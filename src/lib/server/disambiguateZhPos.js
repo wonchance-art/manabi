@@ -243,7 +243,12 @@ export function needsZhJaBackfill(entry) {
   if (!entry || entry.source === 'user_verified') return false;
   const meanings = Array.isArray(entry.meanings) ? entry.meanings : [];
   if (meanings.length === 0) return false;
-  return meanings.every((m) => !m || !('ja' in m));
+  const withJa = meanings.find((m) => m && 'ja' in m);
+  if (!withJa) return true; // ja 미판정(2단계 이전 레거시)
+  // 3단계 백필: ja 객체인데 warn 키가 없으면 동형이의어 미판정(2단계 시절) — 1회 재조회.
+  // warn: null은 '판정 완료·경고 없음'이라 재조회하지 않는다.
+  const ja = withJa.ja;
+  return !!ja && typeof ja === 'object' && !('warn' in ja);
 }
 
 /**

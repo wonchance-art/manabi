@@ -23,3 +23,9 @@ export function formatJaRef(ja, chineseText) {
   if (form === String(chineseText || '')) return yomi;
   return `${form}(${yomi})`;
 }
+
+/** 동형이의어 경고(3단계) — 같은 표기가 일본어에서 갖는 다른 뜻. 없으면 null. */
+export function getJaWarn(ja) {
+  if (!ja || typeof ja !== 'object') return null;
+  return typeof ja.warn === 'string' && ja.warn.trim() ? ja.warn.trim() : null;
+}

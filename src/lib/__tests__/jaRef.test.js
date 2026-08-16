@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { getJaRef, formatJaRef } from '../jaRef.js';
+import { getJaRef, formatJaRef, getJaWarn } from '../jaRef.js';
 
 // 계약: 한자 대조 2단계 — 일본어 대응(ja)은 meanings jsonb 안 관례 필드로 저장되고,
 // 표시 형태는 세 가지(표기 다름·표기 같음·대응어 diff)뿐이다. null=대응 없음 판정,
@@ -41,12 +41,23 @@ describe('formatJaRef — 표시 문자열', () => {
   });
 });
 
+describe('getJaWarn — 동형이의어 경고(3단계)', () => {
+  it('warn이 있으면 그 뜻, null·부재·불량은 null', () => {
+    expect(getJaWarn({ form: '自動車', yomi: 'じどうしゃ', diff: true, warn: '기차' })).toBe('기차');
+    expect(getJaWarn({ form: '図書館', yomi: 'としょかん', warn: null })).toBeNull();
+    expect(getJaWarn({ form: '図書館', yomi: 'としょかん' })).toBeNull();
+    expect(getJaWarn(null)).toBeNull();
+    expect(getJaWarn({ warn: '   ' })).toBeNull();
+  });
+});
+
 // 배선 계약 — 표시가 같은 옵트인(showHanjaKo) 아래에서만, 백필이 미싱 경로에 연결돼야 한다.
 describe('ja 대응 배선 계약', () => {
-  it('뷰어가 대조 토글 아래에서 사전 행 조회·표시를 배선한다', () => {
+  it('뷰어가 대조 토글 아래에서 사전 행 조회·표시·경고를 배선한다', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
-    expect(src).toContain('formatJaRef(getJaRef(editDictEntry)');
-    expect(src).toContain('formatJaRef(getJaRef(popupDictEntry)');
+    expect(src).toContain('getJaRef(editDictEntry)');
+    expect(src).toContain('getJaRef(popupDictEntry)');
+    expect(src).toContain('getJaWarn(ja)');
     expect(src).toMatch(/isEditingToken \|\| \(showHanjaKo && materialLang === 'Chinese'\)/);
   });
 

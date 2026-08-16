@@ -336,9 +336,14 @@ describe('needsZhJaBackfill — 일본어 대응 백필 판정', () => {
     expect(needsZhJaBackfill({ source: 'gemini', meanings: [{ meaning: '도서관' }] })).toBe(true);
   });
 
-  it('ja: null(대응 없음 판정)·ja 있음은 재조회하지 않는다(무한 재조회 방지)', () => {
+  it('ja: null(대응 없음 판정)·warn까지 판정된 ja는 재조회하지 않는다(무한 재조회 방지)', () => {
     expect(needsZhJaBackfill({ source: 'gemini', meanings: [{ meaning: '~의', ja: null }] })).toBe(false);
-    expect(needsZhJaBackfill({ source: 'gemini', meanings: [{ meaning: '도서관', ja: { form: '図書館', yomi: 'としょかん' } }] })).toBe(false);
+    expect(needsZhJaBackfill({ source: 'gemini', meanings: [{ meaning: '도서관', ja: { form: '図書館', yomi: 'としょかん', warn: null } }] })).toBe(false);
+    expect(needsZhJaBackfill({ source: 'gemini', meanings: [{ meaning: '자동차', ja: { form: '自動車', yomi: 'じどうしゃ', diff: true, warn: '기차' } }] })).toBe(false);
+  });
+
+  it('warn 키 없는 ja(2단계 시절)는 동형이의어 판정을 위해 1회 재조회한다', () => {
+    expect(needsZhJaBackfill({ source: 'gemini', meanings: [{ meaning: '도서관', ja: { form: '図書館', yomi: 'としょかん' } }] })).toBe(true);
   });
 
   it('user_verified·빈 뜻은 제외', () => {
