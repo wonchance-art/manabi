@@ -113,11 +113,12 @@ describe('fetchMeaningsForMissing — 병렬·deadline', () => {
     expect(result.get('图书馆').meanings).toEqual([{ meaning: '도서관', priority: 1, ja: null }]);
   });
 
-  // 한자 대조 2단계 — 일본어 대응(ja)은 meanings[0]의 관례 필드로 저장(스키마 무변경)
-  it('중국어는 일본어 대응(ja)을 검증해 저장하고, 불량 형식은 null 판정으로 기록한다', async () => {
+  // 한자 대조 2·3단계 — 일본어 대응(ja)·동형이의어 경고(warn)는 meanings[0]의 관례 필드로
+  // 저장(스키마 무변경). warn: null도 '판정 완료·경고 없음' 기록 — 백필 무한 재조회 방지.
+  it('중국어는 일본어 대응(ja)·경고(warn)를 검증해 저장하고, 불량 형식은 null 판정으로 기록한다', async () => {
     const arr = [
       { pos: '명사', reading: 'túshūguǎn', meanings: [{ meaning: '도서관', pos: '명사' }], ja: { form: '図書館', yomi: 'としょかん' } },
-      { pos: '명사', reading: 'lǎoshī', meanings: [{ meaning: '선생님', pos: '명사' }], ja: { form: '先生', yomi: 'せんせい', diff: true } },
+      { pos: '명사', reading: 'qìchē', meanings: [{ meaning: '자동차', pos: '명사' }], ja: { form: '自動車', yomi: 'じどうしゃ', diff: true, warn: '기차' } },
       { pos: '조사', reading: 'de', meanings: [{ meaning: '~의', pos: '조사' }], ja: { form: '', yomi: '' } },
     ];
     vi.stubGlobal('fetch', vi.fn(async () => ({
@@ -128,13 +129,13 @@ describe('fetchMeaningsForMissing — 병렬·deadline', () => {
     const { result } = await fetchMeaningsForMissing(
       [
         { base_form: '图书馆', pos: '명사', reading: '' },
-        { base_form: '老师', pos: '명사', reading: '' },
+        { base_form: '汽车', pos: '명사', reading: '' },
         { base_form: '的', pos: '조사', reading: '' },
       ],
       'Chinese', mockSupabase
     );
-    expect(result.get('图书馆').meanings[0].ja).toEqual({ form: '図書館', yomi: 'としょかん' });
-    expect(result.get('老师').meanings[0].ja).toEqual({ form: '先生', yomi: 'せんせい', diff: true });
+    expect(result.get('图书馆').meanings[0].ja).toEqual({ form: '図書館', yomi: 'としょかん', warn: null });
+    expect(result.get('汽车').meanings[0].ja).toEqual({ form: '自動車', yomi: 'じどうしゃ', diff: true, warn: '기차' });
     expect(result.get('的').meanings[0].ja).toBeNull();
   });
 

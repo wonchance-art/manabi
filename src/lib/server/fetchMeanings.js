@@ -18,7 +18,8 @@ ${list}
 ## 출력 형식 (순서와 길이 정확히 일치)
 [
   { "pos": "명사", "reading": "túshūguǎn", "meanings": [{"meaning": "도서관", "pos": "명사"}], "ja": {"form": "図書館", "yomi": "としょかん"} },
-  { "pos": "동사·명사", "reading": "gōngzuò", "meanings": [{"meaning": "일하다", "pos": "동사"}, {"meaning": "일, 직업", "pos": "명사"}], "ja": {"form": "仕事", "yomi": "しごと", "diff": true} },
+  { "pos": "동사·명사", "reading": "gōngzuò", "meanings": [{"meaning": "일하다", "pos": "동사"}, {"meaning": "일, 직업", "pos": "명사"}], "ja": {"form": "仕事", "yomi": "しごと", "diff": true, "warn": null} },
+  { "pos": "명사", "reading": "qìchē", "meanings": [{"meaning": "자동차", "pos": "명사"}], "ja": {"form": "自動車", "yomi": "じどうしゃ", "diff": true, "warn": "기차"} },
   ...
 ]
 
@@ -29,6 +30,8 @@ ${list}
 - ja: 이 단어의 일본어 대응 — form은 일본어에서 실제 그 뜻으로 쓰는 표기(신자체), yomi는 히라가나 읽기.
   같은 한자어를 일본어도 같은 뜻으로 쓰면 diff 생략(図書館), 일본어에선 다른 단어를 쓰면 그 단어를 form에 넣고 diff: true(老师→先生).
   기능어(的·了 등)나 마땅한 대응이 없으면 ja: null
+- ja.warn: 동형이의어 경고 — 이 단어와 같은 표기(신자체로 옮긴 형태)가 일본어에 존재하는데 뜻이 다를 때만,
+  일본어에서의 그 뜻을 15자 이내로 (예: 汽车→"기차", 手纸→"편지", 勉强→"공부"). 해당 없으면 warn: null
 - reading은 성조 기호가 붙은 병음 (예: 图书馆→túshūguǎn, 中国→Zhōngguó)
 - 각 단어에 1~3개 주요 의미 (가장 흔한 순)
 - 의미는 10자 이내로 간결하게
@@ -245,6 +248,8 @@ export async function fetchMeaningsForMissing(missing, language, supabase, opts 
       // 구분한다 — 백필 판정(needsZhJaBackfill)이 이 구분에 기댄다.
       if (language === 'Chinese' && normalizedMeanings.length > 0) {
         const rawJa = entry?.ja;
+        // warn(동형이의어 — 같은 표기가 일본어에서 다른 뜻, 3단계)도 null을 명시 기록:
+        // warn 키 부재 = 2단계 시절 미판정 → 백필 1회 대상(needsZhJaBackfill).
         const ja = rawJa && typeof rawJa === 'object' &&
           typeof rawJa.form === 'string' && rawJa.form.trim() &&
           typeof rawJa.yomi === 'string' && rawJa.yomi.trim()
@@ -252,6 +257,9 @@ export async function fetchMeaningsForMissing(missing, language, supabase, opts 
               form: rawJa.form.trim().slice(0, 20),
               yomi: rawJa.yomi.trim().slice(0, 30),
               ...(rawJa.diff === true ? { diff: true } : {}),
+              warn: typeof rawJa.warn === 'string' && rawJa.warn.trim()
+                ? rawJa.warn.trim().slice(0, 30)
+                : null,
             }
           : null;
         normalizedMeanings[0] = { ...normalizedMeanings[0], ja };

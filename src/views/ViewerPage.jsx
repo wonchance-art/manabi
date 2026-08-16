@@ -39,7 +39,7 @@ import { useNextRangeMutation } from '../lib/useNextRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
 import { useScrollRestore } from '../lib/useScrollRestore';
 import { readHanjaKo } from '../lib/hanjaKo';
-import { getJaRef, formatJaRef } from '../lib/jaRef';
+import { getJaRef, formatJaRef, getJaWarn } from '../lib/jaRef';
 import TokenEditPanel from './TokenEditPanel';
 import TokenPosLabel from './TokenPosLabel';
 import TokenRangeGrips from './TokenRangeGrips';
@@ -902,15 +902,20 @@ export default function ViewerPage() {
           </div>
           {(() => {
             const hk = hanjaKoOf(selectedToken.text);
-            const jr = materialLang === 'Chinese' && showHanjaKo
-              ? formatJaRef(getJaRef(editDictEntry), selectedToken.text)
-              : null;
-            if (!hk && !jr) return null;
+            const ja = materialLang === 'Chinese' && showHanjaKo ? getJaRef(editDictEntry) : null;
+            const jr = ja ? formatJaRef(ja, selectedToken.text) : null;
+            const warn = getJaWarn(ja);
+            if (!hk && !jr && !warn) return null;
             return (
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>
                 {hk && <>한자음 <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{hk}</span></>}
                 {hk && jr && ' · '}
                 {jr && <>日 <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{jr}</span></>}
+                {warn && (
+                  <span style={{ color: 'var(--warning)', fontWeight: 600, marginLeft: (hk || jr) ? 6 : 0 }}>
+                    ⚠ 일본어로는 '{warn}'
+                  </span>
+                )}
               </div>
             );
           })()}
@@ -1713,10 +1718,19 @@ export default function ViewerPage() {
                 <span className="pdf-detail-popup__base">한자음 {hk}</span>
               ) : null; })()}
               {(() => {
-                const jr = materialLang === 'Chinese' && showHanjaKo
-                  ? formatJaRef(getJaRef(popupDictEntry), popupWord.token.text)
-                  : null;
-                return jr ? <span className="pdf-detail-popup__base">日 {jr}</span> : null;
+                const ja = materialLang === 'Chinese' && showHanjaKo ? getJaRef(popupDictEntry) : null;
+                const jr = ja ? formatJaRef(ja, popupWord.token.text) : null;
+                const warn = getJaWarn(ja);
+                return (
+                  <>
+                    {jr && <span className="pdf-detail-popup__base">日 {jr}</span>}
+                    {warn && (
+                      <span className="pdf-detail-popup__base" style={{ color: 'var(--warning)', fontWeight: 600 }}>
+                        ⚠ 日 '{warn}'
+                      </span>
+                    )}
+                  </>
+                );
               })()}
               <span className="pdf-detail-popup__short">{popupWord.token.meaning}</span>
             </div>
