@@ -13,6 +13,7 @@ import grammarH4 from './grammar/h4';
 import grammarH5 from './grammar/h5';
 import grammarH6 from './grammar/h6';
 import grammarH1Pronunciation from './grammar/h1_pronunciation';
+import grammarJaBridge from './grammar/ja_bridge';
 import grammarSceneEmergency from './grammar/scene_emergency';
 import grammarSceneTravel from './grammar/scene_travel';
 
@@ -184,7 +185,7 @@ const registry = createRegistry(
   {
     OT: withExtraExamples(grammarOT, exOT),
     H1: [...withExtraExamples(grammarH1, exH1), ...grammarH1Pronunciation, ...grammarSceneEmergency, ...grammarSceneTravel.filter(ch => ch.level === 'H1')],
-    H2: withExtraExamples(grammarH2, exH2),
+    H2: [...withExtraExamples(grammarH2, exH2), ...grammarJaBridge],
     H3: withExtraExamples(grammarH3, exH3),
     H4: withExtraExamples(grammarH4, exH4),
     H5: withExtraExamples(grammarH5, exH5),

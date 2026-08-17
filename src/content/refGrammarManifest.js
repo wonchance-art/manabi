@@ -8427,6 +8427,27 @@ export const REF_GRAMMAR_MANIFEST = {
                   "slug": "h2-12-time-expressions",
                   "source": "lesson"
                 },
+                "nextLesson": {
+                  "id": "chinese-h2-u07-l01",
+                  "href": "/chinese/grammar/h2-13-ja-onyomi-pinyin-bridge"
+                }
+              }
+            },
+            {
+              "slug": "h2-13-ja-onyomi-pinyin-bridge",
+              "level": "H2",
+              "order": 13,
+              "title": "일본어 한자음은 병음의 나침반",
+              "topic": "한자 대조 학습법 音読み↔拼音",
+              "summary": "일본어 음독과 한국 한자음을 겹치면 병음의 끝소리(-n/-ng/모음)를 미리 좁힐 수 있어요. 통하는 법칙 세 가지와, 믿으면 안 되는 함정을 배워요.",
+              "duration": "약 12분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "chinese-h2-u07-l01",
+                  "lang": "Chinese",
+                  "slug": "h2-13-ja-onyomi-pinyin-bridge",
+                  "source": "lesson"
+                },
                 "nextLesson": null
               }
             }
