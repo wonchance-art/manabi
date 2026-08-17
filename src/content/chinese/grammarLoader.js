@@ -39,10 +39,14 @@ export const CHINESE_GRAMMAR_LOADERS = Object.freeze({
     ...emergency.default,
     ...travel.default.filter(chapter => chapter.level === 'H1'),
   ]),
-  H2: () => loadLevel(
-    () => import('./grammar/h2.js'),
-    () => import('./grammar/h2_examples.js'),
-  ),
+  H2: () => Promise.all([
+    import('./grammar/h2.js'),
+    import('./grammar/h2_examples.js'),
+    import('./grammar/ja_bridge.js'),
+  ]).then(([grammar, examples, jaBridge]) => [
+    ...withExtraExamples(grammar.default, examples.default),
+    ...jaBridge.default,
+  ]),
   H3: () => loadLevel(
     () => import('./grammar/h3.js'),
     () => import('./grammar/h3_examples.js'),
