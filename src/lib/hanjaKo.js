@@ -67,3 +67,12 @@ export function listHanjaHunEum(word, koTable, hunTable) {
     .filter((x) => x.label);
   return items.length ? items : null;
 }
+
+/**
+ * 훈음 나열이 단어의 전 글자를 커버하는가 — 커버하면 한자음 단독 표기는 글자별 음과
+ * 중복이라 생략한다(오너 확정). 훈이 빠진 글자가 있으면 한자음이 유일한 앵커라 유지.
+ */
+export function hunsCoverWord(word, huns) {
+  const n = [...String(word || '')].length;
+  return !!huns && n > 0 && huns.length === n;
+}
