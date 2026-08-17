@@ -1062,9 +1062,10 @@ export default function ViewerPage() {
           pos는 TokenPosLabel·병음은 헤더와 중복이라 생략. 예문만 새 정보라 자연 배치,
           한자 노트는 한자 대조 토글(한자음·훈음)과 겹치므로 토글 꺼짐일 때만. */}
       {refVocab?.word?.ex && (
+        // 예문 3줄 스택(오너 확정): 예문 → 병음 → 뜻
         <div style={{ fontSize: '0.84rem', lineHeight: 1.55, marginBottom: 12 }}>
-          <span lang="zh-Hans">{refVocab.word.ex.zh}</span>
-          <span style={{ color: 'var(--text-muted)', fontSize: '0.76rem', marginLeft: 6 }}>{refVocab.word.ex.pinyin}</span>
+          <div lang="zh-Hans">{refVocab.word.ex.zh}</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '0.76rem' }}>{refVocab.word.ex.pinyin}</div>
           <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{refVocab.word.ex.ko}</div>
         </div>
       )}
