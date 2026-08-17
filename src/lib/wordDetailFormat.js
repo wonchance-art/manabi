@@ -29,6 +29,8 @@ export function formatDetail(text) {
       }
       return `<strong>${m}</strong>`;
     })
+    // 병음 줄(⟪py⟫ 마커 — 중국어 예문 아래 표시 시점 합성, wordDetail.injectExamplePinyin)
+    .replace(/⟪py⟫([^\n]*)/g, '<span class="pdf-detail-pinyin">$1</span>')
     .split('\n').map(l => l.trim()).filter(Boolean).join('<br />')
     .replace(/(<br \/>){2,}/g, '</p><p>')
     .replace(/^/, '<p>').replace(/$/, '</p>');

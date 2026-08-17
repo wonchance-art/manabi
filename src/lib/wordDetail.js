@@ -1,6 +1,41 @@
 import { callGemini } from './gemini';
 import { langNameKo } from './constants';
 
+const HAS_HANZI = /[一-鿿]/;
+
+/**
+ * 상세 설명의 중국어 예문(굵은 원문 줄) 아래에 병음 줄을 삽입한다(순수 — 오너 확정:
+ * 예문/병음/뜻 3줄). 마커 ⟪py⟫는 formatDetail이 흐린 스타일로 렌더한다.
+ * 저장 원문(크라우드소싱 필드)은 불변 — 표시 시점 합성이라 기존 캐시에도 소급 적용.
+ * @param {string} text
+ * @param {(s: string) => string} pyFn - 한자 문장 → 병음 문자열
+ */
+export function injectExamplePinyin(text, pyFn) {
+  const lines = String(text || '').split('\n');
+  const out = [];
+  for (let i = 0; i < lines.length; i++) {
+    out.push(lines[i]);
+    const m = lines[i].trim().match(/^-?\s*\*\*(.+?)\*\*[.。]?$/);
+    if (!m || !HAS_HANZI.test(m[1])) continue;
+    const next = (lines[i + 1] || '').trim();
+    if (next.startsWith('⟪py⟫')) continue; // 이미 삽입됨(로컬 캐시 재통과 등)
+    const py = pyFn(m[1]);
+    if (py) out.push(`⟪py⟫${py}`);
+  }
+  return out.join('\n');
+}
+
+/** 중국어면 병음 줄 합성(pinyin-pro 지연 로드 — 실패 시 원문 그대로), 그 외 언어는 무변경. */
+async function withExamplePinyin(text, language) {
+  if (language !== 'Chinese' || !text || !HAS_HANZI.test(text)) return text;
+  try {
+    const { pinyin } = await import('pinyin-pro');
+    return injectExamplePinyin(text, (s) => pinyin(s, { toneType: 'symbol' }));
+  } catch {
+    return text;
+  }
+}
+
 function localGet(key) {
   if (typeof window === 'undefined') return null;
   try { return localStorage.getItem(`pdf_cache:detail:${key}`); } catch { return null; }
@@ -21,7 +56,7 @@ export async function fetchWordDetailText(token, language) {
   // 1. localStorage
   const local = localGet(cacheKey);
   if (local) {
-    try { const parsed = JSON.parse(local); if (parsed) return parsed; } catch {}
+    try { const parsed = JSON.parse(local); if (parsed) return await withExamplePinyin(parsed, language); } catch {}
   }
 
   // 2. DB
@@ -30,7 +65,7 @@ export async function fetchWordDetailText(token, language) {
     const { detail } = await res.json();
     if (detail) {
       localSet(cacheKey, detail);
-      return detail;
+      return await withExamplePinyin(detail, language);
     }
   } catch {}
 
@@ -72,7 +107,7 @@ export async function fetchWordDetailText(token, language) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeader },
     body: JSON.stringify({ base_form: baseForm, language, detail_text: detail }),
-  }).catch(() => {}); // fire-and-forget
+  }).catch(() => {}); // fire-and-forget — 저장은 원문(병음 합성 전)
 
-  return detail;
+  return withExamplePinyin(detail, language);
 }

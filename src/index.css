@@ -871,6 +871,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 0.68rem; font-weight: 700; color: var(--warning);
   background: rgba(252,196,25,0.16); padding: 2px 8px; border-radius: var(--radius-full); white-space: nowrap;
 }
+/* 상세 설명 예문의 병음 줄(표시 시점 합성 — 예문/병음/뜻 3줄) */
+.pdf-detail-pinyin { color: var(--text-muted); font-size: 0.85em; }
 /* 급수 뱃지(②) — 레퍼런스 사전에서 표시 시점 계산(HSK n / 생활) */
 .vocab-row__level {
   font-size: 0.62rem; font-weight: 700; color: var(--primary-light);
