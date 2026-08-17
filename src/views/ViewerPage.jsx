@@ -726,6 +726,11 @@ export default function ViewerPage() {
 
   // 우리 사전(레퍼런스 어휘) 연동(②) — 급수 뱃지 + 정본 뜻·예문·한자 노트 자동 표시
   const refVocab = useRefVocabEntry(materialLang, selectedToken?.base_form || selectedToken?.text);
+  // 정본 뜻 대체(오너 피드백): 우리 사전에 있으면 그 뜻을 뜻 자리에 그대로 쓴다 —
+  // AI 뜻과 대부분 겹치므로 별도 블록 없이 하나만. 단, 사용자가 이 토큰의 뜻을
+  // 직접 교정했다면 교정이 최우선(편집 기능 계약 유지).
+  const hasMeaningCorrection = tokenCorrections.some((c) => c?.after_value?.meaning);
+  const refMeaning = !hasMeaningCorrection ? (refVocab?.word?.ko || null) : null;
 
   // 뜻·발음 수동 편집(링큐식) — 자료 소유자만(materials update RLS가 소유자 한정).
   // 같은 사전 행을 한자 대조(ja 대응 표시)도 쓰므로, 편집 중이거나 대조 토글이 켜져 있으면 조회.
@@ -989,7 +994,7 @@ export default function ViewerPage() {
       </div>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: materialLang === 'English' && selectedToken.reading ? 4 : 14 }}>
         <div style={{ fontSize: '1rem', lineHeight: 1.6, flex: 1, minWidth: 0 }}>
-          {selectedToken.meaning || '(뜻 없음)'}
+          {refMeaning || selectedToken.meaning || '(뜻 없음)'}
         </div>
         {canEditToken && (
           <button
@@ -1035,28 +1040,19 @@ export default function ViewerPage() {
         </div>
       )}
 
-      {/* 우리 사전 — 레퍼런스 정본의 뜻·예문·한자 노트 자동 표시(②, AI 호출 0) */}
-      {refVocab?.word && (
-        <div style={{ border: '1px solid var(--border)', borderRadius: 10, padding: '9px 12px', marginBottom: 12, background: 'var(--bg-secondary)' }}>
-          <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 4 }}>
-            우리 사전 · {refLevelLabel(refVocab.level)}
-          </div>
-          <div style={{ fontSize: '0.88rem' }}>
-            {refVocab.word.ko}
-            {refVocab.word.pos && <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginLeft: 6 }}>{refVocab.word.pos}</span>}
-          </div>
-          {refVocab.word.ex && (
-            <div style={{ marginTop: 6, fontSize: '0.84rem', lineHeight: 1.55 }}>
-              <div>{refVocab.word.ex.zh}</div>
-              <div style={{ color: 'var(--text-muted)', fontSize: '0.76rem' }}>{refVocab.word.ex.pinyin}</div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{refVocab.word.ex.ko}</div>
-            </div>
-          )}
-          {refVocab.word.hanja && (
-            <div style={{ marginTop: 6, fontSize: '0.76rem', color: 'var(--text-secondary)' }}>
-              🈶 {refVocab.word.hanja}
-            </div>
-          )}
+      {/* 정본 예문·한자 노트(② — 오너 피드백로 박스 해체): 뜻은 위 뜻 자리가 대체 표시,
+          pos는 TokenPosLabel·병음은 헤더와 중복이라 생략. 예문만 새 정보라 자연 배치,
+          한자 노트는 한자 대조 토글(한자음·훈음)과 겹치므로 토글 꺼짐일 때만. */}
+      {refVocab?.word?.ex && (
+        <div style={{ fontSize: '0.84rem', lineHeight: 1.55, marginBottom: 12 }}>
+          <span lang="zh-Hans">{refVocab.word.ex.zh}</span>
+          <span style={{ color: 'var(--text-muted)', fontSize: '0.76rem', marginLeft: 6 }}>{refVocab.word.ex.pinyin}</span>
+          <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{refVocab.word.ex.ko}</div>
+        </div>
+      )}
+      {refVocab?.word?.hanja && !showHanjaKo && (
+        <div style={{ fontSize: '0.76rem', color: '#51A85C', marginBottom: 12 }}>
+          한자 · {refVocab.word.hanja}
         </div>
       )}
 
