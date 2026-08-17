@@ -36,3 +36,20 @@ export function buildReadingOptions(dictEntry, token, extra = []) {
   }
   return out;
 }
+
+/**
+ * 저장할 교정 구성(패널 마감 ③) — 실제 바뀐 필드만 담는다.
+ * - 뜻을 비우는 교정은 무시한다(빈 뜻은 표시상 '(뜻 없음)'일 뿐 교정으로 무의미).
+ * - 발음 비우기는 허용한다(잘못 붙은 병음·후리가나 제거는 정당한 교정).
+ * - pos는 뜻 칩 선택에 동반될 때만 실린다(뜻 교정 없이 pos만 바뀌는 일 없음).
+ * @returns {object|null} 저장할 교정 — 바뀐 게 없으면 null(무저장 닫기 신호)
+ */
+export function buildTokenCorrections(token, { meaning, reading, meaningPos } = {}) {
+  const corrections = {};
+  const nextMeaning = String(meaning || '').trim();
+  const nextReading = String(reading || '').trim();
+  if (nextMeaning && nextMeaning !== (token?.meaning || '')) corrections.meaning = nextMeaning;
+  if (nextReading !== (token?.furigana || '')) corrections.furigana = nextReading;
+  if (corrections.meaning && meaningPos) corrections.pos = meaningPos;
+  return Object.keys(corrections).length > 0 ? corrections : null;
+}

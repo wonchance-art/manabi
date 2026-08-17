@@ -661,9 +661,6 @@ export default function ViewerPage() {
     staleTime: 1000 * 30,
   });
 
-  const handleCorrectToken = (tokenId, corrections) => {
-    correctTokenMutation.mutate({ tokenId, corrections });
-  };
 
   // 교정 전역 적용(링큐식) — 공유 사전 승격(user_verified) + 내 단어장 동기.
   // 실패해도 이 자료의 교정(correctTokenMutation)은 이미 반영돼 있다(부분 성공 허용).
@@ -733,6 +730,9 @@ export default function ViewerPage() {
   // 뜻·발음 수동 편집(링큐식) — 자료 소유자만(materials update RLS가 소유자 한정).
   // 같은 사전 행을 한자 대조(ja 대응 표시)도 쓰므로, 편집 중이거나 대조 토글이 켜져 있으면 조회.
   const [isEditingToken, setIsEditingToken] = useState(false);
+  // 편집 중 다른 토큰을 탭하면 편집을 닫는다 — 이전 단어의 편집 상태가 새 단어로
+  // 이어지는 혼선 차단(마감 ③). 같은 토큰의 교정 반영(id 불변)에는 발화하지 않는다.
+  useEffect(() => { setIsEditingToken(false); }, [selectedToken?.id]);
   const canEditToken = !!user?.id && user.id === material?.owner_id;
   const { data: editDictEntry } = useQuery({
     queryKey: ['token-dict', materialLang, selectedToken?.base_form],
@@ -1002,14 +1002,23 @@ export default function ViewerPage() {
       </div>
       {isEditingToken && (
         <TokenEditPanel
+          key={selectedToken.id} // 토큰 전환 시 리마운트 — 이전 단어 입력값이 새 토큰에 붙는 것 차단(마감 ③)
           token={selectedToken}
           language={materialLang}
           dictEntry={editDictEntry}
           saving={correctTokenMutation.isPending}
           onSave={(corrections, opts) => {
-            handleCorrectToken(selectedToken.id, corrections);
-            if (opts?.applyGlobal) promoteCorrection(selectedToken, corrections);
-            setIsEditingToken(false);
+            // 성공 시에만 닫는다 — 실패 시 패널·입력값 유지(재시도 가능). 전역 승격도
+            // 자료 교정이 실제로 반영된 뒤에만(부분 성공 허용 계약 유지).
+            correctTokenMutation.mutate(
+              { tokenId: selectedToken.id, corrections },
+              {
+                onSuccess: () => {
+                  if (opts?.applyGlobal) promoteCorrection(selectedToken, corrections);
+                  setIsEditingToken(false);
+                },
+              }
+            );
           }}
           onClose={() => setIsEditingToken(false)}
         />

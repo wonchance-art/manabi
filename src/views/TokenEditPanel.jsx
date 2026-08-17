@@ -5,7 +5,7 @@
 // 품사 표시(TokenPosLabel)와 어긋나지 않는다. 중국어 1자 다음자는 pinyin-pro(multiple)로
 // 발음 후보를 보강한다(클라 지연 로드 — 편집을 열 때만).
 import { useEffect, useMemo, useState } from 'react';
-import { buildMeaningOptions, buildReadingOptions } from '../lib/tokenEditOptions';
+import { buildMeaningOptions, buildReadingOptions, buildTokenCorrections } from '../lib/tokenEditOptions';
 
 export default function TokenEditPanel({ token, language, dictEntry, saving, onSave, onClose }) {
   const [meaning, setMeaning] = useState(token?.meaning || '');
@@ -38,19 +38,19 @@ export default function TokenEditPanel({ token, language, dictEntry, saving, onS
     [dictEntry, token, multiReadings]
   );
 
-  const dirty = meaning.trim() !== (token?.meaning || '') || reading.trim() !== (token?.furigana || '');
+  // 빈 뜻 무시 규칙 포함(마감 ③) — 저장 버튼 활성 판정도 같은 함수로 정합.
+  const pending = buildTokenCorrections(token, { meaning, reading, meaningPos });
 
   const save = () => {
-    const corrections = {};
-    if (meaning.trim() !== (token?.meaning || '')) corrections.meaning = meaning.trim();
-    if (reading.trim() !== (token?.furigana || '')) corrections.furigana = reading.trim();
-    if (corrections.meaning && meaningPos) corrections.pos = meaningPos;
-    if (Object.keys(corrections).length === 0) { onClose(); return; }
-    onSave(corrections, { applyGlobal });
+    if (!pending) { onClose(); return; }
+    onSave(pending, { applyGlobal });
   };
 
   return (
-    <div className="token-edit">
+    <div
+      className="token-edit"
+      onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); onClose(); } }}
+    >
       <div className="token-edit__label">뜻</div>
       {meaningOptions.length > 0 && (
         <div className="token-edit__chips">
@@ -107,7 +107,7 @@ export default function TokenEditPanel({ token, language, dictEntry, saving, onS
 
       <div className="token-edit__actions">
         <button type="button" className="btn btn--ghost btn--sm" onClick={onClose}>취소</button>
-        <button type="button" className="btn btn--primary btn--sm" disabled={saving || !dirty} onClick={save}>
+        <button type="button" className="btn btn--primary btn--sm" disabled={saving || !pending} onClick={save}>
           {saving ? '저장 중…' : '저장'}
         </button>
       </div>
