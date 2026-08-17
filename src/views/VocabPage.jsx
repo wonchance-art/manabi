@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
@@ -24,6 +24,7 @@ import { useVocabData } from '../lib/useVocabData';
 // 'use client' 번들에 교재 전체가 딸려 오지 않는다.
 import { deriveVocabRungs, vocabTypeForRung } from '../lib/skillRung';
 import { exportCSV, exportAnki } from '../lib/vocabIO';
+import { loadRefVocabIndex } from '../lib/refVocabIndex';
 import {
   deckOf, fisherYatesShuffle, isNewWord,
   loadIntroIds, saveIntroIds,
@@ -49,10 +50,14 @@ export default function VocabPage() {
   const [langFilter, setLangFilter] = useState('all');
   const [showHint, setShowHint] = useState(false);
   const [seriesFilter, setSeriesFilter] = useState('all');
+  const [levelFilter, setLevelFilter] = useState('all');
   const [settingsRestored, setSettingsRestored] = useState(false);
   useEffect(() => {
     if (settingsRestored) localStorage.setItem('vocab_seriesFilter', seriesFilter);
   }, [seriesFilter, settingsRestored]);
+  useEffect(() => {
+    if (settingsRestored) localStorage.setItem('vocab_levelFilter', levelFilter);
+  }, [levelFilter, settingsRestored]);
 
   const [reviewMode, setReviewMode] = useState('auto');
 
@@ -75,6 +80,7 @@ export default function VocabPage() {
     try {
       setLangFilter(localStorage.getItem('vocab_langFilter') || 'all');
       setSeriesFilter(localStorage.getItem('vocab_seriesFilter') || 'all');
+      setLevelFilter(localStorage.getItem('vocab_levelFilter') || 'all');
       setReviewMode(localStorage.getItem('as_review_mode') || 'auto');
       const storedNewPerDay = parseInt(localStorage.getItem('vocab_new_per_day'), 10);
       setNewPerDay(Number.isFinite(storedNewPerDay) ? storedNewPerDay : DEFAULT_NEW_PER_DAY);
@@ -178,6 +184,25 @@ export default function VocabPage() {
     };
   }, [manualAddOpen]);
 
+  // 급수 자동 분류(오너 승인 ②) — 급수는 저장하지 않고 표시 시점에 레퍼런스 어휘
+  // 인덱스로 계산한다(기존 단어 소급 적용). 중국어 단어가 있을 때만 1회 지연 로드.
+  const hasZhVocab = useMemo(() => vocab.some(v => v.language === 'Chinese'), [vocab]);
+  const [zhRefIndex, setZhRefIndex] = useState(null);
+  useEffect(() => {
+    if (!hasZhVocab || zhRefIndex) return undefined;
+    let alive = true;
+    loadRefVocabIndex('Chinese').then((ix) => { if (alive) setZhRefIndex(ix); }).catch(() => {});
+    return () => { alive = false; };
+  }, [hasZhVocab, zhRefIndex]);
+  const refLevelOf = useCallback((v) => (
+    v?.language === 'Chinese' && zhRefIndex ? (zhRefIndex.get(v.word_text)?.level || null) : null
+  ), [zhRefIndex]);
+  // 급수 필터는 중국어 문맥에서만 의미가 있다 — 다른 언어로 좁히면 자동 해제.
+  useEffect(() => {
+    if (levelFilter !== 'all' && langFilter !== 'all' && langFilter !== 'Chinese') setLevelFilter('all');
+  }, [langFilter, levelFilter]);
+  const showLevelFilter = hasZhVocab && !!zhRefIndex && (langFilter === 'all' || langFilter === 'Chinese');
+
   // 검색용 인덱스 사전 계산 (vocab이 바뀔 때만 1회)
   const vocabSearchIndex = useMemo(() => {
     return vocab.map(v => ({
@@ -196,6 +221,13 @@ export default function VocabPage() {
     if (seriesFilter !== 'all') {
       list = list.filter(x => deckOf(x._item)?.key === seriesFilter);
     }
+    if (levelFilter !== 'all' && zhRefIndex) {
+      // 급수 필터는 중국어 한정 스코프 — 'NONE'은 레퍼런스 사전 밖 단어(미분류).
+      list = list.filter(x => {
+        if (x._item.language !== 'Chinese') return false;
+        return (zhRefIndex.get(x._item.word_text)?.level || 'NONE') === levelFilter;
+      });
+    }
     if (q) {
       list = list.filter(x => x._searchKey.includes(q));
     }
@@ -209,9 +241,9 @@ export default function VocabPage() {
       list = [...list].sort((a, b) => (a.word_text || '').localeCompare(b.word_text || '', 'ja'));
     }
     return list;
-  }, [vocabSearchIndex, search, sortBy, langFilter, seriesFilter]);
+  }, [vocabSearchIndex, search, sortBy, langFilter, seriesFilter, levelFilter, zhRefIndex]);
 
-  useEffect(() => { setVisibleCount(30); }, [search, sortBy, langFilter]);
+  useEffect(() => { setVisibleCount(30); }, [search, sortBy, langFilter, levelFilter]);
 
   // 단어가 속한 시리즈 집합 (chip filter용)
   const availableSeries = useMemo(() => {
@@ -781,6 +813,10 @@ export default function VocabPage() {
           setSortBy={setSortBy}
           langFilter={langFilter}
           setLangFilter={setLangFilter}
+          levelFilter={levelFilter}
+          setLevelFilter={setLevelFilter}
+          showLevelFilter={showLevelFilter}
+          refLevelOf={refLevelOf}
           ttsSupported={ttsSupported}
           speak={speak}
           setConfirmAction={setConfirmAction}

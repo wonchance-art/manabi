@@ -39,6 +39,7 @@ import { useNextRangeMutation } from '../lib/useNextRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
 import { useScrollRestore } from '../lib/useScrollRestore';
 import { readHanjaKo } from '../lib/hanjaKo';
+import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
 import { getBook } from '../lib/bookMeta';
 import { getJaRef, formatJaRef, getJaWarn } from '../lib/jaRef';
 import TokenEditPanel from './TokenEditPanel';
@@ -716,6 +717,9 @@ export default function ViewerPage() {
       : null
   );
 
+  // 우리 사전(레퍼런스 어휘) 연동(②) — 급수 뱃지 + 정본 뜻·예문·한자 노트 자동 표시
+  const refVocab = useRefVocabEntry(materialLang, selectedToken?.base_form || selectedToken?.text);
+
   // 뜻·발음 수동 편집(링큐식) — 자료 소유자만(materials update RLS가 소유자 한정).
   // 같은 사전 행을 한자 대조(ja 대응 표시)도 쓰므로, 편집 중이거나 대조 토글이 켜져 있으면 조회.
   const [isEditingToken, setIsEditingToken] = useState(false);
@@ -931,6 +935,11 @@ export default function ViewerPage() {
           <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 4 }}>
             <TokenPosLabel token={selectedToken} />
             {selectedToken.base_form && selectedToken.base_form !== selectedToken.text && ` · ${selectedToken.base_form}`}
+            {refVocab && (
+              <span style={{ marginLeft: 6, padding: '1px 7px', borderRadius: 999, background: 'var(--primary-glow)', color: 'var(--primary-light)', fontWeight: 700, fontSize: '0.7rem' }}>
+                {refLevelLabel(refVocab.level)}
+              </span>
+            )}
           </div>
           {(() => {
             const hk = hanjaKoOf(selectedToken.text);
@@ -992,6 +1001,31 @@ export default function ViewerPage() {
           marginBottom: 14,
         }}>
           {selectedToken.reading}
+        </div>
+      )}
+
+      {/* 우리 사전 — 레퍼런스 정본의 뜻·예문·한자 노트 자동 표시(②, AI 호출 0) */}
+      {refVocab?.word && (
+        <div style={{ border: '1px solid var(--border)', borderRadius: 10, padding: '9px 12px', marginBottom: 12, background: 'var(--bg-secondary)' }}>
+          <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 4 }}>
+            우리 사전 · {refLevelLabel(refVocab.level)}
+          </div>
+          <div style={{ fontSize: '0.88rem' }}>
+            {refVocab.word.ko}
+            {refVocab.word.pos && <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginLeft: 6 }}>{refVocab.word.pos}</span>}
+          </div>
+          {refVocab.word.ex && (
+            <div style={{ marginTop: 6, fontSize: '0.84rem', lineHeight: 1.55 }}>
+              <div>{refVocab.word.ex.zh}</div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.76rem' }}>{refVocab.word.ex.pinyin}</div>
+              <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{refVocab.word.ex.ko}</div>
+            </div>
+          )}
+          {refVocab.word.hanja && (
+            <div style={{ marginTop: 6, fontSize: '0.76rem', color: 'var(--text-secondary)' }}>
+              🈶 {refVocab.word.hanja}
+            </div>
+          )}
         </div>
       )}
 
