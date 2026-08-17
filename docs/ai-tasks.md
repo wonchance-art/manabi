@@ -15,10 +15,12 @@
 ## Codex-1 (codex/*)
 ### doing
 ### todo
-- 📄 PDF.js 뷰어 전환 1단계 골격(발주 5312202647 §C1, 오너 ㄱㄱ 2026-08-17) —
-  pdfjs-dist 도입·PdfJsViewer(캔버스+textLayer+lazy)·pdfText 순수 추출·`?pdfjs=1`
-  게이트만(기존 `<embed>` 기본 경로 무변경 계약). 배선·시트 연동은 Claude 후속.
 ### done (최근)
+- 📄 PDF.js 뷰어 전환 1단계 골격: pdfjs-dist `4.10.38` 고정·public worker 전략,
+  캔버스+선택 가능 textLayer와 current±1 최대 3페이지 lazy 렌더, 순수 텍스트 줄·문단·
+  하이픈 복원, `?pdfjs=1` opt-in을 구현하고 기본 `<embed>` 경로를 불변 유지
+  (`codex/pdfjs-viewer-s1`, 구현 `c58f87c`, draft PR #1038,
+  base `19ef218bc69be44775aae46c8865f840bdf17cc6`)
 - 인증 E2E 빌드 환경 계약 R1: 빌드 시점 테스트 전용 `NEXT_PUBLIC_*` 주입과
   인증 학습 E2E 실행 순서를 `e2e/README.md`에 고정해 런타임 env만 설정한 실패를 차단
   (`codex/e2e-auth-build-contract-r1`, 구현 `083a994`,

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
@@ -12,6 +12,7 @@ import { fetchWordDetailText } from '../lib/wordDetail';
 import Button from '../components/Button';
 import Spinner from '../components/Spinner';
 import PdfDocument from '../components/PdfDocument';
+import PdfJsViewer from '../components/PdfJsViewer';
 import ViewerBottomSheet from '../components/ViewerBottomSheet';
 import ListenControls from '../components/ListenControls';
 import { formatDetail } from '../lib/wordDetailFormat';
@@ -81,6 +82,8 @@ async function getTranslationAndContext(text, language) {
 
 export default function PdfViewerPage() {
   const { id } = useParams();
+  const searchParams = useSearchParams();
+  const usePdfJs = searchParams.get('pdfjs') === '1';
   const { user } = useAuth();
   const toast = useToast();
 
@@ -356,7 +359,7 @@ export default function PdfViewerPage() {
           ) : isPdfUrlLoading ? (
             <Spinner message="로딩 중..." />
           ) : pdfUrl ? (
-            <PdfDocument pdfUrl={pdfUrl} />
+            usePdfJs ? <PdfJsViewer pdfUrl={pdfUrl} /> : <PdfDocument pdfUrl={pdfUrl} />
           ) : (
             <div className="pdf-side__empty">PDF 파일 주소가 없습니다.</div>
           )}

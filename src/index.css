@@ -4424,6 +4424,74 @@ body.is-review-session .page-container { padding-top: 8px; }
   padding: 16px;
 }
 /* pdfjs v4 TextLayer — 정확한 위치 배치 */
+.pdfjs-viewer {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+}
+.pdfjs-viewer .pdf-nav {
+  flex-shrink: 0;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+}
+.pdfjs-pages {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  scroll-behavior: smooth;
+}
+.pdfjs-page {
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+.pdfjs-page__surface {
+  position: relative;
+  flex: 0 0 auto;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 12px rgb(0 0 0 / 0.14);
+}
+.pdfjs-page__canvas {
+  display: block;
+}
+.pdfjs-page__text-layer,
+.pdfjs-page__text-layer :is(span, br) {
+  transform-origin: 0 0;
+}
+.pdfjs-page__text-layer {
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+  line-height: 1;
+  text-align: initial;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+}
+.pdfjs-page__text-layer :is(span, br) {
+  position: absolute;
+  color: transparent;
+  white-space: pre;
+  cursor: text;
+}
+.pdfjs-page__text-layer span.markedContent {
+  top: 0;
+  height: 0;
+}
+.pdfjs-page__text-layer span[role="img"] {
+  user-select: none;
+  cursor: default;
+}
+.pdfjs-page__text-layer ::selection {
+  background: rgb(0 100 255 / 0.25);
+}
+.pdfjs-page__text-layer br::selection {
+  background: transparent;
+}
 
 .pdf-input-bar {
   display: flex;
