@@ -8,6 +8,8 @@ import { useToast } from '../lib/ToastContext';
 import Button from '../components/Button';
 import { analyzeText } from '../lib/analyzeText';
 import { autoSplitParagraphs } from '../lib/splitParagraphs';
+import { splitTextIntoChapters, mergeWithPrevious, CHAPTER_MAX_CHARS } from '../lib/bookSplit';
+import { makeBookKey } from '../lib/bookMeta';
 import { LEVELS } from '../lib/constants';
 import MaterialAddPdfSection from './MaterialAddPdfSection';
 import MaterialAddEpubSection from '../components/MaterialAddEpubSection';
@@ -44,6 +46,72 @@ export default function MaterialAddPage() {
       el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 200);
   };
+
+  // 책 묶음 초안(P1) — 방대한 양도 일단 다 받아들이되 챕터별 자료로 쪼개 등록한다.
+  // 등록 시 분석은 돌리지 않는다(status: 'pending') — 읽을 챕터만 뷰어에서 온디맨드 분석.
+  const [bookDraft, setBookDraft] = useState(null); // { title, chapters: [{title, text}], fromEpub }
+  const [bookRegistering, setBookRegistering] = useState(false);
+  const [bookDoneCount, setBookDoneCount] = useState(0);
+
+  const handleEpubBookReady = ({ bookTitle, language: epubLang, chapters }) => {
+    setPdfSource(null);
+    setEpubSource(true);
+    setVisibility('private');
+    if (epubLang) { setLanguage(epubLang); setLevel(epubLang === 'Japanese' ? 'N3 중급' : epubLang === 'Chinese' ? 'H3 중급' : 'B1 중급'); }
+    // 상한 초과 챕터는 여기서 재분할해 받아들인다("일단 다 받아들이되" 원칙)
+    const normalized = chapters.flatMap((ch) =>
+      ch.text.length > CHAPTER_MAX_CHARS
+        ? splitTextIntoChapters(ch.text).map((sub, i, arr) => ({
+            title: arr.length > 1 ? `${ch.title} (${i + 1}/${arr.length})` : ch.title,
+            text: sub.text,
+          }))
+        : [{ title: ch.title, text: ch.text }]
+    );
+    setBookDraft({ title: bookTitle, chapters: normalized, fromEpub: true });
+    setBookDoneCount(0);
+    toast(`챕터 ${normalized.length}개를 준비했어요. 목록을 확인하고 등록하세요.`, 'success');
+  };
+
+  // 긴 붙여넣기 텍스트 → 챕터 자동 분할 초안(P2). 경계는 아래 목록에서 손볼 수 있다.
+  const handleSplitToBook = () => {
+    const chapters = splitTextIntoChapters(rawText);
+    if (chapters.length < 2) { toast('나눌 챕터 경계를 찾지 못했어요 — 그대로 한 자료로 등록해 주세요.', 'info'); return; }
+    setBookDraft({ title: title || '제목 없는 책', chapters, fromEpub: false });
+    setBookDoneCount(0);
+  };
+
+  async function handleBookRegister() {
+    if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
+    if (!bookDraft || bookDraft.chapters.length === 0) return;
+    setBookRegistering(true);
+    try {
+      const key = makeBookKey();
+      const total = bookDraft.chapters.length;
+      const rows = bookDraft.chapters.map((ch, i) => ({
+        title: `${bookDraft.title} — ${ch.title}`,
+        raw_text: autoSplitParagraphs(ch.text),
+        processed_json: {
+          sequence: [], dictionary: {}, last_idx: -1,
+          status: 'pending', // 미분석 — 뷰어에서 "이 챕터 분석하기"로 온디맨드 실행
+          metadata: {
+            language, level,
+            book: { key, title: bookDraft.title, order: i + 1, total },
+            updated_at: new Date().toISOString(),
+          },
+        },
+        visibility: bookDraft.fromEpub ? 'private' : visibility,
+        owner_id: user.id,
+      }));
+      const { error: insertError } = await supabase.from('reading_materials').insert(rows);
+      if (insertError) throw insertError;
+      setBookDoneCount(total);
+      toast(`《${bookDraft.title}》 챕터 ${total}개 등록 완료! 각 챕터는 열 때 분석돼요.`, 'success');
+    } catch (err) {
+      toast('책 등록 실패 — ' + friendlyToastMessage(err), 'error');
+    } finally {
+      setBookRegistering(false);
+    }
+  }
 
   // EPUB 챕터 반입 — 텍스트만 폼에 주입, 개인 소장물이므로 비공개 고정
   const handleEpubReady = ({ title: epubTitle, rawText: epubText, language: epubLang }) => {
@@ -235,7 +303,65 @@ export default function MaterialAddPage() {
         onRangeReady={handlePdfRangeReady}
       />
 
-      <MaterialAddEpubSection toast={toast} onReady={handleEpubReady} />
+      <MaterialAddEpubSection toast={toast} onReady={handleEpubReady} onBookReady={handleEpubBookReady} />
+
+      {/* 책 묶음 초안 — 챕터 목록 확인·경계 병합·제목 수정 후 일괄 등록(분석은 온디맨드) */}
+      {bookDraft && (
+        <div className="card add-form" style={{ marginBottom: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--primary-light)', fontWeight: 700 }}>책으로 등록</div>
+              <input
+                className="form-input"
+                style={{ marginTop: 4 }}
+                value={bookDraft.title}
+                onChange={(e) => setBookDraft((d) => ({ ...d, title: e.target.value }))}
+                placeholder="책 제목"
+              />
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => { setBookDraft(null); setBookDoneCount(0); }}>✕ 취소</Button>
+          </div>
+          <div style={{ maxHeight: 280, overflowY: 'auto', marginTop: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {bookDraft.chapters.map((ch, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)' }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', flexShrink: 0, width: 24, textAlign: 'right' }}>{i + 1}</span>
+                <input
+                  value={ch.title}
+                  onChange={(e) => setBookDraft((d) => {
+                    const chapters = d.chapters.slice();
+                    chapters[i] = { ...chapters[i], title: e.target.value };
+                    return { ...d, chapters };
+                  })}
+                  style={{ flex: 1, minWidth: 0, fontSize: '0.85rem', background: 'transparent', border: 'none', color: 'var(--text-primary)', outline: 'none' }}
+                />
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
+                  {ch.text.length.toLocaleString()}자
+                </span>
+                {i > 0 && (
+                  <button
+                    type="button"
+                    title="앞 챕터와 합치기"
+                    onClick={() => setBookDraft((d) => ({ ...d, chapters: mergeWithPrevious(d.chapters, i) }))}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.8rem', flexShrink: 0 }}
+                  >⤴ 합치기</button>
+                )}
+              </div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, gap: 10 }}>
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+              챕터 {bookDraft.chapters.length}개 · 총 {bookDraft.chapters.reduce((n, c) => n + c.text.length, 0).toLocaleString()}자 · 각 챕터는 열 때 분석돼요
+            </span>
+            {bookDoneCount > 0 ? (
+              <Button size="sm" onClick={() => router.push('/materials')}>자료실에서 책 보기</Button>
+            ) : (
+              <Button size="sm" onClick={handleBookRegister} disabled={bookRegistering || !bookDraft.title.trim()}>
+                {bookRegistering ? '등록 중…' : `책으로 등록 (${bookDraft.chapters.length}챕터)`}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="card add-form">
         {/* PDF 출처 배지 */}
@@ -372,6 +498,15 @@ export default function MaterialAddPage() {
           {rawText.length > 0 && (
             <div className={`form-char-count ${rawText.length > 50000 ? 'form-char-count--over' : rawText.length > 30000 ? 'form-char-count--warn' : ''}`}>
               {rawText.length.toLocaleString()}자 · 약 {rawText.split('\n').filter(l => l.trim()).length}개 문단
+              {rawText.length > 10000 && !bookDraft && (
+                <button
+                  type="button"
+                  onClick={handleSplitToBook}
+                  style={{ marginLeft: 10, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary-light)', fontSize: '0.8rem', fontWeight: 700, textDecoration: 'underline' }}
+                >
+                  챕터로 나눠 책으로 등록
+                </button>
+              )}
             </div>
           )}
         </div>

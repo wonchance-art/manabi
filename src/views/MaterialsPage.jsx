@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { parseTitle } from '../lib/seriesMeta';
+import { groupByBook } from '../lib/bookMeta';
 import { JP_LEVELS, EN_LEVELS, ZH_LEVELS, langNameKo } from '../lib/constants';
 import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
@@ -466,7 +467,40 @@ export default function MaterialsPage() {
               const k = `${xm.level}|${xm.series}`;
               seriesTotals.set(k, (seriesTotals.get(k) || 0) + 1);
             }
-            return filtered.slice(0, visibleCount).map(m => {
+            // 책 묶음(P1) — metadata.book이 있는 자료는 책 카드 하나로 묶어 챕터 목록을 보여준다
+            const { books, singles } = groupByBook(filtered);
+            const bookCards = books.map((b) => {
+              const analyzed = b.chapters.filter((c) => ['completed', 'partial'].includes(c.processed_json?.status)).length;
+              const readDone = b.chapters.filter((c) => completedIds.has(c.id)).length;
+              return (
+                <details key={b.key} className="card book-card" style={{ gridColumn: '1 / -1', padding: '14px 18px' }}>
+                  <summary style={{ cursor: 'pointer', listStyle: 'none', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                    <span style={{ fontWeight: 800, fontSize: '1rem' }}>📖 {b.title || '제목 없는 책'}</span>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                      챕터 {b.chapters.length}개 · 분석 {analyzed}/{b.chapters.length} · 읽음 {readDone}/{b.chapters.length}
+                    </span>
+                  </summary>
+                  <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {b.chapters.map((c) => {
+                      const st = c.processed_json?.status || 'idle';
+                      const chTitle = c.title.includes(' — ') ? c.title.split(' — ').slice(1).join(' — ') : c.title;
+                      return (
+                        <div key={c.id} onClick={() => router.push(`/viewer/${c.id}`)}
+                          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', cursor: 'pointer' }}>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', width: 24, textAlign: 'right', flexShrink: 0 }}>{c._bookOrder}</span>
+                          <span style={{ flex: 1, minWidth: 0, fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{chTitle}</span>
+                          {completedIds.has(c.id) && <span style={{ fontSize: '0.72rem', color: 'var(--success, var(--primary-light))', flexShrink: 0 }}>✓ 읽음</span>}
+                          <span style={{ fontSize: '0.72rem', flexShrink: 0, color: st === 'pending' ? 'var(--text-muted)' : st === 'failed' ? 'var(--danger)' : st === 'analyzing' ? 'var(--warning)' : 'var(--primary-light)' }}>
+                            {st === 'pending' ? '분석 전' : st === 'analyzing' ? '분석 중' : st === 'failed' ? '실패' : st === 'partial' ? '일부 완료' : '완료'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </details>
+              );
+            });
+            return [...bookCards, ...singles.slice(0, visibleCount).map(m => {
             const status = m.processed_json?.status || 'idle';
             const metadata = m.processed_json?.metadata || {};
             const language = metadata.language || (m.title.match(/[a-zA-Z]/) ? 'English' : 'Japanese');
@@ -613,7 +647,7 @@ export default function MaterialsPage() {
                 </div>
               </div>
             );
-            });
+            })];
           })()}
         </div>
         {visibleCount < filtered.length && (
