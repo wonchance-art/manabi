@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { applyDueum, readHanjaKo } from '../hanjaKo.js';
+import { applyDueum, readHanjaKo, hanjaHunEum, listHanjaHunEum } from '../hanjaKo.js';
 
 // 계약: 한자 대조(옵트인) 1단계 — 한국 한자음은 발음 앵커이지 뜻이 아니다(오너 확정).
 // 어두 두음법칙 적용(노사·여자), 미등재 글자가 섞이면 표시 생략(null).
@@ -61,6 +61,37 @@ describe('readHanjaKo — 단어 한자음 합성', () => {
   });
 });
 
+describe('hanjaHunEum·listHanjaHunEum — 훈음 병기(①)', () => {
+  const ko = { 老: '로', 师: '사', 先: '선', 生: '생' };
+  const hun = { 老: '늙을', 师: '스승', 先: '먼저' };
+
+  it("옥편 표제 관례 — 두음 변형이 있으면 괄호 병기: '늙을 로(노)'", () => {
+    expect(hanjaHunEum('老', ko, hun)).toBe('늙을 로(노)');
+  });
+
+  it('두음 변형이 없으면 그대로: 스승 사', () => {
+    expect(hanjaHunEum('师', ko, hun)).toBe('스승 사');
+  });
+
+  it('훈 또는 음 미등재면 null', () => {
+    expect(hanjaHunEum('生', ko, hun)).toBeNull(); // 훈 없음
+    expect(hanjaHunEum('老', null, hun)).toBeNull();
+    expect(hanjaHunEum('老', ko, null)).toBeNull();
+  });
+
+  it('단어 나열은 훈 있는 글자만 담고, 전무하면 null', () => {
+    expect(listHanjaHunEum('老师', ko, hun)).toEqual([
+      { ch: '老', label: '늙을 로(노)' },
+      { ch: '师', label: '스승 사' },
+    ]);
+    expect(listHanjaHunEum('先生', ko, hun)).toEqual([
+      { ch: '先', label: '먼저 선' },
+    ]);
+    expect(listHanjaHunEum('生', ko, hun)).toBeNull();
+    expect(listHanjaHunEum('', ko, hun)).toBeNull();
+  });
+});
+
 // 생성 데이터 상시 검증 — 재생성이 표를 깨뜨리면 여기서 잡힌다.
 describe('hanjaKo.json 생성 데이터', () => {
   const data = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'src/lib/data/hanjaKo.json'), 'utf8'));
@@ -79,6 +110,27 @@ describe('hanjaKo.json 생성 데이터', () => {
   });
 });
 
+// 훈 오버레이 생성 데이터(①) — libhangul 훈음 + kTraditionalVariant 간체 상속.
+describe('hanjaHun.json 생성 데이터', () => {
+  const hun = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'src/lib/data/hanjaHun.json'), 'utf8'));
+
+  it('정체 직접 수록 + 간체 상속 표본', () => {
+    expect(hun['老']).toBe('늙을');   // 두음형(노) 행 우선 규칙 — '늙은이'가 아니라 '늙을'
+    expect(hun['師']).toBe('스승');   // 정체 직접
+    expect(hun['师']).toBe('스승');   // 간체 ← 師 상속
+    expect(hun['學']).toBe('배울');
+    expect(hun['学']).toBe('배울');   // 간체 ← 學 상속
+    expect(hun['让']).toBe('사양할'); // 간체 ← 讓 상속
+  });
+
+  it('훈은 hanjaKo.json 등재 글자에만 붙는 오버레이고, 8천 자 이상이다', () => {
+    const ko = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'src/lib/data/hanjaKo.json'), 'utf8'));
+    const keys = Object.keys(hun);
+    expect(keys.length).toBeGreaterThan(8000);
+    expect(keys.every((ch) => ko[ch])).toBe(true);
+  });
+});
+
 // 배선 계약: 옵트인 전제 — 기본 꺼짐, 중국어 뷰어에서만 토글 노출.
 describe('한자 대조 배선 계약', () => {
   it('설정 기본값이 꺼짐(false)이다', () => {
@@ -91,5 +143,13 @@ describe('한자 대조 배선 계약', () => {
     expect(src).toMatch(/materialLang === 'Chinese' && \(\s*<button\s*onClick=\{\(\) => setShowHanjaKo/);
     expect(src).toContain("import('../lib/data/hanjaKo.json')");
     expect(src).toContain('한자음');
+  });
+
+  it('훈음(①)도 같은 토글 아래 지연 로드되어 시트·팝업에 병기된다', () => {
+    const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
+    expect(src).toContain("import('../lib/data/hanjaHun.json')");
+    expect(src).toContain('listHanjaHunEum');
+    expect(src).toMatch(/hanjaHunOf\(selectedToken\.text\)/);
+    expect(src).toMatch(/hanjaHunOf\(popupWord\.token\.text\)/);
   });
 });

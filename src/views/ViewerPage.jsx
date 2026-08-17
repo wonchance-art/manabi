@@ -38,7 +38,7 @@ import { useTokenRangeSelect } from '../lib/useTokenRangeSelect';
 import { useNextRangeMutation } from '../lib/useNextRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
 import { useScrollRestore } from '../lib/useScrollRestore';
-import { readHanjaKo } from '../lib/hanjaKo';
+import { readHanjaKo, listHanjaHunEum } from '../lib/hanjaKo';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
 import { getBook } from '../lib/bookMeta';
 import { getJaRef, formatJaRef, getJaWarn } from '../lib/jaRef';
@@ -702,18 +702,28 @@ export default function ViewerPage() {
 
   // 한자 대조(옵트인) — 한국 한자음 테이블은 토글이 켜질 때만 지연 로드(245KB 청크,
   // 이후 캐시). 표는 뜻이 아니라 발음 앵커: 老师 → 노사(어두 두음법칙).
+  // 훈 테이블(①, 143KB)도 같은 조건으로 병행 로드 — 옥편 표제 관례 '늙을 로(노)' 병기.
   const [hanjaKoTable, setHanjaKoTable] = useState(null);
+  const [hanjaHunTable, setHanjaHunTable] = useState(null);
   useEffect(() => {
     if (!showHanjaKo || materialLang !== 'Chinese' || hanjaKoTable) return undefined;
     let alive = true;
     import('../lib/data/hanjaKo.json')
       .then((m) => { if (alive) setHanjaKoTable(m.default || m); })
       .catch(() => {});
+    import('../lib/data/hanjaHun.json')
+      .then((m) => { if (alive) setHanjaHunTable(m.default || m); })
+      .catch(() => {});
     return () => { alive = false; };
   }, [showHanjaKo, materialLang, hanjaKoTable]);
   const hanjaKoOf = (text) => (
     materialLang === 'Chinese' && showHanjaKo && hanjaKoTable
       ? readHanjaKo(text, hanjaKoTable)
+      : null
+  );
+  const hanjaHunOf = (text) => (
+    materialLang === 'Chinese' && showHanjaKo && hanjaKoTable && hanjaHunTable
+      ? listHanjaHunEum(text, hanjaKoTable, hanjaHunTable)
       : null
   );
 
@@ -946,7 +956,8 @@ export default function ViewerPage() {
             const ja = materialLang === 'Chinese' && showHanjaKo ? getJaRef(editDictEntry) : null;
             const jr = ja ? formatJaRef(ja, selectedToken.text) : null;
             const warn = getJaWarn(ja);
-            if (!hk && !jr && !warn) return null;
+            const huns = hanjaHunOf(selectedToken.text);
+            if (!hk && !jr && !warn && !huns) return null;
             return (
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>
                 {hk && <>한자음 <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{hk}</span></>}
@@ -956,6 +967,17 @@ export default function ViewerPage() {
                   <span style={{ color: 'var(--warning)', fontWeight: 600, marginLeft: (hk || jr) ? 6 : 0 }}>
                     ⚠ 일본어로는 '{warn}'
                   </span>
+                )}
+                {huns && (
+                  <div style={{ marginTop: 2 }}>
+                    {huns.map(({ ch, label }, i) => (
+                      <span key={`${ch}-${i}`}>
+                        {i > 0 && ' · '}
+                        <span lang="zh-Hans">{ch}</span>{' '}
+                        <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{label}</span>
+                      </span>
+                    ))}
+                  </div>
                 )}
               </div>
             );
@@ -1808,6 +1830,11 @@ export default function ViewerPage() {
               )}
               {(() => { const hk = hanjaKoOf(popupWord.token.text); return hk ? (
                 <span className="pdf-detail-popup__base">한자음 {hk}</span>
+              ) : null; })()}
+              {(() => { const huns = hanjaHunOf(popupWord.token.text); return huns ? (
+                <span className="pdf-detail-popup__base">
+                  {huns.map(({ ch, label }) => `${ch} ${label}`).join(' · ')}
+                </span>
               ) : null; })()}
               {(() => {
                 const ja = materialLang === 'Chinese' && showHanjaKo ? getJaRef(popupDictEntry) : null;
