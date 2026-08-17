@@ -2,6 +2,18 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+/**
+ * 신호 전이 판정(순수) — 단독 신호는 반대 섹션을 접고(가림 수리), 동시 신호는 둘 다 연다.
+ * @returns {{left: boolean|null, right: boolean|null}|null} null=전이 없음, 필드 null=유지
+ */
+export function resolveSignalTransition(leftRose, rightRose) {
+  if (!leftRose && !rightRose) return null;
+  return {
+    left: leftRose ? true : (rightRose ? false : null),
+    right: rightRose ? true : (leftRose ? false : null),
+  };
+}
+
 export default function ViewerBottomSheet({
   leftContent,
   rightContent,
@@ -21,6 +33,7 @@ export default function ViewerBottomSheet({
   const prevLeft = useRef(false);
   const prevRight = useRef(false);
 
+
   useEffect(() => {
     if (leftActive && !prevLeft.current) {
       setLeftOpen(true);
@@ -37,12 +50,20 @@ export default function ViewerBottomSheet({
     prevRight.current = rightActive;
   }, [rightActive]);
 
+  // 신호 전이 — 단독 신호(단어 탭 등)는 반대 섹션을 접는다: 먼저 열려 있던 문장 설명이
+  // 단어 상세를 가리는 문제(오너 보고)의 수리. 동시 신호(문장 드래그 = 번역+단어 목록
+  // 동시 오픈)는 기존 의도(#992)대로 둘 다 연다.
+  const prevSig = useRef({ left: 0, right: 0 });
   useEffect(() => {
-    if (leftSignal > 0) { setLeftOpen(true); setSheetOpen(true); }
-  }, [leftSignal]);
-  useEffect(() => {
-    if (rightSignal > 0) { setRightOpen(true); setSheetOpen(true); }
-  }, [rightSignal]);
+    const leftRose = leftSignal > prevSig.current.left;
+    const rightRose = rightSignal > prevSig.current.right;
+    prevSig.current = { left: leftSignal, right: rightSignal };
+    const t = resolveSignalTransition(leftRose, rightRose);
+    if (!t) return;
+    setSheetOpen(true);
+    if (t.left != null) setLeftOpen(t.left);
+    if (t.right != null) setRightOpen(t.right);
+  }, [leftSignal, rightSignal]);
 
   // 재탭 = 닫기: 열려 있는 섹션의 버튼을 다시 탭하면 시트째 닫는다.
   // ("해당 섹션만 열려 있을 때"로 좁히면 문장 드래그(번역+단어 동시 오픈) 상황에서
