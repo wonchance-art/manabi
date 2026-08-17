@@ -38,7 +38,7 @@ import { useTokenRangeSelect } from '../lib/useTokenRangeSelect';
 import { useNextRangeMutation } from '../lib/useNextRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
 import { useScrollRestore } from '../lib/useScrollRestore';
-import { readHanjaKo, listHanjaHunEum } from '../lib/hanjaKo';
+import { readHanjaKo, listHanjaHunEum, hunsCoverWord } from '../lib/hanjaKo';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
 import { getBook } from '../lib/bookMeta';
 import { getJaRef, formatJaRef, getJaWarn } from '../lib/jaRef';
@@ -957,11 +957,12 @@ export default function ViewerPage() {
             )}
           </div>
           {(() => {
-            const hk = hanjaKoOf(selectedToken.text);
             const ja = materialLang === 'Chinese' && showHanjaKo ? getJaRef(editDictEntry) : null;
             const jr = ja ? formatJaRef(ja, selectedToken.text) : null;
             const warn = getJaWarn(ja);
             const huns = hanjaHunOf(selectedToken.text);
+            // 훈음이 전 글자를 커버하면 한자음 단독 줄은 중복이라 생략(오너 확정)
+            const hk = hunsCoverWord(selectedToken.text, huns) ? null : hanjaKoOf(selectedToken.text);
             if (!hk && !jr && !warn && !huns) return null;
             return (
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>
@@ -1833,14 +1834,21 @@ export default function ViewerPage() {
               {popupWord.token.base_form && popupWord.token.base_form !== popupWord.token.text && (
                 <span className="pdf-detail-popup__base">{popupWord.token.base_form}</span>
               )}
-              {(() => { const hk = hanjaKoOf(popupWord.token.text); return hk ? (
-                <span className="pdf-detail-popup__base">한자음 {hk}</span>
-              ) : null; })()}
-              {(() => { const huns = hanjaHunOf(popupWord.token.text); return huns ? (
-                <span className="pdf-detail-popup__base">
-                  {huns.map(({ ch, label }) => `${ch} ${label}`).join(' · ')}
-                </span>
-              ) : null; })()}
+              {(() => {
+                const huns = hanjaHunOf(popupWord.token.text);
+                // 훈음 전 글자 커버 시 한자음 단독 표기는 중복이라 생략(오너 확정)
+                const hk = hunsCoverWord(popupWord.token.text, huns) ? null : hanjaKoOf(popupWord.token.text);
+                return (
+                  <>
+                    {hk && <span className="pdf-detail-popup__base">한자음 {hk}</span>}
+                    {huns && (
+                      <span className="pdf-detail-popup__base">
+                        {huns.map(({ ch, label }) => `${ch} ${label}`).join(' · ')}
+                      </span>
+                    )}
+                  </>
+                );
+              })()}
               {(() => {
                 const ja = materialLang === 'Chinese' && showHanjaKo ? getJaRef(popupDictEntry) : null;
                 const jr = ja ? formatJaRef(ja, popupWord.token.text) : null;

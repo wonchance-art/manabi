@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { applyDueum, readHanjaKo, hanjaHunEum, listHanjaHunEum } from '../hanjaKo.js';
+import { applyDueum, readHanjaKo, hanjaHunEum, listHanjaHunEum, hunsCoverWord } from '../hanjaKo.js';
 
 // 계약: 한자 대조(옵트인) 1단계 — 한국 한자음은 발음 앵커이지 뜻이 아니다(오너 확정).
 // 어두 두음법칙 적용(노사·여자), 미등재 글자가 섞이면 표시 생략(null).
@@ -90,6 +90,13 @@ describe('hanjaHunEum·listHanjaHunEum — 훈음 병기(①)', () => {
     expect(listHanjaHunEum('生', ko, hun)).toBeNull();
     expect(listHanjaHunEum('', ko, hun)).toBeNull();
   });
+
+  it('전 글자 커버 판정 — 커버 시 한자음 단독 표기는 중복(오너 확정), 부분 커버는 유지', () => {
+    expect(hunsCoverWord('老师', listHanjaHunEum('老师', ko, hun))).toBe(true);
+    expect(hunsCoverWord('先生', listHanjaHunEum('先生', ko, hun))).toBe(false); // 生 훈 없음
+    expect(hunsCoverWord('生', null)).toBe(false);
+    expect(hunsCoverWord('', null)).toBe(false);
+  });
 });
 
 // 생성 데이터 상시 검증 — 재생성이 표를 깨뜨리면 여기서 잡힌다.
@@ -151,5 +158,11 @@ describe('한자 대조 배선 계약', () => {
     expect(src).toContain('listHanjaHunEum');
     expect(src).toMatch(/hanjaHunOf\(selectedToken\.text\)/);
     expect(src).toMatch(/hanjaHunOf\(popupWord\.token\.text\)/);
+  });
+
+  it('훈음이 전 글자를 커버하면 한자음 단독 줄을 생략한다(오너 확정 — 시트·팝업 동일 규칙)', () => {
+    const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
+    expect(src).toMatch(/hunsCoverWord\(selectedToken\.text, huns\) \? null : hanjaKoOf\(selectedToken\.text\)/);
+    expect(src).toMatch(/hunsCoverWord\(popupWord\.token\.text, huns\) \? null : hanjaKoOf\(popupWord\.token\.text\)/);
   });
 });
