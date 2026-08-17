@@ -16,10 +16,17 @@ describe('뷰어 시트 — 우리 사전 연동', () => {
     expect(src).toMatch(/useRefVocabEntry\(materialLang,\s*selectedToken\?\.base_form\s*\|\|\s*selectedToken\?\.text\)/);
   });
 
-  it('급수 뱃지와 우리 사전 섹션(뜻·예문)을 렌더한다', () => {
+  it('정본 뜻이 있으면 뜻 자리를 대체하되, 사용자 교정이 최우선이다(오너 피드백)', () => {
+    expect(src).toMatch(/hasMeaningCorrection = tokenCorrections\.some/);
+    expect(src).toMatch(/refMeaning \|\| selectedToken\.meaning \|\| '\(뜻 없음\)'/);
+  });
+
+  it('급수 뱃지·정본 예문은 박스 없이 자연 배치, 한자 노트는 한자 대조와 중복 방지', () => {
     expect(src).toContain('refLevelLabel(refVocab.level)');
-    expect(src).toContain('우리 사전');
-    expect(src).toContain('refVocab.word.ex');
+    expect(src).toContain('refVocab?.word?.ex');
+    expect(src).toMatch(/refVocab\?\.word\?\.hanja && !showHanjaKo/);
+    // 오너 피드백: 별도 '우리 사전' 라벨 블록으로 가두지 않는다
+    expect(src).not.toContain('우리 사전 ·');
   });
 });
 
