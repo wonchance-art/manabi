@@ -3,12 +3,27 @@ import Link from 'next/link';
 import Button from '../components/Button';
 import { detectLang, displayWord } from '../lib/constants';
 import { refInline } from './refShared';
+import { refLevelLabel } from '../lib/refVocabIndex';
 
 const LANG_CODE = { Japanese: 'ja', Chinese: 'zh-Hans', English: 'en', French: 'fr' };
+
+// 급수 자동 분류 필터(②) — 급수는 레퍼런스 사전에서 표시 시점 계산. 'NONE'=사전 밖.
+const LEVEL_OPTIONS = [
+  { value: 'all', label: '급수 전체' },
+  { value: 'H1', label: 'HSK 1' },
+  { value: 'H2', label: 'HSK 2' },
+  { value: 'H3', label: 'HSK 3' },
+  { value: 'H4', label: 'HSK 4' },
+  { value: 'H5', label: 'HSK 5' },
+  { value: 'H6', label: 'HSK 6' },
+  { value: 'LIFE', label: '생활' },
+  { value: 'NONE', label: '미분류' },
+];
 
 export default function VocabList({
   vocab = [], filteredVocab, visibleCount, setVisibleCount,
   search, setSearch, sortBy, setSortBy, langFilter, setLangFilter,
+  levelFilter = 'all', setLevelFilter, showLevelFilter = false, refLevelOf,
   ttsSupported, speak, setConfirmAction, deleteMutation, onWordClick,
   bulkDeleteMutation, updateVocabMutation,
 }) {
@@ -118,6 +133,16 @@ export default function VocabList({
             <option value="newest">최신 순</option>
             <option value="alpha">가나다 순</option>
           </select>
+          {showLevelFilter && (
+            <select
+              className="vocab-sort"
+              value={levelFilter}
+              onChange={e => setLevelFilter?.(e.target.value)}
+              aria-label="급수 필터"
+            >
+              {LEVEL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          )}
         <div className="chip-group" role="group" aria-label="단어 언어 필터">
           {/* 4개 언어를 늘 깔아 두면 단어가 한 언어뿐일 때도 칩 5개가 자리를 먹는다 —
               단어장에 실제로 있는 언어만, 그것도 둘 이상일 때만 보여준다. */}
@@ -194,6 +219,7 @@ export default function VocabList({
           const stageLabel = itv >= 30 ? '숙련' : itv >= 7 ? '학습 중' : '초기';
           const due = new Date(v.next_review_at) <= new Date();
           const lc = LANG_CODE[v.language];
+          const refLevel = refLevelLabel(refLevelOf?.(v));
           return (
           <div
             key={v.id}
@@ -248,6 +274,7 @@ export default function VocabList({
             )}
 
             <div className="vocab-row__right" onClick={e => e.stopPropagation()}>
+              {refLevel && <span className="vocab-row__level">{refLevel}</span>}
               {due
                 ? <span className="vocab-row__due">복습</span>
                 : <span className="vocab-row__dot" style={{ background: stageColor }} title={stageLabel} aria-label={stageLabel} />}
