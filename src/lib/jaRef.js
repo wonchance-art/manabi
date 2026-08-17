@@ -13,14 +13,19 @@ export function getJaRef(dictEntry) {
   return undefined; // 미판정 레거시
 }
 
-/** 표시 문자열 — 대응 없음(null)·미판정(undefined)·형식 불량은 null(표시 생략). */
-export function formatJaRef(ja, chineseText) {
+/**
+ * 표시 문자열 — 대응 없음(null)·미판정(undefined)·형식 불량은 null(표시 생략).
+ * @param {string} [jaWordForm] - 글자별 일본식 자형 나열(toJaForm). 어형이 이와 같으면
+ *   훈음 줄과 중복이라 요미만 남긴다(배치 개선 ② — 図書館 이중 표기 제거).
+ */
+export function formatJaRef(ja, chineseText, jaWordForm) {
   if (!ja || typeof ja !== 'object') return null;
   const form = typeof ja.form === 'string' ? ja.form.trim() : '';
   const yomi = typeof ja.yomi === 'string' ? ja.yomi.trim() : '';
   if (!form || !yomi) return null;
   if (ja.diff === true) return `≒${form}(${yomi})`;
   if (form === String(chineseText || '')) return yomi;
+  if (jaWordForm && form === jaWordForm) return yomi;
   return `${form}(${yomi})`;
 }
 

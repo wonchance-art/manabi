@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { applyDueum, readHanjaKo, hanjaHunEum, listHanjaHunEum, hunsCoverWord } from '../hanjaKo.js';
+import { applyDueum, readHanjaKo, hanjaHunEum, listHanjaHunEum, hunsCoverWord, toJaForm } from '../hanjaKo.js';
 
 // 계약: 한자 대조(옵트인) 1단계 — 한국 한자음은 발음 앵커이지 뜻이 아니다(오너 확정).
 // 어두 두음법칙 적용(노사·여자), 미등재 글자가 섞이면 표시 생략(null).
@@ -97,6 +97,14 @@ describe('hanjaHunEum·listHanjaHunEum — 훈음 병기(①)', () => {
     expect(hunsCoverWord('生', null)).toBe(false);
     expect(hunsCoverWord('', null)).toBe(false);
   });
+
+  it('toJaForm — 일본식 자형 변환(미등재·무테이블은 그대로)', () => {
+    const jaT = { 师: '師', 图: '図' };
+    expect(toJaForm('老师', jaT)).toBe('老師');
+    expect(toJaForm('图', jaT)).toBe('図');
+    expect(toJaForm('学生', jaT)).toBe('学生');
+    expect(toJaForm('老师', null)).toBe('老师');
+  });
 });
 
 // 생성 데이터 상시 검증 — 재생성이 표를 깨뜨리면 여기서 잡힌다.
@@ -138,6 +146,37 @@ describe('hanjaHun.json 생성 데이터', () => {
   });
 });
 
+// 일본식 자형 오버레이(오너 확정) — 간체→정체(kTV)→신자체(OpenCC 402쌍), 자형 상이만 수록.
+describe('hanjaJa.json 생성 데이터', () => {
+  const ja = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'src/lib/data/hanjaJa.json'), 'utf8'));
+
+  it('신자체·정체 폴백 표본', () => {
+    expect(ja['师']).toBe('師');   // 일본은 정체형 유지
+    expect(ja['图']).toBe('図');   // 간체→정체→신자체
+    expect(ja['让']).toBe('譲');
+    expect(ja['广']).toBe('広');
+    expect(ja['单']).toBe('単');
+    expect(ja['译']).toBe('訳');
+    expect(ja['发']).toBe('発');
+    expect(ja['們'] ?? ja['们']).toBe('們'); // 일본 비상용은 정체 폴백
+    expect(ja['學']).toBe('学');   // 본문이 구자체로 온 경우
+  });
+
+  it('동형 글자는 미수록(diff-only) — 신자체=간체(学)·왕복 동형(台)·공통 자형(老)', () => {
+    expect(ja['学']).toBeUndefined();
+    expect(ja['台']).toBeUndefined();
+    expect(ja['老']).toBeUndefined();
+    expect(Object.entries(ja).every(([k, v]) => k !== v)).toBe(true);
+  });
+
+  it('hanjaKo 등재 글자에만 붙는 오버레이고 2,500자 이상이다', () => {
+    const ko = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'src/lib/data/hanjaKo.json'), 'utf8'));
+    const keys = Object.keys(ja);
+    expect(keys.length).toBeGreaterThan(2500);
+    expect(keys.every((ch) => ko[ch])).toBe(true);
+  });
+});
+
 // 배선 계약: 옵트인 전제 — 기본 꺼짐, 중국어 뷰어에서만 토글 노출.
 describe('한자 대조 배선 계약', () => {
   it('설정 기본값이 꺼짐(false)이다', () => {
@@ -164,5 +203,22 @@ describe('한자 대조 배선 계약', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
     expect(src).toMatch(/hunsCoverWord\(selectedToken\.text, huns\) \? null : hanjaKoOf\(selectedToken\.text\)/);
     expect(src).toMatch(/hunsCoverWord\(popupWord\.token\.text, huns\) \? null : hanjaKoOf\(popupWord\.token\.text\)/);
+  });
+
+  it('일본식 자형 표기(오너 확정) — 훈음 글자는 신자체 단독, 日 어형은 나열과 같으면 요미만, ⚠는 日 줄 통합', () => {
+    const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
+    expect(src).toContain("import('../lib/data/hanjaJa.json')");
+    expect(src).toMatch(/jaFormOf\(ch\)/);
+    expect(src).toMatch(/formatJaRef\(ja, selectedToken\.text, jaFormOf\(selectedToken\.text\)\)/);
+    expect(src).toMatch(/formatJaRef\(ja, popupWord\.token\.text, jaFormOf\(popupWord\.token\.text\)\)/);
+    expect(src).toMatch(/⚠ \{jaFormOf\(selectedToken\.text\)\}는 일본어로/);
+  });
+
+  it('배치 개선 — 대조 블록은 헤더가 아니라 뜻 아래에 있다', () => {
+    const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
+    const meaningAt = src.indexOf("refMeaning || selectedToken.meaning || '(뜻 없음)'");
+    const blockAt = src.indexOf('한자 대조 블록(배치 개선');
+    expect(meaningAt).toBeGreaterThan(-1);
+    expect(blockAt).toBeGreaterThan(meaningAt);
   });
 });

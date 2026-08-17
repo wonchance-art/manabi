@@ -38,7 +38,7 @@ import { useTokenRangeSelect } from '../lib/useTokenRangeSelect';
 import { useNextRangeMutation } from '../lib/useNextRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
 import { useScrollRestore } from '../lib/useScrollRestore';
-import { readHanjaKo, listHanjaHunEum, hunsCoverWord } from '../lib/hanjaKo';
+import { readHanjaKo, listHanjaHunEum, hunsCoverWord, toJaForm } from '../lib/hanjaKo';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
 import { getBook } from '../lib/bookMeta';
 import { getJaRef, formatJaRef, getJaWarn } from '../lib/jaRef';
@@ -702,6 +702,7 @@ export default function ViewerPage() {
   // 훈 테이블(①, 143KB)도 같은 조건으로 병행 로드 — 옥편 표제 관례 '늙을 로(노)' 병기.
   const [hanjaKoTable, setHanjaKoTable] = useState(null);
   const [hanjaHunTable, setHanjaHunTable] = useState(null);
+  const [hanjaJaTable, setHanjaJaTable] = useState(null);
   useEffect(() => {
     if (!showHanjaKo || materialLang !== 'Chinese' || hanjaKoTable) return undefined;
     let alive = true;
@@ -710,6 +711,9 @@ export default function ViewerPage() {
       .catch(() => {});
     import('../lib/data/hanjaHun.json')
       .then((m) => { if (alive) setHanjaHunTable(m.default || m); })
+      .catch(() => {});
+    import('../lib/data/hanjaJa.json')
+      .then((m) => { if (alive) setHanjaJaTable(m.default || m); })
       .catch(() => {});
     return () => { alive = false; };
   }, [showHanjaKo, materialLang, hanjaKoTable]);
@@ -723,6 +727,8 @@ export default function ViewerPage() {
       ? listHanjaHunEum(text, hanjaKoTable, hanjaHunTable)
       : null
   );
+  // 일본식 자형(오너 확정: 간체보다 익숙한 신자체 단독 표기 — 본문 간체가 헤더에 있어 병기 불요)
+  const jaFormOf = (text) => toJaForm(text, hanjaJaTable);
 
   // 우리 사전(레퍼런스 어휘) 연동(②) — 급수 뱃지 + 정본 뜻·예문·한자 노트 자동 표시
   const refVocab = useRefVocabEntry(materialLang, selectedToken?.base_form || selectedToken?.text);
@@ -956,38 +962,6 @@ export default function ViewerPage() {
               </span>
             )}
           </div>
-          {(() => {
-            const ja = materialLang === 'Chinese' && showHanjaKo ? getJaRef(editDictEntry) : null;
-            const jr = ja ? formatJaRef(ja, selectedToken.text) : null;
-            const warn = getJaWarn(ja);
-            const huns = hanjaHunOf(selectedToken.text);
-            // 훈음이 전 글자를 커버하면 한자음 단독 줄은 중복이라 생략(오너 확정)
-            const hk = hunsCoverWord(selectedToken.text, huns) ? null : hanjaKoOf(selectedToken.text);
-            if (!hk && !jr && !warn && !huns) return null;
-            return (
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>
-                {hk && <>한자음 <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{hk}</span></>}
-                {hk && jr && ' · '}
-                {jr && <>日 <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{jr}</span></>}
-                {warn && (
-                  <span style={{ color: 'var(--warning)', fontWeight: 600, marginLeft: (hk || jr) ? 6 : 0 }}>
-                    ⚠ 일본어로는 '{warn}'
-                  </span>
-                )}
-                {huns && (
-                  <div style={{ marginTop: 2 }}>
-                    {huns.map(({ ch, label }, i) => (
-                      <span key={`${ch}-${i}`}>
-                        {i > 0 && ' · '}
-                        <span lang="zh-Hans">{ch}</span>{' '}
-                        <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{label}</span>
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })()}
         </div>
         {ttsSupported && (
           <button onClick={() => speak(selectedToken.text, materialLang)} aria-label="발음 듣기" style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', minWidth: 32, minHeight: 32 }} title="발음 듣기">▷</button>
@@ -1040,6 +1014,49 @@ export default function ViewerPage() {
           {selectedToken.reading}
         </div>
       )}
+
+      {/* 한자 대조 블록(배치 개선 — 뜻 아래 보조 위치): 훈음 줄은 일본식 자형 단독(오너
+          확정 — 본문 간체가 헤더에 있어 병기 불요), 글자 그룹 단위 줄바꿈. 日 줄은 어형이
+          글자 나열과 같으면 요미만(#1041 원리의 단어판), ⚠ 경고는 日 줄에 통합. */}
+      {(() => {
+        const ja = materialLang === 'Chinese' && showHanjaKo ? getJaRef(editDictEntry) : null;
+        const huns = hanjaHunOf(selectedToken.text);
+        const jr = ja ? formatJaRef(ja, selectedToken.text, jaFormOf(selectedToken.text)) : null;
+        const warn = getJaWarn(ja);
+        // 훈음이 전 글자를 커버하면 한자음 단독 줄은 중복이라 생략(오너 확정)
+        const hk = hunsCoverWord(selectedToken.text, huns) ? null : hanjaKoOf(selectedToken.text);
+        if (!hk && !jr && !warn && !huns) return null;
+        return (
+          <div style={{ fontSize: '0.82rem', marginBottom: 12 }}>
+            {hk && (
+              <div style={{ color: 'var(--text-muted)' }}>
+                한자음 <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{hk}</span>
+              </div>
+            )}
+            {huns && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 14px' }}>
+                {huns.map(({ ch, label }, i) => (
+                  <span key={`${ch}-${i}`} style={{ whiteSpace: 'nowrap' }}>
+                    <span lang="ja" style={{ fontWeight: 700 }}>{jaFormOf(ch)}</span>{' '}
+                    <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+                  </span>
+                ))}
+              </div>
+            )}
+            {(jr || warn) && (
+              <div style={{ color: 'var(--text-muted)', marginTop: 2 }}>
+                日{' '}
+                {jr && <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{jr}</span>}
+                {warn && (
+                  <span style={{ color: 'var(--warning)', fontWeight: 600, marginLeft: jr ? 6 : 0 }}>
+                    ⚠ {jaFormOf(selectedToken.text)}는 일본어로 '{warn}'
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* 정본 예문·한자 노트(② — 오너 피드백로 박스 해체): 뜻은 위 뜻 자리가 대체 표시,
           pos는 TokenPosLabel·병음은 헤더와 중복이라 생략. 예문만 새 정보라 자연 배치,
@@ -1843,7 +1860,7 @@ export default function ViewerPage() {
                     {hk && <span className="pdf-detail-popup__base">한자음 {hk}</span>}
                     {huns && (
                       <span className="pdf-detail-popup__base">
-                        {huns.map(({ ch, label }) => `${ch} ${label}`).join(' · ')}
+                        {huns.map(({ ch, label }) => `${jaFormOf(ch)} ${label}`).join(' · ')}
                       </span>
                     )}
                   </>
@@ -1851,14 +1868,14 @@ export default function ViewerPage() {
               })()}
               {(() => {
                 const ja = materialLang === 'Chinese' && showHanjaKo ? getJaRef(popupDictEntry) : null;
-                const jr = ja ? formatJaRef(ja, popupWord.token.text) : null;
+                const jr = ja ? formatJaRef(ja, popupWord.token.text, jaFormOf(popupWord.token.text)) : null;
                 const warn = getJaWarn(ja);
                 return (
                   <>
                     {jr && <span className="pdf-detail-popup__base">日 {jr}</span>}
                     {warn && (
                       <span className="pdf-detail-popup__base" style={{ color: 'var(--warning)', fontWeight: 600 }}>
-                        ⚠ 日 '{warn}'
+                        ⚠ {jaFormOf(popupWord.token.text)}는 일본어로 '{warn}'
                       </span>
                     )}
                   </>

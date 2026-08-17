@@ -29,6 +29,13 @@ describe('formatJaRef — 표시 문자열', () => {
     expect(formatJaRef({ form: '学校', yomi: 'がっこう' }, '学校')).toBe('がっこう');
   });
 
+  it('어형이 글자별 일본식 나열(jaWordForm)과 같으면 요미만 — 훈음 줄과 중복 제거(배치 개선)', () => {
+    const ja = { form: '図書館', yomi: 'としょかん', diff: false };
+    expect(formatJaRef(ja, '图书馆', '図書館')).toBe('としょかん');
+    expect(formatJaRef(ja, '图书馆')).toBe('図書館(としょかん)'); // 파라미터 없으면 기존 동작
+    expect(formatJaRef(ja, '图书馆', '図書舘')).toBe('図書館(としょかん)'); // 불일치는 어형 유지
+  });
+
   it('대응어(diff)는 ≒ 접두', () => {
     expect(formatJaRef({ form: '先生', yomi: 'せんせい', diff: true }, '老师')).toBe('≒先生(せんせい)');
   });
