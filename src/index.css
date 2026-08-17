@@ -1861,6 +1861,43 @@ body.is-review-session .page-container { padding-top: 8px; }
 }
 
 /* Reader */
+/* 책 챕터 내비(P1) — 뷰어 상단, 같은 책 형제 챕터 이동 */
+.book-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 14px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+}
+.book-nav__btn {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--primary-light);
+  flex-shrink: 0;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+}
+.book-nav__btn--off { color: var(--text-muted); opacity: 0.4; }
+.book-nav__title {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.book-nav__pos { color: var(--text-muted); font-weight: 400; font-size: 0.78rem; }
+
+/* 자료함 책 카드 — summary 기본 마커 제거 */
+.book-card > summary::-webkit-details-marker { display: none; }
+
 .reader-area {
   position: relative; /* 지정 범위 그립(.range-grip)의 절대 배치 기준 */
   min-height: 60vh;

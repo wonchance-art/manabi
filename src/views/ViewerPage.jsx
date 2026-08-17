@@ -39,6 +39,7 @@ import { useNextRangeMutation } from '../lib/useNextRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
 import { useScrollRestore } from '../lib/useScrollRestore';
 import { readHanjaKo } from '../lib/hanjaKo';
+import { getBook } from '../lib/bookMeta';
 import { getJaRef, formatJaRef, getJaWarn } from '../lib/jaRef';
 import TokenEditPanel from './TokenEditPanel';
 import TokenPosLabel from './TokenPosLabel';
@@ -285,6 +286,36 @@ export default function ViewerPage() {
 
   // 시리즈 navigation: 같은 시리즈 prev/next + 시리즈/레벨 완주 안내 + 진척도
   const { prevLesson, nextLesson, seriesEndCard, seriesPosition } = useSeriesNeighbors(id, material?.title);
+
+  // 책 챕터 목록(P1) — metadata.book이 있으면 같은 key의 형제 챕터를 불러 내비를 만든다
+  const bookMeta = getBook(material?.processed_json?.metadata);
+  const { data: bookChapters } = useQuery({
+    queryKey: ['book-chapters', bookMeta?.key],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('reading_materials')
+        .select('id, title, processed_json->status, processed_json->metadata->book')
+        .filter('processed_json->metadata->book->>key', 'eq', bookMeta.key);
+      if (error) throw error;
+      return (data || [])
+        .map((r) => ({ id: r.id, title: r.title, status: r.status, order: Number(r.book?.order) || 0 }))
+        .sort((a, b) => a.order - b.order);
+    },
+    enabled: !!bookMeta?.key,
+    staleTime: 1000 * 60,
+  });
+  const bookNav = (() => {
+    if (!bookMeta || !bookChapters?.length) return null;
+    const idx = bookChapters.findIndex((c) => c.id === Number(id) || String(c.id) === String(id));
+    if (idx === -1) return null;
+    return {
+      title: bookMeta.title,
+      pos: idx + 1,
+      total: bookChapters.length,
+      prev: idx > 0 ? bookChapters[idx - 1] : null,
+      next: idx < bookChapters.length - 1 ? bookChapters[idx + 1] : null,
+    };
+  })();
 
   const { data: nextMaterial } = useQuery({
     queryKey: ['next-material', id, material?.processed_json?.metadata?.language],
@@ -826,6 +857,7 @@ export default function ViewerPage() {
   const json = material?.processed_json || { sequence: [], dictionary: {} };
   const status = material?.status || material?.processed_json?.status;
   const isAnalyzing = status === 'analyzing';
+  const isPending = status === 'pending'; // 책 챕터 미분석 — 원문 열람 가능, 분석은 온디맨드
   const isFailed = status === 'failed';
   const isDone = status === 'completed' || status === 'partial';
   const isPartial = status === 'partial';
@@ -1346,6 +1378,21 @@ export default function ViewerPage() {
         </div>{/* viewer-settings__body */}
       </div>
 
+      {/* 책 챕터 내비(P1) — 같은 책의 형제 챕터 사이 이동 */}
+      {bookNav && (
+        <div className="book-nav">
+          {bookNav.prev
+            ? <Link href={`/viewer/${bookNav.prev.id}`} className="book-nav__btn">← 이전</Link>
+            : <span className="book-nav__btn book-nav__btn--off">← 이전</span>}
+          <span className="book-nav__title">
+            《{bookNav.title}》 <span className="book-nav__pos">{bookNav.pos}/{bookNav.total}</span>
+          </span>
+          {bookNav.next
+            ? <Link href={`/viewer/${bookNav.next.id}`} className="book-nav__btn">다음 →</Link>
+            : <span className="book-nav__btn book-nav__btn--off">다음 →</span>}
+        </div>
+      )}
+
       {/* Reader Area — 인앱 토큰 범위 지정(드래그) 이벤트는 여기서 위임 수신 */}
       <div
         ref={readerRef}
@@ -1375,6 +1422,17 @@ export default function ViewerPage() {
                 : <button onClick={() => reanalyze.mutation.mutate({ resume: true })} className="analyzing-banner__refresh" style={{ background: 'var(--accent)' }}>▶ 이어서 분석</button>
               }
             </div>
+          </div>
+        )}
+
+        {isPending && (
+          <div className="analyzing-banner">
+            <span>이 챕터는 아직 분석 전이에요 — 원문은 그대로 읽을 수 있어요.</span>
+            {user?.id === material?.owner_id && (
+              reanalyzeMutation.isPending
+                ? <button onClick={stopReanalysis} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>⏹ 중단</button>
+                : <button onClick={startFullReanalyze} className="analyzing-banner__refresh">이 챕터 분석하기</button>
+            )}
           </div>
         )}
 
@@ -1410,7 +1468,7 @@ export default function ViewerPage() {
             return m ? m[1].length : 0;
           }
 
-          const showRaw = isAnalyzing && rawLines.length > 0;
+          const showRaw = (isAnalyzing || isPending) && rawLines.length > 0;
 
           // lineIdx → [tokenId, ...] 맵 구성
           const tokensByLine = new Map();

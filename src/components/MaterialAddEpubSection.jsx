@@ -11,7 +11,7 @@ const MAX_CHARS = 50000; // MaterialAddPage 본문 상한과 동일 — 초과 �
  * 파싱은 전부 클라이언트(무업로드·무의존)·원본 파일은 보관하지 않는다(텍스트만 반입).
  * 개인 소장물은 저작권 상태를 알 수 없으므로 호출측(MaterialAddPage)이 비공개로 고정한다.
  */
-export default function MaterialAddEpubSection({ toast, onReady }) {
+export default function MaterialAddEpubSection({ toast, onReady, onBookReady }) {
   const inputRef = useRef(null);
   const [book, setBook] = useState(null);        // { fileName, title, language, chapters }
   const [selected, setSelected] = useState(() => new Set());
@@ -48,6 +48,18 @@ export default function MaterialAddEpubSection({ toast, onReady }) {
   const picked = book ? [...selected].sort((a, b) => a - b).map((i) => book.chapters[i]) : [];
   const totalChars = picked.reduce((n, c) => n + c.chars, 0);
   const over = totalChars > MAX_CHARS;
+
+  // 책 전체를 챕터별 자료로 묶어 반입(P1) — 챕터당 50k 캡은 호출측(bookSplit 재분할)이 지킨다
+  function importWholeBook() {
+    if (!book || book.chapters.length === 0) return;
+    onBookReady?.({
+      bookTitle: book.title || book.fileName.replace(/\.epub$/i, ''),
+      language: /^ja/i.test(book.language) ? 'Japanese' : /^en/i.test(book.language) ? 'English' : /^zh/i.test(book.language) ? 'Chinese' : null,
+      chapters: book.chapters.map((ch) => ({ title: ch.title, text: ch.text })),
+    });
+    setBook(null);
+    setSelected(new Set());
+  }
 
   function importPicked() {
     if (!book || picked.length === 0 || over) return;
@@ -107,9 +119,16 @@ export default function MaterialAddEpubSection({ toast, onReady }) {
               선택 {picked.length}개 · {totalChars.toLocaleString()}/{MAX_CHARS.toLocaleString()}자
               {over && ' — 한 번에 가져오기엔 길어요. 챕터를 나눠 반입해 주세요.'}
             </span>
-            <Button size="sm" onClick={importPicked} disabled={picked.length === 0 || over}>
-              선택 챕터 가져오기
-            </Button>
+            <span style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+              {onBookReady && (
+                <Button size="sm" variant="secondary" onClick={importWholeBook}>
+                  책 전체를 챕터별로
+                </Button>
+              )}
+              <Button size="sm" onClick={importPicked} disabled={picked.length === 0 || over}>
+                선택 챕터 가져오기
+              </Button>
+            </span>
           </div>
         </div>
       )}
