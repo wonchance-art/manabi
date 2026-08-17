@@ -246,10 +246,13 @@
 ## Codex-2 (codex2/*)
 ### doing
 ### todo
-- 🧪 뷰어 e2e 스모크 R1(발주 5312202647 §C2, 오너 ㄱㄱ 2026-08-17) — 인앱 지정·시트
-  신호(#1030 수리 계약)·책 내비, Gemini 무호출 픽스처·연속 2회 green.
-  fonts.gstatic 플레이크 안정화는 제안 전용(워크플로 수정 금지).
 ### done (최근)
+- 🧪 뷰어 e2e 스모크 R1: 분석 완료 중국어 `processed_json` 픽스처와 직접 세션 쿠키로
+  토큰 탭·문장 드래그·열린 문장 시트의 단어 전환·책 챕터 내비를 Gemini 무호출로 고정
+  (targeted 1/1·학습 e2e 9/9 연속 2회·전체 301파일/2,829테스트·build 474페이지 green,
+  파일 SHA `9898e6bf…3263` 2회 동일, e2e peak JS heap 29,247,956B·전체 max RSS
+  2,433,974,272B·peak footprint 24,988,648B·swap 0, `codex2/viewer-e2e-r1`,
+  구현 `d552651`, assignment 5312202647, exact base `b8eea864ef78871af772ba08c6c2bbfec0d25215`)
 - ♿ 학습 접근성 R2: 챕터 패턴 체크의 문제·선택지 연결과 채점 live status, 어휘 복습
   힌트 disclosure·비색상 정오 상태, 단어장 도구 이름·CSV 키보드 진입을 저위험 보강하고
   대비·44px·`/home`은 제안 전용으로 유지(targeted 5파일/18·전체 279파일/2,608테스트,

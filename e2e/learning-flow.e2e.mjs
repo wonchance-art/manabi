@@ -149,7 +149,7 @@ function fakeLearnerSession() {
   };
 }
 
-async function mockAuthenticatedVocab(context) {
+async function mockAuthenticatedVocab(context, { readingMaterials = [] } = {}) {
   await context.addInitScript(() => {
     class NoopIntersectionObserver {
       observe() {}
@@ -222,6 +222,27 @@ async function mockAuthenticatedVocab(context) {
       await route.fulfill({ status: 200, headers: { ...cors, 'content-range': '*/0' } });
       return;
     }
+    if (table === 'reading_materials' && readingMaterials.length > 0) {
+      const idFilter = url.searchParams.get('id')?.replace(/^eq\./, '');
+      let rows = idFilter == null
+        ? readingMaterials
+        : readingMaterials.filter((row) => String(row.id) === idFilter);
+      const select = url.searchParams.get('select') || '';
+      if (select.includes('processed_json->status')) {
+        rows = rows.map((row) => ({
+          id: row.id,
+          title: row.title,
+          status: row.processed_json.status,
+          book: row.processed_json.metadata.book,
+        }));
+      }
+      await json(
+        route,
+        idFilter == null ? rows : (rows[0] || null),
+        { 'content-range': rows.length ? `0-${rows.length - 1}/${rows.length}` : '*/0' },
+      );
+      return;
+    }
     if (table === 'user_vocabulary') {
       if (request.method() === 'GET') {
         const selectedWordsOnly = url.searchParams.get('select') === 'word_text';
@@ -266,6 +287,98 @@ async function mockAuthenticatedVocab(context) {
   }]);
 
   return { session, storedWords, writes, writesByTable };
+}
+
+function viewerReadingMaterials(ownerId) {
+  const book = { key: 'bk_e2e_viewer_r1', title: 'E2E 중국어 읽기', total: 2 };
+  return [
+    {
+      id: 91001,
+      title: 'E2E 중국어 읽기 1장',
+      raw_text: '今天我们学习中文。\n阅读很有趣。',
+      status: 'completed',
+      visibility: 'public',
+      owner_id: ownerId,
+      processed_json: {
+        status: 'completed',
+        metadata: { language: 'Chinese', level: 'H1', book: { ...book, order: 1 } },
+        sequence: [
+          'id_0_0', 'id_0_1', 'id_0_2', 'id_0_3', 'id_0_4', 'br_0_5',
+          'id_1_0', 'id_1_1', 'id_1_2', 'id_1_3',
+        ],
+        dictionary: {
+          id_0_0: { text: '今天', base_form: '今天', furigana: 'jīn tiān', pos: '명사', meaning: '오늘' },
+          id_0_1: { text: '我们', base_form: '我们', furigana: 'wǒ men', pos: '대명사', meaning: '우리' },
+          id_0_2: { text: '学习', base_form: '学习', furigana: 'xué xí', pos: '동사', meaning: '배우다' },
+          id_0_3: { text: '中文', base_form: '中文', furigana: 'zhōng wén', pos: '명사', meaning: '중국어' },
+          id_0_4: { text: '。', base_form: '。', furigana: '', pos: '기호', meaning: '마침표' },
+          br_0_5: { text: '\n', base_form: '\n', furigana: '', pos: '개행', meaning: '' },
+          id_1_0: { text: '阅读', base_form: '阅读', furigana: 'yuè dú', pos: '동사', meaning: '읽다' },
+          id_1_1: { text: '很', base_form: '很', furigana: 'hěn', pos: '부사', meaning: '매우' },
+          id_1_2: { text: '有趣', base_form: '有趣', furigana: 'yǒu qù', pos: '형용사', meaning: '재미있다' },
+          id_1_3: { text: '。', base_form: '。', furigana: '', pos: '기호', meaning: '마침표' },
+        },
+      },
+    },
+    {
+      id: 91002,
+      title: 'E2E 중국어 읽기 2장',
+      raw_text: '明天继续学习。',
+      status: 'completed',
+      visibility: 'public',
+      owner_id: ownerId,
+      processed_json: {
+        status: 'completed',
+        metadata: { language: 'Chinese', level: 'H1', book: { ...book, order: 2 } },
+        sequence: ['id_0_0', 'id_0_1', 'id_0_2', 'id_0_3'],
+        dictionary: {
+          id_0_0: { text: '明天', base_form: '明天', furigana: 'míng tiān', pos: '명사', meaning: '내일' },
+          id_0_1: { text: '继续', base_form: '继续', furigana: 'jì xù', pos: '동사', meaning: '계속하다' },
+          id_0_2: { text: '学习', base_form: '学习', furigana: 'xué xí', pos: '동사', meaning: '배우다' },
+          id_0_3: { text: '。', base_form: '。', furigana: '', pos: '기호', meaning: '마침표' },
+        },
+      },
+    },
+  ];
+}
+
+async function mockAuthenticatedViewer(context) {
+  const fixtures = viewerReadingMaterials('00000000-0000-4000-8000-000000000999');
+  const state = await mockAuthenticatedVocab(context, { readingMaterials: fixtures });
+  const analyzeRequests = [];
+  let geminiRequests = 0;
+
+  await context.route('**/api/analyze', async (route) => {
+    analyzeRequests.push(route.request().postDataJSON());
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        results: [{
+          sequence: ['range_0', 'range_1'],
+          dictionary: {
+            range_0: { text: '学习', base_form: '学习', furigana: 'xué xí', pos: '동사', meaning: '배우다' },
+            range_1: { text: '中文', base_form: '中文', furigana: 'zhōng wén', pos: '명사', meaning: '중국어' },
+          },
+        }],
+      }),
+    });
+  });
+  await context.route('**/api/gemini', async (route) => {
+    geminiRequests += 1;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ candidates: [{ content: { parts: [{ text: 'unexpected Gemini fallback' }] } }] }),
+    });
+  });
+
+  return {
+    ...state,
+    fixtures,
+    analyzeRequests,
+    getGeminiRequests: () => geminiRequests,
+  };
 }
 
 async function openTrackChapter(page, track) {
@@ -553,6 +666,77 @@ test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복�
     }
     assert.ok(!('easeFactor' in grade), 'camelCase easeFactor must never reach the DB');
     await sampleHeap(page, 'authenticated vocabulary save and review queue');
+  });
+});
+
+// 분석 완료 processed_json을 사전 저장한 중국어 자료로 뷰어 핵심 상호작용을 고정한다.
+// 외부 Gemini는 호출하지 않고, 문장 범위의 단어 분석 응답만 결정적 fixture로 돌려준다.
+test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증한다', { timeout: config.timeout * 2 }, async () => {
+  await runInFreshPage(async (page, context) => {
+    await page.setViewportSize({ width: 1024, height: 1100 });
+    const { analyzeRequests, getGeminiRequests } = await mockAuthenticatedViewer(context);
+    await page.goto('/viewer/91001', { waitUntil: 'domcontentloaded', timeout: config.timeout });
+
+    await assertVisible(page.getByRole('heading', { name: 'E2E 중국어 읽기 1장', exact: true }), 'viewer fixture heading');
+    const bookNav = page.locator('.book-nav');
+    await assertVisible(bookNav.getByText('《E2E 중국어 읽기》', { exact: false }), 'book chapter navigation');
+    await assertVisible(bookNav.getByText('1/2', { exact: true }), 'book chapter position');
+
+    const sheet = page.getByRole('dialog', { name: 'AI 분석 결과' });
+    const sectionHeaders = sheet.locator('.viewer-sheet__section-header');
+    const leftSection = sectionHeaders.nth(0);
+    const rightSection = sectionHeaders.nth(1);
+    const wordToken = page.locator('[data-tid="id_0_3"]');
+    await assertVisible(wordToken, 'Chinese word token');
+    await wordToken.click();
+    await assertVisible(sheet, 'word detail sheet');
+    assert.equal(await leftSection.getAttribute('aria-expanded'), 'false', 'a token tap keeps sentence detail collapsed');
+    assert.equal(await rightSection.getAttribute('aria-expanded'), 'true', 'a token tap opens the word section');
+    await assertVisible(sheet.getByText('중국어', { exact: true }), 'selected word meaning');
+
+    const selectedText = '我们学习中文';
+    await page.evaluate((text) => {
+      localStorage.setItem(
+        `viewer_tx:Chinese:${text}`,
+        '**번역**\n우리는 중국어를 배웁니다.\n\n**맥락**\nE2E 캐시 문장입니다.',
+      );
+    }, selectedText);
+
+    const start = await page.locator('[data-tid="id_0_1"] .surface').boundingBox();
+    const end = await page.locator('[data-tid="id_0_3"] .surface').boundingBox();
+    assert.ok(start && end, 'drag endpoints must have stable layout boxes');
+    await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(end.x + end.width / 2, end.y + end.height / 2, { steps: 8 });
+    await page.mouse.up();
+
+    await page.waitForFunction(
+      () => document.querySelectorAll('.word-token--picked').length >= 3,
+      undefined,
+      { timeout: config.timeout },
+    );
+    assert.equal(await leftSection.getAttribute('aria-expanded'), 'true', 'sentence drag opens the sentence section');
+    assert.equal(await rightSection.getAttribute('aria-expanded'), 'true', 'sentence drag opens the analyzed word section');
+    const contextText = sheet.locator('.pdf-context__text');
+    await assertVisible(contextText, 'cached sentence translation');
+    assert.match(await contextText.innerText(), /우리는 중국어를 배웁니다\./);
+    await assertVisible(sheet.getByText('단어 (2)', { exact: true }), 'deterministic sentence word analysis');
+    assert.deepEqual(analyzeRequests.map(({ lines, language }) => ({ lines, language })), [
+      { lines: [selectedText], language: 'Chinese' },
+    ]);
+    assert.equal(getGeminiRequests(), 0, 'the preseeded translation cache must prevent Gemini calls');
+
+    await wordToken.click();
+    assert.equal(await leftSection.getAttribute('aria-expanded'), 'false', 'a word tap folds the open sentence section');
+    assert.equal(await rightSection.getAttribute('aria-expanded'), 'true', 'a word tap keeps the word section open');
+    await assertVisible(sheet.getByText('중국어', { exact: true }), 'word detail replaces sentence word results');
+
+    await sheet.getByRole('button', { name: '시트 닫기', exact: true }).click();
+    await bookNav.getByRole('link', { name: '다음 →', exact: true }).click();
+    await page.waitForURL('**/viewer/91002', { timeout: config.timeout });
+    await assertVisible(page.getByRole('heading', { name: 'E2E 중국어 읽기 2장', exact: true }), 'next book chapter');
+    await assertVisible(page.locator('.book-nav').getByText('2/2', { exact: true }), 'next book chapter position');
+    await sampleHeap(page, 'viewer token range sheet and book navigation');
   });
 });
 
