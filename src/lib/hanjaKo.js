@@ -76,3 +76,14 @@ export function hunsCoverWord(word, huns) {
   const n = [...String(word || '')].length;
   return !!huns && n > 0 && huns.length === n;
 }
+
+/**
+ * 단어(또는 글자)를 일본식 자형으로 — 간체보다 일본식이 익숙하다는 오너 확정에 따라
+ * 훈음 줄 글자를 일본식 단독으로 표기한다(본문 간체가 바로 위 헤더에 있어 병기 불요).
+ * 테이블은 자형 상이분만 수록(hanjaJa.json) — 미등재는 그대로.
+ */
+export function toJaForm(word, jaTable) {
+  const s = String(word || '');
+  if (!jaTable) return s;
+  return [...s].map((ch) => jaTable[ch] || ch).join('');
+}
