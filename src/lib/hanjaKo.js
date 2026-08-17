@@ -41,3 +41,29 @@ export function readHanjaKo(word, table) {
   readings[0] = applyDueum(readings[0]);
   return readings.join('');
 }
+
+/**
+ * 글자 하나의 훈음 라벨(①) — 한국 옥편 표제 관례: '늙을 로(노)'(두음 변형이 있으면
+ * 괄호 병기), 변형 없으면 '스승 사'. 훈 또는 음 미등재면 null.
+ * @param {string} ch - 한자 1글자
+ * @param {Record<string, string>} koTable - hanjaKo.json(자→음)
+ * @param {Record<string, string>} hunTable - hanjaHun.json(자→훈)
+ */
+export function hanjaHunEum(ch, koTable, hunTable) {
+  const eum = koTable?.[ch];
+  const hun = hunTable?.[ch];
+  if (!eum || !hun) return null;
+  const dueum = applyDueum(eum);
+  return dueum !== eum ? `${hun} ${eum}(${dueum})` : `${hun} ${eum}`;
+}
+
+/**
+ * 단어의 글자별 훈음 나열 — [{ch, label}]. 훈이 있는 글자만 담고, 전무하면 null
+ * (음 앵커는 readHanjaKo가 이미 커버하므로 훈 없는 글자는 조용히 생략).
+ */
+export function listHanjaHunEum(word, koTable, hunTable) {
+  const items = [...String(word || '')]
+    .map((ch) => ({ ch, label: hanjaHunEum(ch, koTable, hunTable) }))
+    .filter((x) => x.label);
+  return items.length ? items : null;
+}
