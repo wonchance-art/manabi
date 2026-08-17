@@ -51,6 +51,16 @@ describe('buildPromotedEntry — 승격 행 구성', () => {
     expect(entry.meanings[1].ja).toEqual({ form: '仕事', yomi: 'しごと', diff: true });
   });
 
+  it('영어 품사 판정 marker는 교정 뜻이 선두에 삽입돼도 기존 항목에 보존된다', () => {
+    const withMarker = {
+      ...existing,
+      meanings: [{ meaning: '기록하다', priority: 1, pos: '동사', en_pos_v: 1 }],
+    };
+    const entry = buildPromotedEntry(withMarker, { meaning: '기록', pos: '명사' });
+    expect(entry.meanings[0]).not.toHaveProperty('en_pos_v');
+    expect(entry.meanings[1].en_pos_v).toBe(1);
+  });
+
   it('미등재 단어는 교정 뜻만으로 새 행을 만든다', () => {
     const entry = buildPromotedEntry(null, { meaning: '붓', pos: '명사', furigana: 'bǐ' });
     expect(entry).toEqual({

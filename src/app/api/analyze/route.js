@@ -14,6 +14,10 @@ import {
   collectZhPosMarks, disambiguateZhPos, resolveZhTokenPos, zhPosMarkKey,
   pickZhMeaning, needsZhMeaningPosRefresh, needsZhJaBackfill, buildZhPosWriteback, splitZhToken,
 } from '@/lib/server/disambiguateZhPos';
+import {
+  collectEnLemmaLookupForms, collectEnPosMarks, disambiguateEnPos, enPosMarkKey,
+  needsEnPosBackfill, resolveEnTokenContext,
+} from '@/lib/server/disambiguateEnPos';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 
 export const runtime = 'nodejs';
@@ -95,11 +99,18 @@ export async function POST(request) {
       }))
     );
 
-    // 2. 모든 base_form 수집 (중복 제거)
+    // 2. 모든 기본 base_form 수집 (중복 제거). 영어는 POS별 lemma 후보 사전 행도 같은 요청에서
+    // MAX_MISSING cap 안에 조회한다. 후보 행이 없으면 문맥 pick을 적용하지 않고 기본 키로 폴백.
     const allBaseForms = new Set();
     for (const { tokens } of tokenizedLines) {
       for (const t of tokens) {
         if (t.base_form) allBaseForms.add(t.base_form);
+      }
+    }
+    const lookupBaseForms = new Set(allBaseForms);
+    if (language === 'English') {
+      for (const form of collectEnLemmaLookupForms(tokenizedLines, MAX_MISSING)) {
+        lookupBaseForms.add(form);
       }
     }
 
@@ -109,7 +120,7 @@ export async function POST(request) {
       .from('morpheme_dictionary')
       .select('base_form, meanings, pos, reading, source')
       .eq('language', language)
-      .in('base_form', [...allBaseForms]);
+      .in('base_form', [...lookupBaseForms]);
 
     const cache = new Map((cachedRows || []).map(r => [r.base_form, r]));
 
@@ -139,20 +150,45 @@ export async function POST(request) {
       }
     }
 
+    // 4.3. 영어 lazy backfill — marker 미판정 행만 진짜 미싱 뒤에 붙인다. 이번 요청에서
+    // 후보 lemma로 함께 읽힌 행도 포함하되, user_verified는 판정·update 양쪽에서 제외한다.
+    const enBackfillForms = new Set();
+    if (language === 'English') {
+      for (const [baseForm, entry] of cache) {
+        if (needsEnPosBackfill(entry) && !missingList.some((item) => item.base_form === baseForm)) {
+          missingList.push({
+            base_form: baseForm,
+            pos: entry.pos,
+            reading: entry.reading,
+            source: entry.source,
+            existing: true,
+          });
+          enBackfillForms.add(baseForm);
+        }
+      }
+    }
+
     // 4.5. 중국어 품사 문맥 판별 — 겸류사(工作·计划·希望 등)는 jieba가 문맥 불문 단어당 한
     // 태그만 달고, 캐시 pos 우선 병합이 그 첫 품사를 박제한다(병음 박제 #1004와 같은 구조).
     // 명/동/형 계열 한자어를 모아 flash-lite 1회로 "품사 후보 전체 + 이 문장에서의 품사"를
     // 받는다. 뜻 조회와 서로 독립(판별은 pos만, 뜻 조회는 meaning만)이라 병렬 실행 —
     // 미싱이 있는 요청에선 벽시계 추가가 없다. 실패 시 기존 pos 폴백(그레이스풀).
     const zhMarks = language === 'Chinese' ? collectZhPosMarks(tokenizedLines, cache) : [];
-    const posPicksPromise = zhMarks.length > 0
+    const zhPosPicksPromise = zhMarks.length > 0
       ? disambiguateZhPos(lines, zhMarks, { deadlineMs: startedAt + 35_000 })
       : Promise.resolve(new Map());
+    // 4.6. 영어 품사·lemma 문맥 판별 — 동일 표기 반복도 occurrence key로 독립 판정.
+    // 뜻 조회와 병렬이며, 선택 lemma 행이 cache에 없으면 응답 조립에서 현행 값으로 폴백한다.
+    const enMarks = language === 'English' ? collectEnPosMarks(tokenizedLines, cache) : [];
+    const enPosPromise = enMarks.length > 0
+      ? disambiguateEnPos(lines, enMarks, { deadlineMs: startedAt + 35_000 })
+      : Promise.resolve({ picks: new Map(), httpCalls: 0 });
 
     // 미싱 처리 상한 — 배치 폭발 방지. 초과분은 이번 요청에서 뜻 없이 넘어간다(다음에 백필).
     // deadline: 캐시가 빈 언어(중국어 개통 직후)는 미싱 100개 순차 조회가 실측 94s로 60s 캡을
     // 넘겨 함수째 죽고, 클라에선 문단 전체 실패로 보였다(#969). 함수 킬 전에 조회만 중단한다.
     const cappedMissing = missingList.slice(0, MAX_MISSING);
+    let enBackfillRows = 0;
     const meaningsPromise = (async () => {
       if (cappedMissing.length === 0) return;
       try {
@@ -164,13 +200,19 @@ export async function POST(request) {
         });
         for (const [baseForm, entry] of fetched) {
           cache.set(baseForm, entry);
+          if (enBackfillForms.has(baseForm)) enBackfillRows++;
         }
       } catch (err) {
         console.warn('[api/analyze] Gemini meaning fetch failed:', err?.message);
       }
     })();
-    // disambiguateZhPos는 내부에서 전부 catch — reject 없이 빈 Map으로 수렴한다.
-    const [posPicks] = await Promise.all([posPicksPromise, meaningsPromise]);
+    // 두 판별기는 내부에서 전부 catch — reject 없이 빈 결과로 수렴한다.
+    const [posPicks, enPosResult] = await Promise.all([
+      zhPosPicksPromise,
+      enPosPromise,
+      meaningsPromise,
+    ]);
+    const enPosPicks = enPosResult.picks;
 
     // 5. processed_json 호환 응답 조립
     // 불필요 furigana 필터: 히라가나·카타카나·기호만인 토큰은 reading 무시
@@ -188,6 +230,9 @@ export async function POST(request) {
     }
 
     const timestamp = Date.now();
+    const enMarkKeys = new Set(enMarks.map((mark) => mark.key));
+    const usedBaseFormsSet = new Set();
+    let enFallbacks = 0;
     const results = tokenizedLines.map(({ tokens }, lineIdx) => {
       const sequence = [];
       const dictionary = {};
@@ -203,7 +248,14 @@ export async function POST(request) {
       lineTokens.forEach((t, tokenIdx) => {
         const tokenId = `id_${lineIdx}_${tokenIdx}_${timestamp}`;
         sequence.push(tokenId);
-        const cached = cache.get(t.base_form);
+        const enKey = enPosMarkKey(lineIdx, tokenIdx);
+        const enResolved = language === 'English'
+          ? resolveEnTokenContext({ token: t, pick: enPosPicks.get(enKey), cache })
+          : null;
+        if (language === 'English' && enMarkKeys.has(enKey) && enResolved.fallback) enFallbacks++;
+        const cached = enResolved?.entry || cache.get(t.base_form);
+        const outputBaseForm = enResolved?.baseForm || t.base_form;
+        if (cached) usedBaseFormsSet.add(outputBaseForm);
         // 중국어 병음은 토크나이저가 문장 문맥(다음자·변조)으로 산출 — 캐시(첫 문맥의 병음)가
         // 덮으면 문맥이 박제된다(#1004). 일본어는 Gemini 맥락 reading이 캐시에 있어 캐시 우선 유지.
         const rawReading = (language === 'Chinese'
@@ -218,17 +270,21 @@ export async function POST(request) {
               tokenPos: t.pos,
               tokenPosAll: t.pos_all,
             })
-          : { pos: cached?.pos || t.pos, posAll: null };
+          : language === 'English'
+            ? { pos: enResolved.pos, posAll: enResolved.posAll }
+            : { pos: cached?.pos || t.pos, posAll: null };
         // 뜻도 문맥 품사를 따른다 — 짚힌 pos와 일치하는 뜻 우선, 없으면 첫 뜻(기존 동작).
         const meaning = language === 'Chinese'
           ? pickZhMeaning(cached?.meanings, pos)
-          : (cached?.meanings?.[0]?.meaning || '');
+          : language === 'English'
+            ? enResolved.meaning
+            : (cached?.meanings?.[0]?.meaning || '');
         dictionary[tokenId] = {
           text: t.text,
           furigana: cleanFurigana(t.text, rawReading),
           pos,
           meaning,
-          base_form: t.base_form,
+          base_form: outputBaseForm,
           ...(posAll ? { pos_all: posAll } : {}),
         };
       });
@@ -251,7 +307,9 @@ export async function POST(request) {
     }
 
     // usage_count / last_used_at 업데이트 (fire-and-forget)
-    const usedBaseForms = [...allBaseForms].filter(bf => cache.has(bf));
+    const usedBaseForms = language === 'English'
+      ? [...usedBaseFormsSet]
+      : [...allBaseForms].filter(bf => cache.has(bf));
     if (usedBaseForms.length > 0) {
       supabase.rpc('touch_morphemes', {
         lang: language,
@@ -267,6 +325,12 @@ export async function POST(request) {
         totalTokens: [...allBaseForms].length,
         cacheHits: usedBaseForms.length,
         geminiCalls: cappedMissing.length,
+        enPos: {
+          marks: enMarks.length,
+          httpCalls: enPosResult.httpCalls,
+          backfillRows: enBackfillRows,
+          fallbacks: enFallbacks,
+        },
       },
     });
   } catch (err) {
