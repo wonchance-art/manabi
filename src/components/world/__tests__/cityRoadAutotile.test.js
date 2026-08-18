@@ -141,9 +141,13 @@ function cityRenderKeyManifest(city) {
 }
 
 describe('CityScene road autotile opt-in', () => {
+  // 26도시 geo를 전량 로드하는 무거운 훅 — 단독 실행 실측 93s, 병렬 실행에선 CPU 경합으로
+  // 더 늘어 60s 제한을 넘기며 간헐 실패했다(2026-08-18 전체 게이트 2회 연속 red 실측,
+  // 단독 재실행은 7/7 green). 게이트 규약의 '단독 재실행 확인 후 명시 timeout' 선례대로
+  // 실측의 두 배 여유로 올린다 — 테스트 내용은 무변경.
   beforeAll(async () => {
     CITY_MAPS = await loadAllCities();
-  }, 60000);
+  }, 180000);
 
   it('roadStyle 계약은 26도시 전부 autotile-v1을 사용한다', () => {
     expect(CITY_MAPS).toHaveLength(26);

@@ -27,8 +27,11 @@ $ARGUMENTS
 - draft PR 본문: 배경(오너 지시 인용) / 변경 / 테스트 / 게이트. 리포 PR 템플릿이 있으면 그 구조를 따른다.
 
 ### 3. 게이트 — 병렬로 시작
-- 로컬 전체 vitest를 **백그라운드**로 시작: `npm test 2>&1 | tail -10; exit ${PIPESTATUS[0]}`
-  (파이프가 exit code를 삼키므로 `PIPESTATUS` 필수 — 이걸 빠뜨려 실패를 green으로 오독한 전례 있음).
+- 로컬 전체 vitest를 **백그라운드**로 시작하되 **전체 로그를 파일에 남긴다**:
+  `npm test > /tmp/vitest-full.log 2>&1; echo "exit=$?"; grep -E "FAIL|AssertionError" /tmp/vitest-full.log | head; tail -5 /tmp/vitest-full.log`
+  - `| tail -N`으로 파이프하지 말 것 — 요약만 남고 **실패한 파일명·assertion이 통째로 사라진다**
+    (2026-08-18 두 번 연속 이걸로 실패 지점을 못 찾아 전체를 재실행했다).
+  - 파이프를 꼭 쓸 거면 `exit ${PIPESTATUS[0]}`로 exit code를 살릴 것(파이프가 삼킨다).
 - 콘텐츠를 건드렸으면 `node scripts/lint-curriculum.mjs`·`check-content.mjs`·`lint-content.mjs`.
 - 레퍼런스 챕터를 추가·수정했으면 `node scripts/build-ref-grammar-manifest.mjs` 재생성 필수.
 

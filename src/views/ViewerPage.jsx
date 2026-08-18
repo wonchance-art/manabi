@@ -40,6 +40,7 @@ import { useScrollRestore } from '../lib/useScrollRestore';
 import { readHanjaKo, listHanjaHunEum, hunsCoverWord, toJaForm } from '../lib/hanjaKo';
 import { useGrammarDetail } from '../lib/useGrammarDetail';
 import { buildContextPrompt } from '../lib/grammarDetail';
+import { analysisCacheKey, clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
 import { getBook } from '../lib/bookMeta';
 import { getJaRef, formatJaRef, getJaWarn } from '../lib/jaRef';
@@ -516,8 +517,12 @@ export default function ViewerPage() {
           try { if (text) localStorage.setItem(cacheKey, text); } catch {}
         }).catch(() => { setLeftPanelResult(''); setLeftPanelLoading(false); }),
 
-        // 단어 분석
+        // 단어 분석 — 문장 단위 캐시(좌측 번역과 대칭). 적중하면 서버 요청 자체가 사라져
+        // 문맥 판별·뜻 조회가 함께 절감된다(§C4).
         (async () => {
+          const anKey = analysisCacheKey(materialLang, sel);
+          const anCached = isClient ? readAnalysisCache(localStorage, anKey) : null;
+          if (anCached) { setDragTokens(anCached); setDragAnalyzing(false); return; }
           let authHeader = {};
           try {
             const { data: { session } } = await supabase.auth.getSession();
@@ -545,6 +550,7 @@ export default function ViewerPage() {
             }
           }
           setDragTokens(tokens);
+          if (isClient) writeAnalysisCache(localStorage, anKey, tokens);
           setDragAnalyzing(false);
         })(),
       ]);
@@ -619,6 +625,8 @@ export default function ViewerPage() {
       return { tokenId, corrections };
     },
     onSuccess: ({ tokenId, corrections }) => {
+      // 교정된 뜻이 캐시된 분석 결과에 남아 낡지 않게 무효화(§C4 무효화 규칙)
+      if (isClient) clearAnalysisCache(localStorage);
       queryClient.invalidateQueries({ queryKey: ['material', id] });
       queryClient.invalidateQueries({ queryKey: ['token-corrections', id, tokenId] });
       // BottomSheet에 표시되는 selectedToken도 업데이트
@@ -676,6 +684,7 @@ export default function ViewerPage() {
           queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
         }
       }
+      if (isClient) clearAnalysisCache(localStorage); // 승격된 뜻 반영(§C4)
       toast('사전과 단어장에도 반영했어요!', 'success');
     } catch {
       toast('전체 적용은 실패했어요 — 이 자료에는 반영됐어요.', 'warning');
