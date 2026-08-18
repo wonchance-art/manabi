@@ -491,6 +491,41 @@ for (const [lang, cv] of Object.entries(COVER)) {
   }
 }
 
+// ── 챕터 3곳 등록 게이트 ─────────────────────────────────────────────────
+// 신규 grammar 챕터 파일은 세 곳 모두에 실려야 한다: eager 레지스트리(index.js) ·
+// 지연 로더(grammarLoader.js) · 생성 매니페스트(refGrammarManifest.js).
+// 하나라도 빠지면 lazy view가 eager와 어긋나 refGrammarManifest 계약이 깨진다
+// (2026-08-17 ja_bridge 추가 때 3건 실패 실측 — 그 학습을 게이트로 승격).
+{
+  const { readFileSync, existsSync } = await import('node:fs');
+  const manifestSrc = existsSync('src/content/refGrammarManifest.js')
+    ? readFileSync('src/content/refGrammarManifest.js', 'utf8') : '';
+  for (const lang of Object.keys(LANGS)) {
+    const dir = `src/content/${lang}/grammar`;
+    if (!existsSync(dir)) continue;
+    const indexPath = `src/content/${lang}/index.js`;
+    const loaderPath = `src/content/${lang}/grammarLoader.js`;
+    if (!existsSync(indexPath) || !existsSync(loaderPath)) continue;
+    const indexSrc = readFileSync(indexPath, 'utf8');
+    const loaderSrc = readFileSync(loaderPath, 'utf8');
+    for (const file of readdirSync(dir).filter(f => f.endsWith('.js'))) {
+      const stem = file.replace(/\.js$/, '');
+      if (stem.endsWith('_examples')) continue; // 예문 병합 모듈은 본편에 딸려 등록된다
+      const chapters = (grammarModules.get(lang) || [])
+        .filter(m => (m.file || '').endsWith(file))
+        .flatMap(m => m.chapters);
+      if (!chapters.length) continue;
+      if (!indexSrc.includes(`grammar/${stem}`))
+        errors.push(`[${lang}] ${file}이 index.js(eager 레지스트리)에 없다 — 3곳 등록 필요`);
+      if (!loaderSrc.includes(`grammar/${stem}.js`))
+        errors.push(`[${lang}] ${file}이 grammarLoader.js(지연 로더)에 없다 — 3곳 등록 필요`);
+      const missingSlug = chapters.map(ch => ch.slug).find(slug => slug && !manifestSrc.includes(slug));
+      if (missingSlug)
+        errors.push(`[${lang}] ${file}의 "${missingSlug}"가 매니페스트에 없다 — node scripts/build-ref-grammar-manifest.mjs 재생성 필요`);
+    }
+  }
+}
+
 for (const w of warns) console.warn('⚠', w);
 for (const e of errors) console.error('✗', e);
 console.log(`\n콘텐츠 린트 — 오류 ${errors.length} · 경고 ${warns.length} (요미가나 검사 ${jaFiles.length}파일 중 실패 ${furiFail})`);
