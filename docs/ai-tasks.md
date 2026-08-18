@@ -518,8 +518,11 @@
   C3 영어 겸류(**RFC 도착 5317318207 — 실측 대조 후 승인: saw→see lemma 충돌 발견·
   occurrence key·null-marker 이식 우수. 보완 3건(marker 위치 무관+승격 보존 계약·
   lemma 후보 사전 조회·allowlist 확장 절차) 달아 구현 발주 5317343327,
-  `codex3/en-pos-context-r1` exact allowlist 9파일**) · C4 판별 캐시 RFC(회신 대기,
-  RFC-first 구현 금지 명시).
+  `codex3/en-pos-context-r1` exact allowlist 9파일 → **구현 #1049 merge ffcfdd0 —
+  검수: allowlist 1:1 준수·보완 3건 전량 반영·모델 응답 4중 검증(pos∈all·base_form∈
+  제시 후보·길이·화이트리스트)에 모든 실패가 빈 picks 수렴·레거시 lemma 폴백 동일성
+  보존·독립 재현 303파일/2,850 green, CLAUDE_REVIEW 5323042389**) · C4 판별 캐시
+  RFC(회신 대기, RFC-first 구현 금지 명시).
   Claude 몫 완료: ③ 편집 패널 마감(#1036, merge 90887d8) — 실측 결함 3건(편집 중 토큰
   전환 시 이전 입력값이 새 토큰에 저장되는 stale, 저장 실패에도 패널 닫혀 입력 소실,
   빈 뜻 저장 허용)을 key 리마운트+전환 자동 닫기·per-call onSuccess 게이팅·
