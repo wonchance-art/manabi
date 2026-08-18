@@ -34,10 +34,18 @@ describe('코드 리뷰 R1 수리 회귀', () => {
     expect(m[1]).toContain('/^\\/(?!\\/)/');
   });
 
-  it('V-02 ViewerGrammarModal: inlineFormat이 원문을 이스케이프한다', () => {
-    const src = read('src/views/ViewerGrammarModal.jsx');
-    expect(src).toContain('function escapeHtml');
-    expect(src).toMatch(/return escapeHtml\(text\)/);
+  // V-02 원본은 ViewerGrammarModal의 inlineFormat 계약이었다. 모달이 [자세히] 인라인
+  // 해설로 대체되면서(2026-08-18) AI 출력 렌더가 formatDetail 하나로 모였고, 이스케이프
+  // 책임도 그쪽으로 이관됐다. 계약의 실질(AI 출력이 dangerouslySetInnerHTML로 갈 때
+  // 반드시 이스케이프)을 새 경로에서 유지되는지로 다시 고정한다.
+  it('V-02 AI 출력 렌더 경로는 이스케이프를 거친다(모달 → 인라인 이관)', () => {
+    const fmt = read('src/lib/wordDetailFormat.js');
+    expect(fmt).toContain('function escapeHtml');
+    expect(fmt).toMatch(/return escapeHtml\(cleaned\)/);
+    const viewer = read('src/views/ViewerPage.jsx');
+    // 문법 해설 결과도 formatDetail을 통과해야 한다(원문 직접 삽입 금지)
+    expect(viewer).toMatch(/__html: formatDetail\(grammar\.result\)/);
+    expect(viewer).not.toContain('__html: grammar.result');
   });
 
   it('V-04 LessonsPage: level은 key/label 모두 받고 미지 값은 전체로 폴백한다', () => {

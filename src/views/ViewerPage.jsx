@@ -13,7 +13,6 @@ import Button from '../components/Button';
 import { recordActivity } from '../lib/streak';
 import { useTTS } from '../lib/useTTS';
 import { useViewerSettings } from '../lib/useViewerSettings';
-import { useGrammarAnalysis, GRAMMAR_ACTIONS } from '../lib/useGrammarAnalysis';
 import { useViewerQuiz } from '../lib/useViewerQuiz';
 import { useReanalyze } from '../lib/useReanalyze';
 import { useReanalyzeUI } from '../lib/useReanalyzeUI';
@@ -39,6 +38,8 @@ import { useNextRangeMutation } from '../lib/useNextRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
 import { useScrollRestore } from '../lib/useScrollRestore';
 import { readHanjaKo, listHanjaHunEum, hunsCoverWord, toJaForm } from '../lib/hanjaKo';
+import { useGrammarDetail } from '../lib/useGrammarDetail';
+import { buildContextPrompt } from '../lib/grammarDetail';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
 import { getBook } from '../lib/bookMeta';
 import { getJaRef, formatJaRef, getJaWarn } from '../lib/jaRef';
@@ -46,7 +47,6 @@ import TokenEditPanel from './TokenEditPanel';
 import TokenPosLabel from './TokenPosLabel';
 import TokenRangeGrips from './TokenRangeGrips';
 import ViewerComments from './ViewerComments';
-import ViewerGrammarModal from './ViewerGrammarModal';
 import ViewerQuizModal from './ViewerQuizModal';
 import { langNameKo } from '../lib/constants';
 
@@ -237,13 +237,9 @@ export default function ViewerPage() {
 
   const materialLang = material?.processed_json?.metadata?.language || 'Japanese';
 
-  const grammar = useGrammarAnalysis({ toast, materialLang });
-  const { isGrammarModalOpen, setIsGrammarModalOpen, grammarAnalysis,
-          isGrammarLoading, selectedRangeText, setSelectedRangeText,
-          checkedActions, setCheckedActions,
-          grammarFollowUp, setGrammarFollowUp,
-          grammarFollowLoading, analyzeGrammar,
-          requestGrammarAnalysis, askFollowUp } = grammar;
+  // [자세히] 인라인 문법 해설(오너 확정) — 모달·체크박스 없이 시트 좌측에서 펼친다.
+  const grammar = useGrammarDetail({ materialLang, toast });
+  const [selectedRangeText, setSelectedRangeText] = useState('');
 
   const { data: savedWords = { byKey: new Map(), surfaces: new Set(), bases: new Set() } } = useQuery({
     queryKey: ['vocab-words', user?.id],
@@ -382,7 +378,7 @@ export default function ViewerPage() {
   const saveGrammarNoteMutation = useGrammarNoteSave({
     user, materialId: id,
     selectedText: selectedRangeText,
-    explanation: grammarAnalysis,
+    explanation: grammar.result,
     toast,
   });
 
@@ -480,6 +476,7 @@ export default function ViewerPage() {
     onSelect: (text) => {
       setPickedLineIdx(null); // 막대 지정 이펙트와 상호 배타
       setSelectedRangeText(text);
+      grammar.reset(); // 다른 문장의 해설이 남지 않게
       runSelectionAnalysis(text);
     },
   });
@@ -512,19 +509,7 @@ export default function ViewerPage() {
       // 병렬 실행
       await Promise.allSettled([
         // 번역+맥락 (캐시 미스 시에만)
-        cached ? Promise.resolve() : callGemini(`다음 ${langName} 텍스트를 한국어로 처리해주세요.
-
-"${sel}"
-
-아래 형식 정확히 따라 출력. 도입 문구 없이 바로:
-
-**번역**
-자연스러운 한국어 번역
-
-**맥락**
-내용 이해를 돕는 배경 설명 2~3문장
-
-규칙: 마크다운 **굵게**만 사용, 간결하게`).then(raw => {
+        cached ? Promise.resolve() : callGemini(buildContextPrompt(sel, langName)).then(raw => {
           const text = raw?.candidates?.[0]?.content?.parts?.[0]?.text || raw || '';
           setLeftPanelResult(text);
           setLeftPanelLoading(false);
@@ -1137,6 +1122,57 @@ export default function ViewerPage() {
         </div>
       )}
       <div className="pdf-context__text" dangerouslySetInnerHTML={{ __html: formatDetail(leftPanelResult) }} />
+
+      {/* [자세히] — 문법 온디맨드(구조+패턴 통합, 정본 챕터 연결). 번역·어휘는 이미
+          위(맥락)와 오른쪽(단어 목록)이 담당하므로 여기서 반복하지 않는다. */}
+      {!grammar.open ? (
+        <button
+          className="grammar-btn grammar-detail__toggle"
+          onClick={() => grammar.run(leftPanelText)}
+          disabled={!leftPanelText}
+        >자세히 ▾</button>
+      ) : (
+        <div className="grammar-detail">
+          {grammar.loading ? (
+            <div className="grammar-detail__loading">문법 해설 생성 중…</div>
+          ) : (
+            <>
+              {grammar.result && (
+                <div className="pdf-context__text" dangerouslySetInnerHTML={{ __html: formatDetail(grammar.result) }} />
+              )}
+              {grammar.chapter && (
+                <Link href={grammar.chapter.href} className="grammar-detail__ref">
+                  → 정본 해설: 「{grammar.chapter.title}」 ›
+                </Link>
+              )}
+              {user && grammar.result && (
+                <button
+                  onClick={() => saveGrammarNoteMutation.mutate()}
+                  disabled={saveGrammarNoteMutation.isPending || saveGrammarNoteMutation.isSuccess}
+                  className="grammar-btn grammar-detail__save"
+                >
+                  {saveGrammarNoteMutation.isSuccess ? '✓ 저장됨' : saveGrammarNoteMutation.isPending ? '저장 중…' : '노트에 저장'}
+                </button>
+              )}
+              <div className="grammar-detail__ask">
+                <input
+                  value={grammar.question}
+                  onChange={(e) => grammar.setQuestion(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') grammar.ask(leftPanelText); }}
+                  placeholder="이 문장에 대해 더 묻기"
+                  aria-label="문법 추가 질문"
+                  className="form-input"
+                />
+                <button
+                  className="grammar-btn"
+                  onClick={() => grammar.ask(leftPanelText)}
+                  disabled={grammar.asking || !grammar.question.trim()}
+                >{grammar.asking ? '…' : '질문'}</button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   ) : (
     <div className="pdf-side__empty">
@@ -1359,13 +1395,6 @@ export default function ViewerPage() {
             </button>
           )}
 
-          <button
-            onClick={analyzeGrammar}
-            disabled={isGrammarLoading}
-            className={`grammar-btn ${selectedRangeText ? 'grammar-btn--active' : ''}`}
-          >
-            {isGrammarLoading ? '분석 중...' : 'AI 문법 해설'}
-          </button>
 
           {user?.id === material?.owner_id && !isAnalyzing && (
             reanalyzeMutation.isPending ? (
@@ -1821,16 +1850,6 @@ export default function ViewerPage() {
         rightSignal={rightSheetSignal}
       />
 
-      <ViewerGrammarModal
-        isOpen={isGrammarModalOpen} onClose={() => setIsGrammarModalOpen(false)}
-        selectedRangeText={selectedRangeText} materialLang={materialLang}
-        isGrammarLoading={isGrammarLoading} grammarAnalysis={grammarAnalysis}
-        checkedActions={checkedActions} setCheckedActions={setCheckedActions}
-        GRAMMAR_ACTIONS={GRAMMAR_ACTIONS} requestGrammarAnalysis={requestGrammarAnalysis}
-        grammarFollowUp={grammarFollowUp} setGrammarFollowUp={setGrammarFollowUp}
-        grammarFollowLoading={grammarFollowLoading} askFollowUp={askFollowUp}
-        saveGrammarNoteMutation={saveGrammarNoteMutation} user={user}
-      />
 
       {/* 드래그 단어 상세 팝업 — PDF와 동일 */}
       {popupWord && (

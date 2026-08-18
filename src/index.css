@@ -871,6 +871,18 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 0.68rem; font-weight: 700; color: var(--warning);
   background: rgba(252,196,25,0.16); padding: 2px 8px; border-radius: var(--radius-full); white-space: nowrap;
 }
+/* [자세히] 인라인 문법 해설 — 시트 좌측 번역·맥락 아래로 펼친다 */
+.grammar-detail__toggle { width: 100%; margin-top: 10px; }
+.grammar-detail { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; }
+.grammar-detail__loading { font-size: 0.82rem; color: var(--text-muted); }
+.grammar-detail__ref {
+  display: inline-block; margin-top: 8px; font-size: 0.8rem;
+  color: var(--primary-light); text-decoration: none;
+}
+.grammar-detail__ref:hover { text-decoration: underline; }
+.grammar-detail__save { margin-top: 8px; }
+.grammar-detail__ask { display: flex; gap: 6px; margin-top: 10px; }
+.grammar-detail__ask .form-input { flex: 1; min-width: 0; font-size: 0.82rem; }
 /* 상세 설명 예문의 병음 줄(표시 시점 합성 — 예문/병음/뜻 3줄) */
 .pdf-detail-pinyin { color: var(--text-muted); font-size: 0.85em; }
 /* 급수 뱃지(②) — 레퍼런스 사전에서 표시 시점 계산(HSK n / 생활) */
