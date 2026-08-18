@@ -113,6 +113,102 @@ describe('fetchMeaningsForMissing — 병렬·deadline', () => {
     expect(result.get('图书馆').meanings).toEqual([{ meaning: '도서관', priority: 1, ja: null }]);
   });
 
+  it('영어는 다중 pos·뜻별 pos와 판정 marker를 저장한다', async () => {
+    const arr = [{
+      pos: '동사·명사',
+      ipa: '/ˈrek.ɔːd/',
+      meanings: [{ meaning: '기록하다', pos: '동사' }, { meaning: '기록', pos: '명사' }],
+    }];
+    let written;
+    let upsertOpts;
+    const supabase = {
+      from: () => ({
+        upsert: async (rows, opts) => {
+          written = rows;
+          upsertOpts = opts;
+          return { error: null };
+        },
+      }),
+    };
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify(arr) }] } }] }),
+    })));
+    const { result } = await fetchMeaningsForMissing(
+      [{ base_form: 'record', pos: null, reading: '' }], 'English', supabase
+    );
+    expect(result.get('record')).toMatchObject({ pos: '동사·명사', reading: '/ˈrek.ɔːd/' });
+    expect(result.get('record').meanings).toEqual([
+      { meaning: '기록하다', priority: 1, pos: '동사', en_pos_v: 1 },
+      { meaning: '기록', priority: 2, pos: '명사' },
+    ]);
+    expect(written).toHaveLength(1);
+    expect(upsertOpts.ignoreDuplicates).toBe(true);
+  });
+
+  it('영어 pos·뜻별 pos 계약 위반 행은 marker·DB 갱신 없이 폐기한다', async () => {
+    const arr = [{
+      pos: '동사·명사',
+      ipa: '/ˈrek.ɔːd/',
+      meanings: [{ meaning: '기록하다', pos: '동사' }], // 명사 뜻 누락
+    }];
+    const upsert = vi.fn(async () => ({ error: null }));
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify(arr) }] } }] }),
+    })));
+    const { result } = await fetchMeaningsForMissing(
+      [{ base_form: 'record', pos: null, reading: '' }],
+      'English',
+      { from: () => ({ upsert }) }
+    );
+    expect(result.size).toBe(0);
+    expect(upsert).not.toHaveBeenCalled();
+  });
+
+  it('영어 lazy backfill은 source 조건부 update로 user_verified를 보호한다', async () => {
+    const arr = [{ pos: '명사', ipa: '/wɜːd/', meanings: [{ meaning: '단어', pos: '명사' }] }];
+    const calls = [];
+    const chain = {
+      update(payload) { calls.push(['update', payload]); return this; },
+      eq(key, value) { calls.push(['eq', key, value]); return this; },
+      async neq(key, value) { calls.push(['neq', key, value]); return { error: null }; },
+    };
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify(arr) }] } }] }),
+    })));
+    const { result } = await fetchMeaningsForMissing(
+      [{ base_form: 'word', pos: '명사', reading: null, source: 'gemini', existing: true }],
+      'English',
+      { from: () => chain }
+    );
+    expect(result.get('word').meanings[0].en_pos_v).toBe(1);
+    expect(calls).toContainEqual(['eq', 'language', 'English']);
+    expect(calls).toContainEqual(['eq', 'base_form', 'word']);
+    expect(calls).toContainEqual(['neq', 'source', 'user_verified']);
+  });
+
+  it('영어 user_verified 입력은 모델 행이 와도 result·DB 모두 건드리지 않는다', async () => {
+    const arr = [{ pos: '명사', ipa: '/wɜːd/', meanings: [{ meaning: '단어', pos: '명사' }] }];
+    const upsert = vi.fn(async () => ({ error: null }));
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify(arr) }] } }] }),
+    })));
+    const { result } = await fetchMeaningsForMissing(
+      [{ base_form: 'word', pos: '명사', source: 'user_verified', existing: true }],
+      'English',
+      { from: () => ({ upsert }) }
+    );
+    expect(result.size).toBe(0);
+    expect(upsert).not.toHaveBeenCalled();
+  });
+
   // 한자 대조 2·3단계 — 일본어 대응(ja)·동형이의어 경고(warn)는 meanings[0]의 관례 필드로
   // 저장(스키마 무변경). warn: null도 '판정 완료·경고 없음' 기록 — 백필 무한 재조회 방지.
   it('중국어는 일본어 대응(ja)·경고(warn)를 검증해 저장하고, 불량 형식은 null 판정으로 기록한다', async () => {

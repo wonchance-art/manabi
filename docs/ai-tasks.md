@@ -348,14 +348,19 @@
 ## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
 ### doing
 ### todo
-- 🇬🇧 영어 겸류 문맥 판별 RFC(발주 5312202647 §C3, 오너 ㄱㄱ 2026-08-17) — **RFC만,
-  구현 착수 금지**: 영어 pos 소스 실측·최소 설계·백필 리스크 → #150 코멘트. ← 최우선
 - ~~📱 모바일 반응형 실측 + 수리~~ → **회수: 2026-08-08 Claude 직접 수행·완료(#876)**. 무응답 3회(이슈 2·보드 1) 후 회수. 실측 360/390/768 × 12페이지 = 36조합 가로 넘침 0건, 한자 다리 표 넘침(360px +37px) 수리. 이 열에 잔여 발주 없음.
 - 📚 /learn 진도·스트릭 위젯(발주 5126671497) → **구현 #706 도착·Claude 게이트 green(lint 2종+vitest 2508) — 오너 승인 대기(draft 유지)** ← 피벗 후 우선, 아래 월드 항목 동결
 - (P0 공통) 로컬 clone 이전 확인 코멘트
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
 - S4 수집 연출 정합 → S2 앨범 지역 탭·수집률 → S3 마일스톤 보상 v1(localStorage·DB 금지)
 ### done (최근)
+- 🇬🇧 영어 겸류 문맥 판별: 레거시 기본 lemma 폴백을 유지하며 POS별 결정 후보·occurrence
+  문맥 판별·다중 pos/뜻별 pos+위치 무관 `en_pos_v` marker·lazy backfill을 연결하고,
+  선택 lemma 사전 행 미조회/판별 실패 시 현행 표시를 보존. `stats.enPos` 실측
+  marks 2·HTTP 1, 대상 4파일/39·전체 303파일/2,850테스트 green, lint 0 errors
+  (기존 warning 2), max RSS 3,310,452,736B·swap 0
+  (`codex3/en-pos-context-r1`, 구현 `04eb3f7895809e405bfa6c2b85f9eea6db9ccd75`,
+  base `12272fb1c864dd7c9bef418ad3c12c37c95c6f95`, 발주 5317440125)
 - 🛡️ 리뷰 R1 후속 수리(발주 5194144381): SW cache version을 배포 콘텐츠 SHA로
   결정화하고 실패/redirect navigation 캐시를 차단했으며, curriculum drill scanner를
   fail-closed+mutation 회귀로 고정하고 check-content가 expansion·scene 배열 모듈을 자동 발견.

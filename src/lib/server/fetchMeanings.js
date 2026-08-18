@@ -70,15 +70,17 @@ ${list}
 
 ## 출력 형식 (순서와 길이 정확히 일치)
 [
-  { "pos": "동사", "ipa": "/ɪɡˈzæm.pəl/", "meanings": [{"meaning": "기본 뜻"}, {"meaning": "보조 뜻"}] },
-  { "pos": "명사", "ipa": "/wɜːrd/", "meanings": [{"meaning": "..."}] },
+  { "pos": "동사·명사", "ipa": "/ˈrek.ɔːd/", "meanings": [{"meaning": "기록하다", "pos": "동사"}, {"meaning": "기록", "pos": "명사"}] },
+  { "pos": "명사", "ipa": "/wɜːrd/", "meanings": [{"meaning": "단어", "pos": "명사"}] },
   ...
 ]
 
 ## 규칙
 - pos는 한국어로 (명사/동사/형용사/부사/전치사/접속사/관사/대명사/조동사/감탄사/수사)
+- 여러 품사로 쓰이는 단어는 흔한 순으로 '·'로 이어 후보를 모두 적기(최대 3개)
+- 각 meanings 항목에 그 뜻의 pos를 반드시 붙이고, pos 후보마다 뜻을 최소 1개 포함
 - ipa는 슬래시 포함 IPA 발음 기호
-- 각 단어에 1~2개 주요 의미 (가장 흔한 순)
+- 각 단어에 1~3개 주요 의미 (가장 흔한 순)
 - 의미는 10자 이내로 간결하게
 - 복수형이어도 단수 기준 뜻 (apples → "사과")
 - 과거형이어도 원형 기준 뜻 (ran → "달리다")
@@ -91,6 +93,15 @@ export function parseJsonLenient(text) {
   const end = cleaned.lastIndexOf(']');
   if (start === -1 || end === -1) throw new Error('JSON 배열을 찾을 수 없습니다');
   return JSON.parse(cleaned.substring(start, end + 1));
+}
+
+const ENGLISH_POS = new Set([
+  '명사', '동사', '형용사', '부사', '전치사', '접속사',
+  '관사', '대명사', '조동사', '감탄사', '수사',
+]);
+
+function splitEnglishPos(value) {
+  return String(value || '').split('·').map((pos) => pos.trim()).filter(Boolean);
 }
 
 /**
@@ -233,8 +244,18 @@ export async function fetchMeaningsForMissing(missing, language, supabase, opts 
     const rows = [];
     parsed.forEach((entry, idx) => {
       const source = batch[idx];
+      if (language === 'English' && source?.source === 'user_verified') return;
       const meanings = Array.isArray(entry?.meanings) ? entry.meanings.filter(m => m?.meaning) : [];
       if (meanings.length === 0) return;
+
+      // 영어 후보·뜻별 pos 계약은 행 단위 fail-closed. 모델이 허용 목록 밖 품사를 주거나
+      // 후보별 뜻을 빠뜨리면 marker도 DB 갱신도 하지 않아 다음 요청에서 재시도한다.
+      const enPosCandidates = language === 'English' ? splitEnglishPos(entry?.pos) : null;
+      if (language === 'English' && (
+        enPosCandidates.length < 1 || enPosCandidates.length > 3 ||
+        new Set(enPosCandidates).size !== enPosCandidates.length ||
+        enPosCandidates.some((pos) => !ENGLISH_POS.has(pos))
+      )) return;
 
       // 뜻별 pos 태그(중국어 겸류사 — 뜻 정렬이 문맥 품사를 따르는 데 필요)는 모델이 준 경우만 보존
       const normalizedMeanings = meanings.slice(0, 3).map((m, i) => ({
@@ -242,6 +263,17 @@ export async function fetchMeaningsForMissing(missing, language, supabase, opts 
         priority: i + 1,
         ...(m?.pos && typeof m.pos === 'string' ? { pos: String(m.pos).trim().slice(0, 20) } : {}),
       }));
+
+      if (language === 'English') {
+        const invalidMeaning = normalizedMeanings.some((meaning) =>
+          !meaning.pos || !ENGLISH_POS.has(meaning.pos) || !enPosCandidates.includes(meaning.pos));
+        const missingCandidate = enPosCandidates.some((pos) =>
+          !normalizedMeanings.some((meaning) => meaning.pos === pos));
+        if (invalidMeaning || missingCandidate) return;
+        // 위치는 저장 관례일 뿐 판정기는 meanings 전체에서 marker 존재를 찾는다. 사전 승격으로
+        // 이 항목이 뒤로 밀려도 필드 스프레드가 marker를 보존한다.
+        normalizedMeanings[0] = { ...normalizedMeanings[0], en_pos_v: 1 };
+      }
 
       // 일본어 대응(한자 대조 2단계, 중국어만) — meanings jsonb 안 관례 필드로 저장(스키마
       // 무변경). ja: null도 "판정 완료·대응 없음"으로 기록해 레거시 미판정(키 자체 부재)과
@@ -268,7 +300,7 @@ export async function fetchMeaningsForMissing(missing, language, supabase, opts 
       // 영어·중국어는 Gemini가 pos를 정해줌(중국어는 겸류 다중 pos '동사·명사' 포함 — jieba
       // 단일 태그보다 정확). 일본어는 kuromoji pos가 이미 정확해 유지.
       const pos = (language === 'English' || language === 'Chinese') && entry?.pos
-        ? String(entry.pos).slice(0, 30)
+        ? (language === 'English' ? enPosCandidates.join('·') : String(entry.pos).slice(0, 30))
         : source.pos;
 
       // 일본어: Gemini 맥락 기반 reading / 영어: IPA 발음
@@ -289,18 +321,50 @@ export async function fetchMeaningsForMissing(missing, language, supabase, opts 
         meanings: normalizedMeanings,
         source: 'gemini',
       };
-      rows.push(dictEntry);
+      rows.push({ dictEntry, refresh: source?.existing === true });
       result.set(source.base_form, dictEntry);
     });
 
-    // DB 저장 (ON CONFLICT — 기존 항목은 touch만)
+    // DB 저장. 영어 신규 행은 충돌 무시(동시 user_verified 승격 보호), lazy backfill은
+    // source 조건부 update로 user_verified를 이중 보호한다. 다른 언어의 기존 계약은 유지.
     if (rows.length > 0) {
-      const { error } = await supabase
-        .from('morpheme_dictionary')
-        .upsert(rows, { onConflict: 'base_form,language', ignoreDuplicates: false });
-      if (error) {
-        console.warn('[fetchMeanings] db upsert failed:', error.message);
-        errors.push({ stage: 'db', batch: batchOffset, error: error.message });
+      if (language === 'English') {
+        const newRows = rows.filter((row) => !row.refresh).map((row) => row.dictEntry);
+        if (newRows.length > 0) {
+          const { error } = await supabase
+            .from('morpheme_dictionary')
+            .upsert(newRows, { onConflict: 'base_form,language', ignoreDuplicates: true });
+          if (error) {
+            console.warn('[fetchMeanings] db upsert failed:', error.message);
+            errors.push({ stage: 'db', batch: batchOffset, error: error.message });
+          }
+        }
+        for (const { dictEntry, refresh } of rows) {
+          if (!refresh) continue;
+          const { error } = await supabase
+            .from('morpheme_dictionary')
+            .update({
+              pos: dictEntry.pos,
+              reading: dictEntry.reading,
+              meanings: dictEntry.meanings,
+              source: 'gemini',
+            })
+            .eq('language', 'English')
+            .eq('base_form', dictEntry.base_form)
+            .neq('source', 'user_verified');
+          if (error) {
+            console.warn('[fetchMeanings] db update failed:', error.message);
+            errors.push({ stage: 'db', batch: batchOffset, error: error.message });
+          }
+        }
+      } else {
+        const { error } = await supabase
+          .from('morpheme_dictionary')
+          .upsert(rows.map((row) => row.dictEntry), { onConflict: 'base_form,language', ignoreDuplicates: false });
+        if (error) {
+          console.warn('[fetchMeanings] db upsert failed:', error.message);
+          errors.push({ stage: 'db', batch: batchOffset, error: error.message });
+        }
       }
     }
   }
