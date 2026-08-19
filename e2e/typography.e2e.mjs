@@ -156,6 +156,32 @@ test('성조 색상 — 본문(.word-token 안) 병음 rt에 실제로 색이 �
   assert.notEqual(toned, plain, `성조 클래스 rt가 기본 병음색 그대로다: ${toned}`);
 });
 
+test('집중 모드 — 지정 문장만 원래 밝기, 나머지는 어둡고, 좌표는 1px도 안 움직인다', async () => {
+  const line = (focus) => `<div id="row2" class="reader-area${focus ? ' reader-area--focus' : ''}" style="min-height:0;padding:24px">`
+    + tok(zhSeg('我', 'wǒ'), false).replace('word-token', 'word-token word-token--picked')
+    + tok(zhSeg('去', 'qù'), false) + tok('。', false) + '</div>';
+  await page.setContent(PAGE(line(true)));
+  const focus = await page.evaluate(() => {
+    const toks = [...document.querySelectorAll('#row2 .word-token')];
+    return {
+      ops: toks.map((t) => parseFloat(getComputedStyle(t).opacity)),
+      lefts: toks.map((t) => +t.getBoundingClientRect().left.toFixed(1)),
+    };
+  });
+  assert.equal(focus.ops[0], 1, `지정 토큰은 원래 밝기여야 함: ${focus.ops[0]}`);
+  assert.ok(focus.ops[1] < 0.3 && focus.ops[2] < 0.3, `비지정 토큰은 어두워야 함: ${focus.ops.slice(1)}`);
+  await page.setContent(PAGE(line(false)));
+  const off = await page.evaluate(() => {
+    const toks = [...document.querySelectorAll('#row2 .word-token')];
+    return {
+      ops: toks.map((t) => parseFloat(getComputedStyle(t).opacity)),
+      lefts: toks.map((t) => +t.getBoundingClientRect().left.toFixed(1)),
+    };
+  });
+  assert.deepEqual(uniq(off.ops), [1], '집중 모드 해제 시 전 토큰 원래 밝기');
+  assert.deepEqual(focus.lefts, off.lefts, '어둡기는 좌표를 못 움직인다(opacity는 레이아웃 무관)');
+});
+
 test('레퍼런스(.ja-ruby) — 긴 요미가 문장 폭을 못 늘리고, 두 line-height 컨텍스트의 간격이 정합한다', async () => {
   const body = `
     <div id="withRuby" class="ja-ruby" style="display:inline-block">私<span>は</span><ruby>志<span class="rt-an">こころざし</span></ruby><span>を</span><ruby>承<span class="rt-an">うけたまわ</span></ruby><span>る</span></div>

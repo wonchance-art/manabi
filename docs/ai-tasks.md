@@ -1314,6 +1314,15 @@
 - 런던 위성 마이크로 픽(재량 위임 해석): 윈저+옥스퍼드 2곳 추천 — 레만호 완성 후 순번
 - 일본 4도시 COPY 슬롯 이식(다국어 UI 확정 시) / 아토미움 = marker-only 유지 확인
 ### done (최근)
+- **🔦 집중 모드(2026-08-19, 오너 승인 — 조사→목업→ㄱㄱ)** — 지정 문장만 원래
+  밝기, 나머지 토큰 18% 어둡게. 조사: 기존 문장 지정 인프라(문장 막대·드래그 픽의
+  --picked 클래스)가 이미 있어 역상만 추가하면 됨을 확인, 외부 선례(MS Immersive
+  Reader Line Focus 교육 연구·Emacs Focus·Obsidian Focus&Highlight)로 기법 검증 +
+  오버레이 계열(driver.js류) 배제 근거 확보(줄바꿈 걸친 문장 = 비직사각형, opacity가
+  엔진 중립 — WebKit rt 선례). 구현: focusMode 설정(옵트인 기본 꺼짐)·언어 공통
+  토글·reader-area--focus는 지정 존재 시에만(빈 화면 전체 어두워짐 방지)·transition
+  0.25s + prefers-reduced-motion. 실렌더 e2e(투명도 1 vs 0.18 + 좌표 불변) + 배선
+  계약 5. 전체 vitest 1,870 green.
 - **📱 iOS 병음 어긋남 수리 — WebKit의 rt 절대배치 거부(2026-08-19, 오너 실기+진단기)** —
   아이폰(전 브라우저 WebKit)에서 병음이 한자 중심에서 10px 밀리고 세로 -37px로
   내려앉으며 긴 병음 뒤 한자가 벌어져 보이는 실기 결함. 진단기 아티팩트(앱 CSS·토큰
