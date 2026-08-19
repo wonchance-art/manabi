@@ -63,7 +63,8 @@ describe('ja 대응 배선 계약', () => {
   it('뷰어가 대조 토글 아래에서 사전 행 조회·표시·경고를 배선한다', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
     expect(src).toContain('getJaRef(editDictEntry)');
-    expect(src).toContain('getJaRef(popupDictEntry)');
+    // 팝업 전용 사전 행 조회는 카드 단일화(②)로 소멸 — 리스트 단어도 editDictEntry 경로
+    expect(src).not.toContain('popupDictEntry');
     expect(src).toContain('getJaWarn(ja)');
     expect(src).toMatch(/isEditingToken \|\| \(showHanjaKo && materialLang === 'Chinese'\)/);
   });

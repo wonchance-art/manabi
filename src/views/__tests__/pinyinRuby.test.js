@@ -87,10 +87,10 @@ describe('중국어·병음 폰트 계약', () => {
     expect(viewer).toContain("? `var(--font-noto-sc, 'Noto Sans SC'), ${fontFamily}`");
   });
 
-  it('시트·팝업·원문 인용에 자료 언어 표식과 병음 라틴 클래스가 붙는다', () => {
+  it('단어 카드·원문 인용에 자료 언어 표식과 병음 라틴 클래스가 붙는다(팝업은 ②로 카드 단일화)', () => {
     expect(viewer).toMatch(/const contentLangTag = materialLang === 'Chinese' \? 'zh-Hans'/);
-    expect(viewer.match(/lang=\{contentLangTag\}/g)?.length).toBeGreaterThanOrEqual(3);
-    expect(viewer.match(/className=\{seg\.pinyin \? \['pinyin-text', showToneColors && pinyinToneClass\(seg\.reading\)\]\.filter\(Boolean\)\.join\(' '\) : undefined\}/g)?.length).toBe(2);
+    expect(viewer.match(/lang=\{contentLangTag\}/g)?.length).toBeGreaterThanOrEqual(2);
+    expect(viewer.match(/className=\{seg\.pinyin \? \['pinyin-text', showToneColors && pinyinToneClass\(seg\.reading\)\]\.filter\(Boolean\)\.join\(' '\) : undefined\}/g)?.length).toBe(1);
   });
 
   it('성조 색상은 병음에만·옵트인이다(오너 확정: "병음만")', () => {
@@ -100,8 +100,8 @@ describe('중국어·병음 폰트 계약', () => {
     expect(css).toMatch(/\.word-token :is\(rt, \.rt-an\)\.pinyin-tone--1, :is\(rt, \.rt-an\)\.pinyin-tone--1 \{ color: var\(--tone-1\); \}/);
     expect(css).toMatch(/\[data-theme="light"\] \{\s*--tone-1:/);
     expect(viewer).toContain("'rt-an', showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : ''");
-    // 시트·팝업도 병음 rt에만 합성(pinyin-text와 병행)
-    expect(viewer.match(/showToneColors && pinyinToneClass\(seg\.reading\)/g)?.length).toBe(2);
+    // 단어 카드도 병음 rt에만 합성(pinyin-text와 병행) — 팝업은 카드 단일화(②)로 소멸
+    expect(viewer.match(/showToneColors && pinyinToneClass\(seg\.reading\)/g)?.length).toBe(1);
     // 기본 꺼짐(옵트인) — showHanjaKo 선례
     const settings = read('src/lib/useViewerSettings.js');
     expect(settings).toContain("readPref('showToneColors', false)");

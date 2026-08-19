@@ -74,7 +74,8 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
     expect(src).toContain("const { error } = await supabase.from('user_vocabulary').upsert(row, options)");
     expect(src).toContain('if (error) throw error');
     expect(src).toContain('if (inlineSaving[key]) return');
-    expect(src.match(/onClick=\{\(\) => saveInlineVocabulary\(t\)\}/g)).toHaveLength(2);
+    // 리스트 행 1곳 — 팝업 저장 버튼은 카드 단일화(②)로 제거(카드 저장은 addToVocab 경로)
+    expect(src.match(/onClick=\{\(\) => saveInlineVocabulary\(t\)\}/g)).toHaveLength(1);
   });
 
   it('V-13 보강 감사: 나머지 await mutation도 반환 error를 명시적으로 확인한다', () => {

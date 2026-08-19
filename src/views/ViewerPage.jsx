@@ -35,7 +35,6 @@ import ListenControls from '../components/ListenControls';
 import { formatDetail } from '../lib/wordDetailFormat';
 import { useSeriesNeighbors } from '../lib/useSeriesNeighbors';
 import { useTitleEdit } from '../lib/useTitleEdit';
-import { useDragWordPopup } from '../lib/useDragWordPopup';
 import { useTokenRangeSelect } from '../lib/useTokenRangeSelect';
 import { useNextRangeMutation } from '../lib/useNextRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
@@ -353,6 +352,30 @@ export default function ViewerPage() {
     }
   };
 
+  // ② 리스트 단어 탭 → 팝업 대신 단어 카드가 리스트 위에(오너 승인). 문장 컨텍스트
+  // (리스트·막대 지정·집중 어둡기)를 유지해야 하므로 dragTokens·pickedLineIdx는 건드리지 않는다.
+  const handleListWordClick = (t) => {
+    setSelectedToken({ ...t });
+    setIsSheetOpen(true);
+    setWordDetail(null);
+    setIsEditingToken(false);
+    setRightSheetSignal(s => s + 1);
+  };
+
+  const closeWordCard = () => {
+    setIsSheetOpen(false);
+    setSelectedToken(null);
+    setWordDetail(null);
+    setIsEditingToken(false);
+  };
+
+  // 카드는 패널 맨 위에 붙는다 — 리스트를 내려 본 뒤 탭해도 보이도록 스크롤 복귀
+  // (데스크톱 우측 패널 + 모바일 시트 섹션, 둘 다 렌더 사본이라 전부 복귀).
+  useEffect(() => {
+    if (!selectedToken || !isSheetOpen) return;
+    for (const el of document.querySelectorAll('.viewer-side--right, .viewer-sheet__section-body')) el.scrollTop = 0;
+  }, [selectedToken, isSheetOpen]);
+
   // 왼쪽 패널: 번역 + 맥락
   const [leftPanelText, setLeftPanelText] = useState('');
   const [leftPanelResult, setLeftPanelResult] = useState('');
@@ -390,9 +413,6 @@ export default function ViewerPage() {
   const [showReadingTest, setShowReadingTest] = useState(false);
   // 회화 연습
   const [showConversation, setShowConversation] = useState(false);
-
-  // 드래그 단어 클릭 → AI 상세 팝업 (PDF와 동일)
-  const { popupWord, setPopupWord, handleDragWordClick } = useDragWordPopup(materialLang);
 
   // 인앱 토큰 범위 지정 — 네이티브 선택 대체(앱 전역 무선택 정책). 데스크톱 즉시 드래그,
   // 모바일 길게 누르기(300ms) 후 드래그. 확정 시 기존 분석 파이프라인에 그대로 투입하고,
@@ -724,23 +744,6 @@ export default function ViewerPage() {
     staleTime: 1000 * 60,
   });
 
-  // 드래그 상세 팝업 단어의 사전 행 — ja 대응 표시용(대조 토글 시)
-  const { data: popupDictEntry } = useQuery({
-    queryKey: ['token-dict', materialLang, popupWord?.token?.base_form],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('morpheme_dictionary')
-        .select('meanings, reading, pos')
-        .eq('language', materialLang)
-        .eq('base_form', popupWord.token.base_form)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-    enabled: showHanjaKo && materialLang === 'Chinese' && !!popupWord?.token?.base_form,
-    staleTime: 1000 * 60,
-  });
-
   const saveInlineVocabulary = async (token) => {
     const key = token.base_form || token.text;
     if (inlineSaving[key]) return;
@@ -872,8 +875,10 @@ export default function ViewerPage() {
     return count;
   })();
 
-  const rightPanelContent = dragTokens !== null ? (
-    <div className="viewer-side__content">
+  // 리스트(문장 분석 결과)와 단어 카드는 독립 조각 — 리스트 단어를 탭하면 카드가
+  // 리스트 위에 붙는다(② 오너 승인, 팝업 대체). 합성은 아래 rightPanelContent에서.
+  const wordListPanel = dragTokens === null ? null : (
+    <>
       <div className="pdf-word-list__header" style={{ marginBottom: 10 }}>
         <span className="pdf-word-list__title">단어 ({dragTokens.length})</span>
       </div>
@@ -883,11 +888,11 @@ export default function ViewerPage() {
         const saveKey = t.base_form || t.text;
         return (
           <div key={i} className={`pdf-word-item ${isSaved ? 'pdf-word-item--saved' : ''}`}>
-            <span className="pdf-word-item__text" onClick={() => handleDragWordClick(t)}>
+            <span className="pdf-word-item__text" onClick={() => handleListWordClick(t)}>
               {t.text}
               {t.furigana && <span className="pdf-word-item__reading">{t.furigana}</span>}
             </span>
-            <span className="pdf-word-item__meaning" onClick={() => handleDragWordClick(t)}>{t.meaning}</span>
+            <span className="pdf-word-item__meaning" onClick={() => handleListWordClick(t)}>{t.meaning}</span>
             {user && (
               <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                 <button className="pdf-word-item__save" disabled={isSaved || inlineSaving[saveKey]}
@@ -904,9 +909,11 @@ export default function ViewerPage() {
           </div>
         );
       })}
-    </div>
-  ) : selectedToken && isSheetOpen ? (
-    <div className="viewer-side__content">
+    </>
+  );
+
+  const wordDetailCard = !selectedToken || !isSheetOpen ? null : (
+    <div className={`word-detail-card${dragTokens !== null ? ' word-detail-card--above-list' : ''}`}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
         <div>
           <div lang={contentLangTag} style={{ fontSize: '1.5rem', fontWeight: 800, lineHeight: 1.3 }}>
@@ -926,15 +933,19 @@ export default function ViewerPage() {
             )}
           </div>
         </div>
-        {ttsSupported && (
-          <button onClick={() => speak(selectedToken.text, materialLang)} aria-label="발음 듣기" style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', minWidth: 32, minHeight: 32 }} title="발음 듣기">▷</button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+          {ttsSupported && (
+            <button onClick={() => speak(selectedToken.text, materialLang)} aria-label="발음 듣기" style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', minWidth: 32, minHeight: 32 }} title="발음 듣기">▷</button>
+          )}
+          <button className="word-detail-card__close" onClick={closeWordCard} aria-label="단어 상세 닫기" title="닫기">✕</button>
+        </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: materialLang === 'English' && selectedToken.reading ? 4 : 14 }}>
         <div style={{ fontSize: '1rem', lineHeight: 1.6, flex: 1, minWidth: 0 }}>
           {refMeaning || selectedToken.meaning || '(뜻 없음)'}
         </div>
-        {canEditToken && (
+        {/* 리스트 단어는 자료 토큰이 아니라(id 없음) 이 자료의 교정 대상이 될 수 없다 */}
+        {canEditToken && selectedToken.id && (
           <button
             onClick={() => setIsEditingToken(v => !v)}
             aria-label="뜻·발음 수정"
@@ -1072,6 +1083,13 @@ export default function ViewerPage() {
           {saveAnim ? '저장됨' : isWordSaved ? '✓ 단어장에 있음' : '단어장에 저장'}
         </button>
       )}
+    </div>
+  );
+
+  const rightPanelContent = wordDetailCard || wordListPanel ? (
+    <div className="viewer-side__content">
+      {wordDetailCard}
+      {wordListPanel}
     </div>
   ) : (
     <div className="pdf-side__empty">
@@ -1888,80 +1906,6 @@ export default function ViewerPage() {
         rightSignal={rightSheetSignal}
       />
 
-
-      {/* 드래그 단어 상세 팝업 — PDF와 동일 */}
-      {popupWord && (
-        <>
-          <div className="pdf-detail-overlay" onClick={() => setPopupWord(null)} />
-          <div className="pdf-detail-popup">
-            <div className="pdf-detail-popup__header">
-              <div className="pdf-detail-popup__word" lang={contentLangTag}>
-                {popupWord.token.furigana
-                  ? splitRuby(popupWord.token.text, popupWord.token.furigana).map((seg, i) =>
-                      seg.kanji ? <ruby key={i}>{seg.kanji}<rt className={seg.pinyin ? ['pinyin-text', showToneColors && pinyinToneClass(seg.reading)].filter(Boolean).join(' ') : undefined}>{seg.reading}</rt></ruby> : <span key={i}>{seg.plain}</span>
-                    )
-                  : popupWord.token.text}
-              </div>
-              <button className="pdf-detail-popup__close" onClick={() => setPopupWord(null)}>✕</button>
-            </div>
-            <div className="pdf-detail-popup__meta">
-              <span className="pdf-detail-popup__pos"><TokenPosLabel token={popupWord.token} /></span>
-              {popupWord.token.base_form && popupWord.token.base_form !== popupWord.token.text && (
-                <span className="pdf-detail-popup__base">{popupWord.token.base_form}</span>
-              )}
-              {(() => {
-                const huns = hanjaHunOf(popupWord.token.text);
-                // 훈음 전 글자 커버 시 한자음 단독 표기는 중복이라 생략(오너 확정)
-                const hk = hunsCoverWord(popupWord.token.text, huns) ? null : hanjaKoOf(popupWord.token.text);
-                return (
-                  <>
-                    {hk && <span className="pdf-detail-popup__base">한자음 {hk}</span>}
-                    {huns && (
-                      <span className="pdf-detail-popup__base">
-                        {huns.map(({ ch, label }) => `${jaFormOf(ch)} ${label}`).join(' · ')}
-                      </span>
-                    )}
-                  </>
-                );
-              })()}
-              {(() => {
-                const ja = materialLang === 'Chinese' && showHanjaKo ? getJaRef(popupDictEntry) : null;
-                const jr = ja ? formatJaRef(ja, popupWord.token.text, jaFormOf(popupWord.token.text)) : null;
-                const warn = getJaWarn(ja);
-                return (
-                  <>
-                    {jr && <span className="pdf-detail-popup__base">日 {jr}</span>}
-                    {warn && (
-                      <span className="pdf-detail-popup__base" style={{ color: 'var(--warning)', fontWeight: 600 }}>
-                        ⚠ {jaFormOf(popupWord.token.text)}는 일본어로 '{warn}'
-                      </span>
-                    )}
-                  </>
-                );
-              })()}
-              <span className="pdf-detail-popup__short">{popupWord.token.meaning}</span>
-            </div>
-            <div className="pdf-detail-popup__body">
-              {popupWord.loading
-                ? <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>상세 설명 생성 중...</div>
-                : <div className="pdf-detail-popup__text" dangerouslySetInnerHTML={{ __html: formatDetail(popupWord.detail) }} />
-              }
-            </div>
-            {user && (() => {
-              const t = popupWord.token;
-              const isSaved = savedWords.surfaces?.has(t.text) || savedWords.bases?.has(t.base_form);
-              const saveKey = t.base_form || t.text;
-              return (
-                <button className={`pdf-detail-popup__save ${isSaved ? 'pdf-detail-popup__save--done' : ''}`}
-                  disabled={isSaved || inlineSaving[saveKey]}
-                  onClick={() => saveInlineVocabulary(t)}>
-                  {isSaved ? '✓ 저장됨' : inlineSaving[saveKey] ? '저장 중…' : '단어장에 저장'}
-                </button>
-              );
-            })()}
-          </div>
-        </>
-      )}
 
       <ViewerQuizModal
         quizState={quizState} handleQuizAnswer={handleQuizAnswer}

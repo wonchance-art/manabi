@@ -191,18 +191,18 @@ describe('한자 대조 배선 계약', () => {
     expect(src).toContain('한자음');
   });
 
-  it('훈음(①)도 같은 토글 아래 지연 로드되어 시트·팝업에 병기된다', () => {
+  it('훈음(①)도 같은 토글 아래 지연 로드되어 단어 카드에 병기된다(팝업은 ②로 카드 단일화)', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
     expect(src).toContain("import('../lib/data/hanjaHun.json')");
     expect(src).toContain('listHanjaHunEum');
     expect(src).toMatch(/hanjaHunOf\(selectedToken\.text\)/);
-    expect(src).toMatch(/hanjaHunOf\(popupWord\.token\.text\)/);
+    // 팝업 부활 금지 — 리스트 단어도 같은 카드 한 벌을 쓴다(오너 승인 ②)
+    expect(src).not.toContain('popupWord');
   });
 
-  it('훈음이 전 글자를 커버하면 한자음 단독 줄을 생략한다(오너 확정 — 시트·팝업 동일 규칙)', () => {
+  it('훈음이 전 글자를 커버하면 한자음 단독 줄을 생략한다(오너 확정)', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
     expect(src).toMatch(/hunsCoverWord\(selectedToken\.text, huns\) \? null : hanjaKoOf\(selectedToken\.text\)/);
-    expect(src).toMatch(/hunsCoverWord\(popupWord\.token\.text, huns\) \? null : hanjaKoOf\(popupWord\.token\.text\)/);
   });
 
   it('일본식 자형 표기(오너 확정) — 훈음 글자는 신자체 단독, 日 어형은 나열과 같으면 요미만, ⚠는 日 줄 통합', () => {
@@ -210,7 +210,6 @@ describe('한자 대조 배선 계약', () => {
     expect(src).toContain("import('../lib/data/hanjaJa.json')");
     expect(src).toMatch(/jaFormOf\(ch\)/);
     expect(src).toMatch(/formatJaRef\(ja, selectedToken\.text, jaFormOf\(selectedToken\.text\)\)/);
-    expect(src).toMatch(/formatJaRef\(ja, popupWord\.token\.text, jaFormOf\(popupWord\.token\.text\)\)/);
     expect(src).toMatch(/⚠ \{jaFormOf\(selectedToken\.text\)\}는 일본어로/);
   });
 
