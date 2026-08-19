@@ -2220,13 +2220,19 @@ body.is-review-session .page-container { padding-top: 8px; }
      base를 밀어 셀을 넓힌다 — 중국어 병음은 chuāng·shuāng처럼 6자 음절이 흔해
      한자 1em을 넘긴다(요미가나는 대개 base 안에 들어와 문제가 드러나지 않았다).
      ruby-overhang은 브라우저가 사실상 구현하지 않아 무력하므로, rt를 절대배치로
-     빼서 base 폭 계산에서 제외한다. 세로 공간은 .surface의 line-height가 이미 확보. */
+     빼서 base 폭 계산에서 제외한다. 세로 위치는 아래 bottom이 직접 잡는다. */
 }
 /* 병음만 절대배치 — base 폭 계산에서 빼 토글 시 한자 간격을 고정한다(오너 요청). */
 .word-token ruby[data-pinyin] > rt {
   position: absolute;
   left: 50%;
-  bottom: 100%;
+  /* 본문과의 간격은 오늘 손대기 전(네이티브 ruby)과 같게 맞춘다 — 실측 -0.15em
+     (20px 기준 -3px, rt 아랫변이 한자 윗변보다 살짝 내려온 상태).
+     기준 상자는 ruby이고 그 높이는 .surface의 line-height 2.2em이다. 상자 위쪽에서
+     0.65em 내린 자리가 그 간격이므로 0.65 / 2.2 = 29.55%를 100%에서 뺀다.
+     bottom: 100%(상자 맨 위)로 두면 병음이 13px 더 떠서 본문이 성겨 보였다(오너 지적).
+     ※ .surface의 line-height를 바꾸면 이 비율을 다시 재야 한다. */
+  bottom: calc(100% - (0.65 / 2.2) * 100%);
   transform: translateX(-50%);
   width: max-content;
   pointer-events: none;
