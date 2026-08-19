@@ -23,8 +23,8 @@ const PAGE = (body) => `<style>${CSS}</style><style>body{margin:0;font-size:20px
 
 // 뷰어 렌더 구조 재현(ViewerPage renderToken과 동일한 마크업 계약 — pinyinRuby.test.js가
 // 소스 쪽을, 이 파일이 결과 쪽을 지킨다)
-const zhSeg = (ch, py) => `<ruby data-pinyin="1">${ch}<rt>${py}</rt></ruby>`;
-const jaSeg = (k, r) => `<ruby data-yomi="1">${k}<rt>${r}</rt></ruby>`;
+const zhSeg = (ch, py) => `<ruby data-pinyin="1">${ch}<span class="rt-an">${py}</span></ruby>`;
+const jaSeg = (k, r) => `<ruby data-yomi="1">${k}<span class="rt-an">${r}</span></ruby>`;
 const tok = (inner, off) => `<div class="word-token"><span class="surface${off ? ' surface--furi-off' : ''}">${inner}</span></div>`;
 
 // 최장 병음(chuāng·shuāng)을 인접시킨 최악 배치 포함
@@ -56,13 +56,13 @@ async function measure(body) {
       const walker = document.createTreeWalker(surface, NodeFilter.SHOW_TEXT);
       let node; const glyphs = [];
       while ((node = walker.nextNode())) {
-        if (node.parentElement.tagName === 'RT') continue;
+        if (node.parentElement.tagName === 'RT' || node.parentElement.classList.contains('rt-an')) continue;
         const range = document.createRange();
         range.selectNodeContents(node);
         const b = range.getBoundingClientRect();
         glyphs.push({ l: b.left, r: b.right, t: b.top, w: b.width });
       }
-      const rt = surface.querySelector('rt');
+      const rt = surface.querySelector('rt, .rt-an');
       const rb = rt ? rt.getBoundingClientRect() : null;
       out.push({
         left: +glyphs[0].l.toFixed(1), tops: glyphs.map((g) => +g.t.toFixed(1)),
@@ -146,11 +146,11 @@ test('성조 색상 — 본문(.word-token 안) 병음 rt에 실제로 색이 �
   // #1064 회귀(오너 발견): 소스에는 규칙이 있었지만 기본색 규칙(.word-token rt)이
   // 순서로 이겨 본문만 무색이었다 — 소스 검사로는 못 잡는 종류라 계산된 색을 단언한다.
   await page.setContent(PAGE(
-    tok(`<ruby data-pinyin="1">我<rt class="pinyin-tone--3">wǒ</rt></ruby>`, false)
-    + tok(`<ruby data-pinyin="1">去<rt>qù</rt></ruby>`, false),
+    tok(`<ruby data-pinyin="1">我<span class="rt-an pinyin-tone--3">wǒ</span></ruby>`, false)
+    + tok(`<ruby data-pinyin="1">去<span class="rt-an">qù</span></ruby>`, false),
   ));
   const { toned, plain } = await page.evaluate(() => {
-    const [a, b] = [...document.querySelectorAll('rt')].map((el) => getComputedStyle(el).color);
+    const [a, b] = [...document.querySelectorAll('.rt-an')].map((el) => getComputedStyle(el).color);
     return { toned: a, plain: b };
   });
   assert.notEqual(toned, plain, `성조 클래스 rt가 기본 병음색 그대로다: ${toned}`);
@@ -158,16 +158,16 @@ test('성조 색상 — 본문(.word-token 안) 병음 rt에 실제로 색이 �
 
 test('레퍼런스(.ja-ruby) — 긴 요미가 문장 폭을 못 늘리고, 두 line-height 컨텍스트의 간격이 정합한다', async () => {
   const body = `
-    <div id="withRuby" class="ja-ruby" style="display:inline-block">私<span>は</span><ruby>志<rt>こころざし</rt></ruby><span>を</span><ruby>承<rt>うけたまわ</rt></ruby><span>る</span></div>
+    <div id="withRuby" class="ja-ruby" style="display:inline-block">私<span>は</span><ruby>志<span class="rt-an">こころざし</span></ruby><span>を</span><ruby>承<span class="rt-an">うけたまわ</span></ruby><span>る</span></div>
     <br />
     <div id="noRuby" class="ja-ruby" style="display:inline-block">私<span>は</span>志<span>を</span>承<span>る</span></div>
-    <div class="bk-ex__ja"><span class="ja-ruby" id="bk"><ruby>勉強<rt>べんきょう</rt></ruby><span>します</span></span></div>`;
+    <div class="bk-ex__ja"><span class="ja-ruby" id="bk"><ruby>勉強<span class="rt-an">べんきょう</span></ruby><span>します</span></span></div>`;
   await page.setContent(PAGE(body));
   const out = await page.evaluate(() => {
     const w = (id) => +document.getElementById(id).getBoundingClientRect().width.toFixed(1);
     const gap = (rootId) => {
       const root = document.getElementById(rootId);
-      const rt = root.querySelector('rt');
+      const rt = root.querySelector('rt, .rt-an');
       const range = document.createRange();
       range.selectNodeContents(root.querySelector('ruby').childNodes[0]);
       return +(range.getBoundingClientRect().top - rt.getBoundingClientRect().bottom).toFixed(1);

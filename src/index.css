@@ -121,11 +121,11 @@ html {
    발견 2026-08-19). .word-token 조합(0,2,1)을 병기해 순서와 무관하게 이기게 한다.
    단독 선택자는 시트·팝업(.word-token 밖) 병음용. 토글이 꺼지면 클래스 자체가 안
    붙어 기본색으로 복귀 — CSS 상태 분기 불요. */
-.word-token rt.pinyin-tone--1, rt.pinyin-tone--1 { color: var(--tone-1); }
-.word-token rt.pinyin-tone--2, rt.pinyin-tone--2 { color: var(--tone-2); }
-.word-token rt.pinyin-tone--3, rt.pinyin-tone--3 { color: var(--tone-3); }
-.word-token rt.pinyin-tone--4, rt.pinyin-tone--4 { color: var(--tone-4); }
-.word-token rt.pinyin-tone--0, rt.pinyin-tone--0 { color: var(--tone-0); }
+.word-token :is(rt, .rt-an).pinyin-tone--1, :is(rt, .rt-an).pinyin-tone--1 { color: var(--tone-1); }
+.word-token :is(rt, .rt-an).pinyin-tone--2, :is(rt, .rt-an).pinyin-tone--2 { color: var(--tone-2); }
+.word-token :is(rt, .rt-an).pinyin-tone--3, :is(rt, .rt-an).pinyin-tone--3 { color: var(--tone-3); }
+.word-token :is(rt, .rt-an).pinyin-tone--4, :is(rt, .rt-an).pinyin-tone--4 { color: var(--tone-4); }
+.word-token :is(rt, .rt-an).pinyin-tone--0, :is(rt, .rt-an).pinyin-tone--0 { color: var(--tone-0); }
 
 /* ── 중국어 자형 (오너 확정 2026-08-19: Noto Sans SC) ──
    lang="zh*" 표식이 있는 모든 중국어를 간체 표준 자형으로 렌더한다. 표식이 없으면
@@ -147,7 +147,7 @@ html {
    중국어 본문 뒤에 붙은 경우(형제 선택자)만 좁혀 적용한다. */
 .pinyin-text,
 .pdf-detail-pinyin,
-.word-token ruby[data-pinyin] > rt,
+.word-token ruby[data-pinyin] > .rt-an,
 [lang^="zh"] + .fr-example__ipa {
   font-family: var(--font-noto-sans, 'Noto Sans'), sans-serif;
 }
@@ -2260,7 +2260,7 @@ body.is-review-session .page-container { padding-top: 8px; }
 /* 병음·요미가나 공통 기준점 — rt를 절대배치로 빼 base 폭 계산에서 제외한다. */
 .word-token ruby[data-pinyin],
 .word-token ruby[data-yomi] { position: relative; }
-.word-token rt {
+.word-token :is(rt, .rt-an) {
   font-size: 0.5em;
   color: var(--primary-light);
   font-weight: 400;
@@ -2282,8 +2282,11 @@ body.is-review-session .page-container { padding-top: 8px; }
    표준 관행(ruby overhang)이고, 한자 사이에 가나가 끼는 언어 구조 덕에 실제 예문 231문장의
    rt 인접쌍 228을 전수 시뮬레이션해 충돌 0이었다. 크기 축소는 하지 않는다: 요미는 최대
    한자 1자당 5자(志=こころざし)라 최장 기준 단일 축소가 0.2em(판독 불가)이 되기 때문. */
-.word-token ruby[data-pinyin] > rt,
-.word-token ruby[data-yomi] > rt {
+/* ※ 반드시 span(.rt-an)이어야 한다 — WebKit(iOS 전 브라우저)은 <rt> 요소에 한해
+   position: absolute를 무시한다(진단기 실측 2026-08-19: rt position=static → 병음이
+   흐름에 남아 한자 옆으로 10px 밀리고 세로 -37px). span에는 특례가 없어 전 엔진 동일. */
+.word-token ruby[data-pinyin] > .rt-an,
+.word-token ruby[data-yomi] > .rt-an {
   position: absolute;
   left: 50%;
   /* 본문과의 간격은 네이티브 ruby와 같게 맞춘다 — 실측 -0.15em(20px 기준 -3px,
@@ -2304,7 +2307,7 @@ body.is-review-session .page-container { padding-top: 8px; }
    들어가려면 0.94 / 3.55 ≈ 0.26em. 최장이 들어가므로 어떤 인접쌍도 겹칠 수 없다.
    작아지는 만큼은 뷰어의 글자 크기 조절로 보완한다는 오너 결정.
    ※ 요미가나 rt는 0.5em 유지(위 공통 블록 밖) — 병음만 덮어쓴다. */
-.word-token ruby[data-pinyin] > rt {
+.word-token ruby[data-pinyin] > .rt-an {
   font-size: 0.26em;
 }
 /* 정사각 그리드 유지(오너 피드백 2026-08-19: "일자로 정렬된 게 아니네") —
@@ -2324,7 +2327,7 @@ body.is-review-session .page-container { padding-top: 8px; }
   justify-content: center;
 }
 /* 병음 끄기 — 폭 예약(ruby)은 유지한 채 독음만 감춘다(켤 때 글자가 밀리지 않게) */
-.surface--furi-off rt { visibility: hidden; }
+.surface--furi-off :is(rt, .rt-an) { visibility: hidden; }
 /* (병음 OFF에서도 ruby 마크업·폭 예약은 유지 — 켤 때 글자가 밀리지 않게) */
 
 /* ruby 유무 관계없이 줄 높이 통일 — rt absolute라 공간은 line-height로 확보 */
@@ -8477,7 +8480,7 @@ body.is-review-session .page-container { padding-top: 8px; }
   display: inline-flex;
   justify-content: center;
 }
-.ja-ruby ruby > rt {
+.ja-ruby ruby > .rt-an {
   position: absolute;
   left: 50%;
   bottom: calc(100% - (0.575 / 2.05) * 100%);
@@ -8485,8 +8488,8 @@ body.is-review-session .page-container { padding-top: 8px; }
   width: max-content;
   pointer-events: none;
 }
-.bk-ex__ja .ja-ruby ruby > rt { bottom: calc(100% - (0.5 / 1.9) * 100%); }
-.ja-ruby rt {
+.bk-ex__ja .ja-ruby ruby > .rt-an { bottom: calc(100% - (0.5 / 1.9) * 100%); }
+.ja-ruby :is(rt, .rt-an) {
   font-size: 0.55em;
   font-weight: 400;
   color: var(--text-muted);

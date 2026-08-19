@@ -1604,9 +1604,11 @@ export default function ViewerPage() {
                         // 병음 rt는 CSS가 전 음절 단일 크기(최장 병음이 1em 셀에 들어가는
                         // 크기)로 조판한다 — 글자별 속성이 더 필요 없다(오너 확정 2026-08-19).
                         // 요미가나(data-yomi)는 크기 유지 + 절대배치 — 한자 폭 불변(오너 요청).
+                        // 독음은 <rt>가 아니라 span(.rt-an) — WebKit이 rt에 한해 절대배치를
+                        // 무시해 iOS에서 병음이 흐름으로 새던 실기 결함의 수리(진단기 실측).
                         ? <ruby key={i} data-pinyin={seg.pinyin ? '1' : undefined}
                             data-yomi={seg.pinyin ? undefined : '1'}>
-                            {seg.kanji}<rt className={showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : undefined}>{seg.reading}</rt>
+                            {seg.kanji}<span className={['rt-an', showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : ''].filter(Boolean).join(' ')}>{seg.reading}</span>
                           </ruby>
                         : <span key={i}>{seg.plain}</span>
                     )}
