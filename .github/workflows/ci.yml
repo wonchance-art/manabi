@@ -7,6 +7,9 @@ on:
   pull_request:
   push:
     branches: [main]
+  # 수동 재실행 — 러너 플레이크로 main이 red일 때 커밋 없이 다시 돌린다
+  # (2026-08-19 learning-flow 드래그 타임아웃: 로컬 9/9 재현 불가 → 플레이크 판정 선례).
+  workflow_dispatch:
 
 # 같은 브랜치에 새 푸시가 오면 진행 중인 실행은 취소한다(러너 시간 절약).
 concurrency:
