@@ -2249,6 +2249,22 @@ body.is-review-session .page-container { padding-top: 8px; }
   display: inline;
   vertical-align: bottom;
   cursor: pointer;
+  /* 집중 모드 진입·이동·해제가 뚝 끊기지 않게 — 어둡기만 전환한다 */
+  transition: opacity 0.25s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .word-token { transition: none; }
+}
+/* ── 집중 모드 (오너 승인 2026-08-19: "지정된 문장만 보이고 나머지는 어둡게") ──
+   오버레이가 아니라 토큰별 투명도인 이유: 문장이 줄바꿈에 걸치면 비직사각형이라
+   오버레이는 다각형 좌표를 리사이즈·병음 토글마다 재계산해야 한다. 토큰 DOM을 직접
+   소유하므로 클래스 분기 하나로 끝나고, opacity는 엔진 중립적이다(WebKit rt 선례).
+   .reader-area--focus는 집중 모드 ON + 지정 존재일 때만 붙는다 — 지정이 없으면
+   전부 원래 밝기(뷰어 진입 직후 화면이 통째로 어두워지는 일이 없다).
+   18%: 위치 감각(문서의 어디쯤인지)은 남기면서 읽기 간섭은 끊는 값 — 기기에서
+   보고 조정할 취향 지점. 병음·성조색·저장 표식은 토큰 내부라 함께 어두워진다. */
+.reader-area--focus .word-token:not(.word-token--picked) {
+  opacity: 0.18;
 }
 
 /* ruby 후리가나·병음 */

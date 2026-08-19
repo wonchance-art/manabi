@@ -133,6 +133,7 @@ export default function ViewerPage() {
   const { fontSize, setFontSize, lineGap, setLineGap, charGap, setCharGap,
           showHanjaKo, setShowHanjaKo,
           showToneColors, setShowToneColors,
+          focusMode, setFocusMode,
           theme, setTheme, fontFamily, setFontFamily, showFurigana, setShowFurigana,
           autoSpeakOnClick, setAutoSpeakOnClick,
           settingsOpen, setSettingsOpen } = settings;
@@ -1309,6 +1310,14 @@ export default function ViewerPage() {
             {showFurigana ? '후리가나 숨기기' : '후리가나 보이기'}
           </button>
 
+          <button
+            onClick={() => setFocusMode(v => !v)}
+            className={`grammar-btn ${focusMode ? 'grammar-btn--active' : ''}`}
+            title="문장 막대(¦)나 드래그로 지정한 문장만 밝게, 나머지는 어둡게"
+          >
+            {focusMode ? '☑ 집중 모드 켜짐' : '◻ 집중 모드 꺼짐'}
+          </button>
+
           {materialLang === 'Chinese' && (
             <button
               onClick={() => setShowHanjaKo(v => !v)}
@@ -1449,7 +1458,7 @@ export default function ViewerPage() {
       {/* Reader Area — 인앱 토큰 범위 지정(드래그) 이벤트는 여기서 위임 수신 */}
       <div
         ref={readerRef}
-        className={`card reader-area reader-area--${theme}`}
+        className={`card reader-area reader-area--${theme}${focusMode && (pickedLineIdx !== null || tokenRange.range) ? ' reader-area--focus' : ''}`}
         style={{
           fontSize: `${fontSize}rem`,
           // 자료 언어의 표준 자형이 우선(오너 확정) — 중국어는 SC, 일본어는 JP를 사용자
