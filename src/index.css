@@ -106,6 +106,12 @@ html {
 :lang(zh) {
   font-family: var(--font-noto-sc, 'Noto Sans SC'), var(--font-noto-kr, 'Noto Sans KR'), sans-serif;
 }
+/* 일본어도 같은 결함이 있었다(오너 지적 2026-08-19): 본문이 KR 우선이라 한자가
+   한국식 자형(直·骨·海·社 등이 일본 표준과 다름)으로, 가나는 KR에 글리프가 없어
+   시스템 폰트로 렌더됐다. JP를 앞에 둬 한자·가나 모두 일본 표준으로 맞춘다. */
+:lang(ja) {
+  font-family: var(--font-noto-jp, 'Noto Sans JP'), var(--font-noto-kr, 'Noto Sans KR'), sans-serif;
+}
 /* ── 병음 라틴 (오너 확정: Noto Sans — 성조 부호 전 범위·SC와 같은 계열) ──
    루비 병음(rt)·상세 예문 병음 줄·병음 표기 요소 공용. 일본어 요미가나 rt는
    data-pinyin 밖이라 무영향. .fr-example__ipa는 프랑스어 IPA와 공유하는 클래스라

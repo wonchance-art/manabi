@@ -18,7 +18,9 @@ const notoKr = Noto_Sans_KR({
 
 const notoJp = Noto_Sans_JP({
   subsets: ['latin'],
-  weight: ['500', '700'],
+  // 400: 뷰어 본문 기본 굵기 — 없으면 브라우저가 500으로 대체해 본문이 미세하게 굵었다.
+  // 가변 폰트 1벌을 조각 서빙이라 weight 추가로 다운로드 파일 수는 늘지 않는다(실측).
+  weight: ['400', '500', '700'],
   variable: '--font-noto-jp',
   display: 'swap',
 });
