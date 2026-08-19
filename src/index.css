@@ -2228,9 +2228,9 @@ body.is-review-session .page-container { padding-top: 8px; }
   ruby-overhang: auto;
   ruby-align: center;
 }
-/* 병음 전용 기준점 — 일본어 요미가나는 기존 동작(rt가 base를 밀어 수용)을 유지한다.
-   요미는 base보다 긴 경우가 5.7%로 흔해(실측) 절대배치로 바꾸면 겹침이 생긴다. */
-.word-token ruby[data-pinyin] { position: relative; }
+/* 병음·요미가나 공통 기준점 — rt를 절대배치로 빼 base 폭 계산에서 제외한다. */
+.word-token ruby[data-pinyin],
+.word-token ruby[data-yomi] { position: relative; }
 .word-token rt {
   font-size: 0.5em;
   color: var(--primary-light);
@@ -2247,8 +2247,14 @@ body.is-review-session .page-container { padding-top: 8px; }
      ruby-overhang은 브라우저가 사실상 구현하지 않아 무력하므로, rt를 절대배치로
      빼서 base 폭 계산에서 제외한다. 세로 위치는 아래 bottom이 직접 잡는다. */
 }
-/* 병음만 절대배치 — base 폭 계산에서 빼 토글 시 한자 간격을 고정한다(오너 요청). */
-.word-token ruby[data-pinyin] > rt {
+/* 병음·요미가나 절대배치 — base 폭 계산에서 빼 토글 시 한자 간격을 고정한다(오너 요청).
+   일본어(2026-08-19 오너 요청 "후리가나도 한자 너비 초과하지 않도록"): 요미가 한자 구간보다
+   넓어도(코퍼스 14.4%) base를 밀지 않고 이웃 가나 위 빈 공간으로 흘러넘친다 — 일본 조판의
+   표준 관행(ruby overhang)이고, 한자 사이에 가나가 끼는 언어 구조 덕에 실제 예문 231문장의
+   rt 인접쌍 228을 전수 시뮬레이션해 충돌 0이었다. 크기 축소는 하지 않는다: 요미는 최대
+   한자 1자당 5자(志=こころざし)라 최장 기준 단일 축소가 0.2em(판독 불가)이 되기 때문. */
+.word-token ruby[data-pinyin] > rt,
+.word-token ruby[data-yomi] > rt {
   position: absolute;
   left: 50%;
   /* 본문과의 간격은 네이티브 ruby와 같게 맞춘다 — 실측 -0.15em(20px 기준 -3px,
@@ -2261,13 +2267,15 @@ body.is-review-session .page-container { padding-top: 8px; }
   transform: translateX(-50%);
   width: max-content;
   pointer-events: none;
-  /* 전 음절 단일 크기 — 병음 줄이 일자가 되는 조건(오너 확정 2026-08-19).
-     크기가 음절마다 다르면 윗변·베이스라인·글자 키가 달라져 "글자마다 병음 위치가
-     다르다"(오너 지적). 값의 유도: 최장 병음 chuāng·shuāng·zhuāng이 자기 글자 폭에
-     3.55배(자간 -0.03em 포함 실측)이므로, 1em 셀의 0.94(폰트별 폭 편차 여유)에
-     들어가려면 0.94 / 3.55 ≈ 0.26em. 최장이 들어가므로 어떤 인접쌍도 겹칠 수 없다.
-     작아지는 만큼은 뷰어의 글자 크기 조절로 보완한다는 오너 결정.
-     ※ 일반 rt(0.5em)는 일본어 요미가나용 — 이 선택자가 병음만 덮어쓴다. */
+}
+/* 전 음절 단일 크기 — 병음 줄이 일자가 되는 조건(오너 확정 2026-08-19).
+   크기가 음절마다 다르면 윗변·베이스라인·글자 키가 달라져 "글자마다 병음 위치가
+   다르다"(오너 지적). 값의 유도: 최장 병음 chuāng·shuāng·zhuāng이 자기 글자 폭에
+   3.55배(자간 -0.03em 포함 실측)이므로, 1em 셀의 0.94(폰트별 폭 편차 여유)에
+   들어가려면 0.94 / 3.55 ≈ 0.26em. 최장이 들어가므로 어떤 인접쌍도 겹칠 수 없다.
+   작아지는 만큼은 뷰어의 글자 크기 조절로 보완한다는 오너 결정.
+   ※ 요미가나 rt는 0.5em 유지(위 공통 블록 밖) — 병음만 덮어쓴다. */
+.word-token ruby[data-pinyin] > rt {
   font-size: 0.26em;
 }
 /* 정사각 그리드 유지(오너 피드백 2026-08-19: "일자로 정렬된 게 아니네") —
@@ -2278,6 +2286,13 @@ body.is-review-session .page-container { padding-top: 8px; }
   display: inline-flex;
   justify-content: center;
   width: 1em; /* 정사각 그리드 — 병음 길이와 무관하게 한자 자리 고정 */
+}
+/* 요미가나 ruby도 같은 상자 모델로 — 네이티브 display:ruby는 상자 높이가 토큰마다
+   미세하게 달라져 절대배치 rt의 세로 기준(bottom %)이 흔들린다(실측: 간격이 -6.5/-14
+   두 값으로 갈림). 폭은 병음(1em 고정)과 달리 한자 구간의 자연 폭 그대로 둔다. */
+.word-token ruby[data-yomi] {
+  display: inline-flex;
+  justify-content: center;
 }
 /* 병음 끄기 — 폭 예약(ruby)은 유지한 채 독음만 감춘다(켤 때 글자가 밀리지 않게) */
 .surface--furi-off rt { visibility: hidden; }

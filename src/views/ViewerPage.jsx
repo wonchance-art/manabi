@@ -146,8 +146,7 @@ function splitRuby(text, furigana) {
   if (furigana.includes(' ') && !/[぀-ヿ]/.test(furigana) && zhChars.every(isKanji)) {
     const syllables = furigana.trim().split(/\s+/);
     if (syllables.length === zhChars.length) {
-      // pinyin 표식 — 이 경로만 rt 절대배치·폭 예약을 적용한다. 일본어 요미가나는
-      // 요미가 base보다 긴 경우가 5.7%로 흔해(실측) 절대배치로 바꾸면 겹침이 되살아난다.
+      // pinyin 표식 — 글자당 1음절 격자 조판(폭 1em 고정·단일 축소 크기) 전용 경로.
       return zhChars.map((ch, i) => ({ kanji: ch, reading: syllables[i], pinyin: true }));
     }
   }
@@ -1673,7 +1672,9 @@ export default function ViewerPage() {
                       seg.kanji
                         // 병음 rt는 CSS가 전 음절 단일 크기(최장 병음이 1em 셀에 들어가는
                         // 크기)로 조판한다 — 글자별 속성이 더 필요 없다(오너 확정 2026-08-19).
-                        ? <ruby key={i} data-pinyin={seg.pinyin ? '1' : undefined}>
+                        // 요미가나(data-yomi)는 크기 유지 + 절대배치 — 한자 폭 불변(오너 요청).
+                        ? <ruby key={i} data-pinyin={seg.pinyin ? '1' : undefined}
+                            data-yomi={seg.pinyin ? undefined : '1'}>
                             {seg.kanji}<rt>{seg.reading}</rt>
                           </ruby>
                         : <span key={i}>{seg.plain}</span>
