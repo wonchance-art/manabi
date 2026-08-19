@@ -1,4 +1,4 @@
-import { Inter, Noto_Sans_KR, Noto_Sans_JP } from 'next/font/google';
+import { Inter, Noto_Sans, Noto_Sans_KR, Noto_Sans_JP, Noto_Sans_SC } from 'next/font/google';
 import '../index.css';
 import Providers from './providers';
 
@@ -20,6 +20,23 @@ const notoJp = Noto_Sans_JP({
   subsets: ['latin'],
   weight: ['500', '700'],
   variable: '--font-noto-jp',
+  display: 'swap',
+});
+
+// 중국어 본문 — 간체 표준 자형(오너 확정 2026-08-19, 폰트 시연장 비교 후 선택).
+// 이전엔 중국어 전용 폰트가 없어 KR/JP 폰트의 자형(間·直·骨 등이 비대륙형)으로 렌더됐다.
+const notoSc = Noto_Sans_SC({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-noto-sc',
+  display: 'swap',
+});
+
+// 병음 전용 라틴 — 성조 부호(ā á ǎ à…) 전 범위 보장, SC와 같은 계열(오너 확정).
+const notoSans = Noto_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-noto-sans',
   display: 'swap',
 });
 
@@ -87,7 +104,7 @@ export default function RootLayout({ children }) {
           />
         )}
       </head>
-      <body className={`${inter.variable} ${notoKr.variable} ${notoJp.variable}`}>
+      <body className={`${inter.variable} ${notoKr.variable} ${notoJp.variable} ${notoSc.variable} ${notoSans.variable}`}>
         <Providers>{children}</Providers>
       </body>
     </html>

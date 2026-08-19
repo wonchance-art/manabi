@@ -942,10 +942,10 @@ export default function ViewerPage() {
     <div className="viewer-side__content">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
         <div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 800, lineHeight: 1.3 }}>
+          <div lang={materialLang === 'Chinese' ? 'zh-Hans' : undefined} style={{ fontSize: '1.5rem', fontWeight: 800, lineHeight: 1.3 }}>
             {selectedToken.furigana
               ? splitRuby(selectedToken.text, selectedToken.furigana).map((seg, i) =>
-                  seg.kanji ? <ruby key={i}>{seg.kanji}<rt style={{ fontSize: '0.45em', color: 'var(--primary-light)' }}>{seg.reading}</rt></ruby> : <span key={i}>{seg.plain}</span>
+                  seg.kanji ? <ruby key={i}>{seg.kanji}<rt className={seg.pinyin ? 'pinyin-text' : undefined} style={{ fontSize: '0.45em', color: 'var(--primary-light)' }}>{seg.reading}</rt></ruby> : <span key={i}>{seg.plain}</span>
                 )
               : selectedToken.text}
           </div>
@@ -1061,7 +1061,7 @@ export default function ViewerPage() {
         // 예문 3줄 스택(오너 확정): 예문 → 병음 → 뜻
         <div style={{ fontSize: '0.84rem', lineHeight: 1.55, marginBottom: 12 }}>
           <div lang="zh-Hans">{refVocab.word.ex.zh}</div>
-          <div style={{ color: 'var(--text-muted)', fontSize: '0.76rem' }}>{refVocab.word.ex.pinyin}</div>
+          <div className="pinyin-text" style={{ color: 'var(--text-muted)', fontSize: '0.76rem' }}>{refVocab.word.ex.pinyin}</div>
           <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{refVocab.word.ex.ko}</div>
         </div>
       )}
@@ -1121,7 +1121,7 @@ export default function ViewerPage() {
       <div className="pdf-context__title">번역 · 맥락</div>
       {leftPanelText && (
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
-          <div className="pdf-context__original" style={{ flex: 1, minWidth: 0 }}>"{leftPanelText.length > 120 ? leftPanelText.slice(0, 120) + '…' : leftPanelText}"</div>
+          <div className="pdf-context__original" lang={materialLang === 'Chinese' ? 'zh-Hans' : undefined} style={{ flex: 1, minWidth: 0 }}>"{leftPanelText.length > 120 ? leftPanelText.slice(0, 120) + '…' : leftPanelText}"</div>
           {ttsSupported && (
             <button
               onClick={() => speak(leftPanelText, materialLang)}
@@ -1517,7 +1517,15 @@ export default function ViewerPage() {
       <div
         ref={readerRef}
         className={`card reader-area reader-area--${theme}`}
-        style={{ fontSize: `${fontSize}rem`, fontFamily, gap: `${lineGap}px ${charGap}rem`, '--char-gap': `${charGap}rem` }}
+        style={{
+          fontSize: `${fontSize}rem`,
+          // 중국어 자료는 간체 표준 자형(SC)이 우선(오너 확정) — 사용자 글꼴 설정(KR 계열)이
+          // 한자를 자기 자형으로 그리는 것을 막고, 한글·라틴은 설정 글꼴로 흘려보낸다.
+          fontFamily: materialLang === 'Chinese'
+            ? `var(--font-noto-sc, 'Noto Sans SC'), ${fontFamily}`
+            : fontFamily,
+          gap: `${lineGap}px ${charGap}rem`, '--char-gap': `${charGap}rem`,
+        }}
         onPointerDown={tokenRange.handlePointerDown}
         onClickCapture={tokenRange.handleClickCapture}
       >
@@ -1874,10 +1882,10 @@ export default function ViewerPage() {
           <div className="pdf-detail-overlay" onClick={() => setPopupWord(null)} />
           <div className="pdf-detail-popup">
             <div className="pdf-detail-popup__header">
-              <div className="pdf-detail-popup__word">
+              <div className="pdf-detail-popup__word" lang={materialLang === 'Chinese' ? 'zh-Hans' : undefined}>
                 {popupWord.token.furigana
                   ? splitRuby(popupWord.token.text, popupWord.token.furigana).map((seg, i) =>
-                      seg.kanji ? <ruby key={i}>{seg.kanji}<rt>{seg.reading}</rt></ruby> : <span key={i}>{seg.plain}</span>
+                      seg.kanji ? <ruby key={i}>{seg.kanji}<rt className={seg.pinyin ? 'pinyin-text' : undefined}>{seg.reading}</rt></ruby> : <span key={i}>{seg.plain}</span>
                     )
                   : popupWord.token.text}
               </div>

@@ -53,3 +53,32 @@ describe('병음 조판 계약', () => {
     expect(viewer).toMatch(/reading: syllables\[i\], pinyin: true/);
   });
 });
+
+// 계약: 중국어 자형·병음 폰트 (오너 확정 2026-08-19 — 시연장 비교 후 선택)
+// 중국어 = Noto Sans SC(간체 표준 자형) · 병음 = Noto Sans(성조 부호 전 범위).
+describe('중국어·병음 폰트 계약', () => {
+  const layout = read('src/app/layout.jsx');
+
+  it('레이아웃이 두 폰트를 로드하고 CSS 변수로 노출한다', () => {
+    expect(layout).toMatch(/Noto_Sans_SC\(\{[^}]*variable: '--font-noto-sc'/s);
+    expect(layout).toMatch(/const notoSans = Noto_Sans\(\{[^}]*variable: '--font-noto-sans'/s);
+    expect(layout).toContain('${notoSc.variable} ${notoSans.variable}');
+  });
+
+  it('lang="zh*" 요소는 간체 표준 자형으로 렌더된다(한글 폴백은 KR)', () => {
+    expect(css).toMatch(/:lang\(zh\) \{\s*font-family: var\(--font-noto-sc, 'Noto Sans SC'\), var\(--font-noto-kr/);
+  });
+
+  it('병음 라틴은 루비·상세 예문·병음 요소 공용으로 Noto Sans를 쓴다', () => {
+    expect(css).toMatch(/\.pinyin-text,\s*\.pdf-detail-pinyin,\s*\.word-token ruby\[data-pinyin\] > rt,\s*\[lang\^="zh"\] \+ \.fr-example__ipa \{\s*font-family: var\(--font-noto-sans, 'Noto Sans'\)/);
+  });
+
+  it('뷰어 본문은 중국어 자료에서 SC를 사용자 글꼴 설정 앞에 놓는다', () => {
+    expect(viewer).toContain("? `var(--font-noto-sc, 'Noto Sans SC'), ${fontFamily}`");
+  });
+
+  it('시트·팝업의 중국어 단어에 zh 표식과 병음 라틴 클래스가 붙는다', () => {
+    expect(viewer.match(/lang=\{materialLang === 'Chinese' \? 'zh-Hans' : undefined\}/g)?.length).toBeGreaterThanOrEqual(3);
+    expect(viewer.match(/className=\{seg\.pinyin \? 'pinyin-text' : undefined\}/g)?.length).toBe(2);
+  });
+});
