@@ -9,6 +9,7 @@ name: world (도시 geo·오버월드)
 on:
   push:
     branches: [main] # 병합분은 경로와 무관하게 한 번 더 전량 검증
+  workflow_dispatch: # 수동 재실행 — 러너 플레이크 시 커밋 없이 재시도
   pull_request:
     paths:
       - 'src/components/world/**'
