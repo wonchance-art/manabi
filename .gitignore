@@ -34,5 +34,8 @@ supabase/.temp/
 # Codex CLI 로컬 설정
 .codex/
 
-# Overpass 원본 스냅샷 — world-data 브랜치에 분리 보관(npm run world:fetch-data)
+# Overpass 원본 스냅샷(도시 geo 재현 전용·43M) — world-data 브랜치에 분리 보관
+# (npm run world:fetch-data). Tatoeba 프랑스어 스냅샷은 260KB이고 일상 게이트가
+# 직접 읽으므로 예외로 남긴다.
 scripts/data/
+!scripts/data/tatoeba-*.json

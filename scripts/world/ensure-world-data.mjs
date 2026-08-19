@@ -19,7 +19,11 @@ const root = path.dirname(path.dirname(path.dirname(fileURLToPath(import.meta.ur
 const dataDir = path.join(root, 'scripts/data');
 const REF = process.env.WORLD_DATA_REF || 'world-data';
 
-const count = () => (existsSync(dataDir) ? readdirSync(dataDir).filter((f) => f.endsWith('.json')).length : 0);
+// Tatoeba 스냅샷은 리포에 남아 있으므로(일상 게이트가 읽는다) 그것만으로 '있음'을
+// 판정하면 osm 데이터를 영영 받지 않는다 — 반드시 osm 스냅샷으로 센다.
+const count = () => (existsSync(dataDir)
+  ? readdirSync(dataDir).filter((f) => f.includes('-osm-') && f.endsWith('.json')).length
+  : 0);
 
 if (count() > 0) {
   console.log(`world data: 이미 있음 (${count()}파일) — ${path.relative(root, dataDir)}`);
