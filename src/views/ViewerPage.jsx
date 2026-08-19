@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -26,6 +26,7 @@ import { callGemini } from '../lib/gemini';
 import { fetchWordDetailText } from '../lib/wordDetail';
 import { pinyinToneClass } from '../lib/pinyinTone';
 import { splitRuby } from '../lib/splitRuby';
+import { pickableSentences, adjacentSentence } from '../lib/sentenceNav';
 import ReportMaterialButton from '../components/ReportMaterialButton';
 import ReadingTest from '../components/ReadingTest';
 import ConversationPanel from '../components/ConversationPanel';
@@ -409,6 +410,48 @@ export default function ViewerPage() {
   });
 
   // 드래그 선택·문장 버튼 공용 — 왼쪽 번역+맥락, 오른쪽 단어 리스트 분석
+  // 문장 이동(▲/▼) — 지정 가능한 문장 목록. 렌더의 lineGroups와 같은 규칙으로
+  // sequence에서 파생한다(문장 막대와 단위 동조 — sentenceNav 계약 참조).
+  const sentences = useMemo(() => {
+    const seq = material?.processed_json?.sequence;
+    const dict = material?.processed_json?.dictionary;
+    if (!seq?.length || !dict) return [];
+    const rawLines = material?.raw_text?.split('\n') ?? [];
+    const lineGroups = [];
+    let curGroup = { rawIdx: 0, tokenIds: [] };
+    for (const tokenId of seq) {
+      const token = dict[tokenId];
+      if (!token) continue;
+      if (token.pos === '개행') {
+        lineGroups.push(curGroup);
+        const m = tokenId.match(/^(?:id|br|failed)_(\d+)_/);
+        curGroup = { rawIdx: m ? parseInt(m[1]) + 1 : curGroup.rawIdx + 1, tokenIds: [] };
+      } else {
+        const m = tokenId.match(/^(?:id|failed)_(\d+)_/);
+        if (m && curGroup.tokenIds.length === 0) curGroup.rawIdx = parseInt(m[1]);
+        curGroup.tokenIds.push(tokenId);
+      }
+    }
+    if (curGroup.tokenIds.length) lineGroups.push(curGroup);
+    return pickableSentences(lineGroups, rawLines);
+  }, [material?.processed_json, material?.raw_text]);
+
+  // 이동 = 그 문장의 막대(¦)를 대신 눌러주는 것 — 지정·분석·스크롤이 한 동작.
+  const moveSentence = (dir) => {
+    if (pickedLineIdx === null) return;
+    const target = adjacentSentence(sentences, pickedLineIdx, dir);
+    if (!target) return;
+    tokenRange.clearRange();
+    setPickedLineIdx(target.rawIdx);
+    setSelectedRangeText(target.text);
+    runSelectionAnalysis(target.text);
+    const el = tokenRefs.current[target.firstTokenId];
+    if (el?.scrollIntoView) {
+      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+      el.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+    }
+  };
+
   const runSelectionAnalysis = async (sel) => {
     setLeftSheetSignal(s => s + 1);
     setRightSheetSignal(s => s + 1);
@@ -1703,6 +1746,27 @@ export default function ViewerPage() {
             );
           });
         })()}
+
+        {/* 문장 이동(▲ 위 / ▼ 아래) — 문장이 지정된 동안에만 나타나는 플로팅 필.
+            이동은 그 문장의 막대(¦) 클릭과 동일 효과(지정+분석+집중 모드 추종). */}
+        {pickedLineIdx !== null && sentences.length > 0 && (
+          <div className="sentence-nav" role="group" aria-label="문장 이동">
+            <button
+              className="sentence-nav__btn"
+              aria-label="위 문장"
+              title="위 문장"
+              disabled={!adjacentSentence(sentences, pickedLineIdx, -1)}
+              onClick={() => moveSentence(-1)}
+            >▲</button>
+            <button
+              className="sentence-nav__btn"
+              aria-label="아래 문장"
+              title="아래 문장"
+              disabled={!adjacentSentence(sentences, pickedLineIdx, 1)}
+              onClick={() => moveSentence(1)}
+            >▼</button>
+          </div>
+        )}
 
         {/* 지정 범위 양끝 그립 — 잡아 끌어 미세 조정(P3) */}
         <TokenRangeGrips

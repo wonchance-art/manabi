@@ -2351,6 +2351,37 @@ body.is-review-session .page-container { padding-top: 8px; }
   line-height: 2.2;
 }
 
+/* ── 문장 이동 필(▲/▼) — 문장 지정 중에만 나타난다(오너 승인 2026-08-19).
+   reader-area가 position:relative지만 본문과 같이 스크롤되므로, 엄지 위치에 상시
+   머물도록 뷰포트 고정(fixed)으로 띄운다. 모바일 하단 내비 위로 올리는 오프셋은
+   기존 --mobile-nav-height 선례를 따른다. */
+.sentence-nav {
+  position: fixed;
+  right: 14px;
+  bottom: calc(var(--mobile-nav-height, 0px) + 24px + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-full, 999px);
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-secondary) 88%, transparent);
+  backdrop-filter: blur(6px);
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+.sentence-nav__btn {
+  width: 44px;  /* WCAG 터치 타깃 관례(드릴 버튼 선례) */
+  height: 44px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.sentence-nav__btn + .sentence-nav__btn { border-top: 1px solid var(--border); }
+.sentence-nav__btn:disabled { opacity: 0.3; cursor: default; }
+.sentence-nav__btn:not(:disabled):active { color: var(--primary-light); }
+
 /* 문장 전체 지정 막대 — 줄 첫 토큰 안에 인라인으로 앉혀 한자와 라인박스·baseline을 공유.
    절대배치(앵커)는 루비(요미가나·병음) 줄에서 rt 높이 쪽으로 어긋났다(#984 실측) — 인라인이 정답.
    음수 마진(-28+6=-22=폭 상쇄)으로 본문을 밀지 않고 왼쪽 여백에 나간다. */

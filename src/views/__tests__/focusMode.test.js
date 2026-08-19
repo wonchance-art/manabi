@@ -28,6 +28,18 @@ describe('집중 모드 배선', () => {
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{\s*\.word-token \{ transition: none; \}/);
   });
 
+  it('문장 이동 필 — 지정 중에만 뜨고, 이동은 막대 클릭과 동일 효과다(오너 승인)', () => {
+    expect(viewer).toContain("pickedLineIdx !== null && sentences.length > 0 && (");
+    // 지정·분석·범위 배타·스크롤이 한 동작 — 막대(¦) onClick과 같은 4종 호출
+    const move = viewer.slice(viewer.indexOf('const moveSentence'), viewer.indexOf('const runSelectionAnalysis'));
+    for (const call of ['tokenRange.clearRange()', 'setPickedLineIdx(target.rawIdx)', 'setSelectedRangeText(target.text)', 'runSelectionAnalysis(target.text)', 'scrollIntoView']) {
+      expect(move).toContain(call);
+    }
+    // 경계 비활성(순환 없음)
+    expect(viewer).toContain("disabled={!adjacentSentence(sentences, pickedLineIdx, -1)}");
+    expect(css).toMatch(/\.sentence-nav__btn \{[^}]*width: 44px;/s);
+  });
+
   it('토글이 설정에 있고 언어 무관이다', () => {
     expect(viewer).toContain("'☑ 집중 모드 켜짐' : '◻ 집중 모드 꺼짐'");
     // 중국어 조건(materialLang === 'Chinese') 블록 밖 — 후리가나 토글과 같은 층위
