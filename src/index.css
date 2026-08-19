@@ -2203,6 +2203,9 @@ body.is-review-session .page-container { padding-top: 8px; }
   ruby-overhang: auto;
   ruby-align: center;
 }
+/* 병음 전용 기준점 — 일본어 요미가나는 기존 동작(rt가 base를 밀어 수용)을 유지한다.
+   요미는 base보다 긴 경우가 5.7%로 흔해(실측) 절대배치로 바꾸면 겹침이 생긴다. */
+.word-token ruby[data-pinyin] { position: relative; }
 .word-token rt {
   font-size: 0.5em;
   color: var(--primary-light);
@@ -2213,7 +2216,37 @@ body.is-review-session .page-container { padding-top: 8px; }
   white-space: nowrap;
   text-align: center;
   letter-spacing: -0.03em;
+  /* 병음 토글 시 한자 간격 불변(오너 요청): 네이티브 ruby는 rt가 base보다 넓으면
+     base를 밀어 셀을 넓힌다 — 중국어 병음은 chuāng·shuāng처럼 6자 음절이 흔해
+     한자 1em을 넘긴다(요미가나는 대개 base 안에 들어와 문제가 드러나지 않았다).
+     ruby-overhang은 브라우저가 사실상 구현하지 않아 무력하므로, rt를 절대배치로
+     빼서 base 폭 계산에서 제외한다. 세로 공간은 .surface의 line-height가 이미 확보. */
 }
+/* 병음만 절대배치 — base 폭 계산에서 빼 토글 시 한자 간격을 고정한다(오너 요청). */
+.word-token ruby[data-pinyin] > rt {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  width: max-content;
+  pointer-events: none;
+}
+/* 독음 폭 예약(오너 요청 2026-08-19) — rt가 절대배치라 base 폭에 영향을 주지 않는 대신
+   긴 독음이 이웃 위로 넘쳐 겹친다. 넘치는 길이 구간만 최소 폭을 확보한다.
+   병음을 꺼도 ruby 마크업이 유지되므로 이 폭은 토글과 무관하게 같다 = 시프트 0.
+   실측 근거(font-size 20px): 4자 21px · 5자 22.4px · 6자 31px vs 한자 20px.
+   콘텐츠 예문 2,059개 기준 4자 20.9%·5자 8.2%·6자+ 0.9% → 본문 폭 증가 약 3%. */
+.word-token ruby[data-syl="4"] { min-width: 1.12em; }
+.word-token ruby[data-syl="5"] { min-width: 1.22em; }
+.word-token ruby[data-syl="6"] { min-width: 1.62em; }
+.word-token ruby[data-syl] {
+  display: inline-flex;
+  justify-content: center;
+}
+/* 병음 끄기 — 폭 예약(ruby)은 유지한 채 독음만 감춘다(켤 때 글자가 밀리지 않게) */
+.surface--furi-off rt { visibility: hidden; }
+/* (병음 OFF에서도 ruby 마크업·폭 예약은 유지 — 켤 때 글자가 밀리지 않게) */
+
 /* ruby 유무 관계없이 줄 높이 통일 — rt absolute라 공간은 line-height로 확보 */
 .word-token .surface {
   line-height: 2.2;
