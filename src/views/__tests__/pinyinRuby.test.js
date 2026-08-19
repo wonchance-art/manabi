@@ -84,7 +84,19 @@ describe('중국어·병음 폰트 계약', () => {
   it('시트·팝업·원문 인용에 자료 언어 표식과 병음 라틴 클래스가 붙는다', () => {
     expect(viewer).toMatch(/const contentLangTag = materialLang === 'Chinese' \? 'zh-Hans'/);
     expect(viewer.match(/lang=\{contentLangTag\}/g)?.length).toBeGreaterThanOrEqual(3);
-    expect(viewer.match(/className=\{seg\.pinyin \? 'pinyin-text' : undefined\}/g)?.length).toBe(2);
+    expect(viewer.match(/className=\{seg\.pinyin \? \['pinyin-text', showToneColors && pinyinToneClass\(seg\.reading\)\]\.filter\(Boolean\)\.join\(' '\) : undefined\}/g)?.length).toBe(2);
+  });
+
+  it('성조 색상은 병음에만·옵트인이다(오너 확정: "병음만")', () => {
+    // 한자에 색이 새면 오너 결정 위반 — 클래스는 rt에만 붙는다
+    expect(css).toMatch(/rt\.pinyin-tone--1 \{ color: var\(--tone-1\); \}/);
+    expect(css).toMatch(/\[data-theme="light"\] \{\s*--tone-1:/);
+    expect(viewer).toContain("showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : undefined");
+    // 시트·팝업도 병음 rt에만 합성(pinyin-text와 병행)
+    expect(viewer.match(/showToneColors && pinyinToneClass\(seg\.reading\)/g)?.length).toBe(2);
+    // 기본 꺼짐(옵트인) — showHanjaKo 선례
+    const settings = read('src/lib/useViewerSettings.js');
+    expect(settings).toContain("readPref('showToneColors', false)");
   });
 
   it('일본어도 같은 방식 — :lang(ja)는 JP 우선, 뷰어 본문은 JP를 설정 글꼴 앞에 놓는다(오너 지적)', () => {
