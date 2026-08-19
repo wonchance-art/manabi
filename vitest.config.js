@@ -12,13 +12,16 @@
 //    동시성을 2까지 낮춰도 초과는 남고 총 시간만 비슷해(70.6s vs 78s) 타임아웃으로 푼다.
 // 2) 파일 동시성 제한: 4코어에서 파일을 과하게 병렬화하면 개별 테스트의 실시간이 늘어
 //    타임아웃을 유발한다. 코어 수에 맞춰 상한을 둔다.
-export default {
+//
+// 수정(2026-08-19): 처음 쓴 `poolOptions.{threads,forks}.max*`는 **vitest 4에서 제거된
+// 키**라 조용히 무시되고 있었다(실행 시 DEPRECATED 경고로 발견). 상한이 실제로는 걸린 적이
+// 없었다는 뜻이라, 현행 API인 top-level `maxWorkers`로 옮긴다.
+const config = {
   test: {
     testTimeout: 90_000,
     hookTimeout: 60_000,
-    poolOptions: {
-      threads: { maxThreads: 4, minThreads: 1 },
-      forks: { maxForks: 4, minForks: 1 },
-    },
+    maxWorkers: 4,
   },
 };
+
+export default config;
