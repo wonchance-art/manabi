@@ -41,6 +41,7 @@ import { readHanjaKo, listHanjaHunEum, hunsCoverWord, toJaForm } from '../lib/ha
 import { useGrammarDetail } from '../lib/useGrammarDetail';
 import { buildContextPrompt } from '../lib/grammarDetail';
 import { analysisCacheKey, clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
+import { rubyWidthStep } from '../lib/rubyLayout';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
 import { getBook } from '../lib/bookMeta';
 import { getJaRef, formatJaRef, getJaWarn } from '../lib/jaRef';
@@ -146,7 +147,9 @@ function splitRuby(text, furigana) {
   if (furigana.includes(' ') && !/[぀-ヿ]/.test(furigana) && zhChars.every(isKanji)) {
     const syllables = furigana.trim().split(/\s+/);
     if (syllables.length === zhChars.length) {
-      return zhChars.map((ch, i) => ({ kanji: ch, reading: syllables[i] }));
+      // pinyin 표식 — 이 경로만 rt 절대배치·폭 예약을 적용한다. 일본어 요미가나는
+      // 요미가 base보다 긴 경우가 5.7%로 흔해(실측) 절대배치로 바꾸면 겹침이 되살아난다.
+      return zhChars.map((ch, i) => ({ kanji: ch, reading: syllables[i], pinyin: true }));
     }
   }
 
@@ -1638,7 +1641,9 @@ export default function ViewerPage() {
             }
             const isSaved = isTokenSaved(savedWords, token);
             const isDue = isSaved && isTokenDue(savedWords, token);
-            const rubySegments = showFurigana && token.furigana
+            // ruby는 토글과 무관하게 항상 만든다 — 폭 예약(ruby[data-syl])이 병음을 꺼도
+            // 유지돼야 켤 때 글자가 밀리지 않는다(오너 요청 2026-08-19). 끌 때는 rt만 감춘다.
+            const rubySegments = token.furigana
               ? splitRuby(token.text, token.furigana)
               : null;
             return (
@@ -1650,10 +1655,15 @@ export default function ViewerPage() {
                 onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleTokenClick(token, tokenId))}>
                 {linePick}
                 {rubySegments ? (
-                  <span className="surface">
+                  <span className={`surface${showFurigana ? '' : ' surface--furi-off'}`}>
                     {rubySegments.map((seg, i) =>
                       seg.kanji
-                        ? <ruby key={i}>{seg.kanji}<rt>{seg.reading}</rt></ruby>
+                        // data-syl: 독음 길이 단계(4·5·6+) — 이 글자가 차지할 최소 폭을
+                        // 정한다. 실측(2026-08-19): 1~3자는 한자 폭 안에 들어와 보정 불요.
+                        ? <ruby key={i} data-pinyin={seg.pinyin ? '1' : undefined}
+                            data-syl={seg.pinyin ? rubyWidthStep(seg.reading) : undefined}>
+                            {seg.kanji}<rt>{seg.reading}</rt>
+                          </ruby>
                         : <span key={i}>{seg.plain}</span>
                     )}
                   </span>
