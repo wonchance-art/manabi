@@ -89,7 +89,9 @@ describe('중국어·병음 폰트 계약', () => {
 
   it('성조 색상은 병음에만·옵트인이다(오너 확정: "병음만")', () => {
     // 한자에 색이 새면 오너 결정 위반 — 클래스는 rt에만 붙는다
-    expect(css).toMatch(/rt\.pinyin-tone--1 \{ color: var\(--tone-1\); \}/);
+    // 본문(.word-token 조합)과 시트·팝업(단독) 둘 다 — 본문 조합이 빠지면 기본색
+    // 규칙(.word-token rt)이 순서로 이겨 본문만 무색이 된다(오너 발견 회귀)
+    expect(css).toMatch(/\.word-token rt\.pinyin-tone--1, rt\.pinyin-tone--1 \{ color: var\(--tone-1\); \}/);
     expect(css).toMatch(/\[data-theme="light"\] \{\s*--tone-1:/);
     expect(viewer).toContain("showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : undefined");
     // 시트·팝업도 병음 rt에만 합성(pinyin-text와 병행)

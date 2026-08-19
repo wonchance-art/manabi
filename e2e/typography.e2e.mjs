@@ -142,6 +142,20 @@ test('일본어 — 글자 top·요미 크기·간격이 단일값이다(요미�
   assertGapBand(gaps[0], '요미');
 });
 
+test('성조 색상 — 본문(.word-token 안) 병음 rt에 실제로 색이 칠해진다', async () => {
+  // #1064 회귀(오너 발견): 소스에는 규칙이 있었지만 기본색 규칙(.word-token rt)이
+  // 순서로 이겨 본문만 무색이었다 — 소스 검사로는 못 잡는 종류라 계산된 색을 단언한다.
+  await page.setContent(PAGE(
+    tok(`<ruby data-pinyin="1">我<rt class="pinyin-tone--3">wǒ</rt></ruby>`, false)
+    + tok(`<ruby data-pinyin="1">去<rt>qù</rt></ruby>`, false),
+  ));
+  const { toned, plain } = await page.evaluate(() => {
+    const [a, b] = [...document.querySelectorAll('rt')].map((el) => getComputedStyle(el).color);
+    return { toned: a, plain: b };
+  });
+  assert.notEqual(toned, plain, `성조 클래스 rt가 기본 병음색 그대로다: ${toned}`);
+});
+
 test('레퍼런스(.ja-ruby) — 긴 요미가 문장 폭을 못 늘리고, 두 line-height 컨텍스트의 간격이 정합한다', async () => {
   const body = `
     <div id="withRuby" class="ja-ruby" style="display:inline-block">私<span>は</span><ruby>志<rt>こころざし</rt></ruby><span>を</span><ruby>承<rt>うけたまわ</rt></ruby><span>る</span></div>
