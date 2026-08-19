@@ -82,7 +82,9 @@ describe('buildChapterQuiz', () => {
 });
 
 describe('buildChapterQuiz — 실제 레지스트리 통합', () => {
-  it('일본어 n4-12-nagara 챕터에서 퀴즈가 나온다', { timeout: 30000 }, async () => {
+  // 타임아웃은 vitest.config.js의 전역 기본(90s)을 쓴다 — 개별 30s 명시가 전역을
+  // 덮어 병렬 경합에서 초과했다(2026-08-19 실측: 단독 7.5s).
+  it('일본어 n4-12-nagara 챕터에서 퀴즈가 나온다', async () => {
     // refLangs는 4개 언어 콘텐츠 전체(~10만 줄)를 로드하므로 기본 5초로는 빠듯하다
     const { getRefLang } = await import('../../content/refLangs');
     const ref = getRefLang('Japanese');
@@ -170,7 +172,7 @@ describe('보기 유출 회귀 — 실제 콘텐츠', () => {
     ['English', 'a1-04-plural-countable'],
     ['English', 'a1-05-pronouns-possessive'],
   ];
-  it('재현 케이스 챕터가 유출 없이 문항을 생성한다', { timeout: 30000 }, async () => {
+  it('재현 케이스 챕터가 유출 없이 문항을 생성한다', async () => {
     const { getRefLang } = await import('../../content/refLangs');
     for (const [lang, slug] of CASES) {
       const ref = getRefLang(lang);

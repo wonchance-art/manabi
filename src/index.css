@@ -2231,18 +2231,21 @@ body.is-review-session .page-container { padding-top: 8px; }
   width: max-content;
   pointer-events: none;
 }
-/* 독음 폭 예약(오너 요청 2026-08-19) — rt가 절대배치라 base 폭에 영향을 주지 않는 대신
-   긴 독음이 이웃 위로 넘쳐 겹친다. 넘치는 길이 구간만 최소 폭을 확보한다.
-   병음을 꺼도 ruby 마크업이 유지되므로 이 폭은 토글과 무관하게 같다 = 시프트 0.
-   실측 근거(font-size 20px): 4자 21px · 5자 22.4px · 6자 31px vs 한자 20px.
-   콘텐츠 예문 2,059개 기준 4자 20.9%·5자 8.2%·6자+ 0.9% → 본문 폭 증가 약 3%. */
-.word-token ruby[data-syl="4"] { min-width: 1.12em; }
-.word-token ruby[data-syl="5"] { min-width: 1.22em; }
-.word-token ruby[data-syl="6"] { min-width: 1.62em; }
-.word-token ruby[data-syl] {
+/* 정사각 그리드 유지(오너 피드백 2026-08-19: "일자로 정렬된 게 아니네") —
+   글자마다 폭을 다르게 예약했더니 세로줄이 깨지고 본문이 성겨 보였다. 중국어 본문은
+   모든 글자가 1em으로 정렬되는 게 정상이므로 폭은 균일하게 고정하고, 겹침은 폭이 아니라
+   '긴 병음만 조금 작게'로 푼다.
+   실측(콘텐츠 예문 2,059개): 폭 균일 + rt 등배(0.5em)이면 겹침 24.3%였으나,
+   길이별 축소를 적용하면 0.5%·최대 2px로 떨어진다. 1~3자(전체의 70%)는 원래 크기를
+   그대로 두므로 대다수 병음의 가독성은 손대지 않는다. */
+.word-token ruby[data-pinyin] {
   display: inline-flex;
   justify-content: center;
+  width: 1em; /* 정사각 그리드 — 병음 길이와 무관하게 한자 자리 고정 */
 }
+.word-token ruby[data-syl="4"] rt { font-size: 0.46em; letter-spacing: -0.05em; }
+.word-token ruby[data-syl="5"] rt { font-size: 0.42em; letter-spacing: -0.06em; }
+.word-token ruby[data-syl="6"] rt { font-size: 0.36em; letter-spacing: -0.07em; }
 /* 병음 끄기 — 폭 예약(ruby)은 유지한 채 독음만 감춘다(켤 때 글자가 밀리지 않게) */
 .surface--furi-off rt { visibility: hidden; }
 /* (병음 OFF에서도 ruby 마크업·폭 예약은 유지 — 켤 때 글자가 밀리지 않게) */
