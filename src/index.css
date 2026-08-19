@@ -98,6 +98,25 @@ html {
   scroll-behavior: smooth;
 }
 
+/* ── 중국어 자형 (오너 확정 2026-08-19: Noto Sans SC) ──
+   lang="zh*" 표식이 있는 모든 중국어를 간체 표준 자형으로 렌더한다. 표식이 없으면
+   body 스택의 KR/JP 폰트가 한자를 자기 자형(間·直·骨 등이 대륙 표준과 다름)으로
+   그리므로, 중국어를 렌더하는 요소에는 lang 표식이 필수다(뷰어 본문은 인라인 스택).
+   KR을 뒤에 두는 이유: SC에는 한글이 없어 혼용 문구가 섞여도 한글은 KR로 흐른다. */
+:lang(zh) {
+  font-family: var(--font-noto-sc, 'Noto Sans SC'), var(--font-noto-kr, 'Noto Sans KR'), sans-serif;
+}
+/* ── 병음 라틴 (오너 확정: Noto Sans — 성조 부호 전 범위·SC와 같은 계열) ──
+   루비 병음(rt)·상세 예문 병음 줄·병음 표기 요소 공용. 일본어 요미가나 rt는
+   data-pinyin 밖이라 무영향. .fr-example__ipa는 프랑스어 IPA와 공유하는 클래스라
+   중국어 본문 뒤에 붙은 경우(형제 선택자)만 좁혀 적용한다. */
+.pinyin-text,
+.pdf-detail-pinyin,
+.word-token ruby[data-pinyin] > rt,
+[lang^="zh"] + .fr-example__ipa {
+  font-family: var(--font-noto-sans, 'Noto Sans'), sans-serif;
+}
+
 body {
   font-family: var(--font-inter, 'Inter'), var(--font-noto-kr, 'Noto Sans KR'), var(--font-noto-jp, 'Noto Sans JP'), sans-serif;
   background: var(--bg-primary);
