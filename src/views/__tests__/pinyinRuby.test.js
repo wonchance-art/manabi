@@ -77,8 +77,16 @@ describe('중국어·병음 폰트 계약', () => {
     expect(viewer).toContain("? `var(--font-noto-sc, 'Noto Sans SC'), ${fontFamily}`");
   });
 
-  it('시트·팝업의 중국어 단어에 zh 표식과 병음 라틴 클래스가 붙는다', () => {
-    expect(viewer.match(/lang=\{materialLang === 'Chinese' \? 'zh-Hans' : undefined\}/g)?.length).toBeGreaterThanOrEqual(3);
+  it('시트·팝업·원문 인용에 자료 언어 표식과 병음 라틴 클래스가 붙는다', () => {
+    expect(viewer).toMatch(/const contentLangTag = materialLang === 'Chinese' \? 'zh-Hans'/);
+    expect(viewer.match(/lang=\{contentLangTag\}/g)?.length).toBeGreaterThanOrEqual(3);
     expect(viewer.match(/className=\{seg\.pinyin \? 'pinyin-text' : undefined\}/g)?.length).toBe(2);
+  });
+
+  it('일본어도 같은 방식 — :lang(ja)는 JP 우선, 뷰어 본문은 JP를 설정 글꼴 앞에 놓는다(오너 지적)', () => {
+    expect(css).toMatch(/:lang\(ja\) \{\s*font-family: var\(--font-noto-jp, 'Noto Sans JP'\), var\(--font-noto-kr/);
+    expect(viewer).toContain("? `var(--font-noto-jp, 'Noto Sans JP'), ${fontFamily}`");
+    // 본문 기본 굵기 400 — 없으면 브라우저가 500으로 대체해 본문이 굵어진다
+    expect(layout).toMatch(/Noto_Sans_JP\(\{[^}]*weight: \['400', '500', '700'\]/s);
   });
 });
