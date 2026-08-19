@@ -702,19 +702,30 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
       );
     }, selectedText);
 
-    const start = await page.locator('[data-tid="id_0_1"] .surface').boundingBox();
-    const end = await page.locator('[data-tid="id_0_3"] .surface').boundingBox();
-    assert.ok(start && end, 'drag endpoints must have stable layout boxes');
-    await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(end.x + end.width / 2, end.y + end.height / 2, { steps: 8 });
-    await page.mouse.up();
-
-    await page.waitForFunction(
-      () => document.querySelectorAll('.word-token--picked').length >= 3,
-      undefined,
-      { timeout: config.timeout },
-    );
+    // 느린 러너에서 폰트 스왑 리플로우가 좌표 측정과 드래그 사이에 끼면 3토큰 미만이
+    // 집혀 flaky했다(2026-08-19 main 2회 관측, 로컬 재현 불가 — 원인은 코드가 아니라
+    // 경합). 측정 전 폰트를 안정화하고, 그래도 어긋나면 좌표를 다시 재서 1회 재시도.
+    await page.evaluate(() => document.fonts.ready);
+    const dragPick = async () => {
+      const start = await page.locator('[data-tid="id_0_1"] .surface').boundingBox();
+      const end = await page.locator('[data-tid="id_0_3"] .surface').boundingBox();
+      assert.ok(start && end, 'drag endpoints must have stable layout boxes');
+      await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(end.x + end.width / 2, end.y + end.height / 2, { steps: 8 });
+      await page.mouse.up();
+      return page.waitForFunction(
+        () => document.querySelectorAll('.word-token--picked').length >= 3,
+        undefined,
+        { timeout: 10_000 },
+      ).then(() => true, () => false);
+    };
+    if (!(await dragPick())) {
+      // 부분 선택이 분석 요청을 이미 쐈을 수 있다 — 재시도 성공분만 남겨
+      // 아래 "요청 정확히 1회" 계약을 보존한다.
+      analyzeRequests.length = 0;
+      assert.ok(await dragPick(), 'drag pick did not reach 3 tokens after a retry');
+    }
     assert.equal(await leftSection.getAttribute('aria-expanded'), 'true', 'sentence drag opens the sentence section');
     assert.equal(await rightSection.getAttribute('aria-expanded'), 'true', 'sentence drag opens the analyzed word section');
     const contextText = sheet.locator('.pdf-context__text');
