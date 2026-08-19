@@ -293,7 +293,9 @@ describe('missingStoryIds', () => {
 // 검증 규칙을 함께 추가할 것(검증기-렌더러 차집합 방지).
 describe('isValidOverride — 실제 챕터 전수 라운드트립 (4개 언어)', () => {
   // 대형 콘텐츠 전수 라운드트립 — 병렬 부하 flaky 방지(kyotoGeo/자갈치 선례의 명시 타임아웃).
-  it.each(['japanese', 'french', 'english', 'chinese'])('%s 전 챕터가 검증을 통과한다', { timeout: 30_000 }, async (lang) => {
+  // 타임아웃은 vitest.config.js 전역 기본(90s)을 쓴다 — 개별 30s 명시가 전역을 덮어
+  // 병렬 경합에서 초과했다(2026-08-19 실측: 단독 7s, 병렬 30s+).
+  it.each(['japanese', 'french', 'english', 'chinese'])('%s 전 챕터가 검증을 통과한다', async (lang) => {
     const mod = await import(`../../content/${lang}/index.js`);
     const all = mod.default.ALL_CHAPTERS;
     expect(all.length).toBeGreaterThan(40);
@@ -306,7 +308,7 @@ describe('isValidOverride — 실제 챕터 전수 라운드트립 (4개 언어)
 describe('커리큘럼 prerequisites 참조 계약', () => {
   it.each(['japanese', 'french', 'english', 'chinese'])(
     '%s prerequisites가 같은 트랙의 등록 챕터 slug만 참조한다',
-    { timeout: 30_000 },
+    { timeout: 90_000 },
     async (lang) => {
       const mod = await import(`../../content/${lang}/index.js`);
       const chapters = mod.default.ALL_CHAPTERS;
