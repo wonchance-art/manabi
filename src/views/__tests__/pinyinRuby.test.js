@@ -19,7 +19,7 @@ describe('병음 조판 계약', () => {
 
   it('병음 줄은 일자다 — 전 음절 단일 크기, 글자별 크기·압축 없음', () => {
     // 최장 병음이 셀에 들어가는 크기(0.94 / 3.55 ≈ 0.26em)라 어떤 인접쌍도 겹칠 수 없다
-    expect(css).toMatch(/ruby\[data-pinyin\] > rt \{\s*font-size: 0\.26em;/s);
+    expect(css).toMatch(/ruby\[data-pinyin\] > \.rt-an \{\s*font-size: 0\.26em;/s);
     // 글자별 차등 기제가 되살아나면 일자가 다시 깨진다 — 축소 단계·압축 변수 금지
     expect(css).not.toMatch(/data-syl/);
     expect(css).not.toMatch(/--rt-k/);
@@ -29,7 +29,7 @@ describe('병음 조판 계약', () => {
   it('병음과 본문 간격은 네이티브 ruby와 같다(오너 요청: 원래 간격 유지)', () => {
     // bottom: 100%(ruby 상자 맨 위)로 두면 병음이 0.65em 더 떠서 본문이 성겨 보인다(오너 지적).
     // 상자 높이는 .surface의 line-height이므로 비율의 분모가 그 값과 어긋나면 간격이 틀어진다.
-    expect(css).toMatch(/ruby\[data-yomi\] > rt \{[^}]*bottom: calc\(100% - \(0\.65 \/ 2\.2\) \* 100%\);/s);
+    expect(css).toMatch(/ruby\[data-yomi\] > \.rt-an \{[^}]*bottom: calc\(100% - \(0\.65 \/ 2\.2\) \* 100%\);/s);
     expect(css).not.toMatch(/bottom: 100%;/);
     expect(css).toMatch(/\.word-token \.surface \{\s*line-height: 2\.2;/);
   });
@@ -37,11 +37,13 @@ describe('병음 조판 계약', () => {
   it('요미가나도 절대배치 — 한자 폭 불변(오너 요청), 단 크기는 0.5em 유지', () => {
     // 요미 최대는 한자 1자당 5자(志=こころざし)라 최장 기준 단일 축소는 0.2em(판독 불가).
     // 절대배치만으로 폭 불변을 보장하고, 넘침은 이웃 가나 위로 흘린다(실측 충돌 0/228쌍).
-    expect(css).toMatch(/\.word-token rt \{[^}]*font-size: 0\.5em;/s);
-    expect(css).toMatch(/\.word-token ruby\[data-pinyin\] > rt,\s*\.word-token ruby\[data-yomi\] > rt \{/);
+    expect(css).toMatch(/\.word-token :is\(rt, \.rt-an\) \{[^}]*font-size: 0\.5em;/s);
+    expect(css).toMatch(/\.word-token ruby\[data-pinyin\] > \.rt-an,\s*\.word-token ruby\[data-yomi\] > \.rt-an \{/);
+    // WebKit은 rt 요소의 절대배치를 무시한다(iOS 실기 결함) — rt 표적 부활 금지
+    expect(css).not.toMatch(/ruby\[data-pinyin\] > rt \{/);
     expect(css).toMatch(/\.word-token ruby\[data-pinyin\],\s*\.word-token ruby\[data-yomi\] \{ position: relative; \}/);
     // 소형 단일 크기(0.26em)는 병음 전용 — 요미에 새면 후리가나가 판독 불가로 작아진다
-    expect(css).toMatch(/\.word-token ruby\[data-pinyin\] > rt \{\s*font-size: 0\.26em;\s*\}/);
+    expect(css).toMatch(/\.word-token ruby\[data-pinyin\] > \.rt-an \{\s*font-size: 0\.26em;\s*\}/);
     expect(viewer).toContain("data-pinyin={seg.pinyin ? '1' : undefined}");
     expect(viewer).toContain("data-yomi={seg.pinyin ? undefined : '1'}");
   });
@@ -50,7 +52,7 @@ describe('병음 조판 계약', () => {
     // 끌 때 글자만 렌더하면 예약 폭이 사라져 토글 시프트가 되살아난다
     expect(viewer).toMatch(/const rubySegments = token\.furigana/);
     expect(viewer).toContain('surface--furi-off');
-    expect(css).toContain('.surface--furi-off rt { visibility: hidden; }');
+    expect(css).toContain('.surface--furi-off :is(rt, .rt-an) { visibility: hidden; }');
   });
 
   it('splitRuby가 중국어 병음 경로에만 표식을 남긴다(lib로 추출 — 단위 테스트는 splitRuby.test.js)', () => {
@@ -78,7 +80,7 @@ describe('중국어·병음 폰트 계약', () => {
   });
 
   it('병음 라틴은 루비·상세 예문·병음 요소 공용으로 Noto Sans를 쓴다', () => {
-    expect(css).toMatch(/\.pinyin-text,\s*\.pdf-detail-pinyin,\s*\.word-token ruby\[data-pinyin\] > rt,\s*\[lang\^="zh"\] \+ \.fr-example__ipa \{\s*font-family: var\(--font-noto-sans, 'Noto Sans'\)/);
+    expect(css).toMatch(/\.pinyin-text,\s*\.pdf-detail-pinyin,\s*\.word-token ruby\[data-pinyin\] > \.rt-an,\s*\[lang\^="zh"\] \+ \.fr-example__ipa \{\s*font-family: var\(--font-noto-sans, 'Noto Sans'\)/);
   });
 
   it('뷰어 본문은 중국어 자료에서 SC를 사용자 글꼴 설정 앞에 놓는다', () => {
@@ -95,9 +97,9 @@ describe('중국어·병음 폰트 계약', () => {
     // 한자에 색이 새면 오너 결정 위반 — 클래스는 rt에만 붙는다
     // 본문(.word-token 조합)과 시트·팝업(단독) 둘 다 — 본문 조합이 빠지면 기본색
     // 규칙(.word-token rt)이 순서로 이겨 본문만 무색이 된다(오너 발견 회귀)
-    expect(css).toMatch(/\.word-token rt\.pinyin-tone--1, rt\.pinyin-tone--1 \{ color: var\(--tone-1\); \}/);
+    expect(css).toMatch(/\.word-token :is\(rt, \.rt-an\)\.pinyin-tone--1, :is\(rt, \.rt-an\)\.pinyin-tone--1 \{ color: var\(--tone-1\); \}/);
     expect(css).toMatch(/\[data-theme="light"\] \{\s*--tone-1:/);
-    expect(viewer).toContain("showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : undefined");
+    expect(viewer).toContain("'rt-an', showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : ''");
     // 시트·팝업도 병음 rt에만 합성(pinyin-text와 병행)
     expect(viewer.match(/showToneColors && pinyinToneClass\(seg\.reading\)/g)?.length).toBe(2);
     // 기본 꺼짐(옵트인) — showHanjaKo 선례

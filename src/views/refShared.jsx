@@ -132,7 +132,7 @@ export function JaText({ ja, yomi, fallbackPron = true }) {
     <span lang="ja" className="ja-ruby">
       {segs.map((s, i) =>
         s.rt
-          ? <ruby key={i}>{s.text}<rt>{s.rt}</rt></ruby>
+          ? <ruby key={i}>{s.text}<span className="rt-an">{s.rt}</span></ruby>
           : <span key={i}>{s.text}</span>
       )}
     </span>
