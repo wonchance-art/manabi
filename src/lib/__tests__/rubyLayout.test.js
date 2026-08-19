@@ -57,6 +57,14 @@ describe('병음 조판 배선 계약', () => {
     expect(viewer).toContain('seg.pinyin ? rubyWidthStep(seg.reading) : undefined');
   });
 
+  it('병음과 본문 간격은 네이티브 ruby와 같다(오너 요청: 오늘 손대기 전 간격 유지)', () => {
+    // bottom: 100%(ruby 상자 맨 위)로 두면 병음이 0.65em 더 떠서 본문이 성겨 보인다(오너 지적).
+    // 상자 높이는 .surface의 line-height이므로 비율의 분모가 그 값과 어긋나면 간격이 틀어진다.
+    expect(css).toMatch(/ruby\[data-pinyin\] > rt \{[^}]*bottom: calc\(100% - \(0\.65 \/ 2\.2\) \* 100%\);/s);
+    expect(css).not.toMatch(/ruby\[data-pinyin\] > rt \{[^}]*bottom: 100%;/s);
+    expect(css).toMatch(/\.word-token \.surface \{\s*line-height: 2\.2;/);
+  });
+
   it('병음을 꺼도 ruby 마크업과 폭 예약이 남는다(켤 때 밀리지 않게)', () => {
     // 끌 때 글자만 렌더하면 예약 폭이 사라져 토글 시프트가 되살아난다
     expect(viewer).toMatch(/const rubySegments = token\.furigana/);
