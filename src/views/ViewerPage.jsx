@@ -41,7 +41,6 @@ import { readHanjaKo, listHanjaHunEum, hunsCoverWord, toJaForm } from '../lib/ha
 import { useGrammarDetail } from '../lib/useGrammarDetail';
 import { buildContextPrompt } from '../lib/grammarDetail';
 import { analysisCacheKey, clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
-import { rubyFitStyle } from '../lib/rubyLayout';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
 import { getBook } from '../lib/bookMeta';
 import { getJaRef, formatJaRef, getJaWarn } from '../lib/jaRef';
@@ -1658,10 +1657,9 @@ export default function ViewerPage() {
                   <span className={`surface${showFurigana ? '' : ' surface--furi-off'}`}>
                     {rubySegments.map((seg, i) =>
                       seg.kanji
-                        // --rt-k: 셀(1em)보다 넓은 병음의 가로 압축비 — 글자 크기는 전 음절
-                        // 동일(0.5em)하게 두고 scaleX만 걸어 병음 줄이 일자로 읽히게 한다.
-                        ? <ruby key={i} data-pinyin={seg.pinyin ? '1' : undefined}
-                            style={seg.pinyin ? rubyFitStyle(seg.reading) : undefined}>
+                        // 병음 rt는 CSS가 전 음절 단일 크기(최장 병음이 1em 셀에 들어가는
+                        // 크기)로 조판한다 — 글자별 속성이 더 필요 없다(오너 확정 2026-08-19).
+                        ? <ruby key={i} data-pinyin={seg.pinyin ? '1' : undefined}>
                             {seg.kanji}<rt>{seg.reading}</rt>
                           </ruby>
                         : <span key={i}>{seg.plain}</span>
