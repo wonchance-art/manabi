@@ -98,6 +98,32 @@ html {
   scroll-behavior: smooth;
 }
 
+/* ── 성조 색상 (오너 확정 2026-08-19: 병음에만, 옵트인) ──
+   Pleco 표준 스킴(1빨강·2초록·3파랑·4보라·경성회색) — 타 앱에서 넘어온 학습자에게
+   익숙한 배색. 본문 가독성을 해치지 않게 채도를 낮추고, 0.26em 소형 병음에서도
+   구분되도록 명도 대비를 테마별로 잡았다(다크 기본 → 라이트 재정의). */
+:root {
+  --tone-1: #e8705f; /* 1성 빨강 */
+  --tone-2: #6fbf73; /* 2성 초록 */
+  --tone-3: #6aa9e8; /* 3성 파랑 */
+  --tone-4: #b48ae8; /* 4성 보라 */
+  --tone-0: #9a9a9a; /* 경성 회색 */
+}
+[data-theme="light"] {
+  --tone-1: #c0392b;
+  --tone-2: #2e7d32;
+  --tone-3: #1565c0;
+  --tone-4: #6a3fb5;
+  --tone-0: #8a8a8a;
+}
+/* rt 기본색(--primary-light)보다 구체적이어야 하므로 클래스 지정으로 덮는다.
+   토글이 꺼지면 클래스 자체가 안 붙어 기본색으로 복귀 — CSS 상태 분기 불요. */
+rt.pinyin-tone--1 { color: var(--tone-1); }
+rt.pinyin-tone--2 { color: var(--tone-2); }
+rt.pinyin-tone--3 { color: var(--tone-3); }
+rt.pinyin-tone--4 { color: var(--tone-4); }
+rt.pinyin-tone--0 { color: var(--tone-0); }
+
 /* ── 중국어 자형 (오너 확정 2026-08-19: Noto Sans SC) ──
    lang="zh*" 표식이 있는 모든 중국어를 간체 표준 자형으로 렌더한다. 표식이 없으면
    body 스택의 KR/JP 폰트가 한자를 자기 자형(間·直·骨 등이 대륙 표준과 다름)으로

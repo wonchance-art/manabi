@@ -24,6 +24,7 @@ import { friendlyToastMessage } from '../lib/errorMessage';
 import { normalizeWordText } from '../lib/vocabIO';
 import { callGemini } from '../lib/gemini';
 import { fetchWordDetailText } from '../lib/wordDetail';
+import { pinyinToneClass } from '../lib/pinyinTone';
 import ReportMaterialButton from '../components/ReportMaterialButton';
 import ReadingTest from '../components/ReadingTest';
 import ConversationPanel from '../components/ConversationPanel';
@@ -212,6 +213,7 @@ export default function ViewerPage() {
   const settings = useViewerSettings();
   const { fontSize, setFontSize, lineGap, setLineGap, charGap, setCharGap,
           showHanjaKo, setShowHanjaKo,
+          showToneColors, setShowToneColors,
           theme, setTheme, fontFamily, setFontFamily, showFurigana, setShowFurigana,
           autoSpeakOnClick, setAutoSpeakOnClick,
           settingsOpen, setSettingsOpen } = settings;
@@ -947,7 +949,7 @@ export default function ViewerPage() {
           <div lang={contentLangTag} style={{ fontSize: '1.5rem', fontWeight: 800, lineHeight: 1.3 }}>
             {selectedToken.furigana
               ? splitRuby(selectedToken.text, selectedToken.furigana).map((seg, i) =>
-                  seg.kanji ? <ruby key={i}>{seg.kanji}<rt className={seg.pinyin ? 'pinyin-text' : undefined} style={{ fontSize: '0.45em', color: 'var(--primary-light)' }}>{seg.reading}</rt></ruby> : <span key={i}>{seg.plain}</span>
+                  seg.kanji ? <ruby key={i}>{seg.kanji}<rt className={seg.pinyin ? ['pinyin-text', showToneColors && pinyinToneClass(seg.reading)].filter(Boolean).join(' ') : undefined} style={{ fontSize: '0.45em', color: showToneColors && seg.pinyin ? undefined : 'var(--primary-light)' }}>{seg.reading}</rt></ruby> : <span key={i}>{seg.plain}</span>
                 )
               : selectedToken.text}
           </div>
@@ -1398,6 +1400,16 @@ export default function ViewerPage() {
             </button>
           )}
 
+          {materialLang === 'Chinese' && (
+            <button
+              onClick={() => setShowToneColors(v => !v)}
+              className={`grammar-btn ${showToneColors ? 'grammar-btn--active' : ''}`}
+              title="병음을 성조별 색으로 — 1성 빨강·2성 초록·3성 파랑·4성 보라·경성 회색 (Pleco 표준)"
+            >
+              {showToneColors ? '☑ 성조 색상 켜짐' : '◻ 성조 색상 꺼짐'}
+            </button>
+          )}
+
           {ttsSupported && (
             <button
               onClick={() => setAutoSpeakOnClick(v => !v)}
@@ -1675,7 +1687,7 @@ export default function ViewerPage() {
                         // 요미가나(data-yomi)는 크기 유지 + 절대배치 — 한자 폭 불변(오너 요청).
                         ? <ruby key={i} data-pinyin={seg.pinyin ? '1' : undefined}
                             data-yomi={seg.pinyin ? undefined : '1'}>
-                            {seg.kanji}<rt>{seg.reading}</rt>
+                            {seg.kanji}<rt className={showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : undefined}>{seg.reading}</rt>
                           </ruby>
                         : <span key={i}>{seg.plain}</span>
                     )}
@@ -1892,7 +1904,7 @@ export default function ViewerPage() {
               <div className="pdf-detail-popup__word" lang={contentLangTag}>
                 {popupWord.token.furigana
                   ? splitRuby(popupWord.token.text, popupWord.token.furigana).map((seg, i) =>
-                      seg.kanji ? <ruby key={i}>{seg.kanji}<rt className={seg.pinyin ? 'pinyin-text' : undefined}>{seg.reading}</rt></ruby> : <span key={i}>{seg.plain}</span>
+                      seg.kanji ? <ruby key={i}>{seg.kanji}<rt className={seg.pinyin ? ['pinyin-text', showToneColors && pinyinToneClass(seg.reading)].filter(Boolean).join(' ') : undefined}>{seg.reading}</rt></ruby> : <span key={i}>{seg.plain}</span>
                     )
                   : popupWord.token.text}
               </div>
