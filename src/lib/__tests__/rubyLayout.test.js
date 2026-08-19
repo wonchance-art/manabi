@@ -1,39 +1,58 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { rubyWidthStep } from '../rubyLayout.js';
+import { rubyFitScale, rubyFitStyle } from '../rubyLayout.js';
 
-// 계약(오너 요청 2026-08-19): 병음을 켜고 꺼도 한자 간격이 변하지 않는다.
-// rt를 절대배치로 빼 base 폭에서 제외하고(변화 0), 넘쳐 겹치는 구간만 폭을 예약한다.
+// 계약: 병음 토글 시 한자 간격 불변(폭 1em 균일 그리드) + 병음 줄의 '일자' 유지.
+// 글자 크기 축소(1차 시도)는 병음마다 세로 지표가 달라져 "글자마다 병음 위치가 다르다"는
+// 오너 지적을 받았다 — 크기는 전 음절 동일, 넘치는 폭만 scaleX로 압축한다.
 
-describe('rubyWidthStep — 긴 병음 축소 단계', () => {
-  it('1~3자는 한자 폭 안에 들어와 축소하지 않는다(전체의 70%)', () => {
-    for (const py of ['à', 'wǒ', 'nǐ', 'qùn', 'guǎ', 'xué', 'shū']) {
-      expect(rubyWidthStep(py)).toBeUndefined();
+describe('rubyFitScale — 긴 병음 가로 압축비', () => {
+  it('셀 안에 들어오는 음절은 압축하지 않는다(대다수 — 원본 폭 유지)', () => {
+    for (const py of ['wǒ', 'qù', 'hù', 'de', 'shí', 'kàn', 'lì', 'jǐ']) {
+      expect(rubyFitScale(py), py).toBeUndefined();
     }
   });
 
-  it('4·5·6자는 실측 폭 초과분에 맞춰 축소 단계를 올린다', () => {
-    expect(rubyWidthStep('guǎn')).toBe('4');   // 4자 21px > base 20px
-    expect(rubyWidthStep('xiǎng')).toBe('5');  // 5자 22.4px
-    expect(rubyWidthStep('shuāng')).toBe('6'); // 6자 31px
-    expect(rubyWidthStep('chuāng')).toBe('6');
+  it('판정은 글자 수가 아니라 폭이다 — 같은 3자라도 m·w는 넘치고 s·h·í는 안 넘친다', () => {
+    // 글자 수 기반(rubyWidthStep)의 잔여 겹침 0.94%가 정확히 이 부류였다(màn màn 실측)
+    expect(rubyFitScale('màn')).toBeDefined();
+    expect(rubyFitScale('shí')).toBeUndefined();
   });
 
-  it('7자 이상도 최상위 단계로 수렴한다', () => {
-    expect(rubyWidthStep('zhuāngr')).toBe('6');
+  it('넓을수록 더 압축한다 — 단조성', () => {
+    const k = (py) => Number(rubyFitScale(py) ?? 1);
+    expect(k('màn')).toBeGreaterThan(k('guǎn'));
+    expect(k('guǎn')).toBeGreaterThan(k('xiǎng'));
+    expect(k('xiǎng')).toBeGreaterThan(k('chuāng'));
   });
 
-  it('대문자는 한 단계 올린다 — 고유명사가 같은 글자 수에도 넘친다(실측)', () => {
-    expect(rubyWidthStep('Guǎng')).toBe('6');  // 5자 + 대문자 → 6
-    expect(rubyWidthStep('guǎng')).toBe('5');  // 같은 글자 수, 소문자
-    expect(rubyWidthStep('Wǒ')).toBeUndefined(); // 2자 + 대문자 = 3 → 보정 불요
+  it('최장 음절도 하한(0.5) 밑으로는 내려가지 않는다', () => {
+    for (const py of ['chuāng', 'shuāng', 'zhuāng', 'zhuāngr']) {
+      const k = Number(rubyFitScale(py));
+      expect(k).toBeGreaterThanOrEqual(0.5);
+      expect(k).toBeLessThan(0.6);
+    }
   });
 
-  it('빈 값은 보정하지 않는다', () => {
-    expect(rubyWidthStep('')).toBeUndefined();
-    expect(rubyWidthStep(null)).toBeUndefined();
-    expect(rubyWidthStep(undefined)).toBeUndefined();
+  it('성조 부호는 폭에 영향이 없다 — NFD로 벗겨 같은 값', () => {
+    expect(rubyFitScale('chuāng')).toBe(rubyFitScale('chuang'));
+    expect(rubyFitScale('mǎn')).toBe(rubyFitScale('màn'));
+  });
+
+  it('대문자는 소문자보다 넓게 계산한다(고유명사 Guǎngzhōu)', () => {
+    expect(Number(rubyFitScale('Guǎng'))).toBeLessThan(Number(rubyFitScale('guǎng')));
+  });
+
+  it('빈 값은 undefined', () => {
+    expect(rubyFitScale('')).toBeUndefined();
+    expect(rubyFitScale(null)).toBeUndefined();
+    expect(rubyFitScale(undefined)).toBeUndefined();
+  });
+
+  it('rubyFitStyle — 압축이 필요할 때만 CSS 변수를 낸다', () => {
+    expect(rubyFitStyle('wǒ')).toBeUndefined();
+    expect(rubyFitStyle('chuāng')).toEqual({ '--rt-k': rubyFitScale('chuāng') });
   });
 });
 
@@ -43,26 +62,40 @@ describe('병음 조판 배선 계약', () => {
   const viewer = read('src/views/ViewerPage.jsx');
 
   it('정사각 그리드 — 병음 글자는 길이와 무관하게 1em 고정(오너 피드백: 세로 정렬 유지)', () => {
-    // 글자마다 폭을 다르게 예약했더니 정렬이 깨지고 성겨 보였다 → 폭은 균일, 겹침은 축소로
     expect(css).toMatch(/\.word-token ruby\[data-pinyin\] \{[^}]*width: 1em;/s);
     expect(css).not.toMatch(/ruby\[data-syl="\d"\] \{ min-width/);
   });
 
-  it('rt 절대배치와 축소는 병음 전용이다 — 일본어 요미가나는 기존 동작 유지', () => {
-    // 요미는 base보다 긴 경우가 5.7%로 흔해(실측) 같은 방식을 적용하면 겹침이 생긴다
-    expect(css).toContain('.word-token ruby[data-pinyin] > rt {');
-    expect(css).toContain('.word-token ruby[data-pinyin] { position: relative; }');
-    expect(css).toMatch(/\.word-token ruby\[data-syl="6"\] rt \{ font-size: 0\.\d+em/);
-    expect(viewer).toContain("data-pinyin={seg.pinyin ? '1' : undefined}");
-    expect(viewer).toContain('seg.pinyin ? rubyWidthStep(seg.reading) : undefined');
+  it('병음 줄은 일자다 — 글자 크기는 전 음절 동일, 넘치는 폭만 scaleX 압축', () => {
+    // font-size 축소는 병음마다 윗변·베이스라인이 달라져 기각(오너 지적 2026-08-19)
+    expect(css).toMatch(/ruby\[data-pinyin\] > rt \{[^}]*scaleX\(var\(--rt-k, 1\)\)/s);
+    expect(css).not.toMatch(/ruby\[data-syl="\d"\] rt \{ font-size/);
+    expect(viewer).toContain('rubyFitStyle(seg.reading)');
   });
 
-  it('병음과 본문 간격은 네이티브 ruby와 같다(오너 요청: 오늘 손대기 전 간격 유지)', () => {
+  it('압축 수식의 상수는 CSS 실물과 일치한다 — 어긋나면 추정 폭이 통째로 틀어진다', () => {
+    const layout = read('src/lib/rubyLayout.js');
+    // rt font-size 0.5em ↔ RT_EM 0.5
+    expect(css).toMatch(/\.word-token rt \{[^}]*font-size: 0\.5em;/s);
+    expect(layout).toMatch(/const RT_EM = 0\.5;/);
+    // rt letter-spacing -0.03em ↔ TRACKING 0.03
+    expect(css).toMatch(/\.word-token rt \{[^}]*letter-spacing: -0\.03em;/s);
+    expect(layout).toMatch(/const TRACKING = 0\.03;/);
+  });
+
+  it('병음과 본문 간격은 네이티브 ruby와 같다(오너 요청: 원래 간격 유지)', () => {
     // bottom: 100%(ruby 상자 맨 위)로 두면 병음이 0.65em 더 떠서 본문이 성겨 보인다(오너 지적).
     // 상자 높이는 .surface의 line-height이므로 비율의 분모가 그 값과 어긋나면 간격이 틀어진다.
     expect(css).toMatch(/ruby\[data-pinyin\] > rt \{[^}]*bottom: calc\(100% - \(0\.65 \/ 2\.2\) \* 100%\);/s);
     expect(css).not.toMatch(/ruby\[data-pinyin\] > rt \{[^}]*bottom: 100%;/s);
     expect(css).toMatch(/\.word-token \.surface \{\s*line-height: 2\.2;/);
+  });
+
+  it('rt 절대배치와 압축은 병음 전용이다 — 일본어 요미가나는 기존 동작 유지', () => {
+    // 요미는 base보다 긴 경우가 5.7%로 흔해(실측) 같은 방식을 적용하면 겹침이 생긴다
+    expect(css).toContain('.word-token ruby[data-pinyin] > rt {');
+    expect(css).toContain('.word-token ruby[data-pinyin] { position: relative; }');
+    expect(viewer).toContain("data-pinyin={seg.pinyin ? '1' : undefined}");
   });
 
   it('병음을 꺼도 ruby 마크업과 폭 예약이 남는다(켤 때 밀리지 않게)', () => {

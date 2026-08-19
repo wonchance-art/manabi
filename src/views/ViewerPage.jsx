@@ -41,7 +41,7 @@ import { readHanjaKo, listHanjaHunEum, hunsCoverWord, toJaForm } from '../lib/ha
 import { useGrammarDetail } from '../lib/useGrammarDetail';
 import { buildContextPrompt } from '../lib/grammarDetail';
 import { analysisCacheKey, clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
-import { rubyWidthStep } from '../lib/rubyLayout';
+import { rubyFitStyle } from '../lib/rubyLayout';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
 import { getBook } from '../lib/bookMeta';
 import { getJaRef, formatJaRef, getJaWarn } from '../lib/jaRef';
@@ -1641,7 +1641,7 @@ export default function ViewerPage() {
             }
             const isSaved = isTokenSaved(savedWords, token);
             const isDue = isSaved && isTokenDue(savedWords, token);
-            // ruby는 토글과 무관하게 항상 만든다 — 폭 예약(ruby[data-syl])이 병음을 꺼도
+            // ruby는 토글과 무관하게 항상 만든다 — 폭 예약(ruby[data-pinyin])이 병음을 꺼도
             // 유지돼야 켤 때 글자가 밀리지 않는다(오너 요청 2026-08-19). 끌 때는 rt만 감춘다.
             const rubySegments = token.furigana
               ? splitRuby(token.text, token.furigana)
@@ -1658,10 +1658,10 @@ export default function ViewerPage() {
                   <span className={`surface${showFurigana ? '' : ' surface--furi-off'}`}>
                     {rubySegments.map((seg, i) =>
                       seg.kanji
-                        // data-syl: 독음 길이 단계(4·5·6+) — 이 글자가 차지할 최소 폭을
-                        // 정한다. 실측(2026-08-19): 1~3자는 한자 폭 안에 들어와 보정 불요.
+                        // --rt-k: 셀(1em)보다 넓은 병음의 가로 압축비 — 글자 크기는 전 음절
+                        // 동일(0.5em)하게 두고 scaleX만 걸어 병음 줄이 일자로 읽히게 한다.
                         ? <ruby key={i} data-pinyin={seg.pinyin ? '1' : undefined}
-                            data-syl={seg.pinyin ? rubyWidthStep(seg.reading) : undefined}>
+                            style={seg.pinyin ? rubyFitStyle(seg.reading) : undefined}>
                             {seg.kanji}<rt>{seg.reading}</rt>
                           </ruby>
                         : <span key={i}>{seg.plain}</span>
