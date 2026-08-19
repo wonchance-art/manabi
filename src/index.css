@@ -2226,8 +2226,8 @@ body.is-review-session .page-container { padding-top: 8px; }
 .word-token ruby[data-pinyin] > rt {
   position: absolute;
   left: 50%;
-  /* 본문과의 간격은 오늘 손대기 전(네이티브 ruby)과 같게 맞춘다 — 실측 -0.15em
-     (20px 기준 -3px, rt 아랫변이 한자 윗변보다 살짝 내려온 상태).
+  /* 본문과의 간격은 네이티브 ruby와 같게 맞춘다 — 실측 -0.15em(20px 기준 -3px,
+     rt 아랫변이 한자 윗변보다 살짝 내려온 상태).
      기준 상자는 ruby이고 그 높이는 .surface의 line-height 2.2em이다. 상자 위쪽에서
      0.65em 내린 자리가 그 간격이므로 0.65 / 2.2 = 29.55%를 100%에서 뺀다.
      bottom: 100%(상자 맨 위)로 두면 병음이 13px 더 떠서 본문이 성겨 보였다(오너 지적).
@@ -2236,22 +2236,24 @@ body.is-review-session .page-container { padding-top: 8px; }
   transform: translateX(-50%);
   width: max-content;
   pointer-events: none;
+  /* 전 음절 단일 크기 — 병음 줄이 일자가 되는 조건(오너 확정 2026-08-19).
+     크기가 음절마다 다르면 윗변·베이스라인·글자 키가 달라져 "글자마다 병음 위치가
+     다르다"(오너 지적). 값의 유도: 최장 병음 chuāng·shuāng·zhuāng이 자기 글자 폭에
+     3.55배(자간 -0.03em 포함 실측)이므로, 1em 셀의 0.94(폰트별 폭 편차 여유)에
+     들어가려면 0.94 / 3.55 ≈ 0.26em. 최장이 들어가므로 어떤 인접쌍도 겹칠 수 없다.
+     작아지는 만큼은 뷰어의 글자 크기 조절로 보완한다는 오너 결정.
+     ※ 일반 rt(0.5em)는 일본어 요미가나용 — 이 선택자가 병음만 덮어쓴다. */
+  font-size: 0.26em;
 }
 /* 정사각 그리드 유지(오너 피드백 2026-08-19: "일자로 정렬된 게 아니네") —
    글자마다 폭을 다르게 예약했더니 세로줄이 깨지고 본문이 성겨 보였다. 중국어 본문은
-   모든 글자가 1em으로 정렬되는 게 정상이므로 폭은 균일하게 고정하고, 겹침은 폭이 아니라
-   '긴 병음만 조금 작게'로 푼다.
-   실측(콘텐츠 예문 2,059개): 폭 균일 + rt 등배(0.5em)이면 겹침 24.3%였으나,
-   길이별 축소를 적용하면 0.5%·최대 2px로 떨어진다. 1~3자(전체의 70%)는 원래 크기를
-   그대로 두므로 대다수 병음의 가독성은 손대지 않는다. */
+   모든 글자가 1em으로 정렬되는 게 정상이므로 폭은 균일하게 고정하고, 병음은 최장
+   음절이 셀에 들어가는 단일 크기로 조판한다. */
 .word-token ruby[data-pinyin] {
   display: inline-flex;
   justify-content: center;
   width: 1em; /* 정사각 그리드 — 병음 길이와 무관하게 한자 자리 고정 */
 }
-.word-token ruby[data-syl="4"] rt { font-size: 0.46em; letter-spacing: -0.05em; }
-.word-token ruby[data-syl="5"] rt { font-size: 0.42em; letter-spacing: -0.06em; }
-.word-token ruby[data-syl="6"] rt { font-size: 0.36em; letter-spacing: -0.07em; }
 /* 병음 끄기 — 폭 예약(ruby)은 유지한 채 독음만 감춘다(켤 때 글자가 밀리지 않게) */
 .surface--furi-off rt { visibility: hidden; }
 /* (병음 OFF에서도 ruby 마크업·폭 예약은 유지 — 켤 때 글자가 밀리지 않게) */
