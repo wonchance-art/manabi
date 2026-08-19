@@ -53,8 +53,12 @@ describe('병음 조판 계약', () => {
     expect(css).toContain('.surface--furi-off rt { visibility: hidden; }');
   });
 
-  it('splitRuby가 중국어 병음 경로에만 표식을 남긴다', () => {
-    expect(viewer).toMatch(/reading: syllables\[i\], pinyin: true/);
+  it('splitRuby가 중국어 병음 경로에만 표식을 남긴다(lib로 추출 — 단위 테스트는 splitRuby.test.js)', () => {
+    const lib = read('src/lib/splitRuby.js');
+    expect(lib).toMatch(/reading: syllables\[i\], pinyin: true/);
+    // 공백 조건 부활 금지 — 한 글자 단어가 일본어 경로로 새면 병음이 요미 크기로 커진다
+    expect(lib).not.toMatch(/furigana\.includes\(' '\)/);
+    expect(viewer).toContain("import { splitRuby } from '../lib/splitRuby'");
   });
 });
 

@@ -25,6 +25,7 @@ import { normalizeWordText } from '../lib/vocabIO';
 import { callGemini } from '../lib/gemini';
 import { fetchWordDetailText } from '../lib/wordDetail';
 import { pinyinToneClass } from '../lib/pinyinTone';
+import { splitRuby } from '../lib/splitRuby';
 import ReportMaterialButton from '../components/ReportMaterialButton';
 import ReadingTest from '../components/ReadingTest';
 import ConversationPanel from '../components/ConversationPanel';
@@ -118,88 +119,6 @@ async function upsertViewerVocabulary(row, options = { onConflict: 'user_id,word
   if (error) throw error;
 }
 
-/**
- * 送り仮名(okurigana) 제거: 요미가나에서 원문에 이미 있는 히라가나 제거
- *
- * 원칙: 원문(text)에 보이는 히라가나는 요미가나에서 중복 제거.
- *       요미가나는 한자 읽기만 남긴다.
- *
- * 超える  + こえる    → こ
- * 食べる  + たべる    → た
- * 思い出す + おもいだす → おもだ   (い・す 제거)
- * 한자·히라가나 혼합 토큰을 ruby 세그먼트로 분리.
- * 例: 取りまとめ + とりまとめ → [{kanji:"取", reading:"と"}, {plain:"りまとめ"}]
- *     引っ張る   + ひっぱる   → [{kanji:"引", reading:"ひ"}, {plain:"っ"}, {kanji:"張", reading:"ぱ"}, {plain:"る"}]
- *     今日       + きょう     → [{kanji:"今日", reading:"きょう"}]
- *
- * 알고리즘: surface의 히라가나 구간을 앵커로 reading을 분할 → 한자 구간에 읽기 할당
- */
-function splitRuby(text, furigana) {
-  if (!furigana) return [{ plain: text }];
-
-  const KANJI = /[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF]/;
-  const isKanji = ch => KANJI.test(ch);
-
-  // 중국어 병음: 공백 구분 라틴 음절이 글자 수와 일치하면 글자별로 분배.
-  // 단어 전체에 통째로 붙이면 rt가 base보다 훨씬 넓어져(图书馆 3자 vs tú shū guǎn 11자)
-  // 글자 간격이 벌어진다 — 글자당 음절이 표준 병음 조판. 일본어 후리가나(가나)는 여기 안 걸린다.
-  const zhChars = [...text];
-  if (furigana.includes(' ') && !/[぀-ヿ]/.test(furigana) && zhChars.every(isKanji)) {
-    const syllables = furigana.trim().split(/\s+/);
-    if (syllables.length === zhChars.length) {
-      // pinyin 표식 — 글자당 1음절 격자 조판(폭 1em 고정·단일 축소 크기) 전용 경로.
-      return zhChars.map((ch, i) => ({ kanji: ch, reading: syllables[i], pinyin: true }));
-    }
-  }
-
-  // 1. surface를 [kanji 구간, hira 구간, ...] 으로 분할
-  const segments = [];
-  let i = 0;
-  while (i < text.length) {
-    if (isKanji(text[i])) {
-      let j = i;
-      while (j < text.length && isKanji(text[j])) j++;
-      segments.push({ type: 'kanji', text: text.slice(i, j) });
-      i = j;
-    } else {
-      let j = i;
-      while (j < text.length && !isKanji(text[j])) j++;
-      segments.push({ type: 'plain', text: text.slice(i, j) });
-      i = j;
-    }
-  }
-
-  // 한자가 없으면 plain으로 반환
-  if (!segments.some(s => s.type === 'kanji')) return [{ plain: text }];
-
-  // 2. hira 구간들을 앵커로 regex를 만들어 reading을 분할
-  //    한자 구간 → (.+?)  /  hira 구간 → 리터럴 이스케이프
-  const regexParts = segments.map(s =>
-    s.type === 'kanji' ? '(.+?)' : s.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  );
-  // 마지막 한자 캡처는 greedy로 (.+)
-  const lastKanjiIdx = regexParts.lastIndexOf('(.+?)');
-  if (lastKanjiIdx !== -1) regexParts[lastKanjiIdx] = '(.+)';
-
-  try {
-    const regex = new RegExp('^' + regexParts.join('') + '$');
-    const match = furigana.match(regex);
-    if (match) {
-      let groupIdx = 1;
-      return segments.map(s => {
-        if (s.type === 'kanji') {
-          return { kanji: s.text, reading: match[groupIdx++] };
-        }
-        return { plain: s.text };
-      });
-    }
-  } catch {}
-
-  // regex 실패 시 fallback: 전체 한자에 전체 reading
-  return segments.map(s =>
-    s.type === 'kanji' ? { kanji: s.text, reading: furigana } : { plain: s.text }
-  );
-}
 
 export default function ViewerPage() {
   const { id } = useParams();
