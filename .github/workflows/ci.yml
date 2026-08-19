@@ -35,6 +35,7 @@ jobs:
       - name: 콘텐츠 게이트 (prebuild)
         run: npm run prebuild
 
+      # 일상 게이트 — world 제외(실측 408s → 약 145s). world는 아래 전용 job이 책임진다.
       - run: npm test
 
   e2e:

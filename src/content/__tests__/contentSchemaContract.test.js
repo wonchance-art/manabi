@@ -144,12 +144,16 @@ function vocabThemes(value) {
 let grammarModules;
 let vocabModules;
 
+// 4트랙 문법·어휘 모듈을 전량 로드하는 무거운 훅 — 단독 실행 실측 9.96s로 기본 제한
+// 10s와 사실상 같아, 병렬 실행의 CPU 경합에서는 반드시 초과한다(2026-08-19 world 스위트
+// 분리 후 남은 파일이 촘촘히 병렬화되며 드러남). 게이트 규약의 '단독 재실행 확인 후
+// 명시 timeout' 선례대로 실측의 여섯 배 여유를 둔다 — 테스트 내용·계약 무변경.
 beforeAll(async () => {
   [grammarModules, vocabModules] = await Promise.all([
     loadActiveModules(grammarLoaders, grammarSources),
     loadActiveModules(vocabLoaders, vocabSources),
   ]);
-});
+}, 60000);
 
 describe('content draft exclusion rule', () => {
   it('excludes *_draft* files and uppercase DRAFT comments only', () => {

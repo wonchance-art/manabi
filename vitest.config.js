@@ -1,0 +1,21 @@
+// vitest 설정 — 이전까지 설정 파일 없이 기본값으로 돌았다.
+//
+// 왜 생겼나(2026-08-19): world 스위트를 분리하자(P1) 남은 182파일이 같은 CPU(4코어)를
+// 더 촘촘히 나눠 쓰게 되면서, 무거운 콘텐츠 로드 테스트들이 연쇄적으로 타임아웃에 걸렸다
+// (contentSchemaContract 10s 훅, contentOverrides french 30s, cityRoadAutotile 60s 훅).
+// 개별 타임아웃을 계속 올리는 건 두더지 잡기라, 여기서 두 가지를 함께 고정한다.
+//
+// 1) 기본 타임아웃 상향: 이 리포의 테스트는 4트랙 콘텐츠·26도시 geo를 통째로 로드하는
+//    무거운 훅이 많다. 기본 5s/10s는 애초에 이 규모에 맞지 않았다.
+// 2) 파일 동시성 제한: 4코어에서 파일을 과하게 병렬화하면 개별 테스트의 실시간이 늘어
+//    타임아웃을 유발한다. 코어 수에 맞춰 상한을 둔다.
+export default {
+  test: {
+    testTimeout: 30_000,
+    hookTimeout: 60_000,
+    poolOptions: {
+      threads: { maxThreads: 4, minThreads: 1 },
+      forks: { maxForks: 4, minForks: 1 },
+    },
+  },
+};
