@@ -8437,7 +8437,26 @@ body.is-review-session .page-container { padding-top: 8px; }
 
 /* ── 일본어 요미가나(루비) ── */
 .ja-ruby { line-height: 2.05; }
-.ja-ruby ruby { ruby-align: center; }
+/* 레퍼런스 요미가나도 뷰어와 같은 절대배치 — 긴 요미(코퍼스 14.4%)가 본문 글자 간격을
+   벌리지 않게 한다(2026-08-19 뷰어 #1062와 일관화). 넘침은 이웃 가나 위로(일본 조판
+   표준·JIS X 4051 방향). bottom 상수 유도: 반행간 (lh-1)/2 + 겹침 0.05em을 lh로 나눈
+   비율 — 뷰어(2.2)의 0.65/2.2와 같은 식이며, 여기 lh 2.05는 0.575/2.05,
+   책 예문(lh 1.9)은 0.5/1.9다. ※ line-height를 바꾸면 이 비율을 다시 계산할 것. */
+.ja-ruby ruby {
+  ruby-align: center;
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+}
+.ja-ruby ruby > rt {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% - (0.575 / 2.05) * 100%);
+  transform: translateX(-50%);
+  width: max-content;
+  pointer-events: none;
+}
+.bk-ex__ja .ja-ruby ruby > rt { bottom: calc(100% - (0.5 / 1.9) * 100%); }
 .ja-ruby rt {
   font-size: 0.55em;
   font-weight: 400;
