@@ -582,6 +582,19 @@ export default function ViewerPage() {
     }
   };
 
+  // ▲▼ 한 벌 — 데스크톱 플로팅 필과 모바일 하단 바가 같은 버튼을 다른 옷(className)으로
+  // 입는다. 모바일에서 필이 시트(z 95)에 덮여 못 쓰는 문제의 재배치(오너 보고 2026-08-20):
+  // 바(z 100)는 시트보다 항상 위·항상 노출이라 겹침이 구조적으로 불가능하다.
+  const sentenceNavBtn = (dir, className) => (
+    <button
+      className={className}
+      aria-label={dir < 0 ? '위 문장' : '아래 문장'}
+      title={dir < 0 ? '위 문장' : '아래 문장'}
+      disabled={!adjacentSentence(sentences, pickedLineIdx, dir)}
+      onClick={() => moveSentence(dir)}
+    >{dir < 0 ? '▲' : '▼'}</button>
+  );
+
   // 집중 모드 — 본문 창의 '빈 공간'(글자·컨트롤 밖) 탭 = 지정 해제(오너 확정 2026-08-20:
   // "글자 외 다른 부분 클릭 시 해제 — 전문을 살필 수 있게"). 범위 지정도 같은 조망
   // 이펙트라 함께 풀고, 패널도 비운다(해제된 선택의 분석이 낡은 채 남는 불일치 차단 —
@@ -1990,24 +2003,12 @@ export default function ViewerPage() {
           });
         })()}
 
-        {/* 문장 이동(▲ 위 / ▼ 아래) — 문장이 지정된 동안에만 나타나는 플로팅 필.
-            이동은 그 문장의 막대(¦) 클릭과 동일 효과(지정+분석+집중 모드 추종). */}
+        {/* 문장 이동(▲ 위 / ▼ 아래) — 문장이 지정된 동안에만 나타나는 플로팅 필(데스크톱
+            전용 — 모바일은 하단 바 안의 ▲▼가 대신한다, 시트 겹침 재배치). */}
         {pickedLineIdx !== null && sentences.length > 0 && (
           <div className="sentence-nav" role="group" aria-label="문장 이동">
-            <button
-              className="sentence-nav__btn"
-              aria-label="위 문장"
-              title="위 문장"
-              disabled={!adjacentSentence(sentences, pickedLineIdx, -1)}
-              onClick={() => moveSentence(-1)}
-            >▲</button>
-            <button
-              className="sentence-nav__btn"
-              aria-label="아래 문장"
-              title="아래 문장"
-              disabled={!adjacentSentence(sentences, pickedLineIdx, 1)}
-              onClick={() => moveSentence(1)}
-            >▼</button>
+            {sentenceNavBtn(-1, 'sentence-nav__btn')}
+            {sentenceNavBtn(1, 'sentence-nav__btn')}
           </div>
         )}
 
@@ -2129,6 +2130,12 @@ export default function ViewerPage() {
         rightBadge={selectedToken?.text || (dragTokens ? `${dragTokens.length}개` : null)}
         leftSignal={leftSheetSignal}
         rightSignal={rightSheetSignal}
+        barNav={pickedLineIdx !== null && sentences.length > 0 ? (
+          <>
+            {sentenceNavBtn(-1, 'viewer-sheet-bar__btn viewer-sheet-bar__btn--nav')}
+            {sentenceNavBtn(1, 'viewer-sheet-bar__btn viewer-sheet-bar__btn--nav')}
+          </>
+        ) : null}
       />
 
 

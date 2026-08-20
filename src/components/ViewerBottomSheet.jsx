@@ -25,6 +25,9 @@ export default function ViewerBottomSheet({
   // "시트를 닫은 뒤 다른 단어를 탭"했을 때 다시 열 방법이 없다(#996 오너 보고).
   leftSignal = 0,
   rightSignal = 0,
+  // 바 오른쪽 끝 슬롯(leftContent 합성 선례) — 문장 이동 ▲▼ 재배치용. 바는 시트(z 95)보다
+  // 항상 위(z 100)·항상 노출이라, 플로팅 필처럼 시트에 덮이는 일이 구조적으로 없다.
+  barNav = null,
 }) {
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
@@ -124,6 +127,7 @@ export default function ViewerBottomSheet({
           <span>단어</span>
           {rightBadge && <span className="viewer-sheet-bar__badge">{rightBadge}</span>}
         </button>
+        {barNav}
       </div>
 
       {sheetOpen && (

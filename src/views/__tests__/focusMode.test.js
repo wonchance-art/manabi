@@ -48,9 +48,26 @@ describe('집중 모드 배선', () => {
     // 전체 분석(오너 확정 2026-08-20 — 지정이 먼저, 분석은 안에서 한 번 더). 꺼짐 = 항상 분석.
     expect(viewer).toContain('if (focusMode && pickedLineIdx !== lineHead.rawIdx) clearAnalysisPanels();');
     expect(viewer).toContain('else runSelectionAnalysis(lineHead.text);');
-    // 경계 비활성(순환 없음)
-    expect(viewer).toContain("disabled={!adjacentSentence(sentences, pickedLineIdx, -1)}");
+    // 경계 비활성(순환 없음) — 필·바 공용 헬퍼 한 벌(동작 중복 금지)
+    expect(viewer).toContain('disabled={!adjacentSentence(sentences, pickedLineIdx, dir)}');
     expect(css).toMatch(/\.sentence-nav__btn \{[^}]*width: 44px;/s);
+  });
+
+  it('모바일 ▲▼ = 하단 바 안(오너 실기 2026-08-20 — 필이 시트 z 95에 덮임), 필은 데스크톱 전용', () => {
+    const sheet = read('src/components/ViewerBottomSheet.jsx');
+    // 바 슬롯 합성(leftContent 선례) — 시트 컴포넌트는 내용을 모른다
+    expect(sheet).toContain('barNav = null');
+    expect(sheet).toContain('{barNav}');
+    // 같은 버튼 한 벌이 두 옷(필/바)을 입는다 — 노출 조건도 필과 동일
+    expect(viewer).toContain('barNav={pickedLineIdx !== null && sentences.length > 0 ? (');
+    expect(viewer).toContain("sentenceNavBtn(-1, 'viewer-sheet-bar__btn viewer-sheet-bar__btn--nav')");
+    expect(viewer).toContain("sentenceNavBtn(-1, 'sentence-nav__btn')");
+    // 모바일: 필 숨김(시트가 열려도 바의 ▲▼는 z 100으로 항상 위) + 44px 터치 타깃.
+    // --nav 선언은 베이스 뒤여야 flex:1을 이긴다(동일 특이성은 순서 싸움).
+    const mobile = css.slice(css.indexOf('@media (max-width: 1179px)'));
+    expect(mobile).toMatch(/\.sentence-nav \{ display: none; \}/);
+    expect(mobile.indexOf('.viewer-sheet-bar__btn--nav')).toBeGreaterThan(mobile.indexOf('.viewer-sheet-bar__btn {'));
+    expect(mobile).toMatch(/\.viewer-sheet-bar__btn--nav \{[^}]*flex: 0 0 44px;/s);
   });
 
   it('단일 규칙 — 밖 탭 = 순수 이동, 안 탭 = 카드, 문장 아닌 줄 = 무시(오너 확정 2026-08-20)', () => {

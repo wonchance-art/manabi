@@ -4931,6 +4931,11 @@ body.is-review-session .page-container { padding-top: 8px; }
   .viewer-side { display: none; }
   .viewer-center { overflow: visible; padding-bottom: 72px; }
 
+  /* 문장 이동 ▲▼ 재배치(오너 실기 2026-08-20) — 플로팅 필(z 40)은 시트(z 95, 최대 70vh)가
+     열리면 덮여 못 쓴다. 모바일에선 필을 끄고, 항상 노출·항상 최상단(z 100)인 하단 바
+     안의 ▲▼가 대신한다 — 시트가 열린 채로도 문장 이동이 끊기지 않는다. */
+  .sentence-nav { display: none; }
+
   /* 하단 미니 바 — 항상 노출 */
   .viewer-sheet-bar {
     display: flex;
@@ -4963,6 +4968,15 @@ body.is-review-session .page-container { padding-top: 8px; }
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  /* ▲▼ 전용 좁은 옷 — 베이스(.viewer-sheet-bar__btn) 뒤에 두어 flex:1을 이긴다 */
+  .viewer-sheet-bar__btn--nav {
+    flex: 0 0 44px; /* WCAG 터치 타깃 관례(필 버튼과 동일) */
+    padding: 10px 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+  .viewer-sheet-bar__btn--nav:disabled { opacity: 0.3; cursor: default; }
+  .viewer-sheet-bar__btn--nav:not(:disabled):active { color: var(--primary-light); }
   .viewer-sheet-bar__btn.is-active {
     border-color: var(--primary);
     background: var(--primary-glow);
