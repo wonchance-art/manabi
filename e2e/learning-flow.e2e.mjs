@@ -678,6 +678,16 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
     await page.goto('/viewer/91001', { waitUntil: 'domcontentloaded', timeout: config.timeout });
 
     await assertVisible(page.getByRole('heading', { name: 'E2E 중국어 읽기 1장', exact: true }), 'viewer fixture heading');
+
+    // ⑤ 유의어·반의어는 단어 카드가 열리면 자동 조회된다 — 캐시를 사전 시드해
+    // 결정성(Gemini 0회 계약)을 유지하고, 시드값으로 칩 렌더까지 검증한다.
+    await page.evaluate(() => {
+      localStorage.setItem(
+        'pdf_cache:synant:v1:Chinese:中文',
+        JSON.stringify({ syn: [{ w: '汉语', r: 'hànyǔ', ko: '중국어(한어)' }], ant: [] }),
+      );
+    });
+
     const bookNav = page.locator('.book-nav');
     await assertVisible(bookNav.getByText('《E2E 중국어 읽기》', { exact: false }), 'book chapter navigation');
     await assertVisible(bookNav.getByText('1/2', { exact: true }), 'book chapter position');
@@ -693,6 +703,7 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
     assert.equal(await leftSection.getAttribute('aria-expanded'), 'false', 'a token tap keeps sentence detail collapsed');
     assert.equal(await rightSection.getAttribute('aria-expanded'), 'true', 'a token tap opens the word section');
     await assertVisible(sheet.getByText('중국어', { exact: true }), 'selected word meaning');
+    await assertVisible(sheet.getByText('汉语', { exact: true }), 'preseeded synonym chip in the word card');
 
     const selectedText = '我们学习中文';
     await page.evaluate((text) => {
@@ -723,6 +734,10 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
     if (!(await dragPick())) {
       // 부분 선택이 분석 요청을 이미 쐈을 수 있다 — 재시도 성공분만 남겨
       // 아래 "요청 정확히 1회" 계약을 보존한다.
+      // 부분 선택의 분석으로 시트가 드래그 줄 위까지 자라 있으면 재시도의
+      // pointerdown부터 시트가 먹는다(계측 실측) — 닫고 재시도한다.
+      const closeHandle = sheet.getByRole('button', { name: '시트 닫기', exact: true });
+      if (await closeHandle.isVisible().catch(() => false)) await closeHandle.click();
       analyzeRequests.length = 0;
       assert.ok(await dragPick(), 'drag pick did not reach 3 tokens after a retry');
     }

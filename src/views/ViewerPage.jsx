@@ -1334,7 +1334,9 @@ export default function ViewerPage() {
   );
 
   return (
-    <div className={`viewer-3col viewer-theme-${theme}`}>
+    // --dragging: 지정 드래그 중 바텀시트 포인터 투과 — 시트가 드래그 도중 자라
+    // 경로를 덮어도 elementFromPoint가 밑의 토큰을 잡는다(useTokenRangeSelect 참조)
+    <div className={`viewer-3col viewer-theme-${theme}${tokenRange.dragging ? ' viewer-3col--dragging' : ''}`}>
 
       {/* 왼쪽 — 문법 해설 / 맥락 */}
       <aside className="viewer-side viewer-side--left">
