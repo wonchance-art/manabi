@@ -364,13 +364,28 @@ export default function ViewerPage() {
 
   const handleTokenClick = (token, tokenId) => {
     if (token.pos === '개행') return;
+    // 집중 모드 + 지정 없음 = 발동 대기: 첫 탭은 단어가 아니라 **문장**을 순수 지정한다
+    // (오너 확정 2026-08-20 — 최소 단위 문장, 시트·분석·카드 전부 없음). 지정 불가 줄
+    // (막대 없는 2자 미만)은 아래 기존 단어 카드로 폴백.
+    if (focusMode && pickedLineIdx === null) {
+      const m = tokenId.match(/^(?:id|failed)_(\d+)_/);
+      const line = m ? sentences.find((s) => s.rawIdx === parseInt(m[1])) : null;
+      if (line) {
+        tokenRange.clearRange();
+        setPickedLineIdx(line.rawIdx);
+        setSelectedRangeText(line.text);
+        return;
+      }
+    }
     const t = { ...token, id: tokenId };
     setSelectedToken(t);
     setIsSheetOpen(true);
     setDragTokens(null);
     setWordDetail(null);
     setInspectChar(null);
-    setPickedLineIdx(null);
+    // 집중 모드에서는 단어 열람이 지정을 풀지 않는다 — 풀리면 다음 탭이 다시 '문장
+    // 지정'으로 바뀌는 플립플롭이 생긴다(오너 확정 스펙의 동반 수정).
+    if (!focusMode) setPickedLineIdx(null);
     setIsEditingToken(false); // 다른 단어로 넘어가면 편집 패널 접기
     tokenRange.clearRange(); // 범위 지정 이펙트와 상호 배타
     setRightSheetSignal(s => s + 1);

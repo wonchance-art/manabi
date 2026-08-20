@@ -51,6 +51,22 @@ describe('집중 모드 배선', () => {
     expect(css).toMatch(/\.sentence-nav__btn \{[^}]*width: 44px;/s);
   });
 
+  it('첫 탭 = 문장 순수 지정, 이후 단어 탭은 지정 유지(오너 확정 2026-08-20 — 플립플롭 방지)', () => {
+    const click = viewer.slice(viewer.indexOf('const handleTokenClick'), viewer.indexOf('// ② 리스트 단어 탭'));
+    // 발동 대기(집중 ON + 지정 없음): 탭한 지점의 문장을 지정만 하고 return —
+    // 분석·시트·카드·발화 전부 없음(최소 단위 = 문장)
+    expect(click).toContain('if (focusMode && pickedLineIdx === null) {');
+    expect(click).toMatch(/sentences\.find\(\(s\) => s\.rawIdx === parseInt\(m\[1\]\)\)/);
+    const armed = click.slice(click.indexOf('if (focusMode && pickedLineIdx === null)'), click.indexOf('const t = { ...token'));
+    expect(armed).toContain('setSelectedRangeText(line.text);');
+    expect(armed).toContain('return;');
+    expect(armed).not.toContain('runSelectionAnalysis');
+    expect(armed).not.toContain('setIsSheetOpen');
+    expect(armed).not.toContain('speak(');
+    // 지정 중 단어 탭 = 카드 + 지정 유지(집중 꺼짐일 때만 기존 상호 배타 #1002)
+    expect(click).toContain('if (!focusMode) setPickedLineIdx(null);');
+  });
+
   it('토글이 설정에 있고 언어 무관이다', () => {
     expect(viewer).toContain("'☑ 집중 모드 켜짐' : '◻ 집중 모드 꺼짐'");
     // 중국어 조건(materialLang === 'Chinese') 블록 밖 — 후리가나 토글과 같은 층위
