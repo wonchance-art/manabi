@@ -209,16 +209,18 @@ test('레퍼런스(.ja-ruby) — 긴 요미가 문장 폭을 못 늘리고, 두 
   assertGapBand(out.gapBk, '책예문 요미');
 });
 
-test('카드 확대(①) — 크기 = 패널 폭 ÷ 분모(cqi 수식), 한 글자는 8rem 캡, 격자·병음 계약 유지', async () => {
+test('카드 확대(①) — 크기 = 패널 폭 ÷ 분모(cqi 수식), 캡은 --fit-cap(기본 8rem), 격자·병음 계약 유지', async () => {
   // 카드 마크업 재현(ViewerPage wordDetailCard — 글자는 word-fit__char 스팬으로 감싼다)
   const fitSeg = (ch, py, yomi = false) =>
     `<ruby data-${yomi ? 'yomi' : 'pinyin'}="1"><span class="word-fit__char">${ch}</span><span class="rt-an">${py}</span></ruby>`;
-  const fit = (inner, n) =>
-    `<div class="word-fit-wrap" style="width:248px"><div class="word-fit" style="--fit-n:${n}"><span class="surface">${inner}</span></div></div>`;
+  const fit = (inner, n, cap = '') =>
+    `<div class="word-fit-wrap" style="width:248px"><div class="word-fit" style="--fit-n:${n}${cap ? `; --fit-cap:${cap}` : ''}"><span class="surface">${inner}</span></div></div>`;
   await page.setContent(PAGE(
     fit(fitSeg('强', 'qiáng') + fitSeg('调', 'diào'), 2) +
     fit(fitSeg('我', 'wǒ'), 1) +
-    fit(fitSeg('志', 'こころざし', true), 2.5)
+    fit(fitSeg('志', 'こころざし', true), 2.5) +
+    fit(fitSeg('爱', 'ài'), 1, '200px') +
+    fit(fitSeg('爱', 'ài'), 1, '300px')
   ));
   const got = await page.evaluate(() => [...document.querySelectorAll('.word-fit')].map((el) => {
     const cells = [...el.querySelectorAll('ruby[data-pinyin]')].map((r) => r.getBoundingClientRect().width);
@@ -236,8 +238,12 @@ test('카드 확대(①) — 크기 = 패널 폭 ÷ 분모(cqi 수식), 한 글�
   // 병음은 카드에서도 전 음절 단일 크기(0.26em)·절대배치 계약을 지킨다
   assert.ok(Math.abs(got[0].rtFs - got[0].fs * 0.26) <= 0.5, `병음 크기 0.26em 기대: ${got[0].rtFs}`);
   assert.equal(got[0].rtPos, 'absolute', '카드 병음도 절대배치(WebKit rt 계약과 동일한 span 경로)');
-  // 1자: 폭주 방지 캡 8rem(=128px) — 100cqi(248px)가 아니라 캡에서 멈춘다
-  assert.ok(Math.abs(got[1].fs - 128) <= 1, `1자 캡 128px 기대: ${got[1].fs}`);
+  // 1자: 캡 미지정 문맥은 기본 8rem(=128px) — 100cqi(248px)가 아니라 캡에서 멈춘다
+  assert.ok(Math.abs(got[1].fs - 128) <= 1, `1자 기본 캡 128px 기대: ${got[1].fs}`);
   // ja: 분모 2.5(fitWord.js — 요미 5자 × 0.5em이 본문 1자보다 넓다) → 99.2px
   assert.ok(Math.abs(got[2].fs - 99.2) <= 1, `志 분모 2.5 → 99.2px 기대: ${got[2].fs}`);
+  // --fit-cap 주입(레이아웃 세로 예산 유도 — 오너 승인 2026-08-20): 캡이 폭보다 작으면
+  // 캡에서, 크면 폭(100cqi)에서 멈춘다 — 양방향 지배 전환 실렌더 검증
+  assert.ok(Math.abs(got[3].fs - 200) <= 1, `1자 캡 200px 주입 기대: ${got[3].fs}`);
+  assert.ok(Math.abs(got[4].fs - 248) <= 1, `캡 300px > 폭 248px → 폭 지배 기대: ${got[4].fs}`);
 });

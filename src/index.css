@@ -4756,6 +4756,9 @@ body.is-review-session .page-container { padding-top: 8px; }
 }
 .viewer-side--right {
   border-left: 1px solid var(--border);
+  /* 카드 글자 캡 — 칸(280px)이 세로 스크롤이라 너비 맞춤이 지배(1자 ≈ 칸 폭 전부).
+     30vh는 낮은 창에서 셀(1.9em)이 화면을 압도하는 것만 막는다(일반 창 미발동). */
+  --fit-cap: 30vh;
 }
 .viewer-side__content {
   flex: 1;
@@ -4789,9 +4792,13 @@ body.is-review-session .page-container { padding-top: 8px; }
    수식으로 성립하므로 측정 JS가 없다. 캡 8rem = 한 글자 폭주 방지(패널 절반 수준).
    cqi 미지원 엔진은 아래 폴백 줄(1.5rem — 기존 크기)로 안전하게 내려간다. */
 .word-fit-wrap { container-type: inline-size; width: 100%; }
+/* 캡(--fit-cap)은 레이아웃의 세로 예산에서 유도한다(오너 승인 2026-08-20 — "여유 있는
+   너비만큼 확대"): 데스크톱 우측 칸 30vh(스크롤 컬럼이라 너비가 사실상 지배 — 낮은 창
+   안전핀), 모바일 시트 12svh(글자+병음+첫 뜻이 시트 첫 화면에 함께). 핀 없는 문맥은
+   기존 8rem 그대로. */
 .word-fit {
   font-size: 1.5rem;
-  font-size: clamp(1.5rem, calc(100cqi / var(--fit-n, 1)), 8rem);
+  font-size: clamp(1.5rem, calc(100cqi / var(--fit-n, 1)), var(--fit-cap, 8rem));
   font-weight: 800;
 }
 /* 루비 자리 확보 — 본문(2.2)보다 낮춰 카드 세로 낭비를 줄인다. rt-an bottom의
@@ -4998,13 +5005,18 @@ body.is-review-session .page-container { padding-top: 8px; }
     background: rgba(255,255,255,0.4);
   }
 
-  /* 바텀시트 본체 */
+  /* 바텀시트 본체 — 최대 높이는 100svh 배분 추산에서 유도(오너 승인 2026-08-20):
+     헤더·툴바 ~13 + 본문 가시 최소 3줄 ~20 + 하단 바 ~7 ⇒ 시트 ≤60svh.
+     (기존 70vh는 본문이 1~2줄만 남아 귀환 리듬이 끊겼다 — 실기.) svh 미지원 폴백 70vh. */
   .viewer-sheet {
     display: flex;
     flex-direction: column;
     position: fixed;
     bottom: 0; left: 0; right: 0;
     max-height: 70vh;
+    max-height: 60svh;
+    /* 카드 글자 캡 — 글자 셀(1.9em ≈ 23svh)+병음+첫 뜻이 시트 첫 화면(60svh)에 함께 */
+    --fit-cap: 12svh;
     background: var(--bg-card);
     border-top: 1px solid var(--border);
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
