@@ -38,10 +38,15 @@ export async function fetchVocab(userId) {
     return { ...v, language: lang };
   });
 
-  // DB에도 반영 (fire-and-forget)
+  // DB에도 반영 (fire-and-forget) — 언어별 일괄 UPDATE(행당 개별 요청이던 N+1의 배치화)
   if (needsUpdate.length > 0) {
-    Promise.all(needsUpdate.map(u =>
-      supabase.from('user_vocabulary').update({ language: u.language }).eq('id', u.id)
+    const idsByLang = new Map();
+    for (const u of needsUpdate) {
+      if (!idsByLang.has(u.language)) idsByLang.set(u.language, []);
+      idsByLang.get(u.language).push(u.id);
+    }
+    Promise.all([...idsByLang.entries()].map(([language, ids]) =>
+      supabase.from('user_vocabulary').update({ language }).in('id', ids)
     )).catch(() => {});
   }
 
@@ -51,12 +56,13 @@ export async function fetchVocab(userId) {
     if (sourceIds.length > 0) {
       const titlesMap = new Map();
       const CHUNK = 30;
-      for (let i = 0; i < sourceIds.length; i += CHUNK) {
-        const slice = sourceIds.slice(i, i + CHUNK);
-        const { data: mats } = await supabase
-          .from('reading_materials')
-          .select('id, title')
-          .in('id', slice);
+      // 청크 병렬 조회 — 순차 await는 출처가 많을수록 로드가 선형으로 늘었다(쿼리 다이어트)
+      const chunks = [];
+      for (let i = 0; i < sourceIds.length; i += CHUNK) chunks.push(sourceIds.slice(i, i + CHUNK));
+      const chunkResults = await Promise.all(chunks.map((slice) =>
+        supabase.from('reading_materials').select('id, title').in('id', slice)
+      ));
+      for (const { data: mats } of chunkResults) {
         for (const m of (mats || [])) titlesMap.set(m.id, m.title);
       }
       for (const v of result) {

@@ -261,9 +261,11 @@ export default function ViewerPage() {
       const doneSet = new Set((readIds || []).map(r => r.material_id));
       doneSet.add(id); // 현재 자료도 제외
 
+      // 추천 후보는 메타만 필요 — processed_json 통짜(자료당 수백 KB)를 10행씩 끌지 않는다
+      // (jsonb 경로 선택 — 책 챕터 쿼리 선례. 전수 조사 쿼리 다이어트).
       let query = supabase
         .from('reading_materials')
-        .select('id, title, processed_json')
+        .select('id, title, status:processed_json->>status, language:processed_json->metadata->>language, level:processed_json->metadata->>level')
         .eq('visibility', 'public')
         .neq('id', id)
         .limit(10);
@@ -275,13 +277,13 @@ export default function ViewerPage() {
       // 같은 언어 → 같은 레벨 우선 필터
       const level = material?.processed_json?.metadata?.level;
       const candidates = data
-        .filter(m => !doneSet.has(m.id) && m.processed_json?.status === 'completed')
+        .filter(m => !doneSet.has(m.id) && m.status === 'completed')
         .sort((a, b) => {
-          const aLang = a.processed_json?.metadata?.language === lang ? 0 : 1;
-          const bLang = b.processed_json?.metadata?.language === lang ? 0 : 1;
+          const aLang = a.language === lang ? 0 : 1;
+          const bLang = b.language === lang ? 0 : 1;
           if (aLang !== bLang) return aLang - bLang;
-          const aLevel = a.processed_json?.metadata?.level === level ? 0 : 1;
-          const bLevel = b.processed_json?.metadata?.level === level ? 0 : 1;
+          const aLevel = a.level === level ? 0 : 1;
+          const bLevel = b.level === level ? 0 : 1;
           return aLevel - bLevel;
         });
 

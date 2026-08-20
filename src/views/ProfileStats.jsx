@@ -25,7 +25,8 @@ async function fetchProfileStats(userId) {
     vocabResult,
   ] = await Promise.all([
     supabase.from('user_vocabulary').select('created_at').eq('user_id', userId).gte('created_at', heatmapStart.toISOString()),
-    supabase.from('user_vocabulary').select('*').eq('user_id', userId),
+    // 통계는 세 시각 컬럼만 소비 — 전 컬럼(*)을 단어 수만큼 끌지 않는다(쿼리 다이어트)
+    supabase.from('user_vocabulary').select('created_at, last_reviewed_at, next_review_at').eq('user_id', userId),
   ]);
   if (heatmapResult.error) throw heatmapResult.error;
   if (vocabResult.error) throw vocabResult.error;

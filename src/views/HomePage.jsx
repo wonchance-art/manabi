@@ -47,15 +47,16 @@ async function fetchHomeData(userId, lang, nowMs = Date.now()) {
     supabase.from('user_vocabulary').select('created_at, last_reviewed_at, language, word_text')
       .eq('user_id', userId).gte('created_at', prevWeekStartISO),
     supabase.from('reading_progress')
-      .select('material_id, is_completed, updated_at, completed_at, reading_materials(id, title, processed_json)')
+      .select('material_id, is_completed, updated_at, completed_at, reading_materials(id, title)')
       .eq('user_id', userId).order('updated_at', { ascending: false }).limit(20),
     fetch('/api/suggestions/today').then(r => r.ok ? r.json() : []),
     supabase.from('reading_progress').select('completed_at')
       .eq('user_id', userId).eq('is_completed', true).gte('completed_at', prevWeekStartISO),
     supabase.from('user_vocabulary').select('language, word_text')
       .eq('user_id', userId),
+    // 시리즈 진도는 제목+언어만 필요 — processed_json 통짜를 300행씩 끌지 않는다(쿼리 다이어트)
     supabase.from('reading_materials')
-      .select('id, title, processed_json')
+      .select('id, title, language:processed_json->metadata->>language')
       .eq('visibility', 'public')
       .ilike('title', '[%#%]%')
       .limit(300),
@@ -144,7 +145,7 @@ async function fetchHomeData(userId, lang, nowMs = Date.now()) {
       for (const m of (seriesMaterials || [])) {
         const meta = parseTitle(m.title);
         if (!meta.level || !meta.series || meta.num == null) continue;
-        const lang = m.processed_json?.metadata?.language || (/[A-Z]\d/.test(meta.level) ? 'English' : 'Japanese');
+        const lang = m.language || (/[A-Z]\d/.test(meta.level) ? 'English' : 'Japanese');
         const key = `${meta.level}|${meta.series}`;
         if (!groups.has(key)) groups.set(key, { level: meta.level, series: meta.series, language: lang, items: [] });
         groups.get(key).items.push({ id: m.id, title: m.title, num: meta.num });
