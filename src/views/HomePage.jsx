@@ -27,7 +27,6 @@ async function fetchHomeData(userId, lang, nowMs = Date.now()) {
   // 지난주 범위 (월~일)
   const prevWeekStart = new Date(weekStartDate.getTime() - 7 * 24 * 3600 * 1000);
   const prevWeekStartISO = prevWeekStart.toISOString();
-  const prevWeekEndISO = weekStartISO;
 
   // vocab stats are derived client-side from vocabRows
   const [
@@ -35,7 +34,6 @@ async function fetchHomeData(userId, lang, nowMs = Date.now()) {
     vocabResult,
     recentResult,
     suggestionsRes,
-    readProgressResult,
     allVocabResult,
     seriesMaterialsResult,
     allCompletedResult,
@@ -50,8 +48,6 @@ async function fetchHomeData(userId, lang, nowMs = Date.now()) {
       .select('material_id, is_completed, updated_at, completed_at, reading_materials(id, title)')
       .eq('user_id', userId).order('updated_at', { ascending: false }).limit(20),
     fetch('/api/suggestions/today').then(r => r.ok ? r.json() : []),
-    supabase.from('reading_progress').select('completed_at')
-      .eq('user_id', userId).eq('is_completed', true).gte('completed_at', prevWeekStartISO),
     supabase.from('user_vocabulary').select('language, word_text')
       .eq('user_id', userId),
     // 시리즈 진도는 제목+언어만 필요 — processed_json 통짜를 300행씩 끌지 않는다(쿼리 다이어트)
@@ -73,7 +69,7 @@ async function fetchHomeData(userId, lang, nowMs = Date.now()) {
   ]);
 
   const dbResults = [
-    dueResult, vocabResult, recentResult, readProgressResult, allVocabResult,
+    dueResult, vocabResult, recentResult, allVocabResult,
     seriesMaterialsResult, allCompletedResult, forecastResult,
   ];
   const failed = dbResults.find(result => result?.error);
@@ -82,50 +78,29 @@ async function fetchHomeData(userId, lang, nowMs = Date.now()) {
   const dueCount = dueResult.count;
   const vocabRows = vocabResult.data;
   const recentProgress = recentResult.data;
-  const readProgressRows = readProgressResult.data;
   const allVocabRows = allVocabResult.data;
   const seriesMaterials = seriesMaterialsResult.data;
   const allCompleted = allCompletedResult.data;
   const forecastRows = forecastResult.data || [];
 
   const rows = vocabRows || [];
-  const reads = readProgressRows || [];
 
-  // Derive all vocab stats client-side
-  let todayVocabCount = 0, todayReviewCount = 0, weekVocab = 0, weekReview = 0;
-  let prevWeekVocab = 0, prevWeekReview = 0;
+  // 오늘 카운트 2종 — 주간·XP 계산(렌더 무소비)은 제거: 사양은 보드의 제안 19(주간
+  // 리포트) 항목에 기록돼 있고, 필요해지는 시점에 서버 집계로 부활한다.
+  let todayVocabCount = 0, todayReviewCount = 0;
 
   for (const v of rows) {
     if (v.created_at >= todayStart) todayVocabCount++;
-    if (v.created_at >= weekStartISO) weekVocab++;
-    else if (v.created_at >= prevWeekStartISO && v.created_at < prevWeekEndISO) prevWeekVocab++;
     if (v.last_reviewed_at && v.last_reviewed_at >= todayStart) todayReviewCount++;
-    if (v.last_reviewed_at && v.last_reviewed_at >= weekStartISO) weekReview++;
-    else if (v.last_reviewed_at && v.last_reviewed_at >= prevWeekStartISO && v.last_reviewed_at < prevWeekEndISO) prevWeekReview++;
   }
-
-  // Derive read stats
-  const todayReadCount = reads.filter(r => r.completed_at >= todayStart).length;
-  const weekRead = reads.filter(r => r.completed_at >= weekStartISO).length;
-  const prevWeekRead = reads.filter(r => r.completed_at >= prevWeekStartISO && r.completed_at < prevWeekEndISO).length;
 
   return {
     dueCount:         dueCount || 0,
     todayVocabCount,
     todayReviewCount,
-    todayReadCount,
     recentProgress:   (recentProgress || []).slice(0, 4),
     suggestions:      suggestionsRes || [],
     forecast:         buildForecast(forecastRows, new Date(nowMs)),
-    weekVocab,
-    weekReviews: weekReview,
-    weekReads:   weekRead,
-    weekXP:      weekVocab * 5 + weekReview * 10 + weekRead * 50,
-    weekStart:   weekStartDate,
-    prevWeekVocab,
-    prevWeekReviews: prevWeekReview,
-    prevWeekReads:   prevWeekRead,
-    prevWeekXP:      prevWeekVocab * 5 + prevWeekReview * 10 + prevWeekRead * 50,
     vocabByLang: (() => {
       const all = allVocabRows || [];
       // language가 비어 있는 레거시 행은 표기로 일본어/영어를 추정(기존 동작 유지).
@@ -298,7 +273,6 @@ export default function HomePage({ continueManifest = {} }) {
 
   const todayVocab   = data?.todayVocabCount    ?? 0;
   const todayReviews = data?.todayReviewCount   ?? 0;
-  const todayReads   = data?.todayReadCount     ?? 0;
   const dueCount     = data?.dueCount           ?? 0;
 
   const suggestion = useMemo(() => {

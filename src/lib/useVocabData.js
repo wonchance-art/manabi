@@ -6,6 +6,7 @@ import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { friendlyToastMessage } from './errorMessage';
 import { fetchVocab, csvToVocabRows } from './vocabIO';
+import { persistVocabGrade } from './fsrs';
 
 export function useVocabData() {
   const { user } = useAuth();
@@ -20,12 +21,7 @@ export function useVocabData() {
 
   const scoreMutation = useMutation({
     mutationFn: async ({ id, nextStats }) => {
-      const payload = { ...nextStats, last_reviewed_at: new Date().toISOString() };
-      const { error } = await supabase
-        .from('user_vocabulary')
-        .update(payload)
-        .eq('id', id);
-      if (error) throw error;
+      await persistVocabGrade(supabase, id, nextStats);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
