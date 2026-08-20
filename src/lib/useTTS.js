@@ -1,5 +1,6 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
+import { bcp47ForLanguage, voicePrefixForLanguage } from './speechLang';
 
 const VOICE_KEY = 'tts_voice'; // { ja: voiceURI, en: voiceURI }
 
@@ -72,29 +73,20 @@ export function useTTS() {
     return () => synth.removeEventListener?.('voiceschanged', refresh);
   }, []);
 
-  const langCode = (lang) =>
-    lang === 'Japanese' || lang === 'ja' ? 'ja-JP'
-    : lang === 'French' || lang === 'fr' ? 'fr-FR'
-    : 'en-US';
-  const langKey = (lang) =>
-    lang === 'Japanese' || lang === 'ja' ? 'ja'
-    : lang === 'French' || lang === 'fr' ? 'fr'
-    : 'en';
-
   const listVoices = useCallback((lang = 'Japanese') => {
     if (typeof window === 'undefined' || !window.speechSynthesis) return [];
     const all = window.speechSynthesis.getVoices();
-    const code = langCode(lang);
+    const code = bcp47ForLanguage(lang);
     const prefix = code.split('-')[0];
     return all.filter(v => v.lang === code || v.lang.startsWith(prefix + '-'));
   }, []);
 
   const getSelectedVoice = useCallback((lang = 'Japanese') => {
-    return loadStoredVoice(langKey(lang));
+    return loadStoredVoice(voicePrefixForLanguage(lang));
   }, []);
 
   const setSelectedVoice = useCallback((lang, voiceURI) => {
-    saveStoredVoice(langKey(lang), voiceURI || null);
+    saveStoredVoice(voicePrefixForLanguage(lang), voiceURI || null);
   }, []);
 
   // 브라우저 내장 음성 — 서버 TTS 실패 시 폴백 전용
@@ -102,10 +94,10 @@ export function useTTS() {
     if (!getTtsCapabilities().webSpeech) return;
     window.speechSynthesis.cancel();
     const utter = new window.SpeechSynthesisUtterance(text);
-    utter.lang = langCode(language);
+    utter.lang = bcp47ForLanguage(language);
     utter.rate = opts.rate ?? 0.85;
     utter.pitch = opts.pitch ?? 1;
-    const wantedURI = loadStoredVoice(langKey(language));
+    const wantedURI = loadStoredVoice(voicePrefixForLanguage(language));
     if (wantedURI) {
       const v = window.speechSynthesis.getVoices().find(x => x.voiceURI === wantedURI);
       if (v) utter.voice = v;

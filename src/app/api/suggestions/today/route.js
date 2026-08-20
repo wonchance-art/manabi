@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { kstDateString } from '@/lib/growthStats';
 
 export async function GET() {
   const supabase = createClient(
@@ -6,7 +7,8 @@ export async function GET() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   );
 
-  const today = new Date().toISOString().split('T')[0];
+  // KST 날짜 정본 — 수집 크론과 같은 함수(UTC 날짜를 쓰면 KST 아침부터 빈 카드가 된다)
+  const today = kstDateString();
 
   const { data, error } = await supabase
     .from('daily_suggestions')

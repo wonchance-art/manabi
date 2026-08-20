@@ -53,6 +53,15 @@ export function kstDayStartIso(nowMs = Date.now()) {
   return new Date(kstDayStartMs(nowMs)).toISOString();
 }
 
+/**
+ * KST 기준 오늘 날짜 문자열(YYYY-MM-DD) — daily_suggestions의 date 키 정본.
+ * 수집 크론(15:00 UTC = KST 자정)과 조회(/api/suggestions/today)가 서로 다른
+ * 시간대 날짜를 쓰면 '오늘 읽기'가 하루 대부분 비는 실결함 — 양쪽이 이 함수 하나를 쓴다.
+ */
+export function kstDateString(nowMs = Date.now()) {
+  return new Date(nowMs + 9 * 3600 * 1000).toISOString().split('T')[0];
+}
+
 /** KST 기준 이번 주 월요일 0시의 UTC ISO 문자열(서버 count 조회 하한). */
 export function kstWeekStartIso(nowMs = Date.now()) {
   return new Date(kstWeekStartMs(nowMs)).toISOString();

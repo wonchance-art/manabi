@@ -150,7 +150,7 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
   // 게스트 경로: localStorage만
   if (!userId) {
     recordReviewLocal(type, itemKey);
-    return;
+    return { ok: true };
   }
 
   // 로그인 경로: 복습 이벤트 + SRS + 보상
@@ -167,8 +167,12 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
 
     // 3. 보상: 활동 기록
     await recordActivityRemote(userId, lang, 'review_completed', { type, correct });
+    return { ok: true };
   } catch (err) {
+    // 콘솔만 남기면 채점 유실이 무증상이 된다(과거 조용한 실패 사고) — 호출자가
+    // 사용자에게 알릴 수 있게 실패를 반환값으로 노출한다(낙관 전진은 호출자 몫).
     console.error('[progressStore] reviewCompleted 오류:', err);
+    return { ok: false, error: err };
   }
 }
 

@@ -5,6 +5,7 @@ import {
   isPassedChapter,
   kstDayStartMs,
   kstDayStartIso,
+  kstDateString,
   kstWeekStartMs,
   kstWeekStartIso,
   isThisWeekSession,
@@ -23,6 +24,29 @@ describe('kstDayStart — KST 일간 경계', () => {
     const midnight = Date.UTC(2024, 0, 1, 15, 0, 0); // KST 1/2 00:00:00
     expect(kstDayStartMs(midnight)).toBe(Date.UTC(2024, 0, 1, 15, 0, 0));
     expect(kstDayStartIso(midnight)).toBe('2024-01-01T15:00:00.000Z');
+  });
+});
+
+describe('kstDateString — daily_suggestions date 키 정본', () => {
+  it('UTC 15시(=KST 자정) 이후는 KST 다음날 — 수집 크론 시각의 핵심 경계', () => {
+    // 2024-01-01T15:00Z = KST 2024-01-02 00:00 → 크론이 이 시각에 돌며 '01-02'로 저장해야 한다
+    expect(kstDateString(Date.UTC(2024, 0, 1, 15, 0, 0))).toBe('2024-01-02');
+    expect(kstDateString(Date.UTC(2024, 0, 1, 14, 59, 59))).toBe('2024-01-01');
+  });
+
+  it('KST 아침(UTC 새 날짜 직후)에도 KST 오늘을 돌려준다 — 빈 카드 결함의 재발 방지', () => {
+    // 2024-01-02T01:00Z = KST 01-02 10:00 → '01-02' (UTC 날짜와 우연히 같지만 KST 산식이어야 함)
+    expect(kstDateString(Date.UTC(2024, 0, 2, 1, 0, 0))).toBe('2024-01-02');
+  });
+
+  it('배선 계약 — 수집 크론과 조회 라우트가 같은 함수를 쓴다(UTC toISOString 부활 금지)', async () => {
+    const fs = await import('node:fs');
+    const cron = fs.readFileSync('src/app/api/cron/fetch-suggestions/route.js', 'utf8');
+    const today = fs.readFileSync('src/app/api/suggestions/today/route.js', 'utf8');
+    for (const src of [cron, today]) {
+      expect(src).toContain('kstDateString()');
+      expect(src).not.toContain("new Date().toISOString().split('T')[0]");
+    }
   });
 });
 
