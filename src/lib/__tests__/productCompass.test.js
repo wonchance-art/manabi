@@ -16,6 +16,9 @@ describe('제품 나침반 지속 계약', () => {
     expect(claude).toContain('모든 제안·구현 전 3문');
     expect(claude).toContain('docs/architecture-and-handoff.md');
     expect(claude).toContain('계약 테스트로 심는다');
+    // 오너 지시(2026-08-20): 아이디어·설계 검토 시 선례·오픈소스 조사를 묻지 않아도 수행
+    expect(claude).toContain('선례·오픈소스 조사는 기본값');
+    expect(claude).toContain('채택/부분 채택/배제');
   });
 
   it('arch 문서 — 순환 지도(§1.1)와 이음새 지도, 3문 체크(§2), 최근 지뢰(§4.9-0)', () => {
