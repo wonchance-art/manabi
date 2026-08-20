@@ -526,7 +526,27 @@ export default function ViewerPage() {
     return pickableSentences(lineGroups, rawLines);
   }, [material?.processed_json, material?.raw_text]);
 
+  // 집중 모드 순수 이동용 — 좌(번역·맥락)/우(단어 리스트·카드) 패널과 시트 활성 상태를
+  // 비운다. 시트 신호는 올리지 않는다(안 띄우는 게 목적). ViewerBottomSheet의 active가
+  // 이 상태들에서 유도되므로 비우면 시트도 스스로 잦아든다. 이전 문장 분석이 낡은 채
+  // 시트에 남는 불일치도 이걸로 차단.
+  const clearAnalysisPanels = () => {
+    setLeftPanelText('');
+    setLeftPanelResult('');
+    setLeftPanelLoading(false);
+    setDragTokens(null);
+    setDragAnalyzing(false);
+    setSelectedToken(null);
+    setIsSheetOpen(false);
+    setInspectChar(null);
+    setWordDetail(null);
+  };
+
   // 이동 = 그 문장의 막대(¦)를 대신 눌러주는 것 — 지정·분석·스크롤이 한 동작.
+  // 단, 집중 모드에서는 '순수 이동'(오너 지시 2026-08-20): 문장을 따라 읽는 중이라
+  // 번역·맥락 시트가 매번 올라오는 게 방해고, 안 볼 번역에 Gemini 호출을 쓰는 낭비다.
+  // 분석 없이 지정·스크롤만 하고 패널은 비운다. 분석이 필요하면 막대(¦)를 누른다 —
+  // 그 경로는 본래처럼 전체 분석이다.
   const moveSentence = (dir) => {
     if (pickedLineIdx === null) return;
     const target = adjacentSentence(sentences, pickedLineIdx, dir);
@@ -534,7 +554,8 @@ export default function ViewerPage() {
     tokenRange.clearRange();
     setPickedLineIdx(target.rawIdx);
     setSelectedRangeText(target.text);
-    runSelectionAnalysis(target.text);
+    if (focusMode) clearAnalysisPanels();
+    else runSelectionAnalysis(target.text);
     const el = tokenRefs.current[target.firstTokenId];
     if (el?.scrollIntoView) {
       const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
