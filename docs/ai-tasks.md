@@ -1314,6 +1314,18 @@
 - 런던 위성 마이크로 픽(재량 위임 해석): 윈저+옥스퍼드 2곳 추천 — 레만호 완성 후 순번
 - 일본 4도시 COPY 슬롯 이식(다국어 UI 확정 시) / 아토미움 = marker-only 유지 확인
 ### done (최근)
+- **🧹 구조 정리 C — 중복·죽은 코드 수렴(2026-08-20, 3/3 완결)** — ① 어휘 FSRS 채점
+  저장 4중복(단어장 scoreMutation·인라인 복습·퀘스트·progressStore) →
+  fsrs.persistVocabGrade 정본 수렴(원시 페이로드 부활 금지 계약, 기존 이름은 별칭
+  유지) ② KST 주 시작 로컬 재구현 2벌(StudySessionPage·studyMaterials) → growthStats
+  정본 ③ 죽은 코드 srs.js + 그 테스트 삭제(부활 금지 계약) ④ HomePage 죽은 계산
+  일소(weekXP·주간/지난주 누적·todayReads·read 쿼리 1개 — 렌더 무소비 실측; **주간
+  XP 사양(단어5·복습10·완독50)은 제안 19 주간 리포트의 사양서로 이 항목에 보존**,
+  isNewUser가 쓰는 recentProgress는 유지) ⑤ 규약 통일: 문형 저장 조회 → 어휘와 같은
+  청크 정본(fetchSavedWordSet), PDF 번역 프롬프트 → 뷰어와 같은 buildContextPrompt
+  (하드코딩 사본이 말투 항목 개정에서 이미 표류). 제외 유지: PDF 패널 통합·
+  StudySession 분해·VocabStats 사제 공식(동작 변화 — 기능 동봉 원칙), listenSubtitles·
+  크론 슬롯(오너 결정 대기). 유닛 2 + 계약 4. 전체 vitest 1,953 green.
 - **🧹 구조 정리 B — 쿼리 다이어트(2026-08-20)** — 메타만 쓰는 조회의 통짜 전송 제거:
   뷰어 다음 자료 추천(10행 × processed_json 통짜 → status/language/level 경로 3필드),
   홈 시리즈 진도(300행 통짜 → 언어 경로 1필드), 홈 최근 진행 join(제목만), 프로필

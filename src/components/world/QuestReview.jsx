@@ -16,6 +16,7 @@ import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { logReviewEvents } from '../../lib/reviewEvents';
 import { detectLang, displayWord } from '../../lib/constants';
+import { persistVocabGrade } from '../../lib/fsrs';
 import bus from './bus';
 
 const DUE_LIMIT = 8; // 즉석 리뷰 한 판(5~8문항)
@@ -68,13 +69,8 @@ export const gbcButtonPrimary = {
   color: GBC.creamHi,
 };
 
-export async function persistQuestReviewGrade(client, wordId, nextStats, reviewedAt = new Date().toISOString()) {
-  const { error } = await client
-    .from('user_vocabulary')
-    .update({ ...nextStats, last_reviewed_at: reviewedAt })
-    .eq('id', wordId);
-  if (error) throw error;
-}
+// 채점 저장은 fsrs.persistVocabGrade 정본으로 수렴 — 이 이름은 기존 테스트·호출 계약 유지용
+export const persistQuestReviewGrade = persistVocabGrade;
 
 export default function QuestReview({ userId, onClose }) {
   const [phase, setPhase] = useState('loading'); // loading | empty | active | done

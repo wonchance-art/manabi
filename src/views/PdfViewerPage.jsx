@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { callGemini } from '../lib/gemini';
+import { buildContextPrompt } from '../lib/grammarDetail';
 import { fetchWordDetailText } from '../lib/wordDetail';
 import Button from '../components/Button';
 import Spinner from '../components/Spinner';
@@ -62,19 +63,9 @@ async function quickAnalyze(text, language) {
 
 async function getTranslationAndContext(text, language) {
   const langName = langNameKo(language);
-  const raw = await callGemini(`다음 ${langName} 텍스트를 한국어로 처리해주세요.
-
-"${text}"
-
-아래 형식 정확히 따라 출력. 도입 문구 없이 바로:
-
-**번역**
-자연스러운 한국어 번역
-
-**맥락**
-내용 이해를 돕는 배경 설명 2~3문장
-
-규칙: 마크다운 **굵게**만 사용, 간결하게`);
+  // 번역+맥락 프롬프트는 뷰어와 같은 정본(buildContextPrompt) — 하드코딩 사본이
+  // 개정(말투 항목 등)에서 이미 표류하고 있었다(구조 정리 C, 이중 수정 차단)
+  const raw = await callGemini(buildContextPrompt(text, langName));
   const result = raw?.candidates?.[0]?.content?.parts?.[0]?.text || raw;
   if (!result) throw new Error('CONTEXT_EMPTY');
   return result;

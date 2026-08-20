@@ -17,6 +17,7 @@ import { recordActivity } from '../lib/streak';
 import { recordLessonCompleted, recordNewWord } from '../lib/learn/progressStore';
 import { recordStudyReviewCompleted } from '../lib/studyExerciseBridge';
 import { gradeTyping, isChapterPassed, grammarDueChapterCounts } from '../lib/studySession';
+import { kstWeekStartIso } from '../lib/growthStats';
 import { splitSentenceAroundWord } from '../lib/constants';
 import { mapParagraphToItems } from '../lib/studyParagraph';
 
@@ -32,19 +33,6 @@ async function persistWritingPractice(row) {
   } catch (error) {
     console.warn('[writing practice] history save failed:', error);
   }
-}
-
-/**
- * KST 기준 이번 주 월요일 0시의 UTC ISO — 주간 회고 조회 하한.
- * studyMaterials의 kstWeekStartMs가 export되지 않아 로컬 재구현(근사).
- */
-function kstWeekStartIso(nowMs = Date.now()) {
-  const kst = new Date(nowMs + 9 * 3600 * 1000);
-  const dow = kst.getUTCDay();               // 0=일 … 6=토
-  const daysFromMon = (dow + 6) % 7;         // 월=0 … 일=6
-  const monKstMidnightUtc = Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate())
-    - daysFromMon * 24 * 3600 * 1000;        // 'KST 자정을 UTC인 척'한 값
-  return new Date(monKstMidnightUtc - 9 * 3600 * 1000).toISOString(); // 실제 UTC 순간으로 보정
 }
 
 function shuffle(arr) {

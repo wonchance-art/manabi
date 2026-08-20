@@ -1,6 +1,7 @@
 'use client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
+import { persistVocabGrade } from './fsrs';
 import { recordActivity } from './streak';
 import { friendlyToastMessage } from './errorMessage';
 import { logReviewEvents } from './reviewEvents';
@@ -20,11 +21,7 @@ export function useInlineReview({ user, fetchProfile, toast }) {
         repetitions: vocab.repetitions ?? 0,
         next_review_at: vocab.next_review_at,
       });
-      const { error } = await supabase
-        .from('user_vocabulary')
-        .update({ ...nextStats, last_reviewed_at: new Date().toISOString() })
-        .eq('id', vocab.id);
-      if (error) throw error;
+      await persistVocabGrade(supabase, vocab.id, nextStats);
       return { vocab, rating, nextStats };
     },
     onSuccess: async ({ vocab, rating }) => {

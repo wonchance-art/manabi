@@ -93,3 +93,18 @@ export function calculateFSRS(rating, prevStats) {
     next_review_at: nextReview.toISOString(),
   };
 }
+
+/**
+ * 어휘 FSRS 채점 저장의 단일 소스 — {…nextStats, last_reviewed_at}를 user_vocabulary에
+ * UPDATE한다. 같은 페이로드가 4곳(단어장 scoreMutation·인라인 복습·퀘스트 복습·
+ * progressStore)에 흩어져 각자 유지되던 중복의 수렴(전수 조사 구조 정리 C).
+ * 컬럼은 snake_case여야 한다 — 미지 컬럼이 섞이면 PostgREST가 UPDATE 전체를
+ * 거부해 채점이 조용히 유실된다(과거 사고). client는 주입식(순수 lib 유지·테스트 용이).
+ */
+export async function persistVocabGrade(client, wordId, nextStats, reviewedAt = new Date().toISOString()) {
+  const { error } = await client
+    .from('user_vocabulary')
+    .update({ ...nextStats, last_reviewed_at: reviewedAt })
+    .eq('id', wordId);
+  if (error) throw error;
+}

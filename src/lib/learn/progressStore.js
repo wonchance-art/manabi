@@ -448,14 +448,9 @@ async function recordReviewEventRemote(userId, event) {
  */
 async function updateVocabNextReviewRemote(userId, wordId, nextStats) {
   if (!userId || !wordId) return;
-
-  const payload = { ...nextStats, last_reviewed_at: new Date().toISOString() };
-  const { error } = await supabase
-    .from('user_vocabulary')
-    .update(payload)
-    .eq('id', wordId);
-
-  if (error) throw error;
+  // 채점 저장 정본(fsrs.persistVocabGrade)으로 수렴 — 4중복 페이로드의 단일화
+  const { persistVocabGrade } = await import('../fsrs');
+  return persistVocabGrade(supabase, wordId, nextStats);
 }
 
 /**

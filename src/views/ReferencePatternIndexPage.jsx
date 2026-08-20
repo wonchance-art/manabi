@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { fetchSavedWordSet } from '../lib/referenceVocab';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { useTTS } from '../lib/useTTS';
@@ -60,16 +61,14 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
     if (!user || allItems.length === 0) { setSavedSet(new Set()); return; }
     let cancel = false;
     (async () => {
-      const { data, error } = await supabase
-        .from('user_vocabulary')
-        .select('word_text')
-        .eq('user_id', user.id)
-        .in('word_text', allItems.map(i => i.pattern));
-      if (!cancel && error) {
-        toast?.('저장 상태를 불러오지 못했어요', 'warning');
-        return;
+      try {
+        // 어휘 페이지와 같은 청크 조회 정본(fetchSavedWordSet) — 문형 수가 늘어도
+        // 단일 .in() 길이 한계에 안 걸린다(규약 통일, 구조 정리 C)
+        const saved = await fetchSavedWordSet(supabase, user.id, allItems.map(i => i.pattern));
+        if (!cancel) setSavedSet(saved);
+      } catch {
+        if (!cancel) toast?.('저장 상태를 불러오지 못했어요', 'warning');
       }
-      if (!cancel && data) setSavedSet(new Set(data.map(d => d.word_text)));
     })();
     return () => { cancel = true; };
   }, [user?.id, allItems, toast]);

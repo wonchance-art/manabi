@@ -26,6 +26,8 @@ vi.mock('../reviewEvents', () => ({
 
 vi.mock('../fsrs', () => ({
   calculateFSRS: vi.fn(() => ({ interval: 3, ease_factor: 2.6, repetitions: 1, next_review_at: '2026-07-12T00:00:00.000Z' })),
+  // 채점 저장 정본(구조 정리 C 수렴) — 이 훅은 이제 원시 update 대신 이것을 호출한다
+  persistVocabGrade: vi.fn().mockResolvedValue(undefined),
 }));
 
 const { useInlineReview } = await import('../useInlineReview');

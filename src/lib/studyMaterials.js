@@ -14,6 +14,7 @@ import { computeEwma, dialFromEwma, computeWeakness, deriveVocabRungs } from '@/
 // 기존 import 경로(테스트·과거 소비처) 호환 위해 re-export — studyMaterials 공개 API 불변.
 export { deriveVocabRungs };
 import { levelBand } from '@/lib/writingPrompts';
+import { kstWeekStartMs } from './growthStats'; // 상대 경로 — vitest가 실모듈을 로드한다(@ 별칭 없음)
 import { THEMES } from '@/lib/studyParagraph';
 
 /**
@@ -159,16 +160,6 @@ function sample(arr, n) {
     out.push(arr[(start + i * 7) % arr.length]);
   }
   return [...new Set(out)].slice(0, n);
-}
-
-/** KST 기준 이번 주 월요일 0시의 UTC 밀리초 */
-function kstWeekStartMs(nowMs = Date.now()) {
-  const kst = new Date(nowMs + 9 * 3600 * 1000);
-  const dow = kst.getUTCDay();                        // 0=일 … 6=토
-  const daysSinceMon = (dow + 6) % 7;
-  // Date.UTC(...)는 'KST 자정을 UTC인 척'한 값 → 9h를 빼 실제 UTC 순간으로 되돌린다.
-  return Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate())
-    - daysSinceMon * 86400000 - 9 * 3600 * 1000;
 }
 
 /** KST 기준 일요일인가 */
