@@ -4756,9 +4756,9 @@ body.is-review-session .page-container { padding-top: 8px; }
 }
 .viewer-side--right {
   border-left: 1px solid var(--border);
-  /* 카드 글자 캡 — 칸(280px)이 세로 스크롤이라 너비 맞춤이 지배(1자 ≈ 칸 폭 전부).
-     30vh는 낮은 창에서 셀(1.9em)이 화면을 압도하는 것만 막는다(일반 창 미발동). */
-  --fit-cap: 30vh;
+  /* 지정 단어 글자 = 4rem(64px) 고정 — 글자 수 무관 동일 크기(1~3자 전부 64px),
+     4자 성어만 칸 폭(≈224px) 한계에서 56px로 조용히 축소(한 줄 유지). */
+  --fit-cap: 4rem;
 }
 .viewer-side__content {
   flex: 1;
@@ -4792,10 +4792,10 @@ body.is-review-session .page-container { padding-top: 8px; }
    수식으로 성립하므로 측정 JS가 없다. 캡 8rem = 한 글자 폭주 방지(패널 절반 수준).
    cqi 미지원 엔진은 아래 폴백 줄(1.5rem — 기존 크기)로 안전하게 내려간다. */
 .word-fit-wrap { container-type: inline-size; width: 100%; }
-/* 캡(--fit-cap)은 레이아웃의 세로 예산에서 유도한다(오너 승인 2026-08-20 — "여유 있는
-   너비만큼 확대"): 데스크톱 우측 칸 30vh(스크롤 컬럼이라 너비가 사실상 지배 — 낮은 창
-   안전핀), 모바일 시트 12svh(글자+병음+첫 뜻이 시트 첫 화면에 함께). 핀 없는 문맥은
-   기존 8rem 그대로. */
+/* --fit-cap = 사실상의 고정 크기(오너 확정 2026-08-20 — "환경별 알맞은 크기로 고정").
+   글자 수로 크기가 널뛰던 것의 수리: 흔한 단어는 전부 캡 크기로 고정되고, 폭맞춤
+   (100cqi÷분모)은 긴 단어가 칸을 넘칠 때만 아래로 개입한다(min 동작 — 한 줄 유지).
+   Pleco·Anki 표제어 고정 선례. 핀 없는 문맥은 기존 8rem 그대로. */
 .word-fit {
   font-size: 1.5rem;
   font-size: clamp(1.5rem, calc(100cqi / var(--fit-n, 1)), var(--fit-cap, 8rem));
@@ -5015,8 +5015,9 @@ body.is-review-session .page-container { padding-top: 8px; }
     bottom: 0; left: 0; right: 0;
     max-height: 70vh;
     max-height: 60svh;
-    /* 카드 글자 캡 — 글자 셀(1.9em ≈ 23svh)+병음+첫 뜻이 시트 첫 화면(60svh)에 함께 */
-    --fit-cap: 12svh;
+    /* 지정 단어 글자 = 4rem(64px) 고정 — 데스크톱과 동일 크기, 시트 폭에선 5자까지 무축소.
+       셀(1.9em ≈ 122px)이 시트 첫 화면에 뜻과 함께 들어간다. */
+    --fit-cap: 4rem;
     background: var(--bg-card);
     border-top: 1px solid var(--border);
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
