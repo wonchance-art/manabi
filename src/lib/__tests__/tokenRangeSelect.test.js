@@ -136,3 +136,31 @@ describe('그립 배선 계약 (ViewerPage.jsx)', () => {
     expect(src).toContain('onGripDown={tokenRange.startGripAdjust}');
   });
 });
+
+// 계약: 드래그 중 시트 포인터 투과 — 드래그 도중 비동기 데이터 도착으로 시트가 위로
+// 자라 경로를 덮으면 elementFromPoint가 시트를 반환해 범위가 목표 토큰에 못 미친다
+// (2026-08-20 main CI 3연속 red의 원인, 로컬 계측 실측). pointer-events:none 요소는
+// elementFromPoint가 투과하므로 드래그 동안만 시트를 눕힌다.
+describe('드래그 중 시트 가로채기 차단 계약', () => {
+  const hook = fs.readFileSync(path.join(process.cwd(), 'src/lib/useTokenRangeSelect.js'), 'utf8');
+  const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
+  const css = fs.readFileSync(path.join(process.cwd(), 'src/index.css'), 'utf8');
+
+  it('훅이 dragging을 노출한다 — 드래그·그립 시작 시 true, 정리 경로에서 false', () => {
+    expect(hook.match(/setDragging\(true\)/g)?.length).toBe(2); // onStart + 그립 조정
+    // 종료·취소가 모두 지나는 cleanupTransient에서 단일 해제 — 켠 채 새는 경로 차단
+    expect(hook).toMatch(/const cleanupTransient = useCallback\(\(\) => \{\s*setDragging\(false\);/);
+    expect(hook).toMatch(/return \{ range, rangeTokenIds, dragging,/);
+  });
+
+  it('뷰어가 드래그 동안 루트에 --dragging을 달고, CSS가 시트·바를 투과시킨다', () => {
+    expect(viewer).toContain("tokenRange.dragging ? ' viewer-3col--dragging' : ''");
+    expect(css).toMatch(/\.viewer-3col--dragging \.viewer-sheet,\s*\.viewer-3col--dragging \.viewer-sheet-bar \{ pointer-events: none; \}/);
+  });
+
+  it('e2e 재시도는 시트를 닫고 다시 드래그한다(자란 시트가 pointerdown부터 먹는 경우)', () => {
+    const e2e = fs.readFileSync(path.join(process.cwd(), 'e2e/learning-flow.e2e.mjs'), 'utf8');
+    expect(e2e).toContain("getByRole('button', { name: '시트 닫기', exact: true })");
+    expect(e2e).toContain("pdf_cache:synant:v1:Chinese:中文"); // ⑤ 자동 조회 결정성 시드
+  });
+});

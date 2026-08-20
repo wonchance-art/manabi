@@ -101,6 +101,10 @@ const AUTO_SCROLL_EDGE = 72; // 뷰포트 상·하단 이 안쪽에서 드래그
  */
 export function useTokenRangeSelect({ sequence, dictionary, enabled = true, onSelect }) {
   const [range, setRange] = useState(null); // { start, end } — sequence 인덱스(정렬됨)
+  // 드래그 진행 중 표식 — 뷰어가 이 동안 바텀시트를 pointer-events:none으로 눕힌다.
+  // 드래그 도중 비동기 데이터 도착으로 시트가 위로 자라 경로를 덮으면 elementFromPoint가
+  // 시트를 반환해 범위가 목표 토큰에 못 미친다(CI 3연속·로컬 계측 실측 — 실사용 결함).
+  const [dragging, setDragging] = useState(false);
   const anchorRef = useRef(null);
   const focusRef = useRef(null);
   const didSelectRef = useRef(false); // 제스처 직후 합성 click 억제 플래그
@@ -163,6 +167,7 @@ export function useTokenRangeSelect({ sequence, dictionary, enabled = true, onSe
   }, [applyFocus, tokenIdxFromPoint]);
 
   const cleanupTransient = useCallback(() => {
+    setDragging(false);
     if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0; }
     if (touchBlockRef.current) {
       document.removeEventListener('touchmove', touchBlockRef.current);
@@ -184,6 +189,7 @@ export function useTokenRangeSelect({ sequence, dictionary, enabled = true, onSe
       onStart: () => {
         if (anchorRef.current == null) return;
         didSelectRef.current = true;
+        setDragging(true);
         focusRef.current = anchorRef.current;
         setRange({ start: anchorRef.current, end: anchorRef.current });
         // 지정 확정 후 터치 스크롤 차단 — 아직 스크롤이 시작되지 않은 시점이라 유효
@@ -268,6 +274,7 @@ export function useTokenRangeSelect({ sequence, dictionary, enabled = true, onSe
     e.preventDefault();
     e.stopPropagation();
     didSelectRef.current = true;
+    setDragging(true); // 그립 조정도 드래그 — 시트 가로채기 차단 동일 적용
     anchorRef.current = gripAnchor(r, which);
     focusRef.current = which === 'start' ? r.start : r.end;
     const before = { start: r.start, end: r.end };
@@ -320,5 +327,5 @@ export function useTokenRangeSelect({ sequence, dictionary, enabled = true, onSe
     };
   }, [clearRange]);
 
-  return { range, rangeTokenIds, clearRange, handlePointerDown, handleClickCapture, startGripAdjust };
+  return { range, rangeTokenIds, dragging, clearRange, handlePointerDown, handleClickCapture, startGripAdjust };
 }

@@ -4919,6 +4919,13 @@ body.is-review-session .page-container { padding-top: 8px; }
 .viewer-sheet-bar,
 .viewer-sheet { display: none; }
 
+/* 지정 드래그 중에는 시트·바가 포인터를 가로채지 않는다 — 드래그 도중 비동기 데이터
+   도착(정본 예문·유의어 등)으로 시트가 위로 자라 경로를 덮으면 elementFromPoint가
+   시트를 반환해 범위가 목표 토큰에 못 미치는 실결함의 수리(CI 3연속·로컬 계측 실측).
+   pointer-events:none 요소는 elementFromPoint가 투과해 밑의 본문 토큰을 잡는다. */
+.viewer-3col--dragging .viewer-sheet,
+.viewer-3col--dragging .viewer-sheet-bar { pointer-events: none; }
+
 @media (max-width: 1179px) {
   .viewer-3col { flex-direction: column; height: auto; }
   .viewer-side { display: none; }
