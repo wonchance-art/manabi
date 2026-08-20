@@ -28,13 +28,24 @@ describe('집중 모드 배선', () => {
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{\s*\.word-token \{ transition: none; \}/);
   });
 
-  it('문장 이동 필 — 지정 중에만 뜨고, 이동은 막대 클릭과 동일 효과다(오너 승인)', () => {
+  it('문장 이동 필 — 지정 중에만 뜨고, 지정·스크롤은 공통·분석은 모드 분기(오너 지시 2026-08-20)', () => {
     expect(viewer).toContain("pickedLineIdx !== null && sentences.length > 0 && (");
-    // 지정·분석·범위 배타·스크롤이 한 동작 — 막대(¦) onClick과 같은 4종 호출
     const move = viewer.slice(viewer.indexOf('const moveSentence'), viewer.indexOf('const runSelectionAnalysis'));
-    for (const call of ['tokenRange.clearRange()', 'setPickedLineIdx(target.rawIdx)', 'setSelectedRangeText(target.text)', 'runSelectionAnalysis(target.text)', 'scrollIntoView']) {
+    for (const call of ['tokenRange.clearRange()', 'setPickedLineIdx(target.rawIdx)', 'setSelectedRangeText(target.text)', 'scrollIntoView']) {
       expect(move).toContain(call);
     }
+    // 집중 모드 ▲▼ = 순수 이동: 분석·시트 없음(읽기 방해 + 안 볼 번역의 Gemini 낭비),
+    // 꺼짐 = 본래처럼 전체 분석. 순수 이동이 시트 신호를 올리면 계약 위반.
+    expect(move).toContain('if (focusMode) clearAnalysisPanels();');
+    expect(move).toContain('else runSelectionAnalysis(target.text);');
+    expect(move).not.toContain('SheetSignal');
+    // 패널 비움의 최소 범위 — 좌 결과·우 리스트·카드 활성이 함께 꺼져야 시트가 잦아든다
+    const clear = viewer.slice(viewer.indexOf('const clearAnalysisPanels'), viewer.indexOf('const moveSentence'));
+    for (const call of ["setLeftPanelResult('')", 'setDragTokens(null)', 'setIsSheetOpen(false)']) {
+      expect(clear).toContain(call);
+    }
+    // 막대(¦) 경로는 본래처럼 전체 분석(오너: "전체 지정 버튼 누르면 나타나도록")
+    expect(viewer).toContain('runSelectionAnalysis(lineHead.text);');
     // 경계 비활성(순환 없음)
     expect(viewer).toContain("disabled={!adjacentSentence(sentences, pickedLineIdx, -1)}");
     expect(css).toMatch(/\.sentence-nav__btn \{[^}]*width: 44px;/s);
