@@ -364,16 +364,20 @@ export default function ViewerPage() {
 
   const handleTokenClick = (token, tokenId) => {
     if (token.pos === '개행') return;
-    // 집중 모드 + 지정 없음 = 발동 대기: 첫 탭은 단어가 아니라 **문장**을 순수 지정한다
-    // (오너 확정 2026-08-20 — 최소 단위 문장, 시트·분석·카드 전부 없음). 지정 불가 줄
-    // (막대 없는 2자 미만)은 아래 기존 단어 카드로 폴백.
-    if (focusMode && pickedLineIdx === null) {
+    // 집중 모드 단일 규칙(오너 확정 2026-08-20): 지정 문장 '밖' 탭 = 순수 이동 — 지정만
+    // 옮기고 카드·분석·발화·시트 없음, 뜻이 필요하면 지정된 문장 '안'에서 한 번 더 탭.
+    // '안' 탭 = 아래 기존 단어 카드. 지정 없음(발동 대기)도 같은 규칙의 특수형(모든 탭이
+    // 밖 = 첫 탭이 문장 지정). 문장 단위가 아닌 줄(막대 없는 2자 미만)은 무시 — 카드
+    // 폴백을 두면 첫 탭이 곧장 카드를 띄우는 뒷문이 된다.
+    if (focusMode) {
       const m = tokenId.match(/^(?:id|failed)_(\d+)_/);
       const line = m ? sentences.find((s) => s.rawIdx === parseInt(m[1])) : null;
-      if (line) {
+      if (!line) return;
+      if (line.rawIdx !== pickedLineIdx) {
         tokenRange.clearRange();
         setPickedLineIdx(line.rawIdx);
         setSelectedRangeText(line.text);
+        clearAnalysisPanels(); // 이전 문장 분석이 낡은 채 남지 않게 — 순수 이동과 동일 원칙
         return;
       }
     }
@@ -576,6 +580,22 @@ export default function ViewerPage() {
       const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
       el.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
     }
+  };
+
+  // 집중 모드 — 본문 창의 '빈 공간'(글자·컨트롤 밖) 탭 = 지정 해제(오너 확정 2026-08-20:
+  // "글자 외 다른 부분 클릭 시 해제 — 전문을 살필 수 있게"). 범위 지정도 같은 조망
+  // 이펙트라 함께 풀고, 패널도 비운다(해제된 선택의 분석이 낡은 채 남는 불일치 차단 —
+  // 순수 이동과 동일 원칙). 토큰·막대(¦)·▲▼필·그립·버튼류는 저마다의 동작이므로 해제
+  // 대상이 아니다: ¦·그립은 stopPropagation, 드래그 합성 클릭은 캡처 차단으로 여기
+  // 안 오고, 나머지는 closest 가드로 거른다.
+  const handleReaderBlankClick = (e) => {
+    if (!focusMode) return;
+    if (e.target.closest('.word-token, .line-pick, .sentence-nav, .range-grip, button, a')) return;
+    if (pickedLineIdx === null && !tokenRange.range) return;
+    tokenRange.clearRange();
+    setPickedLineIdx(null);
+    setSelectedRangeText('');
+    clearAnalysisPanels();
   };
 
   const runSelectionAnalysis = async (sel) => {
@@ -1735,6 +1755,7 @@ export default function ViewerPage() {
         }}
         onPointerDown={tokenRange.handlePointerDown}
         onClickCapture={tokenRange.handleClickCapture}
+        onClick={handleReaderBlankClick}
       >
         {isAnalyzing && !isStaleAnalysis && (
           <div className="analyzing-banner">
@@ -1837,7 +1858,10 @@ export default function ViewerPage() {
                   tokenRange.clearRange(); // 범위 지정 이펙트와 상호 배타
                   setPickedLineIdx(lineHead.rawIdx); // 문장 전체 지정 이펙트
                   setSelectedRangeText(lineHead.text); // 문법 버튼 활성 경로
-                  runSelectionAnalysis(lineHead.text);
+                  // 집중 모드 단일 규칙: 지정 '밖' 막대 = 순수 이동(지정 먼저), 지정된
+                  // 문장의 막대 재탭 = 본래처럼 전체 분석. 집중 꺼짐 = 항상 분석.
+                  if (focusMode && pickedLineIdx !== lineHead.rawIdx) clearAnalysisPanels();
+                  else runSelectionAnalysis(lineHead.text);
                 }}
               />
             ) : null;

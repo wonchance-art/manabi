@@ -44,27 +44,52 @@ describe('집중 모드 배선', () => {
     for (const call of ["setLeftPanelResult('')", 'setDragTokens(null)', 'setIsSheetOpen(false)']) {
       expect(clear).toContain(call);
     }
-    // 막대(¦) 경로는 본래처럼 전체 분석(오너: "전체 지정 버튼 누르면 나타나도록")
-    expect(viewer).toContain('runSelectionAnalysis(lineHead.text);');
+    // 막대(¦): 집중 모드에서 지정 '밖' 막대는 순수 이동, 지정된 문장의 막대 재탭만
+    // 전체 분석(오너 확정 2026-08-20 — 지정이 먼저, 분석은 안에서 한 번 더). 꺼짐 = 항상 분석.
+    expect(viewer).toContain('if (focusMode && pickedLineIdx !== lineHead.rawIdx) clearAnalysisPanels();');
+    expect(viewer).toContain('else runSelectionAnalysis(lineHead.text);');
     // 경계 비활성(순환 없음)
     expect(viewer).toContain("disabled={!adjacentSentence(sentences, pickedLineIdx, -1)}");
     expect(css).toMatch(/\.sentence-nav__btn \{[^}]*width: 44px;/s);
   });
 
-  it('첫 탭 = 문장 순수 지정, 이후 단어 탭은 지정 유지(오너 확정 2026-08-20 — 플립플롭 방지)', () => {
+  it('단일 규칙 — 밖 탭 = 순수 이동, 안 탭 = 카드, 문장 아닌 줄 = 무시(오너 확정 2026-08-20)', () => {
     const click = viewer.slice(viewer.indexOf('const handleTokenClick'), viewer.indexOf('// ② 리스트 단어 탭'));
-    // 발동 대기(집중 ON + 지정 없음): 탭한 지점의 문장을 지정만 하고 return —
-    // 분석·시트·카드·발화 전부 없음(최소 단위 = 문장)
-    expect(click).toContain('if (focusMode && pickedLineIdx === null) {');
+    // 집중 ON: 탭한 지점의 문장을 찾는다. 못 찾으면(막대 없는 2자 미만 줄) 무시 —
+    // 카드 폴백을 두면 첫 탭이 곧장 카드를 띄우는 뒷문이 된다.
+    expect(click).toContain('if (focusMode) {');
     expect(click).toMatch(/sentences\.find\(\(s\) => s\.rawIdx === parseInt\(m\[1\]\)\)/);
-    const armed = click.slice(click.indexOf('if (focusMode && pickedLineIdx === null)'), click.indexOf('const t = { ...token'));
-    expect(armed).toContain('setSelectedRangeText(line.text);');
-    expect(armed).toContain('return;');
-    expect(armed).not.toContain('runSelectionAnalysis');
-    expect(armed).not.toContain('setIsSheetOpen');
-    expect(armed).not.toContain('speak(');
-    // 지정 중 단어 탭 = 카드 + 지정 유지(집중 꺼짐일 때만 기존 상호 배타 #1002)
+    expect(click).toContain('if (!line) return;');
+    // 밖(지정 문장이 아님 — 지정 없음 = 발동 대기도 포함) = 순수 이동:
+    // 지정만 옮기고 분석·시트·카드·발화 전부 없음, 낡은 패널은 비운다
+    const outside = click.slice(click.indexOf('if (focusMode) {'), click.indexOf('const t = { ...token'));
+    expect(outside).toContain('if (line.rawIdx !== pickedLineIdx) {');
+    expect(outside).toContain('setSelectedRangeText(line.text);');
+    expect(outside).toContain('clearAnalysisPanels();');
+    expect(outside).toContain('return;');
+    expect(outside).not.toContain('runSelectionAnalysis');
+    expect(outside).not.toContain('setIsSheetOpen');
+    expect(outside).not.toContain('speak(');
+    // 안(지정 문장 내) 단어 탭 = 기존 카드 경로 + 지정 유지(집중 꺼짐일 때만 상호 배타 #1002)
     expect(click).toContain('if (!focusMode) setPickedLineIdx(null);');
+  });
+
+  it('빈 공간 탭 = 지정 해제(전문 조망) — 토큰·막대·▲▼·그립·버튼은 해제 대상 아님(오너 확정 2026-08-20)', () => {
+    const blank = viewer.slice(viewer.indexOf('const handleReaderBlankClick'), viewer.indexOf('const runSelectionAnalysis'));
+    // 집중 꺼짐이면 아무 일 없음 — 기존 동작 보존
+    expect(blank).toContain('if (!focusMode) return;');
+    // 저마다의 동작이 있는 컨트롤은 closest 가드로 거른다(¦·그립은 stopPropagation,
+    // 드래그 합성 클릭은 handleClickCapture가 앞단에서 차단 — 이중 방어)
+    for (const guard of ['.word-token', '.line-pick', '.sentence-nav', '.range-grip', 'button']) {
+      expect(blank).toContain(guard);
+    }
+    // 해제 = 지정 + 범위 + 선택 텍스트 + 낡은 패널까지(순수 이동과 동일 원칙)
+    for (const call of ['tokenRange.clearRange();', 'setPickedLineIdx(null);', "setSelectedRangeText('');", 'clearAnalysisPanels();']) {
+      expect(blank).toContain(call);
+    }
+    // 본문 컨테이너에 실제 배선 — 캡처 차단은 그대로 앞단에 산다
+    expect(viewer).toContain('onClick={handleReaderBlankClick}');
+    expect(viewer).toContain('onClickCapture={tokenRange.handleClickCapture}');
   });
 
   it('토글이 설정에 있고 언어 무관이다', () => {
