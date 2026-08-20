@@ -134,7 +134,7 @@ export default function ViewerQuizModal({
                 <a href={`/viewer/${nextMaterial.id}`} className="completion-next-card">
                   <span className="completion-next-card__badge">다음 추천</span>
                   <span className="completion-next-card__flag">
-                    {nextMaterial.processed_json?.metadata?.language === 'English' ? '영어' : '일본어'}
+                    {nextMaterial.language === 'English' ? '영어' : '일본어'}
                   </span>
                   <span className="completion-next-card__title">{nextMaterial.title}</span>
                   <span className="completion-next-card__arrow">→</span>
