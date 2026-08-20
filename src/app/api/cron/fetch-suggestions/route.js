@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { kstDateString } from '@/lib/growthStats';
 import { fetchFromSource } from '../../../../lib/content-sources.js';
 
 export async function GET(request) {
@@ -18,7 +19,8 @@ export async function GET(request) {
     serviceKey ? { auth: { persistSession: false } } : {},
   );
 
-  const today = new Date().toISOString().split('T')[0];
+  // KST 날짜 정본 — 이 크론은 15:00 UTC(=KST 자정)에 돌므로 UTC 날짜는 'KST 어제'가 된다
+  const today = kstDateString();
   const saved = { Japanese: 0, English: 0, errors: [] };
 
   // DB에서 활성 소스 조회, 없으면 기본값

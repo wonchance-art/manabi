@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { bcp47ForLanguage } from '../lib/speechLang';
 
 export default function ListenControls({ text, language = 'Japanese' }) {
   const [supported, setSupported] = useState(false);
@@ -55,7 +56,7 @@ export default function ListenControls({ text, language = 'Japanese' }) {
     setProgress({ current: i + 1, total: sentences.length });
     setCurrentSentence(sentences[i]);
     const utter = new window.SpeechSynthesisUtterance(sentences[i]);
-    utter.lang = languageRef.current === 'Japanese' ? 'ja-JP' : 'en-US';
+    utter.lang = bcp47ForLanguage(languageRef.current);
     utter.rate = rateRef.current;
     utter.onend = () => {
       if (sessionRef.current !== sessionId) return;

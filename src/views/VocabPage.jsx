@@ -345,6 +345,8 @@ export default function VocabPage() {
     });
     // progressStore로 통합: 복습 기록 + SRS + 보상 일괄 처리
     const qtype = ({ flash: 'flash', context: 'choice', typing: 'typing', listening: 'listening' })[effectiveMode] || 'choice';
+    // 낙관 전진(카드는 즉시 넘어감) + 실패는 반드시 표면화 — 과거 '채점해도 SRS가
+    // 안 전진하는 조용한 실패' 재발 방지의 두 번째 겹(첫 겹은 아래 페이로드 계약).
     recordReviewCompleted(user.id, {
       type: 'vocab',
       itemKey: currentWord.word_text,
@@ -359,6 +361,8 @@ export default function VocabPage() {
       ease_factor: nextStats.ease_factor ?? 0,
       repetitions: nextStats.repetitions ?? 0,
       next_review_at: nextStats.next_review_at,
+    }).then((r) => {
+      if (r?.ok === false) toast('복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.', 'error', 5000);
     });
     // 기존 scoreMutation은 progressStore 내부에서 처리됨
     fetchProfile(user.id);
@@ -419,6 +423,9 @@ export default function VocabPage() {
     } else {
       setReviewFinished(true);
       toast('오늘의 복습 완료', 'celebrate', 5000);
+      // 세션 동안의 낙관 전진을 서버 정본과 재동기 — 채점 저장이 fire-and-forget이라
+      // 여기서 한 번 무효화하지 않으면 다음 화면이 낡은 FSRS 값을 계속 본다.
+      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
       // 복습 완료 시 진도 갱신 — 현재 시리즈 필터의 모든 복습 완료 단어를 학습 진도로 기록
       updateReadingProgress();
     }

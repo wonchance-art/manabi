@@ -23,7 +23,9 @@ vi.mock('../../supabase', () => ({
   supabase: {
     from: vi.fn((table) => ({
       upsert: vi.fn().mockResolvedValue({ error: null }),
-      update: vi.fn().mockResolvedValue({ error: null }),
+      // update().eq() 체인 — 예전 목(update가 곧장 resolve)은 .eq 부재로 실제 경로를
+      // 조용히 throw시키고 있었다(반환 계약 도입이 드러낸 은폐 결함).
+      update: vi.fn(() => ({ eq: vi.fn().mockResolvedValue({ error: null }) })),
       insert: vi.fn().mockResolvedValue({ error: null }),
       eq: vi.fn().mockReturnThis(),
     })),
@@ -120,8 +122,8 @@ describe('progressStore', () => {
   });
 
   describe('recordReviewCompleted', () => {
-    it('로그인 사용자: 복습 이벤트 + SRS + 보상 기록', async () => {
-      await recordReviewCompleted('user-123', {
+    it('로그인 사용자: 복습 이벤트 + SRS + 보상 기록 — 성공을 반환값으로 알린다', async () => {
+      const result = await recordReviewCompleted('user-123', {
         type: 'vocab',
         itemKey: 'word-456',
         lang: 'Japanese',
@@ -129,12 +131,30 @@ describe('progressStore', () => {
         detail: { word_id: 'word-456', meaning: '의미' },
       }, {
         interval: 3,
-        easeFactor: 2.5,
+        ease_factor: 2.5,
+        repetitions: 1,
         next_review_at: new Date().toISOString(),
       });
 
-      // review_events + vocabulary update 호출 확인
-      expect(recordReviewCompleted).toBeDefined();
+      // review_events + vocabulary update 호출 확인 + 저장 성공 표식
+      expect(result).toEqual({ ok: true });
+    });
+
+    it('원격 실패는 삼키지 않는다 — { ok: false }로 호출자에게 알린다(무증상 유실 방지)', async () => {
+      // review_events 적재가 터지는 상황
+      const { logReviewEvents } = await import('../../reviewEvents');
+      vi.mocked(logReviewEvents).mockRejectedValueOnce(new Error('네트워크 단절'));
+
+      const result = await recordReviewCompleted('user-123', {
+        type: 'vocab',
+        itemKey: 'word-456',
+        lang: 'Japanese',
+        correct: true,
+        detail: { word_id: 'word-456', meaning: '의미' },
+      }, { interval: 3, ease_factor: 2.5, repetitions: 1, next_review_at: new Date().toISOString() });
+
+      expect(result.ok).toBe(false);
+      expect(result.error).toBeInstanceOf(Error);
     });
 
     it('게스트: 진도 이벤트 기록 불가 (localStorage 제약)', async () => {
