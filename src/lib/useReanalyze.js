@@ -75,8 +75,10 @@ export function useReanalyze({ materialId, material, refetch, toast }) {
   const missingIndices = stale ? computeMissingLineIndices(material) : [];
 
   const mutation = useMutation({
-    mutationFn: async ({ fullReset = false, resume = false, selectedLineIndices = null } = {}) => {
-      let rawText = material?.raw_text;
+    // rawTextOverride/baseJsonOverride: ③ 원문 수정 경로 — 방금 저장한 텍스트와
+    // 리맵된 분석본을 react-query 캐시(낡음)를 우회해 직접 투입한다(sourceEdit.js).
+    mutationFn: async ({ fullReset = false, resume = false, selectedLineIndices = null, rawTextOverride = null, baseJsonOverride = null } = {}) => {
+      let rawText = rawTextOverride || material?.raw_text;
       if (!rawText) throw new Error('원본 텍스트가 없습니다.');
 
       // 문단 구분이 안 돼있으면 자동 분리 후 DB에도 반영
@@ -90,7 +92,7 @@ export function useReanalyze({ materialId, material, refetch, toast }) {
       abortRef.current = controller;
 
       const initMeta = {
-        ...(material.processed_json?.metadata || {}),
+        ...((baseJsonOverride || material.processed_json)?.metadata || {}),
         updated_at: new Date().toISOString(),
       };
 
@@ -100,7 +102,7 @@ export function useReanalyze({ materialId, material, refetch, toast }) {
       if (selectedLineIndices) {
         // 부분 분석: 선택한 줄만 failed로 마킹 → 나머지 기존 유지
         const failedForPartial = [...selectedLineIndices].sort((a, b) => a - b);
-        baseJson = { ...material.processed_json, failed_indices: failedForPartial };
+        baseJson = { ...(baseJsonOverride || material.processed_json), failed_indices: failedForPartial };
         statusJson = { ...baseJson, status: 'analyzing', metadata: initMeta };
       } else if (fullReset) {
         statusJson = { sequence: [], dictionary: {}, last_idx: -1, status: 'analyzing', metadata: initMeta, failed_indices: [] };

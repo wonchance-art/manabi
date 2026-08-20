@@ -50,6 +50,7 @@ import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
 import { getBook } from '../lib/bookMeta';
 import { getJaRef, formatJaRef, getJaWarn } from '../lib/jaRef';
 import TokenEditPanel from './TokenEditPanel';
+import SourceEditModal from './SourceEditModal';
 import TokenPosLabel from './TokenPosLabel';
 import TokenRangeGrips from './TokenRangeGrips';
 import ViewerComments from './ViewerComments';
@@ -325,6 +326,30 @@ export default function ViewerPage() {
     selectedParas, paragraphs,
     togglePara, startFullReanalyze, startPartialReanalyze,
   } = useReanalyzeUI({ reanalyze, material, toast });
+
+  // ③ 원문 수정(오너 승인) — 소유자 전용, 저장 시 바뀐 줄만 재분석(sourceEdit.js 계획).
+  const [sourceEditOpen, setSourceEditOpen] = useState(false);
+  const handleSourceEditSave = async (plan) => {
+    if (!plan || plan.noop) { setSourceEditOpen(false); return; }
+    if (!plan.ok) { toast(plan.reason, 'error'); return; }
+    try {
+      // raw_text를 먼저 확정 — 분석은 override로 같은 텍스트를 받아 낡은 캐시를 우회
+      const { error: rawError } = await supabase
+        .from('reading_materials')
+        .update({ raw_text: plan.newText })
+        .eq('id', id);
+      if (rawError) throw rawError;
+    } catch (e) {
+      toast('원문 저장 실패 — ' + friendlyToastMessage(e), 'error');
+      return;
+    }
+    setSourceEditOpen(false);
+    reanalyzeMutation.mutate({
+      selectedLineIndices: plan.selected,
+      rawTextOverride: plan.newText,
+      baseJsonOverride: plan.remapped,
+    });
+  };
 
   // 읽기 진행률 바 — readerRef는 본문 컨테이너에 부착
   const { readerRef, readProgress } = useReadProgress(material);
@@ -1569,6 +1594,10 @@ export default function ViewerPage() {
                           <strong>부분 분석</strong>
                           <span>문단을 선택해서 분석합니다</span>
                         </button>
+                        <button className="reanalyze-panel__item" onClick={() => { setReanalyzePanel(null); setSourceEditOpen(true); }}>
+                          <strong>원문 수정</strong>
+                          <span>텍스트를 고치면 바뀐 줄만 분석합니다</span>
+                        </button>
                       </div>
                     )}
                     {reanalyzePanel === 'pick' && (
@@ -2038,6 +2067,17 @@ export default function ViewerPage() {
         rightSignal={rightSheetSignal}
       />
 
+
+      {user?.id === material?.owner_id && (
+        <SourceEditModal
+          open={sourceEditOpen}
+          initialText={material?.raw_text || ''}
+          processedJson={material?.processed_json}
+          saving={reanalyzeMutation.isPending}
+          onSave={handleSourceEditSave}
+          onClose={() => setSourceEditOpen(false)}
+        />
+      )}
 
       <ViewerQuizModal
         quizState={quizState} handleQuizAnswer={handleQuizAnswer}

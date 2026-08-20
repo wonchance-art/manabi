@@ -4874,6 +4874,41 @@ body.is-review-session .page-container { padding-top: 8px; }
 .syn-ant__chip:hover { border-color: var(--border-hover); color: var(--primary-light); }
 .syn-ant__r { color: var(--text-muted); font-size: 0.74rem; }
 .syn-ant__ko { color: var(--text-secondary); font-size: 0.76rem; }
+
+/* ③ 원문 수정(오너 승인) — 소유자 전용, 저장 시 바뀐 줄만 재분석 */
+.source-edit-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 90; }
+.source-edit {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(720px, 94vw);
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  z-index: 91;
+}
+.source-edit__title { font-weight: 700; font-size: 0.95rem; }
+.source-edit__textarea {
+  width: 100%;
+  min-height: 45vh;
+  resize: vertical;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+.source-edit__footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.source-edit__summary { font-size: 0.8rem; color: var(--text-muted); }
+.source-edit__actions { display: flex; gap: 8px; margin-left: auto; }
 .viewer-center {
   flex: 1;
   overflow-y: auto;
