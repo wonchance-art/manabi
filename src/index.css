@@ -4848,6 +4848,32 @@ body.is-review-session .page-container { padding-top: 8px; }
   font-size: 0.82rem;
 }
 .char-inspect__word:hover { border-color: var(--border-hover); color: var(--primary-light); }
+
+/* ⑤ 유의어·반의어(오너 승인) — 뜻 바로 아래 두 줄, 칩 탭 = 그 단어 카드로 */
+.syn-ant {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: -6px 0 14px;
+  font-size: 0.82rem;
+}
+.syn-ant__row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; }
+.syn-ant__label { color: var(--text-muted); font-size: 0.74rem; flex-shrink: 0; }
+.syn-ant__chip {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 2px 9px;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+}
+.syn-ant__chip:hover { border-color: var(--border-hover); color: var(--primary-light); }
+.syn-ant__r { color: var(--text-muted); font-size: 0.74rem; }
+.syn-ant__ko { color: var(--text-secondary); font-size: 0.76rem; }
 .viewer-center {
   flex: 1;
   overflow-y: auto;

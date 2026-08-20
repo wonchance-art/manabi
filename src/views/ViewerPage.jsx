@@ -29,6 +29,7 @@ import { splitRuby } from '../lib/splitRuby';
 import { pickableSentences, adjacentSentence } from '../lib/sentenceNav';
 import { fitDivisor, isFitLang } from '../lib/fitWord';
 import { charDetail, isInspectableChar, wordsWithChar } from '../lib/charInspect';
+import { fetchSynAnt, synAntEligible } from '../lib/synAnt';
 import ReportMaterialButton from '../components/ReportMaterialButton';
 import ReadingTest from '../components/ReadingTest';
 import ConversationPanel from '../components/ConversationPanel';
@@ -381,12 +382,42 @@ export default function ViewerPage() {
     setInspectChar(prev => (prev?.key === key ? null : { ch, key, reading }));
   };
 
+  // ⑤ 유의어·반의어 칩 — 탭하면 그 단어의 카드로 교체(handleListWordClick 재사용, 새 상태 없음)
+  const renderSynAntChips = (list) => list.map((x) => (
+    <button
+      key={x.w}
+      className="syn-ant__chip"
+      lang={contentLangTag}
+      onClick={() => handleListWordClick({ text: x.w, base_form: x.w, meaning: x.ko, furigana: x.r, pos: '' })}
+    >
+      <span>{x.w}</span>
+      {x.r && <span className="syn-ant__r pinyin-text">{x.r}</span>}
+      {x.ko && <span className="syn-ant__ko">{x.ko}</span>}
+    </button>
+  ));
+
   // 카드는 패널 맨 위에 붙는다 — 리스트를 내려 본 뒤 탭해도 보이도록 스크롤 복귀
   // (데스크톱 우측 패널 + 모바일 시트 섹션, 둘 다 렌더 사본이라 전부 복귀).
   useEffect(() => {
     if (!selectedToken || !isSheetOpen) return;
     for (const el of document.querySelectorAll('.viewer-side--right, .viewer-sheet__section-body')) el.scrollTop = 0;
   }, [selectedToken, isSheetOpen]);
+
+  // ⑤ 유의어·반의어(오너 승인) — 카드가 열리면 자동 조회. 내용어만(synAntEligible),
+  // localStorage 캐시라 단어당 1회 초소형 호출. 늦게 온 응답이 다른 단어에 붙지 않게 가드.
+  const [synAnt, setSynAnt] = useState(null);
+  useEffect(() => {
+    if (!selectedToken || !isSheetOpen || !synAntEligible(selectedToken, materialLang)) {
+      setSynAnt(null);
+      return undefined;
+    }
+    let alive = true;
+    setSynAnt({ loading: true, syn: [], ant: [] });
+    fetchSynAnt(selectedToken, materialLang)
+      .then((r) => { if (alive) setSynAnt({ loading: false, ...r }); })
+      .catch(() => { if (alive) setSynAnt(null); });
+    return () => { alive = false; };
+  }, [selectedToken, isSheetOpen, materialLang]);
 
   // 왼쪽 패널: 번역 + 맥락
   const [leftPanelText, setLeftPanelText] = useState('');
@@ -1038,6 +1069,23 @@ export default function ViewerPage() {
           >✏️</button>
         )}
       </div>
+      {/* ⑤ 유의어·반의어(오너 승인) — 뜻 바로 아래, 준비되면 조용히 나타난다(내용어만) */}
+      {synAnt && !synAnt.loading && (synAnt.syn.length > 0 || synAnt.ant.length > 0) && (
+        <div className="syn-ant">
+          {synAnt.syn.length > 0 && (
+            <div className="syn-ant__row">
+              <span className="syn-ant__label">유의어</span>
+              {renderSynAntChips(synAnt.syn)}
+            </div>
+          )}
+          {synAnt.ant.length > 0 && (
+            <div className="syn-ant__row">
+              <span className="syn-ant__label">반의어</span>
+              {renderSynAntChips(synAnt.ant)}
+            </div>
+          )}
+        </div>
+      )}
       {isEditingToken && (
         <TokenEditPanel
           key={selectedToken.id} // 토큰 전환 시 리마운트 — 이전 단어 입력값이 새 토큰에 붙는 것 차단(마감 ③)
