@@ -27,6 +27,8 @@ import { fetchWordDetailText } from '../lib/wordDetail';
 import { pinyinToneClass } from '../lib/pinyinTone';
 import { splitRuby } from '../lib/splitRuby';
 import { pickableSentences, adjacentSentence } from '../lib/sentenceNav';
+import { fitDivisor, isFitLang } from '../lib/fitWord';
+import { charDetail, isInspectableChar, wordsWithChar } from '../lib/charInspect';
 import ReportMaterialButton from '../components/ReportMaterialButton';
 import ReadingTest from '../components/ReadingTest';
 import ConversationPanel from '../components/ConversationPanel';
@@ -144,6 +146,8 @@ export default function ViewerPage() {
 
   const [selectedToken, setSelectedToken] = useState(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  // ④ 글자 탐색 — 카드의 큰 단어에서 탭한 한자({ ch, key, reading }). 단어가 바뀌면 리셋.
+  const [inspectChar, setInspectChar] = useState(null);
   const [commentInput, setCommentInput] = useState('');
   const [saveAnim, setSaveAnim] = useState(false);
   const [inlineSaving, setInlineSaving] = useState({});
@@ -337,6 +341,7 @@ export default function ViewerPage() {
     setIsSheetOpen(true);
     setDragTokens(null);
     setWordDetail(null);
+    setInspectChar(null);
     setPickedLineIdx(null);
     setIsEditingToken(false); // 다른 단어로 넘어가면 편집 패널 접기
     tokenRange.clearRange(); // 범위 지정 이펙트와 상호 배타
@@ -358,6 +363,7 @@ export default function ViewerPage() {
     setSelectedToken({ ...t });
     setIsSheetOpen(true);
     setWordDetail(null);
+    setInspectChar(null);
     setIsEditingToken(false);
     setRightSheetSignal(s => s + 1);
   };
@@ -366,7 +372,13 @@ export default function ViewerPage() {
     setIsSheetOpen(false);
     setSelectedToken(null);
     setWordDetail(null);
+    setInspectChar(null);
     setIsEditingToken(false);
+  };
+
+  // ④ 같은 글자 재탭 = 닫기, 다른 글자 = 교체
+  const toggleInspectChar = (ch, key, reading) => {
+    setInspectChar(prev => (prev?.key === key ? null : { ch, key, reading }));
   };
 
   // 카드는 패널 맨 위에 붙는다 — 리스트를 내려 본 뒤 탭해도 보이도록 스크롤 복귀
@@ -687,7 +699,9 @@ export default function ViewerPage() {
   const [hanjaHunTable, setHanjaHunTable] = useState(null);
   const [hanjaJaTable, setHanjaJaTable] = useState(null);
   useEffect(() => {
-    if (!showHanjaKo || materialLang !== 'Chinese' || hanjaKoTable) return undefined;
+    // ④ 글자 탐색이 열리면 토글·언어와 무관하게 로드(음 테이블은 신자체도 수록 — 실측 확인)
+    const needed = (showHanjaKo && materialLang === 'Chinese') || inspectChar !== null;
+    if (!needed || hanjaKoTable) return undefined;
     let alive = true;
     import('../lib/data/hanjaKo.json')
       .then((m) => { if (alive) setHanjaKoTable(m.default || m); })
@@ -699,7 +713,7 @@ export default function ViewerPage() {
       .then((m) => { if (alive) setHanjaJaTable(m.default || m); })
       .catch(() => {});
     return () => { alive = false; };
-  }, [showHanjaKo, materialLang, hanjaKoTable]);
+  }, [showHanjaKo, materialLang, hanjaKoTable, inspectChar]);
   const hanjaKoOf = (text) => (
     materialLang === 'Chinese' && showHanjaKo && hanjaKoTable
       ? readHanjaKo(text, hanjaKoTable)
@@ -914,31 +928,101 @@ export default function ViewerPage() {
 
   const wordDetailCard = !selectedToken || !isSheetOpen ? null : (
     <div className={`word-detail-card${dragTokens !== null ? ' word-detail-card--above-list' : ''}`}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-        <div>
-          <div lang={contentLangTag} style={{ fontSize: '1.5rem', fontWeight: 800, lineHeight: 1.3 }}>
-            {selectedToken.furigana
-              ? splitRuby(selectedToken.text, selectedToken.furigana).map((seg, i) =>
-                  seg.kanji ? <ruby key={i}>{seg.kanji}<rt className={seg.pinyin ? ['pinyin-text', showToneColors && pinyinToneClass(seg.reading)].filter(Boolean).join(' ') : undefined} style={{ fontSize: '0.45em', color: showToneColors && seg.pinyin ? undefined : 'var(--primary-light)' }}>{seg.reading}</rt></ruby> : <span key={i}>{seg.plain}</span>
-                )
-              : selectedToken.text}
-          </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 4 }}>
-            <TokenPosLabel token={selectedToken} />
-            {selectedToken.base_form && selectedToken.base_form !== selectedToken.text && ` · ${selectedToken.base_form}`}
-            {refVocab && (
-              <span style={{ marginLeft: 6, padding: '1px 7px', borderRadius: 999, background: 'var(--primary-glow)', color: 'var(--primary-light)', fontWeight: 700, fontSize: '0.7rem' }}>
-                {refLevelLabel(refVocab.level)}
+      <div className="word-detail-card__actions">
+        {ttsSupported && (
+          <button onClick={() => speak(selectedToken.text, materialLang)} aria-label="발음 듣기" style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', minWidth: 32, minHeight: 32 }} title="발음 듣기">▷</button>
+        )}
+        <button className="word-detail-card__close" onClick={closeWordCard} aria-label="단어 상세 닫기" title="닫기">✕</button>
+      </div>
+      {(() => {
+        // ① 폭맞춤 확대(오너 승인): CJK는 1em 격자라 크기 = 100cqi ÷ fitDivisor가 CSS
+        // 수식으로 성립(.word-fit — 측정 JS 없음). 라틴 자료는 기존 크기 유지.
+        // ④ 글자 탐색: 한자만 탭 대상 — zh는 seg가 글자 단위라 병음도 그 글자 것이다.
+        const rubySegs = selectedToken.furigana ? splitRuby(selectedToken.text, selectedToken.furigana) : null;
+        if (!isFitLang(materialLang)) {
+          return (
+            <div lang={contentLangTag} style={{ fontSize: '1.5rem', fontWeight: 800, lineHeight: 1.3 }}>
+              {rubySegs
+                ? rubySegs.map((seg, i) =>
+                    seg.kanji ? <ruby key={i}>{seg.kanji}<rt className={seg.pinyin ? ['pinyin-text', showToneColors && pinyinToneClass(seg.reading)].filter(Boolean).join(' ') : undefined} style={{ fontSize: '0.45em', color: showToneColors && seg.pinyin ? undefined : 'var(--primary-light)' }}>{seg.reading}</rt></ruby> : <span key={i}>{seg.plain}</span>
+                  )
+                : selectedToken.text}
+            </div>
+          );
+        }
+        const charSpan = (ch, key, reading) => isInspectableChar(ch) ? (
+          <span
+            key={key}
+            role="button"
+            tabIndex={0}
+            className={`word-fit__char${inspectChar?.key === key ? ' word-fit__char--active' : ''}`}
+            title="글자 정보"
+            onClick={() => toggleInspectChar(ch, key, reading)}
+            onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), toggleInspectChar(ch, key, reading))}
+          >{ch}</span>
+        ) : <span key={key}>{ch}</span>;
+        return (
+          <div className="word-fit-wrap">
+            <div
+              className={`word-fit${rubySegs ? '' : ' word-fit--noruby'}`}
+              lang={contentLangTag}
+              style={{ '--fit-n': fitDivisor(selectedToken.text, selectedToken.furigana, materialLang) }}
+            >
+              <span className="surface">
+                {rubySegs
+                  ? rubySegs.map((seg, i) =>
+                      seg.kanji
+                        ? <ruby key={i} data-pinyin={seg.pinyin ? '1' : undefined} data-yomi={seg.pinyin ? undefined : '1'}>
+                            {[...seg.kanji].map((ch, j) => charSpan(ch, `${i}:${j}`, seg.pinyin ? seg.reading : null))}
+                            <span className={['rt-an', showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : ''].filter(Boolean).join(' ')}>{seg.reading}</span>
+                          </ruby>
+                        : <span key={i}>{seg.plain}</span>
+                    )
+                  : [...selectedToken.text].map((ch, j) => charSpan(ch, `p:${j}`, null))}
               </span>
+            </div>
+          </div>
+        );
+      })()}
+      {inspectChar && (() => {
+        // ④ 글자 패널 — 훈음·병음·日 자형(기존 테이블) + 이 글자가 든 내 단어(재인식 앵커)
+        const d = charDetail(inspectChar.ch, { koTable: hanjaKoTable, hunTable: hanjaHunTable, jaTable: hanjaJaTable }) || {};
+        const related = wordsWithChar(inspectChar.ch, [...(savedWords.byKey?.values() || [])], { language: materialLang, excludeText: selectedToken.text });
+        return (
+          <div className="char-inspect">
+            <div className="char-inspect__row">
+              <span className="char-inspect__ch" lang={contentLangTag}>{inspectChar.ch}</span>
+              {inspectChar.reading && (
+                <span className={['pinyin-text', showToneColors ? pinyinToneClass(inspectChar.reading) : ''].filter(Boolean).join(' ')}>{inspectChar.reading}</span>
+              )}
+              {(d.hunEum || d.eum) && <span className="char-inspect__hun">{d.hunEum || `음 ${d.eum}`}</span>}
+              {d.ja && <span className="char-inspect__ja">日 <span lang="ja">{d.ja}</span></span>}
+              {!hanjaKoTable && <span className="char-inspect__loading">옥편 로딩…</span>}
+            </div>
+            {related.length > 0 && (
+              <div className="char-inspect__words">
+                <span className="char-inspect__words-label">내 단어</span>
+                {related.map((v) => (
+                  <button
+                    key={v.id || v.word_text}
+                    className="char-inspect__word"
+                    lang={contentLangTag}
+                    onClick={() => handleListWordClick({ text: v.word_text, base_form: v.base_form || v.word_text, meaning: v.meaning, furigana: v.furigana, pos: v.pos })}
+                  >{v.word_text}</button>
+                ))}
+              </div>
             )}
           </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-          {ttsSupported && (
-            <button onClick={() => speak(selectedToken.text, materialLang)} aria-label="발음 듣기" style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', minWidth: 32, minHeight: 32 }} title="발음 듣기">▷</button>
-          )}
-          <button className="word-detail-card__close" onClick={closeWordCard} aria-label="단어 상세 닫기" title="닫기">✕</button>
-        </div>
+        );
+      })()}
+      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 4, marginBottom: 12 }}>
+        <TokenPosLabel token={selectedToken} />
+        {selectedToken.base_form && selectedToken.base_form !== selectedToken.text && ` · ${selectedToken.base_form}`}
+        {refVocab && (
+          <span style={{ marginLeft: 6, padding: '1px 7px', borderRadius: 999, background: 'var(--primary-glow)', color: 'var(--primary-light)', fontWeight: 700, fontSize: '0.7rem' }}>
+            {refLevelLabel(refVocab.level)}
+          </span>
+        )}
       </div>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: materialLang === 'English' && selectedToken.reading ? 4 : 14 }}>
         <div style={{ fontSize: '1rem', lineHeight: 1.6, flex: 1, minWidth: 0 }}>
