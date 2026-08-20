@@ -16,13 +16,14 @@ describe('① 폭맞춤 확대 계약', () => {
     expect(css).toMatch(/\.word-fit \{\s*font-size: 1\.5rem;\s*font-size: clamp\(1\.5rem, calc\(100cqi \/ var\(--fit-n, 1\)\), var\(--fit-cap, 8rem\)\);/);
   });
 
-  it('캡은 레이아웃 세로 예산에서 유도(오너 승인 2026-08-20) — 데스크톱 30vh, 시트 12svh+60svh', () => {
-    // 데스크톱 우측 칸: 너비 맞춤이 지배(1자 ≈ 칸 폭), 30vh는 낮은 창 안전핀
-    expect(css).toMatch(/\.viewer-side--right \{[^}]*--fit-cap: 30vh;/s);
-    // 모바일 시트: 100svh 배분 추산(헤더 13 + 본문 3줄 20 + 바 7 ⇒ 시트 ≤60svh),
-    // 글자 캡 12svh = 글자+병음+첫 뜻이 시트 첫 화면에 함께. svh 미지원 폴백 70vh 선행.
+  it('지정 단어 글자 = 고정 크기(오너 확정 2026-08-20 — "환경별 알맞은 크기로 고정")', () => {
+    // 글자 수로 크기가 널뛰던 것(1자 220/2자 124/3자 75…)의 수리: --fit-cap이 사실상의
+    // 고정 크기이고, 폭맞춤은 긴 단어가 칸을 넘칠 때만 아래로 개입한다(min — 한 줄 유지).
+    // Pleco·Anki 표제어 고정 선례. 값 재핀은 여기·CSS 두 곳 1줄씩.
+    expect(css).toMatch(/\.viewer-side--right \{[^}]*--fit-cap: 4rem;/s);
+    expect(css).toMatch(/\.viewer-sheet \{[^}]*--fit-cap: 4rem;/s);
+    // 시트 최대 높이는 별개 유지(본문 가시성 — 100svh 배분 추산). svh 미지원 폴백 70vh 선행.
     expect(css).toMatch(/max-height: 70vh;\s*max-height: 60svh;/);
-    expect(css).toMatch(/\.viewer-sheet \{[^}]*--fit-cap: 12svh;/s);
   });
 
   it('격자 복제 — 본문 병음 격자 계약과 동일 규칙(.word-fit 스코프)', () => {
