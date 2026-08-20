@@ -208,3 +208,36 @@ test('레퍼런스(.ja-ruby) — 긴 요미가 문장 폭을 못 늘리고, 두 
   assertGapBand(out.gapMain, '레퍼런스 요미');
   assertGapBand(out.gapBk, '책예문 요미');
 });
+
+test('카드 확대(①) — 크기 = 패널 폭 ÷ 분모(cqi 수식), 한 글자는 8rem 캡, 격자·병음 계약 유지', async () => {
+  // 카드 마크업 재현(ViewerPage wordDetailCard — 글자는 word-fit__char 스팬으로 감싼다)
+  const fitSeg = (ch, py, yomi = false) =>
+    `<ruby data-${yomi ? 'yomi' : 'pinyin'}="1"><span class="word-fit__char">${ch}</span><span class="rt-an">${py}</span></ruby>`;
+  const fit = (inner, n) =>
+    `<div class="word-fit-wrap" style="width:248px"><div class="word-fit" style="--fit-n:${n}"><span class="surface">${inner}</span></div></div>`;
+  await page.setContent(PAGE(
+    fit(fitSeg('强', 'qiáng') + fitSeg('调', 'diào'), 2) +
+    fit(fitSeg('我', 'wǒ'), 1) +
+    fit(fitSeg('志', 'こころざし', true), 2.5)
+  ));
+  const got = await page.evaluate(() => [...document.querySelectorAll('.word-fit')].map((el) => {
+    const cells = [...el.querySelectorAll('ruby[data-pinyin]')].map((r) => r.getBoundingClientRect().width);
+    const rt = el.querySelector('.rt-an');
+    return {
+      fs: parseFloat(getComputedStyle(el).fontSize),
+      cells,
+      rtFs: parseFloat(getComputedStyle(rt).fontSize),
+      rtPos: getComputedStyle(rt).position,
+    };
+  }));
+  // 2자: 248/2 = 124px — 병음 셀(width:1em 격자)이 폭을 꽉 채운다
+  assert.ok(Math.abs(got[0].fs - 124) <= 1, `2자 크기 124px 기대: ${got[0].fs}`);
+  for (const w of got[0].cells) assert.ok(Math.abs(w - got[0].fs) <= 1, `셀 폭 = 1em(격자) 기대: ${w} vs ${got[0].fs}`);
+  // 병음은 카드에서도 전 음절 단일 크기(0.26em)·절대배치 계약을 지킨다
+  assert.ok(Math.abs(got[0].rtFs - got[0].fs * 0.26) <= 0.5, `병음 크기 0.26em 기대: ${got[0].rtFs}`);
+  assert.equal(got[0].rtPos, 'absolute', '카드 병음도 절대배치(WebKit rt 계약과 동일한 span 경로)');
+  // 1자: 폭주 방지 캡 8rem(=128px) — 100cqi(248px)가 아니라 캡에서 멈춘다
+  assert.ok(Math.abs(got[1].fs - 128) <= 1, `1자 캡 128px 기대: ${got[1].fs}`);
+  // ja: 분모 2.5(fitWord.js — 요미 5자 × 0.5em이 본문 1자보다 넓다) → 99.2px
+  assert.ok(Math.abs(got[2].fs - 99.2) <= 1, `志 분모 2.5 → 99.2px 기대: ${got[2].fs}`);
+});
