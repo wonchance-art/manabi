@@ -25,8 +25,12 @@ import { GBC, gbcPanel, gbcButton, gbcButtonPrimary } from './QuestReview';
 import { JaText } from '../../views/refShared';
 import bus from './bus';
 import { getNpcScript, judgeType, drawOmikuji } from './npcScripts';
+import { recordVocabEncounters, stepEncounterRefs, scriptEncounterRefs } from './vocabEncounters';
 
 const WHO_LABEL = { me: '나' };
+
+// 정본 ko는 문화 해설이 길다 — 요약 카드에는 「짧은 뜻 — 해설」 관례의 앞부분만 쓴다.
+const shortKo = (ko) => String(ko || '').split(' — ')[0];
 
 export default function NpcDialog({
   npcKey,
@@ -51,9 +55,75 @@ export default function NpcDialog({
   const [done, setDone] = useState(false);
   const completedRef = useRef(false);             // onComplete 멱등(스탬프 1회)
   const rollTimerRef = useRef(null);
+  const [metWords, setMetWords] = useState(null); // 완주 요약 행 [{text,yomi,ko,pos}] | null(비대상·로드 전)
+  const [savedWords, setSavedWords] = useState(() => new Set()); // user_vocabulary에 이미 담긴 표기
+  const [savingWord, setSavingWord] = useState('');
+  const [saveUser, setSaveUser] = useState(null); // 로그인 사용자(게스트는 담기 버튼 미표시)
 
   const step = steps[idx] || null;
   const isSpeech = step?.t === 'say';
+
+  // 🈁 만남 기록(rfc-vocab-encounter §4.2) — 스텝이 화면에 노출되는 시점에 그 스텝의 refs를 남긴다.
+  // 저작 주석이 없는 스크립트(lang 없음 포함)는 조용히 지나간다.
+  useEffect(() => {
+    if (!script?.lang || !step) return;
+    const refs = stepEncounterRefs(step);
+    if (refs.length > 0) recordVocabEncounters(script.lang, refs);
+  }, [script, step]);
+
+  // 완주 요약(목업 A) 데이터 — 정본 뜻·요미는 무거운 레지스트리라 완주 시에만 지연 로드한다.
+  // 실패는 조용히: 요약 블록 없이 기존 완료 카드만 남는다. 담김 조회·담기는 로그인일 때만.
+  useEffect(() => {
+    if (!done || !script || script.lang !== 'ja') return undefined;
+    const words = scriptEncounterRefs(script);
+    if (words.length === 0) return undefined;
+    let alive = true;
+    (async () => {
+      try {
+        const { JAPANESE_VOCAB_REF } = await import('../../lib/japaneseVocabRegistry');
+        const rows = words.map((text) => {
+          const hit = JAPANESE_VOCAB_REF.findWord(text);
+          return { text, yomi: hit?.word?.yomi || '', ko: hit?.word?.ko || '', pos: hit?.word?.pos || '' };
+        });
+        if (alive) setMetWords(rows);
+        const { supabase } = await import('../../lib/supabase');
+        const { data } = await supabase.auth.getSession();
+        const user = data?.session?.user || null;
+        if (!alive || !user) return;
+        setSaveUser(user);
+        const { fetchSavedWordSet } = await import('../../lib/referenceVocab');
+        const saved = await fetchSavedWordSet(supabase, user.id, words);
+        if (alive) setSavedWords(saved);
+      } catch {
+        // 부가 정보 — 조용히 생략.
+      }
+    })();
+    return () => { alive = false; };
+  }, [done, script]);
+
+  // [+ 담기] — 기존 단어 저장 경로(user_vocabulary) 재사용. ignoreDuplicates로 이미 담긴
+  // 단어의 FSRS 상태를 절대 덮지 않는다. meaning은 정본 ko 전문(오너 확정: 정본 뜻 그대로).
+  async function saveMetWord(row) {
+    if (!saveUser || savingWord) return;
+    setSavingWord(row.text);
+    try {
+      const { supabase } = await import('../../lib/supabase');
+      const { error } = await supabase.from('user_vocabulary').upsert([{
+        user_id: saveUser.id,
+        word_text: row.text,
+        base_form: row.text,
+        furigana: row.yomi,
+        meaning: row.ko,
+        pos: row.pos,
+        next_review_at: new Date().toISOString(),
+        language: 'Japanese',
+      }], { onConflict: 'user_id,word_text', ignoreDuplicates: true });
+      if (!error) setSavedWords((prev) => new Set(prev).add(row.text));
+    } catch {
+      // 실패는 조용히 — 같은 말을 다음에 다시 담을 수 있다.
+    }
+    setSavingWord('');
+  }
 
   // 스텝 전환 시 문항별 임시 상태 초기화.
   useEffect(() => {
@@ -164,13 +234,38 @@ export default function NpcDialog({
     return (
       <div style={overlayWrap}>
         {header}
-        <div style={{ ...gbcPanel, margin: 8, padding: '14px 16px', textAlign: 'center', pointerEvents: 'auto' }}>
+        <div style={{ ...gbcPanel, margin: 8, padding: '14px 16px', textAlign: 'center', pointerEvents: 'auto', maxHeight: '86%', overflowY: 'auto' }}>
           <div style={{ fontSize: '1.5rem', marginBottom: 6 }}>{script.emoji} 🗾</div>
           <p style={{ fontSize: '0.86rem', fontWeight: 700, margin: '0 0 6px' }}>{script.reward}</p>
           {/* noStamp 도시 NPC는 스탬프 대신 수첩 만남 기록을 안내한다. */}
           <p style={{ fontSize: '0.68rem', color: GBC.inkSoft, margin: '0 0 4px' }}>
             {completionNote || '🗾 방문 기념 스탬프를 받았어요.'}
           </p>
+          {/* 🈁 오늘 만난 말(목업 A) — refs 저작이 있는 스크립트만. 연출·포인트 없음: 목록과 담기가 전부. */}
+          {metWords && metWords.length > 0 && (
+            <div style={{ margin: '6px 0 2px', padding: '6px 8px', border: `2px solid ${GBC.creamShade}`, borderRadius: 2, background: GBC.creamHi, textAlign: 'left', maxHeight: 96, overflowY: 'auto' }}>
+              <div style={{ fontSize: '0.66rem', fontWeight: 700, marginBottom: 4 }}>🈁 오늘 만난 말</div>
+              {metWords.map((w) => (
+                <div key={w.text} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.7rem', lineHeight: 1.7 }}>
+                  <span lang="ja" style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>{w.text}</span>
+                  {w.yomi && w.yomi !== w.text && (
+                    <span lang="ja" style={{ color: GBC.inkSoft, whiteSpace: 'nowrap' }}>{w.yomi}</span>
+                  )}
+                  <span style={{ color: GBC.brown, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shortKo(w.ko)}</span>
+                  {saveUser && (savedWords.has(w.text) ? (
+                    <span style={{ fontSize: '0.62rem', color: GBC.inkSoft, whiteSpace: 'nowrap' }}>담김 ✓</span>
+                  ) : (
+                    <button
+                      type="button" onClick={() => saveMetWord(w)} disabled={savingWord !== ''}
+                      style={{ ...gbcButton, padding: '0 6px', fontSize: '0.62rem', boxShadow: 'none', whiteSpace: 'nowrap' }}
+                    >
+                      {savingWord === w.text ? '…' : '+ 담기'}
+                    </button>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
           <button type="button" onClick={exitDialog} style={{ ...gbcButtonPrimary, marginTop: 4 }}>돌아가기 →</button>
         </div>
       </div>
