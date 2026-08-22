@@ -66,7 +66,13 @@ describe('도시 노드 refs 계약', () => {
       for (const node of city?.nodes || []) for (const w of node.refs || []) out.add(w);
       return [...out].sort();
     };
-    expect(refUnion('fukuoka')).toEqual(['タワー', 'ラーメン', '公園', '城', '港', '神社'].sort());
-    expect(refUnion('kyoto')).toEqual(['城', '寺', '市場', '神社'].sort());
+    expect(refUnion('fukuoka')).toEqual([
+      'タワー', 'ラーメン', '公園', '城', '港', '神社',                       // spot 노드(§4.6 1차)
+      '屋台', '免税', 'コンビニ', 'お願いします', '大丈夫', '居酒屋', 'お通し', // 도어 노드(§4.6 확장)
+      '券売機', '替え玉',
+    ].sort());
+    expect(refUnion('kyoto')).toEqual(['城', '寺', '市場', '神社', '拍手'].sort());
+    expect(refUnion('tokyo')).toEqual(['駅', 'まもなく', '行き', '免税', 'コンビニ', 'お願いします', '大丈夫'].sort());
+    expect(refUnion('osaka')).toEqual(['居酒屋', 'お通し', 'コンビニ', 'お願いします', '大丈夫', '市場', '乗り換え', '公園'].sort());
   });
 });

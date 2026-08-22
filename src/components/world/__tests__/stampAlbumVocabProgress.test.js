@@ -73,11 +73,13 @@ describe('stampAlbumVocabProgress — 카드 한 줄', () => {
 describe('도시 코퍼스 실측 고정(R3) — 실제 도시 payload 기준', () => {
   const scriptUnion = (...keys) => keys.flatMap((k) => scriptEncounterRefs(NPC_SCRIPTS[k]));
 
-  it('후쿠오카 코퍼스 = 라멘·편의점·이자카야 스크립트 refs ∪ 노드 refs', () => {
+  it('후쿠오카 코퍼스 = 라멘·편의점·이자카야 스크립트 refs ∪ 노드 refs(spot+도어)', () => {
     const corpus = cityVocabCorpus(FUKUOKA_NODES);
     const expected = new Set([
       ...scriptUnion('ramen', 'konbini', 'izakaya'),
-      '港', 'タワー', '神社', 'ラーメン', '城', '公園',   // §4.6 노드 refs 저작분
+      '港', 'タワー', '神社', 'ラーメン', '城', '公園',                        // spot 노드(§4.6 1차)
+      '屋台', '免税', '居酒屋', 'お通し', 'コンビニ', 'お願いします', '大丈夫', // 도어 노드(§4.6 확장)
+      '券売機', '替え玉',
     ]);
     expect([...corpus.get('ja')].sort()).toEqual([...expected].sort());
   });
@@ -86,24 +88,26 @@ describe('도시 코퍼스 실측 고정(R3) — 실제 도시 payload 기준', 
     const corpus = cityVocabCorpus(KYOTO_NODES);
     const expected = new Set([
       ...scriptEncounterRefs(NPC_SCRIPTS.shrine),
-      '城', '神社', '寺', '市場',                        // §4.6 노드 refs 저작분
+      '城', '神社', '寺', '市場', '拍手',                // §4.6 노드 refs 저작분
     ]);
     expect([...corpus.get('ja')].sort()).toEqual([...expected].sort());
   });
 
-  it('도쿄 코퍼스 = 역무원·면세·편의점·카페·서점 스크립트 refs (노드 refs 미저작)', () => {
+  it('도쿄 코퍼스 = 5스크립트 refs ∪ 도어 노드 refs', () => {
     const corpus = cityVocabCorpus(TOKYO_NODES);
-    const expected = new Set(scriptUnion(
-      'ekiin', 'menzei', 'konbini', 'tokyo-yamanote-west-cafe', 'tokyo-central-east-bookstore',
-    ));
+    const expected = new Set([
+      ...scriptUnion('ekiin', 'menzei', 'konbini', 'tokyo-yamanote-west-cafe', 'tokyo-central-east-bookstore'),
+      '駅', 'まもなく', '行き', '免税', 'コンビニ', 'お願いします', '大丈夫',
+    ]);
     expect([...corpus.get('ja')].sort()).toEqual([...expected].sort());
   });
 
-  it('오사카 코퍼스 = 이자카야·편의점·환승·성곽 스크립트 refs (노드 refs 미저작)', () => {
+  it('오사카 코퍼스 = 4스크립트 refs ∪ 도어 노드 refs', () => {
     const corpus = cityVocabCorpus(OSAKA_NODES);
-    const expected = new Set(scriptUnion(
-      'izakaya', 'konbini', 'osaka-north-hubs-transfer', 'osaka-castle-east-guide',
-    ));
+    const expected = new Set([
+      ...scriptUnion('izakaya', 'konbini', 'osaka-north-hubs-transfer', 'osaka-castle-east-guide'),
+      '居酒屋', 'お通し', 'コンビニ', 'お願いします', '大丈夫', '市場', '乗り換え', '公園',
+    ]);
     expect([...corpus.get('ja')].sort()).toEqual([...expected].sort());
   });
 });

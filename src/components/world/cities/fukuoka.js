@@ -93,12 +93,14 @@ export const CITY_NODES = [
     id: 'fukuoka-konbini', kind: 'npc', npc: 'konbini', chapter: 'ot-07-konbini', name: 'ローソン',
     tile: [248, 140], facing: 'down', noStamp: true,
     desc: '24시간 불이 켜진 편의점(コンビニ) 「ローソン」(로손). 계산대에서 뭘 묻든 대답은 딱 두 개 — お願いします(네)·大丈夫です(됐어요). 명물 からあげクン도 있어요.',
+    refs: ['コンビニ', 'お願いします', '大丈夫'], refsLang: 'ja',
   },
   // ③ 中洲 — 야타이 거리 + 대형 잡화점(免税 도어 무대) + 一蘭 본사.
   {
     id: 'nakasu', kind: 'shop', name: '대형 잡화점', facade: 'donki', chapter: 'ot-12-menzei',
     tile: poiTile('nakasu'), facing: 'down', noStamp: true,
     desc: '두 강 사이 세로 섬 中洲(なかす)의 밤거리 — 야타이(屋台) 노점과 24시간 대형 잡화점의 불이 밝은 밤거리. 免税(めんぜい·면세) 카운터에서 여권을 보이면 세금을 돌려받아요. 근처엔 一蘭 본사도. (ot-12 면세 문화 챕터로 이어져요.)',
+    refs: ['屋台', '免税'], refsLang: 'ja',
   },
   // 居酒屋(이자카야 NPC) — 나카스 밤거리. ot-08 이자카야 도어의 무대: お通し의 정체 + 첫 주문 とりあえず生で.
   //   nodeId 는 WORLD_NODES 에 없어 스탬프 미대상(noStamp) — 대화 학습 경험만.
@@ -106,6 +108,7 @@ export const CITY_NODES = [
     id: 'fukuoka-izakaya', kind: 'npc', npc: 'izakaya', chapter: 'ot-08-izakaya', name: '居酒屋',
     tile: [272, 132], facing: 'down', noStamp: true,
     desc: '나카스 밤거리의 이자카야(居酒屋). 안 시켜도 나오는 유료 기본 안주 お通し(오토시)와, 앉자마자 외치는 첫 주문 「とりあえず生で」를 써 볼 곳이에요.',
+    refs: ['居酒屋', 'お通し'], refsLang: 'ja',
   },
   {
     id: 'kushida-jinja', kind: 'spot', name: '櫛田神社', facade: 'torii',
@@ -124,6 +127,7 @@ export const CITY_NODES = [
     id: 'fukuoka-ramen', kind: 'npc', npc: 'ramen', chapter: 'ot-10-ramen', name: '博多ラーメン',
     tile: [205, 158], facing: 'down',
     desc: '뽀얀 김이 오르는 돈코츠 라멘집(博多ラーメン·はかたラーメン). 입구 券売機(켄바이키)에서 식권부터 — 「替え玉お願いします」를 써 볼 곳이에요.',
+    refs: ['ラーメン', '券売機', '替え玉', 'お願いします'], refsLang: 'ja',
   },
   {
     id: 'fukuoka-ippudo', kind: 'shop', name: '하카타 라멘 골목', facade: 'noren',
