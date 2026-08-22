@@ -27,6 +27,7 @@ import {
 import { stampAlbumDistrictPresentation } from './stampAlbumDistrictPresentation';
 import { stampAlbumDiscoveryProgress } from './stampAlbumDiscoveryProgress';
 import { stampAlbumNpcMeetingProgress } from './stampAlbumNpcMeetingProgress';
+import { stampAlbumVocabProgress } from './stampAlbumVocabProgress';
 import { stampAlbumNextGoal } from './stampAlbumNextGoal';
 import { stampTitlePresentation } from './stampTitlePresentation';
 
@@ -195,6 +196,10 @@ export default function StampAlbum({ devGuest = false, stamps, onClose }) {
             const npcMeeting = badge.has && cityDetailReady
               ? stampAlbumNpcMeetingProgress(node, detailCities)
               : null;
+            // 🈁 만난 말(목업 B) — got 0이면 null이라 줄 자체가 생략된다(0 무표기).
+            const vocabProgress = badge.has && cityDetailReady
+              ? stampAlbumVocabProgress(node, detailCities)
+              : null;
             const detailReady = !cityId || cityDetailReady;
             const nextGoal = badge.has && cityId && detailReady
               ? stampAlbumNextGoal({
@@ -231,6 +236,14 @@ export default function StampAlbum({ devGuest = false, stamps, onClose }) {
                 {badge.has && visitedAt[node.id] && (
                   <span style={{ fontFamily: GBC.font, fontSize: '0.5rem', color: GBC.inkSoft, lineHeight: 1 }}>
                     {fmtDate(visitedAt[node.id])}
+                  </span>
+                )}
+                {vocabProgress && (
+                  <span
+                    aria-label={`${badge.name} 만난 말`}
+                    style={{ fontFamily: GBC.font, fontSize: '0.5rem', color: GBC.inkSoft, lineHeight: 1.2, textAlign: 'center' }}
+                  >
+                    {vocabProgress.label}
                   </span>
                 )}
                 {nextGoal && (

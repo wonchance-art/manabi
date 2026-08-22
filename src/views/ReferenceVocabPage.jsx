@@ -8,7 +8,8 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { useTTS } from '../lib/useTTS';
 import { createReviewEventBatcher } from '../lib/reviewEvents';
-import { fetchSavedWordSet, REFERENCE_VOCAB_PAGE_SIZE, takeThemeWords } from '../lib/referenceVocab';
+import { fetchLearnedWordSet, fetchSavedWordSet, REFERENCE_VOCAB_PAGE_SIZE, takeThemeWords } from '../lib/referenceVocab';
+import { loadVocabEncounters } from '../components/world/vocabEncounters';
 import { refInline, refMain, refPron, LevelDot, JaText, alignFurigana, lightenForText } from './refShared';
 
 const LANG_KO = { Japanese: '일본어', English: '영어', French: '프랑스어', Chinese: '중국어' };
@@ -30,6 +31,10 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
   const [revealed, setRevealed] = useState(() => new Set());
   const anyHide = hideMode !== null;
   const [savedSet, setSavedSet] = useState(() => new Set());
+  // 🈁 상태 필터(rfc-vocab-encounter §4.3, 목업 D) — 만남(월드 로컬 기록)·담김·익힘(FSRS 파생).
+  const [stateFilter, setStateFilter] = useState('all');
+  const [metSet, setMetSet] = useState(() => new Set());
+  const [learnedSet, setLearnedSet] = useState(() => new Set());
   const [visibleCount, setVisibleCount] = useState(REFERENCE_VOCAB_PAGE_SIZE);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -87,37 +92,67 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
     [vocab]
   );
 
-  // 이미 단어장에 있는 단어 표시
+  // 이미 단어장에 있는 단어 표시 + 익힘(복습 2회 이상 통과) 집합
   useEffect(() => {
-    if (!user || allWords.length === 0) { setSavedSet(new Set()); return; }
+    if (!user || allWords.length === 0) { setSavedSet(new Set()); setLearnedSet(new Set()); return; }
     let cancel = false;
     (async () => {
       try {
-        const saved = await fetchSavedWordSet(supabase, user.id, allWords.map(w => refMain(w)));
-        if (!cancel) setSavedSet(saved);
+        const keys = allWords.map(w => refMain(w));
+        const [saved, learned] = await Promise.all([
+          fetchSavedWordSet(supabase, user.id, keys),
+          fetchLearnedWordSet(supabase, user.id, keys),
+        ]);
+        if (!cancel) { setSavedSet(saved); setLearnedSet(learned); }
       } catch {
-        if (!cancel) setSavedSet(new Set());
+        if (!cancel) { setSavedSet(new Set()); setLearnedSet(new Set()); }
       }
     })();
     return () => { cancel = true; };
   }, [user?.id, allWords]);
 
+  // 월드 만남 기록 로드 — 로컬 단독이라 게스트도 보인다. 알 수 없는 언어 코드는 빈 집합.
+  useEffect(() => {
+    const code = refInfo?.langCode;
+    setMetSet(typeof code === 'string' && /^[a-z]{2}$/.test(code) ? loadVocabEncounters(code) : new Set());
+  }, [refInfo?.langCode]);
+
   const filteredThemes = useMemo(() => {
     if (!vocab) return [];
     const q = query.trim().toLowerCase();
-    if (!q) return vocab.themes;
+    const stateSet = stateFilter === 'met' ? metSet
+      : stateFilter === 'saved' ? savedSet
+        : stateFilter === 'learned' ? learnedSet
+          : null;
+    if (!q && !stateSet) return vocab.themes;
+    const matchQuery = w => !q || (
+      refMain(w).toLowerCase().includes(q) ||
+      w.ko.toLowerCase().includes(q) ||
+      (w.yomi || '').includes(q) ||
+      (w.en || '').toLowerCase().includes(q)
+    );
+    const matchState = w => !stateSet || stateSet.has(refMain(w));
     return vocab.themes
-      .map(t => ({
-        ...t,
-        words: t.words.filter(w =>
-          refMain(w).toLowerCase().includes(q) ||
-          w.ko.toLowerCase().includes(q) ||
-          (w.yomi || '').includes(q) ||
-          (w.en || '').toLowerCase().includes(q)
-        ),
-      }))
+      .map(t => ({ ...t, words: t.words.filter(w => matchQuery(w) && matchState(w)) }))
       .filter(t => t.words.length > 0);
-  }, [vocab, query]);
+  }, [vocab, query, stateFilter, metSet, savedSet, learnedSet]);
+
+  // 상태별 개수 — 0인 상태의 칩은 그리지 않는다(0 무표기, rfc-vocab-encounter 결).
+  const stateCounts = useMemo(() => {
+    let met = 0; let saved = 0; let learned = 0;
+    for (const w of allWords) {
+      const key = refMain(w);
+      if (metSet.has(key)) met += 1;
+      if (savedSet.has(key)) saved += 1;
+      if (learnedSet.has(key)) learned += 1;
+    }
+    return { met, saved, learned };
+  }, [allWords, metSet, savedSet, learnedSet]);
+
+  function updateStateFilter(next) {
+    setStateFilter(prev => (prev === next ? 'all' : next));
+    setVisibleCount(REFERENCE_VOCAB_PAGE_SIZE);
+  }
 
   const filteredTotal = useMemo(
     () => filteredThemes.reduce((sum, theme) => sum + theme.words.length, 0),
@@ -290,6 +325,53 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
           aria-label="단어 검색"
         />
       </div>
+
+      {/* 🈁 상태 필터(목업 D) — 상태가 하나도 없으면 칩 줄 자체가 없다. 만남은 게스트도,
+          담은·익힌은 로그인 조회가 있을 때만. 활성 칩 재탭 = 전체로 복귀. */}
+      {(stateCounts.met > 0 || stateCounts.saved > 0 || stateCounts.learned > 0) && (
+        <div className="fr-vlist-tools" role="group" aria-label="상태 필터" style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          <button
+            type="button"
+            className={`chip ${stateFilter === 'all' ? 'chip--active' : ''}`}
+            onClick={() => updateStateFilter('all')}
+            aria-pressed={stateFilter === 'all'}
+          >
+            전체 {total}
+          </button>
+          {stateCounts.met > 0 && (
+            <button
+              type="button"
+              className={`chip ${stateFilter === 'met' ? 'chip--active' : ''}`}
+              onClick={() => updateStateFilter('met')}
+              aria-pressed={stateFilter === 'met'}
+              title="월드에서 만난 말"
+            >
+              만난 말 {stateCounts.met}
+            </button>
+          )}
+          {stateCounts.saved > 0 && (
+            <button
+              type="button"
+              className={`chip ${stateFilter === 'saved' ? 'chip--active' : ''}`}
+              onClick={() => updateStateFilter('saved')}
+              aria-pressed={stateFilter === 'saved'}
+            >
+              담은 말 {stateCounts.saved}
+            </button>
+          )}
+          {stateCounts.learned > 0 && (
+            <button
+              type="button"
+              className={`chip ${stateFilter === 'learned' ? 'chip--active' : ''}`}
+              onClick={() => updateStateFilter('learned')}
+              aria-pressed={stateFilter === 'learned'}
+              title="복습 2회 이상 통과"
+            >
+              익힌 말 {stateCounts.learned}
+            </button>
+          )}
+        </div>
+      )}
       {anyHide && (
         <p className="fr-vlist-hint">
           {hideMode === 'word' ? '뜻을 보고 단어를 떠올린 뒤' : '단어를 보고 뜻·발음을 떠올린 뒤'}, 행을 탭하면 확인할 수 있어요.

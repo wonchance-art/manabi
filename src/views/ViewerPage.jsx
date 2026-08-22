@@ -47,6 +47,7 @@ import { useGrammarDetail } from '../lib/useGrammarDetail';
 import { buildContextPrompt } from '../lib/grammarDetail';
 import { analysisCacheKey, clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
+import { loadVocabEncounters } from '../components/world/vocabEncounters';
 import { getBook } from '../lib/bookMeta';
 import { getJaRef, formatJaRef, getJaWarn } from '../lib/jaRef';
 import TokenEditPanel from './TokenEditPanel';
@@ -172,6 +173,14 @@ export default function ViewerPage() {
   // 자료 언어의 BCP 47 태그 — :lang() 폰트 규칙(zh=SC·ja=JP)의 스위치.
   const contentLangTag = materialLang === 'Chinese' ? 'zh-Hans'
     : materialLang === 'Japanese' ? 'ja' : undefined;
+
+  // 🈁 월드에서 만난 말(rfc-vocab-encounter, 목업 C) — 단어 목록에 조용한 점 하나만 얹는다.
+  // 담김은 기존 저장 ✓ 표시가, 익힘은 레퍼런스 어휘의 필터(목업 D)가 담당하므로 여기선 만남만.
+  const [metWordSet, setMetWordSet] = useState(() => new Set());
+  useEffect(() => {
+    const code = { Japanese: 'ja', French: 'fr', Chinese: 'zh', English: 'en' }[materialLang];
+    setMetWordSet(code ? loadVocabEncounters(code) : new Set());
+  }, [materialLang]);
   const [selectedRangeText, setSelectedRangeText] = useState('');
 
   const { data: savedWords = { byKey: new Map(), surfaces: new Set(), bases: new Set() } } = useQuery({
@@ -1027,9 +1036,17 @@ export default function ViewerPage() {
       {dragTokens.map((t, i) => {
         const isSaved = savedWords.surfaces?.has(t.text) || savedWords.bases?.has(t.base_form);
         const saveKey = t.base_form || t.text;
+        // 🈁 만남 점 — 월드에서 만났고 아직 담지 않은 말에만(담긴 말은 기존 ✓가 이미 말해준다).
+        const isMet = !isSaved && (metWordSet.has(t.base_form) || metWordSet.has(t.text));
         return (
           <div key={i} className={`pdf-word-item ${isSaved ? 'pdf-word-item--saved' : ''}`}>
             <span className="pdf-word-item__text" onClick={() => handleListWordClick(t)}>
+              {isMet && (
+                <span
+                  title="월드에서 만난 말" aria-label="월드에서 만난 말"
+                  style={{ color: 'var(--text-muted)', marginRight: 3, fontWeight: 800 }}
+                >·</span>
+              )}
               {t.text}
               {t.furigana && <span className="pdf-word-item__reading">{t.furigana}</span>}
             </span>

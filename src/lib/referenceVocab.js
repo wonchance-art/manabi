@@ -26,6 +26,24 @@ export function chunkSavedWords(words, chunkSize = SAVED_WORD_QUERY_CHUNK_SIZE) 
   return chunks;
 }
 
+/** 익힘(rfc-vocab-encounter §4.3) — FSRS 복습을 minRepetitions회 이상 통과한 저장 단어. */
+export async function fetchLearnedWordSet(client, userId, words, minRepetitions = 2, chunkSize = SAVED_WORD_QUERY_CHUNK_SIZE) {
+  if (!client || !userId) return new Set();
+  const chunks = chunkSavedWords(words, chunkSize);
+  if (chunks.length === 0) return new Set();
+
+  const results = await Promise.all(chunks.map(chunk => client
+    .from('user_vocabulary')
+    .select('word_text')
+    .eq('user_id', userId)
+    .gte('repetitions', minRepetitions)
+    .in('word_text', chunk)));
+
+  const failed = results.find(result => result.error);
+  if (failed?.error) throw failed.error;
+  return new Set(results.flatMap(result => result.data || []).map(row => row.word_text).filter(Boolean));
+}
+
 export async function fetchSavedWordSet(client, userId, words, chunkSize = SAVED_WORD_QUERY_CHUNK_SIZE) {
   if (!client || !userId) return new Set();
   const chunks = chunkSavedWords(words, chunkSize);
