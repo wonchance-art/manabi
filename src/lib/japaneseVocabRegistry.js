@@ -99,12 +99,35 @@ const VOCAB = {
   N1: mergeVocab(vocabN1, vocabN1jlptA, vocabN1jlptB, vocabN1jlptC, vocabN1jlptD, vocabN1jlptE, vocabN1jlptF, vocabN1jlptG, vocabN1jlptH),
 };
 
+// 표기 → { level, word } 지연 인덱스. 낮은 급수(N5 → N1 순서로 먼저 등록되는 쪽)가 이긴다 —
+// mergeVocab의 중복 제거와 같은 정규화(normalizeWord)를 쓴다. 만남 요약(월드)·상태 점(뷰어)이 소비.
+let wordIndex = null;
+function buildWordIndex() {
+  const idx = new Map();
+  for (const meta of LEVEL_META) {
+    const vocab = VOCAB[meta.key];
+    if (!vocab) continue;
+    for (const theme of vocab.themes) {
+      for (const word of theme.words) {
+        const key = normalizeWord(word.ja);
+        if (key && !idx.has(key)) idx.set(key, { level: meta.key, word });
+      }
+    }
+  }
+  return idx;
+}
+
 export const JAPANESE_VOCAB_REF = Object.freeze({
   base: '/japanese',
   flag: '🇯🇵',
   name: '일본어',
   langCode: 'ja',
   LEVEL_META,
+  /** 정본 표기로 단어를 찾는다 — { level, word } 또는 null. */
+  findWord(text) {
+    wordIndex ||= buildWordIndex();
+    return wordIndex.get(normalizeWord(text)) || null;
+  },
   getLevelMeta(level) {
     return LEVEL_META.find(meta => meta.key === normalize(level)) || null;
   },

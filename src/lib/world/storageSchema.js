@@ -16,6 +16,7 @@ export const MUTED_USER_IDS_STORAGE_KEY = 'world_muted';
 export const NPC_MEETING_STORAGE_PREFIX = 'npc-met:';
 export const ROUTE_DISCOVERY_STORAGE_PREFIX = 'route-discoveries:';
 export const BRIEFING_SEEN_PREFIX = 'briefing-seen:';
+export const VOCAB_ENCOUNTER_STORAGE_PREFIX = 'vocab-encounters:';
 export const LEARNING_ACTIVITY_STORAGE_PREFIX = 'manabi-learning-activity-v1:';
 
 // 학습 진도 slug rename은 반드시 구 slug -> 신 slug 별칭을 먼저 등록한다.
@@ -71,6 +72,7 @@ export const WORLD_STORAGE_KEY_PREFIXES = Object.freeze({
   npcMeetings: NPC_MEETING_STORAGE_PREFIX,
   routeDiscoveries: ROUTE_DISCOVERY_STORAGE_PREFIX,
   briefingSeen: BRIEFING_SEEN_PREFIX,
+  vocabEncounters: VOCAB_ENCOUNTER_STORAGE_PREFIX,
 });
 
 // 학습 진도 원본 키(studied_lesson 등)는 각 기존 저장소가 계속 소유한다.
@@ -89,6 +91,12 @@ export function routeDiscoveryStorageKey(cityId) {
 
 export function briefingSeenKey(countryId) {
   return `${WORLD_STORAGE_KEY_PREFIXES.briefingSeen}${countryId}`;
+}
+
+// 만남 기록(rfc-vocab-encounter §4.2)은 언어 코드(ja 등) 스코프다 — 도시 스코프가 아니다.
+// 같은 말을 어느 도시에서 다시 만나도 하나의 기억이며, 도시별 분모는 소비 시점에 계산한다.
+export function vocabEncounterStorageKey(lang) {
+  return `${WORLD_STORAGE_KEY_PREFIXES.vocabEncounters}${lang}`;
 }
 
 export function learningActivityStorageKey(userId) {
