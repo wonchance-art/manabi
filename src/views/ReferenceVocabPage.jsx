@@ -10,6 +10,7 @@ import { useTTS } from '../lib/useTTS';
 import { createReviewEventBatcher } from '../lib/reviewEvents';
 import { fetchLearnedWordSet, fetchSavedWordSet, REFERENCE_VOCAB_PAGE_SIZE, takeThemeWords } from '../lib/referenceVocab';
 import { loadVocabEncounters } from '../components/world/vocabEncounters';
+import { syncVocabEncounters } from '../components/world/vocabEncounterSync';
 import { refInline, refMain, refPron, LevelDot, JaText, alignFurigana, lightenForText } from './refShared';
 
 const LANG_KO = { Japanese: '일본어', English: '영어', French: '프랑스어', Chinese: '중국어' };
@@ -116,6 +117,20 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
     const code = refInfo?.langCode;
     setMetSet(typeof code === 'string' && /^[a-z]{2}$/.test(code) ? loadVocabEncounters(code) : new Set());
   }, [refInfo?.langCode]);
+
+  // 🈁 서버 정본 동기화(rfc-vocab-encounter §4.5) — 로그인 시 쌍방 병합(5분 스로틀) 후,
+  // 다른 기기에서 온 만남이 있을 때만 재로딩. 실패·게스트는 조용히 로컬 단독(무해성 계약).
+  useEffect(() => {
+    const code = refInfo?.langCode;
+    if (!user?.id || typeof code !== 'string') return undefined;
+    let cancel = false;
+    (async () => {
+      if (await syncVocabEncounters(supabase, user.id, code) && !cancel) {
+        setMetSet(loadVocabEncounters(code));
+      }
+    })();
+    return () => { cancel = true; };
+  }, [user?.id, refInfo?.langCode]);
 
   const filteredThemes = useMemo(() => {
     if (!vocab) return [];

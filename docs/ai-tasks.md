@@ -559,6 +559,18 @@
   맞다" — 만남의 입구(월드 refs) 저작은 오늘로 마감하고, 이후 배치는 학습 웹
   (사전·뷰어 UX, fr/zh 트랙의 뷰어 만남 확장, 서버 정본 §4.5) 위주로 잡는다.
   채움 NPC 이원화 gate도 월드 보류에 묶여 저순위.
+  **§4.5 서버 정본(오너 gate 해제 "서버 정본 §4.5 ㄱㄱ" — 학습 웹 방향 1차 배치)**:
+  ㉕ `user_vocab_encounters` 마이그레이션 SQL(PK user_id·lang·word_text, own-only
+  RLS select/insert만 — 만남 불변이라 update/delete 무정책, REVOKE anon,
+  world_stamps 관례 헤더·전면 멱등. 적용은 main 병합 시 supabase-migrations.yml
+  자동 — 운영 DB 수동 적용 없음 하드리밋 준수) ㉖ vocabEncounterSync 쌍방 병합
+  (pull 서버→로컬 합집합 + push 로컬 전용분, ignoreDuplicates=DO NOTHING으로 서버
+  first_met_at 보존·UPDATE 무권한 GRANT와 정합. 언어별 5분 스로틀 sessionStorage,
+  실패·게스트·마이그레이션 미적용은 조용히 로컬 단독 — 무해성 계약 vitest 8건)
+  ㉗ 학습 웹 진입점 2곳 배선(레퍼런스 어휘 metSet·뷰어 metWordSet — 병합으로 새
+  만남이 온 경우만 재로딩, 뷰어 '세션 중 점 번짐 금지' 원칙 유지. 기록 지점 3곳
+  무변경 = 쓰기 서버 왕복 0) ㉘ RFC §4.5 보류→구현 갱신·owner-gate 해소. 게이트:
+  lint 0 err · 콘텐츠 게이트 오류 0 · vitest 1,960 + world 1,090 green (PR #1099).
 - **🪶 리포 경량화 P1·P2(2026-08-19, 오너 승인)** — 오너 질문("월드가 무거울 텐데 따로
   보관 가능한가")에서 출발한 실측: `.git` 36M으로 **clone은 애초에 무겁지 않았고**,
   체감 비용은 게이트 시간이었다(전체 408s 중 world 265s·파일 123/305=40%).
@@ -1845,8 +1857,6 @@
 상세: docs/world-city-roadmap-cn-au.md. 유럽 2차 잔여·호주 나머지는 백로그 동결.
 
 ## owner-gate (오너 결정 대기 — 착수 금지)
-- **우리 사전 만남 기록 서버 정본 테이블**(rfc-vocab-encounter §4.5 — RFC·목업은
-  2026-08-22 승인·착수됨. DB 마이그레이션 적용만 이 gate에 남는다)
 - **도시 NPC 대화 진입 이원화 검토**(2026-08-22 실측): 도시 안 chapter+npc 노드는
   전부 문화 도어로 라우팅되고 NpcDialog는 chapter 없는 노드(현재 fr 채움 NPC·전국맵
   라멘/신사)만 연다. 도쿄·오사카 채움 NPC 4종은 npc==id(직접 대화 후보 계약)인데

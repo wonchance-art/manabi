@@ -48,6 +48,7 @@ import { buildContextPrompt } from '../lib/grammarDetail';
 import { analysisCacheKey, clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
 import { loadVocabEncounters, recordVocabEncounters } from '../components/world/vocabEncounters';
+import { syncVocabEncounters } from '../components/world/vocabEncounterSync';
 import { getBook } from '../lib/bookMeta';
 import { getJaRef, formatJaRef, getJaWarn } from '../lib/jaRef';
 import TokenEditPanel from './TokenEditPanel';
@@ -181,6 +182,19 @@ export default function ViewerPage() {
     const code = { Japanese: 'ja', French: 'fr', Chinese: 'zh', English: 'en' }[materialLang];
     setMetWordSet(code ? loadVocabEncounters(code) : new Set());
   }, [materialLang]);
+  // 서버 정본 동기화(§4.5) — 로그인 시 쌍방 병합(5분 스로틀). 다른 기기에서 온 만남이 있을 때만
+  // 진입 스냅샷을 한 번 다시 뜬다(세션 중 점 번짐 금지 원칙은 그대로 — 내 드래그는 반영 안 됨).
+  useEffect(() => {
+    const code = { Japanese: 'ja', French: 'fr', Chinese: 'zh', English: 'en' }[materialLang];
+    if (!user?.id || !code) return undefined;
+    let cancel = false;
+    (async () => {
+      if (await syncVocabEncounters(supabase, user.id, code) && !cancel) {
+        setMetWordSet(loadVocabEncounters(code));
+      }
+    })();
+    return () => { cancel = true; };
+  }, [user?.id, materialLang]);
   const [selectedRangeText, setSelectedRangeText] = useState('');
 
   const { data: savedWords = { byKey: new Map(), surfaces: new Set(), bases: new Set() } } = useQuery({
