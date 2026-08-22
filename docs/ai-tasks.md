@@ -496,6 +496,16 @@
 
 ## Claude (claude/*)
 ### doing
+- **📚 우리 사전 '만남' 모델 RFC + 목업(2026-08-22, 오너 승인 대기)** — 오너 발제
+  ("참고할 기능 있을지")로 외부 3리포 검토(confquest 게임 설계·무라이선스 / kana-dojo
+  훈련 엔진·AGPL / Lute v3 상태 모델·MIT) 후 "우리 분위기 필터"(보상·스트릭·수령 연출
+  전부 제외) 통과분만 수렴해 RFC 저작. 골자: 만남(유일한 신설 기록 — 저작 시점 `refs`
+  주석, 런타임 형태소 분석 없음)→담김(user_vocabulary 파생)→익힘(FSRS repetitions 파생)
+  3단계, localStorage `vocab-encounters:<lang>`(storage-schema v1 규약·npc-met 선례),
+  도시 카드 "만난 말 n · 이 도시의 말 m"(분수 표기·0 무표기), npcScripts "배운 표현
+  그대로"(A-1)의 vitest 계약화, 목업 A~D 동봉. DB 적용 없음(서버 정본은 owner-gate
+  보류). docs/rfc-vocab-encounter.md (`claude/confquest-code-review-tej1dk`) —
+  **승인 전 구현 금지**, 목업 합의가 착수 조건.
 - **🪶 리포 경량화 P1·P2(2026-08-19, 오너 승인)** — 오너 질문("월드가 무거울 텐데 따로
   보관 가능한가")에서 출발한 실측: `.git` 36M으로 **clone은 애초에 무겁지 않았고**,
   체감 비용은 게이트 시간이었다(전체 408s 중 world 265s·파일 123/305=40%).
@@ -1782,6 +1792,8 @@
 상세: docs/world-city-roadmap-cn-au.md. 유럽 2차 잔여·호주 나머지는 백로그 동결.
 
 ## owner-gate (오너 결정 대기 — 착수 금지)
+- **우리 사전 '만남' 모델 RFC·목업 A~D 승인**(docs/rfc-vocab-encounter.md — 만남 기록·
+  도시 이해도 표시. 서버 정본 테이블 §4.5는 승인돼도 별도 gate 유지)
 - **몽생미셸 조수 RFC A~C 승인**: A) 745분 주기·epoch 420·8단계 결정 시계 B) 안전 회랑
   mask 방식(소스 재생성 vs 301칸 spine 고정) C) visual-only→collision 2단계 롤아웃
   (D 성벽 카피 4상태는 Claude 승낙 완료 — RFC: #150 코멘트 4999436456)
