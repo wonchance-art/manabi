@@ -651,6 +651,12 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
     if (!Array.isArray(nearNode.refs) || nearNode.refs.length === 0) return;
     recordVocabEncounters(nearNode.refsLang, nearNode.refs);
   }, [descOpen, nearNode]);
+  // 도어 프롬프트도 desc를 병기하므로, 열리는 순간 그 노드의 refs를 남긴다(§4.6 확장).
+  useEffect(() => {
+    const node = chapterPrompt?.node;
+    if (!node?.refsLang || !Array.isArray(node.refs) || node.refs.length === 0) return;
+    recordVocabEncounters(node.refsLang, node.refs);
+  }, [chapterPrompt]);
   useEffect(() => { ferryPromptRef.current = ferryPrompt; }, [ferryPrompt]);
   useEffect(() => { minimapOpenRef.current = minimapOpen; }, [minimapOpen]);
   useEffect(() => { albumOpenRef.current = albumOpen; }, [albumOpen]);
@@ -2956,6 +2962,12 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
                 ? `${chapterPrompt.node.name}에서 이어지는 이야기를 읽을까요?`
                 : `${chapterPrompt.node.name} 문화 챕터를 시작할까요?`}
             </p>
+            {/* 장소 설명 병기(rfc-vocab-encounter §4.6) — 게이트 프롬프트의 desc 병기와 같은 문법. */}
+            {chapterPrompt.node?.desc && (
+              <p style={{ fontSize: '0.68rem', opacity: 0.82, lineHeight: 1.5, margin: '-6px 0 14px', textAlign: 'left' }}>
+                {chapterPrompt.node.desc}
+              </p>
+            )}
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
               <button
                 type="button"

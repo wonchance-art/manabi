@@ -218,16 +218,19 @@ export const CITY_NODES = [
     id: 'tokyo-ekiin', kind: 'npc', npc: 'ekiin', chapter: 'ot-11-densha', name: '駅係員',
     tile: [185, 453], facing: 'down', noStamp: true,
     desc: '시부야역 플랫폼의 역무원(駅係員·えきかかりいん). 방송은 まもなく(곧)와 〜行き(~행) 두 개만 잡아도 내릴 역을 안 놓쳐요.',
+    refs: ['駅', 'まもなく', '行き'], refsLang: 'ja',
   },
   {
     id: 'tokyo-menzei', kind: 'npc', npc: 'menzei', chapter: 'ot-12-menzei', name: '免税カウンター',
     tile: [479, 379], facing: 'down', noStamp: true,
     desc: '긴자 상업가의 면세(免税·めんぜい) 카운터. 여권과 「めんぜい、おねがいします」 한마디면 절차 시작 — 2026년 11월부터는 출국할 때 세금을 돌려받아요.',
+    refs: ['免税'], refsLang: 'ja',
   },
   {
     id: 'tokyo-konbini', kind: 'npc', npc: 'konbini', chapter: 'ot-07-konbini', name: 'コンビニ',
     tile: [181, 274], facing: 'down', noStamp: true,
     desc: '신주쿠의 24시간 편의점(コンビニ). 계산대 대답은 딱 두 개 — お願いします(네)·大丈夫です(됐어요)라고 하면 돼요.',
+    refs: ['コンビニ', 'お願いします', '大丈夫'], refsLang: 'ja',
   },
   // ── 채움 라운드 3-1: 도쿄·오사카 8지구 NPC 4종 (oowner 2026-07-23) ──
   {

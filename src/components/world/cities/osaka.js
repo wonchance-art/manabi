@@ -50,22 +50,26 @@ export const CITY_NODES = [
     id: 'osaka-izakaya', kind: 'npc', npc: 'izakaya', chapter: 'ot-08-izakaya', name: '居酒屋',
     tile: [437, 366], facing: 'down', noStamp: true,
     desc: '도톤보리 골목의 이자카야(居酒屋). 안 시켜도 나오는 유료 기본 안주 お通し(오토시)와 첫 주문 「とりあえず生で」를 써 볼 곳이에요.',
+    refs: ['居酒屋', 'お通し'], refsLang: 'ja',
   },
   {
     id: 'osaka-konbini', kind: 'npc', npc: 'konbini', chapter: 'ot-07-konbini', name: 'コンビニ',
     tile: [469, 385], facing: 'down', noStamp: true,
     desc: '黒門市場 곁 24시간 편의점(コンビニ). 계산대 대답은 딱 두 개 — お願いします(네)·大丈夫です(됐어요)라고 하면 돼요.',
+    refs: ['コンビニ', 'お願いします', '大丈夫', '市場'], refsLang: 'ja',
   },
   // ── 채움 라운드 3-1: 도쿄·오사카 8지구 NPC 4종 (owner 2026-07-23) ──
   {
     id: 'osaka-north-hubs-transfer', kind: 'npc', npc: 'osaka-north-hubs-transfer', chapter: 'ot-11-densha', name: '乗り換え案内員',
     tile: [435, 5], facing: 'down', noStamp: true,
     desc: '오사카 북부 교통 허브의 환승 안내원 「乗り換え案内員」(のりかえあんないいん). 환승 노선, 출구 방향, 빠른 식사를 안내받아요.',
+    refs: ['乗り換え'], refsLang: 'ja',
   },
   {
     id: 'osaka-castle-east-guide', kind: 'npc', npc: 'osaka-castle-east-guide', chapter: 'ot-09-jinja', name: '公園案内員',
     tile: [553, 262], facing: 'down', noStamp: true,
     desc: '오사카성 동쪽 공원 안내원 「公園案内員」(こうえんあんないいん). 관광 동선과 전통 공방 체험 순서를 배워요.',
+    refs: ['公園'], refsLang: 'ja',
   },
 ];
 

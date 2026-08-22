@@ -66,6 +66,7 @@ export const CITY_NODES = [
     id: 'kyoto-shrine', kind: 'npc', npc: 'shrine', chapter: 'ot-09-jinja', name: '巫女',
     tile: [485, 514], facing: 'down', noStamp: true,
     desc: '「伏見稲荷大社」(ふしみいなりたいしゃ) 참배로 곁의 미코(巫女)상. 참배 예절 二礼二拍手一礼(통설)과 오미쿠지를 배워요.',
+    refs: ['拍手'], refsLang: 'ja',
   },
 ];
 
