@@ -4774,7 +4774,7 @@ export const REF_GRAMMAR_MANIFEST = {
         },
         {
           "key": "N5",
-          "vocabCount": 943,
+          "vocabCount": 948,
           "bunkeiAvailable": true,
           "bunkeiChapterSlugs": [
             "n5-04-desu-da",

@@ -9,6 +9,7 @@ import vocabN5jlptC from '../content/japanese/vocab/n5_jlpt_c';
 import vocabN5travelCore from '../content/japanese/vocab/n5_travel_core';
 import vocabSlangCore from '../content/japanese/vocab/slang_core';
 import vocabCultureCore from '../content/japanese/vocab/culture_core';
+import vocabTravelSceneCore from '../content/japanese/vocab/travel_scene_core';
 import vocabOnomatopeCore from '../content/japanese/vocab/onomatope_core';
 import vocabN4jlptA from '../content/japanese/vocab/n4_jlpt_a';
 import vocabN4jlptB from '../content/japanese/vocab/n4_jlpt_b';
@@ -92,7 +93,7 @@ function mergeVocab(base, ...addLists) {
 }
 
 const VOCAB = {
-  N5: mergeVocab(vocabN5, vocabN5jlptA, vocabN5jlptB, vocabN5jlptC, vocabN5travelCore, vocabSlangCore, vocabCultureCore),
+  N5: mergeVocab(vocabN5, vocabN5jlptA, vocabN5jlptB, vocabN5jlptC, vocabN5travelCore, vocabSlangCore, vocabCultureCore, vocabTravelSceneCore),
   N4: mergeVocab(vocabN4, vocabN4jlptA, vocabN4jlptB, vocabN4jlptC, vocabOnomatopeCore),
   N3: mergeVocab(vocabN3, vocabN3jlptA, vocabN3jlptB, vocabN3jlptC, vocabN3jlptD, vocabN3jlptE, vocabN3jlptF, vocabN3jlptG, vocabN3jlptH, vocabN3jlptI, vocabN3jlptJ),
   N2: mergeVocab(vocabN2, vocabN2jlptA, vocabN2jlptB, vocabN2jlptC, vocabN2jlptD, vocabN2jlptE, vocabN2jlptF, vocabN2jlptG, vocabN2jlptH, vocabN2jlptI),
