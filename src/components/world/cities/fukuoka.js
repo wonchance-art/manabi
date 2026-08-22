@@ -73,11 +73,13 @@ export const CITY_NODES = [
     id: 'hakata-port-international-terminal', kind: 'spot', name: '博多港国際ターミナル', facade: 'sign',
     tile: poiTile('hakata-port-international-terminal'), facing: 'down', noStamp: true,
     desc: '부산행 국제 여객선이 드나드는 「博多港国際ターミナル」(はかたこう こくさいターミナル). 앞바다에 큰 카페리가 떠 있어요 — 여기서 배를 타면 부산으로 가요.',
+    refs: ['港'], refsLang: 'ja',
   },
   {
     id: 'hakata-port-tower', kind: 'spot', name: '博多ポートタワー', facade: 'sign',
     tile: poiTile('hakata-port-tower'), facing: 'down', noStamp: true,
     desc: '하카타항의 붉은 전망탑 「博多ポートタワー」(はかたぽーとたわー). 항만 베이 지구를 내려다보는 오래된 랜드마크예요.',
+    refs: ['タワー'], refsLang: 'ja',
   },
   // ② 天神(서핵·백화점군) 인접 — アクロス福岡 + 편의점 NPC(ot-07 편의점 도어 무대).
   {
@@ -109,6 +111,7 @@ export const CITY_NODES = [
     id: 'kushida-jinja', kind: 'spot', name: '櫛田神社', facade: 'torii',
     tile: poiTile('kushida-jinja'), facing: 'down', noStamp: true,
     desc: '하카타의 총사(総鎮守) 「櫛田神社」(くしだじんじゃ). 여름 祇園山笠(ぎおんやまかさ)의 신사 — 붉은 토리이를 지나 참배해요.',
+    refs: ['神社'], refsLang: 'ja',
   },
   // ④ キャナルシティ — 운하 분수.
   {
@@ -126,6 +129,7 @@ export const CITY_NODES = [
     id: 'fukuoka-ippudo', kind: 'shop', name: '하카타 라멘 골목', facade: 'noren',
     tile: [200, 160], facing: 'down', noStamp: true,
     desc: '다이묘에서 시작한 돈코츠 라멘 골목 「하카타 라멘 골목」(はかた ラーメン こうじ). 붉은 노렌 아래 白丸·赤丸이에요.',
+    refs: ['ラーメン'], refsLang: 'ja',
   },
   // ⑦ 大濠公園/福岡城跡 — 연못 공원·성터.
   {
@@ -137,6 +141,7 @@ export const CITY_NODES = [
     id: 'fukuoka-castle', kind: 'spot', name: '福岡城跡', facade: 'castle',
     tile: poiTile('fukuoka-castle'), facing: 'down', noStamp: true,
     desc: '오호리공원과 잇닿은 성터 「福岡城跡／舞鶴公園」(ふくおかじょうあと／まいづるこうえん). 봄이면 벚꽃이 석벽을 덮어요.',
+    refs: ['城', '公園'], refsLang: 'ja',
   },
   {
     id: 'fukuoka-museum', kind: 'spot', name: '福岡市博物館', facade: 'depart',
@@ -148,11 +153,13 @@ export const CITY_NODES = [
     id: 'momochi-seaside', kind: 'spot', name: 'シーサイドももち海浜公園', facade: 'sign',
     tile: poiTile('momochi-seaside'), facing: 'down', noStamp: true,
     desc: '인공 백사장이 펼쳐진 「シーサイドももち海浜公園」(しーさいどももち かいひんこうえん). 하카타만을 바라보는 산책 해변이에요.',
+    refs: ['公園'], refsLang: 'ja',
   },
   {
     id: 'fukuoka-tower', kind: 'spot', name: '福岡タワー', facade: 'sign',
     tile: poiTile('fukuoka-tower'), facing: 'down', noStamp: true,
     desc: '해안에 우뚝 선 전망탑 「福岡タワー」(ふくおかたわー). 삼각 거울 외벽이 바다를 비추는 모모치의 상징이에요.',
+    refs: ['タワー'], refsLang: 'ja',
   },
   {
     id: 'marizon', kind: 'spot', name: 'マリゾン', facade: 'sign',

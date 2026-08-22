@@ -101,6 +101,25 @@ vocabEncounterState(word):
 first_met_at)` upsert 테이블이 자연 확장이다. 마이그레이션 SQL은 그때 코드로만 동봉하고
 적용은 오너 수동(하드리밋). **Phase 1은 로컬 단독으로 완결**이며 이 gate에 의존하지 않는다.
 
+### 4.6 노드 텍스트 refs (R3 잔여 — 2026-08-22 저작 설계, 오너 "진행해")
+
+실측 결과 '간판'(cityDistrictBoundarySigns)은 언어 콘텐츠가 아니라 지구 잠금 경계
+표지물이었다. 실제 노출면은 **도시 노드의 name·desc를 A로 여는 GBC 설명 박스**다
+(spot·shop 중 gate·chapter·npc·reading이 아닌 노드 — GameCanvas descOpen 경로).
+
+- **필드**: 노드에 `refs: string[]`(정본 표기) + `refsLang: 'ja'`. refs가 있으면
+  refsLang 필수(스크립트 lang 계약과 동일, R1 규칙대로 ja만).
+- **저작 원칙 — 표기 실등장**: 그 표기가 노드 name·desc에 실제 문자열로 등장하는
+  정본 어휘만 refs로 삼는다(요미·한글 번역만 있는 경우 제외). 이 원칙은 계약
+  테스트가 기계적으로 강제한다(ref ⊆ name+desc).
+- **기록 시점**: 설명 박스 열람(descOpen) 순간 — NpcDialog 스텝 노출 기록과 같은
+  "본 순간" 원칙.
+- **코퍼스**: cityVocabCorpus가 노드 refs도 합산 — 도시 카드 분모가 자란다.
+- **1차 저작 범위**: 후쿠오카(港·タワー·神社·ラーメン·城·公園)·교토(城·神社·寺·市場).
+- **제외(후속)**: 게이트 노드(desc가 프롬프트에 상시 병기 — 열람 시점이 없음),
+  chapter 도어 노드(desc 미노출 경로), NPC 노드(스크립트 refs 소관 — konbini·izakaya
+  등 미저작 4본의 스크립트 refs 저작이 다음 배치), 오버월드 66+19 노드 desc.
+
 ## 5. 목업 (승인 대상 — 배치·정보량 합의용, 문구·기호는 교체 가능)
 
 **A. NPC 대화 완주 화면** — 마지막 스텝 뒤, 스탬프 수집 줄 아래에 요약 한 블록:
