@@ -95,8 +95,27 @@ describe('R1 저작 실측 고정 — 라멘·신사', () => {
     }
   });
 
-  it('신규 정본 5어(食券·券売機·替え玉·おみくじ·賽銭)는 요미·뜻·품사·예문을 갖춘다', () => {
-    for (const w of ['食券', '券売機', '替え玉', 'おみくじ', '賽銭']) {
+  it('스크립트 8본 확장 저작 — 각 스크립트의 시그니처 표현이 refs에 있다', () => {
+    const signatures = {
+      konbini: ['お弁当', 'お願いします', '大丈夫', '袋'],
+      izakaya: ['お通し', '生ビール', 'すみません', '一人'],
+      ekiin: ['行き', 'すみません'],
+      menzei: ['免税', 'パスポート', 'これ'],
+      'tokyo-yamanote-west-cafe': ['コーヒー', '砂糖', 'ミルク', '大丈夫'],
+      'tokyo-central-east-bookstore': ['どこ', 'いくら', 'サイズ', '棚'],
+      'osaka-north-hubs-transfer': ['乗り換え', '出口', '弁当', '駅弁', 'コンビニ'],
+      'osaka-castle-east-guide': ['見学', '人気'],
+    };
+    for (const [key, words] of Object.entries(signatures)) {
+      const refs = scriptEncounterRefs(NPC_SCRIPTS[key]);
+      for (const w of words) {
+        expect(refs, `${key} 스크립트에 「${w}」 노출`).toContain(w);
+      }
+    }
+  });
+
+  it('신규 정본 8어(R1 5어 + 확장 3어)는 요미·뜻·품사·예문을 갖춘다', () => {
+    for (const w of ['食券', '券売機', '替え玉', 'おみくじ', '賽銭', 'お通し', '生ビール', '駅弁']) {
       const hit = JAPANESE_VOCAB_REF.findWord(w);
       expect(hit, `${w} 정본 존재`).toBeTruthy();
       expect(hit.level, `${w}는 N5 병합(culture_core)`).toBe('N5');
