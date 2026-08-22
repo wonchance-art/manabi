@@ -47,7 +47,7 @@ import { useGrammarDetail } from '../lib/useGrammarDetail';
 import { buildContextPrompt } from '../lib/grammarDetail';
 import { analysisCacheKey, clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
-import { loadVocabEncounters } from '../components/world/vocabEncounters';
+import { loadVocabEncounters, recordVocabEncounters } from '../components/world/vocabEncounters';
 import { getBook } from '../lib/bookMeta';
 import { getJaRef, formatJaRef, getJaWarn } from '../lib/jaRef';
 import TokenEditPanel from './TokenEditPanel';
@@ -498,6 +498,29 @@ export default function ViewerPage() {
   // 오른쪽 패널: 드래그 시 단어 리스트 모드
   const [dragTokens, setDragTokens] = useState(null); // null이면 단일 클릭 모드
   const [dragAnalyzing, setDragAnalyzing] = useState(false);
+
+  // 🈁 만남 기록 R3(rfc-vocab-encounter §4.2) — 드래그로 목록에 뜬 토큰 중 정본 어휘를
+  // 정본 표기로 남긴다. 표시(metWordSet)는 자료 진입 시점 스냅샷을 유지해 점이 실시간으로
+  // 번지지 않게 한다(조용함 우선) — 다음 방문부터 반영. 정본 대조가 있는 ja만(타 트랙은 후속).
+  useEffect(() => {
+    if (materialLang !== 'Japanese' || !Array.isArray(dragTokens) || dragTokens.length === 0) return undefined;
+    let alive = true;
+    (async () => {
+      try {
+        const { JAPANESE_VOCAB_REF } = await import('../lib/japaneseVocabRegistry');
+        if (!alive) return;
+        const met = [];
+        for (const t of dragTokens) {
+          const hit = JAPANESE_VOCAB_REF.findWord(t.base_form || t.text);
+          if (hit?.word?.ja) met.push(hit.word.ja);
+        }
+        if (met.length > 0) recordVocabEncounters('ja', met);
+      } catch {
+        // 부가 기록 — 조용히 생략.
+      }
+    })();
+    return () => { alive = false; };
+  }, [dragTokens, materialLang]);
 
   // 모바일 시트 재오픈 신호 — active 유지 상태에선 rising edge가 없어, 시트를 닫은 뒤
   // 다른 단어를 탭해도 시트가 다시 안 올라온다(#996). 탭·드래그 때마다 카운터를 올린다.

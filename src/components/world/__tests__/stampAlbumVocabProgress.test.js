@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { cityVocabCorpus, stampAlbumVocabProgress } from '../stampAlbumVocabProgress.js';
 import { NPC_SCRIPTS } from '../npcScripts.js';
 import { scriptEncounterRefs, vocabEncounterStorageKey } from '../vocabEncounters.js';
+import { CITY_NODES as FUKUOKA_NODES } from '../cities/fukuoka.js';
+import { CITY_NODES as KYOTO_NODES } from '../cities/kyoto.js';
 
 // 🈁 앨범 도시 카드 "만난 말" 진척(rfc-vocab-encounter §4.4, 목업 B).
 
@@ -63,5 +65,19 @@ describe('stampAlbumVocabProgress — 카드 한 줄', () => {
     expect(p.got).toBe(2);
     expect(p.total).toBe(scriptEncounterRefs(NPC_SCRIPTS.ramen).length);
     expect(p.label).toBe(`만난 말 2 · 이 도시의 말 ${p.total}`);
+  });
+});
+
+describe('도시 코퍼스 실측 고정(R3) — 실제 도시 payload 기준', () => {
+  it('후쿠오카 코퍼스 = 라멘 스크립트 refs (konbini·izakaya는 미저작이라 분모 밖)', () => {
+    const corpus = cityVocabCorpus(FUKUOKA_NODES);
+    expect([...corpus.get('ja')].sort())
+      .toEqual([...new Set(scriptEncounterRefs(NPC_SCRIPTS.ramen))].sort());
+  });
+
+  it('교토 코퍼스 = 신사 스크립트 refs', () => {
+    const corpus = cityVocabCorpus(KYOTO_NODES);
+    expect([...corpus.get('ja')].sort())
+      .toEqual([...new Set(scriptEncounterRefs(NPC_SCRIPTS.shrine))].sort());
   });
 });
