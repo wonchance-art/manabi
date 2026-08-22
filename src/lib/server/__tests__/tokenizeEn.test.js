@@ -26,4 +26,11 @@ describe('tokenizeEnLine — POS별 lemma 후보', () => {
     expect(tokens[2]).toMatchObject({ text: '2', pos: '수사' });
     expect(tokens[2]).not.toHaveProperty('lemma_candidates');
   });
+
+  it('악상·합자 라틴 문자를 한 단어로 붙인다 — 프랑스어 자료가 이 토크나이저를 공용(§4.7)', () => {
+    const tokens = tokenizeEnLine("Le café est à côté de l'hôpital");
+    expect(tokens.map((t) => t.text)).toEqual(['Le', 'café', 'est', 'à', 'côté', 'de', "l'hôpital"]);
+    expect(tokenizeEnLine('cœur')[0]).toMatchObject({ text: 'cœur', base_form: 'cœur' });
+    expect(tokenizeEnLine('café')[0].base_form).toBe('café');
+  });
 });

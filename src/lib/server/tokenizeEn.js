@@ -67,7 +67,11 @@ export function buildEnLemmaCandidates(word) {
 export function tokenizeEnLine(line) {
   if (!line || !line.trim()) return [];
 
-  const PATTERN = /([A-Za-z][A-Za-z'\-]*[A-Za-z]?|[A-Za-z]|[.,!?;:"'()\[\]]|\d+)/g;
+  // 라틴 문자 클래스 — ASCII + 악상·합자(À-Ö·Ø-ö·ø-ÿ = ×·÷ 뺀 라틴-1, Œœ·Ÿ 보충).
+  // 프랑스어 자료가 이 토크나이저를 공용하는데, ASCII만 매칭하면 café→caf처럼 악상에서
+  // 단어가 끊겨 뜻 조회·만남 대조(rfc-vocab-encounter §4.7)가 전부 빗나간다.
+  const LATIN = "A-Za-zÀ-ÖØ-öø-ÿŒœŸ";
+  const PATTERN = new RegExp(`([${LATIN}][${LATIN}'\\-]*[${LATIN}]?|[${LATIN}]|[.,!?;:"'()\\[\\]]|\\d+)`, 'g');
   const tokens = [];
   let match;
   while ((match = PATTERN.exec(line)) !== null) {

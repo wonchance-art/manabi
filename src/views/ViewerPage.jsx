@@ -47,8 +47,10 @@ import { useGrammarDetail } from '../lib/useGrammarDetail';
 import { buildContextPrompt } from '../lib/grammarDetail';
 import { analysisCacheKey, clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
-import { loadVocabEncounters, recordVocabEncounters } from '../components/world/vocabEncounters';
+import { recordVocabEncounters } from '../components/world/vocabEncounters';
 import { syncVocabEncounters } from '../components/world/vocabEncounterSync';
+import { encounterLookupLang, loadMetWordKeys, loadRefVocabLookup } from '../lib/refVocabLookup';
+import { normalizeRefWordKey } from '../lib/refWordNormalize';
 import { getBook } from '../lib/bookMeta';
 import { getJaRef, formatJaRef, getJaWarn } from '../lib/jaRef';
 import TokenEditPanel from './TokenEditPanel';
@@ -177,24 +179,24 @@ export default function ViewerPage() {
 
   // 🈁 월드에서 만난 말(rfc-vocab-encounter, 목업 C) — 단어 목록에 조용한 점 하나만 얹는다.
   // 담김은 기존 저장 ✓ 표시가, 익힘은 레퍼런스 어휘의 필터(목업 D)가 담당하므로 여기선 만남만.
+  // 집합은 대조 키(§4.7 정규화 — fr 관사형 접기, ja·en·zh는 원문 그대로)로 든다.
+  const metCode = { Japanese: 'ja', French: 'fr', Chinese: 'zh', English: 'en' }[materialLang];
   const [metWordSet, setMetWordSet] = useState(() => new Set());
   useEffect(() => {
-    const code = { Japanese: 'ja', French: 'fr', Chinese: 'zh', English: 'en' }[materialLang];
-    setMetWordSet(code ? loadVocabEncounters(code) : new Set());
-  }, [materialLang]);
+    setMetWordSet(metCode ? loadMetWordKeys(metCode) : new Set());
+  }, [metCode]);
   // 서버 정본 동기화(§4.5) — 로그인 시 쌍방 병합(5분 스로틀). 다른 기기에서 온 만남이 있을 때만
   // 진입 스냅샷을 한 번 다시 뜬다(세션 중 점 번짐 금지 원칙은 그대로 — 내 드래그는 반영 안 됨).
   useEffect(() => {
-    const code = { Japanese: 'ja', French: 'fr', Chinese: 'zh', English: 'en' }[materialLang];
-    if (!user?.id || !code) return undefined;
+    if (!user?.id || !metCode) return undefined;
     let cancel = false;
     (async () => {
-      if (await syncVocabEncounters(supabase, user.id, code) && !cancel) {
-        setMetWordSet(loadVocabEncounters(code));
+      if (await syncVocabEncounters(supabase, user.id, metCode) && !cancel) {
+        setMetWordSet(loadMetWordKeys(metCode));
       }
     })();
     return () => { cancel = true; };
-  }, [user?.id, materialLang]);
+  }, [user?.id, metCode]);
   const [selectedRangeText, setSelectedRangeText] = useState('');
 
   const { data: savedWords = { byKey: new Map(), surfaces: new Set(), bases: new Set() } } = useQuery({
@@ -513,22 +515,24 @@ export default function ViewerPage() {
   const [dragTokens, setDragTokens] = useState(null); // null이면 단일 클릭 모드
   const [dragAnalyzing, setDragAnalyzing] = useState(false);
 
-  // 🈁 만남 기록 R3(rfc-vocab-encounter §4.2) — 드래그로 목록에 뜬 토큰 중 정본 어휘를
-  // 정본 표기로 남긴다. 표시(metWordSet)는 자료 진입 시점 스냅샷을 유지해 점이 실시간으로
-  // 번지지 않게 한다(조용함 우선) — 다음 방문부터 반영. 정본 대조가 있는 ja만(타 트랙은 후속).
+  // 🈁 만남 기록 R3(rfc-vocab-encounter §4.2·§4.7) — 드래그로 목록에 뜬 토큰 중 정본 어휘를
+  // 저작 표기(refMain)로 남긴다. 표시(metWordSet)는 자료 진입 시점 스냅샷을 유지해 점이
+  // 실시간으로 번지지 않게 한다(조용함 우선) — 다음 방문부터 반영. 대조는 언어별 정본
+  // 조회(ja 위임·fr/zh 표제어 키 인덱스)로 하고, en 기록은 지시 범위 밖 보류(§4.7).
   useEffect(() => {
-    if (materialLang !== 'Japanese' || !Array.isArray(dragTokens) || dragTokens.length === 0) return undefined;
+    const code = encounterLookupLang(materialLang);
+    if (!code || !Array.isArray(dragTokens) || dragTokens.length === 0) return undefined;
     let alive = true;
     (async () => {
       try {
-        const { JAPANESE_VOCAB_REF } = await import('../lib/japaneseVocabRegistry');
-        if (!alive) return;
+        const lookup = await loadRefVocabLookup(code);
+        if (!alive || !lookup) return;
         const met = [];
         for (const t of dragTokens) {
-          const hit = JAPANESE_VOCAB_REF.findWord(t.base_form || t.text);
-          if (hit?.word?.ja) met.push(hit.word.ja);
+          const hit = lookup.findWord(t.base_form) || lookup.findWord(t.text);
+          if (hit?.main) met.push(hit.main);
         }
-        if (met.length > 0) recordVocabEncounters('ja', met);
+        if (met.length > 0) recordVocabEncounters(code, met);
       } catch {
         // 부가 기록 — 조용히 생략.
       }
@@ -1073,8 +1077,12 @@ export default function ViewerPage() {
       {dragTokens.map((t, i) => {
         const isSaved = savedWords.surfaces?.has(t.text) || savedWords.bases?.has(t.base_form);
         const saveKey = t.base_form || t.text;
-        // 🈁 만남 점 — 월드에서 만났고 아직 담지 않은 말에만(담긴 말은 기존 ✓가 이미 말해준다).
-        const isMet = !isSaved && (metWordSet.has(t.base_form) || metWordSet.has(t.text));
+        // 🈁 만남 점 — 만났고 아직 담지 않은 말에만(담긴 말은 기존 ✓가 이미 말해준다).
+        // 비교는 대조 키(§4.7) — fr 저작형 "la famille"와 토큰 "famille"가 같은 키로 접힌다.
+        const isMet = !isSaved && (
+          metWordSet.has(normalizeRefWordKey(metCode, t.base_form)) ||
+          metWordSet.has(normalizeRefWordKey(metCode, t.text))
+        );
         return (
           <div key={i} className={`pdf-word-item ${isSaved ? 'pdf-word-item--saved' : ''}`}>
             <span className="pdf-word-item__text" onClick={() => handleListWordClick(t)}>

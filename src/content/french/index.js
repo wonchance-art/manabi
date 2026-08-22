@@ -4,6 +4,8 @@
  * 콘텐츠는 코드가 단일 소스 — 형식은 SCHEMA.md 참고.
  */
 import { createRegistry } from '../refRegistry';
+// 표제어 정규화(관사·괄호 제거) 정본 — 뷰어 만남 대조와 같은 키(rfc-vocab-encounter §4.7)
+import { normalizeFrHeadword as _normFr } from '../../lib/refWordNormalize';
 
 import grammarA0 from './grammar/a0';
 import grammarA1 from './grammar/a1';
@@ -38,14 +40,6 @@ import flelexB2r from './vocab/b2_flelex2';
 import flelexC1 from './vocab/c1_flelex';
 import flelexC2 from './vocab/c2_flelex';
 
-// 표제어 정규화(관사·괄호 제거) — 보강 어휘가 본편과 겹치면 버림
-const _frArt = /^(l'|d'|s'|le |la |les |un |une |des |du |de la |de l'|de |au |aux |à |se |s')+/i;
-function _normFr(s) {
-  s = String(s || '').trim().toLowerCase().replace(/’/g, "'").replace(/\([^)]*\)/g, ' ');
-  let p = s.split(/[/,]| ou /)[0].trim(), prev;
-  do { prev = p; p = p.replace(_frArt, '').trim(); } while (p !== prev);
-  return p.replace(/[.!?…»«"]/g, '').trim();
-}
 /** 본편 어휘에 보강 테마(FLELex)들을 병합. 같은 이름 테마는 합치고, 새 이름은 뒤에 추가. */
 function mergeFrVocab(base, ...addLists) {
   const themes = base.themes.map((t) => ({ ...t, words: [...t.words] }));
