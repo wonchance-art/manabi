@@ -4,6 +4,8 @@ import { NPC_SCRIPTS } from '../npcScripts.js';
 import { scriptEncounterRefs, vocabEncounterStorageKey } from '../vocabEncounters.js';
 import { CITY_NODES as FUKUOKA_NODES } from '../cities/fukuoka.js';
 import { CITY_NODES as KYOTO_NODES } from '../cities/kyoto.js';
+import { CITY_NODES as TOKYO_NODES } from '../cities/tokyo.js';
+import { CITY_NODES as OSAKA_NODES } from '../cities/osaka.js';
 
 // 🈁 앨범 도시 카드 "만난 말" 진척(rfc-vocab-encounter §4.4, 목업 B).
 
@@ -69,10 +71,12 @@ describe('stampAlbumVocabProgress — 카드 한 줄', () => {
 });
 
 describe('도시 코퍼스 실측 고정(R3) — 실제 도시 payload 기준', () => {
-  it('후쿠오카 코퍼스 = 라멘 스크립트 refs ∪ 노드 refs (konbini·izakaya 스크립트는 미저작이라 분모 밖)', () => {
+  const scriptUnion = (...keys) => keys.flatMap((k) => scriptEncounterRefs(NPC_SCRIPTS[k]));
+
+  it('후쿠오카 코퍼스 = 라멘·편의점·이자카야 스크립트 refs ∪ 노드 refs', () => {
     const corpus = cityVocabCorpus(FUKUOKA_NODES);
     const expected = new Set([
-      ...scriptEncounterRefs(NPC_SCRIPTS.ramen),
+      ...scriptUnion('ramen', 'konbini', 'izakaya'),
       '港', 'タワー', '神社', 'ラーメン', '城', '公園',   // §4.6 노드 refs 저작분
     ]);
     expect([...corpus.get('ja')].sort()).toEqual([...expected].sort());
@@ -84,6 +88,22 @@ describe('도시 코퍼스 실측 고정(R3) — 실제 도시 payload 기준', 
       ...scriptEncounterRefs(NPC_SCRIPTS.shrine),
       '城', '神社', '寺', '市場',                        // §4.6 노드 refs 저작분
     ]);
+    expect([...corpus.get('ja')].sort()).toEqual([...expected].sort());
+  });
+
+  it('도쿄 코퍼스 = 역무원·면세·편의점·카페·서점 스크립트 refs (노드 refs 미저작)', () => {
+    const corpus = cityVocabCorpus(TOKYO_NODES);
+    const expected = new Set(scriptUnion(
+      'ekiin', 'menzei', 'konbini', 'tokyo-yamanote-west-cafe', 'tokyo-central-east-bookstore',
+    ));
+    expect([...corpus.get('ja')].sort()).toEqual([...expected].sort());
+  });
+
+  it('오사카 코퍼스 = 이자카야·편의점·환승·성곽 스크립트 refs (노드 refs 미저작)', () => {
+    const corpus = cityVocabCorpus(OSAKA_NODES);
+    const expected = new Set(scriptUnion(
+      'izakaya', 'konbini', 'osaka-north-hubs-transfer', 'osaka-castle-east-guide',
+    ));
     expect([...corpus.get('ja')].sort()).toEqual([...expected].sort());
   });
 });
