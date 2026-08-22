@@ -141,6 +141,7 @@ import { formatWorldTime, WORLD_TIME_SCALE } from '../../lib/world/worldClock';
 import { cityWeatherAt, worldEventAt } from '../../lib/world/worldLife';
 import { useWorldClock } from '../../lib/world/useWorldClock';
 import { toInteractiveNode } from './cultureDoors';
+import { recordVocabEncounters } from './vocabEncounters';
 import { StoryTextbox, AirportQuiz } from './StoryOverlay';
 import { buildStoryScript } from './storyScript';
 // 🗾 NPC 도트 대화(마스터플랜 A-1) — 하카타 라멘 전문점 주인·신사 미코상. 대화 콘텐츠·판정은
@@ -643,6 +644,13 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
   useEffect(() => { descOpenRef.current = descOpen; }, [descOpen]);
   // 노드에서 멀어지면(근접 해제) 설명 박스도 닫는다.
   useEffect(() => { if (!nearNode) setDescOpen(false); }, [nearNode]);
+  // 🈁 만남 기록(rfc-vocab-encounter §4.6) — 설명 박스로 노드 텍스트를 읽은 순간 refs를 남긴다.
+  // refs 저작이 없는 노드는 조용히 지나간다(기록·표시 모두 없음).
+  useEffect(() => {
+    if (!descOpen || !nearNode?.refsLang) return;
+    if (!Array.isArray(nearNode.refs) || nearNode.refs.length === 0) return;
+    recordVocabEncounters(nearNode.refsLang, nearNode.refs);
+  }, [descOpen, nearNode]);
   useEffect(() => { ferryPromptRef.current = ferryPrompt; }, [ferryPrompt]);
   useEffect(() => { minimapOpenRef.current = minimapOpen; }, [minimapOpen]);
   useEffect(() => { albumOpenRef.current = albumOpen; }, [albumOpen]);

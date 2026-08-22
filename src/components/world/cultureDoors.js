@@ -18,6 +18,9 @@ export function toInteractiveNode(node) {
     track: node.track,
     reading: node.reading,
     openNow: node.openNow,
+    // 🈁 만남 주석(rfc-vocab-encounter §4.6) — 설명 박스 열람 시 GameCanvas가 기록한다.
+    refs: node.refs,
+    refsLang: node.refsLang,
     ...(node.tideCopyKey ? { tideCopyKey: node.tideCopyKey } : {}),
   };
 }

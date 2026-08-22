@@ -69,15 +69,21 @@ describe('stampAlbumVocabProgress — 카드 한 줄', () => {
 });
 
 describe('도시 코퍼스 실측 고정(R3) — 실제 도시 payload 기준', () => {
-  it('후쿠오카 코퍼스 = 라멘 스크립트 refs (konbini·izakaya는 미저작이라 분모 밖)', () => {
+  it('후쿠오카 코퍼스 = 라멘 스크립트 refs ∪ 노드 refs (konbini·izakaya 스크립트는 미저작이라 분모 밖)', () => {
     const corpus = cityVocabCorpus(FUKUOKA_NODES);
-    expect([...corpus.get('ja')].sort())
-      .toEqual([...new Set(scriptEncounterRefs(NPC_SCRIPTS.ramen))].sort());
+    const expected = new Set([
+      ...scriptEncounterRefs(NPC_SCRIPTS.ramen),
+      '港', 'タワー', '神社', 'ラーメン', '城', '公園',   // §4.6 노드 refs 저작분
+    ]);
+    expect([...corpus.get('ja')].sort()).toEqual([...expected].sort());
   });
 
-  it('교토 코퍼스 = 신사 스크립트 refs', () => {
+  it('교토 코퍼스 = 신사 스크립트 refs ∪ 노드 refs', () => {
     const corpus = cityVocabCorpus(KYOTO_NODES);
-    expect([...corpus.get('ja')].sort())
-      .toEqual([...new Set(scriptEncounterRefs(NPC_SCRIPTS.shrine))].sort());
+    const expected = new Set([
+      ...scriptEncounterRefs(NPC_SCRIPTS.shrine),
+      '城', '神社', '寺', '市場',                        // §4.6 노드 refs 저작분
+    ]);
+    expect([...corpus.get('ja')].sort()).toEqual([...expected].sort());
   });
 });

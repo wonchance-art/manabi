@@ -37,6 +37,17 @@ const POI_DESC = {
   'nishiki-market': '\'교토의 부엌\'으로 불리는 아케이드 시장 「錦市場」(にしきいちば). 400년 넘는 역사로 전해지고, 약 390m 골목에 식재료 상점 120여 곳이 늘어서 있어요.',
 };
 
+// 🈁 만남 주석(rfc-vocab-encounter §4.6) — name·desc에 표기가 실제 등장하는 정본 어휘만.
+// (伏見稲荷大社·平安神宮은 大社·神宮 표기라 神社 ref를 달지 않는다 — 표기 실등장 원칙.)
+const POI_REFS = {
+  'nijo-castle': ['城'],
+  'yasaka-shrine': ['神社'],
+  kiyomizudera: ['寺'],
+  kinkakuji: ['寺'],
+  ginkakuji: ['寺'],
+  'nishiki-market': ['市場'],
+};
+
 export const CITY_NODES = [
   ...KYOTO_GEO.pois.map((poi) => ({
     id: poi.id,
@@ -47,6 +58,7 @@ export const CITY_NODES = [
     facing: 'down',
     noStamp: true,
     desc: POI_DESC[poi.id] || `교토의 대표 장소 「${poi.nameJa}」(${poi.yomi}). 실제 지도 위치를 따라 걸어가 볼 수 있어요.`,
+    ...(POI_REFS[poi.id] ? { refs: POI_REFS[poi.id], refsLang: 'ja' } : {}),
   })),
   // ── NPC 대화 노드(가공 무대 — geo POI 아님) — 미코상 스크립트는 도시 불문 제네릭(참배 예절·오미쿠지).
   //   타일은 보행+보행인접+기존 마커 Chebyshev ≥3 이격을 스크립트로 검증해 고정.

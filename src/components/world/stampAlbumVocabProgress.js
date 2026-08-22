@@ -15,15 +15,20 @@ function cityIdForNode(node) {
 /** 도시 노드 배열 → 언어별 어휘 코퍼스 Map<lang, Set<표기>>. 순수 — 저장소 미접촉. */
 export function cityVocabCorpus(cityNodes) {
   const byLang = new Map();
-  for (const node of cityNodes || []) {
-    if (node?.kind !== 'npc' || typeof node.npc !== 'string') continue;
-    const script = getNpcScript(node.npc);
-    if (!script?.lang) continue;
-    const refs = scriptEncounterRefs(script);
-    if (refs.length === 0) continue;
-    let set = byLang.get(script.lang);
-    if (!set) { set = new Set(); byLang.set(script.lang, set); }
+  const add = (lang, refs) => {
+    if (typeof lang !== 'string' || !Array.isArray(refs) || refs.length === 0) return;
+    let set = byLang.get(lang);
+    if (!set) { set = new Set(); byLang.set(lang, set); }
     for (const w of refs) set.add(w);
+  };
+  for (const node of cityNodes || []) {
+    // NPC 대화 스크립트 refs (§4.1)
+    if (node?.kind === 'npc' && typeof node.npc === 'string') {
+      const script = getNpcScript(node.npc);
+      if (script?.lang) add(script.lang, scriptEncounterRefs(script));
+    }
+    // 노드 텍스트 refs (§4.6) — 설명 박스로 읽는 name·desc의 표기.
+    add(node?.refsLang, node?.refs);
   }
   return byLang;
 }
