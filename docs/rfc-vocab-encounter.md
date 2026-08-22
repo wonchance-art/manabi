@@ -4,7 +4,8 @@
 - 기준: `origin/main` `31f79e849e0dea275a650b77e23026359214a8df`
 - 발주: 오너 대화(2026-08-22) — 외부 리포 3종 검토·"우리 분위기 필터(보상류 제외)" 후속
 - 원칙: **보상·포인트·연출·스트릭 없음**(오너 지시). 기존 SRS·저장 경로 무변경.
-  운영 DB 적용 없음(하드리밋 — 마이그레이션 SQL은 코드로만, §4.5는 owner-gate 보류).
+  운영 DB 수동 적용 없음(하드리밋 — 마이그레이션 SQL은 코드로만; §4.5는 2026-08-22
+  오너 gate 해제로 구현, 적용은 main 병합 시 CI 관례).
 
 ## 1. 결론
 
@@ -95,11 +96,20 @@ vocabEncounterState(word):
 개수 고정. 간판 refs는 R3에서 합류). 표시는 **분수**("만난 말 5 · 이 도시의 말 12") —
 초기 콘텐츠는 분모가 작아 %가 과장된다. 보상·칭호·마일스톤과 연결하지 않는다(비목표).
 
-### 4.5 서버 정본 — 보류 (owner-gate)
+### 4.5 서버 정본 — 구현 (2026-08-22 오너 gate 해제 "ㄱㄱ")
 
-다기기 동기화가 필요해지면 `user_vocab_encounters (user_id, lang, word_text,
-first_met_at)` upsert 테이블이 자연 확장이다. 마이그레이션 SQL은 그때 코드로만 동봉하고
-적용은 오너 수동(하드리밋). **Phase 1은 로컬 단독으로 완결**이며 이 gate에 의존하지 않는다.
+`user_vocab_encounters (user_id, lang, word_text, first_met_at)` — PK(user_id, lang,
+word_text), own-only RLS(select/insert만 — 만남은 불변이라 update/delete 정책 없음).
+마이그레이션은 `supabase/migrations/20260822160000_user_vocab_encounters.sql`, 적용은
+main 병합 시 CI(supabase-migrations.yml)의 `supabase db push` 관례를 따른다.
+
+동기화는 `vocabEncounterSync.syncVocabEncounters` — **로컬이 원본**이라는 §4.2 철학
+그대로, 로그인 시 학습 웹 진입점 2곳(레퍼런스 어휘 metSet·뷰어 metWordSet effect)에서
+쌍방 병합만 한다: pull(서버 행을 로컬 합집합) + push(로컬 전용분 insert,
+ignoreDuplicates로 서버 first_met_at 보존). 언어별 5분 스로틀(sessionStorage,
+refProgress 선례), 실패·게스트·마이그레이션 미적용은 전부 조용히 로컬 단독(무해성 계약
+— vocabEncounterSync.test.js가 고정). 기록 지점(NpcDialog·GameCanvas·뷰어 드래그)은
+무변경 — 쓰기 시 서버 왕복을 더하지 않는다.
 
 ### 4.6 노드 텍스트 refs (R3 잔여 — 2026-08-22 저작 설계, 오너 "진행해")
 
@@ -167,7 +177,7 @@ first_met_at)` upsert 테이블이 자연 확장이다. 마이그레이션 SQL�
 
 - 보상·포인트·수령 연출·스트릭·마일스톤 연결 (오너 필터 — confquest·kana-dojo의 습관화 기계는 전부 배제)
 - SRS·복습 정책 변경 (audit-card-srs 별도 트랙)
-- 운영 DB 적용 (§4.5는 SQL 코드 동봉까지만, 적용·env는 오너)
+- 운영 DB 수동 적용 (§4.5 SQL은 코드 동봉까지 — 적용은 main 병합 시 CI 관례, env는 오너)
 - 런타임 형태소 분석·자동 어휘 추출 (저작 주석으로 대체)
 - Lute의 '무시' 상태, 드래그 숙어 등록 (정본 큐레이션이 대체)
 
@@ -178,6 +188,7 @@ first_met_at)` upsert 테이블이 자연 확장이다. 마이그레이션 SQL�
 | R1 스키마+기록 | refs 저작(라멘·신사 2본)·계약 1/2 테스트·storageSchema 키·NpcDialog 기록 배선·완주 요약(목업 A) | 전체 vitest + test:world green |
 | R2 표시 | 도시 카드(B)·뷰어 상태 점(C)·사전 필터(D) | 목업 승인 반영 확인 |
 | R3 확장 | 간판 refs·뷰어 드래그 조회의 만남 기록·도시 코퍼스 검증 스크립트 | 동일 |
-| 보류 | 서버 정본(§4.5, owner-gate)·fr/zh 확장(트랙 정본 연결 후)·적응 출제(별도 RFC) | — |
+| §4.5 서버 정본 | 마이그레이션 SQL·vocabEncounterSync 쌍방 병합·학습 웹 진입점 2곳 배선 (2026-08-22 gate 해제) | 동일 |
+| 보류 | fr/zh 확장(트랙 정본 연결 후)·적응 출제(별도 RFC) | — |
 
 각 단계는 독립 PR(draft→검수→squash), 보드 갱신 동봉, UI 변경은 본 목업 승인이 선행 조건.
