@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { parseTitle } from '../lib/seriesMeta';
+import { materialFit, fitBand, sortByFit } from '../lib/materialFit';
 import { groupByBook } from '../lib/bookMeta';
 import { JP_LEVELS, EN_LEVELS, ZH_LEVELS, langNameKo } from '../lib/constants';
 import ConfirmModal from '../components/ConfirmModal';
@@ -264,6 +265,28 @@ export default function MaterialsPage() {
     staleTime: 1000 * 60,
   });
 
+  // 🎯 자료 맞춤도(rfc-material-fit R2) — 담김 **전체** 인덱스(위 due 인덱스와 별개: 커버리지는
+  // 복습 대기 여부와 무관하게 "담아 본 말"인지가 기준). 게스트 무조회 — 줄·정렬 자체가 없다.
+  const { data: savedVocabIndex } = useQuery({
+    queryKey: ['saved-vocab-index', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_vocabulary')
+        .select('word_text, base_form')
+        .eq('user_id', user.id);
+      if (error) throw error;
+      const surfaces = new Set();
+      const bases = new Set();
+      for (const v of data || []) {
+        if (v.word_text) surfaces.add(v.word_text);
+        if (v.base_form) bases.add(v.base_form);
+      }
+      return { surfaces, bases };
+    },
+    enabled: !!user,
+    staleTime: 1000 * 60,
+  });
+
   function countDueInMaterial(material) {
     if (!dueVocabIndex || !material?.processed_json?.dictionary) return 0;
     const dict = material.processed_json.dictionary;
@@ -298,8 +321,21 @@ export default function MaterialsPage() {
     : langFilter === 'Chinese' ? ZH_LEVELS
     : [...JP_LEVELS, ...EN_LEVELS, ...ZH_LEVELS];
 
+  // 자료별 맞춤도 — 분석 완료 자료만, 담김 인덱스가 있을 때만(게스트 빈 맵 → 표시·정렬 무효과).
+  const fitById = useMemo(() => {
+    const map = new Map();
+    if (!savedVocabIndex) return map;
+    for (const m of materials) {
+      if (m.processed_json?.status !== 'completed') continue;
+      const fit = materialFit(m.processed_json, savedVocabIndex);
+      map.set(m.id, { ...fit, band: fitBand(fit.coverage, fit.total) });
+    }
+    return map;
+  }, [materials, savedVocabIndex]);
+
   const filtered = (() => {
     if (sortBy === 'newest') return materials;
+    if (sortBy === 'fit') return sortByFit(materials, (m) => fitById.get(m.id)?.band ?? null);
     const arr = [...materials];
     if (sortBy === 'level') {
       arr.sort((a, b) => {
@@ -393,6 +429,7 @@ export default function MaterialsPage() {
             style={{ marginLeft: 'auto' }}
           >
             <option value="newest">최신순</option>
+            {user && <option value="fit">내 수준 맞춤</option>}
             <option value="level">쉬운순</option>
             <option value="title">제목순</option>
           </select>
@@ -597,6 +634,21 @@ export default function MaterialsPage() {
                       {m.title}
                     </Link>
                   </h3>
+                  {/* 🎯 맞춤도 줄(rfc-material-fit 목업 A) — 게스트·미계산은 무표기(0 무표기 결) */}
+                  {(() => {
+                    const fit = fitById.get(m.id);
+                    if (!fit || fit.coverage == null) return null;
+                    return (
+                      <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '6px 0 0' }}>
+                        아는 말 {Math.round(fit.coverage * 100)}% · 새 단어 {fit.unknown}
+                        {fit.band === 'fit' && (
+                          <span style={{ marginLeft: 8, color: 'var(--accent-text)', fontWeight: 600 }}>
+                            지금 읽기 좋아요
+                          </span>
+                        )}
+                      </p>
+                    );
+                  })()}
                 </div>
                 <div className="card__footer">
                   <span>

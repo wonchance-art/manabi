@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FIT_MIN_TYPES, fitBand, fitSortRank, materialContentWords, materialFit } from '../materialFit.js';
+import { FIT_MIN_TYPES, fitBand, fitSortRank, materialContentWords, materialFit, sortByFit } from '../materialFit.js';
 
 // 🈁 자료 맞춤도 엔진(rfc-material-fit R1) — 결정적 커버리지·밴드 계약.
 
@@ -79,5 +79,16 @@ describe('fitBand·fitSortRank — i+1 밴드', () => {
 
   it('정렬 랭크: fit → stretch → comfort → hard → 밴드 없음', () => {
     expect(['fit', 'stretch', 'comfort', 'hard', null].map(fitSortRank)).toEqual([0, 1, 2, 3, 4]);
+  });
+
+  it('sortByFit — 밴드 랭크 안정 정렬(동순위·무밴드는 원래 순서 유지, 입력 불변)', () => {
+    const items = [
+      { id: 'a', band: null }, { id: 'b', band: 'hard' }, { id: 'c', band: 'fit' },
+      { id: 'd', band: 'comfort' }, { id: 'e', band: 'fit' }, { id: 'f', band: 'stretch' },
+    ];
+    const sorted = sortByFit(items, (m) => m.band);
+    expect(sorted.map((m) => m.id)).toEqual(['c', 'e', 'f', 'd', 'b', 'a']); // fit 내부 c→e 순서 유지
+    expect(items[0].id).toBe('a'); // 입력 배열 무변형
+    expect(sortByFit(null, () => null)).toEqual([]);
   });
 });
