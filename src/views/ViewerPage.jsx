@@ -518,7 +518,7 @@ export default function ViewerPage() {
   // 🈁 만남 기록 R3(rfc-vocab-encounter §4.2·§4.7) — 드래그로 목록에 뜬 토큰 중 정본 어휘를
   // 저작 표기(refMain)로 남긴다. 표시(metWordSet)는 자료 진입 시점 스냅샷을 유지해 점이
   // 실시간으로 번지지 않게 한다(조용함 우선) — 다음 방문부터 반영. 대조는 언어별 정본
-  // 조회(ja 위임·fr/zh 표제어 키 인덱스)로 하고, en 기록은 지시 범위 밖 보류(§4.7).
+  // 조회(ja 위임·fr/zh/en 표제어 키 인덱스 — 4트랙 전부, §4.7)로 한다.
   useEffect(() => {
     const code = encounterLookupLang(materialLang);
     if (!code || !Array.isArray(dragTokens) || dragTokens.length === 0) return undefined;
