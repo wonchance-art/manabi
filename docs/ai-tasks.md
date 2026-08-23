@@ -526,9 +526,15 @@
   수행 — ㊿ 엔진 3본(dictation.js 언어별 정규화+diffChars 채점 / rereadSchedule.js
   KST 14일 경계·최신순 3 / outputWords.js 오늘 채점·오답 우선·폴백 — 발주 SPEC
   그대로, 계약 16핀) + 빠른 분석 조사 완료(analyze API 무저장 설계 실측 — 서버
-  변경 0 재사용 가능). 게이트: 전체 vitest 2,053(+16) green (PR #1118). UI
-  라운드(받아쓰기 화면·재독 홈 카드·산출 주입 카피·빠른 분석 화면)는 목업 게시
-  후 순차.
+  변경 0 재사용 가능). 게이트: 전체 vitest 2,053(+16) green (#1118 merge 4985966).
+  **UI 라운드 1차(오너 "좋아 이제 진행해보자" — 목업 ②③)**: 재독 홈 카드
+  (RereadCard — 완독 14일 후보 있을 때만, '오늘 읽기' 아래·그룹 카드 위, 조회
+  실패 조용히) + 산출 주입(useOutputWords 훅 — 오늘 KST 하한으로 서버측 축소,
+  OutputWordChips: 작문 입력 카드 상단(표시 유도만 — 채점 강제 없음) · 회화 패널
+  상단(학생이 쓰면 ✓) + 회화 튜터 프롬프트 시작·진행 양쪽 조건부 자연 주입
+  ("Never force them")). 배선 계약 2핀. 게이트: 전체 vitest 2,055(+2) green
+  (PR #1120). 잔여 UI: ⑤ 이미 앎(마이그레이션 동반) → ① 받아쓰기 화면 → ④
+  빠른 분석 순차. Codex Cloud 첫 태스크(받아쓰기 문장 선정 엔진) 블록 제공.
   승인 후)** — 전략 문서 Phase 4 잔여 ❌(학습 그룹) 대상, RFC = docs/rfc-study-groups.md.
   **실측(소셜 자산 전수)**: 소셜 스키마 3세대(포럼 3-29 · 공유 덱 4-05 · 기수제
   cohorts 6-13)가 전부 UI 없이 DB에 잠들어 있고(XP·notifications 소비 0 — evaluation
