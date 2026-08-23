@@ -8,6 +8,8 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { isPassed } from '../components/RefPatternCheck';
 import { pullProgress } from '../lib/refProgress';
+import { buildWeeklyReport, weekRangeLabel } from '../lib/weeklyReport';
+import { kstWeekStartMs } from '../lib/growthStats';
 import Button from '../components/Button';
 import VocabStats from './VocabStats';
 
@@ -40,6 +42,30 @@ async function fetchProfileStats(userId) {
   }
 
   return { vocab: allVocab || [], heatmapDayCounts };
+}
+
+/**
+ * 주간 리포트 재료(rfc-weekly-report R2, 목업 A) — 2주 윈도 4조회. 실패한 조회는
+ * 빈 배열로 흘러 그 축이 0이 될 뿐(무해성 — 엔진의 0 무표기가 흡수).
+ */
+async function fetchWeeklyReportRows(userId) {
+  const prevStartIso = new Date(kstWeekStartMs() - 7 * 86400000).toISOString();
+  const [ev, vocab, enc, reads] = await Promise.all([
+    supabase.from('review_events').select('source, correct, created_at')
+      .eq('user_id', userId).gte('created_at', prevStartIso).limit(2000),
+    supabase.from('user_vocabulary').select('created_at')
+      .eq('user_id', userId).gte('created_at', prevStartIso),
+    supabase.from('user_vocab_encounters').select('first_met_at')
+      .eq('user_id', userId).gte('first_met_at', prevStartIso),
+    supabase.from('reading_progress').select('completed_at')
+      .eq('user_id', userId).eq('is_completed', true).gte('completed_at', prevStartIso),
+  ]);
+  return {
+    events: ev.data || [],
+    vocabRows: vocab.data || [],
+    encounterRows: enc.data || [],
+    readRows: reads.data || [],
+  };
 }
 
 const isToday = ts => ts && new Date(ts).toDateString() === new Date().toDateString();
@@ -89,6 +115,15 @@ export default function ProfileStats({ refManifest = {} }) {
     staleTime: 1000 * 60,
   });
 
+  // 이번 주 카드(rfc-weekly-report 목업 A) — 실패·빈 주는 카드 생략으로 조용히.
+  const { data: weeklyRows } = useQuery({
+    queryKey: ['weekly-report', user?.id],
+    queryFn: () => fetchWeeklyReportRows(user.id),
+    enabled: !!user,
+    staleTime: 1000 * 60 * 5,
+  });
+  const weekly = useMemo(() => (weeklyRows ? buildWeeklyReport(weeklyRows) : null), [weeklyRows]);
+
   if (!user) return null;
   if (error) return (
     <div className="bento">
@@ -111,6 +146,11 @@ export default function ProfileStats({ refManifest = {} }) {
     <div className="bento">
       <GoalTile vocab={vocab} />
       <DdayTile />
+      {weekly?.hasAny && (
+        <div className="bento-item bento--4x1 card">
+          <WeeklyReportCard weekly={weekly} />
+        </div>
+      )}
       <div className="bento-item bento--2x2">
         <ReviewTile vocab={vocab} />
       </div>
@@ -141,6 +181,42 @@ function StatTile({ label, value }) {
     <div className="bento-item bento--1x1 card bento-stat">
       <span className="mypage-stat-cell__value">{value}</span>
       <span className="mypage-stat-cell__label">{label}</span>
+    </div>
+  );
+}
+
+/* ── 이번 주 카드(rfc-weekly-report 목업 A) — 거울이지 성적표가 아니다:
+     지난주는 회색 병기만(증감 화살표·색상 없음), 0인 축은 그리지 않는다. ── */
+function WeeklyReportCard({ weekly }) {
+  const pct = (a) => (a == null ? null : Math.round(a * 100));
+  const acc = pct(weekly.reviews.accuracy);
+  const prevAcc = pct(weekly.prevReviews.accuracy);
+  const parts = [];
+  if (weekly.newWords > 0) parts.push(`새로 담은 말 ${weekly.newWords}`);
+  if (weekly.metWords > 0) parts.push(`만난 말 ${weekly.metWords}`);
+  if (weekly.readsCompleted > 0) parts.push(`완독 ${weekly.readsCompleted}편`);
+  return (
+    <div style={{ fontVariantNumeric: 'tabular-nums' }}>
+      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 6 }}>
+        이번 주 ({weekRangeLabel(weekly.week)})
+      </div>
+      {weekly.reviews.total > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '2px 12px' }}>
+          <span style={{ fontWeight: 600 }}>
+            복습 {weekly.reviews.total}문항{acc != null ? ` · 정답 ${acc}%` : ''}
+          </span>
+          {weekly.prevReviews.total > 0 && (
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
+              지난주 {weekly.prevReviews.total}{prevAcc != null ? ` · ${prevAcc}%` : ''}
+            </span>
+          )}
+        </div>
+      )}
+      {parts.length > 0 && (
+        <div style={{ marginTop: 4, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+          {parts.join(' · ')}
+        </div>
+      )}
     </div>
   );
 }
