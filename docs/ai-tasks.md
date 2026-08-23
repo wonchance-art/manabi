@@ -622,7 +622,14 @@
   부착(중복 0). 배지 A 렌더(vocab-choice 카드 상단), review_events는 기존 경로에
   detail.origin:'encounter' 표지만 — SRS 갱신은 word_id null이라 기존 가드가 자동
   스킵(FSRS 무접촉이 구조로 성립, 브리지 핀). 게이트: lint 0 err · 콘텐츠 게이트
-  오류 0 · vitest 1,997(+9) + world 1,090 green (PR #1104).
+  오류 0 · vitest 1,997(+9) + world 1,090 green (#1104 merge 2c003eb).
+  **적응 출제 R2(담기 제안, 목업 B)**: ㊱ 만남 문항 정답 직후에만 [+ 단어장에 담기]
+  1줄 — NpcDialog 선례 그대로(user_vocabulary ignoreDuplicates upsert = FSRS
+  무손상, meaning은 정본 뜻 전문 meaningFull·pos 후보 행에 동봉), 오답 무제안·
+  자동 담김 금지·실패는 조용히 재시도 가능·넘어가기는 기존 계속 버튼이 역할.
+  게이트: lint 0 err · 콘텐츠 게이트 오류 0 · vitest 1,997 + world 1,090 green
+  (PR #1105). rfc-adaptive-quiz R1·R2 완결 — 잔여 보류는 만남 출처 문맥
+  저장(스키마 확장 gate)뿐.
 - **🪶 리포 경량화 P1·P2(2026-08-19, 오너 승인)** — 오너 질문("월드가 무거울 텐데 따로
   보관 가능한가")에서 출발한 실측: `.git` 36M으로 **clone은 애초에 무겁지 않았고**,
   체감 비용은 게이트 시간이었다(전체 408s 중 world 265s·파일 123/305=40%).

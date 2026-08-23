@@ -101,6 +101,7 @@ export default function StudySessionPage({
   const [explainState, setExplainState] = useState(null); // 오답 해설: null | 'loading' | {text} | 'failed'
   const [weeklyStats, setWeeklyStats] = useState(null);   // 주간 회고: { n, m } (weekly 세션 결과 화면)
   const [produceState, setProduceState] = useState(null); // 산출 문항 채점: {status:'grading'|'done'|'error', feedback, targetScore}
+  const [encounterSaveState, setEncounterSaveState] = useState(null); // 만남 담기(목업 B): null|'saving'|'saved'
   const [produceReflected, setProduceReflected] = useState(false); // 산출 문장이 내일 문단에 반영됨(≥2점·연재 세션)
   const [parkingLong, setParkingLong] = useState(false); // 파킹 대기 8초 경과 여부
   const [pushPrime, setPushPrime] = useState(null);       // 푸시 프라이밍: null(숨김) | 'show' | 'ios' | 'done'
@@ -591,6 +592,7 @@ export default function StudySessionPage({
     setOrderPicks([]);
     setMatchState({ selectedId: null, matches: {} });
     setProduceState(null);
+    setEncounterSaveState(null);
     setPhase('answer');
     if (idx + 1 >= queue.length) {
       // 큐 끝 — 문단이 아직 생성 중이면 종료하지 않고 파킹(도착 시 이어붙음).
@@ -599,6 +601,33 @@ export default function StudySessionPage({
       fireEffects();
     } else {
       setIdx(i => i + 1);
+    }
+  }
+
+  /**
+   * 만남 담기(rfc-adaptive-quiz §4.2, 목업 B) — 만남 문항 정답 직후에만 제안되는 [+ 담기].
+   * NpcDialog 선례 그대로: user_vocabulary ignoreDuplicates upsert(이미 담긴 단어의 FSRS
+   * 상태를 절대 덮지 않음), meaning은 정본 뜻 전문(meaningFull). 실패는 조용히 되돌려
+   * 재시도 가능. 자동 담김 금지 — 수집은 명시적 선택.
+   */
+  async function saveEncounterWord() {
+    if (!user?.id || !item?.word?.word_text || encounterSaveState) return;
+    setEncounterSaveState('saving');
+    try {
+      const { error } = await supabase.from('user_vocabulary').upsert([{
+        user_id: user.id,
+        word_text: item.word.word_text,
+        base_form: item.word.word_text,
+        furigana: item.word.furigana || '',
+        meaning: item.word.meaningFull || item.word.meaning || '',
+        pos: item.word.pos || '',
+        next_review_at: new Date().toISOString(),
+        language: lang,
+      }], { onConflict: 'user_id,word_text', ignoreDuplicates: true });
+      if (error) throw error;
+      setEncounterSaveState('saved');
+    } catch {
+      setEncounterSaveState(null);
     }
   }
 
@@ -1423,6 +1452,22 @@ export default function StudySessionPage({
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
               {explainState.text}
             </p>
+          )}
+        </div>
+      )}
+
+      {/* 만남 담기 제안(rfc-adaptive-quiz §4.2, 목업 B) — 만남 문항 정답일 때만.
+          오답 무제안(압박 없음), 넘어가기는 아래 계속 버튼이 그 역할. */}
+      {phase === 'feedback' && item.origin === 'encounter' && user
+        && picked === item.word?.meaning && (
+        <div style={{ marginTop: 12, fontSize: '0.9rem' }}>
+          {encounterSaveState === 'saved' ? (
+            <span style={{ color: 'var(--text-muted)' }}>✓ 단어장에 담았어요</span>
+          ) : (
+            <button type="button" className="study-textlink" disabled={encounterSaveState === 'saving'}
+              onClick={saveEncounterWord}>
+              {encounterSaveState === 'saving' ? '…' : '+ 단어장에 담기'}
+            </button>
           )}
         </div>
       )}
