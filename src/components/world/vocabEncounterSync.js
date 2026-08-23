@@ -5,7 +5,7 @@
 // first_met_at 을 보존하며, 이 방식이어야 UPDATE 권한 없는 테이블 GRANT(select/insert)와도 맞는다.
 // 실패는 전부 조용히 — 마이그레이션 미적용이어도 로컬 단독으로 동작한다(무해성 계약).
 
-import { isEncounterLang, loadVocabEncounters, recordVocabEncounters } from './vocabEncounters.js';
+import { isEncounterLang, loadVocabEncounters, loadVocabEncounterContexts, recordVocabEncounters } from './vocabEncounters.js';
 
 const PULL_THROTTLE_MS = 5 * 60 * 1000;
 
@@ -68,9 +68,18 @@ export async function syncVocabEncounters(client, userId, lang, {
     changed = hasNew && recordVocabEncounters(lang, [...remote], storage);
 
     // push — 로컬 전용분만. DB CHECK(1~100자)를 여기서도 걸러 한 행이 배치 전체를 막지 않게 한다.
+    // 출처 문맥(R3)이 있으면 동봉 — insert 시 1회만 실리고 이후 불변(ignoreDuplicates·무 UPDATE).
+    const contexts = loadVocabEncounterContexts(lang, storage);
     const toPush = [...before]
       .filter((w) => !remote.has(w) && w.length <= 100)
-      .map((word_text) => ({ user_id: userId, lang, word_text }));
+      .map((word_text) => {
+        const ctx = contexts[word_text];
+        return {
+          user_id: userId, lang, word_text,
+          ...(typeof ctx?.t === 'string' && ctx.t ? { context: ctx.t.slice(0, 200) } : {}),
+          ...(typeof ctx?.s === 'string' && ctx.s ? { context_source: ctx.s.slice(0, 20) } : {}),
+        };
+      });
     if (toPush.length > 0) {
       await client
         .from('user_vocab_encounters')

@@ -2,11 +2,14 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   isEncounterLang,
   loadVocabEncounters,
+  loadVocabEncounterContexts,
   recordVocabEncounters,
+  stepEncounterContext,
   saveVocabEncounters,
   scriptEncounterRefs,
   stepEncounterRefs,
   vocabEncounterStorageKey,
+  vocabEncounterContextStorageKey,
 } from '../vocabEncounters.js';
 import { NPC_SCRIPTS } from '../npcScripts.js';
 
@@ -104,5 +107,44 @@ describe('스텝·스크립트 refs 추출(완주 요약 카드가 소비)', () 
     expect(refs).toContain('替え玉');
     expect(refs).toContain('お願いします');
     expect(new Set(refs).size).toBe(refs.length);       // 중복 없음
+  });
+});
+
+// 🈁 출처 문맥(rfc-adaptive-quiz R3) — 첫 만남 문장만, 이후 만남은 덮지 않는다.
+describe('출처 문맥 — recordVocabEncounters 4번째 인자·loadVocabEncounterContexts', () => {
+  it('처음 만난 표기에만 문맥이 남고, 재만남은 덮지 않는다(첫 만남 불변)', () => {
+    const storage = memoryStorage();
+    recordVocabEncounters('ja', ['食券'], storage, { text: 'まずは 食券を どうぞ。', source: 'npc' });
+    recordVocabEncounters('ja', ['食券', '替え玉'], storage, { text: '替え玉、おねがいします。', source: 'viewer' });
+    const ctx = loadVocabEncounterContexts('ja', storage);
+    expect(ctx['食券']).toEqual({ t: 'まずは 食券を どうぞ。', s: 'npc' });      // 첫 문장 유지
+    expect(ctx['替え玉']).toEqual({ t: '替え玉、おねがいします。', s: 'viewer' }); // 새 표기만
+  });
+
+  it('문맥 없는 기록은 기존 동작 그대로(하위 호환), 200자 상한·source 생략 허용', () => {
+    const storage = memoryStorage();
+    recordVocabEncounters('ja', ['どうぞ'], storage);
+    expect(loadVocabEncounterContexts('ja', storage)).toEqual({});
+    recordVocabEncounters('ja', ['屋台'], storage, { text: `${'あ'.repeat(300)}屋台` });
+    const ctx = loadVocabEncounterContexts('ja', storage);
+    expect(ctx['屋台'].t).toHaveLength(200);
+    expect(ctx['屋台'].s).toBeUndefined();
+  });
+
+  it('깨진 문맥 값은 빈 맵으로 안전 복구', () => {
+    const storage = memoryStorage({ [vocabEncounterContextStorageKey('ja')]: '{broken' });
+    expect(loadVocabEncounterContexts('ja', storage)).toEqual({});
+  });
+});
+
+describe('stepEncounterContext — say 대사·ask 정답 선택지', () => {
+  it('say는 원문(ja), ask는 correct 선택지 원문, 없으면 null', () => {
+    expect(stepEncounterContext({ t: 'say', ja: 'いらっしゃい！' })).toBe('いらっしゃい！');
+    expect(stepEncounterContext({
+      t: 'ask',
+      choices: [{ ja: 'さようなら。' }, { ja: 'おねがいします。', correct: true }],
+    })).toBe('おねがいします。');
+    expect(stepEncounterContext({ t: 'narr', text: '해설' })).toBeNull();
+    expect(stepEncounterContext(null)).toBeNull();
   });
 });

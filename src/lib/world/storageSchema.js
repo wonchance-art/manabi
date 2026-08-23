@@ -17,6 +17,7 @@ export const NPC_MEETING_STORAGE_PREFIX = 'npc-met:';
 export const ROUTE_DISCOVERY_STORAGE_PREFIX = 'route-discoveries:';
 export const BRIEFING_SEEN_PREFIX = 'briefing-seen:';
 export const VOCAB_ENCOUNTER_STORAGE_PREFIX = 'vocab-encounters:';
+export const VOCAB_ENCOUNTER_CONTEXT_STORAGE_PREFIX = 'vocab-encounter-contexts:';
 export const LEARNING_ACTIVITY_STORAGE_PREFIX = 'manabi-learning-activity-v1:';
 
 // 학습 진도 slug rename은 반드시 구 slug -> 신 slug 별칭을 먼저 등록한다.
@@ -73,6 +74,7 @@ export const WORLD_STORAGE_KEY_PREFIXES = Object.freeze({
   routeDiscoveries: ROUTE_DISCOVERY_STORAGE_PREFIX,
   briefingSeen: BRIEFING_SEEN_PREFIX,
   vocabEncounters: VOCAB_ENCOUNTER_STORAGE_PREFIX,
+  vocabEncounterContexts: VOCAB_ENCOUNTER_CONTEXT_STORAGE_PREFIX,
 });
 
 // 학습 진도 원본 키(studied_lesson 등)는 각 기존 저장소가 계속 소유한다.
@@ -97,6 +99,12 @@ export function briefingSeenKey(countryId) {
 // 같은 말을 어느 도시에서 다시 만나도 하나의 기억이며, 도시별 분모는 소비 시점에 계산한다.
 export function vocabEncounterStorageKey(lang) {
   return `${WORLD_STORAGE_KEY_PREFIXES.vocabEncounters}${lang}`;
+}
+
+// 만남 출처 문맥(rfc-adaptive-quiz R3) — 표기 → { t: 문장, s: 출처 } 맵. 첫 만남 문장만
+// 남긴다(first_met_at 보존과 같은 불변 철학) — 이후 만남은 문맥을 덮지 않는다.
+export function vocabEncounterContextStorageKey(lang) {
+  return `${WORLD_STORAGE_KEY_PREFIXES.vocabEncounterContexts}${lang}`;
 }
 
 export function learningActivityStorageKey(userId) {

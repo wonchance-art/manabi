@@ -649,13 +649,16 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
   useEffect(() => {
     if (!descOpen || !nearNode?.refsLang) return;
     if (!Array.isArray(nearNode.refs) || nearNode.refs.length === 0) return;
-    recordVocabEncounters(nearNode.refsLang, nearNode.refs);
+    // 출처 문맥(R3) — 처음 만난 표기에는 노드 설명 문장을 남긴다.
+    recordVocabEncounters(nearNode.refsLang, nearNode.refs, undefined,
+      nearNode.desc ? { text: nearNode.desc, source: 'node' } : null);
   }, [descOpen, nearNode]);
   // 도어 프롬프트도 desc를 병기하므로, 열리는 순간 그 노드의 refs를 남긴다(§4.6 확장).
   useEffect(() => {
     const node = chapterPrompt?.node;
     if (!node?.refsLang || !Array.isArray(node.refs) || node.refs.length === 0) return;
-    recordVocabEncounters(node.refsLang, node.refs);
+    recordVocabEncounters(node.refsLang, node.refs, undefined,
+      node.desc ? { text: node.desc, source: 'door' } : null);
   }, [chapterPrompt]);
   useEffect(() => { ferryPromptRef.current = ferryPrompt; }, [ferryPrompt]);
   useEffect(() => { minimapOpenRef.current = minimapOpen; }, [minimapOpen]);
