@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { callGemini } from '../lib/gemini';
 import { useTTS } from '../lib/useTTS';
+import { useOutputWords } from '../lib/useOutputWords';
 import Button from './Button';
+import OutputWordChips from './OutputWordChips';
 import { langNameKo } from '../lib/constants';
 
 const STORAGE_KEY = 'conversation:';
@@ -27,6 +29,13 @@ export default function ConversationPanel({ rawText, language, materialId, mater
   const scrollRef = useRef(null);
   const targetLang = language === 'Japanese' ? 'Japanese' : 'English';
   const targetLangKo = langNameKo(language);
+  // 오늘 복습한 말 주입(목업 ③ — #1077-17): 튜터 프롬프트에 조용히, 학생이 쓰면 ✓
+  const outputWords = useOutputWords(language);
+  const usedWordSet = new Set(
+    outputWords
+      .filter((w) => messages.some((m) => m.role === 'user' && m.text?.includes(w.word_text)))
+      .map((w) => w.word_text)
+  );
 
   materialRef.current = materialId;
 
@@ -128,7 +137,8 @@ Open with ONE warm, specific question about the passage. Rules:
 - ONLY in ${targetLang}
 - 1-2 sentences
 - Friendly tone, not exam-like
-- Make the student want to reply`;
+- Make the student want to reply${outputWords.length ? `
+- If it fits naturally, weave in one of these words the student reviewed today: ${outputWords.map((w) => w.word_text).join(', ')}. Never force them.` : ''}`;
     try {
       const raw = await callGemini(prompt);
       if (!isCurrentRequest(requestId, requestMaterialId)) return;
@@ -166,7 +176,8 @@ Reply in TWO parts.
 PART 1 — Tutor reply in ${targetLang}:
 - 2-3 sentences max
 - Match the student's apparent level
-- Stay near the passage topic, ask a follow-up question
+- Stay near the passage topic, ask a follow-up question${outputWords.length ? `
+- If it fits naturally, weave in one of these words the student reviewed today: ${outputWords.map((w) => w.word_text).join(', ')}. Never force them.` : ''}
 
 PART 2 — If the student's most recent message contains a clear ${targetLang} error (grammar, word choice, naturalness), give ONE brief correction in Korean. Format EXACTLY:
 📝 교정: <한국어로 1-2문장>
@@ -224,6 +235,12 @@ Output PART 1, then a blank line, then PART 2 (if any). No labels, no other text
           )}
         </div>
       </div>
+
+      {outputWords.length > 0 && (
+        <div style={{ padding: '8px 14px 0' }}>
+          <OutputWordChips words={outputWords} usedSet={usedWordSet} />
+        </div>
+      )}
 
       <div className="conversation-panel__messages" ref={scrollRef}>
         {messages.length === 0 && !loading && (

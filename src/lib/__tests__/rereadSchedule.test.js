@@ -46,3 +46,15 @@ describe('pickRereadCandidates', () => {
     expect(pickRereadCandidates({ now: NOW })).toEqual([]);
   });
 });
+
+// 배선 계약(목업 ② — UI 라운드): 홈 카드가 엔진을 쓰고, 후보 없으면 조용히 생략.
+describe('재독 카드 배선 계약', () => {
+  it('RereadCard가 엔진을 소비하고 HomePage에 배선되어 있다', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const card = fs.readFileSync(path.join(process.cwd(), 'src/components/RereadCard.jsx'), 'utf8');
+    expect(card).toContain('pickRereadCandidates');
+    expect(card).toContain('다시 읽어볼까요');
+    expect(fs.readFileSync(path.join(process.cwd(), 'src/views/HomePage.jsx'), 'utf8')).toContain('<RereadCard />');
+  });
+});
