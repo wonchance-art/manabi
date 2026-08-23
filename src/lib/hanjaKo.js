@@ -30,6 +30,8 @@ export function applyDueum(syllable) {
 /**
  * 단어의 한국 한자음 — 글자별 음을 이어붙이고 어두에만 두음법칙을 적용한다.
  * 미등재 글자가 하나라도 있으면 null(어중간한 표기는 앵커로서 해롭다 — 표시 생략).
+ * 뷰어의 '한자음' 단독 줄은 폐지됐고(2026-08-23 오너 확정 — 훈음 나열이 대체) 이 함수는
+ * 생성 테이블의 데이터 계약 검증·후속 소비(검색 등)용으로 유지한다.
  * @param {string} word - 중국어 표기(간체·정체 모두 테이블에 수록)
  * @param {Record<string, string>} table - hanjaKo.json
  */
@@ -57,24 +59,25 @@ export function hanjaHunEum(ch, koTable, hunTable) {
   return dueum !== eum ? `${hun} ${eum}(${dueum})` : `${hun} ${eum}`;
 }
 
-/**
- * 단어의 글자별 훈음 나열 — [{ch, label}]. 훈이 있는 글자만 담고, 전무하면 null
- * (음 앵커는 readHanjaKo가 이미 커버하므로 훈 없는 글자는 조용히 생략).
- */
-export function listHanjaHunEum(word, koTable, hunTable) {
-  const items = [...String(word || '')]
-    .map((ch) => ({ ch, label: hanjaHunEum(ch, koTable, hunTable) }))
-    .filter((x) => x.label);
-  return items.length ? items : null;
+/** 음만 있는 글자의 라벨 — 훈음과 같은 두음 병기 관례('로(노)'·'사'). 음 미등재면 null. */
+function eumOnlyLabel(ch, koTable) {
+  const eum = koTable?.[ch];
+  if (!eum) return null;
+  const dueum = applyDueum(eum);
+  return dueum !== eum ? `${eum}(${dueum})` : eum;
 }
 
 /**
- * 훈음 나열이 단어의 전 글자를 커버하는가 — 커버하면 한자음 단독 표기는 글자별 음과
- * 중복이라 생략한다(오너 확정). 훈이 빠진 글자가 있으면 한자음이 유일한 앵커라 유지.
+ * 단어의 글자별 훈음 나열 — [{ch, label}]. 훈이 있는 글자는 '스승 사', 훈이 없는 글자는
+ * 음만이라도('사') 편입한다 — 한자음 단독 줄 폐지(2026-08-23 오너 확정: "그 자리에
+ * 한자 뜻·음 함께 넣으면서 대체")로 이 나열이 단어의 유일한 음 앵커가 됐기 때문.
+ * 음까지 미등재인 글자만 조용히 생략하고, 전무하면 null.
  */
-export function hunsCoverWord(word, huns) {
-  const n = [...String(word || '')].length;
-  return !!huns && n > 0 && huns.length === n;
+export function listHanjaHunEum(word, koTable, hunTable) {
+  const items = [...String(word || '')]
+    .map((ch) => ({ ch, label: hanjaHunEum(ch, koTable, hunTable) || eumOnlyLabel(ch, koTable) }))
+    .filter((x) => x.label);
+  return items.length ? items : null;
 }
 
 /**
