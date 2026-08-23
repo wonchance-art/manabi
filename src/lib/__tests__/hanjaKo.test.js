@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { applyDueum, readHanjaKo, hanjaHunEum, listHanjaHunEum, hunsCoverWord, toJaForm } from '../hanjaKo.js';
+import { applyDueum, readHanjaKo, hanjaHunEum, listHanjaHunEum, toJaForm } from '../hanjaKo.js';
 
 // 계약: 한자 대조(옵트인) 1단계 — 한국 한자음은 발음 앵커이지 뜻이 아니다(오너 확정).
 // 어두 두음법칙 적용(노사·여자), 미등재 글자가 섞이면 표시 생략(null).
@@ -62,7 +62,7 @@ describe('readHanjaKo — 단어 한자음 합성', () => {
 });
 
 describe('hanjaHunEum·listHanjaHunEum — 훈음 병기(①)', () => {
-  const ko = { 老: '로', 师: '사', 先: '선', 生: '생' };
+  const ko = { 老: '로', 师: '사', 先: '선', 生: '생', 路: '로' };
   const hun = { 老: '늙을', 师: '스승', 先: '먼저' };
 
   it("옥편 표제 관례 — 두음 변형이 있으면 괄호 병기: '늙을 로(노)'", () => {
@@ -79,23 +79,23 @@ describe('hanjaHunEum·listHanjaHunEum — 훈음 병기(①)', () => {
     expect(hanjaHunEum('老', ko, null)).toBeNull();
   });
 
-  it('단어 나열은 훈 있는 글자만 담고, 전무하면 null', () => {
+  it('단어 나열 — 훈 있는 글자는 훈음, 훈 없는 글자도 음만으로 편입한다(음 단독 줄 폐지 대체)', () => {
     expect(listHanjaHunEum('老师', ko, hun)).toEqual([
       { ch: '老', label: '늙을 로(노)' },
       { ch: '师', label: '스승 사' },
     ]);
     expect(listHanjaHunEum('先生', ko, hun)).toEqual([
       { ch: '先', label: '먼저 선' },
+      { ch: '生', label: '생' }, // 훈 미등재 → 음만이라도 편입
     ]);
-    expect(listHanjaHunEum('生', ko, hun)).toBeNull();
-    expect(listHanjaHunEum('', ko, hun)).toBeNull();
+    expect(listHanjaHunEum('生', ko, hun)).toEqual([{ ch: '生', label: '생' }]);
   });
 
-  it('전 글자 커버 판정 — 커버 시 한자음 단독 표기는 중복(오너 확정), 부분 커버는 유지', () => {
-    expect(hunsCoverWord('老师', listHanjaHunEum('老师', ko, hun))).toBe(true);
-    expect(hunsCoverWord('先生', listHanjaHunEum('先生', ko, hun))).toBe(false); // 生 훈 없음
-    expect(hunsCoverWord('生', null)).toBe(false);
-    expect(hunsCoverWord('', null)).toBe(false);
+  it('음만 라벨도 두음 병기 관례를 따르고, 음까지 미등재면 조용히 생략·전무하면 null', () => {
+    expect(listHanjaHunEum('路', ko, hun)).toEqual([{ ch: '路', label: '로(노)' }]);
+    expect(listHanjaHunEum('X', ko, hun)).toBeNull();
+    expect(listHanjaHunEum('老X', ko, hun)).toEqual([{ ch: '老', label: '늙을 로(노)' }]);
+    expect(listHanjaHunEum('', ko, hun)).toBeNull();
   });
 
   it('toJaForm — 일본식 자형 변환(미등재·무테이블은 그대로)', () => {
@@ -184,11 +184,11 @@ describe('한자 대조 배선 계약', () => {
     expect(src).toContain("readPref('showHanjaKo', false)");
   });
 
-  it('뷰어가 중국어에서만 토글을 노출하고 시트에 한자음을 표시한다', () => {
+  it('뷰어가 중국어에서만 토글을 노출하고 시트에 훈음을 표시한다', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
     expect(src).toMatch(/materialLang === 'Chinese' && \(\s*<button\s*onClick=\{\(\) => setShowHanjaKo/);
     expect(src).toContain("import('../lib/data/hanjaKo.json')");
-    expect(src).toContain('한자음');
+    expect(src).toContain('훈음');
   });
 
   it('훈음(①)도 같은 토글 아래 지연 로드되어 단어 카드에 병기된다(팝업은 ②로 카드 단일화)', () => {
@@ -200,9 +200,10 @@ describe('한자 대조 배선 계약', () => {
     expect(src).not.toContain('popupWord');
   });
 
-  it('훈음이 전 글자를 커버하면 한자음 단독 줄을 생략한다(오너 확정)', () => {
+  it("음 단독 줄은 폐지 — 뷰어에 '한자음' 표기·합성 경로가 없다(2026-08-23 오너 확정: 훈음 나열이 대체)", () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
-    expect(src).toMatch(/hunsCoverWord\(selectedToken\.text, huns\) \? null : hanjaKoOf\(selectedToken\.text\)/);
+    expect(src).not.toContain('한자음');
+    expect(src).not.toMatch(/hanjaKoOf|hunsCoverWord|readHanjaKo/);
   });
 
   it('일본식 자형 표기(오너 확정) — 훈음 글자는 신자체 단독, 日 어형은 나열과 같으면 요미만, ⚠는 日 줄 통합', () => {

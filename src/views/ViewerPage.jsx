@@ -42,7 +42,7 @@ import { useTokenRangeSelect } from '../lib/useTokenRangeSelect';
 import { useNextRangeMutation } from '../lib/useNextRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
 import { useScrollRestore } from '../lib/useScrollRestore';
-import { readHanjaKo, listHanjaHunEum, hunsCoverWord, toJaForm } from '../lib/hanjaKo';
+import { listHanjaHunEum, toJaForm } from '../lib/hanjaKo';
 import { useGrammarDetail } from '../lib/useGrammarDetail';
 import { buildContextPrompt } from '../lib/grammarDetail';
 import { analysisCacheKey, clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
@@ -873,9 +873,9 @@ export default function ViewerPage() {
     }
   };
 
-  // 한자 대조(옵트인) — 한국 한자음 테이블은 토글이 켜질 때만 지연 로드(245KB 청크,
-  // 이후 캐시). 표는 뜻이 아니라 발음 앵커: 老师 → 노사(어두 두음법칙).
-  // 훈 테이블(①, 143KB)도 같은 조건으로 병행 로드 — 옥편 표제 관례 '늙을 로(노)' 병기.
+  // 한자 대조(옵트인) — 음 테이블은 토글이 켜질 때만 지연 로드(245KB 청크, 이후 캐시).
+  // 훈 테이블(①, 143KB)도 같은 조건으로 병행 로드. 표기는 글자별 훈음 나열이 정본
+  // ('늙을 로(노) 스승 사' — 옥편 표제 관례, 음 단독 줄은 2026-08-23 오너 확정으로 폐지).
   const [hanjaKoTable, setHanjaKoTable] = useState(null);
   const [hanjaHunTable, setHanjaHunTable] = useState(null);
   const [hanjaJaTable, setHanjaJaTable] = useState(null);
@@ -895,11 +895,6 @@ export default function ViewerPage() {
       .catch(() => {});
     return () => { alive = false; };
   }, [showHanjaKo, materialLang, hanjaKoTable, inspectChar]);
-  const hanjaKoOf = (text) => (
-    materialLang === 'Chinese' && showHanjaKo && hanjaKoTable
-      ? readHanjaKo(text, hanjaKoTable)
-      : null
-  );
   const hanjaHunOf = (text) => (
     materialLang === 'Chinese' && showHanjaKo && hanjaKoTable && hanjaHunTable
       ? listHanjaHunEum(text, hanjaKoTable, hanjaHunTable)
@@ -1291,16 +1286,11 @@ export default function ViewerPage() {
         const huns = hanjaHunOf(selectedToken.text);
         const jr = ja ? formatJaRef(ja, selectedToken.text, jaFormOf(selectedToken.text)) : null;
         const warn = getJaWarn(ja);
-        // 훈음이 전 글자를 커버하면 한자음 단독 줄은 중복이라 생략(오너 확정)
-        const hk = hunsCoverWord(selectedToken.text, huns) ? null : hanjaKoOf(selectedToken.text);
-        if (!hk && !jr && !warn && !huns) return null;
+        // 음 단독 줄은 폐지(2026-08-23 오너 확정) — 훈 없는 글자도 음만으로 훈음 나열에
+        // 편입돼(listHanjaHunEum 폴백) 나열이 단어의 유일한 음 앵커다.
+        if (!jr && !warn && !huns) return null;
         return (
           <div style={{ fontSize: '0.82rem', marginBottom: 12 }}>
-            {hk && (
-              <div style={{ color: 'var(--text-muted)' }}>
-                한자음 <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{hk}</span>
-              </div>
-            )}
             {huns && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 14px' }}>
                 {huns.map(({ ch, label }, i) => (
@@ -1328,7 +1318,7 @@ export default function ViewerPage() {
 
       {/* 정본 예문·한자 노트(② — 오너 피드백로 박스 해체): 뜻은 위 뜻 자리가 대체 표시,
           pos는 TokenPosLabel·병음은 헤더와 중복이라 생략. 예문만 새 정보라 자연 배치,
-          한자 노트는 한자 대조 토글(한자음·훈음)과 겹치므로 토글 꺼짐일 때만. */}
+          한자 노트는 한자 대조 토글(훈음 나열)과 겹치므로 토글 꺼짐일 때만. */}
       {refVocab?.word?.ex && (
         // 예문 3줄 스택(오너 확정): 예문 → 병음 → 뜻
         <div style={{ fontSize: '0.84rem', lineHeight: 1.55, marginBottom: 12 }}>
@@ -1679,7 +1669,7 @@ export default function ViewerPage() {
             <button
               onClick={() => setShowHanjaKo(v => !v)}
               className={`grammar-btn ${showHanjaKo ? 'grammar-btn--active' : ''}`}
-              title="단어 상세에 한국 한자음(발음 앵커) 병기 — 예: 老师 → 노사"
+              title="단어 상세에 글자별 훈음 병기 — 예: 老师 → 老 늙을 로(노) · 師 스승 사"
             >
               {showHanjaKo ? '☑ 한자 대조 켜짐' : '◻ 한자 대조 꺼짐'}
             </button>
