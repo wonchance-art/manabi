@@ -120,6 +120,15 @@ describe('hanjaKo.json 생성 데이터', () => {
     expect(data['汉']).toBe('한');
   });
 
+  it('음 교정(3층 보수) — 간체 동형 충돌은 정체 계보 음으로, 수기 교정 우선', () => {
+    expect(data['达']).toBe('달');   // npm 원본 '체'(별자 계보) → 達
+    expect(data['关']).toBe('관');   // '소' → 關
+    expect(data['灯']).toBe('등');   // '정' → 燈
+    expect(data['识']).toBe('식');   // '신' → 識
+    expect(data['撕']).toBe('시');   // 수기: 이독 '서' → 옥편 표제 '시'
+    expect(data['苧']).toBe('저');   // 수기: ST 오매핑(薴 '녕') 차단 — 모시 저 유지
+  });
+
   it('메인 블록 커버리지가 2만 자 이상이다', () => {
     expect(Object.keys(data).length).toBeGreaterThan(20000);
   });
@@ -136,6 +145,18 @@ describe('hanjaHun.json 생성 데이터', () => {
     expect(hun['學']).toBe('배울');
     expect(hun['学']).toBe('배울');   // 간체 ← 學 상속
     expect(hun['让']).toBe('사양할'); // 간체 ← 讓 상속
+  });
+
+  it('훈 보수(3층) — 한국 정자 이체 경유·전 항목 파서·음 교정 연동·수기 오버레이', () => {
+    expect(hun['清']).toBe('맑을');   // 한국 정자 淸 경유(유니코드 분리 이체)
+    expect(hun['教']).toBe('가르칠'); // 敎 경유 + 수기 대표 훈
+    expect(hun['真']).toBe('참');     // 眞 경유
+    expect(hun['床']).toBe('평상');   // "牀의 俗字, 평상 상" — 전 항목 파서가 둘째 항목 채택
+    expect(hun['湿']).toBe('젖을');   // ST 어원형(溼) → 濕 이체 경유
+    expect(hun['达']).toBe('통달할'); // 음 교정(달)과 연동된 상속
+    expect(hun['撕']).toBe('찢을');   // 수기 저작(찢을 시)
+    expect(hun['你']).toBe('너');     // 수기 저작(너 니)
+    expect(hun['怜']).toBe('가련할'); // 자체 행 오식('연리할')을 수기 대표가 대체
   });
 
   it('훈은 hanjaKo.json 등재 글자에만 붙는 오버레이고, 8천 자 이상이다', () => {
