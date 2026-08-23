@@ -1,9 +1,10 @@
 'use client';
 
 /**
- * 학습 그룹 — 함께 읽는 소그룹 (rfc-study-groups R1, 목업 A 상단·하단 + C).
- * R1 표면: 그룹 만들기/코드 참가/나가기 + "이번 주 우리"(주간 거울 합계 — 등수 없음).
- * 같이 읽기·진도 바·토론은 R2(§4.3)에서 이 페이지에 얹는다.
+ * 학습 그룹 — 함께 읽는 소그룹 (rfc-study-groups R1+R2, 목업 A 완형 + C).
+ * R1: 그룹 만들기/코드 참가/나가기 + "이번 주 우리"(주간 거울 합계 — 등수 없음).
+ * R2: 이번 주 같이 읽기(공개 자료 지정·멤버 진도 바) + 진도 게이트 토론(내가 읽은
+ * 데까지만 열림 — 원문이 공개 자료라 보안 아닌 UX 게이트). R3(공동 목표)는 후속.
  */
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -14,15 +15,22 @@ import { buildWeeklyReport, weekRangeLabel } from '../lib/weeklyReport';
 import { fetchWeeklyReportRows } from '../lib/weeklyReportRows';
 import {
   MAX_GROUPS_PER_USER,
+  addGroupComment,
   createGroup,
-  fetchGroupMemberCounts,
+  deleteGroupComment,
+  fetchGroupComments,
+  fetchGroupMembers,
+  fetchGroupReads,
   fetchGroupSnapshots,
   fetchMyGroups,
+  fetchPublicMaterials,
+  gateComments,
   groupErrorMessage,
   joinGroup,
   kstWeekStartDate,
   leaveGroup,
   pushGroupSnapshots,
+  setGroupRead,
   sumGroupSnapshots,
 } from '../lib/studyGroups';
 import Button from '../components/Button';
@@ -122,10 +130,189 @@ function GroupForms({ groupCount, onDone }) {
   );
 }
 
-function GroupCard({ group, memberCount, snapshotSum, userId }) {
+/* 이번 주 자료 고르기 — 공개 자료만(비공개는 그룹원이 못 읽는다, 서버 계약 동일). */
+function ReadPicker({ group, weekStart, userId, onDone }) {
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const [search, setSearch] = useState('');
+  const { data: candidates } = useQuery({
+    queryKey: ['group-read-candidates', group.lang, search],
+    queryFn: () => fetchPublicMaterials(group.lang, search.trim() || undefined),
+    staleTime: 1000 * 60,
+  });
+  const setMutation = useMutation({
+    mutationFn: (materialId) => setGroupRead(group.id, weekStart, materialId, userId),
+    onSuccess: () => {
+      toast('이번 주 같이 읽기 자료를 정했어요!', 'success');
+      queryClient.invalidateQueries({ queryKey: ['group-reads'] });
+      onDone?.();
+    },
+    onError: () => toast('잠시 후 다시 시도해 주세요.', 'warning'),
+  });
+
+  return (
+    <div style={{ marginTop: 8 }}>
+      <input
+        type="text"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="공개 자료 검색 (제목)"
+        style={{ width: '100%', marginBottom: 8 }}
+      />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 220, overflowY: 'auto' }}>
+        {(candidates || []).map((m) => (
+          <button
+            key={m.id}
+            type="button"
+            onClick={() => setMutation.mutate(m.id)}
+            disabled={setMutation.isPending}
+            style={{
+              textAlign: 'left', background: 'none', border: '1px solid var(--border)',
+              borderRadius: 8, padding: '8px 10px', cursor: 'pointer', color: 'var(--text-primary)', fontSize: '0.86rem',
+            }}
+          >
+            {m.title}
+            {m.level && <span style={{ color: 'var(--text-muted)', marginLeft: 6, fontSize: '0.78rem' }}>{m.level}</span>}
+          </button>
+        ))}
+        {candidates && candidates.length === 0 && (
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.84rem', margin: 0 }}>
+            공개 자료가 아직 없어요 — 서재에서 자료를 공개로 올리면 여기서 고를 수 있어요.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* 멤버별 진도 바(목업 A) — 가입순 나열, 등수·정렬 없음. */
+function ReadProgressBars({ members, snapshotsByUser, userId }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, margin: '8px 0' }}>
+      {members.map((m) => {
+        const isMe = m.user_id === userId;
+        const name = isMe ? '나' : (m.author?.display_name || '익명');
+        const pct = snapshotsByUser[m.user_id]?.material_pct;
+        return (
+          <div key={m.user_id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.84rem' }}>
+            <span style={{ width: 64, flexShrink: 0, fontWeight: isMe ? 700 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
+            {pct != null ? (
+              <>
+                <div style={{ flex: 1, height: 8, borderRadius: 4, background: 'var(--border)', overflow: 'hidden' }}>
+                  <div style={{ width: `${pct}%`, height: '100%', background: 'var(--primary)' }} />
+                </div>
+                <span style={{ width: 40, textAlign: 'right', color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }}>{pct}%</span>
+              </>
+            ) : (
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>아직 안 읽음</span>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* 진도 게이트 토론(목업 A) — 내가 읽은 데까지만, 앞선 댓글은 잠금 안내. */
+function GroupDiscussion({ group, read, myPct, userId }) {
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const [input, setInput] = useState('');
+  const { data: comments } = useQuery({
+    queryKey: ['group-comments', group.id, read.material_id],
+    queryFn: () => fetchGroupComments(group.id, read.material_id),
+    staleTime: 1000 * 30,
+  });
+  const gated = useMemo(() => gateComments(comments, myPct), [comments, myPct]);
+  const addMutation = useMutation({
+    mutationFn: () => addGroupComment({
+      groupId: group.id, materialId: read.material_id, userId, content: input.trim(), progressPct: myPct,
+    }),
+    onSuccess: () => {
+      setInput('');
+      queryClient.invalidateQueries({ queryKey: ['group-comments', group.id, read.material_id] });
+    },
+    onError: () => toast('잠시 후 다시 시도해 주세요.', 'warning'),
+  });
+  const deleteMutation = useMutation({
+    mutationFn: (id) => deleteGroupComment(id, userId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['group-comments', group.id, read.material_id] }),
+  });
+
+  const total = comments?.length || 0;
+  return (
+    <div style={{ marginTop: 14 }}>
+      <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 6 }}>
+        토론 ({total}) — 내가 읽은 데까지만 보여요
+      </div>
+      {gated.visible.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 8 }}>
+          {gated.visible.map((c) => (
+            <div key={c.id} style={{ display: 'flex', gap: 8, fontSize: '0.86rem', alignItems: 'baseline' }}>
+              <span style={{ flexShrink: 0, fontWeight: 600 }}>
+                {c.user_id === userId ? '나' : (c.author?.display_name || '익명')}
+              </span>
+              <span style={{ flexShrink: 0, color: 'var(--text-muted)', fontSize: '0.76rem' }}>{c.progress_pct}% 지점</span>
+              <span style={{ color: 'var(--text-secondary)', flex: 1 }}>{c.content}</span>
+              {c.user_id === userId && (
+                <button
+                  type="button"
+                  onClick={() => deleteMutation.mutate(c.id)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0, flexShrink: 0 }}
+                  title="삭제"
+                >✕</button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      {gated.lockedCount > 0 && (
+        <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 8 }}>
+          🔒 {gated.minLockedPct}% 이후 댓글 {gated.lockedCount}개 — 거기까지 읽으면 열려요
+        </div>
+      )}
+      {total === 0 && (
+        <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', margin: '0 0 8px' }}>
+          첫 감상을 남겨보세요 — 지금 진도({myPct}%)까지 읽은 사람에게만 보여요.
+        </p>
+      )}
+      <div style={{ display: 'flex', gap: 8 }}>
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder={`내 진도 ${myPct}% 지점에 남기기`}
+          maxLength={500}
+          style={{ flex: 1 }}
+        />
+        <Button
+          size="sm"
+          disabled={!input.trim() || addMutation.isPending}
+          onClick={() => addMutation.mutate()}
+        >남기기</Button>
+      </div>
+    </div>
+  );
+}
+
+function GroupCard({ group, snapshotRows, snapshotSum, read, weekStart, userId }) {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [confirmLeave, setConfirmLeave] = useState(false);
+  const [picking, setPicking] = useState(false);
+
+  const { data: members } = useQuery({
+    queryKey: ['group-members', group.id],
+    queryFn: () => fetchGroupMembers(group.id),
+    staleTime: 1000 * 60,
+  });
+  const snapshotsByUser = useMemo(() => {
+    const map = {};
+    for (const r of snapshotRows || []) map[r.user_id] = r;
+    return map;
+  }, [snapshotRows]);
+  const myPct = snapshotsByUser[userId]?.material_pct ?? 0;
+
   const leaveMutation = useMutation({
     mutationFn: () => leaveGroup(group.id, userId),
     onSuccess: () => {
@@ -150,7 +337,7 @@ function GroupCard({ group, memberCount, snapshotSum, userId }) {
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
         <h2 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>👥 {group.name}</h2>
         <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-          멤버 {memberCount ?? '–'}/{group.capacity} · {LANG_KO[group.lang] || group.lang}
+          멤버 {members?.length ?? '–'}/{group.capacity} · {LANG_KO[group.lang] || group.lang}
         </span>
         <button
           type="button"
@@ -173,6 +360,49 @@ function GroupCard({ group, memberCount, snapshotSum, userId }) {
         )}
       </div>
 
+      {/* R2 — 이번 주 같이 읽기(목업 A 가운데): 지정 자료·멤버 진도 바·이어 읽기 */}
+      <div style={{ marginTop: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)' }}>이번 주 같이 읽기</span>
+          {read?.material && (
+            <>
+              <span style={{ fontSize: '0.92rem', fontWeight: 600 }}>「{read.material.title}」</span>
+              <button type="button" onClick={() => setPicking((v) => !v)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.78rem', padding: 0 }}>
+                {picking ? '닫기' : '바꾸기'}
+              </button>
+            </>
+          )}
+        </div>
+        {read?.material && !picking && (
+          <>
+            {members?.length > 0 && (
+              <ReadProgressBars members={members} snapshotsByUser={snapshotsByUser} userId={userId} />
+            )}
+            <Link href={`/viewer/${read.material_id}`} className="btn btn--secondary btn--sm">이어 읽기 →</Link>
+          </>
+        )}
+        {(!read?.material || picking) && (
+          picking || read?.material ? (
+            <ReadPicker group={group} weekStart={weekStart} userId={userId} onDone={() => setPicking(false)} />
+          ) : (
+            <div style={{ marginTop: 6 }}>
+              <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', margin: '0 0 6px' }}>
+                이번 주에 함께 읽을 공개 자료를 하나 정해 보세요.
+              </p>
+              <button type="button" onClick={() => setPicking(true)}
+                className="btn btn--secondary btn--sm">이번 주 자료 고르기</button>
+            </div>
+          )
+        )}
+      </div>
+
+      {/* R2 — 진도 게이트 토론(목업 A 가운데 둘째) */}
+      {read?.material && !picking && (
+        <GroupDiscussion group={group} read={read} myPct={myPct} userId={userId} />
+      )}
+
+      {/* R1 — 이번 주 우리(목업 A 하단): 주간 거울 합계, 등수 없음 */}
       <div style={{ marginTop: 14 }}>
         <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 4 }}>
           이번 주 우리 ({weekRangeLabel({ startMs: snapshotSum?.weekStartMs ?? Date.now(), endMs: (snapshotSum?.weekStartMs ?? Date.now()) + 7 * 86400000 })})
@@ -206,17 +436,17 @@ export default function GroupsPage() {
   });
   const groupIds = useMemo(() => (groups || []).map((g) => g.id), [groups]);
 
-  const { data: counts } = useQuery({
-    queryKey: ['study-group-counts', user?.id, groupIds.join(',')],
-    queryFn: () => fetchGroupMemberCounts(groupIds),
-    enabled: groupIds.length > 0,
-    staleTime: 1000 * 60,
-  });
   const { data: snapshots } = useQuery({
     queryKey: ['group-snapshots', user?.id, groupIds.join(','), weekStart],
     queryFn: () => fetchGroupSnapshots(groupIds, weekStart),
     enabled: groupIds.length > 0,
     staleTime: 1000 * 60 * 5,
+  });
+  const { data: reads } = useQuery({
+    queryKey: ['group-reads', user?.id, groupIds.join(','), weekStart],
+    queryFn: () => fetchGroupReads(groupIds, weekStart),
+    enabled: groupIds.length > 0,
+    staleTime: 1000 * 60,
   });
 
   // 내 주간 리포트(프로필 카드와 같은 캐시 키) → 그룹 스냅샷 push(5분 스로틀, 실패 조용히)
@@ -238,15 +468,22 @@ export default function GroupsPage() {
     return () => { alive = false; };
   }, [user, weeklyRows, groupIds, queryClient]);
 
+  const rowsByGroup = useMemo(() => {
+    const byGroup = {};
+    for (const gid of groupIds) byGroup[gid] = (snapshots || []).filter((r) => r.group_id === gid);
+    return byGroup;
+  }, [groupIds, snapshots]);
   const sumsByGroup = useMemo(() => {
     const weekStartMs = new Date(`${weekStart}T00:00:00+09:00`).getTime();
     const byGroup = {};
-    for (const gid of groupIds) {
-      const rows = (snapshots || []).filter((r) => r.group_id === gid);
-      byGroup[gid] = { ...sumGroupSnapshots(rows), weekStartMs };
-    }
+    for (const gid of groupIds) byGroup[gid] = { ...sumGroupSnapshots(rowsByGroup[gid]), weekStartMs };
     return byGroup;
-  }, [groupIds, snapshots, weekStart]);
+  }, [groupIds, rowsByGroup, weekStart]);
+  const readsByGroup = useMemo(() => {
+    const byGroup = {};
+    for (const r of reads || []) byGroup[r.group_id] = r;
+    return byGroup;
+  }, [reads]);
 
   if (!user) {
     return (
@@ -264,7 +501,7 @@ export default function GroupsPage() {
     <div className="page-container" style={{ maxWidth: 680 }}>
       <h1 style={{ fontSize: '1.25rem', fontWeight: 800, margin: '0 0 4px' }}>👥 함께 읽기</h1>
       <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', margin: '0 0 20px' }}>
-        같은 자료를 함께 읽는 소그룹 — 주간 기록을 합계로만 나란히 봐요.
+        같은 자료를 함께 읽는 소그룹 — 토론은 각자 읽은 데까지만, 주간 기록은 합계로만.
       </p>
 
       {isLoading ? (
@@ -283,8 +520,10 @@ export default function GroupsPage() {
             <GroupCard
               key={g.id}
               group={g}
-              memberCount={counts?.[g.id]}
+              snapshotRows={rowsByGroup[g.id]}
               snapshotSum={sumsByGroup[g.id]}
+              read={readsByGroup[g.id]}
+              weekStart={weekStart}
               userId={user.id}
             />
           ))}

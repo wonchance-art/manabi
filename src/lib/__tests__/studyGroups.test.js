@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   MAX_GROUPS_PER_USER,
+  gateComments,
   groupErrorMessage,
   kstWeekStartDate,
   snapshotFromWeekly,
@@ -76,6 +77,40 @@ describe('sumGroupSnapshots — 이번 주 우리(그룹 합계, 등수 없음)'
   });
 });
 
+describe('gateComments — 진도 게이트(R2, 내가 읽은 데까지만)', () => {
+  const comments = [
+    { id: 1, progress_pct: 0, content: 'a' },
+    { id: 2, progress_pct: 40, content: 'b' },
+    { id: 3, progress_pct: 82, content: 'c' },
+    { id: 4, progress_pct: 95, content: 'd' },
+  ];
+
+  it('내 진도 이하만 보이고(경계 포함), 잠긴 것의 최소 지점을 안내한다', () => {
+    const g = gateComments(comments, 40);
+    expect(g.visible.map((c) => c.id)).toEqual([1, 2]);
+    expect(g.lockedCount).toBe(2);
+    expect(g.minLockedPct).toBe(82);
+  });
+
+  it('진도 0·미기록도 0% 지점 코멘트는 보인다(사전 토론 관례)', () => {
+    expect(gateComments(comments, 0).visible.map((c) => c.id)).toEqual([1]);
+    expect(gateComments(comments, null).visible.map((c) => c.id)).toEqual([1]);
+  });
+
+  it('전부 읽었으면 잠금 없음, 빈 목록은 전부 0', () => {
+    const g = gateComments(comments, 100);
+    expect(g.visible).toHaveLength(4);
+    expect(g.lockedCount).toBe(0);
+    expect(g.minLockedPct).toBeNull();
+    expect(gateComments([], 50)).toEqual({ visible: [], lockedCount: 0, minLockedPct: null });
+  });
+
+  it('progress_pct 결측 행은 0% 취급(항상 보임)', () => {
+    const g = gateComments([{ id: 9, content: 'x' }], 0);
+    expect(g.visible.map((c) => c.id)).toEqual([9]);
+  });
+});
+
 describe('groupErrorMessage — RPC 오류 문구', () => {
   it('세 예외를 사용자 문구로, 그 외는 일반 문구(원문 미노출)', () => {
     expect(groupErrorMessage({ message: 'invalid code' })).toContain('코드');
@@ -122,5 +157,35 @@ describe('학습 그룹 배선 계약', () => {
     const profile = read('src/views/ProfileStats.jsx');
     expect(profile).toContain("from '../lib/weeklyReportRows'");
     expect(profile).not.toMatch(/async function fetchWeeklyReportRows/);
+  });
+
+  /* ── R2 — 같이 읽기·진도 게이트 토론 ── */
+  const r2 = read('supabase/migrations/20260823130000_study_group_reads.sql');
+
+  it('R2 마이그레이션 — 공개 자료만 지정(서버 계약)·profiles FK·anon 차단', () => {
+    expect(r2).toMatch(/visibility = 'public'/); // insert·update WITH CHECK
+    expect(r2).toContain('study_group_members_user_profile_fk');
+    expect(r2).toMatch(/user_id\s+uuid NOT NULL REFERENCES public\.profiles\(id\)/); // 작성자 조인 경로
+    expect(r2).toMatch(/REVOKE ALL ON public\.study_group_reads\s+FROM anon/);
+    expect(r2).toMatch(/REVOKE ALL ON public\.study_group_comments FROM anon/);
+  });
+
+  it('R2 마이그레이션 — 개인 원장 테이블 무접촉(자료 접근 정책도 무변경)', () => {
+    const sql = r2.split('\n').filter((l) => !l.trim().startsWith('--')).join('\n');
+    expect(sql).not.toMatch(/review_events|user_vocabulary|user_vocab_encounters|reading_progress/);
+    expect(sql).not.toMatch(/ALTER TABLE public\.reading_materials|ON public\.reading_materials/);
+  });
+
+  it('뷰어 — 같이 읽기 진도 push 훅이 배선되어 있다(실패 조용히는 훅 계약)', () => {
+    const viewer = read('src/views/ViewerPage.jsx');
+    expect(viewer).toContain('useGroupReadPush(material?.id, user?.id, readProgress)');
+  });
+
+  it('그룹 화면 — 게이트 적용·잠금 안내 문구·공개 자료 후보만', () => {
+    const src = read('src/views/GroupsPage.jsx');
+    expect(src).toContain('gateComments');
+    expect(src).toContain('거기까지 읽으면 열려요');
+    const lib = read('src/lib/studyGroups.js');
+    expect(lib).toContain(".eq('visibility', 'public')");
   });
 });

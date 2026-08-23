@@ -41,6 +41,7 @@ import { useTitleEdit } from '../lib/useTitleEdit';
 import { useTokenRangeSelect } from '../lib/useTokenRangeSelect';
 import { useNextRangeMutation } from '../lib/useNextRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
+import { useGroupReadPush } from '../lib/useGroupReadPush';
 import { useScrollRestore } from '../lib/useScrollRestore';
 import { listHanjaHunEum, toJaForm } from '../lib/hanjaKo';
 import { useGrammarDetail } from '../lib/useGrammarDetail';
@@ -380,6 +381,8 @@ export default function ViewerPage() {
 
   // 읽기 진행률 바 — readerRef는 본문 컨테이너에 부착
   const { readerRef, readProgress } = useReadProgress(material);
+  // 그룹 같이 읽기 진도 push(§4.3) — 이번 주 지정 자료일 때만, 실패 조용히
+  useGroupReadPush(material?.id, user?.id, readProgress);
 
   // 스크롤 위치 저장(debounce 2s) + 재진입 시 자동 복원
   const { saveScrollPosition, tokenRefs } = useScrollRestore({ user, materialId: id, material, readingProgress });
