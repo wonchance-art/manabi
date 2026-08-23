@@ -83,3 +83,11 @@ const BAND_ORDER = { fit: 0, stretch: 1, comfort: 2, hard: 3 };
 export function fitSortRank(band) {
   return band in BAND_ORDER ? BAND_ORDER[band] : 4;
 }
+
+/** 목업 B [내 수준 맞춤] — 밴드 랭크 안정 정렬(동순위·무밴드는 원래 순서 유지). 순수. */
+export function sortByFit(items, bandOf) {
+  return (items || [])
+    .map((item, index) => ({ item, index }))
+    .sort((a, b) => (fitSortRank(bandOf(a.item)) - fitSortRank(bandOf(b.item))) || (a.index - b.index))
+    .map((entry) => entry.item);
+}
