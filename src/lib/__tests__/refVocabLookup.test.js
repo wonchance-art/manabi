@@ -47,6 +47,39 @@ describe('loadRefVocabLookup — fr 실측', () => {
   });
 });
 
+describe('loadRefVocabLookup — fr 굴절 전개(§4.8) 실측', () => {
+  it('활용형 표면형이 부정사 표제어에 접힌다 — 불규칙·규칙·철자 보정', async () => {
+    const lookup = await loadRefVocabLookup('fr');
+    expect(lookup.findWord('vais')?.main).toBe('aller');       // 완전 불규칙
+    expect(lookup.findWord('étais')?.main).toBe('être');
+    expect(lookup.findWord('faites')?.main).toBe('faire');
+    expect(lookup.findWord('voudrais')?.main).toBe('vouloir'); // -oir 저작
+    expect(lookup.findWord('reçu')?.main).toBe('recevoir');    // cevoir 가족
+    expect(lookup.findWord('parlons')?.main).toBe('parler');   // -er 규칙
+    expect(lookup.findWord('mangeons')?.main).toBe('manger');  // -ger 연음
+    expect(lookup.findWord('achète')?.main).toBe('acheter');   // 묵음 e→è
+    expect(lookup.findWord('attendez')?.main).toBe('attendre'); // -dre 규칙
+  });
+
+  it('명사 복수·형용사 성수·대안 표기 전 항이 표제어에 접힌다', async () => {
+    const lookup = await loadRefVocabLookup('fr');
+    expect(lookup.findWord('maisons')?.main).toBe('la maison');
+    expect(lookup.findWord('journaux')?.main).toBe('le journal');
+    expect(lookup.findWord('belle')?.main).toBe('beau');
+    expect(lookup.findWord('bel')?.main).toBe('beau');
+  });
+
+  it('표제어가 활용형을 절대 이기지 못하는 일이 없다 — 2패스 우선순위 실측', async () => {
+    const lookup = await loadRefVocabLookup('fr');
+    // porte: porter(동사)의 3인칭 단수이기도 하지만 명사 표제어가 이긴다(1패스 우선)
+    expect(lookup.findWord('porte')?.word?.pos).toBe('n.f.');
+    // pris: prendre 분사이기도 하지만 형용사 표제어 "pris / prise"가 이긴다
+    expect(lookup.findWord('pris')?.word?.pos).toBe('adj.');
+    // suis: être와 suivre가 경합 — 학습 순서(A1 être) 첫 등록이 이긴다
+    expect(lookup.findWord('suis')?.main).toBe('être');
+  });
+});
+
 describe('loadRefVocabLookup — zh 실측', () => {
   it('표면형=표제어 직결(중국어 무활용) — H1 어휘가 잡힌다', async () => {
     const lookup = await loadRefVocabLookup('zh');
