@@ -545,7 +545,16 @@
   보기] 전까지 — 듣기 훈련 전제), ▷ 다시 듣기(useTTS 재사용)·글자 diff 채점
   (gradeDictation — 파랑=놓침·취소선=잉여)·정답률·[한 번 더]. Codex dictationPick
   엔진(추천 문장)은 도착 시 후속 합류. 배선 계약 1핀. 게이트: 전체 vitest
-  2,063(+1) green (PR #1122). 잔여 UI: ④ 빠른 분석.
+  2,063(+1) green (#1122 merge a3479f5). **UI 라운드 4차(목업 ④ 빠른 분석 —
+  5종 완결)**: /quick — /api/analyze 무저장 재사용(서버 변경 0 — 인증 401·분당
+  20회·100줄×200자 캡을 클라가 같은 숫자로 미러, 계약 테스트가 route.js 상수와
+  대조). 토큰 렌더는 뷰어 정본 부품(splitRuby·pinyinToneClass·word-token CSS·
+  rt-an WebKit 수리 승계), 탭 사전은 PDF 뷰어 팝업 계약(fetchWordDetailText·
+  formatDetail·TokenPosLabel) 재사용. 결과 상단 '저장 안 됨 · [자료로 저장]' —
+  초안 sessionStorage 핸드오프(manabi_quick_draft 1회성)로 추가 화면 프리필
+  (저장 흐름은 기존 하나뿐). 게스트는 로그인 안내. 서재 헤더 입구(무저장
+  해부라 '추가 입구 하나' 원칙과 무충돌 — 주석 근거 병기). 계약 10핀. 게이트:
+  전체 vitest 2,073(+10) green (PR #1123). **UI 라운드 ①~⑤ 전체 완결**.
   Codex Cloud 첫 태스크(받아쓰기 문장 선정 엔진 dictationPick) 블록 오너에게 제공
   — PR 미도착(투입 대기 추정).
   승인 후)** — 전략 문서 Phase 4 잔여 ❌(학습 그룹) 대상, RFC = docs/rfc-study-groups.md.

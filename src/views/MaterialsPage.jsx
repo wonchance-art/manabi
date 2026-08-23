@@ -379,10 +379,14 @@ export default function MaterialsPage() {
           <h1 className="page-header__title">자료실</h1>
           <p className="page-header__subtitle">현지 언어 콘텐츠 (기사·이야기·PDF). 패턴 학습은 <Link href="/lessons" style={{ color: 'var(--accent-text)' }}>교재</Link>에서</p>
         </div>
-        {/* 추가 입구는 하나 — 클립보드 붙여넣기는 추가 화면 안에 있다 */}
-        <Link href="/materials/add" className="btn btn--primary btn--md" style={{ flexShrink: 0 }}>
-          새 자료 추가
-        </Link>
+        {/* 추가 입구는 하나 — 클립보드 붙여넣기는 추가 화면 안에 있다.
+            빠른 분석은 추가가 아니라 무저장 해부(목업 ④)라 별도 입구가 원칙과 안 충돌한다. */}
+        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          <Link href="/quick" className="btn btn--ghost btn--md">⚡ 빠른 분석</Link>
+          <Link href="/materials/add" className="btn btn--primary btn--md">
+            새 자료 추가
+          </Link>
+        </div>
       </div>
 
       {/* Search */}
