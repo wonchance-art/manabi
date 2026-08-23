@@ -533,8 +533,15 @@
   OutputWordChips: 작문 입력 카드 상단(표시 유도만 — 채점 강제 없음) · 회화 패널
   상단(학생이 쓰면 ✓) + 회화 튜터 프롬프트 시작·진행 양쪽 조건부 자연 주입
   ("Never force them")). 배선 계약 2핀. 게이트: 전체 vitest 2,055(+2) green
-  (PR #1120). 잔여 UI: ⑤ 이미 앎(마이그레이션 동반) → ① 받아쓰기 화면 → ④
-  빠른 분석 순차. Codex Cloud 첫 태스크(받아쓰기 문장 선정 엔진) 블록 제공.
+  (#1120 merge abbc5fc). **UI 라운드 2차(목업 ⑤ '이미 앎')**: user_known_words
+  마이그레이션(own-only 3정책 — 만남과 달리 취소용 delete 포함·anon 차단·학습
+  테이블 무접촉 핀) + knownWords lib(언어 코드는 만남 매핑 재사용·
+  mergeKnownIntoIndex 순수 합집합 — **materialFit 엔진 시그니처 무변경 합류**) +
+  서재 커버리지 정밀화(fitById에 known 합집합 인덱스) + 뷰어 단어 시트
+  [👌 이미 알아요]/[표시됨—취소] 토글(저장된 단어엔 숨김·실패 조용히). 계약
+  7핀. 게이트: 전체 vitest 2,062(+7) green (PR #1121). 잔여 UI: ① 받아쓰기
+  화면(Codex 문장 선정 엔진 합류 대기 가능) → ④ 빠른 분석.
+  Codex Cloud 첫 태스크(받아쓰기 문장 선정 엔진 dictationPick) 블록 오너에게 제공.
   승인 후)** — 전략 문서 Phase 4 잔여 ❌(학습 그룹) 대상, RFC = docs/rfc-study-groups.md.
   **실측(소셜 자산 전수)**: 소셜 스키마 3세대(포럼 3-29 · 공유 덱 4-05 · 기수제
   cohorts 6-13)가 전부 UI 없이 DB에 잠들어 있고(XP·notifications 소비 0 — evaluation
