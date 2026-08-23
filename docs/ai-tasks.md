@@ -604,7 +604,15 @@
   둘 다), 동철 경합(suis)은 학습 순서 첫 등록(être) 일관. Snowball 어간 비교는
   품사 교차 오탐(porte/porter)으로 배제, vais→aller·mangeons→manger·
   journaux→le journal 실측 green. 게이트: lint 0 err · 콘텐츠 게이트 오류 0 ·
-  vitest 1,988 + world 1,090 green (PR #1102).
+  vitest 1,988 + world 1,090 green (#1102 merge 585f55a).
+  **적응 출제 RFC 게시(오너 "적응 출제 RFC도 ㄱㄱ")**: ㉞ `rfc-adaptive-quiz.md` —
+  현행 적응 3축(선정 due·워밍업·약점 재주입 / 타입 rung 0~5 / 강도 EWMA 다이얼)
+  전수 실측 후 공백 하나만 제안: **만남 인지 슬롯**(월드·뷰어에서 만났지만 미담김
+  어휘를 세션 잔여 예산에 choice 상한 2 — rung 0→1 다리, §4.5 서버 정본이 전제
+  인프라). 기록은 기존 review_events 경로(source:vocab, origin:encounter 표지)라
+  담김 후 rung이 자연 연결, FSRS 무접촉·타이머 없음(kana-dojo '시간 없는' 결 유지)·
+  담김은 정답 직후 제안만(자동 담김 금지). 목업 A(문항 배지)·B(담기 제안) 동봉 —
+  **오너 목업 승인 대기(승인 전 구현 금지)** (PR #1103).
 - **🪶 리포 경량화 P1·P2(2026-08-19, 오너 승인)** — 오너 질문("월드가 무거울 텐데 따로
   보관 가능한가")에서 출발한 실측: `.git` 36M으로 **clone은 애초에 무겁지 않았고**,
   체감 비용은 게이트 시간이었다(전체 408s 중 world 265s·파일 123/305=40%).
