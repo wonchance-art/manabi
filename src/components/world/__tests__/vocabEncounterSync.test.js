@@ -119,3 +119,20 @@ describe('syncVocabEncounters — 스로틀·무해성', () => {
     expect(loadVocabEncounters('ja', storage).has('券売機')).toBe(true);
   });
 });
+
+describe('syncVocabEncounters — 출처 문맥 push 동봉(R3)', () => {
+  it('로컬 문맥이 있는 전용분은 context/context_source가 실리고, 없는 행은 기존 형태 그대로', async () => {
+    const { client, calls } = mockClient({ rows: [] });
+    const storage = memoryStorage({
+      [vocabEncounterStorageKey('ja')]: JSON.stringify(['食券', 'どうぞ']),
+      'vocab-encounter-contexts:ja': JSON.stringify({ '食券': { t: 'まずは 食券を どうぞ。', s: 'npc' } }),
+    });
+    await syncVocabEncounters(client, 'u1', 'ja', { storage, throttleStorage: memoryStorage() });
+    const byWord = Object.fromEntries(calls.upserts[0].payload.map((r) => [r.word_text, r]));
+    expect(byWord['食券']).toEqual({
+      user_id: 'u1', lang: 'ja', word_text: '食券',
+      context: 'まずは 食券を どうぞ。', context_source: 'npc',
+    });
+    expect(byWord['どうぞ']).toEqual({ user_id: 'u1', lang: 'ja', word_text: 'どうぞ' });
+  });
+});

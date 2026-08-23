@@ -12,6 +12,7 @@ import {
   normalizeSlug,
   npcMeetingStorageKey,
   vocabEncounterStorageKey,
+  vocabEncounterContextStorageKey,
   readStorageSchemaVersion,
   routeDiscoveryStorageKey,
   slugAliases,
@@ -45,6 +46,7 @@ describe('월드 localStorage 스키마 v1', () => {
       routeDiscoveries: 'route-discoveries:',
       briefingSeen: 'briefing-seen:',
       vocabEncounters: 'vocab-encounters:',
+      vocabEncounterContexts: 'vocab-encounter-contexts:',
     });
     expect(LEARNING_STORAGE_KEY_PREFIXES).toEqual({
       activity: 'manabi-learning-activity-v1:',
@@ -52,6 +54,7 @@ describe('월드 localStorage 스키마 v1', () => {
     expect(npcMeetingStorageKey('lyon')).toBe('npc-met:lyon');
     expect(routeDiscoveryStorageKey('lyon')).toBe('route-discoveries:lyon');
     expect(vocabEncounterStorageKey('ja')).toBe('vocab-encounters:ja');
+    expect(vocabEncounterContextStorageKey('ja')).toBe('vocab-encounter-contexts:ja');
     expect(briefingSeenKey('france')).toBe('briefing-seen:france');
     expect(learningActivityStorageKey()).toBe('manabi-learning-activity-v1:guest');
     expect(learningActivityStorageKey('user-1')).toBe('manabi-learning-activity-v1:user-1');

@@ -532,13 +532,17 @@ export default function ViewerPage() {
           const hit = lookup.findWord(t.base_form) || lookup.findWord(t.text);
           if (hit?.main) met.push(hit.main);
         }
-        if (met.length > 0) recordVocabEncounters(code, met);
+        // 출처 문맥(R3) — 처음 만난 표기에는 드래그한 자료 문장(첫 줄)을 남긴다.
+        const ctxLine = String(leftPanelText || '').split('\n').map((l) => l.trim()).find(Boolean);
+        if (met.length > 0) {
+          recordVocabEncounters(code, met, undefined, ctxLine ? { text: ctxLine, source: 'viewer' } : null);
+        }
       } catch {
         // 부가 기록 — 조용히 생략.
       }
     })();
     return () => { alive = false; };
-  }, [dragTokens, materialLang]);
+  }, [dragTokens, materialLang, leftPanelText]);
 
   // 모바일 시트 재오픈 신호 — active 유지 상태에선 rising edge가 없어, 시트를 닫은 뒤
   // 다른 단어를 탭해도 시트가 다시 안 올라온다(#996). 탭·드래그 때마다 카운터를 올린다.

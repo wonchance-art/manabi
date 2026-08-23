@@ -330,3 +330,24 @@ describe('buildRefMainWordIndex / buildEncounterCandidates', () => {
     expect(buildEncounterCandidates(many, {})).toEqual([]);
   });
 });
+
+// 🈁 문맥 cloze 오버레이(rfc-adaptive-quiz R3) — 실만남 문장이 정본 예문을 덮는다.
+describe('applyEncounterContextExamples', () => {
+  it('표기가 실재하는 문맥만 덮고, 미포함·빈 문맥·행 부재는 기존 예문 유지(순수)', async () => {
+    const { applyEncounterContextExamples } = await import('../studyMaterials');
+    const base = {
+      '食券': { main: '食券を 買います。', pron: 'しょっけんを かいます' },
+      '屋台': { main: '屋台が 並ぶ。', pron: null },
+    };
+    const out = applyEncounterContextExamples(base, [
+      { word_text: '食券', context: 'まずは 食券を どうぞ。' },   // 덮음
+      { word_text: '屋台', context: '표기가 없는 문장' },          // 미포함 — 유지
+      { word_text: '유령', context: '유령 문장' },                 // base 밖 — 추가(무해: 소비는 due 교집합)
+      { word_text: '食券', context: '' },                          // 빈 문맥 — 무시
+    ]);
+    expect(out['食券']).toEqual({ main: 'まずは 食券を どうぞ。', pron: null });
+    expect(out['屋台']).toEqual(base['屋台']);
+    expect(base['食券'].main).toBe('食券を 買います。'); // 입력 불변
+    expect(applyEncounterContextExamples(base, null)).toEqual(base);
+  });
+});

@@ -25,7 +25,7 @@ import { GBC, gbcPanel, gbcButton, gbcButtonPrimary } from './QuestReview';
 import { JaText } from '../../views/refShared';
 import bus from './bus';
 import { getNpcScript, judgeType, drawOmikuji } from './npcScripts';
-import { recordVocabEncounters, stepEncounterRefs, scriptEncounterRefs } from './vocabEncounters';
+import { recordVocabEncounters, stepEncounterRefs, stepEncounterContext, scriptEncounterRefs } from './vocabEncounters';
 
 const WHO_LABEL = { me: '나' };
 
@@ -68,7 +68,10 @@ export default function NpcDialog({
   useEffect(() => {
     if (!script?.lang || !step) return;
     const refs = stepEncounterRefs(step);
-    if (refs.length > 0) recordVocabEncounters(script.lang, refs);
+    if (refs.length === 0) return;
+    // 출처 문맥(R3) — 처음 만난 표기에는 그 대사/정답 문장을 남긴다(첫 만남 불변).
+    const ctx = stepEncounterContext(step);
+    recordVocabEncounters(script.lang, refs, undefined, ctx ? { text: ctx, source: 'npc' } : null);
   }, [script, step]);
 
   // 완주 요약(목업 A) 데이터 — 정본 뜻·요미는 무거운 레지스트리라 완주 시에만 지연 로드한다.

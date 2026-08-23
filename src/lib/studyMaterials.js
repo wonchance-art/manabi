@@ -308,6 +308,23 @@ export function buildEncounterCandidates(encounterRows, { wordByMain, exclude = 
   return out;
 }
 
+/**
+ * due 어휘 cloze 예문 오버레이(rfc-adaptive-quiz R3) — 실만남 문장이 있으면 정본 예문
+ * 대신 그 문장을 빈칸 재료로. 표기가 문장에 실재해야 빈칸이 성립하므로 포함 검사로
+ * 지키고(미포함·빈 문맥은 기존 예문 유지 — 폴백), pron은 없음(실자료 문장 — 렌더 옵션).
+ * 순수 함수 — 입력 맵은 건드리지 않는다.
+ */
+export function applyEncounterContextExamples(exampleByWord, contextRows) {
+  const out = { ...exampleByWord };
+  for (const row of contextRows || []) {
+    const w = row?.word_text;
+    const ctx = typeof row?.context === 'string' ? row.context.trim() : '';
+    if (!w || !ctx || !ctx.includes(w)) continue;
+    out[w] = { main: ctx, pron: null };
+  }
+  return out;
+}
+
 export async function assembleStudyMaterials(supabase, userId, lang, { horizonHours = 0, interestGroup = null } = {}) {
   const ref = getRefLang(lang);
   // due 기준 시각 — 프리페치는 now + horizonHours 로 미리 당겨 조회.
@@ -358,7 +375,20 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   const eventsAsc = (reviewEventRows || []).slice().reverse();
   const vocabRungs = deriveVocabRungs(eventsAsc, dueVocabRows);
   // cloze(rung 2) 빈칸 예문 — 레지스트리 예문/문맥을 서버에서 조립해 payload에 실어 보낸다(§4.1).
-  const exampleByWord = buildVocabExampleMap(ref, dueVocabRows);
+  const baseExamples = buildVocabExampleMap(ref, dueVocabRows);
+  // 만남 출처 문맥(rfc-adaptive-quiz R3) — due 어휘를 실제로 마주친 문장이 서버 정본에
+  // 있으면 cloze 예문을 그 문장으로 덮는다. 컬럼 미적용·행 부재·실패는 조용히 기존 예문 유지.
+  let encounterContextRows = [];
+  const dueWordTexts = (dueVocabRows || []).map(r => r.word_text).filter(Boolean);
+  if (dueWordTexts.length) {
+    await supabase.from('user_vocab_encounters')
+      .select('word_text, context')
+      .eq('user_id', userId).eq('lang', ref.langCode)
+      .in('word_text', dueWordTexts)
+      .not('context', 'is', null)
+      .then(({ data }) => { encounterContextRows = data || []; }, () => {});
+  }
+  const exampleByWord = applyEncounterContextExamples(baseExamples, encounterContextRows);
   // 다이얼은 채점 문항만 본다 — ui(행동 계측)·dict(자가 채점)는 정답률 신호가 아니다 (§4.9 무간섭 보장).
   const gradedEvents = eventsAsc.filter(e => e.source !== 'ui' && e.source !== 'dict').map(e => ({ correct: !!e.correct }));
   const ewma = computeEwma(gradedEvents);
