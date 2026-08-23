@@ -51,3 +51,20 @@ describe('pickOutputWords', () => {
     expect(pickOutputWords({ now: NOW })).toEqual([]);
   });
 });
+
+// 배선 계약(목업 ③ — UI 라운드): 칩은 작문·회화 양쪽, 회화는 프롬프트 주입 + 사용 ✓.
+describe('산출 주입 배선 계약', () => {
+  it('작문·회화가 칩과 훅을 쓰고, 회화 프롬프트에 오늘 단어가 조건부 주입된다', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const read = (p) => fs.readFileSync(path.join(process.cwd(), p), 'utf8');
+    expect(read('src/views/WritingStudioPage.jsx')).toContain('OutputWordChips');
+    const conv = read('src/components/ConversationPanel.jsx');
+    expect(conv).toContain('OutputWordChips');
+    expect(conv).toContain('useOutputWords');
+    expect(conv).toContain('Never force them'); // 자연 주입 — 강제 금지 문구
+    expect(conv).toContain('usedWordSet'); // 학생이 쓰면 ✓
+    // 훅은 오늘(KST) 하한으로 서버측 축소 — 전 단어장 무견인
+    expect(read('src/lib/useOutputWords.js')).toContain('kstDayStartIso');
+  });
+});

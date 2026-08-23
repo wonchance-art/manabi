@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
+import { useOutputWords } from '../lib/useOutputWords';
+import OutputWordChips from '../components/OutputWordChips';
 import Button from '../components/Button';
 import { WRITING_LEVELS, topicsFor } from '../lib/writingPrompts';
 import { logReviewEvents } from '../lib/reviewEvents';
@@ -29,6 +31,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
   const { user, profile, fetchProfile } = useAuth();
 
   const [language, setLanguage] = useState('Japanese');
+  const outputWords = useOutputWords(language);
   const [level, setLevel] = useState('N5');
   const [tab, setTab] = useState('free');          // 'chapter' | 'topic' | 'free'
   const [chapterSlug, setChapterSlug] = useState(null);
@@ -356,6 +359,8 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
       {/* 작성 */}
       {!result && (
         <div className="card" style={{ padding: '16px 18px', marginBottom: 14 }}>
+          {/* 오늘 복습한 말 주입(목업 ③ — #1077-16): 표시 유도만, 채점 강제 없음 */}
+          <OutputWordChips words={outputWords} />
           {prevScore != null && (
             <div style={{
               padding: '8px 12px', marginBottom: 10, borderRadius: 'var(--radius-md)',
