@@ -592,7 +592,19 @@
   언어 중립이라 코드 무변경으로 개통, 뷰어 만남 4트랙 전부 열림. en은 토크나이저
   lemma(ran→run)가 굴절을 접어 fr보다 회수율이 높다(조회기는 렘마타이저가 아님을
   핀으로 고정). 게이트: lint 0 err · 콘텐츠 게이트 오류 0 · vitest 1,974 + world
-  1,090 green (PR #1101).
+  1,090 green (#1101 merge fff10e4).
+  **§4.8 fr 굴절 대응(오너 "fr 굴절 대응도 ㄱㄱ")**: ㉝ 렘마타이저 대신 **정본
+  활용형 전개** — 대조 대상이 폐집합(동사 937: -er 729·-ir 88·-re 93·-oir 20
+  실측)이라 표제어 쪽에서 전개해 키로 깐다(frInflect — 결정적·무의존·전량 핀).
+  -er 규칙(연음·묵음e·-eler·-yer 보정, 대조기라 병출 허용)·-ir/-dre 규칙 + **어미
+  가족 저작**(venir/prendre/mettre류 — 합성동사 obtenir·apprendre가 꼬리 하나로
+  접힘, 최장 일치) + être/avoir/aller·-oir 불규칙 + 명사 복수·형용사 성수.
+  2패스 인덱스로 **표제어 우선** 보장(porte 명사가 porter 3단수에, pris/prise
+  형용사가 prendre 분사에 안 밀림 — 실측 핀), 대안 표기 전 항 인덱싱(beau/belle
+  둘 다), 동철 경합(suis)은 학습 순서 첫 등록(être) 일관. Snowball 어간 비교는
+  품사 교차 오탐(porte/porter)으로 배제, vais→aller·mangeons→manger·
+  journaux→le journal 실측 green. 게이트: lint 0 err · 콘텐츠 게이트 오류 0 ·
+  vitest 1,988 + world 1,090 green (PR #1102).
 - **🪶 리포 경량화 P1·P2(2026-08-19, 오너 승인)** — 오너 질문("월드가 무거울 텐데 따로
   보관 가능한가")에서 출발한 실측: `.git` 36M으로 **clone은 애초에 무겁지 않았고**,
   체감 비용은 게이트 시간이었다(전체 408s 중 world 265s·파일 123/305=40%).
