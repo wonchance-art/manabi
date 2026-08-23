@@ -49,6 +49,7 @@ import { buildContextPrompt } from '../lib/grammarDetail';
 import { analysisCacheKey, clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
 import { fetchKnownWords, knownWordsLang, markKnown, unmarkKnown } from '../lib/knownWords';
+import DictationPanel from '../components/DictationPanel';
 import { recordVocabEncounters } from '../components/world/vocabEncounters';
 import { syncVocabEncounters } from '../components/world/vocabEncounterSync';
 import { encounterLookupLang, loadMetWordKeys, loadRefVocabLookup } from '../lib/refVocabLookup';
@@ -580,6 +581,8 @@ export default function ViewerPage() {
 
   // 문장 막대로 지정한 줄 — 해당 줄 전체에 지정 이펙트(#1002). 단어 클릭·드래그 시 해제.
   const [pickedLineIdx, setPickedLineIdx] = useState(null);
+  // 받아쓰기 패널(목업 ① — #1077-6): 지정 문장 대상, 열림 동안 원문 가림은 패널 몫
+  const [dictationOpen, setDictationOpen] = useState(false);
 
   // 리딩 테스트
   const [showReadingTest, setShowReadingTest] = useState(false);
@@ -1444,6 +1447,14 @@ export default function ViewerPage() {
               style={{ background: 'none', border: 'none', fontSize: '1.05rem', cursor: 'pointer', minWidth: 32, minHeight: 32, flexShrink: 0, color: 'var(--primary-light)' }}
             >▷</button>
           )}
+          {ttsSupported && (
+            <button
+              onClick={() => setDictationOpen(true)}
+              aria-label="이 문장 받아쓰기"
+              title="이 문장 받아쓰기 — 듣고 입력하면 글자 단위로 채점해요"
+              style={{ background: 'none', border: 'none', fontSize: '1rem', cursor: 'pointer', minWidth: 32, minHeight: 32, flexShrink: 0 }}
+            >🎧</button>
+          )}
         </div>
       )}
       <div className="pdf-context__text" dangerouslySetInnerHTML={{ __html: formatDetail(leftPanelResult) }} />
@@ -2257,6 +2268,15 @@ export default function ViewerPage() {
         completionModal={completionModal} setCompletionModal={setCompletionModal}
         material={material} nextMaterial={nextMaterial}
       />
+
+      {/* 받아쓰기(목업 ① — 지정 문장 듣고 입력·글자 diff 채점) */}
+      {dictationOpen && leftPanelText && (
+        <DictationPanel
+          sentence={leftPanelText}
+          lang={materialLang}
+          onClose={() => setDictationOpen(false)}
+        />
+      )}
 
       <style>{`
         .modal__content--markdown { display: flex; flex-direction: column; gap: 8px; }

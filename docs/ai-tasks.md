@@ -539,9 +539,15 @@
   mergeKnownIntoIndex 순수 합집합 — **materialFit 엔진 시그니처 무변경 합류**) +
   서재 커버리지 정밀화(fitById에 known 합집합 인덱스) + 뷰어 단어 시트
   [👌 이미 알아요]/[표시됨—취소] 토글(저장된 단어엔 숨김·실패 조용히). 계약
-  7핀. 게이트: 전체 vitest 2,062(+7) green (PR #1121). 잔여 UI: ① 받아쓰기
-  화면(Codex 문장 선정 엔진 합류 대기 가능) → ④ 빠른 분석.
-  Codex Cloud 첫 태스크(받아쓰기 문장 선정 엔진 dictationPick) 블록 오너에게 제공.
+  7핀. 게이트: 전체 vitest 2,062(+7) green (#1121 merge f431cc9 — 마이그레이션
+  자동 적용 success). **UI 라운드 3차(목업 ① 받아쓰기)**: DictationPanel —
+  지정 문장(leftPanelText) 대상 🎧 진입(문장 ▷ 옆), 열림 동안 원문 가림([본문
+  보기] 전까지 — 듣기 훈련 전제), ▷ 다시 듣기(useTTS 재사용)·글자 diff 채점
+  (gradeDictation — 파랑=놓침·취소선=잉여)·정답률·[한 번 더]. Codex dictationPick
+  엔진(추천 문장)은 도착 시 후속 합류. 배선 계약 1핀. 게이트: 전체 vitest
+  2,063(+1) green (PR #1122). 잔여 UI: ④ 빠른 분석.
+  Codex Cloud 첫 태스크(받아쓰기 문장 선정 엔진 dictationPick) 블록 오너에게 제공
+  — PR 미도착(투입 대기 추정).
   승인 후)** — 전략 문서 Phase 4 잔여 ❌(학습 그룹) 대상, RFC = docs/rfc-study-groups.md.
   **실측(소셜 자산 전수)**: 소셜 스키마 3세대(포럼 3-29 · 공유 덱 4-05 · 기수제
   cohorts 6-13)가 전부 UI 없이 DB에 잠들어 있고(XP·notifications 소비 0 — evaluation
