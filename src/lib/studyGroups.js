@@ -73,25 +73,12 @@ export async function fetchMyGroups(userId) {
     .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 }
 
-/** 그룹별 멤버 수 — 헤더 "멤버 4" 표기용. */
-export async function fetchGroupMemberCounts(groupIds) {
-  const counts = {};
-  await Promise.all((groupIds || []).map(async (gid) => {
-    const { count, error } = await supabase
-      .from('study_group_members')
-      .select('user_id', { count: 'exact', head: true })
-      .eq('group_id', gid);
-    if (!error) counts[gid] = count || 0;
-  }));
-  return counts;
-}
-
-/** 이번 주 스냅샷 행 — 내 그룹들 것만(RLS가 멤버 밖을 걸러 준다). */
+/** 이번 주 스냅샷 행 — 내 그룹들 것만(RLS가 멤버 밖을 걸러 준다). material_pct는 R2 진도 바. */
 export async function fetchGroupSnapshots(groupIds, weekStartDate) {
   if (!groupIds?.length) return [];
   const { data, error } = await supabase
     .from('study_group_snapshots')
-    .select('group_id, user_id, reviews, correct, added, met, reads')
+    .select('group_id, user_id, reviews, correct, added, met, reads, material_pct')
     .in('group_id', groupIds)
     .eq('week_start', weekStartDate);
   if (error) throw error;
@@ -147,4 +134,145 @@ export async function leaveGroup(groupId, userId) {
     .eq('group_id', groupId)
     .eq('user_id', userId);
   if (error) throw error;
+}
+
+/* ── R2 — 같이 읽기 + 진도 게이트 토론 (§4.3) ─────────────────────── */
+
+/**
+ * 진도 게이트 — 내 진도(%)까지의 코멘트만 보이고 앞선 것은 잠근다(StoryGraph 메커니즘
+ * 자체 구현). 원문이 공개 자료라 보안이 아닌 UX 게이트다. 0% 지점 코멘트는 항상 보인다.
+ */
+export function gateComments(comments, myPct) {
+  const pct = Number.isFinite(myPct) ? myPct : 0;
+  const visible = [];
+  let lockedCount = 0;
+  let minLockedPct = null;
+  for (const c of comments || []) {
+    const at = Number.isFinite(c?.progress_pct) ? c.progress_pct : 0;
+    if (at <= pct) visible.push(c);
+    else {
+      lockedCount += 1;
+      if (minLockedPct == null || at < minLockedPct) minLockedPct = at;
+    }
+  }
+  return { visible, lockedCount, minLockedPct };
+}
+
+/** 이번 주 같이 읽기 지정 — 그룹별 1자료(자료 제목 동봉). */
+export async function fetchGroupReads(groupIds, weekStartDate) {
+  if (!groupIds?.length) return [];
+  const { data, error } = await supabase
+    .from('study_group_reads')
+    .select('group_id, material_id, set_by, material:reading_materials(id, title)')
+    .in('group_id', groupIds)
+    .eq('week_start', weekStartDate);
+  if (error) throw error;
+  return data || [];
+}
+
+/** 자료 지정·재지정(멤버 누구나 — 마지막 지정이 이긴다, 공개 자료만 서버 계약). */
+export async function setGroupRead(groupId, weekStartDate, materialId, userId) {
+  const { error } = await supabase
+    .from('study_group_reads')
+    .upsert({
+      group_id: groupId,
+      week_start: weekStartDate,
+      material_id: materialId,
+      set_by: userId,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'group_id,week_start' });
+  if (error) throw error;
+}
+
+/** 지정 후보 — 공개 자료만(비공개는 그룹원이 못 읽는다), 시리즈 자료 제외(서재 관례). */
+export async function fetchPublicMaterials(lang, search) {
+  let query = supabase
+    .from('reading_materials')
+    .select('id, title, level:processed_json->metadata->>level')
+    .eq('visibility', 'public')
+    .not('title', 'ilike', '[%#%]%')
+    .order('created_at', { ascending: false })
+    .limit(30);
+  if (lang) query = query.eq('processed_json->metadata->>language', lang);
+  if (search) query = query.ilike('title', `%${search}%`);
+  const { data, error } = await query;
+  if (error) throw error;
+  return data || [];
+}
+
+/** 멤버 목록(이름 동봉 — profiles FK 중첩 조인, material_comments 관례). */
+export async function fetchGroupMembers(groupId) {
+  const { data, error } = await supabase
+    .from('study_group_members')
+    .select('user_id, joined_at, author:profiles(display_name)')
+    .eq('group_id', groupId)
+    .order('joined_at', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
+/** 그룹 토론 — 작성 시점 진도 동봉 행(게이트는 클라이언트 gateComments 몫). */
+export async function fetchGroupComments(groupId, materialId) {
+  const { data, error } = await supabase
+    .from('study_group_comments')
+    .select('id, content, progress_pct, created_at, user_id, author:profiles(display_name)')
+    .eq('group_id', groupId)
+    .eq('material_id', materialId)
+    .order('created_at', { ascending: true })
+    .limit(200);
+  if (error) throw error;
+  return data || [];
+}
+
+export async function addGroupComment({ groupId, materialId, userId, content, progressPct }) {
+  const { error } = await supabase.from('study_group_comments').insert({
+    group_id: groupId,
+    material_id: materialId,
+    user_id: userId,
+    content,
+    progress_pct: Math.max(0, Math.min(100, Math.round(progressPct || 0))),
+  });
+  if (error) throw error;
+}
+
+export async function deleteGroupComment(commentId, userId) {
+  const { error } = await supabase
+    .from('study_group_comments')
+    .delete()
+    .eq('id', commentId)
+    .eq('user_id', userId);
+  if (error) throw error;
+}
+
+/**
+ * 뷰어 → 스냅샷 material_pct 갱신(같이 읽기 진도 바의 원천).
+ * upsert는 명시 컬럼만 갱신하므로 주간 지표(reviews 등)는 건드리지 않는다.
+ * 후퇴 방지(뒤로 스크롤·재방문)는 호출 쪽이 세션 최대값으로 보장한다. 실패 조용히.
+ */
+export async function pushMaterialPct(groupIds, userId, pct, nowMs = Date.now()) {
+  if (!groupIds?.length || !userId) return;
+  const clamped = Math.max(0, Math.min(100, Math.round(pct || 0)));
+  const week = kstWeekStartDate(nowMs);
+  for (const gid of groupIds) {
+    try {
+      await supabase.from('study_group_snapshots').upsert({
+        group_id: gid,
+        user_id: userId,
+        week_start: week,
+        material_pct: clamped,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'group_id,user_id,week_start' });
+    } catch {}
+  }
+}
+
+/** 이 자료가 내 그룹들의 이번 주 같이 읽기인가 — 뷰어 배선용(RLS가 내 그룹 밖을 거른다). */
+export async function fetchGroupsReadingMaterial(materialId, weekStartDate) {
+  const { data, error } = await supabase
+    .from('study_group_reads')
+    .select('group_id')
+    .eq('material_id', materialId)
+    .eq('week_start', weekStartDate);
+  if (error) throw error;
+  return (data || []).map((r) => r.group_id);
 }

@@ -1,6 +1,6 @@
 # RFC — 학습 그룹: 함께 읽는 소그룹 v1 (설계 준비 — 구현은 승인 후)
 
-- 상태: **채택 — R1 구현** (2026-08-23 오너 픽 "1번 소셜 설계 준비 ㄱㄱ"로 게시,
+- 상태: **채택 — R1·R2 구현** (2026-08-23 오너 픽 "1번 소셜 설계 준비 ㄱㄱ"로 게시,
   같은 날 "1 승인, 나머지도 권고대로 ㄱㄱ"로 §9 전 항목 권고안 확정 — 방향 승인·정원
   8/1인 3그룹·초대 코드 전용·cohorts 존치·홈 카드·R3 무보상·주간 합계만.)
 - 기준: `origin/main` `e2e2607`
@@ -194,7 +194,7 @@ DEFINER 멤버십 헬퍼). cohorts 자체의 거취는 오너 결정(§9-4).
 |---|---|---|
 | R0 | 이 RFC 방향 승인 + 목업 A·B·C 확정 | ✅ 2026-08-23 §9 전 항목 권고안 승인 |
 | R1 | 마이그레이션(groups·members·snapshots) + 그룹 CRUD·참가 RPC + 이번 주 우리 카드. **구현**: RPC 2본(create_group 코드 서버 생성·join_group 그룹 행 잠금으로 정원 직렬화·3그룹 상한 서버-클라 동치 핀), own-only RLS 6정책 + is_group_member definer 헬퍼, 스냅샷은 fetchWeeklyReportRows 공용화(ProfileStats와 캐시 키 공유) → snapshotFromWeekly push(5분 스로틀·실패 조용히), /groups 페이지(목업 A 상단·하단 + C — 그룹 카드·합계 줄·나가기 2단 확인) + 홈 진입 카드(목업 B의 R1 축소형 — R2에서 완형) | ✅ 전체 vitest green(계약 11핀) |
-| R2 | reads·comments + 같이 읽기 진도 바 + 진도 게이트 토론(목업 A 가운데 두 블록 + B 완형) | 전체 vitest green |
+| R2 | reads·comments + 같이 읽기 진도 바 + 진도 게이트 토론(목업 A 가운데 두 블록 + B 완형). **구현**: 같이 읽기는 **공개(visibility public) 자료만** — 비공개는 그룹원이 못 읽으므로 서버 계약(WITH CHECK)으로 차단, 자료·원장 RLS 무변경. 진도원 = 뷰어 스크롤 %(useReadProgress)를 useGroupReadPush가 세션 최대값·30초 스로틀로 스냅샷 material_pct에 push(R1 예비 컬럼 — 실패 조용히). 게이트는 클라이언트 UX 게이트(gateComments — 원문이 공개 자료라 보안 아님), 코멘트에 작성 시점 진도 기록. 멤버 이름은 profiles FK 중첩 조인(material_comments 관례). §4.3의 "멤버 fit 병기"는 원장 비공개(§3-3)와 충돌해 배제 — 선택 목록은 제목·레벨만(서재 fit 정렬로 고른 뒤 지정하는 흐름) | ✅ 전체 vitest green(게이트 순수함수·계약 6핀) |
 | R3 | 공동 목표(무보상 — §9-6 확정) | 동일 |
 
 각 단계 독립 PR(draft→검수→squash), 보드 갱신 동봉. 제품 나침반 3문: ⑴ 자료 읽기
