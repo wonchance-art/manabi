@@ -58,3 +58,18 @@ describe('gradeDictation — 채점', () => {
     expect(gradeDictation('。、！', 'x', 'Japanese').accuracy).toBeNull(); // 구두점뿐 → 정규화 후 빈 정답
   });
 });
+
+// 배선 계약(목업 ① — UI 라운드): 뷰어 지정 문장에서 열리고, 패널이 엔진·TTS를 소비.
+describe('받아쓰기 배선 계약', () => {
+  it('DictationPanel이 엔진을 쓰고 뷰어 지정 문장에 배선되어 있다', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const panel = fs.readFileSync(path.join(process.cwd(), 'src/components/DictationPanel.jsx'), 'utf8');
+    expect(panel).toContain('gradeDictation');
+    expect(panel).toContain('useTTS');
+    expect(panel).toContain('본문 보기'); // 열림 동안 원문 가림 — 명시 공개만
+    const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
+    expect(viewer).toContain('DictationPanel');
+    expect(viewer).toContain('sentence={leftPanelText}'); // 지정 문장 대상
+  });
+});
