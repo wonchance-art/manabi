@@ -247,3 +247,27 @@ describe('studyExerciseBridge', () => {
     expect(recordReviewCompleted).not.toHaveBeenCalled();
   });
 });
+
+// 🈁 만남 인지 문항(rfc-adaptive-quiz §4.1) — origin 표지·FSRS 무접촉의 구조 근거.
+describe('만남 인지 문항 ref', () => {
+  it('detail에 origin이 실리고 word_id는 null — SRS 갱신 가드(word_id 필수)가 자동 스킵', () => {
+    const refs = buildStudyReviewRefs({
+      correct: true,
+      lang: 'Japanese',
+      rtMs: 1200,
+      item: {
+        type: 'vocab-choice',
+        origin: 'encounter',
+        word: { id: null, word_text: '替え玉', meaning: '사리 추가' },
+        effect: { kind: 'vocab', wordId: null, origin: 'encounter' },
+      },
+    });
+    expect(refs).toHaveLength(1);
+    expect(refs[0]).toMatchObject({
+      type: 'vocab',
+      itemKey: '替え玉',
+      correct: true,
+      detail: { word_id: null, origin: 'encounter', qtype: 'choice', mode: 'study' },
+    });
+  });
+});

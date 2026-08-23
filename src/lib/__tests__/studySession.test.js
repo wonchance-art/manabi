@@ -7,6 +7,7 @@ import {
   qtypeForItem,
   grammarDueChapterCounts,
   buildWarmupItems,
+  buildEncounterItems,
   stripSourceLangInMeaning,
   tokenizeExampleSentence,
 } from '../studySession';
@@ -395,5 +396,54 @@ describe('stripSourceLangInMeaning — 보기 뜻 정화', () => {
     expect(items[0].word.meaning).toBe('일하다');
     expect(items[0].options[0]).toBe('일하다');
     expect(items[0].options).toContain(items[0].word.meaning);
+  });
+});
+
+// 🈁 만남 인지 문항(rfc-adaptive-quiz §4.1, 목업 A) — rung 0→1 다리 계약.
+describe('buildEncounterItems — 만남 인지 슬롯', () => {
+  const ENC = [
+    { word_text: '替え玉', meaning: '사리 추가', furigana: 'かえだま', id: null },
+    { word_text: '券売機', meaning: '식권 발매기', furigana: 'けんばいき', id: null },
+    { word_text: '屋台', meaning: '포장마차', furigana: 'やたい', id: null },
+  ];
+  const POOL = ['약속', '가족', '무료', '계산'];
+
+  it('choice 상한 2 — origin 표지·wordId null·options[0]=정답(렌더 셔플 몫)', () => {
+    const items = buildEncounterItems(ENC, POOL, 'normal', 0);
+    expect(items).toHaveLength(2);
+    for (const it of items) {
+      expect(it.type).toBe('vocab-choice');
+      expect(it.origin).toBe('encounter');
+      expect(it.effect).toEqual({ kind: 'vocab', wordId: null, origin: 'encounter' });
+      expect(it.options[0]).toBe(it.word.meaning);
+      expect(it.options).toHaveLength(4);
+    }
+    expect(items.map(i => i.word.word_text)).toEqual(['替え玉', '券売機']);
+  });
+
+  it('due 잔여 어휘 슬롯만 — due 2면 1문항, due 3 이상이면 0(과부하 0)', () => {
+    expect(buildEncounterItems(ENC, POOL, 'normal', 2)).toHaveLength(1);
+    expect(buildEncounterItems(ENC, POOL, 'normal', 3)).toHaveLength(0);
+    expect(buildEncounterItems(ENC, POOL, 'normal', 4)).toHaveLength(0);
+  });
+
+  it('dial easy면 0 — 신규 재료 취급(gateNewMaterialsByDial 결)', () => {
+    expect(buildEncounterItems(ENC, POOL, 'easy', 0)).toHaveLength(0);
+  });
+
+  it('보기 부족 후보는 타이핑 폴백 없이 건너뛴다(사다리 위반 금지)', () => {
+    expect(buildEncounterItems(ENC, ['약속'], 'normal', 0)).toHaveLength(0);
+    const items = buildEncounterItems(ENC, ['약속', '가족'], 'normal', 0);
+    expect(items).toHaveLength(2);
+    expect(items[0].options).toHaveLength(3); // 정답 + 오답 2 — 최소 성립선
+  });
+
+  it('뜻 원어 병기는 정화되고, 빈 후보·빈 입력은 조용히 0', () => {
+    const items = buildEncounterItems(
+      [{ word_text: '働く', meaning: '일하다 (働く)', furigana: null, id: null }], POOL, 'normal', 0,
+    );
+    expect(items[0].word.meaning).toBe('일하다');
+    expect(buildEncounterItems([], POOL, 'normal', 0)).toHaveLength(0);
+    expect(buildEncounterItems([{ word_text: '', meaning: 'x' }], POOL, 'normal', 0)).toHaveLength(0);
   });
 });

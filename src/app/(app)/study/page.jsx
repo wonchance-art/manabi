@@ -60,7 +60,7 @@ export default async function Page({ searchParams }) {
   const interestGroup = cookieStore.get('study_interest')?.value || null;
 
   // ── 재료 조립 (폴백 세션·rung·dial·오늘의 문단 재료) — prefetched를 써도 라이브로 필요 ──
-  const { session, paragraphMaterials, warmup, band, dial, canGenerate, coldStart } =
+  const { session, paragraphMaterials, warmup, encounterItems, band, dial, canGenerate, coldStart } =
     await assembleStudyMaterials(supabase, user.id, lang, { interestGroup });
 
   // ── 내 자료 세션(?source=mine) — 프리페치를 조회·소모하지 않고 라이브 생성을 강제한다. ──
@@ -101,6 +101,7 @@ export default async function Page({ searchParams }) {
       pregenerated={pregenerated}
       sourceMode={sourceMode}
       warmup={pregenerated ? [] : warmup}
+      encounterItems={encounterItems}
       dial={dial}
       band={band}
       lang={lang}
