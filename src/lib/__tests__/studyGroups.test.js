@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
+  GOAL_AXES,
   MAX_GROUPS_PER_USER,
   gateComments,
+  goalProgress,
   groupErrorMessage,
   kstWeekStartDate,
   snapshotFromWeekly,
@@ -111,6 +113,30 @@ describe('gateComments — 진도 게이트(R2, 내가 읽은 데까지만)', ()
   });
 });
 
+describe('goalProgress — 주간 공동 목표(R3, 무보상·조용한 달성)', () => {
+  const sum = { reviews: 132, added: 24, met: 41, reads: 2 };
+
+  it('축은 주간 거울 4축과 1:1(새 축 신설 금지)', () => {
+    expect(Object.keys(GOAL_AXES).sort()).toEqual(['added', 'met', 'reads', 'reviews']);
+  });
+
+  it('진행은 스냅샷 합계에서 읽고, 달성 경계는 이상(≥)', () => {
+    const p = goalProgress(sum, { axis: 'reviews', target: 300 });
+    expect(p.current).toBe(132);
+    expect(p.ratio).toBeCloseTo(132 / 300);
+    expect(p.done).toBe(false);
+    expect(goalProgress(sum, { axis: 'met', target: 41 }).done).toBe(true);
+    expect(goalProgress(sum, { axis: 'reads', target: 1 }).ratio).toBe(1); // 초과는 100%로 접힘
+  });
+
+  it('미지정·모르는 축·target 0은 null(목표 줄 비표시)', () => {
+    expect(goalProgress(sum, null)).toBeNull();
+    expect(goalProgress(sum, { axis: 'streak', target: 7 })).toBeNull();
+    expect(goalProgress(sum, { axis: 'reviews', target: 0 })).toBeNull();
+    expect(goalProgress(null, { axis: 'reviews', target: 10 })).toBeNull();
+  });
+});
+
 describe('groupErrorMessage — RPC 오류 문구', () => {
   it('세 예외를 사용자 문구로, 그 외는 일반 문구(원문 미노출)', () => {
     expect(groupErrorMessage({ message: 'invalid code' })).toContain('코드');
@@ -187,5 +213,27 @@ describe('학습 그룹 배선 계약', () => {
     expect(src).toContain('거기까지 읽으면 열려요');
     const lib = read('src/lib/studyGroups.js');
     expect(lib).toContain(".eq('visibility', 'public')");
+  });
+
+  /* ── R3 — 주간 공동 목표 ── */
+  it('R3 마이그레이션 — 축 CHECK·멤버 정책·anon 차단·원장 무접촉', () => {
+    const r3 = read('supabase/migrations/20260823140000_study_group_goals.sql');
+    expect(r3).toMatch(/axis IN \('reviews', 'added', 'met', 'reads'\)/);
+    expect(r3).toContain('is_group_member');
+    expect(r3).toMatch(/REVOKE ALL ON public\.study_group_goals FROM anon/);
+    const sql = r3.split('\n').filter((l) => !l.trim().startsWith('--')).join('\n');
+    expect(sql).not.toMatch(/review_events|user_vocabulary|user_vocab_encounters|reading_progress|reading_materials/);
+  });
+
+  it('목표 줄 — 조용한 달성 체크만(보상 요소 부재 계약, §9-6)', () => {
+    const src = read('src/views/GroupsPage.jsx');
+    expect(src).toContain('함께 해냈어요');
+    expect(src).toContain('GroupGoalLine');
+    // 주석(원칙 설명) 제외 코드·카피에 보상 요소 없음
+    const code = src.split('\n').filter((l) => {
+      const t = l.trim();
+      return !t.startsWith('//') && !t.startsWith('/*') && !t.startsWith('*');
+    }).join('\n');
+    expect(code).not.toMatch(/보상|페널티|스탬프|젬|XP/);
   });
 });

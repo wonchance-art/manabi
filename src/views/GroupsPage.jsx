@@ -14,22 +14,26 @@ import { useToast } from '../lib/ToastContext';
 import { buildWeeklyReport, weekRangeLabel } from '../lib/weeklyReport';
 import { fetchWeeklyReportRows } from '../lib/weeklyReportRows';
 import {
+  GOAL_AXES,
   MAX_GROUPS_PER_USER,
   addGroupComment,
   createGroup,
   deleteGroupComment,
   fetchGroupComments,
+  fetchGroupGoals,
   fetchGroupMembers,
   fetchGroupReads,
   fetchGroupSnapshots,
   fetchMyGroups,
   fetchPublicMaterials,
   gateComments,
+  goalProgress,
   groupErrorMessage,
   joinGroup,
   kstWeekStartDate,
   leaveGroup,
   pushGroupSnapshots,
+  setGroupGoal,
   setGroupRead,
   sumGroupSnapshots,
 } from '../lib/studyGroups';
@@ -295,7 +299,63 @@ function GroupDiscussion({ group, read, myPct, userId }) {
   );
 }
 
-function GroupCard({ group, snapshotRows, snapshotSum, read, weekStart, userId }) {
+/* R3 — 주간 공동 목표(§4.4): 무보상·페널티 없음, 달성은 조용한 체크만(§9-6 확정). */
+function GroupGoalLine({ group, weekStart, goal, snapshotSum, userId }) {
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [axis, setAxis] = useState(goal?.axis || 'reviews');
+  const [target, setTarget] = useState(goal?.target || 100);
+  const setMutation = useMutation({
+    mutationFn: () => setGroupGoal(group.id, weekStart, axis, Number(target), userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['group-goals'] });
+      setEditing(false);
+    },
+    onError: () => toast('잠시 후 다시 시도해 주세요.', 'warning'),
+  });
+  const prog = goalProgress(snapshotSum, goal);
+
+  if (editing) {
+    return (
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 6 }}>
+        <select value={axis} onChange={(e) => setAxis(e.target.value)}>
+          {Object.entries(GOAL_AXES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+        </select>
+        <input
+          type="number"
+          min={1}
+          max={100000}
+          value={target}
+          onChange={(e) => setTarget(e.target.value)}
+          style={{ width: 90 }}
+        />
+        <Button size="sm" disabled={!(Number(target) > 0) || setMutation.isPending} onClick={() => setMutation.mutate()}>정하기</Button>
+        <button type="button" onClick={() => setEditing(false)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.8rem', padding: 0 }}>취소</button>
+      </div>
+    );
+  }
+  if (prog) {
+    const ax = GOAL_AXES[prog.axis];
+    return (
+      <div style={{ fontSize: '0.86rem', marginTop: 6, fontVariantNumeric: 'tabular-nums' }}>
+        🎯 {ax.label} {prog.target}{ax.unit} — 지금 {prog.current} ({Math.round(prog.ratio * 100)}%)
+        {prog.done && <span style={{ marginLeft: 6 }}>✓ 함께 해냈어요</span>}
+        <button type="button" onClick={() => setEditing(true)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.78rem', padding: 0, marginLeft: 8 }}>바꾸기</button>
+      </div>
+    );
+  }
+  return (
+    <button type="button" onClick={() => setEditing(true)}
+      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.8rem', padding: 0, marginTop: 6 }}>
+      + 이번 주 공동 목표 정하기
+    </button>
+  );
+}
+
+function GroupCard({ group, snapshotRows, snapshotSum, read, goal, weekStart, userId }) {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [confirmLeave, setConfirmLeave] = useState(false);
@@ -417,6 +477,7 @@ function GroupCard({ group, snapshotRows, snapshotSum, read, weekStart, userId }
             이번 주 함께한 기록이 아직 없어요 — 오늘 학습이 여기에 모여요.
           </div>
         )}
+        <GroupGoalLine group={group} weekStart={weekStart} goal={goal} snapshotSum={snapshotSum} userId={userId} />
       </div>
     </div>
   );
@@ -445,6 +506,12 @@ export default function GroupsPage() {
   const { data: reads } = useQuery({
     queryKey: ['group-reads', user?.id, groupIds.join(','), weekStart],
     queryFn: () => fetchGroupReads(groupIds, weekStart),
+    enabled: groupIds.length > 0,
+    staleTime: 1000 * 60,
+  });
+  const { data: goals } = useQuery({
+    queryKey: ['group-goals', user?.id, groupIds.join(','), weekStart],
+    queryFn: () => fetchGroupGoals(groupIds, weekStart),
     enabled: groupIds.length > 0,
     staleTime: 1000 * 60,
   });
@@ -484,6 +551,11 @@ export default function GroupsPage() {
     for (const r of reads || []) byGroup[r.group_id] = r;
     return byGroup;
   }, [reads]);
+  const goalsByGroup = useMemo(() => {
+    const byGroup = {};
+    for (const g of goals || []) byGroup[g.group_id] = g;
+    return byGroup;
+  }, [goals]);
 
   if (!user) {
     return (
@@ -523,6 +595,7 @@ export default function GroupsPage() {
               snapshotRows={rowsByGroup[g.id]}
               snapshotSum={sumsByGroup[g.id]}
               read={readsByGroup[g.id]}
+              goal={goalsByGroup[g.id]}
               weekStart={weekStart}
               userId={user.id}
             />
