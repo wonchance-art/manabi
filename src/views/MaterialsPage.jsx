@@ -10,6 +10,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { parseTitle } from '../lib/seriesMeta';
 import { materialFit, fitBand, sortByFit } from '../lib/materialFit';
+import { fetchKnownWords, mergeKnownIntoIndex } from '../lib/knownWords';
 import { groupByBook } from '../lib/bookMeta';
 import { JP_LEVELS, EN_LEVELS, ZH_LEVELS, langNameKo } from '../lib/constants';
 import ConfirmModal from '../components/ConfirmModal';
@@ -287,6 +288,14 @@ export default function MaterialsPage() {
     staleTime: 1000 * 60,
   });
 
+  // '이미 앎' 표기(목업 ⑤ — #1077-14): 커버리지 정밀화용 합집합 재료. 실패는 빈 배열(무해성).
+  const { data: knownRows } = useQuery({
+    queryKey: ['known-words-all', user?.id],
+    queryFn: () => fetchKnownWords(user.id),
+    enabled: !!user,
+    staleTime: 1000 * 60,
+  });
+
   function countDueInMaterial(material) {
     if (!dueVocabIndex || !material?.processed_json?.dictionary) return 0;
     const dict = material.processed_json.dictionary;
@@ -322,16 +331,18 @@ export default function MaterialsPage() {
     : [...JP_LEVELS, ...EN_LEVELS, ...ZH_LEVELS];
 
   // 자료별 맞춤도 — 분석 완료 자료만, 담김 인덱스가 있을 때만(게스트 빈 맵 → 표시·정렬 무효과).
+  // '이미 앎' 표기는 인덱스에 합집합으로 합류(엔진 시그니처 무변경 — 목업 ⑤ 정밀화).
   const fitById = useMemo(() => {
     const map = new Map();
     if (!savedVocabIndex) return map;
+    const index = knownRows?.length ? mergeKnownIntoIndex(savedVocabIndex, knownRows) : savedVocabIndex;
     for (const m of materials) {
       if (m.processed_json?.status !== 'completed') continue;
-      const fit = materialFit(m.processed_json, savedVocabIndex);
+      const fit = materialFit(m.processed_json, index);
       map.set(m.id, { ...fit, band: fitBand(fit.coverage, fit.total) });
     }
     return map;
-  }, [materials, savedVocabIndex]);
+  }, [materials, savedVocabIndex, knownRows]);
 
   const filtered = (() => {
     if (sortBy === 'newest') return materials;

@@ -48,6 +48,7 @@ import { useGrammarDetail } from '../lib/useGrammarDetail';
 import { buildContextPrompt } from '../lib/grammarDetail';
 import { analysisCacheKey, clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
+import { fetchKnownWords, knownWordsLang, markKnown, unmarkKnown } from '../lib/knownWords';
 import { recordVocabEncounters } from '../components/world/vocabEncounters';
 import { syncVocabEncounters } from '../components/world/vocabEncounterSync';
 import { encounterLookupLang, loadMetWordKeys, loadRefVocabLookup } from '../lib/refVocabLookup';
@@ -383,6 +384,31 @@ export default function ViewerPage() {
   const { readerRef, readProgress } = useReadProgress(material);
   // 그룹 같이 읽기 진도 push(§4.3) — 이번 주 지정 자료일 때만, 실패 조용히
   useGroupReadPush(material?.id, user?.id, readProgress);
+
+  // '이미 앎' 표기(목업 ⑤ — #1077-14): 이 언어의 표기 집합. 실패는 빈 셋(버튼만 비활성 결).
+  const knownLangCode = knownWordsLang(materialLang);
+  const { data: knownWordSet } = useQuery({
+    queryKey: ['known-words', user?.id, knownLangCode],
+    queryFn: async () => {
+      const rows = await fetchKnownWords(user.id, knownLangCode);
+      return new Set(rows.map((r) => r.word_text));
+    },
+    enabled: !!user && !!knownLangCode,
+    staleTime: 1000 * 60,
+  });
+  const knownToggleMutation = useMutation({
+    mutationFn: async ({ wordText, known }) => {
+      if (known) await unmarkKnown(user.id, knownLangCode, wordText);
+      else await markKnown(user.id, knownLangCode, wordText);
+      return !known;
+    },
+    onSuccess: (nowKnown) => {
+      queryClient.invalidateQueries({ queryKey: ['known-words', user?.id, knownLangCode] });
+      queryClient.invalidateQueries({ queryKey: ['known-words-all', user?.id] });
+      if (nowKnown) toast('이미 아는 말로 표시했어요 — 새 단어 셈에서 빠져요', 'success');
+    },
+    onError: () => toast('잠시 후 다시 시도해 주세요.', 'warning'),
+  });
 
   // 스크롤 위치 저장(debounce 2s) + 재진입 시 자동 복원
   const { saveScrollPosition, tokenRefs } = useScrollRestore({ user, materialId: id, material, readingProgress });
@@ -1370,6 +1396,22 @@ export default function ViewerPage() {
           {saveAnim ? '저장됨' : isWordSaved ? '✓ 단어장에 있음' : '단어장에 저장'}
         </button>
       )}
+      {/* '이미 알아요'(목업 ⑤) — 담을 필요 없는 아는 말 표시. 저장된 단어에는 무의미라 숨김. */}
+      {user && knownLangCode && !isWordSaved && (() => {
+        const isKnown = knownWordSet?.has(selectedToken.text)
+          || (selectedToken.base_form && knownWordSet?.has(selectedToken.base_form));
+        return (
+          <button
+            type="button"
+            onClick={() => knownToggleMutation.mutate({ wordText: selectedToken.text, known: !!isKnown })}
+            disabled={knownToggleMutation.isPending}
+            className="btn btn--ghost btn--sm"
+            style={{ width: '100%', marginTop: 6, color: 'var(--text-muted)' }}
+          >
+            {isKnown ? '👌 아는 말로 표시됨 — 취소' : '👌 이미 알아요'}
+          </button>
+        );
+      })()}
     </div>
   );
 
