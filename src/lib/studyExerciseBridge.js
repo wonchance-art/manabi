@@ -43,6 +43,9 @@ export function buildStudyReviewRefs({ correct, item, lang, rtMs = 0, result = n
       detail: {
         word_id: item.word.id,
         meaning: item.word.meaning,
+        // 만남 인지 문항 표지(rfc-adaptive-quiz §4.1) — word_id가 null이라 SRS 갱신은
+        // progressStore의 기존 가드(detail.word_id 필수)가 자동으로 건너뛴다(FSRS 무접촉).
+        ...(item.origin ? { origin: item.origin } : {}),
         ...detailBase,
       },
     }];

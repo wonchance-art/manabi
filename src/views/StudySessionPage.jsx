@@ -50,7 +50,7 @@ function shuffle(arr) {
  * 종료 시: 어휘 FSRS 갱신 · 문법 due 재스케줄 · 신규 챕터 통과 처리 · 이벤트 적재.
  */
 export default function StudySessionPage({
-  session = null, paragraphMaterials = null, pregenerated = null, warmup = [], dial = 'normal',
+  session = null, paragraphMaterials = null, pregenerated = null, warmup = [], encounterItems = [], dial = 'normal',
   sourceMode = false,
   lang, langCode, langName, readKey,
   band = 'beginner', languages = [], signedOut = false,
@@ -72,11 +72,16 @@ export default function StudySessionPage({
   // 문단은 뒤에서 생성해 이어붙인다(로딩 화면으로 막지 않는다).
   const liveGen = !!(paragraphMaterials && !pregenerated?.paragraph);
   const warmupItems = liveGen ? (warmup || []) : [];
+  // 만남 인지 문항(rfc-adaptive-quiz §4.1, 목업 A)은 문단·프리페치·폴백 세 경로 공통으로
+  // 큐 말미에 붙는다 — 프리페치·즉시 폴백은 초기 큐에서, 라이브 생성은 성공/폴백 합류 시.
   const [queue, setQueue] = useState(() =>
-    usePregen ? pregenMapped.items : liveGen ? warmupItems : (session?.items || [])
+    usePregen ? [...pregenMapped.items, ...encounterItems]
+      : liveGen ? warmupItems
+        : [...(session?.items || []), ...encounterItems]
   );
   const [gradedBase, setGradedBase] = useState(() =>
-    usePregen ? pregenMapped.gradedCount : liveGen ? warmupItems.length : (session?.gradedCount || 0)
+    (usePregen ? pregenMapped.gradedCount : liveGen ? warmupItems.length : (session?.gradedCount || 0))
+    + (liveGen ? 0 : encounterItems.length)
   );
   const [idx, setIdx] = useState(0);
   const [phase, setPhase] = useState('answer');   // 'answer' | 'feedback'
@@ -166,9 +171,9 @@ export default function StudySessionPage({
           if (sourceText) { try { localStorage.removeItem(`study_source_${lang}`); } catch {} }
           const mapped = mapParagraphToItems(data.paragraph, paragraphMaterials);
           if (mapped.gradedCount >= 3) {
-            // 워밍업 뒤에 문단 문항을 이어붙이고 집계 기준을 갱신
-            setQueue(prev => [...prev, ...mapped.items]);
-            setGradedBase(prev => prev + mapped.gradedCount);
+            // 워밍업 뒤에 문단 문항 + 만남 인지 문항을 이어붙이고 집계 기준을 갱신
+            setQueue(prev => [...prev, ...mapped.items, ...encounterItems]);
+            setGradedBase(prev => prev + mapped.gradedCount + encounterItems.length);
             setGenStatus('ready');
             return;
           }
@@ -188,8 +193,8 @@ export default function StudySessionPage({
   function applyFallback() {
     const warmupWords = new Set(warmupItems.map(w => w.word?.word_text).filter(Boolean));
     const fb = (session?.items || []).filter(it => !(it.word && warmupWords.has(it.word.word_text)));
-    setQueue(prev => [...prev, ...fb]);
-    setGradedBase(prev => prev + fb.filter(i => i.type !== 'teach').length);
+    setQueue(prev => [...prev, ...fb, ...encounterItems]);
+    setGradedBase(prev => prev + fb.filter(i => i.type !== 'teach').length + encounterItems.length);
     setGenStatus('fallback');
   }
 
@@ -1152,6 +1157,12 @@ export default function StudySessionPage({
       {/* ── 어휘: 뜻 고르기 ── */}
       {item.type === 'vocab-choice' && (
         <div className="fr-quiz__q">
+          {/* 만남 배지(rfc-adaptive-quiz 목업 A) — 만났지만 담지 않은 말임을 조용히 알린다 */}
+          {item.origin === 'encounter' && (
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: 8 }}>
+              🈁 만난 말 — 월드·읽기에서 마주친 말이에요
+            </div>
+          )}
           <div className="fr-quiz__prompt" lang={langCode} style={{ fontSize: '1.3rem' }}>
             {item.word.word_text}
             <RefSpeak text={item.word.word_text} lang={lang} size="xs" />

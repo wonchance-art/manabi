@@ -269,3 +269,61 @@ describe('deriveColdStart', () => {
     expect(deriveColdStart([{ slug: 'ja-02' }], [], [], new Set(slugs))).toBe(false);
   });
 });
+
+// 🈁 만남 인지 후보(rfc-adaptive-quiz §4.1) — 만남 − 담김 − 최근 출제, 정본 실재만.
+describe('buildRefMainWordIndex / buildEncounterCandidates', () => {
+  const fakeRef = {
+    LEVEL_META: [{ key: 'A1' }, { key: 'B1' }],
+    getVocab(level) {
+      if (level === 'A1') {
+        return { themes: [{ words: [
+          { ja: '替え玉', yomi: 'かえだま', ko: '사리 추가 — 라멘 은어' },
+          { ja: '券売機', yomi: 'けんばいき', ko: '식권 발매기' },
+        ] }] };
+      }
+      if (level === 'B1') {
+        return { themes: [{ words: [
+          { ja: '替え玉', yomi: 'かえだま', ko: '중복 — 상위 레벨' },
+          { ja: '屋台', yomi: 'やたい', ko: '포장마차' },
+        ] }] };
+      }
+      return null;
+    },
+  };
+
+  it('refMain 인덱스는 학습 순서 첫 등록 우선(exact 대조 — 정규화 없음)', async () => {
+    const { buildRefMainWordIndex } = await import('../studyMaterials');
+    const idx = buildRefMainWordIndex(fakeRef);
+    expect(idx.get('替え玉').ko).toBe('사리 추가 — 라멘 은어');
+    expect(idx.size).toBe(3);
+  });
+
+  it('후보 = 만남 − 담김 − 최근 출제, 유령 표기 제외, 뜻은 shortKo(선례)', async () => {
+    const { buildRefMainWordIndex, buildEncounterCandidates } = await import('../studyMaterials');
+    const wordByMain = buildRefMainWordIndex(fakeRef);
+    const rows = [
+      { word_text: '替え玉' },
+      { word_text: '券売機' },   // 담김 — 제외
+      { word_text: '屋台' },     // 최근 출제 — 제외
+      { word_text: '유령표기' }, // 정본 밖 — 제외
+      { word_text: '替え玉' },   // 중복 행 — 1회만
+    ];
+    const out = buildEncounterCandidates(rows, {
+      wordByMain,
+      exclude: [new Set(['券売機']), new Set(['屋台'])],
+    });
+    expect(out).toEqual([
+      { word_text: '替え玉', meaning: '사리 추가', furigana: 'かえだま', id: null },
+    ]);
+  });
+
+  it('cap·빈 입력·인덱스 부재는 조용히 — 서버 정본 미적용 무해성', async () => {
+    const { buildRefMainWordIndex, buildEncounterCandidates } = await import('../studyMaterials');
+    const wordByMain = buildRefMainWordIndex(fakeRef);
+    const many = ['替え玉', '券売機', '屋台'].map(word_text => ({ word_text }));
+    expect(buildEncounterCandidates(many, { wordByMain, cap: 2 })).toHaveLength(2);
+    expect(buildEncounterCandidates([], { wordByMain })).toEqual([]);
+    expect(buildEncounterCandidates(null, { wordByMain })).toEqual([]);
+    expect(buildEncounterCandidates(many, {})).toEqual([]);
+  });
+});

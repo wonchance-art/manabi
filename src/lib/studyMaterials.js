@@ -8,7 +8,7 @@
 import { getRefLang } from '@/content/refLangs';
 import { refMain, refPron } from '@/views/refShared';
 import { buildChapterQuiz } from '@/lib/refQuiz';
-import { composeSession, buildWarmupItems } from '@/lib/studySession';
+import { composeSession, buildWarmupItems, buildEncounterItems } from '@/lib/studySession';
 import { computeEwma, dialFromEwma, computeWeakness, deriveVocabRungs } from '@/lib/skillRung';
 // deriveVocabRungs는 콘텐츠 무의존 순수 함수라 skillRung으로 이전됐다.
 // 기존 import 경로(테스트·과거 소비처) 호환 위해 re-export — studyMaterials 공개 API 불변.
@@ -260,13 +260,57 @@ async function buildWeaknessMaterials(supabase, userId, lang, ref, reviewEventRo
  * @param {{horizonHours?: number}} opts - 프리페치는 36(미리 due될 것까지 당겨봄)
  * @returns {Promise<{session, paragraphMaterials, level, band, canGenerate}>}
  */
+/**
+ * 정본 표제어(refMain) → word 인덱스 — 만남 기록이 저작형 refMain 그대로라(§4.7)
+ * 정규화 없는 exact 대조로 충분하다. 학습 순서 첫 등록 우선(레지스트리 관례).
+ */
+export function buildRefMainWordIndex(ref) {
+  const idx = new Map();
+  for (const meta of ref?.LEVEL_META || []) {
+    const vocab = ref.getVocab(meta.key);
+    if (!vocab) continue;
+    for (const theme of vocab.themes || []) {
+      for (const w of theme.words || []) {
+        const main = refMain(w);
+        if (main && !idx.has(main)) idx.set(main, w);
+      }
+    }
+  }
+  return idx;
+}
+
+/**
+ * 만남 인지 후보(rfc-adaptive-quiz §4.1) — 서버 정본 만남 − 담김 − 최근 출제.
+ * 정본에 실재하는 표기만 통과(유령 표기 차단 — §4.3 파생과 같은 소비 시점 교집합),
+ * 뜻은 정본 ko의 앞 절(NpcDialog shortKo 선례). 순수 함수 — 조회는 호출자 몫.
+ * @param {Array<{word_text: string}>} encounterRows - 최근 만남 순
+ * @param {{wordByMain: Map, exclude?: Array<Set<string>>, cap?: number}} opts
+ * @returns {Array<{word_text, meaning, furigana, id: null}>}
+ */
+export function buildEncounterCandidates(encounterRows, { wordByMain, exclude = [], cap = 8 } = {}) {
+  const out = [];
+  const seen = new Set();
+  for (const row of encounterRows || []) {
+    if (out.length >= cap) break;
+    const main = row?.word_text;
+    if (!main || seen.has(main)) continue;
+    seen.add(main);
+    if (exclude.some((set) => set?.has(main))) continue;
+    const w = wordByMain?.get(main);
+    const meaning = (w?.ko || '').split(' — ')[0].trim();
+    if (!w || !meaning) continue;
+    out.push({ word_text: main, meaning, furigana: refPron(w) || null, id: null });
+  }
+  return out;
+}
+
 export async function assembleStudyMaterials(supabase, userId, lang, { horizonHours = 0, interestGroup = null } = {}) {
   const ref = getRefLang(lang);
   // due 기준 시각 — 프리페치는 now + horizonHours 로 미리 당겨 조회.
   const dueIso = new Date(Date.now() + horizonHours * 3600 * 1000).toISOString();
 
   // ── 재료 조회 (병렬) ──
-  const [{ data: dueVocabRows }, { data: vocabPoolRows }, { data: dueGrammarRows }, { data: progressRows }, { data: reviewEventRows }] = await Promise.all([
+  const [{ data: dueVocabRows }, { data: vocabPoolRows }, { data: dueGrammarRows }, { data: progressRows }, { data: reviewEventRows }, { data: encounterRows }] = await Promise.all([
     supabase.from('user_vocabulary')
       .select('id, word_text, meaning, furigana, source_sentence, language, interval, ease_factor, repetitions, next_review_at')
       .eq('user_id', userId).eq('language', lang)
@@ -292,6 +336,12 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
       .select('source, item_key, correct, detail, created_at')
       .eq('user_id', userId).eq('lang', lang)
       .order('created_at', { ascending: false }).limit(400),
+    // 만남 서버 정본(rfc-vocab-encounter §4.5) — 최근 만남 순. 미적용·게스트·빈 테이블이면
+    // data가 비어 만남 슬롯이 조용히 0이 된다(무해성 계약 — rfc-adaptive-quiz §4.1).
+    supabase.from('user_vocab_encounters')
+      .select('word_text')
+      .eq('user_id', userId).eq('lang', ref.langCode)
+      .order('first_met_at', { ascending: false }).limit(40),
   ]);
 
   const passed = new Set((progressRows || []).filter(r => r.passed).map(r => r.slug));
@@ -401,6 +451,25 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
     .slice(0, 4);
   const warmup = buildWarmupItems(reviewEventRows || [], warmupVocabRows, meaningPool, dueWordSet, warmupFallback);
 
+  // ── 내 단어장 전량(word_text) — 문단 재료(기지어)와 만남 후보의 담김 제외 필터가 공유 ──
+  const { data: myWordRows } = await supabase
+    .from('user_vocabulary')
+    .select('word_text')
+    .eq('user_id', userId).eq('language', lang).limit(800);
+  const myWordList = (myWordRows || []).map(r => r.word_text).filter(Boolean);
+  const myWords = new Set(myWordList);
+
+  // ── 만남 인지 후보(rfc-adaptive-quiz §4.1) — 만남 − 담김 − 최근 출제(이미 조회한 400행 재사용) ──
+  const recentVocabEventKeys = new Set(
+    (reviewEventRows || []).filter(e => e.source === 'vocab' && e.item_key).map(e => e.item_key),
+  );
+  const encounterVocab = buildEncounterCandidates(encounterRows, {
+    wordByMain: buildRefMainWordIndex(ref),
+    exclude: [myWords, dueWordSet, recentVocabEventKeys],
+  });
+  // 만남 인지 문항 — 문단·프리페치·폴백 세 경로 공통으로 큐 말미에 붙일 수 있게 별도 반환.
+  const encounterItems = buildEncounterItems(encounterVocab, meaningPool, dial, (dueVocabRows || []).length);
+
   // 폴백 세션 — 문단 생성 실패 시 그대로 사용
   const session = composeSession({
     vocab: dueVocabRows || [],
@@ -415,12 +484,6 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   });
 
   // ── 오늘의 문단 재료 — 새 문법·새 어휘·복습 문법·복습 어휘를 한 문단으로 ──
-  const { data: myWordRows } = await supabase
-    .from('user_vocabulary')
-    .select('word_text')
-    .eq('user_id', userId).eq('language', lang).limit(800);
-  const myWordList = (myWordRows || []).map(r => r.word_text).filter(Boolean);
-  const myWords = new Set(myWordList);
   const newWords = sample(levelVocabWords, 30)
     .map(w => ({ word: refMain(w), meaning: w.ko || '', pron: refPron(w) || '' }))
     .filter(w => w.word && w.meaning && !myWords.has(w.word))
@@ -498,5 +561,5 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   // 재료가 문법도 단어도 없으면 문단 생성 스킵 (폴백 세션만)
   const canGenerate = !!(paragraphMaterials.newPattern || paragraphMaterials.duePatterns.length || paragraphMaterials.dueWords.length);
 
-  return { session, paragraphMaterials, warmup, level, band, dial, canGenerate, coldStart };
+  return { session, paragraphMaterials, warmup, encounterItems, level, band, dial, canGenerate, coldStart };
 }

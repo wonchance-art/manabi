@@ -168,6 +168,40 @@ function buildVocabItems(vocab, meaningPool, vocabRungs = {}, dial = 'normal', e
   });
 }
 
+/**
+ * 만남 인지 문항(rfc-adaptive-quiz §4.1, 목업 A) — 월드·뷰어에서 만났지만 담지 않은
+ * 정본 어휘를 인지(choice)로만 가볍게 낸다(rung 0→1 다리 — vocabTypeForRung(0)과 동치지만
+ * dial hard 상향을 받지 않도록 고정: 예문 없는 만남 어휘에 cloze는 성립 불가).
+ * due 잔여 어휘 슬롯만 쓰고(과부하 0), dial easy면 0(신규 재료 취급 — gateNewMaterialsByDial 결).
+ * 타이핑 폴백 없음 — 아직 안 외운 말에 회상을 요구하는 건 사다리 위반이라 보기 부족
+ * 후보는 조용히 건너뛴다(만남은 하한 기록·하한 출제).
+ * composeSession에 섞지 않고 별도 반환한다 — 조립 세션은 문단 생성 실패 시의 폴백이라,
+ * 정상(문단)·프리페치·폴백 세 경로 모두에서 큐 말미에 붙이는 건 클라이언트 몫.
+ */
+export function buildEncounterItems(encounterVocab, meaningPool, dial = 'normal', dueCount = 0) {
+  if (dial === 'easy') return [];
+  const slots = Math.min(2, Math.max(0, 3 - dueCount));
+  if (!slots) return [];
+  const cleanPool = (meaningPool || []).map(stripSourceLangInMeaning);
+  const out = [];
+  for (const w of encounterVocab || []) {
+    if (out.length >= slots) break;
+    const meaning = stripSourceLangInMeaning(w?.meaning);
+    if (!w?.word_text || !meaning) continue;
+    const distractors = pickDistractors(cleanPool, meaning, 3);
+    if (distractors.length < 2) continue;
+    out.push({
+      uid: uid('e'),
+      type: 'vocab-choice',
+      origin: 'encounter',
+      word: { ...w, meaning },
+      options: [meaning, ...distractors],
+      effect: { kind: 'vocab', wordId: w.id ?? null, origin: 'encounter' },
+    });
+  }
+  return out;
+}
+
 /** 문법 due 챕터 → 문항 (챕터당 최대 perChapter개, 전체 max개) */
 function buildGrammarDueItems(grammarDue, { max = 2, perChapter = 2 } = {}) {
   const out = [];

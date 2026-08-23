@@ -612,7 +612,17 @@
   인프라). 기록은 기존 review_events 경로(source:vocab, origin:encounter 표지)라
   담김 후 rung이 자연 연결, FSRS 무접촉·타이머 없음(kana-dojo '시간 없는' 결 유지)·
   담김은 정답 직후 제안만(자동 담김 금지). 목업 A(문항 배지)·B(담기 제안) 동봉 —
-  **오너 목업 승인 대기(승인 전 구현 금지)** (PR #1103).
+  오너 목업 A·B 승인(#1103 merge fb443ca → "목업 A·B 승인 ㄱㄱ 착수").
+  **적응 출제 R1(만남 인지 슬롯)**: ㉟ 서버 조립에 만남 후보 왕복 1개 추가
+  (user_vocab_encounters 최근 40 − 담김(myWords 재사용) − 최근 출제(기존 400행
+  재사용), 정본 refMain exact 인덱스 실재만·shortKo 선례) + buildEncounterItems
+  (choice 상한 2·due 잔여 슬롯만·dial easy 0·보기 부족은 타이핑 폴백 없이 스킵 —
+  사다리 위반 금지). **실측 조정**: 조립 세션은 문단 실패 폴백이라 composeSession
+  편입 대신 encounterItems 별도 반환 — 문단·프리페치·폴백 3경로 공통으로 큐 말미
+  부착(중복 0). 배지 A 렌더(vocab-choice 카드 상단), review_events는 기존 경로에
+  detail.origin:'encounter' 표지만 — SRS 갱신은 word_id null이라 기존 가드가 자동
+  스킵(FSRS 무접촉이 구조로 성립, 브리지 핀). 게이트: lint 0 err · 콘텐츠 게이트
+  오류 0 · vitest 1,997(+9) + world 1,090 green (PR #1104).
 - **🪶 리포 경량화 P1·P2(2026-08-19, 오너 승인)** — 오너 질문("월드가 무거울 텐데 따로
   보관 가능한가")에서 출발한 실측: `.git` 36M으로 **clone은 애초에 무겁지 않았고**,
   체감 비용은 게이트 시간이었다(전체 408s 중 world 265s·파일 123/305=40%).
