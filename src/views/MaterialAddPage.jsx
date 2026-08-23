@@ -127,6 +127,22 @@ export default function MaterialAddPage() {
     }, 200);
   };
 
+  // 빠른 분석(/quick)에서 넘어온 초안 — sessionStorage 1회성(읽고 지운다)
+  useEffect(() => {
+    if (searchParams.get('from') !== 'quick') return;
+    try {
+      const raw = sessionStorage.getItem('manabi_quick_draft');
+      if (!raw) return;
+      sessionStorage.removeItem('manabi_quick_draft');
+      const draft = JSON.parse(raw);
+      if (draft?.text) setRawText(draft.text);
+      if (draft?.language) {
+        setLanguage(draft.language);
+        setLevel(draft.language === 'Japanese' ? 'N3 중급' : 'B1 중급');
+      }
+    } catch { /* 초안이 깨졌으면 빈 폼 그대로 */ }
+  }, []);
+
   // 추천 자료에서 진입 시 자동 폼 채우기
   useEffect(() => {
     const suggestionId = searchParams.get('suggestion');
