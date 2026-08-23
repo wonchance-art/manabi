@@ -17,10 +17,13 @@ export function normalizeFrHeadword(s) {
 }
 
 /**
- * 언어별 만남 대조 키. fr만 표제어 정규화가 필요하고(관사형 저작), zh는 표기가 곧
- * 표제어(전수 실측: 괄호·대안·공백 0), ja·en은 기존 원문 그대로 비교를 유지한다(불변).
+ * 언어별 만남 대조 키. fr는 표제어 정규화(관사형 저작), en은 소문자화만(전수 실측
+ * 1,382어: 대소문자 32건 Monday·TV류가 전부 — 토큰 base_form이 소문자 lemma라 필수.
+ * 관사 시작은 관용구 8건뿐이라 fr와 달리 접지 않는다), zh는 표기가 곧 표제어(전수
+ * 실측: 괄호·대안·공백 0 → trim), ja는 원문 그대로 비교를 유지한다(불변).
  */
 export function normalizeRefWordKey(langCode, text) {
   if (langCode === 'fr') return normalizeFrHeadword(text);
+  if (langCode === 'en') return String(text || '').trim().toLowerCase();
   return String(text || '').trim();
 }

@@ -14,11 +14,11 @@ function memoryStorage(seed = {}) {
 }
 
 describe('encounterLookupLang — 기록 대상 언어', () => {
-  it('ja·fr·zh만 — en은 §4.7 보류, 미지는 null', () => {
+  it('4트랙 전부(en은 2026-08-22 오너 지시로 편입) — 미지는 null', () => {
     expect(encounterLookupLang('Japanese')).toBe('ja');
     expect(encounterLookupLang('French')).toBe('fr');
     expect(encounterLookupLang('Chinese')).toBe('zh');
-    expect(encounterLookupLang('English')).toBeNull();
+    expect(encounterLookupLang('English')).toBe('en');
     expect(encounterLookupLang(undefined)).toBeNull();
   });
 });
@@ -56,6 +56,18 @@ describe('loadRefVocabLookup — zh 실측', () => {
   });
 });
 
+describe('loadRefVocabLookup — en 실측', () => {
+  it('소문자 키로 접히고 main은 저작형 그대로 — Monday 대소문자 왕복', async () => {
+    const lookup = await loadRefVocabLookup('en');
+    expect(lookup.findWord('family')).toMatchObject({ level: 'A1', main: 'family' });
+    expect(lookup.findWord('Family')?.main).toBe('family');
+    expect(lookup.findWord('monday')?.main).toBe('Monday'); // 기록은 저작형 유지
+    // 조회기는 렘마타이저가 아니다 — 굴절형은 토크나이저 base_form(ran→run)이 접는다.
+    expect(lookup.findWord('run')?.main).toBe('run');
+    expect(lookup.findWord('ran')).toBeNull();
+  });
+});
+
 describe('loadRefVocabLookup — ja 위임·미지원', () => {
   it('기존 정본 findWord 위임 — main=word.ja, 낮은 급수 우선 그대로', async () => {
     const lookup = await loadRefVocabLookup('ja');
@@ -63,19 +75,21 @@ describe('loadRefVocabLookup — ja 위임·미지원', () => {
     expect(lookup.findWord('실측에없는말')).toBeNull();
   });
 
-  it('미지원 코드는 null 해석(en 포함 — 뷰어가 조용히 건너뛴다)', async () => {
-    expect(await loadRefVocabLookup('en')).toBeNull();
+  it('미지원 코드는 null 해석 — 뷰어가 조용히 건너뛴다', async () => {
     expect(await loadRefVocabLookup('xx')).toBeNull();
+    expect(await loadRefVocabLookup(undefined)).toBeNull();
   });
 });
 
 describe('loadMetWordKeys — 만남 기록 → 점 비교 키 집합', () => {
-  it('fr 저작형 저장을 정규화 키로 접고, ja는 원문 그대로(기존 동작 불변)', () => {
+  it('fr 저작형은 정규화 키로, en은 소문자로 접고, ja는 원문 그대로(기존 동작 불변)', () => {
     const storage = memoryStorage({
       [vocabEncounterStorageKey('fr')]: JSON.stringify(['la famille', "l'eau (f.)"]),
+      [vocabEncounterStorageKey('en')]: JSON.stringify(['Monday']),
       [vocabEncounterStorageKey('ja')]: JSON.stringify(['食券']),
     });
     expect([...loadMetWordKeys('fr', storage)].sort()).toEqual(['eau', 'famille']);
+    expect([...loadMetWordKeys('en', storage)]).toEqual(['monday']);
     expect([...loadMetWordKeys('ja', storage)]).toEqual(['食券']);
     expect(loadMetWordKeys('fr', memoryStorage()).size).toBe(0);
   });

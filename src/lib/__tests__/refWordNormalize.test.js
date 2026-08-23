@@ -30,11 +30,15 @@ describe('normalizeFrHeadword — 저작 표제어 쪽', () => {
 });
 
 describe('normalizeRefWordKey — 언어 분기', () => {
-  it('fr만 표제어 정규화, 그 외는 trim 원문(기존 비교 불변 — ja·en·zh)', () => {
+  it('fr는 표제어 정규화, en은 소문자화, ja·zh는 trim 원문(기존 비교 불변)', () => {
     expect(normalizeRefWordKey('fr', 'la famille')).toBe('famille');
     expect(normalizeRefWordKey('ja', '食券')).toBe('食券');
     expect(normalizeRefWordKey('zh', ' 你好 ')).toBe('你好');
-    expect(normalizeRefWordKey('en', 'Family')).toBe('Family');
+    // en — 저작형 Monday·TV(전수 실측 32건)와 소문자 lemma 토큰이 같은 키로.
+    // 관사 시작은 관용구 8건뿐이라 fr와 달리 접지 않는다(과잉 접기 금지).
+    expect(normalizeRefWordKey('en', 'Family')).toBe('family');
+    expect(normalizeRefWordKey('en', 'Monday')).toBe('monday');
+    expect(normalizeRefWordKey('en', 'the last straw')).toBe('the last straw');
     expect(normalizeRefWordKey(undefined, ' x ')).toBe('x');
     expect(normalizeRefWordKey('fr', undefined)).toBe('');
   });
