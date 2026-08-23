@@ -9,7 +9,7 @@ import { useToast } from '../lib/ToastContext';
 import { isPassed } from '../components/RefPatternCheck';
 import { pullProgress } from '../lib/refProgress';
 import { buildWeeklyReport, weekRangeLabel } from '../lib/weeklyReport';
-import { kstWeekStartMs } from '../lib/growthStats';
+import { fetchWeeklyReportRows } from '../lib/weeklyReportRows';
 import Button from '../components/Button';
 import VocabStats from './VocabStats';
 
@@ -42,30 +42,6 @@ async function fetchProfileStats(userId) {
   }
 
   return { vocab: allVocab || [], heatmapDayCounts };
-}
-
-/**
- * 주간 리포트 재료(rfc-weekly-report R2, 목업 A) — 2주 윈도 4조회. 실패한 조회는
- * 빈 배열로 흘러 그 축이 0이 될 뿐(무해성 — 엔진의 0 무표기가 흡수).
- */
-async function fetchWeeklyReportRows(userId) {
-  const prevStartIso = new Date(kstWeekStartMs() - 7 * 86400000).toISOString();
-  const [ev, vocab, enc, reads] = await Promise.all([
-    supabase.from('review_events').select('source, correct, created_at')
-      .eq('user_id', userId).gte('created_at', prevStartIso).limit(2000),
-    supabase.from('user_vocabulary').select('created_at')
-      .eq('user_id', userId).gte('created_at', prevStartIso),
-    supabase.from('user_vocab_encounters').select('first_met_at')
-      .eq('user_id', userId).gte('first_met_at', prevStartIso),
-    supabase.from('reading_progress').select('completed_at')
-      .eq('user_id', userId).eq('is_completed', true).gte('completed_at', prevStartIso),
-  ]);
-  return {
-    events: ev.data || [],
-    vocabRows: vocab.data || [],
-    encounterRows: enc.data || [],
-    readRows: reads.data || [],
-  };
 }
 
 const isToday = ts => ts && new Date(ts).toDateString() === new Date().toDateString();

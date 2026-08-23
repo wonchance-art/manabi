@@ -508,7 +508,18 @@
   reading_progress×코멘트 진도 비교로 자체 구현) → R3 공동 목표(Duolingo Friends
   Quest 협동 구조, 보상·페널티 없음). 선례 표 7종(Habitica 연대책임 데미지는 압박
   배제 결 위반으로 배제, BookWyrm 코드는 라이선스 배제·패턴만, cohorts는 개조 대신
-  패턴 3종 차용) + 목업 A·B·C + 오너 결정 항목 7번호 동봉. **오너 회신 대기(§9)**.
+  패턴 3종 차용) + 목업 A·B·C + 오너 결정 항목 7번호 동봉(#1112 merge eea7cbb).
+  **§9 전 항목 확정(오너 "1 승인, 나머지도 권고대로 ㄱㄱ")** → **R1 구현**: ㊸
+  마이그레이션(groups·members·snapshots — own-only RLS 6정책·is_group_member
+  definer·create_group 코드 서버 생성(혼동 글자 제외 6자)·join_group 그룹 행
+  잠금 정원 직렬화·3그룹 상한 서버-클라 동치 핀·anon 전면 차단·원장 테이블
+  무접촉 핀) ㊹ studyGroups lib(스냅샷 = fetchWeeklyReportRows 공용화(ProfileStats
+  중복 정의 제거·캐시 키 공유) → snapshotFromWeekly(정답률 대신 correct 정수 —
+  합계 재계산)·sumGroupSnapshots(등수 없음)·push 5분 스로틀·실패 조용히) ㊺
+  /groups 페이지(목업 A 상단·하단 + C: 그룹 카드·이번 주 우리 합계 줄·코드
+  공유 클립보드·나가기 2단 확인·3그룹 상한 폼) + 홈 진입 카드(목업 B의 R1
+  축소형 — §9-5 홈 확정). 게이트: 전체 vitest 2,024(+11) green (PR #1114).
+  R2(같이 읽기+진도 게이트 토론)·R3(공동 목표 — 무보상)는 후속 배치.
 - **📚 우리 사전 '만남' 모델 — R1 완료·R2 진행(2026-08-22, 오너 "ㄱㄱ 착수")** — 외부
   3리포 검토(confquest·kana-dojo·Lute v3)에서 분위기 필터 통과분만 수렴한 RFC
   (docs/rfc-vocab-encounter.md, #1089 merge 7d17c57)를 오너가 목업 A~D 포함 승인.

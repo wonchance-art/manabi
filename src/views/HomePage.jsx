@@ -12,6 +12,7 @@ import { getIdealLevel } from '../lib/levels';
 import { isPassed } from '../components/RefPatternCheck';
 import { pullProgress } from '../lib/refProgress';
 import ForecastCard from '../components/ForecastCard';
+import GroupEntryCard from '../components/GroupEntryCard';
 import ProfileStats from './ProfileStats';
 import { kstDayStartIso, kstWeekStartIso } from '../lib/growthStats';
 
@@ -450,6 +451,9 @@ export default function HomePage({ continueManifest = {} }) {
           </div>
         );
       })()}
+
+      {/* 학습 그룹 진입(목업 B의 R1 축소형 — §9-5 홈 확정): 그룹 없으면 함께 읽기 안내 */}
+      <GroupEntryCard />
 
       <ProfileStats refManifest={continueManifest} />
 
