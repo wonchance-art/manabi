@@ -299,7 +299,11 @@ export function buildEncounterCandidates(encounterRows, { wordByMain, exclude = 
     const w = wordByMain?.get(main);
     const meaning = (w?.ko || '').split(' — ')[0].trim();
     if (!w || !meaning) continue;
-    out.push({ word_text: main, meaning, furigana: refPron(w) || null, id: null });
+    // meaningFull·pos — 담기 제안(R2)이 NpcDialog 선례대로 정본 뜻 전문을 저장하기 위한 동봉.
+    out.push({
+      word_text: main, meaning, furigana: refPron(w) || null, id: null,
+      meaningFull: w.ko, pos: w.pos || '',
+    });
   }
   return out;
 }

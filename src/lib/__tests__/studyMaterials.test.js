@@ -313,7 +313,10 @@ describe('buildRefMainWordIndex / buildEncounterCandidates', () => {
       exclude: [new Set(['券売機']), new Set(['屋台'])],
     });
     expect(out).toEqual([
-      { word_text: '替え玉', meaning: '사리 추가', furigana: 'かえだま', id: null },
+      {
+        word_text: '替え玉', meaning: '사리 추가', furigana: 'かえだま', id: null,
+        meaningFull: '사리 추가 — 라멘 은어', pos: '', // R2 담기 — 정본 뜻 전문(NpcDialog 선례)
+      },
     ]);
   });
 
