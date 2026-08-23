@@ -276,3 +276,56 @@ export async function fetchGroupsReadingMaterial(materialId, weekStartDate) {
   if (error) throw error;
   return (data || []).map((r) => r.group_id);
 }
+
+/* ── R3 — 주간 공동 목표 (§4.4 — 무보상·페널티 없음, 조용한 달성 체크만) ── */
+
+/** 목표 축 라벨 — 주간 거울 4축과 1:1(새 축 신설 금지). */
+export const GOAL_AXES = {
+  reviews: { label: '함께 복습', unit: '문항' },
+  added: { label: '함께 담은 말', unit: '개' },
+  met: { label: '함께 만난 말', unit: '개' },
+  reads: { label: '함께 완독', unit: '편' },
+};
+
+/**
+ * 목표 진행 — 진행값은 이미 있는 스냅샷 합계(sumGroupSnapshots)에서 읽는다(새 기록 0).
+ * 유효하지 않은 목표(미지정·모르는 축·target 0)는 null.
+ */
+export function goalProgress(sum, goal) {
+  if (!sum || !goal || !GOAL_AXES[goal.axis] || !(goal.target > 0)) return null;
+  const current = sum[goal.axis] || 0;
+  return {
+    axis: goal.axis,
+    current,
+    target: goal.target,
+    ratio: Math.min(1, current / goal.target),
+    done: current >= goal.target,
+  };
+}
+
+/** 이번 주 공동 목표 — 그룹별 1개. */
+export async function fetchGroupGoals(groupIds, weekStartDate) {
+  if (!groupIds?.length) return [];
+  const { data, error } = await supabase
+    .from('study_group_goals')
+    .select('group_id, axis, target, set_by')
+    .in('group_id', groupIds)
+    .eq('week_start', weekStartDate);
+  if (error) throw error;
+  return data || [];
+}
+
+/** 목표 지정·재지정(멤버 누구나 — 같이 읽기와 같은 신뢰 모델). */
+export async function setGroupGoal(groupId, weekStartDate, axis, target, userId) {
+  const { error } = await supabase
+    .from('study_group_goals')
+    .upsert({
+      group_id: groupId,
+      week_start: weekStartDate,
+      axis,
+      target: Math.max(1, Math.round(target)),
+      set_by: userId,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'group_id,week_start' });
+  if (error) throw error;
+}
