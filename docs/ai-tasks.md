@@ -658,6 +658,18 @@
   게스트·미계산 무표기 — 0 무표기 결) + 정렬 [내 수준 맞춤]을 기존 셀렉트에
   편입(fit→stretch→comfort→hard 안정 정렬 sortByFit 핀, 게스트 옵션 미표시).
   게이트: lint 0 err · 콘텐츠 게이트 오류 0 · vitest 2,006(+1) green (PR #1108).
+- **🪞 주간 리포트 — "이번 주 나" 카드(2026-08-23, 오너 연속 위임 "다음 큰 목표
+  이어서 ㄱㄱ"로 자율 설정)** — 근거: evaluation-and-strategy Phase 2 P1 "주간
+  리포트 ❌ 미구현"(잔여 ❌ 중 학습 웹·결정적 계산 정합 유일 항목. AI 작문 피드백
+  ❌ 표기는 /study 산출 문항·writing-feedback API로 부분 해소 — 문서 낡음, 별도
+  갱신 대상). 원칙: 이메일 없음(대시보드만)·증감 색상 없음(압박 배제)·LLM 없음.
+  RFC = docs/rfc-weekly-report.md(목업 A: ProfileStats 상단 카드 — 복습·정답률·
+  담김·만난 말·완독, 지난주 회색 병기). **R1 엔진**: weeklyReport.js 순수 집계 —
+  주간 경계는 growthStats.kstWeekStartMs 정본만(신설 금지), 채점 문항 판정은
+  EWMA 다이얼과 동일 결(ui·dict 제외 — isGradedReviewEvent 핀), 만난 말은
+  first_met_at 첫 만남 기준(§4.5 합류), 전 축 0이면 hasAny false(카드 무표기).
+  경계 정밀 핀(주 시작 정각/직전 ms) 포함 5건. **R2 UI는 목업 A 승인 대기**.
+  게이트: lint 0 err · 콘텐츠 게이트 오류 0 · vitest 2,011(+5) green (PR #1109).
 - **🪶 리포 경량화 P1·P2(2026-08-19, 오너 승인)** — 오너 질문("월드가 무거울 텐데 따로
   보관 가능한가")에서 출발한 실측: `.git` 36M으로 **clone은 애초에 무겁지 않았고**,
   체감 비용은 게이트 시간이었다(전체 408s 중 world 265s·파일 123/305=40%).
