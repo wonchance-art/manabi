@@ -59,17 +59,41 @@ describe('gradeDictation — 채점', () => {
   });
 });
 
-// 배선 계약(목업 ① — UI 라운드): 뷰어 지정 문장에서 열리고, 패널이 엔진·TTS를 소비.
+// 배선 계약(목업 ① — UI 라운드): 뷰어 지정 문장·추천 고르기 두 경로가 한 패널로 모이고,
+// 패널이 엔진·TTS를 소비한다.
 describe('받아쓰기 배선 계약', () => {
-  it('DictationPanel이 엔진을 쓰고 뷰어 지정 문장에 배선되어 있다', async () => {
+  const read = async (rel) => {
     const fs = await import('node:fs');
     const path = await import('node:path');
-    const panel = fs.readFileSync(path.join(process.cwd(), 'src/components/DictationPanel.jsx'), 'utf8');
+    return fs.readFileSync(path.join(process.cwd(), rel), 'utf8');
+  };
+
+  it('DictationPanel이 엔진과 TTS를 쓰고 원문을 가린다', async () => {
+    const panel = await read('src/components/DictationPanel.jsx');
     expect(panel).toContain('gradeDictation');
     expect(panel).toContain('useTTS');
     expect(panel).toContain('본문 보기'); // 열림 동안 원문 가림 — 명시 공개만
-    const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
+  });
+
+  it('뷰어의 두 진입 경로가 같은 대상 상태(dictationSentence)로 모인다', async () => {
+    const viewer = await read('src/views/ViewerPage.jsx');
     expect(viewer).toContain('DictationPanel');
-    expect(viewer).toContain('sentence={leftPanelText}'); // 지정 문장 대상
+    expect(viewer).toContain('sentence={dictationSentence}');
+    expect(viewer).toContain('setDictationSentence(leftPanelText)'); // 지정 문장 🎧
+    expect(viewer).toContain('setDictationSentence(text)');          // 추천 고르기
+  });
+
+  it('추천 고르기는 dictationPick 엔진에 위임하고 목록에 원문을 뿌리지 않는다', async () => {
+    const picker = await read('src/components/DictationPicker.jsx');
+    expect(picker).toContain('pickDictationSentences');
+    // 목록 렌더는 글자 수만 — p.text를 그대로 그리면 고르는 단계에서 정답이 새어 나간다.
+    const rendered = picker.match(/\{p\.text[^}]*\}/g) || [];
+    for (const expr of rendered) expect(expr).toContain('.length');
+  });
+
+  it('뷰어가 정본 문장 목록과 담은 단어 집합을 추천에 넘긴다', async () => {
+    const viewer = await read('src/views/ViewerPage.jsx');
+    expect(viewer).toContain('sentences={sentences}');        // sentenceNav 정본 단위 재사용
+    expect(viewer).toContain('savedSet={dictationSavedSet}');
   });
 });

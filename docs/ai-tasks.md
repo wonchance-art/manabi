@@ -14,12 +14,17 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- 🎧 받아쓰기 문장 선정 엔진: 길이·저장 단어 우선·안정 정렬·중복 제거 계약 (`codex/dictation-pick`)
 ### todo
 - ~~🎧 받아쓰기 채점 엔진(#1077 제안 6, 발주 5386786944)~~ → **회수: 2026-08-23
   16:03 스캔까지 WORKING 무표식(30분 룰) — Claude 직접 수행·완결(회수 공지
   5386950005, PR #1118)**. 이 열에 잔여 발주 없음.
 ### done (최근)
+- 🎧 받아쓰기 문장 선정 엔진 `pickDictationSentences` — **Codex Cloud 전환 후 첫 회신**:
+  공백 제외 길이 경계 포함·담은 단어 포함 수 우선·동률 원문 순서·정확 중복 제거·방어적
+  입력(계약 5핀). 검수에서 낡은 base 실측(Cloud 환경이 #1118 시점 main을 캐시 — 브랜치
+  자체는 2,058테스트) → **현재 main 병합 트리로 재검증(212파일/2,078 green)** 후 merge.
+  이후 Cloud 회신 검수는 '병합 트리 재검증'을 표준 단계로 둔다.
+  (실제 브랜치 `codex/locate-the-issue`, #1124 merge 310b8b1)
 - 📄 PDF.js 뷰어 전환 1단계 골격: pdfjs-dist `4.10.38` 고정·public worker 전략,
   캔버스+선택 가능 textLayer와 current±1 최대 3페이지 lazy 렌더, 순수 텍스트 줄·문단·
   하이픈 복원, `?pdfjs=1` opt-in을 구현하고 기본 `<embed>` 경로를 불변 유지
@@ -555,7 +560,14 @@
   초안 sessionStorage 핸드오프(manabi_quick_draft 1회성)로 추가 화면 프리필
   (저장 흐름은 기존 하나뿐). 게스트는 로그인 안내. 서재 헤더 입구(무저장
   해부라 '추가 입구 하나' 원칙과 무충돌 — 주석 근거 병기). 계약 10핀. 게이트:
-  전체 vitest 2,073(+10) green (PR #1123). **UI 라운드 ①~⑤ 전체 완결**.
+  전체 vitest 2,073(+10) green (#1123 merge d5552e0). **UI 라운드 ①~⑤ 전체 완결**.
+  **받아쓰기 추천 문장 합류(Codex #1124 엔진 소비)**: 뷰어 도구줄 [🎧 받아쓰기] →
+  DictationPicker — 후보는 정본 문장 단위(sentenceNav.pickableSentences) 재사용,
+  고르기는 pickDictationSentences 위임(담은 단어 = 표기·기본형 합집합). **목록에 원문
+  무표시(글자 수만)** — 고르는 단계에서 정답이 보이면 받아쓰기 전제가 무너진다(계약
+  테스트가 p.text 렌더를 .length 경유로 강제). 지정 문장 🎧와 추천 고르기가 같은 대상
+  상태(dictationSentence)로 모여 패널 하나를 공유. 배선 계약 4핀. 잔무였던
+  evaluation-and-strategy Phase 4 표 갱신 동봉(학습 그룹 ❌→✅, 70%→100%).
   Codex Cloud 첫 태스크(받아쓰기 문장 선정 엔진 dictationPick) 블록 오너에게 제공
   — PR 미도착(투입 대기 추정).
   승인 후)** — 전략 문서 Phase 4 잔여 ❌(학습 그룹) 대상, RFC = docs/rfc-study-groups.md.

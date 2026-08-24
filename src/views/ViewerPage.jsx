@@ -50,6 +50,7 @@ import { analysisCacheKey, clearAnalysisCache, readAnalysisCache, writeAnalysisC
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
 import { fetchKnownWords, knownWordsLang, markKnown, unmarkKnown } from '../lib/knownWords';
 import DictationPanel from '../components/DictationPanel';
+import DictationPicker from '../components/DictationPicker';
 import { recordVocabEncounters } from '../components/world/vocabEncounters';
 import { syncVocabEncounters } from '../components/world/vocabEncounterSync';
 import { encounterLookupLang, loadMetWordKeys, loadRefVocabLookup } from '../lib/refVocabLookup';
@@ -582,7 +583,9 @@ export default function ViewerPage() {
   // 문장 막대로 지정한 줄 — 해당 줄 전체에 지정 이펙트(#1002). 단어 클릭·드래그 시 해제.
   const [pickedLineIdx, setPickedLineIdx] = useState(null);
   // 받아쓰기 패널(목업 ① — #1077-6): 지정 문장 대상, 열림 동안 원문 가림은 패널 몫
-  const [dictationOpen, setDictationOpen] = useState(false);
+  // 받아쓰기 — 대상 문장 하나를 상태로 든다(지정 문장 🎧 · 추천 고르기 두 경로가 같은 패널로 모임).
+  const [dictationSentence, setDictationSentence] = useState(null);
+  const [dictationPickerOpen, setDictationPickerOpen] = useState(false);
 
   // 리딩 테스트
   const [showReadingTest, setShowReadingTest] = useState(false);
@@ -630,6 +633,12 @@ export default function ViewerPage() {
     if (curGroup.tokenIds.length) lineGroups.push(curGroup);
     return pickableSentences(lineGroups, rawLines);
   }, [material?.processed_json, material?.raw_text]);
+
+  // 받아쓰기 추천용 담은 단어 집합 — 표기·기본형 합집합(엔진이 text.includes로 대조).
+  const dictationSavedSet = useMemo(
+    () => new Set([...(savedWords?.surfaces || []), ...(savedWords?.bases || [])]),
+    [savedWords]
+  );
 
   // 집중 모드 순수 이동용 — 좌(번역·맥락)/우(단어 리스트·카드) 패널과 시트 활성 상태를
   // 비운다. 시트 신호는 올리지 않는다(안 띄우는 게 목적). ViewerBottomSheet의 active가
@@ -1449,7 +1458,7 @@ export default function ViewerPage() {
           )}
           {ttsSupported && (
             <button
-              onClick={() => setDictationOpen(true)}
+              onClick={() => setDictationSentence(leftPanelText)}
               aria-label="이 문장 받아쓰기"
               title="이 문장 받아쓰기 — 듣고 입력하면 글자 단위로 채점해요"
               style={{ background: 'none', border: 'none', fontSize: '1rem', cursor: 'pointer', minWidth: 32, minHeight: 32, flexShrink: 0 }}
@@ -1751,6 +1760,16 @@ export default function ViewerPage() {
             </button>
           )}
 
+
+          {ttsSupported && sentences.length > 0 && (
+            <button
+              onClick={() => setDictationPickerOpen(true)}
+              className="grammar-btn"
+              title="추천 문장을 듣고 받아쓰기 — 담은 단어가 든 문장부터 골라 줘요"
+            >
+              🎧 받아쓰기
+            </button>
+          )}
 
           {user?.id === material?.owner_id && !isAnalyzing && (
             reanalyzeMutation.isPending ? (
@@ -2270,11 +2289,19 @@ export default function ViewerPage() {
       />
 
       {/* 받아쓰기(목업 ① — 지정 문장 듣고 입력·글자 diff 채점) */}
-      {dictationOpen && leftPanelText && (
+      {dictationPickerOpen && (
+        <DictationPicker
+          sentences={sentences}
+          savedSet={dictationSavedSet}
+          onPick={(text) => { setDictationPickerOpen(false); setDictationSentence(text); }}
+          onClose={() => setDictationPickerOpen(false)}
+        />
+      )}
+      {dictationSentence && (
         <DictationPanel
-          sentence={leftPanelText}
+          sentence={dictationSentence}
           lang={materialLang}
-          onClose={() => setDictationOpen(false)}
+          onClose={() => setDictationSentence(null)}
         />
       )}
 
