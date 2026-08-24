@@ -54,7 +54,16 @@ describe('재독 카드 배선 계약', () => {
     const path = await import('node:path');
     const card = fs.readFileSync(path.join(process.cwd(), 'src/components/RereadCard.jsx'), 'utf8');
     expect(card).toContain('pickRereadCandidates');
-    expect(card).toContain('다시 읽어볼까요');
+    // 오너 지시(2026-08-24): '교재 이어서 학습'과 같은 부품·같은 크기로 통합.
+    // 전용 카드 스타일을 다시 만들면 홈이 같은 성격의 줄을 두 문법으로 말한다.
+    expect(card).toContain("className=\"lessons-continue\"");
+    expect(card).toContain('lessons-continue__kicker');
+    expect(card).toContain('lessons-continue__meta');
+    expect(card).not.toContain('다시 읽어볼까요'); // 옛 전용 카드 문구 — 부활 금지
+    const home = fs.readFileSync(path.join(process.cwd(), 'src/views/HomePage.jsx'), 'utf8');
+    // 같은 묶음으로 읽히도록 '교재 이어서 학습' 바로 뒤에 온다(사이 다른 카드 없음).
+    const between = home.slice(home.indexOf('교재 이어서 학습'), home.indexOf('<RereadCard />'));
+    expect(between).not.toContain('className="card"');
     expect(fs.readFileSync(path.join(process.cwd(), 'src/views/HomePage.jsx'), 'utf8')).toContain('<RereadCard />');
   });
 });

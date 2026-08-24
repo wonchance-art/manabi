@@ -238,7 +238,8 @@ test('fixture 데이터로 홈 재독 카드와 작문 산출 칩을 렌더한�
   await fresh(async (page, context) => {
     await mockAccount(context, { reread: true, outputWords: true });
     await page.goto('/home', { waitUntil: 'domcontentloaded' });
-    await visible(page.getByText('📖 다시 읽어볼까요', { exact: true }), 'reread card');
+    // 재독은 '교재 이어서 학습'과 같은 부품(.lessons-continue)으로 통합됐다(오너 지시).
+    await visible(page.getByText('다시 읽기 · 두 번째는 훨씬 빨라요', { exact: true }), 'reread row');
     await visible(page.getByText(/오래된 E2E 읽기/), 'reread fixture title');
     await page.goto('/writing', { waitUntil: 'domcontentloaded' });
     await visible(page.getByText('✍️ 오늘 복습한 말 써먹기:', { exact: true }), 'output chip label');
