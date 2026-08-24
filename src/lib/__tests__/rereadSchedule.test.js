@@ -49,21 +49,24 @@ describe('pickRereadCandidates', () => {
 
 // 배선 계약(목업 ② — UI 라운드): 홈 카드가 엔진을 쓰고, 후보 없으면 조용히 생략.
 describe('재독 카드 배선 계약', () => {
-  it('RereadCard가 엔진을 소비하고 HomePage에 배선되어 있다', async () => {
+  it("재독 후보 훅이 엔진을 소비하고 '이어서' 덱 항목으로 홈에 배선된다", async () => {
     const fs = await import('node:fs');
     const path = await import('node:path');
-    const card = fs.readFileSync(path.join(process.cwd(), 'src/components/RereadCard.jsx'), 'utf8');
-    expect(card).toContain('pickRereadCandidates');
-    // 오너 지시(2026-08-24): '교재 이어서 학습'과 같은 부품·같은 크기로 통합.
-    // 전용 카드 스타일을 다시 만들면 홈이 같은 성격의 줄을 두 문법으로 말한다.
-    expect(card).toContain("className=\"lessons-continue\"");
-    expect(card).toContain('lessons-continue__kicker');
-    expect(card).toContain('lessons-continue__meta');
-    expect(card).not.toContain('다시 읽어볼까요'); // 옛 전용 카드 문구 — 부활 금지
-    const home = fs.readFileSync(path.join(process.cwd(), 'src/views/HomePage.jsx'), 'utf8');
-    // 같은 묶음으로 읽히도록 '교재 이어서 학습' 바로 뒤에 온다(사이 다른 카드 없음).
-    const between = home.slice(home.indexOf('교재 이어서 학습'), home.indexOf('<RereadCard />'));
-    expect(between).not.toContain('className="card"');
-    expect(fs.readFileSync(path.join(process.cwd(), 'src/views/HomePage.jsx'), 'utf8')).toContain('<RereadCard />');
+    const read = (rel) => fs.readFileSync(path.join(process.cwd(), rel), 'utf8');
+
+    const hook = read('src/lib/useRereadCandidate.js');
+    expect(hook).toContain('pickRereadCandidates');
+    // 훅이 렌더가 아니라 **항목 서술**을 준다 — 덱이 개수를 알아야 껍데기를 결정한다.
+    expect(hook).toContain("key: 'reread'");
+    expect(hook).toContain('kicker');
+
+    const home = read('src/views/HomePage.jsx');
+    expect(home).toContain('<ContinueDeck items={continueDeckItems} />');
+    expect(home).toContain('useRereadCandidate()');
+    // 조건부 훅 호출 금지 — 훅은 early return보다 위에 있어야 한다.
+    expect(home.indexOf('useRereadCandidate()')).toBeLessThan(home.indexOf('if (!user) return'));
+    // 옛 전용 카드는 부활 금지
+    expect(home).not.toContain('<RereadCard />');
+    expect(fs.existsSync(path.join(process.cwd(), 'src/components/RereadCard.jsx'))).toBe(false);
   });
 });

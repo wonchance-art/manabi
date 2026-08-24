@@ -13,7 +13,8 @@ import { isPassed } from '../components/RefPatternCheck';
 import { pullProgress } from '../lib/refProgress';
 import ForecastCard from '../components/ForecastCard';
 import GroupEntryCard from '../components/GroupEntryCard';
-import RereadCard from '../components/RereadCard';
+import ContinueDeck from '../components/ContinueDeck';
+import { useRereadCandidate } from '../lib/useRereadCandidate';
 import ProfileStats from './ProfileStats';
 import { kstDayStartIso, kstWeekStartIso } from '../lib/growthStats';
 
@@ -297,6 +298,20 @@ export default function HomePage({ continueManifest = {} }) {
     return scored[0] || all[0];
   }, [data?.suggestions, data?.vocabByLang, profile]);
 
+  // 덱 항목 조립 — 진행 중인 것(교재)이 앞. 훅은 조건 없이 최상위에서
+  // 호출한다 — 아래 early return(!user·isLoading)보다 반드시 위여야 한다.
+  const rereadItem = useRereadCandidate();
+  const continueDeckItems = useMemo(() => [
+    continueCard && {
+      key: 'lesson',
+      href: `${continueCard.ref.base}/grammar/${continueCard.ch.slug}`,
+      kicker: `${continueCard.mode === 'retry' ? '교재 재도전 — 패턴 체크 미통과' : '교재 이어서 학습'} · ${continueCard.ref.name}`,
+      title: `#${continueCard.ch.order} ${continueCard.ch.title}`,
+      meta: `${continueCard.levelLabel} →`,
+    },
+    rereadItem,
+  ].filter(Boolean), [continueCard, rereadItem]);
+
   if (!user) return (
     <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
       <h2 style={{ marginBottom: '16px' }}>로그인이 필요합니다</h2>
@@ -397,25 +412,10 @@ export default function HomePage({ continueManifest = {} }) {
       {/* 망각 예보 — 오늘 안에 흐려지는 단어가 있을 때만 조용히 등장(0개면 침묵) */}
       <ForecastCard forecast={data?.forecast} />
 
-      {/* 강의 이어서 학습 — 챕터 진행 기록 기반 (미통과 재도전 우선) */}
-      {continueCard && (
-        <Link
-          href={`${continueCard.ref.base}/grammar/${continueCard.ch.slug}`}
-          className="lessons-continue"
-        >
-          <span className="lessons-continue__body">
-            <span className="lessons-continue__kicker">
-              {continueCard.mode === 'retry' ? '교재 재도전 — 패턴 체크 미통과' : '교재 이어서 학습'} · {continueCard.ref.name}
-            </span>
-            <span className="lessons-continue__title">#{continueCard.ch.order} {continueCard.ch.title}</span>
-          </span>
-          <span className="lessons-continue__meta">{continueCard.levelLabel} →</span>
-        </Link>
-      )}
-
-      {/* 재독 되부름(#1077-12) — 완독 14일 지난 자료. 위 '교재 이어서 학습'과 같은 부품·
-          같은 크기로, 둘 다 "하던 걸 이어서" 한 줄이라 한 묶음으로 읽힌다(오너 지시). */}
-      <RereadCard />
+      {/* '이어서' 덱 — 교재 이어서 학습·다시 읽기를 한 자리에서 옆으로 넘긴다(오너 지시
+          2026-08-24). 둘 다 "하던 걸 이어서" 한 줄이라 자리를 나눠 쓸 이유가 없다.
+          한 장뿐이면 덱이 캐러셀 옷을 벗고 예전 한 줄 그대로 보인다. */}
+      <ContinueDeck items={continueDeckItems} />
 
       {/* 오늘 읽기 — 진행 중 시리즈가 없을 때만 */}
       {(() => {
