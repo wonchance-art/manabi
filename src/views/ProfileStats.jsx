@@ -27,8 +27,13 @@ async function fetchProfileStats(userId) {
     vocabResult,
   ] = await Promise.all([
     supabase.from('user_vocabulary').select('created_at').eq('user_id', userId).gte('created_at', heatmapStart.toISOString()),
-    // 통계는 세 시각 컬럼만 소비 — 전 컬럼(*)을 단어 수만큼 끌지 않는다(쿼리 다이어트)
-    supabase.from('user_vocabulary').select('created_at, last_reviewed_at, next_review_at').eq('user_id', userId),
+    // 통계는 세 시각 컬럼, 복습 타일은 id·표기·뜻만 소비 — 전 컬럼(*)을 단어 수만큼
+    // 끌지 않는다(쿼리 다이어트 #1079). **타일이 그리는 필드는 반드시 여기 있어야 한다** —
+    // #1079가 표기·뜻을 빼는 바람에 타일이 빈 글자를 돌리고 있었다(2026-08-24 수리).
+    // 드리프트 재발은 profileStatsSelect 계약 테스트가 막는다.
+    supabase.from('user_vocabulary')
+      .select('id, word_text, meaning, created_at, last_reviewed_at, next_review_at')
+      .eq('user_id', userId),
   ]);
   if (heatmapResult.error) throw heatmapResult.error;
   if (vocabResult.error) throw vocabResult.error;
