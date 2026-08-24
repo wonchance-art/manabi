@@ -8631,6 +8631,50 @@ body.is-review-session .page-container { padding-top: 8px; }
   transition: filter 0.15s ease;
 }
 .lessons-continue:hover { filter: brightness(1.05); }
+
+/* '이어서' 덱 — 한 자리에서 옆으로 넘기는 진입 카드들(오너 지시 2026-08-24).
+   넘기기는 네이티브 scroll-snap: 관성·키보드 이동·터치 감을 브라우저에 맡기고
+   캐러셀 라이브러리는 들이지 않는다. 폭과 무관하게 같은 조작(오너 확정). */
+.continue-deck { margin-bottom: 6px; }
+.continue-deck__scroller {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;            /* 스크롤바는 감춘다 — 점이 위치를 말한다 */
+  scroll-behavior: smooth;
+}
+.continue-deck__scroller::-webkit-scrollbar { display: none; }
+/* 92% — 다음 장이 8%만큼 걸쳐 보여 "넘길 게 있다"를 말한다. */
+.continue-deck__slide { flex: 0 0 92%; scroll-snap-align: start; }
+/* 한 장뿐이면 걸침도 점도 없다 — 구조는 그대로 두고 폭만 채워 예전 한 줄과 같아진다
+   (트리를 갈아끼우면 항목이 1→2로 늘 때 카드가 remount돼 화면이 튄다). */
+.continue-deck--solo .continue-deck__slide { flex-basis: 100%; }
+.continue-deck__slide .lessons-continue { margin-bottom: 0; }
+.continue-deck__dots {
+  display: flex; justify-content: center; gap: 6px;
+  margin-top: 8px;
+}
+.continue-deck__dot {
+  width: 6px; height: 6px; padding: 0;
+  border: none; border-radius: 50%;
+  background: var(--border);
+  cursor: pointer;
+  transition: background 0.15s ease, width 0.15s ease;
+}
+/* 44px 탭 타깃 — 점은 작게 보이되 손가락이 닿는 범위는 넉넉히(a11y 감사 관례) */
+.continue-deck__dot::before {
+  content: ''; display: block;
+  width: 44px; height: 44px;
+  margin: -19px 0 0 -19px;
+}
+.continue-deck__dot--on { width: 16px; border-radius: 3px; background: var(--primary); }
+
+@media (prefers-reduced-motion: reduce) {
+  .continue-deck__scroller { scroll-behavior: auto; }
+  .continue-deck__dot { transition: none; }
+}
 .lessons-continue__label { font-size: 1.05rem; flex-shrink: 0; }
 .lessons-continue__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .lessons-continue__kicker {
