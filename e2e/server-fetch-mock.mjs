@@ -58,6 +58,15 @@ globalThis.fetch = async (input, init) => {
     return json({ id: claims.sub, role });
   }
 
+  // /quick E2E의 분석 사전. 실제 /api/analyze 라우트를 통과시키되 형태소 뜻은
+  // 결정적 fixture에서 공급해 외부 Gemini 호출을 만들지 않는다.
+  if (url.pathname.endsWith('/rest/v1/morpheme_dictionary')) {
+    return json([
+      { base_form: 'hello', meanings: [{ meaning: '안녕하세요', pos: '감탄사' }], pos: '감탄사', reading: '/həˈloʊ/', source: 'e2e_fixture' },
+      { base_form: 'world', meanings: [{ meaning: '세계', pos: '명사' }], pos: '명사', reading: '/wɜːrld/', source: 'e2e_fixture' },
+    ]);
+  }
+
   if (url.pathname.endsWith('/rest/v1/user_ref_progress')) return json([]);
   return originalFetch(input, init);
 };
