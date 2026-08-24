@@ -26,5 +26,13 @@ npm run build
 node --test --test-concurrency=1 e2e/learning-flow.e2e.mjs
 ```
 
+최근 신기능 R2(받아쓰기·빠른 분석·이미 알아요·재독/산출 칩·학습 그룹)는 같은 빌드 뒤
+아래처럼 독립 스위트로 실행한다. 빠른 분석의 사전 응답은 `server-fetch-mock.mjs`의
+fixture를 사용하므로 실서버나 Gemini를 호출하지 않는다.
+
+```sh
+node --test --test-concurrency=1 e2e/features-r2.e2e.mjs
+```
+
 `.next`가 다른 `NEXT_PUBLIC_*` 값으로 만들어졌거나 빌드 환경을 알 수 없다면 인증 E2E
 결과를 신뢰하지 말고 위 명령으로 먼저 다시 빌드한다.
