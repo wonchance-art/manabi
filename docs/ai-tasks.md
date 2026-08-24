@@ -607,6 +607,16 @@
   (저장 흐름은 기존 하나뿐). 게스트는 로그인 안내. 서재 헤더 입구(무저장
   해부라 '추가 입구 하나' 원칙과 무충돌 — 주석 근거 병기). 계약 10핀. 게이트:
   전체 vitest 2,073(+10) green (#1123 merge d5552e0). **UI 라운드 ①~⑤ 전체 완결**.
+  **㊿ 오너 확정 2건 계약화(2026-08-24)**: ⑴ `user_verified` 보호 = **DB 무손상까지**
+  (표시 우선 아님) → `userVerifiedScope.test.js`에 **양쪽 다** 못 박음 — 지켜야 할 것
+  (writeback 목록 제외 + 라우트 `source='gemini'` 이중 조건)과 지키지 않기로 한 것
+  (resolveZhTokenPos가 pick을 캐시 POS보다 앞세움). 한쪽만 고정하면 '표시도 우선이어야
+  하는 것 아니냐'는 오독이 조용한 동작 변경으로 들어온다. 조사 리포트 §미해결 1도 확정
+  기록(2~4는 열린 상태 유지). ⑵ 받아쓰기 → review_events **기록 안 함** → 순환 지도
+  이음새를 '부채'에서 **의도적**으로 재분류. 근거 기록: source를 신설해 값을 넣는 순간
+  isGradedReviewEvent가 ui·dict만 제외하므로 weeklyReport·growthStats·적응 출제의 기존
+  집계가 전부 새 출처를 흡수한다 — 스스로 채점해 스스로 끝나는 훈련이 그 파급을 살 이유가
+  없다. 계약 5핀.
   **받아쓰기 추천 문장 합류(Codex #1124 엔진 소비)**: 뷰어 도구줄 [🎧 받아쓰기] →
   DictationPicker — 후보는 정본 문장 단위(sentenceNav.pickableSentences) 재사용,
   고르기는 pickDictationSentences 위임(담은 단어 = 표기·기본형 합집합). **목록에 원문
