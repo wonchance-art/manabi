@@ -141,16 +141,21 @@ async function visible(locator, label) {
   assert.equal(await locator.isVisible(), true, `${label} should be visible`);
 }
 
-async function openSentenceSheet(page) {
+// 문장 지정은 드래그가 아니라 문장 막대(¦)로 한다. 드래그는 선택 텍스트가 폰트·레이아웃에
+// 따라 흔들려 좌측 번역 캐시 키(viewer_tx:{lang}:{sel})가 빗나가는데, 이 화면의 🎧 진입
+// 버튼은 **번역 결과가 있을 때만** 렌더되므로 캐시가 빗나가면 버튼 자체가 없다.
+// 막대 경로의 지정 텍스트는 원문 줄(cleanLineText)로 결정적이라 캐시를 정확히 시드할 수 있다.
+const SENTENCE = 'Hello world.';
+
+async function pickSentence(page) {
+  await page.evaluate((text) => {
+    localStorage.setItem(`viewer_tx:English:${text}`, '**번역**\n안녕, 세계.\n\n**맥락**\nE2E 캐시 문장입니다.');
+  }, SENTENCE);
   await page.evaluate(() => document.fonts.ready);
-  const start = await page.locator('[data-tid="id_0_0"] .surface').boundingBox();
-  const end = await page.locator('[data-tid="id_0_1"] .surface').boundingBox();
-  assert.ok(start && end);
-  await page.mouse.move(start.x + 2, start.y + start.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(end.x + end.width - 2, end.y + end.height / 2, { steps: 8 });
-  await page.mouse.up();
-  await visible(page.getByRole('dialog', { name: 'AI 분석 결과' }), 'sentence sheet');
+  await page.locator('.line-pick').first().click();
+  // 좌측 패널은 넓은 화면의 aside와 좁은 화면의 시트 양쪽에 같은 내용을 렌더한다 —
+  // 레이아웃에 의존하지 않도록 첫 번째만 집는다.
+  await visible(page.getByRole('button', { name: '이 문장 받아쓰기' }).first(), 'dictation entry');
 }
 
 before(async () => {
@@ -174,18 +179,17 @@ test('받아쓰기: 지정 문장을 가린 채 입력·채점하고 diff와 본
     await mockAccount(context, { material: viewerMaterial() });
     await context.route('**/api/analyze', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ results: [{ sequence: ['a', 'b'], dictionary: { a: { text: 'Hello', base_form: 'hello', meaning: '안녕하세요' }, b: { text: 'world', base_form: 'world', meaning: '세계' } } }] }) }));
     await page.goto('/viewer/92001', { waitUntil: 'domcontentloaded' });
-    await page.evaluate(() => localStorage.setItem('viewer_tx:English:Hello world', '안녕하세요, 세계.'));
-    await openSentenceSheet(page);
-    await page.getByRole('button', { name: '이 문장 받아쓰기' }).click();
+    await pickSentence(page);
+    await page.getByRole('button', { name: '이 문장 받아쓰기' }).first().click();
     const dialog = page.getByRole('dialog', { name: '받아쓰기' });
     await visible(dialog.getByPlaceholder('들리는 대로 입력해 보세요'), 'dictation input');
-    assert.equal(await dialog.getByText('Hello world', { exact: false }).count(), 0, 'original stays hidden before reveal');
+    assert.equal(await dialog.getByText(SENTENCE, { exact: false }).count(), 0, 'original stays hidden before reveal');
     await dialog.getByPlaceholder('들리는 대로 입력해 보세요').fill('Hello word');
     await dialog.getByRole('button', { name: '채점', exact: true }).click();
     await visible(dialog.getByText(/정답률 \d+%/), 'accuracy');
     await visible(dialog.getByText('파랑 = 놓친 글자 · 취소선 = 잘못 들어간 글자', { exact: true }), 'diff legend');
     await dialog.getByRole('button', { name: '본문 보기', exact: true }).click();
-    await visible(dialog.getByText('"Hello world"', { exact: true }), 'revealed original');
+    await visible(dialog.getByText(`"${SENTENCE}"`, { exact: true }), 'revealed original');
   });
 });
 
@@ -194,7 +198,19 @@ test('/quick: 게스트 가드와 로그인 사용자의 fixture 분석 결과�
     await page.goto('/quick', { waitUntil: 'domcontentloaded' });
     await visible(page.getByText('빠른 분석은 로그인 후 쓸 수 있어요', { exact: true }), 'guest login card');
     await mockAccount(context);
+    // 분석 응답은 이 스위트의 다른 테스트와 같은 층(브라우저 레벨)에서 고정한다.
+    // 서버 라우트를 그대로 태우면 SUPABASE_SERVICE_ROLE_KEY가 없는 e2e 환경에서 500이
+    // 나고(실측), 화면 렌더 계약이 아니라 서버 환경을 시험하게 된다 — 라우트는 자체
+    // 단위 테스트의 소관이다.
+    await context.route('**/api/analyze', (route) => route.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ results: [{ sequence: ['q0', 'q1'], dictionary: {
+        q0: { text: 'hello', base_form: 'hello', pos: '감탄사', meaning: '안녕하세요' },
+        q1: { text: 'world', base_form: 'world', pos: '명사', meaning: '세계' },
+      } }] }),
+    }));
     await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.selectOption('select', 'English'); // 기본값은 일본어 — 입력과 언어를 맞춘다
     await page.getByPlaceholder('분석할 텍스트를 붙여넣으세요').fill('hello world');
     await page.getByRole('button', { name: '분석', exact: true }).click();
     await visible(page.getByText('저장 안 됨', { exact: true }), 'analysis result');
