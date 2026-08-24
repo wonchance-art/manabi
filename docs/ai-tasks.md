@@ -625,6 +625,17 @@
   제목 / meta 'n일 만에 →'. 옛 문구 부활 금지 핀 포함. **읽은 횟수는 계속 무기록**
   (오너 확정 — reading_progress에 카운트 컬럼 없음, 재독해도 아무것도 안 쌓인다).
   게이트: 전체 vitest 2,260 green + features-r2 e2e 5/5·대조군 9/9(실렌더 확인).
+  **[버그 수리] 홈 단어 복습 타일이 빈 글자를 돌리던 고장(오너 제보)**: ProfileStats의
+  user_vocabulary 조회가 `created_at, last_reviewed_at, next_review_at` 세 컬럼만 끄는데
+  ReviewTile은 `id·word_text·meaning`을 렌더했다 — 행은 있으니 '단어 없음' 폴백으로도
+  안 빠지고 3.5초마다 **빈 글자만 교체**됐다. 원인은 #1079 쿼리 다이어트(8/20)가 select를
+  좁히며 표기·뜻을 빼간 것(타일은 8/19 #1053부터 그 필드 사용) — **나흘간 조용히 고장**.
+  수리: 필요한 3필드 복원(다이어트 취지 유지 — `*`·source_sentence 여전히 안 끎).
+  **재발 방지 2층**: ⑴ profileStatsSelect 계약 테스트가 조회 필드 ⊇ 렌더 필드를 대조
+  (고장 상태로 되돌려 실패 확인 — 3핀 정확히 적중) ⑵ 기존 queryDiet 핀이 **깨진 select
+  문자열을 통째로 박아둬 고장을 계약으로 고정**하고 있던 것을 의도(전 컬럼·큰 컬럼 금지)
+  기준으로 교체. #1079가 좁힌 나머지 4곳도 전수 확인(홈 recentProgress는 .length만 소비 —
+  무해). 게이트: 전체 vitest 2,269 green.
   **받아쓰기 추천 문장 합류(Codex #1124 엔진 소비)**: 뷰어 도구줄 [🎧 받아쓰기] →
   DictationPicker — 후보는 정본 문장 단위(sentenceNav.pickableSentences) 재사용,
   고르기는 pickDictationSentences 위임(담은 단어 = 표기·기본형 합집합). **목록에 원문

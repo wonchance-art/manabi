@@ -29,10 +29,15 @@ describe('쿼리 다이어트 계약', () => {
     expect(home).toContain('m.language ||');
   });
 
-  it('프로필 통계 — 소비하는 세 시각 컬럼만', () => {
+  it('프로필 통계 — 소비하는 컬럼만(전 컬럼 금지)', () => {
     const stats = read('src/views/ProfileStats.jsx');
-    expect(stats).toContain("select('created_at, last_reviewed_at, next_review_at')");
-    expect(stats).not.toMatch(/user_vocabulary'\)\.select\('\*'\)/);
+    // 이 핀은 원래 select 문자열을 통째로 박아 뒀는데, 그 문자열이 복습 타일이 그리는
+    // word_text·meaning을 빠뜨린 고장난 상태였다(2026-08-24 수리). 문자열을 박으면
+    // 고장까지 계약이 된다 — 다이어트의 **의도**(전 컬럼·큰 컬럼 금지)만 고정하고,
+    // 필요한 필드가 다 있는지는 profileStatsSelect.test.js가 렌더와 대조해 지킨다.
+    expect(stats).not.toMatch(/user_vocabulary'\)[\s\S]{0,40}?\.select\('\*'\)/);
+    expect(stats).not.toContain('source_sentence');
+    expect(stats).toContain('next_review_at');
   });
 
   it('단어장 IO — 언어 백필은 언어별 배치 UPDATE, 출처 제목 청크는 병렬', () => {
