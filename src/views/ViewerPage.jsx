@@ -49,6 +49,8 @@ import { buildContextPrompt } from '../lib/grammarDetail';
 import { analysisCacheKey, clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
 import { fetchKnownWords, knownWordsLang, markKnown, unmarkKnown } from '../lib/knownWords';
+import { mergeKnownIntoIndex } from '../lib/knownWords';
+import { materialFit, FIT_MIN_TYPES } from '../lib/materialFit';
 import DictationPanel from '../components/DictationPanel';
 import DictationPicker from '../components/DictationPicker';
 import { recordVocabEncounters } from '../components/world/vocabEncounters';
@@ -633,6 +635,17 @@ export default function ViewerPage() {
     if (curGroup.tokenIds.length) lineGroups.push(curGroup);
     return pickableSentences(lineGroups, rawLines);
   }, [material?.processed_json, material?.raw_text]);
+
+  // 어휘 커버리지 배지(#1077-2) — 서재 카드와 **같은 엔진·같은 인덱스**(materialFit ←
+  // 담김 ∪ '이미 앎'). 뷰어에서만 다른 수를 보이면 두 화면이 서로를 반증한다.
+  // 표본 미달(FIT_MIN_TYPES)·게스트·미분석은 무표기(0% 오표기 금지 — fitBand와 같은 결).
+  const coverage = useMemo(() => {
+    if (!user || !material?.processed_json) return null;
+    const knownRows = [...(knownWordSet || [])].map((word_text) => ({ word_text }));
+    const index = knownRows.length ? mergeKnownIntoIndex(savedWords, knownRows) : savedWords;
+    const fit = materialFit(material.processed_json, index);
+    return fit.total >= FIT_MIN_TYPES ? fit : null;
+  }, [user, material?.processed_json, savedWords, knownWordSet]);
 
   // 받아쓰기 추천용 담은 단어 집합 — 표기·기본형 합집합(엔진이 text.includes로 대조).
   const dictationSavedSet = useMemo(
@@ -1616,6 +1629,18 @@ export default function ViewerPage() {
             color: 'var(--warning)', fontSize: '0.78rem', fontWeight: 600,
           }} title="노란 테두리 단어 클릭 → 인라인 복습">
             {dueInMaterial}개 복습 가능
+          </div>
+        )}
+        {coverage && (
+          <div
+            style={{
+              padding: '4px 10px', borderRadius: 'var(--radius-full)',
+              background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+              color: 'var(--text-secondary)', fontSize: '0.78rem', fontWeight: 600,
+            }}
+            title="담은 단어와 '이미 알아요' 표시를 합쳐 센 값 — 서재 맞춤도와 같은 계산이에요"
+          >
+            아는 단어 {Math.round(coverage.coverage * 100)}% · 새 단어 {coverage.unknown}개
           </div>
         )}
       </header>
