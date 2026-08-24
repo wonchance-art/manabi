@@ -568,6 +568,15 @@
   테스트가 p.text 렌더를 .length 경유로 강제). 지정 문장 🎧와 추천 고르기가 같은 대상
   상태(dictationSentence)로 모여 패널 하나를 공유. 배선 계약 4핀. 잔무였던
   evaluation-and-strategy Phase 4 표 갱신 동봉(학습 그룹 ❌→✅, 70%→100%).
+  (#1125 merge 1a5def0) **배치 후 자립 점검**: `next build` 474페이지 green(/quick 정적
+  프리렌더 7.87kB 확인 — CI가 안 도는 게이트), lint 0 errors(기존 warning 2 무관),
+  리팩터 잔재(dictationOpen) 0. **architecture-and-handoff §1.1 순환 지도 갱신** —
+  신규 정거장 5종(받아쓰기·이미 앎·재독 되부름·산출 주입·빠른 분석 곁길)과 받침(주간
+  리포트·학습 그룹) 반영 + 이음새 4행 추가. 그중 **'받아쓰기 채점 → review_events
+  무기록'은 이번 배치가 새로 만든 부채로 정직 기재**(제품 나침반 3문 ⑶ 자기 적용 —
+  기록하려면 source 신설 여부가 선결). #1077 백로그 실측 재점검: 완결 7/20,
+  권고 Top3 = 2 커버리지 배지(부품 완비·목업 대기)·19 주간 리포트 푸시 마무리
+  (web-push·/api/push 기탑재)·3 '더 쉽게'.
   Codex Cloud 첫 태스크(받아쓰기 문장 선정 엔진 dictationPick) 블록 오너에게 제공
   — PR 미도착(투입 대기 추정).
   승인 후)** — 전략 문서 Phase 4 잔여 ❌(학습 그룹) 대상, RFC = docs/rfc-study-groups.md.
