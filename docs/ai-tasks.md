@@ -254,11 +254,15 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 🧪 `src/lib` 미시 계약 보강 R1: 소스 무수정 경계·실패 경로 테스트 100+ 신설
 ### todo
 - ~~📖 재독 후보 선정 엔진(#1077 제안 12, 발주 5386788169)~~ → **회수: 2026-08-23
   WORKING 무표식(30분 룰) — Claude 직접 수행·완결(PR #1118)**. 이 열에 잔여 발주 없음.
 ### done (최근)
+- 🧪 `src/lib` 미시 계약 보강 R1 — **소스 무수정 계약 준수 확인**: 9모듈
+  (authErrors·diffChars·errorMessage·jaSegments·jaTokenize·kanaRomaji·lessonAccepts·
+  seriesMeta·splitParagraphs) 경계·실패 경로를 `*.more.test.js` 신설로만 보강
+  (기존 테스트 파일 무수정 — 비겹침 규칙대로). 검수: 병합 트리 재검증에서
+  222파일/2,250 green(+169). (`codex/check-connection-status`, #1129 merge 0e66dd4)
 - 🧪 뷰어 e2e 스모크 R1: 분석 완료 중국어 `processed_json` 픽스처와 직접 세션 쿠키로
   토큰 탭·문장 드래그·열린 문장 시트의 단어 전환·책 챕터 내비를 Gemini 무호출로 고정
   (targeted 1/1·학습 e2e 9/9 연속 2회·전체 301파일/2,829테스트·build 474페이지 green,
@@ -359,7 +363,6 @@
 
 ## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
 ### doing
-- 🔎 중국어 POS 판별 재호출·스키마 무변경 캐시 조사 R1 — 리포트 작성 및 전체 게이트 확인 중 (`codex/zh-disambig-cache-research`)
 ### todo
 - ~~✍️ 산출 연동 — 오늘 복습 단어 선정 엔진(#1077 제안 16+17, 발주 5386789708)~~
   → **회수: 2026-08-23 WORKING 무표식(30분 룰) — Claude 직접 수행·완결(PR #1118)**.
@@ -369,6 +372,18 @@
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
 - S4 수집 연출 정합 → S2 앨범 지역 탭·수집률 → S3 마일스톤 보상 v1(localStorage·DB 금지)
 ### done (최근)
+- 🔎 중국어 POS 판별 재호출·캐시 조사 R1 (리포트 전용 — 구현·RFC 금지 준수):
+  `docs/research-zh-disambig-cache.md`. 호출 경로 전수(라우트 단일 호출 지점 + 클라
+  진입점 7종 표)·동일 입력 재호출 10 시나리오·스키마 무변경 캐시 후보 A/B/C와 무효화
+  초안·user_verified 계약 분석·합성 벤치(로컬 처리 0.07~0.16ms — 실비용은 외부 모델)로
+  구성. **핵심 발견**: 서버 판별 캐시 없음, Viewer/PDF는 상류 전체 응답 캐시로 이미
+  방어, /quick·최초 분석·전체 재분석은 무방어. 권고는 '새 DB 스키마 없음 — 계측 먼저'.
+  **미해결 4문(오너 판단 필요)**: ⑴ user_verified 보호가 DB 무손상까지인가 표시 우선까지인가
+  ⑵ /quick 반복 분석에 세션 TTL 허용 여부 ⑶ stats.zhPos 관측치 추가 SPEC 필요 여부
+  ⑷ Viewer/PDF 캐시 키 절단 길이 통합 여부.
+  검수: 표본 사실검증 전량 일치(모델명·MAX_MARKS 120·15s timeout·35s deadline·
+  user_verified 가드·캐시 키 slice(0,200)). (`codex/investigate-chinese-pos-disambiguation-cache`,
+  #1128 merge dac8599)
 - 🇬🇧 영어 겸류 문맥 판별: 레거시 기본 lemma 폴백을 유지하며 POS별 결정 후보·occurrence
   문맥 판별·다중 pos/뜻별 pos+위치 무관 `en_pos_v` marker·lazy backfill을 연결하고,
   선택 lemma 사전 행 미조회/판별 실패 시 현행 표시를 보존. `stats.enPos` 실측
@@ -455,7 +470,6 @@
 
 ## Codex-4 (codex4/*) — 성능·인프라 (타 기기)
 ### doing
-- 🧪 엔진 마이크로벤치 + 대형 자료 합성 실측 — `scripts/bench/` 기준선 하네스 R1
 ### todo
 - ~~⚡ 빠른 분석(클립보드 리더) 실측 조사(#1077 제안 11, 발주 5386791238)~~ →
   **회수: 2026-08-23 WORKING 무표식(30분 룰) — Claude 직접 조사·완료**: analyze
@@ -470,6 +484,14 @@
 - P0 (운영 필수·최우선) 로컬 clone 이전 + 확인 코멘트: #150 5046786117
 - P1 geo lazy-load 구현(RFC #394 승인 — 실패 UX·?spawn= 정합·scene race 주의 3건 코멘트 참조)
 ### done (최근)
+- 🧪 엔진 기준선 벤치 하네스 R1: `scripts/bench/synth.mjs`(mulberry32 시드 고정 —
+  같은 seed는 byte-identical, 계약 2핀) + `run.mjs`(Vite SSR 로더로 앱 모듈을 소스
+  무수정 로드, 25회 반복 중앙값·p95 + --expose-gc heap) + `docs/bench-baseline-2026-08.md`.
+  **검수에서 측정 유효성 직접 확인**(빈 경로를 재는 벤치가 아님): pickOutputWords의
+  `now` 주입·이벤트 detail.word_id 매칭·isGradedReviewEvent 통과·hanjaJa.json 존재를
+  코드 대조. 재현 실행 성공(Node 22 로컬: hanja 로더 12.9ms · pickOutputWords 8.1ms가
+  상위 — 문서의 병목 순위와 일치, 절대값은 기기차). (`codex/add-benchmark-harness-for-engine`,
+  #1127 merge 9c1e502)
 - M2 교재 경쟁력 연습 형식 +2종: 기존 어휘 4개를 쌍별 채점하는 단어↔뜻 매칭과
   기존 예문 자동 토큰 어순 배열을 공통 엔진에 추가하고, StudySession 형식 로테이션·
   F2 `recordReviewCompleted` 쌍별 SRS·게스트 폴백을 회귀 고정
