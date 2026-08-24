@@ -413,6 +413,10 @@ export default function HomePage({ continueManifest = {} }) {
         </Link>
       )}
 
+      {/* 재독 되부름(#1077-12) — 완독 14일 지난 자료. 위 '교재 이어서 학습'과 같은 부품·
+          같은 크기로, 둘 다 "하던 걸 이어서" 한 줄이라 한 묶음으로 읽힌다(오너 지시). */}
+      <RereadCard />
+
       {/* 오늘 읽기 — 진행 중 시리즈가 없을 때만 */}
       {(() => {
         const inProgress = (data?.seriesProgress || []).some(s =>
@@ -452,9 +456,6 @@ export default function HomePage({ continueManifest = {} }) {
           </div>
         );
       })()}
-
-      {/* 재독 카드(목업 ② — #1077-12): 완독 14일 지난 자료가 있을 때만 조용히 */}
-      <RereadCard />
 
       {/* 학습 그룹 진입(목업 B의 R1 축소형 — §9-5 홈 확정): 그룹 없으면 함께 읽기 안내 */}
       <GroupEntryCard />

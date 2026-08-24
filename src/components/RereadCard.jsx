@@ -1,8 +1,13 @@
 'use client';
 
 /**
- * 재독 홈 카드 (#1077-12 목업 ②) — 완독 후 14일 지난 자료를 조용히 되부른다.
- * 후보 없음·게스트·조회 실패는 카드 생략(무해성). 선정은 rereadSchedule 엔진.
+ * 재독 되부름 (#1077-12) — 완독 후 14일 지난 자료를 조용히 되부른다.
+ * 후보 없음·게스트·조회 실패는 렌더 생략(무해성). 선정은 rereadSchedule 엔진.
+ *
+ * 표시는 '교재 이어서 학습'과 **같은 부품**(.lessons-continue)이다(오너 지시 2026-08-24).
+ * 둘 다 "하던 걸 이어서" 한 줄이라 서로 다른 카드 형태를 쓰면 홈이 두 문법으로 말한다 —
+ * 전용 카드를 따로 만들지 않고 같은 클래스를 쓰므로 여백·높이·hover가 자동으로 붙는다.
+ * 기록은 남기지 않는다(오너 확정: 읽은 횟수 무기록 — reading_progress에 카운트 없음).
  */
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
@@ -38,14 +43,12 @@ export default function RereadCard() {
   if (!title) return null;
 
   return (
-    <div className="card" style={{ padding: '16px 20px' }}>
-      <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: 700, marginBottom: 4 }}>
-        📖 다시 읽어볼까요
-      </div>
-      <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: 10 }}>
-        「{title}」 — 완독하고 {candidate.daysSince}일 지났어요. 두 번째는 훨씬 빨라요.
-      </div>
-      <Link href={`/viewer/${candidate.material_id}`} className="btn btn--secondary btn--sm">다시 읽기 →</Link>
-    </div>
+    <Link href={`/viewer/${candidate.material_id}`} className="lessons-continue">
+      <span className="lessons-continue__body">
+        <span className="lessons-continue__kicker">다시 읽기 · 두 번째는 훨씬 빨라요</span>
+        <span className="lessons-continue__title">{title}</span>
+      </span>
+      <span className="lessons-continue__meta">{candidate.daysSince}일 만에 →</span>
+    </Link>
   );
 }
