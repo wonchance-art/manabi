@@ -602,6 +602,18 @@
   기록하려면 source 신설 여부가 선결). #1077 백로그 실측 재점검: 완결 7/20,
   권고 Top3 = 2 커버리지 배지(부품 완비·목업 대기)·19 주간 리포트 푸시 마무리
   (web-push·/api/push 기탑재)·3 '더 쉽게'.
+  **㊾ 커버리지 배지(#1077-2, 오너 ㄱㄱ)**: 뷰어 헤더 pill `아는 단어 n% · 새 단어 m개`.
+  서재 카드와 **같은 엔진·같은 인덱스**(materialFit ← 담김 ∪ '이미 앎' mergeKnownIntoIndex)
+  — 두 화면이 다른 수를 보이면 서로를 반증하므로 계산 동일성을 계약 테스트로 심었다.
+  표본 미달(FIT_MIN_TYPES 20)·게스트·미분석은 무표기(0% 오표기 금지 — fitBand와 같은 결).
+  새 쿼리 0(savedWords·knownWordSet 재사용). 계약 5핀. 게이트: 전체 vitest 2,255(+5) green.
+  **T1(e2e 확장 R2, #1131) 검수 — 머지 보류**: 자체 게이트('연속 2회 green') 미충족.
+  실측 3 pass / 2 fail이 3회 반복 동일(플레이크 아님) — 받아쓰기(문장 시트 미개방)·
+  /quick(분석 결과 미렌더). **환경 유효성 먼저 확보한 뒤의 판정**이다: 대조군
+  learning-flow가 처음 4/9 실패해 조사한 결과, e2e README가 경고한 함정(`.next`를 다른
+  NEXT_PUBLIC_*로 빌드하면 인증 e2e 불신)에 내가 걸린 것 — config webServer.env로
+  재빌드하니 대조군 9/9 green, 그 위에서 T1만 2건 고정 실패. CI가 이 파일을 돌지 않아
+  (#1131 CI green은 기존 스위트만) 도착 CI로는 잡히지 않는 종류.
   Codex Cloud 첫 태스크(받아쓰기 문장 선정 엔진 dictationPick) 블록 오너에게 제공
   — PR 미도착(투입 대기 추정).
   승인 후)** — 전략 문서 Phase 4 잔여 ❌(학습 그룹) 대상, RFC = docs/rfc-study-groups.md.
