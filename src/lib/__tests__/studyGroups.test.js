@@ -176,7 +176,7 @@ describe('학습 그룹 배선 계약', () => {
   });
 
   it('홈 진입 카드(§9-5)가 홈에 배선되어 있다', () => {
-    expect(read('src/views/HomePage.jsx')).toContain('<GroupEntryCard />');
+    expect(read('src/views/HomePage.jsx')).toContain('useGroupEntryItem()'); // 덱 흡수(2026-08-24)
   });
 
   it('주간 재료 조회는 공용 모듈 하나만 — ProfileStats 중복 정의 제거', () => {

@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 
-// ForecastCard가 supabase(env) 체인을 로드하므로 stub 후 동적 import (reviewEvents 테스트와 동일 관례).
+// 예보 탭 이벤트는 순수 함수 — 카드가 덱에 흡수된 뒤 lib로 이관됐다(2026-08-24).
 process.env.NEXT_PUBLIC_SUPABASE_URL ||= 'http://localhost:54321';
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||= 'test-anon-key';
-const { buildForecastTapEvent } = await import('../../components/ForecastCard');
+const { buildForecastTapEvent } = await import('../forecastTapEvent');
 
 describe('buildForecastTapEvent — 예보 탭 ui 계측 규약', () => {
   it('source:ui · item_key:- · detail.qtype:forecast_tap 규약을 만든다', () => {
