@@ -133,10 +133,43 @@ describe('반입 화면 배선 계약', () => {
   });
 
   it('문장 목록은 문단 자동 감지를 건너뛴다 — 요청 수를 챕터당 1건으로 유지', () => {
-    expect(page).toContain('bookDraft.sentenceList ? ch.text : autoSplitParagraphs(ch.text)');
+    expect(page).toContain("bookDraft.origin === 'sentences' ? ch.text : autoSplitParagraphs(ch.text)");
   });
 
   it('배너는 줄 수 기준 분할만 호출한다 — 글자 수 분할로 새지 않는다', () => {
     expect(page).toMatch(/handleSplitSentenceList[\s\S]{0,300}?splitLinesIntoChapters\(rawText, \{ linesPerChapter \}\)/);
+  });
+});
+
+/**
+ * 미리보기 위치 계약(오너 지적 2026-08-25).
+ *
+ * 초안 패널이 페이지 맨 위 한 자리에만 그려지던 때, 텍스트 칸에서 [챕터로 나누기]를 눌러도
+ * 결과가 화면 밖 위쪽에 생겨 **아무 일도 안 일어난 것처럼** 보였다. 정의는 하나로 두되
+ * 그리는 자리는 출처를 따른다 — 누른 자리에서 결과가 나와야 한다.
+ */
+describe('책 초안 미리보기 — 누른 자리에 나타난다', () => {
+  const page = read('src/views/MaterialAddPage.jsx');
+
+  it('패널 정의는 하나이고 두 자리에서 쓰인다', () => {
+    expect(page).toContain("import BookDraftPanel from '../components/BookDraftPanel'");
+    expect(page.match(/<BookDraftPanel/g)).toHaveLength(2);
+    // 패널 본체를 이 파일에 다시 인라인하지 않는다(중복 신설 금지)
+    expect(page).not.toContain('앞 챕터와 합치기');
+  });
+
+  it('붙여넣기 분할 결과는 텍스트 칸 **뒤**에 그려진다', () => {
+    const textarea = page.indexOf('className="form-textarea"');
+    const pasteRender = page.indexOf("bookDraft.origin !== 'epub'");
+    expect(textarea).toBeGreaterThan(-1);
+    expect(pasteRender).toBeGreaterThan(textarea);
+  });
+
+  it('EPUB 결과는 EPUB 섹션 바로 아래·텍스트 칸 앞에 그려진다', () => {
+    const epubSection = page.indexOf('<MaterialAddEpubSection');
+    const epubRender = page.indexOf("bookDraft?.origin === 'epub'");
+    const textarea = page.indexOf('className="form-textarea"');
+    expect(epubRender).toBeGreaterThan(epubSection);
+    expect(epubRender).toBeLessThan(textarea);
   });
 });

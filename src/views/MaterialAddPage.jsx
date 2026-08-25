@@ -9,7 +9,7 @@ import Button from '../components/Button';
 import { analyzeText } from '../lib/analyzeText';
 import { autoSplitParagraphs } from '../lib/splitParagraphs';
 import {
-  splitTextIntoChapters, mergeWithPrevious, CHAPTER_MAX_CHARS,
+  splitTextIntoChapters, CHAPTER_MAX_CHARS,
   splitLinesIntoChapters, looksLikeSentenceList, sentenceListStats,
   DEFAULT_LINES_PER_CHAPTER, LINES_PER_REQUEST_CAP, clampLinesPerChapter,
 } from '../lib/bookSplit';
@@ -17,6 +17,7 @@ import { makeBookKey } from '../lib/bookMeta';
 import { LEVELS } from '../lib/constants';
 import MaterialAddPdfSection from './MaterialAddPdfSection';
 import MaterialAddEpubSection from '../components/MaterialAddEpubSection';
+import BookDraftPanel from '../components/BookDraftPanel';
 import { friendlyToastMessage } from '../lib/errorMessage';
 
 /** 내용 줄 수 — 문장 목록 자료에서 "몇 문장"의 정본 셈법(빈 줄 제외). */
@@ -56,9 +57,10 @@ export default function MaterialAddPage() {
 
   // 책 묶음 초안(P1) — 방대한 양도 일단 다 받아들이되 챕터별 자료로 쪼개 등록한다.
   // 등록 시 분석은 돌리지 않는다(status: 'pending') — 읽을 챕터만 뷰어에서 온디맨드 분석.
-  // bookDraft = { title, chapters: [{title, text}], privateOnly, sentenceList }
+  // bookDraft = { title, chapters: [{title, text}], privateOnly, origin }
   //   privateOnly — 개인 소장물(EPUB·문장 목록)은 공개 선택지를 주지 않는다
-  //   sentenceList — 이미 한 줄 한 문장이라 문단 자동 감지를 건너뛴다(아래 등록부 주석)
+  //   origin — 'epub' | 'text' | 'sentences'. 미리보기를 **어디에 그릴지**(누른 자리)와
+  //            문단 자동 감지를 걸지 말지를 함께 결정한다.
   const [bookDraft, setBookDraft] = useState(null);
   const [bookRegistering, setBookRegistering] = useState(false);
   const [bookDoneCount, setBookDoneCount] = useState(0);
@@ -78,7 +80,7 @@ export default function MaterialAddPage() {
           }))
         : [{ title: ch.title, text: ch.text }]
     );
-    setBookDraft({ title: bookTitle, chapters: normalized, privateOnly: true });
+    setBookDraft({ title: bookTitle, chapters: normalized, privateOnly: true, origin: 'epub' });
     setBookDoneCount(0);
     toast(`챕터 ${normalized.length}개를 준비했어요. 목록을 확인하고 등록하세요.`, 'success');
   };
@@ -87,7 +89,7 @@ export default function MaterialAddPage() {
   const handleSplitToBook = () => {
     const chapters = splitTextIntoChapters(rawText);
     if (chapters.length < 2) { toast('나눌 챕터 경계를 찾지 못했어요 — 그대로 한 자료로 등록해 주세요.', 'info'); return; }
-    setBookDraft({ title: title || '제목 없는 책', chapters });
+    setBookDraft({ title: title || '제목 없는 책', chapters, origin: 'text' });
     setBookDoneCount(0);
   };
 
@@ -97,7 +99,7 @@ export default function MaterialAddPage() {
   const handleSplitSentenceList = () => {
     const chapters = splitLinesIntoChapters(rawText, { linesPerChapter });
     if (chapters.length === 0) { toast('나눌 문장이 없어요.', 'info'); return; }
-    setBookDraft({ title: title || '제목 없는 책', chapters, privateOnly: true, sentenceList: true });
+    setBookDraft({ title: title || '제목 없는 책', chapters, privateOnly: true, origin: 'sentences' });
     setBookDoneCount(0);
   };
 
@@ -115,7 +117,7 @@ export default function MaterialAddPage() {
         // 수만큼으로 늘어 분당 20회 제한에 걸린다. 실측(320문장·16문장/과): 일본어는 요청이
         // 20건 → 320건으로 튄다(。+히라가나 시작 조건에 걸린다). 중국어·영어는 지금은 안
         // 걸리지만(한자 시작·마침표가 종결 집합에 없음) 우연이라 기대지 않는다.
-        raw_text: bookDraft.sentenceList ? ch.text : autoSplitParagraphs(ch.text),
+        raw_text: bookDraft.origin === 'sentences' ? ch.text : autoSplitParagraphs(ch.text),
         processed_json: {
           sequence: [], dictionary: {}, last_idx: -1,
           status: 'pending', // 미분석 — 뷰어에서 "이 챕터 분석하기"로 온디맨드 실행
@@ -332,7 +334,7 @@ export default function MaterialAddPage() {
 
   // 챕터별 문장 범위("1~16번") — 누적 계산이라 [합치기]로 경계를 바꿔도 그대로 맞는다.
   const chapterRanges = useMemo(() => {
-    if (!bookDraft?.sentenceList) return [];
+    if (bookDraft?.origin !== 'sentences') return [];
     let acc = 0;
     return bookDraft.chapters.map((ch) => {
       const from = acc + 1;
@@ -367,71 +369,19 @@ export default function MaterialAddPage() {
 
       <MaterialAddEpubSection toast={toast} onReady={handleEpubReady} onBookReady={handleEpubBookReady} />
 
-      {/* 책 묶음 초안 — 챕터 목록 확인·경계 병합·제목 수정 후 일괄 등록(분석은 온디맨드) */}
-      {bookDraft && (
-        <div className="card add-form" style={{ marginBottom: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: 200 }}>
-              <div style={{ fontSize: '0.75rem', color: 'var(--primary-light)', fontWeight: 700 }}>책으로 등록</div>
-              <input
-                className="form-input"
-                style={{ marginTop: 4 }}
-                value={bookDraft.title}
-                onChange={(e) => setBookDraft((d) => ({ ...d, title: e.target.value }))}
-                placeholder="책 제목"
-              />
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => { setBookDraft(null); setBookDoneCount(0); }}>✕ 취소</Button>
-          </div>
-          <div style={{ maxHeight: 280, overflowY: 'auto', marginTop: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {bookDraft.chapters.map((ch, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', flexShrink: 0, width: 24, textAlign: 'right' }}>{i + 1}</span>
-                <input
-                  value={ch.title}
-                  onChange={(e) => setBookDraft((d) => {
-                    const chapters = d.chapters.slice();
-                    chapters[i] = { ...chapters[i], title: e.target.value };
-                    return { ...d, chapters };
-                  })}
-                  style={{ flex: 1, minWidth: 0, fontSize: '0.85rem', background: 'transparent', border: 'none', color: 'var(--text-primary)', outline: 'none' }}
-                />
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
-                  {bookDraft.sentenceList ? chapterRanges[i] : `${ch.text.length.toLocaleString()}자`}
-                </span>
-                {i > 0 && (
-                  <button
-                    type="button"
-                    title="앞 챕터와 합치기"
-                    onClick={() => setBookDraft((d) => ({ ...d, chapters: mergeWithPrevious(d.chapters, i) }))}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.8rem', flexShrink: 0 }}
-                  >⤴ 합치기</button>
-                )}
-              </div>
-            ))}
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, gap: 10 }}>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-              챕터 {bookDraft.chapters.length}개 ·{' '}
-              {bookDraft.sentenceList
-                ? `총 ${bookDraft.chapters.reduce((n, c) => n + countLines(c.text), 0).toLocaleString()}문장`
-                : `총 ${bookDraft.chapters.reduce((n, c) => n + c.text.length, 0).toLocaleString()}자`}
-              {' '}· 각 챕터는 열 때 분석돼요
-              {bookDraft.privateOnly && (
-                <><br />🔒 개인 소장 자료 — 비공개로 등록됩니다</>
-              )}
-            </span>
-            {bookDoneCount > 0 ? (
-              <Button size="sm" onClick={() => router.push('/materials')}>자료실에서 책 보기</Button>
-            ) : (
-              <Button size="sm" onClick={handleBookRegister} disabled={bookRegistering || !bookDraft.title.trim()}>
-                {bookRegistering ? '등록 중…' : `책으로 등록 (${bookDraft.chapters.length}챕터)`}
-              </Button>
-            )}
-          </div>
-        </div>
+      {/* 책 초안 — EPUB 반입은 EPUB 섹션 바로 아래에서 결과를 보여준다(누른 자리) */}
+      {bookDraft?.origin === 'epub' && (
+        <BookDraftPanel
+          draft={bookDraft}
+          setDraft={setBookDraft}
+          onRegister={handleBookRegister}
+          registering={bookRegistering}
+          doneCount={bookDoneCount}
+          onCancel={() => { setBookDraft(null); setBookDoneCount(0); }}
+          onDone={() => router.push('/materials')}
+          chapterRanges={chapterRanges}
+        />
       )}
-
       <div className="card add-form">
         {/* PDF 출처 배지 */}
         {pdfSource && (
@@ -576,6 +526,23 @@ export default function MaterialAddPage() {
                   챕터로 나눠 책으로 등록
                 </button>
               )}
+            </div>
+          )}
+
+          {/* 붙여넣기 분할 결과는 누른 자리(텍스트 칸 바로 아래)에 펼친다 — 위쪽에 그리면
+              버튼을 눌러도 화면 밖에서 나타나 아무 일도 안 일어난 것처럼 보인다. */}
+          {bookDraft && bookDraft.origin !== 'epub' && (
+            <div style={{ marginTop: 12 }}>
+              <BookDraftPanel
+                draft={bookDraft}
+                setDraft={setBookDraft}
+                onRegister={handleBookRegister}
+                registering={bookRegistering}
+                doneCount={bookDoneCount}
+                onCancel={() => { setBookDraft(null); setBookDoneCount(0); }}
+                onDone={() => router.push('/materials')}
+                chapterRanges={chapterRanges}
+              />
             </div>
           )}
 
