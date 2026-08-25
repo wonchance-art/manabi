@@ -11,10 +11,11 @@ import { parseTitle } from '../lib/seriesMeta';
 import { getIdealLevel } from '../lib/levels';
 import { isPassed } from '../components/RefPatternCheck';
 import { pullProgress } from '../lib/refProgress';
-import ForecastCard from '../components/ForecastCard';
-import GroupEntryCard from '../components/GroupEntryCard';
 import ContinueDeck from '../components/ContinueDeck';
 import { useRereadCandidate } from '../lib/useRereadCandidate';
+import { useGroupEntryItem } from '../lib/useGroupEntryItem';
+import { buildForecastTapEvent } from '../lib/forecastTapEvent';
+import { logReviewEvents } from '../lib/reviewEvents';
 import ProfileStats from './ProfileStats';
 import { kstDayStartIso, kstWeekStartIso } from '../lib/growthStats';
 
@@ -298,19 +299,45 @@ export default function HomePage({ continueManifest = {} }) {
     return scored[0] || all[0];
   }, [data?.suggestions, data?.vocabByLang, profile]);
 
-  // 덱 항목 조립 — 진행 중인 것(교재)이 앞. 훅은 조건 없이 최상위에서
-  // 호출한다 — 아래 early return(!user·isLoading)보다 반드시 위여야 한다.
+  // 홈 알림 덱 조립 — 홈의 알림성 진입을 전부 한 자리에 겹친다(오너 지시 2026-08-24).
+  // 순서는 기존 홈의 우선순위 그대로: 예보 → 교재 → 재독 → 함께.
+  // 훅은 조건 없이 최상위에서 호출한다 — early return(!user·isLoading)보다 반드시 위.
   const rereadItem = useRereadCandidate();
+  const groupItem = useGroupEntryItem();
+  const forecast = data?.forecast;
+  const forecastLang = useMemo(() => {
+    const ll = profile?.learning_language;
+    return (Array.isArray(ll) ? ll[0] : ll) || 'Japanese';
+  }, [profile]);
+
   const continueDeckItems = useMemo(() => [
+    // 예보 — 시간에 민감해 맨 앞. count 0이면 항목 자체가 없다(침묵 계약 유지).
+    forecast?.count > 0 && forecast.top3?.length > 0 && {
+      key: 'forecast',
+      href: '/study',
+      tone: 'review',
+      kicker: '🌫 오늘 안개 예보',
+      title: `${forecast.count === 1
+        ? `'${forecast.top3[0].word_text}' 하나가 흐려져요`
+        : `'${forecast.top3[0].word_text}' 외 ${forecast.count - 1}개가 흐려져요`}. 3분이면 붙잡아요.`,
+      chips: forecast.top3.map((w) => w.word_text),
+      // 탭 계측 — 실패는 조용히(학습 흐름을 막지 않는다).
+      onClick: () => {
+        if (!user?.id) return;
+        try { logReviewEvents(user.id, [buildForecastTapEvent(forecastLang, forecast)]); } catch { /* noop */ }
+      },
+    },
     continueCard && {
       key: 'lesson',
       href: `${continueCard.ref.base}/grammar/${continueCard.ch.slug}`,
+      tone: 'progress',
       kicker: `${continueCard.mode === 'retry' ? '교재 재도전 — 패턴 체크 미통과' : '교재 이어서 학습'} · ${continueCard.ref.name}`,
       title: `#${continueCard.ch.order} ${continueCard.ch.title}`,
       meta: `${continueCard.levelLabel} →`,
     },
     rereadItem,
-  ].filter(Boolean), [continueCard, rereadItem]);
+    groupItem,
+  ].filter(Boolean), [forecast, forecastLang, user?.id, continueCard, rereadItem, groupItem]);
 
   if (!user) return (
     <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
@@ -409,12 +436,9 @@ export default function HomePage({ continueManifest = {} }) {
         }</p>
       </div>
 
-      {/* 망각 예보 — 오늘 안에 흐려지는 단어가 있을 때만 조용히 등장(0개면 침묵) */}
-      <ForecastCard forecast={data?.forecast} />
-
-      {/* '이어서' 덱 — 교재 이어서 학습·다시 읽기를 한 자리에서 옆으로 넘긴다(오너 지시
-          2026-08-24). 둘 다 "하던 걸 이어서" 한 줄이라 자리를 나눠 쓸 이유가 없다.
-          한 장뿐이면 덱이 캐러셀 옷을 벗고 예전 한 줄 그대로 보인다. */}
+      {/* 홈 알림 덱 — 예보·교재 이어서·다시 읽기·함께 읽기를 한 자리에 겹쳐 옆으로 넘긴다
+          (오너 지시 2026-08-24). 성격은 색으로 가르고 높이는 장마다 같다.
+          한 장뿐이면 덱이 캐러셀 옷을 벗고 한 줄 그대로 보인다. */}
       <ContinueDeck items={continueDeckItems} />
 
       {/* 오늘 읽기 — 진행 중 시리즈가 없을 때만 */}
@@ -456,9 +480,6 @@ export default function HomePage({ continueManifest = {} }) {
           </div>
         );
       })()}
-
-      {/* 학습 그룹 진입(목업 B의 R1 축소형 — §9-5 홈 확정): 그룹 없으면 함께 읽기 안내 */}
-      <GroupEntryCard />
 
       <ProfileStats refManifest={continueManifest} />
 

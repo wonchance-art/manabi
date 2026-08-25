@@ -649,6 +649,15 @@
   detach된다 — 구조를 한 갈래로 두고 폭·점만 바꾸는 방식으로 수리. 계약 6핀(단독 껍데기
   없음·같은 부품·점=개수·reduced-motion 양면·라이브러리 0·반응형 분기 없음).
   게이트: 전체 vitest 2,275 green + features-r2 5/5 연속 2회·learning-flow 9/9·smoke 14/14.
+  **덱 확장 — 홈 알림 전부 겹치기(오너 지시 2026-08-24)**: 예보·함께 읽기까지 덱에 흡수
+  (ForecastCard·GroupEntryCard 폐지 → useGroupEntryItem 훅 + forecastTapEvent lib 이관,
+  예보 침묵 계약·탭 계측 보존). 순서는 기존 홈 우선순위 그대로 예보→교재→재독→함께.
+  **성격별 색**: 진행=--primary 테라코타 / 시간 민감=--warning 황금 / 함께=--accent 초록
+  — 함께 읽기는 성격이 달라 진행 계열의 빨강을 쓰지 않는다(오너 지시). social 규칙에
+  --primary·--danger 금지 핀. **높이 고정 112px**(오너 지시 "줄 수에 따라 크기 달라지는
+  거 방지 — 애초에 전부 키우던지"): 제목 2줄 클램프 + 칩 줄 max-height로 예보 카드만
+  커지지 않게 상한. 계약 10핀. 게이트: 전체 vitest 2,279 green + features-r2 5/5 연속
+  2회·learning-flow 9/9·smoke 14/14(실렌더).
   **받아쓰기 추천 문장 합류(Codex #1124 엔진 소비)**: 뷰어 도구줄 [🎧 받아쓰기] →
   DictationPicker — 후보는 정본 문장 단위(sentenceNav.pickableSentences) 재사용,
   고르기는 pickDictationSentences 위임(담은 단어 = 표기·기본형 합집합). **목록에 원문

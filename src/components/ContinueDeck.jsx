@@ -1,8 +1,15 @@
 'use client';
 
 /**
- * '이어서' 덱 (오너 지시 2026-08-24) — 하던 걸 이어서 하는 진입들을 **한 자리에서 옆으로
- * 넘기게** 모은다. 지금 구성원은 교재 이어서 학습·다시 읽기 둘.
+ * 홈 알림 덱 (오너 지시 2026-08-24) — 홈의 알림성 진입을 **전부 한 자리에 겹쳐** 두고
+ * 옆으로 넘기게 한다. 구성원: 안개 예보 · 교재 이어서 학습 · 다시 읽기 · 함께 읽기.
+ *
+ * 성격은 색으로 가른다(tone) — 진행(테라코타) · 시간 민감(황금) · 함께(초록).
+ * 함께 읽기는 성격이 달라 진행 계열의 빨강을 쓰지 않는다(오너 지시).
+ *
+ * **높이는 장마다 같다.** 줄 수·칩 유무로 카드가 커졌다 작아지면 넘길 때마다 아래
+ * 콘텐츠가 밀린다 — 가장 큰 구성(예보: 제목 2줄 + 단어 칩)에 맞춰 전부 키우고,
+ * 제목은 2줄에서 자른다(오너 지시: "전부 다 크기를 키우던지").
  *
  * 넘기기는 CSS scroll-snap이다(라이브러리 0). 관성 스크롤·키보드 이동·터치 감을 브라우저가
  * 이미 제대로 하는데, 2~3장에 자동재생도 무한루프도 없는 요구에 캐러셀 라이브러리를 들이면
@@ -18,12 +25,21 @@ import Link from 'next/link';
 
 function ContinueRow({ item }) {
   return (
-    <Link href={item.href} className="lessons-continue">
-      <span className="lessons-continue__body">
-        <span className="lessons-continue__kicker">{item.kicker}</span>
-        <span className="lessons-continue__title">{item.title}</span>
+    <Link
+      href={item.href}
+      onClick={item.onClick}
+      className={`deck-card deck-card--${item.tone || 'progress'}`}
+    >
+      <span className="deck-card__body">
+        <span className="deck-card__kicker">{item.kicker}</span>
+        <span className="deck-card__title">{item.title}</span>
+        {item.chips?.length > 0 && (
+          <span className="deck-card__chips">
+            {item.chips.map((c) => <span key={c} className="deck-card__chip">{c}</span>)}
+          </span>
+        )}
       </span>
-      <span className="lessons-continue__meta">{item.meta}</span>
+      {item.meta && <span className="deck-card__meta">{item.meta}</span>}
     </Link>
   );
 }
