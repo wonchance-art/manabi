@@ -171,6 +171,16 @@ kuromoji 상위 품사만 받아 보조동사·접미사 병합이 휴리스틱 
 
 ---
 
-## 8. 실행해야 할 SQL (미적용 시 조용히 기능 비활성)
+## 8. 마이그레이션 적용 — **CI가 정본, 수동 SQL 실행 금지**
 
-`docs/deployment-checklist.md`에 목록 유지. 이번 웨이브: `20260701_grammar_review`, `20260702_writing_studio`, `20260703_study_paragraphs`, `20260703_streak_freeze_earn`. 신규 env: `SUPADATA_API_KEY`(자막 폴백), `CRON_SECRET`(cron 인증).
+적용은 `.github/workflows/supabase-migrations.yml`이 main 병합 시 자동으로 한다. 절차 전문과
+env 목록은 `docs/deployment-checklist.md`가 유지한다.
+
+> **이 절이 예전에 하던 말은 폐기됐다.** 한때 여기에 "이번 웨이브: 20260701_grammar_review …"
+> 같은 목록을 두고 SQL Editor 수동 실행을 안내했는데, 수동 실행은 **히스토리 드리프트**
+> (원격 `schema_migrations` ↔ 로컬 파일 불일치)를 만들어 폐기됐다. 목록도 웨이브마다 낡아
+> 실제로는 이미 적용된 것을 "미적용"으로 읽히게 했다. 지금 필요한 판단은 하나뿐이다 —
+> **머지했으면 적용된 것**이고, 의심되면 Actions에서 해당 run의 성공 여부를 보면 된다.
+
+**오너 수동이 남는 것**: Vercel env 등록(코드가 읽는 키)과 Supabase 대시보드 설정.
+마이그레이션 SQL 자체는 아니다.
