@@ -128,3 +128,87 @@ export function mergeWithPrevious(chapters, index) {
   merged.splice(index - 1, 2, { title: prev.title, text: `${prev.text}\n\n${cur.text}` });
   return merged;
 }
+
+/* ─────────────────────────────────────────────────────────────
+ * 문장 목록 반입(오너 승인 2026-08-25)
+ *
+ * 한 줄 한 문장으로 나열된 자료(어휘 교재의 예문집·문장 드릴)는 위의 글자 수 분할로는
+ * 다룰 수 없다. 실측(HSK5 320문장 ≈ 6,400자): 헤딩이 없어 길이 분할로 가는데 목표
+ * 15,000자에 못 미쳐 **챕터 1개·320줄·빈 줄 0**이 나온다. 그 자료를 분석하면
+ * analyzeText가 빈 줄 없는 320줄을 문단 하나로 묶어 /api/analyze에 통째로 보내고,
+ * 서버는 MAX_LINES=100에서 자른다 → 101번째부터는 결과가 없어 'failed' 플레이스홀더가
+ * 되고, 재시도해도 같은 320줄을 다시 보내니 **영구 부분 실패**로 굳는다.
+ *
+ * 그래서 줄 수로 나눈다. 경계는 책의 실제 과 단위(오너 교재 = 16문장/과)를 사람이
+ * 입력하고, 엔진은 요청 캡을 넘지 않게 클램프만 한다.
+ * ─────────────────────────────────────────────────────────────*/
+
+/** /api/analyze의 MAX_LINES 미러. 한 챕터의 연속 줄이 이보다 많으면 잘린다(계약 테스트로 고정). */
+export const LINES_PER_REQUEST_CAP = 100;
+
+/** 기본 과 크기 — 오너 HSK5 교재 기준. 반입 화면에서 사람이 고친다. */
+export const DEFAULT_LINES_PER_CHAPTER = 16;
+
+/** 문장 목록 판정 기준 — 줄이 많고(①) 빈 줄이 거의 없고(②) 줄이 짧다(③). */
+export const SENTENCE_LIST_MIN_LINES = 50;
+export const SENTENCE_LIST_MAX_BLANK_RATIO = 0.05;
+export const SENTENCE_LIST_MAX_AVG_LEN = 40;
+
+/** 문장 목록 통계 — 감지 배너가 "320줄, 평균 18자"를 말하는 근거. 순수. */
+export function sentenceListStats(rawText) {
+  const raw = String(rawText || '').split('\n');
+  const nonEmpty = raw.filter((l) => l.trim());
+  const chars = nonEmpty.reduce((n, l) => n + l.trim().length, 0);
+  return {
+    lines: nonEmpty.length,
+    blankRatio: raw.length > 0 ? (raw.length - nonEmpty.length) / raw.length : 0,
+    avgLen: nonEmpty.length > 0 ? chars / nonEmpty.length : 0,
+  };
+}
+
+/**
+ * 문장 목록처럼 보이는가 — 배너 노출 판정. 틀려도 배너일 뿐이라 사람이 무시할 수 있다
+ * (자동 감지의 오차를 UI가 흡수한다는 이 모듈의 기존 원칙 그대로).
+ */
+export function looksLikeSentenceList(rawText) {
+  const { lines, blankRatio, avgLen } = sentenceListStats(rawText);
+  if (lines < SENTENCE_LIST_MIN_LINES) return false;
+  if (blankRatio >= SENTENCE_LIST_MAX_BLANK_RATIO) return false;
+  return avgLen <= SENTENCE_LIST_MAX_AVG_LEN;
+}
+
+/**
+ * 과 크기 정규화 — 화면(미리 계산한 챕터 수)과 엔진(실제 분할)이 **같은 규칙**을 쓰게 하는 정본.
+ * 두 곳에서 따로 클램프하면 "20챕터"라고 안내하고 320챕터를 만드는 어긋남이 생긴다.
+ * - 캡 초과 → 캡(넘으면 /api/analyze가 자른다)
+ * - 1 미만·NaN·빈 값 → 기본값(음수를 1로 clamp하면 문장마다 한 챕터가 된다)
+ */
+export function clampLinesPerChapter(value) {
+  const n = Math.floor(Number(value));
+  const requested = Number.isFinite(n) && n >= 1 ? n : DEFAULT_LINES_PER_CHAPTER;
+  return Math.min(requested, LINES_PER_REQUEST_CAP);
+}
+
+/**
+ * 줄 수 기준 챕터 분할 — 빈 줄은 버리고 내용 줄만 linesPerChapter개씩 묶는다.
+ * 반환형은 splitTextIntoChapters와 **동일**({title, text})이라 등록·미리보기·경계 병합
+ * UI가 그대로 재사용된다.
+ * @param {string} rawText
+ * @param {{linesPerChapter?: number}} opts
+ * @returns {Array<{title: string, text: string}>}
+ */
+export function splitLinesIntoChapters(rawText, opts = {}) {
+  const { linesPerChapter = DEFAULT_LINES_PER_CHAPTER } = opts;
+  const lines = String(rawText || '')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean);
+  if (lines.length === 0) return [];
+
+  const per = clampLinesPerChapter(linesPerChapter);
+  const out = [];
+  for (let i = 0; i < lines.length; i += per) {
+    out.push({ title: `${out.length + 1}과`, text: lines.slice(i, i + per).join('\n') });
+  }
+  return out;
+}
