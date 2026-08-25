@@ -83,7 +83,7 @@ describe('홈 알림 덱 계약', () => {
   });
 
   it('다음 장이 걸쳐 보인다 — 넘길 게 있다는 신호(폭 무관 동일)', () => {
-    expect(css).toContain('.continue-deck__slide { flex: 0 0 92%; scroll-snap-align: start; }');
+    expect(css).toContain('.continue-deck__slide { flex: 0 0 96%; scroll-snap-align: start; }');
     // 폭별로 조작이 갈리지 않는다 — 덱에 반응형 분기를 두지 않는다(오너 확정).
     expect(css).not.toMatch(/@media[^{]*\{[^}]*continue-deck__slide/);
   });
