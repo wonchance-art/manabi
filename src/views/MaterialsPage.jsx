@@ -9,7 +9,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { parseTitle } from '../lib/seriesMeta';
-import { materialFit, fitBand, sortByFit } from '../lib/materialFit';
+import { materialFit, fitBand, sortByFit, bookFit, FIT_MIN_TYPES } from '../lib/materialFit';
 import { fetchKnownWords, mergeKnownIntoIndex } from '../lib/knownWords';
 import { groupByBook } from '../lib/bookMeta';
 import { JP_LEVELS, EN_LEVELS, ZH_LEVELS, langNameKo } from '../lib/constants';
@@ -330,19 +330,26 @@ export default function MaterialsPage() {
     : langFilter === 'Chinese' ? ZH_LEVELS
     : [...JP_LEVELS, ...EN_LEVELS, ...ZH_LEVELS];
 
+  // 커버리지 대조 인덱스 — 자료 카드(fitById)와 책 카드(bookFit)가 **같은 것**을 쓴다.
+  // '이미 앎' 표기는 여기서 합집합으로 합류한다(엔진 시그니처 무변경 — 목업 ⑤ 정밀화).
+  // 병합을 두 곳에서 하면 '이미 앎' 반영이 한쪽만 되는 조용한 어긋남이 생긴다.
+  const savedFitIndex = useMemo(() => {
+    if (!savedVocabIndex) return null;
+    return knownRows?.length ? mergeKnownIntoIndex(savedVocabIndex, knownRows) : savedVocabIndex;
+  }, [savedVocabIndex, knownRows]);
+
   // 자료별 맞춤도 — 분석 완료 자료만, 담김 인덱스가 있을 때만(게스트 빈 맵 → 표시·정렬 무효과).
-  // '이미 앎' 표기는 인덱스에 합집합으로 합류(엔진 시그니처 무변경 — 목업 ⑤ 정밀화).
   const fitById = useMemo(() => {
     const map = new Map();
-    if (!savedVocabIndex) return map;
-    const index = knownRows?.length ? mergeKnownIntoIndex(savedVocabIndex, knownRows) : savedVocabIndex;
+    const index = savedFitIndex;
+    if (!index) return map;
     for (const m of materials) {
       if (m.processed_json?.status !== 'completed') continue;
       const fit = materialFit(m.processed_json, index);
       map.set(m.id, { ...fit, band: fitBand(fit.coverage, fit.total) });
     }
     return map;
-  }, [materials, savedVocabIndex, knownRows]);
+  }, [materials, savedFitIndex]);
 
   const filtered = (() => {
     if (sortBy === 'newest') return materials;
@@ -524,6 +531,10 @@ export default function MaterialsPage() {
             const bookCards = books.map((b) => {
               const analyzed = b.chapters.filter((c) => ['completed', 'partial'].includes(c.processed_json?.status)).length;
               const readDone = b.chapters.filter((c) => completedIds.has(c.id)).length;
+              // 책 단위 커버리지(R2) — 챕터 types 합집합. 어휘 교재의 진짜 지표는 챕터별 배지가
+              // 아니라 "책 전체 단어 중 몇 개를 아는가"다. 표본 미달·게스트·미분석은 무표기.
+              const bf = savedFitIndex ? bookFit(b.chapters, savedFitIndex) : null;
+              const showBookFit = bf && bf.coverage != null && bf.total >= FIT_MIN_TYPES;
               return (
                 <details key={b.key} className="card book-card" style={{ gridColumn: '1 / -1', padding: '14px 18px' }}>
                   <summary style={{ cursor: 'pointer', listStyle: 'none', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -531,6 +542,14 @@ export default function MaterialsPage() {
                     <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                       챕터 {b.chapters.length}개 · 분석 {analyzed}/{b.chapters.length} · 읽음 {readDone}/{b.chapters.length}
                     </span>
+                    {showBookFit && (
+                      <span style={{ flexBasis: '100%', fontSize: '0.8rem', color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }}>
+                        {bf.analyzed < bf.chapters && `분석한 ${bf.analyzed}과 기준 · `}
+                        {bf.total.toLocaleString()}단어 중{' '}
+                        <strong style={{ color: 'var(--accent-text)' }}>{Math.round(bf.coverage * 100)}% 앎</strong>
+                        {' '}· 새 단어 {bf.unknown.toLocaleString()}개
+                      </span>
+                    )}
                   </summary>
                   <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {b.chapters.map((c) => {

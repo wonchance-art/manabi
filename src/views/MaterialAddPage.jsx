@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
@@ -8,12 +8,19 @@ import { useToast } from '../lib/ToastContext';
 import Button from '../components/Button';
 import { analyzeText } from '../lib/analyzeText';
 import { autoSplitParagraphs } from '../lib/splitParagraphs';
-import { splitTextIntoChapters, mergeWithPrevious, CHAPTER_MAX_CHARS } from '../lib/bookSplit';
+import {
+  splitTextIntoChapters, mergeWithPrevious, CHAPTER_MAX_CHARS,
+  splitLinesIntoChapters, looksLikeSentenceList, sentenceListStats,
+  DEFAULT_LINES_PER_CHAPTER, LINES_PER_REQUEST_CAP, clampLinesPerChapter,
+} from '../lib/bookSplit';
 import { makeBookKey } from '../lib/bookMeta';
 import { LEVELS } from '../lib/constants';
 import MaterialAddPdfSection from './MaterialAddPdfSection';
 import MaterialAddEpubSection from '../components/MaterialAddEpubSection';
 import { friendlyToastMessage } from '../lib/errorMessage';
+
+/** 내용 줄 수 — 문장 목록 자료에서 "몇 문장"의 정본 셈법(빈 줄 제외). */
+const countLines = (t) => String(t || '').split('\n').filter((l) => l.trim()).length;
 
 // --- Component ---
 export default function MaterialAddPage() {
@@ -49,9 +56,13 @@ export default function MaterialAddPage() {
 
   // 책 묶음 초안(P1) — 방대한 양도 일단 다 받아들이되 챕터별 자료로 쪼개 등록한다.
   // 등록 시 분석은 돌리지 않는다(status: 'pending') — 읽을 챕터만 뷰어에서 온디맨드 분석.
-  const [bookDraft, setBookDraft] = useState(null); // { title, chapters: [{title, text}], fromEpub }
+  // bookDraft = { title, chapters: [{title, text}], privateOnly, sentenceList }
+  //   privateOnly — 개인 소장물(EPUB·문장 목록)은 공개 선택지를 주지 않는다
+  //   sentenceList — 이미 한 줄 한 문장이라 문단 자동 감지를 건너뛴다(아래 등록부 주석)
+  const [bookDraft, setBookDraft] = useState(null);
   const [bookRegistering, setBookRegistering] = useState(false);
   const [bookDoneCount, setBookDoneCount] = useState(0);
+  const [linesPerChapter, setLinesPerChapter] = useState(DEFAULT_LINES_PER_CHAPTER);
 
   const handleEpubBookReady = ({ bookTitle, language: epubLang, chapters }) => {
     setPdfSource(null);
@@ -67,7 +78,7 @@ export default function MaterialAddPage() {
           }))
         : [{ title: ch.title, text: ch.text }]
     );
-    setBookDraft({ title: bookTitle, chapters: normalized, fromEpub: true });
+    setBookDraft({ title: bookTitle, chapters: normalized, privateOnly: true });
     setBookDoneCount(0);
     toast(`챕터 ${normalized.length}개를 준비했어요. 목록을 확인하고 등록하세요.`, 'success');
   };
@@ -76,7 +87,17 @@ export default function MaterialAddPage() {
   const handleSplitToBook = () => {
     const chapters = splitTextIntoChapters(rawText);
     if (chapters.length < 2) { toast('나눌 챕터 경계를 찾지 못했어요 — 그대로 한 자료로 등록해 주세요.', 'info'); return; }
-    setBookDraft({ title: title || '제목 없는 책', chapters, fromEpub: false });
+    setBookDraft({ title: title || '제목 없는 책', chapters });
+    setBookDoneCount(0);
+  };
+
+  // 문장 목록 → 과 단위 챕터(오너 승인 2026-08-25). 어휘 교재의 예문집처럼 한 줄 한 문장으로
+  // 나열된 자료는 글자 수 분할이 한 덩어리로 뭉쳐 놓는데, 그러면 빈 줄 없는 연속 줄이
+  // /api/analyze의 100줄 캡에 잘려 영구 부분 실패가 된다(bookSplit.js §문장 목록 반입).
+  const handleSplitSentenceList = () => {
+    const chapters = splitLinesIntoChapters(rawText, { linesPerChapter });
+    if (chapters.length === 0) { toast('나눌 문장이 없어요.', 'info'); return; }
+    setBookDraft({ title: title || '제목 없는 책', chapters, privateOnly: true, sentenceList: true });
     setBookDoneCount(0);
   };
 
@@ -89,7 +110,12 @@ export default function MaterialAddPage() {
       const total = bookDraft.chapters.length;
       const rows = bookDraft.chapters.map((ch, i) => ({
         title: `${bookDraft.title} — ${ch.title}`,
-        raw_text: autoSplitParagraphs(ch.text),
+        // 문장 목록은 이미 한 줄 한 문장이라 문단 자동 감지가 할 일이 없다. 오히려 개입하면
+        // 문장마다 빈 줄이 들어가 문단 수 = 문장 수가 되고, 분석 요청이 챕터당 1건에서 문장
+        // 수만큼으로 늘어 분당 20회 제한에 걸린다. 실측(320문장·16문장/과): 일본어는 요청이
+        // 20건 → 320건으로 튄다(。+히라가나 시작 조건에 걸린다). 중국어·영어는 지금은 안
+        // 걸리지만(한자 시작·마침표가 종결 집합에 없음) 우연이라 기대지 않는다.
+        raw_text: bookDraft.sentenceList ? ch.text : autoSplitParagraphs(ch.text),
         processed_json: {
           sequence: [], dictionary: {}, last_idx: -1,
           status: 'pending', // 미분석 — 뷰어에서 "이 챕터 분석하기"로 온디맨드 실행
@@ -99,7 +125,7 @@ export default function MaterialAddPage() {
             updated_at: new Date().toISOString(),
           },
         },
-        visibility: bookDraft.fromEpub ? 'private' : visibility,
+        visibility: bookDraft.privateOnly ? 'private' : visibility,
         owner_id: user.id,
       }));
       const { error: insertError } = await supabase.from('reading_materials').insert(rows);
@@ -295,6 +321,26 @@ export default function MaterialAddPage() {
     }
   }
 
+  // 문장 목록 감지 — 배너 노출 여부·통계·현재 과 크기로 나눴을 때의 챕터 수.
+  // 조기 return(로딩)보다 **위**에 둔다(#838 Hooks 순서 사고와 같은 자리).
+  const sentenceList = useMemo(() => {
+    const detected = looksLikeSentenceList(rawText);
+    const stats = detected ? sentenceListStats(rawText) : { lines: 0, blankRatio: 0, avgLen: 0 };
+    const per = clampLinesPerChapter(linesPerChapter);
+    return { detected, stats, chapterCount: detected ? Math.ceil(stats.lines / per) : 0 };
+  }, [rawText, linesPerChapter]);
+
+  // 챕터별 문장 범위("1~16번") — 누적 계산이라 [합치기]로 경계를 바꿔도 그대로 맞는다.
+  const chapterRanges = useMemo(() => {
+    if (!bookDraft?.sentenceList) return [];
+    let acc = 0;
+    return bookDraft.chapters.map((ch) => {
+      const from = acc + 1;
+      acc += countLines(ch.text);
+      return `${from}~${acc}번`;
+    });
+  }, [bookDraft]);
+
   if (isSuggestionLoading) {
     return (
       <div className="page-container">
@@ -351,7 +397,7 @@ export default function MaterialAddPage() {
                   style={{ flex: 1, minWidth: 0, fontSize: '0.85rem', background: 'transparent', border: 'none', color: 'var(--text-primary)', outline: 'none' }}
                 />
                 <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
-                  {ch.text.length.toLocaleString()}자
+                  {bookDraft.sentenceList ? chapterRanges[i] : `${ch.text.length.toLocaleString()}자`}
                 </span>
                 {i > 0 && (
                   <button
@@ -366,7 +412,14 @@ export default function MaterialAddPage() {
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, gap: 10 }}>
             <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-              챕터 {bookDraft.chapters.length}개 · 총 {bookDraft.chapters.reduce((n, c) => n + c.text.length, 0).toLocaleString()}자 · 각 챕터는 열 때 분석돼요
+              챕터 {bookDraft.chapters.length}개 ·{' '}
+              {bookDraft.sentenceList
+                ? `총 ${bookDraft.chapters.reduce((n, c) => n + countLines(c.text), 0).toLocaleString()}문장`
+                : `총 ${bookDraft.chapters.reduce((n, c) => n + c.text.length, 0).toLocaleString()}자`}
+              {' '}· 각 챕터는 열 때 분석돼요
+              {bookDraft.privateOnly && (
+                <><br />🔒 개인 소장 자료 — 비공개로 등록됩니다</>
+              )}
             </span>
             {bookDoneCount > 0 ? (
               <Button size="sm" onClick={() => router.push('/materials')}>자료실에서 책 보기</Button>
@@ -523,6 +576,46 @@ export default function MaterialAddPage() {
                   챕터로 나눠 책으로 등록
                 </button>
               )}
+            </div>
+          )}
+
+          {/* 문장 목록 감지 배너 — 어휘 교재 예문집처럼 한 줄 한 문장인 자료를 과 단위로 나눈다.
+              감지가 틀려도 배너일 뿐이라 무시하고 그냥 등록하면 된다. */}
+          {sentenceList.detected && !bookDraft && (
+            <div style={{
+              marginTop: 10, padding: '12px 14px',
+              background: 'var(--primary-glow)', border: '1px solid var(--primary)',
+              borderRadius: 'var(--radius-md)',
+            }}>
+              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary-light)' }}>
+                📋 문장 목록처럼 보여요
+              </div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: 3 }}>
+                {sentenceList.stats.lines.toLocaleString()}줄 · 평균 {Math.round(sentenceList.stats.avgLen)}자 ·
+                {' '}한 덩어리로 두면 {LINES_PER_REQUEST_CAP}줄까지만 분석돼요
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                <input
+                  type="number"
+                  min={1}
+                  max={LINES_PER_REQUEST_CAP}
+                  value={linesPerChapter}
+                  onChange={(e) => setLinesPerChapter(e.target.value)}
+                  aria-label="한 과에 넣을 문장 수"
+                  style={{
+                    width: 64, padding: '5px 8px', fontSize: '0.85rem', textAlign: 'right',
+                    fontVariantNumeric: 'tabular-nums',
+                    background: 'var(--bg-secondary)', color: 'var(--text-primary)',
+                    border: '1px solid var(--border, var(--text-muted))', borderRadius: 'var(--radius-sm, 6px)',
+                  }}
+                />
+                <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                  문장씩 → <strong style={{ color: 'var(--text-primary)' }}>{sentenceList.chapterCount}챕터</strong>
+                </span>
+                <Button size="sm" onClick={handleSplitSentenceList} style={{ marginLeft: 'auto' }}>
+                  챕터로 나누기
+                </Button>
+              </div>
             </div>
           )}
         </div>

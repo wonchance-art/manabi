@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { FIT_MIN_TYPES, fitBand, fitSortRank, materialContentWords, materialFit, sortByFit } from '../materialFit.js';
+import fs from 'node:fs';
+import path from 'node:path';
+import { FIT_MIN_TYPES, bookFit, fitBand, fitSortRank, materialContentWords, materialFit, sortByFit } from '../materialFit.js';
 
 // 🈁 자료 맞춤도 엔진(rfc-material-fit R1) — 결정적 커버리지·밴드 계약.
 
@@ -90,5 +92,78 @@ describe('fitBand·fitSortRank — i+1 밴드', () => {
     expect(sorted.map((m) => m.id)).toEqual(['c', 'e', 'f', 'd', 'b', 'a']); // fit 내부 c→e 순서 유지
     expect(items[0].id).toBe('a'); // 입력 배열 무변형
     expect(sortByFit(null, () => null)).toEqual([]);
+  });
+});
+
+/* ── 책 단위 커버리지(R2) — 어휘 교재의 진짜 지표 ── */
+describe('bookFit — 챕터 합집합 커버리지', () => {
+  const chapterOf = (words) => ({
+    processed_json: {
+      sequence: words.map((_, i) => `t${i}`),
+      dictionary: Object.fromEntries(words.map((w, i) => [`t${i}`, { text: w, base_form: w, pos: '명사' }])),
+    },
+  });
+  const savedOf = (...words) => ({ surfaces: new Set(words), bases: new Set() });
+
+  it('같은 단어가 여러 과에 나와도 한 번만 센다 — 평균이 아니라 합집합', () => {
+    const chapters = [chapterOf(['学习', '工作', '环境']), chapterOf(['学习', '保护', '水平'])];
+    const bf = bookFit(chapters, savedOf('学习', '工作'));
+    expect(bf.total).toBe(5);          // 学习 중복 제거
+    expect(bf.known).toBe(2);
+    expect(bf.coverage).toBeCloseTo(0.4);
+    // 챕터별 평균이었다면 (2/3 + 1/3)/2 = 0.5로 부풀려진다
+    expect(bf.coverage).not.toBeCloseTo(0.5);
+  });
+
+  it('미분석 챕터는 0개를 기여하고 analyzed에서 빠진다 — "분석한 N과 기준"의 근거', () => {
+    const chapters = [
+      chapterOf(['学习', '工作']),
+      { processed_json: { sequence: [], dictionary: {}, status: 'pending' } },
+      { processed_json: null },
+    ];
+    const bf = bookFit(chapters, savedOf('学习'));
+    expect(bf.analyzed).toBe(1);
+    expect(bf.chapters).toBe(3);
+    expect(bf.total).toBe(2);
+  });
+
+  it('전부 미분석이면 coverage는 null — 0%로 오표기하지 않는다', () => {
+    const bf = bookFit([{ processed_json: null }, { processed_json: null }], savedOf('学习'));
+    expect(bf.coverage).toBeNull();
+    expect(bf.analyzed).toBe(0);
+  });
+
+  it('빈 책·게스트(인덱스 없음)에도 터지지 않는다', () => {
+    expect(bookFit([], null).coverage).toBeNull();
+    expect(bookFit(null, null).chapters).toBe(0);
+    expect(bookFit([chapterOf(['学习'])], null).known).toBe(0);
+  });
+
+  it('materialFit과 같은 pos 제외 규칙을 쓴다 — 두 숫자가 같은 셈법', () => {
+    const withParticle = {
+      processed_json: {
+        sequence: ['a', 'b'],
+        dictionary: { a: { text: '学习', base_form: '学习', pos: '명사' }, b: { text: '的', base_form: '的', pos: '조사' } },
+      },
+    };
+    expect(bookFit([withParticle], savedOf()).total).toBe(1); // 조사 제외
+    expect(bookFit([withParticle], savedOf()).total).toBe(materialFit(withParticle.processed_json, savedOf()).total);
+  });
+});
+
+describe('서재 책 카드 배선 계약', () => {
+  it('책 카드와 자료 카드가 같은 대조 인덱스를 쓴다 — 이미 앎 반영이 갈리지 않게', () => {
+    const page = fs.readFileSync(path.join(process.cwd(), 'src/views/MaterialsPage.jsx'), 'utf8');
+    expect(page).toMatch(/const savedFitIndex = useMemo\([\s\S]{0,300}?mergeKnownIntoIndex/);
+    expect(page).toContain('bookFit(b.chapters, savedFitIndex)');
+    expect(page).toMatch(/const index = savedFitIndex;/);
+    // 병합이 두 번 일어나면 안 된다 — mergeKnownIntoIndex 호출은 한 곳뿐
+    expect(page.match(/mergeKnownIntoIndex\(/g)).toHaveLength(1);
+  });
+
+  it('표본 미달 책은 무표기 — fitBand와 같은 결', () => {
+    const page = fs.readFileSync(path.join(process.cwd(), 'src/views/MaterialsPage.jsx'), 'utf8');
+    expect(page).toContain('bf.total >= FIT_MIN_TYPES');
+    expect(page).toContain('bf.coverage != null');
   });
 });

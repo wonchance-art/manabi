@@ -91,3 +91,44 @@ export function sortByFit(items, bandOf) {
     .sort((a, b) => (fitSortRank(bandOf(a.item)) - fitSortRank(bandOf(b.item))) || (a.index - b.index))
     .map((entry) => entry.item);
 }
+
+/**
+ * 책 단위 커버리지(R2) — 챕터들의 내용어 types를 **합집합**으로 모아 산정한다.
+ *
+ * 챕터별 coverage의 평균이 아니다: 같은 단어가 여러 과에 나오면 한 번만 세야
+ * "1,300단어 중 몇 개를 아는가"가 참말이 된다. 어휘 교재는 의도적으로 단어를 재출현시키므로
+ * 평균을 쓰면 아는 단어가 반복 가산돼 커버리지가 부풀려진다.
+ *
+ * 미분석 챕터(dictionary 없음)는 자연히 0개를 기여한다 — 그래서 analyzed를 함께 돌려
+ * 소비 화면이 "분석한 3과 기준"이라고 말할 수 있게 한다(부분 분석 상태를 전체인 척
+ * 말하지 않기 위한 것 — 0 무표기와 같은 결).
+ *
+ * @param {Array<{processed_json?: object}>} chapters - 같은 책의 자료 행들
+ * @param {{surfaces?: Set<string>, bases?: Set<string>}} saved - materialFit과 같은 인덱스
+ * @returns {{total, known, unknown, coverage: number|null, analyzed: number, chapters: number}}
+ */
+export function bookFit(chapters, saved) {
+  const list = chapters || [];
+  const seen = new Map();
+  let analyzed = 0;
+  for (const ch of list) {
+    const words = materialContentWords(ch?.processed_json);
+    if (words.length > 0) analyzed += 1;
+    for (const w of words) if (!seen.has(w.key)) seen.set(w.key, w);
+  }
+  const surfaces = saved?.surfaces;
+  const bases = saved?.bases;
+  let known = 0;
+  for (const w of seen.values()) {
+    if ((w.text && surfaces?.has(w.text)) || (w.base_form && bases?.has(w.base_form))) known += 1;
+  }
+  const total = seen.size;
+  return {
+    total,
+    known,
+    unknown: total - known,
+    coverage: total > 0 ? known / total : null,
+    analyzed,
+    chapters: list.length,
+  };
+}
