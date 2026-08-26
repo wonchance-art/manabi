@@ -4935,9 +4935,9 @@ export const REF_GRAMMAR_MANIFEST = {
               "slug": "n5-07-verbs-masu",
               "level": "N5",
               "order": 4,
-              "title": "일본어 불규칙 동사, 딱 2개가 전부다",
+              "title": "기본 불규칙 동사, する·くる부터 잡기",
               "topic": "동사 ます형과 그룹 분류",
-              "summary": "일본어 동사는 단 세 그룹, 불규칙은 단 두 개. 그룹 구별법과 ます/ません/ました 활용을 한 번에 정리해요.",
+              "summary": "일본어 동사는 활용 방식에 따라 세 그룹으로 나눠요. 기본 불규칙 동사 する·くる와 그룹 구별법, ます/ません/ました 활용을 한 번에 정리해요.",
               "duration": "약 9분",
               "courseLesson": {
                 "lessonRef": {
