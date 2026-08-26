@@ -9225,15 +9225,17 @@ body.is-review-session .page-container { padding-top: 8px; }
 .cohort-team__remove:hover { color: var(--danger, #e03131); background: var(--bg-secondary); }
 
 /* ========= 프로필 — 급수 진행·시리즈 진척도 ========= */
-/* 오너 지시(#959 정정): 원래 배치대로 제목 아래에 칩 줄 — 폭과 무관하게 항상
-   [진도] 한 줄 + 칩 한 줄의 2단 고정. 칩 줄은 절대 갈라지지 않고 좁으면 가로 스크롤. */
+/* 오너 지시(2026-08-26, #959 재정정): [진도 ············ 🇯🇵🇬🇧🇨🇳] — 제목 왼쪽·국기
+   오른쪽 정렬의 한 줄. #959의 2단 고정은 탭이 텍스트 칩이라 좁은 폭에서 잘리던 때의
+   처방이었고, 이후 탭이 국기 이모지만으로 줄어(#1058 계열) 한 줄이 다시 넉넉해졌다.
+   언어가 늘어 국기가 넘치면 탭 쪽만 가로 스크롤(제목은 밀리지 않는다). */
 .lvprog__head {
-  display: flex; flex-direction: column; align-items: flex-start;
+  display: flex; align-items: center; justify-content: space-between;
   gap: 8px; margin-bottom: 12px;
 }
 .lvprog__tabs {
   display: flex; gap: 4px;
-  max-width: 100%; overflow-x: auto;
+  min-width: 0; overflow-x: auto;
   scrollbar-width: none; /* 칩 몇 개짜리 보조 스크롤 — 바는 숨기고 제스처만 */
 }
 .lvprog__tabs::-webkit-scrollbar { display: none; }
