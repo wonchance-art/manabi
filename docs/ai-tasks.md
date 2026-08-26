@@ -12,6 +12,14 @@
 
 > ④ **오너 전면 승인(2026-07-23)**: D-트랙(여행책 지구제 — docs/rfc-guidebook-districts.md) 그린라이트.
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
+## Codex-5 (codex5/*)
+### doing
+- 🇯🇵 일본어 교재 순회 검수 R1 — N5 order 01~06의 스키마·독음·번역·문법·콜아웃·
+  예문·표기를 전수 감사하고 매니페스트를 재생성. (`codex5/ja-audit-n5-r1`,
+  assignment 5427543001)
+### todo
+### done (최근)
+
 ## Codex-1 (codex/*)
 ### doing
 ### todo
