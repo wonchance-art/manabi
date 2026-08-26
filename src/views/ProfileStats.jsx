@@ -51,22 +51,6 @@ async function fetchProfileStats(userId) {
 
 const isToday = ts => ts && new Date(ts).toDateString() === new Date().toDateString();
 
-/** 오늘 학습한 챕터 수 — 읽음 날짜·퀴즈 기록(localStorage) 합산, slug 중복 제거 */
-function chapterActivityToday(refManifest) {
-  let n = 0;
-  try {
-    for (const ref of Object.values(refManifest)) {
-      const seen = new Set();
-      const dates = JSON.parse(localStorage.getItem(`${ref.readKey}_dates`) || '{}');
-      for (const [slug, ts] of Object.entries(dates)) if (isToday(ts)) seen.add(slug);
-      const checks = JSON.parse(localStorage.getItem(`${ref.readKey}_check`) || '{}');
-      for (const [slug, r] of Object.entries(checks)) if (isToday(r?.at)) seen.add(slug);
-      n += seen.size;
-    }
-  } catch {}
-  return n;
-}
-
 /** 가장 최근 학습 기록이 있는 언어 — 진도 탭 기본값 */
 function lastActiveLang(refManifest) {
   let best = null, bestTs = 0;
@@ -85,9 +69,6 @@ function lastActiveLang(refManifest) {
 
 export default function ProfileStats({ refManifest = {} }) {
   const { user, profile } = useAuth();
-  // localStorage 기반 집계는 마운트 후에만 (SSR 일치)
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
 
   const { data, error, refetch } = useQuery({
     queryKey: ['profile-stats', user?.id],
@@ -118,20 +99,11 @@ export default function ProfileStats({ refManifest = {} }) {
   const streak = profile?.streak_count ?? 0;
   const streakFreeze = profile?.streak_freeze_count;
   const hasHeatmap = data?.heatmapDayCounts && Object.keys(data.heatmapDayCounts).length > 0;
-  const todayActivity =
-    vocab.filter(v => isToday(v.created_at)).length +
-    vocab.filter(v => isToday(v.last_reviewed_at)).length +
-    (mounted ? chapterActivityToday(refManifest) : 0);
 
   return (
     <div className="bento">
       <GoalTile vocab={vocab} />
       <DdayTile />
-      {weekly?.hasAny && (
-        <div className="bento-item bento--4x1 card">
-          <WeeklyReportCard weekly={weekly} />
-        </div>
-      )}
       <div className="bento-item bento--2x2">
         <ReviewTile vocab={vocab} />
       </div>
@@ -139,7 +111,11 @@ export default function ProfileStats({ refManifest = {} }) {
         label="스트릭"
         value={streak ? `${streak}일${streakFreeze > 0 ? ` · 🛡${streakFreeze}` : ''}` : '–'}
       />
-      <StatTile label="오늘 활동" value={todayActivity} />
+      {/* '오늘 활동' 타일이 있던 자리(오너 확정 2026-08-26: 제거·이번 주를 이 크기로).
+          오늘 활동은 ⑴ 챕터 수가 이 기기 localStorage 한정 ⑵ 단어 축은 '오늘 목표'
+          타일과 중복 ⑶ 활동한 날에도 0을 크게 보여줘 0 무표기 원칙과 충돌 — 반쪽
+          지표라 지운다. 주간 거울은 4×1 카드 대신 이 한 칸으로 줄인다. */}
+      {weekly?.hasAny && <WeeklyTile weekly={weekly} />}
       <div className="bento-item bento--2x2">
         <LevelCoverageCard refManifest={refManifest} />
       </div>
@@ -166,9 +142,36 @@ function StatTile({ label, value }) {
   );
 }
 
+/* ── 이번 주 타일(오너 확정 2026-08-26) — 주간 거울을 '오늘 활동' 자리·크기(1×1)로.
+     대표 축 하나만 크게: 복습 → 담은 말 → 만난 말 → 완독 순으로 처음 0이 아닌 것
+     (전 축 0이면 hasAny가 타일 자체를 숨긴다 — 0 무표기). 탭하면 전체 거울을 모달로
+     편다(DdayTile의 타일→모달 정본 재사용 — 지난주 병기는 모달에만 남는다). ── */
+function WeeklyTile({ weekly }) {
+  const [open, setOpen] = useState(false);
+  const acc = weekly.reviews.accuracy == null ? null : Math.round(weekly.reviews.accuracy * 100);
+  const [value, label] = weekly.reviews.total > 0
+    ? [`${weekly.reviews.total}`, `이번 주 복습${acc != null ? ` · ${acc}%` : ''}`]
+    : weekly.newWords > 0 ? [`${weekly.newWords}`, '이번 주 담은 말']
+    : weekly.metWords > 0 ? [`${weekly.metWords}`, '이번 주 만난 말']
+    : [`${weekly.readsCompleted}`, '이번 주 완독'];
+  return (
+    <>
+      <button type="button" className="bento-item bento--1x1 card bento-stat bento-stat--btn" onClick={() => setOpen(true)}>
+        <span className="mypage-stat-cell__value">{value}</span>
+        <span className="mypage-stat-cell__label">{label}</span>
+      </button>
+      {open && (
+        <TileModal title={`이번 주 (${weekRangeLabel(weekly.week)})`} onClose={() => setOpen(false)}>
+          <WeeklyReportCard weekly={weekly} header={false} />
+        </TileModal>
+      )}
+    </>
+  );
+}
+
 /* ── 이번 주 카드(rfc-weekly-report 목업 A) — 거울이지 성적표가 아니다:
      지난주는 회색 병기만(증감 화살표·색상 없음), 0인 축은 그리지 않는다. ── */
-function WeeklyReportCard({ weekly }) {
+function WeeklyReportCard({ weekly, header = true }) {
   const pct = (a) => (a == null ? null : Math.round(a * 100));
   const acc = pct(weekly.reviews.accuracy);
   const prevAcc = pct(weekly.prevReviews.accuracy);
@@ -178,9 +181,11 @@ function WeeklyReportCard({ weekly }) {
   if (weekly.readsCompleted > 0) parts.push(`완독 ${weekly.readsCompleted}편`);
   return (
     <div style={{ fontVariantNumeric: 'tabular-nums' }}>
-      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 6 }}>
-        이번 주 ({weekRangeLabel(weekly.week)})
-      </div>
+      {header && (
+        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 6 }}>
+          이번 주 ({weekRangeLabel(weekly.week)})
+        </div>
+      )}
       {weekly.reviews.total > 0 && (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '2px 12px' }}>
           <span style={{ fontWeight: 600 }}>
