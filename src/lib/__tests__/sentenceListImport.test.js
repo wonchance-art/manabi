@@ -124,11 +124,35 @@ describe('looksLikeSentenceList — 감지', () => {
 
 describe('반입 화면 배선 계약', () => {
   const page = read('src/views/MaterialAddPage.jsx');
+  const section = read('src/components/MaterialAddSentenceSection.jsx');
+
+  it('문장 목록은 PDF·EPUB와 같은 층의 독립 입구다', () => {
+    // 본문 폼에 붙여넣은 뒤 반응하는 배너가 아니라, 처음부터 과 단위를 정하는 문(오너 지시).
+    expect(page).toContain("import MaterialAddSentenceSection from '../components/MaterialAddSentenceSection'");
+    const epub = page.indexOf('<MaterialAddEpubSection');
+    const sentence = page.indexOf('<MaterialAddSentenceSection');
+    const textarea = page.indexOf('className="form-textarea"');
+    expect(sentence).toBeGreaterThan(epub);
+    expect(sentence).toBeLessThan(textarea);
+  });
+
+  it('입구가 제목·언어·난이도·과 크기를 모두 자기 안에서 정한다', () => {
+    for (const field of ['교재 이름', '학습 언어', '권장 학습 난이도', '한 과에 넣을 문장 수']) {
+      expect(section, `입구에 '${field}'가 없다`).toContain(field);
+    }
+    expect(section).toContain('splitLinesIntoChapters(text, { linesPerChapter: per })');
+  });
+
+  it('초안이 자기 언어·난이도를 들고 온다 — 본문 폼 상태에 의존하지 않는다', () => {
+    // 입구가 setLanguage를 부르고 곧바로 등록하면 React 상태 갱신이 비동기라 옛 값이 박힌다.
+    expect(page).toMatch(/handleSentenceBookReady[\s\S]{0,400}?language: lang, level: lvl/);
+    expect(page).toContain('language: bookDraft.language || language');
+    expect(page).toContain('level: bookDraft.level || level');
+  });
 
   it('문장 목록 초안은 비공개 고정 — 개인 소장 자료를 공개로 등록할 길이 없다', () => {
-    expect(page).toMatch(/handleSplitSentenceList[\s\S]{0,400}?privateOnly: true/);
+    expect(page).toMatch(/handleSentenceBookReady[\s\S]{0,400}?privateOnly: true/);
     expect(page).toContain("visibility: bookDraft.privateOnly ? 'private' : visibility");
-    // EPUB 경로도 같은 플래그를 쓴다(비공개 근거를 출처가 아니라 성격으로 표현)
     expect(page).toMatch(/handleEpubBookReady[\s\S]{0,900}?privateOnly: true/);
   });
 
@@ -136,8 +160,12 @@ describe('반입 화면 배선 계약', () => {
     expect(page).toContain("bookDraft.origin === 'sentences' ? ch.text : autoSplitParagraphs(ch.text)");
   });
 
-  it('배너는 줄 수 기준 분할만 호출한다 — 글자 수 분할로 새지 않는다', () => {
-    expect(page).toMatch(/handleSplitSentenceList[\s\S]{0,300}?splitLinesIntoChapters\(rawText, \{ linesPerChapter \}\)/);
+  it('본문 폼에 붙여넣은 문장 목록은 여기서 처리하지 않고 입구로 넘긴다 — 문은 하나', () => {
+    // 같은 일을 하는 문이 둘이면 한쪽만 고쳐지는 어긋남이 생긴다. 안내는 넘기기만 한다.
+    expect(page).toContain('looksLikeSentenceList(rawText)');
+    expect(page).toContain('setSentenceSeed(rawText)');
+    expect(page).not.toContain('splitLinesIntoChapters');   // 분할은 입구만 한다
+    expect(section).toContain('seedText');
   });
 });
 
@@ -146,30 +174,28 @@ describe('반입 화면 배선 계약', () => {
  *
  * 초안 패널이 페이지 맨 위 한 자리에만 그려지던 때, 텍스트 칸에서 [챕터로 나누기]를 눌러도
  * 결과가 화면 밖 위쪽에 생겨 **아무 일도 안 일어난 것처럼** 보였다. 정의는 하나로 두되
- * 그리는 자리는 출처를 따른다 — 누른 자리에서 결과가 나와야 한다.
+ * 그리는 자리는 그것을 만든 문을 따른다.
  */
-describe('책 초안 미리보기 — 누른 자리에 나타난다', () => {
+describe('책 초안 미리보기 — 만든 문 옆에 나타난다', () => {
   const page = read('src/views/MaterialAddPage.jsx');
 
   it('패널 정의는 하나이고 두 자리에서 쓰인다', () => {
     expect(page).toContain("import BookDraftPanel from '../components/BookDraftPanel'");
     expect(page.match(/<BookDraftPanel/g)).toHaveLength(2);
-    // 패널 본체를 이 파일에 다시 인라인하지 않는다(중복 신설 금지)
-    expect(page).not.toContain('앞 챕터와 합치기');
+    expect(page).not.toContain('앞 챕터와 합치기');   // 본체 재인라인 금지
   });
 
-  it('붙여넣기 분할 결과는 텍스트 칸 **뒤**에 그려진다', () => {
+  it('위쪽 입구(EPUB·문장 목록) 결과는 그 입구 옆·텍스트 칸 앞', () => {
+    const sectionRender = page.indexOf('<MaterialAddSentenceSection');
+    const upperPanel = page.indexOf("bookDraft?.origin === 'epub' || bookDraft?.origin === 'sentences'");
     const textarea = page.indexOf('className="form-textarea"');
-    const pasteRender = page.indexOf("bookDraft.origin !== 'epub'");
-    expect(textarea).toBeGreaterThan(-1);
-    expect(pasteRender).toBeGreaterThan(textarea);
+    expect(upperPanel).toBeGreaterThan(sectionRender);
+    expect(upperPanel).toBeLessThan(textarea);
   });
 
-  it('EPUB 결과는 EPUB 섹션 바로 아래·텍스트 칸 앞에 그려진다', () => {
-    const epubSection = page.indexOf('<MaterialAddEpubSection');
-    const epubRender = page.indexOf("bookDraft?.origin === 'epub'");
+  it('본문 폼 분할 결과는 텍스트 칸 뒤', () => {
     const textarea = page.indexOf('className="form-textarea"');
-    expect(epubRender).toBeGreaterThan(epubSection);
-    expect(epubRender).toBeLessThan(textarea);
+    const lowerPanel = page.indexOf("bookDraft?.origin === 'text'");
+    expect(lowerPanel).toBeGreaterThan(textarea);
   });
 });

@@ -9,14 +9,13 @@ import Button from '../components/Button';
 import { analyzeText } from '../lib/analyzeText';
 import { autoSplitParagraphs } from '../lib/splitParagraphs';
 import {
-  splitTextIntoChapters, CHAPTER_MAX_CHARS,
-  splitLinesIntoChapters, looksLikeSentenceList, sentenceListStats,
-  DEFAULT_LINES_PER_CHAPTER, LINES_PER_REQUEST_CAP, clampLinesPerChapter,
+  splitTextIntoChapters, CHAPTER_MAX_CHARS, looksLikeSentenceList, LINES_PER_REQUEST_CAP,
 } from '../lib/bookSplit';
 import { makeBookKey } from '../lib/bookMeta';
 import { LEVELS } from '../lib/constants';
 import MaterialAddPdfSection from './MaterialAddPdfSection';
 import MaterialAddEpubSection from '../components/MaterialAddEpubSection';
+import MaterialAddSentenceSection from '../components/MaterialAddSentenceSection';
 import BookDraftPanel from '../components/BookDraftPanel';
 import { friendlyToastMessage } from '../lib/errorMessage';
 
@@ -59,12 +58,14 @@ export default function MaterialAddPage() {
   // 등록 시 분석은 돌리지 않는다(status: 'pending') — 읽을 챕터만 뷰어에서 온디맨드 분석.
   // bookDraft = { title, chapters: [{title, text}], privateOnly, origin }
   //   privateOnly — 개인 소장물(EPUB·문장 목록)은 공개 선택지를 주지 않는다
-  //   origin — 'epub' | 'text' | 'sentences'. 미리보기를 **어디에 그릴지**(누른 자리)와
+  //   origin — 'epub' | 'text' | 'sentences'. 미리보기를 **어느 문 옆에 그릴지**와
   //            문단 자동 감지를 걸지 말지를 함께 결정한다.
+  //   language·level — 'sentences'는 자기 입구에서 정하고 오므로 초안이 들고 온다.
   const [bookDraft, setBookDraft] = useState(null);
   const [bookRegistering, setBookRegistering] = useState(false);
   const [bookDoneCount, setBookDoneCount] = useState(0);
-  const [linesPerChapter, setLinesPerChapter] = useState(DEFAULT_LINES_PER_CHAPTER);
+  // 본문 폼에 문장 목록을 붙여넣은 사람을 위쪽 입구로 넘길 때 싣는 텍스트(1회성).
+  const [sentenceSeed, setSentenceSeed] = useState('');
 
   const handleEpubBookReady = ({ bookTitle, language: epubLang, chapters }) => {
     setPdfSource(null);
@@ -93,14 +94,14 @@ export default function MaterialAddPage() {
     setBookDoneCount(0);
   };
 
-  // 문장 목록 → 과 단위 챕터(오너 승인 2026-08-25). 어휘 교재의 예문집처럼 한 줄 한 문장으로
-  // 나열된 자료는 글자 수 분할이 한 덩어리로 뭉쳐 놓는데, 그러면 빈 줄 없는 연속 줄이
-  // /api/analyze의 100줄 캡에 잘려 영구 부분 실패가 된다(bookSplit.js §문장 목록 반입).
-  const handleSplitSentenceList = () => {
-    const chapters = splitLinesIntoChapters(rawText, { linesPerChapter });
-    if (chapters.length === 0) { toast('나눌 문장이 없어요.', 'info'); return; }
-    setBookDraft({ title: title || '제목 없는 책', chapters, privateOnly: true, origin: 'sentences' });
+  // 문장 목록 입구(PDF·EPUB와 같은 층) — 제목·언어·난이도·과 크기를 거기서 다 정하고 온다.
+  // 초안이 자기 언어·난이도를 들고 오므로 등록이 본문 폼 상태에 의존하지 않는다(비동기 어긋남 없음).
+  const handleSentenceBookReady = ({ bookTitle, language: lang, level: lvl, chapters }) => {
+    setBookDraft({
+      title: bookTitle, chapters, privateOnly: true, origin: 'sentences', language: lang, level: lvl,
+    });
     setBookDoneCount(0);
+    toast(`${chapters.length}과로 나눴어요. 목록을 확인하고 등록하세요.`, 'success');
   };
 
   async function handleBookRegister() {
@@ -122,7 +123,9 @@ export default function MaterialAddPage() {
           sequence: [], dictionary: {}, last_idx: -1,
           status: 'pending', // 미분석 — 뷰어에서 "이 챕터 분석하기"로 온디맨드 실행
           metadata: {
-            language, level,
+            // 초안이 자기 언어·난이도를 들고 왔으면 그것이 정본(문장 목록 입구는 거기서 정한다).
+            language: bookDraft.language || language,
+            level: bookDraft.level || level,
             book: { key, title: bookDraft.title, order: i + 1, total },
             updated_at: new Date().toISOString(),
           },
@@ -323,15 +326,6 @@ export default function MaterialAddPage() {
     }
   }
 
-  // 문장 목록 감지 — 배너 노출 여부·통계·현재 과 크기로 나눴을 때의 챕터 수.
-  // 조기 return(로딩)보다 **위**에 둔다(#838 Hooks 순서 사고와 같은 자리).
-  const sentenceList = useMemo(() => {
-    const detected = looksLikeSentenceList(rawText);
-    const stats = detected ? sentenceListStats(rawText) : { lines: 0, blankRatio: 0, avgLen: 0 };
-    const per = clampLinesPerChapter(linesPerChapter);
-    return { detected, stats, chapterCount: detected ? Math.ceil(stats.lines / per) : 0 };
-  }, [rawText, linesPerChapter]);
-
   // 챕터별 문장 범위("1~16번") — 누적 계산이라 [합치기]로 경계를 바꿔도 그대로 맞는다.
   const chapterRanges = useMemo(() => {
     if (bookDraft?.origin !== 'sentences') return [];
@@ -369,8 +363,16 @@ export default function MaterialAddPage() {
 
       <MaterialAddEpubSection toast={toast} onReady={handleEpubReady} onBookReady={handleEpubBookReady} />
 
-      {/* 책 초안 — EPUB 반입은 EPUB 섹션 바로 아래에서 결과를 보여준다(누른 자리) */}
-      {bookDraft?.origin === 'epub' && (
+      <MaterialAddSentenceSection
+        toast={toast}
+        onReady={handleSentenceBookReady}
+        seedText={sentenceSeed}
+        onSeedConsumed={() => setSentenceSeed('')}
+      />
+
+      {/* 책 초안은 **그것을 만든 문 옆**에 펼친다 — 위쪽 입구(EPUB·문장 목록)에서 왔으면 여기,
+          본문 폼에서 나눴으면 텍스트 칸 아래. 한 자리에 고정하면 누른 자리와 결과가 갈린다. */}
+      {(bookDraft?.origin === 'epub' || bookDraft?.origin === 'sentences') && (
         <BookDraftPanel
           draft={bookDraft}
           setDraft={setBookDraft}
@@ -529,9 +531,8 @@ export default function MaterialAddPage() {
             </div>
           )}
 
-          {/* 붙여넣기 분할 결과는 누른 자리(텍스트 칸 바로 아래)에 펼친다 — 위쪽에 그리면
-              버튼을 눌러도 화면 밖에서 나타나 아무 일도 안 일어난 것처럼 보인다. */}
-          {bookDraft && bookDraft.origin !== 'epub' && (
+          {/* 본문 폼에서 나눈 결과는 누른 자리(텍스트 칸 바로 아래)에 펼친다. */}
+          {bookDraft?.origin === 'text' && (
             <div style={{ marginTop: 12 }}>
               <BookDraftPanel
                 draft={bookDraft}
@@ -546,45 +547,35 @@ export default function MaterialAddPage() {
             </div>
           )}
 
-          {/* 문장 목록 감지 배너 — 어휘 교재 예문집처럼 한 줄 한 문장인 자료를 과 단위로 나눈다.
-              감지가 틀려도 배너일 뿐이라 무시하고 그냥 등록하면 된다. */}
-          {sentenceList.detected && !bookDraft && (
+          {/* 문장 목록을 본문 폼에 붙여넣은 경우 — 여기서 처리하지 않고 위쪽 입구로 넘긴다.
+              그대로 한 자료로 분석하면 빈 줄 없는 연속 줄이 100줄 캡에 잘려 나머지가 영구
+              '미분석'으로 굳는다(bookSplit.js §문장 목록 반입). 문은 하나로 둔다. */}
+          {looksLikeSentenceList(rawText) && !bookDraft && (
             <div style={{
-              marginTop: 10, padding: '12px 14px',
+              marginTop: 10, padding: '10px 12px', display: 'flex', alignItems: 'center',
+              gap: 10, flexWrap: 'wrap',
               background: 'var(--primary-glow)', border: '1px solid var(--primary)',
               borderRadius: 'var(--radius-md)',
             }}>
-              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary-light)' }}>
-                📋 문장 목록처럼 보여요
-              </div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: 3 }}>
-                {sentenceList.stats.lines.toLocaleString()}줄 · 평균 {Math.round(sentenceList.stats.avgLen)}자 ·
-                {' '}한 덩어리로 두면 {LINES_PER_REQUEST_CAP}줄까지만 분석돼요
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-                <input
-                  type="number"
-                  min={1}
-                  max={LINES_PER_REQUEST_CAP}
-                  value={linesPerChapter}
-                  onChange={(e) => setLinesPerChapter(e.target.value)}
-                  aria-label="한 과에 넣을 문장 수"
-                  style={{
-                    width: 64, padding: '5px 8px', fontSize: '0.85rem', textAlign: 'right',
-                    fontVariantNumeric: 'tabular-nums',
-                    background: 'var(--bg-secondary)', color: 'var(--text-primary)',
-                    border: '1px solid var(--border, var(--text-muted))', borderRadius: 'var(--radius-sm, 6px)',
-                  }}
-                />
-                <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                  문장씩 → <strong style={{ color: 'var(--text-primary)' }}>{sentenceList.chapterCount}챕터</strong>
-                </span>
-                <Button size="sm" onClick={handleSplitSentenceList} style={{ marginLeft: 'auto' }}>
-                  챕터로 나누기
-                </Button>
-              </div>
+              <span style={{ flex: 1, minWidth: 200, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                📋 한 줄에 한 문장씩인 목록 같아요 — 이대로 한 자료로 만들면{' '}
+                {LINES_PER_REQUEST_CAP}문장까지만 분석돼요.
+              </span>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setSentenceSeed(rawText);
+                  setRawText('');
+                  setTimeout(() => {
+                    document.getElementById('sentence-text')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }, 100);
+                }}
+              >
+                문장 목록으로 옮기기
+              </Button>
             </div>
           )}
+
         </div>
 
         {/* Progress */}
