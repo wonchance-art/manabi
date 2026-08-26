@@ -102,3 +102,33 @@ export function buildContextPrompt(text, langKo) {
 
 규칙: 마크다운 **굵게**만 사용, 간결하게`;
 }
+
+/* ─────────────────────────────────────────────────────────────
+ * [더 쉽게] (#1077-3, 오너 승인 2026-08-26) — 지정 문장을 **같은 언어의 쉬운 말**로.
+ * 번역 전 중간 계단: 좌측 번역(한국어)을 보기 전에 원어 안에서 한 번 더 이해를 시도하게
+ * 한다(graded reader의 i+1 다리). 이 모듈에 두는 이유: 드래그 문장 온디맨드 프롬프트의
+ * 정본 집이 여기다(buildContextPrompt·buildGrammarPrompt와 형제).
+ * ─────────────────────────────────────────────────────────────*/
+
+/** 문장 단위 localStorage 캐시 키 — viewer_tx(번역)·viewer_gr(문법)과 같은 관례. */
+export function easierCacheKey(language, text) {
+  return `viewer_ez:${language}:${String(text || '').slice(0, 200)}`;
+}
+
+/** 쉬운 말 프롬프트 — 번역이 아니라 같은 언어 안의 바꿔 말하기임을 명시한다. */
+export function buildEasierPrompt(text, langKo) {
+  return `다음 ${langKo} 문장을 **같은 ${langKo}**로, 더 쉬운 어휘와 짧은 구조로 바꿔 주세요.
+한국어 번역이 아니라 ${langKo} 안에서의 바꿔 말하기입니다.
+
+"${text}"
+
+아래 형식 정확히 따라 출력. 도입 문구 없이 바로:
+
+**쉬운 문장**
+같은 뜻의 쉬운 ${langKo} 문장
+
+**바꾼 말**
+어려운 표현 → 쉬운 표현 (한 줄에 하나, 최대 3개. 바꾼 말이 없으면 이 항목을 통째로 생략)
+
+규칙: 마크다운 **굵게**만 사용, 의미 보존, 원문에 없는 정보 추가 금지`;
+}

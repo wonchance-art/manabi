@@ -9535,6 +9535,25 @@ body.is-review-session .page-container { padding-top: 8px; }
 /* 개별 세션(단어만·문법만)은 보조 — 작은 고스트 한 줄 */
 .vocab-hero__split { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
 
+/* ⚔ 재대결(#1077-15) — 헷갈린 단어 집중 큐 진입 스트립. 덱의 복습 톤(--warning)과 같은
+   계열이되, 히어로 주 버튼과 경쟁하지 않게 은은한 배경만. */
+.vocab-rematch {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 9px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  color: var(--warning);
+  background: rgba(212, 150, 42, 0.12);
+  border: 1px solid rgba(212, 150, 42, 0.35);
+  border-radius: var(--radius-md);
+}
+.vocab-rematch:hover { background: rgba(212, 150, 42, 0.2); }
+.vocab-rematch strong { font-weight: 800; }
+
 /* 상단 미니 현황 strip — 복습/신규/학습 중/숙련 한눈에 */
 .vocab-stat-strip {
   display: flex; flex-wrap: wrap; align-items: baseline;

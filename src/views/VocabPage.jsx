@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
@@ -20,6 +20,7 @@ import { friendlyToastMessage } from '../lib/errorMessage';
 import { detectLang } from '../lib/constants';
 import { stripSourceLangInMeaning } from '../lib/studySession';
 import { useVocabData } from '../lib/useVocabData';
+import { confusedVocabWords, CONFUSED_MIN, CONFUSED_SINCE_DAYS } from '../lib/confusedQueue';
 // skillRung은 콘텐츠 무의존 순수 모듈 — studyMaterials(→content 레지스트리)를 끌어오지 않아
 // 'use client' 번들에 교재 전체가 딸려 오지 않는다.
 import { deriveVocabRungs, vocabTypeForRung } from '../lib/skillRung';
@@ -461,11 +462,10 @@ export default function VocabPage() {
     return () => { alive = false; };
   }, [user?.id]);
 
-  const startReview = async () => {
-    // 복습 예정(학습한 단어) 먼저, 그다음 하루 한도 내 새 단어
-    const reviews = session.reviewsDue;
-    const news = session.newAvailable.slice(0, session.newToday);
-    const queueWords = [...reviews, ...news];
+  // 세션 시작 공통 경로 — 진입점(오늘 복습·재대결)은 **큐만** 다르고, rung 유도·상태 초기화·
+  // 채점(handleScore → recordReviewCompleted)은 전부 이 한 길이다. 재대결이 두 번째 문이
+  // 되면서 정본화: 채점 경로를 문마다 새로 만들지 않는다.
+  const startSession = async (queueWords) => {
     const queue = queueWords.map(v => v.id);
     if (queue.length === 0) return;
 
@@ -499,6 +499,36 @@ export default function VocabPage() {
       Notification.requestPermission();
     }
   };
+
+  // 복습 예정(학습한 단어) 먼저, 그다음 하루 한도 내 새 단어
+  const startReview = () =>
+    startSession([...session.reviewsDue, ...session.newAvailable.slice(0, session.newToday)]);
+
+  // ⚔ 헷갈린 단어 재대결(#1077-15) — 최근 2주 오답 가중 상위(computeWeakness 정본)만 모은
+  // 집중 큐. 배너·선택은 조회만 하고, 채점은 위 공통 경로 그대로라 여기서 맞히면 약점
+  // 점수가 내려가 일요일 약점 세션에서 자연히 빠진다(공유 원장이 곧 dedup — 승인된 이음새).
+  const { data: recentVocabEvents = [] } = useQuery({
+    queryKey: ['confused-events', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('review_events')
+        .select('source, item_key, correct, created_at')
+        .eq('user_id', user.id)
+        .eq('source', 'vocab')
+        .gte('created_at', new Date(Date.now() - CONFUSED_SINCE_DAYS * 86400000).toISOString())
+        .order('created_at', { ascending: false })
+        .limit(400);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user,
+    staleTime: 1000 * 60,
+  });
+  const confused = useMemo(
+    () => confusedVocabWords(recentVocabEvents, vocab),
+    [recentVocabEvents, vocab],
+  );
+  const startRematch = () => startSession(confused.map((c) => c.word));
 
   // ── 대시보드 데이터 ──
   // 문법 큐 조망(미래) — '지금 할 것'은 히어로 버튼이 말하므로 여기선 예정만 본다.
@@ -732,6 +762,11 @@ export default function VocabPage() {
                         </Link>
                       )}
                     </div>
+                  )}
+                  {confused.length >= CONFUSED_MIN && (
+                    <button type="button" className="vocab-rematch" onClick={startRematch}>
+                      ⚔ 헷갈린 말 <strong>{confused.length}개</strong> — 재대결 시작 →
+                    </button>
                   )}
                 </>
               )}
