@@ -45,6 +45,7 @@ import { useGroupReadPush } from '../lib/useGroupReadPush';
 import { useScrollRestore } from '../lib/useScrollRestore';
 import { listHanjaHunEum, toJaForm } from '../lib/hanjaKo';
 import { useGrammarDetail } from '../lib/useGrammarDetail';
+import { useEasierText } from '../lib/useEasierText';
 import { buildContextPrompt } from '../lib/grammarDetail';
 import { analysisCacheKey, clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
@@ -179,6 +180,8 @@ export default function ViewerPage() {
 
   // [자세히] 인라인 문법 해설(오너 확정) — 모달·체크박스 없이 시트 좌측에서 펼친다.
   const grammar = useGrammarDetail({ materialLang, toast });
+  // [더 쉽게] (#1077-3) — 지정 문장을 같은 언어의 쉬운 말로. 같은 패널·같은 결.
+  const easier = useEasierText({ materialLang, toast });
   // 자료 언어의 BCP 47 태그 — :lang() 폰트 규칙(zh=SC·ja=JP)의 스위치.
   const contentLangTag = materialLang === 'Chinese' ? 'zh-Hans'
     : materialLang === 'Japanese' ? 'ja' : undefined;
@@ -605,6 +608,7 @@ export default function ViewerPage() {
       setPickedLineIdx(null); // 막대 지정 이펙트와 상호 배타
       setSelectedRangeText(text);
       grammar.reset(); // 다른 문장의 해설이 남지 않게
+      easier.reset();  // 다른 문장의 쉬운 말도 함께
       runSelectionAnalysis(text);
     },
   });
@@ -1480,6 +1484,24 @@ export default function ViewerPage() {
         </div>
       )}
       <div className="pdf-context__text" dangerouslySetInnerHTML={{ __html: formatDetail(leftPanelResult) }} />
+
+      {/* [더 쉽게] (#1077-3) — 번역을 보기 전 원어 안의 한 계단. 결과는 원어 문장이라
+          본문과 같은 :lang() 폰트 규칙을 태운다. */}
+      {!easier.open ? (
+        <button
+          className="grammar-btn grammar-detail__toggle"
+          onClick={() => easier.run(leftPanelText)}
+          disabled={!leftPanelText}
+        >🔤 더 쉽게 ▾</button>
+      ) : (
+        <div className="grammar-detail">
+          {easier.loading ? (
+            <div className="grammar-detail__loading">쉬운 문장 생성 중…</div>
+          ) : (
+            <div className="pdf-context__text" lang={contentLangTag} dangerouslySetInnerHTML={{ __html: formatDetail(easier.result) }} />
+          )}
+        </div>
+      )}
 
       {/* [자세히] — 문법 온디맨드(구조+패턴 통합, 정본 챕터 연결). 번역·어휘는 이미
           위(맥락)와 오른쪽(단어 목록)이 담당하므로 여기서 반복하지 않는다. */}
