@@ -111,17 +111,25 @@ VAPID_SUBJECT=<mailto:운영자 이메일 또는 https://사이트 도메인>
   - 등록 절차: Vercel 대시보드 → 프로젝트 → Settings → Environment Variables에서 **Preview**와 **Production** 두 환경 모두에 3키를 등록한다(Preview 프로덕션 검증에도 `/api/push/test`를 쓰므로 Preview 누락 시 그 환경만 조용히 무발송).
   - `VAPID_SUBJECT`는 `mailto:` 또는 `https://` 형식이어야 web-push 라이브러리가 허용한다.
 
-### `/api/cron/send-forecast` — vercel.json에 아직 등록하지 않았다
+### `/api/cron/send-forecast` — 하루 1회 등록 완료 (오너 확정 2026-08-26)
 
-**의도적으로 `vercel.json`을 수정하지 않았다.** 이유: Vercel **Hobby 플랜은 cron 2개·일 1회 스케줄 제한**이 있고, 현재 `vercel.json`에 이미 `fetch-suggestions`(1일 1회)·`backfill-ipa`(1일 1회) 2건이 등록돼 자리가 꽉 차 있다. `send-forecast`는 기획상 **매시 실행**(`preferred_hour` 매칭)이 필요해 Hobby 플랜에서는 등록 자체가 배포를 깨뜨릴 수 있다(cron 개수 초과 또는 매시 스케줄 거부).
+`vercel.json`에 `"schedule": "0 11 * * *"`(= **KST 20시**)로 등록돼 있다.
 
-**지시:** Vercel 플랜이 **Pro 이상**임을 확인한 뒤에만 `vercel.json`의 `crons` 배열에 아래 항목을 추가하라.
+**왜 하루 1회인가.** Vercel **Hobby의 실제 제약은 cron 개수가 아니라 주기**다 — 개수 상한은
+모든 플랜 100개이고, **하루 2회 이상 도는 스케줄은 배포 단계에서 거부된다.** 기획상의
+매시 실행(`preferred_hour` 매칭)은 Hobby에서 불가능하므로, 시각 매칭을 버리고 하루 한 번
+전원을 훑는다. 11:00 UTC를 고른 이유는 `push.js`의 `preferred_hour` 기본값(사용자 로컬
+20시)과 같은 시각이기 때문이다.
 
-```json
-{ "path": "/api/cron/send-forecast", "schedule": "0 * * * *" }
-```
+**중복 방지.** `hasSentToday`(하루 1회 상한)가 단독으로 맡는다. Hobby는 "정시 보장 없음
+(해당 시간 내 아무 때나)"이라 재시도로 두 번 돌아도 두 번 보내지 않는다.
 
-**그 전까지의 검증 경로:** `vercel.json`에 cron이 없어도 라우트 자체는 배포돼 있다. 로그인 후 `/api/push/test`(POST, Bearer 세션 토큰)를 호출하면 하루 1회 상한을 무시하고 즉시 발송해 발송 회로 전체(카피 엔진·VAPID·구독)를 수동으로 확인할 수 있다. cron 자동 실행(매시·시간대 매칭)만 Pro 전환 후로 미뤄진 것이다.
+**Pro로 올린다면** 두 곳을 **함께** 바꾼다 — `vercel.json`의 스케줄을 `0 * * * *`로,
+라우트의 구독 조회에 `.eq('preferred_hour', hourUtc)`를 되살린다. 하나만 바꾸면
+`src/app/api/__tests__/cronRegistration.test.js`가 막는다(하루 1회 ↔ 시각 무필터가 짝).
+
+**수동 검증 경로:** 로그인 후 `/api/push/test`(POST, Bearer 세션 토큰)를 호출하면 하루 1회
+상한을 무시하고 즉시 발송해 발송 회로 전체(카피 엔진·VAPID·구독)를 확인할 수 있다.
 
 ## 3. 배포 후 관찰 포인트
 

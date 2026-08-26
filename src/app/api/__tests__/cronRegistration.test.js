@@ -5,6 +5,10 @@ import path from 'node:path';
 const root = process.cwd();
 const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
 
+/** 주석을 걷어낸 코드 — 설명에 쓴 예시 문구가 계약에 잡히지 않게(반대로 필터를 주석
+ *  처리해 놓고 통과하는 것도 막는다). */
+const codeOf = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+
 /**
  * cron 라우트 ↔ vercel.json 등록 계약.
  *
@@ -18,11 +22,8 @@ const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
  */
 
 // 아직 등록하지 못한 cron 라우트 — 반드시 이유를 적는다. 등록되는 순간 여기서 지운다.
-const PENDING = {
-  'send-forecast':
-    'Vercel Hobby는 cron 2건이 상한인데 fetch-suggestions·backfill-ipa가 이미 차지했다. ' +
-    '오너 결정 대기: ⑴ Pro 전환 ⑵ backfill-ipa 슬롯 양보 ⑶ fetch-suggestions에 합병.',
-};
+// (2026-08-26 현재 비어 있다 — send-forecast가 등록되며 마지막 항목이 빠졌다.)
+const PENDING = {};
 
 const vercel = JSON.parse(read('vercel.json'));
 const registered = new Set((vercel.crons || []).map((c) => c.path));
@@ -63,9 +64,32 @@ describe('cron 라우트 등록 계약', () => {
     }
   });
 
-  it('cron 2건 상한 — Hobby 요금제 결합점(늘리려면 요금제부터)', () => {
-    // Vercel Hobby는 cron job 2개가 상한이다. 3번째를 추가하면 배포가 거부된다.
-    // 요금제를 올려 상한이 바뀌면 이 숫자와 PENDING을 함께 고친다 — 그게 이 핀의 목적이다.
-    expect((vercel.crons || []).length).toBeLessThanOrEqual(2);
+  it('모든 cron이 하루 1회 이하 주기다 — Hobby 요금제의 실제 제약', () => {
+    // 오해 정정(2026-08-26): Hobby의 제약은 "cron 2건"이 아니라 **주기**다. 개수는 모든
+    // 플랜에서 100개이고, 하루 2회 이상 도는 스케줄은 **배포 단계에서 거부된다**.
+    // 분·시가 둘 다 단일 숫자면 하루 최대 1회다(일·월·요일 필드는 빈도를 줄이기만 한다).
+    for (const c of vercel.crons || []) {
+      const [minute, hour] = String(c.schedule).trim().split(/\s+/);
+      expect(minute, `${c.path}: 분 필드가 단일 값이어야 한다 (${c.schedule})`).toMatch(/^\d+$/);
+      expect(hour, `${c.path}: 시 필드가 단일 값이어야 한다 (${c.schedule})`).toMatch(/^\d+$/);
+    }
+  });
+
+  it('예보 푸시는 하루 1회 스케줄과 시각 무필터가 짝이다', () => {
+    // 하루 1회인데 preferred_hour로 거르면 그 시각을 가진 소수만 받고 나머지는 조용히 빠진다.
+    // Pro로 올려 매시로 바꾸는 날 **둘을 함께** 바꾸게 묶어 둔다.
+    const route = codeOf(read('src/app/api/cron/send-forecast/route.js'));
+    const cron = (vercel.crons || []).find((c) => c.path === '/api/cron/send-forecast');
+    if (!cron) return;                       // 아직 미등록이면 위 PENDING 계약이 맡는다
+    const [minute, hour] = String(cron.schedule).trim().split(/\s+/);
+    const daily = /^\d+$/.test(minute) && /^\d+$/.test(hour);
+    if (daily) {
+      expect(route, '하루 1회 크론인데 preferred_hour로 거르면 대부분이 빠진다')
+        .not.toMatch(/\.eq\(\s*'preferred_hour'/);
+      expect(route, '중복 방지가 hasSentToday 하나뿐이므로 반드시 호출해야 한다')
+        .toContain('hasSentToday(');
+    } else {
+      expect(route).toMatch(/\.eq\(\s*'preferred_hour'/);
+    }
   });
 });
