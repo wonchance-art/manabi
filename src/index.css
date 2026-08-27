@@ -2480,6 +2480,44 @@ body.is-review-session .page-container { padding-top: 8px; }
   50%      { box-shadow: 0 0 6px 1px rgba(212, 150, 42, 0.4); }
 }
 
+/* ── 단어 상태 하이라이트 (링큐식 B안 — 오너 확정 2026-08-27, 목업 아티팩트 합의) ──
+   신규(파랑 진)·만난 말(파랑 연)·학습 중(노랑)·복습(주황, 기존 펄스 유지)·앎(무표시).
+   .reader-area--hl가 붙을 때만 발동(툴바 🖍 토글 — 옵트인 기본 꺼짐). 색은 테마별
+   변수(--picked-bg 선례). :not(--picked) 가드 — 문장/단어 지정 배경이 항상 이긴다. */
+.reader-area--light {
+  --ws-new: rgba(37, 99, 235, 0.15);
+  --ws-met: rgba(37, 99, 235, 0.07);
+  --ws-learn: rgba(212, 160, 8, 0.18);
+  --ws-due: rgba(212, 150, 42, 0.26);
+}
+.reader-area--dark {
+  --ws-new: rgba(110, 160, 246, 0.22);
+  --ws-met: rgba(110, 160, 246, 0.10);
+  --ws-learn: rgba(227, 185, 60, 0.20);
+  --ws-due: rgba(232, 169, 79, 0.30);
+}
+.reader-area--hl .word-token--new:not(.word-token--picked) .surface {
+  background: var(--ws-new);
+  border-radius: 5px;
+}
+.reader-area--hl .word-token--met:not(.word-token--picked) .surface {
+  background: var(--ws-met);
+  border-radius: 5px;
+}
+/* 학습 중: 밑줄+흐림 대신 배경 — 흐림(0.6)을 풀어야 노랑이 탁해지지 않는다(목업 B). */
+.reader-area--hl .word-token--saved:not(.word-token--picked) .surface {
+  background: var(--ws-learn);
+  border-radius: 5px;
+  opacity: 1;
+  border-bottom-color: transparent;
+}
+/* 복습: 배경 + 기존 box-shadow 펄스 유지(배경과 호환). 밑줄만 배경으로 대체(폭 불변). */
+.reader-area--hl .word-token--due:not(.word-token--picked) .surface {
+  background: var(--ws-due);
+  border-radius: 5px;
+  border-bottom-color: transparent;
+}
+
 /* failed 토큰 전용 빈 furigana 영역 */
 .furigana {
   display: none;

@@ -111,9 +111,10 @@ describe('집중 모드 배선', () => {
 
   it('토글이 설정에 있고 언어 무관이다', () => {
     expect(viewer).toContain("'☑ 집중 모드 켜짐' : '◻ 집중 모드 꺼짐'");
-    // 중국어 조건(materialLang === 'Chinese') 블록 밖 — 후리가나 토글과 같은 층위
+    // 중국어 조건(materialLang === 'Chinese') 블록 밖 — 후리가나 토글과 같은 층위.
+    // 창 폭 1400: 사이에 상태 하이라이트 토글(2026-08-27)이 끼어도 층위 계약은 동일하다.
     const idx = viewer.indexOf('집중 모드 켜짐');
-    const before = viewer.slice(idx - 600, idx);
+    const before = viewer.slice(idx - 1400, idx);
     expect(before).toContain('후리가나');
     expect(before).not.toContain("materialLang === 'Chinese' && (");
   });
