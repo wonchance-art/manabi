@@ -2518,6 +2518,31 @@ body.is-review-session .page-container { padding-top: 8px; }
   border-bottom-color: transparent;
 }
 
+/* 지정(단어·문장·범위 = --picked) 중에도 상태 정보 유지(오너 지적 2026-08-27) —
+   배경은 지정색이 이기고, 상태는 밑줄로 강등 표시(A안 문법을 지정 중에만 차용).
+   border 2px는 기본 규칙이 폭을 이미 예약해 레이아웃 불변. picked+due는 기본 규칙의
+   주황 밑줄+펄스가 그대로 남으므로(위 :not 가드가 비지정에만 투명화) 별도 규칙 불필요. */
+.reader-area--light {
+  --ws-new-ln: #2563eb;
+  --ws-met-ln: #85ace8;
+  --ws-learn-ln: #c99700;
+}
+.reader-area--dark {
+  --ws-new-ln: #6ea0f6;
+  --ws-met-ln: #55719e;
+  --ws-learn-ln: #e3b93c;
+}
+.reader-area--hl .word-token--picked.word-token--new .surface {
+  border-bottom: 2px dotted var(--ws-new-ln);
+}
+.reader-area--hl .word-token--picked.word-token--met .surface {
+  border-bottom: 2px dotted var(--ws-met-ln);
+}
+.reader-area--hl .word-token--picked.word-token--saved .surface {
+  border-bottom-color: var(--ws-learn-ln);
+  opacity: 1;
+}
+
 /* failed 토큰 전용 빈 furigana 영역 */
 .furigana {
   display: none;
