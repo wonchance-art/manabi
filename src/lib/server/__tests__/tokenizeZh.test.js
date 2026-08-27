@@ -99,3 +99,48 @@ describe('문맥 병음 — 다음자·변조', () => {
     expect(toks.find((t) => t.text === '世界')?.furigana).toBe('shì jiè');
   });
 });
+
+// 필독 경성(轻声) 오버라이드(zhNeutralTone.js) — pinyin-pro가 원조로 내는 어휘를
+// 토큰 단위로 교정한다(오너 실측 보고: 怪不得 → guài bù dé). customPinyin 전역 등록은
+// 문자열 매칭이 단어 경계를 무시해(这本|事先에 本事 매칭, 东西南北 오염 실측) 쓰지 않는다.
+describe('필독 경성 오버라이드', () => {
+  const pyOf = (line, word) => tokenizeZhLine(line).find((t) => t.text === word)?.furigana;
+
+  it('怪不得 → guài bu de (不·得 경성)', () => {
+    expect(pyOf('怪不得你不知道这件事情。', '怪不得')).toBe('guài bu de');
+  });
+
+  it('어휘 경성: 朋友·时候·知道', () => {
+    expect(pyOf('我朋友知道那个时候。', '朋友')).toBe('péng you');
+    expect(pyOf('我朋友知道那个时候。', '知道')).toBe('zhī dao');
+    expect(pyOf('我朋友知道那个时候。', '时候')).toBe('shí hou');
+  });
+
+  it('가능보어 V不C: 对不起·来不及', () => {
+    expect(pyOf('对不起，来不及了。', '对不起')).toBe('duì bu qǐ');
+    expect(pyOf('对不起，来不及了。', '来不及')).toBe('lái bu jí');
+  });
+
+  it('사전 밖 줄 병음은 그대로 — 성조 변조(不对→bú) 불변', () => {
+    expect(pyOf('这个不对。', '不对') ?? pyOf('这个不对。', '不')).toMatch(/^bú/);
+  });
+
+  it('성어는 원조 유지 — 사전 미등재라 오버라이드 비적용', () => {
+    expect(pyOf('他迫不得已才这样做。', '迫不得已')).toBe('pò bù dé yǐ');
+  });
+
+  it('토큰 정확 일치만 적용 — 东西南北(단일 토큰)는 오염되지 않는다', () => {
+    // 东西(물건)는 dōng xi로 교정하되, 东西南北는 jieba가 한 토큰으로 잘라 사전 키와
+    // 불일치 → 줄 병음(dōng xī …) 유지. customPinyin였다면 여기가 오염됐다(실측).
+    expect(pyOf('我买了很多东西。', '东西')).toBe('dōng xi');
+    expect(pyOf('东西南北都逛了。', '东西南北')).toBe('dōng xī nán běi');
+  });
+
+  it('오버라이드 뒤 토큰의 정렬이 어긋나지 않는다', () => {
+    const toks = tokenizeZhLine('我朋友买了饺子和葡萄。');
+    expect(toks.find((t) => t.text === '饺子')?.furigana).toBe('jiǎo zi');
+    expect(toks.find((t) => t.text === '葡萄')?.furigana).toBe('pú tao');
+    // 사전 밖 후속 토큰도 줄 병음 정렬 유지
+    expect(toks.find((t) => t.text === '和')?.furigana).toBe('hé');
+  });
+});
