@@ -21,6 +21,8 @@ export function useViewerSettings() {
   const [showToneColors, setShowToneColorsRaw] = useState(() => readPref('showToneColors', false));
   // 집중 모드 — 지정 문장만 원래 밝기, 나머지는 어둡게(오너 승인 2026-08-19). 옵트인: 기본 꺼짐.
   const [focusMode, setFocusModeRaw] = useState(() => readPref('focusMode', false));
+  // 단어 상태 하이라이트(링큐식 B안 — 배경색, 오너 확정 2026-08-27). 옵트인: 기본 꺼짐.
+  const [wordStateHl, setWordStateHlRaw] = useState(() => readPref('wordStateHl', false));
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const setFontSize = (v) => { const val = typeof v === 'function' ? v(fontSize) : v; setFontSizeRaw(val); savePref('fontSize', val); };
@@ -32,6 +34,7 @@ export function useViewerSettings() {
   const setAutoSpeakOnClick = (v) => { const val = typeof v === 'function' ? v(autoSpeakOnClick) : v; setAutoSpeakOnClickRaw(val); savePref('autoSpeakOnClick', val); };
   const setFocusMode = (v) => { const val = typeof v === 'function' ? v(focusMode) : v; setFocusModeRaw(val); savePref('focusMode', val); };
   const setShowToneColors = (v) => { const val = typeof v === 'function' ? v(showToneColors) : v; setShowToneColorsRaw(val); savePref('showToneColors', val); };
+  const setWordStateHl = (v) => { const val = typeof v === 'function' ? v(wordStateHl) : v; setWordStateHlRaw(val); savePref('wordStateHl', val); };
   const setShowHanjaKo = (v) => { const val = typeof v === 'function' ? v(showHanjaKo) : v; setShowHanjaKoRaw(val); savePref('showHanjaKo', val); };
 
   return {
@@ -44,6 +47,7 @@ export function useViewerSettings() {
     autoSpeakOnClick, setAutoSpeakOnClick,
     showHanjaKo, setShowHanjaKo,
     showToneColors, setShowToneColors,
+    wordStateHl, setWordStateHl,
     focusMode, setFocusMode,
     settingsOpen, setSettingsOpen,
   };

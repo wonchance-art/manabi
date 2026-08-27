@@ -58,6 +58,7 @@ import { recordVocabEncounters } from '../components/world/vocabEncounters';
 import { syncVocabEncounters } from '../components/world/vocabEncounterSync';
 import { encounterLookupLang, loadMetWordKeys, loadRefVocabLookup } from '../lib/refVocabLookup';
 import { normalizeRefWordKey } from '../lib/refWordNormalize';
+import { isWordToken, wordStateOf, wordStateExtraClass } from '../lib/wordState';
 import { getBook } from '../lib/bookMeta';
 import { getJaRef, formatJaRef, getJaWarn } from '../lib/jaRef';
 import TokenEditPanel from './TokenEditPanel';
@@ -148,6 +149,7 @@ export default function ViewerPage() {
   const { fontSize, setFontSize, lineGap, setLineGap, charGap, setCharGap,
           showHanjaKo, setShowHanjaKo,
           showToneColors, setShowToneColors,
+          wordStateHl, setWordStateHl,
           focusMode, setFocusMode,
           theme, setTheme, fontFamily, setFontFamily, showFurigana, setShowFurigana,
           autoSpeakOnClick, setAutoSpeakOnClick,
@@ -1769,6 +1771,16 @@ export default function ViewerPage() {
             {showFurigana ? '후리가나 숨기기' : '후리가나 보이기'}
           </button>
 
+          {/* 단어 상태 하이라이트(링큐식 B안 — 오너 확정 2026-08-27, 목업 합의): 신규·만남·
+              학습·복습을 배경색으로. 옵트인 기본 꺼짐 — 켰을 때만 상태 계산(성능·기본 경로 불변). */}
+          <button
+            onClick={() => setWordStateHl(v => !v)}
+            className={`grammar-btn ${wordStateHl ? 'grammar-btn--active' : ''}`}
+            title="단어 상태 하이라이트 — 신규(파랑)·만난 말(연파랑)·학습 중(노랑)·복습(주황), 아는 말은 무표시"
+          >
+            {wordStateHl ? '🖍 상태 하이라이트 켜짐' : '🖍 상태 하이라이트 꺼짐'}
+          </button>
+
           <button
             onClick={() => setFocusMode(v => !v)}
             className={`grammar-btn ${focusMode ? 'grammar-btn--active' : ''}`}
@@ -1931,7 +1943,7 @@ export default function ViewerPage() {
       {/* Reader Area — 인앱 토큰 범위 지정(드래그) 이벤트는 여기서 위임 수신 */}
       <div
         ref={readerRef}
-        className={`card reader-area reader-area--${theme}${focusMode && (pickedLineIdx !== null || tokenRange.range) ? ' reader-area--focus' : ''}`}
+        className={`card reader-area reader-area--${theme}${focusMode && (pickedLineIdx !== null || tokenRange.range) ? ' reader-area--focus' : ''}${wordStateHl ? ' reader-area--hl' : ''}`}
         style={{
           fontSize: `${fontSize}rem`,
           // 자료 언어의 표준 자형이 우선(오너 확정) — 중국어는 SC, 일본어는 JP를 사용자
@@ -2070,6 +2082,16 @@ export default function ViewerPage() {
             }
             const isSaved = isTokenSaved(savedWords, token);
             const isDue = isSaved && isTokenDue(savedWords, token);
+            // 상태 하이라이트(B안) — 켰을 때만 앎·만남을 조회해 met/new 클래스를 더한다.
+            // 앎 대조는 단어 카드의 isKnown과 동일 계약(표기·base_form), 만남 대조는
+            // 단어 목록의 조용한 점과 동일 계약(normalizeRefWordKey — §4.7).
+            const hlClass = wordStateHl ? wordStateExtraClass(wordStateOf({
+              isWord: isWordToken(token),
+              isSaved,
+              isDue,
+              isKnown: !!(knownWordSet?.has(token.text) || (token.base_form && knownWordSet?.has(token.base_form))),
+              isMet: !!(metCode && (metWordSet.has(normalizeRefWordKey(metCode, token.base_form)) || metWordSet.has(normalizeRefWordKey(metCode, token.text)))),
+            })) : '';
             // ruby는 토글과 무관하게 항상 만든다 — 폭 예약(ruby[data-pinyin])이 병음을 꺼도
             // 유지돼야 켤 때 글자가 밀리지 않는다(오너 요청 2026-08-19). 끌 때는 rt만 감춘다.
             const rubySegments = token.furigana
@@ -2078,7 +2100,7 @@ export default function ViewerPage() {
             return (
               <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
                 data-tid={tokenId}
-                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${pickedClass}`}
+                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}`}
                 role="button" tabIndex={0}
                 onClick={() => handleTokenClick(token, tokenId)}
                 onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleTokenClick(token, tokenId))}>
