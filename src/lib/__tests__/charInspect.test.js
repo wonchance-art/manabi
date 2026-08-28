@@ -93,6 +93,18 @@ describe('charEtym', () => {
     expect(charEtym('魚', etymTable, { koTable, hunTable })).toBeNull();
     expect(charEtym('あ', etymTable, { koTable, hunTable })).toBeNull();
   });
+
+  it('R5 — 구자체(kyu)와 번체 경유 일본 자형 사슬(jaOfTrad): 乐→樂→楽, 楽→正 樂', () => {
+    const et = { 乐: [5, '丿', '', '樂'], 楽: [13, '木', '', '', '', '樂'] };
+    const jaT = { 樂: '楽' };
+    const a = charEtym('乐', et, { koTable, hunTable, jaTable: jaT });
+    expect(a.jaOfTrad).toBe('楽');
+    expect(a.kyu).toEqual([]);
+    const b = charEtym('楽', et, { koTable, hunTable, jaTable: jaT });
+    expect(b.kyu).toEqual(['樂']);
+    expect(b.jaOfTrad).toBeNull(); // 번체 슬롯이 비어 사슬 없음
+    expect(charEtym('乐', et, { koTable, hunTable }).jaOfTrad).toBeNull(); // jaTable 미로드 안전
+  });
 });
 
 // 증강 R1 — 이 자료 재등장 스캔(신규 데이터 0): 본문 순서가 곧 "곧 다시 만난다"다.
@@ -134,6 +146,16 @@ describe('글자 카드 배선(R1~R3)', () => {
   it('구성 풀이 스토리(R4)는 시드 저작분에만 — 미등재는 조용히 생략', () => {
     expect(viewer).toContain('hanjaStoryTable?.[inspectChar.ch]');
     expect(viewer).toContain('char-inspect__story');
+  });
+
+  it('R5 — 자형 칩(日·繁·简·正)이 전부 탭 가능해 그 자형 카드로 이동한다(④ 오너 확정)', () => {
+    for (const s of [
+      'const formChip = (label, chars, langTag)',
+      'form_${f}',
+      'char-inspect__form',
+      "formChip('正', etym?.kyu || []",
+      'etym?.jaOfTrad',
+    ]) expect(viewer).toContain(s);
   });
 
   it('카드가 구성(성분 탭=재귀)·다시 만나기(이 자료·내 단어)·메타 줄을 그린다', () => {

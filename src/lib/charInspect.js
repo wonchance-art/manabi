@@ -56,17 +56,22 @@ function charLabel(ch, koTable, hunTable) {
 }
 
 /**
- * 자원(字源) 블록 — hanjaEtym.json 항목([획수, 부수, 성분들, 번체, 간체])을 카드가
- * 그릴 형태로 푼다. 성분은 전부 URO(빌드 규칙)라 최소한 음 라벨이 성립하고, 성분
- * 탭 → 그 글자 카드(재귀)는 호출부가 잇는다. 부수는 성분 배지(isRadical)와 메타
- * 한 줄로만 드러난다 — 별도 설명 없음(설계 확정: "부수는 설명하지 않는다").
- * 테이블 미로드·미등재·비한자는 null(조용히 생략 관례).
+ * 자원(字源) 블록 — hanjaEtym.json 항목([획수, 부수, 성분들, 번체, 간체, 구자체])을
+ * 카드가 그릴 형태로 푼다. 성분은 전부 URO(빌드 규칙)라 최소한 음 라벨이 성립하고,
+ * 성분·자형 칩 탭 → 그 글자 카드(재귀)는 호출부가 잇는다. 부수는 성분 배지(isRadical)와
+ * 메타 한 줄로만 드러난다 — 별도 설명 없음(설계 확정: "부수는 설명하지 않는다").
+ * kyu(R5) = 신자체의 정자(구자체) — 간체는 빌드에서 배제돼 正 칩이 거짓말하지 않는다.
+ * jaOfTrad(R5) = 자형 삼각형 사슬: 자기 항목에 일본 자형이 없어도 번체를 경유해
+ * 잇는다(乐 → 樂 → 楽). 테이블 미로드·미등재·비한자는 null(조용히 생략 관례).
  */
-export function charEtym(ch, etymTable, { koTable, hunTable } = {}) {
+export function charEtym(ch, etymTable, { koTable, hunTable, jaTable } = {}) {
   if (!isInspectableChar(ch) || !etymTable) return null;
   const e = etymTable[ch];
   if (!e) return null;
-  const [s, r, c, t, p] = [e[0] || 0, e[1] || '', e[2] || '', e[3] || '', e[4] || ''];
+  const [s, r, c, t, p, k] = [e[0] || 0, e[1] || '', e[2] || '', e[3] || '', e[4] || '', e[5] || ''];
+  const jaOfTrad = jaTable
+    ? [...t].map((x) => jaTable[x]).find((f) => f && f !== ch) || null
+    : null;
   return {
     strokes: s,
     radical: r,
@@ -74,6 +79,8 @@ export function charEtym(ch, etymTable, { koTable, hunTable } = {}) {
     comps: [...c].map((x) => ({ ch: x, label: charLabel(x, koTable, hunTable), isRadical: x === r })),
     trad: [...t],
     simp: [...p],
+    kyu: [...k],
+    jaOfTrad,
   };
 }
 

@@ -20,7 +20,12 @@
 //    번호(n.0)와 일치하는지 전량 검증하고, 하나라도 어긋나면 빌드 실패(자기검증).
 //  · 간체 부수 변형(61' 등)은 번호만 취해 정체 부수로 표기(옥편·훈음 정본과 결).
 //
-// 출력 형식: { 글자: [총획, 부수, 성분들, 번체(≤2), 간체(≤2)] } — 뒤쪽 '' 슬롯은 절단.
+// 출력 형식: { 글자: [총획, 부수, 성분들, 번체(≤2), 간체(≤2), 구자체(≤2)] } — 뒤쪽 '' 슬롯은 절단.
+//
+// 구자체 슬롯(R5 — 오너 승인 2026-08-28 "R5 ㄱㄱ"): 신자체 고유 자형(楽·駅·円…)은
+// Unihan 간번체 필드(중국 간화 기준)가 못 담는다 — 원천 = 우리 hanjaJa 역전(정체→
+// 신자체 2,890쌍 뒤집기) ∪ kJapaneseOldVariant. 번체 슬롯과 겹치는 값은 뺀다
+// (学처럼 간체=신자체인 글자는 繁 칩이 이미 담당 — 칩 중복 방지).
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -77,6 +82,17 @@ const totalStrokes = readProp('kTotalStrokes.txt');
 const rsUnicode = readProp('kRSUnicode.txt');
 const tradVar = readProp('kTraditionalVariant.txt');
 const simpVar = readProp('kSimplifiedVariant.txt');
+const jaOldVar = readProp('kJapaneseOldVariant.txt');
+
+// 구자체 원천 ① — hanjaJa(정체→신자체) 역전: 신자체 → Set(정체). 다대일(弁 ← 辨·瓣·辯)
+// 은 그대로 모아 상한 2에서 자른다. 우주 밖·자기 자신은 제외.
+const jaTable = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'src/lib/data/hanjaJa.json'), 'utf8'));
+const kyuFromJa = new Map();
+for (const [trad, shin] of Object.entries(jaTable)) {
+  if (!shin || shin === trad || !koTable[shin] || !koTable[trad]) continue;
+  if (!kyuFromJa.has(shin)) kyuFromJa.set(shin, new Set());
+  kyuFromJa.get(shin).add(trad);
+}
 
 // 부수표 자기검증 — 각 부수 글자의 kRSUnicode 첫 값이 "번호.0"이어야 한다.
 const radicalErrors = [];
@@ -114,20 +130,22 @@ const decomp = new Map();
   }
 }
 
-// 변형: "U+4E7E U+5E72 U+5E79" → 자기 제외 최대 2자
-function variantsOf(map, cp, self) {
-  const v = map.get(cp);
-  if (!v) return '';
-  const chars = v.split(/\s+/)
+// "U+4E7E U+5E72 U+5E79" → 자기 제외 글자 배열
+function uPlusChars(value, self) {
+  return (value || '').split(/\s+/)
     .map((u) => /^U\+([0-9A-F]+)$/.exec(u))
     .filter(Boolean)
     .map((mm) => String.fromCodePoint(parseInt(mm[1], 16)))
     .filter((c) => c !== self);
-  return chars.slice(0, 2).join('');
+}
+
+// 변형 슬롯: 자기 제외 최대 2자
+function variantsOf(map, cp, self) {
+  return uPlusChars(map.get(cp), self).slice(0, 2).join('');
 }
 
 const out = {};
-const stats = { strokes: 0, radical: 0, comps: 0, trad: 0, simp: 0, skipped: 0 };
+const stats = { strokes: 0, radical: 0, comps: 0, trad: 0, simp: 0, kyu: 0, skipped: 0 };
 for (const ch of universe) {
   const cp = ch.codePointAt(0);
   const s = parseInt((totalStrokes.get(cp) || '').split(/\s+/)[0], 10) || 0;
@@ -137,8 +155,18 @@ for (const ch of universe) {
   const c = decomp.get(ch) || '';
   const t = variantsOf(tradVar, cp, ch);
   const p = variantsOf(simpVar, cp, ch);
-  if (!s && !r && !c && !t && !p) { stats.skipped += 1; continue; }
-  const entry = [s, r, c, t, p];
+  // 구자체(R5): 역전 hanjaJa ∪ kJapaneseOldVariant, 우주 소속만, 繁 슬롯과 중복 제거.
+  // hanjaJa엔 간체 키(乐→楽)도 섞여 있어 역전만 하면 正 칩에 간체가 침투한다(실측:
+  // 楽→"乐樂") — 자기에게 번체가 따로 있는 글자(=간체)는 정자 후보에서 배제한다.
+  const isSimplified = (x) => uPlusChars(tradVar.get(x.codePointAt(0)), x).length > 0;
+  const kyuSet = new Set();
+  for (const x of kyuFromJa.get(ch) || []) if (!isSimplified(x)) kyuSet.add(x);
+  for (const x of uPlusChars(jaOldVar.get(cp), ch)) if (koTable[x] && !isSimplified(x)) kyuSet.add(x);
+  kyuSet.delete(ch);
+  for (const x of t) kyuSet.delete(x);
+  const k = [...kyuSet].slice(0, 2).join('');
+  if (!s && !r && !c && !t && !p && !k) { stats.skipped += 1; continue; }
+  const entry = [s, r, c, t, p, k];
   while (entry.length > 1 && entry[entry.length - 1] === '') entry.pop();
   out[ch] = entry;
   if (s) stats.strokes += 1;
@@ -146,12 +174,13 @@ for (const ch of universe) {
   if (c) stats.comps += 1;
   if (t) stats.trad += 1;
   if (p) stats.simp += 1;
+  if (k) stats.kyu += 1;
 }
 
 fs.writeFileSync(OUT, JSON.stringify(out));
 const kb = (fs.statSync(OUT).size / 1024).toFixed(1);
 console.log(`hanjaEtym.json ${kb}KB · 항목 ${Object.keys(out).length}/${universe.length} (생략 ${stats.skipped})`);
-console.log(`획수 ${stats.strokes} · 부수 ${stats.radical} · 분해 ${stats.comps} · 번체 ${stats.trad} · 간체 ${stats.simp}`);
-for (const probe of ['想', '语', '爱', '相', '心', '干']) {
+console.log(`획수 ${stats.strokes} · 부수 ${stats.radical} · 분해 ${stats.comps} · 번체 ${stats.trad} · 간체 ${stats.simp} · 구자체 ${stats.kyu}`);
+for (const probe of ['想', '语', '爱', '相', '心', '干', '楽', '駅', '円', '学', '弁']) {
   console.log(`${probe} → ${JSON.stringify(out[probe])}`);
 }
