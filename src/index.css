@@ -5054,6 +5054,13 @@ body.is-review-session .page-container { padding-top: 8px; }
   letter-spacing: 0.06em;
   color: var(--text-muted);
 }
+/* 구성 풀이 스토리(R4) — 구성 줄 아래 한 문장, 조용한 톤 */
+.char-inspect__story {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
 .char-inspect__meta { margin-top: 8px; font-size: 0.76rem; color: var(--text-muted); }
 
 /* ⑤ 유의어·반의어(오너 승인) — 뜻 바로 아래 두 줄, 칩 탭 = 그 단어 카드로 */

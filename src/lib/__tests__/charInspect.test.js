@@ -125,9 +125,15 @@ describe('materialWordsWithChar', () => {
 describe('글자 카드 배선(R1~R3)', () => {
   const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
 
-  it('자원 테이블(563KB)은 글자 카드가 실제로 열릴 때만 지연 로드 — 한자 대조 토글로는 안 부른다', () => {
+  it('자원·스토리 테이블은 글자 카드가 실제로 열릴 때만 지연 로드 — 한자 대조 토글로는 안 부른다', () => {
     expect(viewer).toContain("import('../lib/data/hanjaEtym.json')");
+    expect(viewer).toContain("import('../lib/data/hanjaStory.json')");
     expect(viewer).toContain('inspectChar === null || hanjaEtymTable');
+  });
+
+  it('구성 풀이 스토리(R4)는 시드 저작분에만 — 미등재는 조용히 생략', () => {
+    expect(viewer).toContain('hanjaStoryTable?.[inspectChar.ch]');
+    expect(viewer).toContain('char-inspect__story');
   });
 
   it('카드가 구성(성분 탭=재귀)·다시 만나기(이 자료·내 단어)·메타 줄을 그린다', () => {
