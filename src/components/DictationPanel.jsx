@@ -16,7 +16,9 @@ const SEG_STYLE = {
   del: { color: 'var(--warning)', textDecoration: 'line-through' }, // 입력에만 — 잉여
 };
 
-export default function DictationPanel({ sentence, lang, onClose }) {
+// ttsOpts: 뷰어 말하기 속도(readingSheet.ttsOptsFor) 관통 — 같은 시트에서 여는 도구가
+// 설정을 무시하면 안 된다(설정 마감 검수 2026-08-28). 생략 시 기본 속도.
+export default function DictationPanel({ sentence, lang, onClose, ttsOpts }) {
   const { speak, supported: ttsSupported } = useTTS();
   const [typed, setTyped] = useState('');
   const [result, setResult] = useState(null);
@@ -48,7 +50,7 @@ export default function DictationPanel({ sentence, lang, onClose }) {
         </div>
 
         {ttsSupported ? (
-          <Button size="sm" variant="secondary" onClick={() => speak(sentence, lang)}>▷ 다시 듣기</Button>
+          <Button size="sm" variant="secondary" onClick={() => speak(sentence, lang, ttsOpts)}>▷ 다시 듣기</Button>
         ) : (
           <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0 }}>
             이 브라우저는 소리 재생을 지원하지 않아요.

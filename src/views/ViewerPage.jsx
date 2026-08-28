@@ -165,6 +165,9 @@ export default function ViewerPage() {
     setFocusMode(p.focusMode);
     setShowToneColors(p.showToneColors);
   };
+  // 탭 시트(B안 — 오너 전환 지시 2026-08-28): 글자/표시/도구. 상태는 페이지 방문 동안만
+  // 유지(마지막 탭 기억) — 영속 pref로 만들 만큼의 무게는 아니다.
+  const [sheetTab, setSheetTab] = useState('type');
 
   const quiz = useViewerQuiz();
   const { quizState, completionModal, setCompletionModal, generateQuiz,
@@ -1781,108 +1784,131 @@ export default function ViewerPage() {
                 ))}
               </div>
 
-              <div className="rsheet__sec">글자</div>
-              <div className="rsheet-row">
-                <span className="rsheet-row__lab">글자</span>
-                <input type="range" min="0.8" max="3" step="0.05" value={fontSize} aria-label="글자 크기"
-                  onChange={e => setFontSize(parseFloat(e.target.value))} />
-              </div>
-              <div className="rsheet-row">
-                <span className="rsheet-row__lab">배경</span>
-                <span className="rsheet-swatches">
-                  {[['light', '밝은 배경'], ['sepia', '세피아 배경'], ['dark', '어두운 배경']].map(([t, label]) => (
-                    <button key={t} onClick={() => setTheme(t)} aria-label={label} aria-pressed={theme === t}
-                      className={`rsheet-sw rsheet-sw--${t}${theme === t ? ' rsheet-sw--on' : ''}`} />
-                  ))}
-                </span>
-              </div>
-              <div className="rsheet-row">
-                <span className="rsheet-row__lab">폰트</span>
-                <div className="rsheet-fonts">
-                  {[["'Noto Sans KR'", '본고딕'], ["'Nanum Myeongjo'", '명조'], ['monospace', '고정폭'], ["'Inter'", 'Inter']].map(([value, name]) => (
-                    <button key={value} onClick={() => setFontFamily(value)} aria-pressed={fontFamily === value}
-                      className={`rsheet-fcard${fontFamily === value ? ' rsheet-fcard--on' : ''}`}>
-                      <b style={{ fontFamily: value }}>{(materialLang === 'Chinese' ? '你' : materialLang === 'Japanese' ? 'あ' : '') + 'Aa'}</b>
-                      <span>{name}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="rsheet-row">
-                <span className="rsheet-row__lab">행간</span>
-                <input type="range" min="10" max="60" value={lineGap} aria-label="행간"
-                  onChange={e => setLineGap(parseInt(e.target.value))} />
-              </div>
-              <div className="rsheet-row">
-                <span className="rsheet-row__lab">자간</span>
-                <input type="range" min="0" max="1" step="0.05" value={charGap} aria-label="자간"
-                  onChange={e => setCharGap(parseFloat(e.target.value))} />
+              {/* 탭 3분할(B안 — 오너 전환 지시 2026-08-28): 프리셋 줄은 탭 무관 상단 고정.
+                  탭명이 '글자'이므로 크기 행 라벨은 '크기'(중복 해소 — 오너 문구 지시). */}
+              <div className="rsheet-tabs" role="tablist" aria-label="설정 분류">
+                <button role="tab" aria-selected={sheetTab === 'type'}
+                  className={sheetTab === 'type' ? 'rsheet-tabs__btn--on' : undefined}
+                  onClick={() => setSheetTab('type')}>글자</button>
+                <button role="tab" aria-selected={sheetTab === 'display'}
+                  className={sheetTab === 'display' ? 'rsheet-tabs__btn--on' : undefined}
+                  onClick={() => setSheetTab('display')}>표시</button>
+                {((ttsSupported && sentences.length > 0) || (user?.id === material?.owner_id && !isAnalyzing && !reanalyzeMutation.isPending)) && (
+                  <button role="tab" aria-selected={sheetTab === 'tools'}
+                    className={sheetTab === 'tools' ? 'rsheet-tabs__btn--on' : undefined}
+                    onClick={() => setSheetTab('tools')}>도구</button>
+                )}
               </div>
 
-              <div className="rsheet__sec">표시</div>
-              <div className="rsheet-segrow">
-                <span className="rsheet-txt"><b>발음 표기</b><span>모르는 단어만 = 아는 단어·담은 단어는 가려요</span></span>
-                <div className="rsheet-miniseg" role="group" aria-label="발음 표기">
-                  {[['all', '전체'], ['unknown', '모르는 단어만'], ['none', '없음']].map(([v, label]) => (
-                    <button key={v} aria-pressed={pronDisplay === v}
-                      className={pronDisplay === v ? 'rsheet-miniseg--on' : undefined}
-                      onClick={() => setPronDisplay(v)}>{label}</button>
-                  ))}
-                </div>
-              </div>
-              <label className="rsheet-swrow">
-                <span className="rsheet-txt"><b>단어 상태</b><span>아는 정도를 색으로</span></span>
-                <span className="rsheet-switch"><input type="checkbox" checked={wordStateHl} onChange={() => setWordStateHl(v => !v)} /><span className="rsheet-knob" /></span>
-              </label>
-              <label className="rsheet-swrow">
-                <span className="rsheet-txt"><b>집중 모드</b><span>지정한 문장만 밝게</span></span>
-                <span className="rsheet-switch"><input type="checkbox" checked={focusMode} onChange={() => setFocusMode(v => !v)} /><span className="rsheet-knob" /></span>
-              </label>
-              {materialLang === 'Chinese' && (
-                <label className="rsheet-swrow">
-                  <span className="rsheet-txt"><b>성조 색상</b><span>병음을 성조별 색으로</span></span>
-                  <span className="rsheet-switch"><input type="checkbox" checked={showToneColors} onChange={() => setShowToneColors(v => !v)} /><span className="rsheet-knob" /></span>
-                </label>
-              )}
-              {materialLang === 'Chinese' && (
-                <label className="rsheet-swrow">
-                  <span className="rsheet-txt"><b>한자 대조</b><span>단어 상세에 훈음 병기</span></span>
-                  <span className="rsheet-switch"><input type="checkbox" checked={showHanjaKo} onChange={() => setShowHanjaKo(v => !v)} /><span className="rsheet-knob" /></span>
-                </label>
-              )}
-              {ttsSupported && (
-                <label className="rsheet-swrow">
-                  <span className="rsheet-txt"><b>자동 발음</b><span>단어를 누르면 소리로</span></span>
-                  <span className="rsheet-switch"><input type="checkbox" checked={autoSpeakOnClick} onChange={() => setAutoSpeakOnClick(v => !v)} /><span className="rsheet-knob" /></span>
-                </label>
-              )}
-              {ttsSupported && (
-                <div className="rsheet-subrow">
-                  <span className="rsheet-sublab">속도</span>
-                  <div className="rsheet-miniseg" role="group" aria-label="말하기 속도">
-                    {Object.entries(TTS_RATES).map(([k, r]) => (
-                      <button key={k} aria-pressed={ttsRate === k}
-                        className={ttsRate === k ? 'rsheet-miniseg--on' : undefined}
-                        onClick={() => setTtsRate(k)}>{r.label}</button>
-                    ))}
+              {sheetTab === 'type' && (
+                <div className="rsheet-tabpane" role="tabpanel" aria-label="글자">
+                  <div className="rsheet-row">
+                    <span className="rsheet-row__lab">크기</span>
+                    <input type="range" min="0.8" max="3" step="0.05" value={fontSize} aria-label="글자 크기"
+                      onChange={e => setFontSize(parseFloat(e.target.value))} />
+                  </div>
+                  <div className="rsheet-row">
+                    <span className="rsheet-row__lab">배경</span>
+                    <span className="rsheet-swatches">
+                      {[['light', '밝은 배경'], ['sepia', '세피아 배경'], ['dark', '어두운 배경']].map(([t, label]) => (
+                        <button key={t} onClick={() => setTheme(t)} aria-label={label} aria-pressed={theme === t}
+                          className={`rsheet-sw rsheet-sw--${t}${theme === t ? ' rsheet-sw--on' : ''}`} />
+                      ))}
+                    </span>
+                  </div>
+                  <div className="rsheet-row">
+                    <span className="rsheet-row__lab">폰트</span>
+                    <div className="rsheet-fonts">
+                      {[["'Noto Sans KR'", '본고딕'], ["'Nanum Myeongjo'", '명조'], ['monospace', '고정폭'], ["'Inter'", 'Inter']].map(([value, name]) => (
+                        <button key={value} onClick={() => setFontFamily(value)} aria-pressed={fontFamily === value}
+                          className={`rsheet-fcard${fontFamily === value ? ' rsheet-fcard--on' : ''}`}>
+                          <b style={{ fontFamily: value }}>{(materialLang === 'Chinese' ? '你' : materialLang === 'Japanese' ? 'あ' : '') + 'Aa'}</b>
+                          <span>{name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rsheet-row">
+                    <span className="rsheet-row__lab">행간</span>
+                    <input type="range" min="10" max="60" value={lineGap} aria-label="행간"
+                      onChange={e => setLineGap(parseInt(e.target.value))} />
+                  </div>
+                  <div className="rsheet-row">
+                    <span className="rsheet-row__lab">자간</span>
+                    <input type="range" min="0" max="1" step="0.05" value={charGap} aria-label="자간"
+                      onChange={e => setCharGap(parseFloat(e.target.value))} />
                   </div>
                 </div>
               )}
 
-              {((ttsSupported && sentences.length > 0) || (user?.id === material?.owner_id && !isAnalyzing && !reanalyzeMutation.isPending)) && (
-                <div className="rsheet__sec">도구</div>
+              {sheetTab === 'display' && (
+                <div className="rsheet-tabpane" role="tabpanel" aria-label="표시">
+                  <div className="rsheet-segrow">
+                    <span className="rsheet-txt"><b>발음 표기</b><span>모르는 단어만 = 아는 단어·담은 단어는 가려요</span></span>
+                    <div className="rsheet-miniseg" role="group" aria-label="발음 표기">
+                      {[['all', '전체'], ['unknown', '모르는 단어만'], ['none', '없음']].map(([v, label]) => (
+                        <button key={v} aria-pressed={pronDisplay === v}
+                          className={pronDisplay === v ? 'rsheet-miniseg--on' : undefined}
+                          onClick={() => setPronDisplay(v)}>{label}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <label className="rsheet-swrow">
+                    <span className="rsheet-txt"><b>단어 상태</b><span>아는 정도를 색으로</span></span>
+                    <span className="rsheet-switch"><input type="checkbox" checked={wordStateHl} onChange={() => setWordStateHl(v => !v)} /><span className="rsheet-knob" /></span>
+                  </label>
+                  <label className="rsheet-swrow">
+                    <span className="rsheet-txt"><b>집중 모드</b><span>지정한 문장만 밝게</span></span>
+                    <span className="rsheet-switch"><input type="checkbox" checked={focusMode} onChange={() => setFocusMode(v => !v)} /><span className="rsheet-knob" /></span>
+                  </label>
+                  {materialLang === 'Chinese' && (
+                    <label className="rsheet-swrow">
+                      <span className="rsheet-txt"><b>성조 색상</b><span>병음을 성조별 색으로</span></span>
+                      <span className="rsheet-switch"><input type="checkbox" checked={showToneColors} onChange={() => setShowToneColors(v => !v)} /><span className="rsheet-knob" /></span>
+                    </label>
+                  )}
+                  {materialLang === 'Chinese' && (
+                    <label className="rsheet-swrow">
+                      <span className="rsheet-txt"><b>한자 대조</b><span>단어 상세에 훈음 병기</span></span>
+                      <span className="rsheet-switch"><input type="checkbox" checked={showHanjaKo} onChange={() => setShowHanjaKo(v => !v)} /><span className="rsheet-knob" /></span>
+                    </label>
+                  )}
+                  {ttsSupported && (
+                    <label className="rsheet-swrow">
+                      <span className="rsheet-txt"><b>자동 발음</b><span>단어를 누르면 소리로</span></span>
+                      <span className="rsheet-switch"><input type="checkbox" checked={autoSpeakOnClick} onChange={() => setAutoSpeakOnClick(v => !v)} /><span className="rsheet-knob" /></span>
+                    </label>
+                  )}
+                  {ttsSupported && (
+                    <div className="rsheet-subrow">
+                      <span className="rsheet-sublab">속도</span>
+                      <div className="rsheet-miniseg" role="group" aria-label="말하기 속도">
+                        {Object.entries(TTS_RATES).map(([k, r]) => (
+                          <button key={k} aria-pressed={ttsRate === k}
+                            className={ttsRate === k ? 'rsheet-miniseg--on' : undefined}
+                            onClick={() => setTtsRate(k)}>{r.label}</button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
-              {ttsSupported && sentences.length > 0 && (
-                <button className="rsheet-toolrow" onClick={() => { setSettingsOpen(false); setDictationPickerOpen(true); }}>
-                  <span className="rsheet-txt"><b>받아쓰기</b><span>추천 문장을 듣고 받아쓰기</span></span>
-                  <em>›</em>
-                </button>
-              )}
-              {user?.id === material?.owner_id && !isAnalyzing && !reanalyzeMutation.isPending && (
-                <button className="rsheet-toolrow" onClick={() => { setSettingsOpen(false); setReanalyzePanel('menu'); }}>
-                  <span className="rsheet-txt"><b>재분석</b><span>전체·부분 분석, 원문 수정</span></span>
-                  <em>›</em>
-                </button>
+
+              {sheetTab === 'tools' && (
+                <div className="rsheet-tabpane" role="tabpanel" aria-label="도구">
+                  {ttsSupported && sentences.length > 0 && (
+                    <button className="rsheet-toolrow" onClick={() => { setSettingsOpen(false); setDictationPickerOpen(true); }}>
+                      <span className="rsheet-txt"><b>받아쓰기</b><span>추천 문장을 듣고 받아쓰기</span></span>
+                      <em>›</em>
+                    </button>
+                  )}
+                  {user?.id === material?.owner_id && !isAnalyzing && !reanalyzeMutation.isPending && (
+                    <button className="rsheet-toolrow" onClick={() => { setSettingsOpen(false); setReanalyzePanel('menu'); }}>
+                      <span className="rsheet-txt"><b>재분석</b><span>전체·부분 분석, 원문 수정</span></span>
+                      <em>›</em>
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -2389,6 +2415,7 @@ export default function ViewerPage() {
         <DictationPanel
           sentence={dictationSentence}
           lang={materialLang}
+          ttsOpts={ttsOptsFor(ttsRate)}
           onClose={() => setDictationSentence(null)}
         />
       )}
