@@ -45,8 +45,31 @@ describe('hanjaEtym 데이터 정본', () => {
     for (const r of ['心', '木', '水', '言', '金', '龠']) expect(etym[r][1]).toBe(r);
   });
 
-  it('분해 커버리지가 크게 후퇴하면 원천·필터가 잘못된 것(실측 17,993 — 하한 16,000)', () => {
+  it('분해 커버리지가 크게 후퇴하면 원천·필터가 잘못된 것(실측 17,939 — 하한 16,000)', () => {
     const n = Object.values(etym).filter((e) => e[2]).length;
     expect(n).toBeGreaterThan(16000);
+  });
+
+  // R5(오너 승인 2026-08-28): 구자체 슬롯[5] — 신자체 고유 자형의 정자.
+  it('구자체 스팟 핀 — 신자체 고유 자형에 正이 잡히고, 간체=신자체인 글자는 繁이 담당(중복 저장 금지)', () => {
+    expect(etym['楽'][5]).toBe('樂');
+    expect(etym['駅'][5]).toBe('驛');
+    expect(etym['円'][5]).toBe('圓');
+    expect(etym['塩'][5]).toBe('鹽');
+    expect(etym['学'][3]).toBe('學');
+    expect(etym['学'][5] || '').toBe('');
+    const n = Object.values(etym).filter((e) => e[5]).length;
+    expect(n).toBeGreaterThan(200); // 실측 280 — 급감하면 역전·필터 회귀
+  });
+
+  it('正 칩 무결 — 구자체 슬롯의 글자는 자기 번체를 따로 갖지 않는다(간체 침투 금지 실측 계약)', () => {
+    // 침투 실측: hanjaJa 역전만 쓰면 楽→"乐樂"처럼 간체가 섞였다 — 빌드 필터의 계약.
+    const bad = [];
+    for (const [ch, e] of Object.entries(etym)) {
+      for (const c of e[5] || '') {
+        if (etym[c]?.[3]) bad.push(`${ch}:${c}`);
+      }
+    }
+    expect(bad).toEqual([]);
   });
 });

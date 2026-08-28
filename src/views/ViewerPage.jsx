@@ -1267,7 +1267,24 @@ export default function ViewerPage() {
         // 주인공은 구성(1단 분해 — 성분 탭 = 재귀 탐색)과 다시 만나기(이 자료·내 단어).
         // 부수는 설명하지 않는다 — 성분 배지 + 메타 한 줄이 전부(설계 확정).
         const d = charDetail(inspectChar.ch, { koTable: hanjaKoTable, hunTable: hanjaHunTable, jaTable: hanjaJaTable }) || {};
-        const etym = charEtym(inspectChar.ch, hanjaEtymTable, { koTable: hanjaKoTable, hunTable: hanjaHunTable });
+        const etym = charEtym(inspectChar.ch, hanjaEtymTable, { koTable: hanjaKoTable, hunTable: hanjaHunTable, jaTable: hanjaJaTable });
+        // ④ 자형 칩 탭 이동(R5 — 오너 확정 "④ 포함"): 日·繁·简·正 어느 자형이든 탭하면
+        // 그 자형의 카드로 — 신자체처럼 훈이 '음만'인 글자도 정자 카드로 건너가 온전한
+        // 훈음·분해를 본다. 성분 칩의 재귀 탐색과 같은 동작 언어.
+        const formChip = (label, chars, langTag) => chars.length > 0 && (
+          <span className="char-inspect__ja">
+            {label}{' '}
+            {chars.map((f) => (
+              <button
+                key={f}
+                className="char-inspect__form"
+                lang={langTag}
+                title={`${f} 글자 보기`}
+                onClick={() => setInspectChar({ ch: f, key: `form_${f}`, reading: null })}
+              >{f}</button>
+            ))}
+          </span>
+        );
         const inBook = materialWordsWithChar(inspectChar.ch, material?.processed_json, { excludeText: selectedToken.text });
         const related = wordsWithChar(inspectChar.ch, [...(savedWords.byKey?.values() || [])], { language: materialLang, excludeText: selectedToken.text });
         return (
@@ -1278,9 +1295,10 @@ export default function ViewerPage() {
                 <span className={['pinyin-text', showToneColors ? pinyinToneClass(inspectChar.reading) : ''].filter(Boolean).join(' ')}>{inspectChar.reading}</span>
               )}
               {(d.hunEum || d.eum) && <span className="char-inspect__hun">{d.hunEum || `음 ${d.eum}`}</span>}
-              {d.ja && <span className="char-inspect__ja">日 <span lang="ja">{d.ja}</span></span>}
-              {etym?.trad.length > 0 && <span className="char-inspect__ja">繁 <span lang="zh-Hant">{etym.trad.join('·')}</span></span>}
-              {etym?.simp.length > 0 && <span className="char-inspect__ja">简 <span lang="zh-Hans">{etym.simp.join('·')}</span></span>}
+              {formChip('日', [...new Set([d.ja, etym?.jaOfTrad].filter(Boolean))], 'ja')}
+              {formChip('繁', etym?.trad || [], 'zh-Hant')}
+              {formChip('简', etym?.simp || [], 'zh-Hans')}
+              {formChip('正', etym?.kyu || [], contentLangTag)}
               {!hanjaKoTable && <span className="char-inspect__loading">옥편 로딩…</span>}
             </div>
             {etym?.comps.length > 0 && (

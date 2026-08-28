@@ -37,7 +37,7 @@ describe('hanjaStory 데이터 정본', () => {
       const e = etym[ch] || [];
       if (e[1]) set.add(e[1]);
       for (const x of e[2] || '') { set.add(x); add1(x); }
-      for (const x of (e[3] || '') + (e[4] || '')) { set.add(x); add1(x); }
+      for (const x of (e[3] || '') + (e[4] || '') + (e[5] || '')) { set.add(x); add1(x); }
       return set;
     };
     const bad = [];
