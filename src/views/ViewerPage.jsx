@@ -59,6 +59,7 @@ import { syncVocabEncounters } from '../components/world/vocabEncounterSync';
 import { encounterLookupLang, loadMetWordKeys, loadRefVocabLookup } from '../lib/refVocabLookup';
 import { normalizeRefWordKey } from '../lib/refWordNormalize';
 import { isWordToken, wordStateOf, wordStateExtraClass } from '../lib/wordState';
+import { TTS_RATES, ttsOptsFor, pronHiddenFor, READING_PRESETS, PRESET_META, presetActive } from '../lib/readingSheet';
 import { getBook } from '../lib/bookMeta';
 import { getJaRef, formatJaRef, getJaWarn } from '../lib/jaRef';
 import TokenEditPanel from './TokenEditPanel';
@@ -151,9 +152,19 @@ export default function ViewerPage() {
           showToneColors, setShowToneColors,
           wordStateHl, setWordStateHl,
           focusMode, setFocusMode,
-          theme, setTheme, fontFamily, setFontFamily, showFurigana, setShowFurigana,
-          autoSpeakOnClick, setAutoSpeakOnClick,
+          theme, setTheme, fontFamily, setFontFamily, pronDisplay, setPronDisplay,
+          autoSpeakOnClick, setAutoSpeakOnClick, ttsRate, setTtsRate,
           settingsOpen, setSettingsOpen } = settings;
+
+  // 읽기 모드 프리셋(오너 확정 2026-08-27) — 표시 4키만 대입, 조판은 불가침(readingSheet 계약).
+  const applyPreset = (name) => {
+    const p = READING_PRESETS[name];
+    if (!p) return;
+    setPronDisplay(p.pronDisplay);
+    setWordStateHl(p.wordStateHl);
+    setFocusMode(p.focusMode);
+    setShowToneColors(p.showToneColors);
+  };
 
   const quiz = useViewerQuiz();
   const { quizState, completionModal, setCompletionModal, generateQuiz,
@@ -457,7 +468,7 @@ export default function ViewerPage() {
     tokenRange.clearRange(); // 범위 지정 이펙트와 상호 배타
     setRightSheetSignal(s => s + 1);
     if (settings.autoSpeakOnClick && ttsSupported && t.text) {
-      speak(t.text, materialLang);
+      speak(t.text, materialLang, ttsOptsFor(ttsRate));
     }
     // 클릭한 토큰 인덱스를 스크롤 위치로 저장
     const json = material?.processed_json;
@@ -1178,7 +1189,7 @@ export default function ViewerPage() {
     <div className={`word-detail-card${dragTokens !== null ? ' word-detail-card--above-list' : ''}`}>
       <div className="word-detail-card__actions">
         {ttsSupported && (
-          <button onClick={() => speak(selectedToken.text, materialLang)} aria-label="발음 듣기" style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', minWidth: 32, minHeight: 32 }} title="발음 듣기">▷</button>
+          <button onClick={() => speak(selectedToken.text, materialLang, ttsOptsFor(ttsRate))} aria-label="발음 듣기" style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', minWidth: 32, minHeight: 32 }} title="발음 듣기">▷</button>
         )}
         <button className="word-detail-card__close" onClick={closeWordCard} aria-label="단어 상세 닫기" title="닫기">✕</button>
       </div>
@@ -1469,7 +1480,7 @@ export default function ViewerPage() {
           <div className="pdf-context__original" lang={contentLangTag} style={{ flex: 1, minWidth: 0 }}>"{leftPanelText.length > 120 ? leftPanelText.slice(0, 120) + '…' : leftPanelText}"</div>
           {ttsSupported && (
             <button
-              onClick={() => speak(leftPanelText, materialLang)}
+              onClick={() => speak(leftPanelText, materialLang, ttsOptsFor(ttsRate))}
               aria-label="지정한 문장 듣기"
               title="지정한 문장 듣기"
               style={{ background: 'none', border: 'none', fontSize: '1.05rem', cursor: 'pointer', minWidth: 32, minHeight: 32, flexShrink: 0, color: 'var(--primary-light)' }}
@@ -1708,222 +1719,225 @@ export default function ViewerPage() {
         </div>
       )}
 
-      {/* Settings Bar */}
-      <div className={`card viewer-settings ${settingsOpen ? 'viewer-settings--open' : ''}`}>
-        <button className="viewer-settings__toggle" aria-expanded={settingsOpen} onClick={() => setSettingsOpen(v => !v)}>
-          읽기 설정 {settingsOpen ? '▲' : '▼'}
+      {/* 읽기 설정 액션바 — 리뉴얼(오너 확정 2026-08-27, 시연 A안+프리셋 줄): 설정 카드는
+          Aa 버튼 + 하단 시트로 대체하고, 설정이 아닌 것(읽기 완료·학습 링크·분석 중단)만 남긴다. */}
+      <div className="viewer-actionbar">
+        {user?.id === material?.owner_id && reanalyzeMutation.isPending && (
+          <button onClick={stopReanalysis} className="grammar-btn grammar-btn--danger">
+            분석 중단
+          </button>
+        )}
+
+        {user && isDone && (
+          isCompleted
+            ? <span className="grammar-btn viewer-complete-badge">✓ 읽기 완료</span>
+            : <button
+                onClick={() => markCompleteMutation.mutate()}
+                disabled={markCompleteMutation.isPending}
+                className="grammar-btn grammar-btn--complete"
+              >
+                {markCompleteMutation.isPending ? '...' : '✓ 읽기 완료 표시'}
+              </button>
+        )}
+
+        {user && material?.raw_text && STUDY_LANGS.has(materialLang) && (
+          <Link
+            href={`/study?source=mine&lang=${encodeURIComponent(materialLang)}`}
+            className="study-textlink"
+            onClick={() => {
+              try {
+                localStorage.setItem(`study_source_${materialLang}`, (material.raw_text || '').slice(0, 1500));
+              } catch {}
+            }}
+          >
+            이 자료로 오늘 학습 만들기
+          </Link>
+        )}
+
+        <button className="viewer-aa" aria-label="읽기 설정" aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
+          Aa
         </button>
-        <div className="viewer-settings__body">
-        <div className="viewer-settings__left">
-          <div className="settings-control">
-            <span className="settings-label">크기</span>
-            <div className="settings-btn-group">
-              <button className="settings-btn" onClick={() => setFontSize(f => Math.max(0.8, f - 0.1))}>-</button>
-              <button className="settings-btn" onClick={() => setFontSize(f => Math.min(3, f + 0.1))}>+</button>
+      </div>
+
+      {/* 읽기 설정 시트 — backdrop 무광(본문이 곧 미리보기 — 어둡게 덮지 않는다, 시연 합의).
+          행 문법 통일: [2자 라벨][컨트롤]. 프리셋 줄이 최상단(표시 4키만 대입, 조판 불가침). */}
+      {settingsOpen && (
+        <>
+          <div className="rsheet-backdrop" onClick={() => setSettingsOpen(false)} />
+          <div className="rsheet" role="dialog" aria-label="읽기 설정">
+            <button className="rsheet__grab" aria-label="설정 닫기" onClick={() => setSettingsOpen(false)}><i /></button>
+            <div className="rsheet__body">
+              <div className="rsheet__sec">읽기 모드</div>
+              <div className="rsheet-presets">
+                {PRESET_META.map(m => (
+                  <button
+                    key={m.key}
+                    className={`rsheet-pcard${presetActive(m.key, settings) ? ' rsheet-pcard--on' : ''}`}
+                    aria-pressed={presetActive(m.key, settings)}
+                    onClick={() => applyPreset(m.key)}
+                  >
+                    <i>{m.icon}</i><b>{m.name}</b><span>{m.desc}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="rsheet__sec">글자</div>
+              <div className="rsheet-row">
+                <span className="rsheet-row__lab">글자</span>
+                <input type="range" min="0.8" max="3" step="0.05" value={fontSize} aria-label="글자 크기"
+                  onChange={e => setFontSize(parseFloat(e.target.value))} />
+              </div>
+              <div className="rsheet-row">
+                <span className="rsheet-row__lab">배경</span>
+                <span className="rsheet-swatches">
+                  {[['light', '밝은 배경'], ['sepia', '세피아 배경'], ['dark', '어두운 배경']].map(([t, label]) => (
+                    <button key={t} onClick={() => setTheme(t)} aria-label={label} aria-pressed={theme === t}
+                      className={`rsheet-sw rsheet-sw--${t}${theme === t ? ' rsheet-sw--on' : ''}`} />
+                  ))}
+                </span>
+              </div>
+              <div className="rsheet-row">
+                <span className="rsheet-row__lab">폰트</span>
+                <div className="rsheet-fonts">
+                  {[["'Noto Sans KR'", '본고딕'], ["'Nanum Myeongjo'", '명조'], ['monospace', '고정폭'], ["'Inter'", 'Inter']].map(([value, name]) => (
+                    <button key={value} onClick={() => setFontFamily(value)} aria-pressed={fontFamily === value}
+                      className={`rsheet-fcard${fontFamily === value ? ' rsheet-fcard--on' : ''}`}>
+                      <b style={{ fontFamily: value }}>{(materialLang === 'Chinese' ? '你' : materialLang === 'Japanese' ? 'あ' : '') + 'Aa'}</b>
+                      <span>{name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="rsheet-row">
+                <span className="rsheet-row__lab">행간</span>
+                <input type="range" min="10" max="60" value={lineGap} aria-label="행간"
+                  onChange={e => setLineGap(parseInt(e.target.value))} />
+              </div>
+              <div className="rsheet-row">
+                <span className="rsheet-row__lab">자간</span>
+                <input type="range" min="0" max="1" step="0.05" value={charGap} aria-label="자간"
+                  onChange={e => setCharGap(parseFloat(e.target.value))} />
+              </div>
+
+              <div className="rsheet__sec">표시</div>
+              <div className="rsheet-segrow">
+                <span className="rsheet-txt"><b>발음 표기</b><span>모르는 단어만 = 아는 단어·담은 단어는 가려요</span></span>
+                <div className="rsheet-miniseg" role="group" aria-label="발음 표기">
+                  {[['all', '전체'], ['unknown', '모르는 단어만'], ['none', '없음']].map(([v, label]) => (
+                    <button key={v} aria-pressed={pronDisplay === v}
+                      className={pronDisplay === v ? 'rsheet-miniseg--on' : undefined}
+                      onClick={() => setPronDisplay(v)}>{label}</button>
+                  ))}
+                </div>
+              </div>
+              <label className="rsheet-swrow">
+                <span className="rsheet-txt"><b>단어 상태</b><span>아는 정도를 색으로</span></span>
+                <span className="rsheet-switch"><input type="checkbox" checked={wordStateHl} onChange={() => setWordStateHl(v => !v)} /><span className="rsheet-knob" /></span>
+              </label>
+              <label className="rsheet-swrow">
+                <span className="rsheet-txt"><b>집중 모드</b><span>지정한 문장만 밝게</span></span>
+                <span className="rsheet-switch"><input type="checkbox" checked={focusMode} onChange={() => setFocusMode(v => !v)} /><span className="rsheet-knob" /></span>
+              </label>
+              {materialLang === 'Chinese' && (
+                <label className="rsheet-swrow">
+                  <span className="rsheet-txt"><b>성조 색상</b><span>병음을 성조별 색으로</span></span>
+                  <span className="rsheet-switch"><input type="checkbox" checked={showToneColors} onChange={() => setShowToneColors(v => !v)} /><span className="rsheet-knob" /></span>
+                </label>
+              )}
+              {materialLang === 'Chinese' && (
+                <label className="rsheet-swrow">
+                  <span className="rsheet-txt"><b>한자 대조</b><span>단어 상세에 훈음 병기</span></span>
+                  <span className="rsheet-switch"><input type="checkbox" checked={showHanjaKo} onChange={() => setShowHanjaKo(v => !v)} /><span className="rsheet-knob" /></span>
+                </label>
+              )}
+              {ttsSupported && (
+                <label className="rsheet-swrow">
+                  <span className="rsheet-txt"><b>자동 발음</b><span>단어를 누르면 소리로</span></span>
+                  <span className="rsheet-switch"><input type="checkbox" checked={autoSpeakOnClick} onChange={() => setAutoSpeakOnClick(v => !v)} /><span className="rsheet-knob" /></span>
+                </label>
+              )}
+              {ttsSupported && (
+                <div className="rsheet-subrow">
+                  <span className="rsheet-sublab">속도</span>
+                  <div className="rsheet-miniseg" role="group" aria-label="말하기 속도">
+                    {Object.entries(TTS_RATES).map(([k, r]) => (
+                      <button key={k} aria-pressed={ttsRate === k}
+                        className={ttsRate === k ? 'rsheet-miniseg--on' : undefined}
+                        onClick={() => setTtsRate(k)}>{r.label}</button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {((ttsSupported && sentences.length > 0) || (user?.id === material?.owner_id && !isAnalyzing && !reanalyzeMutation.isPending)) && (
+                <div className="rsheet__sec">도구</div>
+              )}
+              {ttsSupported && sentences.length > 0 && (
+                <button className="rsheet-toolrow" onClick={() => { setSettingsOpen(false); setDictationPickerOpen(true); }}>
+                  <span className="rsheet-txt"><b>받아쓰기</b><span>추천 문장을 듣고 받아쓰기</span></span>
+                  <em>›</em>
+                </button>
+              )}
+              {user?.id === material?.owner_id && !isAnalyzing && !reanalyzeMutation.isPending && (
+                <button className="rsheet-toolrow" onClick={() => { setSettingsOpen(false); setReanalyzePanel('menu'); }}>
+                  <span className="rsheet-txt"><b>재분석</b><span>전체·부분 분석, 원문 수정</span></span>
+                  <em>›</em>
+                </button>
+              )}
             </div>
           </div>
+        </>
+      )}
 
-          <div className="settings-control">
-            <span className="settings-label">줄 간격</span>
-            <input type="range" min="10" max="60" value={lineGap}
-              onChange={e => setLineGap(parseInt(e.target.value))}
-              className="settings-range settings-range--primary"
-            />
-          </div>
-
-          <div className="settings-control">
-            <span className="settings-label">자간</span>
-            <input type="range" min="0" max="1" step="0.05" value={charGap}
-              onChange={e => setCharGap(parseFloat(e.target.value))}
-              className="settings-range settings-range--accent"
-            />
-          </div>
-
-          <select value={fontFamily} onChange={e => setFontFamily(e.target.value)} className="settings-select">
-            <option value="'Noto Sans KR'">Noto Sans KR</option>
-            <option value="'Nanum Myeongjo'">나눔 명조</option>
-            <option value="monospace">Monospace</option>
-            <option value="'Inter'">Inter</option>
-          </select>
-        </div>
-
-        <div className="viewer-settings__right">
-          <div className="theme-btns">
-            <button
-              onClick={() => setTheme('light')}
-              aria-label="밝은 배경"
-              aria-pressed={theme === 'light'}
-              className={`theme-btn theme-btn--light ${theme === 'light' ? 'theme-btn--active' : ''}`}
-            />
-            <button
-              onClick={() => setTheme('dark')}
-              aria-label="어두운 배경"
-              aria-pressed={theme === 'dark'}
-              className={`theme-btn theme-btn--dark ${theme === 'dark' ? 'theme-btn--active' : ''}`}
-            />
-          </div>
-
-          <button
-            onClick={() => setShowFurigana(v => !v)}
-            className={`grammar-btn ${showFurigana ? '' : 'grammar-btn--active'}`}
-            title="후리가나 표시/숨김"
-          >
-            {showFurigana ? '후리가나 숨기기' : '후리가나 보이기'}
-          </button>
-
-          {/* 단어 상태 하이라이트(링큐식 B안 — 오너 확정 2026-08-27, 목업 합의): 신규·만남·
-              학습·복습을 배경색으로. 옵트인 기본 꺼짐 — 켰을 때만 상태 계산(성능·기본 경로 불변). */}
-          <button
-            onClick={() => setWordStateHl(v => !v)}
-            className={`grammar-btn ${wordStateHl ? 'grammar-btn--active' : ''}`}
-            title="단어 상태 하이라이트 — 신규(파랑)·만난 말(연파랑)·학습 중(노랑)·복습(주황), 아는 말은 무표시"
-          >
-            {wordStateHl ? '🖍 상태 하이라이트 켜짐' : '🖍 상태 하이라이트 꺼짐'}
-          </button>
-
-          <button
-            onClick={() => setFocusMode(v => !v)}
-            className={`grammar-btn ${focusMode ? 'grammar-btn--active' : ''}`}
-            title="문장 막대(¦)나 드래그로 지정한 문장만 밝게, 나머지는 어둡게"
-          >
-            {focusMode ? '☑ 집중 모드 켜짐' : '◻ 집중 모드 꺼짐'}
-          </button>
-
-          {materialLang === 'Chinese' && (
-            <button
-              onClick={() => setShowHanjaKo(v => !v)}
-              className={`grammar-btn ${showHanjaKo ? 'grammar-btn--active' : ''}`}
-              title="단어 상세에 글자별 훈음 병기 — 예: 老师 → 老 늙을 로(노) · 師 스승 사"
-            >
-              {showHanjaKo ? '☑ 한자 대조 켜짐' : '◻ 한자 대조 꺼짐'}
-            </button>
-          )}
-
-          {materialLang === 'Chinese' && (
-            <button
-              onClick={() => setShowToneColors(v => !v)}
-              className={`grammar-btn ${showToneColors ? 'grammar-btn--active' : ''}`}
-              title="병음을 성조별 색으로 — 1성 빨강·2성 초록·3성 파랑·4성 보라·경성 회색 (Pleco 표준)"
-            >
-              {showToneColors ? '☑ 성조 색상 켜짐' : '◻ 성조 색상 꺼짐'}
-            </button>
-          )}
-
-          {ttsSupported && (
-            <button
-              onClick={() => setAutoSpeakOnClick(v => !v)}
-              className={`grammar-btn ${autoSpeakOnClick ? 'grammar-btn--active' : ''}`}
-              title="단어 클릭 시 자동 발음"
-            >
-              {autoSpeakOnClick ? '▷ 자동 발음 켜짐' : '◻ 자동 발음 꺼짐'}
-            </button>
-          )}
-
-
-          {ttsSupported && sentences.length > 0 && (
-            <button
-              onClick={() => setDictationPickerOpen(true)}
-              className="grammar-btn"
-              title="추천 문장을 듣고 받아쓰기 — 담은 단어가 든 문장부터 골라 줘요"
-            >
-              🎧 받아쓰기
-            </button>
-          )}
-
-          {user?.id === material?.owner_id && !isAnalyzing && (
-            reanalyzeMutation.isPending ? (
-              <button onClick={stopReanalysis} className="grammar-btn grammar-btn--danger">
-                ⏹ 분석 중단
+      {/* 재분석 패널 — position:fixed 중앙이라 설정 카드 해체 후에도 독립 배치(트리 위치 무관) */}
+      {user?.id === material?.owner_id && reanalyzePanel && (
+        <>
+          <div className="reanalyze-panel-overlay" onClick={() => setReanalyzePanel(null)} />
+          {reanalyzePanel === 'menu' && (
+            <div className="reanalyze-panel">
+              <button className="reanalyze-panel__item" onClick={startFullReanalyze}>
+                <strong>전체 분석</strong>
+                <span>처음부터 다시 분석합니다</span>
               </button>
-            ) : (
-              <div style={{ position: 'relative' }}>
-                <button
-                  onClick={() => setReanalyzePanel(prev => prev ? null : 'menu')}
-                  className="grammar-btn"
-                >
-                  재분석
-                </button>
-
-                {reanalyzePanel && (
-                  <>
-                    <div className="reanalyze-panel-overlay" onClick={() => setReanalyzePanel(null)} />
-                    {reanalyzePanel === 'menu' && (
-                      <div className="reanalyze-panel">
-                        <button className="reanalyze-panel__item" onClick={startFullReanalyze}>
-                          <strong>전체 분석</strong>
-                          <span>처음부터 다시 분석합니다</span>
-                        </button>
-                        <button className="reanalyze-panel__item" onClick={() => { setReanalyzePanel('pick'); setSelectedParas(new Set()); }}>
-                          <strong>부분 분석</strong>
-                          <span>문단을 선택해서 분석합니다</span>
-                        </button>
-                        <button className="reanalyze-panel__item" onClick={() => { setReanalyzePanel(null); setSourceEditOpen(true); }}>
-                          <strong>원문 수정</strong>
-                          <span>텍스트를 고치면 바뀐 줄만 분석합니다</span>
-                        </button>
-                      </div>
-                    )}
-                    {reanalyzePanel === 'pick' && (
-                      <div className="reanalyze-panel reanalyze-panel--pick">
-                        <div className="reanalyze-panel__header">
-                          <span style={{ fontWeight: 700, fontSize: '0.88rem' }}>문단 선택</span>
-                          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{selectedParas.size}개 선택</span>
-                        </div>
-                        <div className="reanalyze-panel__list">
-                          {paragraphs.map(p => (
-                            <label key={p.index} className="reanalyze-panel__para">
-                              <input
-                                type="checkbox"
-                                checked={selectedParas.has(p.index)}
-                                onChange={() => togglePara(p.index)}
-                              />
-                              <span className="reanalyze-panel__preview">{p.preview}</span>
-                              <span className="reanalyze-panel__lines">{p.lineCount}줄</span>
-                            </label>
-                          ))}
-                        </div>
-                        <div className="reanalyze-panel__actions">
-                          <button className="btn btn--ghost btn--sm" onClick={() => setReanalyzePanel(null)}>취소</button>
-                          <button className="btn btn--primary btn--sm" onClick={startPartialReanalyze} disabled={selectedParas.size === 0}>
-                            {selectedParas.size}개 문단 분석
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
+              <button className="reanalyze-panel__item" onClick={() => { setReanalyzePanel('pick'); setSelectedParas(new Set()); }}>
+                <strong>부분 분석</strong>
+                <span>문단을 선택해서 분석합니다</span>
+              </button>
+              <button className="reanalyze-panel__item" onClick={() => { setReanalyzePanel(null); setSourceEditOpen(true); }}>
+                <strong>원문 수정</strong>
+                <span>텍스트를 고치면 바뀐 줄만 분석합니다</span>
+              </button>
+            </div>
+          )}
+          {reanalyzePanel === 'pick' && (
+            <div className="reanalyze-panel reanalyze-panel--pick">
+              <div className="reanalyze-panel__header">
+                <span style={{ fontWeight: 700, fontSize: '0.88rem' }}>문단 선택</span>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{selectedParas.size}개 선택</span>
               </div>
-            )
-          )}
-
-          {user && isDone && (
-            isCompleted
-              ? <span className="grammar-btn viewer-complete-badge">✓ 읽기 완료</span>
-              : <button
-                  onClick={() => markCompleteMutation.mutate()}
-                  disabled={markCompleteMutation.isPending}
-                  className="grammar-btn grammar-btn--complete"
-                >
-                  {markCompleteMutation.isPending ? '...' : '✓ 읽기 완료 표시'}
+              <div className="reanalyze-panel__list">
+                {paragraphs.map(p => (
+                  <label key={p.index} className="reanalyze-panel__para">
+                    <input
+                      type="checkbox"
+                      checked={selectedParas.has(p.index)}
+                      onChange={() => togglePara(p.index)}
+                    />
+                    <span className="reanalyze-panel__preview">{p.preview}</span>
+                    <span className="reanalyze-panel__lines">{p.lineCount}줄</span>
+                  </label>
+                ))}
+              </div>
+              <div className="reanalyze-panel__actions">
+                <button className="btn btn--ghost btn--sm" onClick={() => setReanalyzePanel(null)}>취소</button>
+                <button className="btn btn--primary btn--sm" onClick={startPartialReanalyze} disabled={selectedParas.size === 0}>
+                  {selectedParas.size}개 문단 분석
                 </button>
+              </div>
+            </div>
           )}
-
-          {user && material?.raw_text && STUDY_LANGS.has(materialLang) && (
-            <Link
-              href={`/study?source=mine&lang=${encodeURIComponent(materialLang)}`}
-              className="study-textlink"
-              onClick={() => {
-                try {
-                  localStorage.setItem(`study_source_${materialLang}`, (material.raw_text || '').slice(0, 1500));
-                } catch {}
-              }}
-            >
-              이 자료로 오늘 학습 만들기
-            </Link>
-          )}
-        </div>
-        </div>{/* viewer-settings__body */}
-      </div>
+        </>
+      )}
 
       {/* 책 챕터 내비(P1) — 같은 책의 형제 챕터 사이 이동 */}
       {bookNav && (
@@ -2082,16 +2096,21 @@ export default function ViewerPage() {
             }
             const isSaved = isTokenSaved(savedWords, token);
             const isDue = isSaved && isTokenDue(savedWords, token);
-            // 상태 하이라이트(B안) — 켰을 때만 앎·만남을 조회해 met/new 클래스를 더한다.
-            // 앎 대조는 단어 카드의 isKnown과 동일 계약(표기·base_form), 만남 대조는
-            // 단어 목록의 조용한 점과 동일 계약(normalizeRefWordKey — §4.7).
+            // 앎 대조는 단어 카드의 isKnown과 동일 계약(표기·base_form) — 상태 하이라이트와
+            // 발음 표기 '모르는 단어만'이 공유하고, 둘 다 꺼져 있으면 계산 자체를 생략한다.
+            const needKnown = wordStateHl || pronDisplay === 'unknown';
+            const tokKnown = needKnown && !!(knownWordSet?.has(token.text) || (token.base_form && knownWordSet?.has(token.base_form)));
+            // 상태 하이라이트(B안) — 켰을 때만 만남을 조회해 met/new 클래스를 더한다.
+            // 만남 대조는 단어 목록의 조용한 점과 동일 계약(normalizeRefWordKey — §4.7).
             const hlClass = wordStateHl ? wordStateExtraClass(wordStateOf({
               isWord: isWordToken(token),
               isSaved,
               isDue,
-              isKnown: !!(knownWordSet?.has(token.text) || (token.base_form && knownWordSet?.has(token.base_form))),
+              isKnown: tokKnown,
               isMet: !!(metCode && (metWordSet.has(normalizeRefWordKey(metCode, token.base_form)) || metWordSet.has(normalizeRefWordKey(metCode, token.text)))),
             })) : '';
+            // 발음 표기 3단(오너 확정 2026-08-27) — 감춰도 rt만 숨긴다(폭 예약 불변, furi-off 선례).
+            const furiOff = pronHiddenFor(pronDisplay, { isKnown: tokKnown, isSaved });
             // ruby는 토글과 무관하게 항상 만든다 — 폭 예약(ruby[data-pinyin])이 병음을 꺼도
             // 유지돼야 켤 때 글자가 밀리지 않는다(오너 요청 2026-08-19). 끌 때는 rt만 감춘다.
             const rubySegments = token.furigana
@@ -2106,7 +2125,7 @@ export default function ViewerPage() {
                 onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleTokenClick(token, tokenId))}>
                 {linePick}
                 {rubySegments ? (
-                  <span className={`surface${showFurigana ? '' : ' surface--furi-off'}`}>
+                  <span className={`surface${furiOff ? ' surface--furi-off' : ''}`}>
                     {rubySegments.map((seg, i) =>
                       seg.kanji
                         // 병음 rt는 CSS가 전 음절 단일 크기(최장 병음이 1em 셀에 들어가는
