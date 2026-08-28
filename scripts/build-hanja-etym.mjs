@@ -139,9 +139,10 @@ function uPlusChars(value, self) {
     .filter((c) => c !== self);
 }
 
-// 변형 슬롯: 자기 제외 최대 2자
+// 변형 슬롯: 자기 제외·우주 소속(음 정본 키)만 최대 2자 — 확장 글자(𫔭 등)가 슬롯에
+// 들어가면 탭 시 빈 카드가 열린다(R4b 폐포 저작 중 실측). 성분과 같은 닫힘 규칙.
 function variantsOf(map, cp, self) {
-  return uPlusChars(map.get(cp), self).slice(0, 2).join('');
+  return uPlusChars(map.get(cp), self).filter((c) => koTable[c]).slice(0, 2).join('');
 }
 
 const out = {};
