@@ -28,7 +28,7 @@ import { pinyinToneClass } from '../lib/pinyinTone';
 import { splitRuby } from '../lib/splitRuby';
 import { pickableSentences, adjacentSentence } from '../lib/sentenceNav';
 import { fitDivisor, isFitLang } from '../lib/fitWord';
-import { charDetail, isInspectableChar, wordsWithChar } from '../lib/charInspect';
+import { charDetail, charEtym, isInspectableChar, materialWordsWithChar, wordsWithChar } from '../lib/charInspect';
 import { fetchSynAnt, synAntEligible } from '../lib/synAnt';
 import ReportMaterialButton from '../components/ReportMaterialButton';
 import ReadingTest from '../components/ReadingTest';
@@ -969,6 +969,17 @@ export default function ViewerPage() {
       .catch(() => {});
     return () => { alive = false; };
   }, [showHanjaKo, materialLang, hanjaKoTable, inspectChar]);
+  // 자원 테이블(증강 R2·R3 — 획수·부수·1단 분해·간번체, 563KB)은 글자 카드가 실제로
+  // 열릴 때만 지연 로드 — 한자 대조 토글만으로는 안 부른다(단어 줄엔 자원이 안 쓰인다).
+  const [hanjaEtymTable, setHanjaEtymTable] = useState(null);
+  useEffect(() => {
+    if (inspectChar === null || hanjaEtymTable) return undefined;
+    let alive = true;
+    import('../lib/data/hanjaEtym.json')
+      .then((m) => { if (alive) setHanjaEtymTable(m.default || m); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [inspectChar, hanjaEtymTable]);
   const hanjaHunOf = (text) => (
     materialLang === 'Chinese' && showHanjaKo && hanjaKoTable && hanjaHunTable
       ? listHanjaHunEum(text, hanjaKoTable, hanjaHunTable)
@@ -1247,8 +1258,12 @@ export default function ViewerPage() {
         );
       })()}
       {inspectChar && (() => {
-        // ④ 글자 패널 — 훈음·병음·日 자형(기존 테이블) + 이 글자가 든 내 단어(재인식 앵커)
+        // ④ 글자 카드(증강 R1~R3 — 오너 승인 2026-08-28): 헤더는 자기 완결(훈음·병음·자형 칩),
+        // 주인공은 구성(1단 분해 — 성분 탭 = 재귀 탐색)과 다시 만나기(이 자료·내 단어).
+        // 부수는 설명하지 않는다 — 성분 배지 + 메타 한 줄이 전부(설계 확정).
         const d = charDetail(inspectChar.ch, { koTable: hanjaKoTable, hunTable: hanjaHunTable, jaTable: hanjaJaTable }) || {};
+        const etym = charEtym(inspectChar.ch, hanjaEtymTable, { koTable: hanjaKoTable, hunTable: hanjaHunTable });
+        const inBook = materialWordsWithChar(inspectChar.ch, material?.processed_json, { excludeText: selectedToken.text });
         const related = wordsWithChar(inspectChar.ch, [...(savedWords.byKey?.values() || [])], { language: materialLang, excludeText: selectedToken.text });
         return (
           <div className="char-inspect">
@@ -1259,8 +1274,46 @@ export default function ViewerPage() {
               )}
               {(d.hunEum || d.eum) && <span className="char-inspect__hun">{d.hunEum || `음 ${d.eum}`}</span>}
               {d.ja && <span className="char-inspect__ja">日 <span lang="ja">{d.ja}</span></span>}
+              {etym?.trad.length > 0 && <span className="char-inspect__ja">繁 <span lang="zh-Hant">{etym.trad.join('·')}</span></span>}
+              {etym?.simp.length > 0 && <span className="char-inspect__ja">简 <span lang="zh-Hans">{etym.simp.join('·')}</span></span>}
               {!hanjaKoTable && <span className="char-inspect__loading">옥편 로딩…</span>}
             </div>
+            {etym?.comps.length > 0 && (
+              <div className="char-inspect__comps">
+                <span className="char-inspect__words-label">구성</span>
+                {etym.comps.map((c, i) => (
+                  <span key={`${c.ch}_${i}`} className="char-inspect__comp-slot">
+                    {i > 0 && <span className="char-inspect__plus">+</span>}
+                    <button
+                      className="char-inspect__comp"
+                      lang={contentLangTag}
+                      title={`${c.ch} 글자 보기`}
+                      onClick={() => setInspectChar({ ch: c.ch, key: `comp_${c.ch}`, reading: null })}
+                    >
+                      <b>{c.ch}</b>
+                      {c.label && <span>{c.label}</span>}
+                      {c.isRadical && <i className="char-inspect__badge">부수</i>}
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            {(inBook.length > 0 || related.length > 0) && (
+              <div className="char-inspect__group">다시 만나기</div>
+            )}
+            {inBook.length > 0 && (
+              <div className="char-inspect__words">
+                <span className="char-inspect__words-label">이 자료</span>
+                {inBook.map((t, i) => (
+                  <button
+                    key={`${t.text}_${i}`}
+                    className="char-inspect__word"
+                    lang={contentLangTag}
+                    onClick={() => handleListWordClick({ text: t.text, base_form: t.base_form || t.text, meaning: t.meaning, furigana: t.furigana, pos: t.pos })}
+                  >{t.text}</button>
+                ))}
+              </div>
+            )}
             {related.length > 0 && (
               <div className="char-inspect__words">
                 <span className="char-inspect__words-label">내 단어</span>
@@ -1272,6 +1325,13 @@ export default function ViewerPage() {
                     onClick={() => handleListWordClick({ text: v.word_text, base_form: v.base_form || v.word_text, meaning: v.meaning, furigana: v.furigana, pos: v.pos })}
                   >{v.word_text}</button>
                 ))}
+              </div>
+            )}
+            {etym && (etym.strokes > 0 || etym.radical) && (
+              <div className="char-inspect__meta">
+                {etym.strokes > 0 ? `${etym.strokes}획` : ''}
+                {etym.strokes > 0 && etym.radical ? ' · ' : ''}
+                {etym.radical ? `부수 ${etym.radical}${etym.radicalHun ? ` ${etym.radicalHun}` : ''}` : ''}
               </div>
             )}
           </div>

@@ -2,6 +2,8 @@
 // 데이터는 전부 기존 탑재분: 한자음 20,902자(간체·정체·신자체 커버 — 실측),
 // 훈 8,700자(신자체 미수록 — 미등재는 조용히 생략, listHanjaHunEum 관례),
 // 일본식 자형 2,890자. 병음은 카드가 이미 글자별로 갖고 있다(splitRuby).
+// 증강 R1~R3(오너 승인 2026-08-28): 자원 블록(charEtym — hanjaEtym.json: 획수·부수·
+// 1단 분해·간번체)과 자료 재등장 스캔(materialWordsWithChar — 신규 데이터 0)을 더한다.
 
 import { hanjaHunEum } from './hanjaKo';
 
@@ -42,6 +44,55 @@ export function wordsWithChar(ch, vocabRows, { language, excludeText, cap = 6 } 
     if (!w.includes(ch) || w === excludeText || seen.has(w)) continue;
     seen.add(w);
     out.push(v);
+    if (out.length >= cap) break;
+  }
+  return out;
+}
+
+// 성분·부수의 라벨 — 훈음('마음 심')이 대표, 훈 미등재면 음만(charDetail과 같은 관례).
+function charLabel(ch, koTable, hunTable) {
+  const hunEum = koTable && hunTable ? hanjaHunEum(ch, koTable, hunTable) : null;
+  return hunEum || koTable?.[ch] || '';
+}
+
+/**
+ * 자원(字源) 블록 — hanjaEtym.json 항목([획수, 부수, 성분들, 번체, 간체])을 카드가
+ * 그릴 형태로 푼다. 성분은 전부 URO(빌드 규칙)라 최소한 음 라벨이 성립하고, 성분
+ * 탭 → 그 글자 카드(재귀)는 호출부가 잇는다. 부수는 성분 배지(isRadical)와 메타
+ * 한 줄로만 드러난다 — 별도 설명 없음(설계 확정: "부수는 설명하지 않는다").
+ * 테이블 미로드·미등재·비한자는 null(조용히 생략 관례).
+ */
+export function charEtym(ch, etymTable, { koTable, hunTable } = {}) {
+  if (!isInspectableChar(ch) || !etymTable) return null;
+  const e = etymTable[ch];
+  if (!e) return null;
+  const [s, r, c, t, p] = [e[0] || 0, e[1] || '', e[2] || '', e[3] || '', e[4] || ''];
+  return {
+    strokes: s,
+    radical: r,
+    radicalHun: r ? charLabel(r, koTable, hunTable) : '',
+    comps: [...c].map((x) => ({ ch: x, label: charLabel(x, koTable, hunTable), isRadical: x === r })),
+    trad: [...t],
+    simp: [...p],
+  };
+}
+
+/**
+ * 이 자료에서 이 글자가 든 다른 단어 — 읽기 순환의 재등장 앵커(R1: 신규 데이터 0).
+ * 분석 사전(processed_json)을 본문 등장 순서(sequence)로 스캔: 실패·개행 토큰 제외,
+ * 지금 단어 제외, 표기(text) 기준 중복 제거, 기본 6개 상한.
+ */
+export function materialWordsWithChar(ch, json, { excludeText, cap = 6 } = {}) {
+  if (!isInspectableChar(ch) || !json?.sequence || !json?.dictionary) return [];
+  const out = [];
+  const seen = new Set();
+  for (const id of json.sequence) {
+    const t = json.dictionary[id];
+    if (!t || t.failed || t.pos === '개행') continue;
+    const w = t.text || '';
+    if (!w.includes(ch) || w === excludeText || seen.has(w)) continue;
+    seen.add(w);
+    out.push(t);
     if (out.length >= cap) break;
   }
   return out;
