@@ -2415,6 +2415,7 @@ export default function ViewerPage() {
         <DictationPanel
           sentence={dictationSentence}
           lang={materialLang}
+          ttsOpts={ttsOptsFor(ttsRate)}
           onClose={() => setDictationSentence(null)}
         />
       )}
