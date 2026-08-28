@@ -207,7 +207,9 @@ describe('한자 대조 배선 계약', () => {
 
   it('뷰어가 중국어에서만 토글을 노출하고 시트에 훈음을 표시한다', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
-    expect(src).toMatch(/materialLang === 'Chinese' && \(\s*<button\s*onClick=\{\(\) => setShowHanjaKo/);
+    // 읽기 설정 리뉴얼(2026-08-28): 버튼 → 스위치 행. 중국어 가드 직속이라는 계약은 동일.
+    expect(src).toMatch(/materialLang === 'Chinese' && \(\s*<label className="rsheet-swrow">\s*<span className="rsheet-txt"><b>한자 대조<\/b>/);
+    expect(src).toContain('onChange={() => setShowHanjaKo(v => !v)}');
     expect(src).toContain("import('../lib/data/hanjaKo.json')");
     expect(src).toContain('훈음');
   });

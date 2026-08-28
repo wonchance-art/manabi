@@ -1775,106 +1775,250 @@ body.is-review-session .page-container { padding-top: 8px; }
   100% { transform: scale(1); }
 }
 
-.viewer-settings {
-  padding: 0;
+/* ── 읽기 설정 리뉴얼(오너 확정 2026-08-27 — 시연 A안+프리셋 줄) ──
+   설정 카드의 후신 = 액션바(설정 아닌 것만) + Aa 하단 시트(rsheet).
+   backdrop은 무광 — 시트 위 본문이 곧 미리보기라 어둡게 덮지 않는다(시연 합의). */
+.viewer-actionbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
   margin-bottom: 30px;
+}
+
+.viewer-aa {
+  border: 1.5px solid var(--border);
   background: var(--bg-elevated);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.viewer-settings__toggle {
-  display: none; /* desktop에서 숨김 */
-}
-
-.viewer-settings__body {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  flex-wrap: wrap;
-  padding: 16px 24px;
-  justify-content: space-between;
-}
-
-.viewer-settings__left {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.viewer-settings__right {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.settings-control {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.settings-label {
-  font-size: 0.75rem;
-  color: var(--text-muted);
+  color: var(--text-primary);
+  border-radius: 10px;
+  padding: 6px 14px;
+  font-size: 0.95rem;
   font-weight: 700;
+  font-family: Georgia, serif;
+  cursor: pointer;
+  min-height: 36px;
+}
+.viewer-aa:hover { border-color: var(--primary); color: var(--primary-light); }
+
+.rsheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  background: transparent;
 }
 
-.settings-btn-group {
+.rsheet {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  width: 100%;
+  max-width: 560px;
+  z-index: 120;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 18px 18px 0 0;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25);
+  max-height: 68dvh;
   display: flex;
-  gap: 4px;
+  flex-direction: column;
+  animation: rsheetUp 0.26s cubic-bezier(0.3, 0.9, 0.3, 1);
+}
+@keyframes rsheetUp {
+  from { transform: translate(-50%, 105%); }
+  to   { transform: translate(-50%, 0); }
+}
+@media (prefers-reduced-motion: reduce) { .rsheet { animation: none; } }
+
+/* iOS 실기 선례(시연 수리): 버튼이 시스템 폰트로 새지 않게 시트 전체에 상속 고정 */
+.rsheet button { font-family: inherit; }
+
+.rsheet__grab {
+  flex: none;
+  padding: 10px 0 4px;
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+  background: none;
+  border: none;
+  width: 100%;
+}
+.rsheet__grab i { width: 38px; height: 4px; border-radius: 2px; background: var(--border); }
+
+.rsheet__body {
+  overflow-y: auto;
+  padding: 4px 18px calc(22px + env(safe-area-inset-bottom));
+  -webkit-overflow-scrolling: touch;
 }
 
-.settings-btn {
+.rsheet__sec {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: 14px 0 8px;
+}
+
+/* 통일 행 문법: [2자 라벨][컨트롤] */
+.rsheet-row { display: flex; align-items: center; gap: 14px; min-height: 40px; }
+.rsheet-row__lab { font-size: 0.85rem; font-weight: 600; width: 2.6em; flex: none; }
+.rsheet-row input[type="range"] {
+  flex: 1;
+  accent-color: var(--primary);
+  min-width: 0;
+  height: 40px;
+  margin: 0;
+}
+
+.rsheet-swatches { display: flex; gap: 10px; }
+.rsheet-sw {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-  font-size: 1.1rem;
+  border: 1.5px solid var(--border);
   cursor: pointer;
+  padding: 0;
+}
+.rsheet-sw--light { background: #fff; }
+.rsheet-sw--sepia { background: #f0e2c0; }
+.rsheet-sw--dark  { background: #191b1f; }
+.rsheet-sw--on { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary); }
+
+.rsheet-fonts {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  flex: 1;
+  min-width: 0;
+  padding: 2px 0;
+  -webkit-overflow-scrolling: touch;
+}
+.rsheet-fcard {
+  flex: none;
+  width: 72px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-primary);
+  padding: 6px 4px 5px;
+  text-align: center;
+  cursor: pointer;
+}
+.rsheet-fcard b { display: block; font-size: 1.05rem; font-weight: 500; }
+.rsheet-fcard span { display: block; font-size: 0.6rem; color: var(--text-muted); margin-top: 2px; }
+.rsheet-fcard--on { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+
+/* 3단 미니 세그먼트 (발음 표기·말하기 속도) */
+.rsheet-miniseg {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px;
+  gap: 2px;
+}
+.rsheet-miniseg button {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 6px 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.rsheet-miniseg .rsheet-miniseg--on { background: var(--primary); color: #fff; }
+
+.rsheet-segrow { padding: 9px 0; border-bottom: 1px solid var(--border); }
+.rsheet-txt b { display: block; font-size: 0.88rem; font-weight: 600; }
+.rsheet-txt span { display: block; font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; }
+.rsheet-segrow .rsheet-txt span { margin-bottom: 8px; }
+
+.rsheet-swrow {
   display: flex;
   align-items: center;
-  justify-content: center;
-}
-
-.settings-range {
-  width: 80px;
-}
-
-.settings-range--primary { accent-color: var(--primary); }
-.settings-range--accent  { accent-color: var(--accent); }
-
-.settings-select {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border);
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 0.85rem;
-  outline: none;
-}
-
-.theme-btns {
-  display: flex;
+  justify-content: space-between;
   gap: 10px;
-}
-
-.theme-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
   cursor: pointer;
-  border: 2px solid #444;
-  transition: border-color var(--transition-fast);
 }
+.rsheet-switch { position: relative; width: 44px; height: 26px; flex: none; }
+.rsheet-switch input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.rsheet-knob {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  transition: background 0.15s;
+  pointer-events: none;
+}
+.rsheet-knob::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+.rsheet-switch input:checked + .rsheet-knob { background: var(--primary); border-color: var(--primary); }
+.rsheet-switch input:checked + .rsheet-knob::after { transform: translateX(18px); }
+@media (prefers-reduced-motion: reduce) { .rsheet-knob, .rsheet-knob::after { transition: none; } }
 
-.theme-btn--light { background: #fff; }
-.theme-btn--dark  { background: #1a1a1a; }
-.theme-btn--active { border-color: var(--primary); }
+/* 말하기 속도 — 자동 발음의 하위 행 */
+.rsheet-subrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.rsheet-sublab { font-size: 0.74rem; color: var(--text-muted); flex: none; }
+.rsheet-subrow .rsheet-miniseg { flex: 1; max-width: 190px; }
+
+/* 도구 행 — 이모지·기호 없음(오너 지시), 제목+설명+› */
+.rsheet-toolrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 0;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+.rsheet-toolrow:last-child { border-bottom: none; }
+.rsheet-toolrow em { font-style: normal; color: var(--text-muted); font-size: 1.05rem; }
+
+/* 읽기 모드 프리셋 3장 — 표시 의도 묶음(조판 불가침) */
+.rsheet-presets { display: flex; gap: 8px; margin-bottom: 6px; }
+.rsheet-pcard {
+  flex: 1;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  background: transparent;
+  color: var(--text-primary);
+  padding: 10px 8px;
+  text-align: center;
+  cursor: pointer;
+}
+.rsheet-pcard i { font-style: normal; font-size: 1.25rem; display: block; margin-bottom: 3px; }
+.rsheet-pcard b { display: block; font-size: 0.8rem; }
+.rsheet-pcard span { display: block; font-size: 0.64rem; color: var(--text-muted); margin-top: 2px; }
+.rsheet-pcard--on { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
 
 .grammar-btn {
   background: var(--primary-glow);
@@ -2082,6 +2226,8 @@ body.is-review-session .page-container { padding-top: 8px; }
 
 .reader-area--dark  { background: rgba(255,255,255,0.03); }
 .reader-area--light { background: #fff; color: #2d3436; }
+/* 세피아(읽기 설정 리뉴얼 신설 — 오너 확정 2026-08-27): 밝은 계열의 따뜻한 종이색 */
+.reader-area--sepia { background: #f2e8d5; color: #4b3d28; }
 
 .analyzing-banner {
   width: 100%;
@@ -2441,6 +2587,7 @@ body.is-review-session .page-container { padding-top: 8px; }
       gap 폭(--char-gap, 뷰어 설정 인라인 주입)만큼만 왼쪽으로 — 앞 토큰 상자 경계에서
       멈춰 글리프에 닿을 수 없다. */
 .reader-area--light { --picked-bg: color-mix(in srgb, var(--primary) 18%, #fff); }
+.reader-area--sepia { --picked-bg: color-mix(in srgb, var(--primary) 18%, #f2e8d5); }
 .reader-area--dark  { --picked-bg: color-mix(in srgb, var(--primary) 18%, var(--bg-primary)); }
 .word-token--picked .surface {
   background: var(--picked-bg, var(--primary-glow));
@@ -2484,7 +2631,8 @@ body.is-review-session .page-container { padding-top: 8px; }
    신규(파랑 진)·만난 말(파랑 연)·학습 중(노랑)·복습(주황, 기존 펄스 유지)·앎(무표시).
    .reader-area--hl가 붙을 때만 발동(툴바 🖍 토글 — 옵트인 기본 꺼짐). 색은 테마별
    변수(--picked-bg 선례). :not(--picked) 가드 — 문장/단어 지정 배경이 항상 이긴다. */
-.reader-area--light {
+.reader-area--light,
+.reader-area--sepia {
   --ws-new: rgba(37, 99, 235, 0.15);
   --ws-met: rgba(37, 99, 235, 0.07);
   --ws-learn: rgba(212, 160, 8, 0.18);
@@ -2522,7 +2670,8 @@ body.is-review-session .page-container { padding-top: 8px; }
    배경은 지정색이 이기고, 상태는 밑줄로 강등 표시(A안 문법을 지정 중에만 차용).
    border 2px는 기본 규칙이 폭을 이미 예약해 레이아웃 불변. picked+due는 기본 규칙의
    주황 밑줄+펄스가 그대로 남으므로(위 :not 가드가 비지정에만 투명화) 별도 규칙 불필요. */
-.reader-area--light {
+.reader-area--light,
+.reader-area--sepia {
   --ws-new-ln: #2563eb;
   --ws-met-ln: #85ace8;
   --ws-learn-ln: #c99700;
@@ -4085,86 +4234,14 @@ body.is-review-session .page-container { padding-top: 8px; }
     font-size: 1.1rem;
   }
 
-  .viewer-settings__toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    width: 100%;
-    padding: 12px 16px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    background: transparent;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .viewer-settings__body {
-    display: none;
-    padding: 14px 16px;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 14px;
-  }
-
-  .viewer-settings--open .viewer-settings__body {
-    display: flex;
-  }
-
-  .viewer-settings--open .viewer-settings__toggle {
-    color: var(--primary-light);
-  }
-
-  /* 읽기 설정 정렬 — 슬라이더는 라벨 왼쪽·컨트롤 오른쪽 풀폭 행, 버튼은 2열 그리드 */
-  .viewer-settings__left {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-  .viewer-settings__left .settings-control {
-    justify-content: space-between;
-    gap: 12px;
-  }
-  .viewer-settings__left .settings-range {
-    flex: 1;
-    min-width: 0;
-    width: auto;
-  }
-  .viewer-settings__left .settings-select {
-    width: 100%;
-  }
-  .viewer-settings__right {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+  /* 읽기 설정 리뉴얼: 액션바는 좁은 화면에서 좌우 꽉 채워 줄바꿈, Aa는 우측 유지 */
+  .viewer-actionbar {
     gap: 8px;
+    margin-bottom: 20px;
   }
-  .viewer-settings__right .theme-btns {
-    grid-column: 1 / -1;
-    justify-content: center;
-    padding: 2px 0;
-  }
-  .viewer-settings__right .grammar-btn {
-    width: 100%;
-    padding: 10px 8px;
+  .viewer-actionbar .grammar-btn {
+    padding: 10px 12px;
     font-size: 0.82rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-align: center;
-  }
-  .viewer-settings__right > div .grammar-btn {
-    width: 100%;
-  }
-  .viewer-settings__right .study-textlink {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 6px 0;
-  }
-
-  .viewer-settings-bar {
-    padding: 8px 12px;
-    gap: 8px;
-    flex-wrap: wrap;
   }
 
   /* Stats Mobile */
