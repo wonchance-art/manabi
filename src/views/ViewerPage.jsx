@@ -969,14 +969,19 @@ export default function ViewerPage() {
       .catch(() => {});
     return () => { alive = false; };
   }, [showHanjaKo, materialLang, hanjaKoTable, inspectChar]);
-  // 자원 테이블(증강 R2·R3 — 획수·부수·1단 분해·간번체, 563KB)은 글자 카드가 실제로
-  // 열릴 때만 지연 로드 — 한자 대조 토글만으로는 안 부른다(단어 줄엔 자원이 안 쓰인다).
+  // 자원 테이블(증강 R2·R3 — 획수·부수·1단 분해·간번체, 563KB)과 구성 풀이 스토리
+  // (R4 — 최빈 시드 저작분)는 글자 카드가 실제로 열릴 때만 지연 로드 — 한자 대조
+  // 토글만으로는 안 부른다(단어 줄엔 자원이 안 쓰인다).
   const [hanjaEtymTable, setHanjaEtymTable] = useState(null);
+  const [hanjaStoryTable, setHanjaStoryTable] = useState(null);
   useEffect(() => {
     if (inspectChar === null || hanjaEtymTable) return undefined;
     let alive = true;
     import('../lib/data/hanjaEtym.json')
       .then((m) => { if (alive) setHanjaEtymTable(m.default || m); })
+      .catch(() => {});
+    import('../lib/data/hanjaStory.json')
+      .then((m) => { if (alive) setHanjaStoryTable(m.default || m); })
       .catch(() => {});
     return () => { alive = false; };
   }, [inspectChar, hanjaEtymTable]);
@@ -1297,6 +1302,10 @@ export default function ViewerPage() {
                   </span>
                 ))}
               </div>
+            )}
+            {/* 구성 풀이 스토리(R4) — 시드 저작분에만, 미등재는 조용히 생략 */}
+            {hanjaStoryTable?.[inspectChar.ch] && (
+              <div className="char-inspect__story">{hanjaStoryTable[inspectChar.ch]}</div>
             )}
             {(inBook.length > 0 || related.length > 0) && (
               <div className="char-inspect__group">다시 만나기</div>
