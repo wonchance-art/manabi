@@ -45,7 +45,8 @@ describe('① 폭맞춤 확대 계약', () => {
 
 describe('④ 글자 탐색 계약', () => {
   it('한자만 탭 대상 — word-fit__char 스팬 + 재탭 닫기 토글', () => {
-    expect(viewer).toContain("import { charDetail, isInspectableChar, wordsWithChar } from '../lib/charInspect'");
+    // 증강 R1~R3(2026-08-28): charEtym·materialWordsWithChar가 같은 캐논에서 합류
+    expect(viewer).toContain("import { charDetail, charEtym, isInspectableChar, materialWordsWithChar, wordsWithChar } from '../lib/charInspect'");
     expect(viewer).toMatch(/isInspectableChar\(ch\) \? \(/);
     expect(viewer).toContain("className={`word-fit__char${inspectChar?.key === key ? ' word-fit__char--active' : ''}`}");
     expect(viewer).toMatch(/setInspectChar\(prev => \(prev\?\.key === key \? null : \{ ch, key, reading \}\)\)/);

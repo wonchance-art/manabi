@@ -5019,6 +5019,43 @@ body.is-review-session .page-container { padding-top: 8px; }
 }
 .char-inspect__word:hover { border-color: var(--border-hover); color: var(--primary-light); }
 
+/* 글자 카드 증강(R1~R3 — 오너 승인 2026-08-28): 구성(1단 분해)·다시 만나기·메타 한 줄.
+   부수는 성분 배지와 메타 줄로만 — 별도 설명 없음(설계 확정). */
+.char-inspect__comps { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 8px; align-items: center; }
+.char-inspect__comp-slot { display: inline-flex; align-items: center; gap: 6px; }
+.char-inspect__plus { color: var(--text-muted); font-size: 0.8rem; }
+.char-inspect__comp {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 3px 8px;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+.char-inspect__comp:hover { border-color: var(--border-hover); color: var(--primary-light); }
+.char-inspect__comp b { font-size: 1.05rem; font-weight: 700; }
+.char-inspect__comp span { font-size: 0.76rem; color: var(--text-secondary); }
+.char-inspect__badge {
+  font-style: normal;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--primary-light);
+  background: var(--primary-glow);
+  border-radius: 999px;
+  padding: 1px 6px;
+}
+.char-inspect__group {
+  margin-top: 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.char-inspect__meta { margin-top: 8px; font-size: 0.76rem; color: var(--text-muted); }
+
 /* ⑤ 유의어·반의어(오너 승인) — 뜻 바로 아래 두 줄, 칩 탭 = 그 단어 카드로 */
 .syn-ant {
   display: flex;
