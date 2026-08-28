@@ -1862,6 +1862,29 @@ body.is-review-session .page-container { padding-top: 8px; }
   margin: 14px 0 8px;
 }
 
+/* 탭 시트(B안 — 오너 전환 지시 2026-08-28, 애플북스 계보): 탭당 화면이 짧아 정돈.
+   프리셋 줄은 탭 위 고정이라 어느 탭에서든 읽기 모드 전환이 한 탭이다. */
+.rsheet-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-top: 6px;
+}
+.rsheet-tabs button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 0.84rem;
+  padding: 8px 0;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.rsheet-tabs .rsheet-tabs__btn--on { color: var(--primary-light); border-bottom-color: var(--primary); }
+.rsheet-tabpane { padding-top: 6px; }
+
 /* 통일 행 문법: [2자 라벨][컨트롤] */
 .rsheet-row { display: flex; align-items: center; gap: 14px; min-height: 40px; }
 .rsheet-row__lab { font-size: 0.85rem; font-weight: 600; width: 2.6em; flex: none; }
