@@ -2539,6 +2539,10 @@ body.is-review-session .page-container { padding-top: 8px; }
 .reader-area {
   --hl-band-top: 0.58em;
   --hl-band-h: 1.04em;
+  /* 글자 잉크 키(실측 0.58~1.54em) — 문장 막대는 배경 밴드가 아니라 글자 키에 맞춘다
+     (오너 지시 2026-08-29: 밴드 기준 막대는 단어보다 길쭉해 정렬이 안 맞아 보임).
+     밴드 하단(1.62em)과의 차 0.08em이 밴드의 글자 아래 여유다. */
+  --hl-glyph-h: 0.96em;
 }
 .word-token .surface::before {
   content: '';
@@ -2597,9 +2601,11 @@ body.is-review-session .page-container { padding-top: 8px; }
    음수 마진(-28+6=-22=폭 상쇄)으로 본문을 밀지 않고 왼쪽 여백에 나간다. */
 .line-pick {
   /* 히트 영역은 넓게(22px × 2.2em), 시각은 ::before의 얇은 인용 막대만.
-     버튼을 줄상자와 같은 2.2em·top 정렬로 두면 flex 중앙(1.10em) = 밴드 중앙이
-     기하로 일치한다 — middle 정렬+실측 보정은 x-height(글꼴)에 의존해 실기(PingFang)
-     에서 어긋났다(오너 보고 2026-08-29). */
+     버튼이 줄상자와 같은 2.2em·top 정렬이라 버튼 top = 셀 top — 막대를 버튼 기준
+     절대배치하면 글자 좌표계(--hl-band-top 등)를 보정값 없이 그대로 쓴다.
+     middle 정렬+실측 보정은 x-height(글꼴)에 의존해 실기(PingFang)에서 어긋났었다
+     (오너 보고 2026-08-29). */
+  position: relative;
   width: 22px;
   height: 2.2em;
   margin-left: -28px;
@@ -2620,10 +2626,14 @@ body.is-review-session .page-container { padding-top: 8px; }
 }
 .line-pick::before {
   content: '';
+  position: absolute;
   width: 4px;
-  /* 글자 밴드와 같은 세로 범위(오너 편입 지시 2026-08-29 "문장 지정 세로 막대도").
-     버튼이 2.2em·top 정렬이라 flex 중앙 = 밴드 중앙 — 보정값 없이 전 글꼴 정확. */
-  height: var(--hl-band-h);
+  /* 세로 범위 = 글자 잉크 키(오너 지시 2026-08-29 "글자 최대 높이에 맞춰서") —
+     상단은 밴드·잉크 공통 시작(0.58em), 높이는 잉크 키(0.96em). 밴드(1.04em)로 두면
+     글자 아래 여유 0.08em만큼 막대가 단어보다 길쭉해 보인다. */
+  top: var(--hl-band-top);
+  height: var(--hl-glyph-h);
+  right: 0; /* 데스크톱: 기존 flex-end 자리 그대로 */
   border-radius: 2px;
   background: var(--primary-light);
 }
@@ -2643,6 +2653,7 @@ body.is-review-session .page-container { padding-top: 8px; }
     width: 15px;
     justify-content: flex-start;
   }
+  .line-pick::before { left: 0; right: auto; } /* 모바일: 기존 flex-start 자리 그대로 */
   .line-pick:active { opacity: 1; }
 }
 
