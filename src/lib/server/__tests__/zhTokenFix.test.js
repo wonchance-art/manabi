@@ -97,9 +97,19 @@ describe('POS_FIX — jieba 문맥 불문 오태그 수리', () => {
   });
 
   it('POS_FIX 표는 존재하는 단어만 — 등재 밖 무개입(스팟: 일반 문장 불변)', () => {
-    expect(Object.keys(ZH_POS_FIX)).toEqual(['自觉', '没', '很']);
+    expect(Object.keys(ZH_POS_FIX)).toEqual(['自觉', '没', '很', '谢谢', '安静']);
     const words = tokenizeZhLine('我在北京大学读书。').map((t) => t.text);
     expect(words).toContain('北京大学');
     expect(words).toContain('读书');
+  });
+
+  it('nr 오태그 수제 수리: 谢谢·安静(인명 사각 — 수확·판별기 모두 못 잡는 경로)', () => {
+    const xie = tokenizeZhLine('谢谢你！').find((x) => x.text === '谢谢');
+    expect(xie.pos).toBe('동사');
+    const an = tokenizeZhLine('请保持安静。').find((x) => x.text === '安静');
+    expect(an.pos).toBe('형용사');
+    expect(an.pos_all).toBe('형용사·동사');
+    // 정당한 고유명사 태그는 불변 — 지명 존중(북경은 POS_FIX 밖)
+    expect(tokenizeZhLine('我在北京。').find((x) => x.text === '北京').pos).toBe('지명');
   });
 });

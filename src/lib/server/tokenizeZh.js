@@ -7,6 +7,7 @@
 import { tag as jiebaTag } from 'jieba-wasm';
 import { pinyin } from 'pinyin-pro';
 import { ZH_NEUTRAL_TONE } from './zhNeutralTone';
+import { ZH_PINYIN_FIX } from './zhPinyinFix';
 import { fixZhTagged } from './zhTokenFix';
 
 // jieba 품사 태그(중국어 관례) → 한국어 표기. 미지 태그는 null(뜻 조회 단계에서 채워질 수 있음).
@@ -71,10 +72,11 @@ export function tokenizeZhLine(line) {
     // 병음을 달고 품사는 미상(null)으로 남긴다(문맥 판별기가 채움). 오너 보고 실측.
     const isPunct = PUNCT.test(text) || ((tag === 'x' || tag === 'w') && !HAS_HANZI.test(text));
     const chars = [...text];
-    // 줄 병음을 먼저 소비해 글자-병음 정렬을 유지하고, 필독 경성 어휘는 토큰 단위로만
-    // 오버라이드한다(zhNeutralTone.js — customPinyin 전역 등록은 단어 경계 오염 실측으로 배제).
+    // 줄 병음을 먼저 소비해 글자-병음 정렬을 유지하고, 필독 경성 어휘(zhNeutralTone.js)와
+    // 경계 오독 확정분(zhPinyinFix.js — 人参加→人参 탐욕 매칭류)은 토큰 단위로만
+    // 오버라이드한다(customPinyin 전역 등록은 단어 경계 오염 실측으로 배제).
     const lineSyllables = takeSyllables(chars);
-    const override = !isPunct && ZH_NEUTRAL_TONE[text];
+    const override = !isPunct && (ZH_NEUTRAL_TONE[text] ?? ZH_PINYIN_FIX[text]);
     const syllables = override
       ? override.split(' ')
       : (lineSyllables ?? [pinyin(text, { toneType: 'symbol', type: 'string' })]).filter(Boolean);

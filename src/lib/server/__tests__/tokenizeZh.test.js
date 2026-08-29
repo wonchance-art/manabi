@@ -144,3 +144,21 @@ describe('필독 경성 오버라이드', () => {
     expect(toks.find((t) => t.text === '和')?.furigana).toBe('hé');
   });
 });
+
+// 병음 경계 오독 수리(zhPinyinFix.js) — pinyin-pro의 탐욕 매칭이 jieba 토큰 경계를 넘어
+// 다른 단어를 붙잡는 실측 오독의 토큰 오버라이드(실문장 스모크 2026-08-29 발견).
+describe('병음 경계 오독 오버라이드', () => {
+  const pyOf = (line, word) => tokenizeZhLine(line).find((t) => t.text === word)?.furigana;
+
+  it('人|参加 경계: 三十人参加了 → 参加 = cān jiā (人参 rén shēn 매칭 수리)', () => {
+    expect(pyOf('三十人参加了活动。', '参加')).toBe('cān jiā');
+  });
+
+  it('실단어 人参은 불변 — 토큰 정확 일치만 적용', () => {
+    expect(pyOf('我买了人参。', '人参')).toBe('rén shēn');
+  });
+
+  it('오독 문맥 밖 参加도 같은 값(무맥락 정답 독음이라 항상 안전)', () => {
+    expect(pyOf('我参加了比赛。', '参加')).toBe('cān jiā');
+  });
+});

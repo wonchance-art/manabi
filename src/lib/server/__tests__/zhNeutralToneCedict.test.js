@@ -51,6 +51,28 @@ describe('zhNeutralToneCedict 데이터 정본', () => {
     expect(CEDICT['名气']).toBe('míng qi');
     expect(CEDICT['凑热闹']).toBe('còu rè nao');
   });
+
+  it('단어 내부 성조 변조(sandhi) 전수 — 원조 그대로 실은 회귀(不 bù+4성·비어말 一 yī)가 없다', () => {
+    // CEDICT는 원조(citation)로 적는다. 오버라이드는 줄 병음을 토큰째 대체하므로 원조를
+    // 그대로 실으면 pinyin-pro가 맞게 내던 변조를 되돌린다(전수 교차검증 실측 2026-08-29).
+    const T4 = /[àèìòùǜ]/;
+    const bad = [];
+    for (const [k, v] of entries) {
+      const chars = [...k];
+      const syls = v.split(' ');
+      syls.forEach((s, i) => {
+        if (i === syls.length - 1) return; // 어말은 원조 유지가 정본
+        if (chars[i] === '不' && s === 'bù' && T4.test(syls[i + 1])) bad.push(`${k}=${v}`);
+        if (chars[i] === '一' && s === 'yī') bad.push(`${k}=${v}`);
+      });
+    }
+    expect(bad).toEqual([]);
+    // 변조 적용 표본 + ①필터와의 상호작용: 라이브러리가 이미 맞게 내는 不在乎(bú zài hu)는
+    // 변조 후 일치해져 정상 제외되고, 라이브러리가 틀리는 不见得(dé)·不客气(qì)만 남는다.
+    expect(CEDICT['不见得']).toBe('bú jiàn de');
+    expect(CEDICT['不客气']).toBe('bú kè qi');
+    expect(CEDICT['不在乎']).toBeUndefined();
+  });
 });
 
 describe('2층 병합 — 수제 층이 항상 이긴다', () => {

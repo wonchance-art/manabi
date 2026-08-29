@@ -84,7 +84,23 @@ for (const e of raw) {
   if (/[50]$/.test(lastSyl) && DIRECTIONAL_TAIL.has(chars[chars.length - 1])) {
     stats.directional++; continue;                                   // ③ 방향보어·边
   }
-  const converted = syls.map(syllableToSymbol);
+  // 단어 내부 성조 변조(sandhi) — CEDICT는 원조(citation)로 적는다(不在乎 bu4).
+  // 우리 오버라이드는 토큰 단위로 줄 병음을 통째 대체하므로, 원조 그대로 실으면
+  // pinyin-pro가 이미 맞게 내던 변조(不对→bú, #1004)를 되돌리는 회귀가 된다
+  // (전수 교차검증 실측 2026-08-29: 不在乎·不见得류). 단어 내부 변조는 결정적이라
+  // 생성 단계에서 적용한다: 不+4성→bú, 一+4성/경성→yí, 一+1·2·3성→yì(어말 一는 원조).
+  const sandhied = syls.map((syl, i) => {
+    const next = syls[i + 1];
+    if (!next) return syl;
+    const nextTone = next.match(/([0-5])$/)?.[1];
+    if (chars[i] === '不' && /^bu4$/i.test(syl) && nextTone === '4') return 'bu2';
+    if (chars[i] === '一' && /^yi1$/i.test(syl)) {
+      if (nextTone === '4' || nextTone === '5' || nextTone === '0') return 'yi2';
+      if (nextTone === '1' || nextTone === '2' || nextTone === '3') return 'yi4';
+    }
+    return syl;
+  });
+  const converted = sandhied.map(syllableToSymbol);
   if (converted.some((s) => !s)) { stats.malformed++; continue; }
   const value = converted.join(' ');
   // ① 라이브러리 정답분 제외 — 앱과 같은 pinyin-pro 단어 호출로 실측 대조
