@@ -2518,6 +2518,44 @@ body.is-review-session .page-container { padding-top: 8px; }
 /* ruby 유무 관계없이 줄 높이 통일 — rt absolute라 공간은 line-height로 확보 */
 .word-token .surface {
   line-height: 2.2;
+  /* 글자 밴드(#1165)의 기준 상자. 플레인 인라인이면 절대배치 좌표계가 2.2em 줄상자가
+     아니라 글꼴 기준선 띠(위 = 기준선 − 어센트)여서 밴드가 0.3~0.4em 내려앉는다
+     (시연 실측 2026-08-29). inline-block은 기준 상자를 정확히 2.2em으로 고정하되
+     조판은 불변이다: 토큰은 reader-area(flex-wrap)의 아이템이라 줄바꿈 단위가 원래
+     토큰이고, baseline 정렬(#990)은 inline-block의 기준선(마지막 라인박스)이 인라인
+     때와 같은 자리라 유지된다. z-index: 0 스택 문맥 — 밴드(z:-1)가 '자기 글자 뒤,
+     지면 위'라는 보장이 조상 배경 구성과 무관해진다. */
+  display: inline-block;
+  position: relative;
+  z-index: 0;
+}
+
+/* ── 하이라이트 글자 밴드 (오너 확정 2026-08-29, 시연 아티팩트 3라운드) ──
+   상태·저장·복습·지정의 모든 면 칠은 .surface 직접 배경이 아니라 ::before 밴드가 진다.
+   세로 범위는 잉크 실측(픽셀 스캔): 병음 잉크(y·g 디센더 포함) 0.32~0.50em ·
+   한자 잉크 0.58~1.54em(셀 top 기준) → 0.58~1.62em 밴드면 병음과 0.08em 여유,
+   글자는 온전 포함. 소비처(밴드·이음매·문장 막대)가 전부 이 두 변수를 공유한다.
+   ※ .surface line-height(2.2)를 바꾸면 이 값도 다시 재야 한다(rt-an bottom과 동일 계약). */
+.reader-area {
+  --hl-band-top: 0.58em;
+  --hl-band-h: 1.04em;
+}
+.word-token .surface::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: -2px;
+  right: -2px;
+  top: var(--hl-band-top);
+  height: var(--hl-band-h);
+  border-radius: 1px; /* 킨들 톤(오너 레퍼런스 2026-08-29) — 각지되 픽셀 계단만 죽인다 */
+  background: transparent;
+  /* 지정 전이(T1 혼색): 칠의 형태·범위는 불변, 색만 크로스페이드 — 상태가 '배경'이라는
+     한 언어로 계속 살아야 지정 순간 눈이 놓치지 않는다(오너 문제 제기 2026-08-29) */
+  transition: background-color 0.18s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .word-token .surface::before { transition: none; }
 }
 
 /* ── 문장 이동 필(▲/▼) — 문장 지정 중에만 나타난다(오너 승인 2026-08-19).
@@ -2555,8 +2593,8 @@ body.is-review-session .page-container { padding-top: 8px; }
    절대배치(앵커)는 루비(요미가나·병음) 줄에서 rt 높이 쪽으로 어긋났다(#984 실측) — 인라인이 정답.
    음수 마진(-28+6=-22=폭 상쇄)으로 본문을 밀지 않고 왼쪽 여백에 나간다. */
 .line-pick {
-  /* 히트 영역은 넓게, 시각은 ::before의 얇은 인용 막대만.
-     높이는 요미가나(rt) 상단~한자 하단 전체 커버(실측 1.55em + -0.18em 시프트). */
+  /* 히트 영역은 넓게(버튼 상자 1.55em — 불변), 시각은 ::before의 얇은 인용 막대만.
+     막대의 세로 범위는 글자 밴드 변수(--hl-band-*)를 공유해 지정 배경과 정렬된다. */
   width: 22px;
   height: 1.55em;
   margin-left: -28px;
@@ -2579,9 +2617,13 @@ body.is-review-session .page-container { padding-top: 8px; }
 .line-pick::before {
   content: '';
   width: 4px;
-  height: 100%;
+  /* 글자 밴드와 같은 세로 범위(오너 편입 지시 2026-08-29 "문장 지정 세로 막대도").
+     버튼 상자는 flex 중앙 정렬이므로, 막대 중심을 밴드 중심(줄상자 1.10em)으로 맞추는
+     보정만 transform으로 얹는다 — 값은 하네스 픽셀 실측. */
+  height: var(--hl-band-h);
   border-radius: 2px;
   background: var(--primary-light);
+  transform: translateY(0.15em); /* 하네스 실측 δ(버튼 1.55em·middle·-0.18em 시프트의 잔차) */
 }
 /* 호버가 있는 기기(데스크톱) — 기본은 완전 숨김, 버튼 자리에 마우스가 오면 표시 */
 @media (hover: hover) {
@@ -2612,36 +2654,51 @@ body.is-review-session .page-container { padding-top: 8px; }
 .reader-area--light { --picked-bg: color-mix(in srgb, var(--primary) 18%, #fff); }
 .reader-area--sepia { --picked-bg: color-mix(in srgb, var(--primary) 18%, #f2e8d5); }
 .reader-area--dark  { --picked-bg: color-mix(in srgb, var(--primary) 18%, var(--bg-primary)); }
-.word-token--picked .surface {
+.word-token--picked .surface::before {
   background: var(--picked-bg, var(--primary-glow));
-  border-radius: 4px;
-  box-shadow:
-    0 2px 0 var(--picked-bg, var(--primary-glow)),
-    0 -2px 0 var(--picked-bg, var(--primary-glow));
 }
-/* 자간 이음 — 앞 토큰도 지정된 경우에만(줄 경계는 부모가 달라 자동 차단) */
-.word-token--picked + .word-token--picked .surface {
-  box-shadow:
-    0 2px 0 var(--picked-bg, var(--primary-glow)),
-    0 -2px 0 var(--picked-bg, var(--primary-glow)),
-    calc(-1 * var(--char-gap, 0.25rem)) 0 0 var(--picked-bg, var(--primary-glow));
+/* 자간 이음매 — 항상 '지정색' 전용 조각(T1 정정판, 오너 확정 2026-08-29).
+   단어의 칠(::before)은 비지정과 같은 ±2px 그대로 두고 자간만 이 조각이 채운다:
+   지정 전후 단어 칠 범위가 한 픽셀도 안 움직이고(시연 픽셀 스캔 검증), 같은 상태가
+   연속해도(혼색끼리) 단어 경계가 이음매 색으로 남는다.
+   앞 토큰의 ::after가 오른쪽으로 낸다 — 자기 스택 문맥에선 z:-2라 자기 밴드(z:-1)
+   밑에 깔리고, 뒤 토큰은 문맥째 나중에 그려져 그 위를 덮는다. 양쪽 1px씩 겹쳐
+   실금이 없고, 노출부는 정확히 자간뿐이라 이웃 글리프를 침범할 수 없다(#1013 원칙
+   승계). :has 미지원 엔진은 이음매만 생략 — 자간 기본 0.25rem에선 밴드 ±2px가
+   이미 맞닿아 시각 손실이 없다. */
+.word-token--picked:has(+ .word-token--picked) .surface::after {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  right: calc(-1 * var(--char-gap, 0.25rem) - 3px);
+  width: calc(var(--char-gap, 0.25rem) + 2px);
+  top: var(--hl-band-top);
+  height: var(--hl-band-h);
+  background: var(--picked-bg, var(--primary-glow));
 }
 .word-token--picked .line-pick {
   opacity: 1;
 }
 
+/* 저장·복습 밑줄도 밴드가 진다 — 인라인 시절 border-bottom은 글꼴 기준선 띠 하단에
+   붙었지만, inline-block 승격 후 surface 테두리는 2.2em 상자 밑(글자에서 먼 곳)이라
+   ::before(밴드 하단 = 글자 바로 밑 1.62em)로 옮기는 것이 위치·레이아웃 양쪽에서 정답. */
 .word-token--saved .surface {
-  border-bottom: 2px solid var(--primary-light);
   opacity: 0.6;
 }
+.word-token--saved .surface::before {
+  border-bottom: 2px solid var(--primary-light);
+}
 
-/* 복습 대상: 불투명도 복원 + 부드러운 펄스 */
+/* 복습 대상: 불투명도 복원 + 부드러운 펄스(밴드 모양 글로우) */
 .word-token--due .surface {
   opacity: 1;
+}
+.word-token--due .surface::before {
   border-bottom: 2px solid var(--warning);
   animation: due-pulse 2.5s ease-in-out infinite;
 }
-.word-token--due:hover .surface {
+.word-token--due:hover .surface::before {
   animation-play-state: paused;
 }
 
@@ -2667,32 +2724,31 @@ body.is-review-session .page-container { padding-top: 8px; }
   --ws-learn: rgba(227, 185, 60, 0.20);
   --ws-due: rgba(232, 169, 79, 0.30);
 }
-.reader-area--hl .word-token--new:not(.word-token--picked) .surface {
+.reader-area--hl .word-token--new:not(.word-token--picked) .surface::before {
   background: var(--ws-new);
-  border-radius: 5px;
 }
-.reader-area--hl .word-token--met:not(.word-token--picked) .surface {
+.reader-area--hl .word-token--met:not(.word-token--picked) .surface::before {
   background: var(--ws-met);
-  border-radius: 5px;
 }
 /* 학습 중: 밑줄+흐림 대신 배경 — 흐림(0.6)을 풀어야 노랑이 탁해지지 않는다(목업 B). */
-.reader-area--hl .word-token--saved:not(.word-token--picked) .surface {
+.reader-area--hl .word-token--saved:not(.word-token--picked) .surface { opacity: 1; }
+.reader-area--hl .word-token--saved:not(.word-token--picked) .surface::before {
   background: var(--ws-learn);
-  border-radius: 5px;
-  opacity: 1;
   border-bottom-color: transparent;
 }
-/* 복습: 배경 + 기존 box-shadow 펄스 유지(배경과 호환). 밑줄만 배경으로 대체(폭 불변). */
-.reader-area--hl .word-token--due:not(.word-token--picked) .surface {
+/* 복습: 배경 + 기존 펄스 유지(배경과 호환). 밑줄만 배경으로 대체. */
+.reader-area--hl .word-token--due:not(.word-token--picked) .surface::before {
   background: var(--ws-due);
-  border-radius: 5px;
   border-bottom-color: transparent;
 }
 
 /* 지정(단어·문장·범위 = --picked) 중에도 상태 정보 유지(오너 지적 2026-08-27) —
-   배경은 지정색이 이기고, 상태는 밑줄로 강등 표시(A안 문법을 지정 중에만 차용).
-   border 2px는 기본 규칙이 폭을 이미 예약해 레이아웃 불변. picked+due는 기본 규칙의
-   주황 밑줄+펄스가 그대로 남으므로(위 :not 가드가 비지정에만 투명화) 별도 규칙 불필요. */
+   T1 혼색(킨들 겹침 문법, 오너 확정 2026-08-29): 밑줄 강등 대신 그 단어 밴드의 색을
+   지정색×상태색 혼색으로 만든다. 상태가 끝까지 '배경'이라는 한 언어로 살아, 지정
+   전이에서 형태·범위가 불변이고 색만 넘어간다. 혼합 비율은 시연 확정값(연한 met일수록
+   높게). 혼색도 불투명 등가(--picked-bg 기반 color-mix)라 #1013 원칙이 유지된다.
+   picked+due는 기본 규칙의 주황 밑줄+펄스가 혼색 위에 그대로 남는다(:not 가드가
+   비지정에만 투명화). */
 .reader-area--light,
 .reader-area--sepia {
   --ws-new-ln: #2563eb;
@@ -2704,15 +2760,19 @@ body.is-review-session .page-container { padding-top: 8px; }
   --ws-met-ln: #55719e;
   --ws-learn-ln: #e3b93c;
 }
-.reader-area--hl .word-token--picked.word-token--new .surface {
-  border-bottom: 2px dotted var(--ws-new-ln);
+.reader-area--hl .word-token--picked.word-token--new .surface::before {
+  background: color-mix(in srgb, var(--ws-new-ln) 26%, var(--picked-bg, var(--primary-glow)));
 }
-.reader-area--hl .word-token--picked.word-token--met .surface {
-  border-bottom: 2px dotted var(--ws-met-ln);
+.reader-area--hl .word-token--picked.word-token--met .surface::before {
+  background: color-mix(in srgb, var(--ws-met-ln) 30%, var(--picked-bg, var(--primary-glow)));
 }
-.reader-area--hl .word-token--picked.word-token--saved .surface {
-  border-bottom-color: var(--ws-learn-ln);
-  opacity: 1;
+.reader-area--hl .word-token--picked.word-token--saved .surface { opacity: 1; }
+.reader-area--hl .word-token--picked.word-token--saved .surface::before {
+  background: color-mix(in srgb, var(--ws-learn-ln) 30%, var(--picked-bg, var(--primary-glow)));
+  border-bottom-color: transparent;
+}
+.reader-area--hl .word-token--picked.word-token--due .surface::before {
+  background: color-mix(in srgb, var(--warning) 32%, var(--picked-bg, var(--primary-glow)));
 }
 
 /* failed 토큰 전용 빈 furigana 영역 */
