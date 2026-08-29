@@ -16,7 +16,7 @@ describe('중국어 토큰화', () => {
     expect(first.furigana).toBe('tú shū guǎn');
   });
 
-  it('base_form은 표면형과 같다(중국어는 굴절이 없다)', () => {
+  it('base_form은 표면형과 같다(중국어 무굴절 — 유일 예외는 이합사 삽입형, zhSeparable.test)', () => {
     for (const t of tokenizeZhLine('他昨天买了三本书。')) {
       expect(t.base_form).toBe(t.text);
     }
