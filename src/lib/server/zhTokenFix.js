@@ -4,6 +4,8 @@
 // 没有→没/有·没关系→没/关系가 깨짐) — 사전을 건드리지 않고 태그 열을 후처리한다.
 // 경성 사전(zhNeutralTone)과 같은 화이트리스트 계층 패턴: 등재분만 교정, 밖은 무개입.
 
+import ZH_POS_FIX_HSK from './data/zhPosFixHsk.json';
+
 // ① 没V 되가름 — jieba가 한 토큰으로 병합하는 没+동사 중 실단어가 아닌 것들.
 //    상용 1자 동사 55종 × 캐리어 문장 전수 프로브(2026-08-29 실측)에서 병합 28종을 수확,
 //    실단어인 没用(쓸모없다)만 제외한 27종. 학습자에게 没吵는 존재하지 않는 단어다 —
@@ -25,6 +27,10 @@ export const ZH_WORD_SPLIT = {
 //    pos_all을 실으면 기존 문맥 판별기(disambiguateZhPos)가 문장에 맞는 하나를 짚고,
 //    판별 실패 시 첫 후보가 폴백이다 — 겸류(vn/vd) 이음새의 재사용, 신규 경로 없음.
 //    실측: 自觉→d(부사), 没→v(동사 고정 — 没问题에선 동사, 没来에선 부사), 很→zg(미지).
+//    2층 구조(R3): 수제 층 아래에 HSK 3.0 대조 수확층 1,486항(zhPosFixHsk.json —
+//    scripts/build-zh-hsk.mjs가 jieba 품사 계열과 HSK 품사 집합이 서로소인 충돌만
+//    보수적으로 수확: 내용어 계열 한정·고유명사 제외·겸류 교집합은 일치 취급).
+//    수제가 항상 이긴다.
 export const ZH_POS_FIX = {
   自觉: { tag: 'v', posAll: '동사·형용사' },
   没: { tag: 'd', posAll: '부사·동사' },
@@ -74,8 +80,9 @@ export function fixZhTagged(tagged) {
     out.push(entry);
   }
   // ③ POS_FIX — 분할 산출물에도 적용하되, noPosAll(구조 확정) 조각은 후보 확장을 막는다.
+  //    수제 층 → HSK 수확층 순으로 조회(수제 우선).
   return out.map((e) => {
-    const fix = ZH_POS_FIX[e.word];
+    const fix = ZH_POS_FIX[e.word] ?? ZH_POS_FIX_HSK[e.word];
     if (!fix) return e;
     return {
       word: e.word,
