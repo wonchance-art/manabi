@@ -9,6 +9,9 @@ import { tokenizeZhLine } from '../server/tokenizeZh.js';
 // 원천 ivankra/hsk30(MIT, 공식 목록 11,092단어 정리본), 생성 scripts/build-zh-hsk.mjs.
 // ⑴ 급수 데이터 정본 + 조회·프로필(엔진 — UI는 목업 승인 후, i+1 R1→R2 선례)
 // ⑵ 품사 충돌 수확층(jieba 계열과 HSK 집합이 서로소인 것만) — R1 POS_FIX의 자동 시드.
+//    R5: 고유명사류(nr/ns/nt/nz) 태그는 CEDICT 대문자 판별자(© MDBG, CC BY-SA 4.0 —
+//    고유명사는 병음이 대문자)로 갈라, 소문자 독음뿐인 일반어 오태그(明白/nr·星星/nz)만
+//    수확하고 진짜 고유명사(北京·성씨 겸용 毛/周)는 존중한다.
 
 describe('zhHskLevel 데이터 정본', () => {
   const entries = Object.entries(ZH_HSK_LEVEL);
@@ -83,5 +86,19 @@ describe('품사 충돌 수확층(zhPosFixHsk)', () => {
     expect(t.pos).toBe('부사');
     // 겸류 수확은 후보로 실려 문맥 판별기가 짚는다
     expect(HSK_POS_FIX['够']).toEqual({ tag: 'v', posAll: '동사·부사' });
+  });
+
+  it('R5 고유명사 사각 수확 — CEDICT 대문자 판별자(소문자 독음 = 일반어 오태그)', () => {
+    // jieba가 nr/nz로 박제한 상용어들이 HSK 품사로 수확된다
+    expect(HSK_POS_FIX['明白']).toEqual({ tag: 'a', posAll: '형용사·동사' });
+    expect(HSK_POS_FIX['星星']).toEqual({ tag: 'n' });
+    expect(HSK_POS_FIX['换']).toEqual({ tag: 'v' });
+    // 진짜 고유명사(대문자 독음 — 성씨 겸용 포함)는 존중·배제
+    expect(HSK_POS_FIX['北京']).toBeUndefined();
+    expect(HSK_POS_FIX['毛']).toBeUndefined();
+    expect(HSK_POS_FIX['周']).toBeUndefined();
+    // 배선: 星星이 지명/고유명사가 아니라 명사로 표시된다
+    const t = tokenizeZhLine('天上有很多星星。').find((x) => x.text === '星星');
+    expect(t.pos).toBe('명사');
   });
 });

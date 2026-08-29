@@ -1,7 +1,9 @@
 // HSK 3.0 어휘표 → 급수·품사 데이터 생성기 (분석 개선 R3 — 오너 승인 2026-08-29).
 //
-// 원천: ivankra/hsk30 (MIT — 공식 HSK 3.0 목록 11,092단어 정리본, hsk30.csv).
-//   실행: node scripts/build-zh-hsk.mjs --hsk <hsk30.csv 경로>
+// 원천: ivankra/hsk30 (MIT — 공식 HSK 3.0 목록 11,092단어 정리본, hsk30.csv)
+//   + CC-CEDICT (© MDBG, CC BY-SA 4.0 — npm cedict-json의 cedict.json. R5 고유명사
+//   판별자 전용: CC-CEDICT는 고유명사의 병음을 대문자로 적는다).
+//   실행: node scripts/build-zh-hsk.mjs --hsk <hsk30.csv> --cedict <cedict.json>
 //   출력(둘 다 정렬 고정 — 결정성):
 //   ① src/lib/data/zhHskLevel.json — { 단어: 급수 } (1~6, 7 = 7-9 통합밴드).
 //      파이프 변형(爸爸|爸)은 각각 등재, 중복은 낮은 급수 우선. 한자 표제어만.
@@ -14,7 +16,11 @@
 // - 내용어 계열(명·동·형·부)만 비교 — 양사·전치사류 혼합 기능어는 건드리지 않는다
 //   (판별기 MARKABLE_POS와 같은 철학).
 // - jieba 겸류(vn 등)는 계열 집합으로 비교 — 교집합이 있으면 충돌 아님.
-// - jieba 고유명사류(nr·ns·nt·nz) 표제어는 제외(인명·지명 판정은 존중).
+// - jieba 고유명사류(nr·ns·nt·nz) 표제어는 CEDICT 대문자 판별자로 가른다(R5 —
+//   분석 개선 실문장 스모크가 谢谢/nr·安静/nr 사각을 적발한 후속): 해당 표제어의
+//   CEDICT 독음이 전부 소문자면 일반어 오태그(明白·星星·换류)로 보고 HSK 품사를
+//   수확하고, 대문자 독음이 하나라도 있으면(북京은 물론 성씨 겸용 毛·周·金 포함)
+//   진짜 고유명사로 존중·배제한다. CEDICT 미등재도 배제(보수).
 // - 수제 ZH_POS_FIX 등재어는 제외(수제가 정본).
 
 import fs from 'node:fs';
@@ -33,9 +39,17 @@ const arg = (name) => {
   return i >= 0 ? process.argv[i + 1] : null;
 };
 const hskPath = arg('hsk');
-if (!hskPath) {
-  console.error('사용법: node scripts/build-zh-hsk.mjs --hsk <hsk30.csv>');
+const cedictPath = arg('cedict');
+if (!hskPath || !cedictPath) {
+  console.error('사용법: node scripts/build-zh-hsk.mjs --hsk <hsk30.csv> --cedict <cedict.json>');
   process.exit(1);
+}
+
+// CEDICT 간체 표제어 → 독음 배열(고유명사 판별자 — 원문 병음의 대소문자 그대로)
+const cedictReadings = new Map();
+for (const e of JSON.parse(fs.readFileSync(cedictPath, 'utf8'))) {
+  if (!cedictReadings.has(e.simplified)) cedictReadings.set(e.simplified, []);
+  cedictReadings.get(e.simplified).push(e.pinyin);
 }
 
 const HANZI_ONLY = /^[一-鿿]+$/;
@@ -114,13 +128,19 @@ for (const [word, hskSet] of posSets) {
   const tagged = jiebaTag(word, true);
   if (tagged.length !== 1 || tagged[0].word !== word) { stats.multiToken++; continue; }
   const jTag = tagged[0].tag;
-  if (PROPER_TAGS.has(jTag)) { stats.proper++; continue; }
-  const family = JIEBA_FAMILY[jTag] || null;
-  if (family && family.some((l) => hskSet.has(l))) { stats.agree++; continue; }
-  if (!family) {
-    // family-미상: 어소·미지 태그만 보강 수확, 기능어 태그(ug·p·c류)는 jieba 존중
-    if (!LEXICAL_UNKNOWN_TAGS.has(jTag)) { stats.functionTag = (stats.functionTag || 0) + 1; continue; }
-    stats.unknownTag++;
+  if (PROPER_TAGS.has(jTag)) {
+    // R5 게이트: 독음 전부 소문자 = 일반어 오태그 → 수확 / 대문자 존재·미등재 = 존중
+    const readings = cedictReadings.get(word);
+    if (!readings || readings.some((r) => /[A-Z]/.test(r))) { stats.proper++; continue; }
+    stats.properHarvested = (stats.properHarvested || 0) + 1;
+  } else {
+    const family = JIEBA_FAMILY[jTag] || null;
+    if (family && family.some((l) => hskSet.has(l))) { stats.agree++; continue; }
+    if (!family) {
+      // family-미상: 어소·미지 태그만 보강 수확, 기능어 태그(ug·p·c류)는 jieba 존중
+      if (!LEXICAL_UNKNOWN_TAGS.has(jTag)) { stats.functionTag = (stats.functionTag || 0) + 1; continue; }
+      stats.unknownTag++;
+    }
   }
   const labels = [...hskSet];
   posFix[word] = {
@@ -135,8 +155,9 @@ fs.writeFileSync(posPath, JSON.stringify(posSorted, null, 1) + '\n');
 
 console.log('급수 등재:', Object.keys(levelSorted).length, '→', levelPath);
 console.log('품사 대조:', stats.checked, '/ 다중토큰 제외:', stats.multiToken,
-  '/ 고유명사 제외:', stats.proper, '/ 일치:', stats.agree, '/ jieba 미상 태그:', stats.unknownTag);
+  '/ 고유명사 존중(대문자·미등재):', stats.proper, '/ 고유명사 사각 수확(R5):', stats.properHarvested ?? 0,
+  '/ 일치:', stats.agree, '/ jieba 미상 태그:', stats.unknownTag);
 console.log('품사 충돌 수확:', stats.harvested, '→', posPath);
-for (const w of ['自觉', '计划', '希望', '工作']) {
+for (const w of ['自觉', '计划', '希望', '工作', '明白', '星星', '换', '北京', '毛']) {
   console.log(' 스팟', w, 'HSK', levels.get(w) ?? '-', JSON.stringify(posSorted[w] ?? '(수확 없음)'));
 }
