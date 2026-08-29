@@ -70,8 +70,9 @@ describe('하이라이트 글자 밴드 (index.css)', () => {
 
   it('문장 막대는 글자 잉크 키(--hl-glyph-h) — 버튼 2.2em·top 정렬 기준 절대배치', () => {
     // 막대 세로 = 글자 최대 높이(오너 지시 2026-08-29): 밴드 높이로 두면 글자 아래
-    // 여유(0.08em)만큼 단어보다 길쭉해 보인다. 상단은 밴드·잉크 공통 시작을 공유.
-    expect(css).toMatch(/\.reader-area \{[^}]*--hl-glyph-h: 0\.96em;/s);
+    // 여유만큼 단어보다 길쭉해 보인다. 값은 전각 정방 1em(0.58~1.58em) — 잉크 실측
+    // 0.96em은 베이스라인 아래로 깊은 글꼴(PingFang)에서 바닥이 짧았다(오너 실기 보고).
+    expect(css).toMatch(/\.reader-area \{[^}]*--hl-glyph-h: 1em;/s);
     const bar = css.match(/\.line-pick::before \{[^}]*\}/s)?.[0] || '';
     expect(bar).toContain('top: var(--hl-band-top)');
     expect(bar).toContain('height: var(--hl-glyph-h)');
