@@ -11,7 +11,7 @@
 // 东西南北가 dōng xi로 변함). 토큰 단위 적용이면 东西南北는 jieba 단일 토큰이라
 // 사전 비적용(실측), 경계 걸침은 원천 불성립.
 //
-// 등재 기준(전부 pinyin-pro 3.28.2 실측으로 걸렀다 — scripts 없이 이 파일이 정본):
+// 등재 기준(수제 층 — 전부 pinyin-pro 3.28.2 실측으로 걸렀다):
 // ① 라이브러리가 이미 맞게 내는 39종(爸爸·妈妈류, 子/头 접미, 认识·觉得·喜欢·休息·
 //    便宜·聪明·大夫 등)은 싣지 않는다. 라이브러리 업그레이드 시 재실측 후 증감.
 // ② 문맥에 따라 경성 여부가 갈리는 다의어는 배제: 大意(부주의 dàyi/대의 dàyì)·
@@ -20,9 +20,18 @@
 //    东西南北는 단일 토큰이라 비적용. 잔여(단독 东西가 방위 의미)는 뷰어 '뜻·발음 수정'으로.
 // ③ 방향보어(V+出来/下去 등)와 접미 边(上边 등)은 가벼운 읽기(可轻读) 논쟁권이라 v1 배제.
 //
+// 2층 구조(분석 개선 R2 — 오너 승인 2026-08-29): 아래 수제 층(HAND) 밑에 CC-CEDICT
+// 추출층 2,034항(zhNeutralToneCedict.json — scripts/build-zh-neutral-tone.mjs가 위
+// 기준 ①~③을 그대로 기계화해 생성, 다의어·고유명사·얼화·5자 이상 배제)을 깐다.
+// 수제 층이 항상 이긴다 — CEDICT가 원조를 고집하는 필독 경성(知道 zhi1 dao4)이나
+// 이독 병존(告诉)은 수제가 정본이다. CEDICT 층 데이터: CC-CEDICT © MDBG,
+// CC BY-SA 4.0 (https://www.mdbg.net/chinese/dictionary?page=cc-cedict — 출처 표기 의무).
+//
 // 값 형식: 글자당 1음절, 공백 구분 — tokenizeZh가 split(' ')로 재분배한다.
 
-export const ZH_NEUTRAL_TONE = {
+import ZH_NEUTRAL_TONE_CEDICT from './data/zhNeutralToneCedict.json';
+
+const HAND = {
   // ── 호칭·사람 ──
   先生: 'xiān sheng',
   太太: 'tài tai',
@@ -77,3 +86,5 @@ export const ZH_NEUTRAL_TONE = {
   看不起: 'kàn bu qǐ',
   买不起: 'mǎi bu qǐ',
 };
+
+export const ZH_NEUTRAL_TONE = { ...ZH_NEUTRAL_TONE_CEDICT, ...HAND };
