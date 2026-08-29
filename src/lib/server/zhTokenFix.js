@@ -5,6 +5,7 @@
 // 경성 사전(zhNeutralTone)과 같은 화이트리스트 계층 패턴: 등재분만 교정, 밖은 무개입.
 
 import ZH_POS_FIX_HSK from './data/zhPosFixHsk.json';
+import ZH_SEPARABLE from './data/zhSeparable.json';
 
 // ① 没V 되가름 — jieba가 한 토큰으로 병합하는 没+동사 중 실단어가 아닌 것들.
 //    상용 1자 동사 55종 × 캐리어 문장 전수 프로브(2026-08-29 실측)에서 병합 28종을 수확,
@@ -68,7 +69,7 @@ export function fixZhTagged(tagged) {
       for (const [w, t] of ZH_WORD_SPLIT[word]) out.push({ word: w, tag: t });
       continue;
     }
-    // x-조각의 상조사 분리(선두 또는 말미 1자)
+    // x-조각의 상조사 분리(선두 또는 말미 1자) + 양사 个 꼬리 분리(R4a-C: 帮个/x → 帮+个)
     if (tag === 'x' && HAS_HANZI.test(word)) {
       const chars = [...word];
       if (chars.length >= 2 && ASPECT_TAG[chars[0]]) {
@@ -81,18 +82,70 @@ export function fixZhTagged(tagged) {
         out.push({ word: chars[chars.length - 1], tag: ASPECT_TAG[chars[chars.length - 1]] });
         continue;
       }
+      if (chars.length >= 2 && chars[chars.length - 1] === '个') {
+        out.push({ word: chars.slice(0, -1).join(''), tag: 'x' });
+        out.push({ word: '个', tag: 'q' });
+        continue;
+      }
     }
     out.push(entry);
   }
-  // ③ POS_FIX — 분할 산출물에도 적용하되, noPosAll(구조 확정) 조각은 후보 확장을 막는다.
-  //    수제 층 → HSK 수확층 순으로 조회(수제 우선).
-  return out.map((e) => {
+  // ③ 이합사 인지(R4a) — base_form만 합류, 표면·분할·병음 불변. POS_FIX보다 먼저:
+  //    감지는 jieba의 문맥 태그(구조 신호)를 기준으로 한다. POS_FIX는 표시용 기본값
+  //    교정이라 뒤집힌 태그가 감지를 막으면 안 된다(실측: 干了一杯의 干/v를 HSK
+  //    수확층이 a로 뒤집어 B가 불발 — 순서로 해소).
+  const marked = markZhSeparable(out);
+  // ④ POS_FIX — 분할 산출물에도 적용하되, noPosAll(구조 확정) 조각은 후보 확장을 막는다.
+  //    수제 층 → HSK 수확층 순으로 조회(수제 우선). baseForm(③)은 통과 보존.
+  return marked.map((e) => {
     const fix = ZH_POS_FIX[e.word] ?? ZH_POS_FIX_HSK[e.word];
     if (!fix) return e;
     return {
       word: e.word,
       tag: fix.tag,
       ...(fix.posAll && !e.noPosAll ? { posAll: fix.posAll } : {}),
+      ...(e.baseForm ? { baseForm: e.baseForm } : {}),
     };
+  });
+}
+
+// ── 이합사(离合词) 인지 — rfc-zh-separable-verbs §4 (오너 승인 R4a: A+B, 수동 시드) ──
+// 이합사 삽입형(吵过架·吵了一架)에서 저장·만남·FSRS가 조각(吵)에 붙어 실제 어휘(吵架)로
+// 쌓이지 않는 순환 단절을 base_form 재지정만으로 잇는다(저장 키 '기본형 우선' 규약 —
+// vocabIO.normalizeWordText — 재사용, fr 굴절 §4.8과 같은 모형). "base_form = 표면형"
+// 계약의 첫 명시 예외. 사전 밖·패턴 밖은 전부 무개입(실패 시 현행 수렴).
+// V 후보 태그: v-계열 + 실측 확장 — x(C가 되가른 조각 帮), f(上/下 방위사 기본값, 上了课),
+// n(理·照의 고립 명사 기본값, 理了发·照了一张相), m(点의 고립 양사 기본값, 点了几个菜).
+// 사전 가입 + 회랑 화이트리스트가 실질 게이트라 태그 확장의 오탐 여지는 시드 V 글자로 갇힌다.
+const SEP_V_TAGS = new Set(['v', 'vn', 'vd', 'x', 'f', 'n', 'm']);
+const SEP_MID_OK = (tag) => /^u/.test(tag) || tag === 'm' || tag === 'q' || tag === 'mq';
+const NUM_HEAD = /^[一二两三四五六七八九十几半]/; // 一觉/d처럼 오태그된 양사구 캐리어 구제
+
+function markZhSeparable(entries) {
+  return entries.map((e, i) => {
+    const chars = [...e.word];
+    // A. 통짜 삽입형(洗过澡/v — jieba 사전 등재): V+상조사+O 3자 → base만 VO로.
+    if (chars.length === 3 && ASPECT_TAG[chars[1]]) {
+      const vo = chars[0] + chars[2];
+      if (ZH_SEPARABLE[vo]) return { ...e, baseForm: vo };
+    }
+    // B. 분리형 회랑: V(1자) 뒤 3토큰 이내의 O — O는 단독 토큰이거나 수량구 캐리어
+    //    (一架/m·一觉/d 오태그 구제)의 말미 글자. 회랑의 사이 토큰은 전부 조사·수량구
+    //    화이트리스트여야 하고, 밖을 만나면 즉시 중단(오탐 방지 — 我吵他架 불변).
+    //    ※ 창 3은 실측 보정: jieba가 수량구를 융합하면(吵了一架) O가 +2에, 융합하지
+    //    않으면(抽了 一根 烟·请了 三天 假) +3에 온다. O 토큰은 건드리지 않는다
+    //    (한 만남 = 한 단어, 이중 계상 방지).
+    if (chars.length === 1 && SEP_V_TAGS.has(e.tag)) {
+      for (let j = i + 1; j <= i + 3 && j < entries.length; j++) {
+        const t = entries[j];
+        const oc = [...t.word];
+        const o = oc.length === 1 ? t.word
+          : oc.length <= 4 && (t.tag === 'm' || t.tag === 'q' || t.tag === 'mq' || NUM_HEAD.test(t.word))
+            ? oc[oc.length - 1] : null; // ≤4: 一会儿天/m처럼 수량구+O 통짜 융합 실측
+        if (o && ZH_SEPARABLE[e.word + o]) return { ...e, baseForm: e.word + o };
+        if (!SEP_MID_OK(t.tag)) break;
+      }
+    }
+    return e;
   });
 }

@@ -64,7 +64,7 @@ export function tokenizeZhLine(line) {
   };
 
   const tokens = [];
-  for (const { word, tag, posAll } of tagged) {
+  for (const { word, tag, posAll, baseForm } of tagged) {
     const text = word;
     if (!text) continue;
     // x(기타)·w(기호) 태그는 문장부호가 관례지만, jieba는 사전에 없는 한자 조합
@@ -82,7 +82,9 @@ export function tokenizeZhLine(line) {
       : (lineSyllables ?? [pinyin(text, { toneType: 'symbol', type: 'string' })]).filter(Boolean);
     tokens.push({
       text,
-      base_form: text,                       // 중국어는 굴절이 없다 — 표면형이 곧 표제어
+      // 중국어는 굴절이 없어 표면형이 곧 표제어. 유일 예외 = 이합사 삽입형(R4a —
+      // 吵过架·吵…一架의 조각이 base_form=吵架로 합류해 저장·만남·FSRS가 실어휘에 붙는다).
+      base_form: baseForm ?? text,
       furigana: isPunct || !HAS_HANZI.test(text) ? '' : syllables.join(' '),
       pos: isPunct ? '기호' : (POS_KO[tag] ?? null),
       // 겸류 후보: jieba 겸류 태그(vn 등) 또는 POS_FIX가 실은 후보(自觉 동사·형용사 등)
