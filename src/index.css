@@ -2544,8 +2544,11 @@ body.is-review-session .page-container { padding-top: 8px; }
   content: '';
   position: absolute;
   z-index: -1;
-  left: -2px;
-  right: -2px;
+  /* 좌우 여유는 ±1px — ±2px면 기본 자간(0.25rem=4px)에서 이웃 밴드와 정확히 맞닿아
+     색 경계가 앞 글자 잉크에 밀착한다(오너 보고 2026-08-29). ±1px + 이음매 노출 2px이
+     시연 승인 모습(중립 이음매가 단어 경계를 가르는)의 기본 자간 등가다. */
+  left: -1px;
+  right: -1px;
   top: var(--hl-band-top);
   height: var(--hl-band-h);
   border-radius: 1px; /* 킨들 톤(오너 레퍼런스 2026-08-29) — 각지되 픽셀 계단만 죽인다 */
@@ -2593,14 +2596,15 @@ body.is-review-session .page-container { padding-top: 8px; }
    절대배치(앵커)는 루비(요미가나·병음) 줄에서 rt 높이 쪽으로 어긋났다(#984 실측) — 인라인이 정답.
    음수 마진(-28+6=-22=폭 상쇄)으로 본문을 밀지 않고 왼쪽 여백에 나간다. */
 .line-pick {
-  /* 히트 영역은 넓게(버튼 상자 1.55em — 불변), 시각은 ::before의 얇은 인용 막대만.
-     막대의 세로 범위는 글자 밴드 변수(--hl-band-*)를 공유해 지정 배경과 정렬된다. */
+  /* 히트 영역은 넓게(22px × 2.2em), 시각은 ::before의 얇은 인용 막대만.
+     버튼을 줄상자와 같은 2.2em·top 정렬로 두면 flex 중앙(1.10em) = 밴드 중앙이
+     기하로 일치한다 — middle 정렬+실측 보정은 x-height(글꼴)에 의존해 실기(PingFang)
+     에서 어긋났다(오너 보고 2026-08-29). */
   width: 22px;
-  height: 1.55em;
+  height: 2.2em;
   margin-left: -28px;
   margin-right: 6px;
-  vertical-align: middle;
-  transform: translateY(-0.18em);
+  vertical-align: top;
   display: none;
   align-items: center;
   justify-content: flex-end;
@@ -2618,12 +2622,10 @@ body.is-review-session .page-container { padding-top: 8px; }
   content: '';
   width: 4px;
   /* 글자 밴드와 같은 세로 범위(오너 편입 지시 2026-08-29 "문장 지정 세로 막대도").
-     버튼 상자는 flex 중앙 정렬이므로, 막대 중심을 밴드 중심(줄상자 1.10em)으로 맞추는
-     보정만 transform으로 얹는다 — 값은 하네스 픽셀 실측. */
+     버튼이 2.2em·top 정렬이라 flex 중앙 = 밴드 중앙 — 보정값 없이 전 글꼴 정확. */
   height: var(--hl-band-h);
   border-radius: 2px;
   background: var(--primary-light);
-  transform: translateY(0.15em); /* 하네스 실측 δ(버튼 1.55em·middle·-0.18em 시프트의 잔차) */
 }
 /* 호버가 있는 기기(데스크톱) — 기본은 완전 숨김, 버튼 자리에 마우스가 오면 표시 */
 @media (hover: hover) {
@@ -2663,15 +2665,15 @@ body.is-review-session .page-container { padding-top: 8px; }
    연속해도(혼색끼리) 단어 경계가 이음매 색으로 남는다.
    앞 토큰의 ::after가 오른쪽으로 낸다 — 자기 스택 문맥에선 z:-2라 자기 밴드(z:-1)
    밑에 깔리고, 뒤 토큰은 문맥째 나중에 그려져 그 위를 덮는다. 양쪽 1px씩 겹쳐
-   실금이 없고, 노출부는 정확히 자간뿐이라 이웃 글리프를 침범할 수 없다(#1013 원칙
-   승계). :has 미지원 엔진은 이음매만 생략 — 자간 기본 0.25rem에선 밴드 ±2px가
-   이미 맞닿아 시각 손실이 없다. */
+   실금이 없고, 노출부(기본 자간에서 2px)는 색 경계마다 중립 이음매가 되어 이웃
+   글리프를 침범할 수 없다(#1013 원칙 승계). :has 미지원 엔진은 이음매만 생략 —
+   그 자리는 지면색 틈 2px로 남을 뿐 글자·밴드는 온전하다. */
 .word-token--picked:has(+ .word-token--picked) .surface::after {
   content: '';
   position: absolute;
   z-index: -2;
-  right: calc(-1 * var(--char-gap, 0.25rem) - 3px);
-  width: calc(var(--char-gap, 0.25rem) + 2px);
+  right: calc(-1 * var(--char-gap, 0.25rem));
+  width: var(--char-gap, 0.25rem);
   top: var(--hl-band-top);
   height: var(--hl-band-h);
   background: var(--picked-bg, var(--primary-glow));
