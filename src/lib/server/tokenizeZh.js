@@ -7,6 +7,7 @@
 import { tag as jiebaTag } from 'jieba-wasm';
 import { pinyin } from 'pinyin-pro';
 import { ZH_NEUTRAL_TONE } from './zhNeutralTone';
+import { fixZhTagged } from './zhTokenFix';
 
 // jieba 품사 태그(중국어 관례) → 한국어 표기. 미지 태그는 null(뜻 조회 단계에서 채워질 수 있음).
 const POS_KO = {
@@ -39,7 +40,9 @@ const PUNCT = /^[\s。、，．！？!?,.:;：；""''「」『』（）()【】�
  */
 export function tokenizeZhLine(line) {
   if (!line || !line.trim()) return [];
-  const tagged = jiebaTag(line, true);
+  // 분할·품사 후처리(R1): jieba 사전의 쓰레기 병합(没吵)·HMM 오조각(过架/x)·오태그(自觉/d)를
+  // 화이트리스트로 교정한다. 분할이 병음 배분보다 먼저라 글자-병음 정렬은 그대로 성립한다.
+  const tagged = fixZhTagged(jiebaTag(line, true));
 
   // 병음은 단어별이 아니라 줄 전체를 한 번에 — pinyin-pro가 문장 문맥으로 다음자·성조
   // 변조를 처리한다(단어별 호출은 不对→bù(변조 누락)·走了→liǎo(오독) 등 실측 오류, #1004).
@@ -60,7 +63,7 @@ export function tokenizeZhLine(line) {
   };
 
   const tokens = [];
-  for (const { word, tag } of tagged) {
+  for (const { word, tag, posAll } of tagged) {
     const text = word;
     if (!text) continue;
     // x(기타)·w(기호) 태그는 문장부호가 관례지만, jieba는 사전에 없는 한자 조합
@@ -80,7 +83,8 @@ export function tokenizeZhLine(line) {
       base_form: text,                       // 중국어는 굴절이 없다 — 표면형이 곧 표제어
       furigana: isPunct || !HAS_HANZI.test(text) ? '' : syllables.join(' '),
       pos: isPunct ? '기호' : (POS_KO[tag] ?? null),
-      ...(!isPunct && POS_ALL[tag] ? { pos_all: POS_ALL[tag] } : {}),
+      // 겸류 후보: jieba 겸류 태그(vn 등) 또는 POS_FIX가 실은 후보(自觉 동사·형용사 등)
+      ...(!isPunct && (posAll ?? POS_ALL[tag]) ? { pos_all: posAll ?? POS_ALL[tag] } : {}),
     });
   }
   return tokens;
