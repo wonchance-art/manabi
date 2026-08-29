@@ -24,7 +24,9 @@ import { tag as jiebaTag } from 'jieba-wasm';
 // 수제 ZH_POS_FIX 키(zhTokenFix.js와 동기) — 모듈 import는 JSON import 체인 때문에
 // raw node에서 못 쓴다(vitest·Next 전용). 겹쳐도 런타임 조회는 수제 우선이라 무해하고,
 // 겹침 자체는 계약 테스트(수제와 비겹침)가 재생성 신호를 준다.
-const HAND_POS_FIX_KEYS = new Set(['自觉', '没', '很']);
+const HAND_POS_FIX_KEYS = new Set(['自觉', '没', '很', '谢谢', '安静']);
+// ※ 谢谢·安静은 jieba 고립 태그가 nr(고유명사류)라 어차피 수확 제외 — 여기 등재는 동기
+//   계약용이고 재생성 산출물은 불변이다.
 
 const arg = (name) => {
   const i = process.argv.indexOf(`--${name}`);
