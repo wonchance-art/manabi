@@ -68,11 +68,15 @@ describe('하이라이트 글자 밴드 (index.css)', () => {
     expect(css).not.toMatch(/2px dotted var\(--ws-/);
   });
 
-  it('문장 막대 시각이 밴드 변수를 공유하고, 버튼은 2.2em·top 정렬(글꼴 무관 기하 일치)', () => {
+  it('문장 막대는 글자 잉크 키(--hl-glyph-h) — 버튼 2.2em·top 정렬 기준 절대배치', () => {
+    // 막대 세로 = 글자 최대 높이(오너 지시 2026-08-29): 밴드 높이로 두면 글자 아래
+    // 여유(0.08em)만큼 단어보다 길쭉해 보인다. 상단은 밴드·잉크 공통 시작을 공유.
+    expect(css).toMatch(/\.reader-area \{[^}]*--hl-glyph-h: 0\.96em;/s);
     const bar = css.match(/\.line-pick::before \{[^}]*\}/s)?.[0] || '';
-    expect(bar).toContain('height: var(--hl-band-h)');
+    expect(bar).toContain('top: var(--hl-band-top)');
+    expect(bar).toContain('height: var(--hl-glyph-h)');
     // 보정값(transform) 부활 금지 — middle 정렬+실측 보정은 x-height(글꼴) 의존이라
-    // 실기(PingFang)에서 어긋났다(오너 보고 2026-08-29). 2.2em·top이면 flex 중앙 = 밴드 중앙.
+    // 실기(PingFang)에서 어긋났다(오너 보고 2026-08-29). 2.2em·top 버튼 기준 절대배치가 정답.
     expect(bar).not.toContain('transform');
     const btn = css.match(/\.line-pick \{[^}]*\}/s)?.[0] || '';
     expect(btn).toContain('height: 2.2em');
