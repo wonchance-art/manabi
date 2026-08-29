@@ -68,10 +68,21 @@ describe('하이라이트 글자 밴드 (index.css)', () => {
     expect(css).not.toMatch(/2px dotted var\(--ws-/);
   });
 
-  it('문장 막대 시각이 밴드 변수를 공유한다(버튼 상자 = 히트 영역은 1.55em 유지)', () => {
+  it('문장 막대 시각이 밴드 변수를 공유하고, 버튼은 2.2em·top 정렬(글꼴 무관 기하 일치)', () => {
     const bar = css.match(/\.line-pick::before \{[^}]*\}/s)?.[0] || '';
     expect(bar).toContain('height: var(--hl-band-h)');
+    // 보정값(transform) 부활 금지 — middle 정렬+실측 보정은 x-height(글꼴) 의존이라
+    // 실기(PingFang)에서 어긋났다(오너 보고 2026-08-29). 2.2em·top이면 flex 중앙 = 밴드 중앙.
+    expect(bar).not.toContain('transform');
     const btn = css.match(/\.line-pick \{[^}]*\}/s)?.[0] || '';
-    expect(btn).toContain('height: 1.55em');
+    expect(btn).toContain('height: 2.2em');
+    expect(btn).toContain('vertical-align: top');
+    expect(btn).not.toContain('transform');
+  });
+
+  it('밴드 좌우 여유는 ±1px — 기본 자간에서 이웃 밴드와 맞닿지 않고 이음매 2px가 노출된다', () => {
+    const base = css.match(/\.word-token \.surface::before \{[^}]*\}/s)?.[0] || '';
+    expect(base).toContain('left: -1px');
+    expect(base).toContain('right: -1px');
   });
 });
