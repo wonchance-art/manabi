@@ -5,6 +5,8 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { cacheMaterial, getCachedMaterial } from '../lib/offlineCache';
+import OfflineNotice from '../components/OfflineNotice';
 import { computeHeadingLevels } from '../lib/headingHeuristics';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
@@ -76,19 +78,36 @@ import { langNameKo } from '../lib/constants';
 // 키는 REF_LANGS와 반드시 일치(user_vocabulary.language·/study 규약).
 const STUDY_LANGS = new Set(['Japanese', 'English', 'French', 'Chinese']);
 
+/**
+ * 자료 조회 — 온라인이면 네트워크가 정본(계약 6)이고, 성공분은 오프라인용으로
+ * 남긴다(사용자 조작 0 — 뷰어에 들어온 것 자체가 '이 자료를 읽는다'는 신호).
+ * 네트워크가 죽었을 때만 캐시로 폴백한다: 지하철·비행기에서 읽던 자료가 이어진다(v2-N R1).
+ * NOT_FOUND(자료가 실제로 없음)는 폴백하지 않는다 — 삭제된 자료가 캐시로 되살아나면
+ * 그것이야말로 스테일이다.
+ */
 async function fetchMaterial(id) {
-  const { data, error } = await supabase
-    .from('reading_materials')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle();
-  if (error) throw error;
-  if (!data) {
-    const err = new Error('NOT_FOUND');
-    err.code = 'NOT_FOUND';
-    throw err;
+  try {
+    const { data, error } = await supabase
+      .from('reading_materials')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) {
+      const err = new Error('NOT_FOUND');
+      err.code = 'NOT_FOUND';
+      throw err;
+    }
+    // fire-and-forget이되 완전 격리 — 캐시 실패가 아래 catch로 새면 네트워크
+    // 성공분이 캐시 폴백으로 빠진다(계약 4·6 동시 위반).
+    Promise.resolve().then(() => cacheMaterial(data)).catch(() => {});
+    return data;
+  } catch (err) {
+    if (err?.code === 'NOT_FOUND') throw err;
+    const cached = await getCachedMaterial(id);
+    if (!cached) throw err;   // 캐시가 없으면 기존 에러 화면 그대로(계약 5)
+    return { ...cached, __offline: true };
   }
-  return data;
 }
 
 async function fetchUserVocabWords(userId) {
@@ -2172,6 +2191,9 @@ export default function ViewerPage() {
             : <span className="book-nav__btn book-nav__btn--off">다음 →</span>}
         </div>
       )}
+
+      {/* 네트워크가 죽어 캐시 사본으로 살아난 화면임을 알린다(v2-N R1) */}
+      {material?.__offline && <OfflineNotice what="자료" />}
 
       {/* Reader Area — 인앱 토큰 범위 지정(드래그) 이벤트는 여기서 위임 수신 */}
       <div
