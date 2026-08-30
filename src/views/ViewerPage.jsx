@@ -11,6 +11,8 @@ import { useReadingTimer } from '../lib/useReadingTimer';
 import { countReadableChars } from '../lib/readingTimer';
 import { useReadingPacer } from '../lib/useReadingPacer';
 import { dwellMs, defaultTargetCpm, paceHint, stepCpm } from '../lib/readingPacer';
+import { fetchReadingSpeedRows } from '../lib/readingSpeedRows';
+import { recentCpm, suggestTargetCpm } from '../lib/readingSpeedHistory';
 import { computeHeadingLevels } from '../lib/headingHeuristics';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
@@ -834,13 +836,26 @@ export default function ViewerPage() {
   // 자동 진행(v2-I R1b) — 지정 문장에 체류하다 다음으로. 발동 조건이 곧 정지 조건이다:
   // 설정 켬 + 집중 모드 + 문장 지정. 빈 공간 탭으로 지정이 풀리면 셋 중 하나가 깨져
   // 진행도 함께 끝난다(설계 §5 — 별도 ▶/■ 버튼이 필요 없는 이유).
+  // 목표 속도 자동 제안(R2) — I-a가 남긴 완독 측정에서 내 최근 속도를 읽어 +10%로 잡는다.
+  // 페이서를 켠 사람에게만 조회한다: 안 쓰는 사람에게 쿼리를 태울 이유가 없다.
+  const { data: paceHistoryRows } = useQuery({
+    queryKey: ['reading-speed', user?.id, materialLang],
+    queryFn: () => fetchReadingSpeedRows(user.id, materialLang),
+    enabled: !!user && autoPace,
+    staleTime: 1000 * 300,
+  });
+  const myCpm = recentCpm(paceHistoryRows || []);
+  const suggestedCpm = suggestTargetCpm(paceHistoryRows || []);
+
   const pickedSentence = sentences.find((s2) => s2.rawIdx === pickedLineIdx) || null;
   const paceAvgChars = useMemo(() => (
     sentences.length
       ? sentences.reduce((n, s2) => n + countReadableChars(s2.text), 0) / sentences.length
       : null
   ), [sentences]);
-  const paceTargetCpm = paceCpm || defaultTargetCpm(materialLang);
+  // 직접 고른 값이 언제나 이긴다. 안 골랐으면 내 이력에서 제안하고, 이력도 모자라면
+  // 언어별 보수적 기본값으로 떨어진다(설계 §4).
+  const paceTargetCpm = paceCpm || suggestedCpm || defaultTargetCpm(materialLang);
   const paceArmed = autoPace && focusMode && pickedSentence !== null;
   const paceDwell = paceArmed
     ? dwellMs({ chars: countReadableChars(pickedSentence.text), targetCpm: paceTargetCpm })
@@ -2140,6 +2155,17 @@ export default function ViewerPage() {
                         <b>{paceTargetCpm}자/분</b>
                         <button type="button" aria-label="빠르게" onClick={() => setPaceCpm(stepCpm(paceTargetCpm, 1))}>빠르게 +</button>
                       </div>
+                      {/* 이 숫자가 어디서 왔는지 밝힌다 — 자동 제안이 조용히 바뀌면
+                          "왜 어제와 다르지?"가 된다. 직접 고른 상태에서는 자동으로
+                          되돌아갈 길을 남긴다(한 번 누르면 못 돌아오는 막다른 길 방지). */}
+                      {paceCpm ? (
+                        <span className="rsheet-pace__src">
+                          직접 설정
+                          <button type="button" onClick={() => setPaceCpm(null)}>자동으로</button>
+                        </span>
+                      ) : myCpm ? (
+                        <span className="rsheet-pace__src">내 속도 {myCpm}자/분 기준 +10%</span>
+                      ) : null}
                       {/* 조절은 자/분으로 하되 초를 병기한다 — 오너가 처음 말한 "몇 초 후"를
                           그대로 쓸 수 있게(설계 §7②). 숫자 카운트다운은 본문에 두지 않는다. */}
                       <span className="rsheet-pace__hint">

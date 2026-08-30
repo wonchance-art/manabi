@@ -123,7 +123,8 @@ describe('⑩ 미발동 조건 + 옵트인', () => {
     expect(settings).toContain("readPref('autoPace', false)");
     // 목표 속도는 안 고르면 null → 언어별 기본값(정본은 readingPacer 한 곳)
     expect(settings).toContain("readPref('paceCpm', null)");
-    expect(read('src/views/ViewerPage.jsx')).toContain('const paceTargetCpm = paceCpm || defaultTargetCpm(materialLang);');
+    // R2에서 자동 제안이 사이에 끼었다 — 이력이 모자라면 여전히 언어 기본값으로 떨어진다
+    expect(read('src/views/ViewerPage.jsx')).toContain('|| defaultTargetCpm(materialLang);');
   });
 });
 
