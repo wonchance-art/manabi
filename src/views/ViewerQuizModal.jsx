@@ -1,4 +1,5 @@
 import Spinner from '../components/Spinner';
+import { formatDuration } from '../lib/readingTimer';
 import Button from '../components/Button';
 
 export default function ViewerQuizModal({
@@ -96,6 +97,15 @@ export default function ViewerQuizModal({
           <div className="modal completion-modal">
             <h2 className="completion-modal__title">읽기 완료</h2>
             <p className="completion-modal__subtitle">{material?.title}</p>
+
+            {/* 유창성 측정(v2-I R1a) — 조용히 1회만. 경쟁·랭킹 요소 없음(설계 §3).
+                200자 미만이거나 시간이 0이면 reading이 null이라 이 줄 자체가 없다. */}
+            {completionModal.reading && (
+              <p className="completion-modal__reading">
+                {completionModal.reading.chars}자 · {formatDuration(completionModal.reading.ms)} ·{' '}
+                <b>{completionModal.reading.cpm}자/분</b>
+              </p>
+            )}
 
             <div className="completion-stats">
               <div className="completion-stat">
