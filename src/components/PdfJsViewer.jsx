@@ -137,11 +137,12 @@ function PdfJsPage({ doc, pdfjs, pageNumber, current, onPageText }) {
   );
 }
 
-export default function PdfJsViewer({ pdfUrl, onPageText, onPageChange }) {
+export default function PdfJsViewer({ pdfUrl, onPageText, onPageChange, initialPage }) {
   const pagesRef = useRef(null);
   const [pdfjs, setPdfjs] = useState(null);
   const [doc, setDoc] = useState(null);
-  const [pageNumber, setPageNumber] = useState(1);
+  // 자료 뷰어에서 '원본 PDF 보기'로 넘어오면 그 쪽에서 시작한다(v2-H R2).
+  const [pageNumber, setPageNumber] = useState(() => (Number.isFinite(initialPage) && initialPage >= 1 ? Math.floor(initialPage) : 1));
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -150,7 +151,7 @@ export default function PdfJsViewer({ pdfUrl, onPageText, onPageChange }) {
     let loadedDoc = null;
     setDoc(null);
     setError(null);
-    setPageNumber(1);
+    setPageNumber(Number.isFinite(initialPage) && initialPage >= 1 ? Math.floor(initialPage) : 1);
 
     (async () => {
       const loadedPdfjs = await loadPdfjs();
@@ -168,7 +169,12 @@ export default function PdfJsViewer({ pdfUrl, onPageText, onPageChange }) {
       if (loadedDoc) loadedDoc.destroy();
       else loadingTask?.destroy();
     };
-  }, [pdfUrl]);
+  }, [pdfUrl, initialPage]);
+
+  // 넘어온 쪽이 문서 밖이면(자료가 낡았거나 PDF가 교체됨) 끝 쪽으로 당긴다.
+  useEffect(() => {
+    if (doc?.numPages) setPageNumber((p) => Math.min(Math.max(1, p), doc.numPages));
+  }, [doc]);
 
   const pageWindow = useMemo(
     () => getPdfJsPageWindow(pageNumber, doc?.numPages || 0),

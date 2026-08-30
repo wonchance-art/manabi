@@ -77,6 +77,8 @@ export default function PdfViewerPage() {
   const { id } = useParams();
   const searchParams = useSearchParams();
   const usePdfJs = searchParams.get('pdfjs') === '1';
+  // 자료 뷰어의 '원본 PDF 보기'가 실어 보내는 쪽(v2-H R2). 없으면 첫 쪽.
+  const initialPage = parseInt(searchParams.get('page'), 10) || undefined;
   // pdf.js 경로에서만 살아 있는 '지금 보는 쪽'. 기본 경로는 null이라 last_page_read로 떨어진다.
   const [livePage, setLivePage] = useState(null);
   const { user } = useAuth();
@@ -358,7 +360,9 @@ export default function PdfViewerPage() {
           ) : isPdfUrlLoading ? (
             <Spinner message="로딩 중..." />
           ) : pdfUrl ? (
-            usePdfJs ? <PdfJsViewer pdfUrl={pdfUrl} onPageChange={setLivePage} /> : <PdfDocument pdfUrl={pdfUrl} />
+            usePdfJs
+              ? <PdfJsViewer pdfUrl={pdfUrl} onPageChange={setLivePage} initialPage={initialPage} />
+              : <PdfDocument pdfUrl={pdfUrl} page={initialPage} />
           ) : (
             <div className="pdf-side__empty">PDF 파일 주소가 없습니다.</div>
           )}

@@ -11,6 +11,7 @@ import { useReadingTimer } from '../lib/useReadingTimer';
 import { countReadableChars } from '../lib/readingTimer';
 import { useReadingPacer } from '../lib/useReadingPacer';
 import { dwellMs, defaultTargetCpm, paceHint, stepCpm } from '../lib/readingPacer';
+import { pdfViewerHref } from '../lib/pdfRangeBridge';
 import { fetchReadingSpeedRows } from '../lib/readingSpeedRows';
 import { recentCpm, suggestTargetCpm } from '../lib/readingSpeedHistory';
 import { comprehensionRatio, ladderLabel, ladderTargetCpm, nextLadderStep } from '../lib/pacerLadder';
@@ -1994,6 +1995,11 @@ export default function ViewerPage() {
                 (총 {sourcePdf.page_count}p)
               </span>
             </div>
+            {/* 역방향 다리(v2-H R2) — "이 대목 원문이 어떻게 생겼더라"에서 다시 막히지
+                않게. 돌아갈 자리는 자료 행이 이미 알고 있다(page_start). */}
+            <Link href={pdfViewerHref(sourcePdf.id, material.page_start)} className="pdf-origin__back">
+              원본 PDF 보기 →
+            </Link>
           </div>
           {material.page_end < sourcePdf.page_count && (
             <button

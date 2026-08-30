@@ -5110,6 +5110,17 @@ body.is-review-session .page-container { padding-top: 8px; }
   gap: 6px;
   flex-shrink: 0;
 }
+/* 역방향 다리(v2-H R2) — 자료 뷰어의 PDF 출처 줄에서 원본 그 쪽으로 */
+.pdf-origin__back {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary-light);
+  text-decoration: none;
+}
+.pdf-origin__back:hover { text-decoration: underline; }
+
 /* ── PDF → 자료 다리(v2-H R1) ──
    툴바에서 범위만 고르고 건너간다. 툴바가 좁으면(모바일) 제목 아래로 접힌다 —
    .pdf-toolbar가 flex-wrap이라 별도 브레이크포인트가 필요 없다(K R2 총량 상한 유지). */
