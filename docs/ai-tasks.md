@@ -623,6 +623,18 @@
 - 런던 위성 마이크로 픽(재량 위임 해석): 윈저+옥스퍼드 2곳 추천 — 레만호 완성 후 순번
 - 일본 4도시 COPY 슬롯 이식(다국어 UI 확정 시) / 아토미움 = marker-only 유지 확인
 ### done (최근)
+- **⌨️ v2-M 입력 관용성 — 악상·성조 결함 수리(2026-08-30, #1077 순번 "다음 ㄱㄱ")**:
+  흩어진 채점 정규화 3종(studySession·ExerciseEngine·dictation) 어느 것도 결합
+  부호를 접지 않아 prefere≠préfère·hanyu≠hànyǔ — 모바일에서 fr/zh 타이핑 문항이
+  사실상 불가였다. 수리: `answerNormalize.js` 정본 1본 신설 — 철자 모드(받아쓰기:
+  악상 보존·공백 1칸)와 인출 모드(타이핑·cloze·드릴: 라틴 선행 가드 폴딩+공백
+  전제거+하이픈·«» 관용) 2정책. 폴딩 급소: NFD 무차별 제거는 が→か 파괴라 라틴
+  선행+U+0300–036F 범위로 이중 봉인. 소비처 5곳 수렴(studySession·dictation 위임,
+  엔진 채점 normalizeRecall 전환 — normalizeExerciseAnswer는 선지 identity 전용
+  강등, ChapterDrills loose 분기 소멸), 받아쓰기는 correct 불변 + accentOnly
+  플래그·"악상·성조 부호만 달라요" 표시(관용 대신 가르치기). world/npcScripts는
+  게임 동결로 스코프 밖 명시. 계약 10종(§3 4계약+수렴 핀) + 돌연변이 2종(무차별
+  폴딩→① FAIL·폴딩 차단→② FAIL) 검증. 전체 vitest 245파일 2,503 green.
 - **🧪 v2-L 계약 위생 — 공허 통과 구조 차단(2026-08-30, #1077 오너 확정 1순위 ㄱㄱ)**:
   raw `slice(indexOf())`는 앵커 소실 시 빈 문자열 검사로 전락(부정 단언 전량 자동
   통과 — M2 실측). 수리: ⑴ `src/lib/__tests__/helpers/sliceBetween.js` 신설(앵커
