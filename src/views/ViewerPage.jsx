@@ -568,6 +568,59 @@ export default function ViewerPage() {
     }
   };
 
+  // 이합사 시각 연동(R4b 오너 확정 2026-08-30: 연동 띠 + 각괘선 아치 — 카드 문구는 A안
+  // 현행 유지): zh에서 이합사 조각(base_form 2자 ≠ 표면)을 탭하면, 같은 줄의 파트너
+  // 글자에 옅은 띠(word-token--sep-linked)를 켜고 조각 상단→파트너 상단으로 각괘선
+  // (수직→수평→수직, 높이 7px)을 한 번만 그린다. 표면·조판 불변 — 밴드 계약(0.58em
+  // 산식)의 잉크 상단 좌표만 읽는다. 리사이즈로 낡은 아치는 다음 탭에서 다시 그려진다.
+  const sepArcRef = useRef(null);
+  const [sepLink, setSepLink] = useState(null); // { partnerIds: string[] }
+  useEffect(() => {
+    const svg = sepArcRef.current;
+    if (svg) svg.innerHTML = '';
+    const tok = selectedToken;
+    const base = tok?.base_form;
+    if (materialLang !== 'Chinese' || !tok?.id || !base || base === tok.text || [...base].length !== 2) {
+      setSepLink(null);
+      return;
+    }
+    const partner = [...base].find((ch) => !tok.text.includes(ch));
+    const m = typeof tok.id === 'string' ? tok.id.match(/^(?:id|failed)_(\d+)_/) : null;
+    if (!partner || !m) { setSepLink(null); return; }
+    const linePrefix = new RegExp(`^(?:id|failed)_${m[1]}_`);
+    const partnerIds = Object.entries(tokenRefs.current)
+      .filter(([tid, el]) => el && el.isConnected && tid !== tok.id && linePrefix.test(tid) && el.dataset.text === partner)
+      .map(([tid]) => tid);
+    setSepLink(partnerIds.length ? { partnerIds } : null);
+    const anchorEl = tokenRefs.current[tok.id];
+    const partnerEl = tokenRefs.current[partnerIds[0]];
+    const area = readerRef.current;
+    if (!svg || !anchorEl || !partnerEl || !area || !partnerIds.length) return;
+    const areaRect = area.getBoundingClientRect();
+    const inkTop = (el) => {
+      const s = el.querySelector('.surface');
+      if (!s) return null;
+      const r = s.getBoundingClientRect();
+      const fs = parseFloat(getComputedStyle(s).fontSize) || 16;
+      // 잉크 상단 = 밴드 상단(--hl-band-top = 0.58em) — 밴드 계약과 같은 좌표계
+      return { x: r.left - areaRect.left + r.width / 2, y: r.top - areaRect.top + 0.58 * fs };
+    };
+    const a = inkTop(anchorEl);
+    const b = inkTop(partnerEl);
+    if (!a || !b) return;
+    const top = Math.min(a.y, b.y) - 7; // 각괘선 높이 7px(오너 확정)
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M ${a.x} ${a.y} L ${a.x} ${top} L ${b.x} ${top} L ${b.x} ${b.y}`);
+    svg.appendChild(path);
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const len = path.getTotalLength();
+      path.style.strokeDasharray = String(len);
+      path.style.strokeDashoffset = String(len);
+      path.style.transition = 'stroke-dashoffset 0.5s ease-out';
+      requestAnimationFrame(() => requestAnimationFrame(() => { path.style.strokeDashoffset = '0'; }));
+    }
+  }, [selectedToken?.id, selectedToken?.text, selectedToken?.base_form, materialLang]);
+
   // 왼쪽 패널: 번역 + 맥락
   const [leftPanelText, setLeftPanelText] = useState('');
   const [leftPanelResult, setLeftPanelResult] = useState('');
@@ -2140,6 +2193,8 @@ export default function ViewerPage() {
         onClickCapture={tokenRange.handleClickCapture}
         onClick={handleReaderBlankClick}
       >
+        {/* 이합사 연결 아치 오버레이 — reader-area(position:relative, 그립 선례) 좌표계 */}
+        <svg ref={sepArcRef} className="sep-arc" aria-hidden="true" />
         {isAnalyzing && !isStaleAnalysis && (
           <div className="analyzing-banner">
             <span>문단 단위로 분석 중입니다...</span>
@@ -2285,7 +2340,8 @@ export default function ViewerPage() {
             return (
               <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
                 data-tid={tokenId}
-                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}`}
+                data-text={token.text}
+                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}`}
                 role="button" tabIndex={0}
                 onClick={() => handleTokenClick(token, tokenId)}
                 onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleTokenClick(token, tokenId))}>
