@@ -51,7 +51,7 @@ describe('ExerciseEnginePrototype', () => {
     expect(distractors.options).toEqual(expect.arrayContaining(['un', 'deux', 'trois']));
   });
 
-  it('NFC·대소문자·공백은 통일하고 악상 기호는 보존한다', () => {
+  it('선지 identity는 악상 보존, 타이핑 채점은 인출 모드 관용(v2-M, 오너 확정 2026-08-30)', () => {
     const question = normalizeExerciseQuestion({
       type: 'fill',
       prompt: '쓰세요.',
@@ -59,10 +59,14 @@ describe('ExerciseEnginePrototype', () => {
       accept: ['l’école'],
     });
 
+    // identity 정규화(옵션 중복·선택 표시)는 계속 악상을 보존한다
     expect(normalizeExerciseAnswer('  E\u0301COLE  ')).toBe('école');
     expect(gradeExerciseResponse(question, 'école')).toBe(true);
     expect(gradeExerciseResponse(question, 'L’ÉCOLE')).toBe(true);
-    expect(gradeExerciseResponse(question, 'ecole')).toBe(false);
+    // 인출 채점은 악상 없이도 정답 — 한국어 자판에서 못 치던 결함 수리(v2-M 설계 §0)
+    expect(gradeExerciseResponse(question, 'ecole')).toBe(true);
+    expect(gradeExerciseResponse(question, 'lecole')).toBe(true);
+    expect(gradeExerciseResponse(question, 'ecoles')).toBe(false); // 관용은 부호까지 — 다른 낱말은 오답
   });
 
   it('불완전하거나 지원하지 않는 문항은 fail-closed 한다', () => {

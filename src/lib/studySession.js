@@ -13,6 +13,7 @@
  */
 
 import { vocabTypeForRung } from './skillRung';
+import { normalizeRecall } from './answerNormalize';
 
 const MAX_ITEMS = 10; // 예산제 하드캡 (기획 H3)
 
@@ -36,12 +37,11 @@ export function stripSourceLangInMeaning(meaning) {
   return out.replace(/\s{2,}/g, ' ').trim();
 }
 
-/** 타이핑 판정용 정규화 — 공백·구두점 제거, 소문자화 */
+/** 타이핑 판정용 정규화 — 정본 인출 모드(v2-M): 악상·성조 폴딩 + 공백·구두점 제거 + 소문자.
+    prefere=préfère, hanyu=hànyǔ — 인출이 목적이지 철자 정밀도가 아니다. 정본 표기는
+    피드백 줄(word_text·furigana)이 항상 보여준다(관용하되 가르치기). */
 export function normalizeAnswer(s) {
-  return String(s || '')
-    .toLowerCase()
-    .replace(/[\s　]+/g, '')
-    .replace(/[。、．，.,!?！？'’\-–]/g, '');
+  return normalizeRecall(s);
 }
 
 /** 어휘 타이핑 정답 판정 — 표기 또는 발음(후리가나) 일치 */
