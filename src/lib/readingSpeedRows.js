@@ -24,3 +24,26 @@ export async function fetchReadingSpeedRows(userId, lang) {
     return [];
   }
 }
+
+/**
+ * 이 **자료**의 완독 이력(최신순) — 회차 비교용(I-a R2).
+ * review_events가 append-only라 재독 회차가 자연히 쌓인다(설계 §2) — 새 테이블 0.
+ * 완독 직후에 부를 때는 **이번 회차를 기록하기 전에** 불러야 자기 자신과 비교하지 않는다.
+ */
+export async function fetchMaterialRoundRows(userId, materialId) {
+  if (!userId || !materialId) return [];
+  try {
+    const { data, error } = await supabase
+      .from('review_events')
+      .select('detail, created_at')
+      .eq('user_id', userId)
+      .eq('source', 'reading')
+      .eq('item_key', 'material:' + materialId)
+      .order('created_at', { ascending: false })
+      .limit(20);
+    if (error) throw error;
+    return data || [];
+  } catch {
+    return [];
+  }
+}

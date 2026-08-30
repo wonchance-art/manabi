@@ -7501,6 +7501,17 @@ body.is-review-session .page-container { padding-top: 8px; }
    자료 제목에 붙여 두고(무엇을 읽었나의 연장) 요약 상자와는 28px를 유지한다 —
    부제 margin만 믿으면 이 줄이 상자에 달라붙어 '요약 머리글'처럼 보였다(렌더 실측). */
 .completion-modal__subtitle:has(+ .completion-modal__reading) { margin-bottom: 8px; }
+/* 회차 비교 한 줄(I-a R2) — 측정 줄에 붙여 둔다(같은 사실의 두 번째 문장).
+   빨라졌을 때만 강조색을 쓰고 느려졌을 땐 조용히 둔다 — 재독이 느려지는 건 대개
+   더 꼼꼼히 읽었다는 뜻이지 실패가 아니다(설계 §11 "경쟁 요소 0"). */
+.completion-modal__reading:has(+ .completion-modal__round) { margin-bottom: 3px; }
+.completion-modal__round {
+  margin: 0 0 28px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+.completion-modal__round--up b { color: var(--accent-text); }
 .completion-modal__reading {
   margin: 0 0 28px;
   color: var(--text-secondary);

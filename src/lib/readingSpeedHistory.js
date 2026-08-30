@@ -1,7 +1,14 @@
 'use client';
 
 /**
- * 목표 속도 자동 제안 — 순수 로직 (v2-I R1b R2, #1077 설계 §4·§8·§9).
+ * 완독 측정 이력 — 순수 로직 (v2-I R1b R2 목표 제안 + I-a R2 회차 비교, #1077 설계 §1·§4·§8).
+ *
+ * 두 소비처가 **같은 표본 자격**을 쓴다(비페이서·정의 버전 일치). 자격 규칙을 두 곳에
+ * 적어 두면 언젠가 갈리므로 여기 한 곳에 둔다:
+ *   목표 제안 — 이 언어의 최근 이력 → 내 속도 × 1.1
+ *   회차 비교 — 이 **자료**의 직전 회차 → 얼마나 빨라졌나
+ *
+ * ── 목표 속도 자동 제안 (§4)
  *
  * 페이서의 목표 속도가 언어별 고정 기본값이면 두 방향으로 어긋난다: 잘 읽는 사람에겐
  * 답답하고 이제 시작한 사람에겐 못 따라갈 속도다. 그래서 **내가 낸 속도에서** 잡는다 —
@@ -79,4 +86,36 @@ export function suggestTargetCpm(rows, opts) {
   const inRange = clampCpm(mine * SUGGEST_BOOST);
   if (inRange == null) return null;
   return clampCpm(Math.round(inRange / PACE_STEP_UNIT) * PACE_STEP_UNIT);
+}
+
+/* ── 회차 비교 (I-a R2, 설계 §1·§3) ────────────────────────────────────────
+   비교 대상은 **같은 자료의 이전 회차**다. 자료가 다르면 난이도가 달라 숫자가
+   무의미해진다("쉬운 글을 빨리 읽었다"가 실력 향상으로 보인다).
+   rows는 item_key='material:<id>'로 좁혀진 최신순 행이라고 본다. */
+
+/** 이 자료의 직전 유효 회차 속도(자/분). 없으면 null(=첫 회차). */
+export function lastRoundCpm(rows, opts) {
+  return readingCpmSamples(rows, opts)[0] ?? null;
+}
+
+/** 이만큼 안쪽의 변화는 '비슷한 속도'로 본다 — 읽기 속도는 원래 이 정도 흔들린다. */
+export const ROUND_SAME_PCT = 5;
+
+/**
+ * 완독 직후 한 줄용 회차 비교.
+ * @param {{cpm:number, paced?:boolean}} current  이번 회차 측정(buildReadingMetric 산출)
+ * @param {Array} rows  이 자료의 이전 완독 이벤트(최신순) — 이번 회차는 아직 없어야 한다
+ * @returns {{prev:number, deltaPct:number, tone:'up'|'same'|'down'}|null}
+ */
+export function compareRound(current, rows, opts) {
+  // 페이서로 읽은 회차는 '내가 낸 속도'가 아니라 '내가 설정한 속도'다(설계 §8).
+  // 비교의 양쪽 중 어느 한쪽이라도 페이서면 숫자가 실력을 말하지 않는다 —
+  // 이쪽(현재)은 여기서, 저쪽(과거)은 readingCpmSamples가 막는다.
+  if (!current || current.paced === true) return null;
+  if (!Number.isFinite(current.cpm) || current.cpm <= 0) return null;
+  const prev = lastRoundCpm(rows, opts);
+  if (prev == null || prev <= 0) return null;
+  const deltaPct = Math.round(((current.cpm - prev) / prev) * 100);
+  const tone = Math.abs(deltaPct) < ROUND_SAME_PCT ? 'same' : deltaPct > 0 ? 'up' : 'down';
+  return { prev, deltaPct, tone };
 }
