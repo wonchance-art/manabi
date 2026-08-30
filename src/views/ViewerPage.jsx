@@ -24,6 +24,7 @@ import { friendlyToastMessage } from '../lib/errorMessage';
 import { normalizeWordText } from '../lib/vocabIO';
 import { callGemini } from '../lib/gemini';
 import { fetchWordDetailText } from '../lib/wordDetail';
+import { fetchCtxExplain } from '../lib/ctxExplain';
 import { pinyinToneClass } from '../lib/pinyinTone';
 import { splitRuby } from '../lib/splitRuby';
 import { pickableSentences, adjacentSentence } from '../lib/sentenceNav';
@@ -541,6 +542,31 @@ export default function ViewerPage() {
       .catch(() => { if (alive) setSynAnt(null); });
     return () => { alive = false; };
   }, [selectedToken, isSheetOpen, materialLang]);
+
+  // 문맥 설명 R1(오너 승인 — 버튼형+suspect): 탭 단어의 "이 문장에서" 설명. 카드 즉답을
+  // 막지 않는 지연 로드 — [이 문장에서는?]을 눌렀을 때만 /api/explain token 분기 호출.
+  // 늦게 온 응답이 다른 단어 카드에 붙지 않게 시퀀스 가드(synAnt와 동일 원칙).
+  const [ctxExplain, setCtxExplain] = useState(null); // { loading?, text?, error? }
+  const ctxExplainSeq = useRef(0);
+  useEffect(() => { ctxExplainSeq.current += 1; setCtxExplain(null); }, [selectedToken?.id, selectedToken?.text]);
+  const ctxSentenceOf = (tok) => {
+    // 본문 탭 토큰의 id(id_<rawIdx>_…)에서 원문 줄을 되찾는다 — 리스트·칩 경유(무id)는 대상 밖
+    const m = typeof tok?.id === 'string' ? tok.id.match(/^(?:id|failed)_(\d+)_/) : null;
+    const line = m ? sentences.find((s) => s.rawIdx === parseInt(m[1], 10)) : null;
+    return line?.text || null;
+  };
+  const runCtxExplain = async (tok, sentence) => {
+    const seq = ++ctxExplainSeq.current;
+    setCtxExplain({ loading: true });
+    try {
+      const text = await fetchCtxExplain({
+        language: materialLang, sentence, token: tok, materialId: id, tokenKey: tok.id,
+      });
+      if (ctxExplainSeq.current === seq) setCtxExplain(text ? { text } : { error: true });
+    } catch {
+      if (ctxExplainSeq.current === seq) setCtxExplain({ error: true });
+    }
+  };
 
   // 왼쪽 패널: 번역 + 맥락
   const [leftPanelText, setLeftPanelText] = useState('');
@@ -1493,6 +1519,33 @@ export default function ViewerPage() {
           한자 · {refVocab.word.hanja}
         </div>
       )}
+
+      {/* 문맥 설명 R1 — zh부터(프롬프트 검증 언어), 본문 탭 토큰만(문장 유도 가능할 때).
+          즉답 카드는 그대로, 설명은 버튼을 눌러야 온다(스킴 탭 헛호출 0). */}
+      {materialLang === 'Chinese' && (() => {
+        const ctxSentence = ctxSentenceOf(selectedToken);
+        if (!ctxSentence) return null;
+        if (ctxExplain?.loading) {
+          return <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 12 }}>문장 속 쓰임을 읽는 중...</div>;
+        }
+        if (ctxExplain?.text) {
+          return (
+            <div style={{ fontSize: '0.84rem', lineHeight: 1.55, marginBottom: 12 }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 2 }}>이 문장에서</div>
+              <div style={{ color: 'var(--text-secondary)' }}>{ctxExplain.text}</div>
+            </div>
+          );
+        }
+        return (
+          <button
+            onClick={() => runCtxExplain(selectedToken, ctxSentence)}
+            className="btn btn--ghost btn--sm"
+            style={{ width: '100%', marginBottom: 12 }}
+          >
+            {ctxExplain?.error ? '이 문장에서는? (다시 시도)' : '이 문장에서는?'}
+          </button>
+        );
+      })()}
 
       {wordDetail?.loading ? (
         <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 12 }}>상세 설명 생성 중...</div>
