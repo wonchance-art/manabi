@@ -4,9 +4,17 @@
 //   + CC-CEDICT (© MDBG, CC BY-SA 4.0 — npm cedict-json의 cedict.json. R5 고유명사
 //   판별자 전용: CC-CEDICT는 고유명사의 병음을 대문자로 적는다).
 //   실행: node scripts/build-zh-hsk.mjs --hsk <hsk30.csv> --cedict <cedict.json>
-//   출력(둘 다 정렬 고정 — 결정성):
+//   출력(전부 정렬 고정 — 결정성):
 //   ① src/lib/data/zhHskLevel.json — { 단어: 급수 } (1~6, 7 = 7-9 통합밴드).
 //      파이프 변형(爸爸|爸)은 각각 등재, 중복은 낮은 급수 우선. 한자 표제어만.
+//   ③ src/lib/server/data/zhSeparableHsk.json — { 단어: 1 } 이합사 대량층(오너 승인
+//      2026-08-30 "이합사 대량 조달 ㄱㄱ"). 원천은 WebPinyin의 공식 ∥ 분철 마커
+//      (국제중문교육 등급표준의 이합사 표기 — 帮∥忙·吃∥饭, 532행 실측). RFC 1순위
+//      Wiktionary(3,121)는 프록시 정책 차단 실측(2026-08-30, en.wiktionary CONNECT
+//      403)으로 배제 — 공식 표준이 권위·HSK 어휘 정합·라이선스(MIT 기확보) 모두 우위.
+//      2자만(3자 9건은 전부 얼화 — 聊天儿류, jieba 실현성 낮음), V≠O, 수제층
+//      (zhSeparable.json — 정본 우선) 제외. 공백 분철 클래스(下雨 xià yǔ류 112건)는
+//      실이합·비이합 혼성이라 v1 배제 — 수제층·suspect 수확 루프가 갭을 맡는다.
 //   ② src/lib/server/data/zhPosFixHsk.json — { 단어: { tag, posAll? } }.
 //      jieba가 단독 토큰으로 내는 단어 중, jieba 품사 계열과 HSK 품사 집합이
 //      **서로소**인 충돌만 수확(自觉/d vs V·Adj류) — R1 POS_FIX의 자동 시드.
@@ -96,7 +104,12 @@ function parseCsvLine(line) {
 const rows = fs.readFileSync(hskPath, 'utf8').split('\n').filter(Boolean);
 const header = parseCsvLine(rows[0]);
 const col = (name) => header.indexOf(name);
-const [iSimp, iPos, iLevel] = [col('Simplified'), col('POS'), col('Level')];
+const [iSimp, iPos, iLevel, iWebPy] = [col('Simplified'), col('POS'), col('Level'), col('WebPinyin')];
+
+// 수제 이합사층 키 — 파일에서 직접 읽어 자동 동기(raw node의 JSON import 제약 우회)
+const HAND_SEPARABLE = JSON.parse(
+  fs.readFileSync(path.join(process.cwd(), 'src/lib/server/data/zhSeparable.json'), 'utf8')
+);
 
 const levels = new Map();   // 단어 → 급수(낮은 급수 우선)
 const posSets = new Map();  // 단어 → HSK 품사 라벨 Set
@@ -117,6 +130,26 @@ for (const row of rows.slice(1)) {
 const levelSorted = Object.fromEntries([...levels.entries()].sort(([a], [b]) => a.localeCompare(b, 'zh')));
 const levelPath = path.join(process.cwd(), 'src/lib/data/zhHskLevel.json');
 fs.writeFileSync(levelPath, JSON.stringify(levelSorted) + '\n');
+
+// ③ 이합사 대량층 — WebPinyin ∥ 마커 수확
+const sepStats = { marked: 0, notTwo: 0, hand: 0, kept: 0 };
+const separable = {};
+for (const row of rows.slice(1)) {
+  const f = parseCsvLine(row);
+  if (!(f[iWebPy] || '').includes('∥')) continue;
+  for (const w of (f[iSimp] || '').split('|')) {
+    const word = w.trim();
+    if (!word) continue;
+    sepStats.marked++;
+    if (!/^[一-鿿]{2}$/.test(word) || [...word][0] === [...word][1]) { sepStats.notTwo++; continue; }
+    if (HAND_SEPARABLE[word]) { sepStats.hand++; continue; }
+    separable[word] = 1;
+    sepStats.kept++;
+  }
+}
+const sepSorted = Object.fromEntries(Object.entries(separable).sort(([a], [b]) => a.localeCompare(b, 'zh')));
+const sepPath = path.join(process.cwd(), 'src/lib/server/data/zhSeparableHsk.json');
+fs.writeFileSync(sepPath, JSON.stringify(sepSorted, null, 1) + '\n');
 
 // ② 품사 충돌 수확
 const stats = { checked: 0, multiToken: 0, proper: 0, agree: 0, unknownTag: 0, harvested: 0 };
@@ -160,4 +193,9 @@ console.log('품사 대조:', stats.checked, '/ 다중토큰 제외:', stats.mul
 console.log('품사 충돌 수확:', stats.harvested, '→', posPath);
 for (const w of ['自觉', '计划', '希望', '工作', '明白', '星星', '换', '北京', '毛']) {
   console.log(' 스팟', w, 'HSK', levels.get(w) ?? '-', JSON.stringify(posSorted[w] ?? '(수확 없음)'));
+}
+console.log('이합사 ∥ 표기:', sepStats.marked, '/ 비2자·얼화·V=O 제외:', sepStats.notTwo,
+  '/ 수제층 정본:', sepStats.hand, '/ 등재:', sepStats.kept, '→', sepPath);
+for (const w of ['吃饭', '打车', '得到', '睡觉', '聊天儿', '回家']) {
+  console.log(' 이합 스팟', w, '=', sepSorted[w] ?? (HAND_SEPARABLE[w] ? '(수제층)' : '(미등재)'));
 }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import ZH_SEPARABLE from '../data/zhSeparable.json';
+import ZH_SEPARABLE_HSK from '../data/zhSeparableHsk.json';
 import { tokenizeZhLine } from '../tokenizeZh.js';
 
 // 계약: 이합사(离合词) 인지 R4a — rfc-zh-separable-verbs (오너 승인 2026-08-30 "ㄱㄱ" —
@@ -103,9 +104,8 @@ describe('감지 B — 분리형 근접(V…O ≤2토큰, 사이 조사·수량�
     expect(tok('下雨了。', '下雨').base_form).toBe('下雨');         // 연속형 그대로
   });
 
-  it('클러스터 가드 — 실단어 穿过·사전 밖 통짜(吃过饭)는 불변', () => {
-    expect(tok('他穿过马路。', '穿过').base_form).toBe('穿过'); // 穿路 미등재 + 马路 캐리어 아님
-    expect(tok('吃过饭了。', '吃过饭').base_form).toBe('吃过饭'); // 吃饭은 시드 배제(자유 VO 방침)
+  it('클러스터 가드 — 실단어 穿过는 불변(穿路 미등재 + 马路 캐리어 아님)', () => {
+    expect(tok('他穿过马路。', '穿过').base_form).toBe('穿过');
   });
 });
 
@@ -139,5 +139,69 @@ describe('무개입 가드(오탐 방지)', () => {
     for (const t of tokenizeZhLine('我在北京大学读书,他昨天买了三本书。')) {
       expect(t.base_form).toBe(t.text);
     }
+  });
+
+  it('중립 스위프 영구 계약 — 사전이 커져도(대량층 포함) 무이합 문장 합류 0', () => {
+    // 대량 조달(477항) 직후 전수 실측으로 선별한 중립 코퍼스(적대 함정 포함:
+    // 得了到北京·拿出了来自·打了个电话·为了/除了/忘了·수량구 삽입 비이합).
+    // 시드가 더 자라면 이 계약이 오탐 성장의 첫 방벽이다.
+    const neutral = [
+      '我们是好朋友。', '他的名气很大。', '怪不得你没来。', '我不在乎这个。',
+      '他成天玩游戏。', '我想约你吃饭。', '约三十人参加了活动。', '你知道这件事吗？',
+      '街上很热闹。', '我喜欢安静的地方。', '一个人也没有。', '他不是学生。',
+      '他吃了一个苹果。', '我上了一辆车。', '他打了一个电话。', '我们见了很多人。',
+      '他下了楼。', '她生了一个孩子。', '他放了一本书在桌上。', '我起了一个名字。',
+      '她照了镜子。', '他穿过马路。', '他睡着了。', '他到了站。', '车开过来了。',
+      '他走过那条街。', '为了你我什么都做。', '除了他都来了。', '雨下得很大。',
+      '他忘了带伞。', '他想了想。', '他得了到北京的机会。', '他拿出了来自北京的信。',
+      '他打了个电话。', '他吃了点东西。', '他上了年纪。', '他帮了他一下。',
+    ];
+    const bad = [];
+    for (const s of neutral) {
+      for (const t of tokenizeZhLine(s)) {
+        if (t.base_form !== t.text) bad.push(`${s} :: ${t.text}⇒${t.base_form}`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+});
+
+// 대량층(zhSeparableHsk.json) — 오너 승인 2026-08-30 "이합사 대량 조달 ㄱㄱ".
+// 원천: 공식 HSK 3.0 WebPinyin의 ∥ 분철 마커(국제중문교육 등급표준의 이합사 표기,
+// ivankra/hsk30 MIT). RFC 1순위 Wiktionary(3,121)는 프록시 정책 차단 실측으로 대체 —
+// 권위(공식 표준)·HSK 어휘 정합·라이선스 모두 우위. 생성 build-zh-hsk.mjs ③.
+describe('이합사 대량층(HSK ∥ 마커)', () => {
+  const entries = Object.entries(ZH_SEPARABLE_HSK);
+
+  it('규모 — ∥ 532행에서 2자·수제 제외 후 400+', () => {
+    expect(entries.length).toBeGreaterThan(400);
+    expect(entries.length).toBeLessThan(520);
+  });
+
+  it('형식 전수 — 한자 2자·V≠O·값 1', () => {
+    const bad = entries.filter(([k, v]) => !/^[一-鿿]{2}$/.test(k) || [...k][0] === [...k][1] || v !== 1);
+    expect(bad.map(([k]) => k)).toEqual([]);
+  });
+
+  it('수제층과 비겹침(생성기가 정본 우선 제외)', () => {
+    for (const w of Object.keys(ZH_SEPARABLE)) {
+      expect(ZH_SEPARABLE_HSK[w]).toBeUndefined();
+    }
+  });
+
+  it('스팟 — 공식 마커 수확(吃饭·打车·得到·出门) / 얼화 3자·공백 분철 클래스 배제', () => {
+    for (const w of ['吃饭', '打车', '得到', '出门', '请客', '上当']) {
+      expect(ZH_SEPARABLE_HSK[w]).toBe(1);
+    }
+    expect(ZH_SEPARABLE_HSK['聊天儿']).toBeUndefined(); // 3자 얼화
+    expect(ZH_SEPARABLE_HSK['回家']).toBeUndefined();   // 공백 분철(혼성 구 클래스 — v1 배제)
+    expect(ZH_SEPARABLE_HSK['上次']).toBeUndefined();
+  });
+
+  it('병합 배선 — 대량층 항목이 감지에 실제로 문다(수제 뒤집기: 吃饭은 이제 공식 등재)', () => {
+    expect(tok('他吃了饭。', '吃了饭').base_form).toBe('吃饭');  // A 통짜
+    expect(tok('吃过饭了。', '吃过饭').base_form).toBe('吃饭');  // 기존 가드의 정반전(공식 근거)
+    expect(tok('我打了车。', '打').base_form).toBe('打车');      // B 회랑
+    expect(tok('他上了当。', '上').base_form).toBe('上当');      // f-태그 V
   });
 });
