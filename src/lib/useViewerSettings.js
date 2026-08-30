@@ -36,6 +36,9 @@ export function useViewerSettings() {
   const [autoPace, setAutoPaceRaw] = useState(() => readPref('autoPace', false));
   // 목표 속도(자/분). null = 아직 안 고름 → 언어별 기본값(readingPacer가 정본).
   const [paceCpm, setPaceCpmRaw] = useState(() => readPref('paceCpm', null));
+  // 훈련 사다리 단계(v2-I R1b R3) — 목표에 1.05^step을 곱한다. 바탕값(실력)과 훈련
+  // 강도를 분리해 두어야 무엇이 올라 목표가 올랐는지 알 수 있다.
+  const [paceStep, setPaceStepRaw] = useState(() => readPref('paceStep', 0));
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const setFontSize = (v) => { const val = typeof v === 'function' ? v(fontSize) : v; setFontSizeRaw(val); savePref('fontSize', val); };
@@ -52,6 +55,7 @@ export function useViewerSettings() {
   const setShowHanjaKo = (v) => { const val = typeof v === 'function' ? v(showHanjaKo) : v; setShowHanjaKoRaw(val); savePref('showHanjaKo', val); };
   const setAutoPace = (v) => { const val = typeof v === 'function' ? v(autoPace) : v; setAutoPaceRaw(val); savePref('autoPace', val); };
   const setPaceCpm = (v) => { const val = typeof v === 'function' ? v(paceCpm) : v; setPaceCpmRaw(val); savePref('paceCpm', val); };
+  const setPaceStep = (v) => { const val = typeof v === 'function' ? v(paceStep) : v; setPaceStepRaw(val); savePref('paceStep', val); };
 
   return {
     fontSize, setFontSize,
@@ -68,6 +72,7 @@ export function useViewerSettings() {
     focusMode, setFocusMode,
     autoPace, setAutoPace,
     paceCpm, setPaceCpm,
+    paceStep, setPaceStep,
     settingsOpen, setSettingsOpen,
   };
 }

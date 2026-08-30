@@ -13,6 +13,7 @@ import { useReadingPacer } from '../lib/useReadingPacer';
 import { dwellMs, defaultTargetCpm, paceHint, stepCpm } from '../lib/readingPacer';
 import { fetchReadingSpeedRows } from '../lib/readingSpeedRows';
 import { recentCpm, suggestTargetCpm } from '../lib/readingSpeedHistory';
+import { comprehensionRatio, ladderLabel, ladderTargetCpm, nextLadderStep } from '../lib/pacerLadder';
 import { computeHeadingLevels } from '../lib/headingHeuristics';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
@@ -178,7 +179,7 @@ export default function ViewerPage() {
           showToneColors, setShowToneColors,
           wordStateHl, setWordStateHl,
           focusMode, setFocusMode,
-          autoPace, setAutoPace, paceCpm, setPaceCpm,
+          autoPace, setAutoPace, paceCpm, setPaceCpm, paceStep, setPaceStep,
           theme, setTheme, fontFamily, setFontFamily, pronDisplay, setPronDisplay,
           autoSpeakOnClick, setAutoSpeakOnClick, ttsRate, setTtsRate,
           settingsOpen, setSettingsOpen } = settings;
@@ -853,9 +854,12 @@ export default function ViewerPage() {
       ? sentences.reduce((n, s2) => n + countReadableChars(s2.text), 0) / sentences.length
       : null
   ), [sentences]);
-  // 직접 고른 값이 언제나 이긴다. 안 골랐으면 내 이력에서 제안하고, 이력도 모자라면
-  // 언어별 보수적 기본값으로 떨어진다(설계 §4).
-  const paceTargetCpm = paceCpm || suggestedCpm || defaultTargetCpm(materialLang);
+  // 바탕값: 직접 고른 값이 언제나 이긴다. 안 골랐으면 내 이력에서 제안하고, 이력도
+  // 모자라면 언어별 보수적 기본값으로 떨어진다(설계 §4).
+  const paceBaseCpm = paceCpm || suggestedCpm || defaultTargetCpm(materialLang);
+  // 여기에 훈련 사다리(1.05^step)를 곱한 것이 실제 목표다(설계 §9). 바탕과 사다리를
+  // 분리해 두어야 "실력이 올라서"인지 "훈련을 밀어서"인지 구분된다.
+  const paceTargetCpm = ladderTargetCpm(paceBaseCpm, paceStep) || paceBaseCpm;
   const paceArmed = autoPace && focusMode && pickedSentence !== null;
   const paceDwell = paceArmed
     ? dwellMs({ chars: countReadableChars(pickedSentence.text), targetCpm: paceTargetCpm })
@@ -875,6 +879,18 @@ export default function ViewerPage() {
       moveSentence(1);
     },
   });
+
+  // 이해도 가드(v2-I R1b R3) — 사다리는 **읽기가 끝날 때가 아니라 이해도 증거가 올 때**
+  // 움직인다. 완독 순간에는 이번 회차를 이해했는지 알 길이 없어서, 그때 올리면 가드가
+  // 사후 통보가 된다. 페이서로 읽은 회차에만 적용한다: 자기 힘으로 읽은 회차의 이해도는
+  // 훈련 강도와 무관하다.
+  const handleReadingTestGraded = ({ score, total }) => {
+    if (!pacedRef.current) return;
+    const { step, verdict } = nextLadderStep(paceStep, comprehensionRatio({ score, total }));
+    if (step !== paceStep) setPaceStep(step);
+    if (verdict === 'up') toast(`이해도 확인 — 자동 진행을 ${ladderLabel(step)}로 올렸어요`, 'success');
+    else if (verdict === 'down') toast('이해가 조금 떨어졌어요 — 자동 진행을 한 칸 낮췄어요', 'info');
+  };
 
   // ▲▼ 한 벌 — 데스크톱 플로팅 필과 모바일 하단 바가 같은 버튼을 다른 옷(className)으로
   // 입는다. 모바일에서 필이 시트(z 95)에 덮여 못 쓰는 문제의 재배치(오너 보고 2026-08-20):
@@ -2151,9 +2167,11 @@ export default function ViewerPage() {
                     <div className="rsheet-subrow rsheet-subrow--pace">
                       <span className="rsheet-sublab">속도</span>
                       <div className="rsheet-pace" role="group" aria-label="자동 진행 속도">
-                        <button type="button" aria-label="느리게" onClick={() => setPaceCpm(stepCpm(paceTargetCpm, -1))}>− 느리게</button>
+                        {/* 직접 조절하면 사다리를 접는다 — 보이는 값을 그대로 바탕값으로
+                            굳혀야 "내가 90으로 맞췄는데 왜 104로 도나"가 안 생긴다. */}
+                        <button type="button" aria-label="느리게" onClick={() => { setPaceCpm(stepCpm(paceTargetCpm, -1)); setPaceStep(0); }}>− 느리게</button>
                         <b>{paceTargetCpm}자/분</b>
-                        <button type="button" aria-label="빠르게" onClick={() => setPaceCpm(stepCpm(paceTargetCpm, 1))}>빠르게 +</button>
+                        <button type="button" aria-label="빠르게" onClick={() => { setPaceCpm(stepCpm(paceTargetCpm, 1)); setPaceStep(0); }}>빠르게 +</button>
                       </div>
                       {/* 이 숫자가 어디서 왔는지 밝힌다 — 자동 제안이 조용히 바뀌면
                           "왜 어제와 다르지?"가 된다. 직접 고른 상태에서는 자동으로
@@ -2164,7 +2182,12 @@ export default function ViewerPage() {
                           <button type="button" onClick={() => setPaceCpm(null)}>자동으로</button>
                         </span>
                       ) : myCpm ? (
-                        <span className="rsheet-pace__src">내 속도 {myCpm}자/분 기준 +10%</span>
+                        <span className="rsheet-pace__src">
+                          내 속도 {myCpm}자/분 기준 +10%
+                          {ladderLabel(paceStep) && <em>훈련 {ladderLabel(paceStep)}</em>}
+                        </span>
+                      ) : ladderLabel(paceStep) ? (
+                        <span className="rsheet-pace__src"><em>훈련 {ladderLabel(paceStep)}</em></span>
                       ) : null}
                       {/* 조절은 자/분으로 하되 초를 병기한다 — 오너가 처음 말한 "몇 초 후"를
                           그대로 쓸 수 있게(설계 §7②). 숫자 카운트다운은 본문에 두지 않는다. */}
@@ -2684,6 +2707,7 @@ export default function ViewerPage() {
             language={materialLang}
             materialId={id}
             onClose={() => setShowReadingTest(false)}
+            onGraded={handleReadingTestGraded}
             inline
             nextLesson={nextLesson}
           />

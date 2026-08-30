@@ -112,7 +112,9 @@ describe('배선 — 우선순위와 되돌아갈 길', () => {
   const viewer = read('src/views/ViewerPage.jsx');
 
   it('직접 고른 값 > 자동 제안 > 언어 기본값', () => {
-    expect(viewer).toContain('const paceTargetCpm = paceCpm || suggestedCpm || defaultTargetCpm(materialLang);');
+    // R3에서 목표가 '바탕값 × 훈련 사다리'로 갈렸다 — 이 우선순위는 바탕값 쪽이 지킨다.
+    expect(viewer).toContain('const paceBaseCpm = paceCpm || suggestedCpm || defaultTargetCpm(materialLang);');
+    expect(viewer).toContain('ladderTargetCpm(paceBaseCpm, paceStep)');
   });
 
   it('조회는 페이서를 켰을 때만 — 안 쓰는 사람에게 쿼리를 태우지 않는다', () => {
