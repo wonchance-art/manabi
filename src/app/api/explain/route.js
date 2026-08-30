@@ -1,9 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
+import { buildTokenExplainPrompt, parseTokenExplain, sanitizeTokenExplain } from '@/lib/server/explainToken';
 
 /**
  * 오답 해설 "왜?" — 오답 직후(인코딩 최강 순간) 왜 정답이 맞고 학습자의 선택이
  * 안 되는지 한국어 1~2문장으로 설명한다. /api/writing-feedback와 같은 인증·폴백
  * 패턴을 따르되, 구조화 JSON 없이 plain text만 돌려준다(가볍게).
+ *
+ * token 분기(문맥 설명 R1) — 같은 인증·레이트리밋·flash-lite→Groq 폴백 위에
+ * 탭 단어의 "이 문장에서" 설명을 얹는다. suspect(분석 의심 신고)는 응답에 싣지
+ * 않고 token_corrections에 적재만 한다(수확 루프 — explainToken.js 참조).
  */
 
 const GROQ_MODEL = 'qwen/qwen3.6-27b'; // qwen3-32b는 Groq에서 퇴역(2026-08 실측)
@@ -31,7 +36,7 @@ function isRateLimited(key) {
   return entry.count > RATE_LIMIT;
 }
 
-async function callGemini(model, promptText, apiKey) {
+async function callGemini(model, promptText, apiKey, temperature = 0.3) {
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
     {
@@ -39,7 +44,7 @@ async function callGemini(model, promptText, apiKey) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: promptText }] }],
-        generationConfig: { temperature: 0.3 },
+        generationConfig: { temperature },
       }),
     }
   );
@@ -48,7 +53,7 @@ async function callGemini(model, promptText, apiKey) {
   return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
 }
 
-async function callGroq(promptText) {
+async function callGroq(promptText, temperature = 0.3) {
   const groqKey = process.env.GROQ_API_KEY;
   if (!groqKey) return null;
   const res = await fetch(GROQ_URL, {
@@ -57,7 +62,7 @@ async function callGroq(promptText) {
     body: JSON.stringify({
       model: GROQ_MODEL,
       messages: [{ role: 'user', content: promptText }],
-      temperature: 0.3,
+      temperature,
       stream: false,
       reasoning_effort: 'none',
     }),
@@ -110,13 +115,65 @@ export async function POST(request) {
     return Response.json({ error: { message: 'Bad Request: Invalid JSON' } }, { status: 400 });
   }
 
+  // 프롬프트 주입 방어 — 각 필드 길이 캡
+  const cap = (v, n) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, n);
+
+  // ── token 분기: 탭 단어 문맥 설명(R1) ──
+  if (body?.token) {
+    const sentence = cap(body.token.sentence, 200);
+    const word = cap(body.token.word, 20);
+    const base = cap(body.token.base, 20);
+    const pos = cap(body.token.pos, 20);
+    const language = cap(body.language, 20);
+    if (!language || !sentence || !word) {
+      return Response.json({ error: { message: '잘못된 요청입니다.' } }, { status: 400 });
+    }
+    const promptText = buildTokenExplainPrompt({ language, sentence, word, base, pos });
+    try {
+      // 판정성 출력이라 temperature 0(판별기 관례)
+      let raw = null;
+      if (apiKey) raw = await callGemini('gemini-3.5-flash-lite', promptText, apiKey, 0).catch(() => null);
+      if (!raw) raw = await callGroq(promptText, 0).catch(() => null);
+      const result = sanitizeTokenExplain(parseTokenExplain(raw), { sentence, word, base });
+      if (!result) {
+        return Response.json({ error: { message: '설명 생성에 실패했어요.' } }, { status: 502 });
+      }
+      // suspect 적재(수확 루프) — 실패해도 설명 응답에는 영향 없음(fire-and-forget).
+      // token_corrections RLS(본인 insert)를 그대로 타도록 사용자 JWT를 실은 클라이언트로 쓴다.
+      const materialId = cap(body.materialId, 40);
+      const tokenKey = cap(body.tokenKey, 80);
+      if (result.suspect && materialId && tokenKey) {
+        try {
+          const rlsClient = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+            { auth: { persistSession: false }, global: { headers: { Authorization: `Bearer ${token}` } } }
+          );
+          rlsClient.from('token_corrections').insert({
+            material_id: materialId,
+            token_id: tokenKey,
+            user_id: authUser.id,
+            before_value: { word, base_form: base || word, pos },
+            after_value: { source: 'ai_explain_suspect', base_form: result.suspect.base, reason: result.suspect.reason },
+          }).then(({ error }) => {
+            if (error) console.warn('[explain:token] suspect 적재 실패', error.message);
+          });
+        } catch (e) {
+          console.warn('[explain:token] suspect 적재 실패', e?.message);
+        }
+      }
+      return Response.json({ explanation: result.explanation }, { status: 200 });
+    } catch (err) {
+      console.error('[explain:token] error', err?.message);
+      return Response.json({ error: { message: 'Internal Server Error' } }, { status: 500 });
+    }
+  }
+
   const { language, question } = body || {};
   const type = question?.type;
   if (!language || !question || !['cloze', 'vocab', 'comprehension'].includes(type)) {
     return Response.json({ error: { message: '잘못된 요청입니다.' } }, { status: 400 });
   }
-  // 프롬프트 주입 방어 — 각 필드 길이 캡
-  const cap = (v, n) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, n);
   const sentence = cap(question.sentence, 200);
   const correct = cap(question.correct, 120);
   const picked = cap(question.picked, 120);
