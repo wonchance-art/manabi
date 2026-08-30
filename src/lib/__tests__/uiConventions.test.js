@@ -83,6 +83,64 @@ describe('① 인라인 하드코딩 색상 0', () => {
   });
 });
 
+/* ── v2-K R2: 브레이크포인트 동결 ── */
+
+/** 동결 목록 — 이 값들 밖으로 나가는 뷰포트 쿼리는 금지(docs/ui-conventions.md §2). */
+const ALLOWED_MAX = [400, 420, 480, 560, 600, 767, 768, 880, 1179];
+const ALLOWED_MIN = [760, 900];
+/** 현재 총 뷰포트 쿼리 수. 늘릴 수 없다 — 새 접힘은 @container로. */
+const VIEWPORT_QUERY_CAP = 29;
+
+function cssFiles() {
+  const out = [];
+  (function walk(dir) {
+    for (const name of fs.readdirSync(dir)) {
+      if (name === 'node_modules') continue;
+      const p = path.join(dir, name);
+      if (fs.statSync(p).isDirectory()) walk(p);
+      else if (name.endsWith('.css')) out.push(path.relative(ROOT, p));
+    }
+  })(path.join(ROOT, 'src'));
+  return out;
+}
+
+function viewportQueries() {
+  const found = [];
+  for (const f of cssFiles()) {
+    for (const m of read(f).matchAll(/@media[^{]*?\((max|min)-width:\s*(\d+)px/g)) {
+      found.push({ file: f, kind: m[1], px: Number(m[2]) });
+    }
+  }
+  return found;
+}
+
+describe('②③ 브레이크포인트 동결 + @container 정책 (R2)', () => {
+  it('허용 목록 밖의 뷰포트 값이 없다 — 새 브레이크포인트 신설 금지', () => {
+    const bad = viewportQueries().filter(
+      (q) => !(q.kind === 'max' ? ALLOWED_MAX : ALLOWED_MIN).includes(q.px),
+    );
+    expect(bad.map((b) => `${b.file} — ${b.kind}-width: ${b.px}px`)).toEqual([]);
+  });
+
+  it('뷰포트 쿼리 총량에 상한이 있다 — 새 접힘은 @container로 쓰라는 강제', () => {
+    const all = viewportQueries();
+    expect(all.length).toBeGreaterThan(20);            // 스캐너가 비면 여기서 잡힌다
+    expect(all.length).toBeLessThanOrEqual(VIEWPORT_QUERY_CAP);
+  });
+
+  it('컨테이너 쿼리 선례가 살아 있다 — 정책이 가리키는 실물', () => {
+    expect(read('src/index.css')).toContain('container-type: inline-size');
+  });
+
+  it('문서가 정본 티어와 동결 목록을 싣는다', () => {
+    const doc = read('docs/ui-conventions.md');
+    expect(doc).toContain('정본 티어');
+    expect(doc).toContain('동결 목록');
+    for (const px of [480, 600, 768, 1180]) expect(doc).toContain(String(px));
+    expect(doc).toContain('@container');
+  });
+});
+
 describe('④ 규약 문서 — 존재 + 상호 포인터', () => {
   it('ui-conventions.md가 있고 R1이 정한 절을 담는다', () => {
     const doc = read('docs/ui-conventions.md');
