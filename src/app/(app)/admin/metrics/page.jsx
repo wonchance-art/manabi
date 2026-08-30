@@ -158,7 +158,7 @@ export default async function Page({ searchParams }) {
                 title={`${d.day} · 활성 ${num(d.active_users)}명 · 세션 ${num(d.sessions)} · 정답률 ${pct(d.accuracy)}`}
               >
                 <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)' }}>{pct(d.accuracy)}</div>
-                <div style={{ width: 16, height: 72, display: 'flex', alignItems: 'flex-end', background: 'var(--bg-subtle, rgba(128,128,128,0.12))', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{ width: 16, height: 72, display: 'flex', alignItems: 'flex-end', background: 'var(--bg-secondary)', borderRadius: 3, overflow: 'hidden' }}>
                   <div style={{ width: '100%', height: `${Math.max((Number(d.active_users) / dailyMax) * 100, 2)}%`, background: 'var(--accent)' }} />
                 </div>
                 <div style={{ fontSize: '0.55rem', color: 'var(--text-muted)', marginTop: 3, transform: 'rotate(-45deg)', transformOrigin: 'center', whiteSpace: 'nowrap' }}>

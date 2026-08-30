@@ -225,7 +225,7 @@ export default function ChapterDrills({ lang, drills, title, intro }) {
               {d.type === 'dictation' && <InputDrill drill={d} lang={lang} done={done} onResult={record(d)} dictation />}
               {d.type === 'order' && <OrderDrill drill={d} done={done} onResult={record(d)} />}
               {done && (
-                <p role="status" aria-live="polite" style={{ fontSize: '0.82rem', marginTop: 6, color: ok ? 'var(--accent, #2d6a4f)' : 'var(--text-muted)' }}>
+                <p role="status" aria-live="polite" style={{ fontSize: '0.82rem', marginTop: 6, color: ok ? 'var(--accent)' : 'var(--text-muted)' }}>
                   {ok ? '정답이에요!' : `아쉬워요 — 정답: ${d.type === 'fill' ? d.answer : d.sentence ?? d.answer}`}
                 </p>
               )}
@@ -269,7 +269,7 @@ function ReviewNudge({ userId }) {
     return (
       <p role="status" aria-live="polite" style={{ marginTop: 6, fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
         풀이 기록은 이 기기에 쌓였어요.{' '}
-        <Link href="/auth" prefetch={false} style={{ fontWeight: 600, color: 'var(--accent-text, #2d6a4f)' }}>
+        <Link href="/auth" prefetch={false} style={{ fontWeight: 600, color: 'var(--accent-text)' }}>
           로그인하면 며칠 뒤 복습 큐로 돌아와요 →
         </Link>
       </p>
@@ -279,7 +279,7 @@ function ReviewNudge({ userId }) {
   return (
     <p role="status" aria-live="polite" style={{ marginTop: 6, fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
       풀이 기록은 복습 큐에 쌓였어요.{' '}
-      <Link href="/review/grammar" style={{ fontWeight: 600, color: 'var(--accent-text, #2d6a4f)' }}>
+      <Link href="/review/grammar" style={{ fontWeight: 600, color: 'var(--accent-text)' }}>
         {typeof due === 'number' && due > 0 ? `지금 복습 대기 ${due}개 →` : '문법 복습에서 이어가기 →'}
       </Link>
     </p>

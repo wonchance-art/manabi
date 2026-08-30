@@ -56,11 +56,13 @@ function WorldMapWhenNear({ langKey }) {
   return <div ref={holder} aria-hidden="true" style={MAP_PLACEHOLDER} />;
 }
 
+// 트랙 색은 index.css 토큰이 정본(v2-K R1) — 여기서는 참조만 한다.
+// 값을 바꿀 일이 생기면 CSS 한 곳만 고치면 된다.
 const TRACK_COLORS = {
-  English: '#3b6fb5',
-  French: '#a02840',
-  Japanese: '#b0483f',
-  Chinese: '#b0722f',
+  English: 'var(--track-english)',
+  French: 'var(--track-french)',
+  Japanese: 'var(--track-japanese)',
+  Chinese: 'var(--track-chinese)',
 };
 
 const LANG_FILTERS = [

@@ -25,6 +25,28 @@
   /* 배경으로 쓰면 문제없지만 글자로 쓰면 3.32라 AA 미달 — 글자 전용 변형을 따로 둔다(같은 색상, 밝기만). */
   --accent-text: #58A46D;   /* 3.32 → 4.51 */
   --accent-glow: rgba(74, 138, 92, 0.18);
+
+  /* ── v2-K R1 토큰 승격 — 아래 토큰들은 **기존 인라인 값을 그대로** 담는다.
+     브라우저 계산색 대조로 동일 확인(2026-08-30). 미정의 토큰을 가리키던 폴백
+     (--success·--surface-2·--bg-subtle 등)의 실재 토큰 매핑은 별개이고, 그쪽은
+     같은 계열의 근사 대체라 미세한 색 이동이 있다(설계 §8 — 값 병합은 R3 몫). ── */
+  /* 밝은 노랑 강조 — --warning(#D4962A)보다 밝은 별개 색. 진행/중단 배너·칩이 쓴다. */
+  --warning-bright: #FCC419;
+  /* 관리자 전용 표시 — 경고가 아니라 '특별 권한'이라 --warning과 층이 다르다. */
+  --admin-accent: #FF922B;
+  /* 언어 트랙 아이덴티티 — 테마와 무관한 상수 팔레트(교재 필터·칩). */
+  --track-english: #3B6FB5;
+  --track-french: #A02840;
+  --track-japanese: #B0483F;
+  --track-chinese: #B0722F;
+  /* 안내 배너(이메일 미검증 등) — 밝은 노랑 판. 기존 인라인 값을 그대로 옮겼다.
+     테마별 대응은 R3(실기 동반)에서 — R1은 색을 한 값도 바꾸지 않는다. */
+  --notice-bg: #FEF3C7;
+  --notice-text: #92400E;
+  --notice-border: #FDE68A;
+  /* 대화 화자 구분 팔레트 — 세 번째 화자는 --accent를 그대로 쓴다(현행 렌더 보존). */
+  --speaker-1: #6C7CFF;
+  --speaker-2: #E0729A;
   --danger: #C84040;
   --warning: #D4962A;
 
@@ -1020,7 +1042,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .vocab-row__dot { width: 9px; height: 9px; border-radius: 50%; }
 .vocab-row__due {
   font-size: 0.68rem; font-weight: 700; color: var(--warning);
-  background: rgba(252,196,25,0.16); padding: 2px 8px; border-radius: var(--radius-full); white-space: nowrap;
+  background: color-mix(in srgb, var(--warning-bright) 16%, transparent); padding: 2px 8px; border-radius: var(--radius-full); white-space: nowrap;
 }
 /* [자세히] 인라인 문법 해설 — 시트 좌측 번역·맥락 아래로 펼친다 */
 .grammar-detail__toggle { width: 100%; margin-top: 10px; }
@@ -1409,7 +1431,7 @@ body.is-review-session .page-container { padding-top: 8px; }
 }
 
 .review-score-btn--again { background: linear-gradient(135deg, #ff6b6b, #ee5a5a); }
-.review-score-btn--hard  { background: linear-gradient(135deg, #fcc419, #f0b400); }
+.review-score-btn--hard  { background: linear-gradient(135deg, var(--warning-bright), #f0b400); }
 .review-score-btn--good  { background: linear-gradient(135deg, #51cf66, #40c057); }
 .review-score-btn--easy  { background: linear-gradient(135deg, #339af0, #228be6); }
 
@@ -7970,7 +7992,7 @@ body.is-review-session .page-container { padding-top: 8px; }
   box-shadow: 0 0 40px rgba(124,92,252,0.3);
 }
 .celebration-icon--badge {
-  background: linear-gradient(135deg, rgba(252,196,25,0.2), rgba(255,107,107,0.15));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--warning-bright) 20%, transparent), rgba(255,107,107,0.15));
   box-shadow: 0 0 40px rgba(252,196,25,0.3);
 }
 .celebration-icon--milestone {

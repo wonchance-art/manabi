@@ -655,7 +655,7 @@ export default function AdminPage() {
                           <td>
                             <details>
                               <summary style={{ cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-muted)' }}>펼치기</summary>
-                              <pre style={{ maxWidth: 480, maxHeight: 320, overflow: 'auto', fontSize: '0.72rem', background: 'var(--bg-subtle, rgba(128,128,128,0.1))', padding: 10, borderRadius: 6, marginTop: 8 }}>
+                              <pre style={{ maxWidth: 480, maxHeight: 320, overflow: 'auto', fontSize: '0.72rem', background: 'var(--bg-secondary)', padding: 10, borderRadius: 6, marginTop: 8 }}>
                                 {JSON.stringify(o.data, null, 2)}
                               </pre>
                             </details>

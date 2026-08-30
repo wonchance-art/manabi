@@ -141,7 +141,7 @@ export default function VocabStats({ vocab, profile, section }) {
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.meaning}</span>
                   <span style={{
                     fontSize: '0.75rem', fontWeight: 600,
-                    color: (v.repetitions || 0) > 4 ? 'var(--danger)' : 'var(--warning, #f59e0b)',
+                    color: (v.repetitions || 0) > 4 ? 'var(--danger)' : 'var(--warning)',
                     background: 'var(--bg-secondary)', borderRadius: 99, padding: '2px 8px', flexShrink: 0,
                   }}>
                     Again {v.repetitions ?? 0}

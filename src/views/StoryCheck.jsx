@@ -12,7 +12,8 @@ import RefSpeak from '../components/RefSpeak';
 import { normalizeQuestion, shuffleOrderTiles, gradeOrder, checkFill, splitFill } from './ReadingTextView';
 
 // 화자 색 — 등장 순서대로 두 색을 배정(결정적). 세 번째 화자부터는 순환.
-const SPEAKER_COLORS = ['var(--brand, #6c7cff)', 'var(--accent2, #e0729a)', 'var(--accent, #3bb0a0)'];
+// 화자 색은 index.css 토큰이 정본(v2-K R1) — 세 번째는 현행 렌더 그대로 --accent.
+const SPEAKER_COLORS = ['var(--speaker-1)', 'var(--speaker-2)', 'var(--accent)'];
 function buildSpeakerColors(body) {
   const map = {};
   let n = 0;
@@ -186,7 +187,7 @@ function StoryQuestion({ q, langCode }) {
           <>
             <div className="fr-quiz__prompt" style={{ marginBottom: 8 }}>{q.prompt}</div>
             {/* 조립 행 — 줄바꿈 없이 한 줄 고정 + 가로 스크롤(좁은 화면에서도 옆으로 밀어 봄). */}
-            <div style={{ display: 'flex', flexWrap: 'nowrap', gap: 6, minHeight: 44, alignItems: 'center', padding: '8px 10px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm, 8px)', marginBottom: 8, background: 'var(--surface-2, rgba(127,127,127,0.06))', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'thin' }}>
+            <div style={{ display: 'flex', flexWrap: 'nowrap', gap: 6, minHeight: 44, alignItems: 'center', padding: '8px 10px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm, 8px)', marginBottom: 8, background: 'var(--bg-secondary)', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'thin' }}>
               {assembled.length === 0
                 ? <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>아래 타일을 순서대로 탭하세요</span>
                 : picks.map((idx, pos) => (
@@ -217,7 +218,7 @@ function StoryQuestion({ q, langCode }) {
             <div lang="ja" style={{ fontSize: '1.05rem', lineHeight: 2, marginBottom: 8, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 }}>
               <span>{before}</span>
               {result?.ok
-                ? <span style={{ fontWeight: 700, color: 'var(--accent-text, #6c7cff)', margin: '0 2px' }}>{q.fillAnswer}</span>
+                ? <span style={{ fontWeight: 700, color: 'var(--accent-text)', margin: '0 2px' }}>{q.fillAnswer}</span>
                 : <input type="text" lang="ja" value={input} inputMode="text"
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); submitFill(); } }}

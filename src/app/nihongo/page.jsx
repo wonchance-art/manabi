@@ -51,7 +51,7 @@ export default function Nihongo42Page() {
               <div
                 style={{
                   display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 9,
-                  paddingBottom: 8, borderBottom: '1px solid var(--border, rgba(0,0,0,0.06))',
+                  paddingBottom: 8, borderBottom: '1px solid var(--border)',
                   fontVariantNumeric: 'tabular-nums',
                 }}
               >

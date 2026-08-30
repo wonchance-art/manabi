@@ -137,7 +137,7 @@ export default function Layout({ children }) {
           <Link
             href="/admin"
             className={`gnb__link ${pathname.startsWith('/admin') ? 'active' : ''}`}
-            style={{ color: '#ff922b' }}
+            style={{ color: 'var(--admin-accent)' }}
           >
             <span>관리</span>
           </Link>
@@ -192,9 +192,9 @@ export default function Layout({ children }) {
         <div
           role="status"
           style={{
-            background: 'var(--warning-bg, #fef3c7)',
-            color: 'var(--warning-text, #92400e)',
-            borderBottom: '1px solid var(--warning-border, #fde68a)',
+            background: 'var(--notice-bg)',
+            color: 'var(--notice-text)',
+            borderBottom: '1px solid var(--notice-border)',
             padding: '10px 16px',
             fontSize: '0.85rem',
             textAlign: 'center',

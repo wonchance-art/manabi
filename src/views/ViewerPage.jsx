@@ -1587,7 +1587,7 @@ export default function ViewerPage() {
         </div>
       )}
       {refVocab?.word?.hanja && !showHanjaKo && (
-        <div style={{ fontSize: '0.76rem', color: '#51A85C', marginBottom: 12 }}>
+        <div style={{ fontSize: '0.76rem', color: 'var(--accent-text)', marginBottom: 12 }}>
           한자 · {refVocab.word.hanja}
         </div>
       )}
@@ -1635,7 +1635,7 @@ export default function ViewerPage() {
       )}
 
       {user && findSavedVocab(savedWords, selectedToken) && isTokenDue(savedWords, selectedToken) && (
-        <div style={{ padding: '10px 12px', background: 'rgba(212,150,42,0.1)', borderRadius: 'var(--radius-md)', marginBottom: 12, border: '1px solid var(--warning)' }}>
+        <div style={{ padding: '10px 12px', background: 'color-mix(in srgb, var(--warning) 10%, transparent)', borderRadius: 'var(--radius-md)', marginBottom: 12, border: '1px solid var(--warning)' }}>
           <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--warning)', marginBottom: 8 }}>복습 시점이에요</div>
           <div style={{ display: 'flex', gap: 6 }}>
             {[{ label: '모름', rating: 1 }, { label: '애매', rating: 2 }, { label: '알아', rating: 3 }].map(r => (
@@ -2230,7 +2230,7 @@ export default function ViewerPage() {
         )}
 
         {isStaleAnalysis && user?.id === material?.owner_id && (
-          <div className="analyzing-banner" style={{ background: 'rgba(252,196,25,0.1)', borderColor: 'rgba(252,196,25,0.4)' }}>
+          <div className="analyzing-banner" style={{ background: 'color-mix(in srgb, var(--warning-bright) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--warning-bright) 40%, transparent)' }}>
             <span>분석이 중단된 것 같아요{missingLineCount > 0 && ` (남은 ${missingLineCount}줄)`}</span>
             <div style={{ display: 'flex', gap: '8px' }}>
               {reanalyzeMutation.isPending

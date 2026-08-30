@@ -547,7 +547,7 @@ export default function WorldMapPage() {
         ref={containerRef}
         style={{
           position: 'relative', width: '100%', height: 'min(68vh, 640px)', minHeight: 320,
-          borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border-color, rgba(128,128,128,0.3))',
+          borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)',
           cursor: dragRef.current?.moved ? 'grabbing' : 'grab', touchAction: 'none', background: '#0b0d08',
         }}
       >
@@ -595,8 +595,8 @@ export default function WorldMapPage() {
           role="note"
           style={{
             margin: 0, padding: '8px 10px', borderRadius: 6,
-            border: '1px solid var(--border-color, rgba(128,128,128,0.3))',
-            background: 'var(--bg-secondary, rgba(128,128,128,0.08))',
+            border: '1px solid var(--border)',
+            background: 'var(--bg-secondary)',
             color: 'var(--text-muted)', fontSize: '0.72rem', lineHeight: 1.5,
           }}
         >

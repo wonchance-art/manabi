@@ -352,7 +352,7 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
                     <div style={{
                       display: 'flex', flexWrap: 'wrap', gap: 6, minHeight: 44, padding: '8px 10px',
                       border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm, 8px)', marginBottom: 8,
-                      background: 'var(--surface-2, rgba(127,127,127,0.06))',
+                      background: 'var(--bg-secondary)',
                     }}>
                       {assembled.length === 0 ? (
                         <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)', alignSelf: 'center' }}>
@@ -403,7 +403,7 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
                     <div lang="ja" style={{ fontSize: '1.05rem', lineHeight: 2, marginBottom: 8, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 }}>
                       <span>{before}</span>
                       {a?.ok ? (
-                        <span style={{ fontWeight: 700, color: 'var(--accent-text, #6c7cff)', margin: '0 2px' }}>{q.fillAnswer}</span>
+                        <span style={{ fontWeight: 700, color: 'var(--accent-text)', margin: '0 2px' }}>{q.fillAnswer}</span>
                       ) : (
                         <input
                           type="text" lang="ja" value={val} inputMode="text"
@@ -712,8 +712,8 @@ export default function ReadingTextView({ text, onPass, onBack, saving = false }
                 onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), toggleKo(i))}
                 style={{
                   cursor: 'pointer',
-                  background: 'var(--surface-2, rgba(127,127,127,0.06))',
-                  borderLeft: '3px solid var(--accent, var(--brand, #6c7cff))',
+                  background: 'var(--bg-secondary)',
+                  borderLeft: '3px solid var(--accent)',
                   borderRadius: '4px 8px 8px 4px',
                   padding: '11px 13px',
                 }}
