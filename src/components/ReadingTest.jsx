@@ -44,7 +44,7 @@ function ReadingTestOverlay({ children, onClose }) {
   return <div className="reading-test-overlay" onClick={onClose}>{children}</div>;
 }
 
-export default function ReadingTest({ rawText, language, materialId, onClose, inline = false, nextLesson = null }) {
+export default function ReadingTest({ rawText, language, materialId, onClose, onGraded, inline = false, nextLesson = null }) {
   const { user } = useAuth();
   const [status, setStatus] = useState('idle'); // idle | loading | active | done
   const [questions, setQuestions] = useState([]);
@@ -203,6 +203,9 @@ Rules:
         detail: { qtype: 'reading-test' },
       })));
     }
+    // 이해도 결과를 부모에게 넘긴다(v2-I R1b R3) — 페이서 사다리가 이 신호로만 움직인다.
+    // 여기는 그 쓰임을 모른다: 채점 결과를 알릴 뿐이고 판정은 호출자 몫이다.
+    onGraded?.({ score, total: questions.length });
   }
 
   function resetTest() {

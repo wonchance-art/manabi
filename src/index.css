@@ -2183,6 +2183,12 @@ body.is-review-session .page-container { padding-top: 8px; }
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
+/* 훈련 사다리 표기(R3) — 바탕값과 다른 축이라 시각적으로도 갈라 둔다. */
+.rsheet-pace__src em {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--accent-text);
+}
 .rsheet-pace__src button {
   border: 0;
   background: transparent;
