@@ -25,6 +25,9 @@
   /* 배경으로 쓰면 문제없지만 글자로 쓰면 3.32라 AA 미달 — 글자 전용 변형을 따로 둔다(같은 색상, 밝기만). */
   --accent-text: #58A46D;   /* 3.32 → 4.51 */
   --accent-glow: rgba(74, 138, 92, 0.18);
+  /* 자동 진행 체류 선(v2-I R1b) — 주변시로만 감지되게 옅게. --primary-light에서 파생하므로
+     라이트 테마의 대비 보정(B85A30)을 그대로 물려받는다. */
+  --pace-line: color-mix(in srgb, var(--primary-light) 45%, transparent);
 
   /* ── v2-K R1 토큰 승격 — 아래 토큰들은 **기존 인라인 값을 그대로** 담는다.
      브라우저 계산색 대조로 동일 확인(2026-08-30). 미정의 토큰을 가리키던 폴백
@@ -2145,6 +2148,38 @@ body.is-review-session .page-container { padding-top: 8px; }
 .rsheet-sublab { font-size: 0.74rem; color: var(--text-muted); flex: none; }
 .rsheet-subrow .rsheet-miniseg { flex: 1; max-width: 190px; }
 
+/* 자동 진행 속도(v2-I R1b) — 조절은 자/분, 표시는 초 병기(설계 §7②).
+   miniseg와 같은 알약 어휘를 쓰되 값이 가운데 앉아야 해서 별도 한 벌. */
+.rsheet-subrow--pace { flex-wrap: wrap; }
+.rsheet-pace { display: flex; align-items: center; gap: 6px; flex: 1; justify-content: flex-end; }
+.rsheet-pace button {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 7px 11px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.rsheet-pace button:hover { border-color: var(--primary); color: var(--primary-light); }
+.rsheet-pace b {
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  min-width: 7ch;
+  text-align: center;
+  white-space: nowrap;
+}
+.rsheet-pace__hint {
+  flex: 0 0 100%;
+  margin-top: 6px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 /* 도구 행 — 이모지·기호 없음(오너 지시), 제목+설명+› */
 .rsheet-toolrow {
   display: flex;
@@ -2857,6 +2892,53 @@ body.is-review-session .page-container { padding-top: 8px; }
 }
 .word-token--picked .line-pick {
   opacity: 1;
+}
+
+/* ── 자동 진행 체류 표시(v2-I R1b, 설계 §7①) ──
+   지정 문장 글자 아래 아주 옅은 선이 **오른쪽부터 물러난다**. 숫자 카운트다운(3…2…1)은
+   배제했다 — 시선이 글에서 숫자로 옮겨가 읽기 자체를 방해한다. 주변시로 잡히면 충분하다.
+
+   한 문장이 한 줄로 보여야 하므로 조각을 이어 붙인다: 각 토큰이 자기 글자수 몫의
+   구간만 담당하고(React가 --pace-from/--pace-to를 글자수 비례로 나눠 준다), 뒤에 지정
+   토큰이 더 있으면 자간까지 덮어 실금을 없앤다(지정색 이음매 ::after와 같은 수법).
+   덕분에 어느 순간에도 '지워지는 조각'은 하나뿐이라 한 줄이 물러나는 것으로 읽힌다.
+
+   시간은 CSS 애니메이션이 잰다 — JS 프레임 루프 0. 문장이 넘어가면 새 토큰이 클래스를
+   얻으면서 애니메이션이 처음부터 돌아, 재시작 배선도 따로 필요 없다. */
+@keyframes pace-drain {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+.reader-area--pacing .word-token--picked { position: relative; }
+.reader-area--pacing .word-token--picked::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* 밴드 바로 아래 — 글자 잉크 좌표계를 그대로 쓴다(막대 ¦와 같은 기준). 인라인 상자
+     바닥(bottom)에 붙이면 루비 여백만큼 글자에서 떠서 남의 줄처럼 보인다(렌더 실측). */
+  top: calc(var(--hl-band-top) + var(--hl-band-h) + 0.05em);
+  height: 2px;
+  border-radius: 1px;
+  background: var(--pace-line);
+  transform-origin: left center;
+  animation: pace-drain
+             calc((var(--pace-to, 1) - var(--pace-from, 0)) * var(--pace-dwell, 6000ms))
+             linear
+             calc(var(--pace-from, 0) * var(--pace-dwell, 6000ms))
+             forwards;
+}
+/* 자간 잇기 — 다음 토큰도 지정이면 그 틈까지 덮는다(문장 끝에서는 덮지 않는다) */
+.reader-area--pacing .word-token--picked:has(+ .word-token--picked)::after {
+  right: calc(-1 * var(--char-gap, 0.25rem));
+}
+/* 카드·시트가 열리면 선도 함께 멈추고, 닫으면 이어서 간다(설계 §5 일시정지 = 멈춤·재개) */
+.reader-area--pacing-hold .word-token--picked::after { animation-play-state: paused; }
+/* 모션 축소 — 연속 이동 대신 3단계로 뚝뚝 끊는다(설계 §7의 ●●○ 자리).
+   선을 지우고 점을 새로 그리면 문장마다 DOM이 늘어난다. 같은 선을 steps(3)로 돌리면
+   '진행 선은 지정 문장에만'(계약 9)을 지키면서 새 요소가 0이다. */
+@media (prefers-reduced-motion: reduce) {
+  .reader-area--pacing .word-token--picked::after { animation-timing-function: steps(3, end); }
 }
 
 /* 저장·복습 밑줄도 밴드가 진다 — 인라인 시절 border-bottom은 글꼴 기준선 띠 하단에
