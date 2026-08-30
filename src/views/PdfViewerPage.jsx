@@ -14,10 +14,12 @@ import Button from '../components/Button';
 import Spinner from '../components/Spinner';
 import PdfDocument from '../components/PdfDocument';
 import PdfJsViewer from '../components/PdfJsViewer';
+import PdfReadBridge from '../components/PdfReadBridge';
 import ViewerBottomSheet from '../components/ViewerBottomSheet';
 import ListenControls from '../components/ListenControls';
 import { formatDetail } from '../lib/wordDetailFormat';
 import { langNameKo } from '../lib/constants';
+import { usePdfRangeMutation } from '../lib/usePdfRangeMutation';
 import TokenPosLabel from './TokenPosLabel';
 
 async function fetchPdfInfo(pdfId) {
@@ -75,6 +77,8 @@ export default function PdfViewerPage() {
   const { id } = useParams();
   const searchParams = useSearchParams();
   const usePdfJs = searchParams.get('pdfjs') === '1';
+  // pdf.js 경로에서만 살아 있는 '지금 보는 쪽'. 기본 경로는 null이라 last_page_read로 떨어진다.
+  const [livePage, setLivePage] = useState(null);
   const { user } = useAuth();
   const toast = useToast();
 
@@ -130,6 +134,8 @@ export default function PdfViewerPage() {
   const { data: pdfInfo, isLoading, error } = useQuery({
     queryKey: ['pdf-info', id], queryFn: () => fetchPdfInfo(id), enabled: !!id,
   });
+  // 다리는 자료 뷰어의 '다음 범위'와 **같은 뮤테이션**을 쓴다 — 여기 sourcePdf가 곧 이 PDF다.
+  const rangeMutation = usePdfRangeMutation({ sourcePdf: pdfInfo, user, toast });
   const {
     data: pdfUrl,
     isLoading: isPdfUrlLoading,
@@ -324,6 +330,8 @@ export default function PdfViewerPage() {
       <div className="pdf-toolbar" style={{ padding: '10px 16px' }}>
         <Link href="/materials" className="pdf-toolbar__back">← 자료실</Link>
         <h1 className="pdf-toolbar__title">{pdfInfo?.title || 'PDF'}</h1>
+        {/* 자료 뷰어로 건너가는 다리(v2-H R1) — 여기서 범위만 고르고 나머지는 그쪽 몫 */}
+        <PdfReadBridge pdfInfo={pdfInfo} livePage={livePage} mutation={rangeMutation} user={user} />
         {inputText && <ListenControls text={inputText} language={language} />}
         <select value={language} onChange={e => { setLanguage(e.target.value); localStorage.setItem('pdf_language', e.target.value); }}
           style={{ fontSize: '0.8rem', padding: '4px 8px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
@@ -350,7 +358,7 @@ export default function PdfViewerPage() {
           ) : isPdfUrlLoading ? (
             <Spinner message="로딩 중..." />
           ) : pdfUrl ? (
-            usePdfJs ? <PdfJsViewer pdfUrl={pdfUrl} /> : <PdfDocument pdfUrl={pdfUrl} />
+            usePdfJs ? <PdfJsViewer pdfUrl={pdfUrl} onPageChange={setLivePage} /> : <PdfDocument pdfUrl={pdfUrl} />
           ) : (
             <div className="pdf-side__empty">PDF 파일 주소가 없습니다.</div>
           )}

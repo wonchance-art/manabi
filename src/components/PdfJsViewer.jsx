@@ -137,7 +137,7 @@ function PdfJsPage({ doc, pdfjs, pageNumber, current, onPageText }) {
   );
 }
 
-export default function PdfJsViewer({ pdfUrl, onPageText }) {
+export default function PdfJsViewer({ pdfUrl, onPageText, onPageChange }) {
   const pagesRef = useRef(null);
   const [pdfjs, setPdfjs] = useState(null);
   const [doc, setDoc] = useState(null);
@@ -174,6 +174,12 @@ export default function PdfJsViewer({ pdfUrl, onPageText }) {
     () => getPdfJsPageWindow(pageNumber, doc?.numPages || 0),
     [doc?.numPages, pageNumber],
   );
+
+  // 지금 보고 있는 쪽을 밖으로 알린다(v2-H R1) — '이 부분부터 읽기'가 이 값으로 시작 쪽을
+  // 잡는다. 기본 경로(<embed>)는 쪽을 모르므로 그쪽은 last_page_read로 떨어진다.
+  useEffect(() => {
+    if (doc) onPageChange?.(pageNumber);
+  }, [doc, pageNumber, onPageChange]);
 
   useEffect(() => {
     const pages = pagesRef.current;

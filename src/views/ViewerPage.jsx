@@ -49,7 +49,7 @@ import { formatDetail } from '../lib/wordDetailFormat';
 import { useSeriesNeighbors } from '../lib/useSeriesNeighbors';
 import { useTitleEdit } from '../lib/useTitleEdit';
 import { useTokenRangeSelect } from '../lib/useTokenRangeSelect';
-import { useNextRangeMutation } from '../lib/useNextRangeMutation';
+import { usePdfRangeMutation } from '../lib/usePdfRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
 import { useGroupReadPush } from '../lib/useGroupReadPush';
 import { useScrollRestore } from '../lib/useScrollRestore';
@@ -275,7 +275,7 @@ export default function ViewerPage() {
   });
 
   // PDF 출처 자료의 다음 페이지 범위 분석 mutation
-  const nextRangeMutation = useNextRangeMutation({ material, sourcePdf, user, toast });
+  const nextRangeMutation = usePdfRangeMutation({ material, sourcePdf, user, toast });
 
   const { data: readingProgress } = useQuery({
     queryKey: ['reading-progress', user?.id, id],

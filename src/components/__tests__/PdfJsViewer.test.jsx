@@ -34,9 +34,9 @@ describe('PdfJsViewer 1단계 계약', () => {
     const viewer = readSource('../../views/PdfViewerPage.jsx');
     const embed = readSource('../PdfDocument.jsx');
     expect(viewer).toContain("const usePdfJs = searchParams.get('pdfjs') === '1';");
-    expect(viewer).toContain(
-      'usePdfJs ? <PdfJsViewer pdfUrl={pdfUrl} /> : <PdfDocument pdfUrl={pdfUrl} />',
-    );
+    // 게이트 자체를 지킨다 — prop은 늘 수 있다(v2-H R1에서 onPageChange가 붙었다).
+    // 전체 문자열을 박아 두면 무해한 prop 추가에도 계약이 깨져 의도를 못 말한다.
+    expect(viewer).toMatch(/usePdfJs \? <PdfJsViewer pdfUrl=\{pdfUrl\}[^>]*\/> : <PdfDocument pdfUrl=\{pdfUrl\} \/>/);
     expect(embed).toContain('<embed');
     expect(embed).toContain('type="application/pdf"');
   });

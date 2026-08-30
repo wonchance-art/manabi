@@ -3,18 +3,30 @@ import { useMutation } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { analyzeText } from './analyzeText';
 import { friendlyToastMessage } from './errorMessage';
+import { resolveRange } from './pdfRangeBridge';
 
 /**
- * PDF 출처 자료에서 다음 페이지 범위로 새 material 생성 + 백그라운드 분석.
+ * PDF의 한 페이지 범위를 자료로 만들고 뷰어로 보낸다 — 추출·생성·분석·이동 한 벌.
+ *
+ * 입구가 둘이다(v2-H R1에서 하나 늘었다):
+ *   자료 뷰어  '다음 범위' — 시작 쪽을 안 주면 지금 자료의 다음 쪽에서 이어 간다
+ *   PDF 뷰어   '이 부분부터 읽기' — 보고 있는 쪽을 startPage로 준다
+ * 두 입구가 같은 경로를 쓰는 게 요점이다. PDF 뷰어에 추출·생성을 새로 짜면 강제
+ * private·last_page_read 동기화 같은 규칙이 두 곳으로 갈린다(설계 §1 "이식이 아니라 다리").
+ *
  * @returns useMutation 결과
  */
-export function useNextRangeMutation({ material, sourcePdf, user, toast }) {
+export function usePdfRangeMutation({ material, sourcePdf, user, toast }) {
   return useMutation({
-    mutationFn: async ({ chunkSize = 5 } = {}) => {
-      if (!sourcePdf || !material?.page_end) throw new Error('PDF 출처 정보 없음');
-      const nextStart = material.page_end + 1;
-      if (nextStart > sourcePdf.page_count) throw new Error('PDF 끝에 도달했습니다.');
-      const nextEnd = Math.min(nextStart + chunkSize - 1, sourcePdf.page_count);
+    mutationFn: async ({ startPage, chunkSize = 5 } = {}) => {
+      if (!sourcePdf) throw new Error('PDF 출처 정보 없음');
+      // 명시 시작 쪽이 우선, 없으면 지금 자료의 다음 쪽(기존 '다음 범위' 동작 그대로).
+      const from = Number.isFinite(startPage)
+        ? startPage
+        : (Number.isFinite(material?.page_end) ? material.page_end + 1 : NaN);
+      const range = resolveRange({ startPage: from, chunkSize, pageCount: sourcePdf.page_count });
+      if (!range) throw new Error('PDF 끝에 도달했습니다.');
+      const { start: nextStart, end: nextEnd } = range;
 
       const { extractPageRange, getPdfMetadata, ocrPageRange } = await import('./pdfExtract');
       const { getCachedPdf, cachePdf } = await import('./pdfCache');
@@ -89,9 +101,9 @@ export function useNextRangeMutation({ material, sourcePdf, user, toast }) {
       return inserted;
     },
     onSuccess: (inserted) => {
-      toast?.('다음 범위 분석 시작 — 뷰어로 이동합니다', 'success');
+      toast?.('분석 시작 — 뷰어로 이동합니다', 'success');
       window.location.href = `/viewer/${inserted.id}`;
     },
-    onError: (err) => toast?.('다음 범위 생성 실패 — ' + friendlyToastMessage(err), 'error'),
+    onError: (err) => toast?.('범위 가져오기 실패 — ' + friendlyToastMessage(err), 'error'),
   });
 }
