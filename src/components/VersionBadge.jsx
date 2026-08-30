@@ -9,6 +9,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../lib/AuthContext';
 import { buildVersionView, shouldShowVersionBadge } from '../lib/versionBadge';
+import { clearAppShellCaches, readCacheNames, shortenCacheName } from '../lib/swCache';
 
 export default function VersionBadge() {
   const { isAdmin } = useAuth();
@@ -17,6 +18,8 @@ export default function VersionBadge() {
   const [serverSha, setServerSha] = useState(null);
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [cacheNames, setCacheNames] = useState(null);   // v2-J R2 — SW 캐시 진단
+  const [clearing, setClearing] = useState(false);
 
   useEffect(() => {
     let debugFlag = null;
@@ -36,6 +39,14 @@ export default function VersionBadge() {
     return () => { alive = false; };
   }, [show]);
 
+  // 캐시명은 패널을 펼 때만 읽는다 — 배지만 떠 있을 때 CacheStorage를 건드릴 이유가 없다.
+  useEffect(() => {
+    if (!open || cacheNames !== null) return undefined;
+    let alive = true;
+    readCacheNames().then((names) => { if (alive) setCacheNames(names); });
+    return () => { alive = false; };
+  }, [open, cacheNames]);
+
   if (!show) return null;
 
   const view = buildVersionView({
@@ -45,6 +56,14 @@ export default function VersionBadge() {
     serverSha,
   });
   const stale = view.status === 'stale';
+
+  // 앱 껍데기 캐시만 비운다 — IndexedDB(오프라인 자료·단어장)는 건드리지 않는다.
+  async function clearCachesAndReload() {
+    if (clearing) return;
+    setClearing(true);
+    await clearAppShellCaches();
+    window.location.reload();
+  }
 
   async function copySha() {
     try {
@@ -91,6 +110,13 @@ export default function VersionBadge() {
                 <dd>{view.builtAt}{view.relative ? ` · ${view.relative}` : ''}</dd>
               </>
             )}
+            <dt>SW캐시</dt>
+            <dd>
+              {cacheNames === null ? '읽는 중…'
+                : cacheNames.length === 0 ? '없음'
+                  : <code title={cacheNames.join(', ')}>{shortenCacheName(cacheNames[0])}</code>}
+              {cacheNames?.length > 1 && <span> 외 {cacheNames.length - 1}</span>}
+            </dd>
           </dl>
           <button
             type="button"
@@ -99,6 +125,17 @@ export default function VersionBadge() {
           >
             새로고침
           </button>
+          {/* 옛 번들이 서빙될 때의 자가 수리(v2-J R2) — 앱 껍데기 캐시만 비운다.
+              학습 데이터(IndexedDB)는 그대로라 오프라인 자료·단어장이 남는다. */}
+          <button
+            type="button"
+            className="version-badge__reload version-badge__reload--danger"
+            onClick={clearCachesAndReload}
+            disabled={clearing}
+          >
+            {clearing ? '비우는 중…' : '캐시 비우고 새로고침'}
+          </button>
+          <p className="version-badge__hint">학습 데이터는 지우지 않아요</p>
         </div>
       )}
     </div>

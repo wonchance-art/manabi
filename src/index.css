@@ -413,7 +413,12 @@ button {
   align-items: center;
   gap: 8px;
   color: var(--text-secondary);
+  /* 캐시명은 콘텐츠 해시라 길다 — 줄을 접되 '외 2' 같은 꼬리표는 쪼개지 않는다
+     (렌더 검증에서 '외 / 2'로 갈라진 것을 잡았다). */
+  flex-wrap: wrap;
+  overflow-wrap: anywhere;
 }
+.version-badge__rows dd > span { white-space: nowrap; }
 .version-badge__copy,
 .version-badge__reload {
   border: 1px solid var(--border);
@@ -427,6 +432,19 @@ button {
 .version-badge__reload {
   width: 100%;
   padding: 7px 0;
+}
+/* 캐시 비우기(v2-J R2) — 되돌릴 수 없는 조작이라 색으로 구분하되, 학습 데이터는
+   건드리지 않으므로 danger 전면(全面)이 아니라 테두리·글자만 경고색. */
+.version-badge__reload--danger {
+  margin-top: 6px;
+  border-color: var(--warning);
+  color: var(--warning);
+}
+.version-badge__hint {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  text-align: center;
 }
 @media (max-width: 1179px) {
   .version-badge__sha { display: none; }

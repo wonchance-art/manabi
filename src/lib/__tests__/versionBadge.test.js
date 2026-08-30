@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { sliceBetween } from './helpers/sliceBetween.js';
 import { buildVersionView, kstBuildLabel, relativeKo, shouldShowVersionBadge } from '../versionBadge.js';
+import { shortenCacheName } from '../swCache.js';
 
 /**
  * 계약: v2-J 버전 배지 R1 (#1077 설계, 오너 발안·확정 2026-08-27 "?v=1 포함").
@@ -125,5 +126,48 @@ describe('⑤ GNB 레이아웃 불변 + 배선', () => {
     const layout = read('src/components/Layout.jsx');
     expect(layout).toContain("import VersionBadge from './VersionBadge'");
     expect(layout).toContain('<VersionBadge />');
+  });
+});
+
+/* ── v2-J R2: SW 캐시 진단 + 자가 수리 ── */
+describe('R2 캐시 비우기 — 층 분리가 생명', () => {
+  const sw = codeOf(read('src/lib/swCache.js'));
+  const badge = read('src/components/VersionBadge.jsx');
+
+  it('학습 데이터(IndexedDB)는 절대 건드리지 않는다 — v2-N 오프라인 캐시 보호', () => {
+    // CacheStorage = 앱 껍데기, IndexedDB = 학습 데이터. 이 경계가 무너지면
+    // "캐시 비웠더니 지하철에서 단어장이 사라졌다"가 된다.
+    for (const forbidden of ['indexedDB', 'deleteDatabase', 'localStorage.clear', 'offlineCache']) {
+      expect(sw, `swCache가 ${forbidden}를 만지면 안 된다`).not.toContain(forbidden);
+    }
+    expect(codeOf(badge)).not.toContain('deleteDatabase');
+  });
+
+  it('앱 껍데기 캐시 + SW 등록만 정리한다 — 등록을 남기면 옛 워커가 다시 채운다', () => {
+    expect(sw).toContain('caches.keys()');
+    expect(sw).toContain('caches.delete(k)');
+    expect(sw).toContain('getRegistrations');
+    expect(sw).toContain('unregister()');
+  });
+
+  it('실패는 조용히 — 진단 도구가 화면을 깨뜨리지 않는다', () => {
+    expect(sw).toContain("if (typeof caches === 'undefined') return [];");
+    expect(sw).toMatch(/catch \{[\s\S]*?return \[\];/);
+  });
+
+  it('캐시명은 줄여 보여준다(콘텐츠 해시가 길다)', () => {
+    expect(shortenCacheName('anatomy-studio-vebbf66b965be201d')).toBe('anatomy-studio-vebbf…');
+    expect(shortenCacheName('short')).toBe('short');
+    expect(shortenCacheName('')).toBe('');
+  });
+
+  it('배지 패널에 SW캐시 행·비우기 버튼·안전 문구가 있다', () => {
+    expect(badge).toContain('<dt>SW캐시</dt>');
+    expect(badge).toContain('캐시 비우고 새로고침');
+    expect(badge).toContain('학습 데이터는 지우지 않아요');
+  });
+
+  it('캐시명 조회는 패널을 펼 때만 — 배지만 떠 있을 때 CacheStorage 무접촉', () => {
+    expect(badge).toContain('if (!open || cacheNames !== null) return undefined;');
   });
 });
