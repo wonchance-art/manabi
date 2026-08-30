@@ -8890,28 +8890,38 @@ body.is-review-session .page-container { padding-top: 8px; }
 .myplan-bar__fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent, var(--primary))); transition: width 0.3s ease; }
 .myplan-stat { font-size: 0.8rem; color: var(--text-secondary); margin: 7px 0 14px; }
 .myplan-stat strong { color: var(--text-primary); }
-.myplan-sync { color: #4A8A5C; font-weight: 600; }
+.myplan-next { color: var(--primary-light); font-weight: 700; text-decoration: none; }
+.myplan-next:hover { text-decoration: underline; }
 
 .myplan-level { margin-bottom: 14px; }
-.myplan-level__name { font-size: 0.78rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 6px; }
-.myplan-level__sub { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); margin: 7px 0 5px; letter-spacing: 0.02em; }
+/* 레벨 머리 = 이름 + 진도 + 문형·어휘로 가는 길. 챕터 진도만 숫자로 세고 나머지는 링크다. */
+.myplan-level__name {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px;
+  font-size: 0.78rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 6px;
+}
+.myplan-level__count { font-weight: 700; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+/* 눌리는 것임을 조용히 알린다 — 개수 라벨과 구별되지 않으면 아무도 누르지 않는다. */
+.myplan-level__link {
+  font-size: 0.7rem; font-weight: 600; color: var(--text-muted);
+  text-decoration: underline dotted; text-decoration-color: var(--border-hover); text-underline-offset: 3px;
+}
+.myplan-level__link:hover { color: var(--primary-light); text-decoration: underline solid; }
 .myplan-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .myplan-chip {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 4px 9px 4px 6px; border-radius: 99px;
   border: 1px solid var(--border); background: var(--bg-elevated);
   font-size: 0.78rem; color: var(--text-secondary); cursor: pointer;
+  text-decoration: none;
   transition: all 0.12s ease;
 }
-.myplan-chip:hover { border-color: var(--border-hover); }
+.myplan-chip:hover { border-color: var(--border-hover); color: var(--text-primary); }
 .myplan-chip__n {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 18px; height: 18px; padding: 0 3px;
   border-radius: 99px; background: var(--bg-card);
   font-size: 0.68rem; font-weight: 800; color: var(--text-muted);
 }
-.myplan-chip.is-bk { background: rgba(232,118,60,0.07); }
-.myplan-chip.is-bk .myplan-chip__n { background: rgba(232,118,60,0.16); color: #E8763C; }
 .myplan-chip.is-done { background: rgba(74,138,92,0.14); border-color: rgba(74,138,92,0.4); color: var(--text-primary); }
 .myplan-chip.is-done .myplan-chip__n { background: #4A8A5C; color: #fff; }
 .myplan-chip.is-next { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-glow); }

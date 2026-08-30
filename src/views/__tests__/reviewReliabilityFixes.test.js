@@ -94,9 +94,12 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
     const session = read('src/views/StudySessionPage.jsx');
     const materialAdd = read('src/views/MaterialAddPage.jsx');
 
-    expect(plan).toMatch(/const \{ data, error \} = await supabase\s+\.from\('study_plan_progress'\)/);
-    expect(plan).toContain("const { error } = await supabase.from('study_plan_progress').upsert(");
-    expect(plan).toContain('서버 동기화 실패 — 이 기기에는 저장됐어요');
+    // 진도표는 v2-D R1에서 손 체크(study_plan_progress upsert)를 걷어내고 서버 진도를
+    // 읽기만 한다. 검사할 mutation이 사라졌으니 같은 요구를 그 조회에 건다 —
+    // 실패를 삼키면 "0/72 완주"라는 거짓 진도가 화면에 남는다.
+    expect(plan).toMatch(/const \{ data, error \} = await supabase\s+\.from\('user_ref_progress'\)/);
+    expect(plan).toContain('if (error) throw error;');
+    expect(plan).toContain('진도를 불러오지 못했어요');
     expect(plan).not.toContain(').then(() => {}, () => {})');
 
     expect(session).toContain("const { error } = await supabase.from('writing_practice').insert(row)");
