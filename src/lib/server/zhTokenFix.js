@@ -5,7 +5,14 @@
 // 경성 사전(zhNeutralTone)과 같은 화이트리스트 계층 패턴: 등재분만 교정, 밖은 무개입.
 
 import ZH_POS_FIX_HSK from './data/zhPosFixHsk.json';
-import ZH_SEPARABLE from './data/zhSeparable.json';
+import ZH_SEPARABLE_HAND from './data/zhSeparable.json';
+import ZH_SEPARABLE_HSK from './data/zhSeparableHsk.json';
+
+// 이합사 사전 2층(대량 조달 — 오너 승인 2026-08-30): 수제 55(정본·선별) + 공식 HSK
+// ∥ 분철 마커 수확 478(scripts/build-zh-hsk.mjs ③ — 국제중문교육 등급표준의 이합사
+// 표기, RFC 1순위 Wiktionary는 프록시 정책 차단 실측으로 대체). 값이 전부 1이라
+// 우선순위는 무의미하지만 관례대로 수제를 뒤에 편다(경성·POS_FIX 2층과 동형).
+const ZH_SEPARABLE = { ...ZH_SEPARABLE_HSK, ...ZH_SEPARABLE_HAND };
 
 // ① 没V 되가름 — jieba가 한 토큰으로 병합하는 没+동사 중 실단어가 아닌 것들.
 //    상용 1자 동사 55종 × 캐리어 문장 전수 프로브(2026-08-29 실측)에서 병합 28종을 수확,
