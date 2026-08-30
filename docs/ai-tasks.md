@@ -623,6 +623,19 @@
 - 런던 위성 마이크로 픽(재량 위임 해석): 윈저+옥스퍼드 2곳 추천 — 레만호 완성 후 순번
 - 일본 4도시 COPY 슬롯 이식(다국어 UI 확정 시) / 아토미움 = marker-only 유지 확인
 ### done (최근)
+- **🏷 v2-J 버전 배지 R1 — 배포·캐시 진단(2026-08-30, #1077 오너 발안·"구현 ㄱㄱ")**:
+  배지를 표시기가 아니라 **비교기**로 — 번들에 굳은 빌드 SHA(next.config `env`,
+  Vercel 자동 주입이라 대시보드 설정 불요 = 하드리밋 무저촉) ↔ `/api/version`이
+  답한 요청 시점 SHA를 맞대 "이 커밋이 배포됐나"(Q1)와 "내가 그 배포를 보고
+  있나"(Q2)를 함께 답한다. Q2가 곧 '비로그인 옛 버전' 버그(SW 캐시)의 상시 감시
+  장치. 구성: `lib/versionBadge.js` 순수 판정(게이트·상태·KST 표기·상대 시각) +
+  `/api/version`(force-dynamic·no-store·요청 시점 env) + `VersionBadge.jsx`(GNB,
+  관리자·`?v=1`·localStorage.debug_version에만 렌더, 그 밖엔 null) + CSS(SHA 7ch
+  고정·1179px 이하 축약). 계약 6종 전량 테스트화(커밋 메시지 미노출·렌더 0·
+  no-store·dev 폴백·폭 불변·폴링 금지) + 돌연변이 3종(게이트 무력화·no-store 제거·
+  setInterval 부활 → 각각 FAIL 확인). 렌더 검증에서 '2시/간 전' 줄바꿈 결함 발견·
+  `word-break: keep-all`로 수리. 전체 vitest 246파일 2,517 green. R2(SW 캐시명 표시
+  + 캐시 비우기 버튼 = 그 버그의 자가 수리 도구)는 다음 라운드.
 - **⌨️ v2-M 입력 관용성 — 악상·성조 결함 수리(2026-08-30, #1077 순번 "다음 ㄱㄱ")**:
   흩어진 채점 정규화 3종(studySession·ExerciseEngine·dictation) 어느 것도 결합
   부호를 접지 않아 prefere≠préfère·hanyu≠hànyǔ — 모바일에서 fr/zh 타이핑 문항이

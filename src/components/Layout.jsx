@@ -6,6 +6,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useTheme } from '../lib/useTheme';
 import { useState, useEffect } from 'react';
 import OnboardingModal from './OnboardingModal';
+import VersionBadge from './VersionBadge';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/ToastContext';
 
@@ -141,6 +142,9 @@ export default function Layout({ children }) {
             <span>관리</span>
           </Link>
         )}
+
+        {/* 배포 버전 배지(v2-J) — 관리자·?v=1일 때만 DOM에 나타난다(그 밖엔 null) */}
+        <VersionBadge />
 
         <button
           className="theme-toggle"

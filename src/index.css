@@ -326,6 +326,91 @@ button {
   gap: 12px;
 }
 
+/* ── 버전 배지(v2-J R1, #1077 — 오너 발안 2026-08-27) ──
+   관리자·?v=1일 때만 존재한다. GNB를 밀지 않도록 SHA 칸을 고정 폭(7자 = 짧은 SHA)
+   으로 잡고, 좁은 화면에서는 SHA를 접어 'v'/'⚠' 한 글자만 남긴다(계약 5). */
+.version-badge {
+  position: relative;
+  flex: 0 0 auto;
+}
+.version-badge__btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.version-badge__btn--stale {
+  border-color: var(--warning);
+  color: var(--warning);
+}
+.version-badge__sha {
+  /* 7자 고정 — SHA가 바뀌어도 GNB 폭이 흔들리지 않는다 */
+  display: inline-block;
+  min-width: 7ch;
+  text-align: left;
+}
+.version-badge__panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 60;
+  min-width: 232px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-card);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  font-size: 0.78rem;
+  /* 한국어는 낱말 단위로 끊는다 — 기본 규칙은 '2시/간 전'처럼 잘랐다(렌더 실측) */
+  word-break: keep-all;
+}
+.version-badge__warn {
+  margin: 0 0 8px;
+  color: var(--warning);
+  line-height: 1.5;
+}
+.version-badge__rows {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin: 0 0 10px;
+}
+.version-badge__rows dt { color: var(--text-muted); }
+.version-badge__rows dd {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+}
+.version-badge__copy,
+.version-badge__reload {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 4px);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+.version-badge__reload {
+  width: 100%;
+  padding: 7px 0;
+}
+@media (max-width: 1179px) {
+  .version-badge__sha { display: none; }
+  .version-badge__btn { padding: 0 9px; }
+}
+
 .gnb__profile-btn {
   /* 고정 바 안의 단독 아이콘 버튼 — 44로 맞춘다 */
   width: 44px;

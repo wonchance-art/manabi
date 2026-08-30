@@ -16,6 +16,17 @@ const nextConfig = {
   // Node.js 런타임 전용 — kuromoji(사전 fs 접근)·jieba-wasm(.wasm을 fs로 로드).
   serverExternalPackages: ['kuromoji', 'kuromojin', 'jieba-wasm'],
 
+  // 버전 배지(v2-J) — Vercel이 자동 주입하는 시스템 환경변수를 빌드 시점에 굳힌다.
+  // 대시보드 설정이 필요 없어 하드리밋("Vercel env는 오너 수동")에 걸리지 않는다.
+  // 여기 값은 '이 번들이 만들어진 커밋' — 요청 시점 최신 배포는 /api/version이 답한다
+  // (둘을 비교해야 "내가 옛 번들을 보고 있나"(Q2)를 진단할 수 있다).
+  // 커밋 메시지는 넣지 않는다(내부 문구 유출 방지 — 계약 1).
+  env: {
+    NEXT_PUBLIC_BUILD_SHA: (process.env.VERCEL_GIT_COMMIT_SHA || '').slice(0, 7) || 'dev',
+    NEXT_PUBLIC_BUILD_REF: process.env.VERCEL_GIT_COMMIT_REF || 'local',
+    NEXT_PUBLIC_BUILD_AT: new Date().toISOString(),
+  },
+
   // 공개 서비스 기본 보안 헤더
   async headers() {
     // /embed/* 를 뺀 나머지에만 적용하는 공통 보안 헤더(프레임 정책은 각 그룹에서 따로 지정).
