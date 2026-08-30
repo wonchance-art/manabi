@@ -10,6 +10,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { useAuth } from './AuthContext';
 import { pickRereadCandidates } from './rereadSchedule';
+import { fetchMaterialRoundRows } from './readingSpeedRows';
+import { lastRoundCpm } from './readingSpeedHistory';
 
 async function fetchCompletedRows(userId) {
   const { data, error } = await supabase
@@ -32,17 +34,28 @@ export function useRereadCandidate() {
     enabled: !!user,
     staleTime: 1000 * 60 * 10,
   });
-  if (!user || !rows) return null;
+  // 지난 회차 속도(I-a R2) — "두 번째는 훨씬 빨라요"에 실물 근거를 붙인다.
+  // 후보 계산이 조회 앞에 와야 하므로 rows가 없을 때도 hook 순서는 그대로 지킨다.
+  const candidate = rows ? pickRereadCandidates({ progressRows: rows })[0] : null;
+  const { data: roundRows } = useQuery({
+    queryKey: ['reread-cpm', user?.id, candidate?.material_id],
+    queryFn: () => fetchMaterialRoundRows(user.id, candidate.material_id),
+    enabled: !!user && !!candidate?.material_id,
+    staleTime: 1000 * 60 * 10,
+  });
 
-  const candidate = pickRereadCandidates({ progressRows: rows })[0];
-  if (!candidate) return null;
+  if (!user || !rows || !candidate) return null;
   const title = rows.find((r) => r.material_id === candidate.material_id)?.reading_materials?.title;
   if (!title) return null;
 
+  // 속도는 **kicker**에 얹는다. meta는 nowrap·flex-shrink:0이라 여기에 넣으면 제목을
+  // 밀어 두 줄 클램프에서 잘린다(렌더 실측: "— 열두 번째 이..."). kicker 자리에 두면
+  // 레이아웃이 기준선과 같고, "두 번째는 훨씬 빨라요"라는 약속이 실제 숫자로 바뀐다.
+  const lastCpm = lastRoundCpm(roundRows || []);
   return {
     key: 'reread',
     href: `/viewer/${candidate.material_id}`,
-    kicker: '다시 읽기 · 두 번째는 훨씬 빨라요',
+    kicker: lastCpm ? `다시 읽기 · 지난번 ${lastCpm}자/분` : '다시 읽기 · 두 번째는 훨씬 빨라요',
     title,
     meta: `${candidate.daysSince}일 만에 →`,
   };

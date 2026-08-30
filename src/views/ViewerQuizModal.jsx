@@ -107,6 +107,18 @@ export default function ViewerQuizModal({
               </p>
             )}
 
+            {/* 회차 비교(I-a R2) — 같은 자료의 직전 회차와만. 첫 회차·페이서 회차면 없다.
+                느려진 회차에 화살표나 경고색을 쓰지 않는다: 재독이 느려지는 건 대개
+                더 꼼꼼히 읽었다는 뜻이지 실패가 아니다(설계 §11 "경쟁 요소 0"). */}
+            {completionModal.round && (
+              <p className={`completion-modal__round completion-modal__round--${completionModal.round.tone}`}>
+                지난번 {completionModal.round.prev}자/분 →{' '}
+                {completionModal.round.tone === 'same'
+                  ? '비슷한 속도'
+                  : <b>{completionModal.round.deltaPct > 0 ? '+' : '−'}{Math.abs(completionModal.round.deltaPct)}%</b>}
+              </p>
+            )}
+
             <div className="completion-stats">
               <div className="completion-stat">
                 <span className="completion-stat__value">{completionModal.wordsSaved}</span>
