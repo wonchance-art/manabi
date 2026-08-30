@@ -2783,6 +2783,20 @@ body.is-review-session .page-container { padding-top: 8px; }
   background: var(--ws-due);
   border-bottom-color: transparent;
 }
+/* 상태 알약(오너 확정 2026-08-30, 3본 비교 렌더 검증) — 비지정 상태 배경만 B안 원래
+   문법을 유지한다: 모서리 5px + 좌우 확장 없음(자간 4px 전체가 단어 분리 간격).
+   밴드의 ±1px·각형(킨들 톤)은 지정·이음매 전용 — 상태까지 밴드 문법으로 통일하면
+   인접 하이라이트 단어 사이가 2px만 남아 한 줄로 이어져 보인다(밴드 트랙에 딸려간
+   회귀의 원인이 이 두 값). 지정 순간 알약→밴드로 폭 2px·모서리가 바뀌는 것은 수용된
+   트레이드오프(T1 색 크로스페이드는 유지). */
+.reader-area--hl .word-token--new:not(.word-token--picked) .surface::before,
+.reader-area--hl .word-token--met:not(.word-token--picked) .surface::before,
+.reader-area--hl .word-token--saved:not(.word-token--picked) .surface::before,
+.reader-area--hl .word-token--due:not(.word-token--picked) .surface::before {
+  left: 0;
+  right: 0;
+  border-radius: 5px;
+}
 
 /* 지정(단어·문장·범위 = --picked) 중에도 상태 정보 유지(오너 지적 2026-08-27) —
    T1 혼색(킨들 겹침 문법, 오너 확정 2026-08-29): 밑줄 강등 대신 그 단어 밴드의 색을
