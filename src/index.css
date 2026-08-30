@@ -2171,9 +2171,31 @@ body.is-review-session .page-container { padding-top: 8px; }
   text-align: center;
   white-space: nowrap;
 }
+/* 이 숫자의 출처 — 자동 제안인지 직접 설정인지. 근거가 없으면 사용자는 조절을 못 한다. */
+.rsheet-pace__src {
+  flex: 0 0 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 7px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.rsheet-pace__src button {
+  border: 0;
+  background: transparent;
+  color: var(--primary-light);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-decoration: underline;
+  padding: 4px 2px;
+  cursor: pointer;
+}
 .rsheet-pace__hint {
   flex: 0 0 100%;
-  margin-top: 6px;
+  margin-top: 4px;
   font-size: 0.7rem;
   color: var(--text-muted);
   text-align: right;

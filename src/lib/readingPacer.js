@@ -22,6 +22,9 @@ export const PACE_MAX_MS = 20000;
 /** 목표 속도의 사람이 쓸 수 있는 범위. 밖은 조절 버튼이 더 안 나간다. */
 export const PACE_MIN_CPM = 30;
 export const PACE_MAX_CPM = 1200;
+/** 목표 속도가 앉는 눈금(자/분). 수동 조절과 자동 제안이 같은 눈금 위에 서야
+    "제안값에서 한 칸 올림"이 예측 가능해진다(R2에서 제안이 이 상수를 공유한다). */
+export const PACE_STEP_UNIT = 5;
 
 /**
  * 이력이 없을 때의 언어별 보수적 기본값(설계 §4).
@@ -67,7 +70,7 @@ export function dwellMs({ chars, targetCpm }) {
 export function stepCpm(cpm, dir) {
   const base = clampCpm(cpm) ?? FALLBACK_TARGET_CPM;
   const next = dir > 0 ? base * 1.1 : base / 1.1;
-  return clampCpm(Math.round(next / 5) * 5);
+  return clampCpm(Math.round(next / PACE_STEP_UNIT) * PACE_STEP_UNIT);
 }
 
 /** 초 표기 — 소수 1자리("9.3초"의 9.3). */
