@@ -41,7 +41,7 @@ export default function SandwichSelfCheck({ lang, slug, options, vocabs }) {
               aria-pressed={active}
               style={{
                 flex: 1, padding: '8px 12px', fontSize: '0.85rem', borderRadius: 4,
-                border: active ? '2px solid var(--accent, #2d6a4f)' : '1px solid var(--border)',
+                border: active ? '2px solid var(--accent)' : '1px solid var(--border)',
                 background: active ? 'var(--bg-muted)' : 'var(--bg-secondary)',
                 cursor: 'pointer', fontWeight: 600,
               }}

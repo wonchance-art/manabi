@@ -360,7 +360,7 @@ function ReadingTrack({ track, user, selectedId }) {
                   border: isDrill ? '1px dashed var(--border)' : undefined,
                 }}
               >
-                <span aria-hidden="true" style={{ fontSize: '1rem', width: 20, textAlign: 'center', color: passed ? 'var(--success, #4caf50)' : 'var(--text-muted)' }}>{mark}</span>
+                <span aria-hidden="true" style={{ fontSize: '1rem', width: 20, textAlign: 'center', color: passed ? 'var(--accent-text)' : 'var(--text-muted)' }}>{mark}</span>
                 <span style={{ flex: 1, minWidth: 0 }}>
                   <span lang="ja" style={{ display: 'block', fontWeight: 600, fontSize: '0.95rem' }}>{label}</span>
                   {isDrill ? (

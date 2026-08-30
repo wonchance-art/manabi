@@ -72,7 +72,7 @@ export default function GuestGrammarReview() {
         }}
       >
         이 기기에 쌓인 복습이에요.{' '}
-        <Link href="/auth" prefetch={false} style={{ fontWeight: 600, color: 'var(--accent-text, #2d6a4f)' }}>
+        <Link href="/auth" prefetch={false} style={{ fontWeight: 600, color: 'var(--accent-text)' }}>
           로그인하면 기기 간에 이어집니다 →
         </Link>
       </p>
