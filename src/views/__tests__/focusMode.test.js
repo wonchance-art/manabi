@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import { sliceBetween } from '../../lib/__tests__/helpers/sliceBetween.js';
 
 // 계약: 집중 모드(오너 승인 2026-08-19) — 지정 문장만 원래 밝기, 나머지는 어둡게.
 // 실렌더 검증(투명도·좌표 불변)은 e2e/typography.e2e.mjs가 담당하고, 여기는 배선만 지킨다.
+// 앵커 슬라이스는 sliceBetween(앵커 소실 시 throw) — raw slice(indexOf()는 앵커가
+// 사라져도 초록으로 남았다(v2-L 공허 통과 실측, contractHygiene 메타 계약이 금지).
 const read = (f) => fs.readFileSync(path.join(process.cwd(), f), 'utf8');
 
 describe('집중 모드 배선', () => {
@@ -30,7 +33,7 @@ describe('집중 모드 배선', () => {
 
   it('문장 이동 필 — 지정 중에만 뜨고, 지정·스크롤은 공통·분석은 모드 분기(오너 지시 2026-08-20)', () => {
     expect(viewer).toContain("pickedLineIdx !== null && sentences.length > 0 && (");
-    const move = viewer.slice(viewer.indexOf('const moveSentence'), viewer.indexOf('const runSelectionAnalysis'));
+    const move = sliceBetween(viewer, 'const moveSentence', 'const runSelectionAnalysis');
     for (const call of ['tokenRange.clearRange()', 'setPickedLineIdx(target.rawIdx)', 'setSelectedRangeText(target.text)', 'scrollIntoView']) {
       expect(move).toContain(call);
     }
@@ -40,7 +43,7 @@ describe('집중 모드 배선', () => {
     expect(move).toContain('else runSelectionAnalysis(target.text);');
     expect(move).not.toContain('SheetSignal');
     // 패널 비움의 최소 범위 — 좌 결과·우 리스트·카드 활성이 함께 꺼져야 시트가 잦아든다
-    const clear = viewer.slice(viewer.indexOf('const clearAnalysisPanels'), viewer.indexOf('const moveSentence'));
+    const clear = sliceBetween(viewer, 'const clearAnalysisPanels', 'const moveSentence');
     for (const call of ["setLeftPanelResult('')", 'setDragTokens(null)', 'setIsSheetOpen(false)']) {
       expect(clear).toContain(call);
     }
@@ -64,14 +67,17 @@ describe('집중 모드 배선', () => {
     expect(viewer).toContain("sentenceNavBtn(-1, 'sentence-nav__btn')");
     // 모바일: 필 숨김(시트가 열려도 바의 ▲▼는 z 100으로 항상 위) + 44px 터치 타깃.
     // --nav 선언은 베이스 뒤여야 flex:1을 이긴다(동일 특이성은 순서 싸움).
-    const mobile = css.slice(css.indexOf('@media (max-width: 1179px)'));
+    const mobile = sliceBetween(css, '@media (max-width: 1179px)');
     expect(mobile).toMatch(/\.sentence-nav \{ display: none; \}/);
-    expect(mobile.indexOf('.viewer-sheet-bar__btn--nav')).toBeGreaterThan(mobile.indexOf('.viewer-sheet-bar__btn {'));
+    // 순서 단언도 앵커부터 증명 — 기준 앵커가 -1이면 어떤 위치든 통과하는 구멍 봉쇄
+    const baseIdx = mobile.indexOf('.viewer-sheet-bar__btn {');
+    expect(baseIdx).toBeGreaterThan(-1);
+    expect(mobile.indexOf('.viewer-sheet-bar__btn--nav')).toBeGreaterThan(baseIdx);
     expect(mobile).toMatch(/\.viewer-sheet-bar__btn--nav \{[^}]*flex: 0 0 44px;/s);
   });
 
   it('단일 규칙 — 밖 탭 = 순수 이동, 안 탭 = 카드, 문장 아닌 줄 = 무시(오너 확정 2026-08-20)', () => {
-    const click = viewer.slice(viewer.indexOf('const handleTokenClick'), viewer.indexOf('// ② 리스트 단어 탭'));
+    const click = sliceBetween(viewer, 'const handleTokenClick', '// ② 리스트 단어 탭');
     // 집중 ON: 탭한 지점의 문장을 찾는다. 못 찾으면(막대 없는 2자 미만 줄) 무시 —
     // 카드 폴백을 두면 첫 탭이 곧장 카드를 띄우는 뒷문이 된다.
     expect(click).toContain('if (focusMode) {');
@@ -79,7 +85,7 @@ describe('집중 모드 배선', () => {
     expect(click).toContain('if (!line) return;');
     // 밖(지정 문장이 아님 — 지정 없음 = 발동 대기도 포함) = 순수 이동:
     // 지정만 옮기고 분석·시트·카드·발화 전부 없음, 낡은 패널은 비운다
-    const outside = click.slice(click.indexOf('if (focusMode) {'), click.indexOf('const t = { ...token'));
+    const outside = sliceBetween(click, 'if (focusMode) {', 'const t = { ...token');
     expect(outside).toContain('if (line.rawIdx !== pickedLineIdx) {');
     expect(outside).toContain('setSelectedRangeText(line.text);');
     expect(outside).toContain('clearAnalysisPanels();');
@@ -92,7 +98,7 @@ describe('집중 모드 배선', () => {
   });
 
   it('빈 공간 탭 = 지정 해제(전문 조망) — 토큰·막대·▲▼·그립·버튼은 해제 대상 아님(오너 확정 2026-08-20)', () => {
-    const blank = viewer.slice(viewer.indexOf('const handleReaderBlankClick'), viewer.indexOf('const runSelectionAnalysis'));
+    const blank = sliceBetween(viewer, 'const handleReaderBlankClick', 'const runSelectionAnalysis');
     // 집중 꺼짐이면 아무 일 없음 — 기존 동작 보존
     expect(blank).toContain('if (!focusMode) return;');
     // 저마다의 동작이 있는 컨트롤은 closest 가드로 거른다(¦·그립은 stopPropagation,

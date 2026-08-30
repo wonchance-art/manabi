@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { buildEasierPrompt, easierCacheKey, grammarCacheKey } from '../grammarDetail.js';
+import { sliceBetween } from './helpers/sliceBetween.js';
 
 const read = (rel) => fs.readFileSync(path.join(process.cwd(), rel), 'utf8');
 /** 주석 제거 후 대조 — 헤더 주석의 예시 문구가 계약에 잡히지 않게(cronRegistration 선례). */
@@ -80,7 +81,8 @@ describe('뷰어 배선 — [자세히]와 같은 자리·같은 결', () => {
   });
 
   it('쉬운 문장은 원어라 본문과 같은 :lang() 폰트 규칙을 태운다', () => {
-    const block = page.slice(page.indexOf('easier.loading'), page.indexOf('easier.loading') + 400);
+    // 앵커 소실 시 throw(sliceBetween) — raw slice(indexOf()는 공허 통과(v2-L 메타 계약 금지)
+    const block = sliceBetween(page, 'easier.loading').slice(0, 400);
     expect(block).toContain('lang={contentLangTag}');
     expect(block).toContain('formatDetail(easier.result)');
   });
