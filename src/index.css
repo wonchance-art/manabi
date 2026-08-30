@@ -10067,7 +10067,13 @@ body.is-review-session .page-container { padding-top: 8px; }
 .dday-goal__sel { flex: 1 1 0; min-width: 0; padding: 6px 8px; font-size: 0.85rem; }
 
 /* ── 궤도 줄 (v2-D R2) — 목표를 세운 사람에게만 뜨는 홈 머리 한 줄 ── */
-.goal-track { display: flex; flex-direction: column; justify-content: center; gap: 8px; }
+/* 카드 전체가 버튼이다(탭하면 상세 모달 — DdayTile·WeeklyTile의 타일→모달 정본 재사용).
+   button은 font를 상속하지 않으므로 명시한다. */
+.goal-track {
+  display: flex; flex-direction: column; justify-content: center; gap: 8px;
+  width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer;
+}
+.goal-track:hover { border-color: var(--border-hover); }
 .goal-track__head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
 .goal-track__title { font-weight: 800; font-size: 0.95rem; color: var(--text-primary); }
 .goal-track__count { font-size: 0.82rem; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
@@ -10084,12 +10090,23 @@ body.is-review-session .page-container { padding-top: 8px; }
 /* 진도 막대 — 진도표(myplan-bar)와 같은 결. 숫자와 같은 것을 말하되 한눈에 들어온다. */
 /* flex-shrink 0 — 좁은 화면에서 본문이 두 줄이 되면 6px 막대가 0으로 눌려 사라진다(실측). */
 .goal-track__bar { flex: 0 0 6px; border-radius: 99px; background: var(--bg-elevated); overflow: hidden; }
-.goal-track__fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent, var(--primary))); transition: width 0.3s ease; }
+.goal-track__fill { display: block; height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent, var(--primary))); transition: width 0.3s ease; }
 .goal-track__line {
   margin: 0; font-size: 0.84rem; color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
 }
 .goal-track__line b { color: var(--text-primary); font-weight: 700; }
+
+/* 상세 모달 — 진행·속도·어휘 세 줄(설계 §2 MyPage 상세 목업). 라벨은 고정폭, 값은 흐른다. */
+.goal-detail { display: flex; flex-direction: column; gap: 12px; font-variant-numeric: tabular-nums; }
+.goal-detail__row { display: flex; gap: 10px; align-items: baseline; }
+.goal-detail__label {
+  flex: 0 0 2.4em; font-size: 0.78rem; font-weight: 700; color: var(--text-muted);
+}
+.goal-detail__value { flex: 1 1 auto; min-width: 0; font-size: 0.85rem; color: var(--text-secondary); }
+.goal-detail__value b { color: var(--text-primary); font-weight: 700; }
+.goal-detail__levels { display: flex; flex-wrap: wrap; gap: 3px 8px; margin-top: 5px; font-size: 0.74rem; color: var(--text-muted); }
+.goal-detail__levels .is-done { color: #4A8A5C; }
 
 .hm-day {
   aspect-ratio: 1; width: 100%;

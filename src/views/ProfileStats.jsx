@@ -13,6 +13,9 @@ import { fetchWeeklyReportRows } from '../lib/weeklyReportRows';
 import { buildPlan, markProgress } from '../lib/studyPlan';
 import { countRecentDone, pace, perDayLabel } from '../lib/goalPace';
 import { fetchGoalProgressRows } from '../lib/goalRows';
+import { haveWordSet, vocabCoverage } from '../lib/goalVocab';
+import { loadRefVocabIndex } from '../lib/refVocabIndex';
+import { fetchKnownWords, knownWordsLang } from '../lib/knownWords';
 import Button from '../components/Button';
 import VocabStats from './VocabStats';
 
@@ -35,7 +38,7 @@ async function fetchProfileStats(userId) {
     // #1079가 표기·뜻을 빼는 바람에 타일이 빈 글자를 돌리고 있었다(2026-08-24 수리).
     // 드리프트 재발은 profileStatsSelect 계약 테스트가 막는다.
     supabase.from('user_vocabulary')
-      .select('id, word_text, meaning, created_at, last_reviewed_at, next_review_at')
+      .select('id, word_text, meaning, language, created_at, last_reviewed_at, next_review_at')
       .eq('user_id', userId),
   ]);
   if (heatmapResult.error) throw heatmapResult.error;
@@ -108,7 +111,7 @@ export default function ProfileStats({ refManifest = {} }) {
       {/* 목표를 세운 사람에게만 뜨는 궤도 한 줄 — 미설정이면 침묵한다(설계 §4 계약 5).
           숨김이 '위젯 사라짐'으로 읽히는 문제와는 다르다: 사라지는 게 아니라 아직 생긴
           적이 없고, 세우는 자리는 늘 자리를 지키는 D-Day 타일 안에 있다. */}
-      <GoalTrackCard refManifest={refManifest} />
+      <GoalTrackCard refManifest={refManifest} vocab={vocab} />
       <GoalTile vocab={vocab} />
       <DdayTile refManifest={refManifest} />
       <div className="bento-item bento--2x2">
@@ -251,8 +254,10 @@ function GoalTile({ vocab }) {
 
 const VERDICT_CLASS = { 여유: 'easy', 적정: 'ontrack', 이탈: 'late' };
 
-function GoalTrackCard({ refManifest }) {
+function GoalTrackCard({ refManifest, vocab }) {
   const { user, profile } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [vocabIndex, setVocabIndex] = useState(null);
   const goalLang = profile?.goal_lang;
   const goalLevel = profile?.goal_level;
   const goalDate = profile?.dday_date;
@@ -271,6 +276,25 @@ function GoalTrackCard({ refManifest }) {
     staleTime: 1000 * 60 * 5,
   });
 
+  // '이미 앎'과 정본 어휘 인덱스는 **상세를 열 때만** 가져온다. 어휘 정본은 무거워서
+  // (중국어만 1.9MB 소스) 홈 첫 화면에 얹으면 한 줄짜리 진단이 페이지 값을 치른다.
+  const { data: knownRows = [] } = useQuery({
+    queryKey: ['goal-known', user?.id, goalLang],
+    enabled: open && !!user?.id && !!knownWordsLang(goalLang),
+    queryFn: async () => {
+      try { return await fetchKnownWords(user.id, knownWordsLang(goalLang)); }
+      catch { return []; }          // 미적용·실패는 조용히 — 어휘 줄만 덜 정확해진다
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
+  useEffect(() => {
+    if (!open || !goalLang) return undefined;
+    let alive = true;
+    loadRefVocabIndex(goalLang).then((ix) => { if (alive) setVocabIndex(ix); }).catch(() => {});
+    return () => { alive = false; };
+  }, [open, goalLang]);
+
   const track = useMemo(() => {
     if (!plan) return null;
     const marked = markProgress(plan, rows);
@@ -283,6 +307,12 @@ function GoalTrackCard({ refManifest }) {
     return p ? { marked, p } : null;
   }, [plan, rows, goalDate]);
 
+  const coverage = useMemo(() => {
+    if (!vocabIndex || !plan) return null;
+    const have = haveWordSet({ vocabRows: vocab, knownRows, language: goalLang });
+    return vocabCoverage(vocabIndex, plan.levels.map(lv => lv.key), have);
+  }, [vocabIndex, plan, vocab, knownRows, goalLang]);
+
   if (!goalLang || !goalLevel || !goalDate) return null;
   if (!track) return null;
 
@@ -294,28 +324,72 @@ function GoalTrackCard({ refManifest }) {
     : p.gapDays > 0 ? `${p.gapDays}일 늦음`
       : p.gapDays < 0 ? `${Math.abs(p.gapDays)}일 이름`
         : '딱 맞음';
+  const paceLine = p.done ? '계획한 챕터를 다 마쳤어요 🎉' : (
+    <>
+      하루 <b>{perDayLabel(p.needPerDay)}챕터</b> 필요
+      {p.etaDate
+        ? <> · 최근 2주 {perDayLabel(p.actualPerDay)} → 예상 {p.etaDate} ({gapLabel})</>
+        : <> · 최근 2주 진도가 없어 예상 완료일은 아직 못 내요</>}
+    </>
+  );
 
   return (
-    <div className="bento-item bento--4x1 card goal-track">
-      <div className="goal-track__head">
-        <span className="goal-track__title">{plan.flag} {goalName}까지</span>
-        <span className="goal-track__count">{marked.done}/{marked.total}챕터 · {dLabel}</span>
-        {p.verdict && (
-          <span className={`goal-track__verdict is-${VERDICT_CLASS[p.verdict]}`}>{p.verdict}</span>
-        )}
-      </div>
-      <div className="goal-track__bar"><div className="goal-track__fill" style={{ width: `${marked.pct}%` }} /></div>
-      <p className="goal-track__line">
-        {p.done ? '계획한 챕터를 다 마쳤어요 🎉' : (
-          <>
-            하루 <b>{perDayLabel(p.needPerDay)}챕터</b> 필요
-            {p.etaDate
-              ? <> · 최근 2주 {perDayLabel(p.actualPerDay)} → 예상 {p.etaDate} ({gapLabel})</>
-              : <> · 최근 2주 진도가 없어 예상 완료일은 아직 못 내요</>}
-          </>
-        )}
-      </p>
-    </div>
+    <>
+      <button type="button" className="bento-item bento--4x1 card goal-track" onClick={() => setOpen(true)}>
+        <span className="goal-track__head">
+          <span className="goal-track__title">{plan.flag} {goalName}까지</span>
+          <span className="goal-track__count">{marked.done}/{marked.total}챕터 · {dLabel}</span>
+          {p.verdict && (
+            <span className={`goal-track__verdict is-${VERDICT_CLASS[p.verdict]}`}>{p.verdict}</span>
+          )}
+        </span>
+        <span className="goal-track__bar"><span className="goal-track__fill" style={{ width: `${marked.pct}%` }} /></span>
+        <span className="goal-track__line">{paceLine}</span>
+      </button>
+
+      {open && (
+        <TileModal title={`${goalName}까지`} onClose={() => setOpen(false)}>
+          <div className="goal-detail">
+            <div className="goal-detail__row">
+              <span className="goal-detail__label">진행</span>
+              <span className="goal-detail__value">
+                <b>{marked.done}/{marked.total}</b>챕터 ({marked.pct}%)
+                <span className="goal-detail__levels">
+                  {marked.levels.map(lv => (
+                    <span key={lv.key} className={lv.done === lv.total ? 'is-done' : ''}>
+                      {lv.key} {lv.done}/{lv.total}
+                    </span>
+                  ))}
+                </span>
+              </span>
+            </div>
+            <div className="goal-detail__row">
+              <span className="goal-detail__label">속도</span>
+              <span className="goal-detail__value">{paceLine}</span>
+            </div>
+            {/* 어휘 축 합류(R3). 정본 어휘 인덱스가 있는 언어에서만 — 없으면 줄 자체가 없다.
+                "확보"는 담았거나(=FSRS 큐) 이미 안다고 표시한 것: 둘 다 다시 배우지 않아도 되는 말. */}
+            {knownWordsLang(goalLang) && (
+              <div className="goal-detail__row">
+                <span className="goal-detail__label">어휘</span>
+                <span className="goal-detail__value">
+                  {coverage ? (
+                    <>
+                      정본 {coverage.total.toLocaleString()}개 중 <b>{coverage.have.toLocaleString()}</b> 확보 ({coverage.pct}%)
+                      <span className="goal-detail__levels">
+                        {coverage.byLevel.map(b => (
+                          <span key={b.level}>{b.level} {b.have}/{b.total}</span>
+                        ))}
+                      </span>
+                    </>
+                  ) : vocabIndex ? '이 언어의 어휘 정본은 아직 없어요' : '세는 중…'}
+                </span>
+              </div>
+            )}
+          </div>
+        </TileModal>
+      )}
+    </>
   );
 }
 
