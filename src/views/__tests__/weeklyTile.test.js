@@ -26,8 +26,15 @@ describe('홈 통계 그리드 — 오늘 활동 폐지·이번 주 타일화', 
     expect(code.match(/bento--4x1 card/g)).toHaveLength(1);
   });
 
-  it('전 축 0이면 타일 자체가 없다 — hasAny 게이트(0 무표기)', () => {
-    expect(code).toContain('weekly?.hasAny && <WeeklyTile');
+  it('빈 주에도 타일은 자리를 지킨다(오너 확정 2026-08-30 상시 표시) — 게이트는 로드 대기만', () => {
+    // hasAny 게이트 부활 금지 — 숨김이 "위젯 사라짐"으로 읽혔다. 값은 스트릭 '–' 선례.
+    expect(code).toContain('weekly && <WeeklyTile');
+    expect(code).not.toContain('weekly?.hasAny && <WeeklyTile');
+    expect(code).toMatch(/readsCompleted > 0[\s\S]{0,120}?\['–', '이번 주'\]/);
+  });
+
+  it('빈 주 모달도 빈 껍데기가 아니다 — 기록 없음 한 줄', () => {
+    expect(code).toMatch(/!weekly\.hasAny[\s\S]{0,200}?이번 주 기록이 아직 없어요/);
   });
 
   it('탭하면 전체 거울 — TileModal 정본 재사용, 카드 머리는 모달 제목과 중복 금지', () => {
