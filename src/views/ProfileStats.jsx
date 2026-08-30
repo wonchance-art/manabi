@@ -115,7 +115,7 @@ export default function ProfileStats({ refManifest = {} }) {
           오늘 활동은 ⑴ 챕터 수가 이 기기 localStorage 한정 ⑵ 단어 축은 '오늘 목표'
           타일과 중복 ⑶ 활동한 날에도 0을 크게 보여줘 0 무표기 원칙과 충돌 — 반쪽
           지표라 지운다. 주간 거울은 4×1 카드 대신 이 한 칸으로 줄인다. */}
-      {weekly?.hasAny && <WeeklyTile weekly={weekly} />}
+      {weekly && <WeeklyTile weekly={weekly} />}
       <div className="bento-item bento--2x2">
         <LevelCoverageCard refManifest={refManifest} />
       </div>
@@ -143,9 +143,11 @@ function StatTile({ label, value }) {
 }
 
 /* ── 이번 주 타일(오너 확정 2026-08-26) — 주간 거울을 '오늘 활동' 자리·크기(1×1)로.
-     대표 축 하나만 크게: 복습 → 담은 말 → 만난 말 → 완독 순으로 처음 0이 아닌 것
-     (전 축 0이면 hasAny가 타일 자체를 숨긴다 — 0 무표기). 탭하면 전체 거울을 모달로
-     편다(DdayTile의 타일→모달 정본 재사용 — 지난주 병기는 모달에만 남는다). ── */
+     대표 축 하나만 크게: 복습 → 담은 말 → 만난 말 → 완독 순으로 처음 0이 아닌 것.
+     빈 주에도 타일은 자리를 지킨다(오너 확정 2026-08-30 "상시 표시" — 숨김이 '위젯
+     사라짐'으로 읽혔다). 값은 0 대신 스트릭 타일의 '–' 선례 — 0 무표기 원칙과의
+     절충점. 탭하면 전체 거울을 모달로 편다(DdayTile의 타일→모달 정본 재사용 —
+     지난주 병기는 모달에만 남는다). ── */
 function WeeklyTile({ weekly }) {
   const [open, setOpen] = useState(false);
   const acc = weekly.reviews.accuracy == null ? null : Math.round(weekly.reviews.accuracy * 100);
@@ -153,7 +155,8 @@ function WeeklyTile({ weekly }) {
     ? [`${weekly.reviews.total}`, `이번 주 복습${acc != null ? ` · ${acc}%` : ''}`]
     : weekly.newWords > 0 ? [`${weekly.newWords}`, '이번 주 담은 말']
     : weekly.metWords > 0 ? [`${weekly.metWords}`, '이번 주 만난 말']
-    : [`${weekly.readsCompleted}`, '이번 주 완독'];
+    : weekly.readsCompleted > 0 ? [`${weekly.readsCompleted}`, '이번 주 완독']
+    : ['–', '이번 주'];
   return (
     <>
       <button type="button" className="bento-item bento--1x1 card bento-stat bento-stat--btn" onClick={() => setOpen(true)}>
@@ -202,6 +205,11 @@ function WeeklyReportCard({ weekly, header = true }) {
         <div style={{ marginTop: 4, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
           {parts.join(' · ')}
         </div>
+      )}
+      {!weekly.hasAny && (
+        <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+          이번 주 기록이 아직 없어요.
+        </p>
       )}
     </div>
   );
