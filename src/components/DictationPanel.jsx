@@ -71,6 +71,10 @@ export default function DictationPanel({ sentence, lang, onClose, ttsOpts }) {
           <div style={{ marginBottom: 10 }}>
             <div style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: 6 }}>
               {result.correct ? '✓ 완벽해요!' : result.accuracy != null ? `정답률 ${Math.round(result.accuracy * 100)}%` : '채점할 원문이 없어요'}
+              {/* 악상·성조 부호만 다른 오답(v2-M) — 받아쓰기는 관용 대신 짚어 준다 */}
+              {!result.correct && result.accentOnly && (
+                <span style={{ fontWeight: 400, color: 'var(--text-secondary)' }}> · 악상·성조 부호만 달라요</span>
+              )}
             </div>
             {!result.correct && (
               <div style={{ fontSize: '0.95rem', lineHeight: 1.7 }} lang={lang === 'Japanese' ? 'ja' : undefined}>

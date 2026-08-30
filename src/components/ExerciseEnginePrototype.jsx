@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import RefSpeak from './RefSpeak';
 import { tokenizeExampleSentence } from '../lib/studySession';
+import { normalizeRecall } from '../lib/answerNormalize';
 
 const FILL_TYPES = new Set(['fill', 'short-answer']);
 const CHOICE_TYPES = new Set(['choice', 'select']);
@@ -14,10 +15,10 @@ function nonEmptyString(value) {
 }
 
 /**
- * 프로토타입 정답 정규화.
- *
- * 표기 정책을 과도하게 확정하지 않도록 Unicode NFC·대소문자·연속 공백만 통일한다.
- * 악상 기호와 문장부호는 보존하며, 허용 답안은 콘텐츠의 accept[]로 명시한다.
+ * 선지 identity 정규화 — NFC·대소문자·연속 공백만 통일(악상·문장부호 보존).
+ * 옵션 중복 제거·선택 표시처럼 '같은 문자열인가'를 묻는 자리 전용이다.
+ * 타이핑 채점 관용은 정본 answerNormalize.normalizeRecall이 담당(v2-M) —
+ * 여기서 채점 정규화를 재구현하지 말 것.
  */
 export function normalizeExerciseAnswer(value) {
   return String(value ?? '')
@@ -287,10 +288,13 @@ export function gradeExerciseResponse(question, response) {
   if (question.grading === 'exact' || question.type === 'order') {
     return String(response ?? '') === String(question.answer ?? '');
   }
-  const normalized = normalizeExerciseAnswer(response);
+  // 타이핑 채점은 정본 인출 모드(v2-M) — 악상·성조 폴딩 관용(ecole=école).
+  // 정본 표기는 결과 공개(정답 선지·answer 노출)가 가르친다. 선지 identity 비교는
+  // 아래 normalizeExerciseAnswer가 계속 담당(옵션 문자열은 관용이 필요 없다).
+  const normalized = normalizeRecall(response);
   if (!normalized) return false;
   return [question.answer, ...(question.accept || [])]
-    .some((candidate) => normalizeExerciseAnswer(candidate) === normalized);
+    .some((candidate) => normalizeRecall(candidate) === normalized);
 }
 
 /**

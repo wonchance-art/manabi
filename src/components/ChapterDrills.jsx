@@ -4,7 +4,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
 import RefSpeak from './RefSpeak';
-import { normalizeExerciseAnswer } from './ExerciseEnginePrototype';
+import { normalizeRecall } from '../lib/answerNormalize';
 import { useAuth } from '../lib/AuthContext';
 import { recordChapterDrillResult, loadGuestDrillQueue } from '../lib/drillSrs';
 import { countDueGrammar } from '../lib/grammarSrs';
@@ -26,17 +26,11 @@ function HintToggle({ hint }) {
   return <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}> · 힌트: {hint}</span>;
 }
 
-function dictNormalize(s) {
-  return normalizeExerciseAnswer(String(s ?? '').replace(/[’]/g, "'"))
-    .replace(/[.,!?…«»"”“:;—–-]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function matches(input, answer, accepts, loose) {
-  const norm = loose ? dictNormalize : normalizeExerciseAnswer;
-  const target = norm(input);
-  return [answer, ...(accepts ?? [])].some((a) => norm(a) === target);
+// 드릴 채점은 전부 정본 인출 모드(v2-M) — 악상 폴딩·구두점·공백 관용이 옛
+// loose 전용 정규화 셋을 포함하므로 loose 분기가 필요 없어졌다.
+function matches(input, answer, accepts) {
+  const target = normalizeRecall(input);
+  return [answer, ...(accepts ?? [])].some((a) => normalizeRecall(a) === target);
 }
 
 function OrderDrill({ drill, onResult, done }) {
@@ -50,7 +44,7 @@ function OrderDrill({ drill, onResult, done }) {
   const [picked, setPicked] = useState([]);
   const built = picked.join(' ');
   const complete = picked.length === tokens.length;
-  const correct = complete && normalizeExerciseAnswer(built) === normalizeExerciseAnswer(drill.sentence);
+  const correct = complete && normalizeRecall(built) === normalizeRecall(drill.sentence);
   return (
     <div>
       {drill.prompt && <p style={{ fontSize: '0.88rem', marginBottom: 6 }}>{drill.prompt}</p>}
@@ -72,7 +66,7 @@ function OrderDrill({ drill, onResult, done }) {
       <div style={{ display: 'flex', gap: 8 }}>
         <button type="button" className="btn btn--sm drill-action" disabled={done} onClick={() => setPicked([])}>다시</button>
         <button type="button" className="btn btn--sm drill-action" disabled={!complete || done}
-          onClick={() => onResult(normalizeExerciseAnswer(picked.map((t) => t.split('#')[0]).join(' ')) === normalizeExerciseAnswer(drill.sentence))}>
+          onClick={() => onResult(normalizeRecall(picked.map((t) => t.split('#')[0]).join(' ')) === normalizeRecall(drill.sentence))}>
           확인
         </button>
       </div>
@@ -99,7 +93,7 @@ function InputDrill({ drill, lang, onResult, done, dictation }) {
           style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}
           placeholder={dictation ? '들리는 대로…' : '정답 입력'} lang={dictation ? undefined : 'fr'} />
         <button type="button" className="btn btn--sm drill-action" disabled={done || !value.trim()}
-          onClick={() => onResult(matches(value, dictation ? drill.sentence : drill.answer, drill.accepts, dictation))}>
+          onClick={() => onResult(matches(value, dictation ? drill.sentence : drill.answer, drill.accepts))}>
           확인
         </button>
       </div>
