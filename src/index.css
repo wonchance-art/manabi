@@ -5110,6 +5110,58 @@ body.is-review-session .page-container { padding-top: 8px; }
   gap: 6px;
   flex-shrink: 0;
 }
+/* ── PDF → 자료 다리(v2-H R1) ──
+   툴바에서 범위만 고르고 건너간다. 툴바가 좁으면(모바일) 제목 아래로 접힌다 —
+   .pdf-toolbar가 flex-wrap이라 별도 브레이크포인트가 필요 없다(K R2 총량 상한 유지). */
+.pdf-bridge { position: relative; flex-shrink: 0; }
+.pdf-bridge__open {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 7px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pdf-bridge__open:hover { border-color: var(--primary); color: var(--primary-light); }
+.pdf-bridge__panel {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 232px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+.pdf-bridge__lead { margin: 0; font-size: 0.85rem; color: var(--text-primary); }
+.pdf-bridge__lead input {
+  /* 스피너 화살표가 폭을 먹어 세 자리 쪽번호가 잘렸다(렌더 실측: "46" → "4").
+     화살표를 지우고 숫자만 남긴다 — 값은 min/max로 이미 묶여 있다. */
+  appearance: textfield;
+  -moz-appearance: textfield;
+  width: 5ch;
+  margin: 0 3px;
+  padding: 3px 6px;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+.pdf-bridge__lead input::-webkit-outer-spin-button,
+.pdf-bridge__lead input::-webkit-inner-spin-button { appearance: none; margin: 0; }
+.pdf-bridge__hint { margin: 0; font-size: 0.72rem; color: var(--text-muted); }
+
 .pdf-nav {
   display: flex;
   align-items: center;
