@@ -41,6 +41,9 @@ export function isChapterDone(row) {
 export function buildPlan(manifest, lang, { upto } = {}) {
   const L = manifest?.languages?.[lang];
   if (!L || !Array.isArray(L.levels)) return null;
+  // 레벨 이름의 출처는 정본 투영마다 다르다: 정본 manifest는 levelMeta에, 홈이 받는
+  // continueManifest는 레벨 자신이 들고 있다. 같은 정본의 두 투영이라 어느 쪽이든 같은
+  // 계획이 나와야 한다(R2 궤도가 홈에서 같은 함수를 쓴다 — 챕터 수가 갈리면 남은 수도 갈린다).
   const labelOf = new Map((L.levelMeta || []).map((m) => [m.key, m.label || m.key]));
 
   const cut = L.levels.findIndex((lv) => lv.key === upto);
@@ -53,7 +56,7 @@ export function buildPlan(manifest, lang, { upto } = {}) {
     .filter((lv) => (lv.chapters || []).length > 0)
     .map((lv) => ({
       key: lv.key,
-      label: labelOf.get(lv.key) || lv.key,
+      label: labelOf.get(lv.key) || lv.label || lv.key,
       vocabCount: lv.vocabCount || 0,
       // 문형은 레벨 단위 화면(/bunkei/<레벨>)이라 패턴 수만 센다 — 챕터처럼 slug별 진도가
       // 아니다. manifest의 이 배열은 패턴마다 소속 챕터 slug를 담아 중복이 있다.

@@ -22,8 +22,14 @@ describe('홈 통계 그리드 — 오늘 활동 폐지·이번 주 타일화', 
 
   it('이번 주는 1×1 스탯 타일 — 4×1 와이드 카드로 되돌아가지 않는다', () => {
     expect(code).toMatch(/WeeklyTile[\s\S]{0,600}?bento--1x1/);
-    // 4x1은 오류 배너 하나만 남는다(주간 카드가 와이드로 부활하면 2개가 된다)
-    expect(code.match(/bento--4x1 card/g)).toHaveLength(1);
+    // 지키려는 것은 "주간 거울이 와이드로 부활하지 않는다"이지 "4×1 카드가 몇 개냐"가
+    // 아니다. 총량으로 세면 무관한 카드 하나(v2-D R2 궤도 줄)에도 깨져 의도를 못 말한다
+    // — 통짜 문자열 배선 계약에서 겪은 그 일. 주간 컴포넌트 안쪽만 본다.
+    for (const fn of ['function WeeklyTile(', 'function WeeklyReportCard(']) {
+      const at = code.indexOf(fn);
+      expect(at, `${fn} 를 못 찾았다`).toBeGreaterThan(-1);
+      expect(code.slice(at, at + 1600)).not.toContain('bento--4x1');
+    }
   });
 
   it('빈 주에도 타일은 자리를 지킨다(오너 확정 2026-08-30 상시 표시) — 게이트는 로드 대기만', () => {

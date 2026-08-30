@@ -10,6 +10,9 @@ import { isPassed } from '../components/RefPatternCheck';
 import { pullProgress } from '../lib/refProgress';
 import { buildWeeklyReport, weekRangeLabel } from '../lib/weeklyReport';
 import { fetchWeeklyReportRows } from '../lib/weeklyReportRows';
+import { buildPlan, markProgress } from '../lib/studyPlan';
+import { countRecentDone, pace, perDayLabel } from '../lib/goalPace';
+import { fetchGoalProgressRows } from '../lib/goalRows';
 import Button from '../components/Button';
 import VocabStats from './VocabStats';
 
@@ -102,8 +105,12 @@ export default function ProfileStats({ refManifest = {} }) {
 
   return (
     <div className="bento">
+      {/* 목표를 세운 사람에게만 뜨는 궤도 한 줄 — 미설정이면 침묵한다(설계 §4 계약 5).
+          숨김이 '위젯 사라짐'으로 읽히는 문제와는 다르다: 사라지는 게 아니라 아직 생긴
+          적이 없고, 세우는 자리는 늘 자리를 지키는 D-Day 타일 안에 있다. */}
+      <GoalTrackCard refManifest={refManifest} />
       <GoalTile vocab={vocab} />
-      <DdayTile />
+      <DdayTile refManifest={refManifest} />
       <div className="bento-item bento--2x2">
         <ReviewTile vocab={vocab} />
       </div>
@@ -237,9 +244,86 @@ function GoalTile({ vocab }) {
   );
 }
 
-/* ── D-Day 타일 — 시험일 등 목표일 설정 (서버 동기화, 비로그인·오프라인은 localStorage 폴백) ── */
+/* ── 궤도 줄 (v2-D R2, 설계 §2) — "목표는 코드에, 진도는 서버에" 를 끝내는 마지막 한 줄.
+     R1로 계획표가 곧 진도표가 됐지만 표는 "몇 개 했다"까지만 말했다. 목표일이 정해져
+     있는데 역산이 없으면 그 진도가 빠른 건지 늦은 건지 알 수 없다. 남은 일수·필요 속도·
+     지금 속도·예상 완료일을 한 줄로 말하고, 판정은 세 단계까지만 한다(벌칙 없음). ── */
 
-function DdayTile() {
+const VERDICT_CLASS = { 여유: 'easy', 적정: 'ontrack', 이탈: 'late' };
+
+function GoalTrackCard({ refManifest }) {
+  const { user, profile } = useAuth();
+  const goalLang = profile?.goal_lang;
+  const goalLevel = profile?.goal_level;
+  const goalDate = profile?.dday_date;
+
+  // 계획은 관리자 진도표와 같은 함수로 세운다 — 챕터 수가 갈리면 "남은 47"이 화면마다 달라진다.
+  // 홈이 이미 받아 둔 정본 투영을 쓰므로 정본 manifest 전체를 번들에 끌어오지 않는다.
+  const plan = useMemo(
+    () => (goalLang && goalLevel ? buildPlan({ languages: refManifest }, goalLang, { upto: goalLevel }) : null),
+    [refManifest, goalLang, goalLevel],
+  );
+
+  const { data: rows = [] } = useQuery({
+    queryKey: ['goal-progress', user?.id, goalLang],
+    enabled: !!user?.id && !!plan,
+    queryFn: () => fetchGoalProgressRows(user.id, goalLang),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const track = useMemo(() => {
+    if (!plan) return null;
+    const marked = markProgress(plan, rows);
+    const slugSet = new Set(plan.levels.flatMap(lv => lv.chapters).map(c => c.slug));
+    const p = pace({
+      remaining: marked.remaining,
+      targetDate: goalDate,
+      recentDone: countRecentDone(rows, slugSet),
+    });
+    return p ? { marked, p } : null;
+  }, [plan, rows, goalDate]);
+
+  if (!goalLang || !goalLevel || !goalDate) return null;
+  if (!track) return null;
+
+  const { marked, p } = track;
+  // 목표 이름은 사용자가 D-Day에 적어 둔 말이 우선 — "HSK 5"라고 적었으면 그대로 부른다.
+  const goalName = profile?.dday_label || plan.levels[plan.levels.length - 1]?.label || goalLevel;
+  const dLabel = p.daysLeft > 0 ? `D-${p.daysLeft}` : p.daysLeft === 0 ? 'D-Day' : `기한 ${Math.abs(p.daysLeft)}일 지남`;
+  const gapLabel = p.gapDays == null ? null
+    : p.gapDays > 0 ? `${p.gapDays}일 늦음`
+      : p.gapDays < 0 ? `${Math.abs(p.gapDays)}일 이름`
+        : '딱 맞음';
+
+  return (
+    <div className="bento-item bento--4x1 card goal-track">
+      <div className="goal-track__head">
+        <span className="goal-track__title">{plan.flag} {goalName}까지</span>
+        <span className="goal-track__count">{marked.done}/{marked.total}챕터 · {dLabel}</span>
+        {p.verdict && (
+          <span className={`goal-track__verdict is-${VERDICT_CLASS[p.verdict]}`}>{p.verdict}</span>
+        )}
+      </div>
+      <div className="goal-track__bar"><div className="goal-track__fill" style={{ width: `${marked.pct}%` }} /></div>
+      <p className="goal-track__line">
+        {p.done ? '계획한 챕터를 다 마쳤어요 🎉' : (
+          <>
+            하루 <b>{perDayLabel(p.needPerDay)}챕터</b> 필요
+            {p.etaDate
+              ? <> · 최근 2주 {perDayLabel(p.actualPerDay)} → 예상 {p.etaDate} ({gapLabel})</>
+              : <> · 최근 2주 진도가 없어 예상 완료일은 아직 못 내요</>}
+          </>
+        )}
+      </p>
+    </div>
+  );
+}
+
+/* ── D-Day 타일 — 목표일 설정 (서버 동기화, 비로그인·오프라인은 localStorage 폴백).
+     v2-D R2에서 '무엇을 향해 가는가'(언어·도달 레벨)가 여기 붙었다. 날짜 편집기가 이미
+     여기 있는데 과정만 다른 화면에 두면 목표가 두 곳으로 갈린다 — 한 모달에 모은다. ── */
+
+function DdayTile({ refManifest }) {
   const { user, profile, fetchProfile } = useAuth();
   const toast = useToast();
   const [local, setLocal] = useState(null);
@@ -247,6 +331,8 @@ function DdayTile() {
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState('');
   const [label, setLabel] = useState('');
+  const [goalLang, setGoalLang] = useState('');
+  const [goalLevel, setGoalLevel] = useState('');
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -277,13 +363,18 @@ function DdayTile() {
     return Math.round((target - today) / 86400000);
   }, [dday]);
 
+  // 레벨은 그 언어에 챕터가 있는 것만 — 어휘 전용 레벨을 목표로 잡으면 계획이 빈다.
+  const levelOptions = ((refManifest?.[goalLang]?.levels) || []).filter(lv => (lv.chapters || []).length > 0);
+
   function openModal() {
     setDate(dday?.date || '');
     setLabel(dday?.label || '');
+    setGoalLang(profile?.goal_lang || '');
+    setGoalLevel(profile?.goal_level || '');
     setOpen(true);
   }
 
-  async function persist(nextDate, nextLabel) {
+  async function persist(nextDate, nextLabel, nextLang, nextLevel) {
     if (busy) return;
     setBusy(true);
     // 로컬은 항상 기록 (오프라인 폴백)
@@ -293,9 +384,18 @@ function DdayTile() {
     } catch {}
     setLocal(nextDate ? { date: nextDate, label: nextLabel } : null);
     if (user?.id) {
-      const { error } = await supabase.from('profiles')
-        .update({ dday_date: nextDate || null, dday_label: nextLabel || null })
+      const base = { dday_date: nextDate || null, dday_label: nextLabel || null };
+      // 목표 2컬럼은 마이그레이션(20260831010000_profile_goal.sql) 적용 후 생긴다.
+      // 미적용 환경에서 미지 컬럼이 payload에 있으면 PostgREST가 요청 전체를 거부하므로,
+      // 컬럼 오류일 때만 목표를 빼고 재시도한다(profile_levels_fr_zh 폴백과 같은 패턴).
+      let { error } = await supabase.from('profiles')
+        .update({ ...base, goal_lang: nextLang || null, goal_level: nextLevel || null })
         .eq('id', user.id);
+      if (error && /column|schema/i.test(error.message || '')) {
+        ({ error } = await supabase.from('profiles').update(base).eq('id', user.id));
+        // 조용히 삼키면 "과정을 골랐는데 궤도가 안 뜬다"가 된다 — 무엇이 저장됐는지 말한다.
+        if (!error && (nextLang || nextLevel)) toast('날짜는 저장했어요 — 목표 과정은 아직 준비 중이에요', 'info');
+      }
       if (error) toast('동기화 실패 — 이 기기에는 저장됐어요', 'error');
       else fetchProfile(user.id, user.user_metadata);
     }
@@ -315,7 +415,7 @@ function DdayTile() {
         <span className="mypage-stat-cell__label">{(mounted && dday?.label) || 'D-Day'}</span>
       </button>
       {open && (
-        <TileModal title="D-Day 설정" onClose={() => setOpen(false)}>
+        <TileModal title="목표 · D-Day" onClose={() => setOpen(false)}>
           <div className="tile-modal__row">
             <span>날짜</span>
             <input type="date" className="form-input tile-modal__num" style={{ maxWidth: 160 }}
@@ -326,11 +426,33 @@ function DdayTile() {
             <input className="form-input tile-modal__num" style={{ maxWidth: 160 }} maxLength={12}
               placeholder="예: JLPT N3" value={label} onChange={e => setLabel(e.target.value)} />
           </div>
+          {/* 과정을 고르면 그 날까지의 궤도(남은 챕터·필요 속도·예상 완료일)가 홈에 뜬다.
+              안 고르면 지금까지처럼 날짜 카운트다운만 — 목표는 강요가 아니다. */}
+          <div className="tile-modal__row">
+            <span>과정</span>
+            <span className="dday-goal">
+              <select className="form-input dday-goal__sel" aria-label="목표 언어"
+                value={goalLang} onChange={e => { setGoalLang(e.target.value); setGoalLevel(''); }}>
+                <option value="">선택 안 함</option>
+                {Object.keys(refManifest || {}).map(l => (
+                  <option key={l} value={l}>{LANG_KO[l] || l}</option>
+                ))}
+              </select>
+              <select className="form-input dday-goal__sel" aria-label="목표 레벨"
+                value={goalLevel} disabled={!goalLang} onChange={e => setGoalLevel(e.target.value)}>
+                <option value="">레벨</option>
+                {levelOptions.map(lv => (
+                  <option key={lv.key} value={lv.key}>{lv.short || lv.key}</option>
+                ))}
+              </select>
+            </span>
+          </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <Button size="sm" onClick={() => persist(date, label.trim())} disabled={!date || busy} style={{ flex: 1 }}>
+            <Button size="sm" onClick={() => persist(date, label.trim(), goalLang, goalLang ? goalLevel : '')}
+              disabled={!date || busy} style={{ flex: 1 }}>
               {busy ? '저장 중...' : '저장'}
             </Button>
-            {dday && <Button size="sm" variant="secondary" onClick={() => persist('', '')} disabled={busy} style={{ flex: 1 }}>삭제</Button>}
+            {dday && <Button size="sm" variant="secondary" onClick={() => persist('', '', '', '')} disabled={busy} style={{ flex: 1 }}>삭제</Button>}
           </div>
         </TileModal>
       )}
