@@ -34,9 +34,12 @@ describe('PdfJsViewer 1단계 계약', () => {
     const viewer = readSource('../../views/PdfViewerPage.jsx');
     const embed = readSource('../PdfDocument.jsx');
     expect(viewer).toContain("const usePdfJs = searchParams.get('pdfjs') === '1';");
-    // 게이트 자체를 지킨다 — prop은 늘 수 있다(v2-H R1에서 onPageChange가 붙었다).
-    // 전체 문자열을 박아 두면 무해한 prop 추가에도 계약이 깨져 의도를 못 말한다.
-    expect(viewer).toMatch(/usePdfJs \? <PdfJsViewer pdfUrl=\{pdfUrl\}[^>]*\/> : <PdfDocument pdfUrl=\{pdfUrl\} \/>/);
+    // 게이트 **구조**만 지킨다 — prop도 줄바꿈도 늘 수 있다(H R1에서 onPageChange,
+    // R2에서 initialPage·page가 붙었다). 통짜 문자열을 박아 두면 무해한 추가에도
+    // 깨져 의도를 못 말한다. 지킬 것은 "?pdfjs=1이면 새 뷰어, 아니면 embed" 하나다.
+    expect(viewer).toMatch(/usePdfJs\s*\?\s*<PdfJsViewer[^>]*\/>\s*:\s*<PdfDocument[^>]*\/>/);
+    expect(viewer).toMatch(/<PdfJsViewer[^>]*pdfUrl=\{pdfUrl\}/);
+    expect(viewer).toMatch(/<PdfDocument[^>]*pdfUrl=\{pdfUrl\}/);
     expect(embed).toContain('<embed');
     expect(embed).toContain('type="application/pdf"');
   });

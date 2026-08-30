@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { sliceBetween } from './helpers/sliceBetween.js';
-import { BRIDGE_MAX_PAGES, bridgeStartPage, resolveRange } from '../pdfRangeBridge.js';
+import {
+  BRIDGE_MAX_PAGES, bridgeStartPage, embedSrcWithPage, pdfViewerHref, resolveRange,
+} from '../pdfRangeBridge.js';
 
 /**
  * 계약: v2-H R1 PDF 읽기 절벽 — 자료 뷰어로 건너갈 다리 (#1077 설계 §1·§2).
@@ -109,7 +111,46 @@ describe('다리 화면 — 고르는 일만 한다', () => {
   it('툴바에 배선돼 있고, 지금 보는 쪽이 흘러든다', () => {
     const page = read('src/views/PdfViewerPage.jsx');
     expect(page).toContain('<PdfReadBridge pdfInfo={pdfInfo} livePage={livePage} mutation={rangeMutation} user={user} />');
-    expect(page).toContain('<PdfJsViewer pdfUrl={pdfUrl} onPageChange={setLivePage} />');
+    // 배선만 지킨다 — prop은 늘 수 있다(R2에서 initialPage가 붙었다). 통짜 문자열을
+    // 박아 두면 무해한 추가에도 깨져 의도를 못 말한다(PdfJsViewer 계약에서 겪은 그 일).
+    expect(page).toMatch(/<PdfJsViewer[^>]*onPageChange=\{setLivePage\}/);
     expect(read('src/components/PdfJsViewer.jsx')).toContain('onPageChange?.(pageNumber);');
+  });
+});
+
+describe('R2 역방향 — 자료에서 원본 PDF 그 쪽으로', () => {
+  it('돌아갈 자리를 주소에 싣는다', () => {
+    expect(pdfViewerHref('abc', 42)).toBe('/pdf/abc?page=42');
+    expect(pdfViewerHref('abc')).toBe('/pdf/abc');       // 쪽을 모르면 첫 쪽
+    expect(pdfViewerHref('abc', 0)).toBe('/pdf/abc');
+    expect(pdfViewerHref(null, 42)).toBeNull();
+  });
+
+  it('기본 경로(<embed>)는 브라우저 내장 뷰어에 조각으로 부탁한다 — 우리가 렌더를 안 쥔다', () => {
+    expect(embedSrcWithPage('https://x/y.pdf', 42)).toBe('https://x/y.pdf#toolbar=1&navpanes=0&page=42');
+    // 쪽이 없어도 기존 조각은 그대로 — R1 이전 동작 보존
+    expect(embedSrcWithPage('https://x/y.pdf')).toBe('https://x/y.pdf#toolbar=1&navpanes=0');
+    expect(embedSrcWithPage('')).toBe('');
+  });
+
+  it('두 렌더 경로가 모두 그 쪽에서 시작한다', () => {
+    const page = read('src/views/PdfViewerPage.jsx');
+    expect(page).toContain("const initialPage = parseInt(searchParams.get('page'), 10) || undefined;");
+    expect(page).toContain('initialPage={initialPage}');
+    expect(page).toContain('page={initialPage}');
+    expect(read('src/components/PdfDocument.jsx')).toContain('embedSrcWithPage(pdfUrl, page)');
+  });
+
+  it('문서 밖 쪽은 끝 쪽으로 당긴다 — 자료가 낡거나 PDF가 교체돼도 빈 화면이 안 나온다', () => {
+    const viewer = read('src/components/PdfJsViewer.jsx');
+    expect(viewer).toContain('if (doc?.numPages) setPageNumber((p) => Math.min(Math.max(1, p), doc.numPages));');
+  });
+
+  it('자료 뷰어의 PDF 출처 줄에서 되돌아간다 — 주소 조립은 순수 함수 한 곳', () => {
+    const viewer = read('src/views/ViewerPage.jsx');
+    expect(viewer).toContain('pdfViewerHref(sourcePdf.id, material.page_start)');
+    expect(viewer).toContain('원본 PDF 보기');
+    // 주소를 손으로 짓지 않는다 — 두 곳에 적으면 파라미터 이름이 갈린다
+    expect(codeOf(viewer)).not.toMatch(/`\/pdf\/\$\{/);
   });
 });

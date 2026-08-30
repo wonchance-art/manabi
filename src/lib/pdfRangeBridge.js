@@ -52,3 +52,24 @@ export function bridgeStartPage({ livePage, lastPageRead, pageCount } = {}) {
   }
   return 1;
 }
+
+/* ── 역방향: 자료 → 원본 PDF (v2-H R2, 설계 §1) ──────────────────────────
+   다리를 한 방향으로만 놓으면 "이 대목 원문이 어떻게 생겼더라"에서 다시 막힌다.
+   재료는 이미 완비돼 있다 — 자료 행의 source_pdf_id·page_start가 돌아갈 자리를 안다. */
+
+/** 원본 PDF의 그 쪽으로 가는 주소. 쪽을 모르면 첫 쪽(=파라미터 없음). */
+export function pdfViewerHref(pdfId, page) {
+  if (!pdfId) return null;
+  const base = `/pdf/${pdfId}`;
+  return Number.isFinite(page) && page >= 1 ? `${base}?page=${Math.floor(page)}` : base;
+}
+
+/**
+ * 기본 경로(<embed>)에서 쪽을 여는 방법 — PDF Open Parameters의 `#page=N`.
+ * pdf.js 경로처럼 우리가 렌더를 쥐고 있지 않으므로 브라우저 내장 뷰어에게 조각으로 부탁한다.
+ */
+export function embedSrcWithPage(pdfUrl, page) {
+  if (!pdfUrl) return '';
+  const base = `${pdfUrl}#toolbar=1&navpanes=0`;
+  return Number.isFinite(page) && page >= 1 ? `${base}&page=${Math.floor(page)}` : base;
+}
