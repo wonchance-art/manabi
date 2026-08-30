@@ -7,6 +7,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { cacheMaterial, getCachedMaterial } from '../lib/offlineCache';
 import OfflineNotice from '../components/OfflineNotice';
+import { useReadingTimer } from '../lib/useReadingTimer';
+import { countReadableChars } from '../lib/readingTimer';
 import { computeHeadingLevels } from '../lib/headingHeuristics';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
@@ -374,10 +376,22 @@ export default function ViewerPage() {
     if (addCommentMutation.isSuccess) setCommentInput('');
   }, [addCommentMutation.isSuccess]);
 
+  // 유창성 측정(v2-I R1a) — 카드·시트가 열려 있는 동안은 멈춘다: 사전을 찾는 시간을
+  // 빼지 않으면 "많이 찾아볼수록 느린 독자"가 되어 숫자가 학습을 왜곡한다(설계 §1).
+  const readingTimer = useReadingTimer({
+    enabled: !!user && !!material,
+    paused: isSheetOpen || !!selectedToken,
+  });
+
   const markCompleteMutation = useReadingCompletion({
     materialId: id, user, profile, fetchProfile,
     material, generateQuiz,
     toast,
+    // 완독 순간의 순수 읽기 시간·글자수 — 기록 여부 판정은 훅이 한다.
+    readingMetricInput: () => ({
+      ms: readingTimer.readMs(),
+      chars: countReadableChars(material?.raw_text),
+    }),
   });
 
   const saveGrammarNoteMutation = useGrammarNoteSave({

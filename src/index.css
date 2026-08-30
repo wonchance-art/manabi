@@ -7393,6 +7393,17 @@ body.is-review-session .page-container { padding-top: 8px; }
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* 유창성 한 줄(v2-I R1a) — 완독 요약 위, 조용한 톤. 숫자가 주인공이 아니다.
+   자료 제목에 붙여 두고(무엇을 읽었나의 연장) 요약 상자와는 28px를 유지한다 —
+   부제 margin만 믿으면 이 줄이 상자에 달라붙어 '요약 머리글'처럼 보였다(렌더 실측). */
+.completion-modal__subtitle:has(+ .completion-modal__reading) { margin-bottom: 8px; }
+.completion-modal__reading {
+  margin: 0 0 28px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
 .completion-stats {
   display: flex;
   align-items: center;
