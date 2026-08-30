@@ -471,6 +471,18 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 /* ========= Offline Banner ========= */
+/* 저장된 사본 안내(v2-N R1) — 전역 오프라인 배너와 달리 '지금 보는 이 화면이
+   캐시'라는 사실만 조용히 알린다. 흐름을 막지 않도록 고정 배너가 아닌 인라인 줄. */
+.offline-notice {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--warning);
+  border-radius: var(--radius-sm, 4px);
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
 .offline-banner {
   position: fixed;
   top: var(--gnb-height);

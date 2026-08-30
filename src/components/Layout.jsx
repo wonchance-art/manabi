@@ -183,7 +183,7 @@ export default function Layout({ children }) {
       {/* 오프라인 배너 */}
       {isOffline && (
         <div className="offline-banner" role="alert" aria-live="assertive">
-          인터넷 연결이 끊겼습니다. 일부 기능이 제한될 수 있어요.
+          인터넷 연결이 끊겼습니다. 저장해 둔 자료·단어장은 그대로 볼 수 있어요.
         </div>
       )}
 

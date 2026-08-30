@@ -11,6 +11,7 @@ import { countDueGrammar } from '../lib/grammarSrs';
 import { useTTS } from '../lib/useTTS';
 import { callGemini } from '../lib/gemini';
 import Button from '../components/Button';
+import OfflineNotice from '../components/OfflineNotice';
 import ConfirmModal from '../components/ConfirmModal';
 import VocabList from './VocabList';
 import VocabReview from './VocabReview';
@@ -582,6 +583,9 @@ export default function VocabPage() {
 
   return (
     <div className="page-container">
+
+      {/* 네트워크가 죽어 캐시 스냅샷으로 살아난 화면임을 알린다(v2-N R1) */}
+      {vocab?.__offline && <OfflineNotice what="단어장" />}
 
       {/* 헤더 — 세션 중에는 없앤다. 부제와 총계는 아래 통계와 중복이라 뺐다. */}
       {!inSession && (

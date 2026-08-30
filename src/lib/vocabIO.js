@@ -1,5 +1,6 @@
 // 단어장 데이터 입출력 — Supabase fetch · CSV/Anki 가져오기·내보내기
 import { supabase } from './supabase';
+import { cacheVocabSnapshot, getCachedVocabSnapshot } from './offlineCache';
 
 /**
  * 저장용 word_text 정규화 — item_key(=user_vocabulary.word_text) 통일 규약.
@@ -19,7 +20,28 @@ export function normalizeWordText({ surface, base } = {}) {
   return base || surface || '';
 }
 
+/**
+ * 단어장 조회 — 온라인이면 언제나 네트워크가 정본이고(계약 6), 성공분을 오프라인용
+ * 스냅샷으로 남긴다(사용자 조작 0). 네트워크가 죽었을 때만 스냅샷으로 폴백한다.
+ * 스냅샷 행은 next_review_at을 포함하므로 '오늘 due'가 여기서 파생된다(v2-N R1).
+ * 반환 배열에는 열거 불가 __offline 표식을 달아 UI가 안내를 띄운다 — 배열 원소·순회
+ * 결과는 온라인과 완전히 같아 소비처는 무개입이다.
+ */
 export async function fetchVocab(userId) {
+  try {
+    const rows = await fetchVocabFromNetwork(userId);
+    // fire-and-forget이되 **완전히** 격리한다 — 동기 throw든 rejection이든 캐시 실패가
+    // 아래 catch로 새면 네트워크 성공분이 폴백 경로로 빠진다(계약 4·6 동시 위반).
+    Promise.resolve().then(() => cacheVocabSnapshot(userId, rows)).catch(() => {});
+    return rows;
+  } catch (err) {
+    const cached = await getCachedVocabSnapshot(userId);
+    if (!cached) throw err;             // 캐시가 없으면 기존 에러 경로 그대로(계약 5)
+    return Object.defineProperty(cached, '__offline', { value: true, enumerable: false });
+  }
+}
+
+async function fetchVocabFromNetwork(userId) {
   // 단어 본체는 무조건 fetch — JOIN 실패 시에도 단어장이 비어 보이지 않게
   const { data, error } = await supabase
     .from('user_vocabulary')
