@@ -84,6 +84,29 @@ describe('감지 B — 분리형 근접(V…O ≤2토큰, 사이 조사·수량�
     const words = tokenizeZhLine('他去理了发。').map((t) => t.text);
     expect(words).toContain('去理'); // R1 문서화 HMM 병합 — 단어성 판정(판별기) 영역
   });
+
+  it('V+상조사 2자 클러스터(오너 보고 下过雨): 下过/v 조각의 base만 VO로, 표면·분할 불변', () => {
+    // jieba 사전이 下过·刮过를 통째 등재 — x가 아니라 R1 되가름 대상도 아니다(穿过 보호)
+    const line = '昨天下过雨。';
+    const xiaguo = tok(line, '下过');
+    expect(xiaguo.base_form).toBe('下雨');
+    expect(xiaguo.furigana.split(' ')).toHaveLength(2); // 표면 병음 그대로
+    expect(tok(line, '雨').base_form).toBe('雨');        // O 불변(이중 계상 방지)
+    expect(tok('下过一场雨。', '下过').base_form).toBe('下雨'); // 클러스터 + 회랑
+    expect(tok('他下过班。', '下过').base_form).toBe('下班');   // 시드 기존 항목도 잡는 보너스
+  });
+
+  it('날씨 이합사 — f-태그 B·l-토큰 캐리어·연속형', () => {
+    expect(tok('昨天下了雨。', '下').base_form).toBe('下雨');       // 下/f (방위사 기본값)
+    expect(tok('外面下了一场雨。', '下').base_form).toBe('下雨');
+    expect(tok('外面刮了一阵风。', '刮').base_form).toBe('刮风');   // 一阵风/l 융합 캐리어
+    expect(tok('下雨了。', '下雨').base_form).toBe('下雨');         // 연속형 그대로
+  });
+
+  it('클러스터 가드 — 실단어 穿过·사전 밖 통짜(吃过饭)는 불변', () => {
+    expect(tok('他穿过马路。', '穿过').base_form).toBe('穿过'); // 穿路 미등재 + 马路 캐리어 아님
+    expect(tok('吃过饭了。', '吃过饭').base_form).toBe('吃过饭'); // 吃饭은 시드 배제(자유 VO 방침)
+  });
 });
 
 describe('감지 C — x-병합 양사 个 꼬리 분리 → B 합류', () => {

@@ -129,20 +129,28 @@ function markZhSeparable(entries) {
       const vo = chars[0] + chars[2];
       if (ZH_SEPARABLE[vo]) return { ...e, baseForm: vo };
     }
-    // B. 분리형 회랑: V(1자) 뒤 3토큰 이내의 O — O는 단독 토큰이거나 수량구 캐리어
-    //    (一架/m·一觉/d 오태그 구제)의 말미 글자. 회랑의 사이 토큰은 전부 조사·수량구
-    //    화이트리스트여야 하고, 밖을 만나면 즉시 중단(오탐 방지 — 我吵他架 불변).
+    // B. 분리형 회랑: V 클러스터 뒤 3토큰 이내의 O — O는 단독 토큰이거나 수량구 캐리어
+    //    (一架/m·一觉/d 오태그·一阵风/l 융합 구제)의 말미 글자. 회랑의 사이 토큰은 전부
+    //    조사·수량구 화이트리스트여야 하고, 밖을 만나면 즉시 중단(오탐 방지 — 我吵他架·
+    //    穿过马路 불변). V 클러스터는 1자 V 또는 V+상조사 2자 병합 토큰(下过/v·刮过/v가
+    //    jieba 사전에 통째 등재된 실측 — 오너 보고 下过雨) — 후자는 조각의 base만 VO로
+    //    간다(표면·분할 불변, x가 아니라 R1 되가름 대상도 아니다: 실단어 穿过·睡着 보호).
     //    ※ 창 3은 실측 보정: jieba가 수량구를 융합하면(吵了一架) O가 +2에, 융합하지
-    //    않으면(抽了 一根 烟·请了 三天 假) +3에 온다. O 토큰은 건드리지 않는다
+    //    않으면(抽了 一根 烟·结过 一次 婚) +3에 온다. O 토큰은 건드리지 않는다
     //    (한 만남 = 한 단어, 이중 계상 방지).
-    if (chars.length === 1 && SEP_V_TAGS.has(e.tag)) {
+    const vChar = SEP_V_TAGS.has(e.tag)
+      ? chars.length === 1 ? e.word
+        : chars.length === 2 && ASPECT_TAG[chars[1]] ? chars[0]
+          : null
+      : null;
+    if (vChar) {
       for (let j = i + 1; j <= i + 3 && j < entries.length; j++) {
         const t = entries[j];
         const oc = [...t.word];
         const o = oc.length === 1 ? t.word
           : oc.length <= 4 && (t.tag === 'm' || t.tag === 'q' || t.tag === 'mq' || NUM_HEAD.test(t.word))
             ? oc[oc.length - 1] : null; // ≤4: 一会儿天/m처럼 수량구+O 통짜 융합 실측
-        if (o && ZH_SEPARABLE[e.word + o]) return { ...e, baseForm: e.word + o };
+        if (o && ZH_SEPARABLE[vChar + o]) return { ...e, baseForm: vChar + o };
         if (!SEP_MID_OK(t.tag)) break;
       }
     }
