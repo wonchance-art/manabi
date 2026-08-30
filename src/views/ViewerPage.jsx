@@ -9,6 +9,8 @@ import { cacheMaterial, getCachedMaterial } from '../lib/offlineCache';
 import OfflineNotice from '../components/OfflineNotice';
 import { useReadingTimer } from '../lib/useReadingTimer';
 import { countReadableChars } from '../lib/readingTimer';
+import { useReadingPacer } from '../lib/useReadingPacer';
+import { dwellMs, defaultTargetCpm, paceHint, stepCpm } from '../lib/readingPacer';
 import { computeHeadingLevels } from '../lib/headingHeuristics';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
@@ -174,6 +176,7 @@ export default function ViewerPage() {
           showToneColors, setShowToneColors,
           wordStateHl, setWordStateHl,
           focusMode, setFocusMode,
+          autoPace, setAutoPace, paceCpm, setPaceCpm,
           theme, setTheme, fontFamily, setFontFamily, pronDisplay, setPronDisplay,
           autoSpeakOnClick, setAutoSpeakOnClick, ttsRate, setTtsRate,
           settingsOpen, setSettingsOpen } = settings;
@@ -378,6 +381,11 @@ export default function ViewerPage() {
 
   // 유창성 측정(v2-I R1a) — 카드·시트가 열려 있는 동안은 멈춘다: 사전을 찾는 시간을
   // 빼지 않으면 "많이 찾아볼수록 느린 독자"가 되어 숫자가 학습을 왜곡한다(설계 §1).
+  // 이번 읽기에서 페이서가 한 번이라도 문장을 넘겼나 — 완독 detail의 paced가 여기서 온다.
+  // 페이서로 읽은 속도는 '내가 낸 속도'가 아니라 '내가 설정한 속도'라, 표식 없이 섞이면
+  // 유창성 지표가 자기 설정값을 되비추는 거울이 된다(설계 §8).
+  const pacedRef = useRef(false);
+
   const readingTimer = useReadingTimer({
     enabled: !!user && !!material,
     paused: isSheetOpen || !!selectedToken,
@@ -391,6 +399,7 @@ export default function ViewerPage() {
     readingMetricInput: () => ({
       ms: readingTimer.readMs(),
       chars: countReadableChars(material?.raw_text),
+      paced: pacedRef.current,
     }),
   });
 
@@ -821,6 +830,36 @@ export default function ViewerPage() {
       el.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
     }
   };
+
+  // 자동 진행(v2-I R1b) — 지정 문장에 체류하다 다음으로. 발동 조건이 곧 정지 조건이다:
+  // 설정 켬 + 집중 모드 + 문장 지정. 빈 공간 탭으로 지정이 풀리면 셋 중 하나가 깨져
+  // 진행도 함께 끝난다(설계 §5 — 별도 ▶/■ 버튼이 필요 없는 이유).
+  const pickedSentence = sentences.find((s2) => s2.rawIdx === pickedLineIdx) || null;
+  const paceAvgChars = useMemo(() => (
+    sentences.length
+      ? sentences.reduce((n, s2) => n + countReadableChars(s2.text), 0) / sentences.length
+      : null
+  ), [sentences]);
+  const paceTargetCpm = paceCpm || defaultTargetCpm(materialLang);
+  const paceArmed = autoPace && focusMode && pickedSentence !== null;
+  const paceDwell = paceArmed
+    ? dwellMs({ chars: countReadableChars(pickedSentence.text), targetCpm: paceTargetCpm })
+    : null;
+  // 카드·시트 열림 = 찾아보는 중 — 진행도 측정도 함께 멈춘다(I-a와 같은 신호).
+  const paceHeld = isSheetOpen || !!selectedToken;
+
+  useReadingPacer({
+    enabled: paceArmed,
+    dwell: paceDwell,
+    paused: paceHeld,
+    cursor: pickedLineIdx,
+    onAdvance: () => {
+      // 마지막 문장이면 자동 종료 — 넘길 곳이 없으면 paced 표식도 남기지 않는다.
+      if (!adjacentSentence(sentences, pickedLineIdx, 1)) return;
+      pacedRef.current = true;
+      moveSentence(1);
+    },
+  });
 
   // ▲▼ 한 벌 — 데스크톱 플로팅 필과 모바일 하단 바가 같은 버튼을 다른 옷(className)으로
   // 입는다. 모바일에서 필이 시트(z 95)에 덮여 못 쓰는 문제의 재배치(오너 보고 2026-08-20):
@@ -2087,6 +2126,37 @@ export default function ViewerPage() {
                     <span className="rsheet-txt"><b>집중 모드</b><span>지정한 문장만 밝게</span></span>
                     <span className="rsheet-switch"><input type="checkbox" checked={focusMode} onChange={() => setFocusMode(v => !v)} /><span className="rsheet-knob" /></span>
                   </label>
+                  {/* 자동 진행(v2-I R1b) — 집중 모드 바로 아래. 전제가 집중 모드라 붙여 둔다.
+                      발동은 '문장 지정', 정지는 '빈 공간 탭' — 새 버튼을 만들지 않는다(설계 §5). */}
+                  <label className="rsheet-swrow">
+                    <span className="rsheet-txt"><b>자동 진행</b><span>집중 모드에서 지정한 문장에 머물다 다음으로</span></span>
+                    <span className="rsheet-switch"><input type="checkbox" checked={autoPace} onChange={() => setAutoPace(v => !v)} /><span className="rsheet-knob" /></span>
+                  </label>
+                  {autoPace && (
+                    <div className="rsheet-subrow rsheet-subrow--pace">
+                      <span className="rsheet-sublab">속도</span>
+                      <div className="rsheet-pace" role="group" aria-label="자동 진행 속도">
+                        <button type="button" aria-label="느리게" onClick={() => setPaceCpm(stepCpm(paceTargetCpm, -1))}>− 느리게</button>
+                        <b>{paceTargetCpm}자/분</b>
+                        <button type="button" aria-label="빠르게" onClick={() => setPaceCpm(stepCpm(paceTargetCpm, 1))}>빠르게 +</button>
+                      </div>
+                      {/* 조절은 자/분으로 하되 초를 병기한다 — 오너가 처음 말한 "몇 초 후"를
+                          그대로 쓸 수 있게(설계 §7②). 숫자 카운트다운은 본문에 두지 않는다. */}
+                      <span className="rsheet-pace__hint">
+                        {(() => {
+                          const h = paceHint({
+                            chars: pickedSentence ? countReadableChars(pickedSentence.text) : null,
+                            avgChars: paceAvgChars,
+                            targetCpm: paceTargetCpm,
+                          });
+                          const parts = [];
+                          if (h.thisSec != null) parts.push(`이 문장(${h.thisChars}자) ≈ ${h.thisSec}초`);
+                          if (h.avgSec != null) parts.push(`평균 ≈ ${h.avgSec}초`);
+                          return parts.join(' · ');
+                        })()}
+                      </span>
+                    </div>
+                  )}
                   {materialLang === 'Chinese' && (
                     <label className="rsheet-swrow">
                       <span className="rsheet-txt"><b>성조 색상</b><span>병음을 성조별 색으로</span></span>
@@ -2212,7 +2282,7 @@ export default function ViewerPage() {
       {/* Reader Area — 인앱 토큰 범위 지정(드래그) 이벤트는 여기서 위임 수신 */}
       <div
         ref={readerRef}
-        className={`card reader-area reader-area--${theme}${focusMode && (pickedLineIdx !== null || tokenRange.range) ? ' reader-area--focus' : ''}${wordStateHl ? ' reader-area--hl' : ''}`}
+        className={`card reader-area reader-area--${theme}${focusMode && (pickedLineIdx !== null || tokenRange.range) ? ' reader-area--focus' : ''}${wordStateHl ? ' reader-area--hl' : ''}${paceDwell ? ' reader-area--pacing' : ''}${paceDwell && paceHeld ? ' reader-area--pacing-hold' : ''}`}
         style={{
           fontSize: `${fontSize}rem`,
           // 자료 언어의 표준 자형이 우선(오너 확정) — 중국어는 SC, 일본어는 JP를 사용자
@@ -2224,6 +2294,8 @@ export default function ViewerPage() {
               ? `var(--font-noto-jp, 'Noto Sans JP'), ${fontFamily}`
               : fontFamily,
           gap: `${lineGap}px ${charGap}rem`, '--char-gap': `${charGap}rem`,
+          // 체류 표시는 CSS 애니메이션이 시간을 잰다 — JS 프레임 루프 0(설계 §7①).
+          ...(paceDwell ? { '--pace-dwell': `${paceDwell}ms` } : null),
         }}
         onPointerDown={tokenRange.handlePointerDown}
         onClickCapture={tokenRange.handleClickCapture}
@@ -2313,7 +2385,11 @@ export default function ViewerPage() {
             });
           }
 
-          const renderToken = (tokenId, lineHead = null, picked = false) => {
+          const renderToken = (tokenId, lineHead = null, picked = false, paceSlice = null) => {
+            // 체류 선의 자기 몫 구간(v2-I R1b) — 오른쪽부터 물러나므로 마지막 토큰이 먼저 빈다.
+            const paceStyle = paceSlice
+              ? { '--pace-from': paceSlice.from, '--pace-to': paceSlice.to }
+              : undefined;
             const token = json.dictionary[tokenId];
             if (!token) return null;
             // 막대 지정(줄 전체)과 인앱 범위 지정이 같은 이펙트 언어를 공유한다(#1002)
@@ -2343,7 +2419,7 @@ export default function ViewerPage() {
               return (
                 <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
                   data-tid={tokenId}
-                  className={`word-token word-token--failed${pickedClass}`} title="분석 실패 — 재시도 버튼을 눌러주세요">
+                  className={`word-token word-token--failed${pickedClass}`} style={paceStyle} title="분석 실패 — 재시도 버튼을 눌러주세요">
                   {linePick}
                   <span className="furigana" />
                   <span className="surface">{token.text}</span>
@@ -2378,6 +2454,7 @@ export default function ViewerPage() {
                 data-tid={tokenId}
                 data-text={token.text}
                 className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}`}
+                style={paceStyle}
                 role="button" tabIndex={0}
                 onClick={() => handleTokenClick(token, tokenId)}
                 onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleTokenClick(token, tokenId))}>
@@ -2469,10 +2546,28 @@ export default function ViewerPage() {
 
             const isPicked = pickedLineIdx === rawIdx;
 
+            // 자동 진행 체류 선 — 지정 문장 안에서 각 토큰이 '언제 지워질지'를 글자수
+            // 비례로 나눈다. 선은 오른쪽 끝에서 물러나므로 토큰 i의 구간은 [1-e, 1-s].
+            // 나눗셈은 여기서 한 번이고, 실제 시간은 CSS가 잰다(JS 프레임 루프 0).
+            const paceSlices = isPicked && paceDwell ? (() => {
+              const ids = lineTokenIds.slice(startIdx);
+              const lens = ids.map((id) => countReadableChars(json.dictionary[id]?.text || ''));
+              const total = lens.reduce((a, b) => a + b, 0);
+              if (!total) return null;
+              const m = new Map();
+              let acc = 0;
+              for (let i = 0; i < ids.length; i++) {
+                const s2 = acc / total;
+                acc += lens[i];
+                m.set(ids[i], { from: 1 - acc / total, to: 1 - s2 });
+              }
+              return m;
+            })() : null;
+
             return (
               <span key={gi} className={hClass || undefined} style={{ display: 'contents' }}>
                 {lineTokenIds.slice(startIdx).map((id, ti) =>
-                  renderToken(id, ti === 0 && lineText.length >= 2 ? { text: lineText, rawIdx } : null, isPicked)
+                  renderToken(id, ti === 0 && lineText.length >= 2 ? { text: lineText, rawIdx } : null, isPicked, paceSlices?.get(id) || null)
                 )}
                 {gi < lineGroups.length - 1 && <div className="line-break" />}
               </span>

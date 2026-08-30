@@ -32,6 +32,10 @@ export function useViewerSettings() {
   const [focusMode, setFocusModeRaw] = useState(() => readPref('focusMode', false));
   // 단어 상태 하이라이트(링큐식 B안 — 배경색, 오너 확정 2026-08-27). 옵트인: 기본 꺼짐.
   const [wordStateHl, setWordStateHlRaw] = useState(() => readPref('wordStateHl', false));
+  // 자동 진행(v2-I R1b) — 지정 문장에 체류하다 다음으로. 집중 모드가 전제. 옵트인: 기본 꺼짐.
+  const [autoPace, setAutoPaceRaw] = useState(() => readPref('autoPace', false));
+  // 목표 속도(자/분). null = 아직 안 고름 → 언어별 기본값(readingPacer가 정본).
+  const [paceCpm, setPaceCpmRaw] = useState(() => readPref('paceCpm', null));
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const setFontSize = (v) => { const val = typeof v === 'function' ? v(fontSize) : v; setFontSizeRaw(val); savePref('fontSize', val); };
@@ -46,6 +50,8 @@ export function useViewerSettings() {
   const setShowToneColors = (v) => { const val = typeof v === 'function' ? v(showToneColors) : v; setShowToneColorsRaw(val); savePref('showToneColors', val); };
   const setWordStateHl = (v) => { const val = typeof v === 'function' ? v(wordStateHl) : v; setWordStateHlRaw(val); savePref('wordStateHl', val); };
   const setShowHanjaKo = (v) => { const val = typeof v === 'function' ? v(showHanjaKo) : v; setShowHanjaKoRaw(val); savePref('showHanjaKo', val); };
+  const setAutoPace = (v) => { const val = typeof v === 'function' ? v(autoPace) : v; setAutoPaceRaw(val); savePref('autoPace', val); };
+  const setPaceCpm = (v) => { const val = typeof v === 'function' ? v(paceCpm) : v; setPaceCpmRaw(val); savePref('paceCpm', val); };
 
   return {
     fontSize, setFontSize,
@@ -60,6 +66,8 @@ export function useViewerSettings() {
     showToneColors, setShowToneColors,
     wordStateHl, setWordStateHl,
     focusMode, setFocusMode,
+    autoPace, setAutoPace,
+    paceCpm, setPaceCpm,
     settingsOpen, setSettingsOpen,
   };
 }
