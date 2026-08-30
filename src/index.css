@@ -10062,6 +10062,35 @@ body.is-review-session .page-container { padding-top: 8px; }
 }
 .tile-modal__num { max-width: 90px; text-align: right; }
 
+/* 목표 과정 — 언어·레벨 두 칸(D-Day 모달). 좁은 화면에서 두 칸이 한 줄에 들어오도록 폭을 나눈다. */
+.dday-goal { display: flex; gap: 6px; min-width: 0; }
+.dday-goal__sel { flex: 1 1 0; min-width: 0; padding: 6px 8px; font-size: 0.85rem; }
+
+/* ── 궤도 줄 (v2-D R2) — 목표를 세운 사람에게만 뜨는 홈 머리 한 줄 ── */
+.goal-track { display: flex; flex-direction: column; justify-content: center; gap: 8px; }
+.goal-track__head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
+.goal-track__title { font-weight: 800; font-size: 0.95rem; color: var(--text-primary); }
+.goal-track__count { font-size: 0.82rem; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.goal-track__verdict {
+  /* 알약은 패딩 때문에 baseline이 아래로 밀린다 — 혼자만 가운데로 맞춰 머리 줄이 부풀지 않게. */
+  margin-left: auto; align-self: center;
+  padding: 2px 9px; border-radius: 99px;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.02em;
+}
+/* 판정은 상태를 알리는 것이지 성적이 아니다 — 셋 다 같은 채도로 두고 색만 나눈다. */
+.goal-track__verdict.is-easy { background: rgba(74,138,92,0.16); color: #4A8A5C; }
+.goal-track__verdict.is-ontrack { background: var(--bg-elevated); color: var(--text-secondary); }
+.goal-track__verdict.is-late { background: rgba(232,118,60,0.16); color: #E8763C; }
+/* 진도 막대 — 진도표(myplan-bar)와 같은 결. 숫자와 같은 것을 말하되 한눈에 들어온다. */
+/* flex-shrink 0 — 좁은 화면에서 본문이 두 줄이 되면 6px 막대가 0으로 눌려 사라진다(실측). */
+.goal-track__bar { flex: 0 0 6px; border-radius: 99px; background: var(--bg-elevated); overflow: hidden; }
+.goal-track__fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent, var(--primary))); transition: width 0.3s ease; }
+.goal-track__line {
+  margin: 0; font-size: 0.84rem; color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.goal-track__line b { color: var(--text-primary); font-weight: 700; }
+
 .hm-day {
   aspect-ratio: 1; width: 100%;
   border: none; padding: 0; border-radius: 2px;
