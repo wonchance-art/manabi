@@ -32,6 +32,10 @@ describe('check-furigana mixed-yomi gate', () => {
 
     expect(n4.fail).toEqual([]);
     expect(n5.fail).toEqual([]);
-    expect(n4.annotated + n5.annotated).toBe(61);
+    // 요구는 이름 그대로 **「0건으로 축소하지 않는다」** — 게이트가 빈 코퍼스를 검사하며
+    // 공허하게 통과하는 것을 막는 것이다. 등호(toBe)는 그 요구를 넘어서 **콘텐츠가 늘어도**
+    // 깨진다(IP v2 되살리기로 예문 하나가 늘며 61→62로 실제로 깨졌다). 위 `fail` 단언이
+    // 품질을 이미 책임지므로, 여기서 지킬 것은 축소되지 않는다는 하한 하나다.
+    expect(n4.annotated + n5.annotated).toBeGreaterThanOrEqual(61);
   });
 });
