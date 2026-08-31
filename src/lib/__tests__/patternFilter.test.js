@@ -229,8 +229,9 @@ describe('§5 이음새 신설 0 — 읽기만 하고, 좁힐 때만 읽는다',
 
   it("'전체'로 보는 사람에게는 두 조회 다 안 태운다", () => {
     const viewer = codeOf(read('src/views/ViewerPage.jsx'));
-    const zh = sliceBetween(viewer, 'const patternZh =', ';');
-    expect(zh).toContain('showPatterns');
+    const on = sliceBetween(viewer, 'const patternOn =', ';');
+    expect(on).toContain('showPatterns');
+    expect(on).toContain('supportsPatterns(materialLang)');
     expect(sliceBetween(viewer, 'const patternDueOn =', ';')).toContain("patternFilter === 'due'");
     expect(sliceBetween(viewer, 'const patternWeakOn =', ';')).toContain("patternFilter === 'weak'");
     const due = sliceBetween(viewer, "queryKey: ['pattern-due'", '});');
@@ -265,8 +266,9 @@ describe('배선 — 필터를 우회할 길이 없다', () => {
     expect(s).toContain("return PATTERN_FILTERS.includes(v) ? v : 'all';");
   });
 
-  it('세그먼트는 문법 표시를 켠 중국어 자료에서만 — 끄면 고를 것이 없다', () => {
-    expect(viewer).toContain("{materialLang === 'Chinese' && showPatterns && (");
+  it('세그먼트는 문법 표시를 켠 지원 언어에서만 — 끄면 고를 것이 없다', () => {
+    // R3에서 지원 언어가 둘(중국어·일본어)로 늘었다 — 게이트는 한 곳(supportsPatterns)이 정한다.
+    expect(viewer).toContain('{supportsPatterns(materialLang) && showPatterns && (');
     expect(viewer).toContain('aria-label="문법 표시 범위"');
     expect(viewer).toContain("onClick={() => setPatternFilter('all')}>전체<");
     expect(viewer).toContain("onClick={() => setPatternFilter('due')}>복습할 것<");

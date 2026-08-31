@@ -21,7 +21,7 @@ import { useToast } from '../lib/ToastContext';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 import PatternCard from '../components/PatternCard';
-import { dueChapterSet, filterNote, filterScan, loadPatternIndex, scanTokens } from '../lib/patternIndex';
+import { dueChapterSet, filterNote, filterScan, loadPatternIndex, scanTokens, supportsPatterns } from '../lib/patternIndex';
 import { fetchDuePatternRows } from '../lib/patternRows';
 import { weakChapterSet } from '../lib/weaknessProfile';
 import { fetchWeaknessRows } from '../lib/weaknessRows';
@@ -1136,29 +1136,37 @@ export default function ViewerPage() {
     }
   };
 
-  // 문법 표시(v2-G R1) — 정본 문형 인덱스는 토글이 켜질 때만 지연 로드(304KB 청크,
-  // 이후 캐시). 기본 꺼짐인 기능 때문에 모든 독자가 그 값을 치를 이유가 없다(한자 대조 결).
+  // 문법 표시(v2-G R1) — 정본 문형 인덱스는 토글이 켜질 때만 지연 로드(중국어 304KB·
+  // 일본어 852문형). 기본 꺼짐인 기능 때문에 모든 독자가 그 값을 치를 이유가 없다.
+  // 자료 언어가 바뀌면 인덱스도 갈아야 한다 — 안 갈면 중국어 커널로 일본어를 훑는다.
   const [patternIndex, setPatternIndex] = useState(null);
+  const [patternIndexLang, setPatternIndexLang] = useState(null);
   useEffect(() => {
-    if (!showPatterns || materialLang !== 'Chinese' || patternIndex) return undefined;
+    if (!showPatterns || !supportsPatterns(materialLang) || patternIndexLang === materialLang) return undefined;
     let alive = true;
-    loadPatternIndex(materialLang).then((ix) => { if (alive) setPatternIndex(ix); }).catch(() => {});
+    loadPatternIndex(materialLang).then((ix) => {
+      if (!alive) return;
+      setPatternIndex(ix);
+      setPatternIndexLang(materialLang);
+    }).catch(() => {});
     return () => { alive = false; };
-  }, [showPatterns, materialLang, patternIndex]);
+  }, [showPatterns, materialLang, patternIndexLang]);
 
   // 표지 스캔 — 본문이 바뀌거나 인덱스가 오면 한 번. 토큰 수 × 최대 4의 O(n)이라
   // 자료당 한 번 계산해 두면 렌더는 Map 조회뿐이다(설계 §5 성능 대응).
   const patternScan = useMemo(() => {
     const json = material?.processed_json;
-    if (!showPatterns || !patternIndex || !json?.sequence) return null;
+    // 언어가 바뀐 직후 한 프레임 동안 옛 인덱스가 남는다 — 그때 스캔하면 남의 언어
+    // 커널로 훑은 밑줄이 잠깐 깜빡인다.
+    if (!showPatterns || !patternIndex || patternIndexLang !== materialLang || !json?.sequence) return null;
     const tokens = json.sequence.map((id) => ({ id, text: json.dictionary?.[id]?.text || '' }));
     return scanTokens(tokens, patternIndex);
-  }, [showPatterns, patternIndex, material?.processed_json]);
+  }, [showPatterns, patternIndex, patternIndexLang, materialLang, material?.processed_json]);
 
   // '복습할 것' 필터(v2-G R2) — 이미 쌓이고 있는 grammar_review 큐를 읽기만 한다.
   // 좁힐 때만 조회한다: 전체로 보는 사람에게 쿼리를 태울 이유가 없다(goal-known 결).
-  const patternZh = showPatterns && materialLang === 'Chinese';
-  const patternDueOn = patternZh && patternFilter === 'due';
+  const patternOn = showPatterns && supportsPatterns(materialLang);
+  const patternDueOn = patternOn && patternFilter === 'due';
   const { data: dueRows, isPending: duePending } = useQuery({
     queryKey: ['pattern-due', user?.id, materialLang],
     queryFn: () => fetchDuePatternRows(user.id, materialLang),
@@ -1171,7 +1179,7 @@ export default function ViewerPage() {
 
   // '약한 것'(v2-A 결합점) — 약점 정본은 v2-A가 갖고 여기서는 챕터 집합만 받아 쓴다.
   // 조회도 v2-A의 것을 그대로 재사용한다(주간 리포트 한 줄과 같은 재료 — 중복 신설 0).
-  const patternWeakOn = patternZh && patternFilter === 'weak';
+  const patternWeakOn = patternOn && patternFilter === 'weak';
   const { data: weakRows, isPending: weakPending } = useQuery({
     queryKey: ['pattern-weak', user?.id],
     queryFn: () => fetchWeaknessRows(user.id),
@@ -1190,7 +1198,7 @@ export default function ViewerPage() {
   );
   // 밑줄이 하나도 없는 화면은 "필터가 걸렸다"가 아니라 "고장"으로 읽힌다(v2-K 빈 상태).
   const patternNote = filterNote({
-    mode: patternZh ? patternFilter : 'all',
+    mode: patternOn ? patternFilter : 'all',
     signedIn: !!user,
     loading: !!user && (patternDueOn ? duePending : weakPending),
     markedCount: (patternDueOn ? dueSlugs?.size : weakSlugs?.size) || 0,
@@ -2297,9 +2305,10 @@ export default function ViewerPage() {
                       <span className="rsheet-switch"><input type="checkbox" checked={showHanjaKo} onChange={() => setShowHanjaKo(v => !v)} /><span className="rsheet-knob" /></span>
                     </label>
                   )}
-                  {/* 문법 표시(v2-G R1) — 중국어 전용 구획에 둔다. 언어 무관 층위
-                      (발음 표기·단어 상태·집중 모드) 사이에 끼우면 층위가 갈린다(focusMode 계약). */}
-                  {materialLang === 'Chinese' && (
+                  {/* 문법 표시(v2-G R1·R3) — 정본 문형이 있는 언어에서만(중국어·일본어).
+                      언어 무관 층위(발음 표기·단어 상태·집중 모드) 사이에 끼우면 층위가
+                      갈리므로 성조·한자 대조와 같은 구획 끝에 둔다(focusMode 계약). */}
+                  {supportsPatterns(materialLang) && (
                     <label className="rsheet-swrow">
                       <span className="rsheet-txt"><b>문법 표시</b><span>정본 문형의 표지에 옅은 밑줄 — 단어를 탭하면 문형과 챕터로</span></span>
                       <span className="rsheet-switch"><input type="checkbox" checked={showPatterns} onChange={() => setShowPatterns(v => !v)} /><span className="rsheet-knob" /></span>
@@ -2308,7 +2317,7 @@ export default function ViewerPage() {
                   {/* 범위(v2-G R2) — 정본 484문형을 전부 후보로 잡으면 "무엇부터"가 안 정해진다.
                       '복습할 것'은 시간이 부르고(FSRS 큐), '약한 것'은 기록이 부른다(v2-A 약점
                       정본). 둘 다 집합만 받아 쓰므로 이 화면이 약점을 계산하지 않는다. */}
-                  {materialLang === 'Chinese' && showPatterns && (
+                  {supportsPatterns(materialLang) && showPatterns && (
                     <div className="rsheet-subrow rsheet-subrow--pattern">
                       <span className="rsheet-sublab">범위</span>
                       <div className="rsheet-miniseg" role="group" aria-label="문법 표시 범위">

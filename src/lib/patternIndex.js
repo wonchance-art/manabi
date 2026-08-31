@@ -55,15 +55,75 @@ export const LOW_SIGNAL_KERNELS = new Set([
   '再见', '谢谢', '请问', '好吗', '对吗', '是吗',
 ]);
 
+/* ── 일본어 (v2-G R3) ────────────────────────────────────────────────────────
+   R1이 중국어만 연 이유가 여기 있다. 중국어 표기는 슬롯이 한글·로마자라 **한자만
+   남기면** 표지가 떨어지는데, 일본어는 고정 형태소가 대부분 **가나**다(〜てから·
+   〜なければならない). 같은 규칙을 쓰면 커널이 하나도 안 나온다.
+
+   실측이 규칙을 정했다(N5 독해 본문 526문장 · kuromoji 토큰 7,334):
+     ① 아무 제한 없이 → 밀도 42.4%  (は·の·ました·です가 글 전체를 덮는다)
+     ② 가나 3자 이상  → 15.2%       (중국어와 같은 수준이지만 최다 적중이 ました·あります)
+     ③ ② + 슬롯 있는 문형만 → 13.4%
+     ④ ③ + 정중형 활용 제외 → **4.6%**, 최다 적중이 전부 실제 표지
+   ④를 택했다. 난이도에 따라 4.6%(N5 본문) → 10.1%(N4) → 15.8%(N3) → 22.9%(N2 예문)로
+   자연히 오른다 — 어려운 글일수록 볼 만한 표지가 많다는 뜻이라 옳은 방향이다. */
+
+/** 표기가 **구문**을 말하나 — 슬롯이 없으면 문형이 아니라 어휘 항목이다(852 중 85). */
+export function hasSlotMarker(patternText) {
+  const p = String(patternText || '');
+  // 〜(슬롯) · 한국어 슬롯말(명사·な형용사) · 홀로 선 N/V/A/B.
+  // 슬롯 문자는 가나에 바로 붙는다(Nのために) — 뒤가 가나가 아니길 요구하면 못 잡는다.
+  // 경계는 라틴 문자로만 본다(다른 낱말의 일부가 아닌지).
+  return /[〜～]/.test(p) || /[가-힣]/.test(p) || /(^|[^A-Za-z])[NVAB]([^A-Za-z]|$)/.test(p);
+}
+
+/**
+ * 정중형 활용 — 일본어의 '的·了·是'다. `〜ました`는 정본 문형이 맞지만 과거 정중형
+ * 동사마다 밑줄이 붙으면 표지가 아니라 배경이 된다(실측: ました 177회로 압도적 1위).
+ */
+export const JA_LOW_SIGNAL_KERNELS = new Set([
+  'ました', 'ています', 'あります', 'ありません', 'ください', 'でした',
+  'ません', 'ませんでした', 'います', 'ですか', 'ましょう', 'たいです', 'なかった',
+]);
+
+const JA_KANA_ONLY = /^[぀-ヿ]+$/;
+
+/**
+ * 일본어 표기 → 커널. `・`·`/`는 이형태 나열이라 각각 뽑고, `()`는 선택 요소라
+ * **있는 형태와 없는 형태 둘 다** 만든다(〜あげく(に) → あげく·あげくに).
+ */
+export function kernelsOfJa(patternText) {
+  const out = new Set();
+  for (const alt of String(patternText || '').split(/[・/]/)) {
+    const t = alt
+      .replace(/[가-힣]+/g, ' ')        // 한국어 슬롯말
+      .replace(/[〜～]/g, ' ')          // 슬롯 표지
+      .replace(/[A-Za-z]/g, ' ')        // N·V·A·B 슬롯 문자
+      .replace(/[+、。？?…\s]/g, ' ');
+    for (const v of [t.replace(/[()]/g, ''), t.replace(/\([^)]*\)/g, '')]) {
+      for (const run of v.match(/[぀-ヿ一-鿿]+/g) || []) out.add(run);
+    }
+  }
+  return [...out];
+}
+
 /** 표기에서 고정 형태소만 — 슬롯(A/B·주어·형용사)과 기호는 한자가 아니라 저절로 빠진다. */
-export function kernelsOf(patternText) {
+export function kernelsOf(patternText, lang) {
+  if (lang === 'Japanese') return kernelsOfJa(patternText);
   return String(patternText || '').match(/[一-鿿]+/g) || [];
 }
 
 /** 이 커널을 표지로 쓸 수 있나(위 두 겹). */
-export function isUsableKernel(kernel) {
+export function isUsableKernel(kernel, lang) {
   const k = String(kernel || '');
-  if (!k || LOW_SIGNAL_KERNELS.has(k)) return false;
+  if (!k) return false;
+  if (lang === 'Japanese') {
+    if (JA_LOW_SIGNAL_KERNELS.has(k)) return false;
+    // 가나는 3자부터 — 한 글자 조사(は·の·を)도 두 글자 어미(です·から)도 배경이다.
+    // 한자가 섞이면 2자부터: 한자가 이미 뜻을 좁혀 준다(〜上に·〜中で).
+    return [...k].length >= (JA_KANA_ONLY.test(k) ? 3 : 2);
+  }
+  if (LOW_SIGNAL_KERNELS.has(k)) return false;
   return [...k].length >= 2 || STRONG_SINGLE_KERNELS.has(k);
 }
 
@@ -76,7 +136,7 @@ export function isUsableKernel(kernel) {
  *   주면 목록에 없는 `ch`는 **링크를 만들지 않는다**(환각·오타 차단).
  * @returns {Map<string, Array<object>>} 커널 → 패턴들(입력 순서 그대로 — 결정성)
  */
-export function buildKernelIndex(sets, { base = '', validSlugs } = {}) {
+export function buildKernelIndex(sets, { base = '', validSlugs, lang } = {}) {
   const index = new Map();
   let seq = 0;
   for (const { level, mod } of sets || []) {
@@ -98,8 +158,10 @@ export function buildKernelIndex(sets, { base = '', validSlugs } = {}) {
           ch,
           href: ch ? `${base}/grammar/${ch}` : null,
         };
-        for (const kernel of kernelsOf(item.pattern)) {
-          if (!isUsableKernel(kernel)) continue;
+        // 슬롯이 없는 표기는 구문이 아니라 어휘 항목이다 — 밑줄이 문법을 가리키지 않는다.
+        if (lang === 'Japanese' && !hasSlotMarker(item.pattern)) continue;
+        for (const kernel of kernelsOf(item.pattern, lang)) {
+          if (!isUsableKernel(kernel, lang)) continue;
           if (!index.has(kernel)) index.set(kernel, []);
           const bucket = index.get(kernel);
           // 같은 패턴이 같은 커널로 두 번 들어오지 않게(표기에 커널이 반복될 수 있다)
@@ -111,9 +173,14 @@ export function buildKernelIndex(sets, { base = '', validSlugs } = {}) {
   return index;
 }
 
-/** 표지로 볼 수 있는 토큰인가 — 한자가 없으면 문장부호·개행·로마자다. */
+/**
+ * 표지로 볼 수 있는 토큰인가 — 한자도 가나도 없으면 문장부호·개행·로마자다.
+ * 가나까지 받는 것이 일본어에는 필수고 중국어에는 무해하다: 중국어 본문에 가나가
+ * 없을뿐더러, 있더라도 중국어 커널은 한자뿐이라 이어 붙인 조각이 맞을 수 없다
+ * (실측으로 확인 — 중국어 밀도 15%가 그대로다).
+ */
 function isScannable(token) {
-  return !!token?.text && /[一-鿿]/.test(token.text);
+  return !!token?.text && /[぀-ヿ一-鿿]/.test(token.text);
 }
 
 /**
@@ -247,13 +314,30 @@ export function filterNote({ mode, signedIn, loading, markedCount, hitCount } = 
 }
 
 /* ── 지연 로드 — 토글이 켜졌을 때만 (refVocabIndex 관례) ───────────────────────
-   문형 정본은 중국어만 304KB다. 기본 꺼짐인 기능 때문에 모든 독자가 그 값을
-   치를 이유가 없다. 언어는 승인 범위(중국어)만 — 일본어 852패턴은 활용형이라
-   커널 추출 난도가 달라 R3으로 분리한다(설계 §4). */
+   문형 정본은 중국어 304KB·일본어 852패턴이다. 기본 꺼짐인 기능 때문에 모든 독자가
+   그 값을 치를 이유가 없다. 언어별로 따로 캐시해 한 언어를 읽는 사람이 다른 언어의
+   정본을 지지 않게 한다. */
+
+/** 문형 정본이 있는 언어 — 화면 게이트가 언어 이름을 흩뿌리지 않게 한 곳에 둔다. */
+export const PATTERN_LANGS = new Set(['Chinese', 'Japanese']);
+export function supportsPatterns(language) {
+  return PATTERN_LANGS.has(language);
+}
 
 let zhSetsPromise = null;
+let jaSetsPromise = null;
 
 export function loadPatternIndex(language, { validSlugs } = {}) {
+  if (language === 'Japanese') {
+    jaSetsPromise ||= Promise.all([
+      import('../content/japanese/bunkei/n5').then((m) => ({ level: 'N5', mod: m })),
+      import('../content/japanese/bunkei/n4').then((m) => ({ level: 'N4', mod: m })),
+      import('../content/japanese/bunkei/n3').then((m) => ({ level: 'N3', mod: m })),
+      import('../content/japanese/bunkei/n2').then((m) => ({ level: 'N2', mod: m })),
+      import('../content/japanese/bunkei/n1').then((m) => ({ level: 'N1', mod: m })),
+    ]);
+    return jaSetsPromise.then((sets) => buildKernelIndex(sets, { base: '/japanese', validSlugs, lang: 'Japanese' }));
+  }
   if (language !== 'Chinese') return Promise.resolve(null);
   // 무거운 건 콘텐츠 import뿐이라 그것만 캐시한다. 인덱스 조립은 484패턴이라 공짜이고,
   // 인자를 캐시에 가두면 첫 호출의 validSlugs가 영원히 이기는 함정이 된다.
@@ -265,5 +349,5 @@ export function loadPatternIndex(language, { validSlugs } = {}) {
     import('../content/chinese/bunkei/h5').then((m) => ({ level: 'H5', mod: m })),
     import('../content/chinese/bunkei/h6').then((m) => ({ level: 'H6', mod: m })),
   ]);
-  return zhSetsPromise.then((sets) => buildKernelIndex(sets, { base: '/chinese', validSlugs }));
+  return zhSetsPromise.then((sets) => buildKernelIndex(sets, { base: '/chinese', validSlugs, lang: 'Chinese' }));
 }
