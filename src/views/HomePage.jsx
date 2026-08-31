@@ -18,9 +18,10 @@ import { buildForecastTapEvent } from '../lib/forecastTapEvent';
 import { logReviewEvents } from '../lib/reviewEvents';
 import ProfileStats from './ProfileStats';
 import { kstDayStartIso, kstWeekStartIso } from '../lib/growthStats';
+import { langNameKo } from '../lib/constants';
+import { isOnDemandSuggestion } from '../lib/suggestionSources';
 
 // 언어 코드 → 한국어 라벨 (studyParagraph.js의 LANG_NAME과 동일 매핑)
-const LANG_LABEL = { Japanese: '일본어', English: '영어', French: '프랑스어', Chinese: '중국어' };
 
 async function fetchHomeData(userId, lang, nowMs = Date.now()) {
   const todayStart = kstDayStartIso(nowMs);
@@ -481,7 +482,7 @@ export default function HomePage({ continueManifest = {} }) {
             </h2>
             <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: 16 }}>
               {isIdeal && <span style={{ color: 'var(--accent-text)', fontWeight: 700 }}>맞춤 </span>}
-              {LANG_LABEL[suggestion.language] || suggestion.language} {suggestion.level}
+              {langNameKo(suggestion.language)} {suggestion.level}
               {suggestion.channel_name && ` · ${suggestion.channel_name}`}
             </div>
             <Button
@@ -490,7 +491,9 @@ export default function HomePage({ continueManifest = {} }) {
                 : router.push(`/materials/add?suggestion=${suggestion.id}`)
               }
             >
-              {suggestion.material_id ? '바로 읽기 →' : '분석하고 읽기 →'}
+              {suggestion.material_id ? '바로 읽기 →'
+                : isOnDemandSuggestion(suggestion) ? '내 자료로 가져오기 →'
+                : '분석하고 읽기 →'}
             </Button>
           </div>
         );

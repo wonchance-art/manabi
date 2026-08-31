@@ -7119,6 +7119,15 @@ body.is-review-session .page-container { padding-top: 8px; }
   padding: 6px 0;
 }
 
+/* 영상 추천의 고지 한 줄(v2-F R4) — 누르면 내 계정에 비공개 사본이 생긴다는 사실.
+   보조 문구라 색은 --text-muted 토큰만 쓴다(규약 §1: 색 리터럴 금지). */
+.suggestion-card__note {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+  line-height: 1.4;
+}
+
 /* ========= 콘텐츠 소스 토글 버튼 ========= */
 .source-toggle {
   padding: 4px 12px;

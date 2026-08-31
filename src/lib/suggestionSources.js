@@ -10,6 +10,43 @@
  */
 
 /**
+ * 클릭 시점에 **개인 자료로** 가져오는 추천의 `source` 값 (v2-F R4).
+ *
+ * 이 값 하나가 「본문을 서버가 미리 복제해 두지 않았다」는 표식이다. 크론은 목록
+ * (제목·채널·썸네일·videoId)만 담고 `transcript`는 NULL로 둔다 — 자막 복제는 사용자가
+ * **자기 계정에** 할 때 비로소 일어난다. 선례(LingQ)와 같은 자리다.
+ */
+export const ONDEMAND_SOURCE = 'youtube_ondemand';
+
+/** 이 추천이 클릭 시점 반입인가. `transcript` 유무로 보면 안 된다 — 글 소스도 NULL일 수 있다. */
+export function isOnDemandSuggestion(s) {
+  return s?.source === ONDEMAND_SOURCE;
+}
+
+/**
+ * 기사 → `daily_suggestions.source` 라벨.
+ *
+ * 예전엔 크론 안에서 `videoId` 접두사 체인으로만 정했는데, 유튜브는 **videoId가 실제
+ * 유튜브 id여야 한다**(클릭 시점에 그 id로 주소를 만든다). 접두사를 붙이면 그게 깨지므로
+ * 소스가 스스로 라벨을 말하게 하고, 접두사 체인은 기존 글 소스용으로 남긴다.
+ */
+export function suggestionSourceLabel(article) {
+  if (article?.source) return article.source;
+  const id = article?.videoId || '';
+  if (id.startsWith('qiita_')) return 'qiita';
+  if (id.startsWith('devto_')) return 'devto';
+  if (id.startsWith('nhk_')) return 'nhk';
+  if (id.startsWith('wikinews_')) return 'wikinews';
+  return 'wikipedia';
+}
+
+/** 추천 행 → 유튜브 주소. 클릭 시점 반입이 이 주소를 F R1 라우트에 넘긴다. */
+export function suggestionVideoUrl(s) {
+  const id = s?.video_id || s?.videoId || '';
+  return id ? `https://www.youtube.com/watch?v=${id}` : '';
+}
+
+/**
  * DB `content_sources`에 그 언어 행이 하나도 없을 때 쓰는 기본 소스.
  * 언어별로 보충되므로 여기 언어를 추가하면 **배포만으로 그 언어 공급이 열린다** —
  * 오너의 DB 수작업이 필요 없다(하드리밋 「운영 DB 적용은 오너 수동」을 건드리지 않는다).
@@ -23,6 +60,29 @@ export const DEFAULT_SOURCES = Object.freeze([
   Object.freeze({ language: 'Japanese', source_type: 'nhk_rss',     config: { level: 'N3 중급' } }),
   Object.freeze({ language: 'English',  source_type: 'devto',       config: { level: 'B1 중급' } }),
   Object.freeze({ language: 'French',   source_type: 'wikinews_fr', config: { level: 'B1 중급' } }),
+
+  // ── 영상(v2-F R4) — 목록만 긷고 자막은 클릭 시점에 개인 자료로 ──
+  //
+  // 채널은 **핸들**로 적는다. 이 세션은 YouTube가 egress 차단이라 채널 ID를 확인하지
+  // 못했고, 핸들이 틀리면 크론 로그에 소리 나게 남는다(조용한 0건보다 낫다).
+  // `langCode`는 「그 언어 자막이 실제로 달린 영상만」 고르는 데 쓴다 — 이게 없으면
+  // 클릭했을 때 자막이 없어 붙여넣기로 떨어진다.
+  Object.freeze({
+    language: 'English', source_type: 'youtube_channel',
+    config: { handle: '@VOALearningEnglish', langCode: 'en', level: 'B1 중급' },
+  }),
+  Object.freeze({
+    language: 'Japanese', source_type: 'youtube_channel',
+    config: { handle: '@cijapanese', langCode: 'ja', level: 'N4 초중급' },
+  }),
+  Object.freeze({
+    language: 'Japanese', source_type: 'youtube_channel',
+    config: { handle: '@Onomappu', langCode: 'ja', level: 'N3 중급' },
+  }),
+  Object.freeze({
+    language: 'French', source_type: 'youtube_channel',
+    config: { handle: '@innerFrench', langCode: 'fr', level: 'B1 중급' },
+  }),
 ]);
 
 /**

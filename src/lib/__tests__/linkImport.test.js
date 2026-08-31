@@ -200,7 +200,11 @@ describe('§5 정책 — 기본 비공개이되 강제는 아니다', () => {
   it('출처를 남긴다 — 어디서 온 본문인지 자료가 스스로 말해야 한다', () => {
     expect(page).toContain('...(linkSource ? { source: linkSource } : {}),');
     const ui = codeOf(read('src/components/MaterialAddLinkSection.jsx'));
-    expect(ui).toMatch(/source: \{ kind: 'youtube', url: url\.trim\(\), videoId/);
+    // 요구는 「출처 네 조각(종류·주소·videoId·채널)이 실린다」이지 **주소를 어느 변수에서
+    // 읽느냐**가 아니다. 처음엔 `url: url.trim()`을 리터럴로 얼렸다가, F R4가 주소를
+    // 인자로 받게 되자 요구가 그대로인데 깨졌다 — 구현 모양을 고정한 값.
+    expect(ui).toMatch(/source: \{ kind: 'youtube', url:[^,]+, videoId/);
+    expect(ui, '채널까지 실려야 자료가 스스로 출처를 말한다').toMatch(/source: \{[^}]*channel:/);
   });
 
   it('입구를 갈아타면 옛 출처가 따라오지 않는다', () => {
@@ -231,8 +235,11 @@ describe('§6 입구 — 같은 층, 같은 프롭 규약', () => {
   });
 
   it('프롭 규약이 기존 입구와 같다 — 문마다 다른 규약이면 다섯 번째 문이 또 다르게 생긴다', () => {
-    expect(page).toContain('<MaterialAddLinkSection toast={toast} onReady={handleLinkReady} />');
+    // 지킬 것은 **toast·onReady 두 프롭이 다른 입구와 같은 이름·역할**이라는 것이다.
+    // 프롭 **추가**는 그 규약을 깨지 않는다(F R4가 initialUrl을 더했다) — 닫힌 목록으로
+    // 얼리면 확장할 때마다 요구와 무관하게 빨개진다.
+    expect(page).toMatch(/<MaterialAddLinkSection toast=\{toast\} onReady=\{handleLinkReady\}/);
     expect(read('src/components/MaterialAddLinkSection.jsx'))
-      .toContain('export default function MaterialAddLinkSection({ toast, onReady })');
+      .toMatch(/export default function MaterialAddLinkSection\(\{ toast, onReady[,}]/);
   });
 });
