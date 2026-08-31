@@ -12,6 +12,7 @@ import { parseTitle } from '../lib/seriesMeta';
 import { materialFit, fitBand, sortByFit, bookFit, FIT_MIN_TYPES } from '../lib/materialFit';
 import { fetchKnownWords, mergeKnownIntoIndex } from '../lib/knownWords';
 import { groupByBook } from '../lib/bookMeta';
+import { useGroupReadIds } from '../lib/useGroupReadIds';
 import { JP_LEVELS, EN_LEVELS, ZH_LEVELS, langNameKo } from '../lib/constants';
 import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
@@ -189,7 +190,8 @@ export default function MaterialsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [langFilter, setLangFilter] = useState(searchParams.get('lang') || 'all');
   const [levelFilter, setLevelFilter] = useState(searchParams.get('level') || 'all');
-  const [sortBy, setSortBy] = useState('newest'); // newest | level | title
+  const [sortBy, setSortBy] = useState('newest'); // newest | level | title | fit
+  const [unreadOnly, setUnreadOnly] = useState(false); // v2-F R3 — 고르기 좁히기
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [confirmAction, setConfirmAction] = useState(null);
 
@@ -243,6 +245,9 @@ export default function MaterialsPage() {
     staleTime: 1000 * 60,
   });
   const completedIds = progressMap.completed;
+
+  // 내 그룹들이 이번 주 같이 읽는 자료 (v2-F R3) — 홈이 쓰는 캐시를 그대로 타 추가 왕복 0.
+  const groupReadIds = useGroupReadIds();
 
   // 복습 대기 중인 단어 (Reading-as-Review용)
   const { data: dueVocabIndex } = useQuery({
@@ -351,7 +356,7 @@ export default function MaterialsPage() {
     return map;
   }, [materials, savedFitIndex]);
 
-  const filtered = (() => {
+  const sorted = (() => {
     if (sortBy === 'newest') return materials;
     if (sortBy === 'fit') return sortByFit(materials, (m) => fitById.get(m.id)?.band ?? null);
     const arr = [...materials];
@@ -378,6 +383,11 @@ export default function MaterialsPage() {
     }
     return arr;
   })();
+
+  // 「안 읽은 것만」(v2-F R3) — 고르기를 좁히는 필터. **완독한 것만** 걷어낸다:
+  // 읽는 중(진도 %)은 남겨야 이어읽기가 목록에서 사라지지 않는다.
+  // completedIds는 위에서 이미 로드된 인덱스라 추가 조회 0. 게스트는 칩 자체가 없다.
+  const filtered = unreadOnly ? sorted.filter((m) => !completedIds.has(m.id)) : sorted;
 
   return (
     <div className="page-container">
@@ -443,6 +453,18 @@ export default function MaterialsPage() {
               {f.label}
             </button>
           ))}
+          {/* 「안 읽은 것만」(v2-F R3) — 완독분만 걷어낸다(읽는 중은 남긴다).
+              게스트는 진도가 없어 칩 자체를 두지 않는다. */}
+          {user && (
+            <button
+              onClick={() => setUnreadOnly(v => !v)}
+              aria-pressed={unreadOnly}
+              className={`chip ${unreadOnly ? 'chip--active' : ''}`}
+              title="완독한 자료를 목록에서 숨깁니다"
+            >
+              안 읽은 것만
+            </button>
+          )}
           <select
             value={sortBy}
             onChange={e => setSortBy(e.target.value)}
@@ -621,6 +643,25 @@ export default function MaterialsPage() {
                           title="이 자료를 읽으면 복습 처리됨"
                         >
                           {dueCount} 복습
+                        </span>
+                      )}
+                      {/* 우리 그룹이 이번 주 읽는 자료 (v2-F R3) — 고르기 신호.
+                          무그룹·게스트는 빈 Set이라 자연히 안 뜬다.
+                          렌더 실측(320·390·768px): 가로 넘침 0. 320px에서 복습+같이읽기+완독이
+                          **동시에** 붙는 최악 조합일 때만 태그 줄이 2→3줄이 된다 — 그 조합은
+                          드물고(완독이면 「안 읽은 것만」에서 숨겨진다) 라벨을 줄이면 뜻이
+                          흐려져 그대로 둔다. 줄인 게 아니라 재고 끝에 남긴 것이다. */}
+                      {groupReadIds.has(m.id) && (
+                        <span
+                          className="tag"
+                          style={{
+                            background: 'color-mix(in srgb, var(--primary) 14%, transparent)',
+                            color: 'var(--primary-light)',
+                            fontWeight: 600,
+                          }}
+                          title="우리 그룹의 이번 주 같이 읽기"
+                        >
+                          같이 읽기
                         </span>
                       )}
                     </div>
