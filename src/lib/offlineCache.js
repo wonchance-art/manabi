@@ -22,6 +22,13 @@ export const STORE_OUTBOX = 'outbox';
 const DB_VERSION = 2;
 export const TTL_MS = 7 * 24 * 60 * 60 * 1000;  // 7일 — pdfCache와 같은 값
 export const MAX_MATERIALS = 3;                  // 설계 §2: 최근 연 자료 3개
+/**
+ * 받아둔 자료 상한(v2-N R3). 자동분(3)과 **별개**다 — 핀이 자동 상한을 먹으면
+ * 3개를 받아두는 순간 "최근 연 자료" 캐시가 죽어 R1이 무력화된다.
+ * 10인 근거: `processed_json`은 토큰별 사전이라 자료 하나가 대략 0.1~0.6MB이고,
+ * IndexedDB 할당량은 보통 수십 MB 이상이라 10개(≈6MB 상한)는 여유 안이다.
+ */
+export const MAX_PINNED = 10;
 const MAX_SNAPSHOTS = 4;                  // 사용자당 1행 — 기기 공유 여지만 남긴다
 
 let _dbPromise = null;
@@ -98,14 +105,26 @@ async function get(store, key) {
  * 이유이고, 저장 대상이 processed_json(토큰 사전)이라 상한이 실제로 물어야 한다.
  * @returns {Array} 삭제할 키 배열
  */
-export function pickEvictions(entries, { now = Date.now(), ttl = TTL_MS, max, keyPath = 'id' } = {}) {
+export function pickEvictions(entries, {
+  now = Date.now(), ttl = TTL_MS, max, keyPath = 'id', maxPinned = MAX_PINNED,
+} = {}) {
   const list = Array.isArray(entries) ? entries : [];
-  const expired = list.filter((e) => now - e.savedAt > ttl);
+  // 사용자가 고른 것(v2-N R3)은 TTL·자동 상한 **양쪽에서 빠진다**. 자동 캐시는 "최근 연
+  // 것"이라 낡으면 버리는 게 맞지만, 받아둔 자료는 "비행기에서 읽으려고 챙긴 것"이라
+  // 7일 뒤에 사라지면 정확히 그 상황에서 없다. 대신 핀에도 개수 상한은 둔다.
+  const pinned = list.filter((e) => e.pinned);
+  const auto = list.filter((e) => !e.pinned);
+
+  const expired = auto.filter((e) => now - e.savedAt > ttl);
   const toDelete = expired.map((e) => e[keyPath]);
-  const alive = list.filter((e) => now - e.savedAt <= ttl);
+  const alive = auto.filter((e) => now - e.savedAt <= ttl);
   if (Number.isFinite(max) && alive.length > max) {
     const oldestFirst = [...alive].sort((a, b) => a.savedAt - b.savedAt);
     toDelete.push(...oldestFirst.slice(0, alive.length - max).map((e) => e[keyPath]));
+  }
+  if (Number.isFinite(maxPinned) && pinned.length > maxPinned) {
+    const oldestFirst = [...pinned].sort((a, b) => a.savedAt - b.savedAt);
+    toDelete.push(...oldestFirst.slice(0, pinned.length - maxPinned).map((e) => e[keyPath]));
   }
   return toDelete;
 }
@@ -132,14 +151,77 @@ async function cleanup(store, max) {
 
 /* ── 자료(본문 + processed_json) ── */
 
+/** TTL을 적용하지 않는 원시 조회 — 핀 판정과 핀 항목 읽기에 쓴다. */
+async function getRaw(store, key) {
+  try {
+    const db = await openDb();
+    return await new Promise((resolve) => {
+      const tx = db.transaction(store, 'readonly');
+      const req = tx.objectStore(store).get(key);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+  } catch {
+    return null;
+  }
+}
+
 export async function cacheMaterial(material) {
   if (!material?.id) return;
-  await put(STORE_MATERIALS, { id: material.id, material }, MAX_MATERIALS);
+  // 핀을 보존한다 — 받아둔 자료를 뷰어에서 열면 자동 캐시가 같은 키를 덮어쓰는데,
+  // 그때 pinned가 떨어지면 사용자가 챙긴 자료가 조용히 자동 축출 대상이 된다.
+  const prev = await getRaw(STORE_MATERIALS, material.id);
+  await put(
+    STORE_MATERIALS,
+    { id: material.id, material, ...(prev?.pinned ? { pinned: true } : {}) },
+    MAX_MATERIALS,
+  );
 }
 
 export async function getCachedMaterial(id) {
+  // 핀은 TTL 밖이다 — 7일 지난 '받아둔 자료'가 안 열리면 받아둔 의미가 없다.
+  const raw = await getRaw(STORE_MATERIALS, id);
+  if (raw?.pinned) return raw.material || null;
   const entry = await get(STORE_MATERIALS, id);
   return entry?.material || null;
+}
+
+/* ── 받아두기(v2-N R3) — 사용자가 고른 자료를 자동 축출에서 지킨다 ── */
+
+/**
+ * 자료 하나를 받아둔다. `material`은 **뷰어가 읽는 필드를 다 갖춘 행**이어야 한다
+ * (실측: 자료실 목록 조회에는 `raw_text`·`source_pdf_id`·`page_start`·`page_end`·
+ * `status`가 없다 — 목록 행을 그대로 넣으면 오프라인 뷰어에 빈 칸이 생긴다).
+ */
+export async function pinMaterial(material) {
+  if (!material?.id) return false;
+  await put(STORE_MATERIALS, { id: material.id, material, pinned: true }, MAX_MATERIALS);
+  return true;
+}
+
+/** 받아두기 해제 — 본문은 남기되 자동 축출 대상으로 되돌린다. */
+export async function unpinMaterial(id) {
+  if (!id) return false;
+  const prev = await getRaw(STORE_MATERIALS, id);
+  if (!prev) return false;
+  await put(STORE_MATERIALS, { id, material: prev.material }, MAX_MATERIALS);
+  return true;
+}
+
+/** 받아둔 자료 id 집합 — 자료실이 배지·필터에 쓴다. */
+export async function pinnedMaterialIds() {
+  try {
+    const db = await openDb();
+    const all = await new Promise((resolve) => {
+      const tx = db.transaction(STORE_MATERIALS, 'readonly');
+      const req = tx.objectStore(STORE_MATERIALS).getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => resolve([]);
+    });
+    return new Set(all.filter((e) => e.pinned).map((e) => e.id));
+  } catch {
+    return new Set();
+  }
 }
 
 /* ── 단어장 스냅샷 — next_review_at을 포함한 전체 행이라 '오늘 due'가 여기서 파생된다
