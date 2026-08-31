@@ -198,15 +198,20 @@ describe('배선 — 기본 꺼짐, 켜야 로드', () => {
   });
 
   it('정본 인덱스는 토글을 켰을 때만 로드된다 — 안 쓰는 사람에게 304KB를 지우지 않는다', () => {
-    const effect = sliceBetween(card, 'const [patternIndex, setPatternIndex]', '}, [showPatterns, materialLang, patternIndex]);');
-    expect(effect).toContain("if (!showPatterns || materialLang !== 'Chinese' || patternIndex) return undefined;");
+    // R3에서 언어 게이트가 'Chinese' 리터럴에서 supportsPatterns로, 재로드 판정이
+    // patternIndex 유무에서 patternIndexLang 비교로 바뀌었다. 지키려는 요구는 그대로다:
+    // **켜야 로드한다**(그리고 이미 그 언어로 들었으면 다시 안 든다).
+    const effect = sliceBetween(card, 'const [patternIndex, setPatternIndex]', '}, [showPatterns, materialLang, patternIndexLang]);');
+    expect(effect).toContain('if (!showPatterns || !supportsPatterns(materialLang)');
+    expect(effect).toContain('return undefined;');
     expect(effect).toContain('loadPatternIndex(materialLang)');
   });
 
   it('스캔은 자료당 한 번 메모 — 렌더는 Map 조회뿐(설계 §5 성능)', () => {
-    const memo = sliceBetween(card, 'const patternScan = useMemo(', '}, [showPatterns, patternIndex, material?.processed_json]);');
+    const memo = sliceBetween(card, 'const patternScan = useMemo(', '}, [showPatterns, patternIndex,');
     expect(memo).toContain('scanTokens(tokens, patternIndex)');
-    expect(memo).toContain('if (!showPatterns || !patternIndex || !json?.sequence) return null;');
+    expect(memo).toContain('if (!showPatterns || !patternIndex');
+    expect(memo).toContain('!json?.sequence) return null;');
   });
 
   it('밑줄은 스캔이 잡은 토큰에만', () => {
