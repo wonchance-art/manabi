@@ -5812,8 +5812,12 @@ body.is-review-session .page-container { padding-top: 8px; }
 }
 
 /* 폰 — 뷰어 본문 가독 폭 최대화: viewer-center 24px×2 + reader-area 40px×2 여백이
-   375px 화면에서 본문을 245px(65%)로 줄였다. 카드를 풀블리드로 펴서 351px(94%) 확보. */
-@media (max-width: 767px) {
+   375px 화면에서 본문을 245px(65%)로 줄였다. 카드를 풀블리드로 펴서 351px(94%) 확보.
+
+   경계는 768 — 모바일 크롬(`--gnb-height` 56px·하단 네비)이 쓰는 값과 같아야 한다.
+   767이던 시절에는 폭이 정확히 768px일 때 **크롬은 모바일인데 뷰어만 데스크톱**이라
+   1px 구간에서 두 판단이 어긋났다(v2-K R3 이관). */
+@media (max-width: 768px) {
   .viewer-center { padding: 12px 12px 72px; }
   .reader-area {
     margin-left: -12px;
@@ -8958,8 +8962,13 @@ body.is-review-session .page-container { padding-top: 8px; }
 .myplan__head { margin-bottom: 18px; }
 .myplan__title { font-size: 1.15rem; font-weight: 800; color: var(--text-primary); }
 .myplan__lead { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin-top: 4px; }
+/* 이 격자는 **자기 폭**이 좁아지면 접힌다 — 화면 폭으로 대신 재던 880px 쿼리를
+   컨테이너 쿼리로 옮겼다(v2-K R2 정책 · R3 이관). 뷰포트로 재면 같은 900px에서도
+   사이드바 유무에 따라 실제 격자 폭이 다른데 답은 하나로 나온다.
+   선례: `.word-fit-wrap { container-type: inline-size }`. */
+.myplan { container-type: inline-size; }
 .myplan__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
-@media (max-width: 880px) { .myplan__grid { grid-template-columns: 1fr; } }
+@container (max-width: 880px) { .myplan__grid { grid-template-columns: 1fr; } }
 
 .myplan-lang { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; background: var(--bg-card); }
 .myplan-lang__head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
