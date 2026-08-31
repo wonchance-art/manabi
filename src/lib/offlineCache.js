@@ -17,20 +17,27 @@
 const DB_NAME = 'anatomy-offline-cache';
 const STORE_MATERIALS = 'materials';
 const STORE_SNAPSHOTS = 'snapshots';
+/** 미전송 복습(v2-N R2). 같은 DB를 쓴다 — 두 번째 DB를 열면 버전·업그레이드가 갈린다. */
+export const STORE_OUTBOX = 'outbox';
+const DB_VERSION = 2;
 export const TTL_MS = 7 * 24 * 60 * 60 * 1000;  // 7일 — pdfCache와 같은 값
 export const MAX_MATERIALS = 3;                  // 설계 §2: 최근 연 자료 3개
 const MAX_SNAPSHOTS = 4;                  // 사용자당 1행 — 기기 공유 여지만 남긴다
 
 let _dbPromise = null;
 
-function openDb() {
+/**
+ * DB 하나를 공유한다(reviewOutbox도 이 함수를 쓴다) — 모듈마다 DB를 열면 버전이
+ * 갈려 한쪽 업그레이드가 다른 쪽을 blocked 상태로 세운다. 스토어 추가는 여기서만.
+ */
+export function openDb() {
   if (_dbPromise) return _dbPromise;
   _dbPromise = new Promise((resolve, reject) => {
     if (typeof indexedDB === 'undefined') {
       reject(new Error('IndexedDB unavailable'));
       return;
     }
-    const req = indexedDB.open(DB_NAME, 1);
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onerror = () => reject(req.error);
     req.onsuccess = () => resolve(req.result);
     req.onupgradeneeded = (e) => {
@@ -40,6 +47,11 @@ function openDb() {
       }
       if (!db.objectStoreNames.contains(STORE_SNAPSHOTS)) {
         db.createObjectStore(STORE_SNAPSHOTS, { keyPath: 'key' });
+      }
+      // v2 — 미전송 복습 큐. autoIncrement라 같은 단어를 여러 번 채점해도 각각 남는다
+      // (복습 이력은 덮어쓰기가 아니라 append다).
+      if (!db.objectStoreNames.contains(STORE_OUTBOX)) {
+        db.createObjectStore(STORE_OUTBOX, { keyPath: 'seq', autoIncrement: true });
       }
     };
   });
