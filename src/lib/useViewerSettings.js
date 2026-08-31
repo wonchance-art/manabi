@@ -32,6 +32,9 @@ export function useViewerSettings() {
   const [focusMode, setFocusModeRaw] = useState(() => readPref('focusMode', false));
   // 단어 상태 하이라이트(링큐식 B안 — 배경색, 오너 확정 2026-08-27). 옵트인: 기본 꺼짐.
   const [wordStateHl, setWordStateHlRaw] = useState(() => readPref('wordStateHl', false));
+  // 문법 표시(v2-G R1) — 정본 문형의 표지어에 옅은 밑줄. 1단 스캔이라 오탐이 있고,
+  // 정본 로드도 따라오므로 옵트인이 전제(설계 §3·§5): 기본 꺼짐.
+  const [showPatterns, setShowPatternsRaw] = useState(() => readPref('showPatterns', false));
   // 자동 진행(v2-I R1b) — 지정 문장에 체류하다 다음으로. 집중 모드가 전제. 옵트인: 기본 꺼짐.
   const [autoPace, setAutoPaceRaw] = useState(() => readPref('autoPace', false));
   // 목표 속도(자/분). null = 아직 안 고름 → 언어별 기본값(readingPacer가 정본).
@@ -53,6 +56,7 @@ export function useViewerSettings() {
   const setShowToneColors = (v) => { const val = typeof v === 'function' ? v(showToneColors) : v; setShowToneColorsRaw(val); savePref('showToneColors', val); };
   const setWordStateHl = (v) => { const val = typeof v === 'function' ? v(wordStateHl) : v; setWordStateHlRaw(val); savePref('wordStateHl', val); };
   const setShowHanjaKo = (v) => { const val = typeof v === 'function' ? v(showHanjaKo) : v; setShowHanjaKoRaw(val); savePref('showHanjaKo', val); };
+  const setShowPatterns = (v) => { const val = typeof v === 'function' ? v(showPatterns) : v; setShowPatternsRaw(val); savePref('showPatterns', val); };
   const setAutoPace = (v) => { const val = typeof v === 'function' ? v(autoPace) : v; setAutoPaceRaw(val); savePref('autoPace', val); };
   const setPaceCpm = (v) => { const val = typeof v === 'function' ? v(paceCpm) : v; setPaceCpmRaw(val); savePref('paceCpm', val); };
   const setPaceStep = (v) => { const val = typeof v === 'function' ? v(paceStep) : v; setPaceStepRaw(val); savePref('paceStep', val); };
@@ -69,6 +73,7 @@ export function useViewerSettings() {
     showHanjaKo, setShowHanjaKo,
     showToneColors, setShowToneColors,
     wordStateHl, setWordStateHl,
+    showPatterns, setShowPatterns,
     focusMode, setFocusMode,
     autoPace, setAutoPace,
     paceCpm, setPaceCpm,
