@@ -22,8 +22,13 @@
  * 설계는 `pos:{품사}` 축도 ✅ 즉시로 뒀지만 R1에는 **그걸 쓸 화면이 없다**. 리포트 한 줄이
  * 담을 수 있는 건 하나고, "명사가 약하다"보다 "듣고 쓰기가 약하다"가 훨씬 행동 가능한
  * 처방이다. 만들어 두고 안 쓰면 계약만 통과하는 죽은 축이 되므로, 소비처가 생기는
- * 라운드에서 함께 넣는다. `glyph`·`tone`은 설계대로 R2 이후.
+ * 라운드에서 함께 넣는다. `tone`은 설계대로 v2-C(음독 채점) 몫이다.
+ *
+ * ── R2에서 `glyph` 합류 (2026-08-31)
+ * R2가 오답 응답(`detail.resp`)을 심어 글자 어긋남을 볼 수 있게 됐다. 조건은 좁다 —
+ * 아래 glyphTags 주석 참조.
  */
+import { diffChars } from './diffChars';
 
 /**
  * 회상 방식 축 — **허용 목록**이다.
@@ -80,7 +85,42 @@ export function errorTags(event, { chapterOf } = {}) {
     if (slug) tags.push(`pattern:${slug}`);
   }
 
+  for (const glyph of glyphTags(event)) tags.push(glyph);
+
   return tags;
+}
+
+/**
+ * 표기 혼동 축 (v2-A R2) — **놓친 글자**만 센다.
+ *
+ * 조건이 좁다. ⑴ 오답이고 ⑵ `detail.resp`가 있고(R2가 심은 필드) ⑶ 어휘 회상이라
+ * `item_key`가 곧 정답 표기인 qtype일 때만. 고르기·짝 맞추기는 응답이 보기 문자열이라
+ * 글자 어긋남이 학습자의 표기 지식과 무관하고, 문법은 item_key가 슬러그라 정답이 아니다.
+ *
+ * `ins`(정답에만 있는 글자)만 취한다 — 잉여로 친 글자(`del`)는 오타·다른 단어라 표기
+ * 약점의 근거가 얇다. 소급은 자연히 안전하다: 옛 이벤트엔 resp가 없어 이 축이 빠질 뿐이다
+ * (P1 「저장 말고 유도」 — 규칙을 고치면 과거가 재계산된다).
+ */
+const GLYPH_QTYPES = new Set(['typing', 'listening']);
+const GLYPH_CAP = 3;
+
+function glyphTags(event) {
+  if (event.correct) return [];
+  if (event.source !== 'vocab') return [];
+  if (!GLYPH_QTYPES.has(event.detail?.qtype)) return [];
+  const resp = event.detail?.resp;
+  const answer = event.item_key;
+  if (typeof resp !== 'string' || !resp || typeof answer !== 'string' || !answer) return [];
+
+  const missed = [];
+  for (const seg of diffChars(resp, answer)) {
+    if (seg.type !== 'ins') continue;
+    for (const ch of seg.text) {
+      if (missed.length >= GLYPH_CAP) break;
+      if (!missed.includes(ch)) missed.push(ch);
+    }
+  }
+  return missed.map((ch) => `glyph:${ch}`);
 }
 
 /** 태그의 축('retrieval'|'pattern')과 값을 가른다. 형태가 아니면 null. */

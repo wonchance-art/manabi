@@ -5,14 +5,32 @@ import { qtypeForItem } from './studySession';
  * StudySession 문항을 F2 progressStore 복습 계약으로 변환한다.
  * UI 채점 결과와 저장 경계를 분리해 재출제는 호출부에서 계속 제외한다.
  */
-export function buildStudyReviewRefs({ correct, item, lang, rtMs = 0, result = null }) {
+/** 오답 응답 적재 상한 — 진단에 필요한 건 글자 어긋남이지 장문이 아니다. */
+export const RESP_MAX = 40;
+
+/**
+ * 오답 응답 정규화 (v2-A R2). **오답일 때만** 남긴다 —
+ * 정답 응답은 진단 정보가 0이고, 적재하면 detail만 불린다.
+ * 문자열이 아닌 응답(보기 객체 등)은 조용히 버린다: 글자 진단이 성립하지 않는다.
+ */
+export function normalizeResp(response) {
+  if (typeof response !== 'string') return null;
+  const trimmed = response.trim().slice(0, RESP_MAX);
+  return trimmed || null;
+}
+
+export function buildStudyReviewRefs({ correct, item, lang, rtMs = 0, result = null, response = null }) {
   const effect = item?.effect;
   if (!effect) return [];
 
+  // resp는 오답일 때만 — jsonb 안이라 스키마 변경 0이고, 기존 소비자는 모르는 키를
+  // 무시한다(source·isGradedReviewEvent 무변경 = weeklyReport·growthStats 무영향).
+  const resp = correct ? null : normalizeResp(response);
   const detailBase = {
     mode: 'study',
     qtype: qtypeForItem(item.type),
     rt_ms: rtMs,
+    ...(resp ? { resp } : {}),
   };
 
   if (effect.kind === 'vocab-match' && Array.isArray(item.words)) {
@@ -116,8 +134,9 @@ export async function recordStudyReviewCompleted(userId, {
   lang,
   rtMs = 0,
   result = null,
+  response = null,
 }) {
-  const reviewRefs = buildStudyReviewRefs({ correct, item, lang, rtMs, result });
+  const reviewRefs = buildStudyReviewRefs({ correct, item, lang, rtMs, result, response });
   if (reviewRefs.length === 0) return;
 
   let calculateFSRS = null;

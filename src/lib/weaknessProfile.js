@@ -101,6 +101,41 @@ export function weakChapterSet(events, opts = {}) {
 }
 
 /**
+ * 처방 상한 (설계 §3-2) — 약점으로 앞당길 수 있는 문항 수.
+ * EWMA 다이얼이 이미 난이도를 조율하고 있어, 편향이 세면 두 손이 같은 핸들을 잡는다.
+ */
+export const WEAK_PROMOTE_CAP = 3;
+
+/**
+ * 약한 축이 붙은 후보를 앞으로 (v2-A R2, 설계 §3-2 「기존 후보군 정렬만 기울임」).
+ *
+ * **문항을 만들지도 버리지도 않는다** — 순서만 바꾼다. 그래서 오늘 낼 분량·구성은
+ * 그대로고, 바뀌는 건 "무엇을 먼저 보나"뿐이다. 상한을 넘는 약점 후보는 승격되지
+ * 않고 제자리에 남는다(전량 앞으로 몰면 세션이 약점 특강이 된다).
+ *
+ * 항상 **새 배열**을 돌려준다 — 입력이 조립부의 공유 버킷이라 제자리 정렬은 옆 소비자를
+ * 오염시킨다(G R2에서 같은 함정을 돌연변이로 확인했다).
+ *
+ * @param {Array} items 후보 목록
+ * @param {Set<string>} weakSlugs 약한 챕터 slug 집합(weakChapterSet 산출)
+ * @param {object} [opts]
+ * @param {(item:any)=>(string|null)} [opts.slugOf] 후보 → slug
+ * @param {number} [opts.cap] 승격 상한(기본 WEAK_PROMOTE_CAP)
+ */
+export function promoteWeakFirst(items, weakSlugs, { slugOf, cap = WEAK_PROMOTE_CAP } = {}) {
+  const list = [...(items || [])];
+  if (!weakSlugs || weakSlugs.size === 0 || cap <= 0) return list;
+  const promoted = [];
+  const rest = [];
+  for (const item of list) {
+    const slug = slugOf ? slugOf(item) : null;
+    if (slug && weakSlugs.has(slug) && promoted.length < cap) promoted.push(item);
+    else rest.push(item);
+  }
+  return [...promoted, ...rest];
+}
+
+/**
  * "듣고 쓰기 9번 중 6번 틀림" — 리포트 한 줄의 문구(설계 §3.1).
  * 설계 초안의 "6/9 실패"에서 고쳤다: 이 카드는 **거울이지 성적표가 아니라서**
  * (WeeklyReportCard 규약) 분수와 "실패"가 채점표처럼 읽힌다. 같은 수를 말로 편다.
