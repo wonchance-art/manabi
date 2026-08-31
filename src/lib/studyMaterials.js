@@ -13,6 +13,8 @@ import { computeEwma, dialFromEwma, computeWeakness, deriveVocabRungs } from '@/
 // deriveVocabRungs는 콘텐츠 무의존 순수 함수라 skillRung으로 이전됐다.
 // 기존 import 경로(테스트·과거 소비처) 호환 위해 re-export — studyMaterials 공개 API 불변.
 export { deriveVocabRungs };
+// 상대 경로 — growthStats와 같은 이유(vitest가 실모듈을 로드해 @ 별칭이 풀리지 않는다).
+import { weakChapterSet, promoteWeakFirst } from './weaknessProfile';
 import { levelBand } from '@/lib/writingPrompts';
 import { kstWeekStartMs } from './growthStats'; // 상대 경로 — vitest가 실모듈을 로드한다(@ 별칭 없음)
 import { THEMES } from '@/lib/studyParagraph';
@@ -408,6 +410,16 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
     };
   }).filter(Boolean);
 
+  // ── 약점 편향 (v2-A R2, 설계 §3-2) ──
+  // 항목 단위 편향은 buildWeaknessMaterials가 이미 한다(computeWeakness — 이 단어·이 슬러그).
+  // 여기서 더하는 건 **유형 단위**다: A R1이 만든 pattern 축으로 "자주 틀린 챕터"를 앞에
+  // 세운다. 문항을 만들거나 버리지 않고 순서만 바꾸며, 상한 3을 둬 EWMA 다이얼과
+  // 핸들을 다투지 않는다. 이벤트가 없으면(신규·게스트) 집합이 비어 순서가 그대로다.
+  const weakSlugs = weakChapterSet(reviewEventRows || []);
+  const grammarDueOrdered = promoteWeakFirst(grammarDue, weakSlugs, {
+    slugOf: (g) => g?.meta?.slug || null,
+  });
+
   // ── 다음 새 챕터 — 커리큘럼 순서에서 첫 미통과·퀴즈 가능 챕터 ──
   let newChapter = null;
   for (const ch of ref.ALL_CHAPTERS) {
@@ -431,7 +443,7 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
 
   // ── 독해 소재 — 현재 레벨 문형 예문 ──
   // 폴백 레벨 — 인트로(LEVEL_META[0])가 아닌 첫 정규 레벨로(독해·어휘 사전 소재가 인트로가 되지 않게)
-  const level = newChapter?.meta.level || grammarDue[0]?.meta.level || ref.LEVEL_META[1]?.key || ref.LEVEL_META[0]?.key;
+  const level = newChapter?.meta.level || grammarDueOrdered[0]?.meta.level || ref.LEVEL_META[1]?.key || ref.LEVEL_META[0]?.key;
   const band = levelBand(lang, level);
   const bunkei = ref.getBunkei?.(level);
   const exPool = (bunkei?.themes || [])
@@ -508,7 +520,7 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   const session = composeSession({
     vocab: dueVocabRows || [],
     meaningPool,
-    grammarDue,
+    grammarDue: grammarDueOrdered,
     newChapter,
     reading,
     koPool,
@@ -524,7 +536,7 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
     .slice(0, 2);
 
   // 복습 문법의 대표 패턴 (챕터 첫 pattern 섹션)
-  const duePatternsForPara = grammarDue.slice(0, 2).map(g => {
+  const duePatternsForPara = grammarDueOrdered.slice(0, 2).map(g => {
     const ch = ref.getChapter(g.srs.slug)?.chapter;
     const sec = ch?.sections?.find(s => s.pattern);
     return sec ? { pattern: sec.pattern, patternKo: sec.patternKo || '', srs: g.srs, meta: g.meta } : null;

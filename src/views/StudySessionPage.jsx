@@ -537,18 +537,21 @@ export default function StudySessionPage({
    * F2 progressStore 이벤트·어휘 FSRS 갱신 · 문법 챕터 마지막 문항에서 재스케줄.
    * 중도 이탈해도 여기까지의 기록은 남는다.
    */
-  function recordSettle(ok, it, result = null) {
+  function recordSettle(ok, it, result = null, response = null) {
     if (!it?.effect) return;
     const rt_ms = Date.now() - itemShownAtRef.current;
     const eff = it.effect;
 
     // 답안 완료 기록은 F2 단일 경계로 보낸다. 게스트도 같은 호출을 거쳐 로컬 폴백한다.
+    // response는 settle의 pickedValue다 — 여기까지 오지 않아 v2-A R1 진단이 유형까지만
+    // 볼 수 있었다(글자 어긋남은 응답이 있어야 난다). 오답 적재는 브리지가 판단한다.
     recordStudyReviewCompleted(user?.id, {
       correct: ok,
       item: it,
       lang,
       rtMs: rt_ms,
       result,
+      response,
     });
 
     if (eff.kind === 'grammar-due' && user?.id) {
@@ -581,7 +584,7 @@ export default function StudySessionPage({
     // 재출제(-r)는 기록·SRS 제외. 첫 시도만 1회 기록.
     if (!isRetryItem && !recordedRef.current.has(orig)) {
       recordedRef.current.add(orig);
-      recordSettle(ok, item, result);
+      recordSettle(ok, item, result, pickedValue);
     }
   }
 
