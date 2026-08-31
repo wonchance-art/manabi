@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { kstDateString } from '@/lib/growthStats';
+import { ONDEMAND_SOURCE } from '@/lib/suggestionSources';
 
 export async function GET() {
   const supabase = createClient(
@@ -14,7 +15,9 @@ export async function GET() {
     .from('daily_suggestions')
     .select('id, language, source, video_id, title, channel_name, thumbnail_url, level, transcript, material_id')
     .eq('date', today)
-    .not('transcript', 'is', null)
+    // 본문이 있는 글 소스 **또는** 클릭 시점 반입 영상(transcript는 NULL이 정상).
+    // 이 줄이 `.not(transcript, is, null)` 하나였을 때 영상 카드가 통째로 안 보였다.
+    .or(`transcript.not.is.null,source.eq.${ONDEMAND_SOURCE}`)
     .order('language')
     .order('created_at');
 

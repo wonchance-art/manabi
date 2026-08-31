@@ -13,6 +13,7 @@ import {
 } from '../lib/bookSplit';
 import { makeBookKey } from '../lib/bookMeta';
 import { LEVELS } from '../lib/constants';
+import { isOnDemandSuggestion, suggestionVideoUrl } from '../lib/suggestionSources';
 import MaterialAddPdfSection from './MaterialAddPdfSection';
 import MaterialAddEpubSection from '../components/MaterialAddEpubSection';
 import MaterialAddSentenceSection from '../components/MaterialAddSentenceSection';
@@ -150,6 +151,9 @@ export default function MaterialAddPage() {
 
   // 링크 반입(v2-F R1) — 남의 자막이라 **기본** 비공개. PDF·EPUB처럼 강제하지는 않는다:
   // 재배포 판단은 사용자 몫이라 토글을 남긴다(설계 §5). 출처는 metadata.source에 남긴다.
+  /** 추천(영상)에서 들어온 주소 — 링크 반입 입구가 이걸 받아 자동으로 가져온다. */
+  const [linkAutoUrl, setLinkAutoUrl] = useState('');
+
   const handleLinkReady = ({ title: linkTitle, rawText: linkText, source }) => {
     setPdfSource(null);
     setEpubSource(false);
@@ -194,6 +198,11 @@ export default function MaterialAddPage() {
   }, []);
 
   // 추천 자료에서 진입 시 자동 폼 채우기
+  //
+  // 두 갈래다. 글 소스는 크론이 본문까지 담아 뒀으니 그대로 붓는다. **영상은 다르다** —
+  // 크론이 목록만 담고 본문은 없다(v2-F R4: 서버가 남의 자막을 미리 복제하지 않는다).
+  // 그래서 주소를 링크 반입 입구(F R1)에 넘겨 **이 사용자의 비공개 자료**로 가져온다.
+  // 자막 취득이 실패해도 그 자리에서 붙여넣기 창이 열린다 — 이미 만들어 둔 길이다.
   useEffect(() => {
     const suggestionId = searchParams.get('suggestion');
     if (!suggestionId) return;
@@ -205,9 +214,14 @@ export default function MaterialAddPage() {
         const s = items.find(i => i.id === suggestionId);
         if (!s) return;
         setTitle(s.title);
-        setRawText(s.transcript || '');
         setLanguage(s.language || 'Japanese');
         if (s.level) setLevel(s.level);
+        if (isOnDemandSuggestion(s)) {
+          // 공개범위는 여기서 정하지 않는다 — handleLinkReady가 private으로 고정한다.
+          setLinkAutoUrl(suggestionVideoUrl(s));
+          return;
+        }
+        setRawText(s.transcript || '');
         setVisibility('public');
       })
       .catch(() => {})
@@ -393,7 +407,7 @@ export default function MaterialAddPage() {
         onSeedConsumed={() => setSentenceSeed('')}
       />
 
-      <MaterialAddLinkSection toast={toast} onReady={handleLinkReady} />
+      <MaterialAddLinkSection toast={toast} onReady={handleLinkReady} initialUrl={linkAutoUrl} />
 
       {/* 책 초안은 **그것을 만든 문 옆**에 펼친다 — 위쪽 입구(EPUB·문장 목록)에서 왔으면 여기,
           본문 폼에서 나눴으면 텍스트 칸 아래. 한 자리에 고정하면 누른 자리와 결과가 갈린다. */}

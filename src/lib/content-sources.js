@@ -234,6 +234,14 @@ export async function fetchFromSource(source, count = 3) {
     // (F R3). 게이트는 `WIKINEWS_EDITIONS.zh.gate`가 건다 — 여기 분기에는 없다.
     case 'wikinews_zh': return fetchWikinews(count, 'zh');
 
+    // 영상(v2-F R4) — **목록만** 긷는다. 자막 본문은 사용자가 카드를 눌러 자기 계정의
+    // 비공개 자료를 만들 때 `/api/import/link`(F R1)가 가져온다. 서버는 안 담는다.
+    // 동적 import — youtubei.js는 무겁고 이 분기에서만 필요하다(link 라우트 선례).
+    case 'youtube_channel': {
+      const { fetchYoutubeChannel } = await import('./server/youtubeChannel.js');
+      return fetchYoutubeChannel(count, config);
+    }
+
     // 구버전 호환
     case 'wikipedia_good':
     case 'wikipedia_random':

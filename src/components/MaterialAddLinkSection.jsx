@@ -12,7 +12,7 @@
  * IP 차단을 경고한 물건이다. 그래서 422를 **정상 분기**로 받아 붙여넣기 창을 편다 —
  * 실패가 막다른 길이면 기능이 죽는다. 붙여넣은 자막의 타임코드는 같은 순수 함수가 지운다.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Button from './Button';
 import { supabase } from '../lib/supabase';
 import { detectLinkKind, transcriptFromPaste } from '../lib/linkImport';
@@ -20,7 +20,7 @@ import { detectLinkKind, transcriptFromPaste } from '../lib/linkImport';
 /** 유튜브 자막은 길다 — 본문 폼 상한과 같은 결로 끊는다. */
 const MAX_CHARS = 50000;
 
-export default function MaterialAddLinkSection({ toast, onReady }) {
+export default function MaterialAddLinkSection({ toast, onReady, initialUrl = '' }) {
   const [open, setOpen] = useState(false);
   const [url, setUrl] = useState('');
   const [busy, setBusy] = useState(false);
@@ -31,12 +31,12 @@ export default function MaterialAddLinkSection({ toast, onReady }) {
   const kind = detectLinkKind(url);
   const ready = kind === 'youtube' && !busy;
 
-  function deliver({ title, text, videoId, channel, via }) {
+  function deliver({ title, text, videoId, channel, via, url: srcUrl }) {
     const body = text.slice(0, MAX_CHARS);
     onReady({
       title: title || '가져온 영상',
       rawText: body,
-      source: { kind: 'youtube', url: url.trim(), videoId, channel: channel || '', via },
+      source: { kind: 'youtube', url: srcUrl || url.trim(), videoId, channel: channel || '', via },
     });
     setOpen(false);
     setUrl('');
@@ -45,8 +45,15 @@ export default function MaterialAddLinkSection({ toast, onReady }) {
     return body.length;
   }
 
-  async function handleFetch() {
-    if (!ready) return;
+  /**
+   * `target`을 받는 이유: 추천 카드에서 들어오면 주소를 **인자로** 넘겨야 한다.
+   * setUrl 직후에 state를 읽으면 아직 빈 값이라 아무것도 안 가져온다.
+   * (그래서 버튼도 `onClick={handleFetch}`가 아니라 `() => handleFetch()`다 —
+   *  그냥 넘기면 React 이벤트 객체가 target 자리에 들어온다.)
+   */
+  async function handleFetch(target) {
+    const raw = String(target ?? url).trim();
+    if (busy || detectLinkKind(raw) !== 'youtube') return;
     setBusy(true);
     setManual(null);
     try {
@@ -55,11 +62,11 @@ export default function MaterialAddLinkSection({ toast, onReady }) {
       const res = await fetch('/api/import/link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify({ url: url.trim() }),
+        body: JSON.stringify({ url: raw }),
       });
       const j = await res.json().catch(() => ({}));
       if (res.ok && j?.text) {
-        const n = deliver(j);
+        const n = deliver({ ...j, url: raw });
         toast(`자막 ${n.toLocaleString()}자를 가져왔어요.`, 'success');
         return;
       }
@@ -75,6 +82,16 @@ export default function MaterialAddLinkSection({ toast, onReady }) {
       setBusy(false);
     }
   }
+
+  // 추천 카드에서 주소를 안고 들어오면 창을 열고 곧바로 가져온다 — 사용자가 URL을
+  // 다시 붙일 이유가 없다. 실패하면 아래 붙여넣기 창이 **그 자리에서** 열린다.
+  useEffect(() => {
+    if (!initialUrl) return;
+    setOpen(true);
+    setUrl(initialUrl);
+    handleFetch(initialUrl);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialUrl]);
 
   function handlePaste() {
     const text = transcriptFromPaste(pasted);
@@ -111,7 +128,7 @@ export default function MaterialAddLinkSection({ toast, onReady }) {
               onChange={(e) => { setUrl(e.target.value); setManual(null); }}
               onKeyDown={(e) => { if (e.key === 'Enter') handleFetch(); }}
             />
-            <Button size="sm" onClick={handleFetch} disabled={!ready}>
+            <Button size="sm" onClick={() => handleFetch()} disabled={!ready}>
               {busy ? '찾는 중…' : '가져오기'}
             </Button>
           </div>

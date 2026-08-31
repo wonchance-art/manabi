@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { kstDateString } from '@/lib/growthStats';
 import { fetchFromSource } from '../../../../lib/content-sources.js';
-import { groupByLanguage, resolveActiveSources } from '../../../../lib/suggestionSources.js';
+import { groupByLanguage, resolveActiveSources, suggestionSourceLabel } from '../../../../lib/suggestionSources.js';
 
 export async function GET(request) {
   // CRON_SECRET 미설정 시 "Bearer undefined" 통과 방지 — fail-closed.
@@ -49,11 +49,9 @@ export async function GET(request) {
     }
 
     for (const a of articles) {
-      const sourceLabel = a.videoId?.startsWith('qiita_') ? 'qiita'
-        : a.videoId?.startsWith('devto_') ? 'devto'
-        : a.videoId?.startsWith('nhk_') ? 'nhk'
-        : a.videoId?.startsWith('wikinews_') ? 'wikinews'
-        : 'wikipedia';
+      // 라벨 판정은 순수 함수로 뺐다 — 영상 소스는 videoId가 **실제 유튜브 id**여야 해서
+      // 접두사 체인으로 못 가른다(클릭 시점에 그 id로 주소를 만든다).
+      const sourceLabel = suggestionSourceLabel(a);
       const { error } = await supabase.from('daily_suggestions').upsert({
         date: today,
         language,
@@ -62,7 +60,7 @@ export async function GET(request) {
         title: a.title,
         channel_name: a.channelName,
         thumbnail_url: a.thumbnail,
-        transcript: a.transcript,
+        transcript: a.transcript ?? null,   // 영상 소스는 주지 않는다 → NULL(본문 복제 0)
         level: a.level,
       }, { onConflict: 'date,video_id' });
 

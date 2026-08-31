@@ -14,6 +14,7 @@ import { fetchKnownWords, mergeKnownIntoIndex } from '../lib/knownWords';
 import { groupByBook } from '../lib/bookMeta';
 import { useGroupReadIds } from '../lib/useGroupReadIds';
 import { JP_LEVELS, EN_LEVELS, ZH_LEVELS, langNameKo } from '../lib/constants';
+import { isOnDemandSuggestion } from '../lib/suggestionSources';
 import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
 
@@ -25,8 +26,13 @@ async function fetchTodaySuggestions() {
 }
 
 function SuggestionCard({ suggestion: s, router }) {
+  // 영상 추천은 본문이 **없는 게 정상**이다 — 크론은 목록만 담고, 자막은 누르는 사람이
+  // 자기 비공개 자료로 가져온다(v2-F R4). `transcript` 하나로 판정하면 영상 카드가
+  // 전부 「자막 없음」으로 죽는다.
+  const onDemand = isOnDemandSuggestion(s);
   const hasTranscript = !!s.transcript;
-  const isReady = !!s.material_id; // 이미 분석된 자료
+  const isReady = !!s.material_id; // 이미 분석된 자료(글 소스 전용 — 영상은 개인별이라 안 붙는다)
+  const canStudy = onDemand || hasTranscript;
 
   function handleStudy() {
     if (isReady) {
@@ -45,7 +51,9 @@ function SuggestionCard({ suggestion: s, router }) {
       )}
       <div className="suggestion-card__body">
         <div className="suggestion-card__meta">
-          <span className="card__flag">{s.language === 'English' ? '영어' : '일본어'}</span>
+          {/* 언어명은 정본(constants.langNameKo)만 — 여기 삼항이 하드코딩돼 있어
+              F R2가 연 프랑스어 카드가 「일본어」로 떴다. */}
+          <span className="card__flag">{langNameKo(s.language)}</span>
           {s.level && <span className="tag">{s.level}</span>}
           <span className="suggestion-card__source">{s.channel_name}</span>
           {isReady && <span className="suggestion-card__ready">✓ 바로 읽기</span>}
@@ -54,16 +62,21 @@ function SuggestionCard({ suggestion: s, router }) {
         <div className="suggestion-card__actions">
           <button
             className="btn btn--primary btn--sm"
-            disabled={!hasTranscript}
-            title={hasTranscript ? '' : '내용을 가져올 수 없습니다'}
+            disabled={!canStudy}
+            title={canStudy ? '' : '내용을 가져올 수 없습니다'}
             onClick={handleStudy}
           >
-            {isReady ? '바로 읽기' : '공부하기'}
+            {isReady ? '바로 읽기' : onDemand ? '내 자료로 가져오기' : '공부하기'}
           </button>
-          {!hasTranscript && (
+          {!canStudy && (
             <span className="suggestion-card__no-transcript">자막 없음</span>
           )}
         </div>
+        {onDemand && (
+          /* 실제로 일어나는 일을 그대로 말한다 — 내 계정에 비공개 사본이 생긴다.
+             화면 문구와 저작권 모델이 어긋나면 둘 중 하나가 거짓말이 된다. */
+          <p className="suggestion-card__note">가져오면 비공개 내 자료가 돼요</p>
+        )}
       </div>
     </div>
   );
