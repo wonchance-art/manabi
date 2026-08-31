@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PATTERN_FILTERS } from './patternIndex';
 
 function readPref(key, fallback) {
   try { const v = localStorage.getItem('viewer_' + key); return v !== null ? JSON.parse(v) : fallback; } catch { return fallback; }
@@ -35,6 +36,12 @@ export function useViewerSettings() {
   // 문법 표시(v2-G R1) — 정본 문형의 표지어에 옅은 밑줄. 1단 스캔이라 오탐이 있고,
   // 정본 로드도 따라오므로 옵트인이 전제(설계 §3·§5): 기본 꺼짐.
   const [showPatterns, setShowPatternsRaw] = useState(() => readPref('showPatterns', false));
+  // 문법 표시 범위(v2-G R2) — 'all' | 'due'. 정본 문형 484개를 전부 후보로 잡으면
+  // "만나기는 하는데 무엇부터 볼지"가 안 정해진다. 복습이 다가온 문법으로 좁힐 길을 둔다.
+  const [patternFilter, setPatternFilterRaw] = useState(() => {
+    const v = readPref('patternFilter', 'all');
+    return PATTERN_FILTERS.includes(v) ? v : 'all';
+  });
   // 자동 진행(v2-I R1b) — 지정 문장에 체류하다 다음으로. 집중 모드가 전제. 옵트인: 기본 꺼짐.
   const [autoPace, setAutoPaceRaw] = useState(() => readPref('autoPace', false));
   // 목표 속도(자/분). null = 아직 안 고름 → 언어별 기본값(readingPacer가 정본).
@@ -57,6 +64,7 @@ export function useViewerSettings() {
   const setWordStateHl = (v) => { const val = typeof v === 'function' ? v(wordStateHl) : v; setWordStateHlRaw(val); savePref('wordStateHl', val); };
   const setShowHanjaKo = (v) => { const val = typeof v === 'function' ? v(showHanjaKo) : v; setShowHanjaKoRaw(val); savePref('showHanjaKo', val); };
   const setShowPatterns = (v) => { const val = typeof v === 'function' ? v(showPatterns) : v; setShowPatternsRaw(val); savePref('showPatterns', val); };
+  const setPatternFilter = (v) => { setPatternFilterRaw(v); savePref('patternFilter', v); };
   const setAutoPace = (v) => { const val = typeof v === 'function' ? v(autoPace) : v; setAutoPaceRaw(val); savePref('autoPace', val); };
   const setPaceCpm = (v) => { const val = typeof v === 'function' ? v(paceCpm) : v; setPaceCpmRaw(val); savePref('paceCpm', val); };
   const setPaceStep = (v) => { const val = typeof v === 'function' ? v(paceStep) : v; setPaceStepRaw(val); savePref('paceStep', val); };
@@ -74,6 +82,7 @@ export function useViewerSettings() {
     showToneColors, setShowToneColors,
     wordStateHl, setWordStateHl,
     showPatterns, setShowPatterns,
+    patternFilter, setPatternFilter,
     focusMode, setFocusMode,
     autoPace, setAutoPace,
     paceCpm, setPaceCpm,

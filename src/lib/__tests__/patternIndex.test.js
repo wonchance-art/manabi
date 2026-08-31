@@ -211,7 +211,7 @@ describe('배선 — 기본 꺼짐, 켜야 로드', () => {
 
   it('밑줄은 스캔이 잡은 토큰에만', () => {
     expect(card).toMatch(/word-token--pattern/);
-    expect(card).toContain("patternScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''");
+    expect(card).toContain("visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''");
     // 단정하는 면 칠이 아니라 가는 밑줄 — 톤이 CSS에도 남아야 한다
     const css = read('src/index.css');
     const rule = sliceBetween(css, '.word-token--pattern .surface::after {', '}');
@@ -220,8 +220,8 @@ describe('배선 — 기본 꺼짐, 켜야 로드', () => {
   });
 
   it('카드는 단어 카드 안에 얹는다 — 새 상호작용을 만들면 단어 탭과 경합한다', () => {
-    expect(card).toContain('<PatternCard hit={patternScan.byToken.get(selectedToken.id)} />');
-    expect(card).toContain('selectedToken?.id && patternScan?.byToken.get(selectedToken.id)');
+    expect(card).toContain('<PatternCard hit={visibleScan.byToken.get(selectedToken.id)} dueSlugs={dueSlugs} />');
+    expect(card).toContain('selectedToken?.id && visibleScan?.byToken.get(selectedToken.id)');
   });
 
   it("톤은 '후보' — 단정하는 제목을 쓰지 않는다", () => {

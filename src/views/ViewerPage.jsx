@@ -21,7 +21,8 @@ import { useToast } from '../lib/ToastContext';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 import PatternCard from '../components/PatternCard';
-import { loadPatternIndex, scanTokens } from '../lib/patternIndex';
+import { dueChapterSet, dueFilterNote, filterScan, loadPatternIndex, scanTokens } from '../lib/patternIndex';
+import { fetchDuePatternRows } from '../lib/patternRows';
 import { recordActivity } from '../lib/streak';
 import { useTTS } from '../lib/useTTS';
 import { useViewerSettings } from '../lib/useViewerSettings';
@@ -181,7 +182,7 @@ export default function ViewerPage() {
           showHanjaKo, setShowHanjaKo,
           showToneColors, setShowToneColors,
           wordStateHl, setWordStateHl,
-          showPatterns, setShowPatterns,
+          showPatterns, setShowPatterns, patternFilter, setPatternFilter,
           focusMode, setFocusMode,
           autoPace, setAutoPace, paceCpm, setPaceCpm, paceStep, setPaceStep,
           theme, setTheme, fontFamily, setFontFamily, pronDisplay, setPronDisplay,
@@ -1152,6 +1153,33 @@ export default function ViewerPage() {
     return scanTokens(tokens, patternIndex);
   }, [showPatterns, patternIndex, material?.processed_json]);
 
+  // '복습할 것' 필터(v2-G R2) — 이미 쌓이고 있는 grammar_review 큐를 읽기만 한다.
+  // 좁힐 때만 조회한다: 전체로 보는 사람에게 쿼리를 태울 이유가 없다(goal-known 결).
+  const patternDueOn = showPatterns && patternFilter === 'due' && materialLang === 'Chinese';
+  const { data: dueRows, isPending: duePending } = useQuery({
+    queryKey: ['pattern-due', user?.id, materialLang],
+    queryFn: () => fetchDuePatternRows(user.id, materialLang),
+    enabled: !!user && patternDueOn,
+    staleTime: 1000 * 60,
+  });
+  // 조회에서 한 번 자르지만 순수 함수가 다시 자른다 — 뷰어는 오래 열려 있고,
+  // 그 사이 예정 시각이 지난 행이 조용히 남으면 필터가 거짓말을 한다.
+  const dueSlugs = useMemo(() => (patternDueOn ? dueChapterSet(dueRows || []) : null), [patternDueOn, dueRows]);
+  // 인덱스가 아니라 산출을 거른다 — 인덱스는 자료 사이에서 공유·캐시되는 물건이다.
+  const visibleScan = useMemo(
+    () => filterScan(patternScan, { mode: patternFilter, dueSlugs }),
+    [patternScan, patternFilter, dueSlugs],
+  );
+  // 밑줄이 하나도 없는 화면은 "필터가 걸렸다"가 아니라 "고장"으로 읽힌다(v2-K 빈 상태).
+  const dueNote = patternDueOn
+    ? dueFilterNote({
+        signedIn: !!user,
+        loading: !!user && duePending,
+        dueCount: dueSlugs?.size || 0,
+        hitCount: visibleScan?.hits.length || 0,
+      })
+    : null;
+
   // 한자 대조(옵트인) — 음 테이블은 토글이 켜질 때만 지연 로드(245KB 청크, 이후 캐시).
   // 훈 테이블(①, 143KB)도 같은 조건으로 병행 로드. 표기는 글자별 훈음 나열이 정본
   // ('늙을 로(노) 스승 사' — 옥편 표제 관례, 음 단독 줄은 2026-08-23 오너 확정으로 폐지).
@@ -1701,8 +1729,8 @@ export default function ViewerPage() {
 
       {/* 문형 카드(v2-G R1) — 탭한 단어가 표지일 때만. 챕터 → 자료 역방향을 여는 자리라
           단어 카드 안에 얹는다(새 상호작용을 만들면 단어 탭과 경합한다). */}
-      {selectedToken?.id && patternScan?.byToken.get(selectedToken.id) && (
-        <PatternCard hit={patternScan.byToken.get(selectedToken.id)} />
+      {selectedToken?.id && visibleScan?.byToken.get(selectedToken.id) && (
+        <PatternCard hit={visibleScan.byToken.get(selectedToken.id)} dueSlugs={dueSlugs} />
       )}
 
       {/* 문맥 설명 R1 — zh부터(프롬프트 검증 언어), 본문 탭 토큰만(문장 유도 가능할 때).
@@ -2260,6 +2288,22 @@ export default function ViewerPage() {
                       <span className="rsheet-switch"><input type="checkbox" checked={showPatterns} onChange={() => setShowPatterns(v => !v)} /><span className="rsheet-knob" /></span>
                     </label>
                   )}
+                  {/* 범위(v2-G R2) — 정본 484문형을 전부 후보로 잡으면 "무엇부터"가 안 정해진다.
+                      '약한 것'은 v2-A(약점 진단)가 착수된 뒤 합류한다(설계 §4). */}
+                  {materialLang === 'Chinese' && showPatterns && (
+                    <div className="rsheet-subrow rsheet-subrow--pattern">
+                      <span className="rsheet-sublab">범위</span>
+                      <div className="rsheet-miniseg" role="group" aria-label="문법 표시 범위">
+                        <button type="button" aria-pressed={patternFilter === 'all'}
+                          className={patternFilter === 'all' ? 'rsheet-miniseg--on' : undefined}
+                          onClick={() => setPatternFilter('all')}>전체</button>
+                        <button type="button" aria-pressed={patternFilter === 'due'}
+                          className={patternFilter === 'due' ? 'rsheet-miniseg--on' : undefined}
+                          onClick={() => setPatternFilter('due')}>복습할 것</button>
+                      </div>
+                      {dueNote && <span className="rsheet-pattern__note">{dueNote}</span>}
+                    </div>
+                  )}
                   {ttsSupported && (
                     <label className="rsheet-swrow">
                       <span className="rsheet-txt"><b>자동 발음</b><span>단어를 누르면 소리로</span></span>
@@ -2544,7 +2588,7 @@ export default function ViewerPage() {
               <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
                 data-tid={tokenId}
                 data-text={token.text}
-                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${patternScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}`}
+                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}`}
                 style={paceStyle}
                 role="button" tabIndex={0}
                 onClick={() => handleTokenClick(token, tokenId)}
