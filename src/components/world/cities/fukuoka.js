@@ -65,9 +65,9 @@ export const ZONES = [
 export const CITY_NODES = [
   // ① 博多港/베이사이드 — 국내선 부두(ベイサイド)·국제선 터미널(博多港国際ターミナル)·포트타워.
   {
-    id: 'bayside-place', kind: 'spot', name: '하카타 항 부두 광장', facade: 'sign',
+    id: 'bayside-place', kind: 'spot', name: 'ベイサイドプレイス博多', facade: 'sign',
     tile: poiTile('bayside-place'), facing: 'down', noStamp: true,
-    desc: '하카타 항 부두의 광장 「하카타 항 부두 광장」(はかた こう ふとう こうじょう). 하카타 부두에서 배로 시카노시마(志賀島) 쪽으로 나가요. (노코노시마 能古島는 메이노하마 姪浜 나루에서 따로 가요.)',
+    desc: '하카타 부두(博多ふ頭)의 복합 상업시설 「ベイサイドプレイス博多」(ベイサイドプレイスはかた). 여객 터미널(博多ふ頭第1ターミナル)과 한 몸이라, 여기서 배로 시카노시마(志賀島) 쪽으로 나가요. (노코노시마 能古島는 메이노하마 姪浜 나루에서 따로 가요.)',
   },
   {
     id: 'hakata-port-international-terminal', kind: 'spot', name: '博多港国際ターミナル', facade: 'sign',
@@ -97,9 +97,9 @@ export const CITY_NODES = [
   },
   // ③ 中洲 — 야타이 거리 + 대형 잡화점(免税 도어 무대) + 一蘭 본사.
   {
-    id: 'nakasu', kind: 'shop', name: '대형 잡화점', facade: 'donki', chapter: 'ot-12-menzei',
+    id: 'nakasu', kind: 'shop', name: 'ドン・キホーテ', facade: 'donki', chapter: 'ot-12-menzei',
     tile: poiTile('nakasu'), facing: 'down', noStamp: true,
-    desc: '두 강 사이 세로 섬 中洲(なかす)의 밤거리 — 야타이(屋台) 노점과 24시간 대형 잡화점의 불이 밝은 밤거리. 免税(めんぜい·면세) 카운터에서 여권을 보이면 세금을 돌려받아요. 근처엔 一蘭 본사도. (ot-12 면세 문화 챕터로 이어져요.)',
+    desc: '두 강 사이 세로 섬 中洲(なかす)의 밤거리 — 야타이(屋台) 노점과 24시간 「ドン・キホーテ」의 노란 간판이 밝은 밤거리. 免税(めんぜい·면세) 카운터에서 여권을 보이면 세금을 돌려받아요. 근처엔 一蘭 본사도. (ot-12 면세 문화 챕터로 이어져요.)',
     refs: ['屋台', '免税'], refsLang: 'ja',
   },
   // 居酒屋(이자카야 NPC) — 나카스 밤거리. ot-08 이자카야 도어의 무대: お通し의 정체 + 첫 주문 とりあえず生で.
@@ -130,16 +130,18 @@ export const CITY_NODES = [
     refs: ['ラーメン', '券売機', '替え玉', 'お願いします'], refsLang: 'ja',
   },
   {
-    id: 'fukuoka-ippudo', kind: 'shop', name: '하카타 라멘 골목', facade: 'noren',
+    id: 'fukuoka-ippudo', kind: 'shop', name: '一風堂', facade: 'noren',
     tile: [200, 160], facing: 'down', noStamp: true,
-    desc: '다이묘에서 시작한 돈코츠 라멘 골목 「하카타 라멘 골목」(はかた ラーメン こうじ). 붉은 노렌 아래 白丸·赤丸이에요.',
+    // refs의 「ラーメン」은 옛 카피에서 **가짜 요미(はかた ラーメン こうじ) 안에만** 있었다.
+    // 요미를 바로잡으면 표기가 사라져 cityNodeRefs 계약 3(표기 실등장)이 깨진다 — 본문에 심는다.
+    desc: '大名(だいみょう)에서 시작한 돈코츠 라멘(ラーメン)집 「一風堂」(いっぷうどう) 大名本店. 붉은 노렌 아래 白丸(しろまる)·赤丸(あかまる)이에요.',
     refs: ['ラーメン'], refsLang: 'ja',
   },
   // ⑦ 大濠公園/福岡城跡 — 연못 공원·성터.
   {
-    id: 'ohori-park', kind: 'spot', name: '호숫가 공원', facade: 'sign',
+    id: 'ohori-park', kind: 'spot', name: '大濠公園', facade: 'sign',
     tile: poiTile('ohori-park'), facing: 'down', noStamp: true,
-    desc: '후쿠오카성 외호(外堀)를 정비한 큰 연못 공원 「호숫가 공원」(こ ぱーく). 연못을 두른 산책로와 호숫가 카페의 뷰예요.',
+    desc: '후쿠오카성 외호(外堀)를 정비한 큰 연못 공원 「大濠公園」(おおほりこうえん). 연못을 두른 약 2km 산책로와, 호숫가에 면한 スターバックス 福岡大濠公園店의 뷰예요.',
   },
   {
     id: 'fukuoka-castle', kind: 'spot', name: '福岡城跡', facade: 'castle',

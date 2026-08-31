@@ -264,5 +264,9 @@ describe('서울 생성 결정성·오프라인 계약', () => {
     expect(terrainRuns).toHaveLength(746_448);
     expect(railwayRuns).toHaveLength(41_629);
     expect(fs.readFileSync(new URL('../cities/seoul.geo.js', import.meta.url), 'utf8')).not.toMatch(/\bfetch\s*\(/);
-  }, 30_000);
+    // 30_000 → 120_000 (2026-08-31, #1209 CI 실측). 이 테스트는 단독 실행에서도 15.3s를 써
+    // 30s 예산의 절반을 소진한다. 병렬 러너에서 형제 테스트가 93s·171s를 먹은 실행에 타임아웃
+    // (테스트 자체는 green). 바로 위 재생성 결정성 테스트와 같은 예산으로 맞춘다 —
+    // CLAUDE.md 선례 「병렬 flaky는 단독 재실행 확인 후 명시 timeout 부여」.
+  }, 120_000);
 });
