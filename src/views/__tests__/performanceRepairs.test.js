@@ -62,12 +62,16 @@ describe('P1–P5 초기 전송 성능 수리 회귀', () => {
     }
   });
 
-  it('P3: dynamic searchParams 구조와 revalidate 값은 그대로 두고 설명만 바로잡는다', () => {
+  it('P3: dynamic searchParams 구조를 유지한다 — 정적화하면 ?lang·?level이 안 먹는다', () => {
+    // 이 계약이 지키는 것은 **동적 구조**다. 함께 얼려 뒀던 `revalidate = 60`은
+    // 2026-08-31 실측에서 **런타임 효과가 0**으로 판명됐다(빌드 산출 `ƒ /lessons`,
+    // 응답 헤더가 제거 전후 모두 `private, no-cache, no-store, …`). 효과 없는 그 줄이
+    // "비로그인 옛 버전" 조사를 CDN 캐시 오진으로 이끌었기에 지웠다(#1077).
+    // 되살아나지 않는 것은 guestLandingParity가 따로 지킨다.
     const page = read('src/app/(app)/lessons/page.jsx');
 
-    expect(page).toContain('export const revalidate = 60;');
     expect(page).toContain('export default async function Page({ searchParams })');
     expect(page).toContain('const sp = await searchParams;');
-    expect(page).toContain('현재 구조는 dynamic SSR이다');
+    expect(page).toContain('dynamic SSR');
   });
 });
