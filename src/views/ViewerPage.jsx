@@ -20,6 +20,8 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
+import PatternCard from '../components/PatternCard';
+import { loadPatternIndex, scanTokens } from '../lib/patternIndex';
 import { recordActivity } from '../lib/streak';
 import { useTTS } from '../lib/useTTS';
 import { useViewerSettings } from '../lib/useViewerSettings';
@@ -179,6 +181,7 @@ export default function ViewerPage() {
           showHanjaKo, setShowHanjaKo,
           showToneColors, setShowToneColors,
           wordStateHl, setWordStateHl,
+          showPatterns, setShowPatterns,
           focusMode, setFocusMode,
           autoPace, setAutoPace, paceCpm, setPaceCpm, paceStep, setPaceStep,
           theme, setTheme, fontFamily, setFontFamily, pronDisplay, setPronDisplay,
@@ -1130,6 +1133,25 @@ export default function ViewerPage() {
     }
   };
 
+  // 문법 표시(v2-G R1) — 정본 문형 인덱스는 토글이 켜질 때만 지연 로드(304KB 청크,
+  // 이후 캐시). 기본 꺼짐인 기능 때문에 모든 독자가 그 값을 치를 이유가 없다(한자 대조 결).
+  const [patternIndex, setPatternIndex] = useState(null);
+  useEffect(() => {
+    if (!showPatterns || materialLang !== 'Chinese' || patternIndex) return undefined;
+    let alive = true;
+    loadPatternIndex(materialLang).then((ix) => { if (alive) setPatternIndex(ix); }).catch(() => {});
+    return () => { alive = false; };
+  }, [showPatterns, materialLang, patternIndex]);
+
+  // 표지 스캔 — 본문이 바뀌거나 인덱스가 오면 한 번. 토큰 수 × 최대 4의 O(n)이라
+  // 자료당 한 번 계산해 두면 렌더는 Map 조회뿐이다(설계 §5 성능 대응).
+  const patternScan = useMemo(() => {
+    const json = material?.processed_json;
+    if (!showPatterns || !patternIndex || !json?.sequence) return null;
+    const tokens = json.sequence.map((id) => ({ id, text: json.dictionary?.[id]?.text || '' }));
+    return scanTokens(tokens, patternIndex);
+  }, [showPatterns, patternIndex, material?.processed_json]);
+
   // 한자 대조(옵트인) — 음 테이블은 토글이 켜질 때만 지연 로드(245KB 청크, 이후 캐시).
   // 훈 테이블(①, 143KB)도 같은 조건으로 병행 로드. 표기는 글자별 훈음 나열이 정본
   // ('늙을 로(노) 스승 사' — 옥편 표제 관례, 음 단독 줄은 2026-08-23 오너 확정으로 폐지).
@@ -1675,6 +1697,12 @@ export default function ViewerPage() {
         <div style={{ fontSize: '0.76rem', color: 'var(--accent-text)', marginBottom: 12 }}>
           한자 · {refVocab.word.hanja}
         </div>
+      )}
+
+      {/* 문형 카드(v2-G R1) — 탭한 단어가 표지일 때만. 챕터 → 자료 역방향을 여는 자리라
+          단어 카드 안에 얹는다(새 상호작용을 만들면 단어 탭과 경합한다). */}
+      {selectedToken?.id && patternScan?.byToken.get(selectedToken.id) && (
+        <PatternCard hit={patternScan.byToken.get(selectedToken.id)} />
       )}
 
       {/* 문맥 설명 R1 — zh부터(프롬프트 검증 언어), 본문 탭 토큰만(문장 유도 가능할 때).
@@ -2224,6 +2252,14 @@ export default function ViewerPage() {
                       <span className="rsheet-switch"><input type="checkbox" checked={showHanjaKo} onChange={() => setShowHanjaKo(v => !v)} /><span className="rsheet-knob" /></span>
                     </label>
                   )}
+                  {/* 문법 표시(v2-G R1) — 중국어 전용 구획에 둔다. 언어 무관 층위
+                      (발음 표기·단어 상태·집중 모드) 사이에 끼우면 층위가 갈린다(focusMode 계약). */}
+                  {materialLang === 'Chinese' && (
+                    <label className="rsheet-swrow">
+                      <span className="rsheet-txt"><b>문법 표시</b><span>정본 문형의 표지에 옅은 밑줄 — 단어를 탭하면 문형과 챕터로</span></span>
+                      <span className="rsheet-switch"><input type="checkbox" checked={showPatterns} onChange={() => setShowPatterns(v => !v)} /><span className="rsheet-knob" /></span>
+                    </label>
+                  )}
                   {ttsSupported && (
                     <label className="rsheet-swrow">
                       <span className="rsheet-txt"><b>자동 발음</b><span>단어를 누르면 소리로</span></span>
@@ -2508,7 +2544,7 @@ export default function ViewerPage() {
               <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
                 data-tid={tokenId}
                 data-text={token.text}
-                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}`}
+                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${patternScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}`}
                 style={paceStyle}
                 role="button" tabIndex={0}
                 onClick={() => handleTokenClick(token, tokenId)}

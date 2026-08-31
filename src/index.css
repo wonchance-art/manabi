@@ -2747,6 +2747,10 @@ body.is-review-session .page-container { padding-top: 8px; }
   --hl-glyph-h: 1em;
   /* 이합사 연동 띠(R4b) — 지정 보라의 옅은 판. picked-bg에서 파생해 테마를 그대로 탄다. */
   --sep-linked-bg: color-mix(in srgb, var(--picked-bg) 45%, transparent);
+  /* 문법 표지 밑줄(v2-G R1) — '후보'라는 톤이 색으로도 읽혀야 한다. 상태색을 쓰지
+     않는 이유: 초록은 이 앱에서 '아는·통과'고 보라는 '지정'이라, 문법 표지를 거기
+     얹으면 다른 뜻으로 읽힌다. 주석의 색(text-muted)에서 파생한 중립 선으로 둔다. */
+  --pattern-line: color-mix(in srgb, var(--text-muted) 60%, transparent);
 }
 .word-token .surface::before {
   content: '';
@@ -2768,6 +2772,53 @@ body.is-review-session .page-container { padding-top: 8px; }
 @media (prefers-reduced-motion: reduce) {
   .word-token .surface::before { transition: none; }
 }
+
+/* ── 문법 표지 밑줄 (v2-G R1) ──
+   1단 표지어 스캔은 "이 문장이 이 문형이다"를 단정하지 못한다 — 그래서 면 칠(밴드)이
+   아니라 가는 밑줄이고, 색도 옅다. 좌표는 밴드·문장 막대와 같은 글자 잉크 기준
+   (--hl-band-top + --hl-glyph-h): 인라인 상자 바닥에 붙이면 루비 여백만큼 떠서
+   남의 줄처럼 보인다(v2-I 체류 선에서 실측한 그 함정). */
+.word-token--pattern .surface::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--hl-band-top) + var(--hl-glyph-h) + 0.06em);
+  height: 1.5px;
+  border-radius: 1px;
+  background: var(--pattern-line);
+  pointer-events: none;
+}
+
+/* ── 문형 카드 (v2-G R1) — 단어 카드 안의 문법 블록 ──
+   톤은 '후보'다: 단정하는 제목 대신 "이 표지가 쓰이는 문형"이라 적고, 카드 안에서도
+   부속 블록의 무게로 앉힌다(단어 뜻이 주인공인 자리를 뺏지 않는다). */
+.pattern-card { margin-bottom: 12px; }
+.pattern-card__head {
+  display: flex; align-items: baseline; gap: 6px;
+  font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;
+}
+.pattern-card__head b { font-size: 0.95rem; color: var(--accent-text); }
+.pattern-card__item {
+  border-left: 2px solid var(--border);
+  padding-left: 10px; margin-bottom: 10px;
+}
+.pattern-card__line { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.pattern-card__pat { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); }
+.pattern-card__lv {
+  padding: 1px 6px; border-radius: 99px; background: var(--bg-elevated);
+  font-size: 0.66rem; font-weight: 700; color: var(--text-muted);
+}
+.pattern-card__ko { font-size: 0.82rem; color: var(--text-secondary); margin-top: 2px; }
+.pattern-card__conn { font-size: 0.74rem; color: var(--text-muted); margin-top: 2px; }
+.pattern-card__ex { font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px; line-height: 1.5; }
+.pattern-card__ex em { display: block; font-style: normal; font-size: 0.76rem; color: var(--text-muted); }
+.pattern-card__go {
+  display: inline-block; margin-top: 5px;
+  font-size: 0.74rem; font-weight: 700; color: var(--primary-light); text-decoration: none;
+}
+.pattern-card__go:hover { text-decoration: underline; }
+.pattern-card__more { font-size: 0.72rem; color: var(--text-muted); }
 
 /* ── 이합사 시각 연동(R4b — 오너 확정 2026-08-30: 연동 띠 + 각괘선 아치) ──
    조각을 탭하면 같은 줄의 파트너 글자에 옅은 띠. :where로 특이성을 (0,1,1)로 눌러
