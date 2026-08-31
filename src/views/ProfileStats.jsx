@@ -10,6 +10,8 @@ import { isPassed } from '../components/RefPatternCheck';
 import { pullProgress } from '../lib/refProgress';
 import { buildWeeklyReport, weekRangeLabel } from '../lib/weeklyReport';
 import { fetchWeeklyReportRows } from '../lib/weeklyReportRows';
+import { topLabeledWeakness, weaknessLine, weaknessProfile } from '../lib/weaknessProfile';
+import { fetchWeaknessRows } from '../lib/weaknessRows';
 import { buildPlan, markProgress } from '../lib/studyPlan';
 import { countRecentDone, pace, perDayLabel } from '../lib/goalPace';
 import { fetchGoalProgressRows } from '../lib/goalRows';
@@ -175,7 +177,7 @@ function WeeklyTile({ weekly }) {
       </button>
       {open && (
         <TileModal title={`이번 주 (${weekRangeLabel(weekly.week)})`} onClose={() => setOpen(false)}>
-          <WeeklyReportCard weekly={weekly} header={false} />
+          <WeeklyReportCard weekly={weekly} header={false} showWeakness />
         </TileModal>
       )}
     </>
@@ -184,7 +186,7 @@ function WeeklyTile({ weekly }) {
 
 /* ── 이번 주 카드(rfc-weekly-report 목업 A) — 거울이지 성적표가 아니다:
      지난주는 회색 병기만(증감 화살표·색상 없음), 0인 축은 그리지 않는다. ── */
-function WeeklyReportCard({ weekly, header = true }) {
+function WeeklyReportCard({ weekly, header = true, showWeakness = false }) {
   const pct = (a) => (a == null ? null : Math.round(a * 100));
   const acc = pct(weekly.reviews.accuracy);
   const prevAcc = pct(weekly.prevReviews.accuracy);
@@ -216,11 +218,38 @@ function WeeklyReportCard({ weekly, header = true }) {
           {parts.join(' · ')}
         </div>
       )}
+      {showWeakness && <WeakSpotLine weekStartMs={weekly.week.startMs} />}
       {!weekly.hasAny && (
         <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
           이번 주 기록이 아직 없어요.
         </p>
       )}
+    </div>
+  );
+}
+
+/* ── 이번 주 약한 곳 한 줄(v2-A R1, #1077 설계 §3.1) — 침습 순서의 첫 칸: 읽기 전용.
+     아무것도 적재하지 않고 이미 쌓인 review_events에서 태그를 **유도**만 한다(원칙 P1).
+     표본이 미달이면 줄 자체가 없다(P3 — weeklyReport의 '0 무표기'와 같은 결).
+     색은 회색 하나 — 이 카드는 거울이지 성적표가 아니라서 경고색을 쓰면 규약을 깬다. ── */
+function WeakSpotLine({ weekStartMs }) {
+  const { user } = useAuth();
+  // 모달을 연 사람에게만 조회한다 — 홈 첫 화면이 태그 유도용 600행을 치를 이유가 없다.
+  const { data: rows } = useQuery({
+    queryKey: ['weak-spot', user?.id, weekStartMs],
+    queryFn: () => fetchWeaknessRows(user.id, { sinceMs: weekStartMs }),
+    enabled: !!user?.id,
+    staleTime: 1000 * 60,
+  });
+  // 창을 카드와 맞춘다 — 카드가 "이번 주"라고 말하는데 줄만 2주면 같은 카드가 두 기간을 섞는다.
+  const top = useMemo(() => topLabeledWeakness(
+    weaknessProfile(rows || [], { sinceMs: weekStartMs }),
+  ), [rows, weekStartMs]);
+  const line = weaknessLine(top);
+  if (!line) return null;
+  return (
+    <div style={{ marginTop: 6, fontSize: '0.86rem', color: 'var(--text-muted)' }}>
+      약한 곳 — {line}
     </div>
   );
 }
