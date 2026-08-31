@@ -19,7 +19,7 @@
  */
 
 import { computeWeakness } from './skillRung';
-import { errorTags, isWeaknessEvent, tagLabel } from './errorTags';
+import { errorTags, isWeaknessEvent, splitTag, tagLabel } from './errorTags';
 
 /** 집계 창 — 헷갈린 단어 큐와 같은 14일(두 화면이 같은 '헷갈림'을 말해야 한다). */
 export const WEAKNESS_SINCE_DAYS = 14;
@@ -72,6 +72,32 @@ export function topLabeledWeakness(profile, labelOpts) {
     if (label) return { tag: w.tag, label, wrong: w.wrong, total: w.total };
   }
   return null;
+}
+
+/**
+ * 약한 문법 챕터 slug 집합 (v2-A → v2-G 결합점).
+ *
+ * 뷰어의 '약한 것' 필터가 쓰는 축. 여기(v2-A)가 정본을 갖고 문형 쪽(patternIndex)은
+ * **집합을 받아 쓰기만** 한다 — 스캔 층이 오답 이벤트를 알기 시작하면 두 축의 정본이 갈린다.
+ *
+ * 상한을 걸지 않는다(cap 0): 본문에 어느 챕터가 나올지 모르므로 "상위 8개"로 잘라 두면
+ * 9번째로 약한 문법이 눈앞에 있어도 밑줄이 안 붙는다. 14일 창에 챕터 약점이 수십을
+ * 넘지 않아 값이 싸다.
+ *
+ * **드릴 약점은 해석기를 줘야 잡힌다.** 문법 이벤트의 item_key는 챕터 slug일 수도
+ * 드릴 id일 수도 있는데, 드릴 id를 챕터로 되돌리려면 챕터 레지스트리(6MB)가 필요하다.
+ * 뷰어는 그걸 안 든다 — 챕터 단위 복습에서 나온 약점만 잡고 드릴분은 조용히 빠진다.
+ * 놓치는 쪽이 안전한 방향이다(없는 밑줄 < 엉뚱한 밑줄).
+ *
+ * @returns {Set<string>} 챕터 slug
+ */
+export function weakChapterSet(events, opts = {}) {
+  const weak = new Set();
+  for (const w of weaknessProfile(events, { ...opts, cap: 0 })) {
+    const parts = splitTag(w.tag);
+    if (parts?.axis === 'pattern') weak.add(parts.value);
+  }
+  return weak;
 }
 
 /**
