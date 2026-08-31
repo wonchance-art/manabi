@@ -67,7 +67,10 @@ describe('F R3 — 그룹 같이 읽기 신호', () => {
 describe('F R3 — 「안 읽은 것만」', () => {
   it('완독분만 걷어낸다 — 읽는 중은 목록에 남는다', () => {
     // 읽는 중까지 숨기면 "이어서 읽기"가 목록에서 사라진다. 그래서 기준은 완독뿐이다.
-    const filterLine = sliceBetween(source(), 'const filtered = unreadOnly', ';');
+    // 계약이 고정하는 건 **요구**지 변수 이름이 아니다 — 이 줄은 v2-N R3에서
+    // 「받아둔 것만」이 겹쳐 걸리며 `afterUnread`로 갈라졌다. 그때 이름을 박아 둔
+    // 옛 계약이 깨졌고, 그건 구현을 얼린 계약이었다는 뜻이다.
+    const filterLine = sliceBetween(source(), 'unreadOnly ? sorted.filter', ';');
     expect(filterLine).toContain('completedIds.has(m.id)');
     expect(filterLine, '읽는 중까지 숨기면 이어읽기가 사라진다').not.toContain('inProgress');
   });
@@ -76,7 +79,8 @@ describe('F R3 — 「안 읽은 것만」', () => {
     const src = source();
     expect(src).toContain('const sorted = (() => {');
     // 정렬 결과를 입력으로 받는다(정렬 로직 안에서 거르지 않는다).
-    expect(src).toMatch(/const filtered = unreadOnly \? sorted\.filter/);
+    // 좌변 이름은 요구가 아니다 — 고정할 것은 "sorted를 입력으로 받는다"뿐이다.
+    expect(src).toMatch(/=\s*unreadOnly \? sorted\.filter/);
   });
 
   it('게스트에겐 칩이 없다 — 진도가 없어 항상 빈 결과가 되기 때문', () => {

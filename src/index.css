@@ -1667,6 +1667,35 @@ body.is-review-session .page-container { padding-top: 8px; }
   font-weight: 600;
 }
 
+/* 받아두기 토글(v2-N R3) — 자료 카드의 배지 무리에 선다. 배지처럼 보이되 누를 수
+   있어야 해서 테두리를 준다(무엇이 눌리는지 보이게). 색은 토큰만 — 켜진 상태는
+   완독 배지와 같은 accent 계열이라 '이 자료는 확보됨'이 한 눈에 묶여 읽힌다.
+   전역 button:focus-visible이 이미 걸려 있어 키보드 초점은 따로 안 쓴다. */
+.mat-pin {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  min-height: 28px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color var(--transition-fast), background var(--transition-fast),
+              color var(--transition-fast);
+}
+.mat-pin:hover:not(:disabled) { border-color: var(--primary); color: var(--primary-light); }
+.mat-pin:disabled { opacity: 0.6; cursor: default; }
+.mat-pin--on {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  color: var(--accent-text);
+}
+
 .badge--coming-soon {
   background: var(--primary-glow);
   color: var(--primary-light);

@@ -192,6 +192,45 @@ export default function MaterialsPage() {
   const [levelFilter, setLevelFilter] = useState(searchParams.get('level') || 'all');
   const [sortBy, setSortBy] = useState('newest'); // newest | level | title | fit
   const [unreadOnly, setUnreadOnly] = useState(false); // v2-F R3 — 고르기 좁히기
+  // 받아둔 자료(v2-N R3). IndexedDB는 서버가 아니라 **이 기기**의 상태라 쿼리 캐시가
+  // 아니라 지역 상태로 둔다 — 기기마다 다른 게 정상이고, 그래서 동기화 대상도 아니다.
+  const [pinnedIds, setPinnedIds] = useState(() => new Set());
+  const [pinnedOnly, setPinnedOnly] = useState(false);
+  const [pinBusy, setPinBusy] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    import('../lib/offlineCache')
+      .then(({ pinnedMaterialIds }) => pinnedMaterialIds())
+      .then((ids) => { if (alive) setPinnedIds(ids); })
+      .catch(() => { /* 큐를 못 쓰는 환경(사생활 모드) — 배지가 안 뜰 뿐 */ });
+    return () => { alive = false; };
+  }, []);
+
+  // 받아두기 토글. 자료실 목록 행에는 뷰어가 읽는 raw_text·source_pdf_id·page_start·
+  // page_end·status가 **없어서**(실측) 전체 행을 한 번 더 받아 담는다 — 목록 행을
+  // 그대로 넣으면 오프라인 뷰어에 빈 칸이 생긴다.
+  const togglePin = async (id) => {
+    setPinBusy(id);
+    try {
+      const cache = await import('../lib/offlineCache');
+      if (pinnedIds.has(id)) {
+        await cache.unpinMaterial(id);
+        setPinnedIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
+        toast('받아두기를 해제했어요.', 'info');
+        return;
+      }
+      const { data, error } = await supabase
+        .from('reading_materials').select('*').eq('id', id).maybeSingle();
+      if (error || !data) throw error || new Error('NOT_FOUND');
+      await cache.pinMaterial(data);
+      setPinnedIds((prev) => new Set(prev).add(id));
+      toast('받아뒀어요 — 연결이 없어도 열립니다.', 'success');
+    } catch {
+      toast('받아두지 못했어요. 연결을 확인해주세요.', 'error');
+    } finally {
+      setPinBusy(null);
+    }
+  };
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [confirmAction, setConfirmAction] = useState(null);
 
@@ -387,7 +426,9 @@ export default function MaterialsPage() {
   // 「안 읽은 것만」(v2-F R3) — 고르기를 좁히는 필터. **완독한 것만** 걷어낸다:
   // 읽는 중(진도 %)은 남겨야 이어읽기가 목록에서 사라지지 않는다.
   // completedIds는 위에서 이미 로드된 인덱스라 추가 조회 0. 게스트는 칩 자체가 없다.
-  const filtered = unreadOnly ? sorted.filter((m) => !completedIds.has(m.id)) : sorted;
+  const afterUnread = unreadOnly ? sorted.filter((m) => !completedIds.has(m.id)) : sorted;
+  // 「받아둔 것만」(v2-N R3) — 오프라인일 때 열 수 없는 자료를 보여주는 건 해롭다.
+  const filtered = pinnedOnly ? afterUnread.filter((m) => pinnedIds.has(m.id)) : afterUnread;
 
   return (
     <div className="page-container">
@@ -463,6 +504,18 @@ export default function MaterialsPage() {
               title="완독한 자료를 목록에서 숨깁니다"
             >
               안 읽은 것만
+            </button>
+          )}
+          {/* 「받아둔 것만」(v2-N R3) — 받아둔 게 하나도 없으면 칩 자체가 없다
+              (누를 수 있는데 결과가 늘 0인 칩은 고장으로 읽힌다). */}
+          {pinnedIds.size > 0 && (
+            <button
+              onClick={() => setPinnedOnly(v => !v)}
+              aria-pressed={pinnedOnly}
+              className={`chip ${pinnedOnly ? 'chip--active' : ''}`}
+              title="연결이 없어도 열리는 자료만 봅니다"
+            >
+              받아둔 것만
             </button>
           )}
           <select
@@ -665,7 +718,25 @@ export default function MaterialsPage() {
                         </span>
                       )}
                     </div>
-                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                    {/* 받아두기 버튼이 들어오면서 배지 무리가 한 줄에 안 들어가는
+                        구간이 생겼다 — 실측: 320·360px에서 문서 폭이 386px로 넘쳤다
+                        (버튼 제거 시 넘침 0이었으므로 원인은 이 버튼이 맞다).
+                        무리를 감싸고 오른쪽 정렬을 유지해 줄이 늘 뿐 넘치지 않게 한다. */}
+                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                      {/* 받아두기(v2-N R3) — 태그 줄이 아니라 **배지 무리**에 둔다.
+                          F R3 실측: 320px에서 태그 줄이 이미 최악 조합 때 3줄까지 간다.
+                          카드 전체가 뷰어로 가는 클릭 대상이라 stopPropagation 필수 —
+                          받아두려다 자료가 열리면 그건 다른 동작이다. */}
+                      <button
+                        type="button"
+                        className={`mat-pin${pinnedIds.has(m.id) ? ' mat-pin--on' : ''}`}
+                        onClick={(e) => { e.stopPropagation(); togglePin(m.id); }}
+                        disabled={pinBusy === m.id}
+                        aria-pressed={pinnedIds.has(m.id)}
+                        title={pinnedIds.has(m.id) ? '받아둠 — 연결이 없어도 열립니다 (눌러서 해제)' : '받아두기 — 연결이 없어도 열립니다'}
+                      >
+                        {pinBusy === m.id ? '…' : pinnedIds.has(m.id) ? '✓ 받아둠' : '⬇ 받아두기'}
+                      </button>
                       {testScores[String(m.id)] && (
                         <span className="badge" style={{ background: 'color-mix(in srgb, var(--warning) 12%, transparent)', color: 'var(--warning)', fontWeight: 600 }} title="리딩 테스트 최고 점수">
                           {testScores[String(m.id)].score}/{testScores[String(m.id)].total}
