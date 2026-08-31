@@ -164,6 +164,61 @@ describe('②③ 브레이크포인트 동결 + @container 정책 (R2)', () => {
     expect(doc).toContain('이미 스크롤 없이');
   });
 
+  /* ── v2-K R3 2차: 잔여 11건 전수 실측 결과 고정 ── */
+
+  it('요음 획순 패널이 표를 밀어내지 않는다 — 글리프를 쌓아 기본 세트와 같은 폭', () => {
+    // 실측: 패널이 글리프 2개(306px)를 가로로 물면, 챕터 본문 상한 712px 안에서
+    // 요음 표가 뷰포트 759→760에 683→322px(−53%)로 무너졌다. 감싸면 478px로 회복되고
+    // 낙폭이 기본 세트(683→478)와 같아진다.
+    const css = read('src/index.css');
+    expect(css).toContain('.gojuon-panel .kana-stroke-row { flex-wrap: wrap; max-width: var(--kana-glyph); }');
+    // 패널 한정이어야 한다 — 획순 줄 전역을 감싸면 좁은 화면(패널이 표 위)에서도 쌓인다.
+    expect(css, '감싸기는 gojuon 패널 안에서만')
+      .not.toMatch(/^\s*\.kana-stroke-row\s*\{[^}]*flex-wrap/m);
+  });
+
+  it('글리프 한 변은 한 곳에서만 정한다 — 패널 폭 계산이 그 값에 걸려 있다', () => {
+    const css = read('src/index.css');
+    expect(css).toContain('--kana-glyph: 150px;');
+    expect(css).toContain('.kana-stroke-glyph { width: var(--kana-glyph); height: var(--kana-glyph); }');
+    // 좁은 화면 축소도 같은 변수로 — 리터럴로 되돌아가면 감싸는 폭과 조용히 갈린다.
+    expect(css).toContain('.kana-stroke-row { --kana-glyph: 120px; }');
+    expect(css, '글리프 크기를 리터럴로 다시 박으면 안 된다')
+      .not.toMatch(/\.kana-stroke-glyph\s*\{\s*width:\s*\d+px/);
+  });
+
+  it('2차 판정이 유지로 끝난 10건에 뷰포트 쿼리가 그대로 있다 — 기각도 결정이다', () => {
+    // 전부 뷰포트를 상수 오프셋으로 1:1 추종한다(실측). 컨테이너로 옮기면 같은 답을
+    // 다른 숫자로 쓰는 churn이라 **일부러** 두었다. 누가 '정리'로 옮기면 여기서 잡힌다.
+    const css = read('src/index.css');
+    for (const re of [
+      /@media \(min-width: 900px\)\s*\{\s*\.review-dash/,
+      /@media \(min-width: 900px\)\s*\{\s*\.admin-edit__pencil/,
+      /@media \(min-width: 760px\)\s*\{\s*\.jpmap-layout/,
+      /@media \(min-width: 760px\)\s*\{\s*\.gojuon-board/,
+    ]) expect(css, `${re} — R3 2차에서 유지로 판정한 쿼리다`).toMatch(re);
+  });
+
+  it('문서가 R3 2차 판정을 근거와 함께 싣는다 — 추측이 아니라 실측이었음이 남아야 한다', () => {
+    const doc = read('docs/ui-conventions.md');
+    expect(doc).toContain('R3 2차 결과');
+    // 수리 1건: 붕괴 폭과 회복 폭
+    expect(doc).toContain('683→**322px**');
+    expect(doc).toContain('--kana-glyph');
+    // 1차 추측이 기각된 두 건은 그 사실이 남아야 다음 세션이 다시 안 옮긴다
+    expect(doc.match(/1차 추측 기각/g) || []).toHaveLength(2);
+    // 유지한 역전 2건도 수치와 함께 (다시 재보지 않도록)
+    expect(doc).toContain('넘침은 없다');
+    // 사이드바 오해의 뿌리
+    expect(doc).toContain('정의만 되고 아무 데서도 쓰이지 않는다');
+  });
+
+  it('문서의 쿼리 총량이 계약 상한과 같은 값을 말한다 — 두 곳이 갈리면 문서가 먼저 낡는다', () => {
+    // 실측: 1차가 767을 없앴는데 문서는 29로 남아 있었다. 이제 갈리면 여기서 잡힌다.
+    expect(read('docs/ui-conventions.md')).toContain(`현재 ${VIEWPORT_QUERY_CAP}`);
+    expect(viewportQueries()).toHaveLength(VIEWPORT_QUERY_CAP);
+  });
+
   it('문서가 정본 티어와 동결 목록을 싣는다', () => {
     const doc = read('docs/ui-conventions.md');
     expect(doc).toContain('정본 티어');
