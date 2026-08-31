@@ -11,7 +11,7 @@ import { countDueGrammar } from '../lib/grammarSrs';
 import { useTTS } from '../lib/useTTS';
 import { callGemini } from '../lib/gemini';
 import Button from '../components/Button';
-import OfflineNotice from '../components/OfflineNotice';
+import OfflineNotice, { PendingReviewsNotice } from '../components/OfflineNotice';
 import ConfirmModal from '../components/ConfirmModal';
 import VocabList from './VocabList';
 import VocabReview from './VocabReview';
@@ -107,6 +107,24 @@ export default function VocabPage() {
 
   // 복습 큐 — startReview에서 스냅샷으로 고정 (채점해도 재배열/스킵 없음)
   const [reviewQueue, setReviewQueue] = useState([]);
+
+  // 미전송 복습 수(v2-N R2). 폴링하지 않는다 — 카드가 넘어갈 때(reviewIdx)와 Layout이
+  // 동기화를 마치고 쏘는 신호, 두 시점에만 다시 센다. 게스트·큐 불가 환경은 0.
+  const [pendingReviewCount, setPendingReviewCount] = useState(0);
+  useEffect(() => {
+    if (!user?.id) { setPendingReviewCount(0); return; }
+    let alive = true;
+    const recount = async () => {
+      try {
+        const { pendingReviews } = await import('../lib/reviewOutbox');
+        const rows = await pendingReviews(user.id);
+        if (alive) setPendingReviewCount(rows.length);
+      } catch { /* 큐를 못 써도 화면은 그대로 */ }
+    };
+    recount();
+    window.addEventListener('manabi:outbox-flushed', recount);
+    return () => { alive = false; window.removeEventListener('manabi:outbox-flushed', recount); };
+  }, [user?.id, reviewIdx]);
   const [typingAnswer, setTypingAnswer] = useState('');
   const [contextSelected, setContextSelected] = useState(null);
   const exampleCacheRef = useRef(new Map());
@@ -607,6 +625,7 @@ export default function VocabPage() {
 
       {/* 네트워크가 죽어 캐시 스냅샷으로 살아난 화면임을 알린다(v2-N R1) */}
       {vocab?.__offline && <OfflineNotice what="단어장" />}
+      <PendingReviewsNotice count={pendingReviewCount} />
 
       {/* 헤더 — 세션 중에는 없앤다. 부제와 총계는 아래 통계와 중복이라 뺐다. */}
       {!inSession && (

@@ -50,6 +50,30 @@ export default function Layout({ children }) {
     };
   }, []);
 
+  // 미전송 복습 동기화(v2-N R2) — 앱 진입과 온라인 복귀 두 시점에.
+  // 큐가 비어 있으면 IndexedDB 한 번 읽고 끝이라 상시 재실행이 싸다.
+  // 화면에는 성공했을 때만 한 줄 — 오프라인 중에는 조용하다(오너 선택 '안 A').
+  useEffect(() => {
+    if (!user?.id) return;
+    let alive = true;
+    const sync = async () => {
+      try {
+        const [{ flushReviews }, { persistVocabGrade }] = await Promise.all([
+          import('../lib/reviewOutbox'),
+          import('../lib/fsrs'),
+        ]);
+        const r = await flushReviews(supabase, user.id, { persist: persistVocabGrade });
+        if (!alive || r.sent === 0) return;
+        toast(`복습 ${r.sent}개를 저장했어요.`, 'success');
+        // 대기 수를 띄우는 화면(단어장)이 다시 세게 한다 — 폴링 대신 신호.
+        window.dispatchEvent(new CustomEvent('manabi:outbox-flushed'));
+      } catch { /* 큐를 못 써도 학습은 계속된다 */ }
+    };
+    sync();
+    window.addEventListener('online', sync);
+    return () => { alive = false; window.removeEventListener('online', sync); };
+  }, [user?.id, toast]);
+
   // 복습 알림 스케줄러
   useEffect(() => {
     if (!user) return;

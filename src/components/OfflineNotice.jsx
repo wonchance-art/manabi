@@ -24,3 +24,20 @@ export default function OfflineNotice({ what = '내용' }) {
     </p>
   );
 }
+
+/**
+ * 미전송 복습 안내 (v2-N R2).
+ *
+ * 오프라인 채점은 **조용히** 큐에 담긴다(오너 선택 '안 A' — 카드마다 토스트가 뜨면
+ * 복습 리듬이 끊기고, 전역 배너가 이미 오프라인임을 말하고 있어 중복이다).
+ * 대신 여기 한 줄이 "잃지 않았다"를 말한다. 연결돼도 아직 안 올라간 경우가 있어
+ * (동기화 실패·서버 장애) 오프라인 여부와 **독립적으로** 뜬다.
+ */
+export function PendingReviewsNotice({ count = 0 }) {
+  if (!count) return null;
+  return (
+    <p className="offline-notice" role="status">
+      복습 <strong>{count}개</strong>가 기기에 저장돼 있어요 — 연결되면 자동으로 올라갑니다.
+    </p>
+  );
+}

@@ -153,10 +153,25 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
     return { ok: true };
   }
 
+  // 복습 시각을 여기서 한 번 찍어 이벤트·SRS·큐가 **같은 시각**을 쓰게 한다.
+  // 큐가 서버 기본값 now()에 기대면 오프라인 복습이 동기화 시각으로 찍혀 14일 창·
+  // 주 경계·연속 학습일이 밀린다(v2-N R2).
+  const reviewedAt = new Date().toISOString();
+
+  // 오프라인이면 네트워크를 아예 건드리지 않고 큐로 보낸다 — 부분 성공(이벤트는 갔는데
+  // SRS는 실패)이 생길 여지를 없앤다. onLine===false는 '확실히 오프라인'만 뜻한다.
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    const queued = await queueReviewOffline(
+      userId, { type, itemKey, lang, correct, detail }, nextStats, reviewedAt,
+    );
+    // 큐에 못 담았으면 그건 진짜 유실이다 — 성공이라 말하면 안 된다(사생활 모드 등).
+    return queued ? { ok: true, queued: true } : { ok: false, error: new Error('offline-queue-unavailable') };
+  }
+
   // 로그인 경로: 복습 이벤트 + SRS + 보상
   try {
     // 1. 진도 이벤트: review_events 적재
-    await recordReviewEventRemote(userId, { lang, source: type, item_key: itemKey, correct, detail });
+    await recordReviewEventRemote(userId, { lang, source: type, item_key: itemKey, correct, detail, created_at: reviewedAt });
 
     // 2. SRS: 어휘·문법·문형 다음 복습 스케줄
     if (type === 'vocab' && detail?.word_id && nextStats.next_review_at) {
@@ -169,10 +184,39 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
     await recordActivityRemote(userId, lang, 'review_completed', { type, correct });
     return { ok: true };
   } catch (err) {
-    // 콘솔만 남기면 채점 유실이 무증상이 된다(과거 조용한 실패 사고) — 호출자가
-    // 사용자에게 알릴 수 있게 실패를 반환값으로 노출한다(낙관 전진은 호출자 몫).
+    // 온라인인데 실패했다 — 서버가 죽었거나 연결이 방금 끊겼다. 큐에 넣어 살린다.
+    // 이벤트가 이미 착지했을 수도 있는데, 온라인 경로도 같은 reviewedAt을 실어 보내므로
+    // flush의 완전 일치 대조가 그 중복을 걸러낸다.
+    const queued = await queueReviewOffline(
+      userId, { type, itemKey, lang, correct, detail }, nextStats, reviewedAt,
+    );
+    if (queued) return { ok: true, queued: true };
+    // 큐마저 못 쓰는 환경(사생활 모드 등)에서만 실패를 표면화한다 — 콘솔만 남기면
+    // 채점 유실이 무증상이 된다(과거 조용한 실패 사고).
     console.error('[progressStore] reviewCompleted 오류:', err);
     return { ok: false, error: err };
+  }
+}
+
+/**
+ * 미전송 복습 큐로 보낸다(v2-N R2). 어휘가 아니거나 큐를 못 쓰면 false.
+ * 동적 import — IndexedDB 계층을 로그인·온라인 정상 경로의 번들에서 떼어 놓는다.
+ */
+async function queueReviewOffline(userId, ref, nextStats, reviewedAt) {
+  try {
+    const { enqueueReview } = await import('../reviewOutbox');
+    return await enqueueReview({
+      userId,
+      source: ref.type,
+      itemKey: ref.itemKey,
+      lang: ref.lang,
+      correct: ref.correct,
+      detail: ref.detail ?? null,
+      nextStats: nextStats?.next_review_at ? nextStats : null,
+      reviewedAt,
+    });
+  } catch {
+    return false;
   }
 }
 

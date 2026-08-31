@@ -20,6 +20,11 @@ export function logReviewEvents(userId, events) {
       item_key: e.item_key,
       correct: e.correct,
       detail: e.detail ?? null,
+      // created_at은 **주면 존중, 안 주면 서버 기본값**(가산 변경 — 기존 14개 호출처 무영향).
+      // 미전송 큐(v2-N R2)가 이걸 쓴다: 큐가 시각을 안 실으면 비행기에서 한 복습이
+      // 착륙 시각으로 찍혀 14일 창·주 경계·연속 학습일이 전부 밀린다. 그리고 온라인
+      // 경로도 같은 시계를 써야 flush의 중복 제거가 성립한다(완전 일치 대조).
+      ...(e.created_at ? { created_at: e.created_at } : {}),
     }));
   if (rows.length === 0) return;
   supabase.from('review_events').insert(rows).then(() => {}, () => {});
