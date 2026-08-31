@@ -220,7 +220,9 @@ describe('배선 — 기본 꺼짐, 켜야 로드', () => {
   });
 
   it('카드는 단어 카드 안에 얹는다 — 새 상호작용을 만들면 단어 탭과 경합한다', () => {
-    expect(card).toContain('<PatternCard hit={visibleScan.byToken.get(selectedToken.id)} dueSlugs={dueSlugs} />');
+    // 통짜 태그로 잡으면 표식 prop이 하나 늘 때마다 깨진다 — 지키려는 건 "카드가 그리는
+    // 것은 필터를 통과한 그 토큰의 hit"이므로 그것만 본다(weeklyTile 자기함정과 같은 클래스).
+    expect(card).toMatch(/<PatternCard hit=\{visibleScan\.byToken\.get\(selectedToken\.id\)\}/);
     expect(card).toContain('selectedToken?.id && visibleScan?.byToken.get(selectedToken.id)');
   });
 

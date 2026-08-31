@@ -156,12 +156,12 @@ export function scanTokens(tokens, index, { maxSpan = MAX_SPAN } = {}) {
    **무엇부터 볼지**는 여전히 독자 몫이다. 복습이 다가온 문법은 지금 다시 만나면
    그 자체가 복습이 된다 — 이미 쌓이고 있는 `grammar_review` 큐를 그대로 읽는다.
 
-   '약한 것'(v2-A 약점 프로파일) 필터는 여기 없다. 그 축이 아직 착수되지 않았고,
-   약점 유도 부품(errorTags·weaknessProfile)은 v2-A가 정본으로 가져야 한다 —
-   여기서 만들면 중복 신설이다(제품 나침반 ②). v2-A 착수 뒤 한 줄로 합류한다. */
+   '약한 것'은 v2-A(약점 진단)가 정본을 갖는다 — 오답 태깅·점수식을 여기서 다시 만들면
+   중복 신설이다(제품 나침반 ②). v2-A R1이 끝난 뒤 **집합을 받아 쓰는 것으로** 합류했다:
+   이 층은 여전히 오답 이벤트도 점수식도 모르고 챕터 slug 집합 하나만 받는다. */
 
-/** 필터 모드 — 'all'(전체) | 'due'(복습할 것). */
-export const PATTERN_FILTERS = ['all', 'due'];
+/** 필터 모드 — 'all'(전체) | 'due'(복습할 것) | 'weak'(약한 것). */
+export const PATTERN_FILTERS = ['all', 'due', 'weak'];
 
 /**
  * 복습이 다가온 챕터 slug 집합.
@@ -181,35 +181,46 @@ export function dueChapterSet(rows, { now = Date.now() } = {}) {
   return due;
 }
 
-/** 이 표지가 가리키는 문형 중 복습 예정인 챕터가 하나라도 있나. */
-export function hitIsDue(hit, dueSlugs) {
-  if (!dueSlugs || dueSlugs.size === 0) return false;
-  return (hit?.patterns || []).some((p) => p.ch && dueSlugs.has(p.ch));
+/**
+ * 이 표지가 가리키는 문형 중 표식이 붙은 챕터가 하나라도 있나.
+ * 'due'(복습 예정)든 'weak'(자주 틀림)든 판정이 같은 모양이라 한 함수로 쓴다 —
+ * 축마다 따로 짜면 한쪽만 고쳐지는 자리가 생긴다.
+ */
+export function hitIsMarked(hit, markedSlugs) {
+  if (!markedSlugs || markedSlugs.size === 0) return false;
+  return (hit?.patterns || []).some((p) => p.ch && markedSlugs.has(p.ch));
 }
 
 /**
  * 스캔 결과를 필터로 좁힌다 — 인덱스가 아니라 산출을 거른다(인덱스는 공유·캐시된다).
+ *
+ * 두 집합 다 **밖에서 온다**: due는 grammar_review 큐(patternRows), weak는 약점 정본
+ * (v2-A weaknessProfile). 이 층은 슬러그 집합을 받아 거를 뿐 어느 쪽도 계산하지 않는다.
+ *
  * @param {{hits: Array, byToken: Map}} scan scanTokens 산출
- * @param {{mode?: string, dueSlugs?: Set<string>}} [opts]
+ * @param {{mode?: string, dueSlugs?: Set<string>, weakSlugs?: Set<string>}} [opts]
  */
-export function filterScan(scan, { mode = 'all', dueSlugs } = {}) {
+export function filterScan(scan, { mode = 'all', dueSlugs, weakSlugs } = {}) {
   if (!scan) return { hits: [], byToken: new Map() };
-  if (mode !== 'due') return scan;
-  const hits = scan.hits.filter((h) => hitIsDue(h, dueSlugs));
+  // 모르는 모드는 전체로 수렴한다(저장된 옛 값 — v2-M 결). 아는 모드는 **반드시 좁힌다**:
+  // 집합이 아직 안 왔다고 전체를 통과시키면 필터가 조용히 열려 거짓말을 한다.
+  if (mode !== 'due' && mode !== 'weak') return scan;
+  const marked = mode === 'due' ? dueSlugs : weakSlugs;
+  const hits = scan.hits.filter((h) => hitIsMarked(h, marked));
   const byToken = new Map();
   for (const hit of hits) for (const id of hit.tokenIds) byToken.set(id, hit);
   return { hits, byToken };
 }
 
 /**
- * 복습 예정 문형을 앞으로 — 카드는 3개에서 잘린다(把는 14개). 뒤에 묻히면
+ * 표식이 붙은 문형을 앞으로 — 카드는 3개에서 잘린다(把는 14개). 뒤에 묻히면
  * 정작 지금 봐야 할 문형이 영영 안 보인다. 정본 순서(레벨→등장)는 덩이 안에서 보존한다.
  */
-export function orderPatternsByDue(patterns, dueSlugs) {
+export function orderPatternsByMark(patterns, markedSlugs) {
   const list = [...(patterns || [])];
-  if (!dueSlugs || dueSlugs.size === 0) return list;
-  const isDue = (p) => !!(p.ch && dueSlugs.has(p.ch));
-  return [...list.filter(isDue), ...list.filter((p) => !isDue(p))];
+  if (!markedSlugs || markedSlugs.size === 0) return list;
+  const marked = (p) => !!(p.ch && markedSlugs.has(p.ch));
+  return [...list.filter(marked), ...list.filter((p) => !marked(p))];
 }
 
 /**
@@ -218,11 +229,20 @@ export function orderPatternsByDue(patterns, dueSlugs) {
  * (v2-K 빈 상태 규약). 그릴 게 실제로 있으면 null — 할 말이 없으면 하지 않는다.
  * @returns {string|null}
  */
-export function dueFilterNote({ signedIn, loading, dueCount, hitCount } = {}) {
-  if (!signedIn) return '로그인하면 복습이 다가온 문법만 볼 수 있어요';
-  if (loading) return '복습 큐를 읽는 중…';
-  if (!dueCount) return '지금 복습할 문법이 없어요 — [전체]로 보세요';
-  if (!hitCount) return '이 자료에는 복습할 문법이 안 나와요';
+export function filterNote({ mode, signedIn, loading, markedCount, hitCount } = {}) {
+  if (mode !== 'due' && mode !== 'weak') return null;
+  const what = mode === 'due' ? '복습이 다가온' : '자주 틀린';
+  if (!signedIn) return `로그인하면 ${what} 문법만 볼 수 있어요`;
+  if (loading) return mode === 'due' ? '복습 큐를 읽는 중…' : '기록을 읽는 중…';
+  if (!markedCount) {
+    // "아직 모른다"를 "약점이 없다"로 말하면 거짓말이 된다 — 오답이 쌓여야 약점이 선다.
+    return mode === 'due'
+      ? '지금 복습할 문법이 없어요 — [전체]로 보세요'
+      : '아직 약한 문법을 가릴 만큼 기록이 없어요 — [전체]로 보세요';
+  }
+  if (!hitCount) {
+    return mode === 'due' ? '이 자료에는 복습할 문법이 안 나와요' : '이 자료에는 약한 문법이 안 나와요';
+  }
   return null;
 }
 
