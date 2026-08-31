@@ -339,10 +339,25 @@ export default function HomePage({ continueManifest = {} }) {
     groupItem,
   ].filter(Boolean), [forecast, forecastLang, user?.id, continueCard, rereadItem, groupItem]);
 
+  // 게스트 첫 화면(오너 지시 2026-08-31 "둘 다 /home으로 통일").
+  // '/'의 로그인 분기를 걷어내면서 게스트가 여기로 온다 — 전에는 /lessons(교재 목록)로
+  // 갔으므로, 로그인 벽만 세우면 **볼 것이 있던 화면이 볼 것 없는 화면으로 나빠진다**.
+  // 그래서 게스트가 실제로 들어갈 수 있는 문(교재·자료)을 그대로 남기고 로그인은 권유만 한다.
   if (!user) return (
-    <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
-      <h2 style={{ marginBottom: '16px' }}>로그인이 필요합니다</h2>
-      <Link href="/auth" className="btn btn--primary btn--md">로그인하러 가기</Link>
+    <div className="page-container home-page" style={{ maxWidth: 720 }}>
+      <div className="card" style={{ padding: 24 }}>
+        <h2 style={{ margin: '0 0 8px', fontSize: '1.25rem' }}>어학연수를 위한 학습 도구</h2>
+        <p style={{ margin: '0 0 18px', color: 'var(--text-secondary)', lineHeight: 1.65, fontSize: '0.92rem' }}>
+          문법·어휘 레퍼런스를 학습 순서대로 읽고, 읽은 자료에서 단어를 담아 복습해요.
+          <br />
+          로그인하면 진도·단어장·복습 큐가 이어집니다.
+        </p>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <Link href="/lessons" className="btn btn--primary btn--md">교재 둘러보기</Link>
+          <Link href="/materials" className="btn btn--secondary btn--md">자료실</Link>
+          <Link href="/auth" className="btn btn--secondary btn--md">로그인</Link>
+        </div>
+      </div>
     </div>
   );
 

@@ -5,9 +5,13 @@ import path from 'node:path';
 const source = (relativePath) => fs.readFileSync(path.join(process.cwd(), relativePath), 'utf8');
 
 describe('핵심 학습 경로 접근성 수리 계약', () => {
-  it("'/'는 랜딩 없이 상태별 리다이렉트만 한다(#957 — 랜딩 철거 계약)", () => {
+  it("'/'는 랜딩 없이 리다이렉트만 한다(#957 — 랜딩 철거 계약)", () => {
+    // 이 계약이 지키는 것은 **'/'에 랜딩 화면이 되살아나지 않는 것**이다.
+    // 목적지가 `hasSession ? '/home' : '/lessons'`이던 것은 그때의 구현이었고,
+    // 로그인 여부로 아예 다른 화면을 보여 "비로그인이면 옛 버전"으로 읽힌 원인이라
+    // 오너 지시로 한 곳으로 통일했다(2026-08-31). 갈래 금지는 guestLandingParity가 지킨다.
     const root = source('src/app/page.jsx');
-    expect(root).toContain("redirect(hasSession ? '/home' : '/lessons')");
+    expect(root).toMatch(/redirect\('\/home'\);/);
     expect(root).not.toContain('LandingPage');
   });
 

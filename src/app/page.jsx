@@ -1,14 +1,13 @@
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 // 랜딩 철거(#957) — 사설 도구에 현관 페이지가 하던 일이 없다:
 // 트랙 카드는 교재의 언어 필터, 로그인 안내는 auth·자료실, 푸터는 프로필과 전부 같은 문이었다.
-// '/'는 상태에 따라 제 화면으로 보내는 리다이렉트만 남긴다. 세션 판별은 sb-* 쿠키 존재로 충분
-// (실검증은 목적지 페이지가 한다 — 위조 쿠키면 /home이 게스트 처리).
-export const dynamic = 'force-dynamic';
-
-export default async function Page() {
-  const jar = await cookies();
-  const hasSession = jar.getAll().some((c) => c.name.startsWith('sb-') && c.name.endsWith('-auth-token'));
-  redirect(hasSession ? '/home' : '/lessons');
+//
+// 로그인 여부로 갈리던 분기를 걷어냈다(오너 지시 2026-08-31 "둘 다 /home으로 통일").
+// 갈래가 있던 동안 비로그인은 /lessons(교재+피치 카드), 로그인은 /home(대시보드)로 **아예
+// 다른 화면**을 봤고, 그것이 "비로그인이면 옛 버전이 뜬다"는 오래된 보고의 정체였다
+// (캐시가 아니었다 — 실측: /lessons는 `no-store`라 항상 최신, 판정 근거는 #1077).
+// 이제 '/'는 상태와 무관하게 한 곳으로 보내고, 게스트가 볼 내용은 /home이 갖는다.
+export default function Page() {
+  redirect('/home');
 }
