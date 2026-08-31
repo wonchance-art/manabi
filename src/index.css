@@ -10443,11 +10443,17 @@ body.is-review-session .page-container { padding-top: 8px; }
   .gojuon-board { flex-direction: row; align-items: flex-start; gap: 22px; }
   .gojuon-board .gojuon-grid { flex: 1; min-width: 0; }   /* 패널 옆 남은 폭을 표가 채움 */
   .gojuon-panel { align-self: auto; flex: 0 0 auto; position: sticky; top: 16px; }
+  /* 요음 패널은 글리프가 둘이라 가로로 두면 306px — 챕터 본문은 712px가 상한이라
+     표가 절반 밑으로 밀린다(실측: 뷰포트 759→760에서 요음 표 683→322px, −53%).
+     글리프를 세로로 쌓아 패널 폭을 기본 세트와 같은 한 글리프로 맞춘다.
+     ⇒ 요음도 기본과 같은 낙폭(683→478, −30%)이 된다. 기본 세트는 전 구간 불변. */
+  .gojuon-panel .kana-stroke-row { flex-wrap: wrap; max-width: var(--kana-glyph); }
 }
 
 /* 획순 stroke-order 애니메이션 (strokesvg, OFL) */
-.kana-stroke-row { display: flex; gap: 6px; align-items: center; justify-content: center; }
-.kana-stroke-glyph { width: 150px; height: 150px; }
+/* --kana-glyph = 글리프 한 변. 패널 폭이 이 값에 걸려 있어(요음은 2글자) 한 곳에서만 정한다. */
+.kana-stroke-row { --kana-glyph: 150px; display: flex; gap: 6px; align-items: center; justify-content: center; }
+.kana-stroke-glyph { width: var(--kana-glyph); height: var(--kana-glyph); }
 .kana-stroke-glyph--empty { background: var(--bg-secondary); border-radius: var(--radius-md); }
 .kana-stroke-glyph svg { width: 100%; height: 100%; display: block; --shadow: var(--border); --stroke: var(--text-primary); }
 /* 휴지 상태: 획은 숨기고 연한 그림자(글자 윤곽)만 */
@@ -10499,7 +10505,7 @@ body.is-review-session .page-container { padding-top: 8px; }
   .gojuon-cell { min-height: 50px; padding: 7px 1px; gap: 2px; }
   .gojuon-cell__kana { font-size: 1.35rem; }
   .gojuon-cell__sub { font-size: 0.58rem; }
-  .kana-stroke-glyph { width: 120px; height: 120px; }
+  .kana-stroke-row { --kana-glyph: 120px; }
   .kana-test__prompt { font-size: 3.6rem; }
 }
 
