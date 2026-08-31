@@ -16,6 +16,7 @@ import { LEVELS } from '../lib/constants';
 import MaterialAddPdfSection from './MaterialAddPdfSection';
 import MaterialAddEpubSection from '../components/MaterialAddEpubSection';
 import MaterialAddSentenceSection from '../components/MaterialAddSentenceSection';
+import MaterialAddLinkSection from '../components/MaterialAddLinkSection';
 import BookDraftPanel from '../components/BookDraftPanel';
 import { friendlyToastMessage } from '../lib/errorMessage';
 
@@ -37,10 +38,13 @@ export default function MaterialAddPage() {
   const [isSuggestionLoading, setIsSuggestionLoading] = useState(false);
   const [pdfSource, setPdfSource] = useState(null); // { pdf, pageStart, pageEnd }
   const [epubSource, setEpubSource] = useState(false); // 개인 소장 전자책 반입 — 비공개 고정 근거
+  // 링크 반입 출처(v2-F R1) — 있으면 metadata.source에 실린다. 다른 입구로 갈아타면 비운다.
+  const [linkSource, setLinkSource] = useState(null);
 
   // PDF에서 텍스트가 추출되면 폼에 주입
   const handlePdfRangeReady = ({ pdf, pageStart, pageEnd, rawText: extractedText }) => {
     setPdfSource({ pdf, pageStart, pageEnd });
+    setLinkSource(null);
     setTitle(`${pdf.title} (p.${pageStart}-${pageEnd})`);
     setRawText(extractedText);
     if (pdf.language) setLanguage(pdf.language);
@@ -144,9 +148,24 @@ export default function MaterialAddPage() {
     }
   }
 
+  // 링크 반입(v2-F R1) — 남의 자막이라 **기본** 비공개. PDF·EPUB처럼 강제하지는 않는다:
+  // 재배포 판단은 사용자 몫이라 토글을 남긴다(설계 §5). 출처는 metadata.source에 남긴다.
+  const handleLinkReady = ({ title: linkTitle, rawText: linkText, source }) => {
+    setPdfSource(null);
+    setEpubSource(false);
+    setLinkSource(source);
+    setTitle(linkTitle);
+    setRawText(linkText);
+    setVisibility('private');
+    setTimeout(() => {
+      document.querySelector('.form-textarea')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 200);
+  };
+
   // EPUB 챕터 반입 — 텍스트만 폼에 주입, 개인 소장물이므로 비공개 고정
   const handleEpubReady = ({ title: epubTitle, rawText: epubText, language: epubLang }) => {
     setPdfSource(null);
+    setLinkSource(null);
     setEpubSource(true);
     setTitle(epubTitle);
     setRawText(epubText);
@@ -217,7 +236,11 @@ export default function MaterialAddPage() {
     try {
       const initJson = {
         sequence: [], dictionary: {}, last_idx: -1, status: "analyzing",
-        metadata: { language, level, updated_at: new Date().toISOString() }
+        metadata: {
+          language, level, updated_at: new Date().toISOString(),
+          // 출처 기록 — metadata.book 선례를 그대로 탄다(스키마 변경 0).
+          ...(linkSource ? { source: linkSource } : {}),
+        }
       };
       const materialRow = {
         title: title || "제목 없음",
@@ -369,6 +392,8 @@ export default function MaterialAddPage() {
         seedText={sentenceSeed}
         onSeedConsumed={() => setSentenceSeed('')}
       />
+
+      <MaterialAddLinkSection toast={toast} onReady={handleLinkReady} />
 
       {/* 책 초안은 **그것을 만든 문 옆**에 펼친다 — 위쪽 입구(EPUB·문장 목록)에서 왔으면 여기,
           본문 폼에서 나눴으면 텍스트 칸 아래. 한 자리에 고정하면 누른 자리와 결과가 갈린다. */}
