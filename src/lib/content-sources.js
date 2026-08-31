@@ -8,6 +8,13 @@
  * English:
  *   - devto      → Dev.to 영어 기술 트렌드 기사 (B1-B2)
  *   - wikinews   → English Wikinews 최신 기사 (B2, fallback)
+ *
+ * French:
+ *   - wikinews_fr → Wikinews français 최신 기사 (B1)
+ *
+ * Chinese:
+ *   - wikinews_zh → 维基新闻 — **기본 비활성**. 하드리밋 「중화권 정치 서술 완전 배제」
+ *                   때문에 개통은 오너 결정이다(디스패처에는 있으니 DB 행 한 줄이면 켜진다).
  */
 
 const UA = 'AnatomyStudio/1.0 (language-learning)';
@@ -147,37 +154,47 @@ async function wikiFetch(url) {
   return res.json();
 }
 
-async function fetchWikinewsArticleText(title) {
+async function fetchWikinewsArticleText(title, lang = 'en') {
   const params = new URLSearchParams({
     action: 'query', prop: 'extracts', explaintext: 'true',
     exsectionformat: 'plain', titles: title, format: 'json', origin: '*',
   });
-  const data = await wikiFetch(`https://en.wikinews.org/w/api.php?${params}`);
+  const data = await wikiFetch(`https://${lang}.wikinews.org/w/api.php?${params}`);
   const page = Object.values(data?.query?.pages || {})[0];
   const text = page?.extract?.trim() || '';
   if (text.length < 200) return null;
   return text.slice(0, 3000);
 }
 
-export async function fetchWikinews(count = 3) {
+// Wikinews는 언어판마다 같은 MediaWiki API를 쓴다 — 서브도메인만 갈아끼우면 된다.
+// 그래서 fr/zh 공급은 새 파서가 아니라 **이 함수의 매개변수화**로 열린다(신규 파싱 0).
+const WIKINEWS_EDITIONS = {
+  en: { channel: 'English Wikinews',  level: 'B2 상급' },
+  fr: { channel: 'Wikinews français', level: 'B1 중급' },
+  zh: { channel: '维基新闻',            level: 'H4 상급' },
+};
+
+export async function fetchWikinews(count = 3, lang = 'en') {
+  const edition = WIKINEWS_EDITIONS[lang] || WIKINEWS_EDITIONS.en;
   const params = new URLSearchParams({
     action: 'query', list: 'recentchanges', rcnamespace: '0',
     rclimit: String(count * 4), rctype: 'new', format: 'json', origin: '*',
   });
-  const data = await wikiFetch(`https://en.wikinews.org/w/api.php?${params}`);
+  const data = await wikiFetch(`https://${lang}.wikinews.org/w/api.php?${params}`);
   const articles = data?.query?.recentchanges || [];
   const results = [];
   for (const article of articles) {
     if (results.length >= count) break;
-    const text = await fetchWikinewsArticleText(article.title);
+    const text = await fetchWikinewsArticleText(article.title, lang);
     if (!text) continue;
     results.push({
-      videoId: `wikinews_${encodeURIComponent(article.title)}`,
+      // 언어판을 id에 넣는다 — 같은 제목이 두 언어판에 있으면 upsert 키(date,video_id)가 충돌한다.
+      videoId: `wikinews_${lang}_${encodeURIComponent(article.title)}`,
       title: article.title,
-      channelName: 'English Wikinews',
+      channelName: edition.channel,
       thumbnail: null,
       transcript: text,
-      level: 'B2 상급',
+      level: edition.level,
     });
   }
   return results;
@@ -196,7 +213,12 @@ export async function fetchFromSource(source, count = 3) {
     }
     case 'nhk_rss':     return fetchNHKHeadlines(count);
     case 'devto':       return fetchDevto(count);
-    case 'wikinews':    return fetchWikinews(count);
+    case 'wikinews':    return fetchWikinews(count, 'en');
+    case 'wikinews_fr': return fetchWikinews(count, 'fr');
+    // zh는 기본 소스에 넣지 않는다 — 하드리밋 「중화권 정치 서술 완전 배제」.
+    // 뉴스 피드는 정치 기사를 자동으로 추천 카드에 올리게 되므로, 개통은 오너 결정이다.
+    // 여기 남겨 두는 이유는 그 결정이 나면 DB 행 한 줄로 끝나게 하기 위해서다.
+    case 'wikinews_zh': return fetchWikinews(count, 'zh');
 
     // 구버전 호환
     case 'wikipedia_good':
