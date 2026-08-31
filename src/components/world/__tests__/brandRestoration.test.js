@@ -47,6 +47,40 @@ describe('브랜드 복원 R1 — 창작 고유명 금지', () => {
     expect(violations, '고유명 자리에 설명이 복사됨(일반화 흔적) — 실재명을 쓰거나 이름 없이 서술하라').toEqual([]);
   });
 
+  // ── R2 전수 스캔의 상시 판 (2026-08-31, 오너 "ㄱㄱ") ──
+  it('전 도시: 순한글 이름에 외국어 읽기가 붙지 않는다 — 지어낸 요미의 서명', () => {
+    // R1이 고친 가짜 요미 4건은 전부 이 꼴이었다:
+    //   「호숫가 공원」(こ ぱーく) · 「에비스의 복합 광장」(えびす の ふくごう こうじょう)
+    //   「나카노 서브컬처 상점가」(なかの さぶかるちゃー しょうてんが) · 「하카타 항 부두 광장」(…)
+    // **한국어 구절에는 일본어 독음이 있을 수 없다** — 실명을 지우고 그 자리에 한국어
+    // 설명을 넣은 뒤, 없는 이름을 직역해 요미를 지어냈을 때만 나오는 구조다.
+    // 집 관례는 정반대 순서다: 「실명(한글 읽기)」(「Place de la Bourse」·「錦市場」(にしきいちば)).
+    // 그래서 kana뿐 아니라 **모든 외국 문자**를 읽기 자리에서 본다 — zh·fr 도시까지 덮는다.
+    //
+    // R2 전수 스캔(도시 파일 32종) 실측 = **잔여 0건**. 일반화 피해는 R1 범위에 갇혀 있었다.
+    // 오탐으로 확인하고 남겨 둔 3건(재확인 반복 방지):
+    //   bordeaux 「물의 거울」 — 노드 실명 「Place de la Bourse」는 살아 있고 본문 속 부차 언급
+    //   lyon 「정석 한 바퀴」 — 코드 주석의 동선 표현, 지명이 아님
+    //   lyon 「트라불」 — 같은 파일이 이미 `트라불(traboule)`로 실명을 준다
+    // 셋 다 읽기 괄호가 없어 이 계약에는 걸리지 않는다.
+    const files = fs.readdirSync(CITY_DIR).filter((f) => f.endsWith('.js') && !f.endsWith('.geo.js'));
+    expect(files.length).toBeGreaterThan(10);
+
+    const HANGUL = /[가-힣]/;
+    const FOREIGN = /[ぁ-んァ-ヴ一-鿿A-Za-zÀ-ÿ]/;
+    const violations = [];
+    for (const file of files) {
+      const src = fs.readFileSync(path.join(CITY_DIR, file), 'utf8');
+      for (const m of src.matchAll(/「([^」\n]{1,60})」\s*\(([^)\n]{1,80})\)/g)) {
+        const [, name, reading] = m;
+        if (HANGUL.test(name) && !FOREIGN.test(name) && FOREIGN.test(reading)) {
+          violations.push(`${file}: 「${name}」(${reading})`);
+        }
+      }
+    }
+    expect(violations, '한국어 이름에 외국어 요미 — 실명을 지우고 요미를 지어낸 자국이다').toEqual([]);
+  });
+
   it('확인된 가짜 요미가 되살아나지 않는다', () => {
     const sources = ['fukuoka.js', 'tokyo.js']
       .map((f) => fs.readFileSync(path.join(CITY_DIR, f), 'utf8'))
