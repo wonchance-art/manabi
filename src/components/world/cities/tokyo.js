@@ -66,9 +66,9 @@ export const CITY_NODES = [
     desc: '도쿄타워 가까이에 있는 불교 사찰 「増上寺」(ぞうじょうじ)이에요.',
   },
   {
-    id: 'ebisu-garden-place', kind: 'spot', name: '에비스의 복합 광장', facade: 'sign',
+    id: 'ebisu-garden-place', kind: 'spot', name: '恵比寿ガーデンプレイス', facade: 'sign',
     tile: poiTile('ebisu-garden-place'), facing: 'down', noStamp: true,
-    desc: '에비스역 남쪽의 복합 광장 「에비스의 복합 광장」(えびす の ふくごう こうじょう).',
+    desc: '恵比寿역 남쪽의 복합 단지 「恵比寿ガーデンプレイス」(えびすガーデンプレイス). 상업·오피스·미술관이 한데 모여 있고, サッポロビール 본사도 여기예요.',
   },
   // ── v2.2 확장 POI 10 (검증 리서치 2026-07-15 — 전승은 헤지, 상표는 지리 참조만) ──
   {
@@ -202,9 +202,9 @@ export const CITY_NODES = [
     desc: '고서·빈티지 옷·소극장·라이브하우스의 동네 「下北沢」(しもきたざわ). 젊은 문화의 거리로 알려진 골목 미로예요.',
   },
   {
-    id: 'nakano-broadway', kind: 'spot', name: '나카노 서브컬처 상점가', facade: 'sign',
+    id: 'nakano-broadway', kind: 'spot', name: '中野ブロードウェイ', facade: 'sign',
     tile: poiTile('nakano-broadway'), facing: 'down', noStamp: true,
-    desc: '만화·피규어·수집품 상점이 층층이 쌓인 「나카노 서브컬처 상점가」(なかの さぶかるちゃー しょうてんが). 아키하바라와 나란히 꼽히는 서브컬처 거리예요.',
+    desc: '만화·피규어·수집품 상점이 층층이 쌓인 「中野ブロードウェイ」(なかのブロードウェイ). 1966년 문을 연 상가 빌딩으로, 아키하바라와 나란히 꼽히는 서브컬처 성지예요.',
   },
   {
     id: 'omotesando', kind: 'spot', name: '表参道', facade: 'sign',

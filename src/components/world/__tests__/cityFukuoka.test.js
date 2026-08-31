@@ -101,18 +101,24 @@ describe('가게/NPC 노드 (geo POI 매핑)', () => {
     expect(ramen?.kind).toBe('npc');
   });
 
-  it('일반화: 대형 잡화점 불빛으로 표현(상호·브랜드명 일반화, desc는 면세 맥락 유지)', () => {
+  // IP 정책 v2(오너 확정 2026-08-31)로 상호를 되살렸다. 지킬 것은 **파사드·챕터와
+  // 노드 이름의 정합** — 일반화가 깼던 것이 그 정합이다(facade 'donki'인데 이름은
+  // '대형 잡화점', id가 ippudo인데 이름은 '하카타 라멘 골목'이었다).
+  it('中洲 도어: 파사드·챕터·이름이 한 가게를 가리킨다(면세 맥락 유지)', () => {
     const nakasu = CITY_NODES.find((n) => n.id === 'nakasu');
     expect(nakasu?.noStamp).toBe(true);             // 파사드(실존 노드 아님) — 스탬프 없음
     expect(nakasu?.facade).toBe('donki');           // 노란 돈키 간판 마커
+    expect(nakasu?.chapter).toBe('ot-12-menzei');   // 면세 도어 — 무대가 그 가게다
     expect(nakasu?.desc).toContain('免税');          // 면세 도어 무대 소개
-    expect(nakasu?.name).toContain('대형 잡화점');   // 일반화된 카피
+    expect(nakasu?.name).toBe('ドン・キホーテ');      // facade·chapter와 같은 가게를 가리킨다
   });
 
-  it('일반화된 카피: 라멘 골목 노드로 표현(상호 일반화)', () => {
+  it('一風堂 노드: 이름이 id·메뉴명과 같은 가게를 가리킨다', () => {
     const ippudo = CITY_NODES.find((n) => n.id === 'fukuoka-ippudo');
-    expect(ippudo?.name).toBe('하카타 라멘 골목');
-    expect(CITY_NODES.every((n) => !/総本店/.test(n.name || ''))).toBe(true);
+    expect(ippudo?.name).toBe('一風堂');
+    // desc에 남아 있던 白丸·赤丸은 이 가게의 메뉴다 — 상호만 지워 생겼던 어긋남의 흔적.
+    expect(ippudo?.desc).toContain('白丸');
+    expect(ippudo?.desc).toContain('赤丸');
   });
 
   it('편의점·이자카야 NPC 가 도시맵에 추가된다(대화 도어, 스탬프 우주 밖 → noStamp)', () => {
