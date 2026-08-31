@@ -11,12 +11,14 @@
  * 이 문형이다"가 아니라 "이 표지가 쓰이는 문형은 이런 것들"이라고 말한다.
  */
 import Link from 'next/link';
+import { orderPatternsByDue } from '../lib/patternIndex';
 
 /** 한 표지가 여러 문형에 걸릴 때 몇 개까지 펼칠지 — 把는 14개다. 나머지는 수로만. */
 export const PATTERN_CARD_MAX = 3;
 
-export default function PatternCard({ hit }) {
-  const patterns = hit?.patterns || [];
+export default function PatternCard({ hit, dueSlugs }) {
+  // 복습 예정이 앞으로 온다(v2-G R2) — 잘리는 자리가 3개뿐이라 순서가 곧 노출이다.
+  const patterns = orderPatternsByDue(hit?.patterns, dueSlugs);
   if (patterns.length === 0) return null;
 
   const shown = patterns.slice(0, PATTERN_CARD_MAX);
@@ -34,6 +36,9 @@ export default function PatternCard({ hit }) {
           <div className="pattern-card__line">
             <span className="pattern-card__pat" lang="zh-Hans">{p.pattern}</span>
             <span className="pattern-card__lv">{p.level}</span>
+            {/* 복습 예정 표식(v2-G R2) — 이 문형을 지금 본문에서 만나면 그게 복습이다.
+                큐를 안 읽었거나(전체 모드·비로그인) 예정이 아니면 아무 표시도 없다. */}
+            {p.ch && dueSlugs?.has(p.ch) && <span className="pattern-card__due">복습 예정</span>}
           </div>
           {p.ko && <div className="pattern-card__ko">{p.ko}</div>}
           {p.conn && <div className="pattern-card__conn">{p.conn}</div>}

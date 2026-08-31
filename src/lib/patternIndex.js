@@ -151,6 +151,81 @@ export function scanTokens(tokens, index, { maxSpan = MAX_SPAN } = {}) {
   return { hits, byToken };
 }
 
+/* ── 필터 (v2-G R2, 설계 §4) ────────────────────────────────────────────────
+   R1은 정본 문형 전체를 후보로 잡는다. 그러면 "본문에서 문법을 만난다"는 되지만
+   **무엇부터 볼지**는 여전히 독자 몫이다. 복습이 다가온 문법은 지금 다시 만나면
+   그 자체가 복습이 된다 — 이미 쌓이고 있는 `grammar_review` 큐를 그대로 읽는다.
+
+   '약한 것'(v2-A 약점 프로파일) 필터는 여기 없다. 그 축이 아직 착수되지 않았고,
+   약점 유도 부품(errorTags·weaknessProfile)은 v2-A가 정본으로 가져야 한다 —
+   여기서 만들면 중복 신설이다(제품 나침반 ②). v2-A 착수 뒤 한 줄로 합류한다. */
+
+/** 필터 모드 — 'all'(전체) | 'due'(복습할 것). */
+export const PATTERN_FILTERS = ['all', 'due'];
+
+/**
+ * 복습이 다가온 챕터 slug 집합.
+ * `grammar_review`는 챕터 단위 큐라 문형의 `ch`와 그대로 맞물린다.
+ * @param {Array<{slug: string, next_review_at: string}>} rows
+ * @param {{now?: number}} [opts]
+ */
+export function dueChapterSet(rows, { now = Date.now() } = {}) {
+  const due = new Set();
+  for (const r of rows || []) {
+    if (!r?.slug) continue;
+    const t = new Date(r.next_review_at).getTime();
+    // 시각이 없는 행은 큐에 갓 들어온 것 — 예정이 없으니 '지금'으로 친다.
+    if (r.next_review_at != null && (!Number.isFinite(t) || t > now)) continue;
+    due.add(r.slug);
+  }
+  return due;
+}
+
+/** 이 표지가 가리키는 문형 중 복습 예정인 챕터가 하나라도 있나. */
+export function hitIsDue(hit, dueSlugs) {
+  if (!dueSlugs || dueSlugs.size === 0) return false;
+  return (hit?.patterns || []).some((p) => p.ch && dueSlugs.has(p.ch));
+}
+
+/**
+ * 스캔 결과를 필터로 좁힌다 — 인덱스가 아니라 산출을 거른다(인덱스는 공유·캐시된다).
+ * @param {{hits: Array, byToken: Map}} scan scanTokens 산출
+ * @param {{mode?: string, dueSlugs?: Set<string>}} [opts]
+ */
+export function filterScan(scan, { mode = 'all', dueSlugs } = {}) {
+  if (!scan) return { hits: [], byToken: new Map() };
+  if (mode !== 'due') return scan;
+  const hits = scan.hits.filter((h) => hitIsDue(h, dueSlugs));
+  const byToken = new Map();
+  for (const hit of hits) for (const id of hit.tokenIds) byToken.set(id, hit);
+  return { hits, byToken };
+}
+
+/**
+ * 복습 예정 문형을 앞으로 — 카드는 3개에서 잘린다(把는 14개). 뒤에 묻히면
+ * 정작 지금 봐야 할 문형이 영영 안 보인다. 정본 순서(레벨→등장)는 덩이 안에서 보존한다.
+ */
+export function orderPatternsByDue(patterns, dueSlugs) {
+  const list = [...(patterns || [])];
+  if (!dueSlugs || dueSlugs.size === 0) return list;
+  const isDue = (p) => !!(p.ch && dueSlugs.has(p.ch));
+  return [...list.filter(isDue), ...list.filter((p) => !isDue(p))];
+}
+
+/**
+ * '복습할 것'이 아무것도 못 고를 때 이유를 말한다.
+ * 밑줄이 하나도 안 그려진 화면은 "필터가 잘 걸렸다"가 아니라 "고장 났다"로 읽힌다
+ * (v2-K 빈 상태 규약). 그릴 게 실제로 있으면 null — 할 말이 없으면 하지 않는다.
+ * @returns {string|null}
+ */
+export function dueFilterNote({ signedIn, loading, dueCount, hitCount } = {}) {
+  if (!signedIn) return '로그인하면 복습이 다가온 문법만 볼 수 있어요';
+  if (loading) return '복습 큐를 읽는 중…';
+  if (!dueCount) return '지금 복습할 문법이 없어요 — [전체]로 보세요';
+  if (!hitCount) return '이 자료에는 복습할 문법이 안 나와요';
+  return null;
+}
+
 /* ── 지연 로드 — 토글이 켜졌을 때만 (refVocabIndex 관례) ───────────────────────
    문형 정본은 중국어만 304KB다. 기본 꺼짐인 기능 때문에 모든 독자가 그 값을
    치를 이유가 없다. 언어는 승인 범위(중국어)만 — 일본어 852패턴은 활용형이라
