@@ -22,6 +22,9 @@ import { detectLang } from '../lib/constants';
 import { stripSourceLangInMeaning } from '../lib/studySession';
 import { useVocabData } from '../lib/useVocabData';
 import { confusedVocabWords, CONFUSED_MIN, CONFUSED_SINCE_DAYS } from '../lib/confusedQueue';
+import { weaknessProfile } from '../lib/weaknessProfile';
+import { weakDrillPrescription, weakDrillWords, hasWeakDrill } from '../lib/weakDrill';
+import { tagLabel } from '../lib/errorTags';
 // skillRung은 콘텐츠 무의존 순수 모듈 — studyMaterials(→content 레지스트리)를 끌어오지 않아
 // 'use client' 번들에 교재 전체가 딸려 오지 않는다.
 import { deriveVocabRungs, vocabTypeForRung } from '../lib/skillRung';
@@ -513,7 +516,8 @@ export default function VocabPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('review_events')
-        .select('source, item_key, correct, created_at')
+        // detail은 유형 큐(v2-A R3)가 qtype을 보려고 함께 받는다 — 새 조회 대신 컬럼 하나.
+        .select('source, item_key, correct, created_at, detail')
         .eq('user_id', user.id)
         .eq('source', 'vocab')
         .gte('created_at', new Date(Date.now() - CONFUSED_SINCE_DAYS * 86400000).toISOString())
@@ -530,6 +534,23 @@ export default function VocabPage() {
     [recentVocabEvents, vocab],
   );
   const startRematch = () => startSession(confused.map((c) => c.word));
+
+  // 🎯 유형 큐(v2-A R3) — R1이 진단하고 R2가 편성에 반영한 약점을, 사용자가 **한 번에
+  // 그 연습으로 들어갈** 길로 잇는다. 방식 선택(reviewMode)은 원래 있었고 없던 건 다리다.
+  // 같은 이벤트 배열을 재사용하므로 추가 조회 0. 처방할 축이 없거나 표본이 얕으면 null.
+  const weakDrill = useMemo(() => {
+    const pick = weakDrillPrescription(weaknessProfile(recentVocabEvents), { ttsSupported });
+    if (!pick) return null;
+    const words = weakDrillWords(recentVocabEvents, vocab, pick.mode);
+    return hasWeakDrill(words) ? { ...pick, words } : null;
+  }, [recentVocabEvents, vocab, ttsSupported]);
+
+  // 처방을 누르면 그 방식으로 고정해 세션을 연다 — 사용자가 드롭다운을 찾아 바꾸지 않아도 된다.
+  const startWeakDrill = () => {
+    if (!weakDrill) return;
+    setReviewMode(weakDrill.mode);
+    startSession(weakDrill.words.map((c) => c.word));
+  };
 
   // ── 대시보드 데이터 ──
   // 문법 큐 조망(미래) — '지금 할 것'은 히어로 버튼이 말하므로 여기선 예정만 본다.
@@ -770,6 +791,17 @@ export default function VocabPage() {
                   {confused.length >= CONFUSED_MIN && (
                     <button type="button" className="vocab-rematch" onClick={startRematch}>
                       ⚔ 헷갈린 말 <strong>{confused.length}개</strong> — 재대결 시작 →
+                    </button>
+                  )}
+                  {/* 🎯 유형 큐(v2-A R3) — 헷갈린 말 큐의 형제. 저쪽은 "어떤 말"이고
+                      이쪽은 "어떤 방식"이다. 처방할 축이 없으면 줄 자체가 없다. */}
+                  {weakDrill && (
+                    <button type="button" className="vocab-rematch" onClick={startWeakDrill}>
+                      🎯 {tagLabel(weakDrill.tag)}가 약해요
+                      {' '}<span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}>
+                        · {weakDrill.total}번 중 {weakDrill.wrong}번
+                      </span>
+                      {' '}— 그 방식으로 <strong>{weakDrill.words.length}개</strong> 복습 →
                     </button>
                   )}
                 </>
