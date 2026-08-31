@@ -45,7 +45,9 @@ describe('홈 통계 그리드 — 오늘 활동 폐지·이번 주 타일화', 
 
   it('탭하면 전체 거울 — TileModal 정본 재사용, 카드 머리는 모달 제목과 중복 금지', () => {
     expect(code).toMatch(/WeeklyTile[\s\S]{0,1200}?<TileModal/);
-    expect(code).toMatch(/<WeeklyReportCard weekly=\{weekly\} header=\{false\} \/>/);
+    // 태그 전체를 통짜로 잡으면 무관한 prop이 붙을 때마다 깨진다 — 지키려는 건
+    // "모달 안에서는 카드 머리를 끈다"이므로 그것만 본다(v2-A가 showWeakness를 얹었다).
+    expect(code).toMatch(/<WeeklyReportCard weekly=\{weekly\}[^>]*header=\{false\}/);
   });
 
   it('대표 축 폴백 사슬 — 복습이 0이어도 빈 타일이 아니라 다음 축을 보여준다', () => {
