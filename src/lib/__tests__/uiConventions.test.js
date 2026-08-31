@@ -86,10 +86,11 @@ describe('① 인라인 하드코딩 색상 0', () => {
 /* ── v2-K R2: 브레이크포인트 동결 ── */
 
 /** 동결 목록 — 이 값들 밖으로 나가는 뷰포트 쿼리는 금지(docs/ui-conventions.md §2). */
-const ALLOWED_MAX = [400, 420, 480, 560, 600, 767, 768, 880, 1179];
+/** R3에서 767(→768 병합)·880(→@container)이 빠졌다. 목록은 줄기만 하고 늘지 않는다. */
+const ALLOWED_MAX = [400, 420, 480, 560, 600, 768, 1179];
 const ALLOWED_MIN = [760, 900];
 /** 현재 총 뷰포트 쿼리 수. 늘릴 수 없다 — 새 접힘은 @container로. */
-const VIEWPORT_QUERY_CAP = 29;
+const VIEWPORT_QUERY_CAP = 28;
 
 function cssFiles() {
   const out = [];
@@ -130,6 +131,37 @@ describe('②③ 브레이크포인트 동결 + @container 정책 (R2)', () => {
 
   it('컨테이너 쿼리 선례가 살아 있다 — 정책이 가리키는 실물', () => {
     expect(read('src/index.css')).toContain('container-type: inline-size');
+  });
+
+  /* ── v2-K R3: 이관 결과 고정 ── */
+
+  it('뷰어 풀블리드 경계 = 모바일 크롬 경계 — 둘이 어긋나면 1px 구간에서 판단이 갈린다', () => {
+    // 767이던 시절 폭 768px에서 크롬은 모바일인데 뷰어만 데스크톱이었다(R3 실측).
+    const css = read('src/index.css');
+    // 두 블록을 각각 **자기 내용으로** 찾는다 — 위치나 순서에 기대면 앵커가 조용히 샌다.
+    const chrome = css.match(/@media \(max-width: (\d+)px\)[^{]*\{\s*:root\s*\{[^}]*--gnb-height/);
+    expect(chrome, '모바일 크롬 블록(--gnb-height)을 못 찾았다').toBeTruthy();
+    const viewer = css.match(/@media \(max-width: (\d+)px\)\s*\{\s*\.viewer-center \{ padding: 12px 12px 72px; \}/);
+    expect(viewer, '뷰어 풀블리드 블록을 못 찾았다').toBeTruthy();
+    expect(viewer[1], `뷰어 풀블리드는 모바일 크롬과 같은 ${chrome[1]}px여야 한다`).toBe(chrome[1]);
+  });
+
+  it('myplan 격자는 화면이 아니라 **자기 폭**으로 접힌다 — 컨테이너 전환의 실물', () => {
+    const css = read('src/index.css');
+    expect(css).toContain('.myplan { container-type: inline-size; }');
+    expect(css).toContain('@container (max-width: 880px) { .myplan__grid { grid-template-columns: 1fr; } }');
+    // 뷰포트로 되돌리면 사이드바 옆에서 다시 틀린 답을 낸다(실측: 실폭 712px에 2열)
+    expect(css, 'myplan 격자에 뷰포트 쿼리가 되살아나면 안 된다')
+      .not.toMatch(/@media[^{]*\)\s*\{\s*\.myplan__grid/);
+  });
+
+  it('문서가 R3 판정을 근거와 함께 싣는다 — 기각도 기록이다', () => {
+    const doc = read('docs/ui-conventions.md');
+    expect(doc).toContain('R3 1차 결과');
+    for (const kept of ['767 → 768', '880 → @container']) expect(doc).toContain(kept);
+    // 기각 2건은 근거가 함께 남아야 한다(다음 세션이 같은 시도를 반복하지 않게)
+    expect(doc).toContain('136px 2열');
+    expect(doc).toContain('이미 스크롤 없이');
   });
 
   it('문서가 정본 티어와 동결 목록을 싣는다', () => {
