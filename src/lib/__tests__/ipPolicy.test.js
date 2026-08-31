@@ -64,3 +64,50 @@ describe('IP 정책 정합 계약 (v2 — 브랜드 적극 사용)', () => {
     expect(head).toContain('docs/policy-brand-content.md');
   });
 });
+
+/**
+ * IP v2 이행 — **구 정책이 지운 실존명 되살리기** (오너 "나머지 차근차근 ㄱㄱ", 2026-08-31).
+ *
+ * 위 계약들은 「문서 둘이 갈리지 않는가」를 지킨다. 그런데 v1이 살아 있던 5주 동안
+ * **교재 본문이 실제로 깎였다** — 순회 R1이 `ローソン`·`からあげクン`을 지웠고(#1150),
+ * R2가 `Suica`·`PASMO`를 「교통계 IC 카드」로 일반화했다(#1151). 둘 다 "IP 규약 이행"이
+ * 사유였으니 v2에서는 **오답**이다.
+ *
+ * 이걸 여기 심는 이유: 두 챕터는 order 05·10이라 **순회가 이미 지나갔다**. R3(13~30)도,
+ * 그 뒤 라운드도 돌아오지 않는다. 계약이 없으면 아무도 다시 안 본다.
+ *
+ * 지키는 것은 **문장이 아니라 실존명의 생존**이다 — 카피는 얼마든지 고쳐도 된다.
+ */
+describe('IP v2 이행 — 구 정책이 깎은 교재 본문', () => {
+  const n5 = () => read('src/content/japanese/grammar/n5.js');
+
+  // 범위를 **챕터**로 잡는다. 파일 전체면 다른 챕터의 언급으로 만족돼 버리고, 반대로
+  // 설명 본문만으로 좁히면 이름이 예문으로 **옮겨간 정상 변경**에도 깨진다 — 지킬 것은
+  // 「이 챕터가 실명을 쓴다」이지 그 이름이 어느 필드에 있느냐가 아니다.
+  // (슬라이스는 sliceBetween 정본만 — raw slice(…indexOf(는 contractHygiene이 잡는다.)
+  const chapter = (from, to) => sliceBetween(n5(), `slug: "${from}"`, `slug: "${to}"`);
+  const konbini = () => chapter('ot-07-konbini', 'n5-06-particles-o-ni-de');
+  const densha = () => chapter('ot-11-densha', 'n5-08-te-form');
+
+  it('편의점 챕터가 핫스낵을 실제 이름으로 부른다 — R1이 지운 자리', () => {
+    // 학습자가 간판에서 보는 건 からあげ가 아니라 からあげクン·ファミチキ다.
+    // 일반명사로만 두면 "메뉴에 그 단어가 없다"는 실전 실패가 그대로 남는다.
+    const body = konbini();
+    expect(body, 'ローソン 상호').toContain('ローソン');
+    expect(body, 'からあげクン 제품명').toContain('からあげクン');
+  });
+
+  it('전철 챕터가 교통카드를 실제 이름으로 부른다 — R2가 일반화한 자리', () => {
+    const body = densha();
+    expect(body, '수도권 IC 카드').toContain('Suica');
+    expect(body).toContain('PASMO');
+  });
+
+  it('통칭 설명이 브랜드를 가리지 않는다 — 「교통계 IC 카드」만 남으면 되돌아간 것이다', () => {
+    // `IC カード`라는 총칭 자체는 실제 표지·안내에 쓰이므로 지운 게 아니다.
+    // 문제는 **총칭만 남는 것**이었다. 그래서 총칭 항목의 설명이 실명을 든다.
+    const note = n5().match(/ko: "IC 카드 \(교통카드\)", note: "([^"]*)"/);
+    expect(note, 'IC カード 예문 항목이 사라졌다').toBeTruthy();
+    expect(note[1]).toContain('Suica');
+  });
+});
