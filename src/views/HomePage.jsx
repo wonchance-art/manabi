@@ -18,7 +18,7 @@ import { buildForecastTapEvent } from '../lib/forecastTapEvent';
 import { logReviewEvents } from '../lib/reviewEvents';
 import ProfileStats from './ProfileStats';
 import { kstDayStartIso, kstWeekStartIso } from '../lib/growthStats';
-import { langNameKo } from '../lib/constants';
+import { detectLang, langNameKo } from '../lib/constants';
 import { isOnDemandSuggestion } from '../lib/suggestionSources';
 
 // 언어 코드 → 한국어 라벨 (studyParagraph.js의 LANG_NAME과 동일 매핑)
@@ -108,10 +108,9 @@ async function fetchHomeData(userId, lang, nowMs = Date.now()) {
     forecast:         buildForecast(forecastRows, new Date(nowMs)),
     vocabByLang: (() => {
       const all = allVocabRows || [];
-      // language가 비어 있는 레거시 행은 표기로 일본어/영어를 추정(기존 동작 유지).
+      // language가 비어 있는 레거시 행은 표기로 추정(기존 동작 유지) — 판별은 정본 하나로.
       // 명시된 행은 언어별(Japanese/English/French/Chinese)로 그룹 집계.
-      const langOf = (v) => v.language
-        || (/[\u3040-\u30ff\u4e00-\u9fff]/.test(v.word_text || '') ? 'Japanese' : 'English');
+      const langOf = (v) => v.language || detectLang(v.word_text || '');
       const byLang = all.reduce((acc, v) => {
         const lang = langOf(v);
         acc[lang] = (acc[lang] || 0) + 1;

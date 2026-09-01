@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { langFromBcp47 } from '../lib/constants';
 import Button from './Button';
 import { parseEpub } from '../lib/epub';
 
@@ -54,7 +55,7 @@ export default function MaterialAddEpubSection({ toast, onReady, onBookReady }) 
     if (!book || book.chapters.length === 0) return;
     onBookReady?.({
       bookTitle: book.title || book.fileName.replace(/\.epub$/i, ''),
-      language: /^ja/i.test(book.language) ? 'Japanese' : /^en/i.test(book.language) ? 'English' : /^zh/i.test(book.language) ? 'Chinese' : null,
+      language: langFromBcp47(book.language),
       chapters: book.chapters.map((ch) => ({ title: ch.title, text: ch.text })),
     });
     setBook(null);
@@ -70,7 +71,8 @@ export default function MaterialAddEpubSection({ toast, onReady, onBookReady }) 
     onReady({
       title: `${book.title || book.fileName.replace(/\.epub$/i, '')} — ${chapterLabel}`,
       rawText: text,
-      language: /^ja/i.test(book.language) ? 'Japanese' : /^en/i.test(book.language) ? 'English' : null,
+      // 위 `importWholeBook`과 **같은 매퍼** — 예전엔 이쪽만 중국어가 빠져 있었다.
+      language: langFromBcp47(book.language),
     });
     setBook(null);
     setSelected(new Set());
