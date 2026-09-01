@@ -12,6 +12,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../lib/supabase';
+import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { splitRuby } from '../lib/splitRuby';
@@ -111,16 +112,17 @@ export default function QuickPage() {
     const key = token.base_form || token.text;
     setSaving((prev) => ({ ...prev, [key]: true }));
     try {
-      const { error: err } = await supabase.from('user_vocabulary').upsert({
-        user_id: user.id,
-        word_text: token.text,
-        base_form: token.base_form || token.text,
-        meaning: token.meaning || '',
-        pos: token.pos || '',
-        furigana: token.furigana || token.reading || '',
+      // PdfViewerPage와 같은 자리 — surface를 넣어 행이 갈리던 것을 정본으로 수렴.
+      const { error: err } = await supabase.from('user_vocabulary').upsert(buildVocabRow({
+        userId: user.id,
+        surface: token.text,
+        base: token.base_form,
+        meaning: token.meaning,
+        pos: token.pos,
+        reading: token.furigana || token.reading,
         language,
-        source_sentence: (line || '').slice(0, 200),
-      }, { onConflict: 'user_id,word_text' });
+        sourceSentence: line,
+      }), VOCAB_UPSERT);
       if (err) throw err;
       setSaving((prev) => ({ ...prev, [key]: 'done' }));
       toast(`"${token.text}" 저장!`, 'success');

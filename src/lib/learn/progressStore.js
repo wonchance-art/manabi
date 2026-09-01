@@ -15,6 +15,7 @@
  */
 
 import { supabase } from '../supabase';
+import { VOCAB_UPSERT, buildVocabRow } from '../vocabIO';
 import { normalizeSlug, slugAliases } from '../world/storageSchema.js';
 import { recordLessonActivity } from './learningActivity';
 
@@ -231,26 +232,33 @@ export async function recordNewWord(userId, word) {
   if (!userId || !word?.word) return;
 
   try {
-    const row = {
-      user_id: userId,
-      word_text: word.word,
-      base_form: word.word,
-      furigana: word.pron || '',
-      meaning: word.meaning || '',
+    const row = buildVocabRow({
+      userId,
+      surface: word.word,
+      base: word.word,          // 세션 신규어는 정본 표제어다
+      reading: word.pron,
+      meaning: word.meaning,
       pos: '',
-      language: word.language || 'Japanese',
-      source_ref: word.source_ref || '',
-      next_review_at: new Date().toISOString(),
-    };
+      language: word.language,
+      sourceRef: word.source_ref,
+    });
 
+    // `insert`였다 — 이미 담긴 단어면 unique 위반이 나고 아래 catch가 삼켰다.
+    // 정본 옵션(ignoreDuplicates)으로 바꾸면 **의도가 코드에 보인다**: 중복은 무시하되
+    // 기존 기억은 건드리지 않는다.
     const { error } = await supabase
       .from('user_vocabulary')
-      .insert([row]);
+      .upsert([row], VOCAB_UPSERT);
 
     if (error && /column|schema/i.test(error.message || '')) {
-      // schema 미스매치 — base_form 없이 폴백
-      const { word_text, base_form, ...fallback } = row;
-      await supabase.from('user_vocabulary').insert([fallback]).then(() => {}, () => {});
+      // schema 미스매치 — base_form 없이 폴백.
+      //
+      // ⚠ 이 폴백은 고장나 있었다: 주석은 「base_form 없이」인데 구조분해가 **word_text까지**
+      // 벗겨, 단어가 없는 행을 넣으려 했다(그래서 늘 조용히 실패했다). 벗길 건 하나다.
+      // 재시도도 같은 정본 옵션을 타야 한다 — insert면 중복에서 또 다른 에러가 난다.
+      const { base_form: _dropped, ...fallback } = row;
+      await supabase.from('user_vocabulary')
+        .upsert([fallback], VOCAB_UPSERT).then(() => {}, () => {});
     }
   } catch (err) {
     console.error('[progressStore] newWord 오류:', err);

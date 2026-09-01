@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { callGemini } from '../lib/gemini';
@@ -229,13 +230,18 @@ export default function PdfViewerPage() {
     const key = token.base_form || token.text;
     setSaving(prev => ({ ...prev, [key]: true }));
     try {
-      const { error } = await supabase.from('user_vocabulary').upsert({
-        user_id: user.id, word_text: token.text, base_form: token.base_form || token.text,
-        meaning: token.meaning || '', pos: token.pos || '',
-        furigana: token.furigana || token.reading || '', // 영어는 IPA 저장
+      // 여기가 `word_text: token.text`(surface)라, 같은 단어를 자료 뷰어(기본형)와
+      // 이 화면에서 담으면 **행이 둘로 갈려 복습이 두 번** 왔다. 정본 조립기로 수렴.
+      const { error } = await supabase.from('user_vocabulary').upsert(buildVocabRow({
+        userId: user.id,
+        surface: token.text,
+        base: token.base_form,
+        meaning: token.meaning,
+        pos: token.pos,
+        reading: token.furigana || token.reading,
         language,
-        source_sentence: inputText.slice(0, 200),
-      }, { onConflict: 'user_id,word_text' });
+        sourceSentence: inputText,
+      }), VOCAB_UPSERT);
       if (error) throw error;
       setSaving(prev => ({ ...prev, [key]: 'done' }));
       toast(`"${token.text}" 저장!`, 'success');

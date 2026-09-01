@@ -36,7 +36,7 @@ import { useGrammarNoteSave } from '../lib/useGrammarNoteSave';
 import { useInlineReview } from '../lib/useInlineReview';
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage } from '../lib/errorMessage';
-import { normalizeWordText } from '../lib/vocabIO';
+import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { callGemini } from '../lib/gemini';
 import { fetchWordDetailText } from '../lib/wordDetail';
 import { fetchCtxExplain } from '../lib/ctxExplain';
@@ -165,7 +165,7 @@ function isTokenDue(savedWords, token) {
   return new Date(v.next_review_at) <= new Date();
 }
 
-async function upsertViewerVocabulary(row, options = { onConflict: 'user_id,word_text' }) {
+async function upsertViewerVocabulary(row, options = VOCAB_UPSERT) {
   const { error } = await supabase.from('user_vocabulary').upsert(row, options);
   if (error) throw error;
 }
@@ -1288,15 +1288,15 @@ export default function ViewerPage() {
     if (inlineSaving[key]) return;
     setInlineSaving(prev => ({ ...prev, [key]: true }));
     try {
-      await upsertViewerVocabulary({
-        user_id: user.id,
-        word_text: normalizeWordText({ surface: token.text, base: token.base_form }),
-        base_form: token.base_form || token.text,
-        meaning: token.meaning || '',
-        pos: token.pos || '',
-        furigana: token.furigana || token.reading || '',
+      await upsertViewerVocabulary(buildVocabRow({
+        userId: user.id,
+        surface: token.text,
+        base: token.base_form,
+        meaning: token.meaning,
+        pos: token.pos,
+        reading: token.furigana || token.reading,   // 영어는 IPA, 중국어는 병음
         language: materialLang,
-      });
+      }));
       toast(`"${token.text}" 저장!`, 'success');
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
     } catch {
@@ -1313,21 +1313,21 @@ export default function ViewerPage() {
     const sourceSentence = extractSourceSentence(selectedToken.id);
 
     try {
-      const row = {
-        user_id: user.id,
-        // 저장 규약: 분석기 기본형(base_form)이 있으면 기본형, 없으면 surface 폴백.
-        word_text: normalizeWordText({ surface: selectedToken.text, base: selectedToken.base_form }),
-        base_form: selectedToken.base_form || selectedToken.text, // kuromoji 경로에서 전달됨
-        furigana: selectedToken.furigana || selectedToken.reading || '', // 영어는 IPA 저장
-        meaning: selectedToken.meaning || '',
-        pos: selectedToken.pos || '',
-        next_review_at: new Date().toISOString(),
+      // 저장 규약(기본형 우선·출처 동봉)은 정본 조립기가 책임진다 — 저장 경로가 11개라
+      // 자리마다 손으로 적으면 갈린다(실측: pdf·quick이 surface를 넣어 행이 둘로 갈렸다).
+      const row = buildVocabRow({
+        userId: user.id,
+        surface: selectedToken.text,
+        base: selectedToken.base_form,          // kuromoji 경로에서 전달됨
+        meaning: selectedToken.meaning,
+        pos: selectedToken.pos,
+        reading: selectedToken.furigana || selectedToken.reading,
         language: materialLang,
-        source_sentence: sourceSentence || null,
-        source_material_id: id || null,
-      };
+        sourceSentence,
+        sourceMaterialId: id,
+      });
 
-      await upsertViewerVocabulary([row], { onConflict: 'user_id,word_text', ignoreDuplicates: true });
+      await upsertViewerVocabulary([row], VOCAB_UPSERT);
       saveCountRef.current += 1;
 
       // 저장 애니메이션 → 잠시 보여준 뒤 시트 닫기
