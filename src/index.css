@@ -2456,6 +2456,60 @@ a.grammar-btn {
 /* 자료함 책 카드 — summary 기본 마커 제거 */
 .book-card > summary::-webkit-details-marker { display: none; }
 
+/* 묶음 카드(v2-P) — 책 묶음과 PDF 묶음이 **같은 컴포넌트**를 쓴다(MaterialGroupCard).
+   원래는 자료실 렌더 안 인라인 style 50줄이었다. PDF를 흡수하려면 그걸 복제하는
+   수밖에 없어서 먼저 클래스로 뽑았다 — 「같은 컴포넌트로」 계약의 전제다. */
+.group-card { grid-column: 1 / -1; padding: 14px 18px; }
+.group-card__summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.group-card__title { font-weight: 800; font-size: 1rem; }
+.group-card__meta { font-size: 0.78rem; color: var(--text-muted); }
+.group-card__fit {
+  flex-basis: 100%;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.group-card__rows { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+.group-card__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  cursor: pointer;
+}
+.group-card__lead {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  min-width: 24px;
+  text-align: right;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+.group-card__rowtitle {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.group-card__tag { font-size: 0.72rem; flex-shrink: 0; }
+.group-card__tag--done { color: var(--primary-light); }
+.group-card__tag--due { color: var(--warning); }
+.group-card__tag--muted { color: var(--text-muted); }
+.group-card__tag--danger { color: var(--danger); }
+.group-card__fitnum { color: var(--accent-text); }
+.group-card__footer { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+
 .reader-area {
   position: relative; /* 지정 범위 그립(.range-grip)의 절대 배치 기준 */
   min-height: 60vh;

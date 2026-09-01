@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { FIT_MIN_TYPES, bookFit, fitBand, fitSortRank, materialContentWords, materialFit, sortByFit } from '../materialFit.js';
+import { sliceBetween } from './helpers/sliceBetween.js';
 
 // 🈁 자료 맞춤도 엔진(rfc-material-fit R1) — 결정적 커버리지·밴드 계약.
 
@@ -162,8 +163,13 @@ describe('서재 책 카드 배선 계약', () => {
   });
 
   it('표본 미달 책은 무표기 — fitBand와 같은 결', () => {
+    // v2-P로 커버리지 줄이 `fitLineOf` 헬퍼가 됐다(책 묶음과 PDF 묶음이 같은 줄을 쓴다).
+    // 판정은 그대로 한 자리에 있어야 한다 — 두 벌이 되면 한쪽만 낡는다.
     const page = fs.readFileSync(path.join(process.cwd(), 'src/views/MaterialsPage.jsx'), 'utf8');
-    expect(page).toContain('bf.total >= FIT_MIN_TYPES');
-    expect(page).toContain('bf.coverage != null');
+    const guard = sliceBetween(page, 'const fitLineOf = ', '\n  };');
+    expect(guard).toContain('bf.total >= FIT_MIN_TYPES');
+    expect(guard).toContain('bf.coverage != null');
+    // 판정이 헬퍼 밖에 복제돼 있지 않다
+    expect(page.match(/bf\.total >= FIT_MIN_TYPES/g)).toHaveLength(1);
   });
 });

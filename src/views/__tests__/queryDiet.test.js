@@ -48,9 +48,21 @@ describe('쿼리 다이어트 계약', () => {
   });
 
   it('정정 고정 — 자료실 목록과 단어장 본체는 통짜 유지가 맞다(실사용 확인)', () => {
-    // MaterialsPage: dictionary·sequence로 자료별 due 배지 계산(268행대) — 통짜 필요
+    // MaterialsPage: dictionary·sequence로 자료별 due 배지 계산(268행대) — 통짜 필요.
+    //
+    // ⚠ 여기도 select 문자열을 통째로 박아 뒀었다. 위 ProfileStats 주석이 이미 내린
+    // 판단("문자열을 박으면 고장까지 계약이 된다")이 그대로 적용된다 — v2-P가 PDF
+    // 묶음에 필요한 `source_pdf_id`·`page_start`·`page_end`를 **정당하게** 더하자
+    // 이 핀이 걸렸다. 컬럼이 하나 느는 것은 다이어트 위반이 아니다. 그래서 다이어트의
+    // **의도**만 고정한다: 전 컬럼(`*`) 금지 · 통짜 `processed_json` 유지 · 큰 컬럼을
+    // 새로 끌어들이지 않기. 필요한 필드가 다 있는지는 렌더가 곧 증거다(빠지면 깨진다).
     const materials = read('src/views/MaterialsPage.jsx');
-    expect(materials).toContain("select('id, title, created_at, visibility, owner_id, processed_json')");
+    const sel = /from\('reading_materials'\)\s*\n?\s*\.select\('([^']*)'\)/.exec(materials)?.[1];
+    expect(sel, '자료실 목록 select를 못 읽었다').toBeTruthy();
+    expect(sel, '전 컬럼은 금지').not.toBe('*');
+    expect(sel, 'due 배지가 dictionary·sequence를 쓰므로 통짜가 맞다').toContain('processed_json');
+    // 큰 컬럼을 새로 끌어들이지 않는다 — 목록이 쓰지 않는 본문성 컬럼 금지
+    expect(sel).not.toMatch(/\braw_text\b|\bcontent\b|\bfull_text\b/);
     expect(materials).toContain('material.processed_json.dictionary');
     // fetchVocab: 단어장 화면이 전 컬럼 소비자(etym·hanja 포함) — select('*') 유지
     const io = read('src/lib/vocabIO.js');
