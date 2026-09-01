@@ -106,6 +106,11 @@ describe('⑤ 접근성 하한 유지', () => {
     expect(newCss()).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]{0,120}viewer-badge--pop\s*\{\s*animation:\s*none/);
   });
 
+  it('팝 자체는 살아 있다 — 색을 내린 대신 남긴 되먹임이다', () => {
+    // 가드만 있고 애니메이션이 사라지면 계약은 통과하는데 되먹임은 없다(돌연변이 실측).
+    expect(sliceBetween(newCss(), '.viewer-badge--pop {', '}')).toMatch(/animation:\s*vocabCounterPop/);
+  });
+
   it('편집 버튼의 hover는 CSS가 한다 — JS로 색을 매만지지 않는다', () => {
     expect(header(), 'onMouseEnter로 style.color를 바꾸는 옛 방식 부활').not.toMatch(/onMouseEnter=\{[^}]*style\.color/);
     expect(newCss()).toContain('.viewer-title-edit:hover');

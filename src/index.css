@@ -2003,7 +2003,6 @@ a.viewer-badge:hover {
 .viewer-actionbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
   margin-bottom: 30px;
@@ -2014,7 +2013,10 @@ a.viewer-badge:hover {
   gap: 8px;
   flex-wrap: wrap;
 }
-/* 행동 그룹이 통째로 비는 경우(비로그인 등)에도 도구가 왼쪽으로 튀지 않게. */
+/* 오른쪽 배치는 **auto 마진 한 곳**이 맡는다. `justify-content: space-between`을 함께
+   두면 둘이 중복돼 어느 쪽을 지워도 결과가 같고(돌연변이 실측: 양쪽 다 생존), 정작
+   행동 그룹이 통째로 비는 경우(비로그인)에는 space-between이 도구를 왼쪽으로 보낸다.
+   두 경우를 다 감당하는 쪽만 남긴다. */
 .viewer-actionbar__group--tools { margin-left: auto; }
 /* 독립 줄이었을 때의 세로 여백은 그룹 안에서 불필요하다. */
 .viewer-actionbar__group .listen-controls { margin: 0; }
