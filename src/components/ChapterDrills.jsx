@@ -6,8 +6,10 @@ import { supabase } from '../lib/supabase';
 import RefSpeak from './RefSpeak';
 import { normalizeRecall } from '../lib/answerNormalize';
 import { useAuth } from '../lib/AuthContext';
-import { recordChapterDrillResult, loadGuestDrillQueue } from '../lib/drillSrs';
+import { recordChapterDrillResult, loadGuestDrillQueue, DRILL_ENCOUNTER_LANGS } from '../lib/drillSrs';
 import { countDueGrammar } from '../lib/grammarSrs';
+import { encounterLookupLang } from '../lib/refVocabLookup';
+import { syncVocabEncounters } from './world/vocabEncounterSync';
 
 /** 딕테 채점 — 구두점·아포스트로피 변형에는 관대, 철자·악상에는 엄격 */
 // 힌트는 클릭해야 열린다 — 먼저 스스로 생각해 보게 하는 장치
@@ -172,6 +174,17 @@ export default function ChapterDrills({ lang, drills, title, intro }) {
   useEffect(() => {
     setPastStat(readChapterStat(lang, drills));
   }, [lang, drills]);
+
+  // 드릴에서 쌓인 만남을 서버로 올린다(§4.5 — 5분 스로틀은 sync가 진다).
+  // 이 줄이 없으면 **드릴만 푸는 학습자의 만남이 기기에 갇힌다** — 오늘 학습(/study)은
+  // 서버 정본(`user_vocab_encounters`)을 읽으므로 순환이 거기서 끊긴다. 뷰어·어휘 페이지가
+  // 이미 같은 호출을 하고 있어 새 부품이 아니라 **누락된 호출 지점**이다.
+  const encounterCode = encounterLookupLang(lang);
+  useEffect(() => {
+    if (!user?.id || !encounterCode || !DRILL_ENCOUNTER_LANGS.has(encounterCode)) return;
+    // 결과로 화면을 다시 그리지 않으므로 취소 플래그가 없다 — 있으면 읽는 곳 없는 죽은 값이다.
+    syncVocabEncounters(supabase, user.id, encounterCode).catch(() => {});
+  }, [user?.id, encounterCode]);
 
   useEffect(() => {
     if (!user?.id || !Array.isArray(drills) || drills.length === 0) return undefined;

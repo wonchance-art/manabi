@@ -8,6 +8,8 @@ import { calculateFSRS } from './fsrs.js';
 import { supabase } from './supabase.js';
 import { initialQueueRow, upsertRatedGrammarReview } from './grammarSrs.js';
 import { logReviewEvents } from './reviewEvents.js';
+import { encounterLookupLang, loadRefVocabLookup } from './refVocabLookup.js';
+import { recordVocabEncounters } from '../components/world/vocabEncounters.js';
 
 export const DRILL_QUEUE_PREFIX = 'drill:';
 export const GUEST_DRILL_QUEUE_KEY = 'manabi-drill-review-v1';
@@ -122,12 +124,89 @@ export function saveGuestDrillQueue(rows) {
   }
 }
 
+/* ── 드릴 → 단어 만남 (부채 ①, #1077 5490883012 · 실측 정정 5494648246) ────────────
+ * 드릴은 **문법** SRS에는 붙어 있었지만(review_events source:'grammar' + grammar_review)
+ * 단어장에는 아무것도 보내지 않았다. 그 이음새를 만남(encounter)으로만 잇는다.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * 드릴 만남 기록 대상 언어 — **공백으로 단어가 갈리는 언어만**.
+ *
+ * 드릴 2,148개 전수 실측(2026-09-01): 공백 분할 + 정본 대조는 **fr 229/230 · en 59/61**에서
+ * 오탐 없이 걸린다. CJK는 성립하지 않는다 — ja는 문절 분할이라 조사가 붙어 12%만 걸리고
+ * (`あには` = 兄+は), zh는 공백이 없어 **0%**다.
+ *
+ * ⚠ 최장일치 스캔으로 수율을 올려 봤더니(ja 95% · zh 100%) **뽑히는 게 틀렸다**:
+ *   `我有时间。` → 我·**有时**·**间**   (有+时间인데 有时로 붙는다)
+ *   `おにぎりを ひとつ…` → **り**       `きのうは しごと…` → きのう·**じゃ**
+ * 게다가 그 오답들은 전부 **정본에 실재하는 단어**라 `buildEncounterCandidates`의 유령
+ * 차단(§4.1)을 그대로 통과한다 — 오늘 학습에 「り」가 출제된다. **없는 것보다 나쁘다.**
+ * ⇒ ja·zh는 기계 추출이 아니라 **`refs` 저작**으로 간다(월드 `stepEncounterRefs` 선례).
+ */
+export const DRILL_ENCOUNTER_LANGS = new Set(['en', 'fr']);
+
+/** 문장 → 조각. 공백·구두점만 경계로 본다(형태 분석 없음 — 위 주석의 이유). */
+const DRILL_TOKEN_SPLIT = /[\s.,!?;:()[\]{}"'\u2018\u2019\u201C\u201D\u2014\u2013\u00AB\u00BB\u2026]+/u;
+
+/**
+ * 드릴 하나가 노출하는 목표어 조각 — 정본 대조 **전**의 후보다. 순수 함수.
+ * `sentence`가 있는 타입(order·dictation)만 목표어 문장을 들고 있다. choice·fill은
+ * `prompt`가 한국어 메타언어이고 `answer`가 조각(`束`·`りょう`)이라 대조할 것이 없다.
+ */
+export function drillEncounterTokens(drill) {
+  const text = typeof drill?.sentence === 'string' ? drill.sentence : '';
+  if (!text) return [];
+  return text.split(DRILL_TOKEN_SPLIT).filter(Boolean);
+}
+
+/**
+ * 드릴에서 만난 말을 만남 기록에 얹는다 — 뷰어·NPC와 **같은 부품**(`recordVocabEncounters`).
+ * 새 표·새 쿼리 0. 스키마 무변경.
+ *
+ * · **FSRS 등급은 주지 않는다**(오너 확정): 문장을 맞힌 것을 그 안의 단어를 인출한 것으로
+ *   세지 않는다. 순환은 잇되 단어 일정은 흔들지 않는다.
+ * · **정오답과 무관하게 기록한다** — 틀렸어도 그 말을 만난 것은 사실이다(뷰어가 드래그만으로
+ *   기록하는 것과 같은 기준).
+ * · 저장 표기는 **정본 `main`**이다(뷰어와 같은 계약 — 사전 필터·서버 정본과 같은 문자열).
+ * · 문맥은 드릴 문장 자체다(`source: 'drill'`) — 처음 만난 표기에만 남고, 나중에 cloze
+ *   예문 재료가 된다(`applyEncounterContextExamples`).
+ * · 실패는 조용히 — 부가 기록이 채점 UI를 막지 않는다(뷰어 선례).
+ *
+ * @returns {Promise<string[]>} 실제로 기록한 정본 표기(테스트·계약용)
+ */
+export async function recordDrillEncounters(lang, drill, { storage, lookup } = {}) {
+  const code = encounterLookupLang(lang);
+  if (!code || !DRILL_ENCOUNTER_LANGS.has(code)) return [];
+  const tokens = drillEncounterTokens(drill);
+  if (tokens.length === 0) return [];
+  try {
+    const idx = lookup ?? await loadRefVocabLookup(code);
+    if (!idx?.findWord) return [];
+    const met = [];
+    for (const t of tokens) {
+      const hit = idx.findWord(t);
+      // 정본에 없는 조각은 버린다 — 유령 표기를 **쓰기 시점에** 막는다(소비 시점 차단과 이중).
+      if (hit?.main && !met.includes(hit.main)) met.push(hit.main);
+    }
+    if (met.length === 0) return [];
+    recordVocabEncounters(code, met, storage, { text: drill.sentence, source: 'drill' });
+    return met;
+  } catch {
+    return [];
+  }
+}
+
 /** ChapterDrills의 한 번 확정된 결과를 append-only 이벤트 + SRS 카드로 보낸다. */
 export function recordChapterDrillResult(userId, { lang, drill, correct }) {
   const event = buildDrillReviewEvent(lang, drill, correct);
   if (!event) return null;
   const rating = ratingFromDrillResult(correct);
   const slug = drillQueueSlug(drill.id);
+
+  // 만남 기록은 **곁가지**다 — 반환 프로미스에 얹지 않는다. 호출부(ChapterDrills)가 실패 시
+  // 문항을 다시 열어 주는데, 부가 기록이 실패했다고 문항이 되살아나면 안 된다.
+  // 게스트도 기록한다(로컬 우선 — 로그인 시 syncVocabEncounters가 서버로 올린다).
+  recordDrillEncounters(lang, drill);
 
   if (userId) {
     logReviewEvents(userId, [event]);
