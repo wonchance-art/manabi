@@ -55,7 +55,12 @@ describe('x-조각(HMM OOV)의 상조사 분리', () => {
       { word: '着', tag: 'uz' },
     ]);
     expect(fixZhTagged([{ word: '过', tag: 'x' }])).toEqual([{ word: '过', tag: 'x' }]);
-    expect(fixZhTagged([{ word: '笔在', tag: 'x' }])).toEqual([{ word: '笔在', tag: 'x' }]);
+    // 2자 x 조각은 이제 되가른다(v2-T R1) — 이 줄은 원래 `笔在`가 **한 토큰으로 남는 것**을
+    // 고정하고 있었다. 그건 요구가 아니라 당시 한계였다.
+    expect(fixZhTagged([{ word: '笔在', tag: 'x' }])).toEqual([
+      { word: '笔', tag: 'n' },
+      { word: '在', tag: 'p' },
+    ]);
   });
 
   it('실단어 V过/V着 병합은 배제 원칙 — 방향·결과보어 어휘는 그대로', () => {

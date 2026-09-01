@@ -29,17 +29,30 @@ describe('중국어 토큰화', () => {
     expect(punct?.furigana).toBe('');
   });
 
-  // jieba는 사전에 없는 한자 조합(HMM 병합 OOV)에 x 태그를 단다 — 기호로 오분류하면
-  // 병음·품사가 통째로 사라진다(오너 보고: 这宗·这首·这片·这篇·笔在·项有 실측).
-  it('x 태그라도 한자 조합이면 병음을 달고 기호로 처리하지 않는다', () => {
-    const bi = tokenizeZhLine('笔在桌子上。').find((t) => t.text === '笔在');
-    expect(bi?.pos).not.toBe('기호');
-    expect(bi?.furigana).toBe('bǐ zài');
-    const zong = tokenizeZhLine('这宗案子很复杂。').find((t) => t.text === '这宗');
-    expect(zong?.pos).not.toBe('기호');
-    expect(zong?.furigana).toBe('zhè zōng');
-    const pian = tokenizeZhLine('这片森林。').find((t) => t.text === '这片');
-    expect(pian?.furigana).toBe('zhè piàn');
+  // jieba는 사전에 없는 한자 조합(HMM 병합 OOV)에 x 태그를 단다. 이 계약이 원래 지키려던
+  // 요구는 「그걸 **기호로 오분류해 병음이 통째로 사라지면 안 된다**」였고, 그 요구는 지금도
+  // 유효하다. 다만 당시 해법이 「x+한자를 실단어로 승격」이라 `笔在`·`这宗`이 **가짜 표제어**로
+  // 살아남았고, 계약이 그 증상을 값으로 박제했다(v2-T가 되가름으로 뒤집었다).
+  //
+  // ⚠ 부정 단언(`not.toBe('기호')`)은 토큰이 사라지면 `undefined?.pos`가 되어 **공허 통과**한다.
+  //    그래서 「없어졌다」가 아니라 **조각이 무엇인지**를 긍정으로 적는다.
+  it('x+한자는 되갈리되, 조각마다 병음이 붙고 기호로 처리되지 않는다', () => {
+    // 품사는 여기서 고정하지 않는다 — 조각 단위 태그는 jieba가 자주 틀리고(`宗` 단독은
+    // 성씨 `nr`), 그 교정은 하류 문맥 판별기(disambiguateZhPos) 몫이다. 이 계약이 지키는
+    // 것은 **경계와 병음**이다.
+    const readOf = (line) => tokenizeZhLine(line).map((t) => [t.text, t.furigana]);
+
+    expect(readOf('笔在桌子上。').slice(0, 2)).toEqual([['笔', 'bǐ'], ['在', 'zài']]);
+    expect(readOf('这宗案子很复杂。').slice(0, 2)).toEqual([['这', 'zhè'], ['宗', 'zōng']]);
+    expect(readOf('这片森林。').slice(0, 2)).toEqual([['这', 'zhè'], ['片', 'piàn']]);
+
+    // 줄 병음 정렬 불변 — 토큰을 갈라도 음절 배분만 달라진다(병음은 줄 단위 계산).
+    // 그리고 한자 토큰은 어느 것도 기호로 떨어지지 않는다(이 계약의 원래 요구).
+    for (const t of tokenizeZhLine('笔在桌子上。')) {
+      if (!/[一-鿿]/.test(t.text)) continue;
+      expect(t.pos, `${t.text}이 기호로 떨어졌다`).not.toBe('기호');
+      expect(t.furigana, `${t.text}에 병음이 비었다`).not.toBe('');
+    }
   });
 
   it('품사 태그를 한국어로 옮긴다', () => {
