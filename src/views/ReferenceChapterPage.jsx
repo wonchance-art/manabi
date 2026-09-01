@@ -85,17 +85,9 @@ function MediaSection({ media, langCode, lang }) {
   const { youtubeId, songTitle, artist, line, point, culture } = media;
   return (
     <div className="fr-media">
-      {/* 16:9 반응형 래퍼 — aspect-ratio로 어떤 폭에서도 비율 유지 */}
-      <div
-        style={{
-          position: 'relative',
-          width: '100%',
-          aspectRatio: '16 / 9',
-          borderRadius: 10,
-          overflow: 'hidden',
-          background: '#000',
-        }}
-      >
+      {/* 16:9 반응형 래퍼 — aspect-ratio로 어떤 폭에서도 비율 유지.
+          레터박스 검정은 CSS(.fr-media__frame)에 있다(v2-K 잔여 — JSX에 색 리터럴 0). */}
+      <div className="fr-media__frame">
         <iframe
           src={`https://www.youtube-nocookie.com/embed/${youtubeId}`}
           title={`${songTitle}${artist ? ` — ${artist}` : ''}`}

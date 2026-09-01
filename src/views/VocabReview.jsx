@@ -30,6 +30,18 @@ function ScoreSection({ word, onScore }) {
   );
 }
 
+/**
+ * 문맥 퀴즈 보기의 상태 클래스 (v2-K 잔여).
+ *
+ * 색이 삼항 **안**에 있어 한 줄 색 계약도 여러 줄 라쳇도 못 잡던 자리다 — 판정을 여기
+ * 한 곳에 두고 값은 CSS 토큰이 진다. 같은 블록이 화면 둘에 복제돼 있어(데스크톱·모바일)
+ * 인라인으로 두면 고칠 때마다 두 벌을 맞춰야 했다.
+ */
+export function quizOptClass(selected, isAnswer, isThis) {
+  const state = selected === null ? '' : isAnswer ? ' quiz-opt--right' : isThis ? ' quiz-opt--wrong' : '';
+  return `quiz-opt${state}${selected === null ? '' : ' quiz-opt--done'}`;
+}
+
 export default function VocabReview({
   vocab, reviewWords, reviewIdx, currentWord,
   reviewFinished, reviewMode, effectiveMode, setReviewMode,
@@ -281,27 +293,7 @@ export default function VocabReview({
                               setTimeout(() => handleScore(3), 700);
                             }
                           }}
-                          style={{
-                            padding: '12px 16px',
-                            background: contextSelected === null
-                              ? 'var(--bg-secondary)'
-                              : opt.id === currentWord.id
-                                ? 'rgba(74,138,92,0.25)'
-                                : contextSelected === i
-                                  ? 'rgba(200,64,64,0.2)'
-                                  : 'var(--bg-secondary)',
-                            border: `1px solid ${
-                              contextSelected !== null && opt.id === currentWord.id
-                                ? 'var(--accent)'
-                                : 'var(--border)'
-                            }`,
-                            borderRadius: 'var(--radius-md)',
-                            textAlign: 'left',
-                            cursor: contextSelected !== null ? 'default' : 'pointer',
-                            fontSize: '0.92rem',
-                            color: 'var(--text-primary)',
-                            transition: 'background 0.2s, border-color 0.2s',
-                          }}
+                          className={quizOptClass(contextSelected, opt.id === currentWord.id, contextSelected === i)}
                           aria-pressed={contextSelected === i}
                           aria-label={`${opt.meaning}${contextSelected !== null ? (opt.id === currentWord.id ? ', 정답' : contextSelected === i ? ', 선택한 오답' : '') : ''}`}
                         >
@@ -364,27 +356,7 @@ export default function VocabReview({
                                   setTimeout(() => handleScore(3), 700);
                                 }
                               }}
-                              style={{
-                                padding: '12px 16px',
-                                background: contextSelected === null
-                                  ? 'var(--bg-secondary)'
-                                  : opt.id === currentWord.id
-                                    ? 'rgba(74,138,92,0.25)'
-                                    : contextSelected === i
-                                      ? 'rgba(200,64,64,0.2)'
-                                      : 'var(--bg-secondary)',
-                                border: `1px solid ${
-                                  contextSelected !== null && opt.id === currentWord.id
-                                    ? 'var(--accent)'
-                                    : 'var(--border)'
-                                }`,
-                                borderRadius: 'var(--radius-md)',
-                                textAlign: 'left',
-                                cursor: contextSelected !== null ? 'default' : 'pointer',
-                                fontSize: '0.92rem',
-                                color: 'var(--text-primary)',
-                                transition: 'background 0.2s, border-color 0.2s',
-                              }}
+                              className={quizOptClass(contextSelected, opt.id === currentWord.id, contextSelected === i)}
                               aria-pressed={contextSelected === i}
                               aria-label={`${opt.meaning}${contextSelected !== null ? (opt.id === currentWord.id ? ', 정답' : contextSelected === i ? ', 선택한 오답' : '') : ''}`}
                             >

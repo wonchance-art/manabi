@@ -35,10 +35,8 @@ export default function DictationPanel({ sentence, lang, onClose, ttsOpts }) {
     <div
       role="dialog"
       aria-label="받아쓰기"
-      style={{
-        position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center',
-        justifyContent: 'center', background: 'rgba(0,0,0,0.45)', padding: 16,
-      }}
+      className="scrim"
+      style={{ zIndex: 60 }}
       onClick={onClose}
     >
       <div className="card" style={{ maxWidth: 480, width: '100%', padding: '20px 22px' }} onClick={(e) => e.stopPropagation()}>
