@@ -41,7 +41,7 @@ import { callGemini } from '../lib/gemini';
 import { fetchWordDetailText } from '../lib/wordDetail';
 import { fetchCtxExplain } from '../lib/ctxExplain';
 import { pinyinToneClass } from '../lib/pinyinTone';
-import { splitRuby } from '../lib/splitRuby';
+import { splitRuby, KANA_RE } from '../lib/splitRuby';
 import { pickableSentences, adjacentSentence } from '../lib/sentenceNav';
 import { fitDivisor, isFitLang } from '../lib/fitWord';
 import { charDetail, charEtym, isInspectableChar, materialWordsWithChar, wordsWithChar } from '../lib/charInspect';
@@ -1548,8 +1548,15 @@ export default function ViewerPage() {
                       // 덩어리도 한 글자면 같이 받는다. 두 글자 이상이 한 칸에 들어간
                       // 세그먼트는 어느 글자의 훈음인지 가리킬 수 없어 비운다.
                       const hun = chars.length === 1 ? hunByChar.get(seg.kanji) : null;
+                      // 分散配置(JLReq) — 요미가 본체보다 길면 CSS가 **본체 글자를 벌린다**.
+                      // 넘기는 것은 요미 글자수뿐이고 폭 계산(× 0.5em)은 CSS가 한다
+                      // (`--fit-n`과 같은 패턴). 0.5em/자는 **가나** 전제라 가나 읽기에만
+                      // 넘긴다 — 혼종 중국어 토큰의 병음은 라틴이라 훨씬 좁다.
+                      const yomiN = !seg.pinyin && KANA_RE.test(seg.reading || '')
+                        ? [...seg.reading].length : null;
                       return (
-                        <ruby key={i} data-pinyin={seg.pinyin ? '1' : undefined} data-yomi={seg.pinyin ? undefined : '1'}>
+                        <ruby key={i} data-pinyin={seg.pinyin ? '1' : undefined} data-yomi={seg.pinyin ? undefined : '1'}
+                          style={yomiN ? { '--yomi-n': yomiN } : undefined}>
                           {chars.map((ch, j) => charSpan(ch, `${i}:${j}`, seg.pinyin ? seg.reading : null))}
                           <span className={['rt-an', showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : ''].filter(Boolean).join(' ')}>{seg.reading}</span>
                           {hun && <span className="rt-hun">{hun}</span>}
