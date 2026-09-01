@@ -67,9 +67,11 @@ export const DEFAULT_SOURCES = Object.freeze([
   // 못했고, 핸들이 틀리면 크론 로그에 소리 나게 남는다(조용한 0건보다 낫다).
   // `langCode`는 「그 언어 자막이 실제로 달린 영상만」 고르는 데 쓴다 — 이게 없으면
   // 클릭했을 때 자막이 없어 붙여넣기로 떨어진다.
+  // VOA는 **미국 정부 저작물 = 퍼블릭 도메인**이라 본문을 담아 공개 자료로 둔다(F R5).
+  // 근거가 법이지 YouTube 라이선스 표식이 아니므로 **설정으로 명시**한다.
   Object.freeze({
     language: 'English', source_type: 'youtube_channel',
-    config: { handle: '@VOALearningEnglish', langCode: 'en', level: 'B1 중급' },
+    config: { handle: '@VOALearningEnglish', langCode: 'en', level: 'B1 중급', license: 'public-domain' },
   }),
   Object.freeze({
     language: 'Japanese', source_type: 'youtube_channel',
@@ -82,6 +84,22 @@ export const DEFAULT_SOURCES = Object.freeze([
   Object.freeze({
     language: 'French', source_type: 'youtube_channel',
     config: { handle: '@innerFrench', langCode: 'fr', level: 'B1 중급' },
+  }),
+
+  // ── CC BY 검색(v2-F R5) — 재배포 허용분이라 본문을 담는다 ──
+  // 채널 화이트리스트와 달리 **매일 다른 영상**이 걸린다. 라이선스 재확인을 통과한 것만
+  // 남으므로 수확은 적을 수 있다 — 그게 fail-closed의 값이다.
+  Object.freeze({
+    language: 'Japanese', source_type: 'youtube_cc',
+    config: { query: '日本語 学習', langCode: 'ja', level: 'N3 중급' },
+  }),
+  Object.freeze({
+    language: 'English', source_type: 'youtube_cc',
+    config: { query: 'english lesson', langCode: 'en', level: 'B1 중급' },
+  }),
+  Object.freeze({
+    language: 'French', source_type: 'youtube_cc',
+    config: { query: 'apprendre le français', langCode: 'fr', level: 'B1 중급' },
   }),
 ]);
 

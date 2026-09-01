@@ -7119,6 +7119,25 @@ body.is-review-session .page-container { padding-top: 8px; }
   padding: 6px 0;
 }
 
+/* 자료 출처 한 줄(v2-F R5) — CC BY는 표기가 라이선스 조건이라 **보여야** 한다.
+   본문 위 보조 정보라 눈에 띄되 제목을 이기지 않는 크기·색(토큰만). */
+.viewer-attribution {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.viewer-attribution a {
+  color: var(--primary-light);
+  text-decoration: underline;
+}
+
+.viewer-attribution__license {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
 /* 영상 추천의 고지 한 줄(v2-F R4) — 누르면 내 계정에 비공개 사본이 생긴다는 사실.
    보조 문구라 색은 --text-muted 토큰만 쓴다(규약 §1: 색 리터럴 금지). */
 .suggestion-card__note {

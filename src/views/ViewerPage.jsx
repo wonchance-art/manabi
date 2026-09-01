@@ -85,6 +85,7 @@ import TokenRangeGrips from './TokenRangeGrips';
 import ViewerComments from './ViewerComments';
 import ViewerQuizModal from './ViewerQuizModal';
 import { langNameKo } from '../lib/constants';
+import { attributionParts } from '../lib/videoAttribution';
 
 // 공부 모드 지원 언어 키 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
 // 실사용은 '이 자료 언어로 세션 생성 가능한가' 멤버십 체크 1곳뿐이라 정적 키 집합으로 대체한다.
@@ -2060,6 +2061,21 @@ export default function ViewerPage() {
           </div>
         )}
       </header>
+
+      {/* 출처 표기(v2-F R5) — CC BY는 **표기가 라이선스 조건**이다. `metadata.source`가
+          저장만 되고 어디에도 안 보이던 것을 여기서 드러낸다(저장은 표기가 아니다).
+          라이선스를 모르는 개인 반입분에도 채널·원본 링크는 준다 — 어차피 필요한 정보다. */}
+      {(() => {
+        const at = attributionParts(material?.metadata?.source);
+        if (!at) return null;
+        return (
+          <p className="viewer-attribution">
+            출처: {at.channel || '유튜브'}
+            {at.license && <> · <span className="viewer-attribution__license">{at.license}</span></>}
+            {at.url && <> · <a href={at.url} target="_blank" rel="noopener noreferrer">원본 보기</a></>}
+          </p>
+        );
+      })()}
 
       <ListenControls text={material?.raw_text} language={materialLang} />
 
