@@ -2166,6 +2166,12 @@ body.is-review-session .page-container { padding-top: 8px; }
 .rsheet-switch input:checked + .rsheet-knob::after { transform: translateX(18px); }
 @media (prefers-reduced-motion: reduce) { .rsheet-knob, .rsheet-knob::after { transition: none; } }
 
+/* 탭하면 발음 보기(v1-4 R1) — 발음 표기 3단의 종속 스위치. 들여써서 '이 축에 딸린 것'을
+   보이고, 「전체」일 때는 흐린다(가릴 게 없어 동작하지 않는다 — input도 disabled). */
+.rsheet-swrow--sub { padding-left: 14px; }
+.rsheet-swrow--off { opacity: 0.5; cursor: default; }
+.rsheet-swrow--off .rsheet-switch input { cursor: default; }
+
 /* 말하기 속도 — 자동 발음의 하위 행 */
 .rsheet-subrow {
   display: flex;

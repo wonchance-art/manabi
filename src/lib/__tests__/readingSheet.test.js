@@ -45,14 +45,26 @@ describe('발음 표기 3단 — pronHiddenFor', () => {
 });
 
 describe('읽기 모드 프리셋', () => {
-  it('오너 확정 표 그대로 — 몰입/학습/암기 3장, 표시 4키만 다룬다(조판 불가침)', () => {
-    expect(READING_PRESETS).toEqual({
-      immerse: { pronDisplay: 'none',    wordStateHl: false, focusMode: true,  showToneColors: false },
-      study:   { pronDisplay: 'all',     wordStateHl: true,  focusMode: false, showToneColors: true },
-      recall:  { pronDisplay: 'unknown', wordStateHl: true,  focusMode: false, showToneColors: false },
-    });
-    for (const p of Object.values(READING_PRESETS)) {
-      expect(Object.keys(p).sort()).toEqual(['focusMode', 'pronDisplay', 'showToneColors', 'wordStateHl']);
+  // 이 계약은 처음에 표 전체를 toEqual로 얼리고 키 목록까지 못 박아, v1-4가 표시 축을
+  // 하나 늘리자(pronReveal) **정당한 변경에서 깨졌다**. 요구는 「4키」가 아니라
+  // ⑴ 프리셋은 셋 ⑵ 각 프리셋의 표시 의도는 오너 확정값 ⑶ **조판은 불가침**이다.
+  // 구현 모양이 아니라 그 셋을 잡도록 고쳐 쓴다.
+  it('몰입/학습/암기 3장 — 오너 확정 표시값 그대로', () => {
+    expect(Object.keys(READING_PRESETS).sort()).toEqual(['immerse', 'recall', 'study']);
+    expect(READING_PRESETS.immerse).toMatchObject({ pronDisplay: 'none',    wordStateHl: false, focusMode: true,  showToneColors: false });
+    expect(READING_PRESETS.study).toMatchObject({   pronDisplay: 'all',     wordStateHl: true,  focusMode: false, showToneColors: true });
+    expect(READING_PRESETS.recall).toMatchObject({  pronDisplay: 'unknown', wordStateHl: true,  focusMode: false, showToneColors: false });
+  });
+
+  it('조판은 불가침 — 프리셋은 표시 의도만 바꾼다', () => {
+    // 새 표시 키(pronReveal 같은)는 자유롭게 붙되, 글자·배경·행간에는 손대지 않는다.
+    const TYPESETTING = ['fontSize', 'lineGap', 'charGap', 'theme', 'fontFamily'];
+    for (const [name, p] of Object.entries(READING_PRESETS)) {
+      for (const k of TYPESETTING) {
+        expect(Object.keys(p), `${name} 프리셋이 조판 키 ${k}를 건드린다`).not.toContain(k);
+      }
+      // 프리셋끼리 키 집합이 갈리면 전환할 때 이전 프리셋의 값이 남는다.
+      expect(Object.keys(p).sort()).toEqual(Object.keys(READING_PRESETS.immerse).sort());
     }
   });
 
@@ -64,11 +76,19 @@ describe('읽기 모드 프리셋', () => {
     }
   });
 
+  // 손으로 적은 설정 사본을 쓰면 프리셋에 키가 하나 늘 때마다 이 단언이 같이 깨진다
+  // (v1-4의 pronReveal에서 실제로 깨졌다). 프리셋 자신을 기준으로 삼고, 대신 **전 키를
+  // 하나씩 틀어** 원래 요구("한 키만 틀어져도 꺼진다")를 더 넓게 확인한다.
   it('presetActive — 정확 일치만 활성, 한 키만 틀어져도 꺼진다', () => {
-    expect(presetActive('immerse', { pronDisplay: 'none', wordStateHl: false, focusMode: true, showToneColors: false })).toBe(true);
+    const exact = { ...READING_PRESETS.immerse };
+    expect(presetActive('immerse', exact)).toBe(true);
     // 프리셋 밖 키(조판 등)는 판정에 끼지 않는다
-    expect(presetActive('immerse', { pronDisplay: 'none', wordStateHl: false, focusMode: true, showToneColors: false, fontSize: 2 })).toBe(true);
-    expect(presetActive('immerse', { pronDisplay: 'all', wordStateHl: false, focusMode: true, showToneColors: false })).toBe(false);
+    expect(presetActive('immerse', { ...exact, fontSize: 2 })).toBe(true);
+    for (const k of Object.keys(exact)) {
+      expect(presetActive('immerse', { ...exact, [k]: '틀어진값' }), `${k}가 틀어졌는데 활성`).toBe(false);
+      const { [k]: _dropped, ...missing } = exact;
+      expect(presetActive('immerse', missing), `${k}가 없는데 활성`).toBe(false);
+    }
     expect(presetActive('없는프리셋', { pronDisplay: 'none' })).toBe(false);
     expect(presetActive('immerse', undefined)).toBe(false);
   });

@@ -22,6 +22,10 @@ export function useViewerSettings() {
     if (v === 'all' || v === 'unknown' || v === 'none') return v;
     return readPref('showFurigana', true) ? 'all' : 'none';
   });
+  // 탭하면 발음 보기(v1-4 R1) — pronDisplay의 **종속** 스위치. 가려진 단어의 첫 탭이
+  // 카드가 아니라 발음 공개가 된다(인출 연습). 기존 탭 의미를 바꾸므로 옵트인: 기본 꺼짐.
+  // pronDisplay가 'all'이면 가릴 게 없어 이 값은 효력이 없다(readingSheet가 정본).
+  const [pronReveal, setPronRevealRaw] = useState(() => readPref('pronReveal', false));
   const [autoSpeakOnClick, setAutoSpeakOnClickRaw] = useState(() => readPref('autoSpeakOnClick', false));
   // 말하기 속도: 'slow' | 'normal' | 'fast' — 값 매핑은 readingSheet.js(TTS_RATES)가 정본.
   const [ttsRate, setTtsRateRaw] = useState(() => readPref('ttsRate', 'normal'));
@@ -57,6 +61,7 @@ export function useViewerSettings() {
   const setTheme = (v) => { setThemeRaw(v); savePref('theme', v); };
   const setFontFamily = (v) => { setFontFamilyRaw(v); savePref('fontFamily', v); };
   const setPronDisplay = (v) => { setPronDisplayRaw(v); savePref('pronDisplay', v); };
+  const setPronReveal = (v) => { const val = typeof v === 'function' ? v(pronReveal) : v; setPronRevealRaw(val); savePref('pronReveal', val); };
   const setTtsRate = (v) => { setTtsRateRaw(v); savePref('ttsRate', v); };
   const setAutoSpeakOnClick = (v) => { const val = typeof v === 'function' ? v(autoSpeakOnClick) : v; setAutoSpeakOnClickRaw(val); savePref('autoSpeakOnClick', val); };
   const setFocusMode = (v) => { const val = typeof v === 'function' ? v(focusMode) : v; setFocusModeRaw(val); savePref('focusMode', val); };
@@ -76,6 +81,7 @@ export function useViewerSettings() {
     theme, setTheme,
     fontFamily, setFontFamily,
     pronDisplay, setPronDisplay,
+    pronReveal, setPronReveal,
     autoSpeakOnClick, setAutoSpeakOnClick,
     ttsRate, setTtsRate,
     showHanjaKo, setShowHanjaKo,
