@@ -887,6 +887,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   background: #0b0d08;
 }
 
+/* 단어 단계 배지 — 신규/초기/학습 중/숙련(부채 ②). 판정은 `growthStats.wordStage`가
+   지고 여기는 표현만 진다. 옛 인라인은 색을 삼항으로 골라 `color-mix`에 끼워 넣고
+   있었는데, 그러면 경계값이 판정과 표현 두 군데에 살아 한쪽만 낡는다. */
+.badge--stage-new { background: color-mix(in srgb, var(--text-muted) 15%, transparent); color: var(--text-muted); }
+.badge--stage-early { background: color-mix(in srgb, var(--danger) 15%, transparent); color: var(--danger); }
+.badge--stage-learning { background: color-mix(in srgb, var(--warning) 15%, transparent); color: var(--warning); }
+.badge--stage-mastered { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }
+
 /* 문맥 퀴즈 보기 — 정·오답 상태색(v2-K 잔여). 삼항 **안**에 리터럴이 있어 한 줄
    계약도 여러 줄 계약도 못 잡던 자리라 클래스로 분해했다. 값은 토큰 그대로. */
 .quiz-opt {

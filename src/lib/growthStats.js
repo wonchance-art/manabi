@@ -18,6 +18,33 @@ export function isKnownWord(row) {
   return (row?.interval ?? 0) >= KNOWN_WORD_MIN_INTERVAL;
 }
 
+/** '숙련' 경계 — 이 모듈 밖에서 쓰지 않는다(단어 상세 카드의 단계 라벨 전용). */
+export const MASTERED_MIN_INTERVAL = 30;
+
+/**
+ * 단어 단계 — 신규 / 초기 / 학습 중 / 숙련 (부채 ②, 2026-09-01).
+ *
+ * ── 왜 여기로 왔나
+ * 이 판정이 `VocabDetailCard` 안에 삼항으로 있었고, 중간 경계 `7`을
+ * **`KNOWN_WORD_MIN_INTERVAL`을 import하지 않고 리터럴로** 쓰고 있었다. 지금은 값이
+ * 같아 증상이 없지만 상수를 바꾸는 순간 **카드는 「학습 중」인데 카운터는 「아는 단어」가
+ * 아닌** 상태가 생긴다 — 그게 「기억 통계 이중 진실」로 적혀 있던 것의 실체다
+ * (나머지는 이 모듈이 생기면서 이미 해소됐다: 주간 기억 수치는 두 화면이 다 review_events).
+ *
+ * 이 모듈의 선언대로 **「무엇을 세는가」의 판정·문구가 여기를 지난다.** 색은 지나지
+ * 않는다 — 그건 표현이라 CSS가 진다(`.badge--stage-*`).
+ *
+ * @param {{interval?: number|null, last_reviewed_at?: string|null}} row - user_vocabulary 한 행
+ * @returns {{key: 'new'|'early'|'learning'|'mastered', label: string}}
+ */
+export function wordStage(row) {
+  if (!row?.last_reviewed_at) return { key: 'new', label: '신규' };
+  const interval = row?.interval ?? 0;
+  if (interval >= MASTERED_MIN_INTERVAL) return { key: 'mastered', label: '숙련' };
+  if (interval >= KNOWN_WORD_MIN_INTERVAL) return { key: 'learning', label: '학습 중' };
+  return { key: 'early', label: '초기' };
+}
+
 /**
  * '통과 챕터' 판정 — user_ref_progress 행의 passed 플래그가 true.
  * 서버 쿼리의 `.eq('passed', true)`와 동치(클라이언트 필터용).

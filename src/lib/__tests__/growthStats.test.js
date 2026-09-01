@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
   KNOWN_WORD_MIN_INTERVAL,
+  MASTERED_MIN_INTERVAL,
+  wordStage,
   isKnownWord,
   isPassedChapter,
   kstDayStartMs,
@@ -145,5 +149,46 @@ describe('표시 문구 상수', () => {
     expect(GROWTH_LABELS.passedChapters).toBe('통과 챕터');
     expect(GROWTH_LABELS.weekSessions).toBe('이번 주 세션');
     expect(GROWTH_COPY.knownWordSub).toBe('일주일 넘게 기억한 단어');
+  });
+});
+
+/**
+ * 단어 단계 — 부채 ② (「기억 통계 이중 진실」, 2026-09-01).
+ *
+ * 실측하니 「이중 진실」의 대부분은 이 모듈이 생기면서 **이미 해소**돼 있었다(주간 기억
+ * 수치는 세션 화면도 주간 리포트도 `review_events`에서 센다). 남아 있던 하나가 이것이다:
+ * `VocabDetailCard`가 단계 경계 `7`을 **`KNOWN_WORD_MIN_INTERVAL`을 import하지 않고
+ * 리터럴로** 쓰고 있었다. 값이 같아 증상이 없었을 뿐, 상수를 바꾸면 **카드는 「학습 중」인데
+ * 카운터는 「아는 단어」가 아닌** 상태가 생긴다.
+ */
+describe('단어 단계(wordStage) — 경계가 한 곳에서만 산다', () => {
+  const row = (interval, reviewed = '2026-09-01T00:00:00Z') => ({ interval, last_reviewed_at: reviewed });
+
+  it('복습한 적 없으면 신규 — interval이 커도 그렇다', () => {
+    expect(wordStage({ interval: 999, last_reviewed_at: null })).toEqual({ key: 'new', label: '신규' });
+    expect(wordStage({})).toEqual({ key: 'new', label: '신규' });
+  });
+
+  it('경계는 아는 단어 기준과 **같은 상수**를 쓴다', () => {
+    expect(wordStage(row(KNOWN_WORD_MIN_INTERVAL))).toMatchObject({ key: 'learning' });
+    expect(wordStage(row(KNOWN_WORD_MIN_INTERVAL - 1))).toMatchObject({ key: 'early' });
+    // 이 동치가 부채의 본체다 — 「학습 중 이상」과 「아는 단어」는 같은 선이어야 한다.
+    for (const n of [0, 1, 6, 7, 8, 29, 30, 100]) {
+      const stage = wordStage(row(n));
+      expect(isKnownWord({ interval: n }), `interval ${n}`).toBe(stage.key === 'learning' || stage.key === 'mastered');
+    }
+  });
+
+  it('숙련 경계는 이 모듈 자기 상수다', () => {
+    expect(wordStage(row(MASTERED_MIN_INTERVAL))).toEqual({ key: 'mastered', label: '숙련' });
+    expect(wordStage(row(MASTERED_MIN_INTERVAL - 1))).toMatchObject({ key: 'learning' });
+  });
+
+  it('카드가 판정을 다시 하지 않는다 — 경계값이 화면에 되살아나지 않게', () => {
+    const card = fs.readFileSync(path.join(process.cwd(), 'src/views/VocabDetailCard.jsx'), 'utf8');
+    expect(card).toContain("import { wordStage } from '../lib/growthStats'");
+    expect(card, '단계 경계가 화면으로 되돌아왔다').not.toMatch(/interval >= \d+/);
+    // 색도 표현으로 내려갔다 — 판정과 표현이 같은 삼항에 얽혀 있으면 한쪽만 낡는다.
+    expect(card).toContain('badge--stage-${stage.key}');
   });
 });

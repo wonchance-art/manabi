@@ -2,6 +2,7 @@ import { memo, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { displayWord } from '../lib/constants';
 import { isNewWord } from '../lib/vocabStudy';
+import { wordStage } from '../lib/growthStats';
 
 const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak, ttsSupported }) {
   const dialogRef = useRef(null);
@@ -49,8 +50,8 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
   const retention = Math.round(Math.exp(-1 / Math.max(interval, 0.5)) * 100);
 
   const isNew = isNewWord(v);
-  const stageLabel = isNew ? '신규' : interval >= 30 ? '숙련' : interval >= 7 ? '학습 중' : '초기';
-  const stageColor = isNew ? 'var(--text-muted)' : interval >= 30 ? 'var(--accent)' : interval >= 7 ? 'var(--warning)' : 'var(--danger)';
+  // 단계 판정은 growthStats가 진다 — 경계값이 「아는 단어」 카운터와 갈리지 않게(부채 ②).
+  const stage = wordStage(v);
 
   return (
     <div className="vocab-detail-overlay" onClick={onClose}>
@@ -68,8 +69,8 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
           <p id="vocab-detail-meaning" className="vocab-detail-card__meaning">{v.meaning}</p>
           <div className="vocab-detail-card__badges">
             <span className="badge">{v.pos}</span>
-            <span className="badge" style={{ background: `color-mix(in srgb, ${stageColor} 15%, transparent)`, color: stageColor }}>
-              {stageLabel}
+            <span className={`badge badge--stage-${stage.key}`}>
+              {stage.label}
             </span>
           </div>
         </div>
