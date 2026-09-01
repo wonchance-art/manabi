@@ -251,3 +251,84 @@ describe('⑦ 여러 줄 인라인 색 — 0', () => {
     expect(blocks.filter((m) => /#[0-9a-fA-F]{3,8}|rgba?\(/.test(m[1]))).toEqual([]);
   });
 });
+
+/**
+ * ⑧ 오버레이 스크림 값 통합 (#1077 설계 5491002271, 오너 「우선순위대로」 2026-09-01).
+ *
+ * ── 설계가 센 것보다 많았다
+ *
+ * 설계는 「인라인 3벌 + 오버레이 클래스 **4종**」이라고 적었다. 착수 실측은 **9종**이다:
+ *
+ *   0.3  .overlay              (사용처 0 — 죽은 CSS)
+ *   0.45 .tile-modal__overlay  (토큰과 같은 값)
+ *   0.5  .vocab-detail-overlay · .source-edit-overlay · .reading-test-overlay
+ *   0.55 .confirm-overlay
+ *   0.6  .modal-overlay        (+ backdrop-filter: blur(5px))
+ *   0.65 .onboarding-overlay
+ *   0.75 .celebration-overlay  (+ blur(8px) — 사용처 0)
+ *
+ * **설계의 「흐림은 하나뿐」도 틀렸다** — `.celebration-overlay`도 쓴다(죽은 CSS라 화면에
+ * 안 뜰 뿐이다). 목업이 「0.45와 0.65가 구분되지 않는다」고 판정한 범위 밖에 0.3과 0.75가
+ * 있었으므로, 그 둘이 **살아 있었다면 이 라운드는 겉모습 변화 없음이 아니었다.**
+ * 죽어 있어서 성립한다 — 그래서 그 사실 자체를 계약으로 박는다.
+ *
+ * 투명이 의도인 셋(`.rsheet-backdrop`·`.reanalyze-panel-overlay`·`.pdf-detail-overlay`)은
+ * 스크림이 아니라 **클릭 받이**다. 배경을 아예 안 쓰므로 이 계약의 대상이 아니다
+ * (뷰어 바텀시트의 「backdrop은 무광 — 시트 위 본문이 곧 미리보기」 시연 합의).
+ */
+describe('⑧ 오버레이 스크림 — 값이 하나다', () => {
+  /** 주석을 걷어낸 규칙 목록 — 주석 속 예시가 선택자로 오독되면 계약이 헛돈다(요미 라운드 선례). */
+  const rules = () => [...read(CSS).replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+    .map((m) => ({ sel: m[1].trim().split('\n').pop().trim(), body: m[2] }));
+  /** 스크림 후보 = 오버레이·스크림 이름을 단 규칙 중 배경을 **실제로 칠하는** 것. */
+  const scrims = () => rules()
+    .filter((r) => /overlay|\bscrim\b/.test(r.sel))
+    .map((r) => ({ ...r, bg: /(?<!-)\bbackground(?:-color)?\s*:\s*([^;]+)/.exec(r.body)?.[1]?.trim() }))
+    .filter((r) => r.bg && r.bg !== 'transparent');
+
+  it('스크림을 칠하는 규칙이 전부 --scrim 토큰을 쓴다 — 값이 흩어지지 않는다', () => {
+    const stray = scrims().filter((r) => r.bg !== 'var(--scrim)').map((r) => `${r.sel} → ${r.bg}`);
+    expect(stray, `스크림 값이 다시 갈렸다. 토큰을 쓰거나, 스크림이 아니라면 이름을 바꿔라:\n  ${stray.join('\n  ')}`)
+      .toEqual([]);
+  });
+
+  it('계약이 실제로 규칙을 읽어낸다 — 파서가 죽으면 위 단언이 공허해진다', () => {
+    const found = scrims().map((r) => r.sel);
+    expect(found.length, '스크림 규칙을 하나도 못 읽었다 — 파서를 고쳐라').toBeGreaterThanOrEqual(9);
+    for (const sel of ['.scrim', '.modal-overlay', '.confirm-overlay', '.onboarding-overlay']) {
+      expect(found, `${sel}을 못 봤다`).toContain(sel);
+    }
+    // 토큰은 하나이고 값은 0.45다(⑦이 정한 그 값 — 두 계약이 같은 값을 본다).
+    expect(read(CSS)).toContain('--scrim: rgba(0, 0, 0, 0.45);');
+  });
+
+  it('흐림은 손대지 않았다(오너 ⓐ) — 쓰는 오버레이 목록이 고정된다', () => {
+    // ⓑ전부/ⓒ없앰이 아니라 **ⓐ그대로**를 골랐다. 흐림은 우리가 의도적으로 정한 적이
+    // 없으므로 값 통합에 묻어가지 않는다 — 늘거나 줄면 여기서 걸린다.
+    // ⚠ `.celebration-overlay`는 **사용처 0**이다. 죽은 CSS를 걷어내는 라운드가 오면
+    //    이 목록은 1종으로 줄고, 그때 설계 코멘트의 「흐림은 하나뿐」이 비로소 참이 된다.
+    const blurred = scrims()
+      .filter((r) => /(?<!-webkit-)backdrop-filter\s*:/.test(r.body))
+      .map((r) => r.sel);
+    expect(blurred.sort()).toEqual(['.celebration-overlay', '.modal-overlay']);
+    expect(sliceBetween(read(CSS), '\n.modal-overlay {', '}')).toContain('backdrop-filter: blur(5px)');
+  });
+
+  it('죽은 스크림 둘은 여전히 죽어 있다 — 되살아나면 겉모습이 실제로 바뀐다', () => {
+    // 이 라운드가 「겉모습 변화 없음」인 근거가 이것이다. 목업은 0.45~0.65만 비교했고,
+    // 0.3(.overlay)·0.75(.celebration-overlay)는 그 밖이다. 둘 중 하나라도 화면에 붙으면
+    // 통합이 **눈에 보이는 변경**이 되므로, 붙이는 사람이 여기서 멈춰 목업을 다시 본다.
+    const walk = (dir, out = []) => {
+      for (const name of fs.readdirSync(dir)) {
+        if (name === 'node_modules' || name === '__tests__') continue;
+        const p = path.join(dir, name);
+        if (fs.statSync(p).isDirectory()) walk(p, out);
+        else if (/\.(jsx?|tsx?)$/.test(name)) out.push(p);
+      }
+      return out;
+    };
+    const src = walk(path.join(process.cwd(), 'src')).map((f) => fs.readFileSync(f, 'utf8')).join('\n');
+    expect(src).not.toMatch(/className=[^\n]*\bcelebration-overlay\b/);
+    expect(src).not.toMatch(/className=\{?["'`]overlay["'`]/);
+  });
+});

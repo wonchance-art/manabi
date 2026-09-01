@@ -1191,7 +1191,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(0,0,0,0.5);
+  background: var(--scrim);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3413,7 +3413,7 @@ a.grammar-btn {
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.3);
+  background: var(--scrim);
   z-index: 1000;
 }
 
@@ -3510,7 +3510,7 @@ a.grammar-btn {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: var(--scrim);
   backdrop-filter: blur(5px);
   display: flex;
   justify-content: center;
@@ -3778,7 +3778,7 @@ a.grammar-btn {
 .onboarding-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
+  background: var(--scrim);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5968,7 +5968,7 @@ a.grammar-btn {
 .syn-ant__ko { color: var(--text-secondary); font-size: 0.76rem; }
 
 /* ③ 원문 수정(오너 승인) — 소유자 전용, 저장 시 바뀐 줄만 재분석 */
-.source-edit-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 90; }
+.source-edit-overlay { position: fixed; inset: 0; background: var(--scrim); z-index: 90; }
 .source-edit {
   position: fixed;
   top: 50%;
@@ -6172,7 +6172,7 @@ a.grammar-btn {
 .reading-test-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: var(--scrim);
   z-index: 900;
   display: flex;
   align-items: center;
@@ -7513,7 +7513,7 @@ a.grammar-btn {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(0,0,0,0.55);
+  background: var(--scrim);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -8593,7 +8593,7 @@ a.grammar-btn {
    ═══════════════════════════════════════════════ */
 .celebration-overlay {
   position: fixed; inset: 0; z-index: 9999;
-  background: rgba(0,0,0,0.75);
+  background: var(--scrim);
   backdrop-filter: blur(8px);
   display: flex; align-items: center; justify-content: center;
   animation: celebOverlayIn 0.3s ease;
@@ -10504,7 +10504,7 @@ a.grammar-btn {
 
 .tile-modal__overlay {
   position: fixed; inset: 0; z-index: 1000;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--scrim);
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
 }
