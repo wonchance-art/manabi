@@ -1486,9 +1486,17 @@ export default function ViewerPage() {
 
   const wordDetailCard = !selectedToken || !isSheetOpen ? null : (
     <div className={`word-detail-card${dragTokens !== null ? ' word-detail-card--above-list' : ''}`}>
+      {/* 이 줄은 **왼쪽이 통째로 비어** 있고 우측에만 ▷ ✕가 떠 있었다(시트 핸들 바로 아래라
+          소속도 모호했다). 단어와 뜻 사이에 끼어 둘의 연결을 끊던 메타(품사·급수)를 그 빈
+          자리로 옮긴다 — 줄 하나를 회수하고 **단어 → 뜻이 직결**된다(오너 배치안). */}
       <div className="word-detail-card__actions">
+        <div className="word-detail-card__meta">
+          <TokenPosLabel token={selectedToken} />
+          {selectedToken.base_form && selectedToken.base_form !== selectedToken.text && ` · ${selectedToken.base_form}`}
+          {refVocab && <span className="word-detail-card__level">{refLevelLabel(refVocab.level)}</span>}
+        </div>
         {ttsSupported && (
-          <button onClick={() => speak(selectedToken.text, materialLang, ttsOptsFor(ttsRate))} aria-label="발음 듣기" style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', minWidth: 32, minHeight: 32 }} title="발음 듣기">▷</button>
+          <button className="word-detail-card__speak" onClick={() => speak(selectedToken.text, materialLang, ttsOptsFor(ttsRate))} aria-label="발음 듣기" title="발음 듣기">▷</button>
         )}
         <button className="word-detail-card__close" onClick={closeWordCard} aria-label="단어 상세 닫기" title="닫기">✕</button>
       </div>
@@ -1644,17 +1652,11 @@ export default function ViewerPage() {
           </div>
         );
       })()}
-      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 4, marginBottom: 12 }}>
-        <TokenPosLabel token={selectedToken} />
-        {selectedToken.base_form && selectedToken.base_form !== selectedToken.text && ` · ${selectedToken.base_form}`}
-        {refVocab && (
-          <span style={{ marginLeft: 6, padding: '1px 7px', borderRadius: 999, background: 'var(--primary-glow)', color: 'var(--primary-light)', fontWeight: 700, fontSize: '0.7rem' }}>
-            {refLevelLabel(refVocab.level)}
-          </span>
-        )}
-      </div>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: materialLang === 'English' && selectedToken.reading ? 4 : 14 }}>
-        <div style={{ fontSize: '1rem', lineHeight: 1.6, flex: 1, minWidth: 0 }}>
+      {/* 뜻이 카드에서 가장 중요한데 가장 약했다(단어 1.5rem/800 → 뜻 1rem/보통). 한 단계
+          키우고, `✏️`는 뜻이 `flex:1`로 늘어나 넓은 화면에서 멀어지던 것을 **글자 옆에**
+          붙인다(`flex: 0 1 auto` + 줄 자체를 왼쪽 정렬). */}
+      <div className={`word-detail-card__meaningrow${materialLang === 'English' && selectedToken.reading ? ' word-detail-card__meaningrow--tight' : ''}`}>
+        <div className="word-detail-card__meaning">
           {refMeaning || selectedToken.meaning || '(뜻 없음)'}
         </div>
         {/* 리스트 단어는 자료 토큰이 아니라(id 없음) 이 자료의 교정 대상이 될 수 없다 */}
@@ -1663,7 +1665,7 @@ export default function ViewerPage() {
             onClick={() => setIsEditingToken(v => !v)}
             aria-label="뜻·발음 수정"
             title="뜻·발음 수정"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.95rem', minWidth: 28, minHeight: 28, flexShrink: 0, opacity: isEditingToken ? 1 : 0.55 }}
+            className={`word-detail-card__edit${isEditingToken ? ' is-on' : ''}`}
           >✏️</button>
         )}
       </div>
