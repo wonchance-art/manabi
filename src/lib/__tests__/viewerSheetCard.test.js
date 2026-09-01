@@ -28,12 +28,16 @@ const CSS = 'src/index.css';
 const card = () => sliceBetween(read(VIEWER), 'const wordDetailCard = !selectedToken', '{isEditingToken && (');
 
 describe('① 전환 경로는 하단 바 하나 — 섹션 헤더·셰브런 부활 금지', () => {
-  it('시트 안에 헤더 버튼도 셰브런도 없다', () => {
+  it('시트 안에 헤더 버튼도 셰브런도 없다 — 소스·CSS·e2e 어디에도', () => {
     const src = read(SHEET);
     for (const gone of ['viewer-sheet__section-header', 'viewer-sheet__chevron', 'aria-expanded']) {
       expect(src, `${gone}가 되살아났다 — 여는 방법이 다시 둘이 된다`).not.toContain(gone);
     }
-    expect(read(CSS), 'CSS에도 남으면 안 된다').not.toContain('viewer-sheet__section-header');
+    // ⚠ 처음엔 `src/`만 봤다가 **e2e가 그 선택자로 시트를 프로브하고 있던 것**을 놓쳐
+    //    CI에서 30초 타임아웃으로 터졌다. 지운 선택자를 **기다리는 쪽**까지 함께 본다.
+    for (const f of ['src/index.css', 'e2e/learning-flow.e2e.mjs', 'e2e/smoke.e2e.mjs']) {
+      expect(read(f), `${f}에 폐지된 선택자가 남았다`).not.toContain('viewer-sheet__section-header');
+    }
   });
 
   it('시트는 선택된 하나만 그린다', () => {

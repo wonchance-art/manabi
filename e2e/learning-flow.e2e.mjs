@@ -693,15 +693,17 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
     await assertVisible(bookNav.getByText('1/2', { exact: true }), 'book chapter position');
 
     const sheet = page.getByRole('dialog', { name: 'AI 분석 결과' });
-    const sectionHeaders = sheet.locator('.viewer-sheet__section-header');
-    const leftSection = sectionHeaders.nth(0);
-    const rightSection = sectionHeaders.nth(1);
+    // v2-R: 시트 안 섹션 헤더는 폐지됐다(같은 것을 여는 방법이 셋이었다) — 이제 하단 바가
+    // 유일한 전환 수단이고, 열린 탭은 바 버튼의 aria-pressed가 알린다.
+    const barButtons = page.locator('.viewer-sheet-bar__btn');
+    const leftTab = barButtons.nth(0);
+    const rightTab = barButtons.nth(1);
     const wordToken = page.locator('[data-tid="id_0_3"]');
     await assertVisible(wordToken, 'Chinese word token');
     await wordToken.click();
     await assertVisible(sheet, 'word detail sheet');
-    assert.equal(await leftSection.getAttribute('aria-expanded'), 'false', 'a token tap keeps sentence detail collapsed');
-    assert.equal(await rightSection.getAttribute('aria-expanded'), 'true', 'a token tap opens the word section');
+    assert.equal(await leftTab.getAttribute('aria-pressed'), 'false', 'a token tap keeps sentence detail closed');
+    assert.equal(await rightTab.getAttribute('aria-pressed'), 'true', 'a token tap opens the word tab');
     await assertVisible(sheet.getByText('중국어', { exact: true }), 'selected word meaning');
     await assertVisible(sheet.getByText('汉语', { exact: true }), 'preseeded synonym chip in the word card');
 
@@ -741,20 +743,27 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
       analyzeRequests.length = 0;
       assert.ok(await dragPick(), 'drag pick did not reach 3 tokens after a retry');
     }
-    assert.equal(await leftSection.getAttribute('aria-expanded'), 'true', 'sentence drag opens the sentence section');
-    assert.equal(await rightSection.getAttribute('aria-expanded'), 'true', 'sentence drag opens the analyzed word section');
+    // v2-R §3: 문장 드래그는 이제 **번역·맥락 하나만** 띄운다. 둘을 동시에 펼치면 60svh를
+    // 반씩 나눠 실질적으로 둘 다 못 보게 되기 때문이다. 단어 목록은 사라진 게 아니라
+    // 탭 뒤에 있고, 그 대체 경로가 실제로 닿는지를 아래에서 확인한다.
+    assert.equal(await leftTab.getAttribute('aria-pressed'), 'true', 'sentence drag opens the sentence tab');
+    assert.equal(await rightTab.getAttribute('aria-pressed'), 'false', 'sentence drag no longer opens both at once');
     const contextText = sheet.locator('.pdf-context__text');
     await assertVisible(contextText, 'cached sentence translation');
     assert.match(await contextText.innerText(), /우리는 중국어를 배웁니다\./);
-    await assertVisible(sheet.getByText('단어 (2)', { exact: true }), 'deterministic sentence word analysis');
     assert.deepEqual(analyzeRequests.map(({ lines, language }) => ({ lines, language })), [
       { lines: [selectedText], language: 'Chinese' },
     ]);
     assert.equal(getGeminiRequests(), 0, 'the preseeded translation cache must prevent Gemini calls');
 
+    // 대체 경로 — 탭 하나로 분석된 단어 목록에 닿는다(폐지된 동시 오픈이 주던 것).
+    await rightTab.click();
+    assert.equal(await rightTab.getAttribute('aria-pressed'), 'true', 'the bar switches to the word tab');
+    await assertVisible(sheet.getByText('단어 (2)', { exact: true }), 'deterministic sentence word analysis');
+
     await wordToken.click();
-    assert.equal(await leftSection.getAttribute('aria-expanded'), 'false', 'a word tap folds the open sentence section');
-    assert.equal(await rightSection.getAttribute('aria-expanded'), 'true', 'a word tap keeps the word section open');
+    assert.equal(await leftTab.getAttribute('aria-pressed'), 'false', 'a word tap leaves the sentence tab closed');
+    assert.equal(await rightTab.getAttribute('aria-pressed'), 'true', 'a word tap keeps the word tab open');
     await assertVisible(sheet.getByText('중국어', { exact: true }), 'word detail replaces sentence word results');
 
     await sheet.getByRole('button', { name: '시트 닫기', exact: true }).click();
