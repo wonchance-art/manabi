@@ -3,15 +3,24 @@
 import { useEffect, useRef, useState } from 'react';
 
 /**
- * 신호 전이 판정(순수) — 단독 신호는 반대 섹션을 접고(가림 수리), 동시 신호는 둘 다 연다.
- * @returns {{left: boolean|null, right: boolean|null}|null} null=전이 없음, 필드 null=유지
+ * 신호 전이 판정(순수) — 어느 탭을 띄울지 고른다.
+ *
+ * ── 옛 규칙과 무엇이 다른가 (v2-R, 오너 승인 2026-09-01)
+ * 예전에는 섹션 둘이 **동시에 펼쳐질 수 있었다**(#992: 문장 드래그 = 번역+단어 동시 오픈).
+ * 시트 상한이 60svh인데 둘을 펼치면 각자 ~30svh이고, **단어 카드 하나만으로도 예문이
+ * 잘리는 상황**이라 동시 오픈은 실질적으로 둘 다 못 보게 만들었다. 아코디언은 좌우 칸이
+ * 있는 데스크톱의 은유이고, 모바일 하단 바는 이미 **탭처럼 생겼다**.
+ * ⇒ 시트는 **선택된 하나만** 렌더한다. 동시 신호(문장 드래그)는 **번역·맥락**을 띄우고,
+ *   단어 목록은 하단 바 배지(N개)가 알린다 — 탭으로 건너간다.
+ * ※ 데스크톱(좌우 칸, ≥1180px)은 시트를 쓰지 않으므로 **무영향**이다.
+ *
+ * @returns {{tab: 'left'|'right'}|null} null = 전이 없음
  */
 export function resolveSignalTransition(leftRose, rightRose) {
   if (!leftRose && !rightRose) return null;
-  return {
-    left: leftRose ? true : (rightRose ? false : null),
-    right: rightRose ? true : (leftRose ? false : null),
-  };
+  // 동시 신호에서 번역·맥락을 고르는 이유: 문장 드래그의 주 목적이 문장 이해이고,
+  // 단어 목록은 배지로 존재를 알릴 수 있지만 번역은 열지 않으면 알 길이 없다.
+  return { tab: leftRose ? 'left' : 'right' };
 }
 
 export default function ViewerBottomSheet({
@@ -29,8 +38,8 @@ export default function ViewerBottomSheet({
   // 항상 위(z 100)·항상 노출이라, 플로팅 필처럼 시트에 덮이는 일이 구조적으로 없다.
   barNav = null,
 }) {
-  const [leftOpen, setLeftOpen] = useState(false);
-  const [rightOpen, setRightOpen] = useState(false);
+  // 시트는 한 번에 하나만 보여 준다 — 열림 여부(sheetOpen)와 **무엇을 보는지**(tab)로 가른다.
+  const [tab, setTab] = useState('left');
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const prevLeft = useRef(false);
@@ -39,7 +48,7 @@ export default function ViewerBottomSheet({
 
   useEffect(() => {
     if (leftActive && !prevLeft.current) {
-      setLeftOpen(true);
+      setTab('left');
       setSheetOpen(true);
     }
     prevLeft.current = leftActive;
@@ -47,15 +56,14 @@ export default function ViewerBottomSheet({
 
   useEffect(() => {
     if (rightActive && !prevRight.current) {
-      setRightOpen(true);
+      setTab('right');
       setSheetOpen(true);
     }
     prevRight.current = rightActive;
   }, [rightActive]);
 
-  // 신호 전이 — 단독 신호(단어 탭 등)는 반대 섹션을 접는다: 먼저 열려 있던 문장 설명이
-  // 단어 상세를 가리는 문제(오너 보고)의 수리. 동시 신호(문장 드래그 = 번역+단어 목록
-  // 동시 오픈)는 기존 의도(#992)대로 둘 다 연다.
+  // 신호 전이 — 신호가 오면 해당 탭으로 건너간다. 「먼저 열려 있던 문장 설명이 단어 상세를
+  // 가린다」는 옛 문제(오너 보고)는 탭 구조에서 구조적으로 성립하지 않는다.
   const prevSig = useRef({ left: 0, right: 0 });
   useEffect(() => {
     const leftRose = leftSignal > prevSig.current.left;
@@ -64,22 +72,16 @@ export default function ViewerBottomSheet({
     const t = resolveSignalTransition(leftRose, rightRose);
     if (!t) return;
     setSheetOpen(true);
-    if (t.left != null) setLeftOpen(t.left);
-    if (t.right != null) setRightOpen(t.right);
+    setTab(t.tab);
   }, [leftSignal, rightSignal]);
 
-  // 재탭 = 닫기: 열려 있는 섹션의 버튼을 다시 탭하면 시트째 닫는다.
-  // ("해당 섹션만 열려 있을 때"로 좁히면 문장 드래그(번역+단어 동시 오픈) 상황에서
-  //  재탭이 섹션만 접었다 폈다 하고 시트가 영영 안 닫힌다 — #992 오너 재보고의 원인)
-  const toggleLeft = () => {
-    if (!sheetOpen) { setSheetOpen(true); setLeftOpen(true); return; }
-    if (leftOpen) { setSheetOpen(false); return; }
-    setLeftOpen(true);
-  };
-  const toggleRight = () => {
-    if (!sheetOpen) { setSheetOpen(true); setRightOpen(true); return; }
-    if (rightOpen) { setSheetOpen(false); return; }
-    setRightOpen(true);
+  // 하단 바가 **유일한 전환 수단**이다(시트 안 섹션 헤더·셰브런은 폐지 — 같은 것을 여는
+  // 방법이 셋이고 라벨까지 겹쳐 화면에 「번역·맥락」이 두 번 보였다).
+  //   닫힘 → 그 탭으로 연다 / 열림+같은 탭 → 시트째 닫는다 / 열림+다른 탭 → 건너간다
+  const selectTab = (next) => {
+    if (!sheetOpen) { setSheetOpen(true); setTab(next); return; }
+    if (tab === next) { setSheetOpen(false); return; }
+    setTab(next);
   };
   const closeSheet = () => setSheetOpen(false);
 
@@ -114,15 +116,17 @@ export default function ViewerBottomSheet({
     <>
       <div className="viewer-sheet-bar" role="toolbar" onMouseUp={stopMouseUp}>
         <button
-          className={`viewer-sheet-bar__btn ${sheetOpen && leftOpen ? 'is-active' : ''}`}
-          onClick={toggleLeft}
+          className={`viewer-sheet-bar__btn ${sheetOpen && tab === 'left' ? 'is-active' : ''}`}
+          onClick={() => selectTab('left')}
+          aria-pressed={sheetOpen && tab === 'left'}
         >
           <span>번역·맥락</span>
           {leftBadge && <span className="viewer-sheet-bar__badge">{leftBadge}</span>}
         </button>
         <button
-          className={`viewer-sheet-bar__btn ${sheetOpen && rightOpen ? 'is-active' : ''}`}
-          onClick={toggleRight}
+          className={`viewer-sheet-bar__btn ${sheetOpen && tab === 'right' ? 'is-active' : ''}`}
+          onClick={() => selectTab('right')}
+          aria-pressed={sheetOpen && tab === 'right'}
         >
           <span>단어</span>
           {rightBadge && <span className="viewer-sheet-bar__badge">{rightBadge}</span>}
@@ -142,30 +146,12 @@ export default function ViewerBottomSheet({
             <div className="viewer-sheet__handle-bar" aria-hidden="true" />
           </div>
 
+          {/* 선택된 하나만 렌더한다 — 접힌 섹션의 헤더 줄이 세로를 먹던 것이 사라지고,
+              그만큼이 카드 하단 예문(한자/병음/번역 3줄)이 잘리지 않을 여백이 된다. */}
           <div className="viewer-sheet__sections">
-            <section className={`viewer-sheet__section ${leftOpen ? 'is-open' : ''}`}>
-              <button
-                className="viewer-sheet__section-header"
-                onClick={() => setLeftOpen(o => !o)}
-                aria-expanded={leftOpen}
-              >
-                <span>번역·맥락</span>
-                <span className="viewer-sheet__chevron">{leftOpen ? '▼' : '▶'}</span>
-              </button>
-              {leftOpen && <div className="viewer-sheet__section-body">{leftContent}</div>}
-            </section>
-
-            <section className={`viewer-sheet__section ${rightOpen ? 'is-open' : ''}`}>
-              <button
-                className="viewer-sheet__section-header"
-                onClick={() => setRightOpen(o => !o)}
-                aria-expanded={rightOpen}
-              >
-                <span>단어</span>
-                <span className="viewer-sheet__chevron">{rightOpen ? '▼' : '▶'}</span>
-              </button>
-              {rightOpen && <div className="viewer-sheet__section-body">{rightContent}</div>}
-            </section>
+            <div className="viewer-sheet__section-body">
+              {tab === 'left' ? leftContent : rightContent}
+            </div>
           </div>
         </div>
       )}

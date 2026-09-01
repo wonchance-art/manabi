@@ -5556,11 +5556,71 @@ a.grammar-btn {
   min-height: 32px;
 }
 .word-detail-card__close:hover { color: var(--text-primary); }
+/* 헤더 줄(v2-R) — 왼쪽이 통째로 비어 있던 자리에 메타(품사·급수)를 앉힌다. 줄 하나를
+   회수하고, 단어와 뜻 사이에 끼어 둘의 연결을 끊던 것도 사라진다(오너 배치안). */
 .word-detail-card__actions {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
+  gap: 8px;
 }
+.word-detail-card__meta {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.word-detail-card__level {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  background: var(--primary-glow);
+  color: var(--primary-light);
+  font-weight: 700;
+  font-size: 0.7rem;
+}
+/* ▷는 단어와 짝인데 멀리 있었다 — 헤더 줄 우측에 두되 ✕(카드 닫기)와 간격을 벌린다.
+   ✕는 시트 핸들(시트 닫기)과 인접해 오조작 위험이 있어 특히 그렇다. */
+.word-detail-card__speak {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  min-width: 32px;
+  min-height: 32px;
+  margin-right: 4px;
+}
+
+/* 뜻 — 카드에서 가장 중요한데 가장 약했다(단어 1.5rem/800 vs 뜻 1rem/보통). 한 단계 키운다. */
+.word-detail-card__meaningrow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.word-detail-card__meaningrow--tight { margin-bottom: 4px; }
+.word-detail-card__meaning {
+  font-size: 1.12rem;
+  font-weight: 600;
+  line-height: 1.55;
+  /* `flex: 1`이면 뜻 상자가 남는 폭을 다 먹어 넓은 화면에서 ✏️가 멀어진다 —
+     글자 폭까지만 차지하게 두고 대신 줄이 넘칠 때만 줄어들게 한다. */
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.word-detail-card__edit {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  min-width: 28px;
+  min-height: 28px;
+  flex-shrink: 0;
+  opacity: 0.55;
+}
+.word-detail-card__edit.is-on { opacity: 1; }
 
 /* ① 폭맞춤 확대(오너 승인) — 카드의 지정 단어를 패널 폭에 맞춰 키운다.
    본문과 같은 1em 격자(아래 복제 규칙) 위에서 크기 = 100cqi ÷ 분모(fitWord.js)가
@@ -5697,19 +5757,21 @@ a.grammar-btn {
 }
 .syn-ant__row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; }
 .syn-ant__label { color: var(--text-muted); font-size: 0.74rem; flex-shrink: 0; }
+/* 칩이 테두리·여백으로 커서 **뜻을 시각 무게로 누르고 있었다**(v2-R). 테두리를 걷고
+   한 단계 낮춘다 — 보조 정보는 보조로 보여야 한다. 누를 수 있다는 신호는 hover/focus가 준다. */
 .syn-ant__chip {
   background: none;
-  border: 1px solid var(--border);
+  border: none;
   border-radius: var(--radius-full);
-  padding: 2px 9px;
+  padding: 1px 4px;
   cursor: pointer;
-  color: var(--text-primary);
-  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
   display: inline-flex;
   align-items: baseline;
   gap: 5px;
 }
-.syn-ant__chip:hover { border-color: var(--border-hover); color: var(--primary-light); }
+.syn-ant__chip:hover { background: var(--bg-secondary); color: var(--primary-light); }
 .syn-ant__r { color: var(--text-muted); font-size: 0.74rem; }
 .syn-ant__ko { color: var(--text-secondary); font-size: 0.76rem; }
 
@@ -5882,31 +5944,10 @@ a.grammar-btn {
     flex: 1;
     -webkit-overflow-scrolling: touch;
   }
-  .viewer-sheet__section {
-    border-bottom: 1px solid var(--border);
-  }
-  .viewer-sheet__section:last-child { border-bottom: none; }
-  .viewer-sheet__section-header {
-    width: 100%;
-    padding: 12px 16px;
-    background: var(--bg-secondary);
-    border: none;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.88rem;
-    color: var(--text-primary);
-  }
-  .viewer-sheet__section.is-open .viewer-sheet__section-header {
-    background: var(--bg-card);
-    border-bottom: 1px solid var(--border);
-  }
-  .viewer-sheet__chevron {
-    font-size: 0.7rem;
-    color: var(--text-muted);
-  }
+  /* 섹션 헤더·셰브런은 폐지했다(v2-R) — 같은 것을 여는 방법이 셋(하단 바·헤더·셰브런)이고
+     라벨까지 겹쳐 화면에 「번역·맥락」이 두 번 보였다. 게다가 **접힌 섹션도 헤더 줄을
+     차지해** 안 보는 내용이 세로를 먹었고, 그만큼 카드 하단 예문이 잘렸다.
+     이제 하단 바가 유일한 전환 수단이고 시트는 선택된 하나만 그린다. */
   .viewer-sheet__section-body {
     padding: 16px;
   }
