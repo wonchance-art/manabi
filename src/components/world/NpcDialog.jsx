@@ -110,17 +110,18 @@ export default function NpcDialog({
     if (!saveUser || savingWord) return;
     setSavingWord(row.text);
     try {
+      // supabase와 같은 결로 동적 import — 월드 번들에 정적으로 물리지 않는다.
       const { supabase } = await import('../../lib/supabase');
-      const { error } = await supabase.from('user_vocabulary').upsert([{
-        user_id: saveUser.id,
-        word_text: row.text,
-        base_form: row.text,
-        furigana: row.yomi,
+      const { VOCAB_UPSERT, buildVocabRow } = await import('../../lib/vocabIO');
+      const { error } = await supabase.from('user_vocabulary').upsert([buildVocabRow({
+        userId: saveUser.id,
+        surface: row.text,
+        base: row.text,        // 대화 단어는 정본 표기라 활용형이 아니다
+        reading: row.yomi,
         meaning: row.ko,
         pos: row.pos,
-        next_review_at: new Date().toISOString(),
         language: 'Japanese',
-      }], { onConflict: 'user_id,word_text', ignoreDuplicates: true });
+      })], VOCAB_UPSERT);
       if (!error) setSavedWords((prev) => new Set(prev).add(row.text));
     } catch {
       // 실패는 조용히 — 같은 말을 다음에 다시 담을 수 있다.

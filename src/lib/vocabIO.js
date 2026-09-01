@@ -20,6 +20,60 @@ export function normalizeWordText({ surface, base } = {}) {
   return base || surface || '';
 }
 
+/** 출처 문장 저장 상한 — 세 곳이 각자 `slice(0, 200)`을 적고 있었다. */
+export const SOURCE_SENTENCE_MAX = 200;
+
+/**
+ * 저장 옵션 정본.
+ *
+ * `ignoreDuplicates: true`가 정본인 이유: 같은 단어를 다시 담는 건 **이미 있는 기억을
+ * 덮어쓰라는 뜻이 아니다**. 빼면 나중에 담은 얄팍한 페이로드(예: /quick의 뜻 한 줄)가
+ * 먼저 담긴 풍부한 것(참조 덱의 어원·한자)을 밀어낼 수 있고, 결과가 **담은 순서에**
+ * 좌우된다. 실측: 8개 저장 경로 중 5곳은 이미 이 옵션을 쓰고 3곳이 빠져 있었다.
+ */
+export const VOCAB_UPSERT = Object.freeze({ onConflict: 'user_id,word_text', ignoreDuplicates: true });
+
+/**
+ * 분석된 토큰 → `user_vocabulary` 행. **저장 경로가 하나의 모양을 갖게 하는 정본**이다.
+ *
+ * ── 왜 필요했나 (실측)
+ *
+ * `user_vocabulary` 쓰기 경로가 **11개**였고 페이로드가 갈려 있었다. 그중 진짜 버그는
+ * 하나였다 — `PdfViewerPage`·`QuickPage`가 `word_text`에 **surface(활용형)** 를 넣는데
+ * `ViewerPage`는 **base(기본형)** 를 넣는다. `onConflict: 'user_id,word_text'`는 키가
+ * 다르면 못 막으므로, 같은 단어를 두 문으로 담으면 **행이 둘로 갈리고 복습이 두 번 온다**
+ * (뷰어의 `isTokenSaved`가 surface·base 양쪽을 봐서 화면상으로는 저장된 듯 보인다).
+ *
+ * `normalizeWordText`는 이미 있었는데 **7개 토큰 저장 경로 중 2곳만** 쓰고 있었다 —
+ * 없던 건 규약이 아니라 그걸 강제하는 조립 지점이다.
+ *
+ * @param {{userId, surface, base, meaning, pos, reading, language,
+ *          sourceSentence?, sourceMaterialId?, sourceRef?, now?}} p
+ */
+export function buildVocabRow({
+  userId, surface, base, meaning, pos, reading, language,
+  sourceSentence, sourceMaterialId, sourceRef, now = () => new Date().toISOString(),
+}) {
+  const text = normalizeWordText({ surface, base });
+  return {
+    user_id: userId,
+    word_text: text,
+    // base_form은 **항상 채운다** — 뷰어의 저장 판정이 surface·base 두 집합을 다 보므로,
+    // 비면 그 단어가 다른 문에서 "안 담긴 것"으로 보인다.
+    base_form: base || surface || '',
+    meaning: meaning || '',
+    pos: pos || '',
+    furigana: reading || '',       // 영어는 IPA, 중국어는 병음 — 같은 컬럼(리더와 동일)
+    language: language || 'Japanese',
+    // 항상 싣는다. `ignoreDuplicates`라 갱신은 없고 **삽입 때만** 쓰이므로, 컬럼 기본값이
+    // 무엇이든 결과가 같다(기본값을 확인할 수 없는 테이블이라 이 편이 안전하다).
+    next_review_at: now(),
+    ...(sourceSentence ? { source_sentence: String(sourceSentence).slice(0, SOURCE_SENTENCE_MAX) } : {}),
+    ...(sourceMaterialId ? { source_material_id: sourceMaterialId } : {}),
+    ...(sourceRef ? { source_ref: sourceRef } : {}),
+  };
+}
+
 /**
  * 단어장 조회 — 온라인이면 언제나 네트워크가 정본이고(계약 6), 성공분을 오프라인용
  * 스냅샷으로 남긴다(사용자 조작 0). 네트워크가 죽었을 때만 스냅샷으로 폴백한다.

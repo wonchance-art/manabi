@@ -8,6 +8,7 @@ import RefSpeak from '../components/RefSpeak';
 import { useTTS } from '../lib/useTTS';
 import { JaText } from './refShared';
 import { supabase } from '../lib/supabase';
+import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { useAuth } from '../lib/AuthContext';
 import { gradeGrammarReview, ratingFromScore } from '../lib/grammarSrs';
 import { createReviewEventBatcher, logReviewEvents } from '../lib/reviewEvents';
@@ -617,16 +618,17 @@ export default function StudySessionPage({
     if (!user?.id || !item?.word?.word_text || encounterSaveState) return;
     setEncounterSaveState('saving');
     try {
-      const { error } = await supabase.from('user_vocabulary').upsert([{
-        user_id: user.id,
-        word_text: item.word.word_text,
-        base_form: item.word.word_text,
-        furigana: item.word.furigana || '',
-        meaning: item.word.meaningFull || item.word.meaning || '',
-        pos: item.word.pos || '',
-        next_review_at: new Date().toISOString(),
+      // 세션 단어는 이미 사전 표제어라 surface/base가 갈리지 않는다 — 그래도 조립은
+      // 정본으로 보내, 나중에 필드가 늘 때 이 자리만 뒤처지지 않게 한다.
+      const { error } = await supabase.from('user_vocabulary').upsert([buildVocabRow({
+        userId: user.id,
+        surface: item.word.word_text,
+        base: item.word.word_text,
+        reading: item.word.furigana,
+        meaning: item.word.meaningFull || item.word.meaning,
+        pos: item.word.pos,
         language: lang,
-      }], { onConflict: 'user_id,word_text', ignoreDuplicates: true });
+      })], VOCAB_UPSERT);
       if (error) throw error;
       setEncounterSaveState('saved');
     } catch {
