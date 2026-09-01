@@ -751,12 +751,7 @@ export default function MaterialsPage() {
                       )}
                       {dueCount > 0 && (
                         <span
-                          className="tag"
-                          style={{
-                            background: 'rgba(212,150,42,0.15)',
-                            color: 'var(--warning)',
-                            fontWeight: 700,
-                          }}
+                          className="tag tag--due"
                           title="이 자료를 읽으면 복습 처리됨"
                         >
                           {dueCount} 복습

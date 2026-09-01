@@ -53,6 +53,12 @@
   --danger: #C84040;
   --warning: #D4962A;
 
+  /* 모달 스크림 — 뒤 화면을 덮는 검정. 값이 흩어져 있던 것을 토큰으로 모은다(v2-K 잔여).
+     검정이라 테마별 재정의가 없다(밝은 테마에서도 덮는 쪽은 검정이다).
+     ⚠ 기존 오버레이 클래스 4종은 아직 각자 값을 쓴다(0.5·0.55·0.6·0.65) — 그 통합은
+        모달 넷의 겉모습이 바뀌는 일이라 목업 우선 규약대로 별도 라운드로 뺐다. */
+  --scrim: rgba(0, 0, 0, 0.45);
+
   /* Neutral (dark — warm espresso) */
   --bg-primary: #1A1410;
   --bg-secondary: #231C15;
@@ -833,6 +839,74 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   border-radius: 4px;
   border: 1px solid var(--border);
 }
+
+/* 모달 스크림 유틸(v2-K 잔여) — 받아쓰기 패널·문장 고르기·문형 카드가 같은 인라인
+   블록을 세 벌 복제하고 있었다. 정렬만 갈려서 변형으로 뺀다. */
+.scrim {
+  position: fixed;
+  inset: 0;
+  background: var(--scrim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.scrim--bottom { align-items: flex-end; padding: 0; }
+
+/* 복습 알약 — 뷰어 `.viewer-badge--due`와 **같은 값**을 쓴다(v2-K 잔여).
+   자료실이 같은 배지를 인라인으로 두 번째 하드코딩하고 있었다(2트랙 병). */
+.tag--due {
+  background: color-mix(in srgb, var(--warning) 15%, transparent);
+  color: var(--warning);
+  font-weight: 700;
+}
+
+/* 16:9 영상 프레임 — 레터박스는 검정이 정답이다(영상 밖 여백은 테마색이 아니다).
+   인라인에서 CSS로 옮겨 색 리터럴이 JSX에 흩어지지 않게 한다. */
+.fr-media__frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+}
+
+/* 오버월드 지도 뷰포트 — 바닥색은 **게임 팔레트**다(학습 웹 토큰 체계와 다르다.
+   `ui-conventions.md` §1 예외의 `WorldPage`·`components/world/**`와 같은 근거).
+   커서만 상태로 갈리므로 인라인에 남긴다. */
+.worldmap-viewport {
+  position: relative;
+  width: 100%;
+  height: min(68vh, 640px);
+  min-height: 320px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  touch-action: none;
+  background: #0b0d08;
+}
+
+/* 문맥 퀴즈 보기 — 정·오답 상태색(v2-K 잔여). 삼항 **안**에 리터럴이 있어 한 줄
+   계약도 여러 줄 계약도 못 잡던 자리라 클래스로 분해했다. 값은 토큰 그대로. */
+.quiz-opt {
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  transition: background 0.2s, border-color 0.2s;
+}
+.quiz-opt--right {
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+  border-color: var(--accent);
+}
+.quiz-opt--wrong { background: color-mix(in srgb, var(--danger) 20%, transparent); }
+/* 답을 고른 뒤에는 보기 전체가 눌리지 않는다 — 커서도 그렇게 말한다. */
+.quiz-opt--done { cursor: default; }
 
 /* ========= Empty State ========= */
 .empty-state {

@@ -167,25 +167,28 @@ describe('⑥ 제목 줄·액션 축 — 실측이 더한 것', () => {
 });
 
 /**
- * ⑦ 실측 부산물 — K R1 색 계약에 **여러 줄 구멍**이 있다.
+ * ⑦ K R1 색 계약의 **여러 줄 구멍** — 이제 0이다.
  *
  * `uiConventions.test.js`의 검사는 `style={{ … 색 }}`을 **한 줄 안에서** 찾는다.
- * 그래서 여러 줄로 펼친 inline style은 통째로 빠져나간다. 이 라운드가 없앤 복습 배지가
+ * 그래서 여러 줄로 펼친 inline style은 통째로 빠져나갔다. v2-Q가 없앤 복습 배지가
  * 정확히 그 꼴이었다(`style={{` 다음다음 줄에 `rgba(212,150,42,0.15)`) — **계약이
  * 있었는데도 3주를 살아남았다.**
  *
- * 전수하니 잔여 8건. 성격이 갈려 한 라운드로 묶이지 않는다:
- *   · 모달 스크림 3건 — 공용 **스크림 토큰이 없어서** 생긴 것(토큰 신설이 선행)
- *   · MaterialsPage 복습 배지 1건 — 뷰어와 **같은 배지의 두 번째 하드코딩**(2트랙 병)
- *   · 비디오 레터박스 `#000` · 게임 캔버스 바닥 `#0b0d08` — 예외 경로 판단이 필요
- *   · VocabReview 정오답 상태색 2건 — 삼항 안이라 클래스 분해가 필요
- * 그래서 이 라운드는 **고치지 않고 잠근다**: 새로 늘지 못하게 라쳇을 건다.
- * 목록은 **줄어들기만** 한다 — 8을 넘기면 여기서 실패한다.
+ * 그때 전수한 잔여 8건은 성격이 갈려 한 라운드로 안 묶였고, 그래서 **고치지 않고
+ * 라쳇으로 잠갔다**. v2-K 잔여 라운드(2026-09-01)가 넷을 다 처리해 **0**이 됐다:
+ *   · 모달 스크림 3건 → `--scrim` 토큰 + `.scrim` 유틸(값 불변 — 셋 다 0.45였다)
+ *   · MaterialsPage 복습 배지 1건 → `.tag--due`가 뷰어와 **같은 `color-mix`** 를 쓴다
+ *   · 비디오 레터박스 `#000` · 게임 캔버스 바닥 `#0b0d08` → **예외를 늘리지 않고**
+ *     CSS 클래스로 옮겼다(규약이 금하는 것은 *인라인* 색 리터럴이다)
+ *   · VocabReview 정오답 2건 → `quizOptClass` + `.quiz-opt--right/--wrong`
+ *     (삼항 **안**이라 한 줄 계약도 이 라쳇도 못 잡던 자리다)
+ *
+ * 이제 라쳇이 아니라 **0 계약**이다 — 하나라도 생기면 여기서 실패한다.
  */
-describe('⑦ 여러 줄 인라인 색 라쳇 — 늘지 못하게', () => {
+describe('⑦ 여러 줄 인라인 색 — 0', () => {
   const EXEMPT_PATHS = ['src/views/WorldPage.jsx', 'src/components/world/', 'src/app/global-error.jsx', 'src/app/opengraph-image.jsx'];
   const EXEMPT_VALUES = ['#fff', '#ffffff'];
-  const KNOWN = 8;
+  const KNOWN = 0;
 
   const walk = (dir, out = []) => {
     for (const name of fs.readdirSync(dir)) {
@@ -197,7 +200,7 @@ describe('⑦ 여러 줄 인라인 색 라쳇 — 늘지 못하게', () => {
     return out;
   };
 
-  it(`여러 줄 style 블록 안 색 리터럴이 ${KNOWN}건을 넘지 않는다`, () => {
+  it(`여러 줄 style 블록 안 색 리터럴이 ${KNOWN}건이다`, () => {
     const files = walk(path.join(process.cwd(), 'src'))
       .filter((f) => !EXEMPT_PATHS.some((e) => f.startsWith(e) || f === e));
     const found = [];
@@ -213,6 +216,34 @@ describe('⑦ 여러 줄 인라인 색 라쳇 — 늘지 못하게', () => {
       }
     }
     expect(found.length, `여러 줄 인라인 색: ${found.join(', ')}`).toBeLessThanOrEqual(KNOWN);
+  });
+
+  it('없앤 자리는 토큰·클래스로 옮겨 갔다 — 값이 사라진 게 아니라 한 곳에 모였다', () => {
+    // ⚠ `newCss()`는 v2-Q 크롬 절만 잘라 온다 — 여기서는 파일 전체를 봐야 한다.
+    const css = read(CSS);
+    // 스크림: 토큰 하나가 셋을 먹인다
+    expect(css).toContain('--scrim: rgba(0, 0, 0, 0.45);');
+    expect(sliceBetween(css, '.scrim {', '}')).toContain('var(--scrim)');
+    for (const f of ['src/components/DictationPanel.jsx', 'src/components/DictationPicker.jsx', 'src/views/ReadingTextView.jsx']) {
+      expect(read(f), `${f}가 스크림을 다시 손으로 그린다`).toContain('className="scrim');
+    }
+    // 복습 배지: 뷰어와 **같은 식**을 쓴다(값 복제 금지 — 2트랙 병의 재발 방지)
+    const mix = 'color-mix(in srgb, var(--warning) 15%, transparent)';
+    expect(sliceBetween(css, '.tag--due {', '}')).toContain(mix);
+    expect(sliceBetween(css, '.viewer-badge--due {', '}')).toContain(mix);
+    // 정오답: 판정이 한 함수에 있고 값은 토큰이 진다
+    expect(read('src/views/VocabReview.jsx')).toContain('export function quizOptClass');
+    expect(sliceBetween(css, '.quiz-opt--right {', '}')).toContain('var(--accent)');
+    expect(sliceBetween(css, '.quiz-opt--wrong {', '}')).toContain('var(--danger)');
+  });
+
+  it('예외 목록이 늘지 않았다 — 옮길 수 있는 것은 옮겼다', () => {
+    // 레터박스 `#000`·게임 바닥 `#0b0d08`은 예외 등재가 아니라 **CSS 이동**으로 풀었다.
+    // 규약이 금하는 것은 *인라인* 색 리터럴이고, CSS 본문은 값이 사는 자리다.
+    expect(EXEMPT_VALUES).toEqual(['#fff', '#ffffff']);
+    expect(EXEMPT_PATHS).toHaveLength(4);
+    expect(read(CSS), '레터박스가 CSS로 오지 않았다').toContain('.fr-media__frame');
+    expect(read(CSS), '지도 뷰포트가 CSS로 오지 않았다').toContain('.worldmap-viewport');
   });
 
   it('뷰어 헤더는 이미 0이다 — 이 라운드가 없앤 자리로 되돌아가지 않는다', () => {

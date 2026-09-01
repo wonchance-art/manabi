@@ -545,11 +545,8 @@ export default function WorldMapPage() {
       {/* 지도 뷰포트 */}
       <div
         ref={containerRef}
-        style={{
-          position: 'relative', width: '100%', height: 'min(68vh, 640px)', minHeight: 320,
-          borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)',
-          cursor: dragRef.current?.moved ? 'grabbing' : 'grab', touchAction: 'none', background: '#0b0d08',
-        }}
+        className="worldmap-viewport"
+        style={{ cursor: dragRef.current?.moved ? 'grabbing' : 'grab' }}
       >
         <canvas
           ref={canvasRef}

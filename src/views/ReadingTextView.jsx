@@ -574,10 +574,8 @@ function PatternCard({ card, onClose }) {
       role="dialog"
       aria-label={`문형 ${card.pattern}`}
       onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 50,
-        display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-      }}
+      className="scrim scrim--bottom"
+      style={{ zIndex: 50 }}
     >
       <div
         className="card"
