@@ -294,7 +294,7 @@ describe('⑧ 오버레이 스크림 — 값이 하나다', () => {
 
   it('계약이 실제로 규칙을 읽어낸다 — 파서가 죽으면 위 단언이 공허해진다', () => {
     const found = scrims().map((r) => r.sel);
-    expect(found.length, '스크림 규칙을 하나도 못 읽었다 — 파서를 고쳐라').toBeGreaterThanOrEqual(9);
+    expect(found.length, '스크림 규칙을 하나도 못 읽었다 — 파서를 고쳐라').toBeGreaterThanOrEqual(8);
     for (const sel of ['.scrim', '.modal-overlay', '.confirm-overlay', '.onboarding-overlay']) {
       expect(found, `${sel}을 못 봤다`).toContain(sel);
     }
@@ -305,30 +305,24 @@ describe('⑧ 오버레이 스크림 — 값이 하나다', () => {
   it('흐림은 손대지 않았다(오너 ⓐ) — 쓰는 오버레이 목록이 고정된다', () => {
     // ⓑ전부/ⓒ없앰이 아니라 **ⓐ그대로**를 골랐다. 흐림은 우리가 의도적으로 정한 적이
     // 없으므로 값 통합에 묻어가지 않는다 — 늘거나 줄면 여기서 걸린다.
-    // ⚠ `.celebration-overlay`는 **사용처 0**이다. 죽은 CSS를 걷어내는 라운드가 오면
-    //    이 목록은 1종으로 줄고, 그때 설계 코멘트의 「흐림은 하나뿐」이 비로소 참이 된다.
+    // 예전엔 둘이었다(축하 모달 계열이 하나 더 썼다). 죽은 CSS 라운드가 그 계열을 걷어내
+    // **1종으로 줄었고**, 그제서야 설계 코멘트의 「흐림은 하나뿐」이 참이 됐다.
     const blurred = scrims()
       .filter((r) => /(?<!-webkit-)backdrop-filter\s*:/.test(r.body))
       .map((r) => r.sel);
-    expect(blurred.sort()).toEqual(['.celebration-overlay', '.modal-overlay']);
+    expect(blurred.sort()).toEqual(['.modal-overlay']);
     expect(sliceBetween(read(CSS), '\n.modal-overlay {', '}')).toContain('backdrop-filter: blur(5px)');
   });
 
-  it('죽은 스크림 둘은 여전히 죽어 있다 — 되살아나면 겉모습이 실제로 바뀐다', () => {
-    // 이 라운드가 「겉모습 변화 없음」인 근거가 이것이다. 목업은 0.45~0.65만 비교했고,
-    // 0.3(.overlay)·0.75(.celebration-overlay)는 그 밖이다. 둘 중 하나라도 화면에 붙으면
-    // 통합이 **눈에 보이는 변경**이 되므로, 붙이는 사람이 여기서 멈춰 목업을 다시 본다.
-    const walk = (dir, out = []) => {
-      for (const name of fs.readdirSync(dir)) {
-        if (name === 'node_modules' || name === '__tests__') continue;
-        const p = path.join(dir, name);
-        if (fs.statSync(p).isDirectory()) walk(p, out);
-        else if (/\.(jsx?|tsx?)$/.test(name)) out.push(p);
-      }
-      return out;
-    };
-    const src = walk(path.join(process.cwd(), 'src')).map((f) => fs.readFileSync(f, 'utf8')).join('\n');
-    expect(src).not.toMatch(/className=[^\n]*\bcelebration-overlay\b/);
-    expect(src).not.toMatch(/className=\{?["'`]overlay["'`]/);
+  it('목업 판정 범위 밖 값이 스크림에 없다 — 「겉모습 변화 없음」의 근거가 유지된다', () => {
+    // 목업이 「구분되지 않는다」고 판정한 구간은 **0.45~0.65**다. 그 밖 값(0.3·0.75)을 쓰던
+    // 두 오버레이는 죽은 CSS라 통합이 성립했고, 죽은 CSS 라운드에서 규칙째 사라졌다.
+    // ⚠ 이 계약은 **클래스 이름을 코드로 들지 않는다** — 이름을 적으면 죽은 CSS 판정기가
+    //    그 토큰을 「사용 중」으로 읽어, 죽었다고 적은 문장이 그것을 살려 놓는다(실측).
+    const alphas = scrims().map((r) => r.bg)
+      .filter((v) => v !== 'var(--scrim)')
+      .map((v) => Number(/([\d.]+)\s*\)$/.exec(v)?.[1]));
+    expect(alphas, '토큰 밖 스크림 값이 생겼다').toEqual([]);
+    expect(read(CSS)).toContain('--scrim: rgba(0, 0, 0, 0.45);');
   });
 });
