@@ -10,6 +10,7 @@ import { initialQueueRow, upsertRatedGrammarReview } from './grammarSrs.js';
 import { logReviewEvents } from './reviewEvents.js';
 import { encounterLookupLang, loadRefVocabLookup } from './refVocabLookup.js';
 import { recordVocabEncounters } from '../components/world/vocabEncounters.js';
+import DRILL_REFS from './data/drillRefs.json';
 
 export const DRILL_QUEUE_PREFIX = 'drill:';
 export const GUEST_DRILL_QUEUE_KEY = 'manabi-drill-review-v1';
@@ -130,20 +131,24 @@ export function saveGuestDrillQueue(rows) {
  * ─────────────────────────────────────────────────────────────────────────── */
 
 /**
- * 드릴 만남 기록 대상 언어 — **공백으로 단어가 갈리는 언어만**.
+ * 드릴 만남 기록 대상 언어 — 네 언어 전부. **얻는 방법만 다르다.**
  *
- * 드릴 2,148개 전수 실측(2026-09-01): 공백 분할 + 정본 대조는 **fr 229/230 · en 59/61**에서
- * 오탐 없이 걸린다. CJK는 성립하지 않는다 — ja는 문절 분할이라 조사가 붙어 12%만 걸리고
- * (`あには` = 兄+は), zh는 공백이 없어 **0%**다.
+ * fr·en은 공백이 단어를 갈라 주므로 실행 시점에 쪼개 정본과 대조한다(R1 실측: fr 229/230 ·
+ * en 59/61, 오탐 없음). ja·zh는 공백이 그 일을 안 해 주므로 **생성 시점에** 끝내고
+ * `data/drillRefs.json`에 굳힌다 — 실행 시점 분석기 호출 0(그래서 클라이언트가 jieba를
+ * 지고 다니지 않는다).
  *
- * ⚠ 최장일치 스캔으로 수율을 올려 봤더니(ja 95% · zh 100%) **뽑히는 게 틀렸다**:
- *   `我有时间。` → 我·**有时**·**间**   (有+时间인데 有时로 붙는다)
- *   `おにぎりを ひとつ…` → **り**       `きのうは しごと…` → きのう·**じゃ**
- * 게다가 그 오답들은 전부 **정본에 실재하는 단어**라 `buildEncounterCandidates`의 유령
- * 차단(§4.1)을 그대로 통과한다 — 오늘 학습에 「り」가 출제된다. **없는 것보다 나쁘다.**
- * ⇒ ja·zh는 기계 추출이 아니라 **`refs` 저작**으로 간다(월드 `stepEncounterRefs` 선례).
+ * ⚠ R1은 여기서 「ja·zh는 기계 추출 불가 → refs 저작」으로 닫았다. R2가 그 결론을 뒤집었다.
+ * 틀린 건 '기계'가 아니라 **경계를 어디서 얻느냐**였다. 문장 전체를 분석기에 넘기면 실제로
+ * 부서진다(`我有时间` → 我·有时·间 / `おにぎりを` → り). 그런데 zh는 v2-T 후처리가 그 사이에
+ * 들어오면서 71문장 전수 실측이 전부 맞았고(我·有·时间), ja는 **드릴 문장이 배열 문제라
+ * 사람이 이미 문절마다 띄어 뒀다** — 그 경계 안에서만 맞추면 조각 매치가 성립하지 않는다.
+ * 그래서 저작이 아니라 **파생**이 됐다. 상세·감사 = `__tests__/drillRefsBuild.test.js`.
  */
-export const DRILL_ENCOUNTER_LANGS = new Set(['en', 'fr']);
+export const DRILL_ENCOUNTER_LANGS = new Set(['en', 'fr', 'ja', 'zh']);
+
+/** 생성 시점 refs로 가는 언어 — 공백이 단어를 안 갈라 주는 쪽. */
+export const DRILL_REF_LANGS = new Set(['ja', 'zh']);
 
 /** 문장 → 조각. 공백·구두점만 경계로 본다(형태 분석 없음 — 위 주석의 이유). */
 const DRILL_TOKEN_SPLIT = /[\s.,!?;:()[\]{}"'\u2018\u2019\u201C\u201D\u2014\u2013\u00AB\u00BB\u2026]+/u;
@@ -157,6 +162,15 @@ export function drillEncounterTokens(drill) {
   const text = typeof drill?.sentence === 'string' ? drill.sentence : '';
   if (!text) return [];
   return text.split(DRILL_TOKEN_SPLIT).filter(Boolean);
+}
+
+/**
+ * 드릴 하나의 **정본 표기** — ja·zh 전용. 조각이 아니라 이미 대조가 끝난 `main`이다.
+ * 생성기가 정본에 없는 것을 떨궈 놓았으므로 여기서 다시 거를 것이 없다.
+ */
+export function drillEncounterRefs(drill) {
+  const refs = DRILL_REFS[drill?.id];
+  return Array.isArray(refs) ? refs : [];
 }
 
 /**
@@ -177,6 +191,21 @@ export function drillEncounterTokens(drill) {
 export async function recordDrillEncounters(lang, drill, { storage, lookup } = {}) {
   const code = encounterLookupLang(lang);
   if (!code || !DRILL_ENCOUNTER_LANGS.has(code)) return [];
+
+  // ja·zh — 생성 시점에 정본 대조를 끝낸 표기. 실행 시점 분석·조회 없이 그대로 얹는다.
+  // 여기서 공백 분할로 흘려보내면 안 된다: ja 문절은 조사가 붙어 있고(`あには`) zh는
+  // 문장 하나가 통째로 한 조각이 된다 — R1이 유령을 막으려고 세운 그 자리다.
+  if (DRILL_REF_LANGS.has(code)) {
+    const met = drillEncounterRefs(drill);
+    if (met.length === 0) return [];
+    try {
+      recordVocabEncounters(code, met, storage, { text: drill.sentence, source: 'drill' });
+      return met;
+    } catch {
+      return [];
+    }
+  }
+
   const tokens = drillEncounterTokens(drill);
   if (tokens.length === 0) return [];
   try {
