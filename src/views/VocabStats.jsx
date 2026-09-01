@@ -1,19 +1,56 @@
 'use client';
 
 import { useState } from 'react';
-import { detectLang, profileLevel } from '../lib/constants';
+import { LEVELS, detectLang, langNameKo, profileLevel } from '../lib/constants';
 
+/**
+ * 급수별 누적 어휘 목표. 값은 우리가 정하는 게 아니라 **각 시험의 공표 수치**를 따른다
+ * (JLPT·CEFR의 통용 어휘량, HSK는 공식 대강). 우리 콘텐츠 크기가 아니다 — 실측상
+ * 영어 레지스트리는 1,382어인데 C2 목표는 10,000이다. 「알아야 할 양」이지 「우리가 가진 양」이 아니다.
+ *
+ * 중국어(2026-09-01 신설): **HSK 3.0 2026년 7월 시행본**의 누적 어휘 수다.
+ * 2021년 초안(500·1,272·2,245·3,245·4,316·5,456)은 그 시행본으로 **대체됐으므로 쓰지 않는다.**
+ * H6(5,400)이 우리 중국어 콘텐츠 누적(6,850어)보다 작은 것은 오류가 아니라 사실이다 —
+ * HSK 6은 CEFR C2가 아니라 B2~C1 언저리라 사다리가 짧다.
+ *
+ * ⚠ **입문 급수(`OT 입문`·`A0 입문`)는 여기에 칸이 없다.** 그 구간의 목표는 「첫 급수 도달」
+ * 이고, 별도 수를 지어내면 옆 칸과 같은 퍼센트를 그리는 빈 막대가 하나 는다.
+ * 아래 `targetOf`가 라벨과 수를 **함께** 첫 급수로 넘긴다(예전에는 라벨만 「A0 입문」이고
+ * 수는 A1의 500이라 어긋났다 — 프랑스어에서 실제로 그러고 있었다).
+ * 급수가 늘거나 언어가 늘면 `vocabStatsLevels.test.js`가 먼저 걸린다.
+ */
 const LEVEL_MILESTONES = {
   Japanese: { 'N5 기초': 800, 'N4 기본': 1500, 'N3 중급': 3750, 'N2 상급': 6000, 'N1 심화': 10000 },
   English:  { 'A1 기초': 500, 'A2 초급': 1000, 'B1 중급': 2000, 'B2 상급': 4000, 'C1 고급': 7000, 'C2 마스터': 10000 },
   French:   { 'A1 기초': 500, 'A2 초급': 1000, 'B1 중급': 2000, 'B2 상급': 4000, 'C1 고급': 7000, 'C2 마스터': 10000 },
+  Chinese:  { 'H1 기초': 300, 'H2 초급': 500, 'H3 중급': 1000, 'H4 상급': 2000, 'H5 고급': 3600, 'H6 마스터': 5400 },
 };
 
-const LANG_META = {
-  Japanese: { label: '일본어',   coverageTitle: 'JLPT 급수 커버리지', defaultTarget: 'N3 중급' },
-  English:  { label: '영어',     coverageTitle: 'CEFR 급수 커버리지', defaultTarget: 'B1 중급' },
-  French:   { label: '프랑스어', coverageTitle: 'CEFR 급수 커버리지', defaultTarget: 'B1 중급' },
+/** 어휘 사다리에 칸이 없는 급수 — 값에 **왜 없는지**를 적는다(비워 두는 것이 기본값이다). */
+const LADDER_EXEMPT = {
+  'OT 입문': '오리엔테이션 — 어휘가 0개인 문법 구간이라 어휘 목표가 성립하지 않는다',
+  'A0 입문': 'CEFR에 없는 우리 자체 입문 구간 — 공표 수치가 없다',
 };
+
+/** 목표 급수·수를 함께 고른다. 사다리에 없는 급수(입문)는 **첫 급수**로 넘긴다. */
+function targetOf(lang, wanted) {
+  const ladder = LEVEL_MILESTONES[lang] || {};
+  const level = wanted && wanted in ladder ? wanted : Object.keys(ladder)[0];
+  return { level, count: ladder[level] };
+}
+
+const LANG_META = {
+  Japanese: { coverageTitle: 'JLPT 급수 커버리지', defaultTarget: 'N3 중급' },
+  English:  { coverageTitle: 'CEFR 급수 커버리지', defaultTarget: 'B1 중급' },
+  French:   { coverageTitle: 'CEFR 급수 커버리지', defaultTarget: 'B1 중급' },
+  Chinese:  { coverageTitle: 'HSK 급수 커버리지',  defaultTarget: 'H3 중급' },
+};
+
+/** 언어별 막대 색. 삼항으로 두면 **다음 언어가 조용히 한쪽 가지로 떨어진다**(이 파일의 선례). */
+const LANG_BAR = {
+  Japanese: { solid: 'var(--primary-light)', grad: 'linear-gradient(180deg, var(--primary-light) 0%, var(--primary) 100%)' },
+};
+const DEFAULT_BAR = { solid: 'var(--accent)', grad: 'linear-gradient(180deg, var(--accent) 0%, var(--primary) 100%)' };
 
 function getLangVocab(vocab, lang) {
   return vocab.filter(v => (v.language === lang) || (!v.language && detectLang(v.word_text) === lang));
@@ -24,7 +61,6 @@ function LangTabs({ activeLangs, current, onChange }) {
   return (
     <div style={{ display: 'inline-flex', gap: 4, padding: 3, background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)' }}>
       {activeLangs.map(lang => {
-        const meta = LANG_META[lang];
         const active = current === lang;
         return (
           <button key={lang} type="button"
@@ -37,7 +73,7 @@ function LangTabs({ activeLangs, current, onChange }) {
               cursor: 'pointer', transition: 'all 0.15s',
             }}
           >
-            {meta.label}
+            {langNameKo(lang)}
           </button>
         );
       })}
@@ -48,7 +84,9 @@ function LangTabs({ activeLangs, current, onChange }) {
 // section prop: undefined = 전체, 'levels' = 진행도+커버리지, 'memory' = 기억건강+스케줄, 'hardwords' = 요주의
 export default function VocabStats({ vocab, profile, section }) {
   const profileLangs = profile?.learning_language || [];
-  const activeLangs = ['Japanese', 'English', 'French'].filter(l =>
+  // 언어 목록은 정본(`LEVELS`)에서 나온다 — 지역 목록을 또 만들면 언어가 늘 때마다 갈린다
+  // (실측: 중국어가 이 하드코딩 하나 때문에 급수 진도를 못 보고 있었다).
+  const activeLangs = Object.keys(LEVELS).filter(l =>
     profileLangs.includes(l) || vocab.some(v => (v.language === l) || (!v.language && detectLang(v.word_text) === l))
   );
 
@@ -69,14 +107,13 @@ export default function VocabStats({ vocab, profile, section }) {
         const total = langVocab.length;
         const mastered = langVocab.filter(v => (v.interval ?? 0) >= 30).length;
         // 컬럼 선택은 정본으로 — 삼항 체인은 언어가 늘 때마다 마지막 가지가 오답이 된다.
-        const targetLevel = profileLevel(profile, effLevelLang) || meta.defaultTarget;
-        const targetCount = LEVEL_MILESTONES[effLevelLang][targetLevel] || Object.values(LEVEL_MILESTONES[effLevelLang])[0];
+        const { level: targetLevel, count: targetCount } =
+          targetOf(effLevelLang, profileLevel(profile, effLevelLang) || meta.defaultTarget);
         const pct = Math.min(100, Math.round((total / targetCount) * 100));
-        const barColor = effLevelLang === 'Japanese' ? 'var(--primary-light)' : 'var(--accent)';
+        const bar = LANG_BAR[effLevelLang] || DEFAULT_BAR;
+        const barColor = bar.solid;
         const levels = Object.entries(LEVEL_MILESTONES[effLevelLang]);
-        const fillGrad = effLevelLang === 'Japanese'
-          ? 'linear-gradient(180deg, var(--primary-light) 0%, var(--primary) 100%)'
-          : 'linear-gradient(180deg, var(--accent) 0%, var(--primary) 100%)';
+        const fillGrad = bar.grad;
         return (
           <div className="card" >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, gap: 10, flexWrap: 'wrap' }}>
