@@ -8,6 +8,7 @@ import { tag as jiebaTag } from 'jieba-wasm';
 import { pinyin } from 'pinyin-pro';
 import { ZH_NEUTRAL_TONE } from './zhNeutralTone';
 import { ZH_PINYIN_FIX } from './zhPinyinFix';
+import { contextPinyin } from './zhPinyinContext';
 import { fixZhTagged } from './zhTokenFix';
 
 // jieba 품사 태그(중국어 관례) → 한국어 표기. 미지 태그는 null(뜻 조회 단계에서 채워질 수 있음).
@@ -64,7 +65,8 @@ export function tokenizeZhLine(line) {
   };
 
   const tokens = [];
-  for (const { word, tag, posAll, baseForm } of tagged) {
+  for (let ti = 0; ti < tagged.length; ti++) {
+    const { word, tag, posAll, baseForm } = tagged[ti];
     const text = word;
     if (!text) continue;
     // x(기타)·w(기호) 태그는 문장부호가 관례지만, jieba는 사전에 없는 한자 조합
@@ -77,9 +79,12 @@ export function tokenizeZhLine(line) {
     // 오버라이드한다(customPinyin 전역 등록은 단어 경계 오염 실측으로 배제).
     const lineSyllables = takeSyllables(chars);
     const override = !isPunct && (ZH_NEUTRAL_TONE[text] ?? ZH_PINYIN_FIX[text]);
+    // 세 번째 층(zhPinyinContext): 토큰 정확 일치로 못 잡는 구조조사·다음자를 태그·이웃으로 가른다.
+    const contextual = !isPunct && !override ? contextPinyin(tagged, ti, lineSyllables) : null;
     const syllables = override
       ? override.split(' ')
-      : (lineSyllables ?? [pinyin(text, { toneType: 'symbol', type: 'string' })]).filter(Boolean);
+      : contextual
+        ?? (lineSyllables ?? [pinyin(text, { toneType: 'symbol', type: 'string' })]).filter(Boolean);
     tokens.push({
       text,
       // 중국어는 굴절이 없어 표면형이 곧 표제어. 유일 예외 = 이합사 삽입형(R4a —
