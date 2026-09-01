@@ -522,6 +522,10 @@ const jaGeom = async (markup) => {
     const chars = [...ruby.querySelectorAll('.word-fit__char')].map((e) => e.getBoundingClientRect());
     const surf = document.querySelector('.surface').getBoundingClientRect();
     const fit = document.querySelector('.word-fit').getBoundingClientRect();
+    const box = ruby.getBoundingClientRect();
+    // 인접 간격 n+1개(양끝 포함) — space-evenly면 전부 같다
+    const gaps = [box.left, ...chars.map((c) => c.right)]
+      .map((l, i) => (i < chars.length ? chars[i].left : box.right) - l);
     return {
       overTop: surf.top - rt.top,       // 줄 위로 삐진 양(양수면 위반)
       overLeft: fit.left - rt.left,     // 줄머리로 삐진 양(양수면 위반)
@@ -529,6 +533,10 @@ const jaGeom = async (markup) => {
       blockH: fit.height,
       firstL: chars[0]?.left, lastR: chars[chars.length - 1]?.right,
       rtL: rt.left, rtR: rt.right,
+      boxW: box.width,
+      charSum: chars.reduce((a, c) => a + c.width, 0),
+      em: parseFloat(getComputedStyle(ruby).fontSize),
+      gaps,
     };
   });
 };
@@ -544,17 +552,45 @@ test('요미가 줄머리·줄끝으로 삐치지 않는다 — JLReq 금지 조
   }
 });
 
-test('요미가 길면 본체를 벌린다 — 짧으면 벌리지 않는다(分散配置)', async () => {
-  // 벌림의 방향이 규칙의 본체다: 요미가 길 때만 본체가 요미 폭까지 퍼지고,
-  // 요미가 짧으면(図書館) 본체는 그대로이고 요미가 그 위에 가운데로 얹힌다.
-  const wide = await jaGeom(JA_CARD('志望者', 'こころざしぼうしゃ', 4.5, 9));
-  const narrow = await jaGeom(JA_CARD('図書館', 'としょかん', 3, 5));
-  // 요미 > 본체: 본체 양끝이 요미 폭 안쪽에 든다(퍼졌다)
-  assert.ok(wide.firstL >= wide.rtL - 0.5 && wide.lastR <= wide.rtR + 0.5,
-    `志望者: 본체가 요미 폭 밖에 있다 — 본체 ${wide.firstL}~${wide.lastR} vs 요미 ${wide.rtL}~${wide.rtR}`);
-  // 요미 < 본체: 요미가 본체 폭 안쪽(가운데)에 든다 — 본체는 안 퍼진다
-  assert.ok(narrow.rtL >= narrow.firstL - 0.5 && narrow.rtR <= narrow.lastR + 0.5,
-    `図書館: 요미가 본체 폭 밖으로 나갔다 — 요미 ${narrow.rtL}~${narrow.rtR} vs 본체 ${narrow.firstL}~${narrow.lastR}`);
+test('요미 칸 폭 = max(본체 폭, 요미 예약) — 예약식이 分散配置의 조건이다', async () => {
+  // ⚠ 여기서 **렌더된 요미 폭**을 기준으로 삼으면 안 된다. 예약은 `--yomi-n × 0.5em`
+  // 이라는 산술이고, 실제 가나가 그 폭으로 그려지는지는 러너 폰트에 달렸다 —
+  // CJK 폰트가 없는 CI에서는 가나가 0.5em보다 좁게 떨어져 `志望者`조차 **본체가 이겼다**
+  // (실측 본체 225px vs 요미 216px). 그래서 어느 쪽이 이기는지를 전제하지 않고
+  // **등식만** 단언한다(이 파일 머리의 이식성 규칙 그대로다).
+  for (const [k, y, n, yn] of [['志望者', 'こころざしぼうしゃ', 4.5, 9], ['志', 'こころざし', 2.5, 5],
+    ['勉強', 'べんきょう', 2.5, 5], ['図書館', 'としょかん', 3, 5]]) {
+    const g = await jaGeom(JA_CARD(k, y, n, yn));
+    const want = Math.max(g.charSum, yn * 0.5 * g.em);
+    assert.ok(Math.abs(g.boxW - want) <= 0.5,
+      `${k}: 요미 칸 폭이 max(본체 ${g.charSum.toFixed(2)}, 예약 ${(yn * 0.5 * g.em).toFixed(2)})가 아니다 — ${g.boxW}`);
+  }
+});
+
+test('예약이 이기면 본체를 고르게 벌린다 — 지면 벌리지 않는다(分散配置)', async () => {
+  // 분기를 폰트에 맡기지 않는다. 먼저 예약 없이 본체 폭을 **재고**, 그 실측 위에서
+  // 반드시 이기는 값과 반드시 지는 값을 만들어 양쪽 가지를 모두 밟는다.
+  const bare = await jaGeom(JA_CARD('志望者', 'こころざしぼうしゃ', 4.5, null));
+  assert.ok(Math.abs(bare.boxW - bare.charSum) <= 0.5, '예약이 없으면 칸은 본체 폭이어야 한다');
+  assert.ok(bare.gaps.every((g) => Math.abs(g) <= 0.5),
+    `예약이 없는데 본체가 벌어졌다: ${bare.gaps}`);
+
+  const nWide = Math.ceil((bare.charSum / bare.em) * 2) + 2;   // 예약 > 본체 확정
+  const wide = await jaGeom(JA_CARD('志望者', 'こころざしぼうしゃ', 4.5, nWide));
+  assert.ok(Math.abs(wide.boxW - nWide * 0.5 * wide.em) <= 0.5,
+    `예약이 이겼는데 칸이 예약 폭이 아니다: ${wide.boxW}`);
+  // space-evenly — 양끝을 포함한 네 간격이 **모두 같고** 0보다 크다
+  const spread = (wide.boxW - wide.charSum) / wide.gaps.length;
+  assert.ok(spread > 0.5, `예약이 이겼는데 벌어지지 않았다: 여백 ${spread}`);
+  for (const g of wide.gaps) {
+    assert.ok(Math.abs(g - spread) <= 0.5, `간격이 고르지 않다 — space-evenly가 아니다: ${wide.gaps}`);
+  }
+
+  const tight = await jaGeom(JA_CARD('志望者', 'こころざしぼうしゃ', 4.5, 1)); // 예약 0.5em < 본체
+  assert.ok(Math.abs(tight.boxW - tight.charSum) <= 0.5,
+    `예약이 졌는데 칸이 본체 폭이 아니다: ${tight.boxW} vs ${tight.charSum}`);
+  assert.ok(tight.gaps.every((g) => Math.abs(g) <= 0.5),
+    `예약이 졌는데 본체가 벌어졌다: ${tight.gaps}`);
 });
 
 test('블록 세로는 그대로다 — 分散配置는 가로 처리다', async () => {

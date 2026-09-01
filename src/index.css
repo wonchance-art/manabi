@@ -5844,7 +5844,10 @@ a.grammar-btn {
    중국어 토큰의 병음 — 라틴은 0.5em보다 훨씬 좁다). */
 .word-fit ruby[data-yomi] {
   display: inline-flex;
-  width: max-content;
+  /* `width: max-content`를 함께 뒀다가 걷어냈다 — **무동작**이었다. 항목이 전부 글자
+     한 칸이라 이 flex 상자는 min-content == max-content이고, 그래서 자리가 모자라도
+     줄어들 여지가 없다(실측: 300px 칸에 1024px 상자를 넣어도 auto/max-content 동일).
+     변이가 안 잡히길래 재보고 지웠다 — 계약이 못 잡는 줄은 남길 이유가 없다. */
   min-width: calc(var(--yomi-n, 0) * 0.5em);
   justify-content: space-evenly;
 }
