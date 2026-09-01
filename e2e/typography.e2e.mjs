@@ -327,19 +327,28 @@ test('옛 구조 대조군 — 래퍼가 없으면 실제로 전체 폭까지 �
   assert.ok(w[0] < CHROME_W, `inline-block 배지만 내용 폭이었다: ${w[0]}`);
 });
 
-test('모바일 390px — 배지가 눌리지 않고 다음 줄로 흐른다', async () => {
+test('좁은 화면 — 배지가 눌리지 않고 다음 줄로 흐른다', async () => {
   // `flex-wrap`이 지키는 것은 **넘침이 아니라 모양**이다. 실측: wrap을 빼도 넘침은 0인데
   // (flex 항목이 기본으로 줄어든다) 배지가 눌려 알약 **안에서 글자가 접힌다**
   //   wrap 있음 → 2줄, 폭 [140,70,192] 높이 30
   //   wrap 없음 → 1줄, 폭 [130,66,178] 높이 **50**
   // 그래서 넘침만 보면 회귀를 놓친다(돌연변이 실측: flex-wrap 제거가 생존했다).
-  await page.setContent(chromePage(chromeHeader, 900));
+  //
+  // ⚠ 폭을 390px로 못 박았더니 **CJK 폰트가 없는 러너에서 셋이 한 줄에 들어가** 깨졌다
+  //    (이 파일 머리의 이식성 규칙을 내가 어겼다: 절대 px가 아니라 관계로 단언할 것).
+  //    그래서 좁은 폭을 **측정값에서 끌어낸다** — 가장 넓은 배지는 들어가되 셋이 다 서지는
+  //    못하는 폭. 폰트가 무엇이든 같은 상황이 만들어진다.
+  await page.setContent(chromePage(chromeHeader));
   await settle();
   const wide = await page.$$eval('.viewer-badge', (els) => els.map((e) => {
     const r = e.getBoundingClientRect(); return { w: Math.round(r.width), h: Math.round(r.height) };
   }));
+  const widest = Math.max(...wide.map((r) => r.w));
+  const total = wide.reduce((a, r) => a + r.w, 0) + 8 * (wide.length - 1);
+  const narrowW = widest + 20;
+  assert.ok(narrowW < total, `좁은 폭이 한 줄 총폭보다 작아야 상황이 성립한다: ${narrowW} vs ${total}`);
 
-  await page.setContent(chromePage(chromeHeader, 390));
+  await page.setContent(chromePage(chromeHeader, narrowW));
   await settle();
   const narrow = await page.$$eval('.viewer-badge', (els) => els.map((e) => {
     const r = e.getBoundingClientRect(); return { y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) };
@@ -349,7 +358,7 @@ test('모바일 390px — 배지가 눌리지 않고 다음 줄로 흐른다', a
   }));
 
   assert.ok(sw <= cw, `가로 넘침 ${sw - cw}px`);
-  assert.ok(new Set(narrow.map((r) => r.y)).size > 1, '좁은 화면에서는 줄을 나눠 흘러야 한다');
+  assert.ok(new Set(narrow.map((r) => r.y)).size > 1, `좁은 화면(${narrowW}px)에서는 줄을 나눠 흘러야 한다`);
   narrow.forEach((r, i) => {
     assert.equal(r.w, wide[i].w, `배지 ${i}가 눌렸다(폭 ${wide[i].w}→${r.w}) — 줄바꿈 대신 압축됐다`);
     assert.equal(r.h, wide[i].h, `배지 ${i}가 두 줄이 됐다(높이 ${wide[i].h}→${r.h}) — 알약 안에서 글자가 접혔다`);
