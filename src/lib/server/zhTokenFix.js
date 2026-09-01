@@ -10,6 +10,8 @@ import ZH_POS_FIX_HSK from './data/zhPosFixHsk.json';
 import ZH_SEPARABLE_HAND from './data/zhSeparable.json';
 import ZH_SEPARABLE_HSK from './data/zhSeparableHsk.json';
 import { ZH_KEEP_MERGED } from './zhKeepMerged';
+import { ZH_CLASSIFIER, ZH_DEMONSTRATIVE } from './zhClassifiers';
+import ZH_HSK_LEVEL from '../data/zhHskLevel.json';
 
 // 이합사 사전 2층(대량 조달 — 오너 승인 2026-08-30): 수제 55(정본·선별) + 공식 HSK
 // ∥ 분철 마커 수확 478(scripts/build-zh-hsk.mjs ③ — 국제중문교육 등급표준의 이합사
@@ -77,6 +79,34 @@ function isLoneAdjective(text) {
   return t.length === 1 && t[0].tag === 'a';
 }
 
+/** 단독으로 태깅했을 때 명사 한 덩이인가 — 양사 규칙(⑥)의 게이트. */
+function isLoneNoun(text) {
+  const t = jiebaTag(text, false);
+  return t.length === 1 && /^n/.test(t[0].tag);
+}
+
+/**
+ * 실단어 방벽 — 여기 걸리면 **무슨 일이 있어도 안 가른다**.
+ *
+ * HSK 표제어 10,935종(`zhHskLevel.json`)이 방벽의 본체다. 실측(2026-09-01): 후보 규칙을
+ * 표제어 전량에 돌려 **발화 0건**. `本来`·`个人`·`条件`·`位置`·`部分`·`家人`·`头发`·
+ * `节目`·`门口`·`把握`·`座位`처럼 양사 글자로 시작하는 실단어가 전부 이 표에 있다.
+ *
+ * 표에 구멍이 하나 있다 — `这个`·`那个`·`一个`가 없다(표가 `这`와 `个`를 따로 싣는다).
+ * 이것들은 학습자에게 한 단어이므로 `ZH_KEEP_MERGED`(실단어라 병합 유지 — T R1이 만든
+ * 같은 목적의 목록)로 막는다. 목록을 새로 세우지 않고 기존 부품을 쓴다.
+ */
+function isRealWord(word) {
+  return !!ZH_HSK_LEVEL[word] || ZH_KEEP_MERGED.has(word);
+}
+
+/** 바로 앞 토큰이 「수량 자리」인가 — 양사가 양사로 읽히는 유일한 자리. */
+function afterCountSlot(out) {
+  const prev = out[out.length - 1];
+  if (!prev) return false;
+  return prev.tag === 'm' || prev.tag === 'mq' || ZH_DEMONSTRATIVE.has(prev.word);
+}
+
 /**
  * x-조각 하나를 out에 넣는다 — 여러 글자면 HMM 없이 되가르고, 아니면 그대로.
  * 특수 규칙(상조사·个)이 떼어내고 **남긴 조각**도 반드시 여기를 지나야 한다:
@@ -91,6 +121,46 @@ function pushXPiece(out, text) {
     }
   }
   out.push({ word: text, tag: 'x' });
+}
+
+/**
+ * 양사+명사 조각을 out에 넣는다 — 가를 수 있으면 갈라서, 아니면 통째로.
+ *
+ * **앞자리 조건이 규칙의 정밀도 전부다.** 양사는 수사·지시사 뒤에서만 양사로 읽힌다.
+ * 앞자리를 안 보면 `块头很大`의 `块头`(체격 — 실단어인데 HSK 표에 없다)가 갈린다
+ * (실측: 앞자리 조건 없이 3건 발화 중 1건이 이 오분리였다). `这本书`·`一本书`에서는
+ * 앞에 `这`/`一`이 이미 나와 있어 조건이 저절로 선다.
+ *
+ * @returns {boolean} 갈랐으면 true.
+ */
+function pushClassifierPiece(out, text, { onlyWhenSplit = false } = {}) {
+  const chars = [...text];
+  const rest = chars.slice(1).join('');
+  const splittable = chars.length >= 2
+    && ZH_CLASSIFIER.has(chars[0])
+    && !isRealWord(text)
+    && afterCountSlot(out)
+    && isLoneNoun(rest);
+  if (splittable) {
+    out.push({ word: chars[0], tag: 'q', noPosAll: true });
+    out.push({ word: rest, tag: 'n' });
+    return true;
+  }
+  if (!onlyWhenSplit) {
+    // 지시사를 뗀 자리에 양사 한 글자만 남았으면 그건 **구조로 확정된 양사**다 —
+    // 물어볼 필요가 없다. (물어보면 틀린다: jieba 단독 태깅은 `条`를 명사, `件`을
+    // 미상으로 준다 — 실측. 자리를 아는 쪽이 사전보다 정확한 유일한 경우다.)
+    if (chars.length === 1 && ZH_CLASSIFIER.has(text)) {
+      out.push({ word: text, tag: 'q', noPosAll: true });
+      return false;
+    }
+    // 그 밖의 나머지는 jieba에게 다시 묻는다 — 태그를 손으로 찍으면 그 자리가 곧 다음
+    // 오태그가 된다(`条件`을 `n`으로 박는 식). 여러 조각으로 갈리면 그대로 편다.
+    const pieces = jiebaTag(text, false);
+    if (pieces.length > 1) for (const pc of pieces) out.push({ word: pc.word, tag: pc.tag });
+    else out.push({ word: text, tag: pieces[0]?.tag ?? 'n' });
+  }
+  return false;
 }
 
 /**
@@ -115,6 +185,15 @@ export function fixZhTagged(tagged) {
     }
     // x-조각의 상조사 분리(선두 또는 말미 1자) + 양사 个 꼬리 분리(R4a-C: 帮个/x → 帮+个)
     if (tag === 'x' && HAS_HANZI.test(word)) {
+      // 허용목록은 **x-블록 전체의 방벽**이다 — 특수 규칙(상조사·个 꼬리)보다 먼저 본다.
+      // 한때 이 검사가 pushXPiece 안에만 있었고, 그때는 돌연변이가 생존했다(등재어 중
+      // 过·了·着·个로 끝나는 것이 하나도 없어 두 자리가 등가였다). v2-T R3가 `这个`를
+      // 등재하자 个 꼬리 규칙이 방벽을 **우회해** 这+个로 갈랐다 — 계약이 잡았다.
+      // 「지금 등가라서 지운다」가 언제 틀리는지를 보여 준 자리라 주석으로 박아 둔다.
+      if (ZH_KEEP_MERGED.has(word)) {
+        out.push(entry);
+        continue;
+      }
       const chars = [...word];
       if (chars.length >= 2 && ASPECT_TAG[chars[0]]) {
         out.push({ word: chars[0], tag: ASPECT_TAG[chars[0]] });
@@ -164,6 +243,23 @@ export function fixZhTagged(tagged) {
         out.push({ word: adv, tag: 'd', noPosAll: true });
         out.push({ word: word.slice(adv.length), tag: 'a' });
         continue;
+      }
+      // ⑥ 양사 계열 (v2-T R3). ⑤와 같이 **사전에 있는** 병합이라 x가 아니다.
+      //
+      // ⚠ 설계가 잡은 표적(`这本`)은 실물에 없다(재측 2026-09-01). `这本书`는
+      //    `这`+**`本书`** 로 갈린다 — 양사가 앞 지시사가 아니라 **뒤 명사에 붙는다**
+      //    (`这首歌`→`这`+`首歌`도 같다). 그래서 두 갈래를 따로 잡는다.
+      if (!isRealWord(word)) {
+        const chars = [...word];
+        // ⑥-a 지시사 + 양사 (`这件`·`那条`·`那位`·`那本书`) — 지시사를 뗀다.
+        //     `这样`·`那样`·`这里`·`那些`는 样·里·些가 양사가 아니라 자동으로 빠진다.
+        if (chars.length >= 2 && ZH_DEMONSTRATIVE.has(chars[0]) && ZH_CLASSIFIER.has(chars[1])) {
+          out.push({ word: chars[0], tag: 'r', noPosAll: true });
+          pushClassifierPiece(out, chars.slice(1).join(''));
+          continue;
+        }
+        // ⑥-b 양사 + 명사 (`本书`·`首歌`) — 양사를 뗀다.
+        if (pushClassifierPiece(out, word, { onlyWhenSplit: true })) continue;
       }
     }
     out.push(entry);
