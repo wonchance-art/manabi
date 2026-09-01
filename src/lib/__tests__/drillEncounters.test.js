@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-  DRILL_ENCOUNTER_LANGS, drillEncounterTokens, recordDrillEncounters,
+  DRILL_ENCOUNTER_LANGS, DRILL_REF_LANGS, drillEncounterTokens, drillEncounterRefs,
+  recordDrillEncounters,
 } from '../drillSrs.js';
 import { loadVocabEncounters, loadVocabEncounterContexts } from '../../components/world/vocabEncounters.js';
 import { loadRefVocabLookup } from '../refVocabLookup.js';
@@ -25,7 +26,15 @@ import { sliceBetween } from './helpers/sliceBetween.js';
  *   최장일치 스캔으로 CJK 수율을 올리면 95~100%가 되지만 **뽑히는 게 틀린다**
  *   (`我有时间`→我·有时·间 / `おにぎりを`→り). 그 오답들은 **정본에 실재하는 단어**라
  *   소비 시점 유령 차단을 통과해 오늘 학습에 출제된다 — 없는 것보다 나쁘다.
- * ⇒ 공백 언어만 기계로 잇고, ja·zh는 `refs` 저작(R2)으로 간다.
+ * ⇒ 공백 언어만 기계로 잇는다(R1).
+ *
+ * ── R2가 그 결론의 절반을 뒤집었다 (2026-09-01)
+ *
+ * 「ja·zh는 기계 추출 불가」는 **문장 전체를 분석기에 넘겼을 때**의 실측이었다. 경계를
+ * 다른 데서 얻으면 성립한다: zh는 v2-T 후처리가 들어온 뒤 71문장 전수가 맞고(我·有·时间),
+ * ja는 배열 드릴이라 **사람이 문절마다 띄어 둔 것**을 그대로 쓰면 조각 매치가 안 생긴다.
+ * 그래서 저작이 아니라 **생성 시점 파생**(`data/drillRefs.json`)으로 갔다 — 드릴 133개·
+ * 표기 402개. 생성기·감사·전수 실측 = `drillRefsBuild.test.js`.
  */
 
 const read = (f) => fs.readFileSync(path.join(process.cwd(), f), 'utf8');
@@ -64,23 +73,39 @@ describe('① 조각 추출 — 순수, 그리고 문장이 있는 드릴만', (
 });
 
 describe('② 대상 언어 — 공백으로 갈리는 언어만', () => {
-  it('en·fr만이다', () => {
-    expect([...DRILL_ENCOUNTER_LANGS].sort()).toEqual(['en', 'fr']);
+  it('네 언어 전부 — 다만 ja·zh는 얻는 길이 다르다', () => {
+    expect([...DRILL_ENCOUNTER_LANGS].sort()).toEqual(['en', 'fr', 'ja', 'zh']);
+    expect([...DRILL_REF_LANGS].sort()).toEqual(['ja', 'zh']);
+    // refs 언어는 만남 언어의 부분집합이어야 한다 — 아니면 조용히 죽은 갈래가 생긴다.
+    for (const code of DRILL_REF_LANGS) expect(DRILL_ENCOUNTER_LANGS.has(code)).toBe(true);
   });
 
-  it('ja·zh는 조각이 나와도 기록하지 않는다 — 오분리가 정본을 통과해 출제된다', async () => {
+  it('ja·zh는 조각을 절대 쓰지 않는다 — refs에 없는 드릴은 아무것도 기록하지 않는다', async () => {
     const storage = memStorage();
-    // 조회기가 무엇을 주든 상관없다: 언어 게이트가 먼저 막아야 한다.
-    const lookup = fakeLookup(new Map([['あには', '兄'], ['我喝茶。', '我']]));
-    expect(await recordDrillEncounters('Japanese', { sentence: 'あには かいしゃいんです。' }, { storage, lookup })).toEqual([]);
-    expect(await recordDrillEncounters('Chinese', { sentence: '我喝茶。' }, { storage, lookup })).toEqual([]);
+    // 조회기가 그 조각을 **안다고 해도** 상관없다: ja·zh 경로는 조회기를 아예 부르지 않는다.
+    // 오분리가 정본을 통과해 출제되던 자리가 여기다(`おにぎりを`→り).
+    const lookup = fakeLookup(new Map([['あには', '兄'], ['我喝茶。', '我'], ['あには かいしゃいんです。', '兄']]));
+    const ja = { id: 'ja-refs에-없는-드릴', sentence: 'あには かいしゃいんです。' };
+    const zh = { id: 'zh-refs에-없는-드릴', sentence: '我喝茶。' };
+    expect(await recordDrillEncounters('Japanese', ja, { storage, lookup })).toEqual([]);
+    expect(await recordDrillEncounters('Chinese', zh, { storage, lookup })).toEqual([]);
     expect(loadVocabEncounters('ja', storage).size).toBe(0);
     expect(loadVocabEncounters('zh', storage).size).toBe(0);
   });
 
-  it('실측 근거가 코드 옆에 남아 있다 — 다음 세션이 취향으로 CJK를 켜지 않게', () => {
+  it('ja·zh는 생성된 refs를 그대로 얹는다 — 실행 시점 분석 없이', async () => {
+    const storage = memStorage();
+    const drill = { id: 'ja-n506-d5', sentence: 'バスで 会社に 行きます。' };
+    const refs = drillEncounterRefs(drill);
+    expect(refs.length).toBeGreaterThan(0);
+    // 조회기를 주지 **않는다** — 이 경로가 조회기 없이 성립해야 클라이언트가 가벼워진다.
+    expect(await recordDrillEncounters('Japanese', drill, { storage })).toEqual(refs);
+    expect([...loadVocabEncounters('ja', storage)].sort()).toEqual([...refs].sort());
+  });
+
+  it('실측 근거가 코드 옆에 남아 있다 — 다음 세션이 취향으로 되돌리지 않게', () => {
     const src = read('src/lib/drillSrs.js');
-    for (const mark of ['有时', 'stepEncounterRefs', '229/230']) {
+    for (const mark of ['有时', '229/230', 'drillRefsBuild']) {
       expect(src, `실측 근거 「${mark}」가 사라졌다`).toContain(mark);
     }
   });
