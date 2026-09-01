@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { detectLang } from '../lib/constants';
+import { detectLang, profileLevel } from '../lib/constants';
 
 const LEVEL_MILESTONES = {
   Japanese: { 'N5 기초': 800, 'N4 기본': 1500, 'N3 중급': 3750, 'N2 상급': 6000, 'N1 심화': 10000 },
@@ -68,9 +68,8 @@ export default function VocabStats({ vocab, profile, section }) {
         const langVocab = getLangVocab(vocab, effLevelLang);
         const total = langVocab.length;
         const mastered = langVocab.filter(v => (v.interval ?? 0) >= 30).length;
-        const targetLevel = (effLevelLang === 'Japanese' ? profile?.learning_level_japanese
-          : effLevelLang === 'English' ? profile?.learning_level_english
-          : profile?.learning_level_french) || meta.defaultTarget;
+        // 컬럼 선택은 정본으로 — 삼항 체인은 언어가 늘 때마다 마지막 가지가 오답이 된다.
+        const targetLevel = profileLevel(profile, effLevelLang) || meta.defaultTarget;
         const targetCount = LEVEL_MILESTONES[effLevelLang][targetLevel] || Object.values(LEVEL_MILESTONES[effLevelLang])[0];
         const pct = Math.min(100, Math.round((total / targetCount) * 100));
         const barColor = effLevelLang === 'Japanese' ? 'var(--primary-light)' : 'var(--accent)';
