@@ -229,10 +229,18 @@ describe('한자 대조 배선 계약', () => {
     expect(src).not.toMatch(/hanjaKoOf|hunsCoverWord|readHanjaKo/);
   });
 
-  it('일본식 자형 표기(오너 확정) — 훈음 글자는 신자체 단독, 日 어형은 나열과 같으면 요미만, ⚠는 日 줄 통합', () => {
+  // v2-S(2026-09-01)로 훈음 나열 줄이 폐지되면서 **글자별** `jaFormOf(ch)` 호출처가
+  // 사라졌다. 훈음은 이제 표제어 글자(간체) 아래 루비로 붙으므로 나열이 자기 글자를
+  // 다시 그릴 일이 없다. 글자별 신자체는 사라진 게 아니라 **글자 카드**로 옮겨 앉았고
+  // (char-inspect의 日 칩 — 繁·简·正까지 함께, 탭 이동까지 된다) 단어 수준 대조는 日
+  // 줄이 그대로 진다. 그래서 이 계약은 '어디서 신자체를 보는가'를 두 자리로 고정한다.
+  it('일본식 자형 표기(오너 확정) — 글자별은 글자 카드 日 칩, 단어는 日 줄(나열과 같으면 요미만·⚠ 통합)', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
     expect(src).toContain("import('../lib/data/hanjaJa.json')");
-    expect(src).toMatch(/jaFormOf\(ch\)/);
+    // 글자별 신자체 — 글자 카드 헤더의 자형 칩(탭하면 그 자형 카드로)
+    expect(src).toMatch(/formChip\('日',/);
+    expect(src).toMatch(/jaTable: hanjaJaTable/);
+    // 단어 수준 — 日 줄과 ⚠ 경고
     expect(src).toMatch(/formatJaRef\(ja, selectedToken\.text, jaFormOf\(selectedToken\.text\)\)/);
     expect(src).toMatch(/⚠ \{jaFormOf\(selectedToken\.text\)\}는 일본어로/);
   });

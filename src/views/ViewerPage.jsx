@@ -1527,6 +1527,9 @@ export default function ViewerPage() {
             onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), toggleInspectChar(ch, key, reading))}
           >{ch}</span>
         ) : <span key={key}>{ch}</span>;
+        // 훈음 하단 루비(v2-S) — 글자별 조회표. `hanjaHunOf`가 한자 대조 토글·테이블 로드를
+        // 이미 게이트하므로 여기선 글자→훈음만 꺼낸다. 없는 글자는 그 셀을 비운다.
+        const hunByChar = new Map((hanjaHunOf(selectedToken.text) || []).map(({ ch, label }) => [ch, label]));
         return (
           <div className="word-fit-wrap">
             <div
@@ -1536,14 +1539,23 @@ export default function ViewerPage() {
             >
               <span className="surface">
                 {rubySegs
-                  ? rubySegs.map((seg, i) =>
-                      seg.kanji
-                        ? <ruby key={i} data-pinyin={seg.pinyin ? '1' : undefined} data-yomi={seg.pinyin ? undefined : '1'}>
-                            {[...seg.kanji].map((ch, j) => charSpan(ch, `${i}:${j}`, seg.pinyin ? seg.reading : null))}
-                            <span className={['rt-an', showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : ''].filter(Boolean).join(' ')}>{seg.reading}</span>
-                          </ruby>
-                        : <span key={i}>{seg.plain}</span>
-                    )
+                  ? rubySegs.map((seg, i) => {
+                      if (!seg.kanji) return <span key={i}>{seg.plain}</span>;
+                      const chars = [...seg.kanji];
+                      // 훈음은 글자 **아래**(v2-S) — 한 글자만 담은 루비 칸에서만 단다.
+                      // 병음 경로는 언제나 글자당 한 칸이라 전부 해당되고, 혼종 토큰
+                      // (T恤·QQ号 — 라틴이 섞여 병음 격자가 성립하지 않는다)의 한자
+                      // 덩어리도 한 글자면 같이 받는다. 두 글자 이상이 한 칸에 들어간
+                      // 세그먼트는 어느 글자의 훈음인지 가리킬 수 없어 비운다.
+                      const hun = chars.length === 1 ? hunByChar.get(seg.kanji) : null;
+                      return (
+                        <ruby key={i} data-pinyin={seg.pinyin ? '1' : undefined} data-yomi={seg.pinyin ? undefined : '1'}>
+                          {chars.map((ch, j) => charSpan(ch, `${i}:${j}`, seg.pinyin ? seg.reading : null))}
+                          <span className={['rt-an', showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : ''].filter(Boolean).join(' ')}>{seg.reading}</span>
+                          {hun && <span className="rt-hun">{hun}</span>}
+                        </ruby>
+                      );
+                    })
                   : [...selectedToken.text].map((ch, j) => charSpan(ch, `p:${j}`, null))}
               </span>
             </div>
@@ -1726,26 +1738,17 @@ export default function ViewerPage() {
           글자 나열과 같으면 요미만(#1041 원리의 단어판), ⚠ 경고는 日 줄에 통합. */}
       {(() => {
         const ja = materialLang === 'Chinese' && showHanjaKo ? getJaRef(editDictEntry) : null;
-        const huns = hanjaHunOf(selectedToken.text);
         const jr = ja ? formatJaRef(ja, selectedToken.text, jaFormOf(selectedToken.text)) : null;
         const warn = getJaWarn(ja);
-        // 음 단독 줄은 폐지(2026-08-23 오너 확정) — 훈 없는 글자도 음만으로 훈음 나열에
-        // 편입돼(listHanjaHunEum 폴백) 나열이 단어의 유일한 음 앵커다.
-        if (!jr && !warn && !huns) return null;
+        // 훈음 나열 줄은 폐지했다(v2-S) — 헤더에 `杯子`가 이미 있는데 여기서 글자를 **다시
+        // 그리고** 있었다. 훈음은 표제어 글자 **아래 루비**로 옮겼고(세로 증가 0, 놀던
+        // 아래 여백을 쓴다) 이 줄이 사라지면서 줄 하나가 더 회수된다.
+        // ※ 日 자형 줄과 ⚠ 경고는 남긴다 — 훈음만 뽑아냈다.
+        if (!jr && !warn) return null;
         return (
           <div style={{ fontSize: '0.82rem', marginBottom: 12 }}>
-            {huns && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 14px' }}>
-                {huns.map(({ ch, label }, i) => (
-                  <span key={`${ch}-${i}`} style={{ whiteSpace: 'nowrap' }}>
-                    <span lang="ja" style={{ fontWeight: 700 }}>{jaFormOf(ch)}</span>{' '}
-                    <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
-                  </span>
-                ))}
-              </div>
-            )}
             {(jr || warn) && (
-              <div style={{ color: 'var(--text-muted)', marginTop: 2 }}>
+              <div style={{ color: 'var(--text-muted)' }}>
                 日{' '}
                 {jr && <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{jr}</span>}
                 {warn && (
