@@ -96,9 +96,10 @@ function isLoneNoun(text) {
  * 이것들은 학습자에게 한 단어이므로 `ZH_KEEP_MERGED`(실단어라 병합 유지 — T R1이 만든
  * 같은 목적의 목록)로 막는다. 목록을 새로 세우지 않고 기존 부품을 쓴다.
  */
-function isRealWord(word) {
+export function isZhRealWord(word) {
   return !!ZH_HSK_LEVEL[word] || ZH_KEEP_MERGED.has(word);
 }
+const isRealWord = isZhRealWord;
 
 /** 바로 앞 토큰이 「수량 자리」인가 — 양사가 양사로 읽히는 유일한 자리. */
 function afterCountSlot(out) {
