@@ -2033,52 +2033,49 @@ export default function ViewerPage() {
             <Button size="sm" variant="ghost" type="button" onClick={() => setTitleEditing(false)}>취소</Button>
           </form>
         ) : (
-          <h1 className="page-header__title" style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
-            {material.title}
+          /* `편집`이 h1 **안** 인라인이라 상첨자처럼 떠 제목의 일부로 읽혔다. h1은
+             그라디언트 텍스트라 버튼 글자까지 그 클립에 얹혀 있었고, hover 색을 JS로
+             매만지고 있었다(:hover가 할 일). 밖으로 빼고 baseline으로 맞춘다.
+             ※ 여기 있던 `flex: 1`은 죽은 값이었다 — 부모(.page-header)가 flex가 아니다. */
+          <div className="viewer-titlerow">
+            <h1 className="page-header__title">{material.title}</h1>
             {user?.id === material?.owner_id && (
               <button
+                className="viewer-title-edit"
                 onClick={() => { setTitleDraft(material.title); setTitleEditing(true); }}
                 title="제목 편집"
-                style={{
-                  background: 'transparent', border: 'none', cursor: 'pointer',
-                  color: 'var(--text-muted)', fontSize: '0.85rem',
-                  padding: 4, borderRadius: 4,
-                }}
-                onMouseEnter={e => e.currentTarget.style.color = 'var(--primary-light)'}
-                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
               >
                 편집
               </button>
             )}
-          </h1>
+          </div>
         )}
         {user && material?.visibility === 'public' && material?.owner_id !== user.id && (
           <ReportMaterialButton materialId={material.id} userId={user.id} toast={toast} />
         )}
-        {user && savedCount > 0 && (
-          <Link href="/vocab" prefetch={false} className="viewer-vocab-counter">
-            {savedCount}개 수집 → 단어장
-          </Link>
-        )}
-        {user && dueInMaterial > 0 && (
-          <div style={{
-            padding: '4px 10px', borderRadius: 'var(--radius-full)',
-            background: 'rgba(212,150,42,0.15)', border: '1px solid var(--warning)',
-            color: 'var(--warning)', fontSize: '0.78rem', fontWeight: 600,
-          }} title="노란 테두리 단어 클릭 → 인라인 복습">
-            {dueInMaterial}개 복습 가능
-          </div>
-        )}
-        {coverage && (
-          <div
-            style={{
-              padding: '4px 10px', borderRadius: 'var(--radius-full)',
-              background: 'var(--bg-secondary)', border: '1px solid var(--border)',
-              color: 'var(--text-secondary)', fontSize: '0.78rem', fontWeight: 600,
-            }}
-            title="담은 단어와 '이미 알아요' 표시를 합쳐 센 값 — 서재 맞춤도와 같은 계산이에요"
-          >
-            아는 단어 {Math.round(coverage.coverage * 100)}% · 새 단어 {coverage.unknown}개
+        {/* 배지 3종은 여태 header의 **직계 자식**이었다 — 래퍼가 없어 폭이 제각각이었고
+            (inline-block 하나 vs 전체 폭 둘) 세로도 3줄을 먹었다. 한 줄로 모은다.
+            인라인 style 3벌은 공용 클래스로 — v2-K R1 토큰화가 남긴 나머지다. */}
+        {((user && savedCount > 0) || (user && dueInMaterial > 0) || coverage) && (
+          <div className="viewer-badges">
+            {user && savedCount > 0 && (
+              <Link href="/vocab" prefetch={false} className="viewer-badge viewer-badge--pop">
+                {savedCount}개 수집 → 단어장
+              </Link>
+            )}
+            {user && dueInMaterial > 0 && (
+              <span className="viewer-badge viewer-badge--due" title="노란 테두리 단어 클릭 → 인라인 복습">
+                {dueInMaterial}개 복습 가능
+              </span>
+            )}
+            {coverage && (
+              <span
+                className="viewer-badge"
+                title="담은 단어와 '이미 알아요' 표시를 합쳐 센 값 — 서재 맞춤도와 같은 계산이에요"
+              >
+                아는 단어 {Math.round(coverage.coverage * 100)}% · 새 단어 {coverage.unknown}개
+              </span>
+            )}
           </div>
         )}
       </header>
@@ -2097,8 +2094,6 @@ export default function ViewerPage() {
           </p>
         );
       })()}
-
-      <ListenControls text={material?.raw_text} language={materialLang} />
 
       {/* PDF 출처 배지 + 다음 범위 분석 */}
       {sourcePdf && material.page_start && (
@@ -2144,42 +2139,51 @@ export default function ViewerPage() {
 
       {/* 읽기 설정 액션바 — 리뉴얼(오너 확정 2026-08-27, 시연 A안+프리셋 줄): 설정 카드는
           Aa 버튼 + 하단 시트로 대체하고, 설정이 아닌 것(읽기 완료·학습 링크·분석 중단)만 남긴다. */}
+      {/* 줄이 세 언어로 말하고 있었다 — 채워진 버튼·밑줄 링크·아이콘 버튼. 성격도 섞여
+          행동(읽기 완료·오늘 학습)과 도구(듣기·Aa)가 한 덩어리로 오른쪽에 몰려 있었다.
+          축을 갈라 **행동은 왼쪽·같은 버튼 모양**, 도구는 오른쪽에 모은다. */}
       <div className="viewer-actionbar">
-        {user?.id === material?.owner_id && reanalyzeMutation.isPending && (
-          <button onClick={stopReanalysis} className="grammar-btn grammar-btn--danger">
-            분석 중단
+        <div className="viewer-actionbar__group">
+          {user?.id === material?.owner_id && reanalyzeMutation.isPending && (
+            <button onClick={stopReanalysis} className="grammar-btn grammar-btn--danger">
+              분석 중단
+            </button>
+          )}
+
+          {user && isDone && (
+            isCompleted
+              ? <span className="grammar-btn viewer-complete-badge">✓ 읽기 완료</span>
+              : <button
+                  onClick={() => markCompleteMutation.mutate()}
+                  disabled={markCompleteMutation.isPending}
+                  className="grammar-btn grammar-btn--complete"
+                >
+                  {markCompleteMutation.isPending ? '...' : '✓ 읽기 완료 표시'}
+                </button>
+          )}
+
+          {user && material?.raw_text && STUDY_LANGS.has(materialLang) && (
+            <Link
+              href={`/study?source=mine&lang=${encodeURIComponent(materialLang)}`}
+              className="grammar-btn"
+              onClick={() => {
+                try {
+                  localStorage.setItem(`study_source_${materialLang}`, (material.raw_text || '').slice(0, 1500));
+                } catch {}
+              }}
+            >
+              오늘 학습 만들기
+            </Link>
+          )}
+        </div>
+
+        <div className="viewer-actionbar__group viewer-actionbar__group--tools">
+          {/* 듣기는 header 밖 독립 줄에 홀로 떨어져 소속이 모호했다 — 도구는 도구끼리. */}
+          <ListenControls text={material?.raw_text} language={materialLang} />
+          <button className="viewer-aa" aria-label="읽기 설정" aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
+            Aa
           </button>
-        )}
-
-        {user && isDone && (
-          isCompleted
-            ? <span className="grammar-btn viewer-complete-badge">✓ 읽기 완료</span>
-            : <button
-                onClick={() => markCompleteMutation.mutate()}
-                disabled={markCompleteMutation.isPending}
-                className="grammar-btn grammar-btn--complete"
-              >
-                {markCompleteMutation.isPending ? '...' : '✓ 읽기 완료 표시'}
-              </button>
-        )}
-
-        {user && material?.raw_text && STUDY_LANGS.has(materialLang) && (
-          <Link
-            href={`/study?source=mine&lang=${encodeURIComponent(materialLang)}`}
-            className="study-textlink"
-            onClick={() => {
-              try {
-                localStorage.setItem(`study_source_${materialLang}`, (material.raw_text || '').slice(0, 1500));
-              } catch {}
-            }}
-          >
-            이 자료로 오늘 학습 만들기
-          </Link>
-        )}
-
-        <button className="viewer-aa" aria-label="읽기 설정" aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
-          Aa
-        </button>
+        </div>
       </div>
 
       {/* 읽기 설정 시트 — backdrop 무광(본문이 곧 미리보기 — 어둡게 덮지 않는다, 시연 합의).
