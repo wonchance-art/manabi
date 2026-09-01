@@ -460,15 +460,15 @@ test('인접 셀의 훈음이 겹치지 않는다 — 긴 훈까지', async () =
   assert.ok(a.r <= b.l + 0.5, `인접 훈음이 겹친다: ${a.r} vs ${b.l}`);
 });
 
-test('혼종 토큰의 요미 칸도 훈음을 받는다 — 글자를 덮지 않고 줄 안에', async () => {
+test('혼종 토큰의 요미 칸도 훈음을 받는다 — 이제 병음과 **같은 앵커**로', async () => {
   // `T恤`·`QQ号`처럼 라틴이 섞인 중국어 토큰은 병음 격자(글자 수 == 음절 수)가 성립하지
-  // 않아 `data-yomi` 칸으로 흐른다(실측 2026-09-01: 한자 토큰 45개 중 2개). 폐지한 나열
-  // 줄이 그 글자들의 유일한 훈음 공급처였으므로 이 칸이 빠지면 훈음을 통째로 잃는다.
+  // 않아 `data-yomi` 칸으로 흐른다(실측: 한자 토큰 45개 중 2개). 폐지한 나열 줄이 그
+  // 글자들의 유일한 훈음 공급처였으므로 이 칸이 빠지면 훈음을 통째로 잃는다.
   //
-  // 다만 이 칸은 병음 칸과 **상자가 다르다** — 병음 칸만 `inline-flex`라 줄상자 전체를
-  // 차지하고, 요미 칸은 글자 상자(실측 143px vs 243px)만 차지한다. 같은 `top` 유도식을
-  // 그대로 쓰면 훈음이 글자를 37.6px 덮는다(실측). 그래서 이 칸에서는 글자 상자 바로
-  // 아래(`top: 100%`)에 건다.
+  // v2-S는 요미 칸의 **상자가 어긋나 있어서**(글자 상자 143px vs 줄상자 243px) 훈음을
+  // `top: 100%`로 우회시켰다. 分散配置 라운드가 상자를 줄상자로 맞추면서 그 우회를
+  // 걷어냈다 — 이제 병음과 같은 식이 서고, **훈음이 줄 밖으로 나가지도 않는다**
+  // (우회 시절 실측: 훈음 상자가 줄 아래로 3.3px 초과. 지금은 줄 안).
   const CARD = (withHun) => `<div class="word-fit-wrap"><div class="word-fit" lang="zh-Hans" style="--fit-n:2">
     <span class="surface">
       <span>T</span><ruby data-yomi="1"><span class="word-fit__char">恤</span><span class="rt-an">xù</span>${withHun ? '<span class="rt-hun">불쌍할 휼</span>' : ''}</ruby>
@@ -483,19 +483,165 @@ test('혼종 토큰의 요미 칸도 훈음을 받는다 — 글자를 덮지 �
   const g = await page.evaluate(() => {
     const ruby = document.querySelector('ruby[data-yomi]');
     const hun = ruby.querySelector('.rt-hun').getBoundingClientRect();
-    const ch = ruby.querySelector('.word-fit__char').getBoundingClientRect();
     const surf = document.querySelector('.surface').getBoundingClientRect();
     return {
       pos: getComputedStyle(ruby.querySelector('.rt-hun')).position,
       h: Math.round(document.querySelector('.word-fit').getBoundingClientRect().height * 100) / 100,
-      hunTop: hun.top, hunMid: (hun.top + hun.bottom) / 2, chBottom: ch.bottom, surfBottom: surf.bottom,
+      hunTop: hun.top, hunBottom: hun.bottom, surfTop: surf.top, surfBottom: surf.bottom,
+      readingBottom: ruby.querySelector('.rt-an').getBoundingClientRect().bottom,
     };
   });
   assert.equal(g.pos, 'absolute', '요미 칸의 훈음이 절대배치를 못 얻었다 — 선택자가 병음 칸만 본다');
   assert.equal(g.h, before, `요미 칸에 훈음을 달자 블록이 자랐다: ${before} → ${g.h}`);
-  assert.ok(g.hunTop >= g.chBottom - 0.5, `훈음이 글자를 덮는다: 훈음 ${g.hunTop} vs 글자 밑 ${g.chBottom}`);
-  // 상자는 행간(1.9배)까지 안고 있어 줄 밖으로 조금 나가지만, **글자(잉크)는 줄 안**이다.
-  assert.ok(g.hunMid < g.surfBottom, `훈음 잉크가 줄 밖으로 나갔다: ${g.hunMid} vs ${g.surfBottom}`);
+  assert.ok(g.readingBottom < g.hunTop, `읽기가 훈음보다 위여야 한다: ${g.readingBottom} vs ${g.hunTop}`);
+  // 우회를 걷어낸 이득 — 훈음 **상자째** 줄 안에 든다(예전에는 3.3px 넘쳤다).
+  assert.ok(g.hunBottom <= g.surfBottom + 0.5, `훈음이 줄 아래로 넘쳤다: ${g.hunBottom} vs ${g.surfBottom}`);
+});
+
+/* ── 요미 칸 分散配置 (JLReq / JIS X 4051, 오너 승인 2026-09-01) ─────────────────────
+ * 일본 조판은 요미가 본체보다 길 때 **요미를 삐치게 두지 않고 본체 글자를 벌린다.**
+ * 삐짐(はみ出し)은 한쪽 요미 1글자까지만 허용되고 **줄머리·줄끝으로는 금지**인데,
+ * 우리 카드는 둘 다 어기고 있었다 — 실측 `志望者`(요미 1.50자 초과)가 카드 왼쪽으로
+ * 47px, 요미가 줄 위로 17.8px.
+ *
+ * 폭은 `--yomi-n`(요미 글자수) × 0.5em을 CSS가 계산한다(`--fit-n`과 같은 패턴).
+ * ────────────────────────────────────────────────────────────────────────── */
+
+const JA_CARD = (kanji, yomi, fitN, yomiN) => `<div class="word-fit-wrap"><div class="word-fit" lang="ja" style="--fit-n:${fitN}">
+  <span class="surface"><ruby data-yomi="1"${yomiN ? ` style="--yomi-n:${yomiN}"` : ''}>${
+  [...kanji].map((c) => `<span class="word-fit__char">${c}</span>`).join('')
+}<span class="rt-an">${yomi}</span></ruby></span>
+</div></div>`;
+
+const jaGeom = async (markup) => {
+  await page.setContent(chromePage(markup, 300));
+  await settle();
+  return page.evaluate(() => {
+    const ruby = document.querySelector('ruby[data-yomi]');
+    const rt = ruby.querySelector('.rt-an').getBoundingClientRect();
+    const chars = [...ruby.querySelectorAll('.word-fit__char')].map((e) => e.getBoundingClientRect());
+    const surf = document.querySelector('.surface').getBoundingClientRect();
+    const fit = document.querySelector('.word-fit').getBoundingClientRect();
+    const box = ruby.getBoundingClientRect();
+    // 인접 간격 n+1개(양끝 포함) — space-evenly면 전부 같다
+    const gaps = [box.left, ...chars.map((c) => c.right)]
+      .map((l, i) => (i < chars.length ? chars[i].left : box.right) - l);
+    return {
+      overTop: surf.top - rt.top,       // 줄 위로 삐진 양(양수면 위반)
+      overLeft: fit.left - rt.left,     // 줄머리로 삐진 양(양수면 위반)
+      overRight: rt.right - fit.right,  // 줄끝으로 삐진 양
+      blockH: fit.height,
+      firstL: chars[0]?.left, lastR: chars[chars.length - 1]?.right,
+      rtL: rt.left, rtR: rt.right,
+      boxW: box.width,
+      charSum: chars.reduce((a, c) => a + c.width, 0),
+      em: parseFloat(getComputedStyle(ruby).fontSize),
+      gaps,
+    };
+  });
+};
+
+test('요미가 줄머리·줄끝으로 삐치지 않는다 — JLReq 금지 조항', async () => {
+  // 이 셋이 라운드의 합격선이다. 절대 px가 아니라 **부호**만 본다(폰트 없는 러너 대비).
+  for (const [k, y, n, yn] of [['志望者', 'こころざしぼうしゃ', 4.5, 9], ['志', 'こころざし', 2.5, 5],
+    ['勉強', 'べんきょう', 2.5, 5], ['図書館', 'としょかん', 3, 5]]) {
+    const g = await jaGeom(JA_CARD(k, y, n, yn));
+    assert.ok(g.overLeft <= 0.5, `${k}: 요미가 줄머리로 ${g.overLeft}px 삐졌다`);
+    assert.ok(g.overRight <= 0.5, `${k}: 요미가 줄끝으로 ${g.overRight}px 삐졌다`);
+    assert.ok(g.overTop <= 0.5, `${k}: 요미가 줄 위로 ${g.overTop}px 넘쳤다`);
+  }
+});
+
+test('요미 칸 폭 = max(본체 폭, 요미 예약) — 예약식이 分散配置의 조건이다', async () => {
+  // ⚠ 여기서 **렌더된 요미 폭**을 기준으로 삼으면 안 된다. 예약은 `--yomi-n × 0.5em`
+  // 이라는 산술이고, 실제 가나가 그 폭으로 그려지는지는 러너 폰트에 달렸다 —
+  // CJK 폰트가 없는 CI에서는 가나가 0.5em보다 좁게 떨어져 `志望者`조차 **본체가 이겼다**
+  // (실측 본체 225px vs 요미 216px). 그래서 어느 쪽이 이기는지를 전제하지 않고
+  // **등식만** 단언한다(이 파일 머리의 이식성 규칙 그대로다).
+  for (const [k, y, n, yn] of [['志望者', 'こころざしぼうしゃ', 4.5, 9], ['志', 'こころざし', 2.5, 5],
+    ['勉強', 'べんきょう', 2.5, 5], ['図書館', 'としょかん', 3, 5]]) {
+    const g = await jaGeom(JA_CARD(k, y, n, yn));
+    const want = Math.max(g.charSum, yn * 0.5 * g.em);
+    assert.ok(Math.abs(g.boxW - want) <= 0.5,
+      `${k}: 요미 칸 폭이 max(본체 ${g.charSum.toFixed(2)}, 예약 ${(yn * 0.5 * g.em).toFixed(2)})가 아니다 — ${g.boxW}`);
+  }
+});
+
+test('예약이 이기면 본체를 고르게 벌린다 — 지면 벌리지 않는다(分散配置)', async () => {
+  // 분기를 폰트에 맡기지 않는다. 먼저 예약 없이 본체 폭을 **재고**, 그 실측 위에서
+  // 반드시 이기는 값과 반드시 지는 값을 만들어 양쪽 가지를 모두 밟는다.
+  const bare = await jaGeom(JA_CARD('志望者', 'こころざしぼうしゃ', 4.5, null));
+  assert.ok(Math.abs(bare.boxW - bare.charSum) <= 0.5, '예약이 없으면 칸은 본체 폭이어야 한다');
+  assert.ok(bare.gaps.every((g) => Math.abs(g) <= 0.5),
+    `예약이 없는데 본체가 벌어졌다: ${bare.gaps}`);
+
+  const nWide = Math.ceil((bare.charSum / bare.em) * 2) + 2;   // 예약 > 본체 확정
+  const wide = await jaGeom(JA_CARD('志望者', 'こころざしぼうしゃ', 4.5, nWide));
+  assert.ok(Math.abs(wide.boxW - nWide * 0.5 * wide.em) <= 0.5,
+    `예약이 이겼는데 칸이 예약 폭이 아니다: ${wide.boxW}`);
+  // space-evenly — 양끝을 포함한 네 간격이 **모두 같고** 0보다 크다
+  const spread = (wide.boxW - wide.charSum) / wide.gaps.length;
+  assert.ok(spread > 0.5, `예약이 이겼는데 벌어지지 않았다: 여백 ${spread}`);
+  for (const g of wide.gaps) {
+    assert.ok(Math.abs(g - spread) <= 0.5, `간격이 고르지 않다 — space-evenly가 아니다: ${wide.gaps}`);
+  }
+
+  const tight = await jaGeom(JA_CARD('志望者', 'こころざしぼうしゃ', 4.5, 1)); // 예약 0.5em < 본체
+  assert.ok(Math.abs(tight.boxW - tight.charSum) <= 0.5,
+    `예약이 졌는데 칸이 본체 폭이 아니다: ${tight.boxW} vs ${tight.charSum}`);
+  assert.ok(tight.gaps.every((g) => Math.abs(g) <= 0.5),
+    `예약이 졌는데 본체가 벌어졌다: ${tight.gaps}`);
+});
+
+test('블록 세로는 그대로다 — 分散配置는 가로 처리다', async () => {
+  for (const [k, y, n, yn] of [['志望者', 'こころざしぼうしゃ', 4.5, 9], ['図書館', 'としょかん', 3, 5]]) {
+    const on = await jaGeom(JA_CARD(k, y, n, yn));
+    const off = await jaGeom(JA_CARD(k, y, n, null)); // --yomi-n 없음 = min-width 0
+    assert.equal(Math.round(on.blockH * 100), Math.round(off.blockH * 100),
+      `${k}: 分散配置가 블록 높이를 바꿨다 ${off.blockH} → ${on.blockH}`);
+  }
+});
+
+test('가나가 아닌 읽기에는 폭을 예약하지 않는다 — 0.5em/자는 가나 전제다', async () => {
+  // 혼종 중국어 토큰(`T壮`)의 읽기는 병음이라 라틴이고, 라틴은 0.5em보다 훨씬 좁다.
+  // 게이트 없이 글자수를 넘기면 **없는 폭을 예약**한다 — 실측: 실제 필요 198.5px 자리에
+  // 384px(6 × 0.5em)를 잡아 루비가 카드(340px)보다 넓어진다.
+  const CARD = (yn) => `<div class="word-fit-wrap"><div class="word-fit" lang="zh-Hans" style="--fit-n:2">
+    <span class="surface"><span>T</span><ruby data-yomi="1"${yn ? ` style="--yomi-n:${yn}"` : ''}><span class="word-fit__char">壮</span><span class="rt-an">zhuàng</span></ruby></span>
+  </div></div>`;
+  const measure = async (markup) => {
+    await page.setContent(chromePage(markup, 300));
+    await settle();
+    return page.evaluate(() => {
+      const ruby = document.querySelector('ruby[data-yomi]');
+      const rt = ruby.querySelector('.rt-an').getBoundingClientRect();
+      return { rubyW: ruby.getBoundingClientRect().width, readW: rt.width,
+        fitW: document.querySelector('.word-fit').getBoundingClientRect().width };
+    });
+  };
+  const gated = await measure(CARD(null));
+  const leaked = await measure(CARD(6));
+  assert.ok(gated.rubyW <= gated.fitW, `게이트가 있는데도 루비가 카드보다 넓다: ${gated.rubyW} vs ${gated.fitW}`);
+  // 게이트가 없으면 실제 읽기 폭보다 훨씬 큰 자리를 잡는다 — 그 차이가 게이트의 존재 이유다.
+  assert.ok(leaked.rubyW > leaked.readW * 1.5,
+    `게이트 없이도 예약이 과하지 않다 — 이 계약의 전제가 무너졌다: ${leaked.rubyW} vs ${leaked.readW}`);
+  assert.ok(leaked.rubyW > gated.rubyW, '게이트 유무로 루비 폭이 같다 — 게이트가 일하지 않는다');
+});
+
+test('병음 칸은 무접촉 — 요미 규칙이 격자를 건드리지 않는다', async () => {
+  // 요미 칸 규칙은 `[data-yomi]` 스코프다. 병음 칸의 1em 격자·읽기 자리는 불변이어야 한다.
+  await page.setContent(chromePage(HUN_CARD(false), 300));
+  await settle();
+  const g = await page.evaluate(() => {
+    const ruby = document.querySelector('ruby[data-pinyin]');
+    const cs = getComputedStyle(ruby);
+    const box = ruby.getBoundingClientRect();
+    const rt = ruby.querySelector('.rt-an').getBoundingClientRect();
+    return { w: cs.width, minW: cs.minWidth, justify: cs.justifyContent, fromTop: rt.bottom - box.top };
+  });
+  assert.equal(g.justify, 'center', '병음 칸의 정렬이 바뀌었다');
+  assert.ok(!/px/.test(g.minW) || g.minW === '0px', `병음 칸에 min-width가 붙었다: ${g.minW}`);
+  assert.equal(Math.round(g.fromTop * 10) / 10, 64, `병음 읽기 자리가 움직였다: ${g.fromTop}`);
 });
 
 test('본문(.word-token)에는 하단 루비가 없다 — 카드 한정', async () => {

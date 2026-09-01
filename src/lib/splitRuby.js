@@ -18,6 +18,15 @@
  *
  * 알고리즘: surface의 히라가나 구간을 앵커로 reading을 분할 → 한자 구간에 읽기 할당
  */
+/**
+ * 가나 판별 — 이 모듈의 병음/요미 갈림길이 쓰는 그 검사다.
+ *
+ * 밖에서도 쓴다: 카드 요미의 分散配置가 「요미 폭 = 글자수 × 0.5em」을 전제하는데
+ * 그건 **가나** 전제다(혼종 중국어 토큰의 병음은 라틴이라 훨씬 좁다). 같은 판별을
+ * 두 벌로 두면 한쪽만 낡으므로 여기서 내보낸다.
+ */
+export const KANA_RE = /[぀-ヿ]/;
+
 export function splitRuby(text, furigana) {
   if (!furigana) return [{ plain: text }];
 
@@ -32,7 +41,7 @@ export function splitRuby(text, furigana) {
   //    없다)를 일본어 경로로 흘려보내 병음이 요미 크기(0.5em)로 크게 렌더됐다(오너 발견
   //    2026-08-19). 음절 수 == 글자 수 비교가 공백 유무까지 포괄하므로 공백 조건은 제거.
   const zhChars = [...text];
-  if (!/[぀-ヿ]/.test(furigana) && /\p{Script=Latin}/u.test(furigana) && zhChars.every(isKanji)) {
+  if (!KANA_RE.test(furigana) && /\p{Script=Latin}/u.test(furigana) && zhChars.every(isKanji)) {
     const syllables = furigana.trim().split(/\s+/);
     if (syllables.length === zhChars.length) {
       // pinyin 표식 — 글자당 1음절 격자 조판(폭 1em 고정·단일 축소 크기) 전용 경로.

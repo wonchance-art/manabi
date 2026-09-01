@@ -60,7 +60,10 @@ describe('병음 조판 계약', () => {
     expect(lib).toMatch(/reading: syllables\[i\], pinyin: true/);
     // 공백 조건 부활 금지 — 한 글자 단어가 일본어 경로로 새면 병음이 요미 크기로 커진다
     expect(lib).not.toMatch(/furigana\.includes\(' '\)/);
-    expect(viewer).toContain("import { splitRuby } from '../lib/splitRuby'");
+    // import 줄을 통째로 박으면 **같은 모듈에서 이름 하나만 더해도** 깨진다(요미 分散配置가
+    // `KANA_RE`를 같이 가져오며 실제로 걸렸다). 요구는 「splitRuby가 lib에 있고 뷰어가
+    // 그걸 쓴다」이므로 그것만 고정한다.
+    expect(viewer).toMatch(/import \{[^}]*\bsplitRuby\b[^}]*\} from '\.\.\/lib\/splitRuby'/);
   });
 });
 
