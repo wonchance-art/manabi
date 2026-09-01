@@ -53,7 +53,14 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
     const src = read('src/views/MaterialsPage.jsx');
     expect(src).toContain('error: materialsError');
     expect(src).toContain('refetch: refetchMaterials');
-    expect(src.indexOf(') : materialsError ? (')).toBeLessThan(src.indexOf(') : filtered.length > 0 ? ('));
+    // 순서 단언은 **둘 다 있는지 먼저** 확인한다 — 한쪽 앵커가 사라지면 indexOf가 -1이라
+    // 「-1보다 크다」가 공허 통과한다(L축에서 실증한 함정). 빈 목록 분기 조건은 v2-P가
+    // `filtered.length > 0` → `(filtered.length > 0 || visiblePdfs.length > 0)`로 넓혔다.
+    const errAt = src.indexOf(') : materialsError ? (');
+    const emptyAt = src.search(/\) : \(filtered\.length > 0/);
+    expect(errAt, '오류 분기를 못 찾았다').toBeGreaterThan(-1);
+    expect(emptyAt, '빈 목록 분기를 못 찾았다').toBeGreaterThan(-1);
+    expect(errAt).toBeLessThan(emptyAt);
     expect(src).toContain('onClick={() => refetchMaterials()}');
   });
 

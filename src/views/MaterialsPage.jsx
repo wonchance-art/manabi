@@ -12,11 +12,13 @@ import { parseTitle } from '../lib/seriesMeta';
 import { materialFit, fitBand, sortByFit, bookFit, FIT_MIN_TYPES } from '../lib/materialFit';
 import { fetchKnownWords, mergeKnownIntoIndex } from '../lib/knownWords';
 import { groupByBook } from '../lib/bookMeta';
+import { groupByPdf, pageRangeLabel, readProgressLabel } from '../lib/pdfGroups';
 import { useGroupReadIds } from '../lib/useGroupReadIds';
 import { LEVELS, langNameKo, levelRank, profileLevel } from '../lib/constants';
 import { isOnDemandSuggestion } from '../lib/suggestionSources';
 import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
+import MaterialGroupCard from '../components/MaterialGroupCard';
 
 
 async function fetchTodaySuggestions() {
@@ -85,7 +87,7 @@ function SuggestionCard({ suggestion: s, router }) {
 async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuery }) {
   let query = supabase
     .from('reading_materials')
-    .select('id, title, created_at, visibility, owner_id, processed_json')
+    .select('id, title, created_at, visibility, owner_id, processed_json, source_pdf_id, page_start, page_end')
     .order('created_at', { ascending: false });
 
   // 자료실은 현지 언어 콘텐츠만 — 시리즈 패턴 [* #N] 자료는 /lessons로 분리
@@ -144,7 +146,7 @@ function filterSuggestionsByProfile(suggestions, profile) {
 }
 
 export default function MaterialsPage() {
-  const { user, profile } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const router = useRouter();
   const queryClient = useQueryClient();
   const toast = useToast();
@@ -177,7 +179,14 @@ export default function MaterialsPage() {
     onError: (err) => toast('변경 실패: ' + err.message, 'error'),
   });
   const searchParams = useSearchParams();
-  const [tab, setTab] = useState('public');
+  // 기본 탭(v2-P, 오너 지시 「내 자료가 먼저」) — 로그인 `private` / 비로그인 `public`.
+  // ⚠ 게스트 분기가 **필수**다: `내 자료` 쿼리는 `if (!userId) return []`이라 게스트에게
+  // 무조건 빈 목록이다. 그냥 뒤집으면 게스트 첫 화면이 빈다.
+  // auth가 정해지기 전에는 고르지 않는다(`null`) — 로딩 중 `public`으로 그렸다가
+  // 사용자가 확인되며 `private`으로 튀면 **자료 쿼리가 두 번** 난다(가드 없는 useQuery).
+  const [tabOverride, setTabOverride] = useState(null);
+  const tab = tabOverride ?? (authLoading ? null : (user ? 'private' : 'public'));
+  const setTab = setTabOverride;
   const [testScores, setTestScores] = useState({});
 
   useEffect(() => {
@@ -266,13 +275,15 @@ export default function MaterialsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('uploaded_pdfs')
-        .select('id, title, page_count, created_at, thumbnail_path')
+        .select('id, title, page_count, created_at, thumbnail_path, last_page_read')
         .eq('owner_id', user.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data || [];
     },
-    enabled: !!user && tab === 'pdf',
+    // PDF 탭이 없어졌으므로 `내 자료`에서 돈다. 새 쿼리가 아니라 **도는 시점**이 바뀐
+    // 것이다 — 그리고 그 탭이 이제 로그인 사용자의 기본값이다.
+    enabled: !!user && tab === 'private',
     staleTime: 1000 * 60,
   });
 
@@ -373,6 +384,8 @@ export default function MaterialsPage() {
   const { data: materials = [], isLoading, error: materialsError, refetch: refetchMaterials } = useQuery({
     queryKey: ['materials', tab, user?.id, langFilter, levelFilter, searchQuery],
     queryFn: () => fetchMaterials({ tab, userId: user?.id, langFilter, levelFilter, searchQuery }),
+    // 기본 탭이 로그인 여부로 갈리므로 auth 확정 전에 쏘면 버릴 쿼리가 된다.
+    enabled: !!tab,
     refetchInterval: (query) => {
       const hasAnalyzing = query.state.data?.some(
         m => m.processed_json?.status === 'analyzing'
@@ -447,6 +460,52 @@ export default function MaterialsPage() {
   // 「받아둔 것만」(v2-N R3) — 오프라인일 때 열 수 없는 자료를 보여주는 건 해롭다.
   const filtered = pinnedOnly ? afterUnread.filter((m) => pinnedIds.has(m.id)) : afterUnread;
 
+  // PDF 묶음에 적용할 필터(v2-P 계약 ④). 언어·레벨 같은 조건은 **자료**에 붙는 것이라
+  // 자료 0개 PDF에는 대응물이 아예 없다 — 「일본어」로 좁혔는데 언어를 모르는 PDF가
+  // 남아 있으면 그게 필터 위반이다. 그래서 조건이 하나라도 걸리면 **자료가 남은 PDF만**
+  // 보여주고, 조건이 없을 때만 자료 0개 PDF까지 전부 보여준다(계약 ② 누락 금지).
+  const anyFilter = !!searchQuery || langFilter !== 'all' || levelFilter !== 'all' || unreadOnly || pinnedOnly;
+  const visiblePdfs = useMemo(() => {
+    if (tab !== 'private') return [];
+    if (!anyFilter) return pdfs;
+    const live = new Set(filtered.map((m) => m.source_pdf_id).filter(Boolean));
+    return pdfs.filter((x) => live.has(x.id));
+  }, [tab, anyFilter, pdfs, filtered]);
+
+  // 묶음 줄의 오른쪽 슬롯 — 책 챕터든 PDF 범위든 같은 것을 말한다(읽음·복습·분석 상태).
+  // 컴포넌트를 하나로 합치니 책 챕터 줄도 복습 개수를 얻는다(낱개 자료 카드는 원래
+  // 보여 주고 있었다 — 묶음 안에서만 빠져 있던 쪽이 이상했다).
+  const STATUS_LABEL = { pending: '분석 전', analyzing: '분석 중', failed: '실패', partial: '일부 완료' };
+  const STATUS_TONE = { pending: 'muted', analyzing: 'due', failed: 'danger' };
+  const chapterTags = (c) => {
+    const st = c.processed_json?.status || 'idle';
+    const due = st === 'completed' ? countDueInMaterial(c) : 0;
+    return (
+      <>
+        {completedIds.has(c.id) && <span className="group-card__tag group-card__tag--done">✓ 읽음</span>}
+        {due > 0 && <span className="group-card__tag group-card__tag--due">복습 {due}개</span>}
+        <span className={`group-card__tag group-card__tag--${STATUS_TONE[st] || 'done'}`}>
+          {STATUS_LABEL[st] || '완료'}
+        </span>
+      </>
+    );
+  };
+
+  // 묶음 커버리지 줄 — 「책 전체 단어 중 몇 개를 아는가」. 표본 미달·게스트·미분석은 무표기.
+  // 단위만 갈린다(책은 「과」, PDF는 「개」).
+  const fitLineOf = (bf, unit) => {
+    const showFit = bf && bf.coverage != null && bf.total >= FIT_MIN_TYPES;
+    if (!showFit) return null;
+    return (
+      <>
+        {bf.analyzed < bf.chapters && `분석한 ${bf.analyzed}${unit} 기준 · `}
+        {bf.total.toLocaleString()}단어 중{' '}
+        <strong className="group-card__fitnum">{Math.round(bf.coverage * 100)}% 앎</strong>
+        {' '}· 새 단어 {bf.unknown.toLocaleString()}개
+      </>
+    );
+  };
+
   return (
     <div className="page-container">
       <div className="page-header page-header--row">
@@ -477,29 +536,24 @@ export default function MaterialsPage() {
           />
         </div>
 
+        {/* 탭은 둘뿐이다(v2-P) — PDF는 탭이 아니라 `내 자료` 안의 묶음 카드로 들어왔다.
+            순서도 오너 지시대로 뒤집었다: 내 자료가 먼저, 공용이 그 다음. */}
         <div className="tab-pills">
-          <button onClick={() => setTab('public')}
-            aria-pressed={tab === 'public'}
-            className={`tab-pills__item ${tab === 'public' ? 'tab-pills__item--accent' : ''}`}>
-            공용
-          </button>
           <button onClick={() => setTab('private')}
             aria-pressed={tab === 'private'}
             className={`tab-pills__item ${tab === 'private' ? 'tab-pills__item--primary' : ''}`}>
             내 자료
           </button>
-          {user && (
-            <button onClick={() => setTab('pdf')}
-            aria-pressed={tab === 'pdf'}
-              className={`tab-pills__item ${tab === 'pdf' ? 'tab-pills__item--primary' : ''}`}>
-              PDF
-            </button>
-          )}
+          <button onClick={() => setTab('public')}
+            aria-pressed={tab === 'public'}
+            className={`tab-pills__item ${tab === 'public' ? 'tab-pills__item--accent' : ''}`}>
+            공용
+          </button>
         </div>
       </div>
 
-      {/* Language + Level filter — PDF 탭에서는 숨김 */}
-      {tab !== 'pdf' && <div className="materials-filters">
+      {/* Language + Level filter — 이제 두 탭에 똑같이 적용된다(PDF 탭 가드 폐지) */}
+      <div className="materials-filters">
         <div className="chip-group">
           {LANG_FILTERS.map(f => (
             <button
@@ -570,35 +624,9 @@ export default function MaterialsPage() {
             ))}
           </div>
         )}
-      </div>}
+      </div>
 
-      {/* PDF 탭 */}
-      {tab === 'pdf' ? (
-        pdfs.length > 0 ? (
-          <div className="feature-grid">
-            {pdfs.map(pdf => (
-              <Link key={pdf.id} href={`/pdf/${pdf.id}`} className="card card--clickable" style={{ padding: 16, textDecoration: 'none', color: 'inherit' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontSize: '2rem' }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.92rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {pdf.title}
-                    </div>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>
-                      {pdf.page_count}페이지 · {new Date(pdf.created_at).toLocaleDateString('ko-KR')}
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-            <p>업로드된 PDF가 없습니다.</p>
-            <Link href="/materials/add" className="btn btn--primary btn--sm" style={{ marginTop: 12 }}>PDF 업로드하기</Link>
-          </div>
-        )
-      ) : isLoading ? (
+      {(!tab || isLoading) ? (
         <CardGridSkeleton />
       ) : materialsError ? (
         <div className="empty-state">
@@ -606,7 +634,7 @@ export default function MaterialsPage() {
           <p className="empty-state__msg">자료 목록을 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.</p>
           <button type="button" className="btn btn--primary btn--md" onClick={() => refetchMaterials()}>다시 시도</button>
         </div>
-      ) : filtered.length > 0 ? (
+      ) : (filtered.length > 0 || visiblePdfs.length > 0) ? (
         <>
         <div className="feature-grid">
           {(() => {
@@ -618,52 +646,71 @@ export default function MaterialsPage() {
               const k = `${xm.level}|${xm.series}`;
               seriesTotals.set(k, (seriesTotals.get(k) || 0) + 1);
             }
-            // 책 묶음(P1) — metadata.book이 있는 자료는 책 카드 하나로 묶어 챕터 목록을 보여준다
-            const { books, singles } = groupByBook(filtered);
+            // 책 묶음(P1) — metadata.book이 있는 자료는 책 카드 하나로 묶어 챕터 목록을 보여준다.
+            // PDF 묶음(v2-P)은 그 다음 — 손으로 매긴 `metadata.book`이 자동 파생인
+            // `source_pdf_id`를 이기도록 **호출 순서로** 우선순위를 세운다.
+            const { books, singles: bookless } = groupByBook(filtered);
+            const { groups: pdfGroupsHere, rest: singles } = groupByPdf(bookless, visiblePdfs);
             const bookCards = books.map((b) => {
               const analyzed = b.chapters.filter((c) => ['completed', 'partial'].includes(c.processed_json?.status)).length;
               const readDone = b.chapters.filter((c) => completedIds.has(c.id)).length;
               // 책 단위 커버리지(R2) — 챕터 types 합집합. 어휘 교재의 진짜 지표는 챕터별 배지가
               // 아니라 "책 전체 단어 중 몇 개를 아는가"다. 표본 미달·게스트·미분석은 무표기.
               const bf = savedFitIndex ? bookFit(b.chapters, savedFitIndex) : null;
-              const showBookFit = bf && bf.coverage != null && bf.total >= FIT_MIN_TYPES;
               return (
-                <details key={b.key} className="card book-card" style={{ gridColumn: '1 / -1', padding: '14px 18px' }}>
-                  <summary style={{ cursor: 'pointer', listStyle: 'none', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                    <span style={{ fontWeight: 800, fontSize: '1rem' }}>📖 {b.title || '제목 없는 책'}</span>
-                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                      챕터 {b.chapters.length}개 · 분석 {analyzed}/{b.chapters.length} · 읽음 {readDone}/{b.chapters.length}
-                    </span>
-                    {showBookFit && (
-                      <span style={{ flexBasis: '100%', fontSize: '0.8rem', color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }}>
-                        {bf.analyzed < bf.chapters && `분석한 ${bf.analyzed}과 기준 · `}
-                        {bf.total.toLocaleString()}단어 중{' '}
-                        <strong style={{ color: 'var(--accent-text)' }}>{Math.round(bf.coverage * 100)}% 앎</strong>
-                        {' '}· 새 단어 {bf.unknown.toLocaleString()}개
-                      </span>
-                    )}
-                  </summary>
-                  <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    {b.chapters.map((c) => {
-                      const st = c.processed_json?.status || 'idle';
-                      const chTitle = c.title.includes(' — ') ? c.title.split(' — ').slice(1).join(' — ') : c.title;
-                      return (
-                        <div key={c.id} onClick={() => router.push(`/viewer/${c.id}`)}
-                          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', cursor: 'pointer' }}>
-                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', width: 24, textAlign: 'right', flexShrink: 0 }}>{c._bookOrder}</span>
-                          <span style={{ flex: 1, minWidth: 0, fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{chTitle}</span>
-                          {completedIds.has(c.id) && <span style={{ fontSize: '0.72rem', color: 'var(--primary-light)', flexShrink: 0 }}>✓ 읽음</span>}
-                          <span style={{ fontSize: '0.72rem', flexShrink: 0, color: st === 'pending' ? 'var(--text-muted)' : st === 'failed' ? 'var(--danger)' : st === 'analyzing' ? 'var(--warning)' : 'var(--primary-light)' }}>
-                            {st === 'pending' ? '분석 전' : st === 'analyzing' ? '분석 중' : st === 'failed' ? '실패' : st === 'partial' ? '일부 완료' : '완료'}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </details>
+                <MaterialGroupCard
+                  key={b.key}
+                  icon="📖"
+                  title={b.title || '제목 없는 책'}
+                  meta={`챕터 ${b.chapters.length}개 · 분석 ${analyzed}/${b.chapters.length} · 읽음 ${readDone}/${b.chapters.length}`}
+                  fitLine={fitLineOf(bf, '과')}
+                  rows={b.chapters.map((c) => ({
+                    key: c.id,
+                    onClick: () => router.push(`/viewer/${c.id}`),
+                    lead: c._bookOrder,
+                    title: c.title.includes(' — ') ? c.title.split(' — ').slice(1).join(' — ') : c.title,
+                    right: chapterTags(c),
+                  }))}
+                />
               );
             });
-            return [...bookCards, ...singles.slice(0, visibleCount).map(m => {
+            // PDF 묶음(v2-P) — 원본 하나 + 거기서 뽑은 범위 자료들. 책 카드와 **같은
+            // 컴포넌트**를 쓴다(계약 ③). 자료가 0개인 PDF도 카드로 남는다 — 탭을
+            // 없애면서 잃는 것이 있으면 통합이 아니라 삭제다.
+            const pdfCards = pdfGroupsHere.map((g) => {
+              const analyzed = g.chapters.filter((c) => ['completed', 'partial'].includes(c.processed_json?.status)).length;
+              const readDone = g.chapters.filter((c) => completedIds.has(c.id)).length;
+              const bf = savedFitIndex && g.chapters.length > 0 ? bookFit(g.chapters, savedFitIndex) : null;
+              const progress = readProgressLabel(g.pdf);
+              return (
+                <MaterialGroupCard
+                  key={g.key}
+                  icon="📕"
+                  title={g.pdf.title}
+                  meta={[
+                    `PDF ${g.pdf.page_count}쪽`,
+                    progress,
+                    g.chapters.length > 0
+                      ? `자료 ${g.chapters.length}개 · 분석 ${analyzed}/${g.chapters.length} · 읽음 ${readDone}/${g.chapters.length}`
+                      : '아직 뽑은 자료 없음',
+                  ].filter(Boolean).join(' · ')}
+                  fitLine={fitLineOf(bf, '개')}
+                  rows={g.chapters.map((c) => ({
+                    key: c.id,
+                    onClick: () => router.push(`/viewer/${c.id}`),
+                    lead: pageRangeLabel(c) || '',
+                    title: c.title,
+                    right: chapterTags(c),
+                  }))}
+                  footer={(
+                    <Link href={`/pdf/${g.pdf.id}`} className="btn btn--secondary btn--sm">
+                      {progress ? '이어 읽기' : '원본 PDF 보기'}
+                    </Link>
+                  )}
+                />
+              );
+            });
+            return [...bookCards, ...pdfCards, ...singles.slice(0, visibleCount).map(m => {
             const status = m.processed_json?.status || 'idle';
             const metadata = m.processed_json?.metadata || {};
             const language = metadata.language || (m.title.match(/[a-zA-Z]/) ? 'English' : 'Japanese');
