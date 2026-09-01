@@ -13,7 +13,7 @@ import { materialFit, fitBand, sortByFit, bookFit, FIT_MIN_TYPES } from '../lib/
 import { fetchKnownWords, mergeKnownIntoIndex } from '../lib/knownWords';
 import { groupByBook } from '../lib/bookMeta';
 import { useGroupReadIds } from '../lib/useGroupReadIds';
-import { JP_LEVELS, EN_LEVELS, ZH_LEVELS, langNameKo } from '../lib/constants';
+import { LEVELS, langNameKo, levelRank, profileLevel } from '../lib/constants';
 import { isOnDemandSuggestion } from '../lib/suggestionSources';
 import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
@@ -115,32 +115,31 @@ async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuer
 
 const PAGE_SIZE = 12;
 
+// 언어 칩도 정본에서 파생한다. 손으로 적었더니 **프랑스어가 빠져 있었고**, F R2가
+// 프랑스어 공급을 연 뒤에도 자료실에서 프랑스어만 골라 볼 방법이 없었다.
 const LANG_FILTERS = [
-  { key: 'all',      label: '전체' },
-  { key: 'Japanese', label: '일본어' },
-  { key: 'English',  label: '영어' },
-  { key: 'Chinese',  label: '중국어' },
+  { key: 'all', label: '전체' },
+  ...Object.keys(LEVELS).map((key) => ({ key, label: langNameKo(key) })),
 ];
 
 
-// 레벨 순서 정의 (낮을수록 쉬움)
-const LEVEL_ORDER = {
-  'N5 기초': 0, 'N4 기본': 1, 'N3 중급': 2, 'N2 상급': 3, 'N1 심화': 4,
-  'A1 기초': 0, 'A2 초급': 1, 'B1 중급': 2, 'B2 상급': 3, 'C1 고급': 4, 'C2 마스터': 5,
-};
-
-// 유저 레벨 ±1 범위의 추천만 표시
+// 유저 레벨 ±1 범위의 추천만 표시.
+//
+// 순서표도 프로필 컬럼 선택도 **지역 복본이었고 둘 다 ja/en만 알았다**. F R2가 프랑스어
+// 공급을 연 순간 프랑스어 카드가 **사용자의 영어 수준으로** 걸러졌다(영어가 C1이면
+// 프랑스어 B1 카드가 diff 2로 숨는다). 컬럼은 이미 4개가 다 있었고, 없던 건 정본이었다.
 function filterSuggestionsByProfile(suggestions, profile) {
   if (!profile || !suggestions.length) return suggestions;
   return suggestions.filter(s => {
     if (!profile.learning_language?.includes(s.language)) return false;
     if (!s.level) return true;
-    const userLevel = s.language === 'Japanese'
-      ? profile.learning_level_japanese
-      : profile.learning_level_english;
+    const userLevel = profileLevel(profile, s.language);
     if (!userLevel) return true;
-    const diff = Math.abs((LEVEL_ORDER[s.level] ?? 99) - (LEVEL_ORDER[userLevel] ?? 99));
-    return diff <= 1;
+    const cardRank = levelRank(s.language, s.level);
+    const userRank = levelRank(s.language, userLevel);
+    // 모르는 값은 **거르지 않는다** — 예전엔 99로 두어 diff가 커지며 조용히 숨었다.
+    if (cardRank == null || userRank == null) return true;
+    return Math.abs(cardRank - userRank) <= 1;
   });
 }
 
@@ -382,10 +381,10 @@ export default function MaterialsPage() {
     },
   });
 
-  const levelOptions = langFilter === 'Japanese' ? JP_LEVELS
-    : langFilter === 'English' ? EN_LEVELS
-    : langFilter === 'Chinese' ? ZH_LEVELS
-    : [...JP_LEVELS, ...EN_LEVELS, ...ZH_LEVELS];
+  // 레벨 목록도 정본에서. 삼항 체인이라 프랑스어를 고르면 **전체 목록**이 나왔다.
+  // '전체'는 네 언어를 합치되 중복을 지운다 — 영어와 프랑스어가 CEFR 급수를 공유해서,
+  // 안 지우면 같은 항목이 두 번 뜨고 React key도 겹친다.
+  const levelOptions = LEVELS[langFilter] || [...new Set(Object.values(LEVELS).flat())];
 
   // 커버리지 대조 인덱스 — 자료 카드(fitById)와 책 카드(bookFit)가 **같은 것**을 쓴다.
   // '이미 앎' 표기는 여기서 합집합으로 합류한다(엔진 시그니처 무변경 — 목업 ⑤ 정밀화).
@@ -414,10 +413,15 @@ export default function MaterialsPage() {
     const arr = [...materials];
     if (sortBy === 'level') {
       arr.sort((a, b) => {
-        const la = a.processed_json?.metadata?.level;
-        const lb = b.processed_json?.metadata?.level;
-        const oa = la in LEVEL_ORDER ? LEVEL_ORDER[la] : 99;
-        const ob = lb in LEVEL_ORDER ? LEVEL_ORDER[lb] : 99;
+        // 순위는 **그 자료 자신의 언어** 학습 순서에서 나온다(정본 levelRank).
+        // 여기서 모르는 값을 99로 두는 건 맞다 — **정렬에서는 뒤로 밀리는 것**이고,
+        // 추천 필터에서 같은 99가 틀렸던 이유는 거기선 **카드가 사라졌기** 때문이다.
+        const rank = (m) => {
+          const meta = m.processed_json?.metadata;
+          return levelRank(meta?.language, meta?.level) ?? 99;
+        };
+        const oa = rank(a);
+        const ob = rank(b);
         if (oa !== ob) return oa - ob;
         // 같은 레벨: 시리즈 → 번호 → 최신순 (학습 경로 자연 정렬)
         const ma = parseTitle(a.title);

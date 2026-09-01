@@ -45,3 +45,34 @@ export const LEVELS = {
   French: FR_LEVELS,
   Chinese: ZH_LEVELS,
 };
+
+/** 언어 → `profiles`의 학습 수준 컬럼. 컬럼 이름을 아는 곳은 여기 하나여야 한다. */
+export const PROFILE_LEVEL_COLUMN = Object.freeze({
+  Japanese: 'learning_level_japanese',
+  English: 'learning_level_english',
+  French: 'learning_level_french',
+  Chinese: 'learning_level_chinese',
+});
+
+/**
+ * 그 언어에 대한 사용자의 학습 수준. 없으면 null(호출부가 "수준 미설정"으로 다룬다).
+ *
+ * 정본이 없어서 벌어진 일: 추천 카드 필터가 `lang === 'Japanese' ? 일본어 : 영어`였고,
+ * F R2가 프랑스어 공급을 연 순간 **프랑스어 카드가 사용자의 영어 수준으로 걸러졌다**
+ * (영어가 C1이면 프랑스어 B1 카드가 diff 2로 숨는다). 컬럼은 이미 4개가 다 있었다
+ * (`20260810120000_profile_levels_fr_zh`) — 없던 건 데이터가 아니라 이 함수다.
+ */
+export function profileLevel(profile, language) {
+  const col = PROFILE_LEVEL_COLUMN[language];
+  return (col && profile?.[col]) || null;
+}
+
+/**
+ * 그 언어의 학습 순서상 위치(0부터). 모르는 값은 null.
+ * 순서는 `LEVELS` 배열 자체에서 나온다 — 지역 순서표를 또 만들면 언어가 늘 때마다
+ * 갈린다(실측: MaterialsPage의 `LEVEL_ORDER`가 ja/en만 알고 있었다).
+ */
+export function levelRank(language, level) {
+  const i = (LEVELS[language] || []).indexOf(level);
+  return i < 0 ? null : i;
+}
