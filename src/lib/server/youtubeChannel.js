@@ -88,11 +88,22 @@ export async function fetchYoutubeChannel(count = 2, config = {}, deps = {}) {
     const feed = await channel.getVideos();
     const videos = normalizeVideoList(pickVideoNodes(feed), probeBudget(count));
 
+    // 라이선스가 설정에 명시된 채널(VOA = 퍼블릭 도메인)은 **본문까지** 담는다(F R5).
+    // 순환 import를 피하려고 동적으로 가져온다 — youtubeShareable이 이 파일을 쓴다.
+    const shareable = config.license
+      ? (await import('./youtubeShareable.js')).buildShareableArticle
+      : null;
+
     const out = [];
     for (const v of videos) {
       if (out.length >= count) break;
       let info;
       try { info = await yt.getBasicInfo(v.videoId); } catch { continue; }
+      if (shareable) {
+        const a = await shareable({ video: v, info, config, langCode, level }, deps);
+        if (a) out.push(a);
+        continue;
+      }
       const probe = { captionLangs: extractCaptionLangs(info), embeddable: extractEmbeddable(info) };
       if (!isListable(probe, langCode)) continue;
       out.push(toSuggestionArticle(v, {

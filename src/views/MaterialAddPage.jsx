@@ -14,6 +14,7 @@ import {
 import { makeBookKey } from '../lib/bookMeta';
 import { LEVELS } from '../lib/constants';
 import { isOnDemandSuggestion, suggestionVideoUrl } from '../lib/suggestionSources';
+import { isShareableSource, licenseForSource } from '../lib/videoAttribution';
 import MaterialAddPdfSection from './MaterialAddPdfSection';
 import MaterialAddEpubSection from '../components/MaterialAddEpubSection';
 import MaterialAddSentenceSection from '../components/MaterialAddSentenceSection';
@@ -223,6 +224,18 @@ export default function MaterialAddPage() {
         }
         setRawText(s.transcript || '');
         setVisibility('public');
+        // 공유 가능한 영상(퍼블릭 도메인·CC BY)은 **출처 표기가 조건**이다. 여기서
+        // metadata.source에 실어야 뷰어가 보여줄 수 있다 — 안 실으면 라이선스 위반이다.
+        if (isShareableSource(s.source)) {
+          setLinkSource({
+            kind: 'youtube',
+            url: suggestionVideoUrl(s),
+            videoId: s.video_id,
+            channel: s.channel_name || '',
+            license: licenseForSource(s.source),
+            via: 'suggestion',
+          });
+        }
       })
       .catch(() => {})
       .finally(() => setIsSuggestionLoading(false));

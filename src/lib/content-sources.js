@@ -242,6 +242,13 @@ export async function fetchFromSource(source, count = 3) {
       return fetchYoutubeChannel(count, config);
     }
 
+    // CC BY 영상 검색(v2-F R5) — 재배포가 허용된 자료라 **본문까지 담아 공개 자료**로 둔다.
+    // 라이선스는 검색 필터를 믿지 않고 영상마다 재확인한다(fail-closed).
+    case 'youtube_cc': {
+      const { fetchYoutubeCc } = await import('./server/youtubeShareable.js');
+      return fetchYoutubeCc(count, config);
+    }
+
     // 구버전 호환
     case 'wikipedia_good':
     case 'wikipedia_random':
