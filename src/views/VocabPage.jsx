@@ -18,7 +18,7 @@ import VocabReview from './VocabReview';
 import VocabDetailCard from './VocabDetailCard';
 import { CardGridSkeleton } from '../components/Skeleton';
 import { friendlyToastMessage } from '../lib/errorMessage';
-import { detectLang } from '../lib/constants';
+import { detectLang, detectLangConfident, hasCjkText } from '../lib/constants';
 import { stripSourceLangInMeaning } from '../lib/studySession';
 import { useVocabData } from '../lib/useVocabData';
 import { confusedVocabWords, CONFUSED_MIN, CONFUSED_SINCE_DAYS } from '../lib/confusedQueue';
@@ -150,15 +150,17 @@ export default function VocabPage() {
     mutationFn: async (draft) => {
       const text = draft.word_text.trim();
       if (!text) throw new Error('단어를 입력해주세요');
-      const isJa = /[\u3040-\u30ff\u4e00-\u9fff]/.test(text);
+      // 사용자가 고른 언어가 먼저다. 없으면 **확신할 때만** 채우고, 못 가르면 비워 둔다
+      // (표기 추측을 DB에 박지 않는다 — 옛 중국어 단어가 일본어로 굳던 자리다).
+      const guess = draft.language || detectLangConfident(text);
       const row = {
         user_id: user.id,
         word_text: text,
-        base_form: isJa ? text : text.toLowerCase(),
+        base_form: hasCjkText(text) ? text : text.toLowerCase(),
         furigana: draft.furigana.trim(),
         meaning: draft.meaning.trim(),
         pos: draft.pos.trim(),
-        language: draft.language || (isJa ? 'Japanese' : 'English'),
+        ...(guess ? { language: guess } : {}),
         next_review_at: new Date().toISOString(),
       };
       const { error } = await supabase

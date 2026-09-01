@@ -27,7 +27,11 @@ export default function ConversationPanel({ rawText, language, materialId, mater
   const skipPersistRef = useRef(false);
   const { speak, supported: ttsSupported } = useTTS();
   const scrollRef = useRef(null);
-  const targetLang = language === 'Japanese' ? 'Japanese' : 'English';
+  // ⚠ 예전엔 `language === 'Japanese' ? 'Japanese' : 'English'`였다. 이 값은 **LLM 프롬프트**
+  // 에 그대로 들어가므로(「ONLY in ${targetLang}」), 중국어·프랑스어 지문에서 튜터가
+  // **영어로 답했다** — 바로 아래 `targetLangKo`는 「중국어」라고 적으면서.
+  // 이미 아는 언어를 접을 이유가 없다.
+  const targetLang = language || 'English';
   const targetLangKo = langNameKo(language);
   // 오늘 복습한 말 주입(목업 ③ — #1077-17): 튜터 프롬프트에 조용히, 학생이 쓰면 ✓
   const outputWords = useOutputWords(language);

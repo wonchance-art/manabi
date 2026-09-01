@@ -1,5 +1,64 @@
+/* ── 표기로 언어 알아내기 ────────────────────────────────────────────────────────
+ * 이건 `user_vocabulary.language`가 **비어 있을 때만** 쓰는 폴백이다. 저장 경로 6곳은
+ * 전부 언어를 제대로 싣는다(계약: langDetect.test.js).
+ *
+ * ⚠ 「보여 줄 값」과 「저장해도 되는 값」은 다른 질문이다. 예전에는 그 둘이 한 함수였고,
+ * `vocabIO`가 같은 2트랙 판별을 **복제한 뒤 결과를 DB에 UPDATE로 박고** 있었다 —
+ * 옛 중국어 행이 단어장을 여는 순간 `Japanese`로 굳었다(프랑스어는 `English`로).
+ * 표기만 보고 갈 수 없는 것을 되돌릴 수 없게 만든 셈이라, 둘을 갈랐다.
+ * ────────────────────────────────────────────────────────────────────────────── */
+
+/** 가나 — 일본어의 결정적 증거(중국어에는 없다). */
+const KANA = /[\u3040-\u30ff]/;
+/** 한자(CJK 통합) — ja·zh가 **공유**한다. 이것만으로는 못 가른다. */
+const HAN = /[\u4e00-\u9fff]/;
+/** 프랑스어 전용 발음부호 — 영어 표제어에는 사실상 안 나온다. */
+const FR_DIACRITIC = /[àâäæçéèêëîïôœùûü]/i;
+
+/**
+ * **확신할 수 있을 때만** 답한다. 애매하면 `null`.
+ * 영속화(backfill·저장)는 반드시 이걸 쓴다 — 방어할 수 없는 추측을 DB에 박지 않는다.
+ *
+ * · 가나 있음 → 일본어(결정적)
+ * · 프랑스어 발음부호 있음 → 프랑스어
+ * · 한자만 → **null** (ja↔zh를 표기로 못 가른다. `会社`도 `学生`도 양쪽에 있다)
+ * · 라틴만 → **null** (en↔fr을 못 가른다. `table`·`important`는 양쪽 단어다)
+ */
+export function detectLangConfident(word) {
+  const s = String(word || '');
+  if (KANA.test(s)) return 'Japanese';
+  if (FR_DIACRITIC.test(s)) return 'French';
+  return null;
+}
+
+/**
+ * 화면에 쓸 값 — 확신이 없으면 문자 종류로 **기본값**을 고른다(한자→일본어, 그 외→영어).
+ * 기본값은 예전 동작 그대로다. 달라진 건 프랑스어 발음부호 단어가 이제 프랑스어로
+ * 읽히는 것뿐이다(TTS 목소리). **저장에는 쓰지 않는다** — 그건 위 `detectLangConfident`.
+ */
 export function detectLang(word) {
-  return /[\u3040-\u30ff\u4e00-\u9fff]/.test(word) ? 'Japanese' : 'English';
+  return detectLangConfident(word) || (HAN.test(String(word || '')) ? 'Japanese' : 'English');
+}
+
+/**
+ * BCP-47 언어 태그(`ja`·`en-US`·`zh-Hans`) → 정본 언어. **표기 추측이 아니다** —
+ * 파일이 스스로 선언한 값을 우리 이름으로 옮길 뿐이라 확신 문제가 없다.
+ * ⚠ 목록이 `LEVELS`를 덮는지는 계약이 지킨다(EPUB 반입에서 중국어·프랑스어가
+ * 빠진 채 `null`로 떨어지고 있었다 — 언어가 늘 때 이 표가 안 따라왔다).
+ */
+const BCP47_LANG = { ja: 'Japanese', en: 'English', zh: 'Chinese', fr: 'French' };
+export function langFromBcp47(tag) {
+  return BCP47_LANG[String(tag || '').slice(0, 2).toLowerCase()] || null;
+}
+
+/**
+ * 표기가 CJK인가 — **언어 판별이 아니라 표기 판별**이다. 대소문자가 없는 표기를
+ * `toLowerCase()` 하지 않으려고 쓴다(`Tシャツ`의 `T`가 소문자로 굳지 않게).
+ * 언어를 묻는 자리에서 이걸 쓰면 안 된다 — 한자는 ja·zh 공유다.
+ */
+export function hasCjkText(word) {
+  const s = String(word || '');
+  return KANA.test(s) || HAN.test(s);
 }
 
 // \ub2e8\uc5b4 \ud45c\uc2dc\uc6a9 \u2014 \uace0\uc720\uba85\uc0ac/\uc57d\uc5b4 \ub4f1 \ud2b9\ubcc4\ud55c \uacbd\uc6b0\uac00 \uc544\ub2c8\uba74 \uccab \uae00\uc790\ub97c \uc18c\ubb38\uc790\ub85c.

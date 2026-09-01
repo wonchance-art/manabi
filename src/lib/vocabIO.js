@@ -1,5 +1,6 @@
 // 단어장 데이터 입출력 — Supabase fetch · CSV/Anki 가져오기·내보내기
 import { supabase } from './supabase';
+import { detectLangConfident, hasCjkText } from './constants';
 import { cacheVocabSnapshot, getCachedVocabSnapshot } from './offlineCache';
 
 /**
@@ -104,12 +105,22 @@ async function fetchVocabFromNetwork(userId) {
     .order('next_review_at', { ascending: true });
   if (error) throw error;
 
-  // language가 비어있는 기존 단어에 자동 감지 적용
+  // language가 비어 있는 옛 행 backfill.
+  //
+  // ⚠ 여기서 **추측을 DB에 박으면 안 된다.** 예전에는 이 자리에 `detectLang`의 복제
+  // (`/[가나·한자]/ ? 'Japanese' : 'English'`)가 있었고, 그 답을 그대로 UPDATE했다 —
+  // 옛 중국어 행이 단어장을 한 번 여는 것만으로 `Japanese`로 굳었고(프랑스어는
+  // `English`), 원래 언어를 모르니 **되돌릴 수도 없었다.**
+  //
+  // 이제 확신할 때만 채운다(`detectLangConfident`: 가나·프랑스어 발음부호). 못 가르는
+  // 행은 `language`를 **비운 채 둔다** — 화면은 `detectLang` 기본값으로 그리고(예전과
+  // 같은 모양), DB에는 아무것도 쓰지 않는다. 다음에 사용자가 그 단어를 다시 담으면
+  // 저장 경로가 진짜 언어를 싣는다.
   const needsUpdate = [];
   const result = (data || []).map(v => {
     if (v.language) return v;
-    const isJa = /[぀-ヿ一-鿿]/.test(v.word_text);
-    const lang = isJa ? 'Japanese' : 'English';
+    const lang = detectLangConfident(v.word_text);
+    if (!lang) return v;                      // 애매하면 손대지 않는다(쓰기 0)
     needsUpdate.push({ id: v.id, language: lang });
     return { ...v, language: lang };
   });
@@ -192,8 +203,10 @@ export function csvToVocabRows(text, userId) {
     const [word, furigana = '', meaning = '', pos = ''] = r;
     if (!word?.trim()) return null;
     const text = word.trim();
-    const isJa = /[぀-ヿ一-鿿]/.test(text);
-    const isFr = !isJa && /[àâçéèêëîïôùûüœæ]/i.test(text);
+    // CSV에는 언어 칸이 없다. 그래도 **추측을 저장하지는 않는다** — 확신할 때만 싣고,
+    // 못 가르면 비워 둔다(화면은 `detectLang` 기본값으로 그린다). 예전에는 여기서도
+    // ja/fr/en 3트랙으로 단정해 **중국어 CSV가 통째로 일본어로 저장**됐다.
+    const lang = detectLangConfident(text);
     return {
       user_id: userId,
       word_text: text,
@@ -201,8 +214,9 @@ export function csvToVocabRows(text, userId) {
       meaning: meaning.trim(),
       pos: pos.trim(),
       next_review_at: now,
-      language: isJa ? 'Japanese' : isFr ? 'French' : 'English',
-      base_form: isJa ? text : text.toLowerCase(),
+      ...(lang ? { language: lang } : {}),
+      // 소문자화는 **표기** 판단이다(언어가 아니다) — `Tシャツ`의 `T`를 지키려고 가른다.
+      base_form: hasCjkText(text) ? text : text.toLowerCase(),
     };
   }).filter(Boolean);
 }
