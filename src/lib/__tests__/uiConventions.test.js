@@ -89,8 +89,10 @@ describe('① 인라인 하드코딩 색상 0', () => {
 /** R3에서 767(→768 병합)·880(→@container)이 빠졌다. 목록은 줄기만 하고 늘지 않는다. */
 const ALLOWED_MAX = [400, 420, 480, 560, 600, 768, 1179];
 const ALLOWED_MIN = [760, 900];
-/** 현재 총 뷰포트 쿼리 수. 늘릴 수 없다 — 새 접힘은 @container로. */
-const VIEWPORT_QUERY_CAP = 28;
+/** 현재 총 뷰포트 쿼리 수. 늘릴 수 없다 — 새 접힘은 @container로.
+ *  28 → 26 (2026-09-01): 죽은 CSS 라운드가 규칙을 걷어내며 **@media 블록 둘이 통째로
+ *  비어** 사라졌다. 화면을 위해 줄인 게 아니라 아무도 안 쓰던 접힘이 없어진 것이다. */
+const VIEWPORT_QUERY_CAP = 26;
 
 function cssFiles() {
   const out = [];
