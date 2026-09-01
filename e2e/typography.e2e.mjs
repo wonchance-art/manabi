@@ -247,3 +247,151 @@ test('카드 확대(①) — 크기 = 패널 폭 ÷ 분모(cqi 수식), 캡은 -
   assert.ok(Math.abs(got[3].fs - 200) <= 1, `1자 캡 200px 주입 기대: ${got[3].fs}`);
   assert.ok(Math.abs(got[4].fs - 248) <= 1, `캡 300px > 폭 248px → 폭 지배 기대: ${got[4].fs}`);
 });
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * 뷰어 크롬 기하 (v2-Q, 2026-09-01)
+ *
+ * 이 파일의 존재 이유가 그대로 적용된다 — 「규칙이 있어도 상호작용으로 결과가 깨진다」.
+ * v2-Q가 고친 결함이 정확히 그 종류였다: **CSS 규칙 어디에도 문제가 없는데** 배지 3종의
+ * 폭이 제각각이었다. 원인은 각 배지가 아니라 **부모**였다(블록인 `.page-header`의 직계
+ * 자식이라 `div`가 전체 폭까지 늘어났다). 소스 계약은 「래퍼가 있다」까지만 말할 수
+ * 있으므로, 실제로 **한 줄에 내용 폭으로 서는지**는 브라우저 좌표로 못 박는다.
+ *
+ * 폰트 없는 러너에서도 성립하도록 절대 px가 아니라 **관계**만 단언한다
+ * (같은 y · 컨테이너보다 좁다 · 글자 수 순서 · 넘침 0 · 왼쪽/오른쪽).
+ * ────────────────────────────────────────────────────────────────────────── */
+
+const CHROME_W = 900;
+const chromePage = (body, w = CHROME_W) =>
+  `<style>${CSS}</style><style>body{margin:0}#w{width:${w}px}</style><div id="w">${body}</div>`;
+
+const badgeRow = `<div class="viewer-badges">
+  <a class="viewer-badge viewer-badge--pop">103개 수집 → 단어장</a>
+  <span class="viewer-badge viewer-badge--due">6개 복습</span>
+  <span class="viewer-badge">아는 단어 23% · 새 단어 102개</span>
+</div>`;
+const chromeHeader = `<header class="page-header viewer-header">
+  <a class="viewer-back-link">← 자료실</a>
+  <div class="viewer-titlerow"><h1 class="page-header__title">HSK 5 — 1과</h1><button class="viewer-title-edit">편집</button></div>
+  ${badgeRow}
+</header>`;
+
+/** 기하를 재기 전에 진행 중인 애니메이션을 끝까지 돌린다.
+ *  수집 배지의 팝(`vocabCounterPop`)은 `scale(0.9)`에서 시작하므로, 그냥 재면 **애니메이션
+ *  중간 좌표**를 잡아 좌우가 안쪽으로 밀린 값이 나온다(실측: 첫 배지 left 0 → 7.02).
+ *  CI 타이밍에 따라 값이 흔들리는 flaky의 씨앗이라 여기서 확정적으로 없앤다. */
+const settle = () => page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
+
+const boxes = async (sel) => {
+  await settle();
+  return page.$$eval(sel, (els) => els.map((e) => {
+    const r = e.getBoundingClientRect();
+    return { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width) };
+  }));
+};
+
+test('뷰어 배지 3종 — 한 줄에, 각자 내용 폭으로 선다', async () => {
+  await page.setContent(chromePage(chromeHeader));
+  const b = await boxes('.viewer-badge');
+  assert.equal(b.length, 3, '배지 3종');
+  assert.equal(new Set(b.map((r) => r.y)).size, 1, `한 줄이어야 한다: ${JSON.stringify(b)}`);
+  for (const r of b) {
+    assert.ok(r.w < CHROME_W * 0.6, `배지가 전체 폭으로 늘어났다(${r.w}px) — 래퍼가 죽었다`);
+  }
+  // 글자 수가 적은 배지가 더 좁다 = 내용 폭이라는 증거(고정 폭이면 같아진다).
+  assert.ok(b[1].w < b[0].w && b[0].w < b[2].w, `내용 폭 순서 기대(복습<수집<커버리지): ${JSON.stringify(b.map((r) => r.w))}`);
+  // 래퍼가 죽어도(block) 배지가 inline-flex라 한 줄·내용 폭은 유지된다 — 돌연변이 실측.
+  // 래퍼만이 주는 것은 **간격**이다: 공백 문자가 아니라 토큰 gap(8px)이어야 한다.
+  // (위 boxes()는 x·w를 따로 반올림해 간격이 ±2px 흔들린다 — 여기선 원좌표로 잰다.)
+  await settle();
+  const gaps = await page.$$eval('.viewer-badge', (els) => {
+    const r = els.map((e) => e.getBoundingClientRect());
+    return [r[1].left - r[0].right, r[2].left - r[1].right];
+  });
+  for (const gap of gaps) {
+    assert.ok(Math.abs(gap - 8) < 0.6, `배지 사이 gap 8px 기대(래퍼 flex가 죽으면 공백 폭이 된다): ${gap}`);
+  }
+});
+
+test('옛 구조 대조군 — 래퍼가 없으면 실제로 전체 폭까지 늘어난다', async () => {
+  // 진단이 추측이 아니었음을 브라우저로 남긴다. 이 단언이 깨지면 전제가 바뀐 것이므로
+  // 위 계약의 의미도 다시 봐야 한다.
+  await page.setContent(chromePage(`<header class="page-header viewer-header">
+    <h1 class="page-header__title">HSK 5 — 1과</h1>
+    <a style="display:inline-block;padding:4px 12px">103개 수집 → 단어장</a>
+    <div style="padding:4px 10px">6개 복습</div>
+    <div style="padding:4px 10px">아는 단어 23% · 새 단어 102개</div>
+  </header>`));
+  const w = await page.$$eval('header > a, header > div', (els) => els.map((e) => Math.round(e.getBoundingClientRect().width)));
+  assert.equal(w.filter((x) => x >= CHROME_W).length, 2, `블록 배지 둘이 전체 폭이어야 한다(옛 결함): ${JSON.stringify(w)}`);
+  assert.ok(w[0] < CHROME_W, `inline-block 배지만 내용 폭이었다: ${w[0]}`);
+});
+
+test('좁은 화면 — 배지가 눌리지 않고 다음 줄로 흐른다', async () => {
+  // `flex-wrap`이 지키는 것은 **넘침이 아니라 모양**이다. 실측: wrap을 빼도 넘침은 0인데
+  // (flex 항목이 기본으로 줄어든다) 배지가 눌려 알약 **안에서 글자가 접힌다**
+  //   wrap 있음 → 2줄, 폭 [140,70,192] 높이 30
+  //   wrap 없음 → 1줄, 폭 [130,66,178] 높이 **50**
+  // 그래서 넘침만 보면 회귀를 놓친다(돌연변이 실측: flex-wrap 제거가 생존했다).
+  //
+  // ⚠ 폭을 390px로 못 박았더니 **CJK 폰트가 없는 러너에서 셋이 한 줄에 들어가** 깨졌다
+  //    (이 파일 머리의 이식성 규칙을 내가 어겼다: 절대 px가 아니라 관계로 단언할 것).
+  //    그래서 좁은 폭을 **측정값에서 끌어낸다** — 가장 넓은 배지는 들어가되 셋이 다 서지는
+  //    못하는 폭. 폰트가 무엇이든 같은 상황이 만들어진다.
+  await page.setContent(chromePage(chromeHeader));
+  await settle();
+  const wide = await page.$$eval('.viewer-badge', (els) => els.map((e) => {
+    const r = e.getBoundingClientRect(); return { w: Math.round(r.width), h: Math.round(r.height) };
+  }));
+  const widest = Math.max(...wide.map((r) => r.w));
+  const total = wide.reduce((a, r) => a + r.w, 0) + 8 * (wide.length - 1);
+  const narrowW = widest + 20;
+  assert.ok(narrowW < total, `좁은 폭이 한 줄 총폭보다 작아야 상황이 성립한다: ${narrowW} vs ${total}`);
+
+  await page.setContent(chromePage(chromeHeader, narrowW));
+  await settle();
+  const narrow = await page.$$eval('.viewer-badge', (els) => els.map((e) => {
+    const r = e.getBoundingClientRect(); return { y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) };
+  }));
+  const { sw, cw } = await page.evaluate(() => ({
+    sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth,
+  }));
+
+  assert.ok(sw <= cw, `가로 넘침 ${sw - cw}px`);
+  assert.ok(new Set(narrow.map((r) => r.y)).size > 1, `좁은 화면(${narrowW}px)에서는 줄을 나눠 흘러야 한다`);
+  narrow.forEach((r, i) => {
+    assert.equal(r.w, wide[i].w, `배지 ${i}가 눌렸다(폭 ${wide[i].w}→${r.w}) — 줄바꿈 대신 압축됐다`);
+    assert.equal(r.h, wide[i].h, `배지 ${i}가 두 줄이 됐다(높이 ${wide[i].h}→${r.h}) — 알약 안에서 글자가 접혔다`);
+  });
+});
+
+test('액션바 — 행동은 왼쪽, 도구는 오른쪽 끝', async () => {
+  await page.setContent(chromePage(`<div class="viewer-actionbar">
+    <div class="viewer-actionbar__group">
+      <button class="grammar-btn grammar-btn--complete">✓ 읽기 완료 표시</button>
+      <a class="grammar-btn">오늘 학습 만들기</a>
+    </div>
+    <div class="viewer-actionbar__group viewer-actionbar__group--tools">
+      <div class="listen-controls"><button class="btn btn--ghost btn--sm">▷ 듣기</button></div>
+      <button class="viewer-aa">Aa</button>
+    </div>
+  </div>`));
+  const g = await boxes('.viewer-actionbar__group');
+  assert.equal(g.length, 2, '행동·도구 두 그룹');
+  assert.ok(g[0].x < g[1].x, `행동이 도구보다 왼쪽: ${JSON.stringify(g)}`);
+  assert.ok(g[0].x <= 1, `행동은 왼쪽 정렬(제목·배지와 같은 축): x=${g[0].x}`);
+  assert.ok(Math.abs(g[1].x + g[1].w - CHROME_W) <= 1, `도구는 오른쪽 끝: 우변 ${g[1].x + g[1].w}`);
+});
+
+test('액션바 — 행동이 하나도 없어도 도구는 오른쪽에 남는다(비로그인)', async () => {
+  // 행동 그룹이 비면 `justify-content: space-between`은 도구를 **왼쪽으로 보낸다**.
+  // 두 경우를 다 감당하는 것은 auto 마진뿐이라, 그 근거를 여기서 못 박는다.
+  await page.setContent(chromePage(`<div class="viewer-actionbar">
+    <div class="viewer-actionbar__group"></div>
+    <div class="viewer-actionbar__group viewer-actionbar__group--tools">
+      <button class="viewer-aa">Aa</button>
+    </div>
+  </div>`));
+  const g = await boxes('.viewer-actionbar__group');
+  assert.ok(Math.abs(g[1].x + g[1].w - CHROME_W) <= 1, `도구가 왼쪽으로 튀었다: ${JSON.stringify(g)}`);
+});
