@@ -75,7 +75,7 @@ import { syncVocabEncounters } from '../components/world/vocabEncounterSync';
 import { encounterLookupLang, loadMetWordKeys, loadRefVocabLookup } from '../lib/refVocabLookup';
 import { normalizeRefWordKey } from '../lib/refWordNormalize';
 import { isWordToken, wordStateOf, wordStateExtraClass } from '../lib/wordState';
-import { TTS_RATES, ttsOptsFor, pronHiddenFor, READING_PRESETS, PRESET_META, presetActive } from '../lib/readingSheet';
+import { TTS_RATES, ttsOptsFor, pronHiddenFor, pronRevealAvailable, shouldRevealPron, READING_PRESETS, PRESET_META, presetActive } from '../lib/readingSheet';
 import { getBook } from '../lib/bookMeta';
 import { getJaRef, formatJaRef, getJaWarn } from '../lib/jaRef';
 import TokenEditPanel from './TokenEditPanel';
@@ -189,10 +189,13 @@ export default function ViewerPage() {
           focusMode, setFocusMode,
           autoPace, setAutoPace, paceCpm, setPaceCpm, paceStep, setPaceStep,
           theme, setTheme, fontFamily, setFontFamily, pronDisplay, setPronDisplay,
+          pronReveal, setPronReveal,
           autoSpeakOnClick, setAutoSpeakOnClick, ttsRate, setTtsRate,
           settingsOpen, setSettingsOpen } = settings;
 
-  // 읽기 모드 프리셋(오너 확정 2026-08-27) — 표시 4키만 대입, 조판은 불가침(readingSheet 계약).
+  // 읽기 모드 프리셋(오너 확정 2026-08-27) — 표시 키만 대입, 조판은 불가침(readingSheet 계약).
+  // v1-4 R1에서 pronReveal이 합류했다 — 프리셋은 '표시 의도'를 통째로 정하므로 새 키도
+  // 반드시 대입한다(빠뜨리면 카드 불은 켜졌는데 실제 상태는 다른 유령 활성이 생긴다).
   const applyPreset = (name) => {
     const p = READING_PRESETS[name];
     if (!p) return;
@@ -200,6 +203,7 @@ export default function ViewerPage() {
     setWordStateHl(p.wordStateHl);
     setFocusMode(p.focusMode);
     setShowToneColors(p.showToneColors);
+    setPronReveal(p.pronReveal);
   };
   // 탭 시트(B안 — 오너 전환 지시 2026-08-28): 글자/표시/도구. 상태는 페이지 방문 동안만
   // 유지(마지막 탭 기억) — 영속 pref로 만들 만큼의 무게는 아니다.
@@ -213,6 +217,13 @@ export default function ViewerPage() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   // ④ 글자 탐색 — 카드의 큰 단어에서 탭한 한자({ ch, key, reading }). 단어가 바뀌면 리셋.
   const [inspectChar, setInspectChar] = useState(null);
+  // 발음을 공개한 토큰(v1-4 R1). **세션 로컬 Set 하나** — localStorage·DB 어디에도 쓰지
+  // 않는다. 자료를 나가면 리셋되는 것이 맞다: 다음에 또 인출 연습이 돼야 한다(설계 §4).
+  const [revealedPron, setRevealedPron] = useState(() => new Set());
+  // 자료를 옮기면 공개를 접는다. 앱 라우터는 /viewer/[id] 사이 이동에서 이 컴포넌트를
+  // 다시 마운트하지 않으므로, 지우지 않으면 지난 자료의 공개가 tokenId가 겹치는 만큼
+  // 새 자료에 비친다. (빈 Set일 땐 그대로 둔다 — 첫 렌더에 헛 리렌더를 만들지 않는다.)
+  useEffect(() => { setRevealedPron((prev) => (prev.size ? new Set() : prev)); }, [id]);
   const [commentInput, setCommentInput] = useState('');
   const [saveAnim, setSaveAnim] = useState(false);
   const [inlineSaving, setInlineSaving] = useState({});
@@ -493,7 +504,7 @@ export default function ViewerPage() {
   // 단어 저장 카운트 (복습 유도용)
   const saveCountRef = useRef(0);
 
-  const handleTokenClick = (token, tokenId) => {
+  const handleTokenClick = (token, tokenId, opts = {}) => {
     if (token.pos === '개행') return;
     // 집중 모드 단일 규칙(오너 확정 2026-08-20): 지정 문장 '밖' 탭 = 순수 이동 — 지정만
     // 옮기고 카드·분석·발화·시트 없음, 뜻이 필요하면 지정된 문장 '안'에서 한 번 더 탭.
@@ -511,6 +522,16 @@ export default function ViewerPage() {
         clearAnalysisPanels(); // 이전 문장 분석이 낡은 채 남지 않게 — 순수 이동과 동일 원칙
         return;
       }
+    }
+    // 「가려진 것만 한 번 더」(v1-4 R1) — 탭은 그 자리에서 가장 덜 아는 것을 연다.
+    // 순서가 계약이다: ① 집중 모드 문장 밖 = 이동(위에서 이미 return) → ② 발음이
+    // 가려져 있으면 공개 → ③ 그 외 카드 시트. 가려지지 않은 단어는 지금과 완전히 같다.
+    // 공개는 화면 클래스 한 겹만 벗긴다 — review_events·user_vocabulary에 아무것도 쓰지
+    // 않는다. '탭해서 봤다 = 모른다'는 신호가 약해(궁금해서·확인차·오탭) FSRS에 흘리면
+    // 복습 전체가 흔들린다(설계 §4).
+    if (shouldRevealPron(pronReveal, pronDisplay, { hidden: opts.pronHidden, revealed: opts.pronRevealed })) {
+      setRevealedPron((prev) => new Set(prev).add(tokenId));
+      return;
     }
     const t = { ...token, id: tokenId };
     setSelectedToken(t);
@@ -2252,6 +2273,14 @@ export default function ViewerPage() {
                       ))}
                     </div>
                   </div>
+                  {/* 탭하면 발음 보기(v1-4 R1) — 발음 표기의 **종속** 스위치라 바로 아래 들여쓴다.
+                      직교 축이 아니라 3단의 딸림 항목이므로 세그먼트 4번째 값으로 만들지 않는다.
+                      「전체」에는 가릴 게 없어 흐린다 — 흐림 판정과 동작 판정이 같은 함수를
+                      쓴다(갈리면 "흐린데 눌리는" 스위치가 생긴다). */}
+                  <label className={`rsheet-swrow rsheet-swrow--sub${pronRevealAvailable(pronDisplay) ? '' : ' rsheet-swrow--off'}`}>
+                    <span className="rsheet-txt"><b>탭하면 발음 보기</b><span>가려진 단어를 한 번 탭하면 발음이 드러나고, 한 번 더 탭하면 뜻 카드가 열려요</span></span>
+                    <span className="rsheet-switch"><input type="checkbox" checked={pronReveal} disabled={!pronRevealAvailable(pronDisplay)} onChange={() => setPronReveal(v => !v)} /><span className="rsheet-knob" /></span>
+                  </label>
                   <label className="rsheet-swrow">
                     <span className="rsheet-txt"><b>단어 상태</b><span>아는 정도를 색으로</span></span>
                     <span className="rsheet-switch"><input type="checkbox" checked={wordStateHl} onChange={() => setWordStateHl(v => !v)} /><span className="rsheet-knob" /></span>
@@ -2623,13 +2652,19 @@ export default function ViewerPage() {
               isKnown: tokKnown,
               isMet: !!(metCode && (metWordSet.has(normalizeRefWordKey(metCode, token.base_form)) || metWordSet.has(normalizeRefWordKey(metCode, token.text)))),
             })) : '';
-            // 발음 표기 3단(오너 확정 2026-08-27) — 감춰도 rt만 숨긴다(폭 예약 불변, furi-off 선례).
-            const furiOff = pronHiddenFor(pronDisplay, { isKnown: tokKnown, isSaved });
             // ruby는 토글과 무관하게 항상 만든다 — 폭 예약(ruby[data-pinyin])이 병음을 꺼도
             // 유지돼야 켤 때 글자가 밀리지 않는다(오너 요청 2026-08-19). 끌 때는 rt만 감춘다.
             const rubySegments = token.furigana
               ? splitRuby(token.text, token.furigana)
               : null;
+            // 발음 표기 3단(오너 확정 2026-08-27) — 감춰도 rt만 숨긴다(폭 예약 불변, furi-off 선례).
+            // 「가려져 있다」는 **읽기가 실제로 붙는 토큰**에서만 참이다: furigana가 있어도
+            // 한자가 없으면 splitRuby가 plain 한 조각만 내주어 벗길 rt가 없다. 그런 토큰까지
+            // 참으로 두면 탭이 아무 일도 없이 먹힌다(카드가 안 열린다).
+            const hasReading = !!rubySegments?.some((seg) => seg.kanji);
+            const pronHidden = hasReading && pronHiddenFor(pronDisplay, { isKnown: tokKnown, isSaved });
+            const pronRevealed = revealedPron.has(tokenId);
+            const furiOff = pronHidden && !pronRevealed;
             return (
               <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
                 data-tid={tokenId}
@@ -2637,8 +2672,8 @@ export default function ViewerPage() {
                 className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}`}
                 style={paceStyle}
                 role="button" tabIndex={0}
-                onClick={() => handleTokenClick(token, tokenId)}
-                onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleTokenClick(token, tokenId))}>
+                onClick={() => handleTokenClick(token, tokenId, { pronHidden, pronRevealed })}
+                onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleTokenClick(token, tokenId, { pronHidden, pronRevealed }))}>
                 {linePick}
                 {rubySegments ? (
                   <span className={`surface${furiOff ? ' surface--furi-off' : ''}`}>
