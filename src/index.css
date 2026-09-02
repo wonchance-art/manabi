@@ -4628,6 +4628,12 @@ a.grammar-btn {
 .word-detail-card__actrow { display: flex; gap: 6px; margin-bottom: 8px; }
 .word-detail-card__actrow > .btn { flex: 1; min-width: 0; }
 .word-detail-card__known { color: var(--text-muted); }
+/* W R1 저장 등급(#1077 5504298889) — 복습 화면의 .review-score-* 재사용 + 숫자 배지·부제 */
+.save-grade { margin-bottom: 8px; }
+.save-grade .review-score-btn { position: relative; padding: 8px 4px; font-size: 0.8rem; }
+.save-grade__guide { font-size: 0.78rem; color: var(--text-muted); text-align: center; margin: 0 0 6px; }
+.save-grade__key { position: absolute; top: 3px; left: 5px; font-size: 0.6rem; font-weight: 700; opacity: 0.7; }
+.save-grade__sub { font-size: 0.66rem; font-weight: 500; opacity: 0.85; }
 /* ▷는 단어와 짝인데 멀리 있었다 — 헤더 줄 우측에 두되 ✕(카드 닫기)와 간격을 벌린다.
    ✕는 시트 핸들(시트 닫기)과 인접해 오조작 위험이 있어 특히 그렇다. */
 .word-detail-card__speak {

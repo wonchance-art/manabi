@@ -62,9 +62,11 @@ describe("'이미 앎' 배선 계약", () => {
 
   it("뷰어 — 시트에 '이미 알아요' 토글, 저장된 단어에는 숨김", () => {
     const src = read('src/views/ViewerPage.jsx');
-    expect(src).toContain('👌 이미 알아요');
+    // W R1(2026-09-02): 「이미 알아요」 **쓰기 일몰** — 뷰어에 markKnown 호출 0, 이미 known인
+    // 단어의 「취소」만 남는다(읽기 경로·커버리지·「모르는 단어만」은 불변).
+    expect(src).not.toContain('👌 이미 알아요');
+    expect(src).not.toMatch(/\bmarkKnown\(/);
     expect(src).toContain('아는 말로 표시됨 — 취소');
-    // R R2: 저장·이미알아요가 한 액션 줄(2열)에 든다 — 숨김 조건은 그대로
-    expect(src).toContain('{knownLangCode && !isWordSaved && (');
+    expect(src).toContain('{knownLangCode && isKnown && (');
   });
 });

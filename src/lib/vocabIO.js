@@ -2,6 +2,7 @@
 import { supabase } from './supabase';
 import { detectLangConfident, hasCjkText } from './constants';
 import { cacheVocabSnapshot, getCachedVocabSnapshot } from './offlineCache';
+import { calculateFSRS } from './fsrs';
 
 /**
  * 저장용 word_text 정규화 — item_key(=user_vocabulary.word_text) 통일 규약.
@@ -51,9 +52,35 @@ export const VOCAB_UPSERT = Object.freeze({ onConflict: 'user_id,word_text', ign
  * @param {{userId, surface, base, meaning, pos, reading, language,
  *          sourceSentence?, sourceMaterialId?, sourceRef?, now?}} p
  */
+/**
+ * W R1 저장 등급(오너 확정 2026-09-02, #1077 5504298889) — 라벨·순서·CSS 접미사는 복습 화면
+ * ScoreSection과 **동일**해야 한다(saveGrade 계약이 VocabReview 소스와 대조). 같은 이름이
+ * 같은 값이면 충돌이 처리되는 게 아니라 존재하지 않는다. 부제는 ts-fsrs 기본 파라미터의
+ * 첫 간격 실측(1일·1일·2일·8일)에 「다시」 특례(오늘)를 얹은 값.
+ */
+export const SAVE_GRADES = Object.freeze([
+  Object.freeze({ grade: 1, key: '1', label: '다시', sub: '오늘 또', cls: 'again' }),
+  Object.freeze({ grade: 2, key: '2', label: '어려움', sub: '내일', cls: 'hard' }),
+  Object.freeze({ grade: 3, key: '3', label: '알맞음', sub: '2일 뒤', cls: 'good' }),
+  Object.freeze({ grade: 4, key: '4', label: '쉬움', sub: '8일 뒤', cls: 'easy' }),
+]);
+
+/**
+ * 등급 → 초기 SRS 상태. 변환은 calculateFSRS 재사용(손계산 금지) — 첫 등급이 D(난이도)를
+ * 영구히 정한다(1 다시 6.41 · 4 쉬움 1.00, 2회차부터 20배 차이). 「다시」 특례: 최소 간격
+ * 1일 반올림 때문에 1·2가 둘 다 「내일」이 되어 구분이 없으므로 S·D는 FSRS 값 그대로 두고
+ * next_review_at만 오늘(now) — Anki 학습 단계(당일 재등장)의 대용이자 현행 저장 동작의 보존.
+ * last_reviewed_at은 세우지 않는다: 저장은 첫 만남이지 회상이 아니고, 세우면 복습 카드가
+ * 되어 한도 없는 큐로 직행한다(「쉬움」 500개면 8일 뒤 500개).
+ */
+export function gradeToInitialStats(grade, now = () => new Date().toISOString()) {
+  const stats = calculateFSRS(grade, undefined);
+  return grade === 1 ? { ...stats, next_review_at: now() } : stats;
+}
+
 export function buildVocabRow({
   userId, surface, base, meaning, pos, reading, language,
-  sourceSentence, sourceMaterialId, sourceRef, now = () => new Date().toISOString(),
+  sourceSentence, sourceMaterialId, sourceRef, grade, now = () => new Date().toISOString(),
 }) {
   const text = normalizeWordText({ surface, base });
   return {
@@ -68,7 +95,8 @@ export function buildVocabRow({
     language: language || 'Japanese',
     // 항상 싣는다. `ignoreDuplicates`라 갱신은 없고 **삽입 때만** 쓰이므로, 컬럼 기본값이
     // 무엇이든 결과가 같다(기본값을 확인할 수 없는 테이블이라 이 편이 안전하다).
-    next_review_at: now(),
+    // 등급(W R1)이 오면 초기 SRS 상태까지; 없으면(인라인 목록 원탭 등 10경로) 현행 그대로.
+    ...(grade ? gradeToInitialStats(grade, now) : { next_review_at: now() }),
     ...(sourceSentence ? { source_sentence: String(sourceSentence).slice(0, SOURCE_SENTENCE_MAX) } : {}),
     ...(sourceMaterialId ? { source_material_id: sourceMaterialId } : {}),
     ...(sourceRef ? { source_ref: sourceRef } : {}),

@@ -219,18 +219,16 @@ test('/quick: 게스트 가드와 로그인 사용자의 fixture 분석 결과�
   });
 });
 
-test('이미 알아요: 뷰어 단어 시트에서 토글 문구가 왕복한다', async () => {
+// W R1(2026-09-02): 「이미 알아요」 쓰기가 일몰돼 시트에는 4등급 저장 그리드가 선다. 토글 왕복
+// 시나리오는 폐기 — 그 자리의 계약은 src/lib/__tests__/saveGrade.test.js.
+test('저장 등급: 뷰어 단어 시트에 4등급 저장 버튼이 복습 화면과 같은 라벨로 선다', async () => {
   await fresh(async (page, context) => {
     await mockAccount(context, { material: viewerMaterial() });
     await page.goto('/viewer/92001', { waitUntil: 'domcontentloaded' });
     await page.locator('[data-tid="id_0_1"]').click();
-    const button = page.getByRole('button', { name: '👌 이미 알아요', exact: true });
-    await visible(button, 'known-word toggle');
-    await button.click();
-    const undo = page.getByRole('button', { name: '👌 아는 말로 표시됨 — 취소', exact: true });
-    await visible(undo, 'known-word undo state');
-    await undo.click();
-    await visible(page.getByRole('button', { name: '👌 이미 알아요', exact: true }), 'restored known-word state');
+    for (const label of ['다시', '어려움', '알맞음', '쉬움']) {
+      await visible(page.locator('.save-grade .review-score-btn', { hasText: label }), `save-grade ${label}`);
+    }
   });
 });
 
