@@ -11,9 +11,14 @@ const read = (p) => fs.readFileSync(path.join(process.cwd(), p), 'utf8');
 describe('뷰어 시트 — 우리 사전 연동', () => {
   const src = read('src/views/ViewerPage.jsx');
 
-  it('선택 토큰을 레퍼런스 어휘 훅으로 조회한다', () => {
+  it('선택 토큰을 레퍼런스 어휘 훅으로 조회한다 — 키는 sep_link → base_form → text', () => {
     expect(src).toContain("from '../lib/refVocabIndex'");
-    expect(src).toMatch(/useRefVocabEntry\(materialLang,\s*selectedToken\?\.base_form\s*\|\|\s*selectedToken\?\.text\)/);
+    // 이합사 O 조각(道了歉의 歉)은 sep_link(VO)로 조회한다(2026-09-02). base_form은 만남 기록 전용으로
+    // 남고, 카드·조회·저장·「이미 앎」·호는 전부 이 한 키를 쓴다 — 자리마다 손으로 적으면 갈린다.
+    expect(src).toMatch(/const selectedLexKey = selectedToken\?\.sep_link\s*\|\|\s*selectedToken\?\.base_form;/);
+    expect(src).toMatch(/useRefVocabEntry\(materialLang,\s*selectedLexKey\s*\|\|\s*selectedToken\?\.text\)/);
+    // 만남 기록만은 O 조각을 건너뛴다 — V(base_form=VO)가 한 번 남긴다(이중 계상 방지)
+    expect(src).toMatch(/if \(t\.sep_link\) continue;/);
   });
 
   it('정본 뜻이 있으면 뜻 자리를 대체하되, 사용자 교정이 최우선이다(오너 피드백)', () => {

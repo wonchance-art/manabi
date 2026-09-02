@@ -321,6 +321,7 @@ export function fixZhTagged(tagged) {
       tag: fix.tag,
       ...(fix.posAll && !e.noPosAll ? { posAll: fix.posAll } : {}),
       ...(e.baseForm ? { baseForm: e.baseForm } : {}),
+      ...(e.sepLink ? { sepLink: e.sepLink } : {}),
     };
   });
 }
@@ -330,20 +331,22 @@ export function fixZhTagged(tagged) {
 // 쌓이지 않는 순환 단절을 base_form 재지정만으로 잇는다(저장 키 '기본형 우선' 규약 —
 // vocabIO.normalizeWordText — 재사용, fr 굴절 §4.8과 같은 모형). "base_form = 표면형"
 // 계약의 첫 명시 예외. 사전 밖·패턴 밖은 전부 무개입(실패 시 현행 수렴).
-// V 후보 태그: v-계열 + 실측 확장 — x(C가 되가른 조각 帮), f(上/下 방위사 기본값, 上了课),
-// n(理·照의 고립 명사 기본값, 理了发·照了一张相), m(点의 고립 양사 기본값, 点了几个菜).
-// 사전 가입 + 회랑 화이트리스트가 실질 게이트라 태그 확장의 오탐 여지는 시드 V 글자로 갇힌다.
-const SEP_V_TAGS = new Set(['v', 'vn', 'vd', 'x', 'f', 'n', 'm']);
+// V 게이트는 **표 가입**이지 태그가 아니다(2026-09-02, 오너 보고 道了歉). 태그 화이트리스트
+// (v·vn·vd·x·f·n·m)로 두던 시절 jieba가 道를 q(양사)로 달아 道了歉·道过歉의 회랑이 안 열렸다 —
+// 같은 단어가 삽입 성분에 따라 됐다 안 됐다 했다. 표에 있는 V 글자 + 회랑 화이트리스트가 실질
+// 게이트이고, 태그는 一幅/d 선례처럼 오태그가 잦아 근거가 못 된다.
+const SEP_V_CHARS = new Set(Object.keys(ZH_SEPARABLE).map((vo) => [...vo][0]));
 const SEP_MID_OK = (tag) => /^u/.test(tag) || tag === 'm' || tag === 'q' || tag === 'mq';
 const NUM_HEAD = /^[一二两三四五六七八九十几半]/; // 一觉/d처럼 오태그된 양사구 캐리어 구제
 
 function markZhSeparable(entries) {
-  return entries.map((e, i) => {
+  const out = entries.slice();
+  entries.forEach((e, i) => {
     const chars = [...e.word];
     // A. 통짜 삽입형(洗过澡/v — jieba 사전 등재): V+상조사+O 3자 → base만 VO로.
     if (chars.length === 3 && ASPECT_TAG[chars[1]]) {
       const vo = chars[0] + chars[2];
-      if (ZH_SEPARABLE[vo]) return { ...e, baseForm: vo };
+      if (ZH_SEPARABLE[vo]) { out[i] = { ...e, baseForm: vo }; return; }
     }
     // B. 분리형 회랑: V 클러스터 뒤 3토큰 이내의 O — O는 단독 토큰이거나 수량구 캐리어
     //    (一架/m·一觉/d 오태그·一阵风/l 융합 구제)의 말미 글자. 회랑의 사이 토큰은 전부
@@ -354,11 +357,12 @@ function markZhSeparable(entries) {
     //    ※ 창 3은 실측 보정: jieba가 수량구를 융합하면(吵了一架) O가 +2에, 융합하지
     //    않으면(抽了 一根 烟·结过 一次 婚) +3에 온다. O 토큰은 건드리지 않는다
     //    (한 만남 = 한 단어, 이중 계상 방지).
-    const vChar = SEP_V_TAGS.has(e.tag)
-      ? chars.length === 1 ? e.word
-        : chars.length === 2 && ASPECT_TAG[chars[1]] ? chars[0]
-          : null
-      : null;
+    // 조사 태그(u*)는 V가 아니다 — 得/ud(他得了到北京的机会: 得…到가 표의 得到에 걸림)·了/ul·的/uj.
+    // 이합사의 V는 동사 자리이고 조사 읽기는 그 자리가 아니다. 중립 스위프가 잡은 첫 오탐(2026-09-02).
+    const vChar = /^u/.test(e.tag) ? null
+      : chars.length === 1 && SEP_V_CHARS.has(e.word) ? e.word
+        : chars.length === 2 && ASPECT_TAG[chars[1]] && SEP_V_CHARS.has(chars[0]) ? chars[0]
+          : null;
     if (vChar) {
       // 창 4(라운드 5): 수사+양사를 가르면서 O가 +4에 온다 — 开/了/一/个/会. 사이 토큰은 여전히 전부
       // 조사·수량구 화이트리스트여야 하므로 창을 늘려도 오탐 면은 안 넓어진다(我吵他架·穿过马路 불변).
@@ -368,10 +372,23 @@ function markZhSeparable(entries) {
         const o = oc.length === 1 ? t.word
           : oc.length <= 4 && (t.tag === 'm' || t.tag === 'q' || t.tag === 'mq' || NUM_HEAD.test(t.word))
             ? oc[oc.length - 1] : null; // ≤4: 一会儿天/m처럼 수량구+O 통짜 융합 실측
-        if (o && ZH_SEPARABLE[vChar + o]) return { ...e, baseForm: vChar + o };
+        // O 후보가 양사 자리면 목적어가 아니다 — 班里有三十名学生의 名은 「30명」의 양사이지 有名의
+        // 名이 아니다(코퍼스 4문장 오탐, 2026-09-02 실측). 판별은 **뒤에 명사가 붙는가**: 양사는 명사를
+        // 이끌고(三十名|学生), 이합사의 O는 문장을 닫는다(吵了一架|。·请了一天假|。).
+        const nextTag = entries[j + 1]?.tag ?? '';
+        const classifierSlot = (t.tag === 'q' || t.tag === 'm' || t.tag === 'mq') && /^n/.test(nextTag);
+        if (o && !classifierSlot && ZH_SEPARABLE[vChar + o]) {
+          out[i] = { ...e, baseForm: vChar + o };
+          // O 토큰에는 base_form이 아니라 **연결 표식**(sepLink)을 단다(2026-09-02). base_form을
+          // VO로 바꾸면 만남·FSRS가 한 줄에서 두 번 센다(이중 계상). 표식만 달면 뷰어가 카드·
+          // 조회·저장·호를 VO로 보내고 만남 기록은 V 한 번만 남긴다. 단독 O만 — 수량구 캐리어
+          // (一架/m)는 그 자체가 학습 단위라 손대지 않는다.
+          if (oc.length === 1) out[j] = { ...t, sepLink: vChar + o };
+          return;
+        }
         if (!SEP_MID_OK(t.tag)) break;
       }
     }
-    return e;
   });
+  return out;
 }

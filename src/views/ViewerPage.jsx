@@ -653,7 +653,8 @@ export default function ViewerPage() {
     const svg = sepArcRef.current;
     if (svg) svg.innerHTML = '';
     const tok = selectedToken;
-    const base = tok?.base_form;
+    // 이합사 O 조각은 sep_link(VO)를 들고 온다 — 歉을 눌러도 道로 호를 긋는다(2026-09-02 오너 보고).
+    const base = tok?.sep_link || tok?.base_form;
     if (materialLang !== 'Chinese' || !tok?.id || !base || base === tok.text || [...base].length !== 2) {
       setSepLink(null);
       return;
@@ -693,7 +694,7 @@ export default function ViewerPage() {
       path.style.transition = 'stroke-dashoffset 0.5s ease-out';
       requestAnimationFrame(() => requestAnimationFrame(() => { path.style.strokeDashoffset = '0'; }));
     }
-  }, [selectedToken?.id, selectedToken?.text, selectedToken?.base_form, materialLang]);
+  }, [selectedToken?.id, selectedToken?.text, selectedToken?.base_form, selectedToken?.sep_link, materialLang]);
 
   // 왼쪽 패널: 번역 + 맥락
   const [leftPanelText, setLeftPanelText] = useState('');
@@ -734,6 +735,7 @@ export default function ViewerPage() {
         if (!alive || !lookup) return;
         const met = [];
         for (const t of dragTokens) {
+          if (t.sep_link) continue;   // 이합사 O 조각 — 만남은 V(base_form=VO)가 한 번만 남긴다
           const hit = lookup.findWord(t.base_form) || lookup.findWord(t.text);
           if (hit?.main) met.push(hit.main);
         }
@@ -1133,7 +1135,7 @@ export default function ViewerPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify({
-          base_form: token.base_form || token.text,
+          base_form: token.sep_link || token.base_form || token.text,
           language: materialLang,
           corrections,
         }),
@@ -1274,7 +1276,9 @@ export default function ViewerPage() {
   const jaFormOf = (text) => toJaForm(text, hanjaJaTable);
 
   // 우리 사전(레퍼런스 어휘) 연동(②) — 급수 뱃지 + 정본 뜻·예문·한자 노트 자동 표시
-  const refVocab = useRefVocabEntry(materialLang, selectedToken?.base_form || selectedToken?.text);
+  // 어휘 키 — 이합사 O 조각(sep_link)은 VO로 조회·저장·표시한다. base_form은 만남 기록 전용으로 남긴다.
+  const selectedLexKey = selectedToken?.sep_link || selectedToken?.base_form;
+  const refVocab = useRefVocabEntry(materialLang, selectedLexKey || selectedToken?.text);
   // 정본 뜻 대체(오너 피드백): 우리 사전에 있으면 그 뜻을 뜻 자리에 그대로 쓴다 —
   // AI 뜻과 대부분 겹치므로 별도 블록 없이 하나만. 단, 사용자가 이 토큰의 뜻을
   // 직접 교정했다면 교정이 최우선(편집 기능 계약 유지).
@@ -1289,23 +1293,23 @@ export default function ViewerPage() {
   useEffect(() => { setIsEditingToken(false); }, [selectedToken?.id]);
   const canEditToken = !!user?.id && user.id === material?.owner_id;
   const { data: editDictEntry } = useQuery({
-    queryKey: ['token-dict', materialLang, selectedToken?.base_form],
+    queryKey: ['token-dict', materialLang, selectedLexKey],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('morpheme_dictionary')
         .select('meanings, reading, pos')
         .eq('language', materialLang)
-        .eq('base_form', selectedToken.base_form)
+        .eq('base_form', selectedLexKey)
         .maybeSingle();
       if (error) throw error;
       return data;
     },
-    enabled: (isEditingToken || (showHanjaKo && materialLang === 'Chinese')) && !!selectedToken?.base_form,
+    enabled: (isEditingToken || (showHanjaKo && materialLang === 'Chinese')) && !!selectedLexKey,
     staleTime: 1000 * 60,
   });
 
   const saveInlineVocabulary = async (token) => {
-    const key = token.base_form || token.text;
+    const key = token.sep_link || token.base_form || token.text;
     if (inlineSaving[key]) return;
     setInlineSaving(prev => ({ ...prev, [key]: true }));
     try {
@@ -1339,7 +1343,7 @@ export default function ViewerPage() {
       const row = buildVocabRow({
         userId: user.id,
         surface: selectedToken.text,
-        base: selectedToken.base_form,          // kuromoji 경로에서 전달됨
+        base: selectedToken.sep_link || selectedToken.base_form,   // kuromoji 경로·이합사 O 조각
         meaning: selectedToken.meaning,
         pos: selectedToken.pos,
         reading: selectedToken.furigana || selectedToken.reading,
@@ -1492,7 +1496,7 @@ export default function ViewerPage() {
       <div className="word-detail-card__actions">
         <div className="word-detail-card__meta">
           <TokenPosLabel token={selectedToken} />
-          {selectedToken.base_form && selectedToken.base_form !== selectedToken.text && ` · ${selectedToken.base_form}`}
+          {selectedLexKey && selectedLexKey !== selectedToken.text && ` · ${selectedLexKey}`}
           {refVocab && <span className="word-detail-card__level">{refLevelLabel(refVocab.level)}</span>}
         </div>
         {ttsSupported && (
@@ -1856,7 +1860,7 @@ export default function ViewerPage() {
       {/* '이미 알아요'(목업 ⑤) — 담을 필요 없는 아는 말 표시. 저장된 단어에는 무의미라 숨김. */}
       {user && knownLangCode && !isWordSaved && (() => {
         const isKnown = knownWordSet?.has(selectedToken.text)
-          || (selectedToken.base_form && knownWordSet?.has(selectedToken.base_form));
+          || (selectedLexKey && knownWordSet?.has(selectedLexKey));
         return (
           <button
             type="button"

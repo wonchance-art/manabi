@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import ZH_SEPARABLE from '../data/zhSeparable.json';
 import ZH_SEPARABLE_HSK from '../data/zhSeparableHsk.json';
 import { tokenizeZhLine } from '../tokenizeZh.js';
+import { collectZhCorpus } from './zhCorpusPinyin.test.js';
 
 // 계약: 이합사(离合词) 인지 R4a — rfc-zh-separable-verbs (오너 승인 2026-08-30 "ㄱㄱ" —
 // 권장안 A+B 감지·수동 시드. 뷰어 문구는 R4b). "base_form = 표면형" 계약의 첫 명시 예외:
@@ -125,6 +126,56 @@ describe('감지 C — x-병합 양사 个 꼬리 분리 → B 합류', () => {
     expect(tok(line, '帮').base_form).toBe('帮忙');
     expect(tok(line, '个').pos).toBe('양사');
   });
+});
+
+describe('감지 D — 태그 불문 회랑 + O 연결 표식(sep_link) (오너 보고 道了歉, 2026-09-02)', () => {
+  it('道了歉·道过歉·道了三次歉: jieba가 道를 양사(q)로 달아도 회랑이 열린다 — 게이트는 표 가입이다', () => {
+    expect(tok('他向我道了歉。', '道').base_form).toBe('道歉');
+    expect(tok('我已经道过歉了。', '道').base_form).toBe('道歉');
+    expect(tok('他向老师道了三次歉。', '道').base_form).toBe('道歉');
+  });
+
+  it('O 조각(歉)은 base_form을 지키고 sep_link로 VO에 붙는다 — 만남은 V 한 번, 카드·조회·저장은 VO', () => {
+    const q = tok('他向我道了歉。', '歉');
+    expect(q.base_form).toBe('歉');
+    expect(q.sep_link).toBe('道歉');
+    // 기존 삽입형도 같은 표식을 받는다
+    expect(tok('从来没吵过架。', '架').sep_link).toBe('吵架');
+    expect(tok('我想请一天假。', '假').sep_link).toBe('请假');
+  });
+
+  it('수량구 캐리어·연속형·통짜 삽입형에는 표식이 없다 — 캐리어는 그 자체가 학습 단위', () => {
+    expect(tokenizeZhLine('他道歉了。').find((t) => t.text === '道歉').sep_link).toBeUndefined();
+    expect(tokenizeZhLine('他洗过澡了。').find((t) => t.text === '洗过澡').sep_link).toBeUndefined();
+    for (const t of tokenizeZhLine('我吵他架。')) expect(t.sep_link, t.text).toBeUndefined();   // 회랑 밖 → 표식도 없음
+  });
+
+  it('조사 태그(u*)는 V가 아니다 — 他得了到北京的机会: 得/ud…到가 表의 得到에 걸리지 않는다', () => {
+    expect(tok('他得了到北京的机会。', '得').base_form).toBe('得');
+  });
+
+  it('양사 자리의 O 후보는 목적어가 아니다 — 班里有三十名学生: 有…名≠有名 (코퍼스 4문장 오탐 수리)', () => {
+    for (const line of ['班里有三十名学生。', '公司有一百多名员工。', '这艘船上有二十名船员。', '培训班里有二十名学员。'])
+      expect(tok(line, '有').base_form, line).toBe('有');
+    // 반대로 문장을 닫는 O는 그대로 회수된다
+    expect(tok('他们吵了一架。', '吵').base_form).toBe('吵架');
+    expect(tok('我想请一天假。', '请').base_form).toBe('请假');
+  });
+
+  it('코퍼스 불변식 — 표식이 달린 O는 4토큰 안에 base_form이 그 VO인 V를 반드시 가진다(짝 없는 표식 0)', async () => {
+    const rows = await collectZhCorpus();
+    const orphan = []; let marks = 0;
+    for (const r of rows) {
+      const toks = tokenizeZhLine(r.zh);
+      toks.forEach((t, i) => {
+        if (!t.sep_link) return;
+        marks++;
+        if (!toks.slice(Math.max(0, i - 4), i).some((u) => u.base_form === t.sep_link)) orphan.push(`${r.zh} ${t.text}→${t.sep_link}`);
+      });
+    }
+    expect(marks).toBeGreaterThan(5);   // 공허 통과 방지(실측 9)
+    expect(orphan).toEqual([]);
+  }, 120000);
 });
 
 describe('무개입 가드(오탐 방지)', () => {
