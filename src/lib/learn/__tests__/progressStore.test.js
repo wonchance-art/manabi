@@ -140,6 +140,22 @@ describe('progressStore', () => {
       expect(result).toEqual({ ok: true, reviewedAt: expect.any(String) });
     });
 
+    it('한 시계 — SRS last_reviewed_at이 반환 reviewedAt과 같다(이벤트 created_at·큐 항목과 같은 값, W 후속 ③)', async () => {
+      const { supabase } = await import('../../supabase');
+      const { logReviewEvents } = await import('../../reviewEvents');
+      const nextStats = { interval: 3, ease_factor: 2.5, repetitions: 1, next_review_at: '2026-09-10T00:00:00.000Z' };
+      const result = await recordReviewCompleted('user-123', {
+        type: 'vocab', itemKey: 'word-456', lang: 'Japanese', correct: true, detail: { word_id: 'word-456' },
+      }, nextStats);
+      expect(result.ok).toBe(true);
+      const vocabWrite = supabase.from.mock.results
+        .map((r, i) => [supabase.from.mock.calls[i][0], r.value])
+        .find(([table]) => table === 'user_vocabulary');
+      expect(vocabWrite, 'user_vocabulary UPDATE가 있어야 한다').toBeTruthy();
+      expect(vocabWrite[1].update).toHaveBeenCalledWith({ ...nextStats, last_reviewed_at: result.reviewedAt });
+      expect(logReviewEvents).toHaveBeenCalledWith('user-123', [expect.objectContaining({ created_at: result.reviewedAt })]);
+    });
+
     it('원격 실패는 삼키지 않는다 — { ok: false }로 호출자에게 알린다(무증상 유실 방지)', async () => {
       // review_events 적재가 터지는 상황
       const { logReviewEvents } = await import('../../reviewEvents');

@@ -28,9 +28,10 @@ describe('인라인 복습 R3㉮ — 척도 정렬·스냅샷 재료·undo (View
 
   it('useInlineReview 결과에 prev(5필드)·reviewedAt이 실리고, fetchUserVocabWords select에 last_reviewed_at이 있다', () => {
     expect(hook).toContain("export const INLINE_SRS_FIELDS = ['interval', 'ease_factor', 'repetitions', 'next_review_at', 'last_reviewed_at'];");
-    expect(hook).toContain('return { vocab, rating, nextStats, prev, reviewedAt };');
-    expect(hook).toContain('await persistVocabGrade(supabase, vocab.id, nextStats, reviewedAt);');
-    expect(hook).toContain('created_at: reviewedAt,');
+    // W 후속 ③: 저장은 복습 화면과 같은 한 길(recordReviewCompleted) — reviewedAt은 정본이 찍어 돌려준다
+    expect(hook).toContain('return { vocab, rating, nextStats, prev, reviewedAt: r.reviewedAt, queued: !!r.queued };');
+    expect(hook).toContain('const r = await recordReviewCompleted(user?.id, {');
+    expect(hook).toContain("if (!r?.ok) throw r?.error || new Error('review-save-failed');");
     expect(viewer).toMatch(/\.select\('id, word_text, base_form, meaning, pos, furigana, interval, ease_factor, repetitions, next_review_at, last_reviewed_at, language'\)/);
   });
 

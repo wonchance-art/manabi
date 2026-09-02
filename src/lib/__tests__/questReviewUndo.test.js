@@ -26,11 +26,11 @@ describe('퀘스트 복습 R3㉯ — 4등급 정렬·undo·키 (QuestReview)', (
     const g = sliceBetween(quest, 'const grade = async (rating) => {', '\n  };');
     expect(g).toContain('const correct = rating > 1;');
     expect(g).toContain("detail: { word_id: current.id, meaning: current.meaning, rating, mode: 'world', qtype: 'flash' },");
-    expect(g).toContain('created_at: reviewedAt,');
-    expect(g).toContain('await persistQuestReviewGrade(supabase, current.id, nextStats, reviewedAt);');
-    // 스냅샷은 저장 성공 뒤에만 유효
-    expect(g).toContain('lastGradeRef.current = { ...snapshot, reviewedAt };');
-    expect(g.indexOf('lastGradeRef.current = null;')).toBeLessThan(g.indexOf('await persistQuestReviewGrade'));
+    // W 후속 ③: 저장은 복습 화면과 같은 한 길(recordReviewCompleted) — 시각·이벤트·큐를 정본이 맡는다
+    expect(g).toContain('r = await recordReviewCompleted(userId, {');
+    // 스냅샷은 저장(또는 큐 적재) 성공 뒤에만 유효
+    expect(g).toContain('lastGradeRef.current = { ...snapshot, reviewedAt: r.reviewedAt, queued: !!r.queued };');
+    expect(g.indexOf('lastGradeRef.current = null;')).toBeLessThan(g.indexOf('await recordReviewCompleted'));
   });
 
   it('undo 뒤 idx·right·phase가 채점 전 값이며, 버스 신호는 재방출되지 않는다', () => {
