@@ -401,7 +401,7 @@ const themes = {
           ko: "차라리 ~할지언정",
           pos: "부사",
           hanja: "영가(寧可) — '차라리 ~함이 낫다'. 뒤에 也不가 자주 와요.",
-          ex: { zh: "我宁可走路，也不坐他的车。", pinyin: "wǒ nìngkě zǒulù, yě bù zuò tā de chē", ko: "저는 차라리 걸을지언정 그의 차는 안 타요." },
+          ex: { zh: "我宁可走路，也不坐他的车。", pinyin: "wǒ nìngkě zǒulù, yě bú zuò tā de chē", ko: "저는 차라리 걸을지언정 그의 차는 안 타요." },
         },
         {
           zh: "毕竟",
@@ -704,7 +704,7 @@ const themes = {
           ko: "낙담하다, 기가 죽다",
           pos: "동사",
           hanja: "기뇌(氣餒) — '기운(氣)이 꺾이다'. 의기소침해지는 거예요.",
-          ex: { zh: "实验失败了，然而我们并不气馁。", pinyin: "shíyàn shībài le, rán'ér wǒmen bìng bù qìněi", ko: "실험은 실패했지만, 우리는 결코 낙담하지 않았어요." },
+          ex: { zh: "实验失败了，然而我们并不气馁。", pinyin: "shíyàn shībài le, rán'ér wǒmen bìng bú qìněi", ko: "실험은 실패했지만, 우리는 결코 낙담하지 않았어요." },
         },
         {
           zh: "受到",
@@ -1040,7 +1040,7 @@ const themes = {
           ko: "포기하다",
           pos: "동사",
           hanja: "방기(放棄) — '놓아 버리다'. 포기하는 거예요.",
-          ex: { zh: "他之所以成功，是因为他从不放弃。", pinyin: "tā zhīsuǒyǐ chénggōng, shì yīnwèi tā cóng bù fàngqì", ko: "그가 성공한 까닭은 결코 포기하지 않았기 때문이에요." },
+          ex: { zh: "他之所以成功，是因为他从不放弃。", pinyin: "tā zhīsuǒyǐ chénggōng, shì yīnwèi tā cóng bú fàngqì", ko: "그가 성공한 까닭은 결코 포기하지 않았기 때문이에요." },
         },
         {
           zh: "道理",

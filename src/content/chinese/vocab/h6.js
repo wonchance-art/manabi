@@ -201,7 +201,7 @@ const themes = {
           ko: "두려워하다, 위축되다",
           pos: "동사",
           hanja: "외구(畏懼) — '畏(두려울 외)+懼(두려울 구)'. 두려워하는 거예요.",
-          ex: { zh: "他面对困难毫不畏惧。", pinyin: "tā miànduì kùnnan háobù wèijù", ko: "그는 어려움 앞에서 조금도 두려워하지 않아요." },
+          ex: { zh: "他面对困难毫不畏惧。", pinyin: "tā miànduì kùnnan háobú wèijù", ko: "그는 어려움 앞에서 조금도 두려워하지 않아요." },
         },
         {
           zh: "厌倦",
@@ -565,7 +565,7 @@ const themes = {
           ko: "마주치다, 부딪치다",
           pos: "동사",
           hanja: "우도(遇到) — '만나게(遇) 되다'예요.",
-          ex: { zh: "他遇到困难而毫不退缩。", pinyin: "tā yùdào kùnnan ér háobù tuìsuō", ko: "그는 어려움을 만나도 조금도 물러서지 않아요." },
+          ex: { zh: "他遇到困难而毫不退缩。", pinyin: "tā yùdào kùnnan ér háobú tuìsuō", ko: "그는 어려움을 만나도 조금도 물러서지 않아요." },
         },
         {
           zh: "退缩",
@@ -573,7 +573,7 @@ const themes = {
           ko: "위축되다, 움츠러들다",
           pos: "동사",
           hanja: "퇴축(退縮) — '물러나 움츠리다'예요.",
-          ex: { zh: "他遇到困难而毫不退缩。", pinyin: "tā yùdào kùnnan ér háobù tuìsuō", ko: "그는 어려움을 만나도 조금도 물러서지 않아요." },
+          ex: { zh: "他遇到困难而毫不退缩。", pinyin: "tā yùdào kùnnan ér háobú tuìsuō", ko: "그는 어려움을 만나도 조금도 물러서지 않아요." },
         },
         {
           zh: "勤奋",
@@ -821,7 +821,7 @@ const themes = {
           ko: "질, 품질",
           pos: "명사",
           hanja: "질량(質量) — 한국어 '질량'과 글자는 같지만 보통 '품질'을 뜻해요.",
-          ex: { zh: "质量姑且不论，价格就已经太高了。", pinyin: "zhìliàng gūqiě bùlùn, jiàgé jiù yǐjīng tài gāo le", ko: "품질은 일단 논외로 해도, 가격이 이미 너무 비싸요." },
+          ex: { zh: "质量姑且不论，价格就已经太高了。", pinyin: "zhìliàng gūqiě búlùn, jiàgé jiù yǐjīng tài gāo le", ko: "품질은 일단 논외로 해도, 가격이 이미 너무 비싸요." },
         },
         {
           zh: "价格",
@@ -829,7 +829,7 @@ const themes = {
           ko: "가격",
           pos: "명사",
           hanja: "가격(價格) — 한자 그대로예요.",
-          ex: { zh: "质量姑且不论，价格就已经太高了。", pinyin: "zhìliàng gūqiě bùlùn, jiàgé jiù yǐjīng tài gāo le", ko: "품질은 일단 논외로 해도, 가격이 이미 너무 비싸요." },
+          ex: { zh: "质量姑且不论，价格就已经太高了。", pinyin: "zhìliàng gūqiě búlùn, jiàgé jiù yǐjīng tài gāo le", ko: "품질은 일단 논외로 해도, 가격이 이미 너무 비싸요." },
         },
         {
           zh: "忽然",
