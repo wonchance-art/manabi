@@ -39,7 +39,8 @@ describe('① 폭맞춤 확대 계약', () => {
   it('뷰어 배선 — CJK만 폭맞춤(fitWord.js), 분모는 fitDivisor, 라틴 자료는 기존 크기 유지', () => {
     expect(viewer).toContain("import { fitDivisor, isFitLang } from '../lib/fitWord'");
     expect(viewer).toContain('if (!isFitLang(materialLang))');
-    expect(viewer).toContain("'--fit-n': fitDivisor(selectedToken.text, selectedToken.furigana, materialLang)");
+    // R R2: 분모는 표제어(기본형일 수 있다)와 그 읽기 기준
+    expect(viewer).toContain("'--fit-n': fitDivisor(headText, headReading, materialLang)");
   });
 });
 
@@ -48,7 +49,7 @@ describe('④ 글자 탐색 계약', () => {
     // 증강 R1~R3(2026-08-28): charEtym·materialWordsWithChar가 같은 캐논에서 합류
     expect(viewer).toContain("import { charDetail, charEtym, isInspectableChar, materialWordsWithChar, wordsWithChar } from '../lib/charInspect'");
     expect(viewer).toMatch(/isInspectableChar\(ch\) \? \(/);
-    expect(viewer).toContain("className={`word-fit__char${inspectChar?.key === key ? ' word-fit__char--active' : ''}`}");
+    expect(viewer).toContain("className={`word-fit__char${inspectChar?.key === key ? ' word-fit__char--active' : ''}${isPickedAt(i) ? ' word-fit__char--picked' : ''}`}"); // R R2: 탭 구간 강조 클래스 동반
     expect(viewer).toMatch(/setInspectChar\(prev => \(prev\?\.key === key \? null : \{ ch, key, reading \}\)\)/);
   });
 

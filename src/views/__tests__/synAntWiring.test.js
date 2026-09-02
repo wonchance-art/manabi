@@ -24,13 +24,13 @@ describe('유의어·반의어 배선', () => {
     expect(effect).toContain('return () => { alive = false; }');
   });
 
-  it('표시는 뜻 바로 아래·로딩 중엔 조용히 — 빈 결과는 아무것도 그리지 않는다', () => {
-    const meaningAt = viewer.indexOf("refMeaning || selectedToken.meaning || '(뜻 없음)'");
+  it('표시는 예문 뒤·한자 노트 앞(R R2 오너 확정 순서)·로딩 중엔 조용히 — 빈 결과는 아무것도 그리지 않는다', () => {
+    const exAt = viewer.indexOf('splitSentenceAroundWord(refVocab.word.ex.zh, headText');
     const synAt = viewer.indexOf('className="syn-ant"');
-    const editPanelAt = viewer.indexOf('<TokenEditPanel');
-    expect(meaningAt).toBeGreaterThan(-1);
-    expect(synAt).toBeGreaterThan(meaningAt);
-    expect(synAt).toBeLessThan(editPanelAt);
+    const hanjaAt = viewer.indexOf('한자 · {refVocab.word.hanja}');
+    expect(exAt).toBeGreaterThan(-1);
+    expect(synAt).toBeGreaterThan(exAt);
+    expect(synAt).toBeLessThan(hanjaAt);
     expect(viewer).toContain('!synAnt.loading && (synAnt.syn.length > 0 || synAnt.ant.length > 0)');
   });
 
@@ -42,7 +42,7 @@ describe('유의어·반의어 배선', () => {
   });
 
   it('스타일 존재 — 라벨·칩·읽기·뜻', () => {
-    for (const cls of ['.syn-ant__row', '.syn-ant__label', '.syn-ant__chip', '.syn-ant__r', '.syn-ant__ko']) {
+    for (const cls of ['.syn-ant__row', '.syn-ant__chips', '.syn-ant__label', '.syn-ant__chip', '.syn-ant__r', '.syn-ant__ko']) {
       expect(css).toContain(cls);
     }
   });

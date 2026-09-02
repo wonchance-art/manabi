@@ -64,6 +64,7 @@ describe("'이미 앎' 배선 계약", () => {
     const src = read('src/views/ViewerPage.jsx');
     expect(src).toContain('👌 이미 알아요');
     expect(src).toContain('아는 말로 표시됨 — 취소');
-    expect(src).toContain('!isWordSaved && (() => {');
+    // R R2: 저장·이미알아요가 한 액션 줄(2열)에 든다 — 숨김 조건은 그대로
+    expect(src).toContain('{knownLangCode && !isWordSaved && (');
   });
 });
