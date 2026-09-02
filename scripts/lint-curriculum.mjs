@@ -14,6 +14,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { collectZhPinyinPairs } from './zh-pinyin-pairs.mjs';
 import { sandhiViolations } from './zh-sandhi.mjs';
+import { neutralViolations } from './zh-neutral.mjs';
 
 const REPO_ROOT = fileURLToPath(new URL('../', import.meta.url));
 const TRACK_NAMES = ['chinese', 'english', 'french', 'japanese'];
@@ -506,6 +507,15 @@ export async function runCurriculumLint() {
         for (const v of sandhiViolations(zh, py)) {
           errors.push(`zh 성조 변조: ${rel} — "${zh}" ∥ "${py}" — ${v.char}는 "${v.to}"여야 한다(현재 "${v.from}")`);
         }
+        // 경성 — 필독 경성 어휘·가능보어 不/得·경험상 过(오너 결정 2026-09-02 「추천대로」). 규칙 정본 = zh-neutral.mjs.
+        for (const v of neutralViolations(zh, py)) {
+          errors.push(`zh 경성: ${rel} — "${zh}" ∥ "${py}" — ${v.char}는 "${v.to}"여야 한다(현재 "${v.from}")`);
+        }
+      }
+      // 품사 라벨 어휘(오너 결정 2026-09-02 「추천대로」) — 개사·대사는 뷰어 라벨(POS_KO)의 전치사·대명사와 같은 것의
+      // 두 이름이라 콘텐츠는 하나만 쓴다(통일 전 개사 31·전치사 12, 대사 12·대명사 80 혼용).
+      for (const m of src.matchAll(/\bpos:\s*"(개사|대사)"/g)) {
+        errors.push(`zh 품사 라벨: ${rel} — "${m[1]}"는 쓰지 않는다 → "${m[1] === '개사' ? '전치사' : '대명사'}"`);
       }
     }
   } catch (e) {

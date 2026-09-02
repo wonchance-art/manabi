@@ -150,11 +150,11 @@ const themes = {
       icon: "🔶",
       words: [
         { zh: "按时", pinyin: "ànshí", ko: "제때에, 정해진 시간에", pos: "부사", hanja: "안시(按時) — '按'은 누를·따를 안, '時'는 때 시.", ex: { zh: "请按时吃药。", pinyin: "qǐng ànshí chī yào", ko: "약을 제때에 드세요." } },
-        { zh: "按照", pinyin: "ànzhào", ko: "~에 따라, ~대로", pos: "개사", hanja: "안조(按照) — '按'은 따를 안, '照'는 비출 조.", ex: { zh: "请按照说明书操作。", pinyin: "qǐng ànzhào shuōmíngshū cāozuò", ko: "설명서대로 조작해 주세요." } },
+        { zh: "按照", pinyin: "ànzhào", ko: "~에 따라, ~대로", pos: "전치사", hanja: "안조(按照) — '按'은 따를 안, '照'는 비출 조.", ex: { zh: "请按照说明书操作。", pinyin: "qǐng ànzhào shuōmíngshū cāozuò", ko: "설명서대로 조작해 주세요." } },
         { zh: "倍", pinyin: "bèi", ko: "배(倍), 곱절", pos: "양사", hanja: "배(倍) — '곱 배'.", ex: { zh: "今年的收入是去年的两倍。", pinyin: "jīnnián de shōurù shì qùnián de liǎng bèi", ko: "올해 수입은 작년의 두 배예요." } },
         { zh: "本来", pinyin: "běnlái", ko: "본래, 원래", pos: "부사", hanja: "본래(本來) — '本'은 근본 본, '來'는 올 래.", ex: { zh: "我本来想去，但是太忙了。", pinyin: "wǒ běnlái xiǎng qù, dànshì tài máng le", ko: "원래는 가려고 했는데 너무 바빴어요." } },
         { zh: "遍", pinyin: "biàn", ko: "번, 회(동작의 전 과정을 세는 양사)", pos: "양사", hanja: "편(遍) — '두루 편'. 처음부터 끝까지 한 차례.", ex: { zh: "这本书我看了三遍。", pinyin: "zhè běn shū wǒ kàn le sān biàn", ko: "이 책을 저는 세 번 읽었어요." } },
-        { zh: "并且", pinyin: "bìngqiě", ko: "게다가, 또한, 그리고", pos: "접속사", hanja: "병차(並且) — '並'은 아우를 병, '且'는 또 차.", ex: { zh: "他聪明并且努力。", pinyin: "tā cōngmíng bìngqiě nǔlì", ko: "그는 똑똑하고 게다가 노력도 해요." } },
+        { zh: "并且", pinyin: "bìngqiě", ko: "게다가, 또한, 그리고", pos: "접속사", hanja: "병차(並且) — '並'은 아우를 병, '且'는 또 차.", ex: { zh: "他聪明并且努力。", pinyin: "tā cōngming bìngqiě nǔlì", ko: "그는 똑똑하고 게다가 노력도 해요." } },
         { zh: "不但", pinyin: "búdàn", ko: "~뿐만 아니라 (不但 A 而且 B)", pos: "접속사", hanja: "부단(不但) — '但'은 다만 단. 뒤에 而且와 호응.", ex: { zh: "他不但会说英语，而且会说法语。", pinyin: "tā búdàn huì shuō Yīngyǔ, érqiě huì shuō Fǎyǔ", ko: "그는 영어뿐만 아니라 프랑스어도 할 줄 알아요." } },
         { zh: "不得不", pinyin: "bùdébù", ko: "어쩔 수 없이 ~하다, ~하지 않을 수 없다", pos: "부사", hanja: "부득불(不得不) — '얻지 못해 ~하지 않을 수 없다'.", ex: { zh: "下雨了，我们不得不回家。", pinyin: "xià yǔ le, wǒmen bùdébù huíjiā", ko: "비가 와서 우리는 어쩔 수 없이 집에 갔어요." } },
         { zh: "不管", pinyin: "bùguǎn", ko: "~에 관계없이, ~든지 간에", pos: "접속사", hanja: "불관(不管) — '管'은 맡을·상관할 관. '상관하지 않고'.", ex: { zh: "不管多忙，他都会锻炼。", pinyin: "bùguǎn duō máng, tā dōu huì duànliàn", ko: "아무리 바빠도 그는 운동을 해요." } },
