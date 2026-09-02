@@ -218,7 +218,7 @@ describe('한자 대조 배선 계약', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
     expect(src).toContain("import('../lib/data/hanjaHun.json')");
     expect(src).toContain('listHanjaHunEum');
-    expect(src).toMatch(/hanjaHunOf\(selectedToken\.text\)/);
+    expect(src).toMatch(/hanjaHunOf\(headText\)/); // R R2: 훈음은 표제어(기본형) 글자 기준
     // 팝업 부활 금지 — 리스트 단어도 같은 카드 한 벌을 쓴다(오너 승인 ②)
     expect(src).not.toContain('popupWord');
   });
@@ -241,8 +241,8 @@ describe('한자 대조 배선 계약', () => {
     expect(src).toMatch(/formChip\('日',/);
     expect(src).toMatch(/jaTable: hanjaJaTable/);
     // 단어 수준 — 日 줄과 ⚠ 경고
-    expect(src).toMatch(/formatJaRef\(ja, selectedToken\.text, jaFormOf\(selectedToken\.text\)\)/);
-    expect(src).toMatch(/⚠ \{jaFormOf\(selectedToken\.text\)\}는 일본어로/);
+    expect(src).toMatch(/formatJaRef\(ja, headText, jaFormOf\(headText\)\)/); // R R2: 日 대응도 표제어(기본형) 기준
+    expect(src).toMatch(/⚠ \{jaFormOf\(headText\)\}는 일본어로/);
   });
 
   it('배치 개선 — 대조 블록은 헤더가 아니라 뜻 아래에 있다', () => {

@@ -42,6 +42,7 @@ import { fetchWordDetailText } from '../lib/wordDetail';
 import { fetchCtxExplain } from '../lib/ctxExplain';
 import { pinyinToneClass } from '../lib/pinyinTone';
 import { splitRuby, KANA_RE } from '../lib/splitRuby';
+import { pickedRangeOf } from '../lib/headwordPick';
 import { pickableSentences, adjacentSentence } from '../lib/sentenceNav';
 import { fitDivisor, isFitLang } from '../lib/fitWord';
 import { charDetail, charEtym, isInspectableChar, materialWordsWithChar, wordsWithChar } from '../lib/charInspect';
@@ -84,7 +85,7 @@ import TokenPosLabel from './TokenPosLabel';
 import TokenRangeGrips from './TokenRangeGrips';
 import ViewerComments from './ViewerComments';
 import ViewerQuizModal from './ViewerQuizModal';
-import { langNameKo } from '../lib/constants';
+import { langNameKo, splitSentenceAroundWord } from '../lib/constants';
 import { attributionParts } from '../lib/videoAttribution';
 
 // 공부 모드 지원 언어 키 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
@@ -1292,7 +1293,7 @@ export default function ViewerPage() {
   // 이어지는 혼선 차단(마감 ③). 같은 토큰의 교정 반영(id 불변)에는 발화하지 않는다.
   useEffect(() => { setIsEditingToken(false); }, [selectedToken?.id]);
   const canEditToken = !!user?.id && user.id === material?.owner_id;
-  const { data: editDictEntry } = useQuery({
+  const { data: editDictEntry, isFetched: dictFetched } = useQuery({
     queryKey: ['token-dict', materialLang, selectedLexKey],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -1304,9 +1305,21 @@ export default function ViewerPage() {
       if (error) throw error;
       return data;
     },
-    enabled: (isEditingToken || (showHanjaKo && materialLang === 'Chinese')) && !!selectedLexKey,
+    // R R2: 표제어가 기본형(이합사 VO·활용형 사전형)이면 그 읽기를 사전 reading에서 가져온다 —
+    // 조각의 furigana에는 자기 글자 읽기뿐(dào)이라 기본형 전체 읽기의 정본은 사전 행이다.
+    enabled: (isEditingToken || (showHanjaKo && materialLang === 'Chinese') || (!!selectedToken && selectedLexKey !== selectedToken.text)) && !!selectedLexKey,
     staleTime: 1000 * 60,
   });
+  // R R2 표제어 — 표면 ≠ 기본형(이합사 조각 道→道歉·歉→道歉, 활용형 食べた→食べる)이면 카드
+  // 표제어를 기본형으로 쓰고 탭한 구간만 강조한다. 뜻·유의어·예문·日 대응이 전부 기본형의
+  // 것인데 표제어만 표면이면 「길 도」 밑에 「사과하다」가 선다(오너 보고 2026-09-02).
+  // 토큰 데이터(text·base_form·furigana·분할)는 한 바이트도 안 바뀐다 — 렌더만(R4a 무충돌).
+  const headText = selectedToken && selectedLexKey && selectedLexKey !== selectedToken.text ? selectedLexKey : selectedToken?.text;
+  const headIsBase = !!selectedToken && headText !== selectedToken.text;
+  const headReading = headIsBase ? (editDictEntry?.reading || null) : selectedToken?.furigana;
+  // 사전 행이 없으면 기본형을 루비 없이 세우고 메타에 「기본형 …」 라벨 — 조회가 끝난 뒤에만(깜빡임 방지)
+  const headFallback = headIsBase && dictFetched && !editDictEntry?.reading;
+  const headPicked = headIsBase ? pickedRangeOf(headText, selectedToken.text) : null;
 
   const saveInlineVocabulary = async (token) => {
     const key = token.sep_link || token.base_form || token.text;
@@ -1496,7 +1509,9 @@ export default function ViewerPage() {
       <div className="word-detail-card__actions">
         <div className="word-detail-card__meta">
           <TokenPosLabel token={selectedToken} />
-          {selectedLexKey && selectedLexKey !== selectedToken.text && ` · ${selectedLexKey}`}
+          {/* 기본형은 표제어가 보여 준다(R R2) — 「품사 · 기본형」이 겸류 구분자와 같은 모양이라
+              품사 오염으로 읽히던 중의성 소멸. 사전 읽기가 없어 표제어가 폴백일 때만 라벨 텍스트. */}
+          {headFallback && <span className="word-detail-card__base">기본형 {headText}</span>}
           {refVocab && <span className="word-detail-card__level">{refLevelLabel(refVocab.level)}</span>}
         </div>
         {ttsSupported && (
@@ -1508,7 +1523,8 @@ export default function ViewerPage() {
         // ① 폭맞춤 확대(오너 승인): CJK는 1em 격자라 크기 = 100cqi ÷ fitDivisor가 CSS
         // 수식으로 성립(.word-fit — 측정 JS 없음). 라틴 자료는 기존 크기 유지.
         // ④ 글자 탐색: 한자만 탭 대상 — zh는 seg가 글자 단위라 병음도 그 글자 것이다.
-        const rubySegs = selectedToken.furigana ? splitRuby(selectedToken.text, selectedToken.furigana) : null;
+        const rubySegs = headReading ? splitRuby(headText, headReading) : null;
+        let at = 0; // 표제어 안 코드포인트 위치 — 탭한 구간(headPicked) 강조용
         if (!isFitLang(materialLang)) {
           return (
             <div lang={contentLangTag} style={{ fontSize: '1.5rem', fontWeight: 800, lineHeight: 1.3 }}>
@@ -1516,35 +1532,36 @@ export default function ViewerPage() {
                 ? rubySegs.map((seg, i) =>
                     seg.kanji ? <ruby key={i}>{seg.kanji}<rt className={seg.pinyin ? ['pinyin-text', showToneColors && pinyinToneClass(seg.reading)].filter(Boolean).join(' ') : undefined} style={{ fontSize: '0.45em', color: showToneColors && seg.pinyin ? undefined : 'var(--primary-light)' }}>{seg.reading}</rt></ruby> : <span key={i}>{seg.plain}</span>
                   )
-                : selectedToken.text}
+                : headText}
             </div>
           );
         }
-        const charSpan = (ch, key, reading) => isInspectableChar(ch) ? (
+        const isPickedAt = (i) => !!headPicked && i >= headPicked[0] && i < headPicked[1];
+        const charSpan = (ch, key, reading, i) => isInspectableChar(ch) ? (
           <span
             key={key}
             role="button"
             tabIndex={0}
-            className={`word-fit__char${inspectChar?.key === key ? ' word-fit__char--active' : ''}`}
+            className={`word-fit__char${inspectChar?.key === key ? ' word-fit__char--active' : ''}${isPickedAt(i) ? ' word-fit__char--picked' : ''}`}
             title="글자 정보"
             onClick={() => toggleInspectChar(ch, key, reading)}
             onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), toggleInspectChar(ch, key, reading))}
           >{ch}</span>
-        ) : <span key={key}>{ch}</span>;
+        ) : <span key={key} className={isPickedAt(i) ? 'word-fit__char--picked' : undefined}>{ch}</span>;
         // 훈음 하단 루비(v2-S) — 글자별 조회표. `hanjaHunOf`가 한자 대조 토글·테이블 로드를
         // 이미 게이트하므로 여기선 글자→훈음만 꺼낸다. 없는 글자는 그 셀을 비운다.
-        const hunByChar = new Map((hanjaHunOf(selectedToken.text) || []).map(({ ch, label }) => [ch, label]));
+        const hunByChar = new Map((hanjaHunOf(headText) || []).map(({ ch, label }) => [ch, label]));
         return (
           <div className="word-fit-wrap">
             <div
               className={`word-fit${rubySegs ? '' : ' word-fit--noruby'}`}
               lang={contentLangTag}
-              style={{ '--fit-n': fitDivisor(selectedToken.text, selectedToken.furigana, materialLang) }}
+              style={{ '--fit-n': fitDivisor(headText, headReading, materialLang) }}
             >
               <span className="surface">
                 {rubySegs
                   ? rubySegs.map((seg, i) => {
-                      if (!seg.kanji) return <span key={i}>{seg.plain}</span>;
+                      if (!seg.kanji) return <span key={i}>{[...seg.plain].map((ch, j) => charSpan(ch, `${i}:${j}`, null, at++))}</span>;
                       const chars = [...seg.kanji];
                       // 훈음은 글자 **아래**(v2-S) — 한 글자만 담은 루비 칸에서만 단다.
                       // 병음 경로는 언제나 글자당 한 칸이라 전부 해당되고, 혼종 토큰
@@ -1561,13 +1578,13 @@ export default function ViewerPage() {
                       return (
                         <ruby key={i} data-pinyin={seg.pinyin ? '1' : undefined} data-yomi={seg.pinyin ? undefined : '1'}
                           style={yomiN ? { '--yomi-n': yomiN } : undefined}>
-                          {chars.map((ch, j) => charSpan(ch, `${i}:${j}`, seg.pinyin ? seg.reading : null))}
+                          {chars.map((ch, j) => charSpan(ch, `${i}:${j}`, seg.pinyin ? seg.reading : null, at++))}
                           <span className={['rt-an', showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : ''].filter(Boolean).join(' ')}>{seg.reading}</span>
                           {hun && <span className="rt-hun">{hun}</span>}
                         </ruby>
                       );
                     })
-                  : [...selectedToken.text].map((ch, j) => charSpan(ch, `p:${j}`, null))}
+                  : [...headText].map((ch, j) => charSpan(ch, `p:${j}`, null, j))}
               </span>
             </div>
           </div>
@@ -1692,23 +1709,6 @@ export default function ViewerPage() {
           >✏️</button>
         )}
       </div>
-      {/* ⑤ 유의어·반의어(오너 승인) — 뜻 바로 아래, 준비되면 조용히 나타난다(내용어만) */}
-      {synAnt && !synAnt.loading && (synAnt.syn.length > 0 || synAnt.ant.length > 0) && (
-        <div className="syn-ant">
-          {synAnt.syn.length > 0 && (
-            <div className="syn-ant__row">
-              <span className="syn-ant__label">유의어</span>
-              {renderSynAntChips(synAnt.syn)}
-            </div>
-          )}
-          {synAnt.ant.length > 0 && (
-            <div className="syn-ant__row">
-              <span className="syn-ant__label">반의어</span>
-              {renderSynAntChips(synAnt.ant)}
-            </div>
-          )}
-        </div>
-      )}
       {isEditingToken && (
         <TokenEditPanel
           key={selectedToken.id} // 토큰 전환 시 리마운트 — 이전 단어 입력값이 새 토큰에 붙는 것 차단(마감 ③)
@@ -1749,7 +1749,10 @@ export default function ViewerPage() {
           글자 나열과 같으면 요미만(#1041 원리의 단어판), ⚠ 경고는 日 줄에 통합. */}
       {(() => {
         const ja = materialLang === 'Chinese' && showHanjaKo ? getJaRef(editDictEntry) : null;
-        const jr = ja ? formatJaRef(ja, selectedToken.text, jaFormOf(selectedToken.text)) : null;
+        const jr = ja ? formatJaRef(ja, headText, jaFormOf(headText)) : null;
+        // ≒(다른 단어)는 부제로 — 「日」 라벨 옆 기호 하나로는 뜻이 안 읽힌다(R R2 ③). jaRef.js 불변.
+        const jrDiff = !!jr && jr.startsWith('≒');
+        const jrText = jrDiff ? jr.slice(1) : jr;
         const warn = getJaWarn(ja);
         // 훈음 나열 줄은 폐지했다(v2-S) — 헤더에 `杯子`가 이미 있는데 여기서 글자를 **다시
         // 그리고** 있었다. 훈음은 표제어 글자 **아래 루비**로 옮겼고(세로 증가 0, 놀던
@@ -1761,10 +1764,11 @@ export default function ViewerPage() {
             {(jr || warn) && (
               <div style={{ color: 'var(--text-muted)' }}>
                 日{' '}
-                {jr && <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{jr}</span>}
+                {jr && <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{jrText}</span>}
+                {jrDiff && <span className="word-detail-card__jadiff">≠ 다른 단어</span>}
                 {warn && (
                   <span style={{ color: 'var(--warning)', fontWeight: 600, marginLeft: jr ? 6 : 0 }}>
-                    ⚠ {jaFormOf(selectedToken.text)}는 일본어로 '{warn}'
+                    ⚠ {jaFormOf(headText)}는 일본어로 '{warn}'
                   </span>
                 )}
               </div>
@@ -1779,9 +1783,36 @@ export default function ViewerPage() {
       {refVocab?.word?.ex && (
         // 예문 3줄 스택(오너 확정): 예문 → 병음 → 뜻
         <div style={{ fontSize: '0.84rem', lineHeight: 1.55, marginBottom: 12 }}>
-          <div lang="zh-Hans">{refVocab.word.ex.zh}</div>
+          <div lang="zh-Hans">{(() => {
+            // 예문 속 표제어 강조 — 복습 카드의 정본 헬퍼 그대로. 이합사 삽입형(道了歉)처럼
+            // 기본형이 연속으로 없으면 term이 null이라 강조 없이 둔다(조각 오탐 금지).
+            const { parts, term } = splitSentenceAroundWord(refVocab.word.ex.zh, headText, null);
+            return parts.map((part, i, arr) => (
+              i < arr.length - 1
+                ? <span key={i}>{part}<mark className="review-card__highlight">{term}</mark></span>
+                : <span key={i}>{part}</span>
+            ));
+          })()}</div>
           <div className="pinyin-text" style={{ color: 'var(--text-muted)', fontSize: '0.76rem' }}>{refVocab.word.ex.pinyin}</div>
           <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{refVocab.word.ex.ko}</div>
+        </div>
+      )}
+      {/* ⑤ 유의어·반의어 — 예문 뒤(오너 확정 순서 R R2: 뜻 → 日 → 예문 → 유의어 → 한자).
+          라벨은 칩 컨테이너의 **형제 캡션** — 인라인 라벨은 둘째 줄부터 들여쓰기가 어긋났다. */}
+      {synAnt && !synAnt.loading && (synAnt.syn.length > 0 || synAnt.ant.length > 0) && (
+        <div className="syn-ant">
+          {synAnt.syn.length > 0 && (
+            <div className="syn-ant__row">
+              <span className="syn-ant__label">유의어</span>
+              <div className="syn-ant__chips">{renderSynAntChips(synAnt.syn)}</div>
+            </div>
+          )}
+          {synAnt.ant.length > 0 && (
+            <div className="syn-ant__row">
+              <span className="syn-ant__label">반의어</span>
+              <div className="syn-ant__chips">{renderSynAntChips(synAnt.ant)}</div>
+            </div>
+          )}
         </div>
       )}
       {refVocab?.word?.hanja && !showHanjaKo && (
@@ -1812,15 +1843,7 @@ export default function ViewerPage() {
             </div>
           );
         }
-        return (
-          <button
-            onClick={() => runCtxExplain(selectedToken, ctxSentence)}
-            className="btn btn--ghost btn--sm"
-            style={{ width: '100%', marginBottom: 12 }}
-          >
-            {ctxExplain?.error ? '이 문장에서는? (다시 시도)' : '이 문장에서는?'}
-          </button>
-        );
+        return null; // 버튼은 아래 액션 줄로(R R2 ④ — 2열 접기)
       })()}
 
       {wordDetail?.loading ? (
@@ -1828,15 +1851,22 @@ export default function ViewerPage() {
       ) : wordDetail?.detail ? (
         <div className="pdf-detail-popup__text" style={{ marginBottom: 14 }}
           dangerouslySetInnerHTML={{ __html: formatDetail(wordDetail.detail) }} />
-      ) : (
-        <button
-          onClick={() => fetchWordDetail(selectedToken)}
-          className="btn btn--ghost btn--sm"
-          style={{ width: '100%', marginBottom: 12 }}
-        >
-          상세 설명 보기
-        </button>
-      )}
+      ) : null}
+      {/* 액션 접기(R R2 ④): 전폭 4단 → 2단. 1줄 = [이 문장에서는? | 상세 설명], 2줄 = [저장 | 이미 알아요].
+          로딩·결과 텍스트는 위 블록에 남고 버튼만 줄에 든다. W R1이 오면 2줄이 4등급 그리드로 교체. */}
+      {(() => {
+        const ctxSentence = materialLang === 'Chinese' ? ctxSentenceOf(selectedToken) : null;
+        const ctxBtn = ctxSentence && !ctxExplain?.loading && !ctxExplain?.text ? (
+          <button onClick={() => runCtxExplain(selectedToken, ctxSentence)} className="btn btn--ghost btn--sm">
+            {ctxExplain?.error ? '이 문장에서는? (다시 시도)' : '이 문장에서는?'}
+          </button>
+        ) : null;
+        const detailBtn = !wordDetail?.loading && !wordDetail?.detail ? (
+          <button onClick={() => fetchWordDetail(selectedToken)} className="btn btn--ghost btn--sm">상세 설명 보기</button>
+        ) : null;
+        if (!ctxBtn && !detailBtn) return null;
+        return <div className="word-detail-card__actrow">{ctxBtn}{detailBtn}</div>;
+      })()}
 
       {user && findSavedVocab(savedWords, selectedToken) && isTokenDue(savedWords, selectedToken) && (
         <div style={{ padding: '10px 12px', background: 'color-mix(in srgb, var(--warning) 10%, transparent)', borderRadius: 'var(--radius-md)', marginBottom: 12, border: '1px solid var(--warning)' }}>
@@ -1851,26 +1881,27 @@ export default function ViewerPage() {
           </div>
         </div>
       )}
-      {user && (
-        <button onClick={addToVocab} disabled={isWordSaved}
-          className={`btn ${isWordSaved ? 'btn--ghost' : 'btn--primary'} btn--sm`} style={{ width: '100%' }}>
-          {saveAnim ? '저장됨' : isWordSaved ? '✓ 단어장에 있음' : '단어장에 저장'}
-        </button>
-      )}
-      {/* '이미 알아요'(목업 ⑤) — 담을 필요 없는 아는 말 표시. 저장된 단어에는 무의미라 숨김. */}
-      {user && knownLangCode && !isWordSaved && (() => {
+      {user && (() => {
+        // '이미 알아요'(목업 ⑤) — 담을 필요 없는 아는 말 표시. 저장된 단어에는 무의미라 숨김.
         const isKnown = knownWordSet?.has(selectedToken.text)
           || (selectedLexKey && knownWordSet?.has(selectedLexKey));
         return (
-          <button
-            type="button"
-            onClick={() => knownToggleMutation.mutate({ wordText: selectedToken.text, known: !!isKnown })}
-            disabled={knownToggleMutation.isPending}
-            className="btn btn--ghost btn--sm"
-            style={{ width: '100%', marginTop: 6, color: 'var(--text-muted)' }}
-          >
-            {isKnown ? '👌 아는 말로 표시됨 — 취소' : '👌 이미 알아요'}
-          </button>
+          <div className="word-detail-card__actrow">
+            <button onClick={addToVocab} disabled={isWordSaved}
+              className={`btn ${isWordSaved ? 'btn--ghost' : 'btn--primary'} btn--sm`}>
+              {saveAnim ? '저장됨' : isWordSaved ? '✓ 단어장에 있음' : '단어장에 저장'}
+            </button>
+            {knownLangCode && !isWordSaved && (
+              <button
+                type="button"
+                onClick={() => knownToggleMutation.mutate({ wordText: selectedToken.text, known: !!isKnown })}
+                disabled={knownToggleMutation.isPending}
+                className="btn btn--ghost btn--sm word-detail-card__known"
+              >
+                {isKnown ? '👌 아는 말로 표시됨 — 취소' : '👌 이미 알아요'}
+              </button>
+            )}
+          </div>
         );
       })()}
     </div>
