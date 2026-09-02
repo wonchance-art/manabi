@@ -9,6 +9,8 @@ import { useAuth } from '../lib/AuthContext';
 import Button from '../components/Button';
 import { parseTitle } from '../lib/seriesMeta';
 import { getIdealLevel } from '../lib/levels';
+import { materialFit } from '../lib/materialFit';
+import { rankSuggestions, SUGGESTION_TOP_N, REASON } from '../lib/suggestionRank';
 import { isPassed } from '../components/RefPatternCheck';
 import { pullProgress } from '../lib/refProgress';
 import ContinueDeck from '../components/ContinueDeck';
@@ -53,7 +55,8 @@ async function fetchHomeData(userId, lang, nowMs = Date.now()) {
       .select('material_id, is_completed, updated_at, completed_at, reading_materials(id, title)')
       .eq('user_id', userId).order('updated_at', { ascending: false }).limit(20),
     fetch('/api/suggestions/today').then(r => r.ok ? r.json() : []),
-    supabase.from('user_vocabulary').select('language, word_text')
+    // base_form도 함께 — U R1 커버리지(materialFit)가 뷰어 저장 판정과 같은 {surfaces, bases}를 먹는다
+    supabase.from('user_vocabulary').select('language, word_text, base_form')
       .eq('user_id', userId),
     // 시리즈 진도는 제목+언어만 필요 — processed_json 통짜를 300행씩 끌지 않는다(쿼리 다이어트)
     supabase.from('reading_materials')
@@ -90,6 +93,27 @@ async function fetchHomeData(userId, lang, nowMs = Date.now()) {
 
   const rows = vocabRows || [];
 
+  // U R1 — 커버리지 재료: 추천 카드 중 material_id가 있는 것만 processed_json을 가져와 materialFit을
+  // 태운다(클라이언트에 새 토큰화를 넣지 않는다). material_id 없는 카드는 현행 레벨 점수 그대로.
+  // 저장어 집합은 뷰어 관용구와 같은 {surfaces, bases} — 이 화면이 이미 끌어온 단어 행에서 만든다.
+  const suggestionCards = suggestionsRes || [];
+  const fitIds = [...new Set(suggestionCards.map((s) => s?.material_id).filter(Boolean))].slice(0, 12);
+  const fitMaterialsResult = fitIds.length
+    ? await supabase.from('reading_materials').select('id, processed_json').in('id', fitIds)
+    : { data: [] };
+  const savedForFit = (() => {
+    const surfaces = new Set();
+    const bases = new Set();
+    for (const v of allVocabRows || []) {
+      if (v.word_text) surfaces.add(v.word_text);
+      if (v.base_form) bases.add(v.base_form);
+    }
+    return { surfaces, bases };
+  })();
+  const suggestionFit = Object.fromEntries(
+    (fitMaterialsResult?.data || []).map((m) => [m.id, materialFit(m.processed_json, savedForFit)])
+  );
+
   // 오늘 카운트 2종 — 주간·XP 계산(렌더 무소비)은 제거: 사양은 보드의 제안 19(주간
   // 리포트) 항목에 기록돼 있고, 필요해지는 시점에 서버 집계로 부활한다.
   let todayVocabCount = 0, todayReviewCount = 0;
@@ -105,6 +129,7 @@ async function fetchHomeData(userId, lang, nowMs = Date.now()) {
     todayReviewCount,
     recentProgress:   (recentProgress || []).slice(0, 4),
     suggestions:      suggestionsRes || [],
+    suggestionFit,
     forecast:         buildForecast(forecastRows, new Date(nowMs)),
     vocabByLang: (() => {
       const all = allVocabRows || [];
@@ -279,25 +304,23 @@ export default function HomePage({ continueManifest = {} }) {
   const todayReviews = data?.todayReviewCount   ?? 0;
   const dueCount     = data?.dueCount           ?? 0;
 
-  const suggestion = useMemo(() => {
+  // U R1 — 커버리지를 추천 랭킹에 잇는다(#1077 5503520174). 예전엔 선호 언어 > 레벨 문자열 일치로
+  // 점수를 매기고 scored[0] 한 장만 썼다. 이제 순수 랭커가 ⑴ 선호 언어 ⑵ 커버리지 산정 카드 우선
+  // ⑶ i+1 대역 근접 ⑷ 현행 레벨 점수 순으로 정렬하고 상위 N장을 사유 코드와 함께 돌려준다.
+  // 랭킹이지 필터가 아니다 — 비로그인·어휘 0에서도 카드 수가 줄지 않고 순서가 결정적이다.
+  const suggestions = useMemo(() => {
     const all = data?.suggestions || [];
-    if (!profile || !all.length) return all[0] || null;
-    const langs = profile.learning_language || [];
+    if (!all.length) return [];
+    const langs = profile?.learning_language || [];
     const vocabByLang = data?.vocabByLang || {};
-
-    // i+1 점수 계산: 선호 언어 > 이상적 레벨 일치 > 같은 레벨 근처
-    const scored = all.map(s => {
-      let score = 0;
-      if (langs.includes(s.language)) score += 100;
-      const count = vocabByLang[s.language] || 0;
-      const ideal = getIdealLevel(s.language, count);
-      if (s.level === ideal) score += 50;
-      else if (s.level?.startsWith(ideal[0])) score += 20; // 같은 언어군 (N/A/B/C)
-      return { ...s, score };
-    });
-    scored.sort((a, b) => b.score - a.score);
-    return scored[0] || all[0];
-  }, [data?.suggestions, data?.vocabByLang, profile]);
+    const fitMap = data?.suggestionFit || {};
+    return rankSuggestions(all, {
+      langs,
+      fitOf: (s) => (s?.material_id ? fitMap[s.material_id] ?? null : null),
+      levelOf: (s) => getIdealLevel(s.language, vocabByLang[s.language] || 0),
+    }).slice(0, SUGGESTION_TOP_N);
+  }, [data?.suggestions, data?.vocabByLang, data?.suggestionFit, profile]);
+  const suggestion = suggestions[0] || null;
 
   // 홈 알림 덱 조립 — 홈의 알림성 진입을 전부 한 자리에 겹친다(오너 지시 2026-08-24).
   // 순서는 기존 홈의 우선순위 그대로: 예보 → 교재 → 재독 → 함께.
@@ -462,38 +485,61 @@ export default function HomePage({ continueManifest = {} }) {
           (profile?.learning_language || ['Japanese']).includes(s.language) && s.completed > 0 && s.next
         );
         if (inProgress || !suggestion) return null;
-        const vocabByLang = data?.vocabByLang || {};
-        const count = vocabByLang[suggestion.language] || 0;
-        const idealLevel = getIdealLevel(suggestion.language, count);
-        const isIdeal = suggestion.level === idealLevel;
+        // 사유 문구는 뷰 소관 — 랭커는 코드만 돌려준다(콘텐츠 카피를 순수 모듈에 두지 않는다)
+        const reasonText = (r) => {
+          const pct = r?.unknownRatio == null ? null : Math.round((1 - r.unknownRatio) * 100);
+          switch (r?.reason) {
+            case REASON.FIT: return `아는 단어 ${pct}% — 딱 맞는 난이도`;
+            case REASON.FIT_EASY: return `아는 단어 ${pct}% — 술술 읽혀요`;
+            case REASON.FIT_HARD: return `아는 단어 ${pct}% — 도전`;
+            case REASON.LEVEL: return '내 수준에 맞춘 추천';
+            case REASON.LEVEL_NEAR: return '내 수준 근처';
+            case REASON.LANG: return '학습 중인 언어';
+            case REASON.OTHER: return '오늘의 추천';
+            default: return null;
+          }
+        };
         return (
-          <div className="card" style={{
-            padding: '20px 22px',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            borderLeft: '3px solid var(--primary)',
-          }}>
-            <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.02em', marginBottom: 6 }}>
-              오늘 읽기
-            </div>
-            <h2 style={{ fontSize: '1.05rem', fontWeight: 700, margin: '0 0 8px', lineHeight: 1.45 }}>
-              {suggestion.title}
-            </h2>
-            <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: 16 }}>
-              {isIdeal && <span style={{ color: 'var(--accent-text)', fontWeight: 700 }}>맞춤 </span>}
-              {langNameKo(suggestion.language)} {suggestion.level}
-              {suggestion.channel_name && ` · ${suggestion.channel_name}`}
-            </div>
-            <Button
-              onClick={() => suggestion.material_id
-                ? router.push(`/viewer/${suggestion.material_id}`)
-                : router.push(`/materials/add?suggestion=${suggestion.id}`)
-              }
-            >
-              {suggestion.material_id ? '바로 읽기 →'
-                : isOnDemandSuggestion(suggestion) ? '내 자료로 가져오기 →'
-                : '분석하고 읽기 →'}
-            </Button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {suggestions.map((s, i) => {
+              const reason = reasonText(s.rank);
+              if (!reason) return null; // 사유 없는 카드는 그리지 않는다(계약)
+              return (
+                <div key={s.id ?? `${s.material_id}-${i}`} className="card" style={{
+                  padding: i === 0 ? '20px 22px' : '14px 18px',
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border)',
+                  borderLeft: `3px solid ${i === 0 ? 'var(--primary)' : 'var(--border)'}`,
+                }}>
+                  {i === 0 && (
+                    <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.02em', marginBottom: 6 }}>
+                      오늘 읽기
+                    </div>
+                  )}
+                  <h2 style={{ fontSize: i === 0 ? '1.05rem' : '0.94rem', fontWeight: 700, margin: '0 0 6px', lineHeight: 1.45 }}>
+                    {s.title}
+                  </h2>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: 4 }}>
+                    {langNameKo(s.language)} {s.level}
+                    {s.channel_name && ` · ${s.channel_name}`}
+                  </div>
+                  <div className="home-suggestion__reason" style={{ fontSize: '0.78rem', color: 'var(--accent-text)', fontWeight: 600, marginBottom: 12 }}>
+                    {reason}
+                  </div>
+                  <Button
+                    size={i === 0 ? undefined : 'sm'}
+                    onClick={() => s.material_id
+                      ? router.push(`/viewer/${s.material_id}`)
+                      : router.push(`/materials/add?suggestion=${s.id}`)
+                    }
+                  >
+                    {s.material_id ? '바로 읽기 →'
+                      : isOnDemandSuggestion(s) ? '내 자료로 가져오기 →'
+                      : '분석하고 읽기 →'}
+                  </Button>
+                </div>
+              );
+            })}
           </div>
         );
       })()}
