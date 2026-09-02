@@ -40,6 +40,7 @@ const TOKEN_SAVE_SITES = [
   'src/views/StudySessionPage.jsx',
   'src/components/world/NpcDialog.jsx',
   'src/lib/learn/progressStore.js',
+  'src/views/WritingStudioPage.jsx', // U R2 — 못 쓴 말 담기
 ];
 
 describe('정본 조립기 — word_text가 갈리지 않는다', () => {

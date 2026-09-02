@@ -757,6 +757,22 @@
 - 런던 위성 마이크로 픽(재량 위임 해석): 윈저+옥스퍼드 2곳 추천 — 레만호 완성 후 순번
 - 일본 4도시 COPY 슬롯 이식(다국어 UI 확정 시) / 아토미움 = marker-only 유지 확인
 ### done (최근)
+- **🧠 U R2 — 첨삭에서 「못 쓴 말」을 수확한다 (writingGaps)
+  (2026-09-02, 오너 「작업 개시 우선순위대로」 — #1077 착수 SPEC 5503520174, 목차 7순위)**:
+  단어장은 「읽다 만난 말」만 담아 **쓰려다 안 나온 말(능동 어휘 결손)** 은 어디에도 안 쌓였다.
+  재료는 이미 DB에 있었다 — `writing_practice.errors[].fix`(20260702 마이그레이션이 심어 둔
+  「이렇게 써야 했다」)와 `sentence↔corrected`. **읽는 쪽이 없었을 뿐**. 저작이 아니라 파생
+  (`drillSrs.recordDrillEncounters` 선례). `src/lib/writingGaps.js`(순수·조회 0): 두 재료를
+  **독립**으로 수확(errors 비어도 diff로, corrected 없어도 fix로 — `diffChars` 그대로 재사용,
+  새 diff 0), 오류 없는 문장(corrected === sentence) 수확 0, 같은 (언어, 표현)은 count 누적
+  (약점 강도) + 최근 시각 + 출처(fix/diff) + 예문 표본 3, 언어가 다른 행은 안 섞인다. 문장
+  통째·구두점만·빈 값은 표현이 아니다(길이 24·행당 diff 조각 6 상한). 작문 화면: 재료는
+  목록(10)보다 넓게 최근 60행(errors 컬럼 미적용 환경은 sentence·corrected만), 「쓰려다 못 쓴
+  말」 카드에 칩 ×count, **[담기]는 명시 탭만**(v2 헌법 M7 — 산출이 FSRS로 새는 게 아니라
+  사용자가 담는다) → `buildVocabRow` + `VOCAB_UPSERT`(행 조립 신설 0, ignoreDuplicates라 이미
+  있는 표현은 새 행을 만들지 않는다). 저장 자리를 `vocabRowCanon`의 정본 감시 목록(7번째)에
+  올렸다. 계약 `writingGaps.test.js` 8종(순수 6 + 배선 2). 변이 검사 동반. 비범위(설계대로):
+  첨삭 프롬프트·rubric · FSRS 파라미터 · 자동 담기 · 노트(R3).
 - **🧠 U R1 — 커버리지를 추천 랭킹에 잇는다 (suggestionRank)
   (2026-09-02, 오너 「작업 개시 우선순위대로」 — #1077 착수 SPEC 5503520174, 목차 6순위)**:
   SPEC의 정정대로 홈은 이미 개인화하고 있었다(선호 언어 > 레벨 문자열 일치, `HomePage` i+1 점수).
