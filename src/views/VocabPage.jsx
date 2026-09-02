@@ -30,6 +30,7 @@ import { tagLabel } from '../lib/errorTags';
 import { deriveVocabRungs, vocabTypeForRung } from '../lib/skillRung';
 import { exportCSV, exportAnki } from '../lib/vocabIO';
 import { loadRefVocabIndex } from '../lib/refVocabIndex';
+import { logReviewEvents } from '../lib/reviewEvents';
 import {
   deckOf, fisherYatesShuffle, isNewWord,
   loadIntroIds, saveIntroIds,
@@ -37,6 +38,9 @@ import {
 } from '../lib/vocabStudy';
 
 const MAX_EXAMPLE_CACHE = 50;
+
+// W R2 undo 스냅샷이 복원하는 SRS 5필드 — persistVocabGrade 페이로드와 같은 snake_case
+const SRS_FIELDS = ['interval', 'ease_factor', 'repetitions', 'next_review_at', 'last_reviewed_at'];
 
 export default function VocabPage() {
   const { user, fetchProfile } = useAuth();
@@ -142,6 +146,38 @@ export default function VocabPage() {
 
   // 수동 단어 추가 모달
   const [manualAddOpen, setManualAddOpen] = useState(false);
+
+  // W R2(#1077 5504350927) — 키 `1`~`4`는 「화면에 있는 4버튼 줄」에 작용한다: 채점(ScoreSection) /
+  // 보기 선택(객관식·듣기, 클릭과 같은 함수) / 오답 후 2버튼(1 다시 · 2 정답 보기). 그 외 무시.
+  // `Ctrl/⌘+Z` = 직전 채점 되돌리기(단일 레벨). 판정은 DOM 질의가 아니라 **상태**로(ScoreSection이
+  // 세 군데 마운트된다). 수동 추가 다이얼로그가 열려 있으면 그 리스너(Escape/Tab)만 산다 — 두
+  // 리스너가 경쟁하지 않는다. 핸들러는 ref로 읽어 렌더마다 리스너를 갈아 끼우지 않는다.
+  const lastGradeRef = useRef(null);
+  const reviewKeysRef = useRef({});
+  useEffect(() => {
+    if (tab !== 'review' || reviewFinished || manualAddOpen) return undefined;
+    function onKeyDown(e) {
+      const t = e.target;
+      const inField = !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+      const h = reviewKeysRef.current;
+      if ((e.key === 'z' || e.key === 'Z') && (e.metaKey || e.ctrlKey) && !e.altKey) {
+        if (inField || !h.canUndo) return;   // 입력 요소 안 기본 undo 무간섭 · 되돌릴 게 없으면 무동작
+        e.preventDefault();
+        h.undo?.();
+        return;
+      }
+      if (inField || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (!/^[1-4]$/.test(e.key)) return;
+      const n = Number(e.key);
+      if (!h.row) return;                    // 화면에 4버튼 줄이 없으면 아무 일도 하지 않는다
+      e.preventDefault();
+      if (h.row === 'score') h.score?.(n);
+      else if (h.row === 'options') h.pick?.(n - 1);
+      else if (h.row === 'wrong') { if (n === 1) h.score?.(1); else if (n === 2) h.reveal?.(); }
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [tab, reviewFinished, manualAddOpen]);
   const [manualDraft, setManualDraft] = useState({ word_text: '', furigana: '', meaning: '', pos: '', language: 'Japanese' });
   const manualDialogRef = useRef(null);
   const manualAddPendingRef = useRef(false);
@@ -361,6 +397,15 @@ export default function VocabPage() {
       return;
     }
     const wasNew = isNewWord(currentWord);
+    // W R2 undo 스냅샷 — 채점 직전 SRS 5필드(행에 있는 값 그대로, null 포함) + 세션 상태. 단일
+    // 레벨. 유효화는 recordReviewCompleted의 .then 이후(채점 진행 중 undo 차단 — 경쟁 조건).
+    lastGradeRef.current = null;
+    const snapshot = {
+      wordId: currentWord.id, itemKey: currentWord.word_text, word: currentWord.word_text,
+      lang: currentWord.language || detectLang(currentWord.word_text), rating,
+      prev: Object.fromEntries(SRS_FIELDS.filter((k) => currentWord[k] !== undefined).map((k) => [k, currentWord[k]])),
+      wasNew, reviewIdx, requeued: rating === 1,
+    };
     const prevInterval = currentWord.interval ?? 0;
     const nextStats = calculateFSRS(rating, {
       interval: prevInterval,
@@ -387,7 +432,8 @@ export default function VocabPage() {
       repetitions: nextStats.repetitions ?? 0,
       next_review_at: nextStats.next_review_at,
     }).then((r) => {
-      if (r?.ok === false) toast('복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.', 'error', 5000);
+      if (r?.ok === false) { toast('복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.', 'error', 5000); return; }
+      lastGradeRef.current = { ...snapshot, reviewedAt: r?.reviewedAt || null, queued: !!r?.queued };
     });
     // 기존 scoreMutation은 progressStore 내부에서 처리됨
     fetchProfile(user.id);
@@ -401,8 +447,67 @@ export default function VocabPage() {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
+    // 미루기도 last_reviewed_at을 찍으므로 undo 대상 — 이벤트가 없으니 보상 이벤트도 없다
+    lastGradeRef.current = {
+      wordId: currentWord.id, itemKey: currentWord.word_text, word: currentWord.word_text,
+      lang: currentWord.language || detectLang(currentWord.word_text), rating: null, skip: true,
+      prev: Object.fromEntries(SRS_FIELDS.filter((k) => currentWord[k] !== undefined).map((k) => [k, currentWord[k]])),
+      wasNew: false, reviewIdx, requeued: false, reviewedAt: null, queued: false,
+    };
     scoreMutation.mutate({ id: currentWord.id, nextStats: { next_review_at: tomorrow.toISOString() } });
     goNextReview();
+  };
+
+  // W R2 undo = 「SRS 복원 + 보상 이벤트」. review_events는 RLS가 SELECT·INSERT뿐이라 원 이벤트를
+  // 못 지운다 → ① 스냅샷 5필드를 그대로 UPDATE(last_reviewed_at이 null이었으면 null — 그래야
+  // isNewWord가 다시 참) ② 세션 되감기 ③ source:'ui' 보상 이벤트(isGradedReviewEvent가 ui를 이미
+  // 제외하므로 리포트·약점 진단 무오염, detail.undo_of가 원 채점을 가리킨다) — 오프라인 큐에 있던
+  // 채점은 ①③ 대신 outbox 항목 제거(아직 서버에 안 갔으니 지우는 게 곧 undo). redo 없음.
+  const undoLastGrade = async () => {
+    const last = lastGradeRef.current;
+    if (!last || scoringRef.current) return;
+    lastGradeRef.current = null;
+    try {
+      if (last.queued) {
+        const { removeOutboxEntry } = await import('../lib/reviewOutbox');
+        await removeOutboxEntry({ userId: user.id, itemKey: last.itemKey, reviewedAt: last.reviewedAt });
+      } else {
+        const { persistVocabGrade } = await import('../lib/fsrs');
+        const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev;
+        await persistVocabGrade(supabase, last.wordId, prevStats, prevReviewedAt);
+        if (!last.skip && last.reviewedAt) {
+          logReviewEvents(user.id, [{
+            lang: last.lang, source: 'ui', item_key: last.itemKey, correct: true,
+            detail: { qtype: 'undo', undo_of: { item_key: last.itemKey, rating: last.rating, reviewed_at: last.reviewedAt } },
+          }]);
+        }
+      }
+    } catch (err) {
+      toast('되돌리기 실패 — ' + friendlyToastMessage(err), 'error');
+      return;
+    }
+    // 세션 되감기 — 재노출된 큐 항목 제거 · 신규 한도 복원 · 종료 화면이었으면 되살림
+    if (last.requeued) setReviewQueue((q) => (q[q.length - 1] === last.wordId ? q.slice(0, -1) : q));
+    if (last.wasNew) {
+      setIntroIds((prev) => { const next = prev.filter((id) => id !== last.wordId); saveIntroIds(next); return next; });
+    }
+    setReviewIdx(last.reviewIdx);
+    setShowAnswer(true);
+    setContextSelected(null);
+    setTypingAnswer('');
+    setReviewFinished(false);
+    queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
+    toast(`되돌렸어요 — 「${last.word}」 다시 채점`, 'info');
+  };
+
+  // 객관식·듣기의 보기 선택 — 클릭과 키 `1`~`4`가 같은 함수를 탄다(정답이면 700ms 뒤 자동 3점,
+  // 오답이면 「다시/정답 보기」 노출은 렌더가 contextSelected로 판정)
+  const pickContextOption = (i) => {
+    if (contextSelected !== null || !currentWord) return;
+    const opt = contextOptions[i];
+    if (!opt) return;
+    setContextSelected(i);
+    if (opt.id === currentWord.id) setTimeout(() => handleScore(3), 700);
   };
 
   useEffect(() => {
@@ -598,6 +703,18 @@ export default function VocabPage() {
   // 하단 네비는 Layout 소유라 컴포넌트에서 못 지운다 — body 클래스로 CSS에 알린다.
   // 훅은 아래 `if (!user)` 조기 return보다 **위**에 있어야 한다(#838 Hooks 순서 사고와 같은 자리).
   const inSession = tab === 'review' && !reviewFinished;
+  // W R2 — 지금 화면에 있는 4버튼 줄(상태로 판정, DOM 질의 금지)
+  const quizMode = effectiveMode === 'context' || effectiveMode === 'listening';
+  const reviewKeyRow = !currentWord ? null
+    : showAnswer ? 'score'
+    : quizMode && contextSelected === null && contextOptions.length > 0 && (effectiveMode !== 'listening' || ttsSupported) ? 'options'
+    : quizMode && contextSelected !== null && contextOptions[contextSelected]?.id !== currentWord.id ? 'wrong'
+    : null;
+  reviewKeysRef.current = {
+    row: inSession ? reviewKeyRow : null,
+    score: handleScore, pick: pickContextOption, reveal: () => setShowAnswer(true),
+    undo: undoLastGrade, canUndo: !!lastGradeRef.current && !scoringRef.current,
+  };
   useEffect(() => {
     if (typeof document === 'undefined') return undefined;
     document.body.classList.toggle('is-review-session', inSession);
@@ -932,6 +1049,7 @@ export default function VocabPage() {
           reviewIdx={reviewIdx}
           currentWord={currentWord}
           reviewFinished={reviewFinished}
+          pickContextOption={pickContextOption}
           reviewMode={reviewMode}
           effectiveMode={effectiveMode}
           setReviewMode={setReviewMode}

@@ -136,8 +136,8 @@ describe('progressStore', () => {
         next_review_at: new Date().toISOString(),
       });
 
-      // review_events + vocabulary update 호출 확인 + 저장 성공 표식
-      expect(result).toEqual({ ok: true });
+      // review_events + vocabulary update 호출 확인 + 저장 성공 표식(+ W R2: 원 채점 시각 동봉)
+      expect(result).toEqual({ ok: true, reviewedAt: expect.any(String) });
     });
 
     it('원격 실패는 삼키지 않는다 — { ok: false }로 호출자에게 알린다(무증상 유실 방지)', async () => {

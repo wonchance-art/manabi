@@ -166,7 +166,8 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
       userId, { type, itemKey, lang, correct, detail }, nextStats, reviewedAt,
     );
     // 큐에 못 담았으면 그건 진짜 유실이다 — 성공이라 말하면 안 된다(사생활 모드 등).
-    return queued ? { ok: true, queued: true } : { ok: false, error: new Error('offline-queue-unavailable') };
+    // reviewedAt 동봉(W R2) — undo가 outbox 항목(itemKey + reviewedAt)을 찾아 지우는 열쇠
+    return queued ? { ok: true, queued: true, reviewedAt } : { ok: false, error: new Error('offline-queue-unavailable') };
   }
 
   // 로그인 경로: 복습 이벤트 + SRS + 보상
@@ -183,7 +184,9 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
 
     // 3. 보상: 활동 기록
     await recordActivityRemote(userId, lang, 'review_completed', { type, correct });
-    return { ok: true };
+    // reviewedAt 동봉(W R2) — 원 이벤트는 못 지우므로(RLS SELECT·INSERT뿐) undo 보상 이벤트가
+    // detail.undo_of.reviewed_at으로 원 채점을 가리킨다
+    return { ok: true, reviewedAt };
   } catch (err) {
     // 온라인인데 실패했다 — 서버가 죽었거나 연결이 방금 끊겼다. 큐에 넣어 살린다.
     // 이벤트가 이미 착지했을 수도 있는데, 온라인 경로도 같은 reviewedAt을 실어 보내므로
@@ -191,7 +194,7 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
     const queued = await queueReviewOffline(
       userId, { type, itemKey, lang, correct, detail }, nextStats, reviewedAt,
     );
-    if (queued) return { ok: true, queued: true };
+    if (queued) return { ok: true, queued: true, reviewedAt };
     // 큐마저 못 쓰는 환경(사생활 모드 등)에서만 실패를 표면화한다 — 콘솔만 남기면
     // 채점 유실이 무증상이 된다(과거 조용한 실패 사고).
     console.error('[progressStore] reviewCompleted 오류:', err);

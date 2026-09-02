@@ -206,7 +206,7 @@ describe('N R2 — 배선', () => {
     // 자체 검수에서 잡은 결함: 오프라인 분기가 enqueue 결과를 안 보고 무조건
     // {ok:true}를 돌려주면, IndexedDB를 못 쓰는 환경에서 유실이 무증상이 된다.
     expect(read('src/lib/learn/progressStore.js'))
-      .toContain("return queued ? { ok: true, queued: true } : { ok: false, error: new Error('offline-queue-unavailable') };");
+      .toContain("return queued ? { ok: true, queued: true, reviewedAt } : { ok: false, error: new Error('offline-queue-unavailable') };"); // W R2: reviewedAt 동봉
   });
 
   it('온라인 경로도 같은 복습 시각을 싣는다 — 중복 제거가 성립하는 근거다', () => {
@@ -218,7 +218,7 @@ describe('N R2 — 배선', () => {
 
   it('실패해도 큐에 담기면 사용자에게 실패라 하지 않는다 — 거짓말을 안 한다', () => {
     const store = read('src/lib/learn/progressStore.js');
-    expect(store).toContain('if (queued) return { ok: true, queued: true };');
+    expect(store).toContain('if (queued) return { ok: true, queued: true, reviewedAt };'); // W R2: reviewedAt 동봉
     // 큐마저 못 쓰는 환경에서만 ok:false — 그때는 진짜 유실이라 알려야 한다.
     expect(store).toContain('return { ok: false, error: err };');
   });
