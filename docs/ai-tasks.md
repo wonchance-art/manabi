@@ -756,6 +756,26 @@
 - 런던 위성 마이크로 픽(재량 위임 해석): 윈저+옥스퍼드 2곳 추천 — 레만호 완성 후 순번
 - 일본 4도시 COPY 슬롯 이식(다국어 UI 확정 시) / 아토미움 = marker-only 유지 확인
 ### done (최근)
+- **🃏 W 복습 화면 R2 — 키 1~4 + Ctrl/⌘+Z undo(SRS 복원 + 보상 이벤트)
+  (2026-09-02, 오너 「작업 개시 우선순위대로」 — #1077 5504350927, 목차 3순위)**:
+  저장 undo(R1)는 「새 행 하나 삭제」로 끝났지만 복습 채점은 **세 곳에 쓰고** 그중
+  `review_events`는 RLS가 SELECT·INSERT뿐이라 **클라이언트가 못 지운다**. 설계는 그 제약에서
+  출발 — undo = ① 스냅샷 5필드를 그대로 UPDATE(`persistVocabGrade` 4번째 인자로
+  `last_reviewed_at` 원값, null이면 null → `isNewWord`가 다시 참) ② 세션 되감기(reviewIdx ·
+  「다시」 재노출 큐 항목 제거 · introIds 신규 한도 복원 · 종료 화면 되살림) ③ `source:'ui'`
+  보상 이벤트 1건(`detail.undo_of.reviewed_at` = 원 채점 시각, `isGradedReviewEvent`가 ui를
+  이미 제외하므로 리포트·약점 진단 무오염) — 오프라인 큐에 있던 채점은 ①③ 대신 **outbox
+  항목 제거**(`removeOutboxEntry`, itemKey + reviewedAt 완전 일치 = flush의 중복 제거와
+  같은 잣대). 원 채점 시각은 `recordReviewCompleted` 결과에 `reviewedAt`을 **가산 동봉**(설계
+  allowlist 밖 progressStore 3줄 — 이 값 없이는 보상 이벤트가 원 채점을 못 가리킨다).
+  미루기(handleSkip)도 undo 대상(이벤트 없음 → 보상 없음). **키 1~4 = 「화면에 있는 4버튼
+  줄」 한 규칙**: 채점(ScoreSection) / 보기 선택(객관식·듣기 — 클릭과 같은 함수
+  `pickContextOption`으로 수렴, 정답 700ms 자동 3점·오답 2버튼 포함) / 오답 후 1 다시·2 정답
+  보기 / 그 외 무동작. 판정은 **상태로**(ScoreSection이 세 군데 마운트 — DOM 질의 금지).
+  수동 추가 다이얼로그가 열리면 복습 리스너가 빠져 Escape/Tab과 경쟁 0. 숫자 배지(W R1
+  `.save-grade__key` 재사용) + 데스크톱(`pointer: fine`) 전용 안내 문구. 계약
+  `reviewUndo.test.js` 12종. 변이 검사 동반. 잔여(설계대로 비범위): 원 이벤트 1건 잔류(펫
+  count·리포트 +1 — `undo_of`가 단서), `review_events` DELETE 정책은 마이그레이션(오너 수동).
 - **🃏 W 저장 등급 R1 — Anki식 4등급 저장 + 키 1~4 + Ctrl/⌘+Z undo, 「이미 알아요」 쓰기 일몰
   (2026-09-02, 오너 「작업 개시 우선순위대로」 — #1077 5504298889, 목차 2순위)**:
   저장은 `next_review_at: now()`만 싣고 S·D가 없어 **첫 복습이 초기값을 정했다** — 4등급의
