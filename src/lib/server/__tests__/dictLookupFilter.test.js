@@ -29,6 +29,14 @@ describe('사전 조회 대상 판정 — 기호가 공유 사전에 새지 않�
       .toMatchObject({ base_form: '图书馆', pos: '명사' });
   });
 
+  it('이합사 O 조각(sep_link)은 수확하지 않는다 — 歉 낱글자를 Gemini에 묻던 자리(운영 DB 歉 행)', () => {
+    const lines = [{ tokens: tokenizeZhLine('他向我道了歉。') }];
+    const forms = collectMissingBaseForms(lines, new Map()).map((m) => m.base_form);
+    expect(forms).toContain('道歉');       // V가 VO로 한 번
+    expect(forms).not.toContain('歉');     // O는 제외
+    expect(forms).not.toContain('道');
+  });
+
   it('세 언어 모두 수확기를 통과한 목록에 기호가 없다', async () => {
     const lines = [
       { tokens: tokenizeZhLine('我说：“好。”') },

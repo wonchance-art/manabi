@@ -105,7 +105,7 @@ export async function POST(request) {
     const allBaseForms = new Set();
     for (const { tokens } of tokenizedLines) {
       for (const t of tokens) {
-        if (t.base_form) allBaseForms.add(t.base_form);
+        if (t.base_form) allBaseForms.add(t.sep_link || t.base_form);
       }
     }
     const lookupBaseForms = new Set(allBaseForms);
@@ -246,9 +246,10 @@ export async function POST(request) {
           ? resolveEnTokenContext({ token: t, pick: enPosPicks.get(enKey), cache })
           : null;
         if (language === 'English' && enMarkKeys.has(enKey) && enResolved.fallback) enFallbacks++;
-        const cached = enResolved?.entry || cache.get(t.base_form);
+        // 이합사 O 조각(sep_link)은 VO의 사전 항목을 받는다 — 歉을 눌러도 道歉 카드가 뜬다.
+        const cached = enResolved?.entry || cache.get(t.sep_link || t.base_form);
         const outputBaseForm = enResolved?.baseForm || t.base_form;
-        if (cached) usedBaseFormsSet.add(outputBaseForm);
+        if (cached) usedBaseFormsSet.add(t.sep_link || outputBaseForm);
         // 중국어 병음은 토크나이저가 문장 문맥(다음자·변조)으로 산출 — 캐시(첫 문맥의 병음)가
         // 덮으면 문맥이 박제된다(#1004). 일본어는 Gemini 맥락 reading이 캐시에 있어 캐시 우선 유지.
         const rawReading = (language === 'Chinese'
@@ -278,6 +279,7 @@ export async function POST(request) {
           pos,
           meaning,
           base_form: outputBaseForm,
+          ...(t.sep_link ? { sep_link: t.sep_link } : {}),
           ...(posAll ? { pos_all: posAll } : {}),
         };
       });

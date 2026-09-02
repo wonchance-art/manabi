@@ -18,6 +18,9 @@ export function collectMissingBaseForms(tokenizedLines, cache) {
     for (const t of tokens) {
       if (!t.base_form || seen.has(t.base_form) || cache.has(t.base_form)) continue;
       if (!isWordToken(t)) continue;
+      // 이합사 O 조각(sep_link)은 V의 base_form(VO)이 이미 조회한다 — 歉 같은 낱글자를 Gemini에
+      // 묻고 공유 사전에 적재하던 자리(운영 DB 歉 행, 2026-09-02).
+      if (t.sep_link) continue;
       seen.add(t.base_form);
       out.push({ base_form: t.base_form, pos: t.pos, reading: t.furigana });
     }
