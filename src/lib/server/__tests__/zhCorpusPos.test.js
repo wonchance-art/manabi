@@ -25,7 +25,8 @@ describe('중국어 품사 — 콘텐츠 전수 회귀', () => {
     if (process.env.ZH_CORPUS_REPORT) writeFileSync(process.env.ZH_CORPUS_REPORT, JSON.stringify({ nullCount, nullTypes: [...nullPos].sort((a, b) => b[1] - a[1]).slice(0, 30), survived: [...survived] }, null, 1));
     expect(rows.length).toBeGreaterThan(5000);
     expect([...survived], '억제 항목이 토큰으로 살아남았다').toEqual([]);
-    // 실측(2026-09-02): 라운드 2 전 179건/42종 → 후 2건(高高的/nrfg·物). 문턱 5 — 매핑이 하나 죽으면 수십으로 튄다.
-    expect(nullCount).toBeLessThanOrEqual(5);
+    // 실측(2026-09-02): 라운드 2 전 179건/42종 → 후 2건(高高的/nrfg·物) → 라운드 8 후 4건(+胡说·恩人 — 두-실단어
+    // 되가름 조각을 jieba가 홀로 다시 갈라 x 폴백). 문턱 8 — 매핑이 하나 죽으면 수십으로 튄다.
+    expect(nullCount).toBeLessThanOrEqual(8);
   }, 120000);
 });
