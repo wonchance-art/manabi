@@ -83,7 +83,9 @@ describe('저장 등급 — 뷰어 배선(ViewerPage)', () => {
     expect(keys).toContain('if (inField || e.metaKey || e.ctrlKey || e.altKey) return;');
     expect(keys).toContain('if (!/^[1-4]$/.test(e.key)) return;');
     expect(keys).toContain('if (h.saveLocked) return;');
-    expect(viewer).toContain('keyHandlersRef.current = { addToVocab, undoLastSave, saveLocked: isWordSaved || saveAnim };');
+    // R3㉮ 이후 핸들러 묶음이 여러 줄(인라인 그리드 합류) — 잠금 조건은 그대로
+    expect(viewer).toContain('keyHandlersRef.current = {');
+    expect(viewer).toContain('saveLocked: isWordSaved || saveAnim,');
     expect(keys).toContain("document.addEventListener('keydown', onKeyDown);");
     expect(keys).toContain("return () => document.removeEventListener('keydown', onKeyDown);");
   });
@@ -99,9 +101,10 @@ describe('저장 등급 — 뷰어 배선(ViewerPage)', () => {
 
   it('⌘Z는 입력 요소 안에서 기본 동작을 가로채지 않고, 되돌릴 게 없으면 아무 일도 하지 않는다', () => {
     expect(keys).toContain("if ((e.key === 'z' || e.key === 'Z') && (e.metaKey || e.ctrlKey) && !e.altKey) {");
-    expect(keys).toContain('if (inField || !lastSaveRef.current) return;');
+    // R3㉮ 이후 ⌘Z는 저장·인라인 둘 중 하나라도 되돌릴 게 있어야 발동
+    expect(keys).toContain('if (inField || (!lastSaveRef.current && !lastInlineGradeRef.current)) return;');
     // 단어가 바뀌면 소멸 — 다른 단어의 행을 지우면 안 된다
-    expect(viewer).toContain('useEffect(() => { lastSaveRef.current = null; }, [selectedToken?.id, selectedToken?.text]);');
+    expect(viewer).toContain('useEffect(() => { lastSaveRef.current = null; lastInlineGradeRef.current = null; }, [selectedToken?.id, selectedToken?.text]);'); // R3㉮: 인라인 undo도 함께 소멸
     // 토스트 문구에 단축키(맥/그 외 라벨은 표기용, 동작은 양쪽)
     expect(viewer).toContain('저장됨 · ${UNDO_KEY_LABEL} 취소');
     expect(viewer).toMatch(/UNDO_KEY_LABEL = [\s\S]{0,200}\? '⌘Z' : 'Ctrl\+Z'/);
