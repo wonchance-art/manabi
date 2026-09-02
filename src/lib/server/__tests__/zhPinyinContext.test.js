@@ -26,9 +26,12 @@ describe('구조조사 — jieba 전용 태그를 읽는다', () => {
     expect(py('她高兴得跳了起来。', '得')).toBe('de');
     expect(py('这张图画得很漂亮。', '得')).toBe('de');
     expect(py('他的童年过得很幸福。', '得')).toBe('de');
-    // 병합 토큰 V得C — 실단어가 아니면 得는 보어 표지, 실단어(觉得·获得)는 그대로
-    expect(py('这本书我看得懂。', '看得懂')).toBe('kàn de dǒng');
-    expect(py('今天比昨天好得多。', '好得多')).toBe('hǎo de duō');
+    // 병합 토큰 V得C — 실단어가 아니면 得는 보어 표지, 실단어(觉得·获得)는 그대로.
+    // (看得懂·好得多는 라운드 2 억제로 이제 갈려서 단독 得 규칙이 받는다 — 어느 쪽이든 de여야 한다.)
+    const deIn = (line) => tokenizeZhLine(line).some((t) => t.text.includes('得') && t.furigana?.split(' ')[[...t.text].indexOf('得')] === 'de');
+    expect(deIn('这本书我看得懂。')).toBe(true);
+    expect(deIn('今天比昨天好得多。')).toBe(true);
+    expect(deIn('他累得几乎走不动了。')).toBe(true);   // 累得/v — 억제 밖 병합 토큰
     expect(py('我觉得很好。', '觉得')).toBe('jué de');
     expect(py('他获得了第一名。', '获得')).toBe('huò dé');
     expect(py('他迫不得已辞职。', '迫不得已')).toBe('pò bù dé yǐ'); // 성어 — HSK 표 밖이라 방벽을 지났던 자리
@@ -56,7 +59,7 @@ describe('구조조사 — jieba 전용 태그를 읽는다', () => {
     expect(py('我看过这本书。', '看过')).toBe('kàn guo');
     expect(py('穿过马路。', '穿过')).toBe('chuān guò');
     expect(py('过马路要小心。', '过')).toBe('guò');
-    expect(py('我没吃过羊肉。', '没吃过')).toBe('méi chī guo');  // 3자 병합(没V过)
+    expect(py('我没吃过羊肉。', '过')).toBe('guo');              // 没吃过는 라운드 2 억제로 갈린다 — 단독 ug 규칙
     expect(py('我帮过他一次。', '过')).toBe('guo');              // 앞이 되가름 조각 帮/x
     expect(py('他很难过。', '难过')).toBe('nán guò');            // 실단어는 그대로
   });
