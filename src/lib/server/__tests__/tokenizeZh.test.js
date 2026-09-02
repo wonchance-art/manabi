@@ -123,9 +123,9 @@ describe('필독 경성 오버라이드', () => {
     expect(pyOf('怪不得你不知道这件事情。', '怪不得')).toBe('guài bu de');
   });
 
-  it('어휘 경성: 朋友·时候·知道', () => {
+  it('어휘 경성: 朋友·时候 — 知道는 라운드 7에서 원조로(정답지 33:0·CEDICT·pinyin-pro 전부 zhī dào)', () => {
     expect(pyOf('我朋友知道那个时候。', '朋友')).toBe('péng you');
-    expect(pyOf('我朋友知道那个时候。', '知道')).toBe('zhī dao');
+    expect(pyOf('我朋友知道那个时候。', '知道')).toBe('zhī dào');
     expect(pyOf('我朋友知道那个时候。', '时候')).toBe('shí hou');
   });
 

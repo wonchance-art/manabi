@@ -21,7 +21,16 @@
 // 건 안 싣는다(경성 사전 기준 ②). 다글자 토큰의 오독은 여기가 아니라 zhPinyinFix(토큰 정확 일치)다.
 // 적용 순서: 경성 사전 > 경계 수리 > **이 층** > 줄 병음. 등재 밖은 무개입(실패 시 현행 수렴).
 
-import { isZhRealWord } from './zhTokenFix';
+import { isZhRealWord, ZH_NUMERAL } from './zhTokenFix';
+import { ZH_DEMONSTRATIVE } from './zhClassifiers';
+
+const TONE_BASE = { ā: 'a', á: 'a', ǎ: 'a', à: 'a', ē: 'e', é: 'e', ě: 'e', è: 'e', ī: 'i', í: 'i', ǐ: 'i', ì: 'i', ō: 'o', ó: 'o', ǒ: 'o', ò: 'o', ū: 'u', ú: 'u', ǔ: 'u', ù: 'u', ǖ: 'ü', ǘ: 'ü', ǚ: 'ü', ǜ: 'ü' };
+const stripTone = (s) => [...s].map((c) => TONE_BASE[c] ?? c).join('');
+const TONE4 = /[àèìòùǜ]/;
+const TONE123 = /[āáǎēéěīíǐōóǒūúǔǖǘǚ]/;
+/** 个가 양사로 읽히는 「앞 글자」 — 콘텐츠 게이트(scripts/zh-sandhi.mjs CLS_PREV)와 같은 판정에
+ *  上/下(上个月)·了(打了个)를 더한 것. 整·各·个(个个 중첩)는 밖이라 원조 gè가 남는다. */
+const GE_SLOT_PREV = new Set([...ZH_NUMERAL, ...ZH_DEMONSTRATIVE, '每', '某', '多', '上', '下', '了']);
 
 const isVerb = (tag) => /^v/.test(tag || '');
 const isNoun = (tag) => /^n/.test(tag || '');
@@ -79,6 +88,9 @@ export function contextPinyin(entries, i, syllables) {
       case '教': if (tag === 'v') return ['jiāo']; break;  // 教汉语·教我们 (3/3 오독)
       case '还': if (tag === 'd' && isNoun(next?.tag)) return ['huán']; break; // 还钱·还书; 还没·还是 유지
       case '假': if (isCountSlot(prev)) return ['jià']; break; // 三天假; 假的(jiǎ) 유지
+      // 个(라운드 7): 단독 个는 되가름(三/个)·jieba 분할(吃/个/饭) 어느 쪽이든 양사다 — 오너 결정
+      //     「个 양사 자리는 경성 ge」(콘텐츠 게이트와 같은 표기). 정답지 실측 단독 个 357:0 경성.
+      case '个': return ['ge'];
       default: break;
     }
     return null;
@@ -98,5 +110,37 @@ export function contextPinyin(entries, i, syllables) {
   if (last === '地' && chars.length >= 2 && !real) return [...syllables.slice(0, -1), 'de'];
   // 待在… 통짜 관용구(待在家里/i) — 첫 글자만 dāi
   if (chars[0] === '待' && chars[1] === '在') return ['dāi', ...syllables.slice(1)];
+  // ── 라운드 7 (경성 정합) — 정답지 전수 대조로 확정된 규칙 셋. 전부 결정적 규칙이라 사전이 아니라 여기.
+  // 个 양사 자리(융합 토큰): 수사·지시사·每某多·上下·了 뒤의 个는 ge(每个·第一个·上个月·三十多个·打了个).
+  //     整个·各个·个个(중첩)는 앞 글자가 집합 밖이라 원조. 정답지 실측: 융합 54:0 ge, 整个·各个 22:0 gè.
+  const gi = chars.findIndex((c, k) => c === '个' && k > 0 && GE_SLOT_PREV.has(chars[k - 1]) && chars[k + 1] !== '个');
+  if (gi > 0) return syllables.map((syl, k) => (k === gi ? 'ge' : syl));
+  // 동사 중첩 VV: 둘째 음절 경성(想想 xiǎng xiang·试试 shì shi). 정답지 29:0. 부사 중첩(常常·慢慢)·시간사(天天)·
+  //     의성어(哈哈)·명사(画画)는 태그로 갈라져 원조 — 「등등」의 等等은 u 태그라 저절로 밖이다.
+  if (chars.length === 2 && chars[0] === chars[1] && /^v/.test(tag)) return [syllables[0], stripTone(syllables[1])];
+  // V不C 가능보어·A不A: 3자 융합 토큰의 가운데 不는 경성 bu(吃不完 chī bu wán·行不行 xíng bu xíng). 실단어(赶不上)는
+  //     방벽이 지키고, 4자 성어(迫不及待 bù)·부사 융합(绝不会/l bú)은 조건 밖. 정답지 실측 v·A不A 12:2.
+  if (chars.length === 3 && chars[1] === '不' && (chars[0] === chars[2] || /^v/.test(tag)) && !real) return [syllables[0], 'bu', syllables[2]];
   return null;
+}
+
+/**
+ * 단독 不의 변조 재계산(라운드 7). 줄 병음은 不의 변조(bú/bù)를 pinyin-pro의 **내부 판독**으로 정하는데,
+ * 그 판독이 출력과 다르거나(不应该 → bú yīng gāi: 应을 yìng으로 보고 변조), 문맥 층이 다음 음절의 성조를
+ * 바꾸면(不为…所 → 为 wéi) 不가 낡는다 — 코퍼스 실측 10건. 단독 不/d 바로 뒤에 한자 토큰이 오면 그 토큰의
+ * **최종** 첫 음절로 다시 정한다: 4성→bú, 1·2·3성→bù. 경성(A不A의 bu)·구두점 앞·문말은 손대지 않는다.
+ * @param {Array<{text:string, furigana:string, pos:string|null}>} tokens tokenizeZhLine 출력(제자리 수정)
+ * @param {string[]} tags 토큰별 jieba 태그(같은 인덱스)
+ */
+export function resandhiBu(tokens, tags) {
+  for (let i = 0; i < tokens.length - 1; i++) {
+    const t = tokens[i];
+    if (t.text !== '不' || tags[i] !== 'd' || (t.furigana !== 'bù' && t.furigana !== 'bú')) continue;
+    const next = tokens[i + 1];
+    if (next.pos === '기호' || !next.furigana) continue;
+    const first = next.furigana.split(' ')[0];
+    if (TONE4.test(first)) t.furigana = 'bú';
+    else if (TONE123.test(first)) t.furigana = 'bù';
+  }
+  return tokens;
 }

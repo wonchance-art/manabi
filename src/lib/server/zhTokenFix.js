@@ -104,7 +104,7 @@ function isLoneAdjective(text) {
  * 머리가 여러 글자인 수량구를 통째로 남겼다(코퍼스 20건/14종). 위험은 방벽이 받는다 —
  * 이 패턴에 걸리는 HSK 표제어는 半场·零件·一头 셋뿐이고 전부 `isRealWord`가 지킨다(전수 실측).
  */
-const ZH_NUMERAL = new Set([...'一二三四五六七八九十两几半百千万亿零']);
+export const ZH_NUMERAL = new Set([...'一二三四五六七八九十两几半百千万亿零']);
 
 /** 단독으로 태깅했을 때 명사 한 덩이인가 — 양사 규칙(⑥)의 게이트. */
 function isLoneNoun(text) {

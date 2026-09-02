@@ -8,7 +8,7 @@ import { tag as jiebaTag } from 'jieba-wasm';
 import { pinyin } from 'pinyin-pro';
 import { ZH_NEUTRAL_TONE } from './zhNeutralTone';
 import { ZH_PINYIN_FIX } from './zhPinyinFix';
-import { contextPinyin } from './zhPinyinContext';
+import { contextPinyin, resandhiBu } from './zhPinyinContext';
 import './zhSuppress';
 import { fixZhTagged } from './zhTokenFix';
 
@@ -71,10 +71,12 @@ export function tokenizeZhLine(line) {
   };
 
   const tokens = [];
+  const tokenTags = [];
   for (let ti = 0; ti < tagged.length; ti++) {
     const { word, tag, posAll, baseForm, sepLink } = tagged[ti];
     const text = word;
     if (!text) continue;
+    tokenTags.push(tag);
     // x(기타)·w(기호) 태그는 문장부호가 관례지만, jieba는 사전에 없는 한자 조합
     // (这宗·笔在·项有 등 HMM 병합 OOV)에도 x를 단다 — 한자를 포함하면 실단어로 취급해
     // 병음을 달고 품사는 미상(null)으로 남긴다(문맥 판별기가 채움). 오너 보고 실측.
@@ -105,5 +107,7 @@ export function tokenizeZhLine(line) {
       ...(!isPunct && (posAll ?? POS_ALL[tag]) ? { pos_all: posAll ?? POS_ALL[tag] } : {}),
     });
   }
-  return tokens;
+  // 네 번째 손질: 단독 不의 변조를 이웃의 최종 음절로 다시 정한다(zhPinyinContext.resandhiBu — 문맥 층이 바꾼
+  // 성조·pinyin-pro 내부 판독 불일치의 이음새).
+  return resandhiBu(tokens, tokenTags);
 }
