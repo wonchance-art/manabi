@@ -58,8 +58,9 @@ describe('억제 — 병합 항목이 실단어로 갈린다 (코퍼스 문장, 
   it('연쇄를 낳는 항목은 싣지 않았다 — 很多(→很多人·多书), 그리고 ⑤가 이미 가르는 很快·很大', () => {
     expect(ZH_SUPPRESS).not.toContain('很多');
     for (const adv of ZH_DEGREE_ADV) for (const w of ZH_SUPPRESS) expect(w.startsWith(adv) && w.length === adv.length + 1, w).toBe(false);
-    // 很多는 여전히 한 토큰 — 억제했더니 很多人×7이 생겼던 자리
-    expect(textsOf('我有很多朋友。')).toContain('很多');
+    // 很多는 억제가 아니라 ⑤ 후처리(라운드 5, 多·少 허용)가 가른다 — DAG를 안 건드려 很多人 연쇄가 없다
+    expect(textsOf('我有很多朋友。')).not.toContain('很多');
+    expect(textsOf('很多人来了。')).not.toContain('很多人');
   });
 
   it('다른 부품이 받는 것은 싣지 않았다 — 吃了饭은 이합사 R4a 통짜 삽입형(base_form=吃饭)', () => {
