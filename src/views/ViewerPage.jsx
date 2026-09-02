@@ -85,8 +85,9 @@ import TokenPosLabel from './TokenPosLabel';
 import TokenRangeGrips from './TokenRangeGrips';
 import ViewerComments from './ViewerComments';
 import ViewerQuizModal from './ViewerQuizModal';
-import { langNameKo, splitSentenceAroundWord } from '../lib/constants';
+import { langNameKo, splitSentenceAroundWord, detectLang } from '../lib/constants';
 import { attributionParts } from '../lib/videoAttribution';
+import { logReviewEvents } from '../lib/reviewEvents';
 
 // 공부 모드 지원 언어 키 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
 // 실사용은 '이 자료 언어로 세션 생성 가능한가' 멤버십 체크 1곳뿐이라 정적 키 집합으로 대체한다.
@@ -129,7 +130,8 @@ async function fetchUserVocabWords(userId) {
   if (!userId) return { byKey: new Map(), surfaces: new Set(), bases: new Set() };
   const { data, error } = await supabase
     .from('user_vocabulary')
-    .select('id, word_text, base_form, meaning, pos, furigana, interval, ease_factor, repetitions, next_review_at, language')
+    // last_reviewed_at(W R3): 인라인 undo가 원값으로 되돌려야 isNewWord·「복습 시점이에요」 판정이 맞는다 — 읽기 컬럼 하나, 스키마 무변경
+    .select('id, word_text, base_form, meaning, pos, furigana, interval, ease_factor, repetitions, next_review_at, last_reviewed_at, language')
     .eq('user_id', userId);
   if (error) return { byKey: new Map(), surfaces: new Set(), bases: new Set() };
 
@@ -524,13 +526,16 @@ export default function ViewerPage() {
       const inField = !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
       const h = keyHandlersRef.current;
       if ((e.key === 'z' || e.key === 'Z') && (e.metaKey || e.ctrlKey) && !e.altKey) {
-        if (inField || !lastSaveRef.current) return;
+        if (inField || (!lastSaveRef.current && !lastInlineGradeRef.current)) return;
         e.preventDefault();
-        h.undoLastSave?.();
+        h.undo?.();
         return;
       }
       if (inField || e.metaKey || e.ctrlKey || e.altKey) return;
       if (!/^[1-4]$/.test(e.key)) return;
+      // 「지금 화면에 있는 4버튼 줄」 — 저장 그리드(!isWordSaved)와 인라인 복습 그리드(isWordSaved ∧ due)는
+      // 상태상 배타라 한 리스너가 보낸다(W R3㉮). 둘 다 없으면 무동작.
+      if (h.inlineDue) { e.preventDefault(); h.gradeInline?.(Number(e.key)); return; }
       if (h.saveLocked) return;
       e.preventDefault();
       h.addToVocab?.(Number(e.key));
@@ -541,7 +546,8 @@ export default function ViewerPage() {
   // 단어가 바뀌면 되돌릴 것이 소멸한다(다른 단어의 행을 지우면 안 된다). 저장 직후의 자동
   // 닫힘(setIsSheetOpen만)은 저장 동작의 일부라 소멸시키지 않는다 — 명시 닫기(closeWordCard →
   // selectedToken null)와 다음 저장이 소멸 지점.
-  useEffect(() => { lastSaveRef.current = null; }, [selectedToken?.id, selectedToken?.text]);
+  const lastInlineGradeRef = useRef(null);
+  useEffect(() => { lastSaveRef.current = null; lastInlineGradeRef.current = null; }, [selectedToken?.id, selectedToken?.text]);
 
   const handleTokenClick = (token, tokenId, opts = {}) => {
     if (token.pos === '개행') return;
@@ -1399,6 +1405,43 @@ export default function ViewerPage() {
     }
   };
 
+  // W R3㉮ 인라인 복습 — 4등급 정본. 스냅샷은 훅이 돌려준 prev·reviewedAt으로 호출부가 만든다.
+  const gradeInline = (rating) => {
+    const vocab = findSavedVocab(savedWords, selectedToken);
+    if (!vocab || inlineReviewMutation.isPending) return;
+    lastInlineGradeRef.current = null;
+    inlineReviewMutation.mutate({ vocab, rating }, {
+      onSuccess: (res) => {
+        lastInlineGradeRef.current = {
+          wordId: vocab.id, itemKey: vocab.word_text, word: vocab.word_text,
+          lang: vocab.language || detectLang(vocab.word_text), rating,
+          prev: res.prev, reviewedAt: res.reviewedAt,
+        };
+      },
+    });
+  };
+  // undo = R2 모델 그대로(SRS 5필드 복원 + source:'ui' 보상 이벤트). 세션이 없으니 되감을 것은
+  // 카드 상태뿐 — vocab-words를 무효화하면 isTokenDue가 다시 참이 되어 「복습 시점이에요」가 저절로 돌아온다.
+  const undoInlineGrade = async () => {
+    const last = lastInlineGradeRef.current;
+    if (!last || inlineReviewMutation.isPending) return;
+    lastInlineGradeRef.current = null;
+    try {
+      const { persistVocabGrade } = await import('../lib/fsrs');
+      const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev || {};
+      await persistVocabGrade(supabase, last.wordId, prevStats, prevReviewedAt);
+      logReviewEvents(user.id, [{
+        lang: last.lang, source: 'ui', item_key: last.itemKey, correct: true,
+        detail: { qtype: 'undo', undo_of: { item_key: last.itemKey, rating: last.rating, reviewed_at: last.reviewedAt } },
+      }]);
+      queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
+      toast(`되돌렸어요 — 「${last.word}」 다시 채점`, 'info');
+    } catch (err) {
+      toast('되돌리기 실패 — ' + friendlyToastMessage(err), 'error');
+    }
+  };
+  const undoAny = () => (lastInlineGradeRef.current ? undoInlineGrade() : undoLastSave());
+
   const addToVocab = async (grade) => {
     if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
     if (!selectedToken) return;
@@ -1492,7 +1535,11 @@ export default function ViewerPage() {
   const failedIndices = material?.processed_json?.failed_indices || [];
   const isCompleted = readingProgress?.is_completed === true;
   const isWordSaved = isTokenSaved(savedWords, selectedToken);
-  keyHandlersRef.current = { addToVocab, undoLastSave, saveLocked: isWordSaved || saveAnim };
+  keyHandlersRef.current = {
+    addToVocab, gradeInline, undo: undoAny,
+    saveLocked: isWordSaved || saveAnim,
+    inlineDue: !!user && isWordSaved && isTokenDue(savedWords, selectedToken) && !inlineReviewMutation.isPending,
+  };
   const savedCount = (savedWords.surfaces?.size || 0);
 
   // 이 자료에서 복습 가능한 단어 수 (현재 로드된 토큰 기준)
@@ -1930,14 +1977,23 @@ export default function ViewerPage() {
       })()}
 
       {user && findSavedVocab(savedWords, selectedToken) && isTokenDue(savedWords, selectedToken) && (
+        // W R3㉮ — 척도를 정본에 맞춘다: 모름/애매/알아=1/2/3(Easy 없음)이 아니라 복습 화면과 같은 4등급.
+        // 라벨·순서·클래스 = SAVE_GRADES(복습 화면 ScoreSection과 동일 계약). 키 1~4·⌘Z는 카드 리스너.
         <div style={{ padding: '10px 12px', background: 'color-mix(in srgb, var(--warning) 10%, transparent)', borderRadius: 'var(--radius-md)', marginBottom: 12, border: '1px solid var(--warning)' }}>
           <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--warning)', marginBottom: 8 }}>복습 시점이에요</div>
-          <div style={{ display: 'flex', gap: 6 }}>
-            {[{ label: '모름', rating: 1 }, { label: '애매', rating: 2 }, { label: '알아', rating: 3 }].map(r => (
-              <button key={r.rating} onClick={() => {
-                const vocab = findSavedVocab(savedWords, selectedToken);
-                if (vocab) inlineReviewMutation.mutate({ vocab, rating: r.rating });
-              }} className="btn btn--ghost btn--sm" style={{ flex: 1 }}>{r.label}</button>
+          <div className="review-score-grid save-grade save-grade--inline">
+            {SAVE_GRADES.map((g) => (
+              <button
+                key={g.grade}
+                type="button"
+                onClick={() => gradeInline(g.grade)}
+                disabled={inlineReviewMutation.isPending}
+                className={`review-score-btn review-score-btn--${g.cls}`}
+                title={`${g.label} (키 ${g.key})`}
+              >
+                <span className="save-grade__key" aria-hidden="true">{g.key}</span>
+                {g.label}
+              </button>
             ))}
           </div>
         </div>

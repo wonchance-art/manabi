@@ -7,6 +7,9 @@
 //   · due 조회 : user_vocabulary에서 next_review_at <= now 상위 N개 (VocabPage/StudySessionPage 패턴)
 //   · SRS 갱신 : fsrs.js의 calculateFSRS (srs.js는 죽은 코드 — 절대 사용 금지)
 //                → user_vocabulary UPDATE { ...nextStats, last_reviewed_at }  (useVocabData.scoreMutation과 동일 페이로드)
+//   · 척도     : 복습 화면 정본과 같은 4등급(SAVE_GRADES — 1 다시·2 어려움·3 알맞음·4 쉬움, W R3㉯ 동결 예외
+//                #1077 5504406191: 월드 기능이 아니라 SRS 데이터 정합. 옛 틀/맞=1/3은 Easy가 없었다)
+//   · undo     : 키 Ctrl/⌘+Z — R2 모델(SRS 5필드 복원 + source:'ui' 보상 이벤트). 버스 신호는 되돌리지 않는다
 //   · 이벤트   : logReviewEvents { lang, source:'vocab', item_key, correct, detail:{ qtype:'flash', ... } }
 //                플래시 자가채점은 '비대칭 신뢰' — qtype:'flash'로 기록해 rung이 성공을 크레딧 0으로 다룬다(기존 규약).
 //                FSRS는 due(예정된 인출) 항목이므로 정당하게 갱신한다.
@@ -17,9 +20,12 @@ import { supabase } from '../../lib/supabase';
 import { logReviewEvents } from '../../lib/reviewEvents';
 import { detectLang, displayWord } from '../../lib/constants';
 import { persistVocabGrade } from '../../lib/fsrs';
+import { SAVE_GRADES } from '../../lib/vocabIO';
 import bus from './bus';
 
 const DUE_LIMIT = 8; // 즉석 리뷰 한 판(5~8문항)
+// W R3㉯ undo가 복원하는 SRS 5필드 — persistVocabGrade 페이로드와 같은 snake_case
+const QUEST_SRS_FIELDS = ['interval', 'ease_factor', 'repetitions', 'next_review_at', 'last_reviewed_at'];
 
 // ── GBC 다이얼로그 문법 (월드 오버레이 공용 토큰) ──
 // 하드 엣지 · 두꺼운 이중 보더(밝은 안/어두운 밖) · 크림 패널 · 모노스페이스 · 하드 오프셋 그림자.
@@ -82,6 +88,7 @@ export default function QuestReview({ userId, onClose }) {
   const rightRef = useRef(0);   // quest:done의 정답 수 — 상태 클로저 지연 회피
   const gradingRef = useRef(false); // 채점 1회 잠금(더블탭 방지)
   const mountedRef = useRef(true);
+  const lastGradeRef = useRef(null); // W R3㉯ undo 스냅샷(단일 레벨 — 다음 채점이 덮는다)
 
   useEffect(() => {
     mountedRef.current = true;
@@ -117,13 +124,22 @@ export default function QuestReview({ userId, onClose }) {
   const current = items[idx];
 
   // ── 채점 확정 — FSRS 갱신 + 이벤트 기록 + 버스 연출, 그리고 다음 문항/완료 ──
-  const grade = async (correct) => {
+  const grade = async (rating) => {
     if (!current || gradingRef.current) return;
+    if (!Number.isInteger(rating) || rating < 1 || rating > 4) return;
     gradingRef.current = true;
     setGradeError('');
 
-    const rating = correct ? 3 : 1; // 맞았어요=Good / 틀렸어요=Again (기존 채점 규약)
+    const correct = rating > 1; // 정렬 뒤에도 correct = rating > 1 · qtype:'flash' 규약 불변(rung 비대칭 신뢰 승계)
     const lang = current.language || detectLang(current.word_text);
+    // undo 스냅샷 — 채점 직전 5필드(select('*') 행 값 그대로) + 세션 상태. 저장 성공 뒤에만 유효화.
+    lastGradeRef.current = null;
+    const snapshot = {
+      wordId: current.id, itemKey: current.word_text, word: current.word_text, lang, rating,
+      prev: Object.fromEntries(QUEST_SRS_FIELDS.filter((k) => current[k] !== undefined).map((k) => [k, current[k]])),
+      idx, right: rightRef.current,
+    };
+    const reviewedAt = new Date().toISOString();
 
     // 1) FSRS — 기존 호출부와 동일(fsrs.js). due 항목이므로 정당한 예정 인출.
     let calculateFSRS;
@@ -141,8 +157,9 @@ export default function QuestReview({ userId, onClose }) {
     });
     // 저장 성공이 확인된 뒤에만 점수·진행·완료 연출을 확정한다.
     try {
-      await persistQuestReviewGrade(supabase, current.id, nextStats);
+      await persistQuestReviewGrade(supabase, current.id, nextStats, reviewedAt);
       if (!mountedRef.current) return;
+      lastGradeRef.current = { ...snapshot, reviewedAt };
     } catch {
       if (!mountedRef.current) return;
       setGradeError('복습 결과를 저장하지 못했어요. 연결을 확인하고 다시 눌러 주세요.');
@@ -157,6 +174,7 @@ export default function QuestReview({ userId, onClose }) {
       item_key: current.word_text,
       correct,
       detail: { word_id: current.id, meaning: current.meaning, rating, mode: 'world', qtype: 'flash' },
+      created_at: reviewedAt,
     }]);
 
     // 3) 즉시 연출 신호.
@@ -176,6 +194,59 @@ export default function QuestReview({ userId, onClose }) {
       bus.emit('quest:done', { right: nextRight, total: items.length });
     }
   };
+
+  // ── undo(W R3㉯) — SRS 5필드 복원 + 보상 이벤트 + 세션 되감기(idx·flipped·right·phase).
+  // quest:scored / quest:done 버스 신호는 재방출도 취소도 하지 않는다 — 소비처가 연출·펫 재조회(읽기만)라
+  // 되돌릴 쓰기가 없다. 펫 count의 원 이벤트 +1 잔류는 R2와 같은 종류(undo_of가 단서).
+  const undoLast = async () => {
+    const last = lastGradeRef.current;
+    if (!last || gradingRef.current) return;
+    lastGradeRef.current = null;
+    setGradeError('');
+    try {
+      const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev;
+      await persistQuestReviewGrade(supabase, last.wordId, prevStats, prevReviewedAt);
+      if (!mountedRef.current) return;
+    } catch {
+      if (!mountedRef.current) return;
+      setGradeError('되돌리지 못했어요. 연결을 확인해 주세요.');
+      return;
+    }
+    logReviewEvents(userId, [{
+      lang: last.lang, source: 'ui', item_key: last.itemKey, correct: true,
+      detail: { qtype: 'undo', undo_of: { item_key: last.itemKey, rating: last.rating, reviewed_at: last.reviewedAt } },
+    }]);
+    rightRef.current = last.right;
+    setRight(last.right);
+    setIdx(last.idx);
+    setFlipped(true);
+    setPhase('active');
+    gradingRef.current = false;
+  };
+
+  // ── 키 1~4·Ctrl/⌘+Z — 다이얼로그가 열려 있는 동안만(마운트 = 열림). 처리한 키는 전파를 끊어
+  // 월드 캔버스(Phaser, window 리스너)와 경쟁하지 않는다. 입력 요소 안·조합키는 무시.
+  const keysRef = useRef({});
+  keysRef.current = { row: phase === 'active' && !!current && flipped, grade, undo: undoLast, canUndo: !!lastGradeRef.current && !gradingRef.current };
+  useEffect(() => {
+    function onKeyDown(e) {
+      const t = e.target;
+      const inField = !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+      const h = keysRef.current;
+      if ((e.key === 'z' || e.key === 'Z') && (e.metaKey || e.ctrlKey) && !e.altKey) {
+        if (inField || !h.canUndo) return;
+        e.preventDefault(); e.stopPropagation();
+        h.undo?.();
+        return;
+      }
+      if (inField || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (!/^[1-4]$/.test(e.key) || !h.row) return;
+      e.preventDefault(); e.stopPropagation();
+      h.grade?.(Number(e.key));
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   return (
     <div
@@ -264,21 +335,22 @@ export default function QuestReview({ userId, onClose }) {
                 뒤집기
               </button>
             ) : (
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button
-                  type="button"
-                  onClick={() => grade(false)}
-                  style={{ ...gbcButton, flex: 1, background: GBC.red, color: GBC.creamHi, borderColor: GBC.border }}
-                >
-                  틀렸어요
-                </button>
-                <button
-                  type="button"
-                  onClick={() => grade(true)}
-                  style={{ ...gbcButtonPrimary, flex: 1 }}
-                >
-                  맞았어요
-                </button>
+              // 4등급 정본(모양은 GBC, 값·순서는 SAVE_GRADES). 좁은 임베드에서는 2단 2열 — 값·순서 불변.
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8 }}>
+                {SAVE_GRADES.map((g) => (
+                  <button
+                    key={g.grade}
+                    type="button"
+                    onClick={() => grade(g.grade)}
+                    title={`${g.label} (키 ${g.key})`}
+                    style={g.grade === 1
+                      ? { ...gbcButton, background: GBC.red, color: GBC.creamHi, borderColor: GBC.border }
+                      : g.grade >= 3 ? { ...gbcButtonPrimary } : { ...gbcButton }}
+                  >
+                    <span style={{ opacity: 0.7, fontSize: '0.7rem', marginRight: 6 }} aria-hidden="true">{g.key}</span>
+                    {g.label}
+                  </button>
+                ))}
               </div>
             )}
           </div>

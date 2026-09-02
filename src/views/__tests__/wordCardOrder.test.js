@@ -63,7 +63,7 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
   });
 
   it('예문 강조 — 복습 카드의 정본 헬퍼로 기본형을 <mark>, 연속으로 없으면(term null) 강조 0', () => {
-    expect(viewer).toContain("import { langNameKo, splitSentenceAroundWord } from '../lib/constants';");
+    expect(viewer).toMatch(/import \{[^}]*\bsplitSentenceAroundWord\b[^}]*\} from '\.\.\/lib\/constants';/);
     const ex = sliceBetween(card, '<div lang="zh-Hans">{(() => {', '})()}</div>');
     expect(ex).toContain('<mark className="review-card__highlight">{term}</mark>');
     expect(ex).toMatch(/i < arr\.length - 1/);

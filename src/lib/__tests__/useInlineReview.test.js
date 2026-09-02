@@ -69,6 +69,7 @@ describe('useInlineReview — review_events 기록', () => {
       item_key: 'chat',
       correct: false,
       detail: { word_id: 'v1', meaning: '고양이', rating: 1, qtype: 'flash' },
+      created_at: expect.any(String), // W R3: 채점 시각 동봉(undo 보상 이벤트의 열쇠)
     }]);
   });
 
