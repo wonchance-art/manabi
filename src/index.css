@@ -2830,14 +2830,19 @@ a.grammar-btn {
   content: '';
   position: absolute;
   z-index: -1;
-  /* 좌우 여유는 ±1px — ±2px면 기본 자간(0.25rem=4px)에서 이웃 밴드와 정확히 맞닿아
-     색 경계가 앞 글자 잉크에 밀착한다(오너 보고 2026-08-29). ±1px + 이음매 노출 2px이
-     시연 승인 모습(중립 이음매가 단어 경계를 가르는)의 기본 자간 등가다. */
-  left: -1px;
-  right: -1px;
+  /* 알약 문법이 공통 기본(안 A, 오너 확정 2026-09-02 — #1077 5503687165): 좌우 확장 0 ·
+     모서리 5px. 08-29 밴드(±1px·각형 1px 킨들 톤)와 08-30 상태 알약이 서로 다른 문법이라
+     지정 순간 알약→밴드로 폭·모서리·이음(낱개 넷이 한 덩어리)이 한꺼번에 바뀌었다 —
+     「수용된 트레이드오프」 주석이 셋째를 안 적고 있었고 눈에 제일 걸리는 게 그것이었다.
+     공통으로 올리면 낱개 단어 지정은 색만 바뀌고(08-29 원래 계약이 비로소 성립), 구간
+     지정은 아래 연속 규칙이 안쪽 모서리만 죽여 하나의 긴 알약이 된다. 실기에서 5px가
+     거슬리면 3px 절충 — 계약은 「비지정과 같은 값」이지 5px가 아니다. 비지정 인접 간격은
+     자간 4px 전체 그대로(상태 하이라이트가 이어져 보이던 회귀의 방지선). */
+  left: 0;
+  right: 0;
   top: var(--hl-band-top);
   height: var(--hl-band-h);
-  border-radius: 1px; /* 킨들 톤(오너 레퍼런스 2026-08-29) — 각지되 픽셀 계단만 죽인다 */
+  border-radius: 5px;
   background: transparent;
   /* 지정 전이(T1 혼색): 칠의 형태·범위는 불변, 색만 크로스페이드 — 상태가 '배경'이라는
      한 언어로 계속 살아야 지정 순간 눈이 놓치지 않는다(오너 문제 제기 2026-08-29) */
@@ -3041,21 +3046,35 @@ a.grammar-btn {
 .word-token--picked .surface::before {
   background: var(--picked-bg, var(--primary-glow));
 }
+/* 연속 지정 구간 — 안쪽 모서리만 죽인다(버튼 그룹 관용구, 안 A 2026-09-02). 양 끝
+   바깥 모서리는 둥근 채라 구간이 「하나의 긴 알약」으로 읽힌다 — 낱개(상태)와 구간(지정)의
+   뜻 차이는 형태가 아니라 이음으로만 남는다. 뒤 규칙의 :has(.surface)는 항상 참 —
+   목적은 :has 미지원 엔진에서 두 규칙과 이음매가 함께 빠지는 것(토큰마다 온전한 알약 +
+   자간 틈으로 남아 글자·밴드는 온전, 이음매만 생략). */
+.word-token--picked:has(+ .word-token--picked) .surface::before {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.word-token--picked + .word-token--picked:has(.surface) .surface::before {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
 /* 자간 이음매 — 항상 '지정색' 전용 조각(T1 정정판, 오너 확정 2026-08-29).
-   단어의 칠(::before)은 비지정과 같은 ±2px 그대로 두고 자간만 이 조각이 채운다:
-   지정 전후 단어 칠 범위가 한 픽셀도 안 움직이고(시연 픽셀 스캔 검증), 같은 상태가
-   연속해도(혼색끼리) 단어 경계가 이음매 색으로 남는다.
+   단어의 칠(::before)은 비지정과 같은 확장 0 그대로 두고 자간만 이 조각이 채운다:
+   지정 전후 단어 칠 범위가 한 픽셀도 안 움직이고, 같은 상태가 연속해도(혼색끼리)
+   단어 경계가 이음매 색으로 남는다.
    앞 토큰의 ::after가 오른쪽으로 낸다 — 자기 스택 문맥에선 z:-2라 자기 밴드(z:-1)
-   밑에 깔리고, 뒤 토큰은 문맥째 나중에 그려져 그 위를 덮는다. 양쪽 1px씩 겹쳐
-   실금이 없고, 노출부(기본 자간에서 2px)는 색 경계마다 중립 이음매가 되어 이웃
-   글리프를 침범할 수 없다(#1013 원칙 승계). :has 미지원 엔진은 이음매만 생략 —
-   그 자리는 지면색 틈 2px로 남을 뿐 글자·밴드는 온전하다. */
+   밑에 깔리고, 뒤 토큰은 문맥째 나중에 그려져 그 위를 덮는다. 칠의 확장이 0이라
+   조각이 스스로 양쪽 1px씩 밴드 밑으로 물려(안 A) 실금이 없고, 노출부(기본 자간
+   4px)는 색 경계마다 중립 이음매가 되어 이웃 글리프를 침범할 수 없다(#1013 원칙
+   승계). :has 미지원 엔진은 이음매만 생략 — 그 자리는 지면색 틈으로 남을 뿐
+   글자·밴드는 온전하다. */
 .word-token--picked:has(+ .word-token--picked) .surface::after {
   content: '';
   position: absolute;
   z-index: -2;
-  right: calc(-1 * var(--char-gap, 0.25rem));
-  width: var(--char-gap, 0.25rem);
+  right: calc(-1 * var(--char-gap, 0.25rem) - 1px);
+  width: calc(var(--char-gap, 0.25rem) + 2px);
   top: var(--hl-band-top);
   height: var(--hl-band-h);
   background: var(--picked-bg, var(--primary-glow));
@@ -3172,20 +3191,11 @@ a.grammar-btn {
   background: var(--ws-due);
   border-bottom-color: transparent;
 }
-/* 상태 알약(오너 확정 2026-08-30, 3본 비교 렌더 검증) — 비지정 상태 배경만 B안 원래
-   문법을 유지한다: 모서리 5px + 좌우 확장 없음(자간 4px 전체가 단어 분리 간격).
-   밴드의 ±1px·각형(킨들 톤)은 지정·이음매 전용 — 상태까지 밴드 문법으로 통일하면
-   인접 하이라이트 단어 사이가 2px만 남아 한 줄로 이어져 보인다(밴드 트랙에 딸려간
-   회귀의 원인이 이 두 값). 지정 순간 알약→밴드로 폭 2px·모서리가 바뀌는 것은 수용된
-   트레이드오프(T1 색 크로스페이드는 유지). */
-.reader-area--hl .word-token--new:not(.word-token--picked) .surface::before,
-.reader-area--hl .word-token--met:not(.word-token--picked) .surface::before,
-.reader-area--hl .word-token--saved:not(.word-token--picked) .surface::before,
-.reader-area--hl .word-token--due:not(.word-token--picked) .surface::before {
-  left: 0;
-  right: 0;
-  border-radius: 5px;
-}
+/* 상태 알약(오너 확정 2026-08-30, 3본 비교 렌더 검증)은 이제 기반 ::before의 공통
+   문법이다(안 A 2026-09-02) — 여기 있던 --hl 전용 기하 오버라이드(left/right 0·5px)는
+   죽은 규칙이라 지웠다. 되살리지 말 것: pickedBandGrammar 계약이 「--hl 블록 기하
+   오버라이드 0」을 잡는다. 상태를 밴드(±1px·각형)로 올리는 반대 방향도 배제 —
+   인접 하이라이트 단어 사이가 2px만 남아 이어져 보이는 회귀를 이미 겪었다. */
 
 /* 지정(단어·문장·범위 = --picked) 중에도 상태 정보 유지(오너 지적 2026-08-27) —
    T1 혼색(킨들 겹침 문법, 오너 확정 2026-08-29): 밑줄 강등 대신 그 단어 밴드의 색을

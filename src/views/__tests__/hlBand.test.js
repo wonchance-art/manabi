@@ -11,11 +11,12 @@ const css = fs.readFileSync(path.join(process.cwd(), 'src/index.css'), 'utf8');
  *    한자 잉크(0.58~1.54em)를 온전히 덮는다. .surface line-height(2.2)를 바꾸면
  *    rt-an bottom 비율(pinyinRuby 계약)과 함께 이 값도 다시 재야 한다.
  * ② 지정 중 상태는 혼색(T1) — 상태가 끝까지 '배경'이라는 한 언어로 살아야
- *    지정 전이에서 눈이 놓치지 않는다(색 크로스페이드. 형태는 상태 알약→지정 밴드로
- *    폭 2px·모서리만 바뀐다 — 알약 복원과 함께 오너 수용 2026-08-30).
- * ②b 비지정 상태 배경은 알약(오너 확정 2026-08-30) — 모서리 5px·좌우 확장 없음.
- *    밴드 ±1px·각형은 지정·이음매 전용. 상태까지 밴드로 통일하면 인접 하이라이트
- *    단어가 이어져 보인다(밴드 트랙 회귀 실측 — 3본 비교 렌더).
+ *    지정 전이에서 눈이 놓치지 않는다(색 크로스페이드). 형태는 안 A(2026-09-02) 이후
+ *    낱개 지정에서 불변 — 알약 문법이 공통이라 색만 넘어간다(08-29 원래 계약 성립).
+ * ②b 알약(오너 확정 2026-08-30 — 모서리 5px·좌우 확장 없음)은 기반 ::before의 공통
+ *    문법이다(안 A). --hl 전용 오버라이드는 죽은 규칙이라 없다. 상태를 밴드(±1px·각형)로
+ *    올리는 반대 방향은 배제 — 인접 하이라이트 단어가 이어져 보인다(밴드 트랙 회귀 실측).
+ *    연속 지정 구간의 안쪽 모서리·이음매 계약은 pickedBandGrammar.test.js.
  * ③ 문장 막대(line-pick) 시각도 같은 변수(--hl-band-*)를 공유한다(히트 영역은 불변).
  */
 describe('하이라이트 글자 밴드 (index.css)', () => {
@@ -56,17 +57,15 @@ describe('하이라이트 글자 밴드 (index.css)', () => {
     expect(css).toMatch(/\.word-token--due \.surface::before \{[^}]*animation: due-pulse/s);
   });
 
-  it('상태 알약(②b) — 비지정 4상태 배경은 모서리 5px·좌우 확장 없음(밴드 문법 금지)', () => {
-    const rule = css.match(
-      /\.reader-area--hl \.word-token--new:not\(\.word-token--picked\) \.surface::before,[\s\S]*?\{[^}]*\}/
-    )?.[0] || '';
-    expect(rule).toContain('left: 0;');
-    expect(rule).toContain('right: 0;');
-    expect(rule).toContain('border-radius: 5px;');
-    // 4상태 전부 알약 — 그룹 셀렉터가 due까지 싣는다
-    for (const cls of ['met', 'saved', 'due']) {
-      expect(rule).toContain(`.word-token--${cls}:not(.word-token--picked) .surface::before`);
-    }
+  it('상태 알약(②b) — 알약 문법(5px·확장 0)은 기반 ::before 공통, --hl 전용 기하 오버라이드 없음', () => {
+    const base = css.match(/\.word-token \.surface::before \{[^}]*\}/s)?.[0] || '';
+    expect(base).toContain('left: 0;');
+    expect(base).toContain('right: 0;');
+    expect(base).toContain('border-radius: 5px;');
+    // 옛 그룹 오버라이드(4상태 :not(picked)에 left/right/radius) 부활 금지 — 죽은 규칙
+    expect(css).not.toMatch(
+      /\.reader-area--hl \.word-token--new:not\(\.word-token--picked\) \.surface::before,[\s\S]*?\{[^}]*border-radius/
+    );
   });
 
   it('T1 혼색 — 지정 중 4상태의 밴드가 지정색×상태색 color-mix로 칠해진다', () => {
@@ -102,9 +101,10 @@ describe('하이라이트 글자 밴드 (index.css)', () => {
     expect(btn).not.toContain('transform');
   });
 
-  it('밴드 좌우 여유는 ±1px — 기본 자간에서 이웃 밴드와 맞닿지 않고 이음매 2px가 노출된다', () => {
+  it('밴드 좌우 확장 0 — 비지정 인접 간격은 자간 4px 전체(±1px 밴드 문법 부활 금지)', () => {
     const base = css.match(/\.word-token \.surface::before \{[^}]*\}/s)?.[0] || '';
-    expect(base).toContain('left: -1px');
-    expect(base).toContain('right: -1px');
+    expect(base).toContain('left: 0;');
+    expect(base).toContain('right: 0;');
+    expect(base).not.toMatch(/left: -1px|right: -1px/);
   });
 });
