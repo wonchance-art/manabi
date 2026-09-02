@@ -56,10 +56,13 @@ const FR_ALT_SPLIT = /[/,]| ou /;
 const LOADERS = {
   ja: async () => {
     const { JAPANESE_VOCAB_REF } = await import('./japaneseVocabRegistry');
+    const wrap = (hit) => (hit ? { level: hit.level, word: hit.word, main: hit.word.ja } : null);
     return {
-      findWord(text) {
-        const hit = JAPANESE_VOCAB_REF.findWord(text);
-        return hit ? { level: hit.level, word: hit.word, main: hit.word.ja } : null;
+      // reading(후리가나)이 오면 **표면 키 미스 때만** 읽기 2차 조회(가나↔한자 표기 차이 — 라운드 10 잔여).
+      // 표면 우선·main=word.ja는 불변이라 기록 → 재대조 왕복이 그대로 안정하다.
+      findWord(text, reading) {
+        return wrap(JAPANESE_VOCAB_REF.findWord(text))
+          || (reading ? wrap(JAPANESE_VOCAB_REF.findWordByReading(reading, text)) : null);
       },
     };
   },

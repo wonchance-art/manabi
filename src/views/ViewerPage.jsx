@@ -126,6 +126,9 @@ async function fetchMaterial(id) {
   }
 }
 
+// 가나만(히라가나·가타카나·장음) — ja 읽기 2차 조회에서 가나 표면은 표면 자체가 읽기다
+const KANA_ONLY = /^[\u3040-\u30ffー]+$/;
+
 async function fetchUserVocabWords(userId) {
   if (!userId) return { byKey: new Map(), surfaces: new Set(), bases: new Set() };
   const { data, error } = await supabase
@@ -265,6 +268,8 @@ export default function ViewerPage() {
   // 집합은 대조 키(§4.7 정규화 — fr 관사형 접기, ja·en·zh는 원문 그대로)로 든다.
   const metCode = { Japanese: 'ja', French: 'fr', Chinese: 'zh', English: 'en' }[materialLang];
   const [metWordSet, setMetWordSet] = useState(() => new Set());
+  // 표기 차이로 만난 토큰 text → 저작 표기(main) — 점 대조가 기록과 같은 열쇠를 쓴다(ja 읽기 2차 조회)
+  const [metMainByText, setMetMainByText] = useState(() => new Map());
   useEffect(() => {
     setMetWordSet(metCode ? loadMetWordKeys(metCode) : new Set());
   }, [metCode]);
@@ -779,11 +784,19 @@ export default function ViewerPage() {
         const lookup = await loadRefVocabLookup(code);
         if (!alive || !lookup) return;
         const met = [];
+        const mainByText = new Map();
         for (const t of dragTokens) {
           if (t.sep_link) continue;   // 이합사 O 조각 — 만남은 V(base_form=VO)가 한 번만 남긴다
-          const hit = lookup.findWord(t.base_form) || lookup.findWord(t.text);
-          if (hit?.main) met.push(hit.main);
+          // ja 읽기 2차 조회 — 표면 키가 없을 때 후리가나로 표제어를 찾는다(가나 표면은 표면 자체가 읽기,
+          // 토크나이저가 가나 표면의 후리가나를 비운다). 가나↔한자 표기 차이만(어휘 いぬ·본문 犬).
+          const reading = code === 'ja' ? (t.furigana || (KANA_ONLY.test(t.text) ? t.text : null)) : null;
+          const hit = lookup.findWord(t.base_form) || lookup.findWord(t.text, reading);
+          if (hit?.main) {
+            met.push(hit.main);
+            if (hit.main !== t.text && hit.main !== t.base_form) mainByText.set(t.text, hit.main);
+          }
         }
+        if (alive) setMetMainByText(mainByText);
         // 출처 문맥(R3) — 처음 만난 표기에는 드래그한 자료 문장(첫 줄)을 남긴다.
         const ctxLine = String(leftPanelText || '').split('\n').map((l) => l.trim()).find(Boolean);
         if (met.length > 0) {
@@ -1584,7 +1597,8 @@ export default function ViewerPage() {
         // 비교는 대조 키(§4.7) — fr 저작형 "la famille"와 토큰 "famille"가 같은 키로 접힌다.
         const isMet = !isSaved && (
           metWordSet.has(normalizeRefWordKey(metCode, t.base_form)) ||
-          metWordSet.has(normalizeRefWordKey(metCode, t.text))
+          metWordSet.has(normalizeRefWordKey(metCode, t.text)) ||
+          metWordSet.has(normalizeRefWordKey(metCode, metMainByText.get(t.text)))
         );
         return (
           <div key={i} className={`pdf-word-item ${isSaved ? 'pdf-word-item--saved' : ''}`}>
@@ -2852,7 +2866,7 @@ export default function ViewerPage() {
               isSaved,
               isDue,
               isKnown: tokKnown,
-              isMet: !!(metCode && (metWordSet.has(normalizeRefWordKey(metCode, token.base_form)) || metWordSet.has(normalizeRefWordKey(metCode, token.text)))),
+              isMet: !!(metCode && (metWordSet.has(normalizeRefWordKey(metCode, token.base_form)) || metWordSet.has(normalizeRefWordKey(metCode, token.text)) || metWordSet.has(normalizeRefWordKey(metCode, metMainByText.get(token.text))))),
             })) : '';
             // ruby는 토글과 무관하게 항상 만든다 — 폭 예약(ruby[data-pinyin])이 병음을 꺼도
             // 유지돼야 켤 때 글자가 밀리지 않는다(오너 요청 2026-08-19). 끌 때는 rt만 감춘다.

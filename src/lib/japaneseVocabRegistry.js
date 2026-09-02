@@ -118,6 +118,33 @@ function buildWordIndex() {
   return idx;
 }
 
+// ── 읽기 색인(ja 표제어 읽기 매칭 — #1077 라운드 10 §남긴 것) — 표기가 달라 표면 키로 못 만나는 말을
+// 읽기(yomi)로 2차 조회한다. 어휘 정답지 대조에서 표제어 미생존 429 중 204건이 「어휘 いぬ·예문 犬」류의
+// 표기 차이였다. 규칙 셋: ① 〜표기 표제어(〜分·〜時)는 표제어가 아니라 제외 ② 표기 차이는 가나↔한자뿐 —
+// 표면과 후보가 둘 다 한자면(橋↔箸) 다른 말이므로 제외 ③ 동음이의는 최저 급수 우선, 동급이면 무개입(null)
+// — 라운드 4(jaKanaSegment)의 규칙 재사용. 가타카나는 히라가나로 접어 비교한다(パン=ぱん).
+const kataToHira = (s) => String(s || '').replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
+const HAS_KANJI = /[\u3400-\u4dbf\u4e00-\u9fff々]/;
+const normalizeReading = (value) => kataToHira(normalizeWord(value));
+let readingIndex = null;
+function buildReadingIndex() {
+  const idx = new Map();
+  LEVEL_META.forEach((meta, rank) => {
+    const vocab = VOCAB[meta.key];
+    if (!vocab) return;
+    for (const theme of vocab.themes) {
+      for (const word of theme.words) {
+        if (!word?.yomi || /[～〜~]/.test(word.ja || '')) continue;
+        const key = normalizeReading(word.yomi);
+        if (!key) continue;
+        if (!idx.has(key)) idx.set(key, []);
+        idx.get(key).push({ level: meta.key, rank, word });
+      }
+    }
+  });
+  return idx;
+}
+
 export const JAPANESE_VOCAB_REF = Object.freeze({
   base: '/japanese',
   flag: '🇯🇵',
@@ -128,6 +155,23 @@ export const JAPANESE_VOCAB_REF = Object.freeze({
   findWord(text) {
     wordIndex ||= buildWordIndex();
     return wordIndex.get(normalizeWord(text)) || null;
+  },
+  /**
+   * 읽기로 단어를 찾는다 — 표면 키가 없을 때의 2차 조회. { level, word } 또는 null.
+   * surface는 한자↔한자 차단용(표면이 한자면 가나 표제어 후보만 남긴다).
+   */
+  findWordByReading(reading, surface = '') {
+    const key = normalizeReading(reading);
+    if (!key) return null;
+    readingIndex ||= buildReadingIndex();
+    const list = readingIndex.get(key);
+    if (!list) return null;
+    const cands = HAS_KANJI.test(String(surface || '')) ? list.filter((c) => !HAS_KANJI.test(c.word.ja)) : list;
+    if (cands.length === 0) return null;
+    const best = Math.min(...cands.map((c) => c.rank));
+    const top = cands.filter((c) => c.rank === best);
+    if (top.length !== 1) return null; // 동급 동음이의 — 무개입
+    return { level: top[0].level, word: top[0].word };
   },
   getLevelMeta(level) {
     return LEVEL_META.find(meta => meta.key === normalize(level)) || null;
