@@ -102,10 +102,11 @@ describe('POS_FIX — jieba 문맥 불문 오태그 수리', () => {
   });
 
   it('POS_FIX 표는 존재하는 단어만 — 등재 밖 무개입(스팟: 일반 문장 불변)', () => {
-    // 수제 5 + 분석기 리뷰 라운드 2 추가 37(zg·nrt 단어별 12 + nrt 오태그 6 + 고유명사 태그 보통명사·동사 19).
-    // 개수를 못 박는다 — 표가 근거 없이 자라면 여기서 잡힌다(추가분의 근거는 zhSuppress.test·코퍼스 실측).
+    // 수제 5 + 분석기 리뷰 라운드 2 추가 37(zg·nrt 단어별 12 + nrt 오태그 6 + 고유명사 태그 보통명사·동사 19)
+    // + 라운드 9 추가 51(어휘 정답지 대조 — 고유명사 태그 보통명사·동사·형용사 29·수사 접두 부사 11·구별사/시간사/x 11).
+    // 개수를 못 박는다 — 표가 근거 없이 자라면 여기서 잡힌다(추가분의 근거는 zhSuppress.test·zhPosVocabGold.test·코퍼스 실측).
     expect(Object.keys(ZH_POS_FIX).slice(0, 5)).toEqual(['自觉', '没', '很', '谢谢', '安静']);
-    expect(Object.keys(ZH_POS_FIX)).toHaveLength(5 + 37);
+    expect(Object.keys(ZH_POS_FIX)).toHaveLength(5 + 37 + 51);
     const words = tokenizeZhLine('我在北京大学读书。').map((t) => t.text);
     expect(words).toContain('北京大学');
     expect(words).toContain('读书');
