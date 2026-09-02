@@ -12,7 +12,7 @@ import {
   splitTextIntoChapters, CHAPTER_MAX_CHARS, looksLikeSentenceList, LINES_PER_REQUEST_CAP,
 } from '../lib/bookSplit';
 import { makeBookKey } from '../lib/bookMeta';
-import { LEVELS } from '../lib/constants';
+import { LEVELS, MATERIAL_DIRECTION } from '../lib/constants';
 import { isOnDemandSuggestion, suggestionVideoUrl } from '../lib/suggestionSources';
 import { isShareableSource, licenseForSource } from '../lib/videoAttribution';
 import MaterialAddPdfSection from './MaterialAddPdfSection';
@@ -42,6 +42,9 @@ export default function MaterialAddPage() {
   const [epubSource, setEpubSource] = useState(false); // 개인 소장 전자책 반입 — 비공개 고정 근거
   // 링크 반입 출처(v2-F R1) — 있으면 metadata.source에 실린다. 다른 입구로 갈아타면 비운다.
   const [linkSource, setLinkSource] = useState(null);
+  // U R3 내 노트 — 방향 축. 'write'면 한국어 본문을 허용하고 분석 큐에 넣지 않는다.
+  const [direction, setDirection] = useState(MATERIAL_DIRECTION.READ);
+  const isNote = direction === MATERIAL_DIRECTION.WRITE;
 
   // PDF에서 텍스트가 추출되면 폼에 주입
   const handlePdfRangeReady = ({ pdf, pageStart, pageEnd, rawText: extractedText }) => {
@@ -262,7 +265,8 @@ export default function MaterialAddPage() {
 
     try {
       const initJson = {
-        sequence: [], dictionary: {}, last_idx: -1, status: "analyzing",
+        // 노트(write)는 분석 큐에 들어가지 않는다 — status를 'note'로 두면 자료실 상태 배지·재분석 경로가 건드리지 않는다
+        sequence: [], dictionary: {}, last_idx: -1, status: isNote ? 'note' : "analyzing",
         metadata: {
           language, level, updated_at: new Date().toISOString(),
           // 출처 기록 — metadata.book 선례를 그대로 탄다(스키마 변경 0).
@@ -273,8 +277,10 @@ export default function MaterialAddPage() {
         title: title || "제목 없음",
         raw_text: autoSplitParagraphs(rawText),
         processed_json: initJson,
-        visibility: (pdfSource || epubSource) ? 'private' : visibility, // PDF·EPUB(개인 소장) 출처는 강제 private
+        // 노트는 가장 사적인 데이터 — 비공개 고정. PDF·EPUB(개인 소장) 출처도 강제 private
+        visibility: (pdfSource || epubSource || isNote) ? 'private' : visibility,
         owner_id: user.id,
+        ...(isNote ? { direction: MATERIAL_DIRECTION.WRITE } : {}),
         ...(pdfSource ? {
           source_pdf_id: pdfSource.pdf.id,
           page_start: pdfSource.pageStart,
@@ -300,6 +306,14 @@ export default function MaterialAddPage() {
         }
       }
 
+      if (isNote) {
+        // U R3: 노트는 분석하지 않는다(한국어 원문 허용 — 토큰화·병음·FSRS 무접촉). 저장이 곧 완료.
+        setStatus('노트를 저장했어요.');
+        setProgress(100);
+        setCompletedId(data[0].id);
+        setIsProcessing(false);
+        return;
+      }
       setStatus('저장 완료. 백그라운드 분석을 시작합니다...');
       setProgress(10);
       runBackgroundAnalysis(data[0].id, rawText, controller.signal);
@@ -467,6 +481,35 @@ export default function MaterialAddPage() {
           </div>
         )}
 
+        {/* U R3 — 자료의 방향: 읽기 자료(목표어 → 나) / 내 노트(나 → 목표어). 노트는 한국어 원문을
+            허용하고 분석 큐에 넣지 않는다. /quick의 [자료로 저장]과 같은 형태의 입구 — 저장 흐름 하나. */}
+        <div className="form-field">
+          <label className="form-label">자료 종류</label>
+          <div className="toggle-group" role="group" aria-label="자료 종류">
+            <button
+              type="button"
+              aria-pressed={!isNote}
+              onClick={() => setDirection(MATERIAL_DIRECTION.READ)}
+              className={`toggle-btn ${!isNote ? 'toggle-btn--primary' : ''}`}
+            >
+              읽기 자료
+            </button>
+            <button
+              type="button"
+              aria-pressed={isNote}
+              onClick={() => { setDirection(MATERIAL_DIRECTION.WRITE); setVisibility('private'); }}
+              className={`toggle-btn ${isNote ? 'toggle-btn--primary' : ''}`}
+            >
+              내 노트
+            </button>
+          </div>
+          {isNote && (
+            <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', margin: '6px 0 0' }}>
+              내 생각·메모를 한국어로 담아 두는 자료예요. 분석하지 않고, 비공개예요. 학습 언어는 「어느 언어로 옮길 노트인가」예요.
+            </p>
+          )}
+        </div>
+
         {/* Title */}
         <div className="form-field">
           <label className="form-label">제목</label>
@@ -484,20 +527,20 @@ export default function MaterialAddPage() {
           <div className="form-field">
             <label className="form-label">
               공개 범위
-              {(pdfSource || epubSource) && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginLeft: 6 }}>({pdfSource ? 'PDF' : 'EPUB'} 출처는 비공개 고정)</span>}
+              {(pdfSource || epubSource || isNote) && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginLeft: 6 }}>({isNote ? '내 노트' : pdfSource ? 'PDF 출처' : 'EPUB 출처'}는 비공개 고정)</span>}
             </label>
             <div className="toggle-group">
               <button
-                onClick={() => !pdfSource && !epubSource && setVisibility('private')}
+                onClick={() => !pdfSource && !epubSource && !isNote && setVisibility('private')}
                 className={`toggle-btn ${visibility === 'private' ? 'toggle-btn--primary' : ''}`}
-                disabled={!!pdfSource || epubSource}
+                disabled={!!pdfSource || epubSource || isNote}
               >
                 비공개
               </button>
               <button
-                onClick={() => !pdfSource && !epubSource && setVisibility('public')}
+                onClick={() => !pdfSource && !epubSource && !isNote && setVisibility('public')}
                 className={`toggle-btn ${visibility === 'public' ? 'toggle-btn--accent' : ''}`}
-                disabled={!!pdfSource || epubSource}
+                disabled={!!pdfSource || epubSource || isNote}
               >
                 공용
               </button>
