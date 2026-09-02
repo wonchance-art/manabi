@@ -38,9 +38,10 @@ describe('지정 이펙트 불투명 등가색 (index.css)', () => {
   it('자간 이음매는 연속 지정에서만, 밴드 밑(z:-2)에서 자간 폭으로만 잇는다', () => {
     const adj = css.match(/\.word-token--picked:has\(\+ \.word-token--picked\) \.surface::after \{[^}]*\}/)?.[0] || '';
     expect(adj).toContain('z-index: -2'); // 밴드(z:-1)보다 아래 — 이웃 글리프·밴드를 덮을 수 없다
-    // 상자 [W, W+gap]: 밴드(±1px) 밑에 양끝 1px씩 겹치고, 노출부는 기본 자간에서 2px 중립 이음매
-    expect(adj).toContain('right: calc(-1 * var(--char-gap, 0.25rem));');
-    expect(adj).toContain('width: var(--char-gap, 0.25rem);');
+    // 상자 [W-1px, W+gap+1px]: 칠의 확장이 0(안 A)이라 조각이 스스로 양끝 1px씩 밴드 밑으로
+    // 물린다 — 실금 0. 노출부(기본 자간 4px)는 중립 이음매
+    expect(adj).toContain('right: calc(-1 * var(--char-gap, 0.25rem) - 1px);');
+    expect(adj).toContain('width: calc(var(--char-gap, 0.25rem) + 2px);');
     expect(adj).toContain('var(--picked-bg'); // 이음매도 불투명 등가색
   });
 });
