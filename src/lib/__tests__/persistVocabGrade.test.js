@@ -56,10 +56,14 @@ describe('배선 계약 — 중복 부활 금지', () => {
 
   it('KST 주 시작 로컬 재구현 2벌이 growthStats 정본으로 수렴했다', () => {
     for (const f of ['src/views/StudySessionPage.jsx', 'src/lib/studyMaterials.js']) {
-      const src = read(f);
-      expect(src, f).not.toMatch(/function kstWeekStart/);
-      expect(src, f).toMatch(/import \{[^}]*kstWeekStart(Iso|Ms)[^}]*\} from '[^']*growthStats'/);
+      expect(read(f), f).not.toMatch(/function kstWeekStart/);
     }
+    expect(read('src/lib/studyMaterials.js')).toMatch(/import \{[^}]*kstWeekStartMs[^}]*\} from '[^']*growthStats'/);
+    // StudySessionPage의 주간 회고는 W 후속 ②에서 주 경계 계산 자체를 주간 리포트 정본에 넘겼다
+    // (fetchWeeklyReportRows가 안에서 kstWeekStartMs를 쓴다) — 로컬 경계 계산 0.
+    const session = read('src/views/StudySessionPage.jsx');
+    expect(session).toContain("from '../lib/weeklyReportRows'");
+    expect(session).not.toMatch(/kstWeekStart(Iso|Ms)\(/);
   });
 
   it('규약 통일 — 문형 저장 조회는 어휘와 같은 청크 정본, PDF 번역 프롬프트는 뷰어와 같은 정본', () => {

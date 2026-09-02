@@ -22,6 +22,8 @@ import { detectLang, detectLangConfident, hasCjkText } from '../lib/constants';
 import { stripSourceLangInMeaning } from '../lib/studySession';
 import { useVocabData } from '../lib/useVocabData';
 import { confusedVocabWords, CONFUSED_MIN, CONFUSED_SINCE_DAYS } from '../lib/confusedQueue';
+import { dropUndoneEvents } from '../lib/undoneReviews';
+import { fetchUndoMarkers } from '../lib/undoneReviewsRows';
 import { weaknessProfile } from '../lib/weaknessProfile';
 import { weakDrillPrescription, weakDrillWords, hasWeakDrill } from '../lib/weakDrill';
 import { tagLabel } from '../lib/errorTags';
@@ -611,7 +613,8 @@ export default function VocabPage() {
         .order('created_at', { ascending: false })
         .limit(400);
       if (!error && data) {
-        const eventsAsc = data.slice().reverse();
+        // 되돌린 채점 제외(W 후속 ②) — lang 필터뿐이라 undo 마커가 같은 표본에 있다
+        const eventsAsc = dropUndoneEvents(data).slice().reverse();
         rungs = deriveVocabRungs(eventsAsc, queueWords);
       }
     } catch { /* 폴백: 빈 rung → choice 위주 */ }
@@ -639,17 +642,23 @@ export default function VocabPage() {
   const { data: recentVocabEvents = [] } = useQuery({
     queryKey: ['confused-events', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('review_events')
-        // detail은 유형 큐(v2-A R3)가 qtype을 보려고 함께 받는다 — 새 조회 대신 컬럼 하나.
-        .select('source, item_key, correct, created_at, detail')
-        .eq('user_id', user.id)
-        .eq('source', 'vocab')
-        .gte('created_at', new Date(Date.now() - CONFUSED_SINCE_DAYS * 86400000).toISOString())
-        .order('created_at', { ascending: false })
-        .limit(400);
+      const sinceIso = new Date(Date.now() - CONFUSED_SINCE_DAYS * 86400000).toISOString();
+      const [{ data, error }, markers] = await Promise.all([
+        supabase
+          .from('review_events')
+          // detail은 유형 큐(v2-A R3)가 qtype을 보려고 함께 받는다 — 새 조회 대신 컬럼 하나.
+          .select('source, item_key, correct, created_at, detail')
+          .eq('user_id', user.id)
+          .eq('source', 'vocab')
+          .gte('created_at', sinceIso)
+          .order('created_at', { ascending: false })
+          .limit(400),
+        // undo 마커(source ui)는 위 source='vocab' 조회에 없다 — 마커 전용 조회를 붙여 되돌린
+        // 채점을 뺀다(W 후속 ②). 마커 조회 실패는 빈 배열 = 현행 집계로 수렴.
+        fetchUndoMarkers(user.id, { sinceIso }),
+      ]);
       if (error) throw error;
-      return data || [];
+      return dropUndoneEvents(data || [], markers);
     },
     enabled: !!user,
     staleTime: 1000 * 60,

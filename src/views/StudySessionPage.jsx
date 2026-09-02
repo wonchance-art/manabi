@@ -18,7 +18,8 @@ import { recordActivity } from '../lib/streak';
 import { recordLessonCompleted, recordNewWord } from '../lib/learn/progressStore';
 import { recordStudyReviewCompleted } from '../lib/studyExerciseBridge';
 import { gradeTyping, isChapterPassed, grammarDueChapterCounts } from '../lib/studySession';
-import { kstWeekStartIso } from '../lib/growthStats';
+import { buildWeeklyReport } from '../lib/weeklyReport';
+import { fetchWeeklyReportRows } from '../lib/weeklyReportRows';
 import { splitSentenceAroundWord } from '../lib/constants';
 import { mapParagraphToItems } from '../lib/studyParagraph';
 
@@ -325,21 +326,16 @@ export default function StudySessionPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished]);
 
-  // 주간 회고 — weekly 세션 결과 화면에서 1회. review_events 본인 이번 주 count(전체·정답) head 카운트 2회.
+  // 주간 회고 — weekly 세션 결과 화면에서 1회. 주간 리포트 정본(fetchWeeklyReportRows → buildWeeklyReport)
+  // 그대로 — 채점 문항만(ui·dict 제외) 세고 되돌린 채점은 뺀다(W 후속 ②). 예전 head 카운트 2회는 모든
+  // 행(ui 마커·자가 채점 포함)을 세어 프로필 「이번 주」 카드와 수치가 달랐다(중복 신설 해소).
   useEffect(() => {
     if (!finished || !paragraphMaterials?.weekly || !user?.id || weeklyRan.current) return;
     weeklyRan.current = true;
     (async () => {
       try {
-        const sinceIso = kstWeekStartIso();
-        const total = await supabase.from('review_events')
-          .select('correct', { count: 'exact', head: true })
-          .eq('user_id', user.id).gte('created_at', sinceIso);
-        const right = await supabase.from('review_events')
-          .select('correct', { count: 'exact', head: true })
-          .eq('user_id', user.id).eq('correct', true).gte('created_at', sinceIso);
-        if (total.error || right.error) return;
-        setWeeklyStats({ n: total.count || 0, m: right.count || 0 });
+        const { reviews } = buildWeeklyReport(await fetchWeeklyReportRows(user.id));
+        setWeeklyStats({ n: reviews.total, m: reviews.correct });
       } catch {}
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps

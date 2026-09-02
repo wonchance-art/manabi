@@ -17,6 +17,7 @@ export { deriveVocabRungs };
 import { weakChapterSet, promoteWeakFirst } from './weaknessProfile';
 import { levelBand } from '@/lib/writingPrompts';
 import { kstWeekStartMs } from './growthStats'; // 상대 경로 — vitest가 실모듈을 로드한다(@ 별칭 없음)
+import { dropUndoneEvents } from './undoneReviews';
 import { THEMES } from '@/lib/studyParagraph';
 
 /**
@@ -333,7 +334,7 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   const dueIso = new Date(Date.now() + horizonHours * 3600 * 1000).toISOString();
 
   // ── 재료 조회 (병렬) ──
-  const [{ data: dueVocabRows }, { data: vocabPoolRows }, { data: dueGrammarRows }, { data: progressRows }, { data: reviewEventRows }, { data: encounterRows }] = await Promise.all([
+  const [{ data: dueVocabRows }, { data: vocabPoolRows }, { data: dueGrammarRows }, { data: progressRows }, { data: reviewEventRowsRaw }, { data: encounterRows }] = await Promise.all([
     supabase.from('user_vocabulary')
       .select('id, word_text, meaning, furigana, source_sentence, language, interval, ease_factor, repetitions, next_review_at')
       .eq('user_id', userId).eq('language', lang)
@@ -366,6 +367,9 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
       .eq('user_id', userId).eq('lang', ref.langCode)
       .order('first_met_at', { ascending: false }).limit(40),
   ]);
+
+  // 되돌린 채점 제외(W 후속 ②) — lang 필터뿐이라 undo 마커가 같은 표본에 들어 있다.
+  const reviewEventRows = dropUndoneEvents(reviewEventRowsRaw || []);
 
   const passed = new Set((progressRows || []).filter(r => r.passed).map(r => r.slug));
 
