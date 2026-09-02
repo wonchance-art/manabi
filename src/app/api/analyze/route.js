@@ -19,6 +19,7 @@ import {
   needsEnPosBackfill, resolveEnTokenContext,
 } from '@/lib/server/disambiguateEnPos';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
+import { collectMissingBaseForms } from '@/lib/server/dictLookup';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // Vercel Node.js 함수: 최대 60초
@@ -125,18 +126,10 @@ export async function POST(request) {
     const cache = new Map((cachedRows || []).map(r => [r.base_form, r]));
 
     // 4. 미싱 base_form들을 Gemini로 배치 조회 → 캐시에 저장 후 병합
-    const missingList = [];
-    for (const { tokens } of tokenizedLines) {
-      for (const t of tokens) {
-        if (t.base_form && !cache.has(t.base_form) && !missingList.find(m => m.base_form === t.base_form)) {
-          missingList.push({
-            base_form: t.base_form,
-            pos: t.pos,
-            reading: t.furigana,
-          });
-        }
-      }
-    }
+    // 어휘 토큰만 조회한다 — 문장부호도 base_form을 달고 나오므로 거르지 않으면 Gemini에 뜻을 묻고
+    // 공유 사전에 적재된다(운영 감사에서 실제 4행 발견). 판정·수확은 `collectMissingBaseForms`가
+    // 소유하고 계약이 지킨다 — 라우트 안의 루프였을 때는 「거르고 있는가」를 못 박을 수 없었다.
+    const missingList = collectMissingBaseForms(tokenizedLines, cache);
 
     // 4.2. 중국어 자가 치유 — 재조회 대상: ① 다중 품사 행인데 뜻에 pos 태그가 없음(겸류사
     // 뜻 정렬에 필요) ② 일본어 대응(ja) 미판정(한자 대조 2단계 백필). 미싱 경로를 그대로

@@ -98,8 +98,13 @@ function isLoneAdjective(text) {
   return t.length === 1 && t[0].tag === 'a';
 }
 
-/** 수사 한 글자 — 수사+양사 되가름(⑥-c)의 머리. */
-const ZH_NUMERAL = new Set([...'一二三四五六七八九十两几半']);
+/**
+ * 수사 글자 — 수사+양사 되가름(⑥-c)의 머리를 이루는 글자들.
+ * 大수사(百千万亿)와 零은 라운드 5b에서 더했다: 라운드 5는 두 글자만 봐서 `三十个`·`一万块`처럼
+ * 머리가 여러 글자인 수량구를 통째로 남겼다(코퍼스 20건/14종). 위험은 방벽이 받는다 —
+ * 이 패턴에 걸리는 HSK 표제어는 半场·零件·一头 셋뿐이고 전부 `isRealWord`가 지킨다(전수 실측).
+ */
+const ZH_NUMERAL = new Set([...'一二三四五六七八九十两几半百千万亿零']);
 
 /** 단독으로 태깅했을 때 명사 한 덩이인가 — 양사 규칙(⑥)의 게이트. */
 function isLoneNoun(text) {
@@ -276,13 +281,16 @@ export function fixZhTagged(tagged) {
         const chars = [...word];
         // ⑥-c 수사 + 양사 (`一个`·`一件`·`两张` — 분석기 리뷰 라운드 5). jieba는 数量词를 m/mq 한 토큰으로
         //     낸다(코퍼스 636건/72종). 학습자에겐 양사(件·张·条)가 어휘 항목이라 숨으면 안 되고, 정답지도 449건을
-        //     갈라 적었다. 실단어(一下·一点·一起·一样)는 둘째 글자가 양사가 아니라 저절로 빠지고, 一块·一半처럼
-        //     HSK 표제어인 것은 방벽(isRealWord)이 지킨다.
+        //     갈라 적었다. 실단어(一下·一点·一起·一样)는 마지막 글자가 양사가 아니라 저절로 빠지고, 一半·零件처럼
+        //     HSK 표제어인 것은 방벽(isRealWord)이 지킨다(一块는 표에 없어 실제로 갈린다 — 실측).
         //     태그 조건은 두지 않는다 — jieba는 一幅를 d(부사)로 단다(R4a가 기록한 오태그, 코퍼스 5건). 닫힌 양사
         //     집합 + HSK 방벽이 정밀도라 태그가 더해 주는 게 없다.
-        if (chars.length === 2 && ZH_NUMERAL.has(chars[0]) && ZH_CLASSIFIER.has(chars[1])) {
-          out.push({ word: chars[0], tag: 'm', noPosAll: true });
-          out.push({ word: chars[1], tag: 'q', noPosAll: true });
+        //     머리는 여러 글자를 받는다(5b): 라운드 5의 두 글자 제한이 `三十个`·`五十六个`·`一万块`를 통째로
+        //     남겼다. 머리를 통으로 한 토큰에 담는다 — `三十`이 수사 한 단어이지 `三`+`十`이 아니다.
+        const qi = chars.length - 1;
+        if (chars.length >= 2 && ZH_CLASSIFIER.has(chars[qi]) && chars.slice(0, qi).every((c) => ZH_NUMERAL.has(c))) {
+          out.push({ word: chars.slice(0, qi).join(''), tag: 'm', noPosAll: true });
+          out.push({ word: chars[qi], tag: 'q', noPosAll: true });
           continue;
         }
         // ⑥-a 지시사 + 양사 (`这件`·`那条`·`那位`·`那本书`) — 지시사를 뗀다.
