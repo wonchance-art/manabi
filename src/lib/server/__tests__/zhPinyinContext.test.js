@@ -137,6 +137,17 @@ describe('토큰 정확 일치 층 보강 — pinyin-pro가 실제로 틀리는 
     expect(ZH_NEUTRAL_TONE['地方']).toBeUndefined();
     expect(ZH_NEUTRAL_TONE['起来']).toBeUndefined();
   });
+
+  it('오너 결정 2026-09-02 「추천대로」 — ② 예외 妻子, ③ 예외 융합 N+上 7항(정답지 36:0); 단독 上·多少·外边은 그대로', () => {
+    expect(py('他的妻子是一名医生。', '妻子')).toBe('qī zi');
+    expect(py('他的妻子儿女都在。', '妻子')).toBe('qī zi');   // 라운드 8이 妻子|儿女로 가른다 — 갈린 妻子는 「아내」라 경성이 맞다
+    expect(py('墙上挂着一张照片。', '墙上')).toBe('qiáng shang');
+    expect(py('他身上没有钱。', '身上')).toBe('shēn shang');
+    expect(py('天上有很多星星。', '天上')).toBe('tiān shang');
+    for (const w of ['墙上', '地上', '山上', '桌上', '身上', '脸上', '天上']) expect(ZH_NEUTRAL_TONE[w], w).toMatch(/ shang$/);
+    expect(py('桌子上有书。', '上')).toBe('shàng');                       // 단독 上 — 정답지 경성률 31%라 규칙 아님
+    for (const w of ['多少', '外边', '关上', '下来']) expect(ZH_NEUTRAL_TONE[w], w).toBeUndefined();
+  });
 });
 
 describe('라운드 7 — 경성 정합: 정답지 전수 대조로 확정된 결정적 규칙', () => {
