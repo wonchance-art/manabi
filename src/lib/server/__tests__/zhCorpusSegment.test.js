@@ -53,15 +53,35 @@ export function auditZhSegment(rows) {
       if (starts.has(s0 + k)) stat.agree++;
       else { stat.disagree++; disagreed.set(e.word, (disagreed.get(e.word) ?? 0) + 1); }
     }
-    for (const e of fixZhTagged(jiebaTag(r.zh, true))) {
+    // x 폴백 게이지 — 후처리가 **만든** x 실단어 조각만(⑦ 조각을 jieba가 홀로 다시 가른 胡说·恩人). raw에서 이미 x였던
+    // 실단어(허용목록 扫码류, 라운드 9b 방벽이 지키는 不太·微信)는 우리가 만든 게 아니라 제외한다.
+    const rawAll = jiebaTag(r.zh, true);
+    const rawX = new Set(rawAll.filter((e) => e.tag === 'x').map((e) => e.word));
+    for (const e of fixZhTagged(rawAll)) {
       if (!HAN.test(e.word)) continue;
       stat.tokens++;
       if ([...e.word].length >= 3 && !isZhRealWord(e.word)) stat.fusedNonReal++;
-      if (e.tag === 'x' && [...e.word].length >= 2 && isZhRealWord(e.word)) stat.fallbackX++;
+      if (e.tag === 'x' && [...e.word].length >= 2 && isZhRealWord(e.word) && !rawX.has(e.word)) stat.fallbackX++;
     }
   }
   return { stat, disagreed };
 }
+
+describe('중국어 분절 — 실단어 방벽 불변식', () => {
+  it('jieba가 한 토큰으로 낸 HSK 실단어(≥2자)를 후처리가 가르는 경우가 없다 (라운드 9b — 微信/x·真诚/a 10건 → 0)', async () => {
+    const rows = await collectZhCorpus();
+    const broken = new Map();
+    for (const r of rows) {
+      const raw = jiebaTag(r.zh, true);
+      const fixedWords = new Set(fixZhTagged(raw).map((e) => e.word));
+      for (const e of raw) {
+        if ([...e.word].length < 2 || !HAN.test(e.word) || !isZhRealWord(e.word) || fixedWords.has(e.word)) continue;
+        broken.set(`${e.word}/${e.tag}`, (broken.get(`${e.word}/${e.tag}`) || 0) + 1);
+      }
+    }
+    expect([...broken]).toEqual([]);
+  }, 120000);
+});
 
 describe('중국어 분절 — 두-실단어 되가름의 정답지 공백 대조', () => {
   it('가른 자리의 정답지 공백 동의율이 문턱 위이고, 남은 비실단어 융합 토큰이 실측 상한 아래다', async () => {
@@ -79,8 +99,7 @@ describe('중국어 분절 — 두-실단어 되가름의 정답지 공백 대�
     expect(agreeRate).toBeGreaterThanOrEqual(0.97);
     // 남은 비실단어 ≥3자 융합 토큰 — 규칙 전 1,577 → 후 931(모호 분해·명사 접미·성어·고유명사). 상한 = 잔여 + 여유.
     expect(stat.fusedNonReal).toBeLessThanOrEqual(1050);
-    // x 태그로 남은 실단어 ≥2자 — ⑦ 조각을 jieba가 홀로 다시 가른 폴백(胡说·恩人)과 ZH_KEEP_MERGED 통과분(扫码류).
-    // 실측 7, 상한 10.
-    expect(stat.fallbackX).toBeLessThanOrEqual(10);
+    // 후처리가 만든 x 실단어 조각 ≥2자 — ⑦ 조각을 jieba가 홀로 다시 가르면 여기 잡힌다. 실측 0(胡说·恩人은 raw x라 방벽 몫), 상한 5.
+    expect(stat.fallbackX).toBeLessThanOrEqual(5);
   }, 120000);
 });
