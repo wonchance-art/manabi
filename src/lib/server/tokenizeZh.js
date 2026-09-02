@@ -9,6 +9,7 @@ import { pinyin } from 'pinyin-pro';
 import { ZH_NEUTRAL_TONE } from './zhNeutralTone';
 import { ZH_PINYIN_FIX } from './zhPinyinFix';
 import { contextPinyin } from './zhPinyinContext';
+import './zhSuppress';
 import { fixZhTagged } from './zhTokenFix';
 
 // jieba 품사 태그(중국어 관례) → 한국어 표기. 미지 태그는 null(뜻 조회 단계에서 채워질 수 있음).
@@ -24,6 +25,11 @@ const POS_KO = {
   e: '감탄사', i: '성어', l: '관용구', j: '약어', s: '처소사',
   t: '시간사', f: '방위사', b: '구별사', z: '상태사', h: '접두',
   k: '접미', g: '어소', w: '기호', x: '기타', eng: '외국어',
+  // 분석기 리뷰 라운드 2(2026-09-02): 코퍼스 실측에서 품사 미상으로 새던 어소·복합 태그.
+  // 喝/vg(HSK1 '마시다')가 미상으로 떴다 ×31. vq는 去过류 「동사+过」, df는 不要류 부사,
+  // mq는 这点·三分之一류 수량사. zg·nrt는 단어마다 품사가 달라 태그로 못 옮긴다 — ZH_POS_FIX.
+  vg: '동사', ag: '형용사', ng: '명사', dg: '부사', tg: '시간사',
+  vq: '동사', df: '부사', mq: '수량사', rr: '대명사', rz: '대명사', ryt: '대명사',
 };
 
 // jieba 겸류(兼类) 태그 → 품사 후보('·' 연결, 기본 계열 우선). 중국어는 한 단어가 명사·동사

@@ -5,6 +5,8 @@
 // 경성 사전(zhNeutralTone)과 같은 화이트리스트 계층 패턴: 등재분만 교정, 밖은 무개입.
 
 import { tag as jiebaTag } from 'jieba-wasm';
+// 사전 억제(라운드 2)는 import 자체가 적용이다 — 이 모듈의 어떤 jiebaTag보다 먼저 실행된다.
+import './zhSuppress';
 
 import ZH_POS_FIX_HSK from './data/zhPosFixHsk.json';
 import ZH_SEPARABLE_HAND from './data/zhSeparable.json';
@@ -28,6 +30,7 @@ export const ZH_MEI_SPLIT = new Set([
   '没吵', '没来', '没想', '没住', '没开', '没关', '没学', '没教', '没起',
   '没脱', '没洗', '没带', '没回', '没到', '没接', '没答', '没帮', '没变',
   '没换', '没作', '没读', '没画', '没飞', '没游', '没爱', '没怕', '没记',
+  '没喝', // 라운드 2: 喝咖啡 억제 뒤 드러난 병합(我今天没喝咖啡) — 같은 부류라 같은 목록
 ]);
 
 // ② HMM 우연 병합의 실측 확정분 — 사전 병합(①)이 아니라 문맥 조합이 만든 가짜 단어.
@@ -53,6 +56,16 @@ export const ZH_POS_FIX = {
   很: { tag: 'd' },
   谢谢: { tag: 'v' },
   安静: { tag: 'a', posAll: '형용사·동사' }, // HSK Adj/V — 판별기가 문장에 맞는 쪽을 짚는다
+  // ── 분석기 리뷰 라운드 2 (2026-09-02, 코퍼스 실측 전량) ──
+  // zg·nrt는 태그 하나가 여러 품사를 덮어(您/啊/往·令人/保姆) POS_KO로 못 옮긴다 — 단어별로.
+  您: { tag: 'r' }, 啊: { tag: 'y' }, 往: { tag: 'p' }, 此: { tag: 'r' }, 趟: { tag: 'q' }, 每: { tag: 'r' },
+  虽: { tag: 'c' }, 哦: { tag: 'e' }, 唉: { tag: 'e' }, 眨: { tag: 'v' }, 块: { tag: 'q' }, 度: { tag: 'q' },
+  令人: { tag: 'v' }, 摩托: { tag: 'n' }, 保姆: { tag: 'n' }, 拜托: { tag: 'v' }, 崇拜: { tag: 'v' }, 崇高: { tag: 'a' },
+  // 고유명사 태그로 오는 보통명사·동사 — HSK 표 밖이라 R5 CEDICT 수확층이 못 본 것들(老虎/nr→인명 ×4).
+  老虎: { tag: 'n' }, 熊猫: { tag: 'n' }, 田野: { tag: 'n' }, 小镇: { tag: 'n' }, 胡同: { tag: 'n' }, 小狗: { tag: 'n' },
+  安全带: { tag: 'n' }, 安全措施: { tag: 'n' }, 古城: { tag: 'n' }, 城堡: { tag: 'n' }, 夕阳: { tag: 'n' }, 大国: { tag: 'n' },
+  登机牌: { tag: 'n' }, 摩托车: { tag: 'n' }, 大奖: { tag: 'n' }, 南方人: { tag: 'n' },
+  聊天: { tag: 'v' }, 换乘: { tag: 'v' }, 天黑: { tag: 'v' },
 };
 
 // x-태그 쓰레기 조각(HMM OOV)의 선두·말미 상조사(아스펙트 조사) — 过架/x → 过/ug + 架/x.
