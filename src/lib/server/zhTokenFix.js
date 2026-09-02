@@ -191,6 +191,61 @@ function pushClassifierPiece(out, text, { onlyWhenSplit = false } = {}) {
   return false;
 }
 
+/** 두-실단어 되가름(⑦)에서 손대지 않는 태그 — 성어(i)·상태어(z)·고유명사(nr·ns·nt·nz·nrfg)·약어(j). */
+const SPLIT_SKIP_TAG = new Set(['i', 'z', 'nr', 'ns', 'nt', 'nz', 'nrfg', 'j']);
+/** ⑦-c의 꼬리 — 조사·방위 1자. 명사 접미 1자(家·人·店·桶)는 파생 복합어라 여기 없다. */
+const SPLIT_TAIL_PARTICLE = new Set([...'吧呢吗啊了的地得着过上里']);
+/** ⑦의 수사 머리 우선 — ZH_NUMERAL에서 一·半·零을 뺀 것(머리말 참조). */
+const SPLIT_NUMERAL_HEAD = new Set([...'二三四五六七八九十两几百千万亿']);
+
+/**
+ * 두-실단어 되가름 (분석기 라운드 8, 2026-09-02) — jieba 사전이 구(句)를 한 토큰으로 붙인 것을 두 HSK 단어로 가른다
+ * (看电视 → 看|电视 · 天气预报 → 天气|预报 · 十分钟 → 十|分钟 · 回家吧 → 回家|吧).
+ *
+ * 코퍼스 실측(45,612토큰): 비실단어 ≥3자 1,577건(3.5%). 그중 두 실단어로 **유일하게** 분해되는 648건을 정답지 병음의
+ * 단어 띄어쓰기와 대조하니 634:12 동의(98%). 모양 셋만 받는다 — (a) 둘 다 ≥2자(432건, 불일치 0) (b) 1자 접두 + 단어
+ * (191건) (c) 단어 + 조사·방위 1자(25건). 단어 + 명사 접미 1자(垃圾桶·科学家·咖啡店)는 정답지가 붙여 쓰는 파생
+ * 복합어라 받지 않는다. 유일성은 **모든** 두-단어 분해에 대해 본다 — 火车站은 火|车站·火车|站 둘 다 성립해 모호 →
+ * 유지(정답지도 붙여 쓴다; 강한 유일성 전에는 불일치 21, 후 12). 남는 오분리(小孩子·照相机·班主任 등 7종 9건)는
+ * ZH_KEEP_MERGED가 막는다. 경성 사전 표제어는 보호하지 않는다 — 처음엔 어휘 단위라 보호했는데 변이가 살아남아
+ * 재봤더니 그 가드가 붙잡는 코퍼스 토큰 7건 중 3건은 不 가드가 이미 받고(行不通), 나머지 4건(民间故事·门把手·指甲剪·
+ * 坏东西)은 정답지가 4/4 가르며 조각이 경성을 지킨다(故事 gù shi·东西 dōng xi). CEDICT는 구(句)도 표제어로 싣는
+ * 병음 사전이지 어휘 단위의 권위가 아니다. 구 표제어 중 어휘인 것(交朋友·老太太·小时候)은 HSK 방벽이 지킨다.
+ * 방향의 근거는 복구 비대칭이다(zhKeepMerged 머리말) — 오분리는 드래그로 되붙이지만 오병합은 분리 액션이 없다.
+ *
+ * @returns {[string, string]|null} 두 조각, 해당 없으면 null
+ */
+export function splitZhCompound(word, tag) {
+  const chars = [...word];
+  const n = chars.length;
+  if (n < 3 || SPLIT_SKIP_TAG.has(tag) || isRealWord(word)) return null;
+  // 3자 가운데 不·得는 가능보어·A不A(行不行·吃不完·看得懂)의 뼈대다 — 두 단어가 아니라 한 구조. 갈라 버리면
+  // 문맥 층의 不 경성 규칙(zhPinyinContext)이 볼 토큰이 사라진다(계약 실측: 行不行 → 行|不行 → bù 회귀).
+  if (n === 3 && (chars[1] === '不' || chars[1] === '得')) return null;
+  // 수사 머리 우선: 十分钟은 十|分钟·十分|钟 둘 다 두 실단어라 유일성만으로는 모호한데, 수사 뒤에 실단어가 오면 수량구다
+  // (十|分钟·几|年级·两|点钟 — 정답지 공백 10/11). 一·半·零은 뺀다 — 一路上(一路|上)·一行人(一行|人)·半路上(半路|上)처럼
+  // 一/半이 뒤 글자와 먼저 붙는 단어가 있어 모호가 곧 오분리다(그쪽은 유일성이 지켜 유지).
+  const rest = chars.slice(1).join('');
+  if (SPLIT_NUMERAL_HEAD.has(chars[0]) && isRealWord(rest)) return [chars[0], rest];
+  let decompositions = 0;
+  let pick = null;
+  for (let k = 1; k < n; k++) {
+    const a = chars.slice(0, k).join('');
+    const b = chars.slice(k).join('');
+    if (!isRealWord(a) || !isRealWord(b)) continue;
+    decompositions++;
+    const shaped = (k >= 2 && n - k >= 2) || k === 1 || SPLIT_TAIL_PARTICLE.has(chars[n - 1]);
+    if (shaped) pick = [a, b];
+  }
+  return decompositions === 1 && pick ? pick : null;
+}
+
+/** ⑦의 조각을 out에 넣는다 — 태그는 jieba에게 다시 묻는다(pushClassifierPiece와 같은 이유: 손으로 찍은 태그가 다음 오태그다). */
+function pushRealPiece(out, text) {
+  const pieces = jiebaTag(text, false);
+  out.push({ word: text, tag: pieces.length === 1 ? pieces[0].tag : 'x' });
+}
+
 /**
  * jieba tag() 출력 후처리. 입력·출력 모두 [{ word, tag }] — 출력 항목은 선택적으로
  * posAll(품사 후보 '·' 연결)과 noPosAll(겸류 확장 억제) 플래그를 실을 수 있다.
@@ -302,6 +357,12 @@ export function fixZhTagged(tagged) {
         }
         // ⑥-b 양사 + 명사 (`本书`·`首歌`) — 양사를 뗀다.
         if (pushClassifierPiece(out, word, { onlyWhenSplit: true })) continue;
+        // ⑦ 두-실단어 되가름 (라운드 8) — ⑥이 먼저 손대고 남은 비실단어만. 근거·실측은 splitZhCompound 머리말.
+        const parts = splitZhCompound(word, tag);
+        if (parts) {
+          for (const p of parts) pushRealPiece(out, p);
+          continue;
+        }
       }
     }
     out.push(entry);
