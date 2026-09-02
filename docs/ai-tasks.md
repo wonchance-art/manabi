@@ -757,6 +757,24 @@
 - 런던 위성 마이크로 픽(재량 위임 해석): 윈저+옥스퍼드 2곳 추천 — 레만호 완성 후 순번
 - 일본 4도시 COPY 슬롯 이식(다국어 UI 확정 시) / 아토미움 = marker-only 유지 확인
 ### done (최근)
+- **🔁 W 후속 ② — 되돌린 채점을 집계에서 뺀다 (2026-09-02 밤, 오너 「할 일 찾아서 진행」 — W R2
+  설계 §후속 후보, #1077 5504350927)**:
+  R2·R3㉮㉯의 undo는 `review_events`를 못 지워(RLS SELECT·INSERT뿐) `source:'ui'` 보상 이벤트를
+  남긴다. 보상 이벤트 자체는 `isGradedReviewEvent`(ui 제외)가 이미 거르지만 **되돌린 원 이벤트는
+  그대로 집계됐다** — 주간 리포트 정답률·오늘 복습 단어(산출 주입)·약점 프로파일·헷갈림 큐·
+  숙련 rung 유도가 취소한 채점을 셌다(이음새). 순수 필터 `undoneReviews.js` 하나: 원 이벤트 =
+  (item_key, created_at ms)가 마커 `undo_of`의 (item_key, reviewed_at)과 같은 행(온라인 경로가
+  reviewedAt을 created_at으로 보내는 계약 재사용 — 시각은 epoch ms 비교, PostgREST '+00:00' ↔
+  클라이언트 'Z' 표기 차이 흡수). 마커도 함께 뺀다. 마커가 조회에 없는 경로 둘(주간 리포트 2주
+  2000행은 detail 무적재·헷갈림 큐는 source='vocab')은 마커 전용 조회
+  `undoneReviewsRows.fetchUndoMarkers`(`source=ui` + `detail->>qtype=undo`, 실패 = 빈 배열 =
+  현행 수렴)를 붙였다 — detail 전체를 2000행에 얹지 않는다(weaknessRows 머리말과 같은 결).
+  배선 5곳: weeklyReportRows(+item_key) · weaknessRows · useOutputWords(+item_key) ·
+  studyMaterials(서버 조립 표본) · VocabPage(rung 유도·헷갈림 큐). StudySessionPage 주간 회고는
+  head 카운트 2회(모든 행 — ui 마커·자가 채점까지 셈)를 버리고 주간 리포트 정본
+  (`fetchWeeklyReportRows → buildWeeklyReport`)으로 수렴 — 프로필 「이번 주」 카드와 같은 수.
+  🧊 `pet.js`(월드 동결)는 손대지 않는다 — 퀘스트 undo의 펫 count +1 잔류는 QuestReview 주석이
+  명시한 잔류 그대로. 스키마 0. 계약 `undoneReviews.test.js` 13종 · 변이 8/8 검출.
 - **🧠 U R3 — 내 노트(쓰기 자료): 자료에 「방향」 축 하나 (2026-09-02, 오너 「작업 개시
   우선순위대로」 — #1077 착수 SPEC 5503520174, 목차 8순위)**:
   한국어를 담을 자리가 없었다 — `LANG_NAME_KO`가 목표어 4종뿐이고 자료는 그중 하나를 반드시
