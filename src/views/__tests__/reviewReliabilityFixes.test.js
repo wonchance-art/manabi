@@ -78,7 +78,8 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
   it('V-13 ViewerPage: 모든 단어 저장이 공통 error 검사와 중복 클릭 가드를 통과한다', () => {
     const src = read('src/views/ViewerPage.jsx');
     expect(src.match(/\.upsert\(/g)).toHaveLength(1);
-    expect(src).toContain("const { error } = await supabase.from('user_vocabulary').upsert(row, options)");
+    // W R1: upsert가 새로 넣은 행의 id를 돌려준다(undo 판정) — error 검사는 그대로
+    expect(src).toContain("const { data, error } = await supabase.from('user_vocabulary').upsert(row, options).select('id')");
     expect(src).toContain('if (error) throw error');
     expect(src).toContain('if (inlineSaving[key]) return');
     // 리스트 행 1곳 — 팝업 저장 버튼은 카드 단일화(②)로 제거(카드 저장은 addToVocab 경로)

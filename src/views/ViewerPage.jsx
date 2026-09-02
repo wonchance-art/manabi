@@ -36,7 +36,7 @@ import { useGrammarNoteSave } from '../lib/useGrammarNoteSave';
 import { useInlineReview } from '../lib/useInlineReview';
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage } from '../lib/errorMessage';
-import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
+import { SAVE_GRADES, VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { callGemini } from '../lib/gemini';
 import { fetchWordDetailText } from '../lib/wordDetail';
 import { fetchCtxExplain } from '../lib/ctxExplain';
@@ -66,7 +66,7 @@ import { useEasierText } from '../lib/useEasierText';
 import { buildContextPrompt } from '../lib/grammarDetail';
 import { analysisCacheKey, clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
-import { fetchKnownWords, knownWordsLang, markKnown, unmarkKnown } from '../lib/knownWords';
+import { fetchKnownWords, knownWordsLang, unmarkKnown } from '../lib/knownWords';
 import { mergeKnownIntoIndex } from '../lib/knownWords';
 import { materialFit, FIT_MIN_TYPES } from '../lib/materialFit';
 import DictationPanel from '../components/DictationPanel';
@@ -167,9 +167,17 @@ function isTokenDue(savedWords, token) {
 }
 
 async function upsertViewerVocabulary(row, options = VOCAB_UPSERT) {
-  const { error } = await supabase.from('user_vocabulary').upsert(row, options);
+  // 반환 = 새로 들어간 행의 id. `ignoreDuplicates`라 **새로 넣었을 때만** [{ id }], 이미 있던
+  // 단어면 [] — W R1 undo의 「되돌릴 게 있는가」 판정이 이 사실 하나에 선다(원래 있던 행은
+  // 지우면 안 된다).
+  const { data, error } = await supabase.from('user_vocabulary').upsert(row, options).select('id');
   if (error) throw error;
+  return data || [];
 }
+
+// undo 안내 라벨 — 표기용일 뿐이고 동작은 metaKey || ctrlKey 양쪽을 다 받는다.
+const UNDO_KEY_LABEL = typeof navigator !== 'undefined'
+  && /mac|iphone|ipad/i.test(navigator.userAgentData?.platform || navigator.platform || '') ? '⌘Z' : 'Ctrl+Z';
 
 
 export default function ViewerPage() {
@@ -485,16 +493,13 @@ export default function ViewerPage() {
     enabled: !!user && !!knownLangCode,
     staleTime: 1000 * 60,
   });
-  const knownToggleMutation = useMutation({
-    mutationFn: async ({ wordText, known }) => {
-      if (known) await unmarkKnown(user.id, knownLangCode, wordText);
-      else await markKnown(user.id, knownLangCode, wordText);
-      return !known;
-    },
-    onSuccess: (nowKnown) => {
+  // 「이미 알아요」 쓰기 일몰(W R1 ⑤) — 뷰어에서 markKnown 호출 0. 이미 known인 단어의
+  // 「취소」만 남긴다. user_known_words·커버리지·wordState·「모르는 단어만」 읽기 경로는 불변.
+  const knownUnmarkMutation = useMutation({
+    mutationFn: async ({ wordText }) => { await unmarkKnown(user.id, knownLangCode, wordText); },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['known-words', user?.id, knownLangCode] });
       queryClient.invalidateQueries({ queryKey: ['known-words-all', user?.id] });
-      if (nowKnown) toast('이미 아는 말로 표시했어요 — 새 단어 셈에서 빠져요', 'success');
     },
     onError: () => toast('잠시 후 다시 시도해 주세요.', 'warning'),
   });
@@ -504,6 +509,39 @@ export default function ViewerPage() {
 
   // 단어 저장 카운트 (복습 유도용)
   const saveCountRef = useRef(0);
+
+  // W R1 — 키 `1`~`4` = 등급 저장, `Ctrl/⌘+Z` = 마지막 저장 취소(새로 넣은 행만). 문서 리스너
+  // 하나(VocabPage 수동 추가 다이얼로그의 keydown 관용구 — 마운트 등록·언마운트 해제). 가드:
+  // 입력 요소 포커스(편집·코멘트·검색)·조합키·카드 닫힘·이미 저장 상태에서는 발동하지 않고,
+  // 입력 요소 안의 ⌘Z는 브라우저 기본 undo를 가로채지 않는다. 핸들러는 ref로 읽어 렌더마다
+  // 리스너를 갈아 끼우지 않는다.
+  const lastSaveRef = useRef(null);
+  const keyHandlersRef = useRef({});
+  useEffect(() => {
+    if (!selectedToken || !isSheetOpen) return undefined;
+    function onKeyDown(e) {
+      const t = e.target;
+      const inField = !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+      const h = keyHandlersRef.current;
+      if ((e.key === 'z' || e.key === 'Z') && (e.metaKey || e.ctrlKey) && !e.altKey) {
+        if (inField || !lastSaveRef.current) return;
+        e.preventDefault();
+        h.undoLastSave?.();
+        return;
+      }
+      if (inField || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (!/^[1-4]$/.test(e.key)) return;
+      if (h.saveLocked) return;
+      e.preventDefault();
+      h.addToVocab?.(Number(e.key));
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [selectedToken, isSheetOpen]);
+  // 단어가 바뀌면 되돌릴 것이 소멸한다(다른 단어의 행을 지우면 안 된다). 저장 직후의 자동
+  // 닫힘(setIsSheetOpen만)은 저장 동작의 일부라 소멸시키지 않는다 — 명시 닫기(closeWordCard →
+  // selectedToken null)와 다음 저장이 소멸 지점.
+  useEffect(() => { lastSaveRef.current = null; }, [selectedToken?.id, selectedToken?.text]);
 
   const handleTokenClick = (token, tokenId, opts = {}) => {
     if (token.pos === '개행') return;
@@ -1344,9 +1382,27 @@ export default function ViewerPage() {
     }
   };
 
-  const addToVocab = async () => {
+  // W R1 undo — 이번에 새로 넣은 행 하나만 delete(단일 레벨). upsert 응답 전엔 lastSaveRef가
+  // 비어 있어 자연히 무시된다(경쟁 조건 차단).
+  const undoLastSave = async () => {
+    const last = lastSaveRef.current;
+    if (!last) return;
+    lastSaveRef.current = null;
+    try {
+      const { error } = await supabase.from('user_vocabulary').delete().eq('id', last.id);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
+      toast(`"${last.text}" 저장을 취소했어요`, 'info');
+    } catch (err) {
+      toast('취소 실패 — ' + friendlyToastMessage(err), 'error');
+    }
+  };
+
+  const addToVocab = async (grade) => {
     if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
     if (!selectedToken) return;
+    const g = Number.isInteger(grade) && grade >= 1 && grade <= 4 ? grade : undefined;
 
     const sourceSentence = extractSourceSentence(selectedToken.id);
 
@@ -1363,9 +1419,11 @@ export default function ViewerPage() {
         language: materialLang,
         sourceSentence,
         sourceMaterialId: id,
+        grade: g,
       });
 
-      await upsertViewerVocabulary([row], VOCAB_UPSERT);
+      const inserted = await upsertViewerVocabulary([row], VOCAB_UPSERT);
+      lastSaveRef.current = inserted[0]?.id ? { id: inserted[0].id, text: selectedToken.text } : null;
       saveCountRef.current += 1;
 
       // 저장 애니메이션 → 잠시 보여준 뒤 시트 닫기
@@ -1373,7 +1431,9 @@ export default function ViewerPage() {
       setTimeout(() => {
         setSaveAnim(false);
         setIsSheetOpen(false);
-        toast(`"${selectedToken.text}" 단어장에 추가됐어요!`, 'success');
+        toast(lastSaveRef.current
+          ? `"${selectedToken.text}" 저장됨 · ${UNDO_KEY_LABEL} 취소`
+          : `"${selectedToken.text}" 단어장에 추가됐어요!`, 'success');
         if (saveCountRef.current === 5) {
           setTimeout(() => toast('단어 5개 모았어요! 복습하러 가볼까요?', 'info', 5000), 600);
         } else if (saveCountRef.current === 10) {
@@ -1432,6 +1492,7 @@ export default function ViewerPage() {
   const failedIndices = material?.processed_json?.failed_indices || [];
   const isCompleted = readingProgress?.is_completed === true;
   const isWordSaved = isTokenSaved(savedWords, selectedToken);
+  keyHandlersRef.current = { addToVocab, undoLastSave, saveLocked: isWordSaved || saveAnim };
   const savedCount = (savedWords.surfaces?.size || 0);
 
   // 이 자료에서 복습 가능한 단어 수 (현재 로드된 토큰 기준)
@@ -1882,26 +1943,51 @@ export default function ViewerPage() {
         </div>
       )}
       {user && (() => {
-        // '이미 알아요'(목업 ⑤) — 담을 필요 없는 아는 말 표시. 저장된 단어에는 무의미라 숨김.
+        // W R1 저장 등급(오너 확정 2026-09-02, #1077 5504298889): 「저장/이미 안다」 이분법 →
+        // Anki식 4등급. 라벨·순서·클래스는 복습 화면(ScoreSection)과 동일. 전부 SRS 안 —
+        // 「쉬움」도 8일 뒤 확인(Anki는 카드를 끝내지 않는다). 「이미 알아요」 쓰기는 일몰 —
+        // 이미 known인 단어의 「취소」만 남긴다(읽기 경로·커버리지 불변). 원탭 무등급 저장은
+        // 단어 목록 ✓(saveInlineVocabulary)가 그대로 맡는다.
         const isKnown = knownWordSet?.has(selectedToken.text)
           || (selectedLexKey && knownWordSet?.has(selectedLexKey));
+        if (saveAnim || isWordSaved) {
+          return (
+            <div className="word-detail-card__actrow">
+              <button disabled className="btn btn--ghost btn--sm">{saveAnim ? '저장됨' : '✓ 단어장에 있음'}</button>
+            </div>
+          );
+        }
         return (
-          <div className="word-detail-card__actrow">
-            <button onClick={addToVocab} disabled={isWordSaved}
-              className={`btn ${isWordSaved ? 'btn--ghost' : 'btn--primary'} btn--sm`}>
-              {saveAnim ? '저장됨' : isWordSaved ? '✓ 단어장에 있음' : '단어장에 저장'}
-            </button>
-            {knownLangCode && !isWordSaved && (
-              <button
-                type="button"
-                onClick={() => knownToggleMutation.mutate({ wordText: selectedToken.text, known: !!isKnown })}
-                disabled={knownToggleMutation.isPending}
-                className="btn btn--ghost btn--sm word-detail-card__known"
-              >
-                {isKnown ? '👌 아는 말로 표시됨 — 취소' : '👌 이미 알아요'}
-              </button>
+          <>
+            <p className="save-grade__guide">얼마나 알겠어요?</p>
+            <div className="review-score-grid save-grade">
+              {SAVE_GRADES.map((g) => (
+                <button
+                  key={g.grade}
+                  type="button"
+                  onClick={() => addToVocab(g.grade)}
+                  className={`review-score-btn review-score-btn--${g.cls}`}
+                  title={`${g.label} — ${g.sub} 다시 만나요 (키 ${g.key})`}
+                >
+                  <span className="save-grade__key" aria-hidden="true">{g.key}</span>
+                  {g.label}
+                  <span className="save-grade__sub">{g.sub}</span>
+                </button>
+              ))}
+            </div>
+            {knownLangCode && isKnown && (
+              <div className="word-detail-card__actrow">
+                <button
+                  type="button"
+                  onClick={() => knownUnmarkMutation.mutate({ wordText: selectedToken.text })}
+                  disabled={knownUnmarkMutation.isPending}
+                  className="btn btn--ghost btn--sm word-detail-card__known"
+                >
+                  👌 아는 말로 표시됨 — 취소
+                </button>
+              </div>
             )}
-          </div>
+          </>
         );
       })()}
     </div>

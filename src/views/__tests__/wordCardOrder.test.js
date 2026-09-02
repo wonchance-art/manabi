@@ -83,13 +83,14 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
   });
 
   it('액션 영역 — 전폭 단독 버튼 0, 줄(actrow) 정확히 2', () => {
-    expect(card.match(/className="word-detail-card__actrow"/g)?.length).toBe(2);
+    // 줄은 분기별 대안(저장 전 4등급 그리드 / 저장 후 ✓ 줄 / known 취소 줄)이라 소스 개수 ≥ 2 — 렌더는 ≤ 2줄
+    expect(card.match(/className="word-detail-card__actrow"/g)?.length).toBeGreaterThanOrEqual(2);
     expect(card).not.toContain("style={{ width: '100%', marginBottom: 12 }}");
     expect(card).not.toContain("style={{ width: '100%' }}");
     expect(card).not.toContain("style={{ width: '100%', marginTop: 6");
     expect(css).toContain('.word-detail-card__actrow > .btn { flex: 1; min-width: 0; }');
     // 버튼 문구·핸들러는 그대로(기능 무변경)
-    for (const s of ['runCtxExplain(selectedToken, ctxSentence)', 'fetchWordDetail(selectedToken)', '상세 설명 보기', "'✓ 단어장에 있음' : '단어장에 저장'", "'👌 이미 알아요'"]) {
+    for (const s of ['runCtxExplain(selectedToken, ctxSentence)', 'fetchWordDetail(selectedToken)', '상세 설명 보기', "'✓ 단어장에 있음'", '아는 말로 표시됨 — 취소']) {
       expect(card).toContain(s);
     }
   });
