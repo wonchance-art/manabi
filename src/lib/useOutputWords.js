@@ -10,6 +10,7 @@ import { supabase } from './supabase';
 import { useAuth } from './AuthContext';
 import { kstDayStartIso } from './growthStats';
 import { pickOutputWords } from './outputWords';
+import { dropUndoneEvents } from './undoneReviews';
 
 async function fetchTodayReviewRows(userId) {
   const iso = kstDayStartIso();
@@ -18,10 +19,11 @@ async function fetchTodayReviewRows(userId) {
       .select('id, word_text, meaning, language, last_reviewed_at')
       .eq('user_id', userId).gte('last_reviewed_at', iso),
     supabase.from('review_events')
-      .select('source, correct, created_at, detail')
+      // item_key는 되돌린 채점 대조 키(W 후속 ②) — 마커(source ui)는 같은 조회에 들어 있다
+      .select('source, item_key, correct, created_at, detail')
       .eq('user_id', userId).gte('created_at', iso).limit(500),
   ]);
-  return { vocabRows: vocab.data || [], events: events.data || [] };
+  return { vocabRows: vocab.data || [], events: dropUndoneEvents(events.data || []) };
 }
 
 export function useOutputWords(language) {

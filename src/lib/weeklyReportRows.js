@@ -5,11 +5,14 @@
  */
 import { supabase } from './supabase';
 import { kstWeekStartMs } from './growthStats';
+import { dropUndoneEvents } from './undoneReviews';
+import { fetchUndoMarkers } from './undoneReviewsRows';
 
 export async function fetchWeeklyReportRows(userId) {
   const prevStartIso = new Date(kstWeekStartMs() - 7 * 86400000).toISOString();
-  const [ev, vocab, enc, reads] = await Promise.all([
-    supabase.from('review_events').select('source, correct, created_at')
+  const [ev, vocab, enc, reads, undo] = await Promise.all([
+    // item_key는 되돌린 채점 대조 키(W 후속 ②) — detail은 얹지 않고 마커만 아래 전용 조회로 붙인다
+    supabase.from('review_events').select('source, item_key, correct, created_at')
       .eq('user_id', userId).gte('created_at', prevStartIso).limit(2000),
     supabase.from('user_vocabulary').select('created_at')
       .eq('user_id', userId).gte('created_at', prevStartIso),
@@ -17,9 +20,10 @@ export async function fetchWeeklyReportRows(userId) {
       .eq('user_id', userId).gte('first_met_at', prevStartIso),
     supabase.from('reading_progress').select('completed_at')
       .eq('user_id', userId).eq('is_completed', true).gte('completed_at', prevStartIso),
+    fetchUndoMarkers(userId, { sinceIso: prevStartIso }),
   ]);
   return {
-    events: ev.data || [],
+    events: dropUndoneEvents(ev.data || [], undo),
     vocabRows: vocab.data || [],
     encounterRows: enc.data || [],
     readRows: reads.data || [],

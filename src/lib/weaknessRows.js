@@ -10,6 +10,7 @@
  */
 import { supabase } from './supabase';
 import { WEAKNESS_SINCE_DAYS } from './weaknessProfile';
+import { dropUndoneEvents } from './undoneReviews';
 
 /**
  * 최근 채점 이벤트(태그 유도용).
@@ -28,7 +29,8 @@ export async function fetchWeaknessRows(userId, { sinceMs, limit = 600 } = {}) {
       .order('created_at', { ascending: false })
       .limit(limit);
     if (error) throw error;
-    return data || [];
+    // 되돌린 채점 제외(W 후속 ②) — source 필터가 없어 마커가 같은 조회에 들어 있다
+    return dropUndoneEvents(data || []);
   } catch {
     return [];
   }
