@@ -1,3 +1,4 @@
+import { isCanonPos } from './posCanon';
 // 서버 전용 — 미싱 형태소들의 의미를 Gemini에 배치 요청
 
 // 뜻 조회는 단순 구조화 작업 — thinking 없는 flash-lite가 4배 빠르고 품질 동등(실측 배치당 12.7s→3.2s)
@@ -261,7 +262,8 @@ export async function fetchMeaningsForMissing(missing, language, supabase, opts 
       const normalizedMeanings = meanings.slice(0, 3).map((m, i) => ({
         meaning: String(m.meaning).slice(0, 80),
         priority: i + 1,
-        ...(m?.pos && typeof m.pos === 'string' ? { pos: String(m.pos).trim().slice(0, 20) } : {}),
+        // X 게이트(언어 무관): 정본 밖 pos는 그 pos만 떼고 뜻은 저장 — 영어의 행 단위 거부는 아래 그대로
+        ...(m?.pos && typeof m.pos === 'string' && isCanonPos(language, m.pos) ? { pos: String(m.pos).trim().slice(0, 20) } : {}),
       }));
 
       if (language === 'English') {
@@ -300,7 +302,8 @@ export async function fetchMeaningsForMissing(missing, language, supabase, opts 
       // 영어·중국어는 Gemini가 pos를 정해줌(중국어는 겸류 다중 pos '동사·명사' 포함 — jieba
       // 단일 태그보다 정확). 일본어는 kuromoji pos가 이미 정확해 유지.
       const pos = (language === 'English' || language === 'Chinese') && entry?.pos
-        ? (language === 'English' ? enPosCandidates.join('·') : String(entry.pos).slice(0, 30))
+        // X 게이트: zh 상위 pos도 정본 밖이면 토크나이저 pos(source.pos) 유지
+        ? (language === 'English' ? enPosCandidates.join('·') : (isCanonPos('Chinese', entry.pos) ? String(entry.pos).slice(0, 30) : source.pos))
         : source.pos;
 
       // 일본어: Gemini 맥락 기반 reading / 영어: IPA 발음

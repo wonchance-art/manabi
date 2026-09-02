@@ -9,6 +9,14 @@ import TokenPosLabel from '../TokenPosLabel';
 const render = (token) => renderToStaticMarkup(<TokenPosLabel token={token} />);
 
 describe('TokenPosLabel', () => {
+  it('X 2차 방어 — 정본 밖 조각(단어가 품사 칸에 든 행)은 렌더하지 않는다', () => {
+    const html = render({ pos: '동사', pos_all: '동사·喝咖啡' });
+    expect(html).toContain('동사');
+    expect(html).not.toContain('喝咖啡');
+    expect(render({ pos: '喝咖啡' })).toBe('');
+    expect(render({ pos: '喝咖啡', pos_all: '喝咖啡·boire' })).toBe('');
+  });
+
   it('pos_all이 없으면 단일 pos 문자열 그대로', () => {
     expect(render({ pos: '명사' })).toBe('명사');
   });

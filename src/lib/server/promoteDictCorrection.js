@@ -1,3 +1,4 @@
+import { isCanonPos } from './posCanon';
 // 서버 전용 — 교정의 사전 승격(링큐식 "이 단어 전체에 적용", 오너 승인 보완 ②).
 // 오너가 확정한 뜻·발음·품사를 공유 사전(morpheme_dictionary)에 source='user_verified'로
 // 반영해, 이후 모든 자료 분석이 교정을 따르게 한다. 자가 치유·뜻 재조회·pos 기록 로직은
@@ -10,7 +11,12 @@
  * @param {{meaning?: string, furigana?: string, pos?: string}} corrections
  * @returns {{pos, reading, meanings, source}|null} meanings가 비면 null(승격 불가 — 뜻 없는 행 방지)
  */
-export function buildPromotedEntry(existing, corrections) {
+export function buildPromotedEntry(existing, correctionsIn, language) {
+  // X 게이트: 정본 밖 pos는 무시하고 뜻·발음 승격은 진행(pos는 기존값 유지). language가 없으면(구 호출)
+  // 판정하지 않는다 — 라우트는 항상 language를 넘긴다(계약).
+  const corrections = language && correctionsIn?.pos && !isCanonPos(language, correctionsIn.pos)
+    ? { ...correctionsIn, pos: undefined }
+    : (correctionsIn || {});
   const prior = Array.isArray(existing?.meanings)
     ? existing.meanings.filter((m) => m && typeof m.meaning === 'string' && m.meaning.trim())
     : [];

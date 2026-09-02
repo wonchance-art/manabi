@@ -1,4 +1,5 @@
 import { callGemini, parseGeminiJSON, buildTokenizationPrompt } from './gemini';
+import { canonizeTokenPos } from './server/posCanon';
 
 /**
  * 텍스트를 형태소 분석해 processed_json 구조를 생성합니다.
@@ -295,7 +296,8 @@ async function analyzeLineByLineGemini(rawText, signal, { metadata, onBatch, exi
           res.payload.sequence.forEach((oldId, pIdx) => {
             const newId = `id_${res.idx}_${pIdx}_${timestamp}`;
             currentJson.sequence.push(newId);
-            currentJson.dictionary[newId] = res.payload.dictionary[oldId];
+            // X 게이트: 모델이 준 pos가 정본 밖이면 토큰은 살리고 pos만 null(「미상」 관례)
+            currentJson.dictionary[newId] = canonizeTokenPos(res.payload.dictionary[oldId], lang);
           });
           if (res.idx < total - 1) {
             const brId = `br_${res.idx}_${timestamp}`;

@@ -8,6 +8,7 @@
 // 실패·타임아웃·키 없음이면 빈 결과 — 기존 pos 폴백으로 그대로 동작한다(그레이스풀 디그레이드).
 
 import { parseJsonLenient } from './fetchMeanings.js';
+import { isCanonPos } from './posCanon';
 
 const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent';
 
@@ -142,7 +143,8 @@ export async function disambiguateZhPos(lines, marks, opts = {}) {
     parsed.forEach((entry, i) => {
       const mark = marks[i];
       const all = Array.isArray(entry?.all)
-        ? entry.all.filter((p) => typeof p === 'string' && p.trim()).map((p) => p.trim().slice(0, 20)).slice(0, 4)
+        // X 게이트: 후보를 정본으로 걸러야 「동사·喝咖啡」가 pos_all·사전에 안 실린다. 걸러서 비면 기존 폴백.
+        ? entry.all.filter((p) => typeof p === 'string' && p.trim()).map((p) => p.trim().slice(0, 20)).filter((p) => isCanonPos('Chinese', p)).slice(0, 4)
         : [];
       const pos = typeof entry?.pos === 'string' ? entry.pos.trim().slice(0, 20) : '';
       // 단어성 판정: 유효한 분해(부분 연결 == 원 표기)가 오면 분리 verdict 우선 —

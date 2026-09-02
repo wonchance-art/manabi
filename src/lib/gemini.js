@@ -1,3 +1,4 @@
+import { POS_CANON } from './server/posCanon';
 export const GEMINI_MODEL = 'models/gemini-3.6-flash';
 
 async function callGeminiOnce(prompt, signal, { model, ...generationConfig } = {}) {
@@ -110,7 +111,44 @@ export function parseGeminiJSON(rawText) {
 
 export function buildTokenizationPrompt(text, language = 'Japanese') {
   if (language === 'English') return buildEnglishTokenizationPrompt(text);
+  // X(품사 정본 게이트): 프랑스어가 일본어 프롬프트로 폴백돼 pos가 자유 문자열이었다 — 영어와 같은 열거 문장
+  if (language === 'French') return buildFrenchTokenizationPrompt(text);
   return buildJapaneseTokenizationPrompt(text);
+}
+
+function buildFrenchTokenizationPrompt(text) {
+  const escaped = text.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  const posList = [...POS_CANON.French].map((p) => `"${p}"`).join(', ');
+  return `다음 프랑스어 문장을 단어/구두점 단위로 분석해 JSON으로 출력해. 반드시 모든 토큰에 한국어 뜻을 채워야 함.
+
+입력: "${escaped}"
+
+## 출력 형식
+{"sequence":["0","1","2",...],"dictionary":{"0":{...},"1":{...},...}}
+
+## 각 토큰 필드 (모두 필수)
+- "text": 원문 그대로의 단어/구두점 (대소문자·악상 유지)
+- "pos": 한국어 품사 (${posList} 중 하나 — 이 목록 밖의 값 금지)
+- "meaning": 한국어 뜻 (★반드시 채울 것. 모르면 추정이라도★)
+
+## 토큰 분리 규칙
+- 공백 기준으로 단어 분리, 구두점(,.!?;:«»)은 별도 토큰, pos="기호", meaning="(문장부호)"
+- 엘리지옹(l'·d'·j'·qu')은 아포스트로프까지 하나의 토큰(l' = 관사, j' = 대명사)
+- 축약 관사(au·du·des)는 하나의 토큰, pos="전치사"
+
+## 예시 ("J'aime les pommes.")
+{"sequence":["0","1","2","3","4"],"dictionary":{
+  "0":{"text":"J'","pos":"대명사","meaning":"나"},
+  "1":{"text":"aime","pos":"동사","meaning":"좋아하다"},
+  "2":{"text":"les","pos":"관사","meaning":"(정관사 복수)"},
+  "3":{"text":"pommes","pos":"명사","meaning":"사과들"},
+  "4":{"text":".","pos":"기호","meaning":"(마침표)"}
+}}
+
+## 주의
+- meaning은 **절대 빈 문자열로 두지 말 것**
+- furigana 필드는 프랑스어에선 불필요 (출력 금지)
+- JSON만 출력, 설명 금지`;
 }
 
 function buildJapaneseTokenizationPrompt(text) {
