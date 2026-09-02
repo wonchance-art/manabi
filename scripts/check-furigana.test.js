@@ -26,6 +26,29 @@ describe('check-furigana mixed-yomi gate', () => {
     expect(alignFurigana('公です', 'こうです (코-데스) trailing')).toBeNull();
   });
 
+  it('story 대사와 노래 한 줄도 같은 정렬기로 검사한다 — 한글 병기 요미의 숫자 독음·… 누락이 잡힌다', () => {
+    // check-content.mjs의 복제 정렬기는 한글 병기를 KO_MIXED로 통째 면제해 스토리 대사 2건이 숨었다
+    // (분석기 리뷰 라운드 6). 정렬기를 이 파일 하나로 모으고 story.body·media.line까지 순회한다.
+    const chapter = (body, line) => [{ slug: 'x', sections: [
+      { examples: [{ ja: '公です', yomi: 'こうです (코-데스)' }] },
+      { story: { body: [{ narr: '내레이션 문단은 건너뛴다' }, ...body] } },
+      { media: { line } },
+    ] }];
+    const good = checkFuriganaData(chapter(
+      [{ speaker: 'A', ja: '指定席の ほうが よかったかな…?', yomi: 'していせきの ほうが よかったかな…? (시테-세키노 호-가 요캇타카나…?)' }],
+      { ja: '公です', yomi: 'こうです' },
+    ));
+    expect(good.total).toBe(3);
+    expect(good.annotated).toBe(2);
+    expect(good.fail).toEqual([]);
+    const bad = checkFuriganaData(chapter(
+      [{ speaker: 'A', ja: 'うん、5,000えん こえたよ。', yomi: 'うん、5,000えん こえたよ (웅, 고셍엔 코에타요)' },
+       { speaker: 'B', ja: '指定席の ほうが よかったかな…?', yomi: 'していせきの ほうが よかったかな (시테-세키노 호-가 요캇타카나)' }],
+      { ja: '公です', yomi: 'こうです (코-데스) 꼬리' },
+    ));
+    expect(bad.fail.map((f) => f.where)).toEqual(['x §2 story[1]', 'x §2 story[2]', 'x §3 media']);
+  });
+
   it('실콘텐츠 한글 병기 예문을 0건으로 축소하지 않고 전부 검사한다', () => {
     const n4 = checkFuriganaData(n4Grammar);
     const n5 = checkFuriganaData(n5Grammar);

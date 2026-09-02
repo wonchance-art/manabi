@@ -12,6 +12,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { collectZhPinyinPairs } from './zh-pinyin-pairs.mjs';
 
 const REPO_ROOT = fileURLToPath(new URL('../', import.meta.url));
 const TRACK_NAMES = ['chinese', 'english', 'french', 'japanese'];
@@ -455,6 +456,8 @@ export async function runCurriculumLint() {
   }
 
   // (h) zh 병음 정합 게이트 — zh·pinyin 쌍 전수: 허용 문자 + 한자 수↔음절 수(모음 그룹 산식, 儿화 보정).
+  // 쌍 수확은 zh-pinyin-pairs.mjs(공유 정규식) — JSON식 "zh": 표기 파일이 감시망 밖으로 새던 사각을
+  // zh-pinyin-pairs.test.js가 「트리 전수 ⊆ 정규식」으로 지킨다(분석기 리뷰 라운드 6).
   // 모음 시작 음절 앞 아포스트로피(정서법 표기)를 분리자로 신뢰한다 — 누락하면 음절 수가 어긋나 적발된다.
   // zh에 라틴 문자가 섞인 메타 표기(A比B 등)는 판정 불가라 건너뛴다.
   try {
@@ -476,11 +479,7 @@ export async function runCurriculumLint() {
     for (const file of zfiles) {
       const src = await fs.readFile(file, 'utf8');
       const rel = path.relative(REPO_ROOT, file);
-      const re = /zh: "((?:[^"\\]|\\.)*)",\s*pinyin: "((?:[^"\\]|\\.)*)"/g;
-      let m;
-      while ((m = re.exec(src)) !== null) {
-        const zh = m[1];
-        const py = m[2];
+      for (const { zh, pinyin: py } of collectZhPinyinPairs(src)) {
         if (/[A-Za-z]/.test(zh)) continue;
         if (py.includes('→')) continue; // 성조 변조 대조 표기(nǐ hǎo → ní hǎo)는 판정 대상이 아니다
         const hanzi = (zh.match(/[㐀-鿿]/g) || []).length;
