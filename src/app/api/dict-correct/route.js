@@ -69,7 +69,7 @@ export async function POST(request) {
       .maybeSingle();
     if (selErr) throw selErr;
 
-    const entry = buildPromotedEntry(existing, corrections);
+    const entry = buildPromotedEntry(existing, corrections, language); // X: 정본 밖 pos는 승격에서 제외
     if (!entry) {
       // 뜻 없는 미등재 단어에 발음만 승격 요청 — 사전 행이 성립하지 않는다
       return Response.json({ error: '뜻이 있어야 사전에 반영할 수 있어요.' }, { status: 422 });
