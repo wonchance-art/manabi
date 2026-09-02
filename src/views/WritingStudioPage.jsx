@@ -9,6 +9,8 @@ import OutputWordChips from '../components/OutputWordChips';
 import Button from '../components/Button';
 import { WRITING_LEVELS, topicsFor } from '../lib/writingPrompts';
 import { logReviewEvents } from '../lib/reviewEvents';
+import { harvestWritingGaps, gapKey } from '../lib/writingGaps';
+import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { recordActivity } from '../lib/streak';
 
 const LANGS = [
@@ -45,6 +47,9 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
   const [revisionOf, setRevisionOf] = useState(null); // 재작문 중이면 1차 작문 id
   const [prevScore, setPrevScore] = useState(null);   // 1차 점수 (재작문 비교용)
   const [history, setHistory] = useState([]);      // 최근 작문
+  const [gapRows, setGapRows] = useState([]);      // U R2 수확 재료(최근 60행 — 목록보다 넓게)
+  const [gapAdded, setGapAdded] = useState({});    // 담은 표현(gapKey → true)
+  const [gapBusy, setGapBusy] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
 
   // 언어 기본값 — 프로필 학습 언어 → localStorage 순
@@ -105,15 +110,47 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10);
-      if (!full.error && full.data) { setHistory(full.data); return; }
+      if (!full.error && full.data) { setHistory(full.data); await loadGapRows(true); return; }
       const base = await supabase
         .from('writing_practice')
         .select('id, created_at, language, score, sentence, corrected, feedback')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10);
-      if (!base.error && base.data) setHistory(base.data);
+      if (!base.error && base.data) { setHistory(base.data); await loadGapRows(false); }
     } catch {}
+  }
+  // U R2 — 수확 재료는 목록(10)보다 넓게 60행. errors 컬럼 미적용 환경은 sentence↔corrected만으로 수확된다(두 재료 독립)
+  async function loadGapRows(withErrors) {
+    try {
+      const cols = withErrors
+        ? 'id, created_at, language, sentence, corrected, errors'
+        : 'id, created_at, language, sentence, corrected';
+      const r = await supabase.from('writing_practice').select(cols)
+        .eq('user_id', user.id).order('created_at', { ascending: false }).limit(60);
+      if (!r.error && r.data) setGapRows(r.data);
+    } catch {}
+  }
+  // 수확 — 순수 모듈. 자동 담기는 없다: 아래 [담기] 버튼만이 단어장으로 가는 문(M7 저촉 회피 지점)
+  const writingGaps = useMemo(() => harvestWritingGaps(gapRows), [gapRows]);
+  async function addGap(g) {
+    if (!user?.id || gapBusy) return;
+    const key = gapKey(g.lang, g.text);
+    setGapBusy(key);
+    try {
+      // 정본 조립기 그대로(행 조립 로직 신설 금지) — ignoreDuplicates라 이미 있는 표현은 새 행을 만들지 않는다
+      const row = buildVocabRow({
+        userId: user.id, surface: g.text, base: g.text, meaning: '', pos: '', reading: '',
+        language: g.lang, sourceSentence: g.samples?.[0]?.sentence || undefined,
+      });
+      const { error: err } = await supabase.from('user_vocabulary').upsert([row], VOCAB_UPSERT);
+      if (err) throw err;
+      setGapAdded((prev) => ({ ...prev, [key]: true }));
+    } catch {
+      setError('단어장에 담지 못했어요. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      setGapBusy(null);
+    }
   }
   useEffect(() => {
     loadHistory();
@@ -386,6 +423,38 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
             </Button>
           </div>
           {error && <p style={{ color: 'var(--danger)', fontSize: '0.85rem', marginTop: 8 }}>{error}</p>}
+        </div>
+      )}
+
+      {/* U R2 — 쓰려다 못 쓴 말(능동 어휘 결손). errors[].fix + sentence↔corrected에서 수확, 담기는 명시 탭만 */}
+      {!result && writingGaps.length > 0 && (
+        <div className="card" style={{ padding: '16px 18px', marginBottom: 14 }}>
+          <div style={{ fontSize: '0.82rem', fontWeight: 700, marginBottom: 4 }}>쓰려다 못 쓴 말</div>
+          <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: 10 }}>
+            첨삭에서 고쳐진 표현이에요. 담으면 단어장에서 복습해요(자동으로 담지 않아요).
+          </div>
+          <div className="writing-gaps" style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {writingGaps.slice(0, 24).map((g) => {
+              const key = gapKey(g.lang, g.text);
+              const added = !!gapAdded[key];
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  className="chip writing-gaps__chip"
+                  lang={LANG_CODE[g.lang]}
+                  disabled={added || gapBusy === key}
+                  onClick={() => addGap(g)}
+                  title={added ? '단어장에 있어요' : `담기 — ${g.count}번 못 썼어요`}
+                  style={{ fontSize: '0.8rem', padding: '3px 10px', cursor: added ? 'default' : 'pointer' }}
+                >
+                  {g.text}
+                  {g.count > 1 && <span style={{ marginLeft: 5, color: 'var(--text-muted)', fontSize: '0.7rem' }}>×{g.count}</span>}
+                  <span style={{ marginLeft: 6, color: added ? 'var(--accent-text)' : 'var(--text-muted)' }}>{added ? '✓' : '+'}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 
