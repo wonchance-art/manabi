@@ -13,6 +13,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { collectZhPinyinPairs } from './zh-pinyin-pairs.mjs';
+import { sandhiViolations } from './zh-sandhi.mjs';
 
 const REPO_ROOT = fileURLToPath(new URL('../', import.meta.url));
 const TRACK_NAMES = ['chinese', 'english', 'french', 'japanese'];
@@ -499,6 +500,11 @@ export async function runCurriculumLint() {
         const syll = (clean.match(vowRun) || []).length;
         if (!(syll === hanzi || (er > 0 && syll >= hanzi - er && syll < hanzi))) {
           errors.push(`zh 병음 음절 불일치: ${rel} — "${zh}"(${hanzi}자) ↔ "${py}"(${syll}음절)`);
+          continue;
+        }
+        // 성조 변조 표기 — 一·不 변조와 个 경성(오너 확정 2026-09-02). 규칙 정본 = zh-sandhi.mjs.
+        for (const v of sandhiViolations(zh, py)) {
+          errors.push(`zh 성조 변조: ${rel} — "${zh}" ∥ "${py}" — ${v.char}는 "${v.to}"여야 한다(현재 "${v.from}")`);
         }
       }
     }

@@ -309,25 +309,25 @@ const examples = {
     "0": [
       {
         "zh": "这家饭馆不但环境好，而且服务也很周到。",
-        "pinyin": "zhè jiā fànguǎn bùdàn huánjìng hǎo, érqiě fúwù yě hěn zhōudào.",
+        "pinyin": "zhè jiā fànguǎn búdàn huánjìng hǎo, érqiě fúwù yě hěn zhōudào.",
         "ko": "이 식당은 분위기가 좋을 뿐 아니라 게다가 서비스도 세심해요."
       },
       {
         "zh": "他不但成绩好，而且特别爱帮助别人。",
-        "pinyin": "tā bùdàn chéngjì hǎo, érqiě tèbié ài bāngzhù biérén.",
+        "pinyin": "tā búdàn chéngjì hǎo, érqiě tèbié ài bāngzhù biérén.",
         "ko": "그는 성적이 좋을 뿐 아니라 게다가 남 돕는 걸 무척 좋아해요."
       }
     ],
     "1": [
       {
         "zh": "不但我喜欢这首歌，而且我的同学们也都喜欢。",
-        "pinyin": "bùdàn wǒ xǐhuan zhè shǒu gē, érqiě wǒ de tóngxuémen yě dōu xǐhuan.",
+        "pinyin": "búdàn wǒ xǐhuan zhè shǒu gē, érqiě wǒ de tóngxuémen yě dōu xǐhuan.",
         "ko": "저뿐만 아니라 제 반 친구들도 다 이 노래를 좋아해요.",
         "note": "주어가 다르면 不但을 주어 앞에 둠"
       },
       {
         "zh": "这次活动不但学生参加了，而且老师也来了。",
-        "pinyin": "zhè cì huódòng bùdàn xuésheng cānjiā le, érqiě lǎoshī yě lái le.",
+        "pinyin": "zhè cì huódòng búdàn xuésheng cānjiā le, érqiě lǎoshī yě lái le.",
         "ko": "이번 행사에는 학생들뿐 아니라 선생님들도 오셨어요."
       }
     ]
@@ -341,7 +341,7 @@ const examples = {
       },
       {
         "zh": "大家都以为他是老板，其实他只是个职员。",
-        "pinyin": "dàjiā dōu yǐwéi tā shì lǎobǎn, qíshí tā zhǐ shì gè zhíyuán.",
+        "pinyin": "dàjiā dōu yǐwéi tā shì lǎobǎn, qíshí tā zhǐ shì ge zhíyuán.",
         "ko": "다들 그가 사장인 줄 알지만, 사실 그는 그냥 직원이에요."
       }
     ],
@@ -353,7 +353,7 @@ const examples = {
       },
       {
         "zh": "我同意你的看法，不过还有一点想补充。",
-        "pinyin": "wǒ tóngyì nǐ de kànfǎ, bùguò hái yǒu yì diǎn xiǎng bǔchōng.",
+        "pinyin": "wǒ tóngyì nǐ de kànfǎ, búguò hái yǒu yì diǎn xiǎng bǔchōng.",
         "ko": "당신 생각에 동의해요, 다만 한 가지 덧붙이고 싶은 게 있어요."
       }
     ],

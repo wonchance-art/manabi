@@ -158,7 +158,7 @@ const themes = {
         { zh: "行", pinyin: "háng", ko: "줄, 행; 업종, 직종", pos: "명사", hanja: "행(行) — '항렬 항'으로 읽으면 '줄·업종'을 뜻해요.", ex: { zh: "他在银行这一行工作。", pinyin: "tā zài yínháng zhè yì háng gōngzuò", ko: "그는 은행 쪽 업종에서 일해요." } },
         { zh: "许多", pinyin: "xǔduō", ko: "매우 많은, 수많은", pos: "수사", hanja: "허다(許多) — '許'는 허락할 허, '多'는 많을 다. '많다'.", ex: { zh: "公园里有许多人。", pinyin: "gōngyuán lǐ yǒu xǔduō rén", ko: "공원에 사람이 아주 많아요." } },
         { zh: "也许", pinyin: "yěxǔ", ko: "아마, 어쩌면", pos: "부사", hanja: "야허(也許) — '~일지도 모른다'는 추측을 나타내요.", ex: { zh: "他也许不来了。", pinyin: "tā yěxǔ bù lái le", ko: "그는 어쩌면 안 올지도 몰라요." } },
-        { zh: "一切", pinyin: "yīqiè", ko: "모든 것, 일체, 전부", pos: "대명사", hanja: "일체(一切) — '一'은 한 일, '切'는 온통 체. '모든 것'.", ex: { zh: "一切都会好的。", pinyin: "yíqiè dōu huì hǎo de", ko: "모든 게 다 잘될 거예요." } },
+        { zh: "一切", pinyin: "yíqiè", ko: "모든 것, 일체, 전부", pos: "대명사", hanja: "일체(一切) — '一'은 한 일, '切'는 온통 체. '모든 것'.", ex: { zh: "一切都会好的。", pinyin: "yíqiè dōu huì hǎo de", ko: "모든 게 다 잘될 거예요." } },
         { zh: "以", pinyin: "yǐ", ko: "~로(써), ~을 가지고", pos: "개사", hanja: "이(以) — '써 이'. 수단·방식을 나타내요.", ex: { zh: "我们以茶代酒。", pinyin: "wǒmen yǐ chá dài jiǔ", ko: "우리는 술 대신 차로 해요." } },
         { zh: "亿", pinyin: "yì", ko: "억 (100,000,000)", pos: "수사", hanja: "억(億) — '억 억'.", ex: { zh: "中国有十几亿人。", pinyin: "Zhōngguó yǒu shí jǐ yì rén", ko: "중국에는 십몇 억 명이 살아요." } },
         { zh: "由", pinyin: "yóu", ko: "~로부터, ~에 의해; ~에서 (말미암다)", pos: "개사", hanja: "유(由) — '말미암을 유'. 주체·기점을 나타내요.", ex: { zh: "这件事由他负责。", pinyin: "zhè jiàn shì yóu tā fùzé", ko: "이 일은 그가 책임져요." } },

@@ -90,7 +90,7 @@ const examples = {
     "0": [
       {
         "zh": "这两个方案各有好处，真是各有千秋。",
-        "pinyin": "zhè liǎng gè fāng'àn gè yǒu hǎochù, zhēn shì gè yǒu qiānqiū.",
+        "pinyin": "zhè liǎng ge fāng'àn gè yǒu hǎochù, zhēn shì gè yǒu qiānqiū.",
         "ko": "이 두 방안은 각각 장점이 있어서, 정말 각기 나름의 장점이 있어요.",
         "note": "各有千秋: 저마다 장점이 있다"
       },
@@ -323,7 +323,7 @@ const examples = {
       },
       {
         "zh": "他说的话，我不得不信。",
-        "pinyin": "tā shuō de huà, wǒ bùdébù xìn.",
+        "pinyin": "tā shuō de huà, wǒ bùdébú xìn.",
         "ko": "그가 한 말을 저는 믿지 않을 수 없어요.",
         "note": "不得不는 '~하지 않을 수 없다'예요."
       },
