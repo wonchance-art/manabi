@@ -112,6 +112,15 @@ describe('POS_FIX — jieba 문맥 불문 오태그 수리', () => {
     expect(words).toContain('读书');
   });
 
+  it('실단어 방벽은 x-블록·정도부사 규칙에도 선다 — 微信/x·真诚/a·不太/x는 HSK 표제어라 안 가른다(라운드 9b)', () => {
+    const words = (line) => tokenizeZhLine(line).map((x) => x.text);
+    expect(words('我们可以用微信联系。')).toContain('微信');   // jieba 사전 밖 → x → 되가름이 微|信으로 부수던 자리
+    expect(words('他对朋友很真诚。')).toContain('真诚');       // ⑤가 真|诚으로 가르던 자리
+    expect(words('不太舒服。')).toContain('不太');             // x — 교재 표제어(H2)
+    expect(words('他真高。')).toEqual(expect.arrayContaining(['真', '高'])); // 표 밖 정도부사+형용사는 여전히 가른다
+    expect(words('这里的人要多一些。')).not.toContain('人要'); // 표 밖 x는 여전히 되가른다
+  });
+
   it('nr 오태그 수제 수리: 谢谢·安静(인명 사각 — 수확·판별기 모두 못 잡는 경로)', () => {
     const xie = tokenizeZhLine('谢谢你！').find((x) => x.text === '谢谢');
     expect(xie.pos).toBe('동사');

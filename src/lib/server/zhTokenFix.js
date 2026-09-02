@@ -295,7 +295,10 @@ export function fixZhTagged(tagged) {
       // 过·了·着·个로 끝나는 것이 하나도 없어 두 자리가 등가였다). v2-T R3가 `这个`를
       // 등재하자 个 꼬리 규칙이 방벽을 **우회해** 这+个로 갈랐다 — 계약이 잡았다.
       // 「지금 등가라서 지운다」가 언제 틀리는지를 보여 준 자리라 주석으로 박아 둔다.
-      if (ZH_KEEP_MERGED.has(word)) {
+      // 실단어 방벽(라운드 9b): 허용목록뿐 아니라 HSK 표제어도 x-블록 밖이다. jieba 사전에 없는 HSK 어휘(微信 —
+      // HSK 3.0 등재)를 HMM이 x로 달면 되가름이 微|信으로 부쉈다(어휘 정답지 대조 실측). 不太/x(7건)도 여기서 산다 —
+      // 교재 표제어(H2 부사)이고 줄 병음이 변조(bú tài)를 이미 처리한다.
+      if (isRealWord(word)) {
         out.push(entry);
         continue;
       }
@@ -344,7 +347,8 @@ export function fixZhTagged(tagged) {
     // 바뀌면 규칙 둘이 같은 토큰을 다투게 되고, 그때 이 줄이 유일한 방벽이다.
     if (HAS_HANZI.test(word) && tag !== 'x') {
       const adv = ZH_DEGREE_ADV.find((d) => word.startsWith(d) && word.length > d.length);
-      if (adv && isLoneAdjective(word.slice(adv.length))) {
+      // 실단어 방벽(라운드 9b): 真诚/a(HSK)이 真|诚으로 갈렸다 — 머리말이 말한 「진짜 표제어를 부수지 않는 쪽」을 코드로.
+      if (adv && !isRealWord(word) && isLoneAdjective(word.slice(adv.length))) {
         out.push({ word: adv, tag: 'd', noPosAll: true });
         out.push({ word: word.slice(adv.length), tag: 'a' });
         continue;
