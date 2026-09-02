@@ -33,7 +33,7 @@ import { useReanalyze } from '../lib/useReanalyze';
 import { useReanalyzeUI } from '../lib/useReanalyzeUI';
 import { useReadingCompletion } from '../lib/useReadingCompletion';
 import { useGrammarNoteSave } from '../lib/useGrammarNoteSave';
-import { useInlineReview } from '../lib/useInlineReview';
+import { useInlineReview, patchVocabWordsCache } from '../lib/useInlineReview';
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage } from '../lib/errorMessage';
 import { SAVE_GRADES, VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
@@ -1416,6 +1416,7 @@ export default function ViewerPage() {
           wordId: vocab.id, itemKey: vocab.word_text, word: vocab.word_text,
           lang: vocab.language || detectLang(vocab.word_text), rating,
           prev: res.prev, reviewedAt: res.reviewedAt,
+          queued: !!res.queued, // 오프라인 큐에 담긴 채점 — undo는 큐 항목 제거(W 후속 ③)
         };
       },
     });
@@ -1427,13 +1428,21 @@ export default function ViewerPage() {
     if (!last || inlineReviewMutation.isPending) return;
     lastInlineGradeRef.current = null;
     try {
-      const { persistVocabGrade } = await import('../lib/fsrs');
-      const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev || {};
-      await persistVocabGrade(supabase, last.wordId, prevStats, prevReviewedAt);
-      logReviewEvents(user.id, [{
-        lang: last.lang, source: 'ui', item_key: last.itemKey, correct: true,
-        detail: { qtype: 'undo', undo_of: { item_key: last.itemKey, rating: last.rating, reviewed_at: last.reviewedAt } },
-      }]);
+      if (last.queued) {
+        // 큐에 있던 채점은 아직 서버에 없다 — 큐 항목을 지우는 게 곧 undo(복습 화면 R2와 같은 잣대), 보상 이벤트 없음
+        const { removeOutboxEntry } = await import('../lib/reviewOutbox');
+        await removeOutboxEntry({ userId: user.id, itemKey: last.itemKey, reviewedAt: last.reviewedAt });
+      } else {
+        const { persistVocabGrade } = await import('../lib/fsrs');
+        const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev || {};
+        await persistVocabGrade(supabase, last.wordId, prevStats, prevReviewedAt);
+        logReviewEvents(user.id, [{
+          lang: last.lang, source: 'ui', item_key: last.itemKey, correct: true,
+          detail: { qtype: 'undo', undo_of: { item_key: last.itemKey, rating: last.rating, reviewed_at: last.reviewedAt } },
+        }]);
+      }
+      // 낙관 반영을 prev로 되돌린 뒤 무효화 — 오프라인이면 refetch가 실패해도 카드가 「복습 시점이에요」로 돌아온다
+      patchVocabWordsCache(queryClient, user?.id, last.wordId, last.prev || {});
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
       toast(`되돌렸어요 — 「${last.word}」 다시 채점`, 'info');
     } catch (err) {

@@ -20,6 +20,7 @@ import { supabase } from '../../lib/supabase';
 import { logReviewEvents } from '../../lib/reviewEvents';
 import { detectLang, displayWord } from '../../lib/constants';
 import { persistVocabGrade } from '../../lib/fsrs';
+import { recordReviewCompleted } from '../../lib/learn/progressStore';
 import { SAVE_GRADES } from '../../lib/vocabIO';
 import bus from './bus';
 
@@ -139,9 +140,8 @@ export default function QuestReview({ userId, onClose }) {
       prev: Object.fromEntries(QUEST_SRS_FIELDS.filter((k) => current[k] !== undefined).map((k) => [k, current[k]])),
       idx, right: rightRef.current,
     };
-    const reviewedAt = new Date().toISOString();
 
-    // 1) FSRS — 기존 호출부와 동일(fsrs.js). due 항목이므로 정당한 예정 인출.
+    // 1) FSRS 계산 — 기존 호출부와 동일(fsrs.js). due 항목이므로 정당한 예정 인출.
     let calculateFSRS;
     try {
       ({ calculateFSRS } = await import('../../lib/fsrs'));
@@ -155,27 +155,33 @@ export default function QuestReview({ userId, onClose }) {
       repetitions: current.repetitions ?? 0,
       next_review_at: current.next_review_at,
     });
-    // 저장 성공이 확인된 뒤에만 점수·진행·완료 연출을 확정한다.
+    // 2) 저장 — 복습 화면과 같은 한 길(recordReviewCompleted: 이벤트 + FSRS(fsrs 정본) + 보상 + 오프라인 큐,
+    //    W 후속 ③). 이벤트는 qtype:'flash'(자가채점 = 비대칭 신뢰, rung 규약 준수). 저장(또는 큐 적재)
+    //    성공이 확인된 뒤에만 점수·진행·완료 연출을 확정한다 — 시각은 정본이 한 번 찍고 돌려준다.
+    let r;
     try {
-      await persistQuestReviewGrade(supabase, current.id, nextStats, reviewedAt);
-      if (!mountedRef.current) return;
-      lastGradeRef.current = { ...snapshot, reviewedAt };
-    } catch {
-      if (!mountedRef.current) return;
+      r = await recordReviewCompleted(userId, {
+        type: 'vocab',
+        itemKey: current.word_text,
+        lang,
+        correct,
+        detail: { word_id: current.id, meaning: current.meaning, rating, mode: 'world', qtype: 'flash' },
+      }, {
+        interval: nextStats.interval ?? 0,
+        ease_factor: nextStats.ease_factor ?? 0,
+        repetitions: nextStats.repetitions ?? 0,
+        next_review_at: nextStats.next_review_at,
+      });
+    } catch (err) {
+      r = { ok: false, error: err };
+    }
+    if (!mountedRef.current) return;
+    if (!r?.ok) {
       setGradeError('복습 결과를 저장하지 못했어요. 연결을 확인하고 다시 눌러 주세요.');
       gradingRef.current = false;
       return;
     }
-
-    // 2) 이벤트 로그 — qtype:'flash'(자가채점 = 비대칭 신뢰, rung 규약 준수).
-    logReviewEvents(userId, [{
-      lang,
-      source: 'vocab',
-      item_key: current.word_text,
-      correct,
-      detail: { word_id: current.id, meaning: current.meaning, rating, mode: 'world', qtype: 'flash' },
-      created_at: reviewedAt,
-    }]);
+    lastGradeRef.current = { ...snapshot, reviewedAt: r.reviewedAt, queued: !!r.queued };
 
     // 3) 즉시 연출 신호.
     bus.emit('quest:scored', { correct });
@@ -204,15 +210,21 @@ export default function QuestReview({ userId, onClose }) {
     lastGradeRef.current = null;
     setGradeError('');
     try {
-      const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev;
-      await persistQuestReviewGrade(supabase, last.wordId, prevStats, prevReviewedAt);
+      if (last.queued) {
+        // 큐에 있던 채점은 아직 서버에 없다 — 큐 항목을 지우는 게 곧 undo(복습 화면 R2와 같은 잣대), 보상 이벤트 없음
+        const { removeOutboxEntry } = await import('../../lib/reviewOutbox');
+        await removeOutboxEntry({ userId, itemKey: last.itemKey, reviewedAt: last.reviewedAt });
+      } else {
+        const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev;
+        await persistQuestReviewGrade(supabase, last.wordId, prevStats, prevReviewedAt);
+      }
       if (!mountedRef.current) return;
     } catch {
       if (!mountedRef.current) return;
       setGradeError('되돌리지 못했어요. 연결을 확인해 주세요.');
       return;
     }
-    logReviewEvents(userId, [{
+    if (!last.queued) logReviewEvents(userId, [{
       lang: last.lang, source: 'ui', item_key: last.itemKey, correct: true,
       detail: { qtype: 'undo', undo_of: { item_key: last.itemKey, rating: last.rating, reviewed_at: last.reviewedAt } },
     }]);

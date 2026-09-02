@@ -177,7 +177,7 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
 
     // 2. SRS: 어휘·문법·문형 다음 복습 스케줄
     if (type === 'vocab' && detail?.word_id && nextStats.next_review_at) {
-      await updateVocabNextReviewRemote(userId, detail.word_id, nextStats);
+      await updateVocabNextReviewRemote(userId, detail.word_id, nextStats, reviewedAt);
     } else if (type === 'grammar' || type === 'pattern') {
       // 문법/문형은 기존 grammarSrs에서 처리 (이 함수는 진도만)
     }
@@ -501,11 +501,13 @@ async function recordReviewEventRemote(userId, event) {
  * user_vocabulary next_review_at 갱신
  * 기존 VocabPage.scoreMutation 통합
  */
-async function updateVocabNextReviewRemote(userId, wordId, nextStats) {
+async function updateVocabNextReviewRemote(userId, wordId, nextStats, reviewedAt) {
   if (!userId || !wordId) return;
-  // 채점 저장 정본(fsrs.persistVocabGrade)으로 수렴 — 4중복 페이로드의 단일화
+  // 채점 저장 정본(fsrs.persistVocabGrade)으로 수렴 — 4중복 페이로드의 단일화.
+  // reviewedAt을 그대로 실어 SRS last_reviewed_at = 이벤트 created_at = 큐 항목 시각(한 시계).
+  // 안 실으면 persistVocabGrade가 제 시계를 찍어 undo 대조·큐 중복 제거의 열쇠가 ms만큼 어긋난다(W 후속 ③).
   const { persistVocabGrade } = await import('../fsrs');
-  return persistVocabGrade(supabase, wordId, nextStats);
+  return persistVocabGrade(supabase, wordId, nextStats, reviewedAt);
 }
 
 /**

@@ -757,6 +757,23 @@
 - 런던 위성 마이크로 픽(재량 위임 해석): 윈저+옥스퍼드 2곳 추천 — 레만호 완성 후 순번
 - 일본 4도시 COPY 슬롯 이식(다국어 UI 확정 시) / 아토미움 = marker-only 유지 확인
 ### done (최근)
+- **🔁 W 후속 ③ — 인라인·퀘스트 채점이 오프라인 큐에 합류한다 (2026-09-03 새벽, 오너 「할 일 찾아서
+  진행」 — W R2 설계 §후속 후보, #1077 5504350927)**:
+  복습 화면만 `recordReviewCompleted`(이벤트 + SRS + 보상 + v2-N R2 outbox)를 탔고, 뷰어 인라인
+  (`useInlineReview`)과 퀘스트(`QuestReview`)는 `persistVocabGrade`·`logReviewEvents`를 따로 불러
+  오프라인이면 「복습 저장 실패」로 채점이 **유실**됐다(같은 채점의 세 번째 길). 둘을 **같은 한 길**에
+  올렸다 — 새 큐·새 소비처 없이 정본 호출로 수렴(VocabPage와 같은 reviewRef·snake_case 4필드).
+  큐에 담긴 채점은 성공으로 다루고 `queued`를 스냅샷에 싣는다: 인라인 토스트 「복습 저장 — 연결되면
+  보내요」, 퀘스트는 점수·진행 그대로 전진. undo는 R2 잣대 그대로 — 큐에 있으면 큐 항목 제거(보상
+  이벤트 없음), 서버에 갔으면 5필드 복원 + 마커. 뷰어는 `vocab-words` 캐시를 **낙관 반영**
+  (`patchVocabWordsCache` — 같은 행이 surface·base 두 키에 걸려 있어 id로 전부)해 오프라인에서도
+  카드가 전진하고 undo가 prev로 되돌린다(refetch는 오프라인에서 실패하므로 캐시가 진실). 정본의
+  **한 시계** 수리 동반: `updateVocabNextReviewRemote`가 reviewedAt을 안 실어 SRS last_reviewed_at이
+  이벤트 created_at·큐 항목과 ms 어긋나던 것을 통일(undo 대조·flush 중복 제거의 열쇠). 부수 효과
+  (명시): 퀘스트 채점도 정본 안의 streak 보상(`update_streak`)을 타게 된다 — 복습은 복습. 🧊
+  `QuestReview.jsx` 한정 예외 안(씬·연출·펫·bus 무변경). 스키마 0. 계약 `gradeOutbox.test.js` 11종
+  + progressStore 한 시계 1종 · 변이 8/8 검출. 핀 갱신 3(useInlineReview·inlineReviewUndo·
+  questReviewUndo).
 - **🔁 W 후속 ② — 되돌린 채점을 집계에서 뺀다 (2026-09-03 새벽, 오너 「할 일 찾아서 진행」 01:59 KST — W R2
   설계 §후속 후보, #1077 5504350927)**:
   R2·R3㉮㉯의 undo는 `review_events`를 못 지워(RLS SELECT·INSERT뿐) `source:'ui'` 보상 이벤트를
