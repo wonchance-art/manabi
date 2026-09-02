@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import CEDICT from '../data/zhNeutralToneCedict.json';
-import { ZH_NEUTRAL_TONE } from '../zhNeutralTone.js';
+import { ZH_NEUTRAL_TONE, ZH_NEUTRAL_TONE_SUPPRESS } from '../zhNeutralTone.js';
 
 // 계약: 경성 사전 CEDICT 층 (분석 개선 R2 — 오너 승인 2026-08-29).
 // scripts/build-zh-neutral-tone.mjs가 CC-CEDICT(© MDBG, CC BY-SA 4.0)에서 수제 층의
@@ -76,9 +76,25 @@ describe('zhNeutralToneCedict 데이터 정본', () => {
 });
 
 describe('2층 병합 — 수제 층이 항상 이긴다', () => {
-  it('CEDICT가 원조를 고집하는 필독 경성(知道)은 수제 값이 정본', () => {
-    expect(CEDICT['知道']).toBeUndefined(); // CEDICT는 zhi1 dao4 — 후보조차 아님
-    expect(ZH_NEUTRAL_TONE['知道']).toBe('zhī dao');
+  it('CEDICT가 이독 병존으로 버린 필독 경성(告诉)은 수제 값이 정본', () => {
+    expect(CEDICT['告诉']).toBeUndefined(); // ② 다의어 배제 — 층에 없다
+    expect(ZH_NEUTRAL_TONE['告诉']).toBe('gào su');
+  });
+
+  it('라운드 7 — 정답지가 거부한 경성은 병합본에서 빠진다(층 데이터는 그대로, 억제 목록은 층에 실재하는 키만)', () => {
+    // 수제에서 뺀 넷: 정답지 원조 这里 99:1·哪里 2:0·知道 33:0·打算 12:0 — CEDICT도 원조(zhe4 li3·zhi1 dao4)
+    for (const w of ['这里', '哪里', '知道', '打算']) expect(ZH_NEUTRAL_TONE[w], w).toBeUndefined();
+    // CEDICT 층 억제 — 목록의 키는 전부 층에 있어야 한다(없는 키를 억제하면 목록이 낡은 것)
+    for (const w of ZH_NEUTRAL_TONE_SUPPRESS) {
+      expect(CEDICT[w], `${w} — 층에 없음`).toBeDefined();
+      expect(ZH_NEUTRAL_TONE[w], `${w} — 병합본에 남음`).toBeUndefined();
+    }
+    expect(ZH_NEUTRAL_TONE_SUPPRESS).toContain('那里'); // 这里·哪里와 한 묶음(합 101:2 원조)
+    expect(ZH_NEUTRAL_TONE_SUPPRESS).toContain('别人'); // 25:9
+    // 정답지가 경성 다수인 항목은 남는다 — 억제가 CEDICT 층을 통째로 지우는 게 아니라는 핀
+    expect(ZH_NEUTRAL_TONE['还是']).toBe('hái shi');   // 16:3
+    expect(ZH_NEUTRAL_TONE['态度']).toBe('tài du');    // 8:3
+    expect(ZH_NEUTRAL_TONE['学生']).toBe('xué sheng'); // 59:1
   });
 
   it('수제 예외 항목(东西)·가능보어(对不起)가 병합본에 살아 있다', () => {
@@ -86,8 +102,10 @@ describe('2층 병합 — 수제 층이 항상 이긴다', () => {
     expect(ZH_NEUTRAL_TONE['对不起']).toBe('duì bu qǐ');
   });
 
-  it('병합본은 CEDICT 층을 포함한다(대량 확장이 실제로 배선됨)', () => {
-    expect(Object.keys(ZH_NEUTRAL_TONE).length).toBeGreaterThan(entries.length);
+  it('병합본은 CEDICT 층을 포함한다(대량 확장이 실제로 배선됨) — 억제분만 빠진다', () => {
+    const suppressed = new Set(ZH_NEUTRAL_TONE_SUPPRESS);
+    for (const [k, v] of entries) if (!suppressed.has(k)) expect(ZH_NEUTRAL_TONE[k], k).toBe(v);
+    expect(Object.keys(ZH_NEUTRAL_TONE).length).toBeGreaterThan(entries.length - suppressed.size);
     expect(ZH_NEUTRAL_TONE['名气']).toBe('míng qi');
   });
 });
