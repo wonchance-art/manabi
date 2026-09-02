@@ -86,11 +86,20 @@ const HAS_HANZI = /[一-鿿]/;
 //       부수지 않는 쪽이 맞다(x 토큰은 정의상 사전 밖이라 되가름의 근거가 다르다).
 export const ZH_DEGREE_ADV = ['非常', '比较', '特别', '太', '很', '真', '挺'];
 
-/** 단독으로 태깅했을 때 형용사 한 덩이인가 — 규칙의 유일한 게이트. */
+/**
+ * 단독으로 태깅했을 때 형용사 한 덩이인가 — 규칙의 유일한 게이트.
+ * 多·少는 jieba가 m(수사)으로 달아 게이트에 안 걸렸다 — 很多가 154건(코퍼스) 한 토큰으로 남아 정답지(112건
+ * 분리)와 갈렸고, 라운드 2 억제로 풀려니 很多人×7·多书×5 연쇄가 났다(후처리 되가름은 DAG를 안 건드려 연쇄 없음).
+ * 형용사로 쓰이는 두 글자만 명시 허용(분석기 리뷰 라운드 5).
+ */
 function isLoneAdjective(text) {
+  if (text === '多' || text === '少') return true;
   const t = jiebaTag(text, false);
   return t.length === 1 && t[0].tag === 'a';
 }
+
+/** 수사 한 글자 — 수사+양사 되가름(⑥-c)의 머리. */
+const ZH_NUMERAL = new Set([...'一二三四五六七八九十两几半']);
 
 /** 단독으로 태깅했을 때 명사 한 덩이인가 — 양사 규칙(⑥)의 게이트. */
 function isLoneNoun(text) {
@@ -265,6 +274,17 @@ export function fixZhTagged(tagged) {
       //    (`这首歌`→`这`+`首歌`도 같다). 그래서 두 갈래를 따로 잡는다.
       if (!isRealWord(word)) {
         const chars = [...word];
+        // ⑥-c 수사 + 양사 (`一个`·`一件`·`两张` — 분석기 리뷰 라운드 5). jieba는 数量词를 m/mq 한 토큰으로
+        //     낸다(코퍼스 636건/72종). 학습자에겐 양사(件·张·条)가 어휘 항목이라 숨으면 안 되고, 정답지도 449건을
+        //     갈라 적었다. 실단어(一下·一点·一起·一样)는 둘째 글자가 양사가 아니라 저절로 빠지고, 一块·一半처럼
+        //     HSK 표제어인 것은 방벽(isRealWord)이 지킨다.
+        //     태그 조건은 두지 않는다 — jieba는 一幅를 d(부사)로 단다(R4a가 기록한 오태그, 코퍼스 5건). 닫힌 양사
+        //     집합 + HSK 방벽이 정밀도라 태그가 더해 주는 게 없다.
+        if (chars.length === 2 && ZH_NUMERAL.has(chars[0]) && ZH_CLASSIFIER.has(chars[1])) {
+          out.push({ word: chars[0], tag: 'm', noPosAll: true });
+          out.push({ word: chars[1], tag: 'q', noPosAll: true });
+          continue;
+        }
         // ⑥-a 지시사 + 양사 (`这件`·`那条`·`那位`·`那本书`) — 지시사를 뗀다.
         //     `这样`·`那样`·`这里`·`那些`는 样·里·些가 양사가 아니라 자동으로 빠진다.
         if (chars.length >= 2 && ZH_DEMONSTRATIVE.has(chars[0]) && ZH_CLASSIFIER.has(chars[1])) {
@@ -332,7 +352,9 @@ function markZhSeparable(entries) {
           : null
       : null;
     if (vChar) {
-      for (let j = i + 1; j <= i + 3 && j < entries.length; j++) {
+      // 창 4(라운드 5): 수사+양사를 가르면서 O가 +4에 온다 — 开/了/一/个/会. 사이 토큰은 여전히 전부
+      // 조사·수량구 화이트리스트여야 하므로 창을 늘려도 오탐 면은 안 넓어진다(我吵他架·穿过马路 불변).
+      for (let j = i + 1; j <= i + 4 && j < entries.length; j++) {
         const t = entries[j];
         const oc = [...t.word];
         const o = oc.length === 1 ? t.word
