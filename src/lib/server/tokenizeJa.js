@@ -3,6 +3,7 @@
 
 import { getTokenizer } from 'kuromojin';
 import path from 'node:path';
+import { fixJaTokens } from './jaReadingFix';
 
 let _tokenizerPromise = null;
 
@@ -69,7 +70,9 @@ function isSymbolOnly(str) {
 export async function tokenizeJaLine(line) {
   if (!line || !line.trim()) return [];
   const tokenizer = await getJaTokenizer();
-  const tokens = tokenizer.tokenize(line);
+  // 독음 수리 층(라운드 3): 日本→にほん·수사+조수사 병합(二人→ふたり)·이웃 조건(何です→なん).
+  // kuromoji 원출력 위에서 표면·독음만 고친다 — 등재 밖은 그대로.
+  const tokens = fixJaTokens(tokenizer.tokenize(line));
 
   return tokens.map((t) => {
     const baseForm = (t.basic_form && t.basic_form !== '*') ? t.basic_form : t.surface_form;
