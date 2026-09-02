@@ -118,7 +118,7 @@ const themes = {
         { zh: "生气", pinyin: "shēngqì", ko: "화나다", pos: "형용사", hanja: "생기(生氣) — '화가 생기다'. 한국 '생기(활력)'와 뜻이 달라요!", ex: { zh: "他生气了。", pinyin: "tā shēngqì le", ko: "그는 화났어요." } },
         { zh: "舒服", pinyin: "shūfu", ko: "편안하다, 몸이 좋다", pos: "형용사", ex: { zh: "我今天不太舒服。", pinyin: "wǒ jīntiān bú tài shūfu", ko: "저는 오늘 몸이 좀 안 좋아요." } },
         { zh: "聪明", pinyin: "cōngming", ko: "똑똑하다", pos: "형용사", hanja: "총명(聰明) — 한자 그대로.", ex: { zh: "这个孩子很聪明。", pinyin: "zhège háizi hěn cōngming", ko: "이 아이는 똑똑해요." } },
-        { zh: "那么", pinyin: "nàme", ko: "그렇게, 그토록", pos: "대사", hanja: "'那(저 나)'+么. 정도를 가리켜 '그렇게 ~한'을 나타내요.", ex: { zh: "我没有他那么高。", pinyin: "wǒ méiyǒu tā nàme gāo", ko: "저는 그만큼 크지 않아요." } },
+        { zh: "那么", pinyin: "nàme", ko: "그렇게, 그토록", pos: "대명사", hanja: "'那(저 나)'+么. 정도를 가리켜 '그렇게 ~한'을 나타내요.", ex: { zh: "我没有他那么高。", pinyin: "wǒ méiyǒu tā nàme gāo", ko: "저는 그만큼 크지 않아요." } },
       ],
     },
     {

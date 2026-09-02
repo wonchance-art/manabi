@@ -26,7 +26,7 @@ const themes = {
         { zh: "数额", pinyin: "shù'é", ko: "액수, 수량", pos: "명사", ex: { zh: "这笔贷款的数额相当大。", pinyin: "Zhè bǐ dàikuǎn de shù'é xiāngdāng dà.", ko: "이 대출금의 액수가 상당히 커요." } },
         { zh: "淹没", pinyin: "yānmò", ko: "침수시키다, 잠기게 하다", pos: "동사", ex: { zh: "洪水淹没了整片农田。", pinyin: "Hóngshuǐ yānmò le zhěng piàn nóngtián.", ko: "홍수가 논밭 전체를 잠기게 했어요." } },
         { zh: "闪烁", pinyin: "shǎnshuò", ko: "반짝이다, 깜빡이다", pos: "동사", ex: { zh: "夜空中星星在闪烁。", pinyin: "Yèkōng zhōng xīngxing zài shǎnshuò.", ko: "밤하늘에서 별들이 반짝이고 있어요." } },
-        { zh: "眨", pinyin: "zhǎ", ko: "눈을 깜빡이다", pos: "동사", ex: { zh: "她惊讶得连眼睛都没眨一下。", pinyin: "Tā jīngyà de lián yǎnjīng dōu méi zhǎ yíxià.", ko: "그녀는 너무 놀라서 눈도 깜빡이지 못했어요." } },
+        { zh: "眨", pinyin: "zhǎ", ko: "눈을 깜빡이다", pos: "동사", ex: { zh: "她惊讶得连眼睛都没眨一下。", pinyin: "Tā jīngyà de lián yǎnjing dōu méi zhǎ yíxià.", ko: "그녀는 너무 놀라서 눈도 깜빡이지 못했어요." } },
         { zh: "挑剔", pinyin: "tiāoti", ko: "까다롭다, 트집을 잡다", pos: "동사", ex: { zh: "他对食物一向很挑剔。", pinyin: "Tā duì shíwù yíxiàng hěn tiāoti.", ko: "그는 음식에 대해 늘 까다로워요." } },
         { zh: "内幕", pinyin: "nèimù", ko: "내막, 이면", pos: "명사", ex: { zh: "记者揭露了事件的内幕。", pinyin: "Jìzhě jiēlù le shìjiàn de nèimù.", ko: "기자가 사건의 내막을 폭로했어요." } },
         { zh: "俘虏", pinyin: "fúlǔ", ko: "포로", pos: "명사", ex: { zh: "战争结束后俘虏被释放了。", pinyin: "Zhànzhēng jiéshù hòu fúlǔ bèi shìfàng le.", ko: "전쟁이 끝난 후 포로들이 석방되었어요." } },

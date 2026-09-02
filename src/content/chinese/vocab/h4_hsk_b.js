@@ -169,7 +169,7 @@ const themes = {
         { zh: "恐怕", pinyin: "kǒngpà", ko: "아마 ~일 것이다, ~일까 걱정이다", pos: "부사", hanja: "공파(恐怕) — '恐'은 두려울 공, '怕'는 두려울 파. '아마 ~할까 봐'.", ex: { zh: "恐怕今天来不及了。", pinyin: "kǒngpà jīntiān lái bu jí le", ko: "아마 오늘은 시간이 안 될 것 같아요." } },
         { zh: "另外", pinyin: "lìngwài", ko: "그 밖에, 따로, 다른", pos: "접속사", hanja: "령외(另外) — '另'은 따로 령, '外'는 바깥 외.", ex: { zh: "另外，我还有一个问题。", pinyin: "lìngwài, wǒ hái yǒu yí ge wèntí", ko: "그 밖에, 저 질문이 하나 더 있어요." } },
         { zh: "俩", pinyin: "liǎ", ko: "두 사람, 둘 (两个의 구어)", pos: "수사", hanja: "량(倆) — '두 사람'을 한 단어로 줄인 구어 표현이에요.", ex: { zh: "我们俩是好朋友。", pinyin: "wǒmen liǎ shì hǎo péngyou", ko: "우리 둘은 친한 친구예요." } },
-        { zh: "连", pinyin: "lián", ko: "~조차, ~까지도; 잇다, 연결하다", pos: "개사", hanja: "련(連) — '잇닿을 련'. '连…都/也…' 형태로 '~조차도'.", ex: { zh: "他连饭都没吃。", pinyin: "tā lián fàn dōu méi chī", ko: "그는 밥조차 안 먹었어요." } },
+        { zh: "连", pinyin: "lián", ko: "~조차, ~까지도; 잇다, 연결하다", pos: "전치사", hanja: "련(連) — '잇닿을 련'. '连…都/也…' 형태로 '~조차도'.", ex: { zh: "他连饭都没吃。", pinyin: "tā lián fàn dōu méi chī", ko: "그는 밥조차 안 먹었어요." } },
         { zh: "内", pinyin: "nèi", ko: "안, 내부, 이내", pos: "명사", hanja: "내(內) — '안 내'. 外(밖)의 반대.", ex: { zh: "请在一周内回复。", pinyin: "qǐng zài yì zhōu nèi huífù", ko: "일주일 내로 답해 주세요." } },
         { zh: "难道", pinyin: "nándào", ko: "설마 ~란 말인가, 그래 ~란 말이야?", pos: "부사", hanja: "난도(難道) — 반문을 강조하는 부사예요. '설마'.", ex: { zh: "难道你不知道吗？", pinyin: "nándào nǐ bù zhīdào ma", ko: "설마 모르는 거예요?" } },
         { zh: "偶尔", pinyin: "ǒu'ěr", ko: "이따금, 가끔, 어쩌다", pos: "부사", hanja: "우이(偶爾) — '偶'는 짝 우(우연), '爾'는 너 이.", ex: { zh: "我偶尔会去看电影。", pinyin: "wǒ ǒu'ěr huì qù kàn diànyǐng", ko: "저는 가끔 영화를 보러 가요." } },

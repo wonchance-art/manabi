@@ -186,7 +186,7 @@ const examples = {
       },
       {
         "zh": "东西太多，箱子里放不下。",
-        "pinyin": "dōngxi tài duō, xiāngzi lǐ fàng bú xià.",
+        "pinyin": "dōngxi tài duō, xiāngzi lǐ fàng bu xià.",
         "ko": "물건이 너무 많아서 상자에 다 못 넣어요."
       }
     ],

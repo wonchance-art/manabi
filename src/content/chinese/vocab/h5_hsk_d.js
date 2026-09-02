@@ -26,7 +26,7 @@ const themes = {
         { zh: "披", pinyin: "pī", ko: "(어깨에) 걸치다, 두르다", pos: "동사", ex: { zh: "她披着一件外套。", pinyin: "tā pī zhe yí jiàn wàitào", ko: "그녀는 외투를 걸치고 있어요." } },
         { zh: "飘", pinyin: "piāo", ko: "(바람에) 흩날리다, 펄럭이다", pos: "동사", hanja: "표(飄) — '나부낄 표'.", ex: { zh: "雪花在空中飘。", pinyin: "xuěhuā zài kōngzhōng piāo", ko: "눈송이가 공중에서 흩날려요." } },
         { zh: "评价", pinyin: "píngjià", ko: "평가하다; 평가", pos: "동사", hanja: "평가(評價) — '評'은 평할 평, '價'는 값 가.", ex: { zh: "大家对他评价很高。", pinyin: "dàjiā duì tā píngjià hěn gāo", ko: "모두 그를 높이 평가해요." } },
-        { zh: "凭", pinyin: "píng", ko: "~에 근거하다, ~에 기대다", pos: "개사", hanja: "빙(憑) — '기댈 빙'.", ex: { zh: "凭这张票就能进去。", pinyin: "píng zhè zhāng piào jiù néng jìnqù", ko: "이 표만 있으면 들어갈 수 있어요." } },
+        { zh: "凭", pinyin: "píng", ko: "~에 근거하다, ~에 기대다", pos: "전치사", hanja: "빙(憑) — '기댈 빙'.", ex: { zh: "凭这张票就能进去。", pinyin: "píng zhè zhāng piào jiù néng jìnqù", ko: "이 표만 있으면 들어갈 수 있어요." } },
         { zh: "破产", pinyin: "pòchǎn", ko: "파산하다", pos: "동사", hanja: "파산(破産) — '破'는 깨질 파, '産'은 낳을 산.", ex: { zh: "那家公司破产了。", pinyin: "nà jiā gōngsī pòchǎn le", ko: "그 회사는 파산했어요." } },
         { zh: "破坏", pinyin: "pòhuài", ko: "파괴하다, 훼손하다", pos: "동사", hanja: "파괴(破壞) — '破'는 깨질 파, '壞'는 무너질 괴.", ex: { zh: "我们不能破坏环境。", pinyin: "wǒmen bù néng pòhuài huánjìng", ko: "우리는 환경을 파괴하면 안 돼요." } },
         { zh: "期待", pinyin: "qīdài", ko: "기대하다, 고대하다", pos: "동사", hanja: "기대(期待) — '期'는 기약할 기, '待'는 기다릴 대.", ex: { zh: "我很期待这次旅行。", pinyin: "wǒ hěn qīdài zhè cì lǚxíng", ko: "저는 이번 여행을 무척 기대해요." } },

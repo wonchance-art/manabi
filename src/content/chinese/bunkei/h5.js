@@ -258,7 +258,7 @@ const patterns = {
           ch: "h3-08-complex-sentence",
           conn: "无论如何 + 주어 + 都/也 + 술어",
           ko: "어떻게 해서든, 무슨 일이 있어도",
-          ex: { zh: "无论如何我都要完成这个任务。", pinyin: "wúlùn rúhé wǒ dōu yào wánchéng zhège rènwù", ko: "무슨 일이 있어도 이 임무를 완수하겠어요." },
+          ex: { zh: "无论如何我都要完成这个任务。", pinyin: "wúlùn rúhé wǒ dōu yào wánchéng zhège rènwu", ko: "무슨 일이 있어도 이 임무를 완수하겠어요." },
           ex2: { zh: "无论如何也要试一次。", pinyin: "wúlùn rúhé yě yào shì yí cì", ko: "어떻게 해서든 한 번은 해 봐야 해요." },
         },
         {

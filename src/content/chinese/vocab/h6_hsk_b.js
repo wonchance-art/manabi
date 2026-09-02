@@ -61,7 +61,7 @@ const themes = {
         { zh: "魔术", pinyin: "móshù", ko: "마술", pos: "명사", ex: { zh: "那位魔术师表演得非常精彩。", pinyin: "Nà wèi mó shù shī biǎo yǎn de fēi cháng jīng cǎi.", ko: "그 마술사는 매우 훌륭하게 공연했어요." } },
         { zh: "发育", pinyin: "fāyù", ko: "발육하다, 성장하다", pos: "동사", ex: { zh: "孩子正处于发育阶段。", pinyin: "Hái zi zhèng chǔ yú fā yù jiē duàn.", ko: "아이는 지금 발육 단계에 있어요." } },
         { zh: "光芒", pinyin: "guāngmáng", ko: "빛, 광채", pos: "명사", ex: { zh: "太阳散发出耀眼的光芒。", pinyin: "Tài yáng sàn fā chū yào yǎn de guāng máng.", ko: "태양은 눈부신 빛을 발산해요." } },
-        { zh: "额外", pinyin: "éwài", ko: "별도의, 추가의", pos: "형용사", ex: { zh: "这次任务需要额外的努力。", pinyin: "Zhè cì rèn wù xū yào é wài de nǔ lì.", ko: "이번 임무는 추가적인 노력이 필요해요." } },
+        { zh: "额外", pinyin: "éwài", ko: "별도의, 추가의", pos: "형용사", ex: { zh: "这次任务需要额外的努力。", pinyin: "Zhè cì rèn wu xū yào é wài de nǔ lì.", ko: "이번 임무는 추가적인 노력이 필요해요." } },
         { zh: "精确", pinyin: "jīngquè", ko: "정확하다", pos: "형용사", ex: { zh: "这个数据非常精确可靠。", pinyin: "Zhè ge shù jù fēi cháng jīng què kě kào.", ko: "이 데이터는 매우 정확하고 신뢰할 수 있어요." } },
         { zh: "压抑", pinyin: "yāyì", ko: "억압하다, 답답하다", pos: "동사", ex: { zh: "长期压抑情绪对健康不好。", pinyin: "Cháng qī yā yì qíng xù duì jiàn kāng bù hǎo.", ko: "오랫동안 감정을 억압하는 것은 건강에 좋지 않아요." } },
         { zh: "伪造", pinyin: "wěizào", ko: "위조하다", pos: "동사", ex: { zh: "他因伪造文件被逮捕了。", pinyin: "Tā yīn wěi zào wén jiàn bèi dài bǔ le.", ko: "그는 문서를 위조해서 체포되었어요." } },

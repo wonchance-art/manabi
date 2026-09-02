@@ -54,8 +54,9 @@ describe('중국어 품사 — 콘텐츠 전수 회귀', () => {
     if (process.env.ZH_CORPUS_REPORT) writeFileSync(process.env.ZH_CORPUS_REPORT + '.pos', JSON.stringify({ single, agree, rate, miss: [...miss].sort((a, b) => b[1] - a[1]).slice(0, 20) }, null, 1));
     expect(rows.length).toBeGreaterThan(5000);
     expect(single / rows.length).toBeGreaterThan(0.8);   // 표제어가 단일 토큰으로 살아남는 비율 — 분절 규칙이 표제어를 부수면 여기서 잡힌다(실측 0.864)
-    // 실측(2026-09-02): 라운드 9 전 0.8356 → 후 0.85__ (단일 토큰 6,034). 문턱은 그 아래.
-    expect(rate).toBeGreaterThanOrEqual(0.84);
+    // 실측(2026-09-02): 라운드 9 전 0.8356 → 후 0.8550 → 품사 라벨 통일(개사→전치사·대사→대명사) 후 0.8602 (단일 토큰 6,036).
+    // 문턱은 그 아래 0.85.
+    expect(rate).toBeGreaterThanOrEqual(0.85);
     // 라운드 9가 닫은 부류 — 이합사 n→동사(走路), 사전 오태그 수제(一起/m·红绿灯/nr·高兴/b)
     const py = (line, w) => tokenizeZhLine(line).find((x) => x.text === w);
     expect(py('我走路去学校。', '走路')?.pos).toBe('동사');
@@ -63,5 +64,11 @@ describe('중국어 품사 — 콘텐츠 전수 회귀', () => {
     expect(py('我们一起去吧。', '一起')?.pos).toBe('부사');
     expect(py('到红绿灯右拐。', '红绿灯')?.pos).toBe('명사');
     expect(py('我很高兴。', '高兴')?.pos).toBe('형용사');
+    // 품사 라벨 어휘(오너 결정 2026-09-02 「추천대로」) — 콘텐츠는 뷰어 라벨(POS_KO)과 같은 이름을 쓴다: 개사·대사 0건.
+    // 통일 전 개사 31·대사 12가 전치사·대명사와 갈려 있었다(뷰어와 카드가 같은 것을 다른 이름으로 불렀다). 린트가 막고
+    // 여기서 한 번 더 센다 — 같은 표제어가 예문 토큰과 맞아떨어지는 비율에 그대로 드러난다.
+    let synonyms = 0;
+    for (const r of rows) if (r.pos === '개사' || r.pos === '대사') synonyms++;
+    expect(synonyms).toBe(0);
   }, 120000);
 });

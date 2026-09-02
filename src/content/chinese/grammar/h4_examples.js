@@ -150,7 +150,7 @@ const examples = {
       },
       {
         "zh": "这个字我连听都没听过。",
-        "pinyin": "zhège zì wǒ lián tīng dōu méi tīng guò.",
+        "pinyin": "zhège zì wǒ lián tīng dōu méi tīng guo.",
         "ko": "이 글자는 저는 들어 본 적조차 없어요.",
         "note": "동사 听을 连…都로 강조해요."
       },
@@ -244,7 +244,7 @@ const examples = {
     "0": [
       {
         "zh": "你不是已经吃过了吗？",
-        "pinyin": "nǐ bú shì yǐjīng chī guò le ma?",
+        "pinyin": "nǐ bú shì yǐjīng chī guo le ma?",
         "ko": "너 이미 먹었잖아?"
       },
       {
