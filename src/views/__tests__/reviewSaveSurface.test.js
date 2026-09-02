@@ -16,7 +16,8 @@ describe('복습 저장 표면화 계약', () => {
   });
 
   it('채점 호출부가 실패를 토스트로 표면화한다 — 낙관 전진은 유지(await 블로킹 없음)', () => {
-    expect(viewer).toMatch(/\}\)\.then\(\(r\) => \{\s*if \(r\?\.ok === false\) toast\('복습 저장 실패/);
+    // W R2: 실패 토스트 뒤 return(undo 스냅샷 유효화를 건너뛴다) — 표면화 계약은 그대로
+    expect(viewer).toMatch(/\}\)\.then\(\(r\) => \{\s*if \(r\?\.ok === false\) \{ toast\('복습 저장 실패/);
     // 채점 흐름을 막는 await 부활 금지 — UX 계약(카드는 즉시 전진)
     expect(viewer).not.toMatch(/await recordReviewCompleted/);
   });

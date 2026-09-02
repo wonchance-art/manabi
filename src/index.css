@@ -6574,7 +6574,11 @@ a.grammar-btn {
   flex-direction: column;
   align-items: center;
   gap: 3px;
+  position: relative; /* W R2 숫자 배지(.save-grade__key) 기준 상자 */
 }
+/* W R2 키 안내 — 포인터가 정밀한(데스크톱) 환경에서만 */
+.review-keys-hint { display: none; }
+@media (pointer: fine) { .review-keys-hint { display: inline; } }
 
 /* ========= 추천 카드 바로읽기 배지 ========= */
 .suggestion-card__ready {

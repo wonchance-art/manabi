@@ -19,12 +19,13 @@ function ScoreSection({ word, onScore }) {
           </p>
         );
       })()}
-      <p className="review-score-guide">기억이 얼마나 잘 됐나요?</p>
+      <p className="review-score-guide">기억이 얼마나 잘 됐나요?<span className="review-keys-hint"> · 키 1~4 · 되돌리기 Ctrl/⌘+Z</span></p>
+      {/* 숫자 배지 = 키 안내(W R2) — 라벨 텍스트는 버튼 첫 자식 그대로(saveGrade 계약이 이 소스에서 라벨을 뽑는다) */}
       <div className="review-score-grid">
-        <button onClick={() => onScore(1)} className="review-score-btn review-score-btn--again" title="오늘 다시 나와요">다시</button>
-        <button onClick={() => onScore(2)} className="review-score-btn review-score-btn--hard" title="간격이 짧아져요">어려움</button>
-        <button onClick={() => onScore(3)} className="review-score-btn review-score-btn--good" title="정확히 기억했다면 이걸로">알맞음</button>
-        <button onClick={() => onScore(4)} className="review-score-btn review-score-btn--easy" title="간격이 많이 늘어나요">쉬움</button>
+        <button onClick={() => onScore(1)} className="review-score-btn review-score-btn--again" title="오늘 다시 나와요">다시<span className="save-grade__key" aria-hidden="true">1</span></button>
+        <button onClick={() => onScore(2)} className="review-score-btn review-score-btn--hard" title="간격이 짧아져요">어려움<span className="save-grade__key" aria-hidden="true">2</span></button>
+        <button onClick={() => onScore(3)} className="review-score-btn review-score-btn--good" title="정확히 기억했다면 이걸로">알맞음<span className="save-grade__key" aria-hidden="true">3</span></button>
+        <button onClick={() => onScore(4)} className="review-score-btn review-score-btn--easy" title="간격이 많이 늘어나요">쉬움<span className="save-grade__key" aria-hidden="true">4</span></button>
       </div>
     </div>
   );
@@ -47,7 +48,7 @@ export default function VocabReview({
   reviewFinished, reviewMode, effectiveMode, setReviewMode,
   showAnswer, setShowAnswer, showHint, setShowHint,
   typingAnswer, setTypingAnswer, contextSelected, setContextSelected, contextOptions,
-  handleScore, handleSkip, ttsSupported, speak,
+  handleScore, handleSkip, pickContextOption, ttsSupported, speak,
   exampleSentences, exampleLoading, loadExamples,
   setTab,
 }) {
@@ -286,13 +287,7 @@ export default function VocabReview({
                           key={i}
                           type="button"
                           disabled={contextSelected !== null}
-                          onClick={() => {
-                            setContextSelected(i);
-                            const isCorrect = opt.id === currentWord.id;
-                            if (isCorrect) {
-                              setTimeout(() => handleScore(3), 700);
-                            }
-                          }}
+                          onClick={() => pickContextOption(i)}
                           className={quizOptClass(contextSelected, opt.id === currentWord.id, contextSelected === i)}
                           aria-pressed={contextSelected === i}
                           aria-label={`${opt.meaning}${contextSelected !== null ? (opt.id === currentWord.id ? ', 정답' : contextSelected === i ? ', 선택한 오답' : '') : ''}`}
@@ -349,13 +344,7 @@ export default function VocabReview({
                               key={i}
                               type="button"
                               disabled={contextSelected !== null}
-                              onClick={() => {
-                                setContextSelected(i);
-                                const isCorrect = opt.id === currentWord.id;
-                                if (isCorrect) {
-                                  setTimeout(() => handleScore(3), 700);
-                                }
-                              }}
+                              onClick={() => pickContextOption(i)}
                               className={quizOptClass(contextSelected, opt.id === currentWord.id, contextSelected === i)}
                               aria-pressed={contextSelected === i}
                               aria-label={`${opt.meaning}${contextSelected !== null ? (opt.id === currentWord.id ? ', 정답' : contextSelected === i ? ', 선택한 오답' : '') : ''}`}
