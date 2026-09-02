@@ -57,8 +57,10 @@ describe('쿼리 다이어트 계약', () => {
     // **의도**만 고정한다: 전 컬럼(`*`) 금지 · 통짜 `processed_json` 유지 · 큰 컬럼을
     // 새로 끌어들이지 않기. 필요한 필드가 다 있는지는 렌더가 곧 증거다(빠지면 깨진다).
     const materials = read('src/views/MaterialsPage.jsx');
-    const sel = /from\('reading_materials'\)\s*\n?\s*\.select\('([^']*)'\)/.exec(materials)?.[1];
-    expect(sel, '자료실 목록 select를 못 읽었다').toBeTruthy();
+    // U R3부터 목록 컬럼은 상수 MATERIAL_LIST_COLS 하나로 모이고, select는 direction 유무만 분기한다.
+    const sel = /const MATERIAL_LIST_COLS = '([^']*)'/.exec(materials)?.[1];
+    expect(sel, '자료실 목록 컬럼 상수를 못 읽었다').toBeTruthy();
+    expect(materials).toMatch(/from\('reading_materials'\)[\s\S]{0,200}\.select\(withDirection \? `\$\{MATERIAL_LIST_COLS\}, direction` : MATERIAL_LIST_COLS\)/);
     expect(sel, '전 컬럼은 금지').not.toBe('*');
     expect(sel, 'due 배지가 dictionary·sequence를 쓰므로 통짜가 맞다').toContain('processed_json');
     // 큰 컬럼을 새로 끌어들이지 않는다 — 목록이 쓰지 않는 본문성 컬럼 금지

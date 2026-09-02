@@ -96,6 +96,15 @@ export const ZH_LEVELS = ['OT 입문', 'H1 기초', 'H2 초급', 'H3 중급', 'H
 
 /** 언어 키 → 한국어 이름 — AI 프롬프트·라벨 공용. 2트랙 삼항 하드코딩 재발 방지(자가 감사 ⑥). */
 export const LANG_NAME_KO = { Japanese: '일본어', English: '영어', French: '프랑스어', Chinese: '중국어' };
+
+/**
+ * 자료의 「방향」(U R3, #1077 5503520174) — read = 목표어 → 나(지금의 전부), write = 나 → 목표어(내 노트).
+ * 노트는 reading_materials의 행이지 새 엔티티가 아니다(별도 테이블 금지). 한국어 노트는 분석 대상이
+ * 아니다(토큰화·병음·FSRS 무접촉 — 담는 곳일 뿐). language는 목표어를 그대로 선언한다(어느 언어로
+ * 옮길 노트인가) — 'Korean'을 4종 강제 상수에 더하지 않는다(오너 결정).
+ */
+export const MATERIAL_DIRECTION = Object.freeze({ READ: 'read', WRITE: 'write' });
+export function isWriteMaterial(m) { return m?.direction === MATERIAL_DIRECTION.WRITE; }
 export function langNameKo(lang) { return LANG_NAME_KO[lang] || '일본어'; }
 
 export const LEVELS = {

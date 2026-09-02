@@ -14,7 +14,7 @@ import { fetchKnownWords, mergeKnownIntoIndex } from '../lib/knownWords';
 import { groupByBook } from '../lib/bookMeta';
 import { groupByPdf, pageRangeLabel, readProgressLabel } from '../lib/pdfGroups';
 import { useGroupReadIds } from '../lib/useGroupReadIds';
-import { LEVELS, langNameKo, levelRank, profileLevel } from '../lib/constants';
+import { LEVELS, langNameKo, levelRank, profileLevel, isWriteMaterial } from '../lib/constants';
 import { isOnDemandSuggestion } from '../lib/suggestionSources';
 import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
@@ -84,10 +84,15 @@ function SuggestionCard({ suggestion: s, router }) {
   );
 }
 
-async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuery }) {
+const MATERIAL_LIST_COLS = 'id, title, created_at, visibility, owner_id, processed_json, source_pdf_id, page_start, page_end';
+
+function fetchMaterialsWithoutDirection(args) { return fetchMaterials({ ...args, withDirection: false }); }
+
+async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuery, withDirection = true }) {
   let query = supabase
     .from('reading_materials')
-    .select('id, title, created_at, visibility, owner_id, processed_json, source_pdf_id, page_start, page_end')
+    // direction(U R3) — 컬럼 미적용 환경은 PostgREST가 400을 내므로 아래 폴백이 direction 없이 다시 조회한다
+    .select(withDirection ? `${MATERIAL_LIST_COLS}, direction` : MATERIAL_LIST_COLS)
     .order('created_at', { ascending: false });
 
   // 자료실은 현지 언어 콘텐츠만 — 시리즈 패턴 [* #N] 자료는 /lessons로 분리
@@ -111,7 +116,15 @@ async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuer
   }
 
   const { data, error } = await query;
-  if (error) throw error;
+  if (error) {
+    // U R3: direction 컬럼 미적용 환경(마이그레이션은 오너 수동) — 컬럼 없이 같은 조회를 한 번 더.
+    // etym/hanja·writing_practice 신규 컬럼 폴백과 같은 패턴. 그 환경엔 노트가 없으므로 결과는 같다.
+    if (/column|schema|direction/i.test(error.message || '')) {
+      const retry = await fetchMaterialsWithoutDirection({ tab, userId, langFilter, levelFilter, searchQuery });
+      return retry;
+    }
+    throw error;
+  }
   return data || [];
 }
 
@@ -711,7 +724,9 @@ export default function MaterialsPage() {
               );
             });
             return [...bookCards, ...pdfCards, ...singles.slice(0, visibleCount).map(m => {
-            const status = m.processed_json?.status || 'idle';
+            // U R3: 노트(write)는 분석 상태가 없다 — 배지·복습 수·미리보기 대신 「내 노트」 한 표식
+            const isNote = isWriteMaterial(m) || m.processed_json?.status === 'note';
+            const status = isNote ? 'note' : (m.processed_json?.status || 'idle');
             const metadata = m.processed_json?.metadata || {};
             const language = metadata.language || (m.title.match(/[a-zA-Z]/) ? 'English' : 'Japanese');
             const level = metadata.level;
@@ -743,6 +758,7 @@ export default function MaterialsPage() {
                   <div className="card__row card__row--between">
                     <div className="card__row card__row--gap">
                       <span className="card__flag">{langNameKo(language)}</span>
+                      {isNote && <span className="tag" title="내가 쓴 노트 — 분석하지 않는 비공개 자료">✍ 내 노트</span>}
                       {level && <span className="tag">{level}</span>}
                       {seriesPosition && (
                         <span className="tag" style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }} title={`${titleMeta.series} 시리즈`}>
