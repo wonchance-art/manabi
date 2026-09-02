@@ -119,9 +119,15 @@ export function checkFuriganaData(data) {
   }
 
   if (Array.isArray(data)) {
-    // grammar 챕터 배열
-    data.forEach(c => c.sections.forEach((s, si) =>
-      (s.examples || []).forEach(e => checkEx(e, `${c.slug} §${si + 1}`))));
+    // grammar 챕터 배열 — examples + story 대사(story.body, 내레이션 문단 제외) + 노래 한 줄(media.line).
+    // story·media는 check-content.mjs의 복제 정렬기가 검사했는데, 그 복제본은 한글 병기 요미를
+    // KO_MIXED로 통째 면제해 스토리 대사 2건(숫자 요미·… 누락)이 숨었다(분석기 리뷰 라운드 6).
+    // 정렬기는 이 파일 하나만 둔다 — 복제본은 낡는다.
+    data.forEach(c => c.sections.forEach((s, si) => {
+      (s.examples || []).forEach(e => checkEx(e, `${c.slug} §${si + 1}`));
+      (s.story?.body || []).forEach((b, bi) => { if (b.ja != null) checkEx(b, `${c.slug} §${si + 1} story[${bi}]`); });
+      if (s.media?.line?.ja) checkEx(s.media.line, `${c.slug} §${si + 1} media`);
+    }));
   } else {
     // bunkei / vocab
     data.themes.forEach(t => (t.items || t.words).forEach(i => {

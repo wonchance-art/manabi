@@ -194,78 +194,10 @@ for (const language of Object.keys(LANGS))
 // ── 스토리 섹션(story) 검증 헬퍼 ──
 // grammar 챕터의 story.body 대사를 언어별 text/reading 쌍으로 검사하고,
 // story.questions(order/fill/produce)의 필수 필드를 게이트한다. 일본어 {ja,yomi}의
-// 후리가나 정렬은 scripts/check-furigana.mjs의 alignFurigana와 동일 로직(그 스크립트는
-// examples만 순회하므로 story.body는 이 파일에서 동일 규약으로 직접 검사한다).
+// 후리가나 정렬은 여기서 하지 않는다 — scripts/check-furigana.mjs(파일별 spawn, 아래)가 examples·
+// story.body·media.line을 한 정렬기로 검사한다. 이 파일에 있던 복제 정렬기는 한글 병기 요미
+// 「かな (한글)」을 KO_MIXED로 통째 면제해 스토리 대사 2건의 오독이 숨었다(분석기 리뷰 라운드 6).
 const FILL_BLANK = '［　］';
-const isKanjiLike = ch => /[一-鿿々〆ヶ0-9０-９]/.test(ch);
-const kataToHira = s => s.replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60));
-const FURI_PUNCT = '。、・！？!?,. 　「」『』();（）:〜';
-const isKanaCh = c => (c >= 'ぁ' && c <= 'ゖ') || c === 'ー';
-const RT_BAD_START = 'んっーゃゅょぁぃぅぇぉゎ';
-const UO_VOWEL = 'うくすつぬふむゆるぐずづぶぷぅゅょおこそとのほもよろをごぞどぼぽぉ';
-const SMALL_KANA = 'ぁぃぅぇぉゃゅょゎっー';
-const moraLen = rt => rt.reduce((n, c) => n + (SMALL_KANA.includes(c) ? 0 : 1), 0);
-function alignFurigana(ja, yomiRaw) {
-  if (!ja || !yomiRaw) return null;
-  if (/[가-힣]/.test(yomiRaw)) return 'KO_MIXED';
-  if (![...ja].some(isKanjiLike)) return 'NO_KANJI';
-  const yomi = [...kataToHira(yomiRaw.replace(/[\s　]+/g, ''))];
-  const segs = [];
-  for (const ch of ja) {
-    const t = isKanjiLike(ch) ? 'k' : 'p';
-    if (segs.length && segs[segs.length - 1].t === t) segs[segs.length - 1].s += ch;
-    else segs.push({ t, s: ch });
-  }
-  const N = yomi.length;
-  const memo = new Map();
-  function solve(si, yi, afterRt) {
-    if (si === segs.length) {
-      let j = yi;
-      while (j < N && FURI_PUNCT.includes(yomi[j])) j++;
-      return j === N ? { cost: 0, parts: [] } : null;
-    }
-    const key = (si * 4096 + yi) * 2 + (afterRt ? 1 : 0);
-    if (memo.has(key)) return memo.get(key);
-    const seg = segs[si];
-    let best = null;
-    if (seg.t === 'p') {
-      const norm = kataToHira(seg.s.replace(/[\s　]+/g, ''));
-      let j = yi, ok = true;
-      for (const c of norm) {
-        while (j < N && yomi[j] !== c && FURI_PUNCT.includes(yomi[j])) j++;
-        if (j < N && yomi[j] === c) j++;
-        else if (FURI_PUNCT.includes(c)) continue;
-        else { ok = false; break; }
-      }
-      if (ok) {
-        const rest = solve(si + 1, j, j === yi ? afterRt : false);
-        if (rest) best = { cost: rest.cost, parts: [{ text: seg.s }, ...rest.parts] };
-      }
-    } else {
-      let nextFirst = null;
-      if (segs[si + 1]) {
-        const nn = kataToHira(segs[si + 1].s.replace(/[\s　]+/g, ''));
-        nextFirst = [...nn].find(c => !FURI_PUNCT.includes(c)) || null;
-      }
-      for (let end = N; end > yi; end--) {
-        const rt = yomi.slice(yi, end);
-        if (!rt.every(isKanaCh)) continue;
-        if (RT_BAD_START.includes(rt[0])) continue;
-        if (rt[0] === 'う' && afterRt && yi > 0 && UO_VOWEL.includes(yomi[yi - 1])) continue;
-        const rest = solve(si + 1, end, true);
-        if (!rest) continue;
-        const d = moraLen(rt) - seg.s.length;
-        const cost = rest.cost + 8 * d * d + (nextFirst && rt.includes(nextFirst) ? 1 : 0);
-        if (!best || cost < best.cost)
-          best = { cost, parts: [{ text: seg.s, rt: rt.join('') }, ...rest.parts] };
-      }
-    }
-    memo.set(key, best);
-    return best;
-  }
-  const r = solve(0, 0, false);
-  return r ? r.parts : null;
-}
 
 const nonEmptyStr = x => typeof x === 'string' && x.trim().length > 0;
 const STORY_Q_TYPES = new Set(['order', 'fill', 'produce']);
@@ -301,8 +233,6 @@ function checkStorySection(sec, chSlug, language, errors) {
       return;
     }
     if (!nonEmptyStr(b.ko)) errors.push(`[story ${chSlug}] body[${i}] ko 누락: ${text}`);
-    if (language === 'japanese' && alignFurigana(text, b[readingField]) === null)
-      errors.push(`[furigana-story] ${chSlug} body[${i}] 요미 정렬 실패:\n    ja:   ${text}\n    yomi: ${b[readingField]}`);
   });
   // ── questions: order/fill/produce 필수 필드 ──
   const ids = new Set();
@@ -347,8 +277,8 @@ function checkStorySection(sec, chSlug, language, errors) {
 }
 
 // ── 미디어 섹션(media) 검증 헬퍼 ──
-// 챕터의 '노래로 만나기' 모듈: youtubeId 형식(영숫자·-·_ 11자), line{ja,yomi} 후리가나 정렬
-// (story/examples와 동일 로직 재사용), songTitle/artist 필수를 게이트한다.
+// 챕터의 '노래로 만나기' 모듈: youtubeId 형식(영숫자·-·_ 11자), line{ja,yomi,ko} 필수,
+// songTitle/artist 필수를 게이트한다. line의 후리가나 정렬은 check-furigana.mjs가 맡는다.
 const YT_ID_RE = /^[A-Za-z0-9_-]{11}$/;
 function checkMediaSection(sec, chSlug, errors) {
   const m = sec.media;
@@ -361,8 +291,6 @@ function checkMediaSection(sec, chSlug, errors) {
   if (!nonEmptyStr(ln.ja)) errors.push(`[media ${chSlug}] line.ja 누락`);
   if (!nonEmptyStr(ln.yomi)) errors.push(`[media ${chSlug}] line.yomi 누락`);
   if (!nonEmptyStr(ln.ko)) errors.push(`[media ${chSlug}] line.ko 누락`);
-  if (nonEmptyStr(ln.ja) && nonEmptyStr(ln.yomi) && alignFurigana(ln.ja, ln.yomi) === null)
-    errors.push(`[furigana-media] ${chSlug} line 요미 정렬 실패:\n    ja:   ${ln.ja}\n    yomi: ${ln.yomi}`);
 }
 
 const errors = [];
