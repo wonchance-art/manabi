@@ -4,6 +4,7 @@
 import { getTokenizer } from 'kuromojin';
 import path from 'node:path';
 import { fixJaTokens } from './jaReadingFix';
+import { segmentKanaTokens } from './jaKanaSegment';
 
 let _tokenizerPromise = null;
 
@@ -72,7 +73,8 @@ export async function tokenizeJaLine(line) {
   const tokenizer = await getJaTokenizer();
   // 독음 수리 층(라운드 3): 日本→にほん·수사+조수사 병합(二人→ふたり)·이웃 조건(何です→なん).
   // kuromoji 원출력 위에서 표면·독음만 고친다 — 등재 밖은 그대로.
-  const tokens = fixJaTokens(tokenizer.tokenize(line));
+  // 가나 문절 분절(라운드 4): kuromoji가 조각내거나 동사로 오독한 가나 문절만 정본 읽기 색인으로 다시 가른다.
+  const tokens = segmentKanaTokens(fixJaTokens(tokenizer.tokenize(line)));
 
   return tokens.map((t) => {
     const baseForm = (t.basic_form && t.basic_form !== '*') ? t.basic_form : t.surface_form;
