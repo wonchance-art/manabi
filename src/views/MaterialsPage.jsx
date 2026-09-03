@@ -684,6 +684,10 @@ export default function MaterialsPage() {
                     title: c.title.includes(' — ') ? c.title.split(' — ').slice(1).join(' — ') : c.title,
                     right: chapterTags(c),
                   }))}
+                  // 이어 적기(#1077 5520128974) — 내 책에만 「다음 과 적기」(PDF 카드 「이어 읽기」와 같은 자리)
+                  footer={b.chapters[0]?.owner_id === user?.id ? (
+                    <Link href={`/materials/add?book=${encodeURIComponent(b.key)}`} className="btn btn--secondary btn--sm">+ 다음 과 적기</Link>
+                  ) : null}
                 />
               );
             });

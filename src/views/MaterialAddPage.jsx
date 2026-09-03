@@ -12,6 +12,7 @@ import {
   splitTextIntoChapters, CHAPTER_MAX_CHARS, looksLikeSentenceList, LINES_PER_REQUEST_CAP,
 } from '../lib/bookSplit';
 import { makeBookKey } from '../lib/bookMeta';
+import { bookKeyForDraft, appendPlanOf, listAppendableBooks, countContentLines } from '../lib/bookAppend';
 import { LEVELS, MATERIAL_DIRECTION } from '../lib/constants';
 import { isOnDemandSuggestion, suggestionVideoUrl } from '../lib/suggestionSources';
 import { isShareableSource, licenseForSource } from '../lib/videoAttribution';
@@ -73,6 +74,45 @@ export default function MaterialAddPage() {
   const [bookDraft, setBookDraft] = useState(null);
   const [bookRegistering, setBookRegistering] = useState(false);
   const [bookDoneCount, setBookDoneCount] = useState(0);
+  const [bookFirstNewId, setBookFirstNewId] = useState(null); // 등록 직후 [바로 읽기]가 여는 첫 새 챕터
+  // 이어 적기(#1077 5520128974) — 내 책 목록(문장 목록 입구의 「기존 교재에 이어서」 선택지). 메타 경로만
+  // 골라 받는다 — processed_json 통짜를 끌지 않는다(쿼리 다이어트). 게스트는 빈 목록 = 갈래 없음.
+  const [myBookRows, setMyBookRows] = useState([]);
+  useEffect(() => {
+    if (!user?.id) { setMyBookRows([]); return undefined; }
+    let alive = true;
+    supabase
+      .from('reading_materials')
+      .select('id, created_at, processed_json->metadata->>language, processed_json->metadata->>level, processed_json->metadata->book')
+      .eq('owner_id', user.id)
+      .not('processed_json->metadata->book', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(500)
+      .then(({ data, error }) => {
+        if (!alive || error) return;
+        // listAppendableBooks는 metadata 모양을 읽는다 — 평탄 컬럼을 그 모양으로 되돌린다
+        setMyBookRows((data || []).map((r) => ({
+          id: r.id, created_at: r.created_at,
+          processed_json: { metadata: { language: r.language, level: r.level, book: r.book } },
+        })));
+      });
+    return () => { alive = false; };
+  }, [user?.id]);
+  const myBooks = useMemo(() => listAppendableBooks(myBookRows), [myBookRows]);
+  const appendBookKey = searchParams.get('book') || '';
+  // 과당 문장 수 상속 — 가장 최근 등록된 챕터 한 행의 줄 수(문장 목록 책은 곧 과 크기). 못 읽으면 null.
+  const inferPerChapter = async (key) => {
+    const { data, error } = await supabase
+      .from('reading_materials')
+      .select('raw_text')
+      .eq('owner_id', user.id)
+      .filter('processed_json->metadata->book->>key', 'eq', key)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    if (error) return null; // 못 읽으면 상속 없이 지금 값 그대로 — 사람이 고친다(무해)
+    const n = countContentLines(data?.[0]?.raw_text);
+    return n >= 1 ? n : null;
+  };
   // 본문 폼에 문장 목록을 붙여넣은 사람을 위쪽 입구로 넘길 때 싣는 텍스트(1회성).
   const [sentenceSeed, setSentenceSeed] = useState('');
 
@@ -105,12 +145,15 @@ export default function MaterialAddPage() {
 
   // 문장 목록 입구(PDF·EPUB와 같은 층) — 제목·언어·난이도·과 크기를 거기서 다 정하고 온다.
   // 초안이 자기 언어·난이도를 들고 오므로 등록이 본문 폼 상태에 의존하지 않는다(비동기 어긋남 없음).
-  const handleSentenceBookReady = ({ bookTitle, language: lang, level: lvl, chapters }) => {
+  const handleSentenceBookReady = ({ bookTitle, language: lang, level: lvl, chapters, append = null }) => {
     setBookDraft({
-      title: bookTitle, chapters, privateOnly: true, origin: 'sentences', language: lang, level: lvl,
+      title: bookTitle, chapters, privateOnly: true, origin: 'sentences', language: lang, level: lvl, append,
     });
     setBookDoneCount(0);
-    toast(`${chapters.length}과로 나눴어요. 목록을 확인하고 등록하세요.`, 'success');
+    setBookFirstNewId(null);
+    toast(append
+      ? `${append.startOrder}과부터 ${chapters.length}과를 준비했어요. 목록을 확인하고 이어 등록하세요.`
+      : `${chapters.length}과로 나눴어요. 목록을 확인하고 등록하세요.`, 'success');
   };
 
   async function handleBookRegister() {
@@ -118,8 +161,9 @@ export default function MaterialAddPage() {
     if (!bookDraft || bookDraft.chapters.length === 0) return;
     setBookRegistering(true);
     try {
-      const key = makeBookKey();
-      const total = bookDraft.chapters.length;
+      // 이어 적기면 책의 key·다음 순번·기존+새 총수(bookAppend 정본) — 새 책이면 지금까지와 같다.
+      const key = bookKeyForDraft(bookDraft, makeBookKey);
+      const { startOrder, existingCount, total, lastOrder } = appendPlanOf(bookDraft);
       const rows = bookDraft.chapters.map((ch, i) => ({
         title: `${bookDraft.title} — ${ch.title}`,
         // 문장 목록은 이미 한 줄 한 문장이라 문단 자동 감지가 할 일이 없다. 오히려 개입하면
@@ -135,17 +179,20 @@ export default function MaterialAddPage() {
             // 초안이 자기 언어·난이도를 들고 왔으면 그것이 정본(문장 목록 입구는 거기서 정한다).
             language: bookDraft.language || language,
             level: bookDraft.level || level,
-            book: { key, title: bookDraft.title, order: i + 1, total },
+            book: { key, title: bookDraft.title, order: startOrder + i, total },
             updated_at: new Date().toISOString(),
           },
         },
         visibility: bookDraft.privateOnly ? 'private' : visibility,
         owner_id: user.id,
       }));
-      const { error: insertError } = await supabase.from('reading_materials').insert(rows);
+      const { data: inserted, error: insertError } = await supabase.from('reading_materials').insert(rows).select('id');
       if (insertError) throw insertError;
-      setBookDoneCount(total);
-      toast(`《${bookDraft.title}》 챕터 ${total}개 등록 완료! 각 챕터는 열 때 분석돼요.`, 'success');
+      setBookDoneCount(bookDraft.chapters.length);
+      setBookFirstNewId(inserted?.[0]?.id ?? null);
+      toast(bookDraft.append
+        ? `《${bookDraft.title}》 ${startOrder}과~${lastOrder}과를 이었어요(지금 ${existingCount + bookDraft.chapters.length}과). 각 과는 열 때 분석돼요.`
+        : `《${bookDraft.title}》 챕터 ${total}개 등록 완료! 각 챕터는 열 때 분석돼요.`, 'success');
     } catch (err) {
       toast('책 등록 실패 — ' + friendlyToastMessage(err), 'error');
     } finally {
@@ -432,6 +479,9 @@ export default function MaterialAddPage() {
         onReady={handleSentenceBookReady}
         seedText={sentenceSeed}
         onSeedConsumed={() => setSentenceSeed('')}
+        books={myBooks}
+        initialBookKey={appendBookKey}
+        inferPerChapter={inferPerChapter}
       />
 
       <MaterialAddLinkSection toast={toast} onReady={handleLinkReady} initialUrl={linkAutoUrl} />
@@ -447,6 +497,7 @@ export default function MaterialAddPage() {
           doneCount={bookDoneCount}
           onCancel={() => { setBookDraft(null); setBookDoneCount(0); }}
           onDone={() => router.push('/materials')}
+          readHref={bookFirstNewId ? `/viewer/${bookFirstNewId}` : null}
           chapterRanges={chapterRanges}
         />
       )}
@@ -637,6 +688,7 @@ export default function MaterialAddPage() {
                 doneCount={bookDoneCount}
                 onCancel={() => { setBookDraft(null); setBookDoneCount(0); }}
                 onDone={() => router.push('/materials')}
+          readHref={bookFirstNewId ? `/viewer/${bookFirstNewId}` : null}
                 chapterRanges={chapterRanges}
               />
             </div>
