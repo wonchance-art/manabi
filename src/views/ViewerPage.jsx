@@ -357,6 +357,9 @@ export default function ViewerPage() {
       total: bookChapters.length,
       prev: idx > 0 ? bookChapters[idx - 1] : null,
       next: idx < bookChapters.length - 1 ? bookChapters[idx + 1] : null,
+      // 이어 적기(#1077 5520128974) — 마지막 과의 「다음 →」 자리에 「다음 과 적기」(내 책만)
+      key: bookMeta.key,
+      canAppend: !!user?.id && material?.owner_id === user.id,
     };
   })();
 
@@ -2698,7 +2701,9 @@ export default function ViewerPage() {
           </span>
           {bookNav.next
             ? <Link href={`/viewer/${bookNav.next.id}`} className="book-nav__btn">다음 →</Link>
-            : <span className="book-nav__btn book-nav__btn--off">다음 →</span>}
+            : bookNav.canAppend
+              ? <Link href={`/materials/add?book=${encodeURIComponent(bookNav.key)}`} className="book-nav__btn">+ 다음 과 적기</Link>
+              : <span className="book-nav__btn book-nav__btn--off">다음 →</span>}
         </div>
       )}
 

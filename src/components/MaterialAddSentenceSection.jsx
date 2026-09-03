@@ -7,6 +7,7 @@ import {
   splitLinesIntoChapters, clampLinesPerChapter, sentenceListStats,
   DEFAULT_LINES_PER_CHAPTER, LINES_PER_REQUEST_CAP,
 } from '../lib/bookSplit';
+import { renumberChapters } from '../lib/bookAppend';
 
 // 언어별 기본 난이도 — 본문 폼과 같은 짝(중복 신설이 아니라 같은 표를 여기서도 쓴다).
 const LANGS = [
@@ -25,13 +26,36 @@ const LANGS = [
  *
  * 개인 소장 교재라 저작권 상태를 알 수 없으므로 호출측이 비공개로 고정한다(EPUB과 동일).
  */
-export default function MaterialAddSentenceSection({ toast, onReady, seedText, onSeedConsumed }) {
+export default function MaterialAddSentenceSection({ toast, onReady, seedText, onSeedConsumed, books = [], initialBookKey = '', inferPerChapter }) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [language, setLanguage] = useState('Chinese');
   const [level, setLevel] = useState('H3 중급');
   const [perChapter, setPerChapter] = useState(String(DEFAULT_LINES_PER_CHAPTER));
   const [text, setText] = useState('');
+  // 이어 적기(#1077 5520128974 — 하루 한두 과씩 적어 완성) — 기존 책을 고르면 제목·언어·난이도는 책에서
+  // 물려받고, 과 순번은 마지막+1부터 매긴다. 책이 없으면(books 빈 배열) 갈래 자체가 안 보인다.
+  const [mode, setMode] = useState('new');          // 'new' | 'append'
+  const [bookKey, setBookKey] = useState('');
+  const book = mode === 'append' ? (books.find((b) => b.key === bookKey) || null) : null;
+  const startOrder = book ? book.lastOrder + 1 : 1;
+
+  // 딥링크(?book=key — 자료실 책 카드·뷰어 마지막 과의 「다음 과 적기」)로 왔으면 그 책이 선택된 채 열린다.
+  useEffect(() => {
+    if (!initialBookKey || !books.some((b) => b.key === initialBookKey)) return;
+    setMode('append');
+    setBookKey(initialBookKey);
+    setOpen(true);
+  }, [initialBookKey, books]);
+
+  // 과당 문장 수는 책의 마지막 과에서 물려받는다(교재마다 다르다). 못 읽으면 지금 값 그대로 — 사람이 고친다.
+  useEffect(() => {
+    if (!book || !inferPerChapter) return undefined;
+    let alive = true;
+    inferPerChapter(book.key).then((n) => { if (alive && n >= 1) setPerChapter(String(n)); }).catch(() => {});
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [book?.key]);
 
   // 본문 폼에서 넘겨준 문장 목록 — 다시 붙여넣게 하지 않는다(1회성).
   useEffect(() => {
@@ -46,10 +70,20 @@ export default function MaterialAddSentenceSection({ toast, onReady, seedText, o
   const chapterCount = stats.lines > 0 ? Math.ceil(stats.lines / per) : 0;
   const perClamped = String(per) !== String(perChapter).trim();
 
+  const rangeLabel = chapterCount > 1 ? `${startOrder}과~${startOrder + chapterCount - 1}과` : `${startOrder}과`;
+
   function handleSplit() {
-    const chapters = splitLinesIntoChapters(text, { linesPerChapter: per });
-    if (chapters.length === 0) { toast('문장을 붙여넣어 주세요.', 'info'); return; }
-    onReady({ bookTitle: title.trim() || '제목 없는 교재', language, level, chapters });
+    const split = splitLinesIntoChapters(text, { linesPerChapter: per });
+    if (split.length === 0) { toast('문장을 붙여넣어 주세요.', 'info'); return; }
+    // 이어 적기: 1과부터 나온 분할을 다음 순번부터 다시 매기고, 책의 제목·언어·난이도를 그대로 싣는다.
+    const chapters = book ? renumberChapters(split, startOrder) : split;
+    onReady({
+      bookTitle: book ? book.title : (title.trim() || '제목 없는 교재'),
+      language: book?.language || language,
+      level: book?.level || level,
+      chapters,
+      append: book ? { key: book.key, startOrder, existingCount: book.count } : null,
+    });
     setText('');
     setTitle('');
     setOpen(false);
@@ -72,6 +106,50 @@ export default function MaterialAddSentenceSection({ toast, onReady, seedText, o
 
       {open && (
         <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {books.length > 0 && (
+            <div className="form-field" style={{ margin: 0 }}>
+              <label className="form-label">어디에 담을까요</label>
+              <div className="toggle-group">
+                <button
+                  type="button"
+                  aria-pressed={mode === 'new'}
+                  onClick={() => setMode('new')}
+                  className={`toggle-btn ${mode === 'new' ? 'toggle-btn--primary' : ''}`}
+                >
+                  새 교재
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={mode === 'append'}
+                  onClick={() => { setMode('append'); if (!bookKey) setBookKey(books[0].key); }}
+                  className={`toggle-btn ${mode === 'append' ? 'toggle-btn--primary' : ''}`}
+                >
+                  기존 교재에 이어서
+                </button>
+              </div>
+              {mode === 'append' && (
+                <select
+                  id="sentence-append-book"
+                  className="form-input"
+                  style={{ marginTop: 8 }}
+                  value={bookKey}
+                  onChange={(e) => setBookKey(e.target.value)}
+                  aria-label="이어 적을 교재"
+                >
+                  {books.map((b) => (
+                    <option key={b.key} value={b.key}>{b.title || '제목 없는 교재'} · {b.lastOrder}과까지</option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
+
+          {book ? (
+            <p style={{ margin: 0, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', fontSize: '0.84rem', lineHeight: 1.6, color: 'var(--text-secondary)' }}>
+              《{book.title || '제목 없는 교재'}》 · {LANGS.find(([k]) => k === book.language)?.[1] || book.language} · {book.level}
+              {' '}— 교재에서 물려받았어요. 다음은 <strong style={{ color: 'var(--text-primary)' }}>{startOrder}과</strong>부터 매겨요.
+            </p>
+          ) : (<>
           <div className="form-field" style={{ margin: 0 }}>
             <label className="form-label" htmlFor="sentence-book-title">교재 이름</label>
             <input
@@ -115,6 +193,8 @@ export default function MaterialAddSentenceSection({ toast, onReady, seedText, o
               ))}
             </div>
           </div>
+
+          </>)}
 
           <div className="form-field" style={{ margin: 0 }}>
             <label className="form-label" htmlFor="sentence-per-chapter">한 과에 넣을 문장 수</label>
@@ -177,11 +257,11 @@ export default function MaterialAddSentenceSection({ toast, onReady, seedText, o
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
               {stats.lines > 0
-                ? `${stats.lines.toLocaleString()}문장 · 평균 ${Math.round(stats.avgLen)}자 · ${chapterCount}과`
+                ? `${stats.lines.toLocaleString()}문장 · 평균 ${Math.round(stats.avgLen)}자 · ${book ? rangeLabel : `${chapterCount}과`}`
                 : '문장을 붙여넣으면 과 수를 계산해요'}
             </span>
             <Button size="sm" onClick={handleSplit} disabled={stats.lines === 0}>
-              {chapterCount > 0 ? `${chapterCount}과로 나누기` : '과로 나누기'}
+              {chapterCount > 0 ? (book ? `${rangeLabel}로 나누기` : `${chapterCount}과로 나누기`) : '과로 나누기'}
             </Button>
           </div>
         </div>
