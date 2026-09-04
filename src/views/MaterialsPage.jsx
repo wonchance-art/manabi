@@ -55,7 +55,7 @@ function SuggestionCard({ suggestion: s, router }) {
         <div className="suggestion-card__meta">
           {/* 언어명은 정본(constants.langNameKo)만 — 여기 삼항이 하드코딩돼 있어
               F R2가 연 프랑스어 카드가 「일본어」로 떴다. */}
-          <span className="card__flag">{langNameKo(s.language)}</span>
+          <span className="tag">{langNameKo(s.language)}</span>
           {s.level && <span className="tag">{s.level}</span>}
           <span className="suggestion-card__source">{s.channel_name}</span>
           {isReady && <span className="suggestion-card__ready">✓ 바로 읽기</span>}
@@ -490,6 +490,13 @@ export default function MaterialsPage() {
   // 보여 주고 있었다 — 묶음 안에서만 빠져 있던 쪽이 이상했다).
   const STATUS_LABEL = { pending: '분석 전', analyzing: '분석 중', failed: '실패', partial: '일부 완료' };
   const STATUS_TONE = { pending: 'muted', analyzing: 'due', failed: 'danger' };
+  // ⋯ 메뉴(정돈) — 네이티브 details라 JS 상태 0. 서로 모르는 details를 한 번에 하나만 열어 둔다.
+  const closeOtherMenus = (self) => {
+    if (typeof document === 'undefined') return;
+    document.querySelectorAll('details.mat-menu[open]').forEach((d) => { if (d !== self) d.open = false; });
+  };
+  const closeMenu = (e) => e.currentTarget.closest('details.mat-menu')?.removeAttribute('open');
+
   const chapterTags = (c) => {
     const st = c.processed_json?.status || 'idle';
     const due = st === 'completed' ? countDueInMaterial(c) : 0;
@@ -497,9 +504,10 @@ export default function MaterialsPage() {
       <>
         {completedIds.has(c.id) && <span className="group-card__tag group-card__tag--done">✓ 읽음</span>}
         {due > 0 && <span className="group-card__tag group-card__tag--due">복습 {due}개</span>}
-        <span className={`group-card__tag group-card__tag--${STATUS_TONE[st] || 'done'}`}>
-          {STATUS_LABEL[st] || '완료'}
-        </span>
+        {/* 정돈(미니멀): 예외 상태(분석 전·분석 중·실패·일부 완료)만 말한다 — 정상 완료는 무표기 */}
+        {STATUS_LABEL[st] && (
+          <span className={`group-card__tag group-card__tag--${STATUS_TONE[st] || 'done'}`}>{STATUS_LABEL[st]}</span>
+        )}
       </>
     );
   };
@@ -520,11 +528,11 @@ export default function MaterialsPage() {
   };
 
   return (
-    <div className="page-container">
+    <div className="page-container materials-page">
       <div className="page-header page-header--row">
+        {/* 정돈(미니멀, #1077 5547520918): 설명 문장은 내비가 이미 하는 말 — 제목만 */}
         <div>
           <h1 className="page-header__title">자료실</h1>
-          <p className="page-header__subtitle">현지 언어 콘텐츠 (기사·이야기·PDF). 패턴 학습은 <Link href="/lessons" style={{ color: 'var(--accent-text)' }}>교재</Link>에서</p>
         </div>
         {/* 추가 입구는 하나 — 클립보드 붙여넣기는 추가 화면 안에 있다.
             빠른 분석은 추가가 아니라 무저장 해부(목업 ④)라 별도 입구가 원칙과 안 충돌한다. */}
@@ -643,7 +651,6 @@ export default function MaterialsPage() {
         <CardGridSkeleton />
       ) : materialsError ? (
         <div className="empty-state">
-          <div className="empty-state__icon">×</div>
           <p className="empty-state__msg">자료 목록을 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.</p>
           <button type="button" className="btn btn--primary btn--md" onClick={() => refetchMaterials()}>다시 시도</button>
         </div>
@@ -667,6 +674,7 @@ export default function MaterialsPage() {
             const bookCards = books.map((b) => {
               const analyzed = b.chapters.filter((c) => ['completed', 'partial'].includes(c.processed_json?.status)).length;
               const readDone = b.chapters.filter((c) => completedIds.has(c.id)).length;
+              const pendingCount = b.chapters.length - analyzed; // 정돈: 「분석 N/N」 대신 예외만
               // 책 단위 커버리지(R2) — 챕터 types 합집합. 어휘 교재의 진짜 지표는 챕터별 배지가
               // 아니라 "책 전체 단어 중 몇 개를 아는가"다. 표본 미달·게스트·미분석은 무표기.
               const bf = savedFitIndex ? bookFit(b.chapters, savedFitIndex) : null;
@@ -675,7 +683,7 @@ export default function MaterialsPage() {
                   key={b.key}
                   icon="📖"
                   title={b.title || '제목 없는 책'}
-                  meta={`챕터 ${b.chapters.length}개 · 분석 ${analyzed}/${b.chapters.length} · 읽음 ${readDone}/${b.chapters.length}`}
+                  meta={`챕터 ${b.chapters.length} · 읽음 ${readDone}/${b.chapters.length}${pendingCount > 0 ? ` · 분석 전 ${pendingCount}` : ''}`}
                   fitLine={fitLineOf(bf, '과')}
                   rows={b.chapters.map((c) => ({
                     key: c.id,
@@ -697,6 +705,7 @@ export default function MaterialsPage() {
             const pdfCards = pdfGroupsHere.map((g) => {
               const analyzed = g.chapters.filter((c) => ['completed', 'partial'].includes(c.processed_json?.status)).length;
               const readDone = g.chapters.filter((c) => completedIds.has(c.id)).length;
+              const pendingCount = g.chapters.length - analyzed;
               const bf = savedFitIndex && g.chapters.length > 0 ? bookFit(g.chapters, savedFitIndex) : null;
               const progress = readProgressLabel(g.pdf);
               return (
@@ -708,7 +717,7 @@ export default function MaterialsPage() {
                     `PDF ${g.pdf.page_count}쪽`,
                     progress,
                     g.chapters.length > 0
-                      ? `자료 ${g.chapters.length}개 · 분석 ${analyzed}/${g.chapters.length} · 읽음 ${readDone}/${g.chapters.length}`
+                      ? `자료 ${g.chapters.length} · 읽음 ${readDone}/${g.chapters.length}${pendingCount > 0 ? ` · 분석 전 ${pendingCount}` : ''}`
                       : '아직 뽑은 자료 없음',
                   ].filter(Boolean).join(' · ')}
                   fitLine={fitLineOf(bf, '개')}
@@ -751,105 +760,42 @@ export default function MaterialsPage() {
               if (seq.length === 0) return '';
               return seq.slice(0, 40).map(id => dict[id]?.text || '').filter(Boolean).join('').slice(0, 120);
             })();
+            const isOwner = m.owner_id === user?.id;
+            const isPinned = pinnedIds.has(m.id);
+            const tokens = m.processed_json?.sequence?.length || 0;
+            const minutes = tokens >= 50 ? Math.max(1, Math.round(tokens / 200)) : 0;
+            const score = testScores[String(m.id)];
+            // 정돈(미니멀, #1077 5547520918): 상태는 오른쪽 **하나** — 완독 / 진행 % / 예외(분석 중·실패·일부·분석 전).
+            // 정상 완료와 노트는 무표기(붙일 게 없다는 것도 정보다).
+            const stateBadge = (() => {
+              if (isNote) return null;
+              if (isCompleted) return <span className="mat-state mat-state--done">✓ 완독</span>;
+              const lastIdx = progressMap.inProgress.get(m.id);
+              if (lastIdx && tokens > 0) {
+                return <span className="mat-state mat-state--progress" title="이어서 읽기">{Math.round((lastIdx / tokens) * 100)}%</span>;
+              }
+              if (status === 'analyzing') return <span className="mat-state mat-state--busy">분석 중</span>;
+              if (status === 'failed') return <span className="mat-state mat-state--danger">실패</span>;
+              if (status === 'partial') return <span className="mat-state mat-state--busy">일부 완료</span>;
+              if (!isDone) return <span className="mat-state">분석 전</span>;
+              return null;
+            })();
+            // 메타 한 줄 — 언어명(정본 langNameKo)·급수·읽는 시간·날짜. 언어명 큰 글자(card__flag) 폐지.
+            const metaLine = [
+              langNameKo(language),
+              level,
+              minutes ? `${minutes}분` : null,
+              new Date(m.created_at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' }),
+              !isOwner && tab === 'public' ? '공용' : null,
+            ].filter(Boolean).join(' · ');
             return (
               <div
                 key={m.id}
-                className="card card--clickable"
+                className="card card--clickable mat-card"
                 onClick={() => router.push(`/viewer/${m.id}`)}
                 title={previewText || undefined}
               >
-                <div>
-                  <div className="card__row card__row--between">
-                    <div className="card__row card__row--gap">
-                      <span className="card__flag">{langNameKo(language)}</span>
-                      {isNote && <span className="tag" title="내가 쓴 노트 — 분석하지 않는 비공개 자료">✍ 내 노트</span>}
-                      {level && <span className="tag">{level}</span>}
-                      {seriesPosition && (
-                        <span className="tag" style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }} title={`${titleMeta.series} 시리즈`}>
-                          {seriesPosition}
-                        </span>
-                      )}
-                      {dueCount > 0 && (
-                        <span
-                          className="tag tag--due"
-                          title="이 자료를 읽으면 복습 처리됨"
-                        >
-                          {dueCount} 복습
-                        </span>
-                      )}
-                      {/* 우리 그룹이 이번 주 읽는 자료 (v2-F R3) — 고르기 신호.
-                          무그룹·게스트는 빈 Set이라 자연히 안 뜬다.
-                          렌더 실측(320·390·768px): 가로 넘침 0. 320px에서 복습+같이읽기+완독이
-                          **동시에** 붙는 최악 조합일 때만 태그 줄이 2→3줄이 된다 — 그 조합은
-                          드물고(완독이면 「안 읽은 것만」에서 숨겨진다) 라벨을 줄이면 뜻이
-                          흐려져 그대로 둔다. 줄인 게 아니라 재고 끝에 남긴 것이다. */}
-                      {groupReadIds.has(m.id) && (
-                        <span
-                          className="tag"
-                          style={{
-                            background: 'color-mix(in srgb, var(--primary) 14%, transparent)',
-                            color: 'var(--primary-light)',
-                            fontWeight: 600,
-                          }}
-                          title="우리 그룹의 이번 주 같이 읽기"
-                        >
-                          같이 읽기
-                        </span>
-                      )}
-                    </div>
-                    {/* 받아두기 버튼이 들어오면서 배지 무리가 한 줄에 안 들어가는
-                        구간이 생겼다 — 실측: 320·360px에서 문서 폭이 386px로 넘쳤다
-                        (버튼 제거 시 넘침 0이었으므로 원인은 이 버튼이 맞다).
-                        무리를 감싸고 오른쪽 정렬을 유지해 줄이 늘 뿐 넘치지 않게 한다. */}
-                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                      {/* 받아두기(v2-N R3) — 태그 줄이 아니라 **배지 무리**에 둔다.
-                          F R3 실측: 320px에서 태그 줄이 이미 최악 조합 때 3줄까지 간다.
-                          카드 전체가 뷰어로 가는 클릭 대상이라 stopPropagation 필수 —
-                          받아두려다 자료가 열리면 그건 다른 동작이다. */}
-                      <button
-                        type="button"
-                        className={`mat-pin${pinnedIds.has(m.id) ? ' mat-pin--on' : ''}`}
-                        onClick={(e) => { e.stopPropagation(); togglePin(m.id); }}
-                        disabled={pinBusy === m.id}
-                        aria-pressed={pinnedIds.has(m.id)}
-                        title={pinnedIds.has(m.id) ? '받아둠 — 연결이 없어도 열립니다 (눌러서 해제)' : '받아두기 — 연결이 없어도 열립니다'}
-                      >
-                        {pinBusy === m.id ? '…' : pinnedIds.has(m.id) ? '✓ 받아둠' : '⬇ 받아두기'}
-                      </button>
-                      {testScores[String(m.id)] && (
-                        <span className="badge" style={{ background: 'color-mix(in srgb, var(--warning) 12%, transparent)', color: 'var(--warning)', fontWeight: 600 }} title="리딩 테스트 최고 점수">
-                          {testScores[String(m.id)].score}/{testScores[String(m.id)].total}
-                        </span>
-                      )}
-                      {isCompleted ? (
-                        <span className="badge" style={{ background: 'color-mix(in srgb, var(--accent) 15%, transparent)', color: 'var(--accent-text)', fontWeight: 600 }}>
-                          ✓ 완독
-                        </span>
-                      ) : (() => {
-                        const lastIdx = progressMap.inProgress.get(m.id);
-                        const total = m.processed_json?.sequence?.length || 0;
-                        if (lastIdx && total > 0) {
-                          const pct = Math.round((lastIdx / total) * 100);
-                          return (
-                            <span className="badge" style={{ background: 'var(--bg-secondary)', color: 'var(--primary-light)', fontWeight: 600 }} title="이어서 읽기">
-                              {pct}%
-                            </span>
-                          );
-                        }
-                        if (!isDone) {
-                          return (
-                            <span className="badge" style={{
-                              background: status === 'analyzing' ? 'var(--primary-glow)' : 'var(--bg-secondary)',
-                              color: status === 'analyzing' ? 'var(--primary-light)' : 'var(--text-muted)',
-                            }}>
-                              {status === 'analyzing' ? '분석 중...' : '대기 중'}
-                            </span>
-                          );
-                        }
-                        return null;
-                      })()}
-                    </div>
-                  </div>
+                <div className="mat-card__head">
                   <h3 className="card__title">
                     <Link
                       href={`/viewer/${m.id}`}
@@ -859,69 +805,93 @@ export default function MaterialsPage() {
                       {m.title}
                     </Link>
                   </h3>
-                  {/* 🎯 맞춤도 줄(rfc-material-fit 목업 A) — 게스트·미계산은 무표기(0 무표기 결) */}
-                  {(() => {
-                    const fit = fitById.get(m.id);
-                    if (!fit || fit.coverage == null) return null;
-                    return (
-                      <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '6px 0 0' }}>
-                        아는 말 {Math.round(fit.coverage * 100)}% · 새 단어 {fit.unknown}
-                        {fit.band === 'fit' && (
-                          <span style={{ marginLeft: 8, color: 'var(--accent-text)', fontWeight: 600 }}>
-                            지금 읽기 좋아요
-                          </span>
-                        )}
-                      </p>
-                    );
-                  })()}
+                  {/* 카드 액션은 ⋯ 메뉴 **하나** — 받아두기 · (내 자료) 공개 전환 · 삭제. 상시 버튼 부활 금지(계약).
+                      카드 전체가 뷰어로 가는 클릭 대상이라 메뉴 안 클릭은 전부 가로챈다(받아두려다 자료가 열리면 다른 동작). */}
+                  <details
+                    className="mat-menu"
+                    onClick={(e) => e.stopPropagation()}
+                    onToggle={(e) => { if (e.currentTarget.open) closeOtherMenus(e.currentTarget); }}
+                  >
+                    <summary className="mat-menu__btn" aria-label="자료 메뉴" title="받아두기 · 공개 · 삭제">⋯</summary>
+                    <div className="mat-menu__list" role="menu">
+                      {/* 받아두기(v2-N R3) — 메뉴 항목으로. 상태(받아둠)는 아래 알약이 말한다. */}
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className={`mat-pin${isPinned ? ' mat-pin--on' : ''}`}
+                        onClick={(e) => { e.stopPropagation(); togglePin(m.id); }}
+                        disabled={pinBusy === m.id}
+                        aria-pressed={isPinned}
+                        title={isPinned ? '받아둠 — 연결이 없어도 열립니다 (눌러서 해제)' : '받아두기 — 연결이 없어도 열립니다'}
+                      >
+                        {pinBusy === m.id ? '…' : isPinned ? '✓ 받아둠 — 해제' : '⬇ 받아두기'}
+                      </button>
+                      {isOwner && (
+                        <button
+                          type="button"
+                          role="menuitem"
+                          className="mat-menu__item"
+                          disabled={toggleVisibilityMutation.isPending}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            closeMenu(e);
+                            toggleVisibilityMutation.mutate({
+                              id: m.id,
+                              newVisibility: m.visibility === 'public' ? 'private' : 'public',
+                            });
+                          }}
+                        >
+                          {m.visibility === 'public' ? '비공개로' : '공개로'}
+                        </button>
+                      )}
+                      {isOwner && (
+                        <button
+                          type="button"
+                          role="menuitem"
+                          className="mat-menu__item mat-menu__item--danger"
+                          disabled={deleteMutation.isPending}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            closeMenu(e);
+                            setConfirmAction({
+                              message: `"${m.title}" 자료를 삭제하시겠습니까?`,
+                              onConfirm: () => { deleteMutation.mutate(m.id); setConfirmAction(null); },
+                            });
+                          }}
+                        >
+                          삭제
+                        </button>
+                      )}
+                    </div>
+                  </details>
                 </div>
-                <div className="card__footer">
-                  <span>
-                    {new Date(m.created_at).toLocaleDateString('ko-KR')}
-                    {(() => {
-                      const tokens = m.processed_json?.sequence?.length || 0;
-                      if (tokens < 50) return null;
-                      const min = Math.max(1, Math.round(tokens / 200));
-                      return <span style={{ marginLeft: 8, color: 'var(--text-muted)' }}>· {min}분</span>;
-                    })()}
-                  </span>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    {m.owner_id === user?.id ? (
-                      <button
-                        className="btn btn--ghost btn--sm"
-                        style={{ fontSize: '0.75rem', padding: '5px 10px' }}
-                        disabled={toggleVisibilityMutation.isPending}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleVisibilityMutation.mutate({
-                            id: m.id,
-                            newVisibility: m.visibility === 'public' ? 'private' : 'public',
-                          });
-                        }}
-                      >
-                        {m.visibility === 'public' ? '비공개로' : '공개로'}
-                      </button>
-                    ) : (
-                      <span>{tab === 'public' ? '공용' : '비공개'}</span>
+                <div className="mat-card__meta">
+                  <span>{metaLine}</span>
+                  {/* 배지 무리 — 있을 때만 붙는 작은 알약 + 상태 하나. 감싸서(wrap) 좁은 폭에서 줄이 늘 뿐 넘치지 않는다. */}
+                  <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                    {isNote && <span className="tag" title="내가 쓴 노트 — 분석하지 않는 비공개 자료">✍ 내 노트</span>}
+                    {seriesPosition && (
+                      <span className="tag" style={{ fontVariantNumeric: 'tabular-nums' }} title={`${titleMeta.series} 시리즈`}>{seriesPosition}</span>
                     )}
-                    {m.owner_id === user?.id && (
-                      <button
-                        className="btn btn--ghost btn--sm"
-                        style={{ color: 'var(--danger)', padding: '5px 10px', fontSize: '0.75rem' }}
-                        disabled={deleteMutation.isPending}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setConfirmAction({
-                            message: `"${m.title}" 자료를 삭제하시겠습니까?`,
-                            onConfirm: () => { deleteMutation.mutate(m.id); setConfirmAction(null); },
-                          });
-                        }}
-                      >
-                        삭제
-                      </button>
-                    )}
+                    {dueCount > 0 && <span className="tag tag--due" title="이 자료를 읽으면 복습 처리됨">{dueCount} 복습</span>}
+                    {/* 우리 그룹이 이번 주 읽는 자료(v2-F R3) — 무그룹·게스트는 빈 Set이라 자연히 안 뜬다 */}
+                    {groupReadIds.has(m.id) && <span className="tag tag--group" title="우리 그룹의 이번 주 같이 읽기">같이 읽기</span>}
+                    {isPinned && <span className="tag" title="받아둠 — 연결이 없어도 열립니다">받아둠</span>}
+                    {score && <span className="tag tag--score" title="리딩 테스트 최고 점수">{score.score}/{score.total}</span>}
+                    {stateBadge}
                   </div>
                 </div>
+                {/* 🎯 맞춤도 줄(rfc-material-fit 목업 A) — 게스트·미계산은 무표기(0 무표기 결) */}
+                {(() => {
+                  const fit = fitById.get(m.id);
+                  if (!fit || fit.coverage == null) return null;
+                  return (
+                    <p className="mat-card__fit">
+                      아는 말 {Math.round(fit.coverage * 100)}% · 새 단어 {fit.unknown}
+                      {fit.band === 'fit' && <span className="mat-card__fit-good"> · 지금 읽기 좋아요</span>}
+                    </p>
+                  );
+                })()}
               </div>
             );
             })];
@@ -940,7 +910,6 @@ export default function MaterialsPage() {
         </>
       ) : (
         <div className="empty-state">
-          <div className="empty-state__icon" />
           <p className="empty-state__msg">
             {searchQuery || langFilter !== 'all' || levelFilter !== 'all'
               ? '조건에 맞는 자료가 없습니다.'
