@@ -1627,6 +1627,58 @@ body.is-review-session .page-container { padding-top: 8px; }
   color: var(--primary-light);
 }
 
+/* ========= 자료실 정돈(미니멀, #1077 5547520918) — 카드 위계·⋯ 메뉴 =========
+   제목이 첫 줄, 메타 한 줄, 상태 하나, 액션은 ⋯ 메뉴. 색은 토큰만.
+   여백·빈 상태 조정은 .materials-page 스코프 — 같은 클래스를 쓰는 단어장·교재는 그대로. */
+.materials-page .filter-row { margin-bottom: 16px; }
+.materials-page .materials-filters { margin-bottom: 14px; }
+.materials-page .empty-state { background: none; border: none; padding: 40px 0; }
+.mat-card { min-height: 0; gap: 8px; justify-content: flex-start; }
+.mat-card__head { display: flex; align-items: flex-start; gap: 8px; }
+.mat-card__head .card__title { flex: 1; min-width: 0; margin-bottom: 0; }
+.mat-card__meta {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+  font-size: 0.78rem; color: var(--text-muted); font-variant-numeric: tabular-nums;
+}
+.mat-card__fit { margin: 0; font-size: 0.78rem; color: var(--text-muted); }
+.mat-card__fit-good { color: var(--accent-text); font-weight: 600; }
+.mat-state { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+.mat-state--done { color: var(--accent-text); }
+.mat-state--progress, .mat-state--busy { color: var(--primary-light); }
+.mat-state--danger { color: var(--danger); }
+.tag--group { background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary-light); border-color: transparent; }
+.tag--score { background: color-mix(in srgb, var(--warning) 12%, transparent); color: var(--warning); border-color: transparent; }
+.mat-menu { position: relative; flex: none; }
+.mat-menu > summary { list-style: none; }
+.mat-menu > summary::-webkit-details-marker { display: none; }
+.mat-menu__btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 44px; min-height: 44px; margin: -10px -12px -10px 0;
+  border-radius: var(--radius-full); color: var(--text-muted); font-size: 1.1rem; line-height: 1; cursor: pointer;
+}
+.mat-menu__btn:hover, .mat-menu[open] > .mat-menu__btn { color: var(--text-primary); background: var(--bg-secondary); }
+.mat-menu__btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.mat-menu__list {
+  position: absolute; right: 0; top: calc(100% - 6px); z-index: 5; min-width: 168px; padding: 6px;
+  display: flex; flex-direction: column; gap: 2px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--text-primary) 14%, transparent);
+}
+.mat-menu__item {
+  display: flex; align-items: center; min-height: 40px; padding: 0 12px;
+  border: none; border-radius: var(--radius-sm); background: none; color: var(--text-primary);
+  font-size: 0.85rem; text-align: left; cursor: pointer;
+}
+.mat-menu__item:hover:not(:disabled) { background: var(--bg-secondary); }
+.mat-menu__item:disabled { opacity: 0.6; cursor: default; }
+.mat-menu__item--danger { color: var(--danger); }
+.mat-menu__list .mat-pin {
+  justify-content: flex-start; min-height: 40px; padding: 0 12px;
+  border: none; border-radius: var(--radius-sm); background: none; font-size: 0.85rem; font-weight: 500;
+}
+.mat-menu__list .mat-pin:hover:not(:disabled) { background: var(--bg-secondary); }
+/* ========= /자료실 정돈 ========= */
+
 /* ========= Form (MaterialAddPage) ========= */
 .add-form {
   max-width: 800px;
