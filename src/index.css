@@ -1679,6 +1679,23 @@ body.is-review-session .page-container { padding-top: 8px; }
 .mat-menu__list .mat-pin:hover:not(:disabled) { background: var(--bg-secondary); }
 /* ========= /자료실 정돈 ========= */
 
+/* ========= 자료 추가 정돈(미니멀, #1077 5547576227) — 입구 칩 + 아코디언·본문 먼저 =========
+   .add-page 스코프 — 같은 .form-row·.chip·.page-header를 쓰는 다른 화면 무영향. 색은 토큰만. */
+.add-page .page-header { margin-bottom: 16px; }
+.add-entries { margin-bottom: 16px; }
+.add-entries__chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.add-entries__chips .chip {
+  min-height: 44px;                 /* 터치 하한 — 입구 고르기는 이 화면의 첫 행위 */
+  padding: 8px 16px;
+  display: inline-flex; align-items: center;
+}
+.add-entries__chips .chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.add-entry__body { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+.add-entry__desc { font-size: 0.8rem; color: var(--text-muted); margin: 0 0 12px; line-height: 1.5; }
+/* 두 칸 줄(언어|난이도·공개|종류)은 좁으면 한 칸씩 — 새 브레이크포인트 없이 auto-fit */
+.add-page .form-row { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+/* ========= /자료 추가 정돈 ========= */
+
 /* ========= Form (MaterialAddPage) ========= */
 .add-form {
   max-width: 800px;

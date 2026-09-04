@@ -22,6 +22,15 @@ import MaterialAddSentenceSection from '../components/MaterialAddSentenceSection
 import MaterialAddLinkSection from '../components/MaterialAddLinkSection';
 import BookDraftPanel from '../components/BookDraftPanel';
 import { friendlyToastMessage } from '../lib/errorMessage';
+import { titleFromBody } from '../lib/materialTitle';
+
+/** 입구 칩(자료 추가 정돈 R2) — 소스 순서 = 렌더 순서(PDF→EPUB→문장 목록→링크), 아래 렌더와 같은 차례. */
+const ENTRIES = [
+  ['pdf', '📄 PDF'],
+  ['epub', '📚 EPUB'],
+  ['sentences', '📋 문장 목록'],
+  ['link', '🔗 링크'],
+];
 
 /** 내용 줄 수 — 문장 목록 자료에서 "몇 문장"의 정본 셈법(빈 줄 제외). */
 const countLines = (t) => String(t || '').split('\n').filter((l) => l.trim()).length;
@@ -46,11 +55,18 @@ export default function MaterialAddPage() {
   // U R3 내 노트 — 방향 축. 'write'면 한국어 본문을 허용하고 분석 큐에 넣지 않는다.
   const [direction, setDirection] = useState(MATERIAL_DIRECTION.READ);
   const isNote = direction === MATERIAL_DIRECTION.WRITE;
+  // 자료 추가 정돈 R2(#1077 5547576227) — 입구 4장을 칩 한 줄 + 아코디언(한 번에 하나)으로.
+  // 펼침 상태는 여기 하나뿐이다. 입구가 스스로 열어 달라고 할 때(딥링크·본문 폼 넘김)는
+  // onOpenChange로 올라오고, 내용을 넘겨준 뒤엔 접는다(폼으로 시선을 옮긴다).
+  const [openEntry, setOpenEntry] = useState('');   // '' | 'pdf' | 'epub' | 'sentences' | 'link'
+  const [pdfCount, setPdfCount] = useState(0);
+  const entryOpenChange = (key) => (v) => setOpenEntry((cur) => (v ? key : (cur === key ? '' : cur)));
 
   // PDF에서 텍스트가 추출되면 폼에 주입
   const handlePdfRangeReady = ({ pdf, pageStart, pageEnd, rawText: extractedText }) => {
     setPdfSource({ pdf, pageStart, pageEnd });
     setLinkSource(null);
+    setOpenEntry('');
     setTitle(`${pdf.title} (p.${pageStart}-${pageEnd})`);
     setRawText(extractedText);
     if (pdf.language) setLanguage(pdf.language);
@@ -119,6 +135,7 @@ export default function MaterialAddPage() {
   const handleEpubBookReady = ({ bookTitle, language: epubLang, chapters }) => {
     setPdfSource(null);
     setEpubSource(true);
+    setOpenEntry('');
     setVisibility('private');
     if (epubLang) { setLanguage(epubLang); setLevel(epubLang === 'Japanese' ? 'N3 중급' : epubLang === 'Chinese' ? 'H3 중급' : 'B1 중급'); }
     // 상한 초과 챕터는 여기서 재분할해 받아들인다("일단 다 받아들이되" 원칙)
@@ -139,7 +156,7 @@ export default function MaterialAddPage() {
   const handleSplitToBook = () => {
     const chapters = splitTextIntoChapters(rawText);
     if (chapters.length < 2) { toast('나눌 챕터 경계를 찾지 못했어요 — 그대로 한 자료로 등록해 주세요.', 'info'); return; }
-    setBookDraft({ title: title || '제목 없는 책', chapters, origin: 'text' });
+    setBookDraft({ title: title.trim() || titleFromBody(rawText) || '제목 없는 책', chapters, origin: 'text' });
     setBookDoneCount(0);
   };
 
@@ -151,6 +168,7 @@ export default function MaterialAddPage() {
     });
     setBookDoneCount(0);
     setBookFirstNewId(null);
+    setOpenEntry('');
     toast(append
       ? `${append.startOrder}과부터 ${chapters.length}과를 준비했어요. 목록을 확인하고 이어 등록하세요.`
       : `${chapters.length}과로 나눴어요. 목록을 확인하고 등록하세요.`, 'success');
@@ -209,6 +227,7 @@ export default function MaterialAddPage() {
     setPdfSource(null);
     setEpubSource(false);
     setLinkSource(source);
+    setOpenEntry('');
     setTitle(linkTitle);
     setRawText(linkText);
     setVisibility('private');
@@ -222,6 +241,7 @@ export default function MaterialAddPage() {
     setPdfSource(null);
     setLinkSource(null);
     setEpubSource(true);
+    setOpenEntry('');
     setTitle(epubTitle);
     setRawText(epubText);
     if (epubLang) { setLanguage(epubLang); setLevel(epubLang === 'Japanese' ? 'N3 중급' : 'B1 중급'); }
@@ -321,7 +341,8 @@ export default function MaterialAddPage() {
         }
       };
       const materialRow = {
-        title: title || "제목 없음",
+        // 제목이 비면 본문 첫 줄(40자) — 입력한 제목은 덮지 않는다(materialTitle.js 계약).
+        title: title.trim() || titleFromBody(rawText) || "제목 없음",
         raw_text: autoSplitParagraphs(rawText),
         processed_json: initJson,
         // 노트는 가장 사적인 데이터 — 비공개 고정. PDF·EPUB(개인 소장) 출처도 강제 private
@@ -448,6 +469,9 @@ export default function MaterialAddPage() {
     });
   }, [bookDraft]);
 
+  // 제목 칸 placeholder·저장 제목의 정본 — 본문 첫 줄(40자). 비어 있을 때만 쓴다.
+  const autoTitle = titleFromBody(rawText);
+
   if (isSuggestionLoading) {
     return (
       <div className="page-container">
@@ -460,31 +484,53 @@ export default function MaterialAddPage() {
   }
 
   return (
-    <div className="page-container">
+    <div className="page-container add-page">
       <div className="page-header">
         <h1 className="page-header__title">새 자료 추가</h1>
-        <p className="page-header__subtitle">AI가 문장을 형태소 단위로 해부해 드립니다</p>
       </div>
 
-      <MaterialAddPdfSection
-        user={user}
-        toast={toast}
-        onRangeReady={handlePdfRangeReady}
-      />
+      {/* 입구 한 줄(칩) + 아코디언 — 소스 순서(PDF→EPUB→문장 목록→링크)는 렌더 순서이자 계약이다.
+          접힌 입구는 마운트만 되어 있다(훅·딥링크 효과는 산다). 한 번에 하나만 펼친다. */}
+      <div className="card add-form add-entries">
+        <div className="add-entries__chips" role="tablist" aria-label="가져올 곳">
+          {ENTRIES.map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={openEntry === key}
+              className={`chip ${openEntry === key ? 'chip--active' : ''}`}
+              onClick={() => setOpenEntry((cur) => (cur === key ? '' : key))}
+            >
+              {label}{key === 'pdf' && pdfCount > 0 ? ` · ${pdfCount}권` : ''}
+            </button>
+          ))}
+        </div>
 
-      <MaterialAddEpubSection toast={toast} onReady={handleEpubReady} onBookReady={handleEpubBookReady} />
+        <MaterialAddPdfSection
+          user={user}
+          toast={toast}
+          onRangeReady={handlePdfRangeReady}
+          open={openEntry === 'pdf'}
+          onCountChange={setPdfCount}
+        />
 
-      <MaterialAddSentenceSection
-        toast={toast}
-        onReady={handleSentenceBookReady}
-        seedText={sentenceSeed}
-        onSeedConsumed={() => setSentenceSeed('')}
-        books={myBooks}
-        initialBookKey={appendBookKey}
-        inferPerChapter={inferPerChapter}
-      />
+        <MaterialAddEpubSection toast={toast} onReady={handleEpubReady} onBookReady={handleEpubBookReady} open={openEntry === 'epub'} />
 
-      <MaterialAddLinkSection toast={toast} onReady={handleLinkReady} initialUrl={linkAutoUrl} />
+        <MaterialAddSentenceSection
+          toast={toast}
+          onReady={handleSentenceBookReady}
+          seedText={sentenceSeed}
+          onSeedConsumed={() => setSentenceSeed('')}
+          books={myBooks}
+          initialBookKey={appendBookKey}
+          inferPerChapter={inferPerChapter}
+          open={openEntry === 'sentences'}
+          onOpenChange={entryOpenChange('sentences')}
+        />
+
+        <MaterialAddLinkSection toast={toast} onReady={handleLinkReady} initialUrl={linkAutoUrl} open={openEntry === 'link'} onOpenChange={entryOpenChange('link')} />
+      </div>
 
       {/* 책 초안은 **그것을 만든 문 옆**에 펼친다 — 위쪽 입구(EPUB·문장 목록)에서 왔으면 여기,
           본문 폼에서 나눴으면 텍스트 칸 아래. 한 자리에 고정하면 누른 자리와 결과가 갈린다. */}
@@ -532,111 +578,7 @@ export default function MaterialAddPage() {
           </div>
         )}
 
-        {/* U R3 — 자료의 방향: 읽기 자료(목표어 → 나) / 내 노트(나 → 목표어). 노트는 한국어 원문을
-            허용하고 분석 큐에 넣지 않는다. /quick의 [자료로 저장]과 같은 형태의 입구 — 저장 흐름 하나. */}
-        <div className="form-field">
-          <label className="form-label">자료 종류</label>
-          <div className="toggle-group" role="group" aria-label="자료 종류">
-            <button
-              type="button"
-              aria-pressed={!isNote}
-              onClick={() => setDirection(MATERIAL_DIRECTION.READ)}
-              className={`toggle-btn ${!isNote ? 'toggle-btn--primary' : ''}`}
-            >
-              읽기 자료
-            </button>
-            <button
-              type="button"
-              aria-pressed={isNote}
-              onClick={() => { setDirection(MATERIAL_DIRECTION.WRITE); setVisibility('private'); }}
-              className={`toggle-btn ${isNote ? 'toggle-btn--primary' : ''}`}
-            >
-              내 노트
-            </button>
-          </div>
-          {isNote && (
-            <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', margin: '6px 0 0' }}>
-              내 생각·메모를 한국어로 담아 두는 자료예요. 분석하지 않고, 비공개예요. 학습 언어는 「어느 언어로 옮길 노트인가」예요.
-            </p>
-          )}
-        </div>
-
-        {/* Title */}
-        <div className="form-field">
-          <label className="form-label">제목</label>
-          <input
-            type="text"
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            placeholder="기사 제목이나 책 이름을 입력하세요"
-            className="form-input"
-          />
-        </div>
-
-        {/* Visibility + Language */}
-        <div className="form-row">
-          <div className="form-field">
-            <label className="form-label">
-              공개 범위
-              {(pdfSource || epubSource || isNote) && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginLeft: 6 }}>({isNote ? '내 노트' : pdfSource ? 'PDF 출처' : 'EPUB 출처'}는 비공개 고정)</span>}
-            </label>
-            <div className="toggle-group">
-              <button
-                onClick={() => !pdfSource && !epubSource && !isNote && setVisibility('private')}
-                className={`toggle-btn ${visibility === 'private' ? 'toggle-btn--primary' : ''}`}
-                disabled={!!pdfSource || epubSource || isNote}
-              >
-                비공개
-              </button>
-              <button
-                onClick={() => !pdfSource && !epubSource && !isNote && setVisibility('public')}
-                className={`toggle-btn ${visibility === 'public' ? 'toggle-btn--accent' : ''}`}
-                disabled={!!pdfSource || epubSource || isNote}
-              >
-                공용
-              </button>
-            </div>
-          </div>
-
-          <div className="form-field">
-            <label className="form-label">학습 언어</label>
-            <div className="toggle-group">
-              {/* 해부 분석이 지원하는 언어 — 일본어(형태소)·영어(표제어)·중국어(단어 분할+병음) */}
-              {[
-                ['Japanese', '일본어', 'N3 중급'],
-                ['English', '영어', 'B1 중급'],
-                ['Chinese', '중국어', 'H3 중급'],
-              ].map(([key, label, defaultLevel]) => (
-                <button
-                  key={key}
-                  aria-pressed={language === key}
-                  onClick={() => { setLanguage(key); setLevel(defaultLevel); }}
-                  className={`toggle-btn ${language === key ? 'toggle-btn--primary' : ''}`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Level */}
-        <div className="form-field">
-          <label className="form-label">권장 학습 난이도</label>
-          <div className="level-group">
-            {LEVELS[language].map(lvl => (
-              <button
-                key={lvl}
-                onClick={() => setLevel(lvl)}
-                className={`level-btn ${level === lvl ? 'level-btn--active' : ''}`}
-              >
-                {lvl}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Text */}
+        {/* 본문이 먼저다(주 행위). 제목·언어·난이도·공개·종류는 아래 두 줄 — 자료 추가 정돈 R2. */}
         <div className="form-field">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
             <label className="form-label" style={{ marginBottom: 0 }}>본문 텍스트</label>
@@ -688,7 +630,7 @@ export default function MaterialAddPage() {
                 doneCount={bookDoneCount}
                 onCancel={() => { setBookDraft(null); setBookDoneCount(0); }}
                 onDone={() => router.push('/materials')}
-          readHref={bookFirstNewId ? `/viewer/${bookFirstNewId}` : null}
+                readHref={bookFirstNewId ? `/viewer/${bookFirstNewId}` : null}
                 chapterRanges={chapterRanges}
               />
             </div>
@@ -723,6 +665,112 @@ export default function MaterialAddPage() {
             </div>
           )}
 
+        </div>
+
+        {/* Title — 비우면 본문 첫 줄(40자)로 채운다. placeholder가 그 값을 미리 보여 준다. */}
+        <div className="form-field">
+          <label className="form-label">제목</label>
+          <input
+            type="text"
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            placeholder={autoTitle ? `${autoTitle} (본문 첫 줄)` : '비우면 본문 첫 줄로 채워요'}
+            className="form-input"
+          />
+        </div>
+
+        {/* Language + Level */}
+        <div className="form-row">
+          <div className="form-field">
+            <label className="form-label">학습 언어</label>
+            <div className="toggle-group">
+              {/* 해부 분석이 지원하는 언어 — 일본어(형태소)·영어(표제어)·중국어(단어 분할+병음) */}
+              {[
+                ['Japanese', '일본어', 'N3 중급'],
+                ['English', '영어', 'B1 중급'],
+                ['Chinese', '중국어', 'H3 중급'],
+              ].map(([key, label, defaultLevel]) => (
+                <button
+                  key={key}
+                  aria-pressed={language === key}
+                  onClick={() => { setLanguage(key); setLevel(defaultLevel); }}
+                  className={`toggle-btn ${language === key ? 'toggle-btn--primary' : ''}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">권장 학습 난이도</label>
+            <div className="level-group">
+              {LEVELS[language].map(lvl => (
+                <button
+                  key={lvl}
+                  onClick={() => setLevel(lvl)}
+                  className={`level-btn ${level === lvl ? 'level-btn--active' : ''}`}
+                >
+                  {lvl}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Visibility + Kind(U R3 — 읽기 자료 / 내 노트) */}
+        <div className="form-row">
+          <div className="form-field">
+            <label className="form-label">
+              공개 범위
+              {(pdfSource || epubSource || isNote) && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginLeft: 6 }}>({isNote ? '내 노트' : pdfSource ? 'PDF 출처' : 'EPUB 출처'}는 비공개 고정)</span>}
+            </label>
+            <div className="toggle-group">
+              <button
+                onClick={() => !pdfSource && !epubSource && !isNote && setVisibility('private')}
+                className={`toggle-btn ${visibility === 'private' ? 'toggle-btn--primary' : ''}`}
+                disabled={!!pdfSource || epubSource || isNote}
+              >
+                비공개
+              </button>
+              <button
+                onClick={() => !pdfSource && !epubSource && !isNote && setVisibility('public')}
+                className={`toggle-btn ${visibility === 'public' ? 'toggle-btn--accent' : ''}`}
+                disabled={!!pdfSource || epubSource || isNote}
+              >
+                공용
+              </button>
+            </div>
+          </div>
+
+          {/* U R3 — 자료의 방향: 읽기 자료(목표어 → 나) / 내 노트(나 → 목표어). 노트는 한국어 원문을
+              허용하고 분석 큐에 넣지 않는다. /quick의 [자료로 저장]과 같은 형태의 입구 — 저장 흐름 하나. */}
+          <div className="form-field">
+            <label className="form-label">자료 종류</label>
+            <div className="toggle-group" role="group" aria-label="자료 종류">
+              <button
+                type="button"
+                aria-pressed={!isNote}
+                onClick={() => setDirection(MATERIAL_DIRECTION.READ)}
+                className={`toggle-btn ${!isNote ? 'toggle-btn--primary' : ''}`}
+              >
+                읽기 자료
+              </button>
+              <button
+                type="button"
+                aria-pressed={isNote}
+                onClick={() => { setDirection(MATERIAL_DIRECTION.WRITE); setVisibility('private'); }}
+                className={`toggle-btn ${isNote ? 'toggle-btn--primary' : ''}`}
+              >
+                내 노트
+              </button>
+            </div>
+            {isNote && (
+              <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', margin: '6px 0 0' }}>
+                내 생각·메모를 한국어로 담아 두는 자료예요. 분석하지 않고, 비공개예요. 학습 언어는 「어느 언어로 옮길 노트인가」예요.
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Progress */}
