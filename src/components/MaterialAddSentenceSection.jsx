@@ -26,8 +26,11 @@ const LANGS = [
  *
  * 개인 소장 교재라 저작권 상태를 알 수 없으므로 호출측이 비공개로 고정한다(EPUB과 동일).
  */
-export default function MaterialAddSentenceSection({ toast, onReady, seedText, onSeedConsumed, books = [], initialBookKey = '', inferPerChapter }) {
-  const [open, setOpen] = useState(false);
+export default function MaterialAddSentenceSection({
+  toast, onReady, seedText, onSeedConsumed, books = [], initialBookKey = '', inferPerChapter,
+  open = false, onOpenChange,
+}) {
+  // 펼침은 페이지(입구 칩 아코디언)가 쥔다 — 딥링크·본문 폼 넘김이 열어 달라고 할 때만 위로 알린다.
   const [title, setTitle] = useState('');
   const [language, setLanguage] = useState('Chinese');
   const [level, setLevel] = useState('H3 중급');
@@ -45,7 +48,7 @@ export default function MaterialAddSentenceSection({ toast, onReady, seedText, o
     if (!initialBookKey || !books.some((b) => b.key === initialBookKey)) return;
     setMode('append');
     setBookKey(initialBookKey);
-    setOpen(true);
+    onOpenChange?.(true);
   }, [initialBookKey, books]);
 
   // 과당 문장 수는 책의 마지막 과에서 물려받는다(교재마다 다르다). 못 읽으면 지금 값 그대로 — 사람이 고친다.
@@ -61,7 +64,7 @@ export default function MaterialAddSentenceSection({ toast, onReady, seedText, o
   useEffect(() => {
     if (!seedText) return;
     setText(seedText);
-    setOpen(true);
+    onOpenChange?.(true);
     onSeedConsumed?.();
   }, [seedText]);
 
@@ -86,26 +89,20 @@ export default function MaterialAddSentenceSection({ toast, onReady, seedText, o
     });
     setText('');
     setTitle('');
-    setOpen(false);
+    onOpenChange?.(false);
   }
 
-  return (
-    <div className="card add-form" style={{ marginBottom: 16 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
-        <div>
-          <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>문장 목록으로 만들기</div>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '4px 0 0', lineHeight: 1.5 }}>
-            교재 예문집처럼 한 줄에 한 문장씩 나열된 자료를 과 단위로 나눠 담아요.
-            반입한 자료는 비공개로 고정돼요.
-          </p>
-        </div>
-        <Button size="sm" variant="secondary" onClick={() => setOpen((v) => !v)}>
-          {open ? '접기' : '문장 붙여넣기'}
-        </Button>
-      </div>
+  // 아코디언(자료 추가 정돈 R2) — 접혀 있으면 안 그린다. 적던 문장·고른 책은 접었다 펴도 남는다.
+  if (!open) return null;
 
-      {open && (
-        <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
+  return (
+    <div className="add-entry__body">
+      <p className="add-entry__desc">
+        교재 예문집처럼 한 줄에 한 문장씩 나열된 자료를 과 단위로 나눠 담아요.
+        반입한 자료는 비공개로 고정돼요.
+      </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {books.length > 0 && (
             <div className="form-field" style={{ margin: 0 }}>
               <label className="form-label">어디에 담을까요</label>
@@ -265,7 +262,6 @@ export default function MaterialAddSentenceSection({ toast, onReady, seedText, o
             </Button>
           </div>
         </div>
-      )}
     </div>
   );
 }

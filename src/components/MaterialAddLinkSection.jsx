@@ -20,8 +20,8 @@ import { detectLinkKind, transcriptFromPaste } from '../lib/linkImport';
 /** 유튜브 자막은 길다 — 본문 폼 상한과 같은 결로 끊는다. */
 const MAX_CHARS = 50000;
 
-export default function MaterialAddLinkSection({ toast, onReady, initialUrl = '' }) {
-  const [open, setOpen] = useState(false);
+export default function MaterialAddLinkSection({ toast, onReady, initialUrl = '', open = false, onOpenChange }) {
+  // 펼침은 페이지(입구 칩 아코디언)가 쥔다 — 추천 카드 주소를 안고 들어올 때만 열어 달라고 알린다.
   const [url, setUrl] = useState('');
   const [busy, setBusy] = useState(false);
   /** 자동 취득이 실패한 뒤의 상태 — { videoId, title, channel }. null이면 붙여넣기 창을 안 편다. */
@@ -38,7 +38,7 @@ export default function MaterialAddLinkSection({ toast, onReady, initialUrl = ''
       rawText: body,
       source: { kind: 'youtube', url: srcUrl || url.trim(), videoId, channel: channel || '', via },
     });
-    setOpen(false);
+    onOpenChange?.(false);
     setUrl('');
     setManual(null);
     setPasted('');
@@ -87,7 +87,7 @@ export default function MaterialAddLinkSection({ toast, onReady, initialUrl = ''
   // 다시 붙일 이유가 없다. 실패하면 아래 붙여넣기 창이 **그 자리에서** 열린다.
   useEffect(() => {
     if (!initialUrl) return;
-    setOpen(true);
+    onOpenChange?.(true);
     setUrl(initialUrl);
     handleFetch(initialUrl);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -100,22 +100,16 @@ export default function MaterialAddLinkSection({ toast, onReady, initialUrl = ''
     toast(`${n.toLocaleString()}자를 가져왔어요.`, 'success');
   }
 
-  return (
-    <div className="card add-form" style={{ marginBottom: 16 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
-        <div>
-          <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>링크에서 가져오기</div>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '4px 0 0', lineHeight: 1.5 }}>
-            유튜브 영상의 자막을 본문으로 가져와요. 남의 자막이라 기본은 비공개예요.
-          </p>
-        </div>
-        <Button size="sm" variant="secondary" onClick={() => setOpen((v) => !v)}>
-          {open ? '닫기' : '링크 넣기'}
-        </Button>
-      </div>
+  // 아코디언(자료 추가 정돈 R2) — 접혀 있으면 안 그린다. 붙여넣기 창(manual)은 접었다 펴도 남는다.
+  if (!open) return null;
 
-      {open && (
-        <div style={{ marginTop: 14 }}>
+  return (
+    <div className="add-entry__body">
+      <p className="add-entry__desc">
+        유튜브 영상의 자막을 본문으로 가져와요. 남의 자막이라 기본은 비공개예요.
+      </p>
+
+        <div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <input
               className="form-input"
@@ -162,7 +156,6 @@ export default function MaterialAddLinkSection({ toast, onReady, initialUrl = ''
             </div>
           )}
         </div>
-      )}
     </div>
   );
 }

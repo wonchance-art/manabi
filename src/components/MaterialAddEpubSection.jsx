@@ -12,7 +12,7 @@ const MAX_CHARS = 50000; // MaterialAddPage 본문 상한과 동일 — 초과 �
  * 파싱은 전부 클라이언트(무업로드·무의존)·원본 파일은 보관하지 않는다(텍스트만 반입).
  * 개인 소장물은 저작권 상태를 알 수 없으므로 호출측(MaterialAddPage)이 비공개로 고정한다.
  */
-export default function MaterialAddEpubSection({ toast, onReady, onBookReady }) {
+export default function MaterialAddEpubSection({ toast, onReady, onBookReady, open = true }) {
   const inputRef = useRef(null);
   const [book, setBook] = useState(null);        // { fileName, title, language, chapters }
   const [selected, setSelected] = useState(() => new Set());
@@ -78,15 +78,15 @@ export default function MaterialAddEpubSection({ toast, onReady, onBookReady }) 
     setSelected(new Set());
   }
 
+  // 아코디언(자료 추가 정돈 R2) — 접혀 있으면 안 그린다. 고른 챕터 상태는 접었다 펴도 남는다.
+  if (!open) return null;
+
   return (
-    <div className="card add-form" style={{ marginBottom: 16 }}>
+    <div className="add-entry__body">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
-        <div>
-          <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>EPUB에서 가져오기</div>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '4px 0 0', lineHeight: 1.5 }}>
-            소장한 전자책의 챕터를 골라 본문만 가져와요. 파일은 이 기기에서만 읽고 저장하지 않으며, 반입한 자료는 비공개로 고정돼요.
-          </p>
-        </div>
+        <p className="add-entry__desc" style={{ margin: 0, flex: '1 1 240px' }}>
+          소장한 전자책의 챕터를 골라 본문만 가져와요. 파일은 이 기기에서만 읽고 저장하지 않으며, 반입한 자료는 비공개로 고정돼요.
+        </p>
         <input
           ref={inputRef}
           type="file"

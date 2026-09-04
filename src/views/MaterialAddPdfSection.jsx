@@ -42,7 +42,7 @@ async function fetchPdfAnalyzedRanges(pdfId) {
  * MaterialAddPage 상단에 붙는 PDF 책장 + 업로드 섹션
  * props.onRangeReady({ pdf, pageStart, pageEnd, rawText }) — 텍스트 추출 완료 시 호출
  */
-export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
+export default function MaterialAddPdfSection({ user, toast, onRangeReady, open = true, onCountChange }) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
@@ -61,6 +61,9 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
     queryFn: () => fetchMyPdfs(user.id),
     enabled: !!user,
   });
+
+  // 입구 칩(「PDF · N권」)이 권수를 보여 준다 — 접힌 채로도 몇 권인지 안다.
+  useEffect(() => { onCountChange?.(pdfs.length); }, [pdfs.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { data: expandedRanges = [] } = useQuery({
     queryKey: ['pdf-ranges', expandedPdfId],
@@ -253,15 +256,16 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
 
   if (!user) return null;
 
+  // 아코디언(자료 추가 정돈 R2) — 접혀 있으면 아무것도 그리지 않는다. 훅은 위에서 다 돌았으니
+  // 책장 조회·삭제 mutation은 접힌 채로도 살아 있다(칩의 권수가 그걸로 나온다).
+  if (!open) return null;
+
   return (
-    <div className="card add-form" style={{ marginBottom: 20 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <div>
-          <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>내 PDF 책장</h2>
-          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '4px 0 0' }}>
-            PDF를 업로드하고 페이지 범위별로 분석할 수 있어요
-          </p>
-        </div>
+    <div className="add-entry__body">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
+        <p className="add-entry__desc" style={{ margin: 0 }}>
+          PDF를 올려 두고 페이지 범위를 골라 가져와요. 반입한 자료는 비공개로 고정돼요.
+        </p>
         <div>
           <input
             ref={fileInputRef}
