@@ -1,0 +1,128 @@
+.textbook-reader[data-textbook-language="Japanese"] {
+  --book-mauve-main: #85586f;
+  --book-mauve-wash: #fcf5f9;
+  --reader-line: #765b6b;
+  --reader-example-bg: #292129;
+  --reader-panel-bg: var(--bg-card);
+}
+[data-theme="light"] .textbook-reader[data-textbook-language="Japanese"] {
+  --reader-line: #d4b5c7;
+  --reader-example-bg: #fcf5f9;
+  --reader-panel-bg: #fff;
+  --book-tint: #f3e1ec;
+}
+.textbook-reader[data-textbook-language="Japanese"] .textbook-section {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  margin-bottom: 30px;
+}
+.textbook-reader[data-textbook-language="Japanese"] .fr-section__heading {
+  font-family: var(--font-noto-kr), sans-serif;
+  align-items: baseline;
+  line-height: 1.55;
+  margin-bottom: 14px;
+}
+.textbook-pattern-unit {
+  border: 3px solid var(--book-line);
+  border-radius: 10px;
+  background: var(--reader-panel-bg);
+  padding: 8px 16px 18px;
+  min-width: 0;
+}
+.textbook-reader[data-textbook-language="Japanese"] .fr-pattern {
+  border: 0;
+  border-radius: 6px;
+  background: var(--book-tint);
+  padding: 15px 17px;
+  margin: 0 -8px 20px;
+}
+.textbook-reader[data-textbook-language="Japanese"] .fr-section__detail {
+  border: 0;
+  padding: 0;
+  margin: 18px 0;
+}
+.textbook-reader[data-textbook-language="Japanese"] .fr-section__para {
+  font-family: var(--font-textbook-kr-serif), var(--font-noto-kr), serif;
+  font-size: .95rem;
+  line-height: 1.95;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.textbook-reader[data-textbook-language="Japanese"] .fr-section__para strong {
+  font-family: var(--font-noto-kr), sans-serif;
+  background: none;
+  padding: 0;
+}
+.textbook-examples {
+  margin-top: 20px;
+  padding: 14px 16px 4px;
+  border: 1.5px solid var(--reader-line);
+  border-radius: 8px;
+  background: var(--reader-example-bg);
+  min-width: 0;
+}
+.textbook-examples__label {
+  margin: 0 0 10px;
+  color: var(--book-text);
+  font-size: .78rem;
+  font-weight: 700;
+}
+.textbook-examples .fr-examples { margin: 0; }
+.textbook-examples .fr-example {
+  padding: 12px 0 16px;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  min-width: 0;
+}
+.textbook-examples .fr-example + .fr-example {
+  border-top: 1px solid var(--book-line);
+}
+.textbook-examples .fr-example__fr {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-weight: 400;
+  font-size: 1.2rem;
+  line-height: 1.9;
+}
+.textbook-examples .textbook-example-text { min-width: 0; }
+.textbook-examples .fr-example__fr > button { flex-shrink: 0; }
+.textbook-examples [lang="ja"] {
+  font-family: var(--font-textbook-ja-serif), var(--font-noto-jp), serif;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+.textbook-examples .fr-example__ko { margin-top: 4px; line-height: 1.7; }
+.textbook-examples .fr-example__note { margin-top: 8px; line-height: 1.7; }
+.textbook-reader[data-textbook-language="Japanese"] .fr-callout {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  margin: 20px 0 0;
+}
+.textbook-reader[data-textbook-language="Japanese"] .fr-callout__label {
+  color: var(--book-text);
+  display: table;
+  margin: 0;
+  border: 1px solid currentColor;
+  border-bottom: 0;
+  border-radius: 5px 5px 0 0;
+  padding: 4px 10px;
+  background: var(--book-tint);
+}
+.textbook-reader[data-textbook-language="Japanese"] .fr-callout__body {
+  border: 1px solid var(--reader-line);
+  border-radius: 0 7px 7px 7px;
+  background: var(--reader-panel-bg);
+  padding: 12px 15px;
+}
+@media (max-width: 600px) {
+  .textbook-pattern-unit { padding: 7px 12px 14px; }
+  .textbook-examples { padding: 12px 12px 2px; }
+  .textbook-reader[data-textbook-language="Japanese"] .fr-section__para { font-size: .9rem; }
+}
