@@ -232,7 +232,9 @@ export default async function ReferenceChapterPage({ lang, slug, registry: baseR
   const sandwichVocabs = chapter.sections?.find(s => s?.type === 'vocabPreview')?.vocabs ?? [];
   const sourceRefs = collectSrcAttributions(chapter);
   const reviewDrills = buildCumulativeReview(ref.getGrammarChapters(chapter.level), chapter.slug);
-  const meta = ref.getLevelMeta(chapter.level);
+  const levelMeta = ref.getLevelMeta(chapter.level);
+  // 단원 안의 강조는 언어별 책 색상으로 통일하고 레벨 이름·번호는 유지한다.
+  const meta = levelMeta ? { ...levelMeta, color: 'var(--book-text)', bg: 'var(--book-tint)', line: 'var(--book-line)' } : null;
   // 인트로 레벨(OT/A0) — "간단히 알고 가면 좋을 것". 카나 외에는 관문(패턴 체크) 없이 읽으면 끝.
   const isIntro = ref.isIntroLevel?.(chapter.level);
   // 첫 정규 레벨 라벨 — 인트로 안내 카드에서 "본격 학습은 …부터" 문구에 사용
