@@ -757,6 +757,22 @@
 - 런던 위성 마이크로 픽(재량 위임 해석): 윈저+옥스퍼드 2곳 추천 — 레만호 완성 후 순번
 - 일본 4도시 COPY 슬롯 이식(다국어 UI 확정 시) / 아토미움 = marker-only 유지 확인
 ### done (최근)
+- **🧠 U R4 소스 확장 개통 — NHK 카테고리(ja)·Wikinews 카테고리(en·fr) + rss_text 공용 문(VOA·service-public)
+  (2026-09-05 아침, 오너 「박제된 작업 개시. 먼저 제안 살피되 좋은 안 있으면 그걸로 적용 ㄱㄱ」 → 조사표
+  #1077 5509440618의 채택 행 중 **이 세션이 실측 없이도 확실한 것**을 골랐다)**: 판단 — 조사표 권고 셋(NHK
+  카테고리·VOA 텍스트·service-public) 중 NHK는 현행 cat0 파서·호스트 그대로에 피드 번호만 갈리고(URL이 곧
+  NHK의 분류), Wikinews 카테고리는 MediaWiki 표준 `list=categorymembers`라 파서 신설 0 — 둘은 즉시 개통.
+  VOA·service-public은 **피드 URL을 이 세션이 실측할 수 없어**(egress 차단) 문(`rss_text`)만 열고 URL은 오너가
+  행에 넣는다. **원칙**: 주제 태그는 소스 자신의 분류에서만(키워드 추측 0) → `source` 라벨 접미로 싣는다
+  (`nhk_society`·`wikinews_en_health`·`voa_health`, 스키마 0). 태그 못 얻는 항목은 수집 단계 거부(fail-closed):
+  등록 안 된 NHK 피드(정치 cat4·국제 cat6)는 요청조차 안 하고, 채널 제목의 분류명이 등록표보다 우선(소스가
+  스스로 말한 분류), `rss_text`는 계열(RSS_FAMILIES: voa 퍼블릭 도메인·sp Etalab)·주제·URL 셋이 다 있어야 긷고
+  **출처 줄을 본문 끝에 붙여** 자료로 반입돼도 표기가 따라간다(Etalab은 표기가 조건, F R5 「저장은 표기가
+  아니다」). zh 카테고리 수집에도 `newsTopicGate`가 그대로 걸린다. **기존 6종 결과 불변**(설정 없으면 옛 경로 —
+  cat0 라벨 'nhk'·recentchanges 라벨 'wikinews' 그대로). 기본값에 ja cat1·cat3, en Health·Science and technology,
+  fr Santé·Environnement를 **더했다**(French는 배포만으로 열림; ja·en은 운영 DB에 행이 있어 기본값이 잠자므로
+  `20260905100000_content_sources_r4.sql`(행만, DDL 0 — 오너 수동)이 켠다). 계약 `sourceExpansion.test.js` 18종 ·
+  변이 13/13 검출 · 전체 vitest 327/327 green · lint 0. 개통 확인은 크론 1회 로그(saved 증가 + 접미 라벨) — 오너.
 - **🖥 뷰어 정돈(미니멀) A안 「끝은 끝에」 — 경로 줄·끝의 행동 본문 아래·PDF 출처 한 줄·안내문 첫 자료·비공개
   토론 0 (2026-09-05 아침, 오너 「내 자료 뷰어 쪽에도 개선할 점 있는지 검토해줘」 → 설계 초안 ①진단 ②접근안
   #1077 5547935464 → 오너 「A안」)**: **실측(브라우저 좌표, index.css 실물 + 뷰어 마크업 재현, 390px, GNB 포함)**:
