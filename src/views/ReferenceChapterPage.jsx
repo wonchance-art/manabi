@@ -16,11 +16,18 @@ import ChapterDrills from '../components/ChapterDrills';
 import WritingPractice from '../components/WritingPractice';
 import ChapterAdminStrip from '../components/admin/ChapterAdminStrip';
 import InlineEdit from '../components/admin/InlineEdit';
-import { getChapterOverride, getOverridesForLang, mergeChapter } from '../lib/contentOverrides';
+import { textbookThemeStyle } from '../lib/textbookTheme';
+import '../components/admin/textbook.css';
+import { loadPublishedRegistry } from '../lib/publishedChapter';
+import ChapterSourceNotice from '../components/ChapterSourceNotice';
 import { collectSrcAttributions } from '../lib/learn/sourceRefs';
 import { buildCumulativeReview } from '../lib/learn/cumulativeReview';
 
-function ExampleList({ examples, langCode, lang, slug, secIndex }) {
+import MaterialChapterLinks from '../components/learning/MaterialChapterLinks';
+import SaveContextButton from '../components/learning/SaveContextButton';
+import TextbookExpressionSave from '../components/learning/TextbookExpressionSave';
+
+function ExampleList({ examples, langCode, lang, slug, secIndex, sources }) {
   if (!examples?.length) return null;
   return (
     <ul className="fr-examples">
@@ -36,6 +43,7 @@ function ExampleList({ examples, langCode, lang, slug, secIndex }) {
               kind="json"
               path={`sections.${secIndex}.examples.${i}`}
             >
+              <span id={sources?.[i]?.blockId} style={{ scrollMarginTop: 100 }} />
               <StoryLines
                 body={ex.dialogue}
                 lang={lang}
@@ -58,6 +66,7 @@ function ExampleList({ examples, langCode, lang, slug, secIndex }) {
             kind="example"
             path={`sections.${secIndex}.examples.${i}`}
           >
+            <span id={sources?.[i]?.blockId} style={{ scrollMarginTop: 100 }} />
             <div className="fr-example__fr">
               {langCode === 'ja' ? (
                 <JaText ja={refMain(ex)} yomi={pron} />
@@ -70,6 +79,7 @@ function ExampleList({ examples, langCode, lang, slug, secIndex }) {
               <RefSpeak text={refMain(ex)} lang={lang} size="xs" />
             </div>
             <div className="fr-example__ko">{ex.ko}</div>
+            <TextbookExpressionSave lang={lang} slug={slug} sectionIndex={secIndex} exampleIndex={i} />
             {ex.note && <div className="fr-example__note">└ {refInline(ex.note)}</div>}
           </InlineEdit>
         );
@@ -203,14 +213,10 @@ export function FormulaicChapterIntro({ formulaic }) {
 /**
  * 언어 레퍼런스 — 문법 챕터 상세 페이지 (프랑스어·일본어·영어 공용)
  */
-export default async function ReferenceChapterPage({ lang, slug, registry: ref, data, courseLesson }) {
+export default async function ReferenceChapterPage({ lang, slug, registry: baseRef, data, courseLesson }) {
   const backHref = `/lessons?lang=${lang}&view=ref`;
 
-  // 콘텐츠 오버라이드 — 원본 위에 오너 수정본을 병합(실패 시 조용히 원본 렌더).
-  // 이전/다음 제목도 같은 언어의 오버라이드 맵으로 병합한다.
-  const [override, overrideMap] = data
-    ? await Promise.all([getChapterOverride(lang, slug), getOverridesForLang(lang)])
-    : [null, new Map()];
+  const ref = data ? await loadPublishedRegistry(lang, baseRef) : baseRef;
 
   if (!data) {
     return (
@@ -221,14 +227,11 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
     );
   }
 
-  const { chapter: baseChapter, prev: basePrev, next: baseNext } = data;
-  const chapter = mergeChapter(baseChapter, override);
+  const { chapter, prev, next } = ref.resolveData(data);
+  const chapterSource = ref.getChapterSources(chapter);
   const sandwichVocabs = chapter.sections?.find(s => s?.type === 'vocabPreview')?.vocabs ?? [];
   const sourceRefs = collectSrcAttributions(chapter);
   const reviewDrills = buildCumulativeReview(ref.getGrammarChapters(chapter.level), chapter.slug);
-  // 이전/다음은 제목만 오버라이드 병합(slug·level은 병합 유틸이 base로 강제).
-  const prev = basePrev ? mergeChapter(basePrev, overrideMap.get(basePrev.slug)) : null;
-  const next = baseNext ? mergeChapter(baseNext, overrideMap.get(baseNext.slug)) : null;
   const meta = ref.getLevelMeta(chapter.level);
   // 인트로 레벨(OT/A0) — "간단히 알고 가면 좋을 것". 카나 외에는 관문(패턴 체크) 없이 읽으면 끝.
   const isIntro = ref.isIntroLevel?.(chapter.level);
@@ -263,7 +266,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
   }
 
   return (
-    <div className="page-container" style={{ maxWidth: 760 }}>
+    <div className="page-container textbook-theme" style={{ maxWidth: 760, ...textbookThemeStyle(lang) }}>
       {/* ── 브레드크럼 ── */}
       <nav style={{ marginBottom: 18 }} aria-label="브레드크럼">
         {/* 돌아가기는 네비 링크라 WCAG 2.5.8의 본문 인라인 예외를 못 받는다 — 실측 높이 16px을 24px로. */}
@@ -313,6 +316,8 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
         )}
       </header>
 
+      <ChapterSourceNotice revision={chapterSource.revision} />
+      <MaterialChapterLinks lang={lang} slug={slug} />
       <FormulaicChapterIntro formulaic={chapter.formulaic === true} />
 
       {/* ── 핵심 패턴 한눈에 ── */}
@@ -338,6 +343,8 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
         if (sec.type === 'authenticIntro') {
           return (
             <section key={i} id={`sec-${i + 1}`} className="card fr-section">
+              <span id={chapterSource.sections[i]?.sectionId} style={{ scrollMarginTop: 100 }} />
+              {chapterSource.sections[i]?.examples.map(source => <span key={source.blockId} id={source.blockId} style={{ scrollMarginTop: 100 }} />)}
               <InlineEdit lang={lang} slug={slug} path={`sections.${i}.heading`}>
                 <h2 className="fr-section__heading">
                   <span className="fr-section__num" style={{ background: meta?.bg, color: lightenForText(meta?.color) }}>{i + 1}</span>
@@ -377,6 +384,8 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
         if (sec.type === 'vocabPreview') {
           return (
             <section key={i} id={`sec-${i + 1}`} className="card fr-section">
+              <span id={chapterSource.sections[i]?.sectionId} style={{ scrollMarginTop: 100 }} />
+              {chapterSource.sections[i]?.examples.map(source => <span key={source.blockId} id={source.blockId} style={{ scrollMarginTop: 100 }} />)}
               <InlineEdit lang={lang} slug={slug} path={`sections.${i}.heading`}>
                 <h2 className="fr-section__heading">
                   <span className="fr-section__num" style={{ background: meta?.bg, color: lightenForText(meta?.color) }}>{i + 1}</span>
@@ -392,9 +401,10 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
                     </div>
                     {vocab.exampleSentence && (
                       <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 4 }}>
-                        "{vocab.exampleSentence}"
+                        &quot;{vocab.exampleSentence}&quot;
                       </div>
                     )}
+                    <SaveContextButton word={{word_text:vocab.word,meaning:vocab.meanings.join(', '),language:lang}} source={{kind:'textbook',chapterSlug:slug,sectionIndex:i,vocabIndex:j}} />
                     {vocab.note && (
                       <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                         ∟ {vocab.note}
@@ -410,6 +420,8 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
         if (sec.type === 'authenticReplay') {
           return (
             <section key={i} id={`sec-${i + 1}`} className="card fr-section">
+              <span id={chapterSource.sections[i]?.sectionId} style={{ scrollMarginTop: 100 }} />
+              {chapterSource.sections[i]?.examples.map(source => <span key={source.blockId} id={source.blockId} style={{ scrollMarginTop: 100 }} />)}
               <InlineEdit lang={lang} slug={slug} path={`sections.${i}.heading`}>
                 <h2 className="fr-section__heading">
                   <span className="fr-section__num" style={{ background: meta?.bg, color: lightenForText(meta?.color) }}>{i + 1}</span>
@@ -463,6 +475,8 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
         if (sec.type === 'practiceAndRegistration') {
           return (
             <section key={i} id={`sec-${i + 1}`} className="card fr-section">
+              <span id={chapterSource.sections[i]?.sectionId} style={{ scrollMarginTop: 100 }} />
+              {chapterSource.sections[i]?.examples.map(source => <span key={source.blockId} id={source.blockId} style={{ scrollMarginTop: 100 }} />)}
               <InlineEdit lang={lang} slug={slug} path={`sections.${i}.heading`}>
                 <h2 className="fr-section__heading">
                   <span className="fr-section__num" style={{ background: meta?.bg, color: lightenForText(meta?.color) }}>{i + 1}</span>
@@ -480,7 +494,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
                 </ul>
               </div>
               {sec.autoRegisterVocabs && sandwichVocabs.length > 0 && (
-                <VocabRegisterCta lang={lang} slug={slug} vocabs={sandwichVocabs} />
+                <VocabRegisterCta lang={lang} slug={slug} vocabs={sandwichVocabs} sectionIndex={chapter.sections.findIndex(s => s.type === 'vocabPreview')} />
               )}
               <div>
                 <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 10 }}>선택형 문제</h3>
@@ -495,6 +509,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
         // 기존 v1 섹션 렌더
         return (
         <section key={i} id={`sec-${i + 1}`} className="card fr-section">
+              <span id={chapterSource.sections[i]?.sectionId} style={{ scrollMarginTop: 100 }} />
           <InlineEdit lang={lang} slug={slug} path={`sections.${i}.heading`}>
             <h2 className="fr-section__heading">
               <span className="fr-section__num" style={{ background: meta?.bg, color: lightenForText(meta?.color) }}>{i + 1}</span>
@@ -528,7 +543,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
               <SectionTable table={sec.table} />
             </InlineEdit>
           )}
-          <ExampleList examples={sec.examples} langCode={ref.langCode} lang={lang} slug={slug} secIndex={i} />
+          <ExampleList examples={sec.examples} langCode={ref.langCode} lang={lang} slug={slug} secIndex={i} sources={chapterSource.sections[i]?.examples} />
 
           {/* 상세 설명 — 패턴·예문 아래의 부가 설명 (문단별 연필) */}
           {sec.body && (
@@ -673,7 +688,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
 
       {/* 관리자 전용 슬림 스트립 — 인라인 연필(InlineEdit)로 편집하고, 여기선 상태·복원만.
           isAdmin이 아니면 null 렌더. 챕터 데이터는 props로 넘기지 않는다(일반 유저 페이로드 보호). */}
-      <ChapterAdminStrip lang={lang} slug={slug} overridden={!!override} />
+      <ChapterAdminStrip lang={lang} slug={slug} overridden={ref.hasOverride(slug)} />
     </div>
   );
 }

@@ -6,6 +6,9 @@ import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { cacheMaterial, getCachedMaterial } from '../lib/offlineCache';
+import SaveContextButton, { saveContext } from '../components/learning/SaveContextButton';
+import MaterialChapterLinks from '../components/learning/MaterialChapterLinks';
+import ReadingSourceFocus from '../components/learning/ReadingSourceFocus';
 import OfflineNotice from '../components/OfflineNotice';
 import { useReadingTimer } from '../lib/useReadingTimer';
 import { countReadableChars } from '../lib/readingTimer';
@@ -240,6 +243,7 @@ export default function ViewerPage() {
   useEffect(() => { setRevealedPron((prev) => (prev.size ? new Set() : prev)); }, [id]);
   const [commentInput, setCommentInput] = useState('');
   const [saveAnim, setSaveAnim] = useState(false);
+  const savingGrade = useRef(false);
   const [inlineSaving, setInlineSaving] = useState({});
   const { titleEditing, setTitleEditing, titleDraft, setTitleDraft, updateTitleMutation } = useTitleEdit(id, toast);
 
@@ -1402,6 +1406,31 @@ export default function ViewerPage() {
   const headFallback = headIsBase && dictFetched && !editDictEntry?.reading;
   const headPicked = headIsBase ? pickedRangeOf(headText, selectedToken.text) : null;
 
+  function readingContextSource(token) {
+    const original = material?.processed_json?.dictionary?.[token.id];
+    return original?.text === token.text
+      ? { kind: 'reading', materialId: id, tokenId: token.id }
+      : { kind: 'reading', materialId: id, quote: leftPanelText, surface: token.text };
+  }
+
+  function contextWord(token) {
+    return buildVocabRow({ userId: user?.id, surface: token.text, base: token.sep_link || token.base_form,
+      meaning: token.meaning, language: materialLang, reading: token.furigana || token.reading, pos: token.pos });
+  }
+
+  // 등급 저장은 기존 조립기·undo를 유지한다. 문맥만 추가하는 RPC는 이미 저장한 FSRS를 수정하지 않는다.
+  // 연결 실패는 카드 저장 실패와 구분하고, 저장된 카드의 문맥 추가 버튼으로 재시도할 수 있다.
+  async function attachReadingContext(token) {
+    try {
+      await saveContext({ word: contextWord(token), source: readingContextSource(token) });
+      queryClient.invalidateQueries({ queryKey: ['vocabulary-contexts', user?.id] });
+      return true;
+    } catch {
+      toast('단어는 저장했지만 문맥 연결이 남아 있어요. 단어를 다시 열어 문맥 추가를 눌러 주세요.', 'warning', 6000);
+      return false;
+    }
+  }
+
   const saveInlineVocabulary = async (token) => {
     const key = token.sep_link || token.base_form || token.text;
     if (inlineSaving[key]) return;
@@ -1416,7 +1445,8 @@ export default function ViewerPage() {
         reading: token.furigana || token.reading,   // 영어는 IPA, 중국어는 병음
         language: materialLang,
       }));
-      toast(`"${token.text}" 저장!`, 'success');
+      const linked = await attachReadingContext(token);
+      if (linked) toast(`"${token.text}" 저장!`, 'success');
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
     } catch {
       toast('저장 실패', 'error');
@@ -1490,7 +1520,8 @@ export default function ViewerPage() {
 
   const addToVocab = async (grade) => {
     if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
-    if (!selectedToken) return;
+    if (!selectedToken || savingGrade.current) return;
+    savingGrade.current = true;
     const g = Number.isInteger(grade) && grade >= 1 && grade <= 4 ? grade : undefined;
 
     const sourceSentence = extractSourceSentence(selectedToken.id);
@@ -1512,6 +1543,7 @@ export default function ViewerPage() {
       });
 
       const inserted = await upsertViewerVocabulary([row], VOCAB_UPSERT);
+      const linked = await attachReadingContext(selectedToken);
       lastSaveRef.current = inserted[0]?.id ? { id: inserted[0].id, text: selectedToken.text } : null;
       saveCountRef.current += 1;
 
@@ -1520,7 +1552,7 @@ export default function ViewerPage() {
       setTimeout(() => {
         setSaveAnim(false);
         setIsSheetOpen(false);
-        toast(lastSaveRef.current
+        if (linked) toast(lastSaveRef.current
           ? `"${selectedToken.text}" 저장됨 · ${UNDO_KEY_LABEL} 취소`
           : `"${selectedToken.text}" 단어장에 추가됐어요!`, 'success');
         if (saveCountRef.current === 5) {
@@ -1535,6 +1567,8 @@ export default function ViewerPage() {
       recordActivity(user.id, () => fetchProfile(user.id));
     } catch (err) {
       toast('단어 추가 실패 — ' + friendlyToastMessage(err), 'error');
+    } finally {
+      savingGrade.current = false;
     }
   };
 
@@ -1639,10 +1673,11 @@ export default function ViewerPage() {
             <span className="pdf-word-item__meaning" onClick={() => handleListWordClick(t)}>{t.meaning}</span>
             {user && (
               <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                <button className="pdf-word-item__save" disabled={isSaved || inlineSaving[saveKey]}
-                  onClick={() => saveInlineVocabulary(t)}>
-                  {isSaved ? '✓' : inlineSaving[saveKey] ? '…' : '★'}
-                </button>
+                {isSaved ? <SaveContextButton key={`${id}:${saveKey}:${leftPanelText}`} label="문맥 추가"
+                  word={contextWord(t)} source={readingContextSource(t)} /> : (
+                  <button className="pdf-word-item__save" disabled={inlineSaving[saveKey]}
+                    onClick={() => saveInlineVocabulary(t)}>{inlineSaving[saveKey] ? '…' : '★'}</button>
+                )}
                 <button className="pdf-word-item__save pdf-word-item__dismiss"
                   onClick={() => {
                     setDragTokens(prev => prev?.filter((_, idx) => idx !== i) || null);
@@ -1923,7 +1958,7 @@ export default function ViewerPage() {
                 {jrDiff && <span className="word-detail-card__jadiff">≠ 다른 단어</span>}
                 {warn && (
                   <span style={{ color: 'var(--warning)', fontWeight: 600, marginLeft: jr ? 6 : 0 }}>
-                    ⚠ {jaFormOf(headText)}는 일본어로 '{warn}'
+                    ⚠ {jaFormOf(headText)}는 일본어로 &apos;{warn}&apos;
                   </span>
                 )}
               </div>
@@ -2057,6 +2092,8 @@ export default function ViewerPage() {
           return (
             <div className="word-detail-card__actrow">
               <button disabled className="btn btn--ghost btn--sm">{saveAnim ? '저장됨' : '✓ 단어장에 있음'}</button>
+              {!saveAnim && <SaveContextButton key={`${id}:${selectedToken.id || selectedToken.text}:${leftPanelText}`}
+                label="이 문맥 추가" word={contextWord(selectedToken)} source={readingContextSource(selectedToken)} />}
             </div>
           );
         }
@@ -2116,7 +2153,7 @@ export default function ViewerPage() {
       <div className="pdf-context__title">번역 · 맥락</div>
       {leftPanelText && (
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
-          <div className="pdf-context__original" lang={contentLangTag} style={{ flex: 1, minWidth: 0 }}>"{leftPanelText.length > 120 ? leftPanelText.slice(0, 120) + '…' : leftPanelText}"</div>
+          <div className="pdf-context__original" lang={contentLangTag} style={{ flex: 1, minWidth: 0 }}>&quot;{leftPanelText.length > 120 ? leftPanelText.slice(0, 120) + '…' : leftPanelText}&quot;</div>
           {ttsSupported && (
             <button
               onClick={() => speak(leftPanelText, materialLang, ttsOptsFor(ttsRate))}
@@ -2803,6 +2840,8 @@ export default function ViewerPage() {
               return (
                 <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
                   data-tid={tokenId}
+                data-source-token={tokenId}
+                data-source-text={token.text}
                   className={`word-token word-token--failed${pickedClass}`} style={paceStyle} title="분석 실패 — 재시도 버튼을 눌러주세요">
                   {linePick}
                   <span className="furigana" />
@@ -2842,6 +2881,8 @@ export default function ViewerPage() {
             return (
               <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
                 data-tid={tokenId}
+                data-source-token={tokenId}
+                data-source-text={token.text}
                 data-text={token.text}
                 className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}`}
                 style={paceStyle}
@@ -3068,6 +3109,9 @@ export default function ViewerPage() {
           />
         </div>
       )}
+
+      <ReadingSourceFocus materialId={id} ready={!!material?.processed_json?.sequence?.length} />
+      {STUDY_LANGS.has(materialLang) && <MaterialChapterLinks lang={materialLang} kind="reading" materialId={id} />}
 
       {/* 다음 — 한 자리에 하나(뷰어 정돈 A안): 시리즈 다음 편 → 책 다음 과 → 마지막 과면 「다음 과 적기」(내 책만,
           이어 적기 #1077 5520128974) → PDF 다음 범위(예전엔 본문 위 카드의 버튼) → 시리즈·레벨 완주. */}

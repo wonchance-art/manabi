@@ -15,14 +15,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '../../lib/ToastContext';
+import { CHAPTER_FIELD_LABELS } from '../../lib/chapterEditorModel';
 
 async function fetchMerged(lang, slug) {
   const res = await fetch(
-    `/api/admin/chapter?lang=${encodeURIComponent(lang)}&slug=${encodeURIComponent(slug)}`
+    `/api/admin/chapter?lang=${encodeURIComponent(lang)}&slug=${encodeURIComponent(slug)}`, { cache: 'no-store' }
   );
   const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(json.error || '불러오기에 실패했어요.');
-  return json.merged;
+  return json;
 }
 // ── 경로 규약 해석 ──
 // title|topic|titleFr|summary
@@ -104,6 +105,7 @@ function AutoTextarea({ value, onChange, mono, minHeight, autoFocus }) {
       value={value}
       spellCheck={!mono}
       autoFocus={autoFocus}
+      aria-label="편집할 내용"
       onChange={(e) => onChange(e.target.value)}
     />
   );
@@ -116,13 +118,16 @@ export default function InlineEditForm({ lang, slug, path, kind, onDone, onCance
   const [value, setValue] = useState(null);
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
+  const initialValue = useRef(null);
 
   useEffect(() => {
     let alive = true;
     fetchMerged(lang, slug)
-      .then((merged) => {
+      .then(({ merged }) => {
         if (!alive) return;
-        setValue(readInitial(merged, path, kind));
+        const initial = readInitial(merged, path, kind);
+        initialValue.current = initial;
+        setValue(initial);
         setLoading(false);
       })
       .catch((e) => {
@@ -138,7 +143,12 @@ export default function InlineEditForm({ lang, slug, path, kind, onDone, onCance
     setError(null);
     try {
       // 저장 직전 최신 merged 재조회 — 복원·다른 편집 이후에도 항상 서버 상태 기준으로 패치
-      const merged = await fetchMerged(lang, slug);
+      const { merged, updatedAt } = await fetchMerged(lang, slug);
+      if (JSON.stringify(readInitial(merged, path, kind)) !== JSON.stringify(initialValue.current)) {
+        setError('이 부분이 다른 편집에서 변경됐어요. 입력을 복사해 두고 닫은 뒤, 최신 내용을 확인해 주세요.');
+        setSaving(false);
+        return;
+      }
       const clone = structuredClone(merged);
 
       if (kind === 'json') {
@@ -160,7 +170,7 @@ export default function InlineEditForm({ lang, slug, path, kind, onDone, onCance
       const res = await fetch('/api/admin/chapter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lang, slug, data: clone }),
+        body: JSON.stringify({ lang, slug, data: clone, expectedUpdatedAt: updatedAt }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -183,7 +193,7 @@ export default function InlineEditForm({ lang, slug, path, kind, onDone, onCance
   if (value == null && error) {
     return (
       <div className="admin-edit__form">
-        <p className="admin-edit__error">{error}</p>
+        <p className="admin-edit__error" role="alert">{error}</p>
         <div className="admin-edit__actions">
           <button type="button" className="btn btn--ghost btn--sm" onClick={onCancel}>닫기</button>
         </div>
@@ -208,7 +218,7 @@ export default function InlineEditForm({ lang, slug, path, kind, onDone, onCance
         <div className="admin-edit__fields">
           {path.split(',').map((p) => (
             <label key={p} className="admin-edit__field">
-              <span className="admin-edit__field-label">{p.split('.').pop()}</span>
+              <span className="admin-edit__field-label">{CHAPTER_FIELD_LABELS[p.split('.').pop()] || p.split('.').pop()}</span>
               <input
                 className="form-input"
                 value={value[p] ?? ''}
@@ -221,9 +231,9 @@ export default function InlineEditForm({ lang, slug, path, kind, onDone, onCance
 
       {kind === 'example' && (
         <div className="admin-edit__fields">
-          {Object.keys(value).map((k) => (
+          {Object.keys(value).filter((k) => typeof value[k] === 'string' && k !== 'id').map((k) => (
             <label key={k} className="admin-edit__field">
-              <span className="admin-edit__field-label">{k}</span>
+              <span className="admin-edit__field-label">{CHAPTER_FIELD_LABELS[k] || k}</span>
               <input
                 className="form-input"
                 value={value[k] ?? ''}
@@ -231,7 +241,7 @@ export default function InlineEditForm({ lang, slug, path, kind, onDone, onCance
               />
             </label>
           ))}
-          <p className="admin-edit__hint">기존 칸만 수정돼요. 예문 추가·삭제는 고급(JSON) 편집에서.</p>
+          <p className="admin-edit__hint">예문과 해석을 수정해요. 출처 정보는 그대로 유지됩니다.</p>
         </div>
       )}
 
@@ -242,7 +252,7 @@ export default function InlineEditForm({ lang, slug, path, kind, onDone, onCance
         </>
       )}
 
-      {error && <p className="admin-edit__error">{error}</p>}
+      {error && <p className="admin-edit__error" role="alert">{error}</p>}
 
       <div className="admin-edit__actions">
         <button type="button" className="btn btn--ghost btn--sm" onClick={onCancel} disabled={saving}>

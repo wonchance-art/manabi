@@ -9,9 +9,11 @@
  * 창·오버레이는 없다. 챕터 데이터는 props로 받지 않는다(일반 유저 페이로드 보호 — lang·slug·overridden만).
  */
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../lib/AuthContext';
 import { useToast } from '../../lib/ToastContext';
+import { chapterEditorHref } from '../../lib/chapterEditorModel';
 
 export default function ChapterAdminStrip({ lang, slug, overridden = false }) {
   const { isAdmin } = useAuth();
@@ -46,6 +48,7 @@ export default function ChapterAdminStrip({ lang, slug, overridden = false }) {
 
   return (
     <div className="admin-strip" role="region" aria-label="관리자 편집">
+      <Link className="btn btn--ghost btn--sm" href={chapterEditorHref(lang, slug)}>챕터 전체 편집</Link>
       <span className="admin-strip__hint">
         문장 오른쪽 <span aria-hidden="true">✎</span> 로 편집
       </span>

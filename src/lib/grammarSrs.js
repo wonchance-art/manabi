@@ -43,10 +43,13 @@ export function initialQueueRow(userId, lang, slug, now = new Date()) {
  */
 export function staggerBackfillRows(userId, passed, existingKeys, now = new Date(), perDay = 10) {
   const rows = [];
+  const seen = new Set(existingKeys);
   let i = 0;
   for (const p of passed) {
     if (!p?.lang || !p?.slug) continue;
-    if (existingKeys.has(`${p.lang}:${p.slug}`)) continue;
+    const key = `${p.lang}:${p.slug}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
     const at = new Date(now);
     at.setDate(at.getDate() + Math.floor(i / perDay));
     rows.push({

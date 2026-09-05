@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import ReferenceChapterPage from '@/views/ReferenceChapterPage';
 import { getGrammarStaticParams, loadChapter } from '@/content/refGrammarLoaders';
-import { getChapterOverride, mergeChapter } from '@/lib/contentOverrides';
+import { loadPublishedRegistry } from '@/lib/publishedChapter';
 
 // ISR — 오버라이드 저장 시 revalidatePath로 즉시 무효화되고, 그 외에는 60초 주기로 갱신.
 export const revalidate = 60;
@@ -17,9 +17,10 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const { data } = await loadChapter(LANGUAGE, slug);
+  const { data, registry } = await loadChapter(LANGUAGE, slug);
   if (!data) return { title: '중국어 문법' };
-  const chapter = mergeChapter(data.chapter, await getChapterOverride('Chinese', slug));
+  const published = await loadPublishedRegistry(LANGUAGE, registry);
+  const chapter = published.resolve(data.chapter);
   const topicPart = chapter.topic ? ` — ${chapter.topic}` : '';
   const title = `${chapter.title}${topicPart} | 중국어 문법`;
   const description = chapter.summary || '한국어 화자를 위한 중국어 문법 레퍼런스';
