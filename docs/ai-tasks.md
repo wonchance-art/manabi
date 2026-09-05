@@ -757,6 +757,19 @@
 - 런던 위성 마이크로 픽(재량 위임 해석): 윈저+옥스퍼드 2곳 추천 — 레만호 완성 후 순번
 - 일본 4도시 COPY 슬롯 이식(다국어 UI 확정 시) / 아토미움 = marker-only 유지 확인
 ### done (최근)
+- **🔌 AA R2 텔레메트리 — `[llm]` 구조화 로그 1줄/호출 + 인메모리 티어·모델별 집계 + `/api/admin/llm-stats` (2026-09-05 밤,
+  SPEC §R2 · 같은 draft PR #1278 별도 커밋 · 스키마 0 · 머지 보류 동일)**: `llm.js`의 `callLLM`이 성공·실패 무관 호출마다
+  `console.info('[llm]', JSON)` 1줄 — 필수 키 11(route·tier·model·provider·fallbackDepth·ms·in·out·thinking·ok·status,
+  순서 고정) — **프롬프트 본문은 어디에도 싣지 않는다**(계약·변이 검증). `usageMetadata`(prompt/candidates/thoughts)와
+  Groq `usage`를 같은 키(in/out/thinking)로 정규화. 인메모리 집계 `stats.tiers[tier][model] = {calls, ok, in, out, thinking,
+  ms, fallbackUsed}`(답한 모델 기준 — 본선 실패는 fallbackUsed로 남는다), `getLLMStats()`는 깊은 복사·`since`가 창의 시작,
+  `resetLLMStats()`. **로그가 정본, 집계는 창**(인스턴스 재시작에 초기화 — 응답에 명시). 새 라우트
+  `src/app/api/admin/llm-stats/route.js`는 `auth.js`의 `requireAdmin`(api/admin/dictionary 관용구 — 비로그인 401·비관리자
+  403) 위에서 `{ since, tiers, groqConfigured }`. 테스트 러너에서는 `LLM_LOG=on`일 때만 로그(스위트 소음 0). 계약: `llm.test.js`
+  +6(로그 1줄·키 11·프롬프트 무기록·게이트·집계·복사본·Groq 키 정규화·라우트 소스) · `llm-stats/route.test.js` 4(401·401·403·200,
+  ai-relay 하네스 재사용) · 변이 **9/9 검출**. **R3(폴백 정리)는 이 샌드박스에서 ai.google.dev·console.groq.com egress 차단**이라
+  2.5-flash-lite 퇴역 여부·Groq GA 모델 실측이 불가 → 판정 대기(오너 또는 egress 있는 세션). 기한 위험은 R1이 이미 해소 —
+  `TIERS`에 2.5-flash 호출이 없고 옛 이름은 standard로 흡수(하위호환 매핑)돼 10-16 퇴역 뒤에도 죽는 호출 0.
 - **🔌 AA R1 프로바이더 레이어 — `llm.js` 하나로 Gemini 호출 5곳 수렴, 호출부는 티어만 (2026-09-05 밤, 착수 SPEC
   #1077 5551860999 §R1 · **draft PR — 머지 보류**: PR #1277 브랜치 빌드가 운영 도메인에 별칭돼 있어 오너 §B 결정 뒤)**:
   `src/lib/server/llm.js` 신설 — `TIERS`(light=3.5-flash-lite / standard=3.6-flash→lite) · Groq 최종 폴백(Gemini candidates
