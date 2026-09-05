@@ -1,18 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
 import { buildTokenExplainPrompt, parseTokenExplain, sanitizeTokenExplain } from '@/lib/server/explainToken';
+import { callLLM } from '@/lib/server/llm';
 
 /**
  * 오답 해설 "왜?" — 오답 직후(인코딩 최강 순간) 왜 정답이 맞고 학습자의 선택이
  * 안 되는지 한국어 1~2문장으로 설명한다. /api/writing-feedback와 같은 인증·폴백
  * 패턴을 따르되, 구조화 JSON 없이 plain text만 돌려준다(가볍게).
  *
- * token 분기(문맥 설명 R1) — 같은 인증·레이트리밋·flash-lite→Groq 폴백 위에
+ * token 분기(문맥 설명 R1) — 같은 인증·레이트리밋·light 티어(flash-lite→Groq, llm.js) 위에
  * 탭 단어의 "이 문장에서" 설명을 얹는다. suspect(분석 의심 신고)는 응답에 싣지
  * 않고 token_corrections에 적재만 한다(수확 루프 — explainToken.js 참조).
  */
 
-const GROQ_MODEL = 'qwen/qwen3.6-27b'; // qwen3-32b는 Groq에서 퇴역(2026-08 실측)
-const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const MAX_LEN = 300;
 
 // 사용자별 rate limit — 해설도 저빈도라 분당 20회면 충분
@@ -34,42 +33,6 @@ function isRateLimited(key) {
   }
   entry.count += 1;
   return entry.count > RATE_LIMIT;
-}
-
-async function callGemini(model, promptText, apiKey, temperature = 0.3) {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: promptText }] }],
-        generationConfig: { temperature },
-      }),
-    }
-  );
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
-}
-
-async function callGroq(promptText, temperature = 0.3) {
-  const groqKey = process.env.GROQ_API_KEY;
-  if (!groqKey) return null;
-  const res = await fetch(GROQ_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${groqKey}` },
-    body: JSON.stringify({
-      model: GROQ_MODEL,
-      messages: [{ role: 'user', content: promptText }],
-      temperature,
-      stream: false,
-      reasoning_effort: 'none',
-    }),
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content || null;
 }
 
 /** plain text 정리 — 펜스·앞뒤 공백 제거 후 300자 절단 */
@@ -131,9 +94,9 @@ export async function POST(request) {
     const promptText = buildTokenExplainPrompt({ language, sentence, word, base, pos });
     try {
       // 판정성 출력이라 temperature 0(판별기 관례)
-      let raw = null;
-      if (apiKey) raw = await callGemini('gemini-3.5-flash-lite', promptText, apiKey, 0).catch(() => null);
-      if (!raw) raw = await callGroq(promptText, 0).catch(() => null);
+      // light 티어(flash-lite → Groq) — 폴백은 llm.js가 돈다
+      const raw = await callLLM('light', promptText, { temperature: 0, route: 'explain' })
+        .then((r) => r.text).catch(() => null);
       const result = sanitizeTokenExplain(parseTokenExplain(raw), { sentence, word, base });
       if (!result) {
         return Response.json({ error: { message: '설명 생성에 실패했어요.' } }, { status: 502 });
@@ -187,12 +150,9 @@ export async function POST(request) {
     `왜 정답이 맞고 학습자의 선택이 안 되는지 한국어 1~2문장으로, 문법 용어 최소로 설명.`;
 
   try {
-    // flash-lite 우선 → Groq (Gemini 키 없으면 바로 Groq)
-    let raw = null;
-    if (apiKey) {
-      raw = await callGemini('gemini-3.5-flash-lite', promptText, apiKey).catch(() => null);
-    }
-    if (!raw) raw = await callGroq(promptText).catch(() => null);
+    // light 티어(flash-lite → Groq, Gemini 키 없으면 바로 Groq) — 폴백은 llm.js가 돈다
+    const raw = await callLLM('light', promptText, { temperature: 0.3, route: 'explain' })
+      .then((r) => r.text).catch(() => null);
 
     const text = cleanText(raw);
     if (!text) {

@@ -2,15 +2,14 @@ import { createClient } from '@supabase/supabase-js';
 import { getRefLang } from '@/content/refLangs';
 import { buildFeedbackPrompt, validateFeedback, FEEDBACK_SCHEMA, WRITING_LEVELS } from '@/lib/writingPrompts';
 import { attachTagLinks } from '@/lib/writingTagLink';
+import { callLLM } from '@/lib/server/llm';
 
 /**
- * 작문 AI 첨삭 — /api/gemini와 같은 3단 폴백(flash → flash-lite → Groq)이되,
+ * 작문 AI 첨삭 — standard 티어의 3단 폴백(flash → flash-lite → Groq, llm.js)이되,
  * rubric 프롬프트를 서버에서 조립하고 구조화 JSON(responseSchema)으로 받아
  * validateFeedback 검증까지 마친 결과만 돌려준다.
  */
 
-const GROQ_MODEL = 'qwen/qwen3.6-27b'; // qwen3-32b는 Groq에서 퇴역(2026-08 실측)
-const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const MAX_TEXT = 600;
 const MAX_PROMPT = 200;
 
@@ -33,47 +32,6 @@ function isRateLimited(key) {
   }
   entry.count += 1;
   return entry.count > RATE_LIMIT;
-}
-
-async function callGemini(model, promptText, apiKey) {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: promptText }] }],
-        generationConfig: {
-          temperature: 0.2,
-          responseMimeType: 'application/json',
-          responseSchema: FEEDBACK_SCHEMA,
-        },
-      }),
-    }
-  );
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
-}
-
-async function callGroqJson(promptText) {
-  const groqKey = process.env.GROQ_API_KEY;
-  if (!groqKey) return null;
-  const res = await fetch(GROQ_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${groqKey}` },
-    body: JSON.stringify({
-      model: GROQ_MODEL,
-      messages: [{ role: 'user', content: promptText + '\n\nJSON 객체 하나로만 응답하세요.' }],
-      temperature: 0.2,
-      stream: false,
-      reasoning_effort: 'none',
-      response_format: { type: 'json_object' },
-    }),
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content || null;
 }
 
 /** 모델 텍스트 → JSON 파싱 (```json 펜스·전후 잡음 방어) */
@@ -171,13 +129,13 @@ export async function POST(request) {
   }
 
   try {
-    // flash → flash-lite → Groq (Gemini 키 없으면 바로 Groq)
-    let raw = null;
-    if (apiKey) {
-      raw = await callGemini('gemini-3.6-flash', promptText, apiKey).catch(() => null);
-      if (!raw) raw = await callGemini('gemini-3.5-flash-lite', promptText, apiKey).catch(() => null);
-    }
-    if (!raw) raw = await callGroqJson(promptText).catch(() => null);
+    // standard 티어(flash → flash-lite → Groq JSON, Gemini 키 없으면 바로 Groq) — 폴백은 llm.js가 돈다
+    const raw = await callLLM('standard', promptText, {
+      temperature: 0.2,
+      responseMimeType: 'application/json',
+      responseSchema: FEEDBACK_SCHEMA,
+      route: 'writing-feedback',
+    }).then((r) => r.text).catch(() => null);
 
     const feedback = validateFeedback(parseModelJson(raw));
     if (!feedback) {

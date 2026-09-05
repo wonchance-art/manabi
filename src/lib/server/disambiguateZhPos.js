@@ -9,8 +9,7 @@
 
 import { parseJsonLenient } from './fetchMeanings.js';
 import { isCanonPos } from './posCanon';
-
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent';
+import { callLLM } from './llm.js';
 
 // 판별 대상 품사 — 명·동·형 계열과 jieba 겸류 라벨(vn·vd·an·ad의 한국어 표기).
 // 대명사·조사·전치사·수사·양사·지명·인명 등은 품사가 안정적이라 묻지 않는다(호출 크기 절감).
@@ -119,22 +118,10 @@ export async function disambiguateZhPos(lines, marks, opts = {}) {
   if (deadlineMs != null && Date.now() >= deadlineMs) return picks;
 
   try {
-    const res = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(15_000),
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: buildZhPosPrompt(lines, marks) }] }],
-        generationConfig: { temperature: 0 },
-      }),
+    // light 티어 1회 — 판별기 관례: 재시도 0·Groq 폴백 없음(R1 동작 무변경), 실패는 빈 결과로 수렴
+    const { text } = await callLLM('light', buildZhPosPrompt(lines, marks), {
+      temperature: 0, timeoutMs: 15_000, groq: false, route: 'disambiguateZhPos',
     });
-    if (!res.ok) {
-      console.warn('[disambiguateZhPos] HTTP', res.status);
-      return picks;
-    }
-    const data = await res.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) return picks;
     const parsed = parseJsonLenient(text);
     if (!Array.isArray(parsed) || parsed.length !== marks.length) {
       console.warn('[disambiguateZhPos] length mismatch', parsed?.length, marks.length);

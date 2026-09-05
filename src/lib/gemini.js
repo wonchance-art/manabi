@@ -1,7 +1,8 @@
 import { POS_CANON } from './server/posCanon';
-export const GEMINI_MODEL = 'models/gemini-3.6-flash';
+// 클라는 모델이 아니라 **티어**를 말한다(AA R1) — 모델·폴백·Groq는 서버 llm.js의 TIERS가 정한다.
+export const GEMINI_TIER = 'standard';
 
-async function callGeminiOnce(prompt, signal, { model, ...generationConfig } = {}) {
+async function callGeminiOnce(prompt, signal, { tier = GEMINI_TIER, model, ...generationConfig } = {}) {
   // Supabase 세션 토큰 첨부 (서버 측 인증용)
   let authHeader = {};
   try {
@@ -18,6 +19,8 @@ async function callGeminiOnce(prompt, signal, { model, ...generationConfig } = {
     signal,
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
+      tier,
+      // 하위호환 힌트 — 옛 호출부가 model을 주면 그대로 싣는다(프록시가 티어로 매핑, 한 릴리스 유지)
       ...(model ? { model } : {}),
       ...(Object.keys(generationConfig).length > 0 ? { generationConfig } : {})
     })
