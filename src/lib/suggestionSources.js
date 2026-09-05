@@ -61,6 +61,18 @@ export const DEFAULT_SOURCES = Object.freeze([
   Object.freeze({ language: 'English',  source_type: 'devto',       config: { level: 'B1 중급' } }),
   Object.freeze({ language: 'French',   source_type: 'wikinews_fr', config: { level: 'B1 중급' } }),
 
+  // ── U R4 소스 확장(#1077 5509440618 → 오너 「좋은 안 있으면 그걸로 적용」, 2026-09-05) ──
+  // 주제 태그는 소스 자신의 분류에서 — NHK는 카테고리 피드(URL), Wikinews는 카테고리(categorymembers).
+  // 기존 행은 그대로 두고 **더한다**(기존 6종 수집 결과 불변). DB가 그 언어를 아는 운영 환경에서는
+  // 기본값이 잠자므로, 켜려면 content_sources 행이 필요하다 — 20260905100000_content_sources_r4.sql.
+  // VOA·service-public(rss_text)은 피드 URL을 이 세션이 실측하지 못해 기본값에 넣지 않는다(오너 행으로만).
+  Object.freeze({ language: 'Japanese', source_type: 'nhk_rss',     config: { feed: 'cat1', level: 'N3 중급' } }),   // 社会
+  Object.freeze({ language: 'Japanese', source_type: 'nhk_rss',     config: { feed: 'cat3', level: 'N3 중급' } }),   // 科学・医療
+  Object.freeze({ language: 'English',  source_type: 'wikinews',    config: { category: 'Health', level: 'B2 상급' } }),
+  Object.freeze({ language: 'English',  source_type: 'wikinews',    config: { category: 'Science and technology', level: 'B2 상급' } }),
+  Object.freeze({ language: 'French',   source_type: 'wikinews_fr', config: { category: 'Santé', level: 'B1 중급' } }),
+  Object.freeze({ language: 'French',   source_type: 'wikinews_fr', config: { category: 'Environnement', level: 'B1 중급' } }),
+
   // ── 영상(v2-F R4) — 목록만 긷고 자막은 클릭 시점에 개인 자료로 ──
   //
   // 채널은 **핸들**로 적는다. 이 세션은 YouTube가 egress 차단이라 채널 ID를 확인하지
