@@ -4,7 +4,7 @@
 // 결과는 문장 단위 localStorage 캐시(좌측 번역과 동일 관례) — 두 번째 열람은 무료·즉시.
 
 import { useCallback, useState } from 'react';
-import { callGemini, GEMINI_MODEL } from './gemini';
+import { callGemini, GEMINI_TIER } from './gemini';
 import {
   buildGrammarPrompt, formatChapterCandidates, grammarCacheKey, parseGrammarResult,
 } from './grammarDetail';
@@ -60,7 +60,7 @@ export function useGrammarDetail({ materialLang, toast }) {
       const raw = await callGemini(
         buildGrammarPrompt(text, materialLang, formatChapterCandidates(chapters)),
         null,
-        { model: GEMINI_MODEL },
+        { tier: GEMINI_TIER },
       );
       const { body, chapterSlug } = parseGrammarResult(raw, new Set(byslug.keys()));
       const hit = chapterSlug ? byslug.get(chapterSlug) : null;
@@ -85,7 +85,7 @@ export function useGrammarDetail({ materialLang, toast }) {
       const answer = await callGemini(
         `원문: 「${text}」\n기존 해설:\n${result}\n\n추가 질문: ${q}\n\n위 맥락에서 한국어로 간결하게 답해주세요.`,
         null,
-        { model: GEMINI_MODEL },
+        { tier: GEMINI_TIER },
       );
       setResult((prev) => `${prev}\n\n**Q. ${q}**\n${answer}`);
       setQuestion('');

@@ -1,8 +1,9 @@
 import { isCanonPos } from './posCanon';
+import { callLLM } from './llm.js';
 // 서버 전용 — 미싱 형태소들의 의미를 Gemini에 배치 요청
 
-// 뜻 조회는 단순 구조화 작업 — thinking 없는 flash-lite가 4배 빠르고 품질 동등(실측 배치당 12.7s→3.2s)
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent';
+// 뜻 조회는 단순 구조화 작업 — thinking 없는 flash-lite(light 티어)가 4배 빠르고 품질 동등(실측 배치당 12.7s→3.2s).
+// 모델·폴백(Groq)·용량 재시도는 llm.js가 돈다(AA R1) — 여기엔 배치·웨이브·deadline 정책만 남는다.
 
 function buildMeaningBatchPrompt(entries, language = 'Japanese') {
   if (language === 'English') return buildEnglishMeaningBatchPrompt(entries);
@@ -132,97 +133,31 @@ export async function fetchMeaningsForMissing(missing, language, supabase, opts 
   const MAX_RETRIES = 4;
   const DELAYS = [5000, 10000, 20000, 40000];
   const CALL_TIMEOUT_MS = 20_000; // 개별 호출 행잉 방지 — deadline 판정은 호출 사이에만 돌므로 필수
+  const GROQ_TIMEOUT_MS = 15_000;
   const pastDeadline = () => deadlineMs != null && Date.now() >= deadlineMs;
-
-  async function callGroqFallback(prompt) {
-    const groqKey = process.env.GROQ_API_KEY;
-    if (!groqKey) return null;
-    if (pastDeadline()) return null; // deadline 후 폴백까지 타면 함수 킬 위험 — 스킵
-    try {
-      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${groqKey}`,
-        },
-        signal: AbortSignal.timeout(15_000),
-        body: JSON.stringify({
-          model: 'qwen/qwen3.6-27b', // qwen3-32b는 Groq에서 퇴역(2026-08 목록 실측) — 승계 모델
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0,
-          stream: false,
-          reasoning_effort: 'none', // thinking 토큰 낭비 방지
-        }),
-      });
-      if (!res.ok) return null;
-      const data = await res.json();
-      const text = data.choices?.[0]?.message?.content;
-      if (!text) return null;
-      // Gemini candidates 형식으로 포장 (downstream text 파싱은 동일)
-      return {
-        candidates: [{ content: { parts: [{ text }] } }],
-        _provider: 'groq',
-      };
-    } catch { return null; }
-  }
-
-  async function callWithRetry(prompt) {
-    let lastErr = null;
-    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      let res, data;
-      try {
-        res = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          signal: AbortSignal.timeout(CALL_TIMEOUT_MS),
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0 },
-          }),
-        });
-        data = await res.json();
-      } catch (e) {
-        res = { ok: false, status: 0 };
-        data = { error: e?.message || 'fetch failed' };
-      }
-      const isCapacity = res.status === 503 || res.status === 429 || res.status === 0 ||
-        JSON.stringify(data).toLowerCase().includes('high demand') ||
-        JSON.stringify(data).toLowerCase().includes('overloaded');
-
-      if (res.ok) return { res, data };
-      lastErr = { res, data };
-
-      if (!isCapacity || attempt === MAX_RETRIES - 1) return { res, data };
-      const delay = DELAYS[attempt];
-      if (deadlineMs != null && Date.now() + delay >= deadlineMs) return lastErr;
-      console.warn(`[fetchMeanings] capacity retry ${attempt + 1}/${MAX_RETRIES} in ${delay}ms`);
-      await new Promise(r => setTimeout(r, delay));
-    }
-    return lastErr;
-  }
 
   async function processBatch(batch, batchOffset) {
     const prompt = buildMeaningBatchPrompt(batch, language);
-    let { res, data } = await callWithRetry(prompt);
-
-    // Gemini 최종 실패 → Groq 폴백 시도
-    if (!res.ok) {
-      const groqData = await callGroqFallback(prompt);
-      if (groqData) {
-        data = groqData;
-        res = { ok: true, status: 200 };
-      } else {
-        const errMsg = `HTTP ${res.status}: ${JSON.stringify(data).slice(0, 300)}`;
-        console.warn('[fetchMeanings] batch failed:', errMsg);
-        errors.push({ stage: 'http', batch: batchOffset, error: errMsg });
+    // light 티어 — 용량 재시도(4회·백오프, deadline을 넘길 대기는 안 함)와 Groq 최종 폴백은 llm.js가 돈다
+    let text;
+    try {
+      ({ text } = await callLLM('light', prompt, {
+        temperature: 0,
+        timeoutMs: CALL_TIMEOUT_MS,
+        groqTimeoutMs: GROQ_TIMEOUT_MS,
+        retry: { max: MAX_RETRIES - 1, delays: DELAYS },
+        deadlineMs,
+        route: 'fetchMeanings',
+      }));
+    } catch (err) {
+      if (err?.code === 'empty') {
+        console.warn('[fetchMeanings] empty response', JSON.stringify(err?.detail ?? {}).slice(0, 200));
+        errors.push({ stage: 'empty', batch: batchOffset, error: 'no candidates.text' });
         return;
       }
-    }
-
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) {
-      console.warn('[fetchMeanings] empty response', JSON.stringify(data).slice(0, 200));
-      errors.push({ stage: 'empty', batch: batchOffset, error: 'no candidates.text' });
+      const errMsg = `HTTP ${err?.status ?? 0}: ${JSON.stringify(err?.detail ?? err?.message ?? '').slice(0, 300)}`;
+      console.warn('[fetchMeanings] batch failed:', errMsg);
+      errors.push({ stage: 'http', batch: batchOffset, error: errMsg });
       return;
     }
 
