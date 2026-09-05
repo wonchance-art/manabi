@@ -688,8 +688,11 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
       );
     });
 
-    const bookNav = page.locator('.book-nav');
-    await assertVisible(bookNav.getByText('《E2E 중국어 읽기》', { exact: false }), 'book chapter navigation');
+    // 뷰어 정돈 A안: 책 챕터 내비는 시리즈와 같은 경로 줄 내비(.viewer-series-nav)다 — 책 이름은
+    // 툴팁에만(H1이 이미 「책 — 과」를 든다), 화면에는 위치만.
+    const bookNav = page.locator('.viewer-series-nav');
+    await assertVisible(bookNav, 'book chapter navigation');
+    assert.equal(await bookNav.getAttribute('title'), '《E2E 중국어 읽기》', 'book title lives in the tooltip only');
     await assertVisible(bookNav.getByText('1/2', { exact: true }), 'book chapter position');
 
     const sheet = page.getByRole('dialog', { name: 'AI 분석 결과' });
@@ -767,10 +770,10 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
     await assertVisible(sheet.getByText('중국어', { exact: true }), 'word detail replaces sentence word results');
 
     await sheet.getByRole('button', { name: '시트 닫기', exact: true }).click();
-    await bookNav.getByRole('link', { name: '다음 →', exact: true }).click();
+    await bookNav.getByRole('link', { name: '다음 과', exact: true }).click();
     await page.waitForURL('**/viewer/91002', { timeout: config.timeout });
     await assertVisible(page.getByRole('heading', { name: 'E2E 중국어 읽기 2장', exact: true }), 'next book chapter');
-    await assertVisible(page.locator('.book-nav').getByText('2/2', { exact: true }), 'next book chapter position');
+    await assertVisible(page.locator('.viewer-series-nav').getByText('2/2', { exact: true }), 'next book chapter position');
     await sampleHeap(page, 'viewer token range sheet and book navigation');
   });
 });

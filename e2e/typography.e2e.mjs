@@ -365,35 +365,37 @@ test('좁은 화면 — 배지가 눌리지 않고 다음 줄로 흐른다', asy
   });
 });
 
-test('액션바 — 행동은 왼쪽, 도구는 오른쪽 끝', async () => {
-  await page.setContent(chromePage(`<div class="viewer-actionbar">
-    <div class="viewer-actionbar__group">
-      <button class="grammar-btn grammar-btn--complete">✓ 읽기 완료 표시</button>
-      <a class="grammar-btn">오늘 학습 만들기</a>
-    </div>
-    <div class="viewer-actionbar__group viewer-actionbar__group--tools">
+test('경로 줄 — 경로(뒤로가기·형제 내비)는 왼쪽, 도구는 오른쪽 끝 (뷰어 정돈 A안)', async () => {
+  // v2-Q의 액션바(행동 왼쪽·도구 오른쪽)는 A안(#1077 5547935464)에서 경로 줄로 대체됐다 — 행동은
+  // 본문 아래로 갔고, 위에는 경로와 도구만 남는다. 축은 같다: 왼쪽 정렬 + 도구는 auto 마진으로 오른쪽 끝.
+  await page.setContent(chromePage(`<div class="viewer-topbar">
+    <a class="viewer-back-link" href="#">← 자료실</a>
+    <div class="viewer-series-nav" title="《HSK 5 문장 320》"><span class="viewer-series-nav__btn">◀</span><span class="viewer-series-nav__position">3/20</span><span class="viewer-series-nav__btn">▶</span></div>
+    <div class="viewer-topbar__tools">
       <div class="listen-controls"><button class="btn btn--ghost btn--sm">▷ 듣기</button></div>
       <button class="viewer-aa">Aa</button>
     </div>
   </div>`));
-  const g = await boxes('.viewer-actionbar__group');
-  assert.equal(g.length, 2, '행동·도구 두 그룹');
-  assert.ok(g[0].x < g[1].x, `행동이 도구보다 왼쪽: ${JSON.stringify(g)}`);
-  assert.ok(g[0].x <= 1, `행동은 왼쪽 정렬(제목·배지와 같은 축): x=${g[0].x}`);
-  assert.ok(Math.abs(g[1].x + g[1].w - CHROME_W) <= 1, `도구는 오른쪽 끝: 우변 ${g[1].x + g[1].w}`);
+  const back = (await boxes('.viewer-back-link'))[0];
+  const nav = (await boxes('.viewer-series-nav'))[0];
+  const tools = (await boxes('.viewer-topbar__tools'))[0];
+  assert.ok(back.x <= 1, `경로는 왼쪽 정렬(제목·배지와 같은 축): x=${back.x}`);
+  assert.ok(back.x < nav.x && nav.x < tools.x, `뒤로가기 → 내비 → 도구 순서: ${JSON.stringify([back, nav, tools])}`);
+  assert.ok(Math.abs(tools.x + tools.w - CHROME_W) <= 1, `도구는 오른쪽 끝: 우변 ${tools.x + tools.w}`);
+  // 한 줄 — 내비가 옛 .book-nav처럼 아래 줄에 채워진 바로 내려앉지 않는다
+  assert.ok(Math.abs(back.y - nav.y) <= 4 && Math.abs(nav.y - tools.y) <= 8, `경로 줄이 갈라졌다: ${JSON.stringify([back, nav, tools])}`);
 });
 
-test('액션바 — 행동이 하나도 없어도 도구는 오른쪽에 남는다(비로그인)', async () => {
-  // 행동 그룹이 비면 `justify-content: space-between`은 도구를 **왼쪽으로 보낸다**.
-  // 두 경우를 다 감당하는 것은 auto 마진뿐이라, 그 근거를 여기서 못 박는다.
-  await page.setContent(chromePage(`<div class="viewer-actionbar">
-    <div class="viewer-actionbar__group"></div>
-    <div class="viewer-actionbar__group viewer-actionbar__group--tools">
+test('경로 줄 — 뒤로가기·내비가 없어도 도구는 오른쪽에 남는다', async () => {
+  // 왼쪽이 비면 `justify-content: space-between`은 도구를 **왼쪽으로 보낸다**.
+  // 두 경우를 다 감당하는 것은 auto 마진뿐이라, 그 근거를 여기서 못 박는다(v2-Q 선례 그대로).
+  await page.setContent(chromePage(`<div class="viewer-topbar">
+    <div class="viewer-topbar__tools">
       <button class="viewer-aa">Aa</button>
     </div>
   </div>`));
-  const g = await boxes('.viewer-actionbar__group');
-  assert.ok(Math.abs(g[1].x + g[1].w - CHROME_W) <= 1, `도구가 왼쪽으로 튀었다: ${JSON.stringify(g)}`);
+  const tools = (await boxes('.viewer-topbar__tools'))[0];
+  assert.ok(Math.abs(tools.x + tools.w - CHROME_W) <= 1, `도구가 왼쪽으로 튀었다: ${JSON.stringify(tools)}`);
 });
 
 

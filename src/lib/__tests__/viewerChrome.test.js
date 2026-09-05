@@ -24,6 +24,13 @@ import { sliceBetween } from './helpers/sliceBetween.js';
  * 바는 `.book-nav`(책 챕터 내비 — 다른 기능, 본문 바로 위)이고, 그 `《…》`는 **책 제목**이라
  * H1(이 챕터 제목)과 중복이 아니다. 그래서 이 라운드는 둘 다 손대지 않는다 —
  * 없는 문제를 고치면 있는 정보가 사라진다. 대신 현 상태를 회귀 방지로 못 박는다.
+ *
+ * ── 개정(뷰어 정돈 A안, #1077 5547935464, 오너 「A안」 2026-09-05)
+ *
+ * 실측이 한 번 더 고쳤다: 책 챕터의 H1은 `${책} — ${과}`라 **책 제목을 이미 들고 있다**. 그래서
+ * `.book-nav`의 《…》도 중복이었고, 두 내비를 `.viewer-series-nav` **한 문법**(경로 줄, 이름은 툴팁)으로
+ * 합쳤다. 액션바는 해체 — 도구는 경로 줄 오른쪽(.viewer-topbar__tools), 끝의 행동(읽기 완료·오늘 학습)은
+ * 본문 아래 「다 읽었다면」(viewerMinimal.test.js가 지킨다). 여기 ③·⑥은 그 개정판이다.
  */
 
 const read = (f) => fs.readFileSync(path.join(process.cwd(), f), 'utf8');
@@ -31,7 +38,11 @@ const VIEWER = 'src/views/ViewerPage.jsx';
 const CSS = 'src/index.css';
 
 const header = () => sliceBetween(read(VIEWER), '<header className="page-header viewer-header">', '</header>');
-const actionbar = () => sliceBetween(read(VIEWER), '<div className="viewer-actionbar">', '{/* 읽기 설정 시트');
+/** 경로 줄 — 액션바의 후신(A안). 도구 그룹이 여기 산다. */
+const actionbar = () => sliceBetween(read(VIEWER), '<div className="viewer-topbar">', '{titleEditing && user?.id === material?.owner_id')
+  .replace(/\{\/\*[\s\S]*?\*\/\}/g, '');   // JSX 주석은 배선이 아니다 — 주석 속 낱말이 순서 단언에 잡히지 않게
+/** A안이 새로 쓴 CSS 블록 — 경로 줄·다 읽었다면. */
+const aCss = () => sliceBetween(read(CSS), '/* ========= 뷰어 정돈 A안', '/* ========= /뷰어 정돈 A안 ========= */');
 /** 이 라운드가 새로 쓴 CSS만 — 파일 전역 검사는 남의 규칙에 걸려 헛돈다. */
 const newCss = () => sliceBetween(read(CSS), '/* 뷰어 크롬 배지(v2-Q)', '.viewer-aa {');
 
@@ -76,14 +87,19 @@ describe('② 배지 스타일은 공용 클래스 — 인라인 하드코딩 0'
   });
 });
 
-describe('③ 시리즈 내비 — 제목을 반복하지 않는다', () => {
-  it('내비는 위치만 표시한다(시리즈명은 툴팁)', () => {
-    const nav = sliceBetween(header(), '<div className="viewer-series-nav">', '</div>');
-    expect(nav, '위치 표시가 사라졌다').toContain('{seriesPosition.current}/{seriesPosition.total}');
-    // 시리즈명은 `title` 툴팁에만 산다 — 템플릿 리터럴과 문자열 속성을 걷어낸 뒤,
+describe('③ 형제 내비 — 제목을 반복하지 않는다(시리즈·책 한 문법)', () => {
+  it('내비는 위치만 표시한다(시리즈명·책 제목은 툴팁)', () => {
+    const nav = sliceBetween(header(), '<div className="viewer-series-nav" title={siblingNav.label}>', '</div>');
+    expect(nav, '위치 표시가 사라졌다').toContain('{siblingNav.pos}/{siblingNav.total}');
+    // 이름은 `title` 툴팁에만 산다 — 템플릿 리터럴과 title 속성을 걷어낸 뒤,
     // **화면에 찍히는 자리**에 남아 있는지만 본다(툴팁까지 금지하면 정보가 사라진다).
-    const rendered = nav.replace(/`[^`]*`/g, '').replace(/title="[^"]*"/g, '');
-    expect(rendered, '시리즈명을 화면에 찍으면 H1과 중복된다').not.toMatch(/seriesPosition\.series|《/);
+    const rendered = nav.replace(/`[^`]*`/g, '').replace(/title=\{[^}]*\}/g, '').replace(/title="[^"]*"/g, '');
+    expect(rendered, '이름을 화면에 찍으면 H1(「책 — 과」·챕터 제목)과 중복된다').not.toMatch(/siblingNav\.label|seriesPosition\.series|bookNav\.title|《/);
+    // 한 문법 — 책 내비가 따로 살면(옛 .book-nav 채워진 바) 같은 일을 두 모양으로 한다.
+    const src = read(VIEWER);
+    expect(src).not.toContain('className="book-nav"');
+    expect((src.match(/className="viewer-series-nav"/g) || []).length).toBe(1);
+    expect(sliceBetween(src, 'const siblingNav = bookNav', ': null;')).toContain("kind: 'series'");
   });
 
   it('내비는 채워진 바가 아니다 — 크롬이 무게를 갖지 않는다', () => {
@@ -129,32 +145,30 @@ describe('⑥ 제목 줄·액션 축 — 실측이 더한 것', () => {
       .not.toMatch(/page-header__title"\s+style=/);
   });
 
-  it('행동과 도구가 다른 그룹이다 — 도구는 오른쪽', () => {
+  it('도구는 경로 줄 오른쪽, 끝의 행동은 경로 줄에 없다(A안 개정 — 행동은 끝·도구는 위)', () => {
     const bar = actionbar();
-    const tools = bar.indexOf('viewer-actionbar__group--tools');
+    const tools = bar.indexOf('viewer-topbar__tools');
     expect(tools, '도구 그룹이 없다').toBeGreaterThan(0);
-    // 행동 셋은 도구 그룹보다 앞(=왼쪽)에 온다.
-    // ⚠ 존재부터 본다 — 없으면 indexOf가 -1이라 순서 단언이 **공허 통과**한다(M19 실측).
-    for (const label of ['분석 중단', '읽기 완료', '오늘 학습 만들기']) {
-      const at = bar.indexOf(label);
-      expect(at, `${label} 행동이 사라졌다`).toBeGreaterThan(-1);
-      expect(at, `${label}이 도구 그룹 뒤에 있다`).toBeLessThan(tools);
+    // 분석 중단은 지금 도는 분석에 대한 일시 제어라 도구 옆에 남는다. 존재부터 본다(공허 통과 방지, M19 선례).
+    expect(bar.indexOf('분석 중단')).toBeGreaterThan(tools);
+    for (const label of ['읽기 완료', '오늘 학습 만들기']) {
+      expect(bar, `${label}이 본문 위로 되돌아왔다 — 끝의 행동은 본문 아래(viewerMinimal)`).not.toContain(label);
     }
-    expect(sliceBetween(newCss(), '.viewer-actionbar__group--tools', '}')).toContain('margin-left: auto');
+    expect(sliceBetween(aCss(), '.viewer-topbar__tools {', '}')).toContain('margin-left: auto');
   });
 
   it('듣기가 도구 그룹 안이다 — 독립 줄 부활 금지', () => {
     const bar = actionbar();
     expect(bar).toContain('<ListenControls');
-    expect(bar.indexOf('<ListenControls')).toBeGreaterThan(bar.indexOf('viewer-actionbar__group--tools'));
-    // header~액션바 **밖**에 또 하나 놓이면 두 벌이 발화한다.
+    expect(bar.indexOf('<ListenControls')).toBeGreaterThan(bar.indexOf('viewer-topbar__tools'));
+    // header **밖**에 또 하나 놓이면 두 벌이 발화한다.
     expect((read(VIEWER).match(/<ListenControls/g) || []).length).toBe(1);
   });
 
-  it('행동 둘이 같은 버튼 모양이다 — 밑줄 링크 폐기', () => {
-    const bar = actionbar();
-    expect(bar, '오늘 학습이 밑줄 링크로 되돌아갔다').not.toContain('study-textlink');
-    expect((bar.match(/className="grammar-btn/g) || []).length).toBeGreaterThanOrEqual(2);
+  it('끝의 행동 넷이 같은 버튼 모양이다 — 밑줄 링크 폐기', () => {
+    const row = sliceBetween(read(VIEWER), '<div className="post-reading-actions">', '{/* 다음 — 한 자리에 하나');
+    expect(row, '오늘 학습이 밑줄 링크로 되돌아갔다').not.toContain('study-textlink');
+    expect((row.match(/className="post-reading-actions__btn/g) || []).length).toBeGreaterThanOrEqual(4);
   });
 
   it('크롬의 강조색은 복습 하나뿐이다', () => {

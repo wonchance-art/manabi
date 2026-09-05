@@ -70,6 +70,10 @@ jobs:
       # 소스 계약만으로는 못 잡는 상호작용 회귀가 하루 5PR 왕복의 원인이었다(2026-08-19).
       - run: npm run e2e:typography
 
+      # 뷰어 크롬 기하 계약(뷰어 정돈 A안) — 첫 글자가 나오기까지의 높이를 브라우저 좌표로 지킨다.
+      # 조판 e2e와 같은 방식(index.css 실물 + 정적 마크업)이라 빌드가 필요 없다.
+      - run: npm run e2e:chrome
+
       - run: npm run e2e
 
       - run: npm run e2e:learning

@@ -6,7 +6,8 @@ import { supabase } from './supabase';
 /**
  * 자료(viewer)의 댓글 조회/생성/삭제 훅
  */
-export function useMaterialComments({ materialId, user, toast }) {
+/** `enabled` — 비공개 자료는 토론 상대가 없어 조회를 건너뛴다(뷰어 정돈 A안). 기본은 예전대로 켬. */
+export function useMaterialComments({ materialId, user, toast, enabled = true }) {
   const commentsQuery = useQuery({
     queryKey: ['material-comments', materialId],
     queryFn: async () => {
@@ -18,7 +19,7 @@ export function useMaterialComments({ materialId, user, toast }) {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!materialId,
+    enabled: !!materialId && enabled,
   });
 
   const addMutation = useMutation({
