@@ -376,3 +376,109 @@ describe('AA R1 — callLLM 동작 계약', () => {
     expect(isCapacityError(400, { error: { message: 'Invalid argument' } })).toBe(false);
   });
 });
+
+// ── R2 텔레메트리(스키마 0) — 로그 1줄/호출 · 인메모리 집계 · 프롬프트 본문 무기록 ──
+describe('AA R2 — 텔레메트리', () => {
+  beforeEach(() => {
+    vi.stubEnv('GEMINI_API_KEY', 'gemini-test-key');
+    vi.stubEnv('GROQ_API_KEY', '');
+    vi.stubEnv('LLM_LOG', 'on');
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
+  const usage = { promptTokenCount: 10, candidatesTokenCount: 5, thoughtsTokenCount: 2 };
+  const llmLines = (spy) => spy.mock.calls.filter((c) => c[0] === '[llm]').map((c) => c[1]);
+
+  it('호출마다 성공·실패 무관 [llm] 로그 1줄 — 필수 키 11개(순서 고정), 프롬프트 본문은 싣지 않는다', async () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    vi.stubGlobal('fetch', vi.fn(async (url) => (isGemini(url, 'gemini-3.6-flash') ? geminiFail(503) : geminiOk('ok', usage))));
+    const { callLLM, LLM_LOG_KEYS } = await fresh();
+    await callLLM('standard', '비밀 프롬프트 본문', { route: 'explain' });
+    expect(llmLines(info)).toHaveLength(1);
+    const rec = JSON.parse(llmLines(info)[0]);
+    expect(Object.keys(rec)).toEqual([...LLM_LOG_KEYS]);
+    expect(rec).toMatchObject({
+      route: 'explain', tier: 'standard', model: 'gemini-3.5-flash-lite', provider: 'gemini', fallbackDepth: 1,
+      in: 10, out: 5, thinking: 2, ok: true, status: 200,
+    });
+    expect(typeof rec.ms).toBe('number');
+    expect(llmLines(info)[0]).not.toContain('비밀 프롬프트 본문');
+
+    vi.stubGlobal('fetch', vi.fn(async () => geminiFail(429)));
+    await callLLM('light', '비밀 프롬프트 본문', { route: 'fetchMeanings' }).catch(() => null);
+    expect(llmLines(info)).toHaveLength(2);
+    const fail = JSON.parse(llmLines(info)[1]);
+    expect(Object.keys(fail)).toEqual([...LLM_LOG_KEYS]);
+    expect(fail).toMatchObject({
+      route: 'fetchMeanings', tier: 'light', model: 'gemini-3.5-flash-lite', provider: 'gemini', fallbackDepth: 0,
+      in: 0, out: 0, thinking: 0, ok: false, status: 429,
+    });
+    expect(llmLines(info)[1]).not.toContain('비밀 프롬프트 본문');
+  });
+
+  it('테스트 러너에서는 LLM_LOG=on일 때만 로그를 낸다(스위트 소음 0) — 집계는 그래도 쌓인다', async () => {
+    vi.stubEnv('LLM_LOG', '');
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    vi.stubGlobal('fetch', vi.fn(async () => geminiOk('ok')));
+    const { callLLM, getLLMStats, resetLLMStats } = await fresh();
+    resetLLMStats();
+    await callLLM('light', 'p');
+    expect(llmLines(info)).toHaveLength(0);
+    expect(getLLMStats().tiers.light['gemini-3.5-flash-lite'].calls).toBe(1);
+  });
+
+  it('인메모리 집계 — 티어·모델별 calls/ok/in/out/thinking/ms/fallbackUsed, 실패도 calls에 들어가고 ok는 아니다', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    vi.stubGlobal('fetch', vi.fn(async (url) => (isGemini(url, 'gemini-3.6-flash') ? geminiFail(503) : geminiOk('ok', usage))));
+    const { callLLM, getLLMStats, resetLLMStats } = await fresh();
+    resetLLMStats();
+    await callLLM('standard', 'p');
+    await callLLM('light', 'p');
+    vi.stubGlobal('fetch', vi.fn(async () => geminiFail(429)));
+    await callLLM('light', 'p').catch(() => null);
+    const snap = getLLMStats();
+    expect(typeof snap.since).toBe('string');
+    expect(snap.tiers.standard['gemini-3.5-flash-lite']).toMatchObject({ calls: 1, ok: 1, in: 10, out: 5, thinking: 2, fallbackUsed: 1 });
+    expect(snap.tiers.light['gemini-3.5-flash-lite']).toMatchObject({ calls: 2, ok: 1, in: 10, out: 5, thinking: 2, fallbackUsed: 0 });
+    expect(snap.tiers.standard['gemini-3.6-flash']).toBeUndefined(); // 답하지 않은 본선은 버킷을 만들지 않는다(fallbackUsed가 그 자리)
+    expect(snap.tiers.light['gemini-3.5-flash-lite'].ms).toBeGreaterThanOrEqual(0);
+  });
+
+  it('스냅샷은 복사본이고 reset은 창을 새로 연다', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    vi.stubGlobal('fetch', vi.fn(async () => geminiOk('ok')));
+    const { callLLM, getLLMStats, resetLLMStats } = await fresh();
+    resetLLMStats();
+    const before = getLLMStats().since;
+    await callLLM('light', 'p');
+    const snap = getLLMStats();
+    snap.tiers.light['gemini-3.5-flash-lite'].calls = 999;
+    expect(getLLMStats().tiers.light['gemini-3.5-flash-lite'].calls).toBe(1);
+    resetLLMStats();
+    expect(getLLMStats().tiers).toEqual({});
+    expect(getLLMStats().since >= before).toBe(true);
+  });
+
+  it('Groq 사용량이 Gemini와 같은 키(in/out/thinking)로 로그·집계된다', async () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    vi.stubEnv('GROQ_API_KEY', 'groq-test-key');
+    vi.stubGlobal('fetch', vi.fn(async (url) => (isGroq(url) ? groqOk('g') : geminiFail(503))));
+    const { callLLM, getLLMStats, resetLLMStats, GROQ_MODEL } = await fresh();
+    resetLLMStats();
+    await callLLM('light', 'p', { route: 'x' });
+    expect(JSON.parse(llmLines(info)[0])).toMatchObject({ provider: 'groq', model: GROQ_MODEL, in: 7, out: 3, thinking: 0, ok: true, fallbackDepth: 1 });
+    expect(getLLMStats().tiers.light[GROQ_MODEL]).toMatchObject({ calls: 1, ok: 1, in: 7, out: 3, thinking: 0, fallbackUsed: 1 });
+  });
+
+  it('관리자 라우트 — requireAdmin 게이트 위에서 getLLMStats를 그대로 돌려준다(소스 계약)', () => {
+    const src = read('src/app/api/admin/llm-stats/route.js');
+    expect(src).toContain("import { requireAdmin } from '../../../../lib/server/auth.js'");
+    expect(src).toContain('const auth = await requireAdmin(request);');
+    expect(src).toContain('if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });');
+    expect(src).toContain('getLLMStats()');
+    expect(src).not.toContain('SUPABASE_SERVICE_ROLE_KEY'); // 게이트는 auth.js 관용구 하나 — 자기 복사본 0
+  });
+});

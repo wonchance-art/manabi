@@ -19,7 +19,10 @@
 //  - 실패는 LLMError(ok:false · code · status · detail)로 던진다. 키가 둘 다 없으면 code 'no_key'.
 //    status·detail은 Gemini 쪽 마지막 응답을 우선한다(프록시가 클라에 그대로 되돌려 클라 재시도
 //    판정(isCapacityError)이 현행과 같게).
-//  - 텔레메트리(구조화 로그·집계)는 R2. R1은 meta(모델·프로바이더·폴백 깊이·ms·usage)만 돌려준다.
+//  - 텔레메트리(R2, 스키마 0): 성공·실패 무관 호출마다 `[llm]` 구조화 로그 1줄(필수 키 11 — route·tier·model·
+//    provider·fallbackDepth·ms·in·out·thinking·ok·status, 프롬프트 본문은 절대 싣지 않는다) + 인메모리 티어·모델별
+//    집계(getLLMStats — 인스턴스 재시작에 초기화되므로 로그가 정본, 집계는 창). 테스트 러너(VITEST)에서는
+//    LLM_LOG=on일 때만 로그를 낸다.
 
 /** 티어 표 — 호출부는 이 이름만 안다. 폴백 모델 출력 단가는 본선 이하여야 한다(R3에서 확정). */
 export const TIERS = Object.freeze({
@@ -46,6 +49,44 @@ export const LEGACY_MODEL_TIERS = Object.freeze({
 export const THINKING_OFF_CONFIG = Object.freeze({ thinkingBudget: 0 });
 export const DEFAULT_RETRY_DELAYS = Object.freeze([5000, 10000, 20000, 40000]);
 
+/** 구조화 로그 1줄의 필수 키 — 순서 고정(로그 grep·집계 파서가 기댄다). */
+export const LLM_LOG_KEYS = Object.freeze([
+  'route', 'tier', 'model', 'provider', 'fallbackDepth', 'ms', 'in', 'out', 'thinking', 'ok', 'status',
+]);
+
+/** 인메모리 집계(인스턴스 로컬) — 로그가 정본, 이건 창. `since`가 창의 시작. */
+let stats = { since: new Date().toISOString(), tiers: {} };
+
+function bucket(tier, model) {
+  const t = (stats.tiers[tier] ||= {});
+  return (t[model || 'none'] ||= { calls: 0, ok: 0, in: 0, out: 0, thinking: 0, ms: 0, fallbackUsed: 0 });
+}
+
+/** 호출 1건 관측 — 로그 1줄 + 집계 갱신. 프롬프트 본문은 어디에도 싣지 않는다. */
+function observe(record) {
+  const line = {};
+  for (const key of LLM_LOG_KEYS) line[key] = record[key] ?? null;
+  if (!process.env.VITEST || process.env.LLM_LOG === 'on') console.info('[llm]', JSON.stringify(line));
+  const b = bucket(record.tier, record.model);
+  b.calls += 1;
+  if (record.ok) b.ok += 1;
+  b.in += Number(record.in) || 0;
+  b.out += Number(record.out) || 0;
+  b.thinking += Number(record.thinking) || 0;
+  b.ms += Number(record.ms) || 0;
+  if (record.ok && record.fallbackDepth > 0) b.fallbackUsed += 1;
+}
+
+/** 관리자 조회용 스냅샷(깊은 복사) — /api/admin/llm-stats. */
+export function getLLMStats() {
+  return JSON.parse(JSON.stringify(stats));
+}
+
+/** 테스트·운영 리셋 — 창을 새로 연다. */
+export function resetLLMStats() {
+  stats = { since: new Date().toISOString(), tiers: {} };
+}
+
 const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/';
 const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
 const CAPACITY_WORDS = ['high demand', 'overloaded', 'unavailable', 'resource_exhausted'];
@@ -55,7 +96,7 @@ const GENERATION_KEYS = ['temperature', 'responseMimeType', 'responseSchema', 'm
 const thinkingUnsupported = new Set();
 
 export class LLMError extends Error {
-  constructor(message, { code = 'failed', status = 0, detail = null, model = null, provider = null } = {}) {
+  constructor(message, { code = 'failed', status = 0, detail = null, model = null, provider = null, fallbackDepth = 0 } = {}) {
     super(message);
     this.name = 'LLMError';
     this.ok = false;
@@ -64,6 +105,7 @@ export class LLMError extends Error {
     this.detail = detail;
     this.model = model;
     this.provider = provider;
+    this.fallbackDepth = fallbackDepth;
   }
 }
 
@@ -195,9 +237,28 @@ async function groqOnce(contents, generationConfig, { groqKey, signal }) {
  * @throws {LLMError}
  */
 export async function callLLM(tier, input, opts = {}) {
+  const started = Date.now();
+  const route = opts.route || null;
+  try {
+    const result = await callLLMInner(tier, input, opts, started);
+    const { meta } = result;
+    observe({
+      route, tier, model: meta.model, provider: meta.provider, fallbackDepth: meta.fallbackDepth, ms: meta.ms,
+      in: meta.usage.in, out: meta.usage.out, thinking: meta.usage.thinking, ok: true, status: 200,
+    });
+    return result;
+  } catch (err) {
+    observe({
+      route, tier, model: err?.model ?? null, provider: err?.provider ?? null, fallbackDepth: err?.fallbackDepth ?? 0,
+      ms: Date.now() - started, in: 0, out: 0, thinking: 0, ok: false, status: err?.status ?? 0,
+    });
+    throw err;
+  }
+}
+
+async function callLLMInner(tier, input, opts, started) {
   const spec = TIERS[tier];
   if (!spec) throw new LLMError(`unknown tier: ${tier}`, { code: 'unknown_tier', status: 400 });
-  const started = Date.now();
   const apiKey = process.env.GEMINI_API_KEY;
   const groqKey = opts.groq === false ? '' : process.env.GROQ_API_KEY;
   if (!apiKey && !groqKey) throw new LLMError('LLM API key missing', { code: 'no_key', status: 500 });
@@ -232,7 +293,7 @@ export async function callLLM(tier, input, opts = {}) {
       if (r.ok) return { text: r.text, meta: meta(model, 'gemini', depth, r.usage) };
       last = lastGemini = { ...r, model, provider: 'gemini' };
       if (opts.signal?.aborted) {
-        throw new LLMError('aborted', { code: 'aborted', status: 0, model, provider: 'gemini' });
+        throw new LLMError('aborted', { code: 'aborted', status: 0, model, provider: 'gemini', fallbackDepth: depth });
       }
       if (attempt === retryMax || !isCapacityError(r.status, r.detail)) break;
       const delay = delays[attempt] ?? delays[delays.length - 1] ?? 0;
@@ -261,6 +322,7 @@ export async function callLLM(tier, input, opts = {}) {
       detail: primary?.detail ?? null,
       model: primary?.model ?? null,
       provider: primary?.provider ?? null,
+      fallbackDepth: primary?.provider === 'groq' ? chain.length : Math.max(0, depth - 1),
     },
   );
 }
