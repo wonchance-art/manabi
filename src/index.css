@@ -8961,3 +8961,23 @@ a.viewer-badge:hover {
   .jpmap-pin-ring { animation: none; }
   .jpmap-pin { transition: none; }
 }
+
+/* 교재 매체 공통 색상 — 언어별 모브·세이지·잉크블루·앰버 */
+:root {
+  --book-mauve-main: #80576A;
+  --book-mauve-wash: #F3E9EC;
+  --book-mauve-dark-text: #D9ADBF;
+  --book-sage-main: #466C5D;
+  --book-sage-wash: #E9EFE6;
+  --book-sage-dark-text: #ACCCB8;
+  --book-inkblue-main: #4D5D85;
+  --book-inkblue-wash: #E9EDF6;
+  --book-inkblue-dark-text: #B9C8EB;
+  --book-amber-main: #85602F;
+  --book-amber-wash: #F5EDDF;
+  --book-amber-dark-text: #E1C197;
+  --book-preview-paper: #FFFEFA;
+  --book-preview-ink: #2E3437;
+  --book-preview-border: #DDDCD4;
+  --book-preview-muted: #62676D;
+}

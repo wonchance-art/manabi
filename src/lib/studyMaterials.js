@@ -1,3 +1,4 @@
+import { loadPublishedRegistry } from './publishedChapter';
 /**
  * 공부 모드 재료 조립 (서버 전용).
  * study/page.jsx의 서버 재료 조립을 그대로 옮겨 재사용한다 —
@@ -329,7 +330,7 @@ export function applyEncounterContextExamples(exampleByWord, contextRows) {
 }
 
 export async function assembleStudyMaterials(supabase, userId, lang, { horizonHours = 0, interestGroup = null } = {}) {
-  const ref = getRefLang(lang);
+  const ref = await loadPublishedRegistry(lang, getRefLang(lang));
   // due 기준 시각 — 프리페치는 now + horizonHours 로 미리 당겨 조회.
   const dueIso = new Date(Date.now() + horizonHours * 3600 * 1000).toISOString();
 

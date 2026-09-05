@@ -2,11 +2,13 @@ import { useEffect, useId, useRef } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
 import { detectLang, displayWord, splitSentenceAroundWord } from '../lib/constants';
+import VocabularyContexts from '../components/learning/VocabularyContexts';
 
 function ScoreSection({ word, onScore }) {
   return (
     <div className="review-card__answer" role="status" aria-live="polite">
       <p className="review-card__meaning">{word.meaning}</p>
+      <VocabularyContexts vocabularyId={word.id} />
       {word.source_sentence && (() => {
         const { parts, term } = splitSentenceAroundWord(word.source_sentence, word.word_text, word.base_form);
         return (

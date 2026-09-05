@@ -4,6 +4,7 @@ import { getRefLang } from '@/content/refLangs';
 import { getReadingTrack } from '@/content/japanese';
 import { buildReviewQuiz } from '@/lib/refQuiz';
 import { staggerBackfillRows } from '@/lib/grammarSrs';
+import { loadPublishedRegistry } from '@/lib/publishedChapter';
 import { buildDrillReviewQuiz, drillIdFromQueueSlug, findDrillContext } from '@/lib/drillSrs';
 import GrammarReviewSession from '@/views/GrammarReviewSession';
 import GuestGrammarReview from '@/views/GuestGrammarReview';
@@ -54,9 +55,9 @@ function toReadingItem(row) {
 }
 
 /** drill:<id> 큐 행 → 원본 드릴 한 문항 복습 아이템. */
-function toDrillItem(row) {
+function toDrillItem(row, registries) {
   const drillId = drillIdFromQueueSlug(row.slug);
-  const ref = getRefLang(row.lang);
+  const ref = registries.get(row.lang);
   const found = findDrillContext(ref, drillId);
   if (!ref || !found) return null;
   const quiz = buildDrillReviewQuiz(found.drill);
@@ -83,10 +84,10 @@ function toDrillItem(row) {
 }
 
 /** 큐 행 → 세션 아이템 (챕터·퀴즈 조립, 퀴즈 불가 챕터는 null) */
-function toItem(row) {
-  if (drillIdFromQueueSlug(row.slug)) return toDrillItem(row);
+function toItem(row, registries) {
+  if (drillIdFromQueueSlug(row.slug)) return toDrillItem(row, registries);
   if (typeof row.slug === 'string' && row.slug.startsWith('rt:')) return toReadingItem(row); // 독해 분기
-  const ref = getRefLang(row.lang);
+  const ref = registries.get(row.lang);
   if (!ref) return null;
   const found = ref.getChapter(row.slug);
   if (!found) return null;                       // 콘텐츠 개편으로 사라진 슬러그는 건너뜀
@@ -136,6 +137,16 @@ export default async function Page() {
   // 비로그인도 기기 큐로 복습할 수 있다 — 문항 조립은 /api/review/drills가 서버에서 한다.
   if (!user) return <GuestGrammarReview />;
 
+  // 세션 안에서는 언어마다 한 수정본 스냅샷을 사용한다. 다른 챕터에서 가져오는 보기에도 적용.
+  const registries = new Map();
+  async function prepare(rows) {
+    const languages = [...new Set(rows.map(row => row.lang))].filter(lang => !registries.has(lang));
+    await Promise.all(languages.map(async lang => {
+      const base = ['Japanese', 'Chinese', 'French', 'English'].includes(lang) ? getRefLang(lang) : null;
+      if (base) registries.set(lang, await loadPublishedRegistry(lang, base));
+    }));
+  }
+
   // ── 백필: 통과했지만 큐에 없는 챕터 등록 (기능 도입 전의 통과 기록 구제) ──
   try {
     const [{ data: passedRows }, { data: queuedRows }] = await Promise.all([
@@ -148,6 +159,7 @@ export default async function Page() {
         .eq('user_id', user.id),
     ]);
     const existing = new Set((queuedRows || []).map(r => `${r.lang}:${r.slug}`));
+    await prepare(passedRows || []);
     // 퀴즈를 만들 수 있는 챕터만 (카나 챕터 등 퀴즈 없는 통과 기록은 큐 대상 아님)
     // check_total이 NULL인 행은 실제 퀴즈 통과가 아니라 온보딩 레벨 스킵 백필(read=true, passed=true,
     // check_right/check_total=NULL) 표식이므로 제외한다. 실제 퀴즈 통과는 항상 syncCheckRemote가
@@ -155,7 +167,7 @@ export default async function Page() {
     const candidates = (passedRows || []).filter(p => {
       if (existing.has(`${p.lang}:${p.slug}`)) return false;
       if (p.check_total == null) return false;        // 온보딩 스킵 백필 행 — 복습 큐 대상 아님
-      const ref = getRefLang(p.lang);
+      const ref = registries.get(p.lang);
       const ch = ref?.getChapter(p.slug)?.chapter;
       if (!ch) return false;
       if (ref.isIntroLevel(ch.level)) return false;   // 인트로 레벨(OT/A0)은 복습 백필 대상 아님
@@ -186,10 +198,11 @@ export default async function Page() {
       .order('next_review_at', { ascending: true })
       .limit(30),
   ]);
+  await prepare([...(dueRows || []), ...(upcomingRows || [])]);
 
   // ── 잔존 인트로 레벨(OT/A0) 큐 방어 — 표시하지 않고 본인 행을 삭제(fire-and-forget) ──
   const isIntroRow = (row) => {
-    const ref = getRefLang(row.lang);
+    const ref = registries.get(row.lang);
     const ch = ref?.getChapter(row.slug)?.chapter;
     return !!(ch && ref.isIntroLevel(ch.level));
   };
@@ -200,13 +213,13 @@ export default async function Page() {
       .then(() => {}, () => {});   // 실패해도 복습 진행을 막지 않음
   }
 
-  const items = (dueRows || []).map(toItem).filter(Boolean);
+  const items = (dueRows || []).map(row => toItem(row, registries)).filter(Boolean);
 
   // 예정 큐 — 제목만 필요 (퀴즈 조립 없이 가볍게)
   const upcoming = (upcomingRows || []).map(row => {
     const drillId = drillIdFromQueueSlug(row.slug);
     if (drillId) {
-      const ref = getRefLang(row.lang);
+      const ref = registries.get(row.lang);
       const found = findDrillContext(ref, drillId);
       if (!ref || !found) return null;
       return {
@@ -224,7 +237,7 @@ export default async function Page() {
       if (!text) return null;
       return { flag: '📖', level: '독해', order: text.order, title: text.title, href: '/japanese/reading', dueAt: row.next_review_at };
     }
-    const ref = getRefLang(row.lang);
+    const ref = registries.get(row.lang);
     const ch = ref?.getChapter(row.slug)?.chapter;
     if (!ch) return null;
     if (ref.isIntroLevel(ch.level)) return null;   // 인트로 레벨 잔존 큐는 표시하지 않음

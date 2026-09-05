@@ -5,7 +5,6 @@ import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
-import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { callGemini } from '../lib/gemini';
@@ -21,6 +20,9 @@ import ListenControls from '../components/ListenControls';
 import { formatDetail } from '../lib/wordDetailFormat';
 import { langNameKo } from '../lib/constants';
 import { usePdfRangeMutation } from '../lib/usePdfRangeMutation';
+import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
+import SaveContextButton, { saveContext } from '../components/learning/SaveContextButton';
+import MaterialChapterLinks from '../components/learning/MaterialChapterLinks';
 import TokenPosLabel from './TokenPosLabel';
 
 async function fetchPdfInfo(pdfId) {
@@ -90,6 +92,13 @@ export default function PdfViewerPage() {
   const [tokens, setTokens] = useState([]);
   const [analyzing, setAnalyzing] = useState(false);
   const [saving, setSaving] = useState({});
+  function pdfContextWord(token) {
+    return buildVocabRow({ userId: user?.id, surface: token.text, base: token.base_form, meaning: token.meaning, pos: token.pos,
+      reading: token.furigana || token.reading, language, sourceSentence: inputText });
+  }
+  const [sourcePage,setSourcePage] = useState('');
+  useEffect(() => { setSourcePage(initialPage ? String(initialPage) : ''); }, [id, initialPage]);
+  useEffect(() => { if (usePdfJs && livePage) setSourcePage(String(livePage)); }, [usePdfJs, livePage]);
   const [contextExpl, setContextExpl] = useState('');
   const [contextLoading, setContextLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState({ tokens: null, context: null });
@@ -122,9 +131,9 @@ export default function PdfViewerPage() {
   function setCached(key, val) { if (!isClient) return; try { localStorage.setItem(`pdf_cache:${key}`, JSON.stringify(val)); } catch {} }
 
   const { data: savedVocab } = useQuery({
-    queryKey: ['pdf-saved-vocab', user?.id],
+    queryKey: ['pdf-saved-vocab', user?.id, language],
     queryFn: async () => {
-      const { data, error } = await supabase.from('user_vocabulary').select('word_text, base_form').eq('user_id', user.id);
+      const { data, error } = await supabase.from('user_vocabulary').select('word_text, base_form').eq('user_id', user.id).eq('language', language);
       if (error) throw error;
       const set = new Set();
       for (const v of (data || [])) { if (v.word_text) set.add(v.word_text); if (v.base_form) set.add(v.base_form); }
@@ -244,7 +253,12 @@ export default function PdfViewerPage() {
       }), VOCAB_UPSERT);
       if (error) throw error;
       setSaving(prev => ({ ...prev, [key]: 'done' }));
-      toast(`"${token.text}" 저장!`, 'success');
+      try {
+        await saveContext({ word: pdfContextWord(token), source: { kind: 'pdf', pdfId: id, page: sourcePage || null, quote: inputText } });
+        toast(`"${token.text}" 저장!`, 'success');
+      } catch {
+        toast('단어는 저장했지만 문맥 연결이 남아 있어요. 문맥 추가를 눌러 다시 연결해 주세요.', 'warning', 6000);
+      }
     } catch (e) { toast('저장 실패', 'error'); setSaving(prev => ({ ...prev, [key]: false })); }
   }
 
@@ -272,7 +286,7 @@ export default function PdfViewerPage() {
       <div className="pdf-context__title">번역 · 맥락</div>
       {inputText && (
         <div className="pdf-context__original">
-          "{inputText.length > 120 ? inputText.slice(0, 120) + '…' : inputText}"
+          &quot;{inputText.length > 120 ? inputText.slice(0, 120) + '…' : inputText}&quot;
         </div>
       )}
       {contextLoading ? (
@@ -310,8 +324,10 @@ export default function PdfViewerPage() {
             <span className="pdf-word-item__meaning" onClick={() => handleWordClick(t)}>{t.meaning}</span>
             {user && (
               <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                <button className="pdf-word-item__save" disabled={saved || !!saving[key]}
-                  onClick={() => handleSaveWord(t)}>{saved ? '✓' : '★'}</button>
+                {saved ? <SaveContextButton key={`${language}:${key}:${inputText}:${sourcePage}`} label="문맥 추가" word={pdfContextWord(t)}
+                  source={{kind:'pdf',pdfId:id,page:sourcePage||null,quote:inputText}} /> : (
+                  <button className="pdf-word-item__save" disabled={!!saving[key]} onClick={() => handleSaveWord(t)}>{saving[key] ? '…' : '★'}</button>
+                )}
                 <button className="pdf-word-item__save pdf-word-item__dismiss"
                   onClick={() => handleDismissWord(t)}>✕</button>
               </div>
@@ -345,9 +361,15 @@ export default function PdfViewerPage() {
           style={{ fontSize: '0.8rem', padding: '4px 8px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
           <option value="Japanese">일본어</option>
           <option value="English">영어</option>
+          <option value="Chinese">중국어</option>
+          <option value="French">프랑스어</option>
         </select>
       </div>
 
+      <div style={{padding:'0 16px'}}><MaterialChapterLinks lang={language} kind="pdf" materialId={id} />
+        <label className="learning-links__muted">출처 쪽수 {usePdfJs ? '(현재 쪽)' : '(직접 입력)'} <input type="number" aria-label="출처 쪽수" min="1" max={pdfInfo?.page_count||100000} value={sourcePage} onChange={e=>setSourcePage(e.target.value)} style={{width:88,padding:8,fontSize:16}} /></label>
+        <p className="learning-links__muted">복사한 문장의 쪽수를 입력하면 복습에서 해당 쪽으로 돌아올 수 있어요.</p>
+      </div>
       <div className="pdf-layout">
         {/* 왼쪽 — 맥락 설명 */}
         <aside className={`pdf-side pdf-side--left ${hasResults ? 'pdf-side--active' : ''}`}>
@@ -441,14 +463,12 @@ export default function PdfViewerPage() {
             </div>
             {user && (() => {
               const key = wordDetail.token.base_form || wordDetail.token.text;
-              const saved = saving[key] === 'done' || savedVocab?.has(wordDetail.token.text) || savedVocab?.has(wordDetail.token.base_form);
-              return (
-                <button className={`pdf-detail-popup__save ${saved ? 'pdf-detail-popup__save--done' : ''}`}
-                  disabled={saved || !!saving[key]}
-                  onClick={() => handleSaveWord(wordDetail.token)}>
-                  {saved ? '✓ 저장됨' : saving[key] ? '저장 중...' : '단어장에 저장'}
-                </button>
-              );
+              const t=wordDetail.token;
+              const saved = savedVocab?.has(t.text) || savedVocab?.has(t.base_form) || saving[key] === 'done';
+              if (!saved) return <button className="btn btn--primary btn--sm" disabled={!!saving[key]} onClick={() => handleSaveWord(t)}>{saving[key] ? '저장 중…' : '출처와 함께 담기'}</button>;
+              return <SaveContextButton key={`${language}:${key}:${inputText}:${sourcePage}`} label={saved?'이 문맥 추가':'출처와 함께 담기'}
+                word={pdfContextWord(t)}
+                source={{kind:'pdf',pdfId:id,page:sourcePage||null,quote:inputText}} />;
             })()}
           </div>
         </>

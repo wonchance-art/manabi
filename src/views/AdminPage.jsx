@@ -617,9 +617,9 @@ export default function AdminPage() {
       {tab === 'overrides' && (
         overridesLoading ? <Spinner message="수정본 목록 로딩 중..." /> : (
           <div>
+            <Link href="/admin/textbooks" className="btn btn--primary" style={{ marginBottom: 16 }}>교재 편집 열기</Link>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.6 }}>
-              챕터 편집 모드에서 저장한 수정본(content_overrides) 목록이에요. 각 행에서 챕터로 이동하거나,
-              파일 버전으로 복원(삭제)할 수 있어요. data JSON은 펼쳐서 파일로 수확할 때 사용하세요.
+              언어·레벨별 교재를 선택해 내용을 편집하세요. 아래는 저장한 수정본 목록이며, 챕터로 이동하거나 원본으로 복원할 수 있어요.
             </p>
             {overrides.length === 0 ? (
               <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>아직 저장된 수정본이 없어요.</p>

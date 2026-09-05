@@ -6,6 +6,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { isPassed } from '../components/RefPatternCheck';
 import { useAuth } from '../lib/AuthContext';
+import { textbookThemeStyle } from '../lib/textbookTheme';
+import { chapterEditorHref } from '../lib/chapterEditorModel';
+import '../components/admin/textbook.css';
 import { pullProgress } from '../lib/refProgress';
 
 const LanguageWorldMap = dynamic(() => import('../components/LanguageWorldMap'), {
@@ -238,11 +241,12 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
   }, [refLang, refReadLoaded, refRead, refCheck, langFilter]);
 
   return (
-    <div className="page-container">
+    <div className="page-container textbook-theme" style={textbookThemeStyle(langFilter)}>
       <div className="page-header page-header--row">
         <div>
           <h1 className="page-header__title">교재</h1>
           <p className="page-header__subtitle">학습 순서대로 배치된 문법·어휘 레퍼런스</p>
+          {isAdmin && <Link className="btn btn--ghost btn--sm" href={chapterEditorHref(langFilter)}>관리자 교재 편집</Link>}
         </div>
       </div>
 

@@ -9,6 +9,8 @@ import { gradeGrammarReview, ratingFromScore } from '../lib/grammarSrs';
 import { logReviewEvents } from '../lib/reviewEvents';
 import { applyGuestReviewResult, drillIdFromQueueSlug } from '../lib/drillSrs';
 import { recordActivity } from '../lib/streak';
+import { textbookThemeStyle } from '../lib/textbookTheme';
+import '../components/admin/textbook.css';
 
 function shuffle(arr) {
   const a = [...arr];
@@ -138,13 +140,13 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
         logReviewEvents(user.id, (questions || []).map(q => {
           const a = answers[q.id];
           if (!a) return null;
-          const qtype = ({ meaning: 'cloze', order: 'order', produce: 'produce' })[q.type] || 'cloze';
+          const qtype = ({ meaning: 'cloze', order: 'order', produce: 'flash' })[q.type] || 'cloze';
           return {
             lang: item.lang,
             source: 'grammar',
             item_key: drillIdFromQueueSlug(item.srs.slug) || item.srs.slug,
             correct: !!a.ok,
-            detail: { stage: q.type, qtype, qid: q.id, ko: q.ko, answer: q.correct ?? q.answer ?? q.main, picked: a.picked },
+            detail: { stage: q.type, qtype, qid: q.id, ko: q.ko, answer: q.correct ?? q.answer ?? q.main, picked: a.picked, assessment: q.type === 'produce' ? 'self' : 'auto', sourceRef: q.sourceRef || null },
           };
         }).filter(Boolean));
         return Math.max(1, Math.round(updated.interval));
@@ -216,7 +218,7 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
   const renderMain = (text, pron, langCode) =>
     langCode === 'ja'
       ? <JaText ja={text} yomi={pron} />
-      : <>{text}{pron && <span className="fr-check__pron"> {pron}</span>}</>;
+      : <>{text}{langCode === 'zh' && pron && <span className="fr-check__pron"> {pron}</span>}</>;
 
   // ── 빈 상태 ──
   if (signedOut || items.length === 0) {
@@ -272,7 +274,7 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
 
   // ── 챕터 복습 진행 ──
   return (
-    <div className="page-container" style={{ maxWidth: 760 }}>
+    <div className="page-container textbook-theme" style={{ maxWidth: 760, ...textbookThemeStyle(item.lang) }}>
       <header style={{ margin: '14px 0 18px' }}>
         <div role="status" aria-live="polite" aria-atomic="true" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: 6 }}>
           문법 복습 · 챕터 {idx + 1}/{items.length}
@@ -388,6 +390,11 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
                     )}
                   </div>
                 )}
+                {ans && q.sourceRef?.href && <p style={{ marginTop: 12, fontSize: '0.84rem' }}>
+                  <Link href={q.sourceRef.href} target="_blank" rel="noopener noreferrer" prefetch={false}>
+                    교재에서 이 예문 보기 ↗
+                  </Link>
+                </p>}
               </li>
             );
           })}
