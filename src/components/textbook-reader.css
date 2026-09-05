@@ -1,4 +1,5 @@
 .textbook-reader[data-textbook-language="Japanese"] {
+  container: textbook-reader / inline-size;
   --book-mauve-main: #85586f;
   --book-mauve-wash: #fcf5f9;
   --reader-line: #765b6b;
@@ -121,7 +122,7 @@
   background: var(--reader-panel-bg);
   padding: 12px 15px;
 }
-@media (max-width: 600px) {
+@container textbook-reader (max-width: 600px) {
   .textbook-pattern-unit { padding: 7px 12px 14px; }
   .textbook-examples { padding: 12px 12px 2px; }
   .textbook-reader[data-textbook-language="Japanese"] .fr-section__para { font-size: .9rem; }
