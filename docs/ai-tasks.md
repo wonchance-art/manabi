@@ -757,6 +757,24 @@
 - 런던 위성 마이크로 픽(재량 위임 해석): 윈저+옥스퍼드 2곳 추천 — 레만호 완성 후 순번
 - 일본 4도시 COPY 슬롯 이식(다국어 UI 확정 시) / 아토미움 = marker-only 유지 확인
 ### done (최근)
+- **🔌 AA R1 프로바이더 레이어 — `llm.js` 하나로 Gemini 호출 5곳 수렴, 호출부는 티어만 (2026-09-05 밤, 착수 SPEC
+  #1077 5551860999 §R1 · **draft PR — 머지 보류**: PR #1277 브랜치 빌드가 운영 도메인에 별칭돼 있어 오너 §B 결정 뒤)**:
+  `src/lib/server/llm.js` 신설 — `TIERS`(light=3.5-flash-lite / standard=3.6-flash→lite) · Groq 최종 폴백(Gemini candidates
+  형식으로 정규화, 프록시의 변환 로직 이전) · 용량 재시도(429·503·네트워크·문구 4종, 호출부가 retry를 줄 때만, deadline을
+  넘길 대기 0) · thinking 기본 off(`thinkingConfig` 최소 설정 동봉 — 모델이 400으로 거부하면 같은 모델을 설정 없이 즉시
+  재요청하고 메모, 폴백 강등 0) · `LLMError(ok:false·code·status·detail)`(상태는 Gemini 쪽 우선 — 클라 재시도 판정 무변경).
+  교체: `api/gemini` 프록시(`body.tier` 수용, `body.model`은 하위호환 매핑·목록 밖 400, 응답은 candidates+usageMetadata) ·
+  `explain`(light 0/0.3) · `study-paragraph`(standard 0.6+JSON 스키마) · `writing-feedback`(standard 0.2+JSON 스키마) ·
+  `fetchMeanings`(light, 재시도 4·deadline) · `disambiguateZhPos/EnPos`(light, `groq:false` — 동작 무변경) · 클라 `gemini.js`
+  `GEMINI_MODEL`→`GEMINI_TIER`(호출부 3곳 `{ tier }`). 모델 문자열·Gemini 엔드포인트가 사는 곳 = llm.js + tts(별 라인)뿐 —
+  `llm.test.js`가 grep으로 잡는다. 계약 `llm.test.js` 27종(소스 7·동작 20) · 변이 **15/15 검출** · 영향 테스트 8파일 143 green ·
+  lint 0. R2(텔레메트리)·R3(⏰10-16 폴백 정리)는 이 위에서. `ctxExplainWiring`·`easierText` 계약은 SPEC대로 개정.
+- **🔍 PR #1277(Codex 교재 통합) 검수 회신 + #1077 목차 정합 (2026-09-05 밤, 오너 「PR 검토 및 설계 진행 … 일본어 교재
+  제작 중 … 혼동 생기지 않도록 주의」)**: 독립 재현(워크트리 전체 vitest 334/3,688 green)·CI green → 판정 **보류**(보완 10건 —
+  저장 정본 중복(RPC 직접 INSERT) · 토큰 이중 진실(`#85586f`/`#80576A`) · 등급 저장 왕복 2회·토스트 억제 · 교재/뷰어 크롬 ·
+  `SandwichSelfCheck`·PDF 프랑스어·`produce→flash` 오너 확인 · 보드·문서 위생) — **머지 안 함(오너 지시)**. 운영 도메인이 그
+  브랜치 빌드에 별칭돼 있어 **Claude의 main 머지도 오너 결정 전까지 보류**(착수는 draft PR·CI green까지). #1077 본문은 타
+  세션이 09-03 스냅샷으로 덮어쓴 것을 되돌리고 AA·Y·Z 행만 이어받음(덮어쓰기 전 본문 재독 메모 추가).
 - **🧠 U R4 소스 확장 개통 — NHK 카테고리(ja)·Wikinews 카테고리(en·fr) + rss_text 공용 문(VOA·service-public)
   (2026-09-05 아침, 오너 「박제된 작업 개시. 먼저 제안 살피되 좋은 안 있으면 그걸로 적용 ㄱㄱ」 → 조사표
   #1077 5509440618의 채택 행 중 **이 세션이 실측 없이도 확실한 것**을 골랐다)**: 판단 — 조사표 권고 셋(NHK
