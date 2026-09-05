@@ -363,6 +363,24 @@ export default function ViewerPage() {
     };
   })();
 
+  // 형제 내비 **한 문법**(뷰어 정돈 A안, #1077 5547935464) — 교재 시리즈(useSeriesNeighbors)와 책 챕터
+  // (bookNav)가 같은 모양·같은 자리(경로 줄). 예전엔 시리즈는 헤더의 ◀ 3/20 ▶, 책은 본문 위 **채워진
+  // 바** 50px였다. 이름은 툴팁에만 — H1이 이미 「책 — 과」·시리즈 챕터 제목을 들고 있어 화면에 찍으면
+  // 중복이다(v2-Q ③과 같은 규칙을 책에도). 책이 시리즈보다 먼저 — 둘 다인 자료는 없다(책=사용자 등록·시리즈=정본).
+  const siblingNav = bookNav
+    ? {
+        kind: 'book', label: `《${bookNav.title || '제목 없는 교재'}》`,
+        pos: bookNav.pos, total: bookNav.total, prev: bookNav.prev, next: bookNav.next,
+        prevLabel: '이전 과', nextLabel: '다음 과',
+      }
+    : (prevLesson || nextLesson)
+      ? {
+          kind: 'series', label: seriesPosition ? `${seriesPosition.level} ${seriesPosition.series}` : '',
+          pos: seriesPosition?.current ?? null, total: seriesPosition?.total ?? null, prev: prevLesson, next: nextLesson,
+          prevLabel: '이전 편', nextLabel: '다음 편',
+        }
+      : null;
+
   const { data: nextMaterial } = useQuery({
     queryKey: ['next-material', id, material?.processed_json?.metadata?.language],
     queryFn: async () => {
@@ -410,7 +428,10 @@ export default function ViewerPage() {
   });
 
   // 댓글 로직 (훅)
-  const materialComments = useMaterialComments({ materialId: id, user, toast });
+  // 비공개 자료는 작성자만 연다(아래 접근 제어) — 토론 상대가 없으니 카드도 조회도 없다(뷰어 정돈 A안).
+  const materialComments = useMaterialComments({
+    materialId: id, user, toast, enabled: !!material && material.visibility !== 'private',
+  });
   const comments = materialComments.comments;
   const addCommentMutation = materialComments.addMutation;
   const deleteCommentMutation = materialComments.deleteMutation;
@@ -2213,22 +2234,39 @@ export default function ViewerPage() {
       )}
 
       <header className="page-header viewer-header">
-        <Link href="/materials" className="viewer-back-link">← 자료실</Link>
-        {(prevLesson || nextLesson) && (
-          <div className="viewer-series-nav">
-            {prevLesson ? (
-              <Link href={`/viewer/${prevLesson.id}`} className="viewer-series-nav__btn" title={prevLesson.title} aria-label="이전 편">◀</Link>
-            ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">◀</span>}
-            {seriesPosition && (
-              <span className="viewer-series-nav__position" title={`${seriesPosition.level} ${seriesPosition.series}`}>
-                {seriesPosition.current}/{seriesPosition.total}
-              </span>
+        {/* 경로 줄(뷰어 정돈 A안) — 왼쪽 [← 자료실 · 형제 내비], 오른쪽 [도구]. 본문 위에는 경로·제목·도구만
+            남고, 끝의 행동(읽기 완료·오늘 학습·다음 범위)은 본문 **아래**로 갔다(「끝은 끝에」). 예전 액션바는
+            폰에서 두 줄(89px)로 꺾였고, 그 위에 뒤로가기 줄·시리즈 내비 줄이 따로 있었다. */}
+        <div className="viewer-topbar">
+          <Link href="/materials" className="viewer-back-link">← 자료실</Link>
+          {siblingNav && (
+            <div className="viewer-series-nav" title={siblingNav.label}>
+              {siblingNav.prev ? (
+                <Link href={`/viewer/${siblingNav.prev.id}`} className="viewer-series-nav__btn" title={siblingNav.prev.title} aria-label={siblingNav.prevLabel}>◀</Link>
+              ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">◀</span>}
+              {siblingNav.pos != null && (
+                <span className="viewer-series-nav__position" title={siblingNav.label}>
+                  {siblingNav.pos}/{siblingNav.total}
+                </span>
+              )}
+              {siblingNav.next ? (
+                <Link href={`/viewer/${siblingNav.next.id}`} className="viewer-series-nav__btn" title={siblingNav.next.title} aria-label={siblingNav.nextLabel}>▶</Link>
+              ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">▶</span>}
+            </div>
+          )}
+          {/* 도구는 도구끼리 오른쪽(v2-Q 축 그대로). 분석 중단은 지금 도는 분석에 대한 일시 제어라 여기. */}
+          <div className="viewer-topbar__tools">
+            {user?.id === material?.owner_id && reanalyzeMutation.isPending && (
+              <button onClick={stopReanalysis} className="grammar-btn grammar-btn--danger">
+                분석 중단
+              </button>
             )}
-            {nextLesson ? (
-              <Link href={`/viewer/${nextLesson.id}`} className="viewer-series-nav__btn" title={nextLesson.title} aria-label="다음 편">▶</Link>
-            ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">▶</span>}
+            <ListenControls text={material?.raw_text} language={materialLang} />
+            <button className="viewer-aa" aria-label="읽기 설정" aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
+              Aa
+            </button>
           </div>
-        )}
+        </div>
         {titleEditing && user?.id === material?.owner_id ? (
           <form
             onSubmit={e => { e.preventDefault(); updateTitleMutation.mutate(titleDraft); }}
@@ -2310,38 +2348,15 @@ export default function ViewerPage() {
         );
       })()}
 
-      {/* PDF 출처 배지 + 다음 범위 분석 */}
+      {/* PDF 출처 — 유튜브 출처와 **같은 한 줄 문법**(뷰어 정돈 A안). 예전엔 148px 카드(제목·쪽·총쪽·원본
+          링크·다음 범위 버튼)였다. 「다음 p.N 분석」은 성격이 「다음 편」이라 본문 아래 다음 카드로 갔다.
+          역방향 다리(v2-H R2)는 그대로 — 돌아갈 자리는 자료 행이 이미 안다(page_start). */}
       {sourcePdf && material.page_start && (
-        <div className="u-highlight-card u-row u-row--between u-row--wrap u-row--gap-md u-mb-sm" style={{ marginBottom: 12 }}>
-          <div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--primary-light)', fontWeight: 700 }}>
-              PDF 출처
-            </div>
-            <div style={{ fontSize: '0.88rem', marginTop: 2 }}>
-              <strong>{sourcePdf.title}</strong> · p.{material.page_start}-{material.page_end}
-              <span style={{ color: 'var(--text-muted)', marginLeft: 8, fontSize: '0.78rem' }}>
-                (총 {sourcePdf.page_count}p)
-              </span>
-            </div>
-            {/* 역방향 다리(v2-H R2) — "이 대목 원문이 어떻게 생겼더라"에서 다시 막히지
-                않게. 돌아갈 자리는 자료 행이 이미 알고 있다(page_start). */}
-            <Link href={pdfViewerHref(sourcePdf.id, material.page_start)} className="pdf-origin__back">
-              원본 PDF 보기 →
-            </Link>
-          </div>
-          {material.page_end < sourcePdf.page_count && (
-            <button
-              onClick={() => nextRangeMutation.mutate({ chunkSize: 5 })}
-              disabled={nextRangeMutation.isPending}
-              className="btn btn--accent btn--sm"
-              title={`p.${material.page_end + 1}부터 분석`}
-            >
-              {nextRangeMutation.isPending
-                ? '추출 중...'
-                : `다음 p.${material.page_end + 1}-${Math.min(material.page_end + 5, sourcePdf.page_count)} 분석 →`}
-            </button>
-          )}
-        </div>
+        <p className="viewer-attribution">
+          출처: PDF 《{sourcePdf.title}》 p.{material.page_start}-{material.page_end}
+          <span className="viewer-attribution__muted"> / {sourcePdf.page_count}p</span>
+          {' · '}<Link href={pdfViewerHref(sourcePdf.id, material.page_start)}>원본 PDF 보기 →</Link>
+        </p>
       )}
 
       {/* Reading Progress Bar */}
@@ -2352,54 +2367,7 @@ export default function ViewerPage() {
         </div>
       )}
 
-      {/* 읽기 설정 액션바 — 리뉴얼(오너 확정 2026-08-27, 시연 A안+프리셋 줄): 설정 카드는
-          Aa 버튼 + 하단 시트로 대체하고, 설정이 아닌 것(읽기 완료·학습 링크·분석 중단)만 남긴다. */}
-      {/* 줄이 세 언어로 말하고 있었다 — 채워진 버튼·밑줄 링크·아이콘 버튼. 성격도 섞여
-          행동(읽기 완료·오늘 학습)과 도구(듣기·Aa)가 한 덩어리로 오른쪽에 몰려 있었다.
-          축을 갈라 **행동은 왼쪽·같은 버튼 모양**, 도구는 오른쪽에 모은다. */}
-      <div className="viewer-actionbar">
-        <div className="viewer-actionbar__group">
-          {user?.id === material?.owner_id && reanalyzeMutation.isPending && (
-            <button onClick={stopReanalysis} className="grammar-btn grammar-btn--danger">
-              분석 중단
-            </button>
-          )}
-
-          {user && isDone && (
-            isCompleted
-              ? <span className="grammar-btn viewer-complete-badge">✓ 읽기 완료</span>
-              : <button
-                  onClick={() => markCompleteMutation.mutate()}
-                  disabled={markCompleteMutation.isPending}
-                  className="grammar-btn grammar-btn--complete"
-                >
-                  {markCompleteMutation.isPending ? '...' : '✓ 읽기 완료 표시'}
-                </button>
-          )}
-
-          {user && material?.raw_text && STUDY_LANGS.has(materialLang) && (
-            <Link
-              href={`/study?source=mine&lang=${encodeURIComponent(materialLang)}`}
-              className="grammar-btn"
-              onClick={() => {
-                try {
-                  localStorage.setItem(`study_source_${materialLang}`, (material.raw_text || '').slice(0, 1500));
-                } catch {}
-              }}
-            >
-              오늘 학습 만들기
-            </Link>
-          )}
-        </div>
-
-        <div className="viewer-actionbar__group viewer-actionbar__group--tools">
-          {/* 듣기는 header 밖 독립 줄에 홀로 떨어져 소속이 모호했다 — 도구는 도구끼리. */}
-          <ListenControls text={material?.raw_text} language={materialLang} />
-          <button className="viewer-aa" aria-label="읽기 설정" aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
-            Aa
-          </button>
-        </div>
-      </div>
+      {/* (액션바 자리) — 도구는 경로 줄 오른쪽으로, 행동은 본문 아래 「다 읽었다면」으로 갔다(뷰어 정돈 A안). */}
 
       {/* 읽기 설정 시트 — backdrop 무광(본문이 곧 미리보기 — 어둡게 덮지 않는다, 시연 합의).
           행 문법 통일: [2자 라벨][컨트롤]. 프리셋 줄이 최상단(표시 4키만 대입, 조판 불가침). */}
@@ -2690,22 +2658,7 @@ export default function ViewerPage() {
         </>
       )}
 
-      {/* 책 챕터 내비(P1) — 같은 책의 형제 챕터 사이 이동 */}
-      {bookNav && (
-        <div className="book-nav">
-          {bookNav.prev
-            ? <Link href={`/viewer/${bookNav.prev.id}`} className="book-nav__btn">← 이전</Link>
-            : <span className="book-nav__btn book-nav__btn--off">← 이전</span>}
-          <span className="book-nav__title">
-            《{bookNav.title}》 <span className="book-nav__pos">{bookNav.pos}/{bookNav.total}</span>
-          </span>
-          {bookNav.next
-            ? <Link href={`/viewer/${bookNav.next.id}`} className="book-nav__btn">다음 →</Link>
-            : bookNav.canAppend
-              ? <Link href={`/materials/add?book=${encodeURIComponent(bookNav.key)}`} className="book-nav__btn">+ 다음 과 적기</Link>
-              : <span className="book-nav__btn book-nav__btn--off">다음 →</span>}
-        </div>
-      )}
+      {/* (책 챕터 내비 바 자리) — 경로 줄의 형제 내비(siblingNav)와 본문 아래 다음 카드로 갔다(뷰어 정돈 A안). */}
 
       {/* 네트워크가 죽어 캐시 사본으로 살아난 화면임을 알린다(v2-N R1) */}
       {material?.__offline && <OfflineNotice what="자료" />}
@@ -3030,7 +2983,10 @@ export default function ViewerPage() {
           onGripDown={tokenRange.startGripAdjust}
         />
 
-        {isDone && (
+        {/* 조작 안내는 첫 자료의 일(뷰어 정돈 A안) — 단어를 한 번이라도 담은 사람에겐 100번째 자료에서도
+            뜨던 문장을 접는다. 게스트는 위 배너가 같은 말을 하므로 여기서는 안 한다. 데스크톱은 오른쪽 빈
+            패널이 같은 안내를 상시로 하니 CSS가 감춘다(안내는 한 벌). */}
+        {isDone && user && savedCount === 0 && (
           <div className="reader-hint">
             단어를 <strong>클릭</strong>하면 상세 정보, 문장을 <strong>드래그</strong>하면 번역+맥락
           </div>
@@ -3038,52 +2994,48 @@ export default function ViewerPage() {
 
       </div>
 
-      {/* 다음 강의 — 같은 시리즈 next # (primary CTA) */}
-      {isDone && nextLesson && (
-        <Link href={`/viewer/${nextLesson.id}`} className="next-lesson-card">
-          <div className="next-lesson-card__hint">다음 편</div>
-          <div className="next-lesson-card__title">{nextLesson.title}</div>
-        </Link>
-      )}
-
-      {/* 시리즈/레벨 완주 — nextLesson 없을 때 */}
-      {isDone && !nextLesson && seriesEndCard && (
-        seriesEndCard.material ? (
-          <Link href={`/viewer/${seriesEndCard.material.id}`} className="series-end-card">
-            <div className="series-end-card__hint">
-              {seriesEndCard.type === 'level'
-                ? `${seriesEndCard.level} 완주! ${seriesEndCard.nextLevel}로 진학`
-                : `${seriesEndCard.level} ${seriesEndCard.fromSeries} 시리즈 완주!`}
-            </div>
-            <div className="series-end-card__title">{seriesEndCard.material.title}</div>
-          </Link>
-        ) : (
-          <div className="series-end-card series-end-card--top">
-            <div className="series-end-card__hint">
-              {seriesEndCard.level} {seriesEndCard.fromSeries} 시리즈 완주!
-            </div>
-            <div className="series-end-card__title" style={{ color: 'var(--text-muted)' }}>
-              최고 레벨 도달 — 외부 자료를 활용해보세요
-            </div>
+      {/* 다 읽었다면(뷰어 정돈 A안) — **끝의 행동은 끝에**. 읽기 완료(누르면 퀴즈·완독 화면)·오늘 학습은
+          예전에 본문 **위** 액션바에 상시로 있었고, 리딩 테스트·회화는 아래에 있어 두 자리로 갈려 있었다.
+          한 줄로 모은다. 이벤트·퀴즈·오늘 학습 핸드오프(study_source_*)는 그대로 — 자리만 옮겼다. */}
+      {(isDone || isPending) && !showReadingTest && !showConversation && (
+        <div className="post-reading">
+          <div className="post-reading__label">다 읽었다면</div>
+          <div className="post-reading-actions">
+            {user && isDone && (
+              isCompleted
+                ? <span className="post-reading-actions__btn post-reading-actions__btn--done">✓ 읽기 완료</span>
+                : <button
+                    onClick={() => markCompleteMutation.mutate()}
+                    disabled={markCompleteMutation.isPending}
+                    className="post-reading-actions__btn post-reading-actions__btn--primary"
+                  >
+                    {markCompleteMutation.isPending ? '...' : '✓ 읽기 완료'}
+                  </button>
+            )}
+            {user && material?.raw_text && STUDY_LANGS.has(materialLang) && (
+              <Link
+                href={`/study?source=mine&lang=${encodeURIComponent(materialLang)}`}
+                className="post-reading-actions__btn"
+                onClick={() => {
+                  try {
+                    localStorage.setItem(`study_source_${materialLang}`, (material.raw_text || '').slice(0, 1500));
+                  } catch {}
+                }}
+              >
+                오늘 학습 만들기
+              </Link>
+            )}
+            {isDone && (
+              <button className="post-reading-actions__btn" onClick={() => setShowReadingTest(true)}>
+                리딩 테스트
+              </button>
+            )}
+            {isDone && (
+              <button className="post-reading-actions__btn" onClick={() => setShowConversation(true)}>
+                회화 연습
+              </button>
+            )}
           </div>
-        )
-      )}
-
-      {/* 학습 강화 — 보조 CTA 두 개를 한 줄에 (미니멀) */}
-      {isDone && !showReadingTest && !showConversation && (
-        <div className="post-reading-actions">
-          <button
-            className="post-reading-actions__btn"
-            onClick={() => setShowReadingTest(true)}
-          >
-            리딩 테스트
-          </button>
-          <button
-            className="post-reading-actions__btn"
-            onClick={() => setShowConversation(true)}
-          >
-            회화 연습
-          </button>
         </div>
       )}
 
@@ -3117,11 +3069,82 @@ export default function ViewerPage() {
         </div>
       )}
 
-      <ViewerComments
-        user={user} comments={comments} commentInput={commentInput}
-        setCommentInput={setCommentInput} addCommentMutation={addCommentMutation}
-        deleteCommentMutation={deleteCommentMutation}
-      />
+      {/* 다음 — 한 자리에 하나(뷰어 정돈 A안): 시리즈 다음 편 → 책 다음 과 → 마지막 과면 「다음 과 적기」(내 책만,
+          이어 적기 #1077 5520128974) → PDF 다음 범위(예전엔 본문 위 카드의 버튼) → 시리즈·레벨 완주. */}
+      {(isDone || isPending) && (() => {
+        if (nextLesson) {
+          return (
+            <Link href={`/viewer/${nextLesson.id}`} className="next-lesson-card">
+              <div className="next-lesson-card__hint">다음 편</div>
+              <div className="next-lesson-card__title">{nextLesson.title}</div>
+            </Link>
+          );
+        }
+        if (bookNav?.next) {
+          return (
+            <Link href={`/viewer/${bookNav.next.id}`} className="next-lesson-card">
+              <div className="next-lesson-card__hint">다음 과 · {bookNav.pos + 1}/{bookNav.total}</div>
+              <div className="next-lesson-card__title">{bookNav.next.title}</div>
+            </Link>
+          );
+        }
+        if (bookNav?.canAppend) {
+          return (
+            <Link href={`/materials/add?book=${encodeURIComponent(bookNav.key)}`} className="next-lesson-card">
+              <div className="next-lesson-card__hint">+ 다음 과 적기</div>
+              <div className="next-lesson-card__title">《{bookNav.title || '제목 없는 교재'}》 {bookNav.total}과까지 적었어요 — 이어서 적기</div>
+            </Link>
+          );
+        }
+        if (sourcePdf && material.page_end && material.page_end < sourcePdf.page_count) {
+          const to = Math.min(material.page_end + 5, sourcePdf.page_count);
+          return (
+            <button
+              type="button"
+              className="next-lesson-card next-lesson-card--button"
+              onClick={() => nextRangeMutation.mutate({ chunkSize: 5 })}
+              disabled={nextRangeMutation.isPending}
+              title={`p.${material.page_end + 1}부터 분석`}
+            >
+              <div className="next-lesson-card__hint">다음 범위</div>
+              <div className="next-lesson-card__title">
+                {nextRangeMutation.isPending ? '추출 중...' : `p.${material.page_end + 1}-${to} 분석 →`}
+              </div>
+            </button>
+          );
+        }
+        if (isDone && seriesEndCard) {
+          return seriesEndCard.material ? (
+            <Link href={`/viewer/${seriesEndCard.material.id}`} className="series-end-card">
+              <div className="series-end-card__hint">
+                {seriesEndCard.type === 'level'
+                  ? `${seriesEndCard.level} 완주! ${seriesEndCard.nextLevel}로 진학`
+                  : `${seriesEndCard.level} ${seriesEndCard.fromSeries} 시리즈 완주!`}
+              </div>
+              <div className="series-end-card__title">{seriesEndCard.material.title}</div>
+            </Link>
+          ) : (
+            <div className="series-end-card series-end-card--top">
+              <div className="series-end-card__hint">
+                {seriesEndCard.level} {seriesEndCard.fromSeries} 시리즈 완주!
+              </div>
+              <div className="series-end-card__title" style={{ color: 'var(--text-muted)' }}>
+                최고 레벨 도달 — 외부 자료를 활용해보세요
+              </div>
+            </div>
+          );
+        }
+        return null;
+      })()}
+
+      {/* 토론은 공개 자료에만(뷰어 정돈 A안) — 비공개는 작성자만 여니 상대가 없다. 공개로 돌리면 예전 댓글은 그대로. */}
+      {material?.visibility !== 'private' && (
+        <ViewerComments
+          user={user} comments={comments} commentInput={commentInput}
+          setCommentInput={setCommentInput} addCommentMutation={addCommentMutation}
+          deleteCommentMutation={deleteCommentMutation}
+        />
+      )}
 
 
       </main>{/* viewer-center end */}

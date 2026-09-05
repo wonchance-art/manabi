@@ -1993,34 +1993,8 @@ a.viewer-badge:hover {
 /* ── 읽기 설정 리뉴얼(오너 확정 2026-08-27 — 시연 A안+프리셋 줄) ──
    설정 카드의 후신 = 액션바(설정 아닌 것만) + Aa 하단 시트(rsheet).
    backdrop은 무광 — 시트 위 본문이 곧 미리보기라 어둡게 덮지 않는다(시연 합의). */
-/* 액션바(v2-Q) — 오른쪽 정렬이라 왼쪽 정렬인 제목·배지와 축이 어긋나 있었다. 성격도
-   섞여 있다: 읽기 완료·오늘 학습은 **행동**, 듣기·Aa는 **도구**. 축을 갈라 세운다. */
-.viewer-actionbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 30px;
-}
-.viewer-actionbar__group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-/* 오른쪽 배치는 **auto 마진 한 곳**이 맡는다. `justify-content: space-between`을 함께
-   두면 둘이 중복돼 어느 쪽을 지워도 결과가 같고(돌연변이 실측: 양쪽 다 생존), 정작
-   행동 그룹이 통째로 비는 경우(비로그인)에는 space-between이 도구를 왼쪽으로 보낸다.
-   두 경우를 다 감당하는 쪽만 남긴다. */
-.viewer-actionbar__group--tools { margin-left: auto; }
-/* 독립 줄이었을 때의 세로 여백은 그룹 안에서 불필요하다. */
-.viewer-actionbar__group .listen-controls { margin: 0; }
-/* 행동 둘은 같은 버튼 모양 — 링크도 버튼처럼 선다(밑줄 링크 폐기). */
-a.grammar-btn {
-  display: inline-flex;
-  align-items: center;
-  text-decoration: none;
-}
+/* 액션바(v2-Q)는 뷰어 정돈 A안(이슈 1077 코멘트 5547935464)에서 해체됐다 — 도구는 경로 줄 오른쪽(.viewer-topbar__tools),
+   행동은 본문 아래(.post-reading). 규칙은 아래 「뷰어 정돈 A안」 블록에 있다. */
 
 .viewer-aa {
   border: 1.5px solid var(--border);
@@ -2378,8 +2352,10 @@ a.grammar-btn {
   box-shadow: 0 4px 15px var(--primary-glow);
 }
 
-/* Reader hint */
+/* Reader hint — 기본 감춤(뷰어 정돈 A안): 데스크톱은 오른쪽 빈 패널이 같은 안내를 상시로 한다(안내는 한 벌).
+   좌우 패널이 접히는 폭(≤1179px 블록)에서만 켠다 — 그것도 단어를 아직 안 담은 첫 자료에서만(JSX 조건). */
 .reader-hint {
+  display: none;
   width: 100%;
   margin-top: 28px;
   padding: 10px 16px;
@@ -2389,40 +2365,76 @@ a.grammar-btn {
   line-height: 1.5;
 }
 
-/* Reader */
-/* 책 챕터 내비(P1) — 뷰어 상단, 같은 책 형제 챕터 이동 */
-.book-nav {
+/* ========= 뷰어 정돈 A안(이슈 1077 코멘트 5547935464) — 끝은 끝에 =========
+   경로 줄(← 자료실 · 형제 내비 | 도구) · 끝의 행동은 본문 아래 · PDF 출처 한 줄 · 안내문은 첫 자료만.
+   실측(390px, GNB 포함): 첫 글자가 화면 35~63% 지점에서 나왔다 — 액션바 두 줄 89px·책 내비 바 50px·
+   PDF 카드 148px이 본문 위에 있었다. 본문(reader-area·word-token) 셀렉터에는 닿지 않는다(v2-Q ④ 그대로).
+   색은 토큰만. 새 뷰포트 쿼리 0 — 접힘은 flex-wrap이 한다. */
+.viewer-topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 8px 14px;
+  gap: 12px;
+  flex-wrap: wrap;
   margin-bottom: 10px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-secondary);
 }
-.book-nav__btn {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--primary-light);
-  flex-shrink: 0;
-  min-height: 32px;
+.viewer-topbar .viewer-back-link {
   display: inline-flex;
   align-items: center;
+  min-height: 28px;
+  margin-bottom: 0;
 }
-.book-nav__btn--off { color: var(--text-muted); opacity: 0.4; }
-.book-nav__title {
-  flex: 1;
-  min-width: 0;
-  text-align: center;
-  font-size: 0.85rem;
-  font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.viewer-topbar .viewer-series-nav { margin: 0; }
+/* 오른쪽 배치는 auto 마진 한 곳(v2-Q 선례) — 왼쪽이 통째로 비어도 도구는 오른쪽에 남는다. */
+.viewer-topbar__tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-left: auto;
 }
-.book-nav__pos { color: var(--text-muted); font-weight: 400; font-size: 0.78rem; }
+.viewer-topbar__tools .listen-controls { margin: 0; }
+.viewer-attribution__muted { color: var(--text-muted); }
+
+/* 다 읽었다면 — 끝의 행동 한 줄. 버튼 넷이 같은 옷(post-reading-actions__btn), 완료만 색. */
+.post-reading { margin-top: 20px; }
+.post-reading__label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.post-reading .post-reading-actions { margin-top: 0; flex-wrap: wrap; }
+.post-reading .post-reading-actions__btn {
+  flex: 1 1 140px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+.post-reading-actions__btn--primary {
+  background: var(--accent-glow);
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+.post-reading-actions__btn--done {
+  cursor: default;
+  background: var(--accent-glow);
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+/* PDF 다음 범위는 링크가 아니라 버튼(추출 mutation) — 다음 편 카드와 같은 옷을 입는다. */
+.next-lesson-card--button {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+.next-lesson-card--button:disabled { cursor: progress; opacity: 0.7; }
+.next-lesson-card--button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+/* ========= /뷰어 정돈 A안 ========= */
+
+/* Reader */
+/* 책 챕터 내비 바(.book-nav)는 뷰어 정돈 A안에서 폐지 — 시리즈와 같은 .viewer-series-nav(경로 줄) + 본문 아래 다음 카드. */
 
 /* 자료함 책 카드 — summary 기본 마커 제거 */
 .book-card > summary::-webkit-details-marker { display: none; }
@@ -4070,15 +4082,7 @@ a.grammar-btn {
 
   
 
-  /* 읽기 설정 리뉴얼: 액션바는 좁은 화면에서 좌우 꽉 채워 줄바꿈, Aa는 우측 유지 */
-  .viewer-actionbar {
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-  .viewer-actionbar .grammar-btn {
-    padding: 10px 12px;
-    font-size: 0.82rem;
-  }
+  /* (액션바 좁은 화면 규칙은 뷰어 정돈 A안에서 액션바와 함께 사라졌다 — 경로 줄은 flex-wrap이 접는다) */
 
   
 
@@ -4465,16 +4469,6 @@ a.grammar-btn {
   flex-shrink: 0;
 }
 /* 역방향 다리(v2-H R2) — 자료 뷰어의 PDF 출처 줄에서 원본 그 쪽으로 */
-.pdf-origin__back {
-  display: inline-block;
-  margin-top: 6px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--primary-light);
-  text-decoration: none;
-}
-.pdf-origin__back:hover { text-decoration: underline; }
-
 /* ── PDF → 자료 다리(v2-H R1) ──
    툴바에서 범위만 고르고 건너간다. 툴바가 좁으면(모바일) 제목 아래로 접힌다 —
    .pdf-toolbar가 flex-wrap이라 별도 브레이크포인트가 필요 없다(K R2 총량 상한 유지). */
@@ -5139,6 +5133,9 @@ a.grammar-btn {
     from { transform: translateY(100%); }
     to { transform: translateY(0); }
   }
+
+  /* 좌우 패널이 접힌 폭에서만 조작 안내를 켠다(뷰어 정돈 A안 — 안내는 한 벌). */
+  .reader-hint { display: block; }
 }
 
 /* 폰 — 뷰어 본문 가독 폭 최대화: viewer-center 24px×2 + reader-area 40px×2 여백이
@@ -6388,22 +6385,6 @@ a.grammar-btn {
 }
 .source-toggle--off:hover {
   background: var(--border);
-}
-
-/* ========= Viewer 완료 버튼 ========= */
-.grammar-btn--complete {
-  background: var(--accent-glow);
-  color: var(--accent-text);
-  border-color: rgba(74, 138, 92, 0.4);
-}
-.grammar-btn--complete:hover {
-  background: rgba(74, 138, 92, 0.3);
-}
-.viewer-complete-badge {
-  cursor: default;
-  background: var(--accent-glow);
-  color: var(--accent-text);
-  border-color: rgba(74, 138, 92, 0.4);
 }
 
 /* ========= Grammar Modal Footer ========= */
