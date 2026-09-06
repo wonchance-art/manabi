@@ -1,8 +1,15 @@
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 
 const supabaseURL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseOrigin = supabaseURL ? new URL(supabaseURL).origin : null;
 const originalFetch = globalThis.fetch;
+
+// Mirror a published release using the checked-in, hash-verified book. These rows exist
+// only inside the E2E process; production publication and its database remain untouched.
+const editionRoot = new URL('../src/content/textbookEditions/', import.meta.url);
+const { current: editionId } = JSON.parse(readFileSync(new URL('index.json', editionRoot), 'utf8'));
+const edition = JSON.parse(readFileSync(new URL(`${editionId}/bundle.json`, editionRoot), 'utf8'));
 
 function bearerClaims(input, init) {
   const headers = new Headers(input instanceof Request ? input.headers : undefined);
@@ -44,6 +51,16 @@ function userFromClaims(claims) {
 }
 
 function mockResponse(url, claims) {
+  if (url.pathname.endsWith('/rest/v1/textbook_book_releases')) {
+    return json({ book_id: 'japanese-n5', edition_id: editionId, version: 1 });
+  }
+  if (url.pathname.endsWith('/rest/v1/textbook_book_editions')) {
+    const requested = url.searchParams.get('edition_id')?.replace(/^eq\./, '');
+    if (requested && requested !== editionId) return json(null);
+    return json({ book_id: 'japanese-n5', edition_id: editionId,
+      content_hash: edition.contentHash, manuscript: edition.manuscript,
+      artifact_manifest: edition.artifactManifest, published_at: '2026-09-05T00:00:00+09:00' });
+  }
   if (url.pathname.endsWith('/auth/v1/user')) {
     if (!claims?.sub) return json({ message: 'invalid e2e token' }, 401);
     return json(userFromClaims(claims));
