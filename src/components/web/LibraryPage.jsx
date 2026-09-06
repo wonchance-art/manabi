@@ -1,5 +1,7 @@
 'use client';
 import Link from 'next/link';
+import { useEffect } from 'react';
+import LibraryReaderLink from './LibraryReaderLink';
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/AuthContext';
@@ -58,12 +60,12 @@ function ReadingShelf({ book, user }) {
       <QueryState query={reading} label="글의 읽던 위치" />
       {!reading.isError && (reading.data || []).map(row => {
         const material = row.reading_materials;
-        return <Link key={material.id} className="library-reading-row" href={`/viewer/${material.id}`}>
+        return <LibraryReaderLink key={material.id} className="library-reading-row" href={`/viewer/${material.id}`}>
           <span className="library-format">TEXT</span><div><small>{[material.metadata?.language ? langNameKo(material.metadata.language) : '언어 미지정', material.visibility === 'public' ? '공개 자료' : '비공개'].filter(Boolean).join(' · ')}</small><h3>{material.title || '제목 없는 자료'}</h3><p>저장된 문장 위치에서 이어 읽기</p></div><span aria-hidden="true">↗</span>
-        </Link>;
+        </LibraryReaderLink>;
       })}
       <QueryState query={pdfs} label="PDF의 읽던 위치" />
-      {!pdfs.isError && openPdfs.map(pdf => <Link key={pdf.id} className="library-reading-row" href={`/pdf/${pdf.id}?page=${pdf.last_page_read}`}><span className="library-format library-format--pdf">PDF</span><div><small>내 PDF · 비공개</small><h3>{pdf.title || '제목 없는 PDF'}</h3><p>{pdf.last_page_read} / {pdf.page_count}쪽 · 저장된 읽기 위치</p></div><span aria-hidden="true">↗</span></Link>)}
+      {!pdfs.isError && openPdfs.map(pdf => <LibraryReaderLink key={pdf.id} className="library-reading-row" href={`/pdf/${pdf.id}?page=${pdf.last_page_read}`}><span className="library-format library-format--pdf">PDF</span><div><small>내 PDF · 비공개</small><h3>{pdf.title || '제목 없는 PDF'}</h3><p>{pdf.last_page_read} / {pdf.page_count}쪽 · 저장된 읽기 위치</p></div><span aria-hidden="true">↗</span></LibraryReaderLink>)}
       {reading.isSuccess && pdfs.isSuccess && !reading.data.length && !openPdfs.length && <div className="library-empty"><h3>다음으로 읽을 글을 골라 보세요.</h3><p>읽던 글과 PDF가 여기에 모입니다. 다 읽은 자료는 ‘내 자료’에서 다시 열 수 있어요.</p><Link className="manabi-link" href="/materials?view=owned">내 자료에서 고르기 ↗</Link><Link className="manabi-link" href="/discover">발견 둘러보기 ↗</Link></div>}
     </>}
     <div className="library-footer-links"><Link href="/study/library">지난 학습 문단 ↗</Link><Link href="/vocab">담은 표현 복습 ↗</Link><span>받아두기는 이 기기의 오프라인 보관입니다.</span></div>
@@ -73,6 +75,29 @@ function ReadingShelf({ book, user }) {
 export default function LibraryPage({ book }) {
   const params = useSearchParams();
   const view = libraryView(params);
+  const restoreY = params.get('restoreY');
+  useEffect(() => {
+    const y = Number(restoreY);
+    if (restoreY === null || !Number.isFinite(y) || y < 0 || y > 1000000) return;
+    let frame, done = false;
+    const started = performance.now();
+    const stop = () => { done = true; cancelAnimationFrame(frame); };
+    const restore = () => {
+      if (done) return;
+      const height = document.documentElement.scrollHeight - window.innerHeight;
+      if (height >= y || performance.now() - started > 10000) {
+        window.scrollTo({ top: Math.min(y, height), behavior: 'instant' });
+        const url = new URL(window.location.href); url.searchParams.delete('restoreY');
+        window.history.replaceState({ ...window.history.state }, '', url.pathname + url.search);
+        stop();
+      } else frame = requestAnimationFrame(restore);
+    };
+    frame = requestAnimationFrame(restore);
+    window.addEventListener('wheel', stop, { passive: true });
+    window.addEventListener('touchstart', stop, { passive: true });
+    window.addEventListener('keydown', stop);
+    return () => { stop(); window.removeEventListener('wheel', stop); window.removeEventListener('touchstart', stop); window.removeEventListener('keydown', stop); };
+  }, [restoreY]);
   const { user, loading } = useAuth();
   return <div className="manabi-page library-room">
     <header className="manabi-page-heading"><div><p className="manabi-eyebrow">YOUR READING ROOM / 내 서재</p><h1>{view === 'public' ? '함께 읽는 글' : '내가 펼친 세계'}<span>.</span></h1></div><div className="library-header-actions"><Link className="manabi-link" href="/quick">빠른 분석 ↗</Link><Link className="manabi-button" href="/materials/add">자료 가져오기 +</Link></div></header>

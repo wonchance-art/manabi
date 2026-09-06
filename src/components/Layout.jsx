@@ -9,6 +9,7 @@ import OnboardingModal from './OnboardingModal';
 import './books/reading-shell.css';
 import './web/web-shell.css';
 import { MAIN_NAV, navigationOwner } from '@/lib/webNavigation';
+import { librarySearchHref } from '@/lib/libraryReturn';
 import VersionBadge from './VersionBadge';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/ToastContext';
@@ -168,7 +169,7 @@ export default function Layout({ children }) {
           <span aria-hidden="true">◐</span>
         </button>
 
-        <Link href="/materials#library-search" className="manabi-search-link" aria-label="자료 검색">⌕<span>검색</span></Link>
+        <Link href={librarySearchHref(user)} className="manabi-search-link" aria-label="자료 검색">⌕<span>검색</span></Link>
         <div className="gnb__actions">
           {user ? (
             <div className="gnb__user-area">

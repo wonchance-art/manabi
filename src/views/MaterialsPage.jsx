@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
+import LibraryReaderLink, { useLibraryReader } from '@/components/web/LibraryReaderLink';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
@@ -158,6 +159,7 @@ function filterSuggestionsByProfile(suggestions, profile) {
 }
 
 export default function MaterialsPage({ libraryView = null }) {
+  const { readerHref, openReader } = useLibraryReader();
   const { user, profile, loading: authLoading } = useAuth();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -265,7 +267,7 @@ export default function MaterialsPage({ libraryView = null }) {
       setPinBusy(null);
     }
   };
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [visibleCount, setVisibleCount] = useState(() => Math.min(1000, Math.max(PAGE_SIZE, Number(searchParams.get('shown')) || PAGE_SIZE)));
   const [confirmAction, setConfirmAction] = useState(null);
 
   // 검색어 debounce (300ms) — 매 키입력마다 DB 요청 방지
@@ -275,7 +277,20 @@ export default function MaterialsPage({ libraryView = null }) {
   }, [searchInput]);
 
   // 필터 바뀌면 페이지 리셋
-  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [tab, searchQuery, langFilter, levelFilter]);
+  const previousFilterRef = useRef(JSON.stringify([tab, searchQuery, langFilter, levelFilter]));
+  useEffect(() => {
+    const next = JSON.stringify([tab, searchQuery, langFilter, levelFilter]);
+    if (next !== previousFilterRef.current) setVisibleCount(PAGE_SIZE);
+    previousFilterRef.current = next;
+  }, [tab, searchQuery, langFilter, levelFilter]);
+  useEffect(() => {
+    const focusSearch = () => {
+      if (window.location.hash === '#library-search') document.getElementById('library-search')?.focus();
+    };
+    focusSearch();
+    window.addEventListener('hashchange', focusSearch);
+    return () => window.removeEventListener('hashchange', focusSearch);
+  }, []);
 
   // Replace only filter state in the URL. A viewer visit/back restores these filters;
   // no private content or learner records are written to browser history.
@@ -285,9 +300,10 @@ export default function MaterialsPage({ libraryView = null }) {
     for (const [key, value] of Object.entries({ q: searchQuery, lang: langFilter === 'all' ? '' : langFilter, level: levelFilter === 'all' ? '' : levelFilter, sort: sortBy === 'newest' ? '' : sortBy, unread: unreadOnly ? '1' : '', pinned: pinnedOnly && '1' })) {
       if (value) params.set(key, value); else params.delete(key);
     }
+    if (visibleCount > PAGE_SIZE) params.set('shown', String(visibleCount)); else params.delete('shown');
     const next = params.toString();
-    window.history.replaceState(null, '', `/materials${next ? `?${next}` : ''}`);
-  }, [libraryView, searchQuery, langFilter, levelFilter, sortBy, unreadOnly, pinnedOnly]);
+    window.history.replaceState({ ...window.history.state }, '', `/materials${next ? `?${next}` : ''}${window.location.hash}`);
+  }, [libraryView, searchQuery, langFilter, levelFilter, sortBy, unreadOnly, pinnedOnly, visibleCount]);
 
   const { data: suggestions = [] } = useQuery({
     queryKey: ['suggestions-today'],
@@ -707,7 +723,7 @@ export default function MaterialsPage({ libraryView = null }) {
                   fitLine={fitLineOf(bf, '과')}
                   rows={b.chapters.map((c) => ({
                     key: c.id,
-                    onClick: () => router.push(`/viewer/${c.id}`),
+                    onClick: () => openReader(`/viewer/${c.id}`),
                     lead: c._bookOrder,
                     title: c.title.includes(' — ') ? c.title.split(' — ').slice(1).join(' — ') : c.title,
                     right: chapterTags(c),
@@ -743,15 +759,15 @@ export default function MaterialsPage({ libraryView = null }) {
                   fitLine={fitLineOf(bf, '개')}
                   rows={g.chapters.map((c) => ({
                     key: c.id,
-                    onClick: () => router.push(`/viewer/${c.id}`),
+                    onClick: () => openReader(`/viewer/${c.id}`),
                     lead: pageRangeLabel(c) || '',
                     title: c.title,
                     right: chapterTags(c),
                   }))}
                   footer={(
-                    <Link href={`/pdf/${g.pdf.id}`} className="btn btn--secondary btn--sm">
+                    <LibraryReaderLink href={`/pdf/${g.pdf.id}`} className="btn btn--secondary btn--sm">
                       {progress ? '이어 읽기' : '원본 PDF 보기'}
-                    </Link>
+                    </LibraryReaderLink>
                   )}
                 />
               );
@@ -812,15 +828,15 @@ export default function MaterialsPage({ libraryView = null }) {
               <div
                 key={m.id}
                 className="card card--clickable mat-card"
-                onClick={() => router.push(`/viewer/${m.id}`)}
+                onClick={() => openReader(`/viewer/${m.id}`)}
                 title={previewText || undefined}
               >
                 <div className="mat-card__head">
                   <h3 className="card__title">
                     <Link
-                      href={`/viewer/${m.id}`}
+                      href={readerHref(`/viewer/${m.id}`)}
                       style={{ color: 'inherit', textDecoration: 'none' }}
-                      onClick={(e) => e.stopPropagation()}
+                      onClick={(e) => { e.stopPropagation(); openReader(`/viewer/${m.id}`, e); }}
                     >
                       {m.title}
                     </Link>

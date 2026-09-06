@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { LibraryReturnLink } from '@/components/web/LibraryReaderLink';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { cacheMaterial, getCachedMaterial } from '../lib/offlineCache';
@@ -540,7 +541,8 @@ export default function ViewerPage() {
   });
 
   // 스크롤 위치 저장(debounce 2s) + 재진입 시 자동 복원
-  const { saveScrollPosition, tokenRefs } = useScrollRestore({ user, materialId: id, material, readingProgress });
+  const { saveScrollPosition, tokenRefs, positionError, retryPosition } = useScrollRestore({ user, materialId: id, material, readingProgress });
+  const [sourceFocusId, setSourceFocusId] = useState(null);
 
   // 단어 저장 카운트 (복습 유도용)
   const saveCountRef = useRef(0);
@@ -1588,7 +1590,7 @@ export default function ViewerPage() {
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           {!isNotFound && <button onClick={() => refetch()} className="btn btn--primary">다시 시도</button>}
-          <a href="/materials" className="btn btn--secondary">자료실로 돌아가기</a>
+          <LibraryReturnLink className="btn btn--secondary">← 내 서재</LibraryReturnLink>
         </div>
       </div>
     );
@@ -1600,7 +1602,7 @@ export default function ViewerPage() {
       <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
         <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>비공개 자료입니다</h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>이 자료는 작성자만 열람할 수 있습니다.</p>
-        <Link href="/materials" className="btn btn--primary">자료실로 돌아가기</Link>
+        <LibraryReturnLink className="btn btn--primary">← 내 서재</LibraryReturnLink>
       </div>
     );
   }
@@ -2275,7 +2277,7 @@ export default function ViewerPage() {
             남고, 끝의 행동(읽기 완료·오늘 학습·다음 범위)은 본문 **아래**로 갔다(「끝은 끝에」). 예전 액션바는
             폰에서 두 줄(89px)로 꺾였고, 그 위에 뒤로가기 줄·시리즈 내비 줄이 따로 있었다. */}
         <div className="viewer-topbar">
-          <Link href="/materials" className="viewer-back-link">← 자료실</Link>
+          <LibraryReturnLink className="viewer-back-link">← 내 서재</LibraryReturnLink>
           {siblingNav && (
             <div className="viewer-series-nav" title={siblingNav.label}>
               {siblingNav.prev ? (
@@ -2369,6 +2371,7 @@ export default function ViewerPage() {
           </div>
         )}
       </header>
+      {positionError && <div className="error-banner" role="status">읽기 위치를 저장하지 못했어요. <button type="button" className="btn btn--ghost" onClick={retryPosition}>다시 저장</button></div>}
 
       {/* 출처 표기(v2-F R5) — CC BY는 **표기가 라이선스 조건**이다. `metadata.source`가
           저장만 되고 어디에도 안 보이던 것을 여기서 드러낸다(저장은 표기가 아니다).
@@ -2842,7 +2845,7 @@ export default function ViewerPage() {
                   data-tid={tokenId}
                 data-source-token={tokenId}
                 data-source-text={token.text}
-                  className={`word-token word-token--failed${pickedClass}`} style={paceStyle} title="분석 실패 — 재시도 버튼을 눌러주세요">
+                  className={`word-token word-token--failed${pickedClass}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}`} style={paceStyle} title="분석 실패 — 재시도 버튼을 눌러주세요">
                   {linePick}
                   <span className="furigana" />
                   <span className="surface">{token.text}</span>
@@ -2884,7 +2887,7 @@ export default function ViewerPage() {
                 data-source-token={tokenId}
                 data-source-text={token.text}
                 data-text={token.text}
-                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}`}
+                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}`}
                 style={paceStyle}
                 role="button" tabIndex={0}
                 onClick={() => handleTokenClick(token, tokenId, { pronHidden, pronRevealed })}
@@ -3110,7 +3113,7 @@ export default function ViewerPage() {
         </div>
       )}
 
-      <ReadingSourceFocus materialId={id} ready={!!material?.processed_json?.sequence?.length} />
+      <ReadingSourceFocus materialId={id} ready={!!material?.processed_json?.sequence?.length} onTarget={setSourceFocusId} />
       {STUDY_LANGS.has(materialLang) && <MaterialChapterLinks lang={materialLang} kind="reading" materialId={id} />}
 
       {/* 다음 — 한 자리에 하나(뷰어 정돈 A안): 시리즈 다음 편 → 책 다음 과 → 마지막 과면 「다음 과 적기」(내 책만,

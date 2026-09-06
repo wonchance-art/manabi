@@ -38,7 +38,8 @@ describe('추가 화면 (MaterialAddPage)', () => {
     expect(add).toContain('const isNote = direction === MATERIAL_DIRECTION.WRITE;');
     expect(add).toContain('...(isNote ? { direction: MATERIAL_DIRECTION.WRITE } : {}),');
     expect(add).toContain("visibility: (pdfSource || epubSource || isNote) ? 'private' : visibility,");
-    expect(add.match(/\.from\('reading_materials'\)\s*\.insert\(\[materialRow\]\)/g)).toHaveLength(1);
+    expect(add).toContain('saveImportOnce(supabase, importAttemptRef.current.attempt)');
+    expect(read('src/lib/materialImport.js').match(/\.insert\(\[row\]\)/g)).toHaveLength(1);
     // 학습 언어 토글은 그대로(4종 밖 'Korean' 없음)
     expect(add).not.toContain("'Korean'");
     expect(add).toContain('내 노트');
@@ -46,12 +47,13 @@ describe('추가 화면 (MaterialAddPage)', () => {
 
   it("direction=write는 분석 큐에 들어가지 않는다 — status 'note'로 저장하고 runBackgroundAnalysis를 호출하지 않는다", () => {
     expect(add).toContain(`status: isNote ? 'note' : "analyzing"`);
-    const after = sliceBetween(add, 'if (isNote) {', "setStatus('저장 완료. 백그라운드 분석을 시작합니다...');");
+    const after = sliceBetween(add, 'if (isNote) {', "setStatus('원문 저장 완료. 읽기 도구를 준비하고 있어요…');");
     expect(after).not.toContain('runBackgroundAnalysis(');
-    expect(after).toContain('setCompletedId(data[0].id);');
+    expect(after).not.toContain('startAnalysis(');
+    expect(add.indexOf('setCompletedId(record.id);')).toBeLessThan(add.indexOf('if (isNote) {'));
     expect(after).toContain('return;');
     // 읽기 자료 경로는 그대로
-    expect(add).toContain('runBackgroundAnalysis(data[0].id, rawText, controller.signal);');
+    expect(add).toContain('runBackgroundAnalysis(savedRecordRef.current, controller.signal)');
   });
 
   it('자동 번역 진입점이 없다(번역기화 방어선)', () => {

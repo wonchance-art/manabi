@@ -97,7 +97,7 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
     expect(viewer).toContain("if (logError) console.warn('[correction log] failed:'");
     expect(writing).toContain('if (r2.error) throw r2.error');
     expect(materialAdd).toContain('const { error: suggestionLinkError } = await supabase');
-    expect(materialAdd).toContain('if (suggestionLinkError)');
+    expect(materialAdd).toContain('if (suggestionLinkError && aliveRef.current)');
   });
 
   it('V-13 재감사: 비동기 mutation도 반환 error를 버리지 않는다', () => {
@@ -117,9 +117,12 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
     expect(session).toContain("console.warn('[writing practice] history save failed:'");
     expect(session).not.toContain(').then(() => {}, () => {})');
 
-    expect(materialAdd).toContain('const { error: pdfProgressError } = await supabase.from(\'uploaded_pdfs\')');
-    expect(materialAdd).toContain('if (pdfProgressError) throw pdfProgressError');
-    expect(materialAdd).toContain('자료는 저장됐지만 PDF 읽기 위치 동기화에 실패했어요.');
+    // Importing a page range is not reading it. Only the PDF reader owns page progress.
+    expect(materialAdd).not.toContain('last_page_read: pdfSource.pageEnd');
+    const persistence = read('src/lib/materialImport.js');
+    expect(persistence).toContain('if (error) throw error;');
+    expect(persistence).toContain(".eq('owner_id', record.owner_id).select('id')");
+
   });
 
   it('V-13 재감사: src/views 직접 await Supabase 조회가 error를 누락하지 않는다', () => {

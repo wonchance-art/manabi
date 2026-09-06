@@ -1,0 +1,14 @@
+.add-page { max-width: 848px; width: 100%; container-type: inline-size; }
+.import-fields { border: 0; padding: 0; margin: 0; min-inline-size: 0; }
+
+.import-result { margin-block: 20px 32px; padding: clamp(16px, 3cqi, 24px); border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg-card); }
+.import-saved-label { color: var(--accent-text); font-weight: 700; margin: 0 0 8px; }
+.import-status { color: var(--text-secondary); margin: 0 0 16px; line-height: 1.6; }
+.import-result .form-actions { flex-wrap: wrap; }
+.import-result .form-actions > button { min-height: 44px; min-width: min(100%, 160px); }
+.import-result .progress-wrap__header { flex-wrap: wrap; gap: 8px; }
+.import-result .error-banner { overflow-wrap: anywhere; }
+
+.import-language-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.import-language-options .toggle-btn { padding-inline: 10px; white-space: nowrap; }
+@container (max-width: 600px) { .import-language-options { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

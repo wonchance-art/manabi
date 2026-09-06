@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { LibraryReturnLink } from '@/components/web/LibraryReaderLink';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
@@ -273,7 +274,7 @@ export default function PdfViewerPage() {
   if (error) return (
     <div className="page-container" style={{ textAlign: 'center', paddingTop: 80 }}>
       <h2>PDF를 찾을 수 없어요</h2>
-      <Link href="/materials" className="btn btn--primary">자료실로</Link>
+      <LibraryReturnLink className="btn btn--primary">← 내 서재</LibraryReturnLink>
     </div>
   );
 
@@ -352,7 +353,7 @@ export default function PdfViewerPage() {
   return (
     <div className="pdf-page">
       <div className="pdf-toolbar" style={{ padding: '10px 16px' }}>
-        <Link href="/materials" className="pdf-toolbar__back">← 자료실</Link>
+        <LibraryReturnLink className="pdf-toolbar__back">← 내 서재</LibraryReturnLink>
         <h1 className="pdf-toolbar__title">{pdfInfo?.title || 'PDF'}</h1>
         {/* 자료 뷰어로 건너가는 다리(v2-H R1) — 여기서 범위만 고르고 나머지는 그쪽 몫 */}
         <PdfReadBridge pdfInfo={pdfInfo} livePage={livePage} mutation={rangeMutation} user={user} />
