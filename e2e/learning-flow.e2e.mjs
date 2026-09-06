@@ -404,7 +404,7 @@ async function openTrackChapter(page, track) {
 
   const chapterRow = page.locator(`#lessons-ch-${track.slug}`);
   await assertVisible(chapterRow, `${track.label} manifest chapter`);
-  assert.equal(await chapterRow.getAttribute('href'), track.path, 'manifest link keeps its original content address');
+  assert.equal(await chapterRow.getAttribute('href'), `/admin/legacy-textbooks${track.path}`, 'archive navigation links directly to the authenticated destination');
   await chapterRow.click();
   await page.waitForURL(`**/admin/legacy-textbooks${track.path}`, { waitUntil: 'domcontentloaded', timeout: config.timeout });
   assert.equal(new URL(page.url()).pathname, `/admin/legacy-textbooks${track.path}`);

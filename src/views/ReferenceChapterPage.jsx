@@ -1,3 +1,4 @@
+import { legacyTextbookTarget } from '../lib/bookNavigation';
 import Link from 'next/link';
 import { buildChapterQuiz } from '../lib/refQuiz';
 import { refInline, refMain, refPron, Callout, CALLOUT_ORDER, RefParallel, RefHanjaBridge, LevelDot, JaText, lightenForText } from './refShared';
@@ -221,9 +222,10 @@ export function FormulaicChapterIntro({ formulaic }) {
  * 언어 레퍼런스 — 문법 챕터 상세 페이지 (프랑스어·일본어·영어 공용)
  */
 export default async function ReferenceChapterPage({ lang, slug, registry: baseRef, data, courseLesson }) {
-  const backHref = `/lessons?lang=${lang}&view=ref`;
+  const backHref = `/admin/legacy-textbooks?lang=${lang}&view=ref`;
 
   const ref = data ? await loadPublishedRegistry(lang, baseRef) : baseRef;
+  const navigationBase = legacyTextbookTarget(ref?.base) || ref?.base;
 
   if (!data) {
     return (
@@ -261,14 +263,14 @@ export default async function ReferenceChapterPage({ lang, slug, registry: baseR
       const related = bunkei.themes.flatMap(t => t.items).filter(i => i.ch === chapter.slug).length;
       if (related > 0) {
         reviewLinks.push({
-          href: `${ref.base}/bunkei/${chapter.level.toLowerCase()}?ch=${chapter.slug}`,
+          href: `${navigationBase}/bunkei/${chapter.level.toLowerCase()}?ch=${chapter.slug}`,
           label: `연관 문형 ${related}개 복습`,
         });
       }
     }
     if (ref.countVocab(chapter.level) > 0) {
       reviewLinks.push({
-        href: `${ref.base}/vocab/${chapter.level.toLowerCase()}`,
+        href: `${navigationBase}/vocab/${chapter.level.toLowerCase()}`,
         label: `${chapter.level} 어휘`,
       });
     }
@@ -607,7 +609,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: baseR
             이 챕터는 가볍게 읽고 넘어가면 돼요 — 본격 학습은 <strong>{firstRegularLabel}</strong>부터예요.
           </p>
           {next && (
-            <Link href={`${ref.base}/grammar/${next.slug}`} className="fr-check__next">
+            <Link href={`${navigationBase}/grammar/${next.slug}`} className="fr-check__next">
               다음 챕터 · {next.title} →
             </Link>
           )}
@@ -632,7 +634,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: baseR
           storageKey={`${ref.readKey}_check`}
           slug={chapter.slug}
           intro={isIntro}
-          next={next ? { href: `${ref.base}/grammar/${next.slug}`, title: next.title } : null}
+          next={next ? { href: `${navigationBase}/grammar/${next.slug}`, title: next.title } : null}
           reviewLinks={reviewLinks}
           />
         </>
@@ -653,7 +655,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: baseR
         const bunkei = ref.getBunkei?.(chapter.level);
         if (!bunkei) return null;
         const related = bunkei.themes.flatMap(t => t.items).filter(i => i.ch === chapter.slug).length;
-        const base = `${ref.base}/bunkei/${chapter.level.toLowerCase()}`;
+        const base = `${navigationBase}/bunkei/${chapter.level.toLowerCase()}`;
         return (
           <Link
             href={related > 0 ? `${base}?ch=${chapter.slug}` : base}
@@ -685,13 +687,13 @@ export default async function ReferenceChapterPage({ lang, slug, registry: baseR
       {/* ── 이전/다음 ── */}
       <nav className="fr-pager" aria-label="챕터 이동">
         {prev ? (
-          <Link href={`${ref.base}/grammar/${prev.slug}`} className="fr-pager__link">
+          <Link href={`${navigationBase}/grammar/${prev.slug}`} className="fr-pager__link">
             <span className="fr-pager__dir">← 이전 · {ref.getLevelMeta(prev.level)?.label}</span>
             <span className="fr-pager__title">{prev.title}</span>
           </Link>
         ) : <span />}
         {next ? (
-          <Link href={`${ref.base}/grammar/${next.slug}`} className="fr-pager__link fr-pager__link--next">
+          <Link href={`${navigationBase}/grammar/${next.slug}`} className="fr-pager__link fr-pager__link--next">
             <span className="fr-pager__dir">{ref.getLevelMeta(next.level)?.label} · 다음 →</span>
             <span className="fr-pager__title">{next.title}</span>
           </Link>

@@ -1,5 +1,6 @@
 'use client';
 
+import { legacyTextbookTarget } from '../lib/bookNavigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
@@ -87,7 +88,8 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
     });
   }
 
-  const backHref = `/lessons?lang=${lang}&view=ref`;
+  const navigationBase = legacyTextbookTarget(refInfo?.base) || refInfo?.base;
+  const backHref = `/admin/legacy-textbooks?lang=${lang}&view=ref`;
   const allWords = useMemo(
     () => (vocab ? vocab.themes.flatMap(t => t.words) : []),
     [vocab]
@@ -290,7 +292,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
             return (
               <Link
                 key={m.key}
-                href={`${refInfo.base}/vocab/${m.key.toLowerCase()}`}
+                href={`${navigationBase}/vocab/${m.key.toLowerCase()}`}
                 className={`fr-vocab-tab ${active ? 'is-active' : ''}`}
                 style={active ? { color: lightenForText(m.color), background: m.bg, borderColor: m.line } : undefined}
                 aria-current={active ? 'page' : undefined}
@@ -322,7 +324,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
         {hasBunkei && (
           <>
             <span className="bk-toolbar__sep" aria-hidden="true" />
-            <Link href={`${refInfo.base}/bunkei/${meta?.key.toLowerCase()}`} className="bk-switch">
+            <Link href={`${navigationBase}/bunkei/${meta?.key.toLowerCase()}`} className="bk-switch">
               {meta?.key} 문형 사전으로 →
             </Link>
           </>
