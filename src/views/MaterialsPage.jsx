@@ -333,6 +333,7 @@ export default function MaterialsPage({ libraryView = null }) {
     staleTime: 1000 * 60,
   });
   const completedIds = progressMap.completed;
+  const showPdfs = tab === 'private' && libraryView !== 'notes';
 
   // 내 그룹들이 이번 주 같이 읽는 자료 (v2-F R3) — 홈이 쓰는 캐시를 그대로 타 추가 왕복 0.
   const groupReadIds = useGroupReadIds();
@@ -664,8 +665,8 @@ export default function MaterialsPage({ libraryView = null }) {
       </div>
 
       {progressError && <div className="library-query-state" role="alert">읽음 기록을 불러오지 못했어요. <button type="button" onClick={() => refetchProgress()}>다시 불러오기</button></div>}
-      {pdfsError && <div className="library-query-state" role="alert">PDF 목록을 불러오지 못했어요. <button type="button" onClick={() => refetchPdfs()}>다시 불러오기</button></div>}
-      {pdfsLoading && <p role="status">PDF 목록 확인 중…</p>}
+      {showPdfs && pdfsError && <div className="library-query-state" role="alert">PDF 목록을 불러오지 못했어요. <button type="button" onClick={() => refetchPdfs()}>다시 불러오기</button></div>}
+      {showPdfs && pdfsLoading && <p role="status">PDF 목록 확인 중…</p>}
       {(!tab || isLoading) ? (
         <CardGridSkeleton />
       ) : materialsError ? (
@@ -927,7 +928,7 @@ export default function MaterialsPage({ libraryView = null }) {
           </div>
         )}
         </>
-      ) : (
+      ) : (showPdfs && (pdfsLoading || pdfsError)) ? null : (
         <div className="empty-state">
           <p className="empty-state__msg">
             {anyFilter

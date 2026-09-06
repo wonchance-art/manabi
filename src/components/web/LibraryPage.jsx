@@ -22,7 +22,7 @@ function ReadingShelf({ book, user }) {
   const local = useReadingProgress(book?.edition);
   const resume = bookResume(book, local.progress, local.hasProgress);
   const reading = useQuery({
-    queryKey: ['library-reading-v2', user?.id], enabled: !!user, staleTime: 60000,
+    queryKey: ['library-reading-v2', user?.id], enabled: !!user, staleTime: 0,
     queryFn: async () => {
       const { data, error } = await supabase.from('reading_progress')
         .select('material_id, last_token_idx, is_completed, updated_at, reading_materials(id, title, visibility, metadata:processed_json->metadata, status:processed_json->>status)')
@@ -33,7 +33,7 @@ function ReadingShelf({ book, user }) {
     },
   });
   const pdfs = useQuery({
-    queryKey: ['my-pdfs', user?.id], enabled: !!user, staleTime: 60000,
+    queryKey: ['my-pdfs', user?.id], enabled: !!user, staleTime: 60000, refetchOnMount: 'always',
     queryFn: async () => {
       const { data, error } = await supabase.from('uploaded_pdfs')
         .select('id, title, page_count, created_at, thumbnail_path, last_page_read')
