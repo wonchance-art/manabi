@@ -73,9 +73,21 @@ function runtimeErrors(page) {
 
 async function runInFreshPage(run, { allowErrors = [] } = {}) {
   // Inspect completed control states using the application's reduced-motion support.
-  const context = await browser.newContext({ baseURL: config.use.baseURL, reducedMotion: 'reduce' });
+  // API fixtures must be handled by Playwright routes, including requests issued during
+  // client navigation. A production service worker would bypass those route handlers.
+  const context = await browser.newContext({ baseURL: config.use.baseURL, reducedMotion: 'reduce', serviceWorkers: 'block' });
   const page = await context.newPage();
   const errors = runtimeErrors(page);
+  const navigationEvents = [];
+  page.on('response', response => {
+    const url = new URL(response.url());
+    if (url.origin === new URL(config.use.baseURL).origin && !url.pathname.startsWith('/_next/')) {
+      navigationEvents.push({ path: url.pathname, status: response.status(), type: response.headers()['content-type'] });
+    }
+  });
+  page.on('requestfailed', request => {
+    navigationEvents.push({ path: new URL(request.url()).pathname, error: request.failure()?.errorText });
+  });
   try {
     await run(page, context);
     await page.waitForTimeout(250);
@@ -85,6 +97,7 @@ async function runInFreshPage(run, { allowErrors = [] } = {}) {
     const pathname = new URL(page.url()).pathname;
     const headings = await page.locator('h1').allTextContents().catch(() => []);
     error.message += `\nLearning flow stopped at ${pathname}; headings=${JSON.stringify(headings)}`;
+    error.message += `\nRecent navigation=${JSON.stringify(navigationEvents.slice(-12))}`;
     throw error;
   } finally {
     await context.close();
