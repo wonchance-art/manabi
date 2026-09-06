@@ -3439,14 +3439,7 @@ a.viewer-badge:hover {
 }
 
 /* ========= MyPage ========= */
-.mypage-guest {
-  text-align: center;
-  padding: 100px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-}
+
 
 .mypage-avatar {
   width: 70px;

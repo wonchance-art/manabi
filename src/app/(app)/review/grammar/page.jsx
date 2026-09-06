@@ -184,7 +184,7 @@ export default async function Page() {
   }
 
   const nowIso = new Date().toISOString();
-  const [{ data: dueRows }, { data: upcomingRows }] = await Promise.all([
+  const [{ data: dueRows, error: dueError }, { data: upcomingRows, error: upcomingError }] = await Promise.all([
     supabase.from('grammar_review')
       .select('*')
       .eq('user_id', user.id)
@@ -198,6 +198,7 @@ export default async function Page() {
       .order('next_review_at', { ascending: true })
       .limit(30),
   ]);
+  if (dueError || upcomingError) return <div className="page-container"><section className="manabi-inline-state" role="alert"><h1>문법 복습을 불러오지 못했어요.</h1><p>연결을 확인하고 다시 열어 주세요. 복습 기록은 그대로 남아 있어요.</p><a href="/review/grammar">다시 불러오기 →</a></section></div>;
   await prepare([...(dueRows || []), ...(upcomingRows || [])]);
 
   // ── 잔존 인트로 레벨(OT/A0) 큐 방어 — 표시하지 않고 본인 행을 삭제(fire-and-forget) ──

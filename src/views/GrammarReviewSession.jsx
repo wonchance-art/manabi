@@ -11,6 +11,7 @@ import { applyGuestReviewResult, drillIdFromQueueSlug } from '../lib/drillSrs';
 import { recordActivity } from '../lib/streak';
 import { textbookThemeStyle } from '../lib/textbookTheme';
 import '../components/admin/textbook.css';
+import '../components/web/review-room.css';
 
 function shuffle(arr) {
   const a = [...arr];
@@ -274,7 +275,8 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
 
   // ── 챕터 복습 진행 ──
   return (
-    <div className="page-container textbook-theme" style={{ maxWidth: 760, ...textbookThemeStyle(item.lang) }}>
+    <div className="page-container textbook-theme manabi-grammar-room" style={{ maxWidth: 760, ...textbookThemeStyle(item.lang) }}>
+      <div className="review-room-session-nav"><Link href="/vocab" prefetch={false}>← 복습으로</Link><span>떠올리기 → 확인 → 다음</span></div>
       <header style={{ margin: '14px 0 18px' }}>
         <div role="status" aria-live="polite" aria-atomic="true" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: 6 }}>
           문법 복습 · 챕터 {idx + 1}/{items.length}
@@ -412,7 +414,7 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
               : graded
                 ? ' · 복습 결과를 저장했어요.'
                 : ''}
-            {rightCount < total && <> 헷갈렸다면 <Link href={item.href} style={{ textDecoration: 'underline' }}>챕터를 다시 열어</Link> 확인해 보세요.</>}
+            {rightCount < total && <> 헷갈렸다면 <Link href={item.href} target="_blank" rel="noopener noreferrer" prefetch={false} style={{ textDecoration: 'underline' }}>챕터를 다시 열어</Link> 확인해 보세요.</>}
           </p>
           <div className="fr-check__verdict-actions">
             {gradeError ? (
