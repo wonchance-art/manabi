@@ -42,4 +42,3 @@
 
 /* Long reference URLs also wrap inside the narrow embedded reader. */
 .book-reading-content .paper a,.book-reading-content #colophon p{overflow-wrap:anywhere}
-
