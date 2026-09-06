@@ -282,7 +282,7 @@ export default function MaterialsPage({ libraryView = null }) {
   useEffect(() => {
     if (!libraryView) return;
     const params = new URLSearchParams(window.location.search);
-    for (const [key, value] of Object.entries({ q: searchQuery, lang: langFilter === 'all' ? '' : langFilter, level: levelFilter === 'all' ? '' : levelFilter, sort: sortBy === 'newest' ? '' : sortBy, unread: unreadOnly ? '1' : '', pinned: pinnedOnly ? '1' : '' })) {
+    for (const [key, value] of Object.entries({ q: searchQuery, lang: langFilter === 'all' ? '' : langFilter, level: levelFilter === 'all' ? '' : levelFilter, sort: sortBy === 'newest' ? '' : sortBy, unread: unreadOnly ? '1' : '', pinned: pinnedOnly && '1' })) {
       if (value) params.set(key, value); else params.delete(key);
     }
     const next = params.toString();

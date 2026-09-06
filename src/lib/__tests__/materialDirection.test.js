@@ -33,7 +33,8 @@ describe('내 노트 — 방향 축 (constants·migration)', () => {
 
 describe('추가 화면 (MaterialAddPage)', () => {
   it('「내 노트」 갈래 — 저장 흐름은 하나(같은 insert), direction=write·비공개 고정, 목표어를 그대로 선언', () => {
-    expect(add).toContain("const [direction, setDirection] = useState(MATERIAL_DIRECTION.READ);");
+    // A direct note link can choose WRITE; ordinary/unknown links still default to READ.
+    expect(add).toContain("searchParams.get('direction') === MATERIAL_DIRECTION.WRITE ? MATERIAL_DIRECTION.WRITE : MATERIAL_DIRECTION.READ");
     expect(add).toContain('const isNote = direction === MATERIAL_DIRECTION.WRITE;');
     expect(add).toContain('...(isNote ? { direction: MATERIAL_DIRECTION.WRITE } : {}),');
     expect(add).toContain("visibility: (pdfSource || epubSource || isNote) ? 'private' : visibility,");
@@ -71,7 +72,7 @@ describe('자료실 (MaterialsPage)', () => {
   it('direction 컬럼 미적용 환경 폴백 — 컬럼 없이 같은 조회를 한 번 더(기존 자료 동작 불변)', () => {
     expect(list).toContain("const MATERIAL_LIST_COLS = 'id, title, created_at, visibility, owner_id, processed_json, source_pdf_id, page_start, page_end';");
     expect(list).toContain('.select(withDirection ? `${MATERIAL_LIST_COLS}, direction` : MATERIAL_LIST_COLS)');
-    expect(list).toContain('if (/column|schema|direction/i.test(error.message || \'\')) {');
-    expect(list).toContain('fetchMaterialsWithoutDirection({ tab, userId, langFilter, levelFilter, searchQuery })');
+    expect(list).toContain('if (withDirection && /column|schema|direction/i.test(error.message || \'\')) {');
+    expect(list).toContain('fetchMaterialsWithoutDirection({ tab, userId, langFilter, levelFilter, searchQuery, includeOwnedPublic })');
   });
 });

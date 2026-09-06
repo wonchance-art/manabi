@@ -56,7 +56,7 @@ async function check(label){await page.evaluate(()=>document.fonts.ready);const 
 try {
  await page.goto(base+'/discover');await page.getByRole('heading',{name:'궁금한 곳부터, 한 편씩.'}).waitFor();await check('public regional reading index loads from real registry');
  await page.screenshot({path:out+'/discover-desktop.png',fullPage:true});
- await page.getByLabel('지역',{exact:true}).selectOption('france');await page.getByRole('button',{name:'문화',exact:true}).click();
+ await page.getByLabel('지역',{exact:true}).selectOption('france');await page.getByRole('button',{name:'문화',exact:true}).focus();await page.keyboard.press('Enter');
  await page.waitForFunction(()=>document.querySelectorAll('.discovery-reading-item').length===1);assert.match(page.url(),/region=france/);assert.match(page.url(),/topic=culture/);
  const article=page.locator('.discovery-reading-item').first(),href=await article.getAttribute('href');await article.click();await page.waitForURL('**'+href);await page.getByRole('heading',{level:1}).waitFor();await page.goBack();await page.locator('.discovery-reading-item').first().waitFor();assert.equal(await page.getByLabel('지역',{exact:true}).inputValue(),'france');await check('article navigation and back retain region/topic filters');
  await page.getByLabel('제목·소개 검색').fill('없는검색어XYZ');await page.getByRole('button',{name:'찾기 ↗',exact:true}).click();await page.getByRole('heading',{name:'이 조합의 글은 아직 없어요.'}).waitFor();await check('combined no-results has reset');

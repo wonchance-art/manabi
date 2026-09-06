@@ -1,10 +1,13 @@
 import { describe, it, expect } from 'vitest';
+import { navigationOwner } from '../webNavigation';
 import { libraryView, materialLibraryFilters, isLibraryNote, readingLibraryRows, discoverMatches } from '../libraryDiscovery';
 
 describe('library sections and real record boundaries', () => {
   it('defaults to reading and preserves old public/private links', () => {
     const view = text => libraryView(new URLSearchParams(text));
     expect(view('')).toBe('reading');
+    expect(navigationOwner('/study/library')).toBe('/materials');
+    expect(navigationOwner('/study')).toBe('/vocab');
     expect(view('view=notes')).toBe('notes');
     expect(view('tab=public&view=notes')).toBe('public');
     expect(view('tab=private')).toBe('owned');

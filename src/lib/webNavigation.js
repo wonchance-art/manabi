@@ -6,6 +6,7 @@ export const MAIN_NAV = Object.freeze([
   { href: '/materials', label: '내 서재', prefetch: false },
 ]);
 export function navigationOwner(pathname) {
+  if (/^\/study\/library(?:\/|$)/.test(pathname)) return '/materials';
   if (/^\/(?:lessons|books)(?:\/|$)/.test(pathname)) return '/lessons';
   if (/^\/(?:discover|studies|world)(?:\/|$)/.test(pathname)) return '/discover';
   if (/^\/(?:vocab|review|study|learn)(?:\/|$)/.test(pathname)) return '/vocab';
