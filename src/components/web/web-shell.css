@@ -173,3 +173,5 @@
 .today-material-cover>span{font-size:90px;flex:1;display:grid;place-items:center}
 .manabi-page h1,.manabi-page h2,.manabi-page h3,.manabi-reader-outline nav a{word-break:keep-all;overflow-wrap:anywhere}
 .manabi-app .manabi-cover__glyph[lang="zh"]{font-family:var(--font-noto-sc),sans-serif}
+
+.today-story .suggestion-artwork>small{display:none}
