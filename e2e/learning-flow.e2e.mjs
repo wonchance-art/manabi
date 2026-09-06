@@ -398,7 +398,7 @@ async function openTrackChapter(page, track) {
   const chapterRow = page.locator(`#lessons-ch-${track.slug}`);
   await assertVisible(chapterRow, `${track.label} manifest chapter`);
   await chapterRow.click();
-  await page.waitForURL(`**/admin/legacy-textbooks${track.path}`, { timeout: config.timeout });
+  await page.waitForURL(`**/admin/legacy-textbooks${track.path}`, { waitUntil: 'domcontentloaded', timeout: config.timeout });
   assert.equal(new URL(page.url()).pathname, `/admin/legacy-textbooks${track.path}`);
   await assertVisible(page.getByRole('heading', { level: 1 }).first(), `${track.label} chapter heading`);
 }
@@ -573,7 +573,7 @@ test('writing: 초안과 체크리스트를 새로고침 뒤 복원하고 이어
     });
     assert.equal(precedesFilters, true, 'the continue card should precede language and level filters');
     await continueCard.click();
-    await page.waitForURL('**/french/grammar/**', { timeout: config.timeout });
+    await page.waitForURL('**/french/grammar/**', { waitUntil: 'domcontentloaded', timeout: config.timeout });
     await sampleHeap(page, 'writing restore and continue card');
   });
 });

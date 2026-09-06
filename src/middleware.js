@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import { legacyTextbookTarget } from './lib/bookNavigation';
+import { hasLegacyArchivePath } from './lib/legacyArchiveRoutes';
 
 // EMEA 오버월드 자산 가드는 #306 일반 공개(releaseEligible 릴리스 정합 전환)로 폐기했다.
 // 스테일 가드가 남아 비관리자 전원이 EMEA 지형 404를 받는 라이브 결함을 만들었음(2026-07-22
@@ -46,6 +47,15 @@ export async function middleware(request) {
 
   // 어드민 아님 → 홈으로
   if (profile?.role !== 'admin') return NextResponse.redirect(new URL('/', request.url));
+
+  // Decide before the archive's async page starts streaming; notFound() after the
+  // shared loading boundary can otherwise render a 404 screen with HTTP 200.
+  if ((pathname === '/admin/legacy-textbooks' || pathname.startsWith('/admin/legacy-textbooks/')) && !hasLegacyArchivePath(pathname)) {
+    return NextResponse.rewrite(new URL('/_not-found', request.url), {
+      status: 404,
+      headers: { 'Cache-Control': 'private, no-store' },
+    });
+  }
 
   return response;
 }
