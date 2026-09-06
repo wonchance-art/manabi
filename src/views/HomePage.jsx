@@ -130,7 +130,7 @@ export default function HomePage({ book = null }) {
     </section>
     {error && <div className="manabi-inline-state" role="alert">학습 기록을 불러오지 못했어요. 읽기와 책장은 계속 이용할 수 있어요. <button type="button" onClick={() => refetch()}>다시 불러오기</button></div>}
     <div className="today-bottom">
-      <section className="today-review"><p className="manabi-eyebrow">KEEP IT WITH YOU / 복습</p><h2>{authLoading || (user && isLoading) ? '복습 일정을 확인하는 중.' : !user ? '좋은 표현을 내 것으로.' : error ? '복습 기록을 다시 확인해요.' : data?.dueCount > 0 ? <><b>{data.dueCount}</b>개의 표현이<br />다시 만날 시간.</> : data?.vocab?.length ? <>오늘은 가볍게,<br />읽기를 이어가요.</> : <>기억하고 싶은<br />첫 표현을 담아 보세요.</>}</h2>
+      <section className="today-review"><p className="manabi-eyebrow">KEEP IT WITH YOU / 복습</p><h2>{authLoading || (user && isLoading) ? '복습 일정을 확인하는 중.' : !user ? '좋은 표현을 내 것으로.' : error ? '복습 기록을 다시 확인해요.' : data?.dueCount > 0 ? <><b>{data.dueCount}</b>개의 표현이<br /> 다시 만날 시간.</> : data?.vocab?.length ? <>오늘은 가볍게,<br /> 읽기를 이어가요.</> : <>기억하고 싶은<br /> 첫 표현을 담아 보세요.</>}</h2>
         <p>{!user ? '로그인하면 읽다가 고른 표현을 담고 복습할 수 있어요.' : error ? '복습 화면에서 기록을 다시 확인할 수 있어요.' : isLoading ? '복습 일정을 확인하고 있어요…' : data?.dueCount > 0 ? '저장한 표현의 실제 복습 일정이에요.' : '예문 아래 ‘이 예문 담기’로 시작할 수 있어요.'}</p><Link href={user ? '/vocab' : '/auth'} prefetch={false} className="manabi-link">{user ? '표현과 복습 열기' : '로그인하고 시작하기'} ↗</Link>
         {user && <Link className="today-growth" href="/profile">성장 기록과 설정 →</Link>}
       </section>

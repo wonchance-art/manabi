@@ -6,6 +6,8 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 const base = process.env.QA_BASE || 'http://127.0.0.1:8880';
 const out = process.env.QA_OUT || '/private/tmp/manabi-v2-qa';
+// Local cold compilation may need a larger budget; deployed checks use the 30s default.
+const timeout = Number(process.env.QA_TIMEOUT || 30000);
 fs.mkdirSync(out, { recursive: true });
 const browser = await chromium.launch({ executablePath: process.env.QA_CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true });
 let activePage;
@@ -19,6 +21,8 @@ const check = async (page, label) => {
 };
 try {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, serviceWorkers: 'block' });
+  context.setDefaultTimeout(timeout);
+  context.setDefaultNavigationTimeout(timeout);
   const page = await context.newPage(); activePage = page;
   page.on('pageerror', error => report.errors.push(error.message));
   await page.goto(base + '/home');
@@ -95,6 +99,8 @@ try {
 
   // Synthetic authenticated states use the existing sign-in UI, not a production bypass.
   const member = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
+  member.setDefaultTimeout(timeout);
+  member.setDefaultNavigationTimeout(timeout);
   const uid = '00000000-0000-4000-8000-000000000077';
   const now = Math.floor(Date.now() / 1000);
   const user = { id: uid, aud: 'authenticated', role: 'authenticated', email: 'web-v2-fixture@example.com', email_confirmed_at: new Date().toISOString(), confirmed_at: new Date().toISOString(), app_metadata: { provider: 'email' }, user_metadata: {}, identities: [] };
@@ -152,6 +158,7 @@ try {
   await mp.getByRole('button', { name: '다시 불러오기', exact: true }).click();
   await mp.getByRole('heading', { name: /첫 표현을 담아 보세요/ }).waitFor();
   assert.equal((await mp.locator('.today-review h2').innerText()).includes('<br'), false);
+  assert.equal((await mp.locator('.today-review h2').innerText()).replace(/\s+/g, ' '), '기억하고 싶은 첫 표현을 담아 보세요.');
   await mp.screenshot({ path: out + '/member-empty-mobile.png', fullPage: true });
   report.fixtureStates.push('retry + empty vocabulary state');
   rows = [{ material_id: 'fixture-material', is_completed: false, updated_at: new Date().toISOString(), reading_materials: { id: 'fixture-material', title: '최근에 읽은 자료의 실제 기록 형태' } }];
