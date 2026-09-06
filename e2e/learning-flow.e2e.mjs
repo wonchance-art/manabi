@@ -98,6 +98,10 @@ async function runInFreshPage(run, { allowErrors = [] } = {}) {
     const headings = await page.locator('h1').allTextContents().catch(() => []);
     error.message += `\nLearning flow stopped at ${pathname}; headings=${JSON.stringify(headings)}`;
     error.message += `\nRecent navigation=${JSON.stringify(navigationEvents.slice(-12))}`;
+    error.message += `\nBrowser errors=${JSON.stringify(errors)}`;
+    // This server uses only the synthetic E2E backend. Include its render diagnostics
+    // when an RSC response starts but the destination never becomes available.
+    error.message += `\nE2E server diagnostics=${serverOutput.slice(-6000)}`;
     throw error;
   } finally {
     await context.close();
