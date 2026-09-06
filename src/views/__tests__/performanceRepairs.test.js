@@ -31,10 +31,11 @@ describe('P1–P5 초기 전송 성능 수리 회귀', () => {
     expect(lessons).not.toContain("import LanguageWorldMap, { TRACK_COLORS }");
   });
 
-  it('P5: 빈도가 낮은 전역 링크만 prefetch를 끈다', () => {
+  it('P5: 개인화 홈과 빈도가 낮은 전역 링크의 prefetch를 끈다', () => {
     const layout = read('src/components/Layout.jsx');
 
-    expect(MAIN_NAV).toContainEqual({ href: '/home', label: '오늘' });
+    // 로그인 직후 홈의 부분 prefetch가 연속 탐색을 붙잡는 회귀를 함께 방어한다.
+    expect(MAIN_NAV).toContainEqual({ href: '/home', label: '오늘', prefetch: false });
     expect(MAIN_NAV).toContainEqual({ href: '/vocab', label: '복습', prefetch: false });
     expect(MAIN_NAV).toContainEqual({ href: '/materials', label: '내 서재', prefetch: false });
     expect(layout).toContain('const navLinks = MAIN_NAV');
