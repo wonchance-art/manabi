@@ -68,7 +68,7 @@ try {
  await page.locator('.learning-links summary').click();
  assert.equal(await page.getByRole('button',{name:'이 문맥만 지우기',exact:true}).count(),0);
  const link=page.getByRole('link',{name:'교재 예문 열기 ↗',exact:true});await link.waitFor();assert.equal(await link.getAttribute('target'),'_blank');
- const popupPromise=page.waitForEvent('popup');await link.click();const popup=await popupPromise;assert(popup.url().includes('/books/japanese-n5'));await popup.close();
+ const popupPromise=page.waitForEvent('popup');await link.click();const popup=await popupPromise;await popup.waitForURL('**/books/japanese-n5#u29-patterns');await popup.locator('#u29-patterns .examples').first().waitFor();await popup.close();
  assert.equal(writes.filter(w=>w.table==='user_vocabulary'&&w.method==='PATCH').length,0,'source navigation must not grade');
  await page.getByText('계기',{exact:true}).waitFor();await check('source opens separately; same card and answer retained without grading');
  await page.screenshot({path:out+'/answer-mobile.png',fullPage:true});

@@ -80,3 +80,11 @@
   .review-room-session-nav>span { font-size:10px; }
   .manabi-grammar-room .fr-quiz__item { padding:18px; }
 }
+/* Keep the four familiar ratings, but make their color quieter than the question. */
+.manabi-review-room .review-score-btn { background:var(--paper); color:var(--ink); border:1px solid var(--rule); border-top-width:3px; }
+.manabi-review-room .review-score-btn--again { border-top-color:var(--ja); }
+.manabi-review-room .review-score-btn--hard { border-top-color:var(--en); }
+.manabi-review-room .review-score-btn--good { border-top-color:var(--zh); }
+.manabi-review-room .review-score-btn--easy { border-top-color:var(--fr); }
+.manabi-review-room .review-score-btn:hover { background:var(--bg-secondary); color:var(--ink); }
+.manabi-review-room .review-score-btn .save-grade__key { color:var(--muted); }
