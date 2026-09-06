@@ -163,7 +163,10 @@ export default function BookReader({ book, sectionIndex, preview = false }) {
       const hidden = dialogue?.classList.toggle('hide-ko');
       button.setAttribute('aria-pressed', String(!!hidden)); button.textContent = hidden ? '뜻 보기' : '뜻 가리기';
     }
-    if (button?.classList.contains('hide-meanings')) button.closest('article')?.classList.toggle('meanings-hidden');
+    if (button?.classList.contains('hide-meanings')) {
+      const hidden = button.closest('article')?.classList.toggle('meaning-hidden');
+      button.setAttribute('aria-pressed', String(!!hidden)); button.textContent = hidden ? '뜻 보기' : '뜻 가리기';
+    }
   }
 
   function chooseText() {

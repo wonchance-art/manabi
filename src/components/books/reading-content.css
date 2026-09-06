@@ -39,7 +39,6 @@
 .book-reading-content .lex-card{border:1px solid var(--line);box-shadow:none}
 .book-reading-content .lex-card[hidden]{display:none!important}
 .book-reading-content .lex-card :is(.ko,.meaning){color:var(--muted)}
-.book-reading-content.meanings-hidden .meaning{visibility:hidden}
 .book-reading-content a{color:var(--mauve)}
 .book-reading-content a:focus-visible,.book-reading-content button:focus-visible,.book-reading-content input:focus-visible,.book-reading-content textarea:focus-visible{outline:2px solid var(--mauve);outline-offset:4px}
 @container manabi-reader (max-width:550px){
