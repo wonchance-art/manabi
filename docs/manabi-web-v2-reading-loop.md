@@ -32,7 +32,7 @@
 - [내 서재](https://manabi-k6jsmo785-wonchance-arts-projects.vercel.app/materials)
 - [복습](https://manabi-k6jsmo785-wonchance-arts-projects.vercel.app/vocab)
 - 브랜치: `codex/web-v2-reading-loop-20260907`, base `codex/web-v2-library-discovery-20260906` (#1283).
-- GitHub 공개 push는 자동 승인 검토에서 거절되어 실행하지 않았다. 기존 승인이 이전 특정 커밋·브랜치에 한정되었다는 사유로 현재 코드·테스트·문서 게시에 대한 새 승인을 요청한다. draft PR·원격 CI·CODEX_DONE은 그 뒤에 수행한다.
+- 2026-09-07 KST 오너 「다음 ㄱㄱ」 승인 후 공개 push와 [draft PR #1285](https://github.com/wonchance-art/manabi/pull/1285)를 완료했다. 원격 CI의 최종 결과는 PR checks와 이슈 #150의 exact-head CODEX_DONE에 기록한다. 미리보기의 실행 코드와 이후 문서·하니스 커밋을 구분한다.
 - 운영 사이트로 승격하거나 merge하지 않았다.
 
 ## 범위와 한계
