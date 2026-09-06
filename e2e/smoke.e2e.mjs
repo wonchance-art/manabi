@@ -394,7 +394,7 @@ test('visibility: 일반 사용자에게 미완성 내비와 독해 트랙 진�
   await runInFreshPage(async (page, context) => {
     await seedMockSessionCookie(context, 'learner');
     await page.goto('/lessons?lang=Japanese', { waitUntil: 'domcontentloaded' });
-    await assertVisible(page.getByRole('heading', { name: '교재', exact: true }), 'lessons heading');
+    await assertVisible(page.locator('.manabi-bookshelf h1'), 'lessons heading');
     await assertVisible(page.locator('.gnb__profile-btn[title="E2E 학습자"]'), 'non-admin profile');
     // AuthContext가 프로필 조회 뒤 last_login_at 갱신까지 마치기 전에 이동하면 이전 문서의
     // fetch가 중단돼 console.error가 난다. 고정 대기(500ms)는 경합이라 flaky했다 —
@@ -413,6 +413,9 @@ test('visibility: 일반 사용자에게 미완성 내비와 독해 트랙 진�
     // 기본 데스크톱 viewport 에서는 CSS 로 숨겨져 role locator 대상에서 빠지므로
     // DOM 계약 자체를 확인하는 안정적인 aria-label selector 를 사용한다.
     const mobileNav = page.locator('nav[aria-label="모바일 내비게이션"]');
+    assert.deepEqual(await desktopNav.locator('a').allTextContents(), ['오늘', '교재', '발견', '복습', '내 서재']);
+    await assertVisible(page.getByRole('link', { name: '일본어 N5 책 둘러보기', exact: true }), 'published N5 book');
+    assert.equal(await page.locator('.lessons-list__group-header').count(), 0, 'legacy level lists stay in the administrator archive');
     assert.equal(await desktopNav.locator('a[href="/learn"]').count(), 0);
     assert.equal(await desktopNav.locator('a[href="/cohorts"]').count(), 0);
     assert.equal(await mobileNav.locator('a[href="/learn"]').count(), 0);
@@ -427,11 +430,15 @@ test('visibility: 일반 사용자에게 미완성 내비와 독해 트랙 진�
     assert.equal(new URL(page.url()).pathname, '/home');
     await assertVisible(page.locator('.gnb__profile-btn[title="E2E 학습자"]'), 'redirected profile');
     assert.equal(await page.getByRole('heading', { name: '도쿄 도착', exact: true }).count(), 0);
+    await page.goto('/admin/legacy-textbooks', { waitUntil: 'domcontentloaded' });
+    await page.waitForURL((url) => url.pathname === '/home', { timeout: config.timeout });
+    assert.equal(new URL(page.url()).pathname, '/home', 'ordinary learners cannot open the archive');
   });
 });
 
-test('chapter story: 공개 N5 챕터에서 조립·빈칸 채점과 미디어를 제공한다', { timeout: config.timeout * 2 }, async () => {
-  await runInFreshPage(async (page) => {
+test('chapter story: 관리자 보관함 N5 챕터에서 조립·빈칸 채점과 미디어를 제공한다', { timeout: config.timeout * 2 }, async () => {
+  await runInFreshPage(async (page, context) => {
+    await seedMockSessionCookie(context, 'admin');
     await page.route('https://www.youtube-nocookie.com/**', (route) => route.fulfill({
       status: 200,
       contentType: 'text/html',
@@ -477,8 +484,9 @@ test('chapter story: 공개 N5 챕터에서 조립·빈칸 채점과 미디어�
   });
 });
 
-test('chapter story: 공개 입문 편의점 챕터에도 스토리 모듈을 렌더한다', { timeout: config.timeout * 2 }, async () => {
-  await runInFreshPage(async (page) => {
+test('chapter story: 관리자 보관함 입문 편의점 챕터에도 스토리 모듈을 렌더한다', { timeout: config.timeout * 2 }, async () => {
+  await runInFreshPage(async (page, context) => {
+    await seedMockSessionCookie(context, 'admin');
     await page.goto('/japanese/grammar/ot-07-konbini', { waitUntil: 'domcontentloaded' });
     await assertVisible(
       page.getByRole('heading', { name: /이야기 — 민준, 첫 결제에 성공하다/ }),
@@ -491,7 +499,8 @@ test('chapter story: 공개 입문 편의점 챕터에도 스토리 모듈을 �
 });
 
 test('chapter quiz: N4 자동사·타동사 챕터를 열고 첫 문항을 채점한다', { timeout: config.timeout }, async () => {
-  await runInFreshPage(async (page) => {
+  await runInFreshPage(async (page, context) => {
+    await seedMockSessionCookie(context, 'admin');
     await page.goto('/japanese/grammar/n4-05c-jita-verbs', { waitUntil: 'domcontentloaded' });
     await assertVisible(
       page.getByRole('heading', { name: /문이 '열렸다' vs 문을 '열었다'/ }),
@@ -507,7 +516,8 @@ test('chapter quiz: N4 자동사·타동사 챕터를 열고 첫 문항을 채�
 });
 
 test('chapter story: N5 이자카야 문화 도어의 장면과 산출 문항을 렌더한다', { timeout: config.timeout * 2 }, async () => {
-  await runInFreshPage(async (page) => {
+  await runInFreshPage(async (page, context) => {
+    await seedMockSessionCookie(context, 'admin');
     await page.goto('/japanese/grammar/ot-08-izakaya', { waitUntil: 'domcontentloaded' });
     await assertVisible(
       page.getByRole('heading', { name: /안 시킨 안주가 나왔다/ }),
@@ -529,7 +539,7 @@ test('chapter story: N5 이자카야 문화 도어의 장면과 산출 문항을
 test('vocab performance: N3 초기 DOM과 savedSet 요청을 예산 안에 유지한다', { timeout: config.timeout * 2 }, async () => {
   await runInFreshPage(async (page, context) => {
     const restRequests = [];
-    await seedMockSessionCookie(context, 'learner', { restRequests });
+    await seedMockSessionCookie(context, 'admin', { restRequests });
     const startedAt = Date.now();
     await page.goto('/japanese/vocab/n3', { waitUntil: 'load', timeout: config.timeout * 2 });
     await assertVisible(page.locator('.fr-vrow').first(), 'N3 first vocabulary row');

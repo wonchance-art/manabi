@@ -11,6 +11,7 @@ const timeout = Number(process.env.QA_TIMEOUT || 30000);
 fs.mkdirSync(out, { recursive: true });
 const browser = await chromium.launch({ executablePath: process.env.QA_CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true });
 let activePage;
+let fixtureClosing = false;
 const report = { base, realContent: [], fixtureStates: [], layouts: [], errors: [] };
 const check = async (page, label) => {
   await page.evaluate(() => document.fonts.ready);
@@ -111,8 +112,13 @@ try {
   const requests = [];
   // Server-rendered public pages use an anonymous request. Fixture cookies stay client-side.
   await member.route(base + '/**', async route => {
-    const response = await route.fetch({ headers: { ...route.request().headers(), cookie: '' } });
-    return route.fulfill({ response });
+    try {
+      const response = await route.fetch({ headers: { ...route.request().headers(), cookie: '' } });
+      if (!fixtureClosing) await route.fulfill({ response });
+    } catch (error) {
+      // Closing the isolated context cancels its remaining background requests.
+      if (!fixtureClosing || !/disposed|closed|Target.*close/i.test(error.message)) throw error;
+    }
   });
   await member.route('**/auth/v1/**', route => route.fulfill({ status: route.request().method() === 'OPTIONS' ? 204 : 200, headers: cors, contentType: 'application/json', body: route.request().method() === 'OPTIONS' ? '' : JSON.stringify(route.request().url().includes('/user') ? user : session) }));
   await member.route('**/rest/v1/**', async route => {
@@ -174,6 +180,7 @@ try {
   assert.match(await mp.locator('.today-record').first().innerText(), /0 \/ 42과/);
   assert.equal(await mp.getByText('이 브라우저에서는 읽던 위치를 저장할 수 없어요.', { exact: true }).count(), 0);
   report.fixtureStates.push('damaged local record recovers without claiming storage is unavailable');
+  fixtureClosing = true;
   await member.close();
   assert.deepEqual(report.errors, []);
   console.log(JSON.stringify({ realContent: report.realContent, fixtureStates: report.fixtureStates, layouts: report.layouts.length, errors: report.errors }, null, 2));
@@ -185,5 +192,6 @@ try {
   throw error;
 } finally {
   fs.writeFileSync(out + '/report.json', JSON.stringify(report, null, 2));
+  fixtureClosing = true;
   await browser.close();
 }
