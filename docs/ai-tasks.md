@@ -14,12 +14,12 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- **manabi 웹 v2 · 내 서재 분류·발견 필터 (2026-09-06, 오너 후속 승인)** — `codex/web-v2-library-discovery-20260906`, base #1282. 읽는 중·내 자료·노트 분류, 지역학 지역/주제 검색, 실제 주소·진도·개인 권한 보존. 별도 작업 공간에서 진행; DB·PDF 조판·음성·월드 변경 없음.
 ### todo
 - ~~🎧 받아쓰기 채점 엔진(#1077 제안 6, 발주 5386786944)~~ → **회수: 2026-08-23
   16:03 스캔까지 WORKING 무표식(30분 룰) — Claude 직접 수행·완결(회수 공지
   5386950005, PR #1118)**. 이 열에 잔여 발주 없음.
 ### done (최근)
+- **manabi 웹 v2 · 내 서재 분류·발견 필터 완료 (2026-09-06, 오너 후속 승인)** — `codex/web-v2-library-discovery-20260906`, draft PR #1283 (base #1282). 읽는 중·내 자료·노트·공개 읽기, 실제 N5/자료/PDF 이어 읽기, 지역학 26편의 지역/주제/검색·목록 위치 복귀. 실행 코드 `f2ef48afa4e8fb5c600d37ff45f5b713f0f1945c`: 전체 344파일/3,748개·변경 범위 90개·최종 배포 브라우저 26조건/오류 0, Vercel build 통과. 미리보기 https://manabi-4j99qd4z6-wonchance-arts-projects.vercel.app/materials . 상세 `docs/manabi-web-v2-library-discovery.md`, 이슈 #150 CODEX_DONE 인계. 다음: 가져오기·집중 뷰어, 글 전체 북마크 저장 모델. 운영 병합/승격 없음.
 - **manabi 웹 v2 · 복습 화면 개편 완료 (2026-09-06, 오너 후속 승인)** — `codex/web-v2-review-20260906`, draft PR #1282 (base #1281). 표현 직접 복습·문법 수 분리·접히는 설정·집중 카드/예문 박스·원문 새 탭 복귀·계정 전환/실패 상태. 실행 코드 `20208fc97d942e9b61f0b240379fc6f9de9ae00d`: CI 전체 green(343파일/3,742개, 학습 흐름 9·조판 25·뷰어 4·smoke 14), 최종 배포 브라우저 17조건/오류 0. 미리보기 https://manabi-4l84ovuli-wonchance-arts-projects.vercel.app/vocab , 상세 `docs/manabi-web-v2-review.md`. 이슈 #150 CODEX_DONE 인계. 다음: 내 서재 분류·발견 필터. 운영 병합/승격 없음.
 - **manabi 웹 v2 · 1차 구현 완료 (2026-09-06, 오너 직접 승인)** — `codex/web-v2-phase1-20260906`, draft PR #1281 (base #1280). 공통 5메뉴·오늘 이어 읽기·42과 N5 책장/책 홈·발견·프랑스어 입력·이미지 폴백·관리자 보관함 이동/캐시 분리. 실행 코드 `005b6173951f38cb2ecc6dd5f42ae18a9007522f`: 전체 웹 단위 3,736개, learning-flow 9개, 조판 25개·뷰어 크롬 4개·smoke 14개 통과. Vercel 최종 미리보기 Ready + 실교재 왕복/회원·실패·빈 상태 검수 완료. 상세 `docs/manabi-web-v2-phase1.md`, 이슈 #150 CODEX_DONE으로 인계. 운영 반영은 Claude 검토·병합 창구, merge/force-push 없음.
 - **🔤 언어 판별 — 「보여 줄 값」과 「저장해도 되는 값」을 갈랐다 (2026-09-01, 오너 「할 수 있는거 ㄱㄱ」)**:
