@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anatomy-studio-v5da525234563156d';
+const CACHE_NAME = 'anatomy-studio-v7cdd477e6ed5659c';
 
 const PRECACHE_URLS = [
   '/',
@@ -47,6 +47,9 @@ self.addEventListener('fetch', (event) => {
 
   // Skip non-GET, API, and Supabase requests
   if (request.method !== 'GET') return;
+  // Admin documents (including archived textbooks and RSC responses) must always
+  // reach the current authentication gate, never a previous account's offline cache.
+  if (url.origin === self.location.origin && /^\/admin(?:\/|$)/.test(url.pathname)) return;
   if (url.pathname.startsWith('/api/')) return;
   if (url.hostname.includes('supabase')) return;
   if (url.hostname.includes('googleapis')) return;
