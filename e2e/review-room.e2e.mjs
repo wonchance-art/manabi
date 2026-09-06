@@ -86,5 +86,9 @@ try {
  await page.getByRole('heading',{name:'표현을 불러오지 못했어요.',exact:true}).waitFor();await check('failure is not an empty/completed state');
  state='empty';await page.getByRole('button',{name:'다시 불러오기',exact:true}).click();await page.getByRole('heading',{name:'첫 표현을 담아 보세요.',exact:true}).waitFor();await check('retry recovers');
  grammarFail=true;await page.reload();await page.getByRole('alert').filter({hasText:'문법 일정을 불러오지 못했어요.'}).waitFor();await check('independent grammar failure');
+ grammarFail=false;state='due';rows=[{...rows[0],word_text:'長い表現'.repeat(18),meaning:'아주 긴 뜻 '.repeat(25),next_review_at:'2026-01-02'}];await page.reload();
+ await page.getByRole('button',{name:'단어만 1개 →',exact:true}).waitFor();await page.setViewportSize({width:320,height:844});await check('long expression and meaning at 320px');
+ await page.locator('.review-room-settings summary').focus();await page.keyboard.press('Enter');await page.getByLabel('복습 방식',{exact:true}).waitFor();await check('keyboard settings controls remain accessible');
+ await page.screenshot({path:out+'/settings-mobile.png',fullPage:true});
  assert.deepEqual(report.errors,[]);
 } finally {fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));await browser.close();}
