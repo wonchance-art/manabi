@@ -51,6 +51,9 @@ function userFromClaims(claims) {
 }
 
 function mockResponse(url, claims) {
+  // Archive rendering resolves published overrides on the server. Do not let that
+  // request escape to the nonexistent fixture host and wait on DNS/network retries.
+  if (url.pathname.endsWith('/rest/v1/content_overrides')) return json([]);
   if (url.pathname.endsWith('/rest/v1/textbook_book_releases')) {
     return json({ book_id: 'japanese-n5', edition_id: editionId, version: 1 });
   }

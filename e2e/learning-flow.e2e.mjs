@@ -72,8 +72,7 @@ function runtimeErrors(page) {
 }
 
 async function runInFreshPage(run, { allowErrors = [] } = {}) {
-  // The archive restores its last row with scrollIntoView. Use the supported reduced
-  // motion setting so a previous scroll cannot move the next link between pointer events.
+  // Inspect completed control states using the application's reduced-motion support.
   const context = await browser.newContext({ baseURL: config.use.baseURL, reducedMotion: 'reduce' });
   const page = await context.newPage();
   const errors = runtimeErrors(page);
@@ -391,6 +390,7 @@ async function mockAuthenticatedViewer(context) {
 
 async function openTrackChapter(page, track) {
   await page.goto('/admin/legacy-textbooks', { waitUntil: 'domcontentloaded', timeout: config.timeout });
+  await authenticatedPageReady(page);
   await page.getByRole('button', { name: track.label, exact: true }).click();
   await page.waitForFunction(
     (key) => globalThis.localStorage?.getItem('lessons_lang') === key,
@@ -409,6 +409,14 @@ async function openTrackChapter(page, track) {
   await page.waitForURL(`**/admin/legacy-textbooks${track.path}`, { waitUntil: 'domcontentloaded', timeout: config.timeout });
   assert.equal(new URL(page.url()).pathname, `/admin/legacy-textbooks${track.path}`);
   await assertVisible(page.getByRole('heading', { level: 1 }).first(), `${track.label} chapter heading`);
+  await authenticatedPageReady(page);
+}
+
+async function authenticatedPageReady(page) {
+  // The seeded cookie authenticates SSR, but client AuthContext hydrates separately.
+  // A resolved profile is the observable sign that interactions will use the member path.
+  await assertVisible(page.locator('.gnb__profile-btn[title="E2E 학습자"]'), 'hydrated member profile');
+  await page.evaluate(() => document.fonts.ready);
 }
 
 before(async () => {
@@ -798,12 +806,7 @@ test('authenticated drills: 드릴 채점이 review_events·grammar_review 정�
     await assertVisible(drills, 'chapter drills');
     const items = drills.locator('ol > li');
 
-    // 로그인 상태가 클라이언트에 반영된 뒤에 채점해야 정본 경로(서버)로 간다.
-    await page.waitForFunction(
-      () => document.cookie.includes('auth-token'),
-      undefined,
-      { timeout: config.timeout },
-    );
+    await authenticatedPageReady(page);
     await items.nth(0).getByPlaceholder('정답 입력').fill('です');
     await items.nth(0).getByRole('button', { name: '확인', exact: true }).click();
     await assertVisible(items.nth(0).getByText('정답이에요!', { exact: true }), 'correct fill result');
