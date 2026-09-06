@@ -6,6 +6,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useTheme } from '../lib/useTheme';
 import { useState, useEffect } from 'react';
 import OnboardingModal from './OnboardingModal';
+import './books/reading-shell.css';
 import VersionBadge from './VersionBadge';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/ToastContext';
@@ -16,6 +17,8 @@ export default function Layout({ children }) {
   const { user, profile, isAdmin, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const isReading = ['/lessons', '/books', '/vocab', '/materials'].some(base => pathname === base || pathname.startsWith(base + '/'));
+  const isNavActive = href => pathname === href || pathname.startsWith(href + '/') || (href === '/lessons' && pathname.startsWith('/books/'));
   const { theme, toggleTheme } = useTheme();
   const [isOffline, setIsOffline] = useState(false);
   const [resendingConfirm, setResendingConfirm] = useState(false);
@@ -136,11 +139,11 @@ export default function Layout({ children }) {
   ];
 
   return (
-    <>
+    <div className={isReading ? 'manabi-app' : undefined}>
       <a href="#main-content" className="skip-link">본문으로 건너뛰기</a>
       <header className="gnb" role="banner">
-        <Link href="/" className="gnb__logo" aria-label="Anatomy Studio 홈">
-          <span>Anatomy Studio</span>
+        <Link href="/lessons" className="gnb__logo" aria-label="manabi 책장">
+          <span>manabi<span className="manabi-brand-dot" aria-hidden="true" /></span>
         </Link>
 
         <nav className="gnb__nav" aria-label="메인 내비게이션">
@@ -149,8 +152,8 @@ export default function Layout({ children }) {
               key={l.href}
               href={l.href}
               prefetch={l.prefetch}
-              className={`gnb__link ${pathname === l.href || pathname.startsWith(l.href + '/') ? 'active' : ''}`}
-              aria-current={pathname === l.href ? 'page' : undefined}
+              className={`gnb__link ${isNavActive(l.href) ? 'active' : ''}`}
+              aria-current={isNavActive(l.href) ? 'page' : undefined}
             >
               <span>{l.label}</span>
             </Link>
@@ -248,8 +251,8 @@ export default function Layout({ children }) {
             key={l.href}
             href={l.href}
             prefetch={l.prefetch}
-            className={`mobile-nav__link ${pathname === l.href || pathname.startsWith(l.href + '/') ? 'active' : ''}`}
-            aria-current={pathname === l.href ? 'page' : undefined}
+            className={`mobile-nav__link ${isNavActive(l.href) ? 'active' : ''}`}
+            aria-current={isNavActive(l.href) ? 'page' : undefined}
           >
             <span>{l.label}</span>
           </Link>
@@ -261,6 +264,6 @@ export default function Layout({ children }) {
       </main>
 
       {profile && profile.onboarded === false && <OnboardingModal />}
-    </>
+    </div>
   );
 }

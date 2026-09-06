@@ -352,15 +352,15 @@ export default function HomePage({ continueManifest = {} }) {
     },
     continueCard && {
       key: 'lesson',
-      href: `${continueCard.ref.base}/grammar/${continueCard.ch.slug}`,
+      href: profile?.role === 'admin' ? `/admin/legacy-textbooks${continueCard.ref.base}/grammar/${continueCard.ch.slug}` : '/books/japanese-n5',
       tone: 'progress',
-      kicker: `${continueCard.mode === 'retry' ? '교재 재도전 — 패턴 체크 미통과' : '교재 이어서 학습'} · ${continueCard.ref.name}`,
-      title: `#${continueCard.ch.order} ${continueCard.ch.title}`,
-      meta: `${continueCard.levelLabel} →`,
+      kicker: profile?.role === 'admin' ? `기존 교재 · ${continueCard.ref.name}` : '새 교재에서 이어서',
+      title: profile?.role === 'admin' ? `#${continueCard.ch.order} ${continueCard.ch.title}` : '작은 문장으로 시작하는 일본어',
+      meta: profile?.role === 'admin' ? `${continueCard.levelLabel} →` : '일본어 N5 · 42과 →',
     },
     rereadItem,
     groupItem,
-  ].filter(Boolean), [forecast, forecastLang, user?.id, continueCard, rereadItem, groupItem]);
+  ].filter(Boolean), [forecast, forecastLang, user?.id, profile?.role, continueCard, rereadItem, groupItem]);
 
   // 게스트 첫 화면(오너 지시 2026-08-31 "둘 다 /home으로 통일").
   // '/'의 로그인 분기를 걷어내면서 게스트가 여기로 온다 — 전에는 /lessons(교재 목록)로

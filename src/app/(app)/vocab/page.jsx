@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import VocabPage from '@/views/VocabPage';
 
 export const metadata = {
@@ -7,5 +8,5 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <VocabPage />;
+  return <><div className="manabi-return-strip"><span>내가 고른 문장으로 다시 떠올려요.</span><Link href="/books/japanese-n5/review">일본어 N5 · 담은 표현</Link><Link href="/lessons">책장으로 →</Link></div><VocabPage /></>;
 }

@@ -8,7 +8,9 @@ const nextConfig = {
   outputFileTracingIncludes: {
     '/api/books/japanese-n5/**': ['./src/content/textbookEditions/**/*'],
     '/api/admin/books/japanese-n5': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],
-    '/books/japanese-n5': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],
+    '/books/japanese-n5': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/**/index.html', './src/content/textbookEditions/index.json'],
+    '/books/japanese-n5/**': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],
+    '/lessons': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],
     '/api/learning/vocabulary': ['./src/content/textbookEditions/**/bundle.json'],
     '/api/analyze': [
       './node_modules/kuromoji/dict/**/*',

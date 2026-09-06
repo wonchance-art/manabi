@@ -39,3 +39,4 @@ supabase/.temp/
 # 직접 읽으므로 예외로 남긴다.
 scripts/data/
 !scripts/data/tatoeba-*.json
+.env*.local

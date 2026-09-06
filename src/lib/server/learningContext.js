@@ -10,6 +10,11 @@ export function errorReply(error) {
   if (error instanceof SyntaxError) return reply({error:'입력 내용을 확인해 주세요.'},400);
   return reply({ error: error.status ? error.message : '요청을 처리하지 못했어요.', ...(error.extra || {}) }, error.status || 500);
 }
+export async function canReadLegacyTextbook(supabase, userId) {
+  const { data: profile, error } = await supabase.from('profiles').select('role').eq('id', userId).maybeSingle();
+  checkDb(error);
+  return profile?.role === 'admin';
+}
 export async function readBody(request) {
   const body = await request.json();
   if (!body || typeof body !== 'object' || Array.isArray(body)) fail(400,'입력 내용을 확인해 주세요.');
@@ -75,6 +80,7 @@ export async function resolveSave(supabase, userId, payload) {
     if(edition.content_hash!==bundle.contentHash) fail(503,'교재 판본을 확인하지 못했어요.');
     try { resolved=resolveBookSelection(bundle,source,word); } catch(e) { fail(400,e.message); }
   } else if (source.kind === 'textbook') {
+    if (!(await canReadLegacyTextbook(supabase, userId))) fail(403, '기존 교재는 관리자 보관함으로 이동했어요.');
     chapterMeta(lang, source.chapterSlug);
     const { registry, data } = await loadChapter(lang, source.chapterSlug);
     const ref = await loadPublishedRegistry(lang, registry), chapter = ref.resolve(data.chapter);
