@@ -72,7 +72,9 @@ function runtimeErrors(page) {
 }
 
 async function runInFreshPage(run, { allowErrors = [] } = {}) {
-  const context = await browser.newContext({ baseURL: config.use.baseURL });
+  // The archive restores its last row with scrollIntoView. Use the supported reduced
+  // motion setting so a previous scroll cannot move the next link between pointer events.
+  const context = await browser.newContext({ baseURL: config.use.baseURL, reducedMotion: 'reduce' });
   const page = await context.newPage();
   const errors = runtimeErrors(page);
   try {
@@ -80,6 +82,11 @@ async function runInFreshPage(run, { allowErrors = [] } = {}) {
     await page.waitForTimeout(250);
     const unexpected = errors.filter((error) => !allowErrors.some((pattern) => pattern.test(error)));
     assert.deepEqual(unexpected, [], unexpected.join('\n'));
+  } catch (error) {
+    const pathname = new URL(page.url()).pathname;
+    const headings = await page.locator('h1').allTextContents().catch(() => []);
+    error.message += `\nLearning flow stopped at ${pathname}; headings=${JSON.stringify(headings)}`;
+    throw error;
   } finally {
     await context.close();
   }
@@ -397,6 +404,7 @@ async function openTrackChapter(page, track) {
 
   const chapterRow = page.locator(`#lessons-ch-${track.slug}`);
   await assertVisible(chapterRow, `${track.label} manifest chapter`);
+  assert.equal(await chapterRow.getAttribute('href'), track.path, 'manifest link keeps its original content address');
   await chapterRow.click();
   await page.waitForURL(`**/admin/legacy-textbooks${track.path}`, { waitUntil: 'domcontentloaded', timeout: config.timeout });
   assert.equal(new URL(page.url()).pathname, `/admin/legacy-textbooks${track.path}`);
