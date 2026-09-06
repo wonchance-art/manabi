@@ -11,6 +11,18 @@ export default function BookReader({edition,title,lessons,preview=false,pdfEnabl
   const [unit,setUnit]=useState('u01'),[selection,setSelection]=useState(null),[meaning,setMeaning]=useState(''),[expression,setExpression]=useState('');
   const [initialPage,setInitialPage]=useState(null);
   useEffect(()=>{setInitialPage(window.location.hash||'#cover')},[]);
+  useEffect(()=>{
+    // Fragment-only links and browser history do not remount the reader.
+    // Keep the embedded manuscript on the page named by the outer address.
+    const navigate=()=>{
+      const win=frame.current?.contentWindow;
+      const hash=window.location.hash||'#cover';
+      if(win&&win.location.hash!==hash)win.location.hash=hash;
+    };
+    window.addEventListener('hashchange',navigate);
+    window.addEventListener('popstate',navigate);
+    return()=>{window.removeEventListener('hashchange',navigate);window.removeEventListener('popstate',navigate)};
+  },[edition]);
   const asset=`/api/books/${BOOK_ID}/${edition}/asset?file=`;
   const attach=useCallback(()=>{
     detach.current();
