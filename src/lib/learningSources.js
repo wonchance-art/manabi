@@ -1,3 +1,4 @@
+import {bookSourceHref} from './textbook/sources';
 // 브라우저/서버 공용. 주소는 저장된 URL을 신뢰하지 않고 검증된 식별자로 다시 만든다.
 export const LEARNING_LANGUAGES = ['Japanese','Chinese','French','English'];
 export const LANGUAGE_BASE = { Japanese: '/japanese', Chinese: '/chinese', French: '/french', English: '/english' };
@@ -7,6 +8,7 @@ export const normalizeLearningWord = (word) => String(word || '').normalize('NFC
 
 export function sourceHref(source) {
   const loc = source.locator || {};
+  if(source.kind === 'textbook' && loc.bookId) return bookSourceHref(source);
   if (source.kind === 'textbook' && LANGUAGE_BASE[source.lang] && /^[a-z0-9_-]{1,160}$/i.test(source.chapter_slug || '')) {
     const query = new URLSearchParams();
     if (typeof loc.revision === 'string') query.set('sourceRevision', loc.revision);

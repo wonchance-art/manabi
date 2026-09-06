@@ -6,6 +6,10 @@ const nextConfig = {
   // 사전·WASM이 서버 번들에 포함되도록 — kuromoji(ja) 사전과 jieba-wasm(zh)의 .wasm.
   // (네이티브 @node-rs/jieba는 서버리스 플랫폼 바이너리 로드 실패로 WASM 교체 — 단일 파일·플랫폼 무관)
   outputFileTracingIncludes: {
+    '/api/books/japanese-n5/**': ['./src/content/textbookEditions/**/*'],
+    '/api/admin/books/japanese-n5': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],
+    '/books/japanese-n5': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],
+    '/api/learning/vocabulary': ['./src/content/textbookEditions/**/bundle.json'],
     '/api/analyze': [
       './node_modules/kuromoji/dict/**/*',
       './node_modules/jieba-wasm/pkg/nodejs/**/*',

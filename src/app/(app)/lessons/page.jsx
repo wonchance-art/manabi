@@ -1,6 +1,8 @@
 import LessonsPage from '@/views/LessonsPage';
 import { buildRefManifest } from '@/content/refManifest';
 import { applyManifestOverrides } from '@/lib/contentOverrides';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
+import { readRelease } from '@/lib/textbook/server';
 
 export const metadata = {
   title: '교재',
@@ -16,5 +18,7 @@ export const metadata = {
 export default async function Page({ searchParams }) {
   const sp = await searchParams;
   const refManifest = await applyManifestOverrides(buildRefManifest());
-  return <LessonsPage refManifest={refManifest} initialLang={sp?.lang} initialLevel={sp?.level} />;
+  let bookAvailable = false;
+  try { bookAvailable = !!(await readRelease(await createSupabaseServerClient())); } catch { /* Additive book release must not block the existing catalog. */ }
+  return <LessonsPage refManifest={refManifest} initialLang={sp?.lang} initialLevel={sp?.level} bookAvailable={bookAvailable} />;
 }

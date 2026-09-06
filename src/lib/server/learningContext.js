@@ -1,3 +1,4 @@
+import {resolveBookSelection} from '@/lib/textbook/sources';
 import { loadChapter, getGrammarManifest } from '@/content/refGrammarLoaders';
 import { loadPublishedRegistry } from '@/lib/publishedChapter';
 import { LEARNING_LANGUAGES, materialIdValid, normalizeLearningWord, tokenContext } from '@/lib/learningSources';
@@ -65,6 +66,14 @@ export async function resolveSave(supabase, userId, payload) {
     if (!quote || quote.length > 4000) fail(400, '출처 문장을 4,000자 이내로 입력해 주세요.');
     // 네이티브 PDF 뷰어의 선택문/쪽수는 사용자 입력이며 자동 추출 위치라고 주장하지 않는다.
     resolved = { kind: 'pdf', pdfId: pdf.id, quote, translation: '', locator: { page, userSelected: true } };
+  } else if (source.kind === 'textbook' && source.bookId) {
+    if(lang !== 'Japanese') fail(400,'교재 언어를 확인해 주세요.');
+    const {candidate,readEdition} = await import('@/lib/textbook/server');
+    const edition=await readEdition(supabase,source.editionId);
+    if(!edition) fail(404,'발행된 교재에서 표현을 선택해 주세요.');
+    const bundle=await candidate(source.editionId);
+    if(edition.content_hash!==bundle.contentHash) fail(503,'교재 판본을 확인하지 못했어요.');
+    try { resolved=resolveBookSelection(bundle,source,word); } catch(e) { fail(400,e.message); }
   } else if (source.kind === 'textbook') {
     chapterMeta(lang, source.chapterSlug);
     const { registry, data } = await loadChapter(lang, source.chapterSlug);

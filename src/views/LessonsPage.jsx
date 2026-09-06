@@ -85,7 +85,7 @@ function PitchLine({ text }) {
   );
 }
 
-export default function LessonsPage({ refManifest = {}, initialLang, initialLevel }) {
+export default function LessonsPage({ refManifest = {}, initialLang, initialLevel, bookAvailable = false }) {
   const router = useRouter();
   const { user, profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
@@ -247,6 +247,7 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
           <h1 className="page-header__title">교재</h1>
           <p className="page-header__subtitle">학습 순서대로 배치된 문법·어휘 레퍼런스</p>
           {isAdmin && <Link className="btn btn--ghost btn--sm" href={chapterEditorHref(langFilter)}>관리자 교재 편집</Link>}
+          {langFilter === 'Japanese' && (bookAvailable || isAdmin) && <p><Link className="btn btn--ghost btn--sm" href="/books/japanese-n5">일본어 N5 · 한 권으로 공부하기</Link>{isAdmin && <Link className="btn btn--ghost btn--sm" href="/admin/books/japanese-n5">한 권 원고 편집</Link>}</p>}
         </div>
       </div>
 

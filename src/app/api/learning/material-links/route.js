@@ -1,3 +1,5 @@
+import {publishedBookCatalog} from '@/lib/textbook/server';
+import {bookChapterNumber} from '@/lib/textbook/sources';
 import { requireUser } from '@/lib/supabaseServer';
 import { getGrammarManifest } from '@/content/refGrammarLoaders';
 import { getOverridesForLang, mergeChapter } from '@/lib/contentOverrides';
@@ -15,19 +17,22 @@ export async function GET(request) {
     let query = auth.supabase.from('textbook_material_links')
       .select('id,lang,chapter_slug,material_id,pdf_id,reading_materials:material_id(id,title),uploaded_pdfs:pdf_id(id,title)')
       .eq('user_id', auth.user.id).eq('lang', lang);
-    if (slug) { chapterMeta(lang, slug); query = query.eq('chapter_slug', slug); }
+    const bookChapters = lang === 'Japanese' ? await publishedBookCatalog(auth.supabase) : [];
+    const validateChapter = chapterSlug => { if(bookChapterNumber(chapterSlug)){if(!bookChapters.some(c=>c.slug===chapterSlug))fail(404,'발행된 교재를 선택해 주세요.');}else chapterMeta(lang,chapterSlug); };
+    if (slug) { validateChapter(slug); query = query.eq('chapter_slug', slug); }
     else { await accessibleMaterial(auth.supabase, auth.user.id, kind, id); query = query.eq(kind === 'pdf' ? 'pdf_id' : 'material_id', id); }
     const { data, error } = await query.order('created_at', { ascending: true }).limit(100);
     checkDb(error);
     const manifest = getGrammarManifest(lang);
     const overrides = await getOverridesForLang(lang);
     const catalog = manifest.levels.map(level => ({ level: level.key, chapters: level.chapters.map(c => ({ slug: c.slug, title: mergeChapter(c,overrides.get(c.slug)).title })) }));
+    if(bookChapters.length)catalog.push({level:'N5 한 권',chapters:bookChapters});
     const links = (data || []).map(row => {
       const chapter = catalog.flatMap(l => l.chapters).find(c => c.slug === row.chapter_slug);
       const material = row.material_id ? row.reading_materials : row.uploaded_pdfs;
       if (!chapter || !material) return null;
       return { id: row.id, title: slug ? material.title : chapter.title,
-        href: slug ? (row.material_id ? `/viewer/${row.material_id}` : `/pdf/${row.pdf_id}`) : `${LANGUAGE_BASE[lang]}/grammar/${row.chapter_slug}` };
+        href: slug ? (row.material_id ? `/viewer/${row.material_id}` : `/pdf/${row.pdf_id}`) : (chapter.href || `${LANGUAGE_BASE[lang]}/grammar/${row.chapter_slug}`) };
     }).filter(Boolean);
     let candidates = [];
     if (slug) {
@@ -46,7 +51,7 @@ export async function POST(request) {
   if (auth.error) return reply({error:auth.error},auth.status);
   try {
     const body = await readBody(request);
-    chapterMeta(body.lang, body.slug);
+    if(body.lang==='Japanese' && bookChapterNumber(body.slug)){const chapters=await publishedBookCatalog(auth.supabase);if(!chapters.some(c=>c.slug===body.slug))fail(404,'발행된 교재를 선택해 주세요.');}else chapterMeta(body.lang, body.slug);
     await accessibleMaterial(auth.supabase,auth.user.id,body.kind,body.materialId);
     const column = body.kind === 'pdf' ? 'pdf_id' : 'material_id';
     const { error } = await auth.supabase.from('textbook_material_links').upsert({ user_id:auth.user.id,lang:body.lang,chapter_slug:body.slug,[column]:body.materialId },

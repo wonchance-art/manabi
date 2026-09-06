@@ -15,5 +15,5 @@ export default async function Page({ searchParams }) {
     lang, name: ref.name, base: ref.base,
     chapters: ref.ALL_CHAPTERS.map(({ slug, level, order, title }) => ({ slug, level, order, title })),
   }));
-  return <TextbookEditor catalog={catalog} initialLang={params?.lang} initialSlug={params?.slug} />;
+  return <><p className="page-container"><Link href="/admin/books/japanese-n5">일본어 N5 · 한 권 원고 편집 →</Link></p><TextbookEditor catalog={catalog} initialLang={params?.lang} initialSlug={params?.slug} /></>;
 }

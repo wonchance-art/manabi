@@ -1,0 +1,3 @@
+Copyright © 2017 Adobe Systems Incorporated (http://www.adobe.com/).
+
+Subset and outline conversion: ManabiReferenceKoreanSerif.
