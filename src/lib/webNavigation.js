@@ -1,10 +1,14 @@
 export const MAIN_NAV = Object.freeze([
-  { href: '/home', label: '오늘' },
+  { href: '/home', label: '오늘', prefetch: false },
   { href: '/lessons', label: '교재' },
   { href: '/discover', label: '발견' },
   { href: '/vocab', label: '복습', prefetch: false },
   { href: '/materials', label: '내 서재', prefetch: false },
 ]);
+// Only the text reader uses this shell; PDF and book readers keep their own controls.
+export function isFocusedReadingRoute(pathname) {
+  return /^\/viewer\/[^/]+\/?$/.test(pathname || '');
+}
 export function navigationOwner(pathname) {
   if (/^\/study\/library(?:\/|$)/.test(pathname)) return '/materials';
   if (/^\/(?:lessons|books)(?:\/|$)/.test(pathname)) return '/lessons';

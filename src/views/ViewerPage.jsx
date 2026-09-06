@@ -64,6 +64,7 @@ import { usePdfRangeMutation } from '../lib/usePdfRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
 import { useGroupReadPush } from '../lib/useGroupReadPush';
 import { useScrollRestore } from '../lib/useScrollRestore';
+import { captureReadingAnchor, restoreReadingAnchor } from '../lib/readingViewport';
 import { listHanjaHunEum, toJaForm } from '../lib/hanjaKo';
 import { useGrammarDetail } from '../lib/useGrammarDetail';
 import { useEasierText } from '../lib/useEasierText';
@@ -226,6 +227,22 @@ export default function ViewerPage() {
   // 탭 시트(B안 — 오너 전환 지시 2026-08-28): 글자/표시/도구. 상태는 페이지 방문 동안만
   // 유지(마지막 탭 기억) — 영속 pref로 만들 만큼의 무게는 아니다.
   const [sheetTab, setSheetTab] = useState('type');
+  const settingsDialog = useRef(null);
+  const settingsTrigger = useRef(null);
+  useEffect(() => {
+    if (!settingsOpen) return;
+    const dialog = settingsDialog.current;
+    const trigger = settingsTrigger.current;
+    dialog?.showModal();
+    return () => {
+      dialog?.close();
+      // Conditional unmount can remove the modal before native focus restoration.
+      // Do not steal focus from a tool opened directly from this sheet.
+      if (document.activeElement === document.body && trigger?.isConnected) {
+        trigger.focus({ preventScroll: true });
+      }
+    };
+  }, [settingsOpen]);
 
   const quiz = useViewerQuiz();
   const { quizState, completionModal, setCompletionModal, generateQuiz,
@@ -515,6 +532,16 @@ export default function ViewerPage() {
 
   // 읽기 진행률 바 — readerRef는 본문 컨테이너에 부착
   const { readerRef, readProgress } = useReadProgress(material);
+  const displayFrame = useRef(null);
+  useEffect(() => () => cancelAnimationFrame(displayFrame.current), []);
+  const keepReadingPosition = change => {
+    const toolbar = readerRef.current?.closest('.viewer-center')?.querySelector('.viewer-topbar');
+    const top = toolbar ? Math.max(72, toolbar.getBoundingClientRect().bottom + 8) : 72;
+    const anchor = captureReadingAnchor(readerRef.current, top, window.innerHeight);
+    change();
+    cancelAnimationFrame(displayFrame.current);
+    displayFrame.current = requestAnimationFrame(() => restoreReadingAnchor(anchor, options => window.scrollBy(options)));
+  };
   // 그룹 같이 읽기 진도 push(§4.3) — 이번 주 지정 자료일 때만, 실패 조용히
   useGroupReadPush(material?.id, user?.id, readProgress);
 
@@ -556,6 +583,7 @@ export default function ViewerPage() {
   const keyHandlersRef = useRef({});
   useEffect(() => {
     if (!selectedToken || !isSheetOpen) return undefined;
+    if (settingsOpen) return undefined;
     function onKeyDown(e) {
       const t = e.target;
       const inField = !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
@@ -577,7 +605,7 @@ export default function ViewerPage() {
     }
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [selectedToken, isSheetOpen]);
+  }, [selectedToken, isSheetOpen, settingsOpen]);
   // 단어가 바뀌면 되돌릴 것이 소멸한다(다른 단어의 행을 지우면 안 된다). 저장 직후의 자동
   // 닫힘(setIsSheetOpen만)은 저장 동작의 일부라 소멸시키지 않는다 — 명시 닫기(closeWordCard →
   // selectedToken null)와 다음 저장이 소멸 지점.
@@ -2254,7 +2282,9 @@ export default function ViewerPage() {
   return (
     // --dragging: 지정 드래그 중 바텀시트 포인터 투과 — 시트가 드래그 도중 자라
     // 경로를 덮어도 elementFromPoint가 밑의 토큰을 잡는다(useTokenRangeSelect 참조)
-    <div className={`viewer-3col viewer-theme-${theme}${tokenRange.dragging ? ' viewer-3col--dragging' : ''}`}>
+    <div className={`viewer-3col viewer-theme-${theme}${tokenRange.dragging ? ' viewer-3col--dragging' : ''}`}
+      data-left-active={!!(leftPanelLoading || leftPanelResult)}
+      data-right-active={!!(dragTokens !== null || (selectedToken && isSheetOpen))}>
 
       {/* 왼쪽 — 문법 해설 / 맥락 */}
       <aside className="viewer-side viewer-side--left">
@@ -2262,7 +2292,7 @@ export default function ViewerPage() {
       </aside>
 
       {/* 중앙 — 뷰어 본문 */}
-      <main className="viewer-center">
+      <div className="viewer-center">
       {!user && (
         <div className="viewer-guest-banner">
           <span>단어를 클릭해 뜻을 확인할 수 있어요.</span>
@@ -2301,11 +2331,12 @@ export default function ViewerPage() {
               </button>
             )}
             <ListenControls text={material?.raw_text} language={materialLang} />
-            <button className="viewer-aa" aria-label="읽기 설정" aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
+            <button ref={settingsTrigger} className="viewer-aa" aria-label="읽기 설정" aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
               Aa
             </button>
           </div>
         </div>
+        <p className="reader-metadata">{langNameKo(materialLang)}{material?.processed_json?.metadata?.level ? ` · ${material.processed_json.metadata.level}` : ''} · {material.visibility === 'public' ? '공개 읽기' : '내 자료'}</p>
         {titleEditing && user?.id === material?.owner_id ? (
           <form
             onSubmit={e => { e.preventDefault(); updateTitleMutation.mutate(titleDraft); }}
@@ -2414,8 +2445,15 @@ export default function ViewerPage() {
       {settingsOpen && (
         <>
           <div className="rsheet-backdrop" onClick={() => setSettingsOpen(false)} />
-          <div className="rsheet" role="dialog" aria-label="읽기 설정">
-            <button className="rsheet__grab" aria-label="설정 닫기" onClick={() => setSettingsOpen(false)}><i /></button>
+          <dialog ref={settingsDialog} className="rsheet" aria-label="읽기 설정"
+            onCancel={e => { e.preventDefault(); setSettingsOpen(false); }}
+            onKeyDown={e => e.stopPropagation()}
+            onClick={e => {
+              if (e.target !== e.currentTarget) return;
+              const rect = e.currentTarget.getBoundingClientRect();
+              if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) setSettingsOpen(false);
+            }}>
+            <button autoFocus className="rsheet__grab" aria-label="설정 닫기" onClick={() => setSettingsOpen(false)}><i /></button>
             <div className="rsheet__body">
               <div className="rsheet__sec">읽기 모드</div>
               <div className="rsheet-presets">
@@ -2424,7 +2462,7 @@ export default function ViewerPage() {
                     key={m.key}
                     className={`rsheet-pcard${presetActive(m.key, settings) ? ' rsheet-pcard--on' : ''}`}
                     aria-pressed={presetActive(m.key, settings)}
-                    onClick={() => applyPreset(m.key)}
+                    onClick={() => keepReadingPosition(() => applyPreset(m.key))}
                   >
                     <i>{m.icon}</i><b>{m.name}</b><span>{m.desc}</span>
                   </button>
@@ -2452,7 +2490,7 @@ export default function ViewerPage() {
                   <div className="rsheet-row">
                     <span className="rsheet-row__lab">크기</span>
                     <input type="range" min="0.8" max="3" step="0.05" value={fontSize} aria-label="글자 크기"
-                      onChange={e => setFontSize(parseFloat(e.target.value))} />
+                      onChange={e => keepReadingPosition(() => setFontSize(parseFloat(e.target.value)))} />
                   </div>
                   <div className="rsheet-row">
                     <span className="rsheet-row__lab">배경</span>
@@ -2467,7 +2505,7 @@ export default function ViewerPage() {
                     <span className="rsheet-row__lab">폰트</span>
                     <div className="rsheet-fonts">
                       {[["'Noto Sans KR'", '본고딕'], ["'Nanum Myeongjo'", '명조'], ['monospace', '고정폭'], ["'Inter'", 'Inter']].map(([value, name]) => (
-                        <button key={value} onClick={() => setFontFamily(value)} aria-pressed={fontFamily === value}
+                        <button key={value} onClick={() => keepReadingPosition(() => setFontFamily(value))} aria-pressed={fontFamily === value}
                           className={`rsheet-fcard${fontFamily === value ? ' rsheet-fcard--on' : ''}`}>
                           <b style={{ fontFamily: value }}>{(materialLang === 'Chinese' ? '你' : materialLang === 'Japanese' ? 'あ' : '') + 'Aa'}</b>
                           <span>{name}</span>
@@ -2478,12 +2516,12 @@ export default function ViewerPage() {
                   <div className="rsheet-row">
                     <span className="rsheet-row__lab">행간</span>
                     <input type="range" min="10" max="60" value={lineGap} aria-label="행간"
-                      onChange={e => setLineGap(parseInt(e.target.value))} />
+                      onChange={e => keepReadingPosition(() => setLineGap(parseInt(e.target.value)))} />
                   </div>
                   <div className="rsheet-row">
                     <span className="rsheet-row__lab">자간</span>
                     <input type="range" min="0" max="1" step="0.05" value={charGap} aria-label="자간"
-                      onChange={e => setCharGap(parseFloat(e.target.value))} />
+                      onChange={e => keepReadingPosition(() => setCharGap(parseFloat(e.target.value)))} />
                   </div>
                 </div>
               )}
@@ -2496,7 +2534,7 @@ export default function ViewerPage() {
                       {[['all', '전체'], ['unknown', '모르는 단어만'], ['none', '없음']].map(([v, label]) => (
                         <button key={v} aria-pressed={pronDisplay === v}
                           className={pronDisplay === v ? 'rsheet-miniseg--on' : undefined}
-                          onClick={() => setPronDisplay(v)}>{label}</button>
+                          onClick={() => keepReadingPosition(() => setPronDisplay(v))}>{label}</button>
                       ))}
                     </div>
                   </div>
@@ -2644,7 +2682,7 @@ export default function ViewerPage() {
                 </div>
               )}
             </div>
-          </div>
+          </dialog>
         </>
       )}
 
@@ -3194,14 +3232,14 @@ export default function ViewerPage() {
       )}
 
 
-      </main>{/* viewer-center end */}
+      </div>{/* viewer-center end */}
 
       {/* 오른쪽 — 단어 클릭 상세 or 드래그 단어 리스트 */}
       <aside className="viewer-side viewer-side--right">
         {rightPanelContent}
       </aside>
 
-      <ViewerBottomSheet
+      {(leftPanelLoading || leftPanelResult || dragTokens !== null || (selectedToken && isSheetOpen) || pickedLineIdx !== null) && <ViewerBottomSheet
         leftContent={leftPanelContent}
         rightContent={rightPanelContent}
         leftActive={leftPanelLoading || !!leftPanelResult}
@@ -3216,7 +3254,7 @@ export default function ViewerPage() {
             {sentenceNavBtn(1, 'viewer-sheet-bar__btn viewer-sheet-bar__btn--nav')}
           </>
         ) : null}
-      />
+      />}
 
 
       {user?.id === material?.owner_id && (

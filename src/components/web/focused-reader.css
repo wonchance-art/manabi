@@ -1,0 +1,42 @@
+/* Keep the page still when a word is selected: the side columns retain their width. */
+.manabi-app--reading { --gnb-height: 56px; }
+.manabi-app--reading .gnb { height: 56px; gap: 12px; padding-inline: 20px; }
+.manabi-app--reading .gnb__logo { font-size: 24px; letter-spacing: -1.6px; margin-right: auto; }
+.manabi-app--reading .gnb__nav,
+.manabi-app--reading .gnb > .gnb__link,
+.manabi-app--reading .mobile-nav { display: none; }
+.manabi-app--reading .manabi-search-link span { display: none; }
+.manabi-app--reading .app-layout { padding-bottom: 0; }
+.reader-site-menu { position: relative; font-size: 13px; }
+.reader-site-menu summary { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; cursor: pointer; list-style: none; }
+.reader-site-menu summary::-webkit-details-marker { display: none; }
+.reader-site-menu summary span { font-size: 23px; }
+.reader-site-menu nav { position: absolute; top: calc(100% + 6px); right: 0; width: 180px; display: grid; padding: 8px; background: var(--sheet); border: 1px solid var(--rule); box-shadow: 0 8px 24px color-mix(in srgb, var(--ink) 10%, transparent); }
+.reader-site-menu nav a { min-height: 44px; display: flex; align-items: center; padding-inline: 14px; text-decoration: none; color: var(--ink); }
+.reader-site-menu nav a:hover { background: var(--paper); }
+.manabi-app--reading .viewer-3col { height: auto; min-height: calc(100dvh - 56px); overflow: visible; max-width: 1400px; margin-inline: auto; }
+.manabi-app--reading .viewer-center { overflow: visible; padding-bottom: 100px; }
+.manabi-app--reading .viewer-side { position: sticky; top: 68px; max-height: calc(100dvh - 84px); align-self: flex-start; border: 0; }
+.manabi-app--reading .viewer-3col[data-left-active="false"] .viewer-side--left,
+.manabi-app--reading .viewer-3col[data-right-active="false"] .viewer-side--right { visibility: hidden; pointer-events: none; }
+.manabi-app--reading .viewer-header { display: contents; }
+.manabi-app--reading .viewer-topbar { position: sticky; top: 56px; z-index: 45; margin-bottom: 18px; padding-block: 8px; background: var(--paper); border-bottom: 1px solid var(--rule); }
+.manabi-app--reading .viewer-titlerow { margin-bottom: 24px; }
+.manabi-app--reading .viewer-topbar a,
+.manabi-app--reading .viewer-aa,
+.manabi-app--reading .viewer-title-edit { min-height: 44px; }
+.manabi-app--reading .viewer-series-nav__btn { min-width: 44px; }
+.manabi-app--reading .viewer-titlerow .page-header__title { color: var(--ink); -webkit-text-fill-color: currentColor; background: none; font-size: clamp(25px, 2.5vw, 34px); font-weight: 650; line-height: 1.55; letter-spacing: -1px; overflow-wrap: anywhere; }
+.reader-metadata { margin: 0 0 10px; font-size: 12px; color: var(--muted); line-height: 1.8; }
+.manabi-app--reading .reader-area { min-height: 240px; border-radius: 3px; box-shadow: none; }
+.manabi-app--reading .reader-hint { display: block; text-align: left; padding-inline: 0; margin-top: 22px; }
+.manabi-app--reading .viewer-topbar { gap: 8px; flex-wrap: wrap; }
+.manabi-app--reading .post-reading { border-top: 1px solid var(--rule); padding-top: 24px; margin-top: 28px; }
+.manabi-app--reading .post-reading-actions__btn { border-radius: 3px; }
+/* A native modal supplies inert background, Escape and focus return. The page stays visible. */
+.manabi-app--reading dialog.rsheet { top: auto; margin: 0; padding: 0; }
+.manabi-app--reading dialog.rsheet::backdrop { background: transparent; }
+.manabi-app--reading .rsheet__grab { min-height: 44px; }
+
+.manabi-app--reading .rsheet-tabs button,
+.manabi-app--reading .rsheet-miniseg button { min-height: 44px; }

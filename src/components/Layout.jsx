@@ -4,11 +4,12 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../lib/AuthContext';
 import { useTheme } from '../lib/useTheme';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import OnboardingModal from './OnboardingModal';
 import './books/reading-shell.css';
 import './web/web-shell.css';
-import { MAIN_NAV, navigationOwner } from '@/lib/webNavigation';
+import { MAIN_NAV, navigationOwner, isFocusedReadingRoute } from '@/lib/webNavigation';
+import './web/focused-reader.css';
 import { librarySearchHref } from '@/lib/libraryReturn';
 import VersionBadge from './VersionBadge';
 import { supabase } from '../lib/supabase';
@@ -16,10 +17,36 @@ import { useToast } from '../lib/ToastContext';
 
 // 미완성 기능 임시 숨김 — true로 바꾸면 학습·클래스 내비가 함께 복원된다.
 
+function ReaderSiteMenu({ isAdmin }) {
+  const ref = useRef(null);
+  const pathname = usePathname();
+  useEffect(() => { if (ref.current) ref.current.open = false; }, [pathname]);
+  useEffect(() => {
+    const closeOutside = e => { if (ref.current && !ref.current.contains(e.target)) ref.current.open = false; };
+    const closeWithKey = e => {
+      if (e.key === 'Escape' && ref.current?.open) {
+        ref.current.open = false;
+        ref.current.querySelector('summary').focus();
+      }
+    };
+    document.addEventListener('pointerdown', closeOutside);
+    document.addEventListener('keydown', closeWithKey);
+    return () => { document.removeEventListener('pointerdown', closeOutside); document.removeEventListener('keydown', closeWithKey); };
+  }, []);
+  return <details ref={ref} className="reader-site-menu">
+    <summary>메뉴 <span aria-hidden="true">≡</span></summary>
+    <nav aria-label="읽기 화면 내비게이션" onClick={e => { if (e.target.closest('a')) ref.current.open = false; }}>
+      {MAIN_NAV.map(item => <Link key={item.href} href={item.href} prefetch={item.prefetch}>{item.label}</Link>)}
+      {isAdmin && <Link href="/admin" prefetch={false}>관리</Link>}
+    </nav>
+  </details>;
+}
+
 export default function Layout({ children }) {
   const { user, profile, isAdmin, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const focusedReading = isFocusedReadingRoute(pathname);
   const isNavActive = href => navigationOwner(pathname) === href;
   const { theme, toggleTheme } = useTheme();
   const [isOffline, setIsOffline] = useState(false);
@@ -125,10 +152,10 @@ export default function Layout({ children }) {
   const mobileNavLinks = MAIN_NAV;
 
   return (
-    <div className="manabi-app">
+    <div className={`manabi-app${focusedReading ? ' manabi-app--reading' : ''}`}>
       <a href="#main-content" className="skip-link">본문으로 건너뛰기</a>
       <header className="gnb" role="banner">
-        <Link href="/home" className="gnb__logo" aria-label="manabi 오늘">
+        <Link href="/home" prefetch={false} className="gnb__logo" aria-label="manabi 오늘">
           <span>manabi<span className="manabi-brand-dot" aria-hidden="true" /></span>
         </Link>
 
@@ -169,7 +196,8 @@ export default function Layout({ children }) {
           <span aria-hidden="true">◐</span>
         </button>
 
-        <Link href={librarySearchHref(user)} className="manabi-search-link" aria-label="자료 검색">⌕<span>검색</span></Link>
+        {focusedReading && <ReaderSiteMenu isAdmin={isAdmin} />}
+        <Link href={librarySearchHref(user)} prefetch={false} className="manabi-search-link" aria-label="자료 검색">⌕<span>검색</span></Link>
         <div className="gnb__actions">
           {user ? (
             <div className="gnb__user-area">
