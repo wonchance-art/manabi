@@ -14,7 +14,7 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- **manabi 웹 v2 · 자료 가져오기·읽기 왕복 (2026-09-07, 오너 작업 개시)** — `codex/web-v2-reading-loop-20260907`, base #1283. 헤더 검색 연결, 저장/분석 실패·중단·재시도, 서재 필터·읽던 위치 복귀. 공통 Layout·MaterialAddPage·MaterialsPage·LibraryPage·자료/PDF 뷰어의 연결부, 관련 순수 helper·hook·CSS·테스트·검수 문서만 변경. 기존 원고·판본·FSRS·DB·환경·월드·PDF 조판·음성 제외. 원래 작업 공간 변경 보존, merge/force-push 없음.
+- **manabi 웹 v2 · 자료 가져오기·읽기 왕복 (2026-09-07, 오너 작업 개시)** — `codex/web-v2-reading-loop-20260907`, base #1283. 헤더 검색 연결, 저장/분석 실패·중단·재시도, 서재 필터·읽던 위치 복귀. 공통 Layout·MaterialAddPage·MaterialsPage·LibraryPage·자료/PDF 뷰어의 연결부, 관련 순수 helper·hook·CSS·테스트·검수 문서만 변경. 기존 원고·판본·FSRS·DB·환경·월드·PDF 조판·음성 제외. 원래 작업 공간 변경 보존, merge/force-push 없음. 구현·미리보기 검수 완료(실행 코드 `ea6d420`, 브라우저 20조건/오류 0, 단위 3,766 + 시간 초과 4개 단독 통과). 공개 push는 자동 승인 검토 거절로 새 오너 승인 대기; draft PR·원격 CI·CODEX_DONE 미게시. 상세 `docs/manabi-web-v2-reading-loop.md`.
 ### todo
 - ~~🎧 받아쓰기 채점 엔진(#1077 제안 6, 발주 5386786944)~~ → **회수: 2026-08-23
   16:03 스캔까지 WORKING 무표식(30분 룰) — Claude 직접 수행·완결(회수 공지
