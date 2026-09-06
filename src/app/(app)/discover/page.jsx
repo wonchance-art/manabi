@@ -3,7 +3,7 @@ import { STUDY_COUNTRIES } from '@/content/studies';
 import { publishedReading, readingCatalog } from '@/lib/server/bookReading';
 import { bookHref } from '@/lib/textbook/contract';
 export const dynamic = 'force-dynamic';
-export const metadata = { title: '발견 — manabi', description: '언어가 살아가는 곳. 문화와 지역학, 새로운 읽을거리.' };
+export const metadata = { title: '발견', description: '언어가 살아가는 곳. 문화와 지역학, 새로운 읽을거리.' };
 export default async function Page() {
   let book = null;
   try { const published = await publishedReading(); book = readingCatalog(published.book); } catch { /* Regional documents remain available. */ }

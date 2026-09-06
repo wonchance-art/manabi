@@ -12,7 +12,9 @@ export default function useReadingProgress(edition) {
     if (loading || !edition) return;
     function restore() {
       let raw = null, storageAvailable = true;
-      try { raw = JSON.parse(localStorage.getItem(key) || 'null'); } catch { storageAvailable = false; }
+      let stored = null;
+      try { stored = localStorage.getItem(key); } catch { storageAvailable = false; }
+      try { raw = JSON.parse(stored || 'null'); } catch { /* A damaged record starts fresh; storage can still work. */ }
       const progress = validReadingProgress(raw);
       const next = { key, progress, hasProgress: !!raw && raw.page === progress.page, updatedAt: raw?.updatedAt || null, storageAvailable };
       current.current = next; setSnapshot(next);

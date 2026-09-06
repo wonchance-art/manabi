@@ -8,16 +8,18 @@ const base = process.env.QA_BASE || 'http://127.0.0.1:8880';
 const out = process.env.QA_OUT || '/private/tmp/manabi-v2-qa';
 fs.mkdirSync(out, { recursive: true });
 const browser = await chromium.launch({ executablePath: process.env.QA_CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true });
+let activePage;
 const report = { base, realContent: [], fixtureStates: [], layouts: [], errors: [] };
 const check = async (page, label) => {
   await page.evaluate(() => document.fonts.ready);
   const result = await page.evaluate(() => ({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth, title: document.querySelector('main h1')?.textContent }));
   assert(result.scrollWidth <= result.width + 1, `${label}: overflow ${result.scrollWidth}/${result.width}`);
   report.layouts.push({ label, ...result });
+  console.log('Checked', label);
 };
 try {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, serviceWorkers: 'block' });
-  const page = await context.newPage();
+  const page = await context.newPage(); activePage = page;
   page.on('pageerror', error => report.errors.push(error.message));
   await page.goto(base + '/home');
   const first = page.getByRole('link', { name: '첫 페이지 열기', exact: true });
@@ -33,7 +35,9 @@ try {
   await page.getByRole('link', { name: '일본어 N5 책 둘러보기', exact: true }).click();
   await page.getByRole('button', { name: '전체 42과', exact: true }).click();
   assert.equal(await page.locator('.manabi-toc-group li').count(), 42);
-  await page.locator('.manabi-toc-group li').filter({ has: page.locator(`a[href*="#u29-start"]`) }).locator('a').click();
+  const chapterGroup = page.locator('.manabi-toc-group').filter({ has: page.locator('a[href*="#u29-start"]') });
+  await chapterGroup.locator('summary').click();
+  await chapterGroup.locator('a[href*="#u29-start"]').click();
   await page.locator('#u29-start[data-book-source]').waitFor();
   await page.goto(base + `/books/japanese-n5?edition=${edition}#u29-patterns`);
   await page.locator('#u29-patterns .examples').first().waitFor();
@@ -47,6 +51,7 @@ try {
   await page.getByRole('link', { name: '← 책으로', exact: true }).click();
   await page.getByRole('heading', { name: '한 권의 흐름', exact: true }).waitFor();
   report.realContent.push('home → shelf → published book → lesson29 → home → same lesson anchor → book');
+  if (process.env.QA_PART !== 'member') {
   for (const width of [320, 390, 768, 900, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     for (const route of ['/home', '/lessons', '/books/japanese-n5', '/discover', '/materials', '/vocab']) {
@@ -65,11 +70,12 @@ try {
   await nav.getByRole('link', { name: '발견', exact: true }).click();
   await page.getByRole('heading', { name: '말이 태어나는 곳.' }).waitFor();
   await page.locator('.discover-feature').click();
+  await page.waitForURL(/\/studies\/japan\/jp-culture/, { timeout: 60000 });
   await page.locator('main h1').waitFor();
   assert.match(page.url(), /\/studies\/japan\/jp-culture/);
   report.realContent.push('mobile five destinations + discovery opens real regional document');
   await page.goto(base + '/books/japanese-n5#u29-patterns');
-  await page.locator('#u29-patterns .examples').waitFor();
+  await page.locator('#u29-patterns .examples').first().waitFor();
   await check(page, 'reader-examples-390');
   await page.screenshot({ path: out + '/reader-examples-mobile.png' });
   await page.getByRole('button', { name: '집중 읽기', exact: true }).click();
@@ -84,6 +90,7 @@ try {
   await page.keyboard.press('Enter');
   assert.equal(await page.locator(':focus').getAttribute('id'), 'main-content');
   report.realContent.push('keyboard skip-to-content');
+  }
   await context.close();
 
   // Synthetic authenticated states use the existing sign-in UI, not a production bypass.
@@ -96,7 +103,11 @@ try {
   const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*', 'access-control-expose-headers': 'content-range' };
   let failed = false, due = 3, rows = [];
   const requests = [];
-  await member.route(base + '/**', route => { const headers = { ...route.request().headers() }; delete headers.cookie; return route.continue({ headers }); });
+  // Server-rendered public pages use an anonymous request. Fixture cookies stay client-side.
+  await member.route(base + '/**', async route => {
+    const response = await route.fetch({ headers: { ...route.request().headers(), cookie: '' } });
+    return route.fulfill({ response });
+  });
   await member.route('**/auth/v1/**', route => route.fulfill({ status: route.request().method() === 'OPTIONS' ? 204 : 200, headers: cors, contentType: 'application/json', body: route.request().method() === 'OPTIONS' ? '' : JSON.stringify(route.request().url().includes('/user') ? user : session) }));
   await member.route('**/rest/v1/**', async route => {
     const request = route.request(), url = new URL(request.url());
@@ -113,7 +124,7 @@ try {
     localStorage.setItem(`manabi-book-progress:${edition}:guest`, JSON.stringify({ page: 'u29-patterns', completed: ['u29'] }));
     if (!localStorage.getItem(`manabi-book-progress:${edition}:${uid}`)) localStorage.setItem(`manabi-book-progress:${edition}:${uid}`, JSON.stringify({ page: 'u35-start', completed: ['u01', 'u35'], updatedAt: '2026-01-01T00:00:00Z' }));
   }, { edition, uid });
-  const mp = await member.newPage();
+  const mp = await member.newPage(); activePage = mp;
   mp.on('pageerror', error => report.errors.push(error.message));
   await mp.goto(base + '/auth');
   await mp.getByLabel('이메일', { exact: true }).fill(user.email);
@@ -139,7 +150,9 @@ try {
   report.fixtureStates.push('server failure leaves local book readable and exposes retry');
   failed = false; due = 0;
   await mp.getByRole('button', { name: '다시 불러오기', exact: true }).click();
-  await mp.getByRole('heading', { name: '기억하고 싶은첫 표현을 담아 보세요.' }).waitFor();
+  await mp.getByRole('heading', { name: /첫 표현을 담아 보세요/ }).waitFor();
+  assert.equal((await mp.locator('.today-review h2').innerText()).includes('<br'), false);
+  await mp.screenshot({ path: out + '/member-empty-mobile.png', fullPage: true });
   report.fixtureStates.push('retry + empty vocabulary state');
   rows = [{ material_id: 'fixture-material', is_completed: false, updated_at: new Date().toISOString(), reading_materials: { id: 'fixture-material', title: '최근에 읽은 자료의 실제 기록 형태' } }];
   await mp.reload();
@@ -147,9 +160,22 @@ try {
   assert.equal(await mp.getByRole('link', { name: '이어서 읽기', exact: true }).getAttribute('href'), '/viewer/fixture-material');
   report.fixtureStates.push('newer server reading wins without combining its progress with book completion');
   assert(requests.filter(r => /\/(user_vocabulary|reading_progress)$/.test(r.path)).every(r => r.search.includes(`user_id=eq.${uid}`)), 'every personal reading/vocab query is scoped to the signed-in user');
+  rows = [];
+  await mp.evaluate(({ edition, uid }) => localStorage.setItem(`manabi-book-progress:${edition}:${uid}`, '{'), { edition, uid });
+  await mp.reload();
+  await mp.getByRole('link', { name: '첫 페이지 열기', exact: true }).waitFor();
+  assert.match(await mp.locator('.today-record').first().innerText(), /0 \/ 42과/);
+  assert.equal(await mp.getByText('이 브라우저에서는 읽던 위치를 저장할 수 없어요.', { exact: true }).count(), 0);
+  report.fixtureStates.push('damaged local record recovers without claiming storage is unavailable');
   await member.close();
   assert.deepEqual(report.errors, []);
   console.log(JSON.stringify({ realContent: report.realContent, fixtureStates: report.fixtureStates, layouts: report.layouts.length, errors: report.errors }, null, 2));
+} catch (error) {
+  if (activePage && !activePage.isClosed()) {
+    await activePage.screenshot({ path: out + '/failure.png', fullPage: true }).catch(() => {});
+    fs.writeFileSync(out + '/failure.txt', await activePage.locator('body').innerText().catch(() => 'Page unavailable'));
+  }
+  throw error;
 } finally {
   fs.writeFileSync(out + '/report.json', JSON.stringify(report, null, 2));
   await browser.close();
