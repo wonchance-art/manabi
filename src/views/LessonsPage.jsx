@@ -3,8 +3,7 @@
 import { legacyTextbookTarget } from '../lib/bookNavigation';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import Link from '../components/ArchiveLink';
 import { isPassed } from '../components/RefPatternCheck';
 import { useAuth } from '../lib/AuthContext';
 import { textbookThemeStyle } from '../lib/textbookTheme';
@@ -87,7 +86,6 @@ function PitchLine({ text }) {
 }
 
 export default function LessonsPage({ refManifest = {}, initialLang, initialLevel, bookAvailable = false }) {
-  const router = useRouter();
   const { user, profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
 
@@ -263,7 +261,7 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
         <button
           type="button"
           className="lessons-continue"
-          onClick={() => router.push(`${navigationBase}/grammar/${continueTarget.slug}`)}
+          onClick={() => window.location.assign(`${navigationBase}/grammar/${continueTarget.slug}`)}
         >
           <span className="lessons-continue__body">
             <span className="lessons-continue__kicker">
@@ -348,7 +346,7 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
                   <strong style={{ fontSize: '0.9rem', lineHeight: 1.55, color: 'var(--text-primary)', flex: '1 1 240px' }}>{refLang.pitch.closer}</strong>
                   {refLang.levels[0]?.chapters?.[0]?.slug && (
                     <button type="button" className="btn btn--sm"
-                      onClick={() => router.push(`${navigationBase}/grammar/${refLang.levels[0].chapters[0].slug}`)}
+                      onClick={() => window.location.assign(`${navigationBase}/grammar/${refLang.levels[0].chapters[0].slug}`)}
                       style={{ background: TRACK_COLORS[langFilter], color: '#fff', border: 'none' }}>
                       지금 시작 →
                     </button>

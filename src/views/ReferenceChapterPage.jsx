@@ -1,5 +1,5 @@
 import { legacyTextbookTarget } from '../lib/bookNavigation';
-import Link from 'next/link';
+import Link from '../components/ArchiveLink';
 import { buildChapterQuiz } from '../lib/refQuiz';
 import { refInline, refMain, refPron, Callout, CALLOUT_ORDER, RefParallel, RefHanjaBridge, LevelDot, JaText, lightenForText } from './refShared';
 import RefReadMark from '../components/RefReadMark';

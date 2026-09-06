@@ -2,7 +2,7 @@
 
 import { legacyTextbookTarget } from '../lib/bookNavigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
+import Link from '../components/ArchiveLink';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';

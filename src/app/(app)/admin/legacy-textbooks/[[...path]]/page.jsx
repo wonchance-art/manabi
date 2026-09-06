@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '@/components/ArchiveLink';
 import { notFound } from 'next/navigation';
 import { requireAdmin } from '@/lib/supabaseServer';
 import { buildRefManifest } from '@/content/refManifest';
