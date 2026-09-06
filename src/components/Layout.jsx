@@ -7,6 +7,8 @@ import { useTheme } from '../lib/useTheme';
 import { useState, useEffect } from 'react';
 import OnboardingModal from './OnboardingModal';
 import './books/reading-shell.css';
+import './web/web-shell.css';
+import { MAIN_NAV, navigationOwner } from '@/lib/webNavigation';
 import VersionBadge from './VersionBadge';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/ToastContext';
@@ -17,8 +19,7 @@ export default function Layout({ children }) {
   const { user, profile, isAdmin, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const isReading = ['/lessons', '/books', '/vocab', '/materials'].some(base => pathname === base || pathname.startsWith(base + '/'));
-  const isNavActive = href => pathname === href || pathname.startsWith(href + '/') || (href === '/lessons' && pathname.startsWith('/books/'));
+  const isNavActive = href => navigationOwner(pathname) === href;
   const { theme, toggleTheme } = useTheme();
   const [isOffline, setIsOffline] = useState(false);
   const [resendingConfirm, setResendingConfirm] = useState(false);
@@ -119,30 +120,14 @@ export default function Layout({ children }) {
 
   // 핵심 네비게이션만 노출 — 부가 기능(가이드·통계)은 프로필 안쪽으로
   // 학습 월드(/world)는 개발 동결(2026-07 피벗)로 내비에서 내렸다 — 라우트는 유지, 직행 URL로만.
-  const navLinks = [
-    ...(user ? [
-      { href: '/home', label: '홈' },
-    ] : []),
-    { href: '/lessons',   label: '교재' },
-    { href: '/vocab',     label: '복습', prefetch: false },
-    { href: '/materials', label: '자료', prefetch: false },
-  ];
-
-  const mobileNavLinks = [
-    ...(user ? [
-      { href: '/home', label: '홈' },
-    ] : []),
-    { href: '/lessons',   label: '교재' },
-    { href: '/vocab',     label: '복습', prefetch: false },
-    { href: '/materials', label: '자료', prefetch: false },
-    ...(user ? [] : [{ href: '/auth', label: '로그인', prefetch: false }]),
-  ];
+  const navLinks = MAIN_NAV;
+  const mobileNavLinks = MAIN_NAV;
 
   return (
-    <div className={isReading ? 'manabi-app' : undefined}>
+    <div className="manabi-app">
       <a href="#main-content" className="skip-link">본문으로 건너뛰기</a>
       <header className="gnb" role="banner">
-        <Link href="/lessons" className="gnb__logo" aria-label="manabi 책장">
+        <Link href="/home" className="gnb__logo" aria-label="manabi 오늘">
           <span>manabi<span className="manabi-brand-dot" aria-hidden="true" /></span>
         </Link>
 
@@ -183,6 +168,7 @@ export default function Layout({ children }) {
           <span aria-hidden="true">◐</span>
         </button>
 
+        <Link href="/materials#library-search" className="manabi-search-link" aria-label="자료 검색">⌕<span>검색</span></Link>
         <div className="gnb__actions">
           {user ? (
             <div className="gnb__user-area">
@@ -190,6 +176,7 @@ export default function Layout({ children }) {
                 className="gnb__profile-btn"
                 onClick={() => router.push('/profile')}
                 title={profile?.display_name || user.email}
+                aria-label="내 계정"
               >
                 {displayChar}
               </button>
@@ -259,7 +246,7 @@ export default function Layout({ children }) {
         ))}
       </nav>
 
-      <main className="app-layout" role="main" id="main-content">
+      <main className="app-layout" role="main" id="main-content" tabIndex={-1}>
         {children}
       </main>
 

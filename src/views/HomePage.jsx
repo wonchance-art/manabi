@@ -1,551 +1,144 @@
 'use client';
-
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../lib/AuthContext';
-import Button from '../components/Button';
-import { parseTitle } from '../lib/seriesMeta';
-import { getIdealLevel } from '../lib/levels';
-import { materialFit } from '../lib/materialFit';
-import { rankSuggestions, SUGGESTION_TOP_N, REASON } from '../lib/suggestionRank';
-import { isPassed } from '../components/RefPatternCheck';
-import { pullProgress } from '../lib/refProgress';
-import ContinueDeck from '../components/ContinueDeck';
-import { useRereadCandidate } from '../lib/useRereadCandidate';
-import { useGroupEntryItem } from '../lib/useGroupEntryItem';
-import { buildForecastTapEvent } from '../lib/forecastTapEvent';
-import { logReviewEvents } from '../lib/reviewEvents';
-import ProfileStats from './ProfileStats';
-import { kstDayStartIso, kstWeekStartIso } from '../lib/growthStats';
-import { detectLang, langNameKo } from '../lib/constants';
-import { isOnDemandSuggestion } from '../lib/suggestionSources';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/AuthContext';
+import { bookHref } from '@/lib/textbook/contract';
+import { bookResume, chooseResume, recentMaterial } from '@/lib/webNavigation';
+import useReadingProgress from '@/components/books/useReadingProgress';
+import BookCover from '@/components/books/BookCover';
+import SuggestionArtwork from '@/components/SuggestionArtwork';
+import ContinueDeck from '@/components/ContinueDeck';
+import { useRereadCandidate } from '@/lib/useRereadCandidate';
+import { useGroupEntryItem } from '@/lib/useGroupEntryItem';
+import { buildForecastTapEvent } from '@/lib/forecastTapEvent';
+import { logReviewEvents } from '@/lib/reviewEvents';
+import { getIdealLevel } from '@/lib/levels';
+import { materialFit } from '@/lib/materialFit';
+import { rankSuggestions, REASON } from '@/lib/suggestionRank';
+import { detectLang, langNameKo } from '@/lib/constants';
+import { isOnDemandSuggestion } from '@/lib/suggestionSources';
 
-// 언어 코드 → 한국어 라벨 (studyParagraph.js의 LANG_NAME과 동일 매핑)
-
-async function fetchHomeData(userId, lang, nowMs = Date.now()) {
-  const todayStart = kstDayStartIso(nowMs);
-  const now = new Date(nowMs).toISOString();
-  const weekStartISO = kstWeekStartIso(nowMs);
-  const weekStartDate = new Date(weekStartISO);
-
-  // 지난주 범위 (월~일)
-  const prevWeekStart = new Date(weekStartDate.getTime() - 7 * 24 * 3600 * 1000);
-  const prevWeekStartISO = prevWeekStart.toISOString();
-
-  // vocab stats are derived client-side from vocabRows
-  const [
-    dueResult,
-    vocabResult,
-    recentResult,
-    suggestionsRes,
-    allVocabResult,
-    seriesMaterialsResult,
-    allCompletedResult,
-    forecastResult,
-    { buildForecast },
-  ] = await Promise.all([
+export async function fetchHomeData(userId, lang, nowMs = Date.now()) {
+  const [dueResult, recentResult, allVocabResult, forecastResult, { buildForecast }] = await Promise.all([
     supabase.from('user_vocabulary').select('*', { count: 'exact', head: true })
-      .eq('user_id', userId).lte('next_review_at', now),
-    supabase.from('user_vocabulary').select('created_at, last_reviewed_at, language, word_text')
-      .eq('user_id', userId).gte('created_at', prevWeekStartISO),
+      .eq('user_id', userId).lte('next_review_at', new Date(nowMs).toISOString()),
     supabase.from('reading_progress')
-      .select('material_id, is_completed, updated_at, completed_at, reading_materials(id, title)')
-      .eq('user_id', userId).order('updated_at', { ascending: false }).limit(20),
-    fetch('/api/suggestions/today').then(r => r.ok ? r.json() : []),
-    // base_form도 함께 — U R1 커버리지(materialFit)가 뷰어 저장 판정과 같은 {surfaces, bases}를 먹는다
-    supabase.from('user_vocabulary').select('language, word_text, base_form')
-      .eq('user_id', userId),
-    // 시리즈 진도는 제목+언어만 필요 — processed_json 통짜를 300행씩 끌지 않는다(쿼리 다이어트)
-    supabase.from('reading_materials')
-      .select('id, title, language:processed_json->metadata->>language')
-      .eq('visibility', 'public')
-      .ilike('title', '[%#%]%')
-      .limit(300),
-    supabase.from('reading_progress')
-      .select('material_id')
-      .eq('user_id', userId)
-      .eq('is_completed', true),
-    // 망각 예보 재료 — 현재 학습 언어, 학습 이력 있는 행만(신규 저장 행은 서버에서 제외)
-    supabase.from('user_vocabulary')
-      .select('word_text, interval, last_reviewed_at')
-      .eq('user_id', userId).eq('language', lang)
-      .not('last_reviewed_at', 'is', null).gt('interval', 0),
-    import('../lib/forecast'),
+      .select('material_id, is_completed, updated_at, reading_materials(id, title)')
+      .eq('user_id', userId).eq('is_completed', false).order('updated_at', { ascending: false }).limit(20),
+    supabase.from('user_vocabulary').select('language, word_text, base_form').eq('user_id', userId),
+    supabase.from('user_vocabulary').select('word_text, interval, last_reviewed_at')
+      .eq('user_id', userId).eq('language', lang).not('last_reviewed_at', 'is', null).gt('interval', 0),
+    import('@/lib/forecast'),
   ]);
-
-  const dbResults = [
-    dueResult, vocabResult, recentResult, allVocabResult,
-    seriesMaterialsResult, allCompletedResult, forecastResult,
-  ];
+  const dbResults = [dueResult, recentResult, allVocabResult, forecastResult];
   const failed = dbResults.find(result => result?.error);
   if (failed) throw failed.error;
+  const vocab = allVocabResult.data || [];
+  return { dueCount: dueResult.count || 0, recentProgress: recentResult.data || [], vocab,
+    vocabByLang: vocab.reduce((all, v) => { const key = v.language || detectLang(v.word_text || ''); all[key] = (all[key] || 0) + 1; return all; }, {}),
+    forecast: buildForecast(forecastResult.data || [], new Date(nowMs)) };
+}
 
-  const dueCount = dueResult.count;
-  const vocabRows = vocabResult.data;
-  const recentProgress = recentResult.data;
-  const allVocabRows = allVocabResult.data;
-  const seriesMaterials = seriesMaterialsResult.data;
-  const allCompleted = allCompletedResult.data;
-  const forecastRows = forecastResult.data || [];
+async function fetchSuggestions() {
+  const response = await fetch('/api/suggestions/today');
+  if (!response.ok) throw new Error('추천을 불러오지 못했어요.');
+  const rows = await response.json();
+  return Array.isArray(rows) ? rows : [];
+}
 
-  const rows = vocabRows || [];
-
-  // U R1 — 커버리지 재료: 추천 카드 중 material_id가 있는 것만 processed_json을 가져와 materialFit을
-  // 태운다(클라이언트에 새 토큰화를 넣지 않는다). material_id 없는 카드는 현행 레벨 점수 그대로.
-  // 저장어 집합은 뷰어 관용구와 같은 {surfaces, bases} — 이 화면이 이미 끌어온 단어 행에서 만든다.
-  const suggestionCards = suggestionsRes || [];
-  const fitIds = [...new Set(suggestionCards.map((s) => s?.material_id).filter(Boolean))].slice(0, 12);
-  const fitMaterialsResult = fitIds.length
-    ? await supabase.from('reading_materials').select('id, processed_json').in('id', fitIds)
-    : { data: [] };
-  const savedForFit = (() => {
-    const surfaces = new Set();
-    const bases = new Set();
-    for (const v of allVocabRows || []) {
-      if (v.word_text) surfaces.add(v.word_text);
-      if (v.base_form) bases.add(v.base_form);
-    }
-    return { surfaces, bases };
-  })();
-  const suggestionFit = Object.fromEntries(
-    (fitMaterialsResult?.data || []).map((m) => [m.id, materialFit(m.processed_json, savedForFit)])
-  );
-
-  // 오늘 카운트 2종 — 주간·XP 계산(렌더 무소비)은 제거: 사양은 보드의 제안 19(주간
-  // 리포트) 항목에 기록돼 있고, 필요해지는 시점에 서버 집계로 부활한다.
-  let todayVocabCount = 0, todayReviewCount = 0;
-
-  for (const v of rows) {
-    if (v.created_at >= todayStart) todayVocabCount++;
-    if (v.last_reviewed_at && v.last_reviewed_at >= todayStart) todayReviewCount++;
+function reasonText(rank) {
+  const pct = rank?.unknownRatio == null ? null : Math.round((1 - rank.unknownRatio) * 100);
+  switch (rank?.reason) {
+    case REASON.FIT: return `아는 단어 ${pct}% · 알맞은 난이도`;
+    case REASON.FIT_EASY: return `아는 단어 ${pct}% · 가볍게 읽기`;
+    case REASON.FIT_HARD: return `아는 단어 ${pct}% · 도전하는 읽기`;
+    case REASON.LEVEL: return '내 수준에 맞춘 추천';
+    case REASON.LEVEL_NEAR: return '내 수준 근처';
+    case REASON.LANG: return '학습 중인 언어';
+    case REASON.OTHER: return '오늘의 추천';
+    default: return null;
   }
-
-  return {
-    dueCount:         dueCount || 0,
-    todayVocabCount,
-    todayReviewCount,
-    recentProgress:   (recentProgress || []).slice(0, 4),
-    suggestions:      suggestionsRes || [],
-    suggestionFit,
-    forecast:         buildForecast(forecastRows, new Date(nowMs)),
-    vocabByLang: (() => {
-      const all = allVocabRows || [];
-      // language가 비어 있는 레거시 행은 표기로 추정(기존 동작 유지) — 판별은 정본 하나로.
-      // 명시된 행은 언어별(Japanese/English/French/Chinese)로 그룹 집계.
-      const langOf = (v) => v.language || detectLang(v.word_text || '');
-      const byLang = all.reduce((acc, v) => {
-        const lang = langOf(v);
-        acc[lang] = (acc[lang] || 0) + 1;
-        return acc;
-      }, {});
-      return { ...byLang, total: all.length };
-    })(),
-    seriesProgress: (() => {
-      const doneSet = new Set((allCompleted || []).map(r => r.material_id));
-      const groups = new Map(); // key = level|series
-      for (const m of (seriesMaterials || [])) {
-        const meta = parseTitle(m.title);
-        if (!meta.level || !meta.series || meta.num == null) continue;
-        const lang = m.language || (/[A-Z]\d/.test(meta.level) ? 'English' : 'Japanese');
-        const key = `${meta.level}|${meta.series}`;
-        if (!groups.has(key)) groups.set(key, { level: meta.level, series: meta.series, language: lang, items: [] });
-        groups.get(key).items.push({ id: m.id, title: m.title, num: meta.num });
-      }
-      const out = [];
-      for (const g of groups.values()) {
-        g.items.sort((a, b) => a.num - b.num);
-        const completed = g.items.filter(i => doneSet.has(i.id)).length;
-        const total = g.items.length;
-        const next = g.items.find(i => !doneSet.has(i.id));
-        out.push({
-          level: g.level,
-          series: g.series,
-          language: g.language,
-          completed,
-          total,
-          next: next ? { id: next.id, title: next.title, num: next.num } : null,
-        });
-      }
-      return out;
-    })(),
-  };
 }
 
-/* ── 작은 진행 바 ── */
-function ProgressBar({ pct, done }) {
-  return (
-    <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', height: 5, overflow: 'hidden' }}>
-      <div style={{
-        height: '100%', width: `${pct}%`,
-        background: done ? 'var(--accent)' : 'var(--primary-light)',
-        borderRadius: 'var(--radius-full)',
-        transition: 'width 0.5s ease',
-      }} />
-    </div>
-  );
-}
-
-export default function HomePage({ continueManifest = {} }) {
-  const { user, profile, fetchProfile } = useAuth();
-  const router = useRouter();
-
-  // 강의 이어서 학습 — localStorage 진행 기록으로 다음 챕터 계산 (로그인 시 서버 병합)
-  const [refProgress, setRefProgress] = useState(null);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const load = () => {
-      const prog = {};
-      for (const [name, ref] of Object.entries(continueManifest)) {
-        try {
-          prog[name] = {
-            readSet: new Set(JSON.parse(localStorage.getItem(ref.readKey) || '[]')),
-            checkMap: JSON.parse(localStorage.getItem(`${ref.readKey}_check`) || '{}'),
-          };
-        } catch {
-          prog[name] = { readSet: new Set(), checkMap: {} };
-        }
-      }
-      let lastVisit = null;
-      try { lastVisit = JSON.parse(localStorage.getItem('ref_last_visit') || 'null'); } catch {}
-      setRefProgress({ prog, lastVisit });
-    };
-    load();
-    if (user?.id) {
-      const readKeys = Object.fromEntries(
-        Object.entries(continueManifest).map(([name, ref]) => [name, ref.readKey])
-      );
-      pullProgress(user.id, readKeys).then(changed => { if (changed) load(); });
-    }
-    // continueManifest는 서버에서 내려오는 정적 데이터
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
-
-  const continueCard = useMemo(() => {
-    if (!refProgress) return null;
-    const { prog, lastVisit } = refProgress;
-
-    // ① 1순위: 가장 최근에 통과한 챕터의 '다음 챕터' (언어 불문 최신 통과 기준)
-    let recent = null; // { name, slug, at }
-    for (const [name, ref] of Object.entries(continueManifest)) {
-      const checkMap = prog[name]?.checkMap || {};
-      for (const [slug, r] of Object.entries(checkMap)) {
-        if (isPassed(r) && r.at && (!recent || r.at > recent.at)) recent = { name, slug, at: r.at };
-      }
-    }
-    if (recent) {
-      const ref = continueManifest[recent.name];
-      const checkMap = prog[recent.name]?.checkMap || {};
-      const flat = ref.levels.flatMap(l => l.chapters.map(ch => ({ ch, levelLabel: l.label })));
-      const idx = flat.findIndex(f => f.ch.slug === recent.slug);
-      for (let i = idx + 1; i < flat.length; i++) {
-        if (!isPassed(checkMap[flat[i].ch.slug])) {
-          return { ref, ch: flat[i].ch, levelLabel: flat[i].levelLabel, mode: 'next' };
-        }
-      }
-      // 최근 통과 이후가 모두 통과 — 앞쪽의 첫 미통과로
-      for (let i = 0; i < idx; i++) {
-        if (!isPassed(checkMap[flat[i].ch.slug])) {
-          return { ref, ch: flat[i].ch, levelLabel: flat[i].levelLabel, mode: 'next' };
-        }
-      }
-    }
-
-    // ② 폴백: 통과 기록이 없으면 — 마지막 학습 언어 → 프로필 언어 순으로 재도전/첫 미읽음
-    const order = [
-      ...(lastVisit?.lang ? [lastVisit.lang] : []),
-      ...(profile?.learning_language || []),
-      ...Object.keys(continueManifest),
-    ];
-    const seen = new Set();
-    for (const name of order) {
-      if (seen.has(name) || !continueManifest[name]) continue;
-      seen.add(name);
-      const ref = continueManifest[name];
-      const { readSet, checkMap } = prog[name] || { readSet: new Set(), checkMap: {} };
-      // 활동이 전혀 없는 언어는 건너뜀 (신규 사용자는 시작 가이드가 담당)
-      if (readSet.size === 0 && Object.keys(checkMap).length === 0) continue;
-      let firstUnread = null;
-      for (const l of ref.levels) {
-        for (const ch of l.chapters) {
-          const result = checkMap[ch.slug];
-          if (result && !isPassed(result)) {
-            return { ref, ch, levelLabel: l.label, mode: 'retry' };
-          }
-          if (!firstUnread && !readSet.has(ch.slug)) {
-            firstUnread = { ref, ch, levelLabel: l.label, mode: 'next' };
-          }
-        }
-      }
-      if (firstUnread) return firstUnread;
-    }
-    return null;
-  }, [refProgress, profile, continueManifest]);
-
-  // 망각 예보용 현재 학습 언어 — LearnPage와 동일 관례(프로필 첫 언어, 없으면 일본어)
-  const lang = useMemo(() => {
-    const fromProfile = Array.isArray(profile?.learning_language)
-      ? profile.learning_language[0]
-      : profile?.learning_language;
-    return fromProfile || 'Japanese';
-  }, [profile]);
-
+export default function HomePage({ book = null }) {
+  const { user, profile, loading: authLoading } = useAuth();
+  const local = useReadingProgress(book?.edition);
+  const resume = bookResume(book, local.progress, local.hasProgress);
+  const lang = (Array.isArray(profile?.learning_language) ? profile.learning_language[0] : profile?.learning_language) || 'Japanese';
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['home', user?.id, lang],
-    queryFn:  () => fetchHomeData(user.id, lang),
-    enabled:  !!user,
-    staleTime: 1000 * 60 * 5,
-    refetchOnWindowFocus: true,
+    queryKey: ['home-v2', user?.id, lang], queryFn: () => fetchHomeData(user.id, lang),
+    enabled: !!user && !authLoading, staleTime: 60000, refetchOnWindowFocus: true,
   });
-
-  const todayVocab   = data?.todayVocabCount    ?? 0;
-  const todayReviews = data?.todayReviewCount   ?? 0;
-  const dueCount     = data?.dueCount           ?? 0;
-
-  // U R1 — 커버리지를 추천 랭킹에 잇는다(#1077 5503520174). 예전엔 선호 언어 > 레벨 문자열 일치로
-  // 점수를 매기고 scored[0] 한 장만 썼다. 이제 순수 랭커가 ⑴ 선호 언어 ⑵ 커버리지 산정 카드 우선
-  // ⑶ i+1 대역 근접 ⑷ 현행 레벨 점수 순으로 정렬하고 상위 N장을 사유 코드와 함께 돌려준다.
-  // 랭킹이지 필터가 아니다 — 비로그인·어휘 0에서도 카드 수가 줄지 않고 순서가 결정적이다.
+  const recommendations = useQuery({ queryKey: ['today-suggestions'], queryFn: fetchSuggestions, staleTime: 300000 });
+  const fitIds = useMemo(() => [...new Set((recommendations.data || []).map(s => s.material_id).filter(Boolean))].slice(0, 12), [recommendations.data]);
+  const fits = useQuery({ queryKey: ['home-suggestion-fit-v2', user?.id, fitIds], enabled: !!user && fitIds.length > 0,
+    queryFn: async () => { const result = await supabase.from('reading_materials').select('id, processed_json').in('id', fitIds); if (result.error) throw result.error; return result.data || []; }, staleTime: 300000 });
   const suggestions = useMemo(() => {
-    const all = data?.suggestions || [];
-    if (!all.length) return [];
-    const langs = profile?.learning_language || [];
-    const vocabByLang = data?.vocabByLang || {};
-    const fitMap = data?.suggestionFit || {};
-    return rankSuggestions(all, {
-      langs,
-      fitOf: (s) => (s?.material_id ? fitMap[s.material_id] ?? null : null),
-      levelOf: (s) => getIdealLevel(s.language, vocabByLang[s.language] || 0),
-    }).slice(0, SUGGESTION_TOP_N);
-  }, [data?.suggestions, data?.vocabByLang, data?.suggestionFit, profile]);
-  const suggestion = suggestions[0] || null;
-
-  // 홈 알림 덱 조립 — 홈의 알림성 진입을 전부 한 자리에 겹친다(오너 지시 2026-08-24).
-  // 순서는 기존 홈의 우선순위 그대로: 예보 → 교재 → 재독 → 함께.
-  // 훅은 조건 없이 최상위에서 호출한다 — early return(!user·isLoading)보다 반드시 위.
+    const known = { surfaces: new Set((data?.vocab || []).map(v => v.word_text).filter(Boolean)), bases: new Set((data?.vocab || []).map(v => v.base_form).filter(Boolean)) };
+    const fitMap = Object.fromEntries((fits.data || []).map(m => [m.id, materialFit(m.processed_json, known)]));
+    return rankSuggestions((recommendations.data || []).filter(s => s.material_id || s.transcript || isOnDemandSuggestion(s)), {
+      langs: Array.isArray(profile?.learning_language) ? profile.learning_language : [lang],
+      fitOf: s => fitMap[s.material_id] ?? null,
+      levelOf: s => getIdealLevel(s.language, data?.vocabByLang?.[s.language] || 0),
+    }).slice(0, 2);
+  }, [recommendations.data, fits.data, data, profile, lang]);
   const rereadItem = useRereadCandidate();
   const groupItem = useGroupEntryItem();
   const forecast = data?.forecast;
-  const forecastLang = useMemo(() => {
-    const ll = profile?.learning_language;
-    return (Array.isArray(ll) ? ll[0] : ll) || 'Japanese';
-  }, [profile]);
-
-  const continueDeckItems = useMemo(() => [
-    // 예보 — 시간에 민감해 맨 앞. count 0이면 항목 자체가 없다(침묵 계약 유지).
-    forecast?.count > 0 && forecast.top3?.length > 0 && {
-      key: 'forecast',
-      href: '/study',
-      tone: 'review',
-      kicker: '🌫 오늘 안개 예보',
-      title: `${forecast.count === 1
-        ? `'${forecast.top3[0].word_text}' 하나가 흐려져요`
-        : `'${forecast.top3[0].word_text}' 외 ${forecast.count - 1}개가 흐려져요`}. 3분이면 붙잡아요.`,
-      chips: forecast.top3.map((w) => w.word_text),
-      // 탭 계측 — 실패는 조용히(학습 흐름을 막지 않는다).
-      onClick: () => {
-        if (!user?.id) return;
-        try { logReviewEvents(user.id, [buildForecastTapEvent(forecastLang, forecast)]); } catch { /* noop */ }
-      },
+  const continueDeckItems = [forecast?.count > 0 && forecast.top3?.length > 0 && {
+    key: 'forecast', href: '/study', tone: 'review', kicker: '다시 꺼낼 표현',
+    title: `${forecast.top3[0].word_text} · ${forecast.count}개 표현을 가볍게 복습해요.`,
+    chips: forecast.top3.map(w => w.word_text), onClick: () => {
+      if (user?.id) { try { logReviewEvents(user.id, [buildForecastTapEvent(lang, forecast)]); } catch { /* Existing optional telemetry. */ } }
     },
-    continueCard && {
-      key: 'lesson',
-      href: profile?.role === 'admin' ? `/admin/legacy-textbooks${continueCard.ref.base}/grammar/${continueCard.ch.slug}` : '/books/japanese-n5',
-      tone: 'progress',
-      kicker: profile?.role === 'admin' ? `기존 교재 · ${continueCard.ref.name}` : '새 교재에서 이어서',
-      title: profile?.role === 'admin' ? `#${continueCard.ch.order} ${continueCard.ch.title}` : '작은 문장으로 시작하는 일본어',
-      meta: profile?.role === 'admin' ? `${continueCard.levelLabel} →` : '일본어 N5 · 42과 →',
-    },
-    rereadItem,
-    groupItem,
-  ].filter(Boolean), [forecast, forecastLang, user?.id, profile?.role, continueCard, rereadItem, groupItem]);
-
-  // 게스트 첫 화면(오너 지시 2026-08-31 "둘 다 /home으로 통일").
-  // '/'의 로그인 분기를 걷어내면서 게스트가 여기로 온다 — 전에는 /lessons(교재 목록)로
-  // 갔으므로, 로그인 벽만 세우면 **볼 것이 있던 화면이 볼 것 없는 화면으로 나빠진다**.
-  // 그래서 게스트가 실제로 들어갈 수 있는 문(교재·자료)을 그대로 남기고 로그인은 권유만 한다.
-  if (!user) return (
-    <div className="page-container home-page" style={{ maxWidth: 720 }}>
-      <div className="card" style={{ padding: 24 }}>
-        <h2 style={{ margin: '0 0 8px', fontSize: '1.25rem' }}>어학연수를 위한 학습 도구</h2>
-        <p style={{ margin: '0 0 18px', color: 'var(--text-secondary)', lineHeight: 1.65, fontSize: '0.92rem' }}>
-          문법·어휘 레퍼런스를 학습 순서대로 읽고, 읽은 자료에서 단어를 담아 복습해요.
-          <br />
-          로그인하면 진도·단어장·복습 큐가 이어집니다.
-        </p>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Link href="/lessons" className="btn btn--primary btn--md">교재 둘러보기</Link>
-          <Link href="/materials" className="btn btn--secondary btn--md">자료실</Link>
-          <Link href="/auth" className="btn btn--secondary btn--md">로그인</Link>
-        </div>
+  }, rereadItem, groupItem].filter(Boolean);
+  const material = recentMaterial(data?.recentProgress);
+  const pending = authLoading || (!!book && !local.ready) || (!!user && isLoading);
+  // Once rendered, keep the primary destination stable during background query refreshes.
+  // A user/account or edition change gets a fresh choice. Position still updates from real records.
+  const choice = useRef(null);
+  const choiceKey = `${user?.id || 'guest'}:${book?.edition || ''}`;
+  if (choice.current?.key !== choiceKey) choice.current = null;
+  if (!pending && !choice.current) choice.current = { key: choiceKey, kind: chooseResume(resume, local.updatedAt, material), material };
+  const activeMaterial = choice.current?.kind === 'material' ? choice.current.material : null;
+  const activeTitle = activeMaterial?.reading_materials.title || resume?.lesson.title;
+  const activeHref = activeMaterial ? `/viewer/${activeMaterial.reading_materials.id}` : resume ? bookHref(book.edition, resume.page) : '/lessons';
+  const started = !!activeMaterial || resume?.started;
+  const quote = resume?.lesson.quote;
+  return <div className="manabi-page manabi-today">
+    <section className="today-opening" aria-label="오늘의 읽기">
+      <div className="today-copy"><p className="manabi-eyebrow">YOUR NEXT PAGE / 오늘</p>
+        <h1>당신의<br /><em>다음 페이지.</em></h1>
+        <p className="today-intro">한 문장을 읽고, 나의 세계를 조금 더 넓게.</p>
+        {pending ? <div className="today-location" role="status">읽던 위치를 확인하고 있어요…</div> : <div className="today-location">
+          <span className="today-location__number" aria-hidden="true">{activeMaterial || !resume ? '↗' : String(resume.lesson.number).padStart(2, '0')}</span>
+          <div><small>{activeMaterial ? '내 서재 · 읽는 중' : resume ? `일본어 N5 · ${resume.total}과` : 'manabi books'}</small><strong>{activeTitle || '나에게 맞는 책을 골라 보세요'}</strong><span>{started ? '기억해 둔 곳에서 이어가요.' : '처음이라면, 이 한 문장부터.'}</span></div>
+        </div>}
+        <div className="manabi-row"><Link className="manabi-button" href={activeHref} aria-disabled={pending || undefined} onClick={event => { if (pending) event.preventDefault(); }}>{started ? '이어서 읽기' : '첫 페이지 열기'} <span aria-hidden="true">↗</span></Link><Link className="manabi-link" href="/lessons">책장 둘러보기</Link></div>
+        {resume && local.ready && <p className="today-record">이 브라우저의 교재 기록 · {resume.completed} / {resume.total}과 학습</p>}
+        {!local.storageAvailable && <p role="status" className="today-record">이 브라우저에서는 읽던 위치를 저장할 수 없어요.</p>}
+        {!book && <p role="status" className="today-record">지금은 교재 정보를 불러올 수 없어요. <button type="button" onClick={() => location.reload()}>다시 확인</button></p>}
       </div>
+      <div className="today-book-scene" aria-label={activeMaterial ? '내 서재에서 읽는 글' : '지금 펼칠 일본어'}>
+        <div className="today-open-book">{activeMaterial ? <div className="today-material-cover"><small>manabi library</small><strong>읽는 중</strong><span aria-hidden="true">↗</span><small>나의 다음 페이지</small></div> : <BookCover />}<div className="today-open-page"><div className="today-page-top"><span>{activeMaterial ? 'MY LIBRARY' : 'JAPANESE / N5'}</span><i aria-hidden="true" /></div>
+          <span className="today-page-orb" aria-hidden="true" /><div className="today-page-quote">{activeMaterial ? <h2>{activeTitle}</h2> : <><small>{String(resume?.lesson.number || 1).padStart(2, '0')} / {resume?.lesson.subtitle || '일본어로 만나는 일상'}</small><p lang="ja">{typeof quote === 'string' ? quote : quote?.ja || '日本語'}</p>{quote?.ko && <span>{quote.ko}</span>}</>}</div>
+          <div className="today-page-bottom"><span>manabi reading room</span><span>↗</span></div></div></div>
+        <p>조금씩 읽고, 오래 기억하는.</p>
+      </div>
+    </section>
+    {error && <div className="manabi-inline-state" role="alert">학습 기록을 불러오지 못했어요. 읽기와 책장은 계속 이용할 수 있어요. <button type="button" onClick={() => refetch()}>다시 불러오기</button></div>}
+    <div className="today-bottom">
+      <section className="today-review"><p className="manabi-eyebrow">KEEP IT WITH YOU / 복습</p><h2>{authLoading || (user && isLoading) ? '복습 일정을 확인하는 중.' : !user ? '좋은 표현을 내 것으로.' : error ? '복습 기록을 다시 확인해요.' : data?.dueCount > 0 ? <><b>{data.dueCount}</b>개의 표현이<br />다시 만날 시간.</> : data?.vocab?.length ? '오늘은 가볍게,<br />읽기를 이어가요.' : '기억하고 싶은<br />첫 표현을 담아 보세요.'}</h2>
+        <p>{!user ? '로그인하면 읽다가 고른 표현을 담고 복습할 수 있어요.' : error ? '복습 화면에서 기록을 다시 확인할 수 있어요.' : isLoading ? '복습 일정을 확인하고 있어요…' : data?.dueCount > 0 ? '저장한 표현의 실제 복습 일정이에요.' : '예문 아래 ‘이 예문 담기’로 시작할 수 있어요.'}</p><Link href={user ? '/vocab' : '/auth'} prefetch={false} className="manabi-link">{user ? '표현과 복습 열기' : '로그인하고 시작하기'} ↗</Link>
+        {user && <Link className="today-growth" href="/profile">성장 기록과 설정 →</Link>}
+      </section>
+      <section className="today-discovery"><div className="manabi-section-heading"><div><p className="manabi-eyebrow">OFF THE PAGE</p><h2>책 밖의 한 장면</h2></div><Link className="manabi-link" href="/discover">발견 ↗</Link></div>
+        {recommendations.isLoading ? <p role="status">오늘의 읽을거리를 펼치고 있어요…</p> : recommendations.error ? <p role="status">추천을 불러오지 못했어요. <button type="button" onClick={() => recommendations.refetch()}>다시 확인</button></p> : suggestions.length ? suggestions.map(s => <Link key={s.id} className="today-story" href={s.material_id ? `/viewer/${s.material_id}` : `/materials/add?suggestion=${s.id}`} prefetch={false}><SuggestionArtwork suggestion={s} /><div><small>{langNameKo(s.language)} · {s.level || '읽을거리'}</small><h3>{s.title}</h3><p>{reasonText(s.rank) || s.channel_name || '오늘의 추천'} <span>↗</span></p>{isOnDemandSuggestion(s) && !s.material_id && <small>비공개 내 자료로 가져오기</small>}</div></Link>) : <Link className="today-editorial" href="/discover"><span lang="ja" aria-hidden="true">文 化</span><div><small>문화와 지역학</small><h3>말이 태어나는 곳을<br />함께 읽어볼까요?</h3><p>일본·한국·프랑스의 이야기 ↗</p></div></Link>}
+      </section>
     </div>
-  );
-
-  if (isLoading) return (
-    <div className="page-container home-page" style={{ maxWidth: 720, display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {/* 그리팅 스켈레톤 */}
-      <div className="skeleton--card" style={{ height: 120 }}>
-        <div className="skeleton-line--title skeleton-line" />
-        <div className="skeleton-line--text skeleton-line" />
-        <div className="skeleton-bar" />
-      </div>
-      {/* 미션 스켈레톤 */}
-      <div className="skeleton--card" style={{ height: 180 }}>
-        <div className="skeleton-line--title skeleton-line" />
-        {[1,2,3].map(i => <div key={i} className="skeleton-line--text skeleton-line" style={{ marginBottom: 14 }} />)}
-      </div>
-      {/* 통계 스켈레톤 */}
-      <div className="skeleton--card" style={{ height: 100 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
-          {[1,2,3,4].map(i => <div key={i} className="skeleton" style={{ height: 60, borderRadius: 'var(--radius-md)' }} />)}
-        </div>
-      </div>
-    </div>
-  );
-
-  if (error) return (
-    <div className="page-container home-page" style={{ maxWidth: 720, textAlign: 'center', paddingTop: 80 }}>
-      <h2 style={{ marginBottom: 8 }}>학습 현황을 불러올 수 없어요</h2>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: 20 }}>활동 기록을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
-      <button type="button" className="btn btn--primary btn--md" onClick={() => refetch()}>다시 시도</button>
-    </div>
-  );
-
-  const displayName   = profile?.display_name || '학습자';
-  const hasNoLanguage = profile && !profile.learning_language?.length;
-  const isNewUser     = dueCount === 0 && todayVocab === 0 && !data?.recentProgress?.length;
-
-  return (
-    <div className="page-container home-page home-layout" style={{ maxWidth: 720 }}>
-
-      {/* 언어 미설정 배너 */}
-      {hasNoLanguage && (
-        <Link href="/profile" className="home-setup-banner">
-          학습 언어와 수준을 설정하면 맞춤 추천을 받을 수 있어요 →
-        </Link>
-      )}
-
-      {/* 진짜 처음 — 3단계 가이드 */}
-      {isNewUser && (
-        <div className="home-getting-started">
-          <div className="home-getting-started__header">
-            <div>
-              <h2 className="home-getting-started__title">시작해볼까요, {displayName}님!</h2>
-              <p className="home-getting-started__sub">오늘 학습 한 번이면 하루치가 끝나요 · 6~8분</p>
-            </div>
-          </div>
-          {/* 주 CTA — v2 단일 학습 진입점(/study) */}
-          <Link href="/study" className="lessons-continue">
-            <span className="lessons-continue__body">
-              <span className="lessons-continue__kicker">오늘 학습</span>
-              <span className="lessons-continue__title">오늘 학습 시작하기</span>
-            </span>
-            <span className="lessons-continue__meta">→</span>
-          </Link>
-          {/* 보조 단계 — 더 둘러보고 싶다면 */}
-          <p className="home-getting-started__sub" style={{ margin: '14px 0 8px' }}>더 둘러보기</p>
-          <div className="home-gs-steps">
-            {[
-              { href: '/guide',     num: 1, title: '학습 로드맵', desc: '내 레벨 파악 →' },
-              { href: '/materials', num: 2, title: '자료 읽기',   desc: 'AI 해부 분석 →' },
-              { href: '/vocab',     num: 3, title: '단어 복습',   desc: 'FSRS 기억 강화 →' },
-            ].map(s => (
-              <Link key={s.num} href={s.href} className="home-gs-step">
-                <span className="home-gs-step__num">{s.num}</span>
-                <div>
-                  <div className="home-gs-step__title">{s.title}</div>
-                  <div className="home-gs-step__desc">{s.desc}</div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ① 그리팅 — 인사 + 한 줄 (상태 수치·스트릭은 현황 스택이 담당) */}
-      <div className="home-greeting">
-        <h1 className="home-greeting__name">안녕하세요, {displayName}님</h1>
-        <p className="home-greeting__sub">{
-          (data?.vocabByLang?.total || 0) === 0 ? '첫 단어를 모아보러 가볼까요?'
-          : '오늘도 한 걸음, 이어가 볼까요?'
-        }</p>
-      </div>
-
-      {/* 홈 알림 덱 — 예보·교재 이어서·다시 읽기·함께 읽기를 한 자리에 겹쳐 옆으로 넘긴다
-          (오너 지시 2026-08-24). 성격은 색으로 가르고 높이는 장마다 같다.
-          한 장뿐이면 덱이 캐러셀 옷을 벗고 한 줄 그대로 보인다. */}
-      <ContinueDeck items={continueDeckItems} />
-
-      {/* 오늘 읽기 — 진행 중 시리즈가 없을 때만 */}
-      {(() => {
-        const inProgress = (data?.seriesProgress || []).some(s =>
-          (profile?.learning_language || ['Japanese']).includes(s.language) && s.completed > 0 && s.next
-        );
-        if (inProgress || !suggestion) return null;
-        // 사유 문구는 뷰 소관 — 랭커는 코드만 돌려준다(콘텐츠 카피를 순수 모듈에 두지 않는다)
-        const reasonText = (r) => {
-          const pct = r?.unknownRatio == null ? null : Math.round((1 - r.unknownRatio) * 100);
-          switch (r?.reason) {
-            case REASON.FIT: return `아는 단어 ${pct}% — 딱 맞는 난이도`;
-            case REASON.FIT_EASY: return `아는 단어 ${pct}% — 술술 읽혀요`;
-            case REASON.FIT_HARD: return `아는 단어 ${pct}% — 도전`;
-            case REASON.LEVEL: return '내 수준에 맞춘 추천';
-            case REASON.LEVEL_NEAR: return '내 수준 근처';
-            case REASON.LANG: return '학습 중인 언어';
-            case REASON.OTHER: return '오늘의 추천';
-            default: return null;
-          }
-        };
-        return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {suggestions.map((s, i) => {
-              const reason = reasonText(s.rank);
-              if (!reason) return null; // 사유 없는 카드는 그리지 않는다(계약)
-              return (
-                <div key={s.id ?? `${s.material_id}-${i}`} className="card" style={{
-                  padding: i === 0 ? '20px 22px' : '14px 18px',
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border)',
-                  borderLeft: `3px solid ${i === 0 ? 'var(--primary)' : 'var(--border)'}`,
-                }}>
-                  {i === 0 && (
-                    <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.02em', marginBottom: 6 }}>
-                      오늘 읽기
-                    </div>
-                  )}
-                  <h2 style={{ fontSize: i === 0 ? '1.05rem' : '0.94rem', fontWeight: 700, margin: '0 0 6px', lineHeight: 1.45 }}>
-                    {s.title}
-                  </h2>
-                  <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: 4 }}>
-                    {langNameKo(s.language)} {s.level}
-                    {s.channel_name && ` · ${s.channel_name}`}
-                  </div>
-                  <div className="home-suggestion__reason" style={{ fontSize: '0.78rem', color: 'var(--accent-text)', fontWeight: 600, marginBottom: 12 }}>
-                    {reason}
-                  </div>
-                  <Button
-                    size={i === 0 ? undefined : 'sm'}
-                    onClick={() => s.material_id
-                      ? router.push(`/viewer/${s.material_id}`)
-                      : router.push(`/materials/add?suggestion=${s.id}`)
-                    }
-                  >
-                    {s.material_id ? '바로 읽기 →'
-                      : isOnDemandSuggestion(s) ? '내 자료로 가져오기 →'
-                      : '분석하고 읽기 →'}
-                  </Button>
-                </div>
-              );
-            })}
-          </div>
-        );
-      })()}
-
-      <ProfileStats refManifest={continueManifest} />
-
-    </div>
-  );
+    {user && continueDeckItems.length > 0 && <section className="today-tools"><div className="manabi-section-heading"><h2>학습을 이어가는 방법</h2><Link href="/materials" className="manabi-link">내 서재 ↗</Link></div><ContinueDeck items={continueDeckItems} /></section>}
+    {material && !activeMaterial && <Link className="today-library-row" href={`/viewer/${material.reading_materials.id}`}><span>내 서재에서 읽는 중</span><strong>{material.reading_materials.title}</strong><span>이어 읽기 ↗</span></Link>}
+  </div>;
 }

@@ -19,6 +19,7 @@ import { isOnDemandSuggestion } from '../lib/suggestionSources';
 import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
 import MaterialGroupCard from '../components/MaterialGroupCard';
+import SuggestionArtwork from '../components/SuggestionArtwork';
 
 
 async function fetchTodaySuggestions() {
@@ -34,7 +35,7 @@ function SuggestionCard({ suggestion: s, router }) {
   const onDemand = isOnDemandSuggestion(s);
   const hasTranscript = !!s.transcript;
   const isReady = !!s.material_id; // 이미 분석된 자료(글 소스 전용 — 영상은 개인별이라 안 붙는다)
-  const canStudy = onDemand || hasTranscript;
+  const canStudy = isReady || onDemand || hasTranscript;
 
   function handleStudy() {
     if (isReady) {
@@ -46,11 +47,7 @@ function SuggestionCard({ suggestion: s, router }) {
 
   return (
     <div className="suggestion-card">
-      {s.thumbnail_url && (
-        <div className="suggestion-card__thumb-wrap">
-          <img src={s.thumbnail_url} alt={s.title} className="suggestion-card__thumb" />
-        </div>
-      )}
+      <SuggestionArtwork suggestion={s} />
       <div className="suggestion-card__body">
         <div className="suggestion-card__meta">
           {/* 언어명은 정본(constants.langNameKo)만 — 여기 삼항이 하드코딩돼 있어
@@ -197,7 +194,7 @@ export default function MaterialsPage() {
   // 무조건 빈 목록이다. 그냥 뒤집으면 게스트 첫 화면이 빈다.
   // auth가 정해지기 전에는 고르지 않는다(`null`) — 로딩 중 `public`으로 그렸다가
   // 사용자가 확인되며 `private`으로 튀면 **자료 쿼리가 두 번** 난다(가드 없는 useQuery).
-  const [tabOverride, setTabOverride] = useState(null);
+  const [tabOverride, setTabOverride] = useState(() => searchParams.get('tab') === 'public' ? 'public' : null);
   const tab = tabOverride ?? (authLoading ? null : (user ? 'private' : 'public'));
   const setTab = setTabOverride;
   const [testScores, setTestScores] = useState({});
@@ -532,7 +529,7 @@ export default function MaterialsPage() {
       <div className="page-header page-header--row">
         {/* 정돈(미니멀, #1077 5547520918): 설명 문장은 내비가 이미 하는 말 — 제목만 */}
         <div>
-          <h1 className="page-header__title">자료실</h1>
+          <h1 className="page-header__title">내 서재</h1>
         </div>
         {/* 추가 입구는 하나 — 클립보드 붙여넣기는 추가 화면 안에 있다.
             빠른 분석은 추가가 아니라 무저장 해부(목업 ④)라 별도 입구가 원칙과 안 충돌한다. */}
@@ -551,7 +548,7 @@ export default function MaterialsPage() {
           <input
             type="text"
             placeholder="제목으로 자료 찾기..."
-            value={searchInput}
+            id="library-search" value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
             className="search-wrap__input"
           />

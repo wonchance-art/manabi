@@ -4,28 +4,34 @@ import { useAuth } from '@/lib/AuthContext';
 import { emptyReadingProgress, readingProgressKey, validReadingProgress } from '@/lib/bookNavigation';
 
 export default function useReadingProgress(edition) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const key = readingProgressKey(edition, user?.id);
-  const [progress, setProgress] = useState(emptyReadingProgress);
-  const current = useRef(emptyReadingProgress());
-  const ready = useRef(null);
-  const [storageAvailable, setStorageAvailable] = useState(true);
+  const [snapshot, setSnapshot] = useState(null);
+  const current = useRef(null);
   useEffect(() => {
+    if (loading || !edition) return;
     function restore() {
-      let next = emptyReadingProgress();
-      try { next = validReadingProgress(JSON.parse(localStorage.getItem(key) || 'null')); } catch { setStorageAvailable(false); }
-      current.current = next; setProgress(next); ready.current = key;
+      let raw = null, storageAvailable = true;
+      try { raw = JSON.parse(localStorage.getItem(key) || 'null'); } catch { storageAvailable = false; }
+      const progress = validReadingProgress(raw);
+      const next = { key, progress, hasProgress: !!raw && raw.page === progress.page, updatedAt: raw?.updatedAt || null, storageAvailable };
+      current.current = next; setSnapshot(next);
     }
     restore();
     const sync = event => { if (!event.key || event.key === key) restore(); };
     window.addEventListener('storage', sync);
-    return () => { ready.current = null; window.removeEventListener('storage', sync); };
-  }, [key]);
+    return () => { current.current = null; window.removeEventListener('storage', sync); };
+  }, [key, edition, loading]);
   const update = useCallback(patch => {
-    if (ready.current !== key) return;
-    const next = validReadingProgress({ ...current.current, ...patch });
-    current.current = next; setProgress(next);
-    try { localStorage.setItem(key, JSON.stringify(next)); } catch { setStorageAvailable(false); }
+    if (current.current?.key !== key) return;
+    const progress = validReadingProgress({ ...current.current.progress, ...patch });
+    const updatedAt = new Date().toISOString();
+    const next = { key, progress, updatedAt, hasProgress: true, storageAvailable: true };
+    try { localStorage.setItem(key, JSON.stringify({ ...progress, updatedAt })); } catch { next.storageAvailable = false; }
+    current.current = next; setSnapshot(next);
   }, [key]);
-  return { progress, update, storageAvailable };
+  const ready = !loading && snapshot?.key === key;
+  return { progress: ready ? snapshot.progress : emptyReadingProgress(), update, ready,
+    hasProgress: ready && snapshot.hasProgress, updatedAt: ready ? snapshot.updatedAt : null,
+    storageAvailable: ready ? snapshot.storageAvailable : true };
 }

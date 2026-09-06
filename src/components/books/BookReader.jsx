@@ -26,7 +26,7 @@ function readingText(node) {
 
 export default function BookReader({ book, sectionIndex, preview = false }) {
   const { user } = useAuth();
-  const { progress, update, storageAvailable } = useReadingProgress(book.edition);
+  const { progress, update, storageAvailable, hasProgress, ready } = useReadingProgress(book.edition);
   const content = useRef(null), root = useRef(null), dialog = useRef(null), pendingAnchor = useRef(null);
   const [pageId, setPageId] = useState('cover'), [active, setActive] = useState('');
   const [sections, setSections] = useState([]), [loading, setLoading] = useState(false), [error, setError] = useState('');
@@ -116,7 +116,7 @@ export default function BookReader({ book, sectionIndex, preview = false }) {
       if (/^u\d{2}/.test(id)) update({ page: id });
     }); });
     return () => { cancelled = true; cancelAnimationFrame(frame); };
-  }, [pageId, sections, unit, update]);
+  }, [pageId, sections, unit, update, ready]);
 
   useEffect(() => {
     if (!sections.length) return;
@@ -185,7 +185,7 @@ export default function BookReader({ book, sectionIndex, preview = false }) {
   const title = lesson ? lesson.title : ({ guide: '첫 문장 전에, 가볍게 준비', reference: '단어·문형·한자 찾기', materials: '일본어로 넓히는 일상' }[unit] || '교재 위치를 찾지 못했어요');
   return <div ref={root} className={`book-reader${focus ? ' is-focused' : ''}`} onClick={interact}>
     {preview && <p className="manabi-preview-note">관리자 미리보기 · 발행 전 원고입니다.</p>}
-    {unit === 'cover' ? <BookHome book={book} progress={progress} /> : <div className="manabi-reader-page">
+    {unit === 'cover' ? <BookHome book={book} progress={progress} hasProgress={hasProgress} ready={ready} /> : <div className="manabi-reader-page">
       <div className="manabi-reader-toolbar"><a href={bookHref(book.edition)}>← 책으로</a><span>일본어 · N5{lesson ? ` / ${String(lesson.number).padStart(2, '0')}과` : ''}</span><div><a href={bookHref(book.edition, 'reference-start')}>찾아보기</a><Link href={`/books/japanese-n5/review?edition=${book.edition}`}>복습</Link>{lesson && <button type="button" onClick={() => openPanel('materials')}>내 자료</button>}<button type="button" aria-pressed={focus} onClick={() => setFocus(!focus)}>{focus ? '기본 보기' : '집중 읽기'}</button></div></div>
       <div className="manabi-reader-grid"><aside className="manabi-reader-outline"><p className="manabi-eyebrow">{lesson ? `${String(lesson.number).padStart(2, '0')}과 · 읽는 순서` : '이 안에서'}</p><nav aria-label="과 안의 목차">{unitSections.map(section => <a key={section.id} href={bookHref(book.edition, section.id)} aria-current={active === section.id ? 'location' : undefined}>{section.title}</a>)}</nav><Link href={`/books/japanese-n5/materials?edition=${book.edition}`}>함께 읽기 ↗</Link></aside>
         <div className="manabi-reader-main"><details className="manabi-mobile-toc"><summary>이 과의 목차</summary><nav aria-label="모바일 과 목차">{unitSections.map(section => <a key={section.id} href={bookHref(book.edition, section.id)} onClick={event => event.currentTarget.closest('details').removeAttribute('open')}>{section.title}</a>)}</nav></details>

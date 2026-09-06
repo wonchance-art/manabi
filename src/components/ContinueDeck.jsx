@@ -27,6 +27,7 @@ function ContinueRow({ item }) {
   return (
     <Link
       href={item.href}
+      prefetch={false}
       onClick={item.onClick}
       className={`deck-card deck-card--${item.tone || 'progress'}`}
     >

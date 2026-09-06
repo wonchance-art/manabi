@@ -684,11 +684,12 @@ export default function MaterialAddPage() {
           <div className="form-field">
             <label className="form-label">학습 언어</label>
             <div className="toggle-group">
-              {/* 해부 분석이 지원하는 언어 — 일본어(형태소)·영어(표제어)·중국어(단어 분할+병음) */}
+              {/* 해부 분석이 지원하는 언어 — 일본어·영어·중국어·프랑스어 */}
               {[
                 ['Japanese', '일본어', 'N3 중급'],
                 ['English', '영어', 'B1 중급'],
                 ['Chinese', '중국어', 'H3 중급'],
+                ['French', '프랑스어', 'B1 중급'],
               ].map(([key, label, defaultLevel]) => (
                 <button
                   key={key}

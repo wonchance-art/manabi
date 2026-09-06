@@ -11,7 +11,10 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
     expect(src).toContain('const failed = dbResults.find(result => result?.error)');
     expect(src).toContain('if (failed) throw failed.error');
     expect(src).toContain('const { data, isLoading, error, refetch } = useQuery({');
-    expect(src.indexOf('if (error) return (')).toBeLessThan(src.indexOf('const isNewUser'));
+    expect(src).toContain('{error && <div');
+    expect(src).toContain('role="alert"');
+    expect(src).toContain('onClick={() => refetch()}');
+    expect(src).toContain('읽기와 책장은 계속 이용할 수 있어요.');
   });
 
   it('V-08 PdfViewerPage: signed URL 실패·경로 부재와 재시도를 렌더한다', () => {
