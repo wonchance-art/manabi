@@ -3,6 +3,10 @@ const nextConfig = {
   // Strict mode
   reactStrictMode: true,
 
+  // Keep the production compiler below the 8 GB build-container limit. This changes
+  // Webpack's build-time memory management, not the served content or font selection.
+  experimental: { webpackMemoryOptimizations: true },
+
   // 사전·WASM이 서버 번들에 포함되도록 — kuromoji(ja) 사전과 jieba-wasm(zh)의 .wasm.
   // (네이티브 @node-rs/jieba는 서버리스 플랫폼 바이너리 로드 실패로 WASM 교체 — 단일 파일·플랫폼 무관)
   outputFileTracingIncludes: {
