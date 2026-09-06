@@ -29,4 +29,20 @@
 배포 직전 운영: `dpl_6FGmPdaiVss4oZtpuQYTKk47MES7`, `manabi-3w7o92u4n-wonchance-arts-projects.vercel.app`.
 필요하면 이 배포를 promote하고 `teset-gilt.vercel.app` alias를 재연결하면 된다. DB나 개인 학습 기록 복원 작업은 필요하지 않다.
 
-배포와 운영 주소 검수 결과는 전환 후 여기에 추가한다. 실제 관리자 로그인으로 편집/발행을 수행하는 검수와 테스트의 인증 모형 검수를 구분한다.
+## 운영 반영 결과
+
+- 운영 주소: https://teset-gilt.vercel.app/lessons
+- 일본어 N5: https://teset-gilt.vercel.app/books/japanese-n5
+- 관리자 보관함: https://teset-gilt.vercel.app/admin/legacy-textbooks
+- 배포 코드: `2db2c5e163129719a3065883adb7099b05f25fc3`
+- 최종 배포: `dpl_78wiEE8HhRX4uQMnxEwGVyrhbUzr` / https://manabi-2imnjdsdy-wonchance-arts-projects.vercel.app
+- Vercel READY 확인 후 promote 및 `teset-gilt.vercel.app` alias 연결 완료.
+- 검토 PR: https://github.com/wonchance-art/manabi/pull/1280 (draft, #1279 위에 쌓음).
+- 1차 배포본의 54개 화면/42과 전체 검수 후, 최종 배포본에서 뜻 가리기·대화 해석 가리기 수정 검수 통과. 원문·자산은 두 배포 사이에도 동일하다.
+- 운영 주소에서 책장/책 홈/담은 표현/함께 읽기 4화면 × 모바일/데스크톱 8조합을 다시 확인했다. 29과 예문 박스/저장 진입/직접 출처 위치/iframe 제거, 1·29·42과 API, 이전 URL 이동, 관리자 페이지 307 및 개인·관리자 API 401을 확인했다. 브라우저 런타임 오류/가로 넘침 0.
+- `/api/version`은 이 CLI 배포에서도 기존처럼 `dev/local`을 반환하므로 커밋 검증 근거로 사용하지 않았다. Vercel 배포 메타데이터의 40자 SHA와 alias 연결 결과, 실제 새 DOM을 확인했다.
+- Supabase는 필드/외래키 구조만 읽기 조회했다. 실제 사용자 복습 카드·자료·원고를 검수용으로 생성하거나 수정하지 않았다.
+
+실제 관리자 로그인 상태의 보관함/편집 화면 검수는 남아 있다. Mac 화면 잠금으로 컴퓨터 화면에 접근할 수 없어 사용자에게 잠금 해제/관리자 로그인을 요청했다. 일반 회원·관리자 역할의 서버 계약 테스트를 실제 계정 UI 검수로 간주하지 않는다. 공개 웹은 별도 Chrome에서 실제 운영 주소를 열어 검수했다.
+
+검수 자료는 전달 폴더 `reading-release/preview-qa`, `reading-release/production-qa`와 재현 스크립트에 보존했다. 다음 운영 배포는 #1279 및 이 PR의 코드를 함께 포함해야 현재 교재가 유지된다.
