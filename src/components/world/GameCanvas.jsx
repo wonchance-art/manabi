@@ -101,6 +101,7 @@ import { buildFujiClimbScene, FUJI_CLIMB_SCENE_KEY } from './fujiClimbScene';
 import { fujiClimbActCopy } from './fujiClimbContent';
 import { buildTranssibCorridorScene } from './transsibCorridorScene';
 import { buildOverworldRegionScene } from './overworldRegionScene';
+import { buildTokyoPilotScene } from './TokyoPilotScene';
 import { AVATAR_REBAKE_STATIC_TARGETS } from './avatarRebake';
 import { stampCollectionDurationMs } from './stampCollectionPresentation';
 // 🏙️ 도시 정밀맵(계층형 맵) — CityScene 은 1개, cityId 로 파라미터화. 도시 추가 = cities/<id>.js 1개.
@@ -132,6 +133,8 @@ import {
   overworldRegionSpawn,
 } from '../../lib/world/overworldRegions';
 import { worldNodeReturnSpawn } from '../../lib/world/worldNodeGeo';
+import { TOKYO_PILOT_SCENE } from '../../lib/tokyoPilotMap';
+import { createTokyoPilotController } from '../../lib/tokyoPilotController';
 import {
   overworldAirDestinationById,
   overworldAirDestinations,
@@ -2429,6 +2432,38 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
       };
       const TranssibCorridorScene = buildTranssibCorridorScene(Phaser, corridorCtx);
 
+      // 도쿄 현지어 파일럿 회색 박스 — 제품 도시 진입은 건드리지 않고 로컬 debug bridge로만 연다.
+      const tokyoPilotController = createTokyoPilotController({
+        onSceneChange: (sceneId) => game?.scene.start(sceneId),
+      });
+      const tokyoPilotCtx = (sceneId) => ({
+        onReady: () => {
+          const scene = game?.scene.getScene(sceneId);
+          if (scene) sceneRef.current = scene;
+          setActiveScene(sceneId);
+          setNearNode(null); setNearQuest(false); setDescOpen(false); setMinimapOpen(false);
+          setNearStation(null); setStationSelect(null); setTransitStatus(null);
+        },
+        onAnchorChange: (anchor) => {
+          if (anchor) tokyoPilotController.enterAnchor(anchor.id);
+        },
+      });
+      const TokyoPilotHanedaScene = buildTokyoPilotScene(
+        Phaser,
+        TOKYO_PILOT_SCENE.HANEDA,
+        tokyoPilotCtx(TOKYO_PILOT_SCENE.HANEDA),
+      );
+      const TokyoPilotTrainScene = buildTokyoPilotScene(
+        Phaser,
+        TOKYO_PILOT_SCENE.TRAIN,
+        tokyoPilotCtx(TOKYO_PILOT_SCENE.TRAIN),
+      );
+      const TokyoPilotShibuyaScene = buildTokyoPilotScene(
+        Phaser,
+        TOKYO_PILOT_SCENE.SHIBUYA,
+        tokyoPilotCtx(TOKYO_PILOT_SCENE.SHIBUYA),
+      );
+
       const regionScenes = OVERWORLD_REGION_LIST.map((region) => buildOverworldRegionScene(Phaser, region, {
         userId, avatarRef, canAccessPreviewRegionsRef,
         bindScene: (scene) => { sceneRef.current = scene; },
@@ -2518,7 +2553,11 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
         pixelArt: true,
         roundPixels: true,
         scale: { mode: Phaser.Scale.NONE, width: VIEW_W, height: VIEW_H },
-        scene: [WorldScene, AirportScene, MsmAbbeyScene, JagalchiMarketScene, FujiClimbScene, TranssibCorridorScene, ...regionScenes, ...cityScenes],
+        scene: [
+          WorldScene, AirportScene, MsmAbbeyScene, JagalchiMarketScene, FujiClimbScene,
+          TranssibCorridorScene, TokyoPilotHanedaScene, TokyoPilotTrainScene, TokyoPilotShibuyaScene,
+          ...regionScenes, ...cityScenes,
+        ],
       });
       gameRef.current = game;
 
@@ -2606,11 +2645,22 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
       if (game.canvas) game.canvas.style.imageRendering = 'pixelated';
       if (localWorldDebugEnabled()) {
         debugBridge = Object.freeze({
-          snapshot: () => sceneRef.current?.overworldRuntimeSnapshot?.() ?? null,
+          snapshot: () => sceneRef.current?.pilotRuntimeSnapshot?.()
+            ?? sceneRef.current?.overworldRuntimeSnapshot?.() ?? null,
           teleport: (x, y) => sceneRef.current?.debugTeleportTo?.(x, y)
             ?? Promise.reject(new Error('world scene is not ready')),
           enterTranssib: (stopId) => sceneRef.current?.enterTranssib?.(stopId),
           enterRegion: (regionId) => sceneRef.current?.enterOverworldRegion?.(regionId),
+          enterTokyoPilot: (place = 'haneda') => {
+            const sceneId = TOKYO_PILOT_SCENE[place.toUpperCase()];
+            if (!sceneId) return false;
+            if (place === 'haneda') tokyoPilotController.reset();
+            game.scene.start(sceneId);
+            return true;
+          },
+          tokyoPilotJourney: () => tokyoPilotController.snapshot(),
+          resolveTokyoPilotLanguage: (evaluation) => tokyoPilotController.resolveLanguage(evaluation),
+          dispatchTokyoPilot: (event) => tokyoPilotController.dispatch(event),
         });
         window.__MANABI_WORLD_DEBUG__ = debugBridge;
       }
