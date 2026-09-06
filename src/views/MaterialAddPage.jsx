@@ -53,7 +53,7 @@ export default function MaterialAddPage() {
   // 링크 반입 출처(v2-F R1) — 있으면 metadata.source에 실린다. 다른 입구로 갈아타면 비운다.
   const [linkSource, setLinkSource] = useState(null);
   // U R3 내 노트 — 방향 축. 'write'면 한국어 본문을 허용하고 분석 큐에 넣지 않는다.
-  const [direction, setDirection] = useState(MATERIAL_DIRECTION.READ);
+  const [direction, setDirection] = useState(() => searchParams.get('direction') === MATERIAL_DIRECTION.WRITE ? MATERIAL_DIRECTION.WRITE : MATERIAL_DIRECTION.READ);
   const isNote = direction === MATERIAL_DIRECTION.WRITE;
   // 자료 추가 정돈 R2(#1077 5547576227) — 입구 4장을 칩 한 줄 + 아코디언(한 번에 하나)으로.
   // 펼침 상태는 여기 하나뿐이다. 입구가 스스로 열어 달라고 할 때(딥링크·본문 폼 넘김)는

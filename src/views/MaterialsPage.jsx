@@ -16,6 +16,7 @@ import { groupByPdf, pageRangeLabel, readProgressLabel } from '../lib/pdfGroups'
 import { useGroupReadIds } from '../lib/useGroupReadIds';
 import { LEVELS, langNameKo, levelRank, profileLevel, isWriteMaterial } from '../lib/constants';
 import { isOnDemandSuggestion } from '../lib/suggestionSources';
+import { isLibraryNote, materialLibraryFilters } from '../lib/libraryDiscovery';
 import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
 import MaterialGroupCard from '../components/MaterialGroupCard';
@@ -85,7 +86,7 @@ const MATERIAL_LIST_COLS = 'id, title, created_at, visibility, owner_id, process
 
 function fetchMaterialsWithoutDirection(args) { return fetchMaterials({ ...args, withDirection: false }); }
 
-async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuery, withDirection = true }) {
+async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuery, includeOwnedPublic = false, withDirection = true }) {
   let query = supabase
     .from('reading_materials')
     // direction(U R3) — 컬럼 미적용 환경은 PostgREST가 400을 내므로 아래 폴백이 direction 없이 다시 조회한다
@@ -99,7 +100,8 @@ async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuer
     query = query.eq('visibility', 'public');
   } else {
     if (!userId) return [];
-    query = query.eq('visibility', 'private').eq('owner_id', userId);
+    query = query.eq('owner_id', userId);
+    if (!includeOwnedPublic) query = query.eq('visibility', 'private');
   }
 
   if (searchQuery) {
@@ -116,8 +118,8 @@ async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuer
   if (error) {
     // U R3: direction 컬럼 미적용 환경(마이그레이션은 오너 수동) — 컬럼 없이 같은 조회를 한 번 더.
     // etym/hanja·writing_practice 신규 컬럼 폴백과 같은 패턴. 그 환경엔 노트가 없으므로 결과는 같다.
-    if (/column|schema|direction/i.test(error.message || '')) {
-      const retry = await fetchMaterialsWithoutDirection({ tab, userId, langFilter, levelFilter, searchQuery });
+    if (withDirection && /column|schema|direction/i.test(error.message || '')) {
+      const retry = await fetchMaterialsWithoutDirection({ tab, userId, langFilter, levelFilter, searchQuery, includeOwnedPublic });
       return retry;
     }
     throw error;
@@ -155,7 +157,7 @@ function filterSuggestionsByProfile(suggestions, profile) {
   });
 }
 
-export default function MaterialsPage() {
+export default function MaterialsPage({ libraryView = null }) {
   const { user, profile, loading: authLoading } = useAuth();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -195,7 +197,7 @@ export default function MaterialsPage() {
   // auth가 정해지기 전에는 고르지 않는다(`null`) — 로딩 중 `public`으로 그렸다가
   // 사용자가 확인되며 `private`으로 튀면 **자료 쿼리가 두 번** 난다(가드 없는 useQuery).
   const [tabOverride, setTabOverride] = useState(() => searchParams.get('tab') === 'public' ? 'public' : null);
-  const tab = tabOverride ?? (authLoading ? null : (user ? 'private' : 'public'));
+  const tab = libraryView ? (libraryView === 'public' ? 'public' : 'private') : tabOverride ?? (authLoading ? null : (user ? 'private' : 'public'));
   const setTab = setTabOverride;
   const [testScores, setTestScores] = useState({});
 
@@ -217,16 +219,17 @@ export default function MaterialsPage() {
     setTestScores(result);
   }, []);
 
-  const [searchInput, setSearchInput] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [langFilter, setLangFilter] = useState(searchParams.get('lang') || 'all');
-  const [levelFilter, setLevelFilter] = useState(searchParams.get('level') || 'all');
-  const [sortBy, setSortBy] = useState('newest'); // newest | level | title | fit
-  const [unreadOnly, setUnreadOnly] = useState(false); // v2-F R3 — 고르기 좁히기
+  const initialFilters = materialLibraryFilters(searchParams);
+  const [searchInput, setSearchInput] = useState(initialFilters.query);
+  const [searchQuery, setSearchQuery] = useState(initialFilters.query);
+  const [langFilter, setLangFilter] = useState(initialFilters.language);
+  const [levelFilter, setLevelFilter] = useState(initialFilters.level);
+  const [sortBy, setSortBy] = useState(initialFilters.sort); // newest | level | title | fit
+  const [unreadOnly, setUnreadOnly] = useState(initialFilters.unread); // v2-F R3 — 고르기 좁히기
   // 받아둔 자료(v2-N R3). IndexedDB는 서버가 아니라 **이 기기**의 상태라 쿼리 캐시가
   // 아니라 지역 상태로 둔다 — 기기마다 다른 게 정상이고, 그래서 동기화 대상도 아니다.
   const [pinnedIds, setPinnedIds] = useState(() => new Set());
-  const [pinnedOnly, setPinnedOnly] = useState(false);
+  const [pinnedOnly, setPinnedOnly] = useState(initialFilters.pinned);
   const [pinBusy, setPinBusy] = useState(null);
   useEffect(() => {
     let alive = true;
@@ -274,13 +277,26 @@ export default function MaterialsPage() {
   // 필터 바뀌면 페이지 리셋
   useEffect(() => { setVisibleCount(PAGE_SIZE); }, [tab, searchQuery, langFilter, levelFilter]);
 
+  // Replace only filter state in the URL. A viewer visit/back restores these filters;
+  // no private content or learner records are written to browser history.
+  useEffect(() => {
+    if (!libraryView) return;
+    const params = new URLSearchParams(window.location.search);
+    for (const [key, value] of Object.entries({ q: searchQuery, lang: langFilter === 'all' ? '' : langFilter, level: levelFilter === 'all' ? '' : levelFilter, sort: sortBy === 'newest' ? '' : sortBy, unread: unreadOnly ? '1' : '', pinned: pinnedOnly ? '1' : '' })) {
+      if (value) params.set(key, value); else params.delete(key);
+    }
+    const next = params.toString();
+    window.history.replaceState(null, '', `/materials${next ? `?${next}` : ''}`);
+  }, [libraryView, searchQuery, langFilter, levelFilter, sortBy, unreadOnly, pinnedOnly]);
+
   const { data: suggestions = [] } = useQuery({
     queryKey: ['suggestions-today'],
+    enabled: !libraryView || libraryView === 'public',
     queryFn: fetchTodaySuggestions,
     staleTime: 60 * 60 * 1000, // 1시간 캐시
   });
 
-  const { data: pdfs = [] } = useQuery({
+  const { data: pdfs = [], isLoading: pdfsLoading, error: pdfsError, refetch: refetchPdfs } = useQuery({
     queryKey: ['my-pdfs', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -293,11 +309,11 @@ export default function MaterialsPage() {
     },
     // PDF 탭이 없어졌으므로 `내 자료`에서 돈다. 새 쿼리가 아니라 **도는 시점**이 바뀐
     // 것이다 — 그리고 그 탭이 이제 로그인 사용자의 기본값이다.
-    enabled: !!user && tab === 'private',
+    enabled: !!user && tab === 'private' && libraryView !== 'notes',
     staleTime: 1000 * 60,
   });
 
-  const { data: progressMap = { completed: new Set(), inProgress: new Map() } } = useQuery({
+  const { data: progressMap = { completed: new Set(), inProgress: new Map() }, error: progressError, refetch: refetchProgress } = useQuery({
     queryKey: ['reading-progress-list', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -392,8 +408,8 @@ export default function MaterialsPage() {
   }
 
   const { data: materials = [], isLoading, error: materialsError, refetch: refetchMaterials } = useQuery({
-    queryKey: ['materials', tab, user?.id, langFilter, levelFilter, searchQuery],
-    queryFn: () => fetchMaterials({ tab, userId: user?.id, langFilter, levelFilter, searchQuery }),
+    queryKey: ['materials', tab, user?.id, langFilter, levelFilter, searchQuery, !!libraryView],
+    queryFn: () => fetchMaterials({ tab, userId: user?.id, langFilter, levelFilter, searchQuery, includeOwnedPublic: !!libraryView }),
     // 기본 탭이 로그인 여부로 갈리므로 auth 확정 전에 쏘면 버릴 쿼리가 된다.
     enabled: !!tab,
     refetchInterval: (query) => {
@@ -468,7 +484,8 @@ export default function MaterialsPage() {
   // completedIds는 위에서 이미 로드된 인덱스라 추가 조회 0. 게스트는 칩 자체가 없다.
   const afterUnread = unreadOnly ? sorted.filter((m) => !completedIds.has(m.id)) : sorted;
   // 「받아둔 것만」(v2-N R3) — 오프라인일 때 열 수 없는 자료를 보여주는 건 해롭다.
-  const filtered = pinnedOnly ? afterUnread.filter((m) => pinnedIds.has(m.id)) : afterUnread;
+  const afterPinned = pinnedOnly ? afterUnread.filter((m) => pinnedIds.has(m.id)) : afterUnread;
+  const filtered = libraryView === 'notes' ? afterPinned.filter(isLibraryNote) : libraryView === 'owned' ? afterPinned.filter(m => !isLibraryNote(m)) : afterPinned;
 
   // PDF 묶음에 적용할 필터(v2-P 계약 ④). 언어·레벨 같은 조건은 **자료**에 붙는 것이라
   // 자료 0개 PDF에는 대응물이 아예 없다 — 「일본어」로 좁혔는데 언어를 모르는 PDF가
@@ -477,10 +494,11 @@ export default function MaterialsPage() {
   const anyFilter = !!searchQuery || langFilter !== 'all' || levelFilter !== 'all' || unreadOnly || pinnedOnly;
   const visiblePdfs = useMemo(() => {
     if (tab !== 'private') return [];
+    if (libraryView === 'notes' || pdfsError) return [];
     if (!anyFilter) return pdfs;
     const live = new Set(filtered.map((m) => m.source_pdf_id).filter(Boolean));
     return pdfs.filter((x) => live.has(x.id));
-  }, [tab, anyFilter, pdfs, filtered]);
+  }, [tab, anyFilter, pdfs, filtered, libraryView, pdfsError]);
 
   // 묶음 줄의 오른쪽 슬롯 — 책 챕터든 PDF 범위든 같은 것을 말한다(읽음·복습·분석 상태).
   // 컴포넌트를 하나로 합치니 책 챕터 줄도 복습 개수를 얻는다(낱개 자료 카드는 원래
@@ -526,7 +544,7 @@ export default function MaterialsPage() {
 
   return (
     <div className="page-container materials-page">
-      <div className="page-header page-header--row">
+      {!libraryView && <div className="page-header page-header--row">
         {/* 정돈(미니멀, #1077 5547520918): 설명 문장은 내비가 이미 하는 말 — 제목만 */}
         <div>
           <h1 className="page-header__title">내 서재</h1>
@@ -541,6 +559,7 @@ export default function MaterialsPage() {
         </div>
       </div>
 
+      }
       {/* Search */}
       <div className="filter-row">
         <div className="search-wrap">
@@ -548,7 +567,7 @@ export default function MaterialsPage() {
           <input
             type="text"
             placeholder="제목으로 자료 찾기..."
-            id="library-search" value={searchInput}
+            id="library-search" aria-label="자료 제목 검색" maxLength={120} value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
             className="search-wrap__input"
           />
@@ -556,7 +575,7 @@ export default function MaterialsPage() {
 
         {/* 탭은 둘뿐이다(v2-P) — PDF는 탭이 아니라 `내 자료` 안의 묶음 카드로 들어왔다.
             순서도 오너 지시대로 뒤집었다: 내 자료가 먼저, 공용이 그 다음. */}
-        <div className="tab-pills">
+        {!libraryView && <div className="tab-pills">
           <button onClick={() => setTab('private')}
             aria-pressed={tab === 'private'}
             className={`tab-pills__item ${tab === 'private' ? 'tab-pills__item--primary' : ''}`}>
@@ -567,7 +586,7 @@ export default function MaterialsPage() {
             className={`tab-pills__item ${tab === 'public' ? 'tab-pills__item--accent' : ''}`}>
             공용
           </button>
-        </div>
+        </div>}
       </div>
 
       {/* Language + Level filter — 이제 두 탭에 똑같이 적용된다(PDF 탭 가드 폐지) */}
@@ -644,6 +663,9 @@ export default function MaterialsPage() {
         )}
       </div>
 
+      {progressError && <div className="library-query-state" role="alert">읽음 기록을 불러오지 못했어요. <button type="button" onClick={() => refetchProgress()}>다시 불러오기</button></div>}
+      {pdfsError && <div className="library-query-state" role="alert">PDF 목록을 불러오지 못했어요. <button type="button" onClick={() => refetchPdfs()}>다시 불러오기</button></div>}
+      {pdfsLoading && <p role="status">PDF 목록 확인 중…</p>}
       {(!tab || isLoading) ? (
         <CardGridSkeleton />
       ) : materialsError ? (
@@ -738,7 +760,7 @@ export default function MaterialsPage() {
             const isNote = isWriteMaterial(m) || m.processed_json?.status === 'note';
             const status = isNote ? 'note' : (m.processed_json?.status || 'idle');
             const metadata = m.processed_json?.metadata || {};
-            const language = metadata.language || (m.title.match(/[a-zA-Z]/) ? 'English' : 'Japanese');
+            const language = metadata.language;
             const level = metadata.level;
             const isDone = status === 'completed';
             const isCompleted = completedIds.has(m.id);
@@ -769,7 +791,7 @@ export default function MaterialsPage() {
               if (isCompleted) return <span className="mat-state mat-state--done">✓ 완독</span>;
               const lastIdx = progressMap.inProgress.get(m.id);
               if (lastIdx && tokens > 0) {
-                return <span className="mat-state mat-state--progress" title="이어서 읽기">{Math.round((lastIdx / tokens) * 100)}%</span>;
+                return <span className="mat-state mat-state--progress" title="이어서 읽기">{Math.min(100, Math.round((lastIdx / tokens) * 100))}%</span>;
               }
               if (status === 'analyzing') return <span className="mat-state mat-state--busy">분석 중</span>;
               if (status === 'failed') return <span className="mat-state mat-state--danger">실패</span>;
@@ -779,11 +801,11 @@ export default function MaterialsPage() {
             })();
             // 메타 한 줄 — 언어명(정본 langNameKo)·급수·읽는 시간·날짜. 언어명 큰 글자(card__flag) 폐지.
             const metaLine = [
-              langNameKo(language),
+              language ? langNameKo(language) : '언어 미지정',
               level,
               minutes ? `${minutes}분` : null,
               new Date(m.created_at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' }),
-              !isOwner && tab === 'public' ? '공용' : null,
+              m.visibility === 'public' ? '공개 자료' : '비공개',
             ].filter(Boolean).join(' · ');
             return (
               <div
@@ -814,11 +836,11 @@ export default function MaterialsPage() {
                       {/* 받아두기(v2-N R3) — 메뉴 항목으로. 상태(받아둠)는 아래 알약이 말한다. */}
                       <button
                         type="button"
-                        role="menuitem"
+                        role="menuitemcheckbox"
                         className={`mat-pin${isPinned ? ' mat-pin--on' : ''}`}
                         onClick={(e) => { e.stopPropagation(); togglePin(m.id); }}
                         disabled={pinBusy === m.id}
-                        aria-pressed={isPinned}
+                        aria-checked={isPinned}
                         title={isPinned ? '받아둠 — 연결이 없어도 열립니다 (눌러서 해제)' : '받아두기 — 연결이 없어도 열립니다'}
                       >
                         {pinBusy === m.id ? '…' : isPinned ? '✓ 받아둠 — 해제' : '⬇ 받아두기'}
@@ -908,24 +930,24 @@ export default function MaterialsPage() {
       ) : (
         <div className="empty-state">
           <p className="empty-state__msg">
-            {searchQuery || langFilter !== 'all' || levelFilter !== 'all'
+            {anyFilter
               ? '조건에 맞는 자료가 없습니다.'
               : !user
                 ? '자료는 계정에 저장돼요.\n로그인하면 텍스트를 올려 해부하고 단어장에 모을 수 있어요.'
                 : tab === 'public'
                   ? '아직 공유된 공용 자료가 없습니다.'
-                  : '아직 보관된 개인 자료가 없습니다.'}
+                  : libraryView === 'notes' ? '아직 작성한 노트가 없습니다.' : '아직 보관된 개인 자료가 없습니다.'}
           </p>
           {/* 게스트에게 빈 목록만 보여 주지 않는다 — 왜 비어 있는지와 다음 행동을 함께 준다. */}
-          {!user && !(searchQuery || langFilter !== 'all' || levelFilter !== 'all') ? (
+          {!user && !anyFilter ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
               <Link href="/auth" className="btn btn--primary btn--md">로그인하고 자료 올리기 →</Link>
               <Link href="/lessons" className="empty-state__link">로그인 없이 교재부터 보기 →</Link>
             </div>
-          ) : (searchQuery || langFilter !== 'all' || levelFilter !== 'all') ? (
+          ) : anyFilter ? (
             <button
               className="empty-state__link"
-              onClick={() => { setLangFilter('all'); setLevelFilter('all'); setSearchInput(''); }}
+              onClick={() => { setLangFilter('all'); setLevelFilter('all'); setSearchInput(''); setUnreadOnly(false); setPinnedOnly(false); }}
             >
               필터 초기화
             </button>
@@ -939,8 +961,8 @@ export default function MaterialsPage() {
               </Link>
             </div>
           ) : (
-            <Link href="/materials/add" className="empty-state__link">
-              첫 번째 자료 추가하기 →
+            <Link href={libraryView === 'notes' ? '/materials/add?direction=write' : '/materials/add'} className="empty-state__link">
+              {libraryView === 'notes' ? '첫 노트 쓰기 →' : '첫 번째 자료 추가하기 →'}
             </Link>
           )}
         </div>

@@ -16,6 +16,7 @@ const nextConfig = {
     '/books/japanese-n5/**': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],
     '/lessons': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],
     '/home': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],
+    '/materials': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],
     '/discover': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],
     '/api/learning/vocabulary': ['./src/content/textbookEditions/**/bundle.json'],
     '/api/analyze': [
