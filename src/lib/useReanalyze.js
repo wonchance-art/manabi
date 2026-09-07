@@ -5,6 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { analyzeText } from './analyzeText';
 import { autoSplitParagraphs } from './splitParagraphs';
+import { persistImportAnalysis } from './materialImport';
 
 const STALE_THRESHOLD_MS = 3 * 60 * 1000;
 
@@ -85,7 +86,10 @@ export function useReanalyze({ materialId, material, refetch, toast }) {
       const split = autoSplitParagraphs(rawText);
       if (split !== rawText) {
         rawText = split;
-        await supabase.from('reading_materials').update({ raw_text: rawText }).eq('id', materialId);
+        const { data, error } = await supabase.from('reading_materials').update({ raw_text: rawText })
+          .eq('id', materialId).eq('owner_id', material.owner_id).select('id');
+        if (error) throw error;
+        if (!data?.length) throw new Error('원문을 저장할 권한이 없거나 자료가 삭제됐어요.');
       }
 
       const controller = new AbortController();
@@ -117,9 +121,10 @@ export function useReanalyze({ materialId, material, refetch, toast }) {
         statusJson = { sequence: [], dictionary: {}, last_idx: -1, status: 'analyzing', metadata: initMeta, failed_indices: [] };
       }
 
-      await supabase.from('reading_materials').update({ processed_json: statusJson }).eq('id', materialId);
+      const record = { id: materialId, owner_id: material.owner_id };
+      await persistImportAnalysis(supabase, record, statusJson);
 
-      await analyzeText(rawText, controller.signal, {
+      return await analyzeText(rawText, controller.signal, {
         metadata: initMeta,
         existingJson: baseJson,
         concurrency: 8,
@@ -128,16 +133,14 @@ export function useReanalyze({ materialId, material, refetch, toast }) {
             ...currentJson,
             metadata: { ...currentJson.metadata, updated_at: new Date().toISOString() },
           };
-          const { error: updateError } = await supabase
-            .from('reading_materials')
-            .update({ processed_json: json })
-            .eq('id', materialId);
-          if (updateError) console.error('[reanalyze] DB update failed:', updateError.message);
+          await persistImportAnalysis(supabase, record, json);
         },
       });
     },
-    onSuccess: () => {
-      toast?.('분석 완료!', 'success');
+    onSuccess: (json) => {
+      if (json?.status === 'failed') toast?.('분석에 실패했어요. 원문은 그대로 남아 있어요.', 'error');
+      else if (json?.status === 'partial') toast?.('일부 줄은 분석을 다시 시도해야 해요.', 'warning');
+      else toast?.('분석 완료!', 'success');
       refetch?.();
     },
     onError: (err) => {

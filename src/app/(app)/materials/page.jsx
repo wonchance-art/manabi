@@ -1,10 +1,9 @@
-import MaterialsPage from '@/views/MaterialsPage';
-
-export const metadata = {
-  title: '자료실',
-  description: '일본어·영어 텍스트를 올려 형태소 단위로 해부해 읽는 보관함. 기사·이야기·PDF.',
-};
-
-export default function Page() {
-  return <MaterialsPage />;
+import LibraryPage from '@/components/web/LibraryPage';
+import { publishedReading, readingCatalog } from '@/lib/server/bookReading';
+export const dynamic = 'force-dynamic';
+export const metadata = { title: '내 서재', description: '읽던 글과 교재, 내 자료와 노트를 한자리에서.' };
+export default async function Page() {
+  let book = null;
+  try { book = readingCatalog((await publishedReading()).book); } catch { /* Personal materials remain available. */ }
+  return <LibraryPage book={book} />;
 }

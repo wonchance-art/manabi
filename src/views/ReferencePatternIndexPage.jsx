@@ -1,7 +1,8 @@
 'use client';
 
+import { legacyTextbookTarget } from '../lib/bookNavigation';
 import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
+import Link from '../components/ArchiveLink';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
@@ -33,7 +34,8 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
   const [savedSet, setSavedSet] = useState(() => new Set());
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const backHref = `/lessons?lang=${lang}`;
+  const navigationBase = legacyTextbookTarget(refInfo?.base) || refInfo?.base;
+  const backHref = `/admin/legacy-textbooks?lang=${lang}`;
   const isJa = refInfo.langCode === 'ja';
 
   // 현장 체크 — 단어장 저장과 별개로 '아는/모르는' 표시 (레벨별 localStorage)
@@ -196,7 +198,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
             return (
               <Link
                 key={m.key}
-                href={`${refInfo.base}/bunkei/${m.key.toLowerCase()}`}
+                href={`${navigationBase}/bunkei/${m.key.toLowerCase()}`}
                 className={`fr-vocab-tab ${active ? 'is-active' : ''}`}
                 style={active ? { color: lightenForText(m.color), background: m.bg, borderColor: m.line } : undefined}
                 aria-current={active ? 'page' : undefined}
@@ -228,7 +230,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
         {hasVocab && (
           <>
             <span className="bk-toolbar__sep" aria-hidden="true" />
-            <Link href={`${refInfo.base}/vocab/${meta?.key.toLowerCase()}`} className="bk-switch">
+            <Link href={`${navigationBase}/vocab/${meta?.key.toLowerCase()}`} className="bk-switch">
               {meta?.key} 어휘로 →
             </Link>
           </>
@@ -258,7 +260,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
           <span>
             챕터 연관 문형만 보는 중 ({chFilterCount}개)
             {' · '}
-            <Link href={`${refInfo.base}/grammar/${chFilter}`} className="fr-chfilter__back">챕터로 돌아가기</Link>
+            <Link href={`${navigationBase}/grammar/${chFilter}`} className="fr-chfilter__back">챕터로 돌아가기</Link>
           </span>
           <Link href={pathname} className="fr-chfilter__clear">전체 {total}문형 보기 ✕</Link>
         </div>
@@ -384,7 +386,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
                   <div className="fr-vrow__actions">
                     {item.ch && (
                       <Link
-                        href={`${refInfo.base}/grammar/${item.ch}`}
+                        href={`${navigationBase}/grammar/${item.ch}`}
                         className="bk-chlink"
                         title="이 문형을 자세히 다루는 챕터"
                         onClick={e => e.stopPropagation()}

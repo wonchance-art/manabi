@@ -1,34 +1,43 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
+import { authReturnPath } from '@/lib/authRedirect';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/materials';
+  const next = authReturnPath(searchParams.get('next'), '/materials');
+  const failure = new URL('/auth', origin);
+  failure.searchParams.set('error', 'auth_callback_failed');
+  failure.searchParams.set('from', next);
+  const pendingCookies = [];
+  let authenticated = false;
 
   if (code) {
-    const response = NextResponse.redirect(`${origin}${next}`);
-
-    const supabase = createServerClient(SUPABASE_URL, SUPABASE_KEY, {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
+    try {
+      const supabase = createServerClient(SUPABASE_URL, SUPABASE_KEY, {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            pendingCookies.push(...cookiesToSet);
+          },
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        },
-      },
-    });
-
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return response;
+      });
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      authenticated = !error;
+    } catch {
+      // Expired codes and transport failures return to sign-in without exposing
+      // a provider error or leaving the user on an unhandled server error page.
+    }
   }
 
-  // 실패 시 로그인 페이지로
-  return NextResponse.redirect(`${origin}/auth?error=email_confirm_failed`);
+  const response = NextResponse.redirect(authenticated ? new URL(next, origin) : failure);
+  pendingCookies.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+  response.headers.set('Cache-Control', 'private, no-store');
+  return response;
 }

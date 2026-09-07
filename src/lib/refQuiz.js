@@ -101,6 +101,13 @@ const segByPinyin = (zh, pinyin) => {
  */
 export function buildChapterQuiz(chapter, ref, opts = {}) {
   const { maxMeaning = 4, maxApply = 4, maxProduce = 3 } = opts;
+  const sourceMap = ref.getChapterSources?.(chapter);
+  const sourceByExample = new Map();
+  chapter.sections.forEach((section, si) => (section.examples || []).forEach((ex, ei) => {
+    const source = sourceMap?.sections[si]?.examples[ei];
+    if (source) sourceByExample.set(ex, source);
+  }));
+  const origin = ex => sourceByExample.has(ex) ? { sourceRef: sourceByExample.get(ex) } : {};
 
   const exAll = chapter.sections
     .flatMap(sec => sec.examples || [])
@@ -151,6 +158,7 @@ export function buildChapterQuiz(chapter, ref, opts = {}) {
         correct: actual,
         distractors,
         pron: refPron(ex),
+        ...origin(ex),
       });
       ansCount[actual] = (ansCount[actual] || 0) + 1;
       usedCloze.add(main);
@@ -174,7 +182,7 @@ export function buildChapterQuiz(chapter, ref, opts = {}) {
     // 커서 하지 않는다). 라틴 단어는 단어 단위가 곧 청크라 길이 제한을 두지 않는다.
     const tilable = tokens.every(t => !/[぀-ヿ㐀-鿿]/.test(t) || t.length <= 8);
     if (tokens.length >= 3 && tokens.length <= 10 && tilable) {
-      apply.push({ type: 'order', tokens, answer: main, ko: ex.ko, pron: refPron(ex) });
+      apply.push({ type: 'order', tokens, answer: main, ko: ex.ko, pron: refPron(ex), ...origin(ex) });
       usedApply.add(main);
     }
   }
@@ -185,7 +193,7 @@ export function buildChapterQuiz(chapter, ref, opts = {}) {
     ...exAll.filter(ex => usedApply.has(refMain(ex))),
   ];
   const produce = producePool.slice(0, maxProduce).map(ex => ({
-    ko: ex.ko, main: refMain(ex), pron: refPron(ex),
+    ko: ex.ko, main: refMain(ex), pron: refPron(ex), ...origin(ex),
   }));
 
   return { meaning, apply, produce };

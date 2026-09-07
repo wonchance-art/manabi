@@ -64,7 +64,8 @@ describe('재독 카드 배선 계약', () => {
     expect(home).toContain('<ContinueDeck items={continueDeckItems} />');
     expect(home).toContain('useRereadCandidate()');
     // 조건부 훅 호출 금지 — 훅은 early return보다 위에 있어야 한다.
-    expect(home.indexOf('useRereadCandidate()')).toBeLessThan(home.indexOf('if (!user) return'));
+    expect(home.indexOf('useRereadCandidate()')).toBeLessThan(home.indexOf('return <div'));
+    expect(home).not.toContain('if (!user) return');
     // 옛 전용 카드는 부활 금지
     expect(home).not.toContain('<RereadCard />');
     expect(fs.existsSync(path.join(process.cwd(), 'src/components/RereadCard.jsx'))).toBe(false);

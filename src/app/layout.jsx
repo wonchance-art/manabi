@@ -47,24 +47,24 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 export const metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Anatomy Studio — AI 언어 해부 학습',
-    template: '%s · Anatomy Studio',
+    default: 'manabi — 언어마다, 나만의 한 권',
+    template: '%s · manabi',
   },
   description: '일본어·영어·프랑스어·중국어 학습 도구 — 문법 교재, 매일 조립되는 학습 세션, FSRS 복습, 형태소 해부 읽기.',
   keywords: ['일본어 학습', '영어 학습', 'AI 언어', 'JLPT', 'FSRS', '간격 반복', '단어장', '독해'],
-  authors: [{ name: 'Anatomy Studio' }],
+  authors: [{ name: 'manabi' }],
   alternates: { canonical: '/' },
   openGraph: {
-    title: 'Anatomy Studio — AI 언어 해부 학습',
+    title: 'manabi — 언어마다, 나만의 한 권',
     description: '일본어·영어 원문을 AI로 해부하고, FSRS로 과학적으로 복습하세요.',
     url: SITE_URL,
     type: 'website',
-    siteName: 'Anatomy Studio',
+    siteName: 'manabi',
     locale: 'ko_KR',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Anatomy Studio — AI 언어 해부 학습',
+    title: 'manabi — 언어마다, 나만의 한 권',
     description: '일본어·영어 원문을 AI로 해부하고, FSRS로 과학적으로 복습하세요.',
   },
   robots: {
@@ -78,10 +78,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
-        <meta name="theme-color" content="#7C5CFC" />
+        <meta name="theme-color" content="#994A5A" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Anatomy Studio" />
+        <meta name="apple-mobile-web-app-title" content="manabi" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icon.svg" />
         <link rel="manifest" href="/manifest.webmanifest" />

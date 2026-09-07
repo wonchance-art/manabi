@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import RefSpeak from './RefSpeak';
 import { JaText } from '../views/refShared';
@@ -56,6 +56,7 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
   const [answers, setAnswers] = useState({});    // id → { ok, picked? }
   const [orderPicks, setOrderPicks] = useState({}); // id → 선택한 토큰 인덱스 배열
   const [revealedP, setRevealedP] = useState({});   // 생산 문항 정답 공개
+  const settled = useRef(new Set());
 
   useEffect(() => setMounted(true), []);
 
@@ -91,7 +92,6 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
   }, [mounted, quiz, seed]);
 
   const total = questions?.length ?? 0;
-  if (!quiz || ((quiz.meaning?.length || 0) + (quiz.apply?.length || 0) + (quiz.produce?.length || 0)) === 0) return null;
 
   function answerChoice(q, opt) {
     if (answers[q.id]) return;
@@ -141,7 +141,9 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
 
   // 완료 → 결과 저장 (1회)
   useEffect(() => {
-    if (!done || !storageKey || !slug) return;
+    const attempt = `${lang}:${slug}:${seed}`;
+    if (!done || !storageKey || !slug || settled.current.has(attempt)) return;
+    settled.current.add(attempt);
     const result = { right: rightCount, total, at: Date.now(), passed: rightCount >= Math.ceil(total * 0.8) };
     try {
       const map = JSON.parse(localStorage.getItem(storageKey) || '{}');
@@ -158,15 +160,16 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
       logReviewEvents(user.id, (questions || []).map(q => {
         const a = answers[q.id];
         if (!a) return null;
-        // qtype: 문항 유형(meaning=cloze, order, choose=choice, produce)에서 유도
-        const qtype = ({ meaning: 'cloze', order: 'order', choose: 'choice', produce: 'produce' })[q.type]
-          || ({ meaning: 'cloze', apply: 'order', produce: 'produce' })[q.stage] || 'cloze';
+        // qtype: 자동 채점과 입으로 말한 뒤의 자기평가(flash)를 구분한다.
+        const qtype = ({ meaning: 'cloze', order: 'order', choose: 'choice', produce: 'flash' })[q.type]
+          || ({ meaning: 'cloze', apply: 'order', produce: 'flash' })[q.stage] || 'cloze';
         return {
           lang,
           source: 'grammar',
           item_key: slug,
           correct: !!a.ok,
-          detail: { stage: q.stage, qtype, qid: q.id, ko: q.ko, answer: q.correct ?? q.answer ?? q.main, picked: a.picked },
+          detail: { stage: q.stage, qtype, qid: q.id, ko: q.ko, answer: q.correct ?? q.answer ?? q.main, picked: a.picked,
+            assessment: q.type === 'produce' ? 'self' : 'auto', sourceRef: q.sourceRef || null },
         };
       }).filter(Boolean));
     }
@@ -174,10 +177,12 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [done]);
 
+  if (!quiz || ((quiz.meaning?.length || 0) + (quiz.apply?.length || 0) + (quiz.produce?.length || 0)) === 0) return null;
+
   const renderMain = (text, pron) =>
     langCode === 'ja'
       ? <JaText ja={text} yomi={pron} />
-      : <>{text}{pron && <span className="fr-check__pron"> {pron}</span>}</>;
+      : <>{text}{langCode === 'zh' && pron && <span className="fr-check__pron"> {pron}</span>}</>;
 
   let lastStage = null;
 

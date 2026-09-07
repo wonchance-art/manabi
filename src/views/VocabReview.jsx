@@ -2,11 +2,15 @@ import { useEffect, useId, useRef } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
 import { detectLang, displayWord, splitSentenceAroundWord } from '../lib/constants';
+import { sourceHref } from '../lib/learningSources';
+import VocabularyContexts from '../components/learning/VocabularyContexts';
 
 function ScoreSection({ word, onScore }) {
   return (
     <div className="review-card__answer" role="status" aria-live="polite">
       <p className="review-card__meaning">{word.meaning}</p>
+      <VocabularyContexts key={word.id} vocabularyId={word.id} readOnly />
+      {sourceHref({ kind: 'reading', material_id: word.source_material_id }) && <p className="review-room-source-link"><Link href={sourceHref({ kind: 'reading', material_id: word.source_material_id, locator: { surface: word.word_text } })} target="_blank" rel="noopener noreferrer" prefetch={false}>원문 열기 ↗</Link><small>새 탭에서 확인한 뒤 이 카드로 돌아오세요.</small></p>}
       {word.source_sentence && (() => {
         const { parts, term } = splitSentenceAroundWord(word.source_sentence, word.word_text, word.base_form);
         return (
@@ -67,7 +71,7 @@ export default function VocabReview({
   }, [reviewIdx, mode, ttsSupported, currentWord, speak]);
 
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+    <div className="review-room-session">
       {reviewFinished ? (
         <div className="review-done">
           <div className="review-done__header">
@@ -76,7 +80,7 @@ export default function VocabReview({
 
           <div className="review-done__stats">
             <div className="review-done__stat">
-              <span className="review-done__stat-value">{reviewWords.length}</span>
+              <span className="review-done__stat-value">{new Set(reviewWords.filter(Boolean).map(word => word.id)).size}</span>
               <span className="review-done__stat-label">복습한 단어</span>
             </div>
             <div className="review-done__stat-divider" />
@@ -160,7 +164,7 @@ export default function VocabReview({
             목록으로
           </Button>
         </div>
-      ) : reviewWords.length > 0 ? (
+      ) : reviewWords.length > 0 && currentWord ? (
         <>
           <div className="card review-card">
             <div className="review-card__progress review-card__progress--tools">
@@ -177,6 +181,7 @@ export default function VocabReview({
             </div>
 
             <div className="review-card__body">
+              <p className="review-room-prompt">{showAnswer ? '뜻을 확인했어요. 기억의 정도를 골라 주세요.' : mode === 'typing' ? '이 표현의 뜻을 써 보세요.' : mode === 'context' ? '문장 속 표현의 뜻을 골라 보세요.' : mode === 'listening' ? '듣고, 뜻을 떠올려 보세요.' : '이 표현, 어떤 뜻이었나요?'}</p>
               {/* 단어 헤더 (문맥 퀴즈는 정답 공개 전까지 숨김 — 단, 예문이 없으면 단어 자체가 문제이므로 공개) */}
               {currentWord && ((mode !== 'context' && mode !== 'listening') || showAnswer || (mode === 'context' && !currentWord.source_sentence)) && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>

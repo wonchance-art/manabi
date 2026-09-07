@@ -2,7 +2,9 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const port = Number.parseInt(process.env.PLAYWRIGHT_PORT || '3100', 10);
-const baseURL = process.env.PLAYWRIGHT_BASE_URL || `http://127.0.0.1:${port}`;
+// Next normalizes loopback middleware redirects to localhost. Keep the cookie origin
+// identical before and after legacy/admin redirects so authenticated fixtures survive.
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || `http://localhost:${port}`;
 const browserChannel = process.env.PLAYWRIGHT_BROWSER_CHANNEL || 'chrome';
 const localChromiumPath = '/opt/pw-browsers/chromium';
 const executablePath = process.env.PLAYWRIGHT_EXECUTABLE_PATH

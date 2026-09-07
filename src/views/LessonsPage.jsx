@@ -1,11 +1,14 @@
 'use client';
 
+import { legacyTextbookTarget } from '../lib/bookNavigation';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import Link from '../components/ArchiveLink';
 import { isPassed } from '../components/RefPatternCheck';
 import { useAuth } from '../lib/AuthContext';
+import { textbookThemeStyle } from '../lib/textbookTheme';
+import { chapterEditorHref } from '../lib/chapterEditorModel';
+import '../components/admin/textbook.css';
 import { pullProgress } from '../lib/refProgress';
 
 const LanguageWorldMap = dynamic(() => import('../components/LanguageWorldMap'), {
@@ -82,8 +85,7 @@ function PitchLine({ text }) {
   );
 }
 
-export default function LessonsPage({ refManifest = {}, initialLang, initialLevel }) {
-  const router = useRouter();
+export default function LessonsPage({ refManifest = {}, initialLang, initialLevel, bookAvailable = false }) {
   const { user, profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
 
@@ -168,6 +170,7 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
   }, [user?.id]);
 
   const refLang = refManifest[langFilter];
+  const navigationBase = legacyTextbookTarget(refLang?.base) || refLang?.base || '';
   const levelOptions = refLang ? refLang.levels.map(l => ({ value: l.label, short: l.short || l.key })) : [];
 
   // 마지막 선택 언어 저장 — [강의] 재진입 시 유지
@@ -238,11 +241,13 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
   }, [refLang, refReadLoaded, refRead, refCheck, langFilter]);
 
   return (
-    <div className="page-container">
+    <div className="page-container textbook-theme" style={textbookThemeStyle(langFilter)}>
       <div className="page-header page-header--row">
         <div>
           <h1 className="page-header__title">교재</h1>
           <p className="page-header__subtitle">학습 순서대로 배치된 문법·어휘 레퍼런스</p>
+          {isAdmin && <Link className="btn btn--ghost btn--sm" href={chapterEditorHref(langFilter)}>관리자 교재 편집</Link>}
+          {langFilter === 'Japanese' && (bookAvailable || isAdmin) && <p><Link className="btn btn--ghost btn--sm" href="/books/japanese-n5">일본어 N5 · 한 권으로 공부하기</Link>{isAdmin && <Link className="btn btn--ghost btn--sm" href="/admin/books/japanese-n5">한 권 원고 편집</Link>}</p>}
         </div>
       </div>
 
@@ -256,7 +261,7 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
         <button
           type="button"
           className="lessons-continue"
-          onClick={() => router.push(`${refLang.base}/grammar/${continueTarget.slug}`)}
+          onClick={() => window.location.assign(`${navigationBase}/grammar/${continueTarget.slug}`)}
         >
           <span className="lessons-continue__body">
             <span className="lessons-continue__kicker">
@@ -341,7 +346,7 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
                   <strong style={{ fontSize: '0.9rem', lineHeight: 1.55, color: 'var(--text-primary)', flex: '1 1 240px' }}>{refLang.pitch.closer}</strong>
                   {refLang.levels[0]?.chapters?.[0]?.slug && (
                     <button type="button" className="btn btn--sm"
-                      onClick={() => router.push(`${refLang.base ?? ''}/grammar/${refLang.levels[0].chapters[0].slug}`)}
+                      onClick={() => window.location.assign(`${navigationBase}/grammar/${refLang.levels[0].chapters[0].slug}`)}
                       style={{ background: TRACK_COLORS[langFilter], color: '#fff', border: 'none' }}>
                       지금 시작 →
                     </button>
@@ -392,7 +397,7 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
                   {bunkeiCount > 0 && (
                     <Link
                       className="lessons-list__bunkei-chip lessons-list__chip--bunkei"
-                      href={`${refLang.base}/bunkei/${meta.key.toLowerCase()}`}
+                      href={`${navigationBase}/bunkei/${meta.key.toLowerCase()}`}
                       title={`${meta.key} 문형 사전 — ${bunkeiCount}문형 전수 (검색·뜻 가리기)`}
                     >
                       문형 {bunkeiCount}
@@ -401,7 +406,7 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
                   {vocabCount > 0 && (
                     <Link
                       className="lessons-list__bunkei-chip lessons-list__chip--vocab"
-                      href={`${refLang.base}/vocab/${meta.key.toLowerCase()}`}
+                      href={`${navigationBase}/vocab/${meta.key.toLowerCase()}`}
                       title={`${meta.label} 어휘 사전 — ${vocabCount}단어 (주제별·검색)`}
                     >
                       어휘 {vocabCount}
@@ -429,7 +434,7 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
                           <Link
                             id={`lessons-ch-${ch.slug}`}
                             className={`lessons-list__row lessons-list__row--${passed ? 'passed' : read ? 'done' : 'idle'}`}
-                            href={`${refLang.base}/grammar/${ch.slug}`}
+                            href={`${navigationBase}/grammar/${ch.slug}`}
                             title={ch.summary || undefined}
                           >
                             <span className="lessons-list__status" aria-hidden="true">{passed ? '●' : read ? '◐' : '○'}</span>

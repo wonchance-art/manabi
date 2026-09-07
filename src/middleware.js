@@ -1,11 +1,20 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
+import { legacyTextbookTarget } from './lib/bookNavigation';
+import { hasLegacyArchivePath } from './lib/legacyArchiveRoutes';
 
 // EMEA 오버월드 자산 가드는 #306 일반 공개(releaseEligible 릴리스 정합 전환)로 폐기했다.
 // 스테일 가드가 남아 비관리자 전원이 EMEA 지형 404를 받는 라이브 결함을 만들었음(2026-07-22
 // 게스트 라이브 검수 실측). 미출시 지역이 다시 생기면 git 이력의 프리픽스 가드 패턴으로 복원한다.
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
+  const archive = legacyTextbookTarget(pathname);
+  if (archive) {
+    const destination = request.nextUrl.clone();
+    destination.pathname = archive;
+    return NextResponse.redirect(destination);
+  }
+  if (pathname === '/learn/course') return NextResponse.redirect(new URL('/lessons', request.url));
   if (!pathname.startsWith('/admin')) return NextResponse.next();
 
   const response = NextResponse.next();
@@ -39,9 +48,18 @@ export async function middleware(request) {
   // 어드민 아님 → 홈으로
   if (profile?.role !== 'admin') return NextResponse.redirect(new URL('/', request.url));
 
+  // Decide before the archive's async page starts streaming; notFound() after the
+  // shared loading boundary can otherwise render a 404 screen with HTTP 200.
+  if ((pathname === '/admin/legacy-textbooks' || pathname.startsWith('/admin/legacy-textbooks/')) && !hasLegacyArchivePath(pathname)) {
+    return NextResponse.rewrite(new URL('/_not-found', request.url), {
+      status: 404,
+      headers: { 'Cache-Control': 'private, no-store' },
+    });
+  }
+
   return response;
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/admin/:path*', '/japanese/:path*', '/chinese/:path*', '/english/:path*', '/french/:path*', '/learn/course'],
 };

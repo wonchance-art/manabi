@@ -21,12 +21,12 @@ describe('쿼리 다이어트 계약', () => {
     expect(modal).not.toContain('nextMaterial.processed_json');
   });
 
-  it('홈 — 시리즈 진도 300행은 언어 경로만, 최근 진행 join은 제목만', () => {
+  it('홈 — 옛 시리즈 300행 조회를 없애고 최근 진행 join은 제목만', () => {
     const home = read('src/views/HomePage.jsx');
-    expect(home).toContain("select('id, title, language:processed_json->metadata->>language')");
+    expect(home).not.toContain(".limit(300)");
     expect(home).toContain("reading_materials(id, title)')");
     expect(home).not.toContain('reading_materials(id, title, processed_json)');
-    expect(home).toContain('m.language ||');
+    expect(home).toContain(".eq('user_id', userId)");
   });
 
   it('프로필 통계 — 소비하는 컬럼만(전 컬럼 금지)', () => {

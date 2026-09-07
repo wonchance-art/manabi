@@ -33,11 +33,13 @@ describe('내 노트 — 방향 축 (constants·migration)', () => {
 
 describe('추가 화면 (MaterialAddPage)', () => {
   it('「내 노트」 갈래 — 저장 흐름은 하나(같은 insert), direction=write·비공개 고정, 목표어를 그대로 선언', () => {
-    expect(add).toContain("const [direction, setDirection] = useState(MATERIAL_DIRECTION.READ);");
+    // A direct note link can choose WRITE; ordinary/unknown links still default to READ.
+    expect(add).toContain("searchParams.get('direction') === MATERIAL_DIRECTION.WRITE ? MATERIAL_DIRECTION.WRITE : MATERIAL_DIRECTION.READ");
     expect(add).toContain('const isNote = direction === MATERIAL_DIRECTION.WRITE;');
     expect(add).toContain('...(isNote ? { direction: MATERIAL_DIRECTION.WRITE } : {}),');
     expect(add).toContain("visibility: (pdfSource || epubSource || isNote) ? 'private' : visibility,");
-    expect(add.match(/\.from\('reading_materials'\)\s*\.insert\(\[materialRow\]\)/g)).toHaveLength(1);
+    expect(add).toContain('saveImportOnce(supabase, importAttemptRef.current.attempt)');
+    expect(read('src/lib/materialImport.js').match(/\.insert\(\[row\]\)/g)).toHaveLength(1);
     // 학습 언어 토글은 그대로(4종 밖 'Korean' 없음)
     expect(add).not.toContain("'Korean'");
     expect(add).toContain('내 노트');
@@ -45,12 +47,13 @@ describe('추가 화면 (MaterialAddPage)', () => {
 
   it("direction=write는 분석 큐에 들어가지 않는다 — status 'note'로 저장하고 runBackgroundAnalysis를 호출하지 않는다", () => {
     expect(add).toContain(`status: isNote ? 'note' : "analyzing"`);
-    const after = sliceBetween(add, 'if (isNote) {', "setStatus('저장 완료. 백그라운드 분석을 시작합니다...');");
+    const after = sliceBetween(add, 'if (isNote) {', "setStatus('원문 저장 완료. 읽기 도구를 준비하고 있어요…');");
     expect(after).not.toContain('runBackgroundAnalysis(');
-    expect(after).toContain('setCompletedId(data[0].id);');
+    expect(after).not.toContain('startAnalysis(');
+    expect(add.indexOf('setCompletedId(record.id);')).toBeLessThan(add.indexOf('if (isNote) {'));
     expect(after).toContain('return;');
     // 읽기 자료 경로는 그대로
-    expect(add).toContain('runBackgroundAnalysis(data[0].id, rawText, controller.signal);');
+    expect(add).toContain('runBackgroundAnalysis(savedRecordRef.current, controller.signal)');
   });
 
   it('자동 번역 진입점이 없다(번역기화 방어선)', () => {
@@ -71,7 +74,7 @@ describe('자료실 (MaterialsPage)', () => {
   it('direction 컬럼 미적용 환경 폴백 — 컬럼 없이 같은 조회를 한 번 더(기존 자료 동작 불변)', () => {
     expect(list).toContain("const MATERIAL_LIST_COLS = 'id, title, created_at, visibility, owner_id, processed_json, source_pdf_id, page_start, page_end';");
     expect(list).toContain('.select(withDirection ? `${MATERIAL_LIST_COLS}, direction` : MATERIAL_LIST_COLS)');
-    expect(list).toContain('if (/column|schema|direction/i.test(error.message || \'\')) {');
-    expect(list).toContain('fetchMaterialsWithoutDirection({ tab, userId, langFilter, levelFilter, searchQuery })');
+    expect(list).toContain('if (withDirection && /column|schema|direction/i.test(error.message || \'\')) {');
+    expect(list).toContain('fetchMaterialsWithoutDirection({ tab, userId, langFilter, levelFilter, searchQuery, includeOwnedPublic })');
   });
 });

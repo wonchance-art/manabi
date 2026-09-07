@@ -9,15 +9,24 @@
  * 스테일 진단에 쓸 수 없다. no-store로 매 요청 실값을 준다(계약 3).
  * 커밋 메시지는 싣지 않는다 — SHA·브랜치·시각만(계약 1).
  */
+import { serverReleaseVersion } from '../../../lib/releaseVersion';
+
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  return Response.json(
-    {
-      sha: (process.env.VERCEL_GIT_COMMIT_SHA || '').slice(0, 7) || 'dev',
-      ref: process.env.VERCEL_GIT_COMMIT_REF || 'local',
-      at: process.env.VERCEL_DEPLOYMENT_AT || null,
-    },
-    { headers: { 'cache-control': 'no-store, max-age=0' } },
-  );
+  const headers = { 'cache-control': 'no-store, max-age=0' };
+  try {
+    return Response.json(serverReleaseVersion({
+      VERCEL_GIT_COMMIT_SHA: process.env.VERCEL_GIT_COMMIT_SHA,
+      VERCEL_GIT_COMMIT_REF: process.env.VERCEL_GIT_COMMIT_REF,
+      VERCEL_ENV: process.env.VERCEL_ENV,
+      VERCEL: process.env.VERCEL,
+      VERCEL_DEPLOYMENT_ID: process.env.VERCEL_DEPLOYMENT_ID,
+      MANABI_RELEASE_SHA: process.env.MANABI_RELEASE_SHA,
+      MANABI_RELEASE_REF: process.env.MANABI_RELEASE_REF,
+      MANABI_RELEASE_AT: process.env.MANABI_RELEASE_AT,
+    }, JSON.parse(process.env.MANABI_BUILD_IDENTITY || '{}')), { headers });
+  } catch {
+    return Response.json({ error: 'release_identity_unavailable' }, { status: 503, headers });
+  }
 }

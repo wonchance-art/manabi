@@ -1,0 +1,177 @@
+/* manabi v2: publication-like discovery, quiet reading. Language colors are shared with BOOK_SERIES. */
+.manabi-app{--paper:#f6f4ee;--sheet:#fffefb;--ink:#252721;--muted:#65675f;--rule:#d7d5cd;--ja:#994a5a;--zh:#2a7657;--en:#906021;--fr:#3a68a2;--bg-primary:var(--paper);--bg-secondary:#eeece5;--bg-card:var(--sheet);--bg-elevated:#eeeae4;--text-primary:var(--ink);--text-secondary:var(--muted);--text-muted:var(--muted);--border:var(--rule);--gnb-bg:var(--paper);background:var(--paper);color:var(--ink)}
+.manabi-app .gnb{background:var(--paper);border-color:var(--rule);padding-inline:max(28px,calc((100vw - 1192px)/2));gap:24px}
+.manabi-app .gnb__logo{font-size:37px;letter-spacing:-2.7px;color:var(--ink)}
+.manabi-app .gnb__nav{margin-left:46px;gap:30px}
+.manabi-app .gnb__link{color:var(--muted);font-size:14px}
+.manabi-app .gnb__link.active{color:var(--ink);box-shadow:inset 0 -2px var(--ink)}
+.manabi-app .gnb__profile-btn{border-color:var(--rule);background:var(--sheet)!important;color:var(--ink);min-width:44px;min-height:44px}
+.manabi-search-link{display:flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;color:var(--ink);text-decoration:none;font-size:24px;flex:none}
+.manabi-search-link span{font-size:12px}
+.manabi-app :focus-visible{outline:2px solid var(--ja);outline-offset:4px}
+.manabi-app .manabi-page{padding-top:50px;padding-bottom:60px}
+.manabi-app .manabi-page-heading{margin-bottom:34px}
+.manabi-app .manabi-page-heading h1{font-size:clamp(36px,4.3vw,56px);font-weight:700;letter-spacing:-2.4px;line-height:1.22}
+.manabi-app .manabi-eyebrow{font-size:11px;letter-spacing:1.6px;color:var(--muted);line-height:1.7}
+.manabi-app .manabi-section-heading h2{font-size:22px;letter-spacing:-.8px}
+.manabi-app .manabi-section-heading>span,.manabi-app .manabi-small,.manabi-app .manabi-breadcrumb,.manabi-app .manabi-book-tools>a,.manabi-app .manabi-reader-toolbar,.manabi-app .manabi-reader-toolbar button{font-size:13px}
+.manabi-app .manabi-button{border-radius:3px;min-height:48px;font-size:14px;padding:12px 24px;gap:28px}
+.manabi-app .manabi-button:hover{background:#793b48}
+.manabi-app .manabi-link{font-size:13px;line-height:1.6;min-height:44px;display:inline-flex;align-items:center;color:var(--ink)}
+.manabi-app .manabi-muted{color:var(--muted);font-size:14px}
+.manabi-inline-state{border:1px solid var(--rule);padding:16px 20px;line-height:1.8;font-size:14px;margin-block:20px;background:var(--sheet)}
+.manabi-inline-state button,.today-record button,.today-discovery>p button{background:transparent;border:0;font:inherit;color:var(--ja);text-decoration:underline;cursor:pointer;min-height:44px}
+.manabi-app .mobile-nav{background:var(--paper);border-color:var(--rule);padding-bottom:env(safe-area-inset-bottom)}
+.manabi-app .mobile-nav__link{font-size:12px;min-width:0;min-height:54px;flex:1}
+.manabi-app .mobile-nav__link.active{background:transparent;color:var(--ja)}
+.manabi-app .mobile-nav__link.active::before{background:var(--ja);width:18px;height:2px}
+/* Today: one primary action, one open book, two distinct editorial areas. */
+.today-opening{display:grid;grid-template-columns:1fr 1.08fr;gap:34px;align-items:center;padding:17px 0 48px;min-height:530px}
+.today-copy{min-width:0;position:relative;z-index:1}
+.today-copy h1{font-size:clamp(44px,4.8vw,64px);line-height:1.22;letter-spacing:-3px;margin:20px 0 18px;font-weight:700}
+.today-copy h1 em{font-style:normal;color:var(--ja)}
+.today-intro{font-size:14px;line-height:1.8;color:var(--muted);margin:0 0 26px}
+.today-location{border-top:1px solid var(--rule);padding:20px 0;display:flex;gap:18px;align-items:center;min-height:103px;max-width:445px}
+.today-location__number{font-size:44px;font-weight:600;letter-spacing:-2px;line-height:1;flex:none;color:var(--ja)}
+.today-location>div{display:grid;gap:5px;min-width:0}
+.today-location strong{font-size:17px;line-height:1.55;overflow-wrap:anywhere;word-break:keep-all}
+.today-location small{font-size:11px;color:var(--muted)}
+.today-location>div>span,.today-record{font-size:12px;line-height:1.7;color:var(--muted)}
+.today-record{margin:14px 0 0}
+.today-book-scene{min-width:0;padding:20px 0 0 14px;perspective:1800px}
+.today-open-book{display:grid;grid-template-columns:1fr 1fr;aspect-ratio:1.44;transform:rotate(-5deg);filter:drop-shadow(0 22px 19px #25272118);position:relative}
+.today-open-book::after{content:'';position:absolute;inset:100% 0 auto;height:7px;background:repeating-linear-gradient(#fffefb 0 1px,#d7d5cd 1px 2px);transform-origin:top;transform:skewX(-20deg);border-radius:0 0 5px 3px}
+.today-open-book .manabi-cover{min-height:0;height:100%;aspect-ratio:auto;width:100%;max-width:none;border-radius:4px 0 0 4px;box-shadow:inset -18px 0 20px #3b13272a;transform:none;padding:22px 20px}
+.today-open-book .manabi-cover__top{font-size:9px}
+.today-open-book .manabi-cover>strong{font-size:17px;line-height:1.6;margin-top:22px}
+.today-open-book .manabi-cover__glyph{font-size:clamp(75px,8vw,119px);margin:10px 0 0;line-height:1.25}
+.today-open-book .manabi-cover__bottom{font-size:10px}
+.today-open-book .manabi-cover__bottom small{font-size:7px}
+.today-open-page{background:var(--sheet);box-shadow:inset 15px 0 22px #2527210e;border-radius:0 4px 4px 0;position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:12px;padding:23px 24px;min-width:0}
+.today-page-top,.today-page-bottom{display:flex;justify-content:space-between;font-size:8px;letter-spacing:1px;position:relative;z-index:1}
+.today-page-top i{position:absolute;width:17px;height:50px;background:var(--ja);right:3px;top:-23px;clip-path:polygon(0 0,100% 0,100% 100%,50% 85%,0 100%)}
+.today-page-orb{position:absolute;inset:24% 10% auto auto;width:70%;aspect-ratio:1;border-radius:50%;background:#f0e0de;opacity:.78;z-index:0}
+.today-page-quote{position:relative;z-index:1;min-width:0}
+.today-page-quote small,.today-page-quote>span{font-size:11px;line-height:1.8;display:block}
+.today-page-quote p{font-family:var(--font-noto-jp),sans-serif;font-size:clamp(22px,2.6vw,35px);font-weight:500;line-height:1.85;margin:17px 0;overflow-wrap:anywhere}
+.today-page-quote h2{font-size:clamp(20px,2.4vw,30px);line-height:1.6;overflow-wrap:anywhere;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.today-book-scene>p{text-align:center;font-size:11px;color:var(--muted);margin:33px 0 0;letter-spacing:1.7px}
+.today-bottom{display:grid;grid-template-columns:.8fr 1.2fr;border-top:1px solid var(--rule);gap:54px;padding-top:34px}
+.today-review{border-right:1px solid var(--rule);padding-right:40px}
+.today-review h2{font-size:27px;font-weight:600;letter-spacing:-1px;line-height:1.6;margin:16px 0}
+.today-review h2 b{font-weight:500;font-size:50px;color:var(--ja);letter-spacing:-2px;line-height:1}
+.today-review p:not(.manabi-eyebrow){color:var(--muted);font-size:13px;line-height:1.8}
+.today-growth{font-size:12px;display:block;margin-top:15px;line-height:2}
+.today-discovery{min-width:0}
+.today-discovery>.manabi-section-heading{margin:0 0 16px}
+.today-story{display:grid;grid-template-columns:116px 1fr;gap:19px;padding:14px 0;border-top:1px solid var(--rule);align-items:center}
+.today-story>div{min-width:0}
+.today-story small{font-size:11px;color:var(--muted);line-height:1.6}
+.today-story h3{font-size:16px;line-height:1.6;word-break:keep-all;overflow-wrap:anywhere;margin:5px 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.today-story p{font-size:11px;color:var(--muted);margin:0;line-height:1.6}
+.today-story p span{float:right}
+.suggestion-artwork{background:var(--series-color);position:relative;aspect-ratio:16/10;overflow:hidden;color:#fffefb;display:flex;justify-content:center;align-items:center;width:100%;isolation:isolate}
+.suggestion-artwork>img{width:100%;height:100%;object-fit:cover}
+.suggestion-artwork>span{font-size:clamp(50px,7vw,92px);line-height:1.2;transform:rotate(-9deg)}
+.suggestion-artwork>small{position:absolute;left:10px;bottom:8px;color:#fffefb!important;font-size:9px}
+.today-editorial{display:flex;gap:25px;align-items:center}
+.today-editorial>span{background:var(--ink);color:var(--paper);font-size:52px;padding:24px 12px;writing-mode:vertical-rl}
+.today-editorial small,.today-editorial p{font-size:12px;color:var(--muted)}
+.today-editorial h3{font-size:23px;line-height:1.65;letter-spacing:-1px;margin:10px 0}
+.today-tools{margin-top:40px}
+.today-tools .deck-card{background:var(--sheet);border:1px solid var(--rule);box-shadow:none;border-radius:3px}
+.today-library-row{display:flex;align-items:center;gap:24px;border-block:1px solid var(--rule);padding:22px 0;margin-top:35px;font-size:12px}
+.today-library-row strong{flex:1;font-size:15px;overflow-wrap:anywhere;min-width:0}
+/* Covers retain one proportion across the four languages. */
+.manabi-app .manabi-cover{background:var(--series-color);color:var(--sheet);border:0;aspect-ratio:3/4.15;position:relative;border-radius:2px 5px 5px 2px;padding:24px;display:flex;flex-direction:column;box-shadow:inset 5px 0 #00000012,7px 8px 0 -2px #e0ddd4;width:100%;max-width:280px;min-height:0}
+.manabi-app .manabi-cover__top{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.4px}
+.manabi-app .manabi-cover>strong{display:block;line-height:1.65;font-size:18px;letter-spacing:-.4px;margin:24px 0 0}
+.manabi-app .manabi-cover__glyph{flex:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-noto-jp),var(--font-noto-sc),sans-serif;font-size:112px;line-height:1.1;margin:0;font-weight:400;transform:rotate(-6deg)}
+.manabi-app .manabi-cover__glyph--latin{font-family:var(--font-manrope),sans-serif;font-size:110px;letter-spacing:-8px}
+.manabi-app .manabi-cover__bottom{display:flex;justify-content:space-between;font-size:12px;padding-top:18px;border-top:1px solid #ffffff55;gap:6px;align-items:center}
+.manabi-app .manabi-cover__bottom small{font-size:8px}
+.manabi-app .today-open-book .manabi-cover{max-width:none;aspect-ratio:auto;height:100%;border-radius:3px 0 0 3px;padding:22px 18px;box-shadow:inset -15px 0 20px #0002}
+.manabi-app .today-open-book .manabi-cover>strong{font-size:17px;margin-top:22px}
+.manabi-app .today-open-book .manabi-cover__glyph{font-size:clamp(70px,8vw,119px)}
+.manabi-app .today-open-book .manabi-cover__bottom small{display:none}
+.shelf-intro{font-size:14px;line-height:1.9;color:var(--muted);margin:0}
+.shelf-resume{display:flex;align-items:center;gap:24px;background:#eeebe4;border-block:1px solid var(--rule);padding:22px 26px;margin:36px 0}
+.shelf-resume__mark{font-size:43px;color:var(--ja)}
+.shelf-resume>div{flex:1;min-width:0}
+.shelf-resume .manabi-eyebrow{margin:0 0 5px}
+.shelf-resume h2{font-size:18px;line-height:1.6;letter-spacing:-.6px;overflow-wrap:anywhere;margin:0}
+.shelf-resume p:last-child{font-size:12px;color:var(--muted);margin:5px 0 0}
+.shelf-language-tabs{display:flex;gap:28px;border-bottom:1px solid var(--rule);margin:0 0 34px;overflow:auto}
+.shelf-language-tabs button{background:transparent;border:0;border-radius:0;white-space:nowrap;min-height:49px;padding:10px 0;color:var(--muted);font-size:13px!important}
+.shelf-language-tabs button[aria-pressed=true]{box-shadow:inset 0 -2px var(--series-color,var(--ink));color:var(--series-color,var(--ink));font-weight:700}
+.manabi-app .manabi-series-shelf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:32px;margin:0}
+.manabi-app .manabi-series-book{display:block;text-align:left;background:transparent;border:0;padding:0;min-width:0;color:var(--ink);border-radius:0}
+.shelf-series-number{font-size:10px;letter-spacing:1px;display:block;margin:0 0 13px;color:var(--muted)}
+.manabi-app .manabi-series-book .manabi-cover{max-width:none;transition:transform .22s ease}
+.manabi-app a.manabi-series-book:hover .manabi-cover{transform:translateY(-7px) rotate(-1deg)}
+.manabi-app .manabi-series-caption{display:flex;align-items:center;position:relative;padding:21px 0 0;gap:8px;flex-wrap:wrap}
+.manabi-app .manabi-series-caption strong{font-size:18px}
+.manabi-app .manabi-series-caption small{font-size:11px;color:var(--muted)}
+.manabi-app .manabi-series-caption i{margin-left:auto;font-size:19px;font-style:normal}
+.shelf-footnote{display:grid;grid-template-columns:1fr 1fr;gap:40px;border-top:1px solid var(--rule);margin-top:65px;padding-top:30px}
+.shelf-footnote h2{font-size:28px;letter-spacing:-1px;line-height:1.55;margin:12px 0}
+.shelf-footnote p:not(.manabi-eyebrow){font-size:14px;line-height:1.85;color:var(--muted)}
+/* Book home keeps the manuscript and edition-addressed source links intact. */
+.manabi-app .manabi-book-hero{display:grid;grid-template-columns:250px 1fr;gap:65px;padding:25px 0 50px;align-items:center;border-bottom:1px solid var(--rule);background:none}
+.manabi-app .manabi-book-hero h1{font-size:45px;line-height:1.35;letter-spacing:-2px;margin:17px 0}
+.book-edition{font-size:11px;color:var(--muted);margin:18px 0 25px}
+.manabi-app .manabi-book-body{gap:50px}
+.manabi-app .manabi-toc-group{border-color:var(--rule);background:var(--sheet);border-radius:2px}
+.manabi-app .manabi-toc-group summary{padding:20px;font-size:15px}
+.manabi-app .manabi-toc-group li a{padding:17px 20px;font-size:14px;min-height:55px}
+.manabi-app .manabi-toc-group li small{font-size:11px;flex:none}
+.manabi-app .manabi-tabs button{font-size:13px;min-height:44px}
+.manabi-app .manabi-book-tools{border-color:var(--rule)}
+.manabi-app .manabi-book-tools h2{font-size:18px}
+.manabi-app .manabi-book-tools>a{min-height:48px}
+.book-scope{border-bottom:1px solid var(--rule);font-size:12px;line-height:1.8;padding:10px 0}
+.book-scope summary{cursor:pointer;min-height:36px;display:list-item;padding-top:6px}
+.book-scope p{font-size:12px;color:var(--muted)}
+.manabi-app .manabi-reader-toolbar,.manabi-app .manabi-chapter-opening{border-color:var(--rule)}
+.manabi-app .manabi-reader-outline nav a{font-size:12px;min-height:39px}
+.manabi-app .manabi-reader-main{min-width:0}
+.manabi-app .book-reading-content .examples{border:1px solid #dfc4ca;background:#fffaf9;border-radius:4px}
+.manabi-app .manabi-example-signin{font-size:12px;min-height:36px;display:inline-flex;align-items:center}
+/* Discover: a large editorial feature and a compact index, not a dashboard grid. */
+.discover-opening{display:grid;grid-template-columns:1.7fr 1fr;gap:40px;margin-top:30px}
+.discover-feature{display:flex;flex-direction:column;background:var(--ink);color:var(--sheet)!important;padding:30px 36px;min-height:520px;position:relative;overflow:hidden}
+.discover-feature .manabi-eyebrow{color:#d2cfc2}
+.discover-glyph{font-size:126px;letter-spacing:15px;line-height:1.3;transform:rotate(-7deg);color:#e7b5bf;font-family:var(--font-noto-jp),sans-serif;flex:1;padding:12px 0 20px}
+.discover-glyph span{position:relative;top:20px;color:var(--sheet)}
+.discover-feature h2{font-size:27px;line-height:1.55;letter-spacing:-1px;margin:16px 0 12px;max-width:430px}
+.discover-feature>div>p{font-size:13px;line-height:1.9;color:#d8d7cd;margin-bottom:20px}
+.discover-feature-link{font-size:13px;display:inline-flex;align-items:center;min-height:44px;border-top:1px solid #727467;width:100%;padding-top:15px}
+.discover-topics{border-top:1px solid var(--ink);padding-top:25px}
+.discover-topics h2{font-size:34px;line-height:1.45;letter-spacing:-1.5px;margin:14px 0 30px}
+.discover-topics>a{display:flex;gap:18px;align-items:center;border-top:1px solid var(--rule);padding:23px 0;font-size:12px;min-height:80px}
+.discover-topics>a>div{flex:1;display:grid;gap:8px}
+.discover-topics strong{font-size:18px;font-weight:600}
+.discover-topics small{font-size:12px;color:var(--muted)}
+.discover-topics .discover-all{min-height:44px;padding:15px 0;font-size:13px}
+.discover-cultures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px}
+.discover-cultures>a{position:relative;border-top:1px solid var(--rule);padding-top:18px}
+.discover-cultures>a>span{display:block;color:var(--ja);font-size:45px;font-weight:400;letter-spacing:-2px;margin-bottom:20px}
+.discover-cultures small{font-size:11px;color:var(--muted)}
+.discover-cultures h3{font-size:20px;line-height:1.6;letter-spacing:-.7px;margin:10px 0;word-break:keep-all}
+.discover-cultures p{font-size:13px;line-height:1.9;color:var(--muted)}
+.discover-cultures b{position:absolute;top:20px;right:0;font-size:23px;font-weight:400}
+@container manabi-shell (min-width:901px){.manabi-app .mobile-nav{display:none}}
+@container manabi-shell (max-width:1050px){.manabi-app .gnb__nav{margin-left:15px;gap:24px}.manabi-app .gnb{gap:17px}.manabi-app .manabi-series-shelf{gap:22px}.manabi-app .manabi-series-book .manabi-cover{padding:20px}.manabi-app .manabi-series-book .manabi-cover>strong{font-size:15px;margin-top:18px}.manabi-app .manabi-series-book .manabi-cover__glyph{font-size:90px}.today-opening{gap:22px}.today-open-page{padding:22px 19px}.today-bottom{gap:35px}}
+@container manabi-shell (max-width:900px){.manabi-app .app-layout{--gnb-height:66px;padding-top:66px}.manabi-app .gnb{height:66px;--gnb-height:66px;padding-inline:24px}.manabi-app .gnb__nav{display:none}.manabi-app .gnb__actions{margin-left:0}.manabi-search-link{margin-left:auto}.manabi-app .gnb__logo{font-size:32px}.manabi-app .mobile-nav{display:flex;height:calc(60px + env(safe-area-inset-bottom));padding-inline:10px}.manabi-app .app-layout{padding-bottom:calc(80px + env(safe-area-inset-bottom))}.manabi-app .manabi-page{padding-top:35px}.today-opening{min-height:470px}.today-copy h1{font-size:48px}.today-book-scene{padding-left:0}.manabi-app .today-open-book .manabi-cover>strong{font-size:12px}.manabi-app .today-open-book .manabi-cover__top{font-size:7px}.manabi-app .today-open-book .manabi-cover__bottom{font-size:9px}.today-open-page{padding:18px 15px}.today-page-quote small{font-size:10px}.today-page-quote p{font-size:23px}.today-page-top,.today-page-bottom{font-size:7px}.today-page-top i{top:-18px;height:38px;width:13px}.manabi-app .manabi-series-shelf{grid-template-columns:repeat(2,minmax(0,1fr));gap:32px}.manabi-app .manabi-series-book .manabi-cover{padding:25px;max-width:none}.manabi-app .manabi-series-book .manabi-cover>strong{font-size:20px}.manabi-app .manabi-series-book .manabi-cover__glyph{font-size:125px}.manabi-app .manabi-book-hero{gap:35px;grid-template-columns:210px 1fr}.manabi-app .manabi-book-hero h1{font-size:35px}.discover-opening{grid-template-columns:1.4fr 1fr;gap:25px}.discover-feature{padding:25px;min-height:500px}.discover-glyph{font-size:90px}.discover-topics h2{font-size:29px}.discover-cultures{gap:20px}}
+@container manabi-shell (max-width:640px){.manabi-app .gnb{padding-inline:20px;gap:12px}.manabi-app .manabi-page{padding:29px 22px 35px}.manabi-app .manabi-page-heading{align-items:flex-start;gap:18px;flex-wrap:wrap}.manabi-app .manabi-page-heading h1{font-size:38px;letter-spacing:-1.8px}.manabi-app .manabi-eyebrow{font-size:10px;letter-spacing:1.25px}.manabi-search-link span{display:none}.today-opening{display:flex;flex-direction:column;align-items:stretch;gap:18px;padding:0 0 32px;min-height:0}.today-copy h1{font-size:43px;line-height:1.22;letter-spacing:-2px;margin:15px 0}.today-copy h1 br{display:none}.today-copy h1 em{display:block}.today-intro{font-size:12px;margin-bottom:18px}.today-location{padding:16px 0;gap:14px;min-height:94px}.today-location__number{font-size:37px}.today-location strong{font-size:16px}.today-record{font-size:10px;margin-top:12px}.today-copy .manabi-row{gap:18px}.today-book-scene{max-width:380px;width:100%;align-self:center;padding:17px 12px 0}.today-open-book{aspect-ratio:1.55;transform:rotate(-4deg)}.manabi-app .today-open-book .manabi-cover{padding:16px 12px}.manabi-app .today-open-book .manabi-cover>strong{font-size:12px;margin-top:12px}.manabi-app .today-open-book .manabi-cover__glyph{font-size:72px}.manabi-app .today-open-book .manabi-cover__bottom{padding-top:10px;font-size:9px}.today-open-page{padding:15px 12px}.today-page-top i{top:-15px;height:34px}.today-page-quote p{font-size:22px;line-height:1.75;margin:12px 0}.today-page-quote small,.today-page-quote>span{font-size:9px}.today-book-scene>p{font-size:9px;margin-top:23px}.today-page-bottom{letter-spacing:0;font-size:7px}.today-bottom{display:block;padding-top:27px}.today-review{border-right:0;border-bottom:1px solid var(--rule);padding:0 0 26px;margin-bottom:28px}.today-review h2{font-size:25px;margin:12px 0}.today-review h2 br{display:none}.today-review h2 b{font-size:41px}.today-growth{display:inline-block;margin:0 0 0 20px}.today-story{grid-template-columns:95px 1fr;gap:15px}.today-story h3{font-size:14px}.today-library-row{flex-wrap:wrap;gap:10px}.today-library-row strong{flex-basis:100%;order:1}.today-library-row>span:last-child{margin-left:auto}.shelf-intro{font-size:12px}.shelf-resume{padding:17px 15px;gap:13px;flex-wrap:wrap;margin:23px 0}.shelf-resume__mark{font-size:32px}.shelf-resume h2{font-size:15px}.shelf-resume p:last-child{font-size:10px}.shelf-resume .manabi-button{margin-left:0;width:100%;margin-top:3px}.shelf-language-tabs{gap:23px;margin-bottom:25px}.shelf-language-tabs button{font-size:12px!important}.manabi-app .manabi-series-shelf{gap:30px 20px}.shelf-series-number{font-size:9px;letter-spacing:.5px}.manabi-app .manabi-series-book .manabi-cover{padding:16px 12px}.manabi-app .manabi-series-book .manabi-cover__top{font-size:7px;letter-spacing:0}.manabi-app .manabi-series-book .manabi-cover>strong{font-size:12px;line-height:1.6;margin-top:15px}.manabi-app .manabi-series-book .manabi-cover__glyph{font-size:72px}.manabi-app .manabi-series-book .manabi-cover__bottom{font-size:9px;padding-top:11px}.manabi-app .manabi-series-caption{padding-top:16px;gap:5px}.manabi-app .manabi-series-caption strong{font-size:16px}.manabi-app .manabi-series-caption small{font-size:10px}.manabi-app .manabi-series-caption i{font-size:15px}.shelf-footnote{display:block;margin-top:42px;padding-top:24px}.shelf-footnote h2{font-size:25px}.shelf-footnote p:not(.manabi-eyebrow){font-size:13px}.manabi-app .manabi-book-hero{grid-template-columns:110px 1fr;gap:23px;padding:8px 0 28px;align-items:start}.manabi-app .manabi-book-hero .manabi-cover{padding:11px 9px;margin-top:5px}.manabi-app .manabi-book-hero .manabi-cover__top{font-size:6px}.manabi-app .manabi-book-hero .manabi-cover>strong{font-size:9px;margin-top:13px}.manabi-app .manabi-book-hero .manabi-cover__glyph{font-size:52px}.manabi-app .manabi-book-hero .manabi-cover__bottom{font-size:7px;padding-top:8px}.manabi-app .manabi-book-hero .manabi-cover__bottom small{display:none}.manabi-app .manabi-book-hero h1{font-size:26px;letter-spacing:-1.3px;margin:10px 0;line-height:1.45}.manabi-app .manabi-book-hero .manabi-muted{font-size:12px}.manabi-app .manabi-book-hero .manabi-eyebrow{font-size:9px;letter-spacing:.5px}.book-edition{font-size:10px;margin:15px 0}.manabi-app .manabi-book-hero .manabi-row{gap:5px}.manabi-app .manabi-book-hero .manabi-button{font-size:12px;padding:10px 15px;min-height:44px;white-space:normal;text-align:left}.manabi-app .manabi-book-body{display:block}.manabi-app .manabi-toc-group summary{padding:17px 12px;font-size:13px;gap:10px}.manabi-app .manabi-toc-group li a{padding:16px 12px;font-size:13px;gap:10px}.manabi-app .manabi-toc-group li small{font-size:10px}.manabi-app .manabi-book-tools{margin-top:30px}.manabi-app .manabi-section-heading h2{font-size:20px}.discover-opening{display:block;margin-top:24px}.discover-feature{min-height:440px;padding:25px}.discover-glyph{font-size:94px;padding:15px 0 30px}.discover-feature h2{font-size:25px}.discover-feature>div>p{font-size:12px}.discover-topics{margin-top:28px;padding-top:22px}.discover-topics h2{font-size:27px;margin:10px 0 20px}.discover-topics h2 br{display:none}.discover-topics>a{padding:18px 0;min-height:75px}.discover-cultures{display:block}.discover-cultures>a{display:block;padding:20px 0 18px 54px}.discover-cultures>a>span{position:absolute;top:17px;left:0;font-size:31px}.discover-cultures small{font-size:10px}.discover-cultures h3{font-size:18px;padding-right:20px}.discover-cultures b{font-size:20px}.manabi-app .manabi-series-notice{display:block;font-size:13px;line-height:1.8}.manabi-app .manabi-reader-toolbar{font-size:12px}}
+@container manabi-shell (max-width:360px){.manabi-app .manabi-page{padding-inline:18px}.manabi-app .manabi-series-shelf{gap:25px 16px}.manabi-app .manabi-series-book .manabi-cover>strong{font-size:11px}.manabi-app .manabi-series-book .manabi-cover__glyph{font-size:60px}.manabi-app .manabi-book-hero{grid-template-columns:90px 1fr;gap:17px}.manabi-app .manabi-book-hero h1{font-size:23px}.today-copy .manabi-row{gap:12px}.today-copy .manabi-button{padding-inline:17px}.today-location strong{font-size:14px}.manabi-app .today-open-book .manabi-cover>strong{font-size:11px}.today-page-quote p{font-size:20px}.today-story{grid-template-columns:80px 1fr;gap:12px}}
+@media(prefers-reduced-motion:reduce){.manabi-app .manabi-series-book .manabi-cover{transition:none}}
+
+.today-material-cover{display:flex;flex-direction:column;background:var(--ink);color:var(--sheet);padding:24px 20px;border-radius:3px 0 0 3px;min-width:0}
+.today-material-cover small{font-size:10px;letter-spacing:.5px}
+.today-material-cover strong{font-size:24px;margin-top:25px;font-weight:500}
+.today-material-cover>span{font-size:90px;flex:1;display:grid;place-items:center}
+.manabi-page h1,.manabi-page h2,.manabi-page h3,.manabi-reader-outline nav a{word-break:keep-all;overflow-wrap:anywhere}
+.manabi-app .manabi-cover__glyph[lang="zh"]{font-family:var(--font-noto-sc),sans-serif}
+
+.today-story .suggestion-artwork>small{display:none}

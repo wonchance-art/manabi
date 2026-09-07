@@ -3,9 +3,13 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { LibraryReturnLink } from '@/components/web/LibraryReaderLink';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { cacheMaterial, getCachedMaterial } from '../lib/offlineCache';
+import SaveContextButton, { saveContext } from '../components/learning/SaveContextButton';
+import MaterialChapterLinks from '../components/learning/MaterialChapterLinks';
+import ReadingSourceFocus from '../components/learning/ReadingSourceFocus';
 import OfflineNotice from '../components/OfflineNotice';
 import { useReadingTimer } from '../lib/useReadingTimer';
 import { countReadableChars } from '../lib/readingTimer';
@@ -60,6 +64,7 @@ import { usePdfRangeMutation } from '../lib/usePdfRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
 import { useGroupReadPush } from '../lib/useGroupReadPush';
 import { useScrollRestore } from '../lib/useScrollRestore';
+import { captureReadingAnchor, restoreReadingAnchor } from '../lib/readingViewport';
 import { listHanjaHunEum, toJaForm } from '../lib/hanjaKo';
 import { useGrammarDetail } from '../lib/useGrammarDetail';
 import { useEasierText } from '../lib/useEasierText';
@@ -222,6 +227,22 @@ export default function ViewerPage() {
   // 탭 시트(B안 — 오너 전환 지시 2026-08-28): 글자/표시/도구. 상태는 페이지 방문 동안만
   // 유지(마지막 탭 기억) — 영속 pref로 만들 만큼의 무게는 아니다.
   const [sheetTab, setSheetTab] = useState('type');
+  const settingsDialog = useRef(null);
+  const settingsTrigger = useRef(null);
+  useEffect(() => {
+    if (!settingsOpen) return;
+    const dialog = settingsDialog.current;
+    const trigger = settingsTrigger.current;
+    dialog?.showModal();
+    return () => {
+      dialog?.close();
+      // Conditional unmount can remove the modal before native focus restoration.
+      // Do not steal focus from a tool opened directly from this sheet.
+      if (document.activeElement === document.body && trigger?.isConnected) {
+        trigger.focus({ preventScroll: true });
+      }
+    };
+  }, [settingsOpen]);
 
   const quiz = useViewerQuiz();
   const { quizState, completionModal, setCompletionModal, generateQuiz,
@@ -240,6 +261,7 @@ export default function ViewerPage() {
   useEffect(() => { setRevealedPron((prev) => (prev.size ? new Set() : prev)); }, [id]);
   const [commentInput, setCommentInput] = useState('');
   const [saveAnim, setSaveAnim] = useState(false);
+  const savingGrade = useRef(false);
   const [inlineSaving, setInlineSaving] = useState({});
   const { titleEditing, setTitleEditing, titleDraft, setTitleDraft, updateTitleMutation } = useTitleEdit(id, toast);
 
@@ -510,6 +532,16 @@ export default function ViewerPage() {
 
   // 읽기 진행률 바 — readerRef는 본문 컨테이너에 부착
   const { readerRef, readProgress } = useReadProgress(material);
+  const displayFrame = useRef(null);
+  useEffect(() => () => cancelAnimationFrame(displayFrame.current), []);
+  const keepReadingPosition = change => {
+    const toolbar = readerRef.current?.closest('.viewer-center')?.querySelector('.viewer-topbar');
+    const top = toolbar ? Math.max(72, toolbar.getBoundingClientRect().bottom + 8) : 72;
+    const anchor = captureReadingAnchor(readerRef.current, top, window.innerHeight);
+    change();
+    cancelAnimationFrame(displayFrame.current);
+    displayFrame.current = requestAnimationFrame(() => restoreReadingAnchor(anchor, options => window.scrollBy(options)));
+  };
   // 그룹 같이 읽기 진도 push(§4.3) — 이번 주 지정 자료일 때만, 실패 조용히
   useGroupReadPush(material?.id, user?.id, readProgress);
 
@@ -536,7 +568,8 @@ export default function ViewerPage() {
   });
 
   // 스크롤 위치 저장(debounce 2s) + 재진입 시 자동 복원
-  const { saveScrollPosition, tokenRefs } = useScrollRestore({ user, materialId: id, material, readingProgress });
+  const { saveScrollPosition, tokenRefs, positionError, retryPosition } = useScrollRestore({ user, materialId: id, material, readingProgress });
+  const [sourceFocusId, setSourceFocusId] = useState(null);
 
   // 단어 저장 카운트 (복습 유도용)
   const saveCountRef = useRef(0);
@@ -550,6 +583,7 @@ export default function ViewerPage() {
   const keyHandlersRef = useRef({});
   useEffect(() => {
     if (!selectedToken || !isSheetOpen) return undefined;
+    if (settingsOpen) return undefined;
     function onKeyDown(e) {
       const t = e.target;
       const inField = !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
@@ -571,7 +605,7 @@ export default function ViewerPage() {
     }
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [selectedToken, isSheetOpen]);
+  }, [selectedToken, isSheetOpen, settingsOpen]);
   // 단어가 바뀌면 되돌릴 것이 소멸한다(다른 단어의 행을 지우면 안 된다). 저장 직후의 자동
   // 닫힘(setIsSheetOpen만)은 저장 동작의 일부라 소멸시키지 않는다 — 명시 닫기(closeWordCard →
   // selectedToken null)와 다음 저장이 소멸 지점.
@@ -1402,6 +1436,31 @@ export default function ViewerPage() {
   const headFallback = headIsBase && dictFetched && !editDictEntry?.reading;
   const headPicked = headIsBase ? pickedRangeOf(headText, selectedToken.text) : null;
 
+  function readingContextSource(token) {
+    const original = material?.processed_json?.dictionary?.[token.id];
+    return original?.text === token.text
+      ? { kind: 'reading', materialId: id, tokenId: token.id }
+      : { kind: 'reading', materialId: id, quote: leftPanelText, surface: token.text };
+  }
+
+  function contextWord(token) {
+    return buildVocabRow({ userId: user?.id, surface: token.text, base: token.sep_link || token.base_form,
+      meaning: token.meaning, language: materialLang, reading: token.furigana || token.reading, pos: token.pos });
+  }
+
+  // 등급 저장은 기존 조립기·undo를 유지한다. 문맥만 추가하는 RPC는 이미 저장한 FSRS를 수정하지 않는다.
+  // 연결 실패는 카드 저장 실패와 구분하고, 저장된 카드의 문맥 추가 버튼으로 재시도할 수 있다.
+  async function attachReadingContext(token) {
+    try {
+      await saveContext({ word: contextWord(token), source: readingContextSource(token) });
+      queryClient.invalidateQueries({ queryKey: ['vocabulary-contexts', user?.id] });
+      return true;
+    } catch {
+      toast('단어는 저장했지만 문맥 연결이 남아 있어요. 단어를 다시 열어 문맥 추가를 눌러 주세요.', 'warning', 6000);
+      return false;
+    }
+  }
+
   const saveInlineVocabulary = async (token) => {
     const key = token.sep_link || token.base_form || token.text;
     if (inlineSaving[key]) return;
@@ -1416,7 +1475,8 @@ export default function ViewerPage() {
         reading: token.furigana || token.reading,   // 영어는 IPA, 중국어는 병음
         language: materialLang,
       }));
-      toast(`"${token.text}" 저장!`, 'success');
+      const linked = await attachReadingContext(token);
+      if (linked) toast(`"${token.text}" 저장!`, 'success');
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
     } catch {
       toast('저장 실패', 'error');
@@ -1490,7 +1550,8 @@ export default function ViewerPage() {
 
   const addToVocab = async (grade) => {
     if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
-    if (!selectedToken) return;
+    if (!selectedToken || savingGrade.current) return;
+    savingGrade.current = true;
     const g = Number.isInteger(grade) && grade >= 1 && grade <= 4 ? grade : undefined;
 
     const sourceSentence = extractSourceSentence(selectedToken.id);
@@ -1512,6 +1573,7 @@ export default function ViewerPage() {
       });
 
       const inserted = await upsertViewerVocabulary([row], VOCAB_UPSERT);
+      const linked = await attachReadingContext(selectedToken);
       lastSaveRef.current = inserted[0]?.id ? { id: inserted[0].id, text: selectedToken.text } : null;
       saveCountRef.current += 1;
 
@@ -1520,7 +1582,7 @@ export default function ViewerPage() {
       setTimeout(() => {
         setSaveAnim(false);
         setIsSheetOpen(false);
-        toast(lastSaveRef.current
+        if (linked) toast(lastSaveRef.current
           ? `"${selectedToken.text}" 저장됨 · ${UNDO_KEY_LABEL} 취소`
           : `"${selectedToken.text}" 단어장에 추가됐어요!`, 'success');
         if (saveCountRef.current === 5) {
@@ -1535,6 +1597,8 @@ export default function ViewerPage() {
       recordActivity(user.id, () => fetchProfile(user.id));
     } catch (err) {
       toast('단어 추가 실패 — ' + friendlyToastMessage(err), 'error');
+    } finally {
+      savingGrade.current = false;
     }
   };
 
@@ -1554,7 +1618,7 @@ export default function ViewerPage() {
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           {!isNotFound && <button onClick={() => refetch()} className="btn btn--primary">다시 시도</button>}
-          <a href="/materials" className="btn btn--secondary">자료실로 돌아가기</a>
+          <LibraryReturnLink className="btn btn--secondary">← 내 서재</LibraryReturnLink>
         </div>
       </div>
     );
@@ -1566,7 +1630,7 @@ export default function ViewerPage() {
       <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
         <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>비공개 자료입니다</h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>이 자료는 작성자만 열람할 수 있습니다.</p>
-        <Link href="/materials" className="btn btn--primary">자료실로 돌아가기</Link>
+        <LibraryReturnLink className="btn btn--primary">← 내 서재</LibraryReturnLink>
       </div>
     );
   }
@@ -1639,10 +1703,11 @@ export default function ViewerPage() {
             <span className="pdf-word-item__meaning" onClick={() => handleListWordClick(t)}>{t.meaning}</span>
             {user && (
               <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                <button className="pdf-word-item__save" disabled={isSaved || inlineSaving[saveKey]}
-                  onClick={() => saveInlineVocabulary(t)}>
-                  {isSaved ? '✓' : inlineSaving[saveKey] ? '…' : '★'}
-                </button>
+                {isSaved ? <SaveContextButton key={`${id}:${saveKey}:${leftPanelText}`} label="문맥 추가"
+                  word={contextWord(t)} source={readingContextSource(t)} /> : (
+                  <button className="pdf-word-item__save" disabled={inlineSaving[saveKey]}
+                    onClick={() => saveInlineVocabulary(t)}>{inlineSaving[saveKey] ? '…' : '★'}</button>
+                )}
                 <button className="pdf-word-item__save pdf-word-item__dismiss"
                   onClick={() => {
                     setDragTokens(prev => prev?.filter((_, idx) => idx !== i) || null);
@@ -1923,7 +1988,7 @@ export default function ViewerPage() {
                 {jrDiff && <span className="word-detail-card__jadiff">≠ 다른 단어</span>}
                 {warn && (
                   <span style={{ color: 'var(--warning)', fontWeight: 600, marginLeft: jr ? 6 : 0 }}>
-                    ⚠ {jaFormOf(headText)}는 일본어로 '{warn}'
+                    ⚠ {jaFormOf(headText)}는 일본어로 &apos;{warn}&apos;
                   </span>
                 )}
               </div>
@@ -2057,6 +2122,8 @@ export default function ViewerPage() {
           return (
             <div className="word-detail-card__actrow">
               <button disabled className="btn btn--ghost btn--sm">{saveAnim ? '저장됨' : '✓ 단어장에 있음'}</button>
+              {!saveAnim && <SaveContextButton key={`${id}:${selectedToken.id || selectedToken.text}:${leftPanelText}`}
+                label="이 문맥 추가" word={contextWord(selectedToken)} source={readingContextSource(selectedToken)} />}
             </div>
           );
         }
@@ -2116,7 +2183,7 @@ export default function ViewerPage() {
       <div className="pdf-context__title">번역 · 맥락</div>
       {leftPanelText && (
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
-          <div className="pdf-context__original" lang={contentLangTag} style={{ flex: 1, minWidth: 0 }}>"{leftPanelText.length > 120 ? leftPanelText.slice(0, 120) + '…' : leftPanelText}"</div>
+          <div className="pdf-context__original" lang={contentLangTag} style={{ flex: 1, minWidth: 0 }}>&quot;{leftPanelText.length > 120 ? leftPanelText.slice(0, 120) + '…' : leftPanelText}&quot;</div>
           {ttsSupported && (
             <button
               onClick={() => speak(leftPanelText, materialLang, ttsOptsFor(ttsRate))}
@@ -2215,7 +2282,9 @@ export default function ViewerPage() {
   return (
     // --dragging: 지정 드래그 중 바텀시트 포인터 투과 — 시트가 드래그 도중 자라
     // 경로를 덮어도 elementFromPoint가 밑의 토큰을 잡는다(useTokenRangeSelect 참조)
-    <div className={`viewer-3col viewer-theme-${theme}${tokenRange.dragging ? ' viewer-3col--dragging' : ''}`}>
+    <div className={`viewer-3col viewer-theme-${theme}${tokenRange.dragging ? ' viewer-3col--dragging' : ''}`}
+      data-left-active={!!(leftPanelLoading || leftPanelResult)}
+      data-right-active={!!(dragTokens !== null || (selectedToken && isSheetOpen))}>
 
       {/* 왼쪽 — 문법 해설 / 맥락 */}
       <aside className="viewer-side viewer-side--left">
@@ -2223,7 +2292,7 @@ export default function ViewerPage() {
       </aside>
 
       {/* 중앙 — 뷰어 본문 */}
-      <main className="viewer-center">
+      <div className="viewer-center">
       {!user && (
         <div className="viewer-guest-banner">
           <span>단어를 클릭해 뜻을 확인할 수 있어요.</span>
@@ -2238,7 +2307,7 @@ export default function ViewerPage() {
             남고, 끝의 행동(읽기 완료·오늘 학습·다음 범위)은 본문 **아래**로 갔다(「끝은 끝에」). 예전 액션바는
             폰에서 두 줄(89px)로 꺾였고, 그 위에 뒤로가기 줄·시리즈 내비 줄이 따로 있었다. */}
         <div className="viewer-topbar">
-          <Link href="/materials" className="viewer-back-link">← 자료실</Link>
+          <LibraryReturnLink className="viewer-back-link">← 내 서재</LibraryReturnLink>
           {siblingNav && (
             <div className="viewer-series-nav" title={siblingNav.label}>
               {siblingNav.prev ? (
@@ -2262,11 +2331,12 @@ export default function ViewerPage() {
               </button>
             )}
             <ListenControls text={material?.raw_text} language={materialLang} />
-            <button className="viewer-aa" aria-label="읽기 설정" aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
+            <button ref={settingsTrigger} className="viewer-aa" aria-label="읽기 설정" aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
               Aa
             </button>
           </div>
         </div>
+        <p className="reader-metadata">{langNameKo(materialLang)}{material?.processed_json?.metadata?.level ? ` · ${material.processed_json.metadata.level}` : ''} · {material.visibility === 'public' ? '공개 읽기' : '내 자료'}</p>
         {titleEditing && user?.id === material?.owner_id ? (
           <form
             onSubmit={e => { e.preventDefault(); updateTitleMutation.mutate(titleDraft); }}
@@ -2332,6 +2402,7 @@ export default function ViewerPage() {
           </div>
         )}
       </header>
+      {positionError && <div className="error-banner" role="status">읽기 위치를 저장하지 못했어요. <button type="button" className="btn btn--ghost" onClick={retryPosition}>다시 저장</button></div>}
 
       {/* 출처 표기(v2-F R5) — CC BY는 **표기가 라이선스 조건**이다. `metadata.source`가
           저장만 되고 어디에도 안 보이던 것을 여기서 드러낸다(저장은 표기가 아니다).
@@ -2374,8 +2445,15 @@ export default function ViewerPage() {
       {settingsOpen && (
         <>
           <div className="rsheet-backdrop" onClick={() => setSettingsOpen(false)} />
-          <div className="rsheet" role="dialog" aria-label="읽기 설정">
-            <button className="rsheet__grab" aria-label="설정 닫기" onClick={() => setSettingsOpen(false)}><i /></button>
+          <dialog ref={settingsDialog} className="rsheet" aria-label="읽기 설정"
+            onCancel={e => { e.preventDefault(); setSettingsOpen(false); }}
+            onKeyDown={e => e.stopPropagation()}
+            onClick={e => {
+              if (e.target !== e.currentTarget) return;
+              const rect = e.currentTarget.getBoundingClientRect();
+              if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) setSettingsOpen(false);
+            }}>
+            <button autoFocus className="rsheet__grab" aria-label="설정 닫기" onClick={() => setSettingsOpen(false)}><i /></button>
             <div className="rsheet__body">
               <div className="rsheet__sec">읽기 모드</div>
               <div className="rsheet-presets">
@@ -2384,7 +2462,7 @@ export default function ViewerPage() {
                     key={m.key}
                     className={`rsheet-pcard${presetActive(m.key, settings) ? ' rsheet-pcard--on' : ''}`}
                     aria-pressed={presetActive(m.key, settings)}
-                    onClick={() => applyPreset(m.key)}
+                    onClick={() => keepReadingPosition(() => applyPreset(m.key))}
                   >
                     <i>{m.icon}</i><b>{m.name}</b><span>{m.desc}</span>
                   </button>
@@ -2412,7 +2490,7 @@ export default function ViewerPage() {
                   <div className="rsheet-row">
                     <span className="rsheet-row__lab">크기</span>
                     <input type="range" min="0.8" max="3" step="0.05" value={fontSize} aria-label="글자 크기"
-                      onChange={e => setFontSize(parseFloat(e.target.value))} />
+                      onChange={e => keepReadingPosition(() => setFontSize(parseFloat(e.target.value)))} />
                   </div>
                   <div className="rsheet-row">
                     <span className="rsheet-row__lab">배경</span>
@@ -2427,7 +2505,7 @@ export default function ViewerPage() {
                     <span className="rsheet-row__lab">폰트</span>
                     <div className="rsheet-fonts">
                       {[["'Noto Sans KR'", '본고딕'], ["'Nanum Myeongjo'", '명조'], ['monospace', '고정폭'], ["'Inter'", 'Inter']].map(([value, name]) => (
-                        <button key={value} onClick={() => setFontFamily(value)} aria-pressed={fontFamily === value}
+                        <button key={value} onClick={() => keepReadingPosition(() => setFontFamily(value))} aria-pressed={fontFamily === value}
                           className={`rsheet-fcard${fontFamily === value ? ' rsheet-fcard--on' : ''}`}>
                           <b style={{ fontFamily: value }}>{(materialLang === 'Chinese' ? '你' : materialLang === 'Japanese' ? 'あ' : '') + 'Aa'}</b>
                           <span>{name}</span>
@@ -2438,12 +2516,12 @@ export default function ViewerPage() {
                   <div className="rsheet-row">
                     <span className="rsheet-row__lab">행간</span>
                     <input type="range" min="10" max="60" value={lineGap} aria-label="행간"
-                      onChange={e => setLineGap(parseInt(e.target.value))} />
+                      onChange={e => keepReadingPosition(() => setLineGap(parseInt(e.target.value)))} />
                   </div>
                   <div className="rsheet-row">
                     <span className="rsheet-row__lab">자간</span>
                     <input type="range" min="0" max="1" step="0.05" value={charGap} aria-label="자간"
-                      onChange={e => setCharGap(parseFloat(e.target.value))} />
+                      onChange={e => keepReadingPosition(() => setCharGap(parseFloat(e.target.value)))} />
                   </div>
                 </div>
               )}
@@ -2456,7 +2534,7 @@ export default function ViewerPage() {
                       {[['all', '전체'], ['unknown', '모르는 단어만'], ['none', '없음']].map(([v, label]) => (
                         <button key={v} aria-pressed={pronDisplay === v}
                           className={pronDisplay === v ? 'rsheet-miniseg--on' : undefined}
-                          onClick={() => setPronDisplay(v)}>{label}</button>
+                          onClick={() => keepReadingPosition(() => setPronDisplay(v))}>{label}</button>
                       ))}
                     </div>
                   </div>
@@ -2604,7 +2682,7 @@ export default function ViewerPage() {
                 </div>
               )}
             </div>
-          </div>
+          </dialog>
         </>
       )}
 
@@ -2803,7 +2881,9 @@ export default function ViewerPage() {
               return (
                 <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
                   data-tid={tokenId}
-                  className={`word-token word-token--failed${pickedClass}`} style={paceStyle} title="분석 실패 — 재시도 버튼을 눌러주세요">
+                data-source-token={tokenId}
+                data-source-text={token.text}
+                  className={`word-token word-token--failed${pickedClass}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}`} style={paceStyle} title="분석 실패 — 재시도 버튼을 눌러주세요">
                   {linePick}
                   <span className="furigana" />
                   <span className="surface">{token.text}</span>
@@ -2842,8 +2922,10 @@ export default function ViewerPage() {
             return (
               <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
                 data-tid={tokenId}
+                data-source-token={tokenId}
+                data-source-text={token.text}
                 data-text={token.text}
-                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}`}
+                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}`}
                 style={paceStyle}
                 role="button" tabIndex={0}
                 onClick={() => handleTokenClick(token, tokenId, { pronHidden, pronRevealed })}
@@ -3069,6 +3151,9 @@ export default function ViewerPage() {
         </div>
       )}
 
+      <ReadingSourceFocus materialId={id} ready={!!material?.processed_json?.sequence?.length} onTarget={setSourceFocusId} />
+      {STUDY_LANGS.has(materialLang) && <MaterialChapterLinks lang={materialLang} kind="reading" materialId={id} />}
+
       {/* 다음 — 한 자리에 하나(뷰어 정돈 A안): 시리즈 다음 편 → 책 다음 과 → 마지막 과면 「다음 과 적기」(내 책만,
           이어 적기 #1077 5520128974) → PDF 다음 범위(예전엔 본문 위 카드의 버튼) → 시리즈·레벨 완주. */}
       {(isDone || isPending) && (() => {
@@ -3147,14 +3232,14 @@ export default function ViewerPage() {
       )}
 
 
-      </main>{/* viewer-center end */}
+      </div>{/* viewer-center end */}
 
       {/* 오른쪽 — 단어 클릭 상세 or 드래그 단어 리스트 */}
       <aside className="viewer-side viewer-side--right">
         {rightPanelContent}
       </aside>
 
-      <ViewerBottomSheet
+      {(leftPanelLoading || leftPanelResult || dragTokens !== null || (selectedToken && isSheetOpen) || pickedLineIdx !== null) && <ViewerBottomSheet
         leftContent={leftPanelContent}
         rightContent={rightPanelContent}
         leftActive={leftPanelLoading || !!leftPanelResult}
@@ -3169,7 +3254,7 @@ export default function ViewerPage() {
             {sentenceNavBtn(1, 'viewer-sheet-bar__btn viewer-sheet-bar__btn--nav')}
           </>
         ) : null}
-      />
+      />}
 
 
       {user?.id === material?.owner_id && (

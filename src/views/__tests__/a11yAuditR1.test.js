@@ -22,7 +22,7 @@ describe('핵심 학습 경로 접근성 수리 계약', () => {
     expect(lessons).toContain('aria-pressed={langFilter === f.key}');
     expect(lessons).toContain('className="lessons-list__group-toggle"');
     expect(lessons).toContain('aria-controls={`${groupKey}-chapters`}');
-    expect(lessons).toContain('href={`${refLang.base}/grammar/${ch.slug}`}');
+    expect(lessons).toContain('href={`${navigationBase}/grammar/${ch.slug}`}');
     expect(lessons).not.toContain('role="link"');
   });
 

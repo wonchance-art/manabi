@@ -1,6 +1,15 @@
+import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
+
 const supabaseURL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseOrigin = supabaseURL ? new URL(supabaseURL).origin : null;
 const originalFetch = globalThis.fetch;
+
+// Mirror a published release using the checked-in, hash-verified book. These rows exist
+// only inside the E2E process; production publication and its database remain untouched.
+const editionRoot = new URL('../src/content/textbookEditions/', import.meta.url);
+const { current: editionId } = JSON.parse(readFileSync(new URL('index.json', editionRoot), 'utf8'));
+const edition = JSON.parse(readFileSync(new URL(`${editionId}/bundle.json`, editionRoot), 'utf8'));
 
 function bearerClaims(input, init) {
   const headers = new Headers(input instanceof Request ? input.headers : undefined);
@@ -41,23 +50,77 @@ function userFromClaims(claims) {
   };
 }
 
-globalThis.fetch = async (input, init) => {
-  const requestURL = input instanceof Request ? input.url : String(input);
-  const url = new URL(requestURL);
-  if (!supabaseOrigin || url.origin !== supabaseOrigin) return originalFetch(input, init);
-
-  const claims = bearerClaims(input, init);
+function mockResponse(url, claims) {
+  // Archive rendering resolves published overrides on the server. Do not let that
+  // request escape to the nonexistent fixture host and wait on DNS/network retries.
+  if (url.pathname.endsWith('/rest/v1/content_overrides')) return json([]);
+  if (url.pathname.endsWith('/rest/v1/textbook_book_releases')) {
+    return json({ book_id: 'japanese-n5', edition_id: editionId, version: 1 });
+  }
+  if (url.pathname.endsWith('/rest/v1/textbook_book_editions')) {
+    const requested = url.searchParams.get('edition_id')?.replace(/^eq\./, '');
+    if (requested && requested !== editionId) return json(null);
+    return json({ book_id: 'japanese-n5', edition_id: editionId,
+      content_hash: edition.contentHash, manuscript: edition.manuscript,
+      artifact_manifest: edition.artifactManifest, published_at: '2026-09-05T00:00:00+09:00' });
+  }
   if (url.pathname.endsWith('/auth/v1/user')) {
     if (!claims?.sub) return json({ message: 'invalid e2e token' }, 401);
     return json(userFromClaims(claims));
   }
-
   if (url.pathname.endsWith('/rest/v1/profiles')) {
     if (!claims?.sub) return json({ message: 'missing e2e identity' }, 401);
     const role = claims.e2e_role === 'admin' ? 'admin' : 'learner';
     return json({ id: claims.sub, role });
   }
-
   if (url.pathname.endsWith('/rest/v1/user_ref_progress')) return json([]);
-  return originalFetch(input, init);
+  return null;
+}
+
+globalThis.fetch = async (input, init) => {
+  const requestURL = input instanceof Request ? input.url : String(input);
+  const url = new URL(requestURL);
+  if (!supabaseOrigin || url.origin !== supabaseOrigin) return originalFetch(input, init);
+  return mockResponse(url, bearerClaims(input, init)) || originalFetch(input, init);
 };
+
+// Next's Edge middleware uses its own fetch function, so the Node fetch stub above cannot
+// verify archive access. Intercept the same fixture-only origin at Undici's dispatcher too.
+// This file is loaded only by the E2E server's NODE_OPTIONS, never by the product build.
+if (supabaseOrigin) {
+  const require = createRequire(import.meta.url);
+  require('next/dist/compiled/@edge-runtime/primitives/fetch');
+  const key = Symbol.for('undici.globalDispatcher.1');
+  const original = globalThis[key];
+  globalThis[key] = new Proxy(original, {
+    get(target, property) {
+      if (property !== 'dispatch') {
+        const value = Reflect.get(target, property);
+        return typeof value === 'function' ? value.bind(target) : value;
+      }
+      return (options, handler) => {
+        const url = new URL(options.path, options.origin);
+        if (url.origin !== supabaseOrigin) return target.dispatch(options, handler);
+        const headers = new Headers();
+        if (Array.isArray(options.headers)) {
+          for (let i = 0; i < options.headers.length; i += 2) headers.append(String(options.headers[i]), String(options.headers[i + 1]));
+        } else new Headers(options.headers).forEach((value, name) => headers.append(name, value));
+        const response = mockResponse(url, bearerClaims(url.href, { headers }));
+        if (!response) return target.dispatch(options, handler);
+        let aborted = false;
+        queueMicrotask(async () => {
+          try {
+            handler.onConnect(() => { aborted = true; }, null);
+            const body = Buffer.from(await response.arrayBuffer());
+            if (aborted) return;
+            handler.onHeaders(response.status, ['content-type', 'application/json', 'content-length', String(body.length)], () => {}, response.statusText);
+            if (aborted) return;
+            handler.onData(body);
+            handler.onComplete([]);
+          } catch (error) { handler.onError(error); }
+        });
+        return true;
+      };
+    },
+  });
+}

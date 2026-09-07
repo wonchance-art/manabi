@@ -13,7 +13,7 @@ export function useVocabData() {
   const toast = useToast();
   const queryClient = useQueryClient();
 
-  const { data: vocab = [], isLoading } = useQuery({
+  const { data: vocab = [], isLoading, error, refetch } = useQuery({
     queryKey: ['vocab', user?.id],
     queryFn: () => fetchVocab(user.id),
     enabled: !!user,
@@ -113,6 +113,8 @@ export function useVocabData() {
   return {
     vocab,
     isLoading,
+    error,
+    refetch,
     scoreMutation,
     deleteMutation,
     csvImportMutation,

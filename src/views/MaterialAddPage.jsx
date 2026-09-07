@@ -23,6 +23,9 @@ import MaterialAddLinkSection from '../components/MaterialAddLinkSection';
 import BookDraftPanel from '../components/BookDraftPanel';
 import { friendlyToastMessage } from '../lib/errorMessage';
 import { titleFromBody } from '../lib/materialTitle';
+import { useQueryClient } from '@tanstack/react-query';
+import { createImportAttempt, saveImportOnce, interruptedImportJson, persistImportAnalysis } from '../lib/materialImport';
+import './material-import.css';
 
 /** 입구 칩(자료 추가 정돈 R2) — 소스 순서 = 렌더 순서(PDF→EPUB→문장 목록→링크), 아래 렌더와 같은 차례. */
 const ENTRIES = [
@@ -37,8 +40,15 @@ const countLines = (t) => String(t || '').split('\n').filter((l) => l.trim()).le
 
 // --- Component ---
 export default function MaterialAddPage() {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="page-container" role="status">계정을 확인하고 있어요…</div>;
+  return <MaterialAddForm key={user?.id || 'guest'} />;
+}
+
+function MaterialAddForm() {
   const { user } = useAuth();
   const toast = useToast();
+  const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -53,7 +63,7 @@ export default function MaterialAddPage() {
   // 링크 반입 출처(v2-F R1) — 있으면 metadata.source에 실린다. 다른 입구로 갈아타면 비운다.
   const [linkSource, setLinkSource] = useState(null);
   // U R3 내 노트 — 방향 축. 'write'면 한국어 본문을 허용하고 분석 큐에 넣지 않는다.
-  const [direction, setDirection] = useState(MATERIAL_DIRECTION.READ);
+  const [direction, setDirection] = useState(() => searchParams.get('direction') === MATERIAL_DIRECTION.WRITE ? MATERIAL_DIRECTION.WRITE : MATERIAL_DIRECTION.READ);
   const isNote = direction === MATERIAL_DIRECTION.WRITE;
   // 자료 추가 정돈 R2(#1077 5547576227) — 입구 4장을 칩 한 줄 + 아코디언(한 번에 하나)으로.
   // 펼침 상태는 여기 하나뿐이다. 입구가 스스로 열어 달라고 할 때(딥링크·본문 폼 넘김)는
@@ -313,148 +323,142 @@ export default function MaterialAddPage() {
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [status, setStatus] = useState('시스템 대기 중');
+  const [status, setStatus] = useState('');
   const [error, setError] = useState('');
   const [completedId, setCompletedId] = useState(null);
 
   const abortControllerRef = useRef(null);
+  const importAttemptRef = useRef(null);
+  const savedRecordRef = useRef(null);
+  const analysisJsonRef = useRef(null);
+  const analysisPromiseRef = useRef(null);
+  const busyRef = useRef(false);
+  const aliveRef = useRef(true);
+  const [analysisState, setAnalysisState] = useState('idle');
+  useEffect(() => {
+    aliveRef.current = true;
+    return () => { aliveRef.current = false; abortControllerRef.current?.abort(); };
+  }, []);
 
-
+  const refreshLibrary = () => {
+    queryClient.invalidateQueries({ queryKey: ['materials'] });
+    queryClient.invalidateQueries({ queryKey: ['library-reading-v2', user?.id] });
+  };
 
   async function handleStart() {
+    if (busyRef.current || savedRecordRef.current) return;
     if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
     if (!rawText.trim()) { toast('내용을 입력해주세요.', 'warning'); return; }
-
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
+    busyRef.current = true;
     setIsProcessing(true);
     setError('');
-
+    setStatus('원문을 서재에 저장하고 있어요…');
     try {
       const initJson = {
-        // 노트(write)는 분석 큐에 들어가지 않는다 — status를 'note'로 두면 자료실 상태 배지·재분석 경로가 건드리지 않는다
         sequence: [], dictionary: {}, last_idx: -1, status: isNote ? 'note' : "analyzing",
         metadata: {
           language, level, updated_at: new Date().toISOString(),
-          // 출처 기록 — metadata.book 선례를 그대로 탄다(스키마 변경 0).
           ...(linkSource ? { source: linkSource } : {}),
-        }
+        },
       };
       const materialRow = {
-        // 제목이 비면 본문 첫 줄(40자) — 입력한 제목은 덮지 않는다(materialTitle.js 계약).
         title: title.trim() || titleFromBody(rawText) || "제목 없음",
-        raw_text: autoSplitParagraphs(rawText),
-        processed_json: initJson,
-        // 노트는 가장 사적인 데이터 — 비공개 고정. PDF·EPUB(개인 소장) 출처도 강제 private
+        raw_text: autoSplitParagraphs(rawText), processed_json: initJson,
         visibility: (pdfSource || epubSource || isNote) ? 'private' : visibility,
         owner_id: user.id,
         ...(isNote ? { direction: MATERIAL_DIRECTION.WRITE } : {}),
-        ...(pdfSource ? {
-          source_pdf_id: pdfSource.pdf.id,
-          page_start: pdfSource.pageStart,
-          page_end: pdfSource.pageEnd,
-        } : {}),
+        ...(pdfSource ? { source_pdf_id: pdfSource.pdf.id, page_start: pdfSource.pageStart, page_end: pdfSource.pageEnd } : {}),
       };
-      const { data, error: insertError } = await supabase
-        .from('reading_materials')
-        .insert([materialRow])
-        .select();
-
-      if (insertError) throw insertError;
-
-      // 본문 저장은 성공했으므로 PDF 위치 동기화 실패는 별도로 알리고 분석은 계속한다.
-      if (pdfSource) {
-        try {
-          const { error: pdfProgressError } = await supabase.from('uploaded_pdfs')
-            .update({ last_page_read: pdfSource.pageEnd })
-            .eq('id', pdfSource.pdf.id);
-          if (pdfProgressError) throw pdfProgressError;
-        } catch {
-          toast('자료는 저장됐지만 PDF 읽기 위치 동기화에 실패했어요.', 'warning');
-        }
+      const signature = JSON.stringify([title, rawText, language, level, visibility, isNote, pdfSource, epubSource, linkSource]);
+      if (importAttemptRef.current?.signature !== signature) {
+        importAttemptRef.current = { signature, attempt: createImportAttempt(materialRow, crypto.randomUUID()) };
       }
-
+      const record = await saveImportOnce(supabase, importAttemptRef.current.attempt);
+      if (!aliveRef.current) return;
+      savedRecordRef.current = record;
+      analysisJsonRef.current = record.processed_json;
+      setCompletedId(record.id);
+      refreshLibrary();
+      // Saving an extracted range does not mean the reader has read its final page.
+      // PDF page progress remains owned by the PDF reader.
       if (isNote) {
-        // U R3: 노트는 분석하지 않는다(한국어 원문 허용 — 토큰화·병음·FSRS 무접촉). 저장이 곧 완료.
-        setStatus('노트를 저장했어요.');
-        setProgress(100);
-        setCompletedId(data[0].id);
-        setIsProcessing(false);
+        setStatus('노트를 저장했어요.'); setProgress(100); setAnalysisState('note');
+        setIsProcessing(false); busyRef.current = false;
         return;
       }
-      setStatus('저장 완료. 백그라운드 분석을 시작합니다...');
-      setProgress(10);
-      runBackgroundAnalysis(data[0].id, rawText, controller.signal);
+      setStatus('원문 저장 완료. 읽기 도구를 준비하고 있어요…');
+      setProgress(0);
+      startAnalysis();
     } catch (err) {
-      if (err.name === 'AbortError') {
-        setStatus('분석이 중단되었습니다.');
-      } else {
-        setError("저장 오류 — " + friendlyToastMessage(err));
-      }
-      setIsProcessing(false);
+      if (aliveRef.current) { setError('저장 오류 — ' + friendlyToastMessage(err)); setIsProcessing(false); }
+      busyRef.current = false;
     }
+  }
+
+  function startAnalysis() {
+    if (analysisPromiseRef.current || !savedRecordRef.current) return;
+    busyRef.current = true;
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    setIsProcessing(true); setError(''); setAnalysisState('analyzing');
+    analysisPromiseRef.current = runBackgroundAnalysis(savedRecordRef.current, controller.signal)
+      .finally(() => { analysisPromiseRef.current = null; busyRef.current = false; });
   }
 
   function handleCancel() {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      setStatus('중단 요청 중...');
-    }
+    abortControllerRef.current?.abort();
+    setStatus('분석을 멈추고 저장된 위치를 확인하고 있어요…');
   }
 
-  async function runBackgroundAnalysis(id, text, signal) {
+  async function openSavedMaterial() {
+    const record = savedRecordRef.current;
+    if (!record) return;
+    // Do not leave two analysis writers competing for the same original.
+    abortControllerRef.current?.abort();
+    await analysisPromiseRef.current;
+    if (aliveRef.current) router.push(`/viewer/${record.id}`);
+  }
+
+  async function runBackgroundAnalysis(record, signal) {
+    let lastJson = analysisJsonRef.current;
     try {
-      const finalJson = await analyzeText(text, signal, {
-        metadata: { language, level, updated_at: new Date().toISOString() },
-        concurrency: 8, // PDF/페이스트 모두 더 빠르게
+      const finalJson = await analyzeText(record.raw_text, signal, {
+        metadata: { ...lastJson.metadata, updated_at: new Date().toISOString() },
+        existingJson: lastJson, concurrency: 8,
         onBatch: async ({ currentJson, processed, total }) => {
-          const failedSoFar = currentJson.failed_indices?.length || 0;
-          setStatus(`분석 중... (${processed}/${total}줄${failedSoFar > 0 ? ` · 실패 ${failedSoFar}` : ''})`);
-          setProgress(Math.floor((processed / total) * 90) + 10);
-          const { error: updateError } = await supabase
-            .from('reading_materials').update({ processed_json: currentJson }).eq('id', id);
-          if (updateError) console.error('[analyzeText onBatch] DB update failed:', updateError.message);
+          if (!aliveRef.current || signal.aborted) throw new DOMException('Aborted', 'AbortError');
+          lastJson = structuredClone(currentJson);
+          await persistImportAnalysis(supabase, record, lastJson);
+          analysisJsonRef.current = lastJson;
+          if (!aliveRef.current) return;
+          setStatus(`읽기 도구 준비 중 · ${processed} / ${total}줄`);
+          setProgress(total ? Math.floor((processed / total) * 100) : 0);
         },
       });
-
-      const failedCount = finalJson.failed_indices?.length || 0;
-      setStatus(finalJson.status === 'failed'
-        ? '분석에 실패했어요 — 뷰어에서 재분석하거나 잠시 후 다시 시도해 주세요'
-        : failedCount > 0
-          ? `분석 완료 (${failedCount}개 단락 재시도 필요)`
-          : '전체 분석 완료');
+      if (!aliveRef.current) return;
+      analysisJsonRef.current = finalJson;
+      setAnalysisState(finalJson.status);
+      setStatus(finalJson.status === 'failed' ? '원문은 저장됐어요. 분석을 다시 시도할 수 있어요.'
+        : finalJson.status === 'partial' ? `원문 저장 완료 · ${finalJson.failed_indices?.length || 0}개 줄 재시도 필요` : '원문과 읽기 도구가 준비됐어요.');
       setProgress(100);
-      setIsProcessing(false);
-      setCompletedId(id);
-
-      // 추천 자료에서 진입했으면 material_id 기록 (이후 유저는 바로 뷰어로)
       const suggestionId = searchParams.get('suggestion');
       if (suggestionId) {
-        const { error: suggestionLinkError } = await supabase
-          .from('daily_suggestions')
-          .update({ material_id: id })
-          .eq('id', suggestionId)
-          .is('material_id', null); // 이미 연결된 경우 덮어쓰지 않음
-        if (suggestionLinkError) {
-          toast('분석은 완료됐지만 추천 자료 연결에 실패했어요.', 'warning');
-          return;
-        }
-      }
-
-      if ('Notification' in window) {
-        const permission = Notification.permission === 'default'
-          ? await Notification.requestPermission()
-          : Notification.permission;
-        if (permission === 'granted') {
-          new Notification('분석 완료', {
-            body: `"${title || '새 자료'}" 분석이 완료되었습니다.`,
-            icon: '/icon.svg',
-          });
-        }
+        const { error: suggestionLinkError } = await supabase.from('daily_suggestions')
+          .update({ material_id: record.id }).eq('id', suggestionId).is('material_id', null);
+        if (suggestionLinkError && aliveRef.current) toast('자료는 저장됐지만 추천 자료 연결에 실패했어요.', 'warning');
       }
     } catch (err) {
-      setError('분석 중 오류 — ' + friendlyToastMessage(err));
-      setIsProcessing(false);
+      if (!aliveRef.current) return;
+      const interrupted = interruptedImportJson(record.raw_text, lastJson);
+      analysisJsonRef.current = interrupted;
+      try { await persistImportAnalysis(supabase, record, interrupted); }
+      catch { if (aliveRef.current) setError('원문은 저장됐지만 분석 결과를 저장하지 못했어요. 연결을 확인하고 다시 시도해 주세요.'); }
+      if (!aliveRef.current) return;
+      setAnalysisState('paused');
+      setStatus(signal.aborted ? '분석을 멈췄어요. 원문은 서재에 남아 있어요.' : '원문은 저장됐어요. 분석을 다시 시도할 수 있어요.');
+      if (!signal.aborted) setError('분석 오류 — ' + friendlyToastMessage(err));
+    } finally {
+      if (aliveRef.current) { setIsProcessing(false); refreshLibrary(); }
     }
   }
 
@@ -486,8 +490,10 @@ export default function MaterialAddPage() {
   return (
     <div className="page-container add-page">
       <div className="page-header">
+        <p className="manabi-eyebrow">IMPORT / 내 서재</p>
         <h1 className="page-header__title">새 자료 추가</h1>
       </div>
+      <fieldset className="import-fields" disabled={isProcessing || !!completedId}>
 
       {/* 입구 한 줄(칩) + 아코디언 — 소스 순서(PDF→EPUB→문장 목록→링크)는 렌더 순서이자 계약이다.
           접힌 입구는 마운트만 되어 있다(훅·딥링크 효과는 산다). 한 번에 하나만 펼친다. */}
@@ -683,12 +689,13 @@ export default function MaterialAddPage() {
         <div className="form-row">
           <div className="form-field">
             <label className="form-label">학습 언어</label>
-            <div className="toggle-group">
-              {/* 해부 분석이 지원하는 언어 — 일본어(형태소)·영어(표제어)·중국어(단어 분할+병음) */}
+            <div className="toggle-group import-language-options">
+              {/* 해부 분석이 지원하는 언어 — 일본어·영어·중국어·프랑스어 */}
               {[
                 ['Japanese', '일본어', 'N3 중급'],
                 ['English', '영어', 'B1 중급'],
                 ['Chinese', '중국어', 'H3 중급'],
+                ['French', '프랑스어', 'B1 중급'],
               ].map(([key, label, defaultLevel]) => (
                 <button
                   key={key}
@@ -773,6 +780,11 @@ export default function MaterialAddPage() {
           </div>
         </div>
 
+      </div>
+      </fieldset>
+      <div className="import-result" aria-live="polite">
+        {completedId && <p className="import-saved-label">✓ 원문 저장 완료 · {isNote ? '비공개 노트' : visibility === 'public' && !pdfSource && !epubSource ? '공개 자료' : '비공개 자료'}</p>}
+        {!isProcessing && status && <p className="import-status">{status}</p>}
         {/* Progress */}
         {isProcessing && (
           <div className="progress-wrap">
@@ -787,17 +799,17 @@ export default function MaterialAddPage() {
         )}
 
         {/* Error */}
-        {error && <div className="error-banner">{error}</div>}
+        {error && <div className="error-banner" role="alert">{error}</div>}
 
         {/* Actions */}
         {completedId ? (
           <div className="form-actions form-actions--done">
-            <Button size="lg" style={{ flex: 2 }} onClick={() => router.push(`/viewer/${completedId}`)}>
+            <Button size="lg" style={{ flex: 2 }} onClick={openSavedMaterial}>
               지금 바로 읽기
             </Button>
-            <Button variant="secondary" size="lg" style={{ flex: 1 }} onClick={() => router.push('/materials')}>
-              자료실 보기
-            </Button>
+            {isProcessing ? <Button variant="secondary" size="lg" onClick={handleCancel}>분석 중단</Button>
+              : ['failed', 'partial', 'paused'].includes(analysisState) ? <Button variant="secondary" size="lg" onClick={startAnalysis}>분석 다시 시도</Button>
+              : <Button variant="secondary" size="lg" onClick={() => router.push('/materials?view=owned')}>내 서재 보기</Button>}
           </div>
         ) : (
           <div className="form-actions">
@@ -807,7 +819,7 @@ export default function MaterialAddPage() {
               size="lg"
               style={{ flex: 3 }}
             >
-              {isProcessing ? 'AI 해부 분석 진행 중...' : '분석 시작하기'}
+              {isProcessing ? '원문 저장 중…' : isNote ? '노트 저장하기' : '저장하고 읽기 준비'}
             </Button>
             {isProcessing && (
               <Button onClick={handleCancel} variant="danger" size="lg" style={{ flex: 1 }}>

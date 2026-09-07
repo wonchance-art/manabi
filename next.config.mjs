@@ -1,11 +1,32 @@
+import { readFileSync } from 'node:fs';
+import { buildReleaseVersion } from './src/lib/releaseVersion.js';
+
+const releaseVersion = {
+  ...buildReleaseVersion(process.env),
+  bundledEditionId: JSON.parse(readFileSync(new URL('./src/content/textbookEditions/index.json', import.meta.url))).current,
+};
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Strict mode
   reactStrictMode: true,
 
+  // Keep the production compiler below the 8 GB build-container limit. This changes
+  // Webpack's build-time memory management, not the served content or font selection.
+  experimental: { webpackMemoryOptimizations: true },
+
   // 사전·WASM이 서버 번들에 포함되도록 — kuromoji(ja) 사전과 jieba-wasm(zh)의 .wasm.
   // (네이티브 @node-rs/jieba는 서버리스 플랫폼 바이너리 로드 실패로 WASM 교체 — 단일 파일·플랫폼 무관)
   outputFileTracingIncludes: {
+    '/api/books/japanese-n5/**': ['./src/content/textbookEditions/**/*'],
+    '/api/admin/books/japanese-n5': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],
+    '/books/japanese-n5': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/**/index.html', './src/content/textbookEditions/index.json'],
+    '/books/japanese-n5/**': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],
+    '/lessons': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],
+    '/home': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],
+    '/materials': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],
+    '/discover': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],
+    '/api/learning/vocabulary': ['./src/content/textbookEditions/**/bundle.json'],
     '/api/analyze': [
       './node_modules/kuromoji/dict/**/*',
       './node_modules/jieba-wasm/pkg/nodejs/**/*',
@@ -22,9 +43,12 @@ const nextConfig = {
   // (둘을 비교해야 "내가 옛 번들을 보고 있나"(Q2)를 진단할 수 있다).
   // 커밋 메시지는 넣지 않는다(내부 문구 유출 방지 — 계약 1).
   env: {
-    NEXT_PUBLIC_BUILD_SHA: (process.env.VERCEL_GIT_COMMIT_SHA || '').slice(0, 7) || 'dev',
-    NEXT_PUBLIC_BUILD_REF: process.env.VERCEL_GIT_COMMIT_REF || 'local',
-    NEXT_PUBLIC_BUILD_AT: new Date().toISOString(),
+    NEXT_PUBLIC_BUILD_SHA: releaseVersion.sha,
+    NEXT_PUBLIC_BUILD_REF: releaseVersion.ref,
+    NEXT_PUBLIC_BUILD_AT: releaseVersion.at,
+    // Server artifact fallback for CLI deployments without runtime Git metadata.
+    // /api/version stays dynamic/no-store and still checks request-time identity.
+    MANABI_BUILD_IDENTITY: JSON.stringify(releaseVersion),
   },
 
   // 공개 서비스 기본 보안 헤더
