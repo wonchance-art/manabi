@@ -33,6 +33,7 @@
 .library-room .materials-page{padding:0;max-width:none}
 .library-room .materials-page .feature-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
 .library-room .materials-page .mat-card,.library-room .materials-page .group-card{min-width:0;border-radius:3px;background:var(--sheet);box-shadow:none}
+.library-room .materials-page .group-card__title{min-width:0;max-width:100%;overflow-wrap:anywhere}
 .library-room .materials-page .mat-card{padding:24px}
 .library-room .materials-page .card__title{font-size:21px;line-height:1.65;letter-spacing:-.5px}
 .library-room .materials-page .filter-row{margin-bottom:18px}
