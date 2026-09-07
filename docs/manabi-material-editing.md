@@ -64,6 +64,7 @@ src/lib/materialDocument.js, src/lib/materialComposer.js, src/lib/composerDraft.
 src/components/materials/MaterialComposer.jsx, MaterialEntry.jsx, MaterialEditor.jsx, OriginalMaterialReader.jsx, material-composer.css,
 src/app/(app)/materials/[id]/edit/page.jsx,
 src/views/MaterialsPage.jsx, ViewerPage.jsx,
+src/components/web/library-discovery.css(실계정 모바일 왕복에서 재현한 묶음 카드 넘침 수정),
 e2e/material-editing.e2e.mjs 및 전용 fixture, scripts/verification/material-editing.mjs,
 supabase/migrations/20260907221311_material_document_editing.sql(오너 재개 승인),
 이 문서, docs/ai-tasks.md 자기 항목, prebuild가 갱신하는 public/sw.js의 캐시 식별자.
@@ -95,3 +96,11 @@ supabase/migrations/20260907221311_material_document_editing.sql(오너 재개 �
 ## 공개 전송 상태
 
 구현 커밋 3fbc46b7. 새 브랜치 push는 자동 승인 검토가 이전 승인의 범위를 다른 브랜치로 한정해 거절했다. 우회 전송하지 않았으며 원격 PR/배포/DB 변경은 없다. 공개 push·draft PR·새 Vercel 미리보기와 DB 저작·적용의 구체적인 승인 질문 뒤 오너가 “작업 재개.”로 진행을 지시했다. 해당 범위의 전송과 적용을 재개하며 결과를 아래에 기록한다.
+
+## 실계정 검수 중 보완
+
+오너가 커밋8e240a86의 공개 push·PR·미리보기·DB 적용에 “승인.”으로 명시 승인했다. PR #1289, DB workflow34169580009 성공; 실행8e240a86 CI34169542567 전체 성공. 승인 migration20260907221311의 컬럼·validated CHECK·원문 보호 trigger·invoker/search_path·RLS 확인. 보안 advisor는 적용 전후55개 동일, 추가0.
+
+실제 검수에서 새 비공개 글 저장→수정(본문·제목·PDF→EPUB)→새로고침→학습 사본→현재 글→모바일 재수정→학습 사본 재사용→서재 복귀가 동작했다. 원문과 processed_json 해시 불변, 현재 EPUB와 retained PDF 실제 객체 존재. 분석/표현 저장/복습 채점은 실행하지 않았다.
+
+모바일(CSS354px) 서재 복귀 시 기존 묶음 카드의28px 가로 넘침을 재현했다. 모바일1fr의 자동 최소 너비가 내용 최소폭에 끌리는 문제여서 minmax(0,1fr)와 카드 min-width:0으로 고친다. 서재 전체 개편을 확대하지 않고 이번 왕복 흐름의 반응형 오류만 보완한다. 최종 배포에서 넘침0을 다시 측정한다.
