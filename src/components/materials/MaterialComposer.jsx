@@ -182,7 +182,7 @@ function ComposerForm({ ownerId }) {
       <label className="sr-only" htmlFor="composer-title">제목</label>
       <input id="composer-title" className="composer-title" placeholder="제목" value={draft.title} maxLength={240} disabled={locked} onChange={e => change({ title: e.target.value })} autoComplete="off" />
       <label className="sr-only" htmlFor="composer-body">본문</label>
-      <textarea id="composer-body" className="composer-body" placeholder="여기에 글을 쓰거나 붙여넣으세요.\n파일이나 링크만 담아도 괜찮아요." value={draft.body} maxLength={MAX_BODY_CHARS} disabled={locked} onChange={e => change({ body: e.target.value })} onPaste={e => {
+      <textarea id="composer-body" className="composer-body" placeholder={'여기에 글을 쓰거나 붙여넣으세요.\n파일이나 링크만 담아도 괜찮아요.'} value={draft.body} maxLength={MAX_BODY_CHARS} disabled={locked} onChange={e => change({ body: e.target.value })} onPaste={e => {
         const value = e.clipboardData.getData('text/plain').trim();
         if (!draft.body && /^https?:\/\/\S+$/.test(value)) { e.preventDefault(); addLink(value); }
       }} />
