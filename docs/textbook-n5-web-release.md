@@ -16,7 +16,7 @@
 
 ## 데이터 적용
 
-검토된 `supabase/migrations/20260906000912_textbook_book_editions.sql`을 연결된 Supabase 관리 도구로 적용했다. 운영 기록의 migration version은 도구가 발급한 `20260906024758`이며 name은 `textbook_book_editions`다. 같은 SQL을 재적용하지 않는다.
+검토된 `supabase/migrations/20260906000912_textbook_book_editions.sql`을 연결된 Supabase 관리 도구로 적용했다. 운영 기록의 migration version은 도구가 발급한 `20260906024758`이며 name은 `textbook_book_editions`다. 같은 SQL을 재적용하지 않는다. 저장소 파일은 이후 `supabase/migrations/20260906024758_textbook_book_editions.sql`로 정합화했다. 앞의 `20260906000912`는 최초 검토 당시의 번호를 보존한 역사적 기록이다.
 
 `textbook_book_drafts`, `textbook_book_editions`, `textbook_book_releases`의 RLS와 정책을 확인했다. 새 테이블과 관련된 security advisor 항목은 없었다. 적용 전후 기존 데이터 건수는 동일했다: 단어 226, 문맥 1, 교재 자료 연결 0, 읽기 자료 172, 업로드 PDF 1.
 
