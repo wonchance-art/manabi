@@ -3,6 +3,20 @@
 2026-09-07 KST. 오너가 승인한 운영 반영 설계와 후속 ‘진행해’에 따른 출시 준비다.
 상태: **검토용 후보. 운영 전환 전 게이트는 아래에 별도로 기록한다.**
 
+## 승인된 프로필 DB 수정 적용 (2026-09-07)
+
+오너의 **「모두 승인」**은 준비한 프로필 DB 수정 2건의 Codex 적용과 검수용 인앱 브라우저 세션 사용을 명시적으로 승인한 응답이다. 이번 두 변경에 한해 AGENTS.md의 Claude 전용 migration 저작 규칙보다 우선한다. 아래의 이전 ‘DB 적용·세션 사용 승인 대기’ 기록은 이 승인으로 해소됐다. 기존 교재 migration 번호 정합화와 병합 담당은 바꾸지 않는다.
+
+- 원격 migration **`20260907084349_profiles_safe_initial_role` 적용 완료**. 가입 트리거가 허용되지 않는 `user` 대신 `student` 프로필을 생성하도록 수정하고 함수의 `search_path`를 빈 값으로 고정했다. 기존 예외 처리·중복 무시 동작은 유지한다.
+- `profiles_insert_student_only`는 authenticated 역할의 INSERT에 `role = 'student'`를 요구하는 **RESTRICTIVE** 정책이다. 기존 본인 id 검사와 UPDATE 역할 변경 보호를 유지한다. 기존 계정·역할·진도·자료·발행 포인터의 UPDATE/DELETE는 없다.
+- 적용 직전 기존 함수와 새 정책 부재를 확인했다. 적용 후 기존 프로필 id/역할 전체를 집계한 fingerprint가 동일했다. 원격 함수 설정·정책 정의·migration 이름/버전을 조회했고, 원격 이력 SQL과 최종 로컬 파일 바이트가 동일하다. SHA-256 **`57b37d70c439898f315bb1fb27fd7a5454ea3fa29a6279385eb0b8105eda2d0a`**. CLI로 만든 준비 파일은 원격 적용 버전에 맞춰 이름을 정합화했다. 기존 교재 migration은 재실행하지 않았다.
+- 새 `e2e/profiles-initial-role.e2e.mjs`가 실제 migration SQL을 독립 PostgreSQL(PGlite 0.5.8)에서 실행한다. **12조건 / 오류0**: 이전 결함 재현, 기존 행 보존, 함수 검색 경로, 신규 학생 생성, 최초 admin/host 거부, 학생 프로필 복구·일반 편집, 기존 관리자·UPDATE 보호, 다른 계정 id 거부. 운영 계정/자료 쓰기를 수행하는 테스트가 아니다. PGlite는 저장소 의존성에 추가하지 않았으며 외부 설치 위치를 `QA_PGLITE_MODULE`로 지정한다.
+- 적용 후 Supabase Security Advisor에서 해당 함수의 가변 search_path 경고는 없다. 기존 EXECUTE 권한에 대한 일반 [anon](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable) / [authenticated](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable) 경고는 남는다. 트리거 함수인 이 대상의 실행 권한 및 다른 RPC 권한 정리는 별도 검토 사항이며, 이 결과를 전체 DB 보안 감사 통과로 표현하지 않는다.
+- 승인된 인앱 세션을 열어 확인했으나 현재 **로그아웃** 상태였다. 로그인 화면을 열고 오너에게 검수용 계정 로그인을 요청했다. 세션 사용 승인은 완료됐지만 실제 로그인·저장·복습·두 계정 권한 검수는 아직 완료되지 않았다. 비밀번호·토큰·쿠키를 열람하지 않았다.
+- 이번 변경은 DB SQL·검증 스크립트·문서·보드다. 웹 실행 코드는 계속 **`41e8c8bbc99693dcb0796480b843ae10290b8308`**, 고정 미리보기의 `/api/version`도 동일한 `dpl_B8u6MUsQTvaHdBzWRkrXFqGozDDc`와 N5 판본을 반환한다. DB는 공유 백엔드에 적용됐으며, 웹 production 승격·merge·force-push는 하지 않았다.
+
+재현: 외부 `@electric-sql/pglite@0.5.8` 모듈을 `QA_PGLITE_MODULE=file:///.../dist/index.js`로 지정하고 공식 Node24에서 `node e2e/profiles-initial-role.e2e.mjs` 실행. 기본 보고서는 `/private/tmp/manabi-profile-migration-report.json`, 변경하려면 `QA_REPORT`를 지정한다.
+
 ## 통합 범위
 
 main `bd76c7d8f5bddf83c619a94c538183d29786c903`에 대해 #1277 → #1279 → #1280 → #1281 → #1282 → #1283 → #1285 → #1286의 누적 내용을 하나의 PR로 검토한다. AI 프로바이더 #1278, 월드 #1284는 포함하지 않는다.
