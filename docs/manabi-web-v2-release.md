@@ -67,7 +67,20 @@ Vercel 프로젝트의 24.x 설정을 package.json의 20.x가 덮어쓰고 있�
 
 인증·저장·비공개 접근·교재 로딩에 중대한 실패가 생기면 운영 주소를 직전 정상 배포로 되돌린다. DB/자료/진도/발행 포인터는 되돌리거나 삭제하지 않는다. 서로 다른 preview 도메인의 localStorage 읽기 위치가 운영으로 자동 이관되지는 않는다.
 
-## 검수 기록
+## Node 24 후속 검수 (2026-09-07)
+
+- 실행 코드 `4f3c7cd05e2b6910a8b068c96b3d3b3bfadcfcb7`. package/lock engines24, 웹 CI24 적용. 기존 dependency 항목 변경·삭제 0, 누락 optional 4항목 추가. world workflow와 자산 변경 0.
+- 로컬 공식 Node24.20.0 전체 단위 **349파일 / 3,792개**, 153.35초. prebuild 오류0/기존 커리큘럼 경고11, npm11 깨끗한 설치 dry-run 통과.
+- [웹 CI 34071354944](https://github.com/wonchance-art/manabi/actions/runs/34071354944) **SUCCESS**: Node24.20.0/npm11.19.0 설치·lint·콘텐츠·단위3,792·474페이지 빌드·조판25·뷰어4·smoke14(기존skip6)·학습9.
+- [월드 CI 34071354965](https://github.com/wonchance-art/manabi/actions/runs/34071354965) **SUCCESS**: Node22.23.2/npm10.9.8, **130파일 / 1,102개**, 245.00초. 루트 engines24에 대한 경고는 있으나 설치와 테스트는 통과했다. 월드 생성 런타임을 바꾸지 않았다.
+- 최초 웹 CI 34071209152는 기존 lockfile 누락 때문에 설치 단계에서 실패했다. 보완 후 위 CI가 통과했다. 이전 중간 미리보기 `dpl_WgLCgQmmUqDVWinXfrpDZGehUPA7`는 최종 빌드 대기열을 비우기 위해 취소했다.
+- 실제 Vercel 최종 배포 **READY**, `/v13/deployments`의 `nodeVersion=24.x`, `projectSettings.nodeVersion=24.x`. 실제 글꼴 다운로드 재시도 후 474페이지·서버 함수 빌드를 완료했다(빌드 약6분). 미리보기 `manabi-i2gyqbflq-wonchance-arts-projects.vercel.app`, deployment `dpl_AhhMMcmBQ1oXqUVHaK1PCgNiKKMK`, release `web-v2-4f3c7cd05e2b`. 소스 `4f3c7cd05e2b6910a8b068c96b3d3b3bfadcfcb7`.
+- 원본 URL의 실제 `/api/version`에서 exact SHA·판본·preview 대상·배포 ID·no-store 통과. Chrome에서 실제 브라우저/서버 SHA 일치·일반 게스트 내부 표시 숨김·명시적 구버전 fixture 경고의 4조건/오류0도 확인했다.
+- 새 배포의 교재 **54레이아웃 / 17흐름 / 42과 API**, 홈·공통 구조 **34레이아웃 / 실제콘텐츠4흐름 / fixture6흐름** 모두 오류0. 320/390/768/1440px, 실제 홈→책→29과→홈→같은 읽기 위치, 예문 박스·키보드·관리자/API의 게스트 거부를 확인했다. 데스크톱 홈/예문과 390px 홈/30과 이미지를 직접 검수했다. 실제 서버의 공개 교재와 격리 브라우저 로컬 기록을 사용했으며 계정·장애 상태는 명시적 fixture다.
+- 고정 주소 https://manabi-web-v2-preview.vercel.app/home 를 위 Node24 배포로 갱신하고 exact SHA·판본·배포 ID·preview·no-store 검사를 다시 통과했다. 기존 운영 주소는 여전히 `dpl_78wiEE8HhRX4uQMnxEwGVyrhbUzr`다.
+- **Node 승인/런타임 검증 조건은 해소했다.** 실제 계정 로그인은 아직 확인되지 않았으므로 서버 쓰기/두 계정 권한 검수는 대기한다. DB 파일 번호 정합화와 병합은 Claude 담당, 자동 도메인 할당 분리와 production 대기 빌드 검수는 운영 전환 조건으로 유지한다. PDF·음성·월드 생성·운영 승격은 수행하지 않았다.
+
+## 이전 후보 검수 기록 (Node 24 설정 적용 전)
 
 - 공식 Node 24.20.0에서 전체 `npm test -- --maxWorkers=2`: **349파일 / 3,792개 통과**, 123.83초. 설정을 바꾸지 않고 임시 공식 런타임으로 호환성을 확인했다.
 - 배포 식별/기존 배지 계약: **2파일 / 34개 통과**. 변경 파일 ESLint 오류 0, `git diff --check` 통과.
