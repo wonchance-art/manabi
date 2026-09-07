@@ -1,4 +1,5 @@
 'use client';
+import { composerOf, removeComposerOriginals } from '@/lib/materialComposer';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
@@ -170,6 +171,11 @@ export default function MaterialsPage({ libraryView = null }) {
       const { error, count } = await supabase.from('reading_materials').delete({ count: 'exact' }).eq('id', id);
       if (error) throw error;
       if (count === 0) throw new Error('삭제 권한이 없거나 이미 삭제된 자료입니다.');
+      const material = materials?.find(item => item.id === id);
+      if (composerOf(material)) {
+        try { await removeComposerOriginals(supabase, material); }
+        catch { toast('자료는 삭제했지만 첨부 파일 정리를 완료하지 못했어요.', 'error'); }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['materials'] });
@@ -793,7 +799,7 @@ export default function MaterialsPage({ libraryView = null }) {
             const previewText = (() => {
               const dict = m.processed_json?.dictionary || {};
               const seq = m.processed_json?.sequence || [];
-              if (seq.length === 0) return '';
+              if (seq.length === 0) return composerOf(m)?.excerpt || '';
               return seq.slice(0, 40).map(id => dict[id]?.text || '').filter(Boolean).join('').slice(0, 120);
             })();
             const isOwner = m.owner_id === user?.id;
@@ -805,6 +811,7 @@ export default function MaterialsPage({ libraryView = null }) {
             // 정상 완료와 노트는 무표기(붙일 게 없다는 것도 정보다).
             const stateBadge = (() => {
               if (isNote) return null;
+              if (status === 'saved') return null;
               if (isCompleted) return <span className="mat-state mat-state--done">✓ 완독</span>;
               const lastIdx = progressMap.inProgress.get(m.id);
               if (lastIdx && tokens > 0) {
@@ -818,6 +825,7 @@ export default function MaterialsPage({ libraryView = null }) {
             })();
             // 메타 한 줄 — 언어명(정본 langNameKo)·급수·읽는 시간·날짜. 언어명 큰 글자(card__flag) 폐지.
             const metaLine = [
+              composerOf(m)?.assets?.map(asset => asset.kind.toUpperCase()).filter((kind, index, all) => all.indexOf(kind) === index).join(' · '),
               language ? langNameKo(language) : '언어 미지정',
               level,
               minutes ? `${minutes}분` : null,
@@ -851,7 +859,7 @@ export default function MaterialsPage({ libraryView = null }) {
                     <summary className="mat-menu__btn" aria-label="자료 메뉴" title="받아두기 · 공개 · 삭제">⋯</summary>
                     <div className="mat-menu__list" role="menu">
                       {/* 받아두기(v2-N R3) — 메뉴 항목으로. 상태(받아둠)는 아래 알약이 말한다. */}
-                      <button
+                      {(!composerOf(m) || composerOf(m).hasBody) && <button
                         type="button"
                         role="menuitemcheckbox"
                         className={`mat-pin${isPinned ? ' mat-pin--on' : ''}`}
@@ -860,9 +868,9 @@ export default function MaterialsPage({ libraryView = null }) {
                         aria-checked={isPinned}
                         title={isPinned ? '받아둠 — 연결이 없어도 열립니다 (눌러서 해제)' : '받아두기 — 연결이 없어도 열립니다'}
                       >
-                        {pinBusy === m.id ? '…' : isPinned ? '✓ 받아둠 — 해제' : '⬇ 받아두기'}
-                      </button>
-                      {isOwner && (
+                        {pinBusy === m.id ? '…' : isPinned ? '✓ 받아둠 — 해제' : composerOf(m)?.assets?.length ? '⬇ 작성한 본문 받아두기' : '⬇ 받아두기'}
+                      </button>}
+                      {isOwner && !composerOf(m) && (
                         <button
                           type="button"
                           role="menuitem"
@@ -970,7 +978,7 @@ export default function MaterialsPage({ libraryView = null }) {
             </button>
           ) : tab === 'public' ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-              <Link href="/materials/add" className="btn btn--primary btn--md">
+              <Link href="/materials/add?advanced=1" className="btn btn--primary btn--md">
                 첫 번째 자료 공유하기 →
               </Link>
               <Link href="/guide" className="empty-state__link">
@@ -978,8 +986,8 @@ export default function MaterialsPage({ libraryView = null }) {
               </Link>
             </div>
           ) : (
-            <Link href={libraryView === 'notes' ? '/materials/add?direction=write' : '/materials/add'} className="empty-state__link">
-              {libraryView === 'notes' ? '첫 노트 쓰기 →' : '첫 번째 자료 추가하기 →'}
+            <Link href="/materials/add" className="empty-state__link">
+              새 자료 작성 →
             </Link>
           )}
         </div>

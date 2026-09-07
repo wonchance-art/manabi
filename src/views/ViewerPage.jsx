@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
+import OriginalMaterialReader from '@/components/materials/OriginalMaterialReader';
+import { composerOf, shouldReadComposerOriginal } from '@/lib/materialComposer';
 import Link from 'next/link';
 import { LibraryReturnLink } from '@/components/web/LibraryReaderLink';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -192,6 +194,7 @@ const UNDO_KEY_LABEL = typeof navigator !== 'undefined'
 
 export default function ViewerPage() {
   const { id } = useParams();
+  const originalParams = useSearchParams();
   const { user, profile, fetchProfile } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -471,7 +474,7 @@ export default function ViewerPage() {
   const pacedRef = useRef(false);
 
   const readingTimer = useReadingTimer({
-    enabled: !!user && !!material,
+    enabled: !!user && !!material && !shouldReadComposerOriginal(material, originalParams),
     paused: isSheetOpen || !!selectedToken,
   });
 
@@ -1635,10 +1638,14 @@ export default function ViewerPage() {
     );
   }
 
+  if (shouldReadComposerOriginal(material, originalParams)) {
+    return <OriginalMaterialReader key={material.id} material={material} />;
+  }
+
   const json = material?.processed_json || { sequence: [], dictionary: {} };
   const status = material?.status || material?.processed_json?.status;
   const isAnalyzing = status === 'analyzing';
-  const isPending = status === 'pending'; // 책 챕터 미분석 — 원문 열람 가능, 분석은 온디맨드
+  const isPending = status === 'pending' || status === 'saved'; // 책 챕터 미분석 — 원문 열람 가능, 분석은 온디맨드
   const isFailed = status === 'failed';
   const isDone = status === 'completed' || status === 'partial';
   const isPartial = status === 'partial';
@@ -2308,6 +2315,7 @@ export default function ViewerPage() {
             폰에서 두 줄(89px)로 꺾였고, 그 위에 뒤로가기 줄·시리즈 내비 줄이 따로 있었다. */}
         <div className="viewer-topbar">
           <LibraryReturnLink className="viewer-back-link">← 내 서재</LibraryReturnLink>
+          {composerOf(material) && <Link className="viewer-back-link" href={`/viewer/${id}?returnTo=${encodeURIComponent(originalParams.get('returnTo') || '/materials?view=owned')}`}>글과 첨부 원본 ↗</Link>}
           {siblingNav && (
             <div className="viewer-series-nav" title={siblingNav.label}>
               {siblingNav.prev ? (
@@ -2791,11 +2799,11 @@ export default function ViewerPage() {
 
         {isPending && (
           <div className="analyzing-banner">
-            <span>이 챕터는 아직 분석 전이에요 — 원문은 그대로 읽을 수 있어요.</span>
+            <span>{composerOf(material) ? '저장한 본문이에요. 표현을 공부할 때 분석을 시작하세요.' : '이 챕터는 아직 분석 전이에요 — 원문은 그대로 읽을 수 있어요.'}</span>
             {user?.id === material?.owner_id && (
               reanalyzeMutation.isPending
                 ? <button onClick={stopReanalysis} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>⏹ 중단</button>
-                : <button onClick={startFullReanalyze} className="analyzing-banner__refresh">이 챕터 분석하기</button>
+                : <button onClick={startFullReanalyze} className="analyzing-banner__refresh">{composerOf(material) ? '본문 분석하기' : '이 챕터 분석하기'}</button>
             )}
           </div>
         )}

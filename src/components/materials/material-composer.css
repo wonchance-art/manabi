@@ -1,0 +1,53 @@
+.material-composer { max-width: 1000px; margin: 0 auto; padding: 26px clamp(18px, 4vw, 60px) 72px; color: var(--ink); container-type: inline-size; }
+.material-composer .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.material-composer .manabi-button, .composer-gate .manabi-button, .original-reader .manabi-button { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 12px 24px; color: var(--sheet); background: var(--ja); border: 1px solid var(--ja); border-radius: 3px; font: inherit; font-size: 14px; font-weight: 600; text-decoration: none; }
+.composer-top { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding-bottom: 24px; border-bottom: 1px solid var(--rule); font-size: 12px; }
+.composer-top a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; color: inherit; }
+.composer-top span { color: var(--muted); letter-spacing: .1em; font-size: 10px; }
+.composer-heading { padding: 26px 0 22px; }
+.composer-heading h1 { font-size: clamp(28px, 4.5cqi, 36px); line-height: 1.28; letter-spacing: -.055em; font-weight: 550; margin: 16px 0; }
+.composer-heading > p:last-child { color: var(--muted); font-size: 14px; line-height: 1.8; }
+.composer-paper { background: var(--sheet); border: 1px solid var(--rule); padding: clamp(22px, 5cqi, 48px); }
+.composer-title, .composer-body { display: block; width: 100%; border: 0; color: var(--ink); background: transparent; font-family: inherit; border-radius: 0; }
+.composer-title { font-size: clamp(26px, 4.3cqi, 36px); line-height: 1.4; font-weight: 600; letter-spacing: -.045em; padding: 8px 0 24px; border-bottom: 1px solid var(--rule); }
+.composer-body { padding: 28px 0; min-height: 260px; resize: vertical; line-height: 1.95; font-size: 17px; overflow-wrap: anywhere; }
+.composer-title::placeholder, .composer-body::placeholder { color: var(--muted); opacity: .8; }
+.material-composer :is(button, input, select, textarea, a, summary):focus-visible, .original-reader :is(button, select, a):focus-visible { outline: 2px solid var(--ja); outline-offset: 4px; }
+.material-composer button, .original-reader button { cursor: pointer; font-family: inherit; }
+.material-composer button:disabled { opacity: .55; cursor: default; }
+.composer-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 18px 0; border-top: 1px solid var(--rule); }
+.composer-tools button, .composer-link-input button { min-height: 44px; padding: 0 15px; background: var(--paper); color: var(--ink); border: 1px solid var(--rule); font-size: 13px; }
+.composer-tools small { margin-left: auto; font-size: 11px; color: var(--muted); }
+.composer-attachments { display: grid; gap: 8px; }
+.composer-attachment { display: flex; align-items: center; gap: 14px; padding: 14px; border: 1px solid var(--rule); background: var(--paper); min-width: 0; }
+.composer-attachment > div { flex: 1; min-width: 0; }
+.composer-attachment strong { display: block; font-size: 14px; font-weight: 500; overflow-wrap: anywhere; }
+.composer-attachment small { display: block; font-size: 11px; color: var(--muted); margin-top: 4px; overflow-wrap: anywhere; }
+.composer-file-mark { color: var(--ja); font-size: 25px; }
+.composer-attachment button { flex: 0 0 44px; min-height: 44px; border: none; background: transparent; color: var(--muted); font-size: 22px; }
+.composer-link-input { padding: 20px 0; }
+.composer-link-input label, .composer-options label { display: block; font-size: 13px; margin-bottom: 10px; }
+.composer-link-input > div { display: flex; gap: 8px; }
+.composer-link-input input { flex: 1; min-width: 0; min-height: 44px; font: inherit; background: transparent; border: 1px solid var(--rule); padding: 8px 12px; color: var(--ink); }
+.composer-options { font-size: 13px; border-top: 1px solid var(--rule); padding: 12px 0; }
+.composer-options summary { cursor: pointer; min-height: 44px; align-content: center; }
+.composer-options summary span { margin-left: 8px; color: var(--muted); font-size: 11px; }
+.composer-options select, .original-reader select { width: 100%; min-height: 44px; font: inherit; color: inherit; background: var(--sheet); border: 1px solid var(--rule); padding: 8px; }
+.composer-options p, .composer-notice { font-size: 12px; line-height: 1.8; color: var(--muted); }
+.composer-save { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 24px 0 0; margin-top: 12px; border-top: 1px solid var(--rule); }
+.composer-save > span { max-width: 70%; font-size: 11px; line-height: 1.7; color: var(--muted); }
+.composer-save button { min-width: 92px; justify-content: center; }
+.composer-error { font-size: 13px; padding: 16px; background: color-mix(in srgb, var(--danger) 8%, var(--sheet)); color: var(--danger); line-height: 1.8; }
+.composer-error p { margin: 8px 0 0; }
+.composer-after { display: flex; flex-direction: column; gap: 8px; padding: 20px 0; font-size: 11px; line-height: 1.8; color: var(--muted); }
+.composer-after a { align-self: flex-start; display: inline-flex; align-items: center; min-height: 44px; color: inherit; }
+.composer-gate { max-width: 740px; margin: 70px auto; padding: 24px; color: var(--ink); }
+.composer-gate h1 { font-size: 32px; line-height: 1.4; overflow-wrap: anywhere; }
+.composer-gate p { line-height: 1.9; color: var(--muted); }
+.composer-gate .manabi-link { margin: 14px; min-height: 44px; background: transparent; border: none; }
+@container (max-width: 500px) {
+  .composer-heading { padding-top: 28px; }
+  .composer-tools small { flex-basis: 100%; margin: 8px 0 0; }
+  .composer-body { font-size: 16px; min-height: 260px; }
+  .composer-top span { letter-spacing: 0; }
+}

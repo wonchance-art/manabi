@@ -1,0 +1,42 @@
+.original-reader { color: var(--ink); width: 100%; max-width: 1120px; margin: 0 auto; padding: 24px clamp(20px, 4vw, 60px) 72px; container-type: inline-size; }
+.original-heading { max-width: 820px; padding: 46px 0 30px; }
+.original-heading h1 { font-size: clamp(30px, 5.5cqi, 48px); font-weight: 550; line-height: 1.42; letter-spacing: -.045em; overflow-wrap: anywhere; margin: 18px 0; }
+.original-heading > p:last-child { font-size: 12px; color: var(--muted); display: flex; gap: 16px; }
+.original-writing { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 18px; line-height: 2; max-width: 760px; padding: 18px 0 48px; }
+.original-links { display: grid; gap: 10px; margin-bottom: 30px; }
+.original-links a { padding: 24px; border: 1px solid var(--rule); background: var(--sheet); display: flex; justify-content: space-between; align-items: center; gap: 24px; text-decoration: none; color: inherit; }
+.original-links a > div { min-width: 0; }
+.original-links small { color: var(--ja); font-size: 10px; letter-spacing: .12em; }
+.original-links strong { display: block; font-size: 22px; font-weight: 500; margin: 10px 0; overflow-wrap: anywhere; }
+.original-links span { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.original-links b { font-size: 28px; color: var(--ja); font-weight: 400; }
+.original-links > p { font-size: 11px; color: var(--muted); }
+.original-file { border-top: 2px solid var(--ink); margin: 20px 0; padding-top: 24px; }
+.original-file > header { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 22px; }
+.original-file h2 { font-size: 18px; font-weight: 500; overflow-wrap: anywhere; margin: 10px 0 0; }
+.original-file a { color: var(--ja); font-size: 12px; min-height: 44px; display: inline-flex; align-items: center; }
+.original-pdf { height: 78vh; min-height: 400px; background: var(--sheet); border: 1px solid var(--rule); display: flex; }
+.original-pdf .pdfjs-viewer { width: 100%; min-width: 0; }
+.original-pdf .pdfjs-pages { overscroll-behavior: contain; }
+.original-epub { background: var(--sheet); border: 1px solid var(--rule); padding: clamp(22px, 5cqi, 52px); margin-top: 18px; }
+.original-epub h3 { font-size: 24px; line-height: 1.5; margin: 0 0 28px; }
+.original-epub > div { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 2; font-size: 18px; }
+.original-chapter-label { display: block; margin-bottom: 8px; font-size: 12px; }
+.original-chapter-nav { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 16px 0; font-size: 12px; }
+.original-reader button:not(.manabi-button) { border: 1px solid var(--rule); min-height: 44px; padding: 8px 14px; font: inherit; color: inherit; background: var(--sheet); }
+.original-reader button:disabled { opacity: .5; cursor: default; }
+.original-file > footer { display: flex; gap: 12px; flex-wrap: wrap; justify-content: space-between; padding: 16px 0; font-size: 11px; color: var(--muted); }
+.original-file-picker { display: grid; gap: 10px; margin: 24px 0; font-size: 13px; }
+.original-state { padding: 32px 20px; background: var(--sheet); border: 1px solid var(--rule); font-size: 14px; line-height: 1.9; }
+.original-study { border: 1px solid var(--rule); padding: 20px; max-width: 760px; margin: 40px 0; }
+.original-study summary { min-height: 44px; align-content: center; cursor: pointer; font-size: 14px; }
+.original-study p { font-size: 13px; line-height: 1.9; color: var(--muted); }
+.original-study label { display: block; font-size: 12px; margin-bottom: 8px; }
+.original-study button { margin-top: 16px; }
+.original-bottom { display: flex; justify-content: space-between; gap: 20px; padding-top: 24px; border-top: 1px solid var(--rule); }
+.original-bottom a { font-size: 13px; color: inherit; min-height: 44px; display: inline-flex; align-items: center; }
+@container (max-width: 500px) {
+  .original-writing, .original-epub > div { font-size: 16px; }
+  .original-pdf { height: 70vh; }
+  .original-heading { padding-top: 28px; }
+}

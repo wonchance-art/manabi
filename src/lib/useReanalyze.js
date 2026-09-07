@@ -6,6 +6,7 @@ import { supabase } from './supabase';
 import { analyzeText } from './analyzeText';
 import { autoSplitParagraphs } from './splitParagraphs';
 import { persistImportAnalysis } from './materialImport';
+import { composerOf } from './materialComposer';
 
 const STALE_THRESHOLD_MS = 3 * 60 * 1000;
 
@@ -35,9 +36,9 @@ export function computeMissingLineIndices(material) {
 }
 
 /** raw_text를 문단으로 분리 (자동 분리 적용). 각 문단: { index, lineIndices, preview } */
-export function getParagraphs(rawText) {
+export function getParagraphs(rawText, preserveSource = false) {
   if (!rawText) return [];
-  rawText = autoSplitParagraphs(rawText);
+  if (!preserveSource) rawText = autoSplitParagraphs(rawText);
   const lines = rawText.split('\n');
   const paragraphs = [];
   let current = [];
@@ -83,7 +84,7 @@ export function useReanalyze({ materialId, material, refetch, toast }) {
       if (!rawText) throw new Error('원본 텍스트가 없습니다.');
 
       // 문단 구분이 안 돼있으면 자동 분리 후 DB에도 반영
-      const split = autoSplitParagraphs(rawText);
+      const split = composerOf(material) ? rawText : autoSplitParagraphs(rawText);
       if (split !== rawText) {
         rawText = split;
         const { data, error } = await supabase.from('reading_materials').update({ raw_text: rawText })
