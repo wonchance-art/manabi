@@ -14,14 +14,14 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- **서재 저장 후 편집 게시·DB 적용 진행 (2026-09-08, 오너 재개 승인)** — `codex/material-editing-20260908`, 구현3fbc46b7, 승인 migration4e2895d0, 부모 #1288 head93d7607d 불변. 구체적 공개 push·draft PR·미리보기/DB 저작·적용 승인 질문 뒤 “작업 재개.”로 진행 지시. CLI가 생성한20260907221311 하나만 원격 미적용(로컬83/원격82, 누락0); 파일 직접 실행 SQL/IDB 검사 통과. 기존 전체353파일/3857개·집중51개·브라우저15흐름+기존20조건·473페이지 결과 유지. 공개 PR·배포·실계정 검수 후 CODEX_DONE 예정. 운영 merge/alias 승격 없음. 상세 `docs/manabi-material-editing.md`.
 
 ### todo
-- **서재 후속 우선순위** — 저장 후 제목·본문·첨부 수정(기존 표현 출처/원문 버전 보존) → 읽던 자료·최근 저장 중심 목록/컬렉션 → 새 첨부 원본의 학습 구간 추출. 미참조 업로드 정리·URL 본문 가져오기·기기 간 위치 동기화는 후순위. 상세 `docs/manabi-unified-material-editor.md`. 현재 PR #1288 병합은 Claude 검토 창구로 인계.
+- **서재 후속 우선순위** — 읽던 자료·최근 저장 중심 목록/컬렉션 → 새 첨부 원본의 학습 구간 추출. 미참조 업로드 정리·URL 본문 가져오기·기기 간 위치 동기화는 후순위. 상세 `docs/manabi-unified-material-editor.md`. 저장 후 수정은 #1289에서 완료. 부모 #1288 → #1289 병합은 Claude 검토 창구로 인계.
 - ~~🎧 받아쓰기 채점 엔진(#1077 제안 6, 발주 5386786944)~~ → **회수: 2026-08-23
   16:03 스캔까지 WORKING 무표식(30분 룰) — Claude 직접 수행·완결(회수 공지
   5386950005, PR #1118)**. 이 열에 잔여 발주 없음.
 ### done (최근)
+- **서재 저장 후 편집·DB 적용·실계정 검수 완료 (2026-09-08, 오너 명시 승인)** — draft PR #1289 / `codex/material-editing-20260908`, 부모 #1288. migration20260907221311을 workflow34169580009로 적용; 컬럼/CHECK/원문 보호 trigger/RLS, advisor 추가0 확인. 실제 새 검수 글 수정·PDF→EPUB 교체·새로고침·학습 사본·모바일 재수정·사본 재사용·서재 복귀 성공. 최초 raw/processed 해시 불변, current/retained 원본 모두 존재, 사본1개·서버 진도0. RLS 본인2/2·비소유자0/0·anon 차단, 실제 비로그인 본문/파일 비노출. 실행e0973c0d 전체CI34170575000 SUCCESS; 전체353파일/3857개·집중51개·브라우저15흐름+기존20조건·473페이지 빌드. 실계정에서 발견한 묶음 카드/긴 제목 넘침을 고쳐320/354/390/1280px 모두 넘침0, 콘솔error0. 최종 https://manabi-web-v2-preview.vercel.app / dpl_3NYYxVgQEPJhC9TQFE7HNJj8Fg8i READY. 운영main6e61b6e8 불변, merge/force-push/운영 승격 없음. 최종 exact head는 #1289·#150 CODEX_DONE, 상세 `docs/manabi-material-editing.md`.
 - **서재 운영 저장소 적용·실제 저장 검수 완료 (2026-09-08, 오너 승인)** — `20260907162537_unified_material_composer`를 기존 migration workflow34148605087에서 스킵 없이 적용. 사전 원격81/로컬82 차이는 이번 SQL1개, 새 private bucket·소유자3정책·시도 unique index·CHECK 확인. 실제 로그인 계정 PDF 단독 및 EPUB+메모+링크 자료2개 저장/서재 재열람/쪽·장 복구/모바일 검수 성공. 원문 일치·원본 각1개·서버 학습 진도0. 실제 DB 역할 검사 본인2/2·비소유자0/0·anon 차단, 별도 비로그인 두 뷰어 및 공개 원본 URL 차단 확인. DB owner gate 해소; 실행·미리보기ada67c4a 유지, 이후 문서9378e9d1 및 자기 보드만 갱신. 정확한 최종 head/CI는 PR #1288·#150 CODEX_DONE. 기존 자료·교재·판본·복습 수정0, merge/force-push/운영 웹 승격 없음.
 - **서재 단일 편집기 구현·검수 인계 (2026-09-08)** — `codex/unified-material-editor-20260908` / PR #1288. 제목·본문·파일/링크·저장, PDF/EPUB 원본 읽기, 선택 언어4개, 계정별 Blob 초안·재시도 중복 방지. 전체 웹352파일/3,840개·473페이지 로컬 빌드·새 브라우저8흐름·기존 학습20조건·격리 Postgres/IndexedDB 검사 통과. 최초 실행 head2c7f6771 전체 CI 및 Vercel READY, 실제 로그인 편집기 검수 후 표시 수정8dd23129. 최종 head/CI/배포는 #150 CODEX_DONE. 미리보기 https://manabi-web-v2-preview.vercel.app/materials/add , 상세 `docs/manabi-unified-material-editor.md`. 당시 DB 대기 조건은 위 실제 저장 검수에서 해소. 원본 작업 공간·교재/판본·복습·월드 불변, merge/force-push/운영 승격 없음.
 - **manabi PR #1287 운영 전환 완료 (2026-09-08)** — main `6e61b6e83840a4860b314570a074fb42fb1fcb09`, 운영/고정 미리보기 검수 및 CI 완료. 이전 doing 해소 근거: #150 코멘트5572911215. 해당 PR 한정 병합 예외 종료.
