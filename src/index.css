@@ -6123,8 +6123,13 @@ a.viewer-badge:hover {
   font-size: 0.85rem;
 }
 [data-theme="light"] .auth-alert--error,
-[data-theme="light"] .auth-alert__link {
+[data-theme="light"] .auth-alert__link,
+.manabi-app .auth-alert--error,
+.manabi-app .auth-alert__link {
   color: #A12B39;
+}
+.manabi-app .auth-alert--success {
+  color: #356246;
 }
 .auth-submit {
   width: 100%;
