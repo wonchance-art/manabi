@@ -49,6 +49,8 @@ Vercel 프로젝트의 24.x 설정을 package.json의 20.x가 덮어쓰고 있�
 
 공식 Node 24.20.0 darwin-arm64 런타임으로 검증한다. 실제 Vercel Node 24 빌드·서버 동작과 Node 24 웹 CI 결과는 후속 검수 기록에 남긴다. Node 22 world 테스트의 engine 경고는 설치 차단이 아니며 자산 생성 규약을 유지하는 의도적인 역할 분리다.
 
+첫 Node24 CI의 npm 11.19.0 설치 검사가 기존 lockfile의 선택 의존성 네 항목 누락을 발견했다. 격리 폴더에서 `npm install --package-lock-only --ignore-scripts --no-audit --no-fund`로 보완했다. 추가 항목은 `@unrs/resolver-binding-wasm32-wasi@1.12.2`와 그 하위 `@emnapi/core@1.10.0`, `@emnapi/runtime@1.10.0`, `@emnapi/wasi-threads@1.2.1`뿐이다. 기존 package 항목의 변경·삭제는 0이며 의존성 버전을 올리지 않았다. 새 lockfile과 SW 콘텐츠 해시를 함께 보존한다.
+
 ## 병합과 운영 전환
 
 읽기 전용 설정 확인: Vercel project `manabi`, production branch **main**, `autoAssignCustomDomains: true`, Git 배포 enabled, system env enabled. 현재 그대로 병합하면 자동으로 운영 도메인에 할당될 수 있다.
