@@ -90,12 +90,12 @@ supabase/migrations/20260907221311_material_document_editing.sql(오너 재개 �
 
 1. 부모 #1288 → 이 stacked PR을 Claude가 검토. 승인된 additive migration 파일을 함께 포함한다.
 2. 승인된 document_json 컬럼·CHECK·원문 보호 트리거를 기존 GitHub migration workflow로 적용한다. 실행 전 원격 이력과 로컬 파일을 비교해 이번 SQL만 미적용인지 확인한다. 기존 운영 원문에는 UPDATE가 없다.
-3. 이번 미리보기에서 실제 계정의 새 검수 자료를 만들어 수정/첨부 교체/원문 복귀를 확인한 후 고정 미리보기와 운영 전환을 검토한다. 지금은 운영과 기존 고정 미리보기 alias를 변경하지 않는다.
+3. 실제 계정의 새 검수 자료로 수정/첨부 교체/원문 복귀를 확인했다. 승인된 배포를 로그인된 검수 전용 alias에 연결했다. 운영 teset-gilt 도메인은 변경하지 않는다.
 4. 다음 차수: 읽던 자료·최근 저장 중심 서재 목록/컬렉션. 그 다음에 새 원본에서 선택한 구간 학습을 다룬다. 전면 편집 이력 UI, 미참조 업로드 정리, 기기 간 원본 위치 동기화는 별도 후속이다.
 
 ## 공개 전송 상태
 
-구현 커밋 3fbc46b7. 새 브랜치 push는 자동 승인 검토가 이전 승인의 범위를 다른 브랜치로 한정해 거절했다. 우회 전송하지 않았으며 원격 PR/배포/DB 변경은 없다. 공개 push·draft PR·새 Vercel 미리보기와 DB 저작·적용의 구체적인 승인 질문 뒤 오너가 “작업 재개.”로 진행을 지시했다. 해당 범위의 전송과 적용을 재개하며 결과를 아래에 기록한다.
+최초 두 번의 push는 자동 승인 검토가 이전 승인과 “작업 재개.”를 이번 payload의 명시 승인으로 인정하지 않아 실행 전에 거절했다. 우회하지 않았다. 오너가 커밋8e240a86의 공개 push·PR·미리보기·DB 적용 질문에 “승인.”으로 답한 뒤 이 범위로 재개했다. PR #1289 생성, migration 적용, 실제 계정 검수와 같은 PR 내 모바일 보완을 완료한다.
 
 ## 실계정 검수 중 보완
 
@@ -103,4 +103,20 @@ supabase/migrations/20260907221311_material_document_editing.sql(오너 재개 �
 
 실제 검수에서 새 비공개 글 저장→수정(본문·제목·PDF→EPUB)→새로고침→학습 사본→현재 글→모바일 재수정→학습 사본 재사용→서재 복귀가 동작했다. 원문과 processed_json 해시 불변, 현재 EPUB와 retained PDF 실제 객체 존재. 분석/표현 저장/복습 채점은 실행하지 않았다.
 
-모바일(CSS354px) 서재 복귀 시 기존 묶음 카드의28px 가로 넘침을 재현했다. 모바일1fr의 자동 최소 너비가 내용 최소폭에 끌리는 문제여서 minmax(0,1fr)와 카드 min-width:0으로 고친다. 서재 전체 개편을 확대하지 않고 이번 왕복 흐름의 반응형 오류만 보완한다. 최종 배포에서 넘침0을 다시 측정한다.
+모바일(CSS354px) 서재 복귀 시 기존 묶음 카드의28px 가로 넘침을 재현했다. 모바일1fr의 자동 최소 너비가 내용 최소폭에 끌리는 문제여서 minmax(0,1fr)와 카드 min-width:0으로 고친다. 서재 전체 개편을 확대하지 않고 이번 왕복 흐름의 반응형 오류만 보완한다. 390px에서는0이 됐으나 추가320·354px에서 긴 묶음 제목의 별도 넘침을 발견했다. e0973c0d에서 제목 max-width와 overflow-wrap을 추가했고, 모든 크기의 최종 배포 결과를 아래에 기록한다.
+
+## 실제 DB와 사용자 검수 근거
+
+- 새 검수용 비공개 root1개와 study사본1개만 생성했다. 기존 사용자 자료/표현/복습 기록 UPDATE·DELETE·채점 없음. root의 raw_text/processed_json MD5는 수정 전후 각각 e8375e7001c6f7908482795541ed86ee / 9795bc0d04ce48327ab034d40b218b0f로 동일하다.
+- 수정한 제목·본문·영어 선택을 current document에 저장했다. 현재 EPUB와 retained PDF의 실제 Storage 객체 존재, 링크 유지, 새로고침 유지 확인. 자료 제목을 다시 고친 후 같은 본문으로 학습을 열면 같은 사본1개를 재사용한다. 서재에는 root 한 줄만 표시한다. 두 자료의 서버 reading_progress 행은0이다.
+- 실제 READ ONLY 트랜잭션: 작성자 자료/원본2/2, 비소유자0/0, anon 접근 차단 후 ROLLBACK. 실제 두 번째 계정 UI 검수는 아니며 역할/claim 검사다. 별도 비로그인 호스트에서도 본문 비노출, signed-file 링크0을 확인했다.
+- 모바일 편집→저장→재열람·제목→본문 Tab 이동 정상. 브라우저 console error0. 원본 파일을 여는 만료 링크는 검수 문서/PR에 포함하지 않는다.
+- 보안 advisor의 기존55건은 이번 변경과 무관하게 남아 있으며 추가0. 기존 함수 권한 경고의 분류는 [Supabase linter](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable)를 참고한다. 이번 함수는 SECURITY INVOKER이며 search_path가 고정되어 새 경고 대상이 아니다.
+
+## 최종 화면·배포
+
+실행 head e0973c0d598438b10e47d7ed40a7b5037084ce09, Vercel dpl_3NYYxVgQEPJhC9TQFE7HNJj8Fg8i READY. 검수 전용 https://manabi-web-v2-preview.vercel.app 은 https://manabi-n5t7dughm-wonchance-arts-projects.vercel.app 를 가리킨다. API version과 화면 빌드 표시가 실행 head와 일치한다. 최종 실계정 서재의 CSS320/354/390/1280px 모두 문서 가로 넘침0·묶음 제목 넘침0. 편집 화면 데스크톱1280px 및 모바일 검수, console error0, viewport 원복 완료. 검수 자료 수정 화면을 사용자에게 열어 두었다.
+
+운영 https://teset-gilt.vercel.app 의 실제 API version은 main6e61b6e83840a4860b314570a074fb42fb1fcb09 그대로다. 부모 PR #1288 → draft PR #1289 순서로 Claude가 병합 검토한다. 이번 범위의 미해결 기능 오류는 없다. 전체 미참조 원본 정리, 기기 간 위치 동기화, 서재 목록/컬렉션 개편은 후속이다. 실제 두 번째 계정 UI 및 편집 본문의 외부 AI 분석은 이번 검수에 포함하지 않았다.
+
+최종 실행 코드의 전체 CI34170575000 SUCCESS(lint/콘텐츠/vitest, smoke·learning-flow). 마지막 두 커밋은 CSS만 보완했으며 기존 테스트/타임아웃 변경 없음. 이후 인계 문서·자기 보드 커밋은 실행 코드와 구분한다.
