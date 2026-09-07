@@ -26,8 +26,10 @@ async function run(ownerId, mode, operation) {
     tx.onabort = () => reject(tx.error || new Error('초안 저장이 중단됐어요.'));
   });
 }
-export async function readComposerDraft(ownerId) {
-  const draft = await run(ownerId, 'readonly', (store, key) => store.get(key));
+function draftKey(ownerId, scope) { return scope ? `${ownerId}/edit/${scope}` : ownerId; }
+
+export async function readComposerDraft(ownerId, scope = '') {
+  const draft = await run(ownerId, 'readonly', store => store.get(draftKey(ownerId, scope)));
   if (!draft) return null;
   const db = await open();
   return new Promise((resolve, reject) => {
@@ -43,7 +45,7 @@ export async function readComposerDraft(ownerId) {
   });
 }
 
-export async function writeComposerDraft(ownerId, draft) {
+export async function writeComposerDraft(ownerId, draft, scope = '') {
   if (!ownerId) throw new Error('ACCOUNT_REQUIRED');
   const db = await open();
   return new Promise((resolve, reject) => {
@@ -54,21 +56,27 @@ export async function writeComposerDraft(ownerId, draft) {
       const request = files.getKey(key);
       request.onsuccess = () => { if (!request.result && file.blob) files.put(file.blob, key); };
     });
-    tx.objectStore(STORE).put({ ...draft, files: draft.files.map(({ blob, ...file }) => file) }, ownerId);
+    tx.objectStore(STORE).put({ ...draft, files: draft.files.map(({ blob, ...file }) => file) }, draftKey(ownerId, scope));
     tx.oncomplete = resolve;
     tx.onerror = () => reject(tx.error);
     tx.onabort = () => reject(tx.error || new Error('DRAFT_ABORTED'));
   });
 }
 
-export async function removeComposerDraft(ownerId) {
+export async function removeComposerDraft(ownerId, scope = '') {
   if (!ownerId) throw new Error('ACCOUNT_REQUIRED');
   const db = await open();
   return new Promise((resolve, reject) => {
     const tx = db.transaction([STORE, FILES], 'readwrite');
-    tx.objectStore(STORE).delete(ownerId);
-    const cursor = tx.objectStore(FILES).openCursor(IDBKeyRange.bound(`${ownerId}/`, `${ownerId}/\uffff`));
-    cursor.onsuccess = () => { if (cursor.result) { cursor.result.delete(); cursor.result.continue(); } };
+    const drafts = tx.objectStore(STORE);
+    const stored = drafts.get(draftKey(ownerId, scope));
+    stored.onsuccess = () => {
+      drafts.delete(draftKey(ownerId, scope));
+      if (!stored.result) return;
+      const prefix = `${ownerId}/${stored.result.id}/`;
+      const cursor = tx.objectStore(FILES).openCursor(IDBKeyRange.bound(prefix, `${prefix}\uffff`));
+      cursor.onsuccess = () => { if (cursor.result) { cursor.result.delete(); cursor.result.continue(); } };
+    };
     tx.oncomplete = resolve;
     tx.onerror = () => reject(tx.error);
     tx.onabort = () => reject(tx.error);

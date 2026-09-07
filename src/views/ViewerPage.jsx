@@ -512,6 +512,7 @@ export default function ViewerPage() {
   // ③ 원문 수정(오너 승인) — 소유자 전용, 저장 시 바뀐 줄만 재분석(sourceEdit.js 계획).
   const [sourceEditOpen, setSourceEditOpen] = useState(false);
   const handleSourceEditSave = async (plan) => {
+    if (composerOf(material)) return;
     if (!plan || plan.noop) { setSourceEditOpen(false); return; }
     if (!plan.ok) { toast(plan.reason, 'error'); return; }
     try {
@@ -2315,7 +2316,7 @@ export default function ViewerPage() {
             폰에서 두 줄(89px)로 꺾였고, 그 위에 뒤로가기 줄·시리즈 내비 줄이 따로 있었다. */}
         <div className="viewer-topbar">
           <LibraryReturnLink className="viewer-back-link">← 내 서재</LibraryReturnLink>
-          {composerOf(material) && <Link className="viewer-back-link" href={`/viewer/${id}?returnTo=${encodeURIComponent(originalParams.get('returnTo') || '/materials?view=owned')}`}>글과 첨부 원본 ↗</Link>}
+          {composerOf(material) && <Link className="viewer-back-link" href={`/viewer/${composerOf(material)?.parentId || id}?returnTo=${encodeURIComponent(originalParams.get('returnTo') || '/materials?view=owned')}`}>현재 글과 첨부 원본 ↗</Link>}
           {siblingNav && (
             <div className="viewer-series-nav" title={siblingNav.label}>
               {siblingNav.prev ? (
@@ -2345,7 +2346,8 @@ export default function ViewerPage() {
           </div>
         </div>
         <p className="reader-metadata">{langNameKo(materialLang)}{material?.processed_json?.metadata?.level ? ` · ${material.processed_json.metadata.level}` : ''} · {material.visibility === 'public' ? '공개 읽기' : '내 자료'}</p>
-        {titleEditing && user?.id === material?.owner_id ? (
+        {composerOf(material) && <p className="reader-metadata">학습에 사용한 본문이에요. 현재 글은 위의 링크에서 열 수 있어요.</p>}
+        {titleEditing && user?.id === material?.owner_id && !composerOf(material) ? (
           <form
             onSubmit={e => { e.preventDefault(); updateTitleMutation.mutate(titleDraft); }}
             style={{ display: 'flex', gap: 6, alignItems: 'center', flex: 1 }}
@@ -2370,7 +2372,7 @@ export default function ViewerPage() {
              ※ 여기 있던 `flex: 1`은 죽은 값이었다 — 부모(.page-header)가 flex가 아니다. */
           <div className="viewer-titlerow">
             <h1 className="page-header__title">{material.title}</h1>
-            {user?.id === material?.owner_id && (
+            {user?.id === material?.owner_id && !composerOf(material) && (
               <button
                 className="viewer-title-edit"
                 onClick={() => { setTitleDraft(material.title); setTitleEditing(true); }}
@@ -2683,7 +2685,7 @@ export default function ViewerPage() {
                   )}
                   {user?.id === material?.owner_id && !isAnalyzing && !reanalyzeMutation.isPending && (
                     <button className="rsheet-toolrow" onClick={() => { setSettingsOpen(false); setReanalyzePanel('menu'); }}>
-                      <span className="rsheet-txt"><b>재분석</b><span>전체·부분 분석, 원문 수정</span></span>
+                      <span className="rsheet-txt"><b>재분석</b><span>{composerOf(material) ? '전체·부분 분석' : '전체·부분 분석, 원문 수정'}</span></span>
                       <em>›</em>
                     </button>
                   )}
@@ -2708,10 +2710,10 @@ export default function ViewerPage() {
                 <strong>부분 분석</strong>
                 <span>문단을 선택해서 분석합니다</span>
               </button>
-              <button className="reanalyze-panel__item" onClick={() => { setReanalyzePanel(null); setSourceEditOpen(true); }}>
+              {!composerOf(material) && <button className="reanalyze-panel__item" onClick={() => { setReanalyzePanel(null); setSourceEditOpen(true); }}>
                 <strong>원문 수정</strong>
                 <span>텍스트를 고치면 바뀐 줄만 분석합니다</span>
-              </button>
+              </button>}
             </div>
           )}
           {reanalyzePanel === 'pick' && (

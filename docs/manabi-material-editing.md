@@ -19,16 +19,35 @@
 ALTER TABLE public.reading_materials ADD COLUMN IF NOT EXISTS document_json jsonb;
 ALTER TABLE public.reading_materials ADD CONSTRAINT reading_materials_document_private_v1 CHECK (
   document_json IS NULL OR (
-    visibility = 'private' AND owner_id IS NOT NULL
+    COALESCE(visibility = 'private', false) AND owner_id IS NOT NULL
     AND COALESCE(processed_json->'metadata'->'composer'->>'version' = '1', false)
     AND COALESCE(document_json->>'version' = '1', false)
     AND COALESCE(jsonb_typeof(document_json->'body') = 'string', false)
     AND COALESCE(document_json->>'revision' ~ '^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$', false)
   )
 );
+
+-- Older open viewers also share this database. Enforce source identity there,
+-- while allowing analysis dictionaries/status and the new document to change.
+CREATE OR REPLACE FUNCTION public.protect_composer_source()
+RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog, public AS $$
+BEGIN
+  IF OLD.processed_json->'metadata'->'composer'->>'version' = '1' AND (
+    NEW.raw_text IS DISTINCT FROM OLD.raw_text
+    OR NEW.processed_json->'metadata'->'composer' IS DISTINCT FROM OLD.processed_json->'metadata'->'composer'
+    OR NEW.processed_json->'metadata'->'importAttempt' IS DISTINCT FROM OLD.processed_json->'metadata'->'importAttempt'
+  ) THEN
+    RAISE EXCEPTION 'composer_source_is_immutable' USING ERRCODE = '23514';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+CREATE TRIGGER protect_composer_source
+BEFORE UPDATE OF raw_text, processed_json ON public.reading_materials
+FOR EACH ROW EXECUTE FUNCTION public.protect_composer_source();
 ```
 
-기존 행 backfill/테이블/RPC/권한 변경 없음. 기존 행은 null로 통과한다. 기존 소유자 RLS가 새 컬럼에도 적용된다. 검토 후 Claude가 CLI `supabase migration new`로 저작한다.
+기존 행 backfill/테이블/외부 호출 RPC/권한 변경 없음. 기존 탭에서도 학습 원문을 덮어쓰지 못하도록 composer 원문·출처 식별자를 보호하는 UPDATE 트리거를 제안한다. 분석 dictionary/status는 계속 갱신할 수 있다. 기존 행은 null로 통과한다. 기존 소유자 RLS가 새 컬럼에도 적용된다. 검토 후 Claude가 CLI `supabase migration new`로 저작한다.
 
 ## 선례·재사용 판단
 
@@ -46,10 +65,28 @@ src/components/materials/MaterialComposer.jsx, MaterialEntry.jsx, MaterialEditor
 src/app/(app)/materials/[id]/edit/page.jsx,
 src/views/MaterialsPage.jsx, ViewerPage.jsx,
 e2e/material-editing.e2e.mjs 및 전용 fixture, scripts/verification/material-editing.mjs,
-이 문서, docs/ai-tasks.md 자기 항목.
+이 문서, docs/ai-tasks.md 자기 항목, prebuild가 갱신하는 public/sw.js의 캐시 식별자.
 
 금지: 기존 개인 데이터 수정, 학습 콘텐츠/판본/PDF 조판/음성/world/복습 일정 변경, 기존 테스트 의미 변경, merge/force-push, 운영 alias 승격, 환경 파일 열람.
 
 ## 검증 계획
 
 원문/기존 표현 불변, title-only/body/language 수정, 첨부 보존·교체, 사본 재사용, 응답 유실, 동시 수정, 계정/자료별 초안, 권한·삭제·빈 상태, 컬럼 미적용 상태. 데스크톱/모바일 실제 앱과 합성 DB로 저장→재열람→학습 사본→예전 출처 복귀를 검증한다. 전체 vitest 및 Next build, 기존 composer/reading-loop e2e 회귀를 실행한다.
+
+## 검수 기록
+
+- 전체 Vitest: 353파일 / 3,857개 통과. 빌드와 무제한 병렬 실행 시 기존 studiesRefs의 60초 beforeAll이 시간 초과했으며, 빌드 종료 후 `npm test -- --maxWorkers=2`로 전체를 다시 실행해 통과했다. 기존 테스트·타임아웃 수정 없음.
+- 최종 데이터/목록 계약 집중 검사: 5파일 / 51개 통과. 현재 글 저장은 title/document만 쓰고 raw_text·dictionary·sequence를 바꾸지 않음을 검증했다.
+- 독립 PGlite: 제안 DDL 실행, 기존 탭의 원문 덮어쓰기 차단, 분석 결과 갱신 허용, revision 충돌, 비공개/자료 형식 CHECK, 비소유자/비로그인 차단 통과. 실제 운영 DB 검사가 아니며 DDL은 미적용 상태다.
+- 독립 IndexedDB: 계정별·자료별 초안/Blob 분리, 새 자료 초안 공존, 해당 초안만 정리 통과. 기존 원본 저장소 검증 스크립트도 통과했다.
+- 실제 앱 + 합성 HTTP 경계: 수정 7개 흐름(데스크톱/모바일, 첨부 교체, 중복/응답 유실/실패, 동시 수정, 새 초안 공존, 저장 후 재수정, 필터 복귀, DB 미적용/권한 상태) 통과. 모바일 재진입 때 query 갱신으로 Web Lock을 재획득하던 오류를 발견해 편집 시작 시점을 고정하고 최신 자료 로딩 후 진입하도록 수정했다.
+- 기존 새 자료 편집기 8흐름, 기존 가져오기→표현 저장→복습→원문 귀환 20조건 통과. 브라우저 pageerror 0. 실제 개인 자료·표현·채점 기록에는 쓰지 않았다.
+- Next 배포 빌드 473개 정적 페이지 생성 성공. 기존 curriculum 경고 11개, lessonAdapters/lessonModel의 기존 anonymous-default-export 경고 2개는 이번 변경 범위 밖이다.
+- 긴 제목은 휴대폰에서도 전체를 보며 수정할 수 있도록 줄바꿈 높이를 맞추고, 작은 첨부 파일 용량은 KB로 표시한다. 실제 캡처는 로컬 검수 아티팩트로 제공한다.
+
+## 반영 순서와 남은 작업
+
+1. 부모 #1288 → 이 stacked PR을 Claude가 검토. 이 PR에는 migration 파일이 없다.
+2. Claude/오너가 위 document_json 컬럼·CHECK·원문 보호 트리거 제안을 검토하고 승인된 migration으로 저작/적용한다. 기존 운영 원문에는 UPDATE가 없다.
+3. 이번 미리보기에서 실제 계정의 새 검수 자료를 만들어 수정/첨부 교체/원문 복귀를 확인한 후 고정 미리보기와 운영 전환을 검토한다. 지금은 운영과 기존 고정 미리보기 alias를 변경하지 않는다.
+4. 다음 차수: 읽던 자료·최근 저장 중심 서재 목록/컬렉션. 그 다음에 새 원본에서 선택한 구간 학습을 다룬다. 전면 편집 이력 UI, 미참조 업로드 정리, 기기 간 원본 위치 동기화는 별도 후속이다.

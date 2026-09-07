@@ -9,7 +9,7 @@
 .composer-heading > p:last-child { color: var(--muted); font-size: 14px; line-height: 1.8; }
 .composer-paper { background: var(--sheet); border: 1px solid var(--rule); padding: clamp(22px, 5cqi, 48px); }
 .composer-title, .composer-body { display: block; width: 100%; border: 0; color: var(--ink); background: transparent; font-family: inherit; border-radius: 0; }
-.composer-title { font-size: clamp(26px, 4.3cqi, 36px); line-height: 1.4; font-weight: 600; letter-spacing: -.045em; padding: 8px 0 24px; border-bottom: 1px solid var(--rule); }
+.composer-title { font-size: clamp(26px, 4.3cqi, 36px); line-height: 1.4; font-weight: 600; letter-spacing: -.045em; padding: 8px 0 24px; border-bottom: 1px solid var(--rule); resize: none; overflow: hidden; }
 .composer-body { padding: 28px 0; min-height: 260px; resize: vertical; line-height: 1.95; font-size: 17px; overflow-wrap: anywhere; }
 .composer-title::placeholder, .composer-body::placeholder { color: var(--muted); opacity: .8; }
 .material-composer :is(button, input, select, textarea, a, summary):focus-visible, .original-reader :is(button, select, a):focus-visible { outline: 2px solid var(--ja); outline-offset: 4px; }
@@ -39,6 +39,8 @@
 .composer-save button { min-width: 92px; justify-content: center; }
 .composer-error { font-size: 13px; padding: 16px; background: color-mix(in srgb, var(--danger) 8%, var(--sheet)); color: var(--danger); line-height: 1.8; }
 .composer-error p { margin: 8px 0 0; }
+.composer-conflict-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.composer-conflict-actions button { min-height: 44px; padding: 8px 12px; background: var(--sheet); color: var(--ink); border: 1px solid var(--rule); }
 .composer-after { display: flex; flex-direction: column; gap: 8px; padding: 20px 0; font-size: 11px; line-height: 1.8; color: var(--muted); }
 .composer-after a { align-self: flex-start; display: inline-flex; align-items: center; min-height: 44px; color: inherit; }
 .composer-gate { max-width: 740px; margin: 70px auto; padding: 24px; color: var(--ink); }

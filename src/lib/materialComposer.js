@@ -15,6 +15,7 @@ export function composerOf(material) {
 
 export function shouldReadComposerOriginal(material, params) {
   if (!composerOf(material)) return false;
+  if (composerOf(material).role === 'study') return false;
   const learningRequest = params.get('study') === '1' || params.has('sourceToken') || params.has('sourceText');
   return !learningRequest || !material.raw_text?.trim() || !COMPOSER_LANGUAGES.includes(material.processed_json?.metadata?.language);
 }
@@ -79,7 +80,7 @@ export function composerRow(ownerId, draft) {
 
 // The immutable hash path is both the retry identity and the original's version.
 // Never upsert: an existing object is confirmed before skipping an interrupted upload.
-async function uploadOriginal(client, ownerId, draft, file) {
+export async function uploadOriginal(client, ownerId, draft, file) {
   const folder = `${ownerId}/${draft.id}`;
   const name = `${file.hash}.${file.kind}`;
   const bucket = client.storage.from(SOURCE_BUCKET);
@@ -138,7 +139,9 @@ export function composerError(error) {
 }
 
 export async function removeComposerOriginals(client, material) {
-  const paths = (composerOf(material)?.assets || []).map(asset => safeAssetPath(material, asset)).filter(Boolean);
+  const current = material.document_json?.version === 1 ? material.document_json : {};
+  const paths = [...new Set([...(composerOf(material)?.assets || []), ...(current.assets || []), ...(current.retainedAssets || [])]
+    .map(asset => safeAssetPath(material, asset)).filter(Boolean))];
   if (!paths.length) return;
   const { error } = await client.storage.from(SOURCE_BUCKET).remove(paths);
   if (error) throw error;
