@@ -6,6 +6,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toKoreanError } from '../lib/authErrors';
 import { supabase } from '../lib/supabase';
+import { authReturnPath } from '../lib/authRedirect';
 
 function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
@@ -26,9 +27,12 @@ function AuthForm() {
   const searchParams = useSearchParams();
   // 오픈 리다이렉트 차단: 앱 내부 절대경로만 허용한다(//evil.com·https://evil.com 등은 기본값으로).
   const rawFrom = searchParams.get('from');
-  const from = rawFrom && /^\/(?!\/)/.test(rawFrom) ? rawFrom : '/home';
+  const from = rawFrom && /^\/(?!\/)/.test(rawFrom) ? authReturnPath(rawFrom) : '/home';
 
   useEffect(() => {
+    if (searchParams.get('error') === 'auth_callback_failed') {
+      setError('로그인을 완료하지 못했어요. 다시 시도해 주세요.');
+    }
     if (searchParams.get('error') === 'email_confirm_failed') {
       setError('이메일 인증에 실패했습니다. 다시 회원가입을 시도해주세요.');
     }
@@ -78,7 +82,7 @@ function AuthForm() {
 
   async function handleGoogle() {
     try {
-      await signInWithGoogle();
+      await signInWithGoogle(from);
     } catch (err) {
       setError(toKoreanError(err.message));
     }
@@ -121,7 +125,7 @@ function AuthForm() {
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
-          {!isLogin && !isForgot && (
+          {!isLogin && !isForgot && !isReset && (
             <div className="auth-field">
               <label className="auth-label" htmlFor="auth-nickname">닉네임</label>
               <input
