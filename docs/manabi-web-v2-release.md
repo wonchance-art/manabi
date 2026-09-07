@@ -34,27 +34,27 @@ main `bd76c7d8f5bddf83c619a94c538183d29786c903`에 대해 #1277 → #1279 → #1
 
 **Claude 검토 항목:** AGENTS.md의 SQL 파일 소유 규약과 승인 설계의 담당 분리에 따라 Codex가 migration 파일을 변경하지 않았다. 검토 후 SQL 본문을 그대로 두고 `20260906000912_textbook_book_editions.sql`을 `20260906024758_textbook_book_editions.sql`로 이름 변경하고, `docs/textbook-n5-book-editions.md`의 파일 참조를 맞춘다. 과거 적용을 설명하는 `docs/textbook-n5-web-release.md`의 두 번호는 역사적 기록이므로 설명을 보완한다. 이후 최신 remote 이력과 `supabase db push --dry-run`을 재확인한다. 재적용/repair/초기화는 하지 않는다.
 
-## Node 승인 항목
+## 승인된 Node 24 전환
 
-Vercel 프로젝트는 24.x, package.json과 lockfile은 20.x, 일반 CI는 22다. Node 20 신규 배포 종료 안내에 따라 아래 변경을 제안했으나 자동 승인 검토가 저장소 런타임 제한을 근거로 거부했다. **현재 설정은 변경하지 않았다.**
+Vercel 프로젝트의 24.x 설정을 package.json의 20.x가 덮어쓰고 있었다. 최초 자동 승인 검토에서 보류한 세 파일 변경은 2026-09-07 오너의 **「승인. 다음 할 일 진행」**으로 명시적으로 승인되었다. 아래 웹 런타임 설정을 적용했다. 월드 생성용 Node 22 규약은 유지한다.
 
-검토 가능한 변경 범위:
+승인된 변경 범위:
 
-| 파일/범위 | 현재 | 승인 후 |
+| 파일/범위 | 이전 | 적용값 |
 |---|---|---|
 | `package.json` engines.node | `20.x` | `24.x` |
 | `package-lock.json` root engines.node | `20.x` | `24.x` |
 | `.github/workflows/ci.yml` 두 setup-node 단계 | `22` | `24` |
 | `.github/workflows/world.yml` 및 월드 자산 저작 | `22` | 그대로 `22` |
 
-공식 Node 24.20.0 darwin-arm64 런타임을 임시 위치에서 검증한다. 배포 설정 변경 승인 후에는 Vercel Node 24 빌드와 서버 동작을 다시 검사해야 한다. Node 22 world 테스트의 engine 경고는 설치 차단이 아니며 자산 생성 규약을 유지하는 의도적인 역할 분리다.
+공식 Node 24.20.0 darwin-arm64 런타임으로 검증한다. 실제 Vercel Node 24 빌드·서버 동작과 Node 24 웹 CI 결과는 후속 검수 기록에 남긴다. Node 22 world 테스트의 engine 경고는 설치 차단이 아니며 자산 생성 규약을 유지하는 의도적인 역할 분리다.
 
 ## 병합과 운영 전환
 
 읽기 전용 설정 확인: Vercel project `manabi`, production branch **main**, `autoAssignCustomDomains: true`, Git 배포 enabled, system env enabled. 현재 그대로 병합하면 자동으로 운영 도메인에 할당될 수 있다.
 
 1. Claude/운영 담당자가 검수 창을 합의하고 **병합 전에** 도메인 자동 할당을 끈다. 변경한 설정과 원래 값을 기록하고, 직전 운영 배포/도메인 매핑을 다시 읽는다. Codex는 공유 프로젝트 설정을 변경하지 않았다.
-2. DB 파일 번호 정합성, Node 승인/배포 검사, 실제 계정 검수, CI가 통과한 뒤 Claude가 통합 PR을 main에 병합한다. 기존 8개 PR 정리는 포함 내용 확인 뒤 진행한다. Codex merge/force-push 금지.
+2. DB 파일 번호 정합성, 승인된 Node 24 배포 검사, 실제 계정 검수, CI가 통과한 뒤 Claude가 통합 PR을 main에 병합한다. 기존 8개 PR 정리는 포함 내용 확인 뒤 진행한다. Codex merge/force-push 금지.
 3. 깨끗한 main에서 `node scripts/deploy-web-release.mjs --production-staged`로 계획을 검토하고 `--deploy`를 추가한다. 도구는 원격 main HEAD 일치, `--prod --skip-domain`을 강제한다. Preview를 그대로 승격해 production 설정 검증을 생략하지 않는다.
 4. 대기 배포의 버전 검사를 `production` 대상으로 실행하고 인증/읽기/저장/권한/교재를 검수한다. production 대기 빌드 완료가 곧 이용자 전환 완료는 아니다.
 5. 승인된 실행 담당자가 검수한 production 배포를 promote한 뒤, 기존 주소의 버전·교재·캐시·저장을 확인한다. 자동 할당을 원래대로 되돌리는 시점도 담당자가 결정한다.
