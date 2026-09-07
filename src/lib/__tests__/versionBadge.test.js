@@ -48,10 +48,11 @@ describe('④ dev 폴백 — 로컬·미배포에서 깨지지 않는다', () =>
     expect(buildVersionView({}).ref).toBe('local');
   });
 
-  it('next.config가 Vercel 자동 주입 env를 dev/local로 폴백한다', () => {
+  it('next.config가 검증된 CLI/Git 빌드 식별자를 배지에 전달한다', () => {
     const cfg = read('next.config.mjs');
-    expect(cfg).toContain("NEXT_PUBLIC_BUILD_SHA: (process.env.VERCEL_GIT_COMMIT_SHA || '').slice(0, 7) || 'dev'");
-    expect(cfg).toContain("NEXT_PUBLIC_BUILD_REF: process.env.VERCEL_GIT_COMMIT_REF || 'local'");
+    expect(cfg).toContain('buildReleaseVersion(process.env)');
+    expect(cfg).toContain('NEXT_PUBLIC_BUILD_SHA: releaseVersion.sha');
+    expect(cfg).toContain('NEXT_PUBLIC_BUILD_REF: releaseVersion.ref');
   });
 });
 
