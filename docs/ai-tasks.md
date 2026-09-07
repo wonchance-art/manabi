@@ -14,13 +14,15 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- **서재 단일 편집기 착수 (2026-09-08, 오너 승인)** — `codex/unified-material-editor-20260908`, main `6e61b6e8` 기반 별도 작업 공간. 제목·본문·파일/링크·저장 한 흐름, 원본 보존·개인 초안·안전한 재시도·서재/읽기 연결. 범위: materials/add 라우트·새 composer/reader/lib/CSS/테스트, 기존 MaterialsPage·ViewerPage 연결, additive Storage/저장 migration, 관련 문서/자기 보드. 기존 교재/판본/복습/개인 권한·원본 iCloud·world 불변. 운영 DB 적용/merge/force-push 없음.
+- 없음. 아래 단일 편집기는 코드 인계 완료, 운영 파일 저장 조건은 todo에 분리.
 
 ### todo
+- **서재 단일 편집기 운영 저장소 적용(owner-gate)** — draft PR #1288의 `20260907162537_unified_material_composer.sql`: private 원본 bucket·본인 경로 권한·새 자료 중복/비공개 제약. CLAUDE.md 운영 DB 하드리밋에 따라 오너 승인/작업 후 실제 Storage API 파일 저장·접근 검수. 기존 데이터 이동 없음. main migration 자동 적용 workflow가 있으므로 이 조건 확인 전 임의 병합 금지. 후속: 서재 목록/컬렉션·새 원본의 학습 구간 추출.
 - ~~🎧 받아쓰기 채점 엔진(#1077 제안 6, 발주 5386786944)~~ → **회수: 2026-08-23
   16:03 스캔까지 WORKING 무표식(30분 룰) — Claude 직접 수행·완결(회수 공지
   5386950005, PR #1118)**. 이 열에 잔여 발주 없음.
 ### done (최근)
+- **서재 단일 편집기 구현·검수 인계 (2026-09-08)** — `codex/unified-material-editor-20260908` / draft PR #1288. 제목·본문·파일/링크·저장, PDF/EPUB 원본 읽기, 선택 언어4개, 계정별 Blob 초안·재시도 중복 방지. 전체 웹352파일/3,840개·473페이지 로컬 빌드·새 브라우저8흐름·기존 학습20조건·격리 Postgres/IndexedDB 검사 통과. 최초 실행 head2c7f6771 전체 CI 및 Vercel READY, 실제 로그인 편집기 검수 후 표시 수정8dd23129. 최종 head/CI/배포는 #150 CODEX_DONE. 미리보기 https://manabi-web-v2-preview.vercel.app/materials/add , 상세 `docs/manabi-unified-material-editor.md`. 운영 DB 미적용·실제 새 첨부 저장 검수 대기(위 todo). 원본 작업 공간·교재/판본·복습·월드 불변, merge/force-push/운영 승격 없음.
 - **manabi PR #1287 운영 전환 완료 (2026-09-08)** — main `6e61b6e83840a4860b314570a074fb42fb1fcb09`, 운영/고정 미리보기 검수 및 CI 완료. 이전 doing 해소 근거: #150 코멘트5572911215. 해당 PR 한정 병합 예외 종료.
 - **manabi 두 실제 계정 검수·홈 안내 완료 (2026-09-07)** — 비소유자 계정(관리자 메뉴 표시)에서 검수 자료 직접 접근 차단/서재 제목 검색0/검수 표현2개 각각 검색0, 해당 계정의 이어 읽기·복습 목록 확인. 첫 소유자의 네 문장·수집2개·완료·복습 일정 유지. 추가 저장/채점/삭제 및 권한 변경 없음. 홈 전체 대기 수와 하루 한도 적용 후 복습 수가 다름을 설명하는 문구2곳 보완, 실행 코드1f1c21e5, 관련39개·JSX lint·diff check 통과. 최종 미리보기/CI와 exact head는 PR #1287 및 #150 CODEX_DONE. 전체 보안 감사·운영 전환 완료 선언 아님. 보드 독립 커밋, merge/force-push/운영 승격 없음.
 - **manabi 웹 v2 · 실제 로그인·읽기 순환 검수 완료 (2026-09-07)** — 누락된 Supabase 고정 미리보기 redirect 한 항목을 추가, 기존 Site URL/두 callback 유지. 실제 Google 인증이 개편 `/home`으로 복귀함을 확인. 비공개 검수 자료 1개를 운영/미리보기에서 재사용하여 표현 총 2개 저장·복습·원문 복귀, 서버 출처/미래 복습 일정/읽기 완료 확인. 새 복습 목록은 reload 없이 미학습0/학습중2·내일로 갱신. 소유자 1명+비로그인 본문 차단 검수이며 두 실제 계정 검수는 위 todo. 합성 검수 데이터의 정상 학습 이벤트는 계정 집계에 반영될 수 있음. 문서·독립 보드 커밋만 변경, 실행 코드41e8c8bb와 미리보기/운영 배포 유지. 최종 head/CI는 PR #1287 및 #150 CODEX_DONE. merge/force-push/운영 승격 없음.
