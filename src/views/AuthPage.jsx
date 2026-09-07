@@ -219,7 +219,7 @@ function AuthForm() {
           )}
 
           {error && error === 'ALREADY_REGISTERED' ? (
-            <div className="auth-alert auth-alert--error">
+            <div className="auth-alert auth-alert--error" role="alert">
               이미 가입된 이메일입니다.{' '}
               <button
                 type="button"
@@ -230,11 +230,11 @@ function AuthForm() {
               </button>
             </div>
           ) : error ? (
-            <div className="auth-alert auth-alert--error">{error}</div>
+            <div className="auth-alert auth-alert--error" role="alert">{error}</div>
           ) : null}
 
           {success && (
-            <div className="auth-alert auth-alert--success">{success}</div>
+            <div className="auth-alert auth-alert--success" role="status">{success}</div>
           )}
 
           <button

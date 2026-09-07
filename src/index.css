@@ -6122,6 +6122,10 @@ a.viewer-badge:hover {
   cursor: pointer;
   font-size: 0.85rem;
 }
+[data-theme="light"] .auth-alert--error,
+[data-theme="light"] .auth-alert__link {
+  color: #A12B39;
+}
 .auth-submit {
   width: 100%;
   padding: 12px;

@@ -34,6 +34,7 @@ try {
   page.on('pageerror', error => report.errors.push(error.message));
   async function layout(label) {
     await page.evaluate(() => document.fonts.ready);
+    await page.locator('.auth-alert').evaluateAll(elements => Promise.all(elements.flatMap(element => element.getAnimations().map(animation => animation.finished.catch(() => {})))));
     const dimensions = await page.evaluate(() => ({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth }));
     assert(dimensions.scrollWidth <= dimensions.width + 1, `${label}: horizontal overflow`);
     report.layouts.push({ label, ...dimensions });
@@ -67,6 +68,7 @@ try {
   await layout('password-recovery-mobile');
   await page.getByRole('button', { name: '재설정 링크 보내기', exact: true }).click();
   await page.getByText('비밀번호 재설정 링크를 이메일로 보냈습니다. 확인해주세요.', { exact: true }).waitFor();
+  await page.getByRole('status').filter({ hasText: '비밀번호 재설정 링크' }).waitFor();
   const recovery = authRequests.at(-1);
   assert.equal(recovery.type, 'recovery');
   const callback = new URL(recovery.redirect);
@@ -97,8 +99,30 @@ try {
   }
   report.checks.push('Deployed callback without a code returns safely to sign-in without caching');
   await page.goto(base + '/auth?error=auth_callback_failed');
-  await page.getByText('로그인을 완료하지 못했어요. 다시 시도해 주세요.', { exact: true }).waitFor();
+  const alert = page.getByRole('alert').filter({ hasText: '로그인을 완료하지 못했어요.' });
+  await alert.waitFor();
   await layout('callback-error-mobile');
+  const contrast = await alert.evaluate(element => {
+    const rgba = color => color.match(/[\d.]+/g).map(Number);
+    const ancestors = [];
+    for (let item = element; item; item = item.parentElement) ancestors.unshift(item);
+    let background = [255, 255, 255];
+    for (const item of ancestors) {
+      const [r, g, b, alpha = 1] = rgba(getComputedStyle(item).backgroundColor);
+      background = [r, g, b].map((channel, i) => channel * alpha + background[i] * (1 - alpha));
+    }
+    const luminance = color => color.slice(0, 3).map(channel => {
+      const c = channel / 255;
+      return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    }).reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+    const a = luminance(rgba(getComputedStyle(element).color));
+    const b = luminance(background);
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+  });
+  assert(contrast >= 4.5, `Auth error text contrast ${contrast.toFixed(2)} is below 4.5`);
+  report.errorTextContrast = contrast;
+  await page.setViewportSize({ width: 320, height: 740 });
+  await layout('callback-error-narrow-mobile');
   report.checks.push('Callback failure is actionable in the deployed mobile UI');
   assert.deepEqual(report.errors, []);
   await context.close();
