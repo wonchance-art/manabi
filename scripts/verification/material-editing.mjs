@@ -1,4 +1,4 @@
-// Isolated Postgres + IndexedDB verification of the proposed DDL. Never contacts a server.
+// Isolated Postgres + IndexedDB verification of the approved migration. Never contacts a server.
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
@@ -20,8 +20,7 @@ try{
  grant usage on schema public,auth to authenticated,anon; grant all on reading_materials to authenticated; grant select on reading_materials to anon;
  grant usage on all sequences in schema public to authenticated;
  insert into reading_materials(owner_id,visibility,title,raw_text,processed_json) values('${owner}','private','original','original source','{"metadata":{"composer":{"version":1}},"sequence":["old-token"]}');`);
- const spec=await readFile(new URL('../../docs/manabi-material-editing.md',import.meta.url),'utf8');
- const sql=spec.match(/```sql\n([\s\S]*?)```/)[1];await db.exec(sql);
+ const sql=await readFile(new URL('../../supabase/migrations/20260907221311_material_document_editing.sql',import.meta.url),'utf8');await db.exec(sql);
  await db.exec(`set role authenticated; set test.uid='${owner}';`);
  const doc={version:1,revision,body:'new source',language:'French',assets:[],links:[]};
  let result=await db.query('update reading_materials set title=$1,document_json=$2 where id=1 and document_json is null returning id',['edited',doc]);assert.equal(result.rows.length,1);
