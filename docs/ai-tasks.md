@@ -14,12 +14,14 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- **manabi PR #1287 운영 전환 착수 (2026-09-08, 오너 예외 승인)** — 이번 PR에 한해 Codex가 기존 교재 migration 파일명/문서 정합화와 병합을 수행하도록 명시적 승인. 검수한 rename100% 패치 적용·원격 이력/CLI dry-run·최종 CI 후 자동 도메인 할당 분리, exact head squash 병합, merged main production 대기 배포·운영 검수 순서. 기존 SQL 재실행·repair/reset·force-push 금지. 원본 iCloud·개인 자료/진도·발행 판본 보존.
+- **서재 단일 편집기 착수 (2026-09-08, 오너 승인)** — `codex/unified-material-editor-20260908`, main `6e61b6e8` 기반 별도 작업 공간. 제목·본문·파일/링크·저장 한 흐름, 원본 보존·개인 초안·안전한 재시도·서재/읽기 연결. 범위: materials/add 라우트·새 composer/reader/lib/CSS/테스트, 기존 MaterialsPage·ViewerPage 연결, additive Storage/저장 migration, 관련 문서/자기 보드. 기존 교재/판본/복습/개인 권한·원본 iCloud·world 불변. 운영 DB 적용/merge/force-push 없음.
+
 ### todo
 - ~~🎧 받아쓰기 채점 엔진(#1077 제안 6, 발주 5386786944)~~ → **회수: 2026-08-23
   16:03 스캔까지 WORKING 무표식(30분 룰) — Claude 직접 수행·완결(회수 공지
   5386950005, PR #1118)**. 이 열에 잔여 발주 없음.
 ### done (최근)
+- **manabi PR #1287 운영 전환 완료 (2026-09-08)** — main `6e61b6e83840a4860b314570a074fb42fb1fcb09`, 운영/고정 미리보기 검수 및 CI 완료. 이전 doing 해소 근거: #150 코멘트5572911215. 해당 PR 한정 병합 예외 종료.
 - **manabi 두 실제 계정 검수·홈 안내 완료 (2026-09-07)** — 비소유자 계정(관리자 메뉴 표시)에서 검수 자료 직접 접근 차단/서재 제목 검색0/검수 표현2개 각각 검색0, 해당 계정의 이어 읽기·복습 목록 확인. 첫 소유자의 네 문장·수집2개·완료·복습 일정 유지. 추가 저장/채점/삭제 및 권한 변경 없음. 홈 전체 대기 수와 하루 한도 적용 후 복습 수가 다름을 설명하는 문구2곳 보완, 실행 코드1f1c21e5, 관련39개·JSX lint·diff check 통과. 최종 미리보기/CI와 exact head는 PR #1287 및 #150 CODEX_DONE. 전체 보안 감사·운영 전환 완료 선언 아님. 보드 독립 커밋, merge/force-push/운영 승격 없음.
 - **manabi 웹 v2 · 실제 로그인·읽기 순환 검수 완료 (2026-09-07)** — 누락된 Supabase 고정 미리보기 redirect 한 항목을 추가, 기존 Site URL/두 callback 유지. 실제 Google 인증이 개편 `/home`으로 복귀함을 확인. 비공개 검수 자료 1개를 운영/미리보기에서 재사용하여 표현 총 2개 저장·복습·원문 복귀, 서버 출처/미래 복습 일정/읽기 완료 확인. 새 복습 목록은 reload 없이 미학습0/학습중2·내일로 갱신. 소유자 1명+비로그인 본문 차단 검수이며 두 실제 계정 검수는 위 todo. 합성 검수 데이터의 정상 학습 이벤트는 계정 집계에 반영될 수 있음. 문서·독립 보드 커밋만 변경, 실행 코드41e8c8bb와 미리보기/운영 배포 유지. 최종 head/CI는 PR #1287 및 #150 CODEX_DONE. merge/force-push/운영 승격 없음.
 - **manabi 프로필 DB 수정 적용 완료 (2026-09-07, 오너 「모두 승인」)** — `20260907084349_profiles_safe_initial_role` 원격 적용. 신규 student 프로필·함수 search_path 고정·최초 admin/host INSERT 차단, 기존 id/역할 fingerprint 동일, 원격/로컬 SQL 바이트 동일. 격리 PostgreSQL12조건·로컬 인증40개 통과, DB 수정 head `0c6880bdaaf2b14e840fb8e8236a420c37281a8a`의 웹 CI 단위351파일/3,826개·lint·prebuild 성공. 로컬 전체 실행의 도시 로드 timeout/지연은 통과로 집계하지 않았다. migration·검증·문서·보드만 변경, 웹 실행 코드41e8c8bb/고정 미리보기 유지. 기존 계정·자료·진도·판본 UPDATE/DELETE와 웹 운영 승격/merge/force-push 없음. draft PR #1287, 최종 exact head/CI는 #150 CODEX_DONE. 실제 계정 검수는 위 todo에 분리.
