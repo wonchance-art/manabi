@@ -13,11 +13,16 @@ import { LibraryReturnLink } from '@/components/web/LibraryReaderLink';
 import { safeLibraryReturn } from '@/lib/libraryReturn';
 import './material-composer.css';
 import './original-reader.css';
+import {materialActivity,originalPositionKey} from '@/lib/libraryActivity';
+import useLibraryActivity from '@/components/library/useLibraryActivity';
 
 const PdfJsViewer = dynamic(() => import('@/components/PdfJsViewer'), { ssr: false, loading: () => <p role="status">PDF를 여는 중…</p> });
 
 function OriginalFile({ material, asset }) {
-  const key = `manabi-original-position:${material.owner_id}:${material.id}:${asset.hash}`;
+  const key = originalPositionKey(material.owner_id,material.id,asset.hash);
+  const [rendered,setRendered]=useState(false);
+  const originalElement=useRef(null);
+  const readyRef=useRef(()=>setRendered(true));
   const [initialPosition, setInitialPosition] = useState(null);
   const [chapter, setChapter] = useState(0);
   const [positionWarning, setPositionWarning] = useState(false);
@@ -55,12 +60,13 @@ function OriginalFile({ material, asset }) {
   const data = original.data;
   const chapters = data?.book?.chapters || [];
   const active = Math.min(chapter, Math.max(0, chapters.length - 1));
-  return <section className="original-file" aria-label={`${asset.name} 원본`}>
+  useLibraryActivity(materialActivity(material,'original',asset.hash),rendered||chapters.length>0,originalElement);
+  return <section ref={originalElement} className="original-file" aria-label={`${asset.name} 원본`}>
     <header><div><span className="manabi-eyebrow">{asset.kind.toUpperCase()} / ORIGINAL</span><h2>{asset.name}</h2></div>{data?.url && <a href={data.url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">원본 파일 열기 ↗</a>}</header>
     {original.isPending && <p className="original-state" role="status">원본을 불러오고 있어요…</p>}
     {original.isError && <div className="original-state" role="alert"><p>원본을 불러오지 못했어요. 글과 저장 기록은 그대로 남아 있습니다.</p><button onClick={() => setRetry(value => value + 1)}>다시 불러오기</button></div>}
     {data?.unreadable && <div className="original-state" role="status"><p>이 EPUB은 여기서 본문을 펼칠 수 없어요. 위의 ‘원본 파일 열기’로 내려받아 읽을 수 있습니다.</p><button onClick={() => setRetry(value => value + 1)}>다시 펼치기</button></div>}
-    {data?.url && asset.kind === 'pdf' && initialPosition !== null && <div className="original-pdf"><PdfJsViewer key={retry} pdfUrl={data.url} initialPage={initialPosition} onPageChange={onPageChange} /></div>}
+    {data?.url && asset.kind === 'pdf' && initialPosition !== null && <div className="original-pdf"><PdfJsViewer key={retry} pdfUrl={data.url} initialPage={initialPosition} onPageChange={onPageChange} onReady={readyRef.current} /></div>}
     {!!chapters.length && <><label className="original-chapter-label" htmlFor={`chapter-${asset.hash}`}>목차</label><select id={`chapter-${asset.hash}`} value={active} onChange={e => { const value = Number(e.target.value); setChapter(value); onPageChange(value + 1); }}>{chapters.map((item, index) => <option key={index} value={index}>{index + 1}. {item.title}</option>)}</select><article className="original-epub"><h3>{chapters[active].title}</h3><div>{chapters[active].text}</div></article><nav className="original-chapter-nav" aria-label="EPUB 장 이동"><button disabled={active === 0} onClick={() => { setChapter(active - 1); onPageChange(active); }}>← 이전 장</button><span>{active + 1} / {chapters.length}</span><button disabled={active === chapters.length - 1} onClick={() => { setChapter(active + 1); onPageChange(active + 2); }}>다음 장 →</button></nav></>}
     <footer>{positionWarning ? '이 브라우저에서는 읽던 위치를 보관할 수 없어요.' : '원본의 읽던 위치는 이 기기에 보관합니다.'}<span>{asset.kind === 'epub' ? '본문은 읽기 편한 텍스트로 표시됩니다.' : '원본을 그대로 표시합니다.'}</span></footer>
   </section>;
@@ -74,7 +80,8 @@ export default function OriginalMaterialReader({ material }) {
   const [language, setLanguage] = useState(composer.language || '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [assetIndex, setAssetIndex] = useState(0);
+  const [assetIndex, setAssetIndex] = useState(()=>Math.max(0,(composer.assets||[]).findIndex(item=>item.hash===params.get('asset'))));
+  useLibraryActivity(materialActivity(material,'original',null,composer.revision),!!composer.body?.trim()||!!composer.links?.length);
   const assets = composer.assets || [];
   const links = (composer.links || []).flatMap(value => { try { return [normalizeSourceUrl(value)]; } catch { return []; } });
   const asset = assets[Math.min(assetIndex, Math.max(0, assets.length - 1))];

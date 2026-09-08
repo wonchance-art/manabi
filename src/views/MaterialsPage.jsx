@@ -314,7 +314,7 @@ export default function MaterialsPage({ libraryView = null }) {
     }
     if (visibleCount > PAGE_SIZE) params.set('shown', String(visibleCount)); else params.delete('shown');
     const next = params.toString();
-    window.history.replaceState({ ...window.history.state }, '', `/materials${next ? `?${next}` : ''}${window.location.hash}`);
+    window.history.replaceState({ ...window.history.state }, '', `${window.location.pathname === '/discover' ? '/discover' : '/materials'}${next ? `?${next}` : ''}${window.location.hash}`);
   }, [libraryView, searchQuery, langFilter, levelFilter, sortBy, unreadOnly, pinnedOnly, visibleCount]);
 
   const { data: suggestions = [] } = useQuery({

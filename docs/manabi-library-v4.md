@@ -26,9 +26,9 @@
 - src/components/web/LibraryPage.jsx, src/components/web/LibraryReaderLink.jsx, src/components/web/DiscoveryExplorer.jsx.
 - src/components/library/LibraryShelf.jsx, LibraryCollections.jsx, LibraryRow.jsx, LibrarySaveButton.jsx, useLibraryActivity.js, library.css.
 - src/components/materials/MaterialComposer.jsx, OriginalMaterialReader.jsx.
-- src/components/PdfJsViewer.jsx, src/views/ViewerPage.jsx, src/views/PdfViewerPage.jsx.
+- src/views/MaterialsPage.jsx (발견 안의 공개 탐색 URL·고급 보관 도구 호환), src/components/PdfJsViewer.jsx, src/components/PdfDocument.jsx (기존 embed의 정상 load 신호만 연결), src/views/ViewerPage.jsx, src/views/PdfViewerPage.jsx.
 - src/components/books/BookReader.jsx, BookHome.jsx.
-- src/app/(app)/materials/page.jsx, src/app/(app)/discover/page.jsx.
+- public/sw.js (기존 prebuild가 생성하는 코드 해시만), src/app/(app)/materials/page.jsx, src/app/(app)/discover/page.jsx.
 - scripts/verification/personal-library.mjs, e2e/library-v4.e2e.mjs, e2e/fixtures/library-v4-backend.mjs.
 범위가 실제 파일 구조와 다르면 변경 전 이 SPEC의 이유와 정확한 경로를 갱신한다. 기존 테스트·월드·교재 corpus·원문·판본·FSRS·환경 파일 변경 금지. 시안은 승인 완료, UI 카피와 개인 관계 구현은 이번 오너 명시 요청을 따른다. 도시 생성 전용 exact snapshot/PNG 게이트는 해당하지 않는다.
 
@@ -45,4 +45,16 @@
 공개 push·draft PR·DB 적용·Vercel 미리보기는 검토 가능한 정확한 변경/검증 결과를 준비한 뒤 진행. merge·force-push·운영 승격 없음. 기존 미리보기는 새 후보 READY까지 유지.
 
 ## 검수 결과
-구현 중.
+- 전체 Vitest 356파일/3878개 통과. 기존 테스트 파일·timeout 변경 없음.
+- 신규 브라우저 9흐름과 기존 편집기 회귀 7흐름 통과. Chromium이 실제 앱을 실행하고, 합성 계정의 REST 경계 아래에서 실제 PGlite SQL/RLS를 실행했다. 운영 계정 검수와 구분한다.
+- 신규 흐름: 20개 원본 페이지/추가 조회/검색과 묶음 챕터, 모음집 수명과 원본 보존, 자료 저장 뒤 소속만 재시도, 다섯 화면 폭/긴 제목/키보드/200% 확대, 독립 조회 실패, EPUB 첨부·장 복귀, 발견의 공개 글 보관, 판본별 교재 복귀, 편집 후 같은 필터 복귀와 사본 중복 방지.
+- 기존 편집 회귀: PDF 원본 쪽 이동/재열람, 모바일 EPUB→PDF 교체와 보존 첨부, 응답 유실, 동시 수정 충돌, 자료별 초안 잠금, 스키마/소유권/조회 실패, 저장 재시도. 기존 카드 선택자를 쓰는 두 탐색 시나리오는 새 통합 목록 흐름에서 대체 검증했으며 기존 테스트 자체를 수정하지 않았다.
+- 독립 SQL 검증: 0/1/30/300/3000개 원본 총수·페이지, 파일명/0장 PDF/자식 검색, 원문/진도 불변, 비공개 파일 경로 비노출, 모음집 원본 비삭제, 비소유자/anon 차단, 공개 범위 변경, 서버 열람 시각·문맥 검증. 3000개 합성 원본 중 첫 20개 응답 약 7KB; 로컬 측정 약 0.22초로 운영 성능 보장은 아니다.
+- 직접 확인한 데스크톱/모바일 화면: manabi-library-v4-desktop.png, manabi-library-v4-mobile.png (승인 설계와 같은 로컬 시각화 디렉터리). 가로 넘침/브라우저 pageerror 0. 실제 계정의 사적 자료는 캡처하지 않았다.
+- 최종 Next.js 빌드 473페이지 성공, 집중 검사 4파일/31개 통과. 기존 curriculum 경고 11개와 익명 default export 경고 2개만 존재한다. DB 변경·새 Vercel 배포·실제 계정 검수는 아직 수행하지 않았다. 원격 마이그레이션 83개와 관련 실제 컬럼 구조를 재확인했고 이번 20260908025511만 추가 대상이다. 기존 preview/production은 유지한다.
+
+마지막 편집 복귀 검사에서 이전 React Query 자료가 먼저 표시되면 학습 언어 선택이 이전 상태로 남는 경우를 발견했다. 현재 document revision을 reader key에 포함해 수정한 언어·첨부 상태로 갱신하고 재검증했다. 공개 PDF 발췌 글은 다른 소유자의 PDF 대신 접근 가능한 글 주소로 기록한다. 느린 열람 기록 응답 뒤에는 서재 조회를 갱신하며, 구형 PDF 위치도 실제 쪽 렌더가 끝난 뒤에만 저장한다.
+
+코드 재검토로 구형 uploaded_pdfs.last_page_read가 usePdfRangeMutation에서 추출 구간 끝쪽으로도 갱신됨을 확인했다. 이를 실제 열람 쪽으로 간주하던 설계 가정을 바로잡는다. 기존 값은 변경하지 않으며, PDF 정상 렌더 후 현재 쪽을 계정/PDF별 이 기기 위치 키에 저장한다. 서버 열람 색인에는 여전히 위치·완료율을 넣지 않는다.
+
+기존 목록의 시리즈 교재 숨김 규칙도 유지한다. 실제 DB에는 해당 제목 규칙의 공개 123개/비공개 10개가 있어 단순 owner 통합은 은퇴한 교재를 서재에 다시 노출할 수 있었다. 기존 시리즈 자료는 기본 개인 책장에 자동 편입하지 않고, 명시적 보관/모음집/실제 열람 참조만 연결한다. 새 composer로 작성한 개인 자료와 책 그룹은 제목만으로 제외하지 않는다.

@@ -1,16 +1,17 @@
 'use client';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { libraryReaderHref, safeLibraryReturn } from '@/lib/libraryReturn';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { libraryReaderHref, safeLibraryReturn, libraryBrowseReturn } from '@/lib/libraryReturn';
 
 export function useLibraryReader() {
   const router = useRouter();
   const params = useSearchParams();
-  const readerHref = href => libraryReaderHref(href, `/materials?${params}`);
+  const pathname=usePathname();
+  const readerHref = href => libraryReaderHref(href, libraryBrowseReturn(pathname,`?${params}`));
   const openReader = (href, event) => {
     if (event && (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button > 0)) return;
     event?.preventDefault();
-    router.push(libraryReaderHref(href, window.location.pathname + window.location.search, window.scrollY));
+    router.push(libraryReaderHref(href, libraryBrowseReturn(window.location.pathname,window.location.search), window.scrollY));
   };
   return { readerHref, openReader };
 }

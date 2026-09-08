@@ -3,6 +3,9 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import OriginalMaterialReader from '@/components/materials/OriginalMaterialReader';
+import useLibraryActivity from '@/components/library/useLibraryActivity';
+import LibrarySaveButton from '@/components/library/LibrarySaveButton';
+import {materialActivity} from '@/lib/libraryActivity';
 import { composerOf, shouldReadComposerOriginal } from '@/lib/materialComposer';
 import Link from 'next/link';
 import { LibraryReturnLink } from '@/components/web/LibraryReaderLink';
@@ -279,6 +282,7 @@ export default function ViewerPage() {
   });
 
   const materialLang = material?.processed_json?.metadata?.language || 'Japanese';
+  useLibraryActivity(materialActivity(material,originalParams.get('study')==='1'?'study':'text',null,null,user?.id),!!material&&!isLoading&&!error&&!shouldReadComposerOriginal(material,originalParams));
 
   // [자세히] 인라인 문법 해설(오너 확정) — 모달·체크박스 없이 시트 좌측에서 펼친다.
   const grammar = useGrammarDetail({ materialLang, toast });
@@ -1640,7 +1644,7 @@ export default function ViewerPage() {
   }
 
   if (shouldReadComposerOriginal(material, originalParams)) {
-    return <OriginalMaterialReader key={material.id} material={material} />;
+    return <OriginalMaterialReader key={`${material.id}:${material.document_json?.revision || 'original'}`} material={material} />;
   }
 
   const json = material?.processed_json || { sequence: [], dictionary: {} };
@@ -2315,6 +2319,7 @@ export default function ViewerPage() {
             남고, 끝의 행동(읽기 완료·오늘 학습·다음 범위)은 본문 **아래**로 갔다(「끝은 끝에」). 예전 액션바는
             폰에서 두 줄(89px)로 꺾였고, 그 위에 뒤로가기 줄·시리즈 내비 줄이 따로 있었다. */}
         <div className="viewer-topbar">
+          <LibrarySaveButton material={material}/>
           <LibraryReturnLink className="viewer-back-link">← 내 서재</LibraryReturnLink>
           {composerOf(material) && <Link className="viewer-back-link" href={`/viewer/${composerOf(material)?.parentId || id}?returnTo=${encodeURIComponent(originalParams.get('returnTo') || '/materials?view=owned')}`}>현재 글과 첨부 원본 ↗</Link>}
           {siblingNav && (
