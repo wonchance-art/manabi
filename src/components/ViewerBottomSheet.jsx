@@ -37,6 +37,7 @@ export default function ViewerBottomSheet({
   // 바 오른쪽 끝 슬롯(leftContent 합성 선례) — 문장 이동 ▲▼ 재배치용. 바는 시트(z 95)보다
   // 항상 위(z 100)·항상 노출이라, 플로팅 필처럼 시트에 덮이는 일이 구조적으로 없다.
   barNav = null,
+  onClose,
 }) {
   // 시트는 한 번에 하나만 보여 준다 — 열림 여부(sheetOpen)와 **무엇을 보는지**(tab)로 가른다.
   const [tab, setTab] = useState('left');
@@ -80,10 +81,10 @@ export default function ViewerBottomSheet({
   //   닫힘 → 그 탭으로 연다 / 열림+같은 탭 → 시트째 닫는다 / 열림+다른 탭 → 건너간다
   const selectTab = (next) => {
     if (!sheetOpen) { setSheetOpen(true); setTab(next); return; }
-    if (tab === next) { setSheetOpen(false); return; }
+    if (tab === next) { closeSheet(); return; }
     setTab(next);
   };
-  const closeSheet = () => setSheetOpen(false);
+  const closeSheet = () => { setSheetOpen(false); onClose?.(); };
 
   // 핸들 아래로 스와이프 = 내리기 (바텀시트 표준 제스처 — 탭 경로만으론 '내린다'는
   // 기대와 어긋난다). 핸들에서 시작한 하향 드래그만 추적해 콘텐츠 스크롤과 분리.
@@ -100,7 +101,7 @@ export default function ViewerBottomSheet({
     const dy = e.changedTouches[0].clientY - dragY.current;
     dragY.current = null;
     if (sheetRef.current) sheetRef.current.style.transform = '';
-    if (dy > 48) setSheetOpen(false);
+    if (dy > 48) closeSheet();
   };
   // 브라우저가 제스처를 가로채 touchcancel이 오면 이동값이 남아 시트가 화면 밖에
   // 고착된다(#996 '고장' 증상) — 반드시 원위치로 정리.

@@ -7,6 +7,7 @@ import { useTTS } from '../lib/useTTS';
 import { useOutputWords } from '../lib/useOutputWords';
 import Button from './Button';
 import OutputWordChips from './OutputWordChips';
+import { bcp47ForLanguage } from '../lib/speechLang';
 import { langNameKo } from '../lib/constants';
 
 const STORAGE_KEY = 'conversation:';
@@ -52,7 +53,7 @@ export default function ConversationPanel({ rawText, language, materialId, mater
     const recognitionMaterialId = materialId;
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recog = new SR();
-    recog.lang = language === 'Japanese' ? 'ja-JP' : 'en-US';
+    recog.lang = bcp47ForLanguage(language);
     recog.continuous = false;
     recog.interimResults = false;
     recog.onresult = (event) => {

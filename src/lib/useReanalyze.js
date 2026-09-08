@@ -5,8 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { analyzeText } from './analyzeText';
 import { autoSplitParagraphs } from './splitParagraphs';
-import { persistImportAnalysis } from './materialImport';
-import { composerOf } from './materialComposer';
+import { runPreservedReanalysis } from './reanalysisPreservation';
 import { passageOf } from './sourcePassage';
 import { runPassageAnalysis } from './passageAnalysis';
 
@@ -72,17 +71,21 @@ export function getParagraphs(rawText, preserveSource = false) {
  */
 export function useReanalyze({ materialId, material, refetch, toast }) {
   const abortRef = useRef(null);
+  const committingRef = useRef(false);
+  const [committing, setCommitting] = useState(false);
   const queryClient = useQueryClient();
   useEffect(() => () => abortRef.current?.abort(), [materialId]);
   const [confirmState, setConfirmState] = useState(null);
+  const activeId = useRef(materialId);
+  activeId.current = materialId;
 
   const failedIndices = material?.processed_json?.failed_indices || [];
   const stale = isStaleAnalyzing(material);
   const missingIndices = stale ? computeMissingLineIndices(material) : [];
 
   const mutation = useMutation({
-    // rawTextOverride/baseJsonOverride: ③ 원문 수정 경로 — 방금 저장한 텍스트와
-    // 리맵된 분석본을 react-query 캐시(낡음)를 우회해 직접 투입한다(sourceEdit.js).
+    onMutate: () => ({ materialId }),
+    // 편집 초안과 리맵된 분석은 성공한 최종 교체 전까지 메모리에만 둔다.
     mutationFn: async ({ fullReset = false, resume = false, selectedLineIndices = null, rawTextOverride = null, baseJsonOverride = null } = {}) => {
       let rawText = rawTextOverride || material?.raw_text;
       if (!rawText) throw new Error('원본 텍스트가 없습니다.');
@@ -93,69 +96,28 @@ export function useReanalyze({ materialId, material, refetch, toast }) {
           record => queryClient.setQueryData(['material', String(materialId)], record));
       }
 
-      // 문단 구분이 안 돼있으면 자동 분리 후 DB에도 반영
-      const split = composerOf(material) ? rawText : autoSplitParagraphs(rawText);
-      if (split !== rawText) {
-        rawText = split;
-        const { data, error } = await supabase.from('reading_materials').update({ raw_text: rawText })
-          .eq('id', materialId).eq('owner_id', material.owner_id).select('id');
-        if (error) throw error;
-        if (!data?.length) throw new Error('원문을 저장할 권한이 없거나 자료가 삭제됐어요.');
-      }
-
       const controller = new AbortController();
+      abortRef.current?.abort();
       abortRef.current = controller;
-
-      const initMeta = {
-        ...((baseJsonOverride || material.processed_json)?.metadata || {}),
-        updated_at: new Date().toISOString(),
-      };
-
-      let baseJson = null;
-      let statusJson;
-
-      if (selectedLineIndices) {
-        // 부분 분석: 선택한 줄만 failed로 마킹 → 나머지 기존 유지
-        const failedForPartial = [...selectedLineIndices].sort((a, b) => a - b);
-        baseJson = { ...(baseJsonOverride || material.processed_json), failed_indices: failedForPartial };
-        statusJson = { ...baseJson, status: 'analyzing', metadata: initMeta };
-      } else if (fullReset) {
-        statusJson = { sequence: [], dictionary: {}, last_idx: -1, status: 'analyzing', metadata: initMeta, failed_indices: [] };
-      } else if (resume && missingIndices.length > 0) {
-        const mergedFailed = [...new Set([...(failedIndices || []), ...missingIndices])].sort((a, b) => a - b);
-        baseJson = { ...material.processed_json, failed_indices: mergedFailed };
-        statusJson = { ...baseJson, status: 'analyzing', metadata: initMeta };
-      } else if (failedIndices.length > 0) {
-        baseJson = material.processed_json;
-        statusJson = { ...baseJson, status: 'analyzing', metadata: initMeta };
-      } else {
-        statusJson = { sequence: [], dictionary: {}, last_idx: -1, status: 'analyzing', metadata: initMeta, failed_indices: [] };
-      }
-
-      const record = { id: materialId, owner_id: material.owner_id };
-      await persistImportAnalysis(supabase, record, statusJson);
-
-      return await analyzeText(rawText, controller.signal, {
-        metadata: initMeta,
-        existingJson: baseJson,
-        concurrency: 8,
-        onBatch: async ({ currentJson }) => {
-          const json = {
-            ...currentJson,
-            metadata: { ...currentJson.metadata, updated_at: new Date().toISOString() },
-          };
-          await persistImportAnalysis(supabase, record, json);
-        },
-      });
+      try {
+        const record = await runPreservedReanalysis(supabase, material, controller.signal, analyzeText, {
+          fullReset, resume, selectedLineIndices, rawTextOverride, baseJsonOverride,
+          onCommitting: () => { committingRef.current = true; setCommitting(true); },
+        });
+        queryClient.setQueryData(['material', String(materialId)], record);
+        return record.processed_json;
+      } finally { committingRef.current = false; setCommitting(false); }
     },
-    onSuccess: (json) => {
+    onSuccess: (json, variables, scope) => {
+      if (activeId.current !== scope?.materialId) return;
       if (json?.__passageNotAcquired) { refetch?.(); return; }
       if (json?.status === 'failed') toast?.('분석에 실패했어요. 원문은 그대로 남아 있어요.', 'error');
       else if (json?.status === 'partial') toast?.('일부 줄은 분석을 다시 시도해야 해요.', 'warning');
       else toast?.('분석 완료!', 'success');
       refetch?.();
     },
-    onError: (err) => {
+    onError: (err, variables, scope) => {
+      if (activeId.current !== scope?.materialId) return;
       if (err.name !== 'AbortError') toast?.('분석 실패: ' + err.message, 'error');
       refetch?.();
     },
@@ -167,9 +129,10 @@ export function useReanalyze({ materialId, material, refetch, toast }) {
     failedIndices,
     stale,
     missingIndices,
+    committing,
     request: (opts) => setConfirmState(opts),
     confirm: () => { mutation.mutate(confirmState); setConfirmState(null); },
     cancel: () => setConfirmState(null),
-    stop: () => abortRef.current?.abort(),
+    stop: () => { if (!committingRef.current) abortRef.current?.abort(); },
   };
 }
