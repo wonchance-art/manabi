@@ -625,7 +625,9 @@ export default function ViewerPage() {
       const inField = e.target?.closest?.('input, textarea, select, [contenteditable="true"], [role="textbox"]');
       if ((e.key === 'z' || e.key === 'Z') && (e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey) {
         if (inField || h.blocked || e.isComposing || e.repeat || e.defaultPrevented || (!lastSaveRef.current && !lastInlineGradeRef.current)) return;
-        if (!e.target?.closest?.('.viewer-layout, .toast-container')) return;
+        const inViewer = e.target?.closest?.('.viewer-3col, .toast-container')
+          || (e.target === document.body && document.querySelector('.viewer-3col'));
+        if (!inViewer) return;
         e.preventDefault(); h.undo?.(); return;
       }
       if (!viewerCommandAllowed(e, { cardOpen: h.cardOpen, blocked: h.blocked })) return;
