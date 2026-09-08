@@ -7,7 +7,8 @@ import {langNameKo} from '@/lib/constants';
 import {libraryItemHref,libraryKey} from '@/lib/personalLibrary';
 const marks={Japanese:'あ',Chinese:'你',English:'Aa',French:'é'};
 export function LibraryCover({row}){
- return <span className="shelf-cover" data-language={row.language||'unknown'} aria-hidden="true"><small>{row.target_kind==='edition'?'N5':row.target_kind==='book'?'BOOK':row.target_kind==='pdf'?'PDF':row.assets?.[0]?.kind?.toUpperCase()||'NOTE'}</small><b>{marks[row.language]||'m.'}</b><i/></span>;
+ const asset=row.assets?.find(item=>item.hash===row.context?.assetHash)||row.assets?.[0];
+ return <span className="shelf-cover" data-language={row.language||'unknown'} aria-hidden="true"><small>{row.target_kind==='edition'?'N5':row.target_kind==='book'?'BOOK':row.target_kind==='pdf'?'PDF':asset?.kind?.toUpperCase()||'NOTE'}</small><b>{marks[row.language]||'m.'}</b><i/></span>;
 }
 export default function LibraryRow({row,ownerId,onMenu}){
  const [expanded,setExpanded]=useState(false),[count,setCount]=useState(20);
