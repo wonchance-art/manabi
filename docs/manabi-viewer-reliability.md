@@ -20,7 +20,7 @@ Aa 재배치·병음 조판·전체 활동 레이어 개편은 승인한 다음 
 - `src/lib/useReanalyze.js`, `src/lib/useReanalyzeUI.js`, `src/lib/viewerAnalysisCache.js`, `src/lib/synAnt.js`
 - 이 기능에 필요한 순수 규칙/안전 저장 helper 신규 `src/lib/viewer*.js`, `src/lib/readingTest*.js`, `src/lib/reanalysis*.js`
 - 해당 회귀 테스트 신규 `src/lib/__tests__/viewerReliability*.test.js`, `src/lib/__tests__/viewerSaveUndo.test.js`, `src/lib/__tests__/readingTestReliability.test.js`, `src/lib/__tests__/reanalysisPreservation.test.js` 및 `e2e/viewer-reliability.e2e.mjs`, `e2e/viewer-reliability-sql.e2e.mjs`
-- 승인한 동작을 반대로 요구하던 배선 검사 9개 파일: `refVocabWiring`, `reviewReliabilityFixes`, `sourceEditWiring`, `wordCardUnify`, `gradeOutbox`, `grammarDetail`, `inlineReviewUndo`, `saveGrade`, `viewerAnalysisCache`. 알고리즘·다른 화면 검사는 보존하고 변경한 동작의 계약만 교체한다.
+- 승인한 동작을 반대로 요구하던 배선 검사 10개 파일: `refVocabWiring`, `reviewReliabilityFixes`, `sourceEditWiring`, `wordCardUnify`, `gradeOutbox`, `grammarDetail`, `inlineReviewUndo`, `saveGrade`, `viewerAnalysisCache`, `tokenRangeSelect`(E2E 캐시 seed 형식만). 알고리즘·다른 화면 검사는 보존하고 변경한 동작의 계약만 교체한다.
 - `e2e/learning-flow.e2e.mjs`: 기존 Gemini 0회·책 이동·단어/문장 선택 검증은 보존하며 캐시 seed만 새 키 형식으로 맞춘다.
 - `public/sw.js`: prebuild가 생성한 콘텐츠 해시 갱신 1줄.
 - 이 문서·검토용 `docs/manabi-viewer-reliability.sql`과 `docs/ai-tasks.md` 자기 항목(별도 커밋)
