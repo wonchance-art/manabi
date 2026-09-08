@@ -23,9 +23,10 @@ Aa 재배치·병음 조판·전체 활동 레이어 개편은 승인한 다음 
 - 승인한 동작을 반대로 요구하던 배선 검사 10개 파일: `refVocabWiring`, `reviewReliabilityFixes`, `sourceEditWiring`, `wordCardUnify`, `gradeOutbox`, `grammarDetail`, `inlineReviewUndo`, `saveGrade`, `viewerAnalysisCache`, `tokenRangeSelect`(E2E 캐시 seed 형식만). 알고리즘·다른 화면 검사는 보존하고 변경한 동작의 계약만 교체한다.
 - `e2e/learning-flow.e2e.mjs`: 기존 Gemini 0회·책 이동·단어/문장 선택 검증은 보존하며 캐시 seed만 새 키 형식으로 맞춘다.
 - `public/sw.js`: prebuild가 생성한 콘텐츠 해시 갱신 1줄.
+- 오너의 2026-09-09 “승인 ㄱㄱ”에 따른 DB 예외: `supabase/migrations/20260908234552_viewer_reliability_atomic_operations.sql` 신규 1개. 검토 SQL과 같은 함수 2개만 포함한다.
 - 이 문서·검토용 `docs/manabi-viewer-reliability.sql`과 `docs/ai-tasks.md` 자기 항목(별도 커밋)
 
-기존 규약은 참고하되 이번 사용자 승인에 포함된 문맥 표시·버튼 동작·읽기 확인 문구를 구현한다. 교재 corpus, 기존 FSRS 알고리즘, 월드, 환경 파일, 다른 세션의 공유 작업은 수정하지 않는다. 원자적 교체와 취소에 필요한 함수 2개는 별도 검토 SQL로 준비했다. 운영 테이블·컬럼·기존 데이터를 바꾸지 않는다. DB 적용은 저장소 규약상 별도 예외 승인 대기다. 임의 merge·force-push 없음.
+기존 규약은 참고하되 이번 사용자 승인에 포함된 문맥 표시·버튼 동작·읽기 확인 문구를 구현한다. 교재 corpus, 기존 FSRS 알고리즘, 월드, 환경 파일, 다른 세션의 공유 작업은 수정하지 않는다. 원자적 교체와 취소에 필요한 함수 2개는 별도 검토 SQL로 준비했다. 운영 테이블·컬럼·기존 데이터를 바꾸지 않는다. 2026-09-09 오너의 예외 승인 후 운영 DB에 두 함수를 적용했다. 임의 merge·force-push 없음.
 
 ## 검증
 
@@ -38,16 +39,18 @@ Aa 재배치·병음 조판·전체 활동 레이어 개편은 승인한 다음 
 - 기존 학습 흐름의 viewer 검사: **통과**. 새 캐시 키로 결정적 fixture를 갱신했으며 Gemini 요청 0회와 모든 기존 화면 검증을 유지.
 - 수동 교정 결과가 갱신되어도 같은 토큰의 카드를 유지하며, 자료/계정 이동 시에는 선택을 초기화한다.
 - 독립 로컬 Postgres(PGlite) 검증: **13개 통과**. 원자적 교체, 동일 시도 재확인, 다른 창 수정 충돌, 익명/비소유자 거부, 새 복습·문맥 보호, RLS로 숨겨진 문맥의 연쇄 삭제 방지.
-- 실제 Supabase에는 컬럼·정책·외래키·함수 유무만 조회했다. 자료 행을 읽거나 수정하지 않았다. 필요한 ID 타입과 기존 소유권 정책 확인; 함수는 아직 없음.
+- 실제 Supabase: migration `20260908234552` 적용 성공. 함수 본문 MD5가 검토 SQL과 일치하며 익명 실행 불가·authenticated 실행 허용·PUBLIC 회수·고정 search_path 확인. NULL ID만 사용하는 실제 권한 검사 6개 통과, 개인 자료/단어 행 쓰기 없음. PostgREST 스키마도 새로고침했다.
 - 수정 JSX를 포함한 ESLint: 오류 0. 기존 이합사 아치 effect 의존성 경고 1개 유지. 기본 저장소 lint가 JSX를 건너뛰므로 명시적으로 JSX를 포함한 설정으로 추가 검사.
 - `npm run prebuild`: 통과. 기존 교육과정 경고 11개(변경 범위 밖).
-- 로컬 프로덕션 빌드(dbfc16a9): 473페이지 생성 및 빌드 성공. 기본 2GB heap 실패 후 4GB로 실행. 재생성 가능한 Webpack 캐시 쓰기 경고 뒤 빌드는 정상 종료했고 캐시 3.8GB를 정리했다. 단축키 연결 보완을 포함한 최종 커밋은 CI/개별 미리보기 빌드로 검증한다.
+- 로컬 프로덕션 빌드(dbfc16a9): 473페이지 생성 및 빌드 성공. 기본 2GB heap 실패 후 4GB로 실행. 재생성 가능한 Webpack 캐시 쓰기 경고 뒤 빌드는 정상 종료했고 캐시 3.8GB를 정리했다. 실행 커밋 `94cff1f1da37b29955a136d7aa43e976cc13253a`의 CI·Vercel 빌드·배포 화면 17검사도 통과했다. 이후 변경은 적용 SQL의 이력 파일·SQL 검사 경로·검수 기록뿐이며 웹 코드는 같다.
 
 ## DB 적용 순서와 한계
 
-`docs/manabi-viewer-reliability.sql`의 함수부터 적용하고 웹 미리보기를 확인한 뒤, Claude가 운영 병합한다. 함수가 없으면 새 재분석/저장 취소는 실패 메시지와 함께 기존 자료를 유지한다. 무조건 UPDATE/DELETE로 되돌아가는 fallback은 없다.
+운영 DB에는 두 함수 적용을 완료했다. 기존 검수 미리보기에서 사용할 수 있으며, 운영 웹 병합은 Claude가 수행한다. 함수가 없으면 새 재분석/저장 취소는 실패 메시지와 함께 기존 자료를 유지한다. 무조건 UPDATE/DELETE로 되돌아가는 fallback은 없다.
 
 `viewer_replace_analysis`는 SECURITY INVOKER + 소유자 행 잠금 + 시작 시점의 원문/JSON 전체 비교다. `viewer_undo_vocabulary_save`만 SECURITY DEFINER로 실행한다. 소유자 확인 후 다른 출처까지 모두 확인해야, SELECT RLS에서 숨겨진 출처가 CASCADE로 삭제되지 않는다. 후자는 행·출처 정보를 반환하지 않으며, 실행은 authenticated로 제한한다.
+
+보안 advisor는 `authenticated_security_definer_function_executable` 경고 1개를 추가했다. `viewer_undo_vocabulary_save`의 의도한 로그인 사용자 호출이며, 사용자 ID/소유자 확인·행 잠금·행 전체 스냅샷·모든 문맥 비교·익명/PUBLIC 회수를 검증했다. 기존 다른 경고는 동일하다. [Supabase 검토 기준](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable).
 
 온라인 인라인 복습 취소는 해당 복습 시각이 아직 최신일 때만 복원한다. 오프라인 큐는 현재 전송과 취소 사이의 잠금이 없어 이번에는 안전하게 거절하고 기록을 유지한다. 전체 outbox 재설계는 별도 후속이다.
 

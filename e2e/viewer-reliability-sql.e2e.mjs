@@ -14,7 +14,7 @@ create policy mine on reading_materials to authenticated using(owner_id=auth.uid
 create policy mine on user_vocabulary to authenticated using(user_id=auth.uid()) with check(user_id=auth.uid());
 create policy mine on vocabulary_contexts to authenticated using(user_id=auth.uid()) with check(user_id=auth.uid());
 grant select,update on reading_materials to authenticated; grant select,update,delete on user_vocabulary to authenticated; grant select,delete on vocabulary_contexts to authenticated;`);
-await db.exec(fs.readFileSync(new URL('../docs/manabi-viewer-reliability.sql', import.meta.url),'utf8'));
+await db.exec(fs.readFileSync(new URL('../supabase/migrations/20260908234552_viewer_reliability_atomic_operations.sql', import.meta.url),'utf8'));
 const owner='00000000-0000-4000-8000-000000000001',other='00000000-0000-4000-8000-000000000002',attempt='00000000-0000-4000-8000-000000000003',word='00000000-0000-4000-8000-000000000004',context='00000000-0000-4000-8000-000000000005';
 const before={sequence:['id_0_old'],dictionary:{id_0_old:{text:'你好'}},metadata:{language:'Chinese'},status:'completed'};
 const after={...before,metadata:{...before.metadata,viewerRevision:attempt}};
