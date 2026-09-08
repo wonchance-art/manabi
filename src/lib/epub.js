@@ -173,7 +173,7 @@ export async function parseEpub(buf) {
     const xhtml = td(await readZipEntry(buf, entry));
     const text = extractXhtmlText(xhtml);
     if (!text) continue;  // 표지·빈 페이지 제외
-    chapters.push({ title: guessChapterTitle(xhtml, `${i + 1}장`), text, chars: text.length });
+    chapters.push({ title: guessChapterTitle(xhtml, `${i + 1}장`), text, chars: text.length, spinePath: name, spineIndex: i });
   }
   if (chapters.length === 0) throw new Error('본문 챕터를 찾지 못함');
   return { title, language, chapters };

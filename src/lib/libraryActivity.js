@@ -39,6 +39,8 @@ export function libraryResume(row,ownerId,storage){
   let page=null;try{page=Number(storage?.getItem(legacyPdfPositionKey(ownerId,row.target_id)));}catch{/* Exact position is optional. */}
   href=`/pdf/${encodeURIComponent(row.target_id)}?pdfjs=1${Number.isSafeInteger(page)&&page>0?`&page=${page}`:''}`;
   label=Number.isSafeInteger(page)&&page>0?`${page}쪽부터 · 이 기기`:'PDF 열기';
+ }else if(context.mode==='original'&&context.materialId&&String(context.materialId)!==String(row.target_id)&&row.target_kind==='material'){
+  href=`/viewer/${encodeURIComponent(row.target_id)}?passage=${encodeURIComponent(context.materialId)}`;label='원본의 학습 구간 열기';
  }else if(context.assetHash){
   const asset=(row.assets||[]).find(a=>a.hash===context.assetHash);
   if(asset){

@@ -29,7 +29,7 @@ export function getPdfJsPageWindow(pageNumber, pageCount) {
   return Array.from({ length: end - start + 1 }, (_, index) => start + index);
 }
 
-function PdfJsPage({ doc, pdfjs, pageNumber, current, onPageText, onReady }) {
+function PdfJsPage({ doc, pdfjs, pageNumber, current, onPageText, onReady, onPageSource }) {
   const hostRef = useRef(null);
   const canvasRef = useRef(null);
   const textLayerRef = useRef(null);
@@ -97,7 +97,11 @@ function PdfJsPage({ doc, pdfjs, pageNumber, current, onPageText, onReady }) {
       });
 
       await Promise.all([renderTask.promise, textLayer.render()]);
-      if (active) { onPageText?.(pageNumber, reconstructPdfPageText(textContent)); if (current) onReady?.(pageNumber); }
+      if (active) {
+        onPageText?.(pageNumber, reconstructPdfPageText(textContent));
+        onPageSource?.(pageNumber, textLayerContainer);
+        if (current) onReady?.(pageNumber);
+      }
     })().catch((error) => {
       if (active && error?.name !== 'RenderingCancelledException' && error?.name !== 'AbortException') {
         console.error('[PdfJsViewer] page render failed', { pageNumber, error });
@@ -113,7 +117,7 @@ function PdfJsPage({ doc, pdfjs, pageNumber, current, onPageText, onReady }) {
       canvas.width = 1;
       canvas.height = 1;
     };
-  }, [doc, hostWidth, onPageText, pageNumber, pdfjs, current, onReady]);
+  }, [doc, hostWidth, onPageText, pageNumber, pdfjs, current, onReady, onPageSource]);
 
   return (
     <section
@@ -137,7 +141,7 @@ function PdfJsPage({ doc, pdfjs, pageNumber, current, onPageText, onReady }) {
   );
 }
 
-export default function PdfJsViewer({ pdfUrl, onPageText, onPageChange, initialPage, onReady }) {
+export default function PdfJsViewer({ pdfUrl, onPageText, onPageChange, initialPage, onReady, onPageSource }) {
   const pagesRef = useRef(null);
   const [pdfjs, setPdfjs] = useState(null);
   const [doc, setDoc] = useState(null);
@@ -233,6 +237,7 @@ export default function PdfJsViewer({ pdfUrl, onPageText, onPageChange, initialP
             current={visiblePage === pageNumber}
             onPageText={onPageText}
             onReady={onReady}
+            onPageSource={onPageSource}
           />
         ))}
       </div>

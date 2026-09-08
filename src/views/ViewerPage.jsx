@@ -6,6 +6,8 @@ import OriginalMaterialReader from '@/components/materials/OriginalMaterialReade
 import useLibraryActivity from '@/components/library/useLibraryActivity';
 import LibrarySaveButton from '@/components/library/LibrarySaveButton';
 import {materialActivity} from '@/lib/libraryActivity';
+import { passageOf, sourcePassageHref, passageLocation } from '@/lib/sourcePassage';
+import { takePassageAnalysis } from '@/lib/passageAnalysis';
 import { composerOf, shouldReadComposerOriginal } from '@/lib/materialComposer';
 import Link from 'next/link';
 import { LibraryReturnLink } from '@/components/web/LibraryReaderLink';
@@ -282,7 +284,7 @@ export default function ViewerPage() {
   });
 
   const materialLang = material?.processed_json?.metadata?.language || 'Japanese';
-  useLibraryActivity(materialActivity(material,originalParams.get('study')==='1'?'study':'text',null,null,user?.id),!!material&&!isLoading&&!error&&!shouldReadComposerOriginal(material,originalParams));
+  useLibraryActivity(materialActivity(material,passageOf(material)||originalParams.get('study')==='1'?'study':'text',null,null,user?.id),!!material&&!isLoading&&!error&&!shouldReadComposerOriginal(material,originalParams));
 
   // [자세히] 인라인 문법 해설(오너 확정) — 모달·체크박스 없이 시트 좌측에서 펼친다.
   const grammar = useGrammarDetail({ materialLang, toast });
@@ -504,6 +506,14 @@ export default function ViewerPage() {
   // 재분석 로직 + UI
   const reanalyze = useReanalyze({ materialId: id, material, refetch, toast });
   const reanalyzeMutation = reanalyze.mutation;
+  const startPassageMutation = reanalyzeMutation.mutate;
+  useEffect(() => {
+    if (!passageOf(material) || !user?.id || material.owner_id !== user.id) return;
+    const timer = setTimeout(() => {
+      if (takePassageAnalysis(user.id, material.id)) startPassageMutation({ resume: true });
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [material, user?.id, startPassageMutation]);
   const stopReanalysis = reanalyze.stop;
   const isStaleAnalysis = reanalyze.stale;
   const missingLineCount = reanalyze.missingIndices.length;
@@ -1644,13 +1654,13 @@ export default function ViewerPage() {
   }
 
   if (shouldReadComposerOriginal(material, originalParams)) {
-    return <OriginalMaterialReader key={`${material.id}:${material.document_json?.revision || 'original'}`} material={material} />;
+    return <OriginalMaterialReader key={`${material.owner_id}:${material.id}:${material.document_json?.revision || 'original'}`} material={material} />;
   }
 
   const json = material?.processed_json || { sequence: [], dictionary: {} };
   const status = material?.status || material?.processed_json?.status;
-  const isAnalyzing = status === 'analyzing';
-  const isPending = status === 'pending' || status === 'saved'; // 책 챕터 미분석 — 원문 열람 가능, 분석은 온디맨드
+  const isAnalyzing = status === 'analyzing' || (!!passageOf(material) && reanalyzeMutation.isPending);
+  const isPending = !isAnalyzing && (status === 'pending' || status === 'saved'); // 책 챕터 미분석 — 원문 열람 가능, 분석은 온디맨드
   const isFailed = status === 'failed';
   const isDone = status === 'completed' || status === 'partial';
   const isPartial = status === 'partial';
@@ -2321,7 +2331,7 @@ export default function ViewerPage() {
         <div className="viewer-topbar">
           <LibrarySaveButton material={material}/>
           <LibraryReturnLink className="viewer-back-link">← 내 서재</LibraryReturnLink>
-          {composerOf(material) && <Link className="viewer-back-link" href={`/viewer/${composerOf(material)?.parentId || id}?returnTo=${encodeURIComponent(originalParams.get('returnTo') || '/materials?view=owned')}`}>현재 글과 첨부 원본 ↗</Link>}
+          {composerOf(material) && <Link className="viewer-back-link" href={sourcePassageHref(material,originalParams.get('returnTo')) || `/viewer/${composerOf(material)?.parentId || id}?returnTo=${encodeURIComponent(originalParams.get('returnTo') || '/materials?view=owned')}`}>{passageOf(material)?`원본의 ${passageLocation(passageOf(material))}으로 ↗`:'현재 글과 첨부 원본 ↗'}</Link>}
           {siblingNav && (
             <div className="viewer-series-nav" title={siblingNav.label}>
               {siblingNav.prev ? (
@@ -2351,7 +2361,7 @@ export default function ViewerPage() {
           </div>
         </div>
         <p className="reader-metadata">{langNameKo(materialLang)}{material?.processed_json?.metadata?.level ? ` · ${material.processed_json.metadata.level}` : ''} · {material.visibility === 'public' ? '공개 읽기' : '내 자료'}</p>
-        {composerOf(material) && <p className="reader-metadata">학습에 사용한 본문이에요. 현재 글은 위의 링크에서 열 수 있어요.</p>}
+        {composerOf(material) && <p className="reader-metadata">{passageOf(material)?`${passageLocation(passageOf(material))}에서 고른 학습 구간이에요. 원본은 위의 링크에서 열 수 있어요.`:'학습에 사용한 본문이에요. 현재 글은 위의 링크에서 열 수 있어요.'}</p>}
         {titleEditing && user?.id === material?.owner_id && !composerOf(material) ? (
           <form
             onSubmit={e => { e.preventDefault(); updateTitleMutation.mutate(titleDraft); }}
@@ -2493,7 +2503,7 @@ export default function ViewerPage() {
                 <button role="tab" aria-selected={sheetTab === 'display'}
                   className={sheetTab === 'display' ? 'rsheet-tabs__btn--on' : undefined}
                   onClick={() => setSheetTab('display')}>표시</button>
-                {((ttsSupported && sentences.length > 0) || (user?.id === material?.owner_id && !isAnalyzing && !reanalyzeMutation.isPending)) && (
+                {((ttsSupported && sentences.length > 0) || (user?.id === material?.owner_id && !passageOf(material) && !isAnalyzing && !reanalyzeMutation.isPending)) && (
                   <button role="tab" aria-selected={sheetTab === 'tools'}
                     className={sheetTab === 'tools' ? 'rsheet-tabs__btn--on' : undefined}
                     onClick={() => setSheetTab('tools')}>도구</button>
@@ -2688,7 +2698,7 @@ export default function ViewerPage() {
                       <em>›</em>
                     </button>
                   )}
-                  {user?.id === material?.owner_id && !isAnalyzing && !reanalyzeMutation.isPending && (
+                  {user?.id === material?.owner_id && !passageOf(material) && !isAnalyzing && !reanalyzeMutation.isPending && (
                     <button className="rsheet-toolrow" onClick={() => { setSettingsOpen(false); setReanalyzePanel('menu'); }}>
                       <span className="rsheet-txt"><b>재분석</b><span>{composerOf(material) ? '전체·부분 분석' : '전체·부분 분석, 원문 수정'}</span></span>
                       <em>›</em>
