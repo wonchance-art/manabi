@@ -10,7 +10,8 @@ export const OWNER='00000000-0000-4000-8000-000000000172';
 const tables={library_collections:['id','owner_id','name','created_at'],library_collection_items:['owner_id','collection_id','target_kind','target_id','created_at'],library_reading_activity:['owner_id','target_kind','target_id','context','opened_at'],library_bookmarks:['owner_id','material_id','created_at']};
 const conflicts={library_collections:'id',library_collection_items:'owner_id,collection_id,target_kind,target_id',library_reading_activity:'owner_id,target_kind,target_id',library_bookmarks:'owner_id,material_id'};
 export async function fixture(options={}){
- const f=await editingFixture(options),db=new PGlite();
+ const f=await editingFixture(options),db=options.shared?.db||new PGlite();
+ if(!options.shared){
  await db.exec(`create role authenticated;create role anon;create schema auth;
  create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('test.uid',true),'')::uuid$$;
  create table auth.users(id uuid primary key);insert into auth.users values('${OWNER}');
@@ -32,22 +33,32 @@ export async function fixture(options={}){
    create unique index passage_import_once on reading_materials(owner_id,(processed_json->'metadata'->>'importAttempt'));`);
   for(const file of ['20260907221311_material_document_editing.sql','20260908060607_source_passage_study.sql','20260908070150_source_passage_token_correction.sql'])await db.exec(await readFile(new URL(`../../supabase/migrations/${file}`,import.meta.url),'utf8'));
  }
+ if(options.originalPositions)await db.exec(await readFile(new URL('../../supabase/migrations/20260908083442_original_reading_positions.sql',import.meta.url),'utf8'));
+ }
  const edition=JSON.parse(await readFile(new URL('../../src/content/textbookEditions/index.json',import.meta.url),'utf8')).current;
- await db.query('insert into textbook_book_editions values($1,$2)',['japanese-n5',edition]);
- let failMembership=false,failList=false,failRecent=false,losePassageReply=false;
+ if(!options.shared)await db.query('insert into textbook_book_editions values($1,$2)',['japanese-n5',edition]);
+ let failMembership=false,failList=false,failRecent=false,losePassageReply=false,failPositions=false,losePositionReply=false;
  const requests=[];
  const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'GET,POST,PATCH,DELETE,OPTIONS','access-control-expose-headers':'content-range'};
  const json=(r,value,status=200)=>r.fulfill({status,contentType:'application/json',headers:cors,body:JSON.stringify(value)});
- let queue=Promise.resolve();
+ const queueState=options.shared?.queueState||{queue:Promise.resolve()};
  async function sync(){await db.exec('reset role;');for(const m of f.rows){if((await db.query('select 1 from reading_materials where id=$1',[m.id])).rows.length){await db.query('update reading_materials set visibility=$1,title=$2,raw_text=$3,processed_json=$4,document_json=$5 where id=$6',[m.visibility,m.title,m.raw_text,m.processed_json,m.document_json||null,m.id]);continue;}await db.query(`insert into reading_materials(id,owner_id,visibility,title,raw_text,processed_json,document_json,source_pdf_id,page_start,direction,created_at) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) on conflict(id) do update set visibility=excluded.visibility,title=excluded.title,raw_text=excluded.raw_text,processed_json=excluded.processed_json,document_json=excluded.document_json`,[m.id,m.owner_id,m.visibility,m.title,m.raw_text,m.processed_json,m.document_json||null,m.source_pdf_id||null,m.page_start||null,m.direction||null,m.created_at||new Date().toISOString()]);}await db.exec(`set role authenticated;set test.uid='${OWNER}';`);}
  await f.context.route('**/rest/v1/**',async r=>{
   const req=r.request(),url=new URL(req.url()),table=url.pathname.split('/').pop();
   const passageSelect=options.sourcePassages&&table==='reading_materials'&&url.searchParams.get('select')?.includes('passage:');
+  const positionRpc=options.originalPositions&&['get_original_reading_positions','save_original_reading_position'].includes(table);
   const passageRpc=options.sourcePassages&&['open_source_passage','source_passage_analysis','correct_source_passage_token'].includes(table);
-  if(!tables[table]&&!['personal_library_page','personal_library_children'].includes(table)&&!passageSelect&&!passageRpc)return r.fallback();
+  if(!tables[table]&&!['personal_library_page','personal_library_children'].includes(table)&&!passageSelect&&!passageRpc&&!positionRpc)return r.fallback();
   if(req.method()==='OPTIONS')return r.fulfill({status:204,headers:cors});
   const task=async()=>{try{
    await sync();requests.push({table,method:req.method(),payload:req.method()==='POST'?req.postDataJSON():null});
+   if(positionRpc){
+    if(failPositions)return json(r,{message:'offline position service'},503);
+    const p=req.postDataJSON();
+    const result=table==='get_original_reading_positions'?await db.query('select get_original_reading_positions($1,$2,$3) data',[p.p_owner,p.p_material,p.p_keys]):await db.query('select save_original_reading_position($1,$2,$3,$4,$5,$6) data',[p.p_owner,p.p_material,p.p_source,p.p_locator,p.p_version,p.p_write]);
+    if(table==='save_original_reading_position'&&losePositionReply){losePositionReply=false;return r.abort('failed');}
+    return json(r,result.rows[0].data);
+   }
    if(passageRpc){
     const p=req.postDataJSON();
     const result=table==='correct_source_passage_token'?await db.query('select correct_source_passage_token($1,$2,$3,$4) data',[p.p_id,p.p_token,p.p_before,p.p_corrections]):table==='open_source_passage'?await db.query('select open_source_passage($1,$2,$3,$4) data',[p.p_parent,p.p_source,p.p_text,p.p_language]):await db.query('select source_passage_analysis($1,$2,$3) data',[p.p_id,p.p_attempt,p.p_json]);
@@ -84,7 +95,7 @@ export async function fixture(options={}){
    }
    return json(r,req.headers().accept?.includes('vnd.pgrst.object')?result.rows[0]||null:result.rows);
   }catch(e){return json(r,{message:e.message,code:e.code},400);}};
-  queue=queue.then(task,task);await queue;
+  queueState.queue=queueState.queue.then(task,task);await queueState.queue;
  });
- return {...f,db,requests,edition,losePassageReply:()=>{losePassageReply=true;},get analysisCalls(){return f.analysisCalls;},failMembership:()=>{failMembership=true;},setListFailure:value=>{failList=value;},setRecentFailure:value=>{failRecent=value;},close:async()=>{await f.context.close();await queue;await db.close();}};
+ return {...f,db,requests,edition,shared:{db,rows:f.rows,objects:f.objects,queueState},setPositionFailure:value=>{failPositions=value;},losePositionReply:()=>{losePositionReply=true;},losePassageReply:()=>{losePassageReply=true;},get analysisCalls(){return f.analysisCalls;},failMembership:()=>{failMembership=true;},setListFailure:value=>{failList=value;},setRecentFailure:value=>{failRecent=value;},close:async()=>{await f.context.close();await queueState.queue;if(!options.shared)await db.close();}};
 }

@@ -41,6 +41,9 @@ export function libraryResume(row,ownerId,storage){
   label=Number.isSafeInteger(page)&&page>0?`${page}쪽부터 · 이 기기`:'PDF 열기';
  }else if(context.mode==='original'&&context.materialId&&String(context.materialId)!==String(row.target_id)&&row.target_kind==='material'){
   href=`/viewer/${encodeURIComponent(row.target_id)}?passage=${encodeURIComponent(context.materialId)}`;label='원본의 학습 구간 열기';
+ }else if(context.mode==='original'&&context.materialId&&String(context.materialId)===String(row.target_id)&&row.target_kind==='material'){
+  const fallback=(row.assets||[]).some(asset=>asset.hash===context.assetHash)?`&asset=${context.assetHash}`:'';
+  href=`/viewer/${encodeURIComponent(row.target_id)}?resume=1${fallback}`;label='읽던 위치에서 이어 읽기';
  }else if(context.assetHash){
   const asset=(row.assets||[]).find(a=>a.hash===context.assetHash);
   if(asset){

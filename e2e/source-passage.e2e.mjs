@@ -3,7 +3,7 @@ import {test} from 'node:test';
 import {fixture} from './fixtures/library-v4-backend.mjs';
 const shots=process.env.COMPOSER_SCREENSHOTS;
 async function setup(options={}){
- const f=await fixture({...options,sourcePassages:true});let calls=0,fail=false;
+ const f=await fixture({...options,sourcePassages:true,originalPositions:true});let calls=0,fail=false;
  const vocab=[],contexts=[],writes=[];
  await f.context.route('**/rest/v1/user_vocabulary?*',async r=>{
   const method=r.request().method(),p=method==='POST'||method==='PATCH'?r.request().postDataJSON():null;

@@ -16,13 +16,13 @@ const hashBytes = new Map(Object.entries(bytes).map(([kind,buffer])=>[createHash
 before(async()=>{ browser=await chromium.launch(config.use.launchOptions);if(screenshots)await mkdir(screenshots,{recursive:true}); });
 after(async()=>{await browser?.close();});
 
-export async function fixture({width=1440,guest=false,schema=true}={}) {
+export async function fixture({width=1440,guest=false,schema=true,shared=null}={}) {
  const context=await browser.newContext({baseURL,viewport:{width,height:1000},serviceWorkers:'block',reducedMotion:'reduce'});
  const now=Math.floor(Date.now()/1000), user={id:owner,aud:'authenticated',role:'authenticated',email:'composer-fixture@example.com',email_confirmed_at:new Date().toISOString(),confirmed_at:new Date().toISOString(),app_metadata:{provider:'email',providers:['email']},user_metadata:{display_name:'E2E 학습자'},created_at:new Date().toISOString()};
  const enc=value=>Buffer.from(JSON.stringify(value)).toString('base64url');
  const session={access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:owner,aud:'authenticated',role:'authenticated',iat:now,exp:now+3600})}.e2e`,refresh_token:'e2e-refresh',expires_in:3600,expires_at:now+3600,token_type:'bearer',user};
  if(!guest)await context.addCookies([{name:'sb-e2e-auth-token',value:`base64-${enc(session)}`,url:baseURL,sameSite:'Lax'}]);
- const rows=[], objects=new Map(), errors=[];
+ const rows=shared?.rows||[], objects=shared?.objects||new Map(), errors=[];
  let failNextInsert=false,loseNextReply=false,failUpload=false,analysisCalls=0,loseEdit=false,failEdit=false;
  const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'GET,POST,PATCH,DELETE,OPTIONS,HEAD','access-control-expose-headers':'content-range'};
  const json=(route,value,status=200,extra={})=>route.fulfill({status,contentType:'application/json',headers:{...cors,...extra},body:JSON.stringify(value)});

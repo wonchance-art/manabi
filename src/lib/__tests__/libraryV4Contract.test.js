@@ -16,7 +16,8 @@ describe('library projection boundaries',()=>{
  });
  it('normal rendering gates recent writes and local file positions do not become grades',()=>{
   const activity=read('src/components/library/useLibraryActivity.js');expect(activity).toContain("document.visibilityState!=='visible'");expect(activity).toContain('requestAnimationFrame(record)');expect(activity).toContain('getBoundingClientRect');
-  const original=read('src/components/materials/OriginalMaterialReader.jsx');expect(original).toContain('onReady={readyRef.current}');expect(original).toContain('originalPositionKey(');
+  const original=read('src/components/materials/OriginalMaterialReader.jsx');expect(original).toContain('<OriginalFileReader');
+  const file=read('src/components/materials/OriginalFileReader.jsx');expect(file).toContain('onReady={readyRef.current}');expect(file).toContain('originalPositionKey(');
   const pdf=read('src/views/PdfViewerPage.jsx');expect(pdf).toContain('legacyPdfPositionKey(user.id,id)');expect(pdf).not.toContain('update({ last_page_read:');
   expect(read('src/lib/libraryActivity.js')).not.toContain('reading_progress');expect(read('src/lib/libraryActivity.js')).not.toContain('persistVocabGrade');
  });

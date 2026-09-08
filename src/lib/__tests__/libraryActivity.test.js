@@ -12,6 +12,10 @@ describe('reading context is separate from progress and grading',()=>{
   const row={target_kind:'material',target_id:'221',context:{materialId:'224',mode:'original'}};
   expect(libraryResume(row,owner,storage({}))).toEqual({href:'/viewer/221?passage=224',label:'원본의 학습 구간 열기'});
  });
+ it('asks the original reader for the account position instead of forcing an older device attachment',()=>{
+  const row={target_kind:'material',target_id:'221',assets:[{hash,kind:'epub'}],context:{materialId:'221',mode:'original',assetHash:hash}};
+  expect(libraryResume(row,owner,storage({[originalPositionKey(owner,'221',hash)]:'3'}))).toEqual({href:`/viewer/221?resume=1&asset=${hash}`,label:'읽던 위치에서 이어 읽기'});
+ });
  it('restores the exact attachment hash and account-local location',()=>{
   const row={target_kind:'material',target_id:'221',assets:[{hash,kind:'epub'}],context:{assetHash:hash}};
   expect(libraryResume(row,owner,storage({[originalPositionKey(owner,'221',hash)]:'3'}))).toEqual({href:`/viewer/221?asset=${hash}`,label:'3장부터 · 이 기기'});

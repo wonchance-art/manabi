@@ -55,7 +55,7 @@ test('EPUB original: recent resumes the selected attachment and chapter without 
   await f.page.goto('/materials/add');await f.page.locator('#composer-title').fill('쪽과 장을 기억하는 서재');await f.page.locator('#composer-body').fill('Read with the original file.');
   await f.page.locator('input[type=file]').setInputFiles(['reading.pdf','reading.epub'].map(name=>new URL(`./fixtures/composer/${name}`,import.meta.url).pathname));await f.page.getByRole('button',{name:'저장',exact:true}).click();await f.page.locator('.original-reader').waitFor();await f.page.locator('#original-file-select').selectOption('1');await f.page.locator('.original-epub').waitFor();
   await f.page.locator('.original-file select').selectOption('1');await f.page.getByRole('link',{name:'← 내 서재',exact:true}).first().click();await f.page.locator('.shelf-recent-card').waitFor();
-  assert.match(await f.page.locator('.shelf-recent-card').innerText(),/2장부터/);assert.match(await f.page.locator('.shelf-recent-card .shelf-cover').innerText(),/EPUB/);await f.page.locator('.shelf-recent-card').click();await f.page.locator('.original-epub').waitFor();assert.equal(await f.page.locator('.original-file select').inputValue(),'1');assert.equal(f.rows.length,1);assert.equal(f.analysisCalls,0);await overflow(f);
+  assert.match(await f.page.locator('.shelf-recent-card').innerText(),/읽던 위치에서 이어 읽기/);assert.match(await f.page.locator('.shelf-recent-card .shelf-cover').innerText(),/EPUB/);await f.page.locator('.shelf-recent-card').click();await f.page.locator('.original-epub').waitFor();assert.equal(await f.page.locator('.original-file select').inputValue(),'1');assert.equal(f.rows.length,1);assert.equal(f.analysisCalls,0);await overflow(f);
  }finally{await f.close();}
 });
 
