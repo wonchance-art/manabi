@@ -59,3 +59,19 @@ Next.js 최종 production-mode 로컬 빌드473페이지 성공. 테스트와 �
 기존 서재9개와 구간 학습6개, 기존 편집기 첨부/동시 수정/응답 유실/초안/권한/실패 재시도6개 브라우저 흐름도 통과했다. 교재 판본·기존 로컬 진도, 원본/학습 구간 묶음, 명시적 표현 저장과 복습 출처 왕복을 보존한다. 구형 mat-card에 의존한 편집기 첫 시나리오는 부모와 동일하게 새 서재의 편집→복귀 검사로 대체했다.
 
 배포 전 원격86개 migration과 로컬87개를 비교하여 신규 원본 위치 migration 한 개만 미적용임을 확인했다. 전용 검수 원본223의 raw/processed MD5, 첨부2개, 원본 진도0은 이전 완료 상태와 일치한다. security advisor 사전55개.
+
+
+DB 적용 결과: [workflow34240343140](https://github.com/wonchance-art/manabi/actions/runs/34240343140) success, 실제 Link & db push 성공이며 건너뛰지 않았다. 원격 migration87개와 로컬 일치. original_reading_positions RLS 활성, 4개 함수 모두 SECURITY INVOKER/고정 search_path, anon 실행불가. 조회·저장·source key 함수는 인증 사용자 전용이며 검증 트리거 함수 직접 실행은 인증 사용자도 불가다. security advisor55→55, 추가0. 최초 위치 행0이며 기존 검수 원본223 raw/processed 해시는 적용 전후 동일하다.
+
+[실행 커밋 CI34240326474](https://github.com/wonchance-art/manabi/actions/runs/34240326474) 전체 성공: lint·콘텐츠 게이트·Vitest 및 typography/viewer chrome/smoke/learning-flow. 실행 커밋97d6bb064d11abf23ed2215412d9550059ff0c7f. 신규 기능의 SQL·브라우저 검사는 위 로컬 검증 결과이며 기존 CI 검사와 혼동하지 않는다.
+
+
+## 최종 미리보기·실계정 확인
+
+실행 커밋 `97d6bb064d11abf23ed2215412d9550059ff0c7f`, Vercel `dpl_ABCo3J3UuZiMsNDXmc9NQvjbQd6h` READY. 실제 환경/서체의 배포 빌드도473페이지 성공했으며 중간 요청 재시도 후 컴파일4.9분, 전체 빌드약7분이었다. [개별 미리보기](https://manabi-ftkqw95oj-wonchance-arts-projects.vercel.app) 및 [고정 미리보기](https://manabi-web-v2-preview.vercel.app/materials)의 `/api/version`에서 해당 커밋/preview 환경을 확인했다. 교재 판본 `7f572327dc67893e9453246c` 유지.
+
+기존 로그인 계정의 전용 원본223에서 PDF1쪽→2쪽과 EPUB1장→2장을 읽었다. 실제 위치 RPC 저장을 DB에서 확인했고, 서재 최근 카드→원본으로 돌아가 PDF2쪽 및 마지막 EPUB첨부2장 복원을 각각 확인했다. 정상 상태에서 하단 충돌 패널이 뜨지 않으며 화면의 문장·목차·이동 버튼·가로 넘침을 직접 검수했다. 실제 계정 위치 행은 PDF2쪽 version2, EPUB2장/offset0 version4의2개다. 작성 본문 장문/화면 폭 변경/두 독립 저장소/오프라인 충돌은 위 실제 SQL 기반 합성 브라우저 검수 결과로 구분한다. 실제 물리 기기나 iOS Safari 검수 완료를 주장하지 않는다.
+
+검수 전후 원본 raw MD5 `0a820d90615e21989f4e75cc406e5c39`, processed MD5 `16451a24a36e3fb03000d5077ab36476` 일치. 첨부2개·학습 구간3개·원본 학습 진도0 유지. 기존 표현1개의 출처224, 다음 복습일2026-09-10 07:24:42.39UTC, last_reviewed_at null도 유지했다. 새 표현 저장/채점/AI분석/파일 교체를 실행하지 않았다.
+
+검토 가능한 stacked draft [PR #1292](https://github.com/wonchance-art/manabi/pull/1292)로 인계한다. 실행 이후 검수 문서와 자기 보드만 별도 커밋하며 정확한 최종 head는 PR·#150의 CODEX_DONE을 따른다. 원래 iCloud 작업 공간과 다른 세션 변경을 보존했고 merge/force-push/운영 웹 승격은 하지 않았다. 누적 #1288→#1289→#1290→#1291→#1292의 검토·병합은 Claude 창구다. 후속 기능인 미참조 업로드 정리/외부 URL 본문 가져오기는 이번 작업에 포함하지 않는다.
