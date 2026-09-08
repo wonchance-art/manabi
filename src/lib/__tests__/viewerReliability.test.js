@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { contextualMeaning, referenceMatchesContext, createViewerRequestGate, viewerCacheKey, viewerCommandAllowed } from '../viewerReliability';
+import { contextualMeaning, refreshViewerToken, referenceMatchesContext, createViewerRequestGate, viewerCacheKey, viewerCommandAllowed } from '../viewerReliability';
 
 describe('viewer context and requests', () => {
+  it('refreshes an open corrected token by exact ID, while invalidating removed selections', () => {
+    const selected = { id: 'id_0_0', text: '盛', meaning: '성대하다' };
+    const json = { dictionary: { id_0_0: { text: '盛', meaning: '담다', furigana: 'chéng' } } };
+    expect(refreshViewerToken(selected, json)).toEqual({ ...json.dictionary.id_0_0, id: 'id_0_0' });
+    expect(refreshViewerToken(selected, { dictionary: {} })).toBeNull();
+    expect(refreshViewerToken({ text: '盛' }, json)).toBeNull();
+  });
   it('keeps the contextual sense, including absent meaning, without substituting a dictionary sense', () => {
     const token = { text: '盛', meaning: '담다', furigana: 'chéng' };
     expect(contextualMeaning(token)).toBe('담다');

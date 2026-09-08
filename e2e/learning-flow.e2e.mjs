@@ -5,6 +5,7 @@ import { after, before, test } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { chromium } from 'playwright-core';
 import config from '../playwright.config.mjs';
+import { viewerCacheKey } from '../src/lib/viewerReliability.js';
 
 let browser;
 let server;
@@ -704,19 +705,21 @@ test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복�
 test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증한다', { timeout: config.timeout * 2 }, async () => {
   await runInFreshPage(async (page, context) => {
     await page.setViewportSize({ width: 1024, height: 1100 });
-    const { analyzeRequests, getGeminiRequests } = await mockAuthenticatedViewer(context);
+    const { session, fixtures, analyzeRequests, getGeminiRequests } = await mockAuthenticatedViewer(context);
     await page.goto('/viewer/91001', { waitUntil: 'domcontentloaded', timeout: config.timeout });
 
     await assertVisible(page.getByRole('heading', { name: 'E2E 중국어 읽기 1장', exact: true }), 'viewer fixture heading');
+    await authenticatedPageReady(page);
 
     // ⑤ 유의어·반의어는 단어 카드가 열리면 자동 조회된다 — 캐시를 사전 시드해
     // 결정성(Gemini 0회 계약)을 유지하고, 시드값으로 칩 렌더까지 검증한다.
-    await page.evaluate(() => {
+    const synonymKey = await viewerCacheKey('pdf_cache:synant', 'Chinese', ['中文', '중국어', 'zhōng wén']);
+    await page.evaluate((key) => {
       localStorage.setItem(
-        'pdf_cache:synant:v1:Chinese:中文',
+        key,
         JSON.stringify({ syn: [{ w: '汉语', r: 'hànyǔ', ko: '중국어(한어)' }], ant: [] }),
       );
-    });
+    }, synonymKey);
 
     // 뷰어 정돈 A안: 책 챕터 내비는 시리즈와 같은 경로 줄 내비(.viewer-series-nav)다 — 책 이름은
     // 툴팁에만(H1이 이미 「책 — 과」를 든다), 화면에는 위치만.
@@ -741,12 +744,13 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
     await assertVisible(sheet.getByText('汉语', { exact: true }), 'preseeded synonym chip in the word card');
 
     const selectedText = '我们学习中文';
-    await page.evaluate((text) => {
+    const translationKey = await viewerCacheKey('viewer_tx', [session.user.id, '91001', 'Chinese', fixtures[0].raw_text, fixtures[0].processed_json], selectedText);
+    await page.evaluate((key) => {
       localStorage.setItem(
-        `viewer_tx:Chinese:${text}`,
+        key,
         '**번역**\n우리는 중국어를 배웁니다.\n\n**맥락**\nE2E 캐시 문장입니다.',
       );
-    }, selectedText);
+    }, translationKey);
 
     // 느린 러너에서 폰트 스왑 리플로우가 좌표 측정과 드래그 사이에 끼면 3토큰 미만이
     // 집혀 flaky했다(2026-08-19 main 2회 관측, 로컬 재현 불가 — 원인은 코드가 아니라

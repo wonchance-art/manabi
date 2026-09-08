@@ -21,6 +21,7 @@ Aa 재배치·병음 조판·전체 활동 레이어 개편은 승인한 다음 
 - 이 기능에 필요한 순수 규칙/안전 저장 helper 신규 `src/lib/viewer*.js`, `src/lib/readingTest*.js`, `src/lib/reanalysis*.js`
 - 해당 회귀 테스트 신규 `src/lib/__tests__/viewerReliability*.test.js`, `src/lib/__tests__/viewerSaveUndo.test.js`, `src/lib/__tests__/readingTestReliability.test.js`, `src/lib/__tests__/reanalysisPreservation.test.js` 및 `e2e/viewer-reliability.e2e.mjs`, `e2e/viewer-reliability-sql.e2e.mjs`
 - 승인한 동작을 반대로 요구하던 배선 검사 9개 파일: `refVocabWiring`, `reviewReliabilityFixes`, `sourceEditWiring`, `wordCardUnify`, `gradeOutbox`, `grammarDetail`, `inlineReviewUndo`, `saveGrade`, `viewerAnalysisCache`. 알고리즘·다른 화면 검사는 보존하고 변경한 동작의 계약만 교체한다.
+- `e2e/learning-flow.e2e.mjs`: 기존 Gemini 0회·책 이동·단어/문장 선택 검증은 보존하며 캐시 seed만 새 키 형식으로 맞춘다.
 - `public/sw.js`: prebuild가 생성한 콘텐츠 해시 갱신 1줄.
 - 이 문서·검토용 `docs/manabi-viewer-reliability.sql`과 `docs/ai-tasks.md` 자기 항목(별도 커밋)
 
@@ -32,8 +33,10 @@ Aa 재배치·병음 조판·전체 활동 레이어 개편은 승인한 다음 
 
 ## 결과
 
-- 전체 vitest: **362파일 / 3,923테스트 통과**. 기존 FSRS 계산·교재·다른 화면 회귀도 포함.
-- 실제 React 페이지 + 합성 중국어 자료의 브라우저 검사: **16개 통과**, pageerror 0. Chrome 390 / 1138 / 1440px.
+- 전체 vitest: **362파일 / 3,924테스트 통과**. 기존 FSRS 계산·교재·다른 화면 회귀도 포함.
+- 실제 React 페이지 + 합성 중국어 자료의 브라우저 검사: **17개 통과**, pageerror 0. Chrome 390 / 1138 / 1440px.
+- 기존 학습 흐름의 viewer 검사: **통과**. 새 캐시 키로 결정적 fixture를 갱신했으며 Gemini 요청 0회와 모든 기존 화면 검증을 유지.
+- 수동 교정 결과가 갱신되어도 같은 토큰의 카드를 유지하며, 자료/계정 이동 시에는 선택을 초기화한다.
 - 독립 로컬 Postgres(PGlite) 검증: **13개 통과**. 원자적 교체, 동일 시도 재확인, 다른 창 수정 충돌, 익명/비소유자 거부, 새 복습·문맥 보호, RLS로 숨겨진 문맥의 연쇄 삭제 방지.
 - 실제 Supabase에는 컬럼·정책·외래키·함수 유무만 조회했다. 자료 행을 읽거나 수정하지 않았다. 필요한 ID 타입과 기존 소유권 정책 확인; 함수는 아직 없음.
 - 수정 JSX를 포함한 ESLint: 오류 0. 기존 이합사 아치 effect 의존성 경고 1개 유지. 기본 저장소 lint가 JSX를 건너뛰므로 명시적으로 JSX를 포함한 설정으로 추가 검사.

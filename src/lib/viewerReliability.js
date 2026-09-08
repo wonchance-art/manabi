@@ -3,6 +3,11 @@ export function contextualMeaning(token) {
   return typeof token?.meaning === 'string' ? token.meaning : '';
 }
 
+export function refreshViewerToken(selected, json) {
+  if (!selected?.id || !json?.dictionary?.[selected.id]) return null;
+  return { ...json.dictionary[selected.id], id: selected.id };
+}
+
 export function referenceMatchesContext(token, word) {
   if (!token || !word || !contextualMeaning(token).trim()) return false;
   const reading = token.furigana || token.reading;

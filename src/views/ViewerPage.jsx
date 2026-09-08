@@ -77,7 +77,7 @@ import { useGrammarDetail } from '../lib/useGrammarDetail';
 import { useEasierText } from '../lib/useEasierText';
 import { buildContextPrompt } from '../lib/grammarDetail';
 import { prepareViewerSaveUndo, undoViewerSave } from '../lib/viewerSaveUndo';
-import { contextualMeaning, referenceMatchesContext, createViewerRequestGate, viewerCacheKey, viewerCommandAllowed } from '../lib/viewerReliability';
+import { contextualMeaning, refreshViewerToken, referenceMatchesContext, createViewerRequestGate, viewerCacheKey, viewerCommandAllowed } from '../lib/viewerReliability';
 import { clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
 import { fetchKnownWords, knownWordsLang, unmarkKnown } from '../lib/knownWords';
@@ -304,7 +304,12 @@ export default function ViewerPage() {
     setLeftPanelResult('');
     setWordDetail(null);
     return () => { detail.cancel(); selection.cancel(); };
-  }, [id, user?.id, materialLang, material?.raw_text, material?.processed_json]);
+  }, [id, user?.id, materialLang]);
+  useEffect(() => {
+    detailGate.current.cancel(); selectionGate.current.cancel();
+    setWordDetail(null); setLeftPanelLoading(false); setDragAnalyzing(false); setLeftPanelResult('');
+    setSelectedToken(selected => refreshViewerToken(selected, material?.processed_json));
+  }, [material?.raw_text, material?.processed_json]);
   useEffect(() => { detailGate.current.cancel(); }, [selectedToken]);
 
   useLibraryActivity(materialActivity(material,passageOf(material)||originalParams.get('study')==='1'?'study':'text',null,null,user?.id),!!material&&!isLoading&&!error&&!shouldReadComposerOriginal(material,originalParams));
