@@ -107,7 +107,9 @@ test('PDF selection rejects crossing pages; removing the attachment preserves it
 test('explicit expression saving keeps the passage source; review returns to the quote without grading',async()=>{
  const f=await setup();try{
   await create(f);await pick(f);await start(f);assert.equal(f.vocab.length,0);
-  const child=f.rows[1];await f.page.locator('.word-token').first().click();await f.page.locator('.save-grade button').first().click();await f.page.getByRole('button',{name:'저장됨',exact:true}).first().waitFor();
+  const child=f.rows[1];await f.page.locator('.word-token').first().click();
+  await f.page.getByRole('button',{name:'뜻·발음 수정',exact:true}).first().click();await f.page.locator('.token-edit__input').first().fill('자료 안에서 고친 뜻');await f.page.locator('.token-edit__actions').getByRole('button',{name:'저장',exact:true}).click();await f.page.getByText('수정이 저장됐어요!',{exact:true}).waitFor();assert.ok(Object.values(child.processed_json.dictionary).some(token=>token.meaning==='자료 안에서 고친 뜻'));
+  await f.page.locator('.save-grade button').first().click();await f.page.getByRole('button',{name:'저장됨',exact:true}).first().waitFor();
   assert.equal(f.vocab.length,1);assert.equal(String(f.vocab[0].source_material_id),String(child.id));assert.equal(String(f.contexts[0].source.materialId),String(child.id));
   f.vocab[0].next_review_at='2026-01-01';f.vocab[0].interval=1;
   await f.page.goto('/vocab');await f.page.locator('.review-room-settings summary').click();await f.page.getByLabel('복습 방식',{exact:true}).selectOption('flash');await f.page.getByRole('button',{name:'단어만 1개 →',exact:true}).click();await f.page.getByRole('button',{name:'정답 확인하기',exact:true}).click();await f.page.locator('.learning-links summary').click();

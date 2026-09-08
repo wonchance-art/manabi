@@ -6,7 +6,7 @@ import OriginalMaterialReader from '@/components/materials/OriginalMaterialReade
 import useLibraryActivity from '@/components/library/useLibraryActivity';
 import LibrarySaveButton from '@/components/library/LibrarySaveButton';
 import {materialActivity} from '@/lib/libraryActivity';
-import { passageOf, sourcePassageHref, passageLocation } from '@/lib/sourcePassage';
+import { passageOf, sourcePassageHref, passageLocation, correctPassageToken } from '@/lib/sourcePassage';
 import { takePassageAnalysis } from '@/lib/passageAnalysis';
 import { composerOf, shouldReadComposerOriginal } from '@/lib/materialComposer';
 import Link from 'next/link';
@@ -1203,11 +1203,14 @@ export default function ViewerPage() {
       };
       const updatedJson = { ...currentJson, dictionary: updatedDict };
 
-      const { error } = await supabase
-        .from('reading_materials')
-        .update({ processed_json: updatedJson })
-        .eq('id', id);
-      if (error) throw error;
+      if (passageOf(material)) {
+        const record = await correctPassageToken(supabase, material, tokenId, corrections);
+        queryClient.setQueryData(['material', id], record);
+      } else {
+        const { error } = await supabase.from('reading_materials')
+          .update({ processed_json: updatedJson }).eq('id', id);
+        if (error) throw error;
+      }
 
       // 교정 히스토리 로그 (실패해도 수정 자체는 유지)
       if (user?.id) {

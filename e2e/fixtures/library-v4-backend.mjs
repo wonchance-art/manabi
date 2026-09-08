@@ -30,7 +30,7 @@ export async function fixture(options={}){
    create policy passage_write on reading_materials for all to authenticated using(owner_id=auth.uid()) with check(owner_id=auth.uid());
    grant insert,update on reading_materials to authenticated;grant usage on sequence passage_fixture_id to authenticated;
    create unique index passage_import_once on reading_materials(owner_id,(processed_json->'metadata'->>'importAttempt'));`);
-  for(const file of ['20260907221311_material_document_editing.sql','20260908060607_source_passage_study.sql'])await db.exec(await readFile(new URL(`../../supabase/migrations/${file}`,import.meta.url),'utf8'));
+  for(const file of ['20260907221311_material_document_editing.sql','20260908060607_source_passage_study.sql','20260908070150_source_passage_token_correction.sql'])await db.exec(await readFile(new URL(`../../supabase/migrations/${file}`,import.meta.url),'utf8'));
  }
  const edition=JSON.parse(await readFile(new URL('../../src/content/textbookEditions/index.json',import.meta.url),'utf8')).current;
  await db.query('insert into textbook_book_editions values($1,$2)',['japanese-n5',edition]);
@@ -43,14 +43,14 @@ export async function fixture(options={}){
  await f.context.route('**/rest/v1/**',async r=>{
   const req=r.request(),url=new URL(req.url()),table=url.pathname.split('/').pop();
   const passageSelect=options.sourcePassages&&table==='reading_materials'&&url.searchParams.get('select')?.includes('passage:');
-  const passageRpc=options.sourcePassages&&['open_source_passage','source_passage_analysis'].includes(table);
+  const passageRpc=options.sourcePassages&&['open_source_passage','source_passage_analysis','correct_source_passage_token'].includes(table);
   if(!tables[table]&&!['personal_library_page','personal_library_children'].includes(table)&&!passageSelect&&!passageRpc)return r.fallback();
   if(req.method()==='OPTIONS')return r.fulfill({status:204,headers:cors});
   const task=async()=>{try{
    await sync();requests.push({table,method:req.method(),payload:req.method()==='POST'?req.postDataJSON():null});
    if(passageRpc){
     const p=req.postDataJSON();
-    const result=table==='open_source_passage'?await db.query('select open_source_passage($1,$2,$3,$4) data',[p.p_parent,p.p_source,p.p_text,p.p_language]):await db.query('select source_passage_analysis($1,$2,$3) data',[p.p_id,p.p_attempt,p.p_json]);
+    const result=table==='correct_source_passage_token'?await db.query('select correct_source_passage_token($1,$2,$3,$4) data',[p.p_id,p.p_token,p.p_before,p.p_corrections]):table==='open_source_passage'?await db.query('select open_source_passage($1,$2,$3,$4) data',[p.p_parent,p.p_source,p.p_text,p.p_language]):await db.query('select source_passage_analysis($1,$2,$3) data',[p.p_id,p.p_attempt,p.p_json]);
     const data=result.rows[0].data,record=data.material||data;
     const old=f.rows.find(item=>String(item.id)===String(record.id));if(old)Object.assign(old,record);else f.rows.push(record);
     if(table==='open_source_passage'&&losePassageReply){losePassageReply=false;return r.abort('failed');}

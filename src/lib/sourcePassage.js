@@ -121,3 +121,17 @@ export function passageError(error) {
   if (/PASSAGE_LANGUAGE/.test(error?.message)) return '학습할 언어를 골라 주세요.';
   return '구간을 열지 못했어요. 고른 내용은 유지했으니 다시 시도해 주세요.';
 }
+
+
+export async function correctPassageToken(client, material, tokenId, corrections) {
+  const { data, error } = await client.rpc('correct_source_passage_token', {
+    p_id: String(material.id), p_token: tokenId, p_before: material.processed_json.dictionary[tokenId], p_corrections: corrections,
+  });
+  if (error) {
+    if (/PASSAGE_ANALYSIS_BUSY/.test(error.message)) throw new Error('표현 준비가 끝난 뒤 다시 수정해 주세요.');
+    if (/PASSAGE_TOKEN_CHANGED/.test(error.message)) throw new Error('다른 곳에서 수정된 표현이에요. 새로고침 후 다시 확인해 주세요.');
+    throw error;
+  }
+  if (!data?.id) throw new Error('수정 결과를 확인하지 못했어요. 새로고침 후 확인해 주세요.');
+  return data;
+}

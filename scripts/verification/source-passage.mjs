@@ -17,7 +17,7 @@ try{
  grant usage on schema public,auth to authenticated,anon;grant all on reading_materials to authenticated;grant select on reading_materials to anon;grant usage on all sequences in schema public to authenticated;
  create unique index import_once on reading_materials(owner_id,(processed_json->'metadata'->>'importAttempt'));
  `);
- for(const file of ['20260907221311_material_document_editing.sql','20260908060607_source_passage_study.sql'])await db.exec(await readFile(new URL(`../../supabase/migrations/${file}`,import.meta.url),'utf8'));
+ for(const file of ['20260907221311_material_document_editing.sql','20260908060607_source_passage_study.sql','20260908070150_source_passage_token_correction.sql'])await db.exec(await readFile(new URL(`../../supabase/migrations/${file}`,import.meta.url),'utf8'));
  await db.exec(`set role authenticated;set test.uid='${owner}';`);
  const meta={status:'saved',metadata:{language:'French',composer:{version:1,assets:[{kind:'pdf',hash:'a'.repeat(64)},{kind:'epub',hash:'b'.repeat(64)}],links:[]}},sequence:[],dictionary:{}};
  const body='😀 Un café.\nUn café.\n次の文。';
@@ -36,19 +36,25 @@ try{
  const analyze=async(id,run,json=null)=>(await db.query('select source_passage_analysis($1,$2,$3) data',[id,run,json])).rows[0].data;
  const claim=await analyze(child.id,attempt);assert.equal(claim.acquired,true);
  assert.equal((await analyze(child.id,attempt2)).acquired,false);
+ await assert.rejects(db.query('select correct_source_passage_token($1,$2,$3,$4)',[child.id,'id_0_0',{}, {meaning:'too early'}]),/PASSAGE_ANALYSIS_BUSY/);
  const progress={...claim.material.processed_json,sequence:['id_0_0'],dictionary:{id_0_0:{text:'Un',pos:'冠詞'}},last_idx:0,status:'analyzing'};
  await assert.rejects(analyze(child.id,attempt2,progress),/PASSAGE_ANALYSIS_EXPIRED/);
  const final=await analyze(child.id,attempt,{...progress,status:'completed',metadata:{composer:{wrong:true},language:'Chinese'}});
  assert.deepEqual(final.material.processed_json.metadata.composer,child.processed_json.metadata.composer);assert.equal(final.material.processed_json.metadata.language,'French');
  assert.equal((await open()).processed_json.status,'completed');assert.equal((await analyze(child.id,attempt2)).acquired,false);
  await assert.rejects(analyze(child.id,attempt,{...progress,status:'analyzing'}),/PASSAGE_ANALYSIS_EXPIRED/);
+ const token=final.material.processed_json.dictionary.id_0_0;
+ const correct=async(before,corrections)=>(await db.query('select correct_source_passage_token($1,$2,$3,$4) data',[child.id,'id_0_0',before,corrections])).rows[0].data;
+ const corrected=await correct(token,{meaning:'하나의'});assert.equal(corrected.processed_json.dictionary.id_0_0.meaning,'하나의');assert.equal(corrected.raw_text,child.raw_text);assert.deepEqual(corrected.processed_json.metadata,final.material.processed_json.metadata);
+ await assert.rejects(correct(token,{meaning:'stale'}),/PASSAGE_TOKEN_CHANGED/);
+ await assert.rejects(correct(corrected.processed_json.dictionary.id_0_0,{text:'changed source'}),/PASSAGE_INVALID/);
  const doc={version:1,revision:'00000000-0000-4000-8000-000000000012',body:'Changed text',assets:[],retainedAssets:meta.metadata.composer.assets,links:[]};
  await db.query('update reading_materials set document_json=$1 where id=$2',[doc,parent.id]);
  await assert.rejects(open(),/PASSAGE_SOURCE_CHANGED/);
  await assert.rejects(open({...source,quote:{...source.quote,exact:'Un café',end:9}},'Un café'),/PASSAGE_SOURCE_CHANGED/);
  assert.equal((await open(pdf,'Same words.','English')).id,firstPdf.id);
  const preserved=(await db.query('select * from reading_materials where id=$1',[parent.id])).rows[0];assert.equal(preserved.raw_text,body);assert.deepEqual(preserved.processed_json,meta);
- await db.exec(`set test.uid='${other}';`);assert.equal((await db.query('select * from reading_materials')).rows.length,0);await assert.rejects(open(),/PASSAGE_ACCESS/);await assert.rejects(analyze(child.id,attempt),/PASSAGE_ACCESS/);
+ await db.exec(`set test.uid='${other}';`);assert.equal((await db.query('select * from reading_materials')).rows.length,0);await assert.rejects(open(),/PASSAGE_ACCESS/);await assert.rejects(analyze(child.id,attempt),/PASSAGE_ACCESS/);await assert.rejects(correct(token,{meaning:'not mine'}),/PASSAGE_ACCESS/);
  await db.exec('reset role;set role anon;');await assert.rejects(open(),/permission denied/);assert.equal((await db.query('select * from reading_materials')).rows.length,0);
- console.log('PASS: real SQL, private source snapshots, Unicode positions, same-source idempotency, distinct-page identity, invalid-source rejection, immutable raw/metadata, retained source, run lease, stale write guard, non-owner/anon isolation.');
+ console.log('PASS: real SQL, private source snapshots, Unicode positions, same-source idempotency, distinct-page identity, invalid-source rejection, immutable raw/metadata, retained source, run lease, stale write guard, atomic token correction without source changes, non-owner/anon isolation.');
 }finally{await db.close();}
