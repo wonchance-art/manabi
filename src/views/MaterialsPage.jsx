@@ -15,6 +15,7 @@ import { parseTitle } from '../lib/seriesMeta';
 import { materialFit, fitBand, sortByFit, bookFit, FIT_MIN_TYPES } from '../lib/materialFit';
 import { fetchKnownWords, mergeKnownIntoIndex } from '../lib/knownWords';
 import { groupByBook } from '../lib/bookMeta';
+import { isTeamRoot } from '../lib/classBoard';
 import { groupByPdf, pageRangeLabel, readProgressLabel } from '../lib/pdfGroups';
 import { useGroupReadIds } from '../lib/useGroupReadIds';
 import { LEVELS, langNameKo, levelRank, profileLevel, isWriteMaterial } from '../lib/constants';
@@ -130,7 +131,8 @@ async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuer
     }
     throw error;
   }
-  return (data || []).map(documentListRow).filter(material => !isStudySnapshot(material) && (langFilter === 'all' || (documentOf(material)?.language ?? material.processed_json?.metadata?.language) === langFilter));
+  // 팀 루트(수업 설정 행, v2-AB R1)는 자료가 아니다 — 목록에서 숨긴다(정리본은 자료로 보인다).
+  return (data || []).map(documentListRow).filter(material => !isStudySnapshot(material) && !isTeamRoot(material) && (langFilter === 'all' || (documentOf(material)?.language ?? material.processed_json?.metadata?.language) === langFilter));
 }
 
 const PAGE_SIZE = 12;

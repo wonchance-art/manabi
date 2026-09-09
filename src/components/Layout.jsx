@@ -37,6 +37,7 @@ function ReaderSiteMenu({ isAdmin }) {
     <summary>메뉴 <span aria-hidden="true">≡</span></summary>
     <nav aria-label="읽기 화면 내비게이션" onClick={e => { if (e.target.closest('a')) ref.current.open = false; }}>
       {MAIN_NAV.map(item => <Link key={item.href} href={item.href} prefetch={item.prefetch}>{item.label}</Link>)}
+      {isAdmin && <Link href="/class" prefetch={false}>수업</Link>}
       {isAdmin && <Link href="/admin" prefetch={false}>관리</Link>}
     </nav>
   </details>;
@@ -173,6 +174,16 @@ export default function Layout({ children }) {
           ))}
         </nav>
 
+        {/* 수업 팀 허브(v2-AB R1) — 오너(관리자)만. 학생은 팀 링크로 들어온다. */}
+        {isAdmin && (
+          <Link
+            href="/class"
+            prefetch={false}
+            className={`gnb__link ${pathname.startsWith('/class') ? 'active' : ''}`}
+          >
+            <span>수업</span>
+          </Link>
+        )}
         {isAdmin && (
           <Link
             href="/admin"
