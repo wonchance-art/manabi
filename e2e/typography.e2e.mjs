@@ -649,3 +649,18 @@ test('본문(.word-token)에는 하단 루비가 없다 — 카드 한정', asyn
   const pos = await page.$eval('.rt-hun', (el) => getComputedStyle(el).position);
   assert.equal(pos, 'static', '본문 하단 루비가 절대배치를 얻었다 — 규칙이 카드 밖으로 샜다');
 });
+
+
+test('Aa 중국어 명조 — 실제 글자까지 본문과 같은 서체, 병음은 별도 서체', async () => {
+  const token=tok(zhSeg('读','dú'),false);
+  await page.setContent(PAGE(`<div style="--reader-font:Georgia,serif;--font-noto-sans:Arial,sans-serif">
+    <div class="reader-area" lang="zh-Hans">${token}</div>
+    <div class="reader-settings__preview" lang="zh-Hans" style="font-family:var(--reader-font)">${token}</div>
+  </div>`));
+  const fonts=await page.evaluate(()=>{
+    const font=s=>getComputedStyle(document.querySelector(s)).fontFamily;
+    return {body:font('.reader-area ruby'),preview:font('.reader-settings__preview ruby'),pinyin:font('.reader-settings__preview .rt-an')};
+  });
+  assert.equal(fonts.preview,fonts.body,'미리보기의 실제 한자가 전역 :lang(zh) 고딕 규칙으로 바뀌면 안 된다');
+  assert.match(fonts.preview,/Georgia/);assert.match(fonts.pinyin,/Arial/);
+});

@@ -31,7 +31,7 @@
 .viewer-layout :is(button,input,textarea,summary):focus-visible {outline:2px solid var(--reader-accent);outline-offset:3px;}
 .viewer-layout [hidden] {display:none!important;}
 .viewer-layout [data-answer-hidden="true"] {visibility:hidden;}
-.viewer-layout :is(.reader-area,.reader-card-source,.word-fit):lang(zh),.viewer-layout :is(.reader-area,.reader-card-source,.word-fit) :lang(zh) {font-family:var(--reader-font);}
+.viewer-layout :is(.reader-area,.reader-card-source,.word-fit,.reader-settings__preview):lang(zh),.viewer-layout :is(.reader-area,.reader-card-source,.word-fit,.reader-settings__preview) :lang(zh) {font-family:var(--reader-font);}
 /* Annotation font and width are independent from the user's body size. */
 .viewer-layout .reader-area ruby[data-pinyin] > .rt-an {font-size:var(--pinyin-size);font-family:var(--font-noto-sans),sans-serif;letter-spacing:0;line-height:1.2;opacity:1;color:var(--reader-muted);}
 .viewer-layout[data-pron-spacing="reserved"] .reader-area ruby[data-pinyin] {width:max(1em,var(--pinyin-cell));}
