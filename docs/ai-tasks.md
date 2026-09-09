@@ -785,6 +785,28 @@
 - 런던 위성 마이크로 픽(재량 위임 해석): 윈저+옥스퍼드 2곳 추천 — 레만호 완성 후 순번
 - 일본 4도시 COPY 슬롯 이식(다국어 UI 확정 시) / 아토미움 = marker-only 유지 확인
 ### done (최근)
+- **🏫 AB 수업 판 · 교재 정제 · 암호 공유 R0+R1+R2 — 설계 5603827169·팀 페이지 상세 5604199672 전량 구현 (2026-09-09, 오너 「착수해」)**:
+  브랜치 `claude/chinese-pos-context-selection-u23tt0`(merged 이력 위 재기점 → `origin/main` b42d863), draft PR(라운드별 커밋 3 + 보드).
+  · **R0 교재 정제** — `bilingualSplit.js`(한글 비율 ≥60% 줄 = 뜻, 바로 앞 원어와 **문장 키**로 짝, 짝 없는 줄은 미배정으로 노출,
+    `planRefine` = sourceEdit 리맵만·재분석 0) · `bookSplit` 과당 줄 수 **원어 기준** + 과별 translations(합치기도 보존) ·
+    반입 입구 배너(원어만 담고 뜻은 드래그 번역에) · 등록이 `metadata.translations` 동봉 · 뷰어 `runSelectionAnalysis`가
+    캐시·Gemini **전에** translations(정확 일치만, 호출 0 — 비로그인도 교재 뜻) · 관리자 자료 관리 「책 단위 정제」(`BookRefinePanel`:
+    검사 → N과·원어·뜻·미배정 확인 → 과별 `viewer_replace_analysis` RPC — 분석된 과는 `runPreservedReanalysis` 리맵 검증 분기).
+  · **R1 수업 판** — `classBoard.js`(metadata.team 루트/정리본 파서·행 조립·`appendEntryPlan` 새 문단=그 줄만 분석·문단 끝 개행
+    정리·실패 대체본·`toPlainText` 단어 — 읽기 — 뜻) · `classPassword.js` PBKDF2-SHA256 10만 회 Web Crypto(= Node pbkdf2 대조 계약) ·
+    `classRealtime.js` Broadcast(신호는 「다시 읽어라」뿐) · `/class` 허브(새 팀·설정·암호 바꾸기 pwGen+1·지금만 표시) ·
+    `/class/[team]/live` 폰 입력판(직렬 큐 → 정리본 생성/추가 → 파이프라인 선택 줄만 → 분석 막히면 뜻 없이 저장) ·
+    `/class/[team]/board` 태블릿 판(읽기 0쓰기·Broadcast+15초 폴링) · 관리자 내비 「수업」 · 자료실 루트 행 숨김.
+  · **R2 학생 페이지** — `server/classAccess.js`(HMAC 토큰 30일·pwGen·timingSafeEqual·팀 없어도 더미 해시) ·
+    `server/classIndex.js`(service role은 **루트 소유자 행만**) · 라우트 3(`unlock` 틀림·없음·6자 미만 같은 404·IP 10/분·비밀
+    없으면 503 / index·material 401·404) · `sharedStore.js`(사본 전용 DB — TTL 7일, 상한·핀 0, offlineCache DB_VERSION 2 무변경) ·
+    `classClient.js`(토큰·목록 캐시·대기 담기·받기 단일 소유) · `sharedCopy.js`(복제본 = 원문·분석·metadata 그대로 +
+    `metadata.source_ref`, 중복 0, 담기는 복제 **뒤**) · `/class/[team]`(S0 잠김 팀 이름 비노출 → S1 사본 → local: 뷰어 · S4 로그인
+    학생 즉시 복제·전부 담기 · S5 오너 뷰 RLS 직접 · S7 401 재잠김·오프라인) · 뷰어 `local:` 분기(네트워크 0·LOCAL_MISSING·
+    비공개 게이트 예외·팀 목록 book-nav·비로그인 담기 CTA) · Layout 로그인 복제 효과(어디서 로그인하든).
+  · 스키마 0 · **env 1 `SHARE_LINK_SECRET`(오너 Vercel 수동 — 없으면 해제 503 fail-closed, R0·R1은 무관)** · 하드리밋 접촉 0.
+  · 계약 테스트 6파일 95종(bilingualSplit 23·classBoard 20·classPassword 5·classAccess 13·sharedCopy 11 + 배선) · 전체 vitest
+    371파일/4,052 green · lint 0 error. 실사용 미검수(오너 수업 1회 뒤 R1 입력판 속도·판 글자 크기 실측 예정).
 - **🔀 Codex 스택 검수·머지 라운드 — #1292 서재 통합(f2fc7dba) · #1293 뷰어 신뢰성 1차(7da652bb) · #1294 뷰어 2차(1a94d35f) + 구 스택 9건·#1288~#1291·#1284 정리 (2026-09-09 밤,
   오너 「최근 git PR 검토 및 merge 승인 처리」)**: 게이트 = 자기 보고 대조(`merge-base --is-ancestor`로 스택 조상 관계 기계 확인, #1292 ⊃ #1288~#1291 4/4) → 하드리밋 스캔(마이그레이션
   7본 함수 INVOKER — 예외 1 `viewer_undo_vocabulary_save` DEFINER는 오너 승인·자기 행 잠금·삭제 자기 행 한정, 고정 search_path·RLS·anon revoke / 동결 경로·시크릿·테스트 skip 0)
