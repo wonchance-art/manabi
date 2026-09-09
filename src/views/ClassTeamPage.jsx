@@ -16,10 +16,12 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
+import { ClassroomShell,ClassroomState,ClassBack,ClassCover } from '../components/classroom/ClassroomUI';
+import { classroomPlainText } from '../lib/classroomModel';
 import Button from '../components/Button';
 import MaterialGroupCard from '../components/MaterialGroupCard';
 import { LANG_NAME_KO } from '../lib/constants';
-import { getTeam, dayLabel, listDayNotes, localViewerHref, toPlainText, TEAM_PW_MIN } from '../lib/classBoard';
+import { getTeam, dayLabel, listDayNotes, localViewerHref, TEAM_PW_MIN } from '../lib/classBoard';
 import { fetchTeamRoot, fetchDayNotes, fetchBookChapters, chapterLabel } from '../lib/classTeamQueries';
 import {
   readUnlock, clearUnlock, readIndexCache, isBannerOff, setBannerOff, unlockTeam, fetchTeamIndex,
@@ -40,7 +42,7 @@ function TeamHeader({ name, lang, sub, right }) {
   return (
     <div className="page-header page-header--row">
       <div>
-        <h1 className="page-header__title">🏫 {name}{lang ? ` · ${LANG_NAME_KO[lang] || lang}` : ''}</h1>
+        <h1 className="page-header__title">{name}{lang ? ` · ${LANG_NAME_KO[lang] || lang}` : ''}</h1>
         {sub && <p className="page-header__subtitle">{sub}</p>}
       </div>
       {right}
@@ -53,7 +55,7 @@ function LockedView({ pw, setPw, busy, message, onSubmit }) {
   return (
     <div className="page-container" style={{ maxWidth: 480 }}>
       <div className="page-header">
-        <h1 className="page-header__title">🏫 수업 자료</h1>
+        <h1 className="page-header__title">수업 자료</h1>
         <p className="page-header__subtitle">선생님께 받은 암호를 입력하세요.</p>
       </div>
       <form className="card" onSubmit={onSubmit} style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -82,14 +84,15 @@ function LockedView({ pw, setPw, busy, message, onSubmit }) {
 /** S5 — 오너: 암호·토큰 없이 RLS 직접. 같은 카드·같은 목록에 내 뷰어 링크. */
 function OwnerView({ root, user, teamKey, toast }) {
   const router = useRouter();
+  const [tab,setTab]=useState('notes');
   const team = getTeam(root.processed_json?.metadata);
   const { data: chapters = [] } = useQuery({
-    queryKey: ['book-chapters', team.bookKey],
+    queryKey: ['class-book-chapters', user.id, team.bookKey],
     queryFn: () => fetchBookChapters(team.bookKey),
     enabled: !!team.bookKey,
     staleTime: 1000 * 60,
   });
-  const { data: noteRows = [] } = useQuery({
+  const { data: noteRows = [], error: notesError, isLoading: notesLoading, refetch: retryNotes } = useQuery({
     queryKey: ['class-notes', user.id, teamKey],
     queryFn: () => fetchDayNotes(user.id, teamKey),
   });
@@ -99,63 +102,28 @@ function OwnerView({ root, user, teamKey, toast }) {
   async function copyNote(id) {
     const { data, error } = await supabase.from('reading_materials').select('*').eq('id', id).maybeSingle();
     if (error || !data) { toast('정리본을 못 읽었어요.', 'error'); return; }
-    await copyToClipboard(toPlainText(data), toast, '정리본을 복사했어요 — 카톡에 붙여 넣으세요.');
+    await copyToClipboard(classroomPlainText(data), toast, '정리본을 복사했어요 — 카톡에 붙여 넣으세요.');
   }
 
-  return (
-    <div className="page-container" style={{ maxWidth: 760 }}>
-      <TeamHeader name={team.name} lang={team.lang} sub="선생님 화면 — 학생은 링크 + 암호로 같은 목록을 봐요" />
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
-        <Link href={`/class/${teamKey}/live`} className="btn btn--primary btn--sm">📱 입력판 열기</Link>
-        <Link href={`/class/${teamKey}/board`} className="btn btn--secondary btn--sm">🖥 태블릿 판 열기</Link>
-        <Button size="sm" variant="ghost" onClick={() => copyToClipboard(shareLink, toast, '링크를 복사했어요.')}>🔗 링크 복사</Button>
-        <Link href="/class" className="btn btn--ghost btn--sm">⚙ 설정 · 암호</Link>
-      </div>
-      {team.bookKey && (
-        <MaterialGroupCard
-          open
-          icon="📘"
-          title={chapters[0]?.title?.split(' — ')[0] || '교재'}
-          meta={team.bookTotal ? `${team.bookTotal}과 중 ${chapters.length}과까지` : `${chapters.length}과`}
-          rows={chapters.map((c) => ({
-            key: c.id,
-            onClick: () => router.push(`/viewer/${c.id}`),
-            lead: c.order,
-            title: chapterLabel(c.title),
-            right: <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{c.status === 'completed' ? '분석됨' : ''}</span>,
-          }))}
-          footer={team.bookTotal && chapters.length < team.bookTotal ? `${chapters.length + 1}~${team.bookTotal}과는 아직 올라오지 않았어요` : null}
-        />
-      )}
-      <NotesList notes={notes} onOpen={(n) => router.push(`/viewer/${n.id}`)} onCopy={(n) => copyNote(n.id)} />
-    </div>
-  );
+  const latest=notes[0];
+  const back=`/class/${teamKey}`;
+  const openHref=id=>`/viewer/${id}?returnTo=${encodeURIComponent(back)}`;
+  return <ClassroomShell lang={team.lang}>
+    <ClassBack/>
+    <header className="classroom-header"><div><span className="classroom-eyebrow">MANABI / {LANG_NAME_KO[team.lang]}</span><h1>{team.name}</h1><p>수업의 표현을 모아, 나의 언어로.</p></div><ClassCover team={team} small/></header>
+    <div className="classroom-actions"><Link href={`/class/${teamKey}/live`} className="classroom-button">수업 진행 →</Link><Link href={`/class/${teamKey}/board`} className="classroom-button classroom-button--quiet">함께 보는 화면 ↗</Link><button className="classroom-text-button" onClick={()=>copyToClipboard(shareLink,toast,'수업 링크를 복사했어요.')}>학생에게 링크 공유</button><Link href="/class" className="classroom-text-button">수업 설정</Link></div>
+    <div className="classroom-tabs" aria-label="수업 자료 종류"><button aria-pressed={tab==='notes'} onClick={()=>setTab('notes')}>수업 노트 {notes.length||''}</button><button aria-pressed={tab==='book'} onClick={()=>setTab('book')}>교재</button></div>
+    {tab==='notes'?<>
+      {notesLoading?<p role="status">수업 노트를 불러오는 중…</p>:notesError?<div className="classroom-notice" role="alert">노트를 불러오지 못했어요. <button onClick={()=>retryNotes()}>다시 불러오기</button></div>:latest&&<Link href={openHref(latest.id)} className="classroom-featured-note"><span className="classroom-eyebrow">최근 수업 노트</span><h2>{dayLabel(latest.day)}에 함께 배운 것들.</h2><p>{latest.title}</p><b>노트 읽기 →</b></Link>}
+      {!notesLoading&&!notesError&&<NotesList notes={notes} onOpen={n=>router.push(openHref(n.id))} onCopy={n=>copyNote(n.id)}/>}</>
+      :team.bookKey?<MaterialGroupCard open title={chapters[0]?.title?.split(' — ')[0]||'수업 교재'} meta={`공유된 ${chapters.length}과${team.bookTotal?` · 전체 ${team.bookTotal}과`:''}`} rows={chapters.map(c=>({key:c.id,onClick:()=>router.push(openHref(c.id)),lead:c.order,title:chapterLabel(c.title),right:String(c.id)===team.chapterId?<span>지금 수업 중</span>:null}))}/>:<div className="classroom-empty"><b>자유롭게 배우는 수업입니다.</b><p>교재는 수업 설정에서 언제든 연결할 수 있어요.</p></div>}
+  </ClassroomShell>;
 }
 
-function NotesList({ notes, onOpen, onCopy, right = null, dim = () => false }) {
-  return (
-    <div className="card" style={{ padding: '12px 14px', marginTop: 12 }}>
-      <div style={{ fontWeight: 700, marginBottom: 8 }}>📝 수업 정리</div>
-      {notes.length === 0 ? (
-        <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-muted)' }}>아직 수업 정리가 없어요 — 첫 수업 뒤에 생겨요.</p>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {notes.map((n) => (
-            <div key={n.id} className="group-card__row" role="button" tabIndex={0} aria-disabled={dim(n) || undefined}
-              style={dim(n) ? { opacity: 0.5 } : undefined}
-              onClick={() => onOpen(n)}
-              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onOpen(n))}>
-              <span className="group-card__lead">{dayLabel(n.day)}</span>
-              <span className="group-card__rowtitle">{n.lines != null ? `${n.lines}개` : n.title}</span>
-              {right?.(n)}
-              <button type="button" className="btn btn--ghost btn--sm" title="평문 복사" aria-label="정리본 평문 복사"
-                onClick={(e) => { e.stopPropagation(); onCopy(n); }}>📋</button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+function NotesList({notes,onOpen,onCopy,right=null,dim=()=>false}) {
+  return <section className="classroom-note-list" aria-label="날짜별 수업 노트">
+    {!notes.length?<div className="classroom-empty"><b>첫 수업 노트를 기다리고 있어요.</b><p>수업에서 입력한 표현이 날짜별로 모입니다.</p></div>:notes.map(n=><div className="classroom-note-row" key={n.id}><button disabled={dim(n)} onClick={()=>onOpen(n)}><time dateTime={n.day}>{dayLabel(n.day)}</time><strong>{n.lines!=null?`함께 배운 표현 ${n.lines}개`:n.title}</strong>{right?.(n)}</button><button className="classroom-text-button" aria-label={`${dayLabel(n.day)} 노트 복사`} onClick={()=>onCopy(n)}>복사</button></div>)}
+  </section>;
 }
 
 /** S0·S1·S4·S7 — 학생(비로그인·로그인). */
@@ -226,7 +194,7 @@ function StudentView({ teamKey, user, toast }) {
     queryFn: () => findExistingCopies(supabase, user.id),
     enabled: !!user?.id,
   });
-  const claimedMap = claimed || new Map();
+  const claimedMap = useMemo(() => claimed || new Map(), [claimed]);
   useEffect(() => {
     if (!user?.id) return undefined;
     const on = () => { refetchClaimed(); };
@@ -305,7 +273,7 @@ function StudentView({ teamKey, user, toast }) {
     try {
       const copy = await ensureSharedCopy(teamKey, unlock.token, n);
       await refreshCopies();
-      await copyToClipboard(toPlainText(copy.material), toast, '정리본을 복사했어요.');
+      await copyToClipboard(classroomPlainText(copy.material), toast, '정리본을 복사했어요.');
     } catch (err) { toast('복사하지 못했어요 — ' + errMsg(err), 'error'); }
   }
 
@@ -329,7 +297,7 @@ function StudentView({ teamKey, user, toast }) {
     } finally { setBusy(false); }
   }
 
-  if (phase === 'loading') return null;
+  if (phase === 'loading') return <ClassroomState title="수업을 불러오고 있어요."/>;
   if (phase === 'locked') return <LockedView pw={pw} setPw={setPw} busy={busy} message={lockMessage} onSubmit={handleUnlock} />;
 
   const team = index?.team || { key: teamKey, name: unlock?.name || teamKey };
@@ -352,7 +320,7 @@ function StudentView({ teamKey, user, toast }) {
   const dim = (entry) => !user && offline && !copies.get(entry.id);
 
   return (
-    <div className="page-container" style={{ maxWidth: 760 }}>
+    <ClassroomShell lang={team.lang}><ClassBack/>
       <TeamHeader
         name={team.name}
         lang={team.lang}
@@ -367,12 +335,11 @@ function StudentView({ teamKey, user, toast }) {
       )}
       {offline && <p role="status" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 10px' }}>오프라인 — 받아 둔 사본만 열려요.</p>}
 
+      <NotesList notes={notes} onOpen={(n) => { if (!dim(n)) openEntry(n); }} onCopy={copyNotePlain} right={chip} dim={dim} />
       {team.bookKey && (
         <MaterialGroupCard
-          open
-          icon="📘"
           title={team.bookTitle || '교재'}
-          meta={team.bookTotal ? `${team.bookTotal}과 중 ${chapters.length}과까지` : `${chapters.length}과`}
+          meta={`공유된 ${chapters.length}과${team.bookTotal?` · 전체 ${team.bookTotal}과`:""}`}
           rows={chapters.map((c) => ({
             key: c.id,
             onClick: () => { if (!dim(c)) openEntry(c); },
@@ -381,12 +348,12 @@ function StudentView({ teamKey, user, toast }) {
             right: chip(c),
           }))}
           footer={team.bookTotal && chapters.length < team.bookTotal
-            ? `${chapters.length + 1}~${team.bookTotal}과는 아직 올라오지 않았어요`
+            ? `아직 공유되지 않은 과가 있어요`
             : (!user ? '탭하면 받아서 열어요 · 사본은 7일 뒤 지워져요' : null)}
         />
       )}
-      <NotesList notes={notes} onOpen={(n) => { if (!dim(n)) openEntry(n); }} onCopy={copyNotePlain} right={chip} dim={dim} />
-    </div>
+
+    </ClassroomShell>
   );
 }
 
@@ -399,7 +366,7 @@ export default function ClassTeamPage() {
     queryFn: () => fetchTeamRoot(user.id, teamKey),
     enabled: !!user?.id && !!teamKey,
   });
-  if (loading || (user && rootLoading)) return null;
+  if (loading || (user && rootLoading)) return <ClassroomState title="수업을 불러오고 있어요."/>;
   const owned = !!user && !!root && root.owner_id === user.id;
   if (owned) return <OwnerView root={root} user={user} teamKey={teamKey} toast={toast} />;
   return <StudentView teamKey={teamKey} user={user} toast={toast} />;

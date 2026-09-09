@@ -21,6 +21,9 @@ import { listAppendableBooks } from '../lib/bookAppend';
 import {
   listTeams, listDayNotes, buildTeamRootRow, patchTeamRoot, TEAM_KEY_RE, TEAM_PW_MIN, dayLabel,
 } from '../lib/classBoard';
+import { ClassroomShell,ClassroomState,ClassCover } from '../components/classroom/ClassroomUI';
+import ClassroomJoin from '../components/classroom/ClassroomJoin';
+import { saveClassroomMetadata } from '../lib/classroomModel';
 import { hashPassword, makeSalt, validatePassword } from '../lib/classPassword';
 
 const LANG_OPTIONS = ['Japanese', 'Chinese', 'English', 'French'];
@@ -28,7 +31,7 @@ const LANG_OPTIONS = ['Japanese', 'Chinese', 'English', 'French'];
 async function fetchTeamRows(userId) {
   const { data, error } = await supabase
     .from('reading_materials')
-    .select('id, title, owner_id, created_at, processed_json')
+    .select('id, title, raw_text, owner_id, created_at, processed_json')
     .eq('owner_id', userId)
     .not('processed_json->metadata->team', 'is', null)
     .order('created_at', { ascending: false });
@@ -70,7 +73,7 @@ export default function ClassHubPage() {
   const toast = useToast();
   const queryClient = useQueryClient();
 
-  const { data: teamRows = [], isLoading } = useQuery({
+  const { data: teamRows = [], isLoading, error: teamError, refetch: retryTeams } = useQuery({
     queryKey: ['class-teams', user?.id],
     queryFn: () => fetchTeamRows(user.id),
     enabled: !!user?.id && isAdmin,
@@ -98,7 +101,8 @@ export default function ClassHubPage() {
 
   async function handleCreate(e) {
     e.preventDefault();
-    const key = draft.key.trim().toLowerCase();
+    const key = draft.key;
+    if (!draft.name.trim()) { toast('수업 이름을 적어 주세요.', 'warning'); return; }
     if (!TEAM_KEY_RE.test(key)) { toast('팀 키는 소문자·숫자·하이픈 1~16자예요(링크 주소가 돼요).', 'warning'); return; }
     if (teams.some((t) => t.key === key)) { toast('이미 있는 팀 키예요.', 'warning'); return; }
     const pwError = validatePassword(draft.password, TEAM_PW_MIN);
@@ -111,14 +115,15 @@ export default function ClassHubPage() {
         key, name: draft.name, lang: draft.lang, bookKey: draft.bookKey || null,
         bookTotal: draft.bookTotal ? Number(draft.bookTotal) : null, pwHash, pwSalt, ownerId: user.id,
       });
-      const { error } = await supabase.from('reading_materials').insert(row);
-      if (error) throw error;
+      const existing = await supabase.from('reading_materials').select('id').eq('owner_id',user.id).eq('processed_json->metadata->team->>key',key).eq('processed_json->metadata->team->>root','true').maybeSingle();
+      if(existing.error) throw existing.error;
+      if(!existing.data){const {error}=await supabase.from('reading_materials').insert(row);if(error)throw error;}
       setRevealed({ key, name: row.processed_json.metadata.team.name, password: draft.password });
       setDraft({ key: '', name: '', lang: 'Japanese', bookKey: '', bookTotal: '', password: '' });
       setCreating(false);
       refresh();
     } catch (err) {
-      toast('팀 만들기 실패 — ' + (err?.message || '알 수 없는 오류'), 'error');
+      toast('수업 만들기 실패 — ' + (err?.message || '알 수 없는 오류'), 'error');
     } finally {
       setBusy(false);
     }
@@ -140,10 +145,7 @@ export default function ClassHubPage() {
         bookKey: editDraft.bookKey || null,
         bookTotal: editDraft.bookTotal ? Number(editDraft.bookTotal) : null,
       });
-      const { error } = await supabase.from('reading_materials')
-        .update({ processed_json: next, title: `[${next.metadata.team.name}] 팀 설정` })
-        .eq('id', editing.id);
-      if (error) throw error;
+      await saveClassroomMetadata(supabase,editing.material,next.metadata);
       toast('설정을 저장했어요.', 'success');
       setEditing(null);
       refresh();
@@ -165,8 +167,7 @@ export default function ClassHubPage() {
       const pwHash = await hashPassword(pwDraft, pwSalt);
       // pwGen 증가 = 기존 해제 토큰 전부 무효(학생 기기는 다시 한 번 입력)
       const next = patchTeamRoot(pwTarget.material.processed_json, { pwHash, pwSalt, pwGen: (pwTarget.pwGen || 0) + 1 });
-      const { error } = await supabase.from('reading_materials').update({ processed_json: next }).eq('id', pwTarget.id);
-      if (error) throw error;
+      await saveClassroomMetadata(supabase,pwTarget.material,next.metadata);
       setRevealed({ key: pwTarget.key, name: pwTarget.name, password: pwDraft });
       setPwTarget(null);
       setPwDraft('');
@@ -178,32 +179,15 @@ export default function ClassHubPage() {
     }
   }
 
-  if (loading) return null;
-  if (!user || !isAdmin) {
-    return (
-      <div className="page-container" style={{ maxWidth: 560, textAlign: 'center', paddingTop: 60 }}>
-        <h1 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: 10 }}>🏫 수업 자료</h1>
-        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 20 }}>
-          수업 팀 페이지는 선생님께 받은 링크로 들어가요.
-        </p>
-        {!user && <Link href="/auth?from=%2Fclass" className="btn btn--secondary btn--md">로그인 →</Link>}
-      </div>
-    );
-  }
-
+  if (loading) return <ClassroomState title="수업을 불러오고 있어요."/>;
+  if (!isAdmin) return <ClassroomShell><header className="classroom-header"><div><span className="classroom-eyebrow">MANABI / CLASS</span><h1>함께 배우고,<br/>나의 언어로.</h1><p>수업에서 만난 표현을 다시 읽고, 오래 기억하세요.</p></div></header><ClassroomJoin/></ClassroomShell>;
   return (
-    <div className="page-container" style={{ maxWidth: 760 }}>
-      <div className="page-header page-header--row">
-        <div>
-          <h1 className="page-header__title">🏫 수업 팀</h1>
-          <p className="page-header__subtitle">팀마다 교재·암호·오늘의 수업 판. 학생은 링크 + 암호로 들어와요.</p>
-        </div>
-        <Button size="sm" onClick={() => setCreating((v) => !v)}>{creating ? '닫기' : '+ 새 팀'}</Button>
-      </div>
-
+    <ClassroomShell>
+      <header className="classroom-header"><div><span className="classroom-eyebrow">MANABI / CLASS</span><h1>오늘, 함께 배울 것들.</h1><p>한 표현에서 시작해 한 편의 수업 노트로.</p></div>
+      <button className="classroom-button" onClick={()=>{if(!creating&&!draft.key)setDraft(d=>({...d,key:'c'+crypto.randomUUID().replaceAll('-','').slice(0,12),password:crypto.randomUUID().replaceAll('-','').slice(0,10)}));setCreating(v=>!v);}}>{creating?'닫기':'+ 새 수업'}</button></header>
       {revealed && (
         <div className="card" role="status" style={{ padding: '14px 16px', marginBottom: 14, border: '1px solid var(--primary)' }}>
-          <div style={{ fontWeight: 700, marginBottom: 6 }}>🔑 {revealed.name} 암호는 지금만 보여요 — 카톡에 붙여 두세요</div>
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>{revealed.name} 공유 암호 — 지금 복사해 두세요</div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', fontSize: '0.9rem' }}>
             <code style={{ fontSize: '1.05rem', padding: '4px 8px', background: 'var(--bg-secondary)', borderRadius: 6 }}>{revealed.password}</code>
             <Button size="sm" variant="secondary" onClick={() => copyText(revealed.password, toast, '암호')}>암호 복사</Button>
@@ -214,15 +198,11 @@ export default function ClassHubPage() {
       )}
 
       {creating && (
-        <form className="card" onSubmit={handleCreate} style={{ padding: '16px 18px', marginBottom: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <form className="classroom-create" onSubmit={handleCreate}>
           <div className="form-row">
             <div className="form-field">
-              <label className="form-label" htmlFor="team-key">팀 키 (링크 주소)</label>
-              <input id="team-key" className="form-input" value={draft.key} onChange={(e) => setDraft((d) => ({ ...d, key: e.target.value }))} placeholder="a" autoComplete="off" />
-            </div>
-            <div className="form-field">
-              <label className="form-label" htmlFor="team-name">팀 이름</label>
-              <input id="team-name" className="form-input" value={draft.name} onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))} placeholder="A팀" />
+              <label className="form-label" htmlFor="team-name">수업 이름</label>
+              <input id="team-name" className="form-input" value={draft.name} onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))} placeholder="예: 화요일 일본어" required maxLength={80} />
             </div>
           </div>
           <div className="form-row">
@@ -242,7 +222,7 @@ export default function ClassHubPage() {
           </div>
           <div className="form-row">
             <div className="form-field">
-              <label className="form-label" htmlFor="team-total">교재 총 과 수 (선택 · 「41과 중 12과까지」 표시용)</label>
+              <label className="form-label" htmlFor="team-total">교재 전체 과 수 (선택)</label>
               <input id="team-total" className="form-input" type="number" min={1} value={draft.bookTotal} onChange={(e) => setDraft((d) => ({ ...d, bookTotal: e.target.value }))} placeholder="41" />
             </div>
             <div className="form-field">
@@ -252,38 +232,20 @@ export default function ClassHubPage() {
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
             <Button size="sm" variant="ghost" type="button" onClick={() => setCreating(false)}>취소</Button>
-            <Button size="sm" type="submit" disabled={busy}>{busy ? '만드는 중…' : '팀 만들기'}</Button>
+            <Button size="sm" type="submit" disabled={busy}>{busy ? '만드는 중…' : '수업 만들기'}</Button>
           </div>
         </form>
       )}
 
-      {isLoading ? null : teams.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-state__icon">🏫</div>
-          <p>아직 팀이 없어요 — [+ 새 팀]으로 첫 팀을 만들어요.</p>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {teams.map((t) => {
-            const book = t.bookKey ? bookByKey.get(t.bookKey) : null;
-            const notes = listDayNotes(teamRows, t.key);
-            return (
-              <div key={t.key} className="card" style={{ padding: '14px 16px' }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
-                  <strong style={{ fontSize: '1.05rem' }}>{t.name}</strong>
-                  <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                    {LANG_NAME_KO[t.lang] || t.lang} · {book ? `《${book.title || '제목 없는 교재'}》 ${book.lastOrder}과${t.bookTotal ? ` / ${t.bookTotal}과` : ''}` : '교재 없음'}
-                    {' '}· 정리 {notes.length}일치{notes[0] ? ` (최근 ${dayLabel(notes[0].day)})` : ''}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
-                  <Link href={`/class/${t.key}/live`} className="btn btn--primary btn--sm">📱 입력판</Link>
-                  <Link href={`/class/${t.key}/board`} className="btn btn--secondary btn--sm">🖥 태블릿 판</Link>
-                  <Link href={`/class/${t.key}`} className="btn btn--secondary btn--sm">🏫 팀 페이지</Link>
-                  <Button size="sm" variant="ghost" onClick={() => copyText(shareLink(t.key), toast, '링크')}>🔗 링크 복사</Button>
-                  <Button size="sm" variant="ghost" onClick={() => { setPwTarget(t); setPwDraft(''); }}>🔑 암호 바꾸기</Button>
-                  <Button size="sm" variant="ghost" onClick={() => openEdit(t)}>⚙ 설정</Button>
-                </div>
+      {teamError ? <div className="classroom-notice" role="alert">수업 목록을 불러오지 못했어요. <button onClick={()=>retryTeams()}>다시 불러오기</button></div> : isLoading ? <p role="status">수업을 불러오는 중…</p> : teams.length===0 ? <div className="classroom-empty"><b>첫 수업을 열어 보세요.</b><p>이름과 언어를 정하면 바로 시작할 수 있어요. 교재는 나중에 연결해도 됩니다.</p></div> : (
+        <div className="classroom-hub-list">
+          {teams.map(t=>{
+            const book=t.bookKey?bookByKey.get(t.bookKey):null;
+            const notes=listDayNotes(teamRows,t.key);
+            return <article key={t.key} className="classroom-team-card" data-language={t.lang}>
+              <ClassCover team={t}/><div className="classroom-team-body"><span className="classroom-eyebrow">{LANG_NAME_KO[t.lang]}{notes[0]?` · 최근 수업 ${dayLabel(notes[0].day)}`:' · 새로운 수업'}</span><h2>{t.name}</h2><p>{book?`${book.title||'수업 교재'} · 공유된 ${book.count}과`:'교재 없이 자유롭게 표현을 나누는 수업'}<br/>{notes.length?`수업 노트 ${notes.length}편`:'첫 수업 노트를 기다리고 있어요.'}</p>
+              <div className="classroom-actions"><Link href={`/class/${t.key}`} className="classroom-button">수업 열기 →</Link><button className="classroom-text-button" onClick={()=>copyText(shareLink(t.key),toast,'수업 링크')}>학생에게 링크 공유</button></div>
+              <details className="classroom-team-settings"><summary>수업 설정</summary><div className="classroom-actions"><Button size="sm" variant="secondary" onClick={()=>openEdit(t)}>이름 · 교재 변경</Button><Button size="sm" variant="ghost" onClick={()=>{setPwTarget(t);setPwDraft('');}}>공유 암호 변경</Button></div>
                 {pwTarget?.key === t.key && (
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 10 }}>
                     <input className="form-input" style={{ flex: '1 1 160px' }} value={pwDraft} onChange={(e) => setPwDraft(e.target.value)} placeholder={`새 암호 ${TEAM_PW_MIN}자 이상`} autoComplete="off" />
@@ -295,7 +257,7 @@ export default function ClassHubPage() {
                   <form onSubmit={handleEditSave} style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
                     <div className="form-row">
                       <div className="form-field">
-                        <label className="form-label">팀 이름</label>
+                        <label className="form-label">수업 이름</label>
                         <input className="form-input" value={editDraft.name} onChange={(e) => setEditDraft((d) => ({ ...d, name: e.target.value }))} />
                       </div>
                       <div className="form-field">
@@ -325,8 +287,7 @@ export default function ClassHubPage() {
                     </div>
                   </form>
                 )}
-              </div>
-            );
+              </details></div></article>;
           })}
         </div>
       )}
@@ -340,6 +301,6 @@ export default function ClassHubPage() {
         onConfirm={handlePasswordChange}
         onCancel={() => setPwConfirm(false)}
       />
-    </div>
+    </ClassroomShell>
   );
 }

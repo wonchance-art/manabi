@@ -138,16 +138,14 @@ describe('추가 1건 = 재분석 그 줄만', () => {
     expect(appendEntryPlan({ raw_text: plan.newText, processed_json: json }, '次').selected).toEqual([4, 6]);
   });
 
-  it('배선 — 입력판은 plan.selected·plan.baseJson으로 runPreservedReanalysis를 부르고, 러너는 metadata(team)를 펼쳐 싣는다', () => {
-    const live = read('src/views/ClassLivePage.jsx');
-    expect(live).toContain('rawTextOverride: plan.newText, baseJsonOverride: plan.baseJson, selectedLineIndices: plan.selected,');
-    expect(live).toContain("import { runPreservedReanalysis, replaceViewerAnalysis } from '../lib/reanalysisPreservation';");
-    const runner = read('src/lib/reanalysisPreservation.js');
+  it('원문 저장 큐와 분석은 별도 경로이며, 기존 metadata와 실패 줄만 분석한다', () => {
+    const live=read('src/views/ClassLivePage.jsx'), session=read('src/lib/useClassroomSession.js');
+    expect(live).toContain('useClassroomSession');
+    expect(session).toContain('await appendClassroomEntry(db,row)');
+    expect(session).toContain('await runPreservedReanalysis(db,note,controller.signal,analyzeText,{selectedLineIndices:selected,baseJsonOverride:base})');
+    expect(session).toContain('const selected=classroomEntries(note).filter(entry=>!entry.analyzed).map(entry=>entry.idx)');
+    const runner=read('src/lib/reanalysisPreservation.js');
     expect(runner).toContain('const metadata = { ...original?.metadata, viewerRevision: attempt');
-    // 첫 항목은 행을 만든 뒤 줄 0만
-    expect(live).toContain('{ selectedLineIndices: [0] }');
-    // 분석이 막혀도 항목은 들어간다(뜻 없이)
-    expect(live).toContain('saveEntryWithoutAnalysis(supabase, current, plan)');
   });
 });
 
@@ -201,7 +199,7 @@ describe('판·입력판·허브 배선 계약', () => {
 
   it('/live·/board는 소유자(root.owner_id === user.id)에게만 열린다 · 오너 뷰는 API 라우트를 쓰지 않는다', () => {
     for (const src of [live, board]) {
-      expect(src).toContain('const owned = !!user && !!root && root.owner_id === user.id;');
+      expect(src).toMatch(/if\s*\([^)]*root\.data\.owner_id\s*!==\s*user\.id\)\s*return/);
       expect(src).not.toContain("fetch('/api/class");
     }
   });
@@ -212,10 +210,10 @@ describe('판·입력판·허브 배선 계약', () => {
     }
   });
 
-  it('Broadcast가 끊겨도 15초 안에 최신 — 판이 BOARD_POLL_MS(15000)로 폴링한다', () => {
+  it('Broadcast는 갱신 신호만, 실패 보완으로 15초 폴링을 유지한다', () => {
     expect(BOARD_POLL_MS).toBe(15_000);
-    expect(board).toContain('refetchInterval: BOARD_POLL_MS');
-    expect(board).toContain("openClassChannel(key, { onEntry: () => { refetch(); } })");
+    expect(board).toMatch(/refetchInterval:\s*BOARD_POLL_MS/);
+    expect(board).toMatch(/openClassChannel\(team\.key,\{onEntry:\(\)=>\{refetch\(\);refreshRoot\(\);\}/);
     // 신호는 「다시 읽어라」일 뿐 — payload를 그리지 않는다
     expect(board).not.toMatch(/payload\.(text|line|entry)/);
   });
@@ -234,9 +232,12 @@ describe('판·입력판·허브 배선 계약', () => {
     expect(hub).toContain('암호는 지금만 보여요');
   });
 
-  it('입력판 복사는 토큰 데이터와 같은 평문(toPlainText) · 항목은 직렬 큐로 저장', () => {
-    expect(live).toContain('const plain = toPlainText(note);');
-    expect(live).toContain('queueRef.current = queueRef.current');
+  it('대표 뜻으로 노트 복사 · 항목별 기기 보관 후 서버 직렬 저장', () => {
+    expect(live).toContain('navigator.clipboard.writeText(classroomPlainText(session.note))');
+    const session=read('src/lib/useClassroomSession.js');
+    expect(session.indexOf('await putClassOperation(row);')).toBeLessThan(session.indexOf("setStoreError(''); await refreshQueue(); void pump();"));
+    expect(session).toContain('sending.current = true');
+    expect(session).toContain("row.status === 'error'");
   });
 
   it('루트 행은 자료실 목록에서 숨고, 관리자 내비에 수업 링크가 있다', () => {

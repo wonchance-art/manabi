@@ -91,3 +91,20 @@ export async function ensureSharedCopy(key, token, entry) {
   await putSharedCopy(copy);
   return { ...copy, savedAt: Date.now() };
 }
+
+/** Local re-entry suggestions only. Server access is always revalidated by the team page. */
+export function recentClassVisits() {
+  const visits=[];
+  try {
+    for(let i=0;i<localStorage.length;i++){
+      const storageKey=localStorage.key(i);
+      if(!storageKey?.startsWith('class_index:')) continue;
+      const key=storageKey.slice('class_index:'.length);
+      if(!/^[a-z0-9][a-z0-9-]{0,15}$/.test(key)||!readUnlock(key))continue;
+      const cache=readIndexCache(key);
+      if(cache?.index?.team?.key===key)visits.push({key,name:cache.index.team.name,lang:cache.index.team.lang,at:cache.fetchedAt});
+    }
+  }catch{return [];}
+  return visits.sort((a,b)=>b.at-a.at).slice(0,6);
+}
+export function forgetClassVisit(key) { remove(indexKey(key));clearUnlock(key); }

@@ -1,242 +1,100 @@
 'use client';
-
-/**
- * 폰 입력판 `/class/[team]/live` (v2-AB R1 §5, #1077 5603827169) — 오너 전용.
- *
- * 수업 중 폰으로 단어·표현을 치면 ⑴ 그날 정리본(자료 행 하나)의 **새 문단**으로 붙고
- * ⑵ 파이프라인이 **그 줄만** 분석하며(runPreservedReanalysis · selected = 새 줄) ⑶ Broadcast로
- * 태블릿 판에 「다시 읽어라」 신호를 보낸다. 정리본이 없으면 첫 항목과 함께 태어난다.
- * 분석이 막히면(429·오프라인) 항목은 뜻 없이 들어가고 다음 추가가 재시도한다.
- * 정리본 복사 = 카톡용 평문 `단어 — 읽기 — 뜻`.
- */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
-import { useToast } from '../lib/ToastContext';
-import Button from '../components/Button';
-import { analyzeText } from '../lib/analyzeText';
-import { runPreservedReanalysis, replaceViewerAnalysis } from '../lib/reanalysisPreservation';
-import {
-  getTeam, todayKey, dayLabel, buildDayNoteRow, patchTeamRoot, appendEntryPlan, appendEntryFallbackJson,
-  noteEntries, toPlainText,
-} from '../lib/classBoard';
-import { fetchTeamRoot, fetchDayNote, fetchBookChapters, chapterLabel } from '../lib/classTeamQueries';
-import { openClassChannel } from '../lib/classRealtime';
-
-/** 분석 실패 시 대체 저장 — 항목은 남기고(뜻 없음) 다음 추가가 재시도한다. */
-async function saveEntryWithoutAnalysis(client, note, plan) {
-  const attempt = crypto.randomUUID();
-  const fallback = appendEntryFallbackJson(plan);
-  const json = { ...fallback, metadata: { ...(fallback.metadata || {}), viewerRevision: attempt, updated_at: new Date().toISOString() } };
-  return replaceViewerAnalysis(client, note, plan.newText, json, attempt);
-}
+import { getTeam,todayKey,dayLabel,patchTeamRoot } from '../lib/classBoard';
+import { fetchTeamRoot,fetchBookChapters,chapterLabel } from '../lib/classTeamQueries';
+import { classLanguage,classroomEntries,classViewerHref,classroomError,saveClassroomMetadata,classMeaningPatch,classroomPlainText } from '../lib/classroomModel';
+import { useClassroomSession } from '../lib/useClassroomSession';
+import { ClassroomShell,ClassroomState,ClassEntryDisplay,ClassBack } from '../components/classroom/ClassroomUI';
 
 export default function ClassLivePage() {
-  const { team: key } = useParams();
-  const { user, loading } = useAuth();
-  const toast = useToast();
-  const queryClient = useQueryClient();
-  const day = todayKey();
-
-  const { data: root, isLoading: rootLoading } = useQuery({
-    queryKey: ['class-root', user?.id, key],
-    queryFn: () => fetchTeamRoot(user.id, key),
-    enabled: !!user?.id && !!key,
-  });
-  const team = getTeam(root?.processed_json?.metadata);
-  const owned = !!user && !!root && root.owner_id === user.id;
-
-  const { data: loadedNote } = useQuery({
-    queryKey: ['class-note', user?.id, key, day],
-    queryFn: () => fetchDayNote(user.id, key, day),
-    enabled: owned,
-  });
-  const { data: chapters = [] } = useQuery({
-    queryKey: ['book-chapters', team?.bookKey],
-    queryFn: () => fetchBookChapters(team.bookKey),
-    enabled: !!team?.bookKey,
-    staleTime: 1000 * 60,
-  });
-
-  // 정리본은 저장 응답을 정본으로 들고 있는다(RPC가 기대값으로 raw_text·processed_json 전체를 대조한다).
-  const [note, setNote] = useState(null);
-  const noteRef = useRef(null);
-  useEffect(() => {
-    if (loadedNote !== undefined && noteRef.current === null) { noteRef.current = loadedNote; setNote(loadedNote); }
-  }, [loadedNote]);
-
-  const [text, setText] = useState('');
-  const [pending, setPending] = useState([]); // 저장 대기 중 항목(입력 순)
-  const queueRef = useRef(Promise.resolve());
-  const channelRef = useRef(null);
-  useEffect(() => {
-    if (!owned) return undefined;
-    channelRef.current = openClassChannel(key);
-    return () => { channelRef.current?.close(); channelRef.current = null; };
-  }, [owned, key]);
-
-  const chapterId = team?.chapterId || '';
-  const currentChapter = chapters.find((c) => String(c.id) === chapterId) || null;
-
-  async function saveEntry(line) {
-    const controller = new AbortController();
-    const current = noteRef.current;
-    let record;
-    if (!current) {
-      const row = buildDayNoteRow({ team, day, ownerId: user.id, firstLine: line, chapterId: chapterId || null });
-      const { data: inserted, error } = await supabase.from('reading_materials').insert(row).select('*').single();
-      if (error) throw error;
-      noteRef.current = inserted;
-      try {
-        record = await runPreservedReanalysis(supabase, inserted, controller.signal, analyzeText, { selectedLineIndices: [0] });
-      } catch (err) {
-        if (err?.name === 'AbortError') throw err;
-        const plan = { newText: inserted.raw_text, newIdx: 0, baseJson: { ...inserted.processed_json, sequence: [], dictionary: {}, failed_indices: [] } };
-        record = await saveEntryWithoutAnalysis(supabase, inserted, plan);
-      }
-    } else {
-      const plan = appendEntryPlan(current, line);
-      if (!plan.ok) throw new Error(plan.reason);
-      try {
-        record = await runPreservedReanalysis(supabase, current, controller.signal, analyzeText, {
-          rawTextOverride: plan.newText, baseJsonOverride: plan.baseJson, selectedLineIndices: plan.selected,
-        });
-      } catch (err) {
-        if (err?.name === 'AbortError') throw err;
-        record = await saveEntryWithoutAnalysis(supabase, current, plan);
-      }
-    }
-    noteRef.current = record;
-    setNote(record);
-    queryClient.setQueryData(['class-note', user?.id, key, day], record);
-    queryClient.invalidateQueries({ queryKey: ['materials'] });
-    channelRef.current?.send({ noteId: record.id });
-    return record;
+  const {team:key}=useParams(); const params=useSearchParams();
+  const {user,loading}=useAuth();
+  const [day]=useState(()=>/^\d{4}-\d{2}-\d{2}$/.test(params.get('day')||'')?params.get('day'):todayKey());
+  const root=useQuery({queryKey:['class-root',user?.id,key],queryFn:()=>fetchTeamRoot(user.id,key),enabled:!!user?.id&&!!key});
+  if(loading||root.isLoading) return <ClassroomState title="수업을 불러오고 있어요."/>;
+  if(root.error) return <ClassroomState title="수업을 불러오지 못했어요." retry={root.refetch}/>;
+  if(!user) return <ClassroomState title="선생님 계정으로 수업을 열어 주세요."><Link className="classroom-button" href={`/auth?from=${encodeURIComponent(`/class/${key}/live?day=${day}`)}`}>로그인</Link></ClassroomState>;
+  if(!root.data||root.data.owner_id!==user.id) return <ClassroomState title="이 수업의 선생님만 진행할 수 있어요."><ClassBack team={key}/></ClassroomState>;
+  return <LiveSession key={`${user.id}:${key}:${day}`} ownerId={user.id} root={root.data} day={day}/>;
+}
+function LiveSession({ownerId,root,day}) {
+  const team=getTeam(root.processed_json.metadata); const client=useQueryClient();
+  const session=useClassroomSession({ownerId,team:team.key,rootId:root.id,day});
+  const {data:chapters=[]}=useQuery({queryKey:['class-book-chapters',ownerId,team.bookKey],queryFn:()=>fetchBookChapters(team.bookKey),enabled:!!team.bookKey});
+  const entries=useMemo(()=>classroomEntries(session.note),[session.note]);
+  const [text,setText]=useState(''); const [adding,setAdding]=useState(false); const [message,setMessage]=useState('');
+  const [selected,setSelected]=useState(null); const [editing,setEditing]=useState(null); const [meaning,setMeaning]=useState(''); const [saving,setSaving]=useState(false);
+  const composition=useRef(false); const input=useRef(null);
+  const current=entries.find(e=>e.id===selected)||entries.at(-1);
+  const queue=session.queue;
+  async function add(event) {
+    event?.preventDefault(); if(adding||composition.current||!text.trim())return;
+    const original=text; setAdding(true); setMessage('');
+    try {await session.add(original);setText(value=>value===original?'':value);input.current?.focus();}
+    catch(error){setMessage(classroomError(error));}finally{setAdding(false);}
   }
-
-  function handleAdd(e) {
-    e?.preventDefault();
-    const line = text.trim();
-    if (!line || !owned) return;
-    setText('');
-    setPending((p) => [...p, line]);
-    // 직렬 큐 — 앞 항목의 저장 응답이 다음 항목의 기대값이 된다(동시 저장은 RPC가 거부한다).
-    queueRef.current = queueRef.current
-      .then(() => saveEntry(line))
-      .catch((err) => { toast(`「${line}」 저장 실패 — ${err?.message || '다시 시도해 주세요'}`, 'error', 6000); })
-      .finally(() => setPending((p) => p.filter((l, i) => !(l === line && i === p.indexOf(line)))));
-  }
-
-  async function handleChapterChange(e) {
-    const next = e.target.value;
-    if (!root) return;
+  async function present(entry) {
+    setSelected(entry.id); setMessage('');
     try {
-      const json = patchTeamRoot(root.processed_json, { chapterId: next || null });
-      const { error } = await supabase.from('reading_materials').update({ processed_json: json }).eq('id', root.id);
-      if (error) throw error;
-      queryClient.setQueryData(['class-root', user?.id, key], { ...root, processed_json: json });
-      queryClient.invalidateQueries({ queryKey: ['class-root', user?.id, key] });
-    } catch (err) {
-      toast('과 선택 저장 실패 — ' + (err?.message || ''), 'error');
-    }
+      const fresh=await fetchTeamRoot(ownerId,team.key);
+      const record=await saveClassroomMetadata(supabase,fresh,{classPresentation:{day,entryId:entry.id,revision:crypto.randomUUID()}});
+      client.setQueryData(['class-root',ownerId,team.key],record);
+      session.notify();
+    }catch(error){setMessage(classroomError(error));}
   }
-
-  async function handleCopy() {
-    if (!note) { toast('아직 정리할 항목이 없어요.', 'info'); return; }
-    const plain = toPlainText(note);
+  async function saveMeaning(event) {
+    event.preventDefault(); if(!session.note||!editing)return;setSaving(true);setMessage('');
+    try {const record=await saveClassroomMetadata(supabase,session.note,classMeaningPatch(session.note,editing,meaning));session.accept(record);setEditing(null);}
+    catch(error){setMessage(classroomError(error));}finally{setSaving(false);}
+  }
+  async function changeChapter(event) {
+    const chapterId=event.target.value;
     try {
-      await navigator.clipboard.writeText(plain);
-      toast('정리본을 복사했어요 — 카톡에 붙여 넣으세요.', 'success');
-    } catch {
-      toast('복사하지 못했어요. 정리본을 열어 직접 복사해 주세요.', 'warning');
-    }
+      const fresh=await fetchTeamRoot(ownerId,team.key);
+      const patched=patchTeamRoot(fresh.processed_json,{chapterId:chapterId||null});
+      const record=await saveClassroomMetadata(supabase,fresh,patched.metadata);
+      client.setQueryData(['class-root',ownerId,team.key],record);
+      session.notify();
+    }catch(error){setMessage(classroomError(error));}
   }
-
-  const entries = useMemo(() => (note ? noteEntries(note) : []).slice().reverse(), [note]);
-
-  if (loading || rootLoading) return null;
-  if (!user) {
-    return (
-      <div className="page-container" style={{ maxWidth: 560, textAlign: 'center', paddingTop: 60 }}>
-        <p style={{ marginBottom: 16 }}>입력판은 선생님 계정으로 열어요.</p>
-        <Link href={`/auth?from=${encodeURIComponent(`/class/${key}/live`)}`} className="btn btn--primary btn--md">로그인 →</Link>
-      </div>
-    );
+  async function copy() {
+    try{await navigator.clipboard.writeText(classroomPlainText(session.note));setMessage('서버에 저장된 수업 노트를 복사했어요.');}
+    catch{setMessage('복사하지 못했어요. 수업 노트를 열어 직접 복사해 주세요.');}
   }
-  if (!owned) {
-    return (
-      <div className="page-container" style={{ maxWidth: 560, textAlign: 'center', paddingTop: 60 }}>
-        <h1 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: 8 }}>이 팀의 선생님만 열 수 있어요</h1>
-        <Link href={`/class/${key}`} className="btn btn--secondary btn--md">팀 페이지로 →</Link>
-      </div>
-    );
-  }
-
-  return (
-    <div className="page-container" style={{ maxWidth: 640 }}>
-      <div className="page-header page-header--row">
-        <div>
-          <h1 className="page-header__title">{team.name} · {dayLabel(day)}</h1>
-          <p className="page-header__subtitle">입력하면 태블릿 판에 바로 떠요 · 정리본은 자료 한 편으로 남아요</p>
-        </div>
-        <Link href="/class" className="viewer-back-link">← 팀</Link>
-      </div>
-
-      {chapters.length > 0 && (
-        <div className="card" style={{ padding: '10px 14px', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <label htmlFor="class-chapter" style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>오늘 과</label>
-          <select id="class-chapter" className="form-input" style={{ flex: '1 1 200px' }} value={chapterId} onChange={handleChapterChange}>
-            <option value="">선택 안 함</option>
-            {chapters.map((c) => <option key={c.id} value={String(c.id)}>{c.order}. {chapterLabel(c.title)}</option>)}
-          </select>
-          {currentChapter && <Link href={`/viewer/${currentChapter.id}`} className="btn btn--ghost btn--sm">본문 열기</Link>}
-        </div>
-      )}
-
-      <form onSubmit={handleAdd} className="card" style={{ padding: '12px 14px', marginBottom: 12, display: 'flex', gap: 8 }}>
-        <input
-          className="form-input"
-          style={{ flex: 1, fontSize: '1.1rem' }}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="단어·표현 입력 후 Enter"
-          autoComplete="off"
-          autoFocus
-          enterKeyHint="done"
-          aria-label="단어 입력"
-        />
-        <Button type="submit" size="md" disabled={!text.trim()}>추가</Button>
+  return <ClassroomShell lang={team.lang}>
+    <header className="classroom-header"><div><ClassBack team={team.key}/><span className="classroom-eyebrow">{dayLabel(day)} · {classLanguage(team.lang).label}</span><h1>{team.name}<span className="classroom-heading-note">수업 진행</span></h1></div>
+      <Link className="classroom-button classroom-button--quiet" href={`/class/${team.key}/board?day=${day}`}>함께 보는 화면 ↗</Link></header>
+    {chapters.length>0&&<div className="classroom-chapter"><label htmlFor="class-chapter">오늘 교재</label><select id="class-chapter" value={team.chapterId||''} onChange={changeChapter}><option value="">선택 안 함</option>{chapters.map(ch=><option value={String(ch.id)} key={ch.id}>{ch.order}. {chapterLabel(ch.title)}</option>)}</select>{team.chapterId&&<Link href={classViewerHref(team.chapterId,team.key,day)}>본문 열기 ↗</Link>}</div>}
+    <div className="classroom-live-grid"><section className="classroom-workspace" aria-label="수업 입력">
+      <form className="classroom-composer" onSubmit={add}>
+        <label htmlFor="class-expression">지금 함께 공부할 표현</label>
+        <textarea ref={input} id="class-expression" value={text} maxLength={5000} rows={2} placeholder="단어·표현·문장을 입력하세요" onChange={e=>setText(e.target.value)} onCompositionStart={()=>{composition.current=true;}} onCompositionEnd={()=>{composition.current=false;}}
+          onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing&&!composition.current&&e.keyCode!==229){e.preventDefault();void add();}}}/>
+        <div className="classroom-composer-footer"><span>Enter 추가 · Shift + Enter 줄바꿈</span><button className="classroom-button" disabled={adding||!text.trim()}>{adding?'기기에 보관 중…':'추가 ↑'}</button></div>
       </form>
-
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-        <Button size="sm" variant="secondary" onClick={handleCopy} disabled={!note}>📋 정리본 복사</Button>
-        <Link href={`/class/${key}/board`} className="btn btn--secondary btn--sm">🖥 태블릿 판</Link>
-        {note && <Link href={`/viewer/${note.id}`} className="btn btn--ghost btn--sm">정리본 열기</Link>}
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {pending.slice().reverse().map((line, i) => (
-          <div key={`p-${i}-${line}`} className="class-live__entry" aria-busy="true">
-            <span style={{ fontSize: '1.1rem', fontWeight: 700 }}>{line}</span>
-            <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>뜻 찾는 중…</span>
-          </div>
-        ))}
-        {entries.map((e) => (
-          <div key={e.idx} className="class-live__entry">
-            <span style={{ fontSize: '1.1rem', fontWeight: 700 }}>{e.text}</span>
-            {e.reading && <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{e.reading}</span>}
-            <span style={{ fontSize: '0.95rem', flex: 1 }}>{e.analyzed ? e.meaning || '뜻 없음' : '뜻 없음 — 다음 추가 때 다시 찾아요'}</span>
-          </div>
-        ))}
-        {entries.length === 0 && pending.length === 0 && (
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', textAlign: 'center', padding: '24px 0' }}>
-            첫 단어를 입력하면 오늘 정리본이 생겨요.
-          </p>
-        )}
-      </div>
-    </div>
-  );
+      <div className="classroom-status" role="status">{!session.online?'오프라인 · 입력은 이 기기에 보관됩니다':queue.length?`${queue.length}개 서버 저장 대기`:session.isLoading?'노트를 불러오는 중':session.note?'서버에 저장된 수업 노트':'첫 표현을 입력하면 오늘 노트가 만들어집니다'}{session.analysis.running&&' · 뜻 준비 중'}</div>
+      {(message||session.storeError)&&<p className="classroom-notice" role="status">{message||session.storeError}</p>}
+      {session.error&&<div className="classroom-notice" role="alert">기존 노트를 불러오지 못했어요. <button onClick={()=>session.refetch()}>다시 불러오기</button></div>}
+      {session.analysis.error&&<div className="classroom-notice">원문은 저장됐지만 뜻을 준비하지 못했어요. <button onClick={session.reanalyze}>뜻 다시 찾기</button><details><summary>자세히</summary>{session.analysis.error}</details></div>}
+      <ol className="classroom-entry-list">
+        {[...queue].reverse().map(row=><li key={row.id} className="classroom-pending"><strong lang={classLanguage(team.lang).code}>{row.text}</strong><span>{row.status==='error'?row.error:'이 기기에 보관됨 · 서버 저장 대기'}</span>{row.status==='error'&&<button onClick={()=>session.retry(row.id).catch(e=>setMessage(classroomError(e)))}>저장 재시도</button>}{!row.attempted&&<button onClick={()=>session.discard(row.id).catch(e=>setMessage(classroomError(e)))}>입력 취소</button>}</li>)}
+        {[...entries].reverse().map((entry,i)=><li key={entry.id} className={`classroom-entry${current?.id===entry.id?' is-current':''}`}>
+          <span className="classroom-entry-number">{String(entries.length-i).padStart(2,'0')}</span><div className="classroom-entry-content"><button className="classroom-entry-select" aria-pressed={current?.id===entry.id} onClick={()=>present(entry)} lang={classLanguage(team.lang).code}>{entry.text}</button>
+          {entry.reading&&<p className="classroom-reading">{entry.reading}</p>}
+          {editing?.id===entry.id?<form className="classroom-meaning-form" onSubmit={saveMeaning}><label htmlFor="class-meaning">대표 뜻</label><input id="class-meaning" autoFocus value={meaning} maxLength={500} onChange={e=>setMeaning(e.target.value)} placeholder="이 표현의 핵심 뜻을 적어 주세요"/><div className="classroom-actions"><button disabled={saving} className="classroom-button">{saving?'저장 중…':'뜻 저장'}</button><button type="button" className="classroom-button classroom-button--quiet" onClick={()=>setEditing(null)}>취소</button></div></form>
+          :<button className={`classroom-meaning-edit${entry.primary?'':' is-empty'}`} onClick={()=>{setEditing(entry);setMeaning(entry.primary);}}>{entry.primary||'대표 뜻 적기'}<span aria-hidden="true"> ↗</span></button>}
+          {entry.analyzed&&entry.tokens.length>1&&<details className="classroom-details"><summary>단어별 해설</summary>{entry.tokens.filter(t=>t.meaning).map((t,n)=><p key={n}><b>{t.text}</b> {t.meaning}</p>)}</details>}
+          {!entry.analyzed&&!session.analysis.running&&<button className="classroom-text-button" onClick={session.reanalyze}>뜻 다시 찾기</button>}
+          </div><span className="classroom-entry-marker" aria-hidden="true">{current?.id===entry.id?'↗':''}</span>
+        </li>)}
+      </ol>
+      {!entries.length&&!queue.length&&!session.isLoading&&<div className="classroom-empty"><b>한 표현에서 시작하는 수업.</b><p>원문은 먼저 저장하고, 뜻은 이어서 준비할게요.</p></div>}
+      {session.note&&<footer className="classroom-note-footer"><Link href={classViewerHref(session.note.id,team.key,day)}>수업 노트 읽기 →</Link><button onClick={copy}>노트 복사</button>{queue.length>0&&<small>대기 중인 입력은 노트에 아직 포함되지 않았어요.</small>}</footer>}
+    </section><aside className="classroom-preview" aria-label="선택한 표현 미리보기"><span className="classroom-eyebrow">함께 보는 표현</span><ClassEntryDisplay entry={current} lang={team.lang}/><p className="classroom-preview-hint">항목을 누르면 함께 보는 화면에도 선택을 전달합니다.<br/>큰 화면에서 지난 항목을 보고 있다면 그대로 유지됩니다.</p></aside></div>
+  </ClassroomShell>;
 }
