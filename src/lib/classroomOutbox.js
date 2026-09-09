@@ -27,5 +27,8 @@ export const putClassOperation = row => transaction('readwrite', store => store.
 export const deleteClassOperation = id => transaction('readwrite', store => store.delete(id));
 export async function listClassOperations(scope) {
   const all = await transaction('readonly', store => store.getAll());
-  return all.filter(row => row.scope === scope).sort((a,b) => a.createdAt-b.createdAt || a.id.localeCompare(b.id));
+  return all.filter(row => row.scope === scope && row.kind !== 'draft').sort((a,b) => a.createdAt-b.createdAt || a.id.localeCompare(b.id));
 }
+
+export const readClassDraft = scope => transaction('readonly',store=>store.get(`draft:${scope}`));
+export const writeClassDraft = (scope,text) => putClassOperation({id:`draft:${scope}`,scope,kind:'draft',text,updatedAt:Date.now()});

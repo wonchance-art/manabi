@@ -85,6 +85,11 @@ BEGIN
   j := j||jsonb_build_object('sequence',seq,'dictionary',dict,'failed_indices',failed,'status','partial','metadata',meta);
   UPDATE public.reading_materials SET raw_text=CASE WHEN old_text='' THEN clean ELSE old_text||E'\n\n'||clean END,processed_json=j
     WHERE id=note.id AND owner_id=auth.uid() RETURNING * INTO note;
+  -- Reopening the display follows the last saved expression, unless this screen paused following locally.
+  UPDATE public.reading_materials SET processed_json=jsonb_set(root_row.processed_json,'{metadata}',
+    coalesce(root_row.processed_json->'metadata','{}'::jsonb)||jsonb_build_object('viewerRevision',p_operation::text,
+      'classPresentation',jsonb_build_object('day',p_day,'entryId',p_operation::text||':'||(cardinality(lines)-1),'revision',p_operation::text)))
+    WHERE id=p_root AND owner_id=auth.uid();
   RETURN jsonb_build_object('material',to_jsonb(note),'replayed',false);
 END;
 $$;

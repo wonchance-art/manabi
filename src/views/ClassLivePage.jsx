@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -7,7 +7,8 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { getTeam,todayKey,dayLabel,patchTeamRoot } from '../lib/classBoard';
 import { fetchTeamRoot,fetchBookChapters,chapterLabel } from '../lib/classTeamQueries';
-import { classLanguage,classroomEntries,classViewerHref,classroomError,saveClassroomMetadata,classMeaningPatch,classroomPlainText } from '../lib/classroomModel';
+import { classLanguage,classroomScope,classroomEntries,classViewerHref,classroomError,saveClassroomMetadata,classMeaningPatch,classroomPlainText } from '../lib/classroomModel';
+import { readClassDraft,writeClassDraft } from '../lib/classroomOutbox';
 import { useClassroomSession } from '../lib/useClassroomSession';
 import { ClassroomShell,ClassroomState,ClassEntryDisplay,ClassBack } from '../components/classroom/ClassroomUI';
 
@@ -28,14 +29,18 @@ function LiveSession({ownerId,root,day}) {
   const {data:chapters=[]}=useQuery({queryKey:['class-book-chapters',ownerId,team.bookKey],queryFn:()=>fetchBookChapters(team.bookKey),enabled:!!team.bookKey});
   const entries=useMemo(()=>classroomEntries(session.note),[session.note]);
   const [text,setText]=useState(''); const [adding,setAdding]=useState(false); const [message,setMessage]=useState('');
-  const [selected,setSelected]=useState(null); const [editing,setEditing]=useState(null); const [meaning,setMeaning]=useState(''); const [saving,setSaving]=useState(false);
+  const [selected,setSelected]=useState(root.processed_json?.metadata?.classPresentation?.day===day?root.processed_json.metadata.classPresentation.entryId:null); const [editing,setEditing]=useState(null); const [meaning,setMeaning]=useState(''); const [saving,setSaving]=useState(false);
   const composition=useRef(false); const input=useRef(null);
+  const draftScope=classroomScope(ownerId,team.key,day);
+  const [draftReady,setDraftReady]=useState(false);
+  useEffect(()=>{let alive=true;readClassDraft(draftScope).then(row=>{if(alive&&row?.text)setText(row.text);}).catch(error=>{if(alive)setMessage(classroomError(error));}).finally(()=>{if(alive)setDraftReady(true);});return()=>{alive=false;};},[draftScope]);
+  function changeText(value){setText(value);void writeClassDraft(draftScope,value).catch(error=>setMessage(classroomError(error)));}
   const current=entries.find(e=>e.id===selected)||entries.at(-1);
   const queue=session.queue;
   async function add(event) {
     event?.preventDefault(); if(adding||composition.current||!text.trim())return;
     const original=text; setAdding(true); setMessage('');
-    try {await session.add(original);setText(value=>value===original?'':value);input.current?.focus();}
+    try {await session.add(original);setSelected(null);setText(value=>value===original?'':value);await writeClassDraft(draftScope,'');input.current?.focus();}
     catch(error){setMessage(classroomError(error));}finally{setAdding(false);}
   }
   async function present(entry) {
@@ -67,13 +72,13 @@ function LiveSession({ownerId,root,day}) {
     catch{setMessage('복사하지 못했어요. 수업 노트를 열어 직접 복사해 주세요.');}
   }
   return <ClassroomShell lang={team.lang}>
-    <header className="classroom-header"><div><ClassBack team={team.key}/><span className="classroom-eyebrow">{dayLabel(day)} · {classLanguage(team.lang).label}</span><h1>{team.name}<span className="classroom-heading-note">수업 진행</span></h1></div>
+    <header className="classroom-header classroom-header--live"><div><ClassBack team={team.key}/><span className="classroom-eyebrow">{dayLabel(day)} · {classLanguage(team.lang).label}</span><h1>{team.name}<span className="classroom-heading-note">수업 진행</span></h1></div>
       <Link className="classroom-button classroom-button--quiet" href={`/class/${team.key}/board?day=${day}`}>함께 보는 화면 ↗</Link></header>
     {chapters.length>0&&<div className="classroom-chapter"><label htmlFor="class-chapter">오늘 교재</label><select id="class-chapter" value={team.chapterId||''} onChange={changeChapter}><option value="">선택 안 함</option>{chapters.map(ch=><option value={String(ch.id)} key={ch.id}>{ch.order}. {chapterLabel(ch.title)}</option>)}</select>{team.chapterId&&<Link href={classViewerHref(team.chapterId,team.key,day)}>본문 열기 ↗</Link>}</div>}
     <div className="classroom-live-grid"><section className="classroom-workspace" aria-label="수업 입력">
       <form className="classroom-composer" onSubmit={add}>
         <label htmlFor="class-expression">지금 함께 공부할 표현</label>
-        <textarea ref={input} id="class-expression" value={text} maxLength={5000} rows={2} placeholder="단어·표현·문장을 입력하세요" onChange={e=>setText(e.target.value)} onCompositionStart={()=>{composition.current=true;}} onCompositionEnd={()=>{composition.current=false;}}
+        <textarea ref={input} id="class-expression" value={text} disabled={!draftReady||adding} maxLength={5000} rows={2} placeholder="단어·표현·문장을 입력하세요" onChange={e=>changeText(e.target.value)} onCompositionStart={()=>{composition.current=true;}} onCompositionEnd={()=>{composition.current=false;}}
           onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing&&!composition.current&&e.keyCode!==229){e.preventDefault();void add();}}}/>
         <div className="classroom-composer-footer"><span>Enter 추가 · Shift + Enter 줄바꿈</span><button className="classroom-button" disabled={adding||!text.trim()}>{adding?'기기에 보관 중…':'추가 ↑'}</button></div>
       </form>

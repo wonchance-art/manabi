@@ -115,10 +115,12 @@ export default function ClassHubPage() {
         key, name: draft.name, lang: draft.lang, bookKey: draft.bookKey || null,
         bookTotal: draft.bookTotal ? Number(draft.bookTotal) : null, pwHash, pwSalt, ownerId: user.id,
       });
-      const existing = await supabase.from('reading_materials').select('id').eq('owner_id',user.id).eq('processed_json->metadata->team->>key',key).eq('processed_json->metadata->team->>root','true').maybeSingle();
+      const existing = await supabase.from('reading_materials').select('id, processed_json').eq('owner_id',user.id).eq('processed_json->metadata->team->>key',key).eq('processed_json->metadata->team->>root','true').maybeSingle();
       if(existing.error) throw existing.error;
+      const existingTeam=existing.data?.processed_json?.metadata?.team;
+      if(existingTeam && await hashPassword(draft.password,existingTeam.pwSalt)!==existingTeam.pwHash) { refresh(); throw new Error('이전 요청으로 이미 만들어진 수업이에요. 목록에서 공유 암호를 변경해 주세요.'); }
       if(!existing.data){const {error}=await supabase.from('reading_materials').insert(row);if(error)throw error;}
-      setRevealed({ key, name: row.processed_json.metadata.team.name, password: draft.password });
+      setRevealed({ key, name: existingTeam?.name || row.processed_json.metadata.team.name, password: draft.password });
       setDraft({ key: '', name: '', lang: 'Japanese', bookKey: '', bookTotal: '', password: '' });
       setCreating(false);
       refresh();

@@ -25,7 +25,7 @@ function Board({user,root,refreshRoot,day}){
   const entries=useMemo(()=>classroomEntries(note.data),[note.data]);
   const [follow,setFollow]=useState(true),[selection,setSelection]=useState(null),[hidden,setHidden]=useState(false),[list,setList]=useState(false),[size,setSize]=useState('normal');
   const [connection,setConnection]=useState('connecting'),[online,setOnline]=useState(true),[notice,setNotice]=useState('');
-  const frame=useRef(null);const revision=root.processed_json.metadata.classPresentation;
+  const frame=useRef(null);const presentedRevision=useRef(null);const revision=root.processed_json.metadata.classPresentation;
   const {refetch}=note;
   useEffect(()=>{
     const ch=openClassChannel(team.key,{onEntry:()=>{refetch();refreshRoot();},onStatus:setConnection});
@@ -34,13 +34,13 @@ function Board({user,root,refreshRoot,day}){
   },[team.key,refetch,refreshRoot]);
   const latestId=entries.at(-1)?.id||null;
   useEffect(()=>{if(follow)setSelection(latestId);},[latestId,follow]);
-  useEffect(()=>{if(follow&&revision?.day===day&&revision?.entryId)setSelection(revision.entryId);},[revision?.revision,revision?.day,revision?.entryId,day,follow]);
+  useEffect(()=>{if(presentedRevision.current===revision?.revision)return;presentedRevision.current=revision?.revision;if(follow&&revision?.day===day&&revision?.entryId)setSelection(revision.entryId);},[revision?.revision,revision?.day,revision?.entryId,day,follow]);
   const selected=entries.find(e=>e.id===selection)||entries.at(-1);
   const position=entries.findIndex(e=>e.id===selected?.id);
   function choose(entry){setFollow(false);setSelection(entry.id);}
   async function fullscreen(){try{if(document.fullscreenElement)await document.exitFullscreen();else if(frame.current?.requestFullscreen)await frame.current.requestFullscreen();else setNotice('이 브라우저에서는 전체 화면을 지원하지 않아요.');}catch{setNotice('전체 화면을 열지 못했어요.');}}
   return <ClassroomShell lang={team.lang} board><div ref={frame} className="classroom-board-frame" data-size={size}>
-    <header className="classroom-board-header"><Link href={`/class/${team.key}/live?day=${day}`} className="classroom-back">← 수업 진행</Link><div><strong>{team.name}</strong><span>{dayLabel(day)} · {classLanguage(team.lang).label}</span></div><button className="classroom-text-button" onClick={fullscreen}>전체 화면 ↗</button></header>
+    <header className="classroom-board-header"><Link href={`/class/${team.key}/live?day=${day}`} className="classroom-back">← 수업 진행</Link><div><span className="classroom-eyebrow">manabi / class</span><strong>{team.name}</strong><span>{dayLabel(day)} · {classLanguage(team.lang).label}</span></div><button className="classroom-text-button" onClick={fullscreen}>전체 화면 ↗</button></header>
     <div className="classroom-board-toolbar"><div className="classroom-segment"><button aria-pressed={!list} onClick={()=>setList(false)}>한 표현</button><button aria-pressed={list} onClick={()=>setList(true)}>목록</button></div><button className="classroom-button classroom-button--quiet" aria-pressed={hidden} onClick={()=>setHidden(!hidden)}>{hidden?'뜻 보기':'뜻 가리기'}</button><label className="classroom-size-label">글자 크기<select value={size} onChange={e=>setSize(e.target.value)}><option value="normal">기본</option><option value="large">크게</option><option value="largest">더 크게</option></select></label></div>
     {note.error&&<div className="classroom-notice" role="alert">새 내용을 불러오지 못했어요. 마지막으로 받은 내용을 보여 드립니다. <button onClick={()=>note.refetch()}>다시 연결</button></div>}
     {notice&&<p role="status">{notice}</p>}
