@@ -13,7 +13,15 @@ const nextConfig = {
 
   // Keep the production compiler below the 8 GB build-container limit. This changes
   // Webpack's build-time memory management, not the served content or font selection.
-  experimental: { webpackMemoryOptimizations: true },
+  experimental: { webpackMemoryOptimizations: true, webpackBuildWorker: true },
+  // The production build ran out of memory on Vercel; local filesystem cache
+  // serialization also exhausted disk. Keep development caching and the isolated
+  // build worker; avoid retaining/serializing the filesystem cache in production.
+  // https://nextjs.org/docs/app/guides/memory-usage#disable-webpack-cache
+  webpack(config, { dev }) {
+    if (!dev && config.cache) config.cache = Object.freeze({ type: 'memory' });
+    return config;
+  },
 
   // 사전·WASM이 서버 번들에 포함되도록 — kuromoji(ja) 사전과 jieba-wasm(zh)의 .wasm.
   // (네이티브 @node-rs/jieba는 서버리스 플랫폼 바이너리 로드 실패로 WASM 교체 — 단일 파일·플랫폼 무관)
