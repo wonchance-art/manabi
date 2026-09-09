@@ -162,6 +162,7 @@ try {
   band:['top','height'].map(p=>getComputedStyle(t.querySelector('.surface'),'::before')[p]),
  })));
  for(const [theme,name,width] of [['light','밝게',1440],['sepia','종이',1440],['dark','어둡게',1440],['light','밝게',390]]){
+  if(process.env.QA_SELECTION_WIDTH&&width!==Number(process.env.QA_SELECTION_WIDTH))continue;
   await fresh(width,900);
   known=[{word_text:'要',lang:'zh'}];
   vocab=[['身体',1],['尽量',-1]].map(([word,days],i)=>({id:88001+i,user_id:uid,word_text:word,base_form:word,language:'Chinese',meaning:'상태 검수',next_review_at:new Date(Date.now()+days*86400000).toISOString(),repetitions:2}));
@@ -178,6 +179,9 @@ try {
   const a=await first.boundingBox(),b=await last.boundingBox();
   await page.mouse.move(a.x+a.width/2,a.y+a.height*.7);await page.mouse.down();await page.mouse.move(b.x+b.width/2,b.y+b.height*.7,{steps:20});await delay(250);
   const during=await colors(sampleSelector);
+  const left=await first.boundingBox();assert(left.x>=12,'reader must retain an inner margin');
+  const grips=await page.locator('.range-grip').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right};}));
+  assert(grips.length===2&&grips.every(r=>r.left>=0&&r.right<=width),'both drag handles must remain inside the viewport');
   assert.equal(during.filter(t=>t.class.includes('picked')).length,before.length,'drag must select the full range');
   for(let i=0;i<before.length;i++)assert.notEqual(during[i].color,before[i].color,`drag color unchanged at token ${i}`);
   await shotAt(`selection-${theme}-${width}-drag`);await page.mouse.up();await delay(300);

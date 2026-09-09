@@ -17,7 +17,7 @@
   --tone-1:#a8c9ff; --tone-2:#99d7b2; --tone-3:#ebce84; --tone-4:#ffabb8; --tone-0:#c4cbc6;
 }
 .viewer-layout .viewer-center {width:100%;max-width:760px;flex:none;min-width:0;overflow:visible;margin:0 auto;padding:0 0 110px;}
-.viewer-layout .reader-area {background:var(--reader-paper);color:var(--reader-ink);border:0;border-radius:0;box-shadow:none;padding:20px 16px;}
+.viewer-layout .reader-area {background:var(--reader-paper);color:var(--reader-ink);border:0;border-radius:0;box-shadow:none;padding:20px 16px;margin-inline:0;}
 .viewer-layout .viewer-header {padding:0 16px 12px;margin-bottom:12px;border-bottom:1px solid var(--reader-line);}
 .viewer-layout .viewer-header .page-header__title {color:var(--reader-ink);background:none;-webkit-text-fill-color:currentColor;line-height:1.45;overflow-wrap:anywhere;}
 .viewer-layout .viewer-topbar {flex-wrap:wrap;position:sticky;top:var(--gnb-height);z-index:35;padding-block:8px;background:var(--reader-paper);gap:12px;}
@@ -120,7 +120,7 @@
 .reader-modal :is(input,textarea) {background:var(--reader-surface);color:var(--reader-ink);border-color:var(--reader-line);}
 @container reader (max-width:600px) {
   .viewer-center {padding-inline:0;}
-  .viewer-layout .reader-area {padding:12px 0;}
+  .viewer-layout .reader-area {padding:12px;}
   .viewer-layout .viewer-header {padding-inline:0;}
   .reader-modal {margin:auto auto 0;width:100%;border-radius:18px 18px 0 0;}
   .reader-modal__body {padding-inline:16px;}
