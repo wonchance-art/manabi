@@ -2,6 +2,7 @@
 import { chromium } from 'playwright-core';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import {vocabEncounterStorageKey} from '../src/lib/world/storageSchema.js';
 const base=process.env.QA_BASE||'http://127.0.0.1:8898',out=process.env.QA_OUT||'/private/tmp/manabi-viewer-controls-qa';
 fs.mkdirSync(out,{recursive:true});
 const browser=await chromium.launch({executablePath:process.env.QA_CHROME||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
@@ -12,7 +13,7 @@ const user={id:uid,aud:'authenticated',role:'authenticated',email:'reading-fixtu
 const enc=v=>Buffer.from(JSON.stringify(v)).toString('base64url'),now=Math.floor(Date.now()/1000);
 const session={user,access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:uid,aud:'authenticated',role:'authenticated',exp:now+3600,iat:now})}.fixture`,refresh_token:'fixture',expires_at:now+3600,expires_in:3600,token_type:'bearer'};
 const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*','access-control-expose-headers':'content-range'};
-let records=[],vocab=[],reads=[],contexts=[],analysisMode='fail',saveFail=false,writeFail=false,analysisCalls=0;
+let known=[],records=[],vocab=[],reads=[],contexts=[],analysisMode='fail',saveFail=false,writeFail=false,analysisCalls=0;
 const writes=[];
 await context.route('**/*', r => r.request().url().startsWith(base) ? r.continue() : r.abort());
 await context.route(base+'/**',async route=>{
@@ -68,6 +69,7 @@ await context.route('**/rest/v1/**',async r=>{
   return send(object?(rows[0]||null):rows);
  }
  if(table==='user_vocabulary')return send(vocab);
+ if(table==='user_known_words')return send(known);
  if(table==='vocabulary_contexts')return send(contexts.filter(c=>!url.searchParams.has('vocabulary_id')||String(c.vocabulary_id)===url.searchParams.get('vocabulary_id').slice(3)));
  return send(object?null:[]);
 });
@@ -136,7 +138,7 @@ const baseline=structuredClone(records),checks=[];
 const wordA=()=>page.locator('[data-tid="id_0_2_audit"]'),wordB=()=>page.locator('[data-tid="id_1_0_audit"]');
 async function tap(loc){await loc.evaluate(e=>window.scrollBy(0,e.getBoundingClientRect().top-180));await loc.click();}
 async function fresh(width=1138,height=900){
- race=false;detailWait=0;analysisFail=false;reanalysis=false;analysisMode='ok';readingInvalid=false;writeFail=false;records=structuredClone(baseline);vocab=[];contexts=[];reads=[];writes.length=0;
+ race=false;detailWait=0;analysisFail=false;reanalysis=false;analysisMode='ok';readingInvalid=false;writeFail=false;records=structuredClone(baseline);known=[];vocab=[];contexts=[];reads=[];writes.length=0;
  await page.evaluate(()=>{for(const k of Object.keys(localStorage))if(k.startsWith('pdf_cache:')||k.startsWith('viewer_')||k.startsWith('reading_test'))localStorage.removeItem(k);}).catch(()=>{});
  await page.setViewportSize({width,height});await page.goto(base+'/viewer/94001');await wordA().waitFor();await page.evaluate(()=>document.fonts.ready);
 }
@@ -152,6 +154,65 @@ async function range(name,value){const input=page.getByRole('slider',{name,exact
 const selectedLine=()=>page.locator('.reader-area .word-token--picked').first().getAttribute('data-tid');
 try {
  await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last().click();await page.waitForURL('**/home');
+ // Exercise the actual pointer gesture and Aa projection with five real record states.
+ const sampleSelector='.reader-area [data-tid^="id_0_"]';
+ const colors=selector=>page.locator(selector).evaluateAll(ts=>ts.map(t=>({
+  class:t.className.trim().split(/\s+/).filter(c=>/^word-token--(new|met|saved|due|picked)$/.test(c)).sort().join(' '),
+  color:getComputedStyle(t.querySelector('.surface'),'::before').backgroundColor,
+  band:['top','height'].map(p=>getComputedStyle(t.querySelector('.surface'),'::before')[p]),
+ })));
+ for(const [theme,name,width] of [['light','밝게',1440],['sepia','종이',1440],['dark','어둡게',1440],['light','밝게',390]]){
+  await fresh(width,900);
+  known=[{word_text:'要',lang:'zh'}];
+  vocab=[['身体',1],['尽量',-1]].map(([word,days],i)=>({id:88001+i,user_id:uid,word_text:word,base_form:word,language:'Chinese',meaning:'상태 검수',next_review_at:new Date(Date.now()+days*86400000).toISOString(),repetitions:2}));
+  await page.evaluate(key=>localStorage.setItem(key,JSON.stringify(['你'])),vocabEncounterStorageKey('zh'));
+  await page.reload();await wordA().waitFor();
+  await aa('글자·배경');await page.getByRole('button',{name,exact:true}).click();await page.getByRole('tab',{name:'학습 표시',exact:true}).click();await page.getByRole('checkbox',{name:/^단어 상태/}).check();await delay(250);
+  const before=await colors(sampleSelector);
+  assert.deepEqual(before.filter((_,i)=>[0,1,2,3,5].includes(i)).map(t=>t.class),['word-token--met','','word-token--new','word-token--saved','word-token--due word-token--saved']);
+  assert.deepEqual(await colors('.reader-settings__preview .word-token'),before,'Aa must show the same real learning states as the body');
+  assert.equal(await page.locator('.reader-settings__preview [data-tid], .reader-settings__preview [data-source-token], .reader-settings__preview button').count(),0);
+  await shotAt(`selection-${theme}-${width}-aa-before`);await closeAa();
+  const first=page.locator(sampleSelector).first(),last=page.locator(sampleSelector).last();
+  await first.evaluate(e=>scrollBy(0,e.getBoundingClientRect().top-190));
+  const a=await first.boundingBox(),b=await last.boundingBox();
+  await page.mouse.move(a.x+a.width/2,a.y+a.height*.7);await page.mouse.down();await page.mouse.move(b.x+b.width/2,b.y+b.height*.7,{steps:20});await delay(250);
+  const during=await colors(sampleSelector);
+  assert.equal(during.filter(t=>t.class.includes('picked')).length,before.length,'drag must select the full range');
+  for(let i=0;i<before.length;i++)assert.notEqual(during[i].color,before[i].color,`drag color unchanged at token ${i}`);
+  await shotAt(`selection-${theme}-${width}-drag`);await page.mouse.up();await delay(300);
+  assert.deepEqual(await colors(sampleSelector),during,'releasing the drag retains the selected state colors');
+  await aa('학습 표시');await delay(250);assert.deepEqual(await colors('.reader-settings__preview .word-token'),during,'Aa must preserve the current selected range and colors');
+  await shotAt(`selection-${theme}-${width}-aa-picked`);
+  const annotationColors=selector=>page.locator(selector).evaluateAll(es=>es.map(e=>getComputedStyle(e).color));
+  const annotationBefore=await annotationColors('.reader-settings__preview .rt-an');
+  assert.deepEqual(annotationBefore,await annotationColors(sampleSelector+' .rt-an'));
+  await dialog().getByText('성조·문법·한자 표시',{exact:true}).click();
+  await page.getByRole('checkbox',{name:/^성조 색상/}).check();await delay(250);
+  const annotationToned=await annotationColors('.reader-settings__preview .rt-an');
+  assert.deepEqual(annotationToned,await annotationColors(sampleSelector+' .rt-an'));
+  assert.notDeepEqual(annotationToned,annotationBefore);assert(new Set(annotationToned).size>=4);
+  assert.deepEqual(await colors('.reader-settings__preview .word-token'),during,'tone colors must not erase learning-state fills');
+  await page.getByRole('checkbox',{name:/^성조 색상/}).uncheck();await delay(250);
+  assert.deepEqual(await annotationColors('.reader-settings__preview .rt-an'),annotationBefore);
+  await page.getByRole('checkbox',{name:/^단어 상태/}).uncheck();await delay(250);
+  assert.equal(new Set((await colors('.reader-settings__preview .word-token')).map(t=>t.color)).size,1);
+  await page.getByRole('checkbox',{name:/^단어 상태/}).check();await closeAa();await page.keyboard.press('Escape');await delay(250);
+  assert.deepEqual(await colors(sampleSelector),before,'Escape restores state fills');
+  assert.equal(writes.filter(w=>['user_vocabulary','user_known_words','viewer_replace_analysis'].includes(w.table)).length,0);
+  assert.deepEqual(records,baseline);
+  // Reverse drag on a later line must preview that line, not default to line 0.
+  const later=page.locator('.reader-area [data-tid^="id_1_"]');
+  await later.first().evaluate(e=>scrollBy(0,e.getBoundingClientRect().top-190));
+  const c=await later.first().boundingBox(),d=await later.last().boundingBox();
+  await page.mouse.move(d.x+d.width/2,d.y+d.height*.7);await page.mouse.down();await page.mouse.move(c.x+c.width/2,c.y+c.height*.7,{steps:20});await page.mouse.up();await delay(250);
+  await aa('학습 표시');await delay(250);
+  assert.deepEqual(await colors('.reader-settings__preview .word-token'),await colors('.reader-area [data-tid^="id_1_"]'));
+  assert((await page.locator('.reader-settings__preview').innerText()).includes('周'));
+  await closeAa();await page.keyboard.press('Escape');await check(`selection ${theme} ${width}`);
+  pass(`real drag and Aa preserve five learning states: ${theme} ${width}`);
+ }
+ if(!process.env.QA_SELECTION_ONLY){
  await fresh(1440,1000);await tap(wordA());await page.locator('.viewer-inspector .word-detail-card').waitFor();await shotAt('desktop-word');
  assert.equal(await page.locator('.word-detail-card').count(),1);assert.equal(await panel().evaluate(e=>getComputedStyle(e).position),'sticky');pass('desktop has one inspector and one word card');
  await aa();assert(await panel().isHidden());assert(await dialog().evaluate(e=>e.matches(':modal')));assert((await dialog().innerText()).includes('글자·배경'));await shotAt('desktop-aa');
@@ -240,6 +301,7 @@ try {
   const previewSerif=await fontEvidence('.reader-settings__preview .surface ruby[data-pinyin]');assert(previewSerif.some(f=>/Noto ?Serif ?SC/i.test(f.familyName)),JSON.stringify(previewSerif));await shotAt('desktop-aa-serif-real');await closeAa();await page.evaluate(()=>document.fonts.ready);
   const serif=await fontEvidence();assert(serif.some(f=>/Noto ?Serif ?SC/i.test(f.familyName)),JSON.stringify(serif));await shotAt('desktop-serif-real');
   fs.writeFileSync(out+'/real-fonts.json',JSON.stringify({sans,serif,previewSerif},null,2));await cdp.detach();pass('deployed Chinese glyphs use real Noto Sans SC and Noto Serif SC faces');
+ }
  }
  assert.deepEqual(report.errors,[]);console.log(JSON.stringify({checks,errors:report.errors}));
 } finally {await page.screenshot({path:out+'/last.png'}).catch(()=>{});fs.writeFileSync(out+'/report.json',JSON.stringify({checks,layoutChecks:report.checks,errors:report.errors},null,2));await browser.close();}

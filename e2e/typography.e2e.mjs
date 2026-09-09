@@ -78,6 +78,36 @@ async function measure(body) {
 
 const uniq = (arr) => [...new Set(arr)];
 
+// Load the real reader overrides after index.css: a later --new rule previously
+// erased the selected-state blend even though all canonical rules were present.
+for (const theme of ['light','sepia','dark']) {
+  test(`단어 상태 × 범위 지정 — ${theme}: 색은 변하고 글자·병음 좌표는 유지된다`, async () => {
+    const states=['new','met','saved','due','known'];
+    const content=states.map((state,i)=>tok(zhSeg(ZH[i][0],ZH[i][1]),false).replace('word-token',`word-token${state==='known'?'':` word-token--${state}`}${state==='due'?' word-token--saved':''}`)).join('');
+    await page.setContent(PAGE(`<style>*,*::before,*::after{transition:none!important;animation:none!important}</style><div class="reader-area reader-area--hl reader-area--${theme}" style="font-size:24px;gap:16px;--reader-selected:#e9eee7;--primary:#944759;--primary-glow:#ead5da">${content}</div>`));
+    const read=()=>page.locator('.word-token').evaluateAll(tokens=>tokens.map(t=>{
+      const surface=t.querySelector('.surface'),ruby=surface.querySelector('ruby'),rt=surface.querySelector('.rt-an');
+      const rect=e=>{const r=e.getBoundingClientRect();return [r.x,r.y,r.width,r.height];};
+      return {color:getComputedStyle(surface,'::before').backgroundColor,opacity:getComputedStyle(surface).opacity,glyph:rect(ruby),pron:rect(rt)};
+    }));
+    const before=await read();
+    await page.locator('.word-token').evaluateAll(tokens=>tokens.forEach(t=>t.classList.add('word-token--picked')));
+    const picked=await read();
+    for(let i=0;i<states.length;i++) {
+      assert.notEqual(picked[i].color,before[i].color,`${states[i]}: range selection must change its state color`);
+      assert.deepEqual(picked[i].glyph,before[i].glyph);
+      assert.deepEqual(picked[i].pron,before[i].pron);
+      assert.equal(picked[i].opacity,'1');
+    }
+    assert.equal(new Set(picked.map(t=>t.color)).size,5,'selection must preserve five distinct learning states');
+    await page.locator('.word-token').evaluateAll(tokens=>tokens.forEach(t=>t.classList.remove('word-token--picked')));
+    assert.deepEqual(await read(),before,'clearing selection restores every state without shifting text');
+    await page.locator('.reader-area').evaluate(e=>e.classList.remove('reader-area--hl'));
+    await page.locator('.word-token').evaluateAll(tokens=>tokens.forEach(t=>t.classList.add('word-token--picked')));
+    assert.equal(new Set((await read()).map(t=>t.color)).size,1,'state mode off keeps the ordinary selection band');
+  });
+}
+
 /** rt가 본문 바로 위 띠 안에 있는가 — 절대배치가 풀리면(rt가 옆이나 아래로 가면) ON=OFF
  *  등식·단일값 검사는 전부 통과해버린다(visibility:hidden이 자리를 유지하므로). 실측
  *  정상값은 −2~−2.5px(살짝 겹침)이고, 절대배치가 풀리면 −1em급, bottom:100% 회귀면
@@ -155,6 +185,19 @@ test('성조 색상 — 본문(.word-token 안) 병음 rt에 실제로 색이 �
     return { toned: a, plain: b };
   });
   assert.notEqual(toned, plain, `성조 클래스 rt가 기본 병음색 그대로다: ${toned}`);
+});
+
+test('실제 읽기 영역·Aa — 기본 병음색이 같고 성조 색을 덮지 않는다', async () => {
+  await page.setContent(PAGE(['reader-area','reader-settings__preview'].map(cls=>`<div class="${cls}">${tok(zhSeg('窗','chuāng'),false)}${tok(zhSeg('我','wǒ'),false)}</div>`).join('')));
+  const colors=()=>page.locator('.rt-an').evaluateAll(es=>es.map(e=>getComputedStyle(e).color));
+  const normal=await colors();
+  assert.equal(new Set(normal).size,1,'body and preview must use the same neutral annotation color');
+  await page.locator('.rt-an').evaluateAll(es=>es.forEach((e,i)=>e.classList.add(`pinyin-tone--${i%2?3:1}`)));
+  const toned=await colors();
+  assert.notEqual(toned[0],normal[0],'first tone must change color inside the reader');
+  assert.notEqual(toned[1],normal[1],'third tone must change color inside the reader');
+  assert.notEqual(toned[0],toned[1]);
+  assert.deepEqual(toned.slice(0,2),toned.slice(2),'Aa must match body tone colors');
 });
 
 test('집중 모드 — 지정 문장만 원래 밝기, 나머지는 어둡고, 좌표는 1px도 안 움직인다', async () => {

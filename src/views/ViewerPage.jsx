@@ -1726,6 +1726,28 @@ export default function ViewerPage() {
   }
 
   const json = material?.processed_json || { sequence: [], dictionary: {} };
+  // The body and Aa preview read the same existing learning records. The preview
+  // has no token identifiers or handlers, so it cannot record an encounter/read.
+  function tokenDisplayState(token) {
+    const isSaved = isTokenSaved(savedWords, token);
+    const isDue = isSaved && isTokenDue(savedWords, token);
+    const isKnown = (wordStateHl || pronDisplay === 'unknown') && !!(knownWordSet?.has(token.text) || (token.base_form && knownWordSet?.has(token.base_form)));
+    const highlight = wordStateHl ? wordStateExtraClass(wordStateOf({
+      isWord: isWordToken(token), isSaved, isDue, isKnown,
+      isMet: !!(metCode && (metWordSet.has(normalizeRefWordKey(metCode, token.base_form)) || metWordSet.has(normalizeRefWordKey(metCode, token.text)) || metWordSet.has(normalizeRefWordKey(metCode, metMainByText.get(token.text))))),
+    })) : '';
+    return {isSaved, isDue, isKnown, highlight};
+  }
+  const previewTokens = settingsOpen ? (() => {
+    const rangeStart = tokenRange.range ? json.sequence[tokenRange.range.start] : null;
+    const line = pickedLineIdx ?? Number((rangeStart || selectedToken?.id || json.sequence[0])?.split('_')[1] || 0);
+    return json.sequence.filter(key => key.startsWith(`id_${line}_`)).flatMap(key => {
+      const token = json.dictionary[key];
+      if (!token || token.pos === '개행') return [];
+      const state = tokenDisplayState(token);
+      return [{...token, previewSaved:state.isSaved, previewDue:state.isDue, previewKnown:state.isKnown, previewHighlight:state.highlight, previewPicked:pickedLineIdx === line || !!tokenRange.rangeTokenIds?.has(key)}];
+    });
+  })() : [];
   const status = material?.status || material?.processed_json?.status;
   const isAnalyzing = status === 'analyzing' || reanalyzeMutation.isPending;
   const isPending = !isAnalyzing && (status === 'pending' || status === 'saved'); // 책 챕터 미분석 — 원문 열람 가능, 분석은 온디맨드
@@ -2732,21 +2754,7 @@ export default function ViewerPage() {
                 </div>
               );
             }
-            const isSaved = isTokenSaved(savedWords, token);
-            const isDue = isSaved && isTokenDue(savedWords, token);
-            // 앎 대조는 단어 카드의 isKnown과 동일 계약(표기·base_form) — 상태 하이라이트와
-            // 발음 표기 '모르는 단어만'이 공유하고, 둘 다 꺼져 있으면 계산 자체를 생략한다.
-            const needKnown = wordStateHl || pronDisplay === 'unknown';
-            const tokKnown = needKnown && !!(knownWordSet?.has(token.text) || (token.base_form && knownWordSet?.has(token.base_form)));
-            // 상태 하이라이트(B안) — 켰을 때만 만남을 조회해 met/new 클래스를 더한다.
-            // 만남 대조는 단어 목록의 조용한 점과 동일 계약(normalizeRefWordKey — §4.7).
-            const hlClass = wordStateHl ? wordStateExtraClass(wordStateOf({
-              isWord: isWordToken(token),
-              isSaved,
-              isDue,
-              isKnown: tokKnown,
-              isMet: !!(metCode && (metWordSet.has(normalizeRefWordKey(metCode, token.base_form)) || metWordSet.has(normalizeRefWordKey(metCode, token.text)) || metWordSet.has(normalizeRefWordKey(metCode, metMainByText.get(token.text))))),
-            })) : '';
+            const {isSaved, isDue, isKnown:tokKnown, highlight:hlClass} = tokenDisplayState(token);
             // ruby는 토글과 무관하게 항상 만든다 — 폭 예약(ruby[data-pinyin])이 병음을 꺼도
             // 유지돼야 켤 때 글자가 밀리지 않는다(오너 요청 2026-08-19). 끌 때는 rt만 감춘다.
             const rubySegments = token.furigana
@@ -3067,7 +3075,7 @@ export default function ViewerPage() {
       />}
 
 
-      {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} onClose={()=>setSettingsOpen(false)} keepPosition={keepReadingPosition} previewTokens={json.sequence.filter(key=>key.startsWith(`id_${pickedLineIdx??Number(selectedToken?.id?.split('_')[1]||0)}_`)).map(key=>{const t=json.dictionary[key];return t?{...t,previewSaved:isTokenSaved(savedWords,t),previewKnown:!!(knownWordSet?.has(t.text)||knownWordSet?.has(t.base_form))}:null;}).filter(t=>t&&t.pos!=='개행')} onPreset={()=>setRevealedPron(new Set())} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus}/>}
+      {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} onClose={()=>setSettingsOpen(false)} keepPosition={keepReadingPosition} previewTokens={previewTokens} onPreset={()=>setRevealedPron(new Set())} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus}/>}
       {modal('activities')&&<ViewerModal title="학습" onClose={()=>setActiveModal(null)}><div className="reader-activity-menu">
         {ttsSupported&&sentences.length>0&&<button onClick={()=>setDictationPickerOpen(true)}><b>받아쓰기</b><span>추천 문장 하나를 골라 듣고 써요</span></button>}
         {ttsSupported&&pickedSentence&&<button onClick={()=>setDictationSentence(pickedSentence.text)}><b>선택 문장 받아쓰기</b><span>지금 지정한 문장으로 시작해요</span></button>}

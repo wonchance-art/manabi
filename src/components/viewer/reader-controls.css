@@ -33,7 +33,9 @@
 .viewer-layout [data-answer-hidden="true"] {visibility:hidden;}
 .viewer-layout :is(.reader-area,.reader-card-source,.word-fit,.reader-settings__preview):lang(zh),.viewer-layout :is(.reader-area,.reader-card-source,.word-fit,.reader-settings__preview) :lang(zh) {font-family:var(--reader-font);}
 /* Annotation font and width are independent from the user's body size. */
-.viewer-layout .reader-area ruby[data-pinyin] > .rt-an {font-size:var(--pinyin-size);font-family:var(--font-noto-sans),sans-serif;letter-spacing:0;line-height:1.2;opacity:1;color:var(--reader-muted);}
+.viewer-layout .reader-area ruby[data-pinyin] > .rt-an {font-size:var(--pinyin-size);font-family:var(--font-noto-sans),sans-serif;letter-spacing:0;line-height:1.2;opacity:1;}
+/* Keep the neutral color less specific than the optional tone classes below. */
+.viewer-layout :is(.reader-area,.reader-settings__preview) ruby:where([data-pinyin]) > .rt-an {color:var(--reader-muted);}
 .viewer-layout[data-pron-spacing="reserved"] .reader-area ruby[data-pinyin] {width:max(1em,var(--pinyin-cell));}
 .viewer-layout[data-pron-spacing="natural"] .reader-area ruby[data-pinyin] {width:1em;}
 .viewer-layout :is(.reader-area,.reader-settings__preview) :is(.rt-an,rt).pinyin-tone--1 {color:var(--tone-1);}
@@ -159,7 +161,8 @@
 .viewer-layout .reader-area .word-token {max-width:100%;min-width:0;}
 .viewer-layout .reader-area .word-token .surface {max-width:100%;white-space:normal;overflow-wrap:anywhere;}
 .viewer-layout .reader-area :is(.word-token--raw,.word-token--failed) {opacity:1;color:var(--reader-muted);}
-.viewer-layout .reader-area--hl .word-token--new .surface::before {background:var(--reader-selected);}
+/* Learning-state fills and their range-selection blends belong to index.css.
+   A brand-color override here would erase the new-word selection transition. */
 .reader-modal {max-height:min(85dvh,calc(var(--reader-visual-height,100dvh) - 16px));}
 @container reader (max-width:1119px) {
   .viewer-inspector {bottom:calc(max(8px,env(safe-area-inset-bottom)) + var(--reader-keyboard-inset,0px));max-height:calc(var(--reader-visual-height,100dvh) - 110px);}
