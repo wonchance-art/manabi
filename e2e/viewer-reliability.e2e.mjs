@@ -134,7 +134,16 @@ await context.route('**/api/analyze',async r=>{
 
 const baseline=structuredClone(records),checks=[];
 const wordA=()=>page.locator('[data-tid="id_0_2_audit"]'),wordB=()=>page.locator('[data-tid="id_1_0_audit"]');
-async function tap(loc){await loc.evaluate(e=>window.scrollBy(0,e.getBoundingClientRect().top-180));await loc.click();}
+async function tap(loc){
+ // Scroll like a reader: raw scrollBy can race a pending focus/layout restoration.
+ for(let i=0;i<3;i++){
+  const r=await loc.boundingBox();
+  await page.mouse.move(Math.min(page.viewportSize().width-12,Math.max(12,r.x+8)),180);
+  await page.mouse.wheel(0,r.y-180);await delay(100);
+  if(await loc.evaluate(e=>{const r=e.getBoundingClientRect();return e.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2));}))break;
+ }
+ await loc.click();
+}
 async function fresh(width=1138,height=900){
  race=false;detailWait=0;analysisFail=false;reanalysis=false;analysisMode='ok';readingInvalid=false;writeFail=false;records=structuredClone(baseline);vocab=[];contexts=[];reads=[];writes.length=0;
  await page.evaluate(()=>{for(const k of Object.keys(localStorage))if(k.startsWith('pdf_cache:')||k.startsWith('viewer_')||k.startsWith('reading_test'))localStorage.removeItem(k);}).catch(()=>{});

@@ -340,3 +340,18 @@ Aa — 읽기 설정        학습 — 활동          ⋯ — 자료 관리
 새 시나리오: `e2e/viewer-reading-controls.e2e.mjs` (인증/DB/AI 합성 픽스처; 원격 개인 데이터 쓰기 없음). 기존 `e2e/viewer-reliability.e2e.mjs`, `learning-flow`, `typography`, `viewer-chrome`를 새 패널 구조에 연결했다. 원래 FSRS/출처/원본 교체 계약을 유지하고, 폐기된 3열/0.26em/암묵적 자동 시작 소스 계약만 승인 동작으로 교체했다.
 
 검증 결과와 최종 미리보기는 PR 및 후속 검수 기록에 남긴다. 물리 iPhone Safari/실제 마이크와 신규 TTS 품질, 원본 split view·PDF 조판은 이번 검수 완료를 뜻하지 않는다.
+
+## 최종 배포 검수 (2026-09-09)
+
+- 미리보기: https://manabi-24lbnl1ap-wonchance-arts-projects.vercel.app/materials
+- 실행 `ed32d1efe44a1f3cb821a82a6b38c5cca8114707`, Vercel `dpl_ExHpXpQZGkJ4kUDBbb2qwF7325wA` READY, `/api/version` exact commit 일치, Node 24.x.
+- 실행 코드 CI [34300623868](https://github.com/wonchance-art/manabi/actions/runs/34300623868) SUCCESS: lint/콘텐츠/단위 + production build/typography25/viewer chrome4/smoke/learning-flow9.
+- 로컬 전체 단위 363파일/3,931개, production 빌드 473페이지, lint 오류0(기존 교재 경고2), JSX 추가 검사 통과.
+- 최종 배포 신규 동작·실제 글꼴 **17개**, 크기/확대 **17개**, 기존 신뢰성 **17개** 통과. 페이지 오류와 React 키/수화 오류 0. 자체 작성 자료와 인증/DB/AI HTTP 픽스처를 사용하여 개인 자료 쓰기 0.
+- Aa 미리보기와 실제 본문의 글자/병음 크기·줄/글자 간격·공통 칸 좌표 일치. Noto Sans SC/Noto Serif SC의 실제 한자 glyph 렌더링을 CDP로 확인. 명조 실패 시 고딕/오류 안내 별도 검수.
+- 기존 viewer 학습/책 이동 실측 peak JS heap **17,435,294 bytes**. 이는 해당 테스트의 관측치이며 상한 보장은 아니다.
+- 글꼴 검사의 노드는 한자가 직접 들어 있는 ruby로 정정했고, Next의 실제 공백형 font family 이름도 허용했다. 기존 회귀 검사의 스크롤은 실제 wheel+클릭으로 바꿔 저장 직후 강제 scrollBy와 포커스 복원이 경쟁하던 테스트 경합을 제거했다. 앱 행동이나 결과 assertion은 낮추지 않았다.
+
+로그인된 실제 HSK 6 재검수는 Mac 잠금으로 진행하지 못했다. 물리 iPhone Safari/실제 마이크·음성 품질은 미검수다. 이 제한을 구현 완료와 구분해서 인계한다. 원문·교재 판본·FSRS·DB 스키마/권한 변경 및 운영 merge/force-push/기존 alias 변경은 없다. 후속은 실자료·실기기 검수와 Claude 검토/운영 통합이며 split view/PDF/신규 TTS는 별도 범위다.
+
+이 실행 커밋 이후 변경은 검사 하니스·검수 문서·자기 보드뿐이다. 앱 실행 코드와 배포는 위 exact commit으로 유지한다. 최종 인계 head는 PR #1294와 #150 CODEX_DONE에 기록한다.
