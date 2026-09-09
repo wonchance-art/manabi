@@ -1,6 +1,6 @@
 # 수업 제품 1차 구현
 
-오너가 승인한 `manabi-class-product-plan-20260910.md`의 첫 단계. 운영 main `9ae6b70caa36945c4feadbd4bafe87e779b4fad4`에서 격리했다. draft PR #1299, `codex/classroom-phase1-20260910`. **구현 및 격리 검수 완료, 운영 DB 적용 대기**이며 운영 완료를 뜻하지 않는다.
+오너가 승인한 `manabi-class-product-plan-20260910.md`의 첫 단계. 운영 main `9ae6b70caa36945c4feadbd4bafe87e779b4fad4`에서 격리했다. draft PR #1299, `codex/classroom-phase1-20260910`. **구현·운영 DB 적용 완료, 로그인 후 실제 수업 화면 검수 대기**이며 운영 웹 병합 완료를 뜻하지 않는다.
 
 [수업 미리보기](https://manabi-okc27p2p4-wonchance-arts-projects.vercel.app/class) — Vercel `dpl_AKLJxotmEQy4uZpmUsy45Ys1pqUK` READY. `/api/version`에서 실행 코드 `578e5f22105d0dc7ac966bff20dce7696a772362`와 preview 환경을 확인했다. 실제 기존 수업은 선생님 계정 로그인 후 보이며, 미로그인 상태는 수업 링크 입구다.
 
@@ -18,7 +18,7 @@
 
 ## 운영 반영 조건
 
-`supabase/migrations/20260909165823_classroom_atomic_entries.sql`은 검토용이며 아직 운영 적용하지 않았다. 2026-09-10 운영 프로젝트에 `BEGIN READ ONLY … ROLLBACK`으로 집계만 확인했다: 수업 루트 1개, 중복 팀 key 0개, 중복 날짜 노트 0개, 신규 RPC 미설치. 개인 본문은 읽거나 수정하지 않았다. 적용 직전 동일 사전 검사를 다시 해야 한다. 유일성 인덱스는 중복이면 적용을 중단하며 기존 공유 링크를 자동 변경하지 않는다.
+`supabase/migrations/20260909165823_classroom_atomic_entries.sql`은 2026-09-10 오너의 “승인. 다음 작업 개시” 후 기존 [마이그레이션 workflow34414922170](https://github.com/wonchance-art/manabi/actions/runs/34414922170)로 운영 적용했다. 실행 head `93afca03551336afaf6823f7f30a29650f094398`. 적용 직전 원격88/로컬89 차이는 이 SQL 1개, 수업 루트1·중복 key0·중복 날짜0이었다. workflow가 skip 없이 해당 파일을 적용했고 원격/로컬89개가 일치한다. 유일성 인덱스는 중복이면 적용을 중단하며 기존 공유 링크를 자동 변경하지 않는다.
 
 ```sql
 select processed_json #>> '{metadata,team,key}' as team_key, count(*)
@@ -27,7 +27,11 @@ where processed_json #>> '{metadata,team,root}' = 'true'
 group by 1 having count(*) > 1;
 ```
 
-운영 DB는 CLAUDE.md의 오너 적용 규칙에 따라 별도 승인 후 처리한다. RPC가 없을 때 원문은 기기 대기열에 남고 서버 저장이 준비 중임을 표시한다. 이를 정상 운영 완료로 보고하지 않는다. 기존 고정 뷰어 프리뷰를 이번 클래스 프리뷰로 교체하지 않는다. Merge/force-push 없음.
+RPC와 인덱스 설치 후 authenticated 실행 허용/anon 거부, SECURITY INVOKER와 고정 search_path를 확인했다. 기존 수업 행의 원문+processed_json 해시가 적용 전후 동일하고 보안 advisor 추가0이다. RPC 미설치 시 기기 대기열에 남기는 처리는 유지한다. 기존 고정 뷰어 프리뷰를 이번 클래스 프리뷰로 교체하지 않는다. Merge/force-push 없음.
+
+`scripts/verification/classroom.sql`은 운영 DB에서 인증된 역할로 임시 수업 루트·날짜 노트를 만들고 10개 조건을 검사한 뒤 ROLLBACK한다. 원문/private 소유권, 동일 요청 재전송, 변경된 재전송 거부, 의도된 동일 문장 반복, 여러 줄, 노트 metadata와 루트 metadata 보존, 날짜 노트1개, 타 계정/로그아웃 거부가 통과했다. 검수 후 기존 수업 행 수1과 내용 해시도 같다. 이 검사는 실제 DB 함수 검증이며 실제 로그인 브라우저의 저장 왕복을 대체하지 않는다.
+
+현재 수업 미리보기의 로그인 화면을 열어 두었다. 선생님 계정 로그인 후 검수용 수업에서 입력→판→노트 뷰어 왕복을 확인한다. 기존 수업에 검수 표현을 추가하거나 새 계정을 임의로 만들지 않았다.
 
 ## 검수 기록
 
@@ -45,9 +49,9 @@ group by 1 having count(*) > 1;
 
 ### 운영 적용 순서
 
-1. 오너가 위 SQL의 운영 적용을 승인한다. 적용 직전 migration 이력·팀 key/날짜 중복을 다시 확인한다.
-2. 신규 함수와 인덱스만 적용하고 권한·소유자 거부 조건 및 기존 원문/metadata 보존을 확인한다. 임의 기존 데이터 정리 없음.
-3. 승인된 실제 검수 수업에서 폰 입력 → 서버 노트 → 큰 화면 → 수업 노트 뷰어 왕복을 확인한다. 모바일 물리 기기 결과는 별도로 기록한다.
+1. 완료: 오너 승인, migration 이력·팀 key/날짜 중복 재확인.
+2. 완료: 신규 함수·인덱스 적용 및 권한/재전송/소유자 거부/원문·metadata 보존 검증. 임의 기존 데이터 정리 없음.
+3. 로그인 대기: 실제 검수 수업에서 폰 입력 → 서버 노트 → 큰 화면 → 수업 노트 뷰어 왕복. 모바일 물리 기기 결과는 별도로 기록한다.
 4. Claude 검토·병합 창구로 운영 웹 반영을 진행한다. Codex는 merge·force-push하지 않는다.
 
 ## 다음 차수
