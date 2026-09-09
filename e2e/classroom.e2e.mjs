@@ -73,6 +73,7 @@ await page.getByRole('link',{name:'수업 열기 →'}).click();await page.getBy
 await page.getByRole('link',{name:'수업 진행 →'}).click();await page.waitForURL('**/live');await page.goto(base+`/class/fixture-class/live?day=${day}`);
 const input=page.getByLabel('지금 함께 공부할 표현');await input.waitFor();await page.getByRole('button',{name:'また来週',exact:true}).waitFor();
 if(process.env.QA_LAYOUT_ONLY==='1'){
+ await input.fill('keyboard draft');await input.press('Tab');assert.equal((await page.evaluate(()=>document.activeElement.textContent)).trim(),'추가 ↑');await page.keyboard.press('Shift+Tab');assert(await input.evaluate(el=>el===document.activeElement));await input.fill('');check('keyboard reaches submit and returns to composer');
  for(const width of [1440,390,320]){await page.setViewportSize({width,height:950});for(const theme of ['light','dark']){await page.evaluate(t=>document.documentElement.setAttribute('data-theme',t),theme);await page.evaluate(()=>document.fonts.ready);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));const ink=await page.locator('.classroom-composer label').evaluate(el=>getComputedStyle(el).color);assert.equal(ink,'rgb(128, 87, 106)');await page.screenshot({path:`${out}/verified-live-${width}-${theme}.png`});}}
  check('fonts, 320/390/1440 layout and inherited dark preference keep readable ink');await browser.close();await db.close();process.exit(0);
 }

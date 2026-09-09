@@ -65,7 +65,7 @@ export function useClassroomSession({ ownerId, team, rootId, day }) {
       await refreshQueue();
     } catch (error) { if (active.current) setStoreError(classroomError(error)); }
     finally { sending.current = false; }
-  },[scope,ownerId,refreshQueue,accept]);
+  },[ownerId,refreshQueue,accept]);
   useEffect(() => {
     active.current = true;
     const wake = () => { setOnline(navigator.onLine); refreshQueue().then(pump).catch(error=>setStoreError(classroomError(error))); };
