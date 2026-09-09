@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getSupabase } from './supabase';
 import { fetchDayNote } from './classTeamQueries';
 import { classroomScope, appendClassroomEntry, classroomError, classroomEntries } from './classroomModel';
-import { putClassOperation, listClassOperations, deleteClassOperation } from './classroomOutbox';
+import { putClassOperation, listClassOperations, deleteClassOperation, claimClassOperation, discardClassOperation } from './classroomOutbox';
 import { openClassChannel } from './classRealtime';
 import { BOARD_POLL_MS } from './classBoard';
 import { analyzeText } from './analyzeText';
@@ -50,14 +50,15 @@ export function useClassroomSession({ ownerId, team, rootId, day }) {
           const db = await getSupabase();
           const { data, error } = await db.auth.getSession();
           if (error || data?.session?.user?.id !== ownerId || !active.current) break;
-          await putClassOperation({...row,attempted:true,status:'sending'});
+          const claimed=await claimClassOperation(row.id);
+          if(!claimed) continue;
           await refreshQueue();
           if (!active.current) break;
           const record = await appendClassroomEntry(db,row);
           accept(record);
           await deleteClassOperation(row.id);
         } catch (error) {
-          await putClassOperation({...row,attempted:true,status:'error',error:classroomError(error)});
+          await putClassOperation({...row,attempted:true,status:'error',errorCode:error?.code||'',error:classroomError(error)});
           break;
         }
       }
@@ -93,8 +94,8 @@ export function useClassroomSession({ ownerId, team, rootId, day }) {
   }
   async function discard(id) {
     const row=(await listClassOperations(scope)).find(r=>r.id===id);
-    if (!row || row.attempted) throw new Error('서버 저장 여부를 먼저 재시도로 확인해 주세요.');
-    await deleteClassOperation(id); await refreshQueue();
+    if (!row) return;
+    await discardClassOperation(id); await refreshQueue();
   }
   const note=query.data;
   const revision=note?.processed_json?.metadata?.viewerRevision || JSON.stringify(note?.processed_json);

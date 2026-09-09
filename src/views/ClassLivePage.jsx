@@ -8,7 +8,7 @@ import { useAuth } from '../lib/AuthContext';
 import { getTeam,todayKey,dayLabel,patchTeamRoot } from '../lib/classBoard';
 import { fetchTeamRoot,fetchBookChapters,chapterLabel } from '../lib/classTeamQueries';
 import { classLanguage,classroomScope,classroomEntries,classViewerHref,classroomError,saveClassroomMetadata,classMeaningPatch,classroomPlainText } from '../lib/classroomModel';
-import { readClassDraft,writeClassDraft } from '../lib/classroomOutbox';
+import { readClassDraft,writeClassDraft,canDiscardClassOperation } from '../lib/classroomOutbox';
 import { useClassroomSession } from '../lib/useClassroomSession';
 import { ClassroomShell,ClassroomState,ClassEntryDisplay,ClassBack } from '../components/classroom/ClassroomUI';
 
@@ -87,7 +87,7 @@ function LiveSession({ownerId,root,day}) {
       {session.error&&<div className="classroom-notice" role="alert">기존 노트를 불러오지 못했어요. <button onClick={()=>session.refetch()}>다시 불러오기</button></div>}
       {session.analysis.error&&<div className="classroom-notice">원문은 저장됐지만 뜻을 준비하지 못했어요. <button onClick={session.reanalyze}>뜻 다시 찾기</button><details><summary>자세히</summary>{session.analysis.error}</details></div>}
       <ol className="classroom-entry-list">
-        {[...queue].reverse().map(row=><li key={row.id} className="classroom-pending"><strong lang={classLanguage(team.lang).code}>{row.text}</strong><span>{row.status==='error'?row.error:'이 기기에 보관됨 · 서버 저장 대기'}</span>{row.status==='error'&&<button onClick={()=>session.retry(row.id).catch(e=>setMessage(classroomError(e)))}>저장 재시도</button>}{!row.attempted&&<button onClick={()=>session.discard(row.id).catch(e=>setMessage(classroomError(e)))}>입력 취소</button>}</li>)}
+        {[...queue].reverse().map(row=><li key={row.id} className="classroom-pending"><strong lang={classLanguage(team.lang).code}>{row.text}</strong><span>{row.status==='error'?row.error:'이 기기에 보관됨 · 서버 저장 대기'}</span>{row.status==='error'&&<button onClick={()=>session.retry(row.id).catch(e=>setMessage(classroomError(e)))}>저장 재시도</button>}{canDiscardClassOperation(row)&&<button onClick={()=>session.discard(row.id).catch(e=>setMessage(classroomError(e)))}>입력 취소</button>}</li>)}
         {[...entries].reverse().map((entry,i)=><li key={entry.id} className={`classroom-entry${current?.id===entry.id?' is-current':''}`}>
           <span className="classroom-entry-number">{String(entries.length-i).padStart(2,'0')}</span><div className="classroom-entry-content"><button className="classroom-entry-select" aria-pressed={current?.id===entry.id} onClick={()=>present(entry)} lang={classLanguage(team.lang).code}>{entry.text}</button>
           {entry.reading&&<p className="classroom-reading">{entry.reading}</p>}

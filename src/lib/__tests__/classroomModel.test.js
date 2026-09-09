@@ -19,3 +19,12 @@ describe('classroom boundary',()=>{
  it('separates owner, team and day',()=>{expect(new Set([classroomScope('a','x','2026-09-10'),classroomScope('b','x','2026-09-10'),classroomScope('a','y','2026-09-10'),classroomScope('a','x','2026-09-11')]).size).toBe(4);});
  it('retries using the same operation and never falls back to unsafe insert',async()=>{const rpc=vi.fn().mockResolvedValue({error:{code:'PGRST202'}});const operation={rootId:4,day:'2026-09-10',text:'原文',id:'operation'};await expect(appendClassroomEntry({rpc},operation)).rejects.toEqual({code:'PGRST202'});await expect(appendClassroomEntry({rpc},operation)).rejects.toEqual({code:'PGRST202'});expect(rpc.mock.calls[0]).toEqual(rpc.mock.calls[1]);});
 });
+
+it('only definitely unsent requests can be discarded without server confirmation',async()=>{
+ const {canDiscardClassOperation}=await import('../classroomOutbox');
+ expect(canDiscardClassOperation({attempted:false})).toBe(true);
+ expect(canDiscardClassOperation({attempted:true,errorCode:'PGRST202'})).toBe(true);
+ expect(canDiscardClassOperation({attempted:true,errorCode:'42501'})).toBe(true);
+ expect(canDiscardClassOperation({attempted:true,errorCode:'503'})).toBe(false);
+ expect(canDiscardClassOperation({attempted:true,errorCode:''})).toBe(false);
+});

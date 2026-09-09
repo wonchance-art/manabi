@@ -32,3 +32,31 @@ export async function listClassOperations(scope) {
 
 export const readClassDraft = scope => transaction('readonly',store=>store.get(`draft:${scope}`));
 export const writeClassDraft = (scope,text) => putClassOperation({id:`draft:${scope}`,scope,kind:'draft',text,updatedAt:Date.now()});
+
+export function canDiscardClassOperation(row) {
+  return !!row && (!row.attempted || ['PGRST202','PGRST301','22023','42501'].includes(row.errorCode));
+}
+async function changeOperation(id, change) {
+  const db=await open();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(STORE,'readwrite'),store=tx.objectStore(STORE);
+    let result=null,problem;
+    const request=store.get(id);
+    request.onsuccess=()=>{
+      try {const next=change(request.result);result=next;if(next===false)store.delete(id);else if(next)store.put(next);}
+      catch(error){problem=error;tx.abort();}
+    };
+    tx.oncomplete=()=>resolve(result);
+    tx.onerror=tx.onabort=()=>reject(problem||tx.error||new Error('대기 중인 입력을 변경하지 못했어요.'));
+  });
+}
+export function claimClassOperation(id) {
+  return changeOperation(id,row=>!row||row.kind==='draft'||row.status==='error'?null:{...row,attempted:true,status:'sending',errorCode:'',error:''});
+}
+export function discardClassOperation(id) {
+  return changeOperation(id,row=>{
+    if(!row)return null;
+    if(!canDiscardClassOperation(row))throw new Error('서버 저장 여부를 먼저 재시도로 확인해 주세요.');
+    return false;
+  });
+}
