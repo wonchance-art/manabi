@@ -208,6 +208,8 @@ function MaterialAddForm() {
             language: bookDraft.language || language,
             level: bookDraft.level || level,
             book: { key, title: bookDraft.title, order: startOrder + i, total },
+            // 이중 언어 교재의 뜻(v2-AB R0) — 문장 키. 뷰어 드래그 번역이 Gemini 전에 본다.
+            ...(ch.translations && Object.keys(ch.translations).length ? { translations: ch.translations } : {}),
             updated_at: new Date().toISOString(),
           },
         },
