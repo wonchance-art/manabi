@@ -785,6 +785,16 @@
 - 런던 위성 마이크로 픽(재량 위임 해석): 윈저+옥스퍼드 2곳 추천 — 레만호 완성 후 순번
 - 일본 4도시 COPY 슬롯 이식(다국어 UI 확정 시) / 아토미움 = marker-only 유지 확인
 ### done (최근)
+- **🔀 Codex 스택 검수·머지 라운드 — #1292 서재 통합(f2fc7dba) · #1293 뷰어 신뢰성 1차(7da652bb) · #1294 뷰어 2차(1a94d35f) + 구 스택 9건·#1288~#1291·#1284 정리 (2026-09-09 밤,
+  오너 「최근 git PR 검토 및 merge 승인 처리」)**: 게이트 = 자기 보고 대조(`merge-base --is-ancestor`로 스택 조상 관계 기계 확인, #1292 ⊃ #1288~#1291 4/4) → 하드리밋 스캔(마이그레이션
+  7본 함수 INVOKER — 예외 1 `viewer_undo_vocabulary_save` DEFINER는 오너 승인·자기 행 잠금·삭제 자기 행 한정, 고정 search_path·RLS·anon revoke / 동결 경로·시크릿·테스트 skip 0)
+  → 독립 재현(head 워크트리 전체 vitest: #1292 358/3905 · #1293 362/3924 · #1294 364/3938 전부 green, 보고 수치 일치) → CI green → squash. **스택 부모가 squash로 들어가 이력이
+  갈라진 자식 PR은 트리 보존 병합 커밋(`git merge -s ours origin/main`, 파일 변경 0 — main 트리 = 부모 트리 검증 뒤)으로 base를 main에 재지정한 뒤 squash** — 선례로 기록.
+  #1296(Codex 미완·CI unstable)·#1295(월드 트랙 동결)는 보류, #1284는 #1295 재발행이라 종료, 구 스택 #1277·#1279~#1286은 #1287 트리 포함 확인(전 head ⊂ 698e63e8) 뒤 종료.
+  검수 회신 #150 ×3. #1277 검수 보완 10항은 #1077 백로그로 이관.
+- **🔌 AA R1+R2 머지 — PR #1278 squash (2026-09-09 밤)**: 보류 사유(#1277 브랜치 빌드의 운영 별칭)는 #1287 머지로 소멸(운영 = main). main(#1287·#1292·#1293·#1294) 병합 반영 뒤
+  전체 vitest green·CI green. 겹침은 보드와 `ctxExplainWiring.test.js`(서로 다른 hunk, 자동 병합)뿐. #1294가 `callGemini(prompt, signal, {responseMimeType})` 3인자 형식으로 일본어
+  대조 조회를 추가했는데 R1의 `callGeminiOnce`가 그 옵션을 `generationConfig`로 그대로 실어 프록시 `safeGenConfig`를 통과함을 확인(계약 호환). 남은 것 = AA R3(⏰ 10-16).
 - **🔌 AA R2 텔레메트리 — `[llm]` 구조화 로그 1줄/호출 + 인메모리 티어·모델별 집계 + `/api/admin/llm-stats` (2026-09-05 밤,
   SPEC §R2 · 같은 draft PR #1278 별도 커밋 · 스키마 0 · 머지 보류 동일)**: `llm.js`의 `callLLM`이 성공·실패 무관 호출마다
   `console.info('[llm]', JSON)` 1줄 — 필수 키 11(route·tier·model·provider·fallbackDepth·ms·in·out·thinking·ok·status,
