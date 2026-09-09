@@ -51,9 +51,9 @@ describe('buildEasierPrompt — 번역이 아니라 같은 언어 안의 바꿔 
 describe('useEasierText — 정본 부품 재사용 배선', () => {
   const hook = codeOf(read('src/lib/useEasierText.js'));
 
-  it('서버 신설 없음 — 기존 callGemini(/api/gemini)와 GEMINI_MODEL 재사용', () => {
+  it('서버 신설 없음 — 기존 callGemini(/api/gemini)와 GEMINI_TIER 재사용', () => {
     expect(hook).toContain('callGemini(');
-    expect(hook).toContain('GEMINI_MODEL');
+    expect(hook).toContain('GEMINI_TIER');
     expect(hook).not.toContain("fetch(");
     expect(hook).not.toContain('/api/easier');
   });

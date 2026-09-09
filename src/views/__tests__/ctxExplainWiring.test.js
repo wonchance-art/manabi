@@ -40,9 +40,11 @@ describe('서버 배선(/api/explain token 분기)', () => {
     expect(route).toContain('buildTokenExplainPrompt');
   });
 
-  it('판정성 출력이라 temperature 0으로 호출한다(판별기 관례)', () => {
-    expect(route).toContain("callGemini('gemini-3.5-flash-lite', promptText, apiKey, 0)");
-    expect(route).toContain('callGroq(promptText, 0)');
+  it('판정성 출력이라 temperature 0으로 호출한다(판별기 관례) — light 티어, 폴백은 llm.js', () => {
+    expect(route).toContain("callLLM('light', promptText, { temperature: 0, route: 'explain' })");
+    // AA R1: Groq 폴백·모델 문자열은 라우트에 없다 — llm.js 한 곳
+    expect(route).not.toContain('callGroq(');
+    expect(route).not.toMatch(/gemini-\d/);
   });
 
   it('suspect는 응답에 싣지 않고 token_corrections에 적재만(수확 루프·학습자 비노출)', () => {

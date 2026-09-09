@@ -4,8 +4,8 @@
 // lemma의 사전 행이 이번 요청에서 조회되지 않았으면 기존 base_form·pos·첫 뜻으로 폴백한다.
 
 import { parseJsonLenient } from './fetchMeanings.js';
+import { callLLM } from './llm.js';
 
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent';
 const MAX_MARKS = 120;
 
 export const EN_POS_LABELS = [
@@ -144,22 +144,10 @@ export async function disambiguateEnPos(lines, marks, opts = {}) {
   let httpCalls = 0;
   try {
     httpCalls = 1;
-    const res = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(15_000),
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: buildEnPosPrompt(lines, marks) }] }],
-        generationConfig: { temperature: 0 },
-      }),
+    // light 티어 1회 — 판별기 관례: 재시도 0·Groq 폴백 없음(R1 동작 무변경), 실패는 빈 결과로 수렴
+    const { text } = await callLLM('light', buildEnPosPrompt(lines, marks), {
+      temperature: 0, timeoutMs: 15_000, groq: false, route: 'disambiguateEnPos',
     });
-    if (!res.ok) {
-      console.warn('[disambiguateEnPos] HTTP', res.status);
-      return { picks, httpCalls };
-    }
-    const data = await res.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) return { picks, httpCalls };
     const parsed = parseJsonLenient(text);
     if (!Array.isArray(parsed) || parsed.length !== marks.length) {
       console.warn('[disambiguateEnPos] length mismatch', parsed?.length, marks.length);

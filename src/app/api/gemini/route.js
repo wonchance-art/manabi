@@ -1,66 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 import { requireAdmin } from '@/lib/server/auth';
+import { callLLM, resolveTier, LLMError } from '@/lib/server/llm';
 
 // ── 프록시 잠금(비용 남용 방지) ──
-// 클라가 고를 수 있는 모델 화이트리스트 — flash·flash-lite만(pro 등 고비용 모델 차단).
-const ALLOWED_MODELS = new Set([
-  'models/gemini-3.6-flash',
-  'models/gemini-3.5-flash-lite',
-  // 구버전 클라 번들 하위호환 — 배포 직후 캐시된 클라가 옛 모델명을 보낸다
-  'models/gemini-2.5-flash',
-  'models/gemini-2.5-flash-lite',
-]);
-const DEFAULT_MODEL = 'models/gemini-3.6-flash';
+// 클라는 모델이 아니라 **티어**(light/standard)를 고른다 — 모델·폴백·Groq는 llm.js의 TIERS가 정한다(AA R1).
+// 구버전 클라 번들이 보내는 body.model(옛 이름)은 하위호환 힌트로 티어에 매핑하고, 목록 밖은 400(현행).
 // 텍스트 파트 합계 바이트 상한. contents 전체가 아니라 text만 잰다 — PDF OCR 경로가
 // inline_data(base64 이미지, 수백 KB)를 이 프록시로 보내므로 이미지는 캡에서 제외해야
 // 회귀가 없다(pdfExtract.js). 32KB면 ReadingTest 발췌(2.5K자)·대화·긴 CJK 선택을 모두 통과.
 const MAX_TEXT_BYTES = 32 * 1024;
 // 출력 토큰 서버 상한 — 관측된 최대 사용처(단어상세·독해문항·문단번역)보다 넉넉, 출력 폭주 차단.
 const MAX_OUTPUT_TOKENS = 8192;
-
-// Qwen — CJK 언어에 강함. qwen3-32b는 Groq에서 퇴역(2026-08 목록 실측) — 승계 모델 사용
-const GROQ_MODEL = 'qwen/qwen3.6-27b';
-const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-
-/** Groq 호출 + Gemini 호환 응답 형식으로 변환 */
-async function callGroq(contents, generationConfig) {
-  const groqKey = process.env.GROQ_API_KEY;
-  if (!groqKey) return null;
-
-  // Gemini contents → OpenAI-compatible messages
-  const promptText = contents.flatMap(c =>
-    (c.parts || []).map(p => p.text || '')
-  ).join('\n');
-
-  const res = await fetch(GROQ_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${groqKey}`,
-    },
-    body: JSON.stringify({
-      model: GROQ_MODEL,
-      messages: [{ role: 'user', content: promptText }],
-      temperature: generationConfig?.temperature ?? 0,
-      stream: false,
-      // Qwen 3 thinking 모드 비활성화 (불필요한 추론 토큰 낭비 방지)
-      reasoning_effort: 'none',
-    }),
-  });
-
-  if (!res.ok) return null;
-  const data = await res.json();
-  const text = data.choices?.[0]?.message?.content;
-  if (!text) return null;
-
-  // Gemini candidates 형식으로 포장
-  return {
-    candidates: [{
-      content: { parts: [{ text }] },
-      _provider: 'groq',
-    }],
-  };
-}
 
 // IP별 요청 카운터 (서버리스 인스턴스 재시작 시 초기화 — 충분한 억지력)
 const rateLimitMap = new Map();
@@ -164,7 +114,7 @@ export async function POST(request) {
   }
 
   const { contents, generationConfig } = body;
-  const model = body.model ?? DEFAULT_MODEL;
+  const resolved = resolveTier({ tier: body.tier, model: body.model });
   if (!contents) {
     recordStat('errors');
     stats.errorByStatus['400'] = (stats.errorByStatus['400'] || 0) + 1;
@@ -174,12 +124,12 @@ export async function POST(request) {
     );
   }
 
-  // 모델 화이트리스트 — flash·flash-lite만(클라가 pro 등 고비용 모델을 강제하지 못하게).
-  if (!ALLOWED_MODELS.has(model)) {
+  // 티어 화이트리스트 — light/standard만(클라가 pro 등 고비용 모델을 강제하지 못하게). 옛 모델명은 매핑, 밖이면 400.
+  if (resolved.error) {
     recordStat('errors');
     stats.errorByStatus['400'] = (stats.errorByStatus['400'] || 0) + 1;
     return Response.json(
-      { error: { message: 'Bad Request: Unsupported model' } },
+      { error: { message: resolved.error === 'unsupported_tier' ? 'Bad Request: Unsupported tier' : 'Bad Request: Unsupported model' } },
       { status: 400 }
     );
   }
@@ -211,57 +161,44 @@ export async function POST(request) {
     ),
   };
 
-  const requestBody = { contents, generationConfig: safeGenConfig };
-
   try {
-    let url = `https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${apiKey}`;
-    let response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody),
+    const { text, meta } = await callLLM(resolved.tier, contents, {
+      generationConfig: safeGenConfig,
+      route: 'gemini-proxy',
     });
-    let data = await response.json();
-
-    // 폴백 1: 1차 실패 시 gemini-3.5-flash-lite 재시도 (더 가볍고 용량 여유 있음)
-    if (!response.ok && model !== 'models/gemini-3.5-flash-lite') {
-      recordStat('fallbackUsed');
-      const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`;
-      response = await fetch(fallbackUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      });
-      data = await response.json();
-    }
-
-    // 폴백 2: Gemini 두 번째도 실패 시 Groq (GROQ_API_KEY 설정됐을 때만)
-    if (!response.ok) {
-      const groqData = await callGroq(contents, generationConfig).catch(() => null);
-      if (groqData) {
-        recordStat('groqUsed');
-        recordStat('ok');
-        const latency = Date.now() - started;
-        stats.latencySum += latency;
-        return Response.json(groqData, { status: 200 });
-      }
-    }
-
     const latency = Date.now() - started;
     stats.latencySum += latency;
-
-    if (response.ok) {
-      recordStat('ok');
-    } else {
-      recordStat('errors');
-      const key = String(response.status);
-      stats.errorByStatus[key] = (stats.errorByStatus[key] || 0) + 1;
-      console.error('[gemini]', response.status, `${latency}ms`, JSON.stringify(data).slice(0, 300));
-    }
-    return Response.json(data, { status: response.ok ? 200 : response.status });
+    if (meta.fallbackDepth > 0) recordStat('fallbackUsed');
+    if (meta.provider === 'groq') recordStat('groqUsed');
+    recordStat('ok');
+    // 클라(lib/gemini.js)는 Gemini candidates 형식을 읽는다 — Groq 결과도 같은 형식(_provider 표식)으로.
+    return Response.json({
+      candidates: [{
+        content: { parts: [{ text }] },
+        ...(meta.provider === 'groq' ? { _provider: 'groq' } : {}),
+      }],
+      usageMetadata: {
+        promptTokenCount: meta.usage.in,
+        candidatesTokenCount: meta.usage.out,
+        thoughtsTokenCount: meta.usage.thinking,
+      },
+    }, { status: 200 });
   } catch (err) {
     const latency = Date.now() - started;
     stats.latencySum += latency;
     recordStat('errors');
+    if (err instanceof LLMError) {
+      // 마지막 Gemini 응답의 상태·본문을 그대로 되돌린다 — 클라 재시도 판정(isCapacityError)이 현행과 같다.
+      const status = err.status >= 400 ? err.status : 502;
+      const key = String(status);
+      stats.errorByStatus[key] = (stats.errorByStatus[key] || 0) + 1;
+      const detailErr = err.detail && typeof err.detail === 'object' ? err.detail.error : null;
+      const data = detailErr && typeof detailErr === 'object'
+        ? err.detail
+        : { error: { message: (typeof detailErr === 'string' && detailErr) || err.message } };
+      console.error('[gemini]', status, `${latency}ms`, JSON.stringify(data).slice(0, 300));
+      return Response.json(data, { status });
+    }
     stats.errorByStatus['500'] = (stats.errorByStatus['500'] || 0) + 1;
     console.error('[gemini] proxy error', `${latency}ms`, err?.message);
     return Response.json(

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { callGemini, GEMINI_MODEL } from './gemini';
+import { callGemini, GEMINI_TIER } from './gemini';
 import { langNameKo } from './constants';
 
 export function useViewerQuiz() {
@@ -30,7 +30,7 @@ ${excerpt}
 반드시 아래 JSON만 출력:
 {"questions":[{"question":"...","options":["...","...","...","..."],"answer":0},{"question":"...","options":["...","...","...","..."],"answer":1},{"question":"...","options":["...","...","...","..."],"answer":2}]}`;
 
-      const raw = await callGemini(prompt, null, { model: GEMINI_MODEL });
+      const raw = await callGemini(prompt, null, { tier: GEMINI_TIER });
       const clean = raw.replace(/```json|```/g, '').trim();
       const parsed = JSON.parse(clean.substring(clean.indexOf('{'), clean.lastIndexOf('}') + 1));
       setQuizState({

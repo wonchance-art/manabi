@@ -4,7 +4,7 @@
 // 서버 변경 0 — 기존 callGemini(/api/gemini) 재사용.
 
 import { useCallback, useState } from 'react';
-import { callGemini, GEMINI_MODEL } from './gemini';
+import { callGemini, GEMINI_TIER } from './gemini';
 import { buildEasierPrompt, easierCacheKey } from './grammarDetail';
 import { langNameKo } from './constants';
 
@@ -30,7 +30,7 @@ export function useEasierText({ materialLang, toast }) {
     setLoading(true);
     setResult('');
     try {
-      const raw = await callGemini(buildEasierPrompt(text, langNameKo(materialLang)), null, { model: GEMINI_MODEL });
+      const raw = await callGemini(buildEasierPrompt(text, langNameKo(materialLang)), null, { tier: GEMINI_TIER });
       const body = typeof raw === 'string' ? raw.trim() : '';
       if (!body) throw new Error('빈 응답');
       setResult(body);

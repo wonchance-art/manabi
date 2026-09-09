@@ -1,20 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 import { buildParagraphPrompt, validateParagraph, verifyParagraph, PARAGRAPH_SCHEMA } from '@/lib/studyParagraph';
 import { assembleStudyMaterials, deriveArc } from '@/lib/studyMaterials';
+import { callLLM } from '@/lib/server/llm';
 
 /**
  * 오늘의 문단 생성 — 공부 모드의 재료(새 문법·새 어휘·복습 문법·복습 어휘)를
  * 하나의 문단으로 녹이고 파생 문항까지 만든다.
- * /api/writing-feedback과 동일한 인증·폴백(flash → flash-lite → Groq JSON) 구조.
+ * /api/writing-feedback과 동일한 인증·폴백(standard 티어 — flash → flash-lite → Groq JSON, llm.js) 구조.
  *
  * 두 모드:
  *  - 일반: 클라가 보낸 재료로 생성 → 검증·2차검증 → {paragraph} 응답 + study_paragraphs 저장('used').
  *  - prefetch(body.prefetch===true): 재료를 클라가 안 보냄 — 라우트가 assembleStudyMaterials(36h)로
  *    직접 조립해 생성·저장('prefetched')하고 { ok, preview }만 응답(다음 세션 즉시 시작용).
  */
-
-const GROQ_MODEL = 'qwen/qwen3.6-27b'; // qwen3-32b는 Groq에서 퇴역(2026-08 실측)
-const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 const rateLimitMap = new Map();
 const RATE_LIMIT = 15;               // 세션 시작마다 1회 — 분당 15면 충분
@@ -36,47 +34,6 @@ function isRateLimited(key) {
   return entry.count > RATE_LIMIT;
 }
 
-async function callGemini(model, promptText, apiKey) {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: promptText }] }],
-        generationConfig: {
-          temperature: 0.6,            // 문단은 약간의 다양성
-          responseMimeType: 'application/json',
-          responseSchema: PARAGRAPH_SCHEMA,
-        },
-      }),
-    }
-  );
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
-}
-
-async function callGroqJson(promptText) {
-  const groqKey = process.env.GROQ_API_KEY;
-  if (!groqKey) return null;
-  const res = await fetch(GROQ_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${groqKey}` },
-    body: JSON.stringify({
-      model: GROQ_MODEL,
-      messages: [{ role: 'user', content: promptText + '\n\nJSON 객체 하나로만 응답하세요.' }],
-      temperature: 0.6,
-      stream: false,
-      reasoning_effort: 'none',
-      response_format: { type: 'json_object' },
-    }),
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content || null;
-}
-
 function parseModelJson(text) {
   if (!text) return null;
   let t = String(text).trim();
@@ -91,14 +48,14 @@ function parseModelJson(text) {
   return null;
 }
 
-/** 1회 생성 시도 — flash → flash-lite → Groq → validate → verify(결정적 2차검증) */
-async function generateOnce(promptText, apiKey) {
-  let raw = null;
-  if (apiKey) {
-    raw = await callGemini('gemini-3.6-flash', promptText, apiKey).catch(() => null);
-    if (!raw) raw = await callGemini('gemini-3.5-flash-lite', promptText, apiKey).catch(() => null);
-  }
-  if (!raw) raw = await callGroqJson(promptText).catch(() => null);
+/** 1회 생성 시도 — standard 티어(flash → flash-lite → Groq JSON, llm.js) → validate → verify(결정적 2차검증) */
+async function generateOnce(promptText) {
+  const raw = await callLLM('standard', promptText, {
+    temperature: 0.6,            // 문단은 약간의 다양성
+    responseMimeType: 'application/json',
+    responseSchema: PARAGRAPH_SCHEMA,
+    route: 'study-paragraph',
+  }).then((r) => r.text).catch(() => null);
   const validated = validateParagraph(parseModelJson(raw));
   if (!validated) return { paragraph: null, raw };
   return { paragraph: verifyParagraph(validated), raw };
@@ -241,9 +198,9 @@ export async function POST(request) {
 
   try {
     // 생성 → 결정적 2차검증. null이면 동일 프롬프트로 1회 재생성.
-    let { paragraph } = await generateOnce(promptText, apiKey);
+    let { paragraph } = await generateOnce(promptText);
     if (!paragraph) {
-      ({ paragraph } = await generateOnce(promptText, apiKey));
+      ({ paragraph } = await generateOnce(promptText));
     }
     if (!paragraph) {
       console.error('[study-paragraph] unusable model output after retry');

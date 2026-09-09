@@ -244,13 +244,16 @@ describe('④ 규약 문서 — 존재 + 상호 포인터', () => {
 });
 
 describe('⑤ 접근성 하한 — 줄어들면 잡는다', () => {
+  // 스캔 범위 = src/**/*.css 전체(#1294가 index.css → 전체로 넓혔다). 범위를 바꾸면 하한도
+  // 같은 커밋에서 재고정한다 — 넓힌 범위에 옛 하한(29/12/10)을 두면 가드가 무력화된다
+  // (2026-09-09 실측 127/39/12, index.css 단독 35/20/8).
   const css = cssFiles().map(read).join('\n');
   const count = (re) => (css.match(re) || []).length;
 
   it('44px 터치 타깃·:focus-visible·prefers-reduced-motion이 하한 이상', () => {
-    expect(count(/44px/g)).toBeGreaterThanOrEqual(29);
-    expect(count(/focus-visible/g)).toBeGreaterThanOrEqual(12);
-    expect(count(/prefers-reduced-motion/g)).toBeGreaterThanOrEqual(10);
+    expect(count(/44px/g)).toBeGreaterThanOrEqual(120);
+    expect(count(/focus-visible/g)).toBeGreaterThanOrEqual(36);
+    expect(count(/prefers-reduced-motion/g)).toBeGreaterThanOrEqual(12);
   });
 });
 
