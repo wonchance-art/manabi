@@ -14,16 +14,17 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- **수업 저장 운영 적용·실수업 검수 (2026-09-10, 오너 “승인. 다음 작업 개시”)** — #1299 기존 브랜치, 신규 SQL20260909165823 적용 승인. 원격88/로컬89 차이1, 중복 key/날짜0 확인. 기존 workflow로 적용→권한·원문 보존→실제 입력/판/노트 검수. 기존 개인 자료·운영 웹·고정 viewer alias 유지, merge/force-push 제외.
+- **수업 실제 브라우저 검수 (2026-09-10)** — #1299 운영 DB 적용·권한/보존 검증 완료. 새 미리보기 `/auth`에서 선생님 계정 로그인 대기; 로그인 후 검수용 수업의 입력→판→노트 뷰어 왕복을 확인한다. 임의 계정 생성·기존 수업에 검수 표현 추가 없음.
 
 ### todo
-- **수업 후속** — #1299 코드·격리 검수 완료. 신규 저장 RPC 운영 적용은 아래 owner-gate, 이후 실제 폰→태블릿 수업·학생 사본/로그인 후 표현 저장 검수. 운영 웹 병합은 Claude 창구. 상세 `docs/manabi-classroom-phase1.md`.
+- **수업 후속** — #1299 코드·운영 DB 검증 완료, 실제 브라우저 로그인 대기. 다음은 학생 사본의 조회 실패/동시 복제 중복 방지·새 버전 선택 갱신·수업 복귀 및 로그인 후 표현 저장. 운영 웹 병합은 Claude 창구. 상세 `docs/manabi-classroom-phase1.md`.
 - **뷰어 후속** — 실제 HSK6 표시/복귀 검수 완료. 물리 iPhone Safari, 기존 분석 독음·문법 정확도, 부모 #1293 → #1294 검토/운영 통합을 별도로 진행. PDF/신규 음성/원본 split view는 보류한 범위.
 - **서재 후속 우선순위** — 선택 구간 학습 #1291과 기기 간 원본 위치 동기화 #1292 구현·DB 적용·실계정 검수 완료. 누적 #1288 → #1289 → #1290 → #1291 → #1292의 검토·병합은 Claude 창구. 실제 iOS Safari 확인과 운영 반영 준비를 우선하며 미참조 업로드 정리·URL 본문 가져오기는 별도 범위. 상세 `docs/manabi-original-reading-sync.md`.
 - ~~🎧 받아쓰기 채점 엔진(#1077 제안 6, 발주 5386786944)~~ → **회수: 2026-08-23
   16:03 스캔까지 WORKING 무표식(30분 룰) — Claude 직접 수행·완결(회수 공지
   5386950005, PR #1118)**. 이 열에 잔여 발주 없음.
 ### done (최근)
+- **수업 저장 함수 운영 적용·권한 검수 완료 (2026-09-10, 오너 승인)** — #1299, workflow34414922170에서 SQL20260909165823을 skip 없이 적용. 원격/로컬89 일치, authenticated 허용/anon 거부·INVOKER·고정 search_path·unique index 확인. 실제 DB 10조건(소유권·원문·재전송·다중행·metadata·타 계정/로그아웃 거부) PASS 후 ROLLBACK, 기존 수업1행의 내용 해시 불변, advisor 추가0. 신규 스크립트 `scripts/verification/classroom.sql`. 웹 실행578e5f22 그대로, 기존 미리보기 사용; production/고정 viewer alias·개인 자료·FSRS 유지. 실제 브라우저 로그인/실수업 표시는 doing으로 분리. 최종 head·CI는 #150 후속 CODEX_DONE.
 - **수업 제품 1차 구현·미리보기 완료 (2026-09-10)** — draft PR #1299, 실행 `578e5f22105d0dc7ac966bff20dce7696a772362`. 역할별 입구·노트 우선 홈·폰 입력·집중 판, 영속 초안/대기열·원자적 저장·재전송·수동 뜻 보존. SQL 24, 브라우저 23흐름 오류0, 최종 배포 5흐름/320·390·1440 실글꼴·대비·헤더·키보드 검수 통과. 선행90f6e971 CI34402466941 전체373파일/4,061개·빌드·기존 e2e SUCCESS; 최종 문서/보드 head CI는 #150 CODEX_DONE에 기록. Vercel dpl_AKLJxotmEQy4uZpmUsy45Ys1pqUK READY·version 일치, https://manabi-okc27p2p4-wonchance-arts-projects.vercel.app/class . 운영 읽기 전용 사전 검사 중복0·신규 RPC 미설치. **DB APPLY HOLD**: 운영 완료 아님. 개인 자료·기존 viewer/FSRS·운영/고정 뷰어 alias 유지, merge·force-push 없음. 상세 `docs/manabi-classroom-phase1.md`.
 - **뜻 패널 최소화·일본어 대응 완료 (2026-09-09)** — #1294 실행 `5cd105ac4fee8e4cce59c0f9ec05072bed1da405`. 상단 탭 한 줄, 핵심 뜻/일본식 자형/대응어, 접힌 보충 정보, 고정 새 단어 저장. 예약 복원과 새 선택 충돌 보완. CI34322590670 SUCCESS(3,938개·빌드·학습 e2e), 배포 34동작+22화면 오류0. 실제 HSK6 東道主/ホスト国·眼前 한 줄 확인, 1138px 창 패널799→440px. 고정 프리뷰 갱신·운영 불변. 문서 `docs/manabi-viewer-reading-controls.md`, #150 CODEX_DONE으로 인계.
 
