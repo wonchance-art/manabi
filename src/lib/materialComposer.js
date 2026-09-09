@@ -16,7 +16,7 @@ export function composerOf(material) {
 export function shouldReadComposerOriginal(material, params) {
   if (!composerOf(material)) return false;
   if (composerOf(material).role === 'study') return false;
-  const learningRequest = params.get('study') === '1' || params.has('sourceToken') || params.has('sourceText');
+  const learningRequest = params.get('study') === '1' || params.has('sourceToken') || params.has('sourceText') || params.has('sourceContext');
   return !learningRequest || !material.raw_text?.trim() || !COMPOSER_LANGUAGES.includes(material.processed_json?.metadata?.language);
 }
 
