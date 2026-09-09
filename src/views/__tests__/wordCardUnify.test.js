@@ -37,8 +37,9 @@ describe('단어 카드 단일화 계약', () => {
     expect(css).toContain('.word-detail-card--above-list');
   });
 
-  it('X로 닫힌다 — 카드 상태만 정리하고 리스트는 남긴다', () => {
-    expect(viewer).toContain('aria-label="단어 상세 닫기"');
+  it('패널 닫기 한 곳으로 카드 상태를 정리하고 리스트는 남긴다', () => {
+    expect(viewer).toContain('onClose={closeWordCard}');
+    expect(viewer).not.toContain('aria-label="단어 상세 닫기"');
     const fn = viewer.match(/const closeWordCard = \(\) => \{[\s\S]*?\n  \};/)?.[0];
     expect(fn).toBeTruthy();
     expect(fn).toContain('setSelectedToken(null)');
@@ -49,7 +50,7 @@ describe('단어 카드 단일화 계약', () => {
     expect(viewer).toContain('canEditToken && selectedToken.id && (');
   });
 
-  it('카드 열림 시 패널·시트를 맨 위로 되돌린다(리스트를 내려 본 뒤에도 카드가 보이게)', () => {
-    expect(viewer).toContain("querySelectorAll('.viewer-side--right, .viewer-sheet__sections')");
+  it("같은 단어의 보강 응답은 카드 스크롤을 초기화하지 않는다", () => {
+    expect(viewer).toContain("querySelectorAll('.viewer-inspector .reader-card-body')"); expect(viewer).toContain('[selectedToken?.id, selectedToken?.text, isSheetOpen]');
   });
 });

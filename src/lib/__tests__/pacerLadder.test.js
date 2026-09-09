@@ -1,3 +1,4 @@
+import {viewerDefaults} from '../viewerPreferences';
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -115,18 +116,15 @@ describe('목표 = 바탕값 × 사다리', () => {
   });
 
   it('기본 0단계 — 옵트인한 사람도 처음엔 자기 속도에서 시작한다', () => {
-    expect(read('src/lib/useViewerSettings.js')).toContain("readPref('paceStep', 0)");
+    expect(viewerDefaults('Chinese').paceStep).toBe(0);
   });
 
   it('직접 조절하면 사다리를 접는다 — 맞춘 값과 도는 값이 다르면 안 된다', () => {
-    const row = sliceBetween(viewer, '{autoPace && (', "{sheetTab === 'tools'");
-    expect(row).toContain('setPaceCpm(stepCpm(paceTargetCpm, -1)); setPaceStep(0);');
-    expect(row).toContain('setPaceCpm(stepCpm(paceTargetCpm, 1)); setPaceStep(0);');
+    const options=read('src/components/viewer/ViewerSettings.jsx');expect(options).toContain('paceCpm:stepCpm(paceTargetCpm,-1),paceStep:0');expect(options).toContain('paceCpm:stepCpm(paceTargetCpm,1),paceStep:0');
   });
 
-  it('설정 화면이 훈련 단계를 밝힌다 — 0단계면 그 조각이 없다', () => {
-    expect(viewer).toContain('{ladderLabel(paceStep) && <em>훈련 {ladderLabel(paceStep)}</em>}');
-    expect(read('src/index.css')).toContain('.rsheet-pace__src em {');
+  it("속도 기준에 현재 훈련 단계를 밝힌다", () => {
+    expect(read('src/components/viewer/ViewerSettings.jsx')).toContain('훈련 단계 {s.paceStep}');
   });
 });
 

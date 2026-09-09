@@ -21,7 +21,7 @@ import OfflineNotice from '../components/OfflineNotice';
 import { useReadingTimer } from '../lib/useReadingTimer';
 import { countReadableChars } from '../lib/readingTimer';
 import { useReadingPacer } from '../lib/useReadingPacer';
-import { dwellMs, defaultTargetCpm, paceHint, stepCpm } from '../lib/readingPacer';
+import { dwellMs, defaultTargetCpm, paceHint } from '../lib/readingPacer';
 import { pdfViewerHref } from '../lib/pdfRangeBridge';
 import { fetchReadingSpeedRows } from '../lib/readingSpeedRows';
 import { recentCpm, suggestTargetCpm } from '../lib/readingSpeedHistory';
@@ -71,8 +71,16 @@ import { usePdfRangeMutation } from '../lib/usePdfRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
 import { useGroupReadPush } from '../lib/useGroupReadPush';
 import { useScrollRestore } from '../lib/useScrollRestore';
-import { captureReadingAnchor, restoreReadingAnchor } from '../lib/readingViewport';
-import { listHanjaHunEum, toJaForm } from '../lib/hanjaKo';
+import { useReaderLayout, readerVisibleBounds, useSelectedTokenVisibility } from '../lib/useReaderLayout';
+import { pinyinCellWidth } from '../lib/pinyinLayout';
+import { readerFontFamily } from '../lib/viewerPreferences';
+import { textbookThemeStyle } from '../lib/textbookTheme';
+import ViewerSettings from '../components/viewer/ViewerSettings';
+import ViewerModal from '../components/viewer/ViewerModal';
+import dynamic from 'next/dynamic';
+import '../components/viewer/reader-controls.css';
+const ChineseSerif = dynamic(() => import('../components/viewer/ChineseSerif'), {ssr:false});
+import { listHanjaHunEum } from '../lib/hanjaKo';
 import { useGrammarDetail } from '../lib/useGrammarDetail';
 import { useEasierText } from '../lib/useEasierText';
 import { buildContextPrompt } from '../lib/grammarDetail';
@@ -90,9 +98,9 @@ import { syncVocabEncounters } from '../components/world/vocabEncounterSync';
 import { encounterLookupLang, loadMetWordKeys, loadRefVocabLookup } from '../lib/refVocabLookup';
 import { normalizeRefWordKey } from '../lib/refWordNormalize';
 import { isWordToken, wordStateOf, wordStateExtraClass } from '../lib/wordState';
-import { TTS_RATES, ttsOptsFor, pronHiddenFor, pronRevealAvailable, shouldRevealPron, READING_PRESETS, PRESET_META, presetActive } from '../lib/readingSheet';
+import { TTS_RATES, ttsOptsFor, pronHiddenFor, shouldRevealPron } from '../lib/readingSheet';
 import { getBook } from '../lib/bookMeta';
-import { getJaRef, formatJaRef, getJaWarn } from '../lib/jaRef';
+import ViewerJapaneseReference from '../components/viewer/ViewerJapaneseReference';
 import TokenEditPanel from './TokenEditPanel';
 import SourceEditModal from './SourceEditModal';
 import TokenPosLabel from './TokenPosLabel';
@@ -206,59 +214,49 @@ export default function ViewerPage() {
   const toast = useToast();
   const queryClient = useQueryClient();
 
-  const { speak, supported: ttsSupported } = useTTS();
+  const { speak, stop:stopSpeech, supported: ttsSupported } = useTTS();
+  useEffect(()=>()=>stopSpeech(),[id,stopSpeech]);
 
+  const { data: material, isLoading, error, refetch } = useQuery({
+    queryKey: ['material', id],
+    queryFn: () => fetchMaterial(id),
+    refetchInterval: (query) => {
+      const d = query.state.data;
+      const s = d?.status || d?.processed_json?.status;
+      return s === 'analyzing' ? 4000 : false;
+    },
+  });
+
+  const materialLang = material?.processed_json?.metadata?.language || 'Japanese';
+  const [activeModal, setActiveModal] = useState(null);
+  useEffect(()=>{stopSpeech();},[activeModal?.kind,stopSpeech]);
+  const [paceRunning, setPaceRunning] = useState(false);
+  const [inspectorOpen, setInspectorOpen] = useState(false);
+  const [fontStatus,setFontStatus] = useState('idle');
+  const modal = name => activeModal?.kind === name;
+  const changeModal = (name,value) => setActiveModal(value ? {kind:name, ...(typeof value === 'string'?{value}:{})} : null);
+  const settingsOpen=modal('settings'), setSettingsOpen=value=>changeModal('settings',value);
+  const sourceEditOpen=modal('source'), setSourceEditOpen=value=>changeModal('source',value);
+  const dictationPickerOpen=modal('dictationPick'), setDictationPickerOpen=value=>changeModal('dictationPick',value);
+  const dictationSentence=modal('dictation')?activeModal.value:null, setDictationSentence=value=>changeModal('dictation',value);
+  const showReadingTest=modal('reading'), setShowReadingTest=value=>changeModal('reading',value);
+  const showConversation=modal('conversation'), setShowConversation=value=>changeModal('conversation',value);
+  const dictationDrafts=useRef(new Map());
+  useEffect(()=>{setActiveModal(null);setPaceRunning(false);dictationDrafts.current.clear();},[id,user?.id]);
+  useEffect(()=>{setActiveModal(prev=>prev?.kind==='source'?prev:null);setPaceRunning(false);dictationDrafts.current.clear();},[material?.raw_text,material?.processed_json]);
   // Custom hooks
-  const settings = useViewerSettings();
-  const { fontSize, setFontSize, lineGap, setLineGap, charGap, setCharGap,
-          showHanjaKo, setShowHanjaKo,
-          showToneColors, setShowToneColors,
-          wordStateHl, setWordStateHl,
-          showPatterns, setShowPatterns, patternFilter, setPatternFilter,
-          focusMode, setFocusMode,
-          autoPace, setAutoPace, paceCpm, setPaceCpm, paceStep, setPaceStep,
-          theme, setTheme, fontFamily, setFontFamily, pronDisplay, setPronDisplay,
-          pronReveal, setPronReveal,
-          autoSpeakOnClick, setAutoSpeakOnClick, ttsRate, setTtsRate,
-          settingsOpen, setSettingsOpen } = settings;
+  const settings = useViewerSettings(materialLang);
+  const { fontSize,lineGap,charGap,showHanjaKo,showToneColors,wordStateHl,showPatterns,patternFilter,
+    focusMode,setFocusMode,autoPace,paceCpm,paceStep,setPaceStep,theme,fontFamily,pronDisplay,
+    pronReveal,autoSpeakOnClick,ttsRate,pinyinSize } = settings;
 
-  // 읽기 모드 프리셋(오너 확정 2026-08-27) — 표시 키만 대입, 조판은 불가침(readingSheet 계약).
-  // v1-4 R1에서 pronReveal이 합류했다 — 프리셋은 '표시 의도'를 통째로 정하므로 새 키도
-  // 반드시 대입한다(빠뜨리면 카드 불은 켜졌는데 실제 상태는 다른 유령 활성이 생긴다).
-  const applyPreset = (name) => {
-    const p = READING_PRESETS[name];
-    if (!p) return;
-    setPronDisplay(p.pronDisplay);
-    setWordStateHl(p.wordStateHl);
-    setFocusMode(p.focusMode);
-    setShowToneColors(p.showToneColors);
-    setPronReveal(p.pronReveal);
-  };
-  // 탭 시트(B안 — 오너 전환 지시 2026-08-28): 글자/표시/도구. 상태는 페이지 방문 동안만
-  // 유지(마지막 탭 기억) — 영속 pref로 만들 만큼의 무게는 아니다.
-  const [sheetTab, setSheetTab] = useState('type');
-  const settingsDialog = useRef(null);
   const settingsTrigger = useRef(null);
-  useEffect(() => {
-    if (!settingsOpen) return;
-    const dialog = settingsDialog.current;
-    const trigger = settingsTrigger.current;
-    dialog?.showModal();
-    return () => {
-      dialog?.close();
-      // Conditional unmount can remove the modal before native focus restoration.
-      // Do not steal focus from a tool opened directly from this sheet.
-      if (document.activeElement === document.body && trigger?.isConnected) {
-        trigger.focus({ preventScroll: true });
-      }
-    };
-  }, [settingsOpen]);
-
   const quiz = useViewerQuiz();
   const { quizState, completionModal, setCompletionModal, generateQuiz,
           handleQuizAnswer, advanceQuiz, finishQuiz } = quiz;
 
   const [selectedToken, setSelectedToken] = useState(null);
+  const selectedTokenRef=useRef(selectedToken);selectedTokenRef.current=selectedToken;
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const detailGate = useRef(createViewerRequestGate());
   const selectionGate = useRef(createViewerRequestGate());
@@ -273,24 +271,13 @@ export default function ViewerPage() {
   // 자료를 옮기면 공개를 접는다. 앱 라우터는 /viewer/[id] 사이 이동에서 이 컴포넌트를
   // 다시 마운트하지 않으므로, 지우지 않으면 지난 자료의 공개가 tokenId가 겹치는 만큼
   // 새 자료에 비친다. (빈 Set일 땐 그대로 둔다 — 첫 렌더에 헛 리렌더를 만들지 않는다.)
-  useEffect(() => { setRevealedPron((prev) => (prev.size ? new Set() : prev)); }, [id]);
+  useEffect(() => { setRevealedPron((prev) => (prev.size ? new Set() : prev)); }, [id, pronDisplay, pronReveal, material?.processed_json]);
   const [commentInput, setCommentInput] = useState('');
   const [saveAnim, setSaveAnim] = useState(false);
   const savingGrade = useRef(false);
   const [inlineSaving, setInlineSaving] = useState({});
   const { titleEditing, setTitleEditing, titleDraft, setTitleDraft, updateTitleMutation } = useTitleEdit(id, toast);
 
-  const { data: material, isLoading, error, refetch } = useQuery({
-    queryKey: ['material', id],
-    queryFn: () => fetchMaterial(id),
-    refetchInterval: (query) => {
-      const d = query.state.data;
-      const s = d?.status || d?.processed_json?.status;
-      return s === 'analyzing' ? 4000 : false;
-    },
-  });
-
-  const materialLang = material?.processed_json?.metadata?.language || 'Japanese';
   const cacheScope = useMemo(() => [user?.id || 'guest', id, materialLang, material?.raw_text, material?.processed_json],
     [user?.id, id, materialLang, material?.raw_text, material?.processed_json]);
   useEffect(() => {
@@ -509,7 +496,7 @@ export default function ViewerPage() {
 
   const readingTimer = useReadingTimer({
     enabled: !!user && !!material && !shouldReadComposerOriginal(material, originalParams),
-    paused: isSheetOpen || !!selectedToken,
+    paused: isSheetOpen || !!selectedToken || !!activeModal,
   });
 
   const markCompleteMutation = useReadingCompletion({
@@ -549,10 +536,10 @@ export default function ViewerPage() {
     reanalyzePanel, setReanalyzePanel,
     selectedParas, paragraphs,
     togglePara, startFullReanalyze, startPartialReanalyze,
-  } = useReanalyzeUI({ reanalyze, material, toast });
+  } = useReanalyzeUI({ reanalyze, material, toast, panel:modal('manage')?activeModal.value:null, onPanelChange:value=>changeModal('manage',value) });
 
   // ③ 원문 수정(오너 승인) — 소유자 전용, 저장 시 바뀐 줄만 재분석(sourceEdit.js 계획).
-  const [sourceEditOpen, setSourceEditOpen] = useState(false);
+
   const handleSourceEditSave = async (plan) => {
     if (composerOf(material)) return;
     if (!plan || plan.noop) { setSourceEditOpen(false); return; }
@@ -573,16 +560,22 @@ export default function ViewerPage() {
 
   // 읽기 진행률 바 — readerRef는 본문 컨테이너에 부착
   const { readerRef, readProgress } = useReadProgress(material);
-  const displayFrame = useRef(null);
-  useEffect(() => () => cancelAnimationFrame(displayFrame.current), []);
-  const keepReadingPosition = change => {
-    const toolbar = readerRef.current?.closest('.viewer-center')?.querySelector('.viewer-topbar');
-    const top = toolbar ? Math.max(72, toolbar.getBoundingClientRect().bottom + 8) : 72;
-    const anchor = captureReadingAnchor(readerRef.current, top, window.innerHeight);
-    change();
-    cancelAnimationFrame(displayFrame.current);
-    displayFrame.current = requestAnimationFrame(() => restoreReadingAnchor(anchor, options => window.scrollBy(options)));
-  };
+  const {keepPosition:keepReadingPosition,layoutVersion,cancelPosition:cancelReadingPosition} = useReaderLayout(readerRef, material?.processed_json);
+  const [pinyinCell,setPinyinCell] = useState(44);
+  useEffect(()=>{
+    let live=true;
+    const measure=()=>{
+      if(!live||materialLang!=='Chinese'||!readerRef.current)return;
+      const rootSize=parseFloat(getComputedStyle(document.documentElement).fontSize)||16;
+      const ctx=document.createElement('canvas').getContext('2d');
+      if(!ctx)return;
+      const family=getComputedStyle(readerRef.current).getPropertyValue('--font-noto-sans').trim()||'sans-serif';
+      ctx.font=`${pinyinSize*rootSize}px ${family}`;
+      setPinyinCell(pinyinCellWidth(text=>ctx.measureText(text).width,fontSize*rootSize));
+    };
+    measure();document.fonts?.ready.then(measure);window.addEventListener('resize',measure);
+    return ()=>{live=false;window.removeEventListener('resize',measure);};
+  },[materialLang,fontSize,pinyinSize,material?.id,readerRef]);
   // 그룹 같이 읽기 진도 push(§4.3) — 이번 주 지정 자료일 때만, 실패 조용히
   useGroupReadPush(material?.id, user?.id, readProgress);
 
@@ -609,7 +602,7 @@ export default function ViewerPage() {
   });
 
   // 스크롤 위치 저장(debounce 2s) + 재진입 시 자동 복원
-  const { saveScrollPosition, tokenRefs, positionError, retryPosition } = useScrollRestore({ user, materialId: id, material, readingProgress });
+  const { saveScrollPosition, tokenRefs, positionError, retryPosition } = useScrollRestore({ user, materialId: id, material, readingProgress, readerRef });
   const [sourceFocusId, setSourceFocusId] = useState(null);
 
   // 단어 저장 카운트 (복습 유도용)
@@ -717,6 +710,8 @@ export default function ViewerPage() {
   };
 
   const closeWordCard = () => {
+    const trigger=selectedToken?.id?tokenRefs.current[selectedToken.id]:null;
+    trigger?.focus({preventScroll:true});
     detailGate.current.cancel();
     setIsSheetOpen(false);
     setSelectedToken(null);
@@ -747,21 +742,23 @@ export default function ViewerPage() {
   // 카드는 패널 맨 위에 붙는다 — 리스트를 내려 본 뒤 탭해도 보이도록 스크롤 복귀
   // (데스크톱 우측 패널 + 모바일 시트 섹션, 둘 다 렌더 사본이라 전부 복귀).
   useEffect(() => {
-    if (!selectedToken || !isSheetOpen) return;
-    for (const el of document.querySelectorAll('.viewer-side--right, .viewer-sheet__sections')) el.scrollTop = 0;
+    if (!selectedTokenRef.current || !isSheetOpen) return;
+    for (const el of document.querySelectorAll('.viewer-inspector .reader-card-body')) el.scrollTop = 0;
     const frame = requestAnimationFrame(() => {
       for (const card of document.querySelectorAll('.word-detail-card')) {
         if (card.getClientRects().length) { card.focus({ preventScroll: true }); break; }
       }
     });
     return () => cancelAnimationFrame(frame);
-  }, [selectedToken, isSheetOpen]);
+  }, [selectedToken?.id, selectedToken?.text, isSheetOpen]);
 
   // ⑤ 유의어·반의어(오너 승인) — 카드가 열리면 자동 조회. 내용어만(synAntEligible),
   // localStorage 캐시라 단어당 1회 초소형 호출. 늦게 온 응답이 다른 단어에 붙지 않게 가드.
+  const [synAntExpanded,setSynAntExpanded]=useState(false);
+  useEffect(()=>setSynAntExpanded(false),[selectedToken?.id,selectedToken?.text]);
   const [synAnt, setSynAnt] = useState(null);
   useEffect(() => {
-    if (!selectedToken || !isSheetOpen || !synAntEligible(selectedToken, materialLang)) {
+    if (!selectedToken || !isSheetOpen || !synAntExpanded || !synAntEligible(selectedToken, materialLang)) {
       setSynAnt(null);
       return undefined;
     }
@@ -771,7 +768,7 @@ export default function ViewerPage() {
       .then((r) => { if (alive) setSynAnt({ loading: false, ...r }); })
       .catch(() => { if (alive) setSynAnt(null); });
     return () => { alive = false; };
-  }, [selectedToken, isSheetOpen, materialLang]);
+  }, [selectedToken, isSheetOpen, materialLang, synAntExpanded]);
 
   // 문맥 설명 R1(오너 승인 — 버튼형+suspect): 탭 단어의 "이 문장에서" 설명. 카드 즉답을
   // 막지 않는 지연 로드 — [이 문장에서는?]을 눌렀을 때만 /api/explain token 분기 호출.
@@ -808,7 +805,7 @@ export default function ViewerPage() {
   useEffect(() => {
     const svg = sepArcRef.current;
     if (svg) svg.innerHTML = '';
-    const tok = selectedToken;
+    const tok = selectedTokenRef.current;
     // 이합사 O 조각은 sep_link(VO)를 들고 온다 — 歉을 눌러도 道로 호를 긋는다(2026-09-02 오너 보고).
     const base = tok?.sep_link || tok?.base_form;
     if (materialLang !== 'Chinese' || !tok?.id || !base || base === tok.text || [...base].length !== 2) {
@@ -832,9 +829,11 @@ export default function ViewerPage() {
       const s = el.querySelector('.surface');
       if (!s) return null;
       const r = s.getBoundingClientRect();
-      const fs = parseFloat(getComputedStyle(s).fontSize) || 16;
-      // 잉크 상단 = 밴드 상단(--hl-band-top = 0.58em) — 밴드 계약과 같은 좌표계
-      return { x: r.left - areaRect.left + r.width / 2, y: r.top - areaRect.top + 0.58 * fs };
+      const textNode=[...s.childNodes].find(n=>n.nodeType===Node.TEXT_NODE) || s.querySelector('ruby')?.firstChild;
+      const range=document.createRange();
+      if(textNode)range.selectNodeContents(textNode);
+      const ink=textNode?range.getBoundingClientRect():r;
+      return { x: r.left - areaRect.left + r.width / 2, y: ink.top - areaRect.top };
     };
     const a = inkTop(anchorEl);
     const b = inkTop(partnerEl);
@@ -850,7 +849,7 @@ export default function ViewerPage() {
       path.style.transition = 'stroke-dashoffset 0.5s ease-out';
       requestAnimationFrame(() => requestAnimationFrame(() => { path.style.strokeDashoffset = '0'; }));
     }
-  }, [selectedToken?.id, selectedToken?.text, selectedToken?.base_form, selectedToken?.sep_link, materialLang]);
+  }, [selectedToken?.id, selectedToken?.text, selectedToken?.base_form, selectedToken?.sep_link, materialLang, layoutVersion, fontSize, charGap, lineGap, pinyinCell, fontFamily, fontStatus, readerRef, tokenRefs]);
 
   // 왼쪽 패널: 번역 + 맥락
   const [leftPanelText, setLeftPanelText] = useState('');
@@ -931,13 +930,13 @@ export default function ViewerPage() {
   const [pickedLineIdx, setPickedLineIdx] = useState(null);
   // 받아쓰기 패널(목업 ① — #1077-6): 지정 문장 대상, 열림 동안 원문 가림은 패널 몫
   // 받아쓰기 — 대상 문장 하나를 상태로 든다(지정 문장 🎧 · 추천 고르기 두 경로가 같은 패널로 모임).
-  const [dictationSentence, setDictationSentence] = useState(null);
-  const [dictationPickerOpen, setDictationPickerOpen] = useState(false);
+
+
 
   // 리딩 테스트
-  const [showReadingTest, setShowReadingTest] = useState(false);
+
   // 회화 연습
-  const [showConversation, setShowConversation] = useState(false);
+
 
   // 인앱 토큰 범위 지정 — 네이티브 선택 대체(앱 전역 무선택 정책). 데스크톱 즉시 드래그,
   // 모바일 길게 누르기(300ms) 후 드래그. 확정 시 기존 분석 파이프라인에 그대로 투입하고,
@@ -1032,9 +1031,14 @@ export default function ViewerPage() {
     if (focusMode) clearAnalysisPanels();
     else runSelectionAnalysis(target.text);
     const el = tokenRefs.current[target.firstTokenId];
-    if (el?.scrollIntoView) {
+    if (el) {
       const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-      el.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+      requestAnimationFrame(()=>{
+        if(!el.isConnected)return;
+        const bounds=readerVisibleBounds(readerRef.current),rect=el.getBoundingClientRect();
+        const top=bounds.top+Math.max(0,(bounds.bottom-bounds.top-rect.height)/3);
+        window.scrollBy({top:rect.top-top,behavior:reduce?'instant':'smooth'});
+      });
     }
   };
 
@@ -1064,12 +1068,37 @@ export default function ViewerPage() {
   // 여기에 훈련 사다리(1.05^step)를 곱한 것이 실제 목표다(설계 §9). 바탕과 사다리를
   // 분리해 두어야 "실력이 올라서"인지 "훈련을 밀어서"인지 구분된다.
   const paceTargetCpm = ladderTargetCpm(paceBaseCpm, paceStep) || paceBaseCpm;
-  const paceArmed = autoPace && focusMode && pickedSentence !== null;
+  const [background,setBackground]=useState(false);
+  useEffect(()=>{const update=()=>setBackground(document.hidden);document.addEventListener('visibilitychange',update);update();return ()=>document.removeEventListener('visibilitychange',update);},[]);
+  const modalBlocked=!!activeModal||!!reanalyzePanel||!!quizState||!!completionModal;
+  const selectionToReveal = tokenRange.range
+    ? material?.processed_json?.sequence?.[tokenRange.range.start]
+    : isSheetOpen ? selectedToken?.id : undefined;
+  useSelectedTokenVisibility(readerRef, tokenRefs, selectionToReveal, inspectorOpen && !modalBlocked && !tokenRange.dragging, material?.processed_json);
+  const closeReadingSettings = () => {
+    // Once the inspector returns, the selected source owns the visible position.
+    // A still-live Aa anchor must not scroll it back underneath the panel.
+    if (selectionToReveal && inspectorOpen) cancelReadingPosition();
+    setSettingsOpen(false);
+  };
+  useEffect(()=>{if(!autoPace||!focusMode||pickedLineIdx===null)setPaceRunning(false);},[autoPace,focusMode,pickedLineIdx]);
+  useEffect(()=>{
+    const stopOnScroll=e=>{if(tokenRange.dragging||e.target?.closest?.('.reader-modal,.viewer-inspector'))return;setPaceRunning(false);};
+    window.addEventListener('wheel',stopOnScroll,{passive:true});window.addEventListener('touchmove',stopOnScroll,{passive:true});
+    return ()=>{window.removeEventListener('wheel',stopOnScroll);window.removeEventListener('touchmove',stopOnScroll);};
+  },[tokenRange.dragging]);
+  const startPacer=()=>{
+    const bounds=readerVisibleBounds(readerRef.current);
+    const visible=sentences.find(sentence=>{const r=tokenRefs.current[sentence.firstTokenId]?.getBoundingClientRect();return r&&r.bottom>bounds.top&&r.top<bounds.bottom;});
+    const target=pickedSentence||visible||sentences[0];if(!target)return;
+    setFocusMode(true);setPickedLineIdx(target.rawIdx);setPaceRunning(true);
+  };
+  const paceArmed = paceRunning && autoPace && focusMode && pickedSentence !== null;
   const paceDwell = paceArmed
     ? dwellMs({ chars: countReadableChars(pickedSentence.text), targetCpm: paceTargetCpm })
     : null;
   // 카드·시트 열림 = 찾아보는 중 — 진행도 측정도 함께 멈춘다(I-a와 같은 신호).
-  const paceHeld = isSheetOpen || !!selectedToken;
+  const paceHeld = inspectorOpen || isSheetOpen || modalBlocked || tokenRange.dragging || background;
 
   useReadingPacer({
     enabled: paceArmed,
@@ -1078,7 +1107,7 @@ export default function ViewerPage() {
     cursor: pickedLineIdx,
     onAdvance: () => {
       // 마지막 문장이면 자동 종료 — 넘길 곳이 없으면 paced 표식도 남기지 않는다.
-      if (!adjacentSentence(sentences, pickedLineIdx, 1)) return;
+      if (!adjacentSentence(sentences, pickedLineIdx, 1)) { setPaceRunning(false); return; }
       pacedRef.current = true;
       moveSentence(1);
     },
@@ -1423,11 +1452,16 @@ export default function ViewerPage() {
     import('../lib/data/hanjaHun.json')
       .then((m) => { if (alive) setHanjaHunTable(m.default || m); })
       .catch(() => {});
-    import('../lib/data/hanjaJa.json')
-      .then((m) => { if (alive) setHanjaJaTable(m.default || m); })
-      .catch(() => {});
+
     return () => { alive = false; };
   }, [showHanjaKo, materialLang, hanjaKoTable, inspectChar]);
+  const [jaFormError,setJaFormError] = useState(false);
+  useEffect(() => {
+    if (hanjaJaTable || !((materialLang === 'Chinese' && isSheetOpen) || inspectChar)) return undefined;
+    let alive = true;
+    import('../lib/data/hanjaJa.json').then(m => {if(alive){setHanjaJaTable(m.default||m);setJaFormError(false);}}).catch(()=>{if(alive)setJaFormError(true);});
+    return ()=>{alive=false;};
+  }, [materialLang,isSheetOpen,inspectChar,hanjaJaTable]);
   // 자원 테이블(증강 R2·R3 — 획수·부수·1단 분해·간번체, 563KB)과 구성 풀이 스토리
   // (R4 — 최빈 시드 저작분)는 글자 카드가 실제로 열릴 때만 지연 로드 — 한자 대조
   // 토글만으로는 안 부른다(단어 줄엔 자원이 안 쓰인다).
@@ -1449,9 +1483,6 @@ export default function ViewerPage() {
       ? listHanjaHunEum(text, hanjaKoTable, hanjaHunTable)
       : null
   );
-  // 일본식 자형(오너 확정: 간체보다 익숙한 신자체 단독 표기 — 본문 간체가 헤더에 있어 병기 불요)
-  const jaFormOf = (text) => toJaForm(text, hanjaJaTable);
-
   // 우리 사전(레퍼런스 어휘) 연동(②) — 급수 뱃지 + 정본 뜻·예문·한자 노트 자동 표시
   // 어휘 키 — 이합사 O 조각(sep_link)은 VO로 조회·저장·표시한다. base_form은 만남 기록 전용으로 남긴다.
   const selectedLexKey = selectedToken?.sep_link || selectedToken?.base_form;
@@ -1461,27 +1492,28 @@ export default function ViewerPage() {
   const referenceMatches = referenceMatchesContext(selectedToken, refVocab?.word);
 
   // 뜻·발음 수동 편집(링큐식) — 자료 소유자만(materials update RLS가 소유자 한정).
-  // 같은 사전 행을 한자 대조(ja 대응 표시)도 쓰므로, 편집 중이거나 대조 토글이 켜져 있으면 조회.
+  // 중국어 카드에서는 현재 뜻에 맞는 일본어 대응을 함께 조회한다. 한자 훈음 토글과 독립적이다.
   const [isEditingToken, setIsEditingToken] = useState(false);
   // 편집 중 다른 토큰을 탭하면 편집을 닫는다 — 이전 단어의 편집 상태가 새 단어로
   // 이어지는 혼선 차단(마감 ③). 같은 토큰의 교정 반영(id 불변)에는 발화하지 않는다.
   useEffect(() => { setIsEditingToken(false); }, [selectedToken?.id]);
   const canEditToken = !!user?.id && user.id === material?.owner_id;
-  const { data: editDictEntry, isFetched: dictFetched } = useQuery({
-    queryKey: ['token-dict', materialLang, selectedLexKey],
+  const selectedDictKey=selectedLexKey||selectedToken?.text;
+  const { data: editDictEntry, isFetched: dictFetched, isError: dictError } = useQuery({
+    queryKey: ['token-dict', materialLang, selectedDictKey],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('morpheme_dictionary')
         .select('meanings, reading, pos')
         .eq('language', materialLang)
-        .eq('base_form', selectedLexKey)
+        .eq('base_form', selectedDictKey)
         .maybeSingle();
       if (error) throw error;
       return data;
     },
     // R R2: 표제어가 기본형(이합사 VO·활용형 사전형)이면 그 읽기를 사전 reading에서 가져온다 —
     // 조각의 furigana에는 자기 글자 읽기뿐(dào)이라 기본형 전체 읽기의 정본은 사전 행이다.
-    enabled: (isEditingToken || (showHanjaKo && materialLang === 'Chinese') || (!!selectedToken && selectedLexKey !== selectedToken.text)) && !!selectedLexKey,
+    enabled: (isEditingToken || (isSheetOpen && materialLang === 'Chinese') || (!!selectedToken && !!selectedLexKey && selectedLexKey !== selectedToken.text)) && !!selectedDictKey,
     staleTime: 1000 * 60,
   });
   // R R2 표제어 — 표면 ≠ 기본형(이합사 조각 道→道歉·歉→道歉, 활용형 食べた→食べる)이면 카드
@@ -1706,6 +1738,28 @@ export default function ViewerPage() {
   }
 
   const json = material?.processed_json || { sequence: [], dictionary: {} };
+  // The body and Aa preview read the same existing learning records. The preview
+  // has no token identifiers or handlers, so it cannot record an encounter/read.
+  function tokenDisplayState(token) {
+    const isSaved = isTokenSaved(savedWords, token);
+    const isDue = isSaved && isTokenDue(savedWords, token);
+    const isKnown = (wordStateHl || pronDisplay === 'unknown') && !!(knownWordSet?.has(token.text) || (token.base_form && knownWordSet?.has(token.base_form)));
+    const highlight = wordStateHl ? wordStateExtraClass(wordStateOf({
+      isWord: isWordToken(token), isSaved, isDue, isKnown,
+      isMet: !!(metCode && (metWordSet.has(normalizeRefWordKey(metCode, token.base_form)) || metWordSet.has(normalizeRefWordKey(metCode, token.text)) || metWordSet.has(normalizeRefWordKey(metCode, metMainByText.get(token.text))))),
+    })) : '';
+    return {isSaved, isDue, isKnown, highlight};
+  }
+  const previewTokens = settingsOpen ? (() => {
+    const rangeStart = tokenRange.range ? json.sequence[tokenRange.range.start] : null;
+    const line = pickedLineIdx ?? Number((rangeStart || selectedToken?.id || json.sequence[0])?.split('_')[1] || 0);
+    return json.sequence.filter(key => key.startsWith(`id_${line}_`)).flatMap(key => {
+      const token = json.dictionary[key];
+      if (!token || token.pos === '개행') return [];
+      const state = tokenDisplayState(token);
+      return [{...token, previewSaved:state.isSaved, previewDue:state.isDue, previewKnown:state.isKnown, previewHighlight:state.highlight, previewPicked:pickedLineIdx === line || !!tokenRange.rangeTokenIds?.has(key)}];
+    });
+  })() : [];
   const status = material?.status || material?.processed_json?.status;
   const isAnalyzing = status === 'analyzing' || reanalyzeMutation.isPending;
   const isPending = !isAnalyzing && (status === 'pending' || status === 'saved'); // 책 챕터 미분석 — 원문 열람 가능, 분석은 온디맨드
@@ -1794,23 +1848,18 @@ export default function ViewerPage() {
   );
 
   const wordDetailCard = !selectedToken || !isSheetOpen ? null : (
-    <div tabIndex={-1} className={`word-detail-card${dragTokens !== null ? ' word-detail-card--above-list' : ''}`}>
-      {/* 이 줄은 **왼쪽이 통째로 비어** 있고 우측에만 ▷ ✕가 떠 있었다(시트 핸들 바로 아래라
-          소속도 모호했다). 단어와 뜻 사이에 끼어 둘의 연결을 끊던 메타(품사·급수)를 그 빈
-          자리로 옮긴다 — 줄 하나를 회수하고 **단어 → 뜻이 직결**된다(오너 배치안). */}
+    <div key={selectedToken.id||selectedToken.text} tabIndex={-1} className={`word-detail-card${dragTokens !== null ? ' word-detail-card--above-list' : ''}`}>
+      <div className="reader-card-body">
       <div className="word-detail-card__actions">
         <div className="word-detail-card__meta">
           <TokenPosLabel token={selectedToken} />
           {/* 기본형은 표제어가 보여 준다(R R2) — 「품사 · 기본형」이 겸류 구분자와 같은 모양이라
               품사 오염으로 읽히던 중의성 소멸. 사전 읽기가 없어 표제어가 폴백일 때만 라벨 텍스트. */}
-          {headFallback && <span className="word-detail-card__base">기본형 {headText}</span>}
+          {headFallback && <span className="word-detail-card__base">기본형</span>}
           {refVocab && <span className="word-detail-card__level">{refLevelLabel(refVocab.level)}</span>}
         </div>
-        {ttsSupported && (
-          <button className="word-detail-card__speak" onClick={() => speak(headText, materialLang, ttsOptsFor(ttsRate))} aria-label="발음 듣기" title="발음 듣기">▷</button>
-        )}
-        <button className="word-detail-card__close" onClick={closeWordCard} aria-label="단어 상세 닫기" title="닫기">✕</button>
       </div>
+      <div className="reader-card-headword">
       {(() => {
         // ① 폭맞춤 확대(오너 승인): CJK는 1em 격자라 크기 = 100cqi ÷ fitDivisor가 CSS
         // 수식으로 성립(.word-fit — 측정 JS 없음). 라틴 자료는 기존 크기 유지.
@@ -1882,6 +1931,58 @@ export default function ViewerPage() {
           </div>
         );
       })()}
+      {ttsSupported && <button className="word-detail-card__speak" onClick={() => speak(headText, materialLang, ttsOptsFor(ttsRate))} aria-label="발음 듣기" title="발음 듣기">▷</button>}
+      </div>
+      <div className={`word-detail-card__meaningrow${materialLang === 'English' && selectedToken.reading ? ' word-detail-card__meaningrow--tight' : ''}`}>
+        <div className="word-detail-card__meaning">
+          {refMeaning || selectedToken.meaning || '(뜻 없음)'}
+        </div>
+        {/* 리스트 단어는 자료 토큰이 아니라(id 없음) 이 자료의 교정 대상이 될 수 없다 */}
+        {canEditToken && selectedToken.id && (
+          <button
+            onClick={() => setIsEditingToken(v => !v)}
+            aria-label="뜻·발음 수정"
+            title="뜻·발음 수정"
+            className={`word-detail-card__edit${isEditingToken ? ' is-on' : ''}`}
+          ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m16 3 5 5M4 15 16 3a2 2 0 0 1 3 0l2 2a2 2 0 0 1 0 3L9 20l-6 1 1-6Z"/></svg></button>
+        )}
+      </div>
+      {isEditingToken && (
+        <TokenEditPanel
+          key={selectedToken.id} // 토큰 전환 시 리마운트 — 이전 단어 입력값이 새 토큰에 붙는 것 차단(마감 ③)
+          token={selectedToken}
+          language={materialLang}
+          dictEntry={editDictEntry}
+          saving={correctTokenMutation.isPending}
+          onSave={(corrections, opts) => {
+            // 성공 시에만 닫는다 — 실패 시 패널·입력값 유지(재시도 가능). 전역 승격도
+            // 자료 교정이 실제로 반영된 뒤에만(부분 성공 허용 계약 유지).
+            correctTokenMutation.mutate(
+              { tokenId: selectedToken.id, corrections },
+              {
+                onSuccess: () => {
+                  if (opts?.applyGlobal) promoteCorrection(selectedToken, corrections);
+                  setIsEditingToken(false);
+                },
+              }
+            );
+          }}
+          onClose={() => setIsEditingToken(false)}
+        />
+      )}
+      {materialLang === 'English' && selectedToken.reading && (
+        <div style={{
+          fontSize: '0.88rem',
+          color: 'var(--text-secondary)',
+          fontFamily: 'ui-monospace, "SF Mono", Menlo, monospace',
+          letterSpacing: '0.02em',
+          marginBottom: 14,
+        }}>
+          {selectedToken.reading}
+        </div>
+      )}
+
+      {materialLang === 'Chinese' && <ViewerJapaneseReference key={`${selectedToken.id||selectedToken.text}:${refMeaning||''}`} userId={user?.id} word={headText} meaning={refMeaning||selectedToken.meaning||''} dictEntry={editDictEntry} loading={!dictFetched&&!dictError} dictError={dictError} jaTable={hanjaJaTable} formError={jaFormError}/>}
       {inspectChar && (() => {
         // ④ 글자 카드(증강 R1~R3 — 오너 승인 2026-08-28): 헤더는 자기 완결(훈음·병음·자형 칩),
         // 주인공은 구성(1단 분해 — 성분 탭 = 재귀 탐색)과 다시 만나기(이 자료·내 단어).
@@ -1984,96 +2085,40 @@ export default function ViewerPage() {
           </div>
         );
       })()}
-      {/* 뜻이 카드에서 가장 중요한데 가장 약했다(단어 1.5rem/800 → 뜻 1rem/보통). 한 단계
-          키우고, `✏️`는 뜻이 `flex:1`로 늘어나 넓은 화면에서 멀어지던 것을 **글자 옆에**
-          붙인다(`flex: 0 1 auto` + 줄 자체를 왼쪽 정렬). */}
-      <div className={`word-detail-card__meaningrow${materialLang === 'English' && selectedToken.reading ? ' word-detail-card__meaningrow--tight' : ''}`}>
-        <div className="word-detail-card__meaning">
-          {refMeaning || selectedToken.meaning || '(뜻 없음)'}
-        </div>
-        {/* 리스트 단어는 자료 토큰이 아니라(id 없음) 이 자료의 교정 대상이 될 수 없다 */}
-        {canEditToken && selectedToken.id && (
-          <button
-            onClick={() => setIsEditingToken(v => !v)}
-            aria-label="뜻·발음 수정"
-            title="뜻·발음 수정"
-            className={`word-detail-card__edit${isEditingToken ? ' is-on' : ''}`}
-          >✏️</button>
-        )}
-      </div>
-      {isEditingToken && (
-        <TokenEditPanel
-          key={selectedToken.id} // 토큰 전환 시 리마운트 — 이전 단어 입력값이 새 토큰에 붙는 것 차단(마감 ③)
-          token={selectedToken}
-          language={materialLang}
-          dictEntry={editDictEntry}
-          saving={correctTokenMutation.isPending}
-          onSave={(corrections, opts) => {
-            // 성공 시에만 닫는다 — 실패 시 패널·입력값 유지(재시도 가능). 전역 승격도
-            // 자료 교정이 실제로 반영된 뒤에만(부분 성공 허용 계약 유지).
-            correctTokenMutation.mutate(
-              { tokenId: selectedToken.id, corrections },
-              {
-                onSuccess: () => {
-                  if (opts?.applyGlobal) promoteCorrection(selectedToken, corrections);
-                  setIsEditingToken(false);
-                },
-              }
-            );
-          }}
-          onClose={() => setIsEditingToken(false)}
-        />
-      )}
-      {materialLang === 'English' && selectedToken.reading && (
-        <div style={{
-          fontSize: '0.88rem',
-          color: 'var(--text-secondary)',
-          fontFamily: 'ui-monospace, "SF Mono", Menlo, monospace',
-          letterSpacing: '0.02em',
-          marginBottom: 14,
-        }}>
-          {selectedToken.reading}
-        </div>
-      )}
-
-      {/* 한자 대조 블록(배치 개선 — 뜻 아래 보조 위치): 훈음 줄은 일본식 자형 단독(오너
-          확정 — 본문 간체가 헤더에 있어 병기 불요), 글자 그룹 단위 줄바꿈. 日 줄은 어형이
-          글자 나열과 같으면 요미만(#1041 원리의 단어판), ⚠ 경고는 日 줄에 통합. */}
-      {(() => {
-        const ja = materialLang === 'Chinese' && showHanjaKo ? getJaRef(editDictEntry) : null;
-        const jr = ja ? formatJaRef(ja, headText, jaFormOf(headText)) : null;
-        // ≒(다른 단어)는 부제로 — 「日」 라벨 옆 기호 하나로는 뜻이 안 읽힌다(R R2 ③). jaRef.js 불변.
-        const jrDiff = !!jr && jr.startsWith('≒');
-        const jrText = jrDiff ? jr.slice(1) : jr;
-        const warn = getJaWarn(ja);
-        // 훈음 나열 줄은 폐지했다(v2-S) — 헤더에 `杯子`가 이미 있는데 여기서 글자를 **다시
-        // 그리고** 있었다. 훈음은 표제어 글자 **아래 루비**로 옮겼고(세로 증가 0, 놀던
-        // 아래 여백을 쓴다) 이 줄이 사라지면서 줄 하나가 더 회수된다.
-        // ※ 日 자형 줄과 ⚠ 경고는 남긴다 — 훈음만 뽑아냈다.
-        if (!jr && !warn) return null;
-        return (
-          <div style={{ fontSize: '0.82rem', marginBottom: 12 }}>
-            {(jr || warn) && (
-              <div style={{ color: 'var(--text-muted)' }}>
-                日{' '}
-                {jr && <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{jrText}</span>}
-                {jrDiff && <span className="word-detail-card__jadiff">≠ 다른 단어</span>}
-                {warn && (
-                  <span style={{ color: 'var(--warning)', fontWeight: 600, marginLeft: jr ? 6 : 0 }}>
-                    ⚠ {jaFormOf(headText)}는 일본어로 &apos;{warn}&apos;
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-        );
+      {ctxSentenceOf(selectedToken)&&<details className="reader-card-context" key={`context:${selectedToken.id||selectedToken.text}`}>
+        <summary>문장 속 쓰임</summary>
+        <section className="reader-card-source"><blockquote lang={contentLangTag}>{(()=>{const {parts,term}=splitSentenceAroundWord(ctxSentenceOf(selectedToken),selectedToken.text,null);return parts.map((part,i)=><span key={i}>{part}{i<parts.length-1&&<mark>{term}</mark>}</span>);})()}</blockquote></section>
+      {/* 문맥 설명 R1 — zh부터(프롬프트 검증 언어), 본문 탭 토큰만(문장 유도 가능할 때).
+          즉답 카드는 그대로, 설명은 버튼을 눌러야 온다(스킴 탭 헛호출 0). */}
+      {materialLang === 'Chinese' && (() => {
+        const ctxSentence = ctxSentenceOf(selectedToken);
+        if (!ctxSentence) return null;
+        if (ctxExplain?.loading) {
+          return <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 12 }}>문장 속 쓰임을 읽는 중...</div>;
+        }
+        if (ctxExplain?.text) {
+          return (
+            <div style={{ fontSize: '0.84rem', lineHeight: 1.55, marginBottom: 12 }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 2 }}>이 문장에서</div>
+              <div style={{ color: 'var(--text-secondary)' }}>{ctxExplain.text}</div>
+            </div>
+          );
+        }
+        return null; // 버튼은 아래 액션 줄로(R R2 ④ — 2열 접기)
       })()}
 
+        <div className="word-detail-card__actrow">
+          <button className="btn btn--ghost btn--sm" onClick={()=>runSelectionAnalysis(ctxSentenceOf(selectedToken))}>문장 번역</button>
+          {materialLang === 'Chinese'&&!ctxExplain?.loading&&!ctxExplain?.text&&<button className="btn btn--ghost btn--sm" onClick={()=>runCtxExplain(selectedToken,ctxSentenceOf(selectedToken))}>{ctxExplain?.error?'이 문장에서는? (다시 시도)':'이 문장에서는?'}</button>}
+        </div>
+      </details>}
+      <details className="reader-card-more" key={`more:${selectedToken.id||selectedToken.text}`}>
+        <summary>예문·관련 표현</summary>
       {/* 정본 예문·한자 노트(② — 오너 피드백로 박스 해체): 뜻은 위 뜻 자리가 대체 표시,
           pos는 TokenPosLabel·병음은 헤더와 중복이라 생략. 예문만 새 정보라 자연 배치,
           한자 노트는 한자 대조 토글(훈음 나열)과 겹치므로 토글 꺼짐일 때만. */}
       {refVocab?.word?.ex && (
-        <details key={`${selectedToken.id || selectedToken.text}:${referenceMatches}`} open={referenceMatches || undefined}>
+        <details key={`example:${selectedToken.id || selectedToken.text}`} >
           <summary>{referenceMatches ? '사전 예문' : `사전의 다른 뜻 · ${refVocab.word.ko || '뜻 확인'}`}</summary>
         {/* 예문 → 병음 → 뜻 */}
         <div style={{ fontSize: '0.84rem', lineHeight: 1.55, marginBottom: 12 }}>
@@ -2094,52 +2139,18 @@ export default function ViewerPage() {
       )}
       {/* ⑤ 유의어·반의어 — 예문 뒤(오너 확정 순서 R R2: 뜻 → 日 → 예문 → 유의어 → 한자).
           라벨은 칩 컨테이너의 **형제 캡션** — 인라인 라벨은 둘째 줄부터 들여쓰기가 어긋났다. */}
-      {synAnt && !synAnt.loading && (synAnt.syn.length > 0 || synAnt.ant.length > 0) && (
-        <div className="syn-ant">
-          {synAnt.syn.length > 0 && (
-            <div className="syn-ant__row">
-              <span className="syn-ant__label">유의어</span>
-              <div className="syn-ant__chips">{renderSynAntChips(synAnt.syn)}</div>
-            </div>
-          )}
-          {synAnt.ant.length > 0 && (
-            <div className="syn-ant__row">
-              <span className="syn-ant__label">반의어</span>
-              <div className="syn-ant__chips">{renderSynAntChips(synAnt.ant)}</div>
-            </div>
-          )}
-        </div>
-      )}
+      {synAntEligible(selectedToken,materialLang)&&<details key={`syn:${selectedToken.id||selectedToken.text}`} onToggle={e=>setSynAntExpanded(e.currentTarget.open)}><summary>유의어·반의어</summary>
+        {synAnt?.loading?<p role="status">불러오는 중…</p>:synAnt?<div className="syn-ant"><div className="syn-ant__row"><span>유의어</span>{renderSynAntChips(synAnt.syn)}</div><div className="syn-ant__row"><span>반의어</span>{renderSynAntChips(synAnt.ant)}</div>{!synAnt.syn.length&&!synAnt.ant.length&&<p>표시할 항목이 없어요.</p>}</div>:<p>불러오지 못했어요. 접었다 다시 열어 주세요.</p>}
+      </details>}
       {refVocab?.word?.hanja && !showHanjaKo && (
-        <div style={{ fontSize: '0.76rem', color: 'var(--accent-text)', marginBottom: 12 }}>
-          한자 · {refVocab.word.hanja}
-        </div>
+        <details key={`hanja:${selectedToken.id||selectedToken.text}`}><summary>한자 정보</summary><p>{refVocab.word.hanja}</p></details>
       )}
 
       {/* 문형 카드(v2-G R1) — 탭한 단어가 표지일 때만. 챕터 → 자료 역방향을 여는 자리라
           단어 카드 안에 얹는다(새 상호작용을 만들면 단어 탭과 경합한다). */}
       {selectedToken?.id && visibleScan?.byToken.get(selectedToken.id) && (
-        <PatternCard hit={visibleScan.byToken.get(selectedToken.id)} dueSlugs={dueSlugs} weakSlugs={weakSlugs} />
+        <details key={`pattern:${selectedToken.id}`}><summary>관련 문형 후보</summary><PatternCard hit={visibleScan.byToken.get(selectedToken.id)} dueSlugs={dueSlugs} weakSlugs={weakSlugs} /></details>
       )}
-
-      {/* 문맥 설명 R1 — zh부터(프롬프트 검증 언어), 본문 탭 토큰만(문장 유도 가능할 때).
-          즉답 카드는 그대로, 설명은 버튼을 눌러야 온다(스킴 탭 헛호출 0). */}
-      {materialLang === 'Chinese' && (() => {
-        const ctxSentence = ctxSentenceOf(selectedToken);
-        if (!ctxSentence) return null;
-        if (ctxExplain?.loading) {
-          return <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 12 }}>문장 속 쓰임을 읽는 중...</div>;
-        }
-        if (ctxExplain?.text) {
-          return (
-            <div style={{ fontSize: '0.84rem', lineHeight: 1.55, marginBottom: 12 }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 2 }}>이 문장에서</div>
-              <div style={{ color: 'var(--text-secondary)' }}>{ctxExplain.text}</div>
-            </div>
-          );
-        }
-        return null; // 버튼은 아래 액션 줄로(R R2 ④ — 2열 접기)
-      })()}
 
       {wordDetail?.loading ? (
         <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 12 }}>상세 설명 생성 중...</div>
@@ -2149,22 +2160,11 @@ export default function ViewerPage() {
           <div className="pdf-detail-popup__text" dangerouslySetInnerHTML={{ __html: formatDetail(wordDetail.detail) }} />
         </div>
       ) : null}
-      {/* 액션 접기(R R2 ④): 전폭 4단 → 2단. 1줄 = [이 문장에서는? | 상세 설명], 2줄 = [저장 | 이미 알아요].
-          로딩·결과 텍스트는 위 블록에 남고 버튼만 줄에 든다. W R1이 오면 2줄이 4등급 그리드로 교체. */}
-      {(() => {
-        const ctxSentence = materialLang === 'Chinese' ? ctxSentenceOf(selectedToken) : null;
-        const ctxBtn = ctxSentence && !ctxExplain?.loading && !ctxExplain?.text ? (
-          <button onClick={() => runCtxExplain(selectedToken, ctxSentence)} className="btn btn--ghost btn--sm">
-            {ctxExplain?.error ? '이 문장에서는? (다시 시도)' : '이 문장에서는?'}
-          </button>
-        ) : null;
-        const detailBtn = !wordDetail?.loading && !wordDetail?.detail ? (
-          <button onClick={() => fetchWordDetail(selectedToken)} className="btn btn--ghost btn--sm">상세 설명 보기</button>
-        ) : null;
-        if (!ctxBtn && !detailBtn) return null;
-        return <div className="word-detail-card__actrow">{ctxBtn}{detailBtn}</div>;
-      })()}
+      {!wordDetail?.loading && !wordDetail?.detail && <button onClick={() => fetchWordDetail(selectedToken)} className="btn btn--ghost btn--sm">상세 설명 보기</button>}
+      </details>
 
+      </div>
+      <div className="reader-card-actions">
       {user && findSavedVocab(savedWords, selectedToken) && isTokenDue(savedWords, selectedToken) && (
         // W R3㉮ — 척도를 정본에 맞춘다: 모름/애매/알아=1/2/3(Easy 없음)이 아니라 복습 화면과 같은 4등급.
         // 라벨·순서·클래스 = SAVE_GRADES(복습 화면 ScoreSection과 동일 계약). 키 1~4·⌘Z는 카드 리스너.
@@ -2195,6 +2195,7 @@ export default function ViewerPage() {
         // 단어 목록 ✓(saveInlineVocabulary)가 그대로 맡는다.
         const isKnown = knownWordSet?.has(selectedToken.text)
           || (selectedLexKey && knownWordSet?.has(selectedLexKey));
+        if (isWordSaved && isTokenDue(savedWords,selectedToken)) return null;
         if (saveAnim || isWordSaved) {
           return (
             <div className="word-detail-card__actrow">
@@ -2206,7 +2207,7 @@ export default function ViewerPage() {
         }
         return (
           <>
-            <p className="save-grade__guide">얼마나 알겠어요?</p>
+            <p className="save-grade__guide">새 단어 저장 · 얼마나 알겠어요?</p>
             <div className="review-score-grid save-grade">
               {SAVE_GRADES.map((g) => (
                 <button
@@ -2237,6 +2238,7 @@ export default function ViewerPage() {
           </>
         );
       })()}
+      </div>
     </div>
   );
 
@@ -2359,17 +2361,16 @@ export default function ViewerPage() {
   return (
     // --dragging: 지정 드래그 중 바텀시트 포인터 투과 — 시트가 드래그 도중 자라
     // 경로를 덮어도 elementFromPoint가 밑의 토큰을 잡는다(useTokenRangeSelect 참조)
-    <div className={`viewer-3col viewer-theme-${theme}${tokenRange.dragging ? ' viewer-3col--dragging' : ''}`}
+    <div className={`viewer-3col viewer-layout viewer-theme-${theme}${tokenRange.dragging ? ' viewer-3col--dragging' : ''}`}
+      style={{...textbookThemeStyle(materialLang),'--reader-font':readerFontFamily(materialLang,fontFamily),'--pinyin-size':`${pinyinSize}rem`,'--pinyin-cell':`${pinyinCell}px`}}
+      data-reader-theme={theme} data-language={materialLang} data-inspector-open={inspectorOpen&&!modalBlocked}
+      data-pron-spacing={materialLang==='Chinese'&&(pronDisplay!=='none'||pronReveal)?'reserved':'natural'}
       data-left-active={!!(leftPanelLoading || leftPanelResult)}
       data-right-active={!!(dragTokens !== null || (selectedToken && isSheetOpen))}>
 
-      {/* 왼쪽 — 문법 해설 / 맥락 */}
-      <aside className="viewer-side viewer-side--left">
-        {leftPanelContent}
-      </aside>
-
       {/* 중앙 — 뷰어 본문 */}
-      <div className="viewer-center">
+      {materialLang==='Chinese'&&fontFamily==='serif'&&<ChineseSerif rootRef={readerRef} onStatus={setFontStatus}/>}
+      <div className="viewer-center" inert={dictationPickerOpen||!!dictationSentence?true:undefined} aria-hidden={dictationPickerOpen||!!dictationSentence?true:undefined} data-answer-hidden={dictationPickerOpen||!!dictationSentence}>
       {!user && (
         <div className="viewer-guest-banner">
           <span>단어를 클릭해 뜻을 확인할 수 있어요.</span>
@@ -2379,7 +2380,6 @@ export default function ViewerPage() {
         </div>
       )}
 
-      <header className="page-header viewer-header">
         {/* 경로 줄(뷰어 정돈 A안) — 왼쪽 [← 자료실 · 형제 내비], 오른쪽 [도구]. 본문 위에는 경로·제목·도구만
             남고, 끝의 행동(읽기 완료·오늘 학습·다음 범위)은 본문 **아래**로 갔다(「끝은 끝에」). 예전 액션바는
             폰에서 두 줄(89px)로 꺾였고, 그 위에 뒤로가기 줄·시리즈 내비 줄이 따로 있었다. */}
@@ -2409,12 +2409,16 @@ export default function ViewerPage() {
                 분석 중단
               </button>
             )}
-            <ListenControls text={material?.raw_text} language={materialLang} />
+            <ListenControls text={material?.raw_text} language={materialLang} stopSignal={activeModal?.kind} playbackRate={TTS_RATES[ttsRate].web} />
             <button ref={settingsTrigger} className="viewer-aa" aria-label="읽기 설정" aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
               Aa
             </button>
+            <button className="viewer-aa" aria-haspopup="dialog" onClick={()=>changeModal('activities',true)}>학습</button>
+            {user?.id===material?.owner_id&&!passageOf(material)&&!isAnalyzing&&<button className="viewer-aa" aria-label="자료 관리" aria-haspopup="dialog" onClick={()=>{setActiveModal(null);setReanalyzePanel('menu');}}>⋯</button>}
+            {autoPace&&<button className="viewer-pace-toggle" aria-pressed={paceRunning} onClick={()=>paceRunning?setPaceRunning(false):startPacer()}>{paceRunning?(paceHeld?'자동 진행 대기 · 중지':'자동 진행 중지'):'자동 진행 시작'}</button>}
           </div>
         </div>
+      <header className="page-header viewer-header">
         <p className="reader-metadata">{langNameKo(materialLang)}{material?.processed_json?.metadata?.level ? ` · ${material.processed_json.metadata.level}` : ''} · {material.visibility === 'public' ? '공개 읽기' : '내 자료'}</p>
         {composerOf(material) && <p className="reader-metadata">{passageOf(material)?`${passageLocation(passageOf(material))}에서 고른 학습 구간이에요. 원본은 위의 링크에서 열 수 있어요.`:'학습에 사용한 본문이에요. 현재 글은 위의 링크에서 열 수 있어요.'}</p>}
         {titleEditing && user?.id === material?.owner_id && !composerOf(material) ? (
@@ -2520,258 +2524,11 @@ export default function ViewerPage() {
 
       {/* (액션바 자리) — 도구는 경로 줄 오른쪽으로, 행동은 본문 아래 「다 읽었다면」으로 갔다(뷰어 정돈 A안). */}
 
-      {/* 읽기 설정 시트 — backdrop 무광(본문이 곧 미리보기 — 어둡게 덮지 않는다, 시연 합의).
-          행 문법 통일: [2자 라벨][컨트롤]. 프리셋 줄이 최상단(표시 4키만 대입, 조판 불가침). */}
-      {settingsOpen && (
-        <>
-          <div className="rsheet-backdrop" onClick={() => setSettingsOpen(false)} />
-          <dialog ref={settingsDialog} className="rsheet" aria-label="읽기 설정"
-            onCancel={e => { e.preventDefault(); setSettingsOpen(false); }}
-            onKeyDown={e => e.stopPropagation()}
-            onClick={e => {
-              if (e.target !== e.currentTarget) return;
-              const rect = e.currentTarget.getBoundingClientRect();
-              if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) setSettingsOpen(false);
-            }}>
-            <button autoFocus className="rsheet__grab" aria-label="설정 닫기" onClick={() => setSettingsOpen(false)}><i /></button>
-            <div className="rsheet__body">
-              <div className="rsheet__sec">읽기 모드</div>
-              <div className="rsheet-presets">
-                {PRESET_META.map(m => (
-                  <button
-                    key={m.key}
-                    className={`rsheet-pcard${presetActive(m.key, settings) ? ' rsheet-pcard--on' : ''}`}
-                    aria-pressed={presetActive(m.key, settings)}
-                    onClick={() => keepReadingPosition(() => applyPreset(m.key))}
-                  >
-                    <i>{m.icon}</i><b>{m.name}</b><span>{m.desc}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* 탭 3분할(B안 — 오너 전환 지시 2026-08-28): 프리셋 줄은 탭 무관 상단 고정.
-                  탭명이 '글자'이므로 크기 행 라벨은 '크기'(중복 해소 — 오너 문구 지시). */}
-              <div className="rsheet-tabs" role="tablist" aria-label="설정 분류">
-                <button role="tab" aria-selected={sheetTab === 'type'}
-                  className={sheetTab === 'type' ? 'rsheet-tabs__btn--on' : undefined}
-                  onClick={() => setSheetTab('type')}>글자</button>
-                <button role="tab" aria-selected={sheetTab === 'display'}
-                  className={sheetTab === 'display' ? 'rsheet-tabs__btn--on' : undefined}
-                  onClick={() => setSheetTab('display')}>표시</button>
-                {((ttsSupported && sentences.length > 0) || (user?.id === material?.owner_id && !passageOf(material) && !isAnalyzing && !reanalyzeMutation.isPending)) && (
-                  <button role="tab" aria-selected={sheetTab === 'tools'}
-                    className={sheetTab === 'tools' ? 'rsheet-tabs__btn--on' : undefined}
-                    onClick={() => setSheetTab('tools')}>도구</button>
-                )}
-              </div>
-
-              {sheetTab === 'type' && (
-                <div className="rsheet-tabpane" role="tabpanel" aria-label="글자">
-                  <div className="rsheet-row">
-                    <span className="rsheet-row__lab">크기</span>
-                    <input type="range" min="0.8" max="3" step="0.05" value={fontSize} aria-label="글자 크기"
-                      onChange={e => keepReadingPosition(() => setFontSize(parseFloat(e.target.value)))} />
-                  </div>
-                  <div className="rsheet-row">
-                    <span className="rsheet-row__lab">배경</span>
-                    <span className="rsheet-swatches">
-                      {[['light', '밝은 배경'], ['sepia', '세피아 배경'], ['dark', '어두운 배경']].map(([t, label]) => (
-                        <button key={t} onClick={() => setTheme(t)} aria-label={label} aria-pressed={theme === t}
-                          className={`rsheet-sw rsheet-sw--${t}${theme === t ? ' rsheet-sw--on' : ''}`} />
-                      ))}
-                    </span>
-                  </div>
-                  <div className="rsheet-row">
-                    <span className="rsheet-row__lab">폰트</span>
-                    <div className="rsheet-fonts">
-                      {[["'Noto Sans KR'", '본고딕'], ["'Nanum Myeongjo'", '명조'], ['monospace', '고정폭'], ["'Inter'", 'Inter']].map(([value, name]) => (
-                        <button key={value} onClick={() => keepReadingPosition(() => setFontFamily(value))} aria-pressed={fontFamily === value}
-                          className={`rsheet-fcard${fontFamily === value ? ' rsheet-fcard--on' : ''}`}>
-                          <b style={{ fontFamily: value }}>{(materialLang === 'Chinese' ? '你' : materialLang === 'Japanese' ? 'あ' : '') + 'Aa'}</b>
-                          <span>{name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="rsheet-row">
-                    <span className="rsheet-row__lab">행간</span>
-                    <input type="range" min="10" max="60" value={lineGap} aria-label="행간"
-                      onChange={e => keepReadingPosition(() => setLineGap(parseInt(e.target.value)))} />
-                  </div>
-                  <div className="rsheet-row">
-                    <span className="rsheet-row__lab">자간</span>
-                    <input type="range" min="0" max="1" step="0.05" value={charGap} aria-label="자간"
-                      onChange={e => keepReadingPosition(() => setCharGap(parseFloat(e.target.value)))} />
-                  </div>
-                </div>
-              )}
-
-              {sheetTab === 'display' && (
-                <div className="rsheet-tabpane" role="tabpanel" aria-label="표시">
-                  <div className="rsheet-segrow">
-                    <span className="rsheet-txt"><b>발음 표기</b><span>모르는 단어만 = 아는 단어·담은 단어는 가려요</span></span>
-                    <div className="rsheet-miniseg" role="group" aria-label="발음 표기">
-                      {[['all', '전체'], ['unknown', '모르는 단어만'], ['none', '없음']].map(([v, label]) => (
-                        <button key={v} aria-pressed={pronDisplay === v}
-                          className={pronDisplay === v ? 'rsheet-miniseg--on' : undefined}
-                          onClick={() => keepReadingPosition(() => setPronDisplay(v))}>{label}</button>
-                      ))}
-                    </div>
-                  </div>
-                  {/* 탭하면 발음 보기(v1-4 R1) — 발음 표기의 **종속** 스위치라 바로 아래 들여쓴다.
-                      직교 축이 아니라 3단의 딸림 항목이므로 세그먼트 4번째 값으로 만들지 않는다.
-                      「전체」에는 가릴 게 없어 흐린다 — 흐림 판정과 동작 판정이 같은 함수를
-                      쓴다(갈리면 "흐린데 눌리는" 스위치가 생긴다). */}
-                  <label className={`rsheet-swrow rsheet-swrow--sub${pronRevealAvailable(pronDisplay) ? '' : ' rsheet-swrow--off'}`}>
-                    <span className="rsheet-txt"><b>탭하면 발음 보기</b><span>가려진 단어를 한 번 탭하면 발음이 드러나고, 한 번 더 탭하면 뜻 카드가 열려요</span></span>
-                    <span className="rsheet-switch"><input type="checkbox" checked={pronReveal} disabled={!pronRevealAvailable(pronDisplay)} onChange={() => setPronReveal(v => !v)} /><span className="rsheet-knob" /></span>
-                  </label>
-                  <label className="rsheet-swrow">
-                    <span className="rsheet-txt"><b>단어 상태</b><span>아는 정도를 색으로</span></span>
-                    <span className="rsheet-switch"><input type="checkbox" checked={wordStateHl} onChange={() => setWordStateHl(v => !v)} /><span className="rsheet-knob" /></span>
-                  </label>
-                  <label className="rsheet-swrow">
-                    <span className="rsheet-txt"><b>집중 모드</b><span>지정한 문장만 밝게</span></span>
-                    <span className="rsheet-switch"><input type="checkbox" checked={focusMode} onChange={() => setFocusMode(v => !v)} /><span className="rsheet-knob" /></span>
-                  </label>
-                  {/* 자동 진행(v2-I R1b) — 집중 모드 바로 아래. 전제가 집중 모드라 붙여 둔다.
-                      발동은 '문장 지정', 정지는 '빈 공간 탭' — 새 버튼을 만들지 않는다(설계 §5). */}
-                  <label className="rsheet-swrow">
-                    <span className="rsheet-txt"><b>자동 진행</b><span>집중 모드에서 지정한 문장에 머물다 다음으로</span></span>
-                    <span className="rsheet-switch"><input type="checkbox" checked={autoPace} onChange={() => setAutoPace(v => !v)} /><span className="rsheet-knob" /></span>
-                  </label>
-                  {autoPace && (
-                    <div className="rsheet-subrow rsheet-subrow--pace">
-                      <span className="rsheet-sublab">속도</span>
-                      <div className="rsheet-pace" role="group" aria-label="자동 진행 속도">
-                        {/* 직접 조절하면 사다리를 접는다 — 보이는 값을 그대로 바탕값으로
-                            굳혀야 "내가 90으로 맞췄는데 왜 104로 도나"가 안 생긴다. */}
-                        <button type="button" aria-label="느리게" onClick={() => { setPaceCpm(stepCpm(paceTargetCpm, -1)); setPaceStep(0); }}>− 느리게</button>
-                        <b>{paceTargetCpm}자/분</b>
-                        <button type="button" aria-label="빠르게" onClick={() => { setPaceCpm(stepCpm(paceTargetCpm, 1)); setPaceStep(0); }}>빠르게 +</button>
-                      </div>
-                      {/* 이 숫자가 어디서 왔는지 밝힌다 — 자동 제안이 조용히 바뀌면
-                          "왜 어제와 다르지?"가 된다. 직접 고른 상태에서는 자동으로
-                          되돌아갈 길을 남긴다(한 번 누르면 못 돌아오는 막다른 길 방지). */}
-                      {paceCpm ? (
-                        <span className="rsheet-pace__src">
-                          직접 설정
-                          <button type="button" onClick={() => setPaceCpm(null)}>자동으로</button>
-                        </span>
-                      ) : myCpm ? (
-                        <span className="rsheet-pace__src">
-                          내 속도 {myCpm}자/분 기준 +10%
-                          {ladderLabel(paceStep) && <em>훈련 {ladderLabel(paceStep)}</em>}
-                        </span>
-                      ) : ladderLabel(paceStep) ? (
-                        <span className="rsheet-pace__src"><em>훈련 {ladderLabel(paceStep)}</em></span>
-                      ) : null}
-                      {/* 조절은 자/분으로 하되 초를 병기한다 — 오너가 처음 말한 "몇 초 후"를
-                          그대로 쓸 수 있게(설계 §7②). 숫자 카운트다운은 본문에 두지 않는다. */}
-                      <span className="rsheet-pace__hint">
-                        {(() => {
-                          const h = paceHint({
-                            chars: pickedSentence ? countReadableChars(pickedSentence.text) : null,
-                            avgChars: paceAvgChars,
-                            targetCpm: paceTargetCpm,
-                          });
-                          const parts = [];
-                          if (h.thisSec != null) parts.push(`이 문장(${h.thisChars}자) ≈ ${h.thisSec}초`);
-                          if (h.avgSec != null) parts.push(`평균 ≈ ${h.avgSec}초`);
-                          return parts.join(' · ');
-                        })()}
-                      </span>
-                    </div>
-                  )}
-                  {materialLang === 'Chinese' && (
-                    <label className="rsheet-swrow">
-                      <span className="rsheet-txt"><b>성조 색상</b><span>병음을 성조별 색으로</span></span>
-                      <span className="rsheet-switch"><input type="checkbox" checked={showToneColors} onChange={() => setShowToneColors(v => !v)} /><span className="rsheet-knob" /></span>
-                    </label>
-                  )}
-                  {materialLang === 'Chinese' && (
-                    <label className="rsheet-swrow">
-                      <span className="rsheet-txt"><b>한자 대조</b><span>단어 상세에 훈음 병기</span></span>
-                      <span className="rsheet-switch"><input type="checkbox" checked={showHanjaKo} onChange={() => setShowHanjaKo(v => !v)} /><span className="rsheet-knob" /></span>
-                    </label>
-                  )}
-                  {/* 문법 표시(v2-G R1·R3) — 정본 문형이 있는 언어에서만(중국어·일본어).
-                      언어 무관 층위(발음 표기·단어 상태·집중 모드) 사이에 끼우면 층위가
-                      갈리므로 성조·한자 대조와 같은 구획 끝에 둔다(focusMode 계약). */}
-                  {supportsPatterns(materialLang) && (
-                    <label className="rsheet-swrow">
-                      <span className="rsheet-txt"><b>문법 표시</b><span>정본 문형의 표지에 옅은 밑줄 — 단어를 탭하면 문형과 챕터로</span></span>
-                      <span className="rsheet-switch"><input type="checkbox" checked={showPatterns} onChange={() => setShowPatterns(v => !v)} /><span className="rsheet-knob" /></span>
-                    </label>
-                  )}
-                  {/* 범위(v2-G R2) — 정본 484문형을 전부 후보로 잡으면 "무엇부터"가 안 정해진다.
-                      '복습할 것'은 시간이 부르고(FSRS 큐), '약한 것'은 기록이 부른다(v2-A 약점
-                      정본). 둘 다 집합만 받아 쓰므로 이 화면이 약점을 계산하지 않는다. */}
-                  {supportsPatterns(materialLang) && showPatterns && (
-                    <div className="rsheet-subrow rsheet-subrow--pattern">
-                      <span className="rsheet-sublab">범위</span>
-                      <div className="rsheet-miniseg" role="group" aria-label="문법 표시 범위">
-                        <button type="button" aria-pressed={patternFilter === 'all'}
-                          className={patternFilter === 'all' ? 'rsheet-miniseg--on' : undefined}
-                          onClick={() => setPatternFilter('all')}>전체</button>
-                        <button type="button" aria-pressed={patternFilter === 'due'}
-                          className={patternFilter === 'due' ? 'rsheet-miniseg--on' : undefined}
-                          onClick={() => setPatternFilter('due')}>복습할 것</button>
-                        <button type="button" aria-pressed={patternFilter === 'weak'}
-                          className={patternFilter === 'weak' ? 'rsheet-miniseg--on' : undefined}
-                          onClick={() => setPatternFilter('weak')}>약한 것</button>
-                      </div>
-                      {patternNote && <span className="rsheet-pattern__note">{patternNote}</span>}
-                    </div>
-                  )}
-                  {ttsSupported && (
-                    <label className="rsheet-swrow">
-                      <span className="rsheet-txt"><b>자동 발음</b><span>단어를 누르면 소리로</span></span>
-                      <span className="rsheet-switch"><input type="checkbox" checked={autoSpeakOnClick} onChange={() => setAutoSpeakOnClick(v => !v)} /><span className="rsheet-knob" /></span>
-                    </label>
-                  )}
-                  {ttsSupported && (
-                    <div className="rsheet-subrow">
-                      <span className="rsheet-sublab">속도</span>
-                      <div className="rsheet-miniseg" role="group" aria-label="말하기 속도">
-                        {Object.entries(TTS_RATES).map(([k, r]) => (
-                          <button key={k} aria-pressed={ttsRate === k}
-                            className={ttsRate === k ? 'rsheet-miniseg--on' : undefined}
-                            onClick={() => setTtsRate(k)}>{r.label}</button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {sheetTab === 'tools' && (
-                <div className="rsheet-tabpane" role="tabpanel" aria-label="도구">
-                  {ttsSupported && sentences.length > 0 && (
-                    <button className="rsheet-toolrow" onClick={() => { setSettingsOpen(false); setDictationPickerOpen(true); }}>
-                      <span className="rsheet-txt"><b>받아쓰기</b><span>추천 문장을 듣고 받아쓰기</span></span>
-                      <em>›</em>
-                    </button>
-                  )}
-                  {user?.id === material?.owner_id && !passageOf(material) && !isAnalyzing && !reanalyzeMutation.isPending && (
-                    <button className="rsheet-toolrow" onClick={() => { setSettingsOpen(false); setReanalyzePanel('menu'); }}>
-                      <span className="rsheet-txt"><b>재분석</b><span>{composerOf(material) ? '전체·부분 분석' : '전체·부분 분석, 원문 수정'}</span></span>
-                      <em>›</em>
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          </dialog>
-        </>
-      )}
-
       {/* 재분석 패널 — position:fixed 중앙이라 설정 카드 해체 후에도 독립 배치(트리 위치 무관) */}
       {user?.id === material?.owner_id && reanalyzePanel && (
-        <>
-          <div className="reanalyze-panel-overlay" onClick={() => setReanalyzePanel(null)} />
+        <ViewerModal title="자료 관리" onClose={()=>setReanalyzePanel(null)}>
           {reanalyzePanel === 'menu' && (
-            <div className="reanalyze-panel">
+            <div className="reader-manage">
               <button className="reanalyze-panel__item" onClick={startFullReanalyze}>
                 <strong>전체 분석</strong>
                 <span>처음부터 다시 분석합니다</span>
@@ -2787,7 +2544,7 @@ export default function ViewerPage() {
             </div>
           )}
           {reanalyzePanel === 'pick' && (
-            <div className="reanalyze-panel reanalyze-panel--pick">
+            <div className="reader-manage reader-manage--pick">
               <div className="reanalyze-panel__header">
                 <span style={{ fontWeight: 700, fontSize: '0.88rem' }}>문단 선택</span>
                 <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{selectedParas.size}개 선택</span>
@@ -2813,7 +2570,7 @@ export default function ViewerPage() {
               </div>
             </div>
           )}
-        </>
+        </ViewerModal>
       )}
 
       {/* (책 챕터 내비 바 자리) — 경로 줄의 형제 내비(siblingNav)와 본문 아래 다음 카드로 갔다(뷰어 정돈 A안). */}
@@ -2827,14 +2584,7 @@ export default function ViewerPage() {
         className={`card reader-area reader-area--${theme}${focusMode && (pickedLineIdx !== null || tokenRange.range) ? ' reader-area--focus' : ''}${wordStateHl ? ' reader-area--hl' : ''}${paceDwell ? ' reader-area--pacing' : ''}${paceDwell && paceHeld ? ' reader-area--pacing-hold' : ''}`}
         style={{
           fontSize: `${fontSize}rem`,
-          // 자료 언어의 표준 자형이 우선(오너 확정) — 중국어는 SC, 일본어는 JP를 사용자
-          // 글꼴 설정 앞에 놓아, 설정 글꼴(KR 계열)이 한자를 자기 자형으로 그리는 것을
-          // 막는다. 한글·라틴처럼 그 폰트에 없는 글자는 설정 글꼴로 흘러간다.
-          fontFamily: materialLang === 'Chinese'
-            ? `var(--font-noto-sc, 'Noto Sans SC'), ${fontFamily}`
-            : materialLang === 'Japanese'
-              ? `var(--font-noto-jp, 'Noto Sans JP'), ${fontFamily}`
-              : fontFamily,
+          fontFamily: readerFontFamily(materialLang,fontFamily),
           gap: `${lineGap}px ${charGap}rem`, '--char-gap': `${charGap}rem`,
           // 체류 표시는 CSS 애니메이션이 시간을 잰다 — JS 프레임 루프 0(설계 §7①).
           ...(paceDwell ? { '--pace-dwell': `${paceDwell}ms` } : null),
@@ -2971,21 +2721,7 @@ export default function ViewerPage() {
                 </div>
               );
             }
-            const isSaved = isTokenSaved(savedWords, token);
-            const isDue = isSaved && isTokenDue(savedWords, token);
-            // 앎 대조는 단어 카드의 isKnown과 동일 계약(표기·base_form) — 상태 하이라이트와
-            // 발음 표기 '모르는 단어만'이 공유하고, 둘 다 꺼져 있으면 계산 자체를 생략한다.
-            const needKnown = wordStateHl || pronDisplay === 'unknown';
-            const tokKnown = needKnown && !!(knownWordSet?.has(token.text) || (token.base_form && knownWordSet?.has(token.base_form)));
-            // 상태 하이라이트(B안) — 켰을 때만 만남을 조회해 met/new 클래스를 더한다.
-            // 만남 대조는 단어 목록의 조용한 점과 동일 계약(normalizeRefWordKey — §4.7).
-            const hlClass = wordStateHl ? wordStateExtraClass(wordStateOf({
-              isWord: isWordToken(token),
-              isSaved,
-              isDue,
-              isKnown: tokKnown,
-              isMet: !!(metCode && (metWordSet.has(normalizeRefWordKey(metCode, token.base_form)) || metWordSet.has(normalizeRefWordKey(metCode, token.text)) || metWordSet.has(normalizeRefWordKey(metCode, metMainByText.get(token.text))))),
-            })) : '';
+            const {isSaved, isDue, isKnown:tokKnown, highlight:hlClass} = tokenDisplayState(token);
             // ruby는 토글과 무관하게 항상 만든다 — 폭 예약(ruby[data-pinyin])이 병음을 꺼도
             // 유지돼야 켤 때 글자가 밀리지 않는다(오너 요청 2026-08-19). 끌 때는 rt만 감춘다.
             const rubySegments = token.furigana
@@ -3005,6 +2741,7 @@ export default function ViewerPage() {
                 data-source-token={tokenId}
                 data-source-text={token.text}
                 data-text={token.text}
+                data-selected={selectedToken?.id===tokenId&&isSheetOpen?true:undefined}
                 className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}`}
                 style={paceStyle}
                 role="button" tabIndex={0}
@@ -3201,36 +2938,6 @@ export default function ViewerPage() {
         </div>
       )}
 
-      {/* 리딩 테스트 인라인 확장 */}
-      {isDone && showReadingTest && (
-        <div className="reading-test-section">
-          <ReadingTest
-            rawText={material?.raw_text}
-            language={materialLang}
-            materialId={id}
-            onClose={() => setShowReadingTest(false)}
-            onGraded={handleReadingTestGraded}
-            inline
-            nextLesson={nextLesson}
-          />
-        </div>
-      )}
-
-      {/* 회화 연습 인라인 확장 */}
-      {isDone && showConversation && (
-        <div className="reading-test-section">
-          <ConversationPanel
-            rawText={material?.raw_text}
-            language={materialLang}
-            materialId={id}
-            materialTitle={material?.title}
-            onClose={() => setShowConversation(false)}
-            inline
-            nextLesson={nextLesson}
-          />
-        </div>
-      )}
-
       <ReadingSourceFocus materialId={id} ready={!!material?.processed_json?.sequence?.length} onTarget={setSourceFocusId} />
       {STUDY_LANGS.has(materialLang) && <MaterialChapterLinks lang={materialLang} kind="reading" materialId={id} />}
 
@@ -3314,19 +3021,14 @@ export default function ViewerPage() {
 
       </div>{/* viewer-center end */}
 
-      {/* 오른쪽 — 단어 클릭 상세 or 드래그 단어 리스트 */}
-      <aside className="viewer-side viewer-side--right">
-        {rightPanelContent}
-      </aside>
-
       {(leftPanelLoading || leftPanelResult || dragTokens !== null || (selectedToken && isSheetOpen) || pickedLineIdx !== null) && <ViewerBottomSheet
         onClose={closeWordCard}
+        suppressed={modalBlocked}
+        onOpenChange={setInspectorOpen}
         leftContent={leftPanelContent}
         rightContent={rightPanelContent}
         leftActive={leftPanelLoading || !!leftPanelResult}
         rightActive={dragTokens !== null || (selectedToken && isSheetOpen)}
-        leftBadge={leftPanelLoading ? '생성 중' : null}
-        rightBadge={selectedToken?.text || (dragTokens ? `${dragTokens.length}개` : null)}
         leftSignal={leftSheetSignal}
         rightSignal={rightSheetSignal}
         barNav={pickedLineIdx !== null && sentences.length > 0 ? (
@@ -3336,6 +3038,44 @@ export default function ViewerPage() {
           </>
         ) : null}
       />}
+
+
+      {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} onClose={closeReadingSettings} keepPosition={keepReadingPosition} previewTokens={previewTokens} onPreset={()=>setRevealedPron(new Set())} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus}/>}
+      {modal('activities')&&<ViewerModal title="학습" onClose={()=>setActiveModal(null)}><div className="reader-activity-menu">
+        {ttsSupported&&sentences.length>0&&<button onClick={()=>setDictationPickerOpen(true)}><b>받아쓰기</b><span>추천 문장 하나를 골라 듣고 써요</span></button>}
+        {ttsSupported&&pickedSentence&&<button onClick={()=>setDictationSentence(pickedSentence.text)}><b>선택 문장 받아쓰기</b><span>지금 지정한 문장으로 시작해요</span></button>}
+        {isDone&&<><button onClick={()=>setShowReadingTest(true)}><b>읽기 확인</b><span>전체 자료 · 기존 읽기 확인 기록에 연결돼요</span></button><button onClick={()=>setShowConversation(true)}><b>회화 연습</b><span>전체 자료를 주제로 대화해요</span></button></>}
+        {!isDone&&<p>자료 분석이 끝나면 읽기 확인과 회화 연습을 사용할 수 있어요.</p>}
+      </div></ViewerModal>}
+      {/* 리딩 테스트 인라인 확장 */}
+      {isDone && showReadingTest && (
+        <ViewerModal title="읽기 확인 · 전체 자료" onClose={()=>setShowReadingTest(false)}>
+          <ReadingTest
+            rawText={material?.raw_text}
+            language={materialLang}
+            materialId={id}
+            onClose={() => setShowReadingTest(false)}
+            onGraded={handleReadingTestGraded}
+            inline
+            nextLesson={nextLesson}
+          />
+        </ViewerModal>
+      )}
+
+      {/* 회화 연습 인라인 확장 */}
+      {isDone && showConversation && (
+        <ViewerModal title="회화 연습 · 전체 자료" onClose={()=>setShowConversation(false)}>
+          <ConversationPanel
+            rawText={material?.raw_text}
+            language={materialLang}
+            materialId={id}
+            materialTitle={material?.title}
+            onClose={() => setShowConversation(false)}
+            inline
+            nextLesson={nextLesson}
+          />
+        </ViewerModal>
+      )}
 
 
       {user?.id === material?.owner_id && (
@@ -3370,6 +3110,7 @@ export default function ViewerPage() {
       {dictationSentence && (
         <DictationPanel
           sentence={dictationSentence}
+          draftStore={dictationDrafts.current}
           lang={materialLang}
           ttsOpts={ttsOptsFor(ttsRate)}
           onClose={() => setDictationSentence(null)}

@@ -1,3 +1,4 @@
+import {viewerDefaults} from '../viewerPreferences';
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -46,9 +47,7 @@ describe('① 꺼져 있으면 탭 동작이 지금과 완전히 같다', () => 
   });
 
   it('기본값이 꺼짐이다 — 기존 탭 의미를 바꾸는 기능이라 옵트인이 전제', () => {
-    const src = read('src/lib/useViewerSettings.js');
-    const line = sliceBetween(src, "readPref('pronReveal'", ')');
-    expect(line, "pronReveal 기본값은 false여야 한다").toMatch(/readPref\('pronReveal',\s*false/);
+    expect(viewerDefaults('Chinese').pronReveal).toBe(false);
   });
 
   it('활성 인자로 실제 pronReveal이 들어간다 — 상수로 굳어 있으면 스위치가 죽는다', () => {
@@ -78,10 +77,8 @@ describe('② 「전체」에는 공개 단계가 없다 — 가릴 게 없다',
     expect(shouldRevealPron(true, 'unknown', { hidden: true, revealed: true })).toBe(false);
   });
 
-  it('설정 시트의 흐림과 동작이 같은 판정을 쓴다 — 갈리면 "흐린데 눌리는" 스위치가 된다', () => {
-    const sheet = sliceBetween(read(VIEWER), '{/* 탭하면 발음 보기(v1-4 R1)', '<b>단어 상태</b>');
-    expect(sheet, '흐림 클래스가 pronRevealAvailable로 판정돼야 한다').toMatch(/rsheet-swrow--off[\s\S]*?pronRevealAvailable\(pronDisplay\)|pronRevealAvailable\(pronDisplay\)[\s\S]*?rsheet-swrow--off/);
-    expect(sheet, 'input도 실제로 disabled여야 한다 — 흐리기만 하면 눌린다').toMatch(/disabled=\{!pronRevealAvailable\(pronDisplay\)\}/);
+  it("발음 전체 모드에서는 공개 스위치를 실제로 비활성화한다", () => {
+    expect(read('src/components/viewer/ViewerSettings.jsx')).toContain('disabled={!pronRevealAvailable(s.pronDisplay)}');
   });
 });
 
@@ -164,8 +161,8 @@ describe('⑥⑦ 공개는 아무 데도 쓰지 않는다', () => {
     expect(read(VIEWER)).toMatch(/useState\(\(\) => new Set\(\)\)/);
   });
 
-  it('자료를 옮기면 공개가 접힌다 — 앱 라우터는 뷰어를 다시 마운트하지 않는다', () => {
-    expect(read(VIEWER)).toMatch(/setRevealedPron\(\(prev\) => \(prev\.size \? new Set\(\) : prev\)\);\s*\}, \[id\]\)/);
+  it("자료·판본·발음 모드 변경 시 임시 공개가 초기화된다", () => {
+    expect(read(VIEWER)).toContain('[id, pronDisplay, pronReveal, material?.processed_json]'); expect(read(VIEWER)).toContain('setRevealedPron((prev) => (prev.size ? new Set() : prev))');
   });
 });
 
@@ -176,11 +173,8 @@ describe('⑧ 🙈 암기 확인 프리셋이 비로소 이름값을 한다', ()
     expect(READING_PRESETS.study.pronReveal).toBe(false);
   });
 
-  it('프리셋 적용이 새 키를 실제로 대입한다 — 빠뜨리면 카드 불만 켜지는 유령 활성이 생긴다', () => {
-    const apply = sliceBetween(read(VIEWER), 'const applyPreset = (name) =>', '};');
-    for (const key of ['pronDisplay', 'wordStateHl', 'focusMode', 'showToneColors', 'pronReveal']) {
-      expect(apply, `applyPreset이 ${key}를 대입하지 않는다`).toContain(`p.${key}`);
-    }
+  it("프리셋은 정본 표시 키 전체를 적용하고 임시 공개를 지운다", () => {
+    const options=read('src/components/viewer/ViewerSettings.jsx');expect(options).toContain('s.restore({...READING_PRESETS[name]'); expect(options).toContain('onPreset?.()');
   });
 
   it('카드 문안이 공개 단계를 말한다 — 프리셋 설명과 실제 동작이 갈리면 안 된다', () => {

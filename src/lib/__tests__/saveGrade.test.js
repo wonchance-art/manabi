@@ -67,7 +67,7 @@ describe('저장 등급 — 정본(vocabIO)', () => {
 
 describe('저장 등급 — 뷰어 배선(ViewerPage)', () => {
   const card = sliceBetween(viewer, 'const wordDetailCard = !selectedToken || !isSheetOpen ? null : (', 'const rightPanelContent =');
-  const keys = sliceBetween(viewer, 'const lastSaveRef = useRef(null);', '}, [selectedToken, isSheetOpen]);');
+  const keys = sliceBetween(viewer, 'const lastSaveRef = useRef(null);', '}, [selectedToken?.id, selectedToken?.text, isSheetOpen]);');
 
   it('카드 4버튼은 SAVE_GRADES를 돌며 복습 화면 클래스를 재사용한다 — 손으로 적은 라벨 0', () => {
     expect(card).toContain('SAVE_GRADES.map((g) => (');

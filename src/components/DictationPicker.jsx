@@ -11,6 +11,7 @@
 import { useMemo } from 'react';
 import { pickDictationSentences } from '../lib/dictationPick';
 import Button from './Button';
+import ViewerModal from './viewer/ViewerModal';
 
 export default function DictationPicker({ sentences, savedSet, onPick, onClose }) {
   const picks = useMemo(
@@ -19,20 +20,7 @@ export default function DictationPicker({ sentences, savedSet, onPick, onClose }
   );
 
   return (
-    <div
-      role="dialog"
-      aria-label="받아쓰기 문장 고르기"
-      className="scrim"
-      style={{ zIndex: 60 }}
-      onClick={onClose}
-    >
-      <div className="card" style={{ maxWidth: 420, width: '100%', padding: '20px 22px' }} onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-          <span style={{ fontSize: '0.95rem', fontWeight: 700 }}>🎧 받아쓰기</span>
-          <span style={{ flex: 1 }} />
-          <button type="button" onClick={onClose} aria-label="닫기"
-            style={{ background: 'none', border: 'none', fontSize: '1.05rem', cursor: 'pointer', color: 'var(--text-muted)' }}>✕</button>
-        </div>
+    <ViewerModal title="받아쓰기 문장 고르기" onClose={onClose}>
         <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0 0 14px' }}>
           담은 단어가 든 문장부터 골랐어요 · 원문은 가려 둡니다
         </p>
@@ -62,7 +50,6 @@ export default function DictationPicker({ sentences, savedSet, onPick, onClose }
             ))}
           </div>
         )}
-      </div>
-    </div>
+    </ViewerModal>
   );
 }

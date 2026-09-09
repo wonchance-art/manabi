@@ -1,3 +1,4 @@
+import {viewerDefaults,validateViewerPreferences} from '../viewerPreferences';
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -260,18 +261,11 @@ describe('배선 — 필터를 우회할 길이 없다', () => {
   });
 
   it('기본은 전체 — 없던 필터가 켜진 채로 나타나면 밑줄이 사라진 것처럼 보인다', () => {
-    const s = read('src/lib/useViewerSettings.js');
-    expect(s).toContain("readPref('patternFilter', 'all')");
-    // 모르는 값이 저장돼 있어도 전체로 수렴한다(v2-M 입력 관용성 결)
-    expect(s).toContain("return PATTERN_FILTERS.includes(v) ? v : 'all';");
+    expect(viewerDefaults('Chinese').patternFilter).toBe('all');expect(validateViewerPreferences({patternFilter:'broken'},'Chinese').patternFilter).toBe('all');
   });
 
   it('세그먼트는 문법 표시를 켠 지원 언어에서만 — 끄면 고를 것이 없다', () => {
-    // R3에서 지원 언어가 둘(중국어·일본어)로 늘었다 — 게이트는 한 곳(supportsPatterns)이 정한다.
-    expect(viewer).toContain('{supportsPatterns(materialLang) && showPatterns && (');
-    expect(viewer).toContain('aria-label="문법 표시 범위"');
-    expect(viewer).toContain("onClick={() => setPatternFilter('all')}>전체<");
-    expect(viewer).toContain("onClick={() => setPatternFilter('due')}>복습할 것<");
+    const options=read('src/components/viewer/ViewerSettings.jsx');expect(options).toContain('supportsPatterns(language)');expect(options).toContain('s.showPatterns&&<Choices label="문법 표시 범위"');expect(options).toContain("set('patternFilter',v)");
   });
 
   it('카드의 두 표식은 그 집합을 읽었을 때만 — 전체 모드·비로그인에는 아무 표시도 없다', () => {

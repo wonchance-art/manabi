@@ -6,7 +6,7 @@
 .manabi-app--reading .gnb > .gnb__link,
 .manabi-app--reading .mobile-nav { display: none; }
 .manabi-app--reading .manabi-search-link span { display: none; }
-.manabi-app--reading .app-layout { padding-bottom: 0; }
+.manabi-app--reading .app-layout { --gnb-height: 56px; padding-top: var(--gnb-height); padding-bottom: 0; }
 .reader-site-menu { position: relative; font-size: 13px; }
 .reader-site-menu summary { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; cursor: pointer; list-style: none; }
 .reader-site-menu summary::-webkit-details-marker { display: none; }

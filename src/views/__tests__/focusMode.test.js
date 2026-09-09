@@ -1,3 +1,4 @@
+import {viewerDefaults} from '../../lib/viewerPreferences';
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -12,18 +13,20 @@ const read = (f) => fs.readFileSync(path.join(process.cwd(), f), 'utf8');
 describe('집중 모드 배선', () => {
   const css = read('src/index.css');
   const viewer = read('src/views/ViewerPage.jsx');
-  const settings = read('src/lib/useViewerSettings.js');
+  const readerCss = read('src/components/viewer/reader-controls.css');
 
   it('옵트인 기본 꺼짐 — 관례(한자 대조·성조 색상 선례)', () => {
-    expect(settings).toContain("readPref('focusMode', false)");
+    expect(viewerDefaults('Chinese').focusMode).toBe(false);
   });
 
   it('지정이 있을 때만 발동한다 — 지정 없이 켜면 화면이 통째로 어두워지면 안 된다', () => {
     expect(viewer).toContain("focusMode && (pickedLineIdx !== null || tokenRange.range) ? ' reader-area--focus' : ''");
   });
 
-  it('어둡기는 비지정 토큰에만 걸린다(지정 토큰·상속 무관 opacity)', () => {
-    expect(css).toMatch(/\.reader-area--focus \.word-token:not\(\.word-token--picked\) \{\s*opacity: 0\.18;/);
+  it('주변은 흐리게 하고 지정 문장·열린 단어는 선명하게 유지한다', () => {
+    expect(readerCss).toContain('.word-token:not(.word-token--picked):not([data-selected="true"]) {opacity:.28');
+    expect(readerCss).toContain('.word-token:is(.word-token--picked,[data-selected="true"]) {opacity:1');
+    expect(readerCss).toContain('.word-token:is(.word-token--picked,[data-selected="true"]) .surface {opacity:1;}');
   });
 
   it('전환 애니메이션 + 모션 축소 존중', () => {
@@ -34,7 +37,7 @@ describe('집중 모드 배선', () => {
   it('문장 이동 필 — 지정 중에만 뜨고, 지정·스크롤은 공통·분석은 모드 분기(오너 지시 2026-08-20)', () => {
     expect(viewer).toContain("pickedLineIdx !== null && sentences.length > 0 && (");
     const move = sliceBetween(viewer, 'const moveSentence', 'const runSelectionAnalysis');
-    for (const call of ['tokenRange.clearRange()', 'setPickedLineIdx(target.rawIdx)', 'setSelectedRangeText(target.text)', 'scrollIntoView']) {
+    for (const call of ['tokenRange.clearRange()', 'setPickedLineIdx(target.rawIdx)', 'setSelectedRangeText(target.text)', 'readerVisibleBounds', 'window.scrollBy']) {
       expect(move).toContain(call);
     }
     // 집중 모드 ▲▼ = 순수 이동: 분석·시트 없음(읽기 방해 + 안 볼 번역의 Gemini 낭비),
@@ -56,24 +59,8 @@ describe('집중 모드 배선', () => {
     expect(css).toMatch(/\.sentence-nav__btn \{[^}]*width: 44px;/s);
   });
 
-  it('모바일 ▲▼ = 하단 바 안(오너 실기 2026-08-20 — 필이 시트 z 95에 덮임), 필은 데스크톱 전용', () => {
-    const sheet = read('src/components/ViewerBottomSheet.jsx');
-    // 바 슬롯 합성(leftContent 선례) — 시트 컴포넌트는 내용을 모른다
-    expect(sheet).toContain('barNav = null');
-    expect(sheet).toContain('{barNav}');
-    // 같은 버튼 한 벌이 두 옷(필/바)을 입는다 — 노출 조건도 필과 동일
-    expect(viewer).toContain('barNav={pickedLineIdx !== null && sentences.length > 0 ? (');
-    expect(viewer).toContain("sentenceNavBtn(-1, 'viewer-sheet-bar__btn viewer-sheet-bar__btn--nav')");
-    expect(viewer).toContain("sentenceNavBtn(-1, 'sentence-nav__btn')");
-    // 모바일: 필 숨김(시트가 열려도 바의 ▲▼는 z 100으로 항상 위) + 44px 터치 타깃.
-    // --nav 선언은 베이스 뒤여야 flex:1을 이긴다(동일 특이성은 순서 싸움).
-    const mobile = sliceBetween(css, '@media (max-width: 1179px)');
-    expect(mobile).toMatch(/\.sentence-nav \{ display: none; \}/);
-    // 순서 단언도 앵커부터 증명 — 기준 앵커가 -1이면 어떤 위치든 통과하는 구멍 봉쇄
-    const baseIdx = mobile.indexOf('.viewer-sheet-bar__btn {');
-    expect(baseIdx).toBeGreaterThan(-1);
-    expect(mobile.indexOf('.viewer-sheet-bar__btn--nav')).toBeGreaterThan(baseIdx);
-    expect(mobile).toMatch(/\.viewer-sheet-bar__btn--nav \{[^}]*flex: 0 0 44px;/s);
+  it("문장 이동은 동일 패널 footer의 슬롯에서 제공한다", () => {
+    const sheet=read('src/components/ViewerBottomSheet.jsx'); expect(sheet).toContain('barNav=null'); expect(sheet).toContain('{barNav}'); expect(sheet).toContain('viewer-inspector__nav'); expect(viewer).toContain('barNav={pickedLineIdx !== null && sentences.length > 0 ? (');
   });
 
   it('단일 규칙 — 밖 탭 = 순수 이동, 안 탭 = 카드, 문장 아닌 줄 = 무시(오너 확정 2026-08-20)', () => {
@@ -115,14 +102,7 @@ describe('집중 모드 배선', () => {
     expect(viewer).toContain('onClickCapture={tokenRange.handleClickCapture}');
   });
 
-  it('토글이 설정 시트에 있고 언어 무관이다 (읽기 설정 리뉴얼 2026-08-28 — 문구→스위치 행)', () => {
-    const idx = viewer.indexOf('<b>집중 모드</b>');
-    expect(idx).toBeGreaterThan(-1);
-    expect(viewer).toContain('onChange={() => setFocusMode(v => !v)}');
-    // 발음 표기(언어 무관 층위)와 같은 구획 — 사이에 중국어 조건 블록이 없어야
-    // 성조 색상·한자 대조(Chinese 한정)와 층위가 갈린다.
-    const pron = viewer.lastIndexOf('발음 표기', idx);
-    expect(pron).toBeGreaterThan(-1);
-    expect(viewer.slice(pron, idx)).not.toContain("materialLang === 'Chinese' && (");
+  it("문장 집중은 읽기 진행 탭에 있다", () => {
+    const options=read('src/components/viewer/ViewerSettings.jsx'); expect(options).toContain('label="문장 집중"'); expect(options).toContain("set('focusMode',v)"); expect(options).toContain("tab==='pace'");
   });
 });

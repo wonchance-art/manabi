@@ -244,7 +244,7 @@ describe('④ 규약 문서 — 존재 + 상호 포인터', () => {
 });
 
 describe('⑤ 접근성 하한 — 줄어들면 잡는다', () => {
-  const css = read('src/index.css');
+  const css = cssFiles().map(read).join('\n');
   const count = (re) => (css.match(re) || []).length;
 
   it('44px 터치 타깃·:focus-visible·prefers-reduced-motion이 하한 이상', () => {

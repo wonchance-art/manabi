@@ -17,21 +17,17 @@ describe('유의어·반의어 배선', () => {
   });
 
   it('늦게 온 응답이 다른 단어에 붙지 않는다(alive 가드) — 실패는 조용히(null)', () => {
-    const effect = viewer.match(/\/\/ ⑤ 유의어·반의어[\s\S]*?\}, \[selectedToken, isSheetOpen, materialLang\]\);/)?.[0];
+
+    const effect = viewer.match(/\/\/ ⑤ 유의어·반의어[\s\S]*?\}, \[selectedToken, isSheetOpen, materialLang, synAntExpanded\]\);/)?.[0];
     expect(effect).toBeTruthy();
     expect(effect).toContain('let alive = true');
     expect(effect).toContain('if (alive) setSynAnt(');
     expect(effect).toContain('return () => { alive = false; }');
+
   });
 
-  it('표시는 예문 뒤·한자 노트 앞(R R2 오너 확정 순서)·로딩 중엔 조용히 — 빈 결과는 아무것도 그리지 않는다', () => {
-    const exAt = viewer.indexOf('splitSentenceAroundWord(refVocab.word.ex.zh, headText');
-    const synAt = viewer.indexOf('className="syn-ant"');
-    const hanjaAt = viewer.indexOf('한자 · {refVocab.word.hanja}');
-    expect(exAt).toBeGreaterThan(-1);
-    expect(synAt).toBeGreaterThan(exAt);
-    expect(synAt).toBeLessThan(hanjaAt);
-    expect(viewer).toContain('!synAnt.loading && (synAnt.syn.length > 0 || synAnt.ant.length > 0)');
+  it("유의어는 펼칠 때 조회하고 빈 결과와 실패를 구분한다", () => {
+    expect(viewer).toContain('!synAntExpanded || !synAntEligible'); expect(viewer).toContain('onToggle={e=>setSynAntExpanded(e.currentTarget.open)}'); expect(viewer).toContain('표시할 항목이 없어요.'); expect(viewer).toContain('불러오지 못했어요.');
   });
 
   it('칩 탭 = 그 단어 카드로 교체(handleListWordClick 재사용) — 새 상태 없음', () => {

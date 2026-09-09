@@ -19,7 +19,8 @@ import config from '../playwright.config.mjs';
  */
 
 const CSS = fs.readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
-const PAGE = (body) => `<style>${CSS}</style><style>body{margin:0;font-size:20px}#row{padding:48px 64px}</style><div id="row">${body}</div>`;
+const READER_CSS=fs.readFileSync(new URL('../src/components/viewer/reader-controls.css',import.meta.url),'utf8');
+const PAGE = (body) => `<style>${CSS}\n${READER_CSS}</style><style>body{margin:0;font-size:20px}#row{padding:48px 64px;width:100%}</style><div class="viewer-layout" data-pron-spacing="reserved" style="--pinyin-size:.75rem;--pinyin-cell:44px"><div id="row">${body}</div></div>`;
 
 // 뷰어 렌더 구조 재현(ViewerPage renderToken과 동일한 마크업 계약 — pinyinRuby.test.js가
 // 소스 쪽을, 이 파일이 결과 쪽을 지킨다)
@@ -48,7 +49,7 @@ after(async () => { await browser?.close(); });
 
 /** 토큰별 기하: 글자(비-rt 텍스트) 좌표와 rt 좌표 */
 async function measure(body) {
-  await page.setContent(PAGE(body));
+  await page.setContent(PAGE(`<div class="reader-area" style="font-size:20px;min-height:0;padding:0">${body}</div>`));
   return page.evaluate(() => {
     const out = [];
     for (const t of document.querySelectorAll('.word-token')) {
@@ -76,6 +77,36 @@ async function measure(body) {
 }
 
 const uniq = (arr) => [...new Set(arr)];
+
+// Load the real reader overrides after index.css: a later --new rule previously
+// erased the selected-state blend even though all canonical rules were present.
+for (const theme of ['light','sepia','dark']) {
+  test(`단어 상태 × 범위 지정 — ${theme}: 색은 변하고 글자·병음 좌표는 유지된다`, async () => {
+    const states=['new','met','saved','due','known'];
+    const content=states.map((state,i)=>tok(zhSeg(ZH[i][0],ZH[i][1]),false).replace('word-token',`word-token${state==='known'?'':` word-token--${state}`}${state==='due'?' word-token--saved':''}`)).join('');
+    await page.setContent(PAGE(`<style>*,*::before,*::after{transition:none!important;animation:none!important}</style><div class="reader-area reader-area--hl reader-area--${theme}" style="font-size:24px;gap:16px;--reader-selected:#e9eee7;--primary:#944759;--primary-glow:#ead5da">${content}</div>`));
+    const read=()=>page.locator('.word-token').evaluateAll(tokens=>tokens.map(t=>{
+      const surface=t.querySelector('.surface'),ruby=surface.querySelector('ruby'),rt=surface.querySelector('.rt-an');
+      const rect=e=>{const r=e.getBoundingClientRect();return [r.x,r.y,r.width,r.height];};
+      return {color:getComputedStyle(surface,'::before').backgroundColor,opacity:getComputedStyle(surface).opacity,glyph:rect(ruby),pron:rect(rt)};
+    }));
+    const before=await read();
+    await page.locator('.word-token').evaluateAll(tokens=>tokens.forEach(t=>t.classList.add('word-token--picked')));
+    const picked=await read();
+    for(let i=0;i<states.length;i++) {
+      assert.notEqual(picked[i].color,before[i].color,`${states[i]}: range selection must change its state color`);
+      assert.deepEqual(picked[i].glyph,before[i].glyph);
+      assert.deepEqual(picked[i].pron,before[i].pron);
+      assert.equal(picked[i].opacity,'1');
+    }
+    assert.equal(new Set(picked.map(t=>t.color)).size,5,'selection must preserve five distinct learning states');
+    await page.locator('.word-token').evaluateAll(tokens=>tokens.forEach(t=>t.classList.remove('word-token--picked')));
+    assert.deepEqual(await read(),before,'clearing selection restores every state without shifting text');
+    await page.locator('.reader-area').evaluate(e=>e.classList.remove('reader-area--hl'));
+    await page.locator('.word-token').evaluateAll(tokens=>tokens.forEach(t=>t.classList.add('word-token--picked')));
+    assert.equal(new Set((await read()).map(t=>t.color)).size,1,'state mode off keeps the ordinary selection band');
+  });
+}
 
 /** rt가 본문 바로 위 띠 안에 있는가 — 절대배치가 풀리면(rt가 옆이나 아래로 가면) ON=OFF
  *  등식·단일값 검사는 전부 통과해버린다(visibility:hidden이 자리를 유지하므로). 실측
@@ -107,7 +138,7 @@ test('중국어 — 병음은 전 음절 단일 크기이고 최장 인접쌍(ch
   const rts = on.filter((x) => x.rt);
   const sizes = uniq(rts.map((x) => x.rt.fs));
   assert.equal(sizes.length, 1, `병음 크기 단일값이어야 함: ${sizes}`);
-  assert.ok(sizes[0] < 10, `병음(0.26em)은 요미(0.5em=10px)보다 작아야 함: ${sizes[0]}px`);
+  assert.equal(sizes[0],12, `병음 기본 12px: ${sizes[0]}px`);
   for (let i = 0; i + 1 < rts.length; i++) {
     assert.ok(rts[i].rt.r <= rts[i + 1].rt.l + 0.5,
       `병음 겹침: ${i}번째 rt 오른끝 ${rts[i].rt.r} > 다음 rt 왼끝 ${rts[i + 1].rt.l}`);
@@ -156,6 +187,19 @@ test('성조 색상 — 본문(.word-token 안) 병음 rt에 실제로 색이 �
   assert.notEqual(toned, plain, `성조 클래스 rt가 기본 병음색 그대로다: ${toned}`);
 });
 
+test('실제 읽기 영역·Aa — 기본 병음색이 같고 성조 색을 덮지 않는다', async () => {
+  await page.setContent(PAGE(['reader-area','reader-settings__preview'].map(cls=>`<div class="${cls}">${tok(zhSeg('窗','chuāng'),false)}${tok(zhSeg('我','wǒ'),false)}</div>`).join('')));
+  const colors=()=>page.locator('.rt-an').evaluateAll(es=>es.map(e=>getComputedStyle(e).color));
+  const normal=await colors();
+  assert.equal(new Set(normal).size,1,'body and preview must use the same neutral annotation color');
+  await page.locator('.rt-an').evaluateAll(es=>es.forEach((e,i)=>e.classList.add(`pinyin-tone--${i%2?3:1}`)));
+  const toned=await colors();
+  assert.notEqual(toned[0],normal[0],'first tone must change color inside the reader');
+  assert.notEqual(toned[1],normal[1],'third tone must change color inside the reader');
+  assert.notEqual(toned[0],toned[1]);
+  assert.deepEqual(toned.slice(0,2),toned.slice(2),'Aa must match body tone colors');
+});
+
 test('집중 모드 — 지정 문장만 원래 밝기, 나머지는 어둡고, 좌표는 1px도 안 움직인다', async () => {
   const line = (focus) => `<div id="row2" class="reader-area${focus ? ' reader-area--focus' : ''}" style="min-height:0;padding:24px">`
     + tok(zhSeg('我', 'wǒ'), false).replace('word-token', 'word-token word-token--picked')
@@ -169,7 +213,7 @@ test('집중 모드 — 지정 문장만 원래 밝기, 나머지는 어둡고, 
     };
   });
   assert.equal(focus.ops[0], 1, `지정 토큰은 원래 밝기여야 함: ${focus.ops[0]}`);
-  assert.ok(focus.ops[1] < 0.3 && focus.ops[2] < 0.3, `비지정 토큰은 어두워야 함: ${focus.ops.slice(1)}`);
+  assert.deepEqual(focus.ops,[1,.28,.28], "지정 문장은 선명하게, 주변 문장은 28%로 낮춘다");
   await page.setContent(PAGE(line(false)));
   const off = await page.evaluate(() => {
     const toks = [...document.querySelectorAll('#row2 .word-token')];
@@ -209,7 +253,7 @@ test('레퍼런스(.ja-ruby) — 긴 요미가 문장 폭을 못 늘리고, 두 
   assertGapBand(out.gapBk, '책예문 요미');
 });
 
-test('카드 확대(①) — 크기 = 패널 폭 ÷ 분모(cqi 수식), 캡은 --fit-cap(기본 8rem), 격자·병음 계약 유지', async () => {
+test('카드 — 표제어는 40–56px, 병음은 독립 15px로 균일', async () => {
   // 카드 마크업 재현(ViewerPage wordDetailCard — 글자는 word-fit__char 스팬으로 감싼다)
   const fitSeg = (ch, py, yomi = false) =>
     `<ruby data-${yomi ? 'yomi' : 'pinyin'}="1"><span class="word-fit__char">${ch}</span><span class="rt-an">${py}</span></ruby>`;
@@ -232,20 +276,11 @@ test('카드 확대(①) — 크기 = 패널 폭 ÷ 분모(cqi 수식), 캡은 -
       rtPos: getComputedStyle(rt).position,
     };
   }));
-  // 2자: 248/2 = 124px — 병음 셀(width:1em 격자)이 폭을 꽉 채운다
-  assert.ok(Math.abs(got[0].fs - 124) <= 1, `2자 크기 124px 기대: ${got[0].fs}`);
-  for (const w of got[0].cells) assert.ok(Math.abs(w - got[0].fs) <= 1, `셀 폭 = 1em(격자) 기대: ${w} vs ${got[0].fs}`);
-  // 병음은 카드에서도 전 음절 단일 크기(0.26em)·절대배치 계약을 지킨다
-  assert.ok(Math.abs(got[0].rtFs - got[0].fs * 0.26) <= 0.5, `병음 크기 0.26em 기대: ${got[0].rtFs}`);
-  assert.equal(got[0].rtPos, 'absolute', '카드 병음도 절대배치(WebKit rt 계약과 동일한 span 경로)');
-  // 1자: 캡 미지정 문맥은 기본 8rem(=128px) — 100cqi(248px)가 아니라 캡에서 멈춘다
-  assert.ok(Math.abs(got[1].fs - 128) <= 1, `1자 기본 캡 128px 기대: ${got[1].fs}`);
-  // ja: 분모 2.5(fitWord.js — 요미 5자 × 0.5em이 본문 1자보다 넓다) → 99.2px
-  assert.ok(Math.abs(got[2].fs - 99.2) <= 1, `志 분모 2.5 → 99.2px 기대: ${got[2].fs}`);
-  // --fit-cap 주입(레이아웃 세로 예산 유도 — 오너 승인 2026-08-20): 캡이 폭보다 작으면
-  // 캡에서, 크면 폭(100cqi)에서 멈춘다 — 양방향 지배 전환 실렌더 검증
-  assert.ok(Math.abs(got[3].fs - 200) <= 1, `1자 캡 200px 주입 기대: ${got[3].fs}`);
-  assert.ok(Math.abs(got[4].fs - 248) <= 1, `캡 300px > 폭 248px → 폭 지배 기대: ${got[4].fs}`);
+  for(const item of got) assert.ok(item.fs>=32&&item.fs<=36,`표제어는 32–36px 범위: ${item.fs}`);
+  assert.equal(got[0].rtFs,15,'카드 병음은 독립 15px');
+  assert.equal(got[0].rtPos,'absolute');
+  assert.equal(new Set(got[0].cells).size,1,'카드 병음 칸도 균일');
+
 });
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -656,4 +691,19 @@ test('본문(.word-token)에는 하단 루비가 없다 — 카드 한정', asyn
   await settle();
   const pos = await page.$eval('.rt-hun', (el) => getComputedStyle(el).position);
   assert.equal(pos, 'static', '본문 하단 루비가 절대배치를 얻었다 — 규칙이 카드 밖으로 샜다');
+});
+
+
+test('Aa 중국어 명조 — 실제 글자까지 본문과 같은 서체, 병음은 별도 서체', async () => {
+  const token=tok(zhSeg('读','dú'),false);
+  await page.setContent(PAGE(`<div style="--reader-font:Georgia,serif;--font-noto-sans:Arial,sans-serif">
+    <div class="reader-area" lang="zh-Hans">${token}</div>
+    <div class="reader-settings__preview" lang="zh-Hans" style="font-family:var(--reader-font)">${token}</div>
+  </div>`));
+  const fonts=await page.evaluate(()=>{
+    const font=s=>getComputedStyle(document.querySelector(s)).fontFamily;
+    return {body:font('.reader-area ruby'),preview:font('.reader-settings__preview ruby'),pinyin:font('.reader-settings__preview .rt-an')};
+  });
+  assert.equal(fonts.preview,fonts.body,'미리보기의 실제 한자가 전역 :lang(zh) 고딕 규칙으로 바뀌면 안 된다');
+  assert.match(fonts.preview,/Georgia/);assert.match(fonts.pinyin,/Arial/);
 });

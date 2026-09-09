@@ -1,3 +1,4 @@
+import {viewerDefaults} from '../viewerPreferences';
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -194,7 +195,7 @@ describe('배선 — 기본 꺼짐, 켜야 로드', () => {
   const card = codeOf(viewer);
 
   it('§6 기본 꺼짐 — 옵트인이 전제다', () => {
-    expect(read('src/lib/useViewerSettings.js')).toContain("readPref('showPatterns', false)");
+    expect(viewerDefaults('Chinese').showPatterns).toBe(false);
   });
 
   it('정본 인덱스는 토글을 켰을 때만 로드된다 — 안 쓰는 사람에게 304KB를 지우지 않는다', () => {
