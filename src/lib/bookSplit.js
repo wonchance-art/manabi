@@ -4,6 +4,8 @@
 // 분할 결과는 미리보기에서 사람이 경계를 손볼 수 있다(mergeWithPrevious) — 자동 감지의
 // 오차를 UI가 흡수하는 것이 품질의 핵심(조사 결론).
 
+import { splitBilingual } from './bilingualSplit';
+
 export const CHAPTER_MAX_CHARS = 45000;   // MaterialAddPage 50k 캡 아래 안전 여유
 export const CHAPTER_TARGET_CHARS = 15000; // 무헤딩 길이 분할 목표 크기
 
@@ -125,7 +127,15 @@ export function mergeWithPrevious(chapters, index) {
   const merged = chapters.slice();
   const prev = merged[index - 1];
   const cur = merged[index];
-  merged.splice(index - 1, 2, { title: prev.title, text: `${prev.text}\n\n${cur.text}` });
+  // 뜻(translations)은 두 과의 것을 합친다 — 경계를 합쳤다고 뜻이 사라지면 안 된다(v2-AB R0).
+  const translations = prev.translations || cur.translations
+    ? { ...(prev.translations || {}), ...(cur.translations || {}) }
+    : null;
+  merged.splice(index - 1, 2, {
+    title: prev.title,
+    text: `${prev.text}\n\n${cur.text}`,
+    ...(translations ? { translations } : {}),
+  });
   return merged;
 }
 
@@ -159,10 +169,16 @@ export function sentenceListStats(rawText) {
   const raw = String(rawText || '').split('\n');
   const nonEmpty = raw.filter((l) => l.trim());
   const chars = nonEmpty.reduce((n, l) => n + l.trim().length, 0);
+  // 원어 줄 통계(v2-AB R0) — 「일본어/한국어 교대 줄」 교재는 뜻 줄을 빼고 세야 과 수가 맞는다.
+  // lines(전체 내용 줄)는 기존 소비처(감지 배너)를 위해 그대로 둔다.
+  const { stats } = splitBilingual(rawText);
   return {
     lines: nonEmpty.length,
     blankRatio: raw.length > 0 ? (raw.length - nonEmpty.length) / raw.length : 0,
     avgLen: nonEmpty.length > 0 ? chars / nonEmpty.length : 0,
+    sourceLines: stats.source,
+    paired: stats.paired,
+    unassigned: stats.unassigned,
   };
 }
 
@@ -199,16 +215,24 @@ export function clampLinesPerChapter(value) {
  */
 export function splitLinesIntoChapters(rawText, opts = {}) {
   const { linesPerChapter = DEFAULT_LINES_PER_CHAPTER } = opts;
-  const lines = String(rawText || '')
-    .split('\n')
-    .map((l) => l.trim())
-    .filter(Boolean);
+  // 과당 줄 수는 **원어 줄 기준**(v2-AB R0 계약 ⑤) — 한국어 뜻 줄은 세지 않고 각 과의
+  // translations(문장 → 뜻)로 따라간다. 뜻 줄이 없는 목록은 예전과 한 바이트도 다르지 않다.
+  const split = splitBilingual(rawText);
+  const lines = split.sourceLines;
   if (lines.length === 0) return [];
 
   const per = clampLinesPerChapter(linesPerChapter);
+  const hasMeanings = split.stats.paired > 0;
   const out = [];
   for (let i = 0; i < lines.length; i += per) {
-    out.push({ title: `${out.length + 1}과`, text: lines.slice(i, i + per).join('\n') });
+    const chunk = lines.slice(i, i + per);
+    const chapter = { title: `${out.length + 1}과`, text: chunk.join('\n') };
+    if (hasMeanings) {
+      const translations = {};
+      for (const l of chunk) if (split.translations[l]) translations[l] = split.translations[l];
+      chapter.translations = translations;
+    }
+    out.push(chapter);
   }
   return out;
 }

@@ -87,6 +87,7 @@ import { buildContextPrompt } from '../lib/grammarDetail';
 import { prepareViewerSaveUndo, undoViewerSave } from '../lib/viewerSaveUndo';
 import { contextualMeaning, refreshViewerToken, referenceMatchesContext, createViewerRequestGate, viewerCacheKey, viewerCommandAllowed } from '../lib/viewerReliability';
 import { clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
+import { lookupTranslation, bookMeaningPanelText } from '../lib/bilingualSplit';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
 import { fetchKnownWords, knownWordsLang, unmarkKnown } from '../lib/knownWords';
 import { mergeKnownIntoIndex } from '../lib/knownWords';
@@ -1178,11 +1179,14 @@ export default function ViewerPage() {
       setSelectedToken(null);
       setIsSheetOpen(false);
 
+      // 교재 뜻(v2-AB R0) — 정제된 교재의 translations(문장 → 뜻)를 **캐시·Gemini보다 먼저** 본다.
+      // 정확 일치만(부분 추측 금지), 적중하면 번역 요청 0 — 비로그인 학생(프록시 없음)도 교재 뜻은 본다.
+      const bookMeaning = lookupTranslation(material?.processed_json?.metadata?.translations, sel);
       // 번역+맥락 localStorage 캐시 (lang:hash)
       const langName = langNameKo(materialLang);
-      const cacheKey = await viewerCacheKey('viewer_tx', cacheScope, sel).catch(() => null);
+      const cacheKey = bookMeaning ? null : await viewerCacheKey('viewer_tx', cacheScope, sel).catch(() => null);
       if (!current()) return;
-      const cached = (() => { try { return cacheKey && localStorage.getItem(cacheKey); } catch { return null; } })();
+      const cached = bookMeaning ? bookMeaningPanelText(bookMeaning) : (() => { try { return cacheKey && localStorage.getItem(cacheKey); } catch { return null; } })();
       if (cached) {
         setLeftPanelResult(cached);
         setLeftPanelLoading(false);

@@ -8,6 +8,7 @@ import {
   DEFAULT_LINES_PER_CHAPTER, LINES_PER_REQUEST_CAP,
 } from '../lib/bookSplit';
 import { renumberChapters } from '../lib/bookAppend';
+import { looksBilingual, summarizeSplit } from '../lib/bilingualSplit';
 
 // 언어별 기본 난이도 — 본문 폼과 같은 짝(중복 신설이 아니라 같은 표를 여기서도 쓴다).
 const LANGS = [
@@ -70,7 +71,10 @@ export default function MaterialAddSentenceSection({
 
   const stats = sentenceListStats(text);
   const per = clampLinesPerChapter(perChapter);
-  const chapterCount = stats.lines > 0 ? Math.ceil(stats.lines / per) : 0;
+  // 과 수는 **원어 줄** 기준(v2-AB R0) — 「일본어/한국어 교대 줄」 교재의 뜻 줄은 과에 세지 않고
+  // 각 과의 translations로 따라간다(splitLinesIntoChapters가 같은 규칙으로 나눈다).
+  const chapterCount = stats.sourceLines > 0 ? Math.ceil(stats.sourceLines / per) : 0;
+  const bilingual = looksBilingual(text);
   const perClamped = String(per) !== String(perChapter).trim();
 
   const rangeLabel = chapterCount > 1 ? `${startOrder}과~${startOrder + chapterCount - 1}과` : `${startOrder}과`;
@@ -249,15 +253,31 @@ export default function MaterialAddSentenceSection({
               className="form-textarea"
               style={{ minHeight: 160 }}
             />
+            {/* 이중 언어 교재 배너(v2-AB R0) — 원어·뜻 교대 줄이면 원어만 담고 뜻은 드래그 번역에 붙인다.
+                짝이 없는 한국어 줄(장 제목·주석)은 미배정 개수로 드러낸다 — 조용히 버리지 않는다. */}
+            {bilingual && (
+              <p
+                role="status"
+                style={{
+                  margin: '8px 0 0', padding: '8px 12px', fontSize: '0.8rem', lineHeight: 1.6,
+                  color: 'var(--text-secondary)', background: 'var(--primary-glow)',
+                  border: '1px solid var(--primary)', borderRadius: 'var(--radius-md)',
+                }}
+              >
+                📘 원어·뜻이 번갈아 있어요 → <strong style={{ color: 'var(--text-primary)' }}>원어만 담고 뜻은 드래그 번역에 붙입니다</strong>
+                {' '}· {summarizeSplit(stats)}
+                {stats.unassigned > 0 && ' — 미배정 줄은 담기지 않아요(원어 줄 바로 아래에 두면 짝이 돼요)'}
+              </p>
+            )}
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
-              {stats.lines > 0
-                ? `${stats.lines.toLocaleString()}문장 · 평균 ${Math.round(stats.avgLen)}자 · ${book ? rangeLabel : `${chapterCount}과`}`
+              {stats.sourceLines > 0
+                ? `${stats.sourceLines.toLocaleString()}문장${bilingual ? ` · 뜻 ${stats.paired}줄` : ''} · 평균 ${Math.round(stats.avgLen)}자 · ${book ? rangeLabel : `${chapterCount}과`}`
                 : '문장을 붙여넣으면 과 수를 계산해요'}
             </span>
-            <Button size="sm" onClick={handleSplit} disabled={stats.lines === 0}>
+            <Button size="sm" onClick={handleSplit} disabled={stats.sourceLines === 0}>
               {chapterCount > 0 ? (book ? `${rangeLabel}로 나누기` : `${chapterCount}과로 나누기`) : '과로 나누기'}
             </Button>
           </div>

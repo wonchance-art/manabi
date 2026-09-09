@@ -21,6 +21,8 @@ export default function BookDraftPanel({
   const append = draft.append || null;
   const startOrder = append?.startOrder || 1;
   const countLines = (t) => String(t || '').split('\n').filter((l) => l.trim()).length;
+  // 이중 언어 교재(v2-AB R0) — 과에 동봉되는 뜻 개수. 원어만 담긴다는 것을 등록 전에 보여 준다.
+  const translationCount = draft.chapters.reduce((n, c) => n + Object.keys(c.translations || {}).length, 0);
 
   return (
     <div className="card add-form" style={{ marginBottom: 16 }}>
@@ -75,6 +77,7 @@ export default function BookDraftPanel({
           {isSentences
             ? `총 ${draft.chapters.reduce((n, c) => n + countLines(c.text), 0).toLocaleString()}문장`
             : `총 ${draft.chapters.reduce((n, c) => n + c.text.length, 0).toLocaleString()}자`}
+          {translationCount > 0 && ` · 뜻 ${translationCount.toLocaleString()}개는 원문이 아니라 드래그 번역에 붙어요`}
           {' '}· 각 챕터는 열 때 분석돼요
           {draft.privateOnly && (<><br />🔒 개인 소장 자료 — 비공개로 등록됩니다</>)}
         </span>

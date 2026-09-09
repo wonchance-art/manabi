@@ -10,6 +10,7 @@ import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
 import StudyPlanPanel from './StudyPlanPanel';
+import BookRefinePanel from '../components/BookRefinePanel';
 
 const SOURCE_TYPE_LABELS = {
   wikipedia_good:   'Wikipedia 우수 기사',
@@ -97,7 +98,7 @@ async function fetchWorldReports() {
 
 // ── Component ─────────────────────────────────────
 export default function AdminPage() {
-  const { isAdmin, loading } = useAuth();
+  const { user, isAdmin, loading } = useAuth();
   const [tab, setTab] = useState('users');
   const [newSource, setNewSource] = useState(DEFAULT_NEW_SOURCE);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -414,6 +415,13 @@ export default function AdminPage() {
       {tab === 'materials' && (
         matsLoading ? <Spinner message="자료 목록 로딩 중..." /> : (
           <div className="admin-table-wrap">
+            {/* 책 단위 정제(v2-AB R0) — 내 책 묶음만 후보로 보인다(RPC가 소유자만 받는다) */}
+            <BookRefinePanel
+              materials={materials}
+              userId={user?.id}
+              toast={toast}
+              onRefined={() => queryClient.invalidateQueries({ queryKey: ['admin-materials'] })}
+            />
             <div className="admin-table-header">
               <span>총 {materials.length}건</span>
             </div>
