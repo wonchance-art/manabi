@@ -8,6 +8,8 @@ const SUPABASE_KEY = 'sb_publishable_qSe245OfO4EyU7SQxgqSSA_qsMPRlLr';
 export async function generateMetadata({ params }) {
   try {
     const { id } = await params;
+    // 팀 사본(v2-AB R2) — local:<id>는 기기 안에만 있다. 서버 조회 없이 기본 제목.
+    if (String(id).startsWith('local:')) return { title: '팀 자료 사본', description: '팀 페이지에서 받아 둔 사본' };
     const cookieStore = await cookies();
     const supabase = createServerClient(SUPABASE_URL, SUPABASE_KEY, {
       cookies: {

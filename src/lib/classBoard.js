@@ -266,3 +266,29 @@ export function toPlainText(material) {
   const lines = noteEntries(material).map((e) => [e.text, e.reading, e.meaning].filter(Boolean).join(' — '));
   return [material?.title || '', '', ...lines].join('\n').trim();
 }
+
+/* ── 학생 페이지·local: 뷰어(v2-AB R2) ── */
+
+/** 기기 사본을 여는 뷰어 id 접두 — `/viewer/local:<id>?team=<key>`. 네트워크 0 계약의 표식. */
+export const LOCAL_PREFIX = 'local:';
+export function isLocalId(id) { return typeof id === 'string' && id.startsWith(LOCAL_PREFIX); }
+export function parseLocalId(id) {
+  if (!isLocalId(id)) return null;
+  const n = Number(id.slice(LOCAL_PREFIX.length));
+  return Number.isInteger(n) && n > 0 ? n : null;
+}
+export function localViewerHref(id, teamKey) {
+  return `/viewer/${LOCAL_PREFIX}${id}?team=${encodeURIComponent(teamKey)}`;
+}
+/** 사본 안에서의 이전/다음 과는 팀 페이지를 거친다(받기는 팀 페이지만 한다). */
+export function teamOpenHref(teamKey, id) {
+  return `/class/${encodeURIComponent(teamKey)}?open=${encodeURIComponent(id)}`;
+}
+
+/** 팀 목록 캐시의 과 목록을 뷰어 book-nav 모양으로 — {id, title, order, href}. 없으면 []. */
+export function chaptersForLocalNav(index, teamKey) {
+  const chapters = Array.isArray(index?.chapters) ? index.chapters : [];
+  return chapters
+    .map((c) => ({ id: c.id, title: c.title, order: Number(c.order) || 0, href: teamOpenHref(teamKey, c.id) }))
+    .sort((a, b) => a.order - b.order);
+}

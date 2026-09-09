@@ -88,6 +88,9 @@ import { prepareViewerSaveUndo, undoViewerSave } from '../lib/viewerSaveUndo';
 import { contextualMeaning, refreshViewerToken, referenceMatchesContext, createViewerRequestGate, viewerCacheKey, viewerCommandAllowed } from '../lib/viewerReliability';
 import { clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
 import { lookupTranslation, bookMeaningPanelText } from '../lib/bilingualSplit';
+import { isLocalId, parseLocalId, chaptersForLocalNav } from '../lib/classBoard';
+import { getSharedCopy } from '../lib/sharedStore';
+import { readIndexCache, writePendingSave } from '../lib/classClient';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
 import { fetchKnownWords, knownWordsLang, unmarkKnown } from '../lib/knownWords';
 import { mergeKnownIntoIndex } from '../lib/knownWords';
@@ -125,6 +128,17 @@ const STUDY_LANGS = new Set(['Japanese', 'English', 'French', 'Chinese']);
  * 그것이야말로 스테일이다.
  */
 async function fetchMaterial(id) {
+  // 팀 사본(v2-AB R2) — `local:<id>`는 **네트워크 0**: 기기 사본(sharedStore)만 연다. 없으면 LOCAL_MISSING
+  // (캐시 폴백·서버 조회 없음 — 받기는 팀 페이지만 한다). 사본이 없어도 팀 페이지로 돌아갈 길은 ?team=가 준다.
+  if (isLocalId(id)) {
+    const copy = await getSharedCopy(parseLocalId(id));
+    if (!copy?.material) {
+      const err = new Error('LOCAL_MISSING');
+      err.code = 'LOCAL_MISSING';
+      throw err;
+    }
+    return { ...copy.material, __local: true, __team: copy.team };
+  }
   try {
     const { data, error } = await supabase
       .from('reading_materials')
@@ -391,19 +405,24 @@ export default function ViewerPage() {
         .map((r) => ({ id: r.id, title: r.title, status: r.status, order: Number(r.book?.order) || 0 }))
         .sort((a, b) => a.order - b.order);
     },
-    enabled: !!bookMeta?.key,
+    enabled: !!bookMeta?.key && !material?.__local,
     staleTime: 1000 * 60,
   });
+  // 팀 사본(v2-AB R2)의 형제 과는 팀 목록 캐시에서 — 링크는 팀 페이지(?open=)를 거친다(받기 단일 소유).
+  const navChapters = material?.__local
+    ? chaptersForLocalNav(readIndexCache(material.__team)?.index, material.__team)
+    : bookChapters;
+  const navId = material?.__local ? parseLocalId(id) : id;
   const bookNav = (() => {
-    if (!bookMeta || !bookChapters?.length) return null;
-    const idx = bookChapters.findIndex((c) => c.id === Number(id) || String(c.id) === String(id));
+    if (!bookMeta || !navChapters?.length) return null;
+    const idx = navChapters.findIndex((c) => c.id === Number(navId) || String(c.id) === String(navId));
     if (idx === -1) return null;
     return {
       title: bookMeta.title,
       pos: idx + 1,
-      total: bookChapters.length,
-      prev: idx > 0 ? bookChapters[idx - 1] : null,
-      next: idx < bookChapters.length - 1 ? bookChapters[idx + 1] : null,
+      total: navChapters.length,
+      prev: idx > 0 ? navChapters[idx - 1] : null,
+      next: idx < navChapters.length - 1 ? navChapters[idx + 1] : null,
       // 이어 적기(#1077 5520128974) — 마지막 과의 「다음 →」 자리에 「다음 과 적기」(내 책만)
       key: bookMeta.key,
       canAppend: !!user?.id && material?.owner_id === user.id,
@@ -1652,8 +1671,30 @@ export default function ViewerPage() {
   };
   const undoAny = () => (lastInlineGradeRef.current ? undoInlineGrade() : undoLastSave());
 
+  // 팀 사본에서의 「담기」(v2-AB R2) — 비로그인은 단어를 기기에 적어 두고 로그인 뒤 복제본에서 담는다.
+  const rememberGuestSave = (token) => {
+    if (!token || !material?.__local) return;
+    writePendingSave({
+      team: material.__team,
+      materialId: parseLocalId(id),
+      word: {
+        text: token.text,
+        base: token.sep_link || token.base_form,
+        meaning: token.meaning,
+        pos: token.pos,
+        reading: token.furigana || token.reading,
+        language: materialLang,
+        sourceSentence: extractSourceSentence(token.id) || leftPanelText,
+      },
+    });
+  };
+
   const addToVocab = async (grade) => {
-    if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
+    if (!user) {
+      if (material?.__local) { rememberGuestSave(selectedToken); toast('로그인하면 담겨요 — 카드의 「로그인 · 가입」으로 가세요.', 'info'); return; }
+      toast('로그인이 필요합니다.', 'warning');
+      return;
+    }
     if (!selectedToken || savingGrade.current) return;
     savingGrade.current = true;
     setSaveAnim(true);
@@ -1705,6 +1746,19 @@ export default function ViewerPage() {
   };
 
   if (isLoading) return <div className="page-container"><Spinner message="자료 해부 중..." /></div>;
+  if (error?.code === 'LOCAL_MISSING') {
+    // 팀 사본이 없다(7일이 지났거나 다른 기기) — 팀 페이지가 다시 받는다. ?team=이 돌아갈 길.
+    const teamKey = originalParams.get('team');
+    return (
+      <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
+        <h2 style={{ color: 'var(--text-primary)', marginBottom: 8 }}>사본이 없어요</h2>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: 20, maxWidth: 400, margin: '0 auto 20px' }}>
+          이 기기에 받아 둔 사본이 지워졌어요 — 7일이 지났거나 다른 기기예요. 팀 페이지에서 다시 열면 받아요.
+        </p>
+        <Link href={teamKey ? `/class/${teamKey}` : '/class'} className="btn btn--primary">팀 페이지로 →</Link>
+      </div>
+    );
+  }
   if (error) {
     const isNotFound = error.code === 'NOT_FOUND' || /not.*found|no.*rows|multiple.*rows/i.test(error.message || '');
     return (
@@ -1726,8 +1780,8 @@ export default function ViewerPage() {
     );
   }
 
-  // 비공개 자료 접근 제어
-  if (material?.visibility === 'private' && material?.owner_id !== user?.id) {
+  // 비공개 자료 접근 제어 — 팀 사본(__local)은 암호 뒤 토큰으로 받은 것이라 여기서 막지 않는다.
+  if (material?.visibility === 'private' && material?.owner_id !== user?.id && !material?.__local) {
     return (
       <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
         <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>비공개 자료입니다</h2>
@@ -2191,6 +2245,21 @@ export default function ViewerPage() {
           </div>
         </div>
       )}
+      {!user && material?.__local && (
+        // 팀 사본(v2-AB R2 S2) — 담기 CTA. 「로그인이 필요합니다」 토스트 대신 돌아올 길이 있는 시트.
+        <div className="save-grade__guest">
+          <p className="save-grade__guide">로그인하면 「{headText}」이(가) 내 단어장에 담기고 며칠 뒤 복습으로 돌아와요.</p>
+          <div className="word-detail-card__actrow">
+            <Link
+              href={`/auth?from=${encodeURIComponent(`/class/${material.__team}`)}`}
+              className="btn btn--primary btn--sm"
+              onClick={() => rememberGuestSave(selectedToken)}
+            >
+              로그인 · 가입 →
+            </Link>
+          </div>
+        </div>
+      )}
       {user && (() => {
         // W R1 저장 등급(오너 확정 2026-09-02, #1077 5504298889): 「저장/이미 안다」 이분법 →
         // Anki식 4등급. 라벨·순서·클래스는 복습 화면(ScoreSection)과 동일. 전부 SRS 안 —
@@ -2389,12 +2458,14 @@ export default function ViewerPage() {
             폰에서 두 줄(89px)로 꺾였고, 그 위에 뒤로가기 줄·시리즈 내비 줄이 따로 있었다. */}
         <div className="viewer-topbar">
           <LibrarySaveButton material={material}/>
-          <LibraryReturnLink className="viewer-back-link">← 내 서재</LibraryReturnLink>
+          {material?.__local
+            ? <Link href={`/class/${material.__team}`} className="viewer-back-link">← 팀 페이지</Link>
+            : <LibraryReturnLink className="viewer-back-link">← 내 서재</LibraryReturnLink>}
           {composerOf(material) && <Link className="viewer-back-link" href={sourcePassageHref(material,originalParams.get('returnTo')) || `/viewer/${composerOf(material)?.parentId || id}?returnTo=${encodeURIComponent(originalParams.get('returnTo') || '/materials?view=owned')}`}>{passageOf(material)?`원본의 ${passageLocation(passageOf(material))}으로 ↗`:'현재 글과 첨부 원본 ↗'}</Link>}
           {siblingNav && (
             <div className="viewer-series-nav" title={siblingNav.label}>
               {siblingNav.prev ? (
-                <Link href={`/viewer/${siblingNav.prev.id}`} className="viewer-series-nav__btn" title={siblingNav.prev.title} aria-label={siblingNav.prevLabel}>◀</Link>
+                <Link href={siblingNav.prev.href || `/viewer/${siblingNav.prev.id}`} className="viewer-series-nav__btn" title={siblingNav.prev.title} aria-label={siblingNav.prevLabel}>◀</Link>
               ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">◀</span>}
               {siblingNav.pos != null && (
                 <span className="viewer-series-nav__position" title={siblingNav.label}>
@@ -2402,7 +2473,7 @@ export default function ViewerPage() {
                 </span>
               )}
               {siblingNav.next ? (
-                <Link href={`/viewer/${siblingNav.next.id}`} className="viewer-series-nav__btn" title={siblingNav.next.title} aria-label={siblingNav.nextLabel}>▶</Link>
+                <Link href={siblingNav.next.href || `/viewer/${siblingNav.next.id}`} className="viewer-series-nav__btn" title={siblingNav.next.title} aria-label={siblingNav.nextLabel}>▶</Link>
               ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">▶</span>}
             </div>
           )}
@@ -2958,7 +3029,7 @@ export default function ViewerPage() {
         }
         if (bookNav?.next) {
           return (
-            <Link href={`/viewer/${bookNav.next.id}`} className="next-lesson-card">
+            <Link href={bookNav.next.href || `/viewer/${bookNav.next.id}`} className="next-lesson-card">
               <div className="next-lesson-card__hint">다음 과 · {bookNav.pos + 1}/{bookNav.total}</div>
               <div className="next-lesson-card__title">{bookNav.next.title}</div>
             </Link>

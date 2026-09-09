@@ -8505,8 +8505,9 @@ a.viewer-badge:hover {
 .class-board { display: flex; flex-direction: column; gap: 10px; }
 .class-board__row {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1.4fr);
-  gap: 16px;
+  /* 뷰포트 쿼리 동결(ui-conventions) — 좁으면 auto-fit이 세로로 쌓는다 */
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px 16px;
   align-items: baseline;
   padding: 12px 16px;
   border-radius: var(--radius-md);
@@ -8527,6 +8528,5 @@ a.viewer-badge:hover {
   border-radius: var(--radius-md);
   background: var(--bg-secondary);
 }
-@media (max-width: 640px) {
-  .class-board__row { grid-template-columns: 1fr; gap: 4px; }
-}
+/* 팀 사본 담기 CTA(v2-AB R2) — 비로그인 학생의 카드 액션 줄 자리 */
+.save-grade__guest { padding: 10px 12px; border-radius: var(--radius-md); background: var(--primary-glow); border: 1px solid var(--primary); }
