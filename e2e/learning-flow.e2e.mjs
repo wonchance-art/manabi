@@ -5,6 +5,7 @@ import { after, before, test } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { chromium } from 'playwright-core';
 import config from '../playwright.config.mjs';
+import { viewerCacheKey } from '../src/lib/viewerReliability.js';
 
 let browser;
 let server;
@@ -72,14 +73,37 @@ function runtimeErrors(page) {
 }
 
 async function runInFreshPage(run, { allowErrors = [] } = {}) {
-  const context = await browser.newContext({ baseURL: config.use.baseURL });
+  // Inspect completed control states using the application's reduced-motion support.
+  // API fixtures must be handled by Playwright routes, including requests issued during
+  // client navigation. A production service worker would bypass those route handlers.
+  const context = await browser.newContext({ baseURL: config.use.baseURL, reducedMotion: 'reduce', serviceWorkers: 'block' });
   const page = await context.newPage();
   const errors = runtimeErrors(page);
+  const navigationEvents = [];
+  page.on('response', response => {
+    const url = new URL(response.url());
+    if (url.origin === new URL(config.use.baseURL).origin && !url.pathname.startsWith('/_next/')) {
+      navigationEvents.push({ path: url.pathname, status: response.status(), type: response.headers()['content-type'] });
+    }
+  });
+  page.on('requestfailed', request => {
+    navigationEvents.push({ path: new URL(request.url()).pathname, error: request.failure()?.errorText });
+  });
   try {
     await run(page, context);
     await page.waitForTimeout(250);
     const unexpected = errors.filter((error) => !allowErrors.some((pattern) => pattern.test(error)));
     assert.deepEqual(unexpected, [], unexpected.join('\n'));
+  } catch (error) {
+    const pathname = new URL(page.url()).pathname;
+    const headings = await page.locator('h1').allTextContents().catch(() => []);
+    error.message += `\nLearning flow stopped at ${pathname}; headings=${JSON.stringify(headings)}`;
+    error.message += `\nRecent navigation=${JSON.stringify(navigationEvents.slice(-12))}`;
+    error.message += `\nBrowser errors=${JSON.stringify(errors)}`;
+    // This server uses only the synthetic E2E backend. Include its render diagnostics
+    // when an RSC response starts but the destination never becomes available.
+    error.message += `\nE2E server diagnostics=${serverOutput.slice(-6000)}`;
+    throw error;
   } finally {
     await context.close();
   }
@@ -111,7 +135,7 @@ function base64urlJson(value) {
   return Buffer.from(JSON.stringify(value)).toString('base64url');
 }
 
-function fakeLearnerSession() {
+function fakeLearnerSession(role = 'learner') {
   const now = Math.floor(Date.now() / 1000);
   const user = {
     id: '00000000-0000-4000-8000-000000000172',
@@ -133,6 +157,7 @@ function fakeLearnerSession() {
       sub: user.id,
       aud: 'authenticated',
       role: 'authenticated',
+      e2e_role: role,
       email: user.email,
       iat: now,
       exp: now + 3600,
@@ -149,7 +174,7 @@ function fakeLearnerSession() {
   };
 }
 
-async function mockAuthenticatedVocab(context, { readingMaterials = [] } = {}) {
+async function mockAuthenticatedVocab(context, { readingMaterials = [], role = 'learner' } = {}) {
   await context.addInitScript(() => {
     class NoopIntersectionObserver {
       observe() {}
@@ -164,7 +189,7 @@ async function mockAuthenticatedVocab(context, { readingMaterials = [] } = {}) {
     });
   });
 
-  const session = fakeLearnerSession();
+  const session = fakeLearnerSession(role);
   const storedWords = [];
   const writes = [];
   const writesByTable = {};
@@ -211,7 +236,7 @@ async function mockAuthenticatedVocab(context, { readingMaterials = [] } = {}) {
       await json(route, {
         id: session.user.id,
         display_name: 'E2E 학습자',
-        role: 'learner',
+        role,
         onboarded: true,
         streak_count: 1,
         last_login_at: '2026-08-06T00:00:00.000Z',
@@ -382,7 +407,8 @@ async function mockAuthenticatedViewer(context) {
 }
 
 async function openTrackChapter(page, track) {
-  await page.goto('/lessons', { waitUntil: 'domcontentloaded', timeout: config.timeout });
+  await page.goto('/admin/legacy-textbooks', { waitUntil: 'domcontentloaded', timeout: config.timeout });
+  await authenticatedPageReady(page);
   await page.getByRole('button', { name: track.label, exact: true }).click();
   await page.waitForFunction(
     (key) => globalThis.localStorage?.getItem('lessons_lang') === key,
@@ -396,10 +422,19 @@ async function openTrackChapter(page, track) {
 
   const chapterRow = page.locator(`#lessons-ch-${track.slug}`);
   await assertVisible(chapterRow, `${track.label} manifest chapter`);
+  assert.equal(await chapterRow.getAttribute('href'), `/admin/legacy-textbooks${track.path}`, 'archive navigation links directly to the authenticated destination');
   await chapterRow.click();
-  await page.waitForURL(`**${track.path}`, { timeout: config.timeout });
-  assert.equal(new URL(page.url()).pathname, track.path);
+  await page.waitForURL(`**/admin/legacy-textbooks${track.path}`, { waitUntil: 'domcontentloaded', timeout: config.timeout });
+  assert.equal(new URL(page.url()).pathname, `/admin/legacy-textbooks${track.path}`);
   await assertVisible(page.getByRole('heading', { level: 1 }).first(), `${track.label} chapter heading`);
+  await authenticatedPageReady(page);
+}
+
+async function authenticatedPageReady(page) {
+  // The seeded cookie authenticates SSR, but client AuthContext hydrates separately.
+  // A resolved profile is the observable sign that interactions will use the member path.
+  await assertVisible(page.locator('.gnb__profile-btn[title="E2E 학습자"]'), 'hydrated member profile');
+  await page.evaluate(() => document.fonts.ready);
 }
 
 before(async () => {
@@ -429,22 +464,24 @@ after(async () => {
 });
 
 // 언어 칩이나 레벨 아코디언, 매니페스트 링크가 끊기면 4트랙의 실제 첫 챕터 진입에서 잡는다.
-test('lessons: 4트랙을 전환하고 실재 레벨 그룹에서 챕터로 진입한다', { timeout: config.timeout * 4 }, async () => {
+test('archive lessons: 관리자 보관함의 4트랙을 전환하고 실재 레벨 그룹에서 챕터로 진입한다', { timeout: config.timeout * 4 }, async () => {
   const tracks = [
     { key: 'English', label: '영어', level: 'A1', slug: 'a1-01-be-verb', path: '/english/grammar/a1-01-be-verb' },
     { key: 'French', label: '프랑스어', level: 'A1', slug: 'a1-01-pronouns-etre', path: '/french/grammar/a1-01-pronouns-etre' },
     { key: 'Japanese', label: '일본어', level: 'N5', slug: 'n5-04-desu-da', path: '/japanese/grammar/n5-04-desu-da' },
     { key: 'Chinese', label: '중국어', level: 'H1', slug: 'h1-01-shi', path: '/chinese/grammar/h1-01-shi' },
   ];
-  await runInFreshPage(async (page) => {
+  await runInFreshPage(async (page, context) => {
+    await mockAuthenticatedVocab(context, { role: 'admin' });
     for (const track of tracks) await openTrackChapter(page, track);
     await sampleHeap(page, 'four-track chapter navigation');
   });
 });
 
-// 드릴 렌더·채점·게스트 SRS 기록·복습 링크 중 하나가 깨지면 6문항 완주 계약에서 잡는다.
-test('chapter drills: choice·fill·order·listen 6문항의 정오답과 복습 넛지를 검증한다', { timeout: config.timeout * 2 }, async () => {
+// 보관함 드릴 렌더·채점·로그인 SRS 기록·복습 링크 중 하나가 깨지면 6문항 완주 계약에서 잡는다.
+test('archive chapter drills: choice·fill·order·listen 6문항의 정오답과 복습 넛지를 검증한다', { timeout: config.timeout * 2 }, async () => {
   await runInFreshPage(async (page, context) => {
+    const archive = await mockAuthenticatedVocab(context, { role: 'admin' });
     await mockTts(context);
     await openTrackChapter(page, {
       key: 'Japanese',
@@ -487,28 +524,22 @@ test('chapter drills: choice·fill·order·listen 6문항의 정오답과 복습
     await assertVisible(listen.getByText('정답이에요!', { exact: true }), 'correct listen result');
 
     await assertVisible(drills.getByText('6문항 중 4개 정답 — 틀린 문항은 위 문형 설명을 다시 보고 와요.', { exact: true }), 'drill summary');
+    const deadline = Date.now() + config.timeout;
+    while ((archive.writesByTable.review_events || []).length < 6 && Date.now() < deadline) await page.waitForTimeout(100);
+    assert.equal((archive.writesByTable.review_events || []).length, 6, 'all six answers reach signed-in review events');
     const queued = await page.evaluate(() => JSON.parse(localStorage.getItem('manabi-drill-review-v1') || '[]'));
-    assert.equal(queued.length, 6, 'all six guest drill results should enter the local review queue');
-
-    // 게스트를 /review/grammar로 보내면 안 된다 — 그 페이지는 로그인 세션에서만 큐를 읽으므로
-    // "복습 대기 N개"라고 해놓고 빈 화면이 나오는 막다른 길이 된다(이전 계약의 결함).
-    // 게스트에겐 기록이 이 기기에 남았다는 사실만 알리고 그 자리에서 로그인을 권유해야 한다.
-    const nudgeLink = drills.getByRole('link', { name: /로그인하면 며칠 뒤 복습 큐로 돌아와요/ });
-    await assertVisible(nudgeLink, 'guest review nudge invites sign-in');
-    assert.equal(
-      await drills.getByRole('link', { name: /문법 복습/ }).count(),
-      0,
-      'guests must not be pointed at the signed-in-only review session',
-    );
-    await nudgeLink.click();
-    await page.waitForURL('**/auth**', { timeout: config.timeout });
+    assert.equal(queued.length, 0, 'administrator answers are not duplicated into the guest queue');
+    const nudgeLink = drills.getByRole('link', { name: /문법 복습에서 이어가기|지금 복습 대기/ });
+    await assertVisible(nudgeLink, 'signed-in review nudge');
+    assert.equal(await nudgeLink.getAttribute('href'), '/review/grammar');
     await sampleHeap(page, 'six drills and review nudge');
   });
 });
 
 // 초안·체크리스트 저장이나 하이드레이션 복원이 깨지면 새로고침 뒤 써 보기 상태에서 잡는다.
 test('writing: 초안과 체크리스트를 새로고침 뒤 복원하고 이어서 학습 카드를 최상단에 둔다', { timeout: config.timeout * 2 }, async () => {
-  await runInFreshPage(async (page) => {
+  await runInFreshPage(async (page, context) => {
+    await mockAuthenticatedVocab(context, { role: 'admin' });
     const chapterPath = '/french/grammar/a1-01-pronouns-etre';
     const draft = "Je m'appelle Mina. Je suis coréenne.";
     await openTrackChapter(page, {
@@ -565,7 +596,7 @@ test('writing: 초안과 체크리스트를 새로고침 뒤 복원하고 이어
     await restoredChecks.nth(2).check();
     await assertVisible(writing.getByText('점검 완료. 고친 문장으로 한 번 더 써 보면 완전히 내 것이 돼요.', { exact: true }), 'completed checklist');
 
-    await page.goto('/lessons', { waitUntil: 'domcontentloaded', timeout: config.timeout });
+    await page.goto('/admin/legacy-textbooks', { waitUntil: 'domcontentloaded', timeout: config.timeout });
     const continueCard = page.locator('button.lessons-continue');
     await assertVisible(continueCard, 'continue learning card');
     assert.match(await continueCard.innerText(), /이어서 학습/);
@@ -576,7 +607,7 @@ test('writing: 초안과 체크리스트를 새로고침 뒤 복원하고 이어
     });
     assert.equal(precedesFilters, true, 'the continue card should precede language and level filters');
     await continueCard.click();
-    await page.waitForURL('**/french/grammar/**', { timeout: config.timeout });
+    await page.waitForURL('**/french/grammar/**', { waitUntil: 'domcontentloaded', timeout: config.timeout });
     await sampleHeap(page, 'writing restore and continue card');
   });
 });
@@ -584,7 +615,7 @@ test('writing: 초안과 체크리스트를 새로고침 뒤 복원하고 이어
 // 인증 세션·DB upsert·캐시 재조회 중 하나가 끊기면 실재 어휘 저장부터 복습 카드 진입까지에서 잡는다.
 test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복습 큐에 반영한다', { timeout: config.timeout * 2 }, async () => {
   await runInFreshPage(async (page, context) => {
-    const { session, storedWords, writes, writesByTable } = await mockAuthenticatedVocab(context);
+    const { session, storedWords, writes, writesByTable } = await mockAuthenticatedVocab(context, { role: 'admin' });
     await page.goto('/french/vocab/a1', { waitUntil: 'domcontentloaded', timeout: config.timeout });
     await assertVisible(page.getByRole('heading', { name: 'A1 기초 어휘', exact: true }), 'French A1 vocabulary heading');
 
@@ -674,19 +705,21 @@ test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복�
 test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증한다', { timeout: config.timeout * 2 }, async () => {
   await runInFreshPage(async (page, context) => {
     await page.setViewportSize({ width: 1024, height: 1100 });
-    const { analyzeRequests, getGeminiRequests } = await mockAuthenticatedViewer(context);
+    const { session, fixtures, analyzeRequests, getGeminiRequests } = await mockAuthenticatedViewer(context);
     await page.goto('/viewer/91001', { waitUntil: 'domcontentloaded', timeout: config.timeout });
 
     await assertVisible(page.getByRole('heading', { name: 'E2E 중국어 읽기 1장', exact: true }), 'viewer fixture heading');
+    await authenticatedPageReady(page);
 
     // ⑤ 유의어·반의어는 단어 카드가 열리면 자동 조회된다 — 캐시를 사전 시드해
     // 결정성(Gemini 0회 계약)을 유지하고, 시드값으로 칩 렌더까지 검증한다.
-    await page.evaluate(() => {
+    const synonymKey = await viewerCacheKey('pdf_cache:synant', 'Chinese', ['中文', '중국어', 'zhōng wén']);
+    await page.evaluate((key) => {
       localStorage.setItem(
-        'pdf_cache:synant:v1:Chinese:中文',
+        key,
         JSON.stringify({ syn: [{ w: '汉语', r: 'hànyǔ', ko: '중국어(한어)' }], ant: [] }),
       );
-    });
+    }, synonymKey);
 
     // 뷰어 정돈 A안: 책 챕터 내비는 시리즈와 같은 경로 줄 내비(.viewer-series-nav)다 — 책 이름은
     // 툴팁에만(H1이 이미 「책 — 과」를 든다), 화면에는 위치만.
@@ -695,28 +728,31 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
     assert.equal(await bookNav.getAttribute('title'), '《E2E 중국어 읽기》', 'book title lives in the tooltip only');
     await assertVisible(bookNav.getByText('1/2', { exact: true }), 'book chapter position');
 
-    const sheet = page.getByRole('dialog', { name: 'AI 분석 결과' });
+    const sheet = page.getByRole('complementary', { name: '읽기 보조 패널' });
     // v2-R: 시트 안 섹션 헤더는 폐지됐다(같은 것을 여는 방법이 셋이었다) — 이제 하단 바가
     // 유일한 전환 수단이고, 열린 탭은 바 버튼의 aria-pressed가 알린다.
-    const barButtons = page.locator('.viewer-sheet-bar__btn');
-    const leftTab = barButtons.nth(0);
-    const rightTab = barButtons.nth(1);
+    const barButtons = page.locator('.viewer-inspector__tabs [role=tab]');
+    const leftTab = barButtons.nth(1);
+    const rightTab = barButtons.nth(0);
     const wordToken = page.locator('[data-tid="id_0_3"]');
     await assertVisible(wordToken, 'Chinese word token');
     await wordToken.click();
     await assertVisible(sheet, 'word detail sheet');
-    assert.equal(await leftTab.getAttribute('aria-pressed'), 'false', 'a token tap keeps sentence detail closed');
-    assert.equal(await rightTab.getAttribute('aria-pressed'), 'true', 'a token tap opens the word tab');
+    assert.equal(await leftTab.getAttribute('aria-selected'), 'false', 'a token tap keeps sentence detail closed');
+    assert.equal(await rightTab.getAttribute('aria-selected'), 'true', 'a token tap opens the word tab');
     await assertVisible(sheet.getByText('중국어', { exact: true }), 'selected word meaning');
+    await sheet.getByText('예문·관련 표현',{exact:true}).click();
+    await sheet.getByText('유의어·반의어',{exact:true}).click();
     await assertVisible(sheet.getByText('汉语', { exact: true }), 'preseeded synonym chip in the word card');
 
     const selectedText = '我们学习中文';
-    await page.evaluate((text) => {
+    const translationKey = await viewerCacheKey('viewer_tx', [session.user.id, '91001', 'Chinese', fixtures[0].raw_text, fixtures[0].processed_json], selectedText);
+    await page.evaluate((key) => {
       localStorage.setItem(
-        `viewer_tx:Chinese:${text}`,
+        key,
         '**번역**\n우리는 중국어를 배웁니다.\n\n**맥락**\nE2E 캐시 문장입니다.',
       );
-    }, selectedText);
+    }, translationKey);
 
     // 느린 러너에서 폰트 스왑 리플로우가 좌표 측정과 드래그 사이에 끼면 3토큰 미만이
     // 집혀 flaky했다(2026-08-19 main 2회 관측, 로컬 재현 불가 — 원인은 코드가 아니라
@@ -741,7 +777,7 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
       // 아래 "요청 정확히 1회" 계약을 보존한다.
       // 부분 선택의 분석으로 시트가 드래그 줄 위까지 자라 있으면 재시도의
       // pointerdown부터 시트가 먹는다(계측 실측) — 닫고 재시도한다.
-      const closeHandle = sheet.getByRole('button', { name: '시트 닫기', exact: true });
+      const closeHandle = sheet.getByRole('button', { name: '보조 패널 닫기', exact: true });
       if (await closeHandle.isVisible().catch(() => false)) await closeHandle.click();
       analyzeRequests.length = 0;
       assert.ok(await dragPick(), 'drag pick did not reach 3 tokens after a retry');
@@ -749,27 +785,28 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
     // v2-R §3: 문장 드래그는 이제 **번역·맥락 하나만** 띄운다. 둘을 동시에 펼치면 60svh를
     // 반씩 나눠 실질적으로 둘 다 못 보게 되기 때문이다. 단어 목록은 사라진 게 아니라
     // 탭 뒤에 있고, 그 대체 경로가 실제로 닿는지를 아래에서 확인한다.
-    assert.equal(await leftTab.getAttribute('aria-pressed'), 'true', 'sentence drag opens the sentence tab');
-    assert.equal(await rightTab.getAttribute('aria-pressed'), 'false', 'sentence drag no longer opens both at once');
+    assert.equal(await leftTab.getAttribute('aria-selected'), 'true', 'sentence drag opens the sentence tab');
+    assert.equal(await rightTab.getAttribute('aria-selected'), 'false', 'sentence drag no longer opens both at once');
     const contextText = sheet.locator('.pdf-context__text');
     await assertVisible(contextText, 'cached sentence translation');
     assert.match(await contextText.innerText(), /우리는 중국어를 배웁니다\./);
+
+    // 대체 경로 — 탭 하나로 분석된 단어 목록에 닿는다(폐지된 동시 오픈이 주던 것).
+    await rightTab.click();
+    assert.equal(await rightTab.getAttribute('aria-selected'), 'true', 'the bar switches to the word tab');
+    await assertVisible(sheet.getByText('단어 (2)', { exact: true }), 'deterministic sentence word analysis');
+    // Cached translation can render before /api/analyze completes; the word list proves response delivery.
     assert.deepEqual(analyzeRequests.map(({ lines, language }) => ({ lines, language })), [
       { lines: [selectedText], language: 'Chinese' },
     ]);
     assert.equal(getGeminiRequests(), 0, 'the preseeded translation cache must prevent Gemini calls');
 
-    // 대체 경로 — 탭 하나로 분석된 단어 목록에 닿는다(폐지된 동시 오픈이 주던 것).
-    await rightTab.click();
-    assert.equal(await rightTab.getAttribute('aria-pressed'), 'true', 'the bar switches to the word tab');
-    await assertVisible(sheet.getByText('단어 (2)', { exact: true }), 'deterministic sentence word analysis');
-
     await wordToken.click();
-    assert.equal(await leftTab.getAttribute('aria-pressed'), 'false', 'a word tap leaves the sentence tab closed');
-    assert.equal(await rightTab.getAttribute('aria-pressed'), 'true', 'a word tap keeps the word tab open');
+    assert.equal(await leftTab.getAttribute('aria-selected'), 'false', 'a word tap leaves the sentence tab closed');
+    assert.equal(await rightTab.getAttribute('aria-selected'), 'true', 'a word tap keeps the word tab open');
     await assertVisible(sheet.getByText('중국어', { exact: true }), 'word detail replaces sentence word results');
 
-    await sheet.getByRole('button', { name: '시트 닫기', exact: true }).click();
+    await sheet.getByRole('button', { name: '보조 패널 닫기', exact: true }).click();
     await bookNav.getByRole('link', { name: '다음 과', exact: true }).click();
     await page.waitForURL('**/viewer/91002', { timeout: config.timeout });
     await assertVisible(page.getByRole('heading', { name: 'E2E 중국어 읽기 2장', exact: true }), 'next book chapter');
@@ -783,7 +820,7 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
 // 아무 표시도 나지 않는다. 그래서 "무엇을 어느 테이블에 썼는지"를 여기서 붙잡아 둔다.
 test('authenticated drills: 드릴 채점이 review_events·grammar_review 정본에 기록된다', { timeout: config.timeout * 2 }, async () => {
   await runInFreshPage(async (page, context) => {
-    const { session, writesByTable } = await mockAuthenticatedVocab(context);
+    const { session, writesByTable } = await mockAuthenticatedVocab(context, { role: 'admin' });
     await mockTts(context);
     await page.goto('/japanese/grammar/n5-04-desu-da', { waitUntil: 'domcontentloaded', timeout: config.timeout });
 
@@ -793,12 +830,7 @@ test('authenticated drills: 드릴 채점이 review_events·grammar_review 정�
     await assertVisible(drills, 'chapter drills');
     const items = drills.locator('ol > li');
 
-    // 로그인 상태가 클라이언트에 반영된 뒤에 채점해야 정본 경로(서버)로 간다.
-    await page.waitForFunction(
-      () => document.cookie.includes('auth-token'),
-      undefined,
-      { timeout: config.timeout },
-    );
+    await authenticatedPageReady(page);
     await items.nth(0).getByPlaceholder('정답 입력').fill('です');
     await items.nth(0).getByRole('button', { name: '확인', exact: true }).click();
     await assertVisible(items.nth(0).getByText('정답이에요!', { exact: true }), 'correct fill result');
@@ -829,28 +861,11 @@ test('authenticated drills: 드릴 채점이 review_events·grammar_review 정�
 test('guest review: 기기 큐로 복습 세션을 열고 채점이 카드를 전진시킨다', { timeout: config.timeout * 2 }, async () => {
   await runInFreshPage(async (page, context) => {
     await mockTts(context);
-    await page.goto('/japanese/grammar/n5-04-desu-da', { waitUntil: 'domcontentloaded', timeout: config.timeout });
-
-    const drills = page.locator('section.card.fr-section').filter({
-      has: page.getByRole('heading', { name: '변형 드릴 — 새 문장으로 손 풀기', exact: true }),
-    });
-    await assertVisible(drills, 'chapter drills');
-    await drills.locator('ol > li').nth(3).getByRole('button', { name: 'がくせいです', exact: true }).click();
-    await page.waitForFunction(
-      () => JSON.parse(localStorage.getItem('manabi-drill-review-v1') || '[]').length > 0,
-      undefined,
-      { timeout: config.timeout },
-    );
-
-    // 방금 푼 카드는 미래 due라 당장은 안 잡힌다 — 복습 시점이 된 상황으로 당긴다.
-    const before = await page.evaluate(() => {
-      const rows = JSON.parse(localStorage.getItem('manabi-drill-review-v1') || '[]');
-      rows.forEach((row) => { row.next_review_at = '2000-01-01T00:00:00.000Z'; });
-      localStorage.setItem('manabi-drill-review-v1', JSON.stringify(rows));
-      return rows[0];
-    });
-    assert.ok(before.slug.startsWith('drill:'), 'the guest queue stores drill cards by drill id');
-
+    const before = { user_id: 'guest', lang: 'Japanese', slug: 'drill:ja-n504-d4', interval: 1,
+      ease_factor: 5, repetitions: 1, next_review_at: '2000-01-01T00:00:00.000Z' };
+    await context.addInitScript((row) => {
+      if (!localStorage.getItem('manabi-drill-review-v1')) localStorage.setItem('manabi-drill-review-v1', JSON.stringify([row]));
+    }, before);
     await page.goto('/review/grammar', { waitUntil: 'domcontentloaded', timeout: config.timeout });
     await assertVisible(page.getByText('이 기기에 쌓인 복습이에요.'), 'guest review notice');
     const choice = page.getByRole('button', { name: 'がくせいです', exact: true });
@@ -919,8 +934,9 @@ test('queue migration: 로그인하면 기기 복습 큐가 서버로 옮겨진�
 
 // 동적 slug 폴백이 되살아나 soft 404가 생기면 실제 HTTP 상태와 전용 404 화면에서 잡는다.
 test('chapter 404: 매니페스트에 없는 slug는 HTTP 404로 응답한다', { timeout: config.timeout }, async () => {
-  await runInFreshPage(async (page) => {
-    const response = await page.goto('/japanese/grammar/n5-e2e-missing-slug', {
+  await runInFreshPage(async (page, context) => {
+    await mockAuthenticatedVocab(context, { role: 'admin' });
+    const response = await page.goto('/admin/legacy-textbooks/japanese/grammar/n5-e2e-missing-slug', {
       waitUntil: 'domcontentloaded',
       timeout: config.timeout,
     });

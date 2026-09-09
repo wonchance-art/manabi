@@ -1,0 +1,182 @@
+# manabi 웹 v2 출시 후보
+
+2026-09-07 KST. 오너가 승인한 운영 반영 설계와 후속 ‘진행해’에 따른 출시 준비다.
+상태: **검토용 후보. 운영 전환 전 게이트는 아래에 별도로 기록한다.**
+
+## PR #1287 한정 담당 예외와 migration 정합화 (2026-09-08)
+
+오너가 이번 PR에 한해 Codex의 교재 migration 파일명 정합화와 병합을 명시적으로 승인했다. 아래 과거 기록의 Claude 전담/담당 승인 대기는 이번 PR에 한해 해소한다. 일반 협업 규약, 다른 PR 담당, force-push 금지는 유지한다.
+
+- 준비해 검토한 패치를 적용했다. `20260906000912_textbook_book_editions.sql` → `20260906024758_textbook_book_editions.sql`, SQL 본문 변경0. SHA-256 `118d904b04844fdada2bafae2b9921a6088ce2e45f64adbe1baed0c362beb76e` 유지. 교재 문서2개의 현행 파일 참조와 이미 적용한 SQL 안내를 정리했다.
+- 원격과 로컬 migration 각81건의 버전/이름이 정합화됐다. 격리 작업 공간을 프로젝트 `jdtowtxhexcweuxawrds`에 기존 CLI 인증으로 연결하고 Supabase CLI2.90.0의 `supabase db push --dry-run --linked`를 실제 실행했다. 결과 **Remote database is up to date.** 새 SQL 적용0, 원격 이력 repair/reset0, 기존 자료·진도·발행 포인터 변경0.
+- 파일 참조 검색에서 실행 코드/테스트에 옛 파일명 의존성이 없음을 확인했다. 옛 번호는 최초 검토 당시의 역사적 설명으로만 보존한다. diff check 통과. 최종 head의 전체 CI와 병합·운영 배포 결과는 PR #1287과 #150 완료 기록에 남긴다.
+- 실행 순서: 최종 head 검수/CI → 병합 직전 자동 도메인 할당 false 확인 → 승인된 exact head squash 병합 → 깨끗한 merged main의 production 대기 배포 → 버전/학습/권한 검수 → 운영 전환. 즉시 production을 바꾸는 배포나 미병합 preview 승격은 하지 않는다. 현재 수행 단계와 실제 운영 배포는 #150 최신 인계를 따른다.
+
+## 두 실제 계정 검수 완료와 복습 집계 안내 (2026-09-07)
+
+오너가 두 번째 계정으로 직접 로그인한 뒤 **계정 간 앱 화면 분리 검수를 완료했다**. 첫 계정은 비공개 검수 자료의 소유자, 두 번째는 관리자 메뉴가 표시되는 비소유자 계정이다. 역할·권한을 바꾸거나 임시 JWT를 만들지 않았다. 아래 과거 기록의 '두 번째 계정 검수 대기'는 이번 결과로 해소한다.
+
+- 두 번째 계정에서 첫 계정의 비공개 검수 자료 주소를 직접 열면 본문 대신 접근 불가 안내가 표시됐다. 내 자료에서 정확한 검수 제목을 검색해도 결과가 없었다.
+- 두 번째 계정의 단어장 전체 언어 검색에서 첫 계정이 저장한 검수 표현 두 개가 각각 결과0이었다. 두 번째 계정의 홈 이어 읽기와 복습 목록은 그 계정의 기존 자료·표현을 표시했다. 첫 계정의 완료 기록이나 두 표현이 다른 계정 화면에 재사용되지 않았다.
+- 첫 계정의 운영 탭에서도 같은 비공개 자료의 네 문장·수집2개·읽기 완료 표시를 다시 확인했다. 읽기 전용 DB 조회로 private·소유자 완료·두 표현의 미래 복습 일정이 유지됨을 확인했다. 이번 검수에서 추가 자료/표현 저장·채점·삭제는 하지 않았다.
+- 실제 DB의 reading_progress와 user_vocabulary 정책이 `auth.uid() = user_id`를 요구하는 것, 자료 가시성 guard가 RESTRICTIVE인 것을 조회했다. 이 정책 확인을 실제 UI 검수와 구분한다. 모든 관리자 API·쓰기 공격·전체 DB 보안 감사를 완료했다는 의미는 아니다.
+- 홈의 전체 대기 수에는 아직 익히지 않은 표현도 포함되지만 복습 화면은 하루 새 표현 한도를 적용한다. 서로 같은 수로 오해하지 않도록 홈의 제목을 '개의 표현이 기다리고 있어요.', 설명을 '새 표현을 포함한 대기 목록이에요. 오늘 분량은 복습 화면에서 확인하세요.'로 바꿨다. 집계 쿼리·FSRS·하루 한도·데이터 저장은 그대로다.
+- 실행 코드 **`1f1c21e5ca234f19c642ed7661d3989f18e88901`**의 변경은 HomePage 문구 두 곳과 `public/sw.js` 콘텐츠 캐시 버전이다. 관련 기존 검사 **5파일/39개**, 명시적 JSX ESLint, diff check 통과. 코드 변경 규모에 맞춰 기존 계약을 실행했고 문구를 그대로 비교하는 새 테스트는 추가하지 않았다. 최초 JSX lint 기본 호출은 파일을 무시했으므로 통과 근거로 삼지 않고 `--ext .jsx`로 다시 실행했다. 새 미리보기와 최종 전체 CI 결과는 PR #1287 및 #150 인계에 기록한다.
+
+남은 운영 조건은 Claude의 migration 파일 번호/참조 정합화, 병합 전 자동 도메인 할당 분리, Claude 병합과 merged main production 대기 빌드 검수다. [적용용 정합화 패치](https://github.com/wonchance-art/manabi/pull/1287#issuecomment-5571511285)는 준비된 상태이며 SQL을 재실행하지 않는다. PDF·음성 제작은 이번 범위가 아니다.
+
+## 실제 계정 검수 및 미리보기 로그인 복귀 (2026-09-07)
+
+오너의 검수 세션 사용 승인과 직접 로그인 후, **실제 Google 로그인 → 개편 서재 → 비공개 자료 → 표현 저장 → 복습 → 원문 복귀**를 완료했다. 아래 과거 기록의 '로그아웃/실제 계정 검수 전부 대기'는 이 결과로 갱신한다. **두 번째 실제 계정의 접근 분리 검수는 아직 미완료**다.
+
+- 원인과 조치: 미리보기의 Google 로그인은 운영 홈으로 돌아갔다. Supabase Dashboard에서 Site URL이 기존 운영 주소이며 Redirect URLs가 운영 callback과 localhost callback 두 개뿐임을 확인했다. 고정 호스트 **`https://manabi-web-v2-preview.vercel.app/**`** 한 항목을 추가하고 저장된 총 3개 목록을 확인했다. Site URL과 기존 두 항목은 유지했다. 모든 Vercel 호스트에 대한 wildcard를 추가하지 않았다. 이 설정은 DB migration이나 Vercel 환경 변수 변경이 아니다.
+- 조치 후 실제 Google 인증이 **미리보기 `/home`으로 복귀**하고 로그인 계정의 서재를 표시했다. 토큰·쿠키·비밀번호를 열람하거나 다른 origin에 복사하지 않았다. 공개 `/api/version`과 Vercel metadata에서 검수 대상은 계속 `41e8c8bbc99693dcb0796480b843ae10290b8308` / `dpl_B8u6MUsQTvaHdBzWRkrXFqGozDDc`, preview, N5 판본 `7f572327dc67893e9453246c`임을 확인했다.
+- 기존 운영 UI에서 새 비공개 검수 자료 **1개**(합성 일본어 네 문장)를 저장·분석하고 표현 **1개**를 저장·복습했다. 문단 분리 함수가 빈 줄을 넣으므로 원본 입력과 raw_text의 바이트 동일성으로 표현하지 않는다. 문장 내용은 보존됐다. 실제 읽기 완료 기록과 독해 퀴즈 **3/3**도 확인했다.
+- 개편 UI에서는 **같은 검수 자료**를 열고 표현 **1개**를 추가 저장했다. 새로 담은 표현 하나만 복습했으며 '목록으로' 이동 직후 **새로고침 없이 미학습 0 / 학습 중 2, 두 표현 모두 내일**로 갱신됐다. 기존 운영 UI에서 보였던 복습 후 목록 갱신 지연은 이 개편 흐름에서는 재현되지 않았다.
+- 개편 표현 상세의 원본 링크에서 같은 자료와 네 문장, 수집 2개, 기존 읽기 완료 표시를 확인했다. 읽기 전용 DB 조회로 두 검수 표현의 원문 출처, last_reviewed_at, 미래 next_review_at 및 자료의 private/읽기 완료 상태를 확인했다. 기존 개인 자료의 내용·소유권을 편집하지 않았지만 **실제 검수 저장/채점은 정상 학습 이벤트이므로 계정 집계에 반영될 수 있다.** 검수 자료와 표현 두 개를 재검수용으로 유지한다.
+- 로그인 전 같은 비공개 자료 주소의 실제 미리보기는 본문을 노출하지 않고 접근 불가 안내를 표시했다. 이는 **로그인한 소유자 1명 + 비로그인** 검증이다. 별도 로그인 계정 간 검수나 전체 권한 감사로 과장하지 않는다.
+- 실제 계정 화면에서 예문 박스와 집중 복습 화면을 직접 확인했다. 이번 인앱 화면의 실측 너비는 **573px**였다. viewport override 요청값(390/1440)이 실제 DOM에 반영되지 않아 해당 크기의 새 검수로 집계하지 않았고 override를 해제했다. 앞선 320/390/768/1440px 자동·직접 검수 근거는 아래 기록대로 유지한다.
+- 앱 코드·테스트·SQL 변경은 없고 출시 문서/자기 보드만 갱신했다. 기준 head `7f544bd9122e784549aca4f1c9b56d871788f22e`의 [웹 CI](https://github.com/wonchance-art/manabi/actions/runs/34103171361)·[world CI](https://github.com/wonchance-art/manabi/actions/runs/34103171373)는 모두 SUCCESS(웹 단위 351파일/3,826개, world 130파일/1,102개, 473페이지 빌드, 조판25·뷰어4·smoke14/기존skip6·학습9). 이번 문서/보드 최종 head의 상태는 PR #1287 checks 및 #150 인계에 구분한다. 별도 코드 배포·운영 승격·merge·force-push는 하지 않았다.
+
+남은 출시 조건: 두 번째 검수 계정의 비공개 접근 분리, Claude의 기존 교재 migration 번호/참조 정합화, 병합 전 자동 도메인 할당 분리, Claude 병합 및 merged main의 production 대기 빌드 검수. 글 전체 북마크·기기 간 교재 위치 동기화·PDF 조판·음성은 후속 범위다.
+
+## 승인된 프로필 DB 수정 적용 (2026-09-07)
+
+오너의 **「모두 승인」**은 준비한 프로필 DB 수정 2건의 Codex 적용과 검수용 인앱 브라우저 세션 사용을 명시적으로 승인한 응답이다. 이번 두 변경에 한해 AGENTS.md의 Claude 전용 migration 저작 규칙보다 우선한다. 아래의 이전 ‘DB 적용·세션 사용 승인 대기’ 기록은 이 승인으로 해소됐다. 기존 교재 migration 번호 정합화와 병합 담당은 바꾸지 않는다.
+
+- 원격 migration **`20260907084349_profiles_safe_initial_role` 적용 완료**. 가입 트리거가 허용되지 않는 `user` 대신 `student` 프로필을 생성하도록 수정하고 함수의 `search_path`를 빈 값으로 고정했다. 기존 예외 처리·중복 무시 동작은 유지한다.
+- `profiles_insert_student_only`는 authenticated 역할의 INSERT에 `role = 'student'`를 요구하는 **RESTRICTIVE** 정책이다. 기존 본인 id 검사와 UPDATE 역할 변경 보호를 유지한다. 기존 계정·역할·진도·자료·발행 포인터의 UPDATE/DELETE는 없다.
+- 적용 직전 기존 함수와 새 정책 부재를 확인했다. 적용 후 기존 프로필 id/역할 전체를 집계한 fingerprint가 동일했다. 원격 함수 설정·정책 정의·migration 이름/버전을 조회했고, 원격 이력 SQL과 최종 로컬 파일 바이트가 동일하다. SHA-256 **`57b37d70c439898f315bb1fb27fd7a5454ea3fa29a6279385eb0b8105eda2d0a`**. CLI로 만든 준비 파일은 원격 적용 버전에 맞춰 이름을 정합화했다. 기존 교재 migration은 재실행하지 않았다.
+- 새 `e2e/profiles-initial-role.e2e.mjs`가 실제 migration SQL을 독립 PostgreSQL(PGlite 0.5.8)에서 실행한다. **12조건 / 오류0**: 이전 결함 재현, 기존 행 보존, 함수 검색 경로, 신규 학생 생성, 최초 admin/host 거부, 학생 프로필 복구·일반 편집, 기존 관리자·UPDATE 보호, 다른 계정 id 거부. 운영 계정/자료 쓰기를 수행하는 테스트가 아니다. PGlite는 저장소 의존성에 추가하지 않았으며 외부 설치 위치를 `QA_PGLITE_MODULE`로 지정한다.
+- DB 수정 head `0c6880bdaaf2b14e840fb8e8236a420c37281a8a`의 [Node24 CI 단위 job](https://github.com/wonchance-art/manabi/actions/runs/34102812515/job/101680909811)은 **351파일 / 3,826개, 70.11초 통과**. lint 오류0/기존 경고2, prebuild 오류0. 로컬 인증 계약도 **3파일 / 40개 통과**했다. 로컬 전체 검사는 기존 도시 로드 hook 시간 초과 후 단일 워커 재시도에서도 지연돼 종료했으며, 이 두 실행을 통과로 집계하지 않는다. 기존 테스트·시간 제한은 변경하지 않았다. 최종 문서/보드 head의 CI 빌드·화면 흐름·world 결과는 PR #1287과 #150 exact-head 인계에서 확인한다.
+- 적용 후 Supabase Security Advisor에서 해당 함수의 가변 search_path 경고는 없다. 기존 EXECUTE 권한에 대한 일반 [anon](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable) / [authenticated](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable) 경고는 남는다. 트리거 함수인 이 대상의 실행 권한 및 다른 RPC 권한 정리는 별도 검토 사항이며, 이 결과를 전체 DB 보안 감사 통과로 표현하지 않는다.
+- 승인된 인앱 세션을 열어 확인했으나 현재 **로그아웃** 상태였다. 로그인 화면을 열고 오너에게 검수용 계정 로그인을 요청했다. 세션 사용 승인은 완료됐지만 실제 로그인·저장·복습·두 계정 권한 검수는 아직 완료되지 않았다. 비밀번호·토큰·쿠키를 열람하지 않았다.
+- 이번 변경은 DB SQL·검증 스크립트·문서·보드다. 웹 실행 코드는 계속 **`41e8c8bbc99693dcb0796480b843ae10290b8308`**, 고정 미리보기의 `/api/version`도 동일한 `dpl_B8u6MUsQTvaHdBzWRkrXFqGozDDc`와 N5 판본을 반환한다. DB는 공유 백엔드에 적용됐으며, 웹 production 승격·merge·force-push는 하지 않았다.
+
+재현: 외부 `@electric-sql/pglite@0.5.8` 모듈을 `QA_PGLITE_MODULE=file:///.../dist/index.js`로 지정하고 공식 Node24에서 `node e2e/profiles-initial-role.e2e.mjs` 실행. 기본 보고서는 `/private/tmp/manabi-profile-migration-report.json`, 변경하려면 `QA_REPORT`를 지정한다.
+
+## 통합 범위
+
+main `bd76c7d8f5bddf83c619a94c538183d29786c903`에 대해 #1277 → #1279 → #1280 → #1281 → #1282 → #1283 → #1285 → #1286의 누적 내용을 하나의 PR로 검토한다. AI 프로바이더 #1278, 월드 #1284는 포함하지 않는다.
+
+책장·42과 N5·오늘·발견·복습·내 서재·자료 가져오기·집중 뷰어의 기존 변경을 보존한다. 이번 후보의 추가 구현은 배포 식별과 출시 검증이다. 원본 iCloud 작업 공간, 운영 자료, FSRS 일정, 교재 판본은 변경하지 않는다.
+
+## 배포 식별
+
+- `scripts/deploy-web-release.mjs`는 기본적으로 실행 계획만 출력한다. `--deploy`일 때만 기존 Vercel 로그인으로 배포한다. 깨끗한 Git 작업 공간의 exact HEAD/브랜치를 공개 빌드 정보로 전달하며 환경 파일은 읽지 않는다.
+- Git 자동 배포와 CLI 배포 모두 같은 식별 함수를 사용한다. 운영/미리보기 빌드에 커밋이 없거나, Git과 CLI 커밋이 다르면 실패한다. 로컬 개발의 `dev/local` 폴백은 유지한다.
+- `/api/version`은 동적/no-store다. 런타임 Git 정보가 없으면 **해당 서버 산출물**의 식별자를 사용한다. 브라우저 번들의 식별자를 서버 버전으로 오인하지 않는다. 서로 다른 커밋을 감지하면 503을 반환한다.
+- 응답: 기존 `sha/ref/at` + 전체 `commit`, `releaseId`, `deploymentId`, `environment`, `bundledEditionId`. 임의 환경 값·사용자 정보는 내보내지 않는다. 일반 사용자 화면은 변경하지 않는다.
+- `bundledEditionId`는 앱에 포장된 교재다. DB 발행 포인터와 다른 개념이므로 ‘현재 발행 판본’으로 표시하지 않는다. 발행 포인터는 출시 감사에서 별도 조회한다.
+- `scripts/check-web-release.mjs URL EXPECTED_SHA preview`는 no-store·전체 SHA·대상 환경·배포 ID·포장 판본을 검사한다. 예상 SHA는 검토한 Git에서 가져오며 응답 값으로 자체 인증하지 않는다.
+- 기존 `versionBadge.test.js` 한 계약은 Git 환경변수 문자열을 직접 비교하던 부분을 검증된 식별자 전달로 갱신했다. CLI/Git 동등성, 잘못된 커밋, 서버 불일치, 구번들 감지 등 실제 판정은 신규 계약으로 보완한다.
+
+## DB 읽기 전용 감사
+
+운영 migration 80개와 로컬 80개를 비교했다. 공통 버전 79개는 이름이 같으며, 차이는 아래 파일 번호 하나다. SQL 재실행·이력 수정·스키마 변경은 하지 않았다.
+
+| 파일 | 운영 version | SHA-256 |
+|---|---|---|
+| `20260905065205_textbook_material_contexts.sql` | `20260905065205` | `63b5a8f0f230f0ecc7606b149e53f6ea113a28a8c12f519b08c8d5b4b7407015` |
+| `20260906000912_textbook_book_editions.sql` | `20260906024758` | `118d904b04844fdada2bafae2b9921a6088ce2e45f64adbe1baed0c362beb76e` |
+
+두 SHA 모두 운영 `supabase_migrations.schema_migrations.statements`를 개행으로 결합한 UTF-8 SHA-256과 파일 바이트 SHA-256이 정확히 일치한다. 전체 79개 과거 SQL의 바이트 동일성을 보증하는 결과는 아니다.
+
+발행 포인터: `japanese-n5`, edition `7f572327dc67893e9453246c`, version **1**, **42과**. content hash `7f572327dc67893e9453246cbf1f50aa68c2b192ecbe4bcad99a27838c86c528`. 새로 발행하지 않았다.
+
+**Claude 검토 항목:** AGENTS.md의 SQL 파일 소유 규약과 승인 설계의 담당 분리에 따라 Codex가 migration 파일을 변경하지 않았다. 검토 후 SQL 본문을 그대로 두고 `20260906000912_textbook_book_editions.sql`을 `20260906024758_textbook_book_editions.sql`로 이름 변경하고, `docs/textbook-n5-book-editions.md`의 파일 참조를 맞춘다. 과거 적용을 설명하는 `docs/textbook-n5-web-release.md`의 두 번호는 역사적 기록이므로 설명을 보완한다. 이후 최신 remote 이력과 `supabase db push --dry-run`을 재확인한다. 재적용/repair/초기화는 하지 않는다.
+
+## 승인된 Node 24 전환
+
+Vercel 프로젝트의 24.x 설정을 package.json의 20.x가 덮어쓰고 있었다. 최초 자동 승인 검토에서 보류한 세 파일 변경은 2026-09-07 오너의 **「승인. 다음 할 일 진행」**으로 명시적으로 승인되었다. 아래 웹 런타임 설정을 적용했다. 월드 생성용 Node 22 규약은 유지한다.
+
+승인된 변경 범위:
+
+| 파일/범위 | 이전 | 적용값 |
+|---|---|---|
+| `package.json` engines.node | `20.x` | `24.x` |
+| `package-lock.json` root engines.node | `20.x` | `24.x` |
+| `.github/workflows/ci.yml` 두 setup-node 단계 | `22` | `24` |
+| `.github/workflows/world.yml` 및 월드 자산 저작 | `22` | 그대로 `22` |
+
+공식 Node 24.20.0 darwin-arm64 런타임으로 검증한다. 실제 Vercel Node 24 빌드·서버 동작과 Node 24 웹 CI 결과는 후속 검수 기록에 남긴다. Node 22 world 테스트의 engine 경고는 설치 차단이 아니며 자산 생성 규약을 유지하는 의도적인 역할 분리다.
+
+첫 Node24 CI의 npm 11.19.0 설치 검사가 기존 lockfile의 선택 의존성 네 항목 누락을 발견했다. 격리 폴더에서 `npm install --package-lock-only --ignore-scripts --no-audit --no-fund`로 보완했다. 추가 항목은 `@unrs/resolver-binding-wasm32-wasi@1.12.2`와 그 하위 `@emnapi/core@1.10.0`, `@emnapi/runtime@1.10.0`, `@emnapi/wasi-threads@1.2.1`뿐이다. 기존 package 항목의 변경·삭제는 0이며 의존성 버전을 올리지 않았다. 새 lockfile과 SW 콘텐츠 해시를 함께 보존한다.
+
+## 병합과 운영 전환
+
+읽기 전용 설정 확인: Vercel project `manabi`, production branch **main**, `autoAssignCustomDomains: true`, Git 배포 enabled, system env enabled. 현재 그대로 병합하면 자동으로 운영 도메인에 할당될 수 있다.
+
+1. Claude/운영 담당자가 검수 창을 합의하고 **병합 전에** 도메인 자동 할당을 끈다. 변경한 설정과 원래 값을 기록하고, 직전 운영 배포/도메인 매핑을 다시 읽는다. Codex는 공유 프로젝트 설정을 변경하지 않았다.
+2. DB 파일 번호 정합성, 승인된 Node 24 배포 검사, 실제 계정 검수, CI가 통과한 뒤 Claude가 통합 PR을 main에 병합한다. 기존 8개 PR 정리는 포함 내용 확인 뒤 진행한다. Codex merge/force-push 금지.
+3. 깨끗한 main에서 `node scripts/deploy-web-release.mjs --production-staged`로 계획을 검토하고 `--deploy`를 추가한다. 도구는 원격 main HEAD 일치, `--prod --skip-domain`을 강제한다. Preview를 그대로 승격해 production 설정 검증을 생략하지 않는다.
+4. 대기 배포의 버전 검사를 `production` 대상으로 실행하고 인증/읽기/저장/권한/교재를 검수한다. production 대기 빌드 완료가 곧 이용자 전환 완료는 아니다.
+5. 승인된 실행 담당자가 검수한 production 배포를 promote한 뒤, 기존 주소의 버전·교재·캐시·저장을 확인한다. 자동 할당을 원래대로 되돌리는 시점도 담당자가 결정한다.
+
+## 복귀 기준
+
+현재 `teset-gilt.vercel.app`의 실제 운영 배포는 `dpl_78wiEE8HhRX4uQMnxEwGVyrhbUzr` / `manabi-2imnjdsdy-wonchance-arts-projects.vercel.app`이다. main의 코드와 같다고 가정하지 않는다. 전환 직전 다시 확인한다.
+
+인증·저장·비공개 접근·교재 로딩에 중대한 실패가 생기면 운영 주소를 직전 정상 배포로 되돌린다. DB/자료/진도/발행 포인터는 되돌리거나 삭제하지 않는다. 서로 다른 preview 도메인의 localStorage 읽기 위치가 운영으로 자동 이관되지는 않는다.
+
+## Node 24 후속 검수 (2026-09-07)
+
+- 실행 코드 `4f3c7cd05e2b6910a8b068c96b3d3b3bfadcfcb7`. package/lock engines24, 웹 CI24 적용. 기존 dependency 항목 변경·삭제 0, 누락 optional 4항목 추가. world workflow와 자산 변경 0.
+- 로컬 공식 Node24.20.0 전체 단위 **349파일 / 3,792개**, 153.35초. prebuild 오류0/기존 커리큘럼 경고11, npm11 깨끗한 설치 dry-run 통과.
+- [웹 CI 34071354944](https://github.com/wonchance-art/manabi/actions/runs/34071354944) **SUCCESS**: Node24.20.0/npm11.19.0 설치·lint·콘텐츠·단위3,792·474페이지 빌드·조판25·뷰어4·smoke14(기존skip6)·학습9.
+- [월드 CI 34071354965](https://github.com/wonchance-art/manabi/actions/runs/34071354965) **SUCCESS**: Node22.23.2/npm10.9.8, **130파일 / 1,102개**, 245.00초. 루트 engines24에 대한 경고는 있으나 설치와 테스트는 통과했다. 월드 생성 런타임을 바꾸지 않았다.
+- 최초 웹 CI 34071209152는 기존 lockfile 누락 때문에 설치 단계에서 실패했다. 보완 후 위 CI가 통과했다. 이전 중간 미리보기 `dpl_WgLCgQmmUqDVWinXfrpDZGehUPA7`는 최종 빌드 대기열을 비우기 위해 취소했다.
+- 실제 Vercel 최종 배포 **READY**, `/v13/deployments`의 `nodeVersion=24.x`, `projectSettings.nodeVersion=24.x`. 실제 글꼴 다운로드 재시도 후 474페이지·서버 함수 빌드를 완료했다(빌드 약6분). 미리보기 `manabi-i2gyqbflq-wonchance-arts-projects.vercel.app`, deployment `dpl_AhhMMcmBQ1oXqUVHaK1PCgNiKKMK`, release `web-v2-4f3c7cd05e2b`. 소스 `4f3c7cd05e2b6910a8b068c96b3d3b3bfadcfcb7`.
+- 원본 URL의 실제 `/api/version`에서 exact SHA·판본·preview 대상·배포 ID·no-store 통과. Chrome에서 실제 브라우저/서버 SHA 일치·일반 게스트 내부 표시 숨김·명시적 구버전 fixture 경고의 4조건/오류0도 확인했다.
+- 새 배포의 교재 **54레이아웃 / 17흐름 / 42과 API**, 홈·공통 구조 **34레이아웃 / 실제콘텐츠4흐름 / fixture6흐름** 모두 오류0. 320/390/768/1440px, 실제 홈→책→29과→홈→같은 읽기 위치, 예문 박스·키보드·관리자/API의 게스트 거부를 확인했다. 데스크톱 홈/예문과 390px 홈/30과 이미지를 직접 검수했다. 실제 서버의 공개 교재와 격리 브라우저 로컬 기록을 사용했으며 계정·장애 상태는 명시적 fixture다.
+- 고정 주소 https://manabi-web-v2-preview.vercel.app/home 를 위 Node24 배포로 갱신하고 exact SHA·판본·배포 ID·preview·no-store 검사를 다시 통과했다. 기존 운영 주소는 여전히 `dpl_78wiEE8HhRX4uQMnxEwGVyrhbUzr`다.
+- **Node 승인/런타임 검증 조건은 해소했다.** 실제 계정 로그인은 아직 확인되지 않았으므로 서버 쓰기/두 계정 권한 검수는 대기한다. DB 파일 번호 정합화와 병합은 Claude 담당, 자동 도메인 할당 분리와 production 대기 빌드 검수는 운영 전환 조건으로 유지한다. PDF·음성·월드 생성·운영 승격은 수행하지 않았다.
+
+## 운영 전 인증 점검 (2026-09-07)
+
+- Google OAuth와 비밀번호 재설정은 `/auth/callback`에서 PKCE 코드를 세션으로 교환한 다음 목적지로 이동한다. Google 로그인은 요청한 교재의 query/anchor를 보존하며 이메일 가입 확인의 기본 `/materials` 목적지도 유지한다.
+- 복귀 경로는 같은 사이트 내부로 제한한다. 역슬래시·제어 문자·URL 정규화 후 이중 슬래시가 되는 경로를 거부한다. 콜백의 코드 누락·교환 오류·통신 실패는 재시도 가능한 로그인 화면으로 돌아가고, 세션/검증 쿠키 처리를 유지하며 응답을 캐시하지 않는다.
+- 비밀번호 변경 화면에서 불필요한 필수 닉네임 입력을 제거했다. 두 비밀번호 입력만으로 폼 검증을 통과한다. 기존 세션 지연 로딩·서버 진도·브라우저 교재 진도의 저장 방식은 유지한다.
+- 공식 Node24 전체 단위 **351파일 / 3,826개 통과**. 추가한 인증 계약은 34개이며 기존 세션 쿠키 계약 6개도 함께 통과했다. 변경 JS lint 오류0, JSX 기존 hook 경고2, `git diff --check` 통과. prebuild 오류0(기존 콘텐츠25·독해66·커리큘럼11 경고).
+- 새 `e2e/auth-return.e2e.mjs`는 SDK가 생성한 인증 요청을 브라우저에서 가로채 검사한다. Google 제공자 호출·메일 발송·계정/비밀번호 변경은 하지 않는다. 기존 Node24 배포를 대조군으로 실행해 `/auth/callback` 대신 `/`로 돌아가던 오류를 실제로 탐지했다.
+- 실제 DB의 anon 역할에서 비공개 글·읽기 진도·개인 PDF·단어장·PDF Storage 객체 접근은 0, 공개 N5 발행 포인터는 1건이었다. 정책/함수/이력 조회만 수행했다. 프로필 초기화·권한의 별도 수정 제안과 로컬 PostgreSQL 검증 결과는 오너에게 비공개 자료로 제공했으며 운영 DB에는 적용하지 않았다.
+- 실제 로그인 계정으로 제공자 인증 완료·서버 저장·두 계정 권한 분리를 확인하는 검수는 아직 대기한다. 위 격리 검사를 실제 계정 검수의 완료로 간주하지 않는다. DB 전담 규칙 변경 승인 또는 Claude 인계도 별도 조건이다.
+
+최종 미리보기는 `41e8c8bbc99693dcb0796480b843ae10290b8308`, `dpl_B8u6MUsQTvaHdBzWRkrXFqGozDDc`, https://manabi-6g3wh9rnl-wonchance-arts-projects.vercel.app 이다. 실제 Vercel Node24.x/READY를 확인했다. 인증 오류·성공 안내를 밝은 manabi 배경에서 읽기 쉽게 조정하고 `alert`/`status` 알림을 제공했다.
+
+- 최종 배포 인증 **7조건 / 6레이아웃 / 오류0**: 1440/390/320px, Google 내부 위치 복귀·안전하지 않은 주소 거부, 재설정 콜백·두 비밀번호만 요구하는 폼, 실패 화면, 키보드 Google 버튼 실행. 실제 계산한 텍스트 대비는 오류 **6.46:1**, 성공 **6.47:1**이다. 안내 애니메이션 종료 후 스크린샷을 직접 검수했다. 메일 발송·실제 세션 교환·비밀번호 변경은 수행하지 않았다.
+- 최종 원본 배포 버전 검사 **4조건 / 오류0**: 실제 서버/브라우저 commit 일치, no-store, 게스트 내부 정보 숨김, 명시적 구버전 fixture 안내. 고정 preview alias에도 같은 배포를 연결했다. 연결 직후 일시적인 이전 응답을 탐지했고 전파 후 서버 exact SHA/판본/배포 ID가 일치함을 다시 확인했다.
+- 인증 로직 배포 `06414ecf`의 홈 회귀는 **34레이아웃 / 실제 콘텐츠4흐름 / fixture6흐름 / 오류0**. 첫 실행의 Vercel CSS 전송 시간 초과 후 동일 검사 재실행에서 완료했다. 이후 실행 코드 변경은 인증 안내 색상·ARIA에 한정된다.
+- 최종 실행 코드의 [웹 CI 34077200712](https://github.com/wonchance-art/manabi/actions/runs/34077200712)와 [월드 CI 34077200700](https://github.com/wonchance-art/manabi/actions/runs/34077200700)는 모두 성공했다. 이후 문서·보드 head 상태는 PR #1287 및 #150 인계에 기록한다. 기존 운영 도메인은 `dpl_78wiEE8HhRX4uQMnxEwGVyrhbUzr` 그대로다. production 승격·merge·DB 변경은 하지 않았다.
+- 현재 인앱 브라우저 세션 재확인은 자동 승인 검토가 거절했다. 사용자의 로그인 세션/민감 화면을 읽을 수 있으나 명시적 세션 사용 승인이 없다는 이유다. 우회하지 않았고 세션 사용 승인을 요청했다. 별도 새 Chrome의 공개 페이지·격리 fixture 검수는 실제 사용자 세션에 접근하지 않는다.
+
+## 이전 후보 검수 기록 (Node 24 설정 적용 전)
+
+- 공식 Node 24.20.0에서 전체 `npm test -- --maxWorkers=2`: **349파일 / 3,792개 통과**, 123.83초. 설정을 바꾸지 않고 임시 공식 런타임으로 호환성을 확인했다.
+- 배포 식별/기존 배지 계약: **2파일 / 34개 통과**. 변경 파일 ESLint 오류 0, `git diff --check` 통과.
+- prebuild: 콘텐츠·읽기·커리큘럼 오류 0, 기존 커리큘럼 경고 11. world 산출물은 검사만 수행했다. SW 캐시 키는 변경된 콘텐츠 해시로 갱신했다.
+- 실제 브라우저의 기존 검수 화면은 비로그인 상태다. 로그인 계정의 서버 저장 왕복은 아직 완료하지 않았다. 격리 HTTP fixture 결과로 대체하지 않는다.
+- Node 24 로컬 Next 빌드: 기본 2GiB V8 heap에서는 메모리 한도로 중단. 검수 프로세스에만 `NODE_OPTIONS=--max-old-space-size=4096`을 적용한 재실행은 **474페이지 생성까지 성공**했다. 프로젝트/배포 환경 설정을 수정하지 않았다. 로컬 빌드는 공개 더미 인증 설정과 테스트 글꼴을 사용했다.
+- 실제 Vercel 미리보기: Node 20 현재 설정에서 실제 글꼴 포함 빌드 성공(초반 글꼴 다운로드 재시도 후 완료), **474페이지**. 커밋 `3c608476aed01844cb5dca6d883772616c2d4003`, deployment `dpl_4drbJCiSadQb1Wd47PD99KkhaFQQ`, release `web-v2-3c608476aed0`. 그 이후 커밋은 검수 스크립트·문서·보드이며 실행 코드는 동일하다.
+- 고정 검수 주소: https://manabi-web-v2-preview.vercel.app/home . 원본 배포 https://manabi-l7cixb224-wonchance-arts-projects.vercel.app . 두 주소 모두 `/api/version`의 exact SHA·preview 대상·배포 ID·포장 판본·no-store 검사를 통과했다.
+- PR #1287의 실행 코드 CI [34069142476](https://github.com/wonchance-art/manabi/actions/runs/34069142476): 전체 단위 349파일/3,792개, 조판 25개, 뷰어 4개, smoke 14개(기존 skip6), 학습 흐름 9개 통과. 최종 문서/검수 커밋의 CI는 PR checks와 #150 exact-head 인계에 기록한다.
+
+| 실제 배포 브라우저 검사 | 결과 | 데이터 경계 |
+|---|---|---|
+| 버전 식별 | 4조건 / 오류0 | 실제 클라이언트·서버 비교 후 구버전 경고만 명시적 fixture |
+| 교재 전체 | 54개 레이아웃, 17개 흐름, 42과 API / 오류0 | 실제 발행 판본, 격리 브라우저의 로컬 답안/진도 |
+| 오늘·공통 구조 | 34개 레이아웃, 실제 콘텐츠4흐름·상태6흐름 / 오류0 | 실제 홈→책→29과→홈→같은 위치, 계정/장애는 fixture |
+| 자료 가져오기·읽기 왕복 | 20조건 / 오류0 | 상태 있는 인증/REST/AI fixture |
+| 집중 뷰어 | 14조건 / 오류0 | 상태 있는 인증/REST/AI fixture |
+| 서재·발견 | 26조건 / 오류0 | 실제 지역학·교재, 개인 자료/장애는 fixture |
+| 복습 | 17조건 / 오류0 | 채점·되돌리기·원문·계정/실패 fixture |
+
+데스크톱 홈/뷰어, 390px 홈/교재/단어 시트를 렌더 이미지로 직접 검수했다. 가로 넘침, 예문 박스, 글꼴/발음, 키보드 초점, 원문 위치 유지와 계정별 빈 상태를 확인했다. 실제 계정 저장/두 계정 권한 검수와 production 설정 검증은 완료 표시하지 않는다.
+
+고정 alias 연결 후 기존 운영 주소를 재조회했다. 여전히 `dpl_78wiEE8HhRX4uQMnxEwGVyrhbUzr`이며 운영 승격/도메인 전환/DB 쓰기는 없었다.
+
+## 다음 범위
+
+글 전체 북마크, 기기 간 교재 읽기 위치 동기화, PDF 조판, 음성 제작은 후속이다. 이번 출시의 실제 병합/도메인 전환은 위 게이트를 통과한 뒤 담당자가 수행한다.
+
+근거: [Vercel staged deployment 옵션](https://vercel.com/docs/cli/deploy), [시스템 환경변수](https://vercel.com/docs/environment-variables/system-environment-variables), [Node 버전 우선순위](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions), [Supabase migration 이력](https://supabase.com/docs/guides/deployment/database-migrations).

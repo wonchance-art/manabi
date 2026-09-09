@@ -1,12 +1,9 @@
 import HomePage from '@/views/HomePage';
-import { buildContinueManifest } from '@/content/refManifest';
-
-export const metadata = {
-  title: '홈',
-  description: '나의 학습 현황과 오늘의 추천 자료를 확인하세요.',
-  openGraph: { title: '홈 — Anatomy Studio', description: '나의 학습 현황과 오늘의 추천 자료' },
-};
-
-export default function Page() {
-  return <HomePage continueManifest={buildContinueManifest()} />;
+import { publishedReading, readingCatalog } from '@/lib/server/bookReading';
+export const dynamic = 'force-dynamic';
+export const metadata = { title: '오늘', description: '읽던 페이지에서 시작하는 오늘의 언어.' };
+export default async function Page() {
+  let book = null;
+  try { const published = await publishedReading(); book = readingCatalog(published.book); } catch { /* Reading and account services can fail independently. */ }
+  return <HomePage book={book} />;
 }

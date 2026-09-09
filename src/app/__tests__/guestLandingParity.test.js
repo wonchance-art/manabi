@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { sliceBetween } from '../../lib/__tests__/helpers/sliceBetween.js';
 
 /**
  * 계약: 「비로그인이면 옛 버전이 뜬다」 수리 (#1077 · 오너 지시 2026-08-31 "해결 우선").
@@ -40,14 +39,15 @@ describe("'/' — 로그인 여부로 갈리지 않는다", () => {
 
 describe('/home — 게스트가 와도 빈 벽이 아니다', () => {
   const home = read('src/views/HomePage.jsx');
-  const guest = sliceBetween(home, '  if (!user) return (', '\n  );');
+  const guest = home;
 
   it('게스트가 들어갈 문이 남아 있다 — 전에 가던 교재로 가는 길이 끊기면 안 된다', () => {
     // 통일 전 게스트는 /lessons(교재 목록)를 첫 화면으로 받았다. 로그인 벽만 세우면
     // "볼 것이 있던 화면"이 "볼 것 없는 화면"으로 나빠진다 — 그건 수리가 아니다.
     expect(guest).toContain('href="/lessons"');
     expect(guest).toContain('href="/materials"');
-    expect(guest).toContain('href="/auth"');
+    expect(guest).toContain("user ? '/vocab' : '/auth'");
+    expect(guest).not.toContain('if (!user) return');
   });
 
   it('로그인은 권유일 뿐 관문이 아니다', () => {

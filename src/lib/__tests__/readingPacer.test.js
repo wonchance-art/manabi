@@ -1,3 +1,4 @@
+import {viewerDefaults} from '../viewerPreferences';
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -95,18 +96,11 @@ describe('⑤⑥ 진행은 moveSentence(1) 하나 — 새 상태·새 버튼 0',
   });
 
   it('⑦ 마지막 문장이면 자동 종료 — 넘길 곳이 없으면 paced 표식도 남기지 않는다', () => {
-    expect(block).toContain('if (!adjacentSentence(sentences, pickedLineIdx, 1)) return;');
-    expect(block.indexOf('adjacentSentence')).toBeLessThan(block.indexOf('pacedRef.current = true'));
+    expect(block).toContain('if (!adjacentSentence(sentences, pickedLineIdx, 1)) { setPaceRunning(false); return; }'); expect(block.indexOf('adjacentSentence')).toBeLessThan(block.indexOf('pacedRef.current = true'));
   });
 
-  it('⑥ 재생 상태를 따로 들지 않는다 — 별도 ▶/■ 버튼이 생길 자리가 없다', () => {
-    // 발동 조건이 곧 정지 조건이라 상태가 하나도 늘지 않는다(설계 §5).
-    expect(viewer).toContain('const paceArmed = autoPace && focusMode && pickedSentence !== null;');
-    expect(block).toContain('enabled: paceArmed,');
-    // 페이서 전용 재생/정지 상태를 새로 만들면 여기서 걸린다
-    for (const banned of ['setPacePlaying', 'paceRunning', 'setPaceOn', 'togglePace']) {
-      expect(viewer).not.toContain(banned);
-    }
+  it("진행 허용과 실제 시작을 분리하고 명시적 시작 버튼을 제공한다", () => {
+    expect(viewer).toContain('const paceArmed = paceRunning && autoPace && focusMode && pickedSentence !== null;'); expect(block).toContain('enabled: paceArmed,'); expect(viewer).toContain("useState(false)"); expect(viewer).toContain('자동 진행 시작');
   });
 });
 
@@ -119,12 +113,7 @@ describe('⑩ 미발동 조건 + 옵트인', () => {
   });
 
   it('기본 꺼짐 — 관례(집중 모드·한자 대조·성조 색상 선례)', () => {
-    const settings = read('src/lib/useViewerSettings.js');
-    expect(settings).toContain("readPref('autoPace', false)");
-    // 목표 속도는 안 고르면 null → 언어별 기본값(정본은 readingPacer 한 곳)
-    expect(settings).toContain("readPref('paceCpm', null)");
-    // R2에서 자동 제안이 사이에 끼었다 — 이력이 모자라면 여전히 언어 기본값으로 떨어진다
-    expect(read('src/views/ViewerPage.jsx')).toContain('|| defaultTargetCpm(materialLang);');
+    expect(viewerDefaults('Chinese')).toMatchObject({autoPace:false,paceCpm:null}); expect(read('src/views/ViewerPage.jsx')).toContain('|| defaultTargetCpm(materialLang);');
   });
 });
 
@@ -132,16 +121,18 @@ describe('§5 일시정지 — 카드·시트가 열리면 멈추고, 닫으면 
   const hook = read('src/lib/useReadingPacer.js');
   const code = codeOf(hook);
 
-  it('멈춤 신호는 I-a 측정과 같은 것을 쓴다 — 찾아보는 시간은 읽기도 진행도 아니다', () => {
-    expect(read('src/views/ViewerPage.jsx')).toContain('const paceHeld = isSheetOpen || !!selectedToken;');
-    expect(code).toContain('if (!enabled || paused || !Number.isFinite(dwell)) return undefined;');
+  it("카드·모달·드래그·비활성 탭이 모두 페이서를 보류한다", () => {
+    expect(read('src/views/ViewerPage.jsx')).toContain('const paceHeld = inspectorOpen || isSheetOpen || modalBlocked || tokenRange.dragging || background;'); expect(code).toContain('if (paused) { heldRef.current=true; return undefined; }');
   });
 
   it('재개는 이어서 — 남은 체류를 깎아 두지 않으면 사전을 찾을수록 제자리걸음이 된다', () => {
-    const effect = sliceBetween(code, 'const startedAt = Date.now();', '}, [enabled, paused, dwell, cursor]);');
+
+    const effect = sliceBetween(code, 'const startedAt = Date.now();', '}, [enabled, paused, dwell, cursor, resumeGrace]);');
     expect(effect).toContain('remainingRef.current - (Date.now() - startedAt)');
     // 문장이 바뀌면 남은 시간을 물려받지 않고 처음부터
     expect(code).toContain('}, [cursor, dwell, enabled]);');
+
+    expect(code).toContain('Math.max(resumeGrace,remainingRef.current ?? dwell)');
   });
 
   it('JS 프레임 루프 0 — 시간은 한 번의 setTimeout과 CSS 애니메이션이 잰다', () => {
@@ -218,24 +209,11 @@ describe('⑨ 진행 선 — 지정 문장에만, 숫자 카운트다운 없음'
 describe('설정 시트 배치 — 집중 모드 옆, 조절은 초 병기', () => {
   const viewer = read('src/views/ViewerPage.jsx');
 
-  it('자동 진행 스위치가 집중 모드 바로 뒤에 있다 — 전제가 집중 모드다', () => {
-    const focusIdx = viewer.indexOf('<b>집중 모드</b>');
-    const paceIdx = viewer.indexOf('<b>자동 진행</b>');
-    expect(focusIdx).toBeGreaterThan(-1);
-    expect(paceIdx).toBeGreaterThan(focusIdx);
-    // 사이에 다른 스위치 행이 끼면 두 설정의 종속 관계가 안 읽힌다 —
-    // 구간에 들어와도 되는 rsheet-swrow는 자동 진행 자신의 것 하나뿐이다.
-    const between = sliceBetween(viewer, '<b>집중 모드</b>', '<b>자동 진행</b>');
-    expect(between.match(/rsheet-swrow/g)).toHaveLength(1);
-    expect(viewer).toContain('onChange={() => setAutoPace(v => !v)}');
+  it("읽기 진행 탭은 집중·허용·명시적 시작의 관계를 설명한다", () => {
+    const options=read('src/components/viewer/ViewerSettings.jsx');const row=sliceBetween(options,"tab==='pace'",'속도의 기준');expect(row).toContain('label="문장 집중"');expect(row).toContain('label="자동 진행 허용"');expect(row).toContain('시작’을 눌러야 이동');
   });
 
-  it('속도 조절 줄은 켰을 때만 뜨고, 자/분과 초를 함께 보여준다', () => {
-    const row = sliceBetween(viewer, '{autoPace && (', "{sheetTab === 'tools'");
-    expect(row).toContain('stepCpm(paceTargetCpm, -1)');
-    expect(row).toContain('stepCpm(paceTargetCpm, 1)');
-    expect(row).toContain('자/분');
-    expect(row).toContain('paceHint({');
-    expect(row).toContain('초');
+  it("목표 속도 조절은 허용한 경우에만 제공한다", () => {
+    const options=read('src/components/viewer/ViewerSettings.jsx');expect(options).toContain('{s.autoPace&&');expect(options).toContain('stepCpm(paceTargetCpm,-1)');expect(options).toContain('stepCpm(paceTargetCpm,1)');expect(options).toContain('자/분');
   });
 });

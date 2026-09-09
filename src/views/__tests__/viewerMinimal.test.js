@@ -21,7 +21,7 @@ const src = () => read(VIEWER);
 /** 본문 위 크롬 전부 — 헤더 시작부터 리더 카드 직전까지. */
 const above = () => stripComments(sliceBetween(src(), '<header className="page-header viewer-header">', 'className={`card reader-area'));
 /** 본문 아래 — 리더 카드 끝(문장 이동 필 뒤)부터 댓글까지. */
-const below = () => stripComments(sliceBetween(src(), '<TokenRangeGrips', '<aside className="viewer-side viewer-side--right">'));
+const below = () => stripComments(sliceBetween(src(), '<TokenRangeGrips', '{settingsOpen&&<ViewerSettings'));
 const aCss = () => stripComments(sliceBetween(read('src/index.css'), '/* ========= 뷰어 정돈 A안', '/* ========= /뷰어 정돈 A안 ========= */'));
 
 describe('① 본문 위에는 경로·제목·도구만 — 끝의 행동 0', () => {

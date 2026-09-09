@@ -11,7 +11,10 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
     expect(src).toContain('const failed = dbResults.find(result => result?.error)');
     expect(src).toContain('if (failed) throw failed.error');
     expect(src).toContain('const { data, isLoading, error, refetch } = useQuery({');
-    expect(src.indexOf('if (error) return (')).toBeLessThan(src.indexOf('const isNewUser'));
+    expect(src).toContain('{error && <div');
+    expect(src).toContain('role="alert"');
+    expect(src).toContain('onClick={() => refetch()}');
+    expect(src).toContain('읽기와 책장은 계속 이용할 수 있어요.');
   });
 
   it('V-08 PdfViewerPage: signed URL 실패·경로 부재와 재시도를 렌더한다', () => {
@@ -79,7 +82,7 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
     const src = read('src/views/ViewerPage.jsx');
     expect(src.match(/\.upsert\(/g)).toHaveLength(1);
     // W R1: upsert가 새로 넣은 행의 id를 돌려준다(undo 판정) — error 검사는 그대로
-    expect(src).toContain("const { data, error } = await supabase.from('user_vocabulary').upsert(row, options).select('id')");
+    expect(src).toContain("const { data, error } = await supabase.from('user_vocabulary').upsert(row, options).select('*')");
     expect(src).toContain('if (error) throw error');
     expect(src).toContain('if (inlineSaving[key]) return');
     // 리스트 행 1곳 — 팝업 저장 버튼은 카드 단일화(②)로 제거(카드 저장은 addToVocab 경로)
@@ -94,7 +97,7 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
     expect(viewer).toContain("if (logError) console.warn('[correction log] failed:'");
     expect(writing).toContain('if (r2.error) throw r2.error');
     expect(materialAdd).toContain('const { error: suggestionLinkError } = await supabase');
-    expect(materialAdd).toContain('if (suggestionLinkError)');
+    expect(materialAdd).toContain('if (suggestionLinkError && aliveRef.current)');
   });
 
   it('V-13 재감사: 비동기 mutation도 반환 error를 버리지 않는다', () => {
@@ -114,9 +117,12 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
     expect(session).toContain("console.warn('[writing practice] history save failed:'");
     expect(session).not.toContain(').then(() => {}, () => {})');
 
-    expect(materialAdd).toContain('const { error: pdfProgressError } = await supabase.from(\'uploaded_pdfs\')');
-    expect(materialAdd).toContain('if (pdfProgressError) throw pdfProgressError');
-    expect(materialAdd).toContain('자료는 저장됐지만 PDF 읽기 위치 동기화에 실패했어요.');
+    // Importing a page range is not reading it. Only the PDF reader owns page progress.
+    expect(materialAdd).not.toContain('last_page_read: pdfSource.pageEnd');
+    const persistence = read('src/lib/materialImport.js');
+    expect(persistence).toContain('if (error) throw error;');
+    expect(persistence).toContain(".eq('owner_id', record.owner_id).select('id')");
+
   });
 
   it('V-13 재감사: src/views 직접 await Supabase 조회가 error를 누락하지 않는다', () => {

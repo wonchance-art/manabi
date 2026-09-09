@@ -92,4 +92,21 @@ describe('관리자 경로 보호 (기존 계약 유지)', () => {
     expect(response.status).toBe(200);
     expect(response.headers.get('x-middleware-next')).toBe('1');
   });
+
+  it('관리자의 없는 보관함 챕터는 스트리밍 전에 실제 404로 응답한다', async () => {
+    mockSession({ user: { id: 'admin-1' }, role: 'admin' });
+    const response = await middleware(request('/admin/legacy-textbooks/japanese/grammar/n5-e2e-missing-slug'));
+    expect(response.status).toBe(404);
+    expect(response.headers.get('x-middleware-rewrite')).toBe('https://example.test/_not-found');
+    expect(response.headers.get('cache-control')).toBe('private, no-store');
+  });
+
+  it('없는 보관함 주소도 권한 확인을 먼저 하며 실제 네 언어 챕터를 보존한다', async () => {
+    mockSession({ user: { id: 'member-1' }, role: 'member' });
+    expect((await middleware(request('/admin/legacy-textbooks/japanese/grammar/missing'))).status).toBe(307);
+    mockSession({ user: { id: 'admin-1' }, role: 'admin' });
+    for (const path of ['english/grammar/a1-01-be-verb', 'french/grammar/a1-01-pronouns-etre', 'japanese/grammar/n5-04-desu-da', 'chinese/grammar/h1-01-shi', 'french/vocab/a1', 'japanese/bunkei/n5']) {
+      expect((await middleware(request(`/admin/legacy-textbooks/${path}`))).headers.get('x-middleware-next')).toBe('1');
+    }
+  });
 });

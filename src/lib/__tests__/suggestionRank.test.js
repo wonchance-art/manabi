@@ -85,25 +85,25 @@ describe('홈 배선 (HomePage)', () => {
   const home = read('src/views/HomePage.jsx');
 
   it('scored[0] 한 장 대신 순수 랭커 상위 N장 — 커버리지는 material_id 카드만 materialFit으로', () => {
-    expect(home).toContain("import { rankSuggestions, SUGGESTION_TOP_N, REASON } from '../lib/suggestionRank';");
-    expect(home).toContain('}).slice(0, SUGGESTION_TOP_N);');
+    expect(home).toContain("import { rankSuggestions, REASON } from '@/lib/suggestionRank';");
+    expect(home).toContain('}).slice(0, 2);');
     expect(home).not.toMatch(/return scored\[0\]/);
-    expect(home).toContain("fitOf: (s) => (s?.material_id ? fitMap[s.material_id] ?? null : null),");
-    expect(home).toContain("levelOf: (s) => getIdealLevel(s.language, vocabByLang[s.language] || 0),");
+    expect(home).toContain("fitOf: s => fitMap[s.material_id] ?? null,");
+    expect(home).toContain("levelOf: s => getIdealLevel(s.language, data?.vocabByLang?.[s.language] || 0),");
     // 재료: 추천 material_id의 processed_json만(상한 12) + 이 화면이 이미 끌어온 단어 행으로 {surfaces, bases}
     expect(home).toContain(".select('id, processed_json').in('id', fitIds)");
     expect(home).toContain("select('language, word_text, base_form')");
-    expect(home).toContain('materialFit(m.processed_json, savedForFit)');
+    expect(home).toContain('materialFit(m.processed_json, known)');
     // 뷰어의 fetchUserVocabWords를 옮기지 않았다(offlineCache 앵커)
     expect(home).not.toContain('fetchUserVocabWords');
     expect(read('src/views/ViewerPage.jsx')).toContain('async function fetchUserVocabWords');
   });
 
   it('카드마다 사유 한 줄 — 문구는 뷰가 조립하고, 사유 없는 카드는 그리지 않는다', () => {
-    expect(home).toContain('const reasonText = (r) => {');
+    expect(home).toContain('function reasonText(rank) {');
     for (const r of ['FIT', 'FIT_EASY', 'FIT_HARD', 'LEVEL', 'LEVEL_NEAR', 'LANG', 'OTHER']) expect(home).toContain(`case REASON.${r}:`);
-    expect(home).toContain('if (!reason) return null; // 사유 없는 카드는 그리지 않는다(계약)');
-    expect(home).toContain('className="home-suggestion__reason"');
-    expect(home).toContain('{suggestions.map((s, i) => {');
+    expect(home).toContain('reasonText(s.rank)');
+    expect(home).toContain('className="today-story"');
+    expect(home).toContain('suggestions.map(s =>');
   });
 });

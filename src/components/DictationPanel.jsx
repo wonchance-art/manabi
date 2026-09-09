@@ -5,10 +5,11 @@
  * 채점은 dictation 엔진(gradeDictation — diffChars LCS), 듣기는 useTTS 재사용.
  * 패널이 열려 있는 동안 원문은 가려진다([본문 보기] 전까지) — 듣기 훈련의 전제.
  */
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTTS } from '../lib/useTTS';
 import { gradeDictation } from '../lib/dictation';
 import Button from './Button';
+import ViewerModal from './viewer/ViewerModal';
 
 const SEG_STYLE = {
   eq: {},
@@ -18,12 +19,14 @@ const SEG_STYLE = {
 
 // ttsOpts: 뷰어 말하기 속도(readingSheet.ttsOptsFor) 관통 — 같은 시트에서 여는 도구가
 // 설정을 무시하면 안 된다(설정 마감 검수 2026-08-28). 생략 시 기본 속도.
-export default function DictationPanel({ sentence, lang, onClose, ttsOpts }) {
-  const { speak, supported: ttsSupported } = useTTS();
-  const [typed, setTyped] = useState('');
-  const [result, setResult] = useState(null);
-  const [revealed, setRevealed] = useState(false);
+export default function DictationPanel({ sentence, lang, onClose, ttsOpts, draftStore }) {
+  const { speak, stop, supported: ttsSupported } = useTTS();
+  const [typed, setTyped] = useState(()=>draftStore?.get(sentence)?.typed||'');
+  const [result, setResult] = useState(()=>draftStore?.get(sentence)?.result||null);
+  const [revealed, setRevealed] = useState(()=>draftStore?.get(sentence)?.revealed||false);
 
+  const draft=useRef();draft.current={typed,result,revealed};
+  useEffect(()=>()=>{draftStore?.set(sentence,draft.current);stop();},[sentence,draftStore,stop]);
   const grade = () => setResult(gradeDictation(sentence, typed, lang));
   const retry = () => {
     setTyped('');
@@ -32,21 +35,8 @@ export default function DictationPanel({ sentence, lang, onClose, ttsOpts }) {
   };
 
   return (
-    <div
-      role="dialog"
-      aria-label="받아쓰기"
-      className="scrim"
-      style={{ zIndex: 60 }}
-      onClick={onClose}
-    >
-      <div className="card" style={{ maxWidth: 480, width: '100%', padding: '20px 22px' }} onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-          <span style={{ fontSize: '0.95rem', fontWeight: 700 }}>🎧 받아쓰기</span>
-          <span style={{ flex: 1 }} />
-          <button type="button" onClick={onClose}
-            style={{ background: 'none', border: 'none', fontSize: '1.05rem', cursor: 'pointer', color: 'var(--text-muted)' }}>✕</button>
-        </div>
-
+    <ViewerModal title="받아쓰기" onClose={onClose}>
+        <p className="reader-setting-note">선택한 문장 하나 · 닫아도 이 자료를 읽는 동안 입력은 남아요.</p>
         {ttsSupported ? (
           <Button size="sm" variant="secondary" onClick={() => speak(sentence, lang, ttsOpts)}>▷ 다시 듣기</Button>
         ) : (
@@ -59,6 +49,7 @@ export default function DictationPanel({ sentence, lang, onClose, ttsOpts }) {
           className="form-input"
           value={typed}
           onChange={(e) => setTyped(e.target.value)}
+          aria-label="받아쓰기 입력"
           placeholder="들리는 대로 입력해 보세요"
           rows={2}
           lang={lang === 'Japanese' ? 'ja' : lang === 'Chinese' ? 'zh' : lang === 'French' ? 'fr' : 'en'}
@@ -68,7 +59,7 @@ export default function DictationPanel({ sentence, lang, onClose, ttsOpts }) {
         {result && (
           <div style={{ marginBottom: 10 }}>
             <div style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: 6 }}>
-              {result.correct ? '✓ 완벽해요!' : result.accuracy != null ? `정답률 ${Math.round(result.accuracy * 100)}%` : '채점할 원문이 없어요'}
+              {revealed ? '원문을 참고한 연습 · ' : ''}{result.correct ? '✓ 완벽해요!' : result.accuracy != null ? `정답률 ${Math.round(result.accuracy * 100)}%` : '채점할 원문이 없어요'}
               {/* 악상·성조 부호만 다른 오답(v2-M) — 받아쓰기는 관용 대신 짚어 준다 */}
               {!result.correct && result.accentOnly && (
                 <span style={{ fontWeight: 400, color: 'var(--text-secondary)' }}> · 악상·성조 부호만 달라요</span>
@@ -88,20 +79,19 @@ export default function DictationPanel({ sentence, lang, onClose, ttsOpts }) {
         )}
 
         {revealed && (
-          <div className="pdf-context__original" style={{ marginBottom: 10 }}>"{sentence}"</div>
+          <div className="pdf-context__original" style={{ marginBottom: 10 }}>&quot;{sentence}&quot;</div>
         )}
 
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           {!revealed && (
             <button type="button" onClick={() => setRevealed(true)}
-              className="btn btn--ghost btn--sm">본문 보기</button>
+              className="btn btn--ghost btn--sm">원문 보기</button>
           )}
           {result && (
             <button type="button" onClick={retry} className="btn btn--ghost btn--sm">한 번 더</button>
           )}
           <Button size="sm" disabled={!typed.trim()} onClick={grade}>채점</Button>
         </div>
-      </div>
-    </div>
+    </ViewerModal>
   );
 }

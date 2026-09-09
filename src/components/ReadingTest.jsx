@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { viewerCacheKey } from '../lib/viewerReliability';
+import { buildReadingCheckPrompt, validateReadingQuestions } from '../lib/readingTestReliability';
 import { callGemini } from '../lib/gemini';
 import { useAuth } from '../lib/AuthContext';
 import { logReviewEvents } from '../lib/reviewEvents';
@@ -46,6 +48,13 @@ function ReadingTestOverlay({ children, onClose }) {
 
 export default function ReadingTest({ rawText, language, materialId, onClose, onGraded, inline = false, nextLesson = null }) {
   const { user } = useAuth();
+  const english = language === 'English';
+  const [errorMessage, setErrorMessage] = useState('');
+  const diskKeyRef = useRef(null);
+  const generationRef = useRef(null);
+  const generationStartRef = useRef(null);
+  generationStartRef.current = generateTest;
+  const gradedRef = useRef(false);
   const [status, setStatus] = useState('idle'); // idle | loading | active | done
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
@@ -60,31 +69,33 @@ export default function ReadingTest({ rawText, language, materialId, onClose, on
     return isReadingTestRequestCurrent(requestRef, requestId, materialRef, requestMaterialId);
   }
 
-  useEffect(() => () => { requestRef.current += 1; }, []);
+  useEffect(() => () => { requestRef.current += 1; generationRef.current?.abort(); }, []);
 
-  // 저장된 테스트 복원
+  // 계정·자료 원문·언어가 같은 문제만 복원한다. 예전 자료 ID 전용 캐시는 재사용하지 않는다.
   useEffect(() => {
-    requestRef.current += 1;
-    const saved = loadSaved(materialId);
+    const requestId = ++requestRef.current;
+    generationRef.current?.abort();
+    diskKeyRef.current = null;
     skipPersistRef.current = true;
-    if (saved) {
-      setQuestions(saved.questions || []);
-      setAnswers(saved.answers || {});
-      if (saved.result) {
-        setResult(saved.result);
-        setStatus('done');
+    setQuestions([]); setAnswers({}); setResult(null); setErrorMessage(''); setStatus('loading');
+    gradedRef.current = false;
+    viewerCacheKey('reading_test', [user?.id || 'guest', materialId, language], rawText || '').then(key => {
+      if (requestRef.current !== requestId) return;
+      diskKeyRef.current = key;
+      const saved = loadSaved(key);
+      if (saved && validateReadingQuestions(saved.questions, (rawText || '').slice(0, 2500), language)) {
+        setQuestions(saved.questions);
+        setAnswers(saved.answers || {});
+        setResult(saved.result || null);
+        gradedRef.current = !!saved.result;
+        setStatus(saved.result ? 'done' : 'active');
       } else {
-        setResult(null);
-        setStatus('active');
+        setStatus('idle');
+        if (inline) generationStartRef.current();
       }
-    } else {
-      setQuestions([]);
-      setAnswers({});
-      setResult(null);
-      setStatus('idle');
-      if (inline) generateTest();
-    }
-  }, [materialId, inline]);
+    }).catch(() => { if (requestRef.current === requestId) { setStatus('idle'); setErrorMessage('읽기 확인을 준비하지 못했어요. 다시 열어 주세요.'); } });
+    return () => { requestRef.current += 1; generationRef.current?.abort(); };
+  }, [materialId, language, rawText, user?.id, inline]);
 
   // 답변/결과 변경 시 저장
   useEffect(() => {
@@ -93,19 +104,24 @@ export default function ReadingTest({ rawText, language, materialId, onClose, on
       return;
     }
     if (questions.length > 0 && materialId) {
-      saveToDisk(materialId, { questions, answers, result });
+      saveToDisk(diskKeyRef.current, { questions, answers, result });
     }
   }, [questions, answers, result, materialId]);
 
   async function generateTest() {
     const excerpt = (rawText || '').slice(0, 2500);
-    if (!excerpt.trim()) return;
+    if (!excerpt.trim() || !diskKeyRef.current) return;
     const requestMaterialId = materialId;
     const requestId = ++requestRef.current;
     setStatus('loading');
+    setErrorMessage('');
+    generationRef.current?.abort();
+    const controller = new AbortController();
+    generationRef.current = controller;
+    const deadline = setTimeout(() => { controller.abort(); if (isCurrentRequest(requestId, requestMaterialId)) { setStatus('idle'); setErrorMessage('문제 생성 시간이 길어지고 있어요. 다시 시도해 주세요.'); } }, 45000);
 
     try {
-      const raw = await callGemini(`You are an IELTS Academic Reading examiner. Generate a question set for the passage below.
+      const englishPrompt = `You are an IELTS Academic Reading examiner. Generate a question set for the passage below.
 
 Passage:
 """
@@ -152,20 +168,23 @@ Rules:
 - answer: 0-indexed integer matching correct option
 - explanation: one sentence citing the passage
 - Band 6-7 difficulty
-- Questions must require reading the passage to answer`);
+- Questions must require reading the passage to answer`;
+      const raw = await callGemini(english ? englishPrompt : buildReadingCheckPrompt(excerpt, language), controller.signal);
 
-      if (!isCurrentRequest(requestId, requestMaterialId)) return;
+      if (!isCurrentRequest(requestId, requestMaterialId) || controller.signal.aborted) return;
 
       const clean = raw.replace(/```json|```/g, '').trim();
       const parsed = JSON.parse(clean.substring(clean.indexOf('{'), clean.lastIndexOf('}') + 1));
+      if (!validateReadingQuestions(parsed.questions, excerpt, language)) throw new Error('INVALID_QUESTIONS');
+      gradedRef.current = false;
       setQuestions(parsed.questions);
       setAnswers({});
       setResult(null);
       setStatus('active');
-      saveToDisk(materialId, { questions: parsed.questions, answers: {}, result: null });
+      saveToDisk(diskKeyRef.current, { questions: parsed.questions, answers: {}, result: null });
     } catch {
-      if (isCurrentRequest(requestId, requestMaterialId)) setStatus('idle');
-    }
+      if (isCurrentRequest(requestId, requestMaterialId) && !controller.signal.aborted) { setStatus('idle'); setErrorMessage('문제를 만들지 못했어요. 다시 시도해 주세요.'); }
+    } finally { clearTimeout(deadline); }
   }
 
   function selectAnswer(qIdx, optIdx) {
@@ -176,6 +195,8 @@ Rules:
   }
 
   function gradeTest() {
+    if (gradedRef.current || status !== 'active' || !questions.every((q, i) => Number.isInteger(answers[i]) && answers[i] >= 0 && answers[i] < q.options.length)) return;
+    gradedRef.current = true;
     let score = 0;
     const explanations = questions.map((q, i) => {
       const correct = answers[i] === q.answer;
@@ -186,12 +207,13 @@ Rules:
         correctAnswer: q.options[q.answer],
         correct,
         explanation: q.explanation,
+        evidence: q.evidence,
       };
     });
     const r = { score, total: questions.length, explanations };
     setResult(r);
     setStatus('done');
-    pushHistory(materialId, score, questions.length);
+    pushHistory(diskKeyRef.current, score, questions.length);
     // 읽기 루트 신호 편입 — 문항별 정오를 review_events로(다이얼·주간 회고에 합류).
     // source='reading'은 어휘 rung(vocab 전용)·FSRS에는 영향 없다. 게스트는 로컬 히스토리만.
     if (user?.id) {
@@ -213,12 +235,13 @@ Rules:
     setQuestions([]);
     setAnswers({});
     setResult(null);
-    if (materialId) localStorage.removeItem(STORAGE_KEY + materialId);
+    gradedRef.current = false;
+    try { if (diskKeyRef.current) localStorage.removeItem(STORAGE_KEY + diskKeyRef.current); } catch {}
     if (inline) generateTest();
   }
 
   const allAnswered = questions.length > 0 && Object.keys(answers).length === questions.length;
-  const typeLabel = { mcq: 'Multiple Choice', yesno: 'Yes / No / Not Given', completion: 'Sentence Completion', short: 'Short Answer' };
+  const typeLabel = english ? { mcq: 'Multiple Choice', yesno: 'Yes / No / Not Given', completion: 'Sentence Completion', short: 'Short Answer' } : { mcq: '내용 이해', yesno: '일치 여부', completion: '문장 완성', short: '답 고르기' };
 
   const Wrapper = inline ? 'div' : ReadingTestOverlay;
 
@@ -227,7 +250,7 @@ Rules:
       <div className={`reading-test ${inline ? 'reading-test--inline' : ''}`} onClick={e => e.stopPropagation()}>
 
         <div className="reading-test__header">
-          <h2 style={{ margin: 0, fontSize: '1.1rem' }}>IELTS Reading Test</h2>
+          <h2 style={{ margin: 0, fontSize: '1.1rem' }}>{english ? 'IELTS Reading Test' : '읽기 확인'}</h2>
           {onClose && <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: 'var(--text-muted)' }}>✕</button>}
         </div>
 
@@ -235,16 +258,17 @@ Rules:
         {status === 'idle' && (
           <div style={{ textAlign: 'center', padding: '40px 20px' }}>
             <p style={{ color: 'var(--text-secondary)', marginBottom: 20, lineHeight: 1.6 }}>
-              Test your comprehension with<br />IELTS-style reading questions.
+              {english ? 'IELTS 형식으로 이 글의 이해도를 확인해요.' : '방금 읽은 글의 내용을 다섯 문제로 확인해요.'}
             </p>
-            <Button onClick={generateTest}>Start Test</Button>
+            {errorMessage && <p role="alert">{errorMessage}</p>}
+            <Button onClick={generateTest} disabled={!diskKeyRef.current}>{errorMessage ? '다시 시도' : '시작하기'}</Button>
           </div>
         )}
 
         {/* loading */}
         {status === 'loading' && (
           <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
-            Generating questions...
+            문제를 만들고 있어요…
           </div>
         )}
 
@@ -282,7 +306,7 @@ Rules:
 
         {/* done */}
         {status === 'done' && result && (() => {
-          const history = getHistory(materialId);
+          const history = getHistory(diskKeyRef.current);
           const best = history.length > 0 ? history.reduce((b, h) => h.score > b.score ? h : b) : null;
           return (
           <div className="reading-test__body">
@@ -314,6 +338,7 @@ Rules:
                   </div>
                 )}
                 <p className="reading-test__result-expl">{e.explanation}</p>
+                {e.evidence && <blockquote>{e.evidence}</blockquote>}
               </div>
             ))}
 

@@ -15,7 +15,7 @@ describe('카드 배선(ViewerPage)', () => {
   it('버튼형 — 자동 조회가 아니라 [이 문장에서는?] 탭이 유일한 트리거', () => {
     expect(viewer).toContain("import { fetchCtxExplain } from '../lib/ctxExplain'");
     expect(viewer).toContain('이 문장에서는?');
-    expect(viewer).toContain('runCtxExplain(selectedToken, ctxSentence)');
+    expect(viewer).toContain('runCtxExplain(selectedToken,ctxSentenceOf(selectedToken))');
     // 카드 열림 이펙트에서 fetchCtxExplain을 자동 호출하지 않는다
     expect(viewer).not.toMatch(/useEffect\([\s\S]{0,400}fetchCtxExplain/);
   });

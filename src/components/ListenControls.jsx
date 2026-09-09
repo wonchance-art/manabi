@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { bcp47ForLanguage } from '../lib/speechLang';
 
-export default function ListenControls({ text, language = 'Japanese' }) {
+export default function ListenControls({ text, language = 'Japanese', stopSignal, playbackRate }) {
   const [supported, setSupported] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -16,7 +16,7 @@ export default function ListenControls({ text, language = 'Japanese' }) {
   const rateRef = useRef(rate);
   const languageRef = useRef(language);
 
-  rateRef.current = rate;
+  rateRef.current = playbackRate ?? rate;
   languageRef.current = language;
 
   useEffect(() => {
@@ -44,6 +44,8 @@ export default function ListenControls({ text, language = 'Japanese' }) {
     sessionRef.current += 1;
     if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
   }, []);
+
+  useEffect(()=>{sessionRef.current+=1;window.speechSynthesis?.cancel();setPlaying(false);setPaused(false);setCurrentSentence('');},[stopSignal]);
 
   function speakNext(sessionId) {
     if (sessionRef.current !== sessionId) return;
@@ -114,7 +116,9 @@ export default function ListenControls({ text, language = 'Japanese' }) {
           )}
           <button className="listen-controls__btn" onClick={stop} aria-label="정지">⏹</button>
           <span className="listen-controls__progress">{progress.current}/{progress.total}</span>
-          <select
+          {playbackRate != null ? (
+            <span className="listen-controls__rate" title="Aa 읽기 설정에서 재생 속도를 바꿀 수 있어요">{playbackRate}×</span>
+          ) : <select
             className="listen-controls__rate"
             value={rate}
             onChange={e => setRate(parseFloat(e.target.value))}
@@ -124,7 +128,7 @@ export default function ListenControls({ text, language = 'Japanese' }) {
             <option value="1">1x</option>
             <option value="1.25">1.25x</option>
             <option value="1.5">1.5x</option>
-          </select>
+          </select>}
         </div>
       )}
       {playing && currentSentence && (

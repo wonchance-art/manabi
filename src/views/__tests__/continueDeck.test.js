@@ -68,7 +68,9 @@ describe('홈 알림 덱 계약', () => {
 
   it('홈의 알림성 진입이 전부 덱으로 모인다 — 흩어진 카드가 남지 않는다', () => {
     const home = read('src/views/HomePage.jsx');
-    for (const key of ["key: 'forecast'", "key: 'lesson'"]) expect(home).toContain(key);
+    expect(home).toContain("key: 'forecast'");
+    expect(home).toContain('chooseResume(resume, local.updatedAt, material)');
+    expect(home).not.toContain("key: 'lesson'");
     expect(home).toContain('useRereadCandidate()');
     expect(home).toContain('useGroupEntryItem()');
     // 옛 개별 카드는 부활 금지 — 같은 알림이 두 자리에 나오면 겹치기가 무의미해진다.

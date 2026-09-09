@@ -8,6 +8,7 @@ async function loadFetchHandler({ fetchResponse, putError }) {
     if (putError) throw putError;
   });
   const open = vi.fn(async () => ({ put }));
+  const match = vi.fn(async () => null);
   const source = await readFile(new URL('../public/sw.js', import.meta.url), 'utf8');
   const self = {
     addEventListener: (type, handler) => handlers.set(type, handler),
@@ -20,10 +21,10 @@ async function loadFetchHandler({ fetchResponse, putError }) {
     URL,
     console,
     self,
-    caches: { keys: vi.fn(async () => []), match: vi.fn(async () => null), open },
+    caches: { keys: vi.fn(async () => []), match, open },
     fetch: vi.fn(async () => fetchResponse),
   });
-  return { handler: handlers.get('fetch'), open, put };
+  return { handler: handlers.get('fetch'), open, put, match };
 }
 
 async function dispatchNavigation(handler, url = 'https://manabi.example/broken') {
@@ -36,6 +37,20 @@ async function dispatchNavigation(handler, url = 'https://manabi.example/broken'
 }
 
 describe('service worker navigation cache', () => {
+  it.each([
+    ['/admin', 'navigate'],
+    ['/admin/legacy-textbooks/french/grammar/a1-01-pronouns-etre', 'navigate'],
+    ['/admin/legacy-textbooks?_rsc=fixture', 'cors'],
+  ])('%s는 offline cache를 읽거나 쓰지 않고 인증 서버로 보낸다', async (path, mode) => {
+    const { handler, open, put, match } = await loadFetchHandler({});
+    const respondWith = vi.fn();
+    handler({ request: { method: 'GET', mode, url: `https://manabi.example${path}` }, respondWith });
+    expect(respondWith).not.toHaveBeenCalled();
+    expect(match).not.toHaveBeenCalled();
+    expect(open).not.toHaveBeenCalled();
+    expect(put).not.toHaveBeenCalled();
+  });
+
   it.each([404, 500])('%i 실패 응답은 offline cache에 쓰지 않는다', async (status) => {
     const response = { ok: false, redirected: false, status, type: 'basic', url: 'https://manabi.example/broken', clone: vi.fn() };
     const { handler, open, put } = await loadFetchHandler({ fetchResponse: response });

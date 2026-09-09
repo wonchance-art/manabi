@@ -10,6 +10,8 @@
  */
 
 const td = (bytes) => new TextDecoder('utf-8').decode(bytes);
+const MAX_ENTRY_BYTES = 16 * 1024 * 1024;
+const MAX_UNPACKED_BYTES = 128 * 1024 * 1024;
 
 /** ZIP 중앙 디렉터리 파싱 → { name → { offset, method, compSize } } */
 function parseZipDirectory(buf) {
@@ -22,18 +24,23 @@ function parseZipDirectory(buf) {
   }
   if (eocd < 0) throw new Error('ZIP 형식이 아님(EOCD 없음)');
   const count = view.getUint16(eocd + 10, true);
+  if (count > 10000) throw new Error('EPUB 항목이 너무 많습니다.');
   let p = view.getUint32(eocd + 16, true); // 중앙 디렉터리 시작
   const entries = new Map();
+  let unpackedBytes = 0;
   for (let i = 0; i < count; i++) {
     if (view.getUint32(p, true) !== 0x02014b50) throw new Error('ZIP 중앙 디렉터리 손상');
     const method = view.getUint16(p + 10, true);
     const compSize = view.getUint32(p + 20, true);
+    const size = view.getUint32(p + 24, true);
+    unpackedBytes += size;
+    if (size > MAX_ENTRY_BYTES || unpackedBytes > MAX_UNPACKED_BYTES) throw new Error('EPUB 압축 해제 용량이 너무 큽니다.');
     const nameLen = view.getUint16(p + 28, true);
     const extraLen = view.getUint16(p + 30, true);
     const commentLen = view.getUint16(p + 32, true);
     const offset = view.getUint32(p + 42, true);
     const name = td(bytes.subarray(p + 46, p + 46 + nameLen));
-    entries.set(name, { offset, method, compSize });
+    entries.set(name, { offset, method, compSize, size });
     p += 46 + nameLen + extraLen + commentLen;
   }
   return entries;
@@ -48,11 +55,30 @@ async function readZipEntry(buf, entry) {
   const extraLen = view.getUint16(p + 28, true);
   const start = p + 30 + nameLen + extraLen;
   const raw = new Uint8Array(buf, start, entry.compSize);
-  if (entry.method === 0) return raw;               // stored
+  if (entry.method === 0) {
+    if (raw.byteLength > MAX_ENTRY_BYTES) throw new Error('EPUB 항목이 너무 큽니다.');
+    return raw;
+  }
   if (entry.method !== 8) throw new Error(`지원하지 않는 압축 방식(${entry.method})`);
   const ds = new DecompressionStream('deflate-raw'); // browsers·Node 22 공통
   const stream = new Blob([raw]).stream().pipeThrough(ds);
-  return new Uint8Array(await new Response(stream).arrayBuffer());
+  const reader = stream.getReader();
+  const chunks = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > MAX_ENTRY_BYTES || total > entry.size) throw new Error('EPUB 압축 용량 정보가 맞지 않습니다.');
+      chunks.push(value);
+    }
+  } catch (error) { await reader.cancel().catch(() => {}); throw error; }
+  finally { reader.releaseLock(); }
+  const result = new Uint8Array(total);
+  let offset = 0;
+  chunks.forEach(chunk => { result.set(chunk, offset); offset += chunk.byteLength; });
+  return result;
 }
 
 /** container.xml → OPF 경로 */
@@ -147,7 +173,7 @@ export async function parseEpub(buf) {
     const xhtml = td(await readZipEntry(buf, entry));
     const text = extractXhtmlText(xhtml);
     if (!text) continue;  // 표지·빈 페이지 제외
-    chapters.push({ title: guessChapterTitle(xhtml, `${i + 1}장`), text, chars: text.length });
+    chapters.push({ title: guessChapterTitle(xhtml, `${i + 1}장`), text, chars: text.length, spinePath: name, spineIndex: i });
   }
   if (chapters.length === 0) throw new Error('본문 챕터를 찾지 못함');
   return { title, language, chapters };

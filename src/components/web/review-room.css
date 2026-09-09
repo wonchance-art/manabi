@@ -1,0 +1,90 @@
+/* Review is a reading surface: one clear action, restrained language color, visible source boxes. */
+.manabi-review-room { max-width: 1080px; container-type: inline-size; padding-block: 44px 72px; }
+.review-room-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; padding-bottom:28px; border-bottom:1px solid var(--rule); margin-bottom:30px; }
+.review-room-heading h1 { font-size:44px; line-height:1.25; letter-spacing:-2px; margin:9px 0 0; }
+.review-room-heading>p { font-size:14px; line-height:1.8; color:var(--muted); }
+.manabi-review-room .review-room-grid { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr); grid-template-areas:'hero grammar' 'vocab vocab' 'settings settings' 'revisit revisit'; gap:28px 42px; }
+.manabi-review-room .vocab-hero { background:var(--sheet); border:1px solid var(--rule); border-top:3px solid var(--ja); border-radius:3px; padding:30px; box-shadow:none; margin:0; grid-area:hero; }
+.manabi-review-room .vocab-hero__top { justify-content:space-between; min-height:0; margin:0 0 24px; }
+.manabi-review-room .vocab-hero__kicker { color:var(--muted); font-size:12px; }
+.manabi-review-room .vocab-hero h2 { font-size:25px; line-height:1.5; letter-spacing:-1px; font-weight:600; }
+.review-room-number { display:flex; align-items:baseline; gap:14px; margin:12px 0 0; }
+.manabi-review-room .vocab-hero__num { font-family:var(--font-manrope),sans-serif; font-size:82px; font-weight:500; letter-spacing:-5px; color:var(--ja); line-height:1.15; }
+.review-room-number>span { font-size:15px; color:var(--muted); }
+.review-room-note { font-size:13px; line-height:1.9; color:var(--muted); margin:14px 0 24px; }
+.manabi-review-room .btn--primary { min-height:48px; border-radius:3px; background:var(--ja); color:var(--sheet); box-shadow:none; }
+.manabi-review-room .btn--primary:hover { filter:brightness(.92); }
+.review-room-start { width:100%; justify-content:space-between; }
+.review-room-grammar { grid-area:grammar; align-self:center; min-width:0; }
+.review-room-grammar h2 { font-size:25px; font-weight:500; letter-spacing:-1px; margin:12px 0; }
+.review-room-grammar>p:not(.manabi-eyebrow),.review-room-extra p { font-size:13px; line-height:1.9; color:var(--muted); }
+.review-room-extra { border-top:1px solid var(--rule); margin-top:26px; padding-top:22px; }
+.review-room-scope { font-size:12px; margin-top:15px; color:var(--muted); overflow-wrap:anywhere; }
+.review-room-resume { border:0; background:none; color:var(--ja); font:inherit; font-size:13px; text-align:left; min-height:44px; margin-top:12px; cursor:pointer; }
+.manabi-review-room .review-sec { box-shadow:none; border:0; border-radius:0; padding:24px 0 0; border-top:1px solid var(--rule); background:none; margin:0; min-width:0; }
+.manabi-review-room .review-sec__title { font-size:21px; letter-spacing:-.6px; }
+.manabi-review-room .review-sec__row { min-height:64px; gap:18px; border-radius:0; padding:14px 0; background:none; border-bottom:1px solid var(--rule); }
+.manabi-review-room .review-sec__word { min-width:0; max-width:40%; overflow-wrap:anywhere; }
+.manabi-review-room .review-sec__meaning { min-width:0; }
+.manabi-review-room .review-sec__due { font-size:11px; }
+.manabi-review-room .review-sec--vocab { grid-area:vocab; }
+.manabi-review-room .review-sec--revisit { grid-area:revisit; }
+.review-room-settings { grid-area:settings; min-width:0; border-block:1px solid var(--rule); }
+.review-room-settings>summary { display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; cursor:pointer; padding:20px 0; font-size:14px; list-style:none; }
+.review-room-settings>summary::after { content:'+'; margin-left:auto; }
+.review-room-settings[open]>summary::after { content:'−'; }
+.review-room-settings>summary>span { color:var(--muted); font-size:11px; }
+.review-room-settings .vocab-tools__menu { position:static; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 24px; padding:0 0 22px; width:auto; max-width:none; border:0; background:none; box-shadow:none; }
+.review-room-settings .vocab-tools__field,.review-room-settings .vocab-tools__limit { padding:8px 0; }
+.review-room-settings select { min-height:44px; }
+.review-room-settings .vocab-tools__item { min-height:44px; }
+.review-room-state { background:var(--sheet); padding:36px; border:1px solid var(--rule); line-height:1.9; }
+.review-room-state h2 { font-size:23px; }
+.review-room-state p { margin:14px 0 22px; color:var(--muted); }
+.review-guest { padding-top:64px; }
+.review-guest h1 { font-size:clamp(30px,5vw,46px); line-height:1.5; letter-spacing:-1.8px; margin:20px 0; }
+.review-room-session { max-width:680px; margin:0 auto; }
+.manabi-review-room .review-topbar { max-width:680px; margin:12px auto 25px; }
+.manabi-review-room .review-card { border-radius:3px; border:1px solid var(--rule); background:var(--sheet); box-shadow:0 8px 28px color-mix(in srgb,var(--ink) 4%,transparent); overflow:visible; }
+.manabi-review-room .review-card__body { padding:24px 32px 32px; }
+.review-room-prompt { font-size:12px; color:var(--muted); text-align:center; margin:0 0 32px; line-height:1.8; }
+.manabi-review-room .review-card__word { line-height:1.6; overflow-wrap:anywhere; font-size:clamp(28px,4vw,38px); }
+.manabi-review-room .review-card__source,.manabi-review-room .review-card__hint,.manabi-review-room .learning-source-quote { border:1px solid var(--rule); border-left:3px solid var(--ja); border-radius:2px; padding:18px 20px; background:var(--paper); text-align:left; line-height:1.9; overflow-wrap:anywhere; }
+.review-room-source-link { text-align:left; margin:18px 0; }
+.review-room-source-link a { color:var(--ja); font-size:13px; min-height:44px; display:inline-flex; align-items:center; }
+.review-room-source-link small { display:block; color:var(--muted); font-size:11px; line-height:1.7; }
+.manabi-review-room .review-score-grid { gap:8px; }
+.manabi-review-room .review-score-btn { border-radius:3px; min-height:52px; }
+.manabi-review-room .quiz-opt { min-height:48px; border-radius:3px; overflow-wrap:anywhere; }
+.manabi-review-room .learning-links { text-align:left; }
+.manabi-review-room .learning-links summary { min-height:44px; padding-block:12px; }
+.manabi-review-room .review-card__meaning { line-height:1.8; overflow-wrap:anywhere; }
+.manabi-grammar-room { container-type:inline-size; padding-block:28px 60px; }
+.review-room-session-nav { display:flex; justify-content:space-between; gap:15px; align-items:center; padding-bottom:18px; border-bottom:1px solid var(--rule); font-size:12px; }
+.review-room-session-nav>a { min-height:44px; display:inline-flex; align-items:center; }
+.review-room-session-nav>span { color:var(--muted); }
+.manabi-grammar-room .fr-quiz__item { background:var(--sheet); border:1px solid var(--rule); border-radius:3px; padding:24px; }
+.manabi-grammar-room .fr-quiz__prompt { overflow-wrap:anywhere; line-height:1.8; }
+.manabi-grammar-room .fr-quiz__opt { min-height:48px; }
+@container (max-width: 650px) {
+  .manabi-review-room .review-room-grid { grid-template-columns:minmax(0,1fr); grid-template-areas:'hero' 'grammar' 'vocab' 'settings' 'revisit'; gap:28px; }
+  .review-room-heading { align-items:flex-start; gap:12px; margin-bottom:24px; padding-bottom:22px; }
+  .review-room-heading h1 { font-size:36px; }
+  .review-room-heading>p { font-size:12px; }
+  .manabi-review-room .vocab-hero { padding:24px; }
+  .manabi-review-room .review-card__body { padding:18px; }
+  .manabi-review-room .review-sec__row { gap:10px; }
+  .review-room-settings>summary>span { display:none; }
+  .review-room-settings .vocab-tools__menu { grid-template-columns:minmax(0,1fr); }
+  .manabi-review-room .review-score-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .review-room-session-nav>span { font-size:10px; }
+  .manabi-grammar-room .fr-quiz__item { padding:18px; }
+}
+/* Keep the four familiar ratings, but make their color quieter than the question. */
+.manabi-review-room .review-score-btn { background:var(--paper); color:var(--ink); border:1px solid var(--rule); border-top-width:3px; }
+.manabi-review-room .review-score-btn--again { border-top-color:var(--ja); }
+.manabi-review-room .review-score-btn--hard { border-top-color:var(--en); }
+.manabi-review-room .review-score-btn--good { border-top-color:var(--zh); }
+.manabi-review-room .review-score-btn--easy { border-top-color:var(--fr); }
+.manabi-review-room .review-score-btn:hover { background:var(--bg-secondary); color:var(--ink); }
+.manabi-review-room .review-score-btn .save-grade__key { color:var(--muted); }

@@ -145,6 +145,7 @@ describe('드래그 중 시트 가로채기 차단 계약', () => {
   const hook = fs.readFileSync(path.join(process.cwd(), 'src/lib/useTokenRangeSelect.js'), 'utf8');
   const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
   const css = fs.readFileSync(path.join(process.cwd(), 'src/index.css'), 'utf8');
+  const readerCss = fs.readFileSync(path.join(process.cwd(), 'src/components/viewer/reader-controls.css'), 'utf8');
 
   it('훅이 dragging을 노출한다 — 드래그·그립 시작 시 true, 정리 경로에서 false', () => {
     expect(hook.match(/setDragging\(true\)/g)?.length).toBe(2); // onStart + 그립 조정
@@ -155,12 +156,13 @@ describe('드래그 중 시트 가로채기 차단 계약', () => {
 
   it('뷰어가 드래그 동안 루트에 --dragging을 달고, CSS가 시트·바를 투과시킨다', () => {
     expect(viewer).toContain("tokenRange.dragging ? ' viewer-3col--dragging' : ''");
-    expect(css).toMatch(/\.viewer-3col--dragging \.viewer-sheet,\s*\.viewer-3col--dragging \.viewer-sheet-bar \{ pointer-events: none; \}/);
+    expect(readerCss).toMatch(/\.viewer-layout\.viewer-3col--dragging \.viewer-inspector \{pointer-events:none;\}/);
   });
 
   it('e2e 재시도는 시트를 닫고 다시 드래그한다(자란 시트가 pointerdown부터 먹는 경우)', () => {
     const e2e = fs.readFileSync(path.join(process.cwd(), 'e2e/learning-flow.e2e.mjs'), 'utf8');
-    expect(e2e).toContain("getByRole('button', { name: '시트 닫기', exact: true })");
-    expect(e2e).toContain("pdf_cache:synant:v1:Chinese:中文"); // ⑤ 자동 조회 결정성 시드
+    expect(e2e).toContain("getByRole('button', { name: '보조 패널 닫기', exact: true })");
+    expect(e2e).toContain("await viewerCacheKey('pdf_cache:synant', 'Chinese', ['中文', '중국어', 'zhōng wén'])"); // ⑤ 전체 뜻·발음을 반영한 자동 조회 결정성 시드
+    expect(e2e).toContain('}, synonymKey);');
   });
 });

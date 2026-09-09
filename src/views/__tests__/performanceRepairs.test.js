@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { buildContinueManifest } from '../../content/refManifest';
+import { MAIN_NAV } from '../../lib/webNavigation';
 
 const read = (file) => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
 
@@ -31,35 +31,27 @@ describe('P1–P5 초기 전송 성능 수리 회귀', () => {
     expect(lessons).not.toContain("import LanguageWorldMap, { TRACK_COLORS }");
   });
 
-  it('P5: 빈도가 낮은 전역 링크만 prefetch를 끈다', () => {
+  it('P5: 개인화 홈과 빈도가 낮은 전역 링크의 prefetch를 끈다', () => {
     const layout = read('src/components/Layout.jsx');
 
-    expect(layout.split("{ href: '/home', label: '홈' }").length - 1).toBe(2);
-    expect(layout.split("{ href: '/lessons',   label: '교재' }").length - 1).toBe(2);
-    expect(layout.split("{ href: '/vocab',     label: '복습', prefetch: false }").length - 1).toBe(2);
-    expect(layout.split("{ href: '/materials', label: '자료', prefetch: false }").length - 1).toBe(2);
-    expect(layout).toContain("{ href: '/auth', label: '로그인', prefetch: false }");
+    // 로그인 직후 홈의 부분 prefetch가 연속 탐색을 붙잡는 회귀를 함께 방어한다.
+    expect(MAIN_NAV).toContainEqual({ href: '/home', label: '오늘', prefetch: false });
+    expect(MAIN_NAV).toContainEqual({ href: '/vocab', label: '복습', prefetch: false });
+    expect(MAIN_NAV).toContainEqual({ href: '/materials', label: '내 서재', prefetch: false });
+    expect(layout).toContain('const navLinks = MAIN_NAV');
+    expect(layout).toContain('const mobileNavLinks = MAIN_NAV');
     expect(layout.split('prefetch={l.prefetch}').length - 1).toBe(2);
     expect(layout).not.toContain('/review/grammar');
   });
 
-  it('P4: home용 단일 매니페스트가 이어보기와 ProfileStats 형태를 함께 만족한다', () => {
+  it('P4: 홈은 발행 교재의 작은 카탈로그만 전달하고 예전 30과 통계를 섞지 않는다', () => {
     const page = read('src/app/(app)/home/page.jsx');
     const home = read('src/views/HomePage.jsx');
-    const manifest = buildContinueManifest();
-
-    expect(page).not.toContain('buildRefManifest');
-    expect(page).toContain('<HomePage continueManifest={buildContinueManifest()} />');
-    expect(home).toContain('export default function HomePage({ continueManifest = {} })');
-    expect(home).toContain('<ProfileStats refManifest={continueManifest} />');
-    for (const ref of Object.values(manifest)) {
-      for (const level of ref.levels) {
-        expect(level.key).toBeTruthy();
-        expect(level.short).toBeTruthy();
-        expect(level.label).toBeTruthy();
-        expect(Array.isArray(level.chapters)).toBe(true);
-      }
-    }
+    expect(page).toContain('readingCatalog(published.book)');
+    expect(page).toContain('<HomePage book={book} />');
+    expect(page).not.toContain('buildContinueManifest');
+    expect(home).not.toContain('ProfileStats');
+    expect(home).not.toContain('pullProgress');
   });
 
   it('P3: dynamic searchParams 구조를 유지한다 — 정적화하면 ?lang·?level이 안 먹는다', () => {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import ViewerModal from '../components/viewer/ViewerModal';
 import { buildEditPlan } from '../lib/sourceEdit';
 
 /**
@@ -9,9 +10,14 @@ import { buildEditPlan } from '../lib/sourceEdit';
  * 상태와 요약 표시만 담당한다. 요약은 300ms 디바운스(LCS가 키 입력마다 돌지 않게),
  * 저장은 디바운스와 무관하게 현재 초안으로 다시 계산해 넘긴다(정확성 우선).
  */
-export default function SourceEditModal({ open, initialText, processedJson, saving, onSave, onClose }) {
+export default function SourceEditModal({ open, initialText, processedJson, saving, committing, onStop, onSave, onClose }) {
   const [draft, setDraft] = useState(initialText);
-  useEffect(() => { if (open) setDraft(initialText); }, [open, initialText]);
+  const [baseline, setBaseline] = useState({ text: initialText, json: processedJson });
+  useEffect(() => {
+    if (open) { setDraft(initialText); setBaseline({ text: initialText, json: processedJson }); }
+    // 열린 편집기의 초안은 뒤늦은 서버 refetch로 덮지 않는다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const [debounced, setDebounced] = useState(initialText);
   useEffect(() => {
@@ -20,8 +26,8 @@ export default function SourceEditModal({ open, initialText, processedJson, savi
   }, [draft]);
 
   const plan = useMemo(
-    () => (open ? buildEditPlan(initialText, debounced, processedJson) : null),
-    [open, initialText, debounced, processedJson]
+    () => (open ? buildEditPlan(baseline.text, debounced, baseline.json) : null),
+    [open, baseline, debounced]
   );
 
   if (!open) return null;
@@ -34,31 +40,30 @@ export default function SourceEditModal({ open, initialText, processedJson, savi
       : '줄 구조만 변경 — 재분석 없이 저장';
 
   return (
-    <>
-      <div className="source-edit-overlay" onClick={saving ? undefined : onClose} />
-      <div className="source-edit" role="dialog" aria-label="원문 수정">
-        <div className="source-edit__title">원문 수정</div>
+    <ViewerModal title="원문 수정" onClose={()=>{if(!saving)onClose();}}>
+
         <textarea
           className="source-edit__textarea"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           spellCheck={false}
+          disabled={saving}
           aria-label="원문 텍스트"
         />
         <div className="source-edit__footer">
           <span className="source-edit__summary">{summaryText}</span>
           <div className="source-edit__actions">
+            {saving && onStop && <button className="btn btn--ghost btn--sm" onClick={onStop} disabled={committing}>{committing ? '저장 중…' : '분석 중단'}</button>}
             <button className="btn btn--ghost btn--sm" onClick={onClose} disabled={saving}>취소</button>
             <button
               className="btn btn--primary btn--sm"
-              onClick={() => onSave(buildEditPlan(initialText, draft, processedJson))}
+              onClick={() => onSave({ ...buildEditPlan(baseline.text, draft, baseline.json), expectedRaw: baseline.text, expectedJson: baseline.json })}
               disabled={saving || !plan || plan.noop || !plan.ok}
             >
-              {saving ? '저장 중…' : plan?.ok && plan.analyzeCount > 0 ? `저장하고 ${plan.analyzeCount}줄 분석` : '저장'}
+              {saving ? '분석·저장 중…' : plan?.ok && plan.analyzeCount > 0 ? `${plan.analyzeCount}줄 분석 후 저장` : '저장'}
             </button>
           </div>
         </div>
-      </div>
-    </>
+    </ViewerModal>
   );
 }

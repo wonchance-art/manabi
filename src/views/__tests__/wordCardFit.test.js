@@ -9,6 +9,7 @@ import path from 'node:path';
 const read = (f) => fs.readFileSync(path.join(process.cwd(), f), 'utf8');
 const css = read('src/index.css');
 const viewer = read('src/views/ViewerPage.jsx');
+const readerCss = read('src/components/viewer/reader-controls.css');
 
 describe('① 폭맞춤 확대 계약', () => {
   it('크기 수식 — cqi 컨테이너 + clamp(최소 1.5rem·캡 --fit-cap 기본 8rem), 미지원 엔진 폴백 줄 선행', () => {
@@ -16,20 +17,15 @@ describe('① 폭맞춤 확대 계약', () => {
     expect(css).toMatch(/\.word-fit \{\s*font-size: 1\.5rem;\s*font-size: clamp\(1\.5rem, calc\(100cqi \/ var\(--fit-n, 1\)\), var\(--fit-cap, 8rem\)\);/);
   });
 
-  it('지정 단어 글자 = 고정 크기(오너 확정 2026-08-20 — "환경별 알맞은 크기로 고정")', () => {
-    // 글자 수로 크기가 널뛰던 것(1자 220/2자 124/3자 75…)의 수리: --fit-cap이 사실상의
-    // 고정 크기이고, 폭맞춤은 긴 단어가 칸을 넘칠 때만 아래로 개입한다(min — 한 줄 유지).
-    // Pleco·Anki 표제어 고정 선례. 값 재핀은 여기·CSS 두 곳 1줄씩.
-    expect(css).toMatch(/\.viewer-side--right \{[^}]*--fit-cap: 4rem;/s);
-    expect(css).toMatch(/\.viewer-sheet \{[^}]*--fit-cap: 4rem;/s);
-    // 시트 최대 높이는 별개 유지(본문 가시성 — 100svh 배분 추산). svh 미지원 폴백 70vh 선행.
-    expect(css).toMatch(/max-height: 70vh;\s*max-height: 60svh;/);
+  it('표제어는 읽을 수 있는 32–36px 범위이며 긴 표제어는 줄바꿈한다', () => {
+    expect(readerCss).toContain('.viewer-layout .word-fit {font-size:clamp(2rem,4cqi,2.25rem)');
+    expect(readerCss).toContain('.viewer-layout .word-fit .surface {white-space:normal;overflow-wrap:anywhere;}');
   });
 
   it('격자 복제 — 본문 병음 격자 계약과 동일 규칙(.word-fit 스코프)', () => {
     // 핵심 3종: 1em 셀 · 병음 단일 크기 0.26em · 절대배치(rt-an — WebKit rt 계약 공유)
-    expect(css).toMatch(/\.word-fit ruby\[data-pinyin\] \{ display: inline-flex; justify-content: center; width: 1em; \}/);
-    expect(css).toMatch(/\.word-fit ruby\[data-pinyin\] > \.rt-an \{ font-size: 0\.26em;/);
+    expect(readerCss).toContain('.word-fit ruby[data-pinyin] {width:max(1em,3.1rem);}');
+    expect(readerCss).toContain('.word-fit ruby[data-pinyin] > .rt-an {font-size:.9375rem;');
     expect(css).toMatch(/\.word-fit ruby\[data-pinyin\] > \.rt-an, \.word-fit ruby\[data-yomi\] > \.rt-an \{\s*position: absolute;/s);
     // bottom 상수는 카드 line-height(1.9)와 유도식 동조 — 분모가 어긋나면 간격이 틀어진다
     expect(css).toMatch(/\.word-fit \.surface \{ line-height: 1\.9; display: block; \}/);

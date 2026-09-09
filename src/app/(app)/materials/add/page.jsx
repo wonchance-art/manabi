@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import MaterialAddPage from '@/views/MaterialAddPage';
+import MaterialEntry from '@/components/materials/MaterialEntry';
 
 export const metadata = {
   title: '새 자료 추가',
@@ -8,7 +8,7 @@ export const metadata = {
 export default function Page() {
   return (
     <Suspense>
-      <MaterialAddPage />
+      <MaterialEntry />
     </Suspense>
   );
 }

@@ -10,12 +10,14 @@ import { getParagraphs } from './useReanalyze';
  * @returns {{ reanalyzePanel, setReanalyzePanel, selectedParas, paragraphs,
  *            togglePara, startFullReanalyze, startPartialReanalyze }}
  */
-export function useReanalyzeUI({ reanalyze, material, toast }) {
+export function useReanalyzeUI({ reanalyze, material, toast, panel, onPanelChange }) {
   // 재분석 패널 상태: null | 'menu' | 'pick'
-  const [reanalyzePanel, setReanalyzePanel] = useState(null);
+  const [localPanel,setLocalPanel] = useState(null);
+  const reanalyzePanel = onPanelChange ? panel : localPanel;
+  const setReanalyzePanel = onPanelChange || setLocalPanel;
   const [selectedParas, setSelectedParas] = useState(new Set());
 
-  const paragraphs = material?.raw_text ? getParagraphs(material.raw_text) : [];
+  const paragraphs = material?.raw_text ? getParagraphs(material.raw_text, true) : [];
 
   function togglePara(idx) {
     setSelectedParas(prev => {

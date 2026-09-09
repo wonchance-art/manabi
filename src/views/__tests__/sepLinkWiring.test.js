@@ -45,9 +45,8 @@ describe('뷰어 배선(ViewerPage)', () => {
     expect(viewer).toMatch(/\^\(\?:id\|failed\)_\$\{m\[1\]\}_/);
   });
 
-  it('각괘선 높이 7px 고정(오너 확정) + 잉크 상단은 밴드 계약 좌표(0.58em)', () => {
-    expect(viewer).toContain('Math.min(a.y, b.y) - 7;');
-    expect(viewer).toContain('0.58 * fs');
+  it("이합사 아치는 실제 글자 좌표와 새 조판 변경을 반영한다", () => {
+    expect(viewer).toContain('Math.min(a.y, b.y) - 7;'); expect(viewer).toContain('range.getBoundingClientRect()'); expect(viewer).toContain('layoutVersion, fontSize, charGap, lineGap, pinyinCell, fontFamily');
   });
 
   it('한 번만 그려진다 — 대시 드로우온 1회, reduced-motion이면 즉시 완성선', () => {

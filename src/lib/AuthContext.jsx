@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { getSupabase, supabase } from '../lib/supabase';
 import { hasSupabaseSessionCookie } from './authCookie';
+import { authCallbackUrl } from './authRedirect';
 import { migrateGuestDrillQueue } from './drillSrs';
 import { useToast } from './ToastContext';
 import { pullProgress } from './refProgress';
@@ -220,7 +221,7 @@ export function AuthProvider({ children }) {
       password,
       options: {
         data: { display_name: displayName },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: authCallbackUrl(window.location.origin),
       },
     });
     if (error) throw error;
@@ -240,10 +241,10 @@ export function AuthProvider({ children }) {
   }
 
   // 구글 소셜 로그인
-  async function signInWithGoogle() {
+  async function signInWithGoogle(next = '/home') {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin }
+      options: { redirectTo: authCallbackUrl(window.location.origin, next) }
     });
     if (error) throw error;
     return data;
@@ -252,7 +253,7 @@ export function AuthProvider({ children }) {
   // 비밀번호 재설정 메일 발송
   async function resetPassword(email) {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/auth?mode=reset',
+      redirectTo: authCallbackUrl(window.location.origin, '/auth?mode=reset'),
     });
     if (error) throw error;
   }

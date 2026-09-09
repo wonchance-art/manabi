@@ -4,18 +4,50 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../lib/AuthContext';
 import { useTheme } from '../lib/useTheme';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import OnboardingModal from './OnboardingModal';
+import './books/reading-shell.css';
+import './web/web-shell.css';
+import { MAIN_NAV, navigationOwner, isFocusedReadingRoute } from '@/lib/webNavigation';
+import './web/focused-reader.css';
+import { librarySearchHref } from '@/lib/libraryReturn';
 import VersionBadge from './VersionBadge';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/ToastContext';
 
 // 미완성 기능 임시 숨김 — true로 바꾸면 학습·클래스 내비가 함께 복원된다.
 
+function ReaderSiteMenu({ isAdmin }) {
+  const ref = useRef(null);
+  const pathname = usePathname();
+  useEffect(() => { if (ref.current) ref.current.open = false; }, [pathname]);
+  useEffect(() => {
+    const closeOutside = e => { if (ref.current && !ref.current.contains(e.target)) ref.current.open = false; };
+    const closeWithKey = e => {
+      if (e.key === 'Escape' && ref.current?.open) {
+        ref.current.open = false;
+        ref.current.querySelector('summary').focus();
+      }
+    };
+    document.addEventListener('pointerdown', closeOutside);
+    document.addEventListener('keydown', closeWithKey);
+    return () => { document.removeEventListener('pointerdown', closeOutside); document.removeEventListener('keydown', closeWithKey); };
+  }, []);
+  return <details ref={ref} className="reader-site-menu">
+    <summary>메뉴 <span aria-hidden="true">≡</span></summary>
+    <nav aria-label="읽기 화면 내비게이션" onClick={e => { if (e.target.closest('a')) ref.current.open = false; }}>
+      {MAIN_NAV.map(item => <Link key={item.href} href={item.href} prefetch={item.prefetch}>{item.label}</Link>)}
+      {isAdmin && <Link href="/admin" prefetch={false}>관리</Link>}
+    </nav>
+  </details>;
+}
+
 export default function Layout({ children }) {
   const { user, profile, isAdmin, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const focusedReading = isFocusedReadingRoute(pathname);
+  const isNavActive = href => navigationOwner(pathname) === href;
   const { theme, toggleTheme } = useTheme();
   const [isOffline, setIsOffline] = useState(false);
   const [resendingConfirm, setResendingConfirm] = useState(false);
@@ -116,31 +148,15 @@ export default function Layout({ children }) {
 
   // 핵심 네비게이션만 노출 — 부가 기능(가이드·통계)은 프로필 안쪽으로
   // 학습 월드(/world)는 개발 동결(2026-07 피벗)로 내비에서 내렸다 — 라우트는 유지, 직행 URL로만.
-  const navLinks = [
-    ...(user ? [
-      { href: '/home', label: '홈' },
-    ] : []),
-    { href: '/lessons',   label: '교재' },
-    { href: '/vocab',     label: '복습', prefetch: false },
-    { href: '/materials', label: '자료', prefetch: false },
-  ];
-
-  const mobileNavLinks = [
-    ...(user ? [
-      { href: '/home', label: '홈' },
-    ] : []),
-    { href: '/lessons',   label: '교재' },
-    { href: '/vocab',     label: '복습', prefetch: false },
-    { href: '/materials', label: '자료', prefetch: false },
-    ...(user ? [] : [{ href: '/auth', label: '로그인', prefetch: false }]),
-  ];
+  const navLinks = MAIN_NAV;
+  const mobileNavLinks = MAIN_NAV;
 
   return (
-    <>
+    <div className={`manabi-app${focusedReading ? ' manabi-app--reading' : ''}`}>
       <a href="#main-content" className="skip-link">본문으로 건너뛰기</a>
       <header className="gnb" role="banner">
-        <Link href="/" className="gnb__logo" aria-label="Anatomy Studio 홈">
-          <span>Anatomy Studio</span>
+        <Link href="/home" prefetch={false} className="gnb__logo" aria-label="manabi 오늘">
+          <span>manabi<span className="manabi-brand-dot" aria-hidden="true" /></span>
         </Link>
 
         <nav className="gnb__nav" aria-label="메인 내비게이션">
@@ -149,8 +165,8 @@ export default function Layout({ children }) {
               key={l.href}
               href={l.href}
               prefetch={l.prefetch}
-              className={`gnb__link ${pathname === l.href || pathname.startsWith(l.href + '/') ? 'active' : ''}`}
-              aria-current={pathname === l.href ? 'page' : undefined}
+              className={`gnb__link ${isNavActive(l.href) ? 'active' : ''}`}
+              aria-current={isNavActive(l.href) ? 'page' : undefined}
             >
               <span>{l.label}</span>
             </Link>
@@ -180,6 +196,8 @@ export default function Layout({ children }) {
           <span aria-hidden="true">◐</span>
         </button>
 
+        {focusedReading && <ReaderSiteMenu isAdmin={isAdmin} />}
+        <Link href={librarySearchHref(user)} prefetch={false} className="manabi-search-link" aria-label="자료 검색">⌕<span>검색</span></Link>
         <div className="gnb__actions">
           {user ? (
             <div className="gnb__user-area">
@@ -187,6 +205,7 @@ export default function Layout({ children }) {
                 className="gnb__profile-btn"
                 onClick={() => router.push('/profile')}
                 title={profile?.display_name || user.email}
+                aria-label="내 계정"
               >
                 {displayChar}
               </button>
@@ -248,19 +267,19 @@ export default function Layout({ children }) {
             key={l.href}
             href={l.href}
             prefetch={l.prefetch}
-            className={`mobile-nav__link ${pathname === l.href || pathname.startsWith(l.href + '/') ? 'active' : ''}`}
-            aria-current={pathname === l.href ? 'page' : undefined}
+            className={`mobile-nav__link ${isNavActive(l.href) ? 'active' : ''}`}
+            aria-current={isNavActive(l.href) ? 'page' : undefined}
           >
             <span>{l.label}</span>
           </Link>
         ))}
       </nav>
 
-      <main className="app-layout" role="main" id="main-content">
+      <main className="app-layout" role="main" id="main-content" tabIndex={-1}>
         {children}
       </main>
 
       {profile && profile.onboarded === false && <OnboardingModal />}
-    </>
+    </div>
   );
 }

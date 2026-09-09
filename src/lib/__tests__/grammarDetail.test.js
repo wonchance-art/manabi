@@ -130,7 +130,7 @@ describe('문법 [자세히] 배선 계약', () => {
   });
 
   it('좌측 번역·맥락은 buildContextPrompt를 쓴다(말투 통합)', () => {
-    expect(read('src/views/ViewerPage.jsx')).toContain('callGemini(buildContextPrompt(sel, langName))');
+    expect(read('src/views/ViewerPage.jsx')).toContain('callGemini(buildContextPrompt(sel, langName), request.signal)');
   });
 
   it('해설 결과는 문장 단위 캐시를 거친다(재열람 무료)', () => {

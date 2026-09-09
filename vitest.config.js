@@ -16,7 +16,10 @@
 // 수정(2026-08-19): 처음 쓴 `poolOptions.{threads,forks}.max*`는 **vitest 4에서 제거된
 // 키**라 조용히 무시되고 있었다(실행 시 DEPRECATED 경고로 발견). 상한이 실제로는 걸린 적이
 // 없었다는 뜻이라, 현행 API인 top-level `maxWorkers`로 옮긴다.
+import { fileURLToPath } from 'node:url';
+
 const config = {
+  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   test: {
     testTimeout: 90_000,
     hookTimeout: 60_000,

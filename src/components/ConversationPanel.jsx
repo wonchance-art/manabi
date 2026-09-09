@@ -7,6 +7,7 @@ import { useTTS } from '../lib/useTTS';
 import { useOutputWords } from '../lib/useOutputWords';
 import Button from './Button';
 import OutputWordChips from './OutputWordChips';
+import { bcp47ForLanguage } from '../lib/speechLang';
 import { langNameKo } from '../lib/constants';
 
 const STORAGE_KEY = 'conversation:';
@@ -52,7 +53,7 @@ export default function ConversationPanel({ rawText, language, materialId, mater
     const recognitionMaterialId = materialId;
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recog = new SR();
-    recog.lang = language === 'Japanese' ? 'ja-JP' : 'en-US';
+    recog.lang = bcp47ForLanguage(language);
     recog.continuous = false;
     recog.interimResults = false;
     recog.onresult = (event) => {
@@ -126,8 +127,8 @@ export default function ConversationPanel({ rawText, language, materialId, mater
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, loading]);
 
-  async function startConversation() {
-    if (messages.length > 0 || loading) return;
+  async function startConversation({retry=false} = {}) {
+    if ((!retry&&messages.length > 0) || loading) return;
     const requestMaterialId = materialId;
     const requestId = ++requestRef.current;
     setLoading(true);
@@ -156,11 +157,11 @@ Open with ONE warm, specific question about the passage. Rules:
     }
   }
 
-  async function send() {
-    const userText = input.trim();
+  async function send({retry=false} = {}) {
+    const userText = retry ? [...messages].reverse().find(m=>m.role==='user')?.text : input.trim();
     if (!userText || loading) return;
     setInput('');
-    const next = [...messages, { role: 'user', text: userText, ts: Date.now() }];
+    const next = retry ? messages.filter((m,i)=>!(i===messages.length-1&&m.error)) : [...messages, { role: 'user', text: userText, ts: Date.now() }];
     setMessages(next);
     const requestMaterialId = materialId;
     const requestId = ++requestRef.current;
@@ -272,6 +273,7 @@ Output PART 1, then a blank line, then PART 2 (if any). No labels, no other text
                 >▷</button>
               )}
             </div>
+            {m.error&&i===messages.length-1&&<button className="btn btn--ghost btn--sm" disabled={loading} onClick={()=>messages.some(m=>m.role==='user')?send({retry:true}):startConversation({retry:true})}>답변 다시 받기</button>}
             {m.role === 'ai' && m.correction && (
               <div className="conversation-correction">
                 <span>{m.correction}</span>

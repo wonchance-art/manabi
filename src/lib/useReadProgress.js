@@ -13,6 +13,7 @@ export function useReadProgress(material) {
     const el = readerRef.current;
     if (!el) return;
     const handleScroll = () => {
+      if(el.dataset.layoutRestoring==='true'||el.dataset.selectionRevealing==='true')return;
       const rect = el.getBoundingClientRect();
       const total = el.scrollHeight - window.innerHeight;
       if (total <= 0) { setReadProgress(100); return; }

@@ -89,7 +89,7 @@ describe('② 배지 스타일은 공용 클래스 — 인라인 하드코딩 0'
 
 describe('③ 형제 내비 — 제목을 반복하지 않는다(시리즈·책 한 문법)', () => {
   it('내비는 위치만 표시한다(시리즈명·책 제목은 툴팁)', () => {
-    const nav = sliceBetween(header(), '<div className="viewer-series-nav" title={siblingNav.label}>', '</div>');
+    const nav = sliceBetween(actionbar(), '<div className="viewer-series-nav" title={siblingNav.label}>', '</div>');
     expect(nav, '위치 표시가 사라졌다').toContain('{siblingNav.pos}/{siblingNav.total}');
     // 이름은 `title` 툴팁에만 산다 — 템플릿 리터럴과 title 속성을 걷어낸 뒤,
     // **화면에 찍히는 자리**에 남아 있는지만 본다(툴팁까지 금지하면 정보가 사라진다).
@@ -233,12 +233,13 @@ describe('⑦ 여러 줄 인라인 색 — 0', () => {
   });
 
   it('없앤 자리는 토큰·클래스로 옮겨 갔다 — 값이 사라진 게 아니라 한 곳에 모였다', () => {
+
     // ⚠ `newCss()`는 v2-Q 크롬 절만 잘라 온다 — 여기서는 파일 전체를 봐야 한다.
     const css = read(CSS);
     // 스크림: 토큰 하나가 셋을 먹인다
     expect(css).toContain('--scrim: rgba(0, 0, 0, 0.45);');
     expect(sliceBetween(css, '.scrim {', '}')).toContain('var(--scrim)');
-    for (const f of ['src/components/DictationPanel.jsx', 'src/components/DictationPicker.jsx', 'src/views/ReadingTextView.jsx']) {
+    for (const f of ['src/views/ReadingTextView.jsx']) {
       expect(read(f), `${f}가 스크림을 다시 손으로 그린다`).toContain('className="scrim');
     }
     // 복습 배지: 뷰어와 **같은 식**을 쓴다(값 복제 금지 — 2트랙 병의 재발 방지)
@@ -249,6 +250,8 @@ describe('⑦ 여러 줄 인라인 색 — 0', () => {
     expect(read('src/views/VocabReview.jsx')).toContain('export function quizOptClass');
     expect(sliceBetween(css, '.quiz-opt--right {', '}')).toContain('var(--accent)');
     expect(sliceBetween(css, '.quiz-opt--wrong {', '}')).toContain('var(--danger)');
+
+    expect(read('src/components/viewer/reader-controls.css')).toContain('.reader-modal::backdrop {background:var(--scrim);}'); for(const f of ['src/components/DictationPanel.jsx','src/components/DictationPicker.jsx'])expect(read(f)).toContain('<ViewerModal');
   });
 
   it('예외 목록이 늘지 않았다 — 옮길 수 있는 것은 옮겼다', () => {
@@ -292,11 +295,11 @@ describe('⑦ 여러 줄 인라인 색 — 0', () => {
  */
 describe('⑧ 오버레이 스크림 — 값이 하나다', () => {
   /** 주석을 걷어낸 규칙 목록 — 주석 속 예시가 선택자로 오독되면 계약이 헛돈다(요미 라운드 선례). */
-  const rules = () => [...read(CSS).replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+  const rules = () => [...(read(CSS)+'\n'+read('src/components/viewer/reader-controls.css')).replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)]
     .map((m) => ({ sel: m[1].trim().split('\n').pop().trim(), body: m[2] }));
   /** 스크림 후보 = 오버레이·스크림 이름을 단 규칙 중 배경을 **실제로 칠하는** 것. */
   const scrims = () => rules()
-    .filter((r) => /overlay|\bscrim\b/.test(r.sel))
+    .filter((r) => /overlay|\bscrim\b|::backdrop/.test(r.sel))
     .map((r) => ({ ...r, bg: /(?<!-)\bbackground(?:-color)?\s*:\s*([^;]+)/.exec(r.body)?.[1]?.trim() }))
     .filter((r) => r.bg && r.bg !== 'transparent');
 

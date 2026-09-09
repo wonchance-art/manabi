@@ -48,35 +48,22 @@ describe('① 전환 경로는 하단 바 하나 — 섹션 헤더·셰브런 �
     }
   });
 
-  it('시트는 선택된 하나만 그린다', () => {
-    const body = sliceBetween(read(SHEET), '<div className="viewer-sheet__sections">', '</div>');
-    // 두 콘텐츠를 나란히 렌더하면 접힌 헤더 문제가 그대로 돌아온다 — 삼항 하나가 계약이다.
-    expect(body).toMatch(/tab === 'left' \? leftContent : rightContent/);
-    // 시트 본문 컨테이너는 하나뿐이다(둘을 쌓으면 다시 세로를 먹는다).
-    expect((read(SHEET).match(/viewer-sheet__section-body/g) || []).length).toBe(1);
+  it("패널은 한 탭만 표시하며 숨긴 탭의 내용과 스크롤은 보존한다", () => {
+    const sheet=read(SHEET);expect(sheet).toContain("hidden={tab!=='right'}");expect(sheet).toContain("hidden={tab!=='left'}");expect(sheet).toContain('role="tabpanel"');
   });
 
   it('하단 바 버튼이 선택 상태를 알린다', () => {
-    const src = read(SHEET);
-    expect((src.match(/aria-pressed=\{sheetOpen && tab === '(left|right)'\}/g) || []).length).toBe(2);
+    const sheet=read(SHEET);expect(sheet).toContain("aria-selected={tab==='right'}");expect(sheet).toContain("aria-selected={tab==='left'}");
   });
 });
 
 describe('② 동작 변경 — 「둘 다 펼치기」 폐기(모바일 한정)', () => {
   it('상태가 열림 여부와 어느 탭인지로 갈린다 — 두 불리언이 아니다', () => {
-    const src = read(SHEET);
-    expect(src).toMatch(/const \[tab, setTab\] = useState\('left'\)/);
-    for (const gone of ['leftOpen', 'rightOpen']) {
-      expect(src, `${gone}가 되살아나면 둘 다 펼치기가 가능해진다`).not.toContain(gone);
-    }
+    const sheet=read(SHEET);expect(sheet).toContain("[tab,setTab]=useState('right')");expect(sheet).toContain('[open,setOpen]=useState(false)');expect(sheet).not.toContain('leftOpen');expect(sheet).not.toContain('rightOpen');
   });
 
-  it('되돌리는 지점이 한 곳이다 — 그 사실을 주석이 말한다', () => {
-    // 오너가 이 동작 변경을 물릴 수 있어야 한다. 함수 하나 + 시트 렌더가 전부라는 것을
-    // 계약으로도 남긴다(설계 §3의 유일한 동작 변경).
-    const head = sliceBetween(read(SHEET), '/**', 'export function resolveSignalTransition');
-    expect(head).toMatch(/선택된 하나만/);
-    expect(head, '데스크톱 무영향이 근거의 일부다').toMatch(/데스크톱/);
+  it("같은 패널의 표시와 모달 중 임시 숨김을 구분한다", () => {
+    expect(read(SHEET)).toContain('resolveSignalTransition(');expect(read(SHEET)).toContain('hidden={suppressed}'); expect(read(VIEWER)).toContain('suppressed={modalBlocked}');
   });
 });
 
@@ -89,14 +76,14 @@ describe('③ 카드 — 빈 줄을 메타가 쓰고, 뜻이 제 무게를 갖�
     expect((card().match(/<TokenPosLabel/g) || []).length, '메타가 두 곳에 있다').toBe(1);
   });
 
-  it('▷와 ✕가 같은 줄에 있되 붙어 있지 않다 — ✕는 시트 핸들과 인접해 오조작 위험', () => {
-    // ⚠ `</div>`로 끊으면 **안쪽 메타 div**에서 멈춰 버튼이 슬라이스 밖으로 나간다
-    //    (그러면 indexOf가 -1이 되어 순서 단언이 공허 통과한다 — 이번 축에서 두 번째다).
-    const actions = sliceBetween(card(), '<div className="word-detail-card__actions">', '{(() => {');
-    expect(actions.indexOf('word-detail-card__speak'), '▷가 헤더 줄에 없다').toBeGreaterThan(-1);
-    expect(actions.indexOf('word-detail-card__close'), '✕가 헤더 줄에 없다').toBeGreaterThan(-1);
-    expect(actions.indexOf('word-detail-card__speak')).toBeLessThan(actions.indexOf('word-detail-card__close'));
-    expect(sliceBetween(read(CSS), '.word-detail-card__speak {', '}')).toMatch(/margin-right/);
+  it('발음은 표제어와 같은 줄, 닫기는 패널에 한 곳만 둔다', () => {
+    const head = sliceBetween(card(), '<div className="reader-card-headword">', '<div className={`word-detail-card__meaningrow');
+    expect(head).toContain('word-fit-wrap');
+    expect(head).toContain('aria-label="발음 듣기"');
+    expect(card()).not.toContain('word-detail-card__close');
+    expect(read(SHEET).match(/aria-label="보조 패널 닫기"/g)).toHaveLength(1);
+    expect(card()).toContain('<svg');
+    expect(card()).not.toContain('✏️');
   });
 
   it('뜻이 메타보다 크다 — 카드에서 가장 중요한 것이 가장 약했다', () => {
@@ -204,12 +191,10 @@ describe('⑤ 훈음 하단 루비 — 범위와 동조', () => {
   });
 
   it('훈음 나열 줄이 부활하지 않는다 — 헤더에 있는 글자를 다시 그리던 것', () => {
-    // 이 블록은 `card()` 슬라이스(편집 패널 앞에서 끊긴다) 밖이라 따로 잘라 본다.
-    const block = sliceBetween(read(VIEWER), '{/* 한자 대조 블록', '})()}');
+    const block=read('src/components/viewer/ViewerJapaneseReference.jsx');
     expect(block, 'huns.map 나열이 되살아났다').not.toMatch(/huns\.map/);
-    // 日 자형 줄과 ⚠ 경고는 남긴다 — 훈음만 뽑아냈다.
-    expect(block, '日 줄까지 지우면 안 된다').toContain('formatJaRef');
-    expect(block, '⚠ 경고도 남는다').toContain('getJaWarn');
+    expect(block).toContain('toJaForm(word,jaTable)');
+    expect(block).toContain('ref?.warn');
   });
 });
 
