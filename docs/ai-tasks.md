@@ -14,15 +14,16 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- **수업 제품 1차 구현 (2026-09-10, 오너 설계 승인·“좋아 작업 개시”)** — `codex/classroom-phase1-20260910`, 운영 main `9ae6b70caa36945c4feadbd4bafe87e779b4fad4`에서 격리. 역할별 입구·팀 홈·폰 입력·집중 판, 계정별 영속 대기열·원자적 추가/재전송·대표 뜻 수정. class 전용 화면/부품/검사 및 신규 SQL만 소유. 기존 viewer 분석 공통 부품·개인 사본/FSRS·월드 유지. DB 운영 적용·merge·force-push 제외. 상세 `docs/manabi-classroom-phase1.md` 작성 예정.
 
 ### todo
+- **수업 후속** — #1299 코드·격리 검수 완료. 신규 저장 RPC 운영 적용은 아래 owner-gate, 이후 실제 폰→태블릿 수업·학생 사본/로그인 후 표현 저장 검수. 운영 웹 병합은 Claude 창구. 상세 `docs/manabi-classroom-phase1.md`.
 - **뷰어 후속** — 실제 HSK6 표시/복귀 검수 완료. 물리 iPhone Safari, 기존 분석 독음·문법 정확도, 부모 #1293 → #1294 검토/운영 통합을 별도로 진행. PDF/신규 음성/원본 split view는 보류한 범위.
 - **서재 후속 우선순위** — 선택 구간 학습 #1291과 기기 간 원본 위치 동기화 #1292 구현·DB 적용·실계정 검수 완료. 누적 #1288 → #1289 → #1290 → #1291 → #1292의 검토·병합은 Claude 창구. 실제 iOS Safari 확인과 운영 반영 준비를 우선하며 미참조 업로드 정리·URL 본문 가져오기는 별도 범위. 상세 `docs/manabi-original-reading-sync.md`.
 - ~~🎧 받아쓰기 채점 엔진(#1077 제안 6, 발주 5386786944)~~ → **회수: 2026-08-23
   16:03 스캔까지 WORKING 무표식(30분 룰) — Claude 직접 수행·완결(회수 공지
   5386950005, PR #1118)**. 이 열에 잔여 발주 없음.
 ### done (최근)
+- **수업 제품 1차 구현·미리보기 완료 (2026-09-10)** — draft PR #1299, 실행 `578e5f22105d0dc7ac966bff20dce7696a772362`. 역할별 입구·노트 우선 홈·폰 입력·집중 판, 영속 초안/대기열·원자적 저장·재전송·수동 뜻 보존. SQL 24, 브라우저 23흐름 오류0, 최종 배포 5흐름/320·390·1440 실글꼴·대비·헤더·키보드 검수 통과. 선행90f6e971 CI34402466941 전체373파일/4,061개·빌드·기존 e2e SUCCESS; 최종 문서/보드 head CI는 #150 CODEX_DONE에 기록. Vercel dpl_AKLJxotmEQy4uZpmUsy45Ys1pqUK READY·version 일치, https://manabi-okc27p2p4-wonchance-arts-projects.vercel.app/class . 운영 읽기 전용 사전 검사 중복0·신규 RPC 미설치. **DB APPLY HOLD**: 운영 완료 아님. 개인 자료·기존 viewer/FSRS·운영/고정 뷰어 alias 유지, merge·force-push 없음. 상세 `docs/manabi-classroom-phase1.md`.
 - **뜻 패널 최소화·일본어 대응 완료 (2026-09-09)** — #1294 실행 `5cd105ac4fee8e4cce59c0f9ec05072bed1da405`. 상단 탭 한 줄, 핵심 뜻/일본식 자형/대응어, 접힌 보충 정보, 고정 새 단어 저장. 예약 복원과 새 선택 충돌 보완. CI34322590670 SUCCESS(3,938개·빌드·학습 e2e), 배포 34동작+22화면 오류0. 실제 HSK6 東道主/ホスト国·眼前 한 줄 확인, 1138px 창 패널799→440px. 고정 프리뷰 갱신·운영 불변. 문서 `docs/manabi-viewer-reading-controls.md`, #150 CODEX_DONE으로 인계.
 
 - **뷰어 실사용 6항목 보정 완료 (2026-09-09)** — #1294, 지정 중립색·주변28%·상태색의 글자 높이 선택선, 표제어32–36px/뜻 패널 압축·SVG·닫기1개, 56/66px 메뉴 충돌과 투명 틈 수정. 실행78a775d1, 검사f200ffcd CI34316634676 SUCCESS(363파일/3,934개·빌드·기존 학습 흐름), 조판34·배포29동작/22조건 오류0. dpl_7hP1oTqeVa33bRGCTDjyg12LT8Mt READY·고정 preview version 일치. 실제 HSK6 590px에서 6항목 실측/스크린 검수·원래 설정 보존·오류0, 운영/원문/복습 불변. 최종 head는 문서/보드 후 #150 CODEX_DONE. 상세 docs/manabi-viewer-reading-controls.md.
@@ -4731,6 +4732,7 @@
 상세: docs/world-city-roadmap-cn-au.md. 유럽 2차 잔여·호주 나머지는 백로그 동결.
 
 ## owner-gate (오너 결정 대기 — 착수 금지)
+- **수업 제품 1차 저장 함수 적용 (2026-09-10, Codex-1 / #1299)** — `20260909165823_classroom_atomic_entries.sql` 코드·SQL 24검사·격리 브라우저 완료. 운영 읽기 전용 사전 집계: 수업 루트1, 중복 key/날짜0, 함수 미설치. CLAUDE.md 운영 DB 오너 적용 규칙에 따라 신규 SQL의 운영 반영 승인 대기. 기존 내용 자동 정리·링크 변경 없음. 승인 후 이력 재확인→적용→권한/실제 저장 검수. 상세 `docs/manabi-classroom-phase1.md`.
 - **도시 NPC 대화 진입 이원화 검토**(2026-08-22 실측): 도시 안 chapter+npc 노드는
   전부 문화 도어로 라우팅되고 NpcDialog는 chapter 없는 노드(현재 fr 채움 NPC·전국맵
   라멘/신사)만 연다. 도쿄·오사카 채움 NPC 4종은 npc==id(직접 대화 후보 계약)인데
