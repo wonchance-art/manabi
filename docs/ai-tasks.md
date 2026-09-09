@@ -14,7 +14,7 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- **뷰어 드래그 상태색 회귀 수정 (2026-09-09)** — 오너 첨부 화면 및 프리뷰 오류 신고. 기존 상태×범위 지정 혼색을 덮는 CSS를 수리하고 Aa 미리보기의 실제 상태 반영을 연결. 지정 전/중/후·3테마·모바일·미리보기/본문 일치 검사. 기존 #1294에서 진행하며 DB·원문·FSRS 변경 및 운영 merge 제외.
+- 없음
 
 ### todo
 - **뷰어 후속** — 실제 HSK6 표시/복귀 검수 완료. 물리 iPhone Safari, 기존 분석 독음·문법 정확도, 부모 #1293 → #1294 검토/운영 통합을 별도로 진행. PDF/신규 음성/원본 split view는 보류한 범위.
@@ -23,6 +23,7 @@
   16:03 스캔까지 WORKING 무표식(30분 룰) — Claude 직접 수행·완결(회수 공지
   5386950005, PR #1118)**. 이 열에 잔여 발주 없음.
 ### done (최근)
+- **뷰어 드래그·Aa 색상 회귀 보정 완료 (2026-09-09, 오너 실사용 신고)** — 기존 #1294. 상태 5종×지정 혼색 복원, Aa 상태/범위/띠 기하 공유, 성조색 충돌 제거, 모바일 여백·손잡이, Aa 복귀 위치 충돌 및 범위 시작점 가림 수정. 실행 `e51442099f341491a2b80c4f1eda0dc3c6e22852`, CI34313231166 SUCCESS(전체363파일/3,934개·빌드·학습 흐름). 조판/툴바34, 최종 배포 동작/실제 글꼴23+레이아웃21 오류0. `dpl_77tzJN9dz1NJaYKEyWmi7kR571VX` READY·고정 preview exact version 일치. 실제 HSK6 드래그/성조/Aa/모바일 복귀 확인. 단어 상태만 검토용 ON, 나머지 설정/viewport 복원. 운영 불변·DB/원문/FSRS 변경·merge/force-push 없음. 문서/보드 이후 최종 head는 #150 CODEX_DONE. 상세 `docs/manabi-viewer-reading-controls.md`.
 - **뷰어 실제 HSK6 검수 및 보정 완료 (2026-09-09, 오너 “재개 해줘”)** — draft PR #1294, 실행 `992c402fbaddea91728e43148fb836261dd5efaf`. 실제 HSK6 2·3과/모바일390·데스크톱1440에서 Aa·단어 카드·과 이동·활동 복귀 확인. 발견한 Aa 명조 자식 글리프 미적용과 모바일 선택 원문 가림 수정. 전체363파일/3,934개·CI34308260457 SUCCESS·473페이지 빌드, 최종 배포 동작/실제 글꼴19+레이아웃17 오류0. 고정 preview https://manabi-web-v2-preview.vercel.app/materials → dpl_3QMhuTVjtRL7APjwtnaVvx51Qa2E READY·version 일치. 설정/viewport 복원, 원문 편집·재분석·단어 저장/채점 없음(일반 읽기 위치 기록은 갱신 가능). 운영 commit/배포 불변, merge/force-push 없음. 문서/자기 보드 이후 exact head·최종 CI는 #1294/#150 CODEX_DONE. 상세 `docs/manabi-viewer-reading-controls.md`.
 - **뷰어 2차 구현·배포 검수 완료 (2026-09-09, 오너 “진행해”)** — `codex/viewer-reading-controls-20260909`, 부모 #1293 bb8fc05d, draft PR #1294. Aa 3탭/학습·관리 분리, 한 곳의 단어·문장 패널, 실제 SC 서체·12–16px 병음·3테마, 위치 복원·명시적 자동 진행·받아쓰기/회화 복구. 실행 `ed32d1efe44a1f3cb821a82a6b38c5cca8114707`: 전체363파일/3,931개, CI34300623868 SUCCESS, Vercel READY·버전 일치, 배포 신규/실제 글꼴17 + 레이아웃17 + 기존 신뢰성17 오류0. 미리보기 https://manabi-24lbnl1ap-wonchance-arts-projects.vercel.app/materials . 이후 검사/문서/자기 보드만 변경, exact head는 #1294/#150 CODEX_DONE. 실계정 HSK6 재검수는 Mac 잠금, 물리 iOS/마이크는 미검수. PDF/신규 음성/split view·DB 변경·merge/force-push/기존 alias 변경 없음. 상세 `docs/manabi-viewer-reading-controls.md`.
 - **뷰어 신뢰성 1차·DB 적용 완료 (2026-09-09, 오너 설계 승인·“진행 가자”)** — `codex/viewer-reliability-20260909`, 부모 #1292 `7d7c6a6496243e014c17f9bd66161c34e9033212`. 문맥 뜻·표시/저장 일치, 요청 경합·캐시·undo·숨은 카드 입력, 중국어 읽기/인식 연결, 재분석 성공 후 조건부 교체. SPEC `docs/manabi-viewer-reliability.md`. 원본 공유 폴더/교재/FSRS/권한 보존, merge·force-push·월드·PDF 조판·새 음성 제외. PR #1293 draft: 전체 362파일/3,924테스트·브라우저 17흐름·로컬 SQL 13검사·기존 viewer 학습 흐름 통과. 오너 “승인 ㄱㄱ” 후 migration20260908234552 적용·로컬/원격88개 일치·실제 권한6검사·본문MD5 일치. 개인 자료 쓰기0. 취소 RPC의 의도한 authenticated DEFINER WARN1 검토 기록, 나머지 advisor 동일. 실행94cff1f1 CI/READY·배포17검사 통과, 후속은 migration 이력·SQL 검사 경로·문서·자기 보드만 변경. 웹 코드는 같아 기존 https://manabi-l55ad7efn-wonchance-arts-projects.vercel.app/materials 사용. 운영 웹 병합은 Claude 창구, exact head는 #1293/#150 CODEX_DONE.
