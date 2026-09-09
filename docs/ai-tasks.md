@@ -14,6 +14,7 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
+- **수업 제품 1차 구현 (2026-09-10, 오너 설계 승인·“좋아 작업 개시”)** — `codex/classroom-phase1-20260910`, 운영 main `9ae6b70caa36945c4feadbd4bafe87e779b4fad4`에서 격리. 역할별 입구·팀 홈·폰 입력·집중 판, 계정별 영속 대기열·원자적 추가/재전송·대표 뜻 수정. class 전용 화면/부품/검사 및 신규 SQL만 소유. 기존 viewer 분석 공통 부품·개인 사본/FSRS·월드 유지. DB 운영 적용·merge·force-push 제외. 상세 `docs/manabi-classroom-phase1.md` 작성 예정.
 
 ### todo
 - **뷰어 후속** — 실제 HSK6 표시/복귀 검수 완료. 물리 iPhone Safari, 기존 분석 독음·문법 정확도, 부모 #1293 → #1294 검토/운영 통합을 별도로 진행. PDF/신규 음성/원본 split view는 보류한 범위.
