@@ -61,6 +61,10 @@
 .manabi-app:has(.classroom-shell--board) > .gnb,.manabi-app:has(.classroom-shell--board) > .mobile-nav {display:none}
 .manabi-app:has(.classroom-shell--board) > .app-layout {padding-top:0;padding-bottom:0}
 .classroom-board-header .classroom-eyebrow {margin:0 0 6px;font-size:10px}
+@container manabi-shell (max-width:400px) {
+  .manabi-app:has(.classroom-shell) > .gnb {padding-inline:12px;gap:8px}
+  .manabi-app:has(.classroom-shell) > .gnb .gnb__logo {font-size:28px}
+}
 @container (max-width:520px) {
   .classroom-header--live {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px}
   .classroom-header--live>div {grid-column:1 / -1;grid-row:1}
