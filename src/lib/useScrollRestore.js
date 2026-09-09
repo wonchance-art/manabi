@@ -89,7 +89,7 @@ export function useScrollRestore({ user, materialId, material, readingProgress, 
       const item = elements[low], rect = item.el.getBoundingClientRect();
       if (rect.bottom > 0 && rect.top < window.innerHeight) saveScrollPosition(item.index);
     };
-    const scroll = () => { clearTimeout(timer); if(readerRef?.current?.dataset.layoutRestoring==='true')return; timer = setTimeout(remember, 450); };
+    const scroll = () => { clearTimeout(timer); if(readerRef?.current?.dataset.layoutRestoring==='true'||readerRef?.current?.dataset.selectionRevealing==='true')return; timer = setTimeout(remember, 450); };
     window.addEventListener('scroll', scroll, { passive: true });
     return () => { clearTimeout(timer); window.removeEventListener('scroll', scroll); };
   }, [material?.processed_json?.sequence, user?.id, saveScrollPosition, readerRef]);

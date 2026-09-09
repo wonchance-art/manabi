@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { MAIN_NAV, isFocusedReadingRoute } from '../webNavigation';
-import { captureReadingAnchor, restoreReadingAnchor } from '../readingViewport';
+import { captureReadingAnchor, restoreReadingAnchor, selectedTokenScrollDelta } from '../readingViewport';
 
 const node = (top, width = 30) => ({ isConnected: true, getBoundingClientRect: () => ({ top, bottom: top + 40, width }) });
 const root = (...nodes) => ({ querySelectorAll: () => nodes });
@@ -16,6 +16,21 @@ describe('focused reader boundaries', () => {
   it('does not prefetch personalized home, review and library across login', () => {
     for (const href of ['/home', '/vocab', '/materials']) expect(MAIN_NAV.find(item => item.href === href).prefetch).toBe(false);
     expect(MAIN_NAV.map(item => item.label)).toEqual(['오늘', '교재', '발견', '복습', '내 서재']);
+  });
+});
+
+describe('selected word stays between the toolbar and mobile inspector', () => {
+  const bounds = { top: 190, bottom: 373 };
+  it('moves a covered word just above the sheet and below the toolbar', () => {
+    expect(selectedTokenScrollDelta({ top: 394, bottom: 450 }, bounds)).toBe(85);
+    expect(selectedTokenScrollDelta({ top: 175, bottom: 231 }, bounds)).toBe(-23);
+  });
+  it('leaves an already visible word in place', () => {
+    expect(selectedTokenScrollDelta({ top: 240, bottom: 296 }, bounds)).toBe(0);
+  });
+  it('does not chase a word when an expanded sheet leaves no reading space', () => {
+    expect(selectedTokenScrollDelta({ top: 394, bottom: 450 }, { top: 190, bottom: 120 })).toBe(0);
+    expect(selectedTokenScrollDelta({ top: 180, bottom: 390 }, bounds)).toBe(0);
   });
 });
 

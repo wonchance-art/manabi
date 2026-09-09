@@ -33,3 +33,12 @@ export function restoreReadingAnchor(anchor, scrollBy) {
   const delta = rect.top - anchor.top;
   if (Number.isFinite(delta) && Math.abs(delta) > 1) scrollBy({ top: delta, behavior: 'instant' });
 }
+
+// Reveal only the obscured edge; an expanded sheet may leave no usable line.
+export function selectedTokenScrollDelta(rect, bounds) {
+  const top = bounds.top + 8, bottom = bounds.bottom - 8;
+  if (bottom - top < rect.bottom - rect.top) return 0;
+  if (rect.top < top) return rect.top - top;
+  if (rect.bottom > bottom) return rect.bottom - bottom;
+  return 0;
+}

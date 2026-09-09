@@ -171,6 +171,15 @@ try {
  await aa('학습 표시');await page.getByRole('button',{name:'숨김',exact:true}).click();await page.getByRole('checkbox',{name:/탭하면 발음 보기/}).check();await closeAa();
  const widthBefore=await wordA().evaluate(e=>e.getBoundingClientRect().width);await tap(wordA());assert.equal(await page.locator('.word-detail-card').count(),0);const widthAfter=await wordA().evaluate(e=>e.getBoundingClientRect().width);assert(Math.abs(widthBefore-widthAfter)<1);await tap(wordA());assert(await panel().isVisible());pass('hidden reading reveals on first tap without reflow; second opens card');
  // Grade controls stay within the same visible panel, even with expanded information.
+ await fresh(390,844);
+ const lowWord=page.locator('[data-tid="id_12_0_audit"]');
+ await lowWord.evaluate(e=>scrollBy(0,e.getBoundingClientRect().top-560));await lowWord.click();await panel().waitFor();await delay(150);
+ const visibleSelected=async()=>{const r=await lowWord.boundingBox(),p=await panel().boundingBox(),t=await page.locator('.viewer-topbar').boundingBox();assert(r.y>=t.y+t.height+7&&r.y+r.height<=p.y-7,`selected word ${JSON.stringify(r)} is covered by toolbar/sheet ${JSON.stringify(p)}`);};
+ await visibleSelected();await aa();await range('본문 크기',1.8);await closeAa();await delay(150);await visibleSelected();
+ await page.getByRole('button',{name:'패널 펼치기',exact:true}).click();await page.getByRole('button',{name:'패널 줄이기',exact:true}).click();await delay(150);await visibleSelected();
+ await shotAt('mobile-selected-source-visible');pass('low word selection, Aa return and sheet resize keep the source above the inspector');
+ await page.mouse.move(220,250);await page.mouse.wheel(0,250);await delay(250);const manualY=await page.evaluate(()=>scrollY);
+ await page.setViewportSize({width:390,height:820});await delay(150);assert(Math.abs(await page.evaluate(()=>scrollY)-manualY)<2);pass('manual reading scroll wins over a later sheet resize');
  await fresh(390,844);await tap(wordA());await page.locator('.reader-card-body').getByText('유의어·반의어',{exact:true}).click();await page.locator('.syn-ant__chip').first().waitFor();
  const controls=await page.locator('.save-grade').boundingBox(),panelBounds=await panel().boundingBox(),tabs=await page.locator('.viewer-inspector__tabs').boundingBox();assert(controls.y>=panelBounds.y&&controls.y+controls.height<=tabs.y+1);await shotAt('mobile-card-actions');pass('mobile card grades remain visible above tabs and below scrolling details');
  await page.getByRole('button',{name:'읽기 설정',exact:true}).click();await page.keyboard.press('1');assert.equal(vocab.length,0);await page.keyboard.press('Escape');assert(await panel().isVisible());await page.getByRole('button',{name:'보조 패널 닫기',exact:true}).click();await page.keyboard.press('1');assert.equal(vocab.length,0);pass('modal and closed inspector cannot grade a hidden card');

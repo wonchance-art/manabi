@@ -71,7 +71,7 @@ import { usePdfRangeMutation } from '../lib/usePdfRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
 import { useGroupReadPush } from '../lib/useGroupReadPush';
 import { useScrollRestore } from '../lib/useScrollRestore';
-import { useReaderLayout, readerVisibleBounds } from '../lib/useReaderLayout';
+import { useReaderLayout, readerVisibleBounds, useSelectedTokenVisibility } from '../lib/useReaderLayout';
 import { pinyinCellWidth } from '../lib/pinyinLayout';
 import { readerFontFamily } from '../lib/viewerPreferences';
 import { textbookThemeStyle } from '../lib/textbookTheme';
@@ -1071,6 +1071,7 @@ export default function ViewerPage() {
   const [background,setBackground]=useState(false);
   useEffect(()=>{const update=()=>setBackground(document.hidden);document.addEventListener('visibilitychange',update);update();return ()=>document.removeEventListener('visibilitychange',update);},[]);
   const modalBlocked=!!activeModal||!!reanalyzePanel||!!quizState||!!completionModal;
+  useSelectedTokenVisibility(readerRef, tokenRefs, selectedToken?.id, inspectorOpen && isSheetOpen && !modalBlocked, material?.processed_json);
   useEffect(()=>{if(!autoPace||!focusMode||pickedLineIdx===null)setPaceRunning(false);},[autoPace,focusMode,pickedLineIdx]);
   useEffect(()=>{
     const stopOnScroll=e=>{if(tokenRange.dragging||e.target?.closest?.('.reader-modal,.viewer-inspector'))return;setPaceRunning(false);};
