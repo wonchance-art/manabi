@@ -37,8 +37,9 @@ describe('단어 카드 단일화 계약', () => {
     expect(css).toContain('.word-detail-card--above-list');
   });
 
-  it('X로 닫힌다 — 카드 상태만 정리하고 리스트는 남긴다', () => {
-    expect(viewer).toContain('aria-label="단어 상세 닫기"');
+  it('패널 닫기 한 곳으로 카드 상태를 정리하고 리스트는 남긴다', () => {
+    expect(viewer).toContain('onClose={closeWordCard}');
+    expect(viewer).not.toContain('aria-label="단어 상세 닫기"');
     const fn = viewer.match(/const closeWordCard = \(\) => \{[\s\S]*?\n  \};/)?.[0];
     expect(fn).toBeTruthy();
     expect(fn).toContain('setSelectedToken(null)');

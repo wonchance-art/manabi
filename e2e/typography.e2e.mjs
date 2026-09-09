@@ -213,7 +213,7 @@ test('집중 모드 — 지정 문장만 원래 밝기, 나머지는 어둡고, 
     };
   });
   assert.equal(focus.ops[0], 1, `지정 토큰은 원래 밝기여야 함: ${focus.ops[0]}`);
-  assert.deepEqual(focus.ops,[1,1,1], "주변 문장도 투명도 없이 읽을 수 있어야 한다");
+  assert.deepEqual(focus.ops,[1,.28,.28], "지정 문장은 선명하게, 주변 문장은 28%로 낮춘다");
   await page.setContent(PAGE(line(false)));
   const off = await page.evaluate(() => {
     const toks = [...document.querySelectorAll('#row2 .word-token')];
@@ -276,7 +276,7 @@ test('카드 — 표제어는 40–56px, 병음은 독립 15px로 균일', async
       rtPos: getComputedStyle(rt).position,
     };
   }));
-  for(const item of got) assert.ok(item.fs>=40&&item.fs<=56,`표제어는 40–56px 범위: ${item.fs}`);
+  for(const item of got) assert.ok(item.fs>=32&&item.fs<=36,`표제어는 32–36px 범위: ${item.fs}`);
   assert.equal(got[0].rtFs,15,'카드 병음은 독립 15px');
   assert.equal(got[0].rtPos,'absolute');
   assert.equal(new Set(got[0].cells).size,1,'카드 병음 칸도 균일');

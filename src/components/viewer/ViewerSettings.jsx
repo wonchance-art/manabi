@@ -51,7 +51,7 @@ export default function ViewerSettings({settings:s,language,onClose,keepPosition
         </details>
       </>}
       {tab==='pace'&&<>
-        <Toggle label="문장 집중" note="읽는 문장을 표시하고 주변 문장도 읽을 수 있게 유지해요" checked={s.focusMode} onChange={v=>set('focusMode',v)}/>
+        <Toggle label="문장 집중" note="읽는 문장은 선명하게, 주변 문장은 흐리게 표시해요" checked={s.focusMode} onChange={v=>set('focusMode',v)}/>
         <Toggle label="자동 진행 허용" note="본문의 ‘자동 진행 시작’을 눌러야 이동해요" checked={s.autoPace} onChange={v=>set('autoPace',v)}/>
         {s.autoPace&&<><div className="reader-setting-choices"><b>목표 속도 · {paceTargetCpm}자/분</b><div><button aria-label="느리게" onClick={()=>s.restore({paceCpm:stepCpm(paceTargetCpm,-1),paceStep:0})}>− 느리게</button><button aria-label="빠르게" onClick={()=>s.restore({paceCpm:stepCpm(paceTargetCpm,1),paceStep:0})}>빠르게 +</button></div></div><details><summary>속도의 기준</summary>{paceEstimate?.thisSec!=null&&<p>이 문장 약 {paceEstimate.thisSec}초</p>}{paceEstimate?.avgSec!=null&&<p>문장 평균 약 {paceEstimate.avgSec}초</p>}<p>{s.paceCpm?'직접 정한 목표':myCpm?`읽기 기록 ${myCpm}자/분 기준 제안`:'이 언어의 기본 목표'} · 훈련 단계 {s.paceStep}</p><p>자동 진행 속도는 읽기 실력이나 이해도 기록이 아니에요.</p><button onClick={()=>s.restore({paceCpm:null,paceStep:0})}>기본 제안으로</button></details></>}
         {ttsSupported&&<><Toggle label="단어 선택 시 발음" checked={s.autoSpeakOnClick} onChange={v=>set('autoSpeakOnClick',v)}/><Choices label="재생 속도" value={s.ttsRate} items={Object.entries(TTS_RATES).map(([key,r])=>[key,r.label])} onChange={v=>set('ttsRate',v)}/></>}

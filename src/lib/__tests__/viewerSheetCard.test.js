@@ -76,14 +76,14 @@ describe('③ 카드 — 빈 줄을 메타가 쓰고, 뜻이 제 무게를 갖�
     expect((card().match(/<TokenPosLabel/g) || []).length, '메타가 두 곳에 있다').toBe(1);
   });
 
-  it('▷와 ✕가 같은 줄에 있되 붙어 있지 않다 — ✕는 시트 핸들과 인접해 오조작 위험', () => {
-    // ⚠ `</div>`로 끊으면 **안쪽 메타 div**에서 멈춰 버튼이 슬라이스 밖으로 나간다
-    //    (그러면 indexOf가 -1이 되어 순서 단언이 공허 통과한다 — 이번 축에서 두 번째다).
-    const actions = sliceBetween(card(), '<div className="word-detail-card__actions">', '{(() => {');
-    expect(actions.indexOf('word-detail-card__speak'), '▷가 헤더 줄에 없다').toBeGreaterThan(-1);
-    expect(actions.indexOf('word-detail-card__close'), '✕가 헤더 줄에 없다').toBeGreaterThan(-1);
-    expect(actions.indexOf('word-detail-card__speak')).toBeLessThan(actions.indexOf('word-detail-card__close'));
-    expect(sliceBetween(read(CSS), '.word-detail-card__speak {', '}')).toMatch(/margin-right/);
+  it('발음은 표제어와 같은 줄, 닫기는 패널에 한 곳만 둔다', () => {
+    const head = sliceBetween(card(), '<div className="reader-card-headword">', '{inspectChar &&');
+    expect(head).toContain('word-fit-wrap');
+    expect(head).toContain('aria-label="발음 듣기"');
+    expect(card()).not.toContain('word-detail-card__close');
+    expect(read(SHEET).match(/aria-label="보조 패널 닫기"/g)).toHaveLength(1);
+    expect(card()).toContain('<svg');
+    expect(card()).not.toContain('✏️');
   });
 
   it('뜻이 메타보다 크다 — 카드에서 가장 중요한 것이 가장 약했다', () => {

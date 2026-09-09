@@ -1846,9 +1846,6 @@ export default function ViewerPage() {
 
   const wordDetailCard = !selectedToken || !isSheetOpen ? null : (
     <div key={selectedToken.id||selectedToken.text} tabIndex={-1} className={`word-detail-card${dragTokens !== null ? ' word-detail-card--above-list' : ''}`}>
-      {/* 이 줄은 **왼쪽이 통째로 비어** 있고 우측에만 ▷ ✕가 떠 있었다(시트 핸들 바로 아래라
-          소속도 모호했다). 단어와 뜻 사이에 끼어 둘의 연결을 끊던 메타(품사·급수)를 그 빈
-          자리로 옮긴다 — 줄 하나를 회수하고 **단어 → 뜻이 직결**된다(오너 배치안). */}
       <div className="reader-card-body">
       <div className="word-detail-card__actions">
         <div className="word-detail-card__meta">
@@ -1858,11 +1855,8 @@ export default function ViewerPage() {
           {headFallback && <span className="word-detail-card__base">기본형 {headText}</span>}
           {refVocab && <span className="word-detail-card__level">{refLevelLabel(refVocab.level)}</span>}
         </div>
-        {ttsSupported && (
-          <button className="word-detail-card__speak" onClick={() => speak(headText, materialLang, ttsOptsFor(ttsRate))} aria-label="발음 듣기" title="발음 듣기">▷</button>
-        )}
-        <button className="word-detail-card__close" onClick={closeWordCard} aria-label="단어 상세 닫기" title="닫기">✕</button>
       </div>
+      <div className="reader-card-headword">
       {(() => {
         // ① 폭맞춤 확대(오너 승인): CJK는 1em 격자라 크기 = 100cqi ÷ fitDivisor가 CSS
         // 수식으로 성립(.word-fit — 측정 JS 없음). 라틴 자료는 기존 크기 유지.
@@ -1934,6 +1928,8 @@ export default function ViewerPage() {
           </div>
         );
       })()}
+      {ttsSupported && <button className="word-detail-card__speak" onClick={() => speak(headText, materialLang, ttsOptsFor(ttsRate))} aria-label="발음 듣기" title="발음 듣기">▷</button>}
+      </div>
       {inspectChar && (() => {
         // ④ 글자 카드(증강 R1~R3 — 오너 승인 2026-08-28): 헤더는 자기 완결(훈음·병음·자형 칩),
         // 주인공은 구성(1단 분해 — 성분 탭 = 재귀 탐색)과 다시 만나기(이 자료·내 단어).
@@ -2036,9 +2032,6 @@ export default function ViewerPage() {
           </div>
         );
       })()}
-      {/* 뜻이 카드에서 가장 중요한데 가장 약했다(단어 1.5rem/800 → 뜻 1rem/보통). 한 단계
-          키우고, `✏️`는 뜻이 `flex:1`로 늘어나 넓은 화면에서 멀어지던 것을 **글자 옆에**
-          붙인다(`flex: 0 1 auto` + 줄 자체를 왼쪽 정렬). */}
       <div className={`word-detail-card__meaningrow${materialLang === 'English' && selectedToken.reading ? ' word-detail-card__meaningrow--tight' : ''}`}>
         <div className="word-detail-card__meaning">
           {refMeaning || selectedToken.meaning || '(뜻 없음)'}
@@ -2050,7 +2043,7 @@ export default function ViewerPage() {
             aria-label="뜻·발음 수정"
             title="뜻·발음 수정"
             className={`word-detail-card__edit${isEditingToken ? ' is-on' : ''}`}
-          >✏️</button>
+          ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m16 3 5 5M4 15 16 3a2 2 0 0 1 3 0l2 2a2 2 0 0 1 0 3L9 20l-6 1 1-6Z"/></svg></button>
         )}
       </div>
       {isEditingToken && (

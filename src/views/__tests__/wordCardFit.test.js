@@ -17,8 +17,8 @@ describe('① 폭맞춤 확대 계약', () => {
     expect(css).toMatch(/\.word-fit \{\s*font-size: 1\.5rem;\s*font-size: clamp\(1\.5rem, calc\(100cqi \/ var\(--fit-n, 1\)\), var\(--fit-cap, 8rem\)\);/);
   });
 
-  it('표제어는 읽을 수 있는 40–56px 범위이며 긴 표제어는 줄바꿈한다', () => {
-    expect(readerCss).toContain('.viewer-layout .word-fit {font-size:clamp(2.5rem,8cqi,3.5rem)');
+  it('표제어는 읽을 수 있는 32–36px 범위이며 긴 표제어는 줄바꿈한다', () => {
+    expect(readerCss).toContain('.viewer-layout .word-fit {font-size:clamp(2rem,4cqi,2.25rem)');
     expect(readerCss).toContain('.viewer-layout .word-fit .surface {white-space:normal;overflow-wrap:anywhere;}');
   });
 

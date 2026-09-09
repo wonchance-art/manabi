@@ -161,7 +161,7 @@ try {
   color:getComputedStyle(t.querySelector('.surface'),'::before').backgroundColor,
   band:['top','height'].map(p=>getComputedStyle(t.querySelector('.surface'),'::before')[p]),
  })));
- for(const [theme,name,width] of [['light','밝게',1440],['sepia','종이',1440],['dark','어둡게',1440],['light','밝게',390]]){
+ for(const [theme,name,width] of [['light','밝게',1440],['sepia','종이',1440],['dark','어둡게',1440],['light','밝게',390],['sepia','종이',590]]){
   if(process.env.QA_SELECTION_WIDTH&&width!==Number(process.env.QA_SELECTION_WIDTH))continue;
   await fresh(width,900);
   known=[{word_text:'要',lang:'zh'}];
@@ -206,6 +206,30 @@ try {
   assert.deepEqual(await colors(sampleSelector),before,'Escape restores state fills');
   assert.equal(writes.filter(w=>['user_vocabulary','user_known_words','viewer_replace_analysis'].includes(w.table)).length,0);
   assert.deepEqual(records,baseline);
+  // Real focus, word selection, card density and sticky chrome (owner screenshots).
+  await aa('읽기 진행');await page.getByRole('checkbox',{name:/^문장 집중/}).check();await closeAa();
+  await first.locator('.line-pick').click();await tap(wordA());await delay(300);
+  const focusRead=await page.evaluate(()=>{
+   const selected=document.querySelector('.reader-area [data-selected="true"]'),surface=selected.querySelector('.surface'),band=getComputedStyle(surface,'::before');
+   const picked=document.querySelector('.reader-area .word-token--picked'),rest=document.querySelector('.reader-area .word-token:not(.word-token--picked)');
+   const rgb=paint=>{const c=document.createElement('canvas');c.width=c.height=1;const x=c.getContext('2d');x.fillStyle=paint;x.fillRect(0,0,1,1);return [...x.getImageData(0,0,1,1).data].slice(0,3);};
+   const lum=cs=>cs.map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((a,v,i)=>a+v*[.2126,.7152,.0722][i],0);
+   const a=lum(rgb(getComputedStyle(surface).color)),b=lum(rgb(band.backgroundColor));
+   return {picked:getComputedStyle(picked).opacity,rest:getComputedStyle(rest).opacity,tokenBg:getComputedStyle(selected).backgroundColor,outline:getComputedStyle(selected).outlineStyle,shadow:band.boxShadow,band:parseFloat(band.height),cell:surface.getBoundingClientRect().height,contrast:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
+  });
+  assert.equal(focusRead.picked,'1');assert.equal(focusRead.rest,'0.28');assert(focusRead.contrast>=7,JSON.stringify(focusRead));
+  assert.equal(focusRead.tokenBg,'rgba(0, 0, 0, 0)');assert.equal(focusRead.outline,'none');assert(focusRead.shadow.includes('inset'));assert(focusRead.band<focusRead.cell*.55);
+  assert.equal(await panel().getByRole('button',{name:/닫기/}).count(),1,'only one close control');
+  assert.equal(await panel().locator('.word-detail-card__edit svg').count(),1,'consistent vector edit icon');
+  const density=await page.evaluate(()=>{
+   const body=document.querySelector('.reader-card-body').getBoundingClientRect(),meaning=document.querySelector('.word-detail-card__meaning').getBoundingClientRect(),source=document.querySelector('.reader-card-source blockquote'),r=source.getBoundingClientRect();
+   const nav=document.querySelector('.gnb').getBoundingClientRect(),bar=document.querySelector('.viewer-topbar'),br=bar.getBoundingClientRect();
+   return {meaningBottom:meaning.bottom,bodyBottom:body.bottom,sourceFirstLine:r.top+parseFloat(getComputedStyle(source).lineHeight),navBottom:nav.bottom,barTop:br.top,barMargin:parseFloat(getComputedStyle(bar).marginBottom),font:parseFloat(getComputedStyle(document.querySelector('.word-fit')).fontSize)};
+  });
+  assert(density.meaningBottom<=density.bodyBottom&&density.sourceFirstLine<=density.bodyBottom,'meaning and first context line fit: '+JSON.stringify(density));
+  assert(Math.abs(density.navBottom-density.barTop)<1,'toolbar joins actual navigation: '+JSON.stringify(density));assert.equal(density.barMargin,0);assert(density.font<=36);
+  await shotAt(`focus-card-${theme}-${width}`);pass(`focus contrast, tight state outline, compact card and continuous toolbar: ${theme} ${width}`);
+  await page.keyboard.press('Escape');
   // Reverse drag on a later line must preview that line, not default to line 0.
   const later=page.locator('.reader-area [data-tid^="id_1_"]');
   await later.first().evaluate(e=>scrollBy(0,e.getBoundingClientRect().top-190));

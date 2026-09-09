@@ -23,8 +23,10 @@ describe('집중 모드 배선', () => {
     expect(viewer).toContain("focusMode && (pickedLineIdx !== null || tokenRange.range) ? ' reader-area--focus' : ''");
   });
 
-  it('주변 문장도 불투명하게 읽을 수 있고 선택 문장만 강조된다', () => {
-    expect(readerCss).toMatch(/\.reader-area--focus \.word-token:not\(\.word-token--picked\) \{opacity:1;color:var\(--reader-muted\);/);
+  it('주변은 흐리게 하고 지정 문장·열린 단어는 선명하게 유지한다', () => {
+    expect(readerCss).toContain('.word-token:not(.word-token--picked):not([data-selected="true"]) {opacity:.28');
+    expect(readerCss).toContain('.word-token:is(.word-token--picked,[data-selected="true"]) {opacity:1');
+    expect(readerCss).toContain('.word-token:is(.word-token--picked,[data-selected="true"]) .surface {opacity:1;}');
   });
 
   it('전환 애니메이션 + 모션 축소 존중', () => {
