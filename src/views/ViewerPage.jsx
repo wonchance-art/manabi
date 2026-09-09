@@ -223,7 +223,7 @@ export default function ViewerPage() {
     queryFn: () => fetchMaterial(id),
     refetchInterval: (query) => {
       const d = query.state.data;
-      const s = d?.status || d?.processed_json?.status;
+      const s = d?.processed_json?.status || d?.status;
       return s === 'analyzing' ? 4000 : false;
     },
   });
@@ -1764,13 +1764,12 @@ export default function ViewerPage() {
       return [{...token, previewSaved:state.isSaved, previewDue:state.isDue, previewKnown:state.isKnown, previewHighlight:state.highlight, previewPicked:pickedLineIdx === line || !!tokenRange.rangeTokenIds?.has(key)}];
     });
   })() : [];
-  const status = material?.status || material?.processed_json?.status;
-  const isAnalyzing = status === 'analyzing' || reanalyzeMutation.isPending;
+  const status = material?.processed_json?.status || material?.status;
+  const isAnalyzing = (status === 'analyzing' && !isStaleAnalysis) || reanalyzeMutation.isPending;
   const isPending = !isAnalyzing && (status === 'pending' || status === 'saved'); // 책 챕터 미분석 — 원문 열람 가능, 분석은 온디맨드
   const isFailed = status === 'failed';
   const isDone = status === 'completed' || status === 'partial';
-  const isPartial = status === 'partial';
-  const failedIndices = material?.processed_json?.failed_indices || [];
+  const needsRecovery = !passageOf(material) && (isStaleAnalysis || (isDone && missingLineCount > 0));
   const isCompleted = readingProgress?.is_completed === true;
   const isWordSaved = isTokenSaved(savedWords, selectedToken);
   keyHandlersRef.current = {
@@ -2600,7 +2599,7 @@ export default function ViewerPage() {
       >
         {/* 이합사 연결 아치 오버레이 — reader-area(position:relative, 그립 선례) 좌표계 */}
         <svg ref={sepArcRef} className="sep-arc" aria-hidden="true" />
-        {isAnalyzing && !isStaleAnalysis && (
+        {isAnalyzing && !needsRecovery && (
           <div className="analyzing-banner">
             <span>{reanalyze.committing ? '검증한 분석을 저장 중입니다…' : reanalyzeMutation.isPending ? '새 분석을 준비 중입니다. 기존 자료는 유지됩니다.' : '문단 단위로 분석 중입니다...'}</span>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -2612,13 +2611,18 @@ export default function ViewerPage() {
           </div>
         )}
 
-        {isStaleAnalysis && user?.id === material?.owner_id && (
+        {needsRecovery && user?.id === material?.owner_id && (
           <div className="analyzing-banner" style={{ background: 'color-mix(in srgb, var(--warning-bright) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--warning-bright) 40%, transparent)' }}>
-            <span>분석이 중단된 것 같아요{missingLineCount > 0 && ` (남은 ${missingLineCount}줄)`}</span>
+            <span role="status" aria-live="polite">{reanalyze.committing
+              ? '검증한 분석을 저장 중입니다…'
+              : reanalyze.recovery
+                ? `${reanalyze.recovery.total}곳 중 ${reanalyze.recovery.completed}곳을 복구했어요. 기존 내용은 그대로 볼 수 있어요.`
+                : reanalyzeMutation.isPending ? '새 분석을 준비 중입니다. 기존 자료는 유지됩니다.'
+                  : missingLineCount > 0 ? `분석이 끝나지 않은 부분이 ${missingLineCount}곳 있어요.` : '분석 결과를 확인하고 마무리할 수 있어요.'}</span>
             <div style={{ display: 'flex', gap: '8px' }}>
               {reanalyzeMutation.isPending
                 ? <button onClick={stopReanalysis} disabled={reanalyze.committing} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>⏹ 중단</button>
-                : <button onClick={() => reanalyze.mutation.mutate({ resume: true })} className="analyzing-banner__refresh" style={{ background: 'var(--accent)' }}>▶ 이어서 분석</button>
+                : <button onClick={() => reanalyze.mutation.mutate({ resume: true })} className="analyzing-banner__refresh" style={{ background: 'var(--reader-accent)' }}>▶ 이어서 분석</button>
               }
             </div>
           </div>
@@ -2645,13 +2649,6 @@ export default function ViewerPage() {
           </div>
         )}
 
-        {isPartial && failedIndices.length > 0 && !reanalyzeMutation.isPending && (
-          <div className="analyzing-banner analyzing-banner--warn">
-            <span>{failedIndices.length}줄 분석 실패</span>
-            <button onClick={() => reanalyze.mutation.mutate()} className="analyzing-banner__refresh">실패 줄 재시도</button>
-          </div>
-        )}
-
         {(() => {
           // raw_text 줄 분리 (헤딩 감지 + showRaw 렌더 공용)
           const rawLines = material?.raw_text?.split('\n') ?? [];
@@ -2667,7 +2664,7 @@ export default function ViewerPage() {
             return m ? m[1].length : 0;
           }
 
-          const showRaw = (isAnalyzing || isPending) && rawLines.length > 0;
+          const showRaw = (isAnalyzing || isPending || needsRecovery) && rawLines.length > 0;
 
           // lineIdx → [tokenId, ...] 맵 구성
           const tokensByLine = new Map();
