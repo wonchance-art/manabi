@@ -6,6 +6,7 @@
 // localStorage만 쓴다. 빈 결과도 캐시해 재호출 루프를 막는다.
 
 import { callGemini, parseGeminiJSON } from './gemini';
+import { viewerCacheKey } from './viewerReliability';
 import { langNameKo } from './constants';
 
 // 내용어만 조회 — 기능어(조사·어미·기호·접속사 등)의 유의어는 무의미하고 호출 낭비다.
@@ -67,7 +68,7 @@ function cacheSet(key, val) {
 
 /** 유의어·반의어 조회 — localStorage 캐시 → Gemini(초소형 프롬프트) 2단. */
 export async function fetchSynAnt(token, language) {
-  const key = synAntCacheKey(language, token.base_form || token.text);
+  const key = await viewerCacheKey('pdf_cache:synant', language, [token.sep_link || token.base_form || token.text, token.meaning, token.furigana || token.reading]);
   const cached = cacheGet(key);
   if (cached && Array.isArray(cached.syn) && Array.isArray(cached.ant)) return cached;
   const raw = await callGemini(buildSynAntPrompt(token, language));

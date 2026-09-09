@@ -50,6 +50,6 @@ describe('단어 카드 단일화 계약', () => {
   });
 
   it('카드 열림 시 패널·시트를 맨 위로 되돌린다(리스트를 내려 본 뒤에도 카드가 보이게)', () => {
-    expect(viewer).toContain("querySelectorAll('.viewer-side--right, .viewer-sheet__section-body')");
+    expect(viewer).toContain("querySelectorAll('.viewer-side--right, .viewer-sheet__sections')");
   });
 });

@@ -21,8 +21,9 @@ describe('뷰어 시트 — 우리 사전 연동', () => {
     expect(src).toMatch(/if \(t\.sep_link\) continue;/);
   });
 
-  it('정본 뜻이 있으면 뜻 자리를 대체하되, 사용자 교정이 최우선이다(오너 피드백)', () => {
-    expect(src).toMatch(/hasMeaningCorrection = tokenCorrections\.some/);
+  it('문맥 뜻(사용자 교정 포함)을 유지하고 사전의 다른 뜻을 구분한다', () => {
+    expect(src).toContain('const refMeaning = contextualMeaning(selectedToken) || null;');
+    expect(src).toContain('referenceMatchesContext(selectedToken, refVocab?.word)');
     expect(src).toMatch(/refMeaning \|\| selectedToken\.meaning \|\| '\(뜻 없음\)'/);
   });
 

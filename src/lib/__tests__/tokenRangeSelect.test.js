@@ -161,6 +161,7 @@ describe('드래그 중 시트 가로채기 차단 계약', () => {
   it('e2e 재시도는 시트를 닫고 다시 드래그한다(자란 시트가 pointerdown부터 먹는 경우)', () => {
     const e2e = fs.readFileSync(path.join(process.cwd(), 'e2e/learning-flow.e2e.mjs'), 'utf8');
     expect(e2e).toContain("getByRole('button', { name: '시트 닫기', exact: true })");
-    expect(e2e).toContain("pdf_cache:synant:v1:Chinese:中文"); // ⑤ 자동 조회 결정성 시드
+    expect(e2e).toContain("await viewerCacheKey('pdf_cache:synant', 'Chinese', ['中文', '중국어', 'zhōng wén'])"); // ⑤ 전체 뜻·발음을 반영한 자동 조회 결정성 시드
+    expect(e2e).toContain('}, synonymKey);');
   });
 });

@@ -77,36 +77,34 @@ describe('저장 등급 — 뷰어 배선(ViewerPage)', () => {
     expect(css).toContain('.save-grade .review-score-btn');
   });
 
-  it('키 1~4 — 입력 요소 포커스·조합키·카드 닫힘·이미 저장 상태에서 발동하지 않는다', () => {
-    expect(keys).toContain('if (!selectedToken || !isSheetOpen) return undefined;');
-    expect(keys).toContain("t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable");
-    expect(keys).toContain('if (inField || e.metaKey || e.ctrlKey || e.altKey) return;');
-    expect(keys).toContain('if (!/^[1-4]$/.test(e.key)) return;');
-    expect(keys).toContain('if (h.saveLocked) return;');
-    // R3㉮ 이후 핸들러 묶음이 여러 줄(인라인 그리드 합류) — 잠금 조건은 그대로
-    expect(viewer).toContain('keyHandlersRef.current = {');
+  it('키 1~4는 실제 보이는 카드에 포커스가 있을 때만 작동한다', () => {
+    expect(keys).toContain('viewerCommandAllowed(e, { cardOpen: h.cardOpen, blocked: h.blocked })');
+    expect(keys).toContain("e.metaKey || e.ctrlKey || e.altKey || !/^[1-4]$/.test(e.key)");
+    expect(keys).toContain('if (!h.saveLocked) { e.preventDefault(); h.addToVocab?.(Number(e.key)); }');
     expect(viewer).toContain('saveLocked: isWordSaved || saveAnim,');
     expect(keys).toContain("document.addEventListener('keydown', onKeyDown);");
     expect(keys).toContain("return () => document.removeEventListener('keydown', onKeyDown);");
   });
 
-  it('undo는 이번에 새로 넣은 행만 — upsert .select(id) 반환이 판정, 이미 있던 단어는 undo 대상 아님', () => {
-    expect(viewer).toContain(".upsert(row, options).select('id');");
-    expect(viewer).toContain("lastSaveRef.current = inserted[0]?.id ? { id: inserted[0].id, text: selectedToken.text } : null;");
-    const undo = sliceBetween(viewer, 'const undoLastSave = async () => {', '\n  };');
-    expect(undo).toContain("from('user_vocabulary').delete().eq('id', last.id)");
+  it('undo는 INSERT 반환 전체 행과 출처를 캡처하고 조건부 RPC로만 취소한다', () => {
+    expect(viewer).toContain(".upsert(row, options).select('*');");
+    expect(viewer).toContain('prepareViewerSaveUndo(supabase, inserted[0], savedSource, linked)');
+    const undo = sliceBetween(viewer, 'const undoLastSave = async (snapshot = lastSaveRef.current) => {', '\n  };');
+    expect(undo).toContain('await undoViewerSave(supabase, snapshot, user?.id)');
+    expect(undo).not.toContain('.delete()');
     expect(undo).toContain('lastSaveRef.current = null;');
     expect(undo).toContain("queryKey: ['vocab-words', user?.id]");
   });
 
-  it('⌘Z는 입력 요소 안에서 기본 동작을 가로채지 않고, 되돌릴 게 없으면 아무 일도 하지 않는다', () => {
-    expect(keys).toContain("if ((e.key === 'z' || e.key === 'Z') && (e.metaKey || e.ctrlKey) && !e.altKey) {");
-    // R3㉮ 이후 ⌘Z는 저장·인라인 둘 중 하나라도 되돌릴 게 있어야 발동
-    expect(keys).toContain('if (inField || (!lastSaveRef.current && !lastInlineGradeRef.current)) return;');
-    // 단어가 바뀌면 소멸 — 다른 단어의 행을 지우면 안 된다
-    expect(viewer).toContain('useEffect(() => { lastSaveRef.current = null; lastInlineGradeRef.current = null; }, [selectedToken?.id, selectedToken?.text]);'); // R3㉮: 인라인 undo도 함께 소멸
-    // 토스트 문구에 단축키(맥/그 외 라벨은 표기용, 동작은 양쪽)
-    expect(viewer).toContain('저장됨 · ${UNDO_KEY_LABEL} 취소');
+  it('undo는 입력창·조합키·다른 계정에 개입하지 않고 대상이 명시된 버튼으로도 가능하다', () => {
+    expect(keys).toContain('!e.altKey && !e.shiftKey');
+    expect(keys).toContain('inField || h.blocked || e.isComposing || e.repeat || e.defaultPrevented');
+    expect(keys).toContain('(!lastSaveRef.current && !lastInlineGradeRef.current)');
+    expect(keys).toContain('lastSaveRef.current?.expiresAt < Date.now()');
+    expect(keys).toContain("e.target?.closest?.('.viewer-3col, .toast-container')");
+    expect(keys).toContain("e.target === document.body && document.querySelector('.viewer-3col')");
+    expect(viewer).toContain('useEffect(() => { lastSaveRef.current = null; lastInlineGradeRef.current = null; }, [id, user?.id]);');
+    expect(viewer).toContain('onClick={() => undoLastSave(snapshot)}>저장 취소 · {UNDO_KEY_LABEL}');
     expect(viewer).toMatch(/UNDO_KEY_LABEL = [\s\S]{0,200}\? '⌘Z' : 'Ctrl\+Z'/);
   });
 

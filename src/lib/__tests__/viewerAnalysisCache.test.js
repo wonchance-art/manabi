@@ -84,7 +84,8 @@ describe('배선 계약', () => {
   it('드래그 분석이 캐시를 먼저 읽고, 성공 결과를 저장한다', () => {
     expect(viewer).toContain('readAnalysisCache');
     expect(viewer).toContain('writeAnalysisCache');
-    expect(viewer).toContain('analysisCacheKey(materialLang, sel)');
+    expect(viewer).toContain("viewerCacheKey('viewer_an', cacheScope, sel)");
+    expect(viewer).not.toContain('analysisCacheKey(materialLang, sel)');
   });
 
   it('교정·승격 성공 시 캐시를 무효화한다(낡은 뜻 방지)', () => {

@@ -38,7 +38,9 @@ describe('인라인 복습 R3㉮ — 척도 정렬·스냅샷 재료·undo (View
   it('undo 뒤 user_vocabulary 5필드가 스냅샷과 동일(last_reviewed_at 원값) + vocab-words 무효화로 「복습 시점이에요」가 다시 보인다', () => {
     const undo = sliceBetween(viewer, 'const undoInlineGrade = async () => {', '\n  };');
     expect(undo).toContain("const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev || {};");
-    expect(undo).toContain('await persistVocabGrade(supabase, last.wordId, prevStats, prevReviewedAt);');
+    expect(undo).toContain('.update({ ...prevStats, last_reviewed_at: prevReviewedAt })');
+    expect(undo).toContain(".eq('user_id', user.id).eq('last_reviewed_at', last.reviewedAt).select('id')");
+    expect(undo).toContain('if (!data?.length) throw');
     expect(undo).toContain("queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });");
     // 보상 이벤트 정확히 1건 — source ui · undo_of.reviewed_at = 원 채점 시각
     expect(undo.match(/logReviewEvents\(/g)).toHaveLength(1);
@@ -53,12 +55,13 @@ describe('인라인 복습 R3㉮ — 척도 정렬·스냅샷 재료·undo (View
   it('키 1~4 — 저장 그리드와 인라인 그리드가 동시에 반응하지 않는다(상태상 배타), ⌘Z는 인라인 → 저장 순', () => {
     const keys = sliceBetween(viewer, 'const lastSaveRef = useRef(null);', '}, [selectedToken, isSheetOpen]);');
     expect(keys).toContain('if (h.inlineDue) { e.preventDefault(); h.gradeInline?.(Number(e.key)); return; }');
-    expect(keys).toContain('if (h.saveLocked) return;');
-    expect(keys).toContain('if (inField || (!lastSaveRef.current && !lastInlineGradeRef.current)) return;');
+    expect(keys).toContain('if (!h.saveLocked) { e.preventDefault(); h.addToVocab?.(Number(e.key)); }');
+    expect(keys).toContain('inField || h.blocked || e.isComposing || e.repeat || e.defaultPrevented');
+    expect(keys).toContain('(!lastSaveRef.current && !lastInlineGradeRef.current)');
     expect(viewer).toContain('inlineDue: !!user && isWordSaved && isTokenDue(savedWords, selectedToken) && !inlineReviewMutation.isPending,');
     expect(viewer).toContain('const undoAny = () => (lastInlineGradeRef.current ? undoInlineGrade() : undoLastSave());');
-    // 단어가 바뀌면 둘 다 소멸
-    expect(viewer).toContain('useEffect(() => { lastSaveRef.current = null; lastInlineGradeRef.current = null; }, [selectedToken?.id, selectedToken?.text]);');
+    // 선택이 바뀌어도 방금 저장한 대상은 유지하되 계정/자료 이동 시 소멸
+    expect(viewer).toContain('useEffect(() => { lastSaveRef.current = null; lastInlineGradeRef.current = null; }, [id, user?.id]);');
   });
 });
 
