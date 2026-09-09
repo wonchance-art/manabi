@@ -14,6 +14,8 @@ import { fetchWordDetailText } from '../lib/wordDetail';
 import Button from '../components/Button';
 import Spinner from '../components/Spinner';
 import PdfDocument from '../components/PdfDocument';
+import useLibraryActivity from '@/components/library/useLibraryActivity';
+import {legacyPdfPositionKey} from '@/lib/libraryActivity';
 import PdfJsViewer from '../components/PdfJsViewer';
 import PdfReadBridge from '../components/PdfReadBridge';
 import ViewerBottomSheet from '../components/ViewerBottomSheet';
@@ -147,6 +149,14 @@ export default function PdfViewerPage() {
   const { data: pdfInfo, isLoading, error } = useQuery({
     queryKey: ['pdf-info', id], queryFn: () => fetchPdfInfo(id), enabled: !!id,
   });
+  const [renderedPdf,setRenderedPdf]=useState(null);
+  const pdfReady=useRef(null);pdfReady.current=page=>{
+    setRenderedPdf(String(id));
+    if(!user||!usePdfJs||!Number.isSafeInteger(page)||page<1)return;
+    try{localStorage.setItem(legacyPdfPositionKey(user.id,id),String(page));}catch{/* Reading remains available without local storage. */}
+  };
+  const onPdfReady=useRef(page=>pdfReady.current?.(page)).current;
+  useLibraryActivity({target_kind:'pdf',target_id:String(id),context:{}},!!pdfInfo&&renderedPdf===String(id));
   // 다리는 자료 뷰어의 '다음 범위'와 **같은 뮤테이션**을 쓴다 — 여기 sourcePdf가 곧 이 PDF다.
   const rangeMutation = usePdfRangeMutation({ sourcePdf: pdfInfo, user, toast });
   const {
@@ -390,8 +400,8 @@ export default function PdfViewerPage() {
             <Spinner message="로딩 중..." />
           ) : pdfUrl ? (
             usePdfJs
-              ? <PdfJsViewer pdfUrl={pdfUrl} onPageChange={setLivePage} initialPage={initialPage} />
-              : <PdfDocument pdfUrl={pdfUrl} page={initialPage} />
+              ? <PdfJsViewer pdfUrl={pdfUrl} onPageChange={setLivePage} initialPage={initialPage} onReady={onPdfReady} />
+              : <PdfDocument pdfUrl={pdfUrl} page={initialPage} onReady={onPdfReady} />
           ) : (
             <div className="pdf-side__empty">PDF 파일 주소가 없습니다.</div>
           )}

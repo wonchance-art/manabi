@@ -150,7 +150,7 @@ try {
   await mp.locator('.suggestion-artwork > span').waitFor();
   await check(mp, 'member-long-title-failed-image');
   report.fixtureStates.push('member has separate edition progress; real schedule count displayed; broken image fallback; long title');
-  await mp.goto(base + '/materials/add');
+  await mp.goto(base + '/materials/add?advanced=1');
   await mp.getByRole('button', { name: '프랑스어', exact: true }).click();
   assert.equal(await mp.getByRole('button', { name: '프랑스어', exact: true }).getAttribute('aria-pressed'), 'true');
   await check(mp, 'french-material-input');

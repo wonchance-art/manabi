@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { getParagraphs } from './useReanalyze';
+import { composerOf } from './materialComposer';
 
 /**
  * 재분석 패널 UI 상태 + 핸들러.
@@ -15,7 +16,7 @@ export function useReanalyzeUI({ reanalyze, material, toast }) {
   const [reanalyzePanel, setReanalyzePanel] = useState(null);
   const [selectedParas, setSelectedParas] = useState(new Set());
 
-  const paragraphs = material?.raw_text ? getParagraphs(material.raw_text) : [];
+  const paragraphs = material?.raw_text ? getParagraphs(material.raw_text, !!composerOf(material)) : [];
 
   function togglePara(idx) {
     setSelectedParas(prev => {

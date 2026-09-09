@@ -1,4 +1,6 @@
 'use client';
+import { composerOf, removeComposerOriginals } from '@/lib/materialComposer';
+import { documentOf, isStudySnapshot, documentListRow } from '@/lib/materialDocument';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
@@ -87,12 +89,14 @@ const MATERIAL_LIST_COLS = 'id, title, created_at, visibility, owner_id, process
 
 function fetchMaterialsWithoutDirection(args) { return fetchMaterials({ ...args, withDirection: false }); }
 
-async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuery, includeOwnedPublic = false, withDirection = true }) {
+async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuery, includeOwnedPublic = false, withDirection = true, withDocument = true }) {
   let query = supabase
     .from('reading_materials')
     // direction(U R3) — 컬럼 미적용 환경은 PostgREST가 400을 내므로 아래 폴백이 direction 없이 다시 조회한다
     .select(withDirection ? `${MATERIAL_LIST_COLS}, direction` : MATERIAL_LIST_COLS)
     .order('created_at', { ascending: false });
+  // Add only current-document summary fields; its full body stays out of list payloads.
+  if (withDocument) query = query.select(`${MATERIAL_LIST_COLS}${withDirection ? ', direction' : ''}, document_revision:document_json->>revision, document_language:document_json->>language, document_excerpt:document_json->>excerpt, document_assets:document_json->assets, document_has_body:document_json->hasBody`);
 
   // 자료실은 현지 언어 콘텐츠만 — 시리즈 패턴 [* #N] 자료는 /lessons로 분리
   query = query.not('title', 'ilike', '[%#%]%');
@@ -108,7 +112,7 @@ async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuer
   if (searchQuery) {
     query = query.ilike('title', `%${searchQuery}%`);
   }
-  if (langFilter !== 'all') {
+  if (langFilter !== 'all' && !withDocument) {
     query = query.eq('processed_json->metadata->>language', langFilter);
   }
   if (levelFilter !== 'all') {
@@ -117,6 +121,7 @@ async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuer
 
   const { data, error } = await query;
   if (error) {
+    if (withDocument && /document_json/.test(error.message || '')) return fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuery, includeOwnedPublic, withDirection, withDocument: false });
     // U R3: direction 컬럼 미적용 환경(마이그레이션은 오너 수동) — 컬럼 없이 같은 조회를 한 번 더.
     // etym/hanja·writing_practice 신규 컬럼 폴백과 같은 패턴. 그 환경엔 노트가 없으므로 결과는 같다.
     if (withDirection && /column|schema|direction/i.test(error.message || '')) {
@@ -125,7 +130,7 @@ async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuer
     }
     throw error;
   }
-  return data || [];
+  return (data || []).map(documentListRow).filter(material => !isStudySnapshot(material) && (langFilter === 'all' || (documentOf(material)?.language ?? material.processed_json?.metadata?.language) === langFilter));
 }
 
 const PAGE_SIZE = 12;
@@ -167,9 +172,16 @@ export default function MaterialsPage({ libraryView = null }) {
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
+      const current = await supabase.from('reading_materials').select('*').eq('id', id).eq('owner_id', user.id).maybeSingle();
+      if (current.error) throw current.error;
       const { error, count } = await supabase.from('reading_materials').delete({ count: 'exact' }).eq('id', id);
       if (error) throw error;
       if (count === 0) throw new Error('삭제 권한이 없거나 이미 삭제된 자료입니다.');
+      const material = current.data;
+      if (composerOf(material)) {
+        try { await removeComposerOriginals(supabase, material); }
+        catch { toast('자료는 삭제했지만 첨부 파일 정리를 완료하지 못했어요.', 'error'); }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['materials'] });
@@ -302,7 +314,7 @@ export default function MaterialsPage({ libraryView = null }) {
     }
     if (visibleCount > PAGE_SIZE) params.set('shown', String(visibleCount)); else params.delete('shown');
     const next = params.toString();
-    window.history.replaceState({ ...window.history.state }, '', `/materials${next ? `?${next}` : ''}${window.location.hash}`);
+    window.history.replaceState({ ...window.history.state }, '', `${window.location.pathname === '/discover' ? '/discover' : '/materials'}${next ? `?${next}` : ''}${window.location.hash}`);
   }, [libraryView, searchQuery, langFilter, levelFilter, sortBy, unreadOnly, pinnedOnly, visibleCount]);
 
   const { data: suggestions = [] } = useQuery({
@@ -777,7 +789,7 @@ export default function MaterialsPage({ libraryView = null }) {
             const isNote = isWriteMaterial(m) || m.processed_json?.status === 'note';
             const status = isNote ? 'note' : (m.processed_json?.status || 'idle');
             const metadata = m.processed_json?.metadata || {};
-            const language = metadata.language;
+            const language = documentOf(m)?.language ?? metadata.language;
             const level = metadata.level;
             const isDone = status === 'completed';
             const isCompleted = completedIds.has(m.id);
@@ -791,20 +803,23 @@ export default function MaterialsPage({ libraryView = null }) {
               : null;
 
             const previewText = (() => {
+              if (documentOf(m)) return documentOf(m).excerpt;
               const dict = m.processed_json?.dictionary || {};
               const seq = m.processed_json?.sequence || [];
-              if (seq.length === 0) return '';
+              if (seq.length === 0) return composerOf(m)?.excerpt || '';
               return seq.slice(0, 40).map(id => dict[id]?.text || '').filter(Boolean).join('').slice(0, 120);
             })();
             const isOwner = m.owner_id === user?.id;
             const isPinned = pinnedIds.has(m.id);
             const tokens = m.processed_json?.sequence?.length || 0;
-            const minutes = tokens >= 50 ? Math.max(1, Math.round(tokens / 200)) : 0;
+            const minutes = !composerOf(m) && tokens >= 50 ? Math.max(1, Math.round(tokens / 200)) : 0;
             const score = testScores[String(m.id)];
             // 정돈(미니멀, #1077 5547520918): 상태는 오른쪽 **하나** — 완독 / 진행 % / 예외(분석 중·실패·일부·분석 전).
             // 정상 완료와 노트는 무표기(붙일 게 없다는 것도 정보다).
             const stateBadge = (() => {
               if (isNote) return null;
+              if (composerOf(m)) return null;
+              if (status === 'saved') return null;
               if (isCompleted) return <span className="mat-state mat-state--done">✓ 완독</span>;
               const lastIdx = progressMap.inProgress.get(m.id);
               if (lastIdx && tokens > 0) {
@@ -818,6 +833,7 @@ export default function MaterialsPage({ libraryView = null }) {
             })();
             // 메타 한 줄 — 언어명(정본 langNameKo)·급수·읽는 시간·날짜. 언어명 큰 글자(card__flag) 폐지.
             const metaLine = [
+              documentOf(m)?.assets?.map(asset => asset.kind.toUpperCase()).filter((kind, index, all) => all.indexOf(kind) === index).join(' · '),
               language ? langNameKo(language) : '언어 미지정',
               level,
               minutes ? `${minutes}분` : null,
@@ -851,7 +867,7 @@ export default function MaterialsPage({ libraryView = null }) {
                     <summary className="mat-menu__btn" aria-label="자료 메뉴" title="받아두기 · 공개 · 삭제">⋯</summary>
                     <div className="mat-menu__list" role="menu">
                       {/* 받아두기(v2-N R3) — 메뉴 항목으로. 상태(받아둠)는 아래 알약이 말한다. */}
-                      <button
+                      {(!composerOf(m) || documentOf(m)?.hasBody) && <button
                         type="button"
                         role="menuitemcheckbox"
                         className={`mat-pin${isPinned ? ' mat-pin--on' : ''}`}
@@ -860,9 +876,10 @@ export default function MaterialsPage({ libraryView = null }) {
                         aria-checked={isPinned}
                         title={isPinned ? '받아둠 — 연결이 없어도 열립니다 (눌러서 해제)' : '받아두기 — 연결이 없어도 열립니다'}
                       >
-                        {pinBusy === m.id ? '…' : isPinned ? '✓ 받아둠 — 해제' : '⬇ 받아두기'}
-                      </button>
-                      {isOwner && (
+                        {pinBusy === m.id ? '…' : isPinned ? '✓ 받아둠 — 해제' : documentOf(m)?.assets?.length ? '⬇ 작성한 본문 받아두기' : '⬇ 받아두기'}
+                      </button>}
+                      {isOwner && documentOf(m) && <button type="button" role="menuitem" className="mat-menu__item" onClick={() => router.push(readerHref(`/viewer/${m.id}`).replace(`/viewer/${m.id}`, `/materials/${m.id}/edit`))}>수정</button>}
+                      {isOwner && !composerOf(m) && (
                         <button
                           type="button"
                           role="menuitem"
@@ -970,7 +987,7 @@ export default function MaterialsPage({ libraryView = null }) {
             </button>
           ) : tab === 'public' ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-              <Link href="/materials/add" className="btn btn--primary btn--md">
+              <Link href="/materials/add?advanced=1" className="btn btn--primary btn--md">
                 첫 번째 자료 공유하기 →
               </Link>
               <Link href="/guide" className="empty-state__link">
@@ -978,8 +995,8 @@ export default function MaterialsPage({ libraryView = null }) {
               </Link>
             </div>
           ) : (
-            <Link href={libraryView === 'notes' ? '/materials/add?direction=write' : '/materials/add'} className="empty-state__link">
-              {libraryView === 'notes' ? '첫 노트 쓰기 →' : '첫 번째 자료 추가하기 →'}
+            <Link href="/materials/add" className="empty-state__link">
+              새 자료 작성 →
             </Link>
           )}
         </div>

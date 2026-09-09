@@ -1,7 +1,14 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
+import OriginalMaterialReader from '@/components/materials/OriginalMaterialReader';
+import useLibraryActivity from '@/components/library/useLibraryActivity';
+import LibrarySaveButton from '@/components/library/LibrarySaveButton';
+import {materialActivity} from '@/lib/libraryActivity';
+import { passageOf, sourcePassageHref, passageLocation, correctPassageToken } from '@/lib/sourcePassage';
+import { takePassageAnalysis } from '@/lib/passageAnalysis';
+import { composerOf, shouldReadComposerOriginal } from '@/lib/materialComposer';
 import Link from 'next/link';
 import { LibraryReturnLink } from '@/components/web/LibraryReaderLink';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -192,6 +199,7 @@ const UNDO_KEY_LABEL = typeof navigator !== 'undefined'
 
 export default function ViewerPage() {
   const { id } = useParams();
+  const originalParams = useSearchParams();
   const { user, profile, fetchProfile } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -276,6 +284,7 @@ export default function ViewerPage() {
   });
 
   const materialLang = material?.processed_json?.metadata?.language || 'Japanese';
+  useLibraryActivity(materialActivity(material,passageOf(material)||originalParams.get('study')==='1'?'study':'text',null,null,user?.id),!!material&&!isLoading&&!error&&!shouldReadComposerOriginal(material,originalParams));
 
   // [자세히] 인라인 문법 해설(오너 확정) — 모달·체크박스 없이 시트 좌측에서 펼친다.
   const grammar = useGrammarDetail({ materialLang, toast });
@@ -471,7 +480,7 @@ export default function ViewerPage() {
   const pacedRef = useRef(false);
 
   const readingTimer = useReadingTimer({
-    enabled: !!user && !!material,
+    enabled: !!user && !!material && !shouldReadComposerOriginal(material, originalParams),
     paused: isSheetOpen || !!selectedToken,
   });
 
@@ -497,6 +506,14 @@ export default function ViewerPage() {
   // 재분석 로직 + UI
   const reanalyze = useReanalyze({ materialId: id, material, refetch, toast });
   const reanalyzeMutation = reanalyze.mutation;
+  const startPassageMutation = reanalyzeMutation.mutate;
+  useEffect(() => {
+    if (!passageOf(material) || !user?.id || material.owner_id !== user.id) return;
+    const timer = setTimeout(() => {
+      if (takePassageAnalysis(user.id, material.id)) startPassageMutation({ resume: true });
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [material, user?.id, startPassageMutation]);
   const stopReanalysis = reanalyze.stop;
   const isStaleAnalysis = reanalyze.stale;
   const missingLineCount = reanalyze.missingIndices.length;
@@ -509,6 +526,7 @@ export default function ViewerPage() {
   // ③ 원문 수정(오너 승인) — 소유자 전용, 저장 시 바뀐 줄만 재분석(sourceEdit.js 계획).
   const [sourceEditOpen, setSourceEditOpen] = useState(false);
   const handleSourceEditSave = async (plan) => {
+    if (composerOf(material)) return;
     if (!plan || plan.noop) { setSourceEditOpen(false); return; }
     if (!plan.ok) { toast(plan.reason, 'error'); return; }
     try {
@@ -1185,11 +1203,14 @@ export default function ViewerPage() {
       };
       const updatedJson = { ...currentJson, dictionary: updatedDict };
 
-      const { error } = await supabase
-        .from('reading_materials')
-        .update({ processed_json: updatedJson })
-        .eq('id', id);
-      if (error) throw error;
+      if (passageOf(material)) {
+        const record = await correctPassageToken(supabase, material, tokenId, corrections);
+        queryClient.setQueryData(['material', id], record);
+      } else {
+        const { error } = await supabase.from('reading_materials')
+          .update({ processed_json: updatedJson }).eq('id', id);
+        if (error) throw error;
+      }
 
       // 교정 히스토리 로그 (실패해도 수정 자체는 유지)
       if (user?.id) {
@@ -1635,10 +1656,14 @@ export default function ViewerPage() {
     );
   }
 
+  if (shouldReadComposerOriginal(material, originalParams)) {
+    return <OriginalMaterialReader key={`${material.owner_id}:${material.id}:${material.document_json?.revision || 'original'}`} material={material} />;
+  }
+
   const json = material?.processed_json || { sequence: [], dictionary: {} };
   const status = material?.status || material?.processed_json?.status;
-  const isAnalyzing = status === 'analyzing';
-  const isPending = status === 'pending'; // 책 챕터 미분석 — 원문 열람 가능, 분석은 온디맨드
+  const isAnalyzing = status === 'analyzing' || (!!passageOf(material) && reanalyzeMutation.isPending);
+  const isPending = !isAnalyzing && (status === 'pending' || status === 'saved'); // 책 챕터 미분석 — 원문 열람 가능, 분석은 온디맨드
   const isFailed = status === 'failed';
   const isDone = status === 'completed' || status === 'partial';
   const isPartial = status === 'partial';
@@ -2307,7 +2332,9 @@ export default function ViewerPage() {
             남고, 끝의 행동(읽기 완료·오늘 학습·다음 범위)은 본문 **아래**로 갔다(「끝은 끝에」). 예전 액션바는
             폰에서 두 줄(89px)로 꺾였고, 그 위에 뒤로가기 줄·시리즈 내비 줄이 따로 있었다. */}
         <div className="viewer-topbar">
+          <LibrarySaveButton material={material}/>
           <LibraryReturnLink className="viewer-back-link">← 내 서재</LibraryReturnLink>
+          {composerOf(material) && <Link className="viewer-back-link" href={sourcePassageHref(material,originalParams.get('returnTo')) || `/viewer/${composerOf(material)?.parentId || id}?returnTo=${encodeURIComponent(originalParams.get('returnTo') || '/materials?view=owned')}`}>{passageOf(material)?`원본의 ${passageLocation(passageOf(material))}으로 ↗`:'현재 글과 첨부 원본 ↗'}</Link>}
           {siblingNav && (
             <div className="viewer-series-nav" title={siblingNav.label}>
               {siblingNav.prev ? (
@@ -2337,7 +2364,8 @@ export default function ViewerPage() {
           </div>
         </div>
         <p className="reader-metadata">{langNameKo(materialLang)}{material?.processed_json?.metadata?.level ? ` · ${material.processed_json.metadata.level}` : ''} · {material.visibility === 'public' ? '공개 읽기' : '내 자료'}</p>
-        {titleEditing && user?.id === material?.owner_id ? (
+        {composerOf(material) && <p className="reader-metadata">{passageOf(material)?`${passageLocation(passageOf(material))}에서 고른 학습 구간이에요. 원본은 위의 링크에서 열 수 있어요.`:'학습에 사용한 본문이에요. 현재 글은 위의 링크에서 열 수 있어요.'}</p>}
+        {titleEditing && user?.id === material?.owner_id && !composerOf(material) ? (
           <form
             onSubmit={e => { e.preventDefault(); updateTitleMutation.mutate(titleDraft); }}
             style={{ display: 'flex', gap: 6, alignItems: 'center', flex: 1 }}
@@ -2362,7 +2390,7 @@ export default function ViewerPage() {
              ※ 여기 있던 `flex: 1`은 죽은 값이었다 — 부모(.page-header)가 flex가 아니다. */
           <div className="viewer-titlerow">
             <h1 className="page-header__title">{material.title}</h1>
-            {user?.id === material?.owner_id && (
+            {user?.id === material?.owner_id && !composerOf(material) && (
               <button
                 className="viewer-title-edit"
                 onClick={() => { setTitleDraft(material.title); setTitleEditing(true); }}
@@ -2478,7 +2506,7 @@ export default function ViewerPage() {
                 <button role="tab" aria-selected={sheetTab === 'display'}
                   className={sheetTab === 'display' ? 'rsheet-tabs__btn--on' : undefined}
                   onClick={() => setSheetTab('display')}>표시</button>
-                {((ttsSupported && sentences.length > 0) || (user?.id === material?.owner_id && !isAnalyzing && !reanalyzeMutation.isPending)) && (
+                {((ttsSupported && sentences.length > 0) || (user?.id === material?.owner_id && !passageOf(material) && !isAnalyzing && !reanalyzeMutation.isPending)) && (
                   <button role="tab" aria-selected={sheetTab === 'tools'}
                     className={sheetTab === 'tools' ? 'rsheet-tabs__btn--on' : undefined}
                     onClick={() => setSheetTab('tools')}>도구</button>
@@ -2673,9 +2701,9 @@ export default function ViewerPage() {
                       <em>›</em>
                     </button>
                   )}
-                  {user?.id === material?.owner_id && !isAnalyzing && !reanalyzeMutation.isPending && (
+                  {user?.id === material?.owner_id && !passageOf(material) && !isAnalyzing && !reanalyzeMutation.isPending && (
                     <button className="rsheet-toolrow" onClick={() => { setSettingsOpen(false); setReanalyzePanel('menu'); }}>
-                      <span className="rsheet-txt"><b>재분석</b><span>전체·부분 분석, 원문 수정</span></span>
+                      <span className="rsheet-txt"><b>재분석</b><span>{composerOf(material) ? '전체·부분 분석' : '전체·부분 분석, 원문 수정'}</span></span>
                       <em>›</em>
                     </button>
                   )}
@@ -2700,10 +2728,10 @@ export default function ViewerPage() {
                 <strong>부분 분석</strong>
                 <span>문단을 선택해서 분석합니다</span>
               </button>
-              <button className="reanalyze-panel__item" onClick={() => { setReanalyzePanel(null); setSourceEditOpen(true); }}>
+              {!composerOf(material) && <button className="reanalyze-panel__item" onClick={() => { setReanalyzePanel(null); setSourceEditOpen(true); }}>
                 <strong>원문 수정</strong>
                 <span>텍스트를 고치면 바뀐 줄만 분석합니다</span>
-              </button>
+              </button>}
             </div>
           )}
           {reanalyzePanel === 'pick' && (
@@ -2791,11 +2819,11 @@ export default function ViewerPage() {
 
         {isPending && (
           <div className="analyzing-banner">
-            <span>이 챕터는 아직 분석 전이에요 — 원문은 그대로 읽을 수 있어요.</span>
+            <span>{composerOf(material) ? '저장한 본문이에요. 표현을 공부할 때 분석을 시작하세요.' : '이 챕터는 아직 분석 전이에요 — 원문은 그대로 읽을 수 있어요.'}</span>
             {user?.id === material?.owner_id && (
               reanalyzeMutation.isPending
                 ? <button onClick={stopReanalysis} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>⏹ 중단</button>
-                : <button onClick={startFullReanalyze} className="analyzing-banner__refresh">이 챕터 분석하기</button>
+                : <button onClick={startFullReanalyze} className="analyzing-banner__refresh">{composerOf(material) ? '본문 분석하기' : '이 챕터 분석하기'}</button>
             )}
           </div>
         )}

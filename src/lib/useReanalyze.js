@@ -1,11 +1,14 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useState, useRef, useEffect } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { analyzeText } from './analyzeText';
 import { autoSplitParagraphs } from './splitParagraphs';
 import { persistImportAnalysis } from './materialImport';
+import { composerOf } from './materialComposer';
+import { passageOf } from './sourcePassage';
+import { runPassageAnalysis } from './passageAnalysis';
 
 const STALE_THRESHOLD_MS = 3 * 60 * 1000;
 
@@ -35,9 +38,9 @@ export function computeMissingLineIndices(material) {
 }
 
 /** raw_text를 문단으로 분리 (자동 분리 적용). 각 문단: { index, lineIndices, preview } */
-export function getParagraphs(rawText) {
+export function getParagraphs(rawText, preserveSource = false) {
   if (!rawText) return [];
-  rawText = autoSplitParagraphs(rawText);
+  if (!preserveSource) rawText = autoSplitParagraphs(rawText);
   const lines = rawText.split('\n');
   const paragraphs = [];
   let current = [];
@@ -69,6 +72,8 @@ export function getParagraphs(rawText) {
  */
 export function useReanalyze({ materialId, material, refetch, toast }) {
   const abortRef = useRef(null);
+  const queryClient = useQueryClient();
+  useEffect(() => () => abortRef.current?.abort(), [materialId]);
   const [confirmState, setConfirmState] = useState(null);
 
   const failedIndices = material?.processed_json?.failed_indices || [];
@@ -81,9 +86,15 @@ export function useReanalyze({ materialId, material, refetch, toast }) {
     mutationFn: async ({ fullReset = false, resume = false, selectedLineIndices = null, rawTextOverride = null, baseJsonOverride = null } = {}) => {
       let rawText = rawTextOverride || material?.raw_text;
       if (!rawText) throw new Error('원본 텍스트가 없습니다.');
+      if (passageOf(material)) {
+        const controller = new AbortController();
+        abortRef.current = controller;
+        return runPassageAnalysis(supabase, material, controller.signal, analyzeText,
+          record => queryClient.setQueryData(['material', String(materialId)], record));
+      }
 
       // 문단 구분이 안 돼있으면 자동 분리 후 DB에도 반영
-      const split = autoSplitParagraphs(rawText);
+      const split = composerOf(material) ? rawText : autoSplitParagraphs(rawText);
       if (split !== rawText) {
         rawText = split;
         const { data, error } = await supabase.from('reading_materials').update({ raw_text: rawText })
@@ -138,6 +149,7 @@ export function useReanalyze({ materialId, material, refetch, toast }) {
       });
     },
     onSuccess: (json) => {
+      if (json?.__passageNotAcquired) { refetch?.(); return; }
       if (json?.status === 'failed') toast?.('분석에 실패했어요. 원문은 그대로 남아 있어요.', 'error');
       else if (json?.status === 'partial') toast?.('일부 줄은 분석을 다시 시도해야 해요.', 'warning');
       else toast?.('분석 완료!', 'success');
