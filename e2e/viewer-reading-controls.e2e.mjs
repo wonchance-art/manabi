@@ -186,6 +186,7 @@ try {
   for(let i=0;i<before.length;i++)assert.notEqual(during[i].color,before[i].color,`drag color unchanged at token ${i}`);
   await shotAt(`selection-${theme}-${width}-drag`);await page.mouse.up();await delay(300);
   assert.deepEqual(await colors(sampleSelector),during,'releasing the drag retains the selected state colors');
+  if(width===390){const r=await first.boundingBox(),p=await panel().boundingBox();assert(r.y+r.height<=p.y-7,'range start must remain above the opened inspector');}
   await aa('학습 표시');await delay(250);assert.deepEqual(await colors('.reader-settings__preview .word-token'),during,'Aa must preserve the current selected range and colors');
   await shotAt(`selection-${theme}-${width}-aa-picked`);
   const annotationColors=selector=>page.locator(selector).evaluateAll(es=>es.map(e=>getComputedStyle(e).color));
@@ -240,7 +241,8 @@ try {
  const lowWord=page.locator('[data-tid="id_12_0_audit"]');
  await lowWord.evaluate(e=>scrollBy(0,e.getBoundingClientRect().top-560));await lowWord.click();await panel().waitFor();await delay(150);
  const visibleSelected=async()=>{const r=await lowWord.boundingBox(),p=await panel().boundingBox(),t=await page.locator('.viewer-topbar').boundingBox();assert(r.y>=t.y+t.height+7&&r.y+r.height<=p.y-7,`selected word ${JSON.stringify(r)} is covered by toolbar/sheet ${JSON.stringify(p)}`);};
- await visibleSelected();await aa();await range('본문 크기',1.8);await closeAa();await delay(150);await visibleSelected();
+ await visibleSelected();
+ for(const size of [1.8,2,1.4]){await aa();await range('본문 크기',size);await closeAa();await delay(150);await visibleSelected();await delay(300);await visibleSelected();}
  await page.getByRole('button',{name:'패널 펼치기',exact:true}).click();await page.getByRole('button',{name:'패널 줄이기',exact:true}).click();await delay(150);await visibleSelected();
  await shotAt('mobile-selected-source-visible');pass('low word selection, Aa return and sheet resize keep the source above the inspector');
  await page.mouse.move(220,250);await page.mouse.wheel(0,250);await delay(250);const manualY=await page.evaluate(()=>scrollY);

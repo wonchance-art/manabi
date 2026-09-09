@@ -560,7 +560,7 @@ export default function ViewerPage() {
 
   // 읽기 진행률 바 — readerRef는 본문 컨테이너에 부착
   const { readerRef, readProgress } = useReadProgress(material);
-  const {keepPosition:keepReadingPosition,layoutVersion} = useReaderLayout(readerRef, material?.processed_json);
+  const {keepPosition:keepReadingPosition,layoutVersion,cancelPosition:cancelReadingPosition} = useReaderLayout(readerRef, material?.processed_json);
   const [pinyinCell,setPinyinCell] = useState(44);
   useEffect(()=>{
     let live=true;
@@ -1071,7 +1071,16 @@ export default function ViewerPage() {
   const [background,setBackground]=useState(false);
   useEffect(()=>{const update=()=>setBackground(document.hidden);document.addEventListener('visibilitychange',update);update();return ()=>document.removeEventListener('visibilitychange',update);},[]);
   const modalBlocked=!!activeModal||!!reanalyzePanel||!!quizState||!!completionModal;
-  useSelectedTokenVisibility(readerRef, tokenRefs, selectedToken?.id, inspectorOpen && isSheetOpen && !modalBlocked, material?.processed_json);
+  const selectionToReveal = tokenRange.range
+    ? material?.processed_json?.sequence?.[tokenRange.range.start]
+    : isSheetOpen ? selectedToken?.id : undefined;
+  useSelectedTokenVisibility(readerRef, tokenRefs, selectionToReveal, inspectorOpen && !modalBlocked && !tokenRange.dragging, material?.processed_json);
+  const closeReadingSettings = () => {
+    // Once the inspector returns, the selected source owns the visible position.
+    // A still-live Aa anchor must not scroll it back underneath the panel.
+    if (selectionToReveal && inspectorOpen) cancelReadingPosition();
+    setSettingsOpen(false);
+  };
   useEffect(()=>{if(!autoPace||!focusMode||pickedLineIdx===null)setPaceRunning(false);},[autoPace,focusMode,pickedLineIdx]);
   useEffect(()=>{
     const stopOnScroll=e=>{if(tokenRange.dragging||e.target?.closest?.('.reader-modal,.viewer-inspector'))return;setPaceRunning(false);};
@@ -3075,7 +3084,7 @@ export default function ViewerPage() {
       />}
 
 
-      {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} onClose={()=>setSettingsOpen(false)} keepPosition={keepReadingPosition} previewTokens={previewTokens} onPreset={()=>setRevealedPron(new Set())} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus}/>}
+      {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} onClose={closeReadingSettings} keepPosition={keepReadingPosition} previewTokens={previewTokens} onPreset={()=>setRevealedPron(new Set())} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus}/>}
       {modal('activities')&&<ViewerModal title="학습" onClose={()=>setActiveModal(null)}><div className="reader-activity-menu">
         {ttsSupported&&sentences.length>0&&<button onClick={()=>setDictationPickerOpen(true)}><b>받아쓰기</b><span>추천 문장 하나를 골라 듣고 써요</span></button>}
         {ttsSupported&&pickedSentence&&<button onClick={()=>setDictationSentence(pickedSentence.text)}><b>선택 문장 받아쓰기</b><span>지금 지정한 문장으로 시작해요</span></button>}

@@ -90,5 +90,5 @@ export function useReaderLayout(readerRef,revision) {
     change();restore();document.fonts?.ready.then(restore);
     timeout=setTimeout(cancel,15000);
   };
-  return {keepPosition,layoutVersion};
+  return {keepPosition,layoutVersion,cancelPosition:cancel};
 }
