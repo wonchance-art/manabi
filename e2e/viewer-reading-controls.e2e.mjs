@@ -155,7 +155,14 @@ try {
  await fresh(1440,1000);await tap(wordA());await page.locator('.viewer-inspector .word-detail-card').waitFor();await shotAt('desktop-word');
  assert.equal(await page.locator('.word-detail-card').count(),1);assert.equal(await panel().evaluate(e=>getComputedStyle(e).position),'sticky');pass('desktop has one inspector and one word card');
  await aa();assert(await panel().isHidden());assert(await dialog().evaluate(e=>e.matches(':modal')));assert((await dialog().innerText()).includes('글자·배경'));await shotAt('desktop-aa');
- await range('본문 크기',2);await range('병음 크기',1);await page.getByRole('tab',{name:'학습 표시',exact:true}).click();await page.getByRole('checkbox',{name:'단어 상태',exact:false}).check();await page.getByRole('button',{name:'이번 변경 되돌리기',exact:true}).click();assert.equal((await pref()).languages.Chinese.fontSize,1.6);assert.equal((await pref()).languages.Chinese.wordStateHl,false);pass('opening snapshot survives tab changes and restores all preferences');
+ await range('본문 크기',2);await range('병음 크기',1);await range('줄 사이',30);await range('글자 사이',.3);
+ const previewLayout=await page.evaluate(()=>{
+  const preview=document.querySelector('.reader-settings__preview'),body=document.querySelector('.reader-area');
+  const sizes=el=>{const s=getComputedStyle(el),r=el.querySelector('ruby[data-pinyin]');return {font:s.fontSize,row:s.rowGap,column:s.columnGap,cell:r.getBoundingClientRect().width,pinyin:getComputedStyle(r.querySelector('.rt-an')).fontSize};};
+  return {preview:sizes(preview),body:sizes(body),interactive:preview.querySelectorAll('[data-tid],[data-source-token],button,input').length};
+ });
+ assert.deepEqual(previewLayout.preview,previewLayout.body,'Aa preview reflects the actual body font, spacing and pinyin grid');assert.equal(previewLayout.interactive,0);
+ await page.getByRole('tab',{name:'학습 표시',exact:true}).click();await page.getByRole('checkbox',{name:'단어 상태',exact:false}).check();await page.getByRole('button',{name:'이번 변경 되돌리기',exact:true}).click();assert.equal((await pref()).languages.Chinese.fontSize,1.6);assert.equal((await pref()).languages.Chinese.wordStateHl,false);pass('opening snapshot survives tab changes and restores all preferences');
  await page.getByRole('checkbox',{name:'단어 상태',exact:false}).check();await page.getByRole('tab',{name:'글자·배경',exact:true}).click();await range('본문 크기',2.4);await page.getByRole('button',{name:'이 탭 기본값',exact:true}).click();assert.equal((await pref()).languages.Chinese.fontSize,1.6);assert.equal((await pref()).languages.Chinese.wordStateHl,true);await closeAa();assert(await panel().isVisible());pass('tab reset leaves another tab intact; inspector resumes');
  // Pinyin is readable and identical across syllables; revealing never changes widths.
  await fresh(390,844);await aa('글자·배경');await range('본문 크기',.8);await range('병음 크기',1);await closeAa();

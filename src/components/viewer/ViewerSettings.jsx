@@ -1,11 +1,11 @@
 'use client';
 import {useRef,useState} from 'react';
 import ViewerModal from './ViewerModal';
-import {fontChoices,readerFontFamily} from '../../lib/viewerPreferences';
+import {fontChoices} from '../../lib/viewerPreferences';
+import ViewerPreview from './ViewerPreview';
 import {READING_PRESETS,PRESET_META,presetActive,pronRevealAvailable,TTS_RATES} from '../../lib/readingSheet';
 import {supportsPatterns} from '../../lib/patternIndex';
 import {stepCpm} from '../../lib/readingPacer';
-import {splitRuby} from '../../lib/splitRuby';
 
 function Toggle({label,note,checked,onChange,disabled=false}) {
   return <label className="reader-setting-toggle"><span><b>{label}</b>{note&&<small>{note}</small>}</span><input type="checkbox" checked={checked} disabled={disabled} onChange={e=>onChange(e.target.checked)}/></label>;
@@ -28,9 +28,7 @@ export default function ViewerSettings({settings:s,language,onClose,keepPosition
       {tabs.map(([id,name])=><button key={id} role="tab" id={`reading-tab-${id}`} aria-controls={`reading-pane-${id}`} aria-selected={tab===id} tabIndex={tab===id?0:-1} onClick={()=>setTab(id)}>{name}</button>)}
     </div>
     <button className="reader-preview-toggle" aria-expanded={preview} onClick={()=>setPreview(v=>!v)}>현재 문장 미리보기 {preview?'접기':'펼치기'}</button>
-    {preview&&<div className="reader-settings__preview" lang={language==='Chinese'?'zh-Hans':language==='Japanese'?'ja':undefined} style={{fontSize:`${s.fontSize}rem`,fontFamily:readerFontFamily(language,s.fontFamily),'--pinyin-size':`${s.pinyinSize}rem`}}>
-      {(previewTokens.length?previewTokens:[{text:language==='Chinese'?'今天一起读书。':language==='Japanese'?'いっしょに読みましょう。':'Read at your own pace.'}]).map((token,i)=><span key={i}>{phonetic&&s.pronDisplay!=='none'&&token.furigana?splitRuby(token.text,token.furigana).map((seg,j)=>seg.kanji?<ruby key={j}>{seg.kanji}<rt>{seg.reading}</rt></ruby>:<span key={j}>{seg.plain}</span>):token.text}</span>)}
-    </div>}
+    {preview&&<ViewerPreview settings={s} language={language} tokens={previewTokens}/>}
     {s.storageError&&<p role="status" className="reader-settings__warning">이 브라우저에 저장하지 못했어요. 현재 화면에는 적용되어 있어요.</p>}
     <section role="tabpanel" id={`reading-pane-${tab}`} aria-labelledby={`reading-tab-${tab}`}>
       {tab==='type'&&<>

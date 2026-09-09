@@ -36,11 +36,11 @@
 .viewer-layout .reader-area ruby[data-pinyin] > .rt-an {font-size:var(--pinyin-size);font-family:var(--font-noto-sans),sans-serif;letter-spacing:0;line-height:1.2;opacity:1;color:var(--reader-muted);}
 .viewer-layout[data-pron-spacing="reserved"] .reader-area ruby[data-pinyin] {width:max(1em,var(--pinyin-cell));}
 .viewer-layout[data-pron-spacing="natural"] .reader-area ruby[data-pinyin] {width:1em;}
-.viewer-layout .reader-area :is(.rt-an,rt).pinyin-tone--1 {color:var(--tone-1);}
-.viewer-layout .reader-area :is(.rt-an,rt).pinyin-tone--2 {color:var(--tone-2);}
-.viewer-layout .reader-area :is(.rt-an,rt).pinyin-tone--3 {color:var(--tone-3);}
-.viewer-layout .reader-area :is(.rt-an,rt).pinyin-tone--4 {color:var(--tone-4);}
-.viewer-layout .reader-area :is(.rt-an,rt).pinyin-tone--0 {color:var(--tone-0);}
+.viewer-layout :is(.reader-area,.reader-settings__preview) :is(.rt-an,rt).pinyin-tone--1 {color:var(--tone-1);}
+.viewer-layout :is(.reader-area,.reader-settings__preview) :is(.rt-an,rt).pinyin-tone--2 {color:var(--tone-2);}
+.viewer-layout :is(.reader-area,.reader-settings__preview) :is(.rt-an,rt).pinyin-tone--3 {color:var(--tone-3);}
+.viewer-layout :is(.reader-area,.reader-settings__preview) :is(.rt-an,rt).pinyin-tone--4 {color:var(--tone-4);}
+.viewer-layout :is(.reader-area,.reader-settings__preview) :is(.rt-an,rt).pinyin-tone--0 {color:var(--tone-0);}
 .viewer-layout .word-fit {font-size:clamp(2.5rem,8cqi,3.5rem);line-height:1.9;}
 .viewer-layout .word-fit .surface {white-space:normal;overflow-wrap:anywhere;}
 .viewer-layout .word-fit ruby[data-pinyin] {width:max(1em,3.1rem);}
@@ -94,7 +94,7 @@
 .reader-settings__tabs button {flex:1;background:none;border:0;border-bottom:2px solid transparent;color:var(--reader-muted);padding:12px 0;white-space:nowrap;}
 .reader-settings__tabs button[aria-selected="true"] {color:var(--reader-accent);border-color:var(--reader-accent);font-weight:700;}
 .reader-preview-toggle {display:block;margin:8px 0 0;border:0;background:none;color:var(--reader-muted);font-size:.75rem;padding:0;}
-.reader-settings__preview {max-height:5.5em;overflow:hidden;line-height:2.3;background:var(--reader-surface);border-radius:8px;padding:8px 12px;margin-bottom:12px;pointer-events:none;}
+.reader-settings__preview {display:flex;flex-wrap:wrap;align-items:baseline;max-height:5.5em;overflow:hidden;line-height:2.3;background:var(--reader-surface);border-radius:8px;padding:8px 12px;margin-bottom:12px;pointer-events:none;}
 .reader-settings__preview rt {font-size:var(--pinyin-size);font-family:var(--font-noto-sans),sans-serif;color:var(--reader-muted);}
 .reader-setting-range {padding:12px 0;border-bottom:1px solid var(--reader-line);}
 .reader-setting-range label {display:block;font-size:.9rem;}
@@ -174,3 +174,10 @@
   .viewer-inspector {max-height:min(calc(100dvh - 180px),calc(var(--reader-visual-height,100dvh) - 110px));}
   .reader-modal {max-height:calc(var(--reader-visual-height,100dvh) - 12px);}
 }
+
+/* The pure Aa preview uses the same annotation size and reserved grid as the body. */
+.viewer-layout .reader-settings__preview .word-token {max-width:100%;cursor:default;}
+.viewer-layout .reader-settings__preview .surface {white-space:normal;overflow-wrap:anywhere;color:var(--reader-ink);text-shadow:none;}
+.viewer-layout .reader-settings__preview ruby[data-pinyin] > .rt-an {font-size:var(--pinyin-size);font-family:var(--font-noto-sans),sans-serif;letter-spacing:0;line-height:1.2;opacity:1;}
+.viewer-layout[data-pron-spacing="reserved"] .reader-settings__preview ruby[data-pinyin] {width:max(1em,var(--pinyin-cell));}
+.viewer-layout[data-pron-spacing="natural"] .reader-settings__preview ruby[data-pinyin] {width:1em;}
