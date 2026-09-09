@@ -15,6 +15,7 @@ const session={user,access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:uid
 const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*','access-control-expose-headers':'content-range'};
 let known=[],records=[],vocab=[],reads=[],contexts=[],analysisMode='fail',saveFail=false,writeFail=false,analysisCalls=0;
 const writes=[];
+let progressGate=null,releaseProgress;
 let japaneseRows={},japaneseFail=false,japaneseDelay=0,japaneseCalls=[];
 await context.route('**/*', r => r.request().url().startsWith(base) ? r.continue() : r.abort());
 await context.route(base+'/**',async route=>{
@@ -65,6 +66,7 @@ await context.route('**/rest/v1/**',async r=>{
   return send(object?(rows[0]||null):rows);
  }
  if(table==='reading_progress'){
+  if(progressGate&&url.searchParams.has('material_id'))await progressGate;
   let rows=reads.map(row=>({...row,reading_materials:records.find(m=>String(m.id)===String(row.material_id))}));
   const id=url.searchParams.get('material_id');if(id)rows=rows.filter(row=>String(row.material_id)===id.slice(3));
   return send(object?(rows[0]||null):rows);
@@ -88,6 +90,12 @@ await context.route('**/api/learning/**',r=>{
   const payload=r.request().postDataJSON();const word=vocab.find(v=>v.word_text===payload.word?.word_text)||vocab.at(-1);contexts.push({id:'context-1',user_id:uid,vocabulary_id:word?.id,material_id:payload.source?.materialId,quote:payload.source?.quote,locator:{tokenId:payload.source?.tokenId}});return r.fulfill({json:{ok:true,context:{id:'context-1'},vocabulary:{id:word?.id}}});
  }
  return r.fulfill({json:{contexts:contexts.map((payload,i)=>({id:`source-${i}`,kind:'reading',quote:payload.source?.quote||'검수 예문',href:`/viewer/${payload.source?.materialId||records[0]?.id}?sourceToken=${encodeURIComponent(payload.source?.tokenId||records[0]?.processed_json.sequence[0]||'')}`})),links:[]}});
+});
+await context.addInitScript(()=>{
+ const schedule=window.setTimeout.bind(window),scrollIntoView=Element.prototype.scrollIntoView;
+ window.__readerRestoreAudit={scheduled:0,scrolls:[],pending:[],hold:location.search.includes('restoreAudit=1')};
+ window.setTimeout=(fn,ms,...args)=>{if(ms===300&&typeof fn==='function'&&String(fn).includes('scrollIntoView')){const audit=window.__readerRestoreAudit;audit.scheduled++;if(audit.hold)return schedule(()=>audit.pending.push(fn),ms);}return schedule(fn,ms,...args);};
+ Element.prototype.scrollIntoView=function(...args){window.__readerRestoreAudit.scrolls.push({id:this.dataset.tid||null,selected:document.querySelector('.reader-area [data-selected="true"]')?.dataset.tid||null});return scrollIntoView.apply(this,args);};
 });
 const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.message));
 page.on('console',m=>{if(m.type()==='error'&&/same key|unique "key"|Hydration failed|hydration mismatch/i.test(m.text()))report.errors.push(m.text());});
@@ -144,10 +152,10 @@ await context.route('**/api/analyze',async r=>{
 const baseline=structuredClone(records),checks=[];
 const wordA=()=>page.locator('[data-tid="id_0_2_audit"]'),wordB=()=>page.locator('[data-tid="id_1_0_audit"]');
 async function tap(loc){await loc.evaluate(e=>window.scrollBy(0,e.getBoundingClientRect().top-180));await loc.click();}
-async function fresh(width=1138,height=900){
+async function fresh(width=1138,height=900,suffix=''){
  race=false;detailWait=0;analysisFail=false;reanalysis=false;japaneseFail=false;japaneseDelay=0;japaneseCalls=[];japaneseRows={爱惜:{meanings:[{meaning:'아끼다',ja:{form:'愛惜',warn:null}}]}};analysisMode='ok';readingInvalid=false;writeFail=false;records=structuredClone(baseline);known=[];vocab=[];contexts=[];reads=[];writes.length=0;
  await page.evaluate(()=>{for(const k of Object.keys(localStorage))if(k.startsWith('pdf_cache:')||k.startsWith('viewer_')||k.startsWith('reading_test'))localStorage.removeItem(k);}).catch(()=>{});
- await page.setViewportSize({width,height});await page.goto(base+'/viewer/94001');await wordA().waitFor();await page.evaluate(()=>document.fonts.ready);
+ await page.setViewportSize({width,height});await page.goto(base+'/viewer/94001'+suffix);await wordA().waitFor();await page.evaluate(()=>document.fonts.ready);
 }
 function pass(name){checks.push(name);console.log('PASS '+name);}
 async function shotAt(name){await page.screenshot({path:out+'/'+name+'.png'});}
@@ -161,6 +169,21 @@ async function range(name,value){const input=page.getByRole('slider',{name,exact
 const selectedLine=()=>page.locator('.reader-area .word-token--picked').first().getAttribute('data-tid');
 try {
  await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last().click();await page.waitForURL('**/home');
+ // A scheduled initial restore must yield when the learner has already picked another word.
+ progressGate=new Promise(resolve=>{releaseProgress=resolve;});
+ await fresh(390,844,'?restoreAudit=1');reads=[{material_id:94001,user_id:uid,last_token_idx:0}];
+ const restoredResponse=page.waitForResponse(r=>r.url().includes('/reading_progress?')&&new URL(r.url()).searchParams.has('material_id'));
+ releaseProgress();await restoredResponse;progressGate=null;await page.waitForFunction(()=>window.__readerRestoreAudit.pending.length>0);
+ const restoreTarget=page.locator('[data-tid="id_12_0_audit"]');
+ const selectedSave=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().includes('/reading_progress?'));
+ await restoreTarget.evaluate(e=>scrollBy(0,e.getBoundingClientRect().top-560));await restoreTarget.click();
+ await page.evaluate(()=>{const audit=window.__readerRestoreAudit;audit.hold=false;for(const fn of audit.pending.splice(0))fn();});await delay(150);
+ const restoreAudit=await page.evaluate(()=>({scheduled:window.__readerRestoreAudit.scheduled,scrolls:window.__readerRestoreAudit.scrolls}));console.log('RESTORE_AUDIT '+JSON.stringify(restoreAudit));
+ assert.equal(restoreAudit.scrolls.filter(s=>s.selected==='id_12_0_audit'&&s.id==='id_0_0_audit').length,0,'an already selected word cancels the queued initial scroll');
+ const restoreRect=await restoreTarget.boundingBox(),restorePanel=await panel().boundingBox(),restoreBar=await page.locator('.viewer-topbar').boundingBox();
+ assert(restoreRect.y>=restoreBar.y+restoreBar.height+7&&restoreRect.y+restoreRect.height<=restorePanel.y-7,'a pending initial restore must not replace the newly selected reading position: '+JSON.stringify({restoreRect,restorePanel}));
+ await shotAt('selected-word-wins-over-pending-restore');await selectedSave;pass('word selection wins over a previously scheduled reading-position restore');
+ if(!process.env.QA_RESTORE_ONLY){
  // Exercise the actual pointer gesture and Aa projection with five real record states.
  const sampleSelector='.reader-area [data-tid^="id_0_"]';
  const colors=selector=>page.locator(selector).evaluateAll(ts=>ts.map(t=>({
@@ -381,6 +404,7 @@ try {
   const previewSerif=await fontEvidence('.reader-settings__preview .surface ruby[data-pinyin]');assert(previewSerif.some(f=>/Noto ?Serif ?SC/i.test(f.familyName)),JSON.stringify(previewSerif));await shotAt('desktop-aa-serif-real');await closeAa();await page.evaluate(()=>document.fonts.ready);
   const serif=await fontEvidence();assert(serif.some(f=>/Noto ?Serif ?SC/i.test(f.familyName)),JSON.stringify(serif));await shotAt('desktop-serif-real');
   fs.writeFileSync(out+'/real-fonts.json',JSON.stringify({sans,serif,previewSerif},null,2));await cdp.detach();pass('deployed Chinese glyphs use real Noto Sans SC and Noto Serif SC faces');
+ }
  }
  }
  }

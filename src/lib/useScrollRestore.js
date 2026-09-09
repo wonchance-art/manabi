@@ -64,6 +64,8 @@ export function useScrollRestore({ user, materialId, material, readingProgress, 
     const tokenId = json.sequence[lastIdx];
     if (!tokenId) return;
     const timer = setTimeout(() => {
+      // Selection may have taken precedence after this restore was scheduled.
+      if (restoredKey.current === key) return;
       const el = tokenRefs.current[tokenId];
       if (el) {
         el.scrollIntoView({ behavior: 'instant', block: 'center' });
