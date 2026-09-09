@@ -15,6 +15,7 @@ const session={user,access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:uid
 const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*','access-control-expose-headers':'content-range'};
 let known=[],records=[],vocab=[],reads=[],contexts=[],analysisMode='fail',saveFail=false,writeFail=false,analysisCalls=0;
 const writes=[];
+let japaneseRows={},japaneseFail=false,japaneseDelay=0,japaneseCalls=[];
 await context.route('**/*', r => r.request().url().startsWith(base) ? r.continue() : r.abort());
 await context.route(base+'/**',async route=>{
  if(new URL(route.request().url()).pathname.startsWith('/_next/static/'))return route.continue();
@@ -68,11 +69,13 @@ await context.route('**/rest/v1/**',async r=>{
   const id=url.searchParams.get('material_id');if(id)rows=rows.filter(row=>String(row.material_id)===id.slice(3));
   return send(object?(rows[0]||null):rows);
  }
+ if(table==='morpheme_dictionary')return send(japaneseRows[url.searchParams.get('base_form')?.slice(3)]||null);
  if(table==='user_vocabulary')return send(vocab);
  if(table==='user_known_words')return send(known);
  if(table==='vocabulary_contexts')return send(contexts.filter(c=>!url.searchParams.has('vocabulary_id')||String(c.vocabulary_id)===url.searchParams.get('vocabulary_id').slice(3)));
  return send(object?null:[]);
 });
+await context.route('**/api/explain',r=>r.fulfill({json:{explanation:'A문장-爱惜-설명'}}));
 await context.route('**/api/suggestions/today',r=>r.fulfill({json:[]}));
 await context.route('**/api/analyze',async r=>{
  analysisCalls++;if(analysisMode==='slow')await new Promise(resolve=>setTimeout(resolve,1800));
@@ -112,6 +115,10 @@ records=[{id:94001,title:'중국어 뷰어 검수 — 긴 문장과 선택 동�
 let race=false, detailWait=0,analysisFail=false,readingInvalid=false,reanalysis=false,readingPrompt='';
 await context.route('**/api/gemini',async r=>{
  const prompt=r.request().postDataJSON()?.contents?.[0]?.parts?.[0]?.text||'';
+ if(prompt.includes('중국어 학습자의 일본어 의미 대조')){
+  japaneseCalls.push(prompt);if(japaneseDelay)await delay(japaneseDelay);
+  return japaneseFail?r.fulfill({status:500,json:{error:{message:'fixture Japanese failure'}}}):r.fulfill({json:{candidates:[{content:{parts:[{text:JSON.stringify({form:prompt.includes('周末')?'週末':'大切にする',warn:null})}]}}]}});
+ }
  if(prompt.includes('evidence')){
   readingPrompt=prompt;return r.fulfill({json:{candidates:[{content:{parts:[{text:JSON.stringify({questions:Array.from({length:5},(_,i)=>({type:'mcq',question:`第${i+1}题：周末我们去哪里？`,options:['公园','学校','医院','机场'],answer:readingInvalid?9:0,explanation:'원문에서 공원에 간다고 설명합니다.',evidence:raw[1]}))})}]}}]}});
  }
@@ -138,7 +145,7 @@ const baseline=structuredClone(records),checks=[];
 const wordA=()=>page.locator('[data-tid="id_0_2_audit"]'),wordB=()=>page.locator('[data-tid="id_1_0_audit"]');
 async function tap(loc){await loc.evaluate(e=>window.scrollBy(0,e.getBoundingClientRect().top-180));await loc.click();}
 async function fresh(width=1138,height=900){
- race=false;detailWait=0;analysisFail=false;reanalysis=false;analysisMode='ok';readingInvalid=false;writeFail=false;records=structuredClone(baseline);known=[];vocab=[];contexts=[];reads=[];writes.length=0;
+ race=false;detailWait=0;analysisFail=false;reanalysis=false;japaneseFail=false;japaneseDelay=0;japaneseCalls=[];japaneseRows={爱惜:{meanings:[{meaning:'아끼다',ja:{form:'愛惜',warn:null}}]}};analysisMode='ok';readingInvalid=false;writeFail=false;records=structuredClone(baseline);known=[];vocab=[];contexts=[];reads=[];writes.length=0;
  await page.evaluate(()=>{for(const k of Object.keys(localStorage))if(k.startsWith('pdf_cache:')||k.startsWith('viewer_')||k.startsWith('reading_test'))localStorage.removeItem(k);}).catch(()=>{});
  await page.setViewportSize({width,height});await page.goto(base+'/viewer/94001');await wordA().waitFor();await page.evaluate(()=>document.fonts.ready);
 }
@@ -161,7 +168,7 @@ try {
   color:getComputedStyle(t.querySelector('.surface'),'::before').backgroundColor,
   band:['top','height'].map(p=>getComputedStyle(t.querySelector('.surface'),'::before')[p]),
  })));
- for(const [theme,name,width] of [['light','밝게',1440],['sepia','종이',1440],['dark','어둡게',1440],['light','밝게',390],['sepia','종이',590]]){
+ for(const [theme,name,width] of (process.env.QA_SKIP_SELECTION?[]:[['light','밝게',1440],['sepia','종이',1440],['dark','어둡게',1440],['light','밝게',390],['sepia','종이',590]])){
   if(process.env.QA_SELECTION_WIDTH&&width!==Number(process.env.QA_SELECTION_WIDTH))continue;
   await fresh(width,900);
   known=[{word_text:'要',lang:'zh'}];
@@ -222,11 +229,11 @@ try {
   assert.equal(await panel().getByRole('button',{name:/닫기/}).count(),1,'only one close control');
   assert.equal(await panel().locator('.word-detail-card__edit svg').count(),1,'consistent vector edit icon');
   const density=await page.evaluate(()=>{
-   const body=document.querySelector('.reader-card-body').getBoundingClientRect(),meaning=document.querySelector('.word-detail-card__meaning').getBoundingClientRect(),source=document.querySelector('.reader-card-source blockquote'),r=source.getBoundingClientRect();
+   const body=document.querySelector('.reader-card-body').getBoundingClientRect(),meaning=document.querySelector('.word-detail-card__meaning').getBoundingClientRect(),ja=document.querySelector('.reader-japanese').getBoundingClientRect();
    const nav=document.querySelector('.gnb').getBoundingClientRect(),bar=document.querySelector('.viewer-topbar'),br=bar.getBoundingClientRect();
-   return {meaningBottom:meaning.bottom,bodyBottom:body.bottom,sourceFirstLine:r.top+parseFloat(getComputedStyle(source).lineHeight),navBottom:nav.bottom,barTop:br.top,barMargin:parseFloat(getComputedStyle(bar).marginBottom),font:parseFloat(getComputedStyle(document.querySelector('.word-fit')).fontSize)};
+   return {meaningBottom:meaning.bottom,bodyBottom:body.bottom,japaneseBottom:ja.bottom,navBottom:nav.bottom,barTop:br.top,barMargin:parseFloat(getComputedStyle(bar).marginBottom),font:parseFloat(getComputedStyle(document.querySelector('.word-fit')).fontSize)};
   });
-  assert(density.meaningBottom<=density.bodyBottom&&density.sourceFirstLine<=density.bodyBottom,'meaning and first context line fit: '+JSON.stringify(density));
+  assert(density.meaningBottom<=density.bodyBottom&&density.japaneseBottom<=density.bodyBottom,'meaning and Japanese fit without scrolling: '+JSON.stringify(density));
   assert(Math.abs(density.navBottom-density.barTop)<1,'toolbar joins actual navigation: '+JSON.stringify(density));assert.equal(density.barMargin,0);assert(density.font<=36);
   await shotAt(`focus-card-${theme}-${width}`);pass(`focus contrast, tight state outline, compact card and continuous toolbar: ${theme} ${width}`);
   await page.keyboard.press('Escape');
@@ -242,6 +249,49 @@ try {
   pass(`real drag and Aa preserve five learning states: ${theme} ${width}`);
  }
  if(!process.env.QA_SELECTION_ONLY){
+ // The compact inspector keeps core meaning / Japanese visible and extra tools reachable.
+ await fresh(390,844);await tap(wordA());
+ await panel().getByText('愛惜',{exact:true}).waitFor();
+ assert.equal(await panel().locator('.reader-japanese__row').count(),1,'same form and meaning appear only once');
+ assert.equal(japaneseCalls.length,0,'dictionary data must not trigger AI');
+ assert.equal(await panel().locator('footer').count(),0,'no repeated footer rail');
+ assert.equal(await panel().locator('.reader-card-context[open],.reader-card-more[open]').count(),0);
+ assert(await panel().getByText('새 단어 저장 · 얼마나 알겠어요?',{exact:true}).isVisible());
+ await shotAt('minimal-mobile-default');
+ const contextSummary=panel().getByText('문장 속 쓰임',{exact:true});await contextSummary.focus();await page.keyboard.press('Enter');
+ assert(await panel().locator('.reader-card-source blockquote').isVisible());
+ await panel().getByRole('button',{name:'이 문장에서는?',exact:true}).click();await panel().getByText('A문장-爱惜-설명',{exact:true}).waitFor();
+ await contextSummary.click();
+ await panel().getByRole('button',{name:'뜻·발음 수정',exact:true}).click();assert(await panel().locator('input').first().isVisible());await panel().getByRole('button',{name:'뜻·발음 수정',exact:true}).click();
+ await panel().getByText('예문·관련 표현',{exact:true}).click();await panel().getByRole('button',{name:'상세 설명 보기',exact:true}).click();await panel().getByText('상세설명-대상-爱惜',{exact:true}).waitFor();
+ await panel().getByText('유의어·반의어',{exact:true}).click();await panel().locator('.syn-ant__chip').first().waitFor();
+ await panel().getByText('예문·관련 표현',{exact:true}).click();
+ await panel().locator('.word-fit__char').first().click();assert(await panel().locator('.char-inspect').isVisible());await panel().locator('.word-fit__char').first().click();
+ await panel().getByRole('tab',{name:'문장 번역',exact:true}).click();await page.keyboard.press('ArrowLeft');assert.equal(await panel().getByRole('tab',{name:'단어',exact:true}).getAttribute('aria-selected'),'true');
+ await delay(60);assert.equal(await page.evaluate(()=>document.activeElement?.id),'inspector-word-tab');await page.keyboard.press('ArrowRight');await delay(60);assert.equal(await page.evaluate(()=>document.activeElement?.id),'inspector-sentence-tab');await page.keyboard.press('ArrowLeft');
+ assert.equal(writes.filter(w=>['user_vocabulary','reading_materials','morpheme_dictionary'].includes(w.table)).length,0);
+ pass('minimal card preserves editing, character lookup, context, synonyms, details, keyboard tabs and fixed saving');
+ // Another dictionary sense must never be shown as the translation of this sense.
+ japaneseRows.周末={meanings:[{meaning:'다른 뜻',ja:{form:'間違い'}}]};
+ await page.keyboard.press('Escape');await tap(wordB());await panel().getByRole('button',{name:'일본어 대응 찾기',exact:true}).waitFor();
+ assert(!(await panel().innerText()).includes('間違い'));japaneseFail=true;
+ await panel().getByRole('button',{name:'일본어 대응 찾기',exact:true}).click();await panel().getByRole('button',{name:'일본어 다시 찾기',exact:true}).waitFor();
+ japaneseFail=false;await panel().getByRole('button',{name:'일본어 다시 찾기',exact:true}).click();await panel().getByText('週末',{exact:true}).waitFor();
+ assert.equal(await panel().locator('.reader-japanese__row').count(),2);assert(await panel().getByText('AI',{exact:true}).isVisible());
+ assert.equal(writes.filter(w=>w.table==='morpheme_dictionary').length,0);
+ pass('missing or mismatched Japanese sense supports explicit lookup, failure and retry without dictionary writes');
+ // Different equivalent and false-friend warning remain distinct from converted glyphs.
+ await fresh(590,869);records[0].processed_json.dictionary.id_0_2_audit={text:'勉强',base_form:'勉强',meaning:'억지로 하다',furigana:'miǎn qiǎng',pos:'동사'};japaneseRows.勉强={meanings:[{meaning:'억지로 하다',ja:{form:'無理強い',warn:'공부'}}]};
+ await page.reload();await wordA().waitFor();await tap(wordA());await panel().getByText('無理強い',{exact:true}).waitFor();
+ assert.equal(await panel().locator('.reader-japanese__row').count(),2);assert.equal(await panel().locator('.reader-japanese__form').innerText(),'勉強');assert((await panel().locator('.reader-japanese__note').innerText()).includes('공부'));
+ await shotAt('minimal-japanese-different-meaning');pass('shinjitai, semantic equivalent and false-friend meaning are distinct');
+ // A delayed answer for A cannot be attached to word B.
+ await fresh(390,844);japaneseRows={};await tap(wordA());japaneseDelay=1200;
+ await panel().getByRole('button',{name:'일본어 대응 찾기',exact:true}).click();await page.keyboard.press('Escape');await tap(wordB());await delay(1500);
+ assert(!(await panel().innerText()).includes('大切にする'));await panel().getByRole('button',{name:'일본어 대응 찾기',exact:true}).waitFor();
+ pass('Japanese lookup cancellation prevents stale word answers');
+
+ if(!process.env.QA_MINIMAL_ONLY){
  await fresh(1440,1000);await tap(wordA());await page.locator('.viewer-inspector .word-detail-card').waitFor();await shotAt('desktop-word');
  assert.equal(await page.locator('.word-detail-card').count(),1);assert.equal(await panel().evaluate(e=>getComputedStyle(e).position),'sticky');pass('desktop has one inspector and one word card');
  await aa();assert(await panel().isHidden());assert(await dialog().evaluate(e=>e.matches(':modal')));assert((await dialog().innerText()).includes('글자·배경'));await shotAt('desktop-aa');
@@ -271,8 +321,8 @@ try {
  await shotAt('mobile-selected-source-visible');pass('low word selection, Aa return and sheet resize keep the source above the inspector');
  await page.mouse.move(220,250);await page.mouse.wheel(0,250);await delay(250);const manualY=await page.evaluate(()=>scrollY);
  await page.setViewportSize({width:390,height:820});await delay(150);assert(Math.abs(await page.evaluate(()=>scrollY)-manualY)<2);pass('manual reading scroll wins over a later sheet resize');
- await fresh(390,844);await tap(wordA());await page.locator('.reader-card-body').getByText('유의어·반의어',{exact:true}).click();await page.locator('.syn-ant__chip').first().waitFor();
- const controls=await page.locator('.save-grade').boundingBox(),panelBounds=await panel().boundingBox(),tabs=await page.locator('.viewer-inspector__tabs').boundingBox();assert(controls.y>=panelBounds.y&&controls.y+controls.height<=tabs.y+1);await shotAt('mobile-card-actions');pass('mobile card grades remain visible above tabs and below scrolling details');
+ await fresh(390,844);await tap(wordA());await page.locator('.reader-card-body').getByText('예문·관련 표현',{exact:true}).click();await page.locator('.reader-card-body').getByText('유의어·반의어',{exact:true}).click();await page.locator('.syn-ant__chip').first().waitFor();
+ const controls=await page.locator('.save-grade').boundingBox(),panelBounds=await panel().boundingBox(),tabs=await page.locator('.viewer-inspector__tabs').boundingBox();assert(controls.y>=tabs.y+tabs.height&&controls.y+controls.height<=panelBounds.y+panelBounds.height);await shotAt('mobile-card-actions');pass('mobile grades remain fixed below scrolling details and a single top rail');
  await page.getByRole('button',{name:'읽기 설정',exact:true}).click();await page.keyboard.press('1');assert.equal(vocab.length,0);await page.keyboard.press('Escape');assert(await panel().isVisible());await page.getByRole('button',{name:'보조 패널 닫기',exact:true}).click();await page.keyboard.press('1');assert.equal(vocab.length,0);pass('modal and closed inspector cannot grade a hidden card');
  // Theme changes reach the body, native modal and inspector surfaces.
  for(const [choice,name] of [['dark','어둡게'],['light','밝게'],['sepia','종이']]){
@@ -331,6 +381,7 @@ try {
   const previewSerif=await fontEvidence('.reader-settings__preview .surface ruby[data-pinyin]');assert(previewSerif.some(f=>/Noto ?Serif ?SC/i.test(f.familyName)),JSON.stringify(previewSerif));await shotAt('desktop-aa-serif-real');await closeAa();await page.evaluate(()=>document.fonts.ready);
   const serif=await fontEvidence();assert(serif.some(f=>/Noto ?Serif ?SC/i.test(f.familyName)),JSON.stringify(serif));await shotAt('desktop-serif-real');
   fs.writeFileSync(out+'/real-fonts.json',JSON.stringify({sans,serif,previewSerif},null,2));await cdp.detach();pass('deployed Chinese glyphs use real Noto Sans SC and Noto Serif SC faces');
+ }
  }
  }
  assert.deepEqual(report.errors,[]);console.log(JSON.stringify({checks,errors:report.errors}));

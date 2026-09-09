@@ -31,7 +31,7 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
   });
 
   it('기본형 읽기는 사전 reading — 표면 ≠ 기본형이면 token-dict 조회가 켜지고, 없으면 폴백만 남는다', () => {
-    expect(viewer).toContain("(!!selectedToken && selectedLexKey !== selectedToken.text)) && !!selectedLexKey");
+    expect(viewer).toContain("(!!selectedToken && !!selectedLexKey && selectedLexKey !== selectedToken.text)) && !!selectedDictKey");
     expect(viewer).toContain('const headReading = headIsBase ? (editDictEntry?.reading || null) : selectedToken?.furigana;');
     expect(viewer).toContain('const headFallback = headIsBase && dictFetched && !editDictEntry?.reading;');
   });
@@ -44,7 +44,7 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
   it('메타 줄 — 「· 기본형」 구분자 문자열이 없고, 폴백 시에만 「기본형 …」 라벨 텍스트; 품사·급수 자리는 현행', () => {
     const meta = sliceBetween(card, '<div className="word-detail-card__meta">', '</div>');
     expect(meta).not.toContain('` · ${selectedLexKey}`');
-    expect(meta).toContain('{headFallback && <span className="word-detail-card__base">기본형 {headText}</span>}');
+    expect(meta).toContain('{headFallback && <span className="word-detail-card__base">기본형</span>}');
     expect(meta).toContain('<TokenPosLabel token={selectedToken} />');
     expect(meta).toContain('word-detail-card__level');
   });
@@ -52,7 +52,7 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
   it('본문 블록 순서 — 뜻 → 日 → 예문 → 유의어·반의어 → 한자 노트', () => {
     const at = (s) => { const i = card.indexOf(s); expect(i, s).toBeGreaterThan(-1); return i; };
     const meaning = at("refMeaning || selectedToken.meaning || '(뜻 없음)'");
-    const ja = at('formatJaRef(ja, headText, jaFormOf(headText))');
+    const ja = at('<ViewerJapaneseReference');
     const ex = at('splitSentenceAroundWord(refVocab.word.ex.zh, headText, null)');
     const syn = at('className="syn-ant"');
     const hanja = at('<summary>한자 정보</summary>');
@@ -69,11 +69,12 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
     expect(ex).toMatch(/i < arr\.length - 1/);
   });
 
-  it('日 대응 — ≒ 기호를 렌더하지 않고 「≠ 다른 단어」 부제로(jaRef.js 불변)', () => {
-    expect(card).toContain("const jrDiff = !!jr && jr.startsWith('≒');");
-    expect(card).toContain('<span className="word-detail-card__jadiff">≠ 다른 단어</span>');
-    expect(card).toContain('{jrText}</span>');
-    expect(card).not.toMatch(/>\{jr\}</);
+  it('일본어 대조가 자형과 의미를 구분하며 동일 표기는 한 번만 표시한다', () => {
+    const component=read('src/components/viewer/ViewerJapaneseReference.jsx');
+    expect(component).toContain('japaneseReferenceForMeaning(dictEntry,meaning)');
+    expect(component).toContain('ref.form===glyphForm');
+    expect(component).toContain('ref&&!same');
+    expect(component).toContain('같은 뜻');
   });
 
   it("유의어와 반의어는 구분된 줄에서 제공한다", () => {
@@ -88,7 +89,7 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
     expect(card).not.toContain("style={{ width: '100%', marginTop: 6");
     expect(css).toContain('.word-detail-card__actrow > .btn { flex: 1; min-width: 0; }');
     // 버튼 문구·핸들러는 그대로(기능 무변경)
-    for (const s of ['runCtxExplain(selectedToken, ctxSentence)', 'fetchWordDetail(selectedToken)', '상세 설명 보기', "'✓ 단어장에 있음'", '아는 말로 표시됨 — 취소']) {
+    for (const s of ['runCtxExplain(selectedToken,ctxSentenceOf(selectedToken))', 'fetchWordDetail(selectedToken)', '상세 설명 보기', "'✓ 단어장에 있음'", '아는 말로 표시됨 — 취소']) {
       expect(card).toContain(s);
     }
   });

@@ -58,15 +58,14 @@ describe('getJaWarn — 동형이의어 경고(3단계)', () => {
   });
 });
 
-// 배선 계약 — 표시가 같은 옵트인(showHanjaKo) 아래에서만, 백필이 미싱 경로에 연결돼야 한다.
+// 기존 데이터 API는 보존하고, 뷰어는 현재 의미와 일치하는 행만 사용한다.
 describe('ja 대응 배선 계약', () => {
-  it('뷰어가 대조 토글 아래에서 사전 행 조회·표시·경고를 배선한다', () => {
+  it('중국어 카드가 훈음 토글과 독립적으로 일본어 대조를 표시한다', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
-    expect(src).toContain('getJaRef(editDictEntry)');
-    // 팝업 전용 사전 행 조회는 카드 단일화(②)로 소멸 — 리스트 단어도 editDictEntry 경로
+    expect(src).toContain("materialLang === 'Chinese' && <ViewerJapaneseReference");
+    expect(src).toContain('dictEntry={editDictEntry}');
     expect(src).not.toContain('popupDictEntry');
-    expect(src).toContain('getJaWarn(ja)');
-    expect(src).toMatch(/isEditingToken \|\| \(showHanjaKo && materialLang === 'Chinese'\)/);
+    expect(src).toMatch(/isEditingToken \|\| \(isSheetOpen && materialLang === 'Chinese'\)/);
   });
 
   it('라우트가 ja 미판정 행을 백필 대상으로 배선한다', () => {

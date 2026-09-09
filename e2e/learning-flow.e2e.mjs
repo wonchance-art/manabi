@@ -741,6 +741,7 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
     assert.equal(await leftTab.getAttribute('aria-selected'), 'false', 'a token tap keeps sentence detail closed');
     assert.equal(await rightTab.getAttribute('aria-selected'), 'true', 'a token tap opens the word tab');
     await assertVisible(sheet.getByText('중국어', { exact: true }), 'selected word meaning');
+    await sheet.getByText('예문·관련 표현',{exact:true}).click();
     await sheet.getByText('유의어·반의어',{exact:true}).click();
     await assertVisible(sheet.getByText('汉语', { exact: true }), 'preseeded synonym chip in the word card');
 

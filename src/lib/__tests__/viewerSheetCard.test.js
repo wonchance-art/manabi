@@ -77,7 +77,7 @@ describe('③ 카드 — 빈 줄을 메타가 쓰고, 뜻이 제 무게를 갖�
   });
 
   it('발음은 표제어와 같은 줄, 닫기는 패널에 한 곳만 둔다', () => {
-    const head = sliceBetween(card(), '<div className="reader-card-headword">', '{inspectChar &&');
+    const head = sliceBetween(card(), '<div className="reader-card-headword">', '<div className={`word-detail-card__meaningrow');
     expect(head).toContain('word-fit-wrap');
     expect(head).toContain('aria-label="발음 듣기"');
     expect(card()).not.toContain('word-detail-card__close');
@@ -191,12 +191,10 @@ describe('⑤ 훈음 하단 루비 — 범위와 동조', () => {
   });
 
   it('훈음 나열 줄이 부활하지 않는다 — 헤더에 있는 글자를 다시 그리던 것', () => {
-    // 이 블록은 `card()` 슬라이스(편집 패널 앞에서 끊긴다) 밖이라 따로 잘라 본다.
-    const block = sliceBetween(read(VIEWER), '{/* 한자 대조 블록', '})()}');
+    const block=read('src/components/viewer/ViewerJapaneseReference.jsx');
     expect(block, 'huns.map 나열이 되살아났다').not.toMatch(/huns\.map/);
-    // 日 자형 줄과 ⚠ 경고는 남긴다 — 훈음만 뽑아냈다.
-    expect(block, '日 줄까지 지우면 안 된다').toContain('formatJaRef');
-    expect(block, '⚠ 경고도 남는다').toContain('getJaWarn');
+    expect(block).toContain('toJaForm(word,jaTable)');
+    expect(block).toContain('ref?.warn');
   });
 });
 

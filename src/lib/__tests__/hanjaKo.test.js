@@ -229,21 +229,23 @@ describe('한자 대조 배선 계약', () => {
   // 다시 그릴 일이 없다. 글자별 신자체는 사라진 게 아니라 **글자 카드**로 옮겨 앉았고
   // (char-inspect의 日 칩 — 繁·简·正까지 함께, 탭 이동까지 된다) 단어 수준 대조는 日
   // 줄이 그대로 진다. 그래서 이 계약은 '어디서 신자체를 보는가'를 두 자리로 고정한다.
-  it('일본식 자형 표기(오너 확정) — 글자별은 글자 카드 日 칩, 단어는 日 줄(나열과 같으면 요미만·⚠ 통합)', () => {
+  it('일본식 자형 — 글자 카드와 현재 뜻에 맞는 일본어 대조를 보존한다', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
     expect(src).toContain("import('../lib/data/hanjaJa.json')");
     // 글자별 신자체 — 글자 카드 헤더의 자형 칩(탭하면 그 자형 카드로)
     expect(src).toMatch(/formChip\('日',/);
     expect(src).toMatch(/jaTable: hanjaJaTable/);
-    // 단어 수준 — 日 줄과 ⚠ 경고
-    expect(src).toMatch(/formatJaRef\(ja, headText, jaFormOf\(headText\)\)/); // R R2: 日 대응도 표제어(기본형) 기준
-    expect(src).toMatch(/⚠ \{jaFormOf\(headText\)\}는 일본어로/);
+    expect(src).toContain('word={headText}');
+    expect(src).toContain('jaTable={hanjaJaTable}');
+    const component=fs.readFileSync(path.join(process.cwd(), 'src/components/viewer/ViewerJapaneseReference.jsx'), 'utf8');
+    expect(component).toContain('toJaForm(word,jaTable)');
+    expect(component).toContain('ref?.warn');
   });
 
   it('배치 개선 — 대조 블록은 헤더가 아니라 뜻 아래에 있다', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
     const meaningAt = src.indexOf("refMeaning || selectedToken.meaning || '(뜻 없음)'");
-    const blockAt = src.indexOf('한자 대조 블록(배치 개선');
+    const blockAt = src.indexOf('<ViewerJapaneseReference');
     expect(meaningAt).toBeGreaterThan(-1);
     expect(blockAt).toBeGreaterThan(meaningAt);
   });
