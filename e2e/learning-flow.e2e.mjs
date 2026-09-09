@@ -789,15 +789,16 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
     const contextText = sheet.locator('.pdf-context__text');
     await assertVisible(contextText, 'cached sentence translation');
     assert.match(await contextText.innerText(), /우리는 중국어를 배웁니다\./);
-    assert.deepEqual(analyzeRequests.map(({ lines, language }) => ({ lines, language })), [
-      { lines: [selectedText], language: 'Chinese' },
-    ]);
-    assert.equal(getGeminiRequests(), 0, 'the preseeded translation cache must prevent Gemini calls');
 
     // 대체 경로 — 탭 하나로 분석된 단어 목록에 닿는다(폐지된 동시 오픈이 주던 것).
     await rightTab.click();
     assert.equal(await rightTab.getAttribute('aria-selected'), 'true', 'the bar switches to the word tab');
     await assertVisible(sheet.getByText('단어 (2)', { exact: true }), 'deterministic sentence word analysis');
+    // Cached translation can render before /api/analyze completes; the word list proves response delivery.
+    assert.deepEqual(analyzeRequests.map(({ lines, language }) => ({ lines, language })), [
+      { lines: [selectedText], language: 'Chinese' },
+    ]);
+    assert.equal(getGeminiRequests(), 0, 'the preseeded translation cache must prevent Gemini calls');
 
     await wordToken.click();
     assert.equal(await leftTab.getAttribute('aria-selected'), 'false', 'a word tap leaves the sentence tab closed');
