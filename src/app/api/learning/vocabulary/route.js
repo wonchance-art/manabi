@@ -1,5 +1,5 @@
 import { requireUser } from '@/lib/supabaseServer';
-import { resolveSave, reply, errorReply, checkDb, fail, readBody } from '@/lib/server/learningContext';
+import { resolveSave, reply, errorReply, checkDb, fail, readBody, accessibleMaterial } from '@/lib/server/learningContext';
 import { UUID, sourceHref } from '@/lib/learningSources';
 
 export const dynamic = 'force-dynamic';
@@ -32,7 +32,18 @@ export async function GET(request) {
   const auth = await requireUser();
   if (auth.error) return reply({ error: auth.error }, auth.status);
   try {
-    const id = new URL(request.url).searchParams.get('id');
+    const params = new URL(request.url).searchParams;
+    const contextId = params.get('contextId');
+    if(params.has('contextId')) {
+      if(!UUID.test(contextId || '')) fail(400,'저장한 문맥을 다시 선택해 주세요.');
+      const {data:context,error}=await auth.supabase.from('vocabulary_contexts')
+        .select('id,kind,material_id,locator,quote').eq('user_id',auth.user.id).eq('id',contextId).maybeSingle();
+      checkDb(error);
+      if(!context || context.kind!=='reading' || String(context.material_id)!==params.get('materialId')) fail(404,'접근할 수 없는 문맥입니다.');
+      await accessibleMaterial(auth.supabase,auth.user.id,'reading',context.material_id);
+      return reply({context});
+    }
+    const id = params.get('id');
     if (!UUID.test(id || '')) fail(400, '단어를 선택해 주세요.');
     const { data, error } = await auth.supabase.from('vocabulary_contexts')
       .select('id,kind,lang,chapter_slug,material_id,pdf_id,locator,quote,translation,created_at')

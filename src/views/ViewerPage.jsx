@@ -81,6 +81,7 @@ import dynamic from 'next/dynamic';
 import '../components/viewer/reader-controls.css';
 const ChineseSerif = dynamic(() => import('../components/viewer/ChineseSerif'), {ssr:false});
 import { listHanjaHunEum } from '../lib/hanjaKo';
+import { viewerJapaneseGlyphTable } from '../lib/viewerJapaneseReference';
 import { useGrammarDetail } from '../lib/useGrammarDetail';
 import { useEasierText } from '../lib/useEasierText';
 import { buildContextPrompt } from '../lib/grammarDetail';
@@ -1456,12 +1457,13 @@ export default function ViewerPage() {
     return () => { alive = false; };
   }, [showHanjaKo, materialLang, hanjaKoTable, inspectChar]);
   const [jaFormError,setJaFormError] = useState(false);
+  const [jaFormRetry,setJaFormRetry] = useState(0);
   useEffect(() => {
     if (hanjaJaTable || !((materialLang === 'Chinese' && isSheetOpen) || inspectChar)) return undefined;
     let alive = true;
-    import('../lib/data/hanjaJa.json').then(m => {if(alive){setHanjaJaTable(m.default||m);setJaFormError(false);}}).catch(()=>{if(alive)setJaFormError(true);});
+    import('../lib/data/hanjaJa.json').then(m => {if(alive){setHanjaJaTable(viewerJapaneseGlyphTable(m.default||m));setJaFormError(false);}}).catch(()=>{if(alive)setJaFormError(true);});
     return ()=>{alive=false;};
-  }, [materialLang,isSheetOpen,inspectChar,hanjaJaTable]);
+  }, [materialLang,isSheetOpen,inspectChar,hanjaJaTable,jaFormRetry]);
   // 자원 테이블(증강 R2·R3 — 획수·부수·1단 분해·간번체, 563KB)과 구성 풀이 스토리
   // (R4 — 최빈 시드 저작분)는 글자 카드가 실제로 열릴 때만 지연 로드 — 한자 대조
   // 토글만으로는 안 부른다(단어 줄엔 자원이 안 쓰인다).
@@ -1546,8 +1548,10 @@ export default function ViewerPage() {
       await saveContext({ word: contextWord(token), source: readingContextSource(token) });
       queryClient.invalidateQueries({ queryKey: ['vocabulary-contexts', user?.id] });
       return true;
-    } catch {
-      toast('단어는 저장했지만 문맥 연결이 남아 있어요. 단어를 다시 열어 문맥 추가를 눌러 주세요.', 'warning', 6000);
+    } catch (error) {
+      toast(error.code==='meaning_conflict'
+        ? '기존 카드와 뜻이 달라 문맥을 합치지 않았어요. 이 문맥 추가에서 뜻을 확인해 주세요.'
+        : '단어는 저장했지만 문맥 연결이 남아 있어요. 단어를 다시 열어 문맥 추가를 눌러 주세요.', 'warning', 6000);
       return false;
     }
   }
@@ -1982,7 +1986,7 @@ export default function ViewerPage() {
         </div>
       )}
 
-      {materialLang === 'Chinese' && <ViewerJapaneseReference key={`${selectedToken.id||selectedToken.text}:${refMeaning||''}`} userId={user?.id} word={headText} meaning={refMeaning||selectedToken.meaning||''} dictEntry={editDictEntry} loading={!dictFetched&&!dictError} dictError={dictError} jaTable={hanjaJaTable} formError={jaFormError}/>}
+      {materialLang === 'Chinese' && <ViewerJapaneseReference key={`${selectedToken.id||selectedToken.text}:${refMeaning||''}`} userId={user?.id} word={headText} meaning={refMeaning||selectedToken.meaning||''} pos={selectedToken.pos} dictEntry={editDictEntry} loading={!dictFetched&&!dictError} dictError={dictError} jaTable={hanjaJaTable} formError={jaFormError} onRetryForm={()=>{setJaFormError(false);setJaFormRetry(n=>n+1);}}/>}
       {inspectChar && (() => {
         // ④ 글자 카드(증강 R1~R3 — 오너 승인 2026-08-28): 헤더는 자기 완결(훈음·병음·자형 칩),
         // 주인공은 구성(1단 분해 — 성분 탭 = 재귀 탐색)과 다시 만나기(이 자료·내 단어).
@@ -2486,6 +2490,7 @@ export default function ViewerPage() {
           </div>
         )}
       </header>
+      <ReadingSourceFocus materialId={id} ready={!!material?.processed_json?.sequence?.length} json={material?.processed_json} onTarget={setSourceFocusId} />
       {positionError && <div className="error-banner" role="status">읽기 위치를 저장하지 못했어요. <button type="button" className="btn btn--ghost" onClick={retryPosition}>다시 저장</button></div>}
 
       {/* 출처 표기(v2-F R5) — CC BY는 **표기가 라이선스 조건**이다. `metadata.source`가
@@ -2938,7 +2943,6 @@ export default function ViewerPage() {
         </div>
       )}
 
-      <ReadingSourceFocus materialId={id} ready={!!material?.processed_json?.sequence?.length} onTarget={setSourceFocusId} />
       {STUDY_LANGS.has(materialLang) && <MaterialChapterLinks lang={materialLang} kind="reading" materialId={id} />}
 
       {/* 다음 — 한 자리에 하나(뷰어 정돈 A안): 시리즈 다음 편 → 책 다음 과 → 마지막 과면 「다음 과 적기」(내 책만,

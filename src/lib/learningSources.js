@@ -16,6 +16,10 @@ export function sourceHref(source) {
   }
   if (source.kind === 'reading' && materialIdValid('reading', source.material_id)) {
     const query = new URLSearchParams();
+    if (UUID.test(source.id || '')) {
+      query.set('sourceContext',source.id);
+      return `/viewer/${source.material_id}?${query}`;
+    }
     if (typeof loc.tokenId === 'string') query.set('sourceToken', loc.tokenId);
     if (typeof loc.surface === 'string') query.set('sourceText', loc.surface);
     return `/viewer/${source.material_id}${query.size ? `?${query}` : ''}`;
@@ -25,6 +29,50 @@ export function sourceHref(source) {
     return `/pdf/${source.pdf_id}${page}`;
   }
   return null;
+}
+
+const compactSource = value => String(value || '').normalize('NFC').replace(/\s+/gu,'');
+
+// Resolve against the current analysis. A stale ID or repeated word is not enough
+// to assert that we found the saved occurrence.
+export function readingSourceTarget(json, {locator = {}, quote = ''} = {}) {
+  const dict=json?.dictionary || {}, spans=[];
+  let body='';
+  for(const id of json?.sequence || []) {
+    const token=dict[id], value=compactSource(token?.text);
+    if(!value || token?.pos==='개행') continue;
+    spans.push({id,token,start:body.length,end:body.length+value.length});body+=value;
+  }
+  const surface=compactSource(locator.surface), saved=compactSource(quote), ranges=[];
+  if(saved) {
+    for(let at=body.indexOf(saved);at>=0;at=body.indexOf(saved,at+1)) ranges.push({start:at,end:at+saved.length});
+    if(!ranges.length) return null;
+  }
+  const inside=(start,end)=>!saved || ranges.some(r=>start>=r.start && end<=r.end);
+  const exact=spans.filter(s=>s.id===locator.tokenId && (!surface || compactSource(s.token.text)===surface) && inside(s.start,s.end));
+  if(exact.length===1) return exact[0].id;
+  if(!surface) return null;
+  const candidates=[],starts=new Map(spans.map(s=>[s.start,s])),ends=new Set(spans.map(s=>s.end));
+  for(let at=body.indexOf(surface);at>=0;at=body.indexOf(surface,at+1)) {
+    const end=at+surface.length;
+    const first=starts.get(at);
+    if(first && ends.has(end) && inside(at,end)) candidates.push(first.id);
+    if(candidates.length>1) return null;
+  }
+  if(candidates.length===1) return candidates[0];
+  if(candidates.length>1 || saved) return null;
+  const bases=spans.filter(s=>compactSource(s.token.sep_link || s.token.base_form)===surface);
+  return bases.length===1?bases[0].id:null;
+}
+
+export function reviewSourceContexts(word, contexts = []) {
+  const valid=contexts.map(c=>({...c,href:sourceHref(c)})).filter(c=>c.href);
+  const quote=compactSource(word?.source_sentence);
+  const match=c=>String(c.material_id)===String(word?.source_material_id);
+  const primary=valid.find(c=>match(c)&&quote&&compactSource(c.quote)===quote) || valid.find(match) || valid[0];
+  if(primary) return {primary,others:valid.filter(c=>c.id!==primary.id)};
+  const fallback=word?.source_material_id?{kind:'reading',material_id:word.source_material_id,quote:word.source_sentence || '',locator:{surface:word.word_text},legacy:true}:null;
+  return {primary:fallback && sourceHref(fallback)?{...fallback,href:sourceHref(fallback)}:word?.source_sentence?{quote:word.source_sentence,legacy:true}:null,others:[]};
 }
 
 export function tokenContext(json, tokenId) {
