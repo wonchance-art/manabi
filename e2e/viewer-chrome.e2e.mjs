@@ -15,19 +15,20 @@ import config from '../playwright.config.mjs';
  * 이식성: 앱 서버·빌드 불요(index.css 실물 + ViewerPage 렌더 구조 재현). 러너에 CJK 폰트가 없어도
  * 크롬 행 높이는 라틴·시스템 폰트로 결정되므로 **상한 단언**은 성립한다(여유 20px 포함).
  */
-const CSS = fs.readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
+const CSS = fs.readFileSync(new URL('../src/index.css', import.meta.url), 'utf8') + fs.readFileSync(new URL('../src/components/viewer/reader-controls.css', import.meta.url), 'utf8');
 const GNB = 56;
 const wrap = (body) => `<style>${CSS}</style><style>body{margin:0}</style>
-<div class="viewer-3col viewer-theme-light"><aside class="viewer-side viewer-side--left"></aside><main class="viewer-center">${body}</main><aside class="viewer-side viewer-side--right"></aside></div>`;
+<div class="viewer-layout" data-reader-theme="light"><main class="viewer-center">${body}</main></div>`;
 
 // ViewerPage 헤더 구조 재현(A안) — 경로 줄 [← 자료실 · 형제 내비 | 도구] → 제목 → 배지 3
 const header = ({ nav }) => `
-<header class="page-header viewer-header">
   <div class="viewer-topbar">
     <a class="viewer-back-link" href="#">← 자료실</a>
     ${nav ? '<div class="viewer-series-nav" title="《HSK 5 문장 320》"><span class="viewer-series-nav__btn">◀</span><span class="viewer-series-nav__position">3/20</span><span class="viewer-series-nav__btn">▶</span></div>' : ''}
-    <div class="viewer-topbar__tools"><div class="listen-controls"><button class="btn btn--ghost btn--sm">▷ 듣기</button></div><button class="viewer-aa">Aa</button></div>
+    <div class="viewer-topbar__tools"><div class="listen-controls"><button class="btn btn--ghost btn--sm">▷ 듣기</button></div><button class="viewer-aa">Aa</button><button class="viewer-aa">학습</button><button class="viewer-aa">⋯</button></div>
   </div>
+<header class="page-header viewer-header">
+  <p class="reader-metadata">중국어 · HSK 5 · 내 자료</p>
   <div class="viewer-titlerow"><h1 class="page-header__title">北京的秋天 — 第三课</h1><button class="viewer-title-edit">편집</button></div>
   <div class="viewer-badges"><a class="viewer-badge" href="#">12개 수집 → 단어장</a><span class="viewer-badge viewer-badge--due">3개 복습 가능</span><span class="viewer-badge">아는 단어 92% · 새 단어 14개</span></div>
 </header>`;
@@ -36,9 +37,10 @@ const reader = '<div class="card reader-area reader-area--light"><div class="wor
 
 /** 경우별 상한(px, GNB 포함) — 정돈 전 실측: B 374 · C 434 · D 534 (390px). */
 const CASES = [
-  { name: 'B 단어 담긴 뒤(배지 3)', body: header({ nav: false }) + reader, max390: 300, max1280: 290 },
-  { name: 'C 책 챕터(배지 3 + 형제 내비)', body: header({ nav: true }) + reader, max390: 300, max1280: 290 },
-  { name: 'D PDF 범위(배지 3 + 출처 한 줄)', body: header({ nav: false }) + pdfLine + reader, max390: 330, max1280: 320 },
+  { name: 'B 단어 담긴 뒤(배지 3)', body: header({ nav: false }) + reader, max390: 320, max1280: 310 },
+  // Phase 2 exposes Aa / learning / management at 44px targets. A chapter nav may wrap once.
+  { name: 'C 책 챕터(배지 3 + 형제 내비)', body: header({ nav: true }) + reader, max390: 360, max1280: 310 },
+  { name: 'D PDF 범위(배지 3 + 출처 한 줄)', body: header({ nav: false }) + pdfLine + reader, max390: 350, max1280: 340 },
 ];
 
 let browser;

@@ -30,6 +30,7 @@ function saveStoredVoice(langKey, voiceURI) {
 // 서버 TTS 재생 캐시 (URL → objectURL) + 현재 재생 핸들
 const serverAudioCache = new Map();
 let currentAudio = null;
+let audioGeneration = 0;
 
 export function getTtsCapabilities(browser = typeof window === 'undefined' ? null : window) {
   if (!browser) return { webSpeech: false, serverAudio: false, supported: false };
@@ -40,7 +41,7 @@ export function getTtsCapabilities(browser = typeof window === 'undefined' ? nul
   return { webSpeech, serverAudio, supported: webSpeech || serverAudio };
 }
 
-async function playServerTTS(text, language, playbackRate = 1) {
+async function playServerTTS(text, language, playbackRate = 1, generation) {
   const url = `/api/tts?lang=${encodeURIComponent(language)}&text=${encodeURIComponent(text)}`;
   let objUrl = serverAudioCache.get(url);
   if (!objUrl) {
@@ -50,6 +51,7 @@ async function playServerTTS(text, language, playbackRate = 1) {
     objUrl = window.URL.createObjectURL(blob);
     serverAudioCache.set(url, objUrl);
   }
+  if (generation !== audioGeneration) return;
   if (currentAudio) {
     currentAudio.pause();
     currentAudio.currentTime = 0;
@@ -112,10 +114,14 @@ export function useTTS() {
   const speak = useCallback((text, language = 'Japanese', opts = {}) => {
     if (typeof window === 'undefined' || !text) return;
     // opts: { playbackRate } = 서버 음성 배속, { rate, pitch } = Web Speech 폴백 — readingSheet.ttsOptsFor가 한 벌로 만든다.
-    playServerTTS(text, language, opts.playbackRate ?? 1).catch(() => speakFallback(text, language, opts));
+    const generation=++audioGeneration;
+    if(currentAudio)currentAudio.pause();
+    window.speechSynthesis?.cancel();
+    playServerTTS(text, language, opts.playbackRate ?? 1, generation).catch(() => {if(generation===audioGeneration)speakFallback(text, language, opts);});
   }, [speakFallback]);
 
   const stop = useCallback(() => {
+    audioGeneration += 1;
     if (currentAudio) {
       currentAudio.pause();
       currentAudio.currentTime = 0;

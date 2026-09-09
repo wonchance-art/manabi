@@ -49,7 +49,7 @@ describe('단어 카드 단일화 계약', () => {
     expect(viewer).toContain('canEditToken && selectedToken.id && (');
   });
 
-  it('카드 열림 시 패널·시트를 맨 위로 되돌린다(리스트를 내려 본 뒤에도 카드가 보이게)', () => {
-    expect(viewer).toContain("querySelectorAll('.viewer-side--right, .viewer-sheet__sections')");
+  it("같은 단어의 보강 응답은 카드 스크롤을 초기화하지 않는다", () => {
+    expect(viewer).toContain("querySelectorAll('.viewer-inspector .reader-card-body')"); expect(viewer).toContain('[selectedToken?.id, selectedToken?.text, isSheetOpen]');
   });
 });

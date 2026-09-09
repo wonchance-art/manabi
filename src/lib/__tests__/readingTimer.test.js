@@ -100,7 +100,7 @@ describe('일시정지 3종 배선', () => {
   });
 
   it('② 카드·시트 열림이 측정을 멈춘다 — 찾아보기 시간은 읽기가 아니다', () => {
-    expect(viewer).toContain('paused: isSheetOpen || !!selectedToken,');
+    expect(viewer).toContain('paused: isSheetOpen || !!selectedToken || !!activeModal,');
   });
 
   it('배경 탭에서 타이머가 새지 않는다 — setInterval 누적 금지(구간 차이 방식)', () => {

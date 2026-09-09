@@ -12,7 +12,7 @@ const read = (f) => fs.readFileSync(path.join(process.cwd(), f), 'utf8');
 const viewer = read('src/views/ViewerPage.jsx');
 const modal = read('src/views/SourceEditModal.jsx');
 const reanalyze = read('src/lib/useReanalyze.js');
-const css = read('src/index.css');
+const css = read('src/index.css') + read('src/components/viewer/reader-controls.css');
 
 describe('원문 수정 배선', () => {
   it('진입은 재분석 메뉴 3번째 항목 — 소유자 게이트(기존 재분석 블록) 안', () => {
@@ -55,7 +55,7 @@ describe('원문 수정 배선', () => {
   });
 
   it('스타일 존재 — 오버레이·모달·텍스트영역·요약', () => {
-    for (const cls of ['.source-edit-overlay', '.source-edit__textarea', '.source-edit__summary']) {
+    for (const cls of ['.reader-modal', '.source-edit__textarea', '.source-edit__summary']) {
       expect(css).toContain(cls);
     }
   });

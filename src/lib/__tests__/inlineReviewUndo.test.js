@@ -53,7 +53,7 @@ describe('인라인 복습 R3㉮ — 척도 정렬·스냅샷 재료·undo (View
   });
 
   it('키 1~4 — 저장 그리드와 인라인 그리드가 동시에 반응하지 않는다(상태상 배타), ⌘Z는 인라인 → 저장 순', () => {
-    const keys = sliceBetween(viewer, 'const lastSaveRef = useRef(null);', '}, [selectedToken, isSheetOpen]);');
+    const keys = sliceBetween(viewer, 'const lastSaveRef = useRef(null);', '}, [selectedToken?.id, selectedToken?.text, isSheetOpen]);');
     expect(keys).toContain('if (h.inlineDue) { e.preventDefault(); h.gradeInline?.(Number(e.key)); return; }');
     expect(keys).toContain('if (!h.saveLocked) { e.preventDefault(); h.addToVocab?.(Number(e.key)); }');
     expect(keys).toContain('inField || h.blocked || e.isComposing || e.repeat || e.defaultPrevented');

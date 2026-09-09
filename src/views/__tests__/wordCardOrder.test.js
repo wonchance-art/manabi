@@ -55,7 +55,7 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
     const ja = at('formatJaRef(ja, headText, jaFormOf(headText))');
     const ex = at('splitSentenceAroundWord(refVocab.word.ex.zh, headText, null)');
     const syn = at('className="syn-ant"');
-    const hanja = at('한자 · {refVocab.word.hanja}');
+    const hanja = at('<summary>한자 정보</summary>');
     expect(meaning).toBeLessThan(ja);
     expect(ja).toBeLessThan(ex);
     expect(ex).toBeLessThan(syn);
@@ -76,10 +76,8 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
     expect(card).not.toMatch(/>\{jr\}</);
   });
 
-  it('유의어 라벨은 칩 컨테이너의 형제 캡션 — 세로 스택', () => {
-    expect(card).toContain('<span className="syn-ant__label">유의어</span>\n              <div className="syn-ant__chips">');
-    expect(sliceBetween(css, '.syn-ant__row {', '}')).toContain('flex-direction: column');
-    expect(css).toContain('.syn-ant__chips { display: flex; flex-wrap: wrap;');
+  it("유의어와 반의어는 구분된 줄에서 제공한다", () => {
+    expect(card).toContain('className="syn-ant__row"'); expect(card).toContain('renderSynAntChips(synAnt.syn)'); expect(sliceBetween(css,'.syn-ant__row {','}')).toContain('flex-direction: column');
   });
 
   it('액션 영역 — 전폭 단독 버튼 0, 줄(actrow) 정확히 2', () => {

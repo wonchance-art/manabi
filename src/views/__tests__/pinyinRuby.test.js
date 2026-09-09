@@ -1,25 +1,23 @@
+import {viewerDefaults,readerFontFamily} from '../../lib/viewerPreferences';
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 
-// 계약: 병음 조판 — 토글 시 한자 간격 불변(폭 1em 균일 그리드) + 병음 줄의 '일자'.
-// 오너 확정(2026-08-19): 병음은 **전 음절 단일 크기**로 조판한다. 크기가 음절마다
-// 다르면(#1056~#1058의 길이별 축소) 윗변·베이스라인·글자 키가 달라져 "글자마다 병음
-// 위치가 다르다"는 지적을 받았다. 크기는 최장 병음(chuāng — 자기 글자 폭의 3.55배)이
-// 1em 셀에 들어가는 값으로 고정하고, 작아지는 만큼은 뷰어의 글자 크기 조절로 보완한다.
+// Phase 2: 12–16px 병음과 공통 셀 폭. 실제 겹침/공개 시 이동은 브라우저에서 검증.
 
 const read = (f) => fs.readFileSync(path.join(process.cwd(), f), 'utf8');
 const css = read('src/index.css');
 const viewer = read('src/views/ViewerPage.jsx');
+const readerCss = read('src/components/viewer/reader-controls.css');
 
 describe('병음 조판 계약', () => {
-  it('정사각 그리드 — 병음 글자는 길이와 무관하게 1em 고정(오너 피드백: 세로 정렬 유지)', () => {
-    expect(css).toMatch(/\.word-token ruby\[data-pinyin\] \{[^}]*width: 1em;/s);
+  it('병음 공간 예약 모드는 모든 음절에 같은 측정 폭을 사용한다', () => {
+    expect(readerCss).toContain('width:max(1em,var(--pinyin-cell))');
+    expect(viewer).toContain("data-pron-spacing={materialLang==='Chinese'");
   });
 
   it('병음 줄은 일자다 — 전 음절 단일 크기, 글자별 크기·압축 없음', () => {
-    // 최장 병음이 셀에 들어가는 크기(0.94 / 3.55 ≈ 0.26em)라 어떤 인접쌍도 겹칠 수 없다
-    expect(css).toMatch(/ruby\[data-pinyin\] > \.rt-an \{\s*font-size: 0\.26em;/s);
+    expect(readerCss).toMatch(/ruby\[data-pinyin\] > \.rt-an \{font-size:var\(--pinyin-size\);/s);
     // 글자별 차등 기제가 되살아나면 일자가 다시 깨진다 — 축소 단계·압축 변수 금지
     expect(css).not.toMatch(/data-syl/);
     expect(css).not.toMatch(/--rt-k/);
@@ -86,8 +84,8 @@ describe('중국어·병음 폰트 계약', () => {
     expect(css).toMatch(/\.pinyin-text,\s*\.pdf-detail-pinyin,\s*\.word-token ruby\[data-pinyin\] > \.rt-an,\s*\[lang\^="zh"\] \+ \.fr-example__ipa \{\s*font-family: var\(--font-noto-sans, 'Noto Sans'\)/);
   });
 
-  it('뷰어 본문은 중국어 자료에서 SC를 사용자 글꼴 설정 앞에 놓는다', () => {
-    expect(viewer).toContain("? `var(--font-noto-sc, 'Noto Sans SC'), ${fontFamily}`");
+  it("중국어 서체 선택이 실제 SC 고딕과 명조에 연결된다", () => {
+    expect(readerFontFamily('Chinese','sans')).toContain('--font-noto-sc'); expect(readerFontFamily('Chinese','serif')).toContain('--font-reader-serif'); expect(viewer).toContain('fontFamily: readerFontFamily(materialLang,fontFamily)');
   });
 
   it('단어 카드·원문 인용에 자료 언어 표식과 병음 라틴 클래스가 붙는다(팝업은 ②로 카드 단일화)', () => {
@@ -97,6 +95,7 @@ describe('중국어·병음 폰트 계약', () => {
   });
 
   it('성조 색상은 병음에만·옵트인이다(오너 확정: "병음만")', () => {
+
     // 한자에 색이 새면 오너 결정 위반 — 클래스는 rt에만 붙는다
     // 본문(.word-token 조합)과 시트·팝업(단독) 둘 다 — 본문 조합이 빠지면 기본색
     // 규칙(.word-token rt)이 순서로 이겨 본문만 무색이 된다(오너 발견 회귀)
@@ -106,14 +105,11 @@ describe('중국어·병음 폰트 계약', () => {
     // 단어 카드도 병음 rt에만 합성(pinyin-text와 병행) — 팝업은 카드 단일화(②)로 소멸
     expect(viewer.match(/showToneColors && pinyinToneClass\(seg\.reading\)/g)?.length).toBe(1);
     // 기본 꺼짐(옵트인) — showHanjaKo 선례
-    const settings = read('src/lib/useViewerSettings.js');
-    expect(settings).toContain("readPref('showToneColors', false)");
+    expect(viewerDefaults('Chinese').showToneColors).toBe(false);
+
   });
 
-  it('일본어도 같은 방식 — :lang(ja)는 JP 우선, 뷰어 본문은 JP를 설정 글꼴 앞에 놓는다(오너 지적)', () => {
-    expect(css).toMatch(/:lang\(ja\) \{\s*font-family: var\(--font-noto-jp, 'Noto Sans JP'\), var\(--font-noto-kr/);
-    expect(viewer).toContain("? `var(--font-noto-jp, 'Noto Sans JP'), ${fontFamily}`");
-    // 본문 기본 굵기 400 — 없으면 브라우저가 500으로 대체해 본문이 굵어진다
-    expect(layout).toMatch(/Noto_Sans_JP\(\{[^}]*weight: \['400', '500', '700'\]/s);
+  it("일본어는 기존 JP 글꼴과 기본 굵기를 유지한다", () => {
+    expect(readerFontFamily('Japanese','sans')).toContain('--font-noto-jp'); expect(layout).toMatch(/Noto_Sans_JP\(\{[^}]*weight: \['400', '500', '700'\]/s);
   });
 });

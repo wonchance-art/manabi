@@ -1,3 +1,4 @@
+import {viewerDefaults} from '../viewerPreferences';
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -201,17 +202,11 @@ describe('hanjaJa.json 생성 데이터', () => {
 // 배선 계약: 옵트인 전제 — 기본 꺼짐, 중국어 뷰어에서만 토글 노출.
 describe('한자 대조 배선 계약', () => {
   it('설정 기본값이 꺼짐(false)이다', () => {
-    const src = fs.readFileSync(path.join(process.cwd(), 'src/lib/useViewerSettings.js'), 'utf8');
-    expect(src).toContain("readPref('showHanjaKo', false)");
+    expect(viewerDefaults('Chinese').showHanjaKo).toBe(false);
   });
 
   it('뷰어가 중국어에서만 토글을 노출하고 시트에 훈음을 표시한다', () => {
-    const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
-    // 읽기 설정 리뉴얼(2026-08-28): 버튼 → 스위치 행. 중국어 가드 직속이라는 계약은 동일.
-    expect(src).toMatch(/materialLang === 'Chinese' && \(\s*<label className="rsheet-swrow">\s*<span className="rsheet-txt"><b>한자 대조<\/b>/);
-    expect(src).toContain('onChange={() => setShowHanjaKo(v => !v)}');
-    expect(src).toContain("import('../lib/data/hanjaKo.json')");
-    expect(src).toContain('훈음');
+    const options=fs.readFileSync(path.join(process.cwd(),'src/components/viewer/ViewerSettings.jsx'),'utf8'); expect(options).toContain("language==='Chinese'&&");expect(options).toContain('label="한자 대조"');expect(options).toContain("set('showHanjaKo',v)");const src=fs.readFileSync(path.join(process.cwd(),'src/views/ViewerPage.jsx'),'utf8');expect(src).toContain("import('../lib/data/hanjaKo.json')");
   });
 
   it('훈음(①)도 같은 토글 아래 지연 로드되어 단어 카드에 병기된다(팝업은 ②로 카드 단일화)', () => {

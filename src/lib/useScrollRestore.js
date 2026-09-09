@@ -10,7 +10,7 @@ import { createPositionWriter } from './readingPositionWriter';
  *   tokenRefs: 본문 토큰 DOM ref 등록용 (token id → element)
  *   saveScrollPosition(tokenIdx): 호출 시 2초 후 DB 저장
  */
-export function useScrollRestore({ user, materialId, material, readingProgress }) {
+export function useScrollRestore({ user, materialId, material, readingProgress, readerRef }) {
   const writerRef = useRef(null);
   const ownerRef = useRef(user?.id);
   ownerRef.current = user?.id;
@@ -89,10 +89,10 @@ export function useScrollRestore({ user, materialId, material, readingProgress }
       const item = elements[low], rect = item.el.getBoundingClientRect();
       if (rect.bottom > 0 && rect.top < window.innerHeight) saveScrollPosition(item.index);
     };
-    const scroll = () => { clearTimeout(timer); timer = setTimeout(remember, 450); };
+    const scroll = () => { clearTimeout(timer); if(readerRef?.current?.dataset.layoutRestoring==='true')return; timer = setTimeout(remember, 450); };
     window.addEventListener('scroll', scroll, { passive: true });
     return () => { clearTimeout(timer); window.removeEventListener('scroll', scroll); };
-  }, [material?.processed_json?.sequence, user?.id, saveScrollPosition]);
+  }, [material?.processed_json?.sequence, user?.id, saveScrollPosition, readerRef]);
 
   return { saveScrollPosition, tokenRefs, positionError, retryPosition: () => writerRef.current?.writer.flush() };
 }

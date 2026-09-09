@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import ViewerModal from '../components/viewer/ViewerModal';
 import { buildEditPlan } from '../lib/sourceEdit';
 
 /**
@@ -39,10 +40,8 @@ export default function SourceEditModal({ open, initialText, processedJson, savi
       : '줄 구조만 변경 — 재분석 없이 저장';
 
   return (
-    <>
-      <div className="source-edit-overlay" onClick={saving ? undefined : onClose} />
-      <div className="source-edit" role="dialog" aria-label="원문 수정">
-        <div className="source-edit__title">원문 수정</div>
+    <ViewerModal title="원문 수정" onClose={()=>{if(!saving)onClose();}}>
+
         <textarea
           className="source-edit__textarea"
           value={draft}
@@ -65,7 +64,6 @@ export default function SourceEditModal({ open, initialText, processedJson, savi
             </button>
           </div>
         </div>
-      </div>
-    </>
+    </ViewerModal>
   );
 }

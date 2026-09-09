@@ -19,7 +19,8 @@ import config from '../playwright.config.mjs';
  */
 
 const CSS = fs.readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
-const PAGE = (body) => `<style>${CSS}</style><style>body{margin:0;font-size:20px}#row{padding:48px 64px}</style><div id="row">${body}</div>`;
+const READER_CSS=fs.readFileSync(new URL('../src/components/viewer/reader-controls.css',import.meta.url),'utf8');
+const PAGE = (body) => `<style>${CSS}\n${READER_CSS}</style><style>body{margin:0;font-size:20px}#row{padding:48px 64px;width:100%}</style><div class="viewer-layout" data-pron-spacing="reserved" style="--pinyin-size:.75rem;--pinyin-cell:44px"><div id="row">${body}</div></div>`;
 
 // 뷰어 렌더 구조 재현(ViewerPage renderToken과 동일한 마크업 계약 — pinyinRuby.test.js가
 // 소스 쪽을, 이 파일이 결과 쪽을 지킨다)
@@ -48,7 +49,7 @@ after(async () => { await browser?.close(); });
 
 /** 토큰별 기하: 글자(비-rt 텍스트) 좌표와 rt 좌표 */
 async function measure(body) {
-  await page.setContent(PAGE(body));
+  await page.setContent(PAGE(`<div class="reader-area" style="font-size:20px;min-height:0;padding:0">${body}</div>`));
   return page.evaluate(() => {
     const out = [];
     for (const t of document.querySelectorAll('.word-token')) {
@@ -107,7 +108,7 @@ test('중국어 — 병음은 전 음절 단일 크기이고 최장 인접쌍(ch
   const rts = on.filter((x) => x.rt);
   const sizes = uniq(rts.map((x) => x.rt.fs));
   assert.equal(sizes.length, 1, `병음 크기 단일값이어야 함: ${sizes}`);
-  assert.ok(sizes[0] < 10, `병음(0.26em)은 요미(0.5em=10px)보다 작아야 함: ${sizes[0]}px`);
+  assert.equal(sizes[0],12, `병음 기본 12px: ${sizes[0]}px`);
   for (let i = 0; i + 1 < rts.length; i++) {
     assert.ok(rts[i].rt.r <= rts[i + 1].rt.l + 0.5,
       `병음 겹침: ${i}번째 rt 오른끝 ${rts[i].rt.r} > 다음 rt 왼끝 ${rts[i + 1].rt.l}`);
@@ -169,7 +170,7 @@ test('집중 모드 — 지정 문장만 원래 밝기, 나머지는 어둡고, 
     };
   });
   assert.equal(focus.ops[0], 1, `지정 토큰은 원래 밝기여야 함: ${focus.ops[0]}`);
-  assert.ok(focus.ops[1] < 0.3 && focus.ops[2] < 0.3, `비지정 토큰은 어두워야 함: ${focus.ops.slice(1)}`);
+  assert.deepEqual(focus.ops,[1,1,1], "주변 문장도 투명도 없이 읽을 수 있어야 한다");
   await page.setContent(PAGE(line(false)));
   const off = await page.evaluate(() => {
     const toks = [...document.querySelectorAll('#row2 .word-token')];
@@ -209,7 +210,7 @@ test('레퍼런스(.ja-ruby) — 긴 요미가 문장 폭을 못 늘리고, 두 
   assertGapBand(out.gapBk, '책예문 요미');
 });
 
-test('카드 확대(①) — 크기 = 패널 폭 ÷ 분모(cqi 수식), 캡은 --fit-cap(기본 8rem), 격자·병음 계약 유지', async () => {
+test('카드 — 표제어는 40–56px, 병음은 독립 15px로 균일', async () => {
   // 카드 마크업 재현(ViewerPage wordDetailCard — 글자는 word-fit__char 스팬으로 감싼다)
   const fitSeg = (ch, py, yomi = false) =>
     `<ruby data-${yomi ? 'yomi' : 'pinyin'}="1"><span class="word-fit__char">${ch}</span><span class="rt-an">${py}</span></ruby>`;
@@ -232,20 +233,11 @@ test('카드 확대(①) — 크기 = 패널 폭 ÷ 분모(cqi 수식), 캡은 -
       rtPos: getComputedStyle(rt).position,
     };
   }));
-  // 2자: 248/2 = 124px — 병음 셀(width:1em 격자)이 폭을 꽉 채운다
-  assert.ok(Math.abs(got[0].fs - 124) <= 1, `2자 크기 124px 기대: ${got[0].fs}`);
-  for (const w of got[0].cells) assert.ok(Math.abs(w - got[0].fs) <= 1, `셀 폭 = 1em(격자) 기대: ${w} vs ${got[0].fs}`);
-  // 병음은 카드에서도 전 음절 단일 크기(0.26em)·절대배치 계약을 지킨다
-  assert.ok(Math.abs(got[0].rtFs - got[0].fs * 0.26) <= 0.5, `병음 크기 0.26em 기대: ${got[0].rtFs}`);
-  assert.equal(got[0].rtPos, 'absolute', '카드 병음도 절대배치(WebKit rt 계약과 동일한 span 경로)');
-  // 1자: 캡 미지정 문맥은 기본 8rem(=128px) — 100cqi(248px)가 아니라 캡에서 멈춘다
-  assert.ok(Math.abs(got[1].fs - 128) <= 1, `1자 기본 캡 128px 기대: ${got[1].fs}`);
-  // ja: 분모 2.5(fitWord.js — 요미 5자 × 0.5em이 본문 1자보다 넓다) → 99.2px
-  assert.ok(Math.abs(got[2].fs - 99.2) <= 1, `志 분모 2.5 → 99.2px 기대: ${got[2].fs}`);
-  // --fit-cap 주입(레이아웃 세로 예산 유도 — 오너 승인 2026-08-20): 캡이 폭보다 작으면
-  // 캡에서, 크면 폭(100cqi)에서 멈춘다 — 양방향 지배 전환 실렌더 검증
-  assert.ok(Math.abs(got[3].fs - 200) <= 1, `1자 캡 200px 주입 기대: ${got[3].fs}`);
-  assert.ok(Math.abs(got[4].fs - 248) <= 1, `캡 300px > 폭 248px → 폭 지배 기대: ${got[4].fs}`);
+  for(const item of got) assert.ok(item.fs>=40&&item.fs<=56,`표제어는 40–56px 범위: ${item.fs}`);
+  assert.equal(got[0].rtFs,15,'카드 병음은 독립 15px');
+  assert.equal(got[0].rtPos,'absolute');
+  assert.equal(new Set(got[0].cells).size,1,'카드 병음 칸도 균일');
+
 });
 
 /* ────────────────────────────────────────────────────────────────────────────

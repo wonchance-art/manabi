@@ -48,35 +48,22 @@ describe('① 전환 경로는 하단 바 하나 — 섹션 헤더·셰브런 �
     }
   });
 
-  it('시트는 선택된 하나만 그린다', () => {
-    const body = sliceBetween(read(SHEET), '<div className="viewer-sheet__sections">', '</div>');
-    // 두 콘텐츠를 나란히 렌더하면 접힌 헤더 문제가 그대로 돌아온다 — 삼항 하나가 계약이다.
-    expect(body).toMatch(/tab === 'left' \? leftContent : rightContent/);
-    // 시트 본문 컨테이너는 하나뿐이다(둘을 쌓으면 다시 세로를 먹는다).
-    expect((read(SHEET).match(/viewer-sheet__section-body/g) || []).length).toBe(1);
+  it("패널은 한 탭만 표시하며 숨긴 탭의 내용과 스크롤은 보존한다", () => {
+    const sheet=read(SHEET);expect(sheet).toContain("hidden={tab!=='right'}");expect(sheet).toContain("hidden={tab!=='left'}");expect(sheet).toContain('role="tabpanel"');
   });
 
   it('하단 바 버튼이 선택 상태를 알린다', () => {
-    const src = read(SHEET);
-    expect((src.match(/aria-pressed=\{sheetOpen && tab === '(left|right)'\}/g) || []).length).toBe(2);
+    const sheet=read(SHEET);expect(sheet).toContain("aria-selected={tab==='right'}");expect(sheet).toContain("aria-selected={tab==='left'}");
   });
 });
 
 describe('② 동작 변경 — 「둘 다 펼치기」 폐기(모바일 한정)', () => {
   it('상태가 열림 여부와 어느 탭인지로 갈린다 — 두 불리언이 아니다', () => {
-    const src = read(SHEET);
-    expect(src).toMatch(/const \[tab, setTab\] = useState\('left'\)/);
-    for (const gone of ['leftOpen', 'rightOpen']) {
-      expect(src, `${gone}가 되살아나면 둘 다 펼치기가 가능해진다`).not.toContain(gone);
-    }
+    const sheet=read(SHEET);expect(sheet).toContain("[tab,setTab]=useState('right')");expect(sheet).toContain('[open,setOpen]=useState(false)');expect(sheet).not.toContain('leftOpen');expect(sheet).not.toContain('rightOpen');
   });
 
-  it('되돌리는 지점이 한 곳이다 — 그 사실을 주석이 말한다', () => {
-    // 오너가 이 동작 변경을 물릴 수 있어야 한다. 함수 하나 + 시트 렌더가 전부라는 것을
-    // 계약으로도 남긴다(설계 §3의 유일한 동작 변경).
-    const head = sliceBetween(read(SHEET), '/**', 'export function resolveSignalTransition');
-    expect(head).toMatch(/선택된 하나만/);
-    expect(head, '데스크톱 무영향이 근거의 일부다').toMatch(/데스크톱/);
+  it("같은 패널의 표시와 모달 중 임시 숨김을 구분한다", () => {
+    expect(read(SHEET)).toContain('resolveSignalTransition(');expect(read(SHEET)).toContain('hidden={suppressed}'); expect(read(VIEWER)).toContain('suppressed={modalBlocked}');
   });
 });
 

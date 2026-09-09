@@ -126,13 +126,8 @@ describe('배선 — 우선순위와 되돌아갈 길', () => {
   });
 
   it('직접 설정에서 자동으로 되돌아갈 길이 있다 — 한 번 누르면 못 돌아오면 막다른 길', () => {
-    const row = sliceBetween(viewer, '{paceCpm ? (', ') : myCpm ? (');
-    expect(row).toContain('onClick={() => setPaceCpm(null)}');
-    expect(row).toContain('자동으로');
+    expect(read('src/components/viewer/ViewerSettings.jsx')).toContain('s.restore({paceCpm:null,paceStep:0})');expect(read('src/components/viewer/ViewerSettings.jsx')).toContain('기본 제안으로');
   });
 
-  it('숫자의 출처를 밝힌다 — 조용히 바뀌면 "왜 어제와 다르지?"가 된다', () => {
-    expect(viewer).toContain('내 속도 {myCpm}자/분 기준 +10%');
-    expect(viewer).toContain('const myCpm = recentCpm(paceHistoryRows || []);');
-  });
+  it('숫자의 출처를 밝힌다 — 조용히 바뀌면 "왜 어제와 다르지?"가 된다', () => { expect(read('src/components/viewer/ViewerSettings.jsx')).toContain('읽기 기록 ${myCpm}자/분 기준 제안'); expect(viewer).toContain('const myCpm = recentCpm(paceHistoryRows || []);'); });
 });
