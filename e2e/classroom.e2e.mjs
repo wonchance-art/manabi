@@ -93,6 +93,7 @@ await waitFor(async()=>(await current()).processed_json.status==='completed');
 assert(Object.values((await current()).processed_json.metadata.classMeanings).some(v=>v.meaning==='선생님이 직접 적은 핵심 뜻'));check('subsequent analysis preserves manual meaning');
 emptyMeaning=true;await input.fill('図書館');await page.getByRole('button',{name:'추가 ↑',exact:true}).click();
 const gap=page.locator('.classroom-entry').filter({has:page.getByRole('button',{name:'図書館',exact:true})});
+await waitFor(async()=>{const n=await current();return n.raw_text.includes('図書館')&&n.processed_json.status==='completed';});
 await gap.getByRole('button',{name:'뜻 다시 찾기',exact:true}).waitFor();
 const callsBefore=analyzedLines.length;await page.waitForTimeout(1500);assert.equal(analyzedLines.length,callsBefore);check('completed empty meaning exposes retry without automatic loop');
 await gap.locator('.classroom-meaning-edit').click();await page.getByLabel('대표 뜻',{exact:true}).fill('도서관 · 직접 입력');await page.getByRole('button',{name:'뜻 저장',exact:true}).click();await gap.getByRole('button',{name:/도서관 · 직접 입력/}).waitFor();
