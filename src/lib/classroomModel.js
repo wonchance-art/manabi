@@ -1,5 +1,6 @@
 import { noteEntries, TEAM_KEY_RE } from './classBoard';
 import { replaceViewerAnalysis } from './reanalysisPreservation';
+import { classStudyHref } from './classStudy';
 
 export const CLASS_LANG = {
   Japanese: { code: 'ja', label: '일본어', glyph: 'あ' }, Chinese: { code: 'zh', label: '중국어', glyph: '学' },
@@ -21,7 +22,7 @@ export function classroomEntries(note) {
     const primary = edit?.text === entry.text ? edit.meaning : content.length === 1 && entry.analyzed ? content[0].meaning || '' : '';
     const missingMeanings = entry.analyzed && content.some(t => !String(t.meaning || '').trim() && !correctedMeanings.has(t));
     return { ...entry, id, primary, missingMeanings, manual: edit?.text === entry.text,
-      reading: ['Japanese','Chinese'].includes(meta.language || 'Japanese') ? entry.reading : '' };
+      reading: ['Japanese','Chinese'].includes(meta.language || 'Japanese') ? (meta.classReadings?.[id]||entry.reading) : '' };
   });
 }
 // Automatic work only targets raw entries. Enrichment gaps require an explicit retry.
@@ -29,8 +30,7 @@ export function classroomAnalysisIndices(note, retryMissing = false) {
   return classroomEntries(note).filter(entry => !entry.analyzed || (retryMissing && entry.missingMeanings)).map(entry => entry.idx);
 }
 export function classViewerHref(id, team, day) {
-  const back = `/class/${encodeURIComponent(team)}/live${day ? `?day=${day}` : ''}`;
-  return `/viewer/${id}?returnTo=${encodeURIComponent(back)}`;
+  return classStudyHref(id,team,day||'');
 }
 export function classLinkPath(value, origin) {
   const text = String(value || '').trim();
@@ -48,8 +48,9 @@ export function classroomError(error) {
   return error?.message || '연결을 확인한 뒤 다시 시도해 주세요.';
 }
 export async function appendClassroomEntry(client, operation) {
-  const { data, error } = await client.rpc('classroom_append_entry', {
+  const { data, error } = await client.rpc(operation.seed?'classroom_append_study':'classroom_append_entry', {
     p_root: String(operation.rootId), p_day: operation.day, p_text: operation.text, p_operation: operation.id,
+    ...(operation.seed?{p_seed:operation.seed}:{}),
   });
   if (error) throw error;
   if (!data?.material?.id) throw new Error('저장 응답을 확인하지 못했어요. 같은 요청으로 다시 확인해 주세요.');

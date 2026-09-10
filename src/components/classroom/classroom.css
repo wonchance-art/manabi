@@ -73,3 +73,10 @@
   .classroom-header--live h1 {font-size:26px}
   .classroom-header--live .classroom-heading-note {font-size:12px;margin-top:8px}
 }
+
+button.classroom-featured-note {width:100%;border:0;text-align:left;font:inherit;}
+
+.classroom-shell .page-header__title {color:var(--class-ink);background:none;-webkit-text-fill-color:currentColor;}
+.classroom-resume {max-width:1104px;margin:16px auto;padding:16px 20px;border:1px solid var(--border);border-radius:12px;background:var(--bg-primary);font-size:14px;line-height:1.6;}
+.classroom-resume p {margin:0 0 8px;}
+.classroom-resume button {min-height:44px;padding:8px 14px;color:var(--text-primary);border:1px solid var(--border);border-radius:8px;background:var(--bg-secondary);cursor:pointer;}

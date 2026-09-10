@@ -1,4 +1,8 @@
 'use client';
+import ClassroomReader from '../components/classroom/ClassroomReader';
+import ClassCopyNotice from '../components/classroom/ClassCopyNotice';
+import {createClassSaveIntent} from '../lib/classSaveIntent';
+import {classStudyContext,studySelection} from '../lib/classStudy';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
@@ -90,7 +94,7 @@ import { clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../li
 import { lookupTranslation, bookMeaningPanelText } from '../lib/bilingualSplit';
 import { isLocalId, parseLocalId, chaptersForLocalNav } from '../lib/classBoard';
 import { getSharedCopy } from '../lib/sharedStore';
-import { readIndexCache, writePendingSave } from '../lib/classClient';
+import { readIndexCache } from '../lib/classClient';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
 import { fetchKnownWords, knownWordsLang, unmarkKnown } from '../lib/knownWords';
 import { mergeKnownIntoIndex } from '../lib/knownWords';
@@ -225,6 +229,8 @@ const UNDO_KEY_LABEL = typeof navigator !== 'undefined'
 export default function ViewerPage() {
   const { id } = useParams();
   const originalParams = useSearchParams();
+  const studyContext=classStudyContext(originalParams);
+  const [classStudyActive,setClassStudyActive]=useState(false);
   const { user, profile, fetchProfile } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -624,6 +630,16 @@ export default function ViewerPage() {
   // 스크롤 위치 저장(debounce 2s) + 재진입 시 자동 복원
   const { saveScrollPosition, tokenRefs, positionError, retryPosition } = useScrollRestore({ user, materialId: id, material, readingProgress, readerRef });
   const [sourceFocusId, setSourceFocusId] = useState(null);
+  const classResumeSelection=useRef(null);
+  useEffect(()=>{
+    const tokenId=originalParams.get('sourceToken');
+    const scope=`${id}:${tokenId}`;
+    if(originalParams.get('classSaved')!=='1'||!tokenId||classResumeSelection.current===scope)return;
+    const token=material?.processed_json?.dictionary?.[tokenId];
+    if(!token)return;
+    classResumeSelection.current=scope;setSelectedToken({...token,id:tokenId});setIsSheetOpen(true);
+  },[id,material,originalParams]);
+
 
   // 단어 저장 카운트 (복습 유도용)
   const saveCountRef = useRef(0);
@@ -1672,26 +1688,27 @@ export default function ViewerPage() {
   const undoAny = () => (lastInlineGradeRef.current ? undoInlineGrade() : undoLastSave());
 
   // 팀 사본에서의 「담기」(v2-AB R2) — 비로그인은 단어를 기기에 적어 두고 로그인 뒤 복제본에서 담는다.
-  const rememberGuestSave = (token) => {
-    if (!token || !material?.__local) return;
-    writePendingSave({
-      team: material.__team,
-      materialId: parseLocalId(id),
-      word: {
-        text: token.text,
-        base: token.sep_link || token.base_form,
-        meaning: token.meaning,
-        pos: token.pos,
-        reading: token.furigana || token.reading,
-        language: materialLang,
-        sourceSentence: extractSourceSentence(token.id) || leftPanelText,
-      },
+  const rememberGuestSave = async (token, grade) => {
+    if (!token || !material?.__local) return null;
+    return createClassSaveIntent({
+      team: material.__team, day:material.processed_json?.metadata?.team?.day, materialId: parseLocalId(id), tokenId: token.id,
+      grade: Number.isInteger(grade)&&grade>=1&&grade<=4?grade:undefined,
+      word: { text: token.text, base: token.sep_link || token.base_form,
+        meaning: token.meaning, pos: token.pos, reading: token.furigana || token.reading,
+        language: materialLang, sourceSentence: extractSourceSentence(token.id) || leftPanelText },
     });
+  };
+  const loginForGuestSave = async (event) => {
+    event.preventDefault();
+    try {
+      const request=await rememberGuestSave(selectedToken);
+      if(request)window.location.assign(`/auth?from=${encodeURIComponent(`/class/${material.__team}?classSave=${request}`)}`);
+    } catch { toast('이 기기에 저장 요청을 보관하지 못했어요. 로그인 후 표현을 다시 선택해 주세요.','error'); }
   };
 
   const addToVocab = async (grade) => {
     if (!user) {
-      if (material?.__local) { rememberGuestSave(selectedToken); toast('로그인하면 담겨요 — 카드의 「로그인 · 가입」으로 가세요.', 'info'); return; }
+      if (material?.__local) { toast('로그인하면 담겨요 — 카드의 「로그인 · 가입」으로 가세요.', 'info'); return; }
       toast('로그인이 필요합니다.', 'warning');
       return;
     }
@@ -1905,7 +1922,7 @@ export default function ViewerPage() {
     </>
   );
 
-  const wordDetailCard = !selectedToken || !isSheetOpen ? null : (
+  const renderWordDetailCard = (classAction=null) => !selectedToken || !isSheetOpen ? null : (
     <div key={selectedToken.id||selectedToken.text} tabIndex={-1} className={`word-detail-card${dragTokens !== null ? ' word-detail-card--above-list' : ''}`}>
       <div className="reader-card-body">
       <div className="word-detail-card__actions">
@@ -2041,6 +2058,7 @@ export default function ViewerPage() {
       )}
 
       {materialLang === 'Chinese' && <ViewerJapaneseReference key={`${selectedToken.id||selectedToken.text}:${refMeaning||''}`} userId={user?.id} word={headText} meaning={refMeaning||selectedToken.meaning||''} dictEntry={editDictEntry} loading={!dictFetched&&!dictError} dictError={dictError} jaTable={hanjaJaTable} formError={jaFormError}/>}
+      {classAction}
       {inspectChar && (() => {
         // ④ 글자 카드(증강 R1~R3 — 오너 승인 2026-08-28): 헤더는 자기 완결(훈음·병음·자형 칩),
         // 주인공은 구성(1단 분해 — 성분 탭 = 재귀 탐색)과 다시 만나기(이 자료·내 단어).
@@ -2253,7 +2271,7 @@ export default function ViewerPage() {
             <Link
               href={`/auth?from=${encodeURIComponent(`/class/${material.__team}`)}`}
               className="btn btn--primary btn--sm"
-              onClick={() => rememberGuestSave(selectedToken)}
+              onClick={loginForGuestSave}
             >
               로그인 · 가입 →
             </Link>
@@ -2315,7 +2333,9 @@ export default function ViewerPage() {
     </div>
   );
 
-  const rightPanelContent = wordDetailCard || wordListPanel ? (
+  const renderRightPanelContent = (classAction=null) => {
+    const wordDetailCard=renderWordDetailCard(classAction);
+    return wordDetailCard || wordListPanel ? (
     <div className="viewer-side__content">
       {wordDetailCard}
       {wordListPanel}
@@ -2325,6 +2345,9 @@ export default function ViewerPage() {
       단어 클릭 → 상세<br />문장 드래그 → 단어 목록
     </div>
   );
+
+  };
+  const rightPanelContent=renderRightPanelContent();
 
   const leftPanelContent = leftPanelLoading ? (
     <div className="pdf-side__empty">
@@ -2436,7 +2459,7 @@ export default function ViewerPage() {
     // 경로를 덮어도 elementFromPoint가 밑의 토큰을 잡는다(useTokenRangeSelect 참조)
     <div className={`viewer-3col viewer-layout viewer-theme-${theme}${tokenRange.dragging ? ' viewer-3col--dragging' : ''}`}
       style={{...textbookThemeStyle(materialLang),'--reader-font':readerFontFamily(materialLang,fontFamily),'--pinyin-size':`${pinyinSize}rem`,'--pinyin-cell':`${pinyinCell}px`}}
-      data-reader-theme={theme} data-language={materialLang} data-inspector-open={inspectorOpen&&!modalBlocked}
+      data-reader-theme={theme} data-language={materialLang} data-class-study={classStudyActive} data-inspector-open={inspectorOpen&&!modalBlocked}
       data-pron-spacing={materialLang==='Chinese'&&(pronDisplay!=='none'||pronReveal)?'reserved':'natural'}
       data-left-active={!!(leftPanelLoading || leftPanelResult)}
       data-right-active={!!(dragTokens !== null || (selectedToken && isSheetOpen))}>
@@ -2493,6 +2516,7 @@ export default function ViewerPage() {
             {autoPace&&<button className="viewer-pace-toggle" aria-pressed={paceRunning} onClick={()=>paceRunning?setPaceRunning(false):startPacer()}>{paceRunning?(paceHeld?'자동 진행 대기 · 중지':'자동 진행 중지'):'자동 진행 시작'}</button>}
           </div>
         </div>
+      <ClassCopyNotice key={String(id)} material={material} user={user} returnTo={originalParams.get('returnTo')}/>
       <header className="page-header viewer-header">
         <p className="reader-metadata">{langNameKo(materialLang)}{material?.processed_json?.metadata?.level ? ` · ${material.processed_json.metadata.level}` : ''} · {material.visibility === 'public' ? '공개 읽기' : '내 자료'}</p>
         {composerOf(material) && <p className="reader-metadata">{passageOf(material)?`${passageLocation(passageOf(material))}에서 고른 학습 구간이에요. 원본은 위의 링크에서 열 수 있어요.`:'학습에 사용한 본문이에요. 현재 글은 위의 링크에서 열 수 있어요.'}</p>}
@@ -3096,7 +3120,12 @@ export default function ViewerPage() {
 
       </div>{/* viewer-center end */}
 
-      {(leftPanelLoading || leftPanelResult || dragTokens !== null || (selectedToken && isSheetOpen) || pickedLineIdx !== null) && <ViewerBottomSheet
+      <ClassroomReader context={studyContext} user={user} material={material}
+        selection={studySelection(material,isSheetOpen&&selectedToken?{...selectedToken,meaning:refMeaning||selectedToken.meaning,furigana:headReading||selectedToken.furigana}:null,dragTokens!==null?leftPanelText:!isSheetOpen?pickedSentence?.text||'':'')}
+        wordContent={(dragTokens!==null||(selectedToken&&isSheetOpen))?renderRightPanelContent:null}
+        sentenceContent={(leftPanelLoading||leftPanelResult)?leftPanelContent:null}
+        onActive={setClassStudyActive} suppressed={modalBlocked}
+        fallback={(leftPanelLoading || leftPanelResult || dragTokens !== null || (selectedToken && isSheetOpen) || pickedLineIdx !== null) && <ViewerBottomSheet
         onClose={closeWordCard}
         suppressed={modalBlocked}
         onOpenChange={setInspectorOpen}
@@ -3112,7 +3141,7 @@ export default function ViewerPage() {
             {sentenceNavBtn(1, 'viewer-sheet-bar__btn viewer-sheet-bar__btn--nav')}
           </>
         ) : null}
-      />}
+      />} />
 
 
       {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} onClose={closeReadingSettings} keepPosition={keepReadingPosition} previewTokens={previewTokens} onPreset={()=>setRevealedPron(new Set())} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus}/>}

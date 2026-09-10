@@ -78,6 +78,7 @@ export async function fetchTeamMaterial(key, token, id) {
 /** 순수 — 사본을 다시 받아야 하는가(없음·원본이 더 새것). */
 export function copyIsStale(copy, entry) {
   if (!copy) return true;
+  if(entry?.contentRevision)return copy.contentRevision!==entry.contentRevision;
   if (!entry?.updatedAt || !copy.updatedAt) return false;
   return String(entry.updatedAt) > String(copy.updatedAt);
 }
@@ -87,8 +88,8 @@ export async function ensureSharedCopy(key, token, entry) {
   const existing = await getSharedCopy(entry.id);
   if (existing && !copyIsStale(existing, entry)) return existing;
   const payload = await fetchTeamMaterial(key, token, entry.id);
-  const copy = { id: payload.id, team: key, updatedAt: payload.updatedAt || null, material: payload };
-  await putSharedCopy(copy);
+  const copy = { id: payload.id, team: key, contentRevision:payload.contentRevision||null, updatedAt: payload.updatedAt || null, material: payload };
+  if(!await putSharedCopy(copy))throw new Error('이 기기에 자료를 보관하지 못했어요. 저장 공간을 확인한 뒤 다시 열어 주세요.');
   return { ...copy, savedAt: Date.now() };
 }
 

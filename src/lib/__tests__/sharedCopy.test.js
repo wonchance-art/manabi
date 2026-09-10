@@ -51,55 +51,17 @@ describe('복제본 행', () => {
   });
 });
 
-/** 체이닝 되는 가짜 supabase — from().select().eq().not() / insert().select().single() / upsert() */
-function fakeClient({ existing = [], insertIds = [1001, 1002] } = {}) {
-  const calls = [];
-  let n = 0;
-  const q = (table) => {
-    const state = { table, op: null, row: null };
-    const chain = {
-      select() { return chain; },
-      eq() { return chain; },
-      not() { return chain; },
-      insert(row) { state.op = 'insert'; state.row = row; return chain; },
-      upsert(row, opts) { calls.push({ table, op: 'upsert', row, opts }); return Promise.resolve({ error: null }); },
-      single() {
-        if (state.op === 'insert') { calls.push({ table, op: 'insert', row: state.row }); return Promise.resolve({ data: { id: insertIds[n++] }, error: null }); }
-        return Promise.resolve({ data: null, error: null });
-      },
-      then(res) { return Promise.resolve({ data: existing, error: null }).then(res); },
-    };
-    return chain;
-  };
-  return { from: q, calls };
-}
-
-describe('복제 + 대기 담기', () => {
-  it('없는 것만 넣고(재분석 0), 담기는 복제 **뒤** 복제본 id로', async () => {
-    const client = fakeClient({ existing: [{ id: 900, source_ref: '13' }] });
-    const pending = { materialId: 12, word: { text: '学生', base: '学生', meaning: '학생', pos: '명사', reading: 'がくせい', language: 'Japanese', sourceSentence: '私は学生です。' } };
-    const r = await claimSharedCopies(client, 'student', { materials: [payload, { ...payload, id: 13 }], pending });
-    expect(r.copied).toBe(1);
-    expect(r.skipped).toBe(1);
-    expect(r.byId.get('12')).toBe(1001);
-    expect(r.byId.get('13')).toBe(900);
-    expect(r.saved).toBe(true);
-    expect(r.savedWord).toBe('学生');
-    const ops = client.calls.map((c) => c.op);
-    expect(ops).toEqual(['insert', 'upsert']); // 순서 계약 — 복제가 먼저
-    const upsert = client.calls.find((c) => c.op === 'upsert');
-    expect(upsert.table).toBe('user_vocabulary');
-    expect(upsert.row).toMatchObject({ user_id: 'student', word_text: '学生', source_material_id: 1001, source_sentence: '私は学生です。' });
-    expect(upsert.opts).toEqual({ onConflict: 'user_id,word_text', ignoreDuplicates: true });
-    // 복제 행에 분석 호출 흔적이 없다 — 파이프라인 import 0
-    expect(read('src/lib/sharedCopy.js')).not.toContain('analyzeText');
+describe('명시적으로 여는 자료만 서버에서 원자적으로 보관', () => {
+  it('서버가 반환한 기존 사본 ID를 사용하고 클라이언트 직접 쓰기·단어 자동 저장을 하지 않는다', async () => {
+    const requests=[];
+    const client={from(){throw new Error('direct writes forbidden');}};
+    const result=await claimSharedCopies(client,'student',{team:'classroom',materials:[payload,{...payload,id:13}],requestCopy:async(team,id,action)=>{requests.push({team,id,action});return {copyId:id===12?1001:900};}});
+    expect(requests).toEqual([{team:'classroom',id:12,action:'open'},{team:'classroom',id:13,action:'open'}]);
+    expect([...result.byId]).toEqual([['12',1001],['13',900]]);
   });
-
-  it('대기 단어의 원본이 이번 복제에 없으면 담지 않는다(다음 방문에서)', async () => {
-    const client = fakeClient();
-    const r = await claimSharedCopies(client, 'student', { materials: [payload], pending: { materialId: 77, word: { text: 'x' } } });
-    expect(r.saved).toBe(false);
-    expect(client.calls.map((c) => c.op)).toEqual(['insert']);
+  it('수업 권한 확인 경로가 없거나 기존 사본을 선택하지 않으면 임의로 새 사본을 만들지 않는다', async () => {
+    await expect(claimSharedCopies({},'student',{materials:[payload]})).rejects.toThrow('수업 화면');
+    await expect(claimSharedCopies({},'student',{team:'classroom',materials:[payload],requestCopy:async()=>({state:'choose'})})).rejects.toThrow('기존 사본');
   });
 });
 
@@ -168,26 +130,16 @@ describe('local: 뷰어 — 네트워크 0', () => {
     expect(viewer).toContain('const canEditToken = !!user?.id && user.id === material?.owner_id;');
   });
 
-  it('담기는 CTA 시트로 — 「로그인이 필요합니다」 토스트를 타지 않고 대기 담기를 기기에 적는다', () => {
-    const viewer = read('src/views/ViewerPage.jsx');
-    const add = sliceBetween(viewer, 'const addToVocab = async (grade) => {', '\n  };\n');
-    expect(add).toContain("if (material?.__local) { rememberGuestSave(selectedToken);");
-    expect(viewer).toContain('{!user && material?.__local && (');
-    expect(viewer).toContain('className="save-grade__guest"');
-    expect(viewer).toContain('onClick={() => rememberGuestSave(selectedToken)}');
-    expect(viewer).toContain('href={`/auth?from=${encodeURIComponent(`/class/${material.__team}`)}`}');
-    expect(read('src/index.css')).toContain('.save-grade__guest');
-  });
-
-  it('로그인 직후 복제는 Layout 효과 하나(어디서 로그인하든) — 복제 뒤 사본 삭제·대기 담기 정리', () => {
-    const layout = read('src/components/Layout.jsx');
-    const fx = sliceBetween(layout, '// 팀 사본 복제(v2-AB R2)', '// 복습 알림 스케줄러');
-    const claim = fx.indexOf('claimSharedCopies(supabase, user.id, { materials: copies.map((c) => c.material), pending })');
-    const del = fx.indexOf('deleteSharedCopy(c.id)');
-    expect(claim).toBeGreaterThan(-1);
-    expect(del).toBeGreaterThan(claim);
-    expect(fx).toContain('if (r.saved) clearPendingSave();');
-    expect(fx).toContain("window.dispatchEvent(new CustomEvent('manabi:shared-claimed'));");
+  it('로그인 버튼을 누른 표현만 요청 ID로 이어가고 일괄 자동 복제를 하지 않는다', () => {
+    const viewer=read('src/views/ViewerPage.jsx'),layout=read('src/components/Layout.jsx');
+    expect(viewer).toContain('return createClassSaveIntent(');
+    expect(viewer).toContain('loginForGuestSave');
+    expect(viewer).toContain('classSave=');
+    expect(layout).not.toContain('claimSharedCopies');
+    expect(layout).not.toContain('deleteSharedCopy');
+    const resume=read('src/components/classroom/ClassSaveResume.jsx');
+    expect(resume.indexOf('requestClassCopy(intent.team')).toBeLessThan(resume.indexOf("from('user_vocabulary').upsert"));
+    expect(resume.indexOf('await saveContext(')).toBeLessThan(resume.indexOf('await finishClassSaveIntent('));
   });
 
   it('팀 페이지 — 받기는 여기서만(ensureSharedCopy → local: 뷰어), 오너 뷰는 API 라우트 0, 로그인 학생은 즉시 복제', () => {
@@ -198,7 +150,7 @@ describe('local: 뷰어 — 네트워크 0', () => {
     const owner = sliceBetween(page, 'function OwnerView(', '\nfunction NotesList(');
     expect(owner).not.toContain('fetch(');
     expect(owner).not.toContain('unlock');
-    expect(page).toContain('const r = await claimSharedCopies(supabase, user.id, { materials: [payload] });');
+    expect(page).toContain("await requestClassCopy(teamKey,id,'open')");
     // 401 = 잠김으로(암호 변경·30일)
     expect(page).toContain('if (err?.status === 401) relock(RELOCK_MSG);');
     // 뷰어 메타는 local:이면 서버를 묻지 않는다

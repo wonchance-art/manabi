@@ -1,12 +1,4 @@
-/**
- * 팀 사본 → 내 자료 복제 (v2-AB R2, #1077 5603827169 §6 · 상세 5604199672 S3/S4 · 정정 ②).
- *
- * 로그인하면 기기 사본(또는 토큰으로 방금 받은 페이로드)을 **내 자료 행**으로 복제한다 —
- * raw_text·processed_json·metadata(book·translations) 그대로, 재분석 0. 원본 표시는 컬럼이 아니라
- * `metadata.source_ref`(스키마 0 — `source_ref` 컬럼은 vocab_words에만 있다). 같은 원본은 한 번만
- * (중복 0). 담으려던 단어는 복제가 끝난 **뒤** 복제본 id로 담는다(순서 계약).
- */
-import { buildVocabRow, VOCAB_UPSERT } from './vocabIO';
+/** Shared-copy compatibility helpers. New authenticated copies are created only by the class capability RPC. */
 
 /** 순수 — 페이로드/사본 → 내 자료 행. */
 export function copyRowFromPayload(material, userId) {
@@ -37,52 +29,34 @@ export function planClaim(materials, existingBySource) {
   return { toInsert, byId };
 }
 
-/** 내 자료 중 복제본(source_ref 있음) — source_ref → 내 id. 실패는 빈 Map(복제가 두 번 될 수 있지만 막히진 않는다). */
+/** Lookup failure is not absence. Duplicate legacy rows require an explicit choice at the server. */
 export async function findExistingCopies(client, userId) {
-  const { data, error } = await client
-    .from('reading_materials')
-    .select('id, processed_json->metadata->>source_ref')
-    .eq('owner_id', userId)
-    .not('processed_json->metadata->source_ref', 'is', null);
-  if (error) return new Map();
-  const map = new Map();
-  for (const r of data || []) if (r.source_ref) map.set(String(r.source_ref), r.id);
+  const rows=[],links=[];
+  for(let from=0;;from+=500){
+    const {data,error}=await client.from('reading_materials').select('id, processed_json->metadata->>source_ref').eq('owner_id',userId).not('processed_json->metadata->source_ref','is',null).order('id').range(from,from+499);
+    if(error)throw error;if(!Array.isArray(data))throw new Error('기존 자료를 확인하지 못했어요.');
+    rows.push(...data);if(data.length<500)break;
+  }
+  for(let from=0;;from+=500){
+    const {data,error}=await client.from('class_material_copies').select('source_material_id,copy_material_id').eq('owner_id',userId).order('source_material_id').range(from,from+499);
+    if(error)throw error;if(!Array.isArray(data))throw new Error('대표 사본을 확인하지 못했어요.');
+    links.push(...data);if(data.length<500)break;
+  }
+  const groups=new Map(),map=new Map();
+  for(const r of rows){if(!r.source_ref)continue;const key=String(r.source_ref);groups.set(key,[...(groups.get(key)||[]),r.id]);}
+  for(const [key,ids]of groups)if(ids.length===1)map.set(key,ids[0]);
+  for(const r of links)map.set(String(r.source_material_id),r.copy_material_id);
   return map;
 }
 
-/**
- * 복제 + 대기 담기.
- * @param {object} client supabase
- * @param {string} userId
- * @param {{materials: object[], pending?: object|null}} opts
- * @returns {{copied:number, skipped:number, byId:Map<string,number>, saved:boolean, savedWord:string|null}}
- */
-export async function claimSharedCopies(client, userId, { materials = [], pending = null } = {}) {
-  const existing = await findExistingCopies(client, userId);
-  const { toInsert, byId } = planClaim(materials, existing);
-  let copied = 0;
-  for (const m of toInsert) {
-    const { data, error } = await client.from('reading_materials').insert(copyRowFromPayload(m, userId)).select('id').single();
-    if (error) throw error;
-    byId.set(String(m.id), data.id);
-    copied += 1;
+/** Explicit selections only; the server owns canonical-copy identity and authorization. */
+export async function claimSharedCopies(client, userId, { materials = [], team, requestCopy } = {}) {
+  if(!team||typeof requestCopy!=='function')throw new Error('수업 화면에서 안전하게 자료를 열어 주세요.');
+  const byId=new Map();
+  for(const material of materials){
+    const result=await requestCopy(team,material.id,'open');
+    if(!result.copyId)throw new Error('기존 사본을 먼저 선택해 주세요.');
+    byId.set(String(material.id),result.copyId);
   }
-  let saved = false;
-  let savedWord = null;
-  if (pending?.word?.text && byId.has(String(pending.materialId))) {
-    const row = buildVocabRow({
-      userId,
-      surface: pending.word.text,
-      base: pending.word.base || pending.word.text,
-      meaning: pending.word.meaning,
-      pos: pending.word.pos,
-      reading: pending.word.reading,
-      language: pending.word.language,
-      sourceSentence: pending.word.sourceSentence,
-      sourceMaterialId: byId.get(String(pending.materialId)),
-    });
-    const { error } = await client.from('user_vocabulary').upsert(row, VOCAB_UPSERT);
-    if (!error) { saved = true; savedWord = pending.word.text; }
-  }
-  return { copied, skipped: materials.length - toInsert.length, byId, saved, savedWord };
+  return {byId};
 }

@@ -17,18 +17,21 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { ClassroomShell,ClassroomState,ClassBack,ClassCover } from '../components/classroom/ClassroomUI';
+import { classStudyHref } from '../lib/classStudy';
 import { classroomPlainText } from '../lib/classroomModel';
 import Button from '../components/Button';
 import MaterialGroupCard from '../components/MaterialGroupCard';
 import { LANG_NAME_KO } from '../lib/constants';
-import { getTeam, dayLabel, listDayNotes, localViewerHref, TEAM_PW_MIN } from '../lib/classBoard';
+import { getTeam, todayKey, dayLabel, listDayNotes, localViewerHref, TEAM_PW_MIN } from '../lib/classBoard';
 import { fetchTeamRoot, fetchDayNotes, fetchBookChapters, chapterLabel } from '../lib/classTeamQueries';
 import {
   readUnlock, clearUnlock, readIndexCache, isBannerOff, setBannerOff, unlockTeam, fetchTeamIndex,
-  fetchTeamMaterial, ensureSharedCopy, copyIsStale,
+  ensureSharedCopy, copyIsStale,
 } from '../lib/classClient';
 import { listSharedCopies, copyDaysLeft } from '../lib/sharedStore';
-import { claimSharedCopies, findExistingCopies } from '../lib/sharedCopy';
+import { findExistingCopies } from '../lib/sharedCopy';
+import { requestClassCopy, studentReaderHref } from '../lib/classCopyClient';
+import ClassSaveResume from '../components/classroom/ClassSaveResume';
 
 const RELOCK_MSG = '암호를 다시 입력해 주세요 — 선생님이 바꿨거나 30일이 지났어요.';
 const errMsg = (err) => (err?.status === 429 ? '잠시 후 다시 시도해 주세요.' : err?.message || '알 수 없는 오류');
@@ -111,7 +114,7 @@ function OwnerView({ root, user, teamKey, toast }) {
   return <ClassroomShell lang={team.lang}>
     <ClassBack/>
     <header className="classroom-header"><div><span className="classroom-eyebrow">MANABI / {LANG_NAME_KO[team.lang]}</span><h1>{team.name}</h1><p>수업의 표현을 모아, 나의 언어로.</p></div><ClassCover team={team} small/></header>
-    <div className="classroom-actions"><Link href={`/class/${teamKey}/live`} className="classroom-button">수업 진행 →</Link><Link href={`/class/${teamKey}/board`} className="classroom-button classroom-button--quiet">함께 보는 화면 ↗</Link><button className="classroom-text-button" onClick={()=>copyToClipboard(shareLink,toast,'수업 링크를 복사했어요.')}>학생에게 링크 공유</button><Link href="/class" className="classroom-text-button">수업 설정</Link></div>
+    <div className="classroom-actions"><Link href={team.chapterId?classStudyHref(team.chapterId,teamKey,todayKey()):`/class/${teamKey}/live`} className="classroom-button">수업 진행 →</Link><Link href={`/class/${teamKey}/board`} className="classroom-button classroom-button--quiet">함께 보는 화면 ↗</Link><button className="classroom-text-button" onClick={()=>copyToClipboard(shareLink,toast,'수업 링크를 복사했어요.')}>학생에게 링크 공유</button><Link href="/class" className="classroom-text-button">수업 설정</Link></div>
     <div className="classroom-tabs" aria-label="수업 자료 종류"><button aria-pressed={tab==='notes'} onClick={()=>setTab('notes')}>수업 노트 {notes.length||''}</button><button aria-pressed={tab==='book'} onClick={()=>setTab('book')}>교재</button></div>
     {tab==='notes'?<>
       {notesLoading?<p role="status">수업 노트를 불러오는 중…</p>:notesError?<div className="classroom-notice" role="alert">노트를 불러오지 못했어요. <button onClick={()=>retryNotes()}>다시 불러오기</button></div>:latest&&<Link href={openHref(latest.id)} className="classroom-featured-note"><span className="classroom-eyebrow">최근 수업 노트</span><h2>{dayLabel(latest.day)}에 함께 배운 것들.</h2><p>{latest.title}</p><b>노트 읽기 →</b></Link>}
@@ -139,6 +142,8 @@ function StudentView({ teamKey, user, toast }) {
   const [offline, setOffline] = useState(false);
   const [copies, setCopies] = useState(() => new Map());
   const [rowBusy, setRowBusy] = useState({});
+  const [choice,setChoice]=useState(null);
+  const [studentTab,setStudentTab]=useState('notes');
   const [bannerOff, setBannerOffState] = useState(true);
 
   const refreshCopies = useCallback(async () => {
@@ -189,12 +194,15 @@ function StudentView({ teamKey, user, toast }) {
   }, [teamKey, refreshCopies, relock]);
 
   // S4 — 로그인 학생: 이미 내 자료로 담긴 원본(source_ref → 내 id)
-  const { data: claimed, refetch: refetchClaimed } = useQuery({
+  const { data: claimed, error: claimedError, refetch: refetchClaimed } = useQuery({
     queryKey: ['class-claimed', user?.id],
     queryFn: () => findExistingCopies(supabase, user.id),
     enabled: !!user?.id,
   });
   const claimedMap = useMemo(() => claimed || new Map(), [claimed]);
+  const {data:recentActivity=[]}=useQuery({queryKey:['class-reading-activity',user?.id,teamKey],enabled:!!user?.id,
+    queryFn:async()=>{const {data,error}=await supabase.from('library_reading_activity').select('context,opened_at').eq('owner_id',user.id).order('opened_at',{ascending:false}).limit(100);if(error)throw error;return data||[];}});
+
   useEffect(() => {
     if (!user?.id) return undefined;
     const on = () => { refetchClaimed(); };
@@ -229,20 +237,15 @@ function StudentView({ teamKey, user, toast }) {
     if (!unlock) return;
     const id = entry.id;
     if (user) {
-      const mine = claimedMap.get(String(id));
-      if (mine) { router.push(`/viewer/${mine}`); return; }
-      if (offline) { toast('온라인에서 담을 수 있어요.', 'warning'); return; }
-      setRow(id, true);
+      if (offline) { const mine=claimedMap.get(String(id));if(mine)router.push(studentReaderHref(mine,teamKey,entry.day));else toast('온라인에서 처음 열 수 있어요.','warning');return; }
+      setRow(id,true);
       try {
-        const payload = await fetchTeamMaterial(teamKey, unlock.token, id);
-        const r = await claimSharedCopies(supabase, user.id, { materials: [payload] });
-        const newId = r.byId.get(String(id));
+        const result=await requestClassCopy(teamKey,id,'open');
+        if(result.state==='choose'){setChoice({entry,candidates:result.candidates});return;}
         await refetchClaimed();
-        if (newId) router.push(`/viewer/${newId}`);
-      } catch (err) {
-        if (err?.status === 401) relock(RELOCK_MSG); else toast('담지 못했어요 — ' + errMsg(err), 'error');
-      } finally { setRow(id, false); }
-      return;
+        if(result.copyId)router.push(studentReaderHref(result.copyId,teamKey,entry.day));
+      }catch(err){if(err?.status===401)relock(RELOCK_MSG);else toast(err.message,'error');}
+      finally{setRow(id,false);}return;
     }
     const existing = copies.get(id);
     if (existing && !copyIsStale(existing, entry)) { router.push(localViewerHref(id, teamKey)); return; }
@@ -285,8 +288,8 @@ function StudentView({ teamKey, user, toast }) {
     let n = 0;
     try {
       for (const e of all) {
-        const payload = await fetchTeamMaterial(teamKey, unlock.token, e.id);
-        await claimSharedCopies(supabase, user.id, { materials: [payload] });
+        const result=await requestClassCopy(teamKey,e.id,'open');
+        if(!result.copyId)throw new Error('기존 사본을 먼저 선택해야 하는 자료가 있어요.');
         n += 1;
       }
       await refetchClaimed();
@@ -303,6 +306,10 @@ function StudentView({ teamKey, user, toast }) {
   const team = index?.team || { key: teamKey, name: unlock?.name || teamKey };
   const chapters = index?.chapters || [];
   const notes = index?.notes || [];
+  const allEntries=[...notes,...chapters];
+  const recent=recentActivity.map(a=>allEntries.find(e=>String(claimedMap.get(String(e.id)))===String(a.context?.materialId))).find(Boolean);
+  const featured=recent||notes[0]||chapters[0];
+
   const unclaimedCount = user ? [...chapters, ...notes].filter((e) => !claimedMap.has(String(e.id))).length : 0;
 
   const chip = (entry) => {
@@ -310,7 +317,7 @@ function StudentView({ teamKey, user, toast }) {
     if (user) {
       return claimedMap.has(String(entry.id))
         ? <span style={{ fontSize: '0.72rem', color: 'var(--accent-text)' }}>✓ 내 자료</span>
-        : <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>↓ 담기</span>;
+        : <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>읽기 시작 →</span>;
     }
     const c = copies.get(entry.id);
     if (!c) return <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{offline ? '온라인에서 받기' : '·'}</span>;
@@ -324,19 +331,23 @@ function StudentView({ teamKey, user, toast }) {
       <TeamHeader
         name={team.name}
         lang={team.lang}
-        right={user && unclaimedCount > 0 ? <Button size="sm" disabled={busy || offline} onClick={claimAll}>📥 전부 내 자료로 ({unclaimedCount})</Button> : null}
+        right={user && unclaimedCount > 0 ? <details><summary>보관 옵션</summary><Button size="sm" disabled={busy || offline} onClick={claimAll}>남은 자료 모두 보관 ({unclaimedCount})</Button></details> : null}
       />
       {!user && !bannerOff && (
         <div role="status" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: '8px 12px', marginBottom: 12, borderRadius: 'var(--radius-md)', background: 'var(--primary-glow)', border: '1px solid var(--primary)', fontSize: '0.82rem' }}>
-          <span style={{ flex: 1, minWidth: 200 }}>로그인하면 이 교재와 수업 정리가 내 자료로 담겨요</span>
+          <span style={{ flex: 1, minWidth: 200 }}>로그인하면 여는 자료를 내 서재에 보관해요</span>
           <Link href={`/auth?from=${encodeURIComponent(`/class/${teamKey}`)}`} className="btn btn--primary btn--sm">로그인 →</Link>
           <button type="button" className="btn btn--ghost btn--sm" aria-label="닫기" onClick={() => { setBannerOff(teamKey); setBannerOffState(true); }}>✕</button>
         </div>
       )}
       {offline && <p role="status" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 10px' }}>오프라인 — 받아 둔 사본만 열려요.</p>}
 
-      <NotesList notes={notes} onOpen={(n) => { if (!dim(n)) openEntry(n); }} onCopy={copyNotePlain} right={chip} dim={dim} />
-      {team.bookKey && (
+      {featured&&<button className="classroom-featured-note" onClick={()=>openEntry(featured)} disabled={!!rowBusy[featured.id]}><span className="classroom-eyebrow">{recent?'이어서 공부하기':'최근 수업 자료'}</span><h2>{featured.day?`${dayLabel(featured.day)} 수업 노트`:chapterLabel(featured.title)}</h2><p>{recent?'읽던 위치에서 계속 공부하세요.':'한 표현씩, 내 언어로 만들어 보세요.'}</p><b>{rowBusy[featured.id]?'자료 확인 중…':recent?'이어 읽기 →':'읽기 시작 →'}</b>{user&&<small>처음 여는 자료는 내 서재에 보관됩니다.</small>}</button>}
+      {claimedError&&<p role="alert">내 자료 목록을 확인하지 못했어요. <button onClick={()=>refetchClaimed()}>다시 확인</button></p>}
+      {choice&&<div className="classroom-notice" role="group" aria-label="기존 사본 선택"><b>사용할 사본을 선택하세요.</b><p>다른 사본은 삭제하지 않습니다.</p>{choice.candidates.map(c=><button key={c.id} disabled={busy} onClick={async()=>{setBusy(true);try{const r=await requestClassCopy(teamKey,choice.entry.id,'open',{preferred:c.id});if(r.copyId)router.push(studentReaderHref(r.copyId,teamKey,choice.entry.day));setChoice(null);}catch(e){toast(e.message,'error');}finally{setBusy(false);}}}>{c.title} · {new Date(c.createdAt).toLocaleDateString('ko-KR')}</button>)}<button onClick={()=>setChoice(null)}>나중에</button></div>}
+      <div className="classroom-tabs" aria-label="수업 자료 종류"><button aria-pressed={studentTab==='notes'} onClick={()=>setStudentTab('notes')}>수업 노트</button><button aria-pressed={studentTab==='book'} onClick={()=>setStudentTab('book')}>교재</button></div>
+      {studentTab==='notes'&&<NotesList notes={notes} onOpen={(n) => { if (!dim(n)) openEntry(n); }} onCopy={copyNotePlain} right={chip} dim={dim} />}
+      {studentTab==='book'&&team.bookKey && (
         <MaterialGroupCard
           title={team.bookTitle || '교재'}
           meta={`공유된 ${chapters.length}과${team.bookTotal?` · 전체 ${team.bookTotal}과`:""}`}
@@ -368,6 +379,6 @@ export default function ClassTeamPage() {
   });
   if (loading || (user && rootLoading)) return <ClassroomState title="수업을 불러오고 있어요."/>;
   const owned = !!user && !!root && root.owner_id === user.id;
-  if (owned) return <OwnerView root={root} user={user} teamKey={teamKey} toast={toast} />;
-  return <StudentView teamKey={teamKey} user={user} toast={toast} />;
+  if (owned) return <><ClassSaveResume user={user}/><OwnerView root={root} user={user} teamKey={teamKey} toast={toast} /></>;
+  return <><ClassSaveResume user={user}/><StudentView teamKey={teamKey} user={user} toast={toast} /></>;
 }

@@ -83,11 +83,19 @@ describe('목록·페이로드 — 루트 소유자의 행만', () => {
     });
     expect(idx.team).toEqual({ key: 'a', name: 'A팀', lang: 'Japanese', bookKey: 'bk_1', bookTitle: '교재', bookTotal: 41, chapterId: null });
     expect(idx.chapters.map((c) => c.id)).toEqual([3, 12]);
-    expect(idx.chapters[0]).toEqual({ id: 3, title: '교재 — 3과', order: 3, status: 'completed', updatedAt: '2026-09-03' });
+    expect(idx.chapters[0]).toEqual({ id: 3, title: '교재 — 3과', order: 3, status: 'completed', updatedAt: '2026-09-03', contentRevision:expect.stringMatching(/^[a-f0-9]{64}$/) });
     expect(idx.notes.map((n) => n.id)).toEqual([21, 20]);
-    expect(idx.notes[0]).toEqual({ id: 21, title: '[A팀] 2026-09-09 수업', day: '2026-09-09', lines: 2, updatedAt: '2026-09-09T10:00:00Z' });
+    expect(idx.notes[0]).toEqual({ id: 21, title: '[A팀] 2026-09-09 수업', day: '2026-09-09', lines: 2, updatedAt: '2026-09-09T10:00:00Z', contentRevision:expect.stringMatching(/^[a-f0-9]{64}$/) });
     // 목록에 raw_text·processed_json 본문이 실리지 않는다(페이로드 라우트가 따로)
     expect(JSON.stringify(idx)).not.toContain('道歉');
+  });
+
+  it('내용 판본은 시간과 무관하게 바뀌고 목록·본문에서 같다',()=>{
+    const row={...chapter(3,3),raw_text:'图书馆'};
+    const original=toPayload(row,'chapter').contentRevision;
+    expect(indexFromRows({team,chapterRows:[row]}).chapters[0].contentRevision).toBe(original);
+    row.processed_json.metadata.viewerRevision='read-position';expect(toPayload(row,'chapter').contentRevision).toBe(original);
+    row.raw_text+='明天';expect(toPayload(row,'chapter').contentRevision).not.toBe(original);
   });
 
   it('페이로드 판정 — 소유자가 다르면(학생 복제본 포함) 팀 메타가 있어도 null', () => {
@@ -102,7 +110,7 @@ describe('목록·페이로드 — 루트 소유자의 행만', () => {
 
   it('페이로드는 뷰어가 읽는 필드만 — raw_text·processed_json(metadata 포함)·언어·소유자', () => {
     const p = toPayload({ ...chapter(3, 3), raw_text: '私は学生です。', visibility: 'private' }, 'chapter');
-    expect(Object.keys(p).sort()).toEqual(['created_at', 'id', 'kind', 'language', 'owner_id', 'processed_json', 'raw_text', 'title', 'updatedAt', 'visibility']);
+    expect(Object.keys(p).sort()).toEqual(['contentRevision','conversation_script','created_at','direction','document_json','id','kind','language','lesson_explanation_ko','owner_id','page_end','page_start','processed_json','raw_text','source_pdf_id','title','updatedAt','visibility']);
     expect(p.raw_text).toBe('私は学生です。');
     expect(p.processed_json.metadata.book.key).toBe('bk_1');
   });

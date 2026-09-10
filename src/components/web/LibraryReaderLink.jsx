@@ -24,5 +24,5 @@ export default function LibraryReaderLink({ href, children, ...props }) {
 export function LibraryReturnLink({ children = '← 내 서재', ...props }) {
   const params = useSearchParams();
   const back = safeReaderReturn(params.get('returnTo'));
-  return <Link {...props} href={back}>{back.startsWith('/class/') ? '← 수업 진행' : children}</Link>;
+  return <Link {...props} href={back}>{back.startsWith('/class/') ? (back.includes('/live')?'← 수업 진행':'← 수업으로') : children}</Link>;
 }

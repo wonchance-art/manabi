@@ -81,12 +81,13 @@ export function useClassroomSession({ ownerId, team, rootId, day }) {
   },[team,client,queryKey,pump,refreshQueue]);
   // Polling also discovers entries safely queued in another tab. Failed rows require explicit retry.
   useEffect(() => { const timer=setInterval(()=>{ refreshQueue().then(pump).catch(()=>{}); },5000); return()=>clearInterval(timer); },[pump,refreshQueue]);
-  async function add(text) {
+  async function add(text,seed=null) {
     const clean=text.replace(/\r/g,'').trim();
     if (!clean || clean.length>5000) throw new Error('1~5,000자로 입력해 주세요.');
-    const row={id:crypto.randomUUID(),scope,ownerId,team,rootId,day,text:clean,createdAt:Date.now(),status:'queued',attempted:false};
+    const row={id:crypto.randomUUID(),scope,ownerId,team,rootId,day,text:clean,createdAt:Date.now(),status:'queued',attempted:false,...(seed?{seed}:{} )};
     await putClassOperation(row); // Never clear the composer until the transaction commits.
     setStoreError(''); await refreshQueue(); void pump();
+    return row.id;
   }
   async function retry(id) {
     const row=(await listClassOperations(scope)).find(r=>r.id===id);
@@ -107,17 +108,29 @@ export function useClassroomSession({ ownerId, team, rootId, day }) {
     const controller=new AbortController();
     let alive=true;
     setAnalysis({running:true,error:''});
-    (async()=>{
+    const run=async()=>{
       const db=await getSupabase();
       const {data,error}=await db.auth.getSession();
       if (error || data?.session?.user?.id!==ownerId || !alive) return;
+      const fresh=await fetchDayNote(ownerId,team,day);
+      if(!alive)return;
+      if(!fresh||JSON.stringify(fresh.processed_json)!==JSON.stringify(note.processed_json)){
+        if(fresh)accept(fresh);
+        return;
+      }
       // The pipeline appends paragraph end breaks itself. Keep lexical IDs and manual fields intact.
       const base=structuredClone(note.processed_json);
       base.sequence=base.sequence.filter(id=>!/^br_\d+_end_/.test(id));
       base.dictionary=Object.fromEntries(base.sequence.map(id=>[id,base.dictionary[id]]));
       const record=await runPreservedReanalysis(db,note,controller.signal,analyzeText,{selectedLineIndices:selected,baseJsonOverride:base});
       if (alive) accept(record);
-    })().catch(error=>{
+    };
+    // One origin runs one analysis for this class/day. The server CAS also protects
+    // against a stale writer from another device or preview origin.
+    const task=navigator.locks?.request
+      ? navigator.locks.request(`manabi-class-analysis:${scope}`,{signal:controller.signal},run)
+      : run();
+    task.catch(error=>{
       if (alive && error?.name!=='AbortError') setAnalysis({running:false,error:classroomError(error)});
     }).finally(()=>{if(alive) setAnalysis(prev=>({...prev,running:false}));});
     return()=>{alive=false;controller.abort();};
