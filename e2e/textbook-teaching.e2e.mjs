@@ -37,7 +37,9 @@ let failure=false,lostResponse=false,analysisDelay=0,analysisFail=false,emptyMea
 const analyzedLines=[];
 const report={checks:[],errors:[],screens:[]},writes=[];
 await context.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());
-await context.route(base+'/**',async route=>{if(new URL(route.request().url()).pathname.startsWith('/_next/static/'))return route.continue();const response=await route.fetch({headers:{...route.request().headers(),cookie:''},timeout:180000,maxRedirects:0});await route.fulfill({response});});
+// Synthetic auth belongs to the intercepted client/API fixtures. Strip it from
+// server page requests without a second fetch/fulfill lifecycle for prefetches.
+await context.route(base+'/**',route=>route.continue(new URL(route.request().url()).pathname.startsWith('/_next/static/')?{}:{headers:{...route.request().headers(),cookie:''}}));
 await context.route('**/api/**',r=>r.fulfill({json:{}}));
 await context.route('**/auth/v1/**',r=>r.fulfill({headers:cors,json:r.request().url().includes('/user')?user:session}));
 await context.route('**/rest/v1/**',async r=>{
@@ -117,12 +119,18 @@ await dock.getByRole('button',{name:'저장 재시도',exact:true}).waitFor();aw
 await db.exec('RESET ROLE');assert.equal((await db.query('select count(*)::int n from textbook_annotations')).rows[0].n,2);await db.exec('SET ROLE authenticated');
 await page.reload();await dock.waitFor();await dock.getByText('图书馆里很安静。',{exact:true}).waitFor();check('annotation automatically returns on next visit at its anchored passage');
 await dock.getByRole('button',{name:'접기',exact:true}).last().click();await page.evaluate(()=>scrollTo(0,1000));await page.evaluate(()=>scrollTo(0,0));assert.equal(await dock.getByText('图书馆里很安静。',{exact:true}).count(),0);check('scrolling back does not repeatedly reopen a dismissed annotation');
+// Click actionability may reveal a button before opening it, especially after
+// a viewport change. Compare with the position at activation, not before that
+// browser scroll; capture runs before React mounts the presentation.
+await page.evaluate(()=>document.addEventListener('click',event=>{
+ if(event.target.closest('.class-reader-presentation-actions button')?.textContent==='크게 보여주기')window.__teachingOpenY=scrollY;
+},true));
 for(const viewport of [{width:1024,height:768},{width:768,height:1024},{width:390,height:844}]){
  await page.setViewportSize(viewport);await page.locator('[data-tid="id_3_word"]').click();
  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
- const origin=await page.evaluate(()=>scrollY);
  for(let i=0;i<10;i++){
   await dock.getByRole('button',{name:'크게 보여주기',exact:true}).last().click();
+  const origin=await page.evaluate(()=>window.__teachingOpenY);assert(Number.isFinite(origin),'capture actual presentation activation');
   const dialog=page.getByRole('dialog',{name:'학생에게 보여주는 설명'});await dialog.waitFor();
   await dialog.getByRole('button',{name:'뜻 가리기',exact:true}).click();await dialog.getByText('뜻을 떠올려 보세요.',{exact:true}).waitFor();
   if(i===0){const shot=`presentation-${viewport.width}.png`;await page.screenshot({path:out+'/'+shot});report.screens.push(shot);}
