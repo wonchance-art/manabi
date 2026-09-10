@@ -80,7 +80,7 @@ button.classroom-featured-note {width:100%;border:0;text-align:left;font:inherit
 .classroom-resume {max-width:1104px;margin:16px auto;padding:16px 20px;border:1px solid var(--border);border-radius:12px;background:var(--bg-primary);font-size:14px;line-height:1.6;}
 .classroom-resume p {margin:0 0 8px;}
 .classroom-resume button {min-height:44px;padding:8px 14px;color:var(--text-primary);border:1px solid var(--border);border-radius:8px;background:var(--bg-secondary);cursor:pointer;}
-.class-study-history__filters {display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin-block:24px;}
+.class-study-history__filters {display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-block:24px;}
 .class-study-history__filters label {flex:1;min-width:180px;font-size:12px;color:var(--text-muted);}
 .class-study-history input {display:block;width:100%;min-height:44px;margin-top:6px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg-card);color:var(--text-primary);font:inherit;box-sizing:border-box;}
 .class-study-history button {min-height:44px;border:1px solid var(--border);border-radius:10px;background:var(--bg-card);color:var(--accent-text);padding:8px 12px;font:inherit;font-size:13px;cursor:pointer;}

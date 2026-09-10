@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {build} from 'vite';
 import path from 'node:path';
 const {PGlite}=await import(process.env.QA_PGLITE_MODULE||'@electric-sql/pglite');
-const base=process.env.QA_BASE||'http://127.0.0.1:8910',out=process.env.QA_OUT||'/private/tmp/manabi-class-copy-qa';fs.mkdirSync(out,{recursive:true});
+const base=process.env.QA_BASE||'http://127.0.0.1:8912',out=process.env.QA_OUT||'/private/tmp/manabi-class-history-qa';fs.mkdirSync(out,{recursive:true});
 const db=new PGlite();const uid='00000000-0000-4000-8000-000000000077',day='2026-09-10';
 await db.exec(`CREATE ROLE authenticated;CREATE ROLE anon;CREATE ROLE service_role BYPASSRLS;CREATE SCHEMA auth;CREATE TABLE auth.users(id uuid primary key);
 CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
@@ -46,7 +46,7 @@ await context.route('**/rest/v1/**',async r=>{
  const req=r.request(),url=new URL(req.url()),table=url.pathname.split('/').pop(),method=req.method(),object=req.headers().accept?.includes('vnd.pgrst.object');
  const send=(data,status=200)=>r.fulfill({headers:cors,status,json:data});
  if(method==='OPTIONS')return r.fulfill({status:204,headers:cors});if(method==='HEAD')return r.fulfill({headers:{...cors,'content-range':'*/0'},body:''});
- if(table==='profiles')return send({id:student,display_name:'수업 검수',role:'admin',onboarded:true,last_login_at:new Date().toISOString(),learning_language:['Japanese']});
+ if(table==='profiles')return send({id:student,display_name:'수업 검수',role:'student',onboarded:true,last_login_at:new Date().toISOString(),learning_language:['Japanese']});
  if(['POST','PATCH','DELETE'].includes(method)){
   const body=req.postDataJSON();writes.push({table,body});
   try{
@@ -111,29 +111,18 @@ if(process.env.QA_LOGIN==='1'){await page.goto(base+'/auth');await page.getByLab
 else {await context.addCookies([{name:'sb-e2e-auth-token',value:'base64-'+enc(session),url:base,httpOnly:false,sameSite:'Lax'}]);}
 
 
+const historyNotes=[{id:note.id,day:'2026-09-10',title:'9월 10일 함께 읽기',entries:[{id:'manual',text:'忙碌',meaning:'하루 종일 바쁘다',reading:'máng lù',source:{kind:'manual'}},{id:'source',text:'图书馆',meaning:'도서관',reading:'tú shū guǎn',source:{kind:'textbook',materialId:'10',tokenId:'id_0_word',quote:'图书馆'}},{id:'legacy',text:'以前',meaning:'예전',reading:'yǐ qián',source:null}]}];
+await context.route('**/api/class/fixture-class/history?*',r=>r.fulfill({json:{notes:historyNotes,coverage:[{day:'2026-09-10',material_ids:['10']}],next:null}}));
 try {
 await page.goto(base+'/class/fixture-class');await page.locator('button.classroom-featured-note').waitFor();
-await page.locator('button.classroom-featured-note').click();await page.waitForURL(/\/viewer\/\d+/);await page.locator('[data-tid="id_0_word"]').waitFor();
-const copyId=/viewer\/(\d+)/.exec(page.url())[1];assert.notEqual(copyId,'10');assert.equal(await page.getByRole('complementary',{name:'교재 안 수업 도구'}).count(),0);check('student opens one private canonical copy with no teacher controls');
-await page.getByRole('link',{name:'← 수업으로',exact:true}).click();await page.locator('button.classroom-featured-note').click();await page.waitForURL(new RegExp('/viewer/'+copyId));
-assert.equal((await db.query("select count(*)::int n from reading_materials where owner_id=$1 and processed_json#>>'{metadata,source_ref}'='10'",[student])).rows[0].n,1);check('return and reopen uses same copy ID');
-const copyBefore=(await db.query('select * from reading_materials where id=$1',[copyId])).rows[0];
-const personal=structuredClone(copyBefore.processed_json);personal.dictionary.id_0_word.meaning='학생이 직접 적은 뜻';await db.query('update reading_materials set processed_json=$1 where id=$2',[personal,copyId]);
-const source=structuredClone(book);source.dictionary.id_0_word.meaning='선생님의 새 뜻';source.dictionary.id_1_word.meaning='학생이라는 새 설명';await db.query('update reading_materials set processed_json=$1 where id=10',[source]);
-await page.reload();await page.getByRole('button',{name:'변경 내용 보기',exact:true}).waitFor();assert.equal((await db.query('select processed_json from reading_materials where id=$1',[copyId])).rows[0].processed_json.dictionary.id_1_word.meaning,'뜻 2');check('new source stays unapplied until explicitly reviewed');
-await page.getByRole('button',{name:'변경 내용 보기',exact:true}).click();const dialog=page.getByRole('dialog',{name:'수업의 새 내용'});await dialog.waitFor();await page.screenshot({path:out+'/update-desktop.png'});report.screens.push('update-desktop.png');
-await dialog.getByRole('button',{name:'변경 내용 반영',exact:true}).click();await dialog.waitFor({state:'hidden'});
-const updated=(await db.query('select * from reading_materials where id=$1',[copyId])).rows[0];assert.equal(updated.processed_json.dictionary.id_0_word.meaning,'학생이 직접 적은 뜻');assert.equal(updated.processed_json.dictionary.id_1_word.meaning,'학생이라는 새 설명');assert.deepEqual(updated.processed_json.sequence,copyBefore.processed_json.sequence);check('explicit update preserves student correction and original token IDs');
-await page.getByRole('link',{name:'← 수업으로',exact:true}).click();status.failCopy=true;await page.locator('button.classroom-featured-note').click();await page.getByText('자료를 처리하지 못했어요. 기존 자료는 유지됩니다.',{exact:true}).waitFor();assert(page.url().includes('/class/fixture-class'));status.failCopy=false;check('copy lookup failure never silently creates a duplicate');
-for(const width of [1440,390,320]){await page.setViewportSize({width,height:950});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:`${out}/student-${width}.png`});report.screens.push(`student-${width}.png`);}check('student class home has no overflow on desktop and mobile');
-await page.setViewportSize({width:1440,height:1000});
-const intent=await page.evaluate(async()=>{
- const id=crypto.randomUUID();const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('manabi-class-save-intents',1);r.onupgradeneeded=()=>r.result.createObjectStore('intents',{keyPath:'id'});r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
- await new Promise((resolve,reject)=>{const tx=db.transaction('intents','readwrite');tx.objectStore('intents').put({id,at:Date.now(),ownerId:null,team:'fixture-class',materialId:10,tokenId:'id_0_word',grade:3,word:{text:'图书馆',meaning:'학생이 직접 적은 뜻',reading:'tú shū guǎn',pos:'명사',language:'Chinese',sourceSentence:'图书馆'}});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});db.close();sessionStorage.setItem(`class-save-login:${id}`,'requested');return id;
-});
-status.failContext=true;await page.goto(base+'/class/fixture-class?classSave='+intent);await page.getByText('단어는 저장됐지만 문맥 연결을 마치지 못했어요. 다시 시도해 주세요.',{exact:true}).waitFor();assert.equal(vocab.length,1);const savedStats=JSON.stringify(vocab[0]);check('login intent records partial success and retains retry after context failure');
-status.failContext=false;await page.getByRole('button',{name:'저장 재시도',exact:true}).click();await page.waitForURL(/classSaved=1/);await page.locator('[data-tid="id_0_word"][data-selected="true"]').waitFor();assert.equal(vocab.length,1);assert.equal(JSON.stringify(vocab[0]),savedStats);assert.equal(contexts.length,1);assert.equal(contexts[0].source.materialId,copyId);assert(page.url().includes('sourceToken=id_0_word'));check('resumed explicit save returns to exact word in canonical copy without resetting FSRS');
-assert.equal(await page.evaluate(id=>sessionStorage.getItem(`class-save-login:${id}`),intent),null);check('completed request is consumed only after vocabulary and context success');
+assert.equal(await page.getByRole('button',{name:'교재',exact:true}).getAttribute('aria-pressed'),'true');check('student home opens textbook tab by default');
+await page.getByRole('button',{name:'수업 돌아보기',exact:true}).click();const history=page.getByRole('region',{name:'수업 돌아보기'});await history.getByText('忙碌',{exact:true}).waitFor();
+await history.getByRole('searchbox').fill('하루');assert.equal(await history.getByText('图书馆',{exact:true}).count(),0);await history.getByText('忙碌',{exact:true}).waitFor();check('search matches Korean meaning');
+await history.getByRole('searchbox').fill('');await history.getByRole('button',{name:'교재 밖 표현만',exact:true}).click();assert.equal(await history.getByText('以前',{exact:true}).count(),0);assert.equal(await history.getByText('图书馆',{exact:true}).count(),0);check('outside-textbook filter excludes textbook and unknown legacy sources');
+await history.getByRole('button',{name:'교재 밖 표현만',exact:true}).click();
+for(const width of [1440,768,390]){await page.setViewportSize({width,height:1000});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:`${out}/history-${width}.png`});report.screens.push(`history-${width}.png`);}check('history layout fits desktop, tablet and mobile');
+await history.getByRole('button',{name:'교재에서 보기 ↗',exact:true}).click();await page.waitForURL(/viewer\/\d+/);await page.locator('[data-tid="id_0_word"][data-selected="true"]').waitFor();assert(page.url().includes('sourceQuote='));check('history opens exact expression in canonical personal copy');
+await page.getByRole('link',{name:'← 수업으로',exact:true}).click();await page.getByRole('button',{name:'수업 돌아보기',exact:true}).waitFor();assert.equal(await page.getByRole('button',{name:'수업 돌아보기',exact:true}).getAttribute('aria-pressed'),'true');check('return from source opens the class history context');
 assert.equal(report.errors.length,0,report.errors.join('\n'));check('no page runtime errors');
 } catch(error){console.error(error);report.failure=error.message;await page.screenshot({path:out+'/failure.png'});fs.writeFileSync(out+'/failure.html',await page.content());process.exitCode=1;}
 fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));await browser.close();await db.close();

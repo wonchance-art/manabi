@@ -636,9 +636,9 @@ export default function ViewerPage() {
   useEffect(()=>{
     const tokenId=originalParams.get('sourceToken');
     const scope=`${id}:${tokenId}`;
-    if(originalParams.get('classSaved')!=='1'||!tokenId||classResumeSelection.current===scope)return;
+    if((originalParams.get('classSaved')!=='1'&&!originalParams.get('sourceQuote'))||!tokenId||classResumeSelection.current===scope)return;
     const token=material?.processed_json?.dictionary?.[tokenId];
-    if(!token)return;
+    if(!token||(originalParams.get('sourceQuote')&&originalParams.get('sourceQuote')!==token.text))return;
     classResumeSelection.current=scope;setSelectedToken({...token,id:tokenId});setIsSheetOpen(true);
   },[id,material,originalParams]);
 

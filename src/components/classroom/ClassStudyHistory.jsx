@@ -36,7 +36,7 @@ export default function ClassStudyHistory({notes,coverage=[],chapters,onOpen,onC
           {note.entries?.length?<ul>{note.entries.map(entry=>{
             const chapter=chapters.find(c=>String(c.id)===entry.source?.materialId);
             return <li key={entry.id}><div><strong>{entry.text}</strong>{entry.reading&&<small>{entry.reading}</small>}<p>{entry.meaning||'노트에서 문맥과 뜻 확인'}</p></div>
-              {chapter?<button disabled={disabled(chapter)} onClick={()=>onOpen({...chapter,sourceToken:entry.source.tokenId})}>교재에서 보기 ↗</button>:<span>{entry.source?.kind==='manual'?'교재 밖 표현':'수업 표현'}</span>}
+              {chapter?<button disabled={disabled(chapter)} onClick={()=>onOpen({...chapter,day,sourceToken:entry.source.tokenId,sourceQuote:entry.source.quote})}>교재에서 보기 ↗</button>:<span>{entry.source?.kind==='manual'?'교재 밖 표현':'수업 표현'}</span>}
             </li>;
           })}</ul>:<p>이전 형식의 노트입니다. 노트를 열어 확인하세요.</p>}
         </section>)}
