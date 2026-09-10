@@ -16,6 +16,7 @@ export function safeReaderReturn(value) {
     const url=new URL(value,'https://manabi.invalid');
     if(!url.hash){const clean=new URLSearchParams();const day=url.searchParams.get('day');
       if(/^\d{4}-\d{2}-\d{2}$/.test(day||'')&&Number.isFinite(Date.parse(day))&&new Date(day).toISOString().slice(0,10)===day)clean.set('day',day);
+      if(url.searchParams.get('view')==='history')clean.set('view','history');
       if(['notes','book'].includes(url.searchParams.get('tab')))clean.set('tab',url.searchParams.get('tab'));
       return url.pathname+(clean.size?'?'+clean:'');}
   }

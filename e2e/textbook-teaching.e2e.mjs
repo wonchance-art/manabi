@@ -171,6 +171,14 @@ await history.getByRole('searchbox',{name:'지난 수업에서 찾기'}).fill('�
 await history.getByText('你好',{exact:true}).waitFor();
 assert.equal(await history.getByText('이전 형식의 노트입니다. 노트를 열어 확인하세요.').count(),0);
 check('owner history displays and searches actual entries with the selected note columns');
+await history.getByRole('button',{name:'노트 열기 →',exact:true})[activate]();
+await page.waitForURL(/\/viewer\/\d+\?returnTo=/);
+const historyBack=page.getByRole('link',{name:'← 수업으로',exact:true});
+assert.equal(await historyBack.getAttribute('href'),'/class/fixture-class?view=history');
+await historyBack[activate]();await page.waitForURL(base+'/class/fixture-class?view=history');
+assert.equal(await page.getByRole('button',{name:/^수업 돌아보기/}).getAttribute('aria-pressed'),'true');
+await page.getByRole('region',{name:'수업 돌아보기',exact:true}).getByText('你好',{exact:true}).waitFor();
+check('owner note returns to class history after a full viewer round trip');
 assert.equal(writes.filter(w=>w.table==='user_vocabulary').length,0);assert.equal(report.errors.length,0,report.errors.join('\n'));check('no personal vocabulary mutations or runtime errors');
 } catch(error) {console.error(error);report.failure=error.message;await page.screenshot({path:out+'/failure.png'});fs.writeFileSync(out+'/failure.html',await page.content());process.exitCode=1;}
 fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));await context.unrouteAll({behavior:'wait'});await browser.close();await db.close();
