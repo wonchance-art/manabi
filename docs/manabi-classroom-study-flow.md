@@ -13,20 +13,35 @@
 - 새 수업 내용은 알림/뜻 변경 비교/명시적 반영으로 처리한다. 원문 편집·삭제·단어 분할 변경은 자동 합치기를 중단한다. 기존 토큰 ID·개인 교정·해설·대화문·판본/출처를 보존한다. 읽기 위치와 원본 분석 작업 상태는 공유하지 않는다.
 - 비로그인 캐시는 timestamp만 믿지 않고 내용 지문으로 새 버전을 확인한다.
 
-## 검증
+## 검증 결과
 
-- 관련 단위/라우트 검사 72개 통과(해설 보존 포함). 인증·수업 권한, 서버가 계산한 갱신만 허용, stale revision, 조회 실패, 분할 변경 보존, 복귀 주소 검증.
-- 격리 PostgreSQL(PGlite) 25조건 통과: 원자적 입력·같은 요청 재전송·동일 출처·타 계정 거부·service-only 함수·개인 사본·기존 중복 선택·명시적 반복·stale update·RLS. PGlite는 단일 연결로, 독립 연결 간 대기 시간 실측을 뜻하지 않는다.
-- 교사 브라우저 10흐름, 학생 브라우저 10흐름/오류 0. 실제 React, HTTP 경계, 격리 DB를 사용한다. 학생 사본 API는 실제 코드를 묶고 인증 제공자만 fixture로 바꿨다. 11개 연속 추가, 직접 입력, 320/390/768/1440px, 동일 사본 재진입, 새 내용 반영, 개인 교정/토큰 보존, 로그인 요청의 부분 실패/재시도/선택 위치 복귀를 확인했다.
-- 캡처를 직접 열어 모바일 버튼 밀림·선택 본문 가림·중복 표제를 수정했다.
-- 로컬 전체 검사 시도는 자원 경합/worker 종료 시간초과로 완료하지 못했다. world 원본 데이터가 없는 직접 `vitest run`의 실패는 웹 회귀 성공으로 집계하지 않는다. 최종 전체 `npm test`, 빌드와 기존 e2e는 PR CI 결과로 기록한다.
-- 새 migration은 기존 함수 호환을 유지하는 추가 함수·테이블이다. 실제 운영 적용 및 rollback 검수 결과는 후속 기록한다. 현재 문서 시점 운영 적용 전이다.
+- 실행/검사 커밋 `8d4a02d0dcfdd09a631e43fe659bbf49e17f9ba0`의 [CI34437898875](https://github.com/wonchance-art/manabi/actions/runs/34437898875) SUCCESS. 전체 375파일/4,094개, lint·콘텐츠 게이트·빌드·기존 조판/크롬/smoke/학습 e2e 통과.
+- 관련 단위/라우트 72개와 기존 단어 카드·저장·되돌리기 회귀 54개 통과. 인증·수업 권한, 서버 계산 갱신, stale revision, 조회 실패, 해설 보존, 분할 변경 보존, 복귀 주소를 검증했다.
+- 격리 PostgreSQL(PGlite) 25조건 통과: 원자적 입력·같은 요청 재전송·동일 출처·타 계정 거부·service-only 함수·개인 사본·과거 중복 선택·명시적 반복·stale update·RLS. 단일 연결 검사로 독립 연결 간 대기 시간 실측을 뜻하지 않는다.
+- 로컬 및 최종 배포에서 교사 12흐름/학생 10흐름, 브라우저 runtime error 0. 실제 React 화면, 격리 인증/HTTP 경계와 PGlite를 사용했다. 학생 사본 API는 실제 코드를 묶고 인증 제공자만 fixture로 바꿨다. 운영 개인 자료에 검수 표현을 추가하지 않는다.
+- 11개 연속 추가, 드래그한 여러 단어를 한 표현으로 추가, 선택을 바꿔도 수업용 뜻 초안 보존, 직접 입력, 사본 재진입, 새 내용 명시적 반영, 개인 교정·토큰 보존, 저장 요청의 부분 실패·재시도·선택 위치 복귀를 확인했다. FSRS 변경 요청 0.
+- 320/390/768/1440px 캡처 직접 검수. 모바일 버튼 밀림·선택 본문 가림·중복 표제를 수정했다. 기존 개인 단어 저장 네 등급은 별도 동작으로 유지한다.
+- 로컬 전체 검사 시도는 자원 경합/worker 종료 시간초과로 완료하지 못했다. 성공으로 집계하지 않았고 전체 게이트는 위 원격 CI 결과로 확인했다. 테스트 skip/제한 완화 없음.
 
-## 남은 검수와 운영 순서
+## DB 적용 및 보존
 
-1. 최종 PR CI/새 Vercel 배포 확인.
-2. 원격 migration 차이가 이번 파일 한 개인지 확인하고 승인된 배포 경로로 적용. `scripts/verification/classroom-study.sql`은 기존 행을 수정하지 않는 트랜잭션 검수 후 rollback한다.
-3. 새 미리보기에서 실계정 수업 교재를 열고 확인. 기존 운영 수업과 개인 단어장에는 검수 표현을 추가하지 않는다.
-4. 결과와 정확한 head를 #150에 전달. Codex는 merge·force-push·production alias 변경을 하지 않는다.
+- 신규 migration `20260910024120_classroom_study_flow.sql`은 기존 함수와 호환되는 추가 함수·대표 사본 테이블이다. 사전 원격89/로컬90의 차이가 이번 파일 하나임을 확인했다.
+- 승인된 기존 migration workflow [34437984331](https://github.com/wonchance-art/manabi/actions/runs/34437984331) SUCCESS. 신규 파일을 skip 없이 적용했고 원격 migration 이력에서 확인했다.
+- `scripts/verification/classroom-study.sql`: 실제 DB에서 검수용 비공개 행만 생성해 authenticated 추가·권한 거부·대표 사본·해설/대화문 보존·stale generation/update 거부 등 9조건 PASS 후 전체 ROLLBACK. 잔여 검수 행 0, 새 테이블 RLS 확인.
+- 적용/검수 전후 원래 수업의 raw/processed MD5 `600fbc2b4c649865cec2f23ef2093bc1` 동일. 개인 단어 340개 및 전체 행 지문 `ddcc74cad179c09805982fe64cd57646` 동일. 복습 일정·문맥·개인 교정을 포함한 기존 행 보존.
+- 적용 후 security advisor에 신규 classroom 객체 관련 지적 없음. 기존 다른 객체의 advisory가 모두 없다는 뜻은 아니다.
 
-물리 iPhone/iPad Safari와 실제 교실의 기기 간 지연, OAuth 제공자 왕복은 격리 브라우저 검사로 대체했다고 주장하지 않는다. PDF/EPUB 새 뷰어, 음성 제작, 출결/성적표는 범위 밖이다.
+## 미리보기 및 인계
+
+- [수업 미리보기](https://manabi-qtr2r2rku-wonchance-arts-projects.vercel.app/class), 배포 `dpl_E9wYeGKnk9t3CjE5nWyM6gEdp3Zj` READY. `/api/version`의 전체 SHA가 `8d4a02d0dcfdd09a631e43fe659bbf49e17f9ba0`와 일치하며 environment=preview, bundledEditionId=`7f572327dc67893e9453246c`이다.
+- [draft PR #1300](https://github.com/wonchance-art/manabi/pull/1300)은 #1299의 `81522911abfb0cbb6f595e6e41b69c6eec6274d1` 뒤에 오는 의존 PR이다. 이후 변경은 이 검수 문서와 자기 보드뿐이다. 최종 head는 #150 CODEX_DONE에 기록한다.
+- 잘못된 release identity 없이 직접 실행한 최초 배포는 실패했다. 저장소의 `scripts/deploy-web-release.mjs`로 다시 빌드한 위 READY 배포만 검수/인계 대상으로 사용한다.
+- 운영 웹과 고정 뷰어 preview alias는 유지했다. DB 추가 함수는 적용됐지만 운영 웹 병합 완료를 뜻하지 않는다. merge·force-push는 하지 않는다.
+
+## 남은 실사용 검수
+
+- 새로운 preview 원점에서 교사 계정 로그인 후 실제 교재 선택 → 뜻 → 수업 노트 → 판 왕복. 새 주소의 로그인을 요청한 상태다. 이 세션의 사용자 브라우저 제어 연결이 반복 시간초과여서 실제 계정 화면 검수를 통과로 기록하지 않는다. 격리 인증/DB의 배포 브라우저 22흐름 및 실제 DB rollback 9조건과 구분한다.
+- 로그인 저장의 실제 이메일/OAuth 제공자 왕복, 물리 iPhone/iPad Safari 및 실제 교실 기기 간 지연은 미검수다.
+- Claude가 #1299 → #1300 의존성과 누적 PR을 검토하고 운영 통합을 진행한다. 실사용 검수 상태를 확인한 뒤 운영 반영을 판단한다.
+
+PDF/EPUB 새 뷰어, 음성 제작, 출결/성적표는 이번 범위 밖이다.
