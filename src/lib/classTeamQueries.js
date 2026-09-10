@@ -33,11 +33,11 @@ export async function fetchDayNote(userId, key, day) {
   return data || null;
 }
 
-/** 팀의 정리본 목록(가벼운 컬럼). */
+/** 팀 정리본: raw_text는 classEntries의 원문 위치·내용 검증에도 필요하다. */
 export async function fetchDayNotes(userId, key) {
   const { data, error } = await supabase
     .from('reading_materials')
-    .select('id, title, owner_id, created_at, processed_json')
+    .select('id, title, owner_id, created_at, raw_text, processed_json')
     .eq('owner_id', userId)
     .filter('processed_json->metadata->team->>key', 'eq', key)
     .filter('processed_json->metadata->team->>root', 'is', null);

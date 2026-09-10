@@ -33,10 +33,13 @@ function ClassReaderSession({root,team,day,material,selection,annotationContent,
   const session=useClassroomSession({ownerId:root.owner_id,rootId:root.id,team:team.key,day});
   const {data:chapters=[]}=useQuery({queryKey:['class-book-chapters',root.owner_id,team.bookKey],queryFn:()=>fetchBookChapters(team.bookKey),enabled:!!team.bookKey});
   const [manual,setManual]=useState(false),[input,setInput]=useState(''),[draft,setDraft]=useState(null),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[lookupBusy,setLookupBusy]=useState(false),[toolsOpen,setToolsOpen]=useState(false),[collapsed,setCollapsed]=useState(false),[expanded,setExpanded]=useState(false);
-  const dockRef=useRef(null);
+  const dockRef=useRef(null),bodyRef=useRef(null);
   const [edits,setEdits]=useState({});const lookupAttempt=useRef(0),composition=useRef(false);
   const current=manual?draft:selection;
   const key=studySelectionKey(current),override=edits[key];
+  // A new expression starts at its headword; showing/closing its presentation
+  // or refreshing a meaning must not move the learner's place in this panel.
+  useEffect(()=>{bodyRef.current?.scrollTo({top:0,behavior:'instant'});},[key]);
   const meaning=override?.meaning??current?.meaning??'',reading=override?.reading??current?.reading??'';
   const entries=useMemo(()=>classroomEntries(session.note),[session.note]);
   const existing=findStudyEntry(session.note,current);
@@ -88,7 +91,7 @@ function ClassReaderSession({root,team,day,material,selection,annotationContent,
       </section>:<p className="class-reader-hint">교재의 단어를 누르거나 표현을 드래그하세요. 이 자리에서 뜻을 보고 수업에 추가합니다.</p>);
   return <><aside ref={dockRef} className={`class-reader-dock${collapsed?' is-collapsed':''}${expanded?' is-expanded':''}`} hidden={suppressed} aria-label="교재 안 수업 도구" onMouseUp={e=>e.stopPropagation()}>
     <header className="class-reader-dock__header"><div><Link href={`/class/${team.key}/live?day=${day}`}>{team.name}</Link><small>{dayLabel(day)} · 수업</small></div><button className="class-reader-tools-toggle" aria-expanded={toolsOpen||!current} onClick={()=>{setCollapsed(false);setToolsOpen(v=>!v);}}>찾기</button><button aria-label={collapsed?'수업 도구 펼치기':'수업 도구 접기'} onClick={()=>setCollapsed(v=>!v)}>{collapsed?'펼치기':'접기'}</button><button className="class-reader-expand" aria-label={expanded?'패널 줄이기':'패널 펼치기'} onClick={()=>setExpanded(v=>!v)}>{expanded?'↙':'↗'}</button></header>
-    <div className="class-reader-dock__body" hidden={collapsed}>
+    <div ref={bodyRef} className="class-reader-dock__body" hidden={collapsed}>
       <div className="class-reader-tools" data-open={toolsOpen||!current}>
       {chapters.length>0&&<label className="class-reader-chapter">교재 <select aria-label="수업 교재 과 선택" value={chapters.some(ch=>String(ch.id)===String(material.id))?String(material.id):''} onChange={e=>{if(e.target.value)router.push(classStudyHref(e.target.value,team.key,day));}}><option value="" disabled>교재 선택</option>{chapters.map(ch=><option key={ch.id} value={String(ch.id)}>{ch.order}. {chapterLabel(ch.title)}</option>)}</select></label>}
       <form className="class-reader-search" onSubmit={lookup}><input aria-label="단어·표현 찾기" placeholder="단어·표현 찾기" value={input} maxLength={300} onChange={e=>{lookupAttempt.current++;setLookupBusy(false);setInput(e.target.value);}} onCompositionStart={()=>{composition.current=true;}} onCompositionEnd={()=>{composition.current=false;}}/><button disabled={lookupBusy||!input.trim()}>{lookupBusy?'조회 중':'찾기'}</button></form>

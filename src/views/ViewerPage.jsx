@@ -3,7 +3,7 @@ import ClassroomReader from '../components/classroom/ClassroomReader';
 import TextbookAnnotations from '../components/classroom/TextbookAnnotations';
 import ClassCopyNotice from '../components/classroom/ClassCopyNotice';
 import {createClassSaveIntent} from '../lib/classSaveIntent';
-import {classStudyContext,studySelection} from '../lib/classStudy';
+import {classStudyContext,classStudyNeighborHref,studySelection} from '../lib/classStudy';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
@@ -2490,7 +2490,7 @@ export default function ViewerPage() {
           {siblingNav && (
             <div className="viewer-series-nav" title={siblingNav.label}>
               {siblingNav.prev ? (
-                <Link href={siblingNav.prev.href || `/viewer/${siblingNav.prev.id}`} className="viewer-series-nav__btn" title={siblingNav.prev.title} aria-label={siblingNav.prevLabel}>◀</Link>
+                <Link href={classStudyNeighborHref(siblingNav.prev,studyContext)} className="viewer-series-nav__btn" title={siblingNav.prev.title} aria-label={siblingNav.prevLabel}>◀</Link>
               ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">◀</span>}
               {siblingNav.pos != null && (
                 <span className="viewer-series-nav__position" title={siblingNav.label}>
@@ -2498,7 +2498,7 @@ export default function ViewerPage() {
                 </span>
               )}
               {siblingNav.next ? (
-                <Link href={siblingNav.next.href || `/viewer/${siblingNav.next.id}`} className="viewer-series-nav__btn" title={siblingNav.next.title} aria-label={siblingNav.nextLabel}>▶</Link>
+                <Link href={classStudyNeighborHref(siblingNav.next,studyContext)} className="viewer-series-nav__btn" title={siblingNav.next.title} aria-label={siblingNav.nextLabel}>▶</Link>
               ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">▶</span>}
             </div>
           )}
@@ -3047,7 +3047,7 @@ export default function ViewerPage() {
       {(isDone || isPending) && (() => {
         if (nextLesson) {
           return (
-            <Link href={`/viewer/${nextLesson.id}`} className="next-lesson-card">
+            <Link href={classStudyNeighborHref(nextLesson,studyContext)} className="next-lesson-card">
               <div className="next-lesson-card__hint">다음 편</div>
               <div className="next-lesson-card__title">{nextLesson.title}</div>
             </Link>
@@ -3055,7 +3055,7 @@ export default function ViewerPage() {
         }
         if (bookNav?.next) {
           return (
-            <Link href={bookNav.next.href || `/viewer/${bookNav.next.id}`} className="next-lesson-card">
+            <Link href={classStudyNeighborHref(bookNav.next,studyContext)} className="next-lesson-card">
               <div className="next-lesson-card__hint">다음 과 · {bookNav.pos + 1}/{bookNav.total}</div>
               <div className="next-lesson-card__title">{bookNav.next.title}</div>
             </Link>

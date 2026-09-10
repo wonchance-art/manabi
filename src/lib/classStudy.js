@@ -15,6 +15,11 @@ export function classStudyHref(id,team,day) {
   const q=new URLSearchParams({class:team,day,returnTo:`/class/${team}/live?day=${day}`});
   return `/viewer/${id}?${q}`;
 }
+export function classStudyNeighborHref(neighbor,context) {
+  // Local student copies must keep their team-page download/update destination.
+  if(neighbor.href)return neighbor.href;
+  return context?classStudyHref(neighbor.id,context.team,context.day):`/viewer/${neighbor.id}`;
+}
 export function studySelection(material,token,rangeText='') {
   const text=String(rangeText||token?.text||'').trim();
   if(!text)return null;

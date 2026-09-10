@@ -25,6 +25,7 @@ const book={sequence:[],dictionary:{},status:'completed',failed_indices:[],metad
 words.forEach((text,i)=>{const id=`id_${i}_word`,br=`br_${i}_end_fixture`;book.sequence.push(id,br);book.dictionary[id]={text,meaning:`뜻 ${i+1}`,furigana:i===0?'tú shū guǎn':'',pos:'명사',base:text};book.dictionary[br]={text:'\n',pos:'개행'};});
 for(const [i,text]of ['我们','明天','见','。'].entries()){const id=`id_14_${i}`;book.sequence.push(id);book.dictionary[id]={text,meaning:['우리','내일','보다',''][i],pos:i===3?'기호':'표현'};}
 await db.query('insert into reading_materials(id,owner_id,title,raw_text,visibility,processed_json) values(10,$1,$2,$3,$4,$5)',[uid,'실전 중국어 — 함께 공부하는 하루',words.join('\n')+'\n我们明天见。','private',book]);
+await db.query('insert into reading_materials(id,owner_id,title,raw_text,visibility,processed_json) values(11,$1,$2,$3,$4,$5)',[uid,'실전 중국어 — 다음 과',words.join('\n'),'private',{...book,metadata:{...book.metadata,book:{key:'fixture-book',order:2}}}]);
 await db.exec("select setval('reading_materials_id_seq',20)");
 const browser=await chromium.launch({executablePath:process.env.QA_CHROME||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
 const context=await browser.newContext({viewport:{width:1440,height:1000},serviceWorkers:'block'});context.setDefaultTimeout(25000);context.setDefaultNavigationTimeout(180000);
@@ -36,7 +37,7 @@ let failure=false,lostResponse=false,analysisDelay=0,analysisFail=false,emptyMea
 const analyzedLines=[];
 const report={checks:[],errors:[],screens:[]},writes=[];
 await context.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());
-await context.route(base+'/**',async route=>{if(new URL(route.request().url()).pathname.startsWith('/_next/static/'))return route.continue();const response=await route.fetch({headers:{...route.request().headers(),cookie:''},timeout:180000});await route.fulfill({response});});
+await context.route(base+'/**',async route=>{if(new URL(route.request().url()).pathname.startsWith('/_next/static/'))return route.continue();const response=await route.fetch({headers:{...route.request().headers(),cookie:''},timeout:180000,maxRedirects:0});await route.fulfill({response});});
 await context.route('**/api/**',r=>r.fulfill({json:{}}));
 await context.route('**/auth/v1/**',r=>r.fulfill({headers:cors,json:r.request().url().includes('/user')?user:session}));
 await context.route('**/rest/v1/**',async r=>{
@@ -65,6 +66,7 @@ await context.route('**/rest/v1/**',async r=>{
   const bookKey=url.searchParams.get('processed_json->metadata->book->>key');if(bookKey?.startsWith('eq.'))rows=rows.filter(row=>row.processed_json.metadata.book?.key===bookKey.slice(3));
   const select=url.searchParams.get('select')||'';
   if(select.includes('processed_json->status'))rows=rows.map(row=>({...row,status:row.processed_json.status,book:row.processed_json.metadata.book}));
+  if(select&&select!=='*'&&!select.includes('->'))rows=rows.map(row=>Object.fromEntries(select.split(',').map(key=>key.trim()).map(key=>[key,row[key]])));
   return send(object?(rows[0]||null):rows);
  }
  if(table==='morpheme_dictionary')return send(object?{reading:'nǐ hǎo',meanings:['안녕하세요'],pos:'표현'}:[{reading:'nǐ hǎo',meanings:['안녕하세요'],pos:'표현'}]);
@@ -88,7 +90,8 @@ await context.route('**/api/materials/*/annotations*',async r=>{
   if(annotationLost){annotationLost=false;return r.abort('failed');}
   return r.fulfill({json:{annotation:result}});
  }
- const rows=(await db.query('select * from textbook_annotations where material_id=10 order by created_at')).rows;
+ const materialId=Number(new URL(r.request().url()).pathname.split('/')[3]);
+ const rows=(await db.query('select * from textbook_annotations where material_id=$1 order by created_at',[materialId])).rows;
  const history=(await db.query('select * from textbook_annotation_revisions order by created_at desc')).rows;
  return r.fulfill({json:{materialId:'10',canEdit:true,annotations:rows,history}});
  }catch(e){return r.fulfill({status:409,json:{error:e.message,conflict:true}});}finally{await db.exec('RESET ROLE;SET ROLE authenticated');}
@@ -97,6 +100,11 @@ try {
 const url=base+`/viewer/10?class=fixture-class&day=${day}&returnTo=${encodeURIComponent('/class/fixture-class/live?day='+day)}`;
 await page.goto(url);
 const dock=page.getByRole('complementary',{name:'교재 안 수업 도구'});await dock.waitFor();
+const nextUrl=base+`/viewer/11?class=fixture-class&day=${day}&returnTo=${encodeURIComponent('/class/fixture-class/live?day='+day)}`;
+assert.equal(await page.locator('.next-lesson-card').getAttribute('href'),new URL(nextUrl).pathname+new URL(nextUrl).search);
+await page.getByRole('link',{name:'다음 과',exact:true}).click();await page.waitForURL(nextUrl);await dock.waitFor();
+await page.getByRole('link',{name:'이전 과',exact:true}).click();await page.waitForURL(url);await dock.waitFor();
+check('top and bottom chapter links keep the class day and teacher tools');
 await page.locator('[data-tid="id_0_word"]').click();
 const original=await current();
 await dock.getByRole('button',{name:'주의점 추가 +',exact:true}).click();
@@ -135,6 +143,24 @@ await page.keyboard.press('Escape');await waitFor(async()=>await page.getByRole(
 await page.locator('[data-tid="id_0_word"]').click();
 await dock.getByRole('button',{name:'수정',exact:true}).first().click();await dock.getByRole('button',{name:'보관',exact:true}).click();await waitFor(async()=>await dock.getByRole('button',{name:'보관',exact:true}).count()===0);
 await dock.getByText('보관한 주의점',{exact:true}).click();await dock.getByRole('button',{name:'다시 표시',exact:true}).click();await waitFor(async()=>await dock.getByRole('button',{name:'다시 표시',exact:true}).count()===0);check('teacher can archive and restore explanations without deleting history');
+for(const width of [1440,768,390]){
+ await page.setViewportSize({width,height:900});
+ const body=page.locator('.class-reader-dock__body');
+ await body.evaluate(el=>{el.scrollTop=el.scrollHeight;});
+ assert(await body.evaluate(el=>el.scrollTop)>0,'fixture must exercise a scrolled panel');
+ await page.locator(`[data-tid="id_${width===768?1:2}_word"]`).click();
+ await waitFor(async()=>await body.evaluate(el=>el.scrollTop)<2);
+ const geometry=await page.evaluate(()=>{const body=document.querySelector('.class-reader-dock__body').getBoundingClientRect(),word=document.querySelector('.class-reader-word').getBoundingClientRect();return {bodyTop:body.top,bodyBottom:body.bottom,wordTop:word.top};});
+ assert(geometry.wordTop>=geometry.bodyTop&&geometry.wordTop<geometry.bodyBottom,'new headword must be visible without scrolling');
+}
+check('new word selection reveals its headword after reading lower notes on desktop tablet and phone');
+await page.goto(base+'/class/fixture-class?view=history');
+const history=page.getByRole('region',{name:'수업 돌아보기',exact:true});
+await history.getByText('你好',{exact:true}).waitFor();
+await history.getByRole('searchbox',{name:'지난 수업에서 찾기'}).fill('안녕하세요');
+await history.getByText('你好',{exact:true}).waitFor();
+assert.equal(await history.getByText('이전 형식의 노트입니다. 노트를 열어 확인하세요.').count(),0);
+check('owner history displays and searches actual entries with the selected note columns');
 assert.equal(writes.filter(w=>w.table==='user_vocabulary').length,0);assert.equal(report.errors.length,0,report.errors.join('\n'));check('no personal vocabulary mutations or runtime errors');
 } catch(error) {console.error(error);report.failure=error.message;await page.screenshot({path:out+'/failure.png'});fs.writeFileSync(out+'/failure.html',await page.content());process.exitCode=1;}
-fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));await browser.close();await db.close();
+fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));await context.unrouteAll({behavior:'wait'});await browser.close();await db.close();

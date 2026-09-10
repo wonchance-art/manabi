@@ -1,9 +1,20 @@
 import {describe,it,expect,vi} from 'vitest';
-import {classStudyContext,studySelection,studySelectionKey,findStudyEntry,buildStudySeed} from '../classStudy';
+import {classStudyContext,classStudyNeighborHref,studySelection,studySelectionKey,findStudyEntry,buildStudySeed} from '../classStudy';
 import {sharedSnapshot,classCopyUpdatePlan} from '../classCopyModel';
 import {findExistingCopies,claimSharedCopies} from '../sharedCopy';
 const material=()=>({id:12,title:'수업 교재',raw_text:'图书馆',processed_json:{status:'completed',sequence:['id_0_one'],dictionary:{id_0_one:{text:'图书馆',meaning:'도서관',furigana:'tú shū guǎn',pos:'명사'}},metadata:{language:'Chinese',book:{key:'book'}}}});
 describe('교재 안 수업 선택',()=>{
+ it('keeps the class day and return destination through neighboring chapters',()=>{
+  const context={team:'class-a',day:'2026-09-10'};
+  const next=new URL(classStudyNeighborHref({id:13},context),'https://manabi.invalid');
+  expect(next.pathname).toBe('/viewer/13');
+  expect(classStudyContext(next.searchParams)).toEqual(context);
+  expect(next.searchParams.get('returnTo')).toBe('/class/class-a/live?day=2026-09-10');
+ });
+ it('preserves ordinary reading and local student-copy download routes',()=>{
+  expect(classStudyNeighborHref({id:13},null)).toBe('/viewer/13');
+  expect(classStudyNeighborHref({id:13,href:'/class/class-a?open=13'},{team:'class-a',day:'2026-09-10'})).toBe('/class/class-a?open=13');
+ });
  it('accepts only bounded class and calendar context',()=>{
   expect(classStudyContext(new URLSearchParams({class:'class-a',day:'2026-09-10'}))).toEqual({team:'class-a',day:'2026-09-10'});
   expect(classStudyContext(new URLSearchParams({class:'../admin'}))).toBeNull();

@@ -6,6 +6,7 @@ import { copyRowFromPayload, planClaim, claimSharedCopies } from '../sharedCopy.
 import { isCopyExpired, copyDaysLeft, SHARED_TTL_MS } from '../sharedStore.js';
 import { copyIsStale, PENDING_TTL_MS } from '../classClient.js';
 import { isLocalId, parseLocalId, localViewerHref, teamOpenHref, chaptersForLocalNav } from '../classBoard.js';
+import {classStudyNeighborHref} from '../classStudy.js';
 
 const read = (f) => fs.readFileSync(path.join(process.cwd(), f), 'utf8');
 
@@ -123,7 +124,9 @@ describe('local: 뷰어 — 네트워크 0', () => {
     expect(viewer).toContain("if (material?.visibility === 'private' && material?.owner_id !== user?.id && !material?.__local) {");
     expect(viewer).toContain("enabled: !!bookMeta?.key && !material?.__local,");
     expect(viewer).toContain('chaptersForLocalNav(readIndexCache(material.__team)?.index, material.__team)');
-    expect(viewer).toContain('href={siblingNav.next.href || `/viewer/${siblingNav.next.id}`}');
+    expect(viewer).toContain('href={classStudyNeighborHref(siblingNav.next,studyContext)}');
+    const localNeighbors=chaptersForLocalNav({chapters:[{id:12,title:'과',order:1}]},'a');
+    expect(classStudyNeighborHref(localNeighbors[0],{team:'a',day:'2026-09-10'})).toBe('/class/a?open=12');
     // 「다음 과 적기」는 owner_id 게이트 그대로 — 사본의 소유자는 선생님이라 학생·익명에겐 안 뜬다(bookAppend 계약 불변)
     expect(viewer).toContain("canAppend: !!user?.id && material?.owner_id === user.id,");
     // 편집·재분석·제목·삭제·교정은 전부 owner_id 게이트 — 사본의 owner_id는 선생님이라 학생에겐 안 뜬다
