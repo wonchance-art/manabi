@@ -144,7 +144,8 @@ describe('local: 뷰어 — 네트워크 0', () => {
 
   it('팀 페이지 — 받기는 여기서만(ensureSharedCopy → local: 뷰어), 오너 뷰는 API 라우트 0, 로그인 학생은 즉시 복제', () => {
     const page = read('src/views/ClassTeamPage.jsx');
-    expect(page).toContain('await ensureSharedCopy(teamKey, unlock.token, entry);');
+    // Re-entering online also refreshes shared textbook annotations; the viewer itself remains offline-only.
+    expect(page).toContain('await ensureSharedCopy(teamKey, unlock.token, entry, {refresh:true});');
     expect(page).toContain('router.push(localViewerHref(id, teamKey));');
     expect(page).toContain("const wanted = search.get('open');");
     const owner = sliceBetween(page, 'function OwnerView(', '\nfunction NotesList(');

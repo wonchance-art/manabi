@@ -1,5 +1,6 @@
 'use client';
 import ClassroomReader from '../components/classroom/ClassroomReader';
+import TextbookAnnotations from '../components/classroom/TextbookAnnotations';
 import ClassCopyNotice from '../components/classroom/ClassCopyNotice';
 import {createClassSaveIntent} from '../lib/classSaveIntent';
 import {classStudyContext,studySelection} from '../lib/classStudy';
@@ -231,6 +232,7 @@ export default function ViewerPage() {
   const originalParams = useSearchParams();
   const studyContext=classStudyContext(originalParams);
   const [classStudyActive,setClassStudyActive]=useState(false);
+  const [classPresenting,setClassPresenting]=useState(false);
   const { user, profile, fetchProfile } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -1106,7 +1108,7 @@ export default function ViewerPage() {
   const paceTargetCpm = ladderTargetCpm(paceBaseCpm, paceStep) || paceBaseCpm;
   const [background,setBackground]=useState(false);
   useEffect(()=>{const update=()=>setBackground(document.hidden);document.addEventListener('visibilitychange',update);update();return ()=>document.removeEventListener('visibilitychange',update);},[]);
-  const modalBlocked=!!activeModal||!!reanalyzePanel||!!quizState||!!completionModal;
+  const modalBlocked=classPresenting||!!activeModal||!!reanalyzePanel||!!quizState||!!completionModal;
   const selectionToReveal = tokenRange.range
     ? material?.processed_json?.sequence?.[tokenRange.range.start]
     : isSheetOpen ? selectedToken?.id : undefined;
@@ -3120,19 +3122,25 @@ export default function ViewerPage() {
 
       </div>{/* viewer-center end */}
 
-      <ClassroomReader context={studyContext} user={user} material={material}
+      <TextbookAnnotations key={`${id}:${user?.id||'guest'}`} material={material} user={user}
+        team={studyContext?.team||/^\/class\/([a-z0-9-]+)(?:\?|$)/.exec(originalParams.get('returnTo')||'')?.[1]}
+        first={tokenRange.range?json.sequence[tokenRange.range.start]:isSheetOpen?selectedToken?.id:pickedSentence?.firstTokenId}
+        last={tokenRange.range?json.sequence[tokenRange.range.end]:undefined}
+        blocked={modalBlocked} onClose={closeWordCard} onPresenting={setClassPresenting}>
+      {(annotationContent,annotationOpen,closeWordCard)=><ClassroomReader annotationContent={annotationContent} context={studyContext} user={user} material={material}
         selection={studySelection(material,isSheetOpen&&selectedToken?{...selectedToken,meaning:refMeaning||selectedToken.meaning,furigana:headReading||selectedToken.furigana}:null,dragTokens!==null?leftPanelText:!isSheetOpen?pickedSentence?.text||'':'')}
         wordContent={(dragTokens!==null||(selectedToken&&isSheetOpen))?renderRightPanelContent:null}
         sentenceContent={(leftPanelLoading||leftPanelResult)?leftPanelContent:null}
-        onActive={setClassStudyActive} suppressed={modalBlocked}
-        fallback={(leftPanelLoading || leftPanelResult || dragTokens !== null || (selectedToken && isSheetOpen) || pickedLineIdx !== null) && <ViewerBottomSheet
+        onActive={setClassStudyActive} onPresenting={setClassPresenting} suppressed={modalBlocked&&!classPresenting}
+        fallback={(annotationOpen || leftPanelLoading || leftPanelResult || dragTokens !== null || (selectedToken && isSheetOpen) || pickedLineIdx !== null) && <ViewerBottomSheet
         onClose={closeWordCard}
         suppressed={modalBlocked}
+        preserveFocus={annotationOpen&&!isSheetOpen&&dragTokens===null}
         onOpenChange={setInspectorOpen}
         leftContent={leftPanelContent}
-        rightContent={rightPanelContent}
+        rightContent={<>{annotationContent}{rightPanelContent}</>}
         leftActive={leftPanelLoading || !!leftPanelResult}
-        rightActive={dragTokens !== null || (selectedToken && isSheetOpen)}
+        rightActive={annotationOpen || dragTokens !== null || (selectedToken && isSheetOpen)}
         leftSignal={leftSheetSignal}
         rightSignal={rightSheetSignal}
         barNav={pickedLineIdx !== null && sentences.length > 0 ? (
@@ -3141,8 +3149,8 @@ export default function ViewerPage() {
             {sentenceNavBtn(1, 'viewer-sheet-bar__btn viewer-sheet-bar__btn--nav')}
           </>
         ) : null}
-      />} />
-
+      />} />}
+      </TextbookAnnotations>
 
       {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} onClose={closeReadingSettings} keepPosition={keepReadingPosition} previewTokens={previewTokens} onPreset={()=>setRevealedPron(new Set())} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus}/>}
       {modal('activities')&&<ViewerModal title="학습" onClose={()=>setActiveModal(null)}><div className="reader-activity-menu">

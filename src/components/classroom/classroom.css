@@ -80,3 +80,15 @@ button.classroom-featured-note {width:100%;border:0;text-align:left;font:inherit
 .classroom-resume {max-width:1104px;margin:16px auto;padding:16px 20px;border:1px solid var(--border);border-radius:12px;background:var(--bg-primary);font-size:14px;line-height:1.6;}
 .classroom-resume p {margin:0 0 8px;}
 .classroom-resume button {min-height:44px;padding:8px 14px;color:var(--text-primary);border:1px solid var(--border);border-radius:8px;background:var(--bg-secondary);cursor:pointer;}
+.class-study-history__filters {display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin-block:24px;}
+.class-study-history__filters label {flex:1;min-width:180px;font-size:12px;color:var(--text-muted);}
+.class-study-history input {display:block;width:100%;min-height:44px;margin-top:6px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg-card);color:var(--text-primary);font:inherit;box-sizing:border-box;}
+.class-study-history button {min-height:44px;border:1px solid var(--border);border-radius:10px;background:var(--bg-card);color:var(--accent-text);padding:8px 12px;font:inherit;font-size:13px;cursor:pointer;}
+.class-study-history button[aria-pressed=true] {background:var(--bg-secondary);border-color:var(--accent-text);}
+.class-study-history__day {border-top:1px solid var(--border);padding-block:24px;}
+.class-study-history__day header {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.class-study-history h2 {font-size:22px;margin:0;}.class-study-history header>div {display:flex;gap:8px;}
+.class-study-history__coverage {display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-block:16px;}.class-study-history__coverage small {width:100%;color:var(--text-muted);}
+.class-study-history ul {list-style:none;padding:0;}.class-study-history li {display:flex;justify-content:space-between;gap:16px;align-items:center;border-bottom:1px solid var(--border);padding:16px 0;flex-wrap:wrap;}
+.class-study-history li>div {flex:1;min-width:160px;overflow-wrap:anywhere;}.class-study-history li strong {font-size:22px;}.class-study-history li small {display:block;font-size:13px;color:var(--text-muted);margin-block:4px;}.class-study-history li p {margin:0;font-size:15px;}.class-study-history li>span {font-size:11px;color:var(--text-muted);}
+.class-study-history :focus-visible {outline:2px solid var(--accent);outline-offset:3px;}

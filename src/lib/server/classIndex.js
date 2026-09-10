@@ -10,6 +10,7 @@ import {createHash} from 'node:crypto';
 import {sharedSnapshot,stableJson} from '../classCopyModel';
 import { createClient } from '@supabase/supabase-js';
 import { getTeam } from '../classBoard';
+import {classHistoryEntries,filterClassHistory} from '../classStudyHistory';
 import { getBook } from '../bookMeta';
 
 export function serviceClient() {
@@ -64,7 +65,7 @@ export function indexFromRows({ team, chapterRows = [], noteRows = [] }) {
   };
 }
 
-export async function buildTeamIndex(admin, root, team) {
+export async function buildTeamIndex(admin, root, team, historyOptions=null) {
   const chaptersQ = team.bookKey
     ? admin.from('reading_materials')
       .select('id, title, raw_text, created_at, processed_json, lesson_explanation_ko, conversation_script, direction, source_pdf_id, page_start, page_end, document_json')
@@ -79,7 +80,14 @@ export async function buildTeamIndex(admin, root, team) {
   const [c, n] = await Promise.all([chaptersQ, notesQ]);
   if (c.error) throw c.error;
   if (n.error) throw n.error;
-  return indexFromRows({ team, chapterRows: c.data || [], noteRows: n.data || [] });
+  if(!historyOptions)return indexFromRows({team,chapterRows:c.data||[],noteRows:n.data||[]});
+  const index=indexFromRows({team,chapterRows:c.data||[],noteRows:n.data||[]});
+  const notes=index.notes.map(note=>({...note,entries:classHistoryEntries(n.data.find(r=>String(r.id)===String(note.id)),index.chapters.map(ch=>ch.id))}));
+  const filtered=filterClassHistory(notes,historyOptions.search,historyOptions.extras);
+  const offset=historyOptions.offset||0;
+  const coverage=await admin.from('class_teaching_coverage').select('day,material_ids,updated_at').eq('root_id',root.id).order('day',{ascending:false});
+  if(coverage.error)throw coverage.error;
+  return {notes:filtered.slice(offset,offset+20),coverage:coverage.data||[],next:offset+20<filtered.length?offset+20:null};
 }
 
 /** 순수 — 이 행이 팀의 것인가: 'chapter' | 'note' | null. 소유자가 다르면 무조건 null. */
