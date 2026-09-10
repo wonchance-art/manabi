@@ -14,17 +14,18 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- **수업 중 교재 학습·학생 연결 (2026-09-10, 오너 전체 진행 승인)** — `codex/classroom-study-flow-20260910`, #1299의 81522911 기반 의존 작업. 교재 안 뜻 확인/수업 추가 → 학생 사본 중복·로그인 복귀 → 개인 교정 보존 갱신. 기존 뷰어/FSRS 재사용, 별도 worktree, merge·force-push 없음. 설계는 오너 승인한 교재 안 수업 도구 및 학생 사본 계획.
+- **수업 교재 학습 실계정 검수 (2026-09-10)** — #1300 구현·DB·배포 검수 완료. 새 preview qtr2r2rku 교사 로그인 요청 및 사용자 브라우저 제어 연결 복구 대기. 실제 교재→뜻→수업 추가→판 왕복은 격리 인증/DB 검수와 구분한다. 기존 실수업·개인 복습에 검수 입력 없음. 상세 `docs/manabi-classroom-study-flow.md`.
 
 
 ### todo
-- **수업 후속** — #1299 코드·운영 DB·실계정 AI 재검수 완료. 다음은 학생 사본의 조회 실패/동시 복제 중복 방지·새 버전 선택 갱신·수업 복귀 및 로그인 후 표현 저장. 운영 웹 병합은 Claude 창구. 상세 `docs/manabi-classroom-phase1.md`.
+- **수업 후속** — #1299 → #1300 검토 및 운영 통합은 Claude 창구. 학생 대표 사본·명시적 갱신·로그인 표현 저장 구현 완료. 다음은 물리 iOS/실교실 지연/실제 인증 제공자 왕복 검수. 상세 `docs/manabi-classroom-study-flow.md`.
 - **뷰어 후속** — 실제 HSK6 표시/복귀 검수 완료. 물리 iPhone Safari, 기존 분석 독음·문법 정확도, 부모 #1293 → #1294 검토/운영 통합을 별도로 진행. PDF/신규 음성/원본 split view는 보류한 범위.
 - **서재 후속 우선순위** — 선택 구간 학습 #1291과 기기 간 원본 위치 동기화 #1292 구현·DB 적용·실계정 검수 완료. 누적 #1288 → #1289 → #1290 → #1291 → #1292의 검토·병합은 Claude 창구. 실제 iOS Safari 확인과 운영 반영 준비를 우선하며 미참조 업로드 정리·URL 본문 가져오기는 별도 범위. 상세 `docs/manabi-original-reading-sync.md`.
 - ~~🎧 받아쓰기 채점 엔진(#1077 제안 6, 발주 5386786944)~~ → **회수: 2026-08-23
   16:03 스캔까지 WORKING 무표식(30분 룰) — Claude 직접 수행·완결(회수 공지
   5386950005, PR #1118)**. 이 열에 잔여 발주 없음.
 ### done (최근)
+- **교재 안 수업 도구·학생 사본 구현/배포 완료 (2026-09-10, 오너 전체 진행 승인)** — draft #1300, #1299의 81522911 기반. 실행/검사8d4a02d0 CI34437898875 SUCCESS(375파일/4,094개·빌드·기존 e2e). 교재 안 뜻/수업 추가·수업용 뜻 초안·대표 사본·명시적 로그인 저장·개인 교정 보존 갱신. 관련126개·격리SQL25·최종 배포 교사12/학생10흐름 오류0, 320/390/768/1440px 직접 검수. SQL20260910024120 workflow34437984331 적용·실제DB9조건 PASS/ROLLBACK·기존 수업/단어340개 전체 지문 동일. preview qtr2r2rku / dpl_E9wYeGKnk9t3CjE5nWyM6gEdp3Zj READY·version 일치. 실계정 검수는 doing으로 분리. 운영 웹/고정 alias 불변, merge·force-push 없음. 최종 head는 #150 CODEX_DONE.
 - **수업 실제 재검수 완료 (2026-09-10)** — #1299 실행9db011dc, 최종 검사b46d8a72 CI34427082560 SUCCESS. 새 preview66k1i3x5w 교사 로그인 후 노트233 뜻5개 복구, Gemini 뜻/품사 HTTP200, 수동 뜻·원문·비개행 토큰ID 보존. 판의 谢谢/감사하다 수신·뷰어 下周/다음 주 표시·같은 수업/날짜 복귀·브라우저 오류0. 기존 수업 내용 및 단어338개/FSRS 행 지문 동일. 로그인/실제 AI HOLD 해소, 운영 웹 병합은 Claude 창구. 문서/보드만 갱신해 현재 미리보기 유지. 학생 사본·물리 iOS는 todo. 최종 head는 #150 CODEX_DONE.
 - **수업 저장 함수 운영 적용·권한 검수 완료 (2026-09-10, 오너 승인)** — #1299, workflow34414922170에서 SQL20260909165823을 skip 없이 적용. 원격/로컬89 일치, authenticated 허용/anon 거부·INVOKER·고정 search_path·unique index 확인. 실제 DB 10조건(소유권·원문·재전송·다중행·metadata·타 계정/로그아웃 거부) PASS 후 ROLLBACK, 기존 수업1행의 내용 해시 불변, advisor 추가0. 신규 스크립트 `scripts/verification/classroom.sql`. 웹 실행578e5f22 그대로, 기존 미리보기 사용; production/고정 viewer alias·개인 자료·FSRS 유지. 실제 브라우저 로그인/실수업 표시는 doing으로 분리. 최종 head·CI는 #150 후속 CODEX_DONE.
 - **수업 제품 1차 구현·미리보기 완료 (2026-09-10)** — draft PR #1299, 실행 `578e5f22105d0dc7ac966bff20dce7696a772362`. 역할별 입구·노트 우선 홈·폰 입력·집중 판, 영속 초안/대기열·원자적 저장·재전송·수동 뜻 보존. SQL 24, 브라우저 23흐름 오류0, 최종 배포 5흐름/320·390·1440 실글꼴·대비·헤더·키보드 검수 통과. 선행90f6e971 CI34402466941 전체373파일/4,061개·빌드·기존 e2e SUCCESS; 최종 문서/보드 head CI는 #150 CODEX_DONE에 기록. Vercel dpl_AKLJxotmEQy4uZpmUsy45Ys1pqUK READY·version 일치, https://manabi-okc27p2p4-wonchance-arts-projects.vercel.app/class . 운영 읽기 전용 사전 검사 중복0·신규 RPC 미설치. **DB APPLY HOLD**: 운영 완료 아님. 개인 자료·기존 viewer/FSRS·운영/고정 뷰어 alias 유지, merge·force-push 없음. 상세 `docs/manabi-classroom-phase1.md`.
