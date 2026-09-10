@@ -33,7 +33,7 @@ const SHEET = 'src/components/ViewerBottomSheet.jsx';
 const VIEWER = 'src/views/ViewerPage.jsx';
 const CSS = 'src/index.css';
 
-const card = () => sliceBetween(read(VIEWER), 'const wordDetailCard = !selectedToken', '{isEditingToken && (');
+const card = () => sliceBetween(read(VIEWER), 'const renderWordDetailCard = (classAction=null) => !selectedToken', '{isEditingToken && (');
 
 describe('① 전환 경로는 하단 바 하나 — 섹션 헤더·셰브런 부활 금지', () => {
   it('시트 안에 헤더 버튼도 셰브런도 없다 — 소스·CSS·e2e 어디에도', () => {

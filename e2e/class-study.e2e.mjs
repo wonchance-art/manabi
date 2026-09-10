@@ -23,7 +23,8 @@ await db.query('update reading_materials set processed_json=$1 where id=$2',[jso
 const words=['图书馆','学生','老师','学校','学习','明天','今天','谢谢','朋友','中文','工作','欢迎','这里','那里'];
 const book={sequence:[],dictionary:{},status:'completed',failed_indices:[],metadata:{language:'Chinese',book:{key:'fixture-book',order:1}}};
 words.forEach((text,i)=>{const id=`id_${i}_word`,br=`br_${i}_end_fixture`;book.sequence.push(id,br);book.dictionary[id]={text,meaning:`뜻 ${i+1}`,furigana:i===0?'tú shū guǎn':'',pos:'명사',base:text};book.dictionary[br]={text:'\n',pos:'개행'};});
-await db.query('insert into reading_materials(id,owner_id,title,raw_text,visibility,processed_json) values(10,$1,$2,$3,$4,$5)',[uid,'실전 중국어 — 함께 공부하는 하루',words.join('\n'),'private',book]);
+for(const [i,text]of ['我们','明天','见','。'].entries()){const id=`id_14_${i}`;book.sequence.push(id);book.dictionary[id]={text,meaning:['우리','내일','보다',''][i],pos:i===3?'기호':'표현'};}
+await db.query('insert into reading_materials(id,owner_id,title,raw_text,visibility,processed_json) values(10,$1,$2,$3,$4,$5)',[uid,'실전 중국어 — 함께 공부하는 하루',words.join('\n')+'\n我们明天见。','private',book]);
 await db.exec("select setval('reading_materials_id_seq',20)");
 const browser=await chromium.launch({executablePath:process.env.QA_CHROME||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
 const context=await browser.newContext({viewport:{width:1440,height:1000},serviceWorkers:'block'});context.setDefaultTimeout(25000);context.setDefaultNavigationTimeout(180000);
@@ -98,6 +99,11 @@ await page.locator('[data-tid="id_11_word"]').click();
 for(const width of [1440,768,390,320]){await page.setViewportSize({width,height:950});await page.evaluate(()=>document.fonts.ready);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`overflow ${width}`);assert.equal(await page.locator('.viewer-sheet').count(),0);await page.screenshot({path:`${out}/reader-${width}.png`});report.screens.push(`reader-${width}.png`);}
 check('single inspector and no horizontal overflow at 320/390/768/1440');
 await dock.getByRole('button',{name:'수업 도구 접기'}).click();assert((await dock.boundingBox()).height<120);await dock.getByRole('button',{name:'수업 도구 펼치기'}).click();check('mobile dock collapses to return reading space');
+await page.setViewportSize({width:1440,height:1000});
+await page.locator('[data-tid="id_12_word"]').click();await dock.getByText('수업용 뜻 확인·수정',{exact:true}).click();await dock.getByRole('textbox',{name:'핵심 뜻',exact:true}).fill('여기 · 수업용 설명');await page.locator('[data-tid="id_13_word"]').click();await page.locator('[data-tid="id_12_word"]').click();await dock.getByText('수업용 뜻 확인·수정',{exact:true}).click();assert.equal(await dock.getByRole('textbox',{name:'핵심 뜻',exact:true}).inputValue(),'여기 · 수업용 설명');await dock.getByRole('button',{name:'수업 노트에 추가 +',exact:true}).click();await dock.getByRole('button',{name:'수업에 추가됨 ✓',exact:true}).waitFor();assert(Object.values((await current()).processed_json.metadata.classMeanings).some(e=>e.meaning==='여기 · 수업용 설명'));check('changing selection preserves draft and commits only classroom-specific meaning');
+await page.locator('[data-tid="id_14_0"]').scrollIntoViewIfNeeded();await page.evaluate(()=>document.fonts.ready);
+const start=await page.locator('[data-tid="id_14_0"] .surface').boundingBox(),end=await page.locator('[data-tid="id_14_2"] .surface').boundingBox();await page.mouse.move(start.x+start.width/2,start.y+start.height/2);await page.mouse.down();await page.mouse.move(end.x+end.width/2,end.y+end.height/2,{steps:8});await page.mouse.up();
+await dock.locator('.class-reader-picked strong').filter({hasText:'我们明天见'}).waitFor();await dock.getByRole('button',{name:'수업 노트에 추가 +',exact:true}).click();await dock.getByRole('button',{name:'수업에 추가됨 ✓',exact:true}).waitFor();assert((await current()).raw_text.endsWith('我们明天见'));check('dragged words add one expression, not separate vocabulary entries');
 assert.equal(writes.filter(w=>w.table==='user_vocabulary').length,0);check('classroom additions never write personal vocabulary or FSRS');
 assert.equal(report.errors.length,0,report.errors.join('\n'));check('no page runtime errors');
 } catch(error) {console.error(error);report.failure=error.message;await page.screenshot({path:out+'/failure.png'});fs.writeFileSync(out+'/failure.html',await page.content());process.exitCode=1;}

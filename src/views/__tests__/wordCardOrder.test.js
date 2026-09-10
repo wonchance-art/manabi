@@ -7,7 +7,7 @@ const read = (p) => fs.readFileSync(path.join(process.cwd(), p), 'utf8');
 const viewer = read('src/views/ViewerPage.jsx');
 const css = read('src/index.css');
 // 카드 렌더 본체 — 정의 시작부터 패널 조립 직전까지
-const card = sliceBetween(viewer, 'const wordDetailCard = !selectedToken || !isSheetOpen ? null : (', 'const rightPanelContent =');
+const card = sliceBetween(viewer, 'const renderWordDetailCard = (classAction=null) => !selectedToken || !isSheetOpen ? null : (', 'const renderRightPanelContent =');
 
 /**
  * 계약: 단어 카드 재배치 R2 (오너 확정 2026-09-02, #1077 5504878570).
