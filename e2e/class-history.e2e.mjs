@@ -1,5 +1,5 @@
 // Real React pages + HTTP fixtures + actual disposable PostgreSQL RPCs. No production writes.
-import {chromium} from 'playwright-core';
+import {chromium,webkit} from 'playwright-core';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {build} from 'vite';
@@ -29,17 +29,19 @@ await db.query('insert into reading_materials(id,owner_id,title,raw_text,visibil
 await db.exec("select setval('reading_materials_id_seq',20)");
 const student='00000000-0000-4000-8000-000000000088';
 await db.exec('RESET ROLE');await db.query('INSERT INTO auth.users VALUES($1)',[student]);
-const browser=await chromium.launch({executablePath:process.env.QA_CHROME||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
-const context=await browser.newContext({viewport:{width:1440,height:1000},serviceWorkers:'block'});context.setDefaultTimeout(25000);context.setDefaultNavigationTimeout(180000);
+const engine=process.env.QA_BROWSER||'chromium',touch=process.env.QA_TOUCH==='1',activate=touch?'tap':'click';
+assert(['chromium','webkit'].includes(engine),'QA_BROWSER must be chromium or webkit');
+const browser=await (engine==='webkit'?webkit:chromium).launch({...(engine==='chromium'?{executablePath:process.env.QA_CHROME||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'}:{}),headless:true});
+const context=await browser.newContext({viewport:{width:1440,height:1000},hasTouch:touch,serviceWorkers:'block'});context.setDefaultTimeout(25000);context.setDefaultNavigationTimeout(180000);
 const enc=v=>Buffer.from(JSON.stringify(v)).toString('base64url'),now=Math.floor(Date.now()/1000);
 const user={id:student,aud:'authenticated',role:'authenticated',email:'classroom-fixture@example.com',email_confirmed_at:new Date().toISOString(),app_metadata:{provider:'email'},user_metadata:{},identities:[]};
 const session={user,access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:student,aud:'authenticated',role:'authenticated',exp:now+3600,iat:now})}.fixture`,refresh_token:'fixture',expires_at:now+3600,expires_in:3600,token_type:'bearer'};
 const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*','access-control-expose-headers':'content-range'};
 let failure=false,lostResponse=false,analysisDelay=0,analysisFail=false,emptyMeaning=false;
 const analyzedLines=[];
-const report={checks:[],errors:[],screens:[]},writes=[];
+const report={engine,touch,checks:[],errors:[],screens:[]},writes=[];
 await context.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());
-await context.route(base+'/**',async route=>{if(new URL(route.request().url()).pathname.startsWith('/_next/static/'))return route.continue();const response=await route.fetch({headers:{...route.request().headers(),cookie:''},timeout:180000});await route.fulfill({response});});
+await context.route(base+'/**',route=>route.continue(new URL(route.request().url()).pathname.startsWith('/_next/static/')?{}:{headers:{...route.request().headers(),cookie:''}}));
 await context.route('**/api/**',r=>r.fulfill({json:{}}));
 await context.route('**/auth/v1/**',r=>r.fulfill({headers:cors,json:r.request().url().includes('/user')?user:session}));
 await context.route('**/rest/v1/**',async r=>{
@@ -107,7 +109,7 @@ const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.m
 const check=label=>{report.checks.push(label);console.log(label);};
 const waitFor=async fn=>{for(let i=0;i<100;i++){if(await fn())return;await page.waitForTimeout(100);}throw new Error('condition timeout');};
 const current=async()=>(await db.query("select * from reading_materials where processed_json#>>'{metadata,team,day}'=$1",[day])).rows[0];
-if(process.env.QA_LOGIN==='1'){await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last().click();await page.waitForURL('**/home');}
+if(process.env.QA_LOGIN==='1'){await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last()[activate]();await page.waitForURL('**/home');}
 else {await context.addCookies([{name:'sb-e2e-auth-token',value:'base64-'+enc(session),url:base,httpOnly:false,sameSite:'Lax'}]);}
 
 
@@ -116,13 +118,13 @@ await context.route('**/api/class/fixture-class/history?*',r=>r.fulfill({json:{n
 try {
 await page.goto(base+'/class/fixture-class');await page.locator('button.classroom-featured-note').waitFor();
 assert.equal(await page.getByRole('button',{name:'교재',exact:true}).getAttribute('aria-pressed'),'true');check('student home opens textbook tab by default');
-await page.getByRole('button',{name:'수업 돌아보기',exact:true}).click();const history=page.getByRole('region',{name:'수업 돌아보기'});await history.getByText('忙碌',{exact:true}).waitFor();
+await page.getByRole('button',{name:'수업 돌아보기',exact:true})[activate]();const history=page.getByRole('region',{name:'수업 돌아보기'});await history.getByText('忙碌',{exact:true}).waitFor();
 await history.getByRole('searchbox').fill('하루');assert.equal(await history.getByText('图书馆',{exact:true}).count(),0);await history.getByText('忙碌',{exact:true}).waitFor();check('search matches Korean meaning');
-await history.getByRole('searchbox').fill('');await history.getByRole('button',{name:'교재 밖 표현만',exact:true}).click();assert.equal(await history.getByText('以前',{exact:true}).count(),0);assert.equal(await history.getByText('图书馆',{exact:true}).count(),0);check('outside-textbook filter excludes textbook and unknown legacy sources');
-await history.getByRole('button',{name:'교재 밖 표현만',exact:true}).click();
+await history.getByRole('searchbox').fill('');await history.getByRole('button',{name:'교재 밖 표현만',exact:true})[activate]();assert.equal(await history.getByText('以前',{exact:true}).count(),0);assert.equal(await history.getByText('图书馆',{exact:true}).count(),0);check('outside-textbook filter excludes textbook and unknown legacy sources');
+await history.getByRole('button',{name:'교재 밖 표현만',exact:true})[activate]();
 for(const width of [1440,768,390]){await page.setViewportSize({width,height:1000});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:`${out}/history-${width}.png`});report.screens.push(`history-${width}.png`);}check('history layout fits desktop, tablet and mobile');
-await history.getByRole('button',{name:'교재에서 보기 ↗',exact:true}).click();await page.waitForURL(/viewer\/\d+/);await page.locator('[data-tid="id_0_word"][data-selected="true"]').waitFor();assert(page.url().includes('sourceQuote='));check('history opens exact expression in canonical personal copy');
-await page.getByRole('link',{name:'← 수업으로',exact:true}).click();await page.getByRole('button',{name:'수업 돌아보기',exact:true}).waitFor();assert.equal(await page.getByRole('button',{name:'수업 돌아보기',exact:true}).getAttribute('aria-pressed'),'true');check('return from source opens the class history context');
+await history.getByRole('button',{name:'교재에서 보기 ↗',exact:true})[activate]();await page.waitForURL(/viewer\/\d+/);await page.locator('[data-tid="id_0_word"][data-selected="true"]').waitFor();assert(page.url().includes('sourceQuote='));check('history opens exact expression in canonical personal copy');
+await page.getByRole('link',{name:'← 수업으로',exact:true})[activate]();await page.getByRole('button',{name:'수업 돌아보기',exact:true}).waitFor();assert.equal(await page.getByRole('button',{name:'수업 돌아보기',exact:true}).getAttribute('aria-pressed'),'true');check('return from source opens the class history context');
 assert.equal(report.errors.length,0,report.errors.join('\n'));check('no page runtime errors');
 } catch(error){console.error(error);report.failure=error.message;await page.screenshot({path:out+'/failure.png'});fs.writeFileSync(out+'/failure.html',await page.content());process.exitCode=1;}
-fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));await browser.close();await db.close();
+fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));await context.unrouteAll({behavior:'wait'});await browser.close();await db.close();

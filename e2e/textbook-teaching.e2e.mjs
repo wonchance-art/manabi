@@ -1,5 +1,5 @@
 // Real React pages + HTTP fixtures + actual disposable PostgreSQL RPCs. No production writes.
-import {chromium} from 'playwright-core';
+import {chromium,webkit} from 'playwright-core';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const {PGlite}=await import(process.env.QA_PGLITE_MODULE||'@electric-sql/pglite');
@@ -27,15 +27,17 @@ for(const [i,text]of ['我们','明天','见','。'].entries()){const id=`id_14_
 await db.query('insert into reading_materials(id,owner_id,title,raw_text,visibility,processed_json) values(10,$1,$2,$3,$4,$5)',[uid,'실전 중국어 — 함께 공부하는 하루',words.join('\n')+'\n我们明天见。','private',book]);
 await db.query('insert into reading_materials(id,owner_id,title,raw_text,visibility,processed_json) values(11,$1,$2,$3,$4,$5)',[uid,'실전 중국어 — 다음 과',words.join('\n'),'private',{...book,metadata:{...book.metadata,book:{key:'fixture-book',order:2}}}]);
 await db.exec("select setval('reading_materials_id_seq',20)");
-const browser=await chromium.launch({executablePath:process.env.QA_CHROME||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
-const context=await browser.newContext({viewport:{width:1440,height:1000},serviceWorkers:'block'});context.setDefaultTimeout(25000);context.setDefaultNavigationTimeout(180000);
+const engine=process.env.QA_BROWSER||'chromium',touch=process.env.QA_TOUCH==='1',activate=touch?'tap':'click';
+assert(['chromium','webkit'].includes(engine),'QA_BROWSER must be chromium or webkit');
+const browser=await (engine==='webkit'?webkit:chromium).launch({...(engine==='chromium'?{executablePath:process.env.QA_CHROME||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'}:{}),headless:true});
+const context=await browser.newContext({viewport:{width:1440,height:1000},hasTouch:touch,serviceWorkers:'block'});context.setDefaultTimeout(25000);context.setDefaultNavigationTimeout(180000);
 const enc=v=>Buffer.from(JSON.stringify(v)).toString('base64url'),now=Math.floor(Date.now()/1000);
 const user={id:uid,aud:'authenticated',role:'authenticated',email:'classroom-fixture@example.com',email_confirmed_at:new Date().toISOString(),app_metadata:{provider:'email'},user_metadata:{},identities:[]};
 const session={user,access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:uid,aud:'authenticated',role:'authenticated',exp:now+3600,iat:now})}.fixture`,refresh_token:'fixture',expires_at:now+3600,expires_in:3600,token_type:'bearer'};
 const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*','access-control-expose-headers':'content-range'};
 let failure=false,lostResponse=false,analysisDelay=0,analysisFail=false,emptyMeaning=false;
 const analyzedLines=[];
-const report={checks:[],errors:[],screens:[]},writes=[];
+const report={engine,touch,checks:[],errors:[],screens:[]},writes=[];
 await context.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());
 // Synthetic auth belongs to the intercepted client/API fixtures. Strip it from
 // server page requests without a second fetch/fulfill lifecycle for prefetches.
@@ -80,7 +82,7 @@ const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.m
 const check=label=>{report.checks.push(label);console.log(label);};
 const waitFor=async fn=>{for(let i=0;i<100;i++){if(await fn())return;await page.waitForTimeout(100);}throw new Error('condition timeout');};
 const current=async()=>(await db.query("select * from reading_materials where processed_json#>>'{metadata,team,day}'=$1",[day])).rows[0];
-if(process.env.QA_LOGIN==='1'){await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last().click();await page.waitForURL('**/home');}
+if(process.env.QA_LOGIN==='1'){await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last()[activate]();await page.waitForURL('**/home');}
 else {await context.addCookies([{name:'sb-e2e-auth-token',value:'base64-'+enc(session),url:base,httpOnly:false,sameSite:'Lax'}]);}
 
 let annotationLost=false;
@@ -104,21 +106,21 @@ await page.goto(url);
 const dock=page.getByRole('complementary',{name:'교재 안 수업 도구'});await dock.waitFor();
 const nextUrl=base+`/viewer/11?class=fixture-class&day=${day}&returnTo=${encodeURIComponent('/class/fixture-class/live?day='+day)}`;
 assert.equal(await page.locator('.next-lesson-card').getAttribute('href'),new URL(nextUrl).pathname+new URL(nextUrl).search);
-await page.getByRole('link',{name:'다음 과',exact:true}).click();await page.waitForURL(nextUrl);await dock.waitFor();
-await page.getByRole('link',{name:'이전 과',exact:true}).click();await page.waitForURL(url);await dock.waitFor();
+await page.getByRole('link',{name:'다음 과',exact:true})[activate]();await page.waitForURL(nextUrl);await dock.waitFor();
+await page.getByRole('link',{name:'이전 과',exact:true})[activate]();await page.waitForURL(url);await dock.waitFor();
 check('top and bottom chapter links keep the class day and teacher tools');
-await page.locator('[data-tid="id_0_word"]').click();
+await page.locator('[data-tid="id_0_word"]')[activate]();
 const original=await current();
-await dock.getByRole('button',{name:'주의점 추가 +',exact:true}).click();
+await dock.getByRole('button',{name:'주의점 추가 +',exact:true})[activate]();
 await dock.getByRole('textbox',{name:'교재 주의점 입력'}).fill('图书馆은 책을 읽거나 빌리는 곳입니다. 서점 书店과 구별해요.');
-await dock.getByRole('button',{name:'교재에 저장',exact:true}).click();
+await dock.getByRole('button',{name:'교재에 저장',exact:true})[activate]();
 await dock.getByText('교재에 저장했어요.',{exact:false}).waitFor();
 assert.equal((await current()).raw_text,original.raw_text);assert.deepEqual((await current()).processed_json,original.processed_json);check('annotation saves without touching dated notes or textbook');
-await dock.getByRole('button',{name:'주의점 추가 +',exact:true}).click();await dock.getByRole('textbox',{name:'교재 주의점 입력'}).fill('图书馆里很安静。');annotationLost=true;await dock.getByRole('button',{name:'교재에 저장',exact:true}).click();
-await dock.getByRole('button',{name:'저장 재시도',exact:true}).waitFor();await page.reload();await dock.waitFor();await dock.getByRole('button',{name:'저장 재시도',exact:true}).click();await waitFor(async()=>await dock.getByRole('button',{name:'저장 재시도',exact:true}).count()===0);check('response loss retries exact operation and preserves appended explanation');
+await dock.getByRole('button',{name:'주의점 추가 +',exact:true})[activate]();await dock.getByRole('textbox',{name:'교재 주의점 입력'}).fill('图书馆里很安静。');annotationLost=true;await dock.getByRole('button',{name:'교재에 저장',exact:true})[activate]();
+await dock.getByRole('button',{name:'저장 재시도',exact:true}).waitFor();await page.reload();await dock.waitFor();await dock.getByRole('button',{name:'저장 재시도',exact:true})[activate]();await waitFor(async()=>await dock.getByRole('button',{name:'저장 재시도',exact:true}).count()===0);check('response loss retries exact operation and preserves appended explanation');
 await db.exec('RESET ROLE');assert.equal((await db.query('select count(*)::int n from textbook_annotations')).rows[0].n,2);await db.exec('SET ROLE authenticated');
 await page.reload();await dock.waitFor();await dock.getByText('图书馆里很安静。',{exact:true}).waitFor();check('annotation automatically returns on next visit at its anchored passage');
-await dock.getByRole('button',{name:'접기',exact:true}).last().click();await page.evaluate(()=>scrollTo(0,1000));await page.evaluate(()=>scrollTo(0,0));assert.equal(await dock.getByText('图书馆里很安静。',{exact:true}).count(),0);check('scrolling back does not repeatedly reopen a dismissed annotation');
+await dock.getByRole('button',{name:'접기',exact:true}).last()[activate]();await page.evaluate(()=>scrollTo(0,1000));await page.evaluate(()=>scrollTo(0,0));assert.equal(await dock.getByText('图书馆里很安静。',{exact:true}).count(),0);check('scrolling back does not repeatedly reopen a dismissed annotation');
 // Click actionability may reveal a button before opening it, especially after
 // a viewport change. Compare with the position at activation, not before that
 // browser scroll; capture runs before React mounts the presentation.
@@ -126,37 +128,37 @@ await page.evaluate(()=>document.addEventListener('click',event=>{
  if(event.target.closest('.class-reader-presentation-actions button')?.textContent==='크게 보여주기')window.__teachingOpenY=scrollY;
 },true));
 for(const viewport of [{width:1024,height:768},{width:768,height:1024},{width:390,height:844}]){
- await page.setViewportSize(viewport);await page.locator('[data-tid="id_3_word"]').click();
+ await page.setViewportSize(viewport);await page.locator('[data-tid="id_3_word"]')[activate]();
  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
  for(let i=0;i<10;i++){
-  await dock.getByRole('button',{name:'크게 보여주기',exact:true}).last().click();
+  await dock.getByRole('button',{name:'크게 보여주기',exact:true}).last()[activate]();
   const origin=await page.evaluate(()=>window.__teachingOpenY);assert(Number.isFinite(origin),'capture actual presentation activation');
   const dialog=page.getByRole('dialog',{name:'학생에게 보여주는 설명'});await dialog.waitFor();
-  await dialog.getByRole('button',{name:'뜻 가리기',exact:true}).click();await dialog.getByText('뜻을 떠올려 보세요.',{exact:true}).waitFor();
+  await dialog.getByRole('button',{name:'뜻 가리기',exact:true})[activate]();await dialog.getByText('뜻을 떠올려 보세요.',{exact:true}).waitFor();
   if(i===0){const shot=`presentation-${viewport.width}.png`;await page.screenshot({path:out+'/'+shot});report.screens.push(shot);}
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);assert.equal(overflow,false);
-  await dialog.getByRole('button',{name:'교재로 돌아가기 ×',exact:true}).click();await waitFor(async()=>await dialog.count()===0);assert.equal(page.url(),url);
+  await dialog.getByRole('button',{name:'교재로 돌아가기 ×',exact:true})[activate]();await waitFor(async()=>await dialog.count()===0);assert.equal(page.url(),url);
   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   const restored=await page.evaluate(()=>scrollY);assert(Math.abs(restored-origin)<3,`viewport ${viewport.width} cycle ${i}: before ${origin}, after ${restored}`);
  }
  check(`presentation restores textbook position ten times at ${viewport.width}x${viewport.height}`);
 }
-await page.setViewportSize({width:1440,height:1000});await page.locator('[data-tid="id_0_word"]').click();
+await page.setViewportSize({width:1440,height:1000});await page.locator('[data-tid="id_0_word"]')[activate]();
 await page.screenshot({path:out+'/textbook-notes-desktop.png'});report.screens.push('textbook-notes-desktop.png');
 assert.equal((await current()).raw_text,original.raw_text);check('showing words and annotations never records a class expression');
-await dock.getByRole('button',{name:'찾기',exact:true}).first().click();
+await dock.getByRole('button',{name:'찾기',exact:true}).first()[activate]();
 const search=dock.getByRole('textbox',{name:'단어·표현 찾기'});await search.fill('你好');await search.press('Enter');await waitFor(async()=>await dock.getByRole('textbox',{name:'핵심 뜻',exact:true}).inputValue()==='안녕하세요');
-await dock.getByRole('button',{name:'보여주고 기록',exact:true}).click();await page.getByRole('dialog').waitFor();await page.getByRole('dialog').getByRole('button',{name:'수업에 기록됨 ✓',exact:true}).waitFor();assert((await current()).raw_text.endsWith('你好'));check('manual expression displays and records with one action');
+await dock.getByRole('button',{name:'보여주고 기록',exact:true})[activate]();await page.getByRole('dialog').waitFor();await page.getByRole('dialog').getByRole('button',{name:'수업에 기록됨 ✓',exact:true}).waitFor();assert((await current()).raw_text.endsWith('你好'));check('manual expression displays and records with one action');
 await page.keyboard.press('Escape');await waitFor(async()=>await page.getByRole('dialog').count()===0);
-await page.locator('[data-tid="id_0_word"]').click();
-await dock.getByRole('button',{name:'수정',exact:true}).first().click();await dock.getByRole('button',{name:'보관',exact:true}).click();await waitFor(async()=>await dock.getByRole('button',{name:'보관',exact:true}).count()===0);
-await dock.getByText('보관한 주의점',{exact:true}).click();await dock.getByRole('button',{name:'다시 표시',exact:true}).click();await waitFor(async()=>await dock.getByRole('button',{name:'다시 표시',exact:true}).count()===0);check('teacher can archive and restore explanations without deleting history');
+await page.locator('[data-tid="id_0_word"]')[activate]();
+await dock.getByRole('button',{name:'수정',exact:true}).first()[activate]();await dock.getByRole('button',{name:'보관',exact:true})[activate]();await waitFor(async()=>await dock.getByRole('button',{name:'보관',exact:true}).count()===0);
+await dock.getByText('보관한 주의점',{exact:true})[activate]();await dock.getByRole('button',{name:'다시 표시',exact:true})[activate]();await waitFor(async()=>await dock.getByRole('button',{name:'다시 표시',exact:true}).count()===0);check('teacher can archive and restore explanations without deleting history');
 for(const width of [1440,768,390]){
  await page.setViewportSize({width,height:900});
  const body=page.locator('.class-reader-dock__body');
  await body.evaluate(el=>{el.scrollTop=el.scrollHeight;});
  assert(await body.evaluate(el=>el.scrollTop)>0,'fixture must exercise a scrolled panel');
- await page.locator(`[data-tid="id_${width===768?1:2}_word"]`).click();
+ await page.locator(`[data-tid="id_${width===768?1:2}_word"]`)[activate]();
  await waitFor(async()=>await body.evaluate(el=>el.scrollTop)<2);
  const geometry=await page.evaluate(()=>{const body=document.querySelector('.class-reader-dock__body').getBoundingClientRect(),word=document.querySelector('.class-reader-word').getBoundingClientRect();return {bodyTop:body.top,bodyBottom:body.bottom,wordTop:word.top};});
  assert(geometry.wordTop>=geometry.bodyTop&&geometry.wordTop<geometry.bodyBottom,'new headword must be visible without scrolling');
