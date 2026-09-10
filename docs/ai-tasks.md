@@ -14,7 +14,6 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- **최신 수업 실계정 복귀 검수 (2026-09-11)** — 오너 진행 승인. r2l7n0u8y 실제 로그인·수업 표현 표시/한국어 검색 확인. 실제 노트 복귀에서 safeReaderReturn이 view=history를 제거하여 교재 탭으로 돌아가는 결함 발견. 같은 PR #1301에서 복귀 allowlist·단위/브라우저 회귀를 보완한다. 실자료·개인 단어 검수 쓰기 없음.
 - **수업 교재 학습 실계정 검수 (2026-09-10)** — #1300 구현·DB·배포 검수 완료. 6v9dwp8dg 교사 실제 로그인 후 교재→뜻 확대→동일 수업/날짜 복귀 확인. 실제 계정의 수업 추가→판 쓰기 왕복은 격리 인증/DB 검수와 구분한다. 기존 실수업·개인 복습에 검수 입력 없음. 상세 `docs/manabi-classroom-study-flow.md`.
 
 
@@ -26,6 +25,7 @@
   16:03 스캔까지 WORKING 무표식(30분 룰) — Claude 직접 수행·완결(회수 공지
   5386950005, PR #1118)**. 이 열에 잔여 발주 없음.
 ### done (최근)
+- **수업 실계정·기록 탭 복귀 보완 완료 (2026-09-11)** — #1301. r2 실계정 기록4개/한국어 검색/과 이동/단어 확대·같은 위치 복귀 확인, 오늘 교재 임시 선택 원상 복원. 발견한 소유자 노트 복귀의 view=history 유실 수정(허용 값만 보존). 실행194793f CI34496971611 전체378파일/4,115개·빌드·기존 e2e SUCCESS, 검사5ff87864 CI34499851995도 SUCCESS. 새26z7kitqi/dpl_F7oTJfAY3RqAo3wBcdqujdTYXk8S READY·version 일치, 로컬과 배포 각각 Chromium 교사15/학생7 + WebKit 터치 교사15/학생7 = 44흐름 PASS/오류0/종료0. 실제 원문·개인 단어·주의점·수업 표현에 검수 내용 저장 없음. 물리 iOS/실교실 지연 및 부모 실제 쓰기 왕복은 별도. 운영/공유 alias·DB/env 추가 변경·merge·force-push 없음. 상세 `docs/verification/classroom-textbook-notes-20260910.md`, 최종 head는 #150 CODEX_DONE.
 - **수업 Safari 계열·터치 검수 완료 (2026-09-10)** — #1301. WebKit 26.5 실제 tap 입력 교사14·학생7, 기존 Chromium 마우스 교사14·학생7 = 42흐름 PASS/페이지 오류0/종료0. 1024×768·768×1024·390×844 확대/복귀 각10회, 1440/768/390 기록/교재 이동 검수. 기존 3b029659 CI34459321045 두 job SUCCESS. 이번 변경은 e2e 두 파일·검수 문서·자기 보드이며 실행1e64954e 및 preview r2l7n0u8y 유지. 최신 실계정 로그인/물리 iPad·실교실 지연은 별도, 실제 사용자 데이터 쓰기·DB/env·운영/alias·merge 없음. 상세 `docs/verification/classroom-textbook-notes-20260910.md`.
 - **교재 설명·주의점 실계정 검수 보완 완료 (2026-09-10)** — draft #1301. 실제 교사 로그인 후 확대/뜻 가리기/초점·위치 복귀·주의점 입력/취소·수동 뜻 입력/확대 확인. 새 단어 선택 후 패널 스크롤 잔존·상하단 과 이동의 수업/날짜 유실·소유자 수업 기록 원문 누락 3건 수정. 실행1e64954e5650e32a38c76e2019877517dd5ed3da CI34457423671 SUCCESS(378파일/4,114개·빌드·기존 e2e), 로컬/배포 교사14흐름 PASS/오류0/종료0. 최종r2l7n0u8y/dpl_A5QhK3pANrLqv9rWjyaeGW8KpbKG READY·version 일치. 실계정 검수와 합성 쓰기 검수 구분, 실제 교재/주의점/수업 기록/개인 단어에 검수 입력 없음. 물리 iOS·실교실은 todo, 운영/공유 alias·DB 추가 변경 및 merge/force-push 없음. 상세 `docs/verification/classroom-textbook-notes-20260910.md`, 최종 head는 #150 CODEX_DONE.
 - **교재 안 설명·누적 주의점·학생 수업 돌아보기 완료 (2026-09-10, 오너 push/PR/DB/배포 및 마무리 승인)** — draft #1301, #1300의 12817f14 기반. 실행021c48d0771b5fbc5ca9680ff1e9335ff31e9010 CI34452183676 SUCCESS(378파일/4,112개·빌드·기존 e2e). 교재 유지 확대/복귀·뜻 가리기·보여주기/기록 분리, 교재 자체 주의점 누적/이력/보관/위치 재연결/재등장, 학생 교재 우선·날짜별 범위·표현 검색/원문 복귀. PGlite18·배포 합성 교사11/학생7·기존 사본10흐름 통과, 390/768/1024/1440px 직접 검수. SQL20260910070535 workflow34451419713 적용·원격10조건 PASS/ROLLBACK·임시 행0·원문/개인 단어 지문 불변. 누락된 SHARE_LINK_SECRET은 별도 오너 승인으로 Preview에만 추가, 최종6v9dwp8dg/dpl_EepffgD4ckoGrW2AqXSCj6Lr6Qcw READY·version 일치·수업 API 비로그인401. 실제 계정 검수는 doing, 운영/고정 alias·merge/force-push 없음. 최종 head는 #150 CODEX_DONE.
