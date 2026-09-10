@@ -147,6 +147,7 @@ for(const viewport of [{width:1024,height:768},{width:768,height:1024},{width:39
   await dialog.getByRole('button',{name:'교재로 돌아가기 ×',exact:true})[activate]();await waitFor(async()=>await dialog.count()===0);assert.equal(page.url(),url);
   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   const restored=await page.evaluate(()=>scrollY);assert(Math.abs(restored-origin)<3,`viewport ${viewport.width} cycle ${i}: before ${origin}, after ${restored}`);
+  assert(await dock.getByRole('button',{name:'크게 보여주기',exact:true}).last().evaluate(el=>document.activeElement===el),'show-only presentation restores its trigger focus');
  }
  check(`presentation restores textbook position ten times at ${viewport.width}x${viewport.height}`);
 }
@@ -157,6 +158,13 @@ await dock.getByRole('button',{name:'찾기',exact:true}).first()[activate]();
 const search=dock.getByRole('textbox',{name:'단어·표현 찾기'});await search.fill('你好');await search.press('Enter');await waitFor(async()=>await dock.getByRole('textbox',{name:'핵심 뜻',exact:true}).inputValue()==='안녕하세요');
 await dock.getByRole('button',{name:'보여주고 기록',exact:true})[activate]();await page.getByRole('dialog').waitFor();await page.getByRole('dialog').getByRole('button',{name:'수업에 기록됨 ✓',exact:true}).waitFor();assert((await current()).raw_text.endsWith('你好'));check('manual expression displays and records with one action');
 await page.keyboard.press('Escape');await waitFor(async()=>await page.getByRole('dialog').count()===0);
+await waitFor(async()=>await dock.getByRole('region',{name:'선택한 표현을 수업에 추가',exact:true}).getByRole('button',{name:'크게 보여주기',exact:true}).evaluate(el=>document.activeElement===el));
+const recorded=await current(),appendCount=writes.filter(w=>w.table.startsWith('classroom_append_')).length;
+await page.keyboard.press('Enter');await page.getByRole('dialog',{name:'학생에게 보여주는 설명'}).waitFor();await page.keyboard.press('Escape');await waitFor(async()=>await page.getByRole('dialog').count()===0);
+// Background analysis may finish while the display is open; compare the
+// saved expressions and append requests, not analysis tokens or revision.
+const reopened=await current();assert.equal(reopened.raw_text,recorded.raw_text);assert.deepEqual(reopened.processed_json.metadata.classEntries,recorded.processed_json.metadata.classEntries);assert.equal(writes.filter(w=>w.table.startsWith('classroom_append_')).length,appendCount,'keyboard reopening must not record a duplicate');
+check('recording presentation returns keyboard focus to the enabled show action');
 await page.locator('[data-tid="id_0_word"]')[activate]();
 await dock.getByRole('button',{name:'수정',exact:true}).first()[activate]();await dock.getByRole('button',{name:'보관',exact:true})[activate]();await waitFor(async()=>await dock.getByRole('button',{name:'보관',exact:true}).count()===0);
 await dock.getByText('보관한 주의점',{exact:true})[activate]();await dock.getByRole('button',{name:'다시 표시',exact:true})[activate]();await waitFor(async()=>await dock.getByRole('button',{name:'다시 표시',exact:true}).count()===0);check('teacher can archive and restore explanations without deleting history');

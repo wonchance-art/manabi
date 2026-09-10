@@ -33,7 +33,7 @@ function ClassReaderSession({root,team,day,material,selection,annotationContent,
   const session=useClassroomSession({ownerId:root.owner_id,rootId:root.id,team:team.key,day});
   const {data:chapters=[]}=useQuery({queryKey:['class-book-chapters',root.owner_id,team.bookKey],queryFn:()=>fetchBookChapters(team.bookKey),enabled:!!team.bookKey});
   const [manual,setManual]=useState(false),[input,setInput]=useState(''),[draft,setDraft]=useState(null),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[lookupBusy,setLookupBusy]=useState(false),[toolsOpen,setToolsOpen]=useState(false),[collapsed,setCollapsed]=useState(false),[expanded,setExpanded]=useState(false);
-  const dockRef=useRef(null),bodyRef=useRef(null);
+  const dockRef=useRef(null),bodyRef=useRef(null),presentationOriginRef=useRef(null),showButtonRef=useRef(null);
   const [edits,setEdits]=useState({});const lookupAttempt=useRef(0),composition=useRef(false);
   const current=manual?draft:selection;
   const key=studySelectionKey(current),override=edits[key];
@@ -80,11 +80,11 @@ function ClassReaderSession({root,team,day,material,selection,annotationContent,
     try{await session.add(current.text,{...buildStudySeed(current,meaning,reading),...(repeat?{repeat:true}:{})});}
     catch(error){setMessage(classroomError(error));}finally{setBusy(false);}
   }
-  const show=()=>{if(current)setPresentation({text:current.text,reading,meaning});};
+  const show=event=>{if(current){presentationOriginRef.current=event.currentTarget;setPresentation({text:current.text,reading,meaning});}};
   const classAction=(current?<section className="class-reader-add" aria-label="선택한 표현을 수업에 추가">
         {!current.source?.tokenId&&<div className="class-reader-picked"><strong lang={team.lang==='Chinese'?'zh':team.lang==='Japanese'?'ja':undefined}>{current.text}</strong><span>{manual?'직접 입력':'교재에서 선택'}</span></div>}
         {manual?<><label>읽기<input value={reading} onChange={e=>edit('reading',e.target.value)} maxLength={500}/></label><label>핵심 뜻<input value={meaning} onChange={e=>edit('meaning',e.target.value)} maxLength={500} placeholder="수업에서 사용할 뜻"/></label></>:<details><summary>수업용 뜻 확인·수정</summary><label>핵심 뜻<input value={meaning} onChange={e=>edit('meaning',e.target.value)} maxLength={500} placeholder="문장·표현의 뜻을 직접 적을 수 있어요"/></label></details>}
-        <div className="class-reader-presentation-actions"><button onClick={show}>크게 보여주기</button>{manual&&<button disabled={busy||!!queued||!!existing} onClick={()=>{show();add();}}>보여주고 기록</button>}</div>
+        <div className="class-reader-presentation-actions"><button ref={showButtonRef} onClick={show}>크게 보여주기</button>{manual&&<button disabled={busy||!!queued||!!existing} onClick={event=>{show(event);add();}}>보여주고 기록</button>}</div>
         <button className="class-reader-add__button" onClick={()=>add()} disabled={busy||!!existing||!!queued}>{queued?queued.status==='error'?'저장 확인 필요':'서버 저장 대기…':existing?'수업에 추가됨 ✓':busy?'기기에 보관 중…':'수업 노트에 추가 +'}</button>
         {existing&&!queued&&<button disabled={busy} onClick={()=>add(true)}>한 번 더 추가</button>}
         {queued?.status==='error'&&<button onClick={()=>session.retry(queued.id).catch(e=>setMessage(classroomError(e)))}>저장 재시도</button>}
@@ -110,5 +110,5 @@ function ClassReaderSession({root,team,day,material,selection,annotationContent,
         {session.analysis.error&&<p role="status">뜻을 준비하지 못했어요. <button onClick={session.reanalyze}>다시 찾기</button></p>}
       </section>
     </div>
-  </aside>{presentation&&<TeachingPresentation entry={presentation} lang={team.lang} onClose={closePresentation} onRecord={()=>add()} recordState={existing?'수업에 기록됨 ✓':queued?'서버 저장 대기':busy?'보관 중…':null}/>}</>;
+  </aside>{presentation&&<TeachingPresentation entry={presentation} lang={team.lang} onClose={closePresentation} onRecord={()=>add()} originRef={presentationOriginRef} fallbackRef={showButtonRef} recordState={existing?'수업에 기록됨 ✓':queued?'서버 저장 대기':busy?'보관 중…':null}/>}</>;
 }
