@@ -9,6 +9,9 @@ export const classLanguage = lang => CLASS_LANG[lang] || CLASS_LANG.Japanese;
 export const classroomScope = (owner, key, day) => JSON.stringify([owner, key, day]);
 export function classroomEntries(note) {
   const meta = note?.processed_json?.metadata || {};
+  const correctedMeanings = new Set(Object.entries(meta.viewerCorrections || {})
+    .filter(([, fields]) => Array.isArray(fields) && fields.includes('meaning'))
+    .map(([id]) => note.processed_json.dictionary?.[id]));
   return noteEntries(note).map(entry => {
     const anchor = meta.classEntries?.find(a => a.idx === entry.idx && a.text === entry.text);
     const id = anchor?.id || `legacy:${entry.idx}:${entry.text}`;
@@ -16,9 +19,14 @@ export function classroomEntries(note) {
     const content = entry.tokens.filter(t => !['기호','개행','미분석'].includes(t.pos));
     // Multiple token glosses are explanations, never a sentence translation.
     const primary = edit?.text === entry.text ? edit.meaning : content.length === 1 && entry.analyzed ? content[0].meaning || '' : '';
-    return { ...entry, id, primary, manual: edit?.text === entry.text,
+    const missingMeanings = entry.analyzed && content.some(t => !String(t.meaning || '').trim() && !correctedMeanings.has(t));
+    return { ...entry, id, primary, missingMeanings, manual: edit?.text === entry.text,
       reading: ['Japanese','Chinese'].includes(meta.language || 'Japanese') ? entry.reading : '' };
   });
+}
+// Automatic work only targets raw entries. Enrichment gaps require an explicit retry.
+export function classroomAnalysisIndices(note, retryMissing = false) {
+  return classroomEntries(note).filter(entry => !entry.analyzed || (retryMissing && entry.missingMeanings)).map(entry => entry.idx);
 }
 export function classViewerHref(id, team, day) {
   const back = `/class/${encodeURIComponent(team)}/live${day ? `?day=${day}` : ''}`;

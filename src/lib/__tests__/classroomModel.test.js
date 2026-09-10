@@ -1,7 +1,25 @@
 import { describe,it,expect,vi } from 'vitest';
-import { classroomEntries,classMeaningPatch,classLinkPath,classroomScope,appendClassroomEntry,classroomPlainText } from '../classroomModel';
+import { classroomEntries,classMeaningPatch,classLinkPath,classroomScope,appendClassroomEntry,classroomPlainText,classroomAnalysisIndices } from '../classroomModel';
 function note(tokens){return {id:1,title:'수업',raw_text:'東道主',processed_json:{sequence:tokens.map((_,i)=>`id_0_${i}`),dictionary:Object.fromEntries(tokens.map((t,i)=>[`id_0_${i}`,t])),metadata:{language:'Chinese',classEntries:[{id:'stable',idx:0,text:'東道主'}]}}};}
 describe('classroom learner meaning',()=>{
+ it('only retries completed empty glosses on explicit request, preserving manual primary meanings',()=>{
+  const n=note([{text:'東道主',pos:'명사',meaning:''}]);
+  n.processed_json.metadata.classMeanings={stable:{text:'東道主',meaning:'호스트 국가'}};
+  expect(classroomEntries(n)[0]).toMatchObject({primary:'호스트 국가',missingMeanings:true});
+  expect(classroomAnalysisIndices(n)).toEqual([]);
+  expect(classroomAnalysisIndices(n,true)).toEqual([0]);
+  n.processed_json.dictionary.id_0_0.meaning='주최자';
+  expect(classroomEntries(n)[0].primary).toBe('호스트 국가');
+  expect(classroomAnalysisIndices(n,true)).toEqual([]);
+ });
+ it('does not treat missing sentence translation, punctuation, or deliberately cleared gloss as an enrichment failure',()=>{
+  const sentence=note([{text:'東',meaning:'동쪽'},{text:'道主',meaning:'주인'},{text:'。',pos:'기호',meaning:''}]);
+  expect(classroomEntries(sentence)[0].primary).toBe('');
+  expect(classroomAnalysisIndices(sentence,true)).toEqual([]);
+  const corrected=note([{text:'東道主',pos:'명사',meaning:''}]);
+  corrected.processed_json.metadata.viewerCorrections={id_0_0:['meaning']};
+  expect(classroomAnalysisIndices(corrected,true)).toEqual([]);
+ });
  it('shows a single word meaning but not joined sentence glosses',()=>{
   expect(classroomEntries(note([{text:'東道主',pos:'명사',meaning:'주최국',furigana:'dōng dào zhǔ'}]))[0].primary).toBe('주최국');
   const e=classroomEntries(note([{text:'東',meaning:'동쪽'},{text:'道主',meaning:'주인'}]))[0];expect(e.primary).toBe('');expect(e.meaning).toBe('동쪽 · 주인');

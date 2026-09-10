@@ -94,7 +94,7 @@ function LiveSession({ownerId,root,day}) {
           {editing?.id===entry.id?<form className="classroom-meaning-form" onSubmit={saveMeaning}><label htmlFor="class-meaning">대표 뜻</label><input id="class-meaning" autoFocus value={meaning} maxLength={500} onChange={e=>setMeaning(e.target.value)} placeholder="이 표현의 핵심 뜻을 적어 주세요"/><div className="classroom-actions"><button disabled={saving} className="classroom-button">{saving?'저장 중…':'뜻 저장'}</button><button type="button" className="classroom-button classroom-button--quiet" onClick={()=>setEditing(null)}>취소</button></div></form>
           :<button className={`classroom-meaning-edit${entry.primary?'':' is-empty'}`} onClick={()=>{setEditing(entry);setMeaning(entry.primary);}}>{entry.primary||'대표 뜻 적기'}<span aria-hidden="true"> ↗</span></button>}
           {entry.analyzed&&entry.tokens.length>1&&<details className="classroom-details"><summary>단어별 해설</summary>{entry.tokens.filter(t=>t.meaning).map((t,n)=><p key={n}><b>{t.text}</b> {t.meaning}</p>)}</details>}
-          {!entry.analyzed&&!session.analysis.running&&<button className="classroom-text-button" onClick={session.reanalyze}>뜻 다시 찾기</button>}
+          {(!entry.analyzed||entry.missingMeanings)&&!session.analysis.running&&<button className="classroom-text-button" onClick={session.reanalyze}>뜻 다시 찾기</button>}
           </div><span className="classroom-entry-marker" aria-hidden="true">{current?.id===entry.id?'↗':''}</span>
         </li>)}
       </ol>

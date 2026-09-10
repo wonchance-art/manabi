@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { libraryReaderHref, safeLibraryReturn, libraryBrowseReturn } from '@/lib/libraryReturn';
+import { libraryReaderHref, safeReaderReturn, libraryBrowseReturn } from '@/lib/libraryReturn';
 
 export function useLibraryReader() {
   const router = useRouter();
@@ -23,5 +23,6 @@ export default function LibraryReaderLink({ href, children, ...props }) {
 
 export function LibraryReturnLink({ children = '← 내 서재', ...props }) {
   const params = useSearchParams();
-  return <Link {...props} href={safeLibraryReturn(params.get('returnTo'))}>{children}</Link>;
+  const back = safeReaderReturn(params.get('returnTo'));
+  return <Link {...props} href={back}>{back.startsWith('/class/') ? '← 수업 진행' : children}</Link>;
 }

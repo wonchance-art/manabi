@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getSupabase } from './supabase';
 import { fetchDayNote } from './classTeamQueries';
-import { classroomScope, appendClassroomEntry, classroomError, classroomEntries } from './classroomModel';
+import { classroomScope, appendClassroomEntry, classroomError, classroomAnalysisIndices } from './classroomModel';
 import { putClassOperation, listClassOperations, deleteClassOperation, claimClassOperation, discardClassOperation } from './classroomOutbox';
 import { openClassChannel } from './classRealtime';
 import { BOARD_POLL_MS } from './classBoard';
@@ -20,6 +20,7 @@ export function useClassroomSession({ ownerId, team, rootId, day }) {
   const [online,setOnline] = useState(true);
   const [analysis,setAnalysis] = useState({ running: false, error: '' });
   const [retryAnalysis,setRetryAnalysis] = useState(0);
+  const retryMissing = useRef(false);
   const active = useRef(true), sending = useRef(false), channel = useRef(null);
   const refreshQueue = useCallback(async () => {
     const all = await listClassOperations(scope);
@@ -100,8 +101,9 @@ export function useClassroomSession({ ownerId, team, rootId, day }) {
   const note=query.data;
   const revision=note?.processed_json?.metadata?.viewerRevision || JSON.stringify(note?.processed_json);
   useEffect(() => {
-    const selected=classroomEntries(note).filter(entry=>!entry.analyzed).map(entry=>entry.idx);
+    const selected=classroomAnalysisIndices(note,retryMissing.current);
     if (!note || !selected?.length || !online) return undefined;
+    retryMissing.current=false; // A saved revision must not loop on an empty AI meaning.
     const controller=new AbortController();
     let alive=true;
     setAnalysis({running:true,error:''});
@@ -122,5 +124,5 @@ export function useClassroomSession({ ownerId, team, rootId, day }) {
     // The exact revision, not a refetched object identity, owns this analysis attempt.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[note?.id,revision,online,retryAnalysis,ownerId,accept]);
-  return {...query,note,queue,online,storeError,analysis,add,retry,discard,accept,notify:()=>channel.current?.send({}),reanalyze:()=>setRetryAnalysis(n=>n+1)};
+  return {...query,note,queue,online,storeError,analysis,add,retry,discard,accept,notify:()=>channel.current?.send({}),reanalyze:()=>{retryMissing.current=true;setRetryAnalysis(n=>n+1);}};
 }

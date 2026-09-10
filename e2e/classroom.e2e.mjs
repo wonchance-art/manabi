@@ -26,7 +26,8 @@ const enc=v=>Buffer.from(JSON.stringify(v)).toString('base64url'),now=Math.floor
 const user={id:uid,aud:'authenticated',role:'authenticated',email:'classroom-fixture@example.com',email_confirmed_at:new Date().toISOString(),app_metadata:{provider:'email'},user_metadata:{},identities:[]};
 const session={user,access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:uid,aud:'authenticated',role:'authenticated',exp:now+3600,iat:now})}.fixture`,refresh_token:'fixture',expires_at:now+3600,expires_in:3600,token_type:'bearer'};
 const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*','access-control-expose-headers':'content-range'};
-let failure=false,lostResponse=false,analysisDelay=0,analysisFail=false;
+let failure=false,lostResponse=false,analysisDelay=0,analysisFail=false,emptyMeaning=false;
+const analyzedLines=[];
 const report={checks:[],errors:[],screens:[]},writes=[];
 await context.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());
 await context.route(base+'/**',async route=>{if(new URL(route.request().url()).pathname.startsWith('/_next/static/'))return route.continue();const response=await route.fetch({headers:{...route.request().headers(),cookie:''},timeout:180000});await route.fulfill({response});});
@@ -60,7 +61,7 @@ await context.route('**/rest/v1/**',async r=>{
  return send(object?null:[]);
 });
 await context.route('**/api/suggestions/today',r=>r.fulfill({json:[]}));
-await context.route('**/api/analyze',async r=>{if(analysisDelay)await new Promise(resolve=>setTimeout(resolve,analysisDelay));if(analysisFail)return r.fulfill({status:503,json:{error:'검수 분석 실패'}});const {lines}=r.request().postDataJSON();try{await r.fulfill({json:{results:lines.map(line=>({sequence:['word'],dictionary:{word:{text:line,meaning:'검수 표현의 뜻',pos:'명사',furigana:'よみ'}}}))}});}catch{}});
+await context.route('**/api/analyze',async r=>{if(analysisDelay)await new Promise(resolve=>setTimeout(resolve,analysisDelay));if(analysisFail)return r.fulfill({status:503,json:{error:'검수 분석 실패'}});const {lines}=r.request().postDataJSON();analyzedLines.push(lines);try{await r.fulfill({json:{results:lines.map(line=>({sequence:['word'],dictionary:{word:{text:line,meaning:emptyMeaning?'':'검수 표현의 뜻',pos:'명사',furigana:'よみ'}}}))}});}catch{}});
 const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.message));
 const check=label=>{report.checks.push(label);console.log(label);};
 const waitFor=async fn=>{for(let i=0;i<100;i++){if(await fn())return;await page.waitForTimeout(100);}throw new Error('condition timeout');};
@@ -90,6 +91,16 @@ await context.setOffline(true);await input.fill('オフライン');await page.ge
 await input.fill('二行目\n三行目');await page.getByRole('button',{name:'추가 ↑',exact:true}).click();await waitFor(async()=>(await current()).raw_text.includes('二行目\n三行目'));check('multiline input preserves source and both analysis indices');
 await waitFor(async()=>(await current()).processed_json.status==='completed');
 assert(Object.values((await current()).processed_json.metadata.classMeanings).some(v=>v.meaning==='선생님이 직접 적은 핵심 뜻'));check('subsequent analysis preserves manual meaning');
+emptyMeaning=true;await input.fill('図書館');await page.getByRole('button',{name:'추가 ↑',exact:true}).click();
+const gap=page.locator('.classroom-entry').filter({has:page.getByRole('button',{name:'図書館',exact:true})});
+await gap.getByRole('button',{name:'뜻 다시 찾기',exact:true}).waitFor();
+const callsBefore=analyzedLines.length;await page.waitForTimeout(1500);assert.equal(analyzedLines.length,callsBefore);check('completed empty meaning exposes retry without automatic loop');
+await gap.locator('.classroom-meaning-edit').click();await page.getByLabel('대표 뜻',{exact:true}).fill('도서관 · 직접 입력');await page.getByRole('button',{name:'뜻 저장',exact:true}).click();await gap.getByRole('button',{name:/도서관 · 직접 입력/}).waitFor();
+await gap.getByRole('button',{name:'뜻 다시 찾기',exact:true}).click();await waitFor(async()=>analyzedLines.length===callsBefore+1);await gap.getByRole('button',{name:'뜻 다시 찾기',exact:true}).waitFor();await page.waitForTimeout(1500);assert.equal(analyzedLines.length,callsBefore+1);check('empty retry remains recoverable without repeated API calls');
+const unchanged=(await current()).processed_json;emptyMeaning=false;await gap.getByRole('button',{name:'뜻 다시 찾기',exact:true}).click();await waitFor(async()=>await gap.getByRole('button',{name:'뜻 다시 찾기',exact:true}).count()===0);await waitFor(async()=>Object.values((await current()).processed_json.dictionary).some(t=>t.text==='図書館'&&t.meaning==='검수 표현의 뜻'));
+assert.deepEqual(analyzedLines.at(-1),['図書館']);assert.equal(await gap.locator('.classroom-meaning-edit').innerText(),'도서관 · 직접 입력 ↗');
+const recovered=(await current()).processed_json;for(const id of unchanged.sequence){if(unchanged.dictionary[id].text!=='図書館'&&unchanged.dictionary[id].pos!=='개행')assert.deepEqual(recovered.dictionary[id],unchanged.dictionary[id]);}check('retry fills only missing gloss and preserves normal tokens and teacher meaning');
+await page.getByRole('link',{name:'수업 노트 읽기 →',exact:true}).click();await page.getByRole('link',{name:'← 수업 진행',exact:true}).waitFor();assert.equal(await page.getByRole('link',{name:'← 수업 진행',exact:true}).getAttribute('href'),`/class/fixture-class/live?day=${day}`);await page.getByRole('link',{name:'← 수업 진행',exact:true}).click();await input.waitFor();check('saved note viewer returns to the same classroom and date');
 for(const width of [1440,768,390,320]){await page.setViewportSize({width,height:950});await page.evaluate(()=>document.fonts.ready);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`live overflow ${width}`);await page.screenshot({path:`${out}/live-${width}.png`});report.screens.push(`live-${width}.png`);}check('live 320/390/768/1440 no horizontal overflow');
 for(let i=0;i<10;i++){await input.fill(`連続入力${i}`);await page.getByRole('button',{name:'추가 ↑',exact:true}).click();}
 await waitFor(async()=>(await current()).raw_text.includes('連続入力9'));const ten=(await current()).raw_text.match(/連続入力\d/g);assert.deepEqual(ten,Array.from({length:10},(_,i)=>`連続入力${i}`));check('ten successive inputs retain exact order once');

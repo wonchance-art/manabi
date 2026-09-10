@@ -10,6 +10,19 @@ export function safeLibraryReturn(value) {
   } catch { return '/materials'; }
 }
 
+// Classroom notes return to their input session. Keep the library-only helper strict.
+export function safeReaderReturn(value) {
+  if (typeof value === 'string' && value.length <= 2000 && /^\/class\/[a-z0-9][a-z0-9-]{0,15}\/live(?:\?|$)/.test(value)) {
+    const url = new URL(value, 'https://manabi.invalid');
+    if (!url.hash && /^\/class\/[a-z0-9][a-z0-9-]{0,15}\/live$/.test(url.pathname)) {
+      const day = url.searchParams.get('day');
+      const validDay = /^\d{4}-\d{2}-\d{2}$/.test(day || '') && Number.isFinite(Date.parse(day)) && new Date(day).toISOString().slice(0,10) === day;
+      return url.pathname + (validDay ? `?day=${day}` : '');
+    }
+  }
+  return safeLibraryReturn(value);
+}
+
 export function libraryReaderHref(href, returnTo, scrollY = null) {
   if (!/^\/(?:viewer|pdf|books)\/[^/?#]+(?:[?#]|$)/.test(href)) return href;
   const url = new URL(href, 'https://manabi.invalid');

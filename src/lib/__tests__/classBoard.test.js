@@ -138,12 +138,12 @@ describe('추가 1건 = 재분석 그 줄만', () => {
     expect(appendEntryPlan({ raw_text: plan.newText, processed_json: json }, '次').selected).toEqual([4, 6]);
   });
 
-  it('원문 저장 큐와 분석은 별도 경로이며, 기존 metadata와 실패 줄만 분석한다', () => {
+  it('원문 저장 큐와 분석은 별도 경로이며, 기존 metadata를 보존하고 자동 분석과 명시적 뜻 재조회를 구분한다', () => {
     const live=read('src/views/ClassLivePage.jsx'), session=read('src/lib/useClassroomSession.js');
     expect(live).toContain('useClassroomSession');
     expect(session).toContain('await appendClassroomEntry(db,row)');
     expect(session).toContain('await runPreservedReanalysis(db,note,controller.signal,analyzeText,{selectedLineIndices:selected,baseJsonOverride:base})');
-    expect(session).toContain('const selected=classroomEntries(note).filter(entry=>!entry.analyzed).map(entry=>entry.idx)');
+    expect(session).toContain('const selected=classroomAnalysisIndices(note,retryMissing.current)');
     const runner=read('src/lib/reanalysisPreservation.js');
     expect(runner).toContain('const metadata = { ...original?.metadata, viewerRevision: attempt');
   });
