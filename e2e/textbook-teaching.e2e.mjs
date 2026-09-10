@@ -82,7 +82,14 @@ const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.m
 const check=label=>{report.checks.push(label);console.log(label);};
 const waitFor=async fn=>{for(let i=0;i<100;i++){if(await fn())return;await page.waitForTimeout(100);}throw new Error('condition timeout');};
 const current=async()=>(await db.query("select * from reading_materials where processed_json#>>'{metadata,team,day}'=$1",[day])).rows[0];
-if(process.env.QA_LOGIN==='1'){await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last()[activate]();await page.waitForURL('**/home');}
+if(process.env.QA_LOGIN==='1'){
+ await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');
+ await page.getByRole('button',{name:'로그인',exact:true}).last()[activate]();await page.waitForURL('**/home');
+ // Complete the fixture login landing before a hard navigation. WebKit can
+ // report requests interrupted during the document swap as access-control errors.
+ await page.getByRole('heading',{name:/첫 표현을 담아/}).waitFor();
+ await page.getByRole('heading',{name:/말이 태어나는 곳을/}).waitFor();
+}
 else {await context.addCookies([{name:'sb-e2e-auth-token',value:'base64-'+enc(session),url:base,httpOnly:false,sameSite:'Lax'}]);}
 
 let annotationLost=false;
