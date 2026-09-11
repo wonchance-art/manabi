@@ -14,7 +14,7 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- **교재 출처 복귀 1차 (2026-09-11, 오너 설계 승인·착수 지시)** — `codex/classroom-source-return-20260911`, 부모 #1301/cdf9b76c. 단어·드래그·문장 선택 위치 및 문맥 보존, 재분석/동일 표현 중복 안전 복귀, 수업 기록 검색·필터·스크롤 복원. 기존 주의점/개인 단어/FSRS/학생 사본 권한 유지. 격리 worktree에서 구현·테스트·검수; PDF/음성/시험/새 split view/운영 병합 제외.
+- **교재 출처 복귀 1차 — 구현·로컬 검수 완료, 발행/DB 적용 확인 대기 (2026-09-11)** — `codex/classroom-source-return-20260911`, 부모 #1301/cdf9b76c, 실행3d7f4cfd. 단어·드래그·문장 위치/문맥 보존, 재분석/중복 안전 복귀, 기록 검색·필터·스크롤 복원 및 터치/마우스 혼합 입력 충돌 수정. 전체381파일/4,135개·PGlite33개·교사 Chrome22/WebKit23·학생 각각7 PASS/실행 오류0, 운영 형식 빌드/prebuild/lint PASS. 신규 SQL·공개 PR·배포·실계정 검수는 미실행이며 이번 SQL은 CLAUDE.md 오너 DB 적용 규칙 확인 대상. 기존 주의점/개인 단어/FSRS/학생 사본 권한 유지. 상세 `docs/verification/classroom-source-return-20260911.md`. PDF/음성/시험/새 split view/운영 병합 제외.
 
 
 ### todo
