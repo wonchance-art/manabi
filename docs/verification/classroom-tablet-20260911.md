@@ -58,4 +58,31 @@ WebKit 자동 터치, 모사 VisualViewport와 IME 이벤트는 물리 iPad 검�
 3. 최종 커밋 미리보기에서 실계정 교사→기록→교재→학생 사본 왕복을 검사한다. 임시 검수 기록만 정리하고 기존 자료·주의점·복습 기록은 보존한다.
 4. 물리 iPad 검수 결과를 자동 검수와 분리해 기록하고 Claude 창구로 통합을 인계한다. merge/force-push는 하지 않는다.
 
-DB 적용의 별도 확인 근거는 저장소 `CLAUDE.md` 68행의 “운영 DB 적용·Vercel env는 오너 수동” 규칙이다. 이번 진행 승인은 로컬 A/B 구현이며 앞서 남긴 SQL/발행 승인 질문에 답변했다고 간주하지 않았다.
+DB 적용의 별도 확인 근거는 저장소 `CLAUDE.md` 68행의 “운영 DB 적용·Vercel env는 오너 수동” 규칙이다. 위 내용은 로컬 완료 시점의 이력이며, 이후 승인·적용 결과는 아래에 기록한다.
+
+## 공개 발행 및 원격 적용 — 2026-09-11 KST
+
+오너가 공개 push·draft PR·DB 적용·미리보기·실계정 검수 진행을 승인했다. `10851b153c75513fab584ee01b277c84547b8900`을 공개 브랜치에 push하고 부모 #1301 위에 draft [#1302](https://github.com/wonchance-art/manabi/pull/1302)를 열었다. merge/force-push는 하지 않았다.
+
+Supabase Manabi 프로젝트에 `classroom_source_anchors`를 적용했다. 저장소 파일 버전은 `20260911051522`, MCP 적용 이력 버전은 `20260911072945`다. 검토한 SQL 앞에 기존 함수 MD5 및 새 함수 부재를 확인하는 중단 조건을 붙여, 다른 작업이 원격 정의를 바꾸었을 경우 덮어쓰지 않게 했다.
+
+- 기존 `classroom_append_study` 정의 MD5는 적용 전 `a3f6b06b957a42ffbb6f906e593149f4`, 적용 후 `b4d4c5021cb6adecdab5243a12ee0e3a`다.
+- 관련 함수3개 모두 SECURITY INVOKER, 고정 search_path, anon 실행불가/authenticated 실행가능이다.
+- 이모지 포함 문자열 UTF-16 길이5, 정상 출처 허용, 서로게이트 중간 위치 거부를 원격에서 확인했다.
+- 실제 검수 대상 교재·팀 루트2건의 원문 및 processed_json 지문이 적용 전후 모두 같다. 데이터 변경 없이 함수 정의만 적용됐다.
+- 원격 임시 교재/수업 행으로 원자적 뜻·출처 저장, 같은 요청 재전송, 실수 중복 방지, 변경된 요청 거부, 서버 전용 사본 권한, 출처 digest 기록 및 위조 위치 거부를 확인했다. 트랜잭션은 ROLLBACK했고 기존 자료는 수정하지 않았다. 이는 실제 로그인 브라우저 왕복 검수와 별개다. 실행 SQL은 로컬 `/private/tmp/manabi-tablet-remote-sql-check.sql`에 있다.
+- 원격 security advisor에 이번 함수3개와 관련된 경고는 없다. 별도 기존 객체의 search_path/DEFINER 실행권한 및 Auth 경고는 변경하지 않았다. 함수 실행권한 경고는 실제 권한·함수 본문을 개별 검토해야 하므로 이번 출처 기능의 실패로 간주하지 않는다. [Supabase 함수 권한 점검 기준](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable).
+
+원격 결과 원본은 로컬 `/private/tmp/manabi-tablet-db-verification.json`에 있다. 개인 교재 원문이나 인증 정보는 공개 문서에 포함하지 않는다.
+
+## 최종 미리보기 검수
+
+- [미리보기](https://manabi-2sfn6fnox-wonchance-arts-projects.vercel.app/class): `dpl_EHpnymEyDKhXiiT9Ujp9ZDtqMyq3`, READY. 2026-09-11 16:39 KST 준비 완료, 빌드 약7분26초. 서체 다운로드 재시도가 있었으나 추가 배포 없이 완료했다.
+- `/api/version`은 `10851b153c75513fab584ee01b277c84547b8900`, Preview, 위 배포 ID와 판본 `7f572327dc67893e9453246c`가 일치한다. 테스트 번들이 아니라 이 커밋을 git archive로 추출한 소스를 원격 빌드했다. 환경 파일·개인 자료·로컬 `.next`는 전송하지 않았다.
+- GitHub CI: 단위 테스트·콘텐츠·lint 및 smoke/learning-flow 모두 SUCCESS. [검증 실행](https://github.com/wonchance-art/manabi/actions/runs/34574508235).
+- 최종 배포의 교사 초안/IME/키보드/오프라인 흐름 Chromium12 + WebKit12 PASS, 학생 사본·정확한 출처·기록 복귀 Chromium7 + WebKit7 PASS, 실행 오류0, 각 종료0. 인증·교재·저장 응답은 fixture/PGlite이며 실제 배포의 UI 번들에 연결했다.
+- 결과 파일: `/private/tmp/manabi-tablet-preview-chromium/report.json`, `/private/tmp/manabi-tablet-preview-webkit/report.json`, `/private/tmp/manabi-source-preview-chromium/report.json`, `/private/tmp/manabi-source-preview-webkit/report.json`. 최종 배포 화면 캡처도 직접 확인했다.
+- 실제 공개 HTTP: `/class` 200, 비로그인 팀 index/history/source는401, 비공개 교재 annotations는403. 비공개 API 응답은 `private, no-store`다.
+- 실계정 브라우저 검수는 로그인 대기다. 최종 미리보기의 로그인 화면을 열어두고 오너에게 요청했다. 물리 iPad 검수 및 별도 실제 학생 계정 검수는 미실행이다. 이번 발행을 운영 병합이나 실제 수업 검수 완료로 표시하지 않는다.
+
+이후 검수 문서·보드 커밋은 실행 코드와 분리하며, 실행 미리보기는 위10851b15로 유지해 로그인 원점을 반복 생성하지 않는다.
