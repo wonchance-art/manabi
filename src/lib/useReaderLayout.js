@@ -6,10 +6,43 @@ export function readerVisibleBounds(root) {
   const viewport=window.visualViewport;
   const bottom=(viewport?.height||window.innerHeight)+(viewport?.offsetTop||0);
   const toolbar=root?.closest('.viewer-layout')?.querySelector('.viewer-topbar');
-  const top=Math.max(64,toolbar?toolbar.getBoundingClientRect().bottom+8:64);
-  const panel=document.querySelector('.viewer-inspector');
-  const r=panel?.getBoundingClientRect();
-  return {top,bottom:r&&r.width>0&&getComputedStyle(panel).position==='fixed'?Math.min(bottom,r.top):bottom};
+  const top=Math.max(64,viewport?.offsetTop||0,toolbar?toolbar.getBoundingClientRect().bottom+8:64);
+  const panels=[...(root?.closest('.viewer-layout')||document).querySelectorAll('.viewer-inspector,.class-reader-dock')];
+  const edges=panels.filter(panel=>!panel.hidden&&getComputedStyle(panel).position==='fixed').map(panel=>panel.getBoundingClientRect()).filter(rect=>rect.width>0).map(rect=>rect.top);
+  return {top,bottom:Math.min(bottom,...edges)};
+}
+
+// The class panel and ordinary inspector use the same visible reading bounds.
+// A user scroll wins over later layout notifications; typing inside the panel does not.
+export function useClassSelectionVisibility(dockRef, bodyRef, first, last, selectionKey, enabled) {
+  useEffect(()=>{
+    const dock=dockRef.current,root=dock?.closest('.viewer-layout');
+    if(!root||!enabled)return;
+    let frame,interrupted=false;
+    const find=id=>id?root.querySelector(`[data-tid="${CSS.escape(id)}"]`):null;
+    const reveal=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{
+      if(dock.hidden)return;
+      const field=document.activeElement,body=bodyRef.current;
+      if(body?.contains(field)&&field.matches('input,textarea,select')){
+        const visible=body.getBoundingClientRect(),rect=field.getBoundingClientRect();
+        const delta=selectedTokenScrollDelta(rect,{top:visible.top,bottom:visible.bottom});
+        if(delta)body.scrollBy({top:delta,behavior:'instant'});
+        return;
+      }
+      if(interrupted)return;
+      const a=find(first),b=find(last||first);if(!a||!b)return;
+      const start=a.getBoundingClientRect(),end=b.getBoundingClientRect(),bounds=readerVisibleBounds(root);
+      const rect={top:Math.min(start.top,end.top),bottom:Math.max(start.bottom,end.bottom)};
+      const delta=selectedTokenScrollDelta(rect.bottom-rect.top>bounds.bottom-bounds.top-16?start:rect,bounds);
+      if(delta)window.scrollBy({top:delta,behavior:'instant'});
+    });};
+    const interrupt=e=>{if(!dock.contains(e.target))interrupted=true;};
+    const observer=new ResizeObserver(reveal);observer.observe(dock);observer.observe(root);
+    window.addEventListener('resize',reveal);window.visualViewport?.addEventListener('resize',reveal);dock.addEventListener('focusin',reveal);
+    for(const type of ['wheel','touchmove','pointerdown','keydown'])window.addEventListener(type,interrupt,{passive:true});
+    reveal();
+    return()=>{observer.disconnect();cancelAnimationFrame(frame);window.removeEventListener('resize',reveal);window.visualViewport?.removeEventListener('resize',reveal);dock.removeEventListener('focusin',reveal);for(const type of ['wheel','touchmove','pointerdown','keydown'])window.removeEventListener(type,interrupt);};
+  },[dockRef,bodyRef,first,last,selectionKey,enabled]);
 }
 
 export function useSelectedTokenVisibility(readerRef, tokenRefs, tokenId, enabled, revision) {

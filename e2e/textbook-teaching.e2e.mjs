@@ -37,6 +37,7 @@ const session={user,access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:uid
 const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*','access-control-expose-headers':'content-range'};
 let failure=false,lostResponse=false,analysisDelay=0,analysisFail=false,emptyMeaning=false;
 const analyzedLines=[];
+const tabletState={dictionaryDelay:0,lookups:0};
 const report={engine,touch,checks:[],errors:[],screens:[]},writes=[];
 await context.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());
 // Synthetic auth belongs to the intercepted client/API fixtures. Strip it from
@@ -73,7 +74,7 @@ await context.route('**/rest/v1/**',async r=>{
   if(select&&select!=='*'&&!select.includes('->'))rows=rows.map(row=>Object.fromEntries(select.split(',').map(key=>key.trim()).map(key=>[key,row[key]])));
   return send(object?(rows[0]||null):rows);
  }
- if(table==='morpheme_dictionary')return send(object?{reading:'nǐ hǎo',meanings:['안녕하세요'],pos:'표현'}:[{reading:'nǐ hǎo',meanings:['안녕하세요'],pos:'표현'}]);
+ if(table==='morpheme_dictionary'){tabletState.lookups++;if(tabletState.dictionaryDelay)await new Promise(resolve=>setTimeout(resolve,tabletState.dictionaryDelay));return send(object?{reading:'nǐ hǎo',meanings:['안녕하세요'],pos:'표현'}:[{reading:'nǐ hǎo',meanings:['안녕하세요'],pos:'표현'}]);}
  return send(object?null:[]);
 });
 await context.route('**/api/suggestions/today',r=>r.fulfill({json:[]}));
@@ -108,6 +109,8 @@ await context.route('**/api/materials/*/annotations*',async r=>{
  }catch(e){return r.fulfill({status:409,json:{error:e.message,conflict:true}});}finally{await db.exec('RESET ROLE;SET ROLE authenticated');}
 });
 try {
+if(process.env.QA_TABLET==='1'){await (await import('./classroom-tablet.scenario.mjs')).runTabletScenario({page,context,base,out,day,db,check,waitFor,current,report,writes,activate,tabletState});}
+else {
 const url=base+`/viewer/10?class=fixture-class&day=${day}&returnTo=${encodeURIComponent('/class/fixture-class/live?day='+day)}`;
 await page.waitForTimeout(2600);await page.goto(url);
 const dock=page.getByRole('complementary',{name:'교재 안 수업 도구'});await dock.waitFor();
@@ -158,7 +161,7 @@ await dock.getByRole('button',{name:'찾기',exact:true}).first()[activate]();
 const search=dock.getByRole('textbox',{name:'단어·표현 찾기'});await search.fill('你好');await search.press('Enter');await waitFor(async()=>await dock.getByRole('textbox',{name:'핵심 뜻',exact:true}).inputValue()==='안녕하세요');
 await dock.getByRole('button',{name:'보여주고 기록',exact:true})[activate]();await page.getByRole('dialog').waitFor();await page.getByRole('dialog').getByRole('button',{name:'수업에 기록됨 ✓',exact:true}).waitFor();assert((await current()).raw_text.endsWith('你好'));check('manual expression displays and records with one action');
 await page.keyboard.press('Escape');await waitFor(async()=>await page.getByRole('dialog').count()===0);
-await waitFor(async()=>await dock.getByRole('region',{name:'선택한 표현을 수업에 추가',exact:true}).getByRole('button',{name:'크게 보여주기',exact:true}).evaluate(el=>document.activeElement===el));
+await waitFor(async()=>await dock.locator('.class-reader-footer').getByRole('button',{name:'크게 보여주기',exact:true}).evaluate(el=>document.activeElement===el));
 const recorded=await current(),appendCount=writes.filter(w=>w.table.startsWith('classroom_append_')).length;
 await page.keyboard.press('Enter');await page.getByRole('dialog',{name:'학생에게 보여주는 설명'}).waitFor();await page.keyboard.press('Escape');await waitFor(async()=>await page.getByRole('dialog').count()===0);
 // Background analysis may finish while the display is open; compare the
@@ -166,6 +169,9 @@ await page.keyboard.press('Enter');await page.getByRole('dialog',{name:'학생�
 const reopened=await current();assert.equal(reopened.raw_text,recorded.raw_text);assert.deepEqual(reopened.processed_json.metadata.classEntries,recorded.processed_json.metadata.classEntries);assert.equal(writes.filter(w=>w.table.startsWith('classroom_append_')).length,appendCount,'keyboard reopening must not record a duplicate');
 check('recording presentation returns keyboard focus to the enabled show action');
 await page.locator('[data-tid="id_0_word"]')[activate]();
+await dock.locator('.class-reader-word').waitFor();
+assert.equal(await dock.getByRole('textbox',{name:'읽기',exact:true}).count(),0,'reselecting the same textbook token exits manual search');
+check('same-word selection after manual search restores textbook details and annotations');
 await dock.getByRole('button',{name:'수정',exact:true}).first()[activate]();await dock.getByRole('button',{name:'보관',exact:true})[activate]();await waitFor(async()=>await dock.getByRole('button',{name:'보관',exact:true}).count()===0);
 await dock.getByText('보관한 주의점',{exact:true})[activate]();await dock.getByRole('button',{name:'다시 표시',exact:true})[activate]();await waitFor(async()=>await dock.getByRole('button',{name:'다시 표시',exact:true}).count()===0);check('teacher can archive and restore explanations without deleting history');
 for(const width of [1440,768,390]){
@@ -241,7 +247,8 @@ const savedSentence=Object.values((await current()).processed_json.metadata.clas
 for(let i=1;i<=12;i++)await db.query('select classroom_append_study(1,$1,$2,$3,$4)',[`2026-08-${String(i).padStart(2,'0')}`,'검수 표현',crypto.randomUUID(),{meaning:'검색 뜻',source:{kind:'manual'}}]);
 await page.waitForTimeout(2600);await page.goto(base+'/class/fixture-class?view=history');await history.getByRole('searchbox').fill('검수');await history.getByRole('button',{name:'교재 밖 표현만',exact:true})[activate]();await page.evaluate(()=>scrollTo(0,650));
 const visibleNote=history.getByRole('button',{name:'노트 열기 →',exact:true}).nth(1);await visibleNote.scrollIntoViewIfNeeded();const savedY=await page.evaluate(()=>scrollY);await visibleNote[activate]();await page.waitForURL(/viewer\/\d+/);await page.getByRole('link',{name:'← 수업으로',exact:true})[activate]();await history.waitFor();
-assert.equal(await history.getByRole('searchbox').inputValue(),'검수');assert.equal(await history.getByRole('button',{name:'교재 밖 표현만',exact:true}).getAttribute('aria-pressed'),'true');await waitFor(async()=>Math.abs(await page.evaluate(()=>scrollY)-savedY)<8);check('date search extras filter and scroll position survive leaving and returning');
+assert.equal(await history.getByRole('searchbox').inputValue(),'검수');assert.equal(await history.getByRole('button',{name:'교재 밖 표현만',exact:true}).getAttribute('aria-pressed'),'true');console.log('history scroll diagnostics',JSON.stringify({savedY,actualY:await page.evaluate(()=>scrollY),returnY:new URL(page.url()).searchParams.get('restoreY')}));await waitFor(async()=>Math.abs(await page.evaluate(()=>scrollY)-savedY)<8);check('date search extras filter and scroll position survive leaving and returning');
 assert.equal(writes.filter(w=>w.table==='user_vocabulary').length,0);assert.equal(report.errors.length,0,report.errors.join('\n'));check('no personal vocabulary mutations or runtime errors');
+}
 } catch(error) {console.error(error);report.failure=error.message;await page.screenshot({path:out+'/failure.png'});fs.writeFileSync(out+'/failure.html',await page.content());process.exitCode=1;}
 fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));await context.unrouteAll({behavior:'wait'});await browser.close();await db.close();

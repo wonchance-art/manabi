@@ -70,13 +70,16 @@ export function useClassroomSession({ ownerId, team, rootId, day }) {
   useEffect(() => {
     active.current = true;
     const wake = () => { setOnline(navigator.onLine); refreshQueue().then(pump).catch(error=>setStoreError(classroomError(error))); };
+    const visible = () => { if(document.visibilityState==='visible'){client.invalidateQueries({queryKey});wake();} };
     wake();
     window.addEventListener('online',wake); window.addEventListener('offline',wake);
     window.addEventListener('focus',wake);
+    document.addEventListener('visibilitychange',visible);
     channel.current = openClassChannel(team,{onEntry:()=>client.invalidateQueries({queryKey})});
     return () => {
       active.current = false; channel.current?.close();
       window.removeEventListener('online',wake); window.removeEventListener('offline',wake); window.removeEventListener('focus',wake);
+      document.removeEventListener('visibilitychange',visible);
     };
   },[team,client,queryKey,pump,refreshQueue]);
   // Polling also discovers entries safely queued in another tab. Failed rows require explicit retry.

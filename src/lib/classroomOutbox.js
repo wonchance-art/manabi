@@ -33,6 +33,15 @@ export async function listClassOperations(scope) {
 export const readClassDraft = scope => transaction('readonly',store=>store.get(`draft:${scope}`));
 export const writeClassDraft = (scope,text) => putClassOperation({id:`draft:${scope}`,scope,kind:'draft',text,updatedAt:Date.now()});
 
+export async function listClassReaderDrafts(scope) {
+  const all = await transaction('readonly', store => store.getAll());
+  return all.filter(row => row.scope === scope && row.kind === 'draft' && row.category === 'reader');
+}
+// Compare the revision inside the transaction: a later edit must survive a save response.
+export function consumeClassReaderDraft(id, revision) {
+  return changeOperation(id, row => row?.kind === 'draft' && row.category === 'reader' && row.revision === revision ? false : null);
+}
+
 export function canDiscardClassOperation(row) {
   return !!row && (!row.attempted || ['PGRST202','PGRST301','22023','42501'].includes(row.errorCode));
 }

@@ -1120,7 +1120,7 @@ export default function ViewerPage() {
   const selectionToReveal = tokenRange.range
     ? material?.processed_json?.sequence?.[tokenRange.range.start]
     : isSheetOpen ? selectedToken?.id : undefined;
-  useSelectedTokenVisibility(readerRef, tokenRefs, selectionToReveal, inspectorOpen && !modalBlocked && !tokenRange.dragging, material?.processed_json);
+  useSelectedTokenVisibility(readerRef, tokenRefs, selectionToReveal, inspectorOpen && !classStudyActive && !modalBlocked && !tokenRange.dragging, material?.processed_json);
   const closeReadingSettings = () => {
     // Once the inspector returns, the selected source owns the visible position.
     // A still-live Aa anchor must not scroll it back underneath the panel.
@@ -3150,7 +3150,7 @@ export default function ViewerPage() {
         last={tokenRange.range?json.sequence[tokenRange.range.end]:undefined}
         blocked={modalBlocked} onClose={closeWordCard} onPresenting={setClassPresenting}>
       {(annotationContent,annotationOpen,closeWordCard)=><ClassroomReader annotationContent={annotationContent} context={studyContext} user={user} material={material}
-        selection={classSelection}
+        selection={classSelection} selectionSignal={rightSheetSignal}
         wordContent={(dragTokens!==null||(selectedToken&&isSheetOpen))?renderRightPanelContent:null}
         sentenceContent={(leftPanelLoading||leftPanelResult)?leftPanelContent:null}
         onActive={setClassStudyActive} onPresenting={setClassPresenting} suppressed={modalBlocked&&!classPresenting}
