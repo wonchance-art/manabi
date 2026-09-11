@@ -11,6 +11,7 @@ import './web/web-shell.css';
 import { MAIN_NAV, navigationOwner, isFocusedReadingRoute } from '@/lib/webNavigation';
 import './web/focused-reader.css';
 import { librarySearchHref } from '@/lib/libraryReturn';
+import { authEntryHref } from '@/lib/authRedirect';
 import VersionBadge from './VersionBadge';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/ToastContext';
@@ -138,7 +139,7 @@ export default function Layout({ children }) {
       await signOut();
       router.push('/auth');
     } else {
-      router.push('/auth');
+      router.push(authEntryHref(window.location.pathname + window.location.search + window.location.hash));
     }
   }
 
