@@ -22,6 +22,9 @@ import { cacheMaterial, getCachedMaterial } from '../lib/offlineCache';
 import SaveContextButton, { saveContext } from '../components/learning/SaveContextButton';
 import MaterialChapterLinks from '../components/learning/MaterialChapterLinks';
 import ReadingSourceFocus from '../components/learning/ReadingSourceFocus';
+import ClassSourceFocus from '../components/classroom/ClassSourceFocus';
+import { classSentenceEnd, classAnchorAt } from '../lib/classSource';
+import { textbookStream } from '../lib/textbookAnnotations';
 import OfflineNotice from '../components/OfflineNotice';
 import { useReadingTimer } from '../lib/useReadingTimer';
 import { countReadableChars } from '../lib/readingTimer';
@@ -632,11 +635,13 @@ export default function ViewerPage() {
   // 스크롤 위치 저장(debounce 2s) + 재진입 시 자동 복원
   const { saveScrollPosition, tokenRefs, positionError, retryPosition } = useScrollRestore({ user, materialId: id, material, readingProgress, readerRef });
   const [sourceFocusId, setSourceFocusId] = useState(null);
+  const [restoredClassSource,setRestoredClassSource]=useState(null);
+  useEffect(()=>setRestoredClassSource(null),[id]);
   const classResumeSelection=useRef(null);
   useEffect(()=>{
     const tokenId=originalParams.get('sourceToken');
     const scope=`${id}:${tokenId}`;
-    if((originalParams.get('classSaved')!=='1'&&!originalParams.get('sourceQuote'))||!tokenId||classResumeSelection.current===scope)return;
+    if(originalParams.get('classSaved')!=='1'||originalParams.get('sourceQuote')||!tokenId||classResumeSelection.current===scope)return;
     const token=material?.processed_json?.dictionary?.[tokenId];
     if(!token||(originalParams.get('sourceQuote')&&originalParams.get('sourceQuote')!==token.text))return;
     classResumeSelection.current=scope;setSelectedToken({...token,id:tokenId});setIsSheetOpen(true);
@@ -680,6 +685,7 @@ export default function ViewerPage() {
   useEffect(() => { setSaveAnim(false); }, [selectedToken?.id, selectedToken?.text]);
 
   const handleTokenClick = (token, tokenId, opts = {}) => {
+    setRestoredClassSource(null);
     if (token.pos === '개행') return;
     // 집중 모드 단일 규칙(오너 확정 2026-08-20): 지정 문장 '밖' 탭 = 순수 이동 — 지정만
     // 옮기고 카드·분석·발화·시트 없음, 뜻이 필요하면 지정된 문장 '안'에서 한 번 더 탭.
@@ -984,6 +990,7 @@ export default function ViewerPage() {
     dictionary: material?.processed_json?.dictionary,
     enabled: true,
     onSelect: (text) => {
+      setRestoredClassSource(null);
       setPickedLineIdx(null); // 막대 지정 이펙트와 상호 배타
       setSelectedRangeText(text);
       grammar.reset(); // 다른 문장의 해설이 남지 않게
@@ -1041,6 +1048,7 @@ export default function ViewerPage() {
   // 이 상태들에서 유도되므로 비우면 시트도 스스로 잦아든다. 이전 문장 분석이 낡은 채
   // 시트에 남는 불일치도 이걸로 차단.
   const clearAnalysisPanels = () => {
+    setRestoredClassSource(null);
     selectionGate.current.cancel();
     detailGate.current.cancel();
     setLeftPanelText('');
@@ -1763,6 +1771,15 @@ export default function ViewerPage() {
       if (saveScopeRef.current === saveScope) setSaveAnim(false);
     }
   };
+
+  const isDragSelection=dragTokens!==null;
+  const classSelection=useMemo(()=>{
+    const currentJson=material?.processed_json;
+    const selection=studySelection(material,isSheetOpen&&selectedToken?{...selectedToken,meaning:refMeaning||selectedToken.meaning,furigana:headReading||selectedToken.furigana}:null,isDragSelection?leftPanelText:!isSheetOpen?pickedSentence?.text||'':'',tokenRange.range?{first:currentJson?.sequence?.[tokenRange.range.start],last:currentJson?.sequence?.[tokenRange.range.end]}:!isSheetOpen&&pickedSentence?{first:pickedSentence.firstTokenId,last:classSentenceEnd(currentJson,pickedSentence.firstTokenId)}:null);
+    // Reanalysis may merge our quote into a larger token. Keep the exact saved
+    // text position while that restored selection is active, never the whole token.
+    return selection&&isDragSelection&&tokenRange.range&&restoredClassSource?.quote===selection.text?{...selection,source:restoredClassSource}:selection;
+  },[material,isSheetOpen,selectedToken,refMeaning,headReading,isDragSelection,leftPanelText,pickedSentence,tokenRange.range,restoredClassSource]);
 
   if (isLoading) return <div className="page-container"><Spinner message="자료 해부 중..." /></div>;
   if (error?.code === 'LOCAL_MISSING') {
@@ -2518,6 +2535,11 @@ export default function ViewerPage() {
             {autoPace&&<button className="viewer-pace-toggle" aria-pressed={paceRunning} onClick={()=>paceRunning?setPaceRunning(false):startPacer()}>{paceRunning?(paceHeld?'자동 진행 대기 · 중지':'자동 진행 중지'):'자동 진행 시작'}</button>}
           </div>
         </div>
+      <ClassSourceFocus material={material} user={user} params={originalParams} tokenRefs={tokenRefs} onResolve={(target,source)=>{
+        clearAnalysisPanels();tokenRange.clearRange();setPickedLineIdx(null);setSelectedRangeText(source.quote);
+        if(target.first===target.last&&json.dictionary[target.first]?.text===source.quote){setSelectedToken({...json.dictionary[target.first],id:target.first});setIsSheetOpen(true);setRightSheetSignal(v=>v+1);}
+        else {tokenRange.restoreRange(target.first,target.last);setRestoredClassSource({materialId:String(material.id),quote:source.quote,anchor:classAnchorAt(textbookStream(json).text,target.start,target.end,source.quote)});setLeftPanelText(source.quote);const from=json.sequence.indexOf(target.first),to=json.sequence.indexOf(target.last);setDragTokens(json.sequence.slice(from,to+1).filter(tid=>json.dictionary[tid]?.pos!=='개행').map(tid=>({...json.dictionary[tid],id:tid})));setRightSheetSignal(v=>v+1);}
+      }}/>
       <ClassCopyNotice key={String(id)} material={material} user={user} returnTo={originalParams.get('returnTo')}/>
       <header className="page-header viewer-header">
         <p className="reader-metadata">{langNameKo(materialLang)}{material?.processed_json?.metadata?.level ? ` · ${material.processed_json.metadata.level}` : ''} · {material.visibility === 'public' ? '공개 읽기' : '내 자료'}</p>
@@ -3039,7 +3061,7 @@ export default function ViewerPage() {
         </div>
       )}
 
-      <ReadingSourceFocus materialId={id} ready={!!material?.processed_json?.sequence?.length} onTarget={setSourceFocusId} />
+      {!originalParams.get('sourceEntry')&&!originalParams.get('sourceQuote')&&<ReadingSourceFocus materialId={id} ready={!!material?.processed_json?.sequence?.length} onTarget={setSourceFocusId} />}
       {STUDY_LANGS.has(materialLang) && <MaterialChapterLinks lang={materialLang} kind="reading" materialId={id} />}
 
       {/* 다음 — 한 자리에 하나(뷰어 정돈 A안): 시리즈 다음 편 → 책 다음 과 → 마지막 과면 「다음 과 적기」(내 책만,
@@ -3128,7 +3150,7 @@ export default function ViewerPage() {
         last={tokenRange.range?json.sequence[tokenRange.range.end]:undefined}
         blocked={modalBlocked} onClose={closeWordCard} onPresenting={setClassPresenting}>
       {(annotationContent,annotationOpen,closeWordCard)=><ClassroomReader annotationContent={annotationContent} context={studyContext} user={user} material={material}
-        selection={studySelection(material,isSheetOpen&&selectedToken?{...selectedToken,meaning:refMeaning||selectedToken.meaning,furigana:headReading||selectedToken.furigana}:null,dragTokens!==null?leftPanelText:!isSheetOpen?pickedSentence?.text||'':'')}
+        selection={classSelection}
         wordContent={(dragTokens!==null||(selectedToken&&isSheetOpen))?renderRightPanelContent:null}
         sentenceContent={(leftPanelLoading||leftPanelResult)?leftPanelContent:null}
         onActive={setClassStudyActive} onPresenting={setClassPresenting} suppressed={modalBlocked&&!classPresenting}

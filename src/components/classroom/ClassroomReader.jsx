@@ -82,6 +82,7 @@ function ClassReaderSession({root,team,day,material,selection,annotationContent,
   }
   const show=event=>{if(current){presentationOriginRef.current=event.currentTarget;setPresentation({text:current.text,reading,meaning});}};
   const classAction=(current?<section className="class-reader-add" aria-label="선택한 표현을 수업에 추가">
+        {!manual&&<p className="class-reader-source">{chapters.find(ch=>String(ch.id)===String(material.id))?.order ? `${chapters.find(ch=>String(ch.id)===String(material.id)).order}과 · ` : ''}교재에서 선택한 표현</p>}
         {!current.source?.tokenId&&<div className="class-reader-picked"><strong lang={team.lang==='Chinese'?'zh':team.lang==='Japanese'?'ja':undefined}>{current.text}</strong><span>{manual?'직접 입력':'교재에서 선택'}</span></div>}
         {manual?<><label>읽기<input value={reading} onChange={e=>edit('reading',e.target.value)} maxLength={500}/></label><label>핵심 뜻<input value={meaning} onChange={e=>edit('meaning',e.target.value)} maxLength={500} placeholder="수업에서 사용할 뜻"/></label></>:<details><summary>수업용 뜻 확인·수정</summary><label>핵심 뜻<input value={meaning} onChange={e=>edit('meaning',e.target.value)} maxLength={500} placeholder="문장·표현의 뜻을 직접 적을 수 있어요"/></label></details>}
         <div className="class-reader-presentation-actions"><button ref={showButtonRef} onClick={show}>크게 보여주기</button>{manual&&<button disabled={busy||!!queued||!!existing} onClick={event=>{show(event);add();}}>보여주고 기록</button>}</div>

@@ -149,7 +149,7 @@ describe('local: 뷰어 — 네트워크 0', () => {
     const page = read('src/views/ClassTeamPage.jsx');
     // Re-entering online also refreshes shared textbook annotations; the viewer itself remains offline-only.
     expect(page).toContain('await ensureSharedCopy(teamKey, unlock.token, entry, {refresh:true});');
-    expect(page).toContain('router.push(localViewerHref(id, teamKey));');
+    expect(page).toContain('router.push(destination(localViewerHref(id, teamKey)));');
     expect(page).toContain("const wanted = search.get('open');");
     const owner = sliceBetween(page, 'function OwnerView(', '\nfunction NotesList(');
     expect(owner).not.toContain('fetch(');

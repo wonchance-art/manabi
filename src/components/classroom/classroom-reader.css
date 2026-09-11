@@ -87,3 +87,5 @@
 .class-reader-coverage {padding:8px 0;border-bottom:1px solid var(--reader-line);font-size:12px;}
 .class-reader-tools-toggle {display:block;}
 .class-reader-tools[data-open="false"] {display:none;}
+
+.class-reader-source { margin: 0; font-size: .75rem; color: var(--text-muted); }

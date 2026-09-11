@@ -56,7 +56,7 @@ export function useScrollRestore({ user, materialId, material, readingProgress, 
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.has('sourceToken') || params.has('sourceText')) return;
+    if (params.has('sourceToken') || params.has('sourceText') || params.has('sourceEntry')) return;
     const lastIdx = readingProgress?.last_token_idx;
     if (!Number.isInteger(lastIdx) || lastIdx < 0 || restoredKey.current === key) return;
     const json = material?.processed_json;

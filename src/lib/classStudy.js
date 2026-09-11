@@ -1,4 +1,5 @@
 import { TEAM_KEY_RE, todayKey } from './classBoard';
+import { makeClassAnchor, classSourceIdentity } from './classSource';
 
 export function classStudyContext(params) {
   // The URL is context only. The component and RPC independently verify ownership.
@@ -20,22 +21,28 @@ export function classStudyNeighborHref(neighbor,context) {
   if(neighbor.href)return neighbor.href;
   return context?classStudyHref(neighbor.id,context.team,context.day):`/viewer/${neighbor.id}`;
 }
-export function studySelection(material,token,rangeText='') {
+export function studySelection(material,token,rangeText='',range=null) {
   const text=String(rangeText||token?.text||'').trim();
   if(!text)return null;
   const original=material?.processed_json?.dictionary?.[token?.id];
   const exact=!rangeText&&original?.text===text;
+  const anchor=makeClassAnchor(material?.processed_json,range?.first||(exact?token.id:null),range?.last||(exact?token.id:null),text);
   return {text,meaning:exact?token.meaning||'':'',reading:exact?token.furigana||token.reading||'':'',
-    source:{materialId:String(material.id),quote:text,...(exact?{tokenId:token.id}:{})}};
+    source:{materialId:String(material.id),quote:text,...(exact?{tokenId:token.id}:{}),...(anchor?{anchor}:{})}};
 }
 export function studySelectionKey(selection) {
   const source=selection?.source||{kind:'manual'};
+  const location=classSourceIdentity(source);
+  if(location)return JSON.stringify([selection?.text||'',location]);
   return JSON.stringify([selection?.text||'',Object.keys(source).sort().map(key=>[key,source[key]])]);
 }
 export function findStudyEntry(note,selection) {
   if(!selection)return null;
   const meta=note?.processed_json?.metadata||{};
-  return (meta.classEntries||[]).find(e=>e.text===selection.text&&studySelectionKey({text:e.text,source:meta.classSources?.[e.id]})===studySelectionKey(selection))||null;
+  return (meta.classEntries||[]).find(e=>{
+    const source=meta.classSources?.[e.id],text=classSourceIdentity(source)?source.quote:e.text;
+    return text===selection.text&&studySelectionKey({text,source})===studySelectionKey(selection);
+  })||null;
 }
 export function buildStudySeed(selection,meaning,reading) {
   if(!selection?.text?.trim()||selection.text.length>5000)throw new Error('추가할 표현을 선택하거나 입력해 주세요.');
