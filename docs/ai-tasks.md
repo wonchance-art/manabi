@@ -14,7 +14,7 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- **수업용 뷰어 태블릿 사용성 (2026-09-11, 오너 설계 승인·진행 지시)** — `codex/classroom-tablet-20260911`, 부모 로컬04d1836b. 기기 초안/IME/응답 순서, 패널 주동작 고정·정보 밀도, 선택 범위·키보드 대응을 격리 구현·검수. 기존 저장 대기열·교재 주의점·개인 단어/FSRS 유지. 신규 DB/음성/PDF/시험/새 split view 제외. 부모 출처 SQL의 발행·DB 적용은 기존 대기 항목과 구분.
+- **수업용 뷰어 태블릿 사용성 — 구현·로컬 검수 완료, 발행/부모 SQL 확인 대기 (2026-09-11)** — `codex/classroom-tablet-20260911`, 부모 로컬04d1836b, 실행7fca8c95. 기기 초안(계정/팀/일자/과 분리·두 탭·편집 중 저장 보존), IME/늦은 조회 방어, 패널 주동작 고정, 키보드/선택 범위 노출, 같은 단어 재선택 전환 완료. 전체382파일/4,145개·실제 IndexedDB Chrome/WebKit 각각7·신규 태블릿 각각12·기존 교사 Chrome23/WebKit24 PASS, 빌드/prebuild/scoped lint PASS. WebKit 기록 스크롤 최초 시간초과→단독 전체 재검수650px 일치(간헐성 미확정) 기록. 신규 SQL/음성/PDF/시험/새 split view 없음. 공개 push/후속 PR·부모 SQL 적용·미리보기·실계정/물리 iPad 검수 미실행. 상세 `docs/verification/classroom-tablet-20260911.md`. 기존 저장 대기열·교재 주의점·개인 단어/FSRS 유지.
 - **교재 출처 복귀 1차 — 구현·로컬 검수 완료, 발행/DB 적용 확인 대기 (2026-09-11)** — `codex/classroom-source-return-20260911`, 부모 #1301/cdf9b76c, 실행3d7f4cfd. 단어·드래그·문장 위치/문맥 보존, 재분석/중복 안전 복귀, 기록 검색·필터·스크롤 복원 및 터치/마우스 혼합 입력 충돌 수정. 전체381파일/4,135개·PGlite33개·교사 Chrome22/WebKit23·학생 각각7 PASS/실행 오류0, 운영 형식 빌드/prebuild/lint PASS. 신규 SQL·공개 PR·배포·실계정 검수는 미실행이며 이번 SQL은 CLAUDE.md 오너 DB 적용 규칙 확인 대상. 기존 주의점/개인 단어/FSRS/학생 사본 권한 유지. 상세 `docs/verification/classroom-source-return-20260911.md`. PDF/음성/시험/새 split view/운영 병합 제외.
 
 
