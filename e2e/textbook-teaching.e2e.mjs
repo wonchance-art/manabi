@@ -121,12 +121,12 @@ await page.getByRole('link',{name:'이전 과',exact:true})[activate]();await pa
 check('top and bottom chapter links keep the class day and teacher tools');
 await page.locator('[data-tid="id_0_word"]')[activate]();
 const original=await current();
-await dock.getByRole('button',{name:'주의점 추가 +',exact:true})[activate]();
-await dock.getByRole('textbox',{name:'교재 주의점 입력'}).fill('图书馆은 책을 읽거나 빌리는 곳입니다. 서점 书店과 구별해요.');
+await dock.getByRole('button',{name:'설명 추가',exact:true})[activate]();
+await dock.getByRole('textbox',{name:'교재 설명 입력'}).fill('图书馆은 책을 읽거나 빌리는 곳입니다. 서점 书店과 구별해요.');
 await dock.getByRole('button',{name:'교재에 저장',exact:true})[activate]();
 await dock.getByText('교재에 저장했어요.',{exact:false}).waitFor();
 assert.equal((await current()).raw_text,original.raw_text);assert.deepEqual((await current()).processed_json,original.processed_json);check('annotation saves without touching dated notes or textbook');
-await dock.getByRole('button',{name:'주의점 추가 +',exact:true})[activate]();await dock.getByRole('textbox',{name:'교재 주의점 입력'}).fill('图书馆里很安静。');annotationLost=true;await dock.getByRole('button',{name:'교재에 저장',exact:true})[activate]();
+await dock.getByRole('button',{name:'설명 추가',exact:true})[activate]();await dock.getByRole('textbox',{name:'교재 설명 입력'}).fill('图书馆里很安静。');annotationLost=true;await dock.getByRole('button',{name:'교재에 저장',exact:true})[activate]();
 await dock.getByRole('button',{name:'저장 재시도',exact:true}).waitFor();await page.waitForTimeout(2600);await page.reload();await dock.waitFor();await dock.getByRole('button',{name:'저장 재시도',exact:true})[activate]();await waitFor(async()=>await dock.getByRole('button',{name:'저장 재시도',exact:true}).count()===0);check('response loss retries exact operation and preserves appended explanation');
 await db.exec('RESET ROLE');assert.equal((await db.query('select count(*)::int n from textbook_annotations')).rows[0].n,2);await db.exec('SET ROLE authenticated');
 await page.waitForTimeout(2600);await page.reload();await dock.waitFor();await dock.getByText('图书馆里很安静。',{exact:true}).waitFor();check('annotation automatically returns on next visit at its anchored passage');
@@ -135,13 +135,13 @@ await dock.getByRole('button',{name:'접기',exact:true}).last()[activate]();awa
 // a viewport change. Compare with the position at activation, not before that
 // browser scroll; capture runs before React mounts the presentation.
 await page.evaluate(()=>document.addEventListener('click',event=>{
- if(event.target.closest('.class-reader-presentation-actions button')?.textContent==='크게 보여주기')window.__teachingOpenY=scrollY;
+ if(event.target.closest('.class-reader-presentation-actions button')?.textContent==='크게 보기')window.__teachingOpenY=scrollY;
 },true));
 for(const viewport of [{width:1024,height:768},{width:768,height:1024},{width:390,height:844}]){
  await page.setViewportSize(viewport);await page.locator('[data-tid="id_3_word"]')[activate]();
  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
  for(let i=0;i<10;i++){
-  await dock.getByRole('button',{name:'크게 보여주기',exact:true}).last()[activate]();
+  await dock.getByRole('button',{name:'크게 보기',exact:true}).last()[activate]();
   const origin=await page.evaluate(()=>window.__teachingOpenY);assert(Number.isFinite(origin),'capture actual presentation activation');
   const dialog=page.getByRole('dialog',{name:'학생에게 보여주는 설명'});await dialog.waitFor();
   await dialog.getByRole('button',{name:'뜻 가리기',exact:true})[activate]();await dialog.getByText('뜻을 떠올려 보세요.',{exact:true}).waitFor();
@@ -150,18 +150,18 @@ for(const viewport of [{width:1024,height:768},{width:768,height:1024},{width:39
   await dialog.getByRole('button',{name:'교재로 돌아가기 ×',exact:true})[activate]();await waitFor(async()=>await dialog.count()===0);assert.equal(page.url(),url);
   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   const restored=await page.evaluate(()=>scrollY);assert(Math.abs(restored-origin)<3,`viewport ${viewport.width} cycle ${i}: before ${origin}, after ${restored}`);
-  assert(await dock.getByRole('button',{name:'크게 보여주기',exact:true}).last().evaluate(el=>document.activeElement===el),'show-only presentation restores its trigger focus');
+  assert(await dock.getByRole('button',{name:'크게 보기',exact:true}).last().evaluate(el=>document.activeElement===el),'show-only presentation restores its trigger focus');
  }
  check(`presentation restores textbook position ten times at ${viewport.width}x${viewport.height}`);
 }
 await page.setViewportSize({width:1440,height:1000});await page.locator('[data-tid="id_0_word"]')[activate]();
 await page.screenshot({path:out+'/textbook-notes-desktop.png'});report.screens.push('textbook-notes-desktop.png');
 assert.equal((await current()).raw_text,original.raw_text);check('showing words and annotations never records a class expression');
-await dock.getByRole('button',{name:'찾기',exact:true}).first()[activate]();
+await dock.getByRole('button',{name:'표현 찾기 열기',exact:true})[activate]();
 const search=dock.getByRole('textbox',{name:'단어·표현 찾기'});await search.fill('你好');await search.press('Enter');await waitFor(async()=>await dock.getByRole('textbox',{name:'핵심 뜻',exact:true}).inputValue()==='안녕하세요');
-await dock.getByRole('button',{name:'보여주고 기록',exact:true})[activate]();await page.getByRole('dialog').waitFor();await page.getByRole('dialog').getByRole('button',{name:'수업에 기록됨 ✓',exact:true}).waitFor();assert((await current()).raw_text.endsWith('你好'));check('manual expression displays and records with one action');
+await dock.getByRole('button',{name:'크게 보기',exact:true})[activate]();await page.getByRole('dialog').waitFor();await page.getByRole('dialog').getByRole('button',{name:'오늘 표현에 추가',exact:true})[activate]();await page.getByRole('dialog').getByRole('button',{name:'수업에 기록됨 ✓',exact:true}).waitFor();assert((await current()).raw_text.endsWith('你好'));check('manual expression displays then records only after an explicit add');
 await page.keyboard.press('Escape');await waitFor(async()=>await page.getByRole('dialog').count()===0);
-await waitFor(async()=>await dock.locator('.class-reader-footer').getByRole('button',{name:'크게 보여주기',exact:true}).evaluate(el=>document.activeElement===el));
+await waitFor(async()=>await dock.locator('.class-reader-footer').getByRole('button',{name:'크게 보기',exact:true}).evaluate(el=>document.activeElement===el));
 const recorded=await current(),appendCount=writes.filter(w=>w.table.startsWith('classroom_append_')).length;
 await page.keyboard.press('Enter');await page.getByRole('dialog',{name:'학생에게 보여주는 설명'}).waitFor();await page.keyboard.press('Escape');await waitFor(async()=>await page.getByRole('dialog').count()===0);
 // Background analysis may finish while the display is open; compare the
@@ -172,8 +172,8 @@ await page.locator('[data-tid="id_0_word"]')[activate]();
 await dock.locator('.class-reader-word').waitFor();
 assert.equal(await dock.getByRole('textbox',{name:'읽기',exact:true}).count(),0,'reselecting the same textbook token exits manual search');
 check('same-word selection after manual search restores textbook details and annotations');
-await dock.getByRole('button',{name:'수정',exact:true}).first()[activate]();await dock.getByRole('button',{name:'보관',exact:true})[activate]();await waitFor(async()=>await dock.getByRole('button',{name:'보관',exact:true}).count()===0);
-await dock.getByText('보관한 주의점',{exact:true})[activate]();await dock.getByRole('button',{name:'다시 표시',exact:true})[activate]();await waitFor(async()=>await dock.getByRole('button',{name:'다시 표시',exact:true}).count()===0);check('teacher can archive and restore explanations without deleting history');
+await dock.locator('.textbook-notes').getByRole('button',{name:'수정',exact:true}).first()[activate]();await dock.getByRole('button',{name:'보관',exact:true})[activate]();await waitFor(async()=>await dock.getByRole('button',{name:'보관',exact:true}).count()===0);
+await dock.getByText('보관한 설명',{exact:true})[activate]();await dock.getByRole('button',{name:'다시 표시',exact:true})[activate]();await waitFor(async()=>await dock.getByRole('button',{name:'다시 표시',exact:true}).count()===0);check('teacher can archive and restore explanations without deleting history');
 for(const width of [1440,768,390]){
  await page.setViewportSize({width,height:900});
  const body=page.locator('.class-reader-dock__body');
@@ -198,13 +198,13 @@ const historyBack=page.getByRole('link',{name:'← 수업으로',exact:true});
 const historyReturn=new URL(await historyBack.getAttribute('href'),base);assert.equal(historyReturn.searchParams.get('view'),'history');assert.equal(historyReturn.searchParams.get('q'),'안녕하세요');
 await historyBack[activate]();await page.waitForURL(u=>u.pathname==='/class/fixture-class'&&u.searchParams.get('view')==='history');
 assert.equal(await page.getByRole('searchbox',{name:'지난 수업에서 찾기'}).inputValue(),'안녕하세요');
-assert.equal(await page.getByRole('button',{name:/^수업 돌아보기/}).getAttribute('aria-pressed'),'true');
+assert.equal(await page.getByRole('button',{name:/^수업 기록/}).getAttribute('aria-pressed'),'true');
 await page.getByRole('region',{name:'수업 돌아보기',exact:true}).getByText('你好',{exact:true}).waitFor();
 check('owner note returns to class history after a full viewer round trip');
 
 // Source write -> history -> selected textbook range. Uses the real append RPC.
 await page.waitForTimeout(2600);await page.goto(url);await dock.waitFor();await page.locator('[data-tid="id_0_word"]')[activate]();
-await dock.getByRole('button',{name:'수업 노트에 추가 +',exact:true})[activate]();await dock.getByRole('button',{name:'수업에 추가됨 ✓',exact:true}).waitFor();
+await dock.getByRole('button',{name:'오늘 표현에 추가',exact:true})[activate]();await dock.getByRole('button',{name:'수업에 추가됨 ✓',exact:true}).waitFor();
 const savedWord=Object.entries((await current()).processed_json.metadata.classSources).find(([,s])=>s.quote==='图书馆');assert(savedWord?.[1].anchor);
 await page.waitForTimeout(2600);await page.goto(base+'/class/fixture-class?view=history');await history.getByRole('searchbox').fill('图书馆');
 await history.getByRole('button',{name:'교재에서 보기 ↗',exact:true})[activate]();await page.waitForURL(u=>u.pathname==='/viewer/10'&&u.searchParams.has('sourceEntry'));await page.locator('[data-tid="id_0_word"][data-selected="true"]').waitFor();
@@ -227,7 +227,7 @@ if(touch){
 }
 else{await page.mouse.move(a.x+a.width/2,a.y+a.height/2);await page.mouse.down();await page.mouse.move(b.x+b.width/2,b.y+b.height/2,{steps:6});await page.mouse.up();}
 await dock.getByRole('region',{name:'선택한 표현을 수업에 추가',exact:true}).getByText('我们明天',{exact:true}).waitFor();
-await dock.getByRole('button',{name:'수업 노트에 추가 +',exact:true})[activate]();await dock.getByRole('button',{name:'수업에 추가됨 ✓',exact:true}).waitFor();
+await dock.getByRole('button',{name:'오늘 표현에 추가',exact:true})[activate]();await dock.getByRole('button',{name:'수업에 추가됨 ✓',exact:true}).waitFor();
 const savedRange=Object.entries((await current()).processed_json.metadata.classSources).find(([,s])=>s.quote==='我们明天');assert(savedRange?.[1].anchor);assert(!savedRange[1].tokenId);
 const rangeUrl=base+'/viewer/10?'+new URLSearchParams({sourceClass:'fixture-class',sourceNote:String((await current()).id),sourceEntry:savedRange[0],returnTo:'/class/fixture-class?view=history'});
 for(const width of [1440,768,390]){await page.setViewportSize({width,height:1000});await page.waitForTimeout(2600);await page.goto(rangeUrl);await page.locator('[data-tid="id_14_0"].word-token--picked').waitFor();await page.locator('[data-tid="id_14_1"].word-token--picked').waitFor();assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:`${out}/source-range-${width}.png`});report.screens.push(`source-range-${width}.png`);}
@@ -241,7 +241,7 @@ await db.query('update reading_materials set processed_json=$1 where id=10',[boo
 await page.setViewportSize({width:390,height:844});await page.waitForTimeout(2600);await page.goto(url);await dock.waitFor();await dock.getByRole('button',{name:'수업 도구 접기',exact:true})[activate]();
 await page.locator('[data-tid="id_14_0"] .line-pick')[activate]();
 await dock.getByRole('region',{name:'선택한 표현을 수업에 추가',exact:true}).getByText('我们明天见。',{exact:true}).waitFor();
-await dock.getByRole('button',{name:'수업 노트에 추가 +',exact:true})[activate]();await dock.getByRole('button',{name:'수업에 추가됨 ✓',exact:true}).waitFor();
+await dock.getByRole('button',{name:'오늘 표현에 추가',exact:true})[activate]();await dock.getByRole('button',{name:'수업에 추가됨 ✓',exact:true}).waitFor();
 const savedSentence=Object.values((await current()).processed_json.metadata.classSources).find(s=>s.quote==='我们明天见。');assert(savedSentence?.anchor);assert.equal(savedSentence.anchor.end-savedSentence.anchor.start,6);check('sentence bar records the whole sentence boundaries');
 // Enough synthetic days to make scroll restoration measurable.
 for(let i=1;i<=12;i++)await db.query('select classroom_append_study(1,$1,$2,$3,$4)',[`2026-08-${String(i).padStart(2,'0')}`,'검수 표현',crypto.randomUUID(),{meaning:'검색 뜻',source:{kind:'manual'}}]);

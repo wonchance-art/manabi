@@ -52,7 +52,7 @@ export async function runTabletScenario({page,context,base,out,day,db,check,wait
     await dock.locator('.class-reader-dock__body').evaluate(el=>el.scrollTop=el.scrollHeight);
     const footer=await dock.locator('.class-reader-footer').boundingBox(),panel=await dock.boundingBox();
     assert(footer&&panel&&footer.y>=panel.y&&footer.y+footer.height<=panel.y+panel.height+1);
-    assert(await dock.getByRole('button',{name:'크게 보여주기',exact:true}).isVisible());
+    assert(await dock.getByRole('button',{name:'크게 보기',exact:true}).isVisible());
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
     const shot=`tablet-dock-${width}.png`;await page.screenshot({path:out+'/'+shot});report.screens.push(shot);
   }
@@ -61,16 +61,17 @@ export async function runTabletScenario({page,context,base,out,day,db,check,wait
   await dock.getByRole('textbox',{name:'핵심 뜻',exact:true}).focus();
   await page.evaluate(()=>{Object.defineProperty(visualViewport,'height',{configurable:true,get:()=>360});visualViewport.dispatchEvent(new Event('resize'));});
   await page.waitForTimeout(200);
-  const field=await dock.getByRole('textbox',{name:'핵심 뜻',exact:true}).boundingBox(),action=await dock.getByRole('button',{name:'보여주고 기록',exact:true}).boundingBox();
+  const field=await dock.getByRole('textbox',{name:'핵심 뜻',exact:true}).boundingBox(),action=await dock.getByRole('button',{name:'오늘 표현에 추가',exact:true}).boundingBox();
   assert(field&&action&&field.y>=0&&field.y+field.height<=360&&action.y+action.height<=360,'field and primary action fit the simulated visible viewport');
   await page.screenshot({path:out+'/tablet-keyboard-390.png'});report.screens.push('tablet-keyboard-390.png');
   await page.evaluate(()=>{delete visualViewport.height;visualViewport.dispatchEvent(new Event('resize'));});
   check('input and record action remain visible above a simulated software keyboard');
 
   const text='新的表达';
-  await dock.getByRole('button',{name:'보여주고 기록',exact:true})[activate]();
+  await dock.getByRole('button',{name:'크게 보기',exact:true})[activate]();
   const dialog=page.getByRole('dialog',{name:'학생에게 보여주는 설명'});await dialog.waitFor();await dialog.getByText('먼저 입력한 뜻',{exact:true}).waitFor();
   await dialog.getByRole('button',{name:'교재로 돌아가기 ×',exact:true})[activate]();
+  await dock.getByRole('button',{name:'오늘 표현에 추가',exact:true})[activate]();
   await dock.getByRole('textbox',{name:'핵심 뜻',exact:true}).fill('저장 이후 계속 쓴 뜻');
   await waitFor(async()=> (await current()).raw_text.includes(text));
   assert.equal((await current()).raw_text.split('\n').filter(line=>line===text).length,1);
@@ -78,18 +79,18 @@ export async function runTabletScenario({page,context,base,out,day,db,check,wait
   check('recording is explicit and later edits remain a separate unsubmitted draft');
 
   await navigate(url);await page.locator('[data-tid="id_0_word"]')[activate]();
-  await dock.getByText('수업용 뜻 확인·수정',{exact:true})[activate]();
-  await dock.getByRole('textbox',{name:'핵심 뜻',exact:true}).fill('교재 단어에 남긴 수업용 뜻');
+  await dock.getByRole('button',{name:'수업용 뜻 수정',exact:true})[activate]();
+  await dock.getByRole('textbox',{name:'수업용 뜻',exact:true}).fill('교재 단어에 남긴 수업용 뜻');
   await waitFor(async()=> (await drafts()).some(row=>row.value.selection?.source?.materialId==='10'));
-  await navigate(url);await openDraft('图书馆');await dock.getByRole('button',{name:'수업 노트에 추가 +',exact:true})[activate]();
+  await navigate(url);await openDraft('图书馆');await dock.getByRole('button',{name:'오늘 표현에 추가',exact:true})[activate]();
   await waitFor(async()=>Object.values((await current()).processed_json.metadata.classMeanings||{}).some(entry=>entry.meaning==='교재 단어에 남긴 수업용 뜻'));
   check('restored textbook meaning retains verified source and records the edited gloss');
-  const searchToggle=dock.getByRole('button',{name:'찾기',exact:true}).first();
+  const searchToggle=dock.getByRole('button',{name:'표현 찾기 열기',exact:true});
   if(await searchToggle.getAttribute('aria-expanded')!=='true')await searchToggle[activate]();
   await context.setOffline(true);await input.fill('离线说明');await dock.getByRole('button',{name:'찾기',exact:true}).last()[activate]();
   await dock.getByRole('textbox',{name:'핵심 뜻',exact:true}).fill('오프라인 설명');
-  await dock.getByRole('button',{name:'보여주고 기록',exact:true})[activate]();await dialog.waitFor();
-  await dialog.getByRole('button',{name:'교재로 돌아가기 ×',exact:true})[activate]();
+  await dock.getByRole('button',{name:'오늘 표현에 추가',exact:true})[activate]();
+  assert.equal(await dialog.count(),0);
   await waitFor(async()=> (await records(page)).some(row=>row.text==='离线说明'&&row.kind!=='draft'));
   assert(!(await current()).raw_text.includes('离线说明'));check('offline record is durably queued without claiming a server write');
   await dock.getByRole('textbox',{name:'핵심 뜻',exact:true}).fill('전송 이후 이어 쓴 초안');

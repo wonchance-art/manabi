@@ -33,6 +33,10 @@ export async function listClassOperations(scope) {
 export const readClassDraft = scope => transaction('readonly',store=>store.get(`draft:${scope}`));
 export const writeClassDraft = (scope,text) => putClassOperation({id:`draft:${scope}`,scope,kind:'draft',text,updatedAt:Date.now()});
 
+export function consumeLegacyClassDraft(scope, expected) {
+  return changeOperation(`draft:${scope}`, row => row?.kind === 'draft' && row.text === expected.text && row.updatedAt === expected.updatedAt ? false : null);
+}
+
 export async function listClassReaderDrafts(scope) {
   const all = await transaction('readonly', store => store.getAll());
   return all.filter(row => row.scope === scope && row.kind === 'draft' && row.category === 'reader');

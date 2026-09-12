@@ -161,6 +161,7 @@ export default function Layout({ children }) {
           <span>manabi<span className="manabi-brand-dot" aria-hidden="true" /></span>
         </Link>
 
+        <Link href="/home" prefetch={false} className="classroom-app-home" aria-label="웹앱 홈">홈</Link>
         <nav className="gnb__nav" aria-label="메인 내비게이션">
           {navLinks.map(l => (
             <Link

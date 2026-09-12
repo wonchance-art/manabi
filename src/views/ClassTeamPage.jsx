@@ -16,8 +16,9 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
-import { ClassroomShell,ClassroomState,ClassBack,ClassCover } from '../components/classroom/ClassroomUI';
-import { classStudyHref } from '../lib/classStudy';
+import { ClassroomShell,ClassroomState,ClassCover } from '../components/classroom/ClassroomUI';
+import {canTeachClass,startingChapter,classWorkspaceHref} from '../lib/classWorkspace';
+import ClassTeamSettings from '../components/classroom/ClassTeamSettings';
 import { classroomPlainText } from '../lib/classroomModel';
 import Button from '../components/Button';
 import MaterialGroupCard from '../components/MaterialGroupCard';
@@ -47,13 +48,9 @@ async function copyToClipboard(text, toast, done) {
 
 function TeamHeader({ name, lang, sub, right }) {
   return (
-    <div className="page-header page-header--row">
-      <div>
-        <h1 className="page-header__title">{name}{lang ? ` · ${LANG_NAME_KO[lang] || lang}` : ''}</h1>
-        {sub && <p className="page-header__subtitle">{sub}</p>}
-      </div>
-      {right}
-    </div>
+    <header className="class-team-heading">
+      <div><span className="classroom-eyebrow">MANABI CLASS{lang?` · ${LANG_NAME_KO[lang]||lang}`:''}</span><h1>{name}</h1>{sub&&<p>{sub}</p>}</div>{right}
+    </header>
   );
 }
 
@@ -94,7 +91,9 @@ function OwnerView({ root, user, teamKey, toast }) {
   const routeSearch=useSearchParams();
   const [tab,setTab]=useState(()=>routeSearch.get('view')==='history'?'notes':'book');
   const team = getTeam(root.processed_json?.metadata);
-  const { data: chapters = [] } = useQuery({
+  const [settingsOpen,setSettingsOpen]=useState(false);
+  const settingsButton=useRef(null);
+  const { data: chapters = [], error:chaptersError, isLoading:chaptersLoading, refetch:retryChapters } = useQuery({
     queryKey: ['class-book-chapters', user.id, team.bookKey],
     queryFn: () => fetchBookChapters(team.bookKey),
     enabled: !!team.bookKey,
@@ -117,16 +116,18 @@ function OwnerView({ root, user, teamKey, toast }) {
   const history=notes.map(n=>({...n,entries:classHistoryEntries(noteRows.find(r=>String(r.id)===String(n.id)),chapters.map(c=>c.id))}));
   const latest=notes[0];
   const back=`/class/${teamKey}${tab==='notes'?'?view=history':''}`;
-  const openHref=id=>`/viewer/${id}?returnTo=${encodeURIComponent(back)}`;
-  return <ClassroomShell lang={team.lang}>
-    <ClassBack/>
-    <header className="classroom-header"><div><span className="classroom-eyebrow">MANABI / {LANG_NAME_KO[team.lang]}</span><h1>{team.name}</h1><p>수업의 표현을 모아, 나의 언어로.</p></div><ClassCover team={team} small/></header>
-    <div className="classroom-actions"><Link href={team.chapterId?classStudyHref(team.chapterId,teamKey,todayKey()):`/class/${teamKey}/live`} className="classroom-button">수업 진행 →</Link><Link href={`/class/${teamKey}/board`} className="classroom-button classroom-button--quiet">함께 보는 화면 ↗</Link><button className="classroom-text-button" onClick={()=>copyToClipboard(shareLink,toast,'수업 링크를 복사했어요.')}>학생에게 링크 공유</button><Link href="/class" className="classroom-text-button">수업 설정</Link></div>
-    <div className="classroom-tabs" aria-label="수업 자료 종류"><button aria-pressed={tab==='book'} onClick={()=>setTab('book')}>교재</button><button aria-pressed={tab==='notes'} onClick={()=>setTab('notes')}>수업 돌아보기 {notes.length||''}</button></div>
+  const start=startingChapter(team,chapters);
+  const openHref=id=>tab==='book'?classWorkspaceHref(id,teamKey,todayKey()):`/viewer/${id}?returnTo=${encodeURIComponent(back)}`;
+  const startHref=start?classWorkspaceHref(start.id,teamKey,todayKey()):`/class/${teamKey}/live`;
+  return <ClassroomShell lang={team.lang} teamHome>
+    <header className="class-team-heading"><div><span className="classroom-eyebrow">MANABI CLASS · {LANG_NAME_KO[team.lang]}</span><h1>{team.name}</h1></div><div className="class-team-actions"><button className="classroom-text-button" onClick={()=>copyToClipboard(shareLink,toast,'수업 링크를 복사했어요.')}>학생 초대</button><button ref={settingsButton} className="classroom-text-button" aria-expanded={settingsOpen} onClick={()=>setSettingsOpen(v=>!v)}>설정</button></div></header>
+    {settingsOpen&&<ClassTeamSettings root={root} user={user} onClose={()=>{setSettingsOpen(false);settingsButton.current?.focus();}}/>}
+    {tab==='book'&&<section className="class-team-start" aria-label="수업 시작"><ClassCover team={team} small/><div><span className="classroom-eyebrow">{dayLabel(todayKey())} 수업</span><h2>{start?chapterLabel(start.title):team.bookKey?'교재를 확인하고 있어요':'교재 없이 함께 배우기'}</h2><p>{start?'교재를 펼친 채 뜻을 확인하고, 오늘 배운 표현을 남깁니다.':'표현을 입력해 설명하고 수업 기록에 남길 수 있어요.'}</p>{!chaptersError&&!chaptersLoading&&<Link className="classroom-button" href={startHref}>{team.chapterId&&start?'수업 이어하기':'수업 시작'} <span aria-hidden="true">→</span></Link>}{chaptersLoading&&<p role="status">교재를 불러오는 중…</p>}{chaptersError&&<p role="alert">교재를 불러오지 못했어요. <button className="classroom-text-button" onClick={()=>retryChapters()}>다시 확인</button></p>}</div></section>}
+    <div className="classroom-tabs" aria-label="수업 자료 종류"><button aria-pressed={tab==='book'} onClick={()=>setTab('book')}>교재</button><button aria-pressed={tab==='notes'} onClick={()=>setTab('notes')}>수업 기록 {notes.length||''}</button></div>
     {tab==='notes'?<>
       {notesLoading?<p role="status">수업 노트를 불러오는 중…</p>:notesError?<div className="classroom-notice" role="alert">노트를 불러오지 못했어요. <button onClick={()=>retryNotes()}>다시 불러오기</button></div>:latest&&<Link href={openHref(latest.id)} className="classroom-featured-note"><span className="classroom-eyebrow">최근 수업 노트</span><h2>{dayLabel(latest.day)}에 함께 배운 것들.</h2><p>{latest.title}</p><b>노트 읽기 →</b></Link>}
       {!notesLoading&&!notesError&&<ClassStudyHistory notes={history} coverage={coverageQuery.data||[]} chapters={chapters} onOpen={n=>router.push(classEntryHref(openHref(n.id),teamKey,n))} onCopy={n=>copyNote(n.id)}/>}</>
-      :team.bookKey?<MaterialGroupCard open title={chapters[0]?.title?.split(' — ')[0]||'수업 교재'} meta={`공유된 ${chapters.length}과${team.bookTotal?` · 전체 ${team.bookTotal}과`:''}`} rows={chapters.map(c=>({key:c.id,onClick:()=>router.push(openHref(c.id)),lead:c.order,title:chapterLabel(c.title),right:String(c.id)===team.chapterId?<span>지금 수업 중</span>:null}))}/>:<div className="classroom-empty"><b>자유롭게 배우는 수업입니다.</b><p>교재는 수업 설정에서 언제든 연결할 수 있어요.</p></div>}
+      :team.bookKey?<MaterialGroupCard open title={chapters[0]?.title?.split(' — ')[0]||'수업 교재'} meta={`공유된 ${chapters.length}과${team.bookTotal?` · 전체 ${team.bookTotal}과`:''}`} rows={chapters.map(c=>({key:c.id,onClick:()=>router.push(openHref(c.id)),lead:c.order,title:chapterLabel(c.title),right:String(c.id)===team.chapterId?<span>이어서 볼 과</span>:null}))}/>:<div className="classroom-empty"><b>자유롭게 배우는 수업입니다.</b><p>교재를 연결하면 이곳에서 바로 펼쳐볼 수 있어요.</p><button className="classroom-button classroom-button--quiet" onClick={()=>setSettingsOpen(true)}>교재 연결</button></div>}
   </ClassroomShell>;
 }
 
@@ -336,7 +337,7 @@ function StudentView({ teamKey, user, toast }) {
   const dim = (entry) => !user && offline && !copies.get(entry.id);
 
   return (
-    <ClassroomShell lang={team.lang}><ClassBack/>
+    <ClassroomShell lang={team.lang} teamHome>
       <TeamHeader
         name={team.name}
         lang={team.lang}
@@ -354,9 +355,9 @@ function StudentView({ teamKey, user, toast }) {
       {featured&&studentTab==='book'&&<button className="classroom-featured-note" onClick={()=>openEntry(featured)} disabled={!!rowBusy[featured.id]}><span className="classroom-eyebrow">{recent?'이어서 공부하기':featured.day?'최근 수업 노트':'수업 교재'}</span><h2>{featured.day?`${dayLabel(featured.day)} 수업 노트`:chapterLabel(featured.title)}</h2><p>{recent?'읽던 위치에서 계속 공부하세요.':'한 표현씩, 내 언어로 만들어 보세요.'}</p><b>{rowBusy[featured.id]?'자료 확인 중…':recent?'이어 읽기 →':'읽기 시작 →'}</b>{user&&<small>처음 여는 자료는 내 서재에 보관됩니다.</small>}</button>}
       {claimedError&&<p role="alert">내 자료 목록을 확인하지 못했어요. <button onClick={()=>refetchClaimed()}>다시 확인</button></p>}
       {choice&&<div className="classroom-notice" role="group" aria-label="기존 사본 선택"><b>사용할 사본을 선택하세요.</b><p>다른 사본은 삭제하지 않습니다.</p>{choice.candidates.map(c=><button key={c.id} disabled={busy} onClick={async()=>{setBusy(true);try{const r=await requestClassCopy(teamKey,choice.entry.id,'open',{preferred:c.id});if(r.copyId)router.push(classEntryHref(studentReaderHref(r.copyId,teamKey,choice.entry.day),teamKey,choice.entry));setChoice(null);}catch(e){toast(e.message,'error');}finally{setBusy(false);}}}>{c.title} · {new Date(c.createdAt).toLocaleDateString('ko-KR')}</button>)}<button onClick={()=>setChoice(null)}>나중에</button></div>}
-      <div className="classroom-tabs" aria-label="수업 자료 종류"><button aria-pressed={studentTab==='book'} onClick={()=>setStudentTab('book')}>교재</button><button aria-pressed={studentTab==='notes'} onClick={()=>setStudentTab('notes')}>수업 돌아보기</button></div>
+      <div className="classroom-tabs" aria-label="수업 자료 종류"><button aria-pressed={studentTab==='book'} onClick={()=>setStudentTab('book')}>교재</button><button aria-pressed={studentTab==='notes'} onClick={()=>setStudentTab('notes')}>수업 기록</button></div>
       {studentTab==='notes'&&<ClassRemoteHistory team={teamKey} user={user} chapters={chapters} onOpen={n=>{if(!dim(n))openEntry(n);}} onCopy={copyNotePlain} disabled={dim}/>}
-      {studentTab==='book'&&!team.bookKey&&<div className="classroom-empty"><p>아직 연결된 교재가 없어요. 수업 돌아보기에서 함께 배운 표현을 확인하세요.</p></div>}
+      {studentTab==='book'&&!team.bookKey&&<div className="classroom-empty"><p>아직 연결된 교재가 없어요. 수업 기록에서 함께 배운 표현을 확인하세요.</p></div>}
       {studentTab==='book'&&team.bookKey && (
         <MaterialGroupCard open
           title={team.bookTitle || '교재'}
@@ -388,7 +389,7 @@ export default function ClassTeamPage() {
     enabled: !!user?.id && !!teamKey,
   });
   if (loading || (user && rootLoading)) return <ClassroomState title="수업을 불러오고 있어요."/>;
-  const owned = !!user && !!root && root.owner_id === user.id;
+  const owned = canTeachClass(user,root);
   if (owned) return <><ClassSaveResume user={user}/><OwnerView root={root} user={user} teamKey={teamKey} toast={toast} /></>;
   return <><ClassSaveResume user={user}/><StudentView teamKey={teamKey} user={user} toast={toast} /></>;
 }

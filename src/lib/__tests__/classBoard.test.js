@@ -139,7 +139,7 @@ describe('추가 1건 = 재분석 그 줄만', () => {
   });
 
   it('원문 저장 큐와 분석은 별도 경로이며, 기존 metadata를 보존하고 자동 분석과 명시적 뜻 재조회를 구분한다', () => {
-    const live=read('src/views/ClassLivePage.jsx'), session=read('src/lib/useClassroomSession.js');
+    const live=read('src/components/classroom/ClassroomReader.jsx'), session=read('src/lib/useClassroomSession.js');
     expect(live).toContain('useClassroomSession');
     expect(session).toContain('await appendClassroomEntry(db,row)');
     expect(session).toContain('await runPreservedReanalysis(db,note,controller.signal,analyzeText,{selectedLineIndices:selected,baseJsonOverride:base})');
@@ -199,7 +199,8 @@ describe('판·입력판·허브 배선 계약', () => {
 
   it('/live·/board는 소유자(root.owner_id === user.id)에게만 열린다 · 오너 뷰는 API 라우트를 쓰지 않는다', () => {
     for (const src of [live, board]) {
-      expect(src).toMatch(/if\s*\([^)]*root\.data\.owner_id\s*!==\s*user\.id\)\s*return/);
+      if(src===live)expect(src).toContain('if(!canTeachClass(user,root.data))');
+      else expect(src).toMatch(/if\s*\([^)]*root\.data\.owner_id\s*!==\s*user\.id\)\s*return/);
       expect(src).not.toContain("fetch('/api/class");
     }
   });
@@ -233,7 +234,7 @@ describe('판·입력판·허브 배선 계약', () => {
   });
 
   it('대표 뜻으로 노트 복사 · 항목별 기기 보관 후 서버 직렬 저장', () => {
-    expect(live).toContain('navigator.clipboard.writeText(classroomPlainText(session.note))');
+    expect(read('src/components/classroom/ClassroomReader.jsx')).toContain('navigator.clipboard.writeText(classroomPlainText(session.note))');
     const session=read('src/lib/useClassroomSession.js');
     expect(session.indexOf('await putClassOperation(row);')).toBeLessThan(session.indexOf("setStoreError(''); await refreshQueue(); void pump();"));
     expect(session).toContain('sending.current = true');

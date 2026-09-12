@@ -15,7 +15,7 @@ const hook = read('src/lib/useInlineReview.js');
  * 것은 카드 상태뿐 — vocab-words 무효화로 「복습 시점이에요」가 저절로 돌아온다.
  */
 describe('인라인 복습 R3㉮ — 척도 정렬·스냅샷 재료·undo (ViewerPage·useInlineReview)', () => {
-  const card = sliceBetween(viewer, 'const renderWordDetailCard = (classAction=null) => !selectedToken || !isSheetOpen ? null : (', 'const renderRightPanelContent =');
+  const card = sliceBetween(viewer, 'const renderWordDetailCard = (classAction=null,classMeaning=null) => !selectedToken || !isSheetOpen ? null : (', 'const renderRightPanelContent =');
   const inline = sliceBetween(card, '복습 시점이에요</div>', '</div>\n      )}');
 
   it('인라인 채점 버튼의 라벨·순서·값이 복습 화면과 동일(1/2/3/4) — 옛 3버튼 척도 부활 금지', () => {

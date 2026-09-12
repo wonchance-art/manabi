@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { classLanguage } from '../../lib/classroomModel';
 import './classroom.css';
 
-export function ClassroomShell({ lang='Japanese', children, board=false }) {
-  return <div className={`classroom-shell${board?' classroom-shell--board':''}`} data-language={lang}><div className="classroom-page">{children}</div></div>;
+export function ClassroomShell({ lang='Japanese', children, board=false, teamHome=false }) {
+  return <div className={`classroom-shell${board?' classroom-shell--board':''}${teamHome?' classroom-team-home':''}`} data-language={lang}><div className="classroom-page">{children}</div></div>;
 }
 export function ClassroomState({title,children,retry}) {
   return <ClassroomShell><section className="classroom-state"><span className="classroom-eyebrow">MANABI / CLASS</span><h1>{title}</h1>{children}{retry&&<button className="classroom-button" onClick={retry}>다시 불러오기</button>}</section></ClassroomShell>;

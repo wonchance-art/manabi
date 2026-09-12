@@ -234,6 +234,7 @@ export default function ViewerPage() {
   const { id } = useParams();
   const originalParams = useSearchParams();
   const studyContext=classStudyContext(originalParams);
+  const classToolbarTarget=useRef(null);
   const [classStudyActive,setClassStudyActive]=useState(false);
   const [classPresenting,setClassPresenting]=useState(false);
   const { user, profile, fetchProfile } = useAuth();
@@ -1941,7 +1942,7 @@ export default function ViewerPage() {
     </>
   );
 
-  const renderWordDetailCard = (classAction=null) => !selectedToken || !isSheetOpen ? null : (
+  const renderWordDetailCard = (classAction=null,classMeaning=null) => !selectedToken || !isSheetOpen ? null : (
     <div key={selectedToken.id||selectedToken.text} tabIndex={-1} className={`word-detail-card${dragTokens !== null ? ' word-detail-card--above-list' : ''}`}>
       <div className="reader-card-body">
       <div className="word-detail-card__actions">
@@ -2027,7 +2028,7 @@ export default function ViewerPage() {
       })()}
       {ttsSupported && <button className="word-detail-card__speak" onClick={() => speak(headText, materialLang, ttsOptsFor(ttsRate))} aria-label="발음 듣기" title="발음 듣기">▷</button>}
       </div>
-      <div className={`word-detail-card__meaningrow${materialLang === 'English' && selectedToken.reading ? ' word-detail-card__meaningrow--tight' : ''}`}>
+      {classMeaning||<div className={`word-detail-card__meaningrow${materialLang === 'English' && selectedToken.reading ? ' word-detail-card__meaningrow--tight' : ''}`}>
         <div className="word-detail-card__meaning">
           {refMeaning || selectedToken.meaning || '(뜻 없음)'}
         </div>
@@ -2040,8 +2041,8 @@ export default function ViewerPage() {
             className={`word-detail-card__edit${isEditingToken ? ' is-on' : ''}`}
           ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m16 3 5 5M4 15 16 3a2 2 0 0 1 3 0l2 2a2 2 0 0 1 0 3L9 20l-6 1 1-6Z"/></svg></button>
         )}
-      </div>
-      {isEditingToken && (
+      </div>}
+      {isEditingToken && !classMeaning && (
         <TokenEditPanel
           key={selectedToken.id} // 토큰 전환 시 리마운트 — 이전 단어 입력값이 새 토큰에 붙는 것 차단(마감 ③)
           token={selectedToken}
@@ -2076,8 +2077,8 @@ export default function ViewerPage() {
         </div>
       )}
 
-      {materialLang === 'Chinese' && <ViewerJapaneseReference key={`${selectedToken.id||selectedToken.text}:${refMeaning||''}`} userId={user?.id} word={headText} meaning={refMeaning||selectedToken.meaning||''} dictEntry={editDictEntry} loading={!dictFetched&&!dictError} dictError={dictError} jaTable={hanjaJaTable} formError={jaFormError}/>}
       {classAction}
+      {materialLang === 'Chinese' && <ViewerJapaneseReference key={`${selectedToken.id||selectedToken.text}:${refMeaning||''}`} userId={user?.id} word={headText} meaning={refMeaning||selectedToken.meaning||''} dictEntry={editDictEntry} loading={!dictFetched&&!dictError} dictError={dictError} jaTable={hanjaJaTable} formError={jaFormError}/>}
       {inspectChar && (() => {
         // ④ 글자 카드(증강 R1~R3 — 오너 승인 2026-08-28): 헤더는 자기 완결(훈음·병음·자형 칩),
         // 주인공은 구성(1단 분해 — 성분 탭 = 재귀 탐색)과 다시 만나기(이 자료·내 단어).
@@ -2352,8 +2353,8 @@ export default function ViewerPage() {
     </div>
   );
 
-  const renderRightPanelContent = (classAction=null) => {
-    const wordDetailCard=renderWordDetailCard(classAction);
+  const renderRightPanelContent = (classAction=null,classMeaning=null) => {
+    const wordDetailCard=renderWordDetailCard(classAction,classMeaning);
     return wordDetailCard || wordListPanel ? (
     <div className="viewer-side__content">
       {wordDetailCard}
@@ -2498,11 +2499,13 @@ export default function ViewerPage() {
         {/* 경로 줄(뷰어 정돈 A안) — 왼쪽 [← 자료실 · 형제 내비], 오른쪽 [도구]. 본문 위에는 경로·제목·도구만
             남고, 끝의 행동(읽기 완료·오늘 학습·다음 범위)은 본문 **아래**로 갔다(「끝은 끝에」). 예전 액션바는
             폰에서 두 줄(89px)로 꺾였고, 그 위에 뒤로가기 줄·시리즈 내비 줄이 따로 있었다. */}
+        <div ref={classToolbarTarget} className="class-workspace-topbar" hidden={!classStudyActive}/>
         <div className="viewer-topbar">
-          <LibrarySaveButton material={material}/>
-          {material?.__local
+          {!classStudyActive&&<LibrarySaveButton material={material}/>}
+          {classStudyActive&&originalParams.get('returnTo')?.includes('view=history')&&<LibraryReturnLink className="viewer-back-link">← 수업 기록</LibraryReturnLink>}
+          {!classStudyActive&&(material?.__local
             ? <Link href={`/class/${material.__team}`} className="viewer-back-link">← 팀 페이지</Link>
-            : <LibraryReturnLink className="viewer-back-link">← 내 서재</LibraryReturnLink>}
+            : <LibraryReturnLink className="viewer-back-link">← 내 서재</LibraryReturnLink>)}
           {composerOf(material) && <Link className="viewer-back-link" href={sourcePassageHref(material,originalParams.get('returnTo')) || `/viewer/${composerOf(material)?.parentId || id}?returnTo=${encodeURIComponent(originalParams.get('returnTo') || '/materials?view=owned')}`}>{passageOf(material)?`원본의 ${passageLocation(passageOf(material))}으로 ↗`:'현재 글과 첨부 원본 ↗'}</Link>}
           {siblingNav && (
             <div className="viewer-series-nav" title={siblingNav.label}>
@@ -3149,7 +3152,7 @@ export default function ViewerPage() {
         first={tokenRange.range?json.sequence[tokenRange.range.start]:isSheetOpen?selectedToken?.id:pickedSentence?.firstTokenId}
         last={tokenRange.range?json.sequence[tokenRange.range.end]:undefined}
         blocked={modalBlocked} onClose={closeWordCard} onPresenting={setClassPresenting}>
-      {(annotationContent,annotationOpen,closeWordCard)=><ClassroomReader annotationContent={annotationContent} context={studyContext} user={user} material={material}
+      {(annotationContent,annotationOpen,closeWordCard)=><ClassroomReader toolbarTarget={classToolbarTarget} annotationContent={annotationContent} context={studyContext} user={user} material={material}
         selection={classSelection} selectionSignal={rightSheetSignal}
         wordContent={(dragTokens!==null||(selectedToken&&isSheetOpen))?renderRightPanelContent:null}
         sentenceContent={(leftPanelLoading||leftPanelResult)?leftPanelContent:null}

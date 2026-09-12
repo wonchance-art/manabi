@@ -28,7 +28,13 @@ try{
   check(!(await api.listClassReaderDrafts('scope')).some(r=>r.id==='other-owner'),'other scope drafts are not returned');
   await api.consumeClassReaderDraft('queued',undefined);
   check((await api.listClassOperations('scope')).length===1,'draft consumption never removes submitted operations');
+  const legacy=await api.readClassDraft('scope');
+  await api.writeClassDraft('scope','newer input in another tab');
+  await api.consumeLegacyClassDraft('scope',legacy);
+  check((await api.readClassDraft('scope')).text==='newer input in another tab','recovering an old composer draft never deletes a later edit');
+  await api.consumeLegacyClassDraft('scope',await api.readClassDraft('scope'));
+  check(!(await api.readClassDraft('scope'))&&(await api.listClassOperations('scope')).length===1,'recorded legacy draft is consumed without deleting pending class writes');
   return passed;
  });
- assert.equal(checks.length,7);console.log(JSON.stringify({engine,checks,productionWrites:0}));
+ assert.equal(checks.length,9);console.log(JSON.stringify({engine,checks,productionWrites:0}));
 }finally{await browser.close();}

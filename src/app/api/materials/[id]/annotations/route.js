@@ -33,7 +33,16 @@ async function access(request,id,write=false) {
   if(!materialBelongsToTeam(source.data,capability.team,capability.root))return {error:respond({error:'교재 접근 권한이 없어요.'},403)};
   material=source.data;
  }
- const canEdit=!!auth.user&&material.owner_id===auth.user.id&&!mapping.data;
+ let canEdit=!!auth.user&&material.owner_id===auth.user.id&&!mapping.data;
+ const teamKey=new URL(request.url).searchParams.get('team');
+ if(canEdit&&teamKey){
+  const teacher=await scoped.from('reading_materials').select('id,owner_id,processed_json')
+   .eq('owner_id',auth.user.id).eq('processed_json->metadata->team->>key',teamKey)
+   .eq('processed_json->metadata->team->>root','true').maybeSingle();
+  if(teacher.error)throw teacher.error;
+  const classroom=teacher.data?.processed_json?.metadata?.team;
+  canEdit=teacher.data?.owner_id===auth.user.id&&classroom?.root===true&&classroom.key===teamKey&&materialBelongsToTeam(material,classroom,teacher.data);
+ }
  if(write&&!canEdit)return {error:respond({error:'교재 소유자만 주의점을 편집할 수 있어요.'},403)};
  return {admin,material,user:auth.user,canEdit};
 }

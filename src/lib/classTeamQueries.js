@@ -63,3 +63,18 @@ export function chapterLabel(title) {
   const t = String(title || '');
   return t.includes(' — ') ? t.split(' — ').slice(1).join(' — ') : t;
 }
+
+export async function fetchClassBookRows(userId) {
+  const { data, error } = await supabase
+    .from('reading_materials')
+    .select('id, created_at, processed_json->metadata->>language, processed_json->metadata->>level, processed_json->metadata->book')
+    .eq('owner_id', userId)
+    .not('processed_json->metadata->book', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(500);
+  if (error) throw error;
+  return (data || []).map((r) => ({
+    id: r.id, created_at: r.created_at,
+    processed_json: { metadata: { language: r.language, level: r.level, book: r.book } },
+  }));
+}

@@ -5,8 +5,8 @@ import {captureReadingAnchor,restoreReadingAnchor,selectedTokenScrollDelta} from
 export function readerVisibleBounds(root) {
   const viewport=window.visualViewport;
   const bottom=(viewport?.height||window.innerHeight)+(viewport?.offsetTop||0);
-  const toolbar=root?.closest('.viewer-layout')?.querySelector('.viewer-topbar');
-  const top=Math.max(64,viewport?.offsetTop||0,toolbar?toolbar.getBoundingClientRect().bottom+8:64);
+  const toolbars=[...(root?.closest('.viewer-layout')?.querySelectorAll('.viewer-topbar,.class-workspace-topbar')||[])].filter(el=>!el.hidden);
+  const top=Math.max(64,viewport?.offsetTop||0,...toolbars.map(el=>el.getBoundingClientRect().bottom+8));
   const panels=[...(root?.closest('.viewer-layout')||document).querySelectorAll('.viewer-inspector,.class-reader-dock')];
   const edges=panels.filter(panel=>!panel.hidden&&getComputedStyle(panel).position==='fixed').map(panel=>panel.getBoundingClientRect()).filter(rect=>rect.width>0).map(rect=>rect.top);
   return {top,bottom:Math.min(bottom,...edges)};

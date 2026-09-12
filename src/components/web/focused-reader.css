@@ -40,3 +40,5 @@
 
 .manabi-app--reading .rsheet-tabs button,
 .manabi-app--reading .rsheet-miniseg button { min-height: 44px; }
+
+.classroom-app-home {display:none;}

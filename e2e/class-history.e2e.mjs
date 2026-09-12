@@ -128,13 +128,13 @@ await context.route('**/api/class/fixture-class/history?*',r=>r.fulfill({json:{n
 try {
 await page.goto(base+'/class/fixture-class');await page.locator('button.classroom-featured-note').waitFor();
 assert.equal(await page.getByRole('button',{name:'교재',exact:true}).getAttribute('aria-pressed'),'true');check('student home opens textbook tab by default');
-await page.getByRole('button',{name:'수업 돌아보기',exact:true})[activate]();const history=page.getByRole('region',{name:'수업 돌아보기'});await history.getByText('忙碌',{exact:true}).waitFor();
+await page.getByRole('button',{name:'수업 기록',exact:true})[activate]();const history=page.getByRole('region',{name:'수업 돌아보기'});await history.getByText('忙碌',{exact:true}).waitFor();
 await history.getByRole('searchbox').fill('하루');assert.equal(await history.getByText('图书馆',{exact:true}).count(),0);await history.getByText('忙碌',{exact:true}).waitFor();check('search matches Korean meaning');
 await history.getByRole('searchbox').fill('');await history.getByRole('button',{name:'교재 밖 표현만',exact:true})[activate]();assert.equal(await history.getByText('以前',{exact:true}).count(),0);assert.equal(await history.getByText('图书馆',{exact:true}).count(),0);check('outside-textbook filter excludes textbook and unknown legacy sources');
 await history.getByRole('button',{name:'교재 밖 표현만',exact:true})[activate]();
 for(const width of [1440,768,390]){await page.setViewportSize({width,height:1000});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:`${out}/history-${width}.png`});report.screens.push(`history-${width}.png`);}check('history layout fits desktop, tablet and mobile');
 await history.getByRole('button',{name:'교재에서 보기 ↗',exact:true})[activate]();await page.waitForURL(/viewer\/\d+/);await page.locator('[data-tid="id_0_word"][data-selected="true"]').waitFor();assert(page.url().includes('sourceEntry='));assert(!page.url().includes('sourceQuote='));check('history opens exact expression in canonical personal copy');
-await page.getByRole('link',{name:'← 수업으로',exact:true})[activate]();await page.getByRole('button',{name:'수업 돌아보기',exact:true}).waitFor();assert.equal(await page.getByRole('button',{name:'수업 돌아보기',exact:true}).getAttribute('aria-pressed'),'true');check('return from source opens the class history context');
+await page.getByRole('link',{name:'← 수업으로',exact:true})[activate]();await page.getByRole('button',{name:'수업 기록',exact:true}).waitFor();assert.equal(await page.getByRole('button',{name:'수업 기록',exact:true}).getAttribute('aria-pressed'),'true');check('return from source opens the class history context');
 assert.equal(report.errors.length,0,report.errors.join('\n'));check('no page runtime errors');
 } catch(error){console.error(error);report.failure=error.message;await page.screenshot({path:out+'/failure.png'});fs.writeFileSync(out+'/failure.html',await page.content());process.exitCode=1;}
 fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));await context.unrouteAll({behavior:'wait'});await browser.close();await db.close();
