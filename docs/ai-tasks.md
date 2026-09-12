@@ -23,6 +23,7 @@
   16:03 스캔까지 WORKING 무표식(30분 룰) — Claude 직접 수행·완결(회수 공지
   5386950005, PR #1118)**. 이 열에 잔여 발주 없음.
 ### done
+- **운영 설명판 실계정 검수·가림 보정 (2026-09-12)** — `codex/teaching-board-viewport-20260912`. #1306 운영 d5909ce8의 교사 진입·표현/필기·저장 복원·과 전환 확인. 확대 화면에서 모바일 도구막대가 카드 뜻을 가리는 문제를 실제 종이 영역 계산과 도구막대 교체 관찰로 보정. 전체387파일/4,186개·마우스/터치 각13흐름 PASS, 기존 내용/좌표/수업 기록/권한 보존. 최종 CI·배포·운영 재검수는 PR/#150에 기록. `docs/verification/teaching-board-viewport-20260912.md`.
 - **교사 설명판 1차 구현·검수 (2026-09-12)** — `codex/teaching-canvas-20260912`, 실행891ffdf9. 교재 옆 네이티브 표현/필기·묶음·가나 후보·기기 저장·충돌 복구·백업. 기존 교사 권한/수업 저장 RPC/개인 뷰어 보존. 전체386파일/4,182개·모델/API12개·Chromium 마우스/터치 각12흐름 PASS, 로컬 빌드 PASS. 물리 펜·서버 동기화·필기 인식/AI는 후속. 최종 CI·미리보기 및 exact head는 #150 CODEX_DONE에 기록. 운영 merge·DB·env·고정 별칭 변경 없음. `docs/verification/teaching-board-20260912.md`. (최근)
 - **수업 병합 후 이력 파일명 정합 (2026-09-12)** — SQL 초기051522를 실제 원격 적용072945로 개명, SQL 내용 동일 SHA-256 d8e7c2cb82c2d7ff5d9fc49024f4e0dc6831a8bb90b83c75c95c526f2c63970b. 원격 저장SQL suffix와 저장소MD5 일치, 로컬/원격92이력 집합 일치, PGlite33 PASS/운영쓰기0. e2e4경로·설계문서만 갱신. 필수 CI/병합 후 자동 DB 검사는 후속 PR/#150 참조. docs/verification/classroom-migration-history-20260912.md.
 - **병합 권한 개정 완료 (2026-09-12, 오너 직접 지시)** — AGENTS.md·CLAUDE.md에 Claude 및 ChatGPT/Codex의 오너 승인 후 직접 squash merge를 허용. 최신40자 head·대상·범위·충돌·필수 CI 확인, force-push 금지, 기존 변경 보존 유지. 같은 범위의 승인 재요청 방지. 별도 규약 커밋614a2c10, 앱 실행 코드 변경 없음. 원 작업공간 규약도 해당 문단만 반영, 수업 #1303 직접 병합 결과는 #150 참조.

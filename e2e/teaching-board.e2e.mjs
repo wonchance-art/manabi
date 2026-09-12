@@ -211,6 +211,22 @@ try {
  await japaneseForm.getByRole('button',{name:'입력한 표현 놓기',exact:true})[activate]();
  await waitFor(async()=> (await scene()).some(el=>el.customData?.manabiExpression?.text==='箸'));
  await saveScreen('board-japanese');check('kana input offers separate kanji choices; IME confirmation never inserts prematurely');
+ // A 1024×768 browser at 121% zoom exposes about 846×634 CSS pixels.
+ // Native mobile tools must not cover the selected card's meaning in that space.
+ await page.setViewportSize({width:846,height:634});
+ const unobstructed=async()=>{
+  const row=await head(),active=row.document.pages.find(p=>p.id===row.document.activePage),card=active.elements.find(el=>!el.isDeleted&&el.customData?.manabiExpression?.text==='箸');
+  const result=await board.locator('.teaching-board-surface').evaluate((surface,{card,camera})=>{
+   const canvas=surface.getBoundingClientRect(),toolbar=surface.querySelector('.App-toolbar').getBoundingClientRect(),footer=surface.querySelector('.App-bottom-bar .Island')?.getBoundingClientRect();
+   const y=canvas.top+(card.y+camera.scrollY)*camera.zoom.value,bottom=y+card.height*camera.zoom.value;
+   return {fits:y>=toolbar.bottom+15 && bottom<=(footer?.top || canvas.bottom)-15,y,bottom,top:toolbar.bottom,footer:footer?.top,card,camera};
+  },{card,camera:active.camera});
+  return result.fits;
+ };
+ await waitFor(unobstructed);await saveScreen('board-browser-zoom');
+ await board.getByRole('button',{name:'전체 보기',exact:true})[activate]();await waitFor(unobstructed);
+ check('selected expression and fit-all stay clear of mobile toolbars at 121-percent browser zoom');
+ await page.setViewportSize({width:1440,height:1000});
  // Backup round-trip appends a new page, leaving the current board and original textbook intact.
  const backupMenu=board.locator('.teaching-board-footer details');if(!await backupMenu.getAttribute('open'))await backupMenu.locator('summary')[activate]();
  const downloaded=page.waitForEvent('download');await backupMenu.getByRole('button',{name:'내려받기',exact:true})[activate]();
