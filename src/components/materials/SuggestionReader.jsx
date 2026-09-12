@@ -49,6 +49,9 @@ export default function SuggestionReader({ id }) {
       if (account.current !== ownerId) return;
       setSaved({ ownerId, id: record.id });
       queryClient.invalidateQueries({ queryKey: ['personal-library', ownerId] });
+      queryClient.invalidateQueries({ queryKey: ['materials'] });
+      queryClient.invalidateQueries({ queryKey: ['library-reading-v2'] });
+      queryClient.invalidateQueries({ queryKey: ['material', String(record.id)] });
     } catch {
       if (account.current === ownerId) setSaveError('서재에 담지 못했어요. 다시 누르면 저장 여부를 확인하므로 중복으로 담기지 않아요.');
     } finally { pending.current = false; setSaving(false); }
