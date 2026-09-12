@@ -122,8 +122,14 @@ try {
  await board.locator('.excalidraw canvas').first().waitFor();
  const originalBook=(await db.query('select raw_text,processed_json from reading_materials where id=10')).rows[0];
  const originalNote=(await current()).raw_text;
+ if(process.env.QA_READER_DESIGN==='1'){
+  const {verifyReaderDesign}=await import('./viewer-manabi-design-checks.mjs');
+  await verifyReaderDesign({page,board,scene,head,saveScreen,waitFor,check,db,uid,base,day,activate});
+  assert.equal(report.errors.length,0,report.errors.join('\n'));check('no browser runtime errors');
+  await fs.promises.writeFile(out+'/report.json',JSON.stringify(report,null,2));await browser.close();await db.close();process.exit(0);
+ }
  await page.locator('[data-tid="id_0_word"]')[activate]();
- await board.getByRole('button',{name:'판에 놓기',exact:true})[activate]();
+ await page.locator('.viewer-inspector').getByRole('button',{name:'판에 놓기',exact:true})[activate]();
  await waitFor(async()=> (await scene()).length===4);
  assert.equal((await scene()).find(el=>el.customData?.manabiExpression).customData.manabiExpression.source.materialId,'10');
  await saveScreen('board-textbook');check('selected textbook expression imports with reading, meaning and exact source');

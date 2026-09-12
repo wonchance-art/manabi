@@ -1,5 +1,5 @@
 'use client';
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState} from 'react';
 import {Excalidraw, MainMenu, CaptureUpdateAction, convertToExcalidrawElements, newElementWith, getSceneVersion, getCommonBounds} from '@excalidraw/excalidraw';
 import '@excalidraw/excalidraw/index.css';
 import {createPortal} from 'react-dom';
@@ -14,7 +14,7 @@ import {cardSkeleton, cardFields, readCard, rotateCardPart} from '../../lib/teac
 import {isClassComposing} from '../../lib/classReaderDraft';
 import {boardCameraForBounds} from '../../lib/teachingBoardViewport';
 
-export default function TeachingBoardCanvas({owner, team, day, current, onRecord, getRecordState, onLayout, onClose, headerHost, navigation, onSession, onRatio, material, vocabularyIndex}) {
+export default function TeachingBoardCanvas({owner, team, day, onRecord, getRecordState, onLayout, onClose, headerHost, navigation, onSession, onRatio, material, vocabularyIndex, actionsRef, onReady}) {
   const scope = useMemo(() => boardScope(owner, team.key, day), [owner, team.key, day]);
   const store = useTeachingBoard(scope), root = useRef(null), api = useRef(null), document = useRef(null), latest = useRef(null), timer = useRef(null), signature = useRef(''), armed=useRef(false), dirty=useRef(false);
   const [initialWorkspace]=useState(()=>readBoardWorkspace(scope));
@@ -54,10 +54,12 @@ export default function TeachingBoardCanvas({owner, team, day, current, onRecord
     api.current=value;
     requestAnimationFrame(()=>{
       if(api.current!==value || !root.current)return;
+      onReady?.(true);
       const style=getComputedStyle(root.current);
       value.updateScene({appState:{viewBackgroundColor:style.getPropertyValue('--reader-paper').trim(),currentItemStrokeColor:style.getPropertyValue('--reader-ink').trim()}});
     });
-  },[]);
+  },[onReady]);
+  useEffect(()=>()=>onReady?.(false),[onReady]);
   const revealElements = useCallback((elements, fit = false) => {
     const active=api.current;
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
@@ -126,8 +128,8 @@ export default function TeachingBoardCanvas({owner, team, day, current, onRecord
     clearTimeout(timer.current); timer.current = setTimeout(commit, 300);
   };
   const update = (elements, extra = {}) => api.current?.updateScene({elements, ...extra, captureUpdate: CaptureUpdateAction.IMMEDIATELY});
-  const addExpression = value => {
-    if (!api.current) return;
+  const addExpression = (value, preserveDraft=false) => {
+    if (!api.current) return false;
     try {
       const payload = boardExpression(value, team.lang), elements = api.current.getSceneElementsIncludingDeleted();
       const id = crypto.randomUUID(), width = payload.text.length > 25 ? 440 : 320;
@@ -139,9 +141,18 @@ export default function TeachingBoardCanvas({owner, team, day, current, onRecord
       api.current.setActiveTool({type:'selection'});
       revealElements(card);
       setMessage('판에 놓았어요. 자유롭게 옮기고 필기하세요.');
-      attempt.current++;setBusy(false);setPanel(false);setSearching(false);setEditing(null);setInput('');setReading('');setMeaning('');
-    } catch (error) { setMessage(error.message); }
+      if(!preserveDraft){attempt.current++;setBusy(false);setPanel(false);setSearching(false);setEditing(null);setInput('');setReading('');setMeaning('');}
+      return true;
+    } catch (error) { setMessage(error.message);return false; }
   };
+  // The reader's existing word card can place an expression without consuming
+  // the separate board-input draft or posting a student-facing class record.
+  useImperativeHandle(actionsRef,()=>({place:value=>{
+    if(!api.current)return false;
+    armed.current=true;
+    if(layout==='reader')changeLayout('split');
+    return addExpression(value,true);
+  }}));
   const anchor=selected.find(el=>expressionOf(el));
   const picked=anchor && selected.every(el=>el.groupIds?.includes(anchor.groupIds[0])) ? readCard(anchor,api.current?.getSceneElementsIncludingDeleted() || selected) : null;
   const recorded=picked ? getRecordState?.(picked) : null;
@@ -225,6 +236,7 @@ export default function TeachingBoardCanvas({owner, team, day, current, onRecord
   };
 
   const changePage = id => {
+    onReady?.(false);
     commit(); latest.current = null; signature.current = ''; armed.current=false; dirty.current=false; api.current = null;
     document.current = {...document.current, activePage:id}; store.save(document.current); setPageId(id); setSelected([]); setEditing(null); setPanel(false);
   };
@@ -286,7 +298,6 @@ export default function TeachingBoardCanvas({owner, team, day, current, onRecord
     <div className="teaching-board-accessible">{(latest.current?.elements || page.elements).filter(el=>!el.isDeleted && expressionOf(el)).map(el=>{const value=readCard(el,latest.current?.elements || page.elements);return value && <p key={el.id} data-board-expression={el.id}>{value.text} · {value.showReading?value.reading:""} · {value.showMeaning?value.meaning:""}</p>;})}</div>
     {selected.length>0 && <div className="teaching-board-selection" aria-label="선택한 요소 도구"><button onClick={showBoard}>선택한 내용 보여주기</button>{picked && <><button onClick={editSelected}>내용 수정</button><button aria-pressed={!picked.showReading} onClick={() => toggle('showReading')}>읽기 {picked.showReading?'가리기':'보이기'}</button><button aria-pressed={!picked.showMeaning} onClick={() => toggle('showMeaning')}>뜻 {picked.showMeaning?'가리기':'보이기'}</button><button disabled={recording || !!recorded} onClick={record}>{recorded || (recording?'보관 중…':'오늘 표현에 추가')}</button></>}{selected.length>1 && !picked && <button onClick={group}>함께 묶기</button>}</div>}
     <div className="board-entry-dock">
-    {current?.text && <div className="teaching-board-source"><span>교재 <b>{current.text}</b></span><button onClick={() => addExpression(current)}>판에 놓기</button></div>}
     <form className="teaching-board-import" aria-label="표현 불러오기" onSubmit={applyExpression} onCompositionStart={() => {composing.current=true;}} onCompositionEnd={() => {composing.current=false;}} onKeyDown={event => {if(event.key==='Enter' && isClassComposing(event,composing.current))event.preventDefault();}}>
       {(panel||results.length>0)&&<div className="board-entry-details">
         {!!results.length&&<div className="board-search-results" aria-label="표현 검색 결과">{results.map((value,i)=><button key={i} type="button" onClick={()=>addExpression(value)}><span><b>{value.text}</b><small>{value.reading} {value.meaning}</small></span><small>{value.label} ＋</small></button>)}</div>}

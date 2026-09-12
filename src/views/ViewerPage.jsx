@@ -1124,7 +1124,7 @@ export default function ViewerPage() {
   const selectionToReveal = tokenRange.range
     ? material?.processed_json?.sequence?.[tokenRange.range.start]
     : isSheetOpen ? selectedToken?.id : undefined;
-  useSelectedTokenVisibility(readerRef, tokenRefs, selectionToReveal, inspectorOpen && !classStudyActive && !modalBlocked && !tokenRange.dragging, material?.processed_json);
+  useSelectedTokenVisibility(readerRef, tokenRefs, selectionToReveal, inspectorOpen && (!classStudyActive||!!classBoardLayout) && !modalBlocked && !tokenRange.dragging, material?.processed_json);
   const closeReadingSettings = () => {
     // Once the inspector returns, the selected source owns the visible position.
     // A still-live Aa anchor must not scroll it back underneath the panel.
@@ -2507,7 +2507,6 @@ export default function ViewerPage() {
             폰에서 두 줄(89px)로 꺾였고, 그 위에 뒤로가기 줄·시리즈 내비 줄이 따로 있었다. */}
         <div ref={classToolbarTarget} className="class-workspace-topbar" hidden={!classStudyActive}/>
         <div className="viewer-topbar">
-          {!classStudyActive&&<LibrarySaveButton material={material}/>}
           {classStudyActive&&originalParams.get('returnTo')?.includes('view=history')&&<LibraryReturnLink className="viewer-back-link">← 수업 기록</LibraryReturnLink>}
           {!classStudyActive&&(material?.__local
             ? <Link href={`/class/${material.__team}`} className="viewer-back-link">← 팀 페이지</Link>
@@ -2516,16 +2515,16 @@ export default function ViewerPage() {
           {siblingNav && (
             <div className="viewer-series-nav" title={siblingNav.label}>
               {siblingNav.prev ? (
-                <Link href={classStudyNeighborHref(siblingNav.prev,studyContext)} className="viewer-series-nav__btn" title={siblingNav.prev.title} aria-label={siblingNav.prevLabel}>◀</Link>
-              ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">◀</span>}
+                <Link href={classStudyNeighborHref(siblingNav.prev,studyContext)} className="viewer-series-nav__btn" title={siblingNav.prev.title} aria-label={siblingNav.prevLabel}>‹</Link>
+              ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">‹</span>}
               {siblingNav.pos != null && (
                 <span className="viewer-series-nav__position" title={siblingNav.label}>
                   {siblingNav.pos}/{siblingNav.total}
                 </span>
               )}
               {siblingNav.next ? (
-                <Link href={classStudyNeighborHref(siblingNav.next,studyContext)} className="viewer-series-nav__btn" title={siblingNav.next.title} aria-label={siblingNav.nextLabel}>▶</Link>
-              ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">▶</span>}
+                <Link href={classStudyNeighborHref(siblingNav.next,studyContext)} className="viewer-series-nav__btn" title={siblingNav.next.title} aria-label={siblingNav.nextLabel}>›</Link>
+              ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">›</span>}
             </div>
           )}
           {/* 도구는 도구끼리 오른쪽(v2-Q 축 그대로). 분석 중단은 지금 도는 분석에 대한 일시 제어라 여기. */}
@@ -2551,7 +2550,7 @@ export default function ViewerPage() {
       }}/>
       <ClassCopyNotice key={String(id)} material={material} user={user} returnTo={originalParams.get('returnTo')}/>
       <header className="page-header viewer-header">
-        <p className="reader-metadata">{langNameKo(materialLang)}{material?.processed_json?.metadata?.level ? ` · ${material.processed_json.metadata.level}` : ''} · {material.visibility === 'public' ? '공개 읽기' : '내 자료'}</p>
+        <p className="reader-metadata reader-edition"><span>READING ROOM /</span> {langNameKo(materialLang)}{material?.processed_json?.metadata?.level ? ` · ${material.processed_json.metadata.level}` : ''} · {material.visibility === 'public' ? '공개 읽기' : '내 자료'}</p>
         {composerOf(material) && <p className="reader-metadata">{passageOf(material)?`${passageLocation(passageOf(material))}에서 고른 학습 구간이에요. 원본은 위의 링크에서 열 수 있어요.`:'학습에 사용한 본문이에요. 현재 글은 위의 링크에서 열 수 있어요.'}</p>}
         {titleEditing && user?.id === material?.owner_id && !composerOf(material) ? (
           <form
@@ -2589,6 +2588,7 @@ export default function ViewerPage() {
             )}
           </div>
         )}
+        {!classStudyActive&&<LibrarySaveButton material={material}/>}
         {user && material?.visibility === 'public' && material?.owner_id !== user.id && (
           <ReportMaterialButton materialId={material.id} userId={user.id} toast={toast} />
         )}
@@ -3163,13 +3163,16 @@ export default function ViewerPage() {
         wordContent={(dragTokens!==null||(selectedToken&&isSheetOpen))?renderRightPanelContent:null}
         sentenceContent={(leftPanelLoading||leftPanelResult)?leftPanelContent:null}
         onActive={setClassStudyActive} onPresenting={setClassPresenting} suppressed={modalBlocked&&!classPresenting}
-        fallback={(annotationOpen || leftPanelLoading || leftPanelResult || dragTokens !== null || (selectedToken && isSheetOpen) || pickedLineIdx !== null) && <ViewerBottomSheet
+        onSelectionClose={closeWordCard}
+        fallback={boardActions=>(annotationOpen || leftPanelLoading || leftPanelResult || dragTokens !== null || (selectedToken && isSheetOpen) || pickedLineIdx !== null) && <ViewerBottomSheet
+        actions={boardActions}
+        className={boardActions?'viewer-inspector--board':''}
         onClose={closeWordCard}
         suppressed={modalBlocked}
         preserveFocus={annotationOpen&&!isSheetOpen&&dragTokens===null}
         onOpenChange={setInspectorOpen}
         leftContent={leftPanelContent}
-        rightContent={<>{annotationContent}{rightPanelContent}</>}
+        rightContent={selectedToken&&isSheetOpen?renderRightPanelContent(annotationContent&&<details className="reader-card-notes" open={annotationOpen}><summary>교재 설명</summary>{annotationContent}</details>):<>{annotationContent}{rightPanelContent}</>}
         leftActive={leftPanelLoading || !!leftPanelResult}
         rightActive={annotationOpen || dragTokens !== null || (selectedToken && isSheetOpen)}
         leftSignal={leftSheetSignal}
