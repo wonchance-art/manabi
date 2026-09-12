@@ -14,8 +14,6 @@ import {
 import { makeBookKey } from '../lib/bookMeta';
 import { bookKeyForDraft, appendPlanOf, listAppendableBooks, countContentLines } from '../lib/bookAppend';
 import { LEVELS, MATERIAL_DIRECTION } from '../lib/constants';
-import { isOnDemandSuggestion, suggestionVideoUrl } from '../lib/suggestionSources';
-import { isShareableSource, licenseForSource } from '../lib/videoAttribution';
 import MaterialAddPdfSection from './MaterialAddPdfSection';
 import MaterialAddEpubSection from '../components/MaterialAddEpubSection';
 import MaterialAddSentenceSection from '../components/MaterialAddSentenceSection';
@@ -57,7 +55,6 @@ function MaterialAddForm() {
   const [visibility, setVisibility] = useState('private');
   const [language, setLanguage] = useState('Japanese');
   const [level, setLevel] = useState('N3 중급');
-  const [isSuggestionLoading, setIsSuggestionLoading] = useState(false);
   const [pdfSource, setPdfSource] = useState(null); // { pdf, pageStart, pageEnd }
   const [epubSource, setEpubSource] = useState(false); // 개인 소장 전자책 반입 — 비공개 고정 근거
   // 링크 반입 출처(v2-F R1) — 있으면 metadata.source에 실린다. 다른 입구로 갈아타면 비운다.
@@ -233,7 +230,6 @@ function MaterialAddForm() {
   // 링크 반입(v2-F R1) — 남의 자막이라 **기본** 비공개. PDF·EPUB처럼 강제하지는 않는다:
   // 재배포 판단은 사용자 몫이라 토글을 남긴다(설계 §5). 출처는 metadata.source에 남긴다.
   /** 추천(영상)에서 들어온 주소 — 링크 반입 입구가 이걸 받아 자동으로 가져온다. */
-  const [linkAutoUrl, setLinkAutoUrl] = useState('');
 
   const handleLinkReady = ({ title: linkTitle, rawText: linkText, source }) => {
     setPdfSource(null);
@@ -278,49 +274,6 @@ function MaterialAddForm() {
         setLevel(draft.language === 'Japanese' ? 'N3 중급' : 'B1 중급');
       }
     } catch { /* 초안이 깨졌으면 빈 폼 그대로 */ }
-  }, []);
-
-  // 추천 자료에서 진입 시 자동 폼 채우기
-  //
-  // 두 갈래다. 글 소스는 크론이 본문까지 담아 뒀으니 그대로 붓는다. **영상은 다르다** —
-  // 크론이 목록만 담고 본문은 없다(v2-F R4: 서버가 남의 자막을 미리 복제하지 않는다).
-  // 그래서 주소를 링크 반입 입구(F R1)에 넘겨 **이 사용자의 비공개 자료**로 가져온다.
-  // 자막 취득이 실패해도 그 자리에서 붙여넣기 창이 열린다 — 이미 만들어 둔 길이다.
-  useEffect(() => {
-    const suggestionId = searchParams.get('suggestion');
-    if (!suggestionId) return;
-
-    setIsSuggestionLoading(true);
-    fetch(`/api/suggestions/today`)
-      .then(r => r.json())
-      .then(items => {
-        const s = items.find(i => i.id === suggestionId);
-        if (!s) return;
-        setTitle(s.title);
-        setLanguage(s.language || 'Japanese');
-        if (s.level) setLevel(s.level);
-        if (isOnDemandSuggestion(s)) {
-          // 공개범위는 여기서 정하지 않는다 — handleLinkReady가 private으로 고정한다.
-          setLinkAutoUrl(suggestionVideoUrl(s));
-          return;
-        }
-        setRawText(s.transcript || '');
-        setVisibility('public');
-        // 공유 가능한 영상(퍼블릭 도메인·CC BY)은 **출처 표기가 조건**이다. 여기서
-        // metadata.source에 실어야 뷰어가 보여줄 수 있다 — 안 실으면 라이선스 위반이다.
-        if (isShareableSource(s.source)) {
-          setLinkSource({
-            kind: 'youtube',
-            url: suggestionVideoUrl(s),
-            videoId: s.video_id,
-            channel: s.channel_name || '',
-            license: licenseForSource(s.source),
-            via: 'suggestion',
-          });
-        }
-      })
-      .catch(() => {})
-      .finally(() => setIsSuggestionLoading(false));
   }, []);
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -443,12 +396,7 @@ function MaterialAddForm() {
       setStatus(finalJson.status === 'failed' ? '원문은 저장됐어요. 분석을 다시 시도할 수 있어요.'
         : finalJson.status === 'partial' ? `원문 저장 완료 · ${finalJson.failed_indices?.length || 0}개 줄 재시도 필요` : '원문과 읽기 도구가 준비됐어요.');
       setProgress(100);
-      const suggestionId = searchParams.get('suggestion');
-      if (suggestionId) {
-        const { error: suggestionLinkError } = await supabase.from('daily_suggestions')
-          .update({ material_id: record.id }).eq('id', suggestionId).is('material_id', null);
-        if (suggestionLinkError && aliveRef.current) toast('자료는 저장됐지만 추천 자료 연결에 실패했어요.', 'warning');
-      }
+
     } catch (err) {
       if (!aliveRef.current) return;
       const interrupted = interruptedImportJson(record.raw_text, lastJson);
@@ -478,16 +426,6 @@ function MaterialAddForm() {
   // 제목 칸 placeholder·저장 제목의 정본 — 본문 첫 줄(40자). 비어 있을 때만 쓴다.
   const autoTitle = titleFromBody(rawText);
 
-  if (isSuggestionLoading) {
-    return (
-      <div className="page-container">
-        <div className="spinner-wrap">
-          <div className="spinner" />
-          <span className="spinner-msg">추천 자료 불러오는 중...</span>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="page-container add-page">
@@ -537,7 +475,7 @@ function MaterialAddForm() {
           onOpenChange={entryOpenChange('sentences')}
         />
 
-        <MaterialAddLinkSection toast={toast} onReady={handleLinkReady} initialUrl={linkAutoUrl} open={openEntry === 'link'} onOpenChange={entryOpenChange('link')} />
+        <MaterialAddLinkSection toast={toast} onReady={handleLinkReady} open={openEntry === 'link'} onOpenChange={entryOpenChange('link')} />
       </div>
 
       {/* 책 초안은 **그것을 만든 문 옆**에 펼친다 — 위쪽 입구(EPUB·문장 목록)에서 왔으면 여기,

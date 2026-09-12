@@ -19,7 +19,7 @@ import { isTeamRoot } from '../lib/classBoard';
 import { groupByPdf, pageRangeLabel, readProgressLabel } from '../lib/pdfGroups';
 import { useGroupReadIds } from '../lib/useGroupReadIds';
 import { LEVELS, langNameKo, levelRank, profileLevel, isWriteMaterial } from '../lib/constants';
-import { isOnDemandSuggestion } from '../lib/suggestionSources';
+import { canReadSuggestion, suggestionHref, suggestionSource } from '../lib/suggestionReading';
 import { isLibraryNote, materialLibraryFilters } from '../lib/libraryDiscovery';
 import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
@@ -34,21 +34,9 @@ async function fetchTodaySuggestions() {
 }
 
 function SuggestionCard({ suggestion: s, router }) {
-  // 영상 추천은 본문이 **없는 게 정상**이다 — 크론은 목록만 담고, 자막은 누르는 사람이
-  // 자기 비공개 자료로 가져온다(v2-F R4). `transcript` 하나로 판정하면 영상 카드가
-  // 전부 「자막 없음」으로 죽는다.
-  const onDemand = isOnDemandSuggestion(s);
-  const hasTranscript = !!s.transcript;
-  const isReady = !!s.material_id; // 이미 분석된 자료(글 소스 전용 — 영상은 개인별이라 안 붙는다)
-  const canStudy = isReady || onDemand || hasTranscript;
-
-  function handleStudy() {
-    if (isReady) {
-      router.push(`/viewer/${s.material_id}`);
-    } else {
-      router.push(`/materials/add?suggestion=${s.id}`);
-    }
-  }
+  const canStudy = canReadSuggestion(s);
+  const source = suggestionSource(s);
+  function handleStudy() { router.push(suggestionHref(s)); }
 
   return (
     <div className="suggestion-card">
@@ -60,27 +48,16 @@ function SuggestionCard({ suggestion: s, router }) {
           <span className="tag">{langNameKo(s.language)}</span>
           {s.level && <span className="tag">{s.level}</span>}
           <span className="suggestion-card__source">{s.channel_name}</span>
-          {isReady && <span className="suggestion-card__ready">✓ 바로 읽기</span>}
+          {canStudy && <span className="suggestion-card__ready">✓ 바로 읽기</span>}
         </div>
         <h3 className="suggestion-card__title">{s.title}</h3>
         <div className="suggestion-card__actions">
-          <button
-            className="btn btn--primary btn--sm"
-            disabled={!canStudy}
-            title={canStudy ? '' : '내용을 가져올 수 없습니다'}
-            onClick={handleStudy}
-          >
-            {isReady ? '바로 읽기' : onDemand ? '내 자료로 가져오기' : '공부하기'}
-          </button>
-          {!canStudy && (
-            <span className="suggestion-card__no-transcript">자막 없음</span>
-          )}
+          {canStudy ? <button className="btn btn--primary btn--sm" onClick={handleStudy}>바로 읽기</button>
+            : source.url ? <a className="btn btn--sm" href={source.url} target="_blank" rel="noopener noreferrer">{source.label} ↗</a>
+            : <span className="suggestion-card__no-transcript">현재 읽을 수 없는 자료예요</span>}
+
         </div>
-        {onDemand && (
-          /* 실제로 일어나는 일을 그대로 말한다 — 내 계정에 비공개 사본이 생긴다.
-             화면 문구와 저작권 모델이 어긋나면 둘 중 하나가 거짓말이 된다. */
-          <p className="suggestion-card__note">가져오면 비공개 내 자료가 돼요</p>
-        )}
+
       </div>
     </div>
   );

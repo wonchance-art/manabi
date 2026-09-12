@@ -96,8 +96,11 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
     expect(viewer).toContain("const { error: logError } = await supabase.from('token_corrections').insert");
     expect(viewer).toContain("if (logError) console.warn('[correction log] failed:'");
     expect(writing).toContain('if (r2.error) throw r2.error');
-    expect(materialAdd).toContain('const { error: suggestionLinkError } = await supabase');
-    expect(materialAdd).toContain('if (suggestionLinkError && aliveRef.current)');
+    // Recommendations no longer publish a personal import into a global pointer.
+    expect(materialAdd).not.toContain("from('daily_suggestions')");
+    const reader = read('src/components/materials/SuggestionReader.jsx');
+    expect(reader).toContain('await saveComposerOnce(supabase, save)');
+    expect(reader).toContain('setSaveError(');
   });
 
   it('V-13 재감사: 비동기 mutation도 반환 error를 버리지 않는다', () => {
