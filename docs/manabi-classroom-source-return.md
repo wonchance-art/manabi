@@ -24,7 +24,7 @@
 
 이번 오너 지시는 웹 UI·저장 검증·회귀 테스트 구현 범위를 승인했다. 월드 SPEC/exact snapshot/도시 생성 전용 제한은 이 작업에 적용하지 않는다. 범위와 관계없는 월드 파일·교재 내용·PDF·음성·시험은 수정하지 않는다. 기존 문자열 계약 1건은 새 복귀 주소 래퍼를 반영해 갱신하며, 실제 교사/학생 브라우저와 DB 검사를 함께 둔다.
 
-새 SQL 파일: `supabase/migrations/20260911051522_classroom_source_anchors.sql` (CLI로 생성). 운영 DB 적용은 별도 확인 대상이고 기존 함수 시그니처/INVOKER/인증 사용자 권한을 유지한다. merge/force-push는 하지 않는다.
+새 SQL 파일: `supabase/migrations/20260911072945_classroom_source_anchors.sql` (초기 CLI 버전 20260911051522 → 승인된 원격 적용 이력 20260911072945와 일치하도록 2026-09-12 개명). 운영 DB 적용은 별도 확인 대상이고 기존 함수 시그니처/INVOKER/인증 사용자 권한을 유지한다. merge/force-push는 하지 않는다.
 
 ## 실검수에서 확인한 포인터 보완
 
