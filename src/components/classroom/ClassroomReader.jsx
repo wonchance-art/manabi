@@ -20,20 +20,25 @@ import {resolveClassSource} from '../../lib/classSource';
 import {useClassSelectionVisibility} from '../../lib/useReaderLayout';
 import TeachingBoard from './TeachingBoard';
 
-export default function ClassroomReader({annotationContent,context,user,material,selection,selectionSignal,wordContent,sentenceContent,fallback,onActive,suppressed,onPresenting,toolbarTarget,boardTarget,onBoardLayout}) {
+export default function ClassroomReader({annotationContent,context,user,material,selection,selectionSignal,wordContent,sentenceContent,fallback,onActive,suppressed,onPresenting,toolbarTarget,boardTarget,boardHeaderTarget,onBoardRatio,vocabularyIndex,onBoardLayout}) {
   const root=useQuery({queryKey:['class-root',user?.id,context?.team],queryFn:()=>fetchTeamRoot(user.id,context.team),enabled:!!user?.id&&!!context});
   const team=getTeam(root.data?.processed_json?.metadata);
   const allowed=canTeachClass(user,root.data,material);
   useEffect(()=>{onActive(allowed);return()=>onActive(false);},[allowed,onActive]);
   if(!allowed)return fallback;
-  return <ClassReaderSession key={`${user.id}:${team.key}:${context.day}:${material.id}`} toolbarTarget={toolbarTarget} boardTarget={boardTarget} onBoardLayout={onBoardLayout} root={root.data} team={team} day={context.day} material={material} selection={selection} selectionSignal={selectionSignal} annotationContent={annotationContent} wordContent={wordContent} sentenceContent={sentenceContent} suppressed={suppressed} onPresenting={onPresenting}/>;
+  return <ClassReaderSession key={`${user.id}:${team.key}:${context.day}:${material.id}`} toolbarTarget={toolbarTarget} boardTarget={boardTarget} boardHeaderTarget={boardHeaderTarget} onBoardRatio={onBoardRatio} vocabularyIndex={vocabularyIndex} onBoardLayout={onBoardLayout} root={root.data} team={team} day={context.day} material={material} selection={selection} selectionSignal={selectionSignal} annotationContent={annotationContent} wordContent={wordContent} sentenceContent={sentenceContent} suppressed={suppressed} onPresenting={onPresenting}/>;
 }
 
-function ClassReaderSession({toolbarTarget,boardTarget,onBoardLayout,root,team,day,material,selection,selectionSignal,annotationContent,wordContent,sentenceContent,suppressed,onPresenting}) {
+function ClassReaderSession({toolbarTarget,boardTarget,boardHeaderTarget,onBoardRatio,vocabularyIndex,onBoardLayout,root,team,day,material,selection,selectionSignal,annotationContent,wordContent,sentenceContent,suppressed,onPresenting}) {
   const router=useRouter(),queryClient=useQueryClient();
   const [boardOpen,setBoardOpen]=useState(false);
   useEffect(()=>{if(boardTarget&&new URLSearchParams(window.location.search).get('board')==='1')setBoardOpen(true);},[boardTarget]);
-  const closeBoard=useCallback(()=>{setBoardOpen(false);},[]);
+  const setBoard=useCallback(open=>{
+    setBoardOpen(open);const url=new URL(window.location.href);
+    if(open)url.searchParams.set('board','1');else url.searchParams.delete('board');
+    window.history.replaceState(null,'',url.pathname+url.search+url.hash);
+  },[]);
+  const closeBoard=useCallback(()=>setBoard(false),[setBoard]);
   const positionAttempt=useRef(null);
   const [positionError,setPositionError]=useState(false),[positionBusy,setPositionBusy]=useState(false);
   const [legacy,setLegacy]=useState(null),legacySelected=useRef(null);
@@ -147,8 +152,9 @@ function ClassReaderSession({toolbarTarget,boardTarget,onBoardLayout,root,team,d
     try{if(day===todayKey()){const fresh=await fetchTeamRoot(root.owner_id,team.key);const next=patchTeamRoot(fresh.processed_json,{chapterId:value});const saved=await saveClassroomMetadata(supabase,fresh,next.metadata);queryClient.setQueryData(['class-root',root.owner_id,team.key],saved);}router.push(classWorkspaceHref(value,team.key,day)+(boardOpen?'&board=1':''));}
     catch(error){setMessage(classroomError(error));}
   }
-  const openView=next=>{setBoardOpen(false);setView(next);setCollapsed(false);if(next==='word'){setToolsOpen(true);requestAnimationFrame(()=>searchRef.current?.focus());}};
-  const toolbar=<nav className="class-workspace-nav" aria-label="수업 도구"><Link href={`/class/${team.key}`} className="class-workspace-team">{team.name}</Link><span className="class-workspace-date">{dayLabel(day)}</span>{chapters.length>0&&<select aria-label="수업 교재 과 선택" value={currentChapter?String(material.id):''} onChange={e=>changeChapter(e.target.value)}><option value="" disabled>교재 선택</option>{chapters.map(ch=><option key={ch.id} value={String(ch.id)}>{ch.order}. {chapterLabel(ch.title)}</option>)}</select>}<div className="class-workspace-actions">{boardTarget&&<button onClick={()=>setBoardOpen(true)}>설명판</button>}<button onClick={()=>openView('word')}>표현 찾기</button><button aria-pressed={view==='notes'&&!collapsed} onClick={()=>openView('notes')}>오늘 표현 <span>{entries.length}</span></button><button onClick={()=>openView('summary')}>마무리</button></div></nav>;
+  const openView=next=>{setBoard(false);setView(next);setCollapsed(false);if(next==='word'){setToolsOpen(true);requestAnimationFrame(()=>searchRef.current?.focus());}};
+  const toolbar=<nav className="class-workspace-nav" aria-label="수업 도구"><Link href={`/class/${team.key}`} className="class-workspace-team">{team.name}</Link><span className="class-workspace-date">{dayLabel(day)}</span>{chapters.length>0&&<select aria-label="수업 교재 과 선택" value={currentChapter?String(material.id):''} onChange={e=>changeChapter(e.target.value)}><option value="" disabled>교재 선택</option>{chapters.map(ch=><option key={ch.id} value={String(ch.id)}>{ch.order}. {chapterLabel(ch.title)}</option>)}</select>}<div className="class-workspace-actions">{boardTarget&&<button onClick={()=>setBoard(true)}>설명판</button>}<button onClick={()=>openView('word')}>표현 찾기</button><button aria-pressed={view==='notes'&&!collapsed} onClick={()=>openView('notes')}>오늘 표현 <span>{entries.length}</span></button><button onClick={()=>openView('summary')}>마무리</button></div></nav>;
+  const boardNavigation=<div className="board-class-navigation"><Link href={`/class/${team.key}`} title="팀 홈">{team.name}</Link><span>{dayLabel(day)}</span>{chapters.length>0&&<select aria-label="수업 교재 과 선택" value={currentChapter?String(material.id):''} onChange={e=>changeChapter(e.target.value)}><option value="" disabled>교재 선택</option>{chapters.map(ch=><option key={ch.id} value={String(ch.id)}>{ch.order}. {chapterLabel(ch.title)}</option>)}</select>}</div>;
   const noteList=<section className="class-reader-notes" aria-label="오늘 수업 노트"><div className="class-reader-section-heading"><h2>오늘 배운 표현</h2><small>{dayLabel(day)} · {entries.length}개</small></div>{!entries.length&&!session.isLoading&&<p className="class-reader-hint">학생에게 남길 표현을 추가하면 이곳에 모입니다.</p>}<ol>{entries.slice().reverse().map(e=><li key={e.id}><button className="class-reader-entry-title" onClick={event=>{presentationOriginRef.current=event.currentTarget;setPresentation({text:e.text,reading:e.reading,meaning:e.primary,recorded:true});}}><b>{e.text}</b>{e.reading&&<small>{e.reading}</small>}</button>{entryEdit?.entry.id===e.id?<form onSubmit={saveEntry}><label>수업용 뜻<input autoFocus value={entryEdit.meaning} maxLength={500} onChange={event=>setEntryEdit(v=>({...v,meaning:event.target.value}))}/></label><button disabled={entryBusy}>{entryBusy?'저장 중…':'뜻 저장'}</button><button type="button" disabled={entryBusy} onClick={()=>setEntryEdit(null)}>취소</button></form>:<div className="class-reader-entry-meaning"><p>{e.primary||'뜻을 적어 주세요'}</p><button aria-label={`${e.text} 뜻 수정`} onClick={()=>setEntryEdit({entry:e,meaning:e.primary,base:session.note})}>수정</button></div>}</li>)}</ol>{session.analysis.running&&<p role="status">뜻 준비 중…</p>}{session.analysis.error&&<p role="status">뜻을 준비하지 못했어요. <button onClick={session.reanalyze}>다시 찾기</button></p>}</section>;
   const meaningControl=<div className="class-reader-inline-meaning">{meaningEditing?<div><label>수업용 뜻<input autoFocus value={meaning} maxLength={500} onChange={e=>edit('meaning',e.target.value)}/></label><button onClick={()=>setMeaningEditing(false)}>확인</button><small>오늘 표현에 추가하면 학생에게 전달됩니다.</small></div>:<><strong>{meaning||'뜻을 적어 주세요'}</strong><button aria-label="수업용 뜻 수정" onClick={()=>setMeaningEditing(true)}>수정</button></>}</div>;
   const classDetails=current?<div className="class-reader-add">
@@ -161,7 +167,7 @@ function ClassReaderSession({toolbarTarget,boardTarget,onBoardLayout,root,team,d
       {savedDraft&&<button onClick={()=>clearDraft(savedDraft)}>초안 비우기</button>}
     </details>
   </div>:<p className="class-reader-hint">교재의 단어를 누르거나 표현을 드래그하세요. 이 자리에서 뜻을 보고 수업에 추가합니다.</p>;
-  return <>{toolbarTarget?.current&&createPortal(toolbar,toolbarTarget.current)}<aside ref={dockRef} className={`class-reader-dock${collapsed?' is-collapsed':''}${expanded?' is-expanded':''}`} hidden={suppressed} aria-label="교재 안 수업 도구" onMouseUp={e=>e.stopPropagation()}>
+  return <>{toolbarTarget?.current&&createPortal(boardOpen?null:toolbar,toolbarTarget.current)}<aside ref={dockRef} className={`class-reader-dock${collapsed?' is-collapsed':''}${expanded?' is-expanded':''}`} hidden={suppressed} aria-label="교재 안 수업 도구" onMouseUp={e=>e.stopPropagation()}>
     <header className="class-reader-dock__header"><div><strong>{view==='word'?'뜻과 설명':view==='notes'?'오늘 표현':'수업 마무리'}</strong><small>{dayLabel(day)}</small><strong className="class-reader-keyboard-context">{current?.text||input||'표현 입력'}</strong></div>{view!=='word'&&<button onClick={()=>setView('word')}>뜻 보기</button>}<button className="class-reader-tools-toggle" aria-label="표현 찾기 열기" aria-expanded={toolsOpen||!current} onClick={()=>{setView('word');setCollapsed(false);setToolsOpen(v=>!v);}}>찾기</button><button aria-label={collapsed?'수업 도구 펼치기':'수업 도구 접기'} onClick={()=>setCollapsed(v=>!v)}>{collapsed?'펼치기':'접기'}</button><button className="class-reader-expand" aria-label={expanded?'패널 줄이기':'패널 펼치기'} onClick={()=>setExpanded(v=>!v)}>{expanded?'↙':'↗'}</button></header>
     <section className="class-reader-workspace" aria-label="선택한 표현을 수업에 추가" hidden={collapsed}>
     <div ref={bodyRef} className="class-reader-dock__body">
@@ -191,7 +197,7 @@ function ClassReaderSession({toolbarTarget,boardTarget,onBoardLayout,root,team,d
       {session.queue.length>0&&<details className="class-reader-queue" open={session.queue.some(row=>row.status==='error')}><summary>{saveLabel}</summary>{session.queue.map(row=><div key={row.id} className="class-reader-pending"><b>{row.text}</b><small>{row.status==='error'?row.error:'서버 저장 대기'}</small>{row.status==='error'&&<button onClick={()=>session.retry(row.id).catch(e=>setMessage(classroomError(e)))}>저장 재시도</button>}</div>)}</details>}
     </footer>
     </section>
-  </aside>{boardOpen&&boardTarget&&<TeachingBoard target={boardTarget} onLayout={onBoardLayout} onClose={closeBoard}
+  </aside>{boardOpen&&boardTarget&&<TeachingBoard target={boardTarget} headerTarget={boardHeaderTarget} onRatio={onBoardRatio} navigation={boardNavigation} onSession={()=>openView('summary')} material={material} vocabularyIndex={vocabularyIndex} onLayout={onBoardLayout} onClose={closeBoard}
     owner={root.owner_id} team={team} day={day} current={current?{...current,meaning,reading}:null}
     getRecordState={picked=>findStudyEntry(session.note,picked)?'오늘 표현에 추가됨':session.queue.some(row=>studySelectionKey({text:row.text,source:row.seed?.source})===studySelectionKey(picked))?'저장 대기 중':null}
     onRecord={async picked=>{

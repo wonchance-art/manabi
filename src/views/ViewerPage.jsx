@@ -237,7 +237,8 @@ export default function ViewerPage() {
   const classToolbarTarget=useRef(null);
   const [classStudyActive,setClassStudyActive]=useState(false);
   const [classBoardLayout,setClassBoardLayout]=useState('');
-  const classBoardTarget=useRef(null);
+  const classBoardTarget=useRef(null),classBoardHeaderTarget=useRef(null);
+  const [classBoardRatio,setClassBoardRatio]=useState(60);
   const [classPresenting,setClassPresenting]=useState(false);
   const { user, profile, fetchProfile } = useAuth();
   const toast = useToast();
@@ -2479,8 +2480,9 @@ export default function ViewerPage() {
   return (
     // --dragging: 지정 드래그 중 바텀시트 포인터 투과 — 시트가 드래그 도중 자라
     // 경로를 덮어도 elementFromPoint가 밑의 토큰을 잡는다(useTokenRangeSelect 참조)
+    <div className="viewer-workspace-boundary" data-active={!!(classStudyActive&&classBoardLayout)}>
     <div className={`viewer-3col viewer-layout viewer-theme-${theme}${tokenRange.dragging ? ' viewer-3col--dragging' : ''}`}
-      style={{...textbookThemeStyle(materialLang),'--reader-font':readerFontFamily(materialLang,fontFamily),'--pinyin-size':`${pinyinSize}rem`,'--pinyin-cell':`${pinyinCell}px`}}
+      style={{...textbookThemeStyle(materialLang),'--board-ratio':`${classBoardRatio}%`,'--reader-font':readerFontFamily(materialLang,fontFamily),'--pinyin-size':`${pinyinSize}rem`,'--pinyin-cell':`${pinyinCell}px`}}
       data-reader-theme={theme} data-language={materialLang} data-class-study={classStudyActive} data-teaching-board={classStudyActive?classBoardLayout:''} data-inspector-open={inspectorOpen&&!modalBlocked}
       data-pron-spacing={materialLang==='Chinese'&&(pronDisplay!=='none'||pronReveal)?'reserved':'natural'}
       data-left-active={!!(leftPanelLoading || leftPanelResult)}
@@ -2488,6 +2490,7 @@ export default function ViewerPage() {
 
       {/* 중앙 — 뷰어 본문 */}
       {materialLang==='Chinese'&&fontFamily==='serif'&&<ChineseSerif rootRef={readerRef} onStatus={setFontStatus}/>}
+      <div ref={classBoardHeaderTarget} className="teaching-board-topbar-host" hidden={!classStudyActive||!classBoardLayout}/>
       <div ref={classBoardTarget} className="teaching-board-host" hidden={!classStudyActive||!classBoardLayout}/>
       <div className="viewer-center" inert={dictationPickerOpen||!!dictationSentence?true:undefined} aria-hidden={dictationPickerOpen||!!dictationSentence?true:undefined} data-answer-hidden={dictationPickerOpen||!!dictationSentence}>
       {!user && (
@@ -2712,7 +2715,7 @@ export default function ViewerPage() {
         ref={readerRef}
         className={`card reader-area reader-area--${theme}${focusMode && (pickedLineIdx !== null || tokenRange.range) ? ' reader-area--focus' : ''}${wordStateHl ? ' reader-area--hl' : ''}${paceDwell ? ' reader-area--pacing' : ''}${paceDwell && paceHeld ? ' reader-area--pacing-hold' : ''}`}
         style={{
-          fontSize: `${fontSize}rem`,
+          fontSize: `${fontSize*(classStudyActive&&classBoardLayout==='split'?.8:1)}rem`,
           fontFamily: readerFontFamily(materialLang,fontFamily),
           gap: `${lineGap}px ${charGap}rem`, '--char-gap': `${charGap}rem`,
           // 체류 표시는 CSS 애니메이션이 시간을 잰다 — JS 프레임 루프 0(설계 §7①).
@@ -3155,7 +3158,7 @@ export default function ViewerPage() {
         first={tokenRange.range?json.sequence[tokenRange.range.start]:isSheetOpen?selectedToken?.id:pickedSentence?.firstTokenId}
         last={tokenRange.range?json.sequence[tokenRange.range.end]:undefined}
         blocked={modalBlocked} onClose={closeWordCard} onPresenting={setClassPresenting}>
-      {(annotationContent,annotationOpen,closeWordCard)=><ClassroomReader toolbarTarget={classToolbarTarget} boardTarget={classBoardTarget} onBoardLayout={setClassBoardLayout} annotationContent={annotationContent} context={studyContext} user={user} material={material}
+      {(annotationContent,annotationOpen,closeWordCard)=><ClassroomReader toolbarTarget={classToolbarTarget} boardTarget={classBoardTarget} boardHeaderTarget={classBoardHeaderTarget} onBoardRatio={setClassBoardRatio} vocabularyIndex={savedWords} onBoardLayout={setClassBoardLayout} annotationContent={annotationContent} context={studyContext} user={user} material={material}
         selection={classSelection} selectionSignal={rightSheetSignal}
         wordContent={(dragTokens!==null||(selectedToken&&isSheetOpen))?renderRightPanelContent:null}
         sentenceContent={(leftPanelLoading||leftPanelResult)?leftPanelContent:null}
@@ -3279,6 +3282,6 @@ export default function ViewerPage() {
           text-shadow: 0 0 8px var(--primary-glow);
         }
       `}</style>
-    </div>
+    </div></div>
   );
 }
