@@ -12,7 +12,7 @@ GRANT SELECT,INSERT,UPDATE ON reading_materials TO authenticated;GRANT USAGE,SEL
 INSERT INTO auth.users VALUES('${teacher}'),('${student}');`);
 await db.exec(fs.readFileSync('supabase/migrations/20260909165823_classroom_atomic_entries.sql','utf8'));
 await db.exec(fs.readFileSync('supabase/migrations/20260910024120_classroom_study_flow.sql','utf8'));
-await db.exec(fs.readFileSync('supabase/migrations/20260911051522_classroom_source_anchors.sql','utf8'));
+await db.exec(fs.readFileSync('supabase/migrations/20260911072945_classroom_source_anchors.sql','utf8'));
 
 const check=(value)=>{assert.ok(value);count++;};
 const root={metadata:{language:'Chinese',team:{root:true,key:'qa-source',name:'검수',lang:'Chinese',pwGen:1,bookKey:'qa-book'}}};
