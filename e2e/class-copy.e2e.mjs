@@ -46,7 +46,7 @@ await context.route('**/rest/v1/**',async r=>{
  const req=r.request(),url=new URL(req.url()),table=url.pathname.split('/').pop(),method=req.method(),object=req.headers().accept?.includes('vnd.pgrst.object');
  const send=(data,status=200)=>r.fulfill({headers:cors,status,json:data});
  if(method==='OPTIONS')return r.fulfill({status:204,headers:cors});if(method==='HEAD')return r.fulfill({headers:{...cors,'content-range':'*/0'},body:''});
- if(table==='profiles')return send({id:student,display_name:'수업 검수',role:'admin',onboarded:true,last_login_at:new Date().toISOString(),learning_language:['Japanese']});
+ if(table==='profiles')return send({id:student,display_name:'수업 검수',role:'student',onboarded:true,last_login_at:new Date().toISOString(),learning_language:['Chinese']});
  if(['POST','PATCH','DELETE'].includes(method)){
   const body=req.postDataJSON();writes.push({table,body});
   try{
@@ -113,6 +113,9 @@ else {await context.addCookies([{name:'sb-e2e-auth-token',value:'base64-'+enc(se
 
 try {
 await page.goto(base+'/class/fixture-class');await page.locator('button.classroom-featured-note').waitFor();
+await page.getByRole('button',{name:'내 계정',exact:true}).filter({hasText:'수'}).waitFor();
+assert.equal(await page.getByRole('banner').getByRole('link',{name:'관리',exact:true}).count(),0);
+assert.equal(await page.getByRole('banner').getByRole('link',{name:'수업',exact:true}).count(),0);check('student profile has no owner-only navigation');
 await page.locator('button.classroom-featured-note').click();await page.waitForURL(/\/viewer\/\d+/);await page.locator('[data-tid="id_0_word"]').waitFor();
 const copyId=/viewer\/(\d+)/.exec(page.url())[1];assert.notEqual(copyId,'10');assert.equal(await page.getByRole('complementary',{name:'교재 안 수업 도구'}).count(),0);check('student opens one private canonical copy with no teacher controls');
 await page.getByRole('link',{name:'← 수업으로',exact:true}).click();await page.locator('button.classroom-featured-note').click();await page.waitForURL(new RegExp('/viewer/'+copyId));
