@@ -94,11 +94,6 @@ button.classroom-featured-note {width:100%;border:0;text-align:left;font:inherit
 .class-study-history :focus-visible {outline:2px solid var(--accent);outline-offset:3px;}
 .class-study-history li>.class-study-history__source {flex:0 1 auto;min-width:0;}
 
-.classroom-app-home {display:none;}
-.manabi-app:has(.classroom-team-home,.classroom-launcher,[data-class-study="true"]) > .gnb > :is(.gnb__nav,.gnb__link,.reader-site-menu,.manabi-search-link) {display:none;}
-.manabi-app:has(.classroom-team-home,.classroom-launcher,[data-class-study="true"]) > .gnb > .classroom-app-home {display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 14px;color:var(--text-primary);text-decoration:none;margin-left:auto;}
-.manabi-app:has(.classroom-team-home,.classroom-launcher,[data-class-study="true"]) > .mobile-nav {display:none;}
-.manabi-app:has(.classroom-team-home,.classroom-launcher,[data-class-study="true"]) > .app-layout {padding-bottom:0;}
 .classroom-team-home .classroom-page {max-width:1040px;padding-top:28px;}
 .class-team-heading {display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:28px;}
 .class-team-heading h1 {font-size:clamp(28px,4cqi,42px);line-height:1.2;letter-spacing:-.045em;margin:10px 0;overflow-wrap:anywhere;}

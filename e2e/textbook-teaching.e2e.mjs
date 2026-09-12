@@ -114,6 +114,8 @@ else {
 const url=base+`/viewer/10?class=fixture-class&day=${day}&returnTo=${encodeURIComponent('/class/fixture-class/live?day='+day)}`;
 await page.waitForTimeout(2600);await page.goto(url);
 const dock=page.getByRole('complementary',{name:'교재 안 수업 도구'});await dock.waitFor();
+assert(await page.getByRole('link',{name:'웹앱 홈'}).isVisible(),'a direct classroom viewer has a visible app home without visiting the team page first');
+assert.equal(await page.locator('.reader-site-menu').isVisible(),false);
 const nextUrl=base+`/viewer/11?class=fixture-class&day=${day}&returnTo=${encodeURIComponent('/class/fixture-class/live?day='+day)}`;
 assert.equal(await page.locator('.next-lesson-card').getAttribute('href'),new URL(nextUrl).pathname+new URL(nextUrl).search);
 await page.getByRole('link',{name:'다음 과',exact:true})[activate]();await page.waitForURL(nextUrl);await dock.waitFor();

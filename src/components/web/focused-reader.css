@@ -42,3 +42,9 @@
 .manabi-app--reading .rsheet-miniseg button { min-height: 44px; }
 
 .classroom-app-home {display:none;}
+
+/* Shared links can open a classroom viewer before its team route CSS loads. */
+.manabi-app:has(.classroom-team-home,.classroom-launcher,[data-class-study="true"]) > .gnb > :is(.gnb__nav,.gnb__link,.reader-site-menu,.manabi-search-link) {display:none;}
+.manabi-app:has(.classroom-team-home,.classroom-launcher,[data-class-study="true"]) > .gnb > .classroom-app-home {display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 14px;color:var(--text-primary);text-decoration:none;margin-left:auto;}
+.manabi-app:has(.classroom-team-home,.classroom-launcher,[data-class-study="true"]) > .mobile-nav {display:none;}
+.manabi-app:has(.classroom-team-home,.classroom-launcher,[data-class-study="true"]) > .app-layout {padding-bottom:0;}
