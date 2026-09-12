@@ -219,11 +219,10 @@ describe('F R5 — 표기는 저장이 아니라 **표시**다', () => {
   });
 
   it('추천에서 온 공유 자료가 라이선스를 metadata.source에 싣는다', () => {
-    const page = read('src/views/MaterialAddPage.jsx');
-    const effect = sliceBetween(page, "const suggestionId = searchParams.get('suggestion')", '}, []);');
-    expect(effect).toContain('isShareableSource');
-    expect(effect).toContain('licenseForSource');
-    expect(effect).toContain('setLinkSource');
+    const save = read('src/lib/suggestionReading.js');
+    expect(save).toContain('meta.source =');
+    expect(save).toContain('license: licenseForSource(suggestion.source)');
+    expect(read('src/components/materials/SuggestionReader.jsx')).toContain('{license && <span>{license}</span>}');
   });
 
   it('라이선스를 모르면 라이선스 이름을 안 쓴다 — 없는 권리를 주장하지 않는다', () => {

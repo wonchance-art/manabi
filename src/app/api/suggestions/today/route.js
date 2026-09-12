@@ -1,6 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { kstDateString } from '@/lib/growthStats';
 import { ONDEMAND_SOURCE } from '@/lib/suggestionSources';
+import { SUGGESTION_FIELDS, canReadSuggestion, suggestionSource } from '@/lib/suggestionReading';
+import { publicSuggestionTargets } from '@/lib/server/suggestionReading';
 
 export async function GET() {
   const supabase = createClient(
@@ -13,11 +15,11 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from('daily_suggestions')
-    .select('id, language, source, video_id, title, channel_name, thumbnail_url, level, transcript, material_id')
+    .select(SUGGESTION_FIELDS)
     .eq('date', today)
     // 본문이 있는 글 소스 **또는** 클릭 시점 반입 영상(transcript는 NULL이 정상).
     // 이 줄이 `.not(transcript, is, null)` 하나였을 때 영상 카드가 통째로 안 보였다.
-    .or(`transcript.not.is.null,source.eq.${ONDEMAND_SOURCE}`)
+    .or(`transcript.not.is.null,material_id.not.is.null,source.eq.${ONDEMAND_SOURCE}`)
     .order('language')
     .order('created_at');
 
@@ -27,7 +29,8 @@ export async function GET() {
     return Response.json([], { headers: { 'Cache-Control': 'no-store' } });
   }
 
-  return Response.json(data || [], {
-    headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=300' },
+  const readings = await publicSuggestionTargets(supabase, data || []);
+  return Response.json(readings.filter(s => canReadSuggestion(s) || suggestionSource(s).kind === 'video'), {
+    headers: { 'Cache-Control': 'no-store' },
   });
 }

@@ -159,17 +159,12 @@ describe('F R4 — 배선', () => {
 describe('F R4 — 화면이 저작권 모델과 어긋나지 않는다', () => {
   const materials = () => read('src/views/MaterialsPage.jsx');
 
-  it('영상 카드가 transcript 하나로 죽지 않는다', () => {
-    // `disabled={!hasTranscript}`가 남아 있으면 영상 카드가 전부 「자막 없음」이 된다.
+  it('영상은 원본 시청, 본문이 있는 추천은 바로 읽기로 분리한다', () => {
     const card = sliceBetween(materials(), 'function SuggestionCard', 'function filterSuggestionsByProfile');
-    expect(card).toContain('isOnDemandSuggestion');
-    expect(card).toContain('disabled={!canStudy}');
-  });
-
-  it('버튼이 실제로 일어나는 일을 말한다 — 「공부하기」가 아니라 「내 자료로 가져오기」', () => {
-    const card = sliceBetween(materials(), 'function SuggestionCard', 'function filterSuggestionsByProfile');
-    expect(card).toContain('내 자료로 가져오기');
-    expect(card, '고지가 없으면 화면과 저작권 모델이 어긋난다').toContain('가져오면 비공개 내 자료가 돼요');
+    expect(card).toContain('canReadSuggestion(s)');
+    expect(card).toContain('href={source.url}');
+    expect(card).toContain('바로 읽기');
+    expect(card).not.toContain('/materials/add?suggestion');
   });
 
   it('언어명 하드코딩이 되살아나지 않는다 — 프랑스어 카드가 「일본어」로 떴던 자리', () => {
@@ -183,11 +178,8 @@ describe('F R4 — 화면이 저작권 모델과 어긋나지 않는다', () => 
     // 글 소스는 크론이 담은 공용 본문이라 public이 맞다. 영상은 **남의 자막**이라
     // 그 경로로 새면 안 된다 — handleLinkReady가 private으로 고정한다.
     const page = read('src/views/MaterialAddPage.jsx');
-    const effect = sliceBetween(page, "const suggestionId = searchParams.get('suggestion')", '}, []);');
-    expect(effect).toContain('isOnDemandSuggestion');
-    // on-demand 분기는 setVisibility 없이 return 한다(그 뒤에만 public이 온다).
-    const ondemand = sliceBetween(effect, 'if (isOnDemandSuggestion(s))', 'setRawText');
-    expect(ondemand).not.toContain('public');
+    expect(page).not.toContain("searchParams.get('suggestion')");
+    expect(read('src/lib/server/suggestionReading.js')).toContain('transcript: isOnDemandSuggestion(s) ? null');
     expect(sliceBetween(page, 'const handleLinkReady', 'const handleEpubReady')).toContain("setVisibility('private')");
   });
 

@@ -7,12 +7,12 @@ export const MAIN_NAV = Object.freeze([
 ]);
 // Only the text reader uses this shell; PDF and book readers keep their own controls.
 export function isFocusedReadingRoute(pathname) {
-  return /^\/viewer\/[^/]+\/?$/.test(pathname || '');
+  return /^\/(?:viewer|suggestions)\/[^/]+\/?$/.test(pathname || '');
 }
 export function navigationOwner(pathname) {
   if (/^\/study\/library(?:\/|$)/.test(pathname)) return '/materials';
   if (/^\/(?:lessons|books)(?:\/|$)/.test(pathname)) return '/lessons';
-  if (/^\/(?:discover|studies|world)(?:\/|$)/.test(pathname)) return '/discover';
+  if (/^\/(?:discover|studies|world|suggestions)(?:\/|$)/.test(pathname)) return '/discover';
   if (/^\/(?:vocab|review|study|learn)(?:\/|$)/.test(pathname)) return '/vocab';
   if (/^\/(?:materials|viewer|library|pdf|epub|groups)(?:\/|$)/.test(pathname)) return '/materials';
   return pathname === '/home' ? '/home' : null;
