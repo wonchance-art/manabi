@@ -18,18 +18,22 @@ import {useClassReaderDrafts} from '../../lib/useClassReaderDrafts';
 import {readerDraftScope,readerDraftContext,classroomSaveLabel,isClassComposing} from '../../lib/classReaderDraft';
 import {resolveClassSource} from '../../lib/classSource';
 import {useClassSelectionVisibility} from '../../lib/useReaderLayout';
+import TeachingBoard from './TeachingBoard';
 
-export default function ClassroomReader({annotationContent,context,user,material,selection,selectionSignal,wordContent,sentenceContent,fallback,onActive,suppressed,onPresenting,toolbarTarget}) {
+export default function ClassroomReader({annotationContent,context,user,material,selection,selectionSignal,wordContent,sentenceContent,fallback,onActive,suppressed,onPresenting,toolbarTarget,boardTarget,onBoardLayout}) {
   const root=useQuery({queryKey:['class-root',user?.id,context?.team],queryFn:()=>fetchTeamRoot(user.id,context.team),enabled:!!user?.id&&!!context});
   const team=getTeam(root.data?.processed_json?.metadata);
   const allowed=canTeachClass(user,root.data,material);
   useEffect(()=>{onActive(allowed);return()=>onActive(false);},[allowed,onActive]);
   if(!allowed)return fallback;
-  return <ClassReaderSession key={`${user.id}:${team.key}:${context.day}:${material.id}`} toolbarTarget={toolbarTarget} root={root.data} team={team} day={context.day} material={material} selection={selection} selectionSignal={selectionSignal} annotationContent={annotationContent} wordContent={wordContent} sentenceContent={sentenceContent} suppressed={suppressed} onPresenting={onPresenting}/>;
+  return <ClassReaderSession key={`${user.id}:${team.key}:${context.day}:${material.id}`} toolbarTarget={toolbarTarget} boardTarget={boardTarget} onBoardLayout={onBoardLayout} root={root.data} team={team} day={context.day} material={material} selection={selection} selectionSignal={selectionSignal} annotationContent={annotationContent} wordContent={wordContent} sentenceContent={sentenceContent} suppressed={suppressed} onPresenting={onPresenting}/>;
 }
 
-function ClassReaderSession({toolbarTarget,root,team,day,material,selection,selectionSignal,annotationContent,wordContent,sentenceContent,suppressed,onPresenting}) {
+function ClassReaderSession({toolbarTarget,boardTarget,onBoardLayout,root,team,day,material,selection,selectionSignal,annotationContent,wordContent,sentenceContent,suppressed,onPresenting}) {
   const router=useRouter(),queryClient=useQueryClient();
+  const [boardOpen,setBoardOpen]=useState(false);
+  useEffect(()=>{if(boardTarget&&new URLSearchParams(window.location.search).get('board')==='1')setBoardOpen(true);},[boardTarget]);
+  const closeBoard=useCallback(()=>{setBoardOpen(false);},[]);
   const positionAttempt=useRef(null);
   const [positionError,setPositionError]=useState(false),[positionBusy,setPositionBusy]=useState(false);
   const [legacy,setLegacy]=useState(null),legacySelected=useRef(null);
@@ -140,11 +144,11 @@ function ClassReaderSession({toolbarTarget,root,team,day,material,selection,sele
   }
   async function changeChapter(value) {
     if(!chapters.some(ch=>String(ch.id)===value))return;
-    try{if(day===todayKey()){const fresh=await fetchTeamRoot(root.owner_id,team.key);const next=patchTeamRoot(fresh.processed_json,{chapterId:value});const saved=await saveClassroomMetadata(supabase,fresh,next.metadata);queryClient.setQueryData(['class-root',root.owner_id,team.key],saved);}router.push(classWorkspaceHref(value,team.key,day));}
+    try{if(day===todayKey()){const fresh=await fetchTeamRoot(root.owner_id,team.key);const next=patchTeamRoot(fresh.processed_json,{chapterId:value});const saved=await saveClassroomMetadata(supabase,fresh,next.metadata);queryClient.setQueryData(['class-root',root.owner_id,team.key],saved);}router.push(classWorkspaceHref(value,team.key,day)+(boardOpen?'&board=1':''));}
     catch(error){setMessage(classroomError(error));}
   }
-  const openView=next=>{setView(next);setCollapsed(false);if(next==='word'){setToolsOpen(true);requestAnimationFrame(()=>searchRef.current?.focus());}};
-  const toolbar=<nav className="class-workspace-nav" aria-label="수업 도구"><Link href={`/class/${team.key}`} className="class-workspace-team">{team.name}</Link><span className="class-workspace-date">{dayLabel(day)}</span>{chapters.length>0&&<select aria-label="수업 교재 과 선택" value={currentChapter?String(material.id):''} onChange={e=>changeChapter(e.target.value)}><option value="" disabled>교재 선택</option>{chapters.map(ch=><option key={ch.id} value={String(ch.id)}>{ch.order}. {chapterLabel(ch.title)}</option>)}</select>}<div className="class-workspace-actions"><button onClick={()=>openView('word')}>표현 찾기</button><button aria-pressed={view==='notes'&&!collapsed} onClick={()=>openView('notes')}>오늘 표현 <span>{entries.length}</span></button><button onClick={()=>openView('summary')}>마무리</button></div></nav>;
+  const openView=next=>{setBoardOpen(false);setView(next);setCollapsed(false);if(next==='word'){setToolsOpen(true);requestAnimationFrame(()=>searchRef.current?.focus());}};
+  const toolbar=<nav className="class-workspace-nav" aria-label="수업 도구"><Link href={`/class/${team.key}`} className="class-workspace-team">{team.name}</Link><span className="class-workspace-date">{dayLabel(day)}</span>{chapters.length>0&&<select aria-label="수업 교재 과 선택" value={currentChapter?String(material.id):''} onChange={e=>changeChapter(e.target.value)}><option value="" disabled>교재 선택</option>{chapters.map(ch=><option key={ch.id} value={String(ch.id)}>{ch.order}. {chapterLabel(ch.title)}</option>)}</select>}<div className="class-workspace-actions">{boardTarget&&<button onClick={()=>setBoardOpen(true)}>설명판</button>}<button onClick={()=>openView('word')}>표현 찾기</button><button aria-pressed={view==='notes'&&!collapsed} onClick={()=>openView('notes')}>오늘 표현 <span>{entries.length}</span></button><button onClick={()=>openView('summary')}>마무리</button></div></nav>;
   const noteList=<section className="class-reader-notes" aria-label="오늘 수업 노트"><div className="class-reader-section-heading"><h2>오늘 배운 표현</h2><small>{dayLabel(day)} · {entries.length}개</small></div>{!entries.length&&!session.isLoading&&<p className="class-reader-hint">학생에게 남길 표현을 추가하면 이곳에 모입니다.</p>}<ol>{entries.slice().reverse().map(e=><li key={e.id}><button className="class-reader-entry-title" onClick={event=>{presentationOriginRef.current=event.currentTarget;setPresentation({text:e.text,reading:e.reading,meaning:e.primary,recorded:true});}}><b>{e.text}</b>{e.reading&&<small>{e.reading}</small>}</button>{entryEdit?.entry.id===e.id?<form onSubmit={saveEntry}><label>수업용 뜻<input autoFocus value={entryEdit.meaning} maxLength={500} onChange={event=>setEntryEdit(v=>({...v,meaning:event.target.value}))}/></label><button disabled={entryBusy}>{entryBusy?'저장 중…':'뜻 저장'}</button><button type="button" disabled={entryBusy} onClick={()=>setEntryEdit(null)}>취소</button></form>:<div className="class-reader-entry-meaning"><p>{e.primary||'뜻을 적어 주세요'}</p><button aria-label={`${e.text} 뜻 수정`} onClick={()=>setEntryEdit({entry:e,meaning:e.primary,base:session.note})}>수정</button></div>}</li>)}</ol>{session.analysis.running&&<p role="status">뜻 준비 중…</p>}{session.analysis.error&&<p role="status">뜻을 준비하지 못했어요. <button onClick={session.reanalyze}>다시 찾기</button></p>}</section>;
   const meaningControl=<div className="class-reader-inline-meaning">{meaningEditing?<div><label>수업용 뜻<input autoFocus value={meaning} maxLength={500} onChange={e=>edit('meaning',e.target.value)}/></label><button onClick={()=>setMeaningEditing(false)}>확인</button><small>오늘 표현에 추가하면 학생에게 전달됩니다.</small></div>:<><strong>{meaning||'뜻을 적어 주세요'}</strong><button aria-label="수업용 뜻 수정" onClick={()=>setMeaningEditing(true)}>수정</button></>}</div>;
   const classDetails=current?<div className="class-reader-add">
@@ -187,7 +191,14 @@ function ClassReaderSession({toolbarTarget,root,team,day,material,selection,sele
       {session.queue.length>0&&<details className="class-reader-queue" open={session.queue.some(row=>row.status==='error')}><summary>{saveLabel}</summary>{session.queue.map(row=><div key={row.id} className="class-reader-pending"><b>{row.text}</b><small>{row.status==='error'?row.error:'서버 저장 대기'}</small>{row.status==='error'&&<button onClick={()=>session.retry(row.id).catch(e=>setMessage(classroomError(e)))}>저장 재시도</button>}</div>)}</details>}
     </footer>
     </section>
-  </aside>{presentation&&<TeachingPresentation entry={presentation} lang={team.lang} onClose={closePresentation} onRecord={presentation.recorded?undefined:()=>add(false,presentation)} originRef={presentationOriginRef} fallbackRef={showButtonRef} recordState={findStudyEntry(session.note,presentation.selection)?'수업에 기록됨 ✓':presentationQueued?presentationQueued.status==='error'?'저장 확인 필요':'서버 저장 대기':busy?'보관 중…':null}/>}</>;
+  </aside>{boardOpen&&boardTarget&&<TeachingBoard target={boardTarget} onLayout={onBoardLayout} onClose={closeBoard}
+    owner={root.owner_id} team={team} day={day} current={current?{...current,meaning,reading}:null}
+    getRecordState={picked=>findStudyEntry(session.note,picked)?'오늘 표현에 추가됨':session.queue.some(row=>studySelectionKey({text:row.text,source:row.seed?.source})===studySelectionKey(picked))?'저장 대기 중':null}
+    onRecord={async picked=>{
+      if(picked.source?.kind!=='manual'&&(String(picked.source?.materialId)!==String(material.id)||!resolveClassSource(material.processed_json,picked.source)))throw new Error('원래 교재 위치에서 수업 기록에 추가해 주세요.');
+      if(findStudyEntry(session.note,picked))throw new Error('이미 오늘 표현에 추가된 항목이에요.');
+      await session.add(picked.text,buildStudySeed(picked,picked.meaning,picked.reading));
+    }}/>} {presentation&&<TeachingPresentation entry={presentation} lang={team.lang} onClose={closePresentation} onRecord={presentation.recorded?undefined:()=>add(false,presentation)} originRef={presentationOriginRef} fallbackRef={showButtonRef} recordState={findStudyEntry(session.note,presentation.selection)?'수업에 기록됨 ✓':presentationQueued?presentationQueued.status==='error'?'저장 확인 필요':'서버 저장 대기':busy?'보관 중…':null}/>}</>;
 }
 
 const selectionKeyFor=selection=>studySelectionKey(selection);
