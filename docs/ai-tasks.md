@@ -14,16 +14,16 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- **학생 실계정 마무리 검수·로그인 복귀 보완 (2026-09-12)** — #1302의 f21953aa에서 계속. 별도 학생 계정으로 수업 입장/개인 사본/단어 확인/수업 복귀를 검수하고 상단 로그인에서 수업 주소가 유실되는 재현 결함을 보완. 기존 권한·교재·단어/복습 보존, 실제 기기 검수와 구분. 공개 push/같은 범위 마무리는 기존 오너 승인; merge·force-push 금지.
 
 ### todo
-- **수업 후속** — #1299 → #1300 → #1301 → #1302 검토 및 운영 통합은 Claude 창구. 실제 계정 노트 입력/뷰어/판 및 정식 교재 출처 저장·왕복 완료. 물리 iOS/중국어 입력기/회전/실교실 지연과 별도 실제 학생 계정 왕복은 별도 확인. 학생 대표 사본·명시적 갱신·로그인 표현 저장은 기존 구현 유지. 상세 `docs/manabi-classroom-study-flow.md`.
+- **수업 후속** — #1299 → #1300 → #1301 → #1302 검토 및 운영 통합은 Claude 창구. 실제 교사 계정 노트 입력/뷰어/판 및 정식 교재 출처 저장·왕복 완료. 별도 실제 학생 계정 로그인/팀 암호 입장 후 사본·뜻/독음·수업 복귀 확인과 물리 iOS/중국어 입력기/회전/실교실 지연은 미완료. Codex에 최종 fz4zms59q 로그인 화면을 준비했다. 저장소 QA_LOGIN은 합성 계정이므로 실제 계정으로 세지 않음. 상세 `docs/verification/classroom-student-auth-20260912.md`.
 - **뷰어 후속** — 실제 HSK6 표시/복귀 검수 완료. 물리 iPhone Safari, 기존 분석 독음·문법 정확도, 부모 #1293 → #1294 검토/운영 통합을 별도로 진행. PDF/신규 음성/원본 split view는 보류한 범위.
 - **서재 후속 우선순위** — 선택 구간 학습 #1291과 기기 간 원본 위치 동기화 #1292 구현·DB 적용·실계정 검수 완료. 누적 #1288 → #1289 → #1290 → #1291 → #1292의 검토·병합은 Claude 창구. 실제 iOS Safari 확인과 운영 반영 준비를 우선하며 미참조 업로드 정리·URL 본문 가져오기는 별도 범위. 상세 `docs/manabi-original-reading-sync.md`.
 - ~~🎧 받아쓰기 채점 엔진(#1077 제안 6, 발주 5386786944)~~ → **회수: 2026-08-23
   16:03 스캔까지 WORKING 무표식(30분 룰) — Claude 직접 수행·완결(회수 공지
   5386950005, PR #1118)**. 이 열에 잔여 발주 없음.
 ### done (최근)
+- **학생 자동 검수·로그인 복귀 보완 완료 (2026-09-12)** — #1302, 로그인 실행3aad2ba2·빌드/학생 fixture 교정8b6f3d7b. 상단 로그인에서 수업 주소/검색/앵커 유지, 인증 중첩 방지. 학생 사본 fixture의 admin→student 교정 및 관리 메뉴 비노출 검증. Vercel 첫 배포 OOM/SIGKILL 뒤 생산 compiler cache 해제·worker 유지·빌드 전용4GB로 복구, 최종 fz4zms59q/dpl_E3quHTgNPQUpZTxEvJkkRBC7myYh READY·version 일치. 전체383파일/4,160개·빌드/prebuild/lint·CI34660470245 SUCCESS, 배포 자동37개 오류0. Codex 실제 수업→로그인 from 보존 직접 확인. 별도 실제 학생/물리 iPad는 todo, DB/영속 env/운영/alias·merge·force-push 변경 없음. 상세 `docs/verification/classroom-student-auth-20260912.md`; exact head는 #150 CODEX_DONE.
 - **교재 출처 복귀·태블릿 초안 실계정 검수 완료 (2026-09-11)** — draft #1302, 부모 #1301. 출처 실행3d7f4cfd·태블릿 실행7fca8c95, Preview10851b15 유지. 실제 교재20과 팀에서 단어 뜻 수정/확대/기록, 직접 표현 초안 과 왕복/같은 단어 복귀, 기록 검색/교재 밖 필터/출처 단어 재선택/검색·스크롤355px 복원 PASS. 임시 노트1개·표현2개 삭제/잔존0, 기기 초안0, 오늘 교재 선택 복원. 기존 교재20과·개인 단어338건·review_events288건 전후 지문 동일; 팀 루트 수정 revision/시각은 정상 갱신. 전체382파일/4,145개·빌드·lint·최종 배포 교사 Chrome/WebKit 각12·학생 각7 PASS, SQL 원격 이력20260911072945 및 롤백 검수 PASS. 기존 WebKit 스크롤 최초 시간초과 후 재검수 통과 한계 유지. 상세 `docs/verification/classroom-tablet-20260911.md`. 물리 iPad/별도 실제 학생은 todo, 운영 통합은 Claude. 최종 exact head는 #150 CODEX_DONE.
 - **실제 수업 기록 왕복·기록 후 초점 복귀 완료 (2026-09-11)** — #1301. 26z 실계정에서 임시 날짜 노트1개/표현2개로 입력→분석→뷰어 직접 뜻 입력/보여주고 기록→별도 판 자동 수신/제어→수업 복귀 확인. 임시 노트 삭제·잔존0, 기존 노트/개인 단어338개 전체 행 지문 동일. 실제 쓰기는 수업 노트 뷰어이며 정식 교재 출처 쓰기와 구분. 기록 후 비활성화된 버튼으로 초점 복귀 실패를 재현해 같은 표현의 활성 확대 버튼으로 복원. 실행eea3c15a CI34529069250 전체378파일/4,115개·빌드·기존 e2e SUCCESS, 관련38개·로컬/배포 각각 Chrome16+WebKit 터치16 PASS/오류0/종료0. r4jj4zu1s/dpl_GHC14dfgcZxF4GeK2K68sPM9nnan READY·version 일치, 모바일/태블릿 직접 시각 검수. DB/env/운영/공유 alias·merge·force-push 없음. 상세 `docs/verification/classroom-textbook-notes-20260910.md`, 최종 head는 #150 CODEX_DONE.
 - **수업 실계정·기록 탭 복귀 보완 완료 (2026-09-11)** — #1301. r2 실계정 기록4개/한국어 검색/과 이동/단어 확대·같은 위치 복귀 확인, 오늘 교재 임시 선택 원상 복원. 발견한 소유자 노트 복귀의 view=history 유실 수정(허용 값만 보존). 실행194793f CI34496971611 전체378파일/4,115개·빌드·기존 e2e SUCCESS, 검사5ff87864 CI34499851995도 SUCCESS. 새26z7kitqi/dpl_F7oTJfAY3RqAo3wBcdqujdTYXk8S READY·version 일치, 로컬과 배포 각각 Chromium 교사15/학생7 + WebKit 터치 교사15/학생7 = 44흐름 PASS/오류0/종료0. 실제 원문·개인 단어·주의점·수업 표현에 검수 내용 저장 없음. 물리 iOS/실교실 지연 및 부모 실제 쓰기 왕복은 별도. 운영/공유 alias·DB/env 추가 변경·merge·force-push 없음. 상세 `docs/verification/classroom-textbook-notes-20260910.md`, 최종 head는 #150 CODEX_DONE.
