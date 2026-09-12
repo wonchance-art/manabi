@@ -10,6 +10,32 @@ export function safeLibraryReturn(value) {
   } catch { return '/materials'; }
 }
 
+// Classroom notes return to their input session. Keep the library-only helper strict.
+export function safeReaderReturn(value) {
+  if(typeof value==='string'&&value.length<=2000&&/^\/class\/[a-z0-9][a-z0-9-]{0,15}(?:\?|$)/.test(value)){
+    const url=new URL(value,'https://manabi.invalid');
+    if(!url.hash){const clean=new URLSearchParams();const day=url.searchParams.get('day');
+      if(/^\d{4}-\d{2}-\d{2}$/.test(day||'')&&Number.isFinite(Date.parse(day))&&new Date(day).toISOString().slice(0,10)===day)clean.set('day',day);
+      if(url.searchParams.get('view')==='history')clean.set('view','history');
+      if(['notes','book'].includes(url.searchParams.get('tab')))clean.set('tab',url.searchParams.get('tab'));
+      if(clean.get('view')==='history'){
+        const q=url.searchParams.get('q');if(q&&q.length<=200)clean.set('q',q);
+        if(url.searchParams.get('extras')==='true')clean.set('extras','true');
+        for(const [key,max] of [['restoreY',10000000],['shown',2000]]){const raw=url.searchParams.get(key);if(raw&&/^\d{1,8}$/.test(raw)&&Number(raw)<=max)clean.set(key,raw);}
+      }
+      return url.pathname+(clean.size?'?'+clean:'');}
+  }
+  if (typeof value === 'string' && value.length <= 2000 && /^\/class\/[a-z0-9][a-z0-9-]{0,15}\/live(?:\?|$)/.test(value)) {
+    const url = new URL(value, 'https://manabi.invalid');
+    if (!url.hash && /^\/class\/[a-z0-9][a-z0-9-]{0,15}\/live$/.test(url.pathname)) {
+      const day = url.searchParams.get('day');
+      const validDay = /^\d{4}-\d{2}-\d{2}$/.test(day || '') && Number.isFinite(Date.parse(day)) && new Date(day).toISOString().slice(0,10) === day;
+      return url.pathname + (validDay ? `?day=${day}` : '');
+    }
+  }
+  return safeLibraryReturn(value);
+}
+
 export function libraryReaderHref(href, returnTo, scrollY = null) {
   if (!/^\/(?:viewer|pdf|books)\/[^/?#]+(?:[?#]|$)/.test(href)) return href;
   const url = new URL(href, 'https://manabi.invalid');

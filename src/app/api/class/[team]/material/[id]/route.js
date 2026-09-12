@@ -16,7 +16,9 @@ export async function GET(request, { params }) {
     if (!Number.isInteger(numericId) || numericId <= 0) return Response.json({ error: 'not_found' }, { status: 404, headers: NO_STORE });
     const payload = await loadTeamMaterial(auth.admin, auth.root, auth.team, numericId);
     if (!payload) return Response.json({ error: 'not_found' }, { status: 404, headers: NO_STORE });
-    return Response.json(payload, { headers: NO_STORE });
+    const notes=await auth.admin.from('textbook_annotations').select('id,anchor,body,revision,created_at,updated_at').eq('material_id',numericId).eq('archived',false).order('created_at');
+    if(notes.error)throw notes.error;
+    return Response.json({...payload,textbookAnnotations:notes.data||[]}, { headers: NO_STORE });
   } catch (err) {
     console.error('[api/class/material]', err?.message);
     return Response.json({ error: 'internal' }, { status: 500, headers: NO_STORE });

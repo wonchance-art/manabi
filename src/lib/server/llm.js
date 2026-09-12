@@ -45,8 +45,11 @@ export const LEGACY_MODEL_TIERS = Object.freeze({
   'models/gemini-2.5-flash-lite': 'light',
 });
 
-/** thinking off의 최소 설정 — 한 곳에서만 바꾼다. */
-export const THINKING_OFF_CONFIG = Object.freeze({ thinkingBudget: 0 });
+/** 현재 Gemini 3 Flash/Lite의 최소 추론 설정. 완전 off는 지원하지 않는다.
+ * https://ai.google.dev/gemini-api/docs/generate-content/thinking#thinking-levels
+ * 2.5용 budget:0은 일반 INVALID_ARGUMENT(400)으로 거절될 수 있다.
+ */
+export const THINKING_OFF_CONFIG = Object.freeze({ thinkingLevel: 'minimal' });
 export const DEFAULT_RETRY_DELAYS = Object.freeze([5000, 10000, 20000, 40000]);
 
 /** 구조화 로그 1줄의 필수 키 — 순서 고정(로그 grep·집계 파서가 기댄다). */

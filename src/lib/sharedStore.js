@@ -57,9 +57,9 @@ function tx(mode, fn) {
 }
 
 /** 사본 저장 — { id, team, updatedAt, material }. */
-export async function putSharedCopy({ id, team, updatedAt = null, material }) {
+export async function putSharedCopy({ id, team, updatedAt = null, contentRevision = null, material }) {
   if (!id || !material) return false;
-  const r = await tx('readwrite', (store) => store.put({ id, team, updatedAt, material, savedAt: Date.now() }));
+  const r = await tx('readwrite', (store) => store.put({ id, team, updatedAt, contentRevision, material, savedAt: Date.now() }));
   return r !== null;
 }
 

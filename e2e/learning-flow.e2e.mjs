@@ -373,6 +373,12 @@ async function mockAuthenticatedViewer(context) {
   const analyzeRequests = [];
   let geminiRequests = 0;
 
+  // The reader fixture owns these synthetic books. Annotation permissions/mutations
+  // have separate API and PostgreSQL tests; no live backend is involved here.
+  await context.route('**/api/materials/9100*/annotations', route => route.fulfill({
+    json: { materialId: new URL(route.request().url()).pathname.split('/')[3], canEdit: true, annotations: [], history: [] },
+  }));
+
   await context.route('**/api/analyze', async (route) => {
     analyzeRequests.push(route.request().postDataJSON());
     await route.fulfill({

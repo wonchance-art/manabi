@@ -12,6 +12,10 @@ export const LONG_PRESS_MS = 300;   // 모바일 지정 진입 — OS 텍스트 
 export const MOVE_THRESHOLD = 8;    // 데스크톱 드래그 시작 임계(px)
 export const SCROLL_CANCEL_PX = 10; // 모바일 long-press 전 이동 허용치 — 넘으면 스크롤 양보
 
+// A trackpad/pen hover or compatibility mouse event must not cancel or finish
+// a finger's pending selection. Document listeners receive all pointer streams.
+export const sameRangePointer = (event, active) => event.pointerId === active.pointerId && event.pointerType === active.pointerType;
+
 /**
  * 순수 제스처 코어 — 타이머·이동 임계 판정만 담당(DOM 무관, 단독 테스트 대상).
  * down → (마우스: 8px 이동 / 터치: 300ms 유지) → onStart → onUpdate* → up → onEnd.
@@ -239,6 +243,7 @@ export function useTokenRangeSelect({ sequence, dictionary, enabled = true, onSe
 
   const handlePointerDown = useCallback((e) => {
     if (!enabled) return;
+    if (docListenersRef.current?.pointer && !sameRangePointer(e, docListenersRef.current.pointer)) return;
     if (e.button != null && e.button !== 0) return; // 좌클릭·터치만
     const tokenEl = e.target?.closest?.('[data-tid]');
     if (!tokenEl || e.target?.closest?.('.line-pick')) return; // 토큰 밖·문장 막대는 통과
@@ -248,11 +253,12 @@ export function useTokenRangeSelect({ sequence, dictionary, enabled = true, onSe
     anchorRef.current = idx;
     focusRef.current = idx;
     const g = gestureRef.current;
+    const pointer = { pointerId: e.pointerId, pointerType: e.pointerType };
     g.down({ x: e.clientX, y: e.clientY, pointerType: e.pointerType });
     // 포인터가 본문 밖으로 나가도 추적 — document 레벨에서 이동·종료 수신
-    const move = (ev) => g.move({ x: ev.clientX, y: ev.clientY });
-    const up = () => { g.up(); detach(); };
-    const cancel = () => { g.cancel(); detach(); };
+    const move = (ev) => { if (sameRangePointer(ev, pointer)) g.move({ x: ev.clientX, y: ev.clientY }); };
+    const up = (ev) => { if (sameRangePointer(ev, pointer)) { g.up(); detach(); } };
+    const cancel = (ev) => { if (sameRangePointer(ev, pointer)) { g.cancel(); detach(); } };
     const detach = () => {
       document.removeEventListener('pointermove', move);
       document.removeEventListener('pointerup', up);
@@ -262,7 +268,7 @@ export function useTokenRangeSelect({ sequence, dictionary, enabled = true, onSe
     document.addEventListener('pointermove', move);
     document.addEventListener('pointerup', up);
     document.addEventListener('pointercancel', cancel);
-    docListenersRef.current = { move, up, cancel };
+    docListenersRef.current = { move, up, cancel, pointer };
   }, [enabled, seqIndex]);
 
   // 그립(양끝 핸들) 드래그 — 이미 확정된 범위의 한쪽 끝을 잡아 미세 조정한다.
@@ -271,8 +277,10 @@ export function useTokenRangeSelect({ sequence, dictionary, enabled = true, onSe
   const startGripAdjust = useCallback((which, e) => {
     const r = range;
     if (!r || !enabled) return;
+    if (docListenersRef.current?.pointer && !sameRangePointer(e, docListenersRef.current.pointer)) return;
     e.preventDefault();
     e.stopPropagation();
+    const pointer = { pointerId: e.pointerId, pointerType: e.pointerType };
     didSelectRef.current = true;
     setDragging(true); // 그립 조정도 드래그 — 시트 가로채기 차단 동일 적용
     anchorRef.current = gripAnchor(r, which);
@@ -283,6 +291,7 @@ export function useTokenRangeSelect({ sequence, dictionary, enabled = true, onSe
     touchBlockRef.current = block;
     rafRef.current = requestAnimationFrame(stepAutoScrollRef.current);
     const move = (ev) => {
+      if (!sameRangePointer(ev, pointer)) return;
       lastPointRef.current = { x: ev.clientX, y: ev.clientY };
       applyFocusRef.current(tokenIdxFromPointRef.current(ev.clientX, ev.clientY));
     };
@@ -292,7 +301,8 @@ export function useTokenRangeSelect({ sequence, dictionary, enabled = true, onSe
       document.removeEventListener('pointercancel', cancel);
       if (docListenersRef.current?.move === move) docListenersRef.current = null;
     };
-    const up = () => {
+    const up = (ev) => {
+      if (!sameRangePointer(ev, pointer)) return;
       detach();
       const a = anchorRef.current;
       const f = focusRef.current;
@@ -301,11 +311,11 @@ export function useTokenRangeSelect({ sequence, dictionary, enabled = true, onSe
       if (changed) finishRef.current();
       else cleanupTransientRef.current(); // 무변경 — 하이라이트 유지, 재분석 생략
     };
-    const cancel = () => { detach(); cleanupTransientRef.current(); };
+    const cancel = (ev) => { if (sameRangePointer(ev, pointer)) { detach(); cleanupTransientRef.current(); } };
     document.addEventListener('pointermove', move);
     document.addEventListener('pointerup', up);
     document.addEventListener('pointercancel', cancel);
-    docListenersRef.current = { move, up, cancel };
+    docListenersRef.current = { move, up, cancel, pointer };
   }, [range, enabled]);
 
   // 제스처 직후 합성 click이 단어 시트를 열지 않게 캡처 단계에서 차단
@@ -327,5 +337,12 @@ export function useTokenRangeSelect({ sequence, dictionary, enabled = true, onSe
     };
   }, [clearRange]);
 
-  return { range, rangeTokenIds, dragging, clearRange, handlePointerDown, handleClickCapture, startGripAdjust };
+  const restoreRange = useCallback((first, last) => {
+    const start = sequence?.indexOf(first), end = sequence?.indexOf(last);
+    if (start == null || start < 0 || end < start) return false;
+    cleanupTransientRef.current();
+    setRange({ start, end });
+    return true;
+  }, [sequence]);
+  return { range, rangeTokenIds, dragging, clearRange, restoreRange, handlePointerDown, handleClickCapture, startGripAdjust };
 }

@@ -198,6 +198,27 @@ describe('AA R1 — callLLM 동작 계약', () => {
     expect(bodyOf(fetchSpy.mock.calls[0]).generationConfig).toEqual({ temperature: 0 });
   });
 
+  it.each(['light', 'standard'])('%s — Gemini 3 minimal 설정으로 일반 INVALID_ARGUMENT 거절을 예방한다', async (tier) => {
+    const fetchSpy = vi.fn(async (_url, opts) => {
+      const config = JSON.parse(opts.body).generationConfig.thinkingConfig;
+      return config?.thinkingLevel === 'minimal' && !('thinkingBudget' in config)
+        ? geminiOk('도서관')
+        : geminiFail(400, { error: { message: 'Request contains an invalid argument.', status: 'INVALID_ARGUMENT' } });
+    });
+    vi.stubGlobal('fetch', fetchSpy);
+    const { callLLM } = await fresh();
+    expect((await callLLM(tier, '图书馆')).text).toBe('도서관');
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('호출자가 정한 thinkingConfig는 최소 설정으로 덮어쓰지 않는다', async () => {
+    const fetchSpy = vi.fn(async () => geminiOk('ok'));
+    vi.stubGlobal('fetch', fetchSpy);
+    const { callLLM } = await fresh();
+    await callLLM('light', 'p', { generationConfig: { thinkingConfig: { thinkingLevel: 'high' } } });
+    expect(bodyOf(fetchSpy.mock.calls[0]).generationConfig.thinkingConfig).toEqual({ thinkingLevel: 'high' });
+  });
+
   it('모델이 thinking 설정을 거부(400)하면 같은 모델을 설정 없이 즉시 재요청하고 이후엔 싣지 않는다 — 폴백 강등 0', async () => {
     const fetchSpy = vi.fn(async (url, opts) => {
       const cfg = JSON.parse(opts.body).generationConfig;

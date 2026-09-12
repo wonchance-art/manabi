@@ -11,6 +11,7 @@ import './web/web-shell.css';
 import { MAIN_NAV, navigationOwner, isFocusedReadingRoute } from '@/lib/webNavigation';
 import './web/focused-reader.css';
 import { librarySearchHref } from '@/lib/libraryReturn';
+import { authEntryHref } from '@/lib/authRedirect';
 import VersionBadge from './VersionBadge';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/ToastContext';
@@ -107,35 +108,6 @@ export default function Layout({ children }) {
     return () => { alive = false; window.removeEventListener('online', sync); };
   }, [user?.id, toast]);
 
-  // 팀 사본 복제(v2-AB R2) — 로그인하면 기기 사본(팀 페이지에서 받아 둔 교재·정리본)을 내 자료로
-  // 복제하고, 담으려던 단어를 복제본에서 담는다. 어디서 로그인하든(가입 경로 포함) 같은 효과.
-  // 사본 0·대기 0이면 IndexedDB 한 번 읽고 끝. 실패는 조용히 — 학습을 막지 않는다.
-  useEffect(() => {
-    if (!user?.id) return;
-    let alive = true;
-    (async () => {
-      try {
-        const [{ listSharedCopies, deleteSharedCopy }, { claimSharedCopies }, { readPendingSave, clearPendingSave }] = await Promise.all([
-          import('../lib/sharedStore'),
-          import('../lib/sharedCopy'),
-          import('../lib/classClient'),
-        ]);
-        const copies = await listSharedCopies();
-        const pending = readPendingSave();
-        if (copies.length === 0 && !pending) return;
-        const r = await claimSharedCopies(supabase, user.id, { materials: copies.map((c) => c.material), pending });
-        if (!alive) return;
-        for (const c of copies) await deleteSharedCopy(c.id);
-        if (r.saved) clearPendingSave();
-        if (r.copied > 0 || r.saved) {
-          toast(`팀 자료 ${r.copied}개를 내 자료로 담았어요${r.saved ? ` · 「${r.savedWord}」도 담았어요` : ''}`, 'success', 6000);
-        }
-        window.dispatchEvent(new CustomEvent('manabi:shared-claimed'));
-      } catch { /* 복제를 못 해도 학습은 계속된다 — 다음 로그인·팀 페이지에서 다시 */ }
-    })();
-    return () => { alive = false; };
-  }, [user?.id, toast]);
-
   // 복습 알림 스케줄러
   useEffect(() => {
     if (!user) return;
@@ -167,7 +139,7 @@ export default function Layout({ children }) {
       await signOut();
       router.push('/auth');
     } else {
-      router.push('/auth');
+      router.push(authEntryHref(window.location.pathname + window.location.search + window.location.hash));
     }
   }
 
@@ -189,6 +161,7 @@ export default function Layout({ children }) {
           <span>manabi<span className="manabi-brand-dot" aria-hidden="true" /></span>
         </Link>
 
+        <Link href="/home" prefetch={false} className="classroom-app-home" aria-label="웹앱 홈">홈</Link>
         <nav className="gnb__nav" aria-label="메인 내비게이션">
           {navLinks.map(l => (
             <Link

@@ -78,16 +78,34 @@ export async function fetchTeamMaterial(key, token, id) {
 /** 순수 — 사본을 다시 받아야 하는가(없음·원본이 더 새것). */
 export function copyIsStale(copy, entry) {
   if (!copy) return true;
+  if(entry?.contentRevision)return copy.contentRevision!==entry.contentRevision;
   if (!entry?.updatedAt || !copy.updatedAt) return false;
   return String(entry.updatedAt) > String(copy.updatedAt);
 }
 
 /** 받아서 사본으로 — 있으면 그대로(네트워크 0), 없거나 낡았으면 토큰으로 받아 저장. */
-export async function ensureSharedCopy(key, token, entry) {
+export async function ensureSharedCopy(key, token, entry, {refresh=false}={}) {
   const existing = await getSharedCopy(entry.id);
-  if (existing && !copyIsStale(existing, entry)) return existing;
+  if (!refresh && existing && !copyIsStale(existing, entry)) return existing;
   const payload = await fetchTeamMaterial(key, token, entry.id);
-  const copy = { id: payload.id, team: key, updatedAt: payload.updatedAt || null, material: payload };
-  await putSharedCopy(copy);
+  const copy = { id: payload.id, team: key, contentRevision:payload.contentRevision||null, updatedAt: payload.updatedAt || null, material: payload };
+  if(!await putSharedCopy(copy))throw new Error('이 기기에 자료를 보관하지 못했어요. 저장 공간을 확인한 뒤 다시 열어 주세요.');
   return { ...copy, savedAt: Date.now() };
 }
+
+/** Local re-entry suggestions only. Server access is always revalidated by the team page. */
+export function recentClassVisits() {
+  const visits=[];
+  try {
+    for(let i=0;i<localStorage.length;i++){
+      const storageKey=localStorage.key(i);
+      if(!storageKey?.startsWith('class_index:')) continue;
+      const key=storageKey.slice('class_index:'.length);
+      if(!/^[a-z0-9][a-z0-9-]{0,15}$/.test(key)||!readUnlock(key))continue;
+      const cache=readIndexCache(key);
+      if(cache?.index?.team?.key===key)visits.push({key,name:cache.index.team.name,lang:cache.index.team.lang,at:cache.fetchedAt});
+    }
+  }catch{return [];}
+  return visits.sort((a,b)=>b.at-a.at).slice(0,6);
+}
+export function forgetClassVisit(key) { remove(indexKey(key));clearUnlock(key); }

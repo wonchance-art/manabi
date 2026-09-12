@@ -1,0 +1,40 @@
+import {build} from 'vite';
+import {chromium,webkit} from 'playwright-core';
+import assert from 'node:assert/strict';
+const engine=process.env.QA_BROWSER||'chromium';
+const bundle=await build({configFile:false,publicDir:false,build:{write:false,minify:false,lib:{entry:'src/lib/classroomOutbox.js',name:'DraftOutbox',formats:['iife']}}});
+const code=bundle[0].output.find(file=>file.type==='chunk').code;
+const browser=await(engine==='webkit'?webkit:chromium).launch({...(engine==='chromium'?{executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'}:{}),headless:true});
+const context=await browser.newContext();await context.route('**/*',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><title>Isolated draft storage test</title>'}));
+try{
+ const page=await context.newPage();await page.goto('https://manabi-fixture.invalid');await page.addScriptTag({content:code});
+ const checks=await page.evaluate(async()=>{
+  const api=window.DraftOutbox,passed=[];
+  const check=(ok,label)=>{if(!ok)throw new Error(label);passed.push(label);};
+  await api.writeClassDraft('scope','live input');
+  await api.putClassOperation({id:'queued',scope:'scope',text:'already submitted',status:'queued',attempted:false});
+  const row=(id,revision,scope='scope')=>({id,revision,scope,kind:'draft',category:'reader',value:{input:revision}});
+  await api.putClassOperation(row('writer-a','first'));
+  await api.putClassOperation(row('writer-b','other-tab'));
+  check((await api.listClassOperations('scope')).length===1,'reader and live drafts never enter the delivery queue');
+  check((await api.readClassDraft('scope')).text==='live input','reader writes preserve live composer drafts');
+  check((await api.listClassReaderDrafts('scope')).length===2,'separate writers coexist in IndexedDB');
+  await api.putClassOperation(row('writer-a','edited-during-save'));
+  await api.consumeClassReaderDraft('writer-a','first');
+  check((await api.listClassReaderDrafts('scope')).some(r=>r.revision==='edited-during-save'),'stale consume cannot delete a newer edit');
+  await api.consumeClassReaderDraft('writer-a','edited-during-save');
+  check((await api.listClassReaderDrafts('scope')).length===1,'consuming one writer keeps the other writer');
+  await api.putClassOperation(row('other-owner','private','other-scope'));
+  check(!(await api.listClassReaderDrafts('scope')).some(r=>r.id==='other-owner'),'other scope drafts are not returned');
+  await api.consumeClassReaderDraft('queued',undefined);
+  check((await api.listClassOperations('scope')).length===1,'draft consumption never removes submitted operations');
+  const legacy=await api.readClassDraft('scope');
+  await api.writeClassDraft('scope','newer input in another tab');
+  await api.consumeLegacyClassDraft('scope',legacy);
+  check((await api.readClassDraft('scope')).text==='newer input in another tab','recovering an old composer draft never deletes a later edit');
+  await api.consumeLegacyClassDraft('scope',await api.readClassDraft('scope'));
+  check(!(await api.readClassDraft('scope'))&&(await api.listClassOperations('scope')).length===1,'recorded legacy draft is consumed without deleting pending class writes');
+  return passed;
+ });
+ assert.equal(checks.length,9);console.log(JSON.stringify({engine,checks,productionWrites:0}));
+}finally{await browser.close();}

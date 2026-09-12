@@ -3,7 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 export function resolveSignalTransition(leftRose,rightRose) {
   return leftRose||rightRose?{tab:leftRose?'left':'right'}:null;
 }
-export default function ViewerBottomSheet({leftContent,rightContent,leftActive,rightActive,leftSignal=0,rightSignal=0,barNav=null,onClose,suppressed=false,onOpenChange}) {
+export default function ViewerBottomSheet({leftContent,rightContent,leftActive,rightActive,leftSignal=0,rightSignal=0,barNav=null,onClose,suppressed=false,onOpenChange,preserveFocus=false}) {
   const [tab,setTab]=useState('right'),[open,setOpen]=useState(false),[expanded,setExpanded]=useState(false);
   const prev=useRef({left:false,right:false,leftSignal:0,rightSignal:0});
   const root=useRef(null),drag=useRef(null),suppressedRef=useRef(suppressed);suppressedRef.current=suppressed;
@@ -16,14 +16,14 @@ export default function ViewerBottomSheet({leftContent,rightContent,leftActive,r
   },[leftActive,rightActive,leftSignal,rightSignal]);
   useEffect(()=>{onOpenChange?.(open);},[open,onOpenChange]);
   useEffect(()=>{
-    if(!open||suppressedRef.current)return;
+    if(!open||suppressedRef.current||preserveFocus)return;
     if(root.current?.querySelector('.viewer-inspector__tabs')?.contains(document.activeElement))return;
     const frame=requestAnimationFrame(()=>{
       const target=root.current?.querySelector(`[data-panel="${tab}"] .word-detail-card`)||root.current?.querySelector('[role=tab][aria-selected=true]');
       target?.focus({preventScroll:true});
     });
     return ()=>cancelAnimationFrame(frame);
-  },[open,tab,rightSignal]);
+  },[open,tab,rightSignal,preserveFocus]);
   const close=()=>{setOpen(false);onClose?.();};
   if(!leftActive&&!rightActive&&!barNav)return null;
   const tabs=<div className="viewer-inspector__tabs" role="tablist" aria-label="읽기 보조 패널" onKeyDown={e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=e.key==='Home'?'right':e.key==='End'?'left':tab==='right'?'left':'right';setTab(next);setOpen(true);e.currentTarget.querySelector(next==='right'?'#inspector-word-tab':'#inspector-sentence-tab')?.focus();}}>

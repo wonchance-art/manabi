@@ -1,6 +1,21 @@
 import { describe, it, expect } from 'vitest';
-import { safeLibraryReturn, libraryReaderHref, librarySearchHref } from '../libraryReturn';
+import { safeLibraryReturn, safeReaderReturn, libraryReaderHref, librarySearchHref } from '../libraryReturn';
 describe('library navigation without mixing learning progress',()=>{
+  it('returns classroom notes to the same class and date without broadening composer redirects',()=>{
+    expect(safeReaderReturn('/class/class-1/live?day=2026-09-10&next=https://evil.test')).toBe('/class/class-1/live?day=2026-09-10');
+    expect(safeReaderReturn('/class/class-1/live?day=2026-02-30')).toBe('/class/class-1/live');
+    expect(safeLibraryReturn('/class/class-1/live')).toBe('/materials');
+    expect(safeReaderReturn('/materials?view=owned&restoreY=90')).toBe('/materials?view=owned&restoreY=90');
+  });
+  it('keeps the class history destination after reading a saved lesson note',()=>{
+    expect(safeReaderReturn('/class/class-1?view=history')).toBe('/class/class-1?view=history');
+    expect(safeReaderReturn('/class/class-1?day=2026-09-10&view=history&next=https://evil.test')).toBe('/class/class-1?day=2026-09-10&view=history');
+    expect(safeReaderReturn('/class/class-1?view=admin&next=https://evil.test')).toBe('/class/class-1');
+    expect(safeLibraryReturn('/class/class-1?view=history')).toBe('/materials');
+  });
+  it.each(['//evil.test/class/a/live','https://evil.test/class/a/live','/class/a/../admin','/class/a/live#bad','/class/a/live/../../admin','/class/a/board','/class/a%2fb/live','javascript:alert(1)'])('rejects unsafe reader return: %s',value=>{
+    expect(safeReaderReturn(value)).toBe('/materials');
+  });
   it('search always leads to a view that renders the search input',()=>{
     expect(librarySearchHref({id:'member'})).toBe('/materials?view=owned#library-search');
     expect(librarySearchHref(null)).toBe('/materials?tab=public#library-search');

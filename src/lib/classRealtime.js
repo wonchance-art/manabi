@@ -18,17 +18,15 @@ export const CLASS_EVENT = 'entry';
  * @param {{ onEntry?: (payload: object) => void }} handlers
  * @returns {{ send: (payload: object) => Promise<void>, close: () => void }}
  */
-export function openClassChannel(key, { onEntry } = {}) {
-  let channel = null;
+export function openClassChannel(key, { onEntry, onStatus } = {}) {
   let closed = false;
   const ready = getSupabase().then((client) => {
     if (closed) return null;
     const ch = client.channel(classChannelName(key), { config: { broadcast: { self: false } } });
     if (onEntry) ch.on('broadcast', { event: CLASS_EVENT }, ({ payload }) => { if (!closed) onEntry(payload || {}); });
-    ch.subscribe();
-    channel = ch;
+    ch.subscribe(status => { if (!closed) onStatus?.(status); });
     return ch;
-  }).catch(() => null);
+  }).catch(() => { if (!closed) onStatus?.('CHANNEL_ERROR'); return null; });
   return {
     async send(payload) {
       try {
@@ -40,7 +38,6 @@ export function openClassChannel(key, { onEntry } = {}) {
     close() {
       closed = true;
       ready.then((ch) => { try { ch?.unsubscribe(); } catch { /* ignore */ } });
-      channel = null;
     },
   };
 }
