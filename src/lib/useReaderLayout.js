@@ -2,11 +2,18 @@
 import {useEffect,useRef,useState,useCallback} from 'react';
 import {captureReadingAnchor,restoreReadingAnchor,selectedTokenScrollDelta} from './readingViewport';
 
+// A split classroom scrolls its textbook column; ordinary reading scrolls the page.
+export function readerScrollTarget(root) {
+  const center=root?.closest('.viewer-center')||root?.querySelector('.viewer-center');
+  return center&&/auto|scroll/.test(getComputedStyle(center).overflowY)?center:window;
+}
+
 export function readerVisibleBounds(root) {
   const viewport=window.visualViewport;
-  const bottom=(viewport?.height||window.innerHeight)+(viewport?.offsetTop||0);
+  const scroller=readerScrollTarget(root),pane=scroller===window?null:scroller.getBoundingClientRect();
+  const bottom=Math.min((viewport?.height||window.innerHeight)+(viewport?.offsetTop||0),pane?.bottom??Infinity);
   const toolbars=[...(root?.closest('.viewer-layout')?.querySelectorAll('.viewer-topbar,.class-workspace-topbar')||[])].filter(el=>!el.hidden);
-  const top=Math.max(64,viewport?.offsetTop||0,...toolbars.map(el=>el.getBoundingClientRect().bottom+8));
+  const top=Math.max(64,viewport?.offsetTop||0,pane?.top||0,...toolbars.map(el=>el.getBoundingClientRect().bottom+8));
   const panels=[...(root?.closest('.viewer-layout')||document).querySelectorAll('.viewer-inspector,.class-reader-dock')];
   const edges=panels.filter(panel=>!panel.hidden&&getComputedStyle(panel).position==='fixed').map(panel=>panel.getBoundingClientRect()).filter(rect=>rect.width>0).map(rect=>rect.top);
   return {top,bottom:Math.min(bottom,...edges)};
@@ -34,7 +41,7 @@ export function useClassSelectionVisibility(dockRef, bodyRef, first, last, selec
       const start=a.getBoundingClientRect(),end=b.getBoundingClientRect(),bounds=readerVisibleBounds(root);
       const rect={top:Math.min(start.top,end.top),bottom:Math.max(start.bottom,end.bottom)};
       const delta=selectedTokenScrollDelta(rect.bottom-rect.top>bounds.bottom-bounds.top-16?start:rect,bounds);
-      if(delta)window.scrollBy({top:delta,behavior:'instant'});
+      if(delta)readerScrollTarget(root).scrollBy({top:delta,behavior:'instant'});
     });};
     const interrupt=e=>{if(!dock.contains(e.target))interrupted=true;};
     const observer=new ResizeObserver(reveal);observer.observe(dock);observer.observe(root);
@@ -59,7 +66,7 @@ export function useSelectedTokenVisibility(readerRef, tokenRefs, tokenId, enable
         const delta = selectedTokenScrollDelta(token.getBoundingClientRect(), readerVisibleBounds(root));
         if (!Number.isFinite(delta) || Math.abs(delta) < 1) return;
         root.dataset.selectionRevealing = 'true';
-        window.scrollBy({ top: delta, behavior: 'instant' });
+        readerScrollTarget(root).scrollBy({ top: delta, behavior: 'instant' });
         cancelAnimationFrame(releaseFrame);
         releaseFrame = requestAnimationFrame(() => { releaseFrame = requestAnimationFrame(() => { delete root.dataset.selectionRevealing; }); });
       }); });
@@ -112,7 +119,7 @@ export function useReaderLayout(readerRef,revision) {
     let active=true,frame,releaseFrame,timeout;
     const restore=()=>{if(!active)return;cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{if(active){
       if(root)root.dataset.layoutRestoring='true';
-      restoreReadingAnchor(anchor,options=>window.scrollBy(options));
+      restoreReadingAnchor(anchor,options=>readerScrollTarget(root).scrollBy(options));
       cancelAnimationFrame(releaseFrame);releaseFrame=requestAnimationFrame(()=>{releaseFrame=requestAnimationFrame(()=>{if(root)delete root.dataset.layoutRestoring;});});
       setLayoutVersion(v=>v+1);
     }});};
