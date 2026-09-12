@@ -110,7 +110,10 @@
 .board-presentation header>span {font-size:12px;color:var(--reader-muted);}
 .board-presentation nav {display:flex;gap:2px;margin-left:auto;}
 .board-presentation-paper {flex:1;min-height:0;position:relative;}
-.board-presentation .excalidraw .layer-ui__wrapper {display:none;}
+.board-presentation .excalidraw .layer-ui__wrapper,
+.board-presentation .excalidraw .App-bottom-bar,
+.board-presentation .excalidraw .App-menu_top,
+.board-presentation .excalidraw .mobile-misc-tools-container {display:none;}
 .viewer-layout[data-keyboard-open="true"] .board-tools,
 .viewer-layout[data-keyboard-open="true"] .teaching-board-selection,
 .viewer-layout[data-keyboard-open="true"] .teaching-board-source,

@@ -19,7 +19,7 @@ export default function TeachingBoardCanvas({owner, team, day, current, onRecord
   const store = useTeachingBoard(scope), root = useRef(null), api = useRef(null), document = useRef(null), latest = useRef(null), timer = useRef(null), signature = useRef(''), armed=useRef(false), dirty=useRef(false);
   const [initialWorkspace]=useState(()=>readBoardWorkspace(scope));
   const [ratio,setRatio]=useState(initialWorkspace.ratio),[presenting,setPresenting]=useState(null),[activeTool,setActiveTool]=useState('selection'),[searching,setSearching]=useState(false);
-  const inputRef=useRef(null);
+  const inputRef=useRef(null),presentationActive=useRef(false);
   const [layout, setLayout] = useState(initialWorkspace.layout), [pageId, setPageId] = useState(null), [selected, setSelected] = useState([]), [panel, setPanel] = useState(false);
   const [input, setInput] = useState(initialWorkspace.input), [reading, setReading] = useState(initialWorkspace.reading), [meaning, setMeaning] = useState(initialWorkspace.meaning), [candidates, setCandidates] = useState([]), [busy, setBusy] = useState(false), [message, setMessage] = useState('');
   const [editing, setEditing] = useState(null), [recording, setRecording] = useState(false), [toolsOpen,setToolsOpen] = useState(false);
@@ -61,7 +61,7 @@ export default function TeachingBoardCanvas({owner, team, day, current, onRecord
   const revealElements = useCallback((elements, fit = false) => {
     const active=api.current;
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      if(!active || api.current!==active || !root.current)return;
+      if(!active || api.current!==active || !root.current || presentationActive.current)return;
       active.refresh();
       const surface=root.current.querySelector('.teaching-board-surface'), rect=surface.getBoundingClientRect();
       if(!rect.width || !rect.height)return;
@@ -82,7 +82,7 @@ export default function TeachingBoardCanvas({owner, team, day, current, onRecord
     if(!surface)return;
     let previousSize=null;
     const revealSelected=()=>{
-      const active=api.current;if(!active)return;
+      const active=api.current;if(!active||presentationActive.current)return;
       const rect=surface.getBoundingClientRect();if(!rect.width||!rect.height)return;
       const resized=previousSize&&(Math.abs(previousSize.width-rect.width)>1||Math.abs(previousSize.height-rect.height)>1);
       previousSize={width:rect.width,height:rect.height};
@@ -218,7 +218,7 @@ export default function TeachingBoardCanvas({owner, team, day, current, onRecord
     const ids=editor.getAppState().selectedElementIds;
     update(editor.getSceneElementsIncludingDeleted().map(el=>ids[el.id]?newElementWith(el,{[property]:color}):el),{appState:{[key]:color}});
   };
-  const showBoard=()=>{commit();const all=api.current?.getSceneElements()||[];const elements=selected.length?selected:all;if(elements.length)setPresenting(structuredClone(elements));};
+  const showBoard=()=>{commit();const all=api.current?.getSceneElements()||[];const elements=selected.length?selected:all;if(elements.length){presentationActive.current=true;setPresenting(structuredClone(elements));}};
   const resize=(event)=>{
     const rect=root.current?.closest('.viewer-layout')?.getBoundingClientRect();if(!rect)return;
     setRatio(normalizeBoardWorkspace({ratio:100*(event.clientX-rect.left)/rect.width}).ratio);
@@ -298,6 +298,6 @@ export default function TeachingBoardCanvas({owner, team, day, current, onRecord
     </form></div>
     <footer className="teaching-board-footer"><nav aria-label="설명판 페이지">{pages.map((item,i)=><button key={item.id} aria-current={pageId===item.id?'page':undefined} onClick={()=>changePage(item.id)}>{i+1}</button>)}<button onClick={newPage} aria-label="새 판">＋</button></nav><button onClick={()=>revealElements(api.current?.getSceneElements()||[],true)}>전체 보기</button><details><summary>보관</summary><div className="teaching-board-backup-menu"><button onClick={backup}>내려받기</button>{store.recoveries?.map((row,i)=><button key={row.id} onClick={()=>recover(row)}>충돌본 {i+1} 불러오기</button>)}<label className="teaching-board-file">가져오기<input type="file" accept="application/json,.json" onChange={restore}/></label></div></details><small role="status">{store.error?'저장 확인 필요':store.saving?'보관 중…':'이 기기에 보관됨'}</small></footer>
     {(message||store.error)&&<p className="teaching-board-message" role="status">{store.error||message}{store.error&&<><button onClick={backup}>내 내용 백업</button><button onClick={()=>window.location.reload()}>최신 판 열기</button></>}</p>}
-    {presenting&&<BoardPresentation elements={presenting} onClose={()=>setPresenting(null)}/>}
+    {presenting&&<BoardPresentation elements={presenting} onClose={()=>{presentationActive.current=false;setPresenting(null);}}/>}
   </section>;
 }

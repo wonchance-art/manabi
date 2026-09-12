@@ -38,8 +38,11 @@ const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*'
 let failure=false,lostResponse=false,analysisDelay=0,analysisFail=false,emptyMeaning=false;
 const analyzedLines=[];
 const tabletState={dictionaryDelay:0,lookups:0};
-const report={engine,touch,checks:[],errors:[],screens:[]},writes=[];
+const report={engine,touch,checks:[],errors:[],screens:[],failedRequests:[]},writes=[];
 await context.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());
+// Vercel's injected review toolbar is hosting chrome, outside the app flow.
+// Stub only that script; application console failures still fail verification.
+await context.route('https://vercel.live/_next-live/feedback/feedback.js',r=>r.fulfill({contentType:'application/javascript',body:''}));
 // Synthetic auth belongs to the intercepted client/API fixtures. Strip it from
 // server page requests without a second fetch/fulfill lifecycle for prefetches.
 await context.route(base+'/**',route=>route.continue(new URL(route.request().url()).pathname.startsWith('/_next/static/')?{}:{headers:{...route.request().headers(),cookie:''}}));
@@ -80,6 +83,7 @@ await context.route('**/rest/v1/**',async r=>{
 await context.route('**/api/suggestions/today',r=>r.fulfill({json:[]}));
 await context.route('**/api/analyze',async r=>{if(analysisDelay)await new Promise(resolve=>setTimeout(resolve,analysisDelay));if(analysisFail)return r.fulfill({status:503,json:{error:'검수 분석 실패'}});const {lines}=r.request().postDataJSON();analyzedLines.push(lines);try{await r.fulfill({json:{results:lines.map(line=>({sequence:['word'],dictionary:{word:{text:line,meaning:emptyMeaning?'':'검수 표현의 뜻',pos:'명사',furigana:'よみ'}}}))}});}catch{}});
 const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.message));page.on('console',m=>{if(m.type()==='error' && !m.text().startsWith('WebSocket connection')){report.errors.push(m.text());console.log('browser-console',m.text());}});
+page.on('requestfailed',request=>{const url=new URL(request.url());report.failedRequests.push(url.origin+url.pathname);});
 const check=label=>{report.checks.push(label);console.log(label);};
 const waitFor=async fn=>{for(let i=0;i<100;i++){if(await fn())return;await page.waitForTimeout(100);}throw new Error('condition timeout');};
 const current=async()=>(await db.query("select * from reading_materials where processed_json#>>'{metadata,team,day}'=$1",[day])).rows[0];
@@ -132,12 +136,19 @@ try {
  await presentation.getByRole('button',{name:'뜻 보이기',exact:true})[activate]();
  await presentation.getByRole('button',{name:'레이저',exact:true})[activate]();
  await saveScreen('board-presentation');
+ await page.setViewportSize({width:659,height:866});await page.waitForTimeout(300);
+ assert.equal(await presentation.locator('.App-bottom-bar').isVisible(),false,'presentation hides the native mobile editor menu');
+ await saveScreen('board-presentation-narrow');await page.setViewportSize({width:1440,height:1000});
  await presentation.getByRole('button',{name:'← 설명판으로',exact:true})[activate]();
  assert.equal(JSON.stringify(await head()),originalBoard,'presentation must not write the original board');
  await board.getByRole('button',{name:'선택한 내용 보여주기',exact:true})[activate]();await presentation.waitFor();
  await page.keyboard.press('Escape');await presentation.waitFor({state:'detached'});
  assert(await board.getByRole('button',{name:'선택한 내용 보여주기',exact:true}).evaluate(el=>el===document.activeElement),'Escape returns keyboard focus to the original trigger');
  check('presentation enlarges selected content; temporary hiding and laser never rewrite original scene');
+ if(process.env.QA_PRESENTATION_ONLY==='1'){
+  assert.equal(report.errors.length,0,report.errors.join('\n'));
+  await fs.promises.writeFile(out+'/report.json',JSON.stringify(report,null,2));await browser.close();await db.close();process.exit(0);
+ }
  const paper=await board.locator('canvas.interactive').boundingBox();
  const rectangle=(await scene()).find(el=>el.type==='rectangle');
  const sx=paper.x+rectangle.x+10,sy=paper.y+rectangle.y+18,ex=paper.x+rectangle.x+rectangle.width-10;
