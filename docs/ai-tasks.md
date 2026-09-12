@@ -23,6 +23,7 @@
   16:03 스캔까지 WORKING 무표식(30분 룰) — Claude 직접 수행·완결(회수 공지
   5386950005, PR #1118)**. 이 열에 잔여 발주 없음.
 ### done (최근)
+- **추천 즉시 읽기 (2026-09-12)** — 1776e6fb: 홈·서재 추천과 기존 suggestion 주소를 입력 폼 대신 완성된 읽기로 연결. 기사 발췌·브리핑·영상 구분, 공개 분석 주소 보존, 명시적인 비공개 보관과 중복 방지, 기존 단어 학습 연결. 전체4179 테스트/빌드·실제 수집 글 브라우저11항목 PASS, 실행 오류0. DB·env 변경0. `codex/recommendations-reader-20260912`, 상세 `docs/verification/recommendation-reading-20260912.md`; PR·미리보기 인계는 #150.
 - **수업 병합 후 이력 파일명 정합 (2026-09-12)** — SQL 초기051522를 실제 원격 적용072945로 개명, SQL 내용 동일 SHA-256 d8e7c2cb82c2d7ff5d9fc49024f4e0dc6831a8bb90b83c75c95c526f2c63970b. 원격 저장SQL suffix와 저장소MD5 일치, 로컬/원격92이력 집합 일치, PGlite33 PASS/운영쓰기0. e2e4경로·설계문서만 갱신. 필수 CI/병합 후 자동 DB 검사는 후속 PR/#150 참조. docs/verification/classroom-migration-history-20260912.md.
 - **병합 권한 개정 완료 (2026-09-12, 오너 직접 지시)** — AGENTS.md·CLAUDE.md에 Claude 및 ChatGPT/Codex의 오너 승인 후 직접 squash merge를 허용. 최신40자 head·대상·범위·충돌·필수 CI 확인, force-push 금지, 기존 변경 보존 유지. 같은 범위의 승인 재요청 방지. 별도 규약 커밋614a2c10, 앱 실행 코드 변경 없음. 원 작업공간 규약도 해당 문단만 반영, 수업 #1303 직접 병합 결과는 #150 참조.
 - **수업 흐름 통합 완료 (2026-09-12)** — PR #1303, 실행 c50b54f9. 독립 팀 홈·팀 안 설정·교재 바로 열기·같은 패널의 뜻/오늘 표현/마무리·교사 전용 공통 편집. 전체384파일/4,170개·474페이지 빌드·CI34665722052 SUCCESS. 로컬 Chromium/WebKit 새 흐름각14, 태블릿12, IDB각9, 기존 교사23, 학생 사본11/기록7 PASS. 최종 Preview1g6gftegw READY·version 일치, 배포 번들 교사14/학생11 PASS·오류0. 기존 원문/사본/FSRS/초안/권한 보존, DB/영속 env/운영 alias/merge 변경 없음. 별도 실제 교사·학생 계정 및 물리 iPad 검수는 후속. 상세 docs/verification/classroom-unified-20260912.md; 최종 head는 #150 CODEX_DONE.
