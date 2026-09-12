@@ -236,6 +236,8 @@ export default function ViewerPage() {
   const studyContext=classStudyContext(originalParams);
   const classToolbarTarget=useRef(null);
   const [classStudyActive,setClassStudyActive]=useState(false);
+  const [classBoardLayout,setClassBoardLayout]=useState('');
+  const classBoardTarget=useRef(null);
   const [classPresenting,setClassPresenting]=useState(false);
   const { user, profile, fetchProfile } = useAuth();
   const toast = useToast();
@@ -2479,13 +2481,14 @@ export default function ViewerPage() {
     // 경로를 덮어도 elementFromPoint가 밑의 토큰을 잡는다(useTokenRangeSelect 참조)
     <div className={`viewer-3col viewer-layout viewer-theme-${theme}${tokenRange.dragging ? ' viewer-3col--dragging' : ''}`}
       style={{...textbookThemeStyle(materialLang),'--reader-font':readerFontFamily(materialLang,fontFamily),'--pinyin-size':`${pinyinSize}rem`,'--pinyin-cell':`${pinyinCell}px`}}
-      data-reader-theme={theme} data-language={materialLang} data-class-study={classStudyActive} data-inspector-open={inspectorOpen&&!modalBlocked}
+      data-reader-theme={theme} data-language={materialLang} data-class-study={classStudyActive} data-teaching-board={classStudyActive?classBoardLayout:''} data-inspector-open={inspectorOpen&&!modalBlocked}
       data-pron-spacing={materialLang==='Chinese'&&(pronDisplay!=='none'||pronReveal)?'reserved':'natural'}
       data-left-active={!!(leftPanelLoading || leftPanelResult)}
       data-right-active={!!(dragTokens !== null || (selectedToken && isSheetOpen))}>
 
       {/* 중앙 — 뷰어 본문 */}
       {materialLang==='Chinese'&&fontFamily==='serif'&&<ChineseSerif rootRef={readerRef} onStatus={setFontStatus}/>}
+      <div ref={classBoardTarget} className="teaching-board-host" hidden={!classStudyActive||!classBoardLayout}/>
       <div className="viewer-center" inert={dictationPickerOpen||!!dictationSentence?true:undefined} aria-hidden={dictationPickerOpen||!!dictationSentence?true:undefined} data-answer-hidden={dictationPickerOpen||!!dictationSentence}>
       {!user && (
         <div className="viewer-guest-banner">
@@ -3152,7 +3155,7 @@ export default function ViewerPage() {
         first={tokenRange.range?json.sequence[tokenRange.range.start]:isSheetOpen?selectedToken?.id:pickedSentence?.firstTokenId}
         last={tokenRange.range?json.sequence[tokenRange.range.end]:undefined}
         blocked={modalBlocked} onClose={closeWordCard} onPresenting={setClassPresenting}>
-      {(annotationContent,annotationOpen,closeWordCard)=><ClassroomReader toolbarTarget={classToolbarTarget} annotationContent={annotationContent} context={studyContext} user={user} material={material}
+      {(annotationContent,annotationOpen,closeWordCard)=><ClassroomReader toolbarTarget={classToolbarTarget} boardTarget={classBoardTarget} onBoardLayout={setClassBoardLayout} annotationContent={annotationContent} context={studyContext} user={user} material={material}
         selection={classSelection} selectionSignal={rightSheetSignal}
         wordContent={(dragTokens!==null||(selectedToken&&isSheetOpen))?renderRightPanelContent:null}
         sentenceContent={(leftPanelLoading||leftPanelResult)?leftPanelContent:null}
