@@ -20,18 +20,19 @@ import {resolveClassSource} from '../../lib/classSource';
 import {useClassSelectionVisibility} from '../../lib/useReaderLayout';
 import TeachingBoard from './TeachingBoard';
 
-export default function ClassroomReader({annotationContent,context,user,material,selection,selectionSignal,wordContent,sentenceContent,fallback,onActive,suppressed,onPresenting,toolbarTarget,boardTarget,boardHeaderTarget,onBoardRatio,vocabularyIndex,onBoardLayout}) {
+export default function ClassroomReader({annotationContent,context,user,material,selection,selectionSignal,wordContent,sentenceContent,fallback,onSelectionClose,onActive,suppressed,onPresenting,toolbarTarget,boardTarget,boardHeaderTarget,onBoardRatio,vocabularyIndex,onBoardLayout}) {
   const root=useQuery({queryKey:['class-root',user?.id,context?.team],queryFn:()=>fetchTeamRoot(user.id,context.team),enabled:!!user?.id&&!!context});
   const team=getTeam(root.data?.processed_json?.metadata);
   const allowed=canTeachClass(user,root.data,material);
   useEffect(()=>{onActive(allowed);return()=>onActive(false);},[allowed,onActive]);
-  if(!allowed)return fallback;
-  return <ClassReaderSession key={`${user.id}:${team.key}:${context.day}:${material.id}`} toolbarTarget={toolbarTarget} boardTarget={boardTarget} boardHeaderTarget={boardHeaderTarget} onBoardRatio={onBoardRatio} vocabularyIndex={vocabularyIndex} onBoardLayout={onBoardLayout} root={root.data} team={team} day={context.day} material={material} selection={selection} selectionSignal={selectionSignal} annotationContent={annotationContent} wordContent={wordContent} sentenceContent={sentenceContent} suppressed={suppressed} onPresenting={onPresenting}/>;
+  if(!allowed)return typeof fallback==='function'?fallback():fallback;
+  return <ClassReaderSession key={`${user.id}:${team.key}:${context.day}:${material.id}`} fallback={fallback} onSelectionClose={onSelectionClose} toolbarTarget={toolbarTarget} boardTarget={boardTarget} boardHeaderTarget={boardHeaderTarget} onBoardRatio={onBoardRatio} vocabularyIndex={vocabularyIndex} onBoardLayout={onBoardLayout} root={root.data} team={team} day={context.day} material={material} selection={selection} selectionSignal={selectionSignal} annotationContent={annotationContent} wordContent={wordContent} sentenceContent={sentenceContent} suppressed={suppressed} onPresenting={onPresenting}/>;
 }
 
-function ClassReaderSession({toolbarTarget,boardTarget,boardHeaderTarget,onBoardRatio,vocabularyIndex,onBoardLayout,root,team,day,material,selection,selectionSignal,annotationContent,wordContent,sentenceContent,suppressed,onPresenting}) {
+function ClassReaderSession({fallback,onSelectionClose,toolbarTarget,boardTarget,boardHeaderTarget,onBoardRatio,vocabularyIndex,onBoardLayout,root,team,day,material,selection,selectionSignal,annotationContent,wordContent,sentenceContent,suppressed,onPresenting}) {
   const router=useRouter(),queryClient=useQueryClient();
   const [boardOpen,setBoardOpen]=useState(false);
+  const boardActions=useRef(null),[boardReady,setBoardReady]=useState(false);
   useEffect(()=>{if(boardTarget&&new URLSearchParams(window.location.search).get('board')==='1')setBoardOpen(true);},[boardTarget]);
   const setBoard=useCallback(open=>{
     setBoardOpen(open);const url=new URL(window.location.href);
@@ -75,7 +76,7 @@ function ClassReaderSession({toolbarTarget,boardTarget,boardHeaderTarget,onBoard
   const isManual=current?.source?.kind==='manual';
   const sourceValid=useMemo(()=>!current||isManual||!!resolveClassSource(material.processed_json,current.source),[current,isManual,material.processed_json]);
   const target=useMemo(()=>selection?.source&&resolveClassSource(material.processed_json,selection.source),[selection,material.processed_json]);
-  useClassSelectionVisibility(dockRef,bodyRef,manual?null:target?.first,manual?null:target?.last,`${selectionKeyFor(selection)}:${selectionSignal}`,!collapsed&&!suppressed);
+  useClassSelectionVisibility(dockRef,bodyRef,manual?null:target?.first,manual?null:target?.last,`${selectionKeyFor(selection)}:${selectionSignal}`,!boardOpen&&!collapsed&&!suppressed);
   // A new expression starts at its headword; showing/closing its presentation
   // or refreshing a meaning must not move the learner's place in this panel.
   useEffect(()=>{bodyRef.current?.scrollTo({top:0,behavior:'instant'});},[key]);
@@ -167,7 +168,7 @@ function ClassReaderSession({toolbarTarget,boardTarget,boardHeaderTarget,onBoard
       {savedDraft&&<button onClick={()=>clearDraft(savedDraft)}>초안 비우기</button>}
     </details>
   </div>:<p className="class-reader-hint">교재의 단어를 누르거나 표현을 드래그하세요. 이 자리에서 뜻을 보고 수업에 추가합니다.</p>;
-  return <>{toolbarTarget?.current&&createPortal(boardOpen?null:toolbar,toolbarTarget.current)}<aside ref={dockRef} className={`class-reader-dock${collapsed?' is-collapsed':''}${expanded?' is-expanded':''}`} hidden={suppressed} aria-label="교재 안 수업 도구" onMouseUp={e=>e.stopPropagation()}>
+  return <>{toolbarTarget?.current&&createPortal(boardOpen?null:toolbar,toolbarTarget.current)}{!boardOpen&&<aside ref={dockRef} className={`class-reader-dock${collapsed?' is-collapsed':''}${expanded?' is-expanded':''}`} hidden={suppressed} aria-label="교재 안 수업 도구" onMouseUp={e=>e.stopPropagation()}>
     <header className="class-reader-dock__header"><div><strong>{view==='word'?'뜻과 설명':view==='notes'?'오늘 표현':'수업 마무리'}</strong><small>{dayLabel(day)}</small><strong className="class-reader-keyboard-context">{current?.text||input||'표현 입력'}</strong></div>{view!=='word'&&<button onClick={()=>setView('word')}>뜻 보기</button>}<button className="class-reader-tools-toggle" aria-label="표현 찾기 열기" aria-expanded={toolsOpen||!current} onClick={()=>{setView('word');setCollapsed(false);setToolsOpen(v=>!v);}}>찾기</button><button aria-label={collapsed?'수업 도구 펼치기':'수업 도구 접기'} onClick={()=>setCollapsed(v=>!v)}>{collapsed?'펼치기':'접기'}</button><button className="class-reader-expand" aria-label={expanded?'패널 줄이기':'패널 펼치기'} onClick={()=>setExpanded(v=>!v)}>{expanded?'↙':'↗'}</button></header>
     <section className="class-reader-workspace" aria-label="선택한 표현을 수업에 추가" hidden={collapsed}>
     <div ref={bodyRef} className="class-reader-dock__body">
@@ -197,7 +198,7 @@ function ClassReaderSession({toolbarTarget,boardTarget,boardHeaderTarget,onBoard
       {session.queue.length>0&&<details className="class-reader-queue" open={session.queue.some(row=>row.status==='error')}><summary>{saveLabel}</summary>{session.queue.map(row=><div key={row.id} className="class-reader-pending"><b>{row.text}</b><small>{row.status==='error'?row.error:'서버 저장 대기'}</small>{row.status==='error'&&<button onClick={()=>session.retry(row.id).catch(e=>setMessage(classroomError(e)))}>저장 재시도</button>}</div>)}</details>}
     </footer>
     </section>
-  </aside>{boardOpen&&boardTarget&&<TeachingBoard target={boardTarget} headerTarget={boardHeaderTarget} onRatio={onBoardRatio} navigation={boardNavigation} onSession={()=>openView('summary')} material={material} vocabularyIndex={vocabularyIndex} onLayout={onBoardLayout} onClose={closeBoard}
+  </aside>}{boardOpen&&fallback(<><button disabled={!boardReady||!selection} onClick={()=>{if(boardActions.current?.place(selection))onSelectionClose?.();}}>판에 놓기</button><button disabled={!selection} onClick={event=>{if(selection){presentationOriginRef.current=event.currentTarget;setPresentation({...selection,selection});}}}>크게 보기</button></>)}{boardOpen&&boardTarget&&<TeachingBoard target={boardTarget} headerTarget={boardHeaderTarget} actionsRef={boardActions} onReady={setBoardReady} onRatio={onBoardRatio} navigation={boardNavigation} onSession={()=>openView('summary')} material={material} vocabularyIndex={vocabularyIndex} onLayout={onBoardLayout} onClose={closeBoard}
     owner={root.owner_id} team={team} day={day} current={current?{...current,meaning,reading}:null}
     getRecordState={picked=>findStudyEntry(session.note,picked)?'오늘 표현에 추가됨':session.queue.some(row=>studySelectionKey({text:row.text,source:row.seed?.source})===studySelectionKey(picked))?'저장 대기 중':null}
     onRecord={async picked=>{
