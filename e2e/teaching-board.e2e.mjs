@@ -279,7 +279,7 @@ try {
  const other=await context.newPage();await other.goto(page.url());await other.getByRole('region',{name:'선생님 설명판'}).waitFor();await other.waitForTimeout(800);
  await menus.action('pages','새 판');await waitFor(async()=> (await head()).document.pages.length===3);
  await boardMenus(other,activate).action('pages','새 판');
- await other.getByText('다른 창에서 이 판을 수정했어요.',{exact:false}).first().waitFor();
+ await other.locator('.teaching-board-message').filter({hasText:'다른 창에서 이 판을 수정했어요.'}).waitFor();
  await waitFor(async()=> (await readBoards()).some(row=>row.id!==row.scope));
  assert.equal((await head()).document.pages.length,3);
  await other.close();await page.reload();await board.waitFor();await menus.open('main');

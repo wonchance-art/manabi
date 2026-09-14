@@ -31,6 +31,7 @@ export async function verifyBoardMenus({page,board,activate,check,saveScreen}) {
     const popup=menus.hud.locator('#board-menu-entry');const bounds=await popup.boundingBox();
     assert(bounds.x>=0&&bounds.x+bounds.width<=width+1&&bounds.y+bounds.height<=height+1,'entry popup fits within the teaching viewport');
     assert.deepEqual(await surface.boundingBox(),before,'opening input never shrinks or moves the paper');
+    await saveScreen(`board-entry-${width}`);
     await page.keyboard.press('Escape');
     assert(await menus.hud.getByRole('button',{name:'표현 입력',exact:true}).evaluate(el=>el===document.activeElement));
     await menus.open('pages');await menus.close();
@@ -46,6 +47,7 @@ export async function verifyBoardMenus({page,board,activate,check,saveScreen}) {
   await tools.press('Enter');await menus.hud.locator('#board-menu-tools').waitFor({state:'visible'});
   assert(await menus.hud.getByRole('button',{name:'실행 취소',exact:true}).isDisabled());
   assert(await menus.hud.getByRole('button',{name:'다시 실행',exact:true}).isDisabled());
+  await saveScreen('board-tools');
   await page.keyboard.press('Escape');assert(await tools.evaluate(el=>el===document.activeElement));
   await menus.open('main');
   assert.equal(await menus.hud.getByRole('link',{name:'웹앱 홈',exact:true}).getAttribute('href'),'/home');
