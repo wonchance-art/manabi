@@ -136,6 +136,7 @@ try {
  await page.locator('[data-tid="id_0_word"]')[activate]();
  await page.locator('.viewer-inspector').getByRole('button',{name:'판에 놓기',exact:true})[activate]();
  await waitFor(async()=> (await scene()).length===4);
+ assert.equal(await board.getByLabel('설명판 시작 안내',{exact:true}).count(),0,'placing content removes the empty-board hint');
  assert.equal((await scene()).find(el=>el.customData?.manabiExpression).customData.manabiExpression.source.materialId,'10');
  await saveScreen('board-textbook');check('selected textbook expression imports with reading, meaning and exact source');
  const originalBoard=JSON.stringify(await head());
