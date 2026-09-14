@@ -34,15 +34,19 @@ export async function verifyReaderDesign({page,board,scene,head,saveScreen,waitF
   await token()[activate]();await inspector.locator('.word-detail-card').waitFor();
   await inspector.getByRole('button',{name:'보조 패널 닫기',exact:true})[activate]();
   await page.getByRole('navigation',{name:'설명판 보기'}).getByRole('button',{name:'함께',exact:true})[activate]();
-  await page.setViewportSize({width:390,height:844});
-  await token().scrollIntoViewIfNeeded();await token()[activate]();await inspector.locator('.word-detail-card').waitFor();
-  await page.waitForTimeout(400);
-  const selected=await token().boundingBox(),popup=await inspector.boundingBox(),toolbar=await page.locator('.viewer-topbar').boundingBox();
-  assert(selected.y>=toolbar.y+toolbar.height-1,'selected source clears the sticky reader toolbar');
-  assert(selected.y+selected.height<=popup.y+1,'selected source clears the word card');
-  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
-  await saveScreen('classroom-word-phone');
-  await inspector.getByRole('button',{name:'보조 패널 닫기',exact:true})[activate]();
+  for(const [width,height]of [[390,844],[354,767]]){
+    await page.setViewportSize({width,height});
+    await token().scrollIntoViewIfNeeded();
+    if(width===354)await token().press('Enter');else await token()[activate]();
+    await inspector.locator('.word-detail-card').waitFor();
+    await page.waitForTimeout(400);
+    const selected=await token().boundingBox(),popup=await inspector.boundingBox(),toolbar=await page.locator('.viewer-topbar').boundingBox();
+    assert(selected.y>=toolbar.y+toolbar.height-1,'selected source clears the sticky reader toolbar');
+    assert(selected.y+selected.height<=popup.y+1,'selected source clears the word card');
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+    await saveScreen(`classroom-word-phone-${width}`);
+    await inspector.getByRole('button',{name:'보조 패널 닫기',exact:true})[activate]();
+  }
   await board.locator('canvas.interactive').waitFor({state:'visible'});
   assert.equal((await scene()).find(el=>el.customData?.manabiExpression).customData.manabiExpression.text,'图书馆');
   check('reader-only and mobile layouts keep word lookup, source visibility and the existing board');
@@ -56,7 +60,11 @@ export async function verifyReaderDesign({page,board,scene,head,saveScreen,waitF
   await db.query('insert into reading_materials(id,owner_id,title,raw_text,visibility,processed_json) values(12,$1,$2,$3,$4,$5)',[uid,'주말의 작은 도서관 — 함께 읽으며 넓어지는 세계',Array(8).fill(entries.map(e=>e[0]).join('')).join('\n'),'private',json]);
   const word=()=>page.locator('[data-tid="id_0_6_design"]');
   for(const [width,height,name]of [[1440,1000,'desktop'],[846,900,'tablet'],[390,844,'phone']]){
-    await page.setViewportSize({width,height});await page.goto(base+'/viewer/12');await word().waitFor();await page.evaluate(()=>document.fonts.ready);
+    await page.setViewportSize({width,height});
+    // Let the 450ms scroll observer and 2s position writer finish before
+    // replacing the whole document; WebKit reports aborted fixtures as CORS errors.
+    await page.waitForTimeout(2600);await page.waitForLoadState('networkidle');
+    await page.goto(base+'/viewer/12');await word().waitFor();await page.evaluate(()=>document.fonts.ready);
     await saveScreen(`reader-${name}`);
     await word()[activate]();await inspector.locator('.word-detail-card').waitFor();
     // Let the source-reveal animation frames settle before capturing fixed chrome.

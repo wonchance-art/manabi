@@ -36,8 +36,12 @@ export function restoreReadingAnchor(anchor, scrollBy) {
 
 // Reveal only the obscured edge; an expanded sheet may leave no usable line.
 export function selectedTokenScrollDelta(rect, bounds) {
-  const top = bounds.top + 8, bottom = bounds.bottom - 8;
-  if (bottom - top < rect.bottom - rect.top) return 0;
+  const spare = bounds.bottom - bounds.top - (rect.bottom - rect.top);
+  if (spare < 0) return 0;
+  // A zoomed phone can fit the word but not two full margins. Reduce the
+  // margins before giving up on showing the selected text.
+  const padding = Math.min(8, spare / 2);
+  const top = bounds.top + padding, bottom = bounds.bottom - padding;
   if (rect.top < top) return rect.top - top;
   if (rect.bottom > bottom) return rect.bottom - bottom;
   return 0;

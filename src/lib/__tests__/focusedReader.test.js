@@ -28,6 +28,12 @@ describe('selected word stays between the toolbar and mobile inspector', () => {
   it('leaves an already visible word in place', () => {
     expect(selectedTokenScrollDelta({ top: 240, bottom: 296 }, bounds)).toBe(0);
   });
+  it('reduces margins when a zoomed phone fits the word but not the normal padding', () => {
+    const narrow = { top: 298, bottom: 356 };
+    expect(selectedTokenScrollDelta({ top: 332, bottom: 377 }, narrow)).toBe(27.5);
+    expect(selectedTokenScrollDelta({ top: 280, bottom: 325 }, narrow)).toBe(-24.5);
+    expect(selectedTokenScrollDelta({ top: 320, bottom: 378 }, narrow)).toBe(22);
+  });
   it('does not chase a word when an expanded sheet leaves no reading space', () => {
     expect(selectedTokenScrollDelta({ top: 394, bottom: 450 }, { top: 190, bottom: 120 })).toBe(0);
     expect(selectedTokenScrollDelta({ top: 180, bottom: 390 }, bounds)).toBe(0);
