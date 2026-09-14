@@ -39,7 +39,8 @@ const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*'
 let failure=false,lostResponse=false,analysisDelay=0,analysisFail=false,emptyMeaning=false;
 const analyzedLines=[];
 const tabletState={dictionaryDelay:0,lookups:0};
-const report={engine,touch,checks:[],errors:[],screens:[],failedRequests:[]},writes=[];
+const report={engine,touch,checks:[],errors:[],screens:[],failedRequests:[],expectedTransport:[]},writes=[];
+let replacingDocument=false,cancelledHomePrefetch=false,revisionConflicts=0;
 await context.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());
 // Vercel's injected review toolbar is hosting chrome, outside the app flow.
 // Stub only that script; application console failures still fail verification.
@@ -65,7 +66,7 @@ await context.route('**/rest/v1/**',async r=>{
    if(table==='viewer_replace_analysis')return send((await db.query('select viewer_replace_analysis($1,$2,$3,$4,$5,$6) result',[body.p_id,body.p_expected_raw,body.p_expected_json,body.p_raw,body.p_json,body.p_attempt])).rows[0].result);
    if(table==='reading_materials'&&method==='POST'){const result=await db.query('insert into reading_materials(owner_id,title,raw_text,visibility,processed_json) values($1,$2,$3,$4,$5) returning *',[body.owner_id,body.title,body.raw_text,body.visibility,body.processed_json]);return send(result.rows,201);}
    return send([]);
-  }catch(error){return send({code:error.code,message:error.message},409);}
+  }catch(error){if(error.code==='40001'&&table==='viewer_replace_analysis'){revisionConflicts++;report.expectedTransport.push('stale background analysis rejected by SQL revision check');}return send({code:error.code,message:error.message},409);}
  }
  if(table==='reading_materials'){
   let rows=(await db.query('select * from reading_materials')).rows;
@@ -83,8 +84,13 @@ await context.route('**/rest/v1/**',async r=>{
 });
 await context.route('**/api/suggestions/today',r=>r.fulfill({json:[]}));
 await context.route('**/api/analyze',async r=>{if(analysisDelay)await new Promise(resolve=>setTimeout(resolve,analysisDelay));if(analysisFail)return r.fulfill({status:503,json:{error:'검수 분석 실패'}});const {lines}=r.request().postDataJSON();analyzedLines.push(lines);try{await r.fulfill({json:{results:lines.map(line=>({sequence:['word'],dictionary:{word:{text:line,meaning:emptyMeaning?'':'검수 표현의 뜻',pos:'명사',furigana:'よみ'}}}))}});}catch{}});
-const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.message));page.on('console',m=>{if(m.type()==='error' && !m.text().startsWith('WebSocket connection') && !(lookupError&&m.text().includes('503'))){report.errors.push(m.text());console.log('browser-console',m.text());}});
-page.on('requestfailed',request=>{const url=new URL(request.url());report.failedRequests.push(url.origin+url.pathname);});
+const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.message));page.on('console',m=>{
+ if(m.type()!=='error'||m.text().startsWith('WebSocket connection')||(lookupError&&m.text().includes('503')))return;
+ if(cancelledHomePrefetch&&m.text().startsWith('Failed to fetch RSC payload for '+base+'/home')){cancelledHomePrefetch=false;report.expectedTransport.push('home link prefetch cancelled while replacing the test document');return;}
+ if(revisionConflicts>0&&m.text().includes('409 (Conflict)')){revisionConflicts--;return;}
+ report.errors.push(m.text());console.log('browser-console',m.text());
+});
+page.on('requestfailed',request=>{const url=new URL(request.url());report.failedRequests.push(url.origin+url.pathname);if(replacingDocument&&url.pathname==='/home'&&request.failure()?.errorText==='cancelled')cancelledHomePrefetch=true;});
 const check=label=>{report.checks.push(label);console.log(label);};
 const waitFor=async fn=>{for(let i=0;i<100;i++){if(await fn())return;await page.waitForTimeout(100);}throw new Error('condition timeout');};
 const current=async()=>(await db.query("select * from reading_materials where processed_json#>>'{metadata,team,day}'=$1",[day])).rows[0];
@@ -181,11 +187,11 @@ try {
  assert.deepEqual((await scene()).filter(el=>el.customData?.manabiExpression).map(el=>({text:el.customData.manabiExpression.text,meaning:el.customData.manabiExpression.meaning,source:el.customData.manabiExpression.source})),originalExpressions);
  check('multi-select frame/annotation controls preserve geometry; arranging words does not move ink');
  await selection.getByRole('button',{name:'여백 줄이기',exact:true})[activate]();await page.waitForTimeout(450);
- await menus.action('main','전체 보기');await saveScreen('arranged-words');
+ replacingDocument=true;await menus.action('main','전체 보기');await saveScreen('arranged-words');
  const snapshot=(await scene()).map(({id,type,x,y,customData,points,text})=>({id,type,x,y,customData,points,text}));
  await page.reload();await board.waitFor();await waitFor(async()=> (await scene()).length===snapshot.length);
  assert.deepEqual((await scene()).map(({id,type,x,y,customData,points,text})=>({id,type,x,y,customData,points,text})),snapshot);
- check('annotated groups and handwriting survive reload without reflow');
+ replacingDocument=false;check('annotated groups and handwriting survive reload without reflow');
  await menus.action('main','보여주기');const presentation=page.locator('dialog.board-presentation');await presentation.waitFor();
  await presentation.getByRole('button',{name:'한자 훈음',exact:true})[activate]();await saveScreen('presentation');
  await page.keyboard.press('Escape');await presentation.waitFor({state:'detached'});
@@ -240,6 +246,7 @@ try {
  await dock.getByRole('button',{name:'수업용 뜻 수정',exact:true})[activate]();await dock.getByLabel('수업용 뜻',{exact:true}).fill('우리 내일 만나요');
  await saveScreen('selected-expression');await dock.getByRole('button',{name:'오늘 표현에 추가',exact:true})[activate]();
  await waitFor(async()=> (await current()).raw_text.includes('我们明天见'));
+ await waitFor(()=>dock.getByText('서버 저장 확인됨',{exact:true}).isVisible());
  check('the original teacher inspector still edits and records a dragged multiword expression');
  assert.equal(report.errors.length,0,report.errors.join('\n'));check('no browser runtime errors');
 } catch(error){await saveScreen('failure');console.error(await page.locator('body').innerText());throw error;}
