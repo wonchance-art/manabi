@@ -21,8 +21,8 @@ export function boardSearch(query, entries, limit = 6) {
   }).sort((a,b)=>Number(b.text.toLocaleLowerCase()===q)-Number(a.text.toLocaleLowerCase()===q)).slice(0,limit);
 }
 // A presentation is a disposable view. Hiding readings must not rewrite cards.
-export function presentationElements(elements, {reading=null,meaning=null} = {}) {
+export function presentationElements(elements, {reading=null,meaning=null,hun=null} = {}) {
   return elements.filter(el=>!el.isDeleted).map(el=>({...el,
-    opacity:el.customData?.manabiField==='reading'&&reading!==null ? (reading?100:0) : el.customData?.manabiField==='meaning'&&meaning!==null ? (meaning?100:0) : el.opacity,
+    opacity:el.customData?.manabiField==='hun'&&hun!==null ? (hun?100:0) : el.customData?.manabiField==='reading'&&reading!==null ? (reading?100:0) : el.customData?.manabiField==='meaning'&&meaning!==null ? (meaning?100:0) : el.opacity,
   }));
 }

@@ -1,0 +1,20 @@
+.teaching-word {width:100%;min-width:0;container-type:inline-size;color:var(--reader-ink,var(--text-primary));}
+.teaching-word-graphic {display:block;overflow:visible;max-width:100%;font-family:Arial,"Noto Sans JP","Noto Sans SC",sans-serif;}
+.teaching-word-part {fill:currentColor;}
+.teaching-word-part--text {font-weight:600;}
+.teaching-word-part--reading {fill:var(--reader-accent,var(--accent-text));}
+.teaching-word-part--hun {fill:var(--reader-muted,var(--text-secondary));}
+.teaching-word-part--meaning {font-weight:600;}
+.teaching-word-part[role="button"] {cursor:pointer;}
+.teaching-word-part:focus-visible {outline:2px solid var(--reader-accent,var(--accent-text));outline-offset:3px;}
+.teaching-word-controls {display:flex;align-items:center;flex-wrap:wrap;gap:4px;}
+.teaching-word-controls button {font:inherit;font-size:12px;min-height:44px;padding:7px 10px;border:1px solid var(--reader-line,var(--border));border-radius:9px;background:transparent;color:var(--reader-muted,var(--text-secondary));cursor:pointer;}
+.teaching-word-controls button[aria-pressed="true"] {color:var(--reader-accent,var(--accent-text));background:var(--reader-accent-soft,var(--bg-secondary));}
+.teaching-word--presentation {margin:auto;}
+.teaching-word--presentation .teaching-word-graphic {margin:auto;}
+
+.reader-teaching-word {padding:12px 0;}
+.reader-teaching-actions {display:flex;align-items:center;gap:8px;}
+.reader-teaching-actions details {flex:1;}
+.reader-teaching-actions summary {min-height:44px;display:flex;align-items:center;cursor:pointer;font-size:12px;color:var(--reader-muted);}
+.reader-teaching-actions .word-detail-card__speak {position:static;}

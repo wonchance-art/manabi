@@ -9,25 +9,32 @@ import BoardHistory from './BoardHistory';
 import BoardIcon, {BoardIconButton} from './BoardIcon';
 import Link from 'next/link';
 import BoardPresentation from './BoardPresentation';
+import {lookupSourceLabel} from '../../lib/classroomLookup';
+import {wordRecordSummary} from '../../lib/teachingWordRecord';
+import TeachingWord, {WordDisplayControls, useWordAppearance} from './TeachingWord';
+import {normalizeWordAppearance, annotatedLanguage} from '../../lib/teachingWordLayout';
 import {readBoardWorkspace,writeBoardWorkspace,boardSearch,normalizeBoardWorkspace} from '../../lib/teachingWorkspace';
 import {studySelection} from '../../lib/classStudy';
 import {supabase} from '../../lib/supabase';
 import {boardScope, boardExpression, expressionOf, boardInsertion, replaceBoardPage, BOARD_PAGE_LIMIT, validateBoard} from '../../lib/teachingBoard';
 import {useTeachingBoard} from '../../lib/useTeachingBoard';
-import {cardSkeleton, cardFields, readCard, rotateCardPart} from '../../lib/teachingBoardCard';
+import {cardSkeleton, cardFields, readCard, rotateCardPart, wordCardSkeleton, expressionElements, arrangeExpressionGroups} from '../../lib/teachingBoardCard';
 import {isClassComposing} from '../../lib/classReaderDraft';
 import {boardCameraForBounds} from '../../lib/teachingBoardViewport';
 
-export default function TeachingBoardCanvas({owner, team, day, onRecord, getRecordState, onLayout, onClose, headerHost, navigation, sessionContent, onRatio, material, vocabularyIndex, actionsRef, onReady}) {
+export default function TeachingBoardCanvas({owner, team, day, onRecord, getRecordState, onLayout, onClose, headerHost, navigation, sessionContent, recordCount=0, onRatio, material, vocabularyIndex, actionsRef, onReady}) {
   const scope = useMemo(() => boardScope(owner, team.key, day), [owner, team.key, day]);
   const store = useTeachingBoard(scope), root = useRef(null), api = useRef(null), document = useRef(null), latest = useRef(null), timer = useRef(null), signature = useRef(''), armed=useRef(false), dirty=useRef(false);
   const [initialWorkspace]=useState(()=>readBoardWorkspace(scope,'board'));
   const [ratio,setRatio]=useState(initialWorkspace.ratio),[presenting,setPresenting]=useState(null),[activeTool,setActiveTool]=useState('selection'),[searching,setSearching]=useState(false);
-  const inputRef=useRef(null),presentationActive=useRef(false),presentationTrigger=useRef(null),canvasPointers=useRef(new Set());
+  const inputRef=useRef(null),presentationActive=useRef(false),presentationTrigger=useRef(null),canvasPointers=useRef(new Set()),nativeEditing=useRef(null);
   const [layout, setLayout] = useState(initialWorkspace.layout), [pageId, setPageId] = useState(null), [selected, setSelected] = useState([]), [panel, setPanel] = useState(false);
   const [input, setInput] = useState(initialWorkspace.input), [reading, setReading] = useState(initialWorkspace.reading), [meaning, setMeaning] = useState(initialWorkspace.meaning), [candidates, setCandidates] = useState([]), [busy, setBusy] = useState(false), [message, setMessage] = useState('');
   const [editing, setEditing] = useState(null), [recording, setRecording] = useState(false), [menu,setMenu] = useState(null);
   const hud=useRef(null), menuTrigger=useRef(null);
+  const [appearance,setAppearance]=useWordAppearance(owner,team.lang);
+  const [keepAdding,setKeepAdding]=useState(false),[senses,setSenses]=useState([]);
+  const [entrySource,setEntrySource]=useState({kind:'manual'}),[lookupSource,setLookupSource]=useState('');
   const [toolStyle,setToolStyle]=useState({color:'ink',width:2});
   const [hasContent,setHasContent]=useState(null);
   const toolStyleRef=useRef(toolStyle);toolStyleRef.current=toolStyle;
@@ -140,6 +147,16 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
   const changeScene = (elements, state) => {
     if (!pageId) return;
     latest.current = {id: pageId, elements, state};
+    const finished=nativeEditing.current&&!state.editingTextElement?nativeEditing.current:null;
+    nativeEditing.current=state.editingTextElement?.id||null;
+    if(finished){
+      const edited=elements.find(el=>el.id===finished&&!el.isDeleted);
+      const target=edited&&elements.find(el=>expressionOf(el)?.layoutVersion===2&&el.groupIds?.[0]===edited.groupIds?.[0]);
+      const value=target&&readCard(target,elements);
+      if(value&&JSON.stringify(value)!==JSON.stringify(expressionOf(target))){
+        queueMicrotask(()=>{if(api.current&&latest.current?.id===pageId)api.current.updateScene({elements:rebuildCard(target,value,api.current.getSceneElementsIncludingDeleted()),captureUpdate:CaptureUpdateAction.EVENTUALLY});});
+      }
+    }
     setHasContent(elements.some(el=>!el.isDeleted));
     if(['image','embeddable','magicframe'].includes(state.activeTool.type)){api.current?.setActiveTool({type:'selection'});return;}
     setActiveTool(previous=>previous===state.activeTool.type?previous:state.activeTool.type);
@@ -157,17 +174,18 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
   const addExpression = (value, preserveDraft=false) => {
     if (!api.current) return false;
     try {
-      const payload = boardExpression(value, team.lang), elements = api.current.getSceneElementsIncludingDeleted();
-      const id = crypto.randomUUID(), width = payload.text.length > 25 ? 440 : 320;
+      const payload = boardExpression({...appearance,...value,layoutVersion:2}, value.language||team.lang), elements = api.current.getSceneElementsIncludingDeleted();
+      const id = crypto.randomUUID(), width = Math.min(620,Math.max(300,(api.current.getAppState().width||720)-56));
       const style=getComputedStyle(root.current), palette={paper:style.getPropertyValue('--reader-paper').trim(),ink:style.getPropertyValue('--reader-ink').trim(),line:style.getPropertyValue('--reader-line').trim(),accent:style.getPropertyValue('--reader-accent').trim()};
       const skeleton=cardSkeleton(payload,id,{x:0,y:0},palette,width);
-      const position=boardInsertion(elements,api.current.getAppState(),width,skeleton[0].height);
+      const position=boardInsertion(elements,api.current.getAppState(),skeleton[0].width,skeleton[0].height);
       const card=convertToExcalidrawElements(cardSkeleton(payload,id,position,palette,width),{regenerateIds:false});
       update([...elements,...card],{appState:{selectedElementIds:Object.fromEntries(card.map(el=>[el.id,true])),selectedGroupIds:{[id]:true}}});
       api.current.setActiveTool({type:'selection'});
-      revealElements(card);
+      // Keep the teacher's camera stable while placing several expressions.
+      // Whole-board fit remains an explicit action.
       setMessage('판에 놓았어요. 자유롭게 옮기고 필기하세요.');
-      if(!preserveDraft){attempt.current++;setBusy(false);setPanel(false);setSearching(false);setEditing(null);setInput('');setReading('');setMeaning('');closeMenu(true);}
+      if(!preserveDraft){attempt.current++;setBusy(false);setPanel(false);setSearching(false);setEditing(null);setInput('');setReading('');setMeaning('');setEntrySource({kind:'manual'});setLookupSource('');if(keepAdding){setSearching(true);requestAnimationFrame(()=>inputRef.current?.focus());}else closeMenu(true);}
       return true;
     } catch (error) { setMessage(error.message);return false; }
   };
@@ -179,13 +197,14 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
     if(layout==='reader')changeLayout('split');
     return addExpression(value,true);
   }}));
-  const anchor=selected.find(el=>expressionOf(el));
+  const anchors=selected.filter(el=>expressionOf(el));
+  const anchor=anchors[0];
   const picked=anchor && selected.every(el=>el.groupIds?.includes(anchor.groupIds[0])) ? readCard(anchor,api.current?.getSceneElementsIncludingDeleted() || selected) : null;
   const recorded=picked ? getRecordState?.(picked) : null;
   const editSelected = () => { if (picked) { attempt.current++;editVersion.current++;setBusy(false); setEditing(anchor.id); setInput(picked.text); setReading(picked.reading); setMeaning(picked.meaning); setPanel(true); setCandidates([]);setMenu('entry'); } };
   const applyExpression = event => {
     event.preventDefault(); if (isClassComposing(event, composing.current)) return;
-    if (!editing) { addExpression({text:input, reading, meaning, source:{kind:'manual'}}); return; }
+    if (!editing) { addExpression({text:input, reading, meaning, source:entrySource,lookupSource}); return; }
     const elements = api.current.getSceneElementsIncludingDeleted(), target = elements.find(el => el.id === editing && !el.isDeleted), previous = expressionOf(target);
     if (!previous) { setMessage('수정할 표현을 다시 선택해 주세요.'); return; }
     try {
@@ -194,26 +213,42 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
       cancelEdit();closeMenu(true);setMessage('이 판의 표현을 수정했어요.');
     } catch (error) { setMessage(error.message); }
   };
-  const reviseCard = (target, value) => {
-    const elements=api.current.getSceneElementsIncludingDeleted(), fields=cardFields(target,elements);
-    const style=getComputedStyle(root.current), palette={paper:style.getPropertyValue('--reader-paper').trim(),ink:style.getPropertyValue('--reader-ink').trim(),line:style.getPropertyValue('--reader-line').trim(),accent:style.getPropertyValue('--reader-accent').trim()};
-    const fresh=convertToExcalidrawElements(cardSkeleton(value,target.id,{x:target.x,y:target.y},palette,target.width,(fields.find(el=>el.customData.manabiField==='text')?.fontSize || 42)/42),{regenerateIds:false});
-    const revised=elements.map(el=>{
-      if(el.id===target.id) return newElementWith(el,{height:fresh[0].height,customData:{...el.customData,manabiExpression:value}});
-      if(!fields.some(field=>field.id===el.id)) return el;
-      const replacement=rotateCardPart(fresh.find(field=>field.customData?.manabiField===el.customData.manabiField),fresh[0],target.angle);
-      return newElementWith(el,{x:replacement.x,y:replacement.y,angle:replacement.angle,text:replacement.text,originalText:replacement.originalText,fontSize:replacement.fontSize,width:replacement.width,height:replacement.height,customData:replacement.customData,opacity:replacement.opacity});
-    });
-    update(revised);revealElements(revised.filter(el=>el.groupIds?.[0]===target.groupIds?.[0]));
+  const palette=()=>{const style=getComputedStyle(root.current);return {paper:style.getPropertyValue('--reader-paper').trim(),ink:style.getPropertyValue('--reader-ink').trim(),muted:style.getPropertyValue('--reader-muted').trim(),line:style.getPropertyValue('--reader-line').trim(),accent:style.getPropertyValue('--reader-accent').trim()};};
+  const rebuildCard=(target,value,elements,{compact=false}={})=>{
+    const members=expressionElements(target,elements),fields=cardFields(target,elements);
+    const scale=(fields.find(el=>el.customData.manabiField==='text')?.fontSize||42)/42;
+    const id=crypto.randomUUID();
+    const skeleton=value.layoutVersion===2?wordCardSkeleton(value,id,{x:target.x,y:target.y},palette(),{maxWidth:Math.min(620*scale,Math.max(target.width,300*scale)),scale,compact}):cardSkeleton(value,id,{x:target.x,y:target.y},palette(),target.width,scale);
+    const fresh=convertToExcalidrawElements(skeleton,{regenerateIds:false});
+    const container={...fresh[0],angle:target.angle};
+    const children=fresh.slice(1).map(el=>({...rotateCardPart(el,container,target.angle),groupIds:target.groupIds}));
+    const ids=new Set(members.map(el=>el.id));
+    return [...elements.map(el=>el.id===target.id?newElementWith(el,{width:container.width,height:container.height,strokeColor:container.strokeColor,backgroundColor:container.backgroundColor,customData:{...el.customData,manabiExpression:value}}):ids.has(el.id)?newElementWith(el,{isDeleted:true}):el),...children];
   };
-  const toggle = field => {
-    if (!picked) return;
-    const next={...picked,[field]:!picked[field]};
-    update(api.current.getSceneElementsIncludingDeleted().map(el=>{
-      if(el.id===anchor.id) return newElementWith(el,{customData:{...el.customData,manabiExpression:next}});
-      if(el.groupIds?.[0]===anchor.groupIds[0] && el.customData?.manabiField===(field==='showReading'?'reading':'meaning')) return newElementWith(el,{opacity:next[field]?100:0});
-      return el;
-    }));
+  const reviseCard=(target,value)=>update(rebuildCard(target,value,api.current.getSceneElementsIncludingDeleted()));
+  const applyAppearance=next=>{
+    setAppearance(next);
+    const elements=api.current.getSceneElementsIncludingDeleted(),changes=new Map();
+    for(const target of anchors){
+      const value=readCard(target,elements),updated={...value,...normalizeWordAppearance(next)};
+      // Legacy cards keep their layout until explicit conversion/compacting.
+      if(value.layoutVersion!==2){delete updated.layoutVersion;delete updated.showHun;delete updated.appearance;}
+      changes.set(target.id,{customData:{...target.customData,manabiExpression:updated},strokeColor:next.appearance==='card'?palette().line:'transparent',backgroundColor:next.appearance==='card'?palette().paper:'transparent'});
+      for(const field of cardFields(target,elements)){
+        const key={reading:'showReading',hun:'showHun',meaning:'showMeaning'}[field.customData.manabiField];
+        if(key)changes.set(field.id,{opacity:next[key]===false?0:100});
+      }
+    }
+    update(elements.map(el=>changes.has(el.id)?newElementWith(el,changes.get(el.id)):el));
+  };
+  const compactSelection=()=>{
+    let elements=api.current.getSceneElementsIncludingDeleted();
+    for(const target of anchors)elements=rebuildCard(target,{...readCard(target,elements),...normalizeWordAppearance(readCard(target,elements))},elements);
+    update(elements);setMessage('선택한 표현의 여백을 줄였어요. 되돌리기로 복구할 수 있어요.');
+  };
+  const arrange=direction=>{
+    const elements=api.current.getSceneElementsIncludingDeleted(),moves=arrangeExpressionGroups(anchors,elements,direction);
+    update(elements.map(el=>moves.has(el.id)?newElementWith(el,moves.get(el.id)):el));
   };
   const group = () => {
     if (selected.length < 2) return;
@@ -222,28 +257,27 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
     setMessage('표현과 필기를 함께 묶었어요.');
   };
   const lookup = async text => {
-    const query = text.trim(); if (!query) return;
-    const request = ++attempt.current, atEdit = editVersion.current;setPanel(true);setSearching(false);
-    setBusy(true); setCandidates([]); setMessage('');
-    try {
-      const {data:{session}} = await supabase.auth.getSession();
-      const [dictionary, kana] = await Promise.all([
-        supabase.from('morpheme_dictionary').select('meanings,reading').eq('language',team.lang).eq('base_form',query).maybeSingle(),
-        team.lang === 'Japanese' && /^[ぁ-ゖァ-ヶー]+$/.test(query) ? fetch(`/api/classroom/kana?q=${encodeURIComponent(query)}`, {headers:{Authorization:`Bearer ${session?.access_token || ''}`}}).then(async response => { if (!response.ok) throw new Error('가나 후보를 불러오지 못했어요.'); return response.json(); }) : Promise.resolve({candidates:[]}),
-      ]);
-      if (request !== attempt.current || atEdit !== editVersion.current) return;
-      if (dictionary.error) throw dictionary.error;
-      const found = dictionary.data;
-      const choices=kana.candidates || [];
-      if(choices.length){
-        const result=await supabase.from('morpheme_dictionary').select('base_form,meanings').eq('language','Japanese').in('base_form',choices.map(item=>item.text));
-        if(request!==attempt.current || atEdit!==editVersion.current)return;
-        setCandidates(choices.map(item=>({...item,meaning:(result.data?.find(row=>row.base_form===item.text)?.meanings || []).map(part=>typeof part==='string'?part:part.meaning || part.definition || '').filter(Boolean).join(' · ')})));
-      } else setCandidates([]);
-      if (found) { setReading(found.reading || ''); setMeaning((found.meanings || []).map(item => typeof item === 'string' ? item : item.meaning || item.definition || '').filter(Boolean).join(' · ').slice(0,500)); }
-      else setMessage(kana.candidates?.length ? '표기 후보를 골라 주세요. 뜻은 조회하거나 직접 적을 수 있어요.' : '저장된 뜻이 없어요. 입력한 그대로 놓거나 뜻을 직접 적어 주세요.');
-    } catch { if (request === attempt.current) setMessage('사전을 불러오지 못했어요. 입력한 그대로 놓을 수 있어요.'); }
-    finally { if (request === attempt.current) setBusy(false); }
+    const query=text.trim();if(!query)return;
+    const request=++attempt.current,atEdit=editVersion.current;
+    setPanel(true);setSearching(false);setBusy(true);setCandidates([]);setSenses([]);setMessage('');
+    const local=boardSearch(query,library).find(value=>value.text===query&&value.meaning);
+    if(local){setReading(local.reading||'');setMeaning(local.meaning);setEntrySource(local.source||{kind:'manual'});setLookupSource(local.label);setBusy(false);return;}
+    try{
+      const {data:{session}}=await supabase.auth.getSession();
+      const headers={'Content-Type':'application/json',Authorization:`Bearer ${session?.access_token||''}`};
+      const isKana=team.lang==='Japanese'&&/^[ぁ-ゖァ-ヶー]+$/.test(query);
+      if(isKana){
+        const response=await fetch(`/api/classroom/kana?q=${encodeURIComponent(query)}`,{headers});
+        const data=await response.json();if(!response.ok)throw new Error();
+        if(request!==attempt.current||atEdit!==editVersion.current)return;
+        if(data.candidates?.length){setCandidates(data.candidates);setMessage('표기 후보를 고른 뒤 뜻을 확인하세요.');return;}
+      }
+      const response=await fetch('/api/classroom/lookup',{method:'POST',headers,body:JSON.stringify({text:query,language:team.lang})});
+      const data=await response.json();if(!response.ok)throw new Error(data.error);
+      if(request!==attempt.current||atEdit!==editVersion.current)return;
+      setReading(data.reading||'');setSenses(data.senses||[]);setMeaning(data.senses?.[0]?.meaning||'');setLookupSource(lookupSourceLabel(data.source));setEntrySource({kind:'manual'});
+    }catch(error){if(request===attempt.current&&atEdit===editVersion.current)setMessage(error.message||'사전을 불러오지 못했어요. 입력한 그대로 놓을 수 있어요.');}
+    finally{if(request===attempt.current)setBusy(false);}
   };
   const cancelEdit=()=>{attempt.current++;setBusy(false);if(editing){const draft=readBoardWorkspace(scope);setInput(draft.input);setReading(draft.reading);setMeaning(draft.meaning);setEditing(null);}setPanel(false);setSearching(false);};
   const openInput = event => { if(layout==='reader')changeLayout('board');openMenu('entry',event); };
@@ -262,6 +296,7 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
     const ids=editor.getAppState().selectedElementIds;
     update(editor.getSceneElementsIncludingDeleted().map(el=>ids[el.id]?newElementWith(el,{[property]:color}):el),{appState:{[key]:color}});
   };
+  const showInput=event=>{const value=boardExpression({...appearance,text:input,reading,meaning,source:entrySource},team.lang);presentationTrigger.current=event.currentTarget;presentationActive.current=true;setPresenting(convertToExcalidrawElements(wordCardSkeleton(value,crypto.randomUUID(),{x:0,y:0},palette()),{regenerateIds:false}));};
   const showBoard=event=>{commit();const all=api.current?.getSceneElements()||[];const elements=selected.length?selected:all;if(elements.length){presentationTrigger.current=event.currentTarget;presentationActive.current=true;setPresenting(structuredClone(elements));}};
   const resize=(event)=>{
     const rect=root.current?.closest('.viewer-layout')?.getBoundingClientRect();if(!rect)return;
@@ -304,12 +339,18 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
     const recovered=row.document.pages.map(page=>({...page,id:crypto.randomUUID()}));
     document.current={...document.current,pages:[...document.current.pages,...recovered]};changePage(recovered[0].id);setMessage('최신 판을 보존하고 충돌본을 새 판으로 불러왔어요.');
   };
-  const record = async () => {
-    if (!picked || recording) return;
-    setRecording(true);
-    try { await onRecord(picked); setMessage('수업 기록에서 저장 상태를 확인할 수 있어요.'); }
-    catch (error) { setMessage(error.message || '수업 기록에 추가하지 못했어요. 판의 내용은 유지됩니다.'); }
-    finally { setRecording(false); }
+  const record = async (values=null) => {
+    if(recording)return;
+    const list=values||anchors.map(el=>readCard(el,api.current.getSceneElementsIncludingDeleted())).filter(Boolean);
+    if(!list.length)return;
+    setRecording(true);let queued=0,failed=0;
+    const seen=new Set();
+    for(const value of list){
+      const key=JSON.stringify([value.language,value.text,value.meaning,value.source]);
+      if(seen.has(key)||getRecordState?.(value))continue;seen.add(key);
+      try{await onRecord(value);queued++;}catch{failed++;}
+    }
+    setRecording(false);setMessage(failed?`${failed}개를 추가하지 못했어요. 수업 기록에서 확인하고 다시 시도해 주세요.`:queued?`${queued}개 표현 저장을 요청했어요. 수업 기록에서 완료 상태를 확인하세요.`:'이미 수업에 남긴 표현이에요.');
   };
 
   if (!store.ready || !pageId) return <div className="teaching-board-loading"><p role="status">{store.error || '보관된 설명판을 불러오고 있어요…'}</p><button onClick={onClose}>교재로 돌아가기</button></div>;
@@ -319,7 +360,7 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
   const results=searching&&!editing?boardSearch(input,[...recent,...library]):[];
   const menuTitle={main:'전체 메뉴',tools:'필기 도구',entry:editing?'표현 수정':'표현 불러오기',book:'교재와 화면',pages:'설명판 페이지',selection:'선택한 요소',session:'수업 기록'};
   const menuButton=(name,icon,label,extra={})=><BoardIconButton key={name} icon={icon} label={label} aria-expanded={menu===name} aria-controls={`board-menu-${name}`} data-active={menu===name} onClick={event=>openMenu(name,event)} {...extra}/>;
-  const popover=(name,children)=><section className={`board-popover board-popover--${name}`} id={`board-menu-${name}`} role="dialog" aria-label={menuTitle[name]} hidden={menu!==name}><div className="board-popover-heading"><b>{menuTitle[name]}</b><BoardIconButton icon="close" label="메뉴 닫기" onClick={()=>closeMenu(true)}/></div><div className="board-popover-body">{children}</div></section>;
+  const popover=(name,children)=><section className={`board-popover board-popover--${name}`} id={`board-menu-${name}`} role="dialog" aria-label={menuTitle[name]} hidden={menu!==name}><div className="board-popover-heading"><b>{menuTitle[name]}</b><BoardIconButton icon="close" label="메뉴 닫기" onClick={()=>closeMenu(true)}/></div><div className="board-popover-body">{menu===name&&(message||store.error)&&<p className="board-menu-notice" role="status">{store.error||message}</p>}{children}</div></section>;
   const workspaceHeader=<div ref={hud} className="teaching-board-header board-hud" onKeyDown={event=>{event.stopPropagation();if(event.key==='Escape'){event.preventDefault();if(menu==='entry'&&editing)cancelEdit();closeMenu(true);}}}>
     <nav className="board-hud-rail" aria-label="설명판 메뉴" onKeyDown={event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const buttons=[...event.currentTarget.querySelectorAll('button:not(:disabled)')],index=buttons.indexOf(window.document.activeElement);buttons[event.key==='Home'?0:event.key==='End'?buttons.length-1:(index+(event.key==='ArrowLeft'?-1:1)+buttons.length)%buttons.length]?.focus();}}>
       {menuButton('main','menu','전체 메뉴',{'data-attention':!!store.error})}
@@ -327,6 +368,7 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
       <BoardIconButton icon="add" label="표현 입력" aria-expanded={menu==='entry'} aria-controls="board-menu-entry" data-active={menu==='entry'} data-draft={!!input.trim()} onClick={openInput}/>
       {menuButton('book','book','교재 메뉴')}
     </nav>
+    <div className="board-today-trigger"><BoardIconButton icon="record" label={`오늘 표현 ${recordCount}개`} aria-expanded={menu==='session'} aria-controls="board-menu-session" onClick={event=>{menuTrigger.current=event.currentTarget;setMenu(v=>v==='session'?null:'session');}}><span className="board-count">{recordCount}</span></BoardIconButton></div>
     <div className="board-hud-status" role="status" aria-label={store.error?'저장 확인 필요':store.saving?'보관 중…':'이 기기에 보관됨'} title={store.error?'저장 확인 필요':store.saving?'보관 중…':'이 기기에 보관됨'} data-error={!!store.error} data-saving={store.saving}><span/></div>
     {popover('main',<><section className="board-menu-section" aria-label="판과 도구"><span>판과 도구</span><div className="board-icon-grid">
       {menuButton('tools','freedraw','필기 도구 메뉴')}
@@ -347,21 +389,30 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
     {popover('tools',<><BoardHistory canvasRoot={root} pageId={pageId} onAction={()=>closeMenu(true)}/><BoardTools active={activeTool} style={toolStyle} onTool={chooseTool} onStyle={styleSelection}/></>)}
     {popover('book',<><nav className="board-icon-grid" aria-label="설명판 보기">{[['board','설명판','board'],['split','함께','split'],['reader','교재','book']].map(([value,label,icon])=><BoardIconButton key={value} icon={icon} label={label} aria-pressed={layout===value} onClick={()=>{changeLayout(value);closeMenu(true);}}/>)}</nav>{navigation}</>)}
     {popover('pages',<nav className="board-page-grid" aria-label="설명판 페이지">{pages.map((item,i)=><button key={item.id} aria-label={`${i+1}번 판`} aria-current={pageId===item.id?'page':undefined} onClick={()=>{changePage(item.id);closeMenu(true);}}><BoardIcon name="board"/><span>{i+1}</span></button>)}<BoardIconButton icon="add" label="새 판" onClick={()=>{newPage();closeMenu(true);}}/></nav>)}
-    {popover('selection',<div className="board-icon-grid" aria-label="선택한 요소 도구"><BoardIconButton icon="present" label="선택한 내용 보여주기" disabled={!selected.length} onClick={showBoard}/>{picked&&<>
-      <BoardIconButton icon="edit" label="내용 수정" onClick={editSelected}/>
-      <BoardIconButton icon="reading" label={`읽기 ${picked.showReading?'가리기':'보이기'}`} aria-pressed={!picked.showReading} onClick={()=>toggle('showReading')}/>
-      <BoardIconButton icon="meaning" label={`뜻 ${picked.showMeaning?'가리기':'보이기'}`} aria-pressed={!picked.showMeaning} onClick={()=>toggle('showMeaning')}/>
-      <BoardIconButton icon="record" label={recorded||(recording?'보관 중…':'오늘 표현에 추가')} disabled={recording||!!recorded} onClick={record}/>
-    </>}{selected.length>1&&!picked&&<BoardIconButton icon="group" label="함께 묶기" onClick={group}/>}</div>)}
+    {popover('selection',<>
+      <div className="board-selection-summary">{anchors.length?`${anchors.length}개 표현 선택`: '필기 선택'}</div>
+      {!!anchors.length&&<WordDisplayControls language={team.lang} value={picked||readCard(anchor,api.current?.getSceneElementsIncludingDeleted()||[])} onChange={applyAppearance} appearance/>}
+      <div className="board-icon-grid" aria-label="선택한 요소 도구">
+        <BoardIconButton icon="present" label="선택한 내용 보여주기" disabled={!selected.length} onClick={showBoard}/>
+        {picked&&<BoardIconButton icon="edit" label="내용 수정" onClick={editSelected}/>}
+        {!!anchors.length&&<><BoardIconButton icon="fit" label="여백 줄이기" onClick={compactSelection}/><BoardIconButton icon="record" label={recorded||(recording?'저장 요청 중…':anchors.length>1?`선택한 ${anchors.length}개 수업에 남기기`:'수업에 남기기')} disabled={recording||!!recorded} onClick={()=>record()}/></>}
+        {anchors.length>1&&<><BoardIconButton icon="row" label="나란히 정렬" onClick={()=>arrange('row')}/><BoardIconButton icon="column" label="세로로 정렬" onClick={()=>arrange('column')}/></>}
+        {selected.length>1&&!picked&&<BoardIconButton icon="group" label="함께 묶기" onClick={group}/>}
+      </div>
+    </>)}
     {popover('session',sessionContent)}
     {popover('entry',<form className="teaching-board-import" aria-label="표현 불러오기" onSubmit={applyExpression} onCompositionStart={()=>{composing.current=true;}} onCompositionEnd={()=>{composing.current=false;}} onKeyDown={event=>{if(event.key==='Enter'&&isClassComposing(event,composing.current))event.preventDefault();}}>
-      <div className="board-entry-line"><label className="board-entry-query"><span className="teaching-board-accessible">단어·표현</span><input ref={inputRef} value={input} maxLength={500} placeholder="표현 입력·찾기" onFocus={()=>setSearching(true)} onChange={event=>{attempt.current++;editVersion.current++;setBusy(false);setInput(event.target.value);setCandidates([]);setReading('');setMeaning('');setSearching(true);}}/></label><BoardIconButton icon="more" label="읽기와 뜻 입력" aria-expanded={panel} onClick={()=>{setPanel(v=>!v);setSearching(false);}}/></div>
-      {!!results.length&&<div className="board-search-results" aria-label="표현 검색 결과">{results.map((value,i)=><button key={i} type="button" onClick={()=>addExpression(value)}><span><b>{value.text}</b><small>{value.reading} {value.meaning}</small></span><small>{value.label} ＋</small></button>)}</div>}
+      <div className="board-entry-line"><label className="board-entry-query"><span className="teaching-board-accessible">단어·표현</span><input ref={inputRef} value={input} maxLength={500} placeholder="표현 입력·찾기" onFocus={()=>setSearching(true)} onChange={event=>{attempt.current++;editVersion.current++;setBusy(false);setInput(event.target.value);setCandidates([]);setSenses([]);setReading('');setMeaning('');setEntrySource({kind:'manual'});setLookupSource('');setSearching(true);}}/></label><BoardIconButton icon="more" label="읽기와 뜻 입력" aria-expanded={panel} onClick={()=>{setPanel(v=>!v);setSearching(false);}}/></div>
+      {!!results.length&&<div className="board-search-results" aria-label="표현 검색 결과">{results.map((value,i)=><button key={i} type="button" onClick={()=>{attempt.current++;setBusy(false);setInput(value.text);setReading(value.reading||'');setMeaning(value.meaning||'');setEntrySource(value.source||{kind:'manual'});setLookupSource(value.label||'');setPanel(true);setSearching(false);}}><span><b>{value.text}</b><small>{value.reading} {value.meaning}</small></span><small>{value.label} ＋</small></button>)}</div>}
+      {input.trim()&&<div className="board-word-preview"><TeachingWord entry={{text:input,reading,meaning}} language={team.lang} display={appearance}/>{lookupSource&&<small>{lookupSource}</small>}</div>}
+      <details className="board-display-options"><summary>표시</summary><WordDisplayControls language={team.lang} value={appearance} onChange={setAppearance} appearance/></details>
       {panel&&<div className="board-entry-details">
+        {senses.length>1&&<div className="board-senses" role="group" aria-label="수업에서 쓸 뜻 선택">{senses.map((sense,i)=><button type="button" key={i} aria-pressed={meaning===sense.meaning} onClick={()=>{editVersion.current++;setMeaning(sense.meaning);}}>{sense.meaning}{sense.pos&&<small>{sense.pos}</small>}</button>)}</div>}
         {!!candidates.length&&<div className="teaching-board-candidates" aria-label="한자 후보">{candidates.map(value=><button key={value.text} type="button" onClick={()=>{editVersion.current++;setInput(value.text);setReading(value.reading);lookup(value.text);}}>{value.text}<small>{value.meaning||`${value.level} · 뜻 확인 필요`}</small></button>)}</div>}
-        <div className="teaching-board-import-fields"><label>읽기<input value={reading} maxLength={500} onChange={event=>{editVersion.current++;setReading(event.target.value);}}/></label><label>뜻<textarea aria-label="뜻" value={meaning} rows={2} maxLength={500} onChange={event=>{editVersion.current++;setMeaning(event.target.value);}}/></label></div>
+        <div className="teaching-board-import-fields">{annotatedLanguage(team.lang)&&<label>읽기<input value={reading} maxLength={500} onChange={event=>{editVersion.current++;setReading(event.target.value);}}/></label>}<label>뜻<textarea aria-label="뜻" value={meaning} rows={2} maxLength={500} onChange={event=>{editVersion.current++;setMeaning(event.target.value);}}/></label></div>
       </div>}
-      <div className="board-entry-actions"><BoardIconButton icon="search" label={busy?'조회 중…':'사전 찾기'} disabled={busy||!input.trim()} onClick={()=>lookup(input)}/>{editing&&<BoardIconButton icon="close" label="수정 취소" onClick={()=>{cancelEdit();closeMenu(true);}}/>}<BoardIconButton type="submit" icon="check" label={editing?'수정':'바로 놓기'} disabled={!input.trim()} className="board-add-button"/></div>
+      {!editing&&<label className="board-keep-adding"><input type="checkbox" checked={keepAdding} onChange={event=>setKeepAdding(event.target.checked)}/>계속 추가</label>}
+      <div className="board-entry-actions"><BoardIconButton icon="search" label={busy?'조회 중…':'사전 찾기'} disabled={busy||!input.trim()} onClick={()=>lookup(input)}/>{!editing&&<BoardIconButton icon="present" label="크게 보기" disabled={!input.trim()} onClick={showInput}/>} {!editing&&<BoardIconButton icon="record" label="수업에 남기기" disabled={!input.trim()||recording} onClick={()=>record([{text:input,reading,meaning,source:entrySource,language:team.lang}])}/>} {editing&&<BoardIconButton icon="close" label="수정 취소" onClick={()=>{cancelEdit();closeMenu(true);}}/>}<BoardIconButton type="submit" icon="check" label={editing?'수정':'바로 놓기'} disabled={!input.trim()} className="board-add-button"/></div>
     </form>)}
     {layout!=='reader'&&selected.length>0&&<div className="board-selection-trigger">{menuButton('selection','edit','선택한 요소 편집')}</div>}
   </div>;
@@ -379,7 +430,7 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
     </div>
     {!boardHasContent&&<div className="board-empty-hint" aria-label="설명판 시작 안내"><div aria-hidden="true"><BoardIcon name="freedraw"/><BoardIcon name="add"/><BoardIcon name="book"/></div><p>펜으로 쓰거나, ＋로 표현을 놓아보세요.</p><span>교재에서 고른 표현도 바로 가져올 수 있어요.</span></div>}
     <div className="teaching-board-accessible">{(latest.current?.elements || page.elements).filter(el=>!el.isDeleted && expressionOf(el)).map(el=>{const value=readCard(el,latest.current?.elements || page.elements);return value && <p key={el.id} data-board-expression={el.id}>{value.text} · {value.showReading?value.reading:""} · {value.showMeaning?value.meaning:""}</p>;})}</div>
-    {(message||store.error)&&<p className="teaching-board-message" role="status">{store.error||message}{store.error&&<><button onClick={backup}>내 내용 백업</button><button onClick={()=>window.location.reload()}>최신 판 열기</button></>}</p>}
-    {presenting&&<BoardPresentation elements={presenting} returnFocus={presentationTrigger.current} onClose={()=>{presentationActive.current=false;setPresenting(null);}}/>}
+    {!menu&&(message||store.error)&&<p className="teaching-board-message" role="status">{store.error||message}{store.error&&<><button onClick={backup}>내 내용 백업</button><button onClick={()=>window.location.reload()}>최신 판 열기</button></>}</p>}
+    {presenting&&<BoardPresentation elements={presenting} onRecord={()=>record(presenting.filter(el=>expressionOf(el)).map(el=>readCard(el,presenting)))} recording={recording} recordState={wordRecordSummary(presenting.filter(el=>expressionOf(el)).map(el=>getRecordState?.(readCard(el,presenting))))} returnFocus={presentationTrigger.current} onClose={()=>{presentationActive.current=false;setPresenting(null);}}/>}
   </section>;
 }
