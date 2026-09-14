@@ -17,11 +17,20 @@ export default function TeachingPresentation({entry,lang,onClose,onRecord,record
    document.body.style.overflow=old;values.forEach(([el,value])=>{el.inert=value;});window.removeEventListener('keydown',hold,true);
    // Recording disables its trigger. Keep focus in the same expression's
    // controls instead of dropping keyboard users back to the document body.
-   for(const target of [back,fallback]){
-    if(!target?.isConnected||target.matches(':disabled')||target.closest('[hidden], [inert]'))continue;
-    target.focus({preventScroll:true});if(document.activeElement===target)break;
-   }
-   window.scrollTo(position);requestAnimationFrame(()=>window.scrollTo(position));
+   const restoreFocus=()=>{
+    for(const target of [back,fallback]){
+     if(!target?.isConnected||target.matches(':disabled')||target.closest('[hidden], [inert]'))continue;
+     target.focus({preventScroll:true});if(document.activeElement===target)return true;
+    }
+    return false;
+   };
+   const restored=restoreFocus();
+   window.scrollTo(position);requestAnimationFrame(()=>{
+    // The reader removes the inspector's hidden state in its next effect.
+    // Retry after that commit without stealing focus from a new user action.
+    if(!restored&&document.activeElement===document.body)restoreFocus();
+    window.scrollTo(position);
+   });
   };
  },[onClose,originRef,fallbackRef]);
  return createPortal(<div className="teaching-presentation-host"><section className="teaching-presentation" ref={dialog} role="dialog" aria-modal="true" aria-label="학생에게 보여주는 설명" tabIndex={-1} onKeyDown={e=>{

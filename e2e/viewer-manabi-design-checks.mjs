@@ -20,6 +20,12 @@ export async function verifyReaderDesign({page,board,scene,head,saveScreen,waitF
   await inspector.getByRole('button',{name:'크게 보기',exact:true})[activate]();
   const presentation=page.getByRole('dialog',{name:'학생에게 보여주는 설명',exact:true});await presentation.waitFor();
   await page.keyboard.press('Escape');await presentation.waitFor({state:'detached'});
+  const previewButton=inspector.getByRole('button',{name:'크게 보기',exact:true});
+  await waitFor(()=>previewButton.evaluate(el=>document.activeElement===el),'closing preview returns focus to its temporarily hidden trigger');
+  await previewButton[activate]();await presentation.waitFor();
+  await presentation.getByRole('button',{name:'교재로 돌아가기 ×',exact:true})[activate]();
+  await presentation.waitFor({state:'detached'});
+  await waitFor(()=>previewButton.evaluate(el=>document.activeElement===el),'the return button restores the same trigger');
   assert.equal(JSON.stringify(await head()),original,'preview does not insert into or move the board');
   await inspector.getByRole('button',{name:'판에 놓기',exact:true})[activate]();
   await waitFor(async()=> (await scene()).length===4);
@@ -45,6 +51,9 @@ export async function verifyReaderDesign({page,board,scene,head,saveScreen,waitF
     assert(selected.y+selected.height<=popup.y+1,'selected source clears the word card');
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
     await saveScreen(`classroom-word-phone-${width}`);
+    await previewButton[activate]();await presentation.waitFor();
+    await page.keyboard.press('Escape');await presentation.waitFor({state:'detached'});
+    await waitFor(()=>previewButton.evaluate(el=>document.activeElement===el),'mobile preview restores focus without leaving the word');
     await inspector.getByRole('button',{name:'보조 패널 닫기',exact:true})[activate]();
   }
   await board.locator('canvas.interactive').waitFor({state:'visible'});
