@@ -237,7 +237,8 @@ export default function ViewerPage() {
   const classToolbarTarget=useRef(null);
   const [classStudyActive,setClassStudyActive]=useState(false);
   const [classBoardLayout,setClassBoardLayout]=useState('');
-  const classBoardTarget=useRef(null);
+  const classBoardTarget=useRef(null),classBoardHeaderTarget=useRef(null);
+  const [classBoardRatio,setClassBoardRatio]=useState(60);
   const [classPresenting,setClassPresenting]=useState(false);
   const { user, profile, fetchProfile } = useAuth();
   const toast = useToast();
@@ -1123,7 +1124,7 @@ export default function ViewerPage() {
   const selectionToReveal = tokenRange.range
     ? material?.processed_json?.sequence?.[tokenRange.range.start]
     : isSheetOpen ? selectedToken?.id : undefined;
-  useSelectedTokenVisibility(readerRef, tokenRefs, selectionToReveal, inspectorOpen && !classStudyActive && !modalBlocked && !tokenRange.dragging, material?.processed_json);
+  useSelectedTokenVisibility(readerRef, tokenRefs, selectionToReveal, inspectorOpen && (!classStudyActive||!!classBoardLayout) && !modalBlocked && !tokenRange.dragging, material?.processed_json);
   const closeReadingSettings = () => {
     // Once the inspector returns, the selected source owns the visible position.
     // A still-live Aa anchor must not scroll it back underneath the panel.
@@ -2479,8 +2480,9 @@ export default function ViewerPage() {
   return (
     // --dragging: 지정 드래그 중 바텀시트 포인터 투과 — 시트가 드래그 도중 자라
     // 경로를 덮어도 elementFromPoint가 밑의 토큰을 잡는다(useTokenRangeSelect 참조)
+    <div className="viewer-workspace-boundary" data-active={!!(classStudyActive&&classBoardLayout)}>
     <div className={`viewer-3col viewer-layout viewer-theme-${theme}${tokenRange.dragging ? ' viewer-3col--dragging' : ''}`}
-      style={{...textbookThemeStyle(materialLang),'--reader-font':readerFontFamily(materialLang,fontFamily),'--pinyin-size':`${pinyinSize}rem`,'--pinyin-cell':`${pinyinCell}px`}}
+      style={{...textbookThemeStyle(materialLang),'--board-ratio':`${classBoardRatio}%`,'--reader-font':readerFontFamily(materialLang,fontFamily),'--pinyin-size':`${pinyinSize}rem`,'--pinyin-cell':`${pinyinCell}px`}}
       data-reader-theme={theme} data-language={materialLang} data-class-study={classStudyActive} data-teaching-board={classStudyActive?classBoardLayout:''} data-inspector-open={inspectorOpen&&!modalBlocked}
       data-pron-spacing={materialLang==='Chinese'&&(pronDisplay!=='none'||pronReveal)?'reserved':'natural'}
       data-left-active={!!(leftPanelLoading || leftPanelResult)}
@@ -2488,6 +2490,7 @@ export default function ViewerPage() {
 
       {/* 중앙 — 뷰어 본문 */}
       {materialLang==='Chinese'&&fontFamily==='serif'&&<ChineseSerif rootRef={readerRef} onStatus={setFontStatus}/>}
+      <div ref={classBoardHeaderTarget} className="teaching-board-topbar-host" hidden={!classStudyActive||!classBoardLayout}/>
       <div ref={classBoardTarget} className="teaching-board-host" hidden={!classStudyActive||!classBoardLayout}/>
       <div className="viewer-center" inert={dictationPickerOpen||!!dictationSentence?true:undefined} aria-hidden={dictationPickerOpen||!!dictationSentence?true:undefined} data-answer-hidden={dictationPickerOpen||!!dictationSentence}>
       {!user && (
@@ -2504,7 +2507,6 @@ export default function ViewerPage() {
             폰에서 두 줄(89px)로 꺾였고, 그 위에 뒤로가기 줄·시리즈 내비 줄이 따로 있었다. */}
         <div ref={classToolbarTarget} className="class-workspace-topbar" hidden={!classStudyActive}/>
         <div className="viewer-topbar">
-          {!classStudyActive&&<LibrarySaveButton material={material}/>}
           {classStudyActive&&originalParams.get('returnTo')?.includes('view=history')&&<LibraryReturnLink className="viewer-back-link">← 수업 기록</LibraryReturnLink>}
           {!classStudyActive&&(material?.__local
             ? <Link href={`/class/${material.__team}`} className="viewer-back-link">← 팀 페이지</Link>
@@ -2513,16 +2515,16 @@ export default function ViewerPage() {
           {siblingNav && (
             <div className="viewer-series-nav" title={siblingNav.label}>
               {siblingNav.prev ? (
-                <Link href={classStudyNeighborHref(siblingNav.prev,studyContext)} className="viewer-series-nav__btn" title={siblingNav.prev.title} aria-label={siblingNav.prevLabel}>◀</Link>
-              ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">◀</span>}
+                <Link href={classStudyNeighborHref(siblingNav.prev,studyContext)} className="viewer-series-nav__btn" title={siblingNav.prev.title} aria-label={siblingNav.prevLabel}>‹</Link>
+              ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">‹</span>}
               {siblingNav.pos != null && (
                 <span className="viewer-series-nav__position" title={siblingNav.label}>
                   {siblingNav.pos}/{siblingNav.total}
                 </span>
               )}
               {siblingNav.next ? (
-                <Link href={classStudyNeighborHref(siblingNav.next,studyContext)} className="viewer-series-nav__btn" title={siblingNav.next.title} aria-label={siblingNav.nextLabel}>▶</Link>
-              ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">▶</span>}
+                <Link href={classStudyNeighborHref(siblingNav.next,studyContext)} className="viewer-series-nav__btn" title={siblingNav.next.title} aria-label={siblingNav.nextLabel}>›</Link>
+              ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">›</span>}
             </div>
           )}
           {/* 도구는 도구끼리 오른쪽(v2-Q 축 그대로). 분석 중단은 지금 도는 분석에 대한 일시 제어라 여기. */}
@@ -2548,7 +2550,7 @@ export default function ViewerPage() {
       }}/>
       <ClassCopyNotice key={String(id)} material={material} user={user} returnTo={originalParams.get('returnTo')}/>
       <header className="page-header viewer-header">
-        <p className="reader-metadata">{langNameKo(materialLang)}{material?.processed_json?.metadata?.level ? ` · ${material.processed_json.metadata.level}` : ''} · {material.visibility === 'public' ? '공개 읽기' : '내 자료'}</p>
+        <p className="reader-metadata reader-edition"><span>READING ROOM /</span> {langNameKo(materialLang)}{material?.processed_json?.metadata?.level ? ` · ${material.processed_json.metadata.level}` : ''} · {material.visibility === 'public' ? '공개 읽기' : '내 자료'}</p>
         {composerOf(material) && <p className="reader-metadata">{passageOf(material)?`${passageLocation(passageOf(material))}에서 고른 학습 구간이에요. 원본은 위의 링크에서 열 수 있어요.`:'학습에 사용한 본문이에요. 현재 글은 위의 링크에서 열 수 있어요.'}</p>}
         {titleEditing && user?.id === material?.owner_id && !composerOf(material) ? (
           <form
@@ -2586,6 +2588,7 @@ export default function ViewerPage() {
             )}
           </div>
         )}
+        {!classStudyActive&&<LibrarySaveButton material={material}/>}
         {user && material?.visibility === 'public' && material?.owner_id !== user.id && (
           <ReportMaterialButton materialId={material.id} userId={user.id} toast={toast} />
         )}
@@ -2712,7 +2715,7 @@ export default function ViewerPage() {
         ref={readerRef}
         className={`card reader-area reader-area--${theme}${focusMode && (pickedLineIdx !== null || tokenRange.range) ? ' reader-area--focus' : ''}${wordStateHl ? ' reader-area--hl' : ''}${paceDwell ? ' reader-area--pacing' : ''}${paceDwell && paceHeld ? ' reader-area--pacing-hold' : ''}`}
         style={{
-          fontSize: `${fontSize}rem`,
+          fontSize: `${fontSize*(classStudyActive&&classBoardLayout==='split'?.8:1)}rem`,
           fontFamily: readerFontFamily(materialLang,fontFamily),
           gap: `${lineGap}px ${charGap}rem`, '--char-gap': `${charGap}rem`,
           // 체류 표시는 CSS 애니메이션이 시간을 잰다 — JS 프레임 루프 0(설계 §7①).
@@ -3155,18 +3158,21 @@ export default function ViewerPage() {
         first={tokenRange.range?json.sequence[tokenRange.range.start]:isSheetOpen?selectedToken?.id:pickedSentence?.firstTokenId}
         last={tokenRange.range?json.sequence[tokenRange.range.end]:undefined}
         blocked={modalBlocked} onClose={closeWordCard} onPresenting={setClassPresenting}>
-      {(annotationContent,annotationOpen,closeWordCard)=><ClassroomReader toolbarTarget={classToolbarTarget} boardTarget={classBoardTarget} onBoardLayout={setClassBoardLayout} annotationContent={annotationContent} context={studyContext} user={user} material={material}
+      {(annotationContent,annotationOpen,closeWordCard)=><ClassroomReader toolbarTarget={classToolbarTarget} boardTarget={classBoardTarget} boardHeaderTarget={classBoardHeaderTarget} onBoardRatio={setClassBoardRatio} vocabularyIndex={savedWords} onBoardLayout={setClassBoardLayout} annotationContent={annotationContent} context={studyContext} user={user} material={material}
         selection={classSelection} selectionSignal={rightSheetSignal}
         wordContent={(dragTokens!==null||(selectedToken&&isSheetOpen))?renderRightPanelContent:null}
         sentenceContent={(leftPanelLoading||leftPanelResult)?leftPanelContent:null}
         onActive={setClassStudyActive} onPresenting={setClassPresenting} suppressed={modalBlocked&&!classPresenting}
-        fallback={(annotationOpen || leftPanelLoading || leftPanelResult || dragTokens !== null || (selectedToken && isSheetOpen) || pickedLineIdx !== null) && <ViewerBottomSheet
+        onSelectionClose={closeWordCard}
+        fallback={boardActions=>(annotationOpen || leftPanelLoading || leftPanelResult || dragTokens !== null || (selectedToken && isSheetOpen) || pickedLineIdx !== null) && <ViewerBottomSheet
+        actions={boardActions}
+        className={boardActions?'viewer-inspector--board':''}
         onClose={closeWordCard}
         suppressed={modalBlocked}
         preserveFocus={annotationOpen&&!isSheetOpen&&dragTokens===null}
         onOpenChange={setInspectorOpen}
         leftContent={leftPanelContent}
-        rightContent={<>{annotationContent}{rightPanelContent}</>}
+        rightContent={selectedToken&&isSheetOpen?renderRightPanelContent(annotationContent&&<details className="reader-card-notes" open={annotationOpen}><summary>교재 설명</summary>{annotationContent}</details>):<>{annotationContent}{rightPanelContent}</>}
         leftActive={leftPanelLoading || !!leftPanelResult}
         rightActive={annotationOpen || dragTokens !== null || (selectedToken && isSheetOpen)}
         leftSignal={leftSheetSignal}
@@ -3279,6 +3285,6 @@ export default function ViewerPage() {
           text-shadow: 0 0 8px var(--primary-glow);
         }
       `}</style>
-    </div>
+    </div></div>
   );
 }

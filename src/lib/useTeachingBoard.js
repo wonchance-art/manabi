@@ -3,13 +3,17 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import {emptyBoard} from './teachingBoard';
 import {readTeachingBoard, readTeachingBoardRecoveries, saveTeachingBoard} from './teachingBoardStore';
 
+// A chapter route remounts the reader. Finish this tab's outgoing save before
+// the next reader loads the same daily board; other tabs still use CAS recovery.
+const pendingSaves = new Map();
+
 export function useTeachingBoard(scope) {
   const [state, setState] = useState({ready: false, error: '', saving: false, document: null});
   const current = useRef(null), generation = useRef(null);
   useEffect(() => {
     const run = {alive: true, scope, revision: null, writer: crypto.randomUUID(), chain: Promise.resolve(), dirty: false, blocked: false};
     generation.current = run;
-    Promise.all([readTeachingBoard(scope),readTeachingBoardRecoveries(scope)]).then(([row,recoveries]) => {
+    Promise.resolve(pendingSaves.get(scope)).then(()=>Promise.all([readTeachingBoard(scope),readTeachingBoardRecoveries(scope)])).then(([row,recoveries]) => {
       if (!run.alive) return;
       run.revision = row?.revision || null;
       current.current = row?.document || emptyBoard(crypto.randomUUID());
@@ -39,6 +43,9 @@ export function useTeachingBoard(scope) {
         if (run.alive) setState(previous => ({...previous, saving: false, error: error.message}));
       }
     });
+    const pending=run.chain;
+    pendingSaves.set(scope,pending);
+    pending.finally(()=>{if(pendingSaves.get(scope)===pending)pendingSaves.delete(scope);});
     return run.chain;
   }, [scope]);
   return {...state, save, snapshot: () => current.current, flush: () => generation.current?.chain};

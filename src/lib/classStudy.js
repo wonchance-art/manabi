@@ -10,16 +10,17 @@ export function classStudyContext(params) {
   }
   if(!TEAM_KEY_RE.test(team||''))return null;
   if(day&&(!/^\d{4}-\d{2}-\d{2}$/.test(day)||!Number.isFinite(Date.parse(day))||new Date(day).toISOString().slice(0,10)!==day))return null;
-  return {team,day:day||todayKey()};
+  return {team,day:day||todayKey(),...(params.get('board')==='1'?{board:true}:{})};
 }
-export function classStudyHref(id,team,day) {
+export function classStudyHref(id,team,day,board=false) {
   const q=new URLSearchParams({class:team,day,returnTo:`/class/${team}/live?day=${day}`});
+  if(board)q.set('board','1');
   return `/viewer/${id}?${q}`;
 }
 export function classStudyNeighborHref(neighbor,context) {
   // Local student copies must keep their team-page download/update destination.
   if(neighbor.href)return neighbor.href;
-  return context?classStudyHref(neighbor.id,context.team,context.day):`/viewer/${neighbor.id}`;
+  return context?classStudyHref(neighbor.id,context.team,context.day,context.board):`/viewer/${neighbor.id}`;
 }
 export function studySelection(material,token,rangeText='',range=null) {
   const text=String(rangeText||token?.text||'').trim();

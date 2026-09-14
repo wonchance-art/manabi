@@ -1,7 +1,7 @@
 /* Reader-scoped surfaces inherit the approved four-language book palette. */
 .viewer-layout {
-  --reader-paper: #fffefa; --reader-ink: #2e3437; --reader-muted: #62676d; --reader-line: #dddcd4;
-  --reader-surface: #f6f3eb; --reader-selected: var(--book-wash); --reader-accent: var(--book-main);
+  --reader-paper: var(--sheet); --reader-ink: var(--ink); --reader-muted: var(--muted); --reader-line: var(--rule);
+  --reader-surface: var(--paper); --reader-selected: var(--book-wash); --reader-accent: var(--book-main);
   --bg-primary: var(--reader-paper); --bg-secondary: var(--reader-surface); --bg-card: var(--reader-paper);
   --text-primary: var(--reader-ink); --text-secondary: var(--reader-ink); --text-muted: var(--reader-muted);
   --border: var(--reader-line); --primary-light: var(--reader-accent); --accent-text: var(--reader-accent);
@@ -228,3 +228,85 @@
 .reader-japanese__note {margin:2px 0 0;font-size:.73rem;color:var(--reader-muted);}
 .reader-japanese__lookup {font-size:.75rem;color:var(--reader-muted);}
 .reader-japanese__lookup button {padding:0;border:0;background:transparent;color:var(--reader-accent);cursor:pointer;}
+
+/* Reading-room chrome follows the home page's paper, ink and editorial rules.
+   Body typography, annotation settings and learning-state colors remain reader owned. */
+.manabi-app .viewer-layout {background:var(--reader-surface);gap:28px;min-height:calc(100dvh - var(--gnb-height));}
+.manabi-app .viewer-layout .viewer-topbar {background:var(--reader-surface);border-bottom:1px solid var(--reader-line);gap:8px;padding:6px 0;min-height:58px;}
+.manabi-app .viewer-layout .viewer-topbar::before {background:var(--reader-surface);}
+.manabi-app .viewer-layout .viewer-back-link {font-size:13px;color:var(--reader-muted);min-height:44px;display:inline-flex;align-items:center;}
+.manabi-app .viewer-layout .viewer-topbar__tools {gap:4px;align-items:center;}
+.manabi-app .viewer-layout :is(.viewer-aa,.viewer-pace-toggle,.viewer-series-nav__btn) {border-color:transparent;border-radius:3px;background:transparent;box-shadow:none;min-width:44px;min-height:44px;color:var(--reader-ink);}
+.manabi-app .viewer-layout .viewer-aa {font-size:13px;padding:8px 11px;font-weight:500;}
+.manabi-app .viewer-layout .viewer-aa[aria-label="읽기 설정"] {font-family:var(--font-manrope),sans-serif;font-size:20px;letter-spacing:-1px;}
+.manabi-app .viewer-layout :is(.viewer-aa,.viewer-pace-toggle,.viewer-series-nav__btn):hover {background:var(--reader-selected);color:var(--reader-accent);}
+.manabi-app .viewer-layout .viewer-series-nav {gap:0;}
+.manabi-app .viewer-layout .viewer-series-nav__btn {font-size:27px;font-weight:400;padding:0;}
+.manabi-app .viewer-layout .viewer-series-nav__position {font-size:12px;min-width:35px;text-align:center;font-variant-numeric:tabular-nums;color:var(--reader-muted);}
+.manabi-app .viewer-layout .viewer-series-nav__btn--disabled {opacity:.28;}
+.manabi-app .viewer-layout .listen-controls>.btn {border:0;border-radius:3px;padding:8px 10px;font-size:13px;font-weight:500;color:var(--reader-ink);background:transparent;min-height:44px;}
+.manabi-app .viewer-layout .viewer-header {display:block;padding:32px 0 24px;margin:0;border:0;}
+.manabi-app .viewer-layout .reader-edition {font-size:11px;letter-spacing:.7px;color:var(--reader-accent);margin:0 0 14px;}
+.reader-edition>span {letter-spacing:1.4px;color:var(--reader-muted);margin-right:4px;}
+.manabi-app .viewer-layout .viewer-titlerow {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:baseline;margin-bottom:14px;}
+.manabi-app .viewer-layout .viewer-titlerow .page-header__title {font-size:clamp(27px,3cqi,40px);line-height:1.35;letter-spacing:-1.1px;font-weight:700;color:var(--reader-ink);}
+.manabi-app .viewer-layout .viewer-title-edit {border:0;background:transparent;border-radius:3px;font-size:12px;color:var(--reader-muted);padding:8px;min-height:44px;flex:none;}
+.manabi-app .viewer-layout .library-save-control {margin:0;gap:12px;}
+.manabi-app .viewer-layout .library-save-control>button {border:0;background:transparent;border-radius:0;padding:0;font-size:12px;color:var(--reader-muted);min-height:44px;text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--reader-line);}
+.manabi-app .viewer-layout .viewer-badges {gap:8px 18px;margin:8px 0 0;}
+.manabi-app .viewer-layout .viewer-badge {border:0;border-radius:0;padding:0;background:none;color:var(--reader-muted);box-shadow:none;font-size:11px;animation:none;}
+.manabi-app .viewer-layout .viewer-badge--due {color:var(--reader-accent);}
+.manabi-app .viewer-layout .reader-area {padding:clamp(18px,3cqi,32px);border:1px solid var(--reader-line);border-radius:3px;background:var(--reader-paper);}
+.manabi-app .viewer-layout .reader-hint {font-size:12px;color:var(--reader-muted);line-height:1.7;}
+.manabi-app .viewer-layout .viewer-attribution {font-size:12px;color:var(--reader-muted);line-height:1.8;}
+.manabi-app .viewer-layout .viewer-inspector {border-radius:5px;border-top:3px solid var(--reader-accent);box-shadow:0 12px 32px color-mix(in srgb,var(--reader-ink) 8%,transparent);}
+.manabi-app .viewer-layout .viewer-inspector__header {padding:3px 10px;background:var(--reader-surface);}
+.manabi-app .viewer-layout .viewer-inspector__contents {background:var(--reader-paper);}
+.manabi-app .viewer-layout .viewer-inspector__tabs button {flex:0 1 auto;min-width:64px;font-size:12px;}
+.manabi-app .viewer-layout .reader-card-body {padding:16px 20px;}
+.manabi-app .viewer-layout .word-detail-card__meaning {font-size:22px;font-weight:700;letter-spacing:-.4px;}
+.manabi-app .viewer-layout .word-detail-card__meta {font-size:11px;letter-spacing:.3px;}
+.manabi-app .viewer-layout .reader-card-actions {padding:10px 14px;background:var(--reader-surface);}
+.manabi-app .viewer-layout .reader-card-actions .review-score-btn {border-radius:3px;}
+.manabi-app .viewer-layout .save-grade__guide {font-size:11px;text-align:left;color:var(--reader-muted);}
+.manabi-app .viewer-layout .reader-card-context .reader-card-source {padding:12px 14px;border-left:2px solid var(--reader-accent);background:var(--reader-surface);}
+.manabi-app .viewer-layout .reader-card-source blockquote {font-size:16px;line-height:1.8;}
+.manabi-app .viewer-layout .reader-modal {border-radius:6px;}
+.manabi-app .viewer-layout .reader-modal__header {background:var(--reader-surface);padding:12px 20px;}
+.manabi-app .viewer-layout .reader-modal__header h2 {font-size:20px;letter-spacing:-.6px;}
+.manabi-app .viewer-layout :is(.reader-settings__preview,.reader-setting-choices button,.reader-setting-range button) {border-radius:3px;}
+.viewer-inspector__actions {display:flex;gap:8px;flex:none;padding:8px 14px;background:var(--reader-paper);border-top:1px solid var(--reader-line);}
+.viewer-inspector__actions>button {min-height:44px;padding:8px 18px;border:1px solid var(--reader-line);border-radius:3px;background:transparent;color:var(--reader-ink);font-size:13px;cursor:pointer;}
+.viewer-inspector__actions>button:first-child {flex:1;background:var(--reader-accent);border-color:var(--reader-accent);color:var(--reader-paper);font-weight:600;}
+.viewer-inspector__actions>button:disabled {opacity:.45;cursor:default;}
+@container reader (min-width:1120px) {
+  .manabi-app .viewer-layout[data-inspector-open="true"]>.viewer-center {flex:1;min-width:0;}
+  .manabi-app .viewer-layout .viewer-inspector {top:80px;height:auto;max-height:calc(100dvh - 104px);box-shadow:none;}
+}
+@container reader (max-width:600px) {
+  .manabi-app .viewer-layout .viewer-header {padding-block:24px 18px;}
+  .manabi-app .viewer-layout .viewer-titlerow {align-items:flex-start;}
+  .manabi-app .viewer-layout .reader-area {padding:20px 14px;}
+  .manabi-app .viewer-layout .viewer-topbar {column-gap:0;}
+  .manabi-app .viewer-layout .viewer-series-nav__btn {min-width:40px;}
+  .manabi-app .viewer-layout .viewer-inspector {inset-inline:8px;border-radius:6px;}
+  .manabi-app .viewer-layout .reader-modal {border-radius:8px 8px 0 0;}
+}
+
+/* Reuse the same word card inside the classroom, without covering the board. */
+.manabi-app .viewer-layout .viewer-inspector--board {position:fixed;inset:auto 16px calc(12px + var(--reader-keyboard-inset,0px)) auto;width:min(400px,max(300px,calc(100% - var(--board-ratio) - 32px)));max-width:calc(100% - 24px);height:min(58dvh,480px);max-height:calc(var(--reader-visual-height,100dvh) - 130px);margin:0;z-index:95;box-shadow:0 12px 32px color-mix(in srgb,var(--reader-ink) 12%,transparent);}
+.manabi-app .viewer-layout .viewer-inspector--board.is-expanded {height:calc(var(--reader-visual-height,100dvh) - 140px);}
+.manabi-app .viewer-layout .viewer-inspector--board.is-collapsed {display:none;}
+.manabi-app .viewer-layout .viewer-inspector--board .viewer-inspector__expand {display:block;}
+.manabi-app .viewer-layout[data-teaching-board]:not([data-teaching-board=""])>.viewer-center {margin:0;width:100%;background:var(--reader-surface);padding:8px 16px 40px;}
+.manabi-app .viewer-layout[data-teaching-board]:not([data-teaching-board=""]) .viewer-header {padding:16px 0;}
+.manabi-app .viewer-layout[data-teaching-board]:not([data-teaching-board=""]) .viewer-titlerow {margin:0;}
+.manabi-app .viewer-layout[data-teaching-board]:not([data-teaching-board=""]) .viewer-titlerow .page-header__title {font-size:21px;letter-spacing:-.4px;}
+.manabi-app .viewer-layout[data-teaching-board]:not([data-teaching-board=""]) .reader-area {padding:20px 12px;}
+.manabi-app .viewer-layout[data-teaching-board]:not([data-teaching-board=""]) .viewer-topbar {top:0;}
+@container teaching-workspace (max-width:768px) {
+  .manabi-app .viewer-layout .viewer-inspector--board {inset-inline:8px;width:auto;max-width:none;height:min(52dvh,440px);}
+  .manabi-app .viewer-layout[data-teaching-board="split"][data-inspector-open="true"] {grid-template-rows:auto minmax(0,1fr);}
+  .manabi-app .viewer-layout[data-teaching-board="split"][data-inspector-open="true"]>.teaching-board-host {display:none;}
+  .manabi-app .viewer-layout[data-teaching-board="split"][data-inspector-open="true"]>.viewer-center {grid-row:2;padding-bottom:calc(min(52dvh,440px) + 24px);}
+}

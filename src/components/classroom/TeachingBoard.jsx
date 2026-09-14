@@ -14,9 +14,9 @@ class BoardBoundary extends Component {
   }
 }
 
-export default function TeachingBoard({target, onLayout, onClose, ...props}) {
+export default function TeachingBoard({target, headerTarget, onLayout, onClose, ...props}) {
   const [host, setHost] = useState(null);
   useEffect(() => { setHost(target?.current); onLayout('split'); return () => onLayout(''); }, [target, onLayout]);
   if (!host) return null;
-  return createPortal(<BoardBoundary onClose={onClose}><Canvas {...props} onLayout={onLayout} onClose={onClose}/></BoardBoundary>, host);
+  return createPortal(<BoardBoundary onClose={onClose}><Canvas {...props} headerHost={headerTarget?.current} onLayout={onLayout} onClose={onClose}/></BoardBoundary>, host);
 }
