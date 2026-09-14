@@ -4,6 +4,10 @@ import {Excalidraw, MainMenu, CaptureUpdateAction, convertToExcalidrawElements, 
 import '@excalidraw/excalidraw/index.css';
 import {createPortal} from 'react-dom';
 import BoardTools from './BoardTools';
+import {quickBoardToolAction} from '../../lib/teachingBoardTools';
+import BoardHistory from './BoardHistory';
+import BoardIcon, {BoardIconButton} from './BoardIcon';
+import Link from 'next/link';
 import BoardPresentation from './BoardPresentation';
 import {readBoardWorkspace,writeBoardWorkspace,boardSearch,normalizeBoardWorkspace} from '../../lib/teachingWorkspace';
 import {studySelection} from '../../lib/classStudy';
@@ -14,20 +18,33 @@ import {cardSkeleton, cardFields, readCard, rotateCardPart} from '../../lib/teac
 import {isClassComposing} from '../../lib/classReaderDraft';
 import {boardCameraForBounds} from '../../lib/teachingBoardViewport';
 
-export default function TeachingBoardCanvas({owner, team, day, onRecord, getRecordState, onLayout, onClose, headerHost, navigation, onSession, onRatio, material, vocabularyIndex, actionsRef, onReady}) {
+export default function TeachingBoardCanvas({owner, team, day, onRecord, getRecordState, onLayout, onClose, headerHost, navigation, sessionContent, onRatio, material, vocabularyIndex, actionsRef, onReady}) {
   const scope = useMemo(() => boardScope(owner, team.key, day), [owner, team.key, day]);
   const store = useTeachingBoard(scope), root = useRef(null), api = useRef(null), document = useRef(null), latest = useRef(null), timer = useRef(null), signature = useRef(''), armed=useRef(false), dirty=useRef(false);
-  const [initialWorkspace]=useState(()=>readBoardWorkspace(scope));
+  const [initialWorkspace]=useState(()=>readBoardWorkspace(scope,'board'));
   const [ratio,setRatio]=useState(initialWorkspace.ratio),[presenting,setPresenting]=useState(null),[activeTool,setActiveTool]=useState('selection'),[searching,setSearching]=useState(false);
   const inputRef=useRef(null),presentationActive=useRef(false),presentationTrigger=useRef(null),canvasPointers=useRef(new Set());
   const [layout, setLayout] = useState(initialWorkspace.layout), [pageId, setPageId] = useState(null), [selected, setSelected] = useState([]), [panel, setPanel] = useState(false);
   const [input, setInput] = useState(initialWorkspace.input), [reading, setReading] = useState(initialWorkspace.reading), [meaning, setMeaning] = useState(initialWorkspace.meaning), [candidates, setCandidates] = useState([]), [busy, setBusy] = useState(false), [message, setMessage] = useState('');
-  const [editing, setEditing] = useState(null), [recording, setRecording] = useState(false), [toolsOpen,setToolsOpen] = useState(false);
+  const [editing, setEditing] = useState(null), [recording, setRecording] = useState(false), [menu,setMenu] = useState(null);
+  const hud=useRef(null), menuTrigger=useRef(null);
+  const [toolStyle,setToolStyle]=useState({color:'ink',width:2});
+  const [hasContent,setHasContent]=useState(null);
+  const toolStyleRef=useRef(toolStyle);toolStyleRef.current=toolStyle;
   const attempt = useRef(0), composing = useRef(false), editVersion = useRef(0), boardSave = useRef(store.save);
   boardSave.current = store.save;
   useEffect(()=>{onLayout(layout);onRatio?.(ratio);},[layout,ratio,onLayout,onRatio]);
   useEffect(()=>{writeBoardWorkspace(scope,{...(editing?readBoardWorkspace(scope):{input,reading,meaning}),layout,ratio});},[scope,layout,ratio,input,reading,meaning,editing]);
   useEffect(()=>{if(!message)return;const timeout=setTimeout(()=>setMessage(''),6500);return()=>clearTimeout(timeout);},[message]);
+  const closeMenu=useCallback((restoreFocus=false)=>{setMenu(null);if(restoreFocus)menuTrigger.current?.focus({preventScroll:true});},[]);
+  const openMenu=(name,event)=>{if(event?.currentTarget.closest('.board-hud-rail, .board-selection-trigger'))menuTrigger.current=event.currentTarget;setMenu(value=>value===name?null:name);};
+  useEffect(()=>{
+    if(!menu)return;
+    const frame=requestAnimationFrame(()=>{const body=hud.current?.querySelector('.board-popover:not([hidden]) .board-popover-body');const target=menu==='entry'?inputRef.current:body?.querySelector('input, button:not(:disabled), a');target?.focus({preventScroll:true});});
+    const outside=event=>{if(!presentationActive.current&&!window.document.querySelector('dialog[open]')&&!hud.current?.contains(event.target))closeMenu();};
+    window.document.addEventListener('pointerdown',outside);
+    return()=>{cancelAnimationFrame(frame);window.document.removeEventListener('pointerdown',outside);};
+  },[menu,closeMenu]);
   const library=useMemo(()=>[
     ...Object.entries(material?.processed_json?.dictionary||{}).filter(([,token])=>!['개행','기호','공백'].includes(token.pos)).map(([id,token])=>({...studySelection(material,{...token,id}),label:'교재'})),
     ...[...new Set(vocabularyIndex?.byKey?.values()||[])].filter(row=>row.language===team.lang).map(row=>({text:row.word_text,reading:row.furigana,meaning:row.meaning,source:{kind:'manual'},label:'내 단어'})),
@@ -56,7 +73,7 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
       if(api.current!==value || !root.current)return;
       onReady?.(true);
       const style=getComputedStyle(root.current);
-      value.updateScene({appState:{viewBackgroundColor:style.getPropertyValue('--reader-paper').trim(),currentItemStrokeColor:style.getPropertyValue('--reader-ink').trim()}});
+      value.updateScene({appState:{viewBackgroundColor:style.getPropertyValue('--reader-paper').trim(),currentItemStrokeColor:style.getPropertyValue(`--board-${toolStyleRef.current.color}`).trim(),currentItemStrokeWidth:toolStyleRef.current.width},captureUpdate:CaptureUpdateAction.NEVER});
     });
   },[onReady]);
   useEffect(()=>()=>onReady?.(false),[onReady]);
@@ -79,7 +96,7 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
       if(!visible.length)return;
       // Mobile toolbars animate in from the edges. Reserve their settled size
       // even when getBoundingClientRect observes a partially translated bar.
-      const insets={top:toolbar?.height?toolbar.height+Math.max(16,toolbar.top-rect.top):0,bottom:footer?.height?footer.height+Math.max(16,rect.bottom-footer.bottom):0,right:misc?.width?rect.right-misc.left:0};
+      const insets={top:Math.max(68,toolbar?.height?toolbar.height+Math.max(16,toolbar.top-rect.top):0),bottom:footer?.height?footer.height+Math.max(16,rect.bottom-footer.bottom):0,right:misc?.width?rect.right-misc.left:0};
       const camera=boardCameraForBounds(getCommonBounds(visible),active.getAppState(),{width:rect.width,height:rect.height},insets,fit);
       if(camera)active.updateScene({appState:camera,captureUpdate:CaptureUpdateAction.NEVER});
     }));
@@ -123,6 +140,7 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
   const changeScene = (elements, state) => {
     if (!pageId) return;
     latest.current = {id: pageId, elements, state};
+    setHasContent(elements.some(el=>!el.isDeleted));
     if(['image','embeddable','magicframe'].includes(state.activeTool.type)){api.current?.setActiveTool({type:'selection'});return;}
     setActiveTool(previous=>previous===state.activeTool.type?previous:state.activeTool.type);
     const chosen = elements.filter(el => !el.isDeleted && state.selectedElementIds[el.id]);
@@ -149,7 +167,7 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
       api.current.setActiveTool({type:'selection'});
       revealElements(card);
       setMessage('판에 놓았어요. 자유롭게 옮기고 필기하세요.');
-      if(!preserveDraft){attempt.current++;setBusy(false);setPanel(false);setSearching(false);setEditing(null);setInput('');setReading('');setMeaning('');}
+      if(!preserveDraft){attempt.current++;setBusy(false);setPanel(false);setSearching(false);setEditing(null);setInput('');setReading('');setMeaning('');closeMenu(true);}
       return true;
     } catch (error) { setMessage(error.message);return false; }
   };
@@ -164,7 +182,7 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
   const anchor=selected.find(el=>expressionOf(el));
   const picked=anchor && selected.every(el=>el.groupIds?.includes(anchor.groupIds[0])) ? readCard(anchor,api.current?.getSceneElementsIncludingDeleted() || selected) : null;
   const recorded=picked ? getRecordState?.(picked) : null;
-  const editSelected = () => { if (picked) { attempt.current++;editVersion.current++;setBusy(false); setEditing(anchor.id); setInput(picked.text); setReading(picked.reading); setMeaning(picked.meaning); setPanel(true); setCandidates([]); } };
+  const editSelected = () => { if (picked) { attempt.current++;editVersion.current++;setBusy(false); setEditing(anchor.id); setInput(picked.text); setReading(picked.reading); setMeaning(picked.meaning); setPanel(true); setCandidates([]);setMenu('entry'); } };
   const applyExpression = event => {
     event.preventDefault(); if (isClassComposing(event, composing.current)) return;
     if (!editing) { addExpression({text:input, reading, meaning, source:{kind:'manual'}}); return; }
@@ -173,7 +191,7 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
     try {
       const next = boardExpression({...readCard(target,elements), text:input, reading, meaning, source:input.trim() === previous.text ? previous.source : {kind:'manual'}}, team.lang);
       reviseCard(target,next);
-      cancelEdit();setMessage('이 판의 표현을 수정했어요.');
+      cancelEdit();closeMenu(true);setMessage('이 판의 표현을 수정했어요.');
     } catch (error) { setMessage(error.message); }
   };
   const reviseCard = (target, value) => {
@@ -228,12 +246,19 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
     finally { if (request === attempt.current) setBusy(false); }
   };
   const cancelEdit=()=>{attempt.current++;setBusy(false);if(editing){const draft=readBoardWorkspace(scope);setInput(draft.input);setReading(draft.reading);setMeaning(draft.meaning);setEditing(null);}setPanel(false);setSearching(false);};
-  const openInput = () => { if(layout==='reader')changeLayout('split');requestAnimationFrame(()=>inputRef.current?.focus()); };
-  const chooseTool=type=>{api.current?.setActiveTool({type});setToolsOpen(false);};
+  const openInput = event => { if(layout==='reader')changeLayout('board');openMenu('entry',event); };
+  const chooseTool=type=>{if(layout==='reader')changeLayout('board');api.current?.setActiveTool({type});closeMenu(true);};
+  const quickTool=(type,event)=>{
+    const action=quickBoardToolAction(type,{activeTool,layout,menu});
+    if(!action)return;
+    if(action==='select'){menuTrigger.current=event.currentTarget;chooseTool(type);}
+    else openMenu('tools',event);
+  };
   const styleSelection=(property,value)=>{
     const editor=api.current;if(!editor)return;
     const color=property==='strokeColor'?getComputedStyle(root.current).getPropertyValue(`--board-${value}`).trim():value;
     const key=property==='strokeColor'?'currentItemStrokeColor':'currentItemStrokeWidth';
+    setToolStyle(previous=>({...previous,[property==='strokeColor'?'color':'width']:value}));
     const ids=editor.getAppState().selectedElementIds;
     update(editor.getSceneElementsIncludingDeleted().map(el=>ids[el.id]?newElementWith(el,{[property]:color}):el),{appState:{[key]:color}});
   };
@@ -244,9 +269,11 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
   };
 
   const changePage = id => {
+    cancelEdit();
+    if(layout==='reader')changeLayout('board');
     onReady?.(false);
     commit(); latest.current = null; signature.current = ''; armed.current=false; dirty.current=false; api.current = null;
-    document.current = {...document.current, activePage:id}; store.save(document.current); setPageId(id); setSelected([]); setEditing(null); setPanel(false);
+    document.current = {...document.current, activePage:id}; store.save(document.current); setHasContent(null); setPageId(id); setSelected([]); setEditing(null); setPanel(false);
   };
   const newPage = () => {
     if (document.current.pages.length >= BOARD_PAGE_LIMIT) { setMessage('한 수업에서 20개 판까지 보관할 수 있어요.'); return; }
@@ -287,13 +314,60 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
 
   if (!store.ready || !pageId) return <div className="teaching-board-loading"><p role="status">{store.error || '보관된 설명판을 불러오고 있어요…'}</p><button onClick={onClose}>교재로 돌아가기</button></div>;
   const page = document.current.pages.find(item => item.id === pageId), pages = document.current.pages;
+  const boardHasContent=hasContent??page.elements.some(el=>!el.isDeleted);
   const recent=pages.flatMap(item=>item.elements.filter(el=>!el.isDeleted&&expressionOf(el)).map(el=>({...readCard(el,item.elements),label:'최근 판'}))).reverse();
   const results=searching&&!editing?boardSearch(input,[...recent,...library]):[];
-  const workspaceHeader=<header className="teaching-board-header">{navigation}<nav aria-label="설명판 보기">{[['board','설명판'],['split','함께'],['reader','교재']].map(([value,label])=><button key={value} aria-pressed={layout===value} onClick={()=>changeLayout(value)}>{label}</button>)}</nav><div className="board-header-actions"><button onClick={showBoard} disabled={!(latest.current?.elements||page.elements).some(el=>!el.isDeleted)} className="board-present-button">보여주기</button><button className="board-header-input" onClick={openInput}>표현 입력</button><button onClick={onSession}>수업 기록</button><button onClick={()=>{commit();onClose();}} aria-label="설명판 닫기">×</button></div></header>;
-  return <section ref={root} className="teaching-board" data-tools-open={toolsOpen} onPointerDownCapture={event=>{armed.current=true;if(event.target.matches?.('canvas.interactive'))canvasPointers.current.add(event.pointerId);}} onKeyDownCapture={()=>{armed.current=true;}} onKeyDown={event=>{event.stopPropagation();if(event.key==='Escape'){cancelEdit();setToolsOpen(false);}}} aria-label="선생님 설명판">
+  const menuTitle={main:'전체 메뉴',tools:'필기 도구',entry:editing?'표현 수정':'표현 불러오기',book:'교재와 화면',pages:'설명판 페이지',selection:'선택한 요소',session:'수업 기록'};
+  const menuButton=(name,icon,label,extra={})=><BoardIconButton key={name} icon={icon} label={label} aria-expanded={menu===name} aria-controls={`board-menu-${name}`} data-active={menu===name} onClick={event=>openMenu(name,event)} {...extra}/>;
+  const popover=(name,children)=><section className={`board-popover board-popover--${name}`} id={`board-menu-${name}`} role="dialog" aria-label={menuTitle[name]} hidden={menu!==name}><div className="board-popover-heading"><b>{menuTitle[name]}</b><BoardIconButton icon="close" label="메뉴 닫기" onClick={()=>closeMenu(true)}/></div><div className="board-popover-body">{children}</div></section>;
+  const workspaceHeader=<div ref={hud} className="teaching-board-header board-hud" onKeyDown={event=>{event.stopPropagation();if(event.key==='Escape'){event.preventDefault();if(menu==='entry'&&editing)cancelEdit();closeMenu(true);}}}>
+    <nav className="board-hud-rail" aria-label="설명판 메뉴" onKeyDown={event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const buttons=[...event.currentTarget.querySelectorAll('button:not(:disabled)')],index=buttons.indexOf(window.document.activeElement);buttons[event.key==='Home'?0:event.key==='End'?buttons.length-1:(index+(event.key==='ArrowLeft'?-1:1)+buttons.length)%buttons.length]?.focus();}}>
+      {menuButton('main','menu','전체 메뉴',{'data-attention':!!store.error})}
+      <div className="board-quick-tools" role="group" aria-label="빠른 필기 도구">{[['selection','선택'],['freedraw','펜'],['eraser','지우개']].map(([type,label])=><BoardIconButton key={type} icon={type} label={label} data-pen={type==='freedraw'} style={type==='freedraw'?{'--board-pen-color':`var(--board-${toolStyle.color})`}:undefined} hint={activeTool===type?`${label} · 다시 누르면 도구 설정`:label} aria-pressed={activeTool===type} data-settings={activeTool===type} aria-expanded={activeTool===type&&menu==='tools'} aria-controls="board-menu-tools" onClick={event=>quickTool(type,event)}/>)}</div>
+      <BoardIconButton icon="add" label="표현 입력" aria-expanded={menu==='entry'} aria-controls="board-menu-entry" data-active={menu==='entry'} data-draft={!!input.trim()} onClick={openInput}/>
+      {menuButton('book','book','교재 메뉴')}
+    </nav>
+    <div className="board-hud-status" role="status" aria-label={store.error?'저장 확인 필요':store.saving?'보관 중…':'이 기기에 보관됨'} title={store.error?'저장 확인 필요':store.saving?'보관 중…':'이 기기에 보관됨'} data-error={!!store.error} data-saving={store.saving}><span/></div>
+    {popover('main',<><section className="board-menu-section" aria-label="판과 도구"><span>판과 도구</span><div className="board-icon-grid">
+      {menuButton('tools','freedraw','필기 도구 메뉴')}
+      {menuButton('pages','pages','페이지 메뉴')}
+      <BoardIconButton icon="present" label="보여주기" disabled={!boardHasContent} onClick={showBoard}/>
+      <BoardIconButton icon="fit" label="전체 보기" onClick={()=>{if(layout==='reader')changeLayout('board');closeMenu(true);revealElements(api.current?.getSceneElements()||[],true);}}/>
+    </div></section><section className="board-menu-section" aria-label="수업과 이동"><span>수업과 이동</span><div className="board-icon-grid">
+      <Link href="/home" aria-label="웹앱 홈" title="웹앱 홈" data-label="웹앱 홈" onClick={commit} className="board-icon-button"><BoardIcon name="home"/></Link>
+      <Link href={`/class/${team.key}`} aria-label="팀 홈" title="팀 홈" data-label="팀 홈" onClick={commit} className="board-icon-button"><BoardIcon name="team"/></Link>
+      <BoardIconButton icon="record" label="수업 기록" onClick={()=>setMenu('session')}/>
+      <BoardIconButton icon="close" label="설명판 닫기" onClick={()=>{commit();onClose();}}/>
+    </div></section><section className="board-menu-section" aria-label="백업"><span>백업</span><div className="board-icon-grid">
+      <BoardIconButton icon="download" label="내려받기" onClick={backup}/>
+      <label className="teaching-board-file board-icon-button" title="가져오기"><BoardIcon name="upload"/><input type="file" accept="application/json,.json" aria-label="가져오기" onChange={restore}/></label>
+    </div></section><p className="board-menu-caption">{team.name} · {day}</p><p className="board-menu-caption">{store.error?'저장 확인 필요':store.saving?'보관 중…':'이 기기에 보관됨'}</p>
+    {store.error&&<p className="board-menu-caption" role="status">{store.error}<button onClick={backup}>내 내용 백업</button><button onClick={()=>window.location.reload()}>최신 판 열기</button></p>}
+    {store.recoveries?.map((row,i)=><button className="board-recovery-button" key={row.id} onClick={()=>recover(row)}>충돌본 {i+1} 불러오기</button>)}</>)}
+    {popover('tools',<><BoardHistory canvasRoot={root} pageId={pageId} onAction={()=>closeMenu(true)}/><BoardTools active={activeTool} style={toolStyle} onTool={chooseTool} onStyle={styleSelection}/></>)}
+    {popover('book',<><nav className="board-icon-grid" aria-label="설명판 보기">{[['board','설명판','board'],['split','함께','split'],['reader','교재','book']].map(([value,label,icon])=><BoardIconButton key={value} icon={icon} label={label} aria-pressed={layout===value} onClick={()=>{changeLayout(value);closeMenu(true);}}/>)}</nav>{navigation}</>)}
+    {popover('pages',<nav className="board-page-grid" aria-label="설명판 페이지">{pages.map((item,i)=><button key={item.id} aria-label={`${i+1}번 판`} aria-current={pageId===item.id?'page':undefined} onClick={()=>{changePage(item.id);closeMenu(true);}}><BoardIcon name="board"/><span>{i+1}</span></button>)}<BoardIconButton icon="add" label="새 판" onClick={()=>{newPage();closeMenu(true);}}/></nav>)}
+    {popover('selection',<div className="board-icon-grid" aria-label="선택한 요소 도구"><BoardIconButton icon="present" label="선택한 내용 보여주기" disabled={!selected.length} onClick={showBoard}/>{picked&&<>
+      <BoardIconButton icon="edit" label="내용 수정" onClick={editSelected}/>
+      <BoardIconButton icon="reading" label={`읽기 ${picked.showReading?'가리기':'보이기'}`} aria-pressed={!picked.showReading} onClick={()=>toggle('showReading')}/>
+      <BoardIconButton icon="meaning" label={`뜻 ${picked.showMeaning?'가리기':'보이기'}`} aria-pressed={!picked.showMeaning} onClick={()=>toggle('showMeaning')}/>
+      <BoardIconButton icon="record" label={recorded||(recording?'보관 중…':'오늘 표현에 추가')} disabled={recording||!!recorded} onClick={record}/>
+    </>}{selected.length>1&&!picked&&<BoardIconButton icon="group" label="함께 묶기" onClick={group}/>}</div>)}
+    {popover('session',sessionContent)}
+    {popover('entry',<form className="teaching-board-import" aria-label="표현 불러오기" onSubmit={applyExpression} onCompositionStart={()=>{composing.current=true;}} onCompositionEnd={()=>{composing.current=false;}} onKeyDown={event=>{if(event.key==='Enter'&&isClassComposing(event,composing.current))event.preventDefault();}}>
+      <div className="board-entry-line"><label className="board-entry-query"><span className="teaching-board-accessible">단어·표현</span><input ref={inputRef} value={input} maxLength={500} placeholder="표현 입력·찾기" onFocus={()=>setSearching(true)} onChange={event=>{attempt.current++;editVersion.current++;setBusy(false);setInput(event.target.value);setCandidates([]);setReading('');setMeaning('');setSearching(true);}}/></label><BoardIconButton icon="more" label="읽기와 뜻 입력" aria-expanded={panel} onClick={()=>{setPanel(v=>!v);setSearching(false);}}/></div>
+      {!!results.length&&<div className="board-search-results" aria-label="표현 검색 결과">{results.map((value,i)=><button key={i} type="button" onClick={()=>addExpression(value)}><span><b>{value.text}</b><small>{value.reading} {value.meaning}</small></span><small>{value.label} ＋</small></button>)}</div>}
+      {panel&&<div className="board-entry-details">
+        {!!candidates.length&&<div className="teaching-board-candidates" aria-label="한자 후보">{candidates.map(value=><button key={value.text} type="button" onClick={()=>{editVersion.current++;setInput(value.text);setReading(value.reading);lookup(value.text);}}>{value.text}<small>{value.meaning||`${value.level} · 뜻 확인 필요`}</small></button>)}</div>}
+        <div className="teaching-board-import-fields"><label>읽기<input value={reading} maxLength={500} onChange={event=>{editVersion.current++;setReading(event.target.value);}}/></label><label>뜻<textarea aria-label="뜻" value={meaning} rows={2} maxLength={500} onChange={event=>{editVersion.current++;setMeaning(event.target.value);}}/></label></div>
+      </div>}
+      <div className="board-entry-actions"><BoardIconButton icon="search" label={busy?'조회 중…':'사전 찾기'} disabled={busy||!input.trim()} onClick={()=>lookup(input)}/>{editing&&<BoardIconButton icon="close" label="수정 취소" onClick={()=>{cancelEdit();closeMenu(true);}}/>}<BoardIconButton type="submit" icon="check" label={editing?'수정':'바로 놓기'} disabled={!input.trim()} className="board-add-button"/></div>
+    </form>)}
+    {layout!=='reader'&&selected.length>0&&<div className="board-selection-trigger">{menuButton('selection','edit','선택한 요소 편집')}</div>}
+  </div>;
+  return <section ref={root} className="teaching-board" data-menu={menu||''} onPointerDownCapture={event=>{armed.current=true;if(event.target.matches?.('canvas.interactive'))canvasPointers.current.add(event.pointerId);}} onKeyDownCapture={()=>{armed.current=true;}} onKeyDown={event=>{event.stopPropagation();if(event.key==='Escape'){cancelEdit();closeMenu(true);}}} aria-label="선생님 설명판">
     {headerHost?createPortal(workspaceHeader,headerHost):workspaceHeader}
     {layout==='split'&&<div className="board-divider" role="separator" tabIndex={0} aria-label="설명판 너비" aria-orientation="vertical" aria-valuemin={40} aria-valuemax={72} aria-valuenow={Math.round(ratio)} onPointerDown={event=>{event.currentTarget.setPointerCapture(event.pointerId);resize(event);}} onPointerMove={event=>{if(event.currentTarget.hasPointerCapture(event.pointerId))resize(event);}} onPointerUp={event=>event.currentTarget.releasePointerCapture(event.pointerId)} onKeyDown={event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();setRatio(value=>event.key==='Home'?40:event.key==='End'?72:normalizeBoardWorkspace({ratio:value+(event.key==='ArrowLeft'?-2:2)}).ratio);}}}/>}
-    <BoardTools active={activeTool} onTool={chooseTool} onStyle={styleSelection} open={toolsOpen} onToggle={()=>setToolsOpen(v=>!v)}/>
     <div className="teaching-board-surface">
       <Excalidraw key={pageId} excalidrawAPI={connectCanvas} initialData={{elements:page.elements,appState:{...page.camera,currentItemFontFamily:2,currentItemRoughness:0,currentItemStrokeWidth:2}}}
         onChange={changeScene} langCode="ko-KR" handleKeyboardGlobally={false} autoFocus={false}
@@ -303,19 +377,8 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
         <MainMenu><MainMenu.Item onSelect={backup}>설명판 백업</MainMenu.Item></MainMenu>
       </Excalidraw>
     </div>
+    {!boardHasContent&&<div className="board-empty-hint" aria-label="설명판 시작 안내"><div aria-hidden="true"><BoardIcon name="freedraw"/><BoardIcon name="add"/><BoardIcon name="book"/></div><p>펜으로 쓰거나, ＋로 표현을 놓아보세요.</p><span>교재에서 고른 표현도 바로 가져올 수 있어요.</span></div>}
     <div className="teaching-board-accessible">{(latest.current?.elements || page.elements).filter(el=>!el.isDeleted && expressionOf(el)).map(el=>{const value=readCard(el,latest.current?.elements || page.elements);return value && <p key={el.id} data-board-expression={el.id}>{value.text} · {value.showReading?value.reading:""} · {value.showMeaning?value.meaning:""}</p>;})}</div>
-    {selected.length>0 && <div className="teaching-board-selection" aria-label="선택한 요소 도구"><button onClick={showBoard}>선택한 내용 보여주기</button>{picked && <><button onClick={editSelected}>내용 수정</button><button aria-pressed={!picked.showReading} onClick={() => toggle('showReading')}>읽기 {picked.showReading?'가리기':'보이기'}</button><button aria-pressed={!picked.showMeaning} onClick={() => toggle('showMeaning')}>뜻 {picked.showMeaning?'가리기':'보이기'}</button><button disabled={recording || !!recorded} onClick={record}>{recorded || (recording?'보관 중…':'오늘 표현에 추가')}</button></>}{selected.length>1 && !picked && <button onClick={group}>함께 묶기</button>}</div>}
-    <div className="board-entry-dock">
-    <form className="teaching-board-import" aria-label="표현 불러오기" onSubmit={applyExpression} onCompositionStart={() => {composing.current=true;}} onCompositionEnd={() => {composing.current=false;}} onKeyDown={event => {if(event.key==='Enter' && isClassComposing(event,composing.current))event.preventDefault();}}>
-      {(panel||results.length>0)&&<div className="board-entry-details">
-        {!!results.length&&<div className="board-search-results" aria-label="표현 검색 결과">{results.map((value,i)=><button key={i} type="button" onClick={()=>addExpression(value)}><span><b>{value.text}</b><small>{value.reading} {value.meaning}</small></span><small>{value.label} ＋</small></button>)}</div>}
-        {panel&&<><div className="board-entry-detail-heading"><b>{editing?'표현 수정':'읽기와 뜻'}</b><button type="button" aria-label={editing?"수정 취소":"입력 상세 접기"} onClick={cancelEdit}>×</button></div>
-        {!!candidates.length&&<div className="teaching-board-candidates" aria-label="한자 후보">{candidates.map(value=><button key={value.text} type="button" onClick={()=>{editVersion.current++;setInput(value.text);setReading(value.reading);lookup(value.text);}}>{value.text}<small>{value.meaning||`${value.level} · 뜻 확인 필요`}</small></button>)}</div>}
-        <div className="teaching-board-import-fields"><label>읽기<input value={reading} maxLength={500} onChange={event=>{editVersion.current++;setReading(event.target.value);}}/></label><label>뜻<textarea aria-label="뜻" value={meaning} rows={2} maxLength={500} onChange={event=>{editVersion.current++;setMeaning(event.target.value);}}/></label></div></>}
-      </div>}
-      <div className="board-entry-line"><label className="board-entry-query"><span className="teaching-board-accessible">단어·표현</span><input ref={inputRef} value={input} maxLength={500} placeholder="표현 입력·찾기" onFocus={()=>setSearching(true)} onChange={event=>{attempt.current++;editVersion.current++;setBusy(false);setInput(event.target.value);setCandidates([]);setReading('');setMeaning('');setSearching(true);}}/></label><button type="button" onClick={()=>{setPanel(v=>!v);setSearching(false);}} aria-expanded={panel} aria-label="읽기와 뜻 입력">＋</button><button type="button" disabled={busy||!input.trim()} onClick={()=>lookup(input)}>{busy?'조회 중…':'사전 찾기'}</button><button type="submit" disabled={!input.trim()} className="board-add-button">{editing?'수정':'바로 놓기'}</button></div>
-    </form></div>
-    <footer className="teaching-board-footer"><nav aria-label="설명판 페이지">{pages.map((item,i)=><button key={item.id} aria-current={pageId===item.id?'page':undefined} onClick={()=>changePage(item.id)}>{i+1}</button>)}<button onClick={newPage} aria-label="새 판">＋</button></nav><button onClick={()=>revealElements(api.current?.getSceneElements()||[],true)}>전체 보기</button><details><summary>보관</summary><div className="teaching-board-backup-menu"><button onClick={backup}>내려받기</button>{store.recoveries?.map((row,i)=><button key={row.id} onClick={()=>recover(row)}>충돌본 {i+1} 불러오기</button>)}<label className="teaching-board-file">가져오기<input type="file" accept="application/json,.json" onChange={restore}/></label></div></details><small role="status">{store.error?'저장 확인 필요':store.saving?'보관 중…':'이 기기에 보관됨'}</small></footer>
     {(message||store.error)&&<p className="teaching-board-message" role="status">{store.error||message}{store.error&&<><button onClick={backup}>내 내용 백업</button><button onClick={()=>window.location.reload()}>최신 판 열기</button></>}</p>}
     {presenting&&<BoardPresentation elements={presenting} returnFocus={presentationTrigger.current} onClose={()=>{presentationActive.current=false;setPresenting(null);}}/>}
   </section>;

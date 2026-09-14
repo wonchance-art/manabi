@@ -1,3 +1,4 @@
+import {boardMenus,verifyBoardMenus} from './teaching-board-menu-checks.mjs';
 // Real React pages + HTTP fixtures + actual disposable PostgreSQL RPCs. No production writes.
 import {chromium,webkit} from 'playwright-core';
 import fs from 'node:fs';
@@ -121,6 +122,9 @@ try {
  await page.goto(base+`/viewer/10?class=fixture-class&day=${day}&board=1`);
  const board=page.getByRole('region',{name:'선생님 설명판'});await board.waitFor();
  await board.locator('.excalidraw canvas').first().waitFor();
+ const menus=boardMenus(page,activate),hud=menus.hud;
+ await verifyBoardMenus({page,board,activate,check,saveScreen});
+ await menus.layout('함께');
  const originalBook=(await db.query('select raw_text,processed_json from reading_materials where id=10')).rows[0];
  const originalNote=(await current()).raw_text;
  if(process.env.QA_READER_DESIGN==='1'){
@@ -132,10 +136,11 @@ try {
  await page.locator('[data-tid="id_0_word"]')[activate]();
  await page.locator('.viewer-inspector').getByRole('button',{name:'판에 놓기',exact:true})[activate]();
  await waitFor(async()=> (await scene()).length===4);
+ assert.equal(await board.getByLabel('설명판 시작 안내',{exact:true}).count(),0,'placing content removes the empty-board hint');
  assert.equal((await scene()).find(el=>el.customData?.manabiExpression).customData.manabiExpression.source.materialId,'10');
  await saveScreen('board-textbook');check('selected textbook expression imports with reading, meaning and exact source');
  const originalBoard=JSON.stringify(await head());
- await board.getByRole('button',{name:'선택한 내용 보여주기',exact:true})[activate]();
+ await menus.action('selection','선택한 내용 보여주기');
  const presentation=page.getByRole('dialog',{name:'학생에게 보여주기'});await presentation.waitFor();
  const displayed=await presentation.locator('canvas.static').evaluate(el=>el.toDataURL());
  await presentation.getByRole('button',{name:'뜻 가리기',exact:true})[activate]();
@@ -148,9 +153,9 @@ try {
  await saveScreen('board-presentation-narrow');await page.setViewportSize({width:1440,height:1000});
  await presentation.getByRole('button',{name:'← 설명판으로',exact:true})[activate]();
  assert.equal(JSON.stringify(await head()),originalBoard,'presentation must not write the original board');
- await board.getByRole('button',{name:'선택한 내용 보여주기',exact:true})[activate]();await presentation.waitFor();
+ await menus.action('selection','선택한 내용 보여주기');await presentation.waitFor();
  await page.keyboard.press('Escape');await presentation.waitFor({state:'detached'});
- assert(await board.getByRole('button',{name:'선택한 내용 보여주기',exact:true}).evaluate(el=>el===document.activeElement),'Escape returns keyboard focus to the original trigger');
+ assert(await hud.getByRole('button',{name:'선택한 내용 보여주기',exact:true}).evaluate(el=>el===document.activeElement),'Escape returns keyboard focus to the original trigger');
  check('presentation enlarges selected content; temporary hiding and laser never rewrite original scene');
  if(process.env.QA_PRESENTATION_ONLY==='1'){
   assert.equal(report.errors.length,0,report.errors.join('\n'));
@@ -161,19 +166,19 @@ try {
  const sx=paper.x+rectangle.x+10,sy=paper.y+rectangle.y+18,ex=paper.x+rectangle.x+rectangle.width-10;
  const pixelAt=()=>board.locator('canvas.static').evaluate((canvas,{x,y})=>Array.from(canvas.getContext('2d').getImageData(x*devicePixelRatio,y*devicePixelRatio,1,1).data),{x:rectangle.x+80,y:rectangle.y+18});
  const beforePixel=await pixelAt();
- await board.getByRole('button',{name:'펜',exact:true})[activate]();
+ await menus.action('tools','펜');
  await page.mouse.move(sx,sy);await page.mouse.down();await page.mouse.move(ex,sy,{steps:30});await page.mouse.up();
  await waitFor(async()=> (await scene()).some(el=>el.type==='freedraw'));
  const stroke=(await scene()).find(el=>el.type==='freedraw');
  assert(stroke.points.every(([,y])=>Math.abs(y)<1),'a horizontal stroke stays horizontal when selection tools disappear');
  assert.notDeepEqual(await pixelAt(),beforePixel,'ink must render ON TOP of the card');
  await saveScreen('board-ink');check('real pointer ink remains visible over semantic expression');
- await board.getByTestId('button-undo')[activate]();await waitFor(async()=> !(await scene()).some(el=>el.type==='freedraw'));
- await board.getByTestId('button-redo')[activate]();await waitFor(async()=> (await scene()).some(el=>el.type==='freedraw'));
+ await menus.action('tools','실행 취소');await waitFor(async()=> !(await scene()).some(el=>el.type==='freedraw'));
+ await menus.action('tools','다시 실행');await waitFor(async()=> (await scene()).some(el=>el.type==='freedraw'));
  check('native undo and redo restore the stroke without reader grading');
- await board.getByRole('button',{name:'선택',exact:true})[activate]();
+ await menus.action('tools','선택');
  await board.locator('canvas.interactive').click({position:{x:500,y:400}});await page.keyboard.press('Meta+a');
- await board.getByRole('button',{name:'함께 묶기',exact:true})[activate]();
+ await menus.action('selection','함께 묶기');
  await waitFor(async()=> (await scene()).every(el=>el.groupIds.length>0));
  const beforeMove=await scene();
  const movePaper=await board.locator('canvas.interactive').boundingBox(),moveBoard=await head();
@@ -189,33 +194,33 @@ try {
  assert.equal(JSON.stringify((await scene()).map(({id,type,x,y,text,points,customData,groupIds})=>({id,type,x,y,text,points,customData,groupIds}))),saved);
  check('group moves as one explanation, then survives reload with ink, source and positions');
  await page.getByRole('button',{name:'표현 입력',exact:true})[activate]();
- const form=board.getByRole('form',{name:'표현 불러오기'});
+ const form=hud.locator('#board-menu-entry form');
  await form.getByLabel('단어·표현',{exact:true}).fill('你好');await form.getByRole('button',{name:'읽기와 뜻 입력',exact:true})[activate]();await form.getByLabel('뜻',{exact:true}).fill('안녕하세요');
  await form.getByRole('button',{name:'바로 놓기',exact:true})[activate]();
  await waitFor(async()=> (await scene()).filter(el=>el.customData?.manabiExpression).length===2);
  assert.equal((await current()).raw_text,originalNote,'displaying a manual expression does not publish it');
- await board.getByRole('button',{name:'오늘 표현에 추가',exact:true})[activate]();
+ await menus.action('selection','오늘 표현에 추가');
  await waitFor(async()=> (await current()).raw_text.includes('你好'));
  check('manual expression displays immediately; only explicit add writes the existing classroom record');
- await board.getByRole('button',{name:'뜻 가리기',exact:true})[activate]();
+ await menus.action('selection','뜻 가리기');
  await waitFor(async()=> (await scene()).find(el=>el.customData?.manabiExpression?.text==='你好').customData.manabiExpression.showMeaning===false);
  assert.equal((await scene()).filter(el=>el.customData?.manabiField==='meaning').at(-1).opacity,0);
- await board.getByRole('button',{name:'뜻 보이기',exact:true})[activate]();
- await board.getByRole('button',{name:'새 판',exact:true})[activate]();await waitFor(async()=> (await head()).document.pages.length===2);
- await board.getByRole('navigation',{name:'설명판 페이지'}).getByRole('button',{name:'1',exact:true})[activate]();
+ await menus.action('selection','뜻 보이기');
+ await menus.action('pages','새 판');await waitFor(async()=> (await head()).document.pages.length===2);
+ await menus.action('pages','1번 판');
  await waitFor(async()=> (await scene()).length===9);
- await page.getByLabel('수업 교재 과 선택').selectOption('11');await page.waitForURL('**/viewer/11?**');await board.waitFor();
+ await menus.open('book');await page.getByLabel('수업 교재 과 선택').selectOption('11');await page.waitForURL('**/viewer/11?**');await board.waitFor();
  assert.equal(new URL(page.url()).searchParams.get('board'),'1');await waitFor(async()=> (await scene()).length===9);
  check('reading/meaning toggles and pages persist; changing textbooks keeps the same lesson board');
- const quick=board.getByRole('form',{name:'표현 불러오기'}).getByLabel('단어·표현',{exact:true});
- await quick.fill('준비 중인 표현');
+ const quick=hud.locator('#board-menu-entry form').getByLabel('단어·표현',{exact:true});
+ await menus.open('entry');await quick.fill('준비 중인 표현');await menus.close();
  const divider=board.getByRole('separator',{name:'설명판 너비'});await divider.focus();await divider.press('ArrowLeft');
  const ratio=await divider.getAttribute('aria-valuenow');
  await page.getByRole('link',{name:'이전 과',exact:true})[activate]();await page.waitForURL('**/viewer/10?**');await board.waitFor();
  assert.equal(await quick.inputValue(),'준비 중인 표현');assert.equal(await divider.getAttribute('aria-valuenow'),ratio);
  await page.getByRole('link',{name:'다음 과',exact:true})[activate]();await page.waitForURL('**/viewer/11?**');await board.waitFor();
  assert.equal(new URL(page.url()).searchParams.get('board'),'1');assert.equal(await quick.inputValue(),'준비 중인 표현');
- await quick.fill('');
+ await menus.open('entry');await quick.fill('');await menus.close();
  check('both chapter arrows preserve the board, unfinished input and keyboard-adjusted split ratio');
  assert.deepEqual((await db.query('select raw_text,processed_json from reading_materials where id=10')).rows[0],originalBook);
  await page.setViewportSize({width:1024,height:768});await page.waitForTimeout(500);await saveScreen('board-tablet-landscape');
@@ -225,8 +230,9 @@ try {
  assert(await page.locator('.viewer-center').evaluate(el=>{const r=el.getBoundingClientRect();return r.left>=0 && r.right<=innerWidth+1;}));
  assert(await page.locator('.viewer-layout').evaluate(el=>el.scrollWidth<=el.clientWidth+1));
  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(500);await saveScreen('board-phone');
- assert(await board.getByTestId('button-undo').isVisible(),'phone keeps native undo available');
- assert(await board.getByTestId('button-redo').isVisible(),'phone keeps native redo available');
+ await menus.open('tools');
+ assert(await hud.getByRole('button',{name:'실행 취소',exact:true}).isVisible(),'phone exposes native undo through its tool menu');
+ assert(await hud.getByRole('button',{name:'다시 실행',exact:true}).isVisible(),'phone exposes native redo through its tool menu');await menus.close();
  const mobileScene=await head(),mobilePage=mobileScene.document.pages.find(p=>p.id===mobileScene.document.activePage);
  assert(await board.locator('.teaching-board-surface').evaluate((surface,{elements,camera})=>elements.filter(el=>!el.isDeleted&&el.type==='text'&&el.opacity!==0).every(el=>{
    const x=(el.x+el.width/2+camera.scrollX)*camera.zoom.value,y=(el.y+el.height/2+camera.scrollY)*camera.zoom.value;
@@ -238,7 +244,7 @@ try {
  assert(await page.locator('.viewer-layout').evaluate(el=>el.scrollWidth<=el.clientWidth+1));
  // Model the visual viewport shrinking without shrinking the layout viewport,
  // as a software keyboard does. This does not claim physical iOS IME coverage.
- await quick.focus();
+ await menus.open('entry');await quick.focus();
  await page.evaluate(()=>{Object.defineProperty(visualViewport,'height',{configurable:true,get:()=>innerHeight-310});visualViewport.dispatchEvent(new Event('resize'));});
  await page.waitForTimeout(500);
  assert.equal(await page.locator('.viewer-layout').getAttribute('data-keyboard-open'),'true');
@@ -252,33 +258,33 @@ try {
  check('desktop/tablet/phone layouts retain textbook access without horizontal overflow');
  // Local search retains the exact chapter source. Editing an existing card
  // must leave an unfinished new-expression draft available after cancel/save.
- await quick.fill('老师');
- await board.locator('.board-search-results').getByRole('button',{name:/老师/})[activate]();
+ await menus.open('entry');await quick.fill('老师');
+ await hud.locator('.board-search-results').getByRole('button',{name:/老师/})[activate]();
  await waitFor(async()=>(await scene()).some(el=>el.customData?.manabiExpression?.text==='老师'));
  const localCard=(await scene()).find(el=>el.customData?.manabiExpression?.text==='老师');
  assert.equal(localCard.customData.manabiExpression.source.materialId,'11');
- await quick.fill('다음 설명 초안');
- await board.getByRole('button',{name:'내용 수정',exact:true})[activate]();
+ await menus.open('entry');await quick.fill('다음 설명 초안');
+ await menus.action('selection','내용 수정');
  await form.getByLabel('뜻',{exact:true}).fill('취소할 설명');
  await form.getByRole('button',{name:'수정 취소',exact:true})[activate]();
  assert.equal(await quick.inputValue(),'다음 설명 초안');
  assert.equal((await scene()).find(el=>el.id===localCard.id).customData.manabiExpression.meaning,localCard.customData.manabiExpression.meaning);
- await board.getByRole('button',{name:'내용 수정',exact:true})[activate]();
+ await menus.action('selection','내용 수정');
  await form.getByLabel('뜻',{exact:true}).fill('선생님');
  await form.getByRole('button',{name:'수정',exact:true})[activate]();
  await waitFor(async()=>(await scene()).find(el=>el.id===localCard.id).customData.manabiExpression.meaning==='선생님');
  assert.equal(await quick.inputValue(),'다음 설명 초안');
- await quick.fill('');
+ await menus.open('entry');await quick.fill('');await menus.close();
  check('local textbook search keeps its chapter source; editing and cancelling preserve the separate input draft');
  // Two tabs share the same real IndexedDB. A stale tab must preserve a recovery copy.
  const other=await context.newPage();await other.goto(page.url());await other.getByRole('region',{name:'선생님 설명판'}).waitFor();await other.waitForTimeout(800);
- await board.getByRole('button',{name:'새 판',exact:true})[activate]();await waitFor(async()=> (await head()).document.pages.length===3);
- await other.getByRole('button',{name:'새 판',exact:true})[activate]();
- await other.getByText('다른 창에서 이 판을 수정했어요.',{exact:false}).first().waitFor();
+ await menus.action('pages','새 판');await waitFor(async()=> (await head()).document.pages.length===3);
+ await boardMenus(other,activate).action('pages','새 판');
+ await other.locator('.teaching-board-message').filter({hasText:'다른 창에서 이 판을 수정했어요.'}).waitFor();
  await waitFor(async()=> (await readBoards()).some(row=>row.id!==row.scope));
  assert.equal((await head()).document.pages.length,3);
- await other.close();await page.reload();await board.waitFor();await board.getByText('보관',{exact:true})[activate]();
- await board.getByRole('button',{name:'충돌본 1 불러오기',exact:true})[activate]();
+ await other.close();await page.reload();await board.waitFor();await menus.open('main');
+ await menus.action('main','충돌본 1 불러오기');
  await waitFor(async()=> (await head()).document.pages.length===6);
  check('cross-tab save conflict never overwrites the latest board; recovery copy can be reopened');
  // Japanese kana candidates remain a teacher choice; browser IME confirmation is not submission.
@@ -289,15 +295,15 @@ try {
  await context.route('**/api/classroom/kana?**',r=>r.fulfill({json:{candidates:(kanaIndex['はし']||[]).map(([text,level])=>({text,level,reading:'はし'}))}}));
  await page.reload();await board.waitFor();
  await page.getByRole('button',{name:'표현 입력',exact:true})[activate]();
- const japaneseForm=board.getByRole('form',{name:'표현 불러오기'}), query=japaneseForm.getByLabel('단어·표현',{exact:true});
+ const japaneseForm=hud.locator('#board-menu-entry form'), query=japaneseForm.getByLabel('단어·표현',{exact:true});
  await query.fill('はし');
  await query.dispatchEvent('compositionstart');await query.press('Enter');
  assert(await japaneseForm.isVisible());await query.dispatchEvent('compositionend');
  await japaneseForm.getByRole('button',{name:'사전 찾기',exact:true})[activate]();
- await board.getByRole('button',{name:/橋/}).waitFor();
- await board.getByRole('button',{name:/箸/}).waitFor();
+ await hud.getByRole('button',{name:/橋/}).waitFor();
+ await hud.getByRole('button',{name:/箸/}).waitFor();
  assert.equal(await query.inputValue(),'はし');
- await board.getByRole('button',{name:/箸/})[activate]();assert.equal(await query.inputValue(),'箸');await japaneseForm.getByRole('button',{name:'사전 찾기',exact:true}).waitFor();
+ await hud.getByRole('button',{name:/箸/})[activate]();assert.equal(await query.inputValue(),'箸');await japaneseForm.getByRole('button',{name:'사전 찾기',exact:true}).waitFor();
  await japaneseForm.getByLabel('읽기',{exact:true}).fill('はし');await japaneseForm.getByLabel('뜻',{exact:true}).fill('젓가락');
  await japaneseForm.getByRole('button',{name:'바로 놓기',exact:true})[activate]();
  await waitFor(async()=> (await scene()).some(el=>el.customData?.manabiExpression?.text==='箸'));
@@ -308,24 +314,24 @@ try {
  const unobstructed=async()=>{
   const row=await head(),active=row.document.pages.find(p=>p.id===row.document.activePage),card=active.elements.find(el=>!el.isDeleted&&el.customData?.manabiExpression?.text==='箸');
   const result=await board.locator('.teaching-board-surface').evaluate((surface,{card,camera})=>{
-   const canvas=surface.getBoundingClientRect(),toolbar=surface.querySelector('.App-toolbar:not(.App-bottom-bar .App-toolbar)')?.getBoundingClientRect(),footer=surface.querySelector('.App-bottom-bar .Island')?.getBoundingClientRect();
+   const canvas=surface.getBoundingClientRect(),toolbar=document.querySelector('.board-hud-rail')?.getBoundingClientRect();
    const y=canvas.top+(card.y+camera.scrollY)*camera.zoom.value,bottom=y+card.height*camera.zoom.value;
-   return {fits:y>=(toolbar?.height?toolbar.bottom:canvas.top)+15 && bottom<=(footer?.top || canvas.bottom)-15,y,bottom,top:toolbar?.bottom,footer:footer?.top,card,camera};
+   return {fits:y>=(toolbar?.height?toolbar.bottom:canvas.top)+15 && bottom<=canvas.bottom-15,y,bottom,top:toolbar?.bottom,card,camera};
   },{card,camera:active.camera});
   return result.fits;
  };
  await waitFor(unobstructed);await saveScreen('board-browser-zoom');
- await board.getByRole('button',{name:'전체 보기',exact:true})[activate]();await waitFor(unobstructed);
+ await menus.action('main','전체 보기');await waitFor(unobstructed);
  check('selected expression and fit-all stay clear of mobile toolbars at 121-percent browser zoom');
  await page.setViewportSize({width:1440,height:1000});
  // No debounce wait: a just-added expression must survive immediate chapter navigation.
- const quickBeforeMove=board.getByRole('form',{name:'표현 불러오기'}).getByLabel('단어·표현',{exact:true});
- await quickBeforeMove.fill('即座に');await quickBeforeMove.press('Enter');
+ const quickBeforeMove=hud.locator('#board-menu-entry form').getByLabel('단어·표현',{exact:true});
+ await menus.open('entry');await quickBeforeMove.fill('即座に');await quickBeforeMove.press('Enter');
  await page.getByRole('link',{name:'이전 과',exact:true})[activate]();await page.waitForURL('**/viewer/10?**');await board.waitFor();
  await waitFor(async()=>(await scene()).some(el=>el.customData?.manabiExpression?.text==='即座に'));
  check('text-only immediate insertion survives a chapter change without waiting for autosave');
  // Backup round-trip appends a new page, leaving the current board and original textbook intact.
- const backupMenu=board.locator('.teaching-board-footer details');if(!await backupMenu.getAttribute('open'))await backupMenu.locator('summary')[activate]();
+ await menus.open('main');const backupMenu=hud.locator('#board-menu-main');
  const downloaded=page.waitForEvent('download');await backupMenu.getByRole('button',{name:'내려받기',exact:true})[activate]();
  const download=await downloaded, file=out+'/backup.json';await download.saveAs(file);
  const restored=JSON.parse(fs.readFileSync(file,'utf8'));assert.equal(restored.format,'manabi-teaching-board');
@@ -334,10 +340,10 @@ try {
  const revisionBefore=(await head()).revision;
  await backupMenu.locator('input[type=file]').setInputFiles({name:'invalid.json',mimeType:'application/json',buffer:Buffer.from('{"format":"other"}')});
  await board.getByText('manabi 설명판 백업 파일을 골라 주세요.',{exact:true}).waitFor();assert.equal((await head()).revision,revisionBefore);
- await page.getByRole('navigation',{name:'설명판 보기'}).getByRole('button',{name:'설명판',exact:true})[activate]();assert.equal(await page.locator('.viewer-center').isVisible(),false);
- await page.getByRole('navigation',{name:'설명판 보기'}).getByRole('button',{name:'함께',exact:true})[activate]();assert(await page.locator('.viewer-center').isVisible());
- await page.getByRole('navigation',{name:'설명판 보기'}).getByRole('button',{name:'교재',exact:true})[activate]();assert.equal(await board.locator('canvas.interactive').isVisible(),false);
- await page.getByRole('navigation',{name:'설명판 보기'}).getByRole('button',{name:'함께',exact:true})[activate]();await board.locator('canvas.interactive').waitFor({state:'visible'});
+ await menus.layout('설명판');assert.equal(await page.locator('.viewer-center').isVisible(),false);
+ await menus.layout('함께');assert(await page.locator('.viewer-center').isVisible());
+ await menus.layout('교재');assert.equal(await board.locator('canvas.interactive').isVisible(),false);
+ await menus.layout('함께');await board.locator('canvas.interactive').waitFor({state:'visible'});
  check('backup round-trip, invalid-file protection and board/textbook view switching');
  await page.goto(base+'/viewer/10');await page.locator('[data-tid="id_0_word"]').waitFor();assert.equal(await page.getByRole('region',{name:'선생님 설명판'}).count(),0);
  check('personal viewer stays unchanged outside a teacher classroom');

@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
+import {boardMenus} from './teaching-board-menu-checks.mjs';
 
 // Runs inside teaching-board.e2e's disposable database and intercepted browser.
 // The same real inspector serves personal reading and the classroom canvas.
 export async function verifyReaderDesign({page,board,scene,head,saveScreen,waitFor,check,db,uid,base,day,activate}) {
   const inspector=page.locator('.viewer-inspector');
   const token=()=>page.locator('[data-tid="id_0_word"]');
-  const input=board.getByRole('textbox',{name:'단어·표현',exact:true});
-  await input.fill('설명하다 떠오른 표현');
+  const menus=boardMenus(page,activate);
+  const input=menus.hud.getByLabel('단어·표현',{exact:true});
+  await menus.open('entry');await input.fill('설명하다 떠오른 표현');await menus.close();
   await token()[activate]();await inspector.locator('.word-detail-card').waitFor();
   assert.equal(await page.locator('.word-detail-card').count(),1,'one existing word card, no hidden duplicate');
   assert.equal((await inspector.locator('.word-fit__char').allTextContents()).join(''),'图书馆');assert.match(await inspector.innerText(),/뜻 1/);
@@ -20,6 +22,12 @@ export async function verifyReaderDesign({page,board,scene,head,saveScreen,waitF
   await inspector.getByRole('button',{name:'크게 보기',exact:true})[activate]();
   const presentation=page.getByRole('dialog',{name:'학생에게 보여주는 설명',exact:true});await presentation.waitFor();
   await page.keyboard.press('Escape');await presentation.waitFor({state:'detached'});
+  const previewButton=inspector.getByRole('button',{name:'크게 보기',exact:true});
+  await waitFor(()=>previewButton.evaluate(el=>document.activeElement===el),'closing preview returns focus to its temporarily hidden trigger');
+  await previewButton[activate]();await presentation.waitFor();
+  await presentation.getByRole('button',{name:'교재로 돌아가기 ×',exact:true})[activate]();
+  await presentation.waitFor({state:'detached'});
+  await waitFor(()=>previewButton.evaluate(el=>document.activeElement===el),'the return button restores the same trigger');
   assert.equal(JSON.stringify(await head()),original,'preview does not insert into or move the board');
   await inspector.getByRole('button',{name:'판에 놓기',exact:true})[activate]();
   await waitFor(async()=> (await scene()).length===4);
@@ -30,10 +38,10 @@ export async function verifyReaderDesign({page,board,scene,head,saveScreen,waitF
   assert.equal(notes.rows[0].entries.length,3,'placing a card must not publish a class expression');
   check('classroom uses one full word card; preview and place preserve draft, source and class records');
 
-  await input.fill('');await page.getByRole('navigation',{name:'설명판 보기'}).getByRole('button',{name:'교재',exact:true})[activate]();
+  await menus.open('entry');await input.fill('');await menus.layout('교재');
   await token()[activate]();await inspector.locator('.word-detail-card').waitFor();
   await inspector.getByRole('button',{name:'보조 패널 닫기',exact:true})[activate]();
-  await page.getByRole('navigation',{name:'설명판 보기'}).getByRole('button',{name:'함께',exact:true})[activate]();
+  await menus.layout('함께');
   for(const [width,height]of [[390,844],[354,767]]){
     await page.setViewportSize({width,height});
     await token().scrollIntoViewIfNeeded();
@@ -45,6 +53,9 @@ export async function verifyReaderDesign({page,board,scene,head,saveScreen,waitF
     assert(selected.y+selected.height<=popup.y+1,'selected source clears the word card');
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
     await saveScreen(`classroom-word-phone-${width}`);
+    await previewButton[activate]();await presentation.waitFor();
+    await page.keyboard.press('Escape');await presentation.waitFor({state:'detached'});
+    await waitFor(()=>previewButton.evaluate(el=>document.activeElement===el),'mobile preview restores focus without leaving the word');
     await inspector.getByRole('button',{name:'보조 패널 닫기',exact:true})[activate]();
   }
   await board.locator('canvas.interactive').waitFor({state:'visible'});
