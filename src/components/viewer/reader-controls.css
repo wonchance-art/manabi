@@ -298,17 +298,18 @@
 .manabi-app .viewer-layout .viewer-inspector--board.is-expanded {height:calc(var(--reader-visual-height,100dvh) - 140px);}
 .manabi-app .viewer-layout .viewer-inspector--board.is-collapsed {display:none;}
 .manabi-app .viewer-layout .viewer-inspector--board .viewer-inspector__expand {display:block;}
-.manabi-app .viewer-layout[data-teaching-board]:not([data-teaching-board=""])>.viewer-center {margin:0;width:100%;background:var(--reader-surface);padding:8px 16px 40px;}
+.manabi-app .viewer-layout:where([data-teaching-board]:not([data-teaching-board=""]))>.viewer-center {margin:0;width:100%;background:var(--reader-surface);padding:8px 16px 40px;}
 .manabi-app .viewer-layout[data-teaching-board]:not([data-teaching-board=""]) .viewer-header {padding:16px 0;}
 .manabi-app .viewer-layout[data-teaching-board]:not([data-teaching-board=""]) .viewer-titlerow {margin:0;}
 .manabi-app .viewer-layout[data-teaching-board]:not([data-teaching-board=""]) .viewer-titlerow .page-header__title {font-size:21px;letter-spacing:-.4px;}
 .manabi-app .viewer-layout[data-teaching-board]:not([data-teaching-board=""]) .reader-area {padding:20px 12px;}
-.manabi-app .viewer-layout[data-teaching-board]:not([data-teaching-board=""]) .viewer-topbar {top:0;}
+.manabi-app .viewer-layout:where([data-teaching-board]:not([data-teaching-board=""])) .viewer-topbar {top:0;}
 @container teaching-workspace (max-width:768px) {
   .manabi-app .viewer-layout .viewer-inspector--board {inset-inline:8px;width:auto;max-width:none;height:min(52dvh,440px);}
   /* Reserve one selected line when zoom or wrapping makes the toolbars taller. */
   .manabi-app .viewer-layout .viewer-inspector--board:not(.is-expanded) {max-height:min(calc(var(--reader-visual-height,100dvh) - 130px),max(260px,calc(var(--reader-visual-height,100dvh) - var(--reader-selected-bottom,0px) - 12px)));}
-  .manabi-app .viewer-layout[data-teaching-board="split"][data-inspector-open="true"] {grid-template-rows:auto minmax(0,1fr);}
+  .manabi-app .viewer-layout[data-teaching-board="split"][data-inspector-open="true"] {grid-template-rows:minmax(0,1fr);}
   .manabi-app .viewer-layout[data-teaching-board="split"][data-inspector-open="true"]>.teaching-board-host {display:none;}
-  .manabi-app .viewer-layout[data-teaching-board="split"][data-inspector-open="true"]>.viewer-center {grid-row:2;padding-bottom:calc(min(52dvh,440px) + 24px);}
+  .manabi-app .viewer-layout[data-teaching-board="split"][data-inspector-open="true"]>.viewer-center {grid-row:1;padding-top:76px;padding-bottom:calc(min(52dvh,440px) + 24px);}
+  .manabi-app .viewer-layout[data-teaching-board="split"][data-inspector-open="true"] .viewer-topbar {top:68px;}
 }

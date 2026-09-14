@@ -5,9 +5,9 @@ export function normalizeBoardWorkspace(value = {}) {
     ratio:Number.isFinite(value.ratio)?Math.max(40,Math.min(72,value.ratio)):60,
     ...Object.fromEntries(['input','reading','meaning'].map(key=>[key,String(value[key] || '').slice(0,500)]))};
 }
-export function readBoardWorkspace(scope) {
-  try { return normalizeBoardWorkspace(JSON.parse(sessionStorage.getItem(`board-workspace:${scope}`) || '{}')); }
-  catch { return {...DEFAULT_BOARD_WORKSPACE}; }
+export function readBoardWorkspace(scope, initialLayout = DEFAULT_BOARD_WORKSPACE.layout) {
+  try { return normalizeBoardWorkspace({layout:initialLayout,...JSON.parse(sessionStorage.getItem(`board-workspace:${scope}`) || '{}')}); }
+  catch { return normalizeBoardWorkspace({layout:initialLayout}); }
 }
 export function writeBoardWorkspace(scope, value) {
   try { sessionStorage.setItem(`board-workspace:${scope}`,JSON.stringify(normalizeBoardWorkspace(value))); } catch { /* The board itself still uses IndexedDB. */ }

@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
+import {boardMenus} from './teaching-board-menu-checks.mjs';
 
 // Runs inside teaching-board.e2e's disposable database and intercepted browser.
 // The same real inspector serves personal reading and the classroom canvas.
 export async function verifyReaderDesign({page,board,scene,head,saveScreen,waitFor,check,db,uid,base,day,activate}) {
   const inspector=page.locator('.viewer-inspector');
   const token=()=>page.locator('[data-tid="id_0_word"]');
-  const input=board.getByRole('textbox',{name:'단어·표현',exact:true});
-  await input.fill('설명하다 떠오른 표현');
+  const menus=boardMenus(page,activate);
+  const input=menus.hud.getByLabel('단어·표현',{exact:true});
+  await menus.open('entry');await input.fill('설명하다 떠오른 표현');await menus.close();
   await token()[activate]();await inspector.locator('.word-detail-card').waitFor();
   assert.equal(await page.locator('.word-detail-card').count(),1,'one existing word card, no hidden duplicate');
   assert.equal((await inspector.locator('.word-fit__char').allTextContents()).join(''),'图书馆');assert.match(await inspector.innerText(),/뜻 1/);
@@ -36,10 +38,10 @@ export async function verifyReaderDesign({page,board,scene,head,saveScreen,waitF
   assert.equal(notes.rows[0].entries.length,3,'placing a card must not publish a class expression');
   check('classroom uses one full word card; preview and place preserve draft, source and class records');
 
-  await input.fill('');await page.getByRole('navigation',{name:'설명판 보기'}).getByRole('button',{name:'교재',exact:true})[activate]();
+  await menus.open('entry');await input.fill('');await menus.layout('교재');
   await token()[activate]();await inspector.locator('.word-detail-card').waitFor();
   await inspector.getByRole('button',{name:'보조 패널 닫기',exact:true})[activate]();
-  await page.getByRole('navigation',{name:'설명판 보기'}).getByRole('button',{name:'함께',exact:true})[activate]();
+  await menus.layout('함께');
   for(const [width,height]of [[390,844],[354,767]]){
     await page.setViewportSize({width,height});
     await token().scrollIntoViewIfNeeded();
