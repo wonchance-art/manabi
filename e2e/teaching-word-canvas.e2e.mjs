@@ -231,6 +231,16 @@ try {
   await menus.close();
  }
  check('tablet landscape/portrait and phone menus stay inside the viewport');
+ await page.setViewportSize({width:1440,height:1000});await page.goto(base+`/viewer/10?class=fixture-class&day=${day}`);
+ const dock=page.getByRole('complementary',{name:'교재 안 수업 도구'});await dock.waitFor();
+ await page.locator('[data-tid="id_14_0"]').scrollIntoViewIfNeeded();await page.evaluate(()=>document.fonts.ready);
+ const firstToken=await page.locator('[data-tid="id_14_0"] .surface').boundingBox(),lastToken=await page.locator('[data-tid="id_14_2"] .surface').boundingBox();
+ await page.mouse.move(firstToken.x+firstToken.width/2,firstToken.y+firstToken.height/2);await page.mouse.down();await page.mouse.move(lastToken.x+lastToken.width/2,lastToken.y+lastToken.height/2,{steps:8});await page.mouse.up();
+ await dock.locator('.class-reader-picked strong').filter({hasText:'我们明天见'}).waitFor();
+ await dock.getByRole('button',{name:'수업용 뜻 수정',exact:true})[activate]();await dock.getByLabel('수업용 뜻',{exact:true}).fill('우리 내일 만나요');
+ await saveScreen('selected-expression');await dock.getByRole('button',{name:'오늘 표현에 추가',exact:true})[activate]();
+ await waitFor(async()=> (await current()).raw_text.includes('我们明天见'));
+ check('the original teacher inspector still edits and records a dragged multiword expression');
  assert.equal(report.errors.length,0,report.errors.join('\n'));check('no browser runtime errors');
 } catch(error){await saveScreen('failure');console.error(await page.locator('body').innerText());throw error;}
 finally{await fs.promises.writeFile(out+'/report.json',JSON.stringify(report,null,2));await browser.close();await db.close();}

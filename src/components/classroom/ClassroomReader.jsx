@@ -172,7 +172,7 @@ function ClassReaderSession({fallback,onSelectionClose,toolbarTarget,boardTarget
   const classDetails=current?<div className="class-reader-add">
     <p className="class-reader-source">{isManual?'직접 입력한 표현':`${currentChapter?.order?`${currentChapter.order}과 · `:''}교재에서 선택한 표현`}</p>
     {(manual||!current.source?.tokenId)&&<div className="class-reader-picked"><strong lang={team.lang==='Chinese'?'zh':team.lang==='Japanese'?'ja':undefined}>{current.text}</strong></div>}
-    {manual?<>{['Japanese','Chinese'].includes(team.lang)&&<label>읽기<input value={reading} onChange={e=>edit('reading',e.target.value)} maxLength={500}/></label>}<label>핵심 뜻<input value={meaning} onChange={e=>edit('meaning',e.target.value)} maxLength={500} placeholder="수업에서 사용할 뜻"/></label></>:(!current?.source?.tokenId?{meaning,editor:meaningEditing?meaningControl:<button className="class-reader-meaning-edit" aria-label="수업용 뜻 수정" onClick={()=>setMeaningEditing(true)}>수정</button>}:null)}
+    {manual?<>{['Japanese','Chinese'].includes(team.lang)&&<label>읽기<input value={reading} onChange={e=>edit('reading',e.target.value)} maxLength={500}/></label>}<label>핵심 뜻<input value={meaning} onChange={e=>edit('meaning',e.target.value)} maxLength={500} placeholder="수업에서 사용할 뜻"/></label></>:(!current?.source?.tokenId?meaningControl:null)}
     {!sourceValid&&<p role="status">이 초안의 교재 위치를 확인하지 못했어요. <button onClick={()=>{const next={...current,source:{kind:'manual'}};setDraft(next);setManual(true);persist(next);}}>직접 입력으로 사용</button></p>}
     <details className="class-reader-extra" hidden={!existing&&!savedDraft}><summary>추가 동작</summary>
       {existing&&!queued&&<button disabled={busy||!sourceValid} onClick={()=>add(true)}>한 번 더 추가</button>}
