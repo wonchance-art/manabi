@@ -19,7 +19,7 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
   const store = useTeachingBoard(scope), root = useRef(null), api = useRef(null), document = useRef(null), latest = useRef(null), timer = useRef(null), signature = useRef(''), armed=useRef(false), dirty=useRef(false);
   const [initialWorkspace]=useState(()=>readBoardWorkspace(scope));
   const [ratio,setRatio]=useState(initialWorkspace.ratio),[presenting,setPresenting]=useState(null),[activeTool,setActiveTool]=useState('selection'),[searching,setSearching]=useState(false);
-  const inputRef=useRef(null),presentationActive=useRef(false);
+  const inputRef=useRef(null),presentationActive=useRef(false),presentationTrigger=useRef(null),canvasPointers=useRef(new Set());
   const [layout, setLayout] = useState(initialWorkspace.layout), [pageId, setPageId] = useState(null), [selected, setSelected] = useState([]), [panel, setPanel] = useState(false);
   const [input, setInput] = useState(initialWorkspace.input), [reading, setReading] = useState(initialWorkspace.reading), [meaning, setMeaning] = useState(initialWorkspace.meaning), [candidates, setCandidates] = useState([]), [busy, setBusy] = useState(false), [message, setMessage] = useState('');
   const [editing, setEditing] = useState(null), [recording, setRecording] = useState(false), [toolsOpen,setToolsOpen] = useState(false);
@@ -60,10 +60,15 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
     });
   },[onReady]);
   useEffect(()=>()=>onReady?.(false),[onReady]);
+  useEffect(()=>{
+    const release=event=>canvasPointers.current.delete(event.pointerId),clear=()=>canvasPointers.current.clear();
+    window.addEventListener('pointerup',release,true);window.addEventListener('pointercancel',release,true);window.addEventListener('blur',clear);
+    return()=>{window.removeEventListener('pointerup',release,true);window.removeEventListener('pointercancel',release,true);window.removeEventListener('blur',clear);};
+  },[]);
   const revealElements = useCallback((elements, fit = false) => {
     const active=api.current;
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      if(!active || api.current!==active || !root.current || presentationActive.current)return;
+      if(!active || api.current!==active || !root.current || presentationActive.current || canvasPointers.current.size)return;
       active.refresh();
       const surface=root.current.querySelector('.teaching-board-surface'), rect=surface.getBoundingClientRect();
       if(!rect.width || !rect.height)return;
@@ -88,6 +93,9 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
       const rect=surface.getBoundingClientRect();if(!rect.width||!rect.height)return;
       const resized=previousSize&&(Math.abs(previousSize.width-rect.width)>1||Math.abs(previousSize.height-rect.height)>1);
       previousSize={width:rect.width,height:rect.height};
+      // Tool rows can disappear when a stroke starts. Reframing at that moment
+      // moves the paper under the pen and changes the saved stroke coordinates.
+      if(canvasPointers.current.size)return;
       const state=active.getAppState(),elements=active.getSceneElements(),chosen=elements.filter(el=>state.selectedElementIds[el.id]);
       // A cleared selection must not leave a smaller pane looking empty. Keep
       // an existing camera on mount when its content is still visible.
@@ -229,7 +237,7 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
     const ids=editor.getAppState().selectedElementIds;
     update(editor.getSceneElementsIncludingDeleted().map(el=>ids[el.id]?newElementWith(el,{[property]:color}):el),{appState:{[key]:color}});
   };
-  const showBoard=()=>{commit();const all=api.current?.getSceneElements()||[];const elements=selected.length?selected:all;if(elements.length){presentationActive.current=true;setPresenting(structuredClone(elements));}};
+  const showBoard=event=>{commit();const all=api.current?.getSceneElements()||[];const elements=selected.length?selected:all;if(elements.length){presentationTrigger.current=event.currentTarget;presentationActive.current=true;setPresenting(structuredClone(elements));}};
   const resize=(event)=>{
     const rect=root.current?.closest('.viewer-layout')?.getBoundingClientRect();if(!rect)return;
     setRatio(normalizeBoardWorkspace({ratio:100*(event.clientX-rect.left)/rect.width}).ratio);
@@ -282,7 +290,7 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
   const recent=pages.flatMap(item=>item.elements.filter(el=>!el.isDeleted&&expressionOf(el)).map(el=>({...readCard(el,item.elements),label:'최근 판'}))).reverse();
   const results=searching&&!editing?boardSearch(input,[...recent,...library]):[];
   const workspaceHeader=<header className="teaching-board-header">{navigation}<nav aria-label="설명판 보기">{[['board','설명판'],['split','함께'],['reader','교재']].map(([value,label])=><button key={value} aria-pressed={layout===value} onClick={()=>changeLayout(value)}>{label}</button>)}</nav><div className="board-header-actions"><button onClick={showBoard} disabled={!(latest.current?.elements||page.elements).some(el=>!el.isDeleted)} className="board-present-button">보여주기</button><button className="board-header-input" onClick={openInput}>표현 입력</button><button onClick={onSession}>수업 기록</button><button onClick={()=>{commit();onClose();}} aria-label="설명판 닫기">×</button></div></header>;
-  return <section ref={root} className="teaching-board" data-tools-open={toolsOpen} onPointerDownCapture={()=>{armed.current=true;}} onKeyDownCapture={()=>{armed.current=true;}} onKeyDown={event=>{event.stopPropagation();if(event.key==='Escape'){cancelEdit();setToolsOpen(false);}}} aria-label="선생님 설명판">
+  return <section ref={root} className="teaching-board" data-tools-open={toolsOpen} onPointerDownCapture={event=>{armed.current=true;if(event.target.matches?.('canvas.interactive'))canvasPointers.current.add(event.pointerId);}} onKeyDownCapture={()=>{armed.current=true;}} onKeyDown={event=>{event.stopPropagation();if(event.key==='Escape'){cancelEdit();setToolsOpen(false);}}} aria-label="선생님 설명판">
     {headerHost?createPortal(workspaceHeader,headerHost):workspaceHeader}
     {layout==='split'&&<div className="board-divider" role="separator" tabIndex={0} aria-label="설명판 너비" aria-orientation="vertical" aria-valuemin={40} aria-valuemax={72} aria-valuenow={Math.round(ratio)} onPointerDown={event=>{event.currentTarget.setPointerCapture(event.pointerId);resize(event);}} onPointerMove={event=>{if(event.currentTarget.hasPointerCapture(event.pointerId))resize(event);}} onPointerUp={event=>event.currentTarget.releasePointerCapture(event.pointerId)} onKeyDown={event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();setRatio(value=>event.key==='Home'?40:event.key==='End'?72:normalizeBoardWorkspace({ratio:value+(event.key==='ArrowLeft'?-2:2)}).ratio);}}}/>}
     <BoardTools active={activeTool} onTool={chooseTool} onStyle={styleSelection} open={toolsOpen} onToggle={()=>setToolsOpen(v=>!v)}/>
@@ -309,6 +317,6 @@ export default function TeachingBoardCanvas({owner, team, day, onRecord, getReco
     </form></div>
     <footer className="teaching-board-footer"><nav aria-label="설명판 페이지">{pages.map((item,i)=><button key={item.id} aria-current={pageId===item.id?'page':undefined} onClick={()=>changePage(item.id)}>{i+1}</button>)}<button onClick={newPage} aria-label="새 판">＋</button></nav><button onClick={()=>revealElements(api.current?.getSceneElements()||[],true)}>전체 보기</button><details><summary>보관</summary><div className="teaching-board-backup-menu"><button onClick={backup}>내려받기</button>{store.recoveries?.map((row,i)=><button key={row.id} onClick={()=>recover(row)}>충돌본 {i+1} 불러오기</button>)}<label className="teaching-board-file">가져오기<input type="file" accept="application/json,.json" onChange={restore}/></label></div></details><small role="status">{store.error?'저장 확인 필요':store.saving?'보관 중…':'이 기기에 보관됨'}</small></footer>
     {(message||store.error)&&<p className="teaching-board-message" role="status">{store.error||message}{store.error&&<><button onClick={backup}>내 내용 백업</button><button onClick={()=>window.location.reload()}>최신 판 열기</button></>}</p>}
-    {presenting&&<BoardPresentation elements={presenting} onClose={()=>{presentationActive.current=false;setPresenting(null);}}/>}
+    {presenting&&<BoardPresentation elements={presenting} returnFocus={presentationTrigger.current} onClose={()=>{presentationActive.current=false;setPresenting(null);}}/>}
   </section>;
 }

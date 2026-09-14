@@ -94,6 +94,7 @@ if(process.env.QA_LOGIN==='1'){
  // report requests interrupted during the document swap as access-control errors.
  await page.getByRole('heading',{name:/첫 표현을 담아/}).waitFor();
  await page.getByRole('heading',{name:/말이 태어나는 곳을/}).waitFor();
+ await page.waitForLoadState('networkidle');
 }
 else {await context.addCookies([{name:'sb-e2e-auth-token',value:'base64-'+enc(session),url:base,httpOnly:false,sameSite:'Lax'}]);}
 
@@ -163,6 +164,8 @@ try {
  await board.getByRole('button',{name:'펜',exact:true})[activate]();
  await page.mouse.move(sx,sy);await page.mouse.down();await page.mouse.move(ex,sy,{steps:30});await page.mouse.up();
  await waitFor(async()=> (await scene()).some(el=>el.type==='freedraw'));
+ const stroke=(await scene()).find(el=>el.type==='freedraw');
+ assert(stroke.points.every(([,y])=>Math.abs(y)<1),'a horizontal stroke stays horizontal when selection tools disappear');
  assert.notDeepEqual(await pixelAt(),beforePixel,'ink must render ON TOP of the card');
  await saveScreen('board-ink');check('real pointer ink remains visible over semantic expression');
  await board.getByTestId('button-undo')[activate]();await waitFor(async()=> !(await scene()).some(el=>el.type==='freedraw'));
@@ -173,7 +176,11 @@ try {
  await board.getByRole('button',{name:'함께 묶기',exact:true})[activate]();
  await waitFor(async()=> (await scene()).every(el=>el.groupIds.length>0));
  const beforeMove=await scene();
- await page.mouse.move(paper.x+rectangle.x+rectangle.width-20,paper.y+rectangle.y+rectangle.height-16);await page.mouse.down();await page.mouse.move(paper.x+rectangle.x+rectangle.width+50,paper.y+rectangle.y+rectangle.height+34,{steps:12});await page.mouse.up();
+ const movePaper=await board.locator('canvas.interactive').boundingBox(),moveBoard=await head();
+ const moveCamera=moveBoard.document.pages.find(p=>p.id===moveBoard.document.activePage).camera;
+ const moveX=movePaper.x+(rectangle.x+rectangle.width/2+moveCamera.scrollX)*moveCamera.zoom.value;
+ const moveY=movePaper.y+(rectangle.y+rectangle.height/2+moveCamera.scrollY)*moveCamera.zoom.value;
+ await page.mouse.move(moveX,moveY);await page.mouse.down();await page.mouse.move(moveX+70,moveY+50,{steps:12});await page.mouse.up();
  await waitFor(async()=>Math.abs((await scene()).find(el=>el.id===rectangle.id).x-rectangle.x)>20);
  const moved=await scene();const delta=moved.find(el=>el.id===rectangle.id).x-rectangle.x;
  for(const el of moved)assert(Math.abs(el.x-beforeMove.find(old=>old.id===el.id).x-delta)<1,'grouped expression and ink move together');

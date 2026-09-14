@@ -4,7 +4,7 @@ import {Excalidraw,getCommonBounds,CaptureUpdateAction} from '@excalidraw/excali
 import {presentationElements} from '../../lib/teachingWorkspace';
 import {boardCameraForBounds} from '../../lib/teachingBoardViewport';
 
-export default function BoardPresentation({elements,onClose}) {
+export default function BoardPresentation({elements,onClose,returnFocus}) {
   const dialog=useRef(null),surface=useRef(null),api=useRef(null);
   const [reading,setReading]=useState(null),[meaning,setMeaning]=useState(null),[laser,setLaser]=useState(true);
   const visibleReading=reading??elements.some(el=>el.customData?.manabiField==='reading'&&el.opacity!==0),visibleMeaning=meaning??elements.some(el=>el.customData?.manabiField==='meaning'&&el.opacity!==0);
@@ -16,10 +16,12 @@ export default function BoardPresentation({elements,onClose}) {
     if(camera)editor.updateScene({appState:camera,captureUpdate:CaptureUpdateAction.NEVER});
   },[elements]);
   useEffect(()=>{
-    const el=dialog.current,origin=document.activeElement;el.showModal();
+    // Safari taps do not focus buttons. Keep the actual opener, not the
+    // active element left over from a previous input or canvas interaction.
+    const el=dialog.current,origin=returnFocus||document.activeElement;el.showModal();
     const observer=new ResizeObserver(fit);observer.observe(surface.current);
     return()=>{observer.disconnect();el.close();if(origin?.isConnected)origin.focus({preventScroll:true});};
-  },[fit]);
+  },[fit,returnFocus]);
   useEffect(()=>{api.current?.updateScene({elements:shown,captureUpdate:CaptureUpdateAction.NEVER});},[shown]);
   const connect=useCallback(editor=>{api.current=editor;requestAnimationFrame(()=>{if(api.current===editor){editor.setActiveTool({type:'laser'});fit();}});},[fit]);
   return <dialog ref={dialog} className="board-presentation" aria-label="학생에게 보여주기" onCancel={event=>{event.preventDefault();onClose();}} onKeyDown={event=>event.stopPropagation()}>

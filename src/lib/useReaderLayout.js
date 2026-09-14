@@ -63,6 +63,11 @@ export function useSelectedTokenVisibility(readerRef, tokenRefs, tokenId, enable
       // Let modal teardown and the display-change anchor settle first.
       frame = requestAnimationFrame(() => { settleFrame = requestAnimationFrame(() => {
         if (interrupted || !token.isConnected || panel?.hidden) return;
+        if (panel?.classList.contains('viewer-inspector--board')) {
+          const bounds = readerVisibleBounds(root), rect = token.getBoundingClientRect();
+          const bottom = Math.ceil(bounds.top + rect.height + 24 - (window.visualViewport?.offsetTop || 0));
+          panel.style.setProperty('--reader-selected-bottom', `${bottom}px`);
+        }
         const delta = selectedTokenScrollDelta(token.getBoundingClientRect(), readerVisibleBounds(root));
         if (!Number.isFinite(delta) || Math.abs(delta) < 1) return;
         root.dataset.selectionRevealing = 'true';
@@ -72,7 +77,10 @@ export function useSelectedTokenVisibility(readerRef, tokenRefs, tokenId, enable
       }); });
     };
     // A user's own reading movement wins over a later font/viewport resize.
-    const interrupt = e => { if (!e.target?.closest?.('.reader-modal,.viewer-inspector')) interrupted = true; };
+    const interrupt = e => {
+      if (e.type === 'keydown' && token.contains(e.target) && ['Enter', ' '].includes(e.key)) return;
+      if (!e.target?.closest?.('.reader-modal,.viewer-inspector')) interrupted = true;
+    };
     const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(reveal) : null;
     observer?.observe(root); if (panel) observer?.observe(panel);
     const toolbar = root.closest('.viewer-layout')?.querySelector('.viewer-topbar');
@@ -84,6 +92,7 @@ export function useSelectedTokenVisibility(readerRef, tokenRefs, tokenId, enable
     return () => {
       observer?.disconnect(); cancelAnimationFrame(frame); cancelAnimationFrame(settleFrame); cancelAnimationFrame(releaseFrame);
       delete root.dataset.selectionRevealing;
+      panel?.style.removeProperty('--reader-selected-bottom');
       window.removeEventListener('resize', reveal); window.visualViewport?.removeEventListener('resize', reveal);
       for (const event of ['wheel', 'touchmove', 'pointerdown', 'keydown']) window.removeEventListener(event, interrupt);
     };
