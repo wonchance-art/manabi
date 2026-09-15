@@ -166,7 +166,10 @@ try {
  await menus.action('tools','펜');
  const surface=board.locator('canvas.interactive'),rect=await surface.boundingBox();
  await page.mouse.move(rect.x+280,rect.y+450);await page.mouse.down();await page.mouse.move(rect.x+640,rect.y+510,{steps:24});await page.mouse.up();
- await waitFor(async()=> (await scene()).some(el=>el.type==='freedraw'));
+ // IndexedDB can contain an intermediate pointer-move save while the completed
+ // stroke is still queued. Compare the finished stroke, including Excalidraw's
+ // repeated pointer-up endpoint, rather than a partial line.
+ await waitFor(async()=>{const stroke=(await scene()).find(el=>el.type==='freedraw');const points=stroke?.points;return points?.length>2&&JSON.stringify(points.at(-1))===JSON.stringify(points.at(-2));});
  const ink=(await scene()).find(el=>el.type==='freedraw');const beforeInk=JSON.stringify(ink.points);
  await saveScreen('four-words-and-ink');
  await menus.action('tools','선택');await surface.click({position:{x:900,y:600}});await page.keyboard.press('Meta+a');
