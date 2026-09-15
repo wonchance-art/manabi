@@ -4,6 +4,8 @@ import {Excalidraw, MainMenu, CaptureUpdateAction, convertToExcalidrawElements, 
 import '@excalidraw/excalidraw/index.css';
 import {createPortal} from 'react-dom';
 import BoardTools from './BoardTools';
+import BoardInkRecognition from './BoardInkRecognition';
+import {inkResultKey,planInkPlacement} from '../../lib/teachingInk';
 import {quickBoardToolAction} from '../../lib/teachingBoardTools';
 import BoardHistory from './BoardHistory';
 import BoardIcon, {BoardIconButton} from './BoardIcon';
@@ -30,7 +32,7 @@ export default function TeachingBoardCanvas(props) {
   return <SharedBoardCanvas {...props} scope={scope} store={store}/>;
 }
 
-export function SharedBoardCanvas({owner, team, day, scope, store, personal, onRecord, getRecordState, onLayout, onClose, headerHost, navigation, sessionContent, recordCount=0, onRatio, material, vocabularyIndex, actionsRef, onReady}) {
+export function SharedBoardCanvas({owner, team, day, rootId, scope, store, personal, onRecord, getRecordState, onLayout, onClose, headerHost, navigation, sessionContent, recordCount=0, onRatio, material, vocabularyIndex, actionsRef, onReady}) {
   const root = useRef(null), api = useRef(null), document = useRef(null), latest = useRef(null), timer = useRef(null), signature = useRef(''), armed=useRef(false), dirty=useRef(false);
   const pendingFocus=useRef(null),focusScene=useRef(null);
   const [initialWorkspace]=useState(()=>readBoardWorkspace(scope,'board'));
@@ -45,7 +47,7 @@ export function SharedBoardCanvas({owner, team, day, scope, store, personal, onR
   const [entrySource,setEntrySource]=useState({kind:'manual'}),[lookupSource,setLookupSource]=useState('');
   const [toolStyle,setToolStyle]=useState({color:'ink',width:2});
   const [hasContent,setHasContent]=useState(null);
-  const [capturing,setCapturing]=useState(false);
+  const [capturing,setCapturing]=useState(false),[inkCapture,setInkCapture]=useState(null);
   const captureBusy=useRef(false);
   const toolStyleRef=useRef(toolStyle);toolStyleRef.current=toolStyle;
   const attempt = useRef(0), composing = useRef(false), editVersion = useRef(0), boardSave = useRef(store.save);
@@ -156,7 +158,7 @@ export function SharedBoardCanvas({owner, team, day, scope, store, personal, onR
   },[pageId,revealElements]);
   const changeLayout = next => { setLayout(next); onLayout(next); requestAnimationFrame(() => api.current?.refresh()); };
   const captureInk=async()=>{
-    if(captureBusy.current||!api.current||!personal?.onRecognize)return;
+    if(captureBusy.current||!api.current||!(personal?.onRecognize||(!personal&&rootId)))return;
     captureBusy.current=true;setCapturing(true);
     try{
       commit();
@@ -169,8 +171,56 @@ export function SharedBoardCanvas({owner, team, day, scope, store, personal, onR
       if(!blob||blob.size>RECOGNITION_IMAGE_LIMIT)throw new Error('필기가 너무 커요. 더 작은 부분을 선택해 주세요.');
       const image=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('필기 이미지를 만들지 못했어요.'));reader.readAsDataURL(blob);});
       if(api.current!==editor||document.current.activePage!==id||fingerprint!==await recognitionFingerprint({id,elements:editor.getSceneElements()},ids))throw new Error('필기가 바뀌었어요. 다시 선택해 주세요.');
-      closeMenu();personal.onRecognize({image,pageId:id,elementIds:ids,fingerprint});
+      closeMenu();
+      const capture={image,pageId:id,elementIds:ids,fingerprint};
+      if(personal)personal.onRecognize(capture);else setInkCapture(capture);
     }catch(error){if(root.current)setMessage(error.message);}finally{captureBusy.current=false;if(root.current)setCapturing(false);}
+  };
+  const isCurrentInk=async capture=>{
+    try{
+      commit();
+      const source=document.current?.pages.find(page=>page.id===capture.pageId);
+      const version=getSceneVersion(recognitionElements(source,capture.elementIds));
+      const fingerprint=await recognitionFingerprint(source,capture.elementIds);
+      commit();
+      const latestPage=document.current?.pages.find(page=>page.id===capture.pageId);
+      return !!root.current&&fingerprint===capture.fingerprint&&getSceneVersion(recognitionElements(latestPage,capture.elementIds))===version;
+    }catch{return false;}
+  };
+  const placeInk=async(values,capture,{fresh=false,panelWidth=0}={})=>{
+    if(!await isCurrentInk(capture)||!api.current)throw new Error('선택한 필기가 바뀌었어요. 닫은 뒤 다시 선택해 주세요.');
+    const editor=api.current,elements=editor.getSceneElementsIncludingDeleted(),state=editor.getAppState();
+    const existing=values.map(value=>({value,match:document.current.pages.flatMap(page=>page.elements.filter(el=>!el.isDeleted&&expressionOf(el)&&el.customData?.manabiInk===inkResultKey(capture,value.index)).map(el=>({pageId:page.id,id:el.id})))[0]}));
+    const pending=existing.filter(item=>!item.match).map(item=>item.value);
+    if(!pending.length){const found=existing[0].match;pendingFocus.current={id:found.pageId,elementIds:[found.id]};if(found.pageId!==pageId)changePage(found.pageId,true);else focusScene.current();return {indices:values.map(v=>v.index),existing:true};}
+    if(fresh&&document.current.pages.length>=BOARD_PAGE_LIMIT)throw new Error('판이 20개예요. 기존 판의 공간을 확보한 뒤 다시 놓아 주세요.');
+    const wide=(root.current?.getBoundingClientRect().width||0)>=900;
+    const usableWidth=Math.max(240,state.width-(wide?panelWidth+24:0));
+    const width=Math.min(620,Math.max(240,usableWidth-56));
+    const paletteValue=palette();
+    const bundles=pending.map(value=>{
+      const id=crypto.randomUUID(),payload=boardExpression({...appearance,...value,layoutVersion:2},team.lang);
+      const skeleton=cardSkeleton(payload,id,{x:0,y:0},paletteValue,width);
+      return {id,value,payload,skeleton};
+    });
+    const workingState=fresh?{...state,scrollX:0,scrollY:0,zoom:{value:1}}:state;
+    const positions=planInkPlacement(elements,workingState,bundles.map(item=>item.skeleton[0]),{fresh,panelWidth:wide?panelWidth+24:0});
+    if(!positions)return {needsPage:true};
+    const cards=bundles.flatMap((item,index)=>{
+      const skeleton=cardSkeleton(item.payload,item.id,positions[index],paletteValue,width);
+      skeleton[0].customData={...skeleton[0].customData,manabiInk:inkResultKey(capture,item.value.index)};
+      return convertToExcalidrawElements(skeleton,{regenerateIds:false});
+    });
+    armed.current=true;
+    if(fresh){
+      commit();const id=crypto.randomUUID();
+      document.current={...document.current,pages:[...document.current.pages,{id,elements:cards,camera:{scrollX:0,scrollY:0,zoom:{value:1}}}]};
+      pendingFocus.current={id,elementIds:cards.map(el=>el.id)};changePage(id,true);
+    }else{
+      update([...elements,...cards],{appState:{selectedElementIds:Object.fromEntries(cards.map(el=>[el.id,true])),selectedGroupIds:Object.fromEntries(bundles.map(item=>[item.id,true]))}});
+      editor.setActiveTool({type:'selection'});commit();
+    }
+    return {indices:values.map(value=>value.index)};
   };
   focusScene.current=()=>{
     const editor=api.current,request=pendingFocus.current;if(!editor||!request||document.current?.activePage!==request.id)return;
@@ -352,7 +402,8 @@ export function SharedBoardCanvas({owner, team, day, scope, store, personal, onR
     setRatio(normalizeBoardWorkspace({ratio:100*(event.clientX-rect.left)/rect.width}).ratio);
   };
 
-  const changePage = id => {
+  const changePage = (id,keepInk=false) => {
+    if(!keepInk)setInkCapture(null);
     cancelEdit();
     if(layout==='reader')changeLayout('board');
     onReady?.(false);
@@ -444,7 +495,7 @@ export function SharedBoardCanvas({owner, team, day, scope, store, personal, onR
       {!!anchors.length&&<WordDisplayControls language={team.lang} value={picked||readCard(anchor,api.current?.getSceneElementsIncludingDeleted()||[])} onChange={applyAppearance} appearance/>}
       <div className="board-icon-grid" aria-label="선택한 요소 도구">
         <BoardIconButton icon="present" label="선택한 내용 보여주기" disabled={!selected.length} onClick={showBoard}/>
-        {personal?.onRecognize&&<BoardIconButton icon="reading" label={capturing?'필기 준비 중…':'선택한 필기 인식'} disabled={capturing||!selected.length} onClick={captureInk}/>}
+        {(personal?.onRecognize||(!personal&&rootId))&&<BoardIconButton icon="reading" label={capturing?'필기 준비 중…':'선택한 필기 인식'} disabled={capturing||!!inkCapture||!selected.length} onClick={captureInk}/>}
         {picked&&<BoardIconButton icon="edit" label="내용 수정" onClick={editSelected}/>}
         {!!anchors.length&&<><BoardIconButton icon="fit" label="여백 줄이기" onClick={compactSelection}/>{!personal&&<BoardIconButton icon="record" label={recorded||(recording?'저장 요청 중…':anchors.length>1?`선택한 ${anchors.length}개 수업에 남기기`:'수업에 남기기')} disabled={recording||!!recorded} onClick={()=>record()}/>}</>}
         {anchors.length>1&&<><BoardIconButton icon="row" label="나란히 정렬" onClick={()=>arrange('row')}/><BoardIconButton icon="column" label="세로로 정렬" onClick={()=>arrange('column')}/></>}
@@ -465,6 +516,7 @@ export function SharedBoardCanvas({owner, team, day, scope, store, personal, onR
       {!editing&&<label className="board-keep-adding"><input type="checkbox" checked={keepAdding} onChange={event=>setKeepAdding(event.target.checked)}/>계속 추가</label>}
       <div className="board-entry-actions"><BoardIconButton icon="search" label={busy?'조회 중…':'사전 찾기'} disabled={busy||!input.trim()} onClick={()=>lookup(input)}/>{!editing&&<BoardIconButton icon="present" label="크게 보기" disabled={!input.trim()} onClick={showInput}/>} {!editing&&!personal&&<BoardIconButton icon="record" label="수업에 남기기" disabled={!input.trim()||recording} onClick={()=>record([{text:input,reading,meaning,source:entrySource,language:team.lang}])}/>} {editing&&<BoardIconButton icon="close" label="수정 취소" onClick={()=>{cancelEdit();closeMenu(true);}}/>}<BoardIconButton type="submit" icon="check" label={editing?'수정':'바로 놓기'} disabled={!input.trim()} className="board-add-button"/></div>
     </form>)}
+    {inkCapture&&!personal&&<BoardInkRecognition rootId={rootId} team={team} capture={inkCapture} isCurrent={isCurrentInk} onPlace={placeInk} onClose={()=>{setInkCapture(null);requestAnimationFrame(()=>hud.current?.querySelector('.board-selection-trigger button, .board-hud-rail button')?.focus({preventScroll:true}));}} appearance={appearance} onAppearance={setAppearance}/>}
     {layout!=='reader'&&selected.length>0&&<div className="board-selection-trigger">{menuButton('selection','edit','선택한 요소 편집')}</div>}
   </div>;
   return <section ref={root} className="teaching-board" data-menu={menu||''} onPointerDownCapture={event=>{armed.current=true;if(event.target.matches?.('canvas.interactive'))canvasPointers.current.add(event.pointerId);}} onKeyDownCapture={()=>{armed.current=true;}} onKeyDown={event=>{event.stopPropagation();if(event.key==='Escape'){cancelEdit();closeMenu(true);}}} aria-label={personal?"개인 학습 노트":"선생님 설명판"}>
