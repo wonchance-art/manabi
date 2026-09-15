@@ -24,7 +24,7 @@ export default function VocabularyContexts({ vocabularyId, readOnly = false }) {
   return <details className="learning-links"><summary>이 표현을 만난 문맥 {data.length}개</summary><ul>
     {data.map(context=><li key={context.id}>
       <p className="learning-source-quote">{context.quote}</p>{context.translation&&<p>{context.translation}</p>}
-      <Link href={context.href} target="_blank" rel="noopener noreferrer" prefetch={false}>{context.kind==='textbook'?'교재 예문':context.kind==='pdf'?`PDF${context.locator?.page?` ${context.locator.page}쪽`:''}`:'자료 속 문장'} 열기 ↗</Link>
+      <Link href={context.href} target="_blank" rel="noopener noreferrer" prefetch={false}>{context.locator?.noteCandidate?'내 노트의 필기':context.kind==='textbook'?'교재 예문':context.kind==='pdf'?`PDF${context.locator?.page?` ${context.locator.page}쪽`:''}`:'자료 속 문장'} 열기 ↗</Link>
       {!readOnly && <button type="button" className="btn btn--ghost btn--sm" disabled={!!removing} onClick={()=>remove(context.id)}>{removing===context.id?'지우는 중…':'이 문맥만 지우기'}</button>}
     </li>)}
   </ul><p className="learning-links__muted">{readOnly ? '원문은 새 탭에서 열려요. 이 탭으로 돌아오면 복습을 이어갈 수 있어요.' : '문맥을 지워도 단어 카드와 복습 일정은 유지돼요.'}</p>{removeError&&<p role="alert">{removeError}</p>}</details>;

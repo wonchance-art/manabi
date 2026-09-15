@@ -7,7 +7,8 @@ import {createClassSaveIntent} from '../lib/classSaveIntent';
 import {classStudyContext,classStudyNeighborHref,studySelection} from '../lib/classStudy';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
+import {isStudyNote} from '@/lib/studyNoteIdentity';
 import OriginalMaterialReader from '@/components/materials/OriginalMaterialReader';
 import useLibraryActivity from '@/components/library/useLibraryActivity';
 import LibrarySaveButton from '@/components/library/LibrarySaveButton';
@@ -233,6 +234,7 @@ const UNDO_KEY_LABEL = typeof navigator !== 'undefined'
 
 export default function ViewerPage() {
   const { id } = useParams();
+  const noteRouter = useRouter();
   const originalParams = useSearchParams();
   const studyContext=classStudyContext(originalParams);
   const classToolbarTarget=useRef(null);
@@ -259,6 +261,7 @@ export default function ViewerPage() {
   });
 
   const materialLang = material?.processed_json?.metadata?.language || 'Japanese';
+  useEffect(()=>{if(isStudyNote(material))noteRouter.replace(`/notes/${id}`);},[material,id,noteRouter]);
   const [activeModal, setActiveModal] = useState(null);
   useEffect(()=>{stopSpeech();},[activeModal?.kind,stopSpeech]);
   const [paceRunning, setPaceRunning] = useState(false);
@@ -1788,6 +1791,7 @@ export default function ViewerPage() {
   },[material,isSheetOpen,selectedToken,refMeaning,headReading,isDragSelection,leftPanelText,pickedSentence,tokenRange.range,restoredClassSource]);
 
   if (isLoading) return <div className="page-container"><Spinner message="자료 해부 중..." /></div>;
+  if (isStudyNote(material)) return <div className="page-container"><Spinner message="개인 노트를 펼치고 있어요…" /></div>;
   if (error?.code === 'LOCAL_MISSING') {
     // 팀 사본이 없다(7일이 지났거나 다른 기기) — 팀 페이지가 다시 받는다. ?team=이 돌아갈 길.
     const teamKey = originalParams.get('team');
@@ -3190,6 +3194,7 @@ export default function ViewerPage() {
 
       {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} onClose={closeReadingSettings} keepPosition={keepReadingPosition} previewTokens={previewTokens} onPreset={()=>setRevealedPron(new Set())} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus}/>}
       {modal('activities')&&<ViewerModal title="학습" onClose={()=>setActiveModal(null)}><div className="reader-activity-menu">
+        {user&&!String(id).startsWith('local:')&&<Link className="btn btn--secondary" href={`/notes/new?${new URLSearchParams({material:String(id),language:materialLang})}`}>내 학습 노트 펼치기 ↗</Link>}
         {ttsSupported&&sentences.length>0&&<button onClick={()=>setDictationPickerOpen(true)}><b>받아쓰기</b><span>추천 문장 하나를 골라 듣고 써요</span></button>}
         {ttsSupported&&pickedSentence&&<button onClick={()=>setDictationSentence(pickedSentence.text)}><b>선택 문장 받아쓰기</b><span>지금 지정한 문장으로 시작해요</span></button>}
         {isDone&&<><button onClick={()=>setShowReadingTest(true)}><b>읽기 확인</b><span>전체 자료 · 기존 읽기 확인 기록에 연결돼요</span></button><button onClick={()=>setShowConversation(true)}><b>회화 연습</b><span>전체 자료를 주제로 대화해요</span></button></>}

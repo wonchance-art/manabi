@@ -15,6 +15,10 @@ export function sourceHref(source) {
     return `${LANGUAGE_BASE[source.lang]}/grammar/${source.chapter_slug}${query.size ? `?${query}` : ''}${/^tb-[a-z0-9-]+$/.test(loc.blockId || '') ? `#${loc.blockId}` : ''}`;
   }
   if (source.kind === 'reading' && materialIdValid('reading', source.material_id)) {
+    if (UUID.test(loc.noteCandidate || '') && typeof loc.notePage === 'string') {
+      const query = new URLSearchParams({candidate: loc.noteCandidate, page: loc.notePage});
+      return `/notes/${source.material_id}?${query}`;
+    }
     const query = new URLSearchParams();
     if (typeof loc.tokenId === 'string') query.set('sourceToken', loc.tokenId);
     if (typeof loc.surface === 'string') query.set('sourceText', loc.surface);

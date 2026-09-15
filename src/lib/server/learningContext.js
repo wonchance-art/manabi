@@ -2,6 +2,7 @@ import {resolveBookSelection} from '@/lib/textbook/sources';
 import { loadChapter, getGrammarManifest } from '@/content/refGrammarLoaders';
 import { loadPublishedRegistry } from '@/lib/publishedChapter';
 import { LEARNING_LANGUAGES, materialIdValid, normalizeLearningWord, tokenContext } from '@/lib/learningSources';
+import {isStudyNote, noteFromMaterial} from '@/lib/studyNotes';
 
 export const fail = (status, message, extra = {}) => { throw Object.assign(new Error(message), { status, ...extra }); };
 export function checkDb(error) { if (error) fail(503, '자료 연결을 저장하거나 불러오지 못했어요. 잠시 후 다시 시도해 주세요.'); }
@@ -49,6 +50,15 @@ export async function resolveSave(supabase, userId, payload) {
   let resolved;
   if (source.kind === 'reading') {
     const material = await accessibleMaterial(supabase, userId, 'reading', source.materialId);
+    if (source.noteCandidateId) {
+      if (material.owner_id !== userId || material.visibility !== 'private' || !isStudyNote(material)) fail(404, '내 개인 노트에서 표현을 선택해 주세요.');
+      const note = noteFromMaterial(material), candidate = note.candidates.find(item => item.id === source.noteCandidateId);
+      if (!candidate?.reviewed || candidate.excluded || !candidate.text.trim() || !candidate.meaning.trim() || candidate.language !== lang) fail(400, '노트에서 표기와 뜻을 먼저 확인해 주세요.');
+      normalized = {word_text: normalizeLearningWord(candidate.base.trim() || candidate.text), meaning: candidate.meaning.trim(), language: candidate.language, furigana: candidate.reading.trim(), pos: ''};
+      resolved = {kind: 'reading', materialId: String(material.id), quote: candidate.original || candidate.text, translation: candidate.meaning,
+        locator: {notePage: candidate.pageId, noteCandidate: candidate.id, surface: candidate.text}};
+      return {word: normalized, source: resolved};
+    }
     const context = tokenContext(material.processed_json, source.tokenId);
     if (context) {
       if (context.language !== lang) fail(400, '자료의 언어를 다시 확인해 주세요.');
