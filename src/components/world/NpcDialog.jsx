@@ -35,13 +35,20 @@ const shortKo = (ko) => String(ko || '').split(' — ')[0];
 export default function NpcDialog({
   npcKey,
   npcName,
+  stepStart = 0,
+  stepEnd = null,
   actionRef,
   cancelRef,
   completionNote,
   onComplete,
   onExit,
 }) {
-  const script = useMemo(() => getNpcScript(npcKey), [npcKey]);
+  const script = useMemo(() => {
+    const source = getNpcScript(npcKey);
+    if (!source) return null;
+    const end = stepEnd == null ? source.steps.length : stepEnd;
+    return { ...source, steps: source.steps.slice(stepStart, end) };
+  }, [npcKey, stepEnd, stepStart]);
   const steps = script?.steps || [];
 
   const [idx, setIdx] = useState(0);
