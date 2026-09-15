@@ -7,7 +7,7 @@
 .note-create label,.note-information label {display:grid;gap:8px;font-size:13px;}
 .note-create input,.note-create select,.note-information input {font:inherit;color:var(--ink);background:var(--sheet);border:1px solid var(--rule);border-radius:8px;min-height:48px;padding:12px;width:100%;}
 .personal-note {position:fixed;inset:0;z-index:90;background:var(--sheet);color:var(--ink);display:grid;grid-template-columns:minmax(0,1fr);height:100dvh;container:personal-note / inline-size;}
-.personal-note-canvas {height:100%;min-width:0;min-height:0;position:relative;}
+.personal-note-canvas {height:100%;min-width:0;min-height:0;position:relative;isolation:isolate;}
 .note-loading {padding:36px;}
 .personal-note .teaching-board {container-type:inline-size;}
 .personal-note .board-hud {z-index:3;}
@@ -64,3 +64,18 @@
 .manabi-app:has(.personal-note) {container-type:normal;height:100dvh;overflow:hidden;}
 .manabi-app:has(.personal-note)>.app-layout {padding:0;height:100dvh;overflow:hidden;}
 .manabi-app:has(.personal-note)>.gnb,.manabi-app:has(.personal-note)>.mobile-nav {display:none;}
+.note-recognition {position:fixed;inset:0;margin:auto;width:min(620px,calc(100% - 32px));max-height:calc(100dvh - 32px);padding:0;overflow:auto;border:1px solid var(--rule);border-radius:18px;background:var(--paper);color:var(--ink);box-shadow:0 20px 80px #0003;}
+.note-recognition::backdrop {background:#171a2059;backdrop-filter:blur(3px);}
+.note-recognition>header {display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 24px 8px;}
+.note-recognition h2 {font-size:24px;letter-spacing:-.04em;margin:6px 0;}
+.note-recognition h2 span {color:var(--book-main);}
+.note-recognition small {font-size:11px;color:var(--muted);}
+.note-recognition-body {padding:0 24px;}
+.note-recognition p {font-size:13px;line-height:1.7;}
+.note-recognition img {display:block;max-height:34dvh;min-height:80px;width:100%;object-fit:contain;background:white;border:1px solid var(--rule);border-radius:8px;}
+.note-recognition>footer {display:grid;gap:10px;padding:12px 24px 24px;text-align:center;}
+.note-recognition .note-icon {display:grid;place-items:center;background:transparent;border:0;color:var(--ink);min-width:44px;min-height:44px;}
+.note-recognition .manabi-button {background:var(--ink);color:var(--sheet);}
+.note-recognized>small {font-size:11px;color:var(--book-main);}
+.note-recognized>p {font-size:12px;color:var(--muted);overflow-wrap:anywhere;}
+.note-recognition :focus-visible {outline:2px solid var(--book-main);outline-offset:2px;}

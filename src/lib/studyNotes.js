@@ -2,6 +2,7 @@ import {BOARD_LANGUAGES, emptyBoard, validateBoard, expressionOf} from './teachi
 import {readCard} from './teachingBoardCard';
 import {sameContent} from './classCopyModel';
 import {isStudyNote} from './studyNoteIdentity';
+import {recognitionResult} from './noteRecognition';
 export {isStudyNote};
 
 export const NOTE_LIMIT = 3 * 1024 * 1024;
@@ -29,6 +30,7 @@ export function validateStudyNote(input) {
       original: field(value.original, 2000), text: field(value.text, 300), base: field(value.base, 300), reading: field(value.reading, 500), meaning: field(value.meaning, 2000),
       language: BOARD_LANGUAGES.includes(value.language) ? value.language : input.language, originKey: clean(value.originKey, 500),
       reviewed: value.reviewed === true, excluded: value.excluded === true,
+      ...(value.recognition?.source==='gemini' && /^[a-f0-9]{64}$/.test(value.recognition.fingerprint||'') ? {recognition:{source:'gemini',fingerprint:value.recognition.fingerprint,uncertain:value.recognition.uncertain!==false,choices:recognitionResult({expressions:[{original:value.original||value.text,choices:value.recognition.choices}]})[0]?.choices||[]}} : {}),
       ...(uuid.test(value.vocabularyId || '') ? {vocabularyId: value.vocabularyId} : {})};
   });
   const origin = input.origin && /^\d{1,19}$/.test(String(input.origin.materialId)) ? {materialId: String(input.origin.materialId), title: clean(input.origin.title, 200)} : null;

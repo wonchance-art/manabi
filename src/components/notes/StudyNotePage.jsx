@@ -12,6 +12,8 @@ import useStudyNote, {requestNote} from '@/lib/useStudyNote';
 import {textbookThemeStyle} from '@/lib/textbookTheme';
 import {langNameKo} from '@/lib/constants';
 import NoteVocabulary from './NoteVocabulary';
+import NoteRecognition from './NoteRecognition';
+import {recognizedCandidates} from '@/lib/noteRecognition';
 import '@/components/classroom/teaching-board.css';
 import './study-notes.css';
 
@@ -43,10 +45,12 @@ function NoteEditor({owner,id}) {
   const saved=useQuery({queryKey:['vocab',owner],queryFn:()=>fetchVocab(owner)});
   const vocabularyIndex=useMemo(()=>({byKey:new Map((saved.data||[]).map(row=>[row.id,row]))}),[saved.data]);
   const [review,setReview]=useState(false),[message,setMessage]=useState(''),[ready,setReady]=useState(false),[forking,setForking]=useState(false);
+  const [capture,setCapture]=useState(null);
   const focused=useRef(false),root=useRef(null);
   const {current:readCurrent,change}=store;
   const saveBoard=useCallback(board=>{const current=readCurrent();if(current)change({document:{...current.document,board}});},[change,readCurrent]);
   function organize(){try{actions.current?.flush();const current=store.current();if(!current)return;const candidates=mergeNoteCandidates(current.document.candidates,collectNoteExpressions(current.document));store.change({document:{...current.document,candidates}});setReview(true);}catch(error){setMessage(error.message);}}
+  function applyRecognition(expressions,selection){const current=store.current();const candidates=mergeNoteCandidates(current.document.candidates,recognizedCandidates(expressions,selection,current.document.language));const added=candidates.length-current.document.candidates.length;store.change({document:{...current.document,candidates}});setReview(true);setMessage(added?`${added}개 표현을 읽었어요. 한자·뜻을 고른 뒤 담아 주세요.`:'이미 정리한 필기입니다. 이전에 고른 뜻과 수정은 유지했어요.');}
   const focus=useCallback(row=>{if(root.current?.clientWidth<900)setReview(false);if(actions.current?.focus(row.pageId,row.elementIds)===false)setMessage('원래 페이지가 지워졌어요. 정리 목록의 원문은 그대로 보관됩니다.');},[]);
   useEffect(()=>{
     const canvas=root.current?.querySelector('.personal-note-canvas'),panel=root.current?.querySelector('.note-review');
@@ -77,9 +81,10 @@ function NoteEditor({owner,id}) {
   const value=store.value,saveLabel=store.error?'저장 확인 필요':store.saving?'저장 중…':'계정에 저장됨';
   return <main ref={root} className="personal-note" style={textbookThemeStyle(value.document.language)} data-review={review}>
     <div className="personal-note-canvas"><Canvas owner={owner} team={team} day="개인 노트" vocabularyIndex={vocabularyIndex} scope={noteScope(owner,id)} store={{ready:true,document:value.document.board,save:saveBoard,saving:store.saving,error:store.error}}
-      actionsRef={actions} onLayout={noop} onClose={leave} onReady={setReady} personal={{onOrganize:organize,onLeave:leave,onBackup:backup,saveLabel}}
+      actionsRef={actions} onLayout={noop} onClose={leave} onReady={setReady} personal={{onOrganize:organize,onRecognize:setCapture,onLeave:leave,onBackup:backup,saveLabel}}
       navigation={<div className="note-information"><label>노트 제목<input aria-label="노트 제목" maxLength={200} value={value.title} onChange={event=>store.change({title:event.target.value})}/></label><p>나에게만 보이는 학습 노트</p><p role="status">{saveLabel}</p><button onClick={()=>{actions.current?.flush();store.sync().catch(error=>setMessage(error.message));}}>계정에 저장</button><button onClick={backup}>노트와 정리 목록 백업</button>{value.document.origin&&<Link href={`/viewer/${value.document.origin.materialId}`}>연결한 교재 · {value.document.origin.title} ↗</Link>}{store.conflict&&<button disabled={forking} onClick={fork}>{forking?'내 초안 보관 중…':'내 초안을 새 노트로 보관'}</button>}<p>펜은 자유 필기, 글자 도구는 텍스트 입력입니다. 일본어 입력창에서 기기의 필기 입력을 사용할 수 있어요.</p></div>}/></div>
-    {review&&<NoteVocabulary saved={saved} noteId={id} note={value.document} sync={store.sync} onClose={closeReview} onFocus={focus} onChange={updater=>{const current=store.current();store.change({document:{...current.document,candidates:updater(current.document.candidates)}});}}/>}
-    {message&&<div className="note-notice" role="status">{message}<button aria-label="안내 닫기" onClick={()=>setMessage('')}>×</button></div>}
+    {review&&<NoteVocabulary saved={saved} message={store.error||message} noteId={id} note={value.document} sync={store.sync} onClose={closeReview} onFocus={focus} onChange={updater=>{const current=store.current();store.change({document:{...current.document,candidates:updater(current.document.candidates)}});}}/>}
+    {capture&&<NoteRecognition noteId={id} capture={capture} sync={store.sync} current={store.current} onApply={applyRecognition} onClose={()=>setCapture(null)}/>}
+    {message&&!review&&<div className="note-notice" role="status">{message}<button aria-label="안내 닫기" onClick={()=>setMessage('')}>×</button></div>}
   </main>;
 }

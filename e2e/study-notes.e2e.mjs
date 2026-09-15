@@ -34,6 +34,7 @@ const session={user,access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:uid
 const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*'};
 const report={engine,checks:[],errors:[],screens:[],externalAI:[],expectedTransport:[]},intentionalAborts=new Set();
 let failSave=false,loseSave=false,failWord=true,lookupDelay=0;
+let recognitionMode="ok",recognitionCalls=[];
 await context.route('**/*',route=>{
  if(/generativelanguage|openai\.com|api\/analyze|api\/classroom\/lookup/.test(route.request().url()))report.externalAI.push(route.request().url());
  return route.request().url().startsWith(base)?route.continue():route.abort();
@@ -57,6 +58,12 @@ const noteRow=async id=>(await db.query('select * from reading_materials where i
 await context.route('**/api/notes**',async route=>{
  const req=route.request(),url=new URL(req.url()),path=url.pathname;
  const send=(json,status=200)=>route.fulfill({json,status});
+ if(path.endsWith('/recognize')){
+  const body=req.postDataJSON();recognitionCalls.push(body);
+  if(recognitionMode==='fail')return send({error:'검수용 인식 실패'},503);
+  if(recognitionMode==='slow')await new Promise(resolve=>setTimeout(resolve,1500));
+  return send({source:'gemini',revision:body.revision,fingerprint:body.fingerprint,expressions:recognitionMode==='empty'?[]:[{original:'はし',reading:'はし',uncertain:true,choices:[{text:'橋',reading:'はし',meaning:'다리'},{text:'箸',reading:'はし',meaning:'젓가락'}]}]});
+ }
  if(path.endsWith('/dictionary')){
   if(lookupDelay)await new Promise(resolve=>setTimeout(resolve,lookupDelay));
   return send({text:url.searchParams.get('q'),reading:'はし',senses:[],source:'내 사전',candidates:[{text:'橋',reading:'はし',meaning:'다리'},{text:'箸',reading:'はし',meaning:'젓가락'}]});
@@ -150,6 +157,37 @@ try{
  await review.getByRole('textbox',{name:'お疲れさま 뜻',exact:true}).waitFor();await review.getByRole('textbox',{name:'確認 뜻',exact:true}).waitFor();
  const typed=review.getByRole('textbox',{name:'お疲れさま 뜻',exact:true});await typed.fill('수고 ');assert.equal(await typed.inputValue(),'수고 ');
  check('native text notes split into individual expressions, keep their original lines, and preserve spaces while editing');
- assert.equal(report.externalAI.length,0);assert.equal(report.errors.length,0,report.errors.join('\n'));check('no external AI request or uncaught UI error');
+ // A separate note exercises real raster export and selection with a fake
+ // recognition response. No production handwriting or AI service is used.
+ await page.goto(base+'/notes/new');await page.getByLabel('노트 제목',{exact:true}).fill('필기 인식 검수');await page.getByRole('button',{name:'노트 펼치기 ↗',exact:true}).click();await page.waitForURL(/\/notes\/\d+$/);const inkId=page.url().split('/').pop();await board.locator('canvas.interactive').waitFor();
+ await entry('送信しない','そうしんしない','선택하지 않은 문장');
+ await hud.locator('.board-quick-tools').getByRole('button',{name:'펜',exact:true}).click();
+ await page.mouse.move(220,570);await page.mouse.down();await page.mouse.move(280,590,{steps:10});await page.mouse.move(300,560,{steps:6});await page.mouse.up();
+ await hud.locator('.board-quick-tools').getByRole('button',{name:'선택',exact:true}).click();
+ await page.mouse.move(200,530);await page.mouse.down();await page.mouse.move(325,625,{steps:15});await page.mouse.up();
+ const capture=async()=>{await hud.getByRole('button',{name:'선택한 요소 편집',exact:true}).click();await hud.getByRole('button',{name:'선택한 필기 인식',exact:true}).click();await page.getByRole('dialog',{name:'선택한 필기 읽기.'}).waitFor();};
+ await capture();const recognition=page.locator('.note-recognition');await screen('06-selected-ink-desktop');
+ assert.equal(recognitionCalls.length,0,'opening the crop preview must not send anything');
+ await page.keyboard.press('Escape');await recognition.waitFor({state:'hidden'});assert.equal(recognitionCalls.length,0);
+ await capture();await page.setViewportSize({width:390,height:844});await screen('07-selected-ink-mobile');
+ const box=await recognition.boundingBox();assert(box.width<=390&&box.height<=844&&box.x>=0&&box.y>=0);assert(Math.abs(box.x-(390-box.width)/2)<2,'crop preview is centered');
+ await page.keyboard.press('Tab');assert(await page.evaluate(()=>!!document.activeElement.closest('.note-recognition')),'native modal keeps focus inside preview');
+ recognitionMode='fail';await recognition.getByRole('button',{name:'이 부분 인식하기',exact:true}).click();await recognition.getByText('검수용 인식 실패',{exact:true}).waitFor();
+ recognitionMode='ok';await recognition.getByRole('button',{name:'다시 인식',exact:true}).click();await recognition.waitFor({state:'hidden'});await review.waitFor();
+ const inkNote=noteResponse(await noteRow(inkId));const originalStrokes=JSON.stringify(inkNote.document.board.pages[0].elements.filter(el=>el.type==='freedraw'));
+ assert.equal(recognitionCalls.length,2);for(const body of recognitionCalls){assert.deepEqual(Object.keys(body).sort(),['consent','elementIds','fingerprint','image','pageId','revision'].sort());assert.equal(body.consent,'selected-ink-to-gemini');assert(body.image.startsWith('data:image/png;base64,'));assert.equal(body.elementIds.length,1);const selected=inkNote.document.board.pages[0].elements.find(el=>el.id===body.elementIds[0]);assert.equal(selected.type,'freedraw');}
+ assert.equal(await review.locator('.note-candidate').count(),1);const recognized=review.locator('.note-candidate').first();assert.equal(await recognized.getByRole('textbox',{name:'표현 표기',exact:true}).inputValue(),'はし');assert.equal(await recognized.getByRole('textbox',{name:'はし 뜻',exact:true}).inputValue(),'');
+ await recognized.getByRole('button',{name:'箸 젓가락',exact:true}).click();await recognized.getByRole('textbox',{name:'箸 뜻',exact:true}).fill('젓가락 · 수업 메모');await screen('08-kana-choice-mobile');
+ assert.equal((await db.query('select count(*)::int n from user_vocabulary')).rows[0].n,2,'recognition does not save vocabulary automatically');
+ await review.getByRole('button',{name:'단어 정리 닫기',exact:true}).click();await page.setViewportSize({width:1440,height:1000});await capture();await recognition.getByRole('button',{name:'이 부분 인식하기',exact:true}).click();await review.waitFor();
+ assert.equal(await review.locator('.note-candidate').count(),1);assert.equal(await review.getByRole('textbox',{name:'箸 뜻',exact:true}).inputValue(),'젓가락 · 수업 메모');
+ await review.getByRole('button',{name:'뜻 있는 항목 모두 선택',exact:true}).click();await review.getByRole('button',{name:'선택한 1개 담기',exact:true}).click();await review.getByText('새로 담음',{exact:true}).waitFor();
+ assert.equal(JSON.stringify(noteResponse(await noteRow(inkId)).document.board.pages[0].elements.filter(el=>el.type==='freedraw')),originalStrokes);
+ check('explicit crop preview sends only selected ink; cancel sends nothing; failed recognition retries, kana alternatives preserve edits, deduplicate and save with unchanged strokes');
+ await review.getByRole('button',{name:'단어 정리 닫기',exact:true}).click();await capture();recognitionMode='slow';await recognition.getByRole('button',{name:'이 부분 인식하기',exact:true}).click();await waitFor(()=>recognitionCalls.length===4);await recognition.getByRole('button',{name:'필기 인식 취소',exact:true}).click();await page.waitForTimeout(1800);
+ assert.equal(noteResponse(await noteRow(inkId)).document.candidates.length,1,'cancelled late response is not applied');
+ await capture();recognitionMode='empty';await recognition.getByRole('button',{name:'이 부분 인식하기',exact:true}).click();await recognition.getByText('읽을 수 있는 표현을 찾지 못했어요. 글자 몇 개씩 선택하거나 직접 입력해 주세요.',{exact:true}).waitFor();await recognition.getByRole('button',{name:'필기 인식 닫기',exact:true}).click();
+ check('late cancelled responses and unreadable handwriting preserve the note and prior candidate');
+ assert.equal(report.externalAI.length,0);assert.equal(report.errors.length,0,report.errors.join('\n'));check('no actual external AI request or uncaught UI error');
 }catch(error){report.failure=error.stack;await screen('failure');throw error;}
 finally{fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));await browser.close();await db.close();}

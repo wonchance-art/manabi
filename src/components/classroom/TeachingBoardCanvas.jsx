@@ -1,6 +1,6 @@
 'use client';
 import {useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState} from 'react';
-import {Excalidraw, MainMenu, CaptureUpdateAction, convertToExcalidrawElements, newElementWith, getSceneVersion, getCommonBounds} from '@excalidraw/excalidraw';
+import {Excalidraw, MainMenu, CaptureUpdateAction, convertToExcalidrawElements, newElementWith, getSceneVersion, getCommonBounds, exportToBlob} from '@excalidraw/excalidraw';
 import '@excalidraw/excalidraw/index.css';
 import {createPortal} from 'react-dom';
 import BoardTools from './BoardTools';
@@ -21,6 +21,7 @@ import {useTeachingBoard} from '../../lib/useTeachingBoard';
 import {cardSkeleton, cardFields, readCard, rotateCardPart, wordCardSkeleton, expressionElements, arrangeExpressionGroups} from '../../lib/teachingBoardCard';
 import {isClassComposing} from '../../lib/classReaderDraft';
 import {boardCameraForBounds} from '../../lib/teachingBoardViewport';
+import {recognitionElements,recognitionFingerprint,RECOGNITION_IMAGE_LIMIT} from '../../lib/noteRecognition';
 
 export default function TeachingBoardCanvas(props) {
   const {owner, team, day} = props;
@@ -44,6 +45,8 @@ export function SharedBoardCanvas({owner, team, day, scope, store, personal, onR
   const [entrySource,setEntrySource]=useState({kind:'manual'}),[lookupSource,setLookupSource]=useState('');
   const [toolStyle,setToolStyle]=useState({color:'ink',width:2});
   const [hasContent,setHasContent]=useState(null);
+  const [capturing,setCapturing]=useState(false);
+  const captureBusy=useRef(false);
   const toolStyleRef=useRef(toolStyle);toolStyleRef.current=toolStyle;
   const attempt = useRef(0), composing = useRef(false), editVersion = useRef(0), boardSave = useRef(store.save);
   boardSave.current = store.save;
@@ -152,6 +155,23 @@ export function SharedBoardCanvas({owner, team, day, scope, store, personal, onR
     return()=>{observer.disconnect();tools.disconnect();};
   },[pageId,revealElements]);
   const changeLayout = next => { setLayout(next); onLayout(next); requestAnimationFrame(() => api.current?.refresh()); };
+  const captureInk=async()=>{
+    if(captureBusy.current||!api.current||!personal?.onRecognize)return;
+    captureBusy.current=true;setCapturing(true);
+    try{
+      commit();
+      const editor=api.current,id=document.current.activePage,ids=Object.keys(editor.getAppState().selectedElementIds).filter(key=>editor.getAppState().selectedElementIds[key]);
+      const elements=recognitionElements({id,elements:editor.getSceneElements()},ids);
+      const fingerprint=await recognitionFingerprint({id,elements},ids);
+      // Only these elements are exported. No embedded scene, files, linked
+      // material, or metadata accompanies the raster sent for recognition.
+      const blob=await exportToBlob({elements:elements.map(el=>({...el,link:null,customData:undefined,containerId:null,boundElements:[],frameId:null})),appState:{exportBackground:true,viewBackgroundColor:'#ffffff',exportWithDarkMode:false,exportEmbedScene:false},files:{},maxWidthOrHeight:1600,exportPadding:24,mimeType:'image/png'});
+      if(!blob||blob.size>RECOGNITION_IMAGE_LIMIT)throw new Error('필기가 너무 커요. 더 작은 부분을 선택해 주세요.');
+      const image=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('필기 이미지를 만들지 못했어요.'));reader.readAsDataURL(blob);});
+      if(api.current!==editor||document.current.activePage!==id||fingerprint!==await recognitionFingerprint({id,elements:editor.getSceneElements()},ids))throw new Error('필기가 바뀌었어요. 다시 선택해 주세요.');
+      closeMenu();personal.onRecognize({image,pageId:id,elementIds:ids,fingerprint});
+    }catch(error){if(root.current)setMessage(error.message);}finally{captureBusy.current=false;if(root.current)setCapturing(false);}
+  };
   focusScene.current=()=>{
     const editor=api.current,request=pendingFocus.current;if(!editor||!request||document.current?.activePage!==request.id)return;
     pendingFocus.current=null;
@@ -424,6 +444,7 @@ export function SharedBoardCanvas({owner, team, day, scope, store, personal, onR
       {!!anchors.length&&<WordDisplayControls language={team.lang} value={picked||readCard(anchor,api.current?.getSceneElementsIncludingDeleted()||[])} onChange={applyAppearance} appearance/>}
       <div className="board-icon-grid" aria-label="선택한 요소 도구">
         <BoardIconButton icon="present" label="선택한 내용 보여주기" disabled={!selected.length} onClick={showBoard}/>
+        {personal?.onRecognize&&<BoardIconButton icon="reading" label={capturing?'필기 준비 중…':'선택한 필기 인식'} disabled={capturing||!selected.length} onClick={captureInk}/>}
         {picked&&<BoardIconButton icon="edit" label="내용 수정" onClick={editSelected}/>}
         {!!anchors.length&&<><BoardIconButton icon="fit" label="여백 줄이기" onClick={compactSelection}/>{!personal&&<BoardIconButton icon="record" label={recorded||(recording?'저장 요청 중…':anchors.length>1?`선택한 ${anchors.length}개 수업에 남기기`:'수업에 남기기')} disabled={recording||!!recorded} onClick={()=>record()}/>}</>}
         {anchors.length>1&&<><BoardIconButton icon="row" label="나란히 정렬" onClick={()=>arrange('row')}/><BoardIconButton icon="column" label="세로로 정렬" onClick={()=>arrange('column')}/></>}
