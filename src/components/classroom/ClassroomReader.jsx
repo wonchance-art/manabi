@@ -19,6 +19,7 @@ import {readerDraftScope,readerDraftContext,classroomSaveLabel,isClassComposing}
 import {resolveClassSource} from '../../lib/classSource';
 import {useClassSelectionVisibility} from '../../lib/useReaderLayout';
 import TeachingBoard from './TeachingBoard';
+import {wordRecordKey,savedWordRecord,pendingWordRecord} from '../../lib/teachingWordRecord';
 
 export default function ClassroomReader({annotationContent,context,user,material,selection,selectionSignal,wordContent,sentenceContent,fallback,onSelectionClose,onActive,suppressed,onPresenting,toolbarTarget,boardTarget,boardHeaderTarget,onBoardRatio,vocabularyIndex,onBoardLayout}) {
   const root=useQuery({queryKey:['class-root',user?.id,context?.team],queryFn:()=>fetchTeamRoot(user.id,context.team),enabled:!!user?.id&&!!context});
@@ -82,6 +83,15 @@ function ClassReaderSession({fallback,onSelectionClose,toolbarTarget,boardTarget
   useEffect(()=>{bodyRef.current?.scrollTo({top:0,behavior:'instant'});},[key]);
   const meaning=override?.meaning??current?.meaning??'',reading=override?.reading??current?.reading??'';
   const entries=useMemo(()=>classroomEntries(session.note),[session.note]);
+  const boardQueued=useRef(new Map()),boardSession=useRef(session);boardSession.current=session;
+  const findBoardRecord=value=>savedWordRecord(session.note,value);
+  const boardPending=value=>pendingWordRecord(session.queue,value);
+  useEffect(()=>{
+    // Retain only the gap between local commit and the next observed queue/note.
+    // Once observed, the durable queue owns retries and intentional discards.
+    for(const [key,value] of boardQueued.current)if(savedWordRecord(session.note,value)||pendingWordRecord(session.queue,value))boardQueued.current.delete(key);
+  },[session.note,session.queue]);
+
   const existing=findStudyEntry(session.note,current);
   const queued=session.queue.find(row=>row.text===current?.text&&studySelectionKey({text:row.text,source:row.seed?.source})===key);
   // The viewer's explicit open signal also covers tapping the same word again.
@@ -182,7 +192,7 @@ function ClassReaderSession({fallback,onSelectionClose,toolbarTarget,boardTarget
       </div>
       {legacy&&<details className="class-reader-drafts"><summary>이전 입력 초안</summary><p>{legacy.text}</p><button onClick={()=>{legacySelected.current=legacy;const next={text:legacy.text,source:{kind:'manual'}};setManual(true);setDraft(next);setInput('');persist(next,'','','');}}>이어서 작성</button></details>}
       {drafts.rows.length>0&&<details className="class-reader-drafts"><summary>보관된 초안 {drafts.rows.length}개</summary>{drafts.rows.map(row=><div key={row.id}><button onClick={()=>restoreDraft(row)}>{row.value.selection?.text||row.value.input||'빈 초안'} · 계속 작성</button><button aria-label={`${row.value.selection?.text||row.value.input||'빈 초안'} 초안 비우기`} onClick={()=>clearDraft(row)}>비우기</button></div>)}</details>}
-      {!manual&&wordContent&&<div className="class-reader-word">{wordContent(current?.source?.tokenId?<>{classDetails}{annotationContent}</>:null,current?.source?.tokenId?meaningControl:null)}</div>}
+      {!manual&&wordContent&&<div className="class-reader-word">{wordContent(current?.source?.tokenId?<>{classDetails}{annotationContent}</>:null,current?.source?.tokenId?{meaning,editor:meaningEditing?meaningControl:<button className="class-reader-meaning-edit" aria-label="수업용 뜻 수정" onClick={()=>setMeaningEditing(true)}>수정</button>}:null)}</div>}
       {(manual||!current?.source?.tokenId)&&classDetails}
       {!manual&&!current?.source?.tokenId&&annotationContent}
       {(message||session.storeError||session.error)&&<p role="status" className="class-reader-message">{message||session.storeError||'수업 노트를 불러오지 못했어요.'}{session.error&&<button onClick={()=>session.refetch()}>다시 불러오기</button>}</p>}
@@ -199,14 +209,24 @@ function ClassReaderSession({fallback,onSelectionClose,toolbarTarget,boardTarget
       {pendingSaves}
     </footer>
     </section>
-  </aside>}{boardOpen&&fallback(<><button disabled={!boardReady||!selection} onClick={()=>{if(boardActions.current?.place(selection))onSelectionClose?.();}}>판에 놓기</button><button disabled={!selection} onClick={event=>{if(selection){presentationOriginRef.current=event.currentTarget;setPresentation({...selection,selection});}}}>크게 보기</button></>)}{boardOpen&&boardTarget&&<TeachingBoard target={boardTarget} headerTarget={boardHeaderTarget} actionsRef={boardActions} onReady={setBoardReady} onRatio={onBoardRatio} navigation={boardNavigation} sessionContent={<>{session.isLoading&&<p role="status">수업 기록을 불러오는 중…</p>}{(message||session.storeError||session.error)&&<p className="class-reader-message" role="status">{message||session.storeError||'수업 기록을 불러오지 못했어요.'}{session.error&&<button onClick={()=>session.refetch()}>다시 불러오기</button>}</p>}{positionError&&<p role="status">이어 볼 과를 저장하지 못했어요. <button disabled={positionBusy} onClick={rememberChapter}>위치 저장 재시도</button></p>}{pendingSaves}{noteList}<section className="class-reader-summary"><h2>오늘 수업</h2><p>{entries.length}개 표현 · {saveLabel}</p>{currentChapter&&<div className="class-reader-coverage"><button disabled={coverageBusy||coverage.isLoading||!!coverage.error} onClick={confirmChapter}>{isConfirmed?'오늘 수업 범위 ✓ · 취소':'오늘 이 과를 함께 읽었어요 ✓'}</button>{coverage.error&&<button onClick={()=>coverage.refetch()}>수업 범위 다시 확인</button>}<p role="status">{coverageMessage}</p></div>}{session.note&&<button onClick={copyNote}>기록 복사</button>}</section></>} material={material} vocabularyIndex={vocabularyIndex} onLayout={onBoardLayout} onClose={closeBoard}
+  </aside>}{boardOpen&&fallback(<><button disabled={!boardReady||!selection} onClick={()=>{if(boardActions.current?.place(selection))onSelectionClose?.();}}>판에 놓기</button><button disabled={!selection} onClick={event=>{if(selection){presentationOriginRef.current=event.currentTarget;setPresentation({...selection,selection});}}}>크게 보기</button><button disabled={!selection||busy||!!findStudyEntry(session.note,selection)||session.queue.some(row=>studySelectionKey({text:row.text,source:row.seed?.source})===studySelectionKey(selection))} onClick={()=>add(false,{...selection,selection})}>{findStudyEntry(session.note,selection)?'수업에 남김':busy?'저장 요청 중…':'수업에 남기기'}</button></>)}{boardOpen&&boardTarget&&<TeachingBoard target={boardTarget} headerTarget={boardHeaderTarget} actionsRef={boardActions} onReady={setBoardReady} onRatio={onBoardRatio} recordCount={entries.length} navigation={boardNavigation} sessionContent={<>{session.isLoading&&<p role="status">수업 기록을 불러오는 중…</p>}{(message||session.storeError||session.error)&&<p className="class-reader-message" role="status">{message||session.storeError||'수업 기록을 불러오지 못했어요.'}{session.error&&<button onClick={()=>session.refetch()}>다시 불러오기</button>}</p>}{positionError&&<p role="status">이어 볼 과를 저장하지 못했어요. <button disabled={positionBusy} onClick={rememberChapter}>위치 저장 재시도</button></p>}{pendingSaves}{noteList}<section className="class-reader-summary"><h2>오늘 수업</h2><p>{entries.length}개 표현 · {saveLabel}</p>{currentChapter&&<div className="class-reader-coverage"><button disabled={coverageBusy||coverage.isLoading||!!coverage.error} onClick={confirmChapter}>{isConfirmed?'오늘 수업 범위 ✓ · 취소':'오늘 이 과를 함께 읽었어요 ✓'}</button>{coverage.error&&<button onClick={()=>coverage.refetch()}>수업 범위 다시 확인</button>}<p role="status">{coverageMessage}</p></div>}{session.note&&<button onClick={copyNote}>기록 복사</button>}</section></>} material={material} vocabularyIndex={vocabularyIndex} onLayout={onBoardLayout} onClose={closeBoard}
     owner={root.owner_id} team={team} day={day} current={current?{...current,meaning,reading}:null}
-    getRecordState={picked=>findStudyEntry(session.note,picked)?'오늘 표현에 추가됨':session.queue.some(row=>studySelectionKey({text:row.text,source:row.seed?.source})===studySelectionKey(picked))?'저장 대기 중':null}
+    getRecordState={picked=>findBoardRecord(picked)?'수업에 남김':boardPending(picked)?boardPending(picked).status==='error'?'저장 확인 필요':'저장 대기 중':null}
     onRecord={async picked=>{
-      if(picked.source?.kind!=='manual'&&(String(picked.source?.materialId)!==String(material.id)||!resolveClassSource(material.processed_json,picked.source)))throw new Error('원래 교재 위치에서 수업 기록에 추가해 주세요.');
-      if(findStudyEntry(session.note,picked))throw new Error('이미 오늘 표현에 추가된 항목이에요.');
-      await session.add(picked.text,buildStudySeed(picked,picked.meaning,picked.reading));
-    }}/>} {presentation&&<TeachingPresentation entry={presentation} lang={team.lang} onClose={closePresentation} onRecord={presentation.recorded?undefined:()=>add(false,presentation)} originRef={presentationOriginRef} fallbackRef={showButtonRef} recordState={findStudyEntry(session.note,presentation.selection)?'수업에 기록됨 ✓':presentationQueued?presentationQueued.status==='error'?'저장 확인 필요':'서버 저장 대기':busy?'보관 중…':null}/>}</>;
+      if(picked.source?.kind!=='manual'){
+        let original=material;
+        if(String(picked.source?.materialId)!==String(material.id)){
+          const {data,error}=await supabase.from('reading_materials').select('processed_json').eq('id',picked.source.materialId).maybeSingle();
+          if(error||!data)throw new Error('원래 교재를 확인하지 못했어요. 다시 시도해 주세요.');original=data;
+        }
+        if(!resolveClassSource(original.processed_json,picked.source))throw new Error('교재의 해당 표현이 바뀌었어요. 원래 위치에서 다시 선택해 주세요.');
+      }
+      const identity=wordRecordKey(picked),sourceKey=studySelectionKey(picked),latestSession=boardSession.current;
+      if(savedWordRecord(latestSession.note,picked)||pendingWordRecord(latestSession.queue,picked)||boardQueued.current.has(identity))throw new Error('이미 수업에 남긴 표현이에요.');
+      const repeat=!!findStudyEntry(latestSession.note,picked)||latestSession.queue.some(row=>studySelectionKey({text:row.text,source:row.seed?.source})===sourceKey)||[...boardQueued.current.values()].some(value=>studySelectionKey(value)===sourceKey);
+      boardQueued.current.set(identity,picked);
+      try{await latestSession.add(picked.text,{...buildStudySeed(picked,picked.meaning,picked.reading),...(repeat?{repeat:true}:{})});}catch(error){boardQueued.current.delete(identity);throw error;}
+    }}/>} {presentation&&<TeachingPresentation owner={root.owner_id} entry={presentation} lang={team.lang} onClose={closePresentation} onRecord={presentation.recorded?undefined:()=>add(false,presentation)} originRef={presentationOriginRef} fallbackRef={showButtonRef} recordState={findStudyEntry(session.note,presentation.selection)?'수업에 기록됨 ✓':presentationQueued?presentationQueued.status==='error'?'저장 확인 필요':'서버 저장 대기':busy?'보관 중…':null}/>}</>;
 }
 
 const selectionKeyFor=selection=>studySelectionKey(selection);

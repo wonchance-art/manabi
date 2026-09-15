@@ -5,11 +5,11 @@ import {BoardIconButton} from './BoardIcon';
 import {presentationElements} from '../../lib/teachingWorkspace';
 import {boardCameraForBounds} from '../../lib/teachingBoardViewport';
 
-export default function BoardPresentation({elements,onClose,returnFocus}) {
+export default function BoardPresentation({elements,onClose,returnFocus,onRecord,recording,recordState}) {
   const dialog=useRef(null),surface=useRef(null),api=useRef(null);
-  const [reading,setReading]=useState(null),[meaning,setMeaning]=useState(null),[laser,setLaser]=useState(true);
+  const [hun,setHun]=useState(null),[reading,setReading]=useState(null),[meaning,setMeaning]=useState(null),[laser,setLaser]=useState(true);
   const visibleReading=reading??elements.some(el=>el.customData?.manabiField==='reading'&&el.opacity!==0),visibleMeaning=meaning??elements.some(el=>el.customData?.manabiField==='meaning'&&el.opacity!==0);
-  const shown=useMemo(()=>presentationElements(elements,{reading,meaning}),[elements,reading,meaning]);
+  const shown=useMemo(()=>presentationElements(elements,{reading,meaning,hun}),[elements,reading,meaning,hun]);
   const fit=useCallback(()=>{
     const editor=api.current,rect=surface.current?.getBoundingClientRect();if(!editor||!rect)return;
     editor.refresh();
@@ -29,7 +29,9 @@ export default function BoardPresentation({elements,onClose,returnFocus}) {
     <header><BoardIconButton icon="close" label="← 설명판으로" autoFocus onClick={onClose}/><span>보여주기</span><nav aria-label="보여주기 도구">
       <BoardIconButton icon="laser" label="레이저" aria-pressed={laser} onClick={()=>{setLaser(v=>!v);api.current?.setActiveTool({type:laser?'hand':'laser'});}}/>
       {elements.some(el=>el.customData?.manabiField==='reading')&&<BoardIconButton icon="reading" label={`읽기 ${visibleReading?'가리기':'보이기'}`} aria-pressed={!visibleReading} onClick={()=>setReading(!visibleReading)}/>}
+      {elements.some(el=>el.customData?.manabiField==='hun')&&<BoardIconButton icon="hun" label="한자 훈음" aria-pressed={hun??elements.some(el=>el.customData?.manabiField==='hun'&&el.opacity!==0)} onClick={()=>setHun(!(hun??elements.some(el=>el.customData?.manabiField==='hun'&&el.opacity!==0)))}/>}
       {elements.some(el=>el.customData?.manabiField==='meaning')&&<BoardIconButton icon="meaning" label={`뜻 ${visibleMeaning?'가리기':'보이기'}`} aria-pressed={!visibleMeaning} onClick={()=>setMeaning(!visibleMeaning)}/>}
+      {onRecord&&elements.some(el=>el.customData?.manabiExpression)&&<BoardIconButton icon="record" label={recordState||(recording?'저장 요청 중…':'수업에 남기기')} disabled={recording||!!recordState} onClick={onRecord}/>}
       <BoardIconButton icon="fit" label="화면에 맞추기" onClick={fit}/>
     </nav></header>
     <div ref={surface} className="board-presentation-paper"><Excalidraw excalidrawAPI={connect} initialData={{elements:shown,appState:{viewBackgroundColor:'transparent'}}} viewModeEnabled zenModeEnabled langCode="ko-KR" handleKeyboardGlobally={false} onLinkOpen={(_,event)=>event.preventDefault()} validateEmbeddable={false}/></div>

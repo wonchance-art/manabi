@@ -137,3 +137,29 @@
  .board-hud-status {top:auto;bottom:28px;right:76px;}
  .board-popover {padding:10px;}
 }
+
+/* Content-sized words leave the paper available for handwriting. */
+.board-today-trigger {position:absolute;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));pointer-events:auto;background:var(--reader-paper);border:1px solid var(--reader-line);border-radius:14px;}
+.board-today-trigger .board-icon-button {width:auto;gap:4px;padding:7px;}
+.board-count {font-size:12px;font-weight:700;min-width:14px;}
+.board-hud-status {top:74px;}
+.board-selection-summary {font-size:12px;color:var(--reader-muted);padding-bottom:6px;}
+.board-popover--entry {width:min(440px,calc(100% - 24px));}
+.board-word-preview {padding:16px 0 8px;}
+.board-word-preview>small {display:block;font-size:11px;color:var(--reader-muted);margin-top:8px;}
+.board-display-options>summary {font-size:12px;cursor:pointer;min-height:44px;display:flex;align-items:center;}
+.board-keep-adding {display:flex;gap:8px;align-items:center;min-height:44px;font-size:12px;color:var(--reader-muted);}
+.board-keep-adding input {width:18px;height:18px;}
+.board-senses {display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.board-senses button {text-align:left;min-height:44px;font:inherit;font-size:13px;background:transparent;border:1px solid var(--reader-line);color:var(--reader-ink);border-radius:8px;padding:8px;}
+.board-senses button[aria-pressed="true"] {background:var(--reader-accent-soft);border-color:var(--reader-accent);}
+.board-senses small {display:block;color:var(--reader-muted);font-size:11px;}
+@container board-hud (max-width:420px) {.board-today-trigger {top:74px;}.board-hud-status {top:126px;}}
+
+.board-popover--entry:not([hidden]) {display:flex;flex-direction:column;overflow:hidden;}
+.board-popover--entry .board-popover-body {min-height:0;overflow:auto;overscroll-behavior:contain;}
+.board-popover--entry .board-popover-heading {flex-shrink:0;}
+.board-entry-actions {position:sticky;bottom:0;z-index:1;padding:8px 0 0;background:var(--reader-paper);}
+.board-menu-notice {font-size:12px;line-height:1.5;color:var(--reader-muted);margin:0 0 10px;}
+
+.board-hud:has(.board-popover:not([hidden])) .board-selection-trigger {visibility:hidden;}

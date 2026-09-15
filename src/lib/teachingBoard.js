@@ -23,7 +23,9 @@ export function boardExpression(input, language) {
       ...(origin.tokenId ? {tokenId: String(origin.tokenId)} : {}), ...(origin.anchor ? {anchor: origin.anchor} : {})};
   }
   return {text, reading: String(input.reading || '').slice(0, 500), meaning: String(input.meaning || '').slice(0, 500),
-    language, source, showReading: input.showReading !== false, showMeaning: input.showMeaning !== false};
+    language, source, showReading: input.showReading !== false, showMeaning: input.showMeaning !== false,
+    ...(input.layoutVersion===2?{layoutVersion:2,appearance:input.appearance==='card'?'card':'plain',showHun:input.showHun!==false}:{}),
+    ...(input.lookupSource?{lookupSource:String(input.lookupSource).slice(0,40)}:{})};
 }
 
 export function expressionOf(element) {

@@ -1,4 +1,5 @@
 const paths={
+ row:'M2 5h7v14H2zM15 5h7v14h-7z',column:'M5 2h14v7H5zM5 15h14v7H5z',hun:'M5 4h14M12 4v11m-5-6 5 6 5-6M5 20h14',
  undo:'M9 5 3 11l6 6M3 11h11a6 6 0 0 1 6 6',redo:'m15 5 6 6-6 6m6-6H10a6 6 0 0 0-6 6',
  menu:'M4 5h16M4 12h16M4 19h16',
  selection:'M5 3l13 8-6 2-3 6z',freedraw:'M4 16L15 5l4 4L8 20H4zm9-9 4 4',eraser:'m4 14 9-10 7 7-8 9H9zm4 2 4 4M12 20h9',text:'M5 5h14M12 5v15M8 20h8',arrow:'M4 20 20 4M10 4h10v10',laser:'M5 19 15 9m-2-5h6v6M4 4v3M2.5 5.5h3',
