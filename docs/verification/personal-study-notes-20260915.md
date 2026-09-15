@@ -70,6 +70,17 @@ QA_BASE=http://127.0.0.1:3115 QA_PGLITE_MODULE=/path/to/pglite/dist/index.js nod
 - 기존 교사 설명판의 13개 흐름도 최종 빌드에서 통과했다. 필기/여러 표현/수업 기록/드래그 단어 창 기능은 유지된다.
 - 합성 테스트는 실제 Gemini 인식 정확도나 실제 iPad/Pencil 검수의 대체가 아니다.
 
+## 미리보기·원격 검수
+
+- PR #1313: `https://github.com/wonchance-art/manabi/pull/1313` (draft).
+- Preview: `https://manabi-1uoqwksoa-wonchance-arts-projects.vercel.app/notes/new`, `dpl_4SQVxaBDZbdTcjJ55DNv1QJMKHEo` READY.
+- `/api/version`에서 `e7f070d8945c5b1da2de7e7ff1b40f518df6874c`, preview 환경, 기존 교재 판본 `7f572327dc67893e9453246c` 일치 확인. 이후 변경은 테스트 진입과 검수 문서/자기 보드뿐이다.
+- 배포한 실제 UI에서도 Chromium/WebKit 각각 9개 합성 로그인/HTTP/인식 응답 흐름 PASS, 실행 오류 0, 실제 외부 AI 호출 0. `QA_LOGIN=1`은 HTTP 인터셉트를 통한 합성 계정이며 실제 계정 로그인이 아니다.
+- 비로그인 인식 API는 HTTP 401. Codex 브라우저에서 로그인 필요 화면과 노트 복귀 주소가 유지되는 로그인 진입을 확인했다.
+- 실제 계정 저장·실제 Gemini 인식 정확도 검수를 위해 해당 미리보기 로그인 화면을 열어 두고 사용자 로그인 완료를 기다린다.
+- 운영 `/api/version`은 기존 main `9a7e3be1d0de669557927e813243755f05e9e5c5`와 기존 배포 유지.
+- 초기 배포 식별자 입력을 바로잡으며 앞선 미리보기 빌드를 취소했다. 최종 위 배포만 검수 대상으로 삼았고, 폰트 다운로드 재시도 후 빌드가 정상 완료되었다.
+
 ## 남은 범위
 
 - 물리 iPad/Pencil의 획 품질, 손바닥 접촉, OS 일본어 필기 입력, 실제 두 기기의 동시 편집은 별도 실기기 검수가 필요하다. 브라우저 에뮬레이션을 실기기 확인으로 표시하지 않는다.

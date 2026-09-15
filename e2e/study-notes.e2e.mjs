@@ -91,7 +91,7 @@ await context.route('**/api/learning/vocabulary',async route=>{
  try {const result=(await db.query('select save_vocabulary_context($1,$2,$3,$4) result',[word,source,body.confirmId||null,body.confirmMeaning??null])).rows[0].result;return route.fulfill({json:result});}
  catch(error){if(error.message.includes('vocabulary_meaning_conflict'))return route.fulfill({status:409,json:{error:'같은 뜻인지 확인해 주세요.',code:'meaning_conflict',existing:{id:oldVocab,meaning:originalVocab.meaning}}});throw error;}
 });
-await context.addCookies([{name:'sb-e2e-auth-token',value:'base64-'+enc(session),url:base,httpOnly:false,sameSite:'Lax'}]);
+if(process.env.QA_LOGIN!=='1')await context.addCookies([{name:'sb-e2e-auth-token',value:'base64-'+enc(session),url:base,httpOnly:false,sameSite:'Lax'}]);
 const page=await context.newPage();
 page.on('pageerror',error=>report.errors.push(error.message));
 page.on('console',message=>{
@@ -104,6 +104,9 @@ const screen=async name=>{await page.screenshot({path:`${out}/${name}.png`});rep
 const waitFor=async fn=>{for(let i=0;i<150;i++){if(await fn())return;await page.waitForTimeout(100);}throw new Error('condition timeout');};
 const readLocal=()=>page.evaluate(async()=>{const db=await new Promise((resolve,reject)=>{const req=indexedDB.open('manabi-teaching-boards');req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});return new Promise(resolve=>{const req=db.transaction('boards').objectStore('boards').getAll();req.onsuccess=()=>resolve(req.result);});});
 try{
+ if(process.env.QA_LOGIN==='1'){
+  await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last().click();await page.waitForURL('**/home');await page.waitForLoadState('networkidle');
+ }
  await page.goto(base+'/notes/new');await page.getByLabel('노트 제목',{exact:true}).fill('수업을 들으며 — 오늘의 일본어');await screen('01-create');
  await page.getByRole('button',{name:'노트 펼치기 ↗',exact:true}).click();await page.waitForURL(/\/notes\/\d+$/);const id=page.url().split('/').pop();
  const board=page.getByRole('region',{name:'개인 학습 노트'}),hud=page.locator('.board-hud');await board.locator('canvas.interactive').waitFor();
