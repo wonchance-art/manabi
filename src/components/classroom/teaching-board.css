@@ -163,3 +163,40 @@
 .board-menu-notice {font-size:12px;line-height:1.5;color:var(--reader-muted);margin:0 0 10px;}
 
 .board-hud:has(.board-popover:not([hidden])) .board-selection-trigger {visibility:hidden;}
+
+/* Recognition stays inside the board; the uncovered paper remains writable. */
+.board-ink-panel {position:absolute;right:12px;bottom:12px;z-index:3;width:min(380px,calc(100% - 24px));max-height:min(66%,calc(var(--reader-visual-height,100dvh) - 150px));display:flex;flex-direction:column;pointer-events:auto;border:1px solid var(--reader-line);border-radius:18px;background:var(--reader-paper);box-shadow:0 12px 36px color-mix(in srgb,var(--reader-ink) 12%,transparent);overflow:hidden;}
+.board-ink-panel header {display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 16px 8px;flex-shrink:0;}
+.board-ink-panel header small {font-size:10px;letter-spacing:.1em;color:var(--reader-muted);}
+.board-ink-panel h2 {font-size:20px;line-height:1.3;margin:3px 0 0;letter-spacing:-.04em;}
+.board-ink-panel h2 span {color:var(--reader-accent);}
+.board-ink-body {min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 16px 10px;}
+.board-ink-panel p {font-size:12px;line-height:1.5;margin:8px 0;color:var(--reader-muted);}
+.board-ink-panel summary {font-size:12px;min-height:36px;padding:10px 0;cursor:pointer;color:var(--reader-muted);}
+.board-ink-preview img {display:block;max-width:100%;max-height:130px;margin:0 auto 8px;object-fit:contain;border-radius:8px;}
+.board-ink-results article {padding:10px 0 12px;border-bottom:1px solid var(--reader-line);}
+.board-ink-row-heading {display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--reader-muted);font-size:11px;}
+.board-ink-row-heading label {display:flex;align-items:center;gap:6px;min-height:36px;}
+.board-ink-row-heading small {max-width:50%;overflow-wrap:anywhere;}
+.board-ink-row-heading input {width:18px;height:18px;accent-color:var(--reader-accent);}
+.board-ink-panel fieldset {border:0;padding:0;margin:0;min-width:0;}
+.board-ink-fields {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:10px;}
+.board-ink-fields label,.board-ink-reading {display:flex;flex-direction:column;gap:3px;font-size:10px;color:var(--reader-muted);}
+.board-ink-fields input,.board-ink-reading input {min-width:0;width:100%;min-height:38px;border:0;border-bottom:1px solid var(--reader-line);border-radius:0;background:transparent;padding:5px 0;font:inherit;font-size:16px;color:var(--reader-ink);}
+.board-ink-fields label:first-child input {font-size:25px;line-height:1.3;font-weight:650;}
+.board-ink-reading {margin-top:6px;}
+.board-ink-reading input {min-height:30px;font-size:16px;color:var(--reader-accent);}
+.board-ink-choices {display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
+.board-ink-choices button {display:flex;align-items:center;gap:6px;border-color:var(--reader-line);padding:6px 9px;max-width:100%;text-align:left;overflow-wrap:anywhere;}
+.board-ink-choices button span {font-size:11px;color:var(--reader-muted);}
+.board-ink-results article[data-placed="true"] fieldset {opacity:.6;}
+.board-ink-panel footer {padding:10px 16px 12px;border-top:1px solid var(--reader-line);flex-shrink:0;}
+.board-ink-panel footer small {display:block;color:var(--reader-muted);font-size:10px;line-height:1.4;margin-top:6px;}
+.board-ink-panel .board-ink-primary {width:100%;background:var(--reader-accent);color:var(--reader-paper);font-weight:650;}
+.board-ink-panel .board-ink-primary:hover {background:var(--reader-ink);color:var(--reader-paper);}
+.board-ink-panel [role="alert"] {color:var(--board-red);}
+.board-hud:has(.board-ink-panel) .board-selection-trigger {visibility:hidden;}
+@container board-hud (min-width:900px) {.board-ink-panel {top:80px;bottom:16px;max-height:none;}}
+.board-ink-panel[data-collapsed="true"] {top:auto;bottom:12px;width:auto;max-width:calc(100% - 24px);max-height:none;border-radius:14px;}
+.board-ink-collapsed {display:flex;align-items:center;gap:4px;padding:3px 5px;}
+.board-ink-collapsed>button:first-child {font-weight:600;color:var(--reader-accent);}
