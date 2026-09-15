@@ -62,6 +62,14 @@ QA_BASE=http://127.0.0.1:3115 QA_PGLITE_MODULE=/path/to/pglite/dist/index.js nod
 
 참고한 기존 API: [Excalidraw 선택 요소 PNG export](https://docs.excalidraw.com/docs/@excalidraw/excalidraw/api/utils/export), [Gemini 이미지 입력](https://ai.google.dev/gemini-api/docs/image-understanding). 새로운 편집기나 OCR 의존성은 추가하지 않았다.
 
+## 최종 UI 확인
+
+- 실행 커밋 `e7f070d8945c5b1da2de7e7ff1b40f518df6874c`. 로컬 프로덕션 빌드에서 Chromium/WebKit 각각 9개 전체 흐름 통과, 실행 오류 0, 실제 외부 AI 호출 0.
+- 선택한 freedraw 요소만 PNG로 전송되는지 실제 export와 요청 본문을 검사했다. 미리보기만 열기/취소는 요청 0회, 실패 후 재시도, 빈 인식 결과, 늦은 취소 응답, 재인식 중복 방지, 사용자 뜻 수정 보존, 저장 후 원본 획 불변을 확인했다.
+- WebKit의 Tab 초점 이탈을 수정하고, 양쪽 엔진에서 인식창의 가운데 배치·모바일 390px 맞춤·초점 순환을 확인했다. 단어 정리창의 상태 문구는 하단 저장 버튼을 덮지 않는다.
+- 기존 교사 설명판의 13개 흐름도 최종 빌드에서 통과했다. 필기/여러 표현/수업 기록/드래그 단어 창 기능은 유지된다.
+- 합성 테스트는 실제 Gemini 인식 정확도나 실제 iPad/Pencil 검수의 대체가 아니다.
+
 ## 남은 범위
 
 - 물리 iPad/Pencil의 획 품질, 손바닥 접촉, OS 일본어 필기 입력, 실제 두 기기의 동시 편집은 별도 실기기 검수가 필요하다. 브라우저 에뮬레이션을 실기기 확인으로 표시하지 않는다.
