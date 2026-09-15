@@ -59,4 +59,20 @@ describe('multiple teaching expressions with annotations and ink',()=>{
   expect(layout.parts.filter(p=>p.role==='text').map(p=>p.text).join('')).toBe(text);
   expect(layout.parts.filter(p=>p.role==='reading').map(p=>p.text).join('')).toBe(reading);
  });
+ it('keeps a four-character word together on a narrow display and balances longer phrases',()=>{
+  const rows=layout=>Object.values(Object.groupBy(layout.parts.filter(p=>p.role==='text'),p=>p.y)).map(row=>row.map(p=>p.text).join(''));
+  const short=teachingWordLayout({...value,text:'换位思考',reading:'huàn wèi sī kǎo',meaning:'상대방의 입장에서 생각하다'},{fontSize:35,maxWidth:280});
+  expect(rows(short)).toEqual(['换位思考']);
+  expect(short.width).toBeLessThanOrEqual(280);
+  const phrase={...value,text:'换个角度想一想',reading:'huàn gè jiǎo dù xiǎng yī xiǎng'};
+  const layout=teachingWordLayout(phrase);
+  expect(rows(layout)).toHaveLength(2);
+  expect(rows(layout).every(row=>[...row].length>=3)).toBe(true);
+  expect(rows(layout).join('')).toBe(phrase.text);
+  const narrow=teachingWordLayout(phrase,{maxWidth:310});
+  expect(rows(narrow)).toHaveLength(3);
+  expect(rows(narrow).every(row=>[...row].length>=2)).toBe(true);
+  expect(layout.parts.filter(p=>p.role==='reading').map(p=>p.text)).toEqual(phrase.reading.split(' '));
+  expect(rows(teachingWordLayout({...phrase,showReading:false,showHun:false,showMeaning:false}))).toEqual(rows(layout));
+ });
 });

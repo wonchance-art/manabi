@@ -231,12 +231,16 @@ try {
  for(const [w,h,label]of [[1024,768,'tablet-landscape'],[768,1024,'tablet-portrait'],[390,844,'phone']]){
   await page.setViewportSize({width:w,height:h});await page.waitForTimeout(400);await menus.action('main','전체 보기');await saveScreen(label);
   assert(await page.locator('.viewer-layout').evaluate(el=>el.scrollWidth<=el.clientWidth+1));
-  await menus.open('entry');await form.getByLabel('단어·표현',{exact:true}).fill('学习');await saveScreen(label+'-lookup');
+  await menus.open('entry');await form.getByLabel('단어·표현',{exact:true}).fill('换位思考');
+  const details=form.getByRole('button',{name:'읽기와 뜻 입력',exact:true});if(await details.getAttribute('aria-expanded')!=='true')await details[activate]();
+  await form.getByLabel('읽기',{exact:true}).fill('huàn wèi sī kǎo');await form.getByLabel('뜻',{exact:true}).fill('상대방의 입장에서 생각하다');
+  await waitFor(()=>form.locator('.teaching-word-graphic').evaluate(el=>new Set([...el.querySelectorAll('.teaching-word-part--text')].map(t=>t.getAttribute('y'))).size===1));
+  await saveScreen(label+'-lookup');
   const action=await form.getByRole('button',{name:'바로 놓기',exact:true}).boundingBox();
   assert(action.y>=0&&action.y+action.height<=h,'placement action stays visible without scrolling the whole menu');
   await menus.close();
  }
- check('tablet landscape/portrait and phone menus stay inside the viewport');
+ check('tablet landscape/portrait and phone menus stay inside the viewport; four-character words stay together');
  await page.setViewportSize({width:1440,height:1000});await page.goto(base+`/viewer/10?class=fixture-class&day=${day}`);
  const dock=page.getByRole('complementary',{name:'교재 안 수업 도구'});await dock.waitFor();
  await page.locator('[data-tid="id_14_0"]').scrollIntoViewIfNeeded();await page.evaluate(()=>document.fonts.ready);

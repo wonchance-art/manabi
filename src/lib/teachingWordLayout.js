@@ -36,23 +36,49 @@ export function teachingWordLayout(value, {fontSize=42,maxWidth=620,measure=meas
   let readBand=cjk&&reading&&(!compact||showReading)?readSize*1.35+3:0;
   const hunBand=labels.size&&(!compact||showHun)?hunSize*2.5:0;
   let rowHeight=readBand+size*1.25+hunBand;
-  const gap=size*.4, maxLeft=Math.max(size*1.8,(maxWidth-gap)*.51);
+  const gap=size*.4;
+  let maxLeft=Math.max(size*1.8,(maxWidth-gap)*.51);
   const parts=[];let x=0,y=0,index=0,readingIndex=0,leftWidth=0;
   const add=(role,text,x,y,width,fontSize,extra={})=>parts.push({role,text,x,y,width,height:fontSize*1.25,fontSize,...extra});
   let groups=wordSegments(text,reading,language);
+  const segmentSize=segment=>{
+    const chars=[...(segment.kanji||segment.plain||'')];
+    const widths=chars.map(ch=>Math.max(measure(ch,size),labels.has(ch)?Math.min(measure(labels.get(ch),hunSize),hunSize*4.5):0));
+    return {chars,widths,total:Math.max(widths.reduce((a,b)=>a+b,0),segment.reading?measure(segment.reading,readSize):0)};
+  };
+  // Short words stay together when the meaning still has a readable right column.
+  // Use the same geometry for hidden annotations, so nearby ink never shifts.
+  const naturalWidth=groups.reduce((sum,segment)=>sum+segmentSize(segment).total,0);
+  if(cjk&&[...text].length<=4&&naturalWidth<=maxWidth-gap-meaningSize*3)maxLeft=Math.max(maxLeft,naturalWidth);
   const groupedReading=groups.some(segment=>segment.reading&&(measure(segment.kanji,size)>maxLeft||measure(segment.reading,readSize)>maxLeft));
   if(groupedReading){
     const lines=wrap(reading,maxLeft,readSize,measure);
+    leftWidth=Math.max(0,...lines.map(line=>measure(line,readSize)));
     if(!compact||showReading){lines.forEach((line,i)=>add('reading',line,0,i*readSize*1.25,maxLeft,readSize,{index:i,visible:showReading,align:'left'}));y=lines.length*readSize*1.25+4;}
     groups=[...text].map(plain=>({plain}));readBand=0;rowHeight=size*1.25+hunBand;
   }
-  for(const segment of groups){
-    const chars=[...(segment.kanji||segment.plain||'')];
-    const widths=chars.map(ch=>Math.max(measure(ch,size),labels.has(ch)?Math.min(measure(labels.get(ch),hunSize),hunSize*4.5):0));
-    let total=widths.reduce((a,b)=>a+b,0);
-    if(segment.reading)total=Math.max(total,measure(segment.reading,readSize));
+  const lineStarts=new Set();
+  if(cjk){
+    groups=groups.flatMap(segment=>segment.reading?[segment]:[...(segment.kanji||segment.plain||'')].map(plain=>({plain})));
+    const widths=groups.map(segment=>segmentSize(segment).total);
+    const rows=[{indices:[],width:0}];
+    widths.forEach((width,index)=>{if(rows.at(-1).indices.length&&rows.at(-1).width+width>maxLeft)rows.push({indices:[],width:0});rows.at(-1).indices.push(index);rows.at(-1).width+=width;});
+    // Rebalance adjacent rows without changing their count or splitting ruby.
+    // Working backwards also fixes 3+3+1, which a narrower fixed width cannot.
+    for(let i=rows.length-1;i>0;i--){
+      const before=rows[i-1],after=rows[i];
+      while(before.indices.length>1){
+        const index=before.indices.at(-1),width=widths[index];
+        if(after.width+width>maxLeft||Math.abs(before.width-after.width)<=Math.abs(before.width-after.width-2*width))break;
+        before.indices.pop();before.width-=width;after.indices.unshift(index);after.width+=width;
+      }
+    }
+    rows.slice(1).forEach(row=>lineStarts.add(row.indices[0]));
+  }
+  for(const [segmentIndex,segment] of groups.entries()){
+    const {chars,widths,total}=segmentSize(segment);
     const extra=Math.max(0,(total-widths.reduce((a,b)=>a+b,0))/Math.max(1,chars.length));
-    if(x&&x+total>maxLeft){leftWidth=Math.max(leftWidth,x);x=0;y+=rowHeight+size*.28;}
+    if(x&&(lineStarts.has(segmentIndex)||x+total>maxLeft)){leftWidth=Math.max(leftWidth,x);x=0;y+=rowHeight+size*.28;}
     const groupStart=x;
     // A long inseparable ruby group gets its own row. Do not split its reading incorrectly.
     for(let i=0;i<chars.length;i++){
