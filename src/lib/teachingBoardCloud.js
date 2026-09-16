@@ -29,11 +29,22 @@ export async function packBoard(document){
   for(const page of b.pages){const text=stableJson(page);files.push({id:page.id,hash:await boardDigest(text),bytes:new TextEncoder().encode(text).length,text});}
   return {manifest:validateBoardManifest({...b,pages:files}),files};
 }
-export async function unpackBoard(manifest,read){
-  const clean=validateBoardManifest(manifest),pages=[];
-  for(const entry of clean.pages){const text=await read(entry);if(new TextEncoder().encode(text).length!==entry.bytes||await boardDigest(text)!==entry.hash)throw new Error('저장된 필기를 확인하지 못했어요. 기기 초안은 그대로 보존합니다.');
-    const page=JSON.parse(text);if(page.id!==entry.id)throw new Error('설명판 페이지가 일치하지 않아요.');pages.push(page);}
-  return cloudDocument({...clean,pages});
+export async function unpackBoard(manifest,read,{signal}={}){
+  const clean=validateBoardManifest(manifest),pages=new Array(clean.pages.length);let index=0,failure;
+  const worker=async()=>{
+    while(!failure){
+      signal?.throwIfAborted();const at=index++;if(at>=clean.pages.length)return;
+      try {
+        const entry=clean.pages[at],text=await read(entry);signal?.throwIfAborted();
+        if(new TextEncoder().encode(text).length!==entry.bytes||await boardDigest(text)!==entry.hash)throw new Error('저장된 필기를 확인하지 못했어요. 기기 초안은 그대로 보존합니다.');
+        const page=JSON.parse(text);if(page.id!==entry.id)throw new Error('설명판 페이지가 일치하지 않아요.');pages[at]=page;
+      }catch(error){failure=error;throw error;}
+    }
+  };
+  // Bound I/O and preserve manifest order. No partial document can reach callers.
+  const results=await Promise.allSettled(Array.from({length:Math.min(2,clean.pages.length)},worker));
+  const rejected=results.find(r=>r.status==='rejected');if(rejected)throw rejected.reason;
+  signal?.throwIfAborted();return cloudDocument({...clean,pages});
 }
 export function restoreBoardCamera(remote,local){return {...remote,pages:remote.pages.map(p=>({...p,camera:boardCamera(local?.pages.find(x=>x.id===p.id)?.camera)}))};}
 export function boardCloudLabel(state){if(state.conflict)return '다른 기기와 저장 확인 필요';if(state.error)return state.localSaved?'이 기기에 보관됨 · 계정 저장 확인 필요':'저장 확인 필요';if(state.saving)return '계정에 저장 중…';return state.cloudSaved?'계정에 저장됨':state.localSaved?'이 기기에 보관됨':'저장 준비 중';}

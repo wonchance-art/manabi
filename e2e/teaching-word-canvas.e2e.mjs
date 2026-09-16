@@ -275,6 +275,6 @@ try {
  }
  check('home and team links navigate on click and browser back restores every board page');
  assert.deepEqual(report.readingPrefetch,[],'reading and board menus do not prefetch home, team or study pages');check('reading links request destinations only when used');
- assert.equal(report.errors.length,0,report.errors.join('\n'));check('no browser runtime errors');
+ assert.equal(report.errors.length,0,report.errors.join('\n'));check('no browser runtime errors');if(cloud?.state.historyMetrics)report.historyMetrics=cloud.state.historyMetrics;
 } catch(error){report.failure=error.stack;await saveScreen('failure');console.error(await page.locator('body').innerText());throw error;}
 finally{await fs.promises.writeFile(out+'/report.json',JSON.stringify(report,null,2));await browser.close();await db.close();}
