@@ -1,10 +1,10 @@
-import {boardMenus,verifyBoardMenus} from './teaching-board-menu-checks.mjs';
+import {boardMenus} from './teaching-board-menu-checks.mjs';
 // Real React pages + HTTP fixtures + actual disposable PostgreSQL RPCs. No production writes.
 import {chromium,webkit} from 'playwright-core';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const {PGlite}=await import(process.env.QA_PGLITE_MODULE||'@electric-sql/pglite');
-const base=process.env.QA_BASE||'http://127.0.0.1:3108',out=process.env.QA_OUT||'/private/tmp/manabi-board-qa';fs.mkdirSync(out,{recursive:true});
+const base=process.env.QA_BASE||'http://127.0.0.1:3108',out=process.env.QA_OUT||'/private/tmp/manabi-classroom-ink-qa';fs.mkdirSync(out,{recursive:true});
 const db=new PGlite();const uid='00000000-0000-4000-8000-000000000077',day='2026-09-10';
 await db.exec(`CREATE ROLE authenticated;CREATE ROLE anon;CREATE ROLE service_role BYPASSRLS;CREATE SCHEMA auth;CREATE TABLE auth.users(id uuid primary key);
 CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
@@ -13,7 +13,7 @@ CREATE TABLE user_vocabulary(id uuid PRIMARY KEY,user_id uuid);CREATE TABLE voca
 GRANT USAGE ON SCHEMA auth TO authenticated,anon;GRANT EXECUTE ON FUNCTION auth.uid() TO authenticated,anon;
 ALTER TABLE reading_materials ENABLE ROW LEVEL SECURITY;CREATE POLICY mine ON reading_materials TO authenticated USING(owner_id=auth.uid()) WITH CHECK(owner_id=auth.uid());GRANT SELECT,INSERT,UPDATE ON reading_materials TO authenticated;GRANT USAGE,SELECT,UPDATE ON SEQUENCE reading_materials_id_seq TO authenticated;GRANT ALL ON reading_materials TO service_role;`);
 for(const f of ['20260908234552_viewer_reliability_atomic_operations.sql','20260909165823_classroom_atomic_entries.sql','20260910024120_classroom_study_flow.sql','20260910070535_textbook_teaching_annotations.sql','20260911072945_classroom_source_anchors.sql'])await db.exec(fs.readFileSync(new URL('../supabase/migrations/'+f,import.meta.url),'utf8'));
-const meta={language:'Chinese',team:{key:'fixture-class',root:true,name:'목요일의 중국어',lang:'Chinese',bookKey:'fixture-book',chapterId:10,pwGen:1,pwSalt:'fixture',pwHash:'fixture'}};
+const meta={language:'Japanese',team:{key:'fixture-class',root:true,name:'목요일의 일본어',lang:'Japanese',bookKey:'fixture-book',chapterId:10,pwGen:1,pwSalt:'fixture',pwHash:'fixture'}};
 await db.query('insert into reading_materials(owner_id,title,raw_text,visibility,processed_json) values($1,$2,$3,$4,$5)',[uid,'수업 설정','수업 설정','private',{sequence:[],dictionary:{},metadata:meta}]);
 await db.query('INSERT INTO auth.users VALUES($1)',[uid]);await db.exec('set role authenticated');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[uid]);
 const callAppend=async text=>(await db.query('select classroom_append_entry(1,$1,$2,$3) result',[day,text,crypto.randomUUID()])).rows[0].result.material;
@@ -130,131 +130,77 @@ await context.route('**/api/classroom/lookup',async route=>{
  if(lookupError)return route.fulfill({status:503,json:{error:'뜻을 불러오지 못했어요.'}});
  return route.fulfill({json:{text,language,reading:text==='复习'?'fù xí':'liàn xí',source:'ai',senses:[{meaning:text==='复习'?'복습하다':'연습하다',pos:'동사'},{meaning:'연습',pos:'명사'}]}});
 });
-try {
+let mode='ok',calls=[];
+await context.route('**/api/classroom/recognize',async r=>{
+ const body=r.request().postDataJSON();calls.push(body);
+ if(mode==='slow')await new Promise(resolve=>setTimeout(resolve,1800));
+ if(mode==='fail')return r.fulfill({status:503,json:{error:'검수 인식 실패'}});
+ try{await r.fulfill({json:{source:'gemini',fingerprint:body.fingerprint,expressions:mode==='empty'?[]:[
+  {original:'はし',reading:'はし',uncertain:true,choices:[{text:'箸',reading:'はし',meaning:'젓가락'},{text:'橋',reading:'はし',meaning:'다리'}]},
+  {original:'がっこう',reading:'がっこう',uncertain:false,choices:[{text:'学校',reading:'がっこう',meaning:'학교'}]},
+ ]}});}catch{/* A cancelled request must not affect the canvas. */}
+});
+try{
  await page.goto(base+`/viewer/10?class=fixture-class&day=${day}&board=1`);
  const board=page.getByRole('region',{name:'선생님 설명판'});await board.locator('.excalidraw canvas').first().waitFor();
- const menus=boardMenus(page,activate),hud=menus.hud;
- await menus.layout('함께');
+ const menus=boardMenus(page,activate),hud=menus.hud,surface=board.locator('canvas.interactive');
  const originalNote=(await current()).raw_text;
- await page.locator('[data-tid="id_0_word"]')[activate]();
- const inspector=page.locator('.viewer-inspector');
- await inspector.locator('.teaching-word').waitFor();
- const graphic=inspector.locator('.teaching-word-graphic');
- assert(await graphic.locator('.teaching-word-part--hun').count()>0);
- // WebKit's remote SVG boundingBox can include the SVG root. DOM client rects
- // measure the actual rendered glyphs consistently in both engines.
- await waitFor(()=>graphic.evaluate(el=>{const words=[...el.querySelectorAll('.teaching-word-part--text')].map(t=>t.getBoundingClientRect()),meaning=el.querySelector('.teaching-word-part--meaning').getBoundingClientRect();return words.every(r=>r.width>0)&&meaning.left>Math.max(...words.map(r=>r.right));}));
- await saveScreen('word-in-textbook');
- await inspector.getByRole('button',{name:'판에 놓기',exact:true})[activate]();
- await waitFor(async()=> (await scene()).some(el=>el.customData?.manabiExpression));
- const first=(await scene()).find(el=>el.customData?.manabiExpression);
- assert.equal(first.customData.manabiExpression.source.materialId,'10');assert.equal(first.customData.manabiExpression.appearance,'plain');assert.equal(first.backgroundColor,'transparent');
- check('textbook source, upper reading, lower hanja and right meaning are retained in a borderless native group');
- await menus.layout('설명판');
- const add=async(text,reading,meaning)=>{
-  await menus.open('entry');const form=hud.locator('#board-menu-entry form');
-  await form.getByLabel('단어·표현',{exact:true}).fill(text);
-  const details=form.getByRole('button',{name:'읽기와 뜻 입력',exact:true});if(await details.getAttribute('aria-expanded')!=='true')await details[activate]();
-  await form.getByLabel('읽기',{exact:true}).fill(reading);await form.getByLabel('뜻',{exact:true}).fill(meaning);
-  await form.getByRole('button',{name:'바로 놓기',exact:true})[activate]();
-  await waitFor(async()=> (await scene()).some(el=>el.customData?.manabiExpression?.text===text));
- };
- await add('学习','xué xí','배우다, 공부하다');await add('复习','fù xí','복습하다');await add('练习','liàn xí','연습하다');
- assert.equal((await scene()).filter(el=>el.customData?.manabiExpression).length,4);assert.equal((await current()).raw_text,originalNote);
- check('four expressions coexist and do not publish themselves to student records');
- await menus.close();
  await menus.action('tools','펜');
- const surface=board.locator('canvas.interactive'),rect=await surface.boundingBox();
- await page.mouse.move(rect.x+280,rect.y+450);await page.mouse.down();await page.mouse.move(rect.x+640,rect.y+510,{steps:24});await page.mouse.up();
- // IndexedDB can contain an intermediate pointer-move save while the completed
- // stroke is still queued. Compare the finished stroke, including Excalidraw's
- // repeated pointer-up endpoint, rather than a partial line.
- await waitFor(async()=>{const stroke=(await scene()).find(el=>el.type==='freedraw');const points=stroke?.points;return points?.length>2&&JSON.stringify(points.at(-1))===JSON.stringify(points.at(-2));});
- const ink=(await scene()).find(el=>el.type==='freedraw');const beforeInk=JSON.stringify(ink.points);
- await saveScreen('four-words-and-ink');
- await menus.action('tools','선택');await surface.click({position:{x:900,y:600}});await page.keyboard.press('Meta+a');
- await menus.open('selection');const selection=hud.locator('#board-menu-selection');
- const originalExpressions=(await scene()).filter(el=>el.customData?.manabiExpression).map(el=>({text:el.customData.manabiExpression.text,meaning:el.customData.manabiExpression.meaning,source:el.customData.manabiExpression.source}));
- await selection.getByRole('button',{name:'글자만',exact:true})[activate]();
- await waitFor(async()=> (await scene()).filter(el=>el.customData?.manabiExpression).every(el=>el.customData.manabiExpression.appearance==='card'));
- await selection.getByRole('button',{name:'카드',exact:true})[activate]();
- await waitFor(async()=> (await scene()).filter(el=>el.customData?.manabiExpression).every(el=>el.backgroundColor==='transparent'));
- const geometry=()=>scene().then(rows=>rows.map(({id,x,y,width,height})=>({id,x,y,width,height})));
- const before=await geometry();await selection.getByRole('button',{name:'병음',exact:true})[activate]();await selection.getByRole('button',{name:'한자 훈음',exact:true})[activate]();await selection.getByRole('button',{name:'뜻',exact:true})[activate]();
- await waitFor(async()=> (await scene()).filter(el=>['reading','hun','meaning'].includes(el.customData?.manabiField)).every(el=>el.opacity===0));assert.deepEqual(await geometry(),before);
- for(const name of ['병음','한자 훈음','뜻'])await selection.getByRole('button',{name,exact:true})[activate]();
- await selection.getByRole('button',{name:'나란히 정렬',exact:true})[activate]();
- await waitFor(async()=>new Set((await scene()).filter(el=>el.customData?.manabiExpression).map(el=>el.y)).size===1);
- assert.equal(JSON.stringify((await scene()).find(el=>el.id===ink.id).points),beforeInk);
- assert.equal((await scene()).find(el=>el.id===ink.id).x,ink.x);
- assert.deepEqual((await scene()).filter(el=>el.customData?.manabiExpression).map(el=>({text:el.customData.manabiExpression.text,meaning:el.customData.manabiExpression.meaning,source:el.customData.manabiExpression.source})),originalExpressions);
- check('multi-select frame/annotation controls preserve geometry; arranging words does not move ink');
- await selection.getByRole('button',{name:'여백 줄이기',exact:true})[activate]();await page.waitForTimeout(450);
- replacingDocument=true;await menus.action('main','전체 보기');await saveScreen('arranged-words');
- const snapshot=(await scene()).map(({id,type,x,y,customData,points,text})=>({id,type,x,y,customData,points,text}));
- await page.reload();await board.waitFor();await waitFor(async()=> (await scene()).length===snapshot.length);
- assert.deepEqual((await scene()).map(({id,type,x,y,customData,points,text})=>({id,type,x,y,customData,points,text})),snapshot);
- replacingDocument=false;check('annotated groups and handwriting survive reload without reflow');
- await menus.action('main','보여주기');const presentation=page.locator('dialog.board-presentation');await presentation.waitFor();
- await presentation.getByRole('button',{name:'한자 훈음',exact:true})[activate]();await saveScreen('presentation');
- await page.keyboard.press('Escape');await presentation.waitFor({state:'detached'});
- assert.deepEqual((await scene()).map(({id,type,x,y,customData,points,text})=>({id,type,x,y,customData,points,text})),snapshot);
- check('temporary presentation toggles leave every saved expression and ink stroke unchanged');
- await menus.open('book');await hud.getByLabel('수업 교재 과 선택').selectOption('11');
- await page.waitForURL('**/viewer/11?**');await board.locator('.excalidraw canvas').first().waitFor();
- await waitFor(async()=> (await scene()).some(el=>el.customData?.manabiExpression?.source.materialId==='10'));
- check('switching chapters preserves words and source anchors from the previous chapter');
- await menus.open('entry');const form=hud.locator('#board-menu-entry form');
- await form.getByLabel('단어·표현',{exact:true}).fill('复习');
- await form.getByRole('button',{name:'사전 찾기',exact:true})[activate]();await form.getByRole('group',{name:'수업에서 쓸 뜻 선택'}).waitFor();
- await form.getByRole('button',{name:'연습 명사'}).click();
- assert.equal(await form.getByLabel('뜻',{exact:true}).inputValue(),'연습');check('lookup shows AI provenance and lets the teacher select a sense');
- await form.getByLabel('계속 추가',{exact:true}).check();await form.getByRole('button',{name:'바로 놓기',exact:true})[activate]();
- assert(await form.isVisible());assert.equal(await form.getByLabel('단어·표현',{exact:true}).inputValue(),'');
- await form.getByLabel('단어·표현',{exact:true}).fill('새 표현');lookupDelay=800;
- await form.getByRole('button',{name:'사전 찾기',exact:true})[activate]();await form.getByLabel('뜻',{exact:true}).fill('선생이 입력한 뜻');await page.waitForTimeout(1000);
- assert.equal(await form.getByLabel('뜻',{exact:true}).inputValue(),'선생이 입력한 뜻');lookupDelay=0;
- check('continue adding keeps the board in place, and late results cannot overwrite teacher edits');
- lookupError=true;await form.getByLabel('단어·표현',{exact:true}).fill('조회 실패 확인');
- await form.getByRole('button',{name:'사전 찾기',exact:true})[activate]();await page.getByText('뜻을 불러오지 못했어요.',{exact:true}).waitFor();
- await form.getByLabel('뜻',{exact:true}).fill('직접 입력한 뜻');assert.equal(await form.getByLabel('단어·표현',{exact:true}).inputValue(),'조회 실패 확인');
- await saveScreen('lookup-failure');lookupError=false;
- check('a lookup failure preserves the input and allows manual explanation');
- await menus.close();
- await surface.click({position:{x:900,y:650}});await page.keyboard.press('Meta+a');await menus.open('selection');
- await selection.getByRole('button',{name:/선택한 \d+개 수업에 남기기/})[activate]();
- await waitFor(async()=> (await current()).raw_text.includes('图书馆')&&(await current()).raw_text.includes('学习'));
- await waitFor(async()=> (await current()).raw_text.split('\n').filter(text=>text==='复习').length===2);
- const saved=await current(),meanings=Object.values(saved.processed_json.metadata.classMeanings).filter(row=>row.text==='复习').map(row=>row.meaning);
- assert(meanings.includes('복습하다')&&meanings.includes('연습'));
- await menus.close();await hud.getByRole('button',{name:/오늘 표현 \d+개/})[activate]();
- await hud.locator('#board-menu-session').getByRole('heading',{name:'오늘 배운 표현'}).waitFor();
- check('explicit multi-save writes the existing classroom record and the visible list opens in place');
- await menus.close();
- for(const [w,h,label]of [[1024,768,'tablet-landscape'],[768,1024,'tablet-portrait'],[390,844,'phone']]){
-  await page.setViewportSize({width:w,height:h});await page.waitForTimeout(400);await menus.action('main','전체 보기');await saveScreen(label);
-  assert(await page.locator('.viewer-layout').evaluate(el=>el.scrollWidth<=el.clientWidth+1));
-  await menus.open('entry');await form.getByLabel('단어·표현',{exact:true}).fill('换位思考');
-  const details=form.getByRole('button',{name:'읽기와 뜻 입력',exact:true});if(await details.getAttribute('aria-expanded')!=='true')await details[activate]();
-  await form.getByLabel('읽기',{exact:true}).fill('huàn wèi sī kǎo');await form.getByLabel('뜻',{exact:true}).fill('상대방의 입장에서 생각하다');
-  await waitFor(()=>form.locator('.teaching-word-graphic').evaluate(el=>new Set([...el.querySelectorAll('.teaching-word-part--text')].map(t=>t.getAttribute('y'))).size===1));
-  await saveScreen(label+'-lookup');
-  const action=await form.getByRole('button',{name:'바로 놓기',exact:true}).boundingBox();
-  assert(action.y>=0&&action.y+action.height<=h,'placement action stays visible without scrolling the whole menu');
-  await menus.close();
- }
- check('tablet landscape/portrait and phone menus stay inside the viewport; four-character words stay together');
- await page.setViewportSize({width:1440,height:1000});await page.goto(base+`/viewer/10?class=fixture-class&day=${day}`);
- const dock=page.getByRole('complementary',{name:'교재 안 수업 도구'});await dock.waitFor();
- await page.locator('[data-tid="id_14_0"]').scrollIntoViewIfNeeded();await page.evaluate(()=>document.fonts.ready);
- const firstToken=await page.locator('[data-tid="id_14_0"] .surface').boundingBox(),lastToken=await page.locator('[data-tid="id_14_2"] .surface').boundingBox();
- await page.mouse.move(firstToken.x+firstToken.width/2,firstToken.y+firstToken.height/2);await page.mouse.down();await page.mouse.move(lastToken.x+lastToken.width/2,lastToken.y+lastToken.height/2,{steps:8});await page.mouse.up();
- await dock.locator('.class-reader-picked strong').filter({hasText:'我们明天见'}).waitFor();
- await dock.getByRole('button',{name:'수업용 뜻 수정',exact:true})[activate]();await dock.getByLabel('수업용 뜻',{exact:true}).fill('우리 내일 만나요');
- await saveScreen('selected-expression');await dock.getByRole('button',{name:'오늘 표현에 추가',exact:true})[activate]();
- await waitFor(async()=> (await current()).raw_text.includes('我们明天见'));
- await waitFor(()=>dock.getByText('서버 저장 확인됨',{exact:true}).isVisible());
- check('the original teacher inspector still edits and records a dragged multiword expression');
- assert.equal(report.errors.length,0,report.errors.join('\n'));check('no browser runtime errors');
-} catch(error){await saveScreen('failure');console.error(await page.locator('body').innerText());throw error;}
-finally{await fs.promises.writeFile(out+'/report.json',JSON.stringify(report,null,2));await browser.close();await db.close();}
+ let rect=await surface.boundingBox();
+ await page.mouse.move(rect.x+220,rect.y+210);await page.mouse.down();await page.mouse.move(rect.x+390,rect.y+260,{steps:18});await page.mouse.up();
+ await waitFor(async()=>(await scene()).some(el=>el.type==='freedraw'));
+ const originalInk=(await scene()).filter(el=>el.type==='freedraw').map(el=>({id:el.id,x:el.x,y:el.y,points:el.points}));
+ const capture=async()=>{await menus.action('tools','선택');await surface.click({position:{x:150,y:600}});await page.keyboard.press('Meta+a');await menus.open('selection');await hud.getByRole('button',{name:'선택한 필기 인식',exact:true}).click();};
+ await capture();const panel=page.getByRole('dialog',{name:'필기에서 표현 가져오기'});await panel.waitFor();
+ await saveScreen('01-selected-ink-desktop');assert.equal(calls.length,0);
+ await panel.getByRole('button',{name:'필기 인식 닫기',exact:true}).click();assert.equal(calls.length,0);
+ await capture();lookupError=true;mode='fail';await panel.getByRole('button',{name:'이 부분 인식하기',exact:true}).click();await panel.getByText('검수 인식 실패',{exact:true}).waitFor();
+ mode='ok';await panel.getByRole('button',{name:'다시 인식',exact:true}).click();await panel.getByRole('button',{name:'箸 젓가락',exact:true}).waitFor();
+ assert(!await panel.getByRole('button',{name:'선택한 0개 판에 놓기'}).isEnabled());
+ await panel.getByRole('button',{name:'箸 젓가락',exact:true}).click();await panel.getByRole('button',{name:'学校 학교',exact:true}).click();
+ await saveScreen('02-candidates-desktop');
+ await panel.getByRole('button',{name:'선택한 2개 판에 놓기'}).click();
+ await waitFor(async()=>(await scene()).filter(el=>el.customData?.manabiExpression).length===2);
+ const cards=(await scene()).filter(el=>el.customData?.manabiExpression);
+ assert.deepEqual(cards.map(el=>el.customData.manabiExpression.text),['箸','学校']);
+ for(const card of cards){assert.equal(card.backgroundColor,'transparent');assert.equal(card.customData.manabiExpression.source.kind,'manual');assert(card.customData.manabiInk);}
+ assert.equal((await current()).raw_text,originalNote,'placement must not publish student records');
+ assert.deepEqual((await scene()).filter(el=>el.type==='freedraw').map(el=>({id:el.id,x:el.x,y:el.y,points:el.points})),originalInk);
+ for(const body of calls)assert.deepEqual(Object.keys(body).sort(),['rootId','teamKey','image','fingerprint','consent'].sort());
+ assert.equal(calls[0].rootId,1);assert.equal(calls[0].teamKey,'fixture-class');assert(calls[0].image.startsWith('data:image/png;base64,'));
+ check('selected raster only; no request before consent; provider retry; explicit kana/meaning choice; multiple words with preserved ink and no auto class record');
+ await panel.getByRole('button',{name:'필기 인식 닫기',exact:true}).click();
+ // Reload and re-select the original stroke only to check stable result keys.
+ await page.reload();await surface.waitFor();await menus.action('tools','선택');rect=await surface.boundingBox();
+ await page.mouse.move(rect.x+190,rect.y+180);await page.mouse.down();await page.mouse.move(rect.x+415,rect.y+280,{steps:12});await page.mouse.up();
+ await menus.open('selection');await hud.getByRole('button',{name:'선택한 필기 인식',exact:true}).click();await panel.getByRole('button',{name:'이 부분 인식하기',exact:true}).click();await panel.getByRole('button',{name:'箸 젓가락',exact:true}).click();await panel.getByRole('button',{name:'선택한 1개 판에 놓기'}).click();
+ await panel.getByRole('button',{name:'인식 결과 다시 열기',exact:true}).waitFor();assert.equal((await scene()).filter(el=>el.customData?.manabiExpression).length,2);
+ check('reopening and recognizing the same selected ink focuses an existing word rather than adding duplicates');
+ await panel.getByRole('button',{name:'필기 인식 닫기',exact:true}).click();
+ // Explicit student record remains available through existing element menu.
+ await menus.open('selection');await hud.getByRole('button',{name:'수업에 남기기',exact:true}).click();await waitFor(async()=>(await current()).raw_text.includes('箸'));
+ check('only the existing explicit class-record action publishes the reviewed expression');
+ await menus.close();await menus.action('pages','새 판');await surface.waitFor();
+ await menus.action('tools','펜');rect=await surface.boundingBox();
+ await page.mouse.move(rect.x+200,rect.y+190);await page.mouse.down();await page.mouse.move(rect.x+350,rect.y+240,{steps:12});await page.mouse.up();
+ await capture();mode='slow';await panel.getByRole('button',{name:'이 부분 인식하기',exact:true}).click();await waitFor(()=>calls.length===4);
+ // While the request runs, a new stroke outside the captured region is allowed.
+ await hud.getByRole('button',{name:'펜',exact:true}).click();await page.mouse.move(rect.x+240,rect.y+440);await page.mouse.down();await page.mouse.move(rect.x+420,rect.y+480,{steps:12});await page.mouse.up();
+ await panel.getByRole('button',{name:'箸 젓가락',exact:true}).waitFor();assert.equal((await scene()).filter(el=>el.type==='freedraw').length,2);
+ await panel.getByRole('button',{name:'필기 인식 닫기',exact:true}).click();
+ check('the teacher can continue writing outside the selected region while recognition runs');
+ await capture();mode='slow';await panel.getByRole('button',{name:'이 부분 인식하기',exact:true}).click();await waitFor(()=>calls.length===5);await panel.getByRole('button',{name:'필기 인식 취소',exact:true}).click();await page.waitForTimeout(2200);assert.equal(await page.locator('.board-ink-panel').count(),0);assert.equal((await scene()).filter(el=>el.customData?.manabiExpression).length,0);
+ await capture();mode='empty';await panel.getByRole('button',{name:'이 부분 인식하기',exact:true}).click();await panel.getByText('읽을 수 있는 표현이 없어요. 영역을 줄이거나 ＋에서 직접 입력해 주세요.',{exact:true}).waitFor();await panel.getByRole('button',{name:'필기 인식 닫기',exact:true}).click();
+ check('cancelled late responses do not change the board; empty results keep the handwriting and allow retry');
+ await page.setViewportSize({width:390,height:844});await menus.action('tools','펜');rect=await surface.boundingBox();await page.mouse.move(rect.x+20,rect.y+110);await page.mouse.down();await page.mouse.move(rect.x+rect.width-20,rect.y+rect.height-80,{steps:20});await page.mouse.up();await waitFor(async()=>(await scene()).filter(el=>el.type==='freedraw').length===3);await capture();mode='ok';await panel.getByRole('button',{name:'이 부분 인식하기',exact:true}).click();await panel.getByRole('button',{name:'箸 젓가락',exact:true}).click();await panel.getByRole('button',{name:'学校 학교',exact:true}).click();await saveScreen('03-candidates-mobile');
+ const box=await panel.boundingBox();assert(box.x>=0&&box.y>=70&&box.width<=390&&box.y+box.height<=844);
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+ await panel.getByRole('button',{name:'선택한 2개 판에 놓기'}).click();
+ await panel.getByRole('button',{name:'새 판에 2개 놓기'}).click();await waitFor(async()=>(await scene()).filter(el=>el.customData?.manabiExpression).length===2);
+ await saveScreen('04-new-page-mobile');
+ await panel.getByRole('button',{name:'필기 인식 닫기',exact:true}).click();
+ check('mobile sheet fits the viewport and offers explicit new-page placement when paper space runs out');
+ const rows=await readBoards(),currentBoard=rows.find(row=>row.id===row.scope);assert.equal(currentBoard.document.pages.length,3);
+ assert.equal(currentBoard.document.pages[1].elements.filter(el=>el.type==='freedraw'&&!el.isDeleted).length,3);
+ assert.equal(report.errors.length,0,JSON.stringify(report.errors));
+}finally{fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));await browser.close();await db.close();}

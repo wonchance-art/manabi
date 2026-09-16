@@ -1,6 +1,7 @@
 'use client';
 import { composerOf, removeComposerOriginals } from '@/lib/materialComposer';
 import { documentOf, isStudySnapshot, documentListRow } from '@/lib/materialDocument';
+import {isStudyNote} from '@/lib/studyNoteIdentity';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
@@ -881,7 +882,7 @@ export default function MaterialsPage({ libraryView = null }) {
                         {pinBusy === m.id ? '…' : isPinned ? '✓ 받아둠 — 해제' : documentOf(m)?.assets?.length ? '⬇ 작성한 본문 받아두기' : '⬇ 받아두기'}
                       </button>}
                       {isOwner && documentOf(m) && <button type="button" role="menuitem" className="mat-menu__item" onClick={() => router.push(readerHref(`/viewer/${m.id}`).replace(`/viewer/${m.id}`, `/materials/${m.id}/edit`))}>수정</button>}
-                      {isOwner && !composerOf(m) && (
+                      {isOwner && !composerOf(m) && !isStudyNote(m) && (
                         <button
                           type="button"
                           role="menuitem"
