@@ -234,7 +234,7 @@ try {
  for(const [w,h,label]of [[1024,768,'tablet-landscape'],[768,1024,'tablet-portrait'],[390,844,'phone']]){
   await page.setViewportSize({width:w,height:h});await page.waitForTimeout(400);await menus.action('main','전체 보기');await saveScreen(label);
   assert(await page.locator('.viewer-layout').evaluate(el=>el.scrollWidth<=el.clientWidth+1));
-  await menus.open('entry');await form.getByLabel('단어·표현',{exact:true}).fill('换位思考');
+  await menus.open('entry');await waitFor(()=>form.getByLabel('단어·표현',{exact:true}).evaluate(el=>el===document.activeElement));await form.getByLabel('단어·표현',{exact:true}).fill('换位思考');
   const details=form.getByRole('button',{name:'읽기와 뜻 입력',exact:true});if(await details.getAttribute('aria-expanded')!=='true')await details[activate]();
   await form.getByLabel('읽기',{exact:true}).fill('huàn wèi sī kǎo');await form.getByLabel('뜻',{exact:true}).fill('상대방의 입장에서 생각하다');
   await waitFor(()=>form.locator('.teaching-word-graphic').evaluate(el=>new Set([...el.querySelectorAll('.teaching-word-part--text')].map(t=>t.getAttribute('y'))).size===1));
@@ -256,5 +256,5 @@ try {
  await waitFor(()=>dock.getByText('서버 저장 확인됨',{exact:true}).isVisible());
  check('the original teacher inspector still edits and records a dragged multiword expression');
  assert.equal(report.errors.length,0,report.errors.join('\n'));check('no browser runtime errors');
-} catch(error){await saveScreen('failure');console.error(await page.locator('body').innerText());throw error;}
+} catch(error){report.failure=error.stack;await saveScreen('failure');console.error(await page.locator('body').innerText());throw error;}
 finally{await fs.promises.writeFile(out+'/report.json',JSON.stringify(report,null,2));await browser.close();await db.close();}

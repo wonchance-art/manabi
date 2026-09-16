@@ -23,6 +23,7 @@ await db.exec(fs.readFileSync(new URL('../supabase/migrations/20260905065205_tex
 await db.query('insert into auth.users values($1)',[uid]);
 await db.query("insert into user_vocabulary(id,user_id,word_text,base_form,meaning,language,next_review_at,stability,difficulty,reps) values($1,$2,'橋','橋','다리, 교량','Japanese','2030-01-01',12,3,8)",[oldVocab,uid]);
 await db.exec('set role authenticated');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[uid]);
+const collectionSummary=rows=>({pending:rows.filter(r=>!r.vocabularyId&&!r.excluded).length});
 const originalVocab=(await db.query('select * from user_vocabulary where id=$1',[oldVocab])).rows[0];
 const engine=process.env.QA_BROWSER||'chromium';
 const browser=await(engine==='webkit'?webkit:chromium).launch({...(engine==='chromium'?{executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'}:{}),headless:true});
@@ -49,7 +50,8 @@ await context.route('**/rest/v1/**',async route=>{
  let data=[];
  if(table==='profiles')data={id:uid,display_name:'개인 노트 검수',role:'student',onboarded:true,last_login_at:new Date().toISOString(),learning_language:['Japanese']};
  else if(table==='user_vocabulary')data=(await db.query('select * from user_vocabulary')).rows;
- else if(table==='reading_materials'){data=(await db.query('select * from reading_materials')).rows;const id=url.searchParams.get('id');if(id?.startsWith('eq.'))data=data.filter(row=>String(row.id)===id.slice(3));if(single)data=data[0]||null;}
+ else if(table==='personal_library_page'){const rows=(await db.query('select * from reading_materials')).rows;return route.fulfill({headers:cors,json:{items:rows.map(row=>({target_kind:'material',target_id:String(row.id),material_id:String(row.id),title:row.title,is_note:true,owned:true,language:'Japanese',child_count:0,assets:[],excerpt:'',created_at:new Date().toISOString()})),total:rows.length,unavailable:0}});}
+ else if(table==='reading_materials'){data=(await db.query('select * from reading_materials')).rows;const id=url.searchParams.get('id');if(id?.startsWith('eq.'))data=data.filter(row=>String(row.id)===id.slice(3));if(url.searchParams.get('select')?.includes('note_summary:'))data=data.map(row=>({id:row.id,note_summary:row.processed_json.metadata.studyNote.summary}));if(single)data=data[0]||null;}
  else if(single)data=null;
  return route.fulfill({headers:cors,json:data});
 });
@@ -73,12 +75,12 @@ await context.route('**/api/notes**',async route=>{
  const body=req.postDataJSON();
  if(req.method()==='POST'){
   const old=(await db.query("select * from reading_materials where processed_json#>>'{metadata,importAttempt}'=$1",[body.document.key])).rows[0];if(old)return send(noteResponse(old));
-  const json={sequence:[],dictionary:{},last_idx:-1,status:'note',metadata:{language:body.document.language,importAttempt:body.document.key,studyNote:{version:1,revision:crypto.randomUUID(),document:body.document}}};
+  const json={sequence:[],dictionary:{},last_idx:-1,status:'note',metadata:{language:body.document.language,importAttempt:body.document.key,studyNote:{version:1,revision:crypto.randomUUID(),document:body.document,summary:collectionSummary(body.document.candidates)}}};
   const row=(await db.query("insert into reading_materials(owner_id,title,visibility,direction,raw_text,processed_json) values($1,$2,'private','write','',$3) returning *",[uid,body.title,json])).rows[0];return send(noteResponse(row),201);
  }
  if(failSave)return send({error:'검수용 연결 실패'},503);
  const row=await noteRow(id);if(row.processed_json.metadata.studyNote.revision!==body.revision)return send({error:'다른 기기의 수정과 겹쳤어요.'},409);
- const json={...row.processed_json,metadata:{...row.processed_json.metadata,studyNote:{version:1,revision:crypto.randomUUID(),document:body.document}}};
+ const json={...row.processed_json,metadata:{...row.processed_json.metadata,studyNote:{version:1,revision:crypto.randomUUID(),document:body.document,summary:collectionSummary(body.document.candidates)}}};
  const result=(await db.query("update reading_materials set title=$1,processed_json=$2 where id=$3 and processed_json#>>'{metadata,studyNote,revision}'=$4 returning *",[body.title,json,id,body.revision])).rows[0];
  if(loseSave){loseSave=false;intentionalAborts.add(url.host+url.pathname);return route.abort('failed');}return result?send(noteResponse(result)):send({error:'다른 기기의 수정과 겹쳤어요.'},409);
 });
@@ -120,7 +122,7 @@ try{
  await entry('はし','はし','다리');await entry('復習','ふくしゅう','복습');
  await hud.locator('.board-quick-tools').getByRole('button',{name:'펜',exact:true}).click();const surface=board.locator('canvas.interactive');await page.mouse.move(220,570);await page.mouse.down();await page.mouse.move(560,600,{steps:25});await page.mouse.up();
  await hud.getByRole('button',{name:'단어 정리',exact:true}).filter({visible:true}).first().click();
- const review=page.locator('.note-review');await review.waitFor();assert.equal(await review.locator('.note-candidate').count(),2);
+ const review=page.locator('.note-review');await review.waitFor();assert.equal(await review.locator('.note-candidate').count(),2);await review.getByRole('button',{name:'전체 2',exact:true}).click();
  await waitFor(async()=>!(await page.locator('.board-hud-status').getAttribute('data-saving'))||await page.locator('.board-hud-status').getAttribute('data-saving')==='false');
  const beforeInk=JSON.stringify((await remote()).document.board.pages[0].elements.find(el=>el.type==='freedraw').points);
  const first=review.locator('.note-candidate').first();await first.getByRole('button',{name:'한자·사전',exact:true}).click();await first.getByRole('button',{name:'橋 다리',exact:true}).click();
@@ -131,8 +133,8 @@ try{
  assert.equal((await db.query('select count(*)::int n from user_vocabulary')).rows[0].n,2);assert.equal((await db.query('select count(*)::int n from vocabulary_contexts')).rows[0].n,2);
  assert.equal(JSON.stringify((await remote()).document.board.pages[0].elements.find(el=>el.type==='freedraw').points),beforeInk);
  check('student account creates private notebook; kanji review, conflict confirmation and failed-item retry preserve original ink and existing SRS');
- await review.getByRole('button',{name:'단어 정리 닫기',exact:true}).click();await hud.getByRole('button',{name:'단어 정리',exact:true}).filter({visible:true}).first().click();assert.equal(await review.locator('.note-candidate').count(),2);
- await page.reload();await board.locator('canvas.interactive').waitFor();await hud.getByRole('button',{name:'단어 정리',exact:true}).filter({visible:true}).first().click();assert.equal(await review.getByText('저장됨',{exact:true}).count(),2);
+ await review.getByRole('button',{name:'단어 정리 닫기',exact:true}).click();await hud.getByRole('button',{name:'단어 정리',exact:true}).filter({visible:true}).first().click();assert.equal(await review.locator('.note-candidate').count(),0);await review.getByRole('button',{name:'담음 2',exact:true}).click();assert.equal(await review.locator('.note-candidate').count(),2);
+ await page.reload();await board.locator('canvas.interactive').waitFor();await hud.getByRole('button',{name:'단어 정리',exact:true}).filter({visible:true}).first().click();await review.getByRole('button',{name:'담음 2',exact:true}).click();assert.equal(await review.getByText('저장됨',{exact:true}).count(),2);
  check('reload and repeated organization keep saved corrections without duplicate words or contexts');
  await page.setViewportSize({width:390,height:844});await screen('03-mobile-review');
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
@@ -176,21 +178,55 @@ try{
  const box=await recognition.boundingBox();assert(box.width<=390&&box.height<=844&&box.x>=0&&box.y>=0);assert(Math.abs(box.x-(390-box.width)/2)<2,'crop preview is centered');
  await page.keyboard.press('Tab');assert(await page.evaluate(()=>!!document.activeElement.closest('.note-recognition')),'native modal keeps focus inside preview');
  recognitionMode='fail';await recognition.getByRole('button',{name:'이 부분 인식하기',exact:true}).click();await recognition.getByText('검수용 인식 실패',{exact:true}).waitFor();
- recognitionMode='ok';await recognition.getByRole('button',{name:'다시 인식',exact:true}).click();await recognition.waitFor({state:'hidden'});await review.waitFor();
+ recognitionMode='ok';await recognition.getByRole('button',{name:'다시 인식',exact:true}).click();await recognition.waitFor({state:'hidden'});assert.equal(await review.isVisible(),false,'recognition leaves the canvas available');await page.getByRole('button',{name:'지금 정리',exact:true}).click();await review.waitFor();
  const inkNote=noteResponse(await noteRow(inkId));const originalStrokes=JSON.stringify(inkNote.document.board.pages[0].elements.filter(el=>el.type==='freedraw'));
  assert.equal(recognitionCalls.length,2);for(const body of recognitionCalls){assert.deepEqual(Object.keys(body).sort(),['consent','elementIds','fingerprint','image','pageId','revision'].sort());assert.equal(body.consent,'selected-ink-to-gemini');assert(body.image.startsWith('data:image/png;base64,'));assert.equal(body.elementIds.length,1);const selected=inkNote.document.board.pages[0].elements.find(el=>el.id===body.elementIds[0]);assert.equal(selected.type,'freedraw');}
  assert.equal(await review.locator('.note-candidate').count(),1);const recognized=review.locator('.note-candidate').first();assert.equal(await recognized.getByRole('textbox',{name:'표현 표기',exact:true}).inputValue(),'はし');assert.equal(await recognized.getByRole('textbox',{name:'はし 뜻',exact:true}).inputValue(),'');
  await recognized.getByRole('button',{name:'箸 젓가락',exact:true}).click();await recognized.getByRole('textbox',{name:'箸 뜻',exact:true}).fill('젓가락 · 수업 메모');await screen('08-kana-choice-mobile');
  assert.equal((await db.query('select count(*)::int n from user_vocabulary')).rows[0].n,2,'recognition does not save vocabulary automatically');
- await review.getByRole('button',{name:'단어 정리 닫기',exact:true}).click();await page.setViewportSize({width:1440,height:1000});await capture();await recognition.getByRole('button',{name:'이 부분 인식하기',exact:true}).click();await review.waitFor();
+ await review.getByRole('button',{name:'단어 정리 닫기',exact:true}).click();await page.setViewportSize({width:1440,height:1000});await capture();await recognition.getByRole('button',{name:'이 부분 인식하기',exact:true}).click();await recognition.waitFor({state:'hidden'});await page.getByRole('button',{name:'지금 정리',exact:true}).click();await review.waitFor();
  assert.equal(await review.locator('.note-candidate').count(),1);assert.equal(await review.getByRole('textbox',{name:'箸 뜻',exact:true}).inputValue(),'젓가락 · 수업 메모');
- await review.getByRole('button',{name:'뜻 있는 항목 모두 선택',exact:true}).click();await review.getByRole('button',{name:'선택한 1개 담기',exact:true}).click();await review.getByText('새로 담음',{exact:true}).waitFor();
+ await review.getByRole('button',{name:'뜻 있는 항목 모두 선택',exact:true}).click();await review.getByRole('button',{name:'선택한 1개 담기',exact:true}).click();await review.getByText('새 단어 1개 · 기존 단어 0개 연결',{exact:true}).waitFor();assert.equal(await review.locator('.note-candidate').count(),0);
  assert.equal(JSON.stringify(noteResponse(await noteRow(inkId)).document.board.pages[0].elements.filter(el=>el.type==='freedraw')),originalStrokes);
  check('explicit crop preview sends only selected ink; cancel sends nothing; failed recognition retries, kana alternatives preserve edits, deduplicate and save with unchanged strokes');
  await review.getByRole('button',{name:'단어 정리 닫기',exact:true}).click();await capture();recognitionMode='slow';await recognition.getByRole('button',{name:'이 부분 인식하기',exact:true}).click();await waitFor(()=>recognitionCalls.length===4);await recognition.getByRole('button',{name:'필기 인식 취소',exact:true}).click();await page.waitForTimeout(1800);
  assert.equal(noteResponse(await noteRow(inkId)).document.candidates.length,1,'cancelled late response is not applied');
  await capture();recognitionMode='empty';await recognition.getByRole('button',{name:'이 부분 인식하기',exact:true}).click();await recognition.getByText('읽을 수 있는 표현을 찾지 못했어요. 글자 몇 개씩 선택하거나 직접 입력해 주세요.',{exact:true}).waitFor();await recognition.getByRole('button',{name:'필기 인식 닫기',exact:true}).click();
  check('late cancelled responses and unreadable handwriting preserve the note and prior candidate');
+
+ // A learner can keep writing, then return to the unfinished queue without
+ // rescanning the notebook or losing a reviewed choice.
+ await page.setViewportSize({width:1440,height:1000});
+ await entry('確認','かくにん','확인');await entry('質問','しつもん','질문');
+ await hud.getByRole('button',{name:'단어 정리',exact:true}).filter({visible:true}).first().click();
+ const confirm=review.locator('.note-candidate').filter({has:page.getByRole('textbox',{name:'確認 뜻',exact:true})});
+ const question=review.locator('.note-candidate').filter({has:page.getByRole('textbox',{name:'質問 뜻',exact:true})});
+ await confirm.getByRole('checkbox',{name:'確認 선택',exact:true}).check();
+ await question.getByRole('button',{name:'제외',exact:true}).click();
+ await review.getByRole('button',{name:'제외 1',exact:true}).click();assert.equal(await review.locator('.note-candidate').count(),1);
+ await review.getByRole('button',{name:'미완료 2',exact:true}).click();
+ assert.equal(await confirm.getByRole('checkbox',{name:'確認 선택',exact:true}).isChecked(),true);
+ await review.getByRole('button',{name:'계속 필기 · 나중에 정리',exact:true}).click();
+ assert.equal(await review.isVisible(),false);assert.equal(await page.locator('.personal-note-canvas').evaluate(el=>el.inert),false);
+ await waitFor(async()=>await page.locator('.board-hud-status').getAttribute('aria-label')==='계정에 저장됨');
+ await page.goto(base+'/notes/'+inkId+'?review=1');await review.waitFor();
+ assert.equal(await confirm.getByRole('checkbox',{name:'確認 선택',exact:true}).isChecked(),true);
+ assert.equal(await review.getByRole('button',{name:'미완료 2',exact:true}).getAttribute('aria-pressed'),'true');
+ await review.getByRole('button',{name:'선택한 1개 담기',exact:true}).click();
+ await review.getByText('새 단어 1개 · 기존 단어 0개 연결',{exact:true}).waitFor();
+ assert.equal(await review.locator('.note-candidate').count(),1);
+ await review.getByRole('button',{name:'제외 1',exact:true}).click();await question.getByRole('button',{name:'다시 포함',exact:true}).click();
+ assert.equal(await review.locator('.note-candidate').count(),0);
+ await review.getByRole('button',{name:'미완료 2',exact:true}).click();assert.equal(await question.getByRole('checkbox',{name:'質問 선택',exact:true}).isChecked(),false);
+ await page.setViewportSize({width:320,height:740});await screen('09-collection-mobile');
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+ check('unfinished/saved/excluded queues preserve choices across reload; only reviewed rows save, and excluded words can be restored');
+ await review.getByRole('button',{name:'계속 필기 · 나중에 정리',exact:true}).click();
+ await hud.getByRole('button',{name:'전체 메뉴',exact:true}).click();await hud.getByRole('button',{name:'내 서재',exact:true}).click();
+ await page.waitForURL(url=>url.pathname==='/materials');
+ const resume=page.getByRole('link',{name:'미완료 2개 · 이어 정리 ↗',exact:true});await resume.waitFor();await resume.scrollIntoViewIfNeeded();await screen('10-library-resume');
+ await resume.click();await review.waitFor();assert.equal(await review.locator('.note-candidate').count(),2);
+ check('library shows the saved unfinished count and opens the review queue directly');
  assert.equal(report.externalAI.length,0);assert.equal(report.errors.length,0,report.errors.join('\n'));check('no actual external AI request or uncaught UI error');
 }catch(error){report.failure=error.stack;await screen('failure');throw error;}
 finally{fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));await browser.close();await db.close();}
