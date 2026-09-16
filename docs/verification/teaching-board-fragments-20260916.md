@@ -27,10 +27,14 @@ E2E는 실제 React 앱과 폐기용 PostgreSQL RPC/HTTP 합성 계정이다. �
 
 ## 남은 사항과 권한
 
-- 공개 GitHub push는 자동 승인 검토가 거절했다. 이유: 이 신규 기능 범위의 내부 애플리케이션 코드/테스트를 해당 공개 저장소로 전송하는 명시적 승인 증거 부족. 코드 커밋과 로컬 검수는 완료했다. 동일한 전송을 다른 도구나 Vercel로 우회하지 않는다.
-- 공개 push·draft PR·Vercel Preview 배포 승인을 받은 뒤 원격 CI/배포 버전/배포 브라우저 검수를 수행한다.
+- 오너가 이 범위의 공개 GitHub push·draft PR·Vercel Preview·동일 범위 마무리 push를 명시적으로 승인해 이전 자동 검토의 전송 보류를 해소했다. 공개 push 완료, draft PR #1319 생성. base는 #1318 브랜치다.
+- 최초 Preview는 일반 CLI 배포에 커밋 식별값이 없어 release_commit_required로 중단됐다. 기존 scripts/deploy-web-release.mjs의 releaseDeployArgs를 사용해 공개 커밋/브랜치/시각을 해당 배포에만 전달해 재배포했다. 프로젝트 영구 환경 설정은 바꾸지 않는다.
+- 최종 Preview `https://manabi-p4nl6jogi-wonchance-arts-projects.vercel.app` READY. 배포 `dpl_6pFcntEJ6zePgTjMPxPRKWsy95np`; `/api/version`의 commit7b5d896619dc902063909c5fa10d54b6ec43629c/branch/preview/교재 판본이 소스와 일치, 비로그인 설명판 API401. 원격 빌드480페이지 완료. 테스트용 env/폰트 mock/로컬 .next는 업로드하지 않았다.
+- 배포본 Chromium/PGlite 합성 계정 33흐름 PASS, 실행 오류0. `/private/tmp/manabi-fragments-preview-chromium/report.json`. 실제 배포 서체를 사용한 1024px/390px 부분 선택·복사 결과 캡처 직접 확인, 가로 넘침/확정 버튼 잘림 없음.
+- PR 생성 head8aef243a3685eeb5debf723139bae5bbe8da329f의 CI35089594244는 lint·콘텐츠·Vitest 및 smoke·learning-flow 두 job SUCCESS. 이후 검수 문서/자기 보드만 갱신하며 최종 head와 CI는 PR/#150 완료 신호에 기록한다.
+- Codex에서 새 Preview의 실제 로그인→원래 교재/팀/날짜/설명판 복귀 URL 유지 확인. 새 origin은 미로그인 상태로, 교사 로그인 요청 후 실계정 쓰기는 대기 중이다.
 - 새 Preview 실제 교사 계정 저장/재접속, 물리 iPad/Pencil·두 손가락/손바닥 접촉은 별도 확인 대상이다.
-- 새 DB/schema/Storage 정책/env/의존성/운영 merge/원본 교재 변경 없음. 기존 미병합 #1316/#1317/#1318의 운영 반영과 이번 브랜치 병합은 별도 승인 범위다.
+- 새 DB/schema/Storage 정책/프로젝트 영구 환경 설정/의존성/운영 merge/원본 교재 변경 없음. 기존 미병합 #1316/#1317/#1318의 운영 반영과 이번 브랜치 병합은 별도 승인 범위다.
 - World 생성·PNG 결정성·미니맵 메모리 게이트는 이번 웹 작업에 해당하지 않는다.
 
 설계와 완료 조건은 `docs/manabi-teaching-board-fragments.md`에 동봉했다.
