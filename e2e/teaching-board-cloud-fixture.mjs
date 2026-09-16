@@ -37,7 +37,7 @@ GRANT USAGE ON SCHEMA storage TO authenticated;GRANT SELECT,INSERT,UPDATE,DELETE
   if(state.offline){state.expectedErrors++;report.expectedTransport.push('intentional board connection failure');return send({error:'연결이 끊겼어요. 기기의 필기는 보관되어 있습니다.'},503);}
   try{
    if(req.method()==='GET'){
-    if(p.has('day')){const gate=state.readGate;state.readGate=null;if(gate){gate.entered=true;await gate.wait;}return send({board:await row(p.get('day'))});}
+    if(p.has('day')){if(state.readDenied===p.get('day')){state.readDenied=null;state.expectedErrors++;report.expectedTransport.push('intentional revoked source access');return send({error:'이 수업의 선생님만 설명판을 열 수 있어요.'},403);}const gate=state.readGate;state.readGate=null;if(gate){gate.entered=true;await gate.wait;}return send({board:await row(p.get('day'))});}
     state.listRequests=(state.listRequests||0)+1;
     if(state.listFail){state.listFail=false;state.expectedErrors++;return send({error:'목록 연결을 확인해 주세요.'},503);}
     const gate=state.listGate;state.listGate=null;if(gate){gate.entered=true;await gate.wait;}

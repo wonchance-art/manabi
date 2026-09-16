@@ -44,5 +44,7 @@ export async function verifyBoardHistory({page,day,cloud,check,waitFor,saveScree
  assert.equal(cloud.state.writes,before);assert.equal(JSON.stringify((await cloud.row(day)).manifest),beforeManifest);assert.equal(page.url(),initialURL);
  latencies.sort((a,b)=>a-b);cloud.state.historyMetrics={samples:latencies.length,p95PanelMs:latencies[18],medianPanelMs:latencies[10],method:'Playwright click through next paint, includes driver overhead; synthetic data'};
  check('twenty source-preview open/close cycles release every thumbnail Blob without writing or changing the current lesson');
- cloud.state.historyRows=null;await history.getByRole('button',{name:'새로고침',exact:true}).click();await waitFor(async()=>await rows.count()<30);await menus.close();
+ cloud.state.readDenied=date;await history.locator(`[data-source-day="${date}"]`).click();await history.getByRole('alert').filter({hasText:'이 수업의 선생님만 지난 설명판을 열 수 있어요.'}).waitFor();assert.equal(await rows.count(),0);await menus.close();await open();assert.equal(await rows.count(),0);
+ check('revoked source permission clears cached dates and the open source rather than showing stale private metadata');
+ cloud.state.historyRows=null;await page.reload();await page.getByRole('region',{name:'선생님 설명판'}).locator('canvas').first().waitFor();
 }
