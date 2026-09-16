@@ -12,7 +12,7 @@ export async function verifyBoardFragments({page,base,day,cloud,check,waitFor,sa
   const scene=async()=>{const d=await current();return d.pages.find(p=>p.id===d.activePage).elements.filter(el=>!el.isDeleted);};
   const copied=async()=>(await scene()).filter(el=>el.customData?.manabiReuse?.boardId===saved.id);
   const dialog=page.getByRole('dialog',{name:'가져올 부분 고르기'});
-  const open=async()=>{await menus.open('main');await hud.getByRole('button',{name:'지난 설명판',exact:true}).click();await history.getByRole('button',{name:`${sourceDay} 페이지 가져오기`,exact:true}).click();await history.getByRole('button',{name:'1번 페이지 부분 고르기',exact:true}).click();await dialog.waitFor();await dialog.locator('svg image').waitFor();};
+  const open=async()=>{await menus.open('main');await hud.getByRole('button',{name:'지난 설명판',exact:true}).click();await history.getByRole('button',{name:`${sourceDay} 설명판 살펴보기`,exact:true}).click();await history.getByRole('button',{name:'1번 페이지 부분 고르기',exact:true}).click();await dialog.waitFor();await dialog.locator('svg image').waitFor();};
   const choose=async()=>{await dialog.getByRole('button',{name:'목록으로 선택',exact:true}).click();const list=dialog.getByRole('complementary',{name:'가져올 요소 목록'});await list.getByRole('checkbox',{name:'표현 · 学习 배우다, 공부하다',exact:true}).check();await list.getByRole('checkbox',{name:'표현 · 复习 복습하다',exact:true}).check();const ink=list.locator('label').filter({hasText:/^필기 \d+$/}).first();if(await ink.count())await ink.getByRole('checkbox').check();await dialog.getByRole('button',{name:'목록으로 선택',exact:true}).click();};
   const before=await scene(),records=await hud.getByRole('button',{name:/오늘 표현 \d+개/}).getAttribute('aria-label');
   await open();

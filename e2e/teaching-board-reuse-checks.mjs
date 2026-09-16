@@ -5,7 +5,7 @@ export async function verifyBoardReuse({page,base,day,cloud,check,waitFor,saveSc
  const past=structuredClone(document);past.pages=[past.pages[0],{id:'another-past-page',elements:[],camera:{scrollX:0,scrollY:0,zoom:{value:1}}}];past.activePage=past.pages[0].id;
  const savedSource=await cloud.save(pastDay,past),sourceManifest=JSON.stringify(savedSource.manifest);
  const sourceFiles=savedSource.manifest.pages.map(p=>[p.hash,[...cloud.files.entries()].find(([key])=>key.endsWith(p.hash+'.json'))[1]]);
- const open=async()=>{await menus.open('main');await hud.getByRole('button',{name:'지난 설명판',exact:true}).click();await history.getByRole('button',{name:`${pastDay} 페이지 가져오기`,exact:true}).click();};
+ const open=async()=>{await menus.open('main');await hud.getByRole('button',{name:'지난 설명판',exact:true}).click();await history.getByRole('button',{name:'새로고침',exact:true}).click();await history.getByRole('button',{name:`${pastDay} 설명판 살펴보기`,exact:true}).click();};
  const targetBefore=(await readBoards()).find(r=>r.id===r.scope&&r.document.accountBoard).document;
  const records=await hud.getByRole('button',{name:/오늘 표현 \d+개/}).getAttribute('aria-label');
  await open();await history.getByLabel('1번 페이지 가져오기',{exact:true}).waitFor();
@@ -26,10 +26,10 @@ export async function verifyBoardReuse({page,base,day,cloud,check,waitFor,saveSc
  await hud.getByRole('button',{name:'저장 상태',exact:true}).click();await hud.locator('#board-menu-status').getByRole('button',{name:'지금 저장',exact:true}).click();await hud.locator('#board-menu-status').getByText('계정에 저장됨',{exact:true}).waitFor();
  assert.equal(JSON.stringify((await cloud.row(pastDay)).manifest),sourceManifest);for(const [hash,text]of sourceFiles)assert([...cloud.files.entries()].some(([key,value])=>key.endsWith(hash+'.json')&&value===text));
  await page.reload();await board.locator('canvas').first().waitFor();await open();await history.getByLabel('1번 페이지 가져오기',{exact:true}).waitFor();assert(await history.getByLabel('1번 페이지 가져오기',{exact:true}).isDisabled());await history.getByText('가져옴',{exact:true}).waitFor();
- await history.getByRole('button',{name:'← 날짜 목록',exact:true}).click();await waitFor(()=>history.getByRole('button',{name:`${pastDay} 페이지 가져오기`,exact:true}).evaluate(el=>el===document.activeElement));
+ await history.getByRole('button',{name:'← 날짜 목록',exact:true}).click();await waitFor(()=>history.getByRole('button',{name:`${pastDay} 설명판 살펴보기`,exact:true}).evaluate(el=>el===document.activeElement));
  check('copy provenance survives account save/reload, prevents duplicates and preserves source page bytes; back restores keyboard focus');
  // Read failure and late responses cannot insert content or lose current pages.
- cloud.state.offline=true;await history.getByRole('button',{name:`${pastDay} 페이지 가져오기`,exact:true}).click();await history.getByRole('alert').waitFor();assert.equal((await readBoards()).find(r=>r.id===r.scope&&r.document.accountBoard).document.pages.length,copied.pages.length);
+ cloud.state.offline=true;await history.getByRole('button',{name:`${pastDay} 설명판 살펴보기`,exact:true}).click();await history.getByRole('alert').waitFor();assert.equal((await readBoards()).find(r=>r.id===r.scope&&r.document.accountBoard).document.pages.length,copied.pages.length);
  cloud.state.offline=false;await history.getByRole('button',{name:'다시 불러오기',exact:true}).click();await history.getByText('가져옴',{exact:true}).waitFor();await menus.close();
  let release;const gate={entered:false,wait:new Promise(resolve=>{release=resolve;})};cloud.state.readGate=gate;
  await open();await waitFor(()=>gate.entered);await menus.close();release();await page.waitForTimeout(100);assert.equal((await readBoards()).find(r=>r.id===r.scope&&r.document.accountBoard).document.pages.length,copied.pages.length);

@@ -1,3 +1,4 @@
+import {verifyBoardHistory} from './teaching-board-history-checks.mjs';
 import {verifyBoardFragments} from './teaching-board-fragment-checks.mjs';
 import {verifyBoardReuse} from './teaching-board-reuse-checks.mjs';
 import fs from 'node:fs';
@@ -36,8 +37,14 @@ GRANT USAGE ON SCHEMA storage TO authenticated;GRANT SELECT,INSERT,UPDATE,DELETE
   if(state.offline){state.expectedErrors++;report.expectedTransport.push('intentional board connection failure');return send({error:'연결이 끊겼어요. 기기의 필기는 보관되어 있습니다.'},503);}
   try{
    if(req.method()==='GET'){
-    if(p.has('day')){const gate=state.readGate;state.readGate=null;if(gate){gate.entered=true;await gate.wait;}return send({board:await row(p.get('day'))});}
-    const rows=(await db.query('select id,day::text,manifest,updated_at from class_teaching_boards where root_id=1 and manifest is not null order by day desc')).rows;return send({boards:rows.map(b=>({id:b.id,day:b.day,pages:b.manifest.pages.length,updatedAt:b.updated_at}))});
+    if(p.has('day')){if(state.readDenied===p.get('day')){state.readDenied=null;state.expectedDenied=req.url();report.expectedTransport.push('intentional revoked source access');return send({error:'이 수업의 선생님만 설명판을 열 수 있어요.'},403);}const gate=state.readGate;state.readGate=null;if(gate){gate.entered=true;await gate.wait;}return send({board:await row(p.get('day'))});}
+    state.listRequests=(state.listRequests||0)+1;
+    if(state.listFail){state.listFail=false;state.expectedErrors++;return send({error:'목록 연결을 확인해 주세요.'},503);}
+    const gate=state.listGate;state.listGate=null;if(gate){gate.entered=true;await gate.wait;}
+    const rows=state.historyRows||(await db.query('select id,day::text,manifest,updated_at from class_teaching_boards where root_id=1 and manifest is not null order by day desc')).rows;
+    const from=p.get('from')||'',to=p.get('to')||'',before=p.get('cursor')?JSON.parse(decodeURIComponent(p.get('cursor'))).day:'';
+    const filtered=rows.filter(r=>(!from||r.day>=from)&&(!to||r.day<=to)&&(!before||r.day<before)),items=filtered.slice(0,30),more=filtered.length>30;
+    return send({boards:items.map(b=>({id:b.id,day:b.day,pages:b.manifest.pages.length,updatedAt:b.updated_at})),truncated:more,nextCursor:more?encodeURIComponent(JSON.stringify({v:1,root:p.get('rootId'),from,to,day:items.at(-1).day})):null});
    }
    const body=req.postDataJSON();
    if(req.method()==='POST')return send({board:(await db.query('select teaching_board_prepare(1,$1) b',[body.day])).rows[0].b});
@@ -77,8 +84,9 @@ export async function verifyBoardCloud({page,base,day,cloud,check,waitFor,saveSc
  const cached=(await readBoards()).find(r=>r.document.accountBoard),document=structuredClone(cached.document);delete document.accountBoard;
  if(process.env.QA_BOARD_FRAGMENTS==='1')await verifyBoardFragments({page,base,day,cloud,check,waitFor,saveScreen,menus,readBoards,document});
  if(process.env.QA_BOARD_REUSE==='1')await verifyBoardReuse({page,base,day,cloud,check,waitFor,saveScreen,menus,readBoards,document});
+ if(process.env.QA_BOARD_HISTORY==='1')await verifyBoardHistory({page,base,day,cloud,check,waitFor,saveScreen,menus,document});
  const earlier='2026-09-09';await cloud.save(earlier,document);await menus.open('main');await hud.getByRole('button',{name:'지난 설명판',exact:true}).click();
- const history=hud.locator('#board-menu-history');await history.locator('.board-cloud-history-row > button:first-child').filter({hasText:earlier}).waitFor();await saveScreen('cloud-history');await history.locator('.board-cloud-history-row > button:first-child').filter({hasText:earlier}).click();await page.waitForURL('**day=2026-09-09**');await board.locator('canvas').first().waitFor();
+ const history=hud.locator('#board-menu-history');await history.getByRole('button',{name:'새로고침',exact:true}).click();await history.locator(`[data-source-day="${earlier}"]`).waitFor();await saveScreen('cloud-history');await history.locator(`[data-source-day="${earlier}"]`).click();assert(new URL(page.url()).searchParams.get('day')===day);await history.getByRole('button',{name:'그날 수업 열기 ↗',exact:true}).click();await page.waitForURL('**day=2026-09-09**');await board.locator('canvas').first().waitFor();
  check('the board menu opens a past lesson without a team selector or losing the current drawing');
  await page.goto(base+`/viewer/10?class=fixture-class&day=${day}&board=1`);await board.locator('canvas').first().waitFor();
  // Simulate another device committing while this device still has the prior revision.

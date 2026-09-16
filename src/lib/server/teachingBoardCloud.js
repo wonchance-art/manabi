@@ -1,3 +1,4 @@
+import {BOARD_HISTORY_SIZE,boardHistoryRequest,boardHistoryPage} from '@/lib/teachingBoardHistory';
 import {requireUser} from '@/lib/supabaseServer';
 import {canTeachClass} from '@/lib/classWorkspace';
 import {materialIdValid} from '@/lib/learningSources';
@@ -14,11 +15,14 @@ export async function teacherBoardAuth(rootId){
 function cloudError(error){if(!error)return;if(error.code==='40001')fail(409,'다른 기기에서 수정한 설명판이 있어요. 내 필기는 기기에 보관되어 있습니다.');if(['42P01','42883','PGRST202','PGRST205'].includes(error.code))fail(503,'계정 저장을 준비 중이에요. 이 기기의 필기는 계속 보관합니다.');checkDb(error);}
 export async function boardBody(request){const text=await request.text();if(new TextEncoder().encode(text).length>20000)fail(413,'설명판 저장 정보를 확인해 주세요.');try{const body=JSON.parse(text);if(!body||typeof body!=='object'||Array.isArray(body))throw Error();return body;}catch{fail(400,'설명판 요청을 확인해 주세요.');}}
 export function checkDay(day){if(!validBoardDay(day)||day<'1900-01-01'||day>'2200-12-31')fail(400,'수업 날짜를 확인해 주세요.');}
-export async function getTeacherBoards(rootId,day){
+export async function getTeacherBoards(rootId,day,options={}){
  const {supabase:db,user}=await teacherBoardAuth(rootId);let q=db.from(BOARD_TABLE).select(day?SELECT:'id,day,updated_at,manifest,revision').eq('owner_id',user.id).eq('root_id',rootId);
  if(day){checkDay(day);const {data,error}=await q.eq('day',day).maybeSingle();cloudError(error);return {board:data};}
- const {data,error}=await q.not('manifest','is',null).order('day',{ascending:false}).limit(100);cloudError(error);
- return {boards:(data||[]).map(b=>({id:b.id,day:b.day,updatedAt:b.updated_at,pages:b.manifest.pages.length})),truncated:(data||[]).length===100};
+ const scope=boardHistoryRequest(rootId,options);
+ if(scope.from)q=q.gte('day',scope.from).lte('day',scope.to);
+ if(scope.before)q=q.lt('day',scope.before);
+ const {data,error}=await q.not('manifest','is',null).order('day',{ascending:false}).limit(BOARD_HISTORY_SIZE+1);cloudError(error);
+ return boardHistoryPage(data||[],scope);
 }
 export async function prepareTeacherBoard(body){const {supabase:db}=await teacherBoardAuth(body.rootId);checkDay(body.day);const {data,error}=await db.rpc('teaching_board_prepare',{p_root:body.rootId,p_day:body.day});cloudError(error);return {board:data};}
 export async function commitTeacherBoard(body){

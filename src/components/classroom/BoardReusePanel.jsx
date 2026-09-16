@@ -22,12 +22,12 @@ function PagePreview({page}) {
   return <span className="board-reuse-preview" ref={host}>{url?<img src={url} alt=""/>:<span aria-hidden="true">페이지 미리보기</span>}</span>;
 }
 
-export default function BoardReusePanel({rootId,sourceDay,day,pages,blocked,onCopy,onPick,onBack}) {
+export default function BoardReusePanel({rootId,sourceDay,day,pages,blocked,onCopy,onPick,onBack,onOpen,opening,actionError,onDenied}) {
   const [source,setSource]=useState(null),[error,setError]=useState(''),[selected,setSelected]=useState([]),[busy,setBusy]=useState(false),[attempt,setAttempt]=useState(0);
-  const alive=useRef(true),running=useRef(false),heading=useRef(null);
+  const alive=useRef(true),running=useRef(false),heading=useRef(null),denied=useRef(onDenied);denied.current=onDenied;
   useEffect(()=>{alive.current=true;heading.current?.focus();return()=>{alive.current=false;};},[]);
-  useEffect(()=>{let current=true;setSource(null);setError('');setSelected([]);
-    readCloudBoard(rootId,sourceDay).then(value=>{if(!current)return;if(!value.document)throw new Error('저장된 페이지를 찾지 못했어요.');setSource(value);}).catch(e=>{if(current)setError(e.message);});return()=>{current=false;};
+  useEffect(()=>{let current=true;const controller=new AbortController();setSource(null);setError('');setSelected([]);
+    readCloudBoard(rootId,sourceDay,{signal:controller.signal}).then(value=>{if(!current)return;if(!value.document)throw new Error('저장된 페이지를 찾지 못했어요.');setSource(value);}).catch(e=>{if(current){if([401,403].includes(e.status))denied.current?.();else setError(e.message);}});return()=>{current=false;controller.abort();};
   },[rootId,sourceDay,attempt]);
   const copied=new Set(pages.map(p=>boardReuseKey(p.reusedFrom)).filter(Boolean));
   const available=source?.document.pages.filter(p=>!copied.has(boardReuseKey(pageReuseSource(source.row,p.id))))||[];
@@ -37,6 +37,7 @@ export default function BoardReusePanel({rootId,sourceDay,day,pages,blocked,onCo
     <button className="board-reuse-back" disabled={busy} onClick={onBack}>← 날짜 목록</button>
     <h3 ref={heading} tabIndex={-1}>{sourceDay} 설명판</h3>
     <p className="board-menu-caption">선택한 페이지를 {day} 수업의 새 페이지로 가져옵니다.</p>
+    {actionError&&<p role="alert">{actionError}</p>}
     {error&&<p role="alert">{error}{!source&&<button onClick={()=>setAttempt(n=>n+1)}>다시 불러오기</button>}</p>}
     {!source&&!error&&<p role="status">저장된 페이지를 불러오고 있어요…</p>}
     {source&&<>
@@ -49,5 +50,6 @@ export default function BoardReusePanel({rootId,sourceDay,day,pages,blocked,onCo
       </div>;})}</div>
       <div className="board-reuse-footer">{blocked&&<p role="status">저장 상태에서 다른 기기의 판을 확인한 뒤 가져와 주세요.</p>}{room===0?<p role="status">현재 수업의 20개 페이지가 모두 찼어요. 다른 수업 날짜에서 가져와 주세요.</p>:chosen.length>room&&<p role="status">선택을 {room}개 이하로 줄여 주세요.</p>}<button className="board-reuse-submit" disabled={busy||blocked||!chosen.length||chosen.length>room} onClick={copy}>{busy?'가져오는 중…':`현재 수업에 ${chosen.length||''}${chosen.length?'개 ':''}복사`}</button><small>학생에게 공유하려면 ‘수업에 남기기’를 눌러 주세요.</small></div>
     </>}
+    {onOpen&&<button className="board-reuse-original" disabled={busy||opening} onClick={onOpen}>그날 수업 열기 ↗</button>}
   </div>;
 }

@@ -88,6 +88,7 @@ await context.route('**/api/suggestions/today',r=>r.fulfill({json:[]}));
 await context.route('**/api/analyze',async r=>{if(analysisDelay)await new Promise(resolve=>setTimeout(resolve,analysisDelay));if(analysisFail)return r.fulfill({status:503,json:{error:'검수 분석 실패'}});const {lines}=r.request().postDataJSON();analyzedLines.push(lines);try{await r.fulfill({json:{results:lines.map(line=>({sequence:['word'],dictionary:{word:{text:line,meaning:emptyMeaning?'':'검수 표현의 뜻',pos:'명사',furigana:'よみ'}}}))}});}catch{}});
 const cloud=await installBoardCloudFixture({context,db,uid,cors,report});
 const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.message));page.on('console',m=>{
+ if(cloud.state.expectedDenied&&m.type()==='error'&&/403/.test(m.text())&&m.location().url===cloud.state.expectedDenied){cloud.state.expectedDenied=null;return;}
  if(cloud.state.expectedErrors>0&&/503|409|400|ERR_FAILED|Load failed/.test(m.text())){cloud.state.expectedErrors--;return;}
  if(m.type()!=='error'||m.text().startsWith('WebSocket connection')||(lookupError&&m.text().includes('503')))return;
  if(revisionConflicts>0&&m.text().includes('409 (Conflict)')){revisionConflicts--;return;}
@@ -275,6 +276,6 @@ try {
  }
  check('home and team links navigate on click and browser back restores every board page');
  assert.deepEqual(report.readingPrefetch,[],'reading and board menus do not prefetch home, team or study pages');check('reading links request destinations only when used');
- assert.equal(report.errors.length,0,report.errors.join('\n'));check('no browser runtime errors');
+ assert.equal(report.errors.length,0,report.errors.join('\n'));check('no browser runtime errors');if(cloud?.state.historyMetrics)report.historyMetrics=cloud.state.historyMetrics;
 } catch(error){report.failure=error.stack;await saveScreen('failure');console.error(await page.locator('body').innerText());throw error;}
 finally{await fs.promises.writeFile(out+'/report.json',JSON.stringify(report,null,2));await browser.close();await db.close();}
