@@ -2,7 +2,7 @@
 // may optionally be supplied from a local file. No test content is sent to the DB.
 import assert from 'node:assert/strict';
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
-import { chromium } from 'playwright-core';
+import { chromium, webkit } from 'playwright-core';
 
 const base = process.env.QA_BASE || 'http://localhost:3105';
 assert.ok(['localhost','127.0.0.1'].includes(new URL(base).hostname));
@@ -15,7 +15,8 @@ const item = suggestions[0];
 const rows = [], errors = [], checks = [];
 let failNextSave = false, failRead = false, unknown = false, inserts = 0;
 const owner = '00000000-0000-4000-8000-000000000079';
-const browser = await chromium.launch({ ...(process.env.PLAYWRIGHT_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH } : { channel: 'chrome' }), headless: true });
+const engine = process.env.QA_BROWSER === 'webkit' ? webkit : chromium;
+const browser = await engine.launch({ ...(engine === chromium ? (process.env.PLAYWRIGHT_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH } : { channel: 'chrome' }) : {}), headless: true });
 const enc = value => Buffer.from(JSON.stringify(value)).toString('base64url');
 const now = Math.floor(Date.now()/1000);
 const user = { id: owner, aud: 'authenticated', role: 'authenticated', email: 'suggestion-fixture@example.com', email_confirmed_at: new Date().toISOString(), app_metadata: { provider: 'email', providers: ['email'] }, user_metadata: { display_name: '검수 학습자' }, created_at: new Date().toISOString() };
@@ -82,7 +83,7 @@ try {
     await page.screenshot({path:`${out}/reading-long-title.png`,fullPage:true});
     check('long English title and article on a narrow screen');
   }
-  await page.keyboard.press('Tab');
+  await page.keyboard.press(engine === webkit ? 'Alt+Tab' : 'Tab');
   assert.ok(await page.evaluate(()=>['A','BUTTON'].includes(document.activeElement.tagName)));
   await page.goto(`${base}/materials/add?suggestion=${item.id}`);
   await page.waitForURL('**/suggestions/**');

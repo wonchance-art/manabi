@@ -1,5 +1,5 @@
 // Browser requests use synthetic account/material fixtures; no personal records are changed.
-import {chromium} from 'playwright-core';
+import {chromium,webkit} from 'playwright-core';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 const base=process.env.QA_BASE||'http://127.0.0.1:8899',out=process.env.QA_OUT||'/private/tmp/manabi-analysis-resume-browser';
@@ -8,7 +8,8 @@ const uid='00000000-0000-4000-8000-000000000089';
 const user={id:uid,aud:'authenticated',role:'authenticated',email:'context-fixture@example.com',email_confirmed_at:new Date().toISOString(),app_metadata:{provider:'email'},user_metadata:{},identities:[]};
 const enc=v=>Buffer.from(JSON.stringify(v)).toString('base64url'),now=Math.floor(Date.now()/1000);
 const session={user,access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:uid,aud:'authenticated',role:'authenticated',exp:now+3600,iat:now})}.fixture`,refresh_token:'fixture',expires_at:now+3600,expires_in:3600,token_type:'bearer'};
-const browser=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
+const engine=process.env.QA_BROWSER==='webkit'?webkit:chromium;
+const browser=await engine.launch({...(engine===chromium?{executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'}:{}),headless:true});
 const context=await browser.newContext({viewport:{width:1138,height:900},serviceWorkers:'block',reducedMotion:'reduce'});
 context.setDefaultTimeout(12000);context.setDefaultNavigationTimeout(180000);
 const original = () => {
@@ -64,11 +65,11 @@ const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message)
 page.on('console',m=>{if(m.type()==='error'&&/same key|unique "key"|Hydration failed/i.test(m.text()))errors.push(m.text());});
 const resume=()=>page.getByRole('button',{name:'▶ 이어서 분석',exact:true});
 const token=()=>page.locator('[data-source-token="id_0_0_resume"]');
-async function open(label) {await page.goto(base+'/viewer/94051?case='+label);await token().waitFor();}
+async function open(label) {await page.waitForLoadState('networkidle');await page.goto(base+'/viewer/94051?case='+label);await token().waitFor();}
 async function pass(label) {assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),label+' overflow');checks.push(label);console.log('PASS '+label);}
 async function shot(label){await page.evaluate(()=>document.fonts.ready);await page.screenshot({path:out+'/'+label+'.png'});}
 try {
- await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last().click();await page.waitForURL('**/home');
+ await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last().click();await page.waitForURL('**/home');await page.waitForLoadState('networkidle');
  for(const width of [320,390,768,1440]) {
   material=original();mode='slow';await page.setViewportSize({width,height:900});await open('width'+width);
   await page.getByText('분석이 끝나지 않은 부분이 2곳 있어요.',{exact:true}).waitFor();

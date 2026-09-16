@@ -1,5 +1,5 @@
 // Browser requests use synthetic account/material fixtures; no personal records are changed.
-import {chromium} from 'playwright-core';
+import {chromium,webkit} from 'playwright-core';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 const base=process.env.QA_BASE||'http://127.0.0.1:8897',out=process.env.QA_OUT||'/private/tmp/manabi-context-browser';
@@ -8,7 +8,8 @@ const uid='00000000-0000-4000-8000-000000000089',cid='00000000-0000-4000-8000-00
 const user={id:uid,aud:'authenticated',role:'authenticated',email:'context-fixture@example.com',email_confirmed_at:new Date().toISOString(),app_metadata:{provider:'email'},user_metadata:{},identities:[]};
 const enc=v=>Buffer.from(JSON.stringify(v)).toString('base64url'),now=Math.floor(Date.now()/1000);
 const session={user,access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:uid,aud:'authenticated',role:'authenticated',exp:now+3600,iat:now})}.fixture`,refresh_token:'fixture',expires_at:now+3600,expires_in:3600,token_type:'bearer'};
-const browser=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
+const engine=process.env.QA_BROWSER==='webkit'?webkit:chromium;
+const browser=await engine.launch({...(engine===chromium?{executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'}:{}),headless:true});
 const context=await browser.newContext({viewport:{width:1138,height:900},serviceWorkers:'block',reducedMotion:'reduce'});
 context.setDefaultTimeout(12000);context.setDefaultNavigationTimeout(180000);
 const dictionary={},sequence=[],lines=[['眼前','有','山','。'],['眼前','有','海','。'],['周末','我们','散步','。']];
@@ -63,10 +64,10 @@ await context.route('**/api/learning/vocabulary',r=>{
 const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
 const pass=name=>{checks.push(name);console.log('PASS '+name);};
 const token=id=>page.locator(`[data-source-token="${id}"]`);
-async function open(suffix=''){await page.goto(base+'/viewer/94041'+suffix);await token('id_0_0_context').waitFor();}
+async function open(suffix=''){await page.waitForLoadState('networkidle');await page.goto(base+'/viewer/94041'+suffix);await token('id_0_0_context').waitFor();}
 async function screenshot(name){await page.screenshot({path:out+'/'+name+'.png'});}
 try {
- await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last().click();await page.waitForURL('**/home');
+ await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last().click();await page.waitForURL('**/home');await page.waitForLoadState('networkidle');
  await open(`?sourceContext=${cid}`);
  await token('id_1_0_context').locator('xpath=self::*[contains(@class,"learning-source-highlight")]').waitFor();
  assert.equal(await page.locator('.learning-source-highlight').count(),1);pass('saved context focuses the exact occurrence among repeated words');
@@ -96,14 +97,14 @@ try {
  await page.locator('.save-grade .review-score-btn--again').click();await linked;
  assert.equal(vocab.length,1);assert.equal(vocab[0].meaning,'눈앞');assert.equal(vocab[0].source_sentence,'眼前有山。');assert.equal(saved.length,1);
  assert(!JSON.stringify(vocab[0]).includes('Japanese'));pass('save retains the shown meaning and original sentence');
- await page.goto(base+'/vocab');await page.getByLabel('단어장 도구',{exact:true}).click();await page.getByRole('combobox',{name:'복습 방식',exact:true}).selectOption('flash');await page.locator('.review-room-start').click();
+ await page.waitForLoadState('networkidle');await page.goto(base+'/vocab');await page.getByLabel('단어장 도구',{exact:true}).click();await page.getByRole('combobox',{name:'복습 방식',exact:true}).selectOption('flash');await page.locator('.review-room-start').click();
  await page.getByRole('button',{name:'정답 확인하기',exact:true}).click();
  await page.getByRole('link',{name:'이 문장 열기 ↗',exact:true}).waitFor();
  assert.equal(await page.locator('.review-card__source').count(),1);assert.equal(await page.getByRole('link',{name:'원문 열기 ↗',exact:true}).count(),0);
  const beforeReview=vocab[0].next_review_at;
  const popupPromise=page.waitForEvent('popup');await page.getByRole('link',{name:'이 문장 열기 ↗',exact:true}).click();const popup=await popupPromise;
  await popup.locator('[data-source-token="id_0_0_context"].learning-source-highlight').waitFor();
- await popup.close();assert.equal(vocab[0].next_review_at,beforeReview);assert(await page.locator('.review-card__meaning').isVisible());
+ await popup.waitForLoadState('networkidle');await popup.close();assert.equal(vocab[0].next_review_at,beforeReview);assert(await page.locator('.review-card__meaning').isVisible());
  await screenshot('review-source');pass('review shows one source, opens its exact sentence, and preserves the ungraded card');
  assert.deepEqual(errors,[]);
 } catch(error) {

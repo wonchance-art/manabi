@@ -6,7 +6,7 @@
 
 - #1314 head `2c00ebf9e073d10abdb7e1d500c703d746f93195`를 #1313 브랜치로 squash merge: `9707526e6472938ec70698db36f76bfdcd3b2a4e`. 두 커밋의 전체 트리 동일 확인.
 - 통합 head의 CI35040312281 두 job SUCCESS 확인 후 #1313을 main에 squash merge: `d6dbcff78a60852f338865c1c8bfc95c948632a7`. 역시 전체 트리 동일 확인.
-- 노트·인식의 실제 계정 검수는 `classroom-handwriting-20260916.md`를 따른다. 새 운영 배포 확인은 아래에 후속 기록한다. 설명판의 기기 저장과 개인 노트의 서버 저장은 서로 다른 정본이며 병합만으로 Preview의 기기 저장을 운영 주소에 복사하지 않는다.
+- 노트·인식의 실제 계정 검수는 `classroom-handwriting-20260916.md`를 따른다. 운영 자동 배포 `dpl_7HwjVZUSJXGmHB6eaR6NLG2VwKE3` READY. 운영 `/api/version`은 d6dbcff7/production/교재 판본 일치. 노트 GET·설명판 인식 POST는 비로그인401. 실제 로그인 상태로 운영에서 기존 개인 검수 노트를 열어 필기와 계정 저장 표시를 확인했다. 설명판의 기기 저장과 개인 노트의 서버 저장은 서로 다른 정본이며 병합만으로 Preview의 기기 저장을 운영 주소에 복사하지 않는다.
 
 ## 뷰어와 추천 통합
 
@@ -19,8 +19,20 @@
 
 - 통합 후 전체 Vitest 405파일/4,308개 PASS. 핵심 노트/문맥/복구/추천/권한 검사 104개 PASS.
 - 저장소 lint 오류 0. 기존 lessonAdapters/lessonModel 익명 기본 export 경고 2개 유지.
-- 로컬 프로덕션 빌드와 브라우저 검수 진행 중. 실제 계정 및 물리 기기 확인은 합성 HTTP 검수와 구분한다.
+- 로컬 프로덕션 빌드 479페이지 PASS. Chromium/WebKit 각각 문맥 복귀 10, 분석 복구 11, 추천 읽기 10, 개인 노트 9, 기존 교사 설명판 13조건(각53/총106개) PASS, 보고된 실행 오류 0. 최대 글자/320~1440px/키보드/취소·실패·충돌/저장 중복·SRS 보존을 검사했다. 합성 계정·HTTP 응답·폐기용 PostgreSQL 검수이며 실제 Gemini 정확도/물리 기기 검수로 표시하지 않는다.
+
+## 브라우저 검수 보완
+
+과거 Chromium 전용 E2E 세 개에 QA_BROWSER=webkit 선택을 추가했다. 최초 WebKit 실행은 테스트가 홈 로딩/배경 조회 중 하드 내비게이션을 해 요청 취소를 access-control 오류로 보고했다. 새 문서로 교체하기 전 networkidle 대기와 팝업 닫기 전 대기를 추가한 후 같은 검증을 전량 통과했다. 오류를 무시하는 필터는 추가하지 않았다. 추천 화면의 키보드 검수는 WebKit의 Alt+Tab 링크/버튼 순환을 사용한다.
+
+변경 React 코드의 훅 순서·계정 변경 시 응답 보호·진입 경로·초점과 화면 넘침을 검토했다. SDK/DB 변경은 없으며 Supabase의 현재 maybeSingle 문서(https://supabase.com/docs/reference/javascript/using-modifiers-maybesingle)와 변경 이력도 확인했다.
 
 ## 남은 별도 범위
 
 개인 노트의 계속 모으기/나중에 검토 UI, 교사 설명판 서버 백업, 물리 iPad/Pencil와 여러 필체, 별도 학생 실계정 종단 검수. 외부 노트 반입·팀 시험·PDF·음성은 이번 통합에 포함하지 않는다.
+
+## 최종 실행본 및 배포 인계
+
+실행/통합 head `f12838c39f356e532499a613602f812cef1e6faf`, 공개 PR #1315. 해당 head의 CI35041006470 두 job SUCCESS. 이후 변경은 브라우저 검수 도구와 이 검수 문서/자기 보드뿐이며 앱 번들은 동일하다. Preview `https://manabi-87o08jlfi-wonchance-arts-projects.vercel.app` / `dpl_3TXMLH1YG4Fm5tvAkUvT93uCd7Zk`를 배포했다. 최종 READY·동일 버전·운영 병합/배포 결과는 PR #1315와 #150의 최종 exact-head CODEX_DONE 기록을 따른다.
+
+화면 검수는 로컬 실제 빌드의 320/390/768/1440px 뜻 창, 복구 전/중/후, 추천 읽기 화면을 직접 확인했다. 공개 문서에는 실제 계정 식별자·개인 원문·계정 캡처를 넣지 않았다.
