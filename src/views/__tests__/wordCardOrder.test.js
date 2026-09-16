@@ -71,7 +71,7 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
 
   it('일본어 대조가 자형과 의미를 구분하며 동일 표기는 한 번만 표시한다', () => {
     const component=read('src/components/viewer/ViewerJapaneseReference.jsx');
-    expect(component).toContain('japaneseReferenceForMeaning(dictEntry,meaning)');
+    expect(component).toContain('japaneseReferenceForMeaning(dictEntry,meaning,{pos,form:glyphForm})');
     expect(component).toContain('ref.form===glyphForm');
     expect(component).toContain('ref&&!same');
     expect(component).toContain('같은 뜻');

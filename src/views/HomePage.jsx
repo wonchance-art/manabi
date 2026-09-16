@@ -18,7 +18,7 @@ import { getIdealLevel } from '@/lib/levels';
 import { materialFit } from '@/lib/materialFit';
 import { rankSuggestions, REASON } from '@/lib/suggestionRank';
 import { detectLang, langNameKo } from '@/lib/constants';
-import { isOnDemandSuggestion } from '@/lib/suggestionSources';
+import { canReadSuggestion, suggestionHref } from '@/lib/suggestionReading';
 
 export async function fetchHomeData(userId, lang, nowMs = Date.now()) {
   const [dueResult, recentResult, allVocabResult, forecastResult, { buildForecast }] = await Promise.all([
@@ -78,7 +78,7 @@ export default function HomePage({ book = null }) {
   const suggestions = useMemo(() => {
     const known = { surfaces: new Set((data?.vocab || []).map(v => v.word_text).filter(Boolean)), bases: new Set((data?.vocab || []).map(v => v.base_form).filter(Boolean)) };
     const fitMap = Object.fromEntries((fits.data || []).map(m => [m.id, materialFit(m.processed_json, known)]));
-    return rankSuggestions((recommendations.data || []).filter(s => s.material_id || s.transcript || isOnDemandSuggestion(s)), {
+    return rankSuggestions((recommendations.data || []).filter(canReadSuggestion), {
       langs: Array.isArray(profile?.learning_language) ? profile.learning_language : [lang],
       fitOf: s => fitMap[s.material_id] ?? null,
       levelOf: s => getIdealLevel(s.language, data?.vocabByLang?.[s.language] || 0),
@@ -135,7 +135,7 @@ export default function HomePage({ book = null }) {
         {user && <Link className="today-growth" href="/profile">성장 기록과 설정 →</Link>}
       </section>
       <section className="today-discovery"><div className="manabi-section-heading"><div><p className="manabi-eyebrow">OFF THE PAGE</p><h2>책 밖의 한 장면</h2></div><Link className="manabi-link" href="/discover">발견 ↗</Link></div>
-        {recommendations.isLoading ? <p role="status">오늘의 읽을거리를 펼치고 있어요…</p> : recommendations.error ? <p role="status">추천을 불러오지 못했어요. <button type="button" onClick={() => recommendations.refetch()}>다시 확인</button></p> : suggestions.length ? suggestions.map(s => <Link key={s.id} className="today-story" href={s.material_id ? `/viewer/${s.material_id}` : `/materials/add?suggestion=${s.id}`} prefetch={false}><SuggestionArtwork suggestion={s} /><div><small>{langNameKo(s.language)} · {s.level || '읽을거리'}</small><h3>{s.title}</h3><p>{(user && data?.vocab?.length ? reasonText(s.rank) : null) || s.channel_name || '오늘의 추천'} <span>↗</span></p>{isOnDemandSuggestion(s) && !s.material_id && <small>비공개 내 자료로 가져오기</small>}</div></Link>) : <Link className="today-editorial" href="/discover"><span lang="ja" aria-hidden="true">文 化</span><div><small>문화와 지역학</small><h3>말이 태어나는 곳을<br />함께 읽어볼까요?</h3><p>일본·한국·프랑스의 이야기 ↗</p></div></Link>}
+        {recommendations.isLoading ? <p role="status">오늘의 읽을거리를 펼치고 있어요…</p> : recommendations.error ? <p role="status">추천을 불러오지 못했어요. <button type="button" onClick={() => recommendations.refetch()}>다시 확인</button></p> : suggestions.length ? suggestions.map(s => <Link key={s.id} className="today-story" href={suggestionHref(s, 'home')} prefetch={false}><SuggestionArtwork suggestion={s} /><div><small>{langNameKo(s.language)} · {s.level || '읽을거리'}</small><h3>{s.title}</h3><p>{(user && data?.vocab?.length ? reasonText(s.rank) : null) || s.channel_name || '오늘의 추천'} <span>↗</span></p><small>바로 읽기</small></div></Link>) : <Link className="today-editorial" href="/discover"><span lang="ja" aria-hidden="true">文 化</span><div><small>문화와 지역학</small><h3>말이 태어나는 곳을<br />함께 읽어볼까요?</h3><p>일본·한국·프랑스의 이야기 ↗</p></div></Link>}
       </section>
     </div>
     {user && continueDeckItems.length > 0 && <section className="today-tools"><div className="manabi-section-heading"><h2>학습을 이어가는 방법</h2><Link href="/materials" className="manabi-link">내 서재 ↗</Link></div><ContinueDeck items={continueDeckItems} /></section>}

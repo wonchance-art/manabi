@@ -91,6 +91,7 @@ import dynamic from 'next/dynamic';
 import '../components/viewer/reader-controls.css';
 const ChineseSerif = dynamic(() => import('../components/viewer/ChineseSerif'), {ssr:false});
 import { listHanjaHunEum } from '../lib/hanjaKo';
+import { viewerJapaneseGlyphTable } from '../lib/viewerJapaneseReference';
 import { useGrammarDetail } from '../lib/useGrammarDetail';
 import { useEasierText } from '../lib/useEasierText';
 import { buildContextPrompt } from '../lib/grammarDetail';
@@ -255,7 +256,7 @@ export default function ViewerPage() {
     queryFn: () => fetchMaterial(id),
     refetchInterval: (query) => {
       const d = query.state.data;
-      const s = d?.status || d?.processed_json?.status;
+      const s = d?.processed_json?.status || d?.status;
       return s === 'analyzing' ? 4000 : false;
     },
   });
@@ -1514,12 +1515,13 @@ export default function ViewerPage() {
     return () => { alive = false; };
   }, [showHanjaKo, materialLang, hanjaKoTable, inspectChar]);
   const [jaFormError,setJaFormError] = useState(false);
+  const [jaFormRetry,setJaFormRetry] = useState(0);
   useEffect(() => {
     if (hanjaJaTable || !((materialLang === 'Chinese' && isSheetOpen) || inspectChar)) return undefined;
     let alive = true;
-    import('../lib/data/hanjaJa.json').then(m => {if(alive){setHanjaJaTable(m.default||m);setJaFormError(false);}}).catch(()=>{if(alive)setJaFormError(true);});
+    import('../lib/data/hanjaJa.json').then(m => {if(alive){setHanjaJaTable(viewerJapaneseGlyphTable(m.default||m));setJaFormError(false);}}).catch(()=>{if(alive)setJaFormError(true);});
     return ()=>{alive=false;};
-  }, [materialLang,isSheetOpen,inspectChar,hanjaJaTable]);
+  }, [materialLang,isSheetOpen,inspectChar,hanjaJaTable,jaFormRetry]);
   // 자원 테이블(증강 R2·R3 — 획수·부수·1단 분해·간번체, 563KB)과 구성 풀이 스토리
   // (R4 — 최빈 시드 저작분)는 글자 카드가 실제로 열릴 때만 지연 로드 — 한자 대조
   // 토글만으로는 안 부른다(단어 줄엔 자원이 안 쓰인다).
@@ -1604,8 +1606,10 @@ export default function ViewerPage() {
       await saveContext({ word: contextWord(token), source: readingContextSource(token) });
       queryClient.invalidateQueries({ queryKey: ['vocabulary-contexts', user?.id] });
       return true;
-    } catch {
-      toast('단어는 저장했지만 문맥 연결이 남아 있어요. 단어를 다시 열어 문맥 추가를 눌러 주세요.', 'warning', 6000);
+    } catch (error) {
+      toast(error.code==='meaning_conflict'
+        ? '기존 카드와 뜻이 달라 문맥을 합치지 않았어요. 이 문맥 추가에서 뜻을 확인해 주세요.'
+        : '단어는 저장했지만 문맥 연결이 남아 있어요. 단어를 다시 열어 문맥 추가를 눌러 주세요.', 'warning', 6000);
       return false;
     }
   }
@@ -1864,13 +1868,12 @@ export default function ViewerPage() {
       return [{...token, previewSaved:state.isSaved, previewDue:state.isDue, previewKnown:state.isKnown, previewHighlight:state.highlight, previewPicked:pickedLineIdx === line || !!tokenRange.rangeTokenIds?.has(key)}];
     });
   })() : [];
-  const status = material?.status || material?.processed_json?.status;
-  const isAnalyzing = status === 'analyzing' || reanalyzeMutation.isPending;
+  const status = material?.processed_json?.status || material?.status;
+  const isAnalyzing = (status === 'analyzing' && !isStaleAnalysis) || reanalyzeMutation.isPending;
   const isPending = !isAnalyzing && (status === 'pending' || status === 'saved'); // 책 챕터 미분석 — 원문 열람 가능, 분석은 온디맨드
   const isFailed = status === 'failed';
   const isDone = status === 'completed' || status === 'partial';
-  const isPartial = status === 'partial';
-  const failedIndices = material?.processed_json?.failed_indices || [];
+  const needsRecovery = !passageOf(material) && (isStaleAnalysis || (isDone && missingLineCount > 0));
   const isCompleted = readingProgress?.is_completed === true;
   const isWordSaved = isTokenSaved(savedWords, selectedToken);
   keyHandlersRef.current = {
@@ -2087,7 +2090,8 @@ export default function ViewerPage() {
       )}
 
       {classAction}
-      {materialLang === 'Chinese' && <ViewerJapaneseReference key={`${selectedToken.id||selectedToken.text}:${refMeaning||''}`} userId={user?.id} word={headText} meaning={refMeaning||selectedToken.meaning||''} dictEntry={editDictEntry} loading={!dictFetched&&!dictError} dictError={dictError} jaTable={hanjaJaTable} formError={jaFormError}/>}
+      {materialLang === 'Chinese' && <ViewerJapaneseReference key={`${selectedToken.id||selectedToken.text}:${refMeaning||''}`} userId={user?.id} word={headText} meaning={refMeaning||selectedToken.meaning||''} pos={selectedToken.pos} dictEntry={editDictEntry} loading={!dictFetched&&!dictError} dictError={dictError} jaTable={hanjaJaTable} formError={jaFormError} onRetryForm={()=>{setJaFormError(false);setJaFormRetry(n=>n+1);}}/>}
+
       {inspectChar && (() => {
         // ④ 글자 카드(증강 R1~R3 — 오너 승인 2026-08-28): 헤더는 자기 완결(훈음·병음·자형 칩),
         // 주인공은 구성(1단 분해 — 성분 탭 = 재귀 탐색)과 다시 만나기(이 자료·내 단어).
@@ -2624,6 +2628,7 @@ export default function ViewerPage() {
           </div>
         )}
       </header>
+      {!originalParams.get('sourceEntry')&&!originalParams.get('sourceQuote')&&<ReadingSourceFocus materialId={id} ready={!!material?.processed_json?.sequence?.length} json={material?.processed_json} onTarget={setSourceFocusId} />}
       {positionError && <div className="error-banner" role="status">읽기 위치를 저장하지 못했어요. <button type="button" className="btn btn--ghost" onClick={retryPosition}>다시 저장</button></div>}
 
       {/* 출처 표기(v2-F R5) — CC BY는 **표기가 라이선스 조건**이다. `metadata.source`가
@@ -2733,7 +2738,7 @@ export default function ViewerPage() {
       >
         {/* 이합사 연결 아치 오버레이 — reader-area(position:relative, 그립 선례) 좌표계 */}
         <svg ref={sepArcRef} className="sep-arc" aria-hidden="true" />
-        {isAnalyzing && !isStaleAnalysis && (
+        {isAnalyzing && !needsRecovery && (
           <div className="analyzing-banner">
             <span>{reanalyze.committing ? '검증한 분석을 저장 중입니다…' : reanalyzeMutation.isPending ? '새 분석을 준비 중입니다. 기존 자료는 유지됩니다.' : '문단 단위로 분석 중입니다...'}</span>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -2745,13 +2750,18 @@ export default function ViewerPage() {
           </div>
         )}
 
-        {isStaleAnalysis && user?.id === material?.owner_id && (
+        {needsRecovery && user?.id === material?.owner_id && (
           <div className="analyzing-banner" style={{ background: 'color-mix(in srgb, var(--warning-bright) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--warning-bright) 40%, transparent)' }}>
-            <span>분석이 중단된 것 같아요{missingLineCount > 0 && ` (남은 ${missingLineCount}줄)`}</span>
+            <span role="status" aria-live="polite">{reanalyze.committing
+              ? '검증한 분석을 저장 중입니다…'
+              : reanalyze.recovery
+                ? `${reanalyze.recovery.total}곳 중 ${reanalyze.recovery.completed}곳을 복구했어요. 기존 내용은 그대로 볼 수 있어요.`
+                : reanalyzeMutation.isPending ? '새 분석을 준비 중입니다. 기존 자료는 유지됩니다.'
+                  : missingLineCount > 0 ? `분석이 끝나지 않은 부분이 ${missingLineCount}곳 있어요.` : '분석 결과를 확인하고 마무리할 수 있어요.'}</span>
             <div style={{ display: 'flex', gap: '8px' }}>
               {reanalyzeMutation.isPending
                 ? <button onClick={stopReanalysis} disabled={reanalyze.committing} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>⏹ 중단</button>
-                : <button onClick={() => reanalyze.mutation.mutate({ resume: true })} className="analyzing-banner__refresh" style={{ background: 'var(--accent)' }}>▶ 이어서 분석</button>
+                : <button onClick={() => reanalyze.mutation.mutate({ resume: true })} className="analyzing-banner__refresh" style={{ background: 'var(--reader-accent)' }}>▶ 이어서 분석</button>
               }
             </div>
           </div>
@@ -2778,13 +2788,6 @@ export default function ViewerPage() {
           </div>
         )}
 
-        {isPartial && failedIndices.length > 0 && !reanalyzeMutation.isPending && (
-          <div className="analyzing-banner analyzing-banner--warn">
-            <span>{failedIndices.length}줄 분석 실패</span>
-            <button onClick={() => reanalyze.mutation.mutate()} className="analyzing-banner__refresh">실패 줄 재시도</button>
-          </div>
-        )}
-
         {(() => {
           // raw_text 줄 분리 (헤딩 감지 + showRaw 렌더 공용)
           const rawLines = material?.raw_text?.split('\n') ?? [];
@@ -2800,7 +2803,7 @@ export default function ViewerPage() {
             return m ? m[1].length : 0;
           }
 
-          const showRaw = (isAnalyzing || isPending) && rawLines.length > 0;
+          const showRaw = (isAnalyzing || isPending || needsRecovery) && rawLines.length > 0;
 
           // lineIdx → [tokenId, ...] 맵 구성
           const tokensByLine = new Map();
@@ -3076,7 +3079,7 @@ export default function ViewerPage() {
         </div>
       )}
 
-      {!originalParams.get('sourceEntry')&&!originalParams.get('sourceQuote')&&<ReadingSourceFocus materialId={id} ready={!!material?.processed_json?.sequence?.length} onTarget={setSourceFocusId} />}
+
       {STUDY_LANGS.has(materialLang) && <MaterialChapterLinks lang={materialLang} kind="reading" materialId={id} />}
 
       {/* 다음 — 한 자리에 하나(뷰어 정돈 A안): 시리즈 다음 편 → 책 다음 과 → 마지막 과면 「다음 과 적기」(내 책만,
