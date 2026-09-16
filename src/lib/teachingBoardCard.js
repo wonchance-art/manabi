@@ -92,3 +92,10 @@ export function rotateCardPart(part,container,angle=0) {
   const dx=part.x+part.width/2-cx,dy=part.y+part.height/2-cy;
   return {...part,x:cx+dx*Math.cos(angle)-dy*Math.sin(angle)-part.width/2,y:cy+dx*Math.sin(angle)+dy*Math.cos(angle)-part.height/2,angle};
 }
+
+export function boardPageSummary(page) {
+  const visible=page.elements.filter(el=>!el.isDeleted);
+  const words=visible.filter(expressionOf).map(el=>readCard(el,visible)?.text).filter(Boolean);
+  const text=words.length ? words.join(' · ') : visible.filter(el=>el.type==='text').map(el=>el.text).join(' · ');
+  return {text:text.slice(0,160),count:visible.length,words:words.length,ink:visible.filter(el=>el.type==='freedraw').length};
+}

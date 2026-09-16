@@ -42,7 +42,8 @@ const analyzedLines=[];
 const tabletState={dictionaryDelay:0,lookups:0};
 const report={engine,touch,checks:[],errors:[],screens:[],failedRequests:[],expectedTransport:[]},writes=[];
 let replacingDocument=false,cancelledHomePrefetch=false,revisionConflicts=0;
-await context.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());
+// WebKit routes local Blob images too; allow this app's generated thumbnails.
+await context.route('**/*',r=>{const url=r.request().url();return url.startsWith(base)||url.startsWith(`blob:${base}/`)?r.continue():r.abort();});
 // Vercel's injected review toolbar is hosting chrome, outside the app flow.
 // Stub only that script; application console failures still fail verification.
 await context.route('https://vercel.live/_next-live/feedback/feedback.js',r=>r.fulfill({contentType:'application/javascript',body:''}));
