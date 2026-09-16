@@ -9,6 +9,20 @@ GRANT USAGE ON SCHEMA storage TO authenticated;GRANT SELECT,INSERT,UPDATE,DELETE
  await db.exec(fs.readFileSync(new URL('../supabase/migrations/20260916022136_teaching_board_cloud.sql',import.meta.url),'utf8'));
  await db.exec('SET ROLE authenticated');
  const files=new Map(),state={offline:false,loseResponse:false,expectedErrors:0,writes:0};
+ // WebKit's Playwright request payload omits Blob file bytes (size 0).
+ // Observe that browser's actual Blob before fetch; use it only for this fixture.
+ const browserFiles=new Map();
+ if(context.browser().browserType().name()==='webkit'){
+  await context.exposeBinding('__boardFixtureUpload',(_source,path,text)=>browserFiles.set(path,text));
+  await context.addInitScript(()=>{const fetch=window.fetch.bind(window);window.fetch=async(input,init)=>{
+   const url=typeof input==='string'?input:input?.url||String(input);
+   if(url.includes('/storage/v1/object/teaching-board-pages/')&&(init?.method||input?.method||'GET').toUpperCase()==='POST'){
+    const form=await new Request(input,init).formData(),file=[...form.values()].find(value=>typeof value!=='string');
+    if(file)await window.__boardFixtureUpload(decodeURIComponent(new URL(url,location.href).pathname.split('/teaching-board-pages/')[1]),await file.text());
+   }
+   return fetch(input,init);
+  };});
+ }
  const row=async day=>(await db.query('select id,owner_id,root_id,day::text,revision,manifest,updated_at from class_teaching_boards where root_id=1 and day=$1',[day])).rows[0]||null;
  const save=async(day,document)=>{
   const b=(await db.query('select teaching_board_prepare(1,$1) b',[day])).rows[0].b,pages=[];
@@ -28,7 +42,7 @@ GRANT USAGE ON SCHEMA storage TO authenticated;GRANT SELECT,INSERT,UPDATE,DELETE
    const b=(await db.query('select teaching_board_commit(1,$1,$2,$3,$4) b',[body.day,body.revision,body.operation,body.manifest])).rows[0].b;state.writes++;
    if(state.loseResponse){state.loseResponse=false;state.expectedErrors++;report.expectedTransport.push('intentional lost successful board response');return route.abort('failed');}
    return send({board:b});
-  }catch(error){state.expectedErrors++;report.expectedTransport.push(error.code==='40001'?'intentional board revision conflict':error.message);return send({error:'다른 기기에서 수정한 판이 있어요.'},409);}
+  }catch(error){if(error.code!=='40001')report.errors.push('unexpected board SQL error: '+error.message);state.expectedErrors++;report.expectedTransport.push(error.code==='40001'?'intentional board revision conflict':error.message);return send({error:'다른 기기에서 수정한 판이 있어요.'},409);}
  });
  await context.route('**/storage/v1/object/**',async route=>{
   const req=route.request(),url=new URL(req.url()),path=decodeURIComponent(url.pathname.split('/teaching-board-pages/')[1]||'');
@@ -36,7 +50,9 @@ GRANT USAGE ON SCHEMA storage TO authenticated;GRANT SELECT,INSERT,UPDATE,DELETE
   if(req.method()==='OPTIONS')return route.fulfill({status:204,headers:cors});
   if(req.method()==='POST'){
    const raw=req.postDataBuffer();const body=req.headers()['content-type']||'';let text=raw.toString();
-   if(body.includes('multipart/form-data')){const boundary='--'+body.split('boundary=')[1];const parts=text.split(boundary);text=parts.find(x=>x.includes('filename=')).split('\r\n\r\n').slice(1).join('\r\n\r\n').replace(/\r\n$/,'');}
+   if(body.includes('multipart/form-data')){const form=await new Request(req.url(),{method:'POST',headers:{'content-type':body},body:raw}).formData();const file=[...form.values()].find(value=>typeof value!=='string');assert(file,'uploaded page Blob');text=await file.text();}
+   if(!text&&browserFiles.has(path))text=browserFiles.get(path);
+   assert(text,'uploaded page bytes must be observable');
    if(files.has(path)){state.expectedErrors++;return route.fulfill({headers:cors,status:400,json:{message:'The resource already exists',statusCode:'400',error:'Duplicate'}});}
    files.set(path,text);await db.query("insert into storage.objects(bucket_id,name,metadata) values('teaching-board-pages',$1,$2)",[path,{size:Buffer.byteLength(text)}]);return route.fulfill({headers:cors,json:{Key:'teaching-board-pages/'+path}});
   }
