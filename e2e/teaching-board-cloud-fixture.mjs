@@ -20,7 +20,7 @@ GRANT USAGE ON SCHEMA storage TO authenticated;GRANT SELECT,INSERT,UPDATE,DELETE
   if(state.offline){state.expectedErrors++;report.expectedTransport.push('intentional board connection failure');return send({error:'연결이 끊겼어요. 기기의 필기는 보관되어 있습니다.'},503);}
   try{
    if(req.method()==='GET'){
-    if(p.has('day'))return send({board:await row(p.get('day'))});
+    if(p.has('day')){const gate=state.readGate;state.readGate=null;if(gate){gate.entered=true;await gate.wait;}return send({board:await row(p.get('day'))});}
     const rows=(await db.query('select id,day::text,manifest,updated_at from class_teaching_boards where root_id=1 and manifest is not null order by day desc')).rows;return send({boards:rows.map(b=>({id:b.id,day:b.day,pages:b.manifest.pages.length,updatedAt:b.updated_at}))});
    }
    const body=req.postDataJSON();
@@ -73,6 +73,14 @@ export async function verifyBoardCloud({page,base,day,cloud,check,waitFor,saveSc
  await menus.close();await menus.action('main','페이지 메뉴');await hud.getByRole('button',{name:'새 판',exact:true}).click();cloud.state.loseResponse=true;panel=await status();await panel.getByRole('button',{name:'지금 저장',exact:true}).click();await panel.getByText('계정에 저장됨',{exact:true}).waitFor();
  const count=(await cloud.row(day)).manifest.pages.length;await panel.getByRole('button',{name:'지금 저장',exact:true}).click();assert.equal((await cloud.row(day)).manifest.pages.length,count);
  check('a lost successful save response is reconciled without duplicate boards or pages');
+ // A user can keep drawing while a slow 'latest board' download is in flight.
+ let releaseRead;const gate={entered:false,wait:new Promise(resolve=>{releaseRead=resolve;})};cloud.state.readGate=gate;
+ await panel.getByRole('button',{name:'최신 판 확인',exact:true}).click();await waitFor(()=>gate.entered);
+ await menus.close();await menus.action('main','페이지 메뉴');await hud.getByRole('button',{name:'새 판',exact:true}).click();
+ await waitFor(async()=>(await readBoards()).some(r=>r.id===r.scope&&r.document.accountBoard&&r.document.pages.length===count+1));releaseRead();panel=await status();await panel.getByText(/확인하는 동안 필기가 변경됐어요/).waitFor();
+ assert((await readBoards()).some(r=>r.id===r.scope&&r.document.accountBoard&&r.document.pages.length===count+1));
+ await panel.getByRole('button',{name:'지금 저장',exact:true}).click();await panel.getByText('계정에 저장됨',{exact:true}).waitFor();assert.equal((await cloud.row(day)).manifest.pages.length,count+1);
+ check('edits made during a slow latest-board download are preserved instead of being replaced');
  for(const [width,height]of [[390,844],[1024,768]]){await page.setViewportSize({width,height});await saveScreen('cloud-status-'+width);assert(await page.locator('.viewer-layout').evaluate(e=>e.scrollWidth<=e.clientWidth+1));}
  check('account status and recovery menus fit phone and tablet widths');
  await menus.close();const legacyDay='2026-09-08',legacyScope=JSON.stringify(['teaching-board',uid,'fixture-class',legacyDay]);

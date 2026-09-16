@@ -79,14 +79,26 @@ export default function useTeachingBoardCloud(owner,root,day,legacyScope){
   clearTimeout(timer.current);if(run.dirty&&!run.blocked)timer.current=setTimeout(()=>sync().catch(()=>{}),1800);
  },[scope,persist,publish,sync]);
  const reload=useCallback(async()=>{
-  const run=session.current;if(!run?.document)return;
-  clearTimeout(timer.current);await run.syncing?.catch(()=>{});await run.localQueue;
+  const run=session.current;if(!run?.alive||run.scope!==scope||!run.document)return;
+  clearTimeout(timer.current);await run.syncing?.catch(()=>{});await run.localQueue.catch(()=>{});
+  const generation=run.generation,oldRevision=run.revision;
   if(run.dirty||run.blocked)await preserveTeachingBoardRecovery(scope,run.document,run.writer);
-  const remote=await readCloudBoard(root,day);if(!remote.document)throw new Error('계정의 설명판을 찾지 못했어요. 내 필기는 그대로 두었어요.');
-  // Another tab may have saved locally: reread its CAS head, but preserve ours first.
-  const latest=await readTeachingBoard(scope);run.localRevision=latest?.revision||null;run.document=restoreBoardCamera(remote.document,run.document);run.revision=remote.row.revision;run.dirty=false;run.blocked=false;run.remoteKnown=true;run.cloudSaved=true;
-  await persist(run);const recoveries=await recoveriesFor(scope,legacyScope);if(run.alive)setState(old=>({...old,document:run.document,error:'',conflict:false,cloudSaved:true,saving:false,recoveries,epoch:(old.epoch||0)+1}));
- },[scope,root,day,persist,legacyScope]);
+  const remote=await readCloudBoard(root,day);if(!run.alive||run.scope!==scope)return;
+  if(!remote.document)throw new Error('계정의 설명판을 찾지 못했어요. 내 필기는 그대로 두었어요.');
+  if(run.generation!==generation||run.revision!==oldRevision)throw new Error('확인하는 동안 필기가 변경됐어요. 내 필기를 보관한 뒤 다시 눌러 주세요.');
+  const latest=await readTeachingBoard(scope);
+  if(latest&&latest.revision!==run.localRevision&&latest.document.accountBoard?.dirty)await preserveTeachingBoardRecovery(scope,latest.document,crypto.randomUUID());
+  const recoveries=await recoveriesFor(scope,legacyScope);
+  if(run.generation!==generation||run.revision!==oldRevision)throw new Error('새로 쓴 필기를 보존했어요. 다시 최신 판을 확인해 주세요.');
+  const document=restoreBoardCamera(remote.document,run.document);
+  const saved=await saveTeachingBoard(scope,latest?.revision||null,{...document,accountBoard:{version:1,revision:remote.row.revision,dirty:false}},run.writer);
+  run.localRevision=saved.revision;
+  // A new stroke while IndexedDB was committing must not be replaced on screen
+  // or silently rebased onto a different remote version.
+  if(run.generation!==generation){run.blocked=true;run.revision=oldRevision;await preserveTeachingBoardRecovery(scope,run.document,run.writer);publish(run,{conflict:true,error:'새 필기를 복구본에 보관했어요. 다시 최신 판을 확인해 주세요.'});return;}
+  run.document=document;run.revision=remote.row.revision;run.dirty=false;run.blocked=false;run.remoteKnown=true;run.cloudSaved=true;run.localSaved=true;
+  if(run.alive)setState(old=>({...old,document:run.document,error:'',conflict:false,cloudSaved:true,localSaved:true,saving:false,recoveries,epoch:(old.epoch||0)+1}));
+ },[scope,root,day,legacyScope,publish]);
  useEffect(()=>{
   const retry=()=>sync().catch(()=>{});
   const foreground=async()=>{const run=session.current;if(!run?.alive||run.scope!==scope||!run.document)return;if(run.dirty){retry();return;}try{const remote=await readCloudBoard(root,day);if(!run.alive)return;if(remote.row?.revision!==run.revision)publish(run,{error:'다른 기기에 저장한 판이 있어요. 저장 상태에서 최신 판을 확인하세요.',cloudSaved:false});}catch(error){if(run.alive)publish(run,{error:error.message,cloudSaved:false});}};
