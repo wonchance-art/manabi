@@ -1,3 +1,4 @@
+import {installBoardCloudFixture,verifyBoardCloud} from './teaching-board-cloud-fixture.mjs';
 import {boardMenus,verifyBoardMenus} from './teaching-board-menu-checks.mjs';
 // Real React pages + HTTP fixtures + actual disposable PostgreSQL RPCs. No production writes.
 import {chromium,webkit} from 'playwright-core';
@@ -84,7 +85,9 @@ await context.route('**/rest/v1/**',async r=>{
 });
 await context.route('**/api/suggestions/today',r=>r.fulfill({json:[]}));
 await context.route('**/api/analyze',async r=>{if(analysisDelay)await new Promise(resolve=>setTimeout(resolve,analysisDelay));if(analysisFail)return r.fulfill({status:503,json:{error:'검수 분석 실패'}});const {lines}=r.request().postDataJSON();analyzedLines.push(lines);try{await r.fulfill({json:{results:lines.map(line=>({sequence:['word'],dictionary:{word:{text:line,meaning:emptyMeaning?'':'검수 표현의 뜻',pos:'명사',furigana:'よみ'}}}))}});}catch{}});
+const cloud=await installBoardCloudFixture({context,db,uid,cors,report});
 const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.message));page.on('console',m=>{
+ if(cloud.state.expectedErrors>0&&/503|409|400|ERR_FAILED|Load failed/.test(m.text())){cloud.state.expectedErrors--;return;}
  if(m.type()!=='error'||m.text().startsWith('WebSocket connection')||(lookupError&&m.text().includes('503')))return;
  if(cancelledHomePrefetch&&m.text().startsWith('Failed to fetch RSC payload for '+base+'/home')){cancelledHomePrefetch=false;report.expectedTransport.push('home link prefetch cancelled while replacing the test document');return;}
  if(revisionConflicts>0&&m.text().includes('409 (Conflict)')){revisionConflicts--;return;}
@@ -255,6 +258,7 @@ try {
  await waitFor(async()=> (await current()).raw_text.includes('我们明天见'));
  await waitFor(()=>dock.getByText('서버 저장 확인됨',{exact:true}).isVisible());
  check('the original teacher inspector still edits and records a dragged multiword expression');
+ if(process.env.QA_BOARD_CLOUD==='1')await verifyBoardCloud({page,base,day,cloud,check,waitFor,saveScreen,menus,readBoards,uid});
  assert.equal(report.errors.length,0,report.errors.join('\n'));check('no browser runtime errors');
 } catch(error){report.failure=error.stack;await saveScreen('failure');console.error(await page.locator('body').innerText());throw error;}
 finally{await fs.promises.writeFile(out+'/report.json',JSON.stringify(report,null,2));await browser.close();await db.close();}
