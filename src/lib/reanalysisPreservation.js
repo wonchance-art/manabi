@@ -1,11 +1,13 @@
 import { diffLineMap } from './sourceEdit';
+import { analysisTokenLine, inspectAnalysisCoverage, mergeReanalysisLines } from './analysisCoverage';
 
-const tokenLine = id => /^(?:id|br|failed)_(\d+)_/.exec(id)?.[1];
+const tokenLine = id => analysisTokenLine(id) ?? NaN;
 
 // 같은 원문 줄의 같은 글자 범위에만 이전 식별자와 수동 교정을 연결한다.
 // 분할이 달라졌거나 문맥이 바뀐 토큰을 비슷한 단어에 억지로 연결하지 않는다.
 export function preserveReanalysisTokens(material, text, result, corrections = []) {
   const old = material.processed_json || {};
+  const incomplete = new Set(inspectAnalysisCoverage(material.raw_text || '', { ...old, failed_indices: [] }).missingIndices);
   const mapping = diffLineMap((material.raw_text || '').split('\n'), text.split('\n'));
   if (!mapping.ok) throw new Error('원문 변경 범위가 너무 커서 안전하게 연결하지 못했어요.');
   const patches = new Map();
@@ -27,7 +29,7 @@ export function preserveReanalysisTokens(material, text, result, corrections = [
   const anchors = new Map(), offsets = new Map();
   for (const id of old.sequence || []) {
     const token = old.dictionary?.[id], line = Number(tokenLine(id));
-    if (typeof token?.text !== 'string' || token.pos === '개행' || token.failed || !Number.isInteger(line) || !mapping.pairs.has(line)) continue;
+    if (typeof token?.text !== 'string' || token.pos === '개행' || token.failed || incomplete.has(line) || !Number.isInteger(line) || !mapping.pairs.has(line)) continue;
     const start = offsets.get(line) || 0;
     offsets.set(line, start + token.text.length);
     const nextLine = mapping.pairs.get(line);
@@ -52,20 +54,8 @@ export function preserveReanalysisTokens(material, text, result, corrections = [
 
 export function completeAnalysis(result, text) {
   if (result?.status !== 'completed' || result.failed_indices?.length || !Array.isArray(result.sequence) || !result.dictionary) return false;
-  if (new Set(result.sequence).size !== result.sequence.length) return false;
-  const seen = new Map();
-  const lines = text.split('\n');
-  for (const id of result.sequence) {
-    const token = result.dictionary[id];
-    if (!token || typeof token.text !== 'string' || token.failed) return false;
-    if (token.pos !== '개행') {
-      const line = Number(tokenLine(id));
-      if (!Number.isInteger(line) || line < 0 || line >= lines.length) return false;
-      seen.set(line, (seen.get(line) || '') + token.text);
-    }
-  }
-  const normalize = value => value.normalize('NFC').replace(/\s/g, '');
-  return lines.every((line, index) => normalize(line) === normalize(seen.get(index) || ''));
+  const coverage = inspectAnalysisCoverage(text, result);
+  return coverage.validStructure && coverage.missingIndices.length === 0;
 }
 
 export async function replaceViewerAnalysis(client, material, rawText, json, attempt) {
@@ -86,6 +76,16 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
   if (!rawText?.trim()) throw new Error('원본 텍스트가 없습니다.');
   const checkAbort = () => { if (signal.aborted) throw new DOMException('Aborted', 'AbortError'); };
   checkAbort();
+  const original = options.baseJsonOverride || material.processed_json;
+  const coverage = inspectAnalysisCoverage(rawText, original);
+  const selective = !options.fullReset && (options.resume || options.selectedLineIndices != null || original?.failed_indices?.length);
+  if (selective && !coverage.validStructure) throw new Error('기존 분석의 줄 위치를 확인하지 못했어요. 원문은 유지됩니다. 전체 재분석을 사용해 주세요.');
+  const selected = selective ? [...new Set([
+    ...(options.selectedLineIndices || []), ...coverage.missingIndices,
+  ])].sort((a, b) => a - b) : null;
+  if (selected?.some(line => !Number.isInteger(line) || line < 0 || line >= rawText.split('\n').length)) throw new Error('분석할 줄의 위치가 올바르지 않아요.');
+  const base = selected ? { ...original, failed_indices: selected } : null;
+  if (selected) options.onRecoveryProgress?.({ completed: 0, total: selected.length });
   // 교정 이력을 읽지 못하면 교정을 잃을 수 있으므로 기존 자료를 유지하고 중단한다.
   const corrections = [];
   for (let from = 0; ; from += 500) {
@@ -98,22 +98,27 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
     if (data.length < 500) break;
   }
   checkAbort();
-  const original = options.baseJsonOverride || material.processed_json;
-  const selected = options.selectedLineIndices ? [...options.selectedLineIndices] : null;
-  const base = selected ? { ...original, failed_indices: selected }
-    : !options.fullReset && original?.failed_indices?.length ? original : null;
   const attempt = crypto.randomUUID();
   const metadata = { ...original?.metadata, viewerRevision: attempt, updated_at: new Date().toISOString() };
   // 삭제/줄 이동만 있으면 리맵된 분석을 그대로 검증한다. AI 재호출이 필요하지 않다.
-  const result = options.baseJsonOverride && selected?.length === 0
+  let result = selected?.length === 0
     ? { ...structuredClone(original), status: 'completed', failed_indices: [] }
     : await analyze(rawText, signal, {
     metadata, existingJson: base ? structuredClone(base) : null, concurrency: 8,
-    onBatch: ({ currentJson }) => { checkAbort(); onProgress?.(currentJson.last_idx); },
+    onBatch: ({ currentJson }) => {
+      checkAbort();
+      onProgress?.(currentJson.last_idx);
+      if (selected) {
+        const missing = new Set(inspectAnalysisCoverage(rawText, currentJson).missingIndices);
+        options.onRecoveryProgress?.({ completed: selected.filter(line => !missing.has(line)).length, total: selected.length });
+      }
+    },
   });
   checkAbort();
+  if (selected?.length) result = mergeReanalysisLines(rawText, original, result, selected);
   if (!completeAnalysis(result, rawText)) throw new Error('새 분석을 완료하지 못했어요. 기존 원문과 분석은 그대로 유지됩니다.');
   const json = preserveReanalysisTokens(material, rawText, { ...result, metadata }, corrections || []);
+  if (!completeAnalysis(json, rawText)) throw new Error('분석 연결을 확인하지 못했어요. 기존 원문과 분석은 그대로 유지됩니다.');
   checkAbort();
   options.onCommitting?.();
   const record = await replaceViewerAnalysis(client, material, rawText, json, attempt);

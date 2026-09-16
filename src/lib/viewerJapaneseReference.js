@@ -2,16 +2,33 @@
 // may supply a Japanese equivalent; other senses require a separate lookup.
 const text = value => typeof value === 'string' ? value.trim() : '';
 const senseKey = value => text(value).normalize('NFKC').replace(/[\s,，·;；]/g,'');
+// These shared modern Japanese glyphs must not expand to the Chinese variants
+// chosen by the legacy Unihan reverse map. This is a character-level correction,
+// not a word translation (出神 / 表达 / 大家 remain separate lexical questions).
+// Current Japanese forms: 文化庁「常用漢字表」2010, entries 出・表・家.
+// Keep the generated table intact; both viewer glyph rows and character cards
+// receive this corrected view of it.
+export function viewerJapaneseGlyphTable(table) {
+  return table ? {...table,出:'出',表:'表',家:'家'} : null;
+}
 export function normalizeJapaneseReference(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const form = text(value.form), warn = text(value.warn);
   if (!form || form.length > 80 || /[\r\n<>]/.test(form) || warn.length > 120 || /[\r\n<>]/.test(warn)) return null;
   return {form,warn:warn||null};
 }
-export function japaneseReferenceForMeaning(entry, meaning) {
+const posKeys=value=>(text(value).match(/대명사|접속사|형용사|명사|동사|부사|전치사|개사|조사|양사|수사|감탄사|성어/g) || []).map(p=>p==='전치사'?'개사':p);
+export function japaneseReferenceForMeaning(entry, meaning, {pos,form} = {}) {
   const key = senseKey(meaning);
   if (!key) return null;
-  const row = Array.isArray(entry?.meanings) ? entry.meanings.find(m => senseKey(m?.meaning) === key && normalizeJapaneseReference(m?.ja)) : null;
+  const row = Array.isArray(entry?.meanings) ? entry.meanings.find(m => {
+    if(senseKey(m?.meaning)!==key || !normalizeJapaneseReference(m?.ja)) return false;
+    const candidatePos=posKeys(m.pos), selectedPos=posKeys(pos);
+    if(candidatePos.length && selectedPos.length && !candidatePos.some(p=>selectedPos.includes(p))) return false;
+    // Conflicting legacy metadata needs confirmation; glyph identity alone is
+    // not evidence for an equivalent meaning. This only filters local candidates.
+    return !(form && m.ja.diff===true && text(m.ja.form)===form);
+  }) : null;
   return normalizeJapaneseReference(row?.ja);
 }
 export async function lookupJapaneseReference({word,meaning,form,signal}) {

@@ -80,9 +80,10 @@ describe('입구 — 칩 한 줄 + 아코디언', () => {
     expect(pdf.indexOf('onCountChange?.(pdfs.length)')).toBeLessThan(pdf.indexOf('if (!open) return null;'));
   });
 
-  it('딥링크 배선은 그대로 — ?book=·추천 영상 주소·/quick 초안', () => {
+  it('책·빠른 초안은 기존 경로, 추천은 완성된 읽기로 이동', () => {
     expect(page).toContain('initialBookKey={appendBookKey}');
-    expect(page).toContain('initialUrl={linkAutoUrl}');
+    expect(read('src/app/(app)/materials/add/page.jsx')).toContain('redirect(`/suggestions/');
+    expect(page).not.toContain("searchParams.get('suggestion')");
     expect(page).toContain("'quick'");
     // 입구가 열어 달라고 하는 자리 — 딥링크 효과 안
     const sent = read(SECTIONS.sentences);

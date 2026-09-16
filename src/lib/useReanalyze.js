@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { analyzeText } from './analyzeText';
@@ -8,6 +8,7 @@ import { autoSplitParagraphs } from './splitParagraphs';
 import { runPreservedReanalysis } from './reanalysisPreservation';
 import { passageOf } from './sourcePassage';
 import { runPassageAnalysis } from './passageAnalysis';
+import { inspectAnalysisCoverage } from './analysisCoverage';
 
 const STALE_THRESHOLD_MS = 3 * 60 * 1000;
 
@@ -17,23 +18,12 @@ export function isStaleAnalyzing(material) {
   if (status !== 'analyzing') return false;
   const updatedAt = json?.metadata?.updated_at;
   if (!updatedAt) return true;
-  return Date.now() - new Date(updatedAt).getTime() > STALE_THRESHOLD_MS;
+  const timestamp = new Date(updatedAt).getTime();
+  return !Number.isFinite(timestamp) || Date.now() - timestamp > STALE_THRESHOLD_MS;
 }
 
 export function computeMissingLineIndices(material) {
-  const rawText = material?.raw_text || '';
-  const lines = rawText.split('\n');
-  const sequence = material?.processed_json?.sequence || [];
-  const processedIndices = new Set();
-  for (const tokenId of sequence) {
-    const m = tokenId.match(/^(?:id|failed|br)_(\d+)_/);
-    if (m) processedIndices.add(parseInt(m[1]));
-  }
-  const missing = [];
-  for (let i = 0; i < lines.length; i++) {
-    if (!processedIndices.has(i) && lines[i].trim()) missing.push(i);
-  }
-  return missing;
+  return inspectAnalysisCoverage(material?.raw_text || '', material?.processed_json).missingIndices;
 }
 
 /** raw_text를 문단으로 분리 (자동 분리 적용). 각 문단: { index, lineIndices, preview } */
@@ -73,6 +63,7 @@ export function useReanalyze({ materialId, material, refetch, toast }) {
   const abortRef = useRef(null);
   const committingRef = useRef(false);
   const [committing, setCommitting] = useState(false);
+  const [recovery, setRecovery] = useState(null);
   const queryClient = useQueryClient();
   useEffect(() => () => abortRef.current?.abort(), [materialId]);
   const [confirmState, setConfirmState] = useState(null);
@@ -81,7 +72,7 @@ export function useReanalyze({ materialId, material, refetch, toast }) {
 
   const failedIndices = material?.processed_json?.failed_indices || [];
   const stale = isStaleAnalyzing(material);
-  const missingIndices = stale ? computeMissingLineIndices(material) : [];
+  const missingIndices = useMemo(() => computeMissingLineIndices(material), [material]);
 
   const mutation = useMutation({
     onMutate: () => ({ materialId }),
@@ -97,16 +88,23 @@ export function useReanalyze({ materialId, material, refetch, toast }) {
       }
 
       const controller = new AbortController();
+      if (committingRef.current) throw new Error('분석을 저장하고 있어요. 잠시 기다려 주세요.');
       abortRef.current?.abort();
       abortRef.current = controller;
+      setRecovery(null);
       try {
         const record = await runPreservedReanalysis(supabase, material, controller.signal, analyzeText, {
           fullReset, resume, selectedLineIndices, rawTextOverride, baseJsonOverride,
           onCommitting: () => { committingRef.current = true; setCommitting(true); },
+          onRecoveryProgress: progress => {
+            if (activeId.current === materialId && abortRef.current === controller) setRecovery({ ...progress, materialId });
+          },
         });
         queryClient.setQueryData(['material', String(materialId)], record);
         return record.processed_json;
-      } finally { committingRef.current = false; setCommitting(false); }
+      } finally {
+        if (abortRef.current === controller) { committingRef.current = false; setCommitting(false); }
+      }
     },
     onSuccess: (json, variables, scope) => {
       if (activeId.current !== scope?.materialId) return;
@@ -130,6 +128,7 @@ export function useReanalyze({ materialId, material, refetch, toast }) {
     stale,
     missingIndices,
     committing,
+    recovery: recovery?.materialId === materialId && mutation.isPending ? recovery : null,
     request: (opts) => setConfirmState(opts),
     confirm: () => { mutation.mutate(confirmState); setConfirmState(null); },
     cancel: () => setConfirmState(null),

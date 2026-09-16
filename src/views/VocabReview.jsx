@@ -2,27 +2,13 @@ import { useEffect, useId, useRef } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
 import { detectLang, displayWord, splitSentenceAroundWord } from '../lib/constants';
-import { sourceHref } from '../lib/learningSources';
 import VocabularyContexts from '../components/learning/VocabularyContexts';
 
 function ScoreSection({ word, onScore }) {
   return (
     <div className="review-card__answer" role="status" aria-live="polite">
       <p className="review-card__meaning">{word.meaning}</p>
-      <VocabularyContexts key={word.id} vocabularyId={word.id} readOnly />
-      {sourceHref({ kind: 'reading', material_id: word.source_material_id }) && <p className="review-room-source-link"><Link href={sourceHref({ kind: 'reading', material_id: word.source_material_id, locator: { surface: word.word_text } })} target="_blank" rel="noopener noreferrer" prefetch={false}>원문 열기 ↗</Link><small>새 탭에서 확인한 뒤 이 카드로 돌아오세요.</small></p>}
-      {word.source_sentence && (() => {
-        const { parts, term } = splitSentenceAroundWord(word.source_sentence, word.word_text, word.base_form);
-        return (
-          <p className="review-card__source">
-            {parts.map((part, i, arr) =>
-              i < arr.length - 1
-                ? <span key={i}>{part}<mark className="review-card__highlight">{term}</mark></span>
-                : <span key={i}>{part}</span>
-            )}
-          </p>
-        );
-      })()}
+      <VocabularyContexts key={word.id} vocabularyId={word.id} word={word} readOnly />
       <p className="review-score-guide">기억이 얼마나 잘 됐나요?<span className="review-keys-hint"> · 키 1~4 · 되돌리기 Ctrl/⌘+Z</span></p>
       {/* 숫자 배지 = 키 안내(W R2) — 라벨 텍스트는 버튼 첫 자식 그대로(saveGrade 계약이 이 소스에서 라벨을 뽑는다) */}
       <div className="review-score-grid">
