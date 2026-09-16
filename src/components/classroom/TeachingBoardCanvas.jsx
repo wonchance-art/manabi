@@ -21,6 +21,7 @@ import {supabase} from '../../lib/supabase';
 import {boardScope, boardExpression, expressionOf, boardInsertion, replaceBoardPage, BOARD_PAGE_LIMIT, validateBoard} from '../../lib/teachingBoard';
 import useTeachingBoardCloud from '../../lib/useTeachingBoardCloud';
 import BoardCloudPanel from './BoardCloudPanel';
+import {copyBoardPages} from '../../lib/teachingBoardReuse';
 import {cardSkeleton, cardFields, readCard, rotateCardPart, wordCardSkeleton, expressionElements, arrangeExpressionGroups} from '../../lib/teachingBoardCard';
 import {isClassComposing} from '../../lib/classReaderDraft';
 import {boardCameraForBounds} from '../../lib/teachingBoardViewport';
@@ -441,6 +442,16 @@ export function SharedBoardCanvas({owner, team, day, rootId, scope, store, perso
     const recovered=row.document.pages.map(page=>({...page,id:crypto.randomUUID()}));
     document.current={...document.current,pages:[...document.current.pages,...recovered]};changePage(recovered[0].id);setMessage('최신 판을 보존하고 충돌본을 새 판으로 불러왔어요.');
   };
+  const reusePages = (source, ids) => {
+    if(store.conflict)throw new Error('먼저 저장 상태에서 다른 기기의 판을 확인해 주세요.');
+    // Read the live canvas at the moment of insertion, not the snapshot from
+    // when the history panel started loading. The teacher may keep drawing.
+    commit();
+    const copied=copyBoardPages(document.current,source.document,source.row,ids);
+    document.current=copied.document;
+    changePage(copied.ids[0]);closeMenu(true);
+    setMessage(`${source.row.day}의 ${copied.ids.length}개 페이지를 현재 수업에 가져왔어요.`);
+  };
   const record = async (values=null) => {
     if(recording)return;
     const list=values||anchors.map(el=>readCard(el,api.current.getSceneElementsIncludingDeleted())).filter(Boolean);
@@ -505,7 +516,7 @@ export function SharedBoardCanvas({owner, team, day, rootId, scope, store, perso
       </div>
     </>)}
     {!personal&&popover('status',<BoardCloudPanel mode="status" active={menu==='status'} rootId={rootId} day={day} store={store} onBackup={backup} onBeforeAction={commit}/>)}
-    {!personal&&popover('history',<BoardCloudPanel mode="history" active={menu==='history'} rootId={rootId} day={day} store={store} onBeforeAction={commit} onOpen={async nextDay=>{await store.prepareLeave();const url=new URL(window.location.href);url.searchParams.set('day',nextDay);url.searchParams.set('returnTo',`/class/${team.key}`);url.searchParams.set('board','1');window.location.assign(url.href);}}/>)}
+    {!personal&&popover('history',<BoardCloudPanel pages={pages} onCopy={reusePages} mode="history" active={menu==='history'} rootId={rootId} day={day} store={store} onBeforeAction={commit} onOpen={async nextDay=>{await store.prepareLeave();const url=new URL(window.location.href);url.searchParams.set('day',nextDay);url.searchParams.set('returnTo',`/class/${team.key}`);url.searchParams.set('board','1');window.location.assign(url.href);}}/>)}
     {popover('session',sessionContent)}
     {popover('entry',<form className="teaching-board-import" aria-label="표현 불러오기" onSubmit={applyExpression} onCompositionStart={()=>{composing.current=true;}} onCompositionEnd={()=>{composing.current=false;}} onKeyDown={event=>{if(event.key==='Enter'&&isClassComposing(event,composing.current))event.preventDefault();}}>
       <div className="board-entry-line"><label className="board-entry-query"><span className="teaching-board-accessible">단어·표현</span><input ref={inputRef} value={input} maxLength={500} placeholder="표현 입력·찾기" onFocus={()=>setSearching(true)} onChange={event=>{attempt.current++;editVersion.current++;setBusy(false);setInput(event.target.value);setCandidates([]);setSenses([]);setReading('');setMeaning('');setEntrySource({kind:'manual'});setLookupSource('');setSearching(true);}}/></label><BoardIconButton icon="more" label="읽기와 뜻 입력" aria-expanded={panel} onClick={()=>{setPanel(v=>!v);setSearching(false);}}/></div>

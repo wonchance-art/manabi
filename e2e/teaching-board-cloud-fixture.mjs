@@ -1,3 +1,4 @@
+import {verifyBoardReuse} from './teaching-board-reuse-checks.mjs';
 import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
@@ -73,8 +74,9 @@ export async function verifyBoardCloud({page,base,day,cloud,check,waitFor,saveSc
  await page.goto(base+`/viewer/10?class=fixture-class&day=${day}&board=1`);await board.locator('canvas').first().waitFor();await waitFor(async()=>(await readBoards()).some(r=>r.document.accountBoard?.revision===before.revision));
  check('a device without local drafts restores the private account board and every page');
  const cached=(await readBoards()).find(r=>r.document.accountBoard),document=structuredClone(cached.document);delete document.accountBoard;
+ if(process.env.QA_BOARD_REUSE==='1')await verifyBoardReuse({page,base,day,cloud,check,waitFor,saveScreen,menus,readBoards,document});
  const earlier='2026-09-09';await cloud.save(earlier,document);await menus.open('main');await hud.getByRole('button',{name:'지난 설명판',exact:true}).click();
- const history=hud.locator('#board-menu-history');await history.getByRole('button',{name:new RegExp(earlier)}).waitFor();await saveScreen('cloud-history');await history.getByRole('button',{name:new RegExp(earlier)}).click();await page.waitForURL('**day=2026-09-09**');await board.locator('canvas').first().waitFor();
+ const history=hud.locator('#board-menu-history');await history.locator('.board-cloud-history-row > button:first-child').filter({hasText:earlier}).waitFor();await saveScreen('cloud-history');await history.locator('.board-cloud-history-row > button:first-child').filter({hasText:earlier}).click();await page.waitForURL('**day=2026-09-09**');await board.locator('canvas').first().waitFor();
  check('the board menu opens a past lesson without a team selector or losing the current drawing');
  await page.goto(base+`/viewer/10?class=fixture-class&day=${day}&board=1`);await board.locator('canvas').first().waitFor();
  // Simulate another device committing while this device still has the prior revision.

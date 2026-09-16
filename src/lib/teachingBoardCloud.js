@@ -1,5 +1,6 @@
 import {BOARD_LIMIT, BOARD_PAGE_LIMIT, validateBoard, boardCamera} from './teachingBoard';
 import {stableJson} from './classCopyModel';
+import {boardReuseSource} from './teachingBoardReuse';
 
 export const BOARD_BUCKET='teaching-board-pages';
 export const BOARD_TABLE='class_teaching_boards';
@@ -10,7 +11,7 @@ export const boardPagePath=(owner,id,hash)=>`${owner}/${id}/${hash}.json`;
 export function validBoardDay(day){return /^\d{4}-\d{2}-\d{2}$/.test(day||'')&&Number.isFinite(Date.parse(day))&&new Date(day).toISOString().slice(0,10)===day;}
 // Viewport is device-specific. Store semantic elements, including deletion markers
 // needed by the editor, without transient personal-note/account bookkeeping.
-export function cloudDocument(input){const b=validateBoard(input);return {version:1,activePage:b.activePage,pages:b.pages.map(p=>({id:p.id,elements:p.elements,camera:boardCamera(null)}))};}
+export function cloudDocument(input){const b=validateBoard(input);return {version:1,activePage:b.activePage,pages:b.pages.map(p=>({id:p.id,elements:p.elements,camera:boardCamera(null),...(boardReuseSource(p.reusedFrom)?{reusedFrom:boardReuseSource(p.reusedFrom)}:{})}))};}
 export const sameBoardContent=(a,b)=>stableJson(cloudDocument(a))===stableJson(cloudDocument(b));
 export function validateBoardManifest(value){
   if(!value||value.version!==1||!Array.isArray(value.pages)||!value.pages.length||value.pages.length>BOARD_PAGE_LIMIT)throw new Error('설명판 저장 목록을 확인하지 못했어요.');
