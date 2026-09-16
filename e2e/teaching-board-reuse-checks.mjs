@@ -21,8 +21,9 @@ export async function verifyBoardReuse({page,base,day,cloud,check,waitFor,saveSc
  assert.deepEqual(scene(copied.pages.slice(0,-1)),scene(targetBefore.pages));
  const elements=copied.pages.at(-1).elements;assert(elements.length);assert(elements.every(el=>!past.pages[0].elements.some(p=>p.id===el.id)));
  assert.equal(await hud.getByRole('button',{name:/오늘 표현 \d+개/}).getAttribute('aria-label'),records);
+ await saveScreen('reuse-copied-page');
  check('past page thumbnails, keyboard selection and copy work in-place without changing current ink or publishing student expressions');
- await hud.getByRole('button',{name:'저장 상태',exact:true}).click();await hud.locator('#board-menu-status').getByRole('button',{name:'지금 저장',exact:true}).click();await hud.getByText('계정에 저장됨',{exact:true}).waitFor();
+ await hud.getByRole('button',{name:'저장 상태',exact:true}).click();await hud.locator('#board-menu-status').getByRole('button',{name:'지금 저장',exact:true}).click();await hud.locator('#board-menu-status').getByText('계정에 저장됨',{exact:true}).waitFor();
  assert.equal(JSON.stringify((await cloud.row(pastDay)).manifest),sourceManifest);for(const [hash,text]of sourceFiles)assert([...cloud.files.entries()].some(([key,value])=>key.endsWith(hash+'.json')&&value===text));
  await page.reload();await board.locator('canvas').first().waitFor();await open();await history.getByLabel('1번 페이지 가져오기',{exact:true}).waitFor();assert(await history.getByLabel('1번 페이지 가져오기',{exact:true}).isDisabled());await history.getByText('가져옴',{exact:true}).waitFor();
  await history.getByRole('button',{name:'← 날짜 목록',exact:true}).click();await waitFor(()=>history.getByRole('button',{name:`${pastDay} 페이지 가져오기`,exact:true}).evaluate(el=>el===document.activeElement));

@@ -449,6 +449,7 @@ export function SharedBoardCanvas({owner, team, day, rootId, scope, store, perso
     commit();
     const copied=copyBoardPages(document.current,source.document,source.row,ids);
     document.current=copied.document;
+    pendingFocus.current={id:copied.ids[0],elementIds:[]};
     changePage(copied.ids[0]);closeMenu(true);
     setMessage(`${source.row.day}의 ${copied.ids.length}개 페이지를 현재 수업에 가져왔어요.`);
   };
