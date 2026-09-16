@@ -40,8 +40,8 @@ const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*'
 let failure=false,lostResponse=false,analysisDelay=0,analysisFail=false,emptyMeaning=false;
 const analyzedLines=[];
 const tabletState={dictionaryDelay:0,lookups:0};
-const report={engine,touch,checks:[],errors:[],screens:[],failedRequests:[],expectedTransport:[]},writes=[];
-let replacingDocument=false,cancelledHomePrefetch=false,revisionConflicts=0;
+const report={engine,touch,checks:[],errors:[],screens:[],failedRequests:[],expectedTransport:[],readingPrefetch:[]},writes=[];
+let revisionConflicts=0;
 // WebKit routes local Blob images too; allow this app's generated thumbnails.
 await context.route('**/*',r=>{const url=r.request().url();return url.startsWith(base)||url.startsWith(`blob:${base}/`)?r.continue():r.abort();});
 // Vercel's injected review toolbar is hosting chrome, outside the app flow.
@@ -90,11 +90,16 @@ const cloud=await installBoardCloudFixture({context,db,uid,cors,report});
 const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.message));page.on('console',m=>{
  if(cloud.state.expectedErrors>0&&/503|409|400|ERR_FAILED|Load failed/.test(m.text())){cloud.state.expectedErrors--;return;}
  if(m.type()!=='error'||m.text().startsWith('WebSocket connection')||(lookupError&&m.text().includes('503')))return;
- if(cancelledHomePrefetch&&m.text().startsWith('Failed to fetch RSC payload for '+base+'/home')){cancelledHomePrefetch=false;report.expectedTransport.push('home link prefetch cancelled while replacing the test document');return;}
  if(revisionConflicts>0&&m.text().includes('409 (Conflict)')){revisionConflicts--;return;}
  report.errors.push(m.text());console.log('browser-console',m.text());
 });
-page.on('requestfailed',request=>{const url=new URL(request.url());report.failedRequests.push(url.origin+url.pathname);if(replacingDocument&&url.pathname==='/home'&&request.failure()?.errorText==='cancelled')cancelledHomePrefetch=true;});
+// Leaving links should not fetch account/team/session pages during reading.
+// Keep real navigation requests and every console error visible to the verifier.
+page.on('request',request=>{
+ const url=new URL(request.url()),headers=request.headers();
+ if(page.url().startsWith(base+'/viewer/')&&headers['next-router-prefetch']==='1'&&headers.rsc==='1'&&['/home','/class/fixture-class','/study'].includes(url.pathname))report.readingPrefetch.push(url.pathname);
+});
+page.on('requestfailed',request=>{const url=new URL(request.url());report.failedRequests.push(url.origin+url.pathname);});
 const check=label=>{report.checks.push(label);console.log(label);};
 const waitFor=async fn=>{for(let i=0;i<100;i++){if(await fn())return;await page.waitForTimeout(100);}throw new Error('condition timeout');};
 const current=async()=>(await db.query("select * from reading_materials where processed_json#>>'{metadata,team,day}'=$1",[day])).rows[0];
@@ -194,11 +199,11 @@ try {
  assert.deepEqual((await scene()).filter(el=>el.customData?.manabiExpression).map(el=>({text:el.customData.manabiExpression.text,meaning:el.customData.manabiExpression.meaning,source:el.customData.manabiExpression.source})),originalExpressions);
  check('multi-select frame/annotation controls preserve geometry; arranging words does not move ink');
  await selection.getByRole('button',{name:'여백 줄이기',exact:true})[activate]();await page.waitForTimeout(450);
- replacingDocument=true;await menus.action('main','전체 보기');await saveScreen('arranged-words');
+ await menus.action('main','전체 보기');await saveScreen('arranged-words');
  const snapshot=(await scene()).map(({id,type,x,y,customData,points,text})=>({id,type,x,y,customData,points,text}));
  await page.reload();await board.waitFor();await waitFor(async()=> (await scene()).length===snapshot.length);
  assert.deepEqual((await scene()).map(({id,type,x,y,customData,points,text})=>({id,type,x,y,customData,points,text})),snapshot);
- replacingDocument=false;check('annotated groups and handwriting survive reload without reflow');
+ check('annotated groups and handwriting survive reload without reflow');
  await menus.action('main','보여주기');const presentation=page.locator('dialog.board-presentation');await presentation.waitFor();
  await presentation.getByRole('button',{name:'한자 훈음',exact:true})[activate]();await saveScreen('presentation');
  await page.keyboard.press('Escape');await presentation.waitFor({state:'detached'});
@@ -260,6 +265,16 @@ try {
  await waitFor(()=>dock.getByText('서버 저장 확인됨',{exact:true}).isVisible());
  check('the original teacher inspector still edits and records a dragged multiword expression');
  if(process.env.QA_BOARD_CLOUD==='1')await verifyBoardCloud({page,base,day,cloud,check,waitFor,saveScreen,menus,readBoards,uid});
+ const returnUrl=page.url(),savedPages=(await head()).document.pages.map(p=>p.id);
+ for(const [label,path] of [['팀 홈','/class/fixture-class'],['웹앱 홈','/home']]){
+  await menus.open('main');await hud.getByRole('link',{name:label,exact:true})[activate]();await page.waitForURL(base+path);
+  if(path==='/home')await page.getByRole('heading',{name:/말이 태어나는 곳을/}).waitFor();
+  else await page.getByRole('heading',{name:'목요일의 중국어',exact:true}).waitFor();
+  await page.goBack();await page.waitForURL(returnUrl);await board.locator('canvas').first().waitFor();
+  assert.deepEqual((await head()).document.pages.map(p=>p.id),savedPages);
+ }
+ check('home and team links navigate on click and browser back restores every board page');
+ assert.deepEqual(report.readingPrefetch,[],'reading and board menus do not prefetch home, team or study pages');check('reading links request destinations only when used');
  assert.equal(report.errors.length,0,report.errors.join('\n'));check('no browser runtime errors');
 } catch(error){report.failure=error.stack;await saveScreen('failure');console.error(await page.locator('body').innerText());throw error;}
 finally{await fs.promises.writeFile(out+'/report.json',JSON.stringify(report,null,2));await browser.close();await db.close();}

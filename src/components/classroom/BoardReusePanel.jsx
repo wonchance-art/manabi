@@ -22,7 +22,7 @@ function PagePreview({page}) {
   return <span className="board-reuse-preview" ref={host}>{url?<img src={url} alt=""/>:<span aria-hidden="true">페이지 미리보기</span>}</span>;
 }
 
-export default function BoardReusePanel({rootId,sourceDay,day,pages,blocked,onCopy,onBack}) {
+export default function BoardReusePanel({rootId,sourceDay,day,pages,blocked,onCopy,onPick,onBack}) {
   const [source,setSource]=useState(null),[error,setError]=useState(''),[selected,setSelected]=useState([]),[busy,setBusy]=useState(false),[attempt,setAttempt]=useState(0);
   const alive=useRef(true),running=useRef(false),heading=useRef(null);
   useEffect(()=>{alive.current=true;heading.current?.focus();return()=>{alive.current=false;};},[]);
@@ -41,11 +41,12 @@ export default function BoardReusePanel({rootId,sourceDay,day,pages,blocked,onCo
     {!source&&!error&&<p role="status">저장된 페이지를 불러오고 있어요…</p>}
     {source&&<>
       <div className="board-reuse-summary"><span>{chosen.length}개 선택 · {room}개 더 담기 가능</span><button disabled={busy||!available.length} onClick={()=>setSelected(chosen.length===available.length?[]:available.map(p=>p.id))}>{chosen.length===available.length?'선택 해제':'모두 선택'}</button></div>
-      <div className="board-reuse-pages">{source.document.pages.map((page,index)=>{const summary=boardPageSummary(page),done=!available.some(p=>p.id===page.id);return <label key={page.id} className="board-reuse-page" data-selected={chosen.includes(page.id)} data-copied={done}>
-        <input type="checkbox" aria-label={`${index+1}번 페이지 가져오기`} disabled={busy||done} checked={chosen.includes(page.id)} onChange={event=>setSelected(ids=>event.target.checked?[...ids,page.id]:ids.filter(id=>id!==page.id))}/>
+      <div className="board-reuse-pages">{source.document.pages.map((page,index)=>{const summary=boardPageSummary(page),done=!available.some(p=>p.id===page.id);return <div key={page.id} className="board-reuse-page" data-selected={chosen.includes(page.id)} data-copied={done}>
+        <label className="board-reuse-whole"><input type="checkbox" aria-label={`${index+1}번 페이지 가져오기`} disabled={busy||done} checked={chosen.includes(page.id)} onChange={event=>setSelected(ids=>event.target.checked?[...ids,page.id]:ids.filter(id=>id!==page.id))}/>
         <PagePreview page={page}/><span className="board-reuse-page-title"><b>{index+1}번 페이지</b><small>{done?'가져옴':summary.count?`${summary.words}개 표현 · ${summary.ink}개 필기`:'빈 페이지'}</small></span>
-        {summary.text&&<span className="board-reuse-excerpt">{summary.text}</span>}
-      </label>;})}</div>
+        {summary.text&&<span className="board-reuse-excerpt">{summary.text}</span>}</label>
+        {onPick&&<button className="board-reuse-fragment" disabled={busy||!summary.count} onClick={event=>onPick({source,pageId:page.id,index,returnFocus:event.currentTarget})} aria-label={`${index+1}번 페이지 부분 고르기`}>부분 고르기</button>}
+      </div>;})}</div>
       <div className="board-reuse-footer">{blocked&&<p role="status">저장 상태에서 다른 기기의 판을 확인한 뒤 가져와 주세요.</p>}{room===0?<p role="status">현재 수업의 20개 페이지가 모두 찼어요. 다른 수업 날짜에서 가져와 주세요.</p>:chosen.length>room&&<p role="status">선택을 {room}개 이하로 줄여 주세요.</p>}<button className="board-reuse-submit" disabled={busy||blocked||!chosen.length||chosen.length>room} onClick={copy}>{busy?'가져오는 중…':`현재 수업에 ${chosen.length||''}${chosen.length?'개 ':''}복사`}</button><small>학생에게 공유하려면 ‘수업에 남기기’를 눌러 주세요.</small></div>
     </>}
   </div>;
