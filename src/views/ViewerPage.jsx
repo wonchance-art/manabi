@@ -1805,7 +1805,7 @@ export default function ViewerPage() {
         <p style={{ color: 'var(--text-secondary)', marginBottom: 20, maxWidth: 400, margin: '0 auto 20px' }}>
           이 기기에 받아 둔 사본이 지워졌어요 — 7일이 지났거나 다른 기기예요. 팀 페이지에서 다시 열면 받아요.
         </p>
-        <Link href={teamKey ? `/class/${teamKey}` : '/class'} className="btn btn--primary">팀 페이지로 →</Link>
+        <Link prefetch={false} href={teamKey ? `/class/${teamKey}` : '/class'} className="btn btn--primary">팀 페이지로 →</Link>
       </div>
     );
   }
@@ -1824,7 +1824,7 @@ export default function ViewerPage() {
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           {!isNotFound && <button onClick={() => refetch()} className="btn btn--primary">다시 시도</button>}
-          <LibraryReturnLink className="btn btn--secondary">← 내 서재</LibraryReturnLink>
+          <LibraryReturnLink prefetch={false} className="btn btn--secondary">← 내 서재</LibraryReturnLink>
         </div>
       </div>
     );
@@ -1836,7 +1836,7 @@ export default function ViewerPage() {
       <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
         <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>비공개 자료입니다</h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>이 자료는 작성자만 열람할 수 있습니다.</p>
-        <LibraryReturnLink className="btn btn--primary">← 내 서재</LibraryReturnLink>
+        <LibraryReturnLink prefetch={false} className="btn btn--primary">← 내 서재</LibraryReturnLink>
       </div>
     );
   }
@@ -2517,10 +2517,10 @@ export default function ViewerPage() {
             폰에서 두 줄(89px)로 꺾였고, 그 위에 뒤로가기 줄·시리즈 내비 줄이 따로 있었다. */}
         <div ref={classToolbarTarget} className="class-workspace-topbar" hidden={!classStudyActive}/>
         <div className="viewer-topbar">
-          {classStudyActive&&originalParams.get('returnTo')?.includes('view=history')&&<LibraryReturnLink className="viewer-back-link">← 수업 기록</LibraryReturnLink>}
+          {classStudyActive&&originalParams.get('returnTo')?.includes('view=history')&&<LibraryReturnLink prefetch={false} className="viewer-back-link">← 수업 기록</LibraryReturnLink>}
           {!classStudyActive&&(material?.__local
-            ? <Link href={`/class/${material.__team}`} className="viewer-back-link">← 팀 페이지</Link>
-            : <LibraryReturnLink className="viewer-back-link">← 내 서재</LibraryReturnLink>)}
+            ? <Link prefetch={false} href={`/class/${material.__team}`} className="viewer-back-link">← 팀 페이지</Link>
+            : <LibraryReturnLink prefetch={false} className="viewer-back-link">← 내 서재</LibraryReturnLink>)}
           {composerOf(material) && <Link className="viewer-back-link" href={sourcePassageHref(material,originalParams.get('returnTo')) || `/viewer/${composerOf(material)?.parentId || id}?returnTo=${encodeURIComponent(originalParams.get('returnTo') || '/materials?view=owned')}`}>{passageOf(material)?`원본의 ${passageLocation(passageOf(material))}으로 ↗`:'현재 글과 첨부 원본 ↗'}</Link>}
           {siblingNav && (
             <div className="viewer-series-nav" title={siblingNav.label}>
@@ -3055,6 +3055,7 @@ export default function ViewerPage() {
             {user && material?.raw_text && STUDY_LANGS.has(materialLang) && (
               <Link
                 href={`/study?source=mine&lang=${encodeURIComponent(materialLang)}`}
+                prefetch={false}
                 className="post-reading-actions__btn"
                 onClick={() => {
                   try {

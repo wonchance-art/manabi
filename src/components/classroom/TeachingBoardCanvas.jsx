@@ -549,8 +549,8 @@ export function SharedBoardCanvas({owner, team, day, rootId, scope, store, perso
       <BoardIconButton icon="present" label="보여주기" disabled={!boardHasContent} onClick={showBoard}/>
       <BoardIconButton icon="fit" label="전체 보기" onClick={()=>{if(layout==='reader')changeLayout('board');closeMenu(true);revealElements(api.current?.getSceneElements()||[],true);}}/>
     </div></section><section className="board-menu-section" aria-label="수업과 이동"><span>수업과 이동</span><div className="board-icon-grid">
-      <Link href="/home" aria-label="웹앱 홈" title="웹앱 홈" data-label="웹앱 홈" onClick={commit} className="board-icon-button"><BoardIcon name="home"/></Link>
-      {personal?<BoardIconButton icon="book" label="내 서재" onClick={personal.onLeave}/>:<Link href={`/class/${team.key}`} aria-label="팀 홈" title="팀 홈" data-label="팀 홈" onClick={commit} className="board-icon-button"><BoardIcon name="team"/></Link>}
+      <Link prefetch={false} href="/home" aria-label="웹앱 홈" title="웹앱 홈" data-label="웹앱 홈" onClick={commit} className="board-icon-button"><BoardIcon name="home"/></Link>
+      {personal?<BoardIconButton icon="book" label="내 서재" onClick={personal.onLeave}/>:<Link prefetch={false} href={`/class/${team.key}`} aria-label="팀 홈" title="팀 홈" data-label="팀 홈" onClick={commit} className="board-icon-button"><BoardIcon name="team"/></Link>}
       <BoardIconButton icon="record" label={personal?'단어 정리':'수업 기록'} onClick={()=>{if(personal){commit();closeMenu();personal.onOrganize();}else setMenu('session');}}/>
       <BoardIconButton icon="close" label="설명판 닫기" onClick={()=>{commit();onClose();}}/>
     </div></section><section className="board-menu-section" aria-label="백업"><span>백업</span><div className="board-icon-grid">
