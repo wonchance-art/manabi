@@ -14,7 +14,6 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- **개인 노트 모으기·나중에 정리 (2026-09-16)** — 오너 후속 개발 승인. `codex/note-collection-flow-20260916`, 기준 main efa44c50. 인식 후 필기 유지·대기 개수·미완료/담음/제외 필터·서재 이어 정리. 기존 비공개 저장/CAS/원문/SRS 보존. 노트 컴포넌트/정리 모델/개인 노트 HUD·서재 진입/검수만 소유. DB/env/설명판 서버 백업/공유 이미지/월드/PDF/음성은 별도.
 
 ### todo
 - **설명판 저장·기기 후속 (2026-09-16)** — 다중 표현·직접 필기 인식·운영 반영 완료. 설명판은 현재 기기 저장이며 계정 서버 백업/다른 기기 이어 하기는 미구현(서버 저장되는 개인 노트와 구분). 물리 iPad/Pencil·손바닥 접촉·소프트 키보드·회전은 별도 검수.
@@ -25,6 +24,7 @@
   16:03 스캔까지 WORKING 무표식(30분 룰) — Claude 직접 수행·완결(회수 공지
   5386950005, PR #1118)**. 이 열에 잔여 발주 없음.
 ### done
+- **개인 노트 누적 정리 구현·검수 (2026-09-16)** — #1316, 실행3942697d. 인식 후 필기 유지·미완료/담음/제외 필터·서재 이어 정리. 서버 검증 후보에서 파생 개수를 저장하고 새 책장은 소유자 요약만 조회(이전 노트는 숫자 없는 링크). 전체406파일/4,317개·핵심51·build479페이지·Chromium/WebKit 각11·기존 교사13 PASS. 원문/권한/CAS/초안/SRS 보존. 최종 head/CI/Preview 상태는 PR/#150 CODEX_DONE. 운영 merge·DB/env 변경 없음. 물리 기기와 설명판 서버 백업은 후속. 상세 docs/verification/note-collection-20260916.md.
 - **학습 웹 통합 구현·검수 완료 (2026-09-16)** — #1314→#1313을 main d6dbcff7에 병합, 운영 READY·버전·실제 기존 노트 필기 복원 확인. #1315에서 #1296/#1297/#1305를 최신 코드와 통합하고 수업 원문 복귀/교사 뜻 창/개인 노트 진입을 보존. 전체405파일/4,308개·빌드479페이지·Chromium/WebKit 각53조건 오류0. 구현 f12838c3 CI 두 job SUCCESS, 이후 검수/E2E/자기 보드만 변경. 최종 head·미리보기/운영 결과와 superseded PR 정리는 #1315/#150 완료 신호를 따른다. DB/env/개인 학습 내용/판/PDF/음성/world 변경 없음. 상세 docs/verification/learning-release-20260916.md.
 - **수업 설명판 필기 인식·실계정 검수 완료 (2026-09-16)** — #1314, `codex/classroom-handwriting-20260916`, 선행 #1313 의존. 선택 PNG/Gemini·교사 소유권·표기/뜻 선택·다중 배치·중복/늦은 응답 보호·결과 패널 접힘. 실행5e55cf0d/검수b10ee33d, Preview2h856hnu6/a2qscg5nt READY·version 일치. 전체400파일/4,257개·build·CI 2잡, Chromium/WebKit터치 각각6흐름·개인 노트9·기존 설명판13 PASS. 실제 교사 계정에서 大 획 및 学习/复习 글상자 실제 Gemini 2회→3표현 배치→재접속 복원, 오늘 표현0·콘솔 오류0. 이전 개인 노트 실계정 저장/어휘/원문 복귀도 완료. 최종 문서/자기 보드 head·CI는 PR/#150 CODEX_DONE, 상세 `docs/verification/classroom-handwriting-20260916.md`. 운영 merge·DB/env 변경 없음. Google Preview 복귀 현상·물리 기기·다양한 필체는 후속.
 - **개인 노트 선택 필기 인식·미리보기 완료 (2026-09-15)** — PR #1313, 실행 e7f070d8. 선택 요소만 PNG 확인 후 Gemini 인식, 가나 원문·한자/뜻 후보·검토 후 기존 단어장 저장. 권한/revision/fingerprint/크기 제한·다른 공급자 fallback 금지·취소/중복/수정 보존. 전체398파일/4,248테스트·JSX lint·build, 로컬 및 배포 Chromium/WebKit 각각9흐름 오류0, 기존 교사13흐름 PASS. Preview1uoqwksoa/dpl_4SQVxaBDZbdTcjJ55DNv1QJMKHEo READY·version 일치·비로그인401. 운영 main9a7e3be1 유지, DB/schema/env 변경 없음. 실제 계정/필체/기기 검수는 위 todo. 최종 head/CI/handoff는 PR/#150 및 docs/verification/personal-study-notes-20260915.md.
