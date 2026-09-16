@@ -6,7 +6,7 @@ export async function installBoardCloudFixture({context,db,uid,cors,report}){
 CREATE TABLE storage.objects(id uuid DEFAULT gen_random_uuid(),bucket_id text,name text,metadata jsonb,UNIQUE(bucket_id,name));
 CREATE FUNCTION storage.foldername(text) RETURNS text[] LANGUAGE sql IMMUTABLE AS $$ SELECT (string_to_array($1,'/'))[1:array_length(string_to_array($1,'/'),1)-1] $$;
 GRANT USAGE ON SCHEMA storage TO authenticated;GRANT SELECT,INSERT,UPDATE,DELETE ON storage.objects TO authenticated;ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;`);
- await db.exec(fs.readFileSync(new URL('../supabase/migrations/20260916022136_teaching_board_cloud.sql',import.meta.url),'utf8'));
+ await db.exec(fs.readFileSync(new URL('../supabase/migrations/20260916030644_teaching_board_cloud.sql',import.meta.url),'utf8'));
  await db.exec('SET ROLE authenticated');
  const files=new Map(),state={offline:false,loseResponse:false,expectedErrors:0,writes:0};
  // WebKit's Playwright request payload omits Blob file bytes (size 0).

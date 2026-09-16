@@ -15,7 +15,7 @@ CREATE FUNCTION storage.foldername(text) RETURNS text[] LANGUAGE sql IMMUTABLE A
 GRANT USAGE ON SCHEMA auth,storage TO authenticated,anon;GRANT SELECT ON reading_materials TO authenticated;GRANT SELECT,INSERT,UPDATE,DELETE ON storage.objects TO authenticated;`);
 await db.query('INSERT INTO auth.users VALUES($1),($2)',[teacher,student]);
 await db.query(`INSERT INTO reading_materials VALUES(1,$1,'{"metadata":{"team":{"root":true,"key":"fixture"}}}'),(2,$2,'{"metadata":{"team":{"root":true,"key":"other"}}}')`,[teacher,student]);
-await db.exec(fs.readFileSync(new URL('../supabase/migrations/20260916022136_teaching_board_cloud.sql',import.meta.url),'utf8'));
+await db.exec(fs.readFileSync(new URL('../supabase/migrations/20260916030644_teaching_board_cloud.sql',import.meta.url),'utf8'));
 const as=async(uid,role='authenticated')=>{await db.exec('RESET ROLE');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[uid||'']);await db.exec(`SET ROLE ${role}`);};
 const denied=async(fn,code)=>{await assert.rejects(fn,e=>e.code===code);checks++;};
 await as(null,'anon');await denied(()=>db.query("select teaching_board_prepare(1,'2026-09-16')"),'42501');
