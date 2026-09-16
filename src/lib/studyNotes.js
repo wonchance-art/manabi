@@ -3,6 +3,7 @@ import {readCard} from './teachingBoardCard';
 import {sameContent} from './classCopyModel';
 import {isStudyNote} from './studyNoteIdentity';
 import {recognitionResult} from './noteRecognition';
+import {noteCollectionSummary} from './noteCollection';
 export {isStudyNote};
 
 export const NOTE_LIMIT = 3 * 1024 * 1024;
@@ -52,7 +53,7 @@ export function noteMaterialRow(ownerId, title, note, revision) {
   const document = validateStudyNote(note);
   return {owner_id: ownerId, visibility: 'private', direction: 'write', title: clean(title, 200) || '새 학습 노트', raw_text: noteText(document),
     processed_json: {sequence: [], dictionary: {}, last_idx: -1, status: 'note', metadata: {
-      language: document.language, importAttempt: document.key, studyNote: {version: 1, revision, document},
+      language: document.language, importAttempt: document.key, studyNote: {version: 1, revision, document, summary: noteCollectionSummary(document.candidates)},
     }}};
 }
 
