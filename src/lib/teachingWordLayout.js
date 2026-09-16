@@ -11,7 +11,8 @@ export function wordSegments(text, reading, language) {
   // The legacy ruby fallback may repeat the whole reading over several runs.
   // Keep an uncertain reading over the whole expression instead of inventing alignment.
   if(parts.filter(part=>part.reading===reading).length>1 ||
-      (language==='Chinese' && !parts.every(part=>part.pinyin))) return [{kanji:text,reading}];
+      (language==='Chinese' && !parts.every(part=>part.pinyin)) ||
+      (language==='Japanese' && han.test(text) && parts.map(part=>part.reading??part.plain).join('')!==reading)) return [{kanji:text,reading}];
   return parts;
 }
 const units = text => [...text].reduce((n,ch)=>n+(/[\u0020-\u007e]/.test(ch)?(/[il .,'!]/.test(ch)?.3:.6):1),0);
