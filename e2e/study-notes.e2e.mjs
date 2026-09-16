@@ -224,7 +224,7 @@ try{
  await review.getByRole('button',{name:'계속 필기 · 나중에 정리',exact:true}).click();
  await hud.getByRole('button',{name:'전체 메뉴',exact:true}).click();await hud.getByRole('button',{name:'내 서재',exact:true}).click();
  await page.waitForURL(url=>url.pathname==='/materials');
- const resume=page.getByRole('link',{name:'미완료 2개 · 이어 정리 ↗',exact:true});await resume.waitFor();await screen('10-library-resume');
+ const resume=page.getByRole('link',{name:'미완료 2개 · 이어 정리 ↗',exact:true});await resume.waitFor();await resume.scrollIntoViewIfNeeded();await screen('10-library-resume');
  await resume.click();await review.waitFor();assert.equal(await review.locator('.note-candidate').count(),2);
  check('library shows the saved unfinished count and opens the review queue directly');
  assert.equal(report.externalAI.length,0);assert.equal(report.errors.length,0,report.errors.join('\n'));check('no actual external AI request or uncaught UI error');
