@@ -9,7 +9,7 @@ export async function verifyBoardReuse({page,base,day,cloud,check,waitFor,saveSc
  const targetBefore=(await readBoards()).find(r=>r.id===r.scope&&r.document.accountBoard).document;
  const records=await hud.getByRole('button',{name:/오늘 표현 \d+개/}).getAttribute('aria-label');
  await open();await history.getByLabel('1번 페이지 가져오기',{exact:true}).waitFor();
- await waitFor(()=>history.locator('.board-reuse-preview img').count());
+ await waitFor(()=>history.locator('.board-reuse-preview img').first().evaluate(el=>el.complete&&el.naturalWidth>0));
  assert(page.url().includes(`day=${day}`));
  await history.getByLabel('1번 페이지 가져오기',{exact:true}).focus();await page.keyboard.press('Space');
  for(const [width,height]of [[1024,768],[390,844]]){await page.setViewportSize({width,height});await saveScreen('reuse-picker-'+width);assert(await history.evaluate(el=>el.scrollWidth<=el.clientWidth+1));const box=await history.getByRole('button',{name:'현재 수업에 1개 복사',exact:true}).boundingBox();assert(box.y>=0&&box.y+box.height<=height,'copy action visible');}

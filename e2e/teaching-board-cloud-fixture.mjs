@@ -70,7 +70,7 @@ export async function verifyBoardCloud({page,base,day,cloud,check,waitFor,saveSc
  await panel.getByText('계정에 저장됨',{exact:true}).waitFor();await saveScreen('cloud-saved');await menus.close();
  const before=await cloud.row(day);assert(before.manifest.pages.length>=1);check('teacher drawings upload to private pages and confirm the account revision');
  // A clean device has no IndexedDB copy. Reload must download the actual pages.
- await page.goto(base+'/home');await page.evaluate(async()=>{const db=await new Promise(resolve=>{const r=indexedDB.open('manabi-teaching-boards');r.onsuccess=()=>resolve(r.result);});await new Promise((resolve,reject)=>{const tx=db.transaction('boards','readwrite');tx.objectStore('boards').clear();tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});db.close();});
+ await page.goto(base+'/home');await page.getByRole('heading',{name:/말이 태어나는 곳을/}).waitFor();await page.waitForLoadState('networkidle');await page.evaluate(async()=>{const db=await new Promise(resolve=>{const r=indexedDB.open('manabi-teaching-boards');r.onsuccess=()=>resolve(r.result);});await new Promise((resolve,reject)=>{const tx=db.transaction('boards','readwrite');tx.objectStore('boards').clear();tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});db.close();});
  await page.goto(base+`/viewer/10?class=fixture-class&day=${day}&board=1`);await board.locator('canvas').first().waitFor();await waitFor(async()=>(await readBoards()).some(r=>r.document.accountBoard?.revision===before.revision));
  check('a device without local drafts restores the private account board and every page');
  const cached=(await readBoards()).find(r=>r.document.accountBoard),document=structuredClone(cached.document);delete document.accountBoard;
