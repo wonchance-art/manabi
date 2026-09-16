@@ -1,6 +1,6 @@
 # 설명판 A/B/C 구현 검수 · 2026-09-17 KST
 
-오너 승인 설계: `../manabi-classroom-refinements-20260917.md`. 기준 #1319 `bcce8f12f973df95906c3d963ee736d1c8746b92`. 실행 코드 `498cfdd572e508528a03e57acc4867be41298767`. 기존 작업 디렉터리 대신 독립 worktree/`codex/classroom-refinements-20260917` 사용.
+오너 승인 설계: `../manabi-classroom-refinements-20260917.md`. 기준 #1319 `bcce8f12f973df95906c3d963ee736d1c8746b92`. 최종 실행 코드 `3a640c7099eece33c24e03e39b1b51e5f1d5c442` (Safari 날짜 컨트롤 flex-end 호환 보완 포함). 기존 작업 디렉터리 대신 독립 worktree/`codex/classroom-refinements-20260917` 사용.
 
 ## 적용
 
@@ -21,6 +21,7 @@
 - 390/768/1024/1440px, 데스크톱 200% 확대, 키보드 Enter/Space/Escape·복귀 초점·닫기/확정 접근 검수. 실물 소프트 키보드 검수는 아님.
 - 원본/목적지 필기·출처·숨김·중복 안내·단일 undo/redo·20페이지 한도·계정 저장/재접속·충돌/오프라인/성공 응답 유실·느린 복원 중 새 필기·기존 로컬 판 이전 통과.
 - 원본 미리보기 20회 열기/닫기에서 생성 Blob URL 전부 해제, 계정 쓰기 증가 0, 현재 수업 manifest 불변.
+- 추가 회귀: 기존 뷰어 타이포그래피·상단 UI 34개, 개인 노트 WebKit 11흐름 통과. Chrome 권한 철회 추가 검수에서 원본 미리보기와 캐시 목록 즉시 제거 확인(의도한 해당 403 한 건만 분류, 그 외 오류 허용 없음).
 - 언어 표시: 구성한 60입력(일24/중24/영·불12) 모델 계약. 고위험10×8토글×글자만/카드, 실제 TeachingWord/발표/ViewerPreview 컴포넌트를 Chrome·WebKit에서 비교, 390/768/1024px 가로 넘침/런타임 오류 0. 네이티브 캔버스 요소와 주변 필기 불변은 모델 및 기존 실제 판 E2E로 확인.
 
 ## 성능 측정과 판단
@@ -59,4 +60,11 @@ Apple M1 8 논리 CPU, macOS, 공식 Node24.20.0. 사용자 자료/외부 계측
 
 사용자는 외출 중이므로 로그인 요청 없이 진행했다. 최종 Preview 실제 교사 전체/부분 복사→계정 저장→재접속, 별도 학생 계정, 개인 노트 누적 정리, 물리 iPad/Pencil/손바닥/회전/소프트 키보드는 귀가 후 확인한다. 운영 데이터 실행계획도 이번 합성 DB 검수에 포함하지 않는다. 병합·운영 승격은 별도 승인 범위.
 
-최종 원격 head·CI·Preview 결과는 이 문서 후속 기록 및 PR/#150에 동봉한다.
+## 원격 배포 및 인계
+
+- Draft PR [#1320](https://github.com/wonchance-art/manabi/pull/1320), base는 #1319 브랜치. 운영 main 병합/승격 없음.
+- 최종 실행 `3a640c7099eece33c24e03e39b1b51e5f1d5c442`, [CI 35131141103](https://github.com/wonchance-art/manabi/actions/runs/35131141103) 필수 두 job SUCCESS.
+- [Preview](https://manabi-ajunlm9lm-wonchance-arts-projects.vercel.app/class/culcom2): `dpl_4o5HhaRmxAkv9gaq5prfngLWna1i` READY. 공개 `/api/version` commit/preview 환경 일치, 비로그인 boards API 401. source 빌드 사용, 로컬 QA 설정/환경 파일 업로드 없음.
+- 원격 빌드 성공. 신규 flex 정렬 경고 제거. 기존 lessonAdapters/lessonModel 경고 2개는 변경 범위 밖이며 유지.
+- 최종 배포본 Chrome·WebKit 터치 **각 42흐름, 런타임 오류 0**. 합성 로그인/로컬 DB fixture 사용. 365날짜·기간/복귀·실패/취소·원본 권한 철회·복사/undo·저장/재접속/충돌·기존 뷰어 이동 통과. 배포 WebKit 390/1024px 날짜 목록 및 부분 선택 캡처 직접 확인.
+- 최종 문서/보드 head·필수 CI·완료 신호는 PR/#150에 기록. 이후 문서/보드 커밋과 실행 커밋의 런타임 소스 차이가 없음을 확인한다.
