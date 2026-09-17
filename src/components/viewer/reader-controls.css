@@ -33,8 +33,13 @@
 .viewer-layout .reader-area .word-token .surface {text-shadow:none;color:inherit;}
 /* The sentence hit area extends into the left gutter. Keep keyboard focus
    around its visible marker so the viewport edge cannot cut the outline. */
-.viewer-layout .line-pick:focus-visible {outline:none;}
+.viewer-layout .line-pick {display:inline-flex;width:24px;margin-left:-30px;}
+.viewer-layout .line-pick:focus-visible {outline:none;opacity:1;}
 .viewer-layout .line-pick:focus-visible::before {outline:2px solid var(--reader-accent);outline-offset:3px;}
+@media (hover:none) {
+  .viewer-layout .line-pick {margin-left:-9px;}
+  .viewer-layout .line-pick::before {left:9px;}
+}
 /* Selection adds a quiet neutral wash; learning states keep their own hues. */
 .viewer-layout :is(.reader-area,.reader-settings__preview) {--picked-bg:color-mix(in srgb,var(--reader-ink) 7%,var(--reader-paper));}
 .viewer-layout .reader-area--focus .word-token:not(.word-token--picked):not([data-selected="true"]) {opacity:.28;color:var(--reader-ink);}
