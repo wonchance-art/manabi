@@ -1,12 +1,15 @@
 {
   "name": "reader-inspector-phone",
   "key": "linux-x64-chromium-149.0.7827.55",
-  "sha256": "b4e93e7babd504c590fd7368aa14113e660813ffd49a6aa5c9607043fe5ce315",
-  "review": "Directly inspected Linux CJK rendering: complete Chinese/Korean glyphs, no overlapping word/reading/meaning, all visible panel actions readable. Native control rendering differs from macOS; SVG contrast incomplete remains manual evidence. Desktop cloud icon confirms saved state.",
+  "sha256": "3e21dae482592491bb4f3202984f3221badf2f8e1a9427775b13991a867332a1",
+  "review": "Directly compared old and new images: approved contextual-meaning disclosure row only. Chinese word/reading, Korean meaning, Japanese reference and fixed personal vocabulary/FSRS actions remain readable; no overlap or clipping. Other four classroom screenshots unchanged (0 pixels); stable capture and zero automated accessibility violations. Comparison allowance and canary unchanged.",
   "viewport": {
     "width": 390,
     "height": 844
   },
   "osRelease": "6.17.0-1022-azure",
-  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate",
+  "reviewedAgainst": "b4e93e7babd504c590fd7368aa14113e660813ffd49a6aa5c9607043fe5ce315",
+  "sourceCommit": "d38b6d71e84c35ecaa0e78be3a66cc6a63ee0fc9",
+  "sourceRun": "CI35280813766"
 }
