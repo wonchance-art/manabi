@@ -103,7 +103,16 @@ export async function verifyPersonalReaderDesign({page,saveScreen,waitFor,check,
   const typeTab=settings.getByRole('tab',{name:'글자·배경',exact:true});await typeTab.focus();await page.keyboard.press('End');
   assert.equal(await settings.getByRole('tab',{name:'읽기 진행',exact:true}).getAttribute('aria-selected'),'true');
   await settings.getByRole('checkbox',{name:/문장 집중/}).check();
-  for(let i=0;i<18;i++){await page.keyboard.press('Tab');assert(await settings.evaluate(el=>el.contains(document.activeElement)),'modal keyboard focus remains inside');}
+  for(let i=0;i<18;i++){
+    await page.keyboard.press('Tab');
+    const focus=await settings.evaluate(el=>({inside:el.contains(document.activeElement),browser:!document.hasFocus()&&document.activeElement===document.body}));
+    if(!focus.inside){
+      // Native WebKit dialog tabs may visit browser chrome, then re-enter the
+      // modal. Do not misreport that as focus reaching the inert page below.
+      assert(focus.browser,'modal focus must not reach background page controls');
+      await page.keyboard.press('Tab');assert(await settings.evaluate(el=>el.contains(document.activeElement)),'focus re-enters the modal from browser chrome');
+    }
+  }
   await page.keyboard.press('Escape');await word().waitFor();
   await page.locator('.line-pick').first()[activate]();
   await page.locator('.reader-area--focus .word-token--picked').first().waitFor();
