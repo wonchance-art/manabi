@@ -152,19 +152,23 @@ jobs:
           if (report.steps.length !== expected.length || report.steps.some((step, i) => !step.reused || step.id !== expected[i].id)) throw Error('resume_did_not_reuse_all_verified_steps');
           JS
 
+      - name: 검수 결과 요약
+        if: always() && needs.plan.outputs.full == 'true'
+        run: node scripts/qa-report.mjs
+
+      - name: 합성 증거만 수집
+        if: always() && needs.plan.outputs.full == 'true'
+        run: node scripts/qa-artifacts.mjs
+
       - name: 합성 검수 증거 보관
         if: always() && needs.plan.outputs.full == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: synthetic-qa-${{ github.sha }}
-          path: .qa/runs/
+          path: .qa/evidence/
           include-hidden-files: true
           retention-days: 7
           if-no-files-found: warn
-
-      - name: 검수 결과 요약
-        if: always() && needs.plan.outputs.full == 'true'
-        run: node scripts/qa-report.mjs
 
       - if: needs.plan.outputs.full != 'true'
         run: echo '검수 기록만 변경됨. 기존 필수 검사 이름을 유지하며 판정합니다.'

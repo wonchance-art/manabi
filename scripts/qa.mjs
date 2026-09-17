@@ -103,17 +103,24 @@ try {
       const old = resumeStep(step, previous, fingerprint, cwd);
       if (old) { report.steps.push({ ...old, reused: true });persist();console.log(`QA ${step.id}: reused`);continue; }
       const item = { id: step.id, evidence: step.evidence, status: 'running' };report.steps.push(item);persist();
+      let evidence;
       try {
         if (step.app && !server) { await prepareBuild();await startServer(); }
         const out = path.join(runDir, step.id);fs.mkdirSync(out, { recursive: true });
         console.log(`QA ${step.id}: running`);
         item.exitCode = await runProcess(process.execPath, [step.file], qaEnvironment(step, base, out), path.join(out, 'process.log'));
         const reportPath = path.join(out, 'report.json');
-        const bytes = fs.readFileSync(reportPath), evidence = JSON.parse(bytes);
+        const bytes = fs.readFileSync(reportPath);evidence = JSON.parse(bytes);
+        Object.assign(item, { reportPath: path.relative(cwd, reportPath), reportHash: digest(bytes) });
         validateEvidence(step, evidence, item.exitCode);
-        Object.assign(item, { status: 'passed', reportPath: path.relative(cwd, reportPath), reportHash: digest(bytes), groups: evidence.groups, checks: Array.isArray(evidence.checks) ? evidence.checks.length : evidence.checks });
+        Object.assign(item, { status: 'passed', groups: evidence.groups, checks: Array.isArray(evidence.checks) ? evidence.checks.length : evidence.checks });
         console.log(`QA ${step.id}: passed`);
-      } catch (error) { item.status = 'failed';throw error; }
+      } catch (error) {
+        item.status = 'failed';
+        item.failure = String(evidence?.failure || evidence?.cleanup?.errors?.join('; ') || error.message).slice(0, 4000);
+        console.error(`QA ${step.id}: ${item.failure}`);
+        throw Error(`${step.id}: ${item.failure}`);
+      }
       finally { persist(); }
     }
     report.status = 'passed';
