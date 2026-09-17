@@ -72,6 +72,31 @@ axe의 `incomplete`는 무시된 오류나 통과가 아닌 수동 검토 대상
 - 실제 모델 평가는 공급자/프롬프트/모델 버전·표본·비용 한도를 정하고 원응답을 확보한 다음 한다.
   준비된 정답을 그대로 평가 함수에 넣은 단위 테스트를 AI 정확도로 보고하지 않는다.
 
+### 문맥 재검토와 실제 응답 반입
+
+`lexical-gold.json` v2는 40사례를 유지하면서 문맥 3건과 해석/평가 단위 3건을 보완했다.
+기존 화면·저장 계약용 `lexical-senses.json`과 운영 사전·개인 단어는 바꾸지 않는다.
+상세 근거는 [중일 의미 재검토](verification/lexical-review-20260917.md)에 있다.
+
+```sh
+node scripts/qa-lexical.mjs --export-inputs > /tmp/manabi-lexical-inputs.json
+node scripts/qa-lexical.mjs --responses /tmp/manabi-lexical-responses.json
+```
+
+입력 묶음에는 기대 뜻·독음·일본어 답안을 제외한다. 반입 형식은
+`{schemaVersion:1, fixtureDigest, responses:[{id, source, answer}]}`다.
+`fixtureDigest`는 입력 묶음에서 가져오며, 기준이 바뀌면 이전 응답 묶음을 자동 거부한다.
+`source`는 `ai`, `stored`, `synthetic` 중 실제 관찰한 경로다.
+`answer`는 `{reading,pos,meaning,japanese?,abstain?,selected?}`로 정리한 응답이다.
+원응답의 `senses` 후보 목록을 그대로 넣을 수도 있지만, 첫 후보를 고르지 않고
+`needs-review / candidate-list-not-selected-sense`로 남긴다.
+실패는 `{id,source,error:true}`로 기록하고 미실행 사례는 넣지 않는다.
+
+정리한 응답은 원응답과 수동 대조해야 한다. 반입 도구 자체는 출처를 인증하지 않으며
+`accuracy:null`을 유지한다. 누락·요청 실패·미확정 후보·편집 기준 일치·금지 혼동을 별도로 집계하고,
+저장 사전/합성 응답을 실제 모델 성적으로 합산하지 않는다. 예시 정답 파일을 만들어
+실제 관찰 증거처럼 사용하지 않는다.
+
 ## 오픈소스 판단
 
 | 도구 | 채택 | 이유 / 한계 |

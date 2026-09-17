@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "checkedAt": "2026-09-17",
   "base": "lexical-senses.json",
   "scope": "32 context-bound editorial cases + 8 ambiguity guards. Not HSK pronunciation gold, not model evaluation results. Sources support senses/readings; Korean glosses, POS normalization, original contexts and Japanese translations are editorial. Alternative valid paraphrases require review. Japanese translations remain review candidates, not independently bilingual-adjudicated answers.",
@@ -28,6 +28,11 @@
       "url": "https://www.bunka.go.jp/kokugo_nihongo/sisaku/joho/joho/kijun/naikaku/pdf/joyokanjihyo_20101130.pdf",
       "publisher": "文化庁 常用漢字表 2010 付表",
       "supports": "grouped readings 今日/大人/昨日/二十日 only; Korean glosses are editorial"
+    },
+    "cheap-idiom": {
+      "url": "https://dict.revised.moe.edu.tw/dictView.jsp?ID=18984&la=1&powerMode=0",
+      "publisher": "教育部《重編國語辭典修訂本》",
+      "supports": "便宜行事: permitted discretion according to circumstances; word and idiom meanings must be distinguished"
     }
   },
   "cases": [
@@ -44,12 +49,13 @@
     {
       "id": "zh02",
       "baseCase": "zh02",
-      "context": "这个办法值得研究。",
+      "context": "明天的活动怎么安排？我们一起研究一下。",
       "mode": "sense",
       "readingPolicy": "zh-TW-dictionary",
       "review": "source-checked-editorial",
       "risk": "sense-or-reading",
-      "referencePolicy": "editorial-candidate"
+      "referencePolicy": "editorial-candidate",
+      "editorialNote": "대책을 함께 의논하는 문맥을 명시한다. 연구·검토의 일반적인 중첩은 오역으로 단정하지 않는다."
     },
     {
       "id": "zh03",
@@ -72,7 +78,13 @@
       "readingPolicy": "zh-TW-dictionary",
       "review": "source-checked-editorial",
       "risk": "sense-or-reading",
-      "referencePolicy": "editorial-candidate"
+      "referencePolicy": "editorial-candidate",
+      "meaning": "부당하게 얻는 이득",
+      "acceptedMeanings": [
+        "부당한 이익",
+        "부당한 이득"
+      ],
+      "editorialNote": "占便宜 문맥에서는 뜻밖에라는 우연성보다 부당하게 이득을 취함이 핵심이다. 출처 pián yi 의미 2."
     },
     {
       "id": "zh05",
@@ -87,12 +99,14 @@
     {
       "id": "zh06",
       "baseCase": "zh06",
-      "context": "情况变了，可以便宜行事。",
+      "context": "主管已经授权，我们可以根据现场情况便宜行事。",
       "mode": "sense",
       "readingPolicy": "zh-TW-dictionary",
       "review": "source-checked-editorial",
       "risk": "sense-or-reading",
-      "referencePolicy": "editorial-candidate"
+      "referencePolicy": "editorial-candidate",
+      "editorialNote": "평가 대상은 便宜 두 글자의 뜻·독음이다. 문장 전체의 便宜行事는 허가된 재량에 따라 처리한다는 관용 표현이며 都合がよい를 문장 번역으로 확정하지 않는다.",
+      "usageSource": "cheap-idiom"
     },
     {
       "id": "zh07",
@@ -152,7 +166,9 @@
       "readingPolicy": "zh-TW-dictionary",
       "review": "source-checked-editorial",
       "risk": "sense-or-reading",
-      "referencePolicy": "editorial-candidate"
+      "referencePolicy": "editorial-candidate",
+      "unit": "morpheme",
+      "editorialNote": "康复 안의 复를 묻는 형태소 사례다. 康复 전체의 뜻과 독음을 이 한 글자의 답으로 대조하지 않는다."
     },
     {
       "id": "ja01",
@@ -187,12 +203,13 @@
     {
       "id": "ja04",
       "baseCase": "ja04",
-      "context": "この生物は加熱せずに食べます。",
+      "context": "寿司や刺身などの生物は、食べる直前まで冷蔵します。",
       "mode": "sense",
       "readingPolicy": "ja-dictionary",
       "review": "source-checked-editorial",
       "risk": "sense-or-reading",
-      "referencePolicy": "not-applicable"
+      "referencePolicy": "not-applicable",
+      "editorialNote": "초밥·회라는 식품 문맥으로 せいぶつ와 구분한다. 상하기 쉬운 식품이라는 더 넓은 사전 의미도 별도 검토 대상이다."
     },
     {
       "id": "ja05",
@@ -266,7 +283,12 @@
       "review": "source-checked-editorial",
       "risk": "품사",
       "referencePolicy": "editorial-candidate",
-      "jaExample": "よい"
+      "jaExample": "よい",
+      "acceptedMeanings": [
+        "동의하다",
+        "허락해도 된다"
+      ],
+      "editorialNote": "출처 동사 7은 동의·허락, 형용사 2는 가능·적절이다. 괜찮다/가능하다와 다른 품사 분석은 검토 대상으로 남기며 오역으로 단정하지 않는다."
     },
     {
       "id": "zh15",
