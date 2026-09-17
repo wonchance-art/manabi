@@ -2,7 +2,7 @@
 
 대상: `codex/classroom-release-20260917`, draft PR #1321 후속.
 사용자 승인: 개인 사본 없이 단어 저장 + 뜻 수정 전달 + 검수.
-운영 DB/환경/merge/alias 변경은 현재 제외.
+후속 사용자 승인(“ㄱㄱ 자동화”): 준비한 SQL 한 건의 운영 DB 적용 및 자동 검수. 환경/merge/alias 변경은 제외.
 
 ## 검수 방법
 
@@ -26,15 +26,15 @@
 
 ## 결과
 
-실행 커밋 `1a21318fecd8a3362ceb153a71c3f5b77b14c633`. 구현·로컬 검수 완료. 실제 운영 계정 로그인 검수 및 신규 SQL 운영 적용은 아직 수행하지 않았다.
+실행 커밋 `1a21318fecd8a3362ceb153a71c3f5b77b14c633`. 구현·로컬 검수·Preview 배포·승인된 SQL 운영 적용 완료. 실제 사용자 로그인과 물리 기기 검수는 별도다.
 
-### 자동 검사와 DB 대조
+### 자동 검사와 적용 전 DB 대조
 
 - Vitest: 419 files, **4,510 PASS / 1 SKIP**.
 - 독립 SQL/RLS 시나리오 7개 PASS (`node e2e/classroom-direct-sql.mjs`). 새 저장/재시도/뜻 충돌/교차 계정/암호 세대/원본 삭제/기존 세 종류 저장을 실제 PostgreSQL로 확인.
 - 운영 스키마 **읽기 전용** 확인: vocabulary_contexts의 kind/출처 제약조건 이름·정의, user_vocabulary SRS 컬럼 타입 일치.
-- 운영 `save_vocabulary_context` 본문 MD5 `a31150064cf6db9288565e0c65844725`가 저장소의 기존 migration과 일치. 운영 적용이나 개인 행 조회는 하지 않았다.
-- 원격 역할 권한 조회: service_role의 원본 SELECT/UPDATE 및 개인 단어 SELECT/INSERT/UPDATE, authenticated의 기존 문맥 SELECT/INSERT가 모두 존재한다. 신규 함수는 아직 없다.
+- 적용 전 `save_vocabulary_context` 본문 MD5 `a31150064cf6db9288565e0c65844725`가 저장소의 기존 migration과 일치. 이 사전 확인에서는 운영 적용이나 개인 행 조회를 하지 않았다.
+- 적용 전 역할 권한 조회: service_role의 원본 SELECT/UPDATE 및 개인 단어 SELECT/INSERT/UPDATE, authenticated의 기존 문맥 SELECT/INSERT가 모두 존재했다. 신규 함수는 없었다.
 - 화면 검사에서 Next 경로 매개변수의 `local%3A` 인코딩이 기존 개인 자료 조회로 떨어지는 문제를 발견해 canonical ID 처리와 서버 metadata 분기를 함께 수정했다.
 - 기기 캐시 용량 부족은 온라인 원본 읽기의 실패 조건으로 삼지 않는다.
 - 변경 소스28개 JS/JSX lint(`--ext .js,.jsx`), diff check 통과. Next production build **480 정적 페이지** 완료. 기존 lessonAdapters/lessonModel의 익명 export 경고2개 유지.
@@ -53,12 +53,23 @@
 ### 한계·남은 단계
 
 - 합성 인증/HTTP transport와 실제 로컬 SQL/RLS의 검사이며, 운영 로그인·원격 Auth·실제 Gemini·물리 iPad/Pencil 검수로 세지 않는다. 사용자 외출 중 로그인 요청 없음.
-- SQL `20260917023410_classroom_direct_vocabulary.sql`은 코드만 준비했다. 운영 DB 적용 전 Preview의 직접 단어 저장은 실패 안내로 끝나며, 성공이나 자동 사본 생성을 가장하지 않는다.
-- 운영 적용 승인 후 함수/권한/기존 저장 호환을 확인해야 한다. 운영 웹 병합·승격·고정 alias·영구 환경 변수는 이번 실행에서 변경하지 않는다.
+- SQL `20260917023410_classroom_direct_vocabulary.sql`은 후속 승인으로 운영 적용했다. 아래 실제 DB 검수와 별도로, 사용자 로그인 후 브라우저→원격 Auth→실제 저장 확인은 아직 수행하지 않았다.
+- 운영 웹 병합·승격·고정 alias·영구 환경 변수는 이번 실행에서 변경하지 않았다.
 
 ### 원격 인계
 
 - 같은 공개 draft [PR #1321](https://github.com/wonchance-art/manabi/pull/1321)에 실행 커밋 push 완료.
-- [후속 Preview](https://manabi-2rgzutmdd-wonchance-arts-projects.vercel.app/class), deployment `dpl_3AAYnSwhEZ3znijcy9k98yrjVFCV`. 2026-09-17 12:17 KST 문서 작성 시 원격 build 중이며, 실행 CI [35177280471](https://github.com/wonchance-art/manabi/actions/runs/35177280471)도 진행 중이다. 최종 READY·버전·401 확인 및 최종 head CI 결과는 PR/#150 완료 handoff에 기록한다.
-- 운영 DB 적용은 사용자에게 정확한 SQL 한 건으로 승인 요청했다. 응답 전에는 실행하지 않는다.
+- [후속 Preview](https://manabi-2rgzutmdd-wonchance-arts-projects.vercel.app/class), deployment `dpl_3AAYnSwhEZ3znijcy9k98yrjVFCV`: READY, `/api/version` 실행 커밋/ref/preview 일치. DB 적용 후에도 API GET/POST 비로그인401·private no-store 유지.
+- 배포 클라이언트 Chromium/WebKit 학생 흐름 각6개 PASS/실행 오류0/정상 종료. 인증/HTTP transport는 합성이며 독립 DB를 사용했다. 첫 Chromium 검사기 종료 지연은 중단 후 단독 재실행해 정상 종료를 확인했다.
+- 기존 최종 head `c0c53479a57e973a6c8ad48a44e3a080625f092f`의 [CI35177593275](https://github.com/wonchance-art/manabi/actions/runs/35177593275) 두 job SUCCESS. 후속은 DB 검수 SQL·문서·자기 보드만 추가하며 앱 실행 코드와 migration 본문은 같다.
 - 별도 검수 화면 모음은 로컬 `classroom-direct-study-20260917/index.html`에 두었다. 모두 합성 자료이며 개인 계정 화면은 없다.
+
+### 승인된 운영 DB 활성화 · 2026-09-17 KST
+
+- 적용 직전 원격/로컬 migration 이력을 전체 대조: 로컬 누락0, 미적용 **20260917023410 한 건**. SQL SHA-256 `bf38f3e414fe3f44781b727846068c1da2ff0b3cc8d75c0de2eb95f4106179e6`.
+- 기존 자동 배포 workflow [35178677108](https://github.com/wonchance-art/manabi/actions/runs/35178677108)를 승인된 head c0c53479에서 실행. `Link & db push` SUCCESS, 미설정 skip 아님. 원격 schema_migrations에 같은 버전 등록 확인.
+- 새 service-only 함수는 anon/authenticated EXECUTE 불가, service_role만 허용. 세 저장 함수 모두 SECURITY INVOKER·빈 search_path, 관련 세 테이블 RLS 유지, class 발췌 SELECT는 본인 단어 소유자만 가능.
+- 재실행 가능한 검수: `supabase/verification/classroom_direct_vocabulary.sql`. 실제 운영 DB에 합성 사용자3명·원본/개인 자료·단어·문맥·PDF 메타데이터를 **예외 하위 트랜잭션 안에서만** 만든다. 외부 Auth 가입/메일/Storage 파일 생성은 없다. 모든 검수 후 의도적 예외로 전체 롤백하고 잔존0을 assert한다.
+- 운영 DB 7시나리오 PASS: 단어/문맥/초기 등급 원자 저장, 재시도/SRS 불변, 교사 원본·교차 계정 RLS/직접 쓰기 거부, 원문 변경/뜻 충돌/명시적 확인, 암호 세대·외부 자료 거부, 기존 textbook/reading/PDF RPC 호환, 원본 삭제 후 개인 단어·발췌 보존.
+- 합성 auth/profiles/materials/vocabulary/contexts/PDF 메타데이터 잔존 **0**, 기존 개인 행 수정 **0**. 첫 검수의 PL/pgSQL 변수 `kind` 모호성을 검수 스크립트에서만 고친 뒤 재실행했다. 실패한 첫 실행도 트랜잭션 전체 롤백이며 migration 수정은 없다.
+- 보안 advisor에 이번 변경 함수/테이블 관련 지적0. 전체 프로젝트의 기존 권고는 별개이며 이번 범위에서 권한을 임의로 바꾸지 않았다: [RLS 정책 없는 테이블](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy), [기존 함수 search_path](https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable), [anon의 기존 DEFINER 호출](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable), [authenticated의 기존 DEFINER 호출](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable), [유출 비밀번호 보호](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection). 기존 함수의 내부 인가를 확인하지 않고 advisor 표시만으로 실제 권한 우회를 단정하지 않는다.
