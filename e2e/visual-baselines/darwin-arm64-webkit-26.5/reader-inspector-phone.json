@@ -1,0 +1,12 @@
+{
+  "name": "reader-inspector-phone",
+  "key": "darwin-arm64-webkit-26.5",
+  "sha256": "7398f5dc9838cb624f27ef13243e9e5db9a586d8342c29b0a08666df0f3438a8",
+  "review": "Directly inspected: Chinese pinyin, word, Korean meaning, Japanese form, contextual disclosure, and all four bottom save actions visible; one close button, no overlap.",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "osRelease": "25.3.0",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+}

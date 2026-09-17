@@ -1,0 +1,12 @@
+{
+  "name": "reader-inspector-phone",
+  "key": "darwin-arm64-chromium-149.0.7827.55",
+  "sha256": "c465dc2c6998176918ec238f16c53055b188d90406a3aaafb7589399eb28e54a",
+  "review": "Directly inspected: Chinese pinyin/word, Korean meaning, Japanese form, disclosure, single close and all four save actions remain visible. SVG contrast incomplete kept as manual evidence.",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "osRelease": "25.3.0",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+}

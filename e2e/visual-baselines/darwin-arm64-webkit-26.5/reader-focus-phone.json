@@ -1,0 +1,12 @@
+{
+  "name": "reader-focus-phone",
+  "key": "darwin-arm64-webkit-26.5",
+  "sha256": "1afd64f47e1daa1d6de8bd0130d88322cac17bf3dfa0b75c7a1667571647a941",
+  "review": "Directly inspected final rebuilt viewport: selected sentence remains dark and readable, surrounding sentences dim; keyboard focus marker stays fully inside the gutter, no text clipping under header. Nested-interactive and touch target-size violations resolved. Pseudo-element contrast incomplete remains manual review.",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "osRelease": "25.3.0",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+}
