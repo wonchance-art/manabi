@@ -8,11 +8,11 @@ const sql = [
   { id: 'board-sql', file: 'e2e/teaching-board-cloud-sql.mjs', groups: ['board.sql'], evidence: 'disposable-postgres-rls' },
 ];
 const classroom = browserSteps('classroom', 'e2e/teaching-word-canvas.e2e.mjs', [
-  'board.core', 'board.cloud', 'board.fragments', 'board.reuse', 'board.history', 'classroom.student',
+  'board.core', 'board.cloud', 'board.fragments', 'board.reuse', 'board.history', 'classroom.student', 'classroom.visual',
 ], true);
-const notes = browserSteps('notes', 'e2e/study-notes.e2e.mjs', ['notes.collection'], true);
+const notes = browserSteps('notes', 'e2e/study-notes.e2e.mjs', ['notes.collection', 'notes.visual'], true);
 const reader = [
-  ...browserSteps('word-layout', 'e2e/teaching-word-quality.e2e.mjs', ['reader.layout']),
+  ...browserSteps('word-layout', 'e2e/teaching-word-quality.e2e.mjs', ['reader.layout', 'reader.visual']),
   ...browserSteps('reference', 'e2e/reference-scope.e2e.mjs', ['reader.reference']),
 ];
 export const profiles = Object.freeze({ sql, classroom: [...sql, ...classroom], notes, reader,

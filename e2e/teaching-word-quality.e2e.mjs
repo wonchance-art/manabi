@@ -1,3 +1,4 @@
+import {captureQuality,assertQuality,qualityCanary} from './visual-quality.mjs';
 import {createServer} from 'vite';
 import {launchQaBrowser,traceQa,finishQa} from './qa-runtime.mjs';
 import fs from 'node:fs';
@@ -8,6 +9,7 @@ const browser=await launchQaBrowser(engine);
 const page=await browser.newPage({viewport:{width:1024,height:768}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
 const report={engine,groups:[],checks:[],errors};await traceQa(page.context());
 try{
+ report.canaries=await qualityCanary(browser);
  await page.goto(server.resolvedUrls.local[0]+'e2e/word-quality-fixture.html');await page.locator('[data-case]').last().waitFor();await page.waitForFunction(()=>document.querySelectorAll('.teaching-word-graphic').length===20);
  await page.waitForTimeout(150);
  const baseline=await page.locator('.teaching-word-graphic').evaluateAll(es=>es.map(e=>e.getAttribute('viewBox')));
@@ -20,6 +22,7 @@ try{
  }
  await page.evaluate(()=>window.setWordQuality(7,false));
  for(const width of [390,768,1024]){await page.setViewportSize({width,height:844});await page.waitForTimeout(100);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:`${out}/words-${width}.png`,fullPage:true});for(const id of ['ja-1','zh-5','zh-17'])await page.locator(`[data-case="${id}"]`).screenshot({path:`${out}/${id}-${width}.png`});}
+ await page.setViewportSize({width:768,height:844});await captureQuality({page,report,out,name:'japanese-reading-tablet',selector:'[data-case="ja-1"]'});assertQuality(report,['japanese-reading-tablet']);
  const grouped=await page.locator('[data-case="ja-22"] .reader-settings__preview ruby').allTextContents();assert.deepEqual(grouped,['食べるくう']);
- assert.deepEqual(errors,[]);Object.assign(report,{groups:['reader.layout'],cases:10,masks:8,appearances:2,surfaces:['viewer preview','word inspector','presentation'],widths:[390,768,1024]});console.log('PASS: 10 cases × 8 masks × 2 appearances; viewer/inspector/presentation; 3 widths; no page errors');
+ assert.deepEqual(errors,[]);Object.assign(report,{groups:['reader.layout','reader.visual'],cases:10,masks:8,appearances:2,surfaces:['viewer preview','word inspector','presentation'],widths:[390,768,1024]});console.log('PASS: 10 cases × 8 masks × 2 appearances; viewer/inspector/presentation; 3 widths; no page errors');
 }catch(error){report.failure=error.stack;throw error;}finally{await finishQa({browser,server,context:page.context(),report,out});}

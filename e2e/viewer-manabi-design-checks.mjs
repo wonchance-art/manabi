@@ -62,6 +62,11 @@ export async function verifyReaderDesign({page,board,scene,head,saveScreen,waitF
   assert.equal((await scene()).find(el=>el.customData?.manabiExpression).customData.manabiExpression.text,'图书馆');
   check('reader-only and mobile layouts keep word lookup, source visibility and the existing board');
 
+  await verifyPersonalReaderDesign({page,saveScreen,waitFor,check,db,uid,base,activate});
+}
+
+export async function verifyPersonalReaderDesign({page,saveScreen,waitFor,check,db,uid,base,activate}) {
+  const inspector=page.locator('.viewer-inspector');
   const entries=[['周末','zhōu mò','주말'],['，','',''],['我','wǒ','나'],['和','hé','~와'],['朋友','péng you','친구'],['去','qù','가다'],['图书馆','tú shū guǎn','도서관'],['。','',''],['我们','wǒ men','우리'],['一起','yì qǐ','함께'],['学习','xué xí','공부하다'],['中文','zhōng wén','중국어'],['。','','']];
   const json={sequence:[],dictionary:{},status:'completed',metadata:{language:'Chinese',level:'HSK 3'}};
   for(let line=0;line<8;line++){
@@ -94,6 +99,24 @@ export async function verifyReaderDesign({page,board,scene,head,saveScreen,waitF
   await page.getByRole('button',{name:'읽기 설정',exact:true})[activate]();
   await page.getByRole('dialog',{name:'읽기 설정',exact:true}).waitFor();
   await saveScreen('reader-settings-phone');
+  const settings=page.getByRole('dialog',{name:'읽기 설정',exact:true});
+  const typeTab=settings.getByRole('tab',{name:'글자·배경',exact:true});await typeTab.focus();await page.keyboard.press('End');
+  assert.equal(await settings.getByRole('tab',{name:'읽기 진행',exact:true}).getAttribute('aria-selected'),'true');
+  await settings.getByRole('checkbox',{name:/문장 집중/}).check();
+  for(let i=0;i<18;i++){await page.keyboard.press('Tab');assert(await settings.evaluate(el=>el.contains(document.activeElement)),'modal keyboard focus remains inside');}
   await page.keyboard.press('Escape');await word().waitFor();
-  check('Aa opens and closes with existing settings and mobile focus handling');
+  await page.locator('.line-pick').first()[activate]();
+  await page.locator('.reader-area--focus .word-token--picked').first().waitFor();
+  const opacity=await page.locator('.reader-area--focus').evaluate(el=>({picked:getComputedStyle(el.querySelector('.word-token--picked')).opacity,other:getComputedStyle(el.querySelector('.word-token:not(.word-token--picked)')).opacity}));
+  assert.equal(Number(opacity.picked),1);assert(Number(opacity.other)<=.3,'surrounding text is dimmed without darkening the selected sentence');
+  await saveScreen('reader-focus-phone');
+  check('Aa tabs and modal keyboard focus work; focused text remains clear');
+  await page.setViewportSize({width:640,height:1000});
+  await page.evaluate(()=>{document.documentElement.style.fontSize='200%';});
+  await word()[activate]();await inspector.locator('.word-detail-card').waitFor();
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,'200% text does not introduce page-wide horizontal scroll');
+  await saveScreen('reader-text-200-percent');
+  await page.evaluate(()=>{document.documentElement.style.fontSize='';});
+  await page.keyboard.press('Escape');
+  check('reader and word card reflow with 200% text');
 }

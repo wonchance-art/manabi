@@ -1,3 +1,4 @@
+import {captureQuality,assertQuality} from './visual-quality.mjs';
 // Actual React UI with synthetic auth/HTTP data and the existing PostgreSQL
 // vocabulary RPC. No real account, personal note, or external AI is contacted.
 import {launchQaBrowser,traceQa,finishQa,dragQa} from './qa-runtime.mjs';
@@ -136,7 +137,7 @@ try{
  await review.getByRole('button',{name:'단어 정리 닫기',exact:true}).click();await hud.getByRole('button',{name:'단어 정리',exact:true}).filter({visible:true}).first().click();assert.equal(await review.locator('.note-candidate').count(),0);await review.getByRole('button',{name:'담음 2',exact:true}).click();assert.equal(await review.locator('.note-candidate').count(),2);
  await page.reload();await board.locator('canvas.interactive').waitFor();await hud.getByRole('button',{name:'단어 정리',exact:true}).filter({visible:true}).first().click();await review.getByRole('button',{name:'담음 2',exact:true}).click();assert.equal(await review.getByText('저장됨',{exact:true}).count(),2);
  check('reload and repeated organization keep saved corrections without duplicate words or contexts');
- await page.setViewportSize({width:390,height:844});await screen('03-mobile-review');
+ await page.setViewportSize({width:390,height:844});await screen('03-mobile-review');await captureQuality({page,report,out,name:'notes-review-phone',selector:'.note-review'});
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
  const rect=await review.boundingBox();assert(rect.x>=0&&rect.y>=0&&rect.width<=390&&rect.height<=844);
  assert.equal(await page.locator('.personal-note-canvas').evaluate(el=>el.inert),true,'mobile review does not leave hidden canvas controls focusable');
@@ -227,6 +228,7 @@ try{
  const resume=page.getByRole('link',{name:'미완료 2개 · 이어 정리 ↗',exact:true});await resume.waitFor();await resume.scrollIntoViewIfNeeded();await screen('10-library-resume');
  await resume.click();await review.waitFor();assert.equal(await review.locator('.note-candidate').count(),2);
  check('library shows the saved unfinished count and opens the review queue directly');
+ assertQuality(report,['notes-review-phone']);report.groups.push('notes.visual');
  assert.equal(report.externalAI.length,0);assert.equal(report.errors.length,0,report.errors.join('\n'));check('no actual external AI request or uncaught UI error');report.groups.push('notes.collection');
 }catch(error){report.failure=error.stack;await screen('failure');throw error;}
 finally{await finishQa({browser,db,context,report,out});}

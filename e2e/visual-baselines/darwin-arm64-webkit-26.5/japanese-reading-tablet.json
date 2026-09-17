@@ -1,0 +1,12 @@
+{
+  "name": "japanese-reading-tablet",
+  "key": "darwin-arm64-webkit-26.5",
+  "sha256": "470b86dba1fc7828569a2161b1da808af27609173ded41c344e473a4fa2f1b83",
+  "review": "Codex visual review 2026-09-17 KST: Japanese grouped ruby above, hanja below, meaning right; no overlap or clipping. Synthetic glosses; SVG contrast needs separate measurement.",
+  "viewport": {
+    "width": 768,
+    "height": 844
+  },
+  "osRelease": "25.3.0",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+}

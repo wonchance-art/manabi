@@ -1,3 +1,5 @@
+import {verifyPersonalReaderDesign} from './viewer-manabi-design-checks.mjs';
+import {captureQuality,assertQuality} from './visual-quality.mjs';
 import {installBoardCloudFixture,verifyBoardCloud} from './teaching-board-cloud-fixture.mjs';
 import {boardMenus,verifyBoardMenus} from './teaching-board-menu-checks.mjs';
 import {verifyClassRelease} from './classroom-release-checks.mjs';
@@ -139,7 +141,7 @@ await context.route('**/api/materials/*/annotations*',async r=>{
 const readBoards=()=>page.evaluate(async()=>{const db=await new Promise((resolve,reject)=>{const q=indexedDB.open('manabi-teaching-boards');q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error);});return new Promise((resolve,reject)=>{const q=db.transaction('boards').objectStore('boards').getAll();q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error);});});
 const head=async()=> (await readBoards()).find(row=>row.id===row.scope);
 const scene=async()=>{const row=await head();return row?.document.pages.find(p=>p.id===row.document.activePage)?.elements.filter(el=>!el.isDeleted)||[];};
-const saveScreen=async name=>{await page.screenshot({path:out+'/'+name+'.png'});report.screens.push(name+'.png');};
+const saveScreen=async name=>{await page.screenshot({path:out+'/'+name+'.png'});report.screens.push(name+'.png');if(name==='reader-phone-word')await captureQuality({page,report,out,name:'reader-inspector-phone',selector:'.viewer-inspector'});if(name==='reader-focus-phone')await captureQuality({page,report,out,name,selector:'.reader-area',audit:'.reader-area .word-token--picked'});if(name==='reader-settings-phone')await captureQuality({page,report,out,name,selector:'.reader-settings'});};
 let lookupDelay=0,lookupError=false;
 await context.route('**/api/classroom/lookup',async route=>{
  const {text,language}=route.request().postDataJSON();if(lookupDelay)await new Promise(r=>setTimeout(r,lookupDelay));
@@ -207,6 +209,8 @@ try {
  check('multi-select frame/annotation controls preserve geometry; arranging words does not move ink');
  await selection.getByRole('button',{name:'여백 줄이기',exact:true})[activate]();await page.waitForTimeout(450);
  await menus.action('main','전체 보기');await saveScreen('arranged-words');
+ await page.locator('.board-hud-status[data-saving="true"]').waitFor({state:'hidden'});
+ await captureQuality({page,report,out,name:'board-multiword-desktop',selector:'.teaching-board',audit:'.board-hud'});
  const snapshot=(await scene()).map(({id,type,x,y,customData,points,text})=>({id,type,x,y,customData,points,text}));
  await page.reload();await board.waitFor();await waitFor(async()=> (await scene()).length===snapshot.length);
  assert.deepEqual((await scene()).map(({id,type,x,y,customData,points,text})=>({id,type,x,y,customData,points,text})),snapshot);
@@ -255,6 +259,7 @@ try {
   await form.getByLabel('읽기',{exact:true}).fill('huàn wèi sī kǎo');await form.getByLabel('뜻',{exact:true}).fill('상대방의 입장에서 생각하다');
   await waitFor(()=>form.locator('.teaching-word-graphic').evaluate(el=>new Set([...el.querySelectorAll('.teaching-word-part--text')].map(t=>t.getAttribute('y'))).size===1));
   await saveScreen(label+'-lookup');
+  if(label==='phone')await captureQuality({page,report,out,name:'board-lookup-phone',selector:'#board-menu-entry'});
   const action=await form.getByRole('button',{name:'바로 놓기',exact:true}).boundingBox();
   assert(action.y>=0&&action.y+action.height<=h,'placement action stays visible without scrolling the whole menu');
   await menus.close();
@@ -285,6 +290,7 @@ try {
  }
  check('home and team links navigate on click and browser back restores every board page');
  assert.deepEqual(report.readingPrefetch,[],'reading and board menus do not prefetch home, team or study pages');check('reading links request destinations only when used');
+ await verifyPersonalReaderDesign({page,saveScreen,waitFor,check,db,uid,base,activate});
  if(process.env.QA_CLASS_RELEASE==='1'){
   // Stop teacher background requests before switching the embedded DB role.
   // The student gets a separate browser context, never the teacher's cookies.
@@ -292,6 +298,7 @@ try {
   await fs.promises.writeFile(out+'/teacher-checkpoint.tar',Buffer.from(await (await db.dumpDataDir('none')).arrayBuffer()));
   await verifyClassRelease({browser,db,uid,day,base,out,report,check});report.groups.push('classroom.student');
  }
+ assertQuality(report,['board-multiword-desktop','board-lookup-phone','reader-inspector-phone','reader-settings-phone','reader-focus-phone']);report.groups.push('classroom.visual');
  assert.equal(report.errors.length,0,report.errors.join('\n'));check('no browser runtime errors');report.groups.push('board.core');if(cloud?.state.historyMetrics)report.historyMetrics=cloud.state.historyMetrics;
 } catch(error){report.failure=error.stack;await saveScreen('failure');console.error(await page.locator('body').innerText());throw error;}
 finally{await finishQa({browser,db,context,report,out});}
