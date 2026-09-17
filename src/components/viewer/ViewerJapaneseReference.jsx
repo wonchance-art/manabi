@@ -1,5 +1,4 @@
 'use client';
-import {useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {toJaForm} from '../../lib/hanjaKo';
 import {japaneseReferenceForMeaning,japaneseReferenceKey,lookupJapaneseReference} from '../../lib/viewerJapaneseReference';
@@ -14,12 +13,11 @@ export default function ViewerJapaneseReference(props) {
 }
 
 function ReferenceSelection({userId,word,meaning,pos,dictEntry,loading,dictError,glyphForm,queryKey,formError,onRetryForm}) {
-  const [requested,setRequested]=useState(false);
   const dictionary=japaneseReferenceForMeaning(dictEntry,meaning,{pos,form:glyphForm});
   const query=useQuery({
     queryKey,
     queryFn:({signal})=>lookupJapaneseReference({word,meaning,pos,form:glyphForm,signal}),
-    enabled:requested&&!!userId&&!!glyphForm&&!!meaning,
+    enabled:false,
     staleTime:30*60*1000,gcTime:30*60*1000,retry:false,
   });
   const ref=query.data||dictionary;
@@ -33,8 +31,8 @@ function ReferenceSelection({userId,word,meaning,pos,dictEntry,loading,dictError
     </div>
     {ref&&!same&&<div className="reader-japanese__row"><span className="reader-japanese__label">같은 뜻</span><strong lang="ja">{ref.form}</strong>{query.data?<small title="현재 한국어 뜻을 기준으로 찾은 AI 대응어">AI</small>:<small>기존 사전</small>}</div>}
     {ref?.warn&&<p className="reader-japanese__note">일본어 참고: {ref.warn}</p>}
-    {!ref&&<div className="reader-japanese__lookup">
-      {loading&&!dictError?<span role="status">대응어 확인 중…</span>:query.isFetching?<span role="status">일본어를 찾는 중…</span>:userId?<button type="button" disabled={!glyphForm||!meaning} onClick={()=>{if(requested)query.refetch();else setRequested(true);}}>{query.isError?'일본어 다시 찾기':'일본어 대응 찾기'}</button>:<span>로그인하면 일본어 대응어를 찾을 수 있어요.</span>}
+    {(!dictionary||query.data||query.isError)&&<div className="reader-japanese__lookup">
+      {userId?<button type="button" aria-disabled={query.isFetching||!glyphForm||!meaning||loading&&!dictError} onClick={()=>{if(!query.isFetching&&glyphForm&&meaning&&(!loading||dictError))query.refetch();}}>{query.isFetching?'일본어를 찾는 중…':query.isError?'일본어 다시 찾기':query.data?'일본어 다시 확인':'일본어 대응 찾기'}</button>:<span>로그인하면 일본어 대응어를 찾을 수 있어요.</span>}
       {query.isError&&<span role="status">대응어를 불러오지 못했어요.</span>}
     </div>}
   </section>;

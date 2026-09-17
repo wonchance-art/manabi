@@ -14,6 +14,7 @@ const notes = browserSteps('notes', 'e2e/study-notes.e2e.mjs', ['notes.collectio
 const reader = [
   ...browserSteps('word-layout', 'e2e/teaching-word-quality.e2e.mjs', ['reader.layout', 'reader.visual']),
   ...browserSteps('reference', 'e2e/reference-scope.e2e.mjs', ['reader.reference']),
+  ...browserSteps('meaning-choices', 'e2e/meaning-choices.e2e.mjs', ['reader.meaning']),
 ];
 export const profiles = Object.freeze({ sql, classroom: [...sql, ...classroom], notes, reader,
   release: [...sql, ...classroom, ...notes, ...reader] });

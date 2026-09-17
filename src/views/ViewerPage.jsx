@@ -115,6 +115,7 @@ import { normalizeRefWordKey } from '../lib/refWordNormalize';
 import { isWordToken, wordStateOf, wordStateExtraClass } from '../lib/wordState';
 import { TTS_RATES, ttsOptsFor, pronHiddenFor, shouldRevealPron } from '../lib/readingSheet';
 import { getBook } from '../lib/bookMeta';
+import ViewerMeaningChoices from '../components/viewer/ViewerMeaningChoices';
 import ViewerJapaneseReference from '../components/viewer/ViewerJapaneseReference';
 import TokenEditPanel from './TokenEditPanel';
 import SourceEditModal from './SourceEditModal';
@@ -1328,12 +1329,16 @@ export default function ViewerPage() {
   // 인라인 복습: 뷰어에서 단어 보며 바로 FSRS 평가
   const inlineReviewMutation = useInlineReview({ user, fetchProfile, toast });
 
+  const correctionScope = useRef(null);
+  useEffect(() => { correctionScope.current = `${id}:${user?.id || ''}`; }, [id, user?.id]);
   const correctTokenMutation = useMutation({
-    mutationFn: async ({ tokenId, corrections }) => {
+    mutationFn: async ({ tokenId, corrections, expectedMeaning }) => {
+      if (!user?.id || material?.__local || user.id !== material?.owner_id) throw new Error('이 자료를 수정할 권한이 없습니다.');
       const currentJson = material?.processed_json;
       if (!currentJson?.dictionary?.[tokenId]) throw new Error('토큰을 찾을 수 없습니다.');
 
       const beforeToken = currentJson.dictionary[tokenId];
+      if (expectedMeaning !== undefined && (beforeToken.meaning || '') !== expectedMeaning) throw new Error('뜻이 변경됐어요. 현재 뜻을 다시 확인해 주세요.');
       const updatedDict = {
         ...currentJson.dictionary,
         [tokenId]: { ...beforeToken, ...corrections },
@@ -1344,9 +1349,10 @@ export default function ViewerPage() {
         const record = await correctPassageToken(supabase, material, tokenId, corrections);
         queryClient.setQueryData(['material', id], record);
       } else {
-        const { error } = await supabase.from('reading_materials')
-          .update({ processed_json: updatedJson }).eq('id', id);
+        const { data: saved, error } = await supabase.from('reading_materials')
+          .update({ processed_json: updatedJson }).eq('id', id).eq('owner_id', user.id).select('id').maybeSingle();
         if (error) throw error;
+        if (!saved) throw new Error('저장이 반영되지 않았어요. 접근 권한을 다시 확인해 주세요.');
       }
 
       // 교정 히스토리 로그 (실패해도 수정 자체는 유지)
@@ -1365,13 +1371,14 @@ export default function ViewerPage() {
         });
         if (logError) console.warn('[correction log] failed:', logError.message);
       }
-      return { tokenId, corrections };
+      return { tokenId, corrections, materialId: id, ownerId: user.id };
     },
-    onSuccess: ({ tokenId, corrections }) => {
+    onSuccess: ({ tokenId, corrections, materialId, ownerId }) => {
       // 교정된 뜻이 캐시된 분석 결과에 남아 낡지 않게 무효화(§C4 무효화 규칙)
       if (isClient) clearAnalysisCache(localStorage);
-      queryClient.invalidateQueries({ queryKey: ['material', id] });
-      queryClient.invalidateQueries({ queryKey: ['token-corrections', id, tokenId] });
+      queryClient.invalidateQueries({ queryKey: ['material', materialId] });
+      queryClient.invalidateQueries({ queryKey: ['token-corrections', materialId, tokenId] });
+      if (correctionScope.current !== `${materialId}:${ownerId}`) return;
       // BottomSheet에 표시되는 selectedToken도 업데이트
       setSelectedToken(prev => prev?.id === tokenId ? { ...prev, ...corrections } : prev);
       toast('수정이 저장됐어요!', 'success');
@@ -1553,7 +1560,7 @@ export default function ViewerPage() {
   useEffect(() => { setIsEditingToken(false); }, [selectedToken?.id]);
   const canEditToken = !!user?.id && !material?.__local && user.id === material?.owner_id;
   const selectedDictKey=selectedLexKey||selectedToken?.text;
-  const { data: editDictEntry, isFetched: dictFetched, isError: dictError } = useQuery({
+  const { data: editDictEntry, isFetched: dictFetched, isError: dictError, refetch: retryDictionary } = useQuery({
     queryKey: ['token-dict', materialLang, selectedDictKey],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -2051,6 +2058,7 @@ export default function ViewerPage() {
         {canEditToken && selectedToken.id && (
           <button
             onClick={() => setIsEditingToken(v => !v)}
+            disabled={correctTokenMutation.isPending}
             aria-label="뜻·발음 수정"
             title="뜻·발음 수정"
             className={`word-detail-card__edit${isEditingToken ? ' is-on' : ''}`}
@@ -2091,6 +2099,14 @@ export default function ViewerPage() {
           {selectedToken.reading}
         </div>
       )}
+
+      {materialLang === 'Chinese' && selectedToken.id && !classMeaning && !isEditingToken && <ViewerMeaningChoices
+        userId={user?.id} materialId={id} tokenId={selectedToken.id} word={headText} surface={selectedToken.text}
+        meaning={selectedToken.meaning||''} pos={selectedToken.pos} sentence={ctxSentenceOf(selectedToken)}
+        dictEntry={editDictEntry} dictLoading={!dictFetched&&!dictError} dictError={dictError} onRetryDictionary={retryDictionary}
+        canApply={canEditToken} saving={correctTokenMutation.isPending}
+        onApply={(corrections,target)=>correctTokenMutation.mutateAsync({...target,corrections})}
+      />}
 
       {classAction}
       {materialLang === 'Chinese' && <ViewerJapaneseReference key={`${selectedToken.id||selectedToken.text}:${refMeaning||''}`} userId={user?.id} word={headText} meaning={refMeaning||selectedToken.meaning||''} pos={selectedToken.pos} dictEntry={editDictEntry} loading={!dictFetched&&!dictError} dictError={dictError} jaTable={hanjaJaTable} formError={jaFormError} onRetryForm={()=>{setJaFormError(false);setJaFormRetry(n=>n+1);}}/>}
@@ -2202,7 +2218,7 @@ export default function ViewerPage() {
         <section className="reader-card-source"><blockquote lang={contentLangTag}>{(()=>{const {parts,term}=splitSentenceAroundWord(ctxSentenceOf(selectedToken),selectedToken.text,null);return parts.map((part,i)=><span key={i}>{part}{i<parts.length-1&&<mark>{term}</mark>}</span>);})()}</blockquote></section>
       {/* 문맥 설명 R1 — zh부터(프롬프트 검증 언어), 본문 탭 토큰만(문장 유도 가능할 때).
           즉답 카드는 그대로, 설명은 버튼을 눌러야 온다(스킴 탭 헛호출 0). */}
-      {materialLang === 'Chinese' && (() => {
+      {materialLang === 'Chinese' && (!selectedToken.id || classMeaning) && (() => {
         const ctxSentence = ctxSentenceOf(selectedToken);
         if (!ctxSentence) return null;
         if (ctxExplain?.loading) {
@@ -2221,7 +2237,7 @@ export default function ViewerPage() {
 
         <div className="word-detail-card__actrow">
           <button className="btn btn--ghost btn--sm" onClick={()=>runSelectionAnalysis(ctxSentenceOf(selectedToken))}>문장 번역</button>
-          {materialLang === 'Chinese'&&!ctxExplain?.loading&&!ctxExplain?.text&&<button className="btn btn--ghost btn--sm" onClick={()=>runCtxExplain(selectedToken,ctxSentenceOf(selectedToken))}>{ctxExplain?.error?'이 문장에서는? (다시 시도)':'이 문장에서는?'}</button>}
+          {materialLang === 'Chinese'&&(!selectedToken.id||classMeaning)&&!ctxExplain?.loading&&!ctxExplain?.text&&<button className="btn btn--ghost btn--sm" onClick={()=>runCtxExplain(selectedToken,ctxSentenceOf(selectedToken))}>{ctxExplain?.error?'이 문장에서는? (다시 시도)':'이 문장에서는?'}</button>}
         </div>
       </details>}
       <details className="reader-card-more" key={`more:${selectedToken.id||selectedToken.text}`}>

@@ -25,7 +25,8 @@ try{
  await select({pos:'동사'});await lookup().waitFor();await waitFor(()=>aborted.length===1);
  await delayed();delayed=null;await page.waitForTimeout(100);assert.equal(requests.length,1);assert.equal(await section.getByText('AI',{exact:true}).count(),0);
  check('changing only POS aborts the pending request; late result cannot appear or automatically request again');
- response={form:'研究する',warn:null};await lookup().click();await section.getByText('研究する',{exact:true}).waitFor();assert.equal(requests[1].partOfSpeech,'동사');
+ response={form:'研究する',warn:null};await lookup().focus();await page.keyboard.press('Enter');await section.getByText('研究する',{exact:true}).waitFor();assert.equal(requests[1].partOfSpeech,'동사');assert.equal(await page.getByRole('button',{name:'일본어 다시 확인',exact:true}).evaluate(el=>el===document.activeElement),true);
+ check('keyboard focus stays on the lookup action when the Japanese result arrives');
  await select({meaning:'조사하다'});await lookup().waitFor();await page.waitForTimeout(100);assert.equal(requests.length,2);
  await select({meaning:'연구',pos:'명사'});await lookup().waitFor();response={form:'研究',warn:null};await lookup().click();await section.getByText('AI',{exact:true}).waitFor();assert.equal(requests.length,3);
  await select({pos:'동사'});await section.getByText('研究する',{exact:true}).waitFor();await page.waitForTimeout(100);assert.equal(requests.length,3);
