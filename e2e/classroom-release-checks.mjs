@@ -93,7 +93,7 @@ export async function verifyClassRelease({browser,db,uid,day,base,out,report,che
   await page.locator(`[data-tid="${tokenId}"]`).click();await page.locator('.viewer-inspector').waitFor();
   const inspector=page.locator('.viewer-inspector');
   await inspector.getByText('배우다, 공부하다',{exact:true}).waitFor();
-  assert.match(await inspector.innerText(),/xué\s*xí/);
+  assert.deepEqual((await inspector.locator('.reader-card-headword .rt-an').allTextContents()).map(s=>s.trim()),['xué','xí']);
   assert.equal(copy.processed_json.dictionary[tokenId].meaning,'배우다, 공부하다');
   assert.equal(copy.processed_json.dictionary[tokenId].furigana,'xué xí');
   assert.equal(await page.getByRole('region',{name:'선생님 설명판'}).count(),0);

@@ -33,7 +33,7 @@
 - Next production build 통과. 기존 두 lint 경고 유지. 최초 실행은 기본 2GiB 힙 한도에 도달했고, `NODE_OPTIONS=--max-old-space-size=6144`로 완료했다. 공개 더미 Supabase 주소와 기존 Google font fixture로 로컬 빌드했다. 이 로컬 출력은 배포에 업로드하지 않는다.
 - 실제 `ViewerJapaneseReference` + TanStack Query + HTTP fixture: Chromium/WebKit 각각 4동선 PASS. 품사만 변경해도 실제 fetch 취소, 늦은 응답 무시, 뜻별/계정별 캐시 분리, 새 선택의 명시적 재요청, 로그아웃, null 결과 후 재시도 확인.
 - 개인 노트 Chromium/WebKit 각각 11동선 PASS: 두 차례 인식, 한자 후보 선택/직접 뜻 보존/중복 방지, 미완료·담음·제외/재접속, 부분 실패만 재저장, 원문 복귀, 저장 충돌·오프라인·응답 유실·백업, 기존 SRS 불변. 실제 React 화면과 로컬 SQL RPC, 합성 인식 응답을 사용한다.
-- 교사→학생: `QA_CLASS_RELEASE=1`이 기존 설명판 E2E의 교사 UI가 실제 로컬 SQL에 남긴 결과를 같은 DB에서 읽는다. 별도 browser context/학생 ID, 실제 학생 화면·copy route·copy SQL·RLS·서명 검증을 사용한다. 인증/HTTP transport는 fixture이며 운영 토큰·실계정은 사용하지 않는다. 결과와 대표 화면은 최종 실행 후 아래에 기록한다.
+- 교사→학생: Chromium/WebKit 터치 각각 **46동선 PASS / 실행 오류0**. `QA_CLASS_RELEASE=1`이 기존 설명판 E2E의 교사 UI가 실제 로컬 SQL에 남긴 결과를 같은 DB에서 읽는다. 별도 browser context/학생 ID, 실제 학생 화면·copy route·copy SQL·RLS·서명 검증을 사용한다. 인증/HTTP transport는 fixture이며 운영 토큰·실계정은 사용하지 않는다. 자동 분석 이후에도 `学习`의 교사 뜻 `배우다, 공부하다`와 글자별 병음 `xué / xí`가 학생 사본과 뜻 창에 유지되는지 확인한다. 사본 재열기 1개 유지, 교사 원본/판/Storage 직접 읽기0·쓰기 거부, 학생 열람 후 원본 불변까지 확인했다.
 - 교사와 학생을 전환할 때 교사 페이지의 요청을 먼저 종료하고, 학생 SQL은 transaction-local role/auth.uid를 사용한다. 무조건 허용하는 권한 mock으로 판정하지 않는다. 학생 수업 입장 HTTP 게이트는 서명/팀/세대 판정 fixture이며, 원격 Auth/팀 암호 입력 통합 확인과 구분한다.
 
 합성 검수를 운영 로그인·실제 Gemini 인식 또는 물리 iPad/Pencil 검수로 세지 않는다. 서버 학생 사본→개인 어휘 저장·FSRS/출처는 기존 개별 검수 근거를 유지하며, 이번 교사→학생 연결 추가는 공개 기록→사본→뜻 확인→날짜 기록 복귀/재열기·비공개 권한까지다.
@@ -59,7 +59,13 @@
 
 ## 원격 결과
 
-통합 PR·Preview·최종 실행 commit·CI·화면 검수 결과는 배포 완료 후 갱신한다.
+- main 대상 통합 draft [PR #1321](https://github.com/wonchance-art/manabi/pull/1321), 충돌 없음. 기존 #1316~#1320은 보존.
+- [최종 Preview](https://manabi-g2xjncacd-wonchance-arts-projects.vercel.app/class), `dpl_FnqpqMKisfcyhCEMkTdFKvXGk4cK`, READY.
+- 실행 commit `04fe73b9a2f038ae21642e5f9f376f1fc274ed4c`; `/api/version`의 commit/ref/environment=preview 일치. 초기 후보 lgzr87g35는 뜻 보존 보완 전이므로 최종 확인 주소로 사용하지 않는다.
+- 비로그인 `GET /api/notes/0`, `GET /api/classroom/boards` 모두401. `/api/notes` 자체는 POST 전용이므로 GET405를 권한 검사로 세지 않았다.
+- 실행 커밋 CI [35171281494](https://github.com/wonchance-art/manabi/actions/runs/35171281494)의 lint/콘텐츠/Vitest 및 smoke/learning-flow 두 job SUCCESS. 이후 E2E의 병음 DOM 확인과 검수 문서·자기 보드만 바뀐다. 최종 head/CI는 #150 CODEX_DONE에 기록한다.
+- 최종 로컬 production build Chrome/WebKit 결과: `/private/tmp/manabi-classroom-release-complete-{chrome,webkit}/report.json`. 각각46개, 오류0. 직접 확인한 화면: `four-words-and-ink.png`, `history-390.png`, `student-expression-inspector.png`; 기존 개인 노트 모바일 화면도 확인했다. 병음은 글자별 `.rt-an`을 검증하며 일반 HTML rt로 가정하지 않는다.
+- 실제 개인 데이터/로그인 없이 합성 자료를 사용했다. 외출 중 추가 로그인 요청은 하지 않았다.
 
 ## 실계정·물리 기기에서 남은 4개
 
