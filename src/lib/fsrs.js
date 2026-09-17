@@ -108,3 +108,8 @@ export async function persistVocabGrade(client, wordId, nextStats, reviewedAt = 
     .eq('id', wordId);
   if (error) throw error;
 }
+
+export function gradeToInitialStats(grade, now = () => new Date().toISOString()) {
+  const stats = calculateFSRS(grade, undefined);
+  return grade === 1 ? { ...stats, next_review_at: now() } : stats;
+}

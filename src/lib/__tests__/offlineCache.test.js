@@ -125,7 +125,7 @@ describe('배선 — 자료 경로와 안내', () => {
   const viewer = read('src/views/ViewerPage.jsx');
 
   it('자료도 네트워크 우선 + 실패 시에만 폴백', () => {
-    const fn = sliceBetween(viewer, 'async function fetchMaterial(id)', 'async function fetchUserVocabWords');
+    const fn = sliceBetween(viewer, 'async function fetchMaterial(id,team)', 'async function fetchUserVocabWords');
     // 캐시 쓰기는 완전 격리된 fire-and-forget이어야 한다 — 동기 throw가 폴백으로 새면
     // 네트워크 성공분이 캐시로 대체된다(구현 중 실측해 잡은 결함).
     expect(fn).toContain('Promise.resolve().then(() => cacheMaterial(data)).catch(() => {});');
@@ -134,7 +134,7 @@ describe('배선 — 자료 경로와 안내', () => {
   });
 
   it('삭제된 자료가 캐시로 되살아나지 않는다 — NOT_FOUND는 폴백 금지', () => {
-    const fn = sliceBetween(viewer, 'async function fetchMaterial(id)', 'async function fetchUserVocabWords');
+    const fn = sliceBetween(viewer, 'async function fetchMaterial(id,team)', 'async function fetchUserVocabWords');
     expect(fn).toMatch(/if \(err\?\.code === 'NOT_FOUND'\) throw err;/);
   });
 

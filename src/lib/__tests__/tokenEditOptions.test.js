@@ -92,7 +92,7 @@ describe('편집 배선 계약 (ViewerPage.jsx)', () => {
   });
 
   it('편집은 자료 소유자에게만 노출된다(materials update RLS 정합)', () => {
-    expect(src).toMatch(/canEditToken = !!user\?\.id && user\.id === material\?\.owner_id/);
+    expect(src).toMatch(/canEditToken = !!user\?\.id && !material\?\.__local && user\.id === material\?\.owner_id/);
   });
 });
 

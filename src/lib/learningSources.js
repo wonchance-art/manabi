@@ -8,6 +8,11 @@ export const normalizeLearningWord = (word) => String(word || '').normalize('NFC
 
 export function sourceHref(source) {
   const loc = source.locator || {};
+  if(source.kind==='class' && /^[a-z0-9][a-z0-9-]{0,15}$/.test(loc.team||'') && materialIdValid('reading',loc.materialId)) {
+    const query=new URLSearchParams({team:loc.team,returnTo:`/class/${loc.team}`});
+    if(UUID.test(source.id||''))query.set('sourceContext',source.id);
+    return `/viewer/local:${loc.materialId}?${query}`;
+  }
   if(source.kind === 'textbook' && loc.bookId) return bookSourceHref(source);
   if (source.kind === 'textbook' && LANGUAGE_BASE[source.lang] && /^[a-z0-9_-]{1,160}$/i.test(source.chapter_slug || '')) {
     const query = new URLSearchParams();

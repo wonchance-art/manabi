@@ -74,13 +74,13 @@ export async function replaceViewerAnalysis(client, material, rawText, json, att
 // 수업에서 직접 확정한 전체 표현이 정확히 한 토큰으로 분석됐을 때만 연결한다.
 // 문장 뜻을 구성 단어에 붙이거나, 같은 철자의 다른 줄로 옮기지 않는다.
 // 이 값은 수업 원본의 기준값이므로 개인 교정 표식으로 기록하지 않는다.
-function preserveClassEntryValues(rawText, json) {
-  const meta = json.metadata || {}, lines = rawText.split('\n');
+export function preserveClassEntryValues(rawText, json, changedMeanings = new Set()) {
+  const meta = json?.metadata || {}, lines = String(rawText || '').split('\n');
   if (!Array.isArray(meta.classEntries)) return json;
   const byLine = new Map();
-  for (const id of json.sequence) {
-    const token = json.dictionary[id];
-    if (token.pos === '개행') continue;
+  for (const id of json.sequence || []) {
+    const token = json.dictionary?.[id];
+    if (!token || token.pos === '개행') continue;
     const line = tokenLine(id);
     if (!byLine.has(line)) byLine.set(line, []);
     byLine.get(line).push(id);
@@ -97,7 +97,7 @@ function preserveClassEntryValues(rawText, json) {
     const personal = meta.viewerCorrections?.[id] || [];
     const meaning = meta.classMeanings?.[entry.id], reading = meta.classReadings?.[entry.id];
     const patch = {};
-    if (!personal.includes('meaning') && meaning?.text === entry.text && typeof meaning.meaning === 'string') patch.meaning = meaning.meaning;
+    if ((!personal.includes('meaning') || changedMeanings.has(entry.id)) && meaning?.text === entry.text && typeof meaning.meaning === 'string') patch.meaning = meaning.meaning;
     if (!personal.includes('furigana') && !personal.includes('reading') &&
         ['Japanese', 'Chinese'].includes(meta.language) && typeof reading === 'string') patch.furigana = reading;
     dictionary[id] = { ...token, ...patch };

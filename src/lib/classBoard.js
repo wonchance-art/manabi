@@ -269,12 +269,13 @@ export function toPlainText(material) {
 
 /* ── 학생 페이지·local: 뷰어(v2-AB R2) ── */
 
-/** 기기 사본을 여는 뷰어 id 접두 — `/viewer/local:<id>?team=<key>`. 네트워크 0 계약의 표식. */
+/** 기기 사본을 여는 뷰어 id 접두 — `/viewer/local:<id>?team=<key>`. 수업 원본 열람 주소. 온라인 재진입마다 권한과 최신 내용을 확인한다. */
 export const LOCAL_PREFIX = 'local:';
-export function isLocalId(id) { return typeof id === 'string' && id.startsWith(LOCAL_PREFIX); }
+export function decodeViewerId(id) { return typeof id==='string' && /^local%3a[1-9][0-9]*$/i.test(id) ? 'local:'+id.slice(8) : id; }
+export function isLocalId(id) { const value=decodeViewerId(id);return typeof value === 'string' && value.startsWith(LOCAL_PREFIX); }
 export function parseLocalId(id) {
   if (!isLocalId(id)) return null;
-  const n = Number(id.slice(LOCAL_PREFIX.length));
+  const n = Number(decodeViewerId(id).slice(LOCAL_PREFIX.length));
   return Number.isInteger(n) && n > 0 ? n : null;
 }
 export function localViewerHref(id, teamKey) {
