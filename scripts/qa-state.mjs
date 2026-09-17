@@ -49,6 +49,7 @@ export function reportMarkdown(report) {
     '| 검사 | 결과 | 증거 |', '|---|---|---|',
     ...report.steps.map(step => `| ${step.id} | ${step.status}${step.reused ? ' (동일 입력 증거 재사용)' : ''} | ${step.evidence} |`), '',
     '합성 인증·HTTP와 로컬 PostgreSQL/UI 검수입니다. 실제 사용자 로그인·실제 AI 정확도·물리 iPad/Pencil·운영 배포 완료를 의미하지 않습니다.', '',
+    '과제 마무리는 별도입니다. 최종 변경을 커밋한 뒤 qa:closeout으로 재검수·결과 리뷰·다음 방향을 기록하세요(docs/quality-workflow.md).', '',
     ...(report.failure ? [`실패: ${report.failure}`, ''] : []),
   ].join('\n');
 }

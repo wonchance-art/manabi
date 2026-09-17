@@ -40,7 +40,8 @@
     "qa:reader": "node scripts/qa.mjs reader",
     "qa:sql": "node scripts/qa.mjs sql",
     "qa:browsers": "node node_modules/playwright-core/cli.js install chromium webkit",
-    "qa:live": "node scripts/qa-live-preflight.mjs"
+    "qa:live": "node scripts/qa-live-preflight.mjs",
+    "qa:closeout": "node scripts/qa-closeout.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
