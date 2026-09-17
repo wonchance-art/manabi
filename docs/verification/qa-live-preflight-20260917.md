@@ -31,3 +31,21 @@ GET만 사용하고 인증 헤더·cookie·공급자 로그인을 보내지 않�
 전체 검수 로그는 `/private/tmp/manabi-qa-live-vitest-20260917.log`다.
 이번 변화는 앱 실행 코드/의존성 버전/SQL/env/alias/운영 merge/사용자 계정 변경을 포함하지 않는다.
 고정 주소 연결안·실계정 검수 순서는 `docs/qa-live-workflow.md`에 정리했다.
+
+## 후속 승인과 고정 주소 연결 — 2026-09-17 KST
+
+- 사용자 “승인. 할 수 있는 작업 검토”는 직전 고정 주소 연결 승인 질문에 대한 답변이다.
+- 변경 직전 기존 alias/후보의 배포ID·READY·실행 SHA, #1321/#1322의 최신 head·CI 성공을 다시 확인했다.
+- 고정 주소 `manabi-web-v2-preview.vercel.app`을 후보
+  `manabi-2rgzutmdd-wonchance-arts-projects.vercel.app`로 연결했다.
+  Vercel CLI 성공 후 메타데이터에서도 `dpl_3AAYnSwhEZ3znijcy9k98yrjVFCV`를 확인했다.
+- 같은 `qa:live` 명령을 재실행해 두 주소 모두 PASS·같은 실행 SHA
+  `1a21318fecd8a3362ceb153a71c3f5b77b14c633`·같은 deploymentId·판본·no-store·
+  코드 없는 callback의 안전한 복귀·검사 중 배포 불변을 확인했다. exit0.
+- 생성 보고서: `.qa/live/2026-09-17T11-13-07.377Z-39739/result.json`(내부 실행 식별자).
+- 운영 `teset-gilt.vercel.app`은 전후 모두 `dpl_E25TGWBfQKmkragTBh2euPj5hwbM` /
+  `efa44c508e862bc118518e9235008201f291341d`다. 앱 재배포·운영 승격·merge·DB/env·계정 변경 없음.
+- 이번 추가 변경은 기록 문서와 보드뿐이다. 실행/검사 코드는87368f08 검증본 그대로이며,
+  해당 head CI35201878769·world35201878764 성공, 전체4,534통과·기존1skip은 이전 결과로 보존한다.
+  현재 후속 문서 head의 CI는 PR checks에서 별도로 확인한다.
+- 실제 교사/학생 로그인·OAuth 허용 목록·물리 기기 검수 완료를 의미하지 않는다.
