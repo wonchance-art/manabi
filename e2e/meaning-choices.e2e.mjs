@@ -38,6 +38,8 @@ try{
  check('provider failure retries manually and an uncertain result offers no savable candidate');
  payload={explanation:'请客가 손님을 대접한다는 단서입니다.',candidate:{meaning:'손님을 맞이하는 주인'}};await lookup().click();await page.getByRole('button',{name:'손님을 맞이하는 주인 AI 문맥 후보',exact:true}).click();
  for(const width of [1180,390]){await page.setViewportSize({width,height:860});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await page.screenshot({path:out+`/meaning-${width}.png`,fullPage:true});}
+ payload={explanation:'추가 문맥이 필요합니다.',candidate:null};await lookup().click();await page.getByText('뜻을 하나로 고르기 어려워요. 문장과 사전의 뜻을 함께 확인해 주세요.',{exact:true}).waitFor();assert.equal(await save.isDisabled(),true);assert.equal(await page.getByRole('button',{name:'손님을 맞이하는 주인 AI 문맥 후보',exact:true}).count(),0);
+ check('rechecking clears a previously selected AI candidate; an uncertain replacement cannot save the old invisible choice');
  await lookup().focus();await page.keyboard.press('Escape');assert.equal(await summary.evaluate(el=>el===document.activeElement),true);
  await select({canApply:false,userId:'reader',dictError:true});await summary.click();await page.getByRole('button',{name:'다시 불러오기'}).click();assert.equal(await save.count(),0);assert.equal(await page.locator('.reader-meaning__option').count(),0);
  await select({userId:null});await summary.click();const before=requests.length;await lookup().focus();await page.keyboard.press('Enter');assert.equal(requests.length,before);assert.equal(await lookup().getAttribute('aria-disabled'),'true');

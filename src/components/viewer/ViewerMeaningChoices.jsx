@@ -56,12 +56,12 @@ function MeaningChoices({queryKey,userId,materialId,tokenId,word,surface,meaning
       {sentence&&<div className="reader-meaning__context">
         <blockquote lang="zh-Hans">{sentence}</blockquote>
         <button type="button" className="btn btn--ghost btn--sm" aria-disabled={query.isFetching||!userId||busy}
-          onClick={()=>{if(!query.isFetching&&userId&&!busy)query.refetch();}}>
+          onClick={()=>{if(!query.isFetching&&userId&&!busy){if(choice?.source==='context-ai')setChoice(null);setError('');query.refetch();}}}>
           {query.isFetching?'문맥 확인 중…':query.isError?'문맥 뜻 다시 확인':'이 문장의 뜻 확인'}
         </button>
         {!userId&&<p>로그인하면 문맥 뜻을 확인할 수 있어요.</p>}
         {query.isError&&<p role="alert">문맥 뜻을 불러오지 못했어요. 다시 시도해 주세요.</p>}
-        {query.data&&<div role="status" className="reader-meaning__result">
+        {query.data&&!query.isFetching&&!query.isError&&<div role="status" className="reader-meaning__result">
           {query.data.candidate?option(query.data.candidate,'AI 문맥 후보'):<p>뜻을 하나로 고르기 어려워요. 문장과 사전의 뜻을 함께 확인해 주세요.</p>}
           <p>{query.data.explanation}</p>
         </div>}
