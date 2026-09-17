@@ -91,12 +91,17 @@ export async function verifyClassRelease({browser,db,uid,day,base,out,report,che
   const copy=(await mine('select * from reading_materials where id=$1',[copyId])).rows[0];assert.equal(copy.owner_id,student);assert.equal(copy.visibility,'private');assert.equal(copy.raw_text,note.raw_text);
   const tokenId=copy.processed_json.sequence.find(id=>copy.processed_json.dictionary[id]?.text==='学习');
   await page.locator(`[data-tid="${tokenId}"]`).click();await page.locator('.viewer-inspector').waitFor();
+  const inspector=page.locator('.viewer-inspector');
+  await inspector.getByText('배우다, 공부하다',{exact:true}).waitFor();
+  assert.match(await inspector.innerText(),/xué\s*xí/);
+  assert.equal(copy.processed_json.dictionary[tokenId].meaning,'배우다, 공부하다');
+  assert.equal(copy.processed_json.dictionary[tokenId].furigana,'xué xí');
   assert.equal(await page.getByRole('region',{name:'선생님 설명판'}).count(),0);
   assert.equal(await page.getByRole('complementary',{name:'교재 안 수업 도구'}).count(),0);
   await page.screenshot({path:out+'/student-expression-inspector.png'});report.screens.push('student-expression-inspector.png');
   await page.getByRole('link',{name:'← 수업으로',exact:true}).click();await history.getByRole('button',{name:'노트 열기 →',exact:true}).click();await page.waitForURL(new RegExp('/viewer/'+copyId));
   assert.equal((await mine("select count(*)::int n from reading_materials where processed_json#>>'{metadata,source_ref}'=$1",[String(note.id)])).rows[0].n,1);
-  check('student opens and inspects one private canonical copy; returning to the dated history and reopening reuses its identity');
+  check('student private copy and inspector retain teacher-selected meaning/reading after analysis; return and reopening reuse one canonical identity');
   assert.equal((await mine('select * from reading_materials where owner_id=$1',[uid])).rows.length,0);
   assert.equal((await mine('select * from class_teaching_boards')).rows.length,0);
   assert.equal((await mine("select * from storage.objects where bucket_id='teaching-board-pages'")).rows.length,0);
