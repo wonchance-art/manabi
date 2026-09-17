@@ -756,7 +756,8 @@ export default function ViewerPage() {
   };
 
   const closeWordCard = () => {
-    const trigger=selectedToken?.id?tokenRefs.current[selectedToken.id]:null;
+    const token=selectedToken?.id?tokenRefs.current[selectedToken.id]:null;
+    const trigger=token?.querySelector('.surface[role="button"]');
     trigger?.focus({preventScroll:true});
     detailGate.current.cancel();
     setIsSheetOpen(false);
@@ -2878,6 +2879,16 @@ export default function ViewerPage() {
             const pronHidden = hasReading && pronHiddenFor(pronDisplay, { isKnown: tokKnown, isSaved });
             const pronRevealed = revealedPron.has(tokenId);
             const furiOff = pronHidden && !pronRevealed;
+            // Keep the sentence selector and the word action as siblings.
+            // A button inside another button loses its own keyboard semantics.
+            const wordAction = {
+              role: 'button', tabIndex: 0,
+              onKeyDown: e => {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                e.preventDefault();e.stopPropagation();
+                handleTokenClick(token, tokenId, { pronHidden, pronRevealed });
+              },
+            };
             return (
               <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
                 data-tid={tokenId}
@@ -2887,12 +2898,10 @@ export default function ViewerPage() {
                 data-selected={selectedToken?.id===tokenId&&isSheetOpen?true:undefined}
                 className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}`}
                 style={paceStyle}
-                role="button" tabIndex={0}
-                onClick={() => handleTokenClick(token, tokenId, { pronHidden, pronRevealed })}
-                onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleTokenClick(token, tokenId, { pronHidden, pronRevealed }))}>
+                onClick={() => handleTokenClick(token, tokenId, { pronHidden, pronRevealed })}>
                 {linePick}
                 {rubySegments ? (
-                  <span className={`surface${furiOff ? ' surface--furi-off' : ''}`}>
+                  <span className={`surface${furiOff ? ' surface--furi-off' : ''}`} {...wordAction}>
                     {rubySegments.map((seg, i) =>
                       seg.kanji
                         // 병음 rt는 CSS가 전 음절 단일 크기(최장 병음이 1em 셀에 들어가는
@@ -2908,7 +2917,7 @@ export default function ViewerPage() {
                     )}
                   </span>
                 ) : (
-                  <span className="surface">{token.text}</span>
+                  <span className="surface" {...wordAction}>{token.text}</span>
                 )}
               </div>
             );

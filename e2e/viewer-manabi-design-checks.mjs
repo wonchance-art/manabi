@@ -114,8 +114,9 @@ export async function verifyPersonalReaderDesign({page,saveScreen,waitFor,check,
     }
   }
   await page.keyboard.press('Escape');await word().waitFor();
-  await page.locator('.line-pick').first()[activate]();
+  await page.locator('.line-pick').first().focus();await page.keyboard.press('Enter');
   await page.locator('.reader-area--focus .word-token--picked').first().waitFor();
+  assert.equal(await inspector.locator('.word-detail-card').count(),0,'sentence selection must not also activate the first word');
   const focusOpacity=()=>page.locator('.reader-area--focus').evaluate(el=>({picked:getComputedStyle(el.querySelector('.word-token--picked')).opacity,other:getComputedStyle(el.querySelector('.word-token:not(.word-token--picked):not([data-selected="true"])')).opacity}));
   // The product fades surroundings over 250ms. Verify the settled state,
   // retaining the timeout so a missing/incorrect opacity rule still fails.
@@ -131,10 +132,12 @@ export async function verifyPersonalReaderDesign({page,saveScreen,waitFor,check,
   await waitFor(async()=>(await word().evaluate(el=>parseFloat(getComputedStyle(el).fontSize)))>=normalText*1.99);
   const enlarged=await word().evaluate(el=>({text:parseFloat(getComputedStyle(el).fontSize),root:getComputedStyle(document.documentElement).fontSize,reader:getComputedStyle(el.closest('.reader-area')).fontSize}));
   assert(enlarged.text>=normalText*1.99,`the reading text actually doubles in size: ${JSON.stringify({normalText,normalRoot,enlarged})}`);
-  await word()[activate]();await inspector.locator('.word-detail-card').waitFor();
+  await word().locator('.surface[role="button"]').focus();await page.keyboard.press('Enter');
+  await inspector.locator('.word-detail-card').waitFor();
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,'200% text does not introduce page-wide horizontal scroll');
   await saveScreen('reader-text-200-percent');
   await page.evaluate(()=>{document.documentElement.style.fontSize='';});
   await page.keyboard.press('Escape');
+  await waitFor(()=>word().locator('.surface[role="button"]').evaluate(el=>el===document.activeElement));
   check('reader and word card reflow with 200% text');
 }
