@@ -36,6 +36,15 @@ try{
  await select({userId:'student',word:'学习',meaning:'공부하다',pos:'동사',jaTable:{学:'学',习:'習'}});await lookup().waitFor();response={form:null};await lookup().click();await page.getByRole('button',{name:'일본어 다시 찾기',exact:true}).waitFor();
  response={form:'勉強する',warn:null};await page.getByRole('button',{name:'일본어 다시 찾기',exact:true}).click();await section.getByText('勉強する',{exact:true}).waitFor();
  check('uncertain response stays empty and a manual retry can recover');
+ await select({word:'东道主',meaning:'손님을 맞이하는 주인',pos:'명사',jaTable:{东:'東',道:'道',主:'主'}});await lookup().waitFor();
+ response={form:'주최자',warn:'東道主는 현대 일본어에서 거의 사용되지 않는 고어 표현입니다.'};
+ await lookup().click();await page.getByRole('button',{name:'일본어 다시 찾기',exact:true}).waitFor();
+ assert.equal(await section.getByText('주최자',{exact:true}).count(),0);assert.equal(await section.getByText('AI',{exact:true}).count(),0);
+ const rejectedRequestCount=requests.length;await page.waitForTimeout(100);assert.equal(requests.length,rejectedRequestCount);
+ response={form:'もてなす人',warn:'현대 일본어에서는 드문 표기'};
+ await page.getByRole('button',{name:'일본어 다시 찾기',exact:true}).click();await section.getByText('もてなす人',{exact:true}).waitFor();
+ await section.getByText('일본어 참고: 현대 일본어에서는 드문 표기',{exact:true}).waitFor();
+ check('Korean model output is never shown as Japanese; retry is manual and usage notes are not presented as definitions');
  assert.deepEqual(Object.keys(requests.at(-1)).sort(),['chinese','japaneseCharacterForm','koreanMeaning','partOfSpeech'].sort());assert.deepEqual(errors,[]);
  await page.screenshot({path:out+'/reference.png'});report.groups.push('reader.reference');
 }catch(error){report.failure=error.stack;throw error;}finally{await finishQa({browser,server,context:page.context(),report,out});}

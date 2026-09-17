@@ -16,6 +16,20 @@ describe('Japanese equivalents preserve the selected Chinese sense',()=>{
     expect(japaneseReferenceForMeaning({meanings:[{meaning:'주최국',ja:null}]},'주최국')).toBeNull();
     expect(normalizeJapaneseReference({form:' ホスト国 ',warn:' ',diff:true})).toEqual({form:'ホスト国',warn:null});
   });
+  it('rejects the observed Korean output and mixed Korean glosses from both lookup sources',async()=>{
+    for(const form of ['주최자','主催者 (주최자)','host','123','🎌']){
+      expect(normalizeJapaneseReference({form})).toBeNull();
+      expect(japaneseReferenceForMeaning({meanings:[{meaning:'주인',ja:{form}}]},'주인')).toBeNull();
+    }
+    callGemini.mockResolvedValue(JSON.stringify({form:'주최자',warn:'東道主는 현대 일본어에서 거의 사용되지 않는 고어 표현입니다.'}));
+    await expect(lookupJapaneseReference({word:'东道主',meaning:'손님을 맞이하는 주인',pos:'명사',form:'東道主'})).rejects.toThrow('대응어를 확인하지 못했어요');
+    expect(callGemini).toHaveBeenCalledTimes(1);
+  });
+  it('keeps kanji, kana and Japanese phrases with Latin abbreviations',()=>{
+    for(const form of ['主催者','もてなす人','ホスト','SNSを使う','ＯＫする']){
+      expect(normalizeJapaneseReference({form,warn:null})).toEqual({form,warn:null});
+    }
+  });
   it('passes meaning, character form and cancellation to the existing lookup',async()=>{
     callGemini.mockResolvedValue('{"form":"ホスト国","warn":null}');
     const signal=new AbortController().signal;

@@ -11,8 +11,8 @@ describe('Japanese references stay within the explicitly selected sense and POS'
   ])('does not share cached responses after %s changes',(key,value)=>{
     expect(japaneseReferenceKey({...selection,[key]:value})).not.toEqual(japaneseReferenceKey(selection));
   });
-  it('versions old POS-free responses out and handles unknown POS without invention',()=>{
-    expect(japaneseReferenceKey(selection).slice(0,2)).toEqual(['viewer-japanese-reference',2]);
+  it('versions unvalidated responses out and handles unknown POS without invention',()=>{
+    expect(japaneseReferenceKey(selection).slice(0,2)).toEqual(['viewer-japanese-reference',3]);
     expect(japaneseReferenceKey({...selection,pos:undefined})[5]).toBe('');
     expect(japaneseReferenceKey({...selection,pos:undefined})).not.toEqual(japaneseReferenceKey(selection));
     expect(japaneseReferenceKey({...selection,userId:null})[2]).toBe('guest');
