@@ -1,5 +1,6 @@
 import {installBoardCloudFixture,verifyBoardCloud} from './teaching-board-cloud-fixture.mjs';
 import {boardMenus,verifyBoardMenus} from './teaching-board-menu-checks.mjs';
+import {verifyClassRelease} from './classroom-release-checks.mjs';
 // Real React pages + HTTP fixtures + actual disposable PostgreSQL RPCs. No production writes.
 import {chromium,webkit} from 'playwright-core';
 import fs from 'node:fs';
@@ -276,6 +277,12 @@ try {
  }
  check('home and team links navigate on click and browser back restores every board page');
  assert.deepEqual(report.readingPrefetch,[],'reading and board menus do not prefetch home, team or study pages');check('reading links request destinations only when used');
+ if(process.env.QA_CLASS_RELEASE==='1'){
+  // Stop teacher background requests before switching the embedded DB role.
+  // The student gets a separate browser context, never the teacher's cookies.
+  await page.goto('about:blank');
+  await verifyClassRelease({browser,db,uid,day,base,out,report,check});
+ }
  assert.equal(report.errors.length,0,report.errors.join('\n'));check('no browser runtime errors');if(cloud?.state.historyMetrics)report.historyMetrics=cloud.state.historyMetrics;
 } catch(error){report.failure=error.stack;await saveScreen('failure');console.error(await page.locator('body').innerText());throw error;}
 finally{await fs.promises.writeFile(out+'/report.json',JSON.stringify(report,null,2));await browser.close();await db.close();}

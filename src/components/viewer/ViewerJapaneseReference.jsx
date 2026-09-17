@@ -2,15 +2,23 @@
 import {useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {toJaForm} from '../../lib/hanjaKo';
-import {japaneseReferenceForMeaning,lookupJapaneseReference} from '../../lib/viewerJapaneseReference';
+import {japaneseReferenceForMeaning,japaneseReferenceKey,lookupJapaneseReference} from '../../lib/viewerJapaneseReference';
 
-export default function ViewerJapaneseReference({userId,word,meaning,pos,dictEntry,loading,dictError,jaTable,formError,onRetryForm}) {
-  const [requested,setRequested]=useState(false);
+export default function ViewerJapaneseReference(props) {
+  const {word,jaTable}=props;
   const glyphForm=jaTable?toJaForm(word,jaTable):null;
+  const queryKey=japaneseReferenceKey({...props,form:glyphForm});
+  // A new word/sense/POS/account needs its own explicit request. Remounting also
+  // unsubscribes the old query, aborting it before a late result reaches this UI.
+  return <ReferenceSelection key={JSON.stringify(queryKey)} {...props} glyphForm={glyphForm} queryKey={queryKey}/>;
+}
+
+function ReferenceSelection({userId,word,meaning,pos,dictEntry,loading,dictError,glyphForm,queryKey,formError,onRetryForm}) {
+  const [requested,setRequested]=useState(false);
   const dictionary=japaneseReferenceForMeaning(dictEntry,meaning,{pos,form:glyphForm});
   const query=useQuery({
-    queryKey:['viewer-japanese-reference',userId||'guest',word,meaning,glyphForm],
-    queryFn:({signal})=>lookupJapaneseReference({word,meaning,form:glyphForm,signal}),
+    queryKey,
+    queryFn:({signal})=>lookupJapaneseReference({word,meaning,pos,form:glyphForm,signal}),
     enabled:requested&&!!userId&&!!glyphForm&&!!meaning,
     staleTime:30*60*1000,gcTime:30*60*1000,retry:false,
   });
