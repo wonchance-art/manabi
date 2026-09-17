@@ -8,11 +8,11 @@ const sql = [
   { id: 'board-sql', file: 'e2e/teaching-board-cloud-sql.mjs', groups: ['board.sql'], evidence: 'disposable-postgres-rls' },
 ];
 const classroom = browserSteps('classroom', 'e2e/teaching-word-canvas.e2e.mjs', [
-  'board.core', 'board.cloud', 'board.fragments', 'board.reuse', 'board.history', 'classroom.student',
+  'board.core', 'board.cloud', 'board.fragments', 'board.reuse', 'board.history', 'classroom.student', 'classroom.visual',
 ], true);
-const notes = browserSteps('notes', 'e2e/study-notes.e2e.mjs', ['notes.collection'], true);
+const notes = browserSteps('notes', 'e2e/study-notes.e2e.mjs', ['notes.collection', 'notes.visual'], true);
 const reader = [
-  ...browserSteps('word-layout', 'e2e/teaching-word-quality.e2e.mjs', ['reader.layout']),
+  ...browserSteps('word-layout', 'e2e/teaching-word-quality.e2e.mjs', ['reader.layout', 'reader.visual']),
   ...browserSteps('reference', 'e2e/reference-scope.e2e.mjs', ['reader.reference']),
 ];
 export const profiles = Object.freeze({ sql, classroom: [...sql, ...classroom], notes, reader,
@@ -31,6 +31,13 @@ export function validateEvidence(step, report, exitCode) {
   if (step.browser && report.engine !== step.browser) throw Error(`wrong_browser:${step.id}`);
   if (report.externalAI?.length) throw Error(`unexpected_provider_request:${step.id}`);
   return true;
+}
+
+// Each step owns a disposable database/browser. Collect other independent
+// failures only after cleanup, never after infrastructure or isolation failure.
+export function canCollectAfterFailure({ enabled, interrupted, evidence, exitCode, serverAlive = true, sourceUnchanged = true }) {
+  return !!enabled && !interrupted && Number.isInteger(exitCode) && serverAlive && sourceUnchanged
+    && evidence?.cleanup?.status === 'completed' && !evidence.cleanup.errors?.length && !evidence.externalAI?.length;
 }
 
 // Only archival verification notes and the task index are safe to classify as light.

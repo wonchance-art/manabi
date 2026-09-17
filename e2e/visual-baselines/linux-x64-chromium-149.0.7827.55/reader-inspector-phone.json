@@ -1,0 +1,12 @@
+{
+  "name": "reader-inspector-phone",
+  "key": "linux-x64-chromium-149.0.7827.55",
+  "sha256": "b4e93e7babd504c590fd7368aa14113e660813ffd49a6aa5c9607043fe5ce315",
+  "review": "Directly inspected Linux CJK rendering: complete Chinese/Korean glyphs, no overlapping word/reading/meaning, all visible panel actions readable. Native control rendering differs from macOS; SVG contrast incomplete remains manual evidence. Desktop cloud icon confirms saved state.",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "osRelease": "6.17.0-1022-azure",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+}

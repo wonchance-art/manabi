@@ -27,6 +27,20 @@ function wrap(text, width, size, measure) {
   return rows;
 }
 
+// Prefer word boundaries for Korean/Latin glosses in the narrow right column.
+// Keep the character fallback for a single word wider than the available space.
+// Retain whitespace: native canvas editing reconstructs the original meaning.
+function wrapMeaning(text, width, size, measure) {
+  return String(text).split('\n').flatMap(paragraph => {
+    const rows=[];let row='';
+    for (const token of paragraph.match(/\s+|\S+/gu)||[]) {
+      if(row && !/^\s/u.test(token) && measure(token,size)<=width && measure(row+token,size)>width){rows.push(row);row='';}
+      for(const ch of token){if(row&&measure(row+ch,size)>width){rows.push(row);row='';}row+=ch;}
+    }
+    rows.push(row);return rows;
+  });
+}
+
 // One layout model for native editable canvas elements and DOM word previews.
 // All annotations exist even when hidden; visibility never moves surrounding ink.
 export function teachingWordLayout(value, {fontSize=42,maxWidth=620,measure=measureWordText,compact=false}={}) {
@@ -99,7 +113,7 @@ export function teachingWordLayout(value, {fontSize=42,maxWidth=620,measure=meas
   }
   const remaining=Math.max(meaningSize*3,maxWidth-leftWidth-gap);
   const meaningWidth=Math.min(remaining,Math.max(meaningSize*2,measure(meaning||' ',meaningSize)));
-  const meaningLines=wrap(meaning,meaningWidth,meaningSize,measure);
+  const meaningLines=wrapMeaning(meaning,meaningWidth,meaningSize,measure);
   const meaningTop=readBand+(size*1.25-meaningSize*1.25)/2;
   meaningLines.forEach((line,index)=>add('meaning',line,leftWidth+gap,meaningTop+index*meaningSize*1.4,meaningWidth,meaningSize,{index,visible:showMeaning,align:'left'}));
   const width=leftWidth+(meaning||!compact?gap+meaningWidth:0), height=Math.max(y+rowHeight,meaningTop+meaningLines.length*meaningSize*1.4);

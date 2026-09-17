@@ -1,0 +1,12 @@
+{
+  "name": "reader-settings-phone",
+  "key": "darwin-arm64-chromium-149.0.7827.55",
+  "sha256": "b63cb04cfdafb6d1e6df180152c230e6373a30efbbcc8b6d7f665337eb11a8ea",
+  "review": "Directly inspected: all three tabs, Chinese preview, size sliders, close and reset controls visible without overlap. Browser-specific native range rendering is intentional.",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "osRelease": "25.3.0",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+}

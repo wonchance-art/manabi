@@ -72,10 +72,13 @@
     "@eslint/eslintrc": "^3.3.6",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "axe-core": "4.13.0",
     "eslint": "^9.39.4",
     "eslint-config-next": "^15.5.14",
     "hanja": "^1.1.5",
+    "pixelmatch": "7.2.0",
     "playwright-core": "^1.61.0",
+    "pngjs": "7.0.0",
     "vitest": "^4.1.4"
   }
 }

@@ -1,0 +1,12 @@
+{
+  "name": "board-multiword-desktop",
+  "key": "darwin-arm64-chromium-149.0.7827.55",
+  "sha256": "3b58cf4e69832cac7080246a4a17ebeab261c6b4efd778a0a482f8d1d8813b30",
+  "review": "Directly inspected final saved state: cloud confirmation icon, four aligned expression groups with readings/hun/right meanings, separate ink and visible floating controls. Replaces earlier capture taken while upload was still pending.",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "osRelease": "25.3.0",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+}
