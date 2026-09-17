@@ -1,10 +1,10 @@
 import {createServer} from 'vite';
-import {chromium,webkit} from 'playwright-core';
+import {launchQaBrowser,traceQa,finishQa} from './qa-runtime.mjs';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const out=process.env.QA_OUT||'/private/tmp/manabi-reference-scope',engine=process.env.QA_BROWSER||'chromium';fs.mkdirSync(out,{recursive:true});
-const server=await createServer({configFile:false,root:process.cwd(),server:{host:'127.0.0.1',port:3124,strictPort:true},oxc:{jsx:{runtime:'automatic'}},optimizeDeps:{include:['react','react-dom/client','react/jsx-dev-runtime','react/jsx-runtime']},logLevel:'error'});await server.listen();
-const browser=await(engine==='webkit'?webkit:chromium).launch(engine==='chromium'?{executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true}:{headless:true});
+const server=await createServer({configFile:false,root:process.cwd(),server:{host:'127.0.0.1',port:0},oxc:{jsx:{runtime:'automatic'}},optimizeDeps:{include:['react','react-dom/client','react/jsx-dev-runtime','react/jsx-runtime']},logLevel:'error'});await server.listen();
+const browser=await launchQaBrowser(engine);
 const page=await browser.newPage(),errors=[],requests=[],aborted=[];let delayed=null,response={form:'研究',warn:null};
 page.on('pageerror',e=>errors.push(e.message));page.on('requestfailed',r=>{if(r.url().endsWith('/api/gemini'))aborted.push(r.failure()?.errorText);});
 await page.route('**/api/gemini',async route=>{
@@ -17,8 +17,9 @@ const select=patch=>page.evaluate(patch=>window.selectReference(patch),patch);
 const lookup=()=>page.getByRole('button',{name:'일본어 대응 찾기',exact:true});
 const section=page.getByRole('region',{name:'일본어 대조'});
 const checks=[];const check=label=>{checks.push(label);console.log(label);};
+const report={engine,groups:[],checks,requests,aborted,errors};await traceQa(page.context());
 try{
- await page.goto('http://127.0.0.1:3124/e2e/reference-scope-fixture.html');await lookup().waitFor();assert.equal(requests.length,0);
+ await page.goto(server.resolvedUrls.local[0]+'e2e/reference-scope-fixture.html');await lookup().waitFor();assert.equal(requests.length,0);
  delayed=true;await lookup().click();await waitFor(()=>typeof delayed==='function');
  assert.equal(requests[0].partOfSpeech,'명사');
  await select({pos:'동사'});await lookup().waitFor();await waitFor(()=>aborted.length===1);
@@ -36,5 +37,5 @@ try{
  response={form:'勉強する',warn:null};await page.getByRole('button',{name:'일본어 다시 찾기',exact:true}).click();await section.getByText('勉強する',{exact:true}).waitFor();
  check('uncertain response stays empty and a manual retry can recover');
  assert.deepEqual(Object.keys(requests.at(-1)).sort(),['chinese','japaneseCharacterForm','koreanMeaning','partOfSpeech'].sort());assert.deepEqual(errors,[]);
- await page.screenshot({path:out+'/reference.png'});fs.writeFileSync(out+'/report.json',JSON.stringify({engine,checks,requests,aborted,errors},null,2));
-}finally{await browser.close();await server.close();}
+ await page.screenshot({path:out+'/reference.png'});report.groups.push('reader.reference');
+}catch(error){report.failure=error.stack;throw error;}finally{await finishQa({browser,server,context:page.context(),report,out});}

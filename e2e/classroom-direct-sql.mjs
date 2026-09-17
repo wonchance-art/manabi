@@ -1,8 +1,9 @@
+import {finishQa} from './qa-runtime.mjs';
 // Disposable PostgreSQL: run the exact migrations, never contact the hosted DB.
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const {PGlite}=await import(process.env.QA_PGLITE_MODULE||'@electric-sql/pglite');
-const db=new PGlite(),checks=[];
+const db=new PGlite(),checks=[];const report={groups:[],checks,errors:[]},out=process.env.QA_OUT||'/private/tmp/manabi-direct-sql';
 const teacher='00000000-0000-4000-8000-000000000077',student='00000000-0000-4000-8000-000000000088',other='00000000-0000-4000-8000-000000000099';
 const check=label=>{checks.push(label);console.log('PASS',label);};
 try{
@@ -62,4 +63,5 @@ try{
  await assert.rejects(save(corrected),{code:'42501'});
  check('deleting the teacher source preserves the saved word and private excerpt while blocking new saves');
  console.log(JSON.stringify({checks:checks.length,productionWrites:0}));
-}finally{await db.close();}
+ report.groups.push('classroom.sql');
+}catch(error){report.failure=error.stack;throw error;}finally{await finishQa({db,report,out});}

@@ -1,8 +1,10 @@
+import {finishQa} from './qa-runtime.mjs';
 // Disposable PostgreSQL only. Never uses production credentials or data.
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const {PGlite}=await import(process.env.QA_PGLITE_MODULE||'@electric-sql/pglite');
-const db=new PGlite();let checks=0;
+const db=new PGlite();let checks=0;const report={groups:[],errors:[]},out=process.env.QA_OUT||'/private/tmp/manabi-board-sql';
+try{
 const teacher='11111111-1111-4111-8111-111111111111',student='22222222-2222-4222-8222-222222222222',op='33333333-3333-4333-8333-333333333333',op2='44444444-4444-4444-8444-444444444444';
 await db.exec(`CREATE ROLE authenticated;CREATE ROLE anon;CREATE SCHEMA auth;CREATE SCHEMA storage;CREATE TABLE auth.users(id uuid PRIMARY KEY);
 CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
@@ -45,4 +47,5 @@ await db.query('update reading_materials set owner_id=$1 where id=1',[student]);
 await as(teacher);assert.equal((await db.query('select * from class_teaching_boards')).rows.length,0);assert.equal((await db.query('select * from storage.objects')).rows.length,0);checks+=2;
 await denied(()=>commit(op2),'42501');
 await as(student);assert.equal((await db.query('select * from class_teaching_boards')).rows.length,0);checks++;
-console.log(JSON.stringify({checks,errors:[],coverage:['teacher ownership','student/anonymous denial','immutable identity/storage','atomic revision conflict','idempotent retry','manifest bounds','previous snapshot','revoked access','no student feed writes']}));await db.close();
+console.log(JSON.stringify({checks,errors:[],coverage:['teacher ownership','student/anonymous denial','immutable identity/storage','atomic revision conflict','idempotent retry','manifest bounds','previous snapshot','revoked access','no student feed writes']}));report.groups.push('board.sql');report.checks=checks;
+}catch(error){report.failure=error.stack;throw error;}finally{await finishQa({db,report,out});}

@@ -1,6 +1,6 @@
 // Actual React UI with synthetic auth/HTTP data and the existing PostgreSQL
 // vocabulary RPC. No real account, personal note, or external AI is contacted.
-import {chromium,webkit} from 'playwright-core';
+import {launchQaBrowser,traceQa,finishQa,dragQa} from './qa-runtime.mjs';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const {PGlite}=await import(process.env.QA_PGLITE_MODULE||'@electric-sql/pglite');
@@ -26,14 +26,14 @@ await db.exec('set role authenticated');await db.query("select set_config('reque
 const collectionSummary=rows=>({pending:rows.filter(r=>!r.vocabularyId&&!r.excluded).length});
 const originalVocab=(await db.query('select * from user_vocabulary where id=$1',[oldVocab])).rows[0];
 const engine=process.env.QA_BROWSER||'chromium';
-const browser=await(engine==='webkit'?webkit:chromium).launch({...(engine==='chromium'?{executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'}:{}),headless:true});
+const browser=await launchQaBrowser(engine);
 const context=await browser.newContext({viewport:{width:1440,height:1000},serviceWorkers:'block'});
-context.setDefaultTimeout(30000);context.setDefaultNavigationTimeout(180000);
+await traceQa(context);context.setDefaultTimeout(30000);context.setDefaultNavigationTimeout(180000);
 const enc=value=>Buffer.from(JSON.stringify(value)).toString('base64url'),now=Math.floor(Date.now()/1000);
 const user={id:uid,aud:'authenticated',role:'authenticated',email:'note-fixture@example.com',app_metadata:{provider:'email'},user_metadata:{},identities:[]};
 const session={user,access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:uid,aud:'authenticated',role:'authenticated',exp:now+3600,iat:now})}.fixture`,refresh_token:'fixture',expires_at:now+3600,expires_in:3600,token_type:'bearer'};
 const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*'};
-const report={engine,checks:[],errors:[],screens:[],externalAI:[],expectedTransport:[]},intentionalAborts=new Set();
+const report={engine,groups:[],checks:[],errors:[],screens:[],externalAI:[],expectedTransport:[]},intentionalAborts=new Set();
 let failSave=false,loseSave=false,failWord=true,lookupDelay=0;
 let recognitionMode="ok",recognitionCalls=[];
 await context.route('**/*',route=>{
@@ -120,7 +120,7 @@ try{
  };
  const remote=async()=>noteResponse(await noteRow(id));
  await entry('はし','はし','다리');await entry('復習','ふくしゅう','복습');
- await hud.locator('.board-quick-tools').getByRole('button',{name:'펜',exact:true}).click();const surface=board.locator('canvas.interactive');await page.mouse.move(220,570);await page.mouse.down();await page.mouse.move(560,600,{steps:25});await page.mouse.up();
+ await hud.locator('.board-quick-tools').getByRole('button',{name:'펜',exact:true}).click();const surface=board.locator('canvas.interactive');await dragQa(page,[{x:220,y:570},{x:560,y:600}],25);
  await hud.getByRole('button',{name:'단어 정리',exact:true}).filter({visible:true}).first().click();
  const review=page.locator('.note-review');await review.waitFor();assert.equal(await review.locator('.note-candidate').count(),2);await review.getByRole('button',{name:'전체 2',exact:true}).click();
  await waitFor(async()=>!(await page.locator('.board-hud-status').getAttribute('data-saving'))||await page.locator('.board-hud-status').getAttribute('data-saving')==='false');
@@ -166,10 +166,10 @@ try{
  // recognition response. No production handwriting or AI service is used.
  await page.goto(base+'/notes/new');await page.getByLabel('노트 제목',{exact:true}).fill('필기 인식 검수');await page.getByRole('button',{name:'노트 펼치기 ↗',exact:true}).click();await page.waitForURL(/\/notes\/\d+$/);const inkId=page.url().split('/').pop();await board.locator('canvas.interactive').waitFor();
  await entry('送信しない','そうしんしない','선택하지 않은 문장');
- await hud.locator('.board-quick-tools').getByRole('button',{name:'펜',exact:true}).click();
- await page.mouse.move(220,570);await page.mouse.down();await page.mouse.move(280,590,{steps:10});await page.mouse.move(300,560,{steps:6});await page.mouse.up();
- await hud.locator('.board-quick-tools').getByRole('button',{name:'선택',exact:true}).click();
- await page.mouse.move(200,530);await page.mouse.down();await page.mouse.move(325,625,{steps:15});await page.mouse.up();
+ const pen=hud.locator('.board-quick-tools').getByRole('button',{name:'펜',exact:true});await pen.click();await waitFor(async()=>await pen.getAttribute('aria-pressed')==='true');
+ await dragQa(page,[{x:220,y:570},{x:280,y:590},{x:300,y:560}],10);
+ const selectTool=hud.locator('.board-quick-tools').getByRole('button',{name:'선택',exact:true});await selectTool.click();await waitFor(async()=>await selectTool.getAttribute('aria-pressed')==='true');
+ await dragQa(page,[{x:200,y:530},{x:325,y:625}],15);
  const capture=async()=>{await hud.getByRole('button',{name:'선택한 요소 편집',exact:true}).click();await hud.getByRole('button',{name:'선택한 필기 인식',exact:true}).click();await page.getByRole('dialog',{name:'선택한 필기 읽기.'}).waitFor();};
  await capture();const recognition=page.locator('.note-recognition');await screen('06-selected-ink-desktop');
  assert.equal(recognitionCalls.length,0,'opening the crop preview must not send anything');
@@ -227,6 +227,6 @@ try{
  const resume=page.getByRole('link',{name:'미완료 2개 · 이어 정리 ↗',exact:true});await resume.waitFor();await resume.scrollIntoViewIfNeeded();await screen('10-library-resume');
  await resume.click();await review.waitFor();assert.equal(await review.locator('.note-candidate').count(),2);
  check('library shows the saved unfinished count and opens the review queue directly');
- assert.equal(report.externalAI.length,0);assert.equal(report.errors.length,0,report.errors.join('\n'));check('no actual external AI request or uncaught UI error');
+ assert.equal(report.externalAI.length,0);assert.equal(report.errors.length,0,report.errors.join('\n'));check('no actual external AI request or uncaught UI error');report.groups.push('notes.collection');
 }catch(error){report.failure=error.stack;await screen('failure');throw error;}
-finally{fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));await browser.close();await db.close();}
+finally{await finishQa({browser,db,context,report,out});}

@@ -70,7 +70,7 @@ GRANT USAGE ON SCHEMA storage TO authenticated;GRANT SELECT,INSERT,UPDATE,DELETE
  });
  return {state,row,save,files};
 }
-export async function verifyBoardCloud({page,base,day,cloud,check,waitFor,saveScreen,menus,readBoards,uid}){
+export async function verifyBoardCloud({page,base,day,cloud,check,waitFor,saveScreen,menus,readBoards,uid,report={}}){
  const board=page.getByRole('region',{name:'선생님 설명판'}),hud=menus.hud;
  await page.goto(base+`/viewer/10?class=fixture-class&day=${day}&board=1`);await board.locator('canvas').first().waitFor();
  const status=async()=>{await hud.getByRole('button',{name:'저장 상태',exact:true}).click();return hud.locator('#board-menu-status');};
@@ -82,9 +82,9 @@ export async function verifyBoardCloud({page,base,day,cloud,check,waitFor,saveSc
  await page.goto(base+`/viewer/10?class=fixture-class&day=${day}&board=1`);await board.locator('canvas').first().waitFor();await waitFor(async()=>(await readBoards()).some(r=>r.document.accountBoard?.revision===before.revision));
  check('a device without local drafts restores the private account board and every page');
  const cached=(await readBoards()).find(r=>r.document.accountBoard),document=structuredClone(cached.document);delete document.accountBoard;
- if(process.env.QA_BOARD_FRAGMENTS==='1')await verifyBoardFragments({page,base,day,cloud,check,waitFor,saveScreen,menus,readBoards,document});
- if(process.env.QA_BOARD_REUSE==='1')await verifyBoardReuse({page,base,day,cloud,check,waitFor,saveScreen,menus,readBoards,document});
- if(process.env.QA_BOARD_HISTORY==='1')await verifyBoardHistory({page,base,day,cloud,check,waitFor,saveScreen,menus,document});
+ if(process.env.QA_BOARD_FRAGMENTS==='1'){await verifyBoardFragments({page,base,day,cloud,check,waitFor,saveScreen,menus,readBoards,document});report.groups?.push('board.fragments');}
+ if(process.env.QA_BOARD_REUSE==='1'){await verifyBoardReuse({page,base,day,cloud,check,waitFor,saveScreen,menus,readBoards,document});report.groups?.push('board.reuse');}
+ if(process.env.QA_BOARD_HISTORY==='1'){await verifyBoardHistory({page,base,day,cloud,check,waitFor,saveScreen,menus,document});report.groups?.push('board.history');}
  const earlier='2026-09-09';await cloud.save(earlier,document);await menus.open('main');await hud.getByRole('button',{name:'지난 설명판',exact:true}).click();
  const history=hud.locator('#board-menu-history');await history.getByRole('button',{name:'새로고침',exact:true}).click();await history.locator(`[data-source-day="${earlier}"]`).waitFor();await saveScreen('cloud-history');await history.locator(`[data-source-day="${earlier}"]`).click();assert(new URL(page.url()).searchParams.get('day')===day);await history.getByRole('button',{name:'그날 수업 열기 ↗',exact:true}).click();await page.waitForURL('**day=2026-09-09**');await board.locator('canvas').first().waitFor();
  check('the board menu opens a past lesson without a team selector or losing the current drawing');

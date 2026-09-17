@@ -2,7 +2,7 @@ import {installBoardCloudFixture,verifyBoardCloud} from './teaching-board-cloud-
 import {boardMenus,verifyBoardMenus} from './teaching-board-menu-checks.mjs';
 import {verifyClassRelease} from './classroom-release-checks.mjs';
 // Real React pages + HTTP fixtures + actual disposable PostgreSQL RPCs. No production writes.
-import {chromium,webkit} from 'playwright-core';
+import {launchQaBrowser,traceQa,finishQa,dragQa} from './qa-runtime.mjs';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const {PGlite}=await import(process.env.QA_PGLITE_MODULE||'@electric-sql/pglite');
@@ -37,8 +37,8 @@ await db.query('insert into reading_materials(id,owner_id,title,raw_text,visibil
 await db.exec("select setval('reading_materials_id_seq',20)");
 const engine=process.env.QA_BROWSER||'chromium',touch=process.env.QA_TOUCH==='1',activate=touch?'tap':'click';
 assert(['chromium','webkit'].includes(engine),'QA_BROWSER must be chromium or webkit');
-const browser=await (engine==='webkit'?webkit:chromium).launch({...(engine==='chromium'?{executablePath:process.env.QA_CHROME||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'}:{}),headless:true});
-const context=await browser.newContext({viewport:{width:1440,height:1000},hasTouch:touch,serviceWorkers:'block'});context.setDefaultTimeout(25000);context.setDefaultNavigationTimeout(180000);
+const browser=await launchQaBrowser(engine);
+const context=await browser.newContext({viewport:{width:1440,height:1000},hasTouch:touch,serviceWorkers:'block'});await traceQa(context);context.setDefaultTimeout(25000);context.setDefaultNavigationTimeout(180000);
 const enc=v=>Buffer.from(JSON.stringify(v)).toString('base64url'),now=Math.floor(Date.now()/1000);
 const user={id:uid,aud:'authenticated',role:'authenticated',email:'classroom-fixture@example.com',email_confirmed_at:new Date().toISOString(),app_metadata:{provider:'email'},user_metadata:{},identities:[]};
 const session={user,access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:uid,aud:'authenticated',role:'authenticated',exp:now+3600,iat:now})}.fixture`,refresh_token:'fixture',expires_at:now+3600,expires_in:3600,token_type:'bearer'};
@@ -46,7 +46,7 @@ const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*'
 let failure=false,lostResponse=false,analysisDelay=0,analysisFail=false,emptyMeaning=false;
 const analyzedLines=[];
 const tabletState={dictionaryDelay:0,lookups:0};
-const report={engine,touch,checks:[],errors:[],screens:[],failedRequests:[],expectedTransport:[],readingPrefetch:[]},writes=[];
+const report={engine,touch,groups:[],checks:[],errors:[],screens:[],failedRequests:[],expectedTransport:[],readingPrefetch:[]},writes=[];
 let revisionConflicts=0;
 // WebKit routes local Blob images too; allow this app's generated thumbnails.
 await context.route('**/*',r=>{const url=r.request().url();return url.startsWith(base)||url.startsWith(`blob:${base}/`)?r.continue():r.abort();});
@@ -181,14 +181,14 @@ try {
  await menus.close();
  await menus.action('tools','펜');
  const surface=board.locator('canvas.interactive'),rect=await surface.boundingBox();
- await page.mouse.move(rect.x+280,rect.y+450);await page.mouse.down();await page.mouse.move(rect.x+640,rect.y+510,{steps:24});await page.mouse.up();
+ await dragQa(page,[{x:rect.x+280,y:rect.y+450},{x:rect.x+640,y:rect.y+510}],24);
  // IndexedDB can contain an intermediate pointer-move save while the completed
  // stroke is still queued. Compare the finished stroke, including Excalidraw's
  // repeated pointer-up endpoint, rather than a partial line.
  await waitFor(async()=>{const stroke=(await scene()).find(el=>el.type==='freedraw');const points=stroke?.points;return points?.length>2&&JSON.stringify(points.at(-1))===JSON.stringify(points.at(-2));});
  const ink=(await scene()).find(el=>el.type==='freedraw');const beforeInk=JSON.stringify(ink.points);
  await saveScreen('four-words-and-ink');
- await menus.action('tools','선택');await surface.click({position:{x:900,y:600}});await page.keyboard.press('Meta+a');
+ await menus.action('tools','선택');await surface.click({position:{x:900,y:600}});await page.keyboard.press('ControlOrMeta+a');
  await menus.open('selection');const selection=hud.locator('#board-menu-selection');
  const originalExpressions=(await scene()).filter(el=>el.customData?.manabiExpression).map(el=>({text:el.customData.manabiExpression.text,meaning:el.customData.manabiExpression.meaning,source:el.customData.manabiExpression.source}));
  await selection.getByRole('button',{name:'글자만',exact:true})[activate]();
@@ -237,7 +237,7 @@ try {
  await saveScreen('lookup-failure');lookupError=false;
  check('a lookup failure preserves the input and allows manual explanation');
  await menus.close();
- await surface.click({position:{x:900,y:650}});await page.keyboard.press('Meta+a');await menus.open('selection');
+ await surface.click({position:{x:900,y:650}});await page.keyboard.press('ControlOrMeta+a');await menus.open('selection');
  await selection.getByRole('button',{name:/선택한 \d+개 수업에 남기기/})[activate]();
  await waitFor(async()=> (await current()).raw_text.includes('图书馆')&&(await current()).raw_text.includes('学习'));
  await waitFor(async()=> (await current()).raw_text.split('\n').filter(text=>text==='复习').length===2);
@@ -264,7 +264,7 @@ try {
  const dock=page.getByRole('complementary',{name:'교재 안 수업 도구'});await dock.waitFor();
  await page.locator('[data-tid="id_14_0"]').scrollIntoViewIfNeeded();await page.evaluate(()=>document.fonts.ready);
  const firstToken=await page.locator('[data-tid="id_14_0"] .surface').boundingBox(),lastToken=await page.locator('[data-tid="id_14_2"] .surface').boundingBox();
- await page.mouse.move(firstToken.x+firstToken.width/2,firstToken.y+firstToken.height/2);await page.mouse.down();await page.mouse.move(lastToken.x+lastToken.width/2,lastToken.y+lastToken.height/2,{steps:8});await page.mouse.up();
+ await dragQa(page,[{x:firstToken.x+firstToken.width/2,y:firstToken.y+firstToken.height/2},{x:lastToken.x+lastToken.width/2,y:lastToken.y+lastToken.height/2}],8);
  await dock.locator('.class-reader-picked strong').filter({hasText:'我们明天见'}).waitFor();
  await dock.getByRole('button',{name:'수업용 뜻 수정',exact:true})[activate]();await dock.getByLabel('수업용 뜻',{exact:true}).fill('우리 내일 만나요');
  await saveScreen('selected-expression');await dock.getByRole('button',{name:'오늘 표현에 추가',exact:true})[activate]();
@@ -274,7 +274,7 @@ try {
  // the browser; a published raw line alone does not mean analysis has settled.
  await waitFor(async()=>Object.values((await current()).processed_json.dictionary||{}).some(token=>token.text==='我们明天见'));
  check('the original teacher inspector still edits and records a dragged multiword expression');
- if(process.env.QA_BOARD_CLOUD==='1')await verifyBoardCloud({page,base,day,cloud,check,waitFor,saveScreen,menus,readBoards,uid});
+ if(process.env.QA_BOARD_CLOUD==='1'){await verifyBoardCloud({page,base,day,cloud,check,waitFor,saveScreen,menus,readBoards,uid,report});report.groups.push('board.cloud');}
  const returnUrl=page.url(),savedPages=(await head()).document.pages.map(p=>p.id);
  for(const [label,path] of [['팀 홈','/class/fixture-class'],['웹앱 홈','/home']]){
   await menus.open('main');await hud.getByRole('link',{name:label,exact:true})[activate]();await page.waitForURL(base+path);
@@ -290,8 +290,8 @@ try {
   // The student gets a separate browser context, never the teacher's cookies.
   await page.goto('about:blank');
   await fs.promises.writeFile(out+'/teacher-checkpoint.tar',Buffer.from(await (await db.dumpDataDir('none')).arrayBuffer()));
-  await verifyClassRelease({browser,db,uid,day,base,out,report,check});
+  await verifyClassRelease({browser,db,uid,day,base,out,report,check});report.groups.push('classroom.student');
  }
- assert.equal(report.errors.length,0,report.errors.join('\n'));check('no browser runtime errors');if(cloud?.state.historyMetrics)report.historyMetrics=cloud.state.historyMetrics;
+ assert.equal(report.errors.length,0,report.errors.join('\n'));check('no browser runtime errors');report.groups.push('board.core');if(cloud?.state.historyMetrics)report.historyMetrics=cloud.state.historyMetrics;
 } catch(error){report.failure=error.stack;await saveScreen('failure');console.error(await page.locator('body').innerText());throw error;}
-finally{await fs.promises.writeFile(out+'/report.json',JSON.stringify(report,null,2));await browser.close();await db.close();}
+finally{await finishQa({browser,db,context,report,out});}
