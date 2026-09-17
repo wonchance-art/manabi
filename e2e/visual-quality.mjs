@@ -27,14 +27,14 @@ export async function accessibility(page, selector) {
   }, selector);
 }
 
-export async function captureQuality({ page, report, out, name, selector, audit = selector }) {
+export async function captureQuality({ page, report, out, name, selector, audit = selector, viewport = false }) {
   if (!/^[a-z0-9-]+$/.test(name)) throw Error('invalid_visual_case');
   report.visual ||= [];
   await page.evaluate(() => document.fonts.ready);
   const target = page.locator(selector);
   await target.waitFor({ state: 'visible' });
   // Freeze transitions and caret only while capturing. No content is masked.
-  const shot = () => target.screenshot({ animations: 'disabled', caret: 'hide', scale: 'css' });
+  const shot = () => (viewport ? page : target).screenshot({ animations: 'disabled', caret: 'hide', scale: 'css' });
   let previous = await shot(), actual, stable = false;
   for (let attempt = 0; attempt < 8; attempt++) {
     await page.waitForTimeout(120);actual = await shot();
@@ -56,7 +56,7 @@ export async function captureQuality({ page, report, out, name, selector, audit 
       if (diff && !result.passed) fs.writeFileSync(path.join(dir, `${name}-diff.png`), diff);
     }
   }
-  const result = { name, key, selector, audit, viewport: page.viewportSize(), osRelease: os.release(), sha256: sha256(actual), stable, comparison, a11y };
+  const result = { name, key, selector, audit, capture: viewport ? 'viewport' : 'element', viewport: page.viewportSize(), osRelease: os.release(), sha256: sha256(actual), stable, comparison, a11y };
   fs.writeFileSync(path.join(dir, `${name}.json`), JSON.stringify(result, null, 2));
   report.visual.push(result);
 }

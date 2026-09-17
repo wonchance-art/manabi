@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { profileSteps, validateEvidence, isRecordOnly, qaEnvironment, isLoadedEnvFile } from './qa-profiles.mjs';
+import { profileSteps, validateEvidence, isRecordOnly, qaEnvironment, isLoadedEnvFile, canCollectAfterFailure } from './qa-profiles.mjs';
 
 describe('mandatory QA coverage and truthful evidence', () => {
   const step = profileSteps('classroom').find(row => row.browser === 'webkit');
@@ -37,5 +37,12 @@ describe('mandatory QA coverage and truthful evidence', () => {
   it('rejects loadable environment files without treating the tracked example as credentials', () => {
     for (const file of ['.env', '.env.local', '.env.production', '.env.production.local', '.env.development.local']) expect(isLoadedEnvFile(file)).toBe(true);
     expect(isLoadedEnvFile('.env.example')).toBe(false);
+  });
+  it('collects independent failures only when cleanup and isolation are confirmed', () => {
+    const state={enabled:true,interrupted:false,evidence:report(),exitCode:1};
+    expect(canCollectAfterFailure(state)).toBe(true);
+    for(const patch of [{enabled:false},{interrupted:true},{exitCode:null},{serverAlive:false},{sourceUnchanged:false},{evidence:undefined},{evidence:{cleanup:{status:'failed'}}},{evidence:{cleanup:{status:'completed',errors:['close failed']}}},{evidence:{...report(),externalAI:['unexpected']}}]) {
+      expect(canCollectAfterFailure({...state,...patch})).toBe(false);
+    }
   });
 });

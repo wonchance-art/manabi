@@ -33,6 +33,13 @@ export function validateEvidence(step, report, exitCode) {
   return true;
 }
 
+// Each step owns a disposable database/browser. Collect other independent
+// failures only after cleanup, never after infrastructure or isolation failure.
+export function canCollectAfterFailure({ enabled, interrupted, evidence, exitCode, serverAlive = true, sourceUnchanged = true }) {
+  return !!enabled && !interrupted && Number.isInteger(exitCode) && serverAlive && sourceUnchanged
+    && evidence?.cleanup?.status === 'completed' && !evidence.cleanup.errors?.length && !evidence.externalAI?.length;
+}
+
 // Only archival verification notes and the task index are safe to classify as light.
 // UI rules, curriculum prose, source Markdown, workflows and unknown paths run full CI.
 export function isRecordOnly(paths) {

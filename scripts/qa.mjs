@@ -5,15 +5,16 @@ import path from 'node:path';
 import net from 'node:net';
 import { fileURLToPath } from 'node:url';
 import { execFileSync, spawn } from 'node:child_process';
-import { profileSteps, qaEnvironment, validateEvidence, isLoadedEnvFile } from './qa-profiles.mjs';
+import { profileSteps, qaEnvironment, validateEvidence, isLoadedEnvFile, canCollectAfterFailure } from './qa-profiles.mjs';
 import { digest, sourceFingerprint, writeJson, resumeStep, reportMarkdown } from './qa-state.mjs';
 
 const cwd = fileURLToPath(new URL('../', import.meta.url));
 const args = process.argv.slice(2), profile = args.shift();
-let resume;
+let resume, collectAll = false;
 while (args.length) {
   const flag = args.shift();
-  if (flag !== '--resume' || resume || !args[0]) throw Error('usage: node scripts/qa.mjs <build|sql|reader|notes|classroom|release> [--resume .qa/runs/.../result.json]');
+  if (flag === '--collect-all' && !collectAll) { collectAll = true;continue; }
+  if (flag !== '--resume' || resume || !args[0]) throw Error('usage: node scripts/qa.mjs <build|sql|reader|notes|classroom|release> [--collect-all] [--resume .qa/runs/.../result.json]');
   resume = args.shift();
 }
 if (Number(process.versions.node.split('.')[0]) !== 24) throw Error('web_qa_requires_node24');
@@ -45,7 +46,7 @@ const fingerprint = sourceFingerprint(cwd);
 const report = { version: 1, profile, fingerprint,
   head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd, encoding: 'utf8' }).trim(),
   dirty: !!execFileSync('git', ['status', '--porcelain'], { cwd, encoding: 'utf8' }).trim(),
-  startedAt: new Date().toISOString(), status: 'running', steps: [],
+  startedAt: new Date().toISOString(), status: 'running', steps: [], collectAll,
   realAccount: 'not-run', externalAiEvaluation: 'not-run', physicalDevice: 'not-run', production: 'not-modified' };
 const persist = () => { writeJson(path.join(runDir, 'result.json'), report);fs.writeFileSync(path.join(runDir, 'summary.md'), reportMarkdown(report));writeJson(path.join(cwd, '.qa/latest.json'), { report: path.relative(cwd, path.join(runDir, 'result.json')), status: report.status }); };
 
@@ -119,10 +120,14 @@ try {
         item.status = 'failed';
         item.failure = String(evidence?.failure || evidence?.cleanup?.errors?.join('; ') || error.message).slice(0, 4000);
         console.error(`QA ${step.id}: ${item.failure}`);
-        throw Error(`${step.id}: ${item.failure}`);
+        if (!canCollectAfterFailure({ enabled: collectAll, interrupted, evidence, exitCode: item.exitCode,
+          serverAlive: !step.app || (!!server && server.exitCode === null && server.signalCode === null),
+          sourceUnchanged: sourceFingerprint(cwd) === fingerprint })) throw Error(`${step.id}: ${item.failure}`);
       }
       finally { persist(); }
     }
+    const failed = report.steps.filter(step => step.status !== 'passed');
+    if (failed.length) throw Error(`failed_steps:${failed.map(step => step.id).join(',')}`);
     report.status = 'passed';
   }
 } catch (error) { report.status = 'failed';report.failure = error.message;process.exitCode = 1; }

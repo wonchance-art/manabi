@@ -1,0 +1,12 @@
+{
+  "name": "board-lookup-phone",
+  "key": "linux-x64-chromium-149.0.7827.55",
+  "sha256": "69946f04643b8ddbd58dbc52e45b7efafa3cefeac9f6d42b382fbf8ef5747c97",
+  "review": "Directly inspected Linux CJK rendering: complete Chinese/Korean glyphs, no overlapping word/reading/meaning, all visible panel actions readable. Native control rendering differs from macOS; SVG contrast incomplete remains manual evidence. Desktop cloud icon confirms saved state.",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "osRelease": "6.17.0-1022-azure",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+}

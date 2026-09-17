@@ -136,7 +136,7 @@ jobs:
 
       - name: 교사 → 학생 · 개인 노트 · 뜻 표시 연결 검수
         if: needs.plan.outputs.full == 'true'
-        run: npm run qa:release
+        run: npm run qa:release -- --collect-all
 
       - name: 동일 입력 증거 재개 확인
         if: needs.plan.outputs.full == 'true'

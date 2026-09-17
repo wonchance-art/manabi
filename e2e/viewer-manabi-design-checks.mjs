@@ -116,12 +116,21 @@ export async function verifyPersonalReaderDesign({page,saveScreen,waitFor,check,
   await page.keyboard.press('Escape');await word().waitFor();
   await page.locator('.line-pick').first()[activate]();
   await page.locator('.reader-area--focus .word-token--picked').first().waitFor();
-  const opacity=await page.locator('.reader-area--focus').evaluate(el=>({picked:getComputedStyle(el.querySelector('.word-token--picked')).opacity,other:getComputedStyle(el.querySelector('.word-token:not(.word-token--picked)')).opacity}));
+  const focusOpacity=()=>page.locator('.reader-area--focus').evaluate(el=>({picked:getComputedStyle(el.querySelector('.word-token--picked')).opacity,other:getComputedStyle(el.querySelector('.word-token:not(.word-token--picked):not([data-selected="true"])')).opacity}));
+  // The product fades surroundings over 250ms. Verify the settled state,
+  // retaining the timeout so a missing/incorrect opacity rule still fails.
+  await waitFor(async()=>{const value=await focusOpacity();return Number(value.picked)===1&&Number(value.other)<=.3;});
+  const opacity=await focusOpacity();
   assert.equal(Number(opacity.picked),1);assert(Number(opacity.other)<=.3,'surrounding text is dimmed without darkening the selected sentence');
   await saveScreen('reader-focus-phone');
   check('Aa tabs and modal keyboard focus work; focused text remains clear');
   await page.setViewportSize({width:640,height:1000});
-  await page.evaluate(()=>{document.documentElement.style.fontSize='200%';});
+  const normalText=await word().evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+  const normalRoot=await page.evaluate(()=>parseFloat(getComputedStyle(document.documentElement).fontSize));
+  await page.evaluate(size=>{document.documentElement.style.fontSize=`${size*2}px`;},normalRoot);
+  await waitFor(async()=>(await word().evaluate(el=>parseFloat(getComputedStyle(el).fontSize)))>=normalText*1.99);
+  const enlarged=await word().evaluate(el=>({text:parseFloat(getComputedStyle(el).fontSize),root:getComputedStyle(document.documentElement).fontSize,reader:getComputedStyle(el.closest('.reader-area')).fontSize}));
+  assert(enlarged.text>=normalText*1.99,`the reading text actually doubles in size: ${JSON.stringify({normalText,normalRoot,enlarged})}`);
   await word()[activate]();await inspector.locator('.word-detail-card').waitFor();
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,'200% text does not introduce page-wide horizontal scroll');
   await saveScreen('reader-text-200-percent');

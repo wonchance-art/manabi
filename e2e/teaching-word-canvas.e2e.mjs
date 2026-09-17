@@ -141,7 +141,7 @@ await context.route('**/api/materials/*/annotations*',async r=>{
 const readBoards=()=>page.evaluate(async()=>{const db=await new Promise((resolve,reject)=>{const q=indexedDB.open('manabi-teaching-boards');q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error);});return new Promise((resolve,reject)=>{const q=db.transaction('boards').objectStore('boards').getAll();q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error);});});
 const head=async()=> (await readBoards()).find(row=>row.id===row.scope);
 const scene=async()=>{const row=await head();return row?.document.pages.find(p=>p.id===row.document.activePage)?.elements.filter(el=>!el.isDeleted)||[];};
-const saveScreen=async name=>{await page.screenshot({path:out+'/'+name+'.png'});report.screens.push(name+'.png');if(name==='reader-phone-word')await captureQuality({page,report,out,name:'reader-inspector-phone',selector:'.viewer-inspector'});if(name==='reader-focus-phone')await captureQuality({page,report,out,name,selector:'.reader-area',audit:'.reader-area .word-token--picked'});if(name==='reader-settings-phone')await captureQuality({page,report,out,name,selector:'.reader-settings'});};
+const saveScreen=async name=>{await page.screenshot({path:out+'/'+name+'.png'});report.screens.push(name+'.png');if(name==='reader-phone-word')await captureQuality({page,report,out,name:'reader-inspector-phone',selector:'.viewer-inspector'});if(name==='reader-focus-phone')await captureQuality({page,report,out,name,selector:'.reader-area',audit:'.reader-area .word-token--picked',viewport:true});if(name==='reader-settings-phone')await captureQuality({page,report,out,name,selector:'.reader-settings'});};
 let lookupDelay=0,lookupError=false;
 await context.route('**/api/classroom/lookup',async route=>{
  const {text,language}=route.request().postDataJSON();if(lookupDelay)await new Promise(r=>setTimeout(r,lookupDelay));
@@ -209,7 +209,7 @@ try {
  check('multi-select frame/annotation controls preserve geometry; arranging words does not move ink');
  await selection.getByRole('button',{name:'여백 줄이기',exact:true})[activate]();await page.waitForTimeout(450);
  await menus.action('main','전체 보기');await saveScreen('arranged-words');
- await page.locator('.board-hud-status[data-saving="true"]').waitFor({state:'hidden'});
+ await waitFor(()=>hud.getByRole('button',{name:'저장 상태',exact:true}).getAttribute('title').then(title=>title==='계정에 저장됨'));
  await captureQuality({page,report,out,name:'board-multiword-desktop',selector:'.teaching-board',audit:'.board-hud'});
  const snapshot=(await scene()).map(({id,type,x,y,customData,points,text})=>({id,type,x,y,customData,points,text}));
  await page.reload();await board.waitFor();await waitFor(async()=> (await scene()).length===snapshot.length);
