@@ -5,7 +5,7 @@ const gloss = value => {
 };
 
 export function contextMeaningKey({userId,materialId,tokenId,word,surface,meaning,pos,sentence}) {
-  return ['viewer-context-meaning',1,userId||'guest',String(materialId||''),text(tokenId),
+  return ['viewer-context-meaning',2,userId||'guest',String(materialId||''),text(tokenId),
     text(word),text(surface),text(meaning),text(pos),text(sentence)];
 }
 

@@ -8,8 +8,17 @@ describe('contextual meaning proposal boundary',()=>{
   expect(contextMeaningInput(input,'Japanese')).toBeNull();
   const long={...input,sentence:'甲'.repeat(250)+input.sentence};expect(contextMeaningInput(long,'Chinese').sentence).toBe(long.sentence);
  });
- it('does not treat the old same-POS meaning as ground truth',()=>{
-  const prompt=buildContextMeaningPrompt(input);expect(prompt).toContain('같은 품사라도');expect(prompt).toContain(JSON.stringify(input));expect(prompt).toContain('uncertain:true');
+ it('does not send an old gloss or POS that could anchor a different contextual sense',()=>{
+  const prompt=buildContextMeaningPrompt(input);
+  expect(prompt).toContain(JSON.stringify({sentence:input.sentence,word:input.word,surface:input.surface}));
+  expect(prompt).not.toContain('주최국');
+  expect(buildContextMeaningPrompt({...input,currentMeaning:'접대하는 사람 또는 주최 측',pos:'동사'})).toBe(prompt);
+  expect(prompt).toContain('같은 품사라도');expect(prompt).toContain('uncertain:true');
+ });
+ it('asks for one evidenced use rather than a dictionary list of possible senses',()=>{
+  const prompt=buildContextMeaningPrompt(input);
+  expect(prompt).toContain('뜻 하나만');expect(prompt).toContain('다른 상황에서만 가능한 뜻');
+  expect(prompt).toContain('meaning과 reason은 같은 쓰임');expect(prompt).toContain('뜻 사이에서 결정하지 못하면 uncertain:true, meaning:null');
  });
  it('accepts the observed host-sense correction as a proposal',()=>{
   expect(parseContextMeaning(JSON.stringify({word:'东道主',meaning:'손님을 맞이하는 주인',uncertain:false,reason:'请客라는 말에서 대접하는 사람임을 알 수 있어요.'}),input)).toEqual({candidate:{meaning:'손님을 맞이하는 주인',source:'context-ai'},explanation:'请客라는 말에서 대접하는 사람임을 알 수 있어요.'});

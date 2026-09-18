@@ -9,6 +9,7 @@ beforeEach(()=>{vi.clearAllMocks();getUser.mockResolvedValue({data:{user:{id:'qa
 afterEach(()=>vi.unstubAllEnvs());
 it('returns a proposal without dictionary, material, vocabulary or correction writes',async()=>{
  const response=await POST(request());expect(response.status).toBe(200);expect((await response.json()).candidate.meaning).toBe('손님을 맞이하는 주인');expect(from).not.toHaveBeenCalled();expect(callLLM).toHaveBeenCalledTimes(1);
+ expect(callLLM.mock.calls[0][1]).toContain(token.sentence);expect(callLLM.mock.calls[0][1]).not.toContain(token.currentMeaning);
 });
 it('requires authenticated access before any provider request',async()=>{
  expect((await POST(request({},false))).status).toBe(401);getUser.mockResolvedValue({data:{user:null},error:{message:'expired'}});expect((await POST(request())).status).toBe(401);expect(callLLM).not.toHaveBeenCalled();
