@@ -101,7 +101,7 @@ describe('배선 계약 — 입구·등록·진입·완료', () => {
     expect(materials).toContain('href={`/materials/add?book=${encodeURIComponent(b.key)}`}');
     expect(materials).toContain("footer={b.chapters[0]?.owner_id === user?.id ? (");
     const viewer = read('src/views/ViewerPage.jsx');
-    expect(viewer).toContain('canAppend: !!user?.id && material?.owner_id === user.id,');
+    expect(viewer).toContain('canAppend: !!user?.id && !material?.__local && material?.owner_id === user.id,');
     expect(viewer).toContain('href={`/materials/add?book=${encodeURIComponent(bookNav.key)}`}');
   });
 

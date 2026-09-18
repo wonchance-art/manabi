@@ -3,6 +3,7 @@ import ClassroomReader from '../components/classroom/ClassroomReader';
 import TeachingWord,{WordDisplayControls,useWordAppearance} from '../components/classroom/TeachingWord';
 import TextbookAnnotations from '../components/classroom/TextbookAnnotations';
 import ClassCopyNotice from '../components/classroom/ClassCopyNotice';
+import {readClassMaterial,readClassPosition} from '../lib/classDirectStudy';
 import {createClassSaveIntent} from '../lib/classSaveIntent';
 import {classStudyContext,classStudyNeighborHref,studySelection} from '../lib/classStudy';
 
@@ -99,8 +100,7 @@ import { prepareViewerSaveUndo, undoViewerSave } from '../lib/viewerSaveUndo';
 import { contextualMeaning, refreshViewerToken, referenceMatchesContext, createViewerRequestGate, viewerCacheKey, viewerCommandAllowed } from '../lib/viewerReliability';
 import { clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
 import { lookupTranslation, bookMeaningPanelText } from '../lib/bilingualSplit';
-import { isLocalId, parseLocalId, chaptersForLocalNav } from '../lib/classBoard';
-import { getSharedCopy } from '../lib/sharedStore';
+import { isLocalId, parseLocalId, chaptersForLocalNav, decodeViewerId } from '../lib/classBoard';
 import { readIndexCache } from '../lib/classClient';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
 import { fetchKnownWords, knownWordsLang, unmarkKnown } from '../lib/knownWords';
@@ -115,6 +115,7 @@ import { normalizeRefWordKey } from '../lib/refWordNormalize';
 import { isWordToken, wordStateOf, wordStateExtraClass } from '../lib/wordState';
 import { TTS_RATES, ttsOptsFor, pronHiddenFor, shouldRevealPron } from '../lib/readingSheet';
 import { getBook } from '../lib/bookMeta';
+import ViewerMeaningChoices from '../components/viewer/ViewerMeaningChoices';
 import ViewerJapaneseReference from '../components/viewer/ViewerJapaneseReference';
 import TokenEditPanel from './TokenEditPanel';
 import SourceEditModal from './SourceEditModal';
@@ -138,18 +139,8 @@ const STUDY_LANGS = new Set(['Japanese', 'English', 'French', 'Chinese']);
  * NOT_FOUND(자료가 실제로 없음)는 폴백하지 않는다 — 삭제된 자료가 캐시로 되살아나면
  * 그것이야말로 스테일이다.
  */
-async function fetchMaterial(id) {
-  // 팀 사본(v2-AB R2) — `local:<id>`는 **네트워크 0**: 기기 사본(sharedStore)만 연다. 없으면 LOCAL_MISSING
-  // (캐시 폴백·서버 조회 없음 — 받기는 팀 페이지만 한다). 사본이 없어도 팀 페이지로 돌아갈 길은 ?team=가 준다.
-  if (isLocalId(id)) {
-    const copy = await getSharedCopy(parseLocalId(id));
-    if (!copy?.material) {
-      const err = new Error('LOCAL_MISSING');
-      err.code = 'LOCAL_MISSING';
-      throw err;
-    }
-    return { ...copy.material, __local: true, __team: copy.team };
-  }
+async function fetchMaterial(id,team) {
+  if(isLocalId(id))return readClassMaterial(id,team);
   try {
     const { data, error } = await supabase
       .from('reading_materials')
@@ -234,7 +225,8 @@ const UNDO_KEY_LABEL = typeof navigator !== 'undefined'
 
 
 export default function ViewerPage() {
-  const { id } = useParams();
+  const { id: routeId } = useParams();
+  const id=decodeViewerId(routeId);
   const noteRouter = useRouter();
   const originalParams = useSearchParams();
   const studyContext=classStudyContext(originalParams);
@@ -252,8 +244,9 @@ export default function ViewerPage() {
   useEffect(()=>()=>stopSpeech(),[id,stopSpeech]);
 
   const { data: material, isLoading, error, refetch } = useQuery({
-    queryKey: ['material', id],
-    queryFn: () => fetchMaterial(id),
+    queryKey: isLocalId(id)?['material', id, originalParams.get('team'), user?.id || 'guest']:['material',id],
+    queryFn: () => fetchMaterial(id,originalParams.get('team')),
+    retry: isLocalId(id)?false:undefined,
     refetchInterval: (query) => {
       const d = query.state.data;
       const s = d?.processed_json?.status || d?.status;
@@ -296,7 +289,7 @@ export default function ViewerPage() {
   const detailGate = useRef(createViewerRequestGate());
   const selectionGate = useRef(createViewerRequestGate());
   const saveScopeRef = useRef('');
-  saveScopeRef.current = `${user?.id || ''}:${id}`;
+  saveScopeRef.current = `${user?.id || ''}:${id}:${originalParams.get('team') || ''}`;
 
   // ④ 글자 탐색 — 카드의 큰 단어에서 탭한 한자({ ch, key, reading }). 단어가 바뀌면 리셋.
   const [inspectChar, setInspectChar] = useState(null);
@@ -334,7 +327,7 @@ export default function ViewerPage() {
   }, [material?.raw_text, material?.processed_json]);
   useEffect(() => { detailGate.current.cancel(); }, [selectedToken]);
 
-  useLibraryActivity(materialActivity(material,passageOf(material)||originalParams.get('study')==='1'?'study':'text',null,null,user?.id),!!material&&!isLoading&&!error&&!shouldReadComposerOriginal(material,originalParams));
+  useLibraryActivity(materialActivity(material,passageOf(material)||originalParams.get('study')==='1'?'study':'text',null,null,user?.id),!!material&&!material.__local&&!isLoading&&!error&&!shouldReadComposerOriginal(material,originalParams));
 
   // [자세히] 인라인 문법 해설(오너 확정) — 모달·체크박스 없이 시트 좌측에서 펼친다.
   const grammar = useGrammarDetail({ materialLang, toast });
@@ -394,8 +387,9 @@ export default function ViewerPage() {
   const nextRangeMutation = usePdfRangeMutation({ material, sourcePdf, user, toast });
 
   const { data: readingProgress } = useQuery({
-    queryKey: ['reading-progress', user?.id, id],
+    queryKey: isLocalId(id)?['reading-progress',user?.id,id,originalParams.get('team')]:['reading-progress',user?.id,id],
     queryFn: async () => {
+      if(isLocalId(id))return readClassPosition(user?.id,originalParams.get('team'),id);
       const { data, error } = await supabase
         .from('reading_progress')
         .select('is_completed')
@@ -445,7 +439,7 @@ export default function ViewerPage() {
       next: idx < navChapters.length - 1 ? navChapters[idx + 1] : null,
       // 이어 적기(#1077 5520128974) — 마지막 과의 「다음 →」 자리에 「다음 과 적기」(내 책만)
       key: bookMeta.key,
-      canAppend: !!user?.id && material?.owner_id === user.id,
+      canAppend: !!user?.id && !material?.__local && material?.owner_id === user.id,
     };
   })();
 
@@ -509,7 +503,7 @@ export default function ViewerPage() {
 
       return candidates[0] || null;
     },
-    enabled: !!user && !!completionModal,
+    enabled: !!user && !material?.__local && !!completionModal,
     staleTime: 1000 * 60 * 5,
   });
 
@@ -563,7 +557,7 @@ export default function ViewerPage() {
   const reanalyzeMutation = reanalyze.mutation;
   const startPassageMutation = reanalyzeMutation.mutate;
   useEffect(() => {
-    if (!passageOf(material) || !user?.id || material.owner_id !== user.id) return;
+    if (material?.__local || !passageOf(material) || !user?.id || material.owner_id !== user.id) return;
     const timer = setTimeout(() => {
       if (takePassageAnalysis(user.id, material.id)) startPassageMutation({ resume: true });
     }, 0);
@@ -617,7 +611,7 @@ export default function ViewerPage() {
     return ()=>{live=false;window.removeEventListener('resize',measure);};
   },[materialLang,fontSize,pinyinSize,material?.id,readerRef]);
   // 그룹 같이 읽기 진도 push(§4.3) — 이번 주 지정 자료일 때만, 실패 조용히
-  useGroupReadPush(material?.id, user?.id, readProgress);
+  useGroupReadPush(material?.__local?null:material?.id, user?.id, readProgress);
 
   // '이미 앎' 표기(목업 ⑤ — #1077-14): 이 언어의 표기 집합. 실패는 빈 셋(버튼만 비활성 결).
   const knownLangCode = knownWordsLang(materialLang);
@@ -763,7 +757,8 @@ export default function ViewerPage() {
   };
 
   const closeWordCard = () => {
-    const trigger=selectedToken?.id?tokenRefs.current[selectedToken.id]:null;
+    const token=selectedToken?.id?tokenRefs.current[selectedToken.id]:null;
+    const trigger=token?.querySelector('.surface[role="button"]');
     trigger?.focus({preventScroll:true});
     detailGate.current.cancel();
     setIsSheetOpen(false);
@@ -1334,12 +1329,16 @@ export default function ViewerPage() {
   // 인라인 복습: 뷰어에서 단어 보며 바로 FSRS 평가
   const inlineReviewMutation = useInlineReview({ user, fetchProfile, toast });
 
+  const correctionScope = useRef(null);
+  useEffect(() => { correctionScope.current = `${id}:${user?.id || ''}`; }, [id, user?.id]);
   const correctTokenMutation = useMutation({
-    mutationFn: async ({ tokenId, corrections }) => {
+    mutationFn: async ({ tokenId, corrections, expectedMeaning }) => {
+      if (!user?.id || material?.__local || user.id !== material?.owner_id) throw new Error('이 자료를 수정할 권한이 없습니다.');
       const currentJson = material?.processed_json;
       if (!currentJson?.dictionary?.[tokenId]) throw new Error('토큰을 찾을 수 없습니다.');
 
       const beforeToken = currentJson.dictionary[tokenId];
+      if (expectedMeaning !== undefined && (beforeToken.meaning || '') !== expectedMeaning) throw new Error('뜻이 변경됐어요. 현재 뜻을 다시 확인해 주세요.');
       const updatedDict = {
         ...currentJson.dictionary,
         [tokenId]: { ...beforeToken, ...corrections },
@@ -1350,9 +1349,10 @@ export default function ViewerPage() {
         const record = await correctPassageToken(supabase, material, tokenId, corrections);
         queryClient.setQueryData(['material', id], record);
       } else {
-        const { error } = await supabase.from('reading_materials')
-          .update({ processed_json: updatedJson }).eq('id', id);
+        const { data: saved, error } = await supabase.from('reading_materials')
+          .update({ processed_json: updatedJson }).eq('id', id).eq('owner_id', user.id).select('id').maybeSingle();
         if (error) throw error;
+        if (!saved) throw new Error('저장이 반영되지 않았어요. 접근 권한을 다시 확인해 주세요.');
       }
 
       // 교정 히스토리 로그 (실패해도 수정 자체는 유지)
@@ -1371,13 +1371,14 @@ export default function ViewerPage() {
         });
         if (logError) console.warn('[correction log] failed:', logError.message);
       }
-      return { tokenId, corrections };
+      return { tokenId, corrections, materialId: id, ownerId: user.id };
     },
-    onSuccess: ({ tokenId, corrections }) => {
+    onSuccess: ({ tokenId, corrections, materialId, ownerId }) => {
       // 교정된 뜻이 캐시된 분석 결과에 남아 낡지 않게 무효화(§C4 무효화 규칙)
       if (isClient) clearAnalysisCache(localStorage);
-      queryClient.invalidateQueries({ queryKey: ['material', id] });
-      queryClient.invalidateQueries({ queryKey: ['token-corrections', id, tokenId] });
+      queryClient.invalidateQueries({ queryKey: ['material', materialId] });
+      queryClient.invalidateQueries({ queryKey: ['token-corrections', materialId, tokenId] });
+      if (correctionScope.current !== `${materialId}:${ownerId}`) return;
       // BottomSheet에 표시되는 selectedToken도 업데이트
       setSelectedToken(prev => prev?.id === tokenId ? { ...prev, ...corrections } : prev);
       toast('수정이 저장됐어요!', 'success');
@@ -1557,9 +1558,9 @@ export default function ViewerPage() {
   // 편집 중 다른 토큰을 탭하면 편집을 닫는다 — 이전 단어의 편집 상태가 새 단어로
   // 이어지는 혼선 차단(마감 ③). 같은 토큰의 교정 반영(id 불변)에는 발화하지 않는다.
   useEffect(() => { setIsEditingToken(false); }, [selectedToken?.id]);
-  const canEditToken = !!user?.id && user.id === material?.owner_id;
+  const canEditToken = !!user?.id && !material?.__local && user.id === material?.owner_id;
   const selectedDictKey=selectedLexKey||selectedToken?.text;
-  const { data: editDictEntry, isFetched: dictFetched, isError: dictError } = useQuery({
+  const { data: editDictEntry, isFetched: dictFetched, isError: dictError, refetch: retryDictionary } = useQuery({
     queryKey: ['token-dict', materialLang, selectedDictKey],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -1589,9 +1590,8 @@ export default function ViewerPage() {
 
   function readingContextSource(token) {
     const original = material?.processed_json?.dictionary?.[token.id];
-    return original?.text === token.text
-      ? { kind: 'reading', materialId: id, tokenId: token.id }
-      : { kind: 'reading', materialId: id, quote: leftPanelText, surface: token.text };
+    const source=material?.__classSource?{kind:'class',team:material.__team,materialId:String(material.id),revision:material.contentRevision}:{kind:'reading',materialId:id};
+    return original?.text === token.text?{...source,tokenId:token.id}:{...source,quote:leftPanelText,surface:token.text};
   }
 
   function contextWord(token) {
@@ -1619,6 +1619,11 @@ export default function ViewerPage() {
     if (inlineSaving[key]) return;
     setInlineSaving(prev => ({ ...prev, [key]: true }));
     try {
+      if(material?.__classSource){
+        await saveContext({word:contextWord(token),source:readingContextSource(token)});
+        toast(`「${token.text}」 저장!`,'success');
+        for(const cache of ['vocab','vocabulary-contexts'])queryClient.invalidateQueries({queryKey:[cache,user?.id]});
+      }else{
       await upsertViewerVocabulary(buildVocabRow({
         userId: user.id,
         surface: token.text,
@@ -1630,9 +1635,10 @@ export default function ViewerPage() {
       }));
       const linked = await attachReadingContext(token);
       if (linked) toast(`"${token.text}" 저장!`, 'success');
+      }
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
-    } catch {
-      toast('저장 실패', 'error');
+    } catch (error) {
+      toast(error.message || '저장 실패', 'error');
     } finally {
       setInlineSaving(prev => ({ ...prev, [key]: false }));
     }
@@ -1710,11 +1716,11 @@ export default function ViewerPage() {
   };
   const undoAny = () => (lastInlineGradeRef.current ? undoInlineGrade() : undoLastSave());
 
-  // 팀 사본에서의 「담기」(v2-AB R2) — 비로그인은 단어를 기기에 적어 두고 로그인 뒤 복제본에서 담는다.
+  // 팀 사본에서의 「담기」(v2-AB R2) — 비로그인은 선택을 보관하고 로그인 뒤 원본을 검증해 단어만 담는다.
   const rememberGuestSave = async (token, grade) => {
     if (!token || !material?.__local) return null;
     return createClassSaveIntent({
-      team: material.__team, day:material.processed_json?.metadata?.team?.day, materialId: parseLocalId(id), tokenId: token.id,
+      revision:material.contentRevision, team: material.__team, day:material.processed_json?.metadata?.team?.day, materialId: parseLocalId(id), tokenId: token.id,
       grade: Number.isInteger(grade)&&grade>=1&&grade<=4?grade:undefined,
       word: { text: token.text, base: token.sep_link || token.base_form,
         meaning: token.meaning, pos: token.pos, reading: token.furigana || token.reading,
@@ -1759,12 +1765,16 @@ export default function ViewerPage() {
         reading: headIsBase ? headReading : selectedToken.furigana || selectedToken.reading,
         language: materialLang,
         sourceSentence,
-        sourceMaterialId: id,
+        sourceMaterialId: material?.__local?undefined:id,
         grade: g,
       });
 
-      const inserted = await upsertViewerVocabulary([row], VOCAB_UPSERT);
-      const linked = await attachReadingContext(savedToken);
+      let inserted,linked;
+      if(material?.__classSource){
+        const result=await saveContext({word:row,source:savedSource,grade:g});
+        inserted=result.created&&result.word?[result.word]:[];linked=true;
+        queryClient.invalidateQueries({queryKey:['vocabulary-contexts',user?.id]});
+      }else{inserted=await upsertViewerVocabulary([row],VOCAB_UPSERT);linked=await attachReadingContext(savedToken);}
       const undo = await prepareViewerSaveUndo(supabase, inserted[0], savedSource, linked).catch(() => null);
       if (saveScopeRef.current !== saveScope) return;
       const snapshot = undo ? { ...undo, text: savedToken.text } : null;
@@ -1778,7 +1788,7 @@ export default function ViewerPage() {
       queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
       recordActivity(user.id, () => fetchProfile(user.id));
     } catch (err) {
-      if (saveScopeRef.current === saveScope) toast('단어 추가 실패 — ' + friendlyToastMessage(err), 'error');
+      if (saveScopeRef.current === saveScope) toast('단어 추가 실패 — ' + (err.message || friendlyToastMessage(err)), 'error');
     } finally {
       savingGrade.current = false;
       if (saveScopeRef.current === saveScope) setSaveAnim(false);
@@ -1805,7 +1815,7 @@ export default function ViewerPage() {
         <p style={{ color: 'var(--text-secondary)', marginBottom: 20, maxWidth: 400, margin: '0 auto 20px' }}>
           이 기기에 받아 둔 사본이 지워졌어요 — 7일이 지났거나 다른 기기예요. 팀 페이지에서 다시 열면 받아요.
         </p>
-        <Link href={teamKey ? `/class/${teamKey}` : '/class'} className="btn btn--primary">팀 페이지로 →</Link>
+        <Link prefetch={false} href={teamKey ? `/class/${teamKey}` : '/class'} className="btn btn--primary">팀 페이지로 →</Link>
       </div>
     );
   }
@@ -1824,7 +1834,7 @@ export default function ViewerPage() {
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           {!isNotFound && <button onClick={() => refetch()} className="btn btn--primary">다시 시도</button>}
-          <LibraryReturnLink className="btn btn--secondary">← 내 서재</LibraryReturnLink>
+          {isLocalId(id)?<Link href={`/class/${originalParams.get('team') || ''}`} className="btn btn--secondary">수업으로</Link>:<LibraryReturnLink prefetch={false} className="btn btn--secondary">← 내 서재</LibraryReturnLink>}
         </div>
       </div>
     );
@@ -1836,7 +1846,7 @@ export default function ViewerPage() {
       <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
         <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>비공개 자료입니다</h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>이 자료는 작성자만 열람할 수 있습니다.</p>
-        <LibraryReturnLink className="btn btn--primary">← 내 서재</LibraryReturnLink>
+        <LibraryReturnLink prefetch={false} className="btn btn--primary">← 내 서재</LibraryReturnLink>
       </div>
     );
   }
@@ -2048,6 +2058,7 @@ export default function ViewerPage() {
         {canEditToken && selectedToken.id && (
           <button
             onClick={() => setIsEditingToken(v => !v)}
+            disabled={correctTokenMutation.isPending}
             aria-label="뜻·발음 수정"
             title="뜻·발음 수정"
             className={`word-detail-card__edit${isEditingToken ? ' is-on' : ''}`}
@@ -2088,6 +2099,14 @@ export default function ViewerPage() {
           {selectedToken.reading}
         </div>
       )}
+
+      {materialLang === 'Chinese' && selectedToken.id && !classMeaning && !isEditingToken && <ViewerMeaningChoices
+        userId={user?.id} materialId={id} tokenId={selectedToken.id} word={headText} surface={selectedToken.text}
+        meaning={selectedToken.meaning||''} pos={selectedToken.pos} sentence={ctxSentenceOf(selectedToken)}
+        dictEntry={editDictEntry} dictLoading={!dictFetched&&!dictError} dictError={dictError} onRetryDictionary={retryDictionary}
+        canApply={canEditToken} saving={correctTokenMutation.isPending}
+        onApply={(corrections,target)=>correctTokenMutation.mutateAsync({...target,corrections})}
+      />}
 
       {classAction}
       {materialLang === 'Chinese' && <ViewerJapaneseReference key={`${selectedToken.id||selectedToken.text}:${refMeaning||''}`} userId={user?.id} word={headText} meaning={refMeaning||selectedToken.meaning||''} pos={selectedToken.pos} dictEntry={editDictEntry} loading={!dictFetched&&!dictError} dictError={dictError} jaTable={hanjaJaTable} formError={jaFormError} onRetryForm={()=>{setJaFormError(false);setJaFormRetry(n=>n+1);}}/>}
@@ -2199,7 +2218,7 @@ export default function ViewerPage() {
         <section className="reader-card-source"><blockquote lang={contentLangTag}>{(()=>{const {parts,term}=splitSentenceAroundWord(ctxSentenceOf(selectedToken),selectedToken.text,null);return parts.map((part,i)=><span key={i}>{part}{i<parts.length-1&&<mark>{term}</mark>}</span>);})()}</blockquote></section>
       {/* 문맥 설명 R1 — zh부터(프롬프트 검증 언어), 본문 탭 토큰만(문장 유도 가능할 때).
           즉답 카드는 그대로, 설명은 버튼을 눌러야 온다(스킴 탭 헛호출 0). */}
-      {materialLang === 'Chinese' && (() => {
+      {materialLang === 'Chinese' && (!selectedToken.id || classMeaning) && (() => {
         const ctxSentence = ctxSentenceOf(selectedToken);
         if (!ctxSentence) return null;
         if (ctxExplain?.loading) {
@@ -2218,7 +2237,7 @@ export default function ViewerPage() {
 
         <div className="word-detail-card__actrow">
           <button className="btn btn--ghost btn--sm" onClick={()=>runSelectionAnalysis(ctxSentenceOf(selectedToken))}>문장 번역</button>
-          {materialLang === 'Chinese'&&!ctxExplain?.loading&&!ctxExplain?.text&&<button className="btn btn--ghost btn--sm" onClick={()=>runCtxExplain(selectedToken,ctxSentenceOf(selectedToken))}>{ctxExplain?.error?'이 문장에서는? (다시 시도)':'이 문장에서는?'}</button>}
+          {materialLang === 'Chinese'&&(!selectedToken.id||classMeaning)&&!ctxExplain?.loading&&!ctxExplain?.text&&<button className="btn btn--ghost btn--sm" onClick={()=>runCtxExplain(selectedToken,ctxSentenceOf(selectedToken))}>{ctxExplain?.error?'이 문장에서는? (다시 시도)':'이 문장에서는?'}</button>}
         </div>
       </details>}
       <details className="reader-card-more" key={`more:${selectedToken.id||selectedToken.text}`}>
@@ -2319,7 +2338,7 @@ export default function ViewerPage() {
         // 단어 목록 ✓(saveInlineVocabulary)가 그대로 맡는다.
         const isKnown = knownWordSet?.has(selectedToken.text)
           || (selectedLexKey && knownWordSet?.has(selectedLexKey));
-        if (isWordSaved && isTokenDue(savedWords,selectedToken)) return null;
+        if (isWordSaved && isTokenDue(savedWords,selectedToken)) return <SaveContextButton key={`${id}:${selectedToken.id || selectedToken.text}:${leftPanelText}`} label="이 문맥 추가" word={contextWord(selectedToken)} source={readingContextSource(selectedToken)} />;
         if (saveAnim || isWordSaved) {
           return (
             <div className="word-detail-card__actrow">
@@ -2452,7 +2471,7 @@ export default function ViewerPage() {
                   → 정본 해설: 「{grammar.chapter.title}」 ›
                 </Link>
               )}
-              {user && grammar.result && (
+              {user && !material?.__local && grammar.result && (
                 <button
                   onClick={() => saveGrammarNoteMutation.mutate()}
                   disabled={saveGrammarNoteMutation.isPending || saveGrammarNoteMutation.isSuccess}
@@ -2517,10 +2536,10 @@ export default function ViewerPage() {
             폰에서 두 줄(89px)로 꺾였고, 그 위에 뒤로가기 줄·시리즈 내비 줄이 따로 있었다. */}
         <div ref={classToolbarTarget} className="class-workspace-topbar" hidden={!classStudyActive}/>
         <div className="viewer-topbar">
-          {classStudyActive&&originalParams.get('returnTo')?.includes('view=history')&&<LibraryReturnLink className="viewer-back-link">← 수업 기록</LibraryReturnLink>}
+          {classStudyActive&&originalParams.get('returnTo')?.includes('view=history')&&<LibraryReturnLink prefetch={false} className="viewer-back-link">← 수업 기록</LibraryReturnLink>}
           {!classStudyActive&&(material?.__local
-            ? <Link href={`/class/${material.__team}`} className="viewer-back-link">← 팀 페이지</Link>
-            : <LibraryReturnLink className="viewer-back-link">← 내 서재</LibraryReturnLink>)}
+            ? <Link prefetch={false} href={`/class/${material.__team}`} className="viewer-back-link">← 팀 페이지</Link>
+            : <LibraryReturnLink prefetch={false} className="viewer-back-link">← 내 서재</LibraryReturnLink>)}
           {composerOf(material) && <Link className="viewer-back-link" href={sourcePassageHref(material,originalParams.get('returnTo')) || `/viewer/${composerOf(material)?.parentId || id}?returnTo=${encodeURIComponent(originalParams.get('returnTo') || '/materials?view=owned')}`}>{passageOf(material)?`원본의 ${passageLocation(passageOf(material))}으로 ↗`:'현재 글과 첨부 원본 ↗'}</Link>}
           {siblingNav && (
             <div className="viewer-series-nav" title={siblingNav.label}>
@@ -2558,9 +2577,9 @@ export default function ViewerPage() {
         if(target.first===target.last&&json.dictionary[target.first]?.text===source.quote){setSelectedToken({...json.dictionary[target.first],id:target.first});setIsSheetOpen(true);setRightSheetSignal(v=>v+1);}
         else {tokenRange.restoreRange(target.first,target.last);setRestoredClassSource({materialId:String(material.id),quote:source.quote,anchor:classAnchorAt(textbookStream(json).text,target.start,target.end,source.quote)});setLeftPanelText(source.quote);const from=json.sequence.indexOf(target.first),to=json.sequence.indexOf(target.last);setDragTokens(json.sequence.slice(from,to+1).filter(tid=>json.dictionary[tid]?.pos!=='개행').map(tid=>({...json.dictionary[tid],id:tid})));setRightSheetSignal(v=>v+1);}
       }}/>
-      <ClassCopyNotice key={String(id)} material={material} user={user} returnTo={originalParams.get('returnTo')}/>
+      {!material?.__local&&<ClassCopyNotice key={String(id)} material={material} user={user} returnTo={originalParams.get('returnTo')}/> }
       <header className="page-header viewer-header">
-        <p className="reader-metadata reader-edition"><span>READING ROOM /</span> {langNameKo(materialLang)}{material?.processed_json?.metadata?.level ? ` · ${material.processed_json.metadata.level}` : ''} · {material.visibility === 'public' ? '공개 읽기' : '내 자료'}</p>
+        <p className="reader-metadata reader-edition"><span>READING ROOM /</span> {langNameKo(materialLang)}{material?.processed_json?.metadata?.level ? ` · ${material.processed_json.metadata.level}` : ''} · {material.__classSource?'수업 자료':material.visibility === 'public' ? '공개 읽기' : '내 자료'}</p>
         {composerOf(material) && <p className="reader-metadata">{passageOf(material)?`${passageLocation(passageOf(material))}에서 고른 학습 구간이에요. 원본은 위의 링크에서 열 수 있어요.`:'학습에 사용한 본문이에요. 현재 글은 위의 링크에서 열 수 있어요.'}</p>}
         {titleEditing && user?.id === material?.owner_id && !composerOf(material) ? (
           <form
@@ -2598,7 +2617,7 @@ export default function ViewerPage() {
             )}
           </div>
         )}
-        {!classStudyActive&&<LibrarySaveButton material={material}/>}
+        {!classStudyActive&&!material?.__local&&<LibrarySaveButton material={material}/>}
         {user && material?.visibility === 'public' && material?.owner_id !== user.id && (
           <ReportMaterialButton materialId={material.id} userId={user.id} toast={toast} />
         )}
@@ -2876,6 +2895,16 @@ export default function ViewerPage() {
             const pronHidden = hasReading && pronHiddenFor(pronDisplay, { isKnown: tokKnown, isSaved });
             const pronRevealed = revealedPron.has(tokenId);
             const furiOff = pronHidden && !pronRevealed;
+            // Keep the sentence selector and the word action as siblings.
+            // A button inside another button loses its own keyboard semantics.
+            const wordAction = {
+              role: 'button', tabIndex: 0,
+              onKeyDown: e => {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                e.preventDefault();e.stopPropagation();
+                handleTokenClick(token, tokenId, { pronHidden, pronRevealed });
+              },
+            };
             return (
               <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
                 data-tid={tokenId}
@@ -2885,12 +2914,10 @@ export default function ViewerPage() {
                 data-selected={selectedToken?.id===tokenId&&isSheetOpen?true:undefined}
                 className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}`}
                 style={paceStyle}
-                role="button" tabIndex={0}
-                onClick={() => handleTokenClick(token, tokenId, { pronHidden, pronRevealed })}
-                onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleTokenClick(token, tokenId, { pronHidden, pronRevealed }))}>
+                onClick={() => handleTokenClick(token, tokenId, { pronHidden, pronRevealed })}>
                 {linePick}
                 {rubySegments ? (
-                  <span className={`surface${furiOff ? ' surface--furi-off' : ''}`}>
+                  <span className={`surface${furiOff ? ' surface--furi-off' : ''}`} {...wordAction}>
                     {rubySegments.map((seg, i) =>
                       seg.kanji
                         // 병음 rt는 CSS가 전 음절 단일 크기(최장 병음이 1em 셀에 들어가는
@@ -2906,7 +2933,7 @@ export default function ViewerPage() {
                     )}
                   </span>
                 ) : (
-                  <span className="surface">{token.text}</span>
+                  <span className="surface" {...wordAction}>{token.text}</span>
                 )}
               </div>
             );
@@ -3055,6 +3082,7 @@ export default function ViewerPage() {
             {user && material?.raw_text && STUDY_LANGS.has(materialLang) && (
               <Link
                 href={`/study?source=mine&lang=${encodeURIComponent(materialLang)}`}
+                prefetch={false}
                 className="post-reading-actions__btn"
                 onClick={() => {
                   try {
@@ -3080,7 +3108,7 @@ export default function ViewerPage() {
       )}
 
 
-      {STUDY_LANGS.has(materialLang) && <MaterialChapterLinks lang={materialLang} kind="reading" materialId={id} />}
+      {!material?.__local && STUDY_LANGS.has(materialLang) && <MaterialChapterLinks lang={materialLang} kind="reading" materialId={id} />}
 
       {/* 다음 — 한 자리에 하나(뷰어 정돈 A안): 시리즈 다음 편 → 책 다음 과 → 마지막 과면 「다음 과 적기」(내 책만,
           이어 적기 #1077 5520128974) → PDF 다음 범위(예전엔 본문 위 카드의 버튼) → 시리즈·레벨 완주. */}

@@ -1,0 +1,12 @@
+{
+  "name": "board-lookup-phone",
+  "key": "linux-x64-webkit-26.5",
+  "sha256": "050e2d1b52d979f7f6ef007347b080d41ff6891803931738641f63cd6abd3fc5",
+  "review": "Directly inspected Linux CJK rendering: intact glyphs, upper readings/lower hun/right meanings as applicable, no text overlap or cropped actions. Browser-native controls and synthetic fonts are intentional. Any SVG contrast incomplete remains manual evidence.",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "osRelease": "6.17.0-1022-azure",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+}

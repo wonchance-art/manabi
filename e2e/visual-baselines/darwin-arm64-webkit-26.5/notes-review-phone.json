@@ -1,0 +1,12 @@
+{
+  "name": "notes-review-phone",
+  "key": "darwin-arm64-webkit-26.5",
+  "sha256": "ed221f58bb9890569b329e36988ee1a49530bc476dc62cc4909c358b3253b65f",
+  "review": "Directly inspected: two saved Japanese entries retain readings and right-side Korean meanings; all filters, source links, and bottom return control visible without clipping.",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "osRelease": "25.3.0",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+}

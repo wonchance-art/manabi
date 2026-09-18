@@ -1,0 +1,12 @@
+{
+  "name": "board-multiword-desktop",
+  "key": "linux-x64-webkit-26.5",
+  "sha256": "1f018549ee16b12e80ca09b7a2917acb00149bbbf75911cea446a9d1ab314f82",
+  "review": "Directly inspected Linux CJK rendering: intact glyphs, upper readings/lower hun/right meanings as applicable, no text overlap or cropped actions. Browser-native controls and synthetic fonts are intentional. Any SVG contrast incomplete remains manual evidence.",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "osRelease": "6.17.0-1022-azure",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+}

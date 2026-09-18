@@ -19,7 +19,13 @@ import {readBoardWorkspace,writeBoardWorkspace,boardSearch,normalizeBoardWorkspa
 import {studySelection} from '../../lib/classStudy';
 import {supabase} from '../../lib/supabase';
 import {boardScope, boardExpression, expressionOf, boardInsertion, replaceBoardPage, BOARD_PAGE_LIMIT, validateBoard} from '../../lib/teachingBoard';
-import {useTeachingBoard} from '../../lib/useTeachingBoard';
+import useTeachingBoardCloud from '../../lib/useTeachingBoardCloud';
+import BoardCloudPanel from './BoardCloudPanel';
+import BoardFragmentPicker from './BoardFragmentPicker';
+import {fragmentOrigin,findFragment,cloneFragment,fragmentPosition,insertBoardFragment} from '../../lib/teachingBoardFragment';
+import {boardEndpoint,readCloudBoard} from '../../lib/teachingBoardCloudClient';
+import {requestNote} from '../../lib/useStudyNote';
+import {copyBoardPages} from '../../lib/teachingBoardReuse';
 import {cardSkeleton, cardFields, readCard, rotateCardPart, wordCardSkeleton, expressionElements, arrangeExpressionGroups} from '../../lib/teachingBoardCard';
 import {isClassComposing} from '../../lib/classReaderDraft';
 import {boardCameraForBounds} from '../../lib/teachingBoardViewport';
@@ -28,13 +34,15 @@ import {recognitionElements,recognitionFingerprint,RECOGNITION_IMAGE_LIMIT} from
 export default function TeachingBoardCanvas(props) {
   const {owner, team, day} = props;
   const scope = useMemo(() => boardScope(owner, team.key, day), [owner, team.key, day]);
-  const store = useTeachingBoard(scope);
-  return <SharedBoardCanvas {...props} scope={scope} store={store}/>;
+  const store = useTeachingBoardCloud(owner, props.rootId, day, scope);
+  return <SharedBoardCanvas key={store.epoch} {...props} scope={scope} store={store}/>;
 }
 
 export function SharedBoardCanvas({owner, team, day, rootId, scope, store, personal, onRecord, getRecordState, onLayout, onClose, headerHost, navigation, sessionContent, recordCount=0, onRatio, material, vocabularyIndex, actionsRef, onReady}) {
   const root = useRef(null), api = useRef(null), document = useRef(null), latest = useRef(null), timer = useRef(null), signature = useRef(''), armed=useRef(false), dirty=useRef(false);
-  const pendingFocus=useRef(null),focusScene=useRef(null);
+  const pendingFocus=useRef(null),focusScene=useRef(null),pendingFragment=useRef(null);
+  const [fragment,setFragment]=useState(null);
+  const storeState=useRef(store);storeState.current=store;
   const [initialWorkspace]=useState(()=>readBoardWorkspace(scope,'board'));
   const [ratio,setRatio]=useState(initialWorkspace.ratio),[presenting,setPresenting]=useState(null),[activeTool,setActiveTool]=useState('selection'),[searching,setSearching]=useState(false);
   const inputRef=useRef(null),presentationActive=useRef(false),presentationTrigger=useRef(null),canvasPointers=useRef(new Set()),nativeEditing=useRef(null);
@@ -56,7 +64,7 @@ export function SharedBoardCanvas({owner, team, day, rootId, scope, store, perso
   useEffect(()=>{writeBoardWorkspace(scope,{...(editing?readBoardWorkspace(scope):{input,reading,meaning}),layout,ratio});},[scope,layout,ratio,input,reading,meaning,editing]);
   useEffect(()=>{if(!message)return;const timeout=setTimeout(()=>setMessage(''),6500);return()=>clearTimeout(timeout);},[message]);
   const closeMenu=useCallback((restoreFocus=false)=>{setMenu(null);if(restoreFocus)menuTrigger.current?.focus({preventScroll:true});},[]);
-  const openMenu=(name,event)=>{if(event?.currentTarget.closest('.board-hud-rail, .board-selection-trigger'))menuTrigger.current=event.currentTarget;setMenu(value=>value===name?null:name);};
+  const openMenu=(name,event)=>{if(event?.currentTarget.closest('.board-hud-rail, .board-selection-trigger, .board-cloud-trigger'))menuTrigger.current=event.currentTarget;setMenu(value=>value===name?null:name);};
   useEffect(()=>{
     if(!menu)return;
     const frame=requestAnimationFrame(()=>{const body=hud.current?.querySelector('.board-popover:not([hidden]) .board-popover-body');const target=menu==='entry'?inputRef.current:body?.querySelector('input, button:not(:disabled), a');target?.focus({preventScroll:true});});
@@ -93,6 +101,10 @@ export function SharedBoardCanvas({owner, team, day, rootId, scope, store, perso
       onReady?.(true);
       const style=getComputedStyle(root.current);
       value.updateScene({appState:{viewBackgroundColor:style.getPropertyValue('--reader-paper').trim(),currentItemStrokeColor:style.getPropertyValue(`--board-${toolStyleRef.current.color}`).trim(),currentItemStrokeWidth:toolStyleRef.current.width},captureUpdate:CaptureUpdateAction.NEVER});
+      if(pendingFragment.current?.pageId===document.current?.activePage){
+        const placed=pendingFragment.current.elements;pendingFragment.current=null;armed.current=true;
+        value.updateScene({elements:[...value.getSceneElementsIncludingDeleted(),...placed],appState:{selectedElementIds:Object.fromEntries(placed.map(el=>[el.id,true]))},captureUpdate:CaptureUpdateAction.IMMEDIATELY});
+      }
       if(pendingFocus.current)focusScene.current?.();
     });
   },[onReady]);
@@ -440,6 +452,65 @@ export function SharedBoardCanvas({owner, team, day, rootId, scope, store, perso
     const recovered=row.document.pages.map(page=>({...page,id:crypto.randomUUID()}));
     document.current={...document.current,pages:[...document.current.pages,...recovered]};changePage(recovered[0].id);setMessage('최신 판을 보존하고 충돌본을 새 판으로 불러왔어요.');
   };
+  const reusePages = (source, ids) => {
+    if(storeState.current.conflict)throw new Error('먼저 저장 상태에서 다른 기기의 판을 확인해 주세요.');
+    // Read the live canvas at the moment of insertion, not the snapshot from
+    // when the history panel started loading. The teacher may keep drawing.
+    commit();
+    const copied=copyBoardPages(document.current,source.document,source.row,ids);
+    document.current=copied.document;
+    pendingFocus.current={id:copied.ids[0],elementIds:[]};
+    changePage(copied.ids[0]);closeMenu(true);
+    setMessage(`${source.row.day}의 ${copied.ids.length}개 페이지를 현재 수업에 가져왔어요.`);
+  };
+  const pickFragment = request => {
+    commit();setFragment({...request,targetPage:document.current.activePage,scope,rootId,day});
+  };
+  const copyFragment = async (request,chosen,{fresh,force,isActive}) => {
+    if(storeState.current.conflict)throw new Error('먼저 저장 상태에서 다른 기기의 판을 확인해 주세요.');
+    const sourcePage=request.source.document.pages.find(p=>p.id===request.pageId);
+    // Revalidate permission and the selected page, not unrelated revisions.
+    if(navigator.onLine){
+      const value=await requestNote(boardEndpoint(rootId,request.source.row.day));
+      if(!isActive())return;
+      const original=request.source.row.manifest.pages.find(p=>p.id===request.pageId);
+      if(!value.board||value.board.id!==request.source.row.id||value.board.manifest?.pages.find(p=>p.id===request.pageId)?.hash!==original?.hash)throw new Error('지난 판이 변경됐어요. 최신 판을 불러와 다시 골라 주세요.');
+    }
+    const origin=await fragmentOrigin(request.source.row,sourcePage,chosen);
+    if(!isActive())return;
+    if(request.scope!==scope||document.current.activePage!==request.targetPage||!api.current)throw new Error('놓을 페이지가 바뀌었어요. 부분 고르기를 다시 열어 주세요.');
+    if(storeState.current.conflict)throw new Error('먼저 저장 상태에서 다른 기기의 판을 확인해 주세요.');
+    commit();
+    const duplicate=findFragment(document.current,origin);
+    if(!force&&duplicate.kind!=='none')return {duplicate:duplicate.kind,matches:duplicate.matches};
+    const cloned=cloneFragment(sourcePage.elements,chosen,origin),editor=api.current,state=editor.getAppState();
+    const current=editor.getSceneElementsIncludingDeleted(),viewport=[-state.scrollX+28/state.zoom.value,-state.scrollY+100/state.zoom.value,-state.scrollX+(state.width-28)/state.zoom.value,-state.scrollY+(state.height-80)/state.zoom.value];
+    const bounds=getCommonBounds(cloned),map=new Map(current.map(el=>[el.id,el]));
+    const offset=fresh?{x:32-bounds[0],y:100-bounds[1]}:fragmentPosition(bounds,current.filter(el=>!el.isDeleted).map(el=>getCommonBounds([el],map)),viewport);
+    const copied=insertBoardFragment(document.current,request.targetPage,cloned,offset,{fresh});
+    setFragment(null);closeMenu(true);
+    if(fresh){
+      document.current={...copied.document,pages:copied.document.pages.map(p=>p.id===copied.pageId?{...p,elements:[]}:p)};
+      pendingFragment.current={pageId:copied.pageId,elements:copied.elements};
+      pendingFocus.current={id:copied.pageId,elementIds:copied.elements.map(el=>el.id)};changePage(copied.pageId);
+    }else{
+      armed.current=true;
+      update([...current,...copied.elements],{appState:{selectedElementIds:Object.fromEntries(copied.elements.map(el=>[el.id,true])),selectedGroupIds:{},activeTool:{type:'selection'}}});
+      revealElements(copied.elements,true);
+    }
+    setMessage('선택한 내용을 가져왔어요. 되돌리기로 취소할 수 있어요.');
+  };
+  const locateFragment = matches => {
+    const found=matches.find(item=>document.current.pages.some(page=>page.id===item.pageId&&page.elements.some(el=>el.id===item.id&&!el.isDeleted)));
+    if(!found)return;setFragment(null);closeMenu(true);
+    pendingFocus.current={id:found.pageId,elementIds:matches.filter(item=>item.pageId===found.pageId).map(item=>item.id)};
+    if(found.pageId!==pageId)changePage(found.pageId);else focusScene.current();
+  };
+  const refreshFragment = async request => {
+    const source=await readCloudBoard(rootId,request.source.row.day);
+    if(!source.document?.pages.some(p=>p.id===request.pageId))throw new Error('이 페이지가 더 이상 없어요. 페이지 목록에서 다시 골라 주세요.');
+    setFragment(current=>current===request?{...request,source}:current);
+  };
   const record = async (values=null) => {
     if(recording)return;
     const list=values||anchors.map(el=>readCard(el,api.current.getSceneElementsIncludingDeleted())).filter(Boolean);
@@ -459,7 +530,7 @@ export function SharedBoardCanvas({owner, team, day, rootId, scope, store, perso
   const boardHasContent=hasContent??page.elements.some(el=>!el.isDeleted);
   const recent=pages.flatMap(item=>item.elements.filter(el=>!el.isDeleted&&expressionOf(el)).map(el=>({...readCard(el,item.elements),label:'최근 판'}))).reverse();
   const results=searching&&!editing?boardSearch(input,[...recent,...library]):[];
-  const menuTitle={main:'전체 메뉴',tools:'필기 도구',entry:editing?'표현 수정':'표현 불러오기',book:'교재와 화면',pages:'설명판 페이지',selection:'선택한 요소',session:'수업 기록'};
+  const menuTitle={main:'전체 메뉴',tools:'필기 도구',entry:editing?'표현 수정':'표현 불러오기',book:'교재와 화면',pages:'설명판 페이지',selection:'선택한 요소',session:'수업 기록',status:'저장 상태',history:'지난 설명판'};
   const menuButton=(name,icon,label,extra={})=><BoardIconButton key={name} icon={icon} label={label} aria-expanded={menu===name} aria-controls={`board-menu-${name}`} data-active={menu===name} onClick={event=>openMenu(name,event)} {...extra}/>;
   const popover=(name,children)=><section className={`board-popover board-popover--${name}`} id={`board-menu-${name}`} role="dialog" aria-label={menuTitle[name]} hidden={menu!==name}><div className="board-popover-heading"><b>{menuTitle[name]}</b><BoardIconButton icon="close" label="메뉴 닫기" onClick={()=>closeMenu(true)}/></div><div className="board-popover-body">{menu===name&&(message||store.error)&&<p className="board-menu-notice" role="status">{store.error||message}</p>}{children}</div></section>;
   const workspaceHeader=<div ref={hud} className="teaching-board-header board-hud" onKeyDown={event=>{event.stopPropagation();if(event.key==='Escape'){event.preventDefault();if(menu==='entry'&&editing)cancelEdit();closeMenu(true);}}}>
@@ -469,23 +540,24 @@ export function SharedBoardCanvas({owner, team, day, rootId, scope, store, perso
       <BoardIconButton icon="add" label="표현 입력" aria-expanded={menu==='entry'} aria-controls="board-menu-entry" data-active={menu==='entry'} data-draft={!!input.trim()} onClick={openInput}/>
       {menuButton('book','book',personal?'노트 정보':'교재 메뉴')}
     </nav>
-    <div className="board-today-trigger">{personal?<BoardIconButton icon="record" label="단어 정리" onClick={()=>{commit();closeMenu();personal.onOrganize();}}/>:<BoardIconButton icon="record" label={`오늘 표현 ${recordCount}개`} aria-expanded={menu==='session'} aria-controls="board-menu-session" onClick={event=>{menuTrigger.current=event.currentTarget;setMenu(v=>v==='session'?null:'session');}}><span className="board-count">{recordCount}</span></BoardIconButton>}</div>
-    <div className="board-hud-status" role="status" aria-label={store.error?'저장 확인 필요':store.saving?'보관 중…':personal?.saveLabel||'이 기기에 보관됨'} title={store.error?'저장 확인 필요':store.saving?'보관 중…':personal?.saveLabel||'이 기기에 보관됨'} data-error={!!store.error} data-saving={store.saving}><span/></div>
+    <div className="board-today-trigger">{personal?<BoardIconButton icon="record" label="단어 정리" onClick={()=>{commit();closeMenu();personal.onOrganize();}}><span className="board-count" aria-label={`미완료 표현 ${personal.pendingCount||0}개`}>{personal.pendingCount||0}</span></BoardIconButton>:<BoardIconButton icon="record" label={`오늘 표현 ${recordCount}개`} aria-expanded={menu==='session'} aria-controls="board-menu-session" onClick={event=>{menuTrigger.current=event.currentTarget;setMenu(v=>v==='session'?null:'session');}}><span className="board-count">{recordCount}</span></BoardIconButton>}</div>
+    {!personal?<div className="board-cloud-trigger">{menuButton('status',store.error?'cloudAlert':store.saving?'upload':'cloud','저장 상태',{'data-attention':!!store.error,hint:store.label})}</div>:<div className="board-hud-status" role="status" aria-label={store.error?'저장 확인 필요':store.saving?'보관 중…':personal?.saveLabel||store.label||'이 기기에 보관됨'} title={store.error?'저장 확인 필요':store.saving?'보관 중…':personal?.saveLabel||store.label||'이 기기에 보관됨'} data-error={!!store.error} data-saving={store.saving}><span/></div>}
     {popover('main',<><section className="board-menu-section" aria-label="판과 도구"><span>판과 도구</span><div className="board-icon-grid">
       {menuButton('tools','freedraw','필기 도구 메뉴')}
       {menuButton('pages','pages','페이지 메뉴')}
+      {!personal&&menuButton('history','history','지난 설명판')}
       <BoardIconButton icon="present" label="보여주기" disabled={!boardHasContent} onClick={showBoard}/>
       <BoardIconButton icon="fit" label="전체 보기" onClick={()=>{if(layout==='reader')changeLayout('board');closeMenu(true);revealElements(api.current?.getSceneElements()||[],true);}}/>
     </div></section><section className="board-menu-section" aria-label="수업과 이동"><span>수업과 이동</span><div className="board-icon-grid">
-      <Link href="/home" aria-label="웹앱 홈" title="웹앱 홈" data-label="웹앱 홈" onClick={commit} className="board-icon-button"><BoardIcon name="home"/></Link>
-      {personal?<BoardIconButton icon="book" label="내 서재" onClick={personal.onLeave}/>:<Link href={`/class/${team.key}`} aria-label="팀 홈" title="팀 홈" data-label="팀 홈" onClick={commit} className="board-icon-button"><BoardIcon name="team"/></Link>}
+      <Link prefetch={false} href="/home" aria-label="웹앱 홈" title="웹앱 홈" data-label="웹앱 홈" onClick={commit} className="board-icon-button"><BoardIcon name="home"/></Link>
+      {personal?<BoardIconButton icon="book" label="내 서재" onClick={personal.onLeave}/>:<Link prefetch={false} href={`/class/${team.key}`} aria-label="팀 홈" title="팀 홈" data-label="팀 홈" onClick={commit} className="board-icon-button"><BoardIcon name="team"/></Link>}
       <BoardIconButton icon="record" label={personal?'단어 정리':'수업 기록'} onClick={()=>{if(personal){commit();closeMenu();personal.onOrganize();}else setMenu('session');}}/>
       <BoardIconButton icon="close" label="설명판 닫기" onClick={()=>{commit();onClose();}}/>
     </div></section><section className="board-menu-section" aria-label="백업"><span>백업</span><div className="board-icon-grid">
       <BoardIconButton icon="download" label="내려받기" onClick={backup}/>
       <label className="teaching-board-file board-icon-button" title="가져오기"><BoardIcon name="upload"/><input type="file" accept="application/json,.json" aria-label="가져오기" onChange={restore}/></label>
-    </div></section><p className="board-menu-caption">{team.name} · {day}</p><p className="board-menu-caption">{store.error?'저장 확인 필요':store.saving?'보관 중…':personal?.saveLabel||'이 기기에 보관됨'}</p>
-    {store.error&&<p className="board-menu-caption" role="status">{store.error}<button onClick={backup}>내 내용 백업</button><button onClick={()=>window.location.reload()}>최신 판 열기</button></p>}
+    </div></section><p className="board-menu-caption">{team.name} · {day}</p><p className="board-menu-caption">{store.error?'저장 확인 필요':store.saving?'보관 중…':personal?.saveLabel||store.label||'이 기기에 보관됨'}</p>
+    {store.error&&<p className="board-menu-caption" role="status">{store.error}<button onClick={backup}>내 내용 백업</button><button onClick={()=>{commit();if(store.reload)store.flush?.().then(()=>store.reload()).catch(error=>setMessage(error.message));else window.location.reload();}}>최신 판 열기</button></p>}
     {store.recoveries?.map((row,i)=><button className="board-recovery-button" key={row.id} onClick={()=>recover(row)}>충돌본 {i+1} 불러오기</button>)}</>)}
     {popover('tools',<><BoardHistory canvasRoot={root} pageId={pageId} onAction={()=>closeMenu(true)}/><BoardTools active={activeTool} style={toolStyle} onTool={chooseTool} onStyle={styleSelection}/></>)}
     {popover('book',<>{!personal&&<nav className="board-icon-grid" aria-label="설명판 보기">{[['board','설명판','board'],['split','함께','split'],['reader','교재','book']].map(([value,label,icon])=><BoardIconButton key={value} icon={icon} label={label} aria-pressed={layout===value} onClick={()=>{changeLayout(value);closeMenu(true);}}/>)}</nav>}{navigation}</>)}
@@ -502,6 +574,8 @@ export function SharedBoardCanvas({owner, team, day, rootId, scope, store, perso
         {selected.length>1&&!picked&&<BoardIconButton icon="group" label="함께 묶기" onClick={group}/>}
       </div>
     </>)}
+    {!personal&&popover('status',<BoardCloudPanel mode="status" active={menu==='status'} rootId={rootId} day={day} store={store} onBackup={backup} onBeforeAction={commit}/>)}
+    {!personal&&popover('history',<BoardCloudPanel key={`${owner}:${rootId}`} owner={owner} pages={pages} onCopy={reusePages} onPick={pickFragment} mode="history" active={menu==='history'} rootId={rootId} day={day} store={store} onBeforeAction={commit} onOpen={async nextDay=>{await store.prepareLeave();const url=new URL(window.location.href);url.searchParams.set('day',nextDay);url.searchParams.set('returnTo',`/class/${team.key}`);url.searchParams.set('board','1');window.location.assign(url.href);}}/>)}
     {popover('session',sessionContent)}
     {popover('entry',<form className="teaching-board-import" aria-label="표현 불러오기" onSubmit={applyExpression} onCompositionStart={()=>{composing.current=true;}} onCompositionEnd={()=>{composing.current=false;}} onKeyDown={event=>{if(event.key==='Enter'&&isClassComposing(event,composing.current))event.preventDefault();}}>
       <div className="board-entry-line"><label className="board-entry-query"><span className="teaching-board-accessible">단어·표현</span><input ref={inputRef} value={input} maxLength={500} placeholder="표현 입력·찾기" onFocus={()=>setSearching(true)} onChange={event=>{attempt.current++;editVersion.current++;setBusy(false);setInput(event.target.value);setCandidates([]);setSenses([]);setReading('');setMeaning('');setEntrySource({kind:'manual'});setLookupSource('');setSearching(true);}}/></label><BoardIconButton icon="more" label="읽기와 뜻 입력" aria-expanded={panel} onClick={()=>{setPanel(v=>!v);setSearching(false);}}/></div>
@@ -531,9 +605,10 @@ export function SharedBoardCanvas({owner, team, day, rootId, scope, store, perso
         <MainMenu><MainMenu.Item onSelect={backup}>설명판 백업</MainMenu.Item></MainMenu>
       </Excalidraw>
     </div>
+    {fragment&&<BoardFragmentPicker key={`${fragment.pageId}:${fragment.source.row.revision}`} request={fragment} blocked={store.conflict} onCopy={copyFragment} onLocate={locateFragment} onRefresh={refreshFragment} onClose={()=>setFragment(null)}/>}
     {!boardHasContent&&<div className="board-empty-hint" aria-label="설명판 시작 안내"><div aria-hidden="true"><BoardIcon name="freedraw"/><BoardIcon name="add"/><BoardIcon name="book"/></div><p>펜으로 쓰거나, ＋로 표현을 놓아보세요.</p><span>{personal?'글자와 표현은 오른쪽 위에서 한 번에 정리할 수 있어요.':'교재에서 고른 표현도 바로 가져올 수 있어요.'}</span></div>}
     <div className="teaching-board-accessible">{(latest.current?.elements || page.elements).filter(el=>!el.isDeleted && expressionOf(el)).map(el=>{const value=readCard(el,latest.current?.elements || page.elements);return value && <p key={el.id} data-board-expression={el.id}>{value.text} · {value.showReading?value.reading:""} · {value.showMeaning?value.meaning:""}</p>;})}</div>
-    {!menu&&(message||store.error)&&<p className="teaching-board-message" role="status">{store.error||message}{store.error&&<><button onClick={backup}>내 내용 백업</button><button onClick={()=>window.location.reload()}>최신 판 열기</button></>}</p>}
+    {!menu&&(message||store.error)&&<p className="teaching-board-message" role="status">{store.error||message}{store.error&&<><button onClick={backup}>내 내용 백업</button><button onClick={()=>{commit();if(store.reload)store.flush?.().then(()=>store.reload()).catch(error=>setMessage(error.message));else window.location.reload();}}>최신 판 열기</button></>}</p>}
     {presenting&&<BoardPresentation elements={presenting} onRecord={personal?undefined:()=>record(presenting.filter(el=>expressionOf(el)).map(el=>readCard(el,presenting)))} recording={recording} recordState={wordRecordSummary(presenting.filter(el=>expressionOf(el)).map(el=>getRecordState?.(readCard(el,presenting))))} returnFocus={presentationTrigger.current} onClose={()=>{presentationActive.current=false;setPresenting(null);}}/>}
   </section>;
 }

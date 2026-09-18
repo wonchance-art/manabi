@@ -30,7 +30,7 @@ export const KANA_RE = /[぀-ヿ]/;
 export function splitRuby(text, furigana) {
   if (!furigana) return [{ plain: text }];
 
-  const KANJI = /[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF]/;
+  const KANJI = /\p{Script=Han}/u;
   const isKanji = ch => KANJI.test(ch);
 
   // 중국어 병음: 라틴 음절이 글자 수와 일치하면 글자별로 분배(글자당 음절 = 표준 병음
@@ -49,19 +49,26 @@ export function splitRuby(text, furigana) {
     }
   }
 
+  // A supplied single syllable for the only Han character is unambiguous
+  // (e.g. T恤 + xù); preserve its character-level hun label in the viewer.
+  if (zhChars.length>1 && zhChars.filter(isKanji).length===1 && /^[\p{Script=Latin}\p{Mark}:]+[0-5]?$/u.test(furigana)) return zhChars.map(ch=>isKanji(ch)?{kanji:ch,reading:furigana}:{plain:ch});
+
+  // Mixed Latin/digits/punctuation do not provide Japanese kana anchors.
+  if (!KANA_RE.test(furigana) && /\p{Script=Latin}/u.test(furigana) && zhChars.some(isKanji)) return [{kanji:text,reading:furigana}];
+
   // 1. surface를 [kanji 구간, hira 구간, ...] 으로 분할
   const segments = [];
   let i = 0;
-  while (i < text.length) {
-    if (isKanji(text[i])) {
+  while (i < zhChars.length) {
+    if (isKanji(zhChars[i])) {
       let j = i;
-      while (j < text.length && isKanji(text[j])) j++;
-      segments.push({ type: 'kanji', text: text.slice(i, j) });
+      while (j < zhChars.length && isKanji(zhChars[j])) j++;
+      segments.push({ type: 'kanji', text: zhChars.slice(i, j).join('') });
       i = j;
     } else {
       let j = i;
-      while (j < text.length && !isKanji(text[j])) j++;
-      segments.push({ type: 'plain', text: text.slice(i, j) });
+      while (j < zhChars.length && !isKanji(zhChars[j])) j++;
+      segments.push({ type: 'plain', text: zhChars.slice(i, j).join('') });
       i = j;
     }
   }
@@ -92,8 +99,7 @@ export function splitRuby(text, furigana) {
     }
   } catch {}
 
-  // regex 실패 시 fallback: 전체 한자에 전체 reading
-  return segments.map(s =>
-    s.type === 'kanji' ? { kanji: s.text, reading: furigana } : { plain: s.text }
-  );
+  // Unmatched anchors cannot justify character-level alignment. The viewer and
+  // board both show this reading once above the complete expression.
+  return [{kanji:text,reading:furigana}];
 }

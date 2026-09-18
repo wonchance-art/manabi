@@ -31,7 +31,17 @@
     "e2e:typography": "node --test --test-concurrency=1 e2e/typography.e2e.mjs",
     "e2e:chrome": "node --test --test-concurrency=1 e2e/viewer-chrome.e2e.mjs",
     "e2e:build": "NEXT_PUBLIC_SUPABASE_URL=https://e2e.supabase.co NEXT_PUBLIC_SUPABASE_ANON_KEY=e2e-anon-key NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3100 NEXT_FONT_GOOGLE_MOCKED_RESPONSES=\"$PWD/e2e/fixtures/google-fonts-mock.cjs\" next build",
-    "e2e:full": "npm run e2e:build && npm run e2e:learning"
+    "e2e:full": "npm run e2e:build && npm run e2e:learning",
+    "qa": "node scripts/qa.mjs",
+    "qa:build": "node scripts/qa.mjs build",
+    "qa:release": "node scripts/qa.mjs release",
+    "qa:classroom": "node scripts/qa.mjs classroom",
+    "qa:notes": "node scripts/qa.mjs notes",
+    "qa:reader": "node scripts/qa.mjs reader",
+    "qa:sql": "node scripts/qa.mjs sql",
+    "qa:browsers": "node node_modules/playwright-core/cli.js install chromium webkit",
+    "qa:live": "node scripts/qa-live-preflight.mjs",
+    "qa:closeout": "node scripts/qa-closeout.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -59,13 +69,17 @@
     "youtubei.js": "17.2.0"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
     "@eslint/eslintrc": "^3.3.6",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "axe-core": "4.13.0",
     "eslint": "^9.39.4",
     "eslint-config-next": "^15.5.14",
     "hanja": "^1.1.5",
+    "pixelmatch": "7.2.0",
     "playwright-core": "^1.61.0",
+    "pngjs": "7.0.0",
     "vitest": "^4.1.4"
   }
 }

@@ -204,7 +204,7 @@ describe('학습 그룹 배선 계약', () => {
 
   it('뷰어 — 같이 읽기 진도 push 훅이 배선되어 있다(실패 조용히는 훅 계약)', () => {
     const viewer = read('src/views/ViewerPage.jsx');
-    expect(viewer).toContain('useGroupReadPush(material?.id, user?.id, readProgress)');
+    expect(viewer).toContain('useGroupReadPush(material?.__local?null:material?.id, user?.id, readProgress)');
   });
 
   it('그룹 화면 — 게이트 적용·잠금 안내 문구·공개 자료 후보만', () => {

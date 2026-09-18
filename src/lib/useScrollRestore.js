@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
+import {classPositionKey,readClassPosition} from './classDirectStudy';
 import { createPositionWriter } from './readingPositionWriter';
 
 /**
@@ -27,6 +28,11 @@ export function useScrollRestore({ user, materialId, material, readingProgress, 
     const owner = user.id;
     const writer = createPositionWriter(async index => {
       if (ownerRef.current !== owner) return;
+      if(material?.__local){
+        const key=classPositionKey(owner,material.__team,materialId);
+        localStorage.setItem(key,JSON.stringify({...readClassPosition(owner,material.__team,materialId),last_token_idx:index}));
+        queryClient.invalidateQueries({queryKey:['reading-progress',owner,materialId]});return;
+      }
       const { error } = await supabase.from('reading_progress').upsert({
         user_id: owner, material_id: materialId, last_token_idx: index,
       }, { onConflict: 'user_id,material_id' });
@@ -44,7 +50,7 @@ export function useScrollRestore({ user, materialId, material, readingProgress, 
       writer.close(ownerRef.current === owner);
       writerRef.current = null;
     };
-  }, [user?.id, materialId, key, queryClient]);
+  }, [user?.id, materialId, material?.__local, material?.__team, key, queryClient]);
 
   const saveScrollPosition = useCallback((tokenIdx) => {
     if (writerRef.current?.key === key) {

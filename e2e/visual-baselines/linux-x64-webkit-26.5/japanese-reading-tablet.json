@@ -1,0 +1,12 @@
+{
+  "name": "japanese-reading-tablet",
+  "key": "linux-x64-webkit-26.5",
+  "sha256": "37693fb273d0db7acfc47380446416f20faadd44c14789a4783c914625c12667",
+  "review": "Directly inspected Linux CJK rendering: intact glyphs, upper readings/lower hun/right meanings as applicable, no text overlap or cropped actions. Browser-native controls and synthetic fonts are intentional. Any SVG contrast incomplete remains manual evidence.",
+  "viewport": {
+    "width": 768,
+    "height": 844
+  },
+  "osRelease": "6.17.0-1022-azure",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+}

@@ -61,3 +61,13 @@ export async function saveTeachingBoard(scope, expected, document, writer) {
     tx.onerror = tx.onabort = () => reject(tx.error || new Error('설명판을 기기에 보관하지 못했어요. 백업을 내려받아 주세요.'));
   });
 }
+
+// Preserve a cloud-conflicting draft before explicitly opening another version.
+export async function preserveTeachingBoardRecovery(scope,document,writer) {
+  const clean=validateBoard(document),db=await open();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction('boards','readwrite');
+    tx.objectStore('boards').put({id:`${scope}:recovery:${writer}`,scope,document:clean,revision:crypto.randomUUID(),updatedAt:Date.now()});
+    tx.oncomplete=()=>resolve();tx.onerror=tx.onabort=()=>reject(tx.error||new Error('내 필기 복구본을 보관하지 못했어요. 먼저 백업해 주세요.'));
+  });
+}

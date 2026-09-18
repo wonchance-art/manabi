@@ -17,11 +17,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  plan:
+    name: 검수 범위
+    runs-on: ubuntu-latest
+    outputs:
+      full: ${{ steps.scope.outputs.full }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - id: scope
+        env:
+          QA_DIFF_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: node scripts/qa-ci-plan.mjs
+
   test:
     name: lint · 콘텐츠 게이트 · vitest
+    if: always()
+    needs: plan
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      - name: 검수 범위 판정 확인
+        env:
+          PLAN_RESULT: ${{ needs.plan.result }}
+          FULL: ${{ needs.plan.outputs.full }}
+        run: |
+          test "$PLAN_RESULT" = success
+          test "$FULL" = true || test "$FULL" = false
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
@@ -29,23 +55,38 @@ jobs:
           node-version: '24'
           cache: npm
 
-      - run: npm ci
+      - if: needs.plan.outputs.full == 'true'
+        run: npm ci
 
-      - run: npm run lint
+      - if: needs.plan.outputs.full == 'true'
+        run: npm run lint
 
       # 콘텐츠 방어선 — 드릴 비중복(4트랙)·병음 정합·글자 커버 등.
       # next build의 prebuild와 동일한 체인이라 여기서 먼저 깨뜨려 빌드 시간을 아낀다.
       - name: 콘텐츠 게이트 (prebuild)
+        if: needs.plan.outputs.full == 'true'
         run: npm run prebuild
 
       # 일상 게이트 — world 제외(실측 408s → 약 145s). world는 아래 전용 job이 책임진다.
-      - run: npm test
+      - if: needs.plan.outputs.full == 'true'
+        run: npm test
+      - if: needs.plan.outputs.full != 'true'
+        run: echo '검수 기록만 변경됨. 실행 코드·검사 정의는 그대로입니다.'
 
   e2e:
     name: e2e (smoke · learning-flow)
+    if: always()
+    needs: plan
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
+      - name: 검수 범위 판정 확인
+        env:
+          PLAN_RESULT: ${{ needs.plan.result }}
+          FULL: ${{ needs.plan.outputs.full }}
+        run: |
+          test "$PLAN_RESULT" = success
+          test "$FULL" = true || test "$FULL" = false
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
@@ -53,27 +94,96 @@ jobs:
           node-version: '24'
           cache: npm
 
-      - run: npm ci
+      - if: needs.plan.outputs.full == 'true'
+        run: npm ci
 
       # NEXT_PUBLIC_* 는 빌드 시점에 번들로 인라인된다. 런타임에만 주면 클라이언트 인증이
       # 에러 없이 조용히 죽으므로(#869 오판 선례), 빌드와 실행이 반드시 같은 값을 써야 한다.
       # e2e:build 스크립트가 그 값을 고정해 들고 있다.
       - name: 테스트 env로 빌드
-        run: npm run e2e:build
+        if: needs.plan.outputs.full == 'true'
+        run: npm run qa:build
+
+      - name: 고정 버전 Chromium · WebKit 준비
+        if: needs.plan.outputs.full == 'true'
+        run: node node_modules/playwright-core/cli.js install --with-deps chromium webkit
+
+      - name: 합성 화면의 한글·한자 글리프 준비
+        if: needs.plan.outputs.full == 'true'
+        run: sudo apt-get install -y fonts-noto-cjk
 
       # 브라우저는 러너에 미리 깔린 Google Chrome을 쓴다(playwright.config.mjs 기본 channel).
       - name: Chrome 확인
+        if: needs.plan.outputs.full == 'true'
         run: google-chrome --version
 
       # 조판 기하 계약 — 빌드가 필요 없어(index.css 실물 + 정적 마크업) 제일 싸므로 먼저.
       # 병음·요미가나의 실렌더 좌표(토글 시프트 0·그리드 단일값·겹침 0)를 지킨다 —
       # 소스 계약만으로는 못 잡는 상호작용 회귀가 하루 5PR 왕복의 원인이었다(2026-08-19).
-      - run: npm run e2e:typography
+      - if: needs.plan.outputs.full == 'true'
+        run: npm run e2e:typography
 
       # 뷰어 크롬 기하 계약(뷰어 정돈 A안) — 첫 글자가 나오기까지의 높이를 브라우저 좌표로 지킨다.
       # 조판 e2e와 같은 방식(index.css 실물 + 정적 마크업)이라 빌드가 필요 없다.
-      - run: npm run e2e:chrome
+      - if: needs.plan.outputs.full == 'true'
+        run: npm run e2e:chrome
 
-      - run: npm run e2e
+      - if: needs.plan.outputs.full == 'true'
+        run: npm run e2e
 
-      - run: npm run e2e:learning
+      - if: needs.plan.outputs.full == 'true'
+        run: npm run e2e:learning
+
+      - name: 교사 → 학생 · 개인 노트 · 뜻 표시 연결 검수
+        if: needs.plan.outputs.full == 'true'
+        run: npm run qa:release -- --collect-all
+
+      - name: 동일 입력 증거 재개 확인
+        if: needs.plan.outputs.full == 'true'
+        run: |
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import { spawnSync } from 'node:child_process';
+          import { profileSteps } from './scripts/qa-profiles.mjs';
+          const previous = JSON.parse(fs.readFileSync('.qa/latest.json'));
+          if (previous.status !== 'passed') throw Error('release_evidence_not_passed');
+          const child = spawnSync(process.execPath, ['scripts/qa.mjs', 'release', '--resume', previous.report], { stdio: 'inherit' });
+          if (child.error) throw child.error;
+          if (child.status !== 0) process.exit(child.status ?? 1);
+          const latest = JSON.parse(fs.readFileSync('.qa/latest.json'));
+          const report = JSON.parse(fs.readFileSync(latest.report));
+          const expected = profileSteps('release');
+          if (report.steps.length !== expected.length || report.steps.some((step, i) => !step.reused || step.id !== expected[i].id)) throw Error('resume_did_not_reuse_all_verified_steps');
+          JS
+
+      - name: 검수 결과 요약
+        if: always() && needs.plan.outputs.full == 'true'
+        run: node scripts/qa-report.mjs
+
+      - name: 합성 증거만 수집
+        if: always() && needs.plan.outputs.full == 'true'
+        run: node scripts/qa-artifacts.mjs
+
+      - name: 합성 검수 증거 보관
+        if: always() && needs.plan.outputs.full == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthetic-qa-${{ github.sha }}
+          path: .qa/evidence/
+          include-hidden-files: true
+          retention-days: 7
+          if-no-files-found: warn
+
+      - if: needs.plan.outputs.full != 'true'
+        run: echo '검수 기록만 변경됨. 기존 필수 검사 이름을 유지하며 판정합니다.'
+
+  gate:
+    name: QA 완료 판정
+    if: always()
+    needs: [plan, test, e2e]
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          RESULTS: ${{ join(needs.*.result, ',') }}
+        run: |
+          test "$RESULTS" = 'success,success,success'
