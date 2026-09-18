@@ -12,7 +12,7 @@ describe('Japanese references stay within the explicitly selected sense and POS'
     expect(japaneseReferenceKey({...selection,[key]:value})).not.toEqual(japaneseReferenceKey(selection));
   });
   it('versions unvalidated responses out and handles unknown POS without invention',()=>{
-    expect(japaneseReferenceKey(selection).slice(0,2)).toEqual(['viewer-japanese-reference',3]);
+    expect(japaneseReferenceKey(selection).slice(0,2)).toEqual(['viewer-japanese-reference',4]);
     expect(japaneseReferenceKey({...selection,pos:undefined})[5]).toBe('');
     expect(japaneseReferenceKey({...selection,pos:undefined})).not.toEqual(japaneseReferenceKey(selection));
     expect(japaneseReferenceKey({...selection,userId:null})[2]).toBe('guest');
@@ -27,7 +27,7 @@ describe('Japanese references stay within the explicitly selected sense and POS'
     await lookupJapaneseReference({...selection,pos,signal:controller.signal});
     const [prompt,signal]=callGemini.mock.calls[0];
     const data=JSON.parse(prompt.split('\n')[1]);
-    expect(data).toEqual({chinese:'研究',koreanMeaning:'연구',partOfSpeech:pos||null,japaneseCharacterForm:'研究'});
+    expect(data).toEqual({koreanMeaning:'연구',partOfSpeech:pos||null,chinese:'研究'});
     expect(signal).toBe(controller.signal);
   });
   it('uses dictionary senses with the matching POS even when another comes first',()=>{

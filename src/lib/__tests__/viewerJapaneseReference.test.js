@@ -30,14 +30,24 @@ describe('Japanese equivalents preserve the selected Chinese sense',()=>{
       expect(normalizeJapaneseReference({form,warn:null})).toEqual({form,warn:null});
     }
   });
-  it('passes meaning, character form and cancellation to the existing lookup',async()=>{
+  it('translates the selected sense without suggesting a converted glyph and retains cancellation',async()=>{
     callGemini.mockResolvedValue('{"form":"ホスト国","warn":null}');
     const signal=new AbortController().signal;
     expect(await lookupJapaneseReference({word:'东道主',meaning:'주최국',form:'東道主',signal})).toEqual({form:'ホスト国',warn:null});
     const [prompt,receivedSignal,options]=callGemini.mock.calls[0];
     expect(prompt).toContain('"koreanMeaning":"주최국"');
-    expect(prompt).toContain('"japaneseCharacterForm":"東道主"');
+    expect(prompt).not.toContain('japaneseCharacterForm');
+    expect(prompt).not.toContain('東道主');
     expect(receivedSignal).toBe(signal);expect(options.responseMimeType).toBe('application/json');
+  });
+  it('does not let glyph metadata anchor the request or return a second warning-generation task',async()=>{
+    callGemini.mockResolvedValue('{"form":"もてなす人","warn":"별개의 자형 설명"}');
+    const selection={word:'东道主',meaning:'접대하는 사람',pos:'명사'};
+    expect(await lookupJapaneseReference({...selection,form:'東道主'})).toEqual({form:'もてなす人',warn:null});
+    await lookupJapaneseReference({...selection,form:'다른 자형'});
+    expect(callGemini.mock.calls[0][0]).toBe(callGemini.mock.calls[1][0]);
+    expect(callGemini.mock.calls[0][0]).toContain('드문 한자어·고어');
+    expect(callGemini.mock.calls[0][0]).toContain('form:null로 보류');
   });
   it('does not invent an equivalent when the result is uncertain or the meaning is empty',async()=>{
     callGemini.mockResolvedValue('{"form":null}');
