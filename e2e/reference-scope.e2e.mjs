@@ -44,8 +44,16 @@ try{
  const rejectedRequestCount=requests.length;await page.waitForTimeout(100);assert.equal(requests.length,rejectedRequestCount);
  response={form:'もてなす人',warn:'현대 일본어에서는 드문 표기'};
  await page.getByRole('button',{name:'일본어 다시 찾기',exact:true}).click();await section.getByText('もてなす人',{exact:true}).waitFor();
- await section.getByText('일본어 참고: 현대 일본어에서는 드문 표기',{exact:true}).waitFor();
- check('Korean model output is never shown as Japanese; retry is manual and usage notes are not presented as definitions');
- assert.deepEqual(Object.keys(requests.at(-1)).sort(),['chinese','japaneseCharacterForm','koreanMeaning','partOfSpeech'].sort());assert.deepEqual(errors,[]);
+ assert.equal(await section.getByText('일본어 참고: 현대 일본어에서는 드문 표기',{exact:true}).count(),0);
+ await section.getByText('일본식 자형',{exact:true}).waitFor();await section.getByText('東道主',{exact:true}).waitFor();
+ check('Korean output is rejected; a manual retry shows the modern equivalent separately from glyphs without generated glyph warnings');
+ assert.deepEqual(Object.keys(requests.at(-1)).sort(),['chinese','koreanMeaning','partOfSpeech'].sort());
+ const requestsBeforeDictionary=requests.length;
+ await select({word:'勉强',meaning:'억지로 하다',pos:'동사',jaTable:{勉:'勉',强:'強'},dictEntry:{meanings:[{meaning:'억지로 하다',pos:'동사',ja:{form:'無理強いする',warn:'勉強는 공부를 뜻해요.'}}]}});
+ await section.getByText('無理強いする',{exact:true}).waitFor();
+ await section.getByText('일본어 참고: 勉強는 공부를 뜻해요.',{exact:true}).waitFor();
+ assert.equal(requests.length,requestsBeforeDictionary);assert.equal(await lookup().count(),0);
+ check('matching dictionary equivalents and their existing false-friend notes remain available without an AI request');
+ assert.deepEqual(errors,[]);
  await page.screenshot({path:out+'/reference.png'});report.groups.push('reader.reference');
 }catch(error){report.failure=error.stack;throw error;}finally{await finishQa({browser,server,context:page.context(),report,out});}
