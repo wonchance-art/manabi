@@ -6,7 +6,7 @@ import crypto from 'node:crypto';
 
 const root=new URL('../src/content/textbookEditions/',import.meta.url);
 const index=JSON.parse(fs.readFileSync(new URL('index.json',root),'utf8'));
-const edition=index.current;
+const edition=process.argv[2]||index.current;
 if(!/^[a-f0-9]{24}$/.test(edition))throw Error('invalid current edition');
 const bytes=fs.readFileSync(new URL(`${edition}/bundle.json`,root));
 const bundle=JSON.parse(bytes),book=bundle.manuscript;

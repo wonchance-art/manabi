@@ -1,0 +1,70 @@
+{
+  "baseEdition": "7f572327dc67893e9453246c",
+  "lessons": {
+    "u20": {
+      "duration": "두 번에 나누어 공부해요",
+      "durationNote": "첫날에는 이동 표현, 다음에는 대화와 읽기를 공부해요. 소요 시간보다 각 단계 끝의 확인 질문을 기준으로 쉬어 가세요.",
+      "study_route": [
+        {"title":"이동하는 말과 조사를 골라요","goal":"가다·오다·돌아가다를 고르고, 목적지·수단·동행을 붙여요. 타거나 내릴 때 조사도 함께 비교해요.","targets":["study1","study2","patterns","extra"],"check":"어디로, 무엇을 타고, 누구와 가는지 한 문장으로 말할 수 있나요?","pause":"여기까지가 첫 번째 공부예요. 표를 가리고 나의 이동 계획을 말한 뒤 쉬어 가도 좋아요."},
+        {"title":"대화와 길 안내에서 써 봐요","goal":"대화에서 이동 정보를 찾고 짧은 안내를 읽어요. 조사만 보지 말고 마지막 동사까지 한 덩어리로 확인해요.","targets":["dialogue","practice","read-guide","read-check","movement-check"],"check":"타는 버스와 이동 수단, 만날 곳과 갈 곳을 구별했나요?","pause":"내일은 오늘 답을 가리고, 목적지와 교통수단을 바꿔 한 번 더 말해 보세요."}
+      ],
+      "recall_links": [
+        {"after":"extra","target":"u19-patterns","label":"19과 · 행동하는 장소의 で"},
+        {"after":"movement-check","target":"u20-study2","label":"타고 내릴 때의 조사 다시 보기"}
+      ]
+    },
+    "u23": {
+      "duration": "새 표현과 누적 복습을 나누어 공부해요",
+      "durationNote": "이동 목적을 배운 날에는 첫 단계까지, 다음 공부에서는 앞 과의 표현을 먼저 떠올려 보세요. 누적 복습은 한 묶음씩 나누어도 좋아요.",
+      "study_route": [
+        {"title":"무엇을 하러 가는지 말해요","goal":"ます형에서 목적을 만들고, 함께 가자는 대화와 나의 짧은 문장까지 완성해요.","targets":["study1","patterns","dialogue","practice"],"check":"책을 읽다에서 책을 읽으러 가다로 바꾸어 말할 수 있나요?","pause":"새 표현 학습은 여기까지예요. 다음 공부를 시작할 때에는 앞의 예문을 가리고 복습해 보세요."},
+        {"title":"앞의 표현을 다시 꺼내요","goal":"습관·취향·위치에서 약속·이동으로 이어 가요. 먼저 답하고, 막힌 부분만 앞 과에서 확인해요.","targets":["review1","review2","review3"],"check":"힌트 없이 말한 것과 다시 볼 것을 나누었나요?","pause":"틀린 문장 하나를 고르고 사람·장소·시간을 바꾸어 다시 말해 보세요. 다음 날에는 한국어 지시만 보고 꺼내요."}
+      ],
+      "recall_links": [
+        {"after":"review1","target":"u09-patterns","label":"09과 · 사물과 사람의 위치"},
+        {"after":"review1","target":"u14-patterns","label":"14과 · 취향과 능숙함"},
+        {"after":"review2","target":"u22-patterns","label":"22과 · 함께 하자고 권하기"},
+        {"after":"review3","target":"u19-patterns","label":"19과 · 장소와 도구의 で"},
+        {"after":"review3","target":"u20-study2","label":"20과 · 건너고 타고 내리기"}
+      ]
+    },
+    "u35": {
+      "duration": "이유 표현과 몸 상태를 나누어 공부해요",
+      "durationNote": "먼저 연결 모양을 익히고, 다음 공부에서 몸 상태를 설명하는 연락에 써 보세요. 표를 모두 외운 뒤 시작할 필요는 없어요.",
+      "page_order": ["start","route","study1","study2","patterns","study3","study4","dialogue","practice"],
+      "study_route": [
+        {"title":"이유를 문장에 연결해요","goal":"から·ので 앞의 모양을 비교해요. かぜ가 바람인지 감기인지 문장 끝까지 읽고 골라요.","targets":["study1","study2","patterns"],"check":"명사의 なので와 い형용사의 ので를 구별할 수 있나요?","pause":"첫 단계는 여기까지예요. 이유와 결과가 이어지는 나의 문장을 한 번 말하고 쉬어 가요."},
+        {"title":"몸 상태와 다음 행동을 전해요","goal":"아픈 부위를 말하고 이유와 계획을 덧붙여요. 짧은 연락에서 오늘 할 일과 하지 않을 일을 찾아요.","targets":["study3","study4","dialogue","practice","health-check"],"check":"어디가 불편한지, 그래서 무엇을 할지 두 정보를 전할 수 있나요?","pause":"내일은 예문을 보지 않고 몸 상태와 계획을 한 문장으로 말해 보세요. 막힌 연결 모양만 다시 확인해요."}
+      ],
+      "recall_links": [
+        {"after":"patterns","target":"u30-patterns","label":"30과 · 보통체 모양 확인"},
+        {"after":"health-check","target":"u26-patterns","label":"26과 · 지금 이어지는 상태"},
+        {"after":"health-check","target":"u35-study1","label":"から·ので 연결 카드로 돌아가기"}
+      ]
+    },
+    "u42": {
+      "duration": "네 단계로 나누어 한 권을 마무리해요",
+      "durationNote": "새 표현·누적 복습·글자와 문장·짧은 글은 서로 다른 공부예요. 하루에 모두 끝낼 필요 없이 각 단계의 마침점에서 쉬어 가세요.",
+      "study_route": [
+        {"title":"새 표현으로 준비 상황을 말해요","goal":"もう·まだ로 완료를 확인하고, ね·よ·でしょう로 느낌과 생각을 전해요. 대화와 나의 문장까지가 이번 과의 새 학습이에요.","targets":["study1","patterns","extra","dialogue","practice"],"check":"끝낸 일·아직인 일·다음 행동을 구별해서 말할 수 있나요?","pause":"새 표현 학습은 여기까지예요. 다음에는 앞 과의 표현을 꺼내 쓸 거예요. 지금 쉬고 다음 날 이어도 좋아요."},
+        {"title":"앞의 표현을 꺼내 모임을 준비해요","goal":"수량·동시 행동·약속을 한 장면에서 다시 써요. 해설보다 먼저 나의 문장을 만들어요.","targets":["review1"],"check":"수량과 시간, 장소를 바꾸어도 스스로 말할 수 있나요?","pause":"답을 확인한 뒤 수량이나 약속 시간을 바꾸어 다시 말해 보세요. 다음 단계부터는 글에서 근거를 찾는 연습이에요."},
+        {"title":"글자와 문장을 확인해요","goal":"읽기·표기·단어·문장 배열을 짧게 연습해요. 답을 고른 까닭도 설명해 보세요.","targets":["review2","review3"],"check":"비슷한 보기 사이에서 정답의 근거를 찾았나요?","pause":"맞힌 수보다 헷갈린 이유를 한 가지 적어 보세요. 다음에는 메모와 안내를 읽어요."},
+        {"title":"메모·이야기·안내를 읽어요","goal":"짧은 메모에서 할 일, 이야기에서 이유, 안내에서 조건을 찾아요. 글 하나씩 나누어 읽어도 좋아요.","targets":["review4","review5","review6"],"check":"누가, 언제, 왜, 무엇을 해야 하는지 글 속 표현으로 설명할 수 있나요?","pause":"한 권을 마쳤어요. 내일은 헷갈렸던 글 하나를 다시 읽고 답의 근거가 된 문장을 짚어 보세요."}
+      ],
+      "recall_links": [
+        {"after":"review1","target":"u40-quantity","label":"40과 · 수량과 だけ"},
+        {"after":"review1","target":"u41-patterns","label":"41과 · 동시 행동과 방법"},
+        {"after":"review1","target":"u22-patterns","label":"22과 · 약속과 제안"},
+        {"after":"review3","target":"u36-patterns","label":"36과 · 글을 잇는 표현"},
+        {"after":"review6","target":"u39-start","label":"39과 · 필요한 행동을 안내하기"}
+      ]
+    }
+  },
+  "questionCorrection": {
+    "lesson": "u42",
+    "id": "유형 7 · 글 속 문법",
+    "cue": "この 店は いつも 人が 多いです。＿＿、今日は だれも いません。\n① だから　② でも　③ どうして　④ どこで",
+    "answer": "② でも",
+    "why": "늘 사람이 많다는 평소의 모습과 오늘은 아무도 없다는 모습을 대비해요. 그래서 でも가 맞아요. だから는 앞 내용을 이유로 뒤의 결과를 이을 때 쓰지만, 평소 사람이 많은 것이 오늘 아무도 없는 이유는 아니에요. どうして와 どこで는 각각 이유와 장소를 묻는 말이에요."
+  }
+}
