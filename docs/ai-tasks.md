@@ -14,6 +14,7 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
+- **저장 함수 활성화·승인 중복 요청 정정 (2026-09-25, 오너 명시 승인)** — 기존 SQL20260924114728 한 건을 workflow36018417851에서 적용 완료. 로컬/원격95이력 일치·INVOKER/권한/기존RLS·트리거/정책 보존·신규advisor0, 실제 DB 합성10검사 PASS/ROLLBACK/잔존0. 구체적인 대상·범위가 이미 승인된 작업의 재승인 요청을 AGENTS/CLAUDE/quality-workflow에서 금지하도록 정정. 새 Preview 배포·실계정 두 창 저장 검수 진행 중. 운영 웹 병합과 구분. docs/verification/viewer-correction-activation-20260925.md.
 - **뷰어 저장 보호·N5 전권 감사 후보 (2026-09-24, 오너 로드맵 승인)** — 일반 자료 교정을 소유권/RLS·서버 이전 토큰 비교/한 토큰 갱신으로 변경. 다른 토큰 동시 수정 보존, 같은 토큰 입력 유지/최신값 확인/명시 재저장, 응답 유실·수동 편집·키보드 복귀. 새 제품 빌드와 Chromium/WebKit 각11체크/화면 기준3개/오류0·정리 PASS, 관련47단위·lint·diff PASS. 로컬 전체 단위는 자원 경합 중단하여 최종 필수 전체/통합 CI는 정확한 head의 #150 인계로 확인. SQL20260924114728은 코드 준비만 완료, 운영 DB 미적용·별도 승인 대기. 기존 개인 뜻/SRS·발췌 경로 보존. N5 판본7f572327dc67893e9453246c 42과/309문항 객체 구조 감사 오류0, 어휘625/문형125/한자103은 시험 전범위 인증이 아님; 42과 학습·복습 분리와 긴 과 경로·누적 회상 보완을 다음 개정 우선으로 선정. 기존 발행 원고/PDF/새 음성 불변. 격리 clone /private/tmp/manabi-classroom-release-20260924, codex/classroom-release-20260917; PR #1321 draft, DB·실계정·운영 전환과 구분. docs/verification/viewer-correction-concurrency-20260924.md 및 n5-edition-audit-20260924.md.
 
 ### todo
