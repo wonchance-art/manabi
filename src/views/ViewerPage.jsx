@@ -15,6 +15,7 @@ import useLibraryActivity from '@/components/library/useLibraryActivity';
 import LibrarySaveButton from '@/components/library/LibrarySaveButton';
 import {materialActivity} from '@/lib/libraryActivity';
 import { passageOf, sourcePassageHref, passageLocation, correctPassageToken } from '@/lib/sourcePassage';
+import { correctViewerToken } from '@/lib/viewerTokenCorrection';
 import { takePassageAnalysis } from '@/lib/passageAnalysis';
 import { composerOf, shouldReadComposerOriginal } from '@/lib/materialComposer';
 import Link from 'next/link';
@@ -1332,27 +1333,21 @@ export default function ViewerPage() {
   const correctionScope = useRef(null);
   useEffect(() => { correctionScope.current = `${id}:${user?.id || ''}`; }, [id, user?.id]);
   const correctTokenMutation = useMutation({
-    mutationFn: async ({ tokenId, corrections, expectedMeaning }) => {
+    mutationFn: async ({ tokenId, corrections, expectedMeaning, expectedToken, expectedRaw }) => {
       if (!user?.id || material?.__local || user.id !== material?.owner_id) throw new Error('이 자료를 수정할 권한이 없습니다.');
       const currentJson = material?.processed_json;
       if (!currentJson?.dictionary?.[tokenId]) throw new Error('토큰을 찾을 수 없습니다.');
 
-      const beforeToken = currentJson.dictionary[tokenId];
+      const beforeToken = expectedToken || currentJson.dictionary[tokenId];
       if (expectedMeaning !== undefined && (beforeToken.meaning || '') !== expectedMeaning) throw new Error('뜻이 변경됐어요. 현재 뜻을 다시 확인해 주세요.');
-      const updatedDict = {
-        ...currentJson.dictionary,
-        [tokenId]: { ...beforeToken, ...corrections },
-      };
-      const updatedJson = { ...currentJson, dictionary: updatedDict };
-
       if (passageOf(material)) {
-        const record = await correctPassageToken(supabase, material, tokenId, corrections);
+        const record = await correctPassageToken(supabase, {
+          ...material, processed_json: { ...currentJson, dictionary: { ...currentJson.dictionary, [tokenId]: beforeToken } },
+        }, tokenId, corrections);
         queryClient.setQueryData(['material', id], record);
       } else {
-        const { data: saved, error } = await supabase.from('reading_materials')
-          .update({ processed_json: updatedJson }).eq('id', id).eq('owner_id', user.id).select('id').maybeSingle();
-        if (error) throw error;
-        if (!saved) throw new Error('저장이 반영되지 않았어요. 접근 권한을 다시 확인해 주세요.');
+        const record = await correctViewerToken(supabase, material, tokenId, corrections, beforeToken, expectedRaw);
+        queryClient.setQueryData(['material', id], record);
       }
 
       // 교정 히스토리 로그 (실패해도 수정 자체는 유지)
@@ -1383,7 +1378,7 @@ export default function ViewerPage() {
       setSelectedToken(prev => prev?.id === tokenId ? { ...prev, ...corrections } : prev);
       toast('수정이 저장됐어요!', 'success');
     },
-    onError: (err) => toast('수정 실패 — ' + friendlyToastMessage(err), 'error'),
+    onError: (err) => { if(err.code!=='VIEWER_TOKEN_CONFLICT') toast('수정 실패 — ' + friendlyToastMessage(err), 'error'); },
   });
 
 
@@ -2069,21 +2064,21 @@ export default function ViewerPage() {
         <TokenEditPanel
           key={selectedToken.id} // 토큰 전환 시 리마운트 — 이전 단어 입력값이 새 토큰에 붙는 것 차단(마감 ③)
           token={selectedToken}
+          correctionToken={material?.processed_json?.dictionary?.[selectedToken.id]}
+          correctionRaw={material?.raw_text}
           language={materialLang}
           dictEntry={editDictEntry}
           saving={correctTokenMutation.isPending}
           onSave={(corrections, opts) => {
             // 성공 시에만 닫는다 — 실패 시 패널·입력값 유지(재시도 가능). 전역 승격도
             // 자료 교정이 실제로 반영된 뒤에만(부분 성공 허용 계약 유지).
-            correctTokenMutation.mutate(
-              { tokenId: selectedToken.id, corrections },
-              {
-                onSuccess: () => {
-                  if (opts?.applyGlobal) promoteCorrection(selectedToken, corrections);
-                  setIsEditingToken(false);
-                },
-              }
-            );
+            return correctTokenMutation.mutateAsync({ tokenId: selectedToken.id, corrections,
+              expectedToken:opts?.expectedToken,expectedRaw:opts?.expectedRaw,
+            }).then(({materialId,ownerId,tokenId}) => {
+              if(correctionScope.current!==`${materialId}:${ownerId}`)return;
+              if (opts?.applyGlobal) promoteCorrection(selectedToken, corrections);
+              if(selectedTokenRef.current?.id===tokenId)setIsEditingToken(false);
+            });
           }}
           onClose={() => setIsEditingToken(false)}
         />
@@ -2103,6 +2098,7 @@ export default function ViewerPage() {
       {materialLang === 'Chinese' && selectedToken.id && !classMeaning && !isEditingToken && <ViewerMeaningChoices
         userId={user?.id} materialId={id} tokenId={selectedToken.id} word={headText} surface={selectedToken.text}
         meaning={selectedToken.meaning||''} pos={selectedToken.pos} sentence={ctxSentenceOf(selectedToken)}
+        correctionToken={material?.processed_json?.dictionary?.[selectedToken.id]} correctionRaw={material?.raw_text}
         dictEntry={editDictEntry} dictLoading={!dictFetched&&!dictError} dictError={dictError} onRetryDictionary={retryDictionary}
         canApply={canEditToken} saving={correctTokenMutation.isPending}
         onApply={(corrections,target)=>correctTokenMutation.mutateAsync({...target,corrections})}

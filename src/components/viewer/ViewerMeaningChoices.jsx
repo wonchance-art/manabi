@@ -2,6 +2,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {contextMeaningKey,dictionaryMeaningChoices,meaningChoiceCorrection,fetchContextMeaning} from '../../lib/viewerMeaningChoices';
+import TokenCorrectionConflict from './TokenCorrectionConflict';
 
 export default function ViewerMeaningChoices(props) {
   const queryKey=contextMeaningKey(props);
@@ -25,8 +26,10 @@ function MeaningPanel(props) {
   </details>;
 }
 
-function MeaningChoices({queryKey,userId,materialId,tokenId,word,surface,meaning,pos,sentence,dictEntry,dictLoading,dictError,onRetryDictionary,canApply,onApply,saving,onSaved}) {
+function MeaningChoices({queryKey,userId,materialId,tokenId,word,surface,meaning,pos,sentence,dictEntry,dictLoading,dictError,onRetryDictionary,canApply,onApply,saving,onSaved,correctionToken,correctionRaw}) {
+  const saveButton=useRef(null);
   const [choice,setChoice]=useState(null),[error,setError]=useState(''),[pending,setPending]=useState(false);
+  const [base,setBase]=useState(()=>({token:correctionToken,raw:correctionRaw})),[conflict,setConflict]=useState(null);
   const alive=useRef(true);
   useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
   // Queries are always manual, including refocus/reconnect and broad invalidation.
@@ -37,13 +40,18 @@ function MeaningChoices({queryKey,userId,materialId,tokenId,word,surface,meaning
   const busy=saving||pending;
   const pick=option=>{if(!busy){setChoice(option);setError('');}};
   const apply=async()=>{
-    if (!canApply || !correction || busy) return;
+    if (!canApply || !correction || busy || conflict) return;
     setPending(true);setError('');
     try {
-      await onApply(correction,{tokenId,expectedMeaning:meaning});
+      await onApply(correction,{tokenId,expectedMeaning:base.token?.meaning??meaning,expectedToken:base.token,expectedRaw:base.raw});
       if(alive.current)setChoice(null);
       onSaved();
-    } catch { if(alive.current)setError('저장하지 못했어요. 고른 뜻을 유지했으니 다시 시도해 주세요.'); }
+    } catch (err) {
+      if(alive.current){
+        if(err?.code==='VIEWER_TOKEN_CONFLICT')setConflict(err.latestToken);
+        else setError(err?.code==='VIEWER_CORRECTION_FAILED'?err.message:'저장하지 못했어요. 고른 뜻을 유지했으니 다시 시도해 주세요.');
+      }
+    }
     finally { if(alive.current)setPending(false); }
   };
   const option=(item,label)=>canApply?<button type="button" key={item.meaning+item.pos} className="reader-meaning__option"
@@ -69,7 +77,8 @@ function MeaningChoices({queryKey,userId,materialId,tokenId,word,surface,meaning
       {canApply?<div className="reader-meaning__footer">
         {correction?<p><strong>{choice.meaning}</strong>으로 바꿉니다. 이 자료의 선택한 표현에만 저장돼요.</p>:<p>뜻을 골라도 저장하기 전에는 바뀌지 않아요.</p>}
         {error&&<p role="alert">{error}</p>}
-        <button type="button" className="btn btn--primary btn--sm" disabled={!correction||busy} onClick={apply}>{busy?'저장 중…':'이 자료에만 저장'}</button>
+        <TokenCorrectionConflict token={conflict} onConfirm={()=>{setBase({...base,token:conflict});setConflict(null);setError('');requestAnimationFrame(()=>saveButton.current?.focus());}}/>
+        <button ref={saveButton} type="button" className="btn btn--primary btn--sm" disabled={!correction||busy||!!conflict} onClick={apply}>{busy?'저장 중…':'이 자료에만 저장'}</button>
       </div>:<p className="reader-meaning__caption">이 자료는 읽기 전용입니다. 뜻 후보를 비교할 수 있어요.</p>}
     </div>;
 }
