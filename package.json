@@ -37,6 +37,7 @@
     "qa:release": "node scripts/qa.mjs release",
     "qa:classroom": "node scripts/qa.mjs classroom",
     "qa:notes": "node scripts/qa.mjs notes",
+    "qa:reader-app": "node scripts/qa.mjs reader-app",
     "qa:reader": "node scripts/qa.mjs reader",
     "qa:sql": "node scripts/qa.mjs sql",
     "qa:browsers": "node node_modules/playwright-core/cli.js install chromium webkit",

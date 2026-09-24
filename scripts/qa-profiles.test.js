@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { profileSteps, validateEvidence, isRecordOnly, qaEnvironment, isLoadedEnvFile, canCollectAfterFailure } from './qa-profiles.mjs';
 
 describe('mandatory QA coverage and truthful evidence', () => {
-  const step = profileSteps('classroom').find(row => row.browser === 'webkit');
+  const step = profileSteps('classroom').find(row => row.id === 'classroom-webkit');
   const report = () => ({ engine: 'webkit', groups: [...step.groups], errors: [], cleanup: { status: 'completed' } });
   it('requires teacher/cloud/reuse/history/student coverage in both engines', () => {
-    expect(profileSteps('classroom').filter(s => s.browser)).toHaveLength(2);
+    expect(profileSteps('classroom').filter(s => s.id.startsWith('classroom-') && s.browser)).toHaveLength(2);
     expect(step.groups).toContain('classroom.student');
     expect(step.groups).toContain('board.history');
     expect(profileSteps('release').map(s => s.id)).toEqual(expect.arrayContaining(['notes-webkit', 'reference-chromium', 'word-layout-webkit', 'classroom-sql']));
@@ -21,7 +21,8 @@ describe('mandatory QA coverage and truthful evidence', () => {
     expect(() => validateEvidence(step, { ...report(), externalAI: ['provider'] }, 0)).toThrow('unexpected_provider');
   });
   it('does not let ambient flags omit checks or connect fixtures to account credentials', () => {
-    const env = qaEnvironment(step, 'http://localhost:3137', '/tmp/check', { PATH: '/bin', QA_CLASS_RELEASE: '0', QA_BOARD_CLOUD: '0', QA_PGLITE_MODULE: '/tmp/old', SUPABASE_SERVICE_ROLE_KEY: 'sensitive', NEXT_PUBLIC_SUPABASE_URL: 'remote', GEMINI_API_KEY: 'sensitive' });
+    const env = qaEnvironment(step, 'http://localhost:3137', '/tmp/check', { PATH: '/bin', QA_SCENARIO: 'reader', QA_CLASS_RELEASE: '0', QA_BOARD_CLOUD: '0', QA_PGLITE_MODULE: '/tmp/old', SUPABASE_SERVICE_ROLE_KEY: 'sensitive', NEXT_PUBLIC_SUPABASE_URL: 'remote', GEMINI_API_KEY: 'sensitive' });
+    expect(env.QA_SCENARIO).toBe('classroom');
     expect(env.QA_CLASS_RELEASE).toBe('1');
     expect(env.QA_BOARD_CLOUD).toBe('1');
     expect(env.QA_PGLITE_MODULE).toBeUndefined();
@@ -29,6 +30,22 @@ describe('mandatory QA coverage and truthful evidence', () => {
     expect(env.GEMINI_API_KEY).toBeUndefined();
     expect(env.NEXT_PUBLIC_SUPABASE_URL).toBe('https://e2e.supabase.co');
     expect(env.QA_TOUCH).toBe('1');
+  });
+  it('runs the real reader first without losing or duplicating classroom coverage', () => {
+    const app=profileSteps('reader-app');
+    expect(app.map(s=>s.browser)).toEqual(['chromium','webkit']);
+    for(const s of app){
+      expect(s.app).toBe(true);
+      expect(s.groups).toEqual(['reader.app','reader.app-meaning','reader.app-visual']);
+      expect(qaEnvironment(s,'http://localhost:3137','/tmp/check',{QA_SCENARIO:'classroom'}).QA_SCENARIO).toBe('reader');
+      expect(()=>validateEvidence(s,{engine:s.browser,groups:['reader.app','reader.app-visual'],errors:[],cleanup:{status:'completed'}},0)).toThrow('missing_group:reader.app-meaning');
+      expect(()=>validateEvidence(s,{engine:s.browser,scenario:'classroom',groups:s.groups,errors:[],cleanup:{status:'completed'}},0)).toThrow('wrong_scenario');
+    }
+    for(const profile of ['reader','classroom','release'])expect(profileSteps(profile).filter(s=>s.scenario==='reader')).toEqual(app);
+    const release=profileSteps('release'),ids=release.map(s=>s.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids.indexOf('reader-app-webkit')).toBeLessThan(ids.indexOf('classroom-chromium'));
+    expect(release).toHaveLength(14);
   });
   it('keeps curriculum, UI instructions, executable content and unknown changes under full CI', () => {
     expect(isRecordOnly(['docs/ai-tasks.md', 'docs/verification/release.md'])).toBe(true);

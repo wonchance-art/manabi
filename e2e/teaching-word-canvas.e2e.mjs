@@ -1,4 +1,5 @@
 import {verifyPersonalReaderDesign} from './viewer-manabi-design-checks.mjs';
+import {verifyPersonalReaderMeaning} from './viewer-meaning-save-checks.mjs';
 import {captureQuality,assertQuality} from './visual-quality.mjs';
 import {installBoardCloudFixture,verifyBoardCloud} from './teaching-board-cloud-fixture.mjs';
 import {boardMenus,verifyBoardMenus} from './teaching-board-menu-checks.mjs';
@@ -9,6 +10,8 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const {PGlite}=await import(process.env.QA_PGLITE_MODULE||'@electric-sql/pglite');
 const base=process.env.QA_BASE||'http://127.0.0.1:3108',out=process.env.QA_OUT||'/private/tmp/manabi-board-qa';fs.mkdirSync(out,{recursive:true});
+const scenario=process.env.QA_SCENARIO||'classroom';
+assert(['classroom','reader'].includes(scenario),'unknown app QA scenario');
 const db=new PGlite();const uid='00000000-0000-4000-8000-000000000077',day='2026-09-10';
 await db.exec(`CREATE ROLE authenticated;CREATE ROLE anon;CREATE ROLE service_role BYPASSRLS;CREATE SCHEMA auth;CREATE TABLE auth.users(id uuid primary key);
 CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
@@ -48,7 +51,7 @@ const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*'
 let failure=false,lostResponse=false,analysisDelay=0,analysisFail=false,emptyMeaning=false;
 const analyzedLines=[];
 const tabletState={dictionaryDelay:0,lookups:0};
-const report={engine,touch,groups:[],checks:[],errors:[],screens:[],failedRequests:[],expectedTransport:[],readingPrefetch:[]},writes=[];
+const report={engine,touch,scenario,groups:[],checks:[],errors:[],screens:[],failedRequests:[],expectedTransport:[],readingPrefetch:[]},writes=[];
 let revisionConflicts=0;
 // WebKit routes local Blob images too; allow this app's generated thumbnails.
 await context.route('**/*',r=>{const url=r.request().url();return url.startsWith(base)||url.startsWith(`blob:${base}/`)?r.continue():r.abort();});
@@ -149,6 +152,12 @@ await context.route('**/api/classroom/lookup',async route=>{
  return route.fulfill({json:{text,language,reading:text==='复习'?'fù xí':'liàn xí',source:'ai',senses:[{meaning:text==='复习'?'복습하다':'연습하다',pos:'동사'},{meaning:'연습',pos:'명사'}]}});
 });
 try {
+ if(scenario==='reader'){
+  await verifyPersonalReaderDesign({page,saveScreen,waitFor,check,db,uid,base,activate});report.groups.push('reader.app');
+  assertQuality(report,['reader-inspector-phone','reader-settings-phone','reader-focus-phone']);report.groups.push('reader.app-visual');
+  await verifyPersonalReaderMeaning({page,context,saveScreen,waitFor,check,db,uid,base,activate,writes,cors});report.groups.push('reader.app-meaning');
+  assert.deepEqual(report.readingPrefetch,[],'personal reading does not prefetch destinations');
+ }else{
  await page.goto(base+`/viewer/10?class=fixture-class&day=${day}&board=1`);
  const board=page.getByRole('region',{name:'선생님 설명판'});await board.locator('.excalidraw canvas').first().waitFor();
  const menus=boardMenus(page,activate),hud=menus.hud;
@@ -290,15 +299,17 @@ try {
  }
  check('home and team links navigate on click and browser back restores every board page');
  assert.deepEqual(report.readingPrefetch,[],'reading and board menus do not prefetch home, team or study pages');check('reading links request destinations only when used');
- await verifyPersonalReaderDesign({page,saveScreen,waitFor,check,db,uid,base,activate});
  if(process.env.QA_CLASS_RELEASE==='1'){
   // Stop teacher background requests before switching the embedded DB role.
   // The student gets a separate browser context, never the teacher's cookies.
+  await page.waitForTimeout(2600);await page.waitForLoadState('networkidle');
   await page.goto('about:blank');
   await fs.promises.writeFile(out+'/teacher-checkpoint.tar',Buffer.from(await (await db.dumpDataDir('none')).arrayBuffer()));
   await verifyClassRelease({browser,db,uid,day,base,out,report,check});report.groups.push('classroom.student');
  }
- assertQuality(report,['board-multiword-desktop','board-lookup-phone','reader-inspector-phone','reader-settings-phone','reader-focus-phone']);report.groups.push('classroom.visual');
- assert.equal(report.errors.length,0,report.errors.join('\n'));check('no browser runtime errors');report.groups.push('board.core');if(cloud?.state.historyMetrics)report.historyMetrics=cloud.state.historyMetrics;
+ assertQuality(report,['board-multiword-desktop','board-lookup-phone']);report.groups.push('classroom.visual');
+ report.groups.push('board.core');if(cloud?.state.historyMetrics)report.historyMetrics=cloud.state.historyMetrics;
+ }
+ assert.equal(report.errors.length,0,report.errors.join('\n'));check('no browser runtime errors');
 } catch(error){report.failure=error.stack;await saveScreen('failure');console.error(await page.locator('body').innerText());throw error;}
 finally{await finishQa({browser,db,context,report,out});}

@@ -14,7 +14,7 @@ let resume, collectAll = false;
 while (args.length) {
   const flag = args.shift();
   if (flag === '--collect-all' && !collectAll) { collectAll = true;continue; }
-  if (flag !== '--resume' || resume || !args[0]) throw Error('usage: node scripts/qa.mjs <build|sql|reader|notes|classroom|release> [--collect-all] [--resume .qa/runs/.../result.json]');
+  if (flag !== '--resume' || resume || !args[0]) throw Error('usage: node scripts/qa.mjs <build|sql|reader-app|reader|notes|classroom|release> [--collect-all] [--resume .qa/runs/.../result.json]');
   resume = args.shift();
 }
 if (Number(process.versions.node.split('.')[0]) !== 24) throw Error('web_qa_requires_node24');

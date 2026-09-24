@@ -11,13 +11,17 @@ const classroom = browserSteps('classroom', 'e2e/teaching-word-canvas.e2e.mjs', 
   'board.core', 'board.cloud', 'board.fragments', 'board.reuse', 'board.history', 'classroom.student', 'classroom.visual',
 ], true);
 const notes = browserSteps('notes', 'e2e/study-notes.e2e.mjs', ['notes.collection', 'notes.visual'], true);
+// Reuse the intercepted app/database harness, but stop before any classroom UI.
+const readerApp = browserSteps('reader-app', 'e2e/teaching-word-canvas.e2e.mjs',
+  ['reader.app', 'reader.app-meaning', 'reader.app-visual'], true).map(step => ({ ...step, scenario: 'reader' }));
 const reader = [
   ...browserSteps('word-layout', 'e2e/teaching-word-quality.e2e.mjs', ['reader.layout', 'reader.visual']),
   ...browserSteps('reference', 'e2e/reference-scope.e2e.mjs', ['reader.reference']),
   ...browserSteps('meaning-choices', 'e2e/meaning-choices.e2e.mjs', ['reader.meaning']),
 ];
-export const profiles = Object.freeze({ sql, classroom: [...sql, ...classroom], notes, reader,
-  release: [...sql, ...classroom, ...notes, ...reader] });
+export const profiles = Object.freeze({ sql, classroom: [...sql, ...readerApp, ...classroom], notes,
+  'reader-app': readerApp, reader: [...readerApp, ...reader],
+  release: [...sql, ...readerApp, ...reader, ...classroom, ...notes] });
 
 export function profileSteps(name) {
   if (!Object.hasOwn(profiles, name)) throw Error(`unknown_profile:${name}`);
@@ -30,6 +34,7 @@ export function validateEvidence(step, report, exitCode) {
   if (report.cleanup?.status !== 'completed') throw Error(`cleanup_incomplete:${step.id}`);
   for (const group of step.groups) if (!report.groups?.includes(group)) throw Error(`missing_group:${group}`);
   if (step.browser && report.engine !== step.browser) throw Error(`wrong_browser:${step.id}`);
+  if (step.scenario && report.scenario !== step.scenario) throw Error(`wrong_scenario:${step.id}`);
   if (report.externalAI?.length) throw Error(`unexpected_provider_request:${step.id}`);
   return true;
 }
@@ -54,6 +59,7 @@ export function qaEnvironment(step, base, out, inherited = process.env) {
   const env = Object.fromEntries(Object.entries(inherited).filter(([key]) => allowed.has(key)));
   return { ...env, QA_BASE: base, QA_OUT: out, QA_BROWSER: step.browser || 'chromium',
     QA_TOUCH: step.browser === 'webkit' ? '1' : '0', QA_TRACE: '1', QA_LOGIN: '1',
+    QA_SCENARIO: step.scenario || 'classroom',
     QA_BOARD_CLOUD: '1', QA_BOARD_FRAGMENTS: '1', QA_BOARD_REUSE: '1', QA_BOARD_HISTORY: '1', QA_CLASS_RELEASE: '1',
     NEXT_PUBLIC_SUPABASE_URL: 'https://e2e.supabase.co', NEXT_PUBLIC_SUPABASE_ANON_KEY: 'e2e-anon-key', NEXT_PUBLIC_SITE_URL: base,
     NODE_OPTIONS: '--max-old-space-size=6144',
