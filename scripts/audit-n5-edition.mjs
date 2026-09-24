@@ -20,6 +20,19 @@ function walk(value,path,visit){
 }
 const nonempty=value=>typeof value==='string'&&!!value.trim();
 const issue=(kind,path,detail)=>issues.push({kind,path,detail});
+const bundledAudio=Object.keys(bundle.assets).filter(key=>key.startsWith('audio/'));
+let inheritedAudio=[];
+const inherited=bundle.artifactManifest.inheritedMedia;
+if(inherited){
+  if(!/^[a-f0-9]{24}$/.test(inherited.editionId||''))issue('invalid-media-edition','artifactManifest.inheritedMedia',inherited.editionId);
+  else{
+    try{
+      const origin=JSON.parse(fs.readFileSync(new URL(`${inherited.editionId}/bundle.json`,root),'utf8'));
+      if(origin.artifactManifest.bundleHash!==inherited.bundleHash)issue('changed-media-edition','artifactManifest.inheritedMedia',inherited.editionId);
+      else if(inherited.paths?.includes('audio/'))inheritedAudio=Object.keys(origin.assets).filter(key=>key.startsWith('audio/'));
+    }catch{issue('missing-media-edition','artifactManifest.inheritedMedia',inherited.editionId);}
+  }
+}
 walk(book,'manuscript',(node,path)=>{
   const localLesson=path.match(/^manuscript\.lessons\[(\d+)\]/);
   const target=localLesson&&/^study\d+$/.test(node.target)
@@ -69,7 +82,8 @@ const report={edition,bundleSha256:crypto.createHash('sha256').update(bytes).dig
     promptAnswerRationaleObjects:nodes.reduce((sum,row)=>sum+row.questions,0),
     coreListeningReadingChecks:nodes.filter(row=>row.format==='standard').length*2,
     coreWritingScaffolds:nodes.filter(row=>row.format==='standard').length,
-    preservedAudioFiles:Object.keys(bundle.assets).filter(key=>key.startsWith('audio/')).length,
+    preservedAudioFiles:new Set([...bundledAudio,...inheritedAudio]).size,
+    bundledAudioFiles:bundledAudio.length,inheritedAudioFiles:inheritedAudio.length,
     explicitAudioDisabledLessons:nodes.filter(row=>row.explicitAudioDisabled).map(row=>row.number)},
   issues,lessons:nodes};
 console.log(JSON.stringify(report,null,2));

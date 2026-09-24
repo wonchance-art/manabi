@@ -88,4 +88,9 @@ describe('N5 staged study revision',()=>{
    expect(JSON.parse(fs.readFileSync(path.join(root,'index.json'),'utf8')).current).toBe(OLD);
   }finally{fs.rmSync(dir,{recursive:true,force:true});}
  });
+ it('counts reused audio separately without reporting that the revision deleted it',()=>{
+  const audit=JSON.parse(execFileSync(process.execPath,['scripts/audit-n5-edition.mjs',NEXT],{encoding:'utf8'}));
+  expect(audit.issues).toEqual([]);expect(audit.summary.bundledAudioFiles).toBe(0);
+  expect(audit.summary.inheritedAudioFiles).toBe(147);expect(audit.summary.preservedAudioFiles).toBe(147);
+ });
 });

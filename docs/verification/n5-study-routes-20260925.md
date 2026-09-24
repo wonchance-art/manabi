@@ -20,7 +20,7 @@
 | --- | --- |
 | 제작 재현/보존 | Python 표준 라이브러리 제작 결과 4파일 byte-identical. 원본 bundle SHA256 `ac5f4355474f88012f896d17e6925715f10140ed682092236b4d1bc9ad79bc1e` 유지. 현재 후보 포인터도 원본 유지 |
 | 구조 감사 | 42과/493항목/309문항, 오류 0. 모든 기존 source와 data-save 키 유지. 정답/근거 검사와 경로 존재 확인 |
-| 관련 단위 | 5파일/36검사 PASS. 원본 및 새 판본에서 표현 출처가 자기 판본을 가리킴 |
+| 관련 단위 | 5파일/37검사 PASS. 원본 및 새 판본에서 표현 출처가 자기 판본을 가리킴 |
 | 전체 단위 | 432파일, 4,614 PASS / 기존 1 SKIP. 로컬 Node24, 동시 실행 2개로 제한 |
 | 앱 빌드 | Next 제품 빌드 PASS. 첫 빌드는 기본 heap 한도로 중단되어 저장소 QA와 같은 6GB로 재실행. 기존 lint warning은 유지 |
 | 실제 앱 + 합성 계정 | Chromium/WebKit 각 9흐름, 12레이아웃 PASS. 1440/390/320에서 네 과 검수. 콘솔·pageerror 0 |
@@ -55,3 +55,15 @@
 확인하고 필요한 것만 보완한다. PDF·새 음성·실제 학습자 완료 시간 조사는 별도 범위다.
 
 원격 PR/CI/미리보기와 최종 closeout은 이 문서의 후속 기록 및 #150 exact-head 인계가 정본이다.
+
+
+## 검토 단위 고정
+
+- PR #1324, base `codex/classroom-release-20260917` (#1321), draft.
+- 실행 코드/출력본: `e713f80f21e453d1d06964ce2db556bdc331c199`.
+- 별도 Preview: `https://manabi-8xrjecasn-wonchance-arts-projects.vercel.app`,
+  배포 ID `dpl_4GWYaLPfTbDJbFisVvEQ2tJsDjFW`. 이 주소의 완료 상태와 최종 커밋 CI는 #150 인계 및 closeout에서 확인한다.
+- 후속 수정은 감사기의 상속 음성 147개 집계와 회귀 검사·검수 기록/보드뿐이다.
+  기존 음성을 중복 파일 0개라고 보고하던 것을 `bundled=0, inherited=147, preserved=147`로 구분했다.
+  앱 코드·새 판본 4파일·서체·읽기 화면은 실행 커밋과 같다. 최종 전체 검사 수치는 원격 CI 정본으로 확인한다.
+- 고정 QA/운영 alias, 운영 DB와 기존 발행 후보 포인터는 그대로다. 발행·병합하지 않았다.
