@@ -1,10 +1,12 @@
 'use client';
+import {classVocabularyRequest} from '../../lib/classDirectStudy';
 import { useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../lib/AuthContext';
 import './learning.css';
 
 export async function saveContext(payload) {
+  if(payload.source?.kind==='class')return classVocabularyRequest(payload.source.team,{payload});
   const response = await fetch('/api/learning/vocabulary', { method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload) });
   const result = await response.json();
   if (!response.ok) throw Object.assign(new Error(result.error || '저장하지 못했어요.'), result);

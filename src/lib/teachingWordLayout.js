@@ -11,7 +11,8 @@ export function wordSegments(text, reading, language) {
   // The legacy ruby fallback may repeat the whole reading over several runs.
   // Keep an uncertain reading over the whole expression instead of inventing alignment.
   if(parts.filter(part=>part.reading===reading).length>1 ||
-      (language==='Chinese' && !parts.every(part=>part.pinyin))) return [{kanji:text,reading}];
+      (language==='Chinese' && !parts.every(part=>part.pinyin)) ||
+      (language==='Japanese' && han.test(text) && parts.map(part=>part.reading??part.plain).join('')!==reading)) return [{kanji:text,reading}];
   return parts;
 }
 const units = text => [...text].reduce((n,ch)=>n+(/[\u0020-\u007e]/.test(ch)?(/[il .,'!]/.test(ch)?.3:.6):1),0);
@@ -24,6 +25,20 @@ function wrap(text, width, size, measure) {
     rows.push(row);
   }
   return rows;
+}
+
+// Prefer word boundaries for Korean/Latin glosses in the narrow right column.
+// Keep the character fallback for a single word wider than the available space.
+// Retain whitespace: native canvas editing reconstructs the original meaning.
+function wrapMeaning(text, width, size, measure) {
+  return String(text).split('\n').flatMap(paragraph => {
+    const rows=[];let row='';
+    for (const token of paragraph.match(/\s+|\S+/gu)||[]) {
+      if(row && !/^\s/u.test(token) && measure(token,size)<=width && measure(row+token,size)>width){rows.push(row);row='';}
+      for(const ch of token){if(row&&measure(row+ch,size)>width){rows.push(row);row='';}row+=ch;}
+    }
+    rows.push(row);return rows;
+  });
 }
 
 // One layout model for native editable canvas elements and DOM word previews.
@@ -98,7 +113,7 @@ export function teachingWordLayout(value, {fontSize=42,maxWidth=620,measure=meas
   }
   const remaining=Math.max(meaningSize*3,maxWidth-leftWidth-gap);
   const meaningWidth=Math.min(remaining,Math.max(meaningSize*2,measure(meaning||' ',meaningSize)));
-  const meaningLines=wrap(meaning,meaningWidth,meaningSize,measure);
+  const meaningLines=wrapMeaning(meaning,meaningWidth,meaningSize,measure);
   const meaningTop=readBand+(size*1.25-meaningSize*1.25)/2;
   meaningLines.forEach((line,index)=>add('meaning',line,leftWidth+gap,meaningTop+index*meaningSize*1.4,meaningWidth,meaningSize,{index,visible:showMeaning,align:'left'}));
   const width=leftWidth+(meaning||!compact?gap+meaningWidth:0), height=Math.max(y+rowHeight,meaningTop+meaningLines.length*meaningSize*1.4);

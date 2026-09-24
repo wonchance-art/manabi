@@ -79,3 +79,21 @@
 .note-recognized>small {font-size:11px;color:var(--book-main);}
 .note-recognized>p {font-size:12px;color:var(--muted);overflow-wrap:anywhere;}
 .note-recognition :focus-visible {outline:2px solid var(--book-main);outline-offset:2px;}
+.note-review-filters {display:flex;gap:6px;padding:0 24px 12px;flex-wrap:wrap;}
+.note-review-filters button {flex:1;white-space:nowrap;font-size:12px;padding:7px 8px;}
+.note-review-filters button[aria-pressed="true"] {background:var(--ink);color:var(--sheet);border-color:var(--ink);}
+.note-review-filters span {font-variant-numeric:tabular-nums;margin-left:4px;}
+.note-review .note-continue {border:0;color:var(--book-main);font-size:12px;}
+.note-saved-word {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center;overflow-wrap:anywhere;}
+.note-saved-word strong {display:block;font-size:24px;line-height:1.6;}
+.note-saved-word small {color:var(--book-main);font-size:12px;}
+.note-saved-word p {font-size:14px;line-height:1.7;}
+.note-candidate-saved details {font-size:12px;color:var(--muted);overflow-wrap:anywhere;}
+.note-candidate-saved summary {cursor:pointer;min-height:44px;display:flex;align-items:center;}
+@container note-review (max-width:380px) {
+  .note-review>header {padding:16px 16px 8px;}
+  .note-review-intro {padding:0 16px;margin-bottom:10px;font-size:12px;}
+  .note-review-filters,.note-review-actions {padding-inline:16px;}
+  .note-review-scroll {padding-inline:16px;}
+  .note-review>footer {padding:10px 16px max(10px,env(safe-area-inset-bottom));gap:4px;}
+}

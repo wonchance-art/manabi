@@ -8,6 +8,7 @@ import {langNameKo} from '@/lib/constants';
 import {pinnedMaterialIds} from '@/lib/offlineCache';
 import {fetchLibraryPage,LIBRARY_LANGUAGES,libraryFilters,libraryNarrowed,libraryKey,libraryError,libraryComposerHref,removeFromCollection} from '@/lib/personalLibrary';
 import {libraryResume} from '@/lib/libraryActivity';
+import {fetchNoteCollectionProgress} from '@/lib/noteCollection';
 import {safeLibraryReturn} from '@/lib/libraryReturn';
 import LibraryReaderLink from '@/components/web/LibraryReaderLink';
 import LibraryRow,{LibraryCover} from './LibraryRow';
@@ -50,6 +51,8 @@ export default function LibraryShelf({user}){
   queryFn:({pageParam})=>fetchLibraryPage(supabase,filters,pageParam,{pinned:pinned.data}),
   getNextPageParam:(last,pages)=>{const length=pages.reduce((n,p)=>n+p.items.length,0);return length<last.total?length:undefined;},staleTime:0});
  const items=list.data?.pages.flatMap(p=>p.items)||[],total=list.data?.pages[0]?.total||0;
+ const noteIds=items.filter(row=>row.owned&&row.is_note&&row.target_kind==='material').map(row=>String(row.material_id||row.target_id)).sort();
+ const noteProgress=useQuery({queryKey:['library-note-progress',user.id,noteIds],enabled:noteIds.length>0,queryFn:()=>fetchNoteCollectionProgress(supabase,user.id,noteIds),staleTime:0});
  useEffect(()=>setSearch(filters.query),[filters.query]);
  useEffect(()=>{if(items.length<filters.shown&&list.hasNextPage&&!list.isFetching&&!list.isError)list.fetchNextPage();},[filters.shown,items.length,list.hasNextPage,list.isFetching,list.isError,list.fetchNextPage]);
  function change(patch){const next=new URLSearchParams(params.toString());if(!Object.hasOwn(patch,'shown'))next.delete('shown');next.delete('restoreY');for(const [k,v]of Object.entries(patch)){if(v)next.set(k,String(v));else next.delete(k);}router.replace(`/materials${next.size?`?${next}`:''}`,{scroll:false});}
@@ -73,7 +76,8 @@ export default function LibraryShelf({user}){
    {list.isPending&&<div className="shelf-loading" role="status">자료를 불러오고 있어요…<i/><i/><i/></div>}
    <QueryFailure query={pinned} label="이 기기의 보관 자료"/>
    {list.isError&&<QueryFailure query={list} label="자료 목록"/>}
-   {!!items.length&&<ul className="shelf-rows">{items.map(row=><LibraryRow key={libraryKey(row)} row={row} ownerId={user.id} onMenu={value=>{setMenu(value);setError('');}}/>)}</ul>}
+   {noteIds.length>0&&<QueryFailure query={noteProgress} label="노트 정리 상태"/>}
+   {!!items.length&&<ul className="shelf-rows">{items.map(row=><LibraryRow key={libraryKey(row)} row={row} ownerId={user.id} noteProgress={noteProgress.data?.[String(row.material_id||row.target_id)]} onMenu={value=>{setMenu(value);setError('');}}/>)}</ul>}
    {list.isSuccess&&!items.length&&<div className="shelf-empty"><span className="shelf-empty-mark" aria-hidden="true">m.</span><h3>{narrowed?'이 조건의 자료가 없어요.':'아직 비어 있는 나만의 책장.'}</h3><p>{narrowed?'조건을 줄이거나 이곳에 새 자료를 담아 보세요.':'읽고 싶은 글, 파일, 링크를 한곳에 모아 두세요.'}</p><Link className="manabi-button" href={libraryComposerHref(returnTo,filters.collection)}>{narrowed?'새 자료':'첫 자료 만들기'} ＋</Link>{!narrowed&&<Link className="manabi-link" href="/discover">읽을거리 둘러보기 ↗</Link>}</div>}
    {list.hasNextPage&&<button className="shelf-load-more" disabled={list.isFetchingNextPage} onClick={()=>{change({shown:items.length+20});list.fetchNextPage();}}>{list.isFetchingNextPage?'불러오는 중…':`더 보기 · ${total-items.length}개 남음`} ↓</button>}
    {!!items.length&&!list.hasNextPage&&<p className="shelf-list-end">{total}개 자료를 모아 두었어요.</p>}

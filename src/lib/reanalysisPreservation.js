@@ -71,6 +71,40 @@ export async function replaceViewerAnalysis(client, material, rawText, json, att
   return data.material;
 }
 
+// 수업에서 직접 확정한 전체 표현이 정확히 한 토큰으로 분석됐을 때만 연결한다.
+// 문장 뜻을 구성 단어에 붙이거나, 같은 철자의 다른 줄로 옮기지 않는다.
+// 이 값은 수업 원본의 기준값이므로 개인 교정 표식으로 기록하지 않는다.
+export function preserveClassEntryValues(rawText, json, changedMeanings = new Set()) {
+  const meta = json?.metadata || {}, lines = String(rawText || '').split('\n');
+  if (!Array.isArray(meta.classEntries)) return json;
+  const byLine = new Map();
+  for (const id of json.sequence || []) {
+    const token = json.dictionary?.[id];
+    if (!token || token.pos === '개행') continue;
+    const line = tokenLine(id);
+    if (!byLine.has(line)) byLine.set(line, []);
+    byLine.get(line).push(id);
+  }
+  const counts = new Map();
+  for (const entry of meta.classEntries) counts.set(entry?.idx, (counts.get(entry?.idx) || 0) + 1);
+  const dictionary = { ...json.dictionary };
+  for (const entry of meta.classEntries) {
+    const ids = byLine.get(entry?.idx);
+    if (!entry?.id || !Number.isInteger(entry.idx) || counts.get(entry.idx) !== 1 ||
+        typeof entry.text !== 'string' || lines[entry.idx]?.trim() !== entry.text || ids?.length !== 1) continue;
+    const id = ids[0], token = dictionary[id];
+    if (token.text !== entry.text || token.failed || ['기호', '미분석'].includes(token.pos)) continue;
+    const personal = meta.viewerCorrections?.[id] || [];
+    const meaning = meta.classMeanings?.[entry.id], reading = meta.classReadings?.[entry.id];
+    const patch = {};
+    if ((!personal.includes('meaning') || changedMeanings.has(entry.id)) && meaning?.text === entry.text && typeof meaning.meaning === 'string') patch.meaning = meaning.meaning;
+    if (!personal.includes('furigana') && !personal.includes('reading') &&
+        ['Japanese', 'Chinese'].includes(meta.language) && typeof reading === 'string') patch.furigana = reading;
+    dictionary[id] = { ...token, ...patch };
+  }
+  return { ...json, dictionary };
+}
+
 export async function runPreservedReanalysis(client, material, signal, analyze, options = {}, onProgress) {
   const rawText = options.rawTextOverride ?? material.raw_text;
   if (!rawText?.trim()) throw new Error('원본 텍스트가 없습니다.');
@@ -117,7 +151,9 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
   checkAbort();
   if (selected?.length) result = mergeReanalysisLines(rawText, original, result, selected);
   if (!completeAnalysis(result, rawText)) throw new Error('새 분석을 완료하지 못했어요. 기존 원문과 분석은 그대로 유지됩니다.');
-  const json = preserveReanalysisTokens(material, rawText, { ...result, metadata }, corrections || []);
+  const preserved = preserveReanalysisTokens(material, rawText, { ...result, metadata }, corrections || []);
+  // 원문 편집 때는 옛 줄 앵커를 다른 출현에 붙이지 않는다. 일반 분석·재시도에만 적용한다.
+  const json = rawText === material.raw_text ? preserveClassEntryValues(rawText, preserved) : preserved;
   if (!completeAnalysis(json, rawText)) throw new Error('분석 연결을 확인하지 못했어요. 기존 원문과 분석은 그대로 유지됩니다.');
   checkAbort();
   options.onCommitting?.();

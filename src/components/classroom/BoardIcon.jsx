@@ -1,4 +1,6 @@
 const paths={
+ cloudAlert:'M7 18H6a4 4 0 0 1-1-8 7 7 0 0 1 13-2 5 5 0 0 1 0 10h-1m-5-7v4m0 3v.1',
+ cloud:'M7 18H6a4 4 0 0 1-1-8 7 7 0 0 1 13-2 5 5 0 0 1 0 10h-1m-8-4 3 3 5-5',history:'M3 11a9 9 0 1 1 2 7M3 4v7h7m2-5v6l4 2',
  row:'M2 5h7v14H2zM15 5h7v14h-7z',column:'M5 2h14v7H5zM5 15h14v7H5z',hun:'M5 4h14M12 4v11m-5-6 5 6 5-6M5 20h14',
  undo:'M9 5 3 11l6 6M3 11h11a6 6 0 0 1 6 6',redo:'m15 5 6 6-6 6m6-6H10a6 6 0 0 0-6 6',
  menu:'M4 5h16M4 12h16M4 19h16',

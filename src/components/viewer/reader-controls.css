@@ -31,6 +31,15 @@
 .viewer-layout .viewer-aa,.viewer-pace-toggle {min-height:44px;min-width:44px;border:1px solid var(--reader-line);border-radius:10px;background:var(--reader-paper);color:var(--reader-ink);padding:8px 12px;cursor:pointer;font-size:.9rem;}
 .viewer-layout .viewer-aa:hover {background:var(--reader-selected);}
 .viewer-layout .reader-area .word-token .surface {text-shadow:none;color:inherit;}
+/* The sentence hit area extends into the left gutter. Keep keyboard focus
+   around its visible marker so the viewport edge cannot cut the outline. */
+.viewer-layout .line-pick {display:inline-flex;width:24px;margin-left:-30px;}
+.viewer-layout .line-pick:focus-visible {outline:none;opacity:1;}
+.viewer-layout .line-pick:focus-visible::before {outline:2px solid var(--reader-accent);outline-offset:3px;}
+@media (hover:none) {
+  .viewer-layout .line-pick {margin-left:-9px;}
+  .viewer-layout .line-pick::before {left:9px;}
+}
 /* Selection adds a quiet neutral wash; learning states keep their own hues. */
 .viewer-layout :is(.reader-area,.reader-settings__preview) {--picked-bg:color-mix(in srgb,var(--reader-ink) 7%,var(--reader-paper));}
 .viewer-layout .reader-area--focus .word-token:not(.word-token--picked):not([data-selected="true"]) {opacity:.28;color:var(--reader-ink);}
@@ -232,6 +241,26 @@
 .reader-japanese__note {margin:2px 0 0;font-size:.73rem;color:var(--reader-muted);}
 .reader-japanese__lookup {font-size:.75rem;color:var(--reader-muted);}
 .reader-japanese__lookup button {padding:0;border:0;background:transparent;color:var(--reader-accent);cursor:pointer;}
+
+.reader-meaning {margin:0 0 12px;border-top:1px solid var(--reader-line);font-size:.85rem;line-height:1.6;}
+.reader-meaning>summary {display:flex;align-items:center;min-height:44px;list-style:none;cursor:pointer;font-weight:500;}
+.reader-meaning>summary::-webkit-details-marker {display:none;}
+.reader-meaning>summary::after {content:'+';margin-left:auto;color:var(--reader-muted);}
+.reader-meaning[open]>summary::after {content:'−';}
+.reader-meaning__body {display:grid;gap:8px;min-width:0;padding-bottom:12px;}
+.reader-meaning__body p {margin:0;overflow-wrap:anywhere;}
+.reader-meaning__caption,.reader-meaning small {color:var(--reader-muted);font-size:.73rem;}
+.reader-meaning__option {display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;min-height:44px;text-align:left;padding:8px 10px;border:1px solid var(--reader-line);border-radius:3px;background:var(--reader-paper);color:var(--reader-ink);cursor:pointer;overflow-wrap:anywhere;font:inherit;}
+.reader-meaning__option[aria-pressed="true"] {border-color:var(--reader-accent);background:var(--reader-selected);box-shadow:inset 3px 0 var(--reader-accent);}
+.reader-meaning__option:disabled {cursor:wait;}
+.reader-meaning__context {border-top:1px solid var(--reader-line);padding-top:8px;}
+.reader-meaning__context blockquote {margin:0 0 6px;padding:0;font-size:.85rem;max-height:7em;overflow:auto;overflow-wrap:anywhere;}
+.reader-meaning__result {display:grid;gap:6px;margin-top:8px;}
+.reader-meaning__result>p {color:var(--reader-muted);font-size:.78rem;}
+.reader-meaning__footer {display:grid;gap:8px;border-top:1px solid var(--reader-line);padding-top:8px;font-size:.75rem;}
+.reader-meaning__footer .btn {justify-self:start;min-height:44px;background:var(--reader-accent);color:var(--reader-paper);border-color:var(--reader-accent);border-radius:3px;box-shadow:none;}
+.reader-meaning :is(button,summary):focus-visible {outline:2px solid var(--reader-accent);outline-offset:3px;}
+.reader-meaning button[aria-disabled="true"],.reader-japanese button[aria-disabled="true"] {opacity:.6;cursor:default;}
 
 /* Reading-room chrome follows the home page's paper, ink and editorial rules.
    Body typography, annotation settings and learning-state colors remain reader owned. */

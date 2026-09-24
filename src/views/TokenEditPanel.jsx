@@ -4,10 +4,14 @@
 // 기존 correctTokenMutation 경로 재사용). 뜻 칩에 pos 태그가 있으면 품사도 함께 교정돼
 // 품사 표시(TokenPosLabel)와 어긋나지 않는다. 중국어 1자 다음자는 pinyin-pro(multiple)로
 // 발음 후보를 보강한다(클라 지연 로드 — 편집을 열 때만).
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { buildMeaningOptions, buildReadingOptions, buildTokenCorrections } from '../lib/tokenEditOptions';
+import TokenCorrectionConflict from '../components/viewer/TokenCorrectionConflict';
 
-export default function TokenEditPanel({ token, language, dictEntry, saving, onSave, onClose }) {
+export default function TokenEditPanel({ token, language, dictEntry, saving, onSave, onClose, correctionToken, correctionRaw }) {
+  const saveButton=useRef(null);
+  const [base,setBase]=useState(()=>({token:correctionToken,raw:correctionRaw}));
+  const [conflict,setConflict]=useState(null),[error,setError]=useState(''),[pendingSave,setPendingSave]=useState(false);
   const [meaning, setMeaning] = useState(token?.meaning || '');
   const [meaningPos, setMeaningPos] = useState(null); // 칩 선택 시 동반 교정할 pos
   const [reading, setReading] = useState(token?.furigana || '');
@@ -41,9 +45,15 @@ export default function TokenEditPanel({ token, language, dictEntry, saving, onS
   // 빈 뜻 무시 규칙 포함(마감 ③) — 저장 버튼 활성 판정도 같은 함수로 정합.
   const pending = buildTokenCorrections(token, { meaning, reading, meaningPos });
 
-  const save = () => {
+  const save = async () => {
+    if(saving||pendingSave||conflict)return;
     if (!pending) { onClose(); return; }
-    onSave(pending, { applyGlobal });
+    setPendingSave(true);setError('');
+    try { await onSave(pending, { applyGlobal, expectedToken:base.token, expectedRaw:base.raw }); }
+    catch(err){
+      if(err?.code==='VIEWER_TOKEN_CONFLICT')setConflict(err.latestToken);
+      else setError(err?.code==='VIEWER_CORRECTION_FAILED'?err.message:'저장하지 못했어요. 입력한 내용을 유지했으니 다시 시도해 주세요.');
+    } finally {setPendingSave(false);}
   };
 
   return (
@@ -105,10 +115,12 @@ export default function TokenEditPanel({ token, language, dictEntry, saving, onS
         이 단어 전체에 적용 (사전·단어장)
       </label>
 
+      {error&&<p role="alert">{error}</p>}
+      <TokenCorrectionConflict token={conflict} onConfirm={()=>{setBase({...base,token:conflict});setConflict(null);setError('');requestAnimationFrame(()=>saveButton.current?.focus());}}/>
       <div className="token-edit__actions">
         <button type="button" className="btn btn--ghost btn--sm" onClick={onClose}>취소</button>
-        <button type="button" className="btn btn--primary btn--sm" disabled={saving || !pending} onClick={save}>
-          {saving ? '저장 중…' : '저장'}
+        <button ref={saveButton} type="button" className="btn btn--primary btn--sm" disabled={saving || pendingSave || !!conflict || !pending} onClick={save}>
+          {saving || pendingSave ? '저장 중…' : '저장'}
         </button>
       </div>
     </div>

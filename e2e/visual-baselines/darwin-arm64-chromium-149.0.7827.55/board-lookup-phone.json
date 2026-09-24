@@ -1,0 +1,12 @@
+{
+  "name": "board-lookup-phone",
+  "key": "darwin-arm64-chromium-149.0.7827.55",
+  "sha256": "82b434042a436ca0c76e5edecb38fe4a561efc3f7711d16094dd33af5743747b",
+  "review": "Directly inspected from rebuilt application: four-character Chinese stays together, pinyin/hun remain above/below, Korean meaning uses three complete words in the right column, input and bottom placement action remain visible. SVG contrast incomplete retained for manual review; visible ink on white is clear.",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "osRelease": "25.3.0",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+}
