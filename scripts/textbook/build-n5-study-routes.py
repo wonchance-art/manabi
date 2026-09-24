@@ -12,6 +12,7 @@ import re
 from html import escape
 from html.parser import HTMLParser
 from pathlib import Path
+from practice_labels import practice_text, rename_html, rename_manuscript
 
 REPO = Path(__file__).resolve().parents[2]
 ROOT = REPO / 'src/content/textbookEditions'
@@ -92,7 +93,7 @@ def enhance_article(article, lesson, suffix):
     note = lesson.get('reading_notes', {}).get(suffix)
     if note:
         article = replace_once(article, rich(note['before']), rich(note['text']))
-    links = [link for link in lesson['recall_links'] if link['after'] == suffix]
+    links = [link for link in lesson.get('recall_links', []) if link['after'] == suffix]
     extra = ''
     if links:
         extra += '<nav class="book-recall-links" aria-label="막힌 표현 다시 보기"><strong>막혔다면 이곳부터</strong><ul>'
@@ -119,6 +120,13 @@ def enhance_article(article, lesson, suffix):
             article = article.replace('</article>', extra + '</article>', 1)
     if suffix == 'start' and stages:
         article = article.replace('<p class="goal">', f'<p><a class="page-jump" href="#{lesson["id"]}-route">나누어 공부하는 순서 보기 →</a></p><p class="goal">', 1)
+    for help_item in lesson.get('reading_support', []):
+        if help_item['page'] == suffix:
+            help_html = ('<aside class="note book-reading-help"><b>읽기 도움</b><p><span lang="ja"><ruby>'
+                         + escape(help_item['word']) + '<rt>' + escape(help_item['reading']) + '</rt></ruby></span> · '
+                         + escape(help_item['meaning']) + '</p></aside>')
+            article, count = re.subn(r'(<p class="subtitle">[\s\S]*?</p>)', lambda m: m[0] + help_html, article, count=1)
+            assert count == 1, 'Reading support needs an explicit placement'
     return article
 
 
@@ -164,13 +172,19 @@ def build(out_root):
         assert correction.get('answer', old_question['answer']) == old_question['answer'], 'Answer key migration requires separate review'
         question.update({k: correction[k] for k in ['prompt', 'cue', 'why'] if k in correction})
         corrections.append((old_question, question))
+    for support in spec.get('readingSupport', []):
+        unit = next(l for l in book['lessons'] if l['id'] == support['lesson'])
+        unit.setdefault('reading_support', []).append(copy.deepcopy(support))
+    if spec.get('practiceTerminology'):
+        book = rename_manuscript(book)
+        book['practiceTerminology'] = spec['practiceTerminology']
     digest = sha(canonical({k: v for k, v in book.items() if k not in {'revision', 'source', 'editorialChanges'}}))
     edition = digest[:24]
     book['revision'] = edition
-    book['editorialChanges'] = ['20·23·32·35·42과 학습 경로와 마침점', '39과 본학습·다음 날·누적 복습 구분', '앞 과로 돌아가는 누적 회상 링크', '32·39과 지시문 및 42과 대비 근거 명확화']
+    book['editorialChanges'] = ['20·23·32·35·42과 학습 경로와 마침점', '39과 본학습·다음 날·누적 복습 구분', '앞 과로 돌아가는 누적 회상 링크', '32·39과 지시문 및 42과 대비 근거 명확화', '교재 연습 명칭과 저장 표현 복습 구분', '한자 읽기 도움 6곳 보완']
 
     pages = copy.deepcopy(base['pages'])
-    lessons = {l['id']: l for l in book['lessons'] if l['id'] in spec['lessons']}
+    lessons = {l['id']: l for l in book['lessons'] if l['id'] in spec['lessons'] or l.get('reading_support')}
     for uid, lesson in lessons.items():
         start = next(i for i, p in enumerate(pages) if p['id'] == uid + '-start')
         if lesson.get('study_route'):
@@ -187,6 +201,8 @@ def build(out_root):
                 page['study_stage'] = f'{i:02d} · ' + stage['title']
     for i, page in enumerate(pages, 1):
         page['page'] = i
+        if spec.get('practiceTerminology'):
+            page['title'] = practice_text(page['title'])
     page_map = {p['id']: p for p in pages}
     old_numbers = {p['page']: page_map[p['id']]['page'] for p in base['pages']}
     html = (base_dir / 'index.html').read_text()
@@ -226,6 +242,8 @@ def build(out_root):
             assert selected and all(x.end() == y.start() for x, y in zip(selected, selected[1:]))
             ordered = sorted(selected, key=lambda m: page_map[re.search(r'\bid="([^"]+)"', m[0])[1]]['page'])
             html = html[:selected[0].start()] + ''.join(m[0] for m in ordered) + html[selected[-1].end():]
+    if spec.get('practiceTerminology'):
+        html = rename_html(html)
     # Existing route labels refer to web page order, not a newly generated PDF.
     html = re.sub(r'(href="#[^"]+">)(\d+)(?:–(\d+))?(쪽 · 이 단계 시작 →)',
                   lambda m: m[1] + str(old_numbers[int(m[2])]) + ('–' + str(old_numbers[int(m[3])]) if m[3] else '') + m[4], html)
@@ -237,7 +255,7 @@ def build(out_root):
     ids = re.findall(r'\bid="([^"]+)"', html)
     assert len(ids) == len(set(ids)), 'Duplicate HTML ID'
     for lesson in lessons.values():
-        for link in lesson['recall_links']:
+        for link in lesson.get('recall_links', []):
             assert link['target'] in ids
         for pause in lesson.get('study_pauses', []):
             assert lesson['id'] + '-' + pause['after'] in ids

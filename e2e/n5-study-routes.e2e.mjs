@@ -43,6 +43,28 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
    }
   }
   row.checks.push('five routes at 1440/390/320; keyboard start retains edition');
+  const aids=[['u32-review2','写真','しゃしん'],['u37-practice','持って','もって'],['u41-patterns','聞きながら','ききながら'],['u41-dialogue','名前','なまえ'],['u42-review3','多い','おおい'],['u42-review5','今度','こんど']];
+  for(const width of [1440,390,320]){
+   await page.setViewportSize({width,height:1000});
+   for(const [section,word,reading] of aids){
+    await page.goto(url(section));const help=page.locator('#'+section+' .book-reading-help');await help.waitFor();await page.evaluate(()=>document.fonts.ready);
+    assert.equal(await help.locator('rt').textContent(),reading);assert((await help.innerText()).includes(word));
+    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+    assert(await help.evaluate(el=>el.scrollWidth<=el.clientWidth+1));
+    row.layouts.push({unit:section,width,documentWidth:await page.evaluate(()=>document.documentElement.scrollWidth)});
+    if(section==='u37-practice'&&width!==320){await help.scrollIntoViewIfNeeded();await page.screenshot({path:path.join(out,`${name}-reading-help-${width}.png`)});}
+   }
+  }
+  row.checks.push('six targeted reading aids remain visible without overflow at 1440/390/320');
+  await page.goto(url('u32-review1'));await page.locator('#u32-review1').waitFor();
+  assert(!(await page.locator('#u32-review1').innerText()).includes('복습'));
+  assert((await page.locator('#u32-review1').innerText()).includes('연습 12'));
+  const saved=page.getByRole('link',{name:'담은 표현',exact:true});assert(await saved.isVisible());
+  assert((await saved.getAttribute('href')).startsWith('/books/japanese-n5/review?'));
+  assert(await page.locator('a[href="/vocab"]').filter({hasText:'복습'}).count()>0);
+  await page.goto(url('u42-review2'));await page.locator('#u42-review2').waitFor();
+  assert.equal(await page.locator('#u42-review2 .review-task ruby').filter({hasText:/本|休/}).count(),0);
+  row.checks.push('practice labels and saved-expression review are distinct; reading/spelling answers stay unaided');
   for(const width of [1440,390,320]){
    await page.setViewportSize({width,height:1000});
    for(const section of ['u39-mission','u39-recall','u39-review1']){
@@ -55,7 +77,7 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
   await page.goto(url('u32-practice'));await page.locator('#u32-practice .book-study-pause a').click();
   await page.waitForURL('**#u32-review1');
   assert((await page.locator('#u32-review1').innerText()).includes('이 두 내용을 각각 한 문장으로'));
-  await page.locator('#u32-review1 .book-recall-links a').filter({hasText:'복습 12'}).click();
+  await page.locator('#u32-review1 .book-recall-links a').filter({hasText:'연습 12'}).click();
   await page.waitForURL('**#u29-patterns');await page.locator('#u29-patterns').waitFor();await page.goBack();
   await page.locator('#u32-review1').waitFor();row.checks.push('lesson 32 main learning → cumulative recall → relevant past form → back');
   await page.goto(url('u39-mission'));await page.locator('#u39-mission .book-study-pause a').click();

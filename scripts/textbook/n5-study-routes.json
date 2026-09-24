@@ -427,5 +427,50 @@
     "cue": "この 店は いつも 人が 多いです。＿＿、今日は だれも いません。\n① だから　② でも　③ どうして　④ どこで",
     "answer": "② でも",
     "why": "늘 사람이 많다는 평소의 모습과 오늘은 아무도 없다는 모습을 대비해요. 그래서 でも가 맞아요. だから는 앞 내용을 이유로 뒤의 결과를 이을 때 쓰지만, 평소 사람이 많은 것이 오늘 아무도 없는 이유는 아니에요. どうして와 どこで는 각각 이유와 장소를 묻는 말이에요."
-  }
+  },
+  "practiceTerminology": "separate-textbook-practice-from-saved-expression-review-v1",
+  "readingSupport": [
+    {
+      "lesson": "u32",
+      "page": "review2",
+      "word": "写真",
+      "reading": "しゃしん",
+      "meaning": "사진"
+    },
+    {
+      "lesson": "u37",
+      "page": "practice",
+      "word": "持って",
+      "reading": "もって",
+      "meaning": "가지고"
+    },
+    {
+      "lesson": "u41",
+      "page": "patterns",
+      "word": "聞きながら",
+      "reading": "ききながら",
+      "meaning": "들으면서"
+    },
+    {
+      "lesson": "u41",
+      "page": "dialogue",
+      "word": "名前",
+      "reading": "なまえ",
+      "meaning": "이름"
+    },
+    {
+      "lesson": "u42",
+      "page": "review3",
+      "word": "多い",
+      "reading": "おおい",
+      "meaning": "많다"
+    },
+    {
+      "lesson": "u42",
+      "page": "review5",
+      "word": "今度",
+      "reading": "こんど",
+      "meaning": "이번 또는 다음번 · 이 글에서는 다음번"
+    }
+  ]
 }

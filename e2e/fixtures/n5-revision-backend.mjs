@@ -2,7 +2,7 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import {fileURLToPath} from 'node:url';
-export const revision='486ee7a5c71a4ff19062d808';
+export const revision='c6ed2c215bbf36a50fe555cb';
 const base=JSON.parse(fs.readFileSync(new URL('../../src/content/textbookEditions/7f572327dc67893e9453246c/bundle.json',import.meta.url),'utf8'));
 const uid='00000000-0000-4000-8000-000000000042';
 export function fixtureSession(role='admin'){
