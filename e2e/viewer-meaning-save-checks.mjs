@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {accessibility} from './visual-quality.mjs';
 
 // Actual ViewerPage mutation + disposable PostgreSQL. HTTP/Auth are synthetic;
 // this proves client save boundaries, not hosted RLS or provider accuracy.
@@ -135,6 +136,8 @@ export async function verifyPersonalReaderMeaning({page,context,saveScreen,waitF
     // dismissal so the conflict capture does not include that unrelated notice.
     await page.locator('.toast--success').waitFor({state:'hidden'});
     await saveScreen('reader-meaning-conflict');
+    assert.deepEqual((await accessibility(page,'.reader-meaning__footer [role="alert"]')).violations,[],
+      'conflict confirmation must remain legible and accessible');
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
     await inspector.getByRole('button',{name:'현재 내용 확인',exact:true})[activate]();
     assert.deepEqual(await snapshot(),concurrent,'confirmation alone must not save');
