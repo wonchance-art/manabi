@@ -5,61 +5,422 @@
       "duration": "두 번에 나누어 공부해요",
       "durationNote": "첫날에는 이동 표현, 다음에는 대화와 읽기를 공부해요. 소요 시간보다 각 단계 끝의 확인 질문을 기준으로 쉬어 가세요.",
       "study_route": [
-        {"title":"이동하는 말과 조사를 골라요","goal":"가다·오다·돌아가다를 고르고, 목적지·수단·동행을 붙여요. 타거나 내릴 때 조사도 함께 비교해요.","targets":["study1","study2","patterns","extra"],"check":"어디로, 무엇을 타고, 누구와 가는지 한 문장으로 말할 수 있나요?","pause":"여기까지가 첫 번째 공부예요. 표를 가리고 나의 이동 계획을 말한 뒤 쉬어 가도 좋아요."},
-        {"title":"대화와 길 안내에서 써 봐요","goal":"대화에서 이동 정보를 찾고 짧은 안내를 읽어요. 조사만 보지 말고 마지막 동사까지 한 덩어리로 확인해요.","targets":["dialogue","practice","read-guide","read-check","movement-check"],"check":"타는 버스와 이동 수단, 만날 곳과 갈 곳을 구별했나요?","pause":"내일은 오늘 답을 가리고, 목적지와 교통수단을 바꿔 한 번 더 말해 보세요."}
+        {
+          "title": "이동하는 말과 조사를 골라요",
+          "goal": "가다·오다·돌아가다를 고르고, 목적지·수단·동행을 붙여요. 타거나 내릴 때 조사도 함께 비교해요.",
+          "targets": [
+            "study1",
+            "study2",
+            "patterns",
+            "extra"
+          ],
+          "check": "어디로, 무엇을 타고, 누구와 가는지 한 문장으로 말할 수 있나요?",
+          "pause": "여기까지가 첫 번째 공부예요. 표를 가리고 나의 이동 계획을 말한 뒤 쉬어 가도 좋아요."
+        },
+        {
+          "title": "대화와 길 안내에서 써 봐요",
+          "goal": "대화에서 이동 정보를 찾고 짧은 안내를 읽어요. 조사만 보지 말고 마지막 동사까지 한 덩어리로 확인해요.",
+          "targets": [
+            "dialogue",
+            "practice",
+            "read-guide",
+            "read-check",
+            "movement-check"
+          ],
+          "check": "타는 버스와 이동 수단, 만날 곳과 갈 곳을 구별했나요?",
+          "pause": "내일은 오늘 답을 가리고, 목적지와 교통수단을 바꿔 한 번 더 말해 보세요."
+        }
       ],
       "recall_links": [
-        {"after":"extra","target":"u19-patterns","label":"19과 · 행동하는 장소의 で"},
-        {"after":"movement-check","target":"u20-study2","label":"타고 내릴 때의 조사 다시 보기"}
+        {
+          "after": "extra",
+          "target": "u19-patterns",
+          "label": "19과 · 행동하는 장소의 で"
+        },
+        {
+          "after": "movement-check",
+          "target": "u20-study2",
+          "label": "타고 내릴 때의 조사 다시 보기"
+        }
       ]
     },
     "u23": {
       "duration": "새 표현과 누적 복습을 나누어 공부해요",
       "durationNote": "이동 목적을 배운 날에는 첫 단계까지, 다음 공부에서는 앞 과의 표현을 먼저 떠올려 보세요. 누적 복습은 한 묶음씩 나누어도 좋아요.",
       "study_route": [
-        {"title":"무엇을 하러 가는지 말해요","goal":"ます형에서 목적을 만들고, 함께 가자는 대화와 나의 짧은 문장까지 완성해요.","targets":["study1","patterns","dialogue","practice"],"check":"책을 읽다에서 책을 읽으러 가다로 바꾸어 말할 수 있나요?","pause":"새 표현 학습은 여기까지예요. 다음 공부를 시작할 때에는 앞의 예문을 가리고 복습해 보세요."},
-        {"title":"앞의 표현을 다시 꺼내요","goal":"습관·취향·위치에서 약속·이동으로 이어 가요. 먼저 답하고, 막힌 부분만 앞 과에서 확인해요.","targets":["review1","review2","review3"],"check":"힌트 없이 말한 것과 다시 볼 것을 나누었나요?","pause":"틀린 문장 하나를 고르고 사람·장소·시간을 바꾸어 다시 말해 보세요. 다음 날에는 한국어 지시만 보고 꺼내요."}
+        {
+          "title": "무엇을 하러 가는지 말해요",
+          "goal": "ます형에서 목적을 만들고, 함께 가자는 대화와 나의 짧은 문장까지 완성해요.",
+          "targets": [
+            "study1",
+            "patterns",
+            "dialogue",
+            "practice"
+          ],
+          "check": "책을 읽다에서 책을 읽으러 가다로 바꾸어 말할 수 있나요?",
+          "pause": "새 표현 학습은 여기까지예요. 다음 공부를 시작할 때에는 앞의 예문을 가리고 복습해 보세요."
+        },
+        {
+          "title": "앞의 표현을 다시 꺼내요",
+          "goal": "습관·취향·위치에서 약속·이동으로 이어 가요. 먼저 답하고, 막힌 부분만 앞 과에서 확인해요.",
+          "targets": [
+            "review1",
+            "review2",
+            "review3"
+          ],
+          "check": "힌트 없이 말한 것과 다시 볼 것을 나누었나요?",
+          "pause": "틀린 문장 하나를 고르고 사람·장소·시간을 바꾸어 다시 말해 보세요. 다음 날에는 한국어 지시만 보고 꺼내요."
+        }
       ],
       "recall_links": [
-        {"after":"review1","target":"u09-patterns","label":"09과 · 사물과 사람의 위치"},
-        {"after":"review1","target":"u14-patterns","label":"14과 · 취향과 능숙함"},
-        {"after":"review2","target":"u22-patterns","label":"22과 · 함께 하자고 권하기"},
-        {"after":"review3","target":"u19-patterns","label":"19과 · 장소와 도구의 で"},
-        {"after":"review3","target":"u20-study2","label":"20과 · 건너고 타고 내리기"}
+        {
+          "after": "review1",
+          "target": "u09-patterns",
+          "label": "09과 · 사물과 사람의 위치"
+        },
+        {
+          "after": "review1",
+          "target": "u14-patterns",
+          "label": "14과 · 취향과 능숙함"
+        },
+        {
+          "after": "review2",
+          "target": "u22-patterns",
+          "label": "22과 · 함께 하자고 권하기"
+        },
+        {
+          "after": "review3",
+          "target": "u19-patterns",
+          "label": "19과 · 장소와 도구의 で"
+        },
+        {
+          "after": "review3",
+          "target": "u20-study2",
+          "label": "20과 · 건너고 타고 내리기"
+        }
+      ]
+    },
+    "u32": {
+      "duration": "새 표현과 앞 과 복습을 나누어 공부해요",
+      "durationNote": "먼저 경험과 대표 활동으로 내 이야기를 만들어요. 다음 공부에서는 앞 과의 표현을 다시 꺼내요. 복습 두 묶음도 한 번에 끝낼 필요는 없어요.",
+      "study_route": [
+        {
+          "title": "경험과 지난 활동을 구별해요",
+          "goal": "해 본 경험과 특정한 날에 한 일을 구별하고, 여러 활동 가운데 몇 가지를 들어 말해요. 대화와 내 문장까지 완성해요.",
+          "targets": [
+            "patterns",
+            "dialogue",
+            "practice"
+          ],
+          "check": "경험이 있는지와 지난 주말에 무엇을 했는지를 각각 말할 수 있나요?",
+          "pause": "이번 과의 새 표현은 여기까지예요. 다음 공부에서는 답을 먼저 보지 않고 앞 과의 표현을 꺼내 보세요."
+        },
+        {
+          "title": "앞 과의 표현으로 이야기를 이어요",
+          "goal": "시각·장소·과거를 다시 쓰고, 허락·부탁·경험을 짧은 장면에 연결해요. 먼저 답한 뒤 막힌 부분만 확인해요.",
+          "targets": [
+            "review1",
+            "review2"
+          ],
+          "check": "왜 그 동사 모양과 조사를 썼는지 설명할 수 있나요?",
+          "pause": "다시 볼 문장 하나를 고르고 시간이나 장소를 바꾸어 말해 보세요. 다음 날에는 예문을 가리고 같은 뜻을 꺼내요."
+        }
+      ],
+      "recall_links": [
+        {
+          "after": "patterns",
+          "target": "u28-patterns",
+          "label": "28과 · 지난 일을 말하는 た형"
+        },
+        {
+          "after": "patterns",
+          "target": "u31-patterns",
+          "label": "31과 · 행동의 순서"
+        },
+        {
+          "after": "review1",
+          "target": "u19-patterns",
+          "label": "복습 10 · 행동하는 장소 (19과)"
+        },
+        {
+          "after": "review1",
+          "target": "u31-patterns",
+          "label": "복습 11 · 하기 전의 일 (31과)"
+        },
+        {
+          "after": "review1",
+          "target": "u29-patterns",
+          "label": "복습 12 · 형용사의 과거 (29과)"
+        },
+        {
+          "after": "review2",
+          "target": "u27-patterns",
+          "label": "복습 13 · 허락 묻기 (27과)"
+        },
+        {
+          "after": "review2",
+          "target": "u26-patterns",
+          "label": "복습 14 · 하고 있는 일 (26과)"
+        },
+        {
+          "after": "review2",
+          "target": "u25-patterns",
+          "label": "복습 14 · 기다려 달라고 부탁 (25과)"
+        },
+        {
+          "after": "review2",
+          "target": "u32-patterns",
+          "label": "복습 15 · 경험과 특정한 과거 (32과)"
+        }
       ]
     },
     "u35": {
       "duration": "이유 표현과 몸 상태를 나누어 공부해요",
       "durationNote": "먼저 연결 모양을 익히고, 다음 공부에서 몸 상태를 설명하는 연락에 써 보세요. 표를 모두 외운 뒤 시작할 필요는 없어요.",
-      "page_order": ["start","route","study1","study2","patterns","study3","study4","dialogue","practice"],
+      "page_order": [
+        "start",
+        "route",
+        "study1",
+        "study2",
+        "patterns",
+        "study3",
+        "study4",
+        "dialogue",
+        "practice"
+      ],
       "study_route": [
-        {"title":"이유를 문장에 연결해요","goal":"から·ので 앞의 모양을 비교해요. かぜ가 바람인지 감기인지 문장 끝까지 읽고 골라요.","targets":["study1","study2","patterns"],"check":"명사의 なので와 い형용사의 ので를 구별할 수 있나요?","pause":"첫 단계는 여기까지예요. 이유와 결과가 이어지는 나의 문장을 한 번 말하고 쉬어 가요."},
-        {"title":"몸 상태와 다음 행동을 전해요","goal":"아픈 부위를 말하고 이유와 계획을 덧붙여요. 짧은 연락에서 오늘 할 일과 하지 않을 일을 찾아요.","targets":["study3","study4","dialogue","practice","health-check"],"check":"어디가 불편한지, 그래서 무엇을 할지 두 정보를 전할 수 있나요?","pause":"내일은 예문을 보지 않고 몸 상태와 계획을 한 문장으로 말해 보세요. 막힌 연결 모양만 다시 확인해요."}
+        {
+          "title": "이유를 문장에 연결해요",
+          "goal": "から·ので 앞의 모양을 비교해요. かぜ가 바람인지 감기인지 문장 끝까지 읽고 골라요.",
+          "targets": [
+            "study1",
+            "study2",
+            "patterns"
+          ],
+          "check": "명사의 なので와 い형용사의 ので를 구별할 수 있나요?",
+          "pause": "첫 단계는 여기까지예요. 이유와 결과가 이어지는 나의 문장을 한 번 말하고 쉬어 가요."
+        },
+        {
+          "title": "몸 상태와 다음 행동을 전해요",
+          "goal": "아픈 부위를 말하고 이유와 계획을 덧붙여요. 짧은 연락에서 오늘 할 일과 하지 않을 일을 찾아요.",
+          "targets": [
+            "study3",
+            "study4",
+            "dialogue",
+            "practice",
+            "health-check"
+          ],
+          "check": "어디가 불편한지, 그래서 무엇을 할지 두 정보를 전할 수 있나요?",
+          "pause": "내일은 예문을 보지 않고 몸 상태와 계획을 한 문장으로 말해 보세요. 막힌 연결 모양만 다시 확인해요."
+        }
       ],
       "recall_links": [
-        {"after":"patterns","target":"u30-patterns","label":"30과 · 보통체 모양 확인"},
-        {"after":"health-check","target":"u26-patterns","label":"26과 · 지금 이어지는 상태"},
-        {"after":"health-check","target":"u35-study1","label":"から·ので 연결 카드로 돌아가기"}
+        {
+          "after": "patterns",
+          "target": "u30-patterns",
+          "label": "30과 · 보통체 모양 확인"
+        },
+        {
+          "after": "health-check",
+          "target": "u26-patterns",
+          "label": "26과 · 지금 이어지는 상태"
+        },
+        {
+          "after": "health-check",
+          "target": "u35-study1",
+          "label": "から·ので 연결 카드로 돌아가기"
+        }
+      ]
+    },
+    "u39": {
+      "reading_notes": {
+        "recall": {
+          "path": [
+            "learning_pages",
+            7,
+            "blocks",
+            0,
+            "text"
+          ],
+          "before": "오늘은 아래 완료 기준으로 점검해요. 복습 세 문항은 다음 날 설명을 읽기 전에 풀어 보세요. 틀리면 의미 비교나 ない형 설명을 확인해요.",
+          "text": "오늘은 아래 완료 기준으로 점검해요. 다음 날에는 설명과 답을 보기 전에 이 과의 세 문항을 먼저 풀어요. 앞 과를 함께 쓰는 누적 복습은 그다음에 따로 이어도 좋아요."
+        },
+        "review1": {
+          "path": [
+            "review_pages",
+            0,
+            "lead"
+          ],
+          "before": "33–39과와 앞의 표현을 연결해요.",
+          "text": "33–39과와 앞의 표현을 함께 쓰는 누적 복습이에요. 먼저 내 문장을 만들고, 막힌 표현만 아래 링크에서 확인해요."
+        }
+      },
+      "study_pauses": [
+        {
+          "after": "mission",
+          "title": "오늘의 본학습은 여기까지",
+          "body": "필수 준비물과 필요 없는 물건을 스스로 안내했다면 쉬어 가도 좋아요. 더 연습하고 싶으면 다음 쪽의 선택 연습을 하고, 다음 날에는 아래 복습부터 시작해요.",
+          "links": [
+            {
+              "target": "u39-recall",
+              "label": "다음 날 · 이 과만 다시 꺼내기"
+            }
+          ]
+        },
+        {
+          "after": "recall",
+          "title": "앞 과까지 연결하고 싶다면",
+          "body": "이 과의 의무·불필요·금지를 다시 꺼냈어요. 다음 누적 복습에서는 앞에서 배운 이유와 방법을 함께 써요. 다른 날에 이어도 좋아요.",
+          "links": [
+            {
+              "target": "u39-review1",
+              "label": "앞 과를 함께 쓰는 누적 복습"
+            }
+          ]
+        }
+      ],
+      "recall_links": [
+        {
+          "after": "recall",
+          "target": "u39-compare",
+          "label": "복습 A · 뜻을 나란히 비교"
+        },
+        {
+          "after": "recall",
+          "target": "u39-forms",
+          "label": "복습 B · ない형에서 문장 끝까지"
+        },
+        {
+          "after": "recall",
+          "target": "u39-guided-a",
+          "label": "복습 C · 買う를 바꾸는 연습"
+        },
+        {
+          "after": "review1",
+          "target": "u33-patterns",
+          "label": "복습 16 · 특징 잇기 (33과)"
+        },
+        {
+          "after": "review1",
+          "target": "u35-patterns",
+          "label": "복습 16 · 이유 말하기 (35과)"
+        },
+        {
+          "after": "review1",
+          "target": "u38-patterns",
+          "label": "복습 16 · 할 수 있는 일 (38과)"
+        },
+        {
+          "after": "review1",
+          "target": "u37-patterns",
+          "label": "복습 17 · 명사 꾸미기와 とき (37과)"
+        },
+        {
+          "after": "review1",
+          "target": "u27-patterns",
+          "label": "복습 18 · 금지 (27과)"
+        },
+        {
+          "after": "review1",
+          "target": "u39-compare",
+          "label": "복습 18 · 필요 없음과 금지 비교"
+        }
       ]
     },
     "u42": {
       "duration": "네 단계로 나누어 한 권을 마무리해요",
       "durationNote": "새 표현·누적 복습·글자와 문장·짧은 글은 서로 다른 공부예요. 하루에 모두 끝낼 필요 없이 각 단계의 마침점에서 쉬어 가세요.",
       "study_route": [
-        {"title":"새 표현으로 준비 상황을 말해요","goal":"もう·まだ로 완료를 확인하고, ね·よ·でしょう로 느낌과 생각을 전해요. 대화와 나의 문장까지가 이번 과의 새 학습이에요.","targets":["study1","patterns","extra","dialogue","practice"],"check":"끝낸 일·아직인 일·다음 행동을 구별해서 말할 수 있나요?","pause":"새 표현 학습은 여기까지예요. 다음에는 앞 과의 표현을 꺼내 쓸 거예요. 지금 쉬고 다음 날 이어도 좋아요."},
-        {"title":"앞의 표현을 꺼내 모임을 준비해요","goal":"수량·동시 행동·약속을 한 장면에서 다시 써요. 해설보다 먼저 나의 문장을 만들어요.","targets":["review1"],"check":"수량과 시간, 장소를 바꾸어도 스스로 말할 수 있나요?","pause":"답을 확인한 뒤 수량이나 약속 시간을 바꾸어 다시 말해 보세요. 다음 단계부터는 글에서 근거를 찾는 연습이에요."},
-        {"title":"글자와 문장을 확인해요","goal":"읽기·표기·단어·문장 배열을 짧게 연습해요. 답을 고른 까닭도 설명해 보세요.","targets":["review2","review3"],"check":"비슷한 보기 사이에서 정답의 근거를 찾았나요?","pause":"맞힌 수보다 헷갈린 이유를 한 가지 적어 보세요. 다음에는 메모와 안내를 읽어요."},
-        {"title":"메모·이야기·안내를 읽어요","goal":"짧은 메모에서 할 일, 이야기에서 이유, 안내에서 조건을 찾아요. 글 하나씩 나누어 읽어도 좋아요.","targets":["review4","review5","review6"],"check":"누가, 언제, 왜, 무엇을 해야 하는지 글 속 표현으로 설명할 수 있나요?","pause":"한 권을 마쳤어요. 내일은 헷갈렸던 글 하나를 다시 읽고 답의 근거가 된 문장을 짚어 보세요."}
+        {
+          "title": "새 표현으로 준비 상황을 말해요",
+          "goal": "もう·まだ로 완료를 확인하고, ね·よ·でしょう로 느낌과 생각을 전해요. 대화와 나의 문장까지가 이번 과의 새 학습이에요.",
+          "targets": [
+            "study1",
+            "patterns",
+            "extra",
+            "dialogue",
+            "practice"
+          ],
+          "check": "끝낸 일·아직인 일·다음 행동을 구별해서 말할 수 있나요?",
+          "pause": "새 표현 학습은 여기까지예요. 다음에는 앞 과의 표현을 꺼내 쓸 거예요. 지금 쉬고 다음 날 이어도 좋아요."
+        },
+        {
+          "title": "앞의 표현을 꺼내 모임을 준비해요",
+          "goal": "수량·동시 행동·약속을 한 장면에서 다시 써요. 해설보다 먼저 나의 문장을 만들어요.",
+          "targets": [
+            "review1"
+          ],
+          "check": "수량과 시간, 장소를 바꾸어도 스스로 말할 수 있나요?",
+          "pause": "답을 확인한 뒤 수량이나 약속 시간을 바꾸어 다시 말해 보세요. 다음 단계부터는 글에서 근거를 찾는 연습이에요."
+        },
+        {
+          "title": "글자와 문장을 확인해요",
+          "goal": "읽기·표기·단어·문장 배열을 짧게 연습해요. 답을 고른 까닭도 설명해 보세요.",
+          "targets": [
+            "review2",
+            "review3"
+          ],
+          "check": "비슷한 보기 사이에서 정답의 근거를 찾았나요?",
+          "pause": "맞힌 수보다 헷갈린 이유를 한 가지 적어 보세요. 다음에는 메모와 안내를 읽어요."
+        },
+        {
+          "title": "메모·이야기·안내를 읽어요",
+          "goal": "짧은 메모에서 할 일, 이야기에서 이유, 안내에서 조건을 찾아요. 글 하나씩 나누어 읽어도 좋아요.",
+          "targets": [
+            "review4",
+            "review5",
+            "review6"
+          ],
+          "check": "누가, 언제, 왜, 무엇을 해야 하는지 글 속 표현으로 설명할 수 있나요?",
+          "pause": "한 권을 마쳤어요. 내일은 헷갈렸던 글 하나를 다시 읽고 답의 근거가 된 문장을 짚어 보세요."
+        }
       ],
       "recall_links": [
-        {"after":"review1","target":"u40-quantity","label":"40과 · 수량과 だけ"},
-        {"after":"review1","target":"u41-patterns","label":"41과 · 동시 행동과 방법"},
-        {"after":"review1","target":"u22-patterns","label":"22과 · 약속과 제안"},
-        {"after":"review3","target":"u36-patterns","label":"36과 · 글을 잇는 표현"},
-        {"after":"review6","target":"u39-start","label":"39과 · 필요한 행동을 안내하기"}
+        {
+          "after": "review1",
+          "target": "u40-quantity",
+          "label": "40과 · 수량과 だけ"
+        },
+        {
+          "after": "review1",
+          "target": "u41-patterns",
+          "label": "41과 · 동시 행동과 방법"
+        },
+        {
+          "after": "review1",
+          "target": "u22-patterns",
+          "label": "22과 · 약속과 제안"
+        },
+        {
+          "after": "review3",
+          "target": "u36-patterns",
+          "label": "36과 · 글을 잇는 표현"
+        },
+        {
+          "after": "review6",
+          "target": "u39-start",
+          "label": "39과 · 필요한 행동을 안내하기"
+        }
       ]
     }
   },
+  "wordingCorrections": [
+    {
+      "lesson": "u32",
+      "id": "복습 12",
+      "prompt": "어제 영화는 재미있었어요. 가게는 조용하지 않았어요. 이 두 내용을 각각 한 문장으로 말해요."
+    },
+    {
+      "lesson": "u39",
+      "id": "복습 17",
+      "prompt": "이것은 어제 산 책이라고 말해요. 이어서 한가할 때 읽는다고 별도의 문장으로 말해요."
+    },
+    {
+      "lesson": "u39",
+      "id": "복습 A",
+      "prompt": "식당 직원의 말을 한국어로 설명하세요. “먹으면 안 된다”는 뜻인지도 밝혀 주세요."
+    }
+  ],
   "questionCorrection": {
     "lesson": "u42",
     "id": "유형 7 · 글 속 문법",

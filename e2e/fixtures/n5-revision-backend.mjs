@@ -2,7 +2,7 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import {fileURLToPath} from 'node:url';
-export const revision='e44cd7230ef94ff7f6293e2d';
+export const revision='486ee7a5c71a4ff19062d808';
 const base=JSON.parse(fs.readFileSync(new URL('../../src/content/textbookEditions/7f572327dc67893e9453246c/bundle.json',import.meta.url),'utf8'));
 const uid='00000000-0000-4000-8000-000000000042';
 export function fixtureSession(role='admin'){
@@ -23,7 +23,7 @@ export function revisionBackend({port=48992,app='http://127.0.0.1:48991'}={}){
    return res.end('<html lang="ko"><h1>로컬 교재 검수</h1><p>실제 계정·DB를 사용하지 않는 합성 관리자입니다.</p><a href="/__qa/login">개정 교재 열기</a></html>');
   }
   if(url.pathname==='/__qa/login'){
-   res.writeHead(302,{'Set-Cookie':`sb-127-auth-token=${fixtureSession()}; Path=/; SameSite=Lax`,Location:`${app}/books/japanese-n5?edition=${revision}#u42-route`});return res.end();
+   res.writeHead(302,{'Set-Cookie':`sb-127-auth-token=${fixtureSession()}; Path=/; SameSite=Lax`,Location:`${app}/books/japanese-n5?edition=${revision}#u32-route`});return res.end();
   }
   let role='guest';
   try{role=JSON.parse(Buffer.from((req.headers.authorization||'').split('.')[1],'base64url')).role;}catch{/* anonymous */}

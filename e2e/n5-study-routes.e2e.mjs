@@ -27,14 +27,14 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
   page.on('request',req=>{if(['POST','PATCH','DELETE'].includes(req.method())&&!req.url().endsWith('/rpc/is_admin'))row.writes.push({method:req.method(),path:new URL(req.url()).pathname,body:req.postDataJSON()});});
   for(const width of [1440,390,320]){
    await page.setViewportSize({width,height:1000});
-   for(const unit of ['u20','u23','u35','u42']){
+   for(const unit of ['u20','u23','u32','u35','u42']){
     await page.goto(url(unit+'-route'));await page.locator('#'+unit+'-route').waitFor();await page.evaluate(()=>document.fonts.ready);
     assert(await page.getByText('관리자 미리보기 · 발행 전 원고입니다.',{exact:true}).isVisible());
     const layout=await page.evaluate(()=>({width:innerWidth,documentWidth:document.documentElement.scrollWidth,routeWidth:document.querySelector('.book-route')?.getBoundingClientRect().width}));
     assert(layout.documentWidth<=width+1,`${unit}/${width} overflows`);row.layouts.push({unit,...layout});
-    const stage=page.locator('#'+unit+'-route a.page-jump').first();await stage.focus();await page.keyboard.press('Enter');
-    await page.waitForURL('**#'+unit+'-study1');
-    await page.waitForFunction(id=>{const top=document.getElementById(id)?.getBoundingClientRect().top;return top>=0&&top<220;},unit+'-study1');
+    const stage=page.locator('#'+unit+'-route a.page-jump').first(),target=await stage.getAttribute('href');
+    await stage.focus();await page.keyboard.press('Enter');await page.waitForURL('**'+target);
+    await page.waitForFunction(id=>{const top=document.getElementById(id)?.getBoundingClientRect().top;return top>=0&&top<220;},target.slice(1));
     assert.equal(new URL(page.url()).searchParams.get('edition'),revision);
     if(width===1440||width===390){
      await page.goto(url(unit+'-route'));await page.locator('#'+unit+'-route').waitFor();
@@ -42,7 +42,33 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
     }
    }
   }
-  row.checks.push('four routes at 1440/390/320; keyboard start retains edition');
+  row.checks.push('five routes at 1440/390/320; keyboard start retains edition');
+  for(const width of [1440,390,320]){
+   await page.setViewportSize({width,height:1000});
+   for(const section of ['u39-mission','u39-recall','u39-review1']){
+    await page.goto(url(section));await page.locator('#'+section).waitFor();
+    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+    row.layouts.push({unit:section,width,documentWidth:await page.evaluate(()=>document.documentElement.scrollWidth)});
+    if(width!==320&&section==='u39-review1')await page.locator('#'+section).screenshot({path:path.join(out,`${name}-${section}-${width}.png`)});
+   }
+  }
+  await page.goto(url('u32-practice'));await page.locator('#u32-practice .book-study-pause a').click();
+  await page.waitForURL('**#u32-review1');
+  assert((await page.locator('#u32-review1').innerText()).includes('이 두 내용을 각각 한 문장으로'));
+  await page.locator('#u32-review1 .book-recall-links a').filter({hasText:'복습 12'}).click();
+  await page.waitForURL('**#u29-patterns');await page.locator('#u29-patterns').waitFor();await page.goBack();
+  await page.locator('#u32-review1').waitFor();row.checks.push('lesson 32 main learning → cumulative recall → relevant past form → back');
+  await page.goto(url('u39-mission'));await page.locator('#u39-mission .book-study-pause a').click();
+  await page.waitForURL('**#u39-recall');assert((await page.locator('#u39-recall').innerText()).includes('다음 날에는 설명과 답을 보기 전에 이 과의 세 문항'));
+  assert((await page.locator('#u39-recall').innerText()).includes('“먹으면 안 된다”는 뜻인지도'));
+  await page.locator('#u39-recall .book-study-pause a').click();await page.waitForURL('**#u39-review1');
+  const recall=page.locator('#u39-review1 textarea').first();await recall.fill('누적 복습 · 내가 만든 문장');
+  const helper=page.locator('#u39-review1 .book-recall-links a').filter({hasText:'이유 말하기'});
+  await helper.focus();await page.keyboard.press('Enter');await page.waitForURL('**#u35-patterns');
+  await page.locator('#u35-patterns').waitFor();await page.goBack();await page.locator('#u39-review1').waitFor();
+  assert.equal(await recall.inputValue(),'누적 복습 · 내가 만든 문장');await page.reload();await recall.waitFor();
+  assert.equal(await recall.inputValue(),'누적 복습 · 내가 만든 문장');
+  row.checks.push('lesson 39 optional practice can be skipped; next-day → cumulative recall → prerequisite preserves draft after back/reload');
   await page.setViewportSize({width:390,height:900});
   await page.goto(url('u42-practice'));await page.locator('#u42-practice').waitFor();
   await page.locator('#u42-practice .book-study-pause a').click();await page.waitForURL('**#u42-review1');

@@ -1,7 +1,7 @@
 """Deterministic, web-only revision of one pinned, verified publication.
 
 Retain the accepted renderer's HTML, form keys, ruby and example boxes. Only
-the declared lesson routes and one question change. No database/publication
+the declared lesson routes, reading guidance and question wording change. No database/publication
 write, PDF generation, new audio, or modification of the original edition.
 """
 import argparse
@@ -82,13 +82,16 @@ def route_html(lesson):
 
 
 def enhance_article(article, lesson, suffix):
-    stages = lesson['study_route']
+    stages = lesson.get('study_route', [])
     stage = next((s for s in stages if suffix in s['targets']), None)
     if stage:
         label = (f'<p class="book-stage-label">{stages.index(stage)+1:02d} · {escape(stage["title"])}'
                  f' <a href="#{lesson["id"]}-route">공부 순서</a></p>')
         article, count = re.subn(r'(<h2>[\s\S]*?</h2>)', lambda m: m[0] + label, article, count=1)
         assert count == 1
+    note = lesson.get('reading_notes', {}).get(suffix)
+    if note:
+        article = replace_once(article, rich(note['before']), rich(note['text']))
     links = [link for link in lesson['recall_links'] if link['after'] == suffix]
     extra = ''
     if links:
@@ -103,14 +106,31 @@ def enhance_article(article, lesson, suffix):
         if next_stage:
             extra += f'<a class="page-jump" href="#{lesson["id"]}-{next_stage["targets"][0]}">다음 · {escape(next_stage["title"])} →</a>'
         extra += '</aside>'
+    for pause in lesson.get('study_pauses', []):
+        if pause['after'] == suffix:
+            extra += '<aside class="book-study-pause" aria-label="공부 마침점"><strong>' + escape(pause['title']) + '</strong>'
+            extra += '<p>' + rich(pause['body']) + '</p>'
+            extra += ''.join(f'<a class="page-jump" href="#{link["target"]}">{escape(link["label"])} →</a>' for link in pause['links'])
+            extra += '</aside>'
     if extra:
         if '<footer>' in article:
             article = article.replace('<footer>', extra + '<footer>', 1)
         else:
             article = article.replace('</article>', extra + '</article>', 1)
-    if suffix == 'start':
+    if suffix == 'start' and stages:
         article = article.replace('<p class="goal">', f'<p><a class="page-jump" href="#{lesson["id"]}-route">나누어 공부하는 순서 보기 →</a></p><p class="goal">', 1)
     return article
+
+
+def questions(value):
+    if isinstance(value, dict):
+        if 'id' in value and 'prompt' in value and 'answer' in value:
+            yield value
+        for child in value.values():
+            yield from questions(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from questions(child)
 
 
 def build(out_root):
@@ -127,32 +147,41 @@ def build(out_root):
     for lesson in book['lessons']:
         if lesson['id'] in spec['lessons']:
             lesson.update(copy.deepcopy(spec['lessons'][lesson['id']]))
-    correction = spec['questionCorrection']
-    unit = next(l for l in book['lessons'] if l['id'] == correction['lesson'])
-    old_question = None
-    for page in unit['review_pages']:
-        for question in page['tasks']:
-            if question['id'] == correction['id']:
-                old_question = copy.deepcopy(question)
-                question.update({k: correction[k] for k in ['cue', 'answer', 'why']})
-    assert old_question
+            for note in lesson.get('reading_notes', {}).values():
+                target = lesson
+                for key in note['path'][:-1]:
+                    target = target[key]
+                key = note['path'][-1]
+                assert target[key] == note['before'], 'Reading guidance changed; review replacement'
+                target[key] = note['text']
+    corrections = []
+    for correction in [spec['questionCorrection'], *spec.get('wordingCorrections', [])]:
+        unit = next(l for l in book['lessons'] if l['id'] == correction['lesson'])
+        matches = [q for q in questions(unit) if q['id'] == correction['id']]
+        assert len(matches) == 1, 'Ambiguous question ID'
+        question = matches[0]
+        old_question = copy.deepcopy(question)
+        assert correction.get('answer', old_question['answer']) == old_question['answer'], 'Answer key migration requires separate review'
+        question.update({k: correction[k] for k in ['prompt', 'cue', 'why'] if k in correction})
+        corrections.append((old_question, question))
     digest = sha(canonical({k: v for k, v in book.items() if k not in {'revision', 'source', 'editorialChanges'}}))
     edition = digest[:24]
     book['revision'] = edition
-    book['editorialChanges'] = ['20·23·35·42과 학습 경로와 마침점', '앞 과로 돌아가는 누적 회상 링크', '42과 유형 7 대비 근거 명확화']
+    book['editorialChanges'] = ['20·23·32·35·42과 학습 경로와 마침점', '39과 본학습·다음 날·누적 복습 구분', '앞 과로 돌아가는 누적 회상 링크', '32·39과 지시문 및 42과 대비 근거 명확화']
 
     pages = copy.deepcopy(base['pages'])
     lessons = {l['id']: l for l in book['lessons'] if l['id'] in spec['lessons']}
     for uid, lesson in lessons.items():
         start = next(i for i, p in enumerate(pages) if p['id'] == uid + '-start')
-        pages.insert(start + 1, {'id': uid + '-route', 'kind': 'route', 'lesson': lesson['number'], 'title': '내 속도로 나누어 배워요'})
+        if lesson.get('study_route'):
+            pages.insert(start + 1, {'id': uid + '-route', 'kind': 'route', 'lesson': lesson['number'], 'title': '내 속도로 나누어 배워요'})
         if lesson.get('page_order'):
             order = {uid + '-' + suffix: i for i, suffix in enumerate(lesson['page_order'])}
             positions = [i for i, p in enumerate(pages) if p['id'] in order]
             sorted_pages = sorted([pages[i] for i in positions], key=lambda p: order[p['id']])
             for i, page in zip(positions, sorted_pages):
                 pages[i] = page
-        for i, stage in enumerate(lesson['study_route'], 1):
+        for i, stage in enumerate(lesson.get('study_route', []), 1):
             for suffix in stage['targets']:
                 page = next(p for p in pages if p['id'] == uid + '-' + suffix)
                 page['study_stage'] = f'{i:02d} · ' + stage['title']
@@ -166,9 +195,10 @@ def build(out_root):
     html = html.replace(f'content="{spec["baseEdition"]}"', f'content="{edition}"')
     for file in ['app.js', 'style.css']:
         html = html.replace(f'/{spec["baseEdition"]}/asset?file={file}', f'/{edition}/asset?file={file}')
-    for key in ['cue', 'why']:
-        html = replace_once(html, rich(old_question[key]), rich(correction[key]))
-    assert old_question['answer'] == correction['answer'], 'Answer key migration requires separate review'
+    for old_question, question in corrections:
+        for key in ['prompt', 'cue', 'why']:
+            if old_question.get(key) != question.get(key):
+                html = replace_once(html, rich(old_question[key]), rich(question[key]))
 
     def article_replacement(match):
         article = match[0]
@@ -185,7 +215,7 @@ def build(out_root):
             lesson = lessons[uid_match[1]]
             suffix = pid[len(lesson['id'])+1:]
             article = enhance_article(article, lesson, suffix)
-            if suffix == 'start':
+            if suffix == 'start' and lesson.get('study_route'):
                 article += route_html(lesson)
         return article
     html = re.sub(r'<article\b[^>]*>[\s\S]*?</article>', article_replacement, html)
@@ -200,7 +230,7 @@ def build(out_root):
     html = re.sub(r'(href="#[^"]+">)(\d+)(?:–(\d+))?(쪽 · 이 단계 시작 →)',
                   lambda m: m[1] + str(old_numbers[int(m[2])]) + ('–' + str(old_numbers[int(m[3])]) if m[3] else '') + m[4], html)
     source_lessons = {key: value['lesson'] for key, value in base['sourceIndex'].items()}
-    source_lessons.update({uid + '-route': lesson['number'] for uid, lesson in lessons.items()})
+    source_lessons.update({uid + '-route': lesson['number'] for uid, lesson in lessons.items() if lesson.get('study_route')})
     parser = Sources(source_lessons)
     parser.feed(html)
     assert set(parser.index) == set(source_lessons), 'Lost source anchor'
@@ -209,6 +239,10 @@ def build(out_root):
     for lesson in lessons.values():
         for link in lesson['recall_links']:
             assert link['target'] in ids
+        for pause in lesson.get('study_pauses', []):
+            assert lesson['id'] + '-' + pause['after'] in ids
+            for link in pause['links']:
+                assert link['target'] in ids
     # A revision must not silently change learners' persisted answer keys.
     assert sorted(re.findall(r'data-save="([^"]+)"', html)) == sorted(re.findall(r'data-save="([^"]+)"', (base_dir / 'index.html').read_text()))
     js = (base_dir / 'app.js').read_text()
