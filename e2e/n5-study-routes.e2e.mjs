@@ -44,6 +44,30 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
   }
   row.checks.push('five routes at 1440/390/320; keyboard start retains edition');
   const indexBundle=JSON.parse(fs.readFileSync(new URL(`../src/content/textbookEditions/${revision}/bundle.json`,import.meta.url),'utf8'));
+  const copyEdits=JSON.parse(fs.readFileSync(new URL('../scripts/textbook/n5-copy-edits.json',import.meta.url),'utf8')).edits;
+  const changedPages=[...new Set(copyEdits.flatMap(edit=>edit.render.map(item=>item.target)))].filter(id=>id!=='cover');
+  // The application has its own book home; the packaged cover is an artifact.
+  const artifact=await context.request.get(`/api/books/japanese-n5/${revision}/asset?file=index.html`);assert.equal(artifact.status(),200);
+  const artifactHtml=await artifact.text();
+  for(const edit of copyEdits.filter(e=>e.render.some(r=>r.target==='cover')))assert(artifactHtml.includes(edit.after));
+  const compact=text=>text.replace(/\s/g,'');
+  for(const id of changedPages){
+   await page.goto(url(id));const section=page.locator('#'+id);await section.waitFor();
+   const rendered=compact(await section.textContent());
+   for(const edit of copyEdits.filter(e=>e.render.some(r=>r.target===id)))assert(rendered.includes(compact(edit.after)),`missing reviewed copy: ${id}/${edit.path}`);
+  }
+  row.checks.push('all scoped reading copy rendered, including hidden rationales; packaged cover separately verified');
+  for(const width of [1440,390,320]){
+   await page.setViewportSize({width,height:1000});
+   for(const id of ['guide-katakana','u14-start','u17-start','u39-start','colophon']){
+    await page.goto(url(id));const section=page.locator('#'+id);await section.waitFor();await page.evaluate(()=>document.fonts.ready);
+    const layout=await section.evaluate(el=>({width:innerWidth,documentWidth:document.documentElement.scrollWidth,contentWidth:el.clientWidth,scrollWidth:el.scrollWidth}));
+    assert(layout.documentWidth<=width+1&&layout.scrollWidth<=layout.contentWidth+1,`copy overflow ${id}/${width}`);
+    row.layouts.push({unit:id,...layout});
+    if(width!==320)await section.screenshot({path:path.join(out,`${name}-copy-${id}-${width}.png`)});
+   }
+  }
+  row.checks.push('reviewed kana, question, lesson and edition guidance readable at 1440/390/320');
   const linked=indexBundle.manuscript.kanjiIndex.filter(e=>e.readingLink);
   for(const width of [1440,390,320]){
    await page.setViewportSize({width,height:1000});await page.goto(url('kanji-540d'));await page.locator('#kanji-540d').waitFor();
