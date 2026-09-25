@@ -8,7 +8,7 @@ import {candidate,currentCandidate,contentHash,verifiedAsset} from './server';
 import {extractReadingSections} from '../bookReadingHtml';
 import {resolveBookSelection,bookSourceHref} from './sources';
 
-const OLD='7f572327dc67893e9453246c',NEXT='c6ed2c215bbf36a50fe555cb';
+const OLD='7f572327dc67893e9453246c',NEXT='6a1d083d5cf869c7ba0077c1';
 const root=path.resolve('src/content/textbookEditions');
 const load=id=>JSON.parse(fs.readFileSync(path.join(root,id,'bundle.json'),'utf8'));
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
@@ -28,7 +28,8 @@ describe('N5 staged study revision',()=>{
    }
    for(const key of ['id','number','kanji','audioEnabled','patterns','study_pages','dialog','checks'])expect(lesson[key]).toEqual(original[key]);
   }
-  for(const key of ['lexicon','grammarIndex','kanjiIndex','cultures'])expect(next.manuscript[key]).toEqual(base.manuscript[key]);
+  expect(next.manuscript.kanjiIndex.map(({readingLink,...entry})=>entry)).toEqual(base.manuscript.kanjiIndex);
+  for(const key of ['lexicon','grammarIndex','cultures'])expect(next.manuscript[key]).toEqual(base.manuscript[key]);
  });
  it('retains all page, source and learner answer identities while adding five routes',()=>{
   expect(next.pages).toHaveLength(base.pages.length+5);

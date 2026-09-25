@@ -43,6 +43,49 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
    }
   }
   row.checks.push('five routes at 1440/390/320; keyboard start retains edition');
+  const indexBundle=JSON.parse(fs.readFileSync(new URL(`../src/content/textbookEditions/${revision}/bundle.json`,import.meta.url),'utf8'));
+  const linked=indexBundle.manuscript.kanjiIndex.filter(e=>e.readingLink);
+  for(const width of [1440,390,320]){
+   await page.setViewportSize({width,height:1000});await page.goto(url('kanji-540d'));await page.locator('#kanji-540d').waitFor();
+   await page.waitForFunction(()=>{const card=document.querySelector('#kanji-540d').getBoundingClientRect(),bar=document.querySelector('.manabi-reader-toolbar').getBoundingClientRect();return card.top>=bar.bottom&&card.top<260;});
+   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+   assert.equal(await page.locator('.kanji-card').count(),103);
+   assert.equal(await page.locator('.kanji-reading-link').count(),38);
+   for(const id of ['kanji-540d','kanji-4e2d','kanji-805e']){
+    const card=page.locator('#'+id);await card.scrollIntoViewIfNeeded();
+    const box=await card.evaluate(el=>({width:innerWidth,documentWidth:document.documentElement.scrollWidth,cardWidth:el.clientWidth,scrollWidth:el.scrollWidth,minTarget:Math.min(...[...el.querySelectorAll('a')].map(a=>a.getBoundingClientRect().height))}));
+    assert(box.scrollWidth<=box.cardWidth+1);assert(box.minTarget>=44);row.layouts.push({unit:id,...box});
+   }
+   await page.locator('#kanji-540d').scrollIntoViewIfNeeded();
+   if(width!==320)await page.screenshot({path:path.join(out,`${name}-kanji-links-${width}.png`)});
+  }
+  row.checks.push('103 cards / 38 verified reading links; same/form/usage layouts and 44px targets at 1440/390/320');
+  for(const entry of linked){
+   await page.goto(url(entry.id));const link=page.locator('#'+entry.id+' .kanji-reading-link');await link.waitFor();
+   await link.focus();await page.keyboard.press('Enter');await page.waitForURL('**#'+entry.readingLink.target);await page.locator('#'+entry.readingLink.target).waitFor();
+   assert.equal(new URL(page.url()).searchParams.get('edition'),revision);
+   await page.goBack();await page.locator('#'+entry.id).waitFor();
+  }
+  row.checks.push('all 38 index → actual reading destination → browser back routes preserve edition');
+  await page.goto(url('reference-start'));const search=page.getByRole('searchbox',{name:'어휘·문형·한자 검색'});await search.waitFor();
+  for(const term of ['名前','なまえ','이름']){
+   await search.fill(term);await page.locator('#kanji-540d').waitFor();assert(await page.locator('#kanji-540d').isVisible());
+  }
+  await search.fill('〜です');await page.locator('#gram-001').waitFor();
+  await search.fill('검색결과없음xyz');await page.getByText('일치하는 항목이 없어요. 다른 말로 찾아보세요.',{exact:true}).waitFor();
+  assert.equal(await page.locator('.kanji-card:visible').count(),0);
+  await search.fill('');assert.equal(await page.locator('.kanji-card:visible').count(),103);
+  await search.fill('名前');await page.locator('#kanji-540d .kanji-reading-link').click();await page.waitForURL('**#u41-dialogue');
+  await page.goBack();await page.locator('#kanji-540d').waitFor();
+  assert.equal(await search.inputValue(),'');
+  await page.waitForURL('**#kanji-540d');
+  await page.waitForFunction(()=>document.activeElement?.id==='kanji-540d');
+  row.checks.push('kanji/kana/Korean and grammar search, empty result, clear, destination and back');
+  await page.goto(url('kanji-540d'));const toggle=page.locator('#kanjiIndex-7 .hide-meanings');await toggle.waitFor();
+  await toggle.click();assert.equal(await toggle.textContent(),'읽기·뜻 보기');assert.equal(await page.locator('#kanji-540d .meaning').evaluate(el=>getComputedStyle(el).visibility),'hidden');
+  await toggle.click();assert.equal(await toggle.textContent(),'읽기·뜻 가리기');
+  row.checks.push('kanji reading/meaning toggle keeps accurate label and restores content');
+
   const aids=[['u32-review2','写真','しゃしん'],['u37-practice','持って','もって'],['u41-patterns','聞きながら','ききながら'],['u41-dialogue','名前','なまえ'],['u42-review3','多い','おおい'],['u42-review5','今度','こんど']];
   for(const width of [1440,390,320]){
    await page.setViewportSize({width,height:1000});

@@ -16,3 +16,13 @@
 .book-recall-links ul{list-style:none;margin:6px 0;padding:0;display:flex;gap:4px 22px;flex-wrap:wrap}
 .book-recall-links li{min-width:0}
 @container (max-width:550px){.book-route-list>li{grid-template-columns:26px minmax(0,1fr);gap:10px;padding:20px 0}.book-route-list h3{font-size:18px}.book-study-pause{padding:18px 16px}.book-recall-links ul{display:block}}
+
+/* The primary reading link and the earlier related scene have distinct roles. */
+.book-kanji-links{grid-column:2;display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
+.book-kanji-links a{display:inline-flex;flex-wrap:wrap;align-items:center;min-height:44px;font-size:13px;line-height:1.6;color:var(--mauve,#994a5a);text-underline-offset:4px;overflow-wrap:anywhere}
+.book-kanji-links .kanji-reading-link{font-weight:700}
+.book-kanji-links [lang=ja]{font-size:inherit!important}
+.book-kanji-links a:focus-visible{outline:2px solid var(--mauve,#994a5a);outline-offset:3px}
+.book-reading-content .kanji-card{scroll-margin-top:180px}
+.book-reader.is-focused .kanji-card{scroll-margin-top:100px}
+@container manabi-shell (max-width:680px){.book-reading-content .kanji-card{scroll-margin-top:160px}.book-reader.is-focused .kanji-card{scroll-margin-top:100px}}

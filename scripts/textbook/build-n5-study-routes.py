@@ -13,6 +13,7 @@ from html import escape
 from html.parser import HTMLParser
 from pathlib import Path
 from practice_labels import practice_text, rename_html, rename_manuscript
+from kanji_links import apply_links, render_links
 
 REPO = Path(__file__).resolve().parents[2]
 ROOT = REPO / 'src/content/textbookEditions'
@@ -178,10 +179,11 @@ def build(out_root):
     if spec.get('practiceTerminology'):
         book = rename_manuscript(book)
         book['practiceTerminology'] = spec['practiceTerminology']
+    apply_links(book, json.loads(Path(__file__).with_name('n5-kanji-links.json').read_text()))
     digest = sha(canonical({k: v for k, v in book.items() if k not in {'revision', 'source', 'editorialChanges'}}))
     edition = digest[:24]
     book['revision'] = edition
-    book['editorialChanges'] = ['20·23·32·35·42과 학습 경로와 마침점', '39과 본학습·다음 날·누적 복습 구분', '앞 과로 돌아가는 누적 회상 링크', '32·39과 지시문 및 42과 대비 근거 명확화', '교재 연습 명칭과 저장 표현 복습 구분', '한자 읽기 도움 6곳 보완']
+    book['editorialChanges'] = ['20·23·32·35·42과 학습 경로와 마침점', '39과 본학습·다음 날·누적 복습 구분', '앞 과로 돌아가는 누적 회상 링크', '32·39과 지시문 및 42과 대비 근거 명확화', '교재 연습 명칭과 저장 표현 복습 구분', '한자 읽기 도움 6곳 보완', '한자 색인의 대표 단어·읽기 본문 연결']
 
     pages = copy.deepcopy(base['pages'])
     lessons = {l['id']: l for l in book['lessons'] if l['id'] in spec['lessons'] or l.get('reading_support')}
@@ -219,7 +221,7 @@ def build(out_root):
     def article_replacement(match):
         article = match[0]
         uid_match = re.search(r'data-unit-page="(u\d\d)"', article.split('>', 1)[0])
-        id_match = re.search(r'\bid="([a-z0-9-]+)"', article.split('>', 1)[0])
+        id_match = re.search(r'\bid="([a-zA-Z0-9-]+)"', article.split('>', 1)[0])
         if not id_match:
             return article
         pid = id_match[1]
@@ -244,6 +246,7 @@ def build(out_root):
             html = html[:selected[0].start()] + ''.join(m[0] for m in ordered) + html[selected[-1].end():]
     if spec.get('practiceTerminology'):
         html = rename_html(html)
+    html = render_links(html, book['kanjiIndex'])
     # Existing route labels refer to web page order, not a newly generated PDF.
     html = re.sub(r'(href="#[^"]+">)(\d+)(?:–(\d+))?(쪽 · 이 단계 시작 →)',
                   lambda m: m[1] + str(old_numbers[int(m[2])]) + ('–' + str(old_numbers[int(m[3])]) if m[3] else '') + m[4], html)
@@ -267,6 +270,12 @@ def build(out_root):
     js, count = re.subn(r'const editionPages=[\s\S]*?;\nfunction syncEditionPdf',
                         lambda _: 'const editionPages=' + json.dumps(pages, ensure_ascii=False) + ';\nfunction syncEditionPdf', js)
     assert count == 1
+    # The standalone artifact and the application reader search the same cards.
+    js = js.replace("querySelectorAll('.lex-card')", "querySelectorAll('.lex-card,.kanji-card,.grammar-recall')")
+    js = js.replace("card.dataset.search.toLowerCase()", "(card.dataset.search||card.textContent).toLowerCase()")
+    js = js.replace("querySelector('.lex-card:not([hidden])')", "querySelector('.lex-card:not([hidden]),.kanji-card:not([hidden]),.grammar-recall:not([hidden])')")
+    js = js.replace('개 단어를 찾았어요.', '개 항목을 찾았어요.')
+    js = js.replace("b.textContent=hide?'뜻 보기':'뜻 가리기'", "b.textContent=b.closest('article').querySelector('.kanji-card')?(hide?'읽기·뜻 보기':'읽기·뜻 가리기'):(hide?'뜻 보기':'뜻 가리기')")
     css = (base_dir / 'style.css').read_text() + '\n' + (REPO / 'src/components/books/study-route.css').read_text()
     files = {'index.html': html, 'app.js': js, 'style.css': css}
     assets = {key: {'sha256': sha(value.encode()), 'bytes': len(value.encode()), 'type': base['assets'][key]['type']} for key, value in files.items()}

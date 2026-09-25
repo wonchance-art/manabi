@@ -116,6 +116,7 @@ export default function BookReader({ book, sectionIndex, preview = false }) {
       target?.closest('details')?.setAttribute('open', '');
       if (id === 'cover' || id === unit || id === `${unit}-start`) window.scrollTo({ top: 0 });
       else (target || root.current)?.scrollIntoView({ block: 'start' });
+      if (target?.classList.contains('kanji-card')) { target.setAttribute('tabindex', '-1'); target.focus({ preventScroll: true }); }
       pendingAnchor.current = null;
       if (/^u\d{2}/.test(id)) update({ page: id });
     }); });
@@ -140,28 +141,34 @@ export default function BookReader({ book, sectionIndex, preview = false }) {
 
   useEffect(() => {
     const search = query.trim().toLocaleLowerCase();
-    const cards = [...(content.current?.querySelectorAll('.lex-card') || [])];
+    const cards = [...(content.current?.querySelectorAll('.lex-card,.kanji-card,.grammar-recall') || [])];
     cards.forEach(card => { card.hidden = !!search && !card.textContent.toLocaleLowerCase().includes(search); });
     setSearchCount(cards.filter(card => !card.hidden).length);
-    if (unit === 'reference') content.current?.querySelectorAll('article').forEach(article => { article.hidden = !!search && !article.querySelector('.lex-card:not([hidden])'); });
+    if (unit === 'reference') content.current?.querySelectorAll('article').forEach(article => { article.hidden = !!search && !article.querySelector('.lex-card:not([hidden]),.kanji-card:not([hidden]),.grammar-recall:not([hidden])'); });
   }, [query, sections, unit]);
 
-  const go = useCallback(id => {
+  const go = useCallback((id, originAnchor) => {
     dialog.current?.close();
     const back=new URLSearchParams(window.location.search).get('returnTo');
     const destination=new URL(bookHref(book.edition,id),window.location.origin);
     if(back)destination.searchParams.set('returnTo',safeLibraryReturn(back));
+    // Return from a reading link to the exact card, including after a search.
+    if (originAnchor && unit === 'reference') {
+      const origin = new URL(window.location.href); origin.hash = originAnchor;
+      window.history.replaceState(window.history.state, '', origin.pathname+origin.search+origin.hash);
+    }
     window.history.pushState(window.history.state, '', destination.pathname+destination.search+destination.hash);
+    setQuery('');
     pendingAnchor.current = id; setPageId(id); setActive(id);
     if (/^u\d{2}/.test(id)) update({ page: id });
     if (id === pageId) requestAnimationFrame(() => { document.getElementById(id)?.scrollIntoView({ block: 'start' }); pendingAnchor.current = null; });
-  }, [book.edition, pageId, update]);
+  }, [book.edition, pageId, unit, update]);
 
   function interact(event) {
     const anchor = event.target.closest('a[href]');
     if (anchor && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
       const url = new URL(anchor.href, window.location.href);
-      if (url.origin === location.origin && url.pathname === `/books/${BOOK_ID}` && url.hash) { event.preventDefault(); go(decodeURIComponent(url.hash.slice(1))); return; }
+      if (url.origin === location.origin && url.pathname === `/books/${BOOK_ID}` && url.hash) { event.preventDefault(); go(decodeURIComponent(url.hash.slice(1)), anchor.closest('.kanji-card')?.id); return; }
     }
     const button = event.target.closest('button');
     if (button?.dataset.unit) go(button.dataset.unit);
@@ -172,7 +179,7 @@ export default function BookReader({ book, sectionIndex, preview = false }) {
     }
     if (button?.classList.contains('hide-meanings')) {
       const hidden = button.closest('article')?.classList.toggle('meaning-hidden');
-      button.setAttribute('aria-pressed', String(!!hidden)); button.textContent = hidden ? '뜻 보기' : '뜻 가리기';
+      button.setAttribute('aria-pressed', String(!!hidden)); button.textContent = button.closest('article').querySelector('.kanji-card') ? (hidden ? '읽기·뜻 보기' : '읽기·뜻 가리기') : (hidden ? '뜻 보기' : '뜻 가리기');
     }
   }
 
