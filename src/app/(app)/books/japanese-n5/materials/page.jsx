@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 export const metadata = { title: '일본어 N5 · 함께 읽기' };
 export default async function Page({ searchParams }) {
   const params = await searchParams;
-  let book;
-  try { book = readingCatalog((await publishedReading(params?.edition)).book); } catch { notFound(); }
-  return <BookMaterials book={book} />;
+  let book, preview;
+  try { const reading = await publishedReading(params?.edition, true); book = readingCatalog(reading.book); preview = reading.preview; } catch { notFound(); }
+  return <BookMaterials book={book} preview={preview} />;
 }
