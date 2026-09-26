@@ -80,7 +80,10 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
     assert.equal(await section.locator('.check').count(),3);assert.equal(await section.locator('input[type=radio]').count(),12);
     assert.equal(await section.locator('.review-answers').getAttribute('open'),null);
     const first=model.tasks[0],input=section.locator(`input[data-save="${first.id}"][value="${first.options.indexOf(first.answer)}"]`);
-    await input.check();await page.reload();await section.waitFor();assert(await input.isChecked());
+    await input.check();await page.reload();await section.waitFor();
+    // The page is inserted before the reading effect restores saved inputs.
+    await page.waitForFunction(({id,value})=>document.querySelector(`input[data-save="${id}"][value="${value}"]`)?.checked,{id:first.id,value:String(first.options.indexOf(first.answer))},{timeout:5000});
+    assert(await input.isChecked());
     await section.locator('.review-answers summary').click();
     assert((await section.locator('.review-answers').innerText()).includes(first.why));
     if(width!==320)await section.screenshot({path:path.join(out,`${name}-written-${model.id}-${width}.png`)});
