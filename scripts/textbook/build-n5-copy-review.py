@@ -35,9 +35,20 @@ def apply_edits(book, html, edits):
         if edit['format'] == 'metadata':
             assert not edit['render']
             continue
-        render = core.rich if edit['format'] == 'rich' else escape
-        assert edit['format'] in {'rich', 'plain'} and edit['render']
-        before, after = render(edit['before']), render(edit['after'])
+        assert edit['format'] in {'rich', 'plain', 'phrase'} and edit['render']
+        if edit['format'] == 'phrase':
+            # Replace only a verified unannotated phrase; keep surrounding ruby
+            # and the original reading renderer's segmentation intact.
+            assert key == 'reading'
+            fragment = edit['phrase']
+            assert fragment['before'] and edit['before'].count(fragment['before']) == 1
+            assert edit['before'].replace(fragment['before'], fragment['after']) == edit['after']
+            def phrases(text):
+                return ' '.join('<span class="phrase">' + escape(part) + '</span>' for part in text.split(' '))
+            before, after = phrases(fragment['before']), phrases(fragment['after'])
+        else:
+            render = core.rich if edit['format'] == 'rich' else escape
+            before, after = render(edit['before']), render(edit['after'])
         for occurrence in edit['render']:
             matches = [m for m in ARTICLE.finditer(html)
                        if f'id="{occurrence["target"]}"' in m[0].split('>', 1)[0]]
@@ -49,8 +60,8 @@ def apply_edits(book, html, edits):
     return book, html
 
 
-def build(out_root):
-    plan = json.loads((HERE / 'n5-copy-edits.json').read_text())
+def build(out_root, plan_path=HERE / 'n5-copy-edits.json'):
+    plan = json.loads(plan_path.read_text())
     base_dir = ROOT / plan['baseEdition']
     raw = (base_dir / 'bundle.json').read_bytes()
     assert core.sha(raw) == plan['baseBundleSha256'], 'Pinned publication changed'
@@ -64,9 +75,18 @@ def build(out_root):
     edition = digest[:24]
     book['revision'] = edition
     book['editorialChanges'] = [*book.get('editorialChanges', []),
-                               '공식 N5 유형 대조·대화 질문 조건·한국어 해설·현재 매체 안내 교정']
+                               plan.get('revisionNote', '공식 N5 유형 대조·대화 질문 조건·한국어 해설·현재 매체 안내 교정')]
     for pattern in [r'\bid="([^"]+)"', r'data-save="([^"]+)"', r'href="([^"]+)"']:
         assert re.findall(pattern, html) == re.findall(pattern, original), 'Changed stable identity/link'
+    # Old manifests remain byte-reproducible. New reviews opt in to identifying
+    # their own artifact, while font/audio paths retain the inherited edition.
+    if plan.get('refreshAssetLinks'):
+        html, count = re.subn(r'(<meta name="manuscript-revision" content=")[a-f0-9]{24}(">)',
+                             lambda m: m[1] + edition + m[2], html)
+        assert count == 1, 'Missing/ambiguous edition marker'
+        html, count = re.subn(r'(/api/books/japanese-n5/)[a-f0-9]{24}(/asset\?file=(?:app\.js|style\.css))',
+                             lambda m: m[1] + edition + m[2], html)
+        assert count == 2, 'Missing/ambiguous runtime asset links'
     parser = core.Sources({key: value['lesson'] for key, value in base['sourceIndex'].items()})
     parser.feed(html)
     assert set(parser.index) == set(base['sourceIndex']), 'Lost expression source'
@@ -98,4 +118,6 @@ def build(out_root):
 if __name__ == '__main__':
     args = argparse.ArgumentParser()
     args.add_argument('--out', type=Path, default=ROOT)
-    build(args.parse_args().out)
+    args.add_argument('--plan', type=Path, default=HERE / 'n5-copy-edits.json')
+    options = args.parse_args()
+    build(options.out, options.plan)
