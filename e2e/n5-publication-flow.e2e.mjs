@@ -22,18 +22,18 @@ for(const [engine,type]of [['chromium',chromium],['webkit',webkit]]){
   row.layouts.push({label,...dimensions});await page.screenshot({path:`${out}/${engine}-${label}.png`});
  };
  try{
-  await page.goto(base+path());await page.getByText('JAPANESE · N5 / 검수 중인 교재',{exact:true}).filter({visible:true}).waitFor();
+  await page.goto(base+path());await page.waitForLoadState('networkidle');await page.getByText('JAPANESE · N5 / 검수 중인 교재',{exact:true}).filter({visible:true}).waitFor();
   // The resume label changes only after the reader's first client effect.
   await page.getByRole('link',{name:'첫 과부터 시작하기 →',exact:true}).waitFor();
   await page.getByRole('button',{name:'내 계정',exact:true}).waitFor();
-  await page.getByRole('link',{name:'담은 표현 복습하기 ↗',exact:true}).click();await page.getByRole('heading',{name:'발행 후 표현을 담을 수 있어요.'}).waitFor();
+  await page.getByRole('link',{name:'담은 표현 복습하기 ↗',exact:true}).click();await page.getByRole('heading',{name:'발행 후 표현을 담을 수 있어요.'}).waitFor();await page.waitForLoadState('networkidle');
   assert.equal(reviewRequests,0);await page.getByRole('link',{name:'검수 중인 교재로 돌아가기 →'}).click();await page.locator('#u01-start').waitFor();
   assert(page.url().includes(id));await page.getByRole('link',{name:'← 책으로',exact:true}).click();await page.getByRole('link',{name:'함께 읽기 · 내 자료 ↗',exact:true}).click();
   await page.getByRole('status').filter({hasText:'내 자료 연결은 발행 후'}).waitFor();
   for(const width of [1440,390,320]){await page.setViewportSize({width,height:900});await layout(`preview-materials-${width}`);}
   const culture=page.locator('.manabi-culture-card').first();const href=await culture.getAttribute('href');await culture.click();await page.locator('#'+href.split('#')[1]).waitFor();assert(page.url().includes(id));
   row.checks.push('candidate home → review notice → same candidate → culture → same candidate; no private review request');
-  await page.goto(base+`/books/japanese-n5/review?edition=${id}`);await page.getByRole('heading',{name:'발행 후 표현을 담을 수 있어요.'}).waitFor();await layout('preview-review-320');
+  await page.goto(base+`/books/japanese-n5/review?edition=${id}`);await page.getByRole('heading',{name:'발행 후 표현을 담을 수 있어요.'}).waitFor();await page.waitForLoadState('networkidle');await layout('preview-review-320');
 
   let draft={manuscript:structuredClone(bundles[oldId].manuscript),content_hash:'a'.repeat(64),version:7};draft.manuscript.lessons[0].title='보존할 교사 초안';
   const original=structuredClone(draft),writes=[];let failSave=true,failLoad=false;
@@ -61,10 +61,18 @@ for(const [engine,type]of [['chromium',chromium],['webkit',webkit]]){
   for(const width of [1440,390,320]){await page.setViewportSize({width,height:900});await layout(`editor-preserved-draft-${width}`);}
   const downloadEvent=page.waitForEvent('download');await page.getByRole('button',{name:'저장된 초안 내려받기'}).press('Enter');const downloaded=await downloadEvent;
   assert.deepEqual(JSON.parse(fs.readFileSync(await downloaded.path(),'utf8')),original.manuscript);
-  await page.getByRole('button',{name:'검수 원고로 편집 시작'}).press('Enter');assert.equal(await title.inputValue(),bundles[id].manuscript.lessons[0].title);assert.equal(await selector.isEnabled(),false);assert.equal(writes.length,0);
+  await title.fill('보관 이후 추가한 미저장 입력');
+  assert.equal(await page.getByRole('button',{name:'검수 원고로 편집 시작'}).isEnabled(),false);
+  assert.equal(await title.inputValue(),'보관 이후 추가한 미저장 입력');assert.equal(writes.length,0);
+  // Explicitly abandon this synthetic unsaved edit through the existing reload confirmation.
+  page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'최신 초안 불러오기',exact:true}).click();
+  await page.waitForFunction(expected=>document.querySelectorAll('.book-editor__field textarea')[1]?.value===expected,original.manuscript.lessons[0].title);
+  const backupAgain=page.waitForEvent('download');await page.getByRole('button',{name:'저장된 초안 내려받기'}).press('Enter');await backupAgain;
+  await page.getByRole('button',{name:'검수 원고로 편집 시작'}).press('Enter');assert.equal(await title.inputValue(),bundles[id].manuscript.lessons[0].title);
+  assert.equal(await page.getByRole('button',{name:'검수 원고로 편집 시작'}).isEnabled(),false);assert.equal(await selector.isEnabled(),false);assert.equal(writes.length,0);
   await page.getByRole('button',{name:'초안 저장',exact:true}).click();await page.getByRole('alert').filter({hasText:'동시 저장 충돌'}).waitFor();assert.equal(await title.inputValue(),bundles[id].manuscript.lessons[0].title);
   await page.getByRole('button',{name:'초안 저장',exact:true}).click();await page.getByRole('status').filter({hasText:'비공개 초안을 저장했어요'}).waitFor();assert.equal(await page.getByRole('button',{name:'검수한 판본 발행',exact:true}).isEnabled(),true);assert.equal(writes.length,2);
-  row.checks.push('candidate switching and failed load preserve draft; backup matches original; keyboard adoption writes nothing until save; conflict preserves input; matching draft enables publication');
+  row.checks.push('candidate switching and failed load preserve draft; backup matches original; unsaved edits block replacement; keyboard adoption writes nothing until save; conflict preserves input; matching draft enables publication');
 
   const guest=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'});const guestPage=await guest.newPage();
   await guestPage.goto(`${base}/books/japanese-n5?edition=${oldId}#u03-study1`);const signin=guestPage.locator('#u03-study1 .manabi-example-signin').first();await signin.waitFor();
