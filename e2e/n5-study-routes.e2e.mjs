@@ -12,7 +12,7 @@ const url=(anchor,edition=revision)=>`${base}/books/japanese-n5?edition=${editio
 const old='7f572327dc67893e9453246c';
 for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
  const browser=await engine.launch(name==='chromium'?{executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true}:{headless:true});
- const row={engine:name,checks:[],layouts:[],errors:[],writes:[]};report.engines.push(row);
+ const row={engine:name,checks:[],layouts:[],errors:[],writes:[],prefetches:[]};report.engines.push(row);
  try{
   const guest=await browser.newContext({baseURL:base,serviceWorkers:'block'});
   assert.equal((await guest.request.get(`/api/books/japanese-n5/${revision}/asset?file=index.html`)).status(),401);
@@ -24,6 +24,7 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
   await context.addCookies([{name:'sb-127-auth-token',value:fixtureSession(),url:base,sameSite:'Lax'}]);
   const page=await context.newPage();page.on('pageerror',e=>row.errors.push(e.message));
   page.on('console',message=>{if(message.type()==='error')row.errors.push(message.text());});
+  page.on('request',req=>{if(req.headers()['next-router-prefetch']==='1'&&/^\/books\/japanese-n5\/(materials|review)$/.test(new URL(req.url()).pathname))row.prefetches.push(new URL(req.url()).pathname);});
   page.on('request',req=>{if(['POST','PATCH','DELETE'].includes(req.method())&&!req.url().endsWith('/rpc/is_admin'))row.writes.push({method:req.method(),path:new URL(req.url()).pathname,body:req.postDataJSON()});});
   for(const width of [1440,390,320]){
    await page.setViewportSize({width,height:1000});
@@ -68,6 +69,47 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
    }
   }
   row.checks.push('reviewed kana, question, lesson and edition guidance readable at 1440/390/320');
+  const written=JSON.parse(fs.readFileSync(new URL('../scripts/textbook/n5-written-practice.json',import.meta.url),'utf8'));
+  for(const width of [1440,390,320]){
+   await page.setViewportSize({width,height:1000});
+   for(const model of written.pages){
+    await page.goto(url(model.id));const section=page.locator('#'+model.id);await section.waitFor();await page.evaluate(()=>document.fonts.ready);
+    const layout=await section.evaluate(el=>({width:innerWidth,documentWidth:document.documentElement.scrollWidth,contentWidth:el.clientWidth,scrollWidth:el.scrollWidth,minOption:Math.min(...[...el.querySelectorAll('.check label')].map(x=>x.getBoundingClientRect().height))}));
+    assert(layout.documentWidth<=width+1&&layout.scrollWidth<=layout.contentWidth+1,`practice overflow ${model.id}/${width}`);
+    assert(layout.minOption>=44,`small radio target ${model.id}/${width}`);row.layouts.push({unit:model.id,...layout});
+    assert.equal(await section.locator('.check').count(),3);assert.equal(await section.locator('input[type=radio]').count(),12);
+    assert.equal(await section.locator('.review-answers').getAttribute('open'),null);
+    const first=model.tasks[0],input=section.locator(`input[data-save="${first.id}"][value="${first.options.indexOf(first.answer)}"]`);
+    await input.check();await page.reload();await section.waitFor();assert(await input.isChecked());
+    await section.locator('.review-answers summary').click();
+    assert((await section.locator('.review-answers').innerText()).includes(first.why));
+    if(width!==320)await section.screenshot({path:path.join(out,`${name}-written-${model.id}-${width}.png`)});
+   }
+  }
+  row.checks.push('five added pages / fifteen radio groups, folded answers, complete rationales, 44px targets and draft reload at 1440/390/320');
+  for(const link of written.entryLinks){
+   await page.goto(url(link.from));await page.locator('#'+link.from).waitFor();
+   const entry=page.locator('#'+link.from).getByRole('link',{name:link.label+' →',exact:true});
+   await entry.focus();await page.keyboard.press('Enter');await page.waitForURL('**#'+link.target);await page.locator('#'+link.target).waitFor();
+   assert.equal(new URL(page.url()).searchParams.get('edition'),revision);
+   await page.goBack();await page.locator('#'+link.from).waitFor();
+  }
+  row.checks.push('all five new entries work with keyboard and return to their original section');
+  for(const model of written.pages){
+   await page.goto(url(model.id));const section=page.locator('#'+model.id);await section.waitFor();
+   for(const link of model.help){
+    await section.getByRole('link',{name:link.label+' →',exact:true}).click();await page.waitForURL('**#'+link.target);await page.locator('#'+link.target).waitFor();
+    await page.goBack();await section.waitFor();
+   }
+  }
+  await page.goto(url('guide-katakana-small'));await page.locator('#guide-katakana-small').waitFor();
+  await page.locator('#guide-katakana-small .practice-preparation summary').click();
+  await page.locator('#guide-katakana-small a[href="#lex-329"]').click();await page.waitForURL('**#lex-329');await page.locator('#lex-329').waitFor();
+  await page.goBack();await page.locator('#guide-katakana-small').waitFor();assert(await page.locator('input[data-save="kp-small-1"][value="2"]').isChecked());
+  row.checks.push('all new prerequisites and vocabulary evidence return to the selected answer');
+  await page.goto(url('guide-katakana',written.baseEdition));await page.locator('#guide-katakana').waitFor();
+  assert.equal(await page.locator('input[data-save^="kp-"]').count(),0);
+  row.checks.push('old copy-review edition keeps its original guide and never receives new question groups');
   const linked=indexBundle.manuscript.kanjiIndex.filter(e=>e.readingLink);
   for(const width of [1440,390,320]){
    await page.setViewportSize({width,height:1000});await page.goto(url('kanji-540d'));await page.locator('#kanji-540d').waitFor();
@@ -86,6 +128,9 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
   row.checks.push('103 cards / 38 verified reading links; same/form/usage layouts and 44px targets at 1440/390/320');
   for(const entry of linked){
    await page.goto(url(entry.id));const link=page.locator('#'+entry.id+' .kanji-reading-link');await link.waitFor();
+   // The reader restores focus to the destination card after fonts settle.
+   // Verify that arrival before moving keyboard focus into its reading link.
+   await page.waitForFunction(id=>document.activeElement?.id===id,entry.id);
    await link.focus();await page.keyboard.press('Enter');await page.waitForURL('**#'+entry.readingLink.target);await page.locator('#'+entry.readingLink.target).waitFor();
    assert.equal(new URL(page.url()).searchParams.get('edition'),revision);
    await page.goBack();await page.locator('#'+entry.id).waitFor();
@@ -184,6 +229,20 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
   await page.goto(url('u42-route'));await page.locator('#u42-route').waitFor();
   await page.getByRole('button',{name:'집중 읽기',exact:true}).click();assert.equal(await page.locator('.gnb').isVisible(),false);
   await page.getByRole('button',{name:'기본 보기',exact:true}).click();assert.equal(await page.locator('.gnb').isVisible(),true);row.checks.push('focus reading returns to normal chrome');
+  await page.setViewportSize({width:1440,height:1000});
+  assert.deepEqual(row.prefetches,[]);
+  // Companion screens intentionally accept only published editions.
+  await page.goto(url('u42-start',old));await page.locator('#u42-start').waitFor();
+  await page.getByRole('link',{name:'함께 읽기 ↗',exact:true}).click();await page.waitForURL('**/materials?edition='+old);
+  await page.getByRole('heading',{name:'책 밖으로 이어 읽기.',exact:true}).waitFor();
+  await page.waitForLoadState('networkidle');
+  await page.goBack();await page.locator('#u42-start').waitFor();
+  await page.getByRole('link',{name:'담은 표현',exact:true}).click();await page.waitForURL('**/review?edition='+old);
+  await page.getByRole('heading',{name:'다시 꺼내 보는 문장.',exact:true}).waitFor();
+  await page.getByRole('heading',{name:'첫 문장을 담아 볼까요?',exact:true}).waitFor();
+  await page.waitForLoadState('networkidle');
+  await page.goBack();await page.locator('#u42-start').waitFor();
+  row.checks.push('reader causes no automatic materials/review prefetch; published companion navigation and return remain available');
   assert.deepEqual(row.errors,[]);
   for(const write of row.writes){assert.equal(write.method,'POST');assert.equal(write.path,'/rest/v1/library_reading_activity');assert.equal(write.body.target_kind,'edition');assert.equal(write.body.target_id,old);assert.equal(write.body.owner_id,'00000000-0000-4000-8000-000000000042');}
   row.checks.push('preview causes no server write; original visit logs only its own reading activity');await context.close();
