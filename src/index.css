@@ -1025,7 +1025,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 /* ── 풀폭 단어 행(row) — 섹터 고정폭 정렬, 정보 풍부 ── */
-.vocab-list { display: flex; flex-direction: column; gap: 8px; }
+.vocab-list { display: flex; flex-direction: column; gap: 8px; container: vocab-list / inline-size; }
 /* 2행 그리드 — 1행: 품사·듣기·단어·뜻·우측 (한 라인) / 2행: 발음(단어 아래)·예문(뜻 아래) */
 .vocab-row {
   display: grid;
@@ -1161,6 +1161,26 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .vocab-row__tts { width: 28px; height: 28px; }
   .vocab-row__word { font-size: 1.12rem; }
   .vocab-row__dot { display: none; }
+}
+@container vocab-list (max-width: 368px) {
+  .vocab-row {
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "tts word right"
+      ". reading right"
+      "pos meaning meaning"
+      "ex ex ex";
+    row-gap: 6px;
+  }
+  .vocab-row--sel {
+    grid-template-columns: 24px 28px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "check tts word right"
+      "check . reading right"
+      "check pos meaning meaning"
+      "check ex ex ex";
+  }
+  .vocab-row__right { flex-wrap: wrap; justify-content: flex-end; max-width: 120px; }
 }
 
 /* ========= Vocab Detail Card ========= */

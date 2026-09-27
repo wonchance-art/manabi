@@ -7,11 +7,11 @@ import { splitSentenceAroundWord } from '../../lib/constants';
 import { reviewSourceContexts } from '../../lib/learningSources';
 import './learning.css';
 
-export default function VocabularyContexts({ vocabularyId, readOnly = false, word = null }) {
+export default function VocabularyContexts({ vocabularyId, readOnly = false, word = null, heading = null }) {
   const {user}=useAuth();
   const [removing,setRemoving]=useState(null),[removeError,setRemoveError]=useState('');
-  const {data,error,refetch}=useQuery({queryKey:['vocabulary-contexts',user?.id,vocabularyId],enabled:!!user&&!!vocabularyId,
-    queryFn:async()=>{const response=await fetch(`/api/learning/vocabulary?id=${encodeURIComponent(vocabularyId)}`,{cache:'no-store'});const result=await response.json();if(!response.ok)throw new Error(result.error);return result.contexts;}});
+  const {data,error,refetch,isPending}=useQuery({queryKey:['vocabulary-contexts',user?.id,vocabularyId],enabled:!!user&&!!vocabularyId,
+    queryFn:async({signal})=>{const response=await fetch(`/api/learning/vocabulary?id=${encodeURIComponent(vocabularyId)}`,{cache:'no-store',signal});const result=await response.json();if(!response.ok||!Array.isArray(result.contexts))throw new Error(result.error||'문맥을 불러오지 못했어요.');return result.contexts;}});
   async function remove(id) {
     setRemoving(id);setRemoveError('');
     try {
@@ -22,8 +22,13 @@ export default function VocabularyContexts({ vocabularyId, readOnly = false, wor
     } catch(cause) {setRemoveError(cause.message);} finally {setRemoving(null);}
   }
   const {primary,others}=word?reviewSourceContexts(word,data || []):{primary:null,others:data || []};
+  // Wait for the saved locator before offering a legacy material-only link.
+  // An empty/error response can still use a validated older source record.
+  const loading=!!user&&!!vocabularyId&&isPending;
   return <>
-    {primary&&<section className="review-card__context" aria-label="저장한 문맥">
+    {(loading||error||primary||others.length>0)&&heading}
+    {loading&&<p className="learning-links__muted" role="status">저장한 문맥을 확인하고 있어요.</p>}
+    {!loading&&primary&&<section className="review-card__context" aria-label="저장한 문맥">
       {primary.quote&&<p className="review-card__source">{(()=>{
         const {parts,term}=splitSentenceAroundWord(primary.quote,primary.locator?.surface || word.word_text,word.base_form);
         return parts.map((part,i)=><span key={i}>{part}{i<parts.length-1&&<mark className="review-card__highlight">{term}</mark>}</span>);

@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef } from 'react';
-import Link from 'next/link';
+import VocabularyContexts from '../components/learning/VocabularyContexts';
 import { displayWord } from '../lib/constants';
 import { isNewWord } from '../lib/vocabStudy';
 import { wordStage } from '../lib/growthStats';
@@ -12,7 +12,7 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
   useEffect(() => {
     const previousFocus = document.activeElement;
     const dialog = dialogRef.current;
-    const selector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const selector = 'button, [href], input, select, textarea, summary, [tabindex]:not([tabindex="-1"])';
     const focusInitial = window.setTimeout(() => dialog?.querySelector('[data-dialog-initial-focus]')?.focus(), 0);
     function onKeyDown(event) {
       if (event.key === 'Escape') {
@@ -21,15 +21,19 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
         return;
       }
       if (event.key !== 'Tab') return;
-      const focusable = [...(dialog?.querySelectorAll(selector) || [])].filter(el => !el.disabled);
+      const focusable = [...(dialog?.querySelectorAll(selector) || [])].filter(el => {
+        const closedDetails = el.closest('details:not([open])');
+        return !el.disabled && el.tabIndex >= 0 && el.getClientRects().length > 0
+          && (!closedDetails || el === closedDetails.querySelector(':scope > summary'));
+      });
       if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault(); last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault(); first.focus();
-      }
+      // Explicit traversal also includes source links in WebKit, where native
+      // Tab navigation may otherwise skip links and leave this modal.
+      event.preventDefault();
+      const current = focusable.indexOf(document.activeElement);
+      const next = current < 0 ? (event.shiftKey ? focusable.length - 1 : 0)
+        : (current + (event.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
+      focusable[next].focus();
     }
     document.addEventListener('keydown', onKeyDown);
     return () => {
@@ -137,37 +141,10 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
           </div>
         </div>
 
-        {/* 출처 자료 링크 */}
-        {v.source_material_id && (
-          <div className="vocab-detail-card__source">
-            <h3 className="vocab-detail-card__section-title">출처 자료</h3>
-            {v.source_sentence && (
-              <p style={{
-                fontSize: '0.85rem', color: 'var(--text-secondary)',
-                padding: '8px 12px', background: 'var(--bg-secondary)',
-                borderRadius: 'var(--radius-md)', marginBottom: 8, lineHeight: 1.6,
-              }}>
-                {v.source_sentence.split(v.word_text).map((part, i, arr) =>
-                  i < arr.length - 1
-                    ? <span key={i}>{part}<mark style={{ background: 'var(--primary-glow)', color: 'var(--primary-light)', padding: '0 3px', borderRadius: 3 }}>{v.word_text}</mark></span>
-                    : <span key={i}>{part}</span>
-                )}
-              </p>
-            )}
-            <Link
-              href={`/viewer/${v.source_material_id}`}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                fontSize: '0.85rem', color: 'var(--primary-light)',
-                textDecoration: 'none', padding: '6px 12px',
-                background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              원본 자료로 이동 →
-            </Link>
-          </div>
-        )}
+        <div className="vocab-detail-card__source">
+          <VocabularyContexts key={v.id} vocabularyId={v.id} word={v} readOnly
+            heading={<h3 className="vocab-detail-card__section-title">출처 자료</h3>} />
+        </div>
       </div>
     </div>
   );
