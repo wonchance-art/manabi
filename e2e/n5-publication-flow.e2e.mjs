@@ -3,7 +3,8 @@ import {chromium,webkit} from 'playwright-core';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {fixtureSession} from './fixtures/n5-revision-backend.mjs';
-const base=process.env.QA_BASE||'http://127.0.0.1:48991';
+// Next's local middleware canonicalizes loopback redirects to localhost.
+const base=process.env.QA_BASE||'http://localhost:48991';
 assert(['localhost','127.0.0.1'].includes(new URL(base).hostname),'synthetic authentication is local only');
 const out=process.env.QA_OUT||'.qa/runs/n5-publication-flow/browser';fs.mkdirSync(out,{recursive:true});
 const oldId='7f572327dc67893e9453246c',id='12d69782944b95ef7a11e529';
@@ -78,7 +79,15 @@ for(const [engine,type]of [['chromium',chromium],['webkit',webkit]]){
   await guestPage.goto(`${base}/books/japanese-n5?edition=${oldId}#u03-study1`);const signin=guestPage.locator('#u03-study1 .manabi-example-signin').first();await signin.waitFor();
   const authHref=await signin.getAttribute('href'),from=new URL(authHref,base).searchParams.get('from');assert.equal(from,`/books/japanese-n5?edition=${oldId}#u03-study1`);
   await signin.click();await guestPage.getByRole('heading',{name:'로그인',exact:true}).waitFor();assert.equal(new URL(guestPage.url()).searchParams.get('from'),from);
-  await guest.close();row.checks.push('guest example sign-in preserves exact published edition and source paragraph');
+  row.checks.push('guest example sign-in preserves exact published edition and source paragraph');
+  for(const destination of ['/admin/books/japanese-n5','/admin/textbooks?lang=Japanese&section=grammar']){
+   await guestPage.goto(base+destination);await guestPage.getByRole('heading',{name:'로그인',exact:true}).waitFor();
+   const target=new URL(guestPage.url());assert.equal(target.origin,new URL(base).origin);assert.equal(target.pathname,'/auth');assert.equal(target.searchParams.get('from'),destination);
+  }
+  await guestPage.evaluate(()=>document.fonts.ready);
+  const guestDimensions=await guestPage.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));assert(guestDimensions.scroll<=guestDimensions.width+1);
+  row.layouts.push({label:'admin-login-return-390',...guestDimensions});await guestPage.screenshot({path:`${out}/${engine}-admin-login-return-390.png`});
+  await guest.close();row.checks.push('anonymous admin editor and filtered textbook entry preserve exact internal destinations on the real login screen');
   assert.deepEqual(row.errors,[]);
  }catch(error){await page.screenshot({path:`${out}/${engine}-failure.png`}).catch(()=>{});row.failure=error.message;row.url=page.url();throw error;}
  finally{fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));await context.close();await browser.close();}
