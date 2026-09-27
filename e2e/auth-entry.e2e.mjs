@@ -1,4 +1,4 @@
-// Isolated browser regression: the shared header must preserve classroom context.
+// Isolated browser regression: sign-in must preserve classroom and vocabulary entry.
 // Network fixtures stop every auth/API request before it can reach a real account.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -27,55 +27,71 @@ const session = {
 const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': 'GET,POST,PATCH,OPTIONS,HEAD' };
 let activePage;
 try {
-  for (const width of [1440, 390]) {
-    const context = await browser.newContext({ viewport: { width, height: 900 }, serviceWorkers: 'block' });
-    const requests = [];
-    await context.route('**/*', route => {
-      const request = route.request(), url = new URL(request.url());
-      if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
-      if (url.pathname === '/auth/v1/authorize') {
-        requests.push(url);
-        return route.fulfill({ contentType: 'text/html', body: '<p>Intercepted provider</p>' });
+  for (const entry of [
+    { name: 'classroom', path: '/class/fixture-class?view=history&q=%E5%9B%BE%E4%B9%A6%E9%A6%86&restoreY=355#class-history' },
+    { name: 'vocabulary', path: '/vocab' },
+  ]) {
+    for (const width of [1440, 390]) {
+      const context = await browser.newContext({ viewport: { width, height: 900 }, serviceWorkers: 'block' });
+      const requests = [];
+      await context.route('**/*', route => {
+        const request = route.request(), url = new URL(request.url());
+        if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
+        if (url.pathname === '/auth/v1/authorize') {
+          requests.push(url);
+          return route.fulfill({ contentType: 'text/html', body: '<p>Intercepted provider</p>' });
+        }
+        if (url.pathname.startsWith('/auth/v1/')) return route.fulfill({ headers: cors, json: url.pathname.endsWith('/user') ? user : session });
+        if (url.pathname.startsWith('/rest/v1/')) {
+          const profile = { id: user.id, role: 'student', onboarded: true, display_name: '학생 검수', last_login_at: new Date().toISOString() };
+          return route.fulfill({ headers: cors, json: url.pathname.endsWith('/profiles') ? profile : [] });
+        }
+        if (url.origin === base && url.pathname.startsWith('/api/')) return route.fulfill({ json: {} });
+        // Never forward the fixture session to the preview server.
+        if (url.origin === base) return route.continue({ headers: { ...request.headers(), cookie: '' } });
+        return route.abort();
+      });
+      const page = await context.newPage(); activePage = page;
+      page.on('pageerror', error => report.errors.push(error.message));
+      const path = entry.path;
+      await page.goto(base + path);
+      if (entry.name === 'classroom') {
+        await page.getByRole('textbox', { name: '팀 암호', exact: true }).waitFor();
+        await page.getByRole('banner').getByRole('button', { name: '로그인', exact: true }).press('Enter');
+      } else {
+        const signIn = page.getByRole('link', { name: '로그인하고 단어장 쓰기', exact: true });
+        await signIn.waitFor();
+        await page.screenshot({ path: `${out}/vocab-entry-${width}.png` });
+        await signIn.press('Enter');
       }
-      if (url.pathname.startsWith('/auth/v1/')) return route.fulfill({ headers: cors, json: url.pathname.endsWith('/user') ? user : session });
-      if (url.pathname.startsWith('/rest/v1/')) {
-        const profile = { id: user.id, role: 'student', onboarded: true, display_name: '학생 검수', last_login_at: new Date().toISOString() };
-        return route.fulfill({ headers: cors, json: url.pathname.endsWith('/profiles') ? profile : [] });
+      await page.getByRole('heading', { name: '로그인', exact: true }).waitFor();
+      assert.equal(new URL(page.url()).searchParams.get('from'), path);
+      report.checks.push(`${entry.name} ${width}px: keyboard entry preserves the complete destination`);
+      await page.getByRole('banner').getByRole('button', { name: '로그인', exact: true }).click();
+      assert.equal(new URL(page.url()).searchParams.get('from'), path);
+      assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+      await page.screenshot({ path: `${out}/auth-entry-${entry.name}-${width}.png` });
+      await page.getByRole('button', { name: 'Google로 계속하기', exact: true }).click();
+      await page.waitForURL('**/auth/v1/authorize?**');
+      const callback = new URL(requests.at(-1).searchParams.get('redirect_to'));
+      assert.equal(callback.origin, base);
+      assert.equal(callback.pathname, '/auth/callback');
+      assert.equal(callback.searchParams.get('next'), path);
+      assert.equal(requests.at(-1).searchParams.get('code_challenge_method'), 's256');
+      report.checks.push(`${entry.name} ${width}px: repeated sign-in keeps Google PKCE callback destination`);
+      await page.goto(base + '/auth?' + new URLSearchParams({ from: path }));
+      await page.getByLabel('이메일', { exact: true }).fill(user.email);
+      await page.getByLabel('비밀번호', { exact: true }).fill('fixture-password');
+      await page.locator('form').getByRole('button', { name: '로그인', exact: true }).click();
+      await page.waitForURL(base + path);
+      if (entry.name === 'classroom') await page.getByRole('textbox', { name: '팀 암호', exact: true }).waitFor();
+      else {
+        await page.getByRole('heading', { name: '복습', exact: true }).waitFor();
+        assert.equal(await page.getByRole('link', { name: '로그인하고 단어장 쓰기', exact: true }).count(), 0);
       }
-      if (url.origin === base && url.pathname.startsWith('/api/')) return route.fulfill({ json: {} });
-      // Never forward the fixture session to the preview server.
-      if (url.origin === base) return route.continue({ headers: { ...request.headers(), cookie: '' } });
-      return route.abort();
-    });
-    const page = await context.newPage(); activePage = page;
-    page.on('pageerror', error => report.errors.push(error.message));
-    const path = '/class/fixture-class?view=history&q=%E5%9B%BE%E4%B9%A6%E9%A6%86&restoreY=355#class-history';
-    await page.goto(base + path);
-    await page.getByRole('textbox', { name: '팀 암호', exact: true }).waitFor();
-    await page.getByRole('banner').getByRole('button', { name: '로그인', exact: true }).press('Enter');
-    await page.getByRole('heading', { name: '로그인', exact: true }).waitFor();
-    assert.equal(new URL(page.url()).searchParams.get('from'), path);
-    report.checks.push(`${width}px: header keeps team, history search, scroll and hash`);
-    await page.getByRole('banner').getByRole('button', { name: '로그인', exact: true }).click();
-    assert.equal(new URL(page.url()).searchParams.get('from'), path);
-    assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
-    await page.screenshot({ path: `${out}/auth-entry-${width}.png` });
-    await page.getByRole('button', { name: 'Google로 계속하기', exact: true }).click();
-    await page.waitForURL('**/auth/v1/authorize?**');
-    const callback = new URL(requests.at(-1).searchParams.get('redirect_to'));
-    assert.equal(callback.origin, base);
-    assert.equal(callback.pathname, '/auth/callback');
-    assert.equal(callback.searchParams.get('next'), path);
-    assert.equal(requests.at(-1).searchParams.get('code_challenge_method'), 's256');
-    report.checks.push(`${width}px: repeated sign-in keeps Google PKCE callback destination`);
-    await page.goto(base + '/auth?' + new URLSearchParams({ from: path }));
-    await page.getByLabel('이메일', { exact: true }).fill(user.email);
-    await page.getByLabel('비밀번호', { exact: true }).fill('fixture-password');
-    await page.locator('form').getByRole('button', { name: '로그인', exact: true }).click();
-    await page.waitForURL(base + path);
-    await page.getByRole('textbox', { name: '팀 암호', exact: true }).waitFor();
-    report.checks.push(`${width}px: email sign-in returns to the exact classroom URL`);
-    await context.close();
+      report.checks.push(`${entry.name} ${width}px: email sign-in returns to the authenticated destination`);
+      await context.close();
+    }
   }
   assert.deepEqual(report.errors, []);
 } catch (error) {

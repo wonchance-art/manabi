@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
+import { authEntryHref } from '../lib/authRedirect';
 import { useToast } from '../lib/ToastContext';
 import { recordReviewCompleted } from '../lib/learn/progressStore';
 import { useTTS } from '../lib/useTTS';
@@ -743,7 +744,7 @@ function VocabWorkspace() {
         </p>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <Link href="/review/grammar" className="btn btn--primary btn--md">문법 복습 이어가기 →</Link>
-          <Link href="/auth" className="btn btn--ghost btn--md">로그인하고 단어장 쓰기</Link>
+          <Link href={authEntryHref('/vocab')} className="btn btn--ghost btn--md">로그인하고 단어장 쓰기</Link>
         </div>
       </div>
     );
