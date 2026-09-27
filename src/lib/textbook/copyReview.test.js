@@ -65,7 +65,7 @@ describe('N5 copy review preserves editions and learning records',()=>{
   const report=JSON.parse(execFileSync('python3',['scripts/textbook/audit-n5-coverage.py'],{env:pyEnv,encoding:'utf8'}));
   expect(report.types).toHaveLength(14);
   expect(report.types.filter(t=>t.verifiedRepresentativeQuestions>0)).toHaveLength(10);
-  expect(report.types.find(t=>t.id==='v2').status).toBe('partial');
+  expect(report.types.find(t=>t.id==='v2').status).toBe('representative');
   expect(report.types.filter(t=>t.id.startsWith('l')).every(t=>t.status==='deferred'&&t.verifiedRepresentativeQuestions===0)).toBe(true);
   expect(report.passageLengths.find(p=>p.target==='u42-review4').charactersWithoutWhitespace).toBe(76);
   expect(report.passageLengths.find(p=>p.target==='u42-review5').charactersWithoutWhitespace).toBe(246);
