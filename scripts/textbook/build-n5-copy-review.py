@@ -186,6 +186,38 @@ def apply_edits(book, html, edits):
     return book, html
 
 
+def apply_recall_link_additions(book, html, additions):
+    """Append reviewed prerequisite links without retargeting existing navigation."""
+    ids = set(re.findall(r'\bid="([^"]+)"', html))
+    for change in additions:
+        lesson = next(l for l in book['lessons'] if l['id'] == change['lesson'])
+        links = [link for link in lesson['recall_links'] if link['after'] == change['after']]
+        assert links and links == change['before'], 'Changed recall link preimage'
+        extra = change['add']
+        assert extra, 'Empty recall link addition'
+        targets = {link['target'] for link in links}
+        for link in extra:
+            assert set(link) == {'target', 'label'} and isinstance(link['label'], str) and link['label'].strip()
+            target = re.fullmatch(r'u(\d{2})-[a-z][a-z0-9-]*', link['target'])
+            assert target and int(target[1]) <= lesson['number'] and link['target'] in ids, 'Invalid prerequisite target'
+            assert link['target'] not in targets, 'Duplicate recall target'
+            targets.add(link['target'])
+
+        def nav(items):
+            return ('<nav class="book-recall-links" aria-label="막힌 표현 다시 보기"><strong>막혔다면 이곳부터</strong><ul>'
+                    + ''.join(f'<li><a href="#{x["target"]}">{escape(x["label"])} →</a></li>' for x in items)
+                    + '</ul></nav>')
+
+        pid = lesson['id'] + '-' + change['after']
+        matches = [m for m in ARTICLE.finditer(html) if f'id="{pid}"' in m[0].split('>', 1)[0]]
+        assert len(matches) == 1, 'Missing/ambiguous recall page'
+        match = matches[0]
+        article = core.replace_once(match[0], nav(links), nav([*links, *extra]))
+        html = html[:match.start()] + article + html[match.end():]
+        lesson['recall_links'].extend({'after': change['after'], **link} for link in extra)
+    return book, html
+
+
 def build(out_root, plan_path=HERE / 'n5-copy-edits.json'):
     plan = json.loads(plan_path.read_text())
     base_dir = ROOT / plan['baseEdition']
@@ -198,14 +230,15 @@ def build(out_root, plan_path=HERE / 'n5-copy-edits.json'):
     book, html = apply_edits(copy.deepcopy(base['manuscript']), original, plan['edits'])
     book, html = apply_reading_revisions(book, html, plan.get('readingRevisions', []), plan.get('readingVocabulary', []))
     book, html = apply_check_revisions(book, html, plan.get('checkRevisions', []))
+    for pattern in [r'\bid="([^"]+)"', r'data-save="([^"]+)"', r'href="([^"]+)"']:
+        assert re.findall(pattern, html) == re.findall(pattern, original), 'Changed stable identity/link'
+    book, html = apply_recall_link_additions(book, html, plan.get('recallLinkAdditions', []))
     digest = core.sha(core.canonical({k: v for k, v in book.items()
                                      if k not in {'revision', 'source', 'editorialChanges'}}))
     edition = digest[:24]
     book['revision'] = edition
     book['editorialChanges'] = [*book.get('editorialChanges', []),
                                plan.get('revisionNote', '공식 N5 유형 대조·대화 질문 조건·한국어 해설·현재 매체 안내 교정')]
-    for pattern in [r'\bid="([^"]+)"', r'data-save="([^"]+)"', r'href="([^"]+)"']:
-        assert re.findall(pattern, html) == re.findall(pattern, original), 'Changed stable identity/link'
     # Old manifests remain byte-reproducible. New reviews opt in to identifying
     # their own artifact, while font/audio paths retain the inherited edition.
     if plan.get('refreshAssetLinks'):
