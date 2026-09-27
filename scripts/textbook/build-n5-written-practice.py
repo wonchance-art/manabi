@@ -46,7 +46,9 @@ def render(page, number, total, following):
     if page.get('passage'):
         h += '<div class="examples"><span class="caption">먼저 글 전체를 읽어요</span><p class="bridge-passage" lang="ja">' + escape(page['passage']) + '</p></div>'
     for t in page['tasks']:
-        h += f'<section class="review-task" id="{t["id"]}"><h3>{escape(t["label"])}</h3><p>{core.rich(t["prompt"])}</p><p class="cue">{core.rich(t["cue"])}</p>'
+        h += f'<section class="review-task" id="{t["id"]}"><h3>{escape(t["label"])}</h3><p>{core.rich(t["prompt"])}</p>'
+        if t.get("cue"):
+            h += f'<p class="cue">{core.rich(t["cue"])}</p>'
         if t.get('help'):
             h += '<p class="small">읽기 도움 · ' + core.rich(t['help']) + '</p>'
         h += f'<fieldset class="check bridge-options" data-question="{t["id"]}"><legend>{escape(t["label"])} · 하나 골라요</legend>'
@@ -100,8 +102,8 @@ def validate(plan, base, original):
         assert link['from'] in ids and link['target'] in targets
 
 
-def build(out_root):
-    plan = json.loads((HERE / 'n5-written-practice.json').read_text())
+def build(out_root, plan_path=HERE / 'n5-written-practice.json'):
+    plan = json.loads(plan_path.read_text())
     folder = core.ROOT / plan['baseEdition']
     raw = (folder / 'bundle.json').read_bytes()
     assert core.sha(raw) == plan['baseBundleSha256'], 'Pinned base changed'
@@ -124,11 +126,12 @@ def build(out_root):
             model = {'id': p['id'], 'kind': 'practice_page', 'title': p['title'], 'lesson': 42, 'practice_index': index}
         place = next(i for i, old in enumerate(pages) if old['id'] == p['after'])
         pages.insert(place + 1, model)
-    book['writtenPractice'] = {'pageIds': [p['id'] for p in plan['pages']], 'entryLinks': plan['entryLinks'], 'scope': plan['scope'], 'optionMinHeight': 44}
+    previous = book.get('writtenPractice', {})
+    book['writtenPractice'] = {'pageIds': [*previous.get('pageIds', []), *[p['id'] for p in plan['pages']]], 'entryLinks': [*previous.get('entryLinks', []), *plan['entryLinks']], 'scope': '; '.join(filter(None, [previous.get('scope'), plan['scope']])), 'optionMinHeight': 44}
     digest = core.sha(core.canonical({k: v for k, v in book.items() if k not in {'revision', 'source', 'editorialChanges'}}))
     edition = digest[:24]
     book['revision'] = edition
-    book['editorialChanges'] = [*book.get('editorialChanges', []), '가타카나9·문장배열3·글속문법3 독립 연습과 설명 왕복']
+    book['editorialChanges'] = [*book.get('editorialChanges', []), plan.get('editorialChange', '가타카나9·문장배열3·글속문법3 독립 연습과 설명 왕복')]
     for i, p in enumerate(pages, 1):
         p['page'] = i
     page_map = {p['id']: p for p in pages}
@@ -183,10 +186,12 @@ def build(out_root):
     target.mkdir(parents=True, exist_ok=True)
     for name, value in files.items():
         (target / name).write_text(value)
-    print(json.dumps({'edition': edition, 'pages': len(pages), 'questionsAdded': 15, 'sourceAnchors': len(parser.index), 'bundleSha256': core.sha(files['bundle.json'].encode())}))
+    print(json.dumps({'edition': edition, 'pages': len(pages), 'questionsAdded': sum(len(p['tasks']) for p in plan['pages']), 'sourceAnchors': len(parser.index), 'bundleSha256': core.sha(files['bundle.json'].encode())}))
 
 
 if __name__ == '__main__':
     args = argparse.ArgumentParser()
     args.add_argument('--out', type=Path, default=core.ROOT)
-    build(args.parse_args().out)
+    args.add_argument('--plan', type=Path, default=HERE / 'n5-written-practice.json')
+    options = args.parse_args()
+    build(options.out, options.plan)

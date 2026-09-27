@@ -1,6 +1,6 @@
 {
-  "edition": "595b398b6d8f19c98aeb7ae7",
-  "bundleSha256": "e308f9b39e25738618bcbacf0b2226a24ec37854ce769a945f460665d0fb7bf0",
+  "edition": "d98e42bd66b8b4d593014dde",
+  "bundleSha256": "647ee811cab5869bf7902f79d2cf8011df1687d4451e6f00e088ed7a9aa75876",
   "reviewedAt": "2026-09-28 KST",
   "scope": "공식 N5 유형별 목적과 최신 후보의 대표 문항·추가 연습을 내부 대조. 노출·도움 있는 연습·독립 수행·시험형 전이를 구분한다. 근거 수는 전체 문항 수나 충분성 점수가 아니며, 독립 언어 감수·시험 전범위·합격·청해 완료를 뜻하지 않는다.",
   "sources": [
@@ -465,13 +465,53 @@
           "target": "u42-text-plus",
           "questionId": "wp-text-3",
           "sha256": "6ca8d3359c375ae217e4ba6ca0007ec60ab28d84ccc069bce7c91aafd03dc507"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "practice_pages",
+            2,
+            "tasks",
+            0
+          ],
+          "questionId": "tx-book-a",
+          "target": "u42-text-transfer",
+          "sha256": "c1f38d588893c3d15d0abda143761020f5a53143bd293f9aafaecea540138fda"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "practice_pages",
+            2,
+            "tasks",
+            1
+          ],
+          "questionId": "tx-book-b",
+          "target": "u42-text-transfer",
+          "sha256": "f3c899c1c0c09395757b62b3f716e2c9108c69793b66084d96cc466cde20fe97"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "practice_pages",
+            2,
+            "tasks",
+            2
+          ],
+          "questionId": "tx-book-c",
+          "target": "u42-text-transfer",
+          "sha256": "a0525b07cdd3ce9c9bf154972ac008462e9740bdf4b5a4551c1eb8b01da0241e"
         }
       ],
       "foundationPages": [
         "u36-read-guide",
-        "u42-text-plus"
+        "u42-text-plus",
+        "u42-text-transfer"
       ],
-      "remaining": "36과 연결어A/B와42과대비 선택은 독립 문맥 연습의 대표다. 추가 글은 장소 지시·명사 앞 지시·미래 희망까지 넓혔지만 각 cue가 해결 단서를 제시한다. A는 で 앞 장소어, B는 명사 앞 형식, C는 あした와 유일한 비과거 보기만으로 풀 수 있어 글 전체를 읽는 전이 근거가 약하다. 다음 우선 보완은 문법적으로 가능한 보기 중 앞뒤 내용으로 판단하는 도움 없는 별도 글이다."
+      "remaining": "기존 안내형3문항을 보존하고 별도 글의 허락·미완료·반환 약속을 앞뒤 내용으로 판단하는3문항을 추가했다. 새 문항은 cue/전체 번역 없이 먼저 풀며 정답·오답 근거를 접힌 해설로 확인한다. 한 장면의 내부 의미 감수 표본이므로 다양한 글 유형·독립 언어감수·실학습 수행은 별도 검토하며 시험 충분성으로 세지 않는다."
     },
     {
       "id": "r1",
