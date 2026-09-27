@@ -68,8 +68,10 @@ export async function finishQa({ browser, db, server, context, report, out }) {
   const persist = () => {
     try {
       writeJson(path.join(out, 'report.json'), report);
+      return true;
     } catch {
       if (!failures.includes('cleanup_report_write_failed')) failures.push('cleanup_report_write_failed');
+      return false;
     }
   };
   persist();
@@ -94,15 +96,21 @@ export async function finishQa({ browser, db, server, context, report, out }) {
     catch (error) { failures.push(error.message);resources.push({ name, status: 'failed', durationMs: Date.now() - started }); }
     cleanup.diagnostics.push(cleanupSnapshot(browser, `after-${name}`));persist();
   }
-  if (!report.failure && !failures.length && cleanup.trace.status === 'saved') {
-    try { fs.unlinkSync(tracePath);cleanup.trace = { status: 'discarded' }; }
-    catch { failures.push('trace_discard_failed'); }
-  }
   delete cleanup.active;
   cleanup.status = failures.length ? 'failed' : 'completed';
   if (failures.length) cleanup.errors = failures;
-  persist();
-  // A final report write can itself fail; cleanup has still attempted every resource.
-  if (failures.length) { cleanup.status = 'failed';cleanup.errors = failures; }
-  if (failures.length) throw Error(failures.join('; '));
+  if (!report.failure && !failures.length && cleanup.trace.status === 'saved') {
+    const savedTrace = cleanup.trace;
+    cleanup.trace = { status: 'discarded' };
+    // Confirm the final report BEFORE irreversible deletion. A report-write
+    // failure must retain evidence just like a resource-close failure does.
+    if (persist()) {
+      try { fs.unlinkSync(tracePath); }
+      catch { failures.push('trace_discard_failed');cleanup.trace = savedTrace; }
+    } else cleanup.trace = savedTrace;
+  } else persist();
+  if (failures.length) {
+    cleanup.status = 'failed';cleanup.errors = failures;persist();
+    throw Error(failures.join('; '));
+  }
 }

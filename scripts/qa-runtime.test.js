@@ -116,4 +116,17 @@ describe('QA teardown evidence survives failures without hiding them', () => {
     expect(f.db.close).toHaveBeenCalledOnce();expect(f.server.close).toHaveBeenCalledOnce();
     expect(f.report.cleanup.status).toBe('failed');
   });
+
+  it('retains trace if only the final report commit fails', async () => {
+    vi.stubEnv('QA_TRACE', '1');const f = fixture(), rename = fs.renameSync;
+    vi.spyOn(fs, 'renameSync').mockImplementation((from, to) => {
+      const state = JSON.parse(fs.readFileSync(from));
+      if (state.cleanup.trace.status === 'discarded') throw Error('final report disk failure');
+      return rename(from, to);
+    });
+    await expect(finishQa(f)).rejects.toThrow('cleanup_report_write_failed');
+    expect(f.trace()).toBe(true);
+    expect(f.saved().cleanup).toMatchObject({ status: 'failed', trace: { status: 'saved' } });
+    expect(f.browser.close).toHaveBeenCalledOnce();expect(f.db.close).toHaveBeenCalledOnce();
+  });
 });
