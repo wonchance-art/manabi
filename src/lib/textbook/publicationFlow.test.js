@@ -47,7 +47,7 @@ beforeAll(async()=>{
  }};
  auth.admin.mockImplementation(async()=>role==='admin'?{user:{id:owner},supabase:client}:{error:'관리자 전용',status:403});
  auth.user.mockImplementation(async()=>({user:{id:owner},supabase:client}));auth.client.mockResolvedValue(client);
- old=await candidate('7f572327dc67893e9453246c');next=await candidate('8f6d1f66189502aafa146305');
+ old=await candidate('7f572327dc67893e9453246c');next=await candidate('f09e3e1faa4ee5a35b0fb2a6');
  await db.exec("set role authenticated;set qa.admin='true'");
  let response=await editor.POST(request({action:'publish',editionId:old.editionId,expectedDraftVersion:null,expectedReleaseVersion:null}));expect(response.status).toBe(200);release=(await response.json()).release;
  savedDraft=withField(old.manuscript,['lessons',0,'title'],'보존할 선생님 초안');

@@ -71,3 +71,50 @@ describe('N5 copy review preserves editions and learning records',()=>{
   expect(report.passageLengths.find(p=>p.target==='u42-review5').charactersWithoutWhitespace).toBe(246);
  });
 });
+
+// Editorial wording is reviewed by a person; this contract verifies that a
+// copy-only revision cannot quietly rewrite answers or existing publications.
+describe('N5 productive-practice instructions preserve the learning contract',()=>{
+ const plan=JSON.parse(fs.readFileSync('scripts/textbook/n5-production-review.json','utf8'));
+ const next='f09e3e1faa4ee5a35b0fb2a6',prior=JSON.parse(read(plan.baseEdition,'bundle.json'));
+ const revised=JSON.parse(read(next,'bundle.json'));
+ it('changes only reviewed instructions and keeps answers, controls, unrelated pages and sources',async()=>{
+  expect(hash(read(plan.baseEdition,'bundle.json'))).toBe(plan.baseBundleSha256);
+  const restored=structuredClone(revised.manuscript);
+  const allowed=new Set(['prompt','writing_hint','writing_check']);
+  for(const edit of plan.edits){
+   expect(allowed.has(edit.path.at(-1))).toBe(true);
+   expect(at(restored,edit.path)).toBe(edit.after);
+   expect(at(prior.manuscript,edit.path)).toBe(edit.before);
+   at(restored,edit.path.slice(0,-1))[edit.path.at(-1)]=edit.before;
+  }
+  restored.revision=prior.manuscript.revision;restored.editorialChanges=prior.manuscript.editorialChanges;
+  expect(restored).toEqual(prior.manuscript);
+  expect(revised.pages).toEqual(prior.pages);
+  const changed=new Set(plan.edits.flatMap(e=>e.render.map(r=>r.target)));
+  const sections=extractReadingSections(read(next,'index.html'));
+  for(const old of extractReadingSections(read(plan.baseEdition,'index.html')))if(!changed.has(old.id))expect(sections.find(s=>s.id===old.id).html).toBe(old.html);
+  for(const regex of [/\bid="([^"]+)"/g,/<input\b[^>]*>/g,/<textarea\b[^>]*>/g,/<a\b[^>]*\bhref="([^"]+)"/g])expect([...read(next,'index.html').matchAll(regex)].map(m=>m[0])).toEqual([...read(plan.baseEdition,'index.html').matchAll(regex)].map(m=>m[0]));
+  expect(read(next,'index.html')).toContain(`/api/books/japanese-n5/${next}/asset?file=style.css`);
+  expect(Object.keys(revised.sourceIndex)).toEqual(Object.keys(prior.sourceIndex));
+  for(const [id,source] of Object.entries(prior.sourceIndex)){
+   expect(revised.sourceIndex[id].lesson).toBe(source.lesson);
+   if(!changed.has(id))expect(revised.sourceIndex[id]).toEqual(source);
+  }
+  for(const name of ['app.js','style.css'])expect(read(next,name)).toBe(read(plan.baseEdition,name));
+  expect(revised.artifactManifest.inheritedMedia).toEqual(prior.artifactManifest.inheritedMedia);
+  expect((await currentCandidate()).editionId).toBe('7f572327dc67893e9453246c');
+  const book=await candidate(next);
+  for(const name of ['index.html','app.js','style.css'])expect((await verifiedAsset(book,name)).bytes).toBeTruthy();
+ });
+ it('reproduces the candidate twice without mutating the previous edition',()=>{
+  const temp=fs.mkdtempSync(path.join(os.tmpdir(),'n5-production-'));
+  try{
+   for(const run of ['a','b']){
+    execFileSync('python3',['scripts/textbook/build-n5-copy-review.py','--plan','scripts/textbook/n5-production-review.json','--out',path.join(temp,run)],{env:pyEnv});
+    for(const name of ['bundle.json','index.html','app.js','style.css'])expect(fs.readFileSync(path.join(temp,run,next,name),'utf8')).toBe(read(next,name));
+   }
+   expect(hash(read(plan.baseEdition,'bundle.json'))).toBe(plan.baseBundleSha256);
+  }finally{fs.rmSync(temp,{recursive:true,force:true});}
+ },15000);
+});
