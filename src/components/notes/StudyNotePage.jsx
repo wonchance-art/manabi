@@ -6,6 +6,7 @@ import {useRouter, useSearchParams} from 'next/navigation';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {fetchVocab} from '@/lib/vocabIO';
 import {useAuth} from '@/lib/AuthContext';
+import {authEntryHref} from '@/lib/authRedirect';
 import {BOARD_LANGUAGES} from '@/lib/teachingBoard';
 import {newStudyNote, noteScope, collectNoteExpressions, mergeNoteCandidates} from '@/lib/studyNotes';
 import useStudyNote, {requestNote} from '@/lib/useStudyNote';
@@ -24,8 +25,19 @@ const noop=()=>{};
 export default function StudyNotePage({id}) {
   const {user,loading}=useAuth();
   if(loading)return <p className="manabi-page" role="status">내 노트를 확인하고 있어요…</p>;
-  if(!user)return <section className="manabi-page note-gate"><h1>나만의 학습 노트<span>.</span></h1><p>듣고 적은 표현을 모아 내 단어장으로 이어가세요.</p><Link className="manabi-button" href={`/auth?from=${encodeURIComponent(`/notes/${id}`)}`}>로그인하고 노트 열기 ↗</Link></section>;
+  if(!user)return <NoteSignIn id={id}/>;
   return id==='new'?<CreateNote key={user.id}/>:<NoteEditor key={`${user.id}:${id}`} owner={user.id} id={id}/>;
+}
+
+function NoteSignIn({id}) {
+  const query=useSearchParams().toString(),[hash,setHash]=useState('');
+  useEffect(()=>{
+    const sync=()=>setHash(window.location.hash);
+    sync();window.addEventListener('hashchange',sync);
+    return()=>window.removeEventListener('hashchange',sync);
+  },[id,query]);
+  const href=authEntryHref(`/notes/${id}${query?`?${query}`:''}${hash}`);
+  return <section className="manabi-page note-gate"><h1>나만의 학습 노트<span>.</span></h1><p>듣고 적은 표현을 모아 내 단어장으로 이어가세요.</p><Link className="manabi-button" href={href}>로그인하고 노트 열기 ↗</Link></section>;
 }
 
 function CreateNote() {
