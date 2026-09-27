@@ -45,7 +45,23 @@ describe('mandatory QA coverage and truthful evidence', () => {
     const release=profileSteps('release'),ids=release.map(s=>s.id);
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids.indexOf('reader-app-webkit')).toBeLessThan(ids.indexOf('classroom-chromium'));
-    expect(release).toHaveLength(14);
+    expect(release).toHaveLength(16);
+  });
+  it('requires all login destinations in both release browsers without claiming a database check', () => {
+    const auth = profileSteps('auth-entry');
+    expect(auth.map(s => s.browser)).toEqual(['chromium', 'webkit']);
+    expect(profileSteps('release').filter(s => s.id.startsWith('auth-entry-'))).toEqual(auth);
+    for (const s of auth) {
+      expect(s.app).toBe(true);
+      expect(s.evidence).toBe('synthetic-auth-http+real-ui');
+      expect(s.groups).toEqual(['auth.classroom', 'auth.vocabulary', 'auth.notes', 'auth.visual']);
+      const evidence = {engine: s.browser, groups: s.groups, errors: [], cleanup: {status: 'completed'}};
+      expect(validateEvidence(s, evidence, 0)).toBe(true);
+      for (const group of s.groups) expect(() => validateEvidence(s, {...evidence, groups: s.groups.filter(g => g !== group)}, 0)).toThrow(`missing_group:${group}`);
+      expect(() => validateEvidence(s, {...evidence, cleanup: {status: 'failed'}}, 0)).toThrow('cleanup');
+      expect(() => validateEvidence(s, evidence, 1)).toThrow('process_failed');
+      expect(qaEnvironment(s, 'http://localhost:3137', '/tmp/check', {QA_ENGINE: 'chromium'}).QA_BROWSER).toBe(s.browser);
+    }
   });
   it('keeps curriculum, UI instructions, executable content and unknown changes under full CI', () => {
     expect(isRecordOnly(['docs/ai-tasks.md', 'docs/verification/release.md'])).toBe(true);

@@ -134,7 +134,7 @@ jobs:
       - if: needs.plan.outputs.full == 'true'
         run: npm run e2e:learning
 
-      - name: 교사 → 학생 · 개인 노트 · 뜻 표시 연결 검수
+      - name: 로그인 복귀 · 교사 → 학생 · 개인 노트 · 뜻 표시 연결 검수
         if: needs.plan.outputs.full == 'true'
         run: npm run qa:release -- --collect-all
 

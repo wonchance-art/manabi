@@ -11,6 +11,9 @@ const classroom = browserSteps('classroom', 'e2e/teaching-word-canvas.e2e.mjs', 
   'board.core', 'board.cloud', 'board.fragments', 'board.reuse', 'board.history', 'classroom.student', 'classroom.visual',
 ], true);
 const notes = browserSteps('notes', 'e2e/study-notes.e2e.mjs', ['notes.collection', 'notes.visual'], true);
+const authEntry = browserSteps('auth-entry', 'e2e/auth-entry.e2e.mjs',
+  ['auth.classroom', 'auth.vocabulary', 'auth.notes', 'auth.visual'], true)
+  .map(step => ({ ...step, evidence: 'synthetic-auth-http+real-ui' }));
 // Reuse the intercepted app/database harness, but stop before any classroom UI.
 const readerApp = browserSteps('reader-app', 'e2e/teaching-word-canvas.e2e.mjs',
   ['reader.app', 'reader.app-meaning', 'reader.app-visual'], true).map(step => ({ ...step, scenario: 'reader' }));
@@ -19,9 +22,9 @@ const reader = [
   ...browserSteps('reference', 'e2e/reference-scope.e2e.mjs', ['reader.reference']),
   ...browserSteps('meaning-choices', 'e2e/meaning-choices.e2e.mjs', ['reader.meaning']),
 ];
-export const profiles = Object.freeze({ sql, classroom: [...sql, ...readerApp, ...classroom], notes,
+export const profiles = Object.freeze({ sql, classroom: [...sql, ...readerApp, ...classroom], notes, 'auth-entry': authEntry,
   'reader-app': readerApp, reader: [...readerApp, ...reader],
-  release: [...sql, ...readerApp, ...reader, ...classroom, ...notes] });
+  release: [...authEntry, ...sql, ...readerApp, ...reader, ...classroom, ...notes] });
 
 export function profileSteps(name) {
   if (!Object.hasOwn(profiles, name)) throw Error(`unknown_profile:${name}`);

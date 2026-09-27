@@ -2,17 +2,13 @@
 // Network fixtures stop every auth/API request before it can reach a real account.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { chromium, webkit } from 'playwright-core';
+import { launchQaBrowser, traceQa, finishQa } from './qa-runtime.mjs';
 
 const base = new URL(process.env.QA_BASE || 'http://127.0.0.1:3100').origin;
 const out = process.env.QA_OUT || '/private/tmp/manabi-auth-entry-qa';
-const engine = process.env.QA_ENGINE || 'chromium';
+const engine = process.env.QA_BROWSER || process.env.QA_ENGINE || 'chromium';
 fs.mkdirSync(out, { recursive: true });
-const browser = await (engine === 'webkit' ? webkit : chromium).launch({
-  headless: true,
-  ...(engine === 'webkit' ? {} : { executablePath: process.env.QA_CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' }),
-});
-const report = { base, engine, checks: [], errors: [] };
+const report = { base, engine, groups: [], checks: [], errors: [] };
 const now = Math.floor(Date.now() / 1000);
 const user = {
   id: '00000000-0000-4000-8000-000000000172', email: 'learner@example.invalid',
@@ -36,8 +32,9 @@ const noteFixture = () => ({
     ],
   },
 });
-let activePage;
+let browser, context, activePage;
 try {
+  browser = await launchQaBrowser(engine);
   for (const entry of [
     { name: 'classroom', path: '/class/fixture-class?view=history&q=%E5%9B%BE%E4%B9%A6%E9%A6%86&restoreY=355#class-history' },
     { name: 'vocabulary', path: '/vocab' },
@@ -47,7 +44,9 @@ try {
     { name: 'note', path: '/notes/23' },
   ]) {
     for (const width of [1440, 390]) {
-      const context = await browser.newContext({ viewport: { width, height: 900 }, serviceWorkers: 'block' });
+      context = await browser.newContext({ viewport: { width, height: 900 }, serviceWorkers: 'block' });
+      await traceQa(context);
+      context.setDefaultNavigationTimeout(180000);
       const requests = [], writes = [];
       let note = noteFixture();
       await context.route('**/*', route => {
@@ -147,16 +146,18 @@ try {
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
       await page.screenshot({path: `${out}/returned-${entry.name}-${width}.png`});
       report.checks.push(`${entry.name} ${width}px: email sign-in returns to the authenticated destination`);
+      if (process.env.QA_TRACE === '1') await context.tracing.stop();
       await context.close();
+      context = undefined;
     }
   }
   assert.deepEqual(report.errors, []);
+  report.groups.push('auth.classroom', 'auth.vocabulary', 'auth.notes', 'auth.visual');
 } catch (error) {
   report.failure = error.message;
   await activePage?.screenshot({ path: out + '/failure.png' }).catch(() => {});
   throw error;
 } finally {
-  fs.writeFileSync(out + '/report.json', JSON.stringify(report, null, 2));
+  await finishQa({ browser, context, report, out });
   console.log(JSON.stringify(report));
-  await browser.close();
 }
