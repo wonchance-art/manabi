@@ -159,6 +159,9 @@ try{
  // The detail dialog must use the same saved locator as the review card, rather
  // than falling back to /viewer/:id and losing the private note's expression.
  await hud.getByRole('button',{name:'전체 메뉴',exact:true}).click();await hud.getByRole('button',{name:'내 서재',exact:true}).click();await page.waitForURL(url=>url.pathname==='/materials');
+ // A client navigation changes the URL before its route chunk finishes. Do not
+ // start a full navigation until the destination actually renders.
+ await page.getByRole('heading',{name:/^내 서재/}).waitFor();
  const beforeSource=(await db.query('select * from user_vocabulary order by id')).rows;
  const source=(await db.query("select * from vocabulary_contexts where quote='復習'")).rows[0];assert(source);
  await page.goto(base+'/vocab');await page.getByRole('button',{name:'전체 보기 →',exact:true}).click();await page.getByRole('textbox',{name:'단어장 검색',exact:true}).fill('復習');
