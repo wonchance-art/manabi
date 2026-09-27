@@ -19,6 +19,57 @@ spec.loader.exec_module(core)
 ROOT = core.ROOT
 ARTICLE = re.compile(r'<article\b[^>]*>[\s\S]*?</article>')
 READING_FIELDS = {'reading_title', 'reading', 'reading_question', 'reading_answer', 'reading_why'}
+CHECK_FIELDS = {'id', 'prompt', 'options', 'answer', 'why'}
+
+
+def apply_check_revisions(book, html, revisions):
+    """Revise distractors and their explanation together in a new edition only.
+
+    Pin the entire question, including the unchanged answer/index and prompt.
+    The ordinary copy-edit path still cannot alter options or answer identities.
+    """
+    seen = set()
+    for revision in revisions:
+        uid = revision['lesson']
+        before, after = revision['before'], revision['after']
+        assert set(before) == set(after) == CHECK_FIELDS, 'Review the complete check bundle'
+        key = (uid, before['id'])
+        assert key not in seen, 'Duplicate check revision'
+        seen.add(key)
+        lesson = next(l for l in book['lessons'] if l['id'] == uid)
+        checks = [c for c in lesson['checks'] if c['id'] == before['id']]
+        assert len(checks) == 1 and checks[0] == before, 'Changed check preimage'
+        assert all(after[k] == before[k] for k in ['id', 'prompt', 'answer']), 'Changed question identity/answer'
+        assert isinstance(after['why'], str) and after['why'].strip(), 'Missing check explanation'
+        assert isinstance(after['options'], list) and len(after['options']) == len(before['options']), 'Changed option count'
+        assert all(isinstance(o, str) and o.strip() for o in after['options']), 'Empty option'
+        assert len(set(after['options'])) == len(after['options']), 'Duplicate option'
+        assert before['options'].count(before['answer']) == after['options'].count(after['answer']) == 1, 'Missing/duplicate answer'
+        assert before['options'].index(before['answer']) == after['options'].index(after['answer']), 'Changed answer index'
+        matches = [m for m in ARTICLE.finditer(html) if f'id="{uid}-practice"' in m[0].split('>', 1)[0]]
+        assert len(matches) == 1, 'Missing/ambiguous practice article'
+        match = matches[0]
+        article = match[0]
+        question = escape(uid + '-' + before['id'], quote=True)
+        fields = list(re.finditer(r'<fieldset class="check" data-question="' + re.escape(question) + r'">[\s\S]*?</fieldset>', article))
+        assert len(fields) == 1, 'Missing/ambiguous check rendering'
+        field = fields[0]
+        # Verify the full old fieldset, not a text match elsewhere on the page.
+        def render_check(check):
+            return ('<fieldset class="check" data-question="' + question + '"><legend>' + escape(check['id'])
+                    + '</legend><p>' + core.rich(check['prompt']) + '</p>' + ''.join(
+                        '<label><input type="radio" data-save="' + question + '" name="' + question
+                        + '" value="' + str(i) + '"><span>' + core.rich(option) + '</span></label>'
+                        for i, option in enumerate(check['options'])) + '</fieldset>')
+        assert field[0] == render_check(before), 'Changed check HTML preimage'
+        article = article[:field.start()] + render_check(after) + article[field.end():]
+        def render_answer(check):
+            return ('<section class="answer"><b>' + escape(check['id']) + '</b><p>' + core.rich(check['answer'])
+                    + '</p><small>' + core.rich(check['why']) + '</small></section>')
+        article = core.replace_once(article, render_answer(before), render_answer(after))
+        html = html[:match.start()] + article + html[match.end():]
+        checks[0].update(copy.deepcopy(after))
+    return book, html
 
 
 def reading_html(text, lesson):
@@ -146,6 +197,7 @@ def build(out_root, plan_path=HERE / 'n5-copy-edits.json'):
     original = (base_dir / 'index.html').read_text()
     book, html = apply_edits(copy.deepcopy(base['manuscript']), original, plan['edits'])
     book, html = apply_reading_revisions(book, html, plan.get('readingRevisions', []), plan.get('readingVocabulary', []))
+    book, html = apply_check_revisions(book, html, plan.get('checkRevisions', []))
     digest = core.sha(core.canonical({k: v for k, v in book.items()
                                      if k not in {'revision', 'source', 'editorialChanges'}}))
     edition = digest[:24]
@@ -187,7 +239,8 @@ def build(out_root, plan_path=HERE / 'n5-copy-edits.json'):
     target.mkdir(parents=True, exist_ok=True)
     for name, value in files.items():
         (target / name).write_text(value)
-    print(json.dumps({'edition': edition, 'edits': len(plan['edits']), 'pages': len(base['pages']),
+    print(json.dumps({'edition': edition, 'edits': len(plan['edits']),
+                      'checkRevisions': len(plan.get('checkRevisions', [])), 'pages': len(base['pages']),
                       'sourceAnchors': len(parser.index), 'bundleSha256': core.sha(files['bundle.json'].encode())}))
 
 
