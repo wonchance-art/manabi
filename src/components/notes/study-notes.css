@@ -57,7 +57,8 @@
 .note-review>footer p {font-size:12px;line-height:1.6;margin:0;}
 .note-review>footer .manabi-button {background:var(--ink);color:var(--sheet);width:100%;}
 .note-review>footer small {font-size:11px;color:var(--muted);text-align:center;}
-.note-notice {position:absolute;z-index:155;bottom:24px;left:24px;max-width:calc(100% - 48px);background:var(--paper);border:1px solid var(--rule);padding:12px;box-sizing:border-box;font-size:12px;line-height:1.7;}
+.note-notice {display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px;position:absolute;z-index:155;bottom:24px;left:24px;max-width:calc(100% - 48px);background:var(--paper);border:1px solid var(--rule);padding:12px;box-sizing:border-box;font-size:12px;line-height:1.7;}
+.note-notice a {display:inline-flex;align-items:center;min-height:44px;color:var(--book-main);text-underline-offset:3px;}
 .note-notice button {min-width:44px;min-height:44px;font:inherit;border:0;background:transparent;color:var(--ink);}
 .note-composer-switch {display:flex;justify-content:flex-end;max-width:960px;margin:16px auto 0;padding:0 24px;}
 .note-composer-switch a {display:inline-flex;align-items:center;min-height:44px;gap:8px;color:var(--book-main);font-size:13px;}

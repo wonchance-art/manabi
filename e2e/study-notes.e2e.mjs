@@ -35,7 +35,7 @@ const user={id:uid,aud:'authenticated',role:'authenticated',email:'note-fixture@
 const session={user,access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:uid,aud:'authenticated',role:'authenticated',exp:now+3600,iat:now})}.fixture`,refresh_token:'fixture',expires_at:now+3600,expires_in:3600,token_type:'bearer'};
 const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*'};
 const report={engine,groups:[],checks:[],errors:[],screens:[],externalAI:[],expectedTransport:[]},intentionalAborts=new Set();
-let failSave=false,loseSave=false,failWord=true,lookupDelay=0;
+let failSave=false,loseSave=false,failWord=true,lookupDelay=0,failArchive=false,archiveDelay=0;
 let recognitionMode="ok",recognitionCalls=[],contextFailure=true,contextDelay=600;
 await context.route('**/*',route=>{
  if(/generativelanguage|openai\.com|api\/analyze|api\/classroom\/lookup/.test(route.request().url()))report.externalAI.push(route.request().url());
@@ -75,6 +75,8 @@ await context.route('**/api/notes**',async route=>{
  if(req.method()==='GET'){const row=await noteRow(id);return row?send(noteResponse(row)):send({error:'내 계정의 개인 노트만 열 수 있어요.'},404);}
  const body=req.postDataJSON();
  if(req.method()==='POST'){
+  if(failArchive)return send({error:'검수용 초안 보관 실패'},503);
+  if(archiveDelay)await new Promise(resolve=>setTimeout(resolve,archiveDelay));
   const old=(await db.query("select * from reading_materials where processed_json#>>'{metadata,importAttempt}'=$1",[body.document.key])).rows[0];if(old)return send(noteResponse(old));
   const json={sequence:[],dictionary:{},last_idx:-1,status:'note',metadata:{language:body.document.language,importAttempt:body.document.key,studyNote:{version:1,revision:crypto.randomUUID(),document:body.document,summary:collectionSummary(body.document.candidates)}}};
   const row=(await db.query("insert into reading_materials(owner_id,title,visibility,direction,raw_text,processed_json) values($1,$2,'private','write','',$3) returning *",[uid,body.title,json])).rows[0];return send(noteResponse(row),201);
@@ -193,6 +195,55 @@ try{
  const download=page.waitForEvent('download');await page.getByRole('button',{name:'노트와 정리 목록 백업',exact:true}).click();const file=await download;const backup=JSON.parse(fs.readFileSync(await file.path(),'utf8'));assert.equal(backup.document.candidates.length,2);assert(backup.document.board.pages[0].elements.some(el=>el.customData?.manabiExpression?.text==='授業'));
  await page.getByRole('button',{name:'내 초안을 새 노트로 보관',exact:true}).click();await page.waitForURL(url=>url.pathname.startsWith('/notes/')&&!url.pathname.endsWith('/'+id));await board.locator('canvas.interactive').waitFor();
  assert.equal((await noteRow(id)).title,'다른 기기의 수정');check('offline draft survives reload, cloud conflict never overwrites the other writer, complete backup and private fork recover the local work');
+ // Explicit recovery replaces this editor only after its complete private draft
+ // is confirmed. This is not a browser reload or a write to the remote original.
+ const recoveryNote=page.url().split('/').pop(),vocabBeforeRecovery=(await db.query('select * from user_vocabulary order by id')).rows;
+ failSave=true;await entry('消さない','けさない','보관할 초안');
+ await waitFor(async()=>await page.locator('.board-hud-status').getAttribute('data-error')==='true');
+ await hud.getByRole('button',{name:'노트 정보',exact:true}).click();
+ await page.getByRole('textbox',{name:'노트 제목',exact:true}).fill('복구할 내 초안');
+ await waitFor(async()=>(await readLocal()).some(row=>row.document.personalNote?.title==='복구할 내 초안'));
+ const fullBackup=async()=>{const pending=page.waitForEvent('download');await page.getByRole('button',{name:'노트와 정리 목록 백업',exact:true}).click();return JSON.parse(fs.readFileSync(await (await pending).path(),'utf8'));};
+ const draftBeforeRecovery=await fullBackup(),latest=await noteRow(recoveryNote);
+ latest.processed_json.metadata.studyNote.revision=crypto.randomUUID();
+ latest.processed_json.metadata.studyNote.document.board.pages[0].elements=[];
+ latest.processed_json.metadata.studyNote.document.candidates=[];
+ await db.query('update reading_materials set processed_json=$1,title=$2 where id=$3',[latest.processed_json,'최신 서버 제목',recoveryNote]);
+ const recoveryCount=(await db.query('select count(*)::int n from reading_materials')).rows[0].n;
+ failArchive=true;
+ const recoverButton=page.getByRole('button',{name:'초안 보관 후 최신 판 열기',exact:true}).filter({visible:true});
+ await recoverButton.click();await page.getByText('검수용 초안 보관 실패',{exact:true}).first().waitFor();
+ assert.equal(await page.getByRole('textbox',{name:'노트 제목',exact:true}).inputValue(),'복구할 내 초안');
+ assert.equal((await db.query('select count(*)::int n from reading_materials')).rows[0].n,recoveryCount);
+ assert.deepEqual((await fullBackup()).document,draftBeforeRecovery.document);
+ await page.setViewportSize({width:390,height:844});await screen('05a-recovery-failure-phone');
+ assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+ const draftAtArchive=await fullBackup(); // viewport adjustment legitimately changes the camera
+ failArchive=false;archiveDelay=400;failSave=false;
+ let recoveryNavigations=0;const countNavigation=frame=>{if(frame===page.mainFrame())recoveryNavigations++;};page.on('framenavigated',countNavigation);
+ await recoverButton.focus();await page.keyboard.press('Enter');
+ await page.getByRole('button',{name:'초안 보관 중…',exact:true}).filter({visible:true}).waitFor();
+ assert.equal(await page.getByRole('button',{name:'초안 보관 중…',exact:true}).filter({visible:true}).isDisabled(),true);
+ await page.getByText('내 초안을 따로 보관하고 최신 노트를 열었어요.',{exact:false}).first().waitFor();archiveDelay=0;
+ await board.locator('canvas.interactive').waitFor();
+ await waitFor(async()=>await page.locator('.board-hud-status').getAttribute('aria-label')==='계정에 저장됨');
+ assert.equal(new URL(page.url()).pathname,'/notes/'+recoveryNote);assert.equal(recoveryNavigations,0);page.off('framenavigated',countNavigation);
+ await waitFor(async()=>await hud.getByRole('button',{name:'노트 정보',exact:true}).evaluate(el=>el===document.activeElement));
+ await screen('05b-recovery-complete-phone');assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+ const savedDraftLink=page.getByRole('link',{name:'보관한 초안 열기 ↗',exact:true}).filter({visible:true});
+ const recoveredId=(await savedDraftLink.getAttribute('href')).split('/').pop();
+ assert.equal((await db.query('select count(*)::int n from reading_materials')).rows[0].n,recoveryCount+1);
+ const archived=noteResponse(await noteRow(recoveredId));assert.equal((await noteRow(recoveredId)).visibility,'private');
+ assert.deepEqual(archived.document,{...draftAtArchive.document,key:archived.document.key});
+ await savedDraftLink.click();await page.waitForURL('**/notes/'+recoveredId);await board.locator('canvas.interactive').waitFor();
+ await hud.getByRole('button',{name:'노트 정보',exact:true}).click();assert.deepEqual((await fullBackup()).document,archived.document);
+ await page.goto(base+'/notes/'+recoveryNote);await board.locator('canvas.interactive').waitFor();
+ await hud.getByRole('button',{name:'노트 정보',exact:true}).click();assert.equal(await page.getByRole('textbox',{name:'노트 제목',exact:true}).inputValue(),'최신 서버 제목');
+ assert.deepEqual((await fullBackup()).document,latest.processed_json.metadata.studyNote.document);
+ assert.deepEqual((await db.query('select * from user_vocabulary order by id')).rows,vocabBeforeRecovery);
+ await close();if(await page.getByRole('button',{name:'안내 닫기',exact:true}).isVisible())await page.getByRole('button',{name:'안내 닫기',exact:true}).click();
+ await page.setViewportSize({width:1440,height:1000});
+ check('explicit recovery retries archive failure, keeps a complete private copy, opens latest in place without navigation, preserves vocabulary and keyboard focus, and survives re-entry');
  await hud.getByRole('button',{name:'전체 메뉴',exact:true}).click();await hud.getByRole('button',{name:'필기 도구 메뉴',exact:true}).click();await hud.getByRole('button',{name:'글자',exact:true}).click();
  await board.locator('canvas.interactive').click({position:{x:150,y:780}});await page.locator('textarea.excalidraw-wysiwyg').fill('お疲れさま → 수고했어요\n確認 → 확인');await page.keyboard.press('Escape');
  await hud.getByRole('button',{name:'단어 정리',exact:true}).filter({visible:true}).first().click();
