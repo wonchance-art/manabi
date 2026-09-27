@@ -1,0 +1,526 @@
+{
+  "edition": "c04e4e451a9ddc602fce8260",
+  "bundleSha256": "8835c752f5bd1adbf3f88c443f331b280a3c736c85aa22108079d9bd859b250a",
+  "reviewedAt": "2026-09-25 KST",
+  "scope": "42과 핵심 설명·대화·학습표·읽기·문항과 해설의 에이전트 1차 대조. 공식 시험 전범위·합격·독립 일본어 감수 완료를 뜻하지 않음. 근거 문항 수는 확인한 대표 하한이며 전수 유형별 집계가 아님.",
+  "sources": [
+    "https://www.jlpt.jp/e/about/levelsummary.html",
+    "https://www.jlpt.jp/e/guideline/testsections.html",
+    "https://www.jlpt.jp/e/guideline/pdf/n5_e_revised.pdf",
+    "https://www.jlpt.jp/e/samples/forlearners.html",
+    "https://www.jlpt.jp/e/faq/index.html"
+  ],
+  "types": [
+    {
+      "id": "v1",
+      "label": "한자 읽기",
+      "status": "representative",
+      "evidence": [
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            1,
+            "tasks",
+            0
+          ],
+          "target": "u42-review2",
+          "questionId": "유형 1 · 한자 읽기",
+          "sha256": "24f7086ca054d989e50a279a01000949187841da04fdf655fd7819dcb60bbde9"
+        },
+        {
+          "path": [
+            "lessons",
+            12,
+            "practice_pages",
+            0,
+            "tasks",
+            0
+          ],
+          "target": "u13-read-guide",
+          "questionId": "읽기 13-1",
+          "sha256": "1f19e22fd5775cdbd8dfe52802eeac97d1526c384946a919f8b6e415fc030190"
+        },
+        {
+          "path": [
+            "lessons",
+            19,
+            "practice_pages",
+            1,
+            "tasks",
+            0
+          ],
+          "target": "u20-read-check",
+          "questionId": "읽기 20-2",
+          "sha256": "2d1524f0b6fd73f003cd0406a7a7edbf1c5b2240ec73e6a3094d9832fcc33233"
+        }
+      ],
+      "foundationPages": [
+        "guide-hiragana",
+        "u13-start",
+        "u20-start"
+      ],
+      "remaining": "대표 예시로 존재. 어휘 범위·반복량·오답 품질은 별도 확장 검수 필요."
+    },
+    {
+      "id": "v2",
+      "label": "표기",
+      "status": "partial",
+      "evidence": [
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            1,
+            "tasks",
+            1
+          ],
+          "target": "u42-review2",
+          "questionId": "유형 2 · 표기",
+          "sha256": "914a0bd62273c9528e795979f02daaa8d9df5e723868226533a518f58ac95695"
+        },
+        {
+          "path": [
+            "lessons",
+            12,
+            "practice_pages",
+            1,
+            "tasks",
+            0
+          ],
+          "target": "u13-read-check",
+          "questionId": "읽기 13-2",
+          "sha256": "dddce136879ecec840dec8904c747af028f9bc01f0613c411cca0f3de2b29f3c"
+        }
+      ],
+      "foundationPages": [
+        "guide-katakana",
+        "guide-small"
+      ],
+      "remaining": "한자 표기 선택은 있음. 히라가나 제시어를 가타카나로 고르는 시험형 문항은 이번 321개 문항 검토에서 확인하지 못함. 문자표·예문을 시험 연습 완료로 세지 않음."
+    },
+    {
+      "id": "v3",
+      "label": "문맥 속 어휘",
+      "status": "representative",
+      "evidence": [
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            1,
+            "tasks",
+            2
+          ],
+          "target": "u42-review2",
+          "questionId": "유형 3 · 문맥 속 단어",
+          "sha256": "2f7278c761252967303296923e105d6bf341958c9b89ab95c5bab43001b0989e"
+        },
+        {
+          "path": [
+            "lessons",
+            12,
+            "practice_pages",
+            1,
+            "tasks",
+            1
+          ],
+          "target": "u13-read-check",
+          "questionId": "읽기 13-3",
+          "sha256": "aa9b5bf85ceaafe5abff13e3f45730c3f5c6027aa3fd9e80e9b8477c1344c32d"
+        }
+      ],
+      "foundationPages": [
+        "u13-patterns",
+        "u34-patterns"
+      ],
+      "remaining": "상황·품사·혼동어를 넓힌 독립 문항 추가 필요."
+    },
+    {
+      "id": "v4",
+      "label": "유사 의미 표현",
+      "status": "representative",
+      "evidence": [
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            1,
+            "tasks",
+            3
+          ],
+          "target": "u42-review2",
+          "questionId": "유형 4 · 바꾸어 말하기",
+          "sha256": "08c389d899c35fc4637e714b09084cae7da5ac14613ebbd5339dcec91e64a5bd"
+        },
+        {
+          "path": [
+            "lessons",
+            19,
+            "practice_pages",
+            1,
+            "tasks",
+            2
+          ],
+          "target": "u20-read-check",
+          "questionId": "읽기 20-4",
+          "sha256": "d27883386821882705a51fd0bfe40322e5b229163ae600cc61c43b5cb14a2762"
+        }
+      ],
+      "foundationPages": [
+        "u18-patterns",
+        "u20-patterns"
+      ],
+      "remaining": "문장 의역·다의어·정중한 부정 등 추가 표본 필요."
+    },
+    {
+      "id": "g1",
+      "label": "문법 형식 선택",
+      "status": "representative",
+      "evidence": [
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            2,
+            "tasks",
+            0
+          ],
+          "target": "u42-review3",
+          "questionId": "유형 5 · 문법 형식",
+          "sha256": "2c0c159d177b7949f60d69cd57d275816e5eef8d97391b40892d750686c9fb04"
+        }
+      ],
+      "foundationPages": [
+        "u18-study2",
+        "u24-patterns",
+        "u31-patterns"
+      ],
+      "remaining": "42과까지 설명·2지선다 확인은 넓게 분포. 시험형 4지선다 대표 근거만 여기에 집계."
+    },
+    {
+      "id": "g2",
+      "label": "문장 배열",
+      "status": "representative",
+      "evidence": [
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            2,
+            "tasks",
+            1
+          ],
+          "target": "u42-review3",
+          "questionId": "유형 6 · 문장 배열",
+          "sha256": "3bd115c8986159cfafcfefbc319708ff6b0f22dbe843a3f90c1438119d56cfc0"
+        },
+        {
+          "path": [
+            "lessons",
+            19,
+            "practice_pages",
+            1,
+            "tasks",
+            1
+          ],
+          "target": "u20-read-check",
+          "questionId": "읽기 20-3",
+          "sha256": "0bb87d7025136e3761149e1863ce7b05a9b236a6750dbbf966a8e5cef79807aa"
+        }
+      ],
+      "foundationPages": [
+        "u20-read-guide",
+        "u37-patterns"
+      ],
+      "remaining": "실제 ★ 위치 유형이 있음. 명사 수식·조사·어순의 다양한 조합으로 확장 필요."
+    },
+    {
+      "id": "g3",
+      "label": "글 흐름에 맞는 문법",
+      "status": "representative",
+      "evidence": [
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            2,
+            "tasks",
+            2
+          ],
+          "target": "u42-review3",
+          "questionId": "유형 7 · 글 속 문법",
+          "sha256": "9e99806a12e7880bd3b174f487a417ffdb8255329c27e40ae5ed744c5a192220"
+        },
+        {
+          "path": [
+            "lessons",
+            35,
+            "practice_pages",
+            1,
+            "tasks",
+            0
+          ],
+          "target": "u36-read-check",
+          "questionId": "읽기 36-2",
+          "sha256": "5228e63cff83cc5a4b4af028e26fe7e4f41fecc7778e565239de23f8d92a4c45"
+        },
+        {
+          "path": [
+            "lessons",
+            35,
+            "practice_pages",
+            1,
+            "tasks",
+            1
+          ],
+          "target": "u36-read-check",
+          "questionId": "읽기 36-3",
+          "sha256": "e99f8d5b2ee869ac1cb0abdd35b8398b49e5e2170a98fdbb5f7ace143015adc0"
+        }
+      ],
+      "foundationPages": [
+        "u36-read-guide"
+      ],
+      "remaining": "긴 글 A/B 연결어와 짧은 대비 문항이 있음. 연결어 외 지시·시제·문맥 형식 선택 확장 필요."
+    },
+    {
+      "id": "r1",
+      "label": "짧은 글 이해",
+      "status": "representative",
+      "evidence": [
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            3,
+            "tasks",
+            0
+          ],
+          "target": "u42-review4",
+          "questionId": "유형 8 · 단문 이해",
+          "sha256": "450016091d1917bce53f14e38387bdf0bfbcfef98752ace4440d922d445da957"
+        }
+      ],
+      "foundationPages": [
+        "u30-read-guide"
+      ],
+      "remaining": "각 과 짧은 읽기는 기초 훈련. 시험형 메모 외 이메일·생활 장면 다양성 보완."
+    },
+    {
+      "id": "r2",
+      "label": "이어지는 글 이해",
+      "status": "representative",
+      "evidence": [
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            4,
+            "tasks",
+            0
+          ],
+          "target": "u42-review5",
+          "questionId": "유형 9 · 중문 이해",
+          "sha256": "96e6cf9f1072aefdc610b11992ad25f829639cc74102e1373b767e6c92f5aa30"
+        },
+        {
+          "path": [
+            "lessons",
+            29,
+            "practice_pages",
+            1,
+            "tasks",
+            0
+          ],
+          "target": "u30-read-check",
+          "questionId": "읽기 30-2",
+          "sha256": "f58abf603334311da538e2e323da91fa9fcb3129070a1b9dc2cc88de5ddf1b75"
+        },
+        {
+          "path": [
+            "lessons",
+            29,
+            "practice_pages",
+            1,
+            "tasks",
+            1
+          ],
+          "target": "u30-read-check",
+          "questionId": "읽기 30-3",
+          "sha256": "429f692f5e7994274eb4b93d730267296f9640377e44f49a9a9eb1dbf5c610ef"
+        }
+      ],
+      "foundationPages": [
+        "u30-read-guide"
+      ],
+      "remaining": "지문 길이만으로 난도·충분성을 판정하지 않음. 독립 지문 및 질문을 더 확보해야 함."
+    },
+    {
+      "id": "r3",
+      "label": "안내에서 정보 찾기",
+      "status": "representative",
+      "evidence": [
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            5,
+            "tasks",
+            0
+          ],
+          "target": "u42-review6",
+          "questionId": "유형 10 · 정보 검색",
+          "sha256": "8757ab3a8cd4f20246840b4e7b1b9a91c1bdd10b6f99ef2c0b2a9adab3317cfc"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            5,
+            "tasks",
+            1
+          ],
+          "target": "u42-review6",
+          "questionId": "유형 10-2 · 정보 연결",
+          "sha256": "61cb642c9381a5a0fb7f967bf684860f893b2a160636490a56890b26c50e2813"
+        },
+        {
+          "path": [
+            "lessons",
+            39,
+            "practice_pages",
+            1,
+            "tasks",
+            0
+          ],
+          "target": "u40-read-check",
+          "questionId": "읽기 40-2",
+          "sha256": "18265febbdc50644bee7a540ce17756837ad509c84b0a585522438776254fdc4"
+        },
+        {
+          "path": [
+            "lessons",
+            39,
+            "practice_pages",
+            1,
+            "tasks",
+            1
+          ],
+          "target": "u40-read-check",
+          "questionId": "읽기 40-3",
+          "sha256": "344d473e261a98eed35d4ad29e6ed4d6889b01f63ab2cf1c4a5e033e217f1df8"
+        }
+      ],
+      "foundationPages": [
+        "u40-read-guide",
+        "u39-mission"
+      ],
+      "remaining": "여러 조건·공통 안내 연결 있음. 시간표·시설 안내·상품 조건으로 장면 확장 필요."
+    },
+    {
+      "id": "l1",
+      "label": "지시를 듣고 행동 판단",
+      "status": "deferred",
+      "evidence": [],
+      "foundationPages": [],
+      "remaining": "새 음성 제외 범위. 기존 대화·텍스트 확인 문항 또는 일부 음성을 청해 실전 검증으로 세지 않음. 별도 대본·음성·재생·정답 검수가 필요."
+    },
+    {
+      "id": "l2",
+      "label": "핵심 정보 듣기",
+      "status": "deferred",
+      "evidence": [],
+      "foundationPages": [],
+      "remaining": "새 음성 제외 범위. 기존 대화·텍스트 확인 문항 또는 일부 음성을 청해 실전 검증으로 세지 않음. 별도 대본·음성·재생·정답 검수가 필요."
+    },
+    {
+      "id": "l3",
+      "label": "상황에 맞는 말",
+      "status": "deferred",
+      "evidence": [],
+      "foundationPages": [],
+      "remaining": "새 음성 제외 범위. 기존 대화·텍스트 확인 문항 또는 일부 음성을 청해 실전 검증으로 세지 않음. 별도 대본·음성·재생·정답 검수가 필요."
+    },
+    {
+      "id": "l4",
+      "label": "즉시 응답",
+      "status": "deferred",
+      "evidence": [],
+      "foundationPages": [],
+      "remaining": "새 음성 제외 범위. 기존 대화·텍스트 확인 문항 또는 일부 음성을 청해 실전 검증으로 세지 않음. 별도 대본·음성·재생·정답 검수가 필요."
+    }
+  ],
+  "passages": [
+    {
+      "target": "u30-read-check",
+      "path": [
+        "lessons",
+        29,
+        "practice_pages",
+        1,
+        "passage"
+      ]
+    },
+    {
+      "target": "u36-read-check",
+      "path": [
+        "lessons",
+        35,
+        "practice_pages",
+        1,
+        "passage"
+      ]
+    },
+    {
+      "target": "u42-review4",
+      "path": [
+        "lessons",
+        41,
+        "review_pages",
+        3,
+        "tasks",
+        0,
+        "cue"
+      ],
+      "beforeChoices": true
+    },
+    {
+      "target": "u42-review5",
+      "path": [
+        "lessons",
+        41,
+        "review_pages",
+        4,
+        "tasks",
+        0,
+        "cue"
+      ],
+      "beforeChoices": true
+    },
+    {
+      "target": "u42-review6",
+      "path": [
+        "lessons",
+        41,
+        "review_pages",
+        5,
+        "tasks",
+        0,
+        "cue"
+      ],
+      "beforeChoices": true
+    }
+  ]
+}
