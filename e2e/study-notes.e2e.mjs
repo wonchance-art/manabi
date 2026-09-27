@@ -158,13 +158,15 @@ try{
  check('mobile review fits the viewport; original-note action restores the full canvas; rail supports keyboard navigation');
  // The detail dialog must use the same saved locator as the review card, rather
  // than falling back to /viewer/:id and losing the private note's expression.
+ const libraryProgress=page.waitForResponse(response=>{const url=new URL(response.url());return url.pathname==='/rest/v1/reading_materials'&&url.searchParams.get('select')?.includes('note_summary')&&response.status()===200;});
  await hud.getByRole('button',{name:'전체 메뉴',exact:true}).click();await hud.getByRole('button',{name:'내 서재',exact:true}).click();await page.waitForURL(url=>url.pathname==='/materials');
- // A client navigation changes the URL before its route chunk finishes. Do not
- // start a full navigation until the destination actually renders.
+ // A changed URL/header can precede the note-summary request. Confirm that the
+ // library is ready, then use its real link instead of interrupting it with goto.
  await page.getByRole('heading',{name:/^내 서재/}).waitFor();
+ assert.equal(await (await libraryProgress).finished(),null);
  const beforeSource=(await db.query('select * from user_vocabulary order by id')).rows;
  const source=(await db.query("select * from vocabulary_contexts where quote='復習'")).rows[0];assert(source);
- await page.goto(base+'/vocab');await page.getByRole('button',{name:'전체 보기 →',exact:true}).click();await page.getByRole('textbox',{name:'단어장 검색',exact:true}).fill('復習');
+ await page.getByRole('link',{name:'담은 표현 ↗',exact:true}).click();await page.waitForURL(url=>url.pathname==='/vocab');await page.getByRole('button',{name:'전체 보기 →',exact:true}).click();await page.getByRole('textbox',{name:'단어장 검색',exact:true}).fill('復習');
  const detailTrigger=page.getByRole('button',{name:'復習 — 복습 상세 열기',exact:true});await detailTrigger.focus();await page.keyboard.press('Enter');const detail=page.getByRole('dialog');
  await detail.getByText('저장한 문맥을 확인하고 있어요.',{exact:true}).waitFor();assert.equal(await detail.getByRole('link').count(),0);
  await detail.getByRole('button',{name:'다시 시도',exact:true}).waitFor();contextFailure=false;contextDelay=0;await detail.getByRole('button',{name:'다시 시도',exact:true}).click();
