@@ -1,6 +1,6 @@
 {
-  "edition": "d98e42bd66b8b4d593014dde",
-  "bundleSha256": "647ee811cab5869bf7902f79d2cf8011df1687d4451e6f00e088ed7a9aa75876",
+  "edition": "31e53cf1221211035c8770b6",
+  "bundleSha256": "d096357fd490ea1801b66840f031f1917f40f1843541baa897fea8b38f30f7a6",
   "reviewedAt": "2026-09-28 KST",
   "scope": "공식 N5 유형별 목적과 최신 후보의 대표 문항·추가 연습을 내부 대조. 노출·도움 있는 연습·독립 수행·시험형 전이를 구분한다. 근거 수는 전체 문항 수나 충분성 점수가 아니며, 독립 언어 감수·시험 전범위·합격·청해 완료를 뜻하지 않는다.",
   "sources": [
@@ -530,12 +530,38 @@
           "target": "u42-review4",
           "questionId": "유형 8 · 단문 이해",
           "sha256": "6412bc37b54f2e4f40307b316f598f628b623625f16d8338f76c6296b39fb33b"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "practice_pages",
+            3,
+            "tasks",
+            0
+          ],
+          "target": "u42-message-reading",
+          "questionId": "msg-rina-meet",
+          "sha256": "785e69847f8ee03278186bcb2368507c97b6037fd16111a8078c30672b842ab2"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "practice_pages",
+            3,
+            "tasks",
+            1
+          ],
+          "target": "u42-message-reading",
+          "questionId": "msg-rina-bring",
+          "sha256": "1fa95051ad59c7d6aeec7d5dfdc900ca35ad7bb2cfcb12b42a6914ad84695e94"
         }
       ],
       "foundationPages": [
         "u30-read-guide"
       ],
-      "remaining": "42과 약속 메모는 인물·시각·행동 순서를 구별한다. 앞 도움은 かえす 뜻이며 정답 번호/인물을 주지 않는다. 과별 짧은 읽기와 구분해, 이메일·변경 연락·생활 안내처럼 새 형식에서 단서에 근거해 판단하는 독립 짧은 글이 더 필요하다."
+      "remaining": "42과 약속 메모에 더해 같은 날 두 연락에서 변경된 시간/장소와 필수/선택 준비물을 찾는 독립2문항을 추가했다. 연락시각과 약속시각·발신자의 집·부탁 유지/면제를 구별하며 단어 뜻2개만 미리 제공한다. 실제 학습자 수행·독립 감수·다른 생활 글의 충분성은 미확인. 정보검색형의 문화교실 편중은 이 짧은 연락문으로 해소했다고 세지 않는다."
     },
     {
       "id": "r2",

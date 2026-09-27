@@ -6,12 +6,14 @@ import {execFileSync} from 'node:child_process';
 import {candidate,currentCandidate,verifiedAsset} from './server';
 import {extractReadingSections} from '../bookReadingHtml';
 
-const OLD='595b398b6d8f19c98aeb7ae7',NEXT='d98e42bd66b8b4d593014dde';
-const read=(id,file)=>fs.readFileSync(`src/content/textbookEditions/${id}/${file}`,'utf8');
-const before=JSON.parse(read(OLD,'bundle.json')),after=JSON.parse(read(NEXT,'bundle.json'));
-const plan=JSON.parse(fs.readFileSync('scripts/textbook/n5-text-transfer.json','utf8'));
-
-describe('independent text practice preserves earlier teaching and answers',()=>{
+describe.each([
+ {label:'text grammar',old:'595b398b6d8f19c98aeb7ae7',next:'d98e42bd66b8b4d593014dde',planFile:'n5-text-transfer.json'},
+ {label:'short messages',old:'d98e42bd66b8b4d593014dde',next:'31e53cf1221211035c8770b6',planFile:'n5-message-reading.json'},
+])('independent $label practice preserves earlier teaching and answers',({old:OLD,next:NEXT,planFile})=>{
+ const read=(id,file)=>fs.readFileSync(`src/content/textbookEditions/${id}/${file}`,'utf8');
+ const before=JSON.parse(read(OLD,'bundle.json')),after=JSON.parse(read(NEXT,'bundle.json'));
+ const planPath=`scripts/textbook/${planFile}`;
+ const plan=JSON.parse(fs.readFileSync(planPath,'utf8'));
  it('appends only the new practice and retains the original practice catalog and published edition',async()=>{
   const restored=structuredClone(after.manuscript);
   expect(restored.lessons[41].practice_pages.pop()).toEqual(plan.pages[0]);
@@ -27,7 +29,7 @@ describe('independent text practice preserves earlier teaching and answers',()=>
  it('retains every old answer control and section; new explanations are closed and no cue is injected',()=>{
   const old=read(OLD,'index.html'),html=read(NEXT,'index.html');
   const controls=h=>[...h.matchAll(/<(?:input|textarea)\b[^>]*>/g)].map(m=>m[0]);
-  expect(controls(html).filter(tag=>!tag.includes('tx-book-'))).toEqual(controls(old));
+  expect(controls(html).filter(tag=>!plan.pages[0].tasks.some(t=>tag.includes(`data-save="${t.id}"`)))).toEqual(controls(old));
   const clean=h=>h.replace(/<nav class="book-recall-links" aria-label="조금 더 연습해 볼까요\?">[\s\S]*?<\/nav>/g,'')
    .replace(/(<div class="meta"><span>[^<]*<\/span><b>)\d+(<\/b>)/g,'$1#$2')
    .replace(/(<footer>manabi · 일본어 N5<span>)\d+ \/ \d+(<\/span>)/g,'$1#$2')
@@ -37,7 +39,14 @@ describe('independent text practice preserves earlier teaching and answers',()=>
   expect(newPage.html).not.toContain('class="cue"');
   expect(newPage.html).toContain('<details class="answers review-answers">');
   expect(newPage.html).not.toContain('review-answers" open');
-  expect(newPage.html.indexOf(plan.pages[0].tasks[0].why)).toBeGreaterThan(newPage.html.indexOf('<details'));
+  const answerStart=newPage.html.indexOf('<details');
+  const visibleText=newPage.html.slice(0,answerStart).replace(/<[^>]+>/g,'');
+  const answerText=newPage.html.slice(answerStart).replace(/<[^>]+>/g,'');
+  for(const t of plan.pages[0].tasks){
+   expect(visibleText).not.toContain(t.why);
+   expect(answerText).toContain(t.why);
+   for(const reason of Object.values(t.distractors))expect(answerText).toContain(reason);
+  }
   const ids=new Set(sections.flatMap(s=>s.anchors));
   for(const target of [...newPage.html.matchAll(/href="#([^"]+)"/g)].map(m=>m[1]))expect(ids.has(target)).toBe(true);
  });
@@ -49,13 +58,13 @@ describe('independent text practice preserves earlier teaching and answers',()=>
   expect(read(NEXT,'app.js').replace(catalog,'CATALOG')).toBe(read(OLD,'app.js').replace(catalog,'CATALOG'));
   expect(after.artifactManifest.media).toEqual(before.artifactManifest.media);
   expect(after.artifactManifest.inheritedMedia).toEqual(before.artifactManifest.inheritedMedia);
-  expect(Object.keys(after.sourceIndex).filter(id=>!before.sourceIndex[id])).toEqual(['u42-text-transfer']);
+  expect(Object.keys(after.sourceIndex).filter(id=>!before.sourceIndex[id])).toEqual([plan.pages[0].id]);
  });
  it('rebuilds byte-identically from the pinned base while the original generator plan stays reproducible',()=>{
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'n5-text-transfer-'));
   try{
    for(const run of ['a','b']){
-    execFileSync('python3',['scripts/textbook/build-n5-written-practice.py','--plan','scripts/textbook/n5-text-transfer.json','--out',path.join(dir,run)],{env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'}});
+    execFileSync('python3',['scripts/textbook/build-n5-written-practice.py','--plan',planPath,'--out',path.join(dir,run)],{env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'}});
     for(const name of ['bundle.json','index.html','app.js','style.css'])expect(fs.readFileSync(path.join(dir,run,NEXT,name),'utf8')).toBe(read(NEXT,name));
    }
   }finally{fs.rmSync(dir,{recursive:true,force:true});}
