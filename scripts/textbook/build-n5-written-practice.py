@@ -64,7 +64,8 @@ def render(page, number, total, following):
         h += '<ul>' + ''.join('<li>' + core.rich(k) + ' · ' + core.rich(v) + '</li>' for k, v in t['distractors'].items()) + '</ul></section>'
     h += '</details>' + nav(page['help'], '막히면 설명으로')
     back = 'guide-katakana' if page['unit'] == 'guide' else 'u42-review3'
-    h += nav([{'target': back, 'label': '문자표로 돌아가기' if page['unit'] == 'guide' else '42과 본학습으로 돌아가기'}, following], '이어서 공부하기')
+    back_link = page.get('back') or {'target': back, 'label': '문자표로 돌아가기' if page['unit'] == 'guide' else '42과 본학습으로 돌아가기'}
+    h += nav([back_link, page.get('following') or following], '이어서 공부하기')
     return h + f'<footer>manabi · 일본어 N5<span>{number} / {total}</span></footer></article>'
 
 
@@ -79,6 +80,9 @@ def validate(plan, base, original):
         assert p['after'] in targets and p['unit'] in {'guide', 'u42'}
         for link in p['help']:
             assert link['target'] in ids, 'Unverified prerequisite'
+        for name in ('back', 'following'):
+            if name in p:
+                assert p[name]['target'] in ids and p[name]['label'], 'Unverified continuation'
         for t in p['tasks']:
             assert t['id'] not in old_keys and re.fullmatch(r'[a-z0-9-]+', t['id'])
             assert len(t['options']) == len(set(t['options'])) == 4

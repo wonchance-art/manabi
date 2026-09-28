@@ -9,6 +9,7 @@ import {extractReadingSections} from '../bookReadingHtml';
 describe.each([
  {label:'text grammar',old:'595b398b6d8f19c98aeb7ae7',next:'d98e42bd66b8b4d593014dde',planFile:'n5-text-transfer.json'},
  {label:'short messages',old:'d98e42bd66b8b4d593014dde',next:'31e53cf1221211035c8770b6',planFile:'n5-message-reading.json'},
+ {label:'library information',old:'31e53cf1221211035c8770b6',next:'fdf070fa5123b18cc55f24c7',planFile:'n5-information-reading.json'},
 ])('independent $label practice preserves earlier teaching and answers',({old:OLD,next:NEXT,planFile})=>{
  const read=(id,file)=>fs.readFileSync(`src/content/textbookEditions/${id}/${file}`,'utf8');
  const before=JSON.parse(read(OLD,'bundle.json')),after=JSON.parse(read(NEXT,'bundle.json'));
@@ -70,3 +71,16 @@ describe.each([
   }finally{fs.rmSync(dir,{recursive:true,force:true});}
  },15000);
 });
+
+it('rejects a new practice continuation that cannot return to a real book section',()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'n5-continuation-'));
+ try{
+  for(const field of ['back','following']){
+   const plan=JSON.parse(fs.readFileSync('scripts/textbook/n5-information-reading.json','utf8'));
+   plan.pages[0][field].target='missing-book-section';
+   const file=path.join(dir,`${field}.json`);fs.writeFileSync(file,JSON.stringify(plan));
+   expect(()=>execFileSync('python3',['scripts/textbook/build-n5-written-practice.py','--plan',file,'--out',path.join(dir,'out')],{env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'},stdio:'pipe'})).toThrow();
+   expect(fs.existsSync(path.join(dir,'out'))).toBe(false);
+  }
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+},15000);

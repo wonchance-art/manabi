@@ -1,6 +1,6 @@
 {
-  "edition": "31e53cf1221211035c8770b6",
-  "bundleSha256": "d096357fd490ea1801b66840f031f1917f40f1843541baa897fea8b38f30f7a6",
+  "edition": "fdf070fa5123b18cc55f24c7",
+  "bundleSha256": "a03c8fec9a08073250f8017bf011f3c6ee4e8f60aa9470d10c5cf8592e00aa90",
   "reviewedAt": "2026-09-28 KST",
   "scope": "공식 N5 유형별 목적과 최신 후보의 대표 문항·추가 연습을 내부 대조. 노출·도움 있는 연습·독립 수행·시험형 전이를 구분한다. 근거 수는 전체 문항 수나 충분성 점수가 아니며, 독립 언어 감수·시험 전범위·합격·청해 완료를 뜻하지 않는다.",
   "sources": [
@@ -669,13 +669,42 @@
           "target": "u40-read-check",
           "questionId": "읽기 40-3",
           "sha256": "344d473e261a98eed35d4ad29e6ed4d6889b01f63ab2cf1c4a5e033e217f1df8"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "practice_pages",
+            4,
+            "tasks",
+            0
+          ],
+          "target": "u42-information-reading",
+          "questionId": "info-library-visit",
+          "sha256": "5adbb690ee2302f079baf180f2f510b6abf865d8a0144aace7497826476262b4"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "practice_pages",
+            4,
+            "tasks",
+            1
+          ],
+          "target": "u42-information-reading",
+          "questionId": "info-library-return",
+          "sha256": "e01b250c69ad50cdfa98f258d8770bfd7eebf516d2abdcc78776756b88ca7bab"
         }
       ],
       "foundationPages": [
         "u40-read-guide",
-        "u39-mission"
+        "u39-mission",
+        "u10-patterns",
+        "u11-study2",
+        "u25-patterns"
       ],
-      "remaining": "40과 모임별 카드+공통준비물,42과 날짜·시간·활동/신청마감 연결을 확인. 모두 문화교실 선택 장면이다. 시간표·영업/이용 안내의 다른 정보 배열로 전이가 필요.42과 정보 연결은 직접쓰기이므로 공식4지선다와 같은 형식으로 세지 않는다."
+      "remaining": "기존 문화교실 선택4문항과 도서관 안내2문항을 확인. 요일별 개관/휴관·시간 범위, 책/CD별 반납 규칙과 창구 이용 시간을 대조하는 독립4지선다를 추가해 단일 장면 편중을 일부 해소했다. 가나 중심 안내이며 한자 독해 평가로 세지 않는다. 교통/쇼핑/연락처 등 다른 배열·혼합 표기와 실제 학습 부담·독립 언어감수는 미확인. 기존42과 직접쓰기 정보 연결은 공식4지선다와 구분한다."
     },
     {
       "id": "l1",
@@ -769,6 +798,16 @@
         "cue"
       ],
       "beforeChoices": true
+    },
+    {
+      "target": "u42-information-reading",
+      "path": [
+        "lessons",
+        41,
+        "practice_pages",
+        4,
+        "passage"
+      ]
     }
   ],
   "sourceNote": "2026-09-28 공식 구성표·수준 설명·FAQ·샘플 안내와 일본어 N5 유형별 목적 PDF를 확인. 영문 목적 PDF는 재조회 시간 초과여서 같은 공식 사이트의 일본어 자료로 대조했다. 공식 문제 원문은 복제하지 않았다.",
