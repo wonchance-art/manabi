@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { authEntryHref } from '@/lib/authRedirect';
@@ -31,7 +31,7 @@ function readingText(node) {
 export default function BookReader({ book, sectionIndex, preview = false }) {
   const { user } = useAuth();
   const { progress, update, storageAvailable, hasProgress, ready } = useReadingProgress(book.edition);
-  const content = useRef(null), root = useRef(null), dialog = useRef(null), pendingAnchor = useRef(null);
+  const content = useRef(null), root = useRef(null), toolbar = useRef(null), dialog = useRef(null), pendingAnchor = useRef(null);
   const [pageId, setPageId] = useState('cover'), [active, setActive] = useState('');
   const [sections, setSections] = useState([]), [loading, setLoading] = useState(false), [error, setError] = useState('');
   const [focus, setFocus] = useState(false), [selection, setSelection] = useState(null), [expression, setExpression] = useState(''), [meaning, setMeaning] = useState('');
@@ -43,6 +43,22 @@ export default function BookReader({ book, sectionIndex, preview = false }) {
   const draftKey = readingDraftKey(book.edition, user?.id);
   // Keep this object stable: React must not replace imperative answer fields and portal mounts on progress updates.
   const markup = useMemo(() => ({ __html: sections.map(section => section.html).join('\n') }), [sections]);
+
+  const measureToolbar = useCallback(() => {
+    const bar = toolbar.current;
+    if (bar) root.current?.style.setProperty('--book-toolbar-height', `${bar.getBoundingClientRect().height}px`);
+  }, []);
+
+  useLayoutEffect(() => {
+    const reader = root.current, bar = toolbar.current;
+    if (!reader || !bar) return;
+    // A narrow screen or larger text can wrap the toolbar. Anchors must clear
+    // its rendered height, not a second, independently maintained breakpoint.
+    measureToolbar();
+    const observer = new ResizeObserver(measureToolbar);
+    observer.observe(bar);
+    return () => observer.disconnect();
+  }, [unit, measureToolbar]);
 
   useEffect(() => {
     const sync = () => {
@@ -115,6 +131,7 @@ export default function BookReader({ book, sectionIndex, preview = false }) {
       if (!id || id !== pageId) return;
       const target = document.getElementById(id);
       target?.closest('details')?.setAttribute('open', '');
+      measureToolbar();
       if (id === 'cover' || id === unit || id === `${unit}-start`) window.scrollTo({ top: 0 });
       else (target || root.current)?.scrollIntoView({ block: 'start' });
       if (target?.classList.contains('kanji-card')) { target.setAttribute('tabindex', '-1'); target.focus({ preventScroll: true }); }
@@ -122,7 +139,7 @@ export default function BookReader({ book, sectionIndex, preview = false }) {
       if (/^u\d{2}/.test(id)) update({ page: id });
     }); });
     return () => { cancelled = true; cancelAnimationFrame(frame); };
-  }, [pageId, sections, unit, update, ready]);
+  }, [pageId, sections, unit, update, ready, measureToolbar]);
 
   useEffect(() => {
     if (!sections.length) return;
@@ -162,8 +179,8 @@ export default function BookReader({ book, sectionIndex, preview = false }) {
     setQuery('');
     pendingAnchor.current = id; setPageId(id); setActive(id);
     if (/^u\d{2}/.test(id)) update({ page: id });
-    if (id === pageId) requestAnimationFrame(() => { document.getElementById(id)?.scrollIntoView({ block: 'start' }); pendingAnchor.current = null; });
-  }, [book.edition, pageId, unit, update]);
+    if (id === pageId) requestAnimationFrame(() => { measureToolbar(); document.getElementById(id)?.scrollIntoView({ block: 'start' }); pendingAnchor.current = null; });
+  }, [book.edition, pageId, unit, update, measureToolbar]);
 
   function interact(event) {
     const anchor = event.target.closest('a[href]');
@@ -201,7 +218,7 @@ export default function BookReader({ book, sectionIndex, preview = false }) {
   return <div ref={root} className={`book-reader${focus ? ' is-focused' : ''}`} onClick={interact}>
     {preview && <p className="manabi-preview-note">관리자 미리보기 · 발행 전 원고입니다.</p>}
     {unit === 'cover' ? <BookHome book={book} preview={preview} progress={progress} hasProgress={hasProgress} ready={ready} /> : <div className="manabi-reader-page">
-      <div className="manabi-reader-toolbar"><LibraryReturnLink/><a href={bookHref(book.edition)}>← 책으로</a><span>일본어 · N5{lesson ? ` / ${String(lesson.number).padStart(2, '0')}과` : ''}</span><div><a href={bookHref(book.edition, 'reference-start')}>찾아보기</a><Link prefetch={false} href={`/books/japanese-n5/review?edition=${book.edition}`}>담은 표현</Link>{lesson && <button type="button" onClick={() => openPanel('materials')}>내 자료</button>}<button type="button" aria-pressed={focus} onClick={() => setFocus(!focus)}>{focus ? '기본 보기' : '집중 읽기'}</button></div></div>
+      <div ref={toolbar} className="manabi-reader-toolbar"><LibraryReturnLink/><a href={bookHref(book.edition)}>← 책으로</a><span>일본어 · N5{lesson ? ` / ${String(lesson.number).padStart(2, '0')}과` : ''}</span><div><a href={bookHref(book.edition, 'reference-start')}>찾아보기</a><Link prefetch={false} href={`/books/japanese-n5/review?edition=${book.edition}`}>담은 표현</Link>{lesson && <button type="button" onClick={() => openPanel('materials')}>내 자료</button>}<button type="button" aria-pressed={focus} onClick={() => setFocus(!focus)}>{focus ? '기본 보기' : '집중 읽기'}</button></div></div>
       <div className="manabi-reader-grid"><aside className="manabi-reader-outline"><p className="manabi-eyebrow">{lesson ? `${String(lesson.number).padStart(2, '0')}과 · 읽는 순서` : '이 안에서'}</p><nav aria-label="과 안의 목차">{unitSections.map(section => <a key={section.id} href={bookHref(book.edition, section.id)} aria-current={active === section.id ? 'location' : undefined}>{section.title}</a>)}</nav><Link prefetch={false} href={`/books/japanese-n5/materials?edition=${book.edition}`}>함께 읽기 ↗</Link></aside>
         <div className="manabi-reader-main"><details className="manabi-mobile-toc"><summary>이 과의 목차</summary><nav aria-label="모바일 과 목차">{unitSections.map(section => <a key={section.id} href={bookHref(book.edition, section.id)} onClick={event => event.currentTarget.closest('details').removeAttribute('open')}>{section.title}</a>)}</nav></details>
           <header className="manabi-chapter-opening"><div><p className="manabi-eyebrow">{lesson?.part || 'JAPANESE · N5'}</p>{lesson?.subtitle && <p className="manabi-chapter-subtitle">{lesson.subtitle}</p>}<h1>{title}</h1>{lesson && <p className="manabi-chapter-goal">{lesson.goal}</p>}</div>{lesson && <span className="manabi-chapter-number" aria-hidden="true">{String(lesson.number).padStart(2, '0')}</span>}</header>

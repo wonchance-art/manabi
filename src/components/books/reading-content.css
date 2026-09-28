@@ -46,3 +46,6 @@
 .book-reading-content .paper{padding:34px 0 18px}.book-reading-content h2{font-size:24px}.book-reading-content .pattern{padding:0;margin:24px 0 34px}.book-reading-content .pattern h3{font-size:21px}.book-reading-content .examples{padding:16px 17px 9px}.book-reading-content .example>[lang=ja]{font-size:22px}.book-reading-content .scene,.book-reading-content .dialogue{padding:18px}.book-reading-content .words{padding:10px 15px}.book-reading-content .words [lang=ja]{font-size:21px}.book-reading-content .words>div{gap:12px}.book-reading-content .explanation{font-size:15px}.book-reading-content .turn{padding:13px 0}}
 
 .book-reading-content .manabi-example-signin{font-size:11px;display:inline-flex;align-items:center;min-height:36px;color:#994a5a;padding:7px 0}
+
+/* Cover page, exercise and reference anchors alike, including wrapped toolbars. */
+.book-reader .book-reading-content [id]{scroll-margin-top:var(--book-scroll-offset)}
