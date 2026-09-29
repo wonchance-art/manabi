@@ -2,6 +2,7 @@
 import { composerOf, removeComposerOriginals } from '@/lib/materialComposer';
 import { documentOf, isStudySnapshot, documentListRow } from '@/lib/materialDocument';
 import {isStudyNote} from '@/lib/studyNoteIdentity';
+import {noteCollectionSummary} from '@/lib/noteCollection';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
@@ -903,6 +904,7 @@ export default function MaterialsPage({ libraryView = null }) {
                   {/* 배지 무리 — 있을 때만 붙는 작은 알약 + 상태 하나. 감싸서(wrap) 좁은 폭에서 줄이 늘 뿐 넘치지 않는다. */}
                   <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                     {isNote && <span className="tag" title="내가 쓴 노트 — 분석하지 않는 비공개 자료">✍ 내 노트</span>}
+                    {isOwner && isStudyNote(m) && noteCollectionSummary(m.processed_json.metadata.studyNote.document?.candidates).pending > 0 && <Link className="tag" href={readerHref(`/notes/${m.id}?review=1`)} onClick={event=>{event.stopPropagation();openReader(`/notes/${m.id}?review=1`,event);}}>미완료 {noteCollectionSummary(m.processed_json.metadata.studyNote.document?.candidates).pending}개 · 이어 정리 ↗</Link>}
                     {seriesPosition && (
                       <span className="tag" style={{ fontVariantNumeric: 'tabular-nums' }} title={`${titleMeta.series} 시리즈`}>{seriesPosition}</span>
                     )}

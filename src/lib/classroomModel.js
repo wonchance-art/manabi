@@ -1,5 +1,5 @@
 import { noteEntries, TEAM_KEY_RE } from './classBoard';
-import { replaceViewerAnalysis } from './reanalysisPreservation';
+import { replaceViewerAnalysis, preserveClassEntryValues } from './reanalysisPreservation';
 import { classStudyHref } from './classStudy';
 
 export const CLASS_LANG = {
@@ -59,7 +59,8 @@ export async function appendClassroomEntry(client, operation) {
 export async function saveClassroomMetadata(client, note, patch) {
   const attempt = crypto.randomUUID();
   const json = { ...note.processed_json, metadata: { ...note.processed_json?.metadata, ...patch, viewerRevision: attempt, updated_at: new Date().toISOString() } };
-  return replaceViewerAnalysis(client, note, note.raw_text, json, attempt);
+  const changedMeanings=new Set(Object.keys(patch.classMeanings || {}).filter(key=>JSON.stringify(patch.classMeanings[key])!==JSON.stringify(note.processed_json?.metadata?.classMeanings?.[key])));
+  return replaceViewerAnalysis(client, note, note.raw_text, preserveClassEntryValues(note.raw_text, json, changedMeanings), attempt);
 }
 export function classMeaningPatch(note, entry, meaning) {
   const latest = classroomEntries(note).find(e => e.id === entry.id && e.text === entry.text);

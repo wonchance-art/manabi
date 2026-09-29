@@ -1,4 +1,4 @@
-import {preserveReanalysisTokens} from './reanalysisPreservation';
+import {preserveReanalysisTokens,preserveClassEntryValues} from './reanalysisPreservation';
 
 export function stableJson(value){
   if(Array.isArray(value))return '['+value.map(stableJson).join(',')+']';
@@ -16,11 +16,15 @@ export function sharedSnapshot(material){
   return structuredClone({...extra,title:material?.title||'',raw_text:material?.raw_text||'',processed_json:clean});
 }
 export function classCopyUpdatePlan(copy,base,source,corrections=[]){
-  const next=sharedSnapshot(source),mine=sharedSnapshot(copy);
+  const next=sharedSnapshot({...source,processed_json:preserveClassEntryValues(source.raw_text,source.processed_json || {})}),mine=sharedSnapshot(copy);
   const summary={added:Math.max(0,next.raw_text.split('\n').filter(Boolean).length-(base?.raw_text||'').split('\n').filter(Boolean).length),preserved:0,meanings:[]};
+  const effectiveBase=base?preserveClassEntryValues(base.raw_text,base.processed_json || {}):null;
   if(base)for(const [id,token]of Object.entries(next.processed_json.dictionary||{})){
     const before=base.processed_json?.dictionary?.[id];
-    if(before?.text===token.text&&!sameContent(before.meaning,token.meaning))summary.meanings.push({text:token.text,before:before.meaning||'',after:token.meaning||'',personal:!!copy.processed_json?.dictionary?.[id]&&!sameContent(copy.processed_json.dictionary[id].meaning,before.meaning)});
+    const mineToken=copy.processed_json?.dictionary?.[id],effective=effectiveBase?.dictionary?.[id];
+    const personal=!!mineToken&&!sameContent(mineToken.meaning,before?.meaning)&&!sameContent(mineToken.meaning,effective?.meaning);
+    const previous=personal?effective?.meaning:mineToken?.meaning??before?.meaning;
+    if(before?.text===token.text&&!sameContent(previous,token.meaning))summary.meanings.push({text:token.text,before:previous||'',after:token.meaning||'',personal});
   }
   if(!base){return sameContent(mine,next)?{state:'current',summary}:{state:'blocked',reason:'예전에 받은 기준 내용이 없어 자동으로 합칠 수 없어요. 내 자료를 유지합니다.',summary};}
   if(sameContent(base,next))return {state:'current',summary};
@@ -28,14 +32,14 @@ export function classCopyUpdatePlan(copy,base,source,corrections=[]){
   if(next.raw_text!==base.raw_text&&!next.raw_text.startsWith(base.raw_text+'\n'))return {state:'blocked',reason:'기존 원문이 수정되거나 삭제됐어요. 저장한 위치를 보호하기 위해 내 자료를 유지합니다.',summary};
   // Only exact unchanged spans may retain IDs and corrections; no fuzzy matching of words.
   const fields=['meaning','furigana','reading','pos'];const patches=[];
-  const old=copy.processed_json||{},baseline=base.processed_json||{};
+  const old=copy.processed_json||{},rawBaseline=base.processed_json||{},baseline=preserveClassEntryValues(base.raw_text,rawBaseline);
   for(const id of old.sequence||[]){
     const token=old.dictionary?.[id],b=baseline.dictionary?.[id];
     if(!b||token?.text!==b.text){
       if(token?.pos!=='개행')return {state:'blocked',reason:'내 분석의 단어 구성이 달라 자동으로 합칠 수 없어요.',summary};
       continue;
     }
-    const changed=fields.filter(k=>!sameContent(token?.[k],b?.[k]));
+    const changed=fields.filter(k=>!sameContent(token?.[k],b?.[k])&&!sameContent(token?.[k],rawBaseline.dictionary?.[id]?.[k]));
     if(changed.length){patches.push({token_id:id,after_value:Object.fromEntries(changed.map(k=>[k,token[k]]))});summary.preserved+=1;}
   }
   // Source corrections are part of the baseline, not personal overrides.
@@ -63,5 +67,6 @@ export function classCopyUpdatePlan(copy,base,source,corrections=[]){
     if(Object.keys(merged).length)metadata[name]=merged;
   }
   const extra=Object.fromEntries(COPY_CONTENT_FIELDS.map(key=>[key,sameContent(copy[key]??null,base[key]??null)?next[key]:copy[key]??null]));
-  return {state:'update',summary,material:{...extra,title:copy.title===base.title?next.title:copy.title,raw_text:next.raw_text,processed_json:{...result,metadata}}};
+  const material={...extra,title:copy.title===base.title?next.title:copy.title,raw_text:next.raw_text,processed_json:{...result,metadata}};
+  return sameContent(sharedSnapshot(material),mine)?{state:'current',summary}:{state:'update',summary,material};
 }

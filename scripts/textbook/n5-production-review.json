@@ -1,0 +1,319 @@
+{
+  "baseEdition": "8f6d1f66189502aafa146305",
+  "baseBundleSha256": "f5431fd1fbdb7ead0eb03cfc472099d3a37f57009a5406c6b59f29dc382e5c6c",
+  "scope": "말하기 82개·작문 41개와 39/42과 별도 연습의 지시·예시·해설 내부 대조. 정답 변경 없이 지시/힌트/자기점검만 교정. 독립 감수·시험 범위 인증 아님.",
+  "revisionNote": "말하기 지시·작문 점검 정합화 및 활용형 전체를 쓰는 작문 도움",
+  "refreshAssetLinks": true,
+  "edits": [
+    {
+      "path": [
+        "lessons",
+        0,
+        "oral",
+        1,
+        "prompt"
+      ],
+      "before": "처음 만난 사람에게 정중하게 말해 보세요.",
+      "after": "옆에 있는 사람이 선생님이에요. せんせい。를 정중한 말로 바꿔 소개해 보세요.",
+      "reason": "누구를 소개하는지 정하지 않던 지시를 타인 소개로 명시. 새 호칭 문법을 추가하거나 기존 답을 바꾸지 않음.",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u01-dialogue",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        4,
+        "oral",
+        1,
+        "prompt"
+      ],
+      "before": "누구 것인지 묻고 리나 것이라고 답해요.",
+      "after": "だれのですか。라는 질문에 리나 것이라고 답해요.",
+      "reason": "질문은 이미 주어진 단서이고 예시는 응답 한 문장뿐이므로 수행 지시를 맞춤.",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u05-dialogue",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        3,
+        "writing_check"
+      ],
+      "before": "これ는 혼자 물건을 가리키고, この 뒤에는 명사가 왔나요?",
+      "after": "これ는 혼자 물건을 가리키고, あの 뒤에는 물건 이름을 붙였나요? あの는 말하는 사람과 듣는 사람 모두에게 먼 물건을 가리켜요.",
+      "reason": "작문 틀과 예시는 あの를 쓰는데 점검 문구만 この를 요구하던 불일치 제거.",
+      "format": "plain",
+      "render": [
+        {
+          "target": "u04-practice",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        16,
+        "writing_hint"
+      ],
+      "before": "＿＿を ＿＿ます。 / ＿＿も ＿＿ます。",
+      "after": "＿＿を ＿＿ます。 / ＿＿を ＿＿ます。",
+      "reason": "서로 다른 두 행동을 쓰는 과제와 예시에 맞춤. 두 번째 문장에 も를 반드시 쓰는 별도 조건을 부과하지 않음.",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u17-practice",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        23,
+        "writing_hint"
+      ],
+      "before": "＿＿を ＿＿て、＿＿を ＿＿ます。",
+      "after": "＿＿を［て형］、＿＿を［ます형］。",
+      "reason": "활용형 전체를 넣는 자리로 표시하여 て/で 또는 た/だ를 고정된 접미사로 오해하지 않도록 함.",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u24-practice",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        23,
+        "writing_check"
+      ],
+      "before": "앞 동사를 て형으로 바꾸었나요? 마지막 동사로 문장을 끝냈나요?",
+      "after": "［ ］에는 활용한 동사 전체를 넣어요. 앞 동사는 食べて·読んで처럼 て형으로, 마지막 동사는 정중한 ます형으로 끝냈나요?",
+      "reason": "변형을 마친 동사와 뒤 표현의 연결을 같은 과 예문/선행 동사로 확인하도록 자기점검 보완.",
+      "format": "plain",
+      "render": [
+        {
+          "target": "u24-practice",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        24,
+        "writing_hint"
+      ],
+      "before": "＿＿てください。 / ＿＿ないでください。",
+      "after": "［て형］ください。 / ［ない형］でください。",
+      "reason": "활용형 전체를 넣는 자리로 표시하여 て/で 또는 た/だ를 고정된 접미사로 오해하지 않도록 함.",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u25-practice",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        24,
+        "writing_check"
+      ],
+      "before": "부탁은 て형, 하지 말라는 요청은 ない형에서 출발했나요?",
+      "after": "［ ］에는 활용한 동사 전체를 넣어요. 読んで＋ください, 読まない＋でください처럼 부탁과 부정 요청을 구별했나요?",
+      "reason": "변형을 마친 동사와 뒤 표현의 연결을 같은 과 예문/선행 동사로 확인하도록 자기점검 보완.",
+      "format": "plain",
+      "render": [
+        {
+          "target": "u25-practice",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        25,
+        "writing_hint"
+      ],
+      "before": "いま、＿＿ています。 / ＿＿に 住んでいます。",
+      "after": "いま、［て형］います。 / ＿＿に 住んでいます。",
+      "reason": "활용형 전체를 넣는 자리로 표시하여 て/で 또는 た/だ를 고정된 접미사로 오해하지 않도록 함.",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u26-practice",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        25,
+        "writing_check"
+      ],
+      "before": "진행과 거주 상태를 구별했나요?",
+      "after": "［ ］에는 読んで 같은 て형 전체를 넣어요. 読んでいます의 진행과 住んでいます의 거주 상태를 구별했나요?",
+      "reason": "변형을 마친 동사와 뒤 표현의 연결을 같은 과 예문/선행 동사로 확인하도록 자기점검 보완.",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u26-practice",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        26,
+        "writing_hint"
+      ],
+      "before": "＿＿ても いいですか。 / ＿＿ては いけません。",
+      "after": "［て형］も いいですか。 / ［て형］は いけません。",
+      "reason": "활용형 전체를 넣는 자리로 표시하여 て/で 또는 た/だ를 고정된 접미사로 오해하지 않도록 함.",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u27-practice",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        26,
+        "writing_check"
+      ],
+      "before": "동사의 올바른 て형을 사용했나요?",
+      "after": "［ ］에는 활용한 동사 전체를 넣어요. 読んで＋もいいですか처럼 동사에 맞는 て형을 쓰고, 허락과 금지를 구별했나요?",
+      "reason": "변형을 마친 동사와 뒤 표현의 연결을 같은 과 예문/선행 동사로 확인하도록 자기점검 보완.",
+      "format": "plain",
+      "render": [
+        {
+          "target": "u27-practice",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        30,
+        "writing_hint"
+      ],
+      "before": "＿＿前に、＿＿ます。 / ＿＿てから、＿＿ます。",
+      "after": "［사전형］前に、＿＿ます。 / ［て형］から、＿＿ます。",
+      "reason": "활용형 전체를 넣는 자리로 표시하여 て/で 또는 た/だ를 고정된 접미사로 오해하지 않도록 함.",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u31-practice",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        30,
+        "writing_check"
+      ],
+      "before": "먼저 할 행동과 동사 모양이 맞나요?",
+      "after": "［ ］에는 동사 전체를 넣어요. 前に 앞에는 食べる 같은 사전형, から 앞에는 食べて·読んで 같은 て형을 썼나요? 행동 순서도 확인해요.",
+      "reason": "변형을 마친 동사와 뒤 표현의 연결을 같은 과 예문/선행 동사로 확인하도록 자기점검 보완.",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u31-practice",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        31,
+        "writing_hint"
+      ],
+      "before": "＿＿たことが あります。 / ＿＿たり、＿＿たり します。",
+      "after": "［た형］ことが あります。 / ［た형］り、［た형］り します。",
+      "reason": "활용형 전체를 넣는 자리로 표시하여 て/で 또는 た/だ를 고정된 접미사로 오해하지 않도록 함.",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u32-practice",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        31,
+        "writing_check"
+      ],
+      "before": "경험의 こと와 활동 예시의 たり를 구별했나요?",
+      "after": "［ ］에는 활용한 동사 전체를 넣어요. 読んだ도 た형이에요. 경험은 読んだ＋ことがあります, 활동 예시는 読んだ＋り로 이어지나요?",
+      "reason": "변형을 마친 동사와 뒤 표현의 연결을 같은 과 예문/선행 동사로 확인하도록 자기점검 보완.",
+      "format": "plain",
+      "render": [
+        {
+          "target": "u32-practice",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        41,
+        "writing_hint"
+      ],
+      "before": "＿＿は もう ＿＿ました。＿＿は まだ ＿＿ていません。これから ＿＿ます。",
+      "after": "＿＿は もう ＿＿ました。＿＿は まだ［て형］いません。これから ＿＿ます。",
+      "reason": "활용형 전체를 넣는 자리로 표시하여 て/で 또는 た/だ를 고정된 접미사로 오해하지 않도록 함.",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u42-practice",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        41,
+        "writing_check"
+      ],
+      "before": "완료·미완료와 다음 행동이 모순 없이 이어지나요?",
+      "after": "［ ］에는 買って·読んで 같은 て형 전체를 넣어요. 완료·미완료와 다음 행동이 모순 없이 이어지나요?",
+      "reason": "변형을 마친 동사와 뒤 표현의 연결을 같은 과 예문/선행 동사로 확인하도록 자기점검 보완.",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u42-practice",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

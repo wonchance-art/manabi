@@ -1,0 +1,12 @@
+{
+  "name": "notes-review-phone",
+  "key": "darwin-arm64-chromium-149.0.7827.55",
+  "sha256": "c50cc2a95f19664092b300690d40c766dd2892aba093e677772bcbad4ad160e2",
+  "review": "Directly inspected: two saved Japanese entries keep readings/right-side meanings, source links, filters and bottom return control visible without clipping.",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "osRelease": "25.3.0",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+}

@@ -64,6 +64,7 @@ describe('multiple teaching expressions with annotations and ink',()=>{
   const short=teachingWordLayout({...value,text:'换位思考',reading:'huàn wèi sī kǎo',meaning:'상대방의 입장에서 생각하다'},{fontSize:35,maxWidth:280});
   expect(rows(short)).toEqual(['换位思考']);
   expect(short.width).toBeLessThanOrEqual(280);
+  expect(short.parts.filter(p=>p.role==='meaning').map(p=>p.text.trim())).toEqual(['상대방의','입장에서','생각하다']);
   const phrase={...value,text:'换个角度想一想',reading:'huàn gè jiǎo dù xiǎng yī xiǎng'};
   const layout=teachingWordLayout(phrase);
   expect(rows(layout)).toHaveLength(2);
@@ -74,5 +75,13 @@ describe('multiple teaching expressions with annotations and ink',()=>{
   expect(rows(narrow).every(row=>[...row].length>=2)).toBe(true);
   expect(layout.parts.filter(p=>p.role==='reading').map(p=>p.text)).toEqual(phrase.reading.split(' '));
   expect(rows(teachingWordLayout({...phrase,showReading:false,showHun:false,showMeaning:false}))).toEqual(rows(layout));
+ });
+ it('preserves explicit meaning paragraphs and falls back for an overlong word',()=>{
+  const meaning='첫 번째 뜻\n아주아주아주아주아주긴한단어';
+  const layout=teachingWordLayout({...value,meaning},{maxWidth:220});
+  const lines=layout.parts.filter(p=>p.role==='meaning');
+  expect(lines.map(p=>p.text).join('').replace(/\s/g,'')).toBe(meaning.replace(/\s/g,''));
+  expect(lines.some(p=>p.text.endsWith('뜻'))).toBe(true);
+  expect(lines.length).toBeGreaterThan(3);
  });
 });

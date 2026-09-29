@@ -1,4 +1,6 @@
 'use client';
+import {classVocabularyRequest} from '../../lib/classDirectStudy';
+import {isLocalId,parseLocalId} from '../../lib/classBoard';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '../../lib/AuthContext';
@@ -26,10 +28,14 @@ export default function ReadingSourceFocus({ materialId, ready, json, onTarget }
       if(source.has('sourceContext')) {
         if(!UUID.test(contextId || '')) {setMessage('저장한 문맥 주소를 확인해 주세요.');return;}
         if(!userId) {setMessage('저장한 문맥은 로그인 후 확인할 수 있어요.');return;}
+        if(isLocalId(materialId)) {
+          context=(await classVocabularyRequest(source.get('team'),{method:'GET',query:{contextId,materialId:parseLocalId(materialId)},signal:request.signal})).context;
+        } else {
         const response=await fetch(`/api/learning/vocabulary?contextId=${encodeURIComponent(contextId)}&materialId=${encodeURIComponent(materialId)}`,{cache:'no-store',signal:request.signal});
         const result=await response.json();
         if(!response.ok) throw new Error(response.status===404?'이 문맥의 원문을 더 이상 열 수 없어요.':'저장한 문맥을 불러오지 못했어요.');
         context=result.context;
+        }
       }
       if(request.signal.aborted || interacted) return;
       completed.current=scope;

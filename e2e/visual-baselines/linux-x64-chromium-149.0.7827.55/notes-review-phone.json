@@ -1,0 +1,12 @@
+{
+  "name": "notes-review-phone",
+  "key": "linux-x64-chromium-149.0.7827.55",
+  "sha256": "742539705d1cfe22a255ff6af0d4307238b4a87c02b0acbc7a8175c2341bc173",
+  "review": "Directly inspected Linux CJK rendering: intact glyphs, upper readings/lower hun/right meanings as applicable, no text overlap or cropped actions. Browser-native controls and synthetic fonts are intentional. Any SVG contrast incomplete remains manual evidence.",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "osRelease": "6.17.0-1022-azure",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+}

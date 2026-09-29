@@ -59,20 +59,7 @@ export async function resolveSave(supabase, userId, payload) {
         locator: {notePage: candidate.pageId, noteCandidate: candidate.id, surface: candidate.text}};
       return {word: normalized, source: resolved};
     }
-    const context = tokenContext(material.processed_json, source.tokenId);
-    if (context) {
-      if (context.language !== lang) fail(400, '자료의 언어를 다시 확인해 주세요.');
-      const token = context.token;
-      normalized = { ...normalized, word_text: normalizeLearningWord(token.sep_link || token.base_form || token.text), meaning: String(token.meaning || normalized.meaning).trim(), furigana: token.furigana || token.reading || '', pos: token.pos || '' };
-      resolved = { kind: 'reading', materialId: String(material.id), quote: context.quote.slice(0,4000), translation: '', locator: { tokenId: source.tokenId, surface: token.text } };
-    } else {
-      const quote = String(source.quote || '').trim(), surface = String(source.surface || '').trim();
-      const compact = text => String(text || '').normalize('NFC').replace(/\s+/g,'');
-      if (!quote || quote.length > 4000 || !surface || !compact(quote).includes(compact(surface)) || !compact(material.raw_text).includes(compact(quote))) fail(400,'자료에서 문장을 다시 선택해 주세요.');
-      const actualLang = material.processed_json?.metadata?.language;
-      if (actualLang && actualLang !== lang) fail(400,'자료의 언어를 다시 확인해 주세요.');
-      resolved = {kind:'reading',materialId:String(material.id),quote,translation:'',locator:{surface}};
-    }
+    ({word:normalized,source:resolved}=resolveReadingSelection(material,source,normalized));
   } else if (source.kind === 'pdf') {
     const pdf = await accessibleMaterial(supabase, userId, 'pdf', source.pdfId);
     const page = source.page == null || source.page === '' ? null : Number(source.page);
@@ -114,4 +101,27 @@ export async function resolveSave(supabase, userId, payload) {
   if (!normalized.word_text || normalized.word_text.length > 300 || !normalized.meaning || normalized.meaning.length > 2000) fail(400, '표현과 뜻을 입력해 주세요.');
   // JSONB key 순서에 무관한 위치/발췌로 DB에서 중복 제거. 외부 URL·서명된 파일 주소는 저장하지 않는다.
   return { word: normalized, source: resolved };
+}
+
+// Callers must establish material access before resolving a selection.
+export function resolveReadingSelection(material, source, word) {
+  const lang=word.language;
+  let normalized={...word},resolved;
+    const context = tokenContext(material.processed_json, source.tokenId);
+    if (context) {
+      if (context.language !== lang) fail(400, '자료의 언어를 다시 확인해 주세요.');
+      const token = context.token;
+      normalized = { ...normalized, word_text: normalizeLearningWord(token.sep_link || token.base_form || token.text), meaning: String(token.meaning || normalized.meaning).trim(), furigana: token.furigana || token.reading || '', pos: token.pos || '' };
+      resolved = { kind: 'reading', materialId: String(material.id), quote: context.quote.slice(0,4000), translation: '', locator: { tokenId: source.tokenId, surface: token.text } };
+    } else {
+      const quote = String(source.quote || '').trim(), surface = String(source.surface || '').trim();
+      const compact = text => String(text || '').normalize('NFC').replace(/\s+/g,'');
+      if (!quote || quote.length > 4000 || !surface || !compact(quote).includes(compact(surface)) || !compact(material.raw_text).includes(compact(quote))) fail(400,'자료에서 문장을 다시 선택해 주세요.');
+      const actualLang = material.processed_json?.metadata?.language;
+      if (actualLang && actualLang !== lang) fail(400,'자료의 언어를 다시 확인해 주세요.');
+      resolved = {kind:'reading',materialId:String(material.id),quote,translation:'',locator:{surface}};
+    }
+
+  if (!LEARNING_LANGUAGES.includes(lang) || !normalized.word_text || normalized.word_text.length>300 || !normalized.meaning || normalized.meaning.length>2000) fail(400,'표현과 뜻을 확인해 주세요.');
+  return {word:normalized,source:resolved};
 }

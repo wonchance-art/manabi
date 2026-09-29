@@ -1,4 +1,5 @@
 'use client';
+import {classPositionKey,readClassPosition} from './classDirectStudy';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { recordActivity } from './streak';
@@ -29,6 +30,9 @@ export function useReadingCompletion({
 
   return useMutation({
     mutationFn: async () => {
+      if(material?.__local){
+        localStorage.setItem(classPositionKey(user.id,material.__team,materialId),JSON.stringify({...readClassPosition(user.id,material.__team,materialId),is_completed:true}));return {classRead:true};
+      }
       const { error } = await supabase.from('reading_progress').upsert({
         user_id: user.id,
         material_id: materialId,
@@ -52,6 +56,7 @@ export function useReadingCompletion({
     },
     onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ['reading-progress', user?.id, materialId] });
+      if(data.classRead){toast?.('이 기기에 읽기 완료로 표시했어요.','success');return;}
       queryClient.invalidateQueries({ queryKey: ['reading-progress-list', user?.id] });
       recordActivity(user.id, () => fetchProfile(user.id));
       // 완독을 학습 기록에 합류 — fire-and-forget, 실패 무해

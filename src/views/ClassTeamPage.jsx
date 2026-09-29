@@ -240,35 +240,23 @@ function StudentView({ teamKey, user, toast }) {
 
   const setRow = (id, v) => setRowBusy((b) => ({ ...b, [id]: v }));
 
-  /** 행 열기 — 로그인이면 복제본(정식 뷰어), 아니면 사본(local: 뷰어). 받기는 여기서만. */
+  /** 행 열기 — 수업 원본 바로 읽기. 전체 자료 보관은 보관 옵션에서만. */
   const openEntry = useCallback(async (entry) => {
     if (!unlock) return;
     const id = entry.id;
     const destination=href=>classEntryHref(href,teamKey,entry);
-    if (user) {
-      if (offline) { const mine=claimedMap.get(String(id));if(mine)router.push(destination(studentReaderHref(mine,teamKey,entry.day)));else toast('온라인에서 처음 열 수 있어요.','warning');return; }
-      setRow(id,true);
-      try {
-        const result=await requestClassCopy(teamKey,id,'open');
-        if(result.state==='choose'){setChoice({entry,candidates:result.candidates});return;}
-        await refetchClaimed();
-        if(result.copyId)router.push(destination(studentReaderHref(result.copyId,teamKey,entry.day)));
-      }catch(err){if(err?.status===401)relock(RELOCK_MSG);else toast(err.message,'error');}
-      finally{setRow(id,false);}return;
-    }
     const existing = copies.get(id);
     cacheClassSource(sessionStorage,teamKey,entry);
     if (offline && existing && !copyIsStale(existing, entry)) { router.push(destination(localViewerHref(id, teamKey))); return; }
     if (offline) { toast(existing ? '사본이 낡았지만 오프라인이라 그대로 열어요.' : '온라인에서 받아야 해요.', existing ? 'info' : 'warning'); if (existing) router.push(destination(localViewerHref(id, teamKey))); return; }
     setRow(id, true);
     try {
-      await ensureSharedCopy(teamKey, unlock.token, entry, {refresh:true});
-      await refreshCopies();
+      // The reader fetches the authorized original; a full device cache is optional.
       router.push(destination(localViewerHref(id, teamKey)));
     } catch (err) {
       if (err?.status === 401) relock(RELOCK_MSG); else toast('받지 못했어요 — ' + errMsg(err), 'error');
     } finally { setRow(id, false); }
-  }, [unlock, user, claimedMap, offline, teamKey, copies, router, toast, refetchClaimed, refreshCopies, relock]);
+  }, [unlock, offline, teamKey, copies, router, toast, relock]);
 
   // `?open=<id>` — local: 뷰어의 이전/다음 과가 여기를 거친다(받기 단일 소유). 한 번만.
   const openedRef = useRef(null);
@@ -323,10 +311,10 @@ function StudentView({ teamKey, user, toast }) {
   const unclaimedCount = user ? [...chapters, ...notes].filter((e) => !claimedMap.has(String(e.id))).length : 0;
 
   const chip = (entry) => {
-    if (rowBusy[entry.id]) return <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{user ? '담는 중…' : '받는 중…'}</span>;
+    if (rowBusy[entry.id]) return <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>자료 확인 중…</span>;
     if (user) {
       return claimedMap.has(String(entry.id))
-        ? <span style={{ fontSize: '0.72rem', color: 'var(--accent-text)' }}>✓ 내 자료</span>
+        ? <span style={{ fontSize: '0.72rem', color: 'var(--accent-text)' }}>개인 사본 보관됨</span>
         : <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>읽기 시작 →</span>;
     }
     const c = copies.get(entry.id);
@@ -345,14 +333,14 @@ function StudentView({ teamKey, user, toast }) {
       />
       {!user && !bannerOff && (
         <div role="status" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: '8px 12px', marginBottom: 12, borderRadius: 'var(--radius-md)', background: 'var(--primary-glow)', border: '1px solid var(--primary)', fontSize: '0.82rem' }}>
-          <span style={{ flex: 1, minWidth: 200 }}>로그인하면 여는 자료를 내 서재에 보관해요</span>
+          <span style={{ flex: 1, minWidth: 200 }}>로그인하면 필요한 단어만 바로 저장할 수 있어요</span>
           <Link href={`/auth?from=${encodeURIComponent(`/class/${teamKey}`)}`} className="btn btn--primary btn--sm">로그인 →</Link>
           <button type="button" className="btn btn--ghost btn--sm" aria-label="닫기" onClick={() => { setBannerOff(teamKey); setBannerOffState(true); }}>✕</button>
         </div>
       )}
       {offline && <p role="status" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 10px' }}>오프라인 — 받아 둔 사본만 열려요.</p>}
 
-      {featured&&studentTab==='book'&&<button className="classroom-featured-note" onClick={()=>openEntry(featured)} disabled={!!rowBusy[featured.id]}><span className="classroom-eyebrow">{recent?'이어서 공부하기':featured.day?'최근 수업 노트':'수업 교재'}</span><h2>{featured.day?`${dayLabel(featured.day)} 수업 노트`:chapterLabel(featured.title)}</h2><p>{recent?'읽던 위치에서 계속 공부하세요.':'한 표현씩, 내 언어로 만들어 보세요.'}</p><b>{rowBusy[featured.id]?'자료 확인 중…':recent?'이어 읽기 →':'읽기 시작 →'}</b>{user&&<small>처음 여는 자료는 내 서재에 보관됩니다.</small>}</button>}
+      {featured&&studentTab==='book'&&<button className="classroom-featured-note" onClick={()=>openEntry(featured)} disabled={!!rowBusy[featured.id]}><span className="classroom-eyebrow">{recent?'이어서 공부하기':featured.day?'최근 수업 노트':'수업 교재'}</span><h2>{featured.day?`${dayLabel(featured.day)} 수업 노트`:chapterLabel(featured.title)}</h2><p>{recent?'읽던 위치에서 계속 공부하세요.':'한 표현씩, 내 언어로 만들어 보세요.'}</p><b>{rowBusy[featured.id]?'자료 확인 중…':recent?'이어 읽기 →':'읽기 시작 →'}</b>{user&&<small>사본 없이 읽고, 필요한 단어만 저장하세요.</small>}</button>}
       {claimedError&&<p role="alert">내 자료 목록을 확인하지 못했어요. <button onClick={()=>refetchClaimed()}>다시 확인</button></p>}
       {choice&&<div className="classroom-notice" role="group" aria-label="기존 사본 선택"><b>사용할 사본을 선택하세요.</b><p>다른 사본은 삭제하지 않습니다.</p>{choice.candidates.map(c=><button key={c.id} disabled={busy} onClick={async()=>{setBusy(true);try{const r=await requestClassCopy(teamKey,choice.entry.id,'open',{preferred:c.id});if(r.copyId)router.push(classEntryHref(studentReaderHref(r.copyId,teamKey,choice.entry.day),teamKey,choice.entry));setChoice(null);}catch(e){toast(e.message,'error');}finally{setBusy(false);}}}>{c.title} · {new Date(c.createdAt).toLocaleDateString('ko-KR')}</button>)}<button onClick={()=>setChoice(null)}>나중에</button></div>}
       <div className="classroom-tabs" aria-label="수업 자료 종류"><button aria-pressed={studentTab==='book'} onClick={()=>setStudentTab('book')}>교재</button><button aria-pressed={studentTab==='notes'} onClick={()=>setStudentTab('notes')}>수업 기록</button></div>

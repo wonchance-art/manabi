@@ -6,6 +6,7 @@
  * 학생 복제본은 metadata.team이 있어도 소유자가 달라 절대 나가지 않는다(계약).
  * 순수 판정(indexFromRows·materialBelongsToTeam·toPayload)은 Supabase 없이 계약 테스트가 돈다.
  */
+import {preserveClassEntryValues} from '../reanalysisPreservation';
 import {createHash} from 'node:crypto';
 import {sharedSnapshot,stableJson} from '../classCopyModel';
 import { createClient } from '@supabase/supabase-js';
@@ -37,7 +38,7 @@ export async function loadTeamRoot(admin, key) {
   return { root, team };
 }
 
-const revisionOf=row=>createHash('sha256').update(stableJson(sharedSnapshot(row))).digest('hex');
+export const revisionOf=row=>createHash('sha256').update(stableJson(sharedSnapshot(row))).digest('hex');
 const countLines = (t) => String(t || '').split('\n').filter((l) => l.trim()).length;
 const updatedOf = (row) => row?.updated_at || row?.processed_json?.metadata?.updated_at || row?.created_at || null;
 
@@ -106,7 +107,7 @@ export function toPayload(row, kind) {
     id: row.id, title: row.title, kind,
     lesson_explanation_ko:row.lesson_explanation_ko??null,conversation_script:row.conversation_script??null,direction:row.direction??'read',source_pdf_id:row.source_pdf_id??null,page_start:row.page_start??null,page_end:row.page_end??null,document_json:row.document_json??null,
     language: row.processed_json?.metadata?.language || null,
-    raw_text: row.raw_text, processed_json: row.processed_json,
+    raw_text: row.raw_text, processed_json: preserveClassEntryValues(row.raw_text,row.processed_json || {}),
     visibility: row.visibility, owner_id: row.owner_id, created_at: row.created_at,
     updatedAt: updatedOf(row), contentRevision:revisionOf(row),
   };

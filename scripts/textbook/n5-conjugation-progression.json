@@ -1,0 +1,112 @@
+{
+  "baseEdition": "978a06f6d8d9f1c0fc0df88b",
+  "baseBundleSha256": "5ceb29761039b03d9d5dd189e635cefed182cd238ffa919fcda3aae3786c5d94",
+  "scope": "24–32과 실제 학습 순서 내부 검토 후, 26/30과의 선행 어휘 도움과 28과 과거형 변환 설명, 32과 형용사 연습의 선행 설명 복귀를 보완. 독립 감수·시험 범위 인증 아님.",
+  "revisionNote": "활용 설명·시간/다시 어휘 도움·형용사 과거 연습의 설명 복귀 보완",
+  "refreshAssetLinks": true,
+  "edits": [
+    {
+      "path": [
+        "lessons",
+        25,
+        "preparation"
+      ],
+      "before": "すむ의 표기 住む를 익혀요. 住んでいます는 그곳에 살고 있다는 상태예요.",
+      "after": "すむ의 표기 住む를 익혀요. 住んでいます는 그곳에 살고 있다는 상태예요. じかん은 시간이에요. あつまりのじかん은 모임 시간을 뜻해요.",
+      "reason": "말하기 과제에서 처음 요구하는 시간 어휘를 준비 단계에서 설명. 과제와 답은 유지.",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u26-start",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        27,
+        "patterns",
+        1,
+        "note"
+      ],
+      "before": "과거를 짧게 만드는 방법은 ました에서 です를 떼는 것이 아니에요. 동사 그룹별 た형을 확인해요.",
+      "after": "読みました를 짧게 말할 때는 読む → 読んで → 読んだ로 바꾸어요. ました만 た로 바꾼 読みた가 아니에요. 동사 그룹별 て형 규칙을 た형에도 적용해요.",
+      "reason": "です가 없는 ました에서 です를 뗀다는 비교 대신 読む의 실제 た형 경로와 잘못된 단순 치환을 대조.",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u28-patterns",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        29,
+        "practice_pages",
+        1,
+        "help"
+      ],
+      "before": "읽기 도움 · 白い＝しろい, 하얗다 ／ 一人で＝ひとりで, 혼자 ／ あと＝뒤 ／ 帰りました＝かえりました, 돌아왔어요",
+      "after": "읽기 도움 · 白い＝しろい, 하얗다 ／ 一人で＝ひとりで, 혼자 ／ あと＝뒤 ／ 帰りました＝かえりました, 돌아왔어요 ／ また＝다시",
+      "reason": "독해에서 처음 쓰는 また의 뜻을 기존 지문 앞 도움에 추가. 문제 정답과 읽기 대상은 유지.",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u30-read-check",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        31,
+        "recall_links",
+        4,
+        "label"
+      ],
+      "before": "연습 12 · 형용사의 과거 (29과)",
+      "after": "연습 12 · な형용사의 과거 (29과)",
+      "reason": "29과 설명은 な형용사 과거임을 정확히 표시; 별도 추가 링크는 30과 い형용사 설명으로 연결.",
+      "format": "plain",
+      "render": [
+        {
+          "target": "u32-review1",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "recallLinkAdditions": [
+    {
+      "lesson": "u32",
+      "after": "review1",
+      "before": [
+        {
+          "after": "review1",
+          "target": "u19-patterns",
+          "label": "연습 10 · 행동하는 장소 (19과)"
+        },
+        {
+          "after": "review1",
+          "target": "u31-patterns",
+          "label": "연습 11 · 하기 전의 일 (31과)"
+        },
+        {
+          "after": "review1",
+          "target": "u29-patterns",
+          "label": "연습 12 · な형용사의 과거 (29과)"
+        }
+      ],
+      "add": [
+        {
+          "target": "u30-patterns",
+          "label": "연습 12 · い형용사의 과거 (30과)"
+        }
+      ]
+    }
+  ]
+}

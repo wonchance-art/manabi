@@ -1,0 +1,12 @@
+{
+  "name": "reader-settings-phone",
+  "key": "darwin-arm64-webkit-26.5",
+  "sha256": "941ec94b43bc40042620ee271484cff6000da125d9802ecb6147f882de5c09e3",
+  "review": "Directly inspected: three tabs, Chinese preview, all size sliders, close and reset controls visible. Focus outline is intentional. Remaining settings scroll within the dialog.",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "osRelease": "25.3.0",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+}

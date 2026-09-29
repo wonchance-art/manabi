@@ -2,7 +2,7 @@
 import { supabase } from './supabase';
 import { detectLangConfident, hasCjkText } from './constants';
 import { cacheVocabSnapshot, getCachedVocabSnapshot } from './offlineCache';
-import { calculateFSRS } from './fsrs';
+import { gradeToInitialStats } from './fsrs';
 
 /**
  * 저장용 word_text 정규화 — item_key(=user_vocabulary.word_text) 통일 규약.
@@ -73,10 +73,7 @@ export const SAVE_GRADES = Object.freeze([
  * last_reviewed_at은 세우지 않는다: 저장은 첫 만남이지 회상이 아니고, 세우면 복습 카드가
  * 되어 한도 없는 큐로 직행한다(「쉬움」 500개면 8일 뒤 500개).
  */
-export function gradeToInitialStats(grade, now = () => new Date().toISOString()) {
-  const stats = calculateFSRS(grade, undefined);
-  return grade === 1 ? { ...stats, next_review_at: now() } : stats;
-}
+export {gradeToInitialStats} from './fsrs';
 
 export function buildVocabRow({
   userId, surface, base, meaning, pos, reading, language,

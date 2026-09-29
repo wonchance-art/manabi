@@ -66,13 +66,28 @@ describe('관리자 경로 보호 (기존 계약 유지)', () => {
     createServerClientMock.mockReset();
   });
 
-  it('미로그인 관리자 경로 접근은 /auth 로 보낸다', async () => {
+  it('미로그인 관리자 경로 접근은 원래 주소를 보존해 /auth 로 보낸다', async () => {
     mockSession();
 
     const response = await middleware(request('/admin'));
 
     expect(response.status).toBe(307);
-    expect(response.headers.get('location')).toBe('https://example.test/auth');
+    expect(response.headers.get('location')).toBe('https://example.test/auth?from=%2Fadmin');
+  });
+
+  it.each([
+    '/admin/books/japanese-n5',
+    '/admin/textbooks?lang=Japanese&section=grammar',
+    '/admin/books/japanese-n5?from=https%3A%2F%2Fexample.invalid',
+  ])('로그인 후 관리자 목적지와 조회 조건을 유지한다: %s', async path => {
+    mockSession();
+    const response = await middleware(request(path));
+    const target = new URL(response.headers.get('location'));
+    expect(response.status).toBe(307);
+    expect(target.origin).toBe('https://example.test');
+    expect(target.pathname).toBe('/auth');
+    expect(target.searchParams.get('from')).toBe(path);
+    expect([...target.searchParams.keys()]).toEqual(['from']);
   });
 
   it('일반 사용자는 홈으로 돌려보낸다', async () => {

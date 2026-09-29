@@ -1,0 +1,577 @@
+{
+  "version": 2,
+  "checkedAt": "2026-09-17",
+  "base": "lexical-senses.json",
+  "scope": "32 context-bound editorial cases + 8 ambiguity guards. Not HSK pronunciation gold, not model evaluation results. Sources support senses/readings; Korean glosses, POS normalization, original contexts and Japanese translations are editorial. Alternative valid paraphrases require review. Japanese translations remain review candidates, not independently bilingual-adjudicated answers.",
+  "sources": {
+    "zh-paper": {
+      "url": "https://dict.revised.moe.edu.tw/dictView.jsp?ID=130130&la=0&powerMode=0",
+      "publisher": "教育部《重編國語辭典修訂本》",
+      "supports": "手紙: toilet paper, shǒu zhǐ"
+    },
+    "ja-letter": {
+      "url": "https://kotobank.jp/word/手紙-575196",
+      "publisher": "小学館 デジタル大辞泉 (Kotobank)",
+      "supports": "手紙: written correspondence, てがみ"
+    },
+    "zh-car": {
+      "url": "https://dict.revised.moe.edu.tw/dictView.jsp?ID=99141&q=1&word=汽車",
+      "publisher": "教育部《重編國語辭典修訂本》",
+      "supports": "汽車: motor road vehicle, qì chē"
+    },
+    "ja-train": {
+      "url": "https://www.kanjipedia.jp/kotoba/0001199800",
+      "publisher": "日本漢字能力検定協会 漢字ペディア",
+      "supports": "汽車: steam-powered train, キシャ"
+    },
+    "joyo": {
+      "url": "https://www.bunka.go.jp/kokugo_nihongo/sisaku/joho/joho/kijun/naikaku/pdf/joyokanjihyo_20101130.pdf",
+      "publisher": "文化庁 常用漢字表 2010 付表",
+      "supports": "grouped readings 今日/大人/昨日/二十日 only; Korean glosses are editorial"
+    },
+    "cheap-idiom": {
+      "url": "https://dict.revised.moe.edu.tw/dictView.jsp?ID=18984&la=1&powerMode=0",
+      "publisher": "教育部《重編國語辭典修訂本》",
+      "supports": "便宜行事: permitted discretion according to circumstances; word and idiom meanings must be distinguished"
+    }
+  },
+  "cases": [
+    {
+      "id": "zh01",
+      "baseCase": "zh01",
+      "context": "他研究植物的生长。",
+      "mode": "sense",
+      "readingPolicy": "zh-TW-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "sense-or-reading",
+      "referencePolicy": "editorial-candidate"
+    },
+    {
+      "id": "zh02",
+      "baseCase": "zh02",
+      "context": "明天的活动怎么安排？我们一起研究一下。",
+      "mode": "sense",
+      "readingPolicy": "zh-TW-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "sense-or-reading",
+      "referencePolicy": "editorial-candidate",
+      "editorialNote": "대책을 함께 의논하는 문맥을 명시한다. 연구·검토의 일반적인 중첩은 오역으로 단정하지 않는다."
+    },
+    {
+      "id": "zh03",
+      "baseCase": "zh03",
+      "context": "这本书很便宜。",
+      "mode": "sense",
+      "readingPolicy": "zh-TW-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "sense-or-reading",
+      "referencePolicy": "editorial-candidate",
+      "rejectJapanese": [
+        "便宜"
+      ]
+    },
+    {
+      "id": "zh04",
+      "baseCase": "zh04",
+      "context": "别占别人的便宜。",
+      "mode": "sense",
+      "readingPolicy": "zh-TW-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "sense-or-reading",
+      "referencePolicy": "editorial-candidate",
+      "meaning": "부당하게 얻는 이득",
+      "acceptedMeanings": [
+        "부당한 이익",
+        "부당한 이득"
+      ],
+      "editorialNote": "占便宜 문맥에서는 뜻밖에라는 우연성보다 부당하게 이득을 취함이 핵심이다. 출처 pián yi 의미 2."
+    },
+    {
+      "id": "zh05",
+      "baseCase": "zh05",
+      "context": "这样倒便宜了他。",
+      "mode": "sense",
+      "readingPolicy": "zh-TW-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "sense-or-reading",
+      "referencePolicy": "editorial-candidate"
+    },
+    {
+      "id": "zh06",
+      "baseCase": "zh06",
+      "context": "主管已经授权，我们可以根据现场情况便宜行事。",
+      "mode": "sense",
+      "readingPolicy": "zh-TW-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "sense-or-reading",
+      "referencePolicy": "editorial-candidate",
+      "editorialNote": "평가 대상은 便宜 두 글자의 뜻·독음이다. 문장 전체의 便宜行事는 허가된 재량에 따라 처리한다는 관용 표현이며 都合がよい를 문장 번역으로 확정하지 않는다.",
+      "usageSource": "cheap-idiom"
+    },
+    {
+      "id": "zh07",
+      "baseCase": "zh07",
+      "context": "沿着河边缓缓行。",
+      "mode": "sense",
+      "readingPolicy": "zh-TW-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "sense-or-reading",
+      "referencePolicy": "editorial-candidate"
+    },
+    {
+      "id": "zh08",
+      "baseCase": "zh08",
+      "context": "我在这一行工作。",
+      "mode": "sense",
+      "readingPolicy": "zh-TW-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "sense-or-reading",
+      "referencePolicy": "editorial-candidate"
+    },
+    {
+      "id": "zh09",
+      "baseCase": "zh09",
+      "context": "请记录物重。",
+      "mode": "sense",
+      "readingPolicy": "zh-TW-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "sense-or-reading",
+      "referencePolicy": "editorial-candidate"
+    },
+    {
+      "id": "zh10",
+      "baseCase": "zh10",
+      "context": "这个箱子很重。",
+      "mode": "sense",
+      "readingPolicy": "zh-TW-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "sense-or-reading",
+      "referencePolicy": "editorial-candidate"
+    },
+    {
+      "id": "zh11",
+      "baseCase": "zh11",
+      "context": "今天我请客，我来当东道主。",
+      "mode": "sense",
+      "readingPolicy": "zh-TW-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "sense-or-reading",
+      "referencePolicy": "editorial-candidate"
+    },
+    {
+      "id": "zh12",
+      "baseCase": "zh12",
+      "context": "他的身体已经康复。",
+      "mode": "sense",
+      "readingPolicy": "zh-TW-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "sense-or-reading",
+      "referencePolicy": "editorial-candidate",
+      "unit": "morpheme",
+      "editorialNote": "康复 안의 复를 묻는 형태소 사례다. 康复 전체의 뜻과 독음을 이 한 글자의 답으로 대조하지 않는다."
+    },
+    {
+      "id": "ja01",
+      "baseCase": "ja01",
+      "context": "この橋を渡ります。",
+      "mode": "sense",
+      "readingPolicy": "ja-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "sense-or-reading",
+      "referencePolicy": "not-applicable"
+    },
+    {
+      "id": "ja02",
+      "baseCase": "ja02",
+      "context": "箸でご飯を食べます。",
+      "mode": "sense",
+      "readingPolicy": "ja-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "sense-or-reading",
+      "referencePolicy": "not-applicable"
+    },
+    {
+      "id": "ja03",
+      "baseCase": "ja03",
+      "context": "池の生物を観察します。",
+      "mode": "sense",
+      "readingPolicy": "ja-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "sense-or-reading",
+      "referencePolicy": "not-applicable"
+    },
+    {
+      "id": "ja04",
+      "baseCase": "ja04",
+      "context": "寿司や刺身などの生物は、食べる直前まで冷蔵します。",
+      "mode": "sense",
+      "readingPolicy": "ja-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "sense-or-reading",
+      "referencePolicy": "not-applicable",
+      "editorialNote": "초밥·회라는 식품 문맥으로 せいぶつ와 구분한다. 상하기 쉬운 식품이라는 더 넓은 사전 의미도 별도 검토 대상이다."
+    },
+    {
+      "id": "ja05",
+      "baseCase": "ja05",
+      "context": "妹は料理が上手です。",
+      "mode": "sense",
+      "readingPolicy": "ja-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "sense-or-reading",
+      "referencePolicy": "not-applicable"
+    },
+    {
+      "id": "ja06",
+      "baseCase": "ja06",
+      "context": "俳優は舞台の上手に立ちます。",
+      "mode": "sense",
+      "readingPolicy": "ja-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "sense-or-reading",
+      "referencePolicy": "not-applicable"
+    },
+    {
+      "id": "ja07",
+      "baseCase": "ja07",
+      "context": "大家に家賃を払います。",
+      "mode": "sense",
+      "readingPolicy": "ja-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "sense-or-reading",
+      "referencePolicy": "not-applicable"
+    },
+    {
+      "id": "ja08",
+      "baseCase": "ja08",
+      "context": "彼は書道の大家です。",
+      "mode": "sense",
+      "readingPolicy": "ja-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "sense-or-reading",
+      "referencePolicy": "not-applicable"
+    },
+    {
+      "id": "zh13",
+      "language": "Chinese",
+      "text": "重",
+      "reading": "chóng",
+      "pos": "부사",
+      "meaning": "다시",
+      "rejectMeaning": "무겁다",
+      "context": "请重写这一段。",
+      "source": "heavy",
+      "mode": "sense",
+      "readingPolicy": "zh-TW-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "다음자",
+      "referencePolicy": "editorial-candidate",
+      "jaExample": "もう一度"
+    },
+    {
+      "id": "zh14",
+      "language": "Chinese",
+      "text": "行",
+      "reading": "xíng",
+      "pos": "동사",
+      "meaning": "허락하다",
+      "rejectMeaning": "업종",
+      "context": "明天出发，行不行？",
+      "source": "xing",
+      "mode": "sense",
+      "readingPolicy": "zh-TW-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "품사",
+      "referencePolicy": "editorial-candidate",
+      "jaExample": "よい",
+      "acceptedMeanings": [
+        "동의하다",
+        "허락해도 된다"
+      ],
+      "editorialNote": "출처 동사 7은 동의·허락, 형용사 2는 가능·적절이다. 괜찮다/가능하다와 다른 품사 분석은 검토 대상으로 남기며 오역으로 단정하지 않는다."
+    },
+    {
+      "id": "zh15",
+      "language": "Chinese",
+      "text": "行",
+      "reading": "xíng",
+      "pos": "형용사",
+      "meaning": "유능하다",
+      "rejectMeaning": "걷다",
+      "context": "修电脑他很行。",
+      "source": "xing",
+      "mode": "sense",
+      "readingPolicy": "zh-TW-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "품사",
+      "referencePolicy": "editorial-candidate",
+      "jaExample": "有能だ"
+    },
+    {
+      "id": "zh16",
+      "language": "Chinese",
+      "text": "重",
+      "reading": "zhòng",
+      "pos": "형용사",
+      "meaning": "맛이 진하다",
+      "rejectMeaning": "무게가 무겁다",
+      "context": "这道菜口味重。",
+      "source": "heavy",
+      "mode": "sense",
+      "readingPolicy": "zh-TW-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "다의어",
+      "referencePolicy": "editorial-candidate",
+      "jaExample": "味が濃い"
+    },
+    {
+      "id": "zh17",
+      "language": "Chinese",
+      "text": "手纸",
+      "reading": "shǒu zhǐ",
+      "pos": "명사",
+      "meaning": "화장실용 휴지",
+      "rejectMeaning": "편지",
+      "context": "洗手间里没有手纸了。",
+      "source": "zh-paper",
+      "mode": "sense",
+      "readingPolicy": "zh-TW-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "동형이의어",
+      "referencePolicy": "editorial-candidate",
+      "jaExample": "トイレットペーパー",
+      "rejectJapanese": [
+        "手紙"
+      ]
+    },
+    {
+      "id": "ja09",
+      "language": "Japanese",
+      "text": "手紙",
+      "reading": "てがみ",
+      "pos": "명사",
+      "meaning": "편지",
+      "rejectMeaning": "화장실용 휴지",
+      "context": "友達に手紙を書きます。",
+      "source": "ja-letter",
+      "mode": "sense",
+      "readingPolicy": "ja-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "동형이의어",
+      "referencePolicy": "not-applicable"
+    },
+    {
+      "id": "zh18",
+      "language": "Chinese",
+      "text": "汽车",
+      "reading": "qì chē",
+      "pos": "명사",
+      "meaning": "자동차",
+      "rejectMeaning": "기차",
+      "context": "这辆汽车停在路边。",
+      "source": "zh-car",
+      "mode": "sense",
+      "readingPolicy": "zh-TW-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "동형이의어",
+      "referencePolicy": "editorial-candidate",
+      "jaExample": "自動車",
+      "rejectJapanese": [
+        "汽車"
+      ]
+    },
+    {
+      "id": "ja10",
+      "language": "Japanese",
+      "text": "汽車",
+      "reading": "きしゃ",
+      "pos": "명사",
+      "meaning": "증기 기관차가 끄는 열차",
+      "rejectMeaning": "자동차",
+      "context": "汽車が煙を上げて走ります。",
+      "source": "ja-train",
+      "mode": "sense",
+      "readingPolicy": "ja-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "동형이의어",
+      "referencePolicy": "not-applicable"
+    },
+    {
+      "id": "ja11",
+      "language": "Japanese",
+      "text": "今日",
+      "reading": "きょう",
+      "pos": "명사",
+      "meaning": "오늘",
+      "rejectMeaning": "어제",
+      "context": "今日は家で休みます。",
+      "source": "joyo",
+      "mode": "sense",
+      "readingPolicy": "ja-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "숙자훈",
+      "referencePolicy": "not-applicable"
+    },
+    {
+      "id": "ja12",
+      "language": "Japanese",
+      "text": "大人",
+      "reading": "おとな",
+      "pos": "명사",
+      "meaning": "어른",
+      "rejectMeaning": "아이",
+      "context": "大人が二人います。",
+      "source": "joyo",
+      "mode": "sense",
+      "readingPolicy": "ja-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "숙자훈",
+      "referencePolicy": "not-applicable"
+    },
+    {
+      "id": "ja13",
+      "language": "Japanese",
+      "text": "昨日",
+      "reading": "きのう",
+      "pos": "명사",
+      "meaning": "어제",
+      "rejectMeaning": "오늘",
+      "context": "昨日は雨でした。",
+      "source": "joyo",
+      "mode": "sense",
+      "readingPolicy": "ja-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "숙자훈",
+      "referencePolicy": "not-applicable"
+    },
+    {
+      "id": "ja14",
+      "language": "Japanese",
+      "text": "二十日",
+      "reading": "はつか",
+      "pos": "명사",
+      "meaning": "20일",
+      "rejectMeaning": "이틀",
+      "context": "会議は九月二十日です。",
+      "source": "joyo",
+      "mode": "sense",
+      "readingPolicy": "ja-dictionary",
+      "review": "source-checked-editorial",
+      "risk": "숙자훈",
+      "referencePolicy": "not-applicable"
+    },
+    {
+      "id": "ja-amb-hashi",
+      "language": "Japanese",
+      "text": "はし",
+      "context": "",
+      "mode": "ambiguous",
+      "alternatives": [
+        "ja01",
+        "ja02"
+      ],
+      "review": "source-checked-editorial",
+      "risk": "문맥 없는 자동 확정",
+      "holdReason": "선택한 뜻 또는 문맥이 없어 한 가지 뜻·독음·한자를 자동 확정하면 안 된다."
+    },
+    {
+      "id": "ja-amb-life",
+      "language": "Japanese",
+      "text": "生物",
+      "context": "",
+      "mode": "ambiguous",
+      "alternatives": [
+        "ja03",
+        "ja04"
+      ],
+      "review": "source-checked-editorial",
+      "risk": "문맥 없는 자동 확정",
+      "holdReason": "선택한 뜻 또는 문맥이 없어 한 가지 뜻·독음·한자를 자동 확정하면 안 된다."
+    },
+    {
+      "id": "ja-amb-skill",
+      "language": "Japanese",
+      "text": "上手",
+      "context": "",
+      "mode": "ambiguous",
+      "alternatives": [
+        "ja05",
+        "ja06"
+      ],
+      "review": "source-checked-editorial",
+      "risk": "문맥 없는 자동 확정",
+      "holdReason": "선택한 뜻 또는 문맥이 없어 한 가지 뜻·독음·한자를 자동 확정하면 안 된다."
+    },
+    {
+      "id": "ja-amb-landlord",
+      "language": "Japanese",
+      "text": "大家",
+      "context": "",
+      "mode": "ambiguous",
+      "alternatives": [
+        "ja07",
+        "ja08"
+      ],
+      "review": "source-checked-editorial",
+      "risk": "문맥 없는 자동 확정",
+      "holdReason": "선택한 뜻 또는 문맥이 없어 한 가지 뜻·독음·한자를 자동 확정하면 안 된다."
+    },
+    {
+      "id": "zh-amb-xing",
+      "language": "Chinese",
+      "text": "行",
+      "context": "",
+      "mode": "ambiguous",
+      "alternatives": [
+        "zh07",
+        "zh08"
+      ],
+      "review": "source-checked-editorial",
+      "risk": "문맥 없는 자동 확정",
+      "holdReason": "선택한 뜻 또는 문맥이 없어 한 가지 뜻·독음·한자를 자동 확정하면 안 된다."
+    },
+    {
+      "id": "zh-amb-zhong",
+      "language": "Chinese",
+      "text": "重",
+      "context": "",
+      "mode": "ambiguous",
+      "alternatives": [
+        "zh10",
+        "zh13"
+      ],
+      "review": "source-checked-editorial",
+      "risk": "문맥 없는 자동 확정",
+      "holdReason": "선택한 뜻 또는 문맥이 없어 한 가지 뜻·독음·한자를 자동 확정하면 안 된다."
+    },
+    {
+      "id": "zh-amb-cheap",
+      "language": "Chinese",
+      "text": "便宜",
+      "context": "",
+      "mode": "ambiguous",
+      "alternatives": [
+        "zh03",
+        "zh04",
+        "zh06"
+      ],
+      "review": "source-checked-editorial",
+      "risk": "문맥 없는 자동 확정",
+      "holdReason": "선택한 뜻 또는 문맥이 없어 한 가지 뜻·독음·한자를 자동 확정하면 안 된다."
+    },
+    {
+      "id": "zh-amb-research",
+      "language": "Chinese",
+      "text": "研究",
+      "context": "",
+      "mode": "ambiguous",
+      "alternatives": [
+        "zh01",
+        "zh02"
+      ],
+      "review": "source-checked-editorial",
+      "risk": "문맥 없는 자동 확정",
+      "holdReason": "선택한 뜻 또는 문맥이 없어 한 가지 뜻·독음·한자를 자동 확정하면 안 된다."
+    }
+  ]
+}

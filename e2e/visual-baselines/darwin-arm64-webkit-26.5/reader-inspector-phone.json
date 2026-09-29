@@ -1,0 +1,15 @@
+{
+  "name": "reader-inspector-phone",
+  "key": "darwin-arm64-webkit-26.5",
+  "sha256": "a25a8e9fc675395c2f8d80ef6a3f1a4867e2afe01ed81be8ecf4324e72f96584",
+  "review": "Directly compared old and new images: approved contextual-meaning disclosure row only. Chinese word/reading, Korean meaning, Japanese reference and fixed personal vocabulary/FSRS actions remain readable; no overlap or clipping. Other four classroom screenshots unchanged (0 pixels); stable capture and zero automated accessibility violations. Comparison allowance and canary unchanged.",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "osRelease": "25.3.0",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate",
+  "reviewedAgainst": "7398f5dc9838cb624f27ef13243e9e5db9a586d8342c29b0a08666df0f3438a8",
+  "sourceCommit": "d38b6d71e84c35ecaa0e78be3a66cc6a63ee0fc9",
+  "sourceRun": "2026-09-17T22-30-01-302Z-92945"
+}

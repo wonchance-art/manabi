@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { buildTokenExplainPrompt, parseTokenExplain, sanitizeTokenExplain } from '@/lib/server/explainToken';
 import { callLLM } from '@/lib/server/llm';
+import {contextMeaningInput,buildContextMeaningPrompt,parseContextMeaning} from '@/lib/server/contextMeaning';
 
 /**
  * 오답 해설 "왜?" — 오답 직후(인코딩 최강 순간) 왜 정답이 맞고 학습자의 선택이
@@ -83,6 +84,20 @@ export async function POST(request) {
 
   // ── token 분기: 탭 단어 문맥 설명(R1) ──
   if (body?.token) {
+    // Explicit lookup only. This branch returns a proposal and never promotes it
+    // to the shared dictionary or writes a material/vocabulary correction.
+    if (body.token.meaningChoice === true) {
+      const input=contextMeaningInput(body.token,body.language);
+      if (!input) return Response.json({error:{message:'본문의 단어와 문장을 다시 확인해 주세요.'}},{status:400});
+      try {
+        const raw=await callLLM('light',buildContextMeaningPrompt(input),{temperature:0,route:'explain'});
+        const result=parseContextMeaning(raw.text,input);
+        if (!result) return Response.json({error:{message:'문맥 뜻을 확인하지 못했어요. 다시 시도해 주세요.'}},{status:502});
+        return Response.json(result,{status:200});
+      } catch {
+        return Response.json({error:{message:'문맥 뜻을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.'}},{status:502});
+      }
+    }
     const sentence = cap(body.token.sentence, 200);
     const word = cap(body.token.word, 20);
     const base = cap(body.token.base, 20);

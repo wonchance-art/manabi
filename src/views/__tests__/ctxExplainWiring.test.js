@@ -22,7 +22,8 @@ describe('카드 배선(ViewerPage)', () => {
 
   it('본문 탭 토큰만 — id(id_<rawIdx>_…)에서 원문 줄을 되찾고, zh부터 노출', () => {
     expect(viewer).toMatch(/id\|failed/); // ctxSentenceOf의 rawIdx 유도 정규식
-    expect(viewer).toContain("materialLang === 'Chinese' && (() => {");
+    expect(viewer).toContain("materialLang === 'Chinese' && (!selectedToken.id || classMeaning) && (() => {");
+    expect(viewer).toContain("materialLang === 'Chinese' && selectedToken.id && !classMeaning && !isEditingToken && <ViewerMeaningChoices");
     expect(viewer).toContain('const ctxSentence = ctxSentenceOf(selectedToken)');
   });
 

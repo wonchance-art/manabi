@@ -1,0 +1,67 @@
+import {finishQa} from './qa-runtime.mjs';
+// Disposable PostgreSQL: run the exact migrations, never contact the hosted DB.
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const {PGlite}=await import(process.env.QA_PGLITE_MODULE||'@electric-sql/pglite');
+const db=new PGlite(),checks=[];const report={groups:[],checks,errors:[]},out=process.env.QA_OUT||'/private/tmp/manabi-direct-sql';
+const teacher='00000000-0000-4000-8000-000000000077',student='00000000-0000-4000-8000-000000000088',other='00000000-0000-4000-8000-000000000099';
+const check=label=>{checks.push(label);console.log('PASS',label);};
+try{
+ await db.exec(`CREATE ROLE authenticated;CREATE ROLE anon;CREATE ROLE service_role BYPASSRLS;CREATE SCHEMA auth;CREATE TABLE auth.users(id uuid primary key);
+ CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
+ CREATE FUNCTION public.is_admin() RETURNS boolean LANGUAGE sql AS $$SELECT false$$;
+ CREATE TABLE reading_materials(id bigint PRIMARY KEY,owner_id uuid,raw_text text,processed_json jsonb,visibility text);
+ CREATE TABLE uploaded_pdfs(id uuid primary key,owner_id uuid);
+ CREATE TABLE user_vocabulary(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),user_id uuid REFERENCES auth.users(id),word_text text,base_form text,meaning text,furigana text,pos text,language text,source_sentence text,source_material_id bigint,interval real DEFAULT 0,ease_factor real DEFAULT 0,repetitions int DEFAULT 0,next_review_at timestamptz,last_reviewed_at timestamptz,unique(user_id,word_text));
+ GRANT USAGE ON SCHEMA auth TO authenticated,anon,service_role;GRANT EXECUTE ON FUNCTION auth.uid() TO authenticated,anon,service_role;
+ ALTER TABLE reading_materials ENABLE ROW LEVEL SECURITY;CREATE POLICY mine ON reading_materials TO authenticated USING(owner_id=auth.uid());
+ ALTER TABLE user_vocabulary ENABLE ROW LEVEL SECURITY;CREATE POLICY mine ON user_vocabulary TO authenticated USING(user_id=auth.uid()) WITH CHECK(user_id=auth.uid());
+ GRANT SELECT,INSERT,UPDATE,DELETE ON user_vocabulary TO authenticated;GRANT SELECT ON reading_materials,uploaded_pdfs TO authenticated;GRANT ALL ON reading_materials,user_vocabulary TO service_role;`);
+ for(const name of ['20260905065205_textbook_material_contexts.sql','20260917023410_classroom_direct_vocabulary.sql'])await db.exec(fs.readFileSync(new URL('../supabase/migrations/'+name,import.meta.url),'utf8'));
+ for(const id of [teacher,student,other])await db.query('insert into auth.users values($1)',[id]);
+ const json={metadata:{language:'Chinese',book:{key:'book'}},sequence:['id_0_one'],dictionary:{id_0_one:{text:'学习',meaning:'공부하다'}}};
+ await db.query("insert into reading_materials values(1,$1,'root',$2,'private'),(2,$1,'学习',$3,'private'),(3,$4,'mine',$5,'private')",[teacher,{metadata:{team:{root:true,key:'team',bookKey:'book',pwGen:1}}},json,student,{}]);
+ const as=(role,id,fn)=>db.transaction(async tx=>{await tx.exec(`SET LOCAL ROLE ${role}`);await tx.query("select set_config('request.jwt.claim.sub',$1,true)",[id]);return fn(tx);});
+ const mine=(sql,args=[],id=student)=>as('authenticated',id,tx=>tx.query(sql,args));
+ const word={word_text:'学习',meaning:'공부하다',furigana:'xué xí',language:'Chinese',pos:'동사'};
+ const source={kind:'class',quote:'学习',translation:'공부하다',locator:{team:'team',materialId:'2',tokenId:'id_0_one',surface:'学习'}};
+ const initial={interval:8,ease_factor:2,repetitions:0,next_review_at:'2030-01-01T00:00:00Z'};
+ const defaults=[student,1,1,2,'学习',json,word,source,initial,null,null];
+ const save=(args=defaults,role='service_role')=>as(role,student,tx=>tx.query('select classroom_save_vocabulary($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) result',args)).then(r=>r.rows[0].result);
+ const first=await save();assert(first.created);assert(first.contextAdded);assert.equal(first.word.interval,8);assert.equal(first.word.source_material_id,null);
+ assert.equal((await mine('select * from reading_materials')).rows.length,1);
+ check('word + class context + initial grade commit together; no copied material and no private-original RLS access');
+ const saved=(await mine('select * from user_vocabulary')).rows[0];
+ const repeat=await save();assert(!repeat.created&&!repeat.contextAdded);assert.deepEqual((await mine('select * from user_vocabulary')).rows[0],saved);
+ check('retry is idempotent and preserves all existing SRS fields');
+ await assert.rejects(save(defaults,'authenticated'),{code:'42501'});
+ await assert.rejects(mine('select save_vocabulary_context_for($1,$2,$3)',[other,word,{kind:'textbook',chapterSlug:'x',quote:'学习'}]),{code:'42501'});
+ await assert.rejects(mine('select save_vocabulary_context($1,$2)',[word,source]),{code:'42501'});
+ await assert.rejects(mine('insert into vocabulary_contexts(user_id,vocabulary_id,kind,lang,locator,quote,source_key) values($1,$2,$3,$4,$5,$6,$7)',[student,first.vocabularyId,'class','Chinese',source.locator,'学习','forged']),{code:'42501'});
+ assert.equal((await mine('select * from vocabulary_contexts',[],other)).rows.length,0);
+ check('student cannot forge a class source or another owner; other accounts cannot read saved contexts');
+ const changed={...json,dictionary:{id_0_one:{text:'学习',meaning:'본받다'}}};await db.query('update reading_materials set processed_json=$1 where id=2',[changed]);
+ await assert.rejects(save(),{code:'40001'});
+ const corrected=[...defaults];corrected[5]=changed;corrected[6]={...word,meaning:'본받다'};corrected[7]={...source,translation:'본받다'};
+ await assert.rejects(save(corrected),/vocabulary_meaning_conflict/);
+ corrected[9]=first.vocabularyId;corrected[10]='공부하다';assert(!(await save(corrected)).created);
+ assert.deepEqual((await mine('select * from user_vocabulary')).rows[0],saved);
+ check('source edits invalidate stale saves; meaning conflict requires current card confirmation without overwriting personal meaning or SRS');
+ const staleConfirm=[...corrected];staleConfirm[10]='wrong';await assert.rejects(save(staleConfirm),/vocabulary_meaning_conflict/);
+ const wrongTeam=[...corrected];wrongTeam[7]={...source,locator:{...source.locator,team:'other'}};await assert.rejects(save(wrongTeam),{code:'22023'});
+ const revoked=[...corrected];revoked[2]=2;await assert.rejects(save(revoked),{code:'42501'});
+ const outside=[...corrected];outside[3]=3;await assert.rejects(save(outside),{code:'42501'});
+ check('stale confirmation, changed password generation, wrong team and outside material are rejected');
+ for(const kind of ['textbook','reading','pdf']){
+  const pdf='00000000-0000-4000-8000-000000000011';if(kind==='pdf')await db.query('insert into uploaded_pdfs values($1,$2)',[pdf,student]);
+  const src={kind,quote:'기존 문맥',...(kind==='textbook'?{chapterSlug:'n5-01'}:kind==='reading'?{materialId:'3'}:{pdfId:pdf})};
+  const result=(await mine('select save_vocabulary_context($1,$2) result',[{...word,word_text:kind},src])).rows[0].result;assert(result.created&&result.contextAdded);
+ }
+ check('existing textbook, personal reading and PDF save RPC remains compatible');
+ await db.query('delete from reading_materials where id=2');
+ assert.equal((await mine("select * from vocabulary_contexts where kind='class'")).rows.length,1);assert((await mine('select * from user_vocabulary where id=$1',[first.vocabularyId])).rows[0]);
+ await assert.rejects(save(corrected),{code:'42501'});
+ check('deleting the teacher source preserves the saved word and private excerpt while blocking new saves');
+ console.log(JSON.stringify({checks:checks.length,productionWrites:0}));
+ report.groups.push('classroom.sql');
+}catch(error){report.failure=error.stack;throw error;}finally{await finishQa({db,report,out});}

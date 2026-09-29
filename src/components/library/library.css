@@ -144,3 +144,7 @@
 @media (prefers-reduced-motion:reduce){.shelf-recent-card{transition:none}}
 
 @container (max-width:280px){.shelf-header{grid-template-columns:1fr}.shelf-header form{grid-row:3}.shelf-header .manabi-button{justify-self:start}.shelf-section-heading{align-items:flex-start;flex-direction:column;gap:0}.shelf-row-copy>small{overflow-wrap:anywhere}.shelf-row-link{gap:10px}.shelf-cover{width:36px;height:52px}.shelf-children,.shelf-child-match{margin-left:46px}.shelf-list-tools{flex-wrap:wrap}.shelf-collections button{max-width:100%}}
+
+.shelf-note-resume {display:inline-flex;align-items:center;min-height:44px;margin:0 0 8px 100px;color:var(--book-main,var(--ink));font-size:12px;text-decoration:none;}
+.shelf-note-resume:focus-visible {outline:2px solid currentColor;outline-offset:2px;}
+@container (max-width:600px){.shelf-note-resume{margin-left:0;}}

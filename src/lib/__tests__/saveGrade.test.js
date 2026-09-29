@@ -28,7 +28,7 @@ describe('저장 등급 — 정본(vocabIO)', () => {
   });
 
   it('등급 → 초기 상태는 calculateFSRS 재사용 — 손계산 금지, last_reviewed_at 불세팅', () => {
-    expect(vocabIO).toContain("import { calculateFSRS } from './fsrs';");
+    expect(vocabIO).toContain("import { gradeToInitialStats } from './fsrs';");
     expect(vocabIO).not.toMatch(/24 \* 3600|setDate\(/);
     for (const g of [1, 2, 3, 4]) {
       const st = gradeToInitialStats(g, () => 'NOW');

@@ -92,11 +92,13 @@ describe('사본 저장소 — 별도 DB · TTL 7일 · 상한·핀 없음', () 
   });
 });
 
-describe('local: 뷰어 — 네트워크 0', () => {
+describe('수업 원본 뷰어 — 온라인 권한 재검증', () => {
   it('id 규약 — local:<숫자>만, 링크는 팀 페이지를 거친다', () => {
     expect(isLocalId('local:12')).toBe(true);
     expect(isLocalId('12')).toBe(false);
     expect(parseLocalId('local:12')).toBe(12);
+    expect(isLocalId('local%3A12')).toBe(true);
+    expect(parseLocalId('local%3A12')).toBe(12);
     expect(parseLocalId('local:x')).toBeNull();
     expect(localViewerHref(12, 'a')).toBe('/viewer/local:12?team=a');
     expect(teamOpenHref('a', 13)).toBe('/class/a?open=13');
@@ -105,18 +107,11 @@ describe('local: 뷰어 — 네트워크 0', () => {
     expect(chaptersForLocalNav(null, 'a')).toEqual([]);
   });
 
-  it('뷰어 fetchMaterial은 local:이면 사본만 보고(서버 조회·캐시 폴백 없음) 없으면 LOCAL_MISSING', () => {
-    const viewer = read('src/views/ViewerPage.jsx');
-    const fn = sliceBetween(viewer, 'async function fetchMaterial(id) {', '\n}\n');
-    const local = fn.indexOf('if (isLocalId(id)) {');
-    const shared = fn.indexOf('getSharedCopy(parseLocalId(id))');
-    const network = fn.indexOf(".from('reading_materials')");
-    expect(local).toBeGreaterThan(-1);
-    expect(shared).toBeGreaterThan(local);
-    expect(shared).toBeLessThan(network);
-    expect(fn).toContain("err.code = 'LOCAL_MISSING';");
-    expect(fn).toContain("return { ...copy.material, __local: true, __team: copy.team };");
-    expect(viewer).toContain("if (error?.code === 'LOCAL_MISSING') {");
+  it('수업 원본은 별도 권한 로더를 거쳐 일반 자료 조회와 분리한다', () => {
+    const viewer=read('src/views/ViewerPage.jsx');
+    const fn=sliceBetween(viewer,'async function fetchMaterial(id,team) {','\n}\n');
+    expect(fn.indexOf('readClassMaterial(id,team)')).toBeGreaterThan(-1);
+    expect(fn.indexOf('readClassMaterial(id,team)')).toBeLessThan(fn.indexOf(".from('reading_materials')"));
   });
 
   it('비공개 게이트가 사본을 막지 않고, 형제 과 링크는 팀 페이지(?open=)를 거치며, 소유자 액션은 owner_id 게이트 그대로', () => {
@@ -128,9 +123,9 @@ describe('local: 뷰어 — 네트워크 0', () => {
     const localNeighbors=chaptersForLocalNav({chapters:[{id:12,title:'과',order:1}]},'a');
     expect(classStudyNeighborHref(localNeighbors[0],{team:'a',day:'2026-09-10'})).toBe('/class/a?open=12');
     // 「다음 과 적기」는 owner_id 게이트 그대로 — 사본의 소유자는 선생님이라 학생·익명에겐 안 뜬다(bookAppend 계약 불변)
-    expect(viewer).toContain("canAppend: !!user?.id && material?.owner_id === user.id,");
+    expect(viewer).toContain("canAppend: !!user?.id && !material?.__local && material?.owner_id === user.id,");
     // 편집·재분석·제목·삭제·교정은 전부 owner_id 게이트 — 사본의 owner_id는 선생님이라 학생에겐 안 뜬다
-    expect(viewer).toContain('const canEditToken = !!user?.id && user.id === material?.owner_id;');
+    expect(viewer).toContain('const canEditToken = !!user?.id && !material?.__local && user.id === material?.owner_id;');
   });
 
   it('로그인 버튼을 누른 표현만 요청 ID로 이어가고 일괄 자동 복제를 하지 않는다', () => {
@@ -141,23 +136,27 @@ describe('local: 뷰어 — 네트워크 0', () => {
     expect(layout).not.toContain('claimSharedCopies');
     expect(layout).not.toContain('deleteSharedCopy');
     const resume=read('src/components/classroom/ClassSaveResume.jsx');
-    expect(resume.indexOf('requestClassCopy(intent.team')).toBeLessThan(resume.indexOf("from('user_vocabulary').upsert"));
+    expect(resume).not.toContain('requestClassCopy');
+    expect(resume).not.toContain('VOCAB_UPSERT');
+    expect(resume.indexOf('await readClassMaterial(')).toBeLessThan(resume.indexOf('await saveContext('));
     expect(resume.indexOf('await saveContext(')).toBeLessThan(resume.indexOf('await finishClassSaveIntent('));
   });
 
-  it('팀 페이지 — 받기는 여기서만(ensureSharedCopy → local: 뷰어), 오너 뷰는 API 라우트 0, 로그인 학생은 즉시 복제', () => {
+  it('팀 페이지 — 학생 기본 열기는 원본, 개인 보관은 명시적 선택', () => {
     const page = read('src/views/ClassTeamPage.jsx');
     // Re-entering online also refreshes shared textbook annotations; the viewer itself remains offline-only.
-    expect(page).toContain('await ensureSharedCopy(teamKey, unlock.token, entry, {refresh:true});');
+    expect(sliceBetween(page,'const openEntry =','// `?open=')).not.toContain('ensureSharedCopy');
     expect(page).toContain('router.push(destination(localViewerHref(id, teamKey)));');
     expect(page).toContain("const wanted = search.get('open');");
     const owner = sliceBetween(page, 'function OwnerView(', '\nfunction NotesList(');
     expect(owner).not.toContain('fetch(');
     expect(owner).not.toContain('unlock');
-    expect(page).toContain("await requestClassCopy(teamKey,id,'open')");
+    const open=sliceBetween(page,'const openEntry =','// `?open=');
+    expect(open).not.toContain('requestClassCopy');
+    expect(page).toContain("await requestClassCopy(teamKey,e.id,'open')");
     // 401 = 잠김으로(암호 변경·30일)
     expect(page).toContain('if (err?.status === 401) relock(RELOCK_MSG);');
     // 뷰어 메타는 local:이면 서버를 묻지 않는다
-    expect(read('src/app/(app)/viewer/[id]/page.jsx')).toContain("if (String(id).startsWith('local:')) return { title: '팀 자료 사본'");
+    expect(read('src/app/(app)/viewer/[id]/page.jsx')).toContain("if (isLocalId(id)) return { title: '수업 자료'");
   });
 });

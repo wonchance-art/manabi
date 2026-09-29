@@ -1,0 +1,12 @@
+{
+  "name": "board-lookup-phone",
+  "key": "darwin-arm64-webkit-26.5",
+  "sha256": "00facbffbd3796691f24afc1a27f3034b3634dd1852c97e34b73971f37bc9a7c",
+  "review": "Directly inspected rebuilt application: complete four-character Chinese with upper pinyin/lower hun, three whole Korean words on the right, input and bottom placement action visible. Native WebKit checkbox/range differences intentional. SVG contrast incomplete retained.",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "osRelease": "25.3.0",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+}

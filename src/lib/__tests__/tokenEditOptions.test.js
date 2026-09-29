@@ -81,9 +81,9 @@ describe('편집 배선 계약 (ViewerPage.jsx)', () => {
 
   it('TokenEditPanel이 교정 뮤테이션과 함께 렌더되고, 성공 시에만 닫는다(마감 ③)', () => {
     expect(src).toContain('<TokenEditPanel');
-    expect(src).toMatch(/correctTokenMutation\.mutate\(\s*\{ tokenId: selectedToken\.id, corrections \}/);
-    // 실패 시 패널·입력값 유지: 닫기와 전역 승격이 per-call onSuccess 안에 있어야 한다
-    expect(src).toMatch(/onSuccess: \(\) => \{\s*if \(opts\?\.applyGlobal\) promoteCorrection\(selectedToken, corrections\);\s*setIsEditingToken\(false\);/);
+    expect(src).toMatch(/correctTokenMutation\.mutateAsync\(\{ tokenId: selectedToken\.id, corrections,/);
+    // 닫기/전역 승격은 성공한 Promise 뒤에만, 충돌/실패는 패널에 전달한다.
+    expect(src).toMatch(/\}\)\.then\(\(\{materialId,ownerId,tokenId\}\) => \{\s*if\(correctionScope.current!==`\$\{materialId\}:\$\{ownerId\}`\)return;\s*if \(opts\?\.applyGlobal\) promoteCorrection\(selectedToken, corrections\);\s*if\(selectedTokenRef.current\?\.id===tokenId\)setIsEditingToken\(false\);/);
   });
 
   it('토큰 전환 시 리마운트·편집 닫기(마감 ③ — 이전 입력값이 새 토큰에 붙는 것 차단)', () => {
@@ -92,7 +92,7 @@ describe('편집 배선 계약 (ViewerPage.jsx)', () => {
   });
 
   it('편집은 자료 소유자에게만 노출된다(materials update RLS 정합)', () => {
-    expect(src).toMatch(/canEditToken = !!user\?\.id && user\.id === material\?\.owner_id/);
+    expect(src).toMatch(/canEditToken = !!user\?\.id && !material\?\.__local && user\.id === material\?\.owner_id/);
   });
 });
 
@@ -103,6 +103,6 @@ describe('편집 패널 마감 계약 (TokenEditPanel.jsx)', () => {
   it('Esc로 닫히고, 저장 활성 판정이 buildTokenCorrections와 정합', () => {
     expect(src).toMatch(/e\.key === 'Escape'/);
     expect(src).toContain('buildTokenCorrections(token, { meaning, reading, meaningPos })');
-    expect(src).toMatch(/disabled=\{saving \|\| !pending\}/);
+    expect(src).toMatch(/disabled=\{saving \|\| pendingSave \|\| !!conflict \|\| !pending\}/);
   });
 });

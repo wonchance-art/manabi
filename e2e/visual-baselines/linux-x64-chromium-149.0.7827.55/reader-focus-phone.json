@@ -1,0 +1,12 @@
+{
+  "name": "reader-focus-phone",
+  "key": "linux-x64-chromium-149.0.7827.55",
+  "sha256": "67bcb6f098abb480c14e78f629a0905bccb027ed313fb59198270cd7d9cb6b41",
+  "review": "직접 확인: 390px 집중 문장과 병음이 읽히며 주변 문장은 약화됨. 문장 선택 초점이 화면 안에 보이고 상단 도구/하단 탭과 본문이 겹치지 않음. 자동 대비 미판정은 증거에 보존.",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "osRelease": "6.17.0-1022-azure",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+}

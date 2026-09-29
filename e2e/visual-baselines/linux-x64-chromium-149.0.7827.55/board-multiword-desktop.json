@@ -1,0 +1,12 @@
+{
+  "name": "board-multiword-desktop",
+  "key": "linux-x64-chromium-149.0.7827.55",
+  "sha256": "6c66bfba48588584020282d521fdf79ebf18be7871cdb695f7a0fa1b97a4c880",
+  "review": "Directly inspected Linux CJK rendering: complete Chinese/Korean glyphs, no overlapping word/reading/meaning, all visible panel actions readable. Native control rendering differs from macOS; SVG contrast incomplete remains manual evidence. Desktop cloud icon confirms saved state.",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "osRelease": "6.17.0-1022-azure",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+}

@@ -1,0 +1,502 @@
+{
+  "baseEdition": "6a1d083d5cf869c7ba0077c1",
+  "baseBundleSha256": "2f30b6a4d9297b115f48915e3cd96910d48b8f57d17baad045c77867a5807b92",
+  "scope": "42과 핵심 설명·대화·연습·읽기 1차 편집 검토. 독립 일본어 감수 또는 시험 전범위 인증이 아님.",
+  "edits": [
+    {
+      "path": [
+        "frontMatter",
+        0,
+        "blocks",
+        3,
+        "title"
+      ],
+      "before": "웹과 종이에서 같은 곳 찾기",
+      "after": "웹에서 이어 공부하기",
+      "reason": "PDF 미개정 상태와 같은 쪽수라는 안내 불일치",
+      "format": "rich",
+      "render": [
+        {
+          "target": "guide-start",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "frontMatter",
+        0,
+        "blocks",
+        3,
+        "text"
+      ],
+      "before": "웹의 쪽 번호와 PDF 쪽 번호는 같아요. 웹에서는 답안을 적고 다시 열 수 있어요. 이 로컬 검토본의 답안은 같은 브라우저에 저장돼요. 로그인 계정 저장과는 구별해요.",
+      "after": "이 판은 웹 개정본이에요. 과 제목과 목차로 필요한 곳을 찾아요. 답안은 이 브라우저에 저장되며, 계정의 학습 진도·담은 표현과는 따로 기록돼요. PDF는 이번 개정에 포함하지 않았어요.",
+      "reason": "로컬 답안·계정 학습 기록·PDF 개정 범위 구별",
+      "format": "rich",
+      "render": [
+        {
+          "target": "guide-start",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "frontMatter",
+        3,
+        "note"
+      ],
+      "before": "빈칸에는 현대의 기본 글자가 없어요. ん은 한 박자로 세며 뒤 소리에 따라 발음이 달라져요. を는 조사에서 o로 읽어요. し·ち·つ는 si·ti·tu처럼 영어식으로 읽지 말고 shi·chi·tsu를 참고해요. 로마자만으로 억양과 실제 음색을 익힐 수는 없어요.",
+      "after": "빈칸에는 현대의 기본 글자가 없어요. ン은 한 박자로 세며 뒤 소리에 따라 발음이 달라져요. シ·チ·ツ는 shi·chi·tsu를 참고해요. 앞의 히라가나 표와 짝을 지어 비교해 보세요. 로마자만으로 억양과 실제 음색을 익힐 수는 없어요.",
+      "reason": "히라가나 안내가 복제된 가타카나 표의 문자 예시 정정",
+      "format": "plain",
+      "render": [
+        {
+          "target": "guide-katakana",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        13,
+        "listen_question"
+      ],
+      "before": "미오는 무엇을 좋아하나요?",
+      "after": "미오가 먼저 좋아한다고 말한 것은 무엇인가요?",
+      "reason": "음악과 요리 둘 다 좋아한다는 대화에서 단일 정답 조건 명확화",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u14-start",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        13,
+        "listen_why"
+      ],
+      "before": "미오는 おんがくがすきです라고 답해요. りょうりがじょうず인 사람은 켄이에요.",
+      "after": "미오는 먼저 おんがくがすきです라고 답해요. 뒤에서는 요리도 좋아하지만 잘하지는 못한다고 말해요. 좋아함과 능숙함을 구별해요.",
+      "reason": "요리도 좋아한다는 실제 대화와 해설 일치",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u14-practice",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        13,
+        "reading_why"
+      ],
+      "before": "好き는 좋아함이고, じょうずじゃありません은 잘하지 않는다는 뜻이에요.",
+      "after": "好き는 좋아함을, じょうずじゃありません은 능숙하지 않음을 말해요.",
+      "reason": "잘하지 않는다를 행동 빈도로 오해하지 않도록 설명",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u14-practice",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        16,
+        "listen_question"
+      ],
+      "before": "리나는 아침에 무엇을 마시나요?",
+      "after": "리나가 처음 답한 음료는 무엇인가요?",
+      "reason": "홍차와 커피 둘 다 마시는 대화에서 단일 정답 조건 명확화",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u17-start",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        16,
+        "listen_why"
+      ],
+      "before": "こうちゃをのみます라고 답해요. コーヒーは？라는 질문은 뒤에서 미오가 꺼내요.",
+      "after": "리나는 처음에 こうちゃをのみます라고 답해요. 뒤에서는 コーヒーものみます라고 하므로 두 음료를 모두 마셔요. 이 질문은 먼저 답한 음료를 물어요.",
+      "reason": "커피도 마신다는 내용 누락 보완",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u17-practice",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        18,
+        "practice_pages",
+        0,
+        "tasks",
+        0,
+        "why"
+      ],
+      "before": "첫 では 장소, 둘째 では 도구예요. 쓰는 대상인 이름에는 を가 있어요.",
+      "after": "첫 번째 で는 장소를, 두 번째 で는 도구를 나타내요. 쓰는 대상인 이름에는 を가 있어요.",
+      "reason": "で와 한국어 조사 는의 결합을 일본어 では로 잘못 쓴 해설 교정",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u19-tools-check",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        32,
+        "reading_why"
+      ],
+      "before": "まどのちかく의 특징을 읽고、ここで의 장소를 연결해요.",
+      "after": "まどのちかく의 특징을 읽고, ここで의 장소를 연결해요.",
+      "reason": "한국어 설명 문장의 쉼표 통일",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u33-practice",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        35,
+        "culture"
+      ],
+      "before": "사진에 한두 줄의 후기를 붙일 때도 순서와 느낌을 구별해요. それから로 이동한 순서를 적고、でも로 예상과 다른 느낌을 이어 보세요. 접속어가 많다고 좋은 글이 되는 것은 아니니 필요한 곳에만 넣어요.",
+      "after": "사진에 한두 줄의 후기를 붙일 때도 순서와 느낌을 구별해요. それから로 이동한 순서를 적고, でも로 예상과 다른 느낌을 이어 보세요. 접속어가 많다고 좋은 글이 되는 것은 아니니 필요한 곳에만 넣어요.",
+      "reason": "한국어 설명 문장의 쉼표 통일",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u36-dialogue",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        38,
+        "review_pages",
+        0,
+        "tasks",
+        0,
+        "why"
+      ],
+      "before": "明るくて로 두 특징을 잇고、しずかなので로 이유를 말해요. 가능은 사전형＋ことができます예요.",
+      "after": "明るくて로 두 특징을 잇고, しずかなので로 이유를 말해요. 가능은 사전형＋ことができます예요.",
+      "reason": "한국어 설명 문장의 쉼표 통일",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u39-review1",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        38,
+        "review_pages",
+        0,
+        "tasks",
+        1,
+        "why"
+      ],
+      "before": "買った가 명사를 꾸미고、な형용사는 なとき로 이어요.",
+      "after": "買った가 명사를 꾸미고, な형용사는 なとき로 이어요.",
+      "reason": "한국어 설명 문장의 쉼표 통일",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u39-review1",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        40,
+        "culture"
+      ],
+      "before": "도구나 앱을 처음 쓸 때는 무엇을 모르는지 구체적으로 말해요. 使い方を教えてください라고 부탁한 뒤、メモを見ながらやってみます처럼 확인하며 해 볼 수 있어요. やってみます는 해 볼게요라는 한마디예요.",
+      "after": "도구나 앱을 처음 쓸 때는 무엇을 모르는지 구체적으로 말해요. 使い方を教えてください라고 부탁한 뒤, メモを見ながらやってみます처럼 확인하며 해 볼 수 있어요. やってみます는 해 볼게요라는 한마디예요.",
+      "reason": "한국어 설명 문장의 쉼표 통일",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u41-dialogue",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        38,
+        "learning_pages",
+        0,
+        "blocks",
+        1,
+        "text"
+      ],
+      "before": "본학습은 20–25분 예상이에요. 추가 연습과 다음 날 다시 꺼내기은 따로 해요.",
+      "after": "본학습은 20–25분 예상이에요. 추가 연습과 다음 날 다시 꺼내기는 따로 해요.",
+      "reason": "명칭 교체 후 조사 결합 교정",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u39-start",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        38,
+        "duration"
+      ],
+      "before": "본학습 20–25분 · 추가 연습과 다음 날 다시 꺼내기은 별도",
+      "after": "본학습 20–25분 · 추가 연습과 다음 날 다시 꺼내기는 별도",
+      "reason": "원고 메타데이터의 같은 조사 결합 교정",
+      "format": "metadata",
+      "render": []
+    },
+    {
+      "path": [
+        "lessons",
+        38,
+        "learning_pages",
+        0,
+        "blocks",
+        5,
+        "why"
+      ],
+      "before": "공책 뒤에는 なければなりません, 돈 뒤에는 なくてもいいです가 나와요. 두 표현은 필요 여부가 달라요.",
+      "after": "공책을 가져오라는 문장은 持ってこなければなりません, 돈이 필요 없다는 문장은 持ってこなくてもいいです로 끝나요. 동사 끝의 표현으로 필요 여부를 구별해요.",
+      "reason": "의무·불필요 표현이 명사에 바로 붙는다는 오해 방지",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u39-start",
+          "count": 1
+        },
+        {
+          "target": "u39-forms",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        41,
+        "review_pages",
+        1,
+        "closing"
+      ],
+      "before": "먼저 답하고 해설을 확인해요. 작문은 뜻이 맞는 다른 문장도 가능해요.",
+      "after": "고른 답과 그 근거를 말한 뒤 해설을 확인해요.",
+      "reason": "선택형 문제에 잘못 붙은 작문 안내 제거",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u42-review2",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        41,
+        "review_pages",
+        2,
+        "closing"
+      ],
+      "before": "먼저 답하고 해설을 확인해요. 작문은 뜻이 맞는 다른 문장도 가능해요.",
+      "after": "고른 답과 그 근거를 말한 뒤 해설을 확인해요.",
+      "reason": "선택형 문제에 잘못 붙은 작문 안내 제거",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u42-review3",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        41,
+        "review_pages",
+        3,
+        "closing"
+      ],
+      "before": "먼저 답하고 해설을 확인해요. 작문은 뜻이 맞는 다른 문장도 가능해요.",
+      "after": "고른 답과 그 근거를 말한 뒤 해설을 확인해요.",
+      "reason": "선택형 문제에 잘못 붙은 작문 안내 제거",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u42-review4",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        41,
+        "review_pages",
+        4,
+        "closing"
+      ],
+      "before": "먼저 답하고 해설을 확인해요. 작문은 뜻이 맞는 다른 문장도 가능해요.",
+      "after": "고른 답과 그 근거를 말한 뒤 해설을 확인해요.",
+      "reason": "선택형 문제에 잘못 붙은 작문 안내 제거",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u42-review5",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        41,
+        "review_pages",
+        5,
+        "closing"
+      ],
+      "before": "먼저 답하고 해설을 확인해요. 작문은 뜻이 맞는 다른 문장도 가능해요.",
+      "after": "고른 모임과 찾아낸 정보를 해설과 비교해요. 직접 쓰는 답은 뜻이 맞는 다른 문장도 가능해요.",
+      "reason": "선택형·주관식 혼합 페이지에 맞는 안내",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u42-review6",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "review",
+        "limits"
+      ],
+      "before": "웹과 PDF는 같은 원고예요. 답과 해석을 가린 뒤 스스로 확인하세요. 이번 판은 읽기·문법·회화 원고를 중심으로 구성했으며 새 음성은 포함하지 않아요.",
+      "after": "이 웹 개정본에서 답과 해석을 가린 뒤 스스로 확인하세요. 읽기·문법·회화를 중심으로 구성했으며, PDF 개정과 새 음성 제작은 이번 범위에 포함하지 않았어요.",
+      "reason": "현재 매체의 완료 범위 정정",
+      "format": "rich",
+      "render": [
+        {
+          "target": "cover",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "colophon",
+        "blocks",
+        0,
+        "title"
+      ],
+      "before": "공통 원고",
+      "after": "현재 웹 개정본",
+      "reason": "현재 매체 범위 표시",
+      "format": "rich",
+      "render": [
+        {
+          "target": "colophon",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "colophon",
+        "blocks",
+        0,
+        "text"
+      ],
+      "before": "본문·예문·문항·해설과 보충 자료는 같은 원고에서 웹과 PDF로 만들었어요. 매체에 맞게 단과 줄바꿈, 답안 공간을 다르게 배치했어요.",
+      "after": "공통 원고를 바탕으로 웹의 학습 순서·찾아보기·문구를 다듬었어요. 이번 개정에는 PDF 조판을 포함하지 않았으므로 PDF의 쪽 번호와 내용은 별도로 확인해야 해요.",
+      "reason": "웹과 PDF 모두 개정 완료했다는 잘못된 설명 정정",
+      "format": "rich",
+      "render": [
+        {
+          "target": "colophon",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "colophon",
+        "blocks",
+        2,
+        "text"
+      ],
+      "before": "기존 프로젝트의 어휘 697항목과 문형 125항목, 한자 103자 후보를 감수했어요. 숫자는 내부 편집 기준이며 공식 JLPT 출제 목록이 아니에요. 공식 N5 수준 설명과 공개 문제 유형도 대조했어요. 청해 실전은 이번 음성 제외 범위와 구별해요.",
+      "after": "이 판의 찾아보기에는 어휘 625개·문형 125개·한자 103자가 있어요. 이 숫자는 공식 JLPT 출제 목록이나 전범위 충족의 증거가 아니에요. 공식 필기 문제 10개 유형의 대표 연습을 대조했으며, 가타카나 표기와 유형별 연습량은 더 보완할 부분이에요. 청해 실전은 별도 제작·검수가 필요해요.",
+      "reason": "실제 판본 수량과 공식 유형 대조의 한계 명시",
+      "format": "rich",
+      "render": [
+        {
+          "target": "colophon",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "colophon",
+        "blocks",
+        3,
+        "text"
+      ],
+      "before": "N5 수준 설명: jlpt.jp/e/about/levelsummary.html\n시험 문제 유형: jlpt.jp/e/guideline/testsections.html\n공개 예시: jlpt.jp/e/samples/sample09.html\n확인일: 2026년 9월 6일",
+      "after": "N5 수준 설명: jlpt.jp/e/about/levelsummary.html\n시험 문제 유형: jlpt.jp/e/guideline/testsections.html\n유형별 목적: jlpt.jp/e/guideline/pdf/n5_e_revised.pdf\n공개 예시: jlpt.jp/e/samples/forlearners.html\n확인일: 2026년 9월 25일",
+      "reason": "직접 대조한 공식 자료와 확인일 갱신",
+      "format": "rich",
+      "render": [
+        {
+          "target": "colophon",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "reader-inspector-phone",
+  "key": "linux-x64-chromium-149.0.7827.55",
+  "sha256": "9aa0465825abbec7ee867d3554b234e87f209f10b40184ab8ef30dd1b1d25f79",
+  "review": "Reviewed old, new and diff images for the new standalone reader entry. Exactly 50 compared pixels differ, all raw differences confined to the play-symbol raster at x324-338/y111-128 in the 374x440 inspector crop. Button region and every surrounding pixel are unchanged; word, reading, meaning, Japanese reference and personal save actions remain legible and unclipped. Stable capture; zero automated a11y violations; symbolic-button contrast reviewed visually. The exact fallback-font/rasterization cause is not established. Accept this one independently reviewed initial-reader capture, preserve the 20-pixel threshold and regression canaries, and require a fresh full CI run. Synthetic-font evidence only; not production-font/device approval.",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "osRelease": "6.17.0-1022-azure",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate",
+  "sourceCommit": "0a9c3b86a74b288af6e5607e0377a8d81dda50d3",
+  "sourceRun": "CI35989323158",
+  "reviewedAgainst": "3e21dae482592491bb4f3202984f3221badf2f8e1a9427775b13991a867332a1"
+}

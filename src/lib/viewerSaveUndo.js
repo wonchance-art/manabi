@@ -1,11 +1,13 @@
 // 신규 INSERT 반환 행만 취소 대상으로 삼는다. 이후에 다시 조회한 행으로 스냅샷을 바꾸지 않는다.
 export async function prepareViewerSaveUndo(client, inserted, source, linked) {
   if (!inserted?.id) return null;
-  const { data, error } = await client.from('vocabulary_contexts').select('id, material_id, locator, quote')
+  const { data, error } = await client.from('vocabulary_contexts').select('id, kind, material_id, locator, quote')
     .eq('vocabulary_id', inserted.id).eq('user_id', inserted.user_id);
   if (error || !Array.isArray(data)) return null;
   if (linked) {
-    if (data.length !== 1 || String(data[0].material_id) !== String(source.materialId)) return null;
+    if (data.length !== 1) return null;
+    const stored=data[0];
+    if(source.kind==='class' ? stored.kind!=='class'||stored.locator?.team!==source.team||String(stored.locator?.materialId)!==String(source.materialId) : String(stored.material_id)!==String(source.materialId))return null;
     if (source.tokenId ? data[0].locator?.tokenId !== source.tokenId : data[0].quote !== source.quote) return null;
   } else if (data.length) return null;
   return { id: inserted.id, expected: inserted, contextIds: data.map(row => row.id), expiresAt: Date.now() + 8000 };

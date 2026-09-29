@@ -1,0 +1,81 @@
+import { describe, it, expect } from 'vitest';
+import { profileSteps, validateEvidence, isRecordOnly, qaEnvironment, isLoadedEnvFile, canCollectAfterFailure } from './qa-profiles.mjs';
+
+describe('mandatory QA coverage and truthful evidence', () => {
+  const step = profileSteps('classroom').find(row => row.id === 'classroom-webkit');
+  const report = () => ({ engine: 'webkit', groups: [...step.groups], errors: [], cleanup: { status: 'completed' } });
+  it('requires teacher/cloud/reuse/history/student coverage in both engines', () => {
+    expect(profileSteps('classroom').filter(s => s.id.startsWith('classroom-') && s.browser)).toHaveLength(2);
+    expect(step.groups).toContain('classroom.student');
+    expect(step.groups).toContain('board.history');
+    expect(profileSteps('release').map(s => s.id)).toEqual(expect.arrayContaining(['notes-webkit', 'reference-chromium', 'word-layout-webkit', 'classroom-sql']));
+    expect(() => profileSteps('quick')).toThrow('unknown_profile');
+  });
+  it('does not report a pass after missing coverage, cleanup failure or a hung process', () => {
+    expect(validateEvidence(step, report(), 0)).toBe(true);
+    expect(() => validateEvidence(step, { ...report(), groups: ['board.core'] }, 0)).toThrow('missing_group');
+    expect(() => validateEvidence(step, { ...report(), cleanup: null }, 0)).toThrow('cleanup');
+    expect(() => validateEvidence(step, report(), null)).toThrow('process_failed');
+    expect(() => validateEvidence(step, { ...report(), errors: ['unexpected'] }, 0)).toThrow('invalid_report');
+    expect(() => validateEvidence(step, { ...report(), engine: 'chromium' }, 0)).toThrow('wrong_browser');
+    expect(() => validateEvidence(step, { ...report(), externalAI: ['provider'] }, 0)).toThrow('unexpected_provider');
+  });
+  it('does not let ambient flags omit checks or connect fixtures to account credentials', () => {
+    const env = qaEnvironment(step, 'http://localhost:3137', '/tmp/check', { PATH: '/bin', QA_SCENARIO: 'reader', QA_CLASS_RELEASE: '0', QA_BOARD_CLOUD: '0', QA_PGLITE_MODULE: '/tmp/old', SUPABASE_SERVICE_ROLE_KEY: 'sensitive', NEXT_PUBLIC_SUPABASE_URL: 'remote', GEMINI_API_KEY: 'sensitive' });
+    expect(env.QA_SCENARIO).toBe('classroom');
+    expect(env.QA_CLASS_RELEASE).toBe('1');
+    expect(env.QA_BOARD_CLOUD).toBe('1');
+    expect(env.QA_PGLITE_MODULE).toBeUndefined();
+    expect(env.SUPABASE_SERVICE_ROLE_KEY).toBeUndefined();
+    expect(env.GEMINI_API_KEY).toBeUndefined();
+    expect(env.NEXT_PUBLIC_SUPABASE_URL).toBe('https://e2e.supabase.co');
+    expect(env.QA_TOUCH).toBe('1');
+  });
+  it('runs the real reader first without losing or duplicating classroom coverage', () => {
+    const app=profileSteps('reader-app');
+    expect(app.map(s=>s.browser)).toEqual(['chromium','webkit']);
+    for(const s of app){
+      expect(s.app).toBe(true);
+      expect(s.groups).toEqual(['reader.app','reader.app-meaning','reader.app-visual']);
+      expect(qaEnvironment(s,'http://localhost:3137','/tmp/check',{QA_SCENARIO:'classroom'}).QA_SCENARIO).toBe('reader');
+      expect(()=>validateEvidence(s,{engine:s.browser,groups:['reader.app','reader.app-visual'],errors:[],cleanup:{status:'completed'}},0)).toThrow('missing_group:reader.app-meaning');
+      expect(()=>validateEvidence(s,{engine:s.browser,scenario:'classroom',groups:s.groups,errors:[],cleanup:{status:'completed'}},0)).toThrow('wrong_scenario');
+    }
+    for(const profile of ['reader','classroom','release'])expect(profileSteps(profile).filter(s=>s.scenario==='reader')).toEqual(app);
+    const release=profileSteps('release'),ids=release.map(s=>s.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids.indexOf('reader-app-webkit')).toBeLessThan(ids.indexOf('classroom-chromium'));
+    expect(release).toHaveLength(16);
+  });
+  it('requires all login destinations in both release browsers without claiming a database check', () => {
+    const auth = profileSteps('auth-entry');
+    expect(auth.map(s => s.browser)).toEqual(['chromium', 'webkit']);
+    expect(profileSteps('release').filter(s => s.id.startsWith('auth-entry-'))).toEqual(auth);
+    for (const s of auth) {
+      expect(s.app).toBe(true);
+      expect(s.evidence).toBe('synthetic-auth-http+real-ui');
+      expect(s.groups).toEqual(['auth.classroom', 'auth.vocabulary', 'auth.notes', 'auth.visual']);
+      const evidence = {engine: s.browser, groups: s.groups, errors: [], cleanup: {status: 'completed'}};
+      expect(validateEvidence(s, evidence, 0)).toBe(true);
+      for (const group of s.groups) expect(() => validateEvidence(s, {...evidence, groups: s.groups.filter(g => g !== group)}, 0)).toThrow(`missing_group:${group}`);
+      expect(() => validateEvidence(s, {...evidence, cleanup: {status: 'failed'}}, 0)).toThrow('cleanup');
+      expect(() => validateEvidence(s, evidence, 1)).toThrow('process_failed');
+      expect(qaEnvironment(s, 'http://localhost:3137', '/tmp/check', {QA_ENGINE: 'chromium'}).QA_BROWSER).toBe(s.browser);
+    }
+  });
+  it('keeps curriculum, UI instructions, executable content and unknown changes under full CI', () => {
+    expect(isRecordOnly(['docs/ai-tasks.md', 'docs/verification/release.md'])).toBe(true);
+    for (const files of [[], ['docs/ui-conventions.md'], ['CLAUDE.md'], ['src/content/chapter.md'], ['.github/workflows/ci.yml'], ['package.json'], ['docs/verification/check.sql']]) expect(isRecordOnly(files)).toBe(false);
+  });
+  it('rejects loadable environment files without treating the tracked example as credentials', () => {
+    for (const file of ['.env', '.env.local', '.env.production', '.env.production.local', '.env.development.local']) expect(isLoadedEnvFile(file)).toBe(true);
+    expect(isLoadedEnvFile('.env.example')).toBe(false);
+  });
+  it('collects independent failures only when cleanup and isolation are confirmed', () => {
+    const state={enabled:true,interrupted:false,evidence:report(),exitCode:1};
+    expect(canCollectAfterFailure(state)).toBe(true);
+    for(const patch of [{enabled:false},{interrupted:true},{exitCode:null},{serverAlive:false},{sourceUnchanged:false},{evidence:undefined},{evidence:{cleanup:{status:'failed'}}},{evidence:{cleanup:{status:'completed',errors:['close failed']}}},{evidence:{...report(),externalAI:['unexpected']}}]) {
+      expect(canCollectAfterFailure({...state,...patch})).toBe(false);
+    }
+  });
+});

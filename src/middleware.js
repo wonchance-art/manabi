@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import { legacyTextbookTarget } from './lib/bookNavigation';
 import { hasLegacyArchivePath } from './lib/legacyArchiveRoutes';
+import { authEntryHref } from './lib/authRedirect';
 
 // EMEA 오버월드 자산 가드는 #306 일반 공개(releaseEligible 릴리스 정합 전환)로 폐기했다.
 // 스테일 가드가 남아 비관리자 전원이 EMEA 지형 404를 받는 라이브 결함을 만들었음(2026-07-22
@@ -35,8 +36,8 @@ export async function middleware(request) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  // 미로그인 → 로그인 페이지
-  if (!user) return NextResponse.redirect(new URL('/auth', request.url));
+  // 로그인 후 열려던 관리자 화면과 조회 조건으로 돌아온다.
+  if (!user) return NextResponse.redirect(new URL(authEntryHref(pathname + request.nextUrl.search), request.url));
 
   // role 확인 (DB 호출)
   const { data: profile } = await supabase

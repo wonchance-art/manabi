@@ -9,6 +9,10 @@ describe('shared sign-in entry', () => {
     '/class/fixture-class?view=history&q=%E5%9B%BE%E4%B9%A6%E9%A6%86&restoreY=355',
     '/viewer/10?class=fixture-class&day=2026-09-12&returnTo=%2Fclass%2Ffixture-class#sentence-2',
     '/books/japanese-n5?edition=current#u29-study1',
+    '/notes/23',
+    '/notes/23?review=1',
+    '/notes/23?candidate=00000000-0000-4000-8000-000000000173#note-page-two',
+    '/notes/new?language=Chinese&material=23',
   ])('preserves the complete learning destination: %s', path => {
     expect(destination(path)).toBe(path);
   });

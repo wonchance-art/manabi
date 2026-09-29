@@ -1,0 +1,111 @@
+{
+  "baseEdition": "594bc48ffc62dff84e9b7bf3",
+  "baseBundleSha256": "3915631bf3b966d0f2293eb70ed25c554a8c39e094ac5d606b31dcf40322a90b",
+  "scope": "33–42과 실제 웹80쪽의 설명·선행 지식·문항·정답 내부 대조. 대화 인물 정합성과 첫 등장 어휘 도움만 보완하며 독립 감수·공식 청해 완성을 뜻하지 않음.",
+  "revisionNote": "37과 대화 인물 일치·38/40/42과 첫 어휘 읽기 도움 보완",
+  "refreshAssetLinks": true,
+  "edits": [
+    {
+      "path": [
+        "lessons",
+        36,
+        "scene"
+      ],
+      "before": "리나가 어제 산 책을 보여 줘요. 책을 설명하는 문장과 책을 읽는 때를 찾아보세요.",
+      "after": "미오가 어제 산 책을 보여 줘요. 책을 설명하는 문장과 책을 읽는 때를 찾아보세요.",
+      "reason": "대화에서 책을 소개하는 B·미오와 장면의 인물 일치",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u37-start",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        36,
+        "listen_question"
+      ],
+      "before": "리나는 언제 책을 읽나요?",
+      "after": "미오는 언제 책을 읽나요?",
+      "reason": "한가할 때 읽는다고 말한 B·미오를 질문 대상으로 명시",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u37-start",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        37,
+        "oral",
+        1,
+        "cue"
+      ],
+      "before": "この 店 / この ぶんの いみ",
+      "after": "この 店 / この ぶんの いみ · ぶん＝문장",
+      "reason": "말하기에 처음 필요한 ぶん의 뜻을 지시 옆에 제공",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u38-dialogue",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        39,
+        "practice_pages",
+        1,
+        "help"
+      ],
+      "before": "읽기 도움 · 絵＝え, 그림 ／ 自分で＝じぶんで, 직접 ／ かいかん＝회관",
+      "after": "읽기 도움 · 絵＝え, 그림 ／ 自分で＝じぶんで, 직접 ／ かいかん＝회관 ／ タオル＝수건",
+      "reason": "뒤 종합 안내에도 다시 쓰이는 첫 준비물 어휘의 뜻 제공",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u40-read-check",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": [
+        "lessons",
+        41,
+        "review_pages",
+        3,
+        "lead"
+      ],
+      "before": "글을 먼저 읽고, 질문이 묻는 때와 행동을 찾아요.",
+      "after": "글을 먼저 읽고, 질문이 묻는 때와 행동을 찾아요. 읽기 도움 · かえす＝돌려주다, 반납하다 (1그룹) ／ かえして＝돌려주고, 반납하고",
+      "reason": "해설에서만 알 수 있던 핵심 행동 어휘를 문제 전에 제공. 인물·시각·선택 정답은 노출하지 않음",
+      "format": "rich",
+      "render": [
+        {
+          "target": "u42-review4",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "readingVocabulary": [
+    {
+      "lesson": "u38",
+      "entries": [
+        {
+          "word": "かんたんな",
+          "meaning": "간단한, 쉬운 · かんたん: な형용사"
+        }
+      ]
+    }
+  ]
+}

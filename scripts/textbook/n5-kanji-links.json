@@ -1,0 +1,307 @@
+{
+  "version": "reviewed-word-reading-links-v1",
+  "links": {
+    "入": {
+      "target": "u25-start",
+      "word": "入る",
+      "reading": "はいる",
+      "kind": "word"
+    },
+    "大": {
+      "target": "u13-start",
+      "word": "大きい",
+      "reading": "おおきい",
+      "kind": "word"
+    },
+    "小": {
+      "target": "u13-start",
+      "word": "小さい",
+      "reading": "ちいさい",
+      "kind": "word"
+    },
+    "土": {
+      "target": "u11-study2",
+      "word": "土曜日",
+      "reading": "どようび",
+      "kind": "word"
+    },
+    "火": {
+      "target": "u11-study2",
+      "word": "火曜日",
+      "reading": "かようび",
+      "kind": "word",
+      "evidence": "火曜日かようび화요일"
+    },
+    "中": {
+      "target": "u16-study1",
+      "word": "この中で",
+      "reading": "このなかで",
+      "kind": "usage",
+      "contextNote": "여럿 중에서"
+    },
+    "円": {
+      "target": "u06-start",
+      "word": "円",
+      "reading": "えん",
+      "kind": "word",
+      "evidence": "円은 えん으로 읽는 가격 단위예요."
+    },
+    "天": {
+      "target": "u30-read-guide",
+      "word": "天気",
+      "reading": "てんき",
+      "kind": "word"
+    },
+    "本": {
+      "target": "u17-practice",
+      "word": "本",
+      "reading": "ほん",
+      "kind": "word"
+    },
+    "白": {
+      "target": "u30-read-check",
+      "word": "白い",
+      "reading": "しろい",
+      "kind": "word"
+    },
+    "午": {
+      "target": "u40-read-guide",
+      "word": "午後",
+      "reading": "ごご",
+      "kind": "word"
+    },
+    "友": {
+      "target": "u22-study1",
+      "word": "友だち",
+      "reading": "ともだち",
+      "kind": "word"
+    },
+    "少": {
+      "target": "u38-practice",
+      "word": "少し",
+      "reading": "すこし",
+      "kind": "word"
+    },
+    "休": {
+      "target": "u29-study1",
+      "word": "休み",
+      "reading": "やすみ",
+      "kind": "word"
+    },
+    "先": {
+      "target": "u26-study1",
+      "word": "先生",
+      "reading": "せんせい",
+      "kind": "word"
+    },
+    "名": {
+      "target": "u41-dialogue",
+      "word": "名前",
+      "reading": "なまえ",
+      "kind": "word"
+    },
+    "見": {
+      "target": "u17-start",
+      "word": "見る",
+      "reading": "みる",
+      "kind": "word",
+      "evidence": "見る(みる)"
+    },
+    "多": {
+      "target": "u42-review3",
+      "word": "多い",
+      "reading": "おおい",
+      "kind": "word"
+    },
+    "毎": {
+      "target": "u18-practice",
+      "word": "毎日",
+      "reading": "まいにち",
+      "kind": "word"
+    },
+    "行": {
+      "target": "u24-start",
+      "word": "行く",
+      "reading": "いく",
+      "kind": "word"
+    },
+    "何": {
+      "target": "u31-dialogue",
+      "word": "何",
+      "reading": "なに",
+      "kind": "word"
+    },
+    "雨": {
+      "target": "u35-study1",
+      "word": "雨",
+      "reading": "あめ",
+      "kind": "word"
+    },
+    "安": {
+      "target": "u13-read-guide",
+      "word": "安い",
+      "reading": "やすい",
+      "kind": "word"
+    },
+    "高": {
+      "target": "u13-read-guide",
+      "word": "高い",
+      "reading": "たかい",
+      "kind": "word"
+    },
+    "店": {
+      "target": "u12-patterns",
+      "word": "店",
+      "reading": "みせ",
+      "kind": "word"
+    },
+    "前": {
+      "target": "u31-study1",
+      "word": "前に",
+      "reading": "まえに",
+      "kind": "usage",
+      "contextNote": "시간의 앞뒤 · ~전에"
+    },
+    "食": {
+      "target": "u24-start",
+      "word": "食べる",
+      "reading": "たべる",
+      "kind": "word"
+    },
+    "時": {
+      "target": "u36-read-check",
+      "word": "1時間",
+      "reading": "いちじかん",
+      "kind": "usage",
+      "contextNote": "한 시간"
+    },
+    "買": {
+      "target": "u24-start",
+      "word": "買う",
+      "reading": "かう",
+      "kind": "word"
+    },
+    "話": {
+      "target": "u38-patterns",
+      "word": "話す",
+      "reading": "はなす",
+      "kind": "word"
+    },
+    "電": {
+      "target": "u20-read-guide",
+      "word": "電車",
+      "reading": "でんしゃ",
+      "kind": "word"
+    },
+    "飲": {
+      "target": "u24-start",
+      "word": "飲む",
+      "reading": "のむ",
+      "kind": "word"
+    },
+    "聞": {
+      "target": "u41-patterns",
+      "word": "聞きながら",
+      "reading": "ききながら",
+      "kind": "form",
+      "contextNote": "들으면서"
+    },
+    "語": {
+      "target": "u38-patterns",
+      "word": "日本語",
+      "reading": "にほんご",
+      "kind": "word"
+    },
+    "読": {
+      "target": "u24-start",
+      "word": "読む",
+      "reading": "よむ",
+      "kind": "word"
+    },
+    "新": {
+      "target": "u33-dialogue",
+      "word": "新しい",
+      "reading": "あたらしい",
+      "kind": "word"
+    },
+    "駅": {
+      "target": "u12-practice",
+      "word": "駅",
+      "reading": "えき",
+      "kind": "word"
+    },
+    "書": {
+      "target": "u24-start",
+      "word": "書く",
+      "reading": "かく",
+      "kind": "word"
+    }
+  },
+  "cardOnly": [
+    "一",
+    "二",
+    "九",
+    "七",
+    "人",
+    "八",
+    "十",
+    "三",
+    "上",
+    "下",
+    "口",
+    "女",
+    "山",
+    "川",
+    "千",
+    "子",
+    "五",
+    "六",
+    "手",
+    "日",
+    "月",
+    "木",
+    "水",
+    "出",
+    "右",
+    "四",
+    "左",
+    "目",
+    "立",
+    "万",
+    "今",
+    "分",
+    "父",
+    "北",
+    "半",
+    "古",
+    "外",
+    "母",
+    "年",
+    "気",
+    "百",
+    "耳",
+    "男",
+    "花",
+    "足",
+    "車",
+    "会",
+    "西",
+    "来",
+    "社",
+    "言",
+    "学",
+    "空",
+    "金",
+    "国",
+    "東",
+    "長",
+    "南",
+    "後",
+    "校",
+    "週",
+    "魚",
+    "道",
+    "間",
+    "生"
+  ]
+}

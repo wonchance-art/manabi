@@ -1,0 +1,12 @@
+{
+  "name": "board-multiword-desktop",
+  "key": "darwin-arm64-webkit-26.5",
+  "sha256": "abb90fa0bb05110975f11acbac16a1f6932feaf0dbd6f39178d7c8b1329b7bdf",
+  "review": "Directly inspected after account save confirmation: four aligned expressions retain readings/hun/right meanings, separate handwriting and floating controls remain visible; no crop or overlap.",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "osRelease": "25.3.0",
+  "fontScope": "synthetic harness fonts; production-font/device review remains separate"
+}

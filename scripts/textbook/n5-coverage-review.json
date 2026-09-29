@@ -1,0 +1,815 @@
+{
+  "edition": "fdf070fa5123b18cc55f24c7",
+  "bundleSha256": "a03c8fec9a08073250f8017bf011f3c6ee4e8f60aa9470d10c5cf8592e00aa90",
+  "reviewedAt": "2026-09-28 KST",
+  "scope": "공식 N5 유형별 목적과 최신 후보의 대표 문항·추가 연습을 내부 대조. 노출·도움 있는 연습·독립 수행·시험형 전이를 구분한다. 근거 수는 전체 문항 수나 충분성 점수가 아니며, 독립 언어 감수·시험 전범위·합격·청해 완료를 뜻하지 않는다.",
+  "sources": [
+    "https://www.jlpt.jp/e/about/levelsummary.html",
+    "https://www.jlpt.jp/e/guideline/testsections.html",
+    "https://www.jlpt.jp/guideline/pdf/n5_revised.pdf",
+    "https://www.jlpt.jp/e/samples/forlearners.html",
+    "https://www.jlpt.jp/e/faq/index.html"
+  ],
+  "types": [
+    {
+      "id": "v1",
+      "label": "한자 읽기",
+      "status": "representative",
+      "evidence": [
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            1,
+            "tasks",
+            0
+          ],
+          "target": "u42-review2",
+          "questionId": "유형 1 · 한자 읽기",
+          "sha256": "24f7086ca054d989e50a279a01000949187841da04fdf655fd7819dcb60bbde9"
+        },
+        {
+          "path": [
+            "lessons",
+            12,
+            "practice_pages",
+            0,
+            "tasks",
+            0
+          ],
+          "target": "u13-read-guide",
+          "questionId": "읽기 13-1",
+          "sha256": "1f19e22fd5775cdbd8dfe52802eeac97d1526c384946a919f8b6e415fc030190"
+        },
+        {
+          "path": [
+            "lessons",
+            19,
+            "practice_pages",
+            1,
+            "tasks",
+            0
+          ],
+          "target": "u20-read-check",
+          "questionId": "읽기 20-2",
+          "sha256": "2d1524f0b6fd73f003cd0406a7a7edbf1c5b2240ec73e6a3094d9832fcc33233"
+        }
+      ],
+      "foundationPages": [
+        "guide-hiragana",
+        "u13-start",
+        "u20-start"
+      ],
+      "remaining": "읽기 선택 대표 근거는 유지. 13과는 바로 앞 학습과 연결된 안내 연습,20과는 직전 電車 설명의 회상,42과는 本/조수사 독음 구별이다. 후리가나 제외는 유지되지만 낱말·독음 조합의 지연된 혼합 전이와 범위 충분성은 미확인."
+    },
+    {
+      "id": "v2",
+      "label": "표기",
+      "status": "representative",
+      "evidence": [
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            1,
+            "tasks",
+            1
+          ],
+          "target": "u42-review2",
+          "questionId": "유형 2 · 표기",
+          "sha256": "914a0bd62273c9528e795979f02daaa8d9df5e723868226533a518f58ac95695"
+        },
+        {
+          "path": [
+            "lessons",
+            12,
+            "practice_pages",
+            1,
+            "tasks",
+            0
+          ],
+          "target": "u13-read-check",
+          "questionId": "읽기 13-2",
+          "sha256": "dddce136879ecec840dec8904c747af028f9bc01f0613c411cca0f3de2b29f3c"
+        },
+        {
+          "path": [
+            "frontMatter",
+            7,
+            "tasks",
+            0
+          ],
+          "target": "guide-katakana-long",
+          "questionId": "kp-long-1",
+          "sha256": "8e184e3aa79355df2db77bf56697f575be94d04ba29ad12d988e48b4d3af1f86"
+        },
+        {
+          "path": [
+            "frontMatter",
+            7,
+            "tasks",
+            1
+          ],
+          "target": "guide-katakana-long",
+          "questionId": "kp-long-2",
+          "sha256": "4d4c4c2e8d7604808c56aa26790fed503a74e9e49feaed2251abd8b119d9c781"
+        },
+        {
+          "path": [
+            "frontMatter",
+            7,
+            "tasks",
+            2
+          ],
+          "target": "guide-katakana-long",
+          "questionId": "kp-long-3",
+          "sha256": "58f92985d1b5d44623bec74aa5197c6cd90543781a7a0d85a810b6b2bad951cd"
+        },
+        {
+          "path": [
+            "frontMatter",
+            8,
+            "tasks",
+            0
+          ],
+          "target": "guide-katakana-small",
+          "questionId": "kp-small-1",
+          "sha256": "6c58abce868949625fb6e0b554ddf07e3135d3e387a5df163c1530ade0ee1160"
+        },
+        {
+          "path": [
+            "frontMatter",
+            8,
+            "tasks",
+            1
+          ],
+          "target": "guide-katakana-small",
+          "questionId": "kp-small-2",
+          "sha256": "7f9dc3d38822e0ccc99fb9a044e723a4108f33a2fafff046d954da86b04d1ac3"
+        },
+        {
+          "path": [
+            "frontMatter",
+            8,
+            "tasks",
+            2
+          ],
+          "target": "guide-katakana-small",
+          "questionId": "kp-small-3",
+          "sha256": "1e56cd621874a95f6fb1159a8344e883ca01bb9b289ddf763c1bbcf0bdcd1e2b"
+        },
+        {
+          "path": [
+            "frontMatter",
+            9,
+            "tasks",
+            0
+          ],
+          "target": "guide-katakana-shapes",
+          "questionId": "kp-shape-1",
+          "sha256": "d388415aede7d7cffe38ec000bd9ca0114dbfca6acdc02277baa3f4086c5bdc2"
+        },
+        {
+          "path": [
+            "frontMatter",
+            9,
+            "tasks",
+            1
+          ],
+          "target": "guide-katakana-shapes",
+          "questionId": "kp-shape-2",
+          "sha256": "0c231658bef60799c8b2389a6aa8171730101b0a6cb1e649850cf7e5a57b680d"
+        },
+        {
+          "path": [
+            "frontMatter",
+            9,
+            "tasks",
+            2
+          ],
+          "target": "guide-katakana-shapes",
+          "questionId": "kp-shape-3",
+          "sha256": "d0ffbeddef84d3efb525d34165fc5285514b4ce31e06a27790c6408ff3dc8387"
+        }
+      ],
+      "foundationPages": [
+        "guide-katakana",
+        "guide-small",
+        "guide-katakana-long",
+        "guide-katakana-small",
+        "guide-katakana-shapes"
+      ],
+      "remaining": "이전 가타카나 선택 문제 부재는 해소: 장음·촉음·유사 글자 9개 선택 문항이 있다. 준비 표기·한국어 뜻·오류 종류별 묶음이 있는 기초 연습이다. 짧은 일본어 문장 속 표기와 여러 오류 종류를 섞은 도움 없는 전이는 별도 보완; 한자 표기2대표만으로 범위 충분성을 주장하지 않는다."
+    },
+    {
+      "id": "v3",
+      "label": "문맥 속 어휘",
+      "status": "representative",
+      "evidence": [
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            1,
+            "tasks",
+            2
+          ],
+          "target": "u42-review2",
+          "questionId": "유형 3 · 문맥 속 단어",
+          "sha256": "2f7278c761252967303296923e105d6bf341958c9b89ab95c5bab43001b0989e"
+        },
+        {
+          "path": [
+            "lessons",
+            12,
+            "practice_pages",
+            1,
+            "tasks",
+            1
+          ],
+          "target": "u13-read-check",
+          "questionId": "읽기 13-3",
+          "sha256": "aa9b5bf85ceaafe5abff13e3f45730c3f5c6027aa3fd9e80e9b8477c1344c32d"
+        }
+      ],
+      "foundationPages": [
+        "u13-patterns",
+        "u34-patterns"
+      ],
+      "remaining": "가격(13과)·어두운 방(42과)의 문맥 선택은 확인. 다른 품사/연어·수량·사람/물건 상태를 고르는 독립 맥락과 혼동어 다양성은 부족하다. 한국어 뜻 선택·과내2지선다를 같은 시험형 문항으로 합산하지 않는다."
+    },
+    {
+      "id": "v4",
+      "label": "유사 의미 표현",
+      "status": "representative",
+      "evidence": [
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            1,
+            "tasks",
+            3
+          ],
+          "target": "u42-review2",
+          "questionId": "유형 4 · 바꾸어 말하기",
+          "sha256": "08c389d899c35fc4637e714b09084cae7da5ac14613ebbd5339dcec91e64a5bd"
+        },
+        {
+          "path": [
+            "lessons",
+            19,
+            "practice_pages",
+            1,
+            "tasks",
+            2
+          ],
+          "target": "u20-read-check",
+          "questionId": "읽기 20-4",
+          "sha256": "d27883386821882705a51fd0bfe40322e5b229163ae600cc61c43b5cb14a2762"
+        }
+      ],
+      "foundationPages": [
+        "u18-patterns",
+        "u20-patterns"
+      ],
+      "remaining": "20과 동행과42과 가격 부정의 일본어 의역 선택은 확인. 과거/빈도/수량/허가 등 학습한 표현을 새 맥락에서 바꾸어 읽는 표본은 이 대표 묶음에서 부족하다. 단순 반대말·한국어 뜻 선택과 구분한다."
+    },
+    {
+      "id": "g1",
+      "label": "문법 형식 선택",
+      "status": "representative",
+      "evidence": [
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            2,
+            "tasks",
+            0
+          ],
+          "target": "u42-review3",
+          "questionId": "유형 5 · 문법 형식",
+          "sha256": "2c0c159d177b7949f60d69cd57d275816e5eef8d97391b40892d750686c9fb04"
+        }
+      ],
+      "foundationPages": [
+        "u18-study2",
+        "u24-patterns",
+        "u31-patterns"
+      ],
+      "remaining": "42과 前に의4지선다와 각 과의 형식 확인/회상·산출 연습이 있다. 설명 분포는 넓지만 특정 과 제목을 단서로 쓰지 않는 혼합4지선다 전이·오답 난도는 충분히 검증하지 않았다."
+    },
+    {
+      "id": "g2",
+      "label": "문장 배열",
+      "status": "representative",
+      "evidence": [
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            2,
+            "tasks",
+            1
+          ],
+          "target": "u42-review3",
+          "questionId": "유형 6 · 문장 배열",
+          "sha256": "3bd115c8986159cfafcfefbc319708ff6b0f22dbe843a3f90c1438119d56cfc0"
+        },
+        {
+          "path": [
+            "lessons",
+            19,
+            "practice_pages",
+            1,
+            "tasks",
+            1
+          ],
+          "target": "u20-read-check",
+          "questionId": "읽기 20-3",
+          "sha256": "0bb87d7025136e3761149e1863ce7b05a9b236a6750dbbf966a8e5cef79807aa"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "practice_pages",
+            0,
+            "tasks",
+            0
+          ],
+          "target": "u42-order-plus",
+          "questionId": "wp-order-1",
+          "sha256": "c01d39a399c69f2a1ed7f3a090307fc44f9363750628b14135c3801e05c6a6c3"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "practice_pages",
+            0,
+            "tasks",
+            1
+          ],
+          "target": "u42-order-plus",
+          "questionId": "wp-order-2",
+          "sha256": "e87e98b491c58e2ac69d81a29653c89c0cfd1da7adf102bdf8420b7ada346c27"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "practice_pages",
+            0,
+            "tasks",
+            2
+          ],
+          "target": "u42-order-plus",
+          "questionId": "wp-order-3",
+          "sha256": "4e350ffe53a26d3e146b5755223cd42dc91c775a567b88c88551856542f206e8"
+        }
+      ],
+      "foundationPages": [
+        "u20-read-guide",
+        "u37-patterns",
+        "u42-order-plus"
+      ],
+      "remaining": "20과 조사 묶음·42과 명사 수식에 추가3문항(도구/부탁,ながら,前に)을 확인. 부재/단일 조합 문제는 일부 해소. 추가 문제 제목은 한국어 완성 의미를 알려 주는 안내 연습이므로 독립 문장 조립 평가로 동일 계산하지 않는다. ★ 위치와 전체순서/대안 검토는 유지."
+    },
+    {
+      "id": "g3",
+      "label": "글 흐름에 맞는 문법",
+      "status": "representative",
+      "evidence": [
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            2,
+            "tasks",
+            2
+          ],
+          "target": "u42-review3",
+          "questionId": "유형 7 · 글 속 문법",
+          "sha256": "9e99806a12e7880bd3b174f487a417ffdb8255329c27e40ae5ed744c5a192220"
+        },
+        {
+          "path": [
+            "lessons",
+            35,
+            "practice_pages",
+            1,
+            "tasks",
+            0
+          ],
+          "target": "u36-read-check",
+          "questionId": "읽기 36-2",
+          "sha256": "5228e63cff83cc5a4b4af028e26fe7e4f41fecc7778e565239de23f8d92a4c45"
+        },
+        {
+          "path": [
+            "lessons",
+            35,
+            "practice_pages",
+            1,
+            "tasks",
+            1
+          ],
+          "target": "u36-read-check",
+          "questionId": "읽기 36-3",
+          "sha256": "e99f8d5b2ee869ac1cb0abdd35b8398b49e5e2170a98fdbb5f7ace143015adc0"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "practice_pages",
+            1,
+            "tasks",
+            0
+          ],
+          "target": "u42-text-plus",
+          "questionId": "wp-text-1",
+          "sha256": "fa49dae42fac51248130ed22f5f7fd8d8fc216b6c289346498d0e6fc210b7abd"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "practice_pages",
+            1,
+            "tasks",
+            1
+          ],
+          "target": "u42-text-plus",
+          "questionId": "wp-text-2",
+          "sha256": "20c1d811b2b61119fd72273e0fe7c86c5b3d95d9df7e6f8accc340ba653eb082"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "practice_pages",
+            1,
+            "tasks",
+            2
+          ],
+          "target": "u42-text-plus",
+          "questionId": "wp-text-3",
+          "sha256": "6ca8d3359c375ae217e4ba6ca0007ec60ab28d84ccc069bce7c91aafd03dc507"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "practice_pages",
+            2,
+            "tasks",
+            0
+          ],
+          "questionId": "tx-book-a",
+          "target": "u42-text-transfer",
+          "sha256": "c1f38d588893c3d15d0abda143761020f5a53143bd293f9aafaecea540138fda"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "practice_pages",
+            2,
+            "tasks",
+            1
+          ],
+          "questionId": "tx-book-b",
+          "target": "u42-text-transfer",
+          "sha256": "f3c899c1c0c09395757b62b3f716e2c9108c69793b66084d96cc466cde20fe97"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "practice_pages",
+            2,
+            "tasks",
+            2
+          ],
+          "questionId": "tx-book-c",
+          "target": "u42-text-transfer",
+          "sha256": "a0525b07cdd3ce9c9bf154972ac008462e9740bdf4b5a4551c1eb8b01da0241e"
+        }
+      ],
+      "foundationPages": [
+        "u36-read-guide",
+        "u42-text-plus",
+        "u42-text-transfer"
+      ],
+      "remaining": "기존 안내형3문항을 보존하고 별도 글의 허락·미완료·반환 약속을 앞뒤 내용으로 판단하는3문항을 추가했다. 새 문항은 cue/전체 번역 없이 먼저 풀며 정답·오답 근거를 접힌 해설로 확인한다. 한 장면의 내부 의미 감수 표본이므로 다양한 글 유형·독립 언어감수·실학습 수행은 별도 검토하며 시험 충분성으로 세지 않는다."
+    },
+    {
+      "id": "r1",
+      "label": "짧은 글 이해",
+      "status": "representative",
+      "evidence": [
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            3,
+            "tasks",
+            0
+          ],
+          "target": "u42-review4",
+          "questionId": "유형 8 · 단문 이해",
+          "sha256": "6412bc37b54f2e4f40307b316f598f628b623625f16d8338f76c6296b39fb33b"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "practice_pages",
+            3,
+            "tasks",
+            0
+          ],
+          "target": "u42-message-reading",
+          "questionId": "msg-rina-meet",
+          "sha256": "785e69847f8ee03278186bcb2368507c97b6037fd16111a8078c30672b842ab2"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "practice_pages",
+            3,
+            "tasks",
+            1
+          ],
+          "target": "u42-message-reading",
+          "questionId": "msg-rina-bring",
+          "sha256": "1fa95051ad59c7d6aeec7d5dfdc900ca35ad7bb2cfcb12b42a6914ad84695e94"
+        }
+      ],
+      "foundationPages": [
+        "u30-read-guide"
+      ],
+      "remaining": "42과 약속 메모에 더해 같은 날 두 연락에서 변경된 시간/장소와 필수/선택 준비물을 찾는 독립2문항을 추가했다. 연락시각과 약속시각·발신자의 집·부탁 유지/면제를 구별하며 단어 뜻2개만 미리 제공한다. 실제 학습자 수행·독립 감수·다른 생활 글의 충분성은 미확인. 정보검색형의 문화교실 편중은 이 짧은 연락문으로 해소했다고 세지 않는다."
+    },
+    {
+      "id": "r2",
+      "label": "이어지는 글 이해",
+      "status": "representative",
+      "evidence": [
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            4,
+            "tasks",
+            0
+          ],
+          "target": "u42-review5",
+          "questionId": "유형 9 · 중문 이해",
+          "sha256": "96e6cf9f1072aefdc610b11992ad25f829639cc74102e1373b767e6c92f5aa30"
+        },
+        {
+          "path": [
+            "lessons",
+            29,
+            "practice_pages",
+            1,
+            "tasks",
+            0
+          ],
+          "target": "u30-read-check",
+          "questionId": "읽기 30-2",
+          "sha256": "f58abf603334311da538e2e323da91fa9fcb3129070a1b9dc2cc88de5ddf1b75"
+        },
+        {
+          "path": [
+            "lessons",
+            29,
+            "practice_pages",
+            1,
+            "tasks",
+            1
+          ],
+          "target": "u30-read-check",
+          "questionId": "읽기 30-3",
+          "sha256": "429f692f5e7994274eb4b93d730267296f9640377e44f49a9a9eb1dbf5c610ef"
+        }
+      ],
+      "foundationPages": [
+        "u30-read-guide"
+      ],
+      "remaining": "30과 주말 쇼핑/영화와42과 빵 만들기에서 대상·날짜·원인 연결을 확인. 독립 지문과 질문은 있으나 익숙한 음식/쇼핑 장면에 집중된다. 글쓴이 의도/대상 지칭 등 기본 내용 이해의 다른 생활 장면 전이·실학습 부담은 추가 검토 대상이며 길이로 완성을 판정하지 않는다."
+    },
+    {
+      "id": "r3",
+      "label": "안내에서 정보 찾기",
+      "status": "representative",
+      "evidence": [
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            5,
+            "tasks",
+            0
+          ],
+          "target": "u42-review6",
+          "questionId": "유형 10 · 정보 검색",
+          "sha256": "9415cea3fbbd8338c43f8cb797e07b2eea94cac2b779d851251065a4425e0662"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "review_pages",
+            5,
+            "tasks",
+            1
+          ],
+          "target": "u42-review6",
+          "questionId": "유형 10-2 · 정보 연결",
+          "sha256": "6cb18aff6f7462bac7ea51fc7053109f4a060c1bca44bb906793576183784b2d"
+        },
+        {
+          "path": [
+            "lessons",
+            39,
+            "practice_pages",
+            1,
+            "tasks",
+            0
+          ],
+          "target": "u40-read-check",
+          "questionId": "읽기 40-2",
+          "sha256": "18265febbdc50644bee7a540ce17756837ad509c84b0a585522438776254fdc4"
+        },
+        {
+          "path": [
+            "lessons",
+            39,
+            "practice_pages",
+            1,
+            "tasks",
+            1
+          ],
+          "target": "u40-read-check",
+          "questionId": "읽기 40-3",
+          "sha256": "344d473e261a98eed35d4ad29e6ed4d6889b01f63ab2cf1c4a5e033e217f1df8"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "practice_pages",
+            4,
+            "tasks",
+            0
+          ],
+          "target": "u42-information-reading",
+          "questionId": "info-library-visit",
+          "sha256": "5adbb690ee2302f079baf180f2f510b6abf865d8a0144aace7497826476262b4"
+        },
+        {
+          "path": [
+            "lessons",
+            41,
+            "practice_pages",
+            4,
+            "tasks",
+            1
+          ],
+          "target": "u42-information-reading",
+          "questionId": "info-library-return",
+          "sha256": "e01b250c69ad50cdfa98f258d8770bfd7eebf516d2abdcc78776756b88ca7bab"
+        }
+      ],
+      "foundationPages": [
+        "u40-read-guide",
+        "u39-mission",
+        "u10-patterns",
+        "u11-study2",
+        "u25-patterns"
+      ],
+      "remaining": "기존 문화교실 선택4문항과 도서관 안내2문항을 확인. 요일별 개관/휴관·시간 범위, 책/CD별 반납 규칙과 창구 이용 시간을 대조하는 독립4지선다를 추가해 단일 장면 편중을 일부 해소했다. 가나 중심 안내이며 한자 독해 평가로 세지 않는다. 교통/쇼핑/연락처 등 다른 배열·혼합 표기와 실제 학습 부담·독립 언어감수는 미확인. 기존42과 직접쓰기 정보 연결은 공식4지선다와 구분한다."
+    },
+    {
+      "id": "l1",
+      "label": "지시를 듣고 행동 판단",
+      "status": "deferred",
+      "evidence": [],
+      "foundationPages": [],
+      "remaining": "새 음성 제외 범위. 기존 대화·텍스트 확인 문항 또는 일부 음성을 청해 실전 검증으로 세지 않음. 별도 대본·음성·재생·정답 검수가 필요."
+    },
+    {
+      "id": "l2",
+      "label": "핵심 정보 듣기",
+      "status": "deferred",
+      "evidence": [],
+      "foundationPages": [],
+      "remaining": "새 음성 제외 범위. 기존 대화·텍스트 확인 문항 또는 일부 음성을 청해 실전 검증으로 세지 않음. 별도 대본·음성·재생·정답 검수가 필요."
+    },
+    {
+      "id": "l3",
+      "label": "상황에 맞는 말",
+      "status": "deferred",
+      "evidence": [],
+      "foundationPages": [],
+      "remaining": "새 음성 제외 범위. 기존 대화·텍스트 확인 문항 또는 일부 음성을 청해 실전 검증으로 세지 않음. 별도 대본·음성·재생·정답 검수가 필요."
+    },
+    {
+      "id": "l4",
+      "label": "즉시 응답",
+      "status": "deferred",
+      "evidence": [],
+      "foundationPages": [],
+      "remaining": "새 음성 제외 범위. 기존 대화·텍스트 확인 문항 또는 일부 음성을 청해 실전 검증으로 세지 않음. 별도 대본·음성·재생·정답 검수가 필요."
+    }
+  ],
+  "passages": [
+    {
+      "target": "u30-read-check",
+      "path": [
+        "lessons",
+        29,
+        "practice_pages",
+        1,
+        "passage"
+      ]
+    },
+    {
+      "target": "u36-read-check",
+      "path": [
+        "lessons",
+        35,
+        "practice_pages",
+        1,
+        "passage"
+      ]
+    },
+    {
+      "target": "u42-review4",
+      "path": [
+        "lessons",
+        41,
+        "review_pages",
+        3,
+        "tasks",
+        0,
+        "cue"
+      ],
+      "beforeChoices": true
+    },
+    {
+      "target": "u42-review5",
+      "path": [
+        "lessons",
+        41,
+        "review_pages",
+        4,
+        "tasks",
+        0,
+        "cue"
+      ],
+      "beforeChoices": true
+    },
+    {
+      "target": "u42-review6",
+      "path": [
+        "lessons",
+        41,
+        "review_pages",
+        5,
+        "tasks",
+        0,
+        "cue"
+      ],
+      "beforeChoices": true
+    },
+    {
+      "target": "u42-information-reading",
+      "path": [
+        "lessons",
+        41,
+        "practice_pages",
+        4,
+        "passage"
+      ]
+    }
+  ],
+  "sourceNote": "2026-09-28 공식 구성표·수준 설명·FAQ·샘플 안내와 일본어 N5 유형별 목적 PDF를 확인. 영문 목적 PDF는 재조회 시간 초과여서 같은 공식 사이트의 일본어 자료로 대조했다. 공식 문제 원문은 복제하지 않았다.",
+  "assessmentBoundary": "representative는 실제 대응 문항의 존재를 뜻하며 충분성이나 독립 평가 통과가 아니다. 가타카나9개/배열3개/글문법3개 보완은 안내 연습으로 대조했다. 청해4유형은 deferred를 유지한다."
+}
