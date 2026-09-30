@@ -21,7 +21,7 @@ try{
  grant usage on schema auth,public to authenticated,anon;grant select,insert,update on reading_materials,library_item_state to authenticated;grant usage on sequence reading_materials_id_seq to authenticated;
  insert into reading_materials(owner_id,visibility,title,raw_text,processed_json) values('${owner}','private','Book — 1과','original','{"status":"completed","sequence":["t"],"dictionary":{"t":{"text":"word","meaning":"my meaning"}},"metadata":{"language":"English","book":{"key":"book","title":"Book","order":1},"translations":{"original":"원문"}}}');
  insert into reading_progress values(1,'${owner}',9);insert into user_vocabulary values(1,1,'my meaning','{"due":"2027-01-01","stability":4}');`);
- await db.exec(await readFile(new URL('../../supabase/migrations/20260930142345_library_book_chapters.sql',import.meta.url),'utf8'));
+ await db.exec(await readFile(new URL('../../supabase/migrations/20260930154448_library_book_chapters.sql',import.meta.url),'utf8'));
  const baseline=(await db.query('select raw_text,processed_json from reading_materials where id=1')).rows[0];
  const learning=JSON.stringify([(await db.query('select * from reading_progress')).rows,(await db.query('select * from user_vocabulary')).rows]);
  await db.exec(`set role authenticated;set test.uid='${owner}';`);

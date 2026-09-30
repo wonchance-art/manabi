@@ -31,7 +31,7 @@ export async function fixture(options={}){
  }
  if(options.bookChapters){
   await db.exec(`create sequence chapter_fixture_id start 98000;alter table reading_materials alter column id set default nextval('chapter_fixture_id');grant usage on sequence chapter_fixture_id to authenticated;grant insert,update on reading_materials to authenticated;create policy chapter_write on reading_materials for all to authenticated using(owner_id=auth.uid()) with check(owner_id=auth.uid());`);
-  await db.exec(await readFile(new URL('../../supabase/migrations/20260930142345_library_book_chapters.sql',import.meta.url),'utf8'));
+  await db.exec(await readFile(new URL('../../supabase/migrations/20260930154448_library_book_chapters.sql',import.meta.url),'utf8'));
  }
  if(options.sourcePassages){
   await db.exec(`create sequence passage_fixture_id start 97000;
