@@ -140,6 +140,10 @@ try{
  (30001,'${owner}','private','First chapter','{"metadata":{"book":{"key":"search-book","title":"Search book","order":1}}}'),
  (30002,'${owner}','private','Matching chapter','{"metadata":{"book":{"key":"search-book","title":"Search book","order":2}}}');set role authenticated;`);
  assert.equal((await page({query:'Matching chapter'})).items[0].match_child.id,'30002');
+ // Match the catalog's existing orphan-study fallback without exposing its private parent.
+ await db.exec(`reset role;insert into reading_materials(id,owner_id,visibility,title,processed_json) values(30003,'${other}','public','Standalone study','{"metadata":{"composer":{"role":"study","parentId":"4"}}}');set role authenticated;`);
+ assert.equal((await rpc('library_canonical_target',['material','30003'])).target_id,'30003');
+ assert.equal((await run('save',[{target_kind:'material',target_id:'30003',revision:0}])).items[0].status,'success');
  await db.exec('reset role;set role anon;');await assert.rejects(page(),/permission denied/);
  // Existing privileged account deletion must not be blocked or recreate personal state.
  await db.exec('reset role;');await query('delete from auth.users where id=$1',[owner]);

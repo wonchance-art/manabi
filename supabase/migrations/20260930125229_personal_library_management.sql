@@ -35,13 +35,13 @@ end $$;
 
 create function public.library_canonical_target(p_kind text,p_id text) returns jsonb
 language plpgsql stable security invoker set search_path='' as $$
-declare m public.reading_materials; k text:=p_kind; i text:=p_id;
+declare m public.reading_materials; parent public.reading_materials; k text:=p_kind; i text:=p_id;
 begin
  if p_kind='material' and p_id ~ '^[0-9]{1,18}$' then
   select * into m from public.reading_materials where id=p_id::bigint;
   if m.processed_json#>>'{metadata,composer,role}'='study' then
-   i:=m.processed_json#>>'{metadata,composer,parentId}';
-   select * into m from public.reading_materials where id=case when i ~ '^[0-9]{1,18}$' then i::bigint end;
+   select * into parent from public.reading_materials where id=case when m.processed_json#>>'{metadata,composer,parentId}' ~ '^[0-9]{1,18}$' then (m.processed_json#>>'{metadata,composer,parentId}')::bigint end;
+   if found then m:=parent;end if;
   end if;
   i:=coalesce(m.id::text,i);
   if m.owner_id=auth.uid() and nullif(m.processed_json#>>'{metadata,book,key}','') is not null then

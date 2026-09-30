@@ -197,3 +197,4 @@
 
 .shelf-dialog-head h2{min-width:0;overflow-wrap:anywhere}
 .shelf-dialog-head button{flex:none}
+.shelf-selection-bar>button[aria-label],.shelf-notice>button[aria-label]{min-width:44px}

@@ -44,9 +44,9 @@ test('personal rename, favorites, revision conflict and minimum 320px keyboard c
  await f.page.getByRole('button',{name:'전체',exact:true}).click();await f.page.locator('.shelf-row').nth(3).waitFor();await f.page.getByRole('button',{name:'선택',exact:true}).click();await f.page.getByRole('checkbox',{name:'현재 표시된 자료 선택'}).check();
  const before=(await f.db.query('select target_id from library_item_state limit 1')).rows[0].target_id;
  await f.db.query("update library_item_state set display_title='다른 탭 수정' where target_id=$1",[before]);
- await f.page.getByRole('button',{name:'휴지통',exact:true}).last().click();await f.page.getByRole('button',{name:'이동',exact:true}).click();await f.page.getByText('3개 완료',{exact:true}).waitFor();await f.page.getByRole('button',{name:'실패 항목 다시 선택'}).click();await f.page.getByText('1개 선택',{exact:true}).waitFor();
- for(const width of [320,390,768,1280]){await f.page.setViewportSize({width,height:900});await overflow(f);if(shots){await mkdir(shots,{recursive:true});await f.page.screenshot({path:`${shots}/library-${width}.png`,fullPage:true});}}
- await f.page.getByRole('button',{name:'자료 필터'}).click();await f.page.keyboard.press('Escape');assert.equal(await f.page.locator('dialog[open]').count(),0);assert.equal(await f.page.evaluate(()=>document.activeElement?.getAttribute('aria-label')),'자료 필터');
+ await f.page.getByRole('button',{name:'휴지통',exact:true}).last().click();await f.page.getByRole('button',{name:'이동',exact:true}).click();await f.page.getByText(/^3개 완료 · 일부 자료/).waitFor();await f.page.getByRole('button',{name:'실패 항목 다시 선택'}).click();await f.page.getByText('1개 선택',{exact:true}).waitFor();
+ for(const width of [320,390,768,1280]){await f.page.setViewportSize({width,height:900});await overflow(f);const closeTarget=await f.page.getByRole('button',{name:'선택 해제'}).boundingBox();assert.ok(closeTarget.width>=44&&closeTarget.height>=44);if(shots){await mkdir(shots,{recursive:true});await f.page.screenshot({path:`${shots}/library-${width}.png`,fullPage:true});}}
+ await f.page.getByRole('button',{name:'자료 필터'}).click();await f.page.keyboard.press('Escape');await f.page.waitForFunction(()=>document.activeElement?.getAttribute('aria-label')==='자료 필터');assert.equal(await f.page.locator('dialog[open]').count(),0);
  await f.page.getByRole('button',{name:'선택 해제'}).click();await f.page.locator('.shelf-row-link').first().focus();await f.page.keyboard.press('Control+a');await f.page.getByText('1개 선택',{exact:true}).waitFor();await overflow(f);
  }finally{await f.close();}
 });
