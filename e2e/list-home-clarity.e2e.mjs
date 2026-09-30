@@ -25,7 +25,7 @@ test('new guest can start the published book and use its tools without two ident
   await f.page.getByRole('link',{name:'첫 과부터 시작하기 →',exact:true}).waitFor();
   assert.equal(await f.page.getByRole('link',{name:'01과 처음부터',exact:true}).count(),0);
   assert.equal(await f.page.getByRole('link',{name:'담은 표현',exact:true}).count(),1);
-  const info=f.page.locator('.manabi-book-home .book-scope');await info.locator('summary').focus();await f.page.keyboard.press('Enter');await info.getByText(`판본 ${edition.slice(0,8)} · 42과`,{exact:true}).waitFor();
+  const info=f.page.locator('#main-content .manabi-book-home .book-scope');await info.locator('summary').focus();await f.page.keyboard.press('Enter');await info.getByText(`판본 ${edition.slice(0,8)} · 42과`,{exact:true}).waitFor();
   await capture(f,'book-tools-new-320');assert.equal(f.analysisCalls,0);
  }finally{await f.context.close();}
 });
