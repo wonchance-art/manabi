@@ -71,6 +71,8 @@ test('one reference menu exposes distinct destinations; linked materials open fo
   const ref=menu.getByRole('link',{name:'어휘·문형·한자',exact:true});assert.match(await ref.getAttribute('href'),new RegExp(`${edition}#reference-start`));
   assert.match(await menu.getByRole('link',{name:'문화 읽기',exact:true}).getAttribute('href'),/\/materials\?edition=/);
   await f.page.keyboard.press('Escape');assert.equal(await menu.getAttribute('open'),null);assert.equal(await summary.evaluate(el=>el===document.activeElement),true);
+  await summary.click();await menu.getByRole('link',{name:'문화 읽기',exact:true}).focus();await f.page.keyboard.press('Tab');assert.equal(await menu.getAttribute('open'),null);
+  await summary.click();await f.page.locator('#u42-message-reading h2').click();assert.equal(await menu.getAttribute('open'),null);
   await summary.click();await menu.getByRole('button',{name:'이 과의 연결 자료',exact:true}).click();
   const dialog=f.page.getByRole('dialog',{name:'이 과의 연결 자료',exact:true});await dialog.getByRole('link',{name:'내 약속 글',exact:true}).waitFor();
   assert.equal(await dialog.getByRole('combobox',{name:'내 자료 선택'}).isVisible(),false);assert.equal(await dialog.getByRole('button',{name:'내 약속 글 연결 해제',exact:true}).isVisible(),false);

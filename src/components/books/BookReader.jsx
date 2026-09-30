@@ -35,7 +35,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
   const params = useSearchParams();
   const returnTo = params.get('returnTo');
   const { progress, update, storageAvailable, hasProgress, ready } = useReadingProgress(book.edition);
-  const content = useRef(null), root = useRef(null), toolbar = useRef(null), dialog = useRef(null), dialogOrigin = useRef(null), pendingAnchor = useRef(null);
+  const content = useRef(null), root = useRef(null), toolbar = useRef(null), referenceMenu = useRef(null), dialog = useRef(null), dialogOrigin = useRef(null), pendingAnchor = useRef(null);
   const [pageId, setPageId] = useState('cover'), [active, setActive] = useState('');
   const [anchorRequest, setAnchorRequest] = useState(0);
   const [sections, setSections] = useState([]), [loading, setLoading] = useState(false), [error, setError] = useState('');
@@ -48,6 +48,21 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
   const draftKey = readingDraftKey(book.edition, user?.id);
   // Keep this object stable: React must not replace imperative answer fields and portal mounts on progress updates.
   const markup = useMemo(() => ({ __html: sections.map(section => section.html).join('\n') }), [sections]);
+
+  useEffect(() => {
+    const closeOutside = event => {
+      const menu = referenceMenu.current;
+      if (menu && !menu.contains(event.target)) menu.open = false;
+    };
+    document.addEventListener('pointerdown', closeOutside);
+    return () => document.removeEventListener('pointerdown', closeOutside);
+  }, []);
+
+  function leaveReferenceMenu(event) {
+    // Safari focuses the tabindex=-1 reader before activating a pointer link.
+    // Outside pointer presses are handled separately; Tab targets remain >= 0.
+    if (event.relatedTarget?.tabIndex >= 0 && !event.currentTarget.contains(event.relatedTarget)) event.currentTarget.open = false;
+  }
 
   const measureToolbar = useCallback(() => {
     const bar = toolbar.current;
@@ -269,7 +284,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     {reference && <div className="manabi-preview-note" role="note"><strong>복습 원문 참고</strong><p>읽던 위치는 바뀌지 않아요. 확인 후 복습하던 탭으로 돌아가세요.</p><a data-reading-resume className="manabi-link" href={bookHref(book.edition, active || pageId)}>여기부터 이어읽기 →</a></div>}
     {preview && <p className="manabi-preview-note">관리자 미리보기 · 발행 전 원고입니다.</p>}
     {unit === 'cover' ? <BookHome book={book} preview={preview} progress={progress} hasProgress={hasProgress} ready={ready} /> : <div className="manabi-reader-page">
-      <div ref={toolbar} className="manabi-reader-toolbar"><LibraryReturnLink onlyWithContext/><a href={readerHref('cover')}>← 책 목차</a><span>일본어 · N5{lesson ? ` / ${String(lesson.number).padStart(2, '0')}과` : ''}</span><div><Link prefetch={false} href={`/books/japanese-n5/review?edition=${book.edition}&returnTo=${encodeURIComponent(bookHref(book.edition, reference ? progress.page : active || pageId))}`}>담은 표현</Link><details className="manabi-reference-menu" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) event.currentTarget.open = false; }} onKeyDown={event => { if (event.key === 'Escape') { event.currentTarget.open = false; event.currentTarget.querySelector('summary').focus(); } }}><summary>참고 자료</summary><nav aria-label="교재 참고 자료"><a href={readerHref('reference-start')}>어휘·문형·한자</a>{lesson && <button type="button" onClick={event => { const menu = event.currentTarget.closest('details'); menu.open = false; openPanel('materials', menu.querySelector('summary')); }}>이 과의 연결 자료</button>}<Link prefetch={false} href={`/books/japanese-n5/materials?edition=${book.edition}`}>문화 읽기</Link></nav></details><button type="button" aria-pressed={focus} onClick={() => setFocus(!focus)}>{focus ? '기본 보기' : '집중 읽기'}</button></div></div>
+      <div ref={toolbar} className="manabi-reader-toolbar"><LibraryReturnLink onlyWithContext/><a href={readerHref('cover')}>← 책 목차</a><span>일본어 · N5{lesson ? ` / ${String(lesson.number).padStart(2, '0')}과` : ''}</span><div><Link prefetch={false} href={`/books/japanese-n5/review?edition=${book.edition}&returnTo=${encodeURIComponent(bookHref(book.edition, reference ? progress.page : active || pageId))}`}>담은 표현</Link><details ref={referenceMenu} className="manabi-reference-menu" onBlur={leaveReferenceMenu} onKeyDown={event => { if (event.key === 'Escape') { event.currentTarget.open = false; event.currentTarget.querySelector('summary').focus(); } }}><summary>참고 자료</summary><nav aria-label="교재 참고 자료"><a href={readerHref('reference-start')}>어휘·문형·한자</a>{lesson && <button type="button" onClick={event => { const menu = event.currentTarget.closest('details'); menu.open = false; openPanel('materials', menu.querySelector('summary')); }}>이 과의 연결 자료</button>}<Link prefetch={false} href={`/books/japanese-n5/materials?edition=${book.edition}`}>문화 읽기</Link></nav></details><button type="button" aria-pressed={focus} onClick={() => setFocus(!focus)}>{focus ? '기본 보기' : '집중 읽기'}</button></div></div>
       <div className="manabi-reader-grid"><aside className="manabi-reader-outline"><p className="manabi-eyebrow">{lesson ? `${String(lesson.number).padStart(2, '0')}과 · 목차` : '목차'}</p><nav aria-label="과 안의 목차">{unitSections.map(section => <a key={section.id} href={readerHref(section.id)} aria-current={active === section.id ? 'location' : undefined}>{section.title}</a>)}</nav></aside>
         <div className="manabi-reader-main"><details className="manabi-mobile-toc"><summary>이 과의 목차</summary><nav aria-label="모바일 과 목차">{unitSections.map(section => <a key={section.id} href={readerHref(section.id)} onClick={event => event.currentTarget.closest('details').removeAttribute('open')}>{section.title}</a>)}</nav></details>
           <header className="manabi-chapter-opening"><div><p className="manabi-eyebrow">{lesson?.part || 'JAPANESE · N5'}</p>{lesson?.subtitle && <p className="manabi-chapter-subtitle">{lesson.subtitle}</p>}<h1>{title}</h1>{lesson && <p className="manabi-chapter-goal">{lesson.goal}</p>}</div>{lesson && <span className="manabi-chapter-number" aria-hidden="true">{String(lesson.number).padStart(2, '0')}</span>}</header>
