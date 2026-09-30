@@ -198,3 +198,30 @@
 .shelf-dialog-head h2{min-width:0;overflow-wrap:anywhere}
 .shelf-dialog-head button{flex:none}
 .shelf-selection-bar>button[aria-label],.shelf-notice>button[aria-label]{min-width:44px}
+/* Chapter numbers carry the order; quiet actions stay alongside the open contents. */
+.shelf-chapter-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.shelf-chapter-heading button{color:var(--muted);font-size:12px;min-height:44px}
+.shelf-chapter-heading button:last-child:not(:first-child){color:var(--ink)}
+.shelf-book-chapters li{display:flex;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--rule)}
+.shelf-book-chapters li>a{flex:1;min-width:0;gap:12px}
+.shelf-book-chapters li a .shelf-chapter-title{flex:1;min-width:0;overflow-wrap:anywhere}
+.shelf-chapter-order{min-width:32px;font-variant-numeric:tabular-nums;color:var(--muted)}
+.shelf-chapter-menu{min-width:44px;min-height:44px;color:var(--muted)}
+.shelf-chapter-options{flex-basis:100%;display:flex;justify-content:flex-end;padding-bottom:6px}
+.shelf-chapter-options button{padding:0 12px;border:1px solid var(--rule);font-size:12px}
+.shelf-book-chapters li.is-added{background:color-mix(in srgb,var(--ja) 7%,transparent)}
+.shelf-chapter-book{color:var(--muted);font-size:13px;line-height:1.6;overflow-wrap:anywhere;margin:8px 0 20px}
+.shelf-chapter-form fieldset{border:0;padding:0;margin:0;display:grid;gap:16px;min-width:0}
+.shelf-chapter-form label{display:grid;gap:7px;font-size:12px}
+.shelf-chapter-form input,.shelf-chapter-form textarea{box-sizing:border-box;width:100%;min-width:0;min-height:44px;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--rule);border-radius:2px;background:var(--sheet);color:var(--ink)}
+.shelf-chapter-form textarea{resize:vertical;line-height:1.8}
+.shelf-chapter-number{width:100px}
+.shelf-chapter-form .manabi-button{background:var(--ja);color:var(--sheet)}
+.shelf-chapter-form [role=alert]{font-size:13px;line-height:1.7;margin:12px 0}
+.shelf-chapter-split summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:var(--muted);font-size:12px}
+.shelf-chapter-split>div{display:flex;align-items:end;gap:12px}
+.shelf-chapter-split input{width:100px}
+.shelf-chapter-split button{padding:0 12px;border:1px solid var(--rule)}
+.shelf-chapter-parts{display:grid;gap:16px}
+.shelf-chapter-parts>div{display:grid;grid-template-columns:80px 1fr;gap:8px}
+.shelf-chapter-parts p{grid-column:1/-1;white-space:pre-wrap;max-height:140px;overflow:auto;font-size:13px;line-height:1.8;color:var(--muted)}

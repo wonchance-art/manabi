@@ -414,16 +414,17 @@ export default function ViewerPage() {
   // 책 챕터 목록(P1) — metadata.book이 있으면 같은 key의 형제 챕터를 불러 내비를 만든다
   const bookMeta = getBook(material?.processed_json?.metadata);
   const { data: bookChapters } = useQuery({
-    queryKey: ['book-chapters', bookMeta?.key],
+    queryKey: ['book-chapters', bookMeta?.key, material?.owner_id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('reading_materials')
         .select('id, title, processed_json->status, processed_json->metadata->book')
-        .filter('processed_json->metadata->book->>key', 'eq', bookMeta.key);
+        .filter('processed_json->metadata->book->>key', 'eq', bookMeta.key)
+        .eq('owner_id', material.owner_id);
       if (error) throw error;
       return (data || [])
         .map((r) => ({ id: r.id, title: r.title, status: r.status, order: Number(r.book?.order) || 0 }))
-        .sort((a, b) => a.order - b.order);
+        .sort((a, b) => a.order - b.order || Number(a.id) - Number(b.id));
     },
     enabled: !!bookMeta?.key && !material?.__local,
     staleTime: 1000 * 60,
@@ -3105,7 +3106,7 @@ export default function ViewerPage() {
           return (
             <Link href={`/materials/add?book=${encodeURIComponent(bookNav.key)}`} className="next-lesson-card">
               <div className="next-lesson-card__hint">+ 다음 과 적기</div>
-              <div className="next-lesson-card__title">《{bookNav.title || '제목 없는 교재'}》 {bookNav.total}과까지 적었어요 — 이어서 적기</div>
+              <div className="next-lesson-card__title">《{bookNav.title || '제목 없는 교재'}》 {bookNav.total}과가 담겨 있어요 — 이어서 적기</div>
             </Link>
           );
         }

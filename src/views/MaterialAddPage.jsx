@@ -95,6 +95,7 @@ function MaterialAddForm() {
   //            문단 자동 감지를 걸지 말지를 함께 결정한다.
   //   language·level — 'sentences'는 자기 입구에서 정하고 오므로 초안이 들고 온다.
   const [bookDraft, setBookDraft] = useState(null);
+  const bookAppendAttempt = useRef(null);
   const [bookRegistering, setBookRegistering] = useState(false);
   const [bookDoneCount, setBookDoneCount] = useState(0);
   const [bookFirstNewId, setBookFirstNewId] = useState(null); // 등록 직후 [바로 읽기]가 여는 첫 새 챕터
@@ -213,8 +214,22 @@ function MaterialAddForm() {
         visibility: bookDraft.privateOnly ? 'private' : visibility,
         owner_id: user.id,
       }));
-      const { data: inserted, error: insertError } = await supabase.from('reading_materials').insert(rows).select('id');
-      if (insertError) throw insertError;
+      let inserted;
+      if (bookDraft.append) {
+        const items = rows.map((row, index) => ({ order: startOrder + index,
+          title: bookDraft.chapters[index].title === `${startOrder + index}과` ? '' : bookDraft.chapters[index].title,
+          text: row.raw_text, translations: row.processed_json.metadata.translations || {} }));
+        const payload = JSON.stringify({ key, items });
+        if (bookAppendAttempt.current?.payload !== payload) bookAppendAttempt.current = { payload, id: crypto.randomUUID() };
+        const { data, error } = await supabase.rpc('library_book_add_chapters', { p_key: key, p_request: bookAppendAttempt.current.id, p_items: items });
+        if (error) throw error;
+        inserted = data.items;
+        bookAppendAttempt.current = null;
+      } else {
+        const { data, error } = await supabase.from('reading_materials').insert(rows).select('id');
+        if (error) throw error;
+        inserted = data;
+      }
       setBookDoneCount(bookDraft.chapters.length);
       setBookFirstNewId(inserted?.[0]?.id ?? null);
       toast(bookDraft.append

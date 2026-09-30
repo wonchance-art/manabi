@@ -29,6 +29,10 @@ export async function fixture(options={}){
  await db.exec("create schema storage;create table storage.objects(bucket_id text,name text);alter table storage.objects enable row level security;alter table uploaded_pdfs add column storage_path text,add column thumbnail_path text;");
  await db.exec(await readFile(new URL('../../supabase/migrations/20260930135103_personal_library_management.sql',import.meta.url),'utf8'));
  }
+ if(options.bookChapters){
+  await db.exec(`create sequence chapter_fixture_id start 98000;alter table reading_materials alter column id set default nextval('chapter_fixture_id');grant usage on sequence chapter_fixture_id to authenticated;grant insert,update on reading_materials to authenticated;create policy chapter_write on reading_materials for all to authenticated using(owner_id=auth.uid()) with check(owner_id=auth.uid());`);
+  await db.exec(await readFile(new URL('../../supabase/migrations/20260930142345_library_book_chapters.sql',import.meta.url),'utf8'));
+ }
  if(options.sourcePassages){
   await db.exec(`create sequence passage_fixture_id start 97000;
    alter table reading_materials alter column id set default nextval('passage_fixture_id');
@@ -49,18 +53,21 @@ export async function fixture(options={}){
  async function sync(){await db.exec('reset role;');for(const m of f.rows){if((await db.query('select 1 from reading_materials where id=$1',[m.id])).rows.length){await db.query('update reading_materials set visibility=$1,title=$2,raw_text=$3,processed_json=$4,document_json=$5 where id=$6',[m.visibility,m.title,m.raw_text,m.processed_json,m.document_json||null,m.id]);continue;}await db.query(`insert into reading_materials(id,owner_id,visibility,title,raw_text,processed_json,document_json,source_pdf_id,page_start,direction,created_at) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) on conflict(id) do update set visibility=excluded.visibility,title=excluded.title,raw_text=excluded.raw_text,processed_json=excluded.processed_json,document_json=excluded.document_json`,[m.id,m.owner_id,m.visibility,m.title,m.raw_text,m.processed_json,m.document_json||null,m.source_pdf_id||null,m.page_start||null,m.direction||null,m.created_at||new Date().toISOString()]);}await db.exec(`set role authenticated;set test.uid='${OWNER}';`);}
  await f.context.route('**/rest/v1/**',async r=>{
   const req=r.request(),url=new URL(req.url()),table=url.pathname.split('/').pop();
-  const managementRpc=options.management&&['personal_library_page_v2','library_selection','library_operation_status','library_operation_prepare','library_operation_apply','library_canonical_target','library_folder_change','library_folder_undo'].includes(table);
+  const managementRpc=options.management&&['personal_library_page_v2','library_selection','library_operation_status','library_operation_prepare','library_operation_apply','library_canonical_target','library_folder_change','library_folder_undo',...(options.bookChapters?['library_book_chapters','library_book_add_chapters','library_book_set_order']:[])].includes(table);
   const passageSelect=options.sourcePassages&&table==='reading_materials'&&url.searchParams.get('select')?.includes('passage:');
+  const chapterSelect=options.bookChapters&&table==='reading_materials'&&url.searchParams.get('select')?.includes('processed_json->metadata->book');
   const positionRpc=options.originalPositions&&['get_original_reading_positions','save_original_reading_position'].includes(table);
   const passageRpc=options.sourcePassages&&['open_source_passage','source_passage_analysis','correct_source_passage_token'].includes(table);
-  if(!tables[table]&&!['personal_library_page','personal_library_children'].includes(table)&&!passageSelect&&!passageRpc&&!positionRpc&&!managementRpc)return r.fallback();
+  if(!tables[table]&&!['personal_library_page','personal_library_children'].includes(table)&&!passageSelect&&!chapterSelect&&!passageRpc&&!positionRpc&&!managementRpc)return r.fallback();
   if(req.method()==='OPTIONS')return r.fulfill({status:204,headers:cors});
   const task=async()=>{try{
    await sync();requests.push({table,method:req.method(),payload:req.method()==='POST'?req.postDataJSON():null});
+   if(chapterSelect){const key=url.searchParams.get('processed_json->metadata->book->>key')?.slice(3),owner=url.searchParams.get('owner_id')?.slice(3);return json(r,(await db.query("select id,title,processed_json->>'status' status,processed_json#>'{metadata,book}' book from reading_materials where processed_json#>>'{metadata,book,key}'=$1 and owner_id=$2",[key,owner])).rows);}
    if(managementRpc){
     const p=req.postDataJSON(),keys=Object.keys(p).filter(k=>/^p_[a-z_]+$/.test(k));
     if(table==='personal_library_page_v2'&&((failRecent&&p.p_filters?.recent)||(failList&&!p.p_filters?.recent)))return json(r,{message:'fixture read failure'},503);
     const result=await db.query(`select ${table}(${keys.map((k,i)=>`${k}=>$${i+1}`).join(',')}) data`,keys.map(k=>Array.isArray(p[k])?JSON.stringify(p[k]):p[k]));
+    if(['library_book_add_chapters','library_book_set_order'].includes(table)){const records=(await db.query('select * from reading_materials')).rows;for(const record of records){const old=f.rows.find(item=>String(item.id)===String(record.id));if(old)Object.assign(old,record);else f.rows.push(record);}if(options.loseChapterReply?.())return r.abort('failed');}
     if(table==='library_operation_apply'&&options.loseLibraryReply?.()){return r.abort('failed');}
     return json(r,result.rows[0].data);
    }
@@ -106,7 +113,7 @@ export async function fixture(options={}){
     else result=await db.query(`select * from ${table}${where}${table==='library_collections'?' order by created_at':''}`,values);
    }
    return json(r,req.headers().accept?.includes('vnd.pgrst.object')?result.rows[0]||null:result.rows);
-  }catch(e){return json(r,{message:e.message,code:e.code},400);}};
+  }catch(e){return json(r,{message:e.message,code:e.code,details:e.detail},400);}};
   queueState.queue=queueState.queue.then(task,task);await queueState.queue;
  });
  return {...f,db,requests,edition,shared:{db,rows:f.rows,objects:f.objects,queueState},setPositionFailure:value=>{failPositions=value;},losePositionReply:()=>{losePositionReply=true;},losePassageReply:()=>{losePassageReply=true;},get analysisCalls(){return f.analysisCalls;},failMembership:()=>{failMembership=true;},setListFailure:value=>{failList=value;},setRecentFailure:value=>{failRecent=value;},close:async()=>{await f.context.close();await queueState.queue;if(!options.shared)await db.close();}};
