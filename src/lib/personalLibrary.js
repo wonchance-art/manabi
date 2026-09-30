@@ -13,22 +13,23 @@ export function libraryFilters(params){
  return {query:(params.get('q')||'').trim().slice(0,120),language:[...LIBRARY_LANGUAGES,'unknown'].includes(language)?language:'',
   collection:collectionId(params.get('collection')),sort:['newest','title','opened','level'].includes(sort)?sort:'newest',
   kind:['note','book','pdf','epub','text','link'].includes(kind)?kind:'',
+  scope:['favorites','trash','unfiled'].includes(params.get('scope'))?params.get('scope'):'all',
   state:params.get('unread')==='1'?'unread':['opened','completed','unread'].includes(params.get('state'))?params.get('state'):'',
   level:(params.get('level')||'').slice(0,30),pinned:params.get('pinned')==='1',shown:Number.isInteger(shown)?Math.max(20,Math.min(100000,shown)):20};
 }
-export const libraryNarrowed=f=>!!(f.query||f.language||f.collection||f.kind||f.state||f.level||f.pinned);
+export const libraryNarrowed=f=>!!(f.query||f.language||f.collection||f.kind||f.state||f.level||f.pinned||(f.scope&&f.scope!=='all'));
 export function libraryPageArgs(filters,offset=0,{recent=false,pinned=null}={}){
  return {p_query:filters.query||'',p_language:filters.language||'',p_kind:filters.kind||'',p_collection:filters.collection||null,
   p_sort:filters.sort||'newest',p_state:filters.state||'',p_level:filters.level||'',p_offset:Math.max(0,offset),p_limit:recent?3:LIBRARY_PAGE_SIZE,p_recent:recent,p_pinned:filters.pinned?(pinned||[]).map(String):null};
 }
 export async function fetchLibraryPage(client,filters,offset=0,options={}){
- const {data,error}=await client.rpc('personal_library_page',libraryPageArgs(filters,offset,options));
+ const {data,error}=await client.rpc('personal_library_page_v2',{p_filters:{...filters,pinnedIds:(options.pinned||[]).map(String),recent:!!options.recent},p_offset:offset,p_limit:options.recent?3:LIBRARY_PAGE_SIZE});
  if(error)throw error;
  if(!data||!Array.isArray(data.items)||!Number.isSafeInteger(data.total))throw new Error('INVALID_LIBRARY_PAGE');
  return data;
 }
 export async function fetchCollections(client,ownerId){
- const {data,error}=await client.from('library_collections').select('id,name,created_at').eq('owner_id',ownerId).order('created_at',{ascending:true});
+ const {data,error}=await client.from('library_collections').select('id,name,created_at,parent_id,revision').eq('owner_id',ownerId).is('deleted_at',null).order('created_at',{ascending:true});
  if(error)throw error;return data||[];
 }
 export async function createCollection(client,ownerId,name,id){
