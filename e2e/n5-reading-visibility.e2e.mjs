@@ -50,7 +50,9 @@ async function inspect(page, id, row, label) {
   const sample = await page.evaluate(id => {
     const bar = document.querySelector('.manabi-reader-toolbar'), header = document.querySelector('.gnb');
     const rect = el => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, height: r.height }; };
-    const labels = [...bar.querySelectorAll('a,button')].map(el => {
+    // Closed reference links have no visible text rectangles in WebKit. Check the
+    // visible toolbar, including its summary, rather than demanding a hidden line.
+    const labels = [...bar.querySelectorAll('a,button,summary')].filter(el => !el.closest('details:not([open]) nav')).map(el => {
       const range = document.createRange(); range.selectNodeContents(el);
       return { text: el.textContent, lines: new Set([...range.getClientRects()].filter(r => r.width > 0 && r.height > 0).map(r => Math.round(r.top))).size };
     });
