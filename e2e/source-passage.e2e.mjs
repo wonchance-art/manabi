@@ -112,7 +112,7 @@ test('explicit expression saving keeps the passage source; review returns to the
   await f.page.locator('.save-grade button').first().click();await f.page.getByRole('button',{name:'저장됨',exact:true}).first().waitFor();
   assert.equal(f.vocab.length,1);assert.equal(String(f.vocab[0].source_material_id),String(child.id));assert.equal(String(f.contexts[0].source.materialId),String(child.id));
   f.vocab[0].next_review_at='2026-01-01';f.vocab[0].interval=1;
-  await f.page.goto('/vocab');await f.page.locator('.review-room-settings summary').click();await f.page.getByLabel('복습 방식',{exact:true}).selectOption('flash');await f.page.getByRole('button',{name:'단어만 1개 →',exact:true}).click();await f.page.getByRole('button',{name:'정답 확인하기',exact:true}).click();await f.page.locator('.learning-links summary').click();
+  await f.page.goto('/vocab');await f.page.locator('.review-room-settings summary').click();await f.page.getByLabel('복습 방식',{exact:true}).selectOption('flash');await f.page.getByRole('button',{name:'표현 1개 복습 →',exact:true}).click();await f.page.getByRole('button',{name:'정답 확인하기',exact:true}).click();await f.page.locator('.learning-links summary').click();
   const before=f.writes.filter(w=>w.method==='PATCH').length,popupPromise=f.page.waitForEvent('popup');await f.page.getByRole('link',{name:'자료 속 문장 열기 ↗',exact:true}).click();const popup=await popupPromise;
   await popup.locator('.learning-source-highlight').waitFor();await popup.getByRole('link',{name:'원본의 작성한 본문으로 ↗'}).click();await popup.getByText('원본에서 해당 구간을 표시했어요.',{exact:true}).waitFor();await popup.close();
   assert.equal(f.writes.filter(w=>w.method==='PATCH').length,before);assert.equal(f.rows.length,2);await noOverflow(f);

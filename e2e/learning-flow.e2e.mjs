@@ -674,9 +674,9 @@ test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복�
       'a zero bucket must not be spelled out anywhere',
     );
 
-    // 주 진입은 통합 세션(/study), 개별 단어 세션은 보조 '단어만 N개 →'로 내려갔다.
+    // 전체 복습에는 별도 이야기 학습 입구도 남지만 표현 복습은 표시한 카드 수로 시작한다.
     await assertVisible(page.getByRole('link', { name: '오늘 학습 시작 →', exact: true }), 'unified study entry');
-    await page.getByRole('button', { name: '단어만 1개 →', exact: true }).click();
+    await page.getByRole('button', { name: '표현 1개 복습 →', exact: true }).click();
     // 진행은 카드 안 '남은 단어'에서 상단바 'n / m'으로 옮겼다 — 세션 화면은 문항만 남긴다.
     await assertVisible(page.getByRole('progressbar', { name: '복습 진행' }), 'session progress bar');
     await assertVisible(page.getByText('0 / 1', { exact: true }), 'one-word review queue');

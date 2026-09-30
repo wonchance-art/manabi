@@ -766,7 +766,7 @@ function VocabWorkspace({ bookReview }) {
   }
 
   return (
-    <div className="page-container manabi-review-room">
+    <div className={`page-container manabi-review-room${bookReview ? ' is-book-scoped' : ''}`}>
 
       {/* 네트워크가 죽어 캐시 스냅샷으로 살아난 화면임을 알린다(v2-N R1) */}
       {allVocab?.__offline && <OfflineNotice what="단어장" />}

@@ -67,6 +67,7 @@ try {for(const engine of (process.env.QA_ENGINE==='chromium'?[chromium]:[chromiu
  await context.addCookies([{name:'sb-127-auth-token',value:fixtureSession('learner'),url:base}]);
  const page=await context.newPage(),report={engine:engine.name(),checks:[],errors:[]};reports.push(report);
  page.on('pageerror',e=>report.errors.push(e.message));
+ context.on('page',opened=>opened.on('pageerror',e=>report.errors.push(e.message)));
  const progressKey=`manabi-book-progress:${revision}:${uid}`,oldKey=`manabi-book-progress:${old}:${uid}`;
  const reading=`/books/japanese-n5?edition=${revision}#u42-message-reading`;
  async function check(label){assert((await page.evaluate(()=>document.documentElement.scrollWidth))<=await page.evaluate(()=>innerWidth+1),label+': overflow');report.checks.push(label);console.log(engine.name()+': '+label);}
@@ -96,15 +97,19 @@ try {for(const engine of (process.env.QA_ENGINE==='chromium'?[chromium]:[chromiu
   // Keyboard entry, and an actual source popup rather than a URL-only assertion.
   const start=page.getByRole('button',{name:'표현 3개 복습 →',exact:true});await start.focus();await page.keyboard.press('Enter');await page.getByRole('button',{name:'정답 확인하기',exact:true}).click();
   const sourceLink=page.getByRole('link',{name:'이 문장 열기 ↗',exact:true});await sourceLink.waitFor();
-  const popupPromise=page.waitForEvent('popup');await sourceLink.click();const popup=await popupPromise;await popup.setViewportSize({width:320,height:960});await popup.getByText('복습 원문 참고',{exact:true}).waitFor();assert(popup.url().includes('reference=1'));
-  await popup.evaluate(()=>scrollBy(0,600));await popup.waitForTimeout(400);await popup.reload();await popup.getByText('복습 원문 참고',{exact:true}).waitFor();
+  const popupPromise=page.waitForEvent('popup');await sourceLink.click();const popup=await popupPromise;await popup.setViewportSize({width:320,height:960});await popup.getByRole('note').filter({hasText:'복습 원문 참고'}).waitFor();assert(popup.url().includes('reference=1'));
+  await popup.locator('article[data-unit-page]').first().waitFor();await popup.locator('.book-example-save button').first().waitFor();await popup.evaluate(()=>document.fonts.ready);
+  await popup.evaluate(()=>scrollBy(0,600));await popup.waitForTimeout(400);await popup.reload();await popup.getByRole('note').filter({hasText:'복습 원문 참고'}).waitFor();
+  await popup.locator('article[data-unit-page]').first().waitFor();await popup.locator('.book-example-save button').first().waitFor();await popup.evaluate(()=>document.fonts.ready);await popup.evaluate(()=>scrollBy(0,450));await popup.waitForTimeout(400);
   assert.deepEqual(await popup.evaluate(({progressKey,oldKey})=>[localStorage.getItem(progressKey),localStorage.getItem(oldKey)],{progressKey,oldKey}),storedBefore);
   assert.equal(writes.filter(w=>w.table==='library_reading_activity').length,readCount);assert.equal(writes.filter(w=>w.table==='user_vocabulary'&&w.method==='PATCH').length,0);assert.deepEqual(words,beforeWords);
+  assert(await popup.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'reference at 320px overflows');
   await popup.screenshot({path:`${out}/${engine.name()}-reference-320.png`,fullPage:false});
   await popup.close();await page.getByRole('button',{name:/알맞음/}).waitFor();await check('source reference + scroll + reload preserve both editions’ main reading and server activity, with zero grades');
   for(let i=0;i<3;i++){
    if(i>0)await page.getByRole('button',{name:'정답 확인하기',exact:true}).click();
-   await page.getByRole('button',{name:/알맞음/}).click();
+   const persisted=page.waitForResponse(response=>response.request().method()==='PATCH'&&new URL(response.url()).pathname==='/rest/v1/user_vocabulary');
+   await page.getByRole('button',{name:/알맞음/}).click();assert.equal((await persisted).status(),200);
   }
   await page.getByRole('heading',{name:'이번 표현 복습을 마쳤어요',exact:true}).waitFor();
   assert.equal(writes.filter(w=>w.table==='user_vocabulary'&&w.method==='PATCH').length,3);

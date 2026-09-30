@@ -90,7 +90,7 @@ try {
  await page.locator('.viewer-back-link').click();await page.getByRole('heading',{name:'내가 펼친 세계.',exact:true}).waitFor();await page.waitForTimeout(250);assert(reads.some(row=>row.last_token_idx>0));await check('leaving before debounce flushes the saved token position');
  // The clock is advanced only in this fixture so the just-saved expression is due.
  vocab[0].next_review_at='2026-01-01';vocab[0].interval=1;
- await page.goto(base+'/vocab');await page.locator('.review-room-settings summary').click();await page.getByLabel('복습 방식',{exact:true}).selectOption('flash');await page.getByRole('button',{name:'단어만 1개 →',exact:true}).click();
+ await page.goto(base+'/vocab');await page.locator('.review-room-settings summary').click();await page.getByLabel('복습 방식',{exact:true}).selectOption('flash');await page.getByRole('button',{name:'표현 1개 복습 →',exact:true}).click();
  await page.getByRole('button',{name:'정답 확인하기',exact:true}).click();await page.locator('.learning-links summary').click();
  const gradesBefore=writes.filter(w=>w.table==='user_vocabulary'&&w.method==='PATCH').length;
  const popupEvent=page.waitForEvent('popup');await page.getByRole('link',{name:'자료 속 문장 열기 ↗',exact:true}).click();

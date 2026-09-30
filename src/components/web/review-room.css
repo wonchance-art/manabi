@@ -92,3 +92,6 @@
 /* A book is an explicit review scope, with its own reading return. */
 .review-room-book-scope { margin-bottom: 24px; font-size: .85rem; line-height: 1.65; }
 .review-room-book-scope .manabi-row a { display: inline-flex; align-items: center; min-height: 44px; }
+
+.manabi-review-room.is-book-scoped { max-width: 760px; }
+.manabi-review-room.is-book-scoped .review-room-grid { grid-template-columns: minmax(0,1fr); grid-template-areas: 'hero' 'vocab' 'settings'; }
