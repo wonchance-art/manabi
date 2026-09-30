@@ -15,6 +15,11 @@ export async function candidate(edition) {
   } catch(error){if(error.status)throw error;throw textbookError(404,'출력본이 아직 준비되지 않았어요.');}
 }
 export async function currentCandidate(){const index=JSON.parse(await readFile(path.join(root,'index.json'),'utf8'));return candidate(index.current)}
+// Curated editor choices are separate from the DB publication pointer and legacy fallback.
+export async function editorCandidates() {
+ const index=JSON.parse(await readFile(path.join(root,'index.json'),'utf8'));
+ return Promise.all([...new Set(index.reviewCandidates||[index.current])].map(id=>candidate(id)));
+}
 export async function readRelease(supabase) {
  const {data,error}=await supabase.from('textbook_book_releases').select('book_id,edition_id,version').eq('book_id',BOOK_ID).maybeSingle();
  if(error)throw textbookError(503,'발행 정보를 불러오지 못했어요.');return data;

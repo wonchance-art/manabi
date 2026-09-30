@@ -40,3 +40,6 @@ supabase/.temp/
 scripts/data/
 !scripts/data/tatoeba-*.json
 .env*.local
+
+# Local synthetic QA evidence; never public auth/session data.
+.qa/

@@ -1,4 +1,5 @@
 @import './reading-manuscript.css';
+@import './study-route.css';
 .book-reading-content{--ink:#322e30;--mauve:#994a5a;--wash:#faf4f4;--line:#e8dade;--edge:#c8a3ac;--muted:#796d70;background:transparent;container-type:inline-size;container-name:manabi-reader;font-family:var(--font-noto-kr),KR,sans-serif;font-size:16px;line-height:1.95;margin:0}
 .book-reading-content .paper{max-width:none;background:transparent;border:0;border-radius:0;box-shadow:none;margin:0;padding:44px 0 22px;scroll-margin-top:148px;min-width:0;border-top:1px solid var(--line)}
 .book-reading-content .paper:first-child{border:0;padding-top:32px}
@@ -45,3 +46,6 @@
 .book-reading-content .paper{padding:34px 0 18px}.book-reading-content h2{font-size:24px}.book-reading-content .pattern{padding:0;margin:24px 0 34px}.book-reading-content .pattern h3{font-size:21px}.book-reading-content .examples{padding:16px 17px 9px}.book-reading-content .example>[lang=ja]{font-size:22px}.book-reading-content .scene,.book-reading-content .dialogue{padding:18px}.book-reading-content .words{padding:10px 15px}.book-reading-content .words [lang=ja]{font-size:21px}.book-reading-content .words>div{gap:12px}.book-reading-content .explanation{font-size:15px}.book-reading-content .turn{padding:13px 0}}
 
 .book-reading-content .manabi-example-signin{font-size:11px;display:inline-flex;align-items:center;min-height:36px;color:#994a5a;padding:7px 0}
+
+/* Cover page, exercise and reference anchors alike, including wrapped toolbars. */
+.book-reader .book-reading-content [id]{scroll-margin-top:var(--book-scroll-offset)}
