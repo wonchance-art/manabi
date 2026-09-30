@@ -114,7 +114,7 @@ describe('배선 계약 — 입구·등록·진입·완료', () => {
   it('완료 화면에 [바로 읽기] — 오늘 적은 과를 바로 연다(열 때 분석 원칙 그대로)', () => {
     const panel = read('src/components/BookDraftPanel.jsx');
     expect(panel).toContain('바로 읽기');
-    expect(panel).toContain("{append ? `책에 이어 등록 — 지금 ${append.existingCount}과까지` : '책으로 등록'}");
+    expect(panel).toContain("{append ? `책에 이어 등록 — 현재 ${append.existingCount}과` : '책으로 등록'}");
     expect(panel).toContain('{startOrder + i}');
     expect(page).toContain(".insert(rows).select('id')");
     expect(page).toContain('setBookFirstNewId(inserted?.[0]?.id ?? null);');

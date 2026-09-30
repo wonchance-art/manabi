@@ -41,6 +41,9 @@ jobs:
       # 일상 게이트 — world 제외(실측 408s → 약 145s). world는 아래 전용 job이 책임진다.
       - run: npm test
 
+      # 실제 PostgreSQL에서 과 번호 충돌·재전송·늦은 분석 덮어쓰기를 검사한다.
+      - run: node scripts/verification/library-book-chapters.mjs
+
   e2e:
     name: e2e (smoke · learning-flow)
     runs-on: ubuntu-latest
@@ -77,3 +80,22 @@ jobs:
       - run: npm run e2e
 
       - run: npm run e2e:learning
+
+      - name: 서재 과 추가·관리 (프로덕션 앱 + 격리 PostgreSQL)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://e2e.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: e2e-anon-key
+          NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3100
+          COMPOSER_BASE_URL: http://127.0.0.1:8878
+        run: |
+          export NODE_OPTIONS="--import=$PWD/e2e/server-fetch-mock.mjs"
+          export COMPOSER_TEST_MODULES="$PWD/node_modules"
+          node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 8878 > /tmp/library-chapter-server.log 2>&1 &
+          chapter_server_pid=$!
+          trap 'kill "$chapter_server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8878/manifest.webmanifest > /dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8878/manifest.webmanifest > /dev/null
+          node --test --test-concurrency=1 e2e/library-book-chapters.e2e.mjs e2e/library-management.e2e.mjs
