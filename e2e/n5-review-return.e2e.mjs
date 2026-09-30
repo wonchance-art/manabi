@@ -72,6 +72,20 @@ try {for(const engine of (process.env.QA_ENGINE==='chromium'?[chromium]:[chromiu
  const reading=`/books/japanese-n5?edition=${revision}#u42-message-reading`;
  async function check(label){assert((await page.evaluate(()=>document.documentElement.scrollWidth))<=await page.evaluate(()=>innerWidth+1),label+': overflow');report.checks.push(label);console.log(engine.name()+': '+label);}
  try{
+  // 실제 첫 저장 상태: 예문 전체가 한 카드이며 신·구판 출처만 두 개다.
+  // 이전 검사는 flash 설정을 미리 넣어 기본 auto 모드의 빈 문장을 놓쳤다.
+  const sentence='もう 本を 読みましたか。まだ 読んでいません。';
+  words=[{...word(1,sentence),source_sentence:sentence,meaning:'벌써 책을 읽었어요? 아직 읽지 않았어요.',last_reviewed_at:null}];
+  contexts=[source(1,id(1),old,'u42-study1'),source(2,id(1),revision,'u42-study1')];
+  await page.goto(base+'/vocab?book=japanese-n5&returnTo='+encodeURIComponent(reading));
+  await page.getByRole('button',{name:'표현 1개 복습 →',exact:true}).click();
+  await page.getByRole('heading',{name:sentence,exact:true}).waitFor();
+  await page.getByRole('button',{name:'정답 확인하기',exact:true}).waitFor();
+  assert.equal(await page.getByRole('group',{name:'문맥에 맞는 뜻 고르기'}).count(),0);
+  assert.equal(await page.evaluate(()=>localStorage.getItem('as_review_mode')),null);
+  for(const width of [1440,320]){await page.setViewportSize({width,height:960});await check(`default first saved sentence remains visible at ${width}px`);await page.screenshot({path:`${out}/${engine.name()}-first-sentence-${width}.png`,fullPage:false});}
+  assert.equal(writes.filter(w=>w.table==='user_vocabulary'&&w.method==='PATCH').length,0);
+  reset();await page.setViewportSize({width:1440,height:960});
   await page.goto(base+reading);await page.locator('#u42-message-reading').waitFor();await page.getByRole('link',{name:'담은 표현',exact:true}).waitFor();
   await page.evaluate(({oldKey})=>{localStorage.setItem('vocab_seriesFilter','french-old');localStorage.setItem('vocab_langFilter','French');localStorage.setItem('vocab_levelFilter','H6');localStorage.setItem('as_review_mode','flash');localStorage.setItem(oldKey,JSON.stringify({page:'u29-patterns',completed:['u01'],updatedAt:1}));},{oldKey});
   const save=page.locator('.book-example-save button').first();await save.click();await page.getByRole('status').filter({hasText:'출처와 함께 담았어요'}).waitFor();

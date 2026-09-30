@@ -1,5 +1,20 @@
 // 단어장 학습 관련 순수 헬퍼 — 덱 그룹핑 · 신규 판정 · 하루 새 단어 한도 · 셔플
 import { parseTitle } from './seriesMeta';
+import { splitSentenceAroundWord } from './constants';
+
+// 저장한 문장 전체를 가리거나 정답만 제시하면 회상할 단서가 없다.
+// 선호 모드를 덮지 않고 이 카드만 기존 플래시 방식으로 출제한다.
+export function usableVocabReviewMode(mode, word, options) {
+  if (!word || !['context', 'listening'].includes(mode)) return mode;
+  const meanings = options.map(option => option.meaning?.trim() || '');
+  if (meanings.length < 2 || meanings.some(meaning => !meaning)
+    || new Set(meanings).size !== meanings.length) return 'flash';
+  if (mode === 'context' && word.source_sentence) {
+    const { parts } = splitSentenceAroundWord(word.source_sentence, word.word_text, word.base_form);
+    if (!/[\p{L}\p{N}]/u.test(parts.join(''))) return 'flash';
+  }
+  return mode;
+}
 
 // 하루 새 단어 한도 — Anki식 신규 큐 제한 (0 = 복습만)
 export const NEW_PER_DAY_OPTIONS = [0, 5, 10, 15, 20, 30, 40];

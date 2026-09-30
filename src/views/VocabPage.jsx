@@ -35,7 +35,7 @@ import { exportCSV, exportAnki } from '../lib/vocabIO';
 import { loadRefVocabIndex } from '../lib/refVocabIndex';
 import { logReviewEvents } from '../lib/reviewEvents';
 import {
-  deckOf, fisherYatesShuffle, isNewWord,
+  deckOf, fisherYatesShuffle, isNewWord, usableVocabReviewMode,
   loadIntroIds, saveIntroIds,
   NEW_PER_DAY_OPTIONS, DEFAULT_NEW_PER_DAY,
 } from '../lib/vocabStudy';
@@ -399,8 +399,6 @@ function VocabWorkspace({ bookReview }) {
     if (vtype === 'vocab-listening') return ttsSupported ? 'listening' : 'context';
     return 'context'; // vocab-choice
   };
-  const effectiveMode = reviewMode === 'auto' ? autoSubMode(currentWord) : reviewMode;
-
   const contextOptions = useMemo(() => {
     if (!currentWord) return [];
     const others = vocab.filter(v => v.id !== currentWord.id && v.meaning);
@@ -410,6 +408,9 @@ function VocabWorkspace({ bookReview }) {
       .map(v => ({ ...v, meaning: stripSourceLangInMeaning(v.meaning) }));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewIdx, currentWord?.id]);
+  const effectiveMode = usableVocabReviewMode(
+    reviewMode === 'auto' ? autoSubMode(currentWord) : reviewMode, currentWord, contextOptions,
+  );
 
   const handleScore = async (rating) => {
     if (!currentWord || scoringRef.current) return;
