@@ -53,14 +53,14 @@ try {
  await page.getByRole('link',{name:'로그인하고 단어장 쓰기',exact:true}).waitFor();
  await check('guest has working review and login destinations');
  await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last().click();await page.waitForURL('**/home');
- await page.goto(base+'/vocab');await page.getByRole('button',{name:'단어만 2개 →',exact:true}).waitFor();
+ await page.goto(base+'/vocab');await page.getByRole('button',{name:'표현 2개 복습 →',exact:true}).waitFor();
  assert.equal((await page.locator('.vocab-hero__num').innerText()).trim(),'2');
  await page.getByRole('link',{name:'문법만 1개 →',exact:true}).waitFor();
  await check('separate vocabulary and grammar counts');
  await page.screenshot({path:out+'/review-desktop.png',fullPage:true});
  for(const width of [320,390,768,1440]) {await page.setViewportSize({width,height:950});await check('entrance width '+width);}
  await page.setViewportSize({width:390,height:844});await page.screenshot({path:out+'/review-mobile.png',fullPage:true});
- await page.getByRole('button',{name:'단어만 2개 →',exact:true}).click();await page.getByRole('button',{name:'정답 확인하기',exact:true}).waitFor();
+ await page.getByRole('button',{name:'표현 2개 복습 →',exact:true}).click();await page.getByRole('button',{name:'정답 확인하기',exact:true}).waitFor();
  assert.equal(await page.getByText('계기',{exact:true}).count(),0,'answer must be hidden');
  await check('flash recall hides answer');
  await page.getByRole('button',{name:'← 나가기',exact:true}).click();await page.getByRole('button',{name:/멈춘 복습 이어가기/}).click();await page.getByRole('button',{name:'정답 확인하기',exact:true}).click();
@@ -87,7 +87,7 @@ try {
  state='empty';await page.getByRole('button',{name:'다시 불러오기',exact:true}).click();await page.getByRole('heading',{name:'첫 표현을 담아 보세요.',exact:true}).waitFor();await check('retry recovers');
  grammarFail=true;await page.reload();await page.getByRole('alert').filter({hasText:'문법 일정을 불러오지 못했어요.'}).waitFor();await check('independent grammar failure');
  grammarFail=false;state='due';rows=[{...rows[0],word_text:'長い表現'.repeat(18),meaning:'아주 긴 뜻 '.repeat(25),next_review_at:'2026-01-02'}];await page.reload();
- await page.getByRole('button',{name:'단어만 1개 →',exact:true}).waitFor();await page.setViewportSize({width:320,height:844});await check('long expression and meaning at 320px');
+ await page.getByRole('button',{name:'표현 1개 복습 →',exact:true}).waitFor();await page.setViewportSize({width:320,height:844});await check('long expression and meaning at 320px');
  await page.locator('.review-room-settings summary').focus();await page.keyboard.press('Enter');await page.getByLabel('복습 방식',{exact:true}).waitFor();await check('keyboard settings controls remain accessible');
  await page.screenshot({path:out+'/settings-mobile.png',fullPage:true});
  assert.deepEqual(report.errors,[]);
