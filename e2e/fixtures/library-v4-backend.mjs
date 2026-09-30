@@ -7,7 +7,7 @@ const modules=process.env.COMPOSER_TEST_MODULES;
 if(!modules)throw new Error('COMPOSER_TEST_MODULES required');
 const {PGlite}=await import(pathToFileURL(resolve(modules,'@electric-sql/pglite/dist/index.js')).href);
 export const OWNER='00000000-0000-4000-8000-000000000172';
-const tables={library_collections:['id','owner_id','name','created_at'],library_collection_items:['owner_id','collection_id','target_kind','target_id','created_at'],library_reading_activity:['owner_id','target_kind','target_id','context','opened_at'],library_bookmarks:['owner_id','material_id','created_at']};
+const tables={library_item_state:['owner_id','target_kind','target_id','state','display_title','favorite','revision'],library_collections:['id','owner_id','name','created_at','parent_id','revision','deleted_at'],library_collection_items:['owner_id','collection_id','target_kind','target_id','created_at'],library_reading_activity:['owner_id','target_kind','target_id','context','opened_at'],library_bookmarks:['owner_id','material_id','created_at']};
 const conflicts={library_collections:'id',library_collection_items:'owner_id,collection_id,target_kind,target_id',library_reading_activity:'owner_id,target_kind,target_id',library_bookmarks:'owner_id,material_id'};
 export async function fixture(options={}){
  const f=await editingFixture(options),db=options.shared?.db||new PGlite();
@@ -25,6 +25,10 @@ export async function fixture(options={}){
  create policy rp_own on reading_progress for all using(user_id=auth.uid()) with check(user_id=auth.uid());
  grant usage on schema auth,public to authenticated,anon;grant select on reading_materials,uploaded_pdfs,reading_progress,textbook_book_editions to authenticated,anon;`);
  await db.exec(await readFile(new URL('../../supabase/migrations/20260908025511_personal_library_catalog.sql',import.meta.url),'utf8'));
+ if(options.management){
+ await db.exec("create schema storage;create table storage.objects(bucket_id text,name text);alter table storage.objects enable row level security;alter table uploaded_pdfs add column storage_path text,add column thumbnail_path text;");
+ await db.exec(await readFile(new URL('../../supabase/migrations/20260930135103_personal_library_management.sql',import.meta.url),'utf8'));
+ }
  if(options.sourcePassages){
   await db.exec(`create sequence passage_fixture_id start 97000;
    alter table reading_materials alter column id set default nextval('passage_fixture_id');
@@ -45,13 +49,21 @@ export async function fixture(options={}){
  async function sync(){await db.exec('reset role;');for(const m of f.rows){if((await db.query('select 1 from reading_materials where id=$1',[m.id])).rows.length){await db.query('update reading_materials set visibility=$1,title=$2,raw_text=$3,processed_json=$4,document_json=$5 where id=$6',[m.visibility,m.title,m.raw_text,m.processed_json,m.document_json||null,m.id]);continue;}await db.query(`insert into reading_materials(id,owner_id,visibility,title,raw_text,processed_json,document_json,source_pdf_id,page_start,direction,created_at) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) on conflict(id) do update set visibility=excluded.visibility,title=excluded.title,raw_text=excluded.raw_text,processed_json=excluded.processed_json,document_json=excluded.document_json`,[m.id,m.owner_id,m.visibility,m.title,m.raw_text,m.processed_json,m.document_json||null,m.source_pdf_id||null,m.page_start||null,m.direction||null,m.created_at||new Date().toISOString()]);}await db.exec(`set role authenticated;set test.uid='${OWNER}';`);}
  await f.context.route('**/rest/v1/**',async r=>{
   const req=r.request(),url=new URL(req.url()),table=url.pathname.split('/').pop();
+  const managementRpc=options.management&&['personal_library_page_v2','library_selection','library_operation_status','library_operation_prepare','library_operation_apply','library_canonical_target','library_folder_change','library_folder_undo'].includes(table);
   const passageSelect=options.sourcePassages&&table==='reading_materials'&&url.searchParams.get('select')?.includes('passage:');
   const positionRpc=options.originalPositions&&['get_original_reading_positions','save_original_reading_position'].includes(table);
   const passageRpc=options.sourcePassages&&['open_source_passage','source_passage_analysis','correct_source_passage_token'].includes(table);
-  if(!tables[table]&&!['personal_library_page','personal_library_children'].includes(table)&&!passageSelect&&!passageRpc&&!positionRpc)return r.fallback();
+  if(!tables[table]&&!['personal_library_page','personal_library_children'].includes(table)&&!passageSelect&&!passageRpc&&!positionRpc&&!managementRpc)return r.fallback();
   if(req.method()==='OPTIONS')return r.fulfill({status:204,headers:cors});
   const task=async()=>{try{
    await sync();requests.push({table,method:req.method(),payload:req.method()==='POST'?req.postDataJSON():null});
+   if(managementRpc){
+    const p=req.postDataJSON(),keys=Object.keys(p).filter(k=>/^p_[a-z_]+$/.test(k));
+    if(table==='personal_library_page_v2'&&((failRecent&&p.p_filters?.recent)||(failList&&!p.p_filters?.recent)))return json(r,{message:'fixture read failure'},503);
+    const result=await db.query(`select ${table}(${keys.map((k,i)=>`${k}=>$${i+1}`).join(',')}) data`,keys.map(k=>Array.isArray(p[k])?JSON.stringify(p[k]):p[k]));
+    if(table==='library_operation_apply'&&options.loseLibraryReply?.()){return r.abort('failed');}
+    return json(r,result.rows[0].data);
+   }
    if(positionRpc){
     if(failPositions)return json(r,{message:'offline position service'},503);
     const p=req.postDataJSON();
@@ -87,7 +99,7 @@ export async function fixture(options={}){
     result=await db.query(`insert into ${table}(${keys.join(',')}) values(${keys.map((_,i)=>`$${i+1}`).join(',')}) on conflict(${conflicts[table]}) ${mode==='do update set '?'do nothing':mode} returning *`,keys.map(k=>p[k]));
    }else{
     const predicates=[],values=[];
-    for(const [k,v]of url.searchParams){if(tables[table].includes(k)&&v.startsWith('eq.')){values.push(v.slice(3));predicates.push(`${k}=$${values.length}`);}}
+    for(const [k,v]of url.searchParams){if(tables[table].includes(k)&&v==='is.null'){predicates.push(`${k} is null`);continue;}if(tables[table].includes(k)&&v.startsWith('neq.')){values.push(v.slice(4));predicates.push(`${k}<>$${values.length}`);continue;}if(tables[table].includes(k)&&v.startsWith('eq.')){values.push(v.slice(3));predicates.push(`${k}=$${values.length}`);}}
     const where=predicates.length?' where '+predicates.join(' and '):'';
     if(req.method()==='DELETE')result=await db.query(`delete from ${table}${where} returning *`,values);
     else if(req.method()==='PATCH'){const p=req.postDataJSON();const keys=Object.keys(p).filter(k=>tables[table].includes(k));const sets=keys.map(k=>{values.push(p[k]);return `${k}=$${values.length}`;});result=await db.query(`update ${table} set ${sets.join(',')}${where} returning *`,values);}

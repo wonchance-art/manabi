@@ -1,4 +1,5 @@
 'use client';
+import {currentLibraryTarget,runLibraryOperation,invalidateLibrary,filterActiveSources} from '@/lib/libraryOperations';
 
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -6,7 +7,7 @@ import { supabase } from '../lib/supabase';
 import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
 import { getPdfMetadata, extractPageRange, ocrPageRange, suggestChunkSize, renderPageAsBase64 } from '../lib/pdfExtract';
-import { getCachedPdf, cachePdf, removeCachedPdf } from '../lib/pdfCache';
+import { getCachedPdf, cachePdf } from '../lib/pdfCache';
 
 const MAX_PDF_SIZE = 50 * 1024 * 1024; // 50MB
 
@@ -17,7 +18,7 @@ async function fetchMyPdfs(userId) {
     .eq('owner_id', userId)
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return data || [];
+  return filterActiveSources(supabase,userId,data||[],'pdf');
 }
 
 /** base64 → Blob */
@@ -73,23 +74,13 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
 
   const deletePdfMutation = useMutation({
     mutationFn: async (pdf) => {
-      // Storage에서 PDF + 썸네일 삭제
-      const paths = [pdf.storage_path];
-      if (pdf.thumbnail_path) paths.push(pdf.thumbnail_path);
-      const { error: storageErr } = await supabase.storage
-        .from('user-pdfs')
-        .remove(paths);
-      if (storageErr) console.warn('[pdf delete] storage error:', storageErr.message);
-
-      // IndexedDB 캐시 제거
-      removeCachedPdf(pdf.id).catch(() => {});
-
-      // DB 삭제 (CASCADE로 연결된 reading_materials도 함께 삭제됨)
-      const { error } = await supabase.from('uploaded_pdfs').delete().eq('id', pdf.id);
-      if (error) throw error;
+      const target=await currentLibraryTarget(supabase,{target_kind:'pdf',target_id:pdf.id});
+      const result=await runLibraryOperation(supabase,'trash',[target]);
+      if(result.items.some(item=>item.status!=='success'))throw new Error('자료가 변경됐습니다. 다시 확인해 주세요.');
     },
     onSuccess: () => {
-      toast('PDF가 삭제됐어요.', 'info');
+      toast('휴지통으로 옮겼습니다.', 'info');
+      invalidateLibrary(queryClient,user.id);
       refetch();
       queryClient.invalidateQueries({ queryKey: ['pdf-ranges'] });
     },
@@ -345,7 +336,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
                       onClick={() => setConfirmDelete(pdf)}
                       style={{ color: 'var(--danger)' }}
                     >
-                      삭제
+                      휴지통
                     </Button>
                   </div>
                 </div>
@@ -486,7 +477,7 @@ function PdfRangesList({ pdfId }) {
   if (ranges.length === 0) {
     return (
       <div style={{ padding: '10px 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-        아직 분석된 범위가 없어요. "범위 선택"으로 시작하세요.
+        아직 분석된 범위가 없어요. &quot;범위 선택&quot;으로 시작하세요.
       </div>
     );
   }
@@ -585,17 +576,9 @@ function DeletePdfConfirm({ pdf, onClose, onConfirm }) {
   return (
     <ConfirmModal
       open={!!pdf}
-      title="PDF 삭제"
-      message={
-        relatedError
-          ? '연결된 자료를 확인하지 못했습니다. 닫고 다시 시도해 주세요.'
-          : relatedCount === null
-          ? '정보 확인 중...'
-          : relatedCount === 0
-            ? `"${pdf?.title}"을 삭제할까요?`
-            : `"${pdf?.title}"을 삭제하면 연결된 ${relatedCount}개 분석 자료도 함께 삭제됩니다. 저장한 단어는 단어장에 남습니다. 계속할까요?`
-      }
-      confirmLabel="삭제"
+      title="휴지통으로 이동"
+      message={relatedError ? '연결된 자료를 확인하지 못했습니다.' : `"${pdf?.title}"을 휴지통으로 옮깁니다. 원본과 학습 기록은 남습니다.`}
+      confirmLabel="이동"
       onConfirm={() => { if (relatedCount !== null && !relatedError) onConfirm(); }}
       onCancel={onClose}
     />

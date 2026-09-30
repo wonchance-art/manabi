@@ -1,5 +1,6 @@
 'use client';
-import { composerOf, removeComposerOriginals } from '@/lib/materialComposer';
+import {currentLibraryTarget,runLibraryOperation,invalidateLibrary,filterActiveSources} from '@/lib/libraryOperations';
+import { composerOf } from '@/lib/materialComposer';
 import { documentOf, isStudySnapshot, documentListRow } from '@/lib/materialDocument';
 import {isStudyNote} from '@/lib/studyNoteIdentity';
 
@@ -110,7 +111,7 @@ async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuer
     throw error;
   }
   // 팀 루트(수업 설정 행, v2-AB R1)는 자료가 아니다 — 목록에서 숨긴다(정리본은 자료로 보인다).
-  return (data || []).map(documentListRow).filter(material => !isStudySnapshot(material) && !isTeamRoot(material) && (langFilter === 'all' || (documentOf(material)?.language ?? material.processed_json?.metadata?.language) === langFilter));
+  return (tab==='private'?await filterActiveSources(supabase,userId,data||[]):data||[]).map(documentListRow).filter(material => !isStudySnapshot(material) && !isTeamRoot(material) && (langFilter === 'all' || (documentOf(material)?.language ?? material.processed_json?.metadata?.language) === langFilter));
 }
 
 const PAGE_SIZE = 12;
@@ -152,20 +153,13 @@ export default function MaterialsPage({ libraryView = null }) {
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
-      const current = await supabase.from('reading_materials').select('*').eq('id', id).eq('owner_id', user.id).maybeSingle();
-      if (current.error) throw current.error;
-      const { error, count } = await supabase.from('reading_materials').delete({ count: 'exact' }).eq('id', id);
-      if (error) throw error;
-      if (count === 0) throw new Error('삭제 권한이 없거나 이미 삭제된 자료입니다.');
-      const material = current.data;
-      if (composerOf(material)) {
-        try { await removeComposerOriginals(supabase, material); }
-        catch { toast('자료는 삭제했지만 첨부 파일 정리를 완료하지 못했어요.', 'error'); }
-      }
+      const target = await currentLibraryTarget(supabase,{target_kind:'material',target_id:String(id)});
+      const result = await runLibraryOperation(supabase,'trash',[target]);
+      if(result.items.some(item=>item.status!=='success'))throw new Error('자료가 변경됐습니다. 다시 확인해 주세요.');
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['materials'] });
-      toast('자료를 삭제했습니다.', 'success');
+      invalidateLibrary(queryClient,user.id);
+      toast('휴지통으로 옮겼습니다.', 'success');
     },
     onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
   });
@@ -313,7 +307,7 @@ export default function MaterialsPage({ libraryView = null }) {
         .eq('owner_id', user.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data || [];
+      return filterActiveSources(supabase,user.id,data||[],'pdf');
     },
     // PDF 탭이 없어졌으므로 `내 자료`에서 돈다. 새 쿼리가 아니라 **도는 시점**이 바뀐
     // 것이다 — 그리고 그 탭이 이제 로그인 사용자의 기본값이다.
@@ -887,12 +881,12 @@ export default function MaterialsPage({ libraryView = null }) {
                             e.stopPropagation();
                             closeMenu(e);
                             setConfirmAction({
-                              message: `"${m.title}" 자료를 삭제하시겠습니까?`,
+                              message: `"${m.title}" 자료를 휴지통으로 옮길까요? 학습 기록은 남습니다.`,
                               onConfirm: () => { deleteMutation.mutate(m.id); setConfirmAction(null); },
                             });
                           }}
                         >
-                          삭제
+                          휴지통
                         </button>
                       )}
                     </div>
