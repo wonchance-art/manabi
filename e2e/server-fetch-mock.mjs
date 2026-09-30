@@ -74,6 +74,10 @@ function mockResponse(url, claims) {
     return json({ id: claims.sub, role });
   }
   if (url.pathname.endsWith('/rest/v1/user_ref_progress')) return json([]);
+  // 레퍼런스 어휘 fixture에는 별도 문맥 행이 없다. 회상 카드의 출처 조회도 합성 서버 안에서 끝낸다.
+  if (url.pathname.endsWith('/rest/v1/vocabulary_contexts')) {
+    return claims?.sub ? json([]) : json({ message: 'missing e2e identity' }, 401);
+  }
   return null;
 }
 

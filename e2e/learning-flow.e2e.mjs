@@ -284,7 +284,7 @@ async function mockAuthenticatedVocab(context, { readingMaterials = [], role = '
           item.user_id === row.user_id && item.word_text === row.word_text
         ));
         const persisted = {
-          id: existing >= 0 ? storedWords[existing].id : `e2e-vocab-${storedWords.length + 1}`,
+          id: existing >= 0 ? storedWords[existing].id : `00000000-0000-4000-8000-${String(storedWords.length + 1).padStart(12, '0')}`,
           created_at: '2026-08-06T00:00:00.000Z',
           next_review_at: '2000-01-01T00:00:00.000Z',
           interval: 0,
@@ -680,13 +680,17 @@ test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복�
     // 진행은 카드 안 '남은 단어'에서 상단바 'n / m'으로 옮겼다 — 세션 화면은 문항만 남긴다.
     await assertVisible(page.getByRole('progressbar', { name: '복습 진행' }), 'session progress bar');
     await assertVisible(page.getByText('0 / 1', { exact: true }), 'one-word review queue');
-    await assertVisible(page.getByRole('group', { name: '문맥에 맞는 뜻 고르기', exact: true }), 'saved word review card');
-    await assertVisible(page.getByRole('button', { name: '가족', exact: true }), 'saved word review answer');
+    // 첫 단어 하나로는 객관식 오답을 만들 수 없다. 표현을 보고 뜻을 떠올리는 카드로 시작한다.
+    await assertVisible(page.getByRole('heading', { name: 'la famille', exact: true }), 'saved word review card');
+    assert.equal(await page.getByRole('group', { name: '문맥에 맞는 뜻 고르기', exact: true }).count(), 0);
+    assert.equal(await page.getByText('가족', { exact: true }).count(), 0, 'recall answer stays hidden');
+    await page.getByRole('button', { name: '정답 확인하기', exact: true }).click();
+    await assertVisible(page.getByText('가족', { exact: true }), 'saved word review answer');
 
     // ── 채점이 SRS 정본에 '올바른 컬럼명으로' 닿는지 ──
     // 한때 easeFactor(비존재 컬럼)를 보내고 repetitions를 빠뜨려, PostgREST가 UPDATE 전체를
     // 거부해도 화면엔 아무 표시가 없었다. 계약: PATCH 페이로드는 DB 컬럼과 동일한 snake_case.
-    await page.getByRole('button', { name: '가족', exact: true }).click();
+    await page.getByRole('button', { name: /알맞음/ }).click();
     const gradeDeadline = Date.now() + config.timeout;
     let grades = [];
     while (Date.now() < gradeDeadline) {
