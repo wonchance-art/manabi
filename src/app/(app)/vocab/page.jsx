@@ -1,4 +1,5 @@
 import VocabPage from '@/views/VocabPage';
+import { parseBookReview } from '@/lib/bookReviewNavigation';
 
 export const metadata = {
   title: '복습',
@@ -6,6 +7,6 @@ export const metadata = {
   openGraph: { title: '복습 | manabi', description: 'FSRS v4 알고리즘 기반 과학적 단어 복습' },
 };
 
-export default function Page() {
-  return <VocabPage />;
+export default async function Page({ searchParams }) {
+  return <VocabPage bookReview={parseBookReview(await searchParams)} />;
 }

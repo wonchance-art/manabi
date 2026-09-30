@@ -7,5 +7,5 @@ export default async function Page({ searchParams }) {
   const params = await searchParams;
   let book, preview;
   try { const reading = await publishedReading(params?.edition, true); book = readingCatalog(reading.book); preview = reading.preview; } catch { notFound(); }
-  return <BookReview book={book} preview={preview} />;
+  return <BookReview book={book} preview={preview} returnTo={params?.returnTo} />;
 }

@@ -10,7 +10,7 @@ export default async function Page({ searchParams }) {
     const params = await searchParams;
     const { book, preview } = await publishedReading(params?.edition, true);
     const sections = await readingSections(book.editionId);
-    return <BookReader book={readingCatalog(book)} preview={preview} sectionIndex={sections.map(({ id, unit, title, anchors }) => ({ id, unit, title, anchors }))} />;
+    return <BookReader key={`${book.editionId}:${params?.reference === '1'}`} reference={params?.reference === '1'} book={readingCatalog(book)} preview={preview} sectionIndex={sections.map(({ id, unit, title, anchors }) => ({ id, unit, title, anchors }))} />;
   } catch {
     return <div className="manabi-page"><h1>교재를 불러오지 못했어요</h1><p>잠시 후 다시 열어 주세요.</p><Link href="/lessons">책장으로 돌아가기</Link></div>;
   }

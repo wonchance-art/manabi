@@ -19,6 +19,8 @@ import { CardGridSkeleton } from '../components/Skeleton';
 import { friendlyToastMessage } from '../lib/errorMessage';
 import { detectLang, detectLangConfident, hasCjkText } from '../lib/constants';
 import { stripSourceLangInMeaning } from '../lib/studySession';
+import { authEntryHref } from '../lib/authRedirect';
+import { bookReviewHref, fetchBookVocabularyIds } from '../lib/bookReviewNavigation';
 import { useVocabData } from '../lib/useVocabData';
 import { confusedVocabWords, CONFUSED_MIN, CONFUSED_SINCE_DAYS } from '../lib/confusedQueue';
 import { dropUndoneEvents } from '../lib/undoneReviews';
@@ -33,7 +35,7 @@ import { exportCSV, exportAnki } from '../lib/vocabIO';
 import { loadRefVocabIndex } from '../lib/refVocabIndex';
 import { logReviewEvents } from '../lib/reviewEvents';
 import {
-  deckOf, fisherYatesShuffle, isNewWord,
+  deckOf, fisherYatesShuffle, isNewWord, usableVocabReviewMode,
   loadIntroIds, saveIntroIds,
   NEW_PER_DAY_OPTIONS, DEFAULT_NEW_PER_DAY,
 } from '../lib/vocabStudy';
@@ -45,14 +47,15 @@ const MAX_EXAMPLE_CACHE = 50;
 // W R2 undo 스냅샷이 복원하는 SRS 5필드 — persistVocabGrade 페이로드와 같은 snake_case
 const SRS_FIELDS = ['interval', 'ease_factor', 'repetitions', 'next_review_at', 'last_reviewed_at'];
 
-export default function VocabPage() {
+export default function VocabPage({ bookReview = null }) {
   const { user, loading } = useAuth();
   if (loading) return <div className="page-container manabi-review-room" role="status">계정을 확인하고 있어요…</div>;
   // 계정이 바뀌면 큐·답·undo·열린 상세를 함께 폐기한다. 이전 계정 세션을 재사용하지 않는다.
-  return <VocabWorkspace key={user?.id || 'guest'} />;
+  if (bookReview?.invalid) return <div className="page-container"><h1>복습 범위를 확인해 주세요.</h1><Link href="/vocab">전체 복습으로 이동 →</Link></div>;
+  return <VocabWorkspace key={`${user?.id || 'guest'}:${bookReview?.bookId || 'all'}:${bookReview?.returnTo || ''}`} bookReview={bookReview} />;
 }
 
-function VocabWorkspace() {
+function VocabWorkspace({ bookReview }) {
   const { user, fetchProfile } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -75,11 +78,11 @@ function VocabWorkspace() {
   const [levelFilter, setLevelFilter] = useState('all');
   const [settingsRestored, setSettingsRestored] = useState(false);
   useEffect(() => {
-    if (settingsRestored) { try { localStorage.setItem('vocab_seriesFilter', seriesFilter); } catch {} }
-  }, [seriesFilter, settingsRestored]);
+    if (settingsRestored && !bookReview) { try { localStorage.setItem('vocab_seriesFilter', seriesFilter); } catch {} }
+  }, [seriesFilter, settingsRestored, bookReview]);
   useEffect(() => {
-    if (settingsRestored) { try { localStorage.setItem('vocab_levelFilter', levelFilter); } catch {} }
-  }, [levelFilter, settingsRestored]);
+    if (settingsRestored && !bookReview) { try { localStorage.setItem('vocab_levelFilter', levelFilter); } catch {} }
+  }, [levelFilter, settingsRestored, bookReview]);
 
   const [reviewMode, setReviewMode] = useState('auto');
 
@@ -100,16 +103,18 @@ function VocabWorkspace() {
   // SSR와 hydration 첫 렌더는 고정 기본값을 사용하고 저장된 환경설정은 마운트 후 복원한다.
   useEffect(() => {
     try {
-      setLangFilter(localStorage.getItem('vocab_langFilter') || 'all');
-      setSeriesFilter(localStorage.getItem('vocab_seriesFilter') || 'all');
-      setLevelFilter(localStorage.getItem('vocab_levelFilter') || 'all');
+      if (!bookReview) {
+        setLangFilter(localStorage.getItem('vocab_langFilter') || 'all');
+        setSeriesFilter(localStorage.getItem('vocab_seriesFilter') || 'all');
+        setLevelFilter(localStorage.getItem('vocab_levelFilter') || 'all');
+      }
       const storedMode = localStorage.getItem('as_review_mode');
       setReviewMode(['auto', 'flash', 'typing', 'context', 'listening'].includes(storedMode) ? storedMode : 'auto');
       const storedNewPerDay = parseInt(localStorage.getItem('vocab_new_per_day'), 10);
       setNewPerDay(NEW_PER_DAY_OPTIONS.includes(storedNewPerDay) ? storedNewPerDay : DEFAULT_NEW_PER_DAY);
     } catch { /* 저장소 차단 시 기본값 유지 */ }
     setSettingsRestored(true);
-  }, []);
+  }, [bookReview]);
 
   // 오늘 새로 시작한 단어 ID (날짜 바뀌면 자동 리셋)
   const [introIds, setIntroIds] = useState([]);
@@ -153,10 +158,20 @@ function VocabWorkspace() {
   const [detailWord, setDetailWord] = useState(null);
 
   const {
-    vocab, isLoading, error: vocabError, refetch: refetchVocab,
+    vocab: allVocab, isLoading, error: vocabError, refetch: refetchVocab,
     scoreMutation, deleteMutation, csvImportMutation,
     updateVocabMutation, bulkDeleteMutation,
   } = useVocabData();
+  const bookScope = useQuery({
+    queryKey: ['book-review', user?.id, 'scope', bookReview?.bookId],
+    enabled: !!user && !!bookReview,
+    queryFn: ({ signal }) => fetchBookVocabularyIds({ signal }),
+  });
+  const vocab = useMemo(() => {
+    if (!bookReview) return allVocab;
+    const ids = new Set(bookScope.data || []);
+    return allVocab.filter(word => ids.has(word.id));
+  }, [allVocab, bookReview, bookScope.data]);
 
   // 수동 단어 추가 모달
   const [manualAddOpen, setManualAddOpen] = useState(false);
@@ -354,7 +369,7 @@ function VocabWorkspace() {
   }, [deckScope]);
 
   // 오늘 세션 미리보기 — 복습 예정 + (하루 한도 내) 새 단어
-  const remainingNew = Math.max(0, newPerDay - introIds.filter(id => vocab.some(v => v.id === id)).length);
+  const remainingNew = Math.max(0, newPerDay - introIds.filter(id => allVocab.some(v => v.id === id)).length);
   const session = useMemo(() => {
     const now = new Date();
     const reviewsDue = deckScope.filter(v => !isNewWord(v) && new Date(v.next_review_at) <= now);
@@ -384,8 +399,6 @@ function VocabWorkspace() {
     if (vtype === 'vocab-listening') return ttsSupported ? 'listening' : 'context';
     return 'context'; // vocab-choice
   };
-  const effectiveMode = reviewMode === 'auto' ? autoSubMode(currentWord) : reviewMode;
-
   const contextOptions = useMemo(() => {
     if (!currentWord) return [];
     const others = vocab.filter(v => v.id !== currentWord.id && v.meaning);
@@ -395,6 +408,9 @@ function VocabWorkspace() {
       .map(v => ({ ...v, meaning: stripSourceLangInMeaning(v.meaning) }));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewIdx, currentWord?.id]);
+  const effectiveMode = usableVocabReviewMode(
+    reviewMode === 'auto' ? autoSubMode(currentWord) : reviewMode, currentWord, contextOptions,
+  );
 
   const handleScore = async (rating) => {
     if (!currentWord || scoringRef.current) return;
@@ -565,7 +581,7 @@ function VocabWorkspace() {
       setShowAnswer(false);
     } else {
       setReviewFinished(true);
-      toast('오늘의 복습 완료', 'celebrate', 5000);
+      toast('이번 표현 복습을 마쳤어요', 'celebrate', 5000);
       // 세션 동안의 낙관 전진을 서버 정본과 재동기 — 채점 저장이 fire-and-forget이라
       // 여기서 한 번 무효화하지 않으면 다음 화면이 낡은 FSRS 값을 계속 본다.
       queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
@@ -575,7 +591,7 @@ function VocabWorkspace() {
   };
 
   const updateReadingProgress = () => {
-    if (!user?.id) return;
+    if (bookReview || !user?.id) return;
     try {
       // 현재 시리즈 필터의 복습 완료 단어들 중 review_events에 기록된 것들을 학습 진도로 반영
       const reviewedWords = reviewSessionWords.filter(w => w != null);
@@ -601,7 +617,7 @@ function VocabWorkspace() {
   // 되면서 정본화: 채점 경로를 문마다 새로 만들지 않는다.
   const startSession = async (queueWords) => {
     const queue = queueWords.map(v => v.id);
-    if (queue.length === 0 || startingRef.current) return;
+    if (queue.length === 0 || startingRef.current || (bookReview && (!bookScope.isSuccess || bookScope.isError || vocabError))) return;
     startingRef.current = true;
     setStartingReview(true);
 
@@ -697,7 +713,7 @@ function VocabWorkspace() {
 
   // 문법 대기/예정은 같은 계정 조회에서 유도한다. 실패를 0개 완료로 표시하지 않는다.
   const { data: grammarQueue, error: grammarError, isLoading: grammarLoading, refetch: refetchGrammar } = useQuery({
-    queryKey: ['review-room-grammar', user?.id], enabled: !!user,
+    queryKey: ['review-room-grammar', user?.id], enabled: !!user && !bookReview,
     queryFn: async () => {
       const { data, error } = await supabase.from('grammar_review').select('next_review_at').eq('user_id', user.id);
       if (error) throw error;
@@ -731,6 +747,7 @@ function VocabWorkspace() {
     return () => document.body.classList.remove('is-review-session');
   }, [inSession]);
 
+  if (!user && bookReview) return <div className="page-container"><h1>일본어 N5 · 표현 복습</h1><p>교재에서 담은 표현은 로그인한 계정에 보관돼요.</p><Link href={authEntryHref(bookReviewHref(bookReview.returnTo))}>로그인하고 이어가기 →</Link></div>;
   if (!user) {
     // 단어장은 계정 기반이지만 문법 복습은 이 기기 기록만으로도 이어갈 수 있다 —
     // '복습' 탭이 게스트에게 막다른 길이 되지 않도록 경로를 함께 연다.
@@ -750,21 +767,26 @@ function VocabWorkspace() {
   }
 
   return (
-    <div className="page-container manabi-review-room">
+    <div className={`page-container manabi-review-room${bookReview ? ' is-book-scoped' : ''}`}>
 
       {/* 네트워크가 죽어 캐시 스냅샷으로 살아난 화면임을 알린다(v2-N R1) */}
-      {vocab?.__offline && <OfflineNotice what="단어장" />}
+      {allVocab?.__offline && <OfflineNotice what="단어장" />}
       <PendingReviewsNotice count={pendingReviewCount} />
 
       {/* 헤더 — 세션 중에는 없앤다. 부제와 총계는 아래 통계와 중복이라 뺐다. */}
       {!inSession && (
         <header className="review-room-heading">
-          <div><p className="manabi-eyebrow">THE REVIEW ROOM</p><h1>복습</h1></div>
-          <p>읽다가 담은 표현을,<br />내가 쓰는 말로.</p>
+          <div><p className="manabi-eyebrow">THE REVIEW ROOM</p><h1>{bookReview ? 'N5 표현 복습' : '복습'}</h1></div>
+          {!bookReview && <p>읽다가 담은 표현을,<br />내가 쓰는 말로.</p>}
         </header>
       )}
 
 
+      {bookReview && !inSession && <section className="review-room-scope review-room-book-scope" aria-label="복습 범위">
+        <p>범위 · 일본어 N5에서 담은 표현 (모든 판본)</p>
+        <p>같은 표현은 한 카드로 복습해요. 과별 답안·학습 완료와는 별개예요.</p>
+        <div className="manabi-row"><Link href={bookReview.returnTo}>← 교재로</Link><Link href="/vocab">전체 복습 보기</Link></div>
+      </section>}
       {/* 세션 상단바 — 나가기 · 진행. 카드 안에 있던 '남은 단어'를 여기로 올려 문항만 남긴다. */}
       {inSession && (() => {
         const total = reviewQueue.length || 1;
@@ -791,9 +813,11 @@ function VocabWorkspace() {
         );
       })()}
 
-      {isLoading ? (
+      {isLoading || (bookReview && bookScope.isPending) ? (
         <CardGridSkeleton height={120} />
-      ) : vocabError && !vocab.length ? (
+      ) : bookReview && bookScope.isError ? (
+        <section className="review-room-state" role="alert"><h2>이 교재의 표현 범위를 불러오지 못했어요.</h2><p>다시 확인한 뒤 복습을 시작해 주세요.</p><button type="button" className="btn btn--primary" onClick={() => bookScope.refetch()}>범위 다시 불러오기</button></section>
+      ) : vocabError && (!vocab.length || bookReview) ? (
         <section className="review-room-state" role="alert"><h2>표현을 불러오지 못했어요.</h2><p>연결을 확인한 뒤 다시 불러와 주세요. 복습 기록은 그대로 남아 있어요.</p><button type="button" className="btn btn--primary" onClick={() => refetchVocab()}>다시 불러오기</button></section>
       ) : tab === 'list' ? (
         /* ── 대시보드 — 각 영역을 같은 문법(제목·수 / 오른쪽 진입 / 요약 / 미리보기)으로 조망한다.
@@ -808,18 +832,18 @@ function VocabWorkspace() {
             {session.count > 0 ? <>
               <div className="review-room-number"><strong className="vocab-hero__num">{session.count}</strong><span>개의 표현</span></div>
               <p className="review-room-note">{session.reviewsDue.length > 0 && `기억을 확인할 표현 ${session.reviewsDue.length}개`}{session.reviewsDue.length > 0 && session.newToday > 0 && ' · '}{session.newToday > 0 && `처음 익힐 표현 ${session.newToday}개`}</p>
-              <Button onClick={startReview} disabled={startingReview} className="review-room-start">{startingReview ? '복습 준비 중…' : `단어만 ${session.count}개 →`}</Button>
+              <Button onClick={startReview} disabled={startingReview} className="review-room-start">{startingReview ? '복습 준비 중…' : `표현 ${session.count}개 복습 →`}</Button>
             </> : <>
               <p className="review-room-note">{!vocab.length ? '교재 예문의 ‘이 예문 담기’로 기억하고 싶은 문장을 골라 주세요.' : seriesFilter !== 'all' && !deckScope.length ? '이 범위에는 아직 담은 표현이 없어요. 아래에서 범위를 바꿀 수 있어요.' : session.newAvailable.length ? `오늘 새 표현 한도에 도달했어요. 남은 ${session.newAvailable.length}개는 다음에 익혀요.` : '지금 다시 볼 표현은 없어요. 다음 복습까지 새로운 문장을 만나 보세요.'}</p>
-              <Link href={vocab.length ? '/home' : '/books/japanese-n5'} className="btn btn--primary">{vocab.length ? '읽던 곳으로 →' : '교재에서 표현 고르기 →'}</Link>
+              <Link href={bookReview?.returnTo || (vocab.length ? '/home' : '/books/japanese-n5')} className="btn btn--primary">{bookReview ? '읽던 교재로 돌아가기 →' : vocab.length ? '읽던 곳으로 →' : '교재에서 표현 고르기 →'}</Link>
             </>}
             {seriesFilter !== 'all' && <p className="review-room-scope">범위 · {availableSeries.find(x => x.key === seriesFilter)?.label ?? seriesFilter}</p>}
             {reviewQueue.length > reviewIdx && !reviewFinished && <button type="button" className="review-room-resume" onClick={() => setTab('review')}>멈춘 복습 이어가기 · {reviewIdx} / {reviewQueue.length} →</button>}
             {vocabError && <p role="alert">최신 표현을 확인하지 못했어요. <button type="button" onClick={() => refetchVocab()}>다시 불러오기</button></p>}
           </section>
-          <section className="review-room-grammar" aria-labelledby="review-grammar-title">
+          {!bookReview && <section className="review-room-grammar" aria-labelledby="review-grammar-title">
             <p className="manabi-eyebrow">02 / PATTERNS</p><h2 id="review-grammar-title">문법도 한 번 더.</h2>
-            {grammarLoading ? <p role="status">복습 일정을 확인하고 있어요…</p> : grammarError ? <p role="alert">문법 일정을 불러오지 못했어요. <button type="button" className="btn btn--ghost btn--sm" onClick={() => refetchGrammar()}>다시 시도</button></p> : <p>{dueGrammarCount ? `다시 확인할 문법 ${dueGrammarCount}개가 있어요.` : grammarQueue?.total ? '지금 복습할 문법은 없어요. 다음 일정에 다시 만나요.' : '교재에서 확인한 문법이 복습할 때 돌아와요.'}</p>}
+            {grammarLoading ? <p role="status">복습 일정을 확인하고 있어요…</p> : grammarError ? <p role="alert">문법 일정을 불러오지 못했어요. <button type="button" className="btn btn--ghost btn--sm" onClick={() => refetchGrammar()}>다시 시도</button></p> : <p>{dueGrammarCount ? `다시 확인할 문법 ${dueGrammarCount}개가 있어요.` : grammarQueue?.total ? '지금 복습할 문법은 없어요. 다음 일정에 다시 만나요.' : '이야기 학습에서 연습한 문법의 복습 일정이 여기에 모여요. N5 과별 답안과는 별개예요.'}</p>}
             <Link href="/review/grammar" prefetch={false} className="manabi-link">{dueGrammarCount ? `문법만 ${dueGrammarCount}개 →` : '문법 복습 확인 →'}</Link>
             <div className="review-room-extra"><p>글 한 편으로 함께 연습하고 싶다면</p><Link href="/study" prefetch={false} className="manabi-link">오늘 학습 시작 →</Link></div>
                   {confused.length >= CONFUSED_MIN && (
@@ -839,7 +863,7 @@ function VocabWorkspace() {
                     </button>
                   )}
 
-          </section>
+          </section>}
           <section className="card review-sec review-sec--vocab" aria-labelledby="dash-vocab">
             <div className="review-sec__head">
               <h2 id="dash-vocab" className="review-sec__title">담은 표현 <span className="review-sec__count">{vocab.length}</span></h2>
@@ -887,8 +911,9 @@ function VocabWorkspace() {
           </section>
 
               <details className="review-room-settings">
-                <summary aria-label="단어장 도구">복습 방식과 단어장 관리 <span>범위 · 방식 · 가져오기</span></summary>
+                <summary aria-label="단어장 도구">{bookReview ? '복습 설정' : '복습 방식과 단어장 관리'} <span>{bookReview ? '방식 · 하루 새 표현 한도' : '범위 · 방식 · 가져오기'}</span></summary>
                 <div className="vocab-tools__menu">
+                  {!bookReview && <>
                   <button type="button" className="vocab-tools__item" onClick={() => setManualAddOpen(true)}>
                     단어 직접 추가
                   </button>
@@ -905,10 +930,10 @@ function VocabWorkspace() {
                     aria-label="CSV 파일 선택"
                     onChange={e => { const f = e.target.files?.[0]; if (f) csvImportMutation.mutate(f); e.target.value = ''; }}
                     style={{ display: 'none' }} />
-                  <Link href="/home" className="vocab-tools__item">학습 통계</Link>
+                  <Link href="/home" className="vocab-tools__item">학습 통계</Link></>}
                   {/* 덱·방식은 기본값이면 평생 안 건드리는 설정 — 카드 표면 대신 여기(설정 서랍)에 산다.
                       덱이 걸려 있으면 단어장 카드 요약에 덱 이름이 떠서 잊히지 않는다. */}
-                  {availableSeries.length > 0 && (
+                  {!bookReview && availableSeries.length > 0 && (
                     <div className="vocab-tools__field">
                       <label htmlFor="deck-filter" style={{ display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 5 }}>
                         덱
@@ -953,7 +978,7 @@ function VocabWorkspace() {
                   </div>
                   <div className="vocab-tools__limit">
                     <label htmlFor="new-per-day" style={{ display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 5 }}>
-                      하루 새 단어 한도
+                      하루 새 단어 한도{bookReview && ' · 전체 복습과 공유'}
                     </label>
                     <select
                       id="new-per-day"
@@ -974,7 +999,7 @@ function VocabWorkspace() {
               </details>
           {/* 서재와 작문 — 교재의 두 타일을 이전해 온 상시 입구(앱 유일). 서재=지난 문단 재독,
               작문=쓰고 첨삭 받는 연습장(지난 작문 히스토리 포함) — '기록실'이 아니다. */}
-          <section className="card review-sec review-sec--revisit" aria-labelledby="dash-revisit">
+          {!bookReview && <section className="card review-sec review-sec--revisit" aria-labelledby="dash-revisit">
             <div className="review-sec__head">
               <h2 id="dash-revisit" className="review-sec__title">서재와 작문</h2>
             </div>
@@ -990,7 +1015,7 @@ function VocabWorkspace() {
                 <span className="review-sec__due">열기 →</span>
               </Link>
             </div>
-          </section>
+          </section>}
 
         </div>
       ) : tab === 'browse' ? (
@@ -1024,6 +1049,7 @@ function VocabWorkspace() {
         </>
       ) : tab === 'review' ? (
         <VocabReview
+          bookReview={bookReview}
           vocab={vocab}
           reviewWords={reviewSessionWords}
           reviewIdx={reviewIdx}
@@ -1054,7 +1080,7 @@ function VocabWorkspace() {
       ) : null}
 
       {detailWord && (
-        <VocabDetailCard word={detailWord} onClose={() => setDetailWord(null)} speak={speak} ttsSupported={ttsSupported} />
+        <VocabDetailCard showBookContexts={!!bookReview} word={detailWord} onClose={() => setDetailWord(null)} speak={speak} ttsSupported={ttsSupported} />
       )}
 
       {/* 수동 단어 추가 모달 */}

@@ -34,7 +34,7 @@ export function quizOptClass(selected, isAnswer, isThis) {
 }
 
 export default function VocabReview({
-  vocab, reviewWords, reviewIdx, currentWord,
+  vocab, reviewWords, reviewIdx, currentWord, bookReview = null,
   reviewFinished, reviewMode, effectiveMode, setReviewMode,
   showAnswer, setShowAnswer, showHint, setShowHint,
   typingAnswer, setTypingAnswer, contextSelected, setContextSelected, contextOptions,
@@ -61,23 +61,23 @@ export default function VocabReview({
       {reviewFinished ? (
         <div className="review-done">
           <div className="review-done__header">
-            <h2 className="review-done__title">오늘의 복습 완료</h2>
+            <h2 className="review-done__title">이번 표현 복습을 마쳤어요</h2>
           </div>
 
           <div className="review-done__stats">
             <div className="review-done__stat">
               <span className="review-done__stat-value">{new Set(reviewWords.filter(Boolean).map(word => word.id)).size}</span>
-              <span className="review-done__stat-label">복습한 단어</span>
+              <span className="review-done__stat-label">복습한 표현</span>
             </div>
             <div className="review-done__stat-divider" />
             <div className="review-done__stat">
               <span className="review-done__stat-value">{vocab.filter(v => v.interval >= 30).length}</span>
-              <span className="review-done__stat-label">숙련 단어</span>
+              <span className="review-done__stat-label">숙련 표현</span>
             </div>
             <div className="review-done__stat-divider" />
             <div className="review-done__stat">
               <span className="review-done__stat-value">{vocab.length}</span>
-              <span className="review-done__stat-label">총 단어</span>
+              <span className="review-done__stat-label">전체 표현</span>
             </div>
           </div>
 
@@ -131,7 +131,7 @@ export default function VocabReview({
             );
           })()}
 
-          <div className="review-done__actions">
+          {bookReview ? <div className="review-done__actions"><Link href={bookReview.returnTo} className="review-done__card"><div className="review-done__card-text"><strong>읽던 교재로 돌아가기</strong><span>복습을 시작하기 전의 판본과 위치로 돌아가요.</span></div></Link></div> : <div className="review-done__actions">
             <Link href="/materials" className="review-done__card">
               <div className="review-done__card-text">
                 <strong>새 자료 읽기</strong>
@@ -140,14 +140,14 @@ export default function VocabReview({
             </Link>
             <Link href="/lessons" className="review-done__card">
               <div className="review-done__card-text">
-                <strong>교재 이어서 보기</strong>
-                <span>문법 챕터를 학습하고 패턴 체크에 도전해요</span>
+                <strong>교재 둘러보기</strong>
+                <span>읽고 싶은 교재를 골라 주세요</span>
               </div>
             </Link>
-          </div>
+          </div>}
 
           <Button variant="ghost" onClick={() => setTab('list')} style={{ marginTop: 8 }}>
-            목록으로
+            {bookReview ? '이 교재 표현 목록으로' : '목록으로'}
           </Button>
         </div>
       ) : reviewWords.length > 0 && currentWord ? (

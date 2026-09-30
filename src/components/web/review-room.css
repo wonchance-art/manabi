@@ -88,3 +88,10 @@
 .manabi-review-room .review-score-btn--easy { border-top-color:var(--fr); }
 .manabi-review-room .review-score-btn:hover { background:var(--bg-secondary); color:var(--ink); }
 .manabi-review-room .review-score-btn .save-grade__key { color:var(--muted); }
+
+/* A book is an explicit review scope, with its own reading return. */
+.review-room-book-scope { margin-bottom: 24px; font-size: .85rem; line-height: 1.65; }
+.review-room-book-scope .manabi-row a { display: inline-flex; align-items: center; min-height: 44px; }
+
+.manabi-review-room.is-book-scoped { max-width: 760px; }
+.manabi-review-room.is-book-scoped .review-room-grid { grid-template-columns: minmax(0,1fr); grid-template-areas: 'hero' 'vocab' 'settings'; }

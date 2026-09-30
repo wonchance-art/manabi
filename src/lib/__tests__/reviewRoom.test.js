@@ -28,6 +28,15 @@ describe('review room recall and source contract', () => {
     expect(html).toContain('rel="noopener noreferrer"');
     for (const label of ['다시', '어려움', '알맞음', '쉬움']) expect(html).toContain(label);
   });
+  it('book completion returns to its exact reading context without claiming every review is complete', () => {
+    const returnTo = '/books/japanese-n5?edition=8a8c1c1fd452773810abaf8c#u42-message-reading';
+    const html = render({ reviewFinished: true, bookReview: { bookId: 'japanese-n5', returnTo } });
+    expect(html).toContain(`href="${returnTo}"`);
+    expect(html).toContain('이번 표현 복습을 마쳤어요');
+    expect(html).not.toContain('href="/lessons"');
+    expect(html).not.toContain('href="/materials"');
+    expect(html).not.toContain('오늘의 복습 완료');
+  });
   it('invalid source ids never become navigable links', () => {
     const html = render({ showAnswer: true, currentWord: { ...word, source_material_id: '//other-host' } });
     expect(html).not.toContain('href="/viewer/');
@@ -37,7 +46,7 @@ describe('review room recall and source contract', () => {
   });
   it('account changes remount all session state; queue preparation cannot revive an unmounted account', () => {
     const code = fs.readFileSync('src/views/VocabPage.jsx','utf8');
-    expect(code).toContain("<VocabWorkspace key={user?.id || 'guest'} />");
+    expect(code).toContain("key={`${user?.id || 'guest'}:${bookReview?.bookId || 'all'}:${bookReview?.returnTo || ''}`}");
     expect(code).toContain('if (!workspaceAlive.current) return;');
     expect(code).toContain('error: vocabError, refetch: refetchVocab');
   });

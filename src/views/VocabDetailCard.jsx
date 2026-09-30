@@ -2,9 +2,10 @@ import { memo, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { displayWord } from '../lib/constants';
 import { isNewWord } from '../lib/vocabStudy';
+import VocabularyContexts from '../components/learning/VocabularyContexts';
 import { wordStage } from '../lib/growthStats';
 
-const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak, ttsSupported }) {
+const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak, ttsSupported, showBookContexts = false }) {
   const dialogRef = useRef(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -137,8 +138,9 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
           </div>
         </div>
 
+        {showBookContexts && <VocabularyContexts vocabularyId={v.id} word={v} readOnly />}
         {/* 출처 자료 링크 */}
-        {v.source_material_id && (
+        {!showBookContexts && v.source_material_id && (
           <div className="vocab-detail-card__source">
             <h3 className="vocab-detail-card__section-title">출처 자료</h3>
             {v.source_sentence && (

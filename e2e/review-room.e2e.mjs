@@ -42,7 +42,7 @@ await context.route('**/rest/v1/**',async route=>{
  if(table==='reading_materials')return route.fulfill({headers:cors,json:[{id:91001,title:'읽다가 기억한 문장'}]});
  return route.fulfill({headers:cors,json:[]});
 });
-await context.route('**/api/learning/vocabulary?*',route=>route.fulfill({json:{contexts:[{id:'source-1',kind:'textbook',quote:'日本語を学ぶきっかけは何ですか。',translation:'일본어를 배우는 계기가 무엇인가요?',href:'/books/japanese-n5#u29-patterns'}]}}));
+await context.route('**/api/learning/vocabulary?*',route=>route.fulfill({json:{contexts:[{id:'source-1',kind:'textbook',quote:'日本語を学ぶきっかけは何ですか。',translation:'일본어를 배우는 계기가 무엇인가요?',lang:'Japanese',chapter_slug:'n5-book-u29',locator:{bookId:'japanese-n5',editionId:'7f572327dc67893e9453246c',pageId:'u29-patterns'}}]}}));
 await context.route('**/api/suggestions/today',route=>route.fulfill({json:[]}));
 await context.addInitScript(()=>{localStorage.setItem('as_review_mode','flash');});
 const page=await context.newPage();
@@ -53,22 +53,22 @@ try {
  await page.getByRole('link',{name:'로그인하고 단어장 쓰기',exact:true}).waitFor();
  await check('guest has working review and login destinations');
  await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last().click();await page.waitForURL('**/home');
- await page.goto(base+'/vocab');await page.getByRole('button',{name:'단어만 2개 →',exact:true}).waitFor();
+ await page.goto(base+'/vocab');await page.getByRole('button',{name:'표현 2개 복습 →',exact:true}).waitFor();
  assert.equal((await page.locator('.vocab-hero__num').innerText()).trim(),'2');
  await page.getByRole('link',{name:'문법만 1개 →',exact:true}).waitFor();
  await check('separate vocabulary and grammar counts');
  await page.screenshot({path:out+'/review-desktop.png',fullPage:true});
  for(const width of [320,390,768,1440]) {await page.setViewportSize({width,height:950});await check('entrance width '+width);}
  await page.setViewportSize({width:390,height:844});await page.screenshot({path:out+'/review-mobile.png',fullPage:true});
- await page.getByRole('button',{name:'단어만 2개 →',exact:true}).click();await page.getByRole('button',{name:'정답 확인하기',exact:true}).waitFor();
+ await page.getByRole('button',{name:'표현 2개 복습 →',exact:true}).click();await page.getByRole('button',{name:'정답 확인하기',exact:true}).waitFor();
  assert.equal(await page.getByText('계기',{exact:true}).count(),0,'answer must be hidden');
  await check('flash recall hides answer');
  await page.getByRole('button',{name:'← 나가기',exact:true}).click();await page.getByRole('button',{name:/멈춘 복습 이어가기/}).click();await page.getByRole('button',{name:'정답 확인하기',exact:true}).click();
  await page.getByText('계기',{exact:true}).waitFor();
- await page.locator('.learning-links summary').click();
+ // A single valid context is the primary source; only additional contexts are folded.
  assert.equal(await page.getByRole('button',{name:'이 문맥만 지우기',exact:true}).count(),0);
- const link=page.getByRole('link',{name:'교재 예문 열기 ↗',exact:true});await link.waitFor();assert.equal(await link.getAttribute('target'),'_blank');
- const popupPromise=page.waitForEvent('popup');await link.click();const popup=await popupPromise;await popup.waitForURL('**/books/japanese-n5#u29-patterns');await popup.locator('#u29-patterns .examples').first().waitFor();await popup.close();
+ const link=page.getByRole('link',{name:'이 문장 열기 ↗',exact:true});await link.waitFor();assert.equal(await link.getAttribute('target'),'_blank');
+ const popupPromise=page.waitForEvent('popup');await link.click();const popup=await popupPromise;await popup.waitForURL(url=>url.pathname==='/books/japanese-n5'&&url.searchParams.get('edition')==='7f572327dc67893e9453246c'&&url.searchParams.get('reference')==='1'&&url.hash==='#u29-patterns');await popup.locator('#u29-patterns .examples').first().waitFor();await popup.close();
  assert.equal(writes.filter(w=>w.table==='user_vocabulary'&&w.method==='PATCH').length,0,'source navigation must not grade');
  await page.getByText('계기',{exact:true}).waitFor();await check('source opens separately; same card and answer retained without grading');
  await page.screenshot({path:out+'/answer-mobile.png',fullPage:true});
@@ -87,7 +87,7 @@ try {
  state='empty';await page.getByRole('button',{name:'다시 불러오기',exact:true}).click();await page.getByRole('heading',{name:'첫 표현을 담아 보세요.',exact:true}).waitFor();await check('retry recovers');
  grammarFail=true;await page.reload();await page.getByRole('alert').filter({hasText:'문법 일정을 불러오지 못했어요.'}).waitFor();await check('independent grammar failure');
  grammarFail=false;state='due';rows=[{...rows[0],word_text:'長い表現'.repeat(18),meaning:'아주 긴 뜻 '.repeat(25),next_review_at:'2026-01-02'}];await page.reload();
- await page.getByRole('button',{name:'단어만 1개 →',exact:true}).waitFor();await page.setViewportSize({width:320,height:844});await check('long expression and meaning at 320px');
+ await page.getByRole('button',{name:'표현 1개 복습 →',exact:true}).waitFor();await page.setViewportSize({width:320,height:844});await check('long expression and meaning at 320px');
  await page.locator('.review-room-settings summary').focus();await page.keyboard.press('Enter');await page.getByLabel('복습 방식',{exact:true}).waitFor();await check('keyboard settings controls remain accessible');
  await page.screenshot({path:out+'/settings-mobile.png',fullPage:true});
  assert.deepEqual(report.errors,[]);
