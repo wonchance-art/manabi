@@ -42,7 +42,7 @@ await context.route('**/rest/v1/**',async route=>{
  if(table==='reading_materials')return route.fulfill({headers:cors,json:[{id:91001,title:'읽다가 기억한 문장'}]});
  return route.fulfill({headers:cors,json:[]});
 });
-await context.route('**/api/learning/vocabulary?*',route=>route.fulfill({json:{contexts:[{id:'source-1',kind:'textbook',quote:'日本語を学ぶきっかけは何ですか。',translation:'일본어를 배우는 계기가 무엇인가요?',href:'/books/japanese-n5#u29-patterns'}]}}));
+await context.route('**/api/learning/vocabulary?*',route=>route.fulfill({json:{contexts:[{id:'source-1',kind:'textbook',quote:'日本語を学ぶきっかけは何ですか。',translation:'일본어를 배우는 계기가 무엇인가요?',lang:'Japanese',chapter_slug:'n5-book-u29',locator:{bookId:'japanese-n5',editionId:'7f572327dc67893e9453246c',pageId:'u29-patterns'}}]}}));
 await context.route('**/api/suggestions/today',route=>route.fulfill({json:[]}));
 await context.addInitScript(()=>{localStorage.setItem('as_review_mode','flash');});
 const page=await context.newPage();
@@ -65,10 +65,10 @@ try {
  await check('flash recall hides answer');
  await page.getByRole('button',{name:'← 나가기',exact:true}).click();await page.getByRole('button',{name:/멈춘 복습 이어가기/}).click();await page.getByRole('button',{name:'정답 확인하기',exact:true}).click();
  await page.getByText('계기',{exact:true}).waitFor();
- await page.locator('.learning-links summary').click();
+ // A single valid context is the primary source; only additional contexts are folded.
  assert.equal(await page.getByRole('button',{name:'이 문맥만 지우기',exact:true}).count(),0);
- const link=page.getByRole('link',{name:'교재 예문 열기 ↗',exact:true});await link.waitFor();assert.equal(await link.getAttribute('target'),'_blank');
- const popupPromise=page.waitForEvent('popup');await link.click();const popup=await popupPromise;await popup.waitForURL('**/books/japanese-n5#u29-patterns');await popup.locator('#u29-patterns .examples').first().waitFor();await popup.close();
+ const link=page.getByRole('link',{name:'이 문장 열기 ↗',exact:true});await link.waitFor();assert.equal(await link.getAttribute('target'),'_blank');
+ const popupPromise=page.waitForEvent('popup');await link.click();const popup=await popupPromise;await popup.waitForURL(url=>url.pathname==='/books/japanese-n5'&&url.searchParams.get('edition')==='7f572327dc67893e9453246c'&&url.searchParams.get('reference')==='1'&&url.hash==='#u29-patterns');await popup.locator('#u29-patterns .examples').first().waitFor();await popup.close();
  assert.equal(writes.filter(w=>w.table==='user_vocabulary'&&w.method==='PATCH').length,0,'source navigation must not grade');
  await page.getByText('계기',{exact:true}).waitFor();await check('source opens separately; same card and answer retained without grading');
  await page.screenshot({path:out+'/answer-mobile.png',fullPage:true});
