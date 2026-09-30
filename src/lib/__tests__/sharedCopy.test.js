@@ -124,7 +124,7 @@ describe('local: 뷰어 — 네트워크 0', () => {
     expect(viewer).toContain("if (material?.visibility === 'private' && material?.owner_id !== user?.id && !material?.__local) {");
     expect(viewer).toContain("enabled: !!bookMeta?.key && !material?.__local,");
     expect(viewer).toContain('chaptersForLocalNav(readIndexCache(material.__team)?.index, material.__team)');
-    expect(viewer).toContain('href={classStudyNeighborHref(siblingNav.next,studyContext)}');
+    expect(viewer).toContain("href={classStudyNeighborHref(siblingNav.next,studyContext,originalParams.get('returnTo'))}");
     const localNeighbors=chaptersForLocalNav({chapters:[{id:12,title:'과',order:1}]},'a');
     expect(classStudyNeighborHref(localNeighbors[0],{team:'a',day:'2026-09-10'})).toBe('/class/a?open=12');
     // 「다음 과 적기」는 owner_id 게이트 그대로 — 사본의 소유자는 선생님이라 학생·익명에겐 안 뜬다(bookAppend 계약 불변)

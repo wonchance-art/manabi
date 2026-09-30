@@ -776,7 +776,7 @@ function VocabWorkspace({ bookReview }) {
       {/* 헤더 — 세션 중에는 없앤다. 부제와 총계는 아래 통계와 중복이라 뺐다. */}
       {!inSession && (
         <header className="review-room-heading">
-          <div><p className="manabi-eyebrow">THE REVIEW ROOM</p><h1>{bookReview ? 'N5 표현 복습' : '복습'}</h1></div>
+          <div><p className="manabi-eyebrow">THE REVIEW ROOM</p><h1>{tab === 'browse' ? '담은 표현' : bookReview ? 'N5 표현 복습' : '복습'}</h1></div>
           {!bookReview && <p>읽다가 담은 표현을,<br />내가 쓰는 말로.</p>}
         </header>
       )}
@@ -835,9 +835,9 @@ function VocabWorkspace({ bookReview }) {
               <Button onClick={startReview} disabled={startingReview} className="review-room-start">{startingReview ? '복습 준비 중…' : `표현 ${session.count}개 복습 →`}</Button>
             </> : <>
               <p className="review-room-note">{!vocab.length ? '교재 예문의 ‘이 예문 담기’로 기억하고 싶은 문장을 골라 주세요.' : seriesFilter !== 'all' && !deckScope.length ? '이 범위에는 아직 담은 표현이 없어요. 아래에서 범위를 바꿀 수 있어요.' : session.newAvailable.length ? `오늘 새 표현 한도에 도달했어요. 남은 ${session.newAvailable.length}개는 다음에 익혀요.` : '지금 다시 볼 표현은 없어요. 다음 복습까지 새로운 문장을 만나 보세요.'}</p>
-              <Link href={bookReview?.returnTo || (vocab.length ? '/home' : '/books/japanese-n5')} className="btn btn--primary">{bookReview ? '읽던 교재로 돌아가기 →' : vocab.length ? '읽던 곳으로 →' : '교재에서 표현 고르기 →'}</Link>
+              <Link href={bookReview?.returnTo || (vocab.length ? '/home' : '/books/japanese-n5')} className="btn btn--primary">{bookReview ? '읽던 교재로 돌아가기 →' : vocab.length ? '오늘로 →' : '교재에서 표현 고르기 →'}</Link>
             </>}
-            {seriesFilter !== 'all' && <p className="review-room-scope">범위 · {availableSeries.find(x => x.key === seriesFilter)?.label ?? seriesFilter}</p>}
+            {!bookReview && <p className="review-room-scope">복습 범위 · {seriesFilter === 'all' ? '전체 표현' : availableSeries.find(x => x.key === seriesFilter)?.label ?? seriesFilter}</p>}
             {reviewQueue.length > reviewIdx && !reviewFinished && <button type="button" className="review-room-resume" onClick={() => setTab('review')}>멈춘 복습 이어가기 · {reviewIdx} / {reviewQueue.length} →</button>}
             {vocabError && <p role="alert">최신 표현을 확인하지 못했어요. <button type="button" onClick={() => refetchVocab()}>다시 불러오기</button></p>}
           </section>
@@ -845,7 +845,7 @@ function VocabWorkspace({ bookReview }) {
             <p className="manabi-eyebrow">02 / PATTERNS</p><h2 id="review-grammar-title">문법도 한 번 더.</h2>
             {grammarLoading ? <p role="status">복습 일정을 확인하고 있어요…</p> : grammarError ? <p role="alert">문법 일정을 불러오지 못했어요. <button type="button" className="btn btn--ghost btn--sm" onClick={() => refetchGrammar()}>다시 시도</button></p> : <p>{dueGrammarCount ? `다시 확인할 문법 ${dueGrammarCount}개가 있어요.` : grammarQueue?.total ? '지금 복습할 문법은 없어요. 다음 일정에 다시 만나요.' : '이야기 학습에서 연습한 문법의 복습 일정이 여기에 모여요. N5 과별 답안과는 별개예요.'}</p>}
             <Link href="/review/grammar" prefetch={false} className="manabi-link">{dueGrammarCount ? `문법만 ${dueGrammarCount}개 →` : '문법 복습 확인 →'}</Link>
-            <div className="review-room-extra"><p>글 한 편으로 함께 연습하고 싶다면</p><Link href="/study" prefetch={false} className="manabi-link">오늘 학습 시작 →</Link></div>
+            <div className="review-room-extra"><p>글 한 편으로 함께 연습하고 싶다면</p><Link href="/study" prefetch={false} className="manabi-link">이야기로 연습 →</Link></div>
                   {confused.length >= CONFUSED_MIN && (
                     <button type="button" className="vocab-rematch" onClick={startRematch}>
                       ⚔ 헷갈린 말 <strong>{confused.length}개</strong> — 재대결 시작 →
@@ -930,7 +930,7 @@ function VocabWorkspace({ bookReview }) {
                     aria-label="CSV 파일 선택"
                     onChange={e => { const f = e.target.files?.[0]; if (f) csvImportMutation.mutate(f); e.target.value = ''; }}
                     style={{ display: 'none' }} />
-                  <Link href="/home" className="vocab-tools__item">학습 통계</Link></>}
+                  </>}
                   {/* 덱·방식은 기본값이면 평생 안 건드리는 설정 — 카드 표면 대신 여기(설정 서랍)에 산다.
                       덱이 걸려 있으면 단어장 카드 요약에 덱 이름이 떠서 잊히지 않는다. */}
                   {!bookReview && availableSeries.length > 0 && (
@@ -1001,11 +1001,11 @@ function VocabWorkspace({ bookReview }) {
               작문=쓰고 첨삭 받는 연습장(지난 작문 히스토리 포함) — '기록실'이 아니다. */}
           {!bookReview && <section className="card review-sec review-sec--revisit" aria-labelledby="dash-revisit">
             <div className="review-sec__head">
-              <h2 id="dash-revisit" className="review-sec__title">서재와 작문</h2>
+              <h2 id="dash-revisit" className="review-sec__title">다른 연습</h2>
             </div>
             <div className="review-sec__rows">
               <Link href="/study/library" className="review-sec__row">
-                <span className="review-sec__word">서재</span>
+                <span className="review-sec__word">지난 이야기</span>
                 <span className="review-sec__meaning">지난 문단 다시 읽기 · 내 글감으로 학습</span>
                 <span className="review-sec__due">열기 →</span>
               </Link>

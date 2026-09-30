@@ -41,7 +41,7 @@ describe('핵심 학습 경로 접근성 수리 계약', () => {
     expect(list).not.toContain('role="button"');
     expect(list).toContain('className="vocab-row__word-button"');
     expect(list).toContain('aria-pressed={selectMode ? selected : undefined}');
-    expect(list).toContain('aria-label="단어장 검색"');
+    expect(list).toContain('aria-label="표현 목록 검색"');
     // 정렬은 칩 3개에서 레이블 있는 select로 바뀌었다(줄 수를 줄이려고).
     // 계약은 "정렬 컨트롤에 접근 가능한 이름이 있다"이지 특정 마크업이 아니다.
     expect(list).toMatch(/aria-label="정렬 순서"/);

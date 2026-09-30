@@ -8,7 +8,11 @@ const originalFetch = globalThis.fetch;
 // Mirror a published release using the checked-in, hash-verified book. These rows exist
 // only inside the E2E process; production publication and its database remain untouched.
 const editionRoot = new URL('../src/content/textbookEditions/', import.meta.url);
-const { current: editionId } = JSON.parse(readFileSync(new URL('index.json', editionRoot), 'utf8'));
+const { current, reviewCandidates } = JSON.parse(readFileSync(new URL('index.json', editionRoot), 'utf8'));
+const requestedFixture = process.env.E2E_PUBLISHED_EDITION;
+if (requestedFixture && !reviewCandidates.includes(requestedFixture)) throw new Error('Unknown local fixture edition');
+const editionId = requestedFixture || current;
+const publishedFixtures = new Set([current, editionId]);
 const edition = JSON.parse(readFileSync(new URL(`${editionId}/bundle.json`, editionRoot), 'utf8'));
 
 function bearerClaims(input, init) {
@@ -59,10 +63,12 @@ function mockResponse(url, claims) {
   }
   if (url.pathname.endsWith('/rest/v1/textbook_book_editions')) {
     const requested = url.searchParams.get('edition_id')?.replace(/^eq\./, '');
-    if (requested && requested !== editionId) return json(null);
-    return json({ book_id: 'japanese-n5', edition_id: editionId,
-      content_hash: edition.contentHash, manuscript: edition.manuscript,
-      artifact_manifest: edition.artifactManifest, published_at: '2026-09-05T00:00:00+09:00' });
+    if (requested && !publishedFixtures.has(requested)) return json(null);
+    const selected = requested || editionId;
+    const snapshot = selected === editionId ? edition : JSON.parse(readFileSync(new URL(`${selected}/bundle.json`, editionRoot), 'utf8'));
+    return json({ book_id: 'japanese-n5', edition_id: selected,
+      content_hash: snapshot.contentHash, manuscript: snapshot.manuscript,
+      artifact_manifest: snapshot.artifactManifest, published_at: '2026-09-05T00:00:00+09:00' });
   }
   if (url.pathname.endsWith('/auth/v1/user')) {
     if (!claims?.sub) return json({ message: 'invalid e2e token' }, 401);

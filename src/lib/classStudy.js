@@ -1,5 +1,6 @@
 import { TEAM_KEY_RE, todayKey } from './classBoard';
 import { makeClassAnchor, classSourceIdentity } from './classSource';
+import { libraryReaderHref } from './libraryReturn';
 
 export function classStudyContext(params) {
   // The URL is context only. The component and RPC independently verify ownership.
@@ -17,10 +18,12 @@ export function classStudyHref(id,team,day,board=false) {
   if(board)q.set('board','1');
   return `/viewer/${id}?${q}`;
 }
-export function classStudyNeighborHref(neighbor,context) {
+export function classStudyNeighborHref(neighbor,context,returnTo) {
   // Local student copies must keep their team-page download/update destination.
   if(neighbor.href)return neighbor.href;
-  return context?classStudyHref(neighbor.id,context.team,context.day,context.board):`/viewer/${neighbor.id}`;
+  if(context)return classStudyHref(neighbor.id,context.team,context.day,context.board);
+  const href=`/viewer/${neighbor.id}`;
+  return returnTo ? libraryReaderHref(href,returnTo) : href;
 }
 export function studySelection(material,token,rangeText='',range=null) {
   const text=String(rangeText||token?.text||'').trim();

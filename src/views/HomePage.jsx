@@ -88,8 +88,8 @@ export default function HomePage({ book = null }) {
   const groupItem = useGroupEntryItem();
   const forecast = data?.forecast;
   const continueDeckItems = [forecast?.count > 0 && forecast.top3?.length > 0 && {
-    key: 'forecast', href: '/study', tone: 'review', kicker: '다시 꺼낼 표현',
-    title: `${forecast.top3[0].word_text} · ${forecast.count}개 표현을 가볍게 복습해요.`,
+    key: 'forecast', href: '/study', tone: 'review', kicker: '이야기로 연습',
+    title: `${forecast.top3[0].word_text} · 이 표현으로 이야기를 읽어요.`,
     chips: forecast.top3.map(w => w.word_text), onClick: () => {
       if (user?.id) { try { logReviewEvents(user.id, [buildForecastTapEvent(lang, forecast)]); } catch { /* Existing optional telemetry. */ } }
     },
@@ -130,9 +130,8 @@ export default function HomePage({ book = null }) {
     </section>
     {error && <div className="manabi-inline-state" role="alert">학습 기록을 불러오지 못했어요. 읽기와 책장은 계속 이용할 수 있어요. <button type="button" onClick={() => refetch()}>다시 불러오기</button></div>}
     <div className="today-bottom">
-      <section className="today-review"><p className="manabi-eyebrow">KEEP IT WITH YOU / 복습</p><h2>{authLoading || (user && isLoading) ? '복습 일정을 확인하는 중.' : !user ? '좋은 표현을 내 것으로.' : error ? '복습 기록을 다시 확인해요.' : data?.dueCount > 0 ? <><b>{data.dueCount}</b>개의 표현이<br /> 기다리고 있어요.</> : data?.vocab?.length ? <>오늘은 가볍게,<br /> 읽기를 이어가요.</> : <>기억하고 싶은<br /> 첫 표현을 담아 보세요.</>}</h2>
-        <p>{!user ? '로그인하면 읽다가 고른 표현을 담고 복습할 수 있어요.' : error ? '복습 화면에서 기록을 다시 확인할 수 있어요.' : isLoading ? '복습 일정을 확인하고 있어요…' : data?.dueCount > 0 ? '새 표현을 포함한 대기 목록이에요. 오늘 분량은 복습 화면에서 확인하세요.' : '예문 아래 ‘이 예문 담기’로 시작할 수 있어요.'}</p><Link href={user ? '/vocab' : '/auth'} prefetch={false} className="manabi-link">{user ? '표현과 복습 열기' : '로그인하고 시작하기'} ↗</Link>
-        {user && <Link className="today-growth" href="/profile">성장 기록과 설정 →</Link>}
+      <section className="today-review"><p className="manabi-eyebrow">KEEP IT WITH YOU / 복습</p><h2>{authLoading || (user && isLoading) ? '복습 일정을 확인하는 중.' : !user ? '좋은 표현을 내 것으로.' : error ? '복습 기록을 다시 확인해요.' : data?.dueCount > 0 ? <>담은 표현을<br />다시 만나 보세요.</> : data?.vocab?.length ? <>오늘은 가볍게,<br /> 읽기를 이어가요.</> : <>기억하고 싶은<br /> 첫 표현을 담아 보세요.</>}</h2>
+        <p>{!user ? '로그인하면 읽다가 고른 표현을 담고 복습할 수 있어요.' : error ? '복습 화면에서 기록을 다시 확인할 수 있어요.' : isLoading ? '복습 일정을 확인하고 있어요…' : data?.dueCount > 0 ? '오늘 분량은 복습에서 확인하세요.' : '예문 아래 ‘이 예문 담기’로 시작할 수 있어요.'}</p><Link href={user ? '/vocab' : '/auth'} prefetch={false} className="manabi-link">{user ? '복습' : '로그인하고 시작하기'} ↗</Link>
       </section>
       <section className="today-discovery"><div className="manabi-section-heading"><div><p className="manabi-eyebrow">OFF THE PAGE</p><h2>책 밖의 한 장면</h2></div><Link className="manabi-link" href="/discover">발견 ↗</Link></div>
         {recommendations.isLoading ? <p role="status">오늘의 읽을거리를 펼치고 있어요…</p> : recommendations.error ? <p role="status">추천을 불러오지 못했어요. <button type="button" onClick={() => recommendations.refetch()}>다시 확인</button></p> : suggestions.length ? suggestions.map(s => <Link key={s.id} className="today-story" href={suggestionHref(s, 'home')} prefetch={false}><SuggestionArtwork suggestion={s} /><div><small>{langNameKo(s.language)} · {s.level || '읽을거리'}</small><h3>{s.title}</h3><p>{(user && data?.vocab?.length ? reasonText(s.rank) : null) || s.channel_name || '오늘의 추천'} <span>↗</span></p><small>바로 읽기</small></div></Link>) : <Link className="today-editorial" href="/discover"><span lang="ja" aria-hidden="true">文 化</span><div><small>문화와 지역학</small><h3>말이 태어나는 곳을<br />함께 읽어볼까요?</h3><p>일본·한국·프랑스의 이야기 ↗</p></div></Link>}

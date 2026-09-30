@@ -36,6 +36,15 @@ export function safeReaderReturn(value) {
   return safeLibraryReturn(value);
 }
 
+export function readerReturnLabel(value) {
+  const url = new URL(safeReaderReturn(value), 'https://manabi.invalid');
+  if (url.pathname.startsWith('/class/')) {
+    if (url.pathname.endsWith('/live')) return '← 수업 진행';
+    return url.searchParams.get('view') === 'history' ? '← 수업 기록' : '← 수업으로';
+  }
+  return url.searchParams.get('tab') === 'public' ? '← 발견' : '← 내 서재';
+}
+
 export function libraryReaderHref(href, returnTo, scrollY = null) {
   if (!/^\/(?:viewer|pdf|books)\/[^/?#]+(?:[?#]|$)/.test(href)) return href;
   const url = new URL(href, 'https://manabi.invalid');

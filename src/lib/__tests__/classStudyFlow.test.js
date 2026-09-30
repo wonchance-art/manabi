@@ -15,6 +15,15 @@ describe('교재 안 수업 선택',()=>{
   expect(classStudyNeighborHref({id:13},null)).toBe('/viewer/13');
   expect(classStudyNeighborHref({id:13,href:'/class/class-a?open=13'},{team:'class-a',day:'2026-09-10'})).toBe('/class/class-a?open=13');
  });
+ it('keeps folder, search and list position across ordinary neighboring chapters',()=>{
+  const back='/materials?view=owned&collection=folder&q=school&shown=40&restoreY=520';
+  const next=new URL(classStudyNeighborHref({id:13},null,back),'https://manabi.invalid');
+  expect(next.pathname).toBe('/viewer/13');
+  expect(next.searchParams.get('returnTo')).toBe(back);
+  expect(classStudyNeighborHref({id:13},null,'https://evil.test')).not.toContain('evil');
+  expect(classStudyNeighborHref({id:13,href:'/class/class-a?open=13'},null,back)).toBe('/class/class-a?open=13');
+  expect(new URL(classStudyNeighborHref({id:13},{team:'class-a',day:'2026-09-10'},back),'https://manabi.invalid').searchParams.get('returnTo')).toBe('/class/class-a/live?day=2026-09-10');
+ });
  it('accepts only bounded class and calendar context',()=>{
   expect(classStudyContext(new URLSearchParams({class:'class-a',day:'2026-09-10'}))).toEqual({team:'class-a',day:'2026-09-10'});
   expect(classStudyContext(new URLSearchParams({class:'../admin'}))).toBeNull();

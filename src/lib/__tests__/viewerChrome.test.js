@@ -46,10 +46,10 @@ const aCss = () => sliceBetween(read(CSS), '/* ========= 뷰어 정돈 A안', '/
 /** 이 라운드가 새로 쓴 CSS만 — 파일 전역 검사는 남의 규칙에 걸려 헛돈다. */
 const newCss = () => sliceBetween(read(CSS), '/* 뷰어 크롬 배지(v2-Q)', '.viewer-aa {');
 
-describe('① 배지 3종이 한 컨테이너 안 — 폭 어긋남의 원인 제거', () => {
-  it('셋 다 .viewer-badges 안에 있다(header 직계 자식 금지)', () => {
+describe('① 자료 범위 배지가 한 컨테이너 안 — 폭 어긋남의 원인 제거', () => {
+  it('자료 범위 배지는 .viewer-badges 안에 있다(header 직계 자식 금지)', () => {
     const wrap = sliceBetween(header(), '<div className="viewer-badges">', '</div>\n        )}');
-    for (const badge of ['개 수집 → 단어장', '개 복습 가능', '아는 단어 ']) {
+    for (const badge of ['개 복습 가능', '아는 단어 ']) {
       expect(wrap, `${badge} 배지가 래퍼 밖에 있다`).toContain(badge);
     }
   });
@@ -62,7 +62,7 @@ describe('① 배지 3종이 한 컨테이너 안 — 폭 어긋남의 원인 �
   });
 
   it('배지가 하나도 없으면 래퍼를 그리지 않는다 — 빈 여백만 남는 줄 금지', () => {
-    expect(header()).toMatch(/\{\(\(user && savedCount > 0\) \|\| \(user && dueInMaterial > 0\) \|\| coverage\) && \(\s*\n\s*<div className="viewer-badges">/);
+    expect(header()).toMatch(/\{\(\(user && dueInMaterial > 0\) \|\| coverage\) && \(\s*\n\s*<div className="viewer-badges">/);
   });
 });
 
@@ -76,9 +76,9 @@ describe('② 배지 스타일은 공용 클래스 — 인라인 하드코딩 0'
     }
   });
 
-  it('세 배지가 같은 공용 클래스를 쓴다 — 변형만 다르다', () => {
+  it('자료 범위 배지가 같은 공용 클래스를 쓴다 — 변형만 다르다', () => {
     const wrap = header();
-    expect((wrap.match(/className="viewer-badge[ "]/g) || []).length, '래퍼(viewer-badges)는 세지 않는다').toBe(3);
+    expect((wrap.match(/className="viewer-badge[ "]/g) || []).length, '래퍼(viewer-badges)는 세지 않는다').toBe(2);
     expect(wrap, '복습만 변형 클래스').toContain('viewer-badge viewer-badge--due');
   });
 

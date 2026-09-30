@@ -30,7 +30,7 @@ const header = ({ nav }) => `
 <header class="page-header viewer-header">
   <p class="reader-metadata">중국어 · HSK 5 · 내 자료</p>
   <div class="viewer-titlerow"><h1 class="page-header__title">北京的秋天 — 第三课</h1><button class="viewer-title-edit">편집</button></div>
-  <div class="viewer-badges"><a class="viewer-badge" href="#">12개 수집 → 단어장</a><span class="viewer-badge viewer-badge--due">3개 복습 가능</span><span class="viewer-badge">아는 단어 92% · 새 단어 14개</span></div>
+  <div class="viewer-badges"><span class="viewer-badge viewer-badge--due">3개 복습 가능</span><span class="viewer-badge">아는 단어 92% · 새 단어 14개</span></div>
 </header>`;
 const pdfLine = '<p class="viewer-attribution">출처: PDF 《新HSK5 阅读》 p.12-16<span class="viewer-attribution__muted"> / 180p</span> · <a href="#">원본 PDF 보기 →</a></p>';
 const reader = '<div class="card reader-area reader-area--light"><div class="word-token" id="first"><span class="surface">秋</span></div></div>';

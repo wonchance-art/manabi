@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { safeLibraryReturn, safeReaderReturn, libraryReaderHref, librarySearchHref } from '../libraryReturn';
+import { safeLibraryReturn, safeReaderReturn, libraryReaderHref, librarySearchHref, readerReturnLabel } from '../libraryReturn';
 describe('library navigation without mixing learning progress',()=>{
+  it('names the validated destination, including public browsing and class history',()=>{
+    expect(readerReturnLabel('/materials?tab=public&q=school')).toBe('← 발견');
+    expect(readerReturnLabel('/materials?view=owned&collection=folder')).toBe('← 내 서재');
+    expect(readerReturnLabel('/class/class-a?view=history')).toBe('← 수업 기록');
+    expect(readerReturnLabel('/class/class-a/live?day=2026-09-10')).toBe('← 수업 진행');
+    expect(readerReturnLabel('https://evil.test/materials?tab=public')).toBe('← 내 서재');
+  });
   it('returns classroom notes to the same class and date without broadening composer redirects',()=>{
     expect(safeReaderReturn('/class/class-1/live?day=2026-09-10&next=https://evil.test')).toBe('/class/class-1/live?day=2026-09-10');
     expect(safeReaderReturn('/class/class-1/live?day=2026-02-30')).toBe('/class/class-1/live');

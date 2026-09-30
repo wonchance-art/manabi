@@ -19,7 +19,12 @@ test('out-of-order entry, duplicate correction, renumber and reconnect',async()=
   await f.page.reload({waitUntil:'domcontentloaded',timeout:120000});await f.page.getByRole('button',{name:/담긴 글 보기/}).click();await f.page.getByText('2과',{exact:true}).waitFor();assert.deepEqual(await orders(f),['1과','2과','3과','5과']);
   await f.page.getByRole('button',{name:'2과 더보기'}).click();await f.page.getByRole('button',{name:'과 번호 수정',exact:true}).click();await f.page.keyboard.press('Escape');await f.page.waitForFunction(()=>document.activeElement?.getAttribute('aria-label')==='2과 더보기');
   const third=f.rows.find(row=>row.processed_json.metadata.book.order===3);
-  await f.page.locator('.shelf-book-chapters li>a').filter({hasText:'2과'}).click();await f.page.locator(`a.next-lesson-card[href="/viewer/${third.id}"]`).waitFor();
+  await f.page.locator('.shelf-book-chapters li>a').filter({hasText:'2과'}).click();const next=f.page.locator('a.next-lesson-card');await next.waitFor();
+  const originalReturn=new URL(f.page.url()).searchParams.get('returnTo');
+  const nextUrl=new URL(await next.getAttribute('href'),f.page.url());assert.equal(nextUrl.pathname,`/viewer/${third.id}`);assert.equal(nextUrl.searchParams.get('returnTo'),originalReturn);
+  await next.click();await f.page.getByRole('link',{name:'← 내 서재',exact:true}).waitFor();await f.page.reload({waitUntil:'domcontentloaded',timeout:120000});
+  assert.equal(new URL(f.page.url()).searchParams.get('returnTo'),originalReturn);
+  await f.page.getByRole('link',{name:'← 내 서재',exact:true}).click();await f.page.waitForURL(url=>url.pathname==='/materials');assert.equal(new URL(f.page.url()).pathname,'/materials');
   assert.equal(f.rows[0].raw_text,'原文。');assert.equal(f.analysisCalls,0);assert.deepEqual(f.errors,[]);
  }finally{await f.close();}
 });

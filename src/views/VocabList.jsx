@@ -115,8 +115,8 @@ export default function VocabList({
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="단어, 의미, 후리가나 검색..."
-              aria-label="단어장 검색"
+              placeholder="표현 목록 검색"
+              aria-label="표현 목록 검색"
               className="search-input"
             />
           </div>
@@ -143,7 +143,7 @@ export default function VocabList({
               {LEVEL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           )}
-        <div className="chip-group" role="group" aria-label="단어 언어 필터">
+        <div className="chip-group" role="group" aria-label="표현 목록 언어">
           {/* 4개 언어를 늘 깔아 두면 단어가 한 언어뿐일 때도 칩 5개가 자리를 먹는다 —
               단어장에 실제로 있는 언어만, 그것도 둘 이상일 때만 보여준다. */}
           {(langsInVocab.length > 1
