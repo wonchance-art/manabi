@@ -13,6 +13,7 @@ import {
 } from '../lib/bookSplit';
 import { makeBookKey } from '../lib/bookMeta';
 import { bookKeyForDraft, appendPlanOf, listAppendableBooks, countContentLines } from '../lib/bookAppend';
+import { chapterError } from '../lib/libraryBookChapters';
 import { LEVELS, MATERIAL_DIRECTION } from '../lib/constants';
 import MaterialAddPdfSection from './MaterialAddPdfSection';
 import MaterialAddEpubSection from '../components/MaterialAddEpubSection';
@@ -236,7 +237,7 @@ function MaterialAddForm() {
         ? `《${bookDraft.title}》 ${startOrder}과~${lastOrder}과를 이었어요(지금 ${existingCount + bookDraft.chapters.length}과). 각 과는 열 때 분석돼요.`
         : `《${bookDraft.title}》 챕터 ${total}개 등록 완료! 각 챕터는 열 때 분석돼요.`, 'success');
     } catch (err) {
-      toast('책 등록 실패 — ' + friendlyToastMessage(err), 'error');
+      toast(bookDraft.append ? chapterError(err).message : '책 등록 실패 — ' + friendlyToastMessage(err), 'error');
     } finally {
       setBookRegistering(false);
     }

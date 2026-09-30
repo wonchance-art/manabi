@@ -219,7 +219,7 @@
 .shelf-chapter-form .manabi-button{background:var(--ja);color:var(--sheet)}
 .shelf-chapter-form [role=alert]{font-size:13px;line-height:1.7;margin:12px 0}
 .shelf-chapter-split summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:var(--muted);font-size:12px}
-.shelf-chapter-split>div{display:flex;align-items:end;gap:12px}
+.shelf-chapter-split>div{display:flex;align-items:flex-end;gap:12px}
 .shelf-chapter-split input{width:100px}
 .shelf-chapter-split button{padding:0 12px;border:1px solid var(--rule)}
 .shelf-chapter-parts{display:grid;gap:16px}
