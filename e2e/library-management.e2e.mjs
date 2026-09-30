@@ -5,7 +5,7 @@ import {mkdir} from 'node:fs/promises';
 import {fixture,OWNER} from './fixtures/library-v4-backend.mjs';
 const shots=process.env.COMPOSER_SCREENSHOTS;
 function seed(f,n=5){for(let i=1;i<=n;i++)f.rows.push({id:i,owner_id:OWNER,visibility:'private',title:`자료 ${String(i).padStart(3,'0')}`,raw_text:'This source stays intact.',processed_json:{status:'note',metadata:{language:'English',composer:{version:1,assets:[]}}},created_at:`2026-09-${String((i%28)+1).padStart(2,'0')}T10:00:00Z`});}
-async function enter(f){await f.page.goto('/materials');await f.page.locator('.shelf-row').first().waitFor();}
+async function enter(f){await f.page.goto('/materials',{waitUntil:'domcontentloaded'});await f.page.locator('.shelf-row').first().waitFor();}
 async function overflow(f){assert.ok(await f.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(f.errors,[]);}
 async function capture(f,name){if(shots){await mkdir(shots,{recursive:true});await f.page.screenshot({path:`${shots}/${name}.png`,fullPage:true});}}
 async function createFolder(f,name,parent=''){await f.page.getByRole('button',{name:'폴더 관리',exact:true}).click();await f.page.locator('#collection-name').fill(name);if(parent)await f.page.locator('#folder-parent').selectOption({label:parent});await f.page.getByRole('button',{name:'만들기',exact:true}).click();await f.page.locator('#collection-name').filter({hasText:''}).waitFor();await f.page.waitForFunction(()=>document.querySelector('#collection-name')?.value==='');await f.page.getByRole('button',{name:'닫기',exact:true}).click();}
@@ -30,9 +30,9 @@ test('all filtered results include unloaded rows but exclude newly arriving matc
  await f.page.getByRole('button',{name:'선택',exact:true}).click();await f.page.getByRole('button',{name:'검색 결과 65개 선택'}).click();await f.page.getByText('65개 선택',{exact:true}).waitFor();
  f.rows.push({...f.rows[0],id:99,title:'뒤늦게 들어온 자료'});
  await f.page.getByRole('button',{name:'휴지통',exact:true}).last().click();await f.page.getByRole('button',{name:'이동',exact:true}).click();await f.page.getByRole('button',{name:'다시 확인',exact:true}).waitFor();
- await f.page.reload();await f.page.getByRole('button',{name:'다시 확인',exact:true}).click();await f.page.getByText('65개 완료',{exact:true}).waitFor();assert.equal(await f.page.locator('.shelf-row').count(),1);assert.match(await f.page.locator('.shelf-row').innerText(),/뒤늦게/);
+ await f.page.reload({waitUntil:'domcontentloaded'});await f.page.getByRole('button',{name:'다시 확인',exact:true}).click();await f.page.getByText('65개 완료',{exact:true}).waitFor();assert.equal(await f.page.locator('.shelf-row').count(),1);assert.match(await f.page.locator('.shelf-row').innerText(),/뒤늦게/);
  lose=true;await f.page.getByRole('button',{name:'실행 취소',exact:true}).click();await f.page.getByRole('button',{name:'다시 확인',exact:true}).waitFor();
- await f.page.reload();await f.page.getByRole('button',{name:'다시 확인',exact:true}).click();await f.page.getByText('65개 취소됨',{exact:true}).waitFor();assert.equal((await f.db.query("select count(*)::int n from library_item_state where state='trashed'")).rows[0].n,0);await overflow(f);
+ await f.page.reload({waitUntil:'domcontentloaded'});await f.page.getByRole('button',{name:'다시 확인',exact:true}).click();await f.page.getByText('65개 취소됨',{exact:true}).waitFor();assert.equal((await f.db.query("select count(*)::int n from library_item_state where state='trashed'")).rows[0].n,0);await overflow(f);
  }finally{await f.close();}
 });
 

@@ -11,18 +11,24 @@ export default function LibraryChapterEditor({ownerId,bookKey,title,nextOrder,ch
  const scope=`book-chapters:${bookKey}`;
  const [draft,setDraft]=useState({version:1,files:[],id:null,order:String(chapter?.order??nextOrder),title:'',text:'',parts:null,frozen:null});
  const [ready,setReady]=useState(!!chapter),[busy,setBusy]=useState(false),[failure,setFailure]=useState(null),[draftError,setDraftError]=useState(false),[lines,setLines]=useState('16');
- const queue=useRef(Promise.resolve()),pending=useRef(false),closing=useRef(false),orderInput=useRef(null),initialOrder=useRef(nextOrder);
+ const queue=useRef(Promise.resolve()),lockTask=useRef(Promise.resolve()),pending=useRef(false),closing=useRef(false),orderInput=useRef(null),initialOrder=useRef(nextOrder);
  useEffect(()=>{
   if(chapter)return;
   let alive=true,release;
   async function acquire(lock){
    if(!alive)return;
    if(!lock){setFailure({message:'다른 창에서 이 책을 작성 중이에요.'});return;}
+   const released=new Promise(resolve=>{release=resolve;});
    try{const stored=await readComposerDraft(ownerId,scope);if(alive){setDraft(stored||{version:1,files:[],id:crypto.randomUUID(),order:String(initialOrder.current),title:'',text:'',parts:null,frozen:null});setReady(true);}}
    catch{if(alive)setFailure({message:'초안을 불러오지 못했어요. 다시 열어 주세요.'});}
-   await new Promise(resolve=>{release=resolve;if(!alive)resolve();});
+   await released;
   }
-  if(navigator.locks)navigator.locks.request(`manabi:${ownerId}:${scope}`,{ifAvailable:true},acquire).catch(()=>{if(alive)setFailure({message:'작성 중인 창을 확인해 주세요.'});});
+  // Wait for this instance's previous effect to release its lock before reopening.
+  // Other tabs still use ifAvailable and cannot overwrite this book's draft.
+  if(navigator.locks)lockTask.current=lockTask.current.catch(()=>{}).then(()=>{
+   if(!alive)return;
+   return navigator.locks.request(`manabi:${ownerId}:${scope}`,{ifAvailable:true},acquire);
+  }).catch(()=>{if(alive)setFailure({message:'작성 중인 창을 확인해 주세요.'});});
   else setFailure({message:'이 브라우저에서는 안전한 초안 저장을 지원하지 않아요.'});
   return()=>{alive=false;release?.();};
  },[ownerId,scope,chapter]);

@@ -8,7 +8,9 @@ export function useCollections(ownerId){return useQuery({queryKey:['library-coll
 export function LibraryDialog({title,children,onClose}){
  const dialog=useRef(null);
  useEffect(()=>{const opener=document.activeElement,node=dialog.current;node?.showModal();return()=>{node?.close();requestAnimationFrame(()=>{if(document.activeElement===document.body&&opener?.isConnected)opener.focus({preventScroll:true});});};},[]);
- return <dialog ref={dialog} className="shelf-dialog" aria-label={title} onCancel={e=>{e.preventDefault();onClose();}} onClose={onClose}><div className="shelf-dialog-head"><h2>{title}</h2><button type="button" aria-label="닫기" onClick={onClose}>×</button></div>{children}</dialog>;
+ // Strict Mode can reopen the node before its previous close event is delivered.
+ // A stale event must not dismiss the currently open dialog.
+ return <dialog ref={dialog} className="shelf-dialog" aria-label={title} onCancel={e=>{e.preventDefault();onClose();}} onClose={e=>{if(!e.currentTarget.open)onClose();}}><div className="shelf-dialog-head"><h2>{title}</h2><button type="button" aria-label="닫기" onClick={onClose}>×</button></div>{children}</dialog>;
 }
 export default function LibraryCollections({ownerId,target=null,onClose,onSelect,initialParent=null}){
  const collections=useCollections(ownerId),cache=useQueryClient(),attempt=useRef(null);

@@ -55,14 +55,14 @@ export async function fixture(options={}){
   const req=r.request(),url=new URL(req.url()),table=url.pathname.split('/').pop();
   const managementRpc=options.management&&['personal_library_page_v2','library_selection','library_operation_status','library_operation_prepare','library_operation_apply','library_canonical_target','library_folder_change','library_folder_undo',...(options.bookChapters?['library_book_chapters','library_book_add_chapters','library_book_set_order']:[])].includes(table);
   const passageSelect=options.sourcePassages&&table==='reading_materials'&&url.searchParams.get('select')?.includes('passage:');
-  const chapterSelect=options.bookChapters&&table==='reading_materials'&&url.searchParams.get('select')?.includes('processed_json->metadata->book');
+  const chapterSelect=options.bookChapters&&table==='reading_materials'&&(url.searchParams.get('select')?.includes('processed_json->metadata->book')||url.searchParams.has('processed_json->metadata->book->>key'));
   const positionRpc=options.originalPositions&&['get_original_reading_positions','save_original_reading_position'].includes(table);
   const passageRpc=options.sourcePassages&&['open_source_passage','source_passage_analysis','correct_source_passage_token'].includes(table);
   if(!tables[table]&&!['personal_library_page','personal_library_children'].includes(table)&&!passageSelect&&!chapterSelect&&!passageRpc&&!positionRpc&&!managementRpc)return r.fallback();
   if(req.method()==='OPTIONS')return r.fulfill({status:204,headers:cors});
   const task=async()=>{try{
    await sync();requests.push({table,method:req.method(),payload:req.method()==='POST'?req.postDataJSON():null});
-   if(chapterSelect){const key=url.searchParams.get('processed_json->metadata->book->>key')?.slice(3),owner=url.searchParams.get('owner_id')?.slice(3);return json(r,(await db.query("select id,title,processed_json->>'status' status,processed_json#>'{metadata,book}' book from reading_materials where processed_json#>>'{metadata,book,key}'=$1 and owner_id=$2",[key,owner])).rows);}
+   if(chapterSelect){const key=url.searchParams.get('processed_json->metadata->book->>key')?.slice(3)||null,owner=url.searchParams.get('owner_id')?.slice(3);return json(r,(await db.query("select id,title,raw_text,created_at,processed_json->>'status' status,processed_json#>>'{metadata,language}' language,processed_json#>>'{metadata,level}' level,processed_json#>'{metadata,book}' book from reading_materials where ($1::text is null or processed_json#>>'{metadata,book,key}'=$1) and processed_json#>'{metadata,book}' is not null and owner_id=$2 order by created_at desc,id desc limit $3",[key,owner,Number(url.searchParams.get('limit')||500)])).rows);}
    if(managementRpc){
     const p=req.postDataJSON(),keys=Object.keys(p).filter(k=>/^p_[a-z_]+$/.test(k));
     if(table==='personal_library_page_v2'&&((failRecent&&p.p_filters?.recent)||(failList&&!p.p_filters?.recent)))return json(r,{message:'fixture read failure'},503);
