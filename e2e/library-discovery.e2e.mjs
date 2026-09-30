@@ -54,7 +54,7 @@ await context.route('**/api/learning/**',route=>route.fulfill({json:{contexts:[]
 const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.message));
 async function check(label){await page.evaluate(()=>document.fonts.ready);const size=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));assert(size.scroll<=size.width+1,`${label}: overflow ${JSON.stringify(size)}`);report.checks.push(label);console.log(label);}
 try {
- await page.goto(base+'/discover');await page.getByRole('heading',{name:'궁금한 곳부터, 한 편씩.'}).waitFor();await check('public regional reading index loads from real registry');
+ await page.goto(base+'/discover');await page.getByRole('heading',{name:'지역학 · 한국어로 읽기',exact:true}).waitFor();await check('public regional reading index loads from real registry');
  await page.screenshot({path:out+'/discover-desktop.png',fullPage:true});
  await page.getByLabel('지역',{exact:true}).selectOption('france');await page.getByRole('button',{name:'문화',exact:true}).focus();await page.keyboard.press('Enter');
  await page.waitForFunction(()=>document.querySelectorAll('.discovery-reading-item').length===1);assert.match(page.url(),/region=france/);assert.match(page.url(),/topic=culture/);

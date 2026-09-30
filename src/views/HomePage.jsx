@@ -109,14 +109,12 @@ export default function HomePage({ book = null }) {
   const quote = resume?.lesson.quote;
   return <div className="manabi-page manabi-today">
     <section className="today-opening" aria-label="오늘의 읽기">
-      <div className="today-copy"><p className="manabi-eyebrow">YOUR NEXT PAGE / 오늘</p>
-        <h1>당신의<br /><em>다음 페이지.</em></h1>
-        <p className="today-intro">한 문장을 읽고, 나의 세계를 조금 더 넓게.</p>
+      <div className="today-copy"><h1>오늘</h1>
         {pending ? <div className="today-location" role="status">읽던 위치를 확인하고 있어요…</div> : <div className="today-location">
           <span className="today-location__number" aria-hidden="true">{activeMaterial || !resume ? '↗' : String(resume.lesson.number).padStart(2, '0')}</span>
-          <div><small>{activeMaterial ? '내 서재 · 읽는 중' : resume ? `일본어 N5 · ${resume.total}과` : 'manabi books'}</small><strong>{activeTitle || '나에게 맞는 책을 골라 보세요'}</strong><span>{started ? '기억해 둔 곳에서 이어가요.' : '처음이라면, 이 한 문장부터.'}</span></div>
+          <div><small>{activeMaterial ? '내 서재 · 읽는 중' : resume ? `일본어 N5 · ${resume.total}과` : '교재'}</small><strong>{activeTitle || '교재 선택'}</strong></div>
         </div>}
-        <div className="manabi-row"><Link className="manabi-button" href={activeHref} aria-disabled={pending || undefined} onClick={event => { if (pending) event.preventDefault(); }}>{started ? '이어서 읽기' : '첫 페이지 열기'} <span aria-hidden="true">↗</span></Link><Link className="manabi-link" href="/lessons">책장 둘러보기</Link></div>
+        <div className="manabi-row"><Link className="manabi-button" href={activeHref} aria-disabled={pending || undefined} onClick={event => { if (pending) event.preventDefault(); }}>{started ? '이어서 읽기' : '첫 페이지 열기'} <span aria-hidden="true">→</span></Link><Link className="manabi-link" href="/lessons">교재</Link></div>
         {resume && local.ready && <p className="today-record">이 브라우저의 교재 기록 · {resume.completed} / {resume.total}과 학습</p>}
         {!local.storageAvailable && <p role="status" className="today-record">이 브라우저에서는 읽던 위치를 저장할 수 없어요.</p>}
         {!book && <p role="status" className="today-record">지금은 교재 정보를 불러올 수 없어요. <button type="button" onClick={() => location.reload()}>다시 확인</button></p>}
@@ -125,19 +123,18 @@ export default function HomePage({ book = null }) {
         <div className="today-open-book">{activeMaterial ? <div className="today-material-cover"><small>manabi library</small><strong>읽는 중</strong><span aria-hidden="true">↗</span><small>나의 다음 페이지</small></div> : <BookCover />}<div className="today-open-page"><div className="today-page-top"><span>{activeMaterial ? 'MY LIBRARY' : 'JAPANESE / N5'}</span><i aria-hidden="true" /></div>
           <span className="today-page-orb" aria-hidden="true" /><div className="today-page-quote">{activeMaterial ? <h2>{activeTitle}</h2> : <><small>{String(resume?.lesson.number || 1).padStart(2, '0')} / {resume?.lesson.subtitle || '일본어로 만나는 일상'}</small><p lang="ja">{typeof quote === 'string' ? quote : quote?.ja || '日本語'}</p>{quote?.ko && <span>{quote.ko}</span>}</>}</div>
           <div className="today-page-bottom"><span>manabi reading room</span><span>↗</span></div></div></div>
-        <p>조금씩 읽고, 오래 기억하는.</p>
       </div>
     </section>
     {error && <div className="manabi-inline-state" role="alert">학습 기록을 불러오지 못했어요. 읽기와 책장은 계속 이용할 수 있어요. <button type="button" onClick={() => refetch()}>다시 불러오기</button></div>}
     <div className="today-bottom">
-      <section className="today-review"><p className="manabi-eyebrow">KEEP IT WITH YOU / 복습</p><h2>{authLoading || (user && isLoading) ? '복습 일정을 확인하는 중.' : !user ? '좋은 표현을 내 것으로.' : error ? '복습 기록을 다시 확인해요.' : data?.dueCount > 0 ? <>담은 표현을<br />다시 만나 보세요.</> : data?.vocab?.length ? <>오늘은 가볍게,<br /> 읽기를 이어가요.</> : <>기억하고 싶은<br /> 첫 표현을 담아 보세요.</>}</h2>
-        <p>{!user ? '로그인하면 읽다가 고른 표현을 담고 복습할 수 있어요.' : error ? '복습 화면에서 기록을 다시 확인할 수 있어요.' : isLoading ? '복습 일정을 확인하고 있어요…' : data?.dueCount > 0 ? '오늘 분량은 복습에서 확인하세요.' : '예문 아래 ‘이 예문 담기’로 시작할 수 있어요.'}</p><Link href={user ? '/vocab' : '/auth'} prefetch={false} className="manabi-link">{user ? '복습' : '로그인하고 시작하기'} ↗</Link>
+      <section className="today-review"><h2>복습</h2>
+        <p role={authLoading || (user && isLoading) ? 'status' : undefined}>{authLoading || (user && isLoading) ? '복습 일정을 확인하고 있어요…' : !user ? '로그인하면 담은 표현을 복습할 수 있어요.' : error ? '복습 화면에서 기록을 다시 확인할 수 있어요.' : data?.dueCount > 0 ? '복습할 표현이 있어요. 오늘 분량은 복습에서 확인하세요.' : data?.vocab?.length ? '지금 복습할 표현은 없어요.' : '예문 아래 ‘예문 담기’로 시작하세요.'}</p><Link href={user ? '/vocab' : '/auth'} prefetch={false} className="manabi-link">{user ? '복습' : '로그인'}</Link>
       </section>
-      <section className="today-discovery"><div className="manabi-section-heading"><div><p className="manabi-eyebrow">OFF THE PAGE</p><h2>책 밖의 한 장면</h2></div><Link className="manabi-link" href="/discover">발견 ↗</Link></div>
+      <section className="today-discovery"><div className="manabi-section-heading"><h2>읽을거리</h2><Link className="manabi-link" href="/discover">발견</Link></div>
         {recommendations.isLoading ? <p role="status">오늘의 읽을거리를 펼치고 있어요…</p> : recommendations.error ? <p role="status">추천을 불러오지 못했어요. <button type="button" onClick={() => recommendations.refetch()}>다시 확인</button></p> : suggestions.length ? suggestions.map(s => <Link key={s.id} className="today-story" href={suggestionHref(s, 'home')} prefetch={false}><SuggestionArtwork suggestion={s} /><div><small>{langNameKo(s.language)} · {s.level || '읽을거리'}</small><h3>{s.title}</h3><p>{(user && data?.vocab?.length ? reasonText(s.rank) : null) || s.channel_name || '오늘의 추천'} <span>↗</span></p><small>바로 읽기</small></div></Link>) : <Link className="today-editorial" href="/discover"><span lang="ja" aria-hidden="true">文 化</span><div><small>문화와 지역학</small><h3>말이 태어나는 곳을<br />함께 읽어볼까요?</h3><p>일본·한국·프랑스의 이야기 ↗</p></div></Link>}
       </section>
     </div>
-    {user && continueDeckItems.length > 0 && <section className="today-tools"><div className="manabi-section-heading"><h2>학습을 이어가는 방법</h2><Link href="/materials" className="manabi-link">내 서재 ↗</Link></div><ContinueDeck items={continueDeckItems} /></section>}
+    {user && continueDeckItems.length > 0 && <section className="today-tools"><div className="manabi-section-heading"><h2>학습을 이어가는 방법</h2><Link href="/materials" className="manabi-link">내 서재</Link></div><ContinueDeck items={continueDeckItems} /></section>}
     {material && !activeMaterial && <Link className="today-library-row" href={`/viewer/${material.reading_materials.id}`}><span>내 서재에서 읽는 중</span><strong>{material.reading_materials.title}</strong><span>이어 읽기 ↗</span></Link>}
   </div>;
 }

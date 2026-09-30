@@ -93,7 +93,7 @@ export default function LibraryShelf({user}){
  {error&&<p className="shelf-notice" role="alert">{error}</p>}
  {pending&&!busy&&<div className="shelf-notice" role="status">저장 결과 확인 필요 <button onClick={()=>resume(pending.id,pending.undo)}>다시 확인</button></div>}
  {result&&<div className="shelf-notice" role="status"><span>{busy?'정리 중…':counts.undone?`${counts.undone}개 취소됨`:`${counts.success||0}개 완료`}{Object.entries(counts).filter(([k])=>!['success','undone','pending'].includes(k)).reduce((n,[,v])=>n+v,0)>0&&' · 일부 자료는 다시 확인해 주세요.'}</span>{(counts.conflict||counts.unavailable)>0&&<button disabled={busy||!!pending} onClick={async()=>{setBusy(true);try{const failed=result.items.filter(x=>['conflict','unavailable'].includes(x.status));setSelected(await Promise.all(failed.map(x=>currentLibraryTarget(supabase,x))));setSelecting(true);setResult(null);}catch(e){setError(libraryOperationError(e));}finally{setBusy(false);}}}>실패 항목 다시 선택</button>}{counts.success>0&&<button disabled={busy||!!pending} onClick={()=>resume(result.id,true)}>실행 취소</button>}<button aria-label="결과 닫기" disabled={busy} onClick={()=>setResult(null)}>×</button></div>}
- <footer className="shelf-footer"><Link href="/study/library">지난 학습</Link><Link href="/vocab">담은 표현</Link><Link href="/materials?tools=1&view=owned">고급 도구</Link></footer>
+ <footer className="shelf-footer"><Link href="/study/library">지난 이야기</Link><Link href="/vocab">복습</Link><Link href="/materials?tools=1&view=owned">자료 상세 보기</Link></footer>
  </div></div>
  {dialog==='filters'&&<FilterDialog filters={filters} onApply={change} onClose={close}/>}
  {dialog==='collections'&&<LibraryCollections ownerId={user.id} onClose={close} initialParent={filters.collection} onSelect={id=>change({collection:id,scope:''})}/>}
