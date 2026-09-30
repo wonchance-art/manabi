@@ -14,7 +14,7 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- **서재 과 추가·번호 정렬 (2026-10-01, 오너 구현·병합 승인)** — `codex/library-chapter-order-20261001`, [PR #1328](https://github.com/wonchance-art/manabi/pull/1328). 담긴 글에서 임의 과 추가→숫자 정렬→번호 수정 구현, 기존 ID/본문/진도/FSRS 보존. SQL 회귀와 첫 프로덕션 UI·필수 CI 통과 후 개발 모드의 dialog/초안 잠금 재실행 반례를 교정했다. 최종 후보 CI·브라우저 검수 중. 새 소유자 RPC/trigger 운영 적용 승인 질문은 전달했고 답변 대기 중이며, 승인 후 DB 적용→기승인 병합→운영 확인 순서다. 월드·자동화·원고·환경 설정은 제외. [검수 기록](verification/library-book-chapters-20260930.md).
+- **서재 과 추가·번호 정렬 (2026-10-01, 오너 구현·병합·DB 승인)** — `codex/library-chapter-order-20261001`, [PR #1328](https://github.com/wonchance-art/manabi/pull/1328). 담긴 글에서 임의 과 추가→숫자 정렬→번호 수정 구현, 기존 ID/본문/진도/FSRS 보존. 후보763cd8b7 필수 CI·프로덕션 브라우저 7흐름 통과. 새 소유자 RPC/trigger를 승인 후 운영에 적용했고 실제 버전20260930154448·본문 해시·권한·보호 trigger를 확인했다. SQL 내용은 동일하며 파일명/검사 참조를 이력에 맞춘 최종 CI 후 기승인 병합→배포·실계정 확인을 이어간다. 월드·자동화·원고·환경 설정은 제외. [검수 기록](verification/library-book-chapters-20260930.md).
 - **N5 #1326 Preview 첫 카드 반례 교정·재검수 (2026-09-30)** — 오너가 이 PR의 Preview 배포·실계정 검수를 승인했다. 실제 관리자에서 신구판 출처 2개→카드 1개·중복 저장 보호·정확한 읽기 복귀는 확인했으나, 기본 자동 출제가 문장 전체를 가리고 정답 하나만 노출했다. 제품 교정 `fc41c67d`는 단서/선택지가 부족한 카드만 기존 플래시 방식으로 전환한다. 교정본 최종 CI·Preview·실계정 재검수가 다음 조건이며 최종 head와 증거는 PR/#150·verification/n5-review-return-20260930.md에 기록한다. 운영 merge·DB/env·발행은 미승인·미착수.
 
 ### todo
