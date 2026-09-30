@@ -66,6 +66,12 @@ export default function BookReader({ book, sectionIndex, preview = false }) {
     // async, font-aware anchor. Own restoration only while this reader is mounted.
     const restoration = window.history.scrollRestoration;
     window.history.scrollRestoration = 'manual';
+    // Full navigations/reloads keep the history entry's setting but do not run
+    // React cleanup. Release it before leaving; reacquire it after bfcache return.
+    const release = () => { window.history.scrollRestoration = restoration; };
+    const acquire = () => { window.history.scrollRestoration = 'manual'; };
+    window.addEventListener('pagehide', release);
+    window.addEventListener('pageshow', acquire);
     const sync = () => {
       let id;
       try { id = decodeURIComponent(window.location.hash.slice(1)) || 'cover'; } catch { id = 'cover'; }
@@ -78,7 +84,8 @@ export default function BookReader({ book, sectionIndex, preview = false }) {
     window.addEventListener('hashchange', sync); window.addEventListener('popstate', sync);
     return () => {
       window.removeEventListener('hashchange', sync); window.removeEventListener('popstate', sync);
-      window.history.scrollRestoration = restoration;
+      window.removeEventListener('pagehide', release); window.removeEventListener('pageshow', acquire);
+      release();
     };
   }, [book.edition]);
 
