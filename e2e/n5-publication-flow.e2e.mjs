@@ -7,7 +7,7 @@ import {fixtureSession,revisionBackend} from './fixtures/n5-revision-backend.mjs
 const base=process.env.QA_BASE||'http://localhost:48991';
 assert(['localhost','127.0.0.1'].includes(new URL(base).hostname),'synthetic authentication is local only');
 const out=process.env.QA_OUT||'.qa/runs/n5-publication-flow/browser';fs.mkdirSync(out,{recursive:true});
-const oldId='7f572327dc67893e9453246c',id='fdf070fa5123b18cc55f24c7';
+const oldId='7f572327dc67893e9453246c',id='8a8c1c1fd452773810abaf8c';
 const bundles=Object.fromEntries([oldId,id].map(key=>[key,JSON.parse(fs.readFileSync(`src/content/textbookEditions/${key}/bundle.json`))]));
 const path=(anchor='cover')=>`/books/japanese-n5?edition=${id}#${anchor}`;
 const report={scope:'Synthetic UI only; PostgreSQL/API semantics are covered by publicationFlow.test.js',engines:[]};

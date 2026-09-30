@@ -10,7 +10,7 @@ const base = process.env.QA_BASE || 'http://127.0.0.1:48995';
 assert(['127.0.0.1', 'localhost'].includes(new URL(base).hostname), 'Only a local QA app is allowed');
 const out = path.resolve(process.env.QA_OUT || '.qa/runs/n5-reading-visibility/browser');
 fs.mkdirSync(out, { recursive: true });
-const edition = 'fdf070fa5123b18cc55f24c7';
+const edition = '8a8c1c1fd452773810abaf8c';
 const backendPort = 48996;
 const backend = revisionBackend({ port: backendPort, app: base });
 const report = { edition, scope: 'Synthetic auth/API; actual app UI. No real account, physical device or hosted write.', engines: [] };
@@ -132,6 +132,36 @@ try {
       await inspect(page, 'u42-message-reading', row, 'back-from-cover');
       await page.screenshot({ path: path.join(out, `${name}-keyboard-return-320.png`) });
       row.checks.push('keyboard answer/reload/help/back/cover/back retain answer and visible heading');
+      // Ordinary motion exposed a gap hidden by the reduced-motion layout checks.
+      // A repeated hash can have a different browser-restored scroll position.
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
+      await page.goto(href('u42-message-reading'));
+      await inspect(page, 'u42-message-reading', row, 'normal-motion-reconnect');
+      assert.equal(await page.evaluate(() => history.scrollRestoration), 'manual');
+      await saved();
+      await page.evaluate(() => document.getElementById('u42-text-transfer').scrollIntoView({ behavior: 'instant', block: 'start' }));
+      await page.waitForTimeout(180);
+      await page.locator('.manabi-mobile-toc summary').click();
+      await page.locator('.manabi-mobile-toc a[href$="#u42-message-reading"]').click();
+      await inspect(page, 'u42-message-reading', row, 'same-page-toc');
+      await page.goBack();
+      await page.waitForTimeout(180);
+      await inspect(page, 'u42-message-reading', row, 'same-hash-back');
+      await saved();
+      await page.getByRole('button', { name: '내 자료', exact: true }).click();
+      await page.getByRole('link', { name: '문화 읽기와 내 자료 →', exact: true }).click();
+      const returnLink = page.getByRole('link', { name: '읽던 교재로 돌아가기', exact: true });
+      await returnLink.waitFor();
+      assert.equal(await page.evaluate(() => history.scrollRestoration), 'auto');
+      assert.equal(await returnLink.getAttribute('href'), `/books/japanese-n5?edition=${edition}#u42-message-reading`);
+      await returnLink.click();
+      await inspect(page, 'u42-message-reading', row, 'normal-motion-material-return');
+      await saved();
+      await page.reload();
+      await inspect(page, 'u42-message-reading', row, 'normal-motion-reload');
+      await saved();
+      assert.equal(await page.locator('#u42-message-reading h2').textContent(), '리나가 보낸 두 통의 연락');
+      row.checks.push('ordinary-motion repeated-hash back/material return/reload preserve visible article, resume source and answer');
       assert.deepEqual(row.errors, []); assert.deepEqual(row.writes, []);
       row.checks.push('console/runtime errors0 and server writes0');
     } catch (error) {

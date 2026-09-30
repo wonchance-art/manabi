@@ -33,6 +33,7 @@ export default function BookReader({ book, sectionIndex, preview = false }) {
   const { progress, update, storageAvailable, hasProgress, ready } = useReadingProgress(book.edition);
   const content = useRef(null), root = useRef(null), toolbar = useRef(null), dialog = useRef(null), pendingAnchor = useRef(null);
   const [pageId, setPageId] = useState('cover'), [active, setActive] = useState('');
+  const [anchorRequest, setAnchorRequest] = useState(0);
   const [sections, setSections] = useState([]), [loading, setLoading] = useState(false), [error, setError] = useState('');
   const [focus, setFocus] = useState(false), [selection, setSelection] = useState(null), [expression, setExpression] = useState(''), [meaning, setMeaning] = useState('');
   const [examples, setExamples] = useState([]), [panel, setPanel] = useState('selection'), [query, setQuery] = useState(''), [searchCount, setSearchCount] = useState(0), [draftStatus, setDraftStatus] = useState('');
@@ -61,15 +62,24 @@ export default function BookReader({ book, sectionIndex, preview = false }) {
   }, [unit, measureToolbar]);
 
   useEffect(() => {
+    // The browser restores a history entry after popstate and can overwrite our
+    // async, font-aware anchor. Own restoration only while this reader is mounted.
+    const restoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
     const sync = () => {
       let id;
       try { id = decodeURIComponent(window.location.hash.slice(1)) || 'cover'; } catch { id = 'cover'; }
       id = id.replace(/^(?:web|pdf|audio)-/, '');
       pendingAnchor.current = id; setPageId(id); setActive(id);
+      // Two history entries can name the same page but restore different scroll positions.
+      setAnchorRequest(request => request + 1);
     };
     sync();
     window.addEventListener('hashchange', sync); window.addEventListener('popstate', sync);
-    return () => { window.removeEventListener('hashchange', sync); window.removeEventListener('popstate', sync); };
+    return () => {
+      window.removeEventListener('hashchange', sync); window.removeEventListener('popstate', sync);
+      window.history.scrollRestoration = restoration;
+    };
   }, [book.edition]);
 
   useEffect(() => {
@@ -132,14 +142,15 @@ export default function BookReader({ book, sectionIndex, preview = false }) {
       const target = document.getElementById(id);
       target?.closest('details')?.setAttribute('open', '');
       measureToolbar();
-      if (id === 'cover' || id === unit || id === `${unit}-start`) window.scrollTo({ top: 0 });
-      else (target || root.current)?.scrollIntoView({ block: 'start' });
+      // Complete restoration before clearing the pending anchor or tracking progress.
+      if (id === 'cover' || id === unit || id === `${unit}-start`) window.scrollTo({ top: 0, behavior: 'instant' });
+      else (target || root.current)?.scrollIntoView({ block: 'start', behavior: 'instant' });
       if (target?.classList.contains('kanji-card')) { target.setAttribute('tabindex', '-1'); target.focus({ preventScroll: true }); }
       pendingAnchor.current = null;
       if (/^u\d{2}/.test(id)) update({ page: id });
     }); });
     return () => { cancelled = true; cancelAnimationFrame(frame); };
-  }, [pageId, sections, unit, update, ready, measureToolbar]);
+  }, [pageId, anchorRequest, sections, unit, update, ready, measureToolbar]);
 
   useEffect(() => {
     if (!sections.length) return;
@@ -178,9 +189,9 @@ export default function BookReader({ book, sectionIndex, preview = false }) {
     window.history.pushState(window.history.state, '', destination.pathname+destination.search+destination.hash);
     setQuery('');
     pendingAnchor.current = id; setPageId(id); setActive(id);
+    setAnchorRequest(request => request + 1);
     if (/^u\d{2}/.test(id)) update({ page: id });
-    if (id === pageId) requestAnimationFrame(() => { measureToolbar(); document.getElementById(id)?.scrollIntoView({ block: 'start' }); pendingAnchor.current = null; });
-  }, [book.edition, pageId, unit, update, measureToolbar]);
+  }, [book.edition, unit, update]);
 
   function interact(event) {
     const anchor = event.target.closest('a[href]');
