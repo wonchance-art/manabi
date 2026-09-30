@@ -54,7 +54,7 @@ async function inspect(page, id, row, label) {
       const range = document.createRange(); range.selectNodeContents(el);
       return { text: el.textContent, lines: new Set([...range.getClientRects()].filter(r => r.width > 0 && r.height > 0).map(r => Math.round(r.top))).size };
     });
-    return { id, width: innerWidth, scrollWidth: document.documentElement.scrollWidth, toolbar: rect(bar), target: rect(document.getElementById(id)), headerBottom: getComputedStyle(header).display === 'none' ? 0 : header.getBoundingClientRect().bottom, background: getComputedStyle(bar).backgroundColor, measuredHeight: parseFloat(getComputedStyle(bar).getPropertyValue('--book-toolbar-height')), focused: document.querySelector('.book-reader').classList.contains('is-focused'), labels };
+    return { id, width: innerWidth, scrollWidth: document.documentElement.scrollWidth, toolbar: rect(bar), target: rect(document.getElementById(id)), headerBottom: getComputedStyle(header).display === 'none' ? 0 : header.getBoundingClientRect().bottom, background: getComputedStyle(bar).backgroundColor, measuredHeight: parseFloat(getComputedStyle(bar).getPropertyValue('--book-toolbar-height')), focused: document.querySelector('.book-reader').classList.contains('is-focused'), heapBytes: performance.memory?.usedJSHeapSize ?? null, labels };
   }, id);
   assert(Math.abs(sample.toolbar.top - sample.headerBottom) < 1, `${label}: gap/overlap at the header`);
   assert(!sample.background.startsWith('rgba(') && sample.background !== 'transparent', `${label}: translucent toolbar`);
@@ -126,7 +126,7 @@ try {
       await inspect(page, 'lex-250', row, 'keyboard-word-help');
       await page.goBack(); await saved();
       await inspect(page, 'u42-message-reading', row, 'back-from-word-help');
-      await page.getByRole('link', { name: '← 책으로', exact: true }).focus();
+      await page.getByRole('link', { name: '← 책 목차', exact: true }).focus();
       await page.keyboard.press('Enter'); await page.waitForURL('**#cover');
       await page.goBack(); await saved();
       await inspect(page, 'u42-message-reading', row, 'back-from-cover');
@@ -148,8 +148,8 @@ try {
       await page.waitForTimeout(180);
       await inspect(page, 'u42-message-reading', row, 'same-hash-back');
       await saved();
-      await page.getByRole('button', { name: '내 자료', exact: true }).click();
-      await page.getByRole('link', { name: '문화 읽기와 내 자료 →', exact: true }).click();
+      await page.locator('.manabi-reference-menu>summary').click();
+      await page.getByRole('link', { name: '문화 읽기', exact: true }).click();
       const returnLink = page.getByRole('link', { name: '읽던 교재로 돌아가기', exact: true });
       await returnLink.waitFor();
       assert.equal(await page.evaluate(() => history.scrollRestoration), 'auto');
