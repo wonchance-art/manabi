@@ -82,7 +82,8 @@ try {for(const engine of (process.env.QA_ENGINE==='chromium'?[chromium]:[chromiu
   await page.getByRole('heading',{name:sentence,exact:true}).waitFor();
   await page.getByRole('button',{name:'정답 확인하기',exact:true}).waitFor();
   assert.equal(await page.getByRole('group',{name:'문맥에 맞는 뜻 고르기'}).count(),0);
-  assert.equal(await page.evaluate(()=>localStorage.getItem('as_review_mode')),null);
+  // 기존 화면은 복원한 기본 auto를 저장한다. 카드별 flash 전환이 설정을 바꾸면 안 된다.
+  assert.equal(await page.evaluate(()=>localStorage.getItem('as_review_mode')),'auto');
   for(const width of [1440,320]){await page.setViewportSize({width,height:960});await check(`default first saved sentence remains visible at ${width}px`);await page.screenshot({path:`${out}/${engine.name()}-first-sentence-${width}.png`,fullPage:false});}
   assert.equal(writes.filter(w=>w.table==='user_vocabulary'&&w.method==='PATCH').length,0);
   reset();await page.setViewportSize({width:1440,height:960});
