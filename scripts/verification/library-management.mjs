@@ -36,7 +36,7 @@ try{
  await db.exec(await readFile(new URL('../../supabase/migrations/20260908025511_personal_library_catalog.sql',import.meta.url),'utf8'));
  // Existing duplicate folder names must survive migration.
  await db.exec(`set role authenticated;set test.uid='${owner}';insert into library_collections(name) values('Legacy'),('Legacy');reset role;`);
- await db.exec(await readFile(new URL('../../supabase/migrations/20260930125229_personal_library_management.sql',import.meta.url),'utf8'));
+ await db.exec(await readFile(new URL('../../supabase/migrations/20260930135103_personal_library_management.sql',import.meta.url),'utf8'));
  await db.exec(`set role authenticated;set test.uid='${owner}';`);
  const originals=JSON.stringify((await query('select * from reading_materials order by id')).rows);
  const progress=JSON.stringify((await query('select * from reading_progress')).rows);

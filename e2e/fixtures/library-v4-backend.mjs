@@ -27,7 +27,7 @@ export async function fixture(options={}){
  await db.exec(await readFile(new URL('../../supabase/migrations/20260908025511_personal_library_catalog.sql',import.meta.url),'utf8'));
  if(options.management){
  await db.exec("create schema storage;create table storage.objects(bucket_id text,name text);alter table storage.objects enable row level security;alter table uploaded_pdfs add column storage_path text,add column thumbnail_path text;");
- await db.exec(await readFile(new URL('../../supabase/migrations/20260930125229_personal_library_management.sql',import.meta.url),'utf8'));
+ await db.exec(await readFile(new URL('../../supabase/migrations/20260930135103_personal_library_management.sql',import.meta.url),'utf8'));
  }
  if(options.sourcePassages){
   await db.exec(`create sequence passage_fixture_id start 97000;
