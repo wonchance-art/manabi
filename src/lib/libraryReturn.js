@@ -4,7 +4,7 @@ export function safeLibraryReturn(value) {
   try {
     const url = new URL(value, 'https://manabi.invalid');
     if (url.origin !== 'https://manabi.invalid' || url.pathname !== '/materials') return '/materials';
-    const allowed = new Set(['view', 'tab', 'q', 'lang', 'level', 'sort', 'unread', 'pinned', 'shown', 'restoreY', 'collection', 'kind', 'state', 'tools', 'scope']);
+    const allowed = new Set(['view', 'tab', 'q', 'lang', 'level', 'sort', 'unread', 'pinned', 'shown', 'restoreY', 'collection', 'kind', 'state', 'tools', 'scope', 'outline']);
     for (const key of [...url.searchParams.keys()]) if (!allowed.has(key)) url.searchParams.delete(key);
     return url.pathname + url.search;
   } catch { return '/materials'; }

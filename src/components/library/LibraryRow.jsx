@@ -1,19 +1,19 @@
 'use client';
-import {useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {supabase} from '@/lib/supabase';
 import LibraryReaderLink from '@/components/web/LibraryReaderLink';
 import {langNameKo} from '@/lib/constants';
 import {libraryItemHref,libraryKey} from '@/lib/personalLibrary';
 import LibraryBookChapters from './LibraryBookChapters';
+import useLibraryOutline from './useLibraryOutline';
 const marks={Japanese:'あ',Chinese:'你',English:'Aa',French:'é'};
 export function LibraryCover({row}){
  const asset=row.assets?.find(item=>item.hash===row.context?.assetHash)||row.assets?.[0];
  return <span className="shelf-cover" data-language={row.language||'unknown'} aria-hidden="true"><small>{row.target_kind==='edition'?'N5':row.target_kind==='book'?'BOOK':row.target_kind==='pdf'?'PDF':asset?.kind?.toUpperCase()||'NOTE'}</small><b>{marks[row.language]||'m.'}</b><i/></span>;
 }
 export default function LibraryRow({row,ownerId,onMenu,selecting=false,selected=false,disabled=false,onSelect}){
- const [expanded,setExpanded]=useState(false),[count,setCount]=useState(20);
- const children=useQuery({queryKey:['library-children',ownerId,libraryKey(row),count],enabled:expanded,
+ const [expanded,setExpanded,count,setCount]=useLibraryOutline(row);
+ const children=useQuery({queryKey:['library-children',ownerId,libraryKey(row),count],enabled:expanded&&(row.target_kind==='pdf'||(row.target_kind==='book'&&!row.owned)),
   queryFn:async()=>{const pages=[];for(let offset=0;offset<count;offset+=20){const {data,error}=await supabase.rpc('personal_library_children',{p_kind:row.target_kind,p_id:row.target_id,p_offset:offset});if(error)throw error;pages.push(...data.items);if(pages.length>=data.total)return {items:pages,total:data.total};}return {items:pages,total:row.child_count};}});
  const RowLink=row.unavailable?'div':LibraryReaderLink;
  const meta=[row.language?langNameKo(row.language):'언어 미지정',row.assets?.length?`첨부 ${row.assets.length}개`:null,row.link_count?`링크 ${row.link_count}개`:null,row.target_kind==='book'?`${row.child_count}편`:null,!row.owned&&row.target_kind==='material'?'공개 글':null];
