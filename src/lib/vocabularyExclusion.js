@@ -7,7 +7,7 @@ export const isVocabularyExcludedError = error => error?.code === '55000' && /vo
 export async function loadVocabularyExclusions(client, userId) {
   const items = [];
   for (let offset = 0; ; offset += 200) {
-    const { data, error } = await client.from('vocabulary_exclusions').select('id,language,word_text,vocabulary_id,retired_vocabulary_ids,created_at')
+    const { data, error } = await client.from('vocabulary_exclusions').select('id,language,word_text,vocabulary_id,retired_vocabulary_ids,known_word_keys,created_at')
       .eq('user_id', userId).order('id').range(offset, offset + 199);
     if (error) throw error;
     items.push(...(data || []));

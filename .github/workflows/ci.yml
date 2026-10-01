@@ -44,6 +44,7 @@ jobs:
       # 실제 PostgreSQL에서 과 번호 충돌·재전송·늦은 분석 덮어쓰기를 검사한다.
       - run: node scripts/verification/library-book-chapters.mjs
       - run: node supabase/tests/vocabulary-exclusion.mjs
+      - run: node supabase/tests/known-word-controls.mjs
 
   e2e:
     name: e2e (smoke · learning-flow)

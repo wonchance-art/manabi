@@ -58,7 +58,7 @@ describe('인라인 복습 R3㉮ — 척도 정렬·스냅샷 재료·undo (View
     expect(keys).toContain('if (!h.saveLocked) { e.preventDefault(); h.addToVocab?.(Number(e.key)); }');
     expect(keys).toContain('inField || h.blocked || e.isComposing || e.repeat || e.defaultPrevented');
     expect(keys).toContain('(!lastSaveRef.current && !lastInlineGradeRef.current)');
-    expect(viewer).toContain('inlineDue: !!user && !selectedExcluded && exclusionState.isSuccess && !exclusionState.mutation.isPending && isWordSaved && isTokenDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending,');
+    expect(viewer).toContain('inlineDue: !!user && !selectedExcluded && wordStateReady && !knownPending && !exclusionState.mutation.isPending && isWordSaved && isTokenDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending,');
     expect(viewer).toContain('const undoAny = () => (lastInlineGradeRef.current ? undoInlineGrade() : undoLastSave());');
     // 선택이 바뀌어도 방금 저장한 대상은 유지하되 계정/자료 이동 시 소멸
     expect(viewer).toContain('useEffect(() => { lastSaveRef.current = null; lastInlineGradeRef.current = null; }, [id, user?.id]);');
