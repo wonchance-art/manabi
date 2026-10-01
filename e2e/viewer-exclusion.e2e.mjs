@@ -59,8 +59,8 @@ for (const width of [320, 390, 1440]) test(`미저장 제외/재접속/목록 �
   const header = await f.actions.locator('.save-grade__header').boundingBox();
   const button = await f.toggle('제외 해제').boundingBox();
   assert.ok(button.x >= header.x + header.width / 2 && button.x + button.width <= header.x + header.width + 1);
-  assert.ok((await f.page.evaluate(() => window.fixtureSpeech)).includes('ねこ'));
-  assert.equal(await f.page.locator('[data-source-token="id_0_0"]').textContent(), '猫');
+  assert.ok((await f.page.evaluate(() => window.fixtureSpeech)).includes('猫'));
+  assert.equal(await f.page.locator('[data-source-token="id_0_0"] .surface').evaluate(el => { const clone = el.cloneNode(true); for (const pron of clone.querySelectorAll('.rt-an')) pron.remove(); return clone.textContent; }), '猫');
   if (process.env.COMPOSER_SCREENSHOTS) await f.page.screenshot({ path: `${process.env.COMPOSER_SCREENSHOTS}/excluded-${width}.png`, fullPage: true });
   await f.page.reload({ waitUntil: 'domcontentloaded' }); await f.select(0); await f.toggle('제외 해제').waitFor();
   await f.page.goto('/vocab', { waitUntil: 'domcontentloaded' });
