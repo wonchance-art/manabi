@@ -9,7 +9,10 @@ const entries=[
 ];
 async function open(width) {
  const f=await fixture({width});
- await f.context.addInitScript(()=>localStorage.setItem('viewer_preferences_v2',JSON.stringify({version:2,languages:{Chinese:{showHanjaKo:true,autoSpeakOnClick:false}}})));
+ await f.context.addInitScript(()=>{
+  // Seed a fresh context once; reload must exercise the preference actually saved by the UI.
+  if(!localStorage.getItem('viewer_preferences_v2'))localStorage.setItem('viewer_preferences_v2',JSON.stringify({version:2,languages:{Chinese:{showHanjaKo:true,autoSpeakOnClick:false}}}));
+ });
  f.rows.push({id:94102,user_id:owner,title:'훈음 배치 검수',raw_text:entries.map(e=>e[0]).join(' '),source_type:'text',created_at:new Date().toISOString(),processed_json:{status:'completed',metadata:{language:'Chinese'},sequence:entries.map((_,i)=>`id_0_${i}`),dictionary:Object.fromEntries(entries.map(([text,furigana,meaning],i)=>[`id_0_${i}`,{text,base_form:text,furigana,meaning,pos:'명사'}]))}});
  await f.context.route('**/api/dict?**',r=>r.fulfill({contentType:'application/json',body:'null'}));
  await f.page.goto('/viewer/94102',{waitUntil:'domcontentloaded',timeout:120000});
@@ -47,12 +50,16 @@ for(const width of [1440,390,320])test(`viewer Korean labels/${width}px: long, a
   await checkGeometry(f);
   await f.page.evaluate(()=>document.documentElement.style.fontSize='');
   await f.page.getByRole('button',{name:'읽기 설정',exact:true}).click();
+  await f.page.getByRole('tab',{name:'학습 표시',exact:true}).click();
   await f.page.getByText('성조·문법·한자 표시',{exact:true}).click();
   const toggle=f.page.getByRole('checkbox',{name:'한자 대조'});
-  await toggle.click();await f.page.keyboard.press('Escape');
+  await toggle.click();await f.page.locator('.reader-hun').waitFor({state:'detached'});
+  await f.page.keyboard.press('Escape');
   assert.equal(await f.page.locator('.reader-hun').count(),0);
   await f.page.reload({waitUntil:'domcontentloaded'});
+  assert.equal(await f.page.evaluate(()=>JSON.parse(localStorage.getItem('viewer_preferences_v2')).languages.Chinese.showHanjaKo),false);
   await f.page.locator('[data-source-token="id_0_0"]').focus();await f.page.keyboard.press('Enter');
+  await f.page.locator('.word-detail-card__meaning').getByText(entries[0][2],{exact:true}).waitFor();
   assert.equal(await f.page.locator('.reader-hun').count(),0,'disabled preference survives reload');
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
