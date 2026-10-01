@@ -4,7 +4,7 @@ export function safeLibraryReturn(value) {
   try {
     const url = new URL(value, 'https://manabi.invalid');
     if (url.origin !== 'https://manabi.invalid' || url.pathname !== '/materials') return '/materials';
-    const allowed = new Set(['view', 'tab', 'q', 'lang', 'level', 'sort', 'unread', 'pinned', 'shown', 'restoreY', 'collection', 'kind', 'state', 'tools', 'scope']);
+    const allowed = new Set(['view', 'tab', 'q', 'lang', 'level', 'sort', 'unread', 'pinned', 'shown', 'restoreY', 'collection', 'kind', 'state', 'tools', 'scope', 'outline']);
     for (const key of [...url.searchParams.keys()]) if (!allowed.has(key)) url.searchParams.delete(key);
     return url.pathname + url.search;
   } catch { return '/materials'; }
@@ -34,6 +34,15 @@ export function safeReaderReturn(value) {
     }
   }
   return safeLibraryReturn(value);
+}
+
+export function readerReturnLabel(value) {
+  const url = new URL(safeReaderReturn(value), 'https://manabi.invalid');
+  if (url.pathname.startsWith('/class/')) {
+    if (url.pathname.endsWith('/live')) return '← 수업 진행';
+    return url.searchParams.get('view') === 'history' ? '← 수업 기록' : '← 수업으로';
+  }
+  return url.searchParams.get('tab') === 'public' ? '← 발견' : '← 내 서재';
 }
 
 export function libraryReaderHref(href, returnTo, scrollY = null) {

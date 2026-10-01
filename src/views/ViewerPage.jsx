@@ -2526,7 +2526,7 @@ export default function ViewerPage() {
           {siblingNav && (
             <div className="viewer-series-nav" title={siblingNav.label}>
               {siblingNav.prev ? (
-                <Link href={classStudyNeighborHref(siblingNav.prev,studyContext)} className="viewer-series-nav__btn" title={siblingNav.prev.title} aria-label={siblingNav.prevLabel}>‹</Link>
+                <Link href={classStudyNeighborHref(siblingNav.prev,studyContext,originalParams.get('returnTo'))} className="viewer-series-nav__btn" title={siblingNav.prev.title} aria-label={siblingNav.prevLabel}>‹</Link>
               ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">‹</span>}
               {siblingNav.pos != null && (
                 <span className="viewer-series-nav__position" title={siblingNav.label}>
@@ -2534,7 +2534,7 @@ export default function ViewerPage() {
                 </span>
               )}
               {siblingNav.next ? (
-                <Link href={classStudyNeighborHref(siblingNav.next,studyContext)} className="viewer-series-nav__btn" title={siblingNav.next.title} aria-label={siblingNav.nextLabel}>›</Link>
+                <Link href={classStudyNeighborHref(siblingNav.next,studyContext,originalParams.get('returnTo'))} className="viewer-series-nav__btn" title={siblingNav.next.title} aria-label={siblingNav.nextLabel}>›</Link>
               ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">›</span>}
             </div>
           )}
@@ -2606,13 +2606,8 @@ export default function ViewerPage() {
         {/* 배지 3종은 여태 header의 **직계 자식**이었다 — 래퍼가 없어 폭이 제각각이었고
             (inline-block 하나 vs 전체 폭 둘) 세로도 3줄을 먹었다. 한 줄로 모은다.
             인라인 style 3벌은 공용 클래스로 — v2-K R1 토큰화가 남긴 나머지다. */}
-        {((user && savedCount > 0) || (user && dueInMaterial > 0) || coverage) && (
+        {((user && dueInMaterial > 0) || coverage) && (
           <div className="viewer-badges">
-            {user && savedCount > 0 && (
-              <Link href="/vocab" prefetch={false} className="viewer-badge viewer-badge--pop">
-                {savedCount}개 수집 → 단어장
-              </Link>
-            )}
             {user && dueInMaterial > 0 && (
               <span className="viewer-badge viewer-badge--due" title="노란 테두리 단어 클릭 → 인라인 복습">
                 {dueInMaterial}개 복습 가능
@@ -3063,7 +3058,7 @@ export default function ViewerPage() {
                   } catch {}
                 }}
               >
-                오늘 학습 만들기
+                이 글로 연습
               </Link>
             )}
             {isDone && (
@@ -3088,7 +3083,7 @@ export default function ViewerPage() {
       {(isDone || isPending) && (() => {
         if (nextLesson) {
           return (
-            <Link href={classStudyNeighborHref(nextLesson,studyContext)} className="next-lesson-card">
+            <Link href={classStudyNeighborHref(nextLesson,studyContext,originalParams.get('returnTo'))} className="next-lesson-card">
               <div className="next-lesson-card__hint">다음 편</div>
               <div className="next-lesson-card__title">{nextLesson.title}</div>
             </Link>
@@ -3096,7 +3091,7 @@ export default function ViewerPage() {
         }
         if (bookNav?.next) {
           return (
-            <Link href={classStudyNeighborHref(bookNav.next,studyContext)} className="next-lesson-card">
+            <Link href={classStudyNeighborHref(bookNav.next,studyContext,originalParams.get('returnTo'))} className="next-lesson-card">
               <div className="next-lesson-card__hint">다음 과 · {bookNav.pos + 1}/{bookNav.total}</div>
               <div className="next-lesson-card__title">{bookNav.next.title}</div>
             </Link>

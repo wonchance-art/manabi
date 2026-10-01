@@ -159,7 +159,7 @@ export default function StudyLibraryPage({
   if (signedOut) {
     return (
       <div className="page-container" style={{ maxWidth: 640, textAlign: 'center', paddingTop: 60 }}>
-        <h1 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: 10 }}>서재</h1>
+        <h1 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: 10 }}>지난 이야기</h1>
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 20 }}>
           로그인하면 그동안 읽은 이야기를 다시 읽고, 성장을 확인할 수 있어요.
         </p>
@@ -173,7 +173,7 @@ export default function StudyLibraryPage({
   return (
     <div className="page-container" style={{ maxWidth: 640 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '10px 0 16px' }}>
-        <h1 style={{ fontSize: '1.3rem', fontWeight: 700, flex: 1 }}>서재</h1>
+        <h1 style={{ fontSize: '1.3rem', fontWeight: 700, flex: 1 }}>지난 이야기</h1>
         <Link href={`/study?lang=${lang}`} style={{ fontSize: '0.82rem', color: 'var(--text-muted)', textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: 28 }}>
           오늘 학습 →
         </Link>

@@ -27,7 +27,7 @@ const aCss = () => stripComments(sliceBetween(read('src/index.css'), '/* =======
 describe('① 본문 위에는 경로·제목·도구만 — 끝의 행동 0', () => {
   it('읽기 완료·오늘 학습·다음 범위 분석이 본문 위에 없다', () => {
     const a = above();
-    for (const s of ['markCompleteMutation.mutate', '읽기 완료', '오늘 학습 만들기', 'nextRangeMutation.mutate', '리딩 테스트', '회화 연습']) {
+    for (const s of ['markCompleteMutation.mutate', '읽기 완료', '이 글로 연습', 'nextRangeMutation.mutate', '리딩 테스트', '회화 연습']) {
       expect(a, `${s}이 본문 위로 되돌아왔다`).not.toContain(s);
     }
     // 예전 자리들 — 액션바·책 내비 바·PDF 카드가 되살아나지 않는다
@@ -60,7 +60,7 @@ describe('① 본문 위에는 경로·제목·도구만 — 끝의 행동 0', (
 describe('② 끝의 행동은 본문 아래 「다 읽었다면」 한 줄 + 다음 카드 하나', () => {
   it('읽기 완료 → 오늘 학습 → 리딩 테스트 → 회화 순서로 같은 옷', () => {
     const row = sliceBetween(below(), '<div className="post-reading-actions">', '{(isDone || isPending) && (() => {');
-    const order = ['markCompleteMutation.mutate()', '오늘 학습 만들기', '리딩 테스트', '회화 연습']
+    const order = ['markCompleteMutation.mutate()', '이 글로 연습', '리딩 테스트', '회화 연습']
       .map((s) => { const i = row.indexOf(s); expect(i, `${s} 없음`).toBeGreaterThan(-1); return i; });
     expect([...order].sort((x, y) => x - y)).toEqual(order);
     expect((row.match(/className="post-reading-actions__btn/g) || []).length).toBe(5); // 완료 2상태 + 셋

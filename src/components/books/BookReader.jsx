@@ -2,19 +2,20 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { authEntryHref } from '@/lib/authRedirect';
 import { useAuth } from '@/lib/AuthContext';
 import SaveContextButton from '@/components/learning/SaveContextButton';
 import MaterialChapterLinks from '@/components/learning/MaterialChapterLinks';
 import { BOOK_ID, bookHref } from '@/lib/textbook/contract';
-import { bookReferenceHref } from '@/lib/bookReviewNavigation';
+import { bookReferenceHref, bookReviewHref } from '@/lib/bookReviewNavigation';
 import { readingDraftKey, readingUnit } from '@/lib/bookNavigation';
 import useReadingProgress from './useReadingProgress';
 import BookHome from './BookHome';
 import './reading-content.css';
 import useLibraryActivity from '@/components/library/useLibraryActivity';
 import {LibraryReturnLink} from '@/components/web/LibraryReaderLink';
-import {safeLibraryReturn} from '@/lib/libraryReturn';
+import {safeLibraryReturn, libraryReaderHref} from '@/lib/libraryReturn';
 
 function withoutRuby(node) {
   if (!node) return '';
@@ -31,8 +32,10 @@ function readingText(node) {
 
 export default function BookReader({ book, sectionIndex, preview = false, reference = false }) {
   const { user } = useAuth();
+  const params = useSearchParams();
+  const returnTo = params.get('returnTo');
   const { progress, update, storageAvailable, hasProgress, ready } = useReadingProgress(book.edition);
-  const content = useRef(null), root = useRef(null), toolbar = useRef(null), dialog = useRef(null), pendingAnchor = useRef(null);
+  const content = useRef(null), root = useRef(null), toolbar = useRef(null), referenceMenu = useRef(null), dialog = useRef(null), dialogOrigin = useRef(null), pendingAnchor = useRef(null);
   const [pageId, setPageId] = useState('cover'), [active, setActive] = useState('');
   const [anchorRequest, setAnchorRequest] = useState(0);
   const [sections, setSections] = useState([]), [loading, setLoading] = useState(false), [error, setError] = useState('');
@@ -45,6 +48,21 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
   const draftKey = readingDraftKey(book.edition, user?.id);
   // Keep this object stable: React must not replace imperative answer fields and portal mounts on progress updates.
   const markup = useMemo(() => ({ __html: sections.map(section => section.html).join('\n') }), [sections]);
+
+  useEffect(() => {
+    const closeOutside = event => {
+      const menu = referenceMenu.current;
+      if (menu && !menu.contains(event.target)) menu.open = false;
+    };
+    document.addEventListener('pointerdown', closeOutside);
+    return () => document.removeEventListener('pointerdown', closeOutside);
+  }, []);
+
+  function leaveReferenceMenu(event) {
+    // Safari focuses the tabindex=-1 reader before activating a pointer link.
+    // Outside pointer presses are handled separately; Tab targets remain >= 0.
+    if (event.relatedTarget?.tabIndex >= 0 && !event.currentTarget.contains(event.relatedTarget)) event.currentTarget.open = false;
+  }
 
   const measureToolbar = useCallback(() => {
     const bar = toolbar.current;
@@ -105,6 +123,24 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
   useEffect(() => {
     const node = content.current;
     if (!node || !sections.length) return;
+    // Present the immutable manuscript without repeating its stage heading.
+    const duplicateStages = [];
+    for (const stage of node.querySelectorAll('.stage')) {
+      const heading = stage.nextElementSibling;
+      const text = element => element.textContent.replace(/\s+/g, ' ').trim();
+      if (heading?.tagName === 'H2' && text(stage) === text(heading) && getComputedStyle(heading).display !== 'none') {
+        stage.classList.add('is-duplicate-stage'); duplicateStages.push(stage);
+      }
+    }
+    const dialogueHeaders = [];
+    for (const button of node.querySelectorAll('.dialogue .translation')) {
+      const heading = button.closest('article')?.querySelector(':scope > h2');
+      if (!heading) continue;
+      const marker = document.createComment('translation control');
+      const header = document.createElement('div'); header.className = 'book-dialogue-heading';
+      button.before(marker); heading.before(header); header.append(heading, button);
+      dialogueHeaders.push({ header, heading, button, marker });
+    }
     let drafts = {};
     try { drafts = JSON.parse(localStorage.getItem(draftKey) || 'null') || {}; } catch { /* Reading works without local storage. */ }
     for (const input of node.querySelectorAll('[data-save]')) {
@@ -138,7 +174,11 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
       mounts.push({ mount, pageId: source.id, quote, meaning: translated, furigana: readingText(japanese) });
     }
     setExamples(mounts);
-    return () => { node.removeEventListener('input', remember); mounts.forEach(item => item.mount.remove()); };
+    return () => {
+      node.removeEventListener('input', remember); mounts.forEach(item => item.mount.remove());
+      duplicateStages.forEach(stage => stage.classList.remove('is-duplicate-stage'));
+      dialogueHeaders.forEach(({ header, heading, button, marker }) => { header.before(heading); marker.replaceWith(button); header.remove(); });
+    };
   }, [sections, draftKey, preview]);
 
   useEffect(() => {
@@ -204,6 +244,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
 
   function interact(event) {
     const anchor = event.target.closest('a[href]');
+    anchor?.closest('.manabi-reference-menu')?.removeAttribute('open');
     if (anchor && !anchor.hasAttribute('data-reading-resume') && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
       const url = new URL(anchor.href, window.location.href);
       if (url.origin === location.origin && url.pathname === `/books/${BOOK_ID}` && url.hash) { event.preventDefault(); go(decodeURIComponent(url.hash.slice(1)), anchor.closest('.kanji-card')?.id); return; }
@@ -232,16 +273,19 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     if (!quote || quote.length > 4000) return;
     setSelection({ pageId: source.id, quote }); setExpression(quote.length <= 160 ? quote : ''); setMeaning('');
   }
-  function openPanel(next) { setPanel(next); dialog.current?.showModal(); }
-  const readerHref = id => reference ? bookReferenceHref(bookHref(book.edition, id)) : bookHref(book.edition, id);
+  function openPanel(next, origin) { dialogOrigin.current = origin || null; setPanel(next); dialog.current?.showModal(); }
+  const readerHref = id => {
+    const href = reference ? bookReferenceHref(bookHref(book.edition, id)) : bookHref(book.edition, id);
+    return returnTo ? libraryReaderHref(href, returnTo) : href;
+  };
   const next = lesson && book.lessons.find(item => item.number === lesson.number + 1);
   const title = lesson ? lesson.title : ({ guide: '첫 문장 전에, 가볍게 준비', reference: '단어·문형·한자 찾기', materials: '일본어로 넓히는 일상' }[unit] || '교재 위치를 찾지 못했어요');
   return <div ref={root} className={`book-reader${focus ? ' is-focused' : ''}`} onClick={interact}>
     {reference && <div className="manabi-preview-note" role="note"><strong>복습 원문 참고</strong><p>읽던 위치는 바뀌지 않아요. 확인 후 복습하던 탭으로 돌아가세요.</p><a data-reading-resume className="manabi-link" href={bookHref(book.edition, active || pageId)}>여기부터 이어읽기 →</a></div>}
     {preview && <p className="manabi-preview-note">관리자 미리보기 · 발행 전 원고입니다.</p>}
     {unit === 'cover' ? <BookHome book={book} preview={preview} progress={progress} hasProgress={hasProgress} ready={ready} /> : <div className="manabi-reader-page">
-      <div ref={toolbar} className="manabi-reader-toolbar"><LibraryReturnLink/><a href={bookHref(book.edition)}>← 책으로</a><span>일본어 · N5{lesson ? ` / ${String(lesson.number).padStart(2, '0')}과` : ''}</span><div><a href={bookHref(book.edition, 'reference-start')}>찾아보기</a><Link prefetch={false} href={`/books/japanese-n5/review?edition=${book.edition}&returnTo=${encodeURIComponent(bookHref(book.edition, reference ? progress.page : active || pageId))}`}>담은 표현</Link>{lesson && <button type="button" onClick={() => openPanel('materials')}>내 자료</button>}<button type="button" aria-pressed={focus} onClick={() => setFocus(!focus)}>{focus ? '기본 보기' : '집중 읽기'}</button></div></div>
-      <div className="manabi-reader-grid"><aside className="manabi-reader-outline"><p className="manabi-eyebrow">{lesson ? `${String(lesson.number).padStart(2, '0')}과 · 읽는 순서` : '이 안에서'}</p><nav aria-label="과 안의 목차">{unitSections.map(section => <a key={section.id} href={readerHref(section.id)} aria-current={active === section.id ? 'location' : undefined}>{section.title}</a>)}</nav><Link prefetch={false} href={`/books/japanese-n5/materials?edition=${book.edition}`}>함께 읽기 ↗</Link></aside>
+      <div ref={toolbar} className="manabi-reader-toolbar"><LibraryReturnLink onlyWithContext/><a href={readerHref('cover')}>← 책 목차</a><span>일본어 · N5{lesson ? ` / ${String(lesson.number).padStart(2, '0')}과` : ''}</span><div><Link prefetch={false} href={`/books/japanese-n5/review?edition=${book.edition}&returnTo=${encodeURIComponent(bookHref(book.edition, reference ? progress.page : active || pageId))}`}>담은 표현</Link><details ref={referenceMenu} className="manabi-reference-menu" onBlur={leaveReferenceMenu} onKeyDown={event => { if (event.key === 'Escape') { event.currentTarget.open = false; event.currentTarget.querySelector('summary').focus(); } }}><summary>참고 자료</summary><nav aria-label="교재 참고 자료"><a href={readerHref('reference-start')}>어휘·문형·한자</a>{lesson && <button type="button" onClick={event => { const menu = event.currentTarget.closest('details'); menu.open = false; openPanel('materials', menu.querySelector('summary')); }}>이 과의 연결 자료</button>}<Link prefetch={false} href={`/books/japanese-n5/materials?edition=${book.edition}`}>문화 읽기</Link></nav></details><button type="button" aria-pressed={focus} onClick={() => setFocus(!focus)}>{focus ? '기본 보기' : '집중 읽기'}</button></div></div>
+      <div className="manabi-reader-grid"><aside className="manabi-reader-outline"><p className="manabi-eyebrow">{lesson ? `${String(lesson.number).padStart(2, '0')}과 · 목차` : '목차'}</p><nav aria-label="과 안의 목차">{unitSections.map(section => <a key={section.id} href={readerHref(section.id)} aria-current={active === section.id ? 'location' : undefined}>{section.title}</a>)}</nav></aside>
         <div className="manabi-reader-main"><details className="manabi-mobile-toc"><summary>이 과의 목차</summary><nav aria-label="모바일 과 목차">{unitSections.map(section => <a key={section.id} href={readerHref(section.id)} onClick={event => event.currentTarget.closest('details').removeAttribute('open')}>{section.title}</a>)}</nav></details>
           <header className="manabi-chapter-opening"><div><p className="manabi-eyebrow">{lesson?.part || 'JAPANESE · N5'}</p>{lesson?.subtitle && <p className="manabi-chapter-subtitle">{lesson.subtitle}</p>}<h1>{title}</h1>{lesson && <p className="manabi-chapter-goal">{lesson.goal}</p>}</div>{lesson && <span className="manabi-chapter-number" aria-hidden="true">{String(lesson.number).padStart(2, '0')}</span>}</header>
           {unit === 'reference' && <label className="manabi-reference-search">어휘·문형·한자 검색<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="일본어 또는 한국어로 찾아보세요" /></label>}
@@ -249,13 +293,13 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
           {!unit && <p className="manabi-status"><a href={bookHref(book.edition)}>책 목차에서 다시 열기 →</a></p>}
           {unit === 'reference' && query.trim() && <p className="manabi-status" role="status">{searchCount ? `${searchCount}개 항목을 찾았어요.` : '일치하는 항목이 없어요. 다른 말로 찾아보세요.'}</p>}
           <div ref={content} className={`book-reading-content${lesson ? ' is-lesson' : ''}`} dangerouslySetInnerHTML={markup} onMouseUp={chooseText} onKeyUp={chooseText} onTouchEnd={chooseText} />
-          {lesson && !loading && !error && sections.length > 0 && <section className="manabi-chapter-finish"><p className="manabi-eyebrow">한 과를 마치며</p><h2>이제 내 말로 꺼내 볼까요?</h2><p>{lesson.goal}</p><div className="manabi-row">{!reference && <button className="manabi-button" type="button" disabled={progress.completed.includes(unit)} onClick={() => update({ completed: [...progress.completed, unit] })}>{progress.completed.includes(unit) ? '학습한 과예요 ✓' : '이 과 학습 완료'}</button>}{next ? <a className="manabi-link" href={readerHref(`${next.id}-start`)}>{String(next.number).padStart(2, '0')}과로 →</a> : <Link prefetch={false} className="manabi-link" href={`/books/japanese-n5/review?edition=${book.edition}&returnTo=${encodeURIComponent(bookHref(book.edition, reference ? progress.page : active || pageId))}`}>담은 표현 복습하기 →</Link>}</div><small role="status">{!storageAvailable ? '현재 브라우저에서 읽기 기록을 저장할 수 없어요.' : draftStatus || '읽던 위치와 답안은 이 브라우저에 기억해요.'}</small></section>}
+          {lesson && !loading && !error && sections.length > 0 && <section className="manabi-chapter-finish" aria-label="과 읽기 기록"><div className="manabi-row">{!reference && <button className="manabi-button" type="button" disabled={progress.completed.includes(unit)} onClick={() => update({ completed: [...progress.completed, unit] })}>{progress.completed.includes(unit) ? '읽기 완료 ✓' : '읽기 완료'}</button>}{next ? <a className="manabi-link" href={readerHref(`${next.id}-start`)}>{String(next.number).padStart(2, '0')}과로 →</a> : <Link prefetch={false} className="manabi-link" href={bookReviewHref(bookHref(book.edition, reference ? progress.page : active || pageId))}>이 교재 표현 복습 →</Link>}</div><small role="status">{!storageAvailable ? '현재 브라우저에서 읽기 기록을 저장할 수 없어요.' : draftStatus || '읽던 위치와 답안은 이 브라우저에 기억해요.'}</small></section>}
         </div></div>
     </div>}
-    {selection && !preview && <div className="manabi-selection-bar"><p lang="ja">{selection.quote}</p><button type="button" className="manabi-button" onClick={() => openPanel('selection')}>이 표현 담기</button><button type="button" className="manabi-link" aria-label="선택 닫기" onClick={() => setSelection(null)}>닫기</button></div>}
-    {examples.map((item, index) => createPortal(user ? <SaveContextButton word={{ word_text: item.quote, meaning: item.meaning, furigana: item.furigana, language: 'Japanese' }} source={{ kind: 'textbook', bookId: BOOK_ID, editionId: book.edition, pageId: item.pageId, quote: item.quote }} label="이 예문 담기 +" /> : <Link prefetch={false} className="manabi-example-signin" href={authEntryHref(bookHref(book.edition, item.pageId))}>로그인 후 담기 +</Link>, item.mount, `${item.pageId}:${index}:${user?.id || 'guest'}`))}
-    <dialog ref={dialog} className="manabi-reading-dialog" aria-labelledby="reading-dialog-title"><div className="manabi-section-heading"><h2 id="reading-dialog-title">{panel === 'selection' ? '기억할 표현' : '이 과와 함께 읽기'}</h2><button type="button" className="manabi-link" onClick={() => dialog.current.close()}>닫기</button></div>
-      {panel === 'selection' && selection ? <><blockquote lang="ja">{selection.quote}</blockquote><label>기억할 표현<input maxLength={160} lang="ja" value={expression} onChange={event => setExpression(event.target.value)} /></label><label>한국어 뜻<input maxLength={1000} value={meaning} onChange={event => setMeaning(event.target.value)} /></label>{!user ? <Link href={authEntryHref(bookHref(book.edition, selection.pageId))}>로그인 후 이 위치로 돌아오기 →</Link> : expression.trim() && meaning.trim() ? <SaveContextButton key={`${selection.pageId}:${expression}:${meaning}`} word={{ word_text: expression, meaning, language: 'Japanese' }} source={{ kind: 'textbook', bookId: BOOK_ID, editionId: book.edition, ...selection }} /> : <p>표현과 뜻을 채워 주세요.</p>}</> : <><p>{lesson?.title}</p>{preview && <p className="manabi-muted">미리보기에서는 문화 글을 읽을 수 있어요. 내 자료 연결은 발행 후 사용할 수 있어요.</p>}{lesson && !preview && <MaterialChapterLinks key={unit} lang="Japanese" slug={`n5-book-${unit}`} />}<Link prefetch={false} className="manabi-link" href={`/books/japanese-n5/materials?edition=${book.edition}`}>문화 읽기와 내 자료 →</Link></>}
+    {selection && !preview && <div className="manabi-selection-bar"><p lang="ja">{selection.quote}</p><button type="button" className="manabi-button" onClick={() => openPanel('selection')}>표현 담기</button><button type="button" className="manabi-link" aria-label="선택 닫기" onClick={() => setSelection(null)}>닫기</button></div>}
+    {examples.map((item, index) => createPortal(user ? <SaveContextButton word={{ word_text: item.quote, meaning: item.meaning, furigana: item.furigana, language: 'Japanese' }} source={{ kind: 'textbook', bookId: BOOK_ID, editionId: book.edition, pageId: item.pageId, quote: item.quote }} label="예문 담기" /> : <Link prefetch={false} className="manabi-example-signin" title="로그인 후 이 예문을 담을 수 있어요" href={authEntryHref(bookHref(book.edition, item.pageId))}>예문 담기</Link>, item.mount, `${item.pageId}:${index}:${user?.id || 'guest'}`))}
+    <dialog ref={dialog} onClose={() => { dialogOrigin.current?.focus(); dialogOrigin.current = null; setPanel('selection'); }} className="manabi-reading-dialog" aria-labelledby="reading-dialog-title"><div className="manabi-section-heading"><h2 id="reading-dialog-title">{panel === 'selection' ? '기억할 표현' : '이 과의 연결 자료'}</h2><button type="button" className="manabi-link" onClick={() => dialog.current.close()}>닫기</button></div>
+      {panel === 'selection' && selection ? <><blockquote lang="ja">{selection.quote}</blockquote><label>기억할 표현<input maxLength={160} lang="ja" value={expression} onChange={event => setExpression(event.target.value)} /></label><label>한국어 뜻<input maxLength={1000} value={meaning} onChange={event => setMeaning(event.target.value)} /></label>{!user ? <Link href={authEntryHref(bookHref(book.edition, selection.pageId))}>로그인 후 이 위치로 돌아오기 →</Link> : expression.trim() && meaning.trim() ? <SaveContextButton key={`${selection.pageId}:${expression}:${meaning}`} word={{ word_text: expression, meaning, language: 'Japanese' }} source={{ kind: 'textbook', bookId: BOOK_ID, editionId: book.edition, ...selection }} /> : <p>표현과 뜻을 채워 주세요.</p>}</> : panel === 'materials' ? <>{preview && <p className="manabi-muted">발행 전에는 개인 자료를 연결할 수 없어요.</p>}{lesson && !preview && <MaterialChapterLinks key={unit} lang="Japanese" slug={`n5-book-${unit}`} browseFirst />}</> : null}
     </dialog>
   </div>;
 }

@@ -90,7 +90,7 @@ jobs:
         run: |
           export NODE_OPTIONS="--import=$PWD/e2e/server-fetch-mock.mjs"
           export COMPOSER_TEST_MODULES="$PWD/node_modules"
-          node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 8878 > /tmp/library-chapter-server.log 2>&1 &
+          E2E_PUBLISHED_EDITION=8a8c1c1fd452773810abaf8c node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 8878 > /tmp/library-chapter-server.log 2>&1 &
           chapter_server_pid=$!
           trap 'kill "$chapter_server_pid" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 60); do
@@ -98,4 +98,4 @@ jobs:
             sleep 1
           done
           curl -fsS http://127.0.0.1:8878/manifest.webmanifest > /dev/null
-          node --test --test-concurrency=1 e2e/library-book-chapters.e2e.mjs e2e/library-management.e2e.mjs
+          node --test --test-concurrency=1 e2e/library-book-chapters.e2e.mjs e2e/library-management.e2e.mjs e2e/learning-flow-clarity.e2e.mjs e2e/textbook-reading-clarity.e2e.mjs

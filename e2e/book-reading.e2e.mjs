@@ -30,7 +30,7 @@ fs.mkdirSync(out, {recursive:true});
  const radio=page.locator('input[type=radio]').first();await radio.check();const radioKey=await radio.getAttribute('data-save');const radioValue=await radio.getAttribute('value');
  const area=page.locator('textarea[data-save]').first();await area.fill('로컬 검수 답안');const areaKey=await area.getAttribute('data-save');await page.reload();await page.locator('#u01-practice').waitFor();
  await page.waitForFunction(({key,value})=>[...document.querySelectorAll('input[data-save]')].some(input=>input.dataset.save===key&&input.value===value&&input.checked),{key:radioKey,value:radioValue});assert.equal(await page.locator(`input[data-save="${radioKey}"][value="${radioValue}"]`).isChecked(),true);assert.equal(await page.locator(`textarea[data-save="${areaKey}"]`).inputValue(),'로컬 검수 답안');report.flows.push('radio-and-written-answer-reload');
- await page.getByRole('button',{name:'이 과 학습 완료',exact:true}).click();await page.getByRole('button',{name:'학습한 과예요 ✓',exact:true}).waitFor();report.flows.push('lesson-completion');
+ await page.getByRole('button',{name:'읽기 완료',exact:true}).click();await page.getByRole('button',{name:'읽기 완료 ✓',exact:true}).waitFor();report.flows.push('lesson-completion');
  for(const width of [390,320,768,1440]){
   await page.setViewportSize({width,height:900});
   for(const unit of ['u07','u19','u25','u30','u35','u39','u42']){

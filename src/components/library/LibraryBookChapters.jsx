@@ -6,11 +6,13 @@ import {chapterCaption,fetchBookChapterPage} from '@/lib/libraryBookChapters';
 import {invalidateLibrary} from '@/lib/libraryOperations';
 import LibraryReaderLink from '@/components/web/LibraryReaderLink';
 import LibraryChapterEditor from './LibraryChapterEditor';
+import useLibraryOutline from './useLibraryOutline';
 
 export default function LibraryBookChapters({row,ownerId,disabled=false}) {
  const cache=useQueryClient();
  const addButton=useRef(null),chapterButtons=useRef(new Map());
- const [expanded,setExpanded]=useState(false),[count,setCount]=useState(20),[editor,setEditor]=useState(null),[menu,setMenu]=useState(null),[reveal,setReveal]=useState(null);
+ const [expanded,setExpanded,count,setCount]=useLibraryOutline(row);
+ const [editor,setEditor]=useState(null),[menu,setMenu]=useState(null),[reveal,setReveal]=useState(null);
  const query=useQuery({queryKey:['library-book-chapters',ownerId,row.target_id,count,reveal],enabled:expanded,
   queryFn:()=>fetchBookChapterPage(supabase,row.target_id,count,reveal),staleTime:0});
  async function saved(id){

@@ -14,7 +14,7 @@
 .book-reading-content .pattern h3{font-size:22px;margin-bottom:17px}
 .book-reading-content .formula{border-radius:5px;background:#f4ecee;padding:15px 18px}
 .book-reading-content .examples{border:1px solid #dfc8ce;border-left:4px solid var(--mauve);background:#fffaf9;border-radius:6px;padding:20px 22px 12px;margin-top:28px}
-.book-reading-content .examples .caption{background:#fffaf9;letter-spacing:.035em;color:var(--mauve)}
+.book-reading-content .examples .caption{position:static;display:block;background:transparent;padding:0 0 10px;margin:0;border-bottom:1px solid var(--line);letter-spacing:0;color:var(--mauve)}
 .book-reading-content .example{padding:15px 0}
 .book-reading-content .example>[lang=ja]{font-size:24px;line-height:2}
 .book-reading-content .example>p{font-size:13px;margin-top:6px}
@@ -31,8 +31,25 @@
 .book-reading-content .note{background:#f7f3ed;border-color:#e4d5c0}
 .book-reading-content .note>b{color:#866234}
 .book-reading-content .check,.book-reading-content .practice-box,.book-reading-content .reading-box{border-width:1px;border-color:var(--line);box-shadow:none}
-.book-reading-content .answers{background:#f6efef;border:1px solid #deccd1;border-radius:6px}
+.book-reading-content .answers{background:#f6efef;border:1px solid #deccd1;border-radius:6px;padding:0}
 .book-reading-content .answers summary{color:var(--mauve);padding:12px 16px;min-height:44px;cursor:pointer}
+.book-reading-content .answers>.answer{margin:0;padding:18px;border-top:1px solid var(--line);border-bottom:0;min-width:0}
+.book-reading-content .answers>.answer>small{display:block;line-height:1.9;margin-top:8px}
+.book-reading-content .answers>:not(summary,.answer){margin:16px 18px}
+.book-reading-content .answers .examples{margin-top:14px}
+.book-reading-content .is-duplicate-stage{display:none}
+.book-reading-content .book-dialogue-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px 20px;margin:6px 0 24px;flex-wrap:wrap}
+.book-reading-content .book-dialogue-heading h2{flex:1;min-width:160px;margin:0}
+.book-reading-content .book-dialogue-heading .translation{margin:0;min-height:44px;flex-shrink:0;background:transparent}
+.book-reading-content .oral{grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch}
+.book-reading-content .oral>div{display:grid;grid-template-rows:auto 1fr auto;min-width:0}
+.book-reading-content .oral>div>p{margin:4px 0 16px}
+.book-reading-content .oral textarea{margin:0;align-self:end}
+.book-reading-content .review-task{margin:26px 0;padding-top:20px;border-top:1px solid var(--line)}
+.book-reading-content .review-task>p:first-child{font-weight:700;color:var(--ink)}
+.book-reading-content .review-task .check{background:transparent;border:0;padding:0;margin:12px 0}
+.book-reading-content .review-task .check legend{padding:0}
+.book-reading-content summary:focus-visible{outline:2px solid var(--mauve);outline-offset:4px}
 .book-reading-content textarea,.book-reading-content input{background:#fffdfb;color:var(--ink);border-color:#d9c8cc;accent-color:var(--mauve)}
 .book-reading-content textarea{min-height:54px;padding:13px;line-height:1.9;resize:vertical;max-width:100%}
 .book-reading-content .choice{min-height:44px;align-items:center}
@@ -49,3 +66,17 @@
 
 /* Cover page, exercise and reference anchors alike, including wrapped toolbars. */
 .book-reader .book-reading-content [id]{scroll-margin-top:var(--book-scroll-offset)}
+
+.book-reader .manabi-reference-menu{position:relative;color:#994a5a}
+.book-reader .manabi-reference-menu>summary{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;list-style:none;white-space:nowrap}
+.book-reader .manabi-reference-menu>summary::-webkit-details-marker{display:none}
+.book-reader .manabi-reference-menu>summary::after{content:'⌄';font-size:14px}
+.book-reader .manabi-reference-menu[open]>summary::after{content:'⌃'}
+.book-reader .manabi-reference-menu>nav{position:absolute;right:0;top:100%;z-index:20;min-width:190px;display:grid;padding:8px;background:#fffdfb;border:1px solid #e8dade;border-radius:6px}
+.book-reader .manabi-reference-menu>nav :is(a,button){display:flex;align-items:center;min-height:44px;padding:8px 12px;text-align:left;white-space:normal}
+.book-reader .manabi-reference-menu :is(summary,a,button):focus-visible{outline:2px solid #994a5a;outline-offset:2px}
+.book-reader .learning-links--browse{border:0;margin:0;padding:0}
+.book-reader .learning-links--browse>ul{padding-left:0;list-style:none}
+.book-reader .learning-links--browse>details{border-top:1px solid #e8dade;padding-top:14px;margin-top:20px}
+.book-reader .learning-links--browse>details>summary{min-height:44px;cursor:pointer;color:#994a5a}
+@container manabi-reader (max-width:550px){.book-reading-content .oral{grid-template-columns:1fr}.book-reading-content .oral>div{display:block}.book-reading-content .answers>.answer{padding:16px}}
