@@ -1,6 +1,6 @@
 /**
- * '이미 앎' 표시 (#1077-14, 목업 ⑤) — 담지 않았지만 아는 단어의 미니 표기 목록.
- * 단어장·SRS와 분리: 학습 대상이 아니라 커버리지(i+1)·"새 단어" 셈의 정밀화 재료다.
+ * 아는 단어 표시 — 커버리지와 복습 제외가 같은 표기를 읽는다(2026-10-02 오너 정정).
+ * 표시/해제의 DB 트리거가 복습 보호 상태를 동기화하고 원래 단어·SRS·이력은 보존한다.
  * 합류 지점은 materialFit 호출부의 인덱스 합집합뿐(엔진 시그니처 무변경).
  * 실패·게스트·마이그레이션 미적용은 조용히(버튼·정밀화만 비활성 — 무해성).
  */
@@ -14,14 +14,18 @@ export function knownWordsLang(materialLang) {
 
 /** 내 '이미 앎' 표기 전체(언어 무관 — 서재 커버리지용) 또는 한 언어. */
 export async function fetchKnownWords(userId, langCode) {
-  let query = supabase
-    .from('user_known_words')
-    .select('word_text, lang')
-    .eq('user_id', userId);
-  if (langCode) query = query.eq('lang', langCode);
-  const { data, error } = await query;
-  if (error) throw error;
-  return data || [];
+  return loadKnownWords(supabase, userId, langCode);
+}
+export async function loadKnownWords(client, userId, langCode) {
+  const rows = [];
+  for (let offset = 0; ; offset += 200) {
+    let query = client.from('user_known_words').select('word_text, lang').eq('user_id', userId);
+    if (langCode) query = query.eq('lang', langCode);
+    const { data, error } = await query.order('lang').order('word_text').range(offset, offset + 199);
+    if (error) throw error;
+    rows.push(...(data || []));
+    if ((data || []).length < 200) return rows;
+  }
 }
 
 /**
@@ -52,11 +56,13 @@ export async function markKnown(userId, langCode, wordText) {
 }
 
 export async function unmarkKnown(userId, langCode, wordText) {
+  const keys = Array.isArray(wordText) ? wordText : [wordText];
+  if (!keys.length) return;
   const { error } = await supabase
     .from('user_known_words')
     .delete()
     .eq('user_id', userId)
     .eq('lang', langCode)
-    .eq('word_text', wordText);
+    .in('word_text', keys);
   if (error) throw error;
 }

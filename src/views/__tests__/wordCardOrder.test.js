@@ -81,15 +81,17 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
     expect(card).toContain('className="syn-ant__row"'); expect(card).toContain('renderSynAntChips(synAnt.syn)'); expect(sliceBetween(css,'.syn-ant__row {','}')).toContain('flex-direction: column');
   });
 
-  it('액션 영역 — 전폭 단독 버튼 0, 줄(actrow) 정확히 2', () => {
-    // 줄은 분기별 대안(저장 전 4등급 그리드 / 저장 후 ✓ 줄 / known 취소 줄)이라 소스 개수 ≥ 2 — 렌더는 ≤ 2줄
+  it('액션 영역 — 전폭 단독 버튼 0, 아는 단어 토글은 안내 줄 하나', () => {
+    // 기존 저장/게스트 줄 유지. 오너 정정으로 known 취소의 중복 줄은 안내 줄 토글에 통합.
     expect(card.match(/className="word-detail-card__actrow"/g)?.length).toBeGreaterThanOrEqual(2);
+    expect(card).toContain('aria-pressed={selectedKnown}');
+    expect(card).not.toContain('아는 말로 표시됨 — 취소');
     expect(card).not.toContain("style={{ width: '100%', marginBottom: 12 }}");
     expect(card).not.toContain("style={{ width: '100%' }}");
     expect(card).not.toContain("style={{ width: '100%', marginTop: 6");
     expect(css).toContain('.word-detail-card__actrow > .btn { flex: 1; min-width: 0; }');
     // 버튼 문구·핸들러는 그대로(기능 무변경)
-    for (const s of ['runCtxExplain(selectedToken,ctxSentenceOf(selectedToken))', 'fetchWordDetail(selectedToken)', '상세 설명 보기', "'✓ 단어장에 있음'", '아는 말로 표시됨 — 취소']) {
+    for (const s of ['runCtxExplain(selectedToken,ctxSentenceOf(selectedToken))', 'fetchWordDetail(selectedToken)', '상세 설명 보기', "'✓ 단어장에 있음'"]) {
       expect(card).toContain(s);
     }
   });

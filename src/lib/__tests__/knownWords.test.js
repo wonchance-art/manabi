@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { knownWordsLang, mergeKnownIntoIndex } from '../knownWords.js';
 
-// 계약: '이미 앎'(#1077-14, 목업 ⑤) — 단어장·SRS 분리, 합류는 인덱스 합집합뿐.
+// 원래 known/커버리지 계약 유지. 2026-10-02 오너 정정: known 표시를 복습 보호에도 연결.
 
 describe('knownWordsLang — 만남 기록과 같은 언어 매핑', () => {
   it('4언어 매핑·미지원은 null', () => {
@@ -60,13 +60,12 @@ describe("'이미 앎' 배선 계약", () => {
     expect(src).toMatch(/materialFit\(m\.processed_json, index\)/);
   });
 
-  it("뷰어 — 시트에 '이미 알아요' 토글, 저장된 단어에는 숨김", () => {
+  it('뷰어 — 아는 단어 토글 하나, 네 등급·원래 known 정본 보존', () => {
     const src = read('src/views/ViewerPage.jsx');
-    // W R1(2026-09-02): 「이미 알아요」 **쓰기 일몰** — 뷰어에 markKnown 호출 0, 이미 known인
-    // 단어의 「취소」만 남는다(읽기 경로·커버리지·「모르는 단어만」은 불변).
-    expect(src).not.toContain('👌 이미 알아요');
-    expect(src).not.toMatch(/\bmarkKnown\(/);
-    expect(src).toContain('아는 말로 표시됨 — 취소');
-    expect(src).toContain('{knownLangCode && isKnown && (');
+    expect(src).toContain('knownState.mutation.mutate');
+    expect(src).toContain('aria-pressed={selectedKnown}');
+    expect(src).toContain('removeKeys: selectedKnownKeys');
+    expect(src).not.toContain('아는 말로 표시됨 — 취소');
+    expect(src).not.toContain("selectedExcluded ? '제외 해제' : '제외'");
   });
 });

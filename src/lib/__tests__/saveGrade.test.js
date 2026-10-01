@@ -15,7 +15,7 @@ const DAY = 24 * 3600 * 1000;
  * 계약: W 저장 등급 R1 (오너 확정 2026-09-02, #1077 5504298889).
  * 「저장/이미 안다」 이분법 → Anki식 4등급 저장. 전부 SRS 안 — 「쉬움」도 8일 뒤 확인.
  * last_reviewed_at 불세팅으로 하루 한도 보호. 키 1~4 · Ctrl/⌘+Z undo(새로 넣은 행만).
- * 「이미 알아요」 쓰기 일몰(읽기 경로 불변).
+ * 2026-10-02 오너 정정: 아는 단어 토글은 네 평가칸을 보존하고 복습 보호에 연결한다.
  */
 describe('저장 등급 — 정본(vocabIO)', () => {
   it('저장 4버튼의 라벨·순서·CSS 접미사가 복습 화면(ScoreSection)과 동일하다', () => {
@@ -81,7 +81,7 @@ describe('저장 등급 — 뷰어 배선(ViewerPage)', () => {
     expect(keys).toContain('viewerCommandAllowed(e, { cardOpen: h.cardOpen, blocked: h.blocked })');
     expect(keys).toContain("e.metaKey || e.ctrlKey || e.altKey || !/^[1-4]$/.test(e.key)");
     expect(keys).toContain('if (!h.saveLocked) { e.preventDefault(); h.addToVocab?.(Number(e.key)); }');
-    expect(viewer).toContain('saveLocked: isWordSaved || saveAnim || selectedExcluded || !exclusionState.isSuccess || exclusionState.mutation.isPending,');
+    expect(viewer).toContain('saveLocked: isWordSaved || saveAnim || selectedExcluded || !wordStateReady || knownPending || exclusionState.mutation.isPending,');
     expect(keys).toContain("document.addEventListener('keydown', onKeyDown);");
     expect(keys).toContain("return () => document.removeEventListener('keydown', onKeyDown);");
   });
@@ -108,14 +108,14 @@ describe('저장 등급 — 뷰어 배선(ViewerPage)', () => {
     expect(viewer).toMatch(/UNDO_KEY_LABEL = [\s\S]{0,200}\? '⌘Z' : 'Ctrl\+Z'/);
   });
 
-  it('「이미 알아요」 쓰기 일몰 — 뷰어에 markKnown 호출 0, unmarkKnown(취소)만 남고 읽기 경로는 불변', () => {
-    expect(viewer).not.toMatch(/\bmarkKnown\(/);
-    expect(viewer).toContain('unmarkKnown(user.id, knownLangCode, wordText)');
-    expect(card).toContain('{knownLangCode && isKnown && (');
-    expect(card).not.toContain('👌 이미 알아요');
-    // 읽기: 커버리지 병합·known 집합 조회는 그대로
-    expect(viewer).toContain('fetchKnownWords');
-    expect(viewer).toContain('knownWordSet?.has(selectedToken.text)');
-    expect(read('src/lib/knownWords.js')).toContain('export async function markKnown'); // lib는 그대로(다른 화면 읽기·향후 재개)
+  it('아는 단어 표시가 평가와 분리되고 키보드 저장/복습도 막는다', () => {
+    expect(card).toContain('aria-pressed={selectedKnown}');
+    expect(card).toContain('known: !selectedKnown');
+    expect(viewer).toContain('selectedKnown || (exclusionState.isSuccess');
+    expect(viewer).toContain('saveLocked: isWordSaved || saveAnim || selectedExcluded || !wordStateReady');
+    expect(viewer).toContain('inlineDue: !!user && !selectedExcluded && wordStateReady');
+    expect(card).not.toContain('아는 말로 표시됨 — 취소');
+    expect(viewer).toContain('knownWordSetOf(knownState.data, exclusionState.data, knownLangCode)');
+    expect(read('src/lib/useKnownWords.js')).toContain('unmarkKnown(body.accountId, body.lang, body.removeKeys)');
   });
 });
