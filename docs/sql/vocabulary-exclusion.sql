@@ -44,7 +44,8 @@ BEGIN
   SELECT * INTO e FROM public.vocabulary_exclusions WHERE id=p_exclusion_id AND user_id=who;
   IF e.id IS NULL THEN RAISE EXCEPTION 'exclusion_not_available' USING ERRCODE='42501'; END IF;
   IF e.vocabulary_id IS NOT NULL THEN PERFORM 1 FROM public.user_vocabulary WHERE id=e.vocabulary_id AND user_id=who FOR UPDATE; END IF;
-  DELETE FROM public.vocabulary_exclusions WHERE id=e.id AND user_id=who;
+  DELETE FROM public.vocabulary_exclusions WHERE user_id=who AND (id=e.id OR
+   (e.language IN ('Japanese','Chinese','English','French') AND language=e.language AND word_text=e.word_text));
   RETURN jsonb_build_object('excluded',false,'entry',to_jsonb(e));
  END IF;
  IF p_vocabulary_id IS NOT NULL THEN
@@ -79,7 +80,8 @@ BEGIN
   IF e.id IS NULL THEN
    SELECT * INTO e FROM public.vocabulary_exclusions WHERE user_id=who AND language=lang AND word_text=word;
   END IF;
-  IF e.id IS NOT NULL THEN DELETE FROM public.vocabulary_exclusions WHERE id=e.id AND user_id=who;
+  IF e.id IS NOT NULL THEN DELETE FROM public.vocabulary_exclusions WHERE user_id=who AND (id=e.id OR
+   (e.language IN ('Japanese','Chinese','English','French') AND language=e.language AND word_text=e.word_text));
   ELSE e.id:=gen_random_uuid();e.language:=lang;e.word_text:=word;e.vocabulary_id:=v.id; END IF;
  END IF;
  RETURN jsonb_build_object('excluded',p_excluded,'entry',to_jsonb(e));

@@ -29,7 +29,7 @@ async function setup({ width = 1440, saved = false, due = true } = {}) {
   if (failNext) { failNext = false; return json(r, { error: 'fixture write failure' }, 503); }
   let entry = exclusions.find(e => e.id === body.exclusionId || (body.vocabularyId && e.vocabulary_id === body.vocabularyId));
   if (body.excluded) { entry ||= { id: entryId, language: 'Japanese', word_text: body.tokenId === 'id_0_1' ? '犬' : '猫', vocabulary_id: body.vocabularyId || null }; if (!exclusions.includes(entry)) exclusions.push(entry); }
-  else { const i = exclusions.indexOf(entry); if (i >= 0) exclusions.splice(i, 1); }
+  else { for (let i = exclusions.length - 1; i >= 0; i--) if (exclusions[i].id === entry.id || (exclusions[i].language === entry.language && exclusions[i].word_text === entry.word_text)) exclusions.splice(i, 1); }
   return json(r, { excluded: body.excluded, entry });
  });
  const vocabRows = () => words.map(w => ({ ...w, is_excluded: exclusions.some(e => e.vocabulary_id === w.id || (e.word_text === w.base_form && e.language === w.language)) }));
@@ -70,6 +70,17 @@ for (const width of [320, 390, 1440]) test(`미저장 제외/재접속/목록 �
   assert.equal(f.exclusions.length, 0); assert.equal(f.words.length, 0); assert.equal(f.grades.length, 0);
   await f.page.goto('/viewer/94101', { waitUntil: 'domcontentloaded' }); await f.select(0);
   assert.equal(await f.gradesUI.count(), 4); for (const b of await f.gradesUI.all()) assert.equal(await b.isEnabled(), true);
+  assert.deepEqual(f.errors, []);
+ } finally { await f.context.close(); }
+});
+test('표기 편집으로 겹친 제외 상태도 한 번에 해제하고 네 평가칸 복원', async () => {
+ const f = await setup({ saved: true });
+ try {
+  f.exclusions.push({ id: entryId, language: 'Japanese', word_text: '猫', vocabulary_id: cardId }, { id: '20000000-0000-4000-8000-000000000002', language: 'Japanese', word_text: '猫', vocabulary_id: null });
+  await f.page.reload({ waitUntil: 'domcontentloaded' }); await f.select(0);
+  await f.toggle('제외 해제').click(); await f.toggle('제외').waitFor();
+  assert.equal(f.exclusions.length, 0); assert.equal(f.grades.length, 0);
+  for (const button of await f.gradesUI.all()) assert.equal(await button.isEnabled(), true);
   assert.deepEqual(f.errors, []);
  } finally { await f.context.close(); }
 });

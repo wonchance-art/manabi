@@ -91,6 +91,17 @@ try {
   await toggle({entry:kept[0].id,excluded:false});
   await db.query("insert into user_vocabulary(user_id,word_text,base_form,meaning,language) values($1,'runs','run','새 뜻','English')",[a]);
  });
+ await check('표기 편집으로 제외 키가 겹쳐도 한 번에 계정 범위를 해제',async()=>{
+  const linked=await toggle({id:before.id});await toggle({lang:'English',word:'shelf'});
+  const prior=(await rows('select * from user_vocabulary where id=$1',[before.id]))[0];
+  await db.query("update user_vocabulary set word_text='shelf',base_form='shelf' where id=$1",[before.id]);
+  assert.equal((await rows("select * from vocabulary_exclusions where language='English' and word_text='shelf'")).length,2);
+  await toggle({entry:linked.entry.id,excluded:false});
+  assert.equal((await rows("select * from vocabulary_exclusions where language='English' and word_text='shelf'")).length,0);
+  assert.equal((await rows('select * from active_vocabulary where id=$1',[before.id])).length,1);
+  const after=(await rows('select * from user_vocabulary where id=$1',[before.id]))[0];
+  for(const key of ['meaning','interval','ease_factor','repetitions','next_review_at','last_reviewed_at','source_sentence'])assert.deepEqual(after[key],prior[key]);
+ });
  await check('RLS와 두 view는 다른 계정 단어/제외를 반환하지 않음',async()=>{
   await toggle({id:before.id});await owner(b);
   assert.equal((await rows('select * from vocabulary_exclusions')).length,0);

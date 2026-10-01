@@ -27,7 +27,9 @@ export function findVocabularyExclusion(rows, { vocabularyId, language, word }) 
 }
 
 export function updateVocabularyExclusions(rows, result) {
-  const next = rows.filter(row => row.id !== result.entry.id);
+  const next = rows.filter(row => row.id !== result.entry.id && (result.excluded
+    || !VOCABULARY_LANGUAGES.includes(result.entry.language)
+    || exclusionKey(row.language, row.word_text) !== exclusionKey(result.entry.language, result.entry.word_text)));
   if (result.excluded) next.push(result.entry);
   return next;
 }

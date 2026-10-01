@@ -57,4 +57,11 @@ describe('가역적인 계정 단어 제외', () => {
     expect(findVocabularyExclusion(removed, { vocabularyId: 'old-books', language: 'English', word: 'books' }).id).toBe('x');
   });
 
+  it('표기 편집으로 겹친 동일 언어·단어는 한 번에 해제하고 미상 ID는 결합하지 않는다', () => {
+    const duplicate = [...rows, { ...rows[1], id: 'c', vocabulary_id: null }, { ...rows[1], id: 'd', language: 'French' }];
+    expect(updateVocabularyExclusions(duplicate, { excluded: false, entry: rows[1] })).toEqual([rows[0], duplicate[3]]);
+    const unknown = [{ ...rows[1], language: 'Unknown' }, { ...rows[1], id: 'c', vocabulary_id: 'other', language: 'Unknown' }];
+    expect(updateVocabularyExclusions(unknown, { excluded: false, entry: unknown[0] })).toEqual([unknown[1]]);
+  });
+
 });
