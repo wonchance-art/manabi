@@ -47,6 +47,7 @@ test('expression language search changes only the list; review preparation retai
   const words=['駅','bonjour'].map((text,i)=>({id:`00000000-0000-4000-8000-${String(i+1).padStart(12,'0')}`,word_text:text,meaning:i?'안녕':'역',language:i?'French':'Japanese',interval:1,ease_factor:5,repetitions:1,next_review_at:'2026-01-02',last_reviewed_at:'2026-01-01',created_at:'2026-01-01'}));
   let writes=0;
   await f.context.route('**/rest/v1/user_vocabulary*',r=>{if(r.request().method()!=='GET')writes++;return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(words)});});
+  await f.context.route('**/rest/v1/vocabulary_with_exclusions*',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(words.map(word=>({...word,is_excluded:false})))}));
   await f.page.goto('/vocab',{waitUntil:'domcontentloaded',timeout:120000});
   const start=f.page.getByRole('button',{name:'표현 2개 복습 →',exact:true});await start.waitFor();await f.page.getByText('복습 범위 · 전체 표현',{exact:true}).waitFor();
   assert.equal(await f.page.getByRole('link',{name:'학습 통계',exact:true}).count(),0);
