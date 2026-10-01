@@ -137,62 +137,43 @@ describe('④ 손대지 않은 것', () => {
   });
 });
 
-/**
- * v2-S 훈음 하단 루비 (설계 5486791778, 오너 발안 「후리가나는 위, 훈음은 아래」).
- * 기하(세로 증가 0 · 위아래 대칭 · 비겹침 · 본문 무접촉)는 브라우저가 재고
- * (`typography.e2e.mjs`), 여기서는 **적용 범위와 상수 동조**를 잡는다.
- */
-describe('⑤ 훈음 하단 루비 — 범위와 동조', () => {
-  it('분모가 line-height와 동조한다 — 한 상수를 바꾸면 둘 다 바꿔야 한다', () => {
+// 2026-10-01 오너 채택: 긴 훈음은 루비와 분리해 필요한 높이를 확보한다.
+describe('⑤ 훈음 — 표제어 아래 독립적인 글자/라벨 짝', () => {
+  it('병음 앵커는 보존하고 훈음은 루비 안에서 제거한다', () => {
     const css = read(CSS);
     const lh = /\.word-fit \.surface \{[^}]*line-height:\s*([\d.]+)/.exec(css)?.[1];
-    expect(lh, '.word-fit .surface의 line-height를 못 읽었다').toBeTruthy();
-    // 병음(위)과 훈음(아래)이 **같은 분모**를 쓴다 — 대칭의 근거다.
     const pin = sliceBetween(css, '.word-fit ruby[data-pinyin] > .rt-an, ', '}');
-    const hun = sliceBetween(css, '> .rt-hun {', '}');
-    expect(pin, `병음 분모가 ${lh}가 아니다`).toContain(`/ ${lh}) * 100%`);
-    expect(hun, `훈음 분모가 ${lh}가 아니다`).toContain(`/ ${lh}) * 100%`);
-    expect(pin, '병음은 위 — bottom 앵커').toMatch(/bottom:\s*calc/);
-    expect(hun, '훈음은 아래 — top 앵커').toMatch(/top:\s*calc/);
+    expect(lh).toBeTruthy();
+    expect(pin).toContain(`/ ${lh}) * 100%`);
+    expect(pin).toMatch(/bottom:\s*calc/);
+    expect(card()).not.toContain('rt-hun');
+    expect(cssRules(CSS)).not.toContain('.rt-hun');
   });
 
-  it('카드 한정 — 규칙이 `.word-fit` 밖으로 새지 않는다', () => {
-    // 본문은 사용자가 글자 크기를 줄일 수 있어 1em 셀이 작아진다. 위아래로 끼면 줄
-    // 간격이 무너지므로 본문(.word-token)에는 절대 달지 않는다(설계 §2).
-    // `^\.`로 시작을 묶으면 `:is(...)`로 시작하는 선택자를 통째로 건너뛴다(실측: 그
-    // 변이가 이 계약을 무증상으로 통과했다). 시작 문자를 가리지 않는다.
-    for (const [, sel] of cssRules(CSS).matchAll(/^([^\n{]*\.rt-hun[^\n{]*)\{/gm)) {
-      expect(sel, `훈음 규칙이 카드 밖을 가리킨다: ${sel}`).toMatch(/\.word-fit/);
+  it('읽기 유무/혼종과 무관하게 같은 표제어의 훈음을 뜻 앞에 제공한다', () => {
+    const render=card();
+    expect(render).toContain('<ViewerHanjaReading items={hanjaHunOf(headText)}/>');
+    expect(render.indexOf('<ViewerHanjaReading')).toBeGreaterThan(render.indexOf('aria-label="발음 듣기" title="발음 듣기"'));
+    expect(render.indexOf('<ViewerHanjaReading')).toBeLessThan(render.indexOf('word-detail-card__meaningrow'));
+    const block=read('src/components/viewer/ViewerHanjaReading.jsx');
+    expect(block).toContain('<dt lang="zh-Hans">{ch}</dt><dd>{label}</dd>');
+    expect(block).toContain('key={`${index}:${ch}`}');
+    expect(block).not.toContain('<ruby');
+  });
+
+  it('각 라벨은 잘라내거나 절대배치하지 않고 셀 안에서 줄바꿈한다', () => {
+    const rules=read('src/components/viewer/reader-controls.css');
+    expect(rules).toContain('grid-template-columns:1.5em minmax(0,1fr)');
+    expect(rules).toContain('.reader-hun dd {margin:0;min-width:0;white-space:normal;overflow-wrap:anywhere;}');
+    for(const [,body] of rules.matchAll(/\.reader-hun[^{}]*\{([^}]+)\}/g)) {
+      expect(body).not.toMatch(/position:\s*absolute|text-overflow|overflow:\s*hidden|(?:^|;)height:/);
     }
-    expect(read(CSS)).not.toMatch(/\.word-token[^\n{]*\.rt-hun/);
+    expect(rules).not.toMatch(/\.word-token[^{}]*reader-hun/);
   });
 
-  it('한 글자를 담은 칸에서만 단다 — 병음 칸도 요미 칸도(혼종 토큰 실측)', () => {
-    // 훈음을 병음 칸에만 달면 잃는 글자가 있다. 라틴이 섞인 중국어 토큰은 병음 격자
-    // (글자 수 == 음절 수)가 성립하지 않아 요미 경로로 흐르는데(실측 2026-09-01:
-    // 한자 토큰 45개 중 `T恤`·`QQ号` 2개), 폐지한 나열 줄이 그 글자들의 유일한 훈음
-    // 공급처였다. 그래서 두 칸 다 받되, 한 칸에 두 글자 이상이면 어느 글자의 훈음인지
-    // 가리킬 수 없어 비운다.
-    const seg = splitRuby('T恤', 'xù').find((s) => s.kanji);
-    expect([...seg.kanji], '혼종 토큰의 한자 덩어리가 한 글자다').toHaveLength(1);
-    expect(seg.pinyin, '혼종 토큰은 병음 표식이 없다 — 그래서 요미 칸까지 필요하다').toBeFalsy();
-
-    const render = sliceBetween(card(), 'const hunByChar = new Map', '</ruby>');
-    expect(render, '한 글자 칸 조건이 없다').toMatch(/chars\.length === 1 \? hunByChar\.get\(seg\.kanji\) : null/);
-    expect(render, '뽑아만 놓고 루비로 그리지 않는다').toMatch(/\{hun && <span className="rt-hun">\{hun\}<\/span>\}/);
-
-    // 훈음 규칙은 둘이다 — 본체(절대배치)와 요미 칸 앵커 보정. 본체가 두 칸을 다 잡지
-    // 않으면 보정만 남아 요미 칸은 그냥 흐르는 텍스트가 된다. 그래서 **본체**를 짚는다.
-    const main = [...cssRules(CSS).matchAll(/^([^\n{]*\.rt-hun[^\n{]*)\{([^}]*)\}/gm)]
-      .find(([, , body]) => /position:\s*absolute/.test(body));
-    expect(main, '훈음 절대배치 규칙을 못 찾았다').toBeTruthy();
-    expect(main[1], '요미 칸이 빠졌다 — 혼종 토큰이 훈음을 잃는다').toContain('data-yomi');
-    expect(main[1], '병음 칸이 빠졌다').toContain('data-pinyin');
-  });
-
-  it('훈음 나열 줄이 부활하지 않는다 — 헤더에 있는 글자를 다시 그리던 것', () => {
+  it('일본어 대응은 기존의 독립된 의미/자형 조회를 유지한다', () => {
     const block=read('src/components/viewer/ViewerJapaneseReference.jsx');
-    expect(block, 'huns.map 나열이 되살아났다').not.toMatch(/huns\.map/);
+    expect(block).not.toMatch(/huns\.map/);
     expect(block).toContain('toJaForm(word,jaTable)');
     expect(block).toContain('ref?.warn');
   });
@@ -221,7 +202,7 @@ describe('⑥ 요미 칸 分散配置 — 배선과 동조', () => {
   it('폭 계산은 CSS가 한다 — JSX는 요미 글자수만 넘긴다', () => {
     // `--fit-n`과 같은 패턴이다. JSX가 px를 계산하기 시작하면 폰트 크기가 바뀔 때마다
     // 두 군데를 맞춰야 한다.
-    const render = sliceBetween(card(), 'const hunByChar = new Map', '</ruby>');
+    const render = sliceBetween(card(), 'const isPickedAt', '</ruby>');
     expect(render, '요미 글자수를 안 넘긴다').toMatch(/'--yomi-n': yomiN/);
     expect(render, 'JSX가 폭을 직접 계산한다').not.toMatch(/0\.5\s*\*|em'|px'/);
     expect(cssRules(CSS)).toContain('min-width: calc(var(--yomi-n, 0) * 0.5em);');
@@ -239,7 +220,7 @@ describe('⑥ 요미 칸 分散配置 — 배선과 동조', () => {
   it('가나 읽기에만 건다 — 0.5em/자는 가나 전제다', () => {
     // 혼종 중국어 토큰(`T恤`)의 읽기는 병음이라 라틴이고, 라틴은 0.5em보다 훨씬 좁다.
     // 그대로 넘기면 없는 폭을 예약해 본체가 밀린다.
-    const render = sliceBetween(card(), 'const hunByChar = new Map', '</ruby>');
+    const render = sliceBetween(card(), 'const isPickedAt', '</ruby>');
     expect(render).toMatch(/KANA_RE\.test\(seg\.reading/);
     expect(render, '병음 경로에도 걸린다').toMatch(/!seg\.pinyin && KANA_RE/);
   });
