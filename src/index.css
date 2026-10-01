@@ -4423,30 +4423,6 @@ a.viewer-badge:hover {
 }
 .word-fit ruby[data-pinyin] > .rt-an { font-size: 0.26em; font-family: var(--font-noto-sans, 'Noto Sans'), sans-serif; }
 
-/* 훈음 하단 루비 (v2-S, 오너 발안 — 「후리가나는 위, 훈음은 아래」) — 카드 표제어 한정.
-   ── 왜 세로가 안 늘어나는가
-   `.word-fit .surface { line-height: 1.9 }`가 위아래로 각각 0.45em 여백을 만드는데
-   **지금은 위쪽만 병음이 쓰고 아래는 놀고 있었다.** 훈음은 그 빈 자리에 들어간다.
-   ── 유도식은 병음과 **같고 `bottom`↔`top`만 뒤집는다**
-   분모 `1.9`는 위 `.word-fit .surface`의 `line-height`와 **동조해야 한다**(병음이 이미
-   지키는 계약) — 한 상수를 바꾸면 둘 다 바꾼다. 계약 테스트가 그 동조를 지킨다.
-   ── 병음 칸과 요미 칸 **둘 다** (실측 2026-09-01)
-   중국어 혼종 토큰(`T恤`·`QQ号` — 라틴이 섞여 병음 격자가 성립하지 않는다)은 요미
-   경로로 흘러 `data-yomi` 칸을 쓴다. 실측 45개 한자 토큰 중 2개가 여기 해당했고,
-   훈음을 병음 칸에만 달면 그 2개가 훈음을 통째로 잃는다(폐지한 나열 줄이 유일한
-   공급처였다). `top` 유도식은 읽기 크기와 무관한 줄상자 기하라 두 칸에 그대로 선다. */
-.word-fit :is(ruby[data-pinyin], ruby[data-yomi]) > .rt-hun {
-  position: absolute;
-  left: 50%;
-  top: calc(100% - (0.5 / 1.9) * 100%);
-  transform: translateX(-50%);
-  width: max-content;
-  white-space: nowrap;
-  pointer-events: none;
-  font-size: 0.22em;
-  letter-spacing: -0.03em;
-  color: var(--text-muted);
-}
 .word-fit ruby[data-pinyin] { display: inline-flex; justify-content: center; width: 1em; }
 
 /* 요미 칸 — 分散配置(JLReq / JIS X 4051). 카드 표제어 한정.
@@ -4459,9 +4435,7 @@ a.viewer-badge:hover {
    ── 왜 상자부터 고치는가
    병음 칸만 `inline-flex`라 줄상자 전체를 차지하고 요미 칸은 글자 상자만 차지했다.
    `.rt-an`의 `bottom` 유도식은 **상자 = 줄상자**를 전제하므로 요미 칸에서만 어긋났다.
-   상자를 줄상자로 맞추면 세로가 병음과 같은 자리에 서고(실측 삐짐 0), v2-S가 이
-   어긋남을 우회하려고 넣었던 `.rt-hun { top: 100% }`도 **필요 없어진다**(그 우회는
-   훈음을 줄 밖으로 3.3px 밀어내고 있었다 — 지금은 줄 안에 든다).
+   상자를 줄상자로 맞추면 세로가 병음과 같은 자리에 서고(실측 삐짐 0).
    ── 폭은 요미 글자수로 CSS가 계산한다
    `--yomi-n`(요미 글자수)만 넘기면 `× 0.5em`이 요미 폭이다 — 요미 크기가 본체의 절반인
    것은 일본 조판의 표준이고 우리도 그렇다. `--fit-n`과 같은 패턴(개수만 넘기고 기하는

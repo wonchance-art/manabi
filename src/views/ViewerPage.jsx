@@ -87,6 +87,7 @@ import { pinyinCellWidth } from '../lib/pinyinLayout';
 import { readerFontFamily } from '../lib/viewerPreferences';
 import { textbookThemeStyle } from '../lib/textbookTheme';
 import ViewerSettings from '../components/viewer/ViewerSettings';
+import ViewerHanjaReading from '../components/viewer/ViewerHanjaReading';
 import ViewerModal from '../components/viewer/ViewerModal';
 import dynamic from 'next/dynamic';
 import '../components/viewer/reader-controls.css';
@@ -2031,9 +2032,6 @@ export default function ViewerPage() {
             onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), toggleInspectChar(ch, key, reading))}
           >{ch}</span>
         ) : <span key={key} className={isPickedAt(i) ? 'word-fit__char--picked' : undefined}>{ch}</span>;
-        // 훈음 하단 루비(v2-S) — 글자별 조회표. `hanjaHunOf`가 한자 대조 토글·테이블 로드를
-        // 이미 게이트하므로 여기선 글자→훈음만 꺼낸다. 없는 글자는 그 셀을 비운다.
-        const hunByChar = new Map((hanjaHunOf(headText) || []).map(({ ch, label }) => [ch, label]));
         return (
           <div className="word-fit-wrap">
             <div
@@ -2046,12 +2044,6 @@ export default function ViewerPage() {
                   ? rubySegs.map((seg, i) => {
                       if (!seg.kanji) return <span key={i}>{[...seg.plain].map((ch, j) => charSpan(ch, `${i}:${j}`, null, at++))}</span>;
                       const chars = [...seg.kanji];
-                      // 훈음은 글자 **아래**(v2-S) — 한 글자만 담은 루비 칸에서만 단다.
-                      // 병음 경로는 언제나 글자당 한 칸이라 전부 해당되고, 혼종 토큰
-                      // (T恤·QQ号 — 라틴이 섞여 병음 격자가 성립하지 않는다)의 한자
-                      // 덩어리도 한 글자면 같이 받는다. 두 글자 이상이 한 칸에 들어간
-                      // 세그먼트는 어느 글자의 훈음인지 가리킬 수 없어 비운다.
-                      const hun = chars.length === 1 ? hunByChar.get(seg.kanji) : null;
                       // 分散配置(JLReq) — 요미가 본체보다 길면 CSS가 **본체 글자를 벌린다**.
                       // 넘기는 것은 요미 글자수뿐이고 폭 계산(× 0.5em)은 CSS가 한다
                       // (`--fit-n`과 같은 패턴). 0.5em/자는 **가나** 전제라 가나 읽기에만
@@ -2063,7 +2055,6 @@ export default function ViewerPage() {
                           style={yomiN ? { '--yomi-n': yomiN } : undefined}>
                           {chars.map((ch, j) => charSpan(ch, `${i}:${j}`, seg.pinyin ? seg.reading : null, at++))}
                           <span className={['rt-an', showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : ''].filter(Boolean).join(' ')}>{seg.reading}</span>
-                          {hun && <span className="rt-hun">{hun}</span>}
                         </ruby>
                       );
                     })
@@ -2075,6 +2066,7 @@ export default function ViewerPage() {
       })()}
       {ttsSupported && <button className="word-detail-card__speak" onClick={() => speak(headText, materialLang, { ...ttsOptsFor(ttsRate), preferBrowser: true })} aria-label="발음 듣기" title="발음 듣기">▷</button>}
       </div>}
+      {!classStudyActive&&<ViewerHanjaReading items={hanjaHunOf(headText)}/>}
       {classMeaning?.editor||(!classStudyActive&&<div className={`word-detail-card__meaningrow${materialLang === 'English' && selectedToken.reading ? ' word-detail-card__meaningrow--tight' : ''}`}>
         <div className="word-detail-card__meaning">
           {refMeaning || selectedToken.meaning || '(뜻 없음)'}

@@ -434,106 +434,31 @@ test('경로 줄 — 뒤로가기·내비가 없어도 도구는 오른쪽에 �
 });
 
 
-/* ────────────────────────────────────────────────────────────────────────────
- * 훈음 하단 루비 (v2-S, 2026-09-01)
- *
- * 오너 발안: 「후리가나는 글자 위에 달리지만 **훈음은 아래에**. 단어 카드 한정.」
- * 이 축의 유일한 합격 조건이 **세로가 안 늘어나는 것**이라 소스 계약으로는 못 잡는다 —
- * `.word-fit .surface { line-height: 1.9 }`가 위아래로 0.45em씩 여백을 만들고 지금은
- * **위쪽만 병음이 쓰고 아래는 놀고 있다**는 사실이 근거이기 때문이다. 브라우저가 재야 한다.
- * ────────────────────────────────────────────────────────────────────────── */
-
+// Long Korean labels need their own height; the original pinyin grid remains unchanged.
 const HUN_CARD = (withHun) => `<div class="word-fit-wrap"><div class="word-fit" lang="zh-Hans" style="--fit-n:2">
-  <span class="surface">
-    <ruby data-pinyin="1">杯<span class="rt-an">bēi</span>${withHun ? '<span class="rt-hun">잔 배</span>' : ''}</ruby>
-    <ruby data-pinyin="1">子<span class="rt-an">zi</span>${withHun ? '<span class="rt-hun">아들 자</span>' : ''}</ruby>
-  </span>
-</div></div>`;
+  <span class="surface"><ruby data-pinyin="1">杯<span class="rt-an">bēi</span></ruby><ruby data-pinyin="1">子<span class="rt-an">zi</span></ruby></span>
+</div></div>${withHun ? '<dl class="reader-hun"><div class="reader-hun__pair"><dt>杯</dt><dd>잔 배</dd></div><div class="reader-hun__pair"><dt>子</dt><dd>아들 자</dd></div></dl>' : ''}`;
 
-test('훈음 하단 루비 — 블록 세로가 자라지 않는다(놀던 아래 여백을 쓴다)', async () => {
-  const measure = async (withHun) => {
-    await page.setContent(chromePage(HUN_CARD(withHun), 300));
-    await settle();
-    return page.$eval('.word-fit', (el) => Math.round(el.getBoundingClientRect().height * 100) / 100);
-  };
-  const before = await measure(false);
-  const after = await measure(true);
-  assert.equal(after, before, `훈음을 달자 블록이 자랐다: ${before} → ${after}`);
-});
-
-test('훈음과 병음이 글자를 사이에 두고 대칭이다 — 같은 유도식의 bottom↔top', async () => {
-  // 실측(--fit-n:2, 셀 128px): 줄 상자 243.2px · 병음 아래끝이 위에서 **64.0** ·
-  // 훈음 위끝이 아래에서 **64.0**. 두 값이 같은 것이 「같은 N을 쓴다」의 실물이다.
-  // 절대 px가 아니라 **두 거리의 동일성**을 잰다(폰트 없는 러너에서도 성립).
-  await page.setContent(chromePage(HUN_CARD(true), 300));
-  await settle();
-  const g = await page.evaluate(() => {
-    const ruby = document.querySelector('ruby[data-pinyin]');
-    const box = ruby.getBoundingClientRect();
-    const pin = ruby.querySelector('.rt-an').getBoundingClientRect();
-    const hun = ruby.querySelector('.rt-hun').getBoundingClientRect();
-    return { fromTop: pin.bottom - box.top, fromBottom: box.bottom - hun.top, pinB: pin.bottom, hunT: hun.top };
+const longHun=JSON.parse(fs.readFileSync(new URL('../src/lib/data/hanjaHun.json',import.meta.url),'utf8')).弩+' 노';
+const longHunCard=`<div class="reader-card-headword">${HUN_CARD(false)}</div><dl class="reader-hun" lang="ko"><div class="reader-hun__pair"><dt lang="zh-Hans">连</dt><dd>연할 련(연)</dd></div><div class="reader-hun__pair"><dt lang="zh-Hans">弩</dt><dd>${longHun}</dd></div></dl><div class="word-detail-card__meaning">연발 쇠뇌</div>`;
+for(const width of [170,300,680])for(const scale of [1,2]) {
+ test(`긴 훈음 — ${width}px 카드/${scale*100}% 확대에서 온전한 짝·높이·무겹침`,async()=>{
+  await page.setContent(PAGE(`<style>#row{padding:0;width:${width}px;zoom:${scale}}</style>${longHunCard}`));
+  const geometry=await page.evaluate(()=>{
+   const r=e=>{const b=e.getBoundingClientRect();return {x:b.x,right:b.right,y:b.y,bottom:b.bottom,height:b.height}};
+   return {pairs:[...document.querySelectorAll('.reader-hun__pair')].map(e=>({cell:r(e),ch:r(e.querySelector('dt')),label:r(e.querySelector('dd'))})),section:r(document.querySelector('.reader-hun')),head:r(document.querySelector('.word-fit')),meaning:r(document.querySelector('.word-detail-card__meaning')),full:document.querySelector('.reader-hun dd:last-child')?.textContent};
   });
-  assert.ok(g.pinB < g.hunT, `병음이 훈음보다 위여야 한다: ${g.pinB} vs ${g.hunT}`);
-  assert.ok(
-    Math.abs(g.fromTop - g.fromBottom) < 1,
-    `위아래 앵커 거리가 어긋난다(분모 동조가 깨졌다): ${g.fromTop} vs ${g.fromBottom}`,
-  );
-});
-
-test('인접 셀의 훈음이 겹치지 않는다 — 긴 훈까지', async () => {
-  // 설계가 최악으로 든 "어려울 난"을 포함해 잰다. 겹치면 두 셀의 훈음이 서로를 덮는다.
-  await page.setContent(chromePage(`<div class="word-fit-wrap"><div class="word-fit" lang="zh-Hans" style="--fit-n:2">
-    <span class="surface">
-      <ruby data-pinyin="1">难<span class="rt-an">nán</span><span class="rt-hun">어려울 난</span></ruby>
-      <ruby data-pinyin="1">题<span class="rt-an">tí</span><span class="rt-hun">제목 제</span></ruby>
-    </span>
-  </div></div>`, 300));
-  await settle();
-  const [a, b] = await page.$$eval('.rt-hun', (els) => els.map((e) => {
-    const r = e.getBoundingClientRect();
-    return { l: r.left, r: r.right };
-  }));
-  assert.ok(a.r <= b.l + 0.5, `인접 훈음이 겹친다: ${a.r} vs ${b.l}`);
-});
-
-test('혼종 토큰의 요미 칸도 훈음을 받는다 — 이제 병음과 **같은 앵커**로', async () => {
-  // `T恤`·`QQ号`처럼 라틴이 섞인 중국어 토큰은 병음 격자(글자 수 == 음절 수)가 성립하지
-  // 않아 `data-yomi` 칸으로 흐른다(실측: 한자 토큰 45개 중 2개). 폐지한 나열 줄이 그
-  // 글자들의 유일한 훈음 공급처였으므로 이 칸이 빠지면 훈음을 통째로 잃는다.
-  //
-  // v2-S는 요미 칸의 **상자가 어긋나 있어서**(글자 상자 143px vs 줄상자 243px) 훈음을
-  // `top: 100%`로 우회시켰다. 分散配置 라운드가 상자를 줄상자로 맞추면서 그 우회를
-  // 걷어냈다 — 이제 병음과 같은 식이 서고, **훈음이 줄 밖으로 나가지도 않는다**
-  // (우회 시절 실측: 훈음 상자가 줄 아래로 3.3px 초과. 지금은 줄 안).
-  const CARD = (withHun) => `<div class="word-fit-wrap"><div class="word-fit" lang="zh-Hans" style="--fit-n:2">
-    <span class="surface">
-      <span>T</span><ruby data-yomi="1"><span class="word-fit__char">恤</span><span class="rt-an">xù</span>${withHun ? '<span class="rt-hun">불쌍할 휼</span>' : ''}</ruby>
-    </span>
-  </div></div>`;
-  await page.setContent(chromePage(CARD(false), 300));
-  await settle();
-  const before = await page.$eval('.word-fit', (el) => Math.round(el.getBoundingClientRect().height * 100) / 100);
-
-  await page.setContent(chromePage(CARD(true), 300));
-  await settle();
-  const g = await page.evaluate(() => {
-    const ruby = document.querySelector('ruby[data-yomi]');
-    const hun = ruby.querySelector('.rt-hun').getBoundingClientRect();
-    const surf = document.querySelector('.surface').getBoundingClientRect();
-    return {
-      pos: getComputedStyle(ruby.querySelector('.rt-hun')).position,
-      h: Math.round(document.querySelector('.word-fit').getBoundingClientRect().height * 100) / 100,
-      hunTop: hun.top, hunBottom: hun.bottom, surfTop: surf.top, surfBottom: surf.bottom,
-      readingBottom: ruby.querySelector('.rt-an').getBoundingClientRect().bottom,
-    };
-  });
-  assert.equal(g.pos, 'absolute', '요미 칸의 훈음이 절대배치를 못 얻었다 — 선택자가 병음 칸만 본다');
-  assert.equal(g.h, before, `요미 칸에 훈음을 달자 블록이 자랐다: ${before} → ${g.h}`);
-  assert.ok(g.readingBottom < g.hunTop, `읽기가 훈음보다 위여야 한다: ${g.readingBottom} vs ${g.hunTop}`);
-  // 우회를 걷어낸 이득 — 훈음 **상자째** 줄 안에 든다(예전에는 3.3px 넘쳤다).
-  assert.ok(g.hunBottom <= g.surfBottom + 0.5, `훈음이 줄 아래로 넘쳤다: ${g.hunBottom} vs ${g.surfBottom}`);
-});
+  for(const {cell,ch,label} of geometry.pairs) {
+   assert.ok(ch.right<=label.x+.5,'character must stay beside its own label');
+   assert.ok(label.right<=cell.right+.5,'long label must stay inside its own cell');
+   assert.ok(label.bottom<=cell.bottom+.5,'the cell must reserve the label height');
+  }
+  assert.ok(geometry.section.y>=geometry.head.bottom-.5);
+  assert.ok(geometry.meaning.y>=geometry.section.bottom-.5,'meaning must follow all wrapped labels');
+  assert.ok(await page.locator('.reader-hun dd').last().textContent()===longHun);
+  if(width===170)assert.ok(geometry.pairs[1].cell.y>=geometry.pairs[0].cell.bottom-.5,'narrow cards stack complete pairs');
+ });
+}
 
 /* ── 요미 칸 分散配置 (JLReq / JIS X 4051, 오너 승인 2026-09-01) ─────────────────────
  * 일본 조판은 요미가 본체보다 길 때 **요미를 삐치게 두지 않고 본체 글자를 벌린다.**
@@ -680,19 +605,6 @@ test('병음 칸은 무접촉 — 요미 규칙이 격자를 건드리지 않는
   assert.ok(!/px/.test(g.minW) || g.minW === '0px', `병음 칸에 min-width가 붙었다: ${g.minW}`);
   assert.equal(Math.round(g.fromTop * 10) / 10, 64, `병음 읽기 자리가 움직였다: ${g.fromTop}`);
 });
-
-test('본문(.word-token)에는 하단 루비가 없다 — 카드 한정', async () => {
-  // 본문은 사용자가 글자 크기를 줄일 수 있어 1em 셀이 작아진다 — 위아래로 끼면 줄 간격이
-  // 무너진다. CSS 선택자가 `.word-fit` 밖으로 새지 않는지 실렌더로 확인한다.
-  await page.setContent(chromePage(
-    `<div class="word-token"><span class="surface">
-      <ruby data-pinyin="1">杯<span class="rt-an">bēi</span><span class="rt-hun">잔 배</span></ruby>
-    </span></div>`, 300));
-  await settle();
-  const pos = await page.$eval('.rt-hun', (el) => getComputedStyle(el).position);
-  assert.equal(pos, 'static', '본문 하단 루비가 절대배치를 얻었다 — 규칙이 카드 밖으로 샜다');
-});
-
 
 test('Aa 중국어 명조 — 실제 글자까지 본문과 같은 서체, 병음은 별도 서체', async () => {
   const token=tok(zhSeg('读','dú'),false);
