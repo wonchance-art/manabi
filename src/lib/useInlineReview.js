@@ -3,6 +3,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { friendlyToastMessage } from './errorMessage';
 import { detectLang } from './constants';
 import { recordReviewCompleted } from './learn/progressStore';
+import { calculateFSRS } from './fsrs';
+import { beginVocabularyReview, settleVocabularyReview } from './viewerVocabularyCache';
 
 // W R3 undo 스냅샷이 복원하는 SRS 5필드(persistVocabGrade 페이로드와 같은 snake_case)
 export const INLINE_SRS_FIELDS = ['interval', 'ease_factor', 'repetitions', 'next_review_at', 'last_reviewed_at'];
@@ -38,11 +40,16 @@ export function patchVocabWordsCache(queryClient, userId, wordId, patch) {
  * 결과에 `prev`(채점 직전 5필드)·`reviewedAt`·`queued`를 실어 호출부(카드)가 undo 스냅샷을 만든다 —
  * 훅은 채점만 하고 스냅샷은 호출부가 갖는다. 큐에 담긴 채점의 undo는 큐 항목 제거(복습 화면 R2와 같다).
  */
-export function useInlineReview({ user, fetchProfile, toast }) {
+export function useInlineReview({ user: account, fetchProfile, toast }) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ vocab, rating }) => {
-      const { calculateFSRS } = await import('./fsrs');
+    onMutate: async ({ vocab, rating, userId = account?.id }) => {
+      await queryClient.cancelQueries({ queryKey: ['vocab-words', userId] });
+      const nextStats = calculateFSRS(rating, vocab);
+      return beginVocabularyReview(queryClient, userId, vocab, nextStats);
+    },
+    mutationFn: async ({ vocab, rating, userId = account?.id }) => {
+      const user = { id: userId }; // 응답을 기다리다 계정이 바뀌어도 클릭 시점의 계정에만 기록한다.
       const nextStats = calculateFSRS(rating, {
         interval: vocab.interval ?? 0,
         ease_factor: vocab.ease_factor ?? 0,
@@ -69,14 +76,23 @@ export function useInlineReview({ user, fetchProfile, toast }) {
       if (!r?.ok) throw r?.error || new Error('review-save-failed');
       return { vocab, rating, nextStats, prev, reviewedAt: r.reviewedAt, queued: !!r.queued };
     },
-    onSuccess: async ({ vocab, nextStats, reviewedAt, queued }) => {
+    onSuccess: async ({ vocab, nextStats, reviewedAt, queued }, variables, context) => {
       // 낙관 반영 → 무효화. 온라인이면 refetch가 정본으로 덮고, 오프라인이면 낙관값이 남아 카드가 전진한다.
-      patchVocabWordsCache(queryClient, user?.id, vocab.id, { ...nextStats, last_reviewed_at: reviewedAt });
-      queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
+      const userId = context?.userId || account?.id;
+      if (context) settleVocabularyReview(queryClient, context, { ...nextStats, last_reviewed_at: reviewedAt });
+      else patchVocabWordsCache(queryClient, userId, vocab.id, { ...nextStats, last_reviewed_at: reviewedAt });
+      queryClient.invalidateQueries({ queryKey: ['vocab-words', userId] });
       // 보상(streak)은 정본 안에서 기록됐다 — 여기서는 표시만 새로 고친다(큐 경로는 아직 기록 전)
-      if (!queued) fetchProfile?.(user.id);
-      toast?.(queued ? '복습 저장 — 연결되면 보내요' : '복습 완료!', 'success', 2000);
+      if (account?.id === userId) {
+        if (!queued) fetchProfile?.(userId);
+        toast?.(queued ? '복습 저장 — 연결되면 보내요' : '복습 완료!', 'success', 2000);
+      }
     },
-    onError: (err) => toast?.('복습 저장 실패 — ' + friendlyToastMessage(err), 'error'),
+    onError: (err, variables, context) => {
+      settleVocabularyReview(queryClient, context);
+      if (account?.id === (context?.userId || variables?.userId || account?.id)) {
+        toast?.('복습 저장 실패 — ' + friendlyToastMessage(err), 'error');
+      }
+    },
   });
 }

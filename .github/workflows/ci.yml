@@ -98,4 +98,4 @@ jobs:
             sleep 1
           done
           curl -fsS http://127.0.0.1:8878/manifest.webmanifest > /dev/null
-          node --test --test-concurrency=1 e2e/library-book-chapters.e2e.mjs e2e/library-management.e2e.mjs e2e/learning-flow-clarity.e2e.mjs e2e/textbook-reading-clarity.e2e.mjs
+          node --test --test-concurrency=1 e2e/library-book-chapters.e2e.mjs e2e/library-management.e2e.mjs e2e/learning-flow-clarity.e2e.mjs e2e/textbook-reading-clarity.e2e.mjs e2e/viewer-response.e2e.mjs

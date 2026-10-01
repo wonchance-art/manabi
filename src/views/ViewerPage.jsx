@@ -55,6 +55,7 @@ import { useReanalyzeUI } from '../lib/useReanalyzeUI';
 import { useReadingCompletion } from '../lib/useReadingCompletion';
 import { useGrammarNoteSave } from '../lib/useGrammarNoteSave';
 import { useInlineReview, patchVocabWordsCache } from '../lib/useInlineReview';
+import { insertConfirmedVocabulary, preservePendingVocabularyReviews } from '../lib/viewerVocabularyCache';
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage } from '../lib/errorMessage';
 import { SAVE_GRADES, VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
@@ -219,6 +220,10 @@ function isTokenDue(savedWords, token) {
   return new Date(v.next_review_at) <= new Date();
 }
 
+function gradeSaveKey(scope, token) {
+  return `${scope}:${token?.sep_link || token?.base_form || token?.text || ''}`;
+}
+
 async function upsertViewerVocabulary(row, options = VOCAB_UPSERT) {
   // 반환 = 새로 들어간 행의 id. `ignoreDuplicates`라 **새로 넣었을 때만** [{ id }], 이미 있던
   // 단어면 [] — W R1 undo의 「되돌릴 게 있는가」 판정이 이 사실 하나에 선다(원래 있던 행은
@@ -308,8 +313,12 @@ export default function ViewerPage() {
   // 새 자료에 비친다. (빈 Set일 땐 그대로 둔다 — 첫 렌더에 헛 리렌더를 만들지 않는다.)
   useEffect(() => { setRevealedPron((prev) => (prev.size ? new Set() : prev)); }, [id, pronDisplay, pronReveal, material?.processed_json]);
   const [commentInput, setCommentInput] = useState('');
-  const [saveAnim, setSaveAnim] = useState(false);
-  const savingGrade = useRef(false);
+  const [pendingGradeSaves, setPendingGradeSaves] = useState(() => new Set());
+  const savingGrade = useRef(new Set());
+  const saveAnim = pendingGradeSaves.has(gradeSaveKey(saveScopeRef.current, selectedToken));
+  const gradeAction = useRef(0);
+  const inlineGradeRequests = useRef(new Set());
+  const [pendingInlineGrades, setPendingInlineGrades] = useState(() => new Set());
   const [inlineSaving, setInlineSaving] = useState({});
   const { titleEditing, setTitleEditing, titleDraft, setTitleDraft, updateTitleMutation } = useTitleEdit(id, toast);
 
@@ -370,7 +379,8 @@ export default function ViewerPage() {
 
   const { data: savedWords = { byKey: new Map(), surfaces: new Set(), bases: new Set() } } = useQuery({
     queryKey: ['vocab-words', user?.id],
-    queryFn: () => fetchUserVocabWords(user.id),
+    queryFn: async () => preservePendingVocabularyReviews(await fetchUserVocabWords(user.id),
+      queryClient.getQueryData(['vocab-words', user.id])),
     enabled: !!user,
     staleTime: 1000 * 30,
   });
@@ -692,7 +702,7 @@ export default function ViewerPage() {
   const lastInlineGradeRef = useRef(null);
   const undoBusy = useRef(false);
   useEffect(() => { lastSaveRef.current = null; lastInlineGradeRef.current = null; }, [id, user?.id]);
-  useEffect(() => { setSaveAnim(false); }, [selectedToken?.id, selectedToken?.text]);
+  useEffect(() => { gradeAction.current += 1; }, [id, user?.id]);
 
   const handleTokenClick = (token, tokenId, opts = {}) => {
     setRestoredClassSource(null);
@@ -741,7 +751,7 @@ export default function ViewerPage() {
     tokenRange.clearRange(); // 범위 지정 이펙트와 상호 배타
     setRightSheetSignal(s => s + 1);
     if (settings.autoSpeakOnClick && ttsSupported && t.text) {
-      speak(t.text, materialLang, ttsOptsFor(ttsRate));
+      speak(t.text, materialLang, { ...ttsOptsFor(ttsRate), preferBrowser: true });
     }
     // 클릭한 토큰 인덱스를 스크롤 위치로 저장
     const json = material?.processed_json;
@@ -1333,7 +1343,12 @@ export default function ViewerPage() {
   }
 
   // 인라인 복습: 뷰어에서 단어 보며 바로 FSRS 평가
-  const inlineReviewMutation = useInlineReview({ user, fetchProfile, toast });
+  const inlineReview = useInlineReview({ user, fetchProfile, toast });
+  const selectedVocab = findSavedVocab(savedWords, selectedToken);
+  // 다른 단어의 원격 저장이 진행 중이어도 현재 단어를 평가할 수 있다.
+  const inlineReviewMutation = { ...inlineReview,
+    isPending: pendingInlineGrades.has(`${user?.id}:${selectedVocab?.id}`),
+  };
 
   const correctTokenMutation = useMutation({
     mutationFn: async ({ tokenId, corrections }) => {
@@ -1648,7 +1663,6 @@ export default function ViewerPage() {
     try {
       await undoViewerSave(supabase, snapshot, user?.id);
       if (lastSaveRef.current === snapshot) lastSaveRef.current = null;
-      setSaveAnim(false);
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['vocabulary-contexts', user?.id] });
@@ -1662,12 +1676,17 @@ export default function ViewerPage() {
   const gradeInline = (rating) => {
     const vocab = findSavedVocab(savedWords, selectedToken);
     if (!vocab || inlineReviewMutation.isPending) return;
+    const requestKey = `${user.id}:${vocab.id}`;
+    if (inlineGradeRequests.current.has(requestKey)) return;
+    inlineGradeRequests.current.add(requestKey);
+    setPendingInlineGrades(prev => new Set(prev).add(requestKey));
+    const action = ++gradeAction.current;
     lastInlineGradeRef.current = null;
     lastSaveRef.current = null;
     const gradeScope = saveScopeRef.current;
-    inlineReviewMutation.mutate({ vocab, rating }, {
+    const handlers = {
       onSuccess: (res) => {
-        if (saveScopeRef.current !== gradeScope) return;
+        if (saveScopeRef.current !== gradeScope || gradeAction.current !== action) return;
         lastInlineGradeRef.current = {
           wordId: vocab.id, itemKey: vocab.word_text, word: vocab.word_text,
           lang: vocab.language || detectLang(vocab.word_text), rating,
@@ -1675,7 +1694,13 @@ export default function ViewerPage() {
           queued: !!res.queued, // 오프라인 큐에 담긴 채점 — undo는 큐 항목 제거(W 후속 ③)
         };
       },
-    });
+    };
+    // 연속 mutate의 단발 콜백은 교체된다. 각 Promise에서 완료와 잠금 해제를 처리한다.
+    inlineReviewMutation.mutateAsync({ vocab, rating, userId: user.id }).then(handlers.onSuccess).catch(() => {})
+      .finally(() => {
+        inlineGradeRequests.current.delete(requestKey);
+        setPendingInlineGrades(prev => { const next = new Set(prev); next.delete(requestKey); return next; });
+      });
   };
   // undo = R2 모델 그대로(SRS 5필드 복원 + source:'ui' 보상 이벤트). 세션이 없으니 되감을 것은
   // 카드 상태뿐 — vocab-words를 무효화하면 isTokenDue가 다시 참이 되어 「복습 시점이에요」가 저절로 돌아온다.
@@ -1736,9 +1761,12 @@ export default function ViewerPage() {
       toast('로그인이 필요합니다.', 'warning');
       return;
     }
-    if (!selectedToken || savingGrade.current) return;
-    savingGrade.current = true;
-    setSaveAnim(true);
+    if (!selectedToken) return;
+    const saveKey = gradeSaveKey(saveScopeRef.current, selectedToken);
+    if (savingGrade.current.has(saveKey)) return;
+    savingGrade.current.add(saveKey);
+    setPendingGradeSaves(prev => new Set(prev).add(saveKey));
+    const action = ++gradeAction.current;
     const g = Number.isInteger(grade) && grade >= 1 && grade <= 4 ? grade : undefined;
 
     const sourceSentence = extractSourceSentence(selectedToken.id) || leftPanelText;
@@ -1748,6 +1776,7 @@ export default function ViewerPage() {
     lastSaveRef.current = null;
     lastInlineGradeRef.current = null;
 
+    let inserted;
     try {
       // 저장 규약(기본형 우선·출처 동봉)은 정본 조립기가 책임진다 — 저장 경로가 11개라
       // 자리마다 손으로 적으면 갈린다(실측: pdf·quick이 surface를 넣어 행이 둘로 갈렸다).
@@ -1764,26 +1793,31 @@ export default function ViewerPage() {
         grade: g,
       });
 
-      const inserted = await upsertViewerVocabulary([row], VOCAB_UPSERT);
-      const linked = await attachReadingContext(savedToken);
-      const undo = await prepareViewerSaveUndo(supabase, inserted[0], savedSource, linked).catch(() => null);
-      if (saveScopeRef.current !== saveScope) return;
-      const snapshot = undo ? { ...undo, text: savedToken.text } : null;
-      lastSaveRef.current = snapshot;
-      saveCountRef.current += 1;
-      // 저장 확인이 다음 단어의 패널을 닫거나 그 단어를 '저장됨'으로 바꾸지 않는다.
-      setSaveAnim(false);
-      if (linked || snapshot) toast(<span>「{savedToken.text}」 저장됨 {snapshot && <button type="button" className="btn btn--ghost btn--sm" style={{ pointerEvents: 'auto' }} onClick={() => undoLastSave(snapshot)}>저장 취소 · {UNDO_KEY_LABEL}</button>}</span>, 'success', 8000);
-
+      inserted = await upsertViewerVocabulary([row], VOCAB_UPSERT);
+      // INSERT가 확인된 행을 즉시 반영한다. 문맥 RPC/undo 조회를 기다리거나 refetch를 추가로 기다리지 않는다.
+      insertConfirmedVocabulary(queryClient, user.id, inserted[0]);
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
-      recordActivity(user.id, () => fetchProfile(user.id));
+      if (saveScopeRef.current === saveScope) saveCountRef.current += 1;
     } catch (err) {
       if (saveScopeRef.current === saveScope) toast('단어 추가 실패 — ' + friendlyToastMessage(err), 'error');
+      return;
     } finally {
-      savingGrade.current = false;
-      if (saveScopeRef.current === saveScope) setSaveAnim(false);
+      savingGrade.current.delete(saveKey);
+      setPendingGradeSaves(prev => { const next = new Set(prev); next.delete(saveKey); return next; });
     }
+    // 부가 저장도 끝까지 확인한다. 실패는 기존 문맥 추가 경로로 재시도하고 안전한 undo만 제공한다.
+    if (saveScopeRef.current !== saveScope) return;
+    const linked = await attachReadingContext(savedToken);
+    const undo = await prepareViewerSaveUndo(supabase, inserted[0], savedSource, linked).catch(() => null);
+    if (saveScopeRef.current !== saveScope) return;
+    recordActivity(user.id, () => {
+      if (saveScopeRef.current === saveScope) fetchProfile(user.id);
+    });
+    if (gradeAction.current !== action) return;
+    const snapshot = undo ? { ...undo, text: savedToken.text } : null;
+    lastSaveRef.current = snapshot;
+    if (linked || snapshot) toast(<span>「{savedToken.text}」 저장됨 {snapshot && <button type="button" className="btn btn--ghost btn--sm" style={{ pointerEvents: 'auto' }} onClick={() => undoLastSave(snapshot)}>저장 취소 · {UNDO_KEY_LABEL}</button>}</span>, 'success', 8000);
   };
 
   const isDragSelection=dragTokens!==null;
@@ -2039,7 +2073,7 @@ export default function ViewerPage() {
           </div>
         );
       })()}
-      {ttsSupported && <button className="word-detail-card__speak" onClick={() => speak(headText, materialLang, ttsOptsFor(ttsRate))} aria-label="발음 듣기" title="발음 듣기">▷</button>}
+      {ttsSupported && <button className="word-detail-card__speak" onClick={() => speak(headText, materialLang, { ...ttsOptsFor(ttsRate), preferBrowser: true })} aria-label="발음 듣기" title="발음 듣기">▷</button>}
       </div>}
       {classMeaning?.editor||(!classStudyActive&&<div className={`word-detail-card__meaningrow${materialLang === 'English' && selectedToken.reading ? ' word-detail-card__meaningrow--tight' : ''}`}>
         <div className="word-detail-card__meaning">
@@ -2275,7 +2309,7 @@ export default function ViewerPage() {
 
       </div>
       <div className="reader-card-actions">
-      {user && findSavedVocab(savedWords, selectedToken) && isTokenDue(savedWords, selectedToken) && (
+      {user && findSavedVocab(savedWords, selectedToken) && isTokenDue(savedWords, selectedToken) && !inlineReviewMutation.isPending && (
         // W R3㉮ — 척도를 정본에 맞춘다: 모름/애매/알아=1/2/3(Easy 없음)이 아니라 복습 화면과 같은 4등급.
         // 라벨·순서·클래스 = SAVE_GRADES(복습 화면 ScoreSection과 동일 계약). 키 1~4·⌘Z는 카드 리스너.
         <div style={{ padding: '10px 12px', background: 'color-mix(in srgb, var(--warning) 10%, transparent)', borderRadius: 'var(--radius-md)', marginBottom: 12, border: '1px solid var(--warning)' }}>
@@ -2320,12 +2354,12 @@ export default function ViewerPage() {
         // 단어 목록 ✓(saveInlineVocabulary)가 그대로 맡는다.
         const isKnown = knownWordSet?.has(selectedToken.text)
           || (selectedLexKey && knownWordSet?.has(selectedLexKey));
-        if (isWordSaved && isTokenDue(savedWords,selectedToken)) return null;
-        if (saveAnim || isWordSaved) {
+        if (isWordSaved && isTokenDue(savedWords,selectedToken) && !inlineReviewMutation.isPending) return null;
+        if (saveAnim || inlineReviewMutation.isPending || isWordSaved) {
           return (
             <div className="word-detail-card__actrow">
-              <button disabled className="btn btn--ghost btn--sm">{saveAnim ? '저장 중…' : '✓ 단어장에 있음'}</button>
-              {!saveAnim && <SaveContextButton key={`${id}:${selectedToken.id || selectedToken.text}:${leftPanelText}`}
+              <button disabled className="btn btn--ghost btn--sm">{saveAnim || inlineReviewMutation.isPending ? '저장 중…' : '✓ 단어장에 있음'}</button>
+              {!saveAnim && !inlineReviewMutation.isPending && <SaveContextButton key={`${id}:${selectedToken.id || selectedToken.text}:${leftPanelText}`}
                 label="이 문맥 추가" word={contextWord(selectedToken)} source={readingContextSource(selectedToken)} />}
             </div>
           );

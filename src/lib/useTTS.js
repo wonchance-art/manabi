@@ -23,7 +23,7 @@ function saveStoredVoice(langKey, voiceURI) {
 
 /**
  * TTS 래퍼 — 1순위 서버 고품질 음성(/api/tts, Gemini TTS), 실패 시 Web Speech API 폴백.
- *  - speak(text, lang, opts) — 고품질 음성 재생 (같은 문장은 메모리+HTTP 캐시)
+ *  - speak(text, lang, opts) — 고품질 음성 재생; 단어 클릭은 preferBrowser로 즉시 재생
  *  - listVoices / getSelectedVoice / setSelectedVoice — 폴백용 브라우저 음성 선택
  */
 
@@ -39,6 +39,17 @@ export function getTtsCapabilities(browser = typeof window === 'undefined' ? nul
     && typeof browser.Audio === 'function'
     && typeof browser.URL?.createObjectURL === 'function';
   return { webSpeech, serverAudio, supported: webSpeech || serverAudio };
+}
+
+export function immediateSpeechVoice(voices, language, wantedURI) {
+  const code = bcp47ForLanguage(language).toLowerCase();
+  const prefix = code.split('-')[0];
+  const matching = voices.filter(v => v.lang?.toLowerCase() === prefix || v.lang?.toLowerCase().startsWith(prefix + '-'));
+  return matching.find(v => v.voiceURI === wantedURI)
+    || matching.find(v => v.localService && v.lang.toLowerCase() === code)
+    || matching.find(v => v.localService)
+    || matching.find(v => v.lang.toLowerCase() === code)
+    || matching[0];
 }
 
 async function playServerTTS(text, language, playbackRate = 1, generation) {
@@ -95,20 +106,24 @@ export function useTTS() {
     saveStoredVoice(voicePrefixForLanguage(lang), voiceURI || null);
   }, []);
 
-  // 브라우저 내장 음성 — 서버 TTS 실패 시 폴백 전용
-  const speakFallback = useCallback((text, language = 'Japanese', opts = {}) => {
-    if (!getTtsCapabilities().webSpeech) return;
+  // 같은 사용자 제스처 안에서 재생한다. 즉시 경로는 해당 언어 음성이 있을 때만 사용한다.
+  const speakFallback = useCallback((text, language = 'Japanese', opts = {}, voice, onError) => {
+    if (!getTtsCapabilities().webSpeech) return false;
     window.speechSynthesis.cancel();
     const utter = new window.SpeechSynthesisUtterance(text);
     utter.lang = bcp47ForLanguage(language);
     utter.rate = opts.rate ?? 0.85;
     utter.pitch = opts.pitch ?? 1;
     const wantedURI = loadStoredVoice(voicePrefixForLanguage(language));
-    if (wantedURI) {
+    if (voice) utter.voice = voice;
+    else if (wantedURI) {
       const v = window.speechSynthesis.getVoices().find(x => x.voiceURI === wantedURI);
       if (v) utter.voice = v;
     }
-    window.speechSynthesis.speak(utter);
+    if (onError) utter.onerror = event => {
+      if (!['canceled', 'interrupted'].includes(event.error)) onError();
+    };
+    try { window.speechSynthesis.speak(utter); return true; } catch { return false; }
   }, []);
 
   const speak = useCallback((text, language = 'Japanese', opts = {}) => {
@@ -117,6 +132,15 @@ export function useTTS() {
     const generation=++audioGeneration;
     if(currentAudio)currentAudio.pause();
     window.speechSynthesis?.cancel();
+    if (opts.preferBrowser && getTtsCapabilities().webSpeech) {
+      const voice = immediateSpeechVoice(window.speechSynthesis.getVoices(), language,
+        loadStoredVoice(voicePrefixForLanguage(language)));
+      const retryServer = () => {
+        if (generation !== audioGeneration) return;
+        playServerTTS(text, language, opts.playbackRate ?? 1, generation).catch(() => {});
+      };
+      if (voice && speakFallback(text, language, opts, voice, retryServer)) return;
+    }
     playServerTTS(text, language, opts.playbackRate ?? 1, generation).catch(() => {if(generation===audioGeneration)speakFallback(text, language, opts);});
   }, [speakFallback]);
 

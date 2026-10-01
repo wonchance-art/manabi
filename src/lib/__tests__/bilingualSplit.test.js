@@ -127,7 +127,7 @@ describe('③ 교재 뜻은 Gemini 전에 — 정확 일치만', () => {
 
   it('뷰어 배선 — runSelectionAnalysis가 캐시·Gemini보다 먼저 translations를 본다', () => {
     const viewer = read('src/views/ViewerPage.jsx');
-    const fn = sliceBetween(viewer, 'const runSelectionAnalysis = async (sel) => {', 'const inlineReviewMutation = useInlineReview(');
+    const fn = sliceBetween(viewer, 'const runSelectionAnalysis = async (sel) => {', 'const inlineReview = useInlineReview(');
     const lookup = fn.indexOf('lookupTranslation(');
     const cache = fn.indexOf("viewerCacheKey('viewer_tx'");
     const gemini = fn.indexOf('callGemini(buildContextPrompt(');
