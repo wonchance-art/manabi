@@ -43,6 +43,7 @@ jobs:
 
       # 실제 PostgreSQL에서 과 번호 충돌·재전송·늦은 분석 덮어쓰기를 검사한다.
       - run: node scripts/verification/library-book-chapters.mjs
+      - run: node supabase/tests/vocabulary-exclusion.mjs
 
   e2e:
     name: e2e (smoke · learning-flow)
@@ -98,4 +99,4 @@ jobs:
             sleep 1
           done
           curl -fsS http://127.0.0.1:8878/manifest.webmanifest > /dev/null
-          node --test --test-concurrency=1 e2e/library-book-chapters.e2e.mjs e2e/library-management.e2e.mjs e2e/learning-flow-clarity.e2e.mjs e2e/textbook-reading-clarity.e2e.mjs e2e/viewer-response.e2e.mjs e2e/viewer-hun-layout.e2e.mjs
+          node --test --test-concurrency=1 e2e/library-book-chapters.e2e.mjs e2e/library-management.e2e.mjs e2e/learning-flow-clarity.e2e.mjs e2e/textbook-reading-clarity.e2e.mjs e2e/viewer-response.e2e.mjs e2e/viewer-hun-layout.e2e.mjs e2e/viewer-exclusion.e2e.mjs

@@ -216,8 +216,8 @@ export default function VocabList({
           };
           const itv = v.interval ?? 0;
           const stageColor = itv >= 30 ? 'var(--accent)' : itv >= 7 ? 'var(--warning)' : 'var(--danger)';
-          const stageLabel = itv >= 30 ? '숙련' : itv >= 7 ? '학습 중' : '초기';
-          const due = new Date(v.next_review_at) <= new Date();
+          const stageLabel = v.is_excluded ? '제외' : itv >= 30 ? '숙련' : itv >= 7 ? '학습 중' : '초기';
+          const due = !v.is_excluded && new Date(v.next_review_at) <= new Date();
           const lc = LANG_CODE[v.language];
           const refLevel = refLevelLabel(refLevelOf?.(v));
           return (

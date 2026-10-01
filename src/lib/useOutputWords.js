@@ -15,7 +15,7 @@ import { dropUndoneEvents } from './undoneReviews';
 async function fetchTodayReviewRows(userId) {
   const iso = kstDayStartIso();
   const [vocab, events] = await Promise.all([
-    supabase.from('user_vocabulary')
+    supabase.from('active_vocabulary')
       .select('id, word_text, meaning, language, last_reviewed_at')
       .eq('user_id', userId).gte('last_reviewed_at', iso),
     supabase.from('review_events')

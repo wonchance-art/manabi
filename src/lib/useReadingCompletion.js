@@ -44,7 +44,7 @@ export function useReadingCompletion({
       ] = await Promise.all([
         supabase.from('user_vocabulary').select('*', { count: 'exact', head: true })
           .eq('user_id', user.id).eq('source_material_id', materialId),
-        supabase.from('user_vocabulary').select('*', { count: 'exact', head: true })
+        supabase.from('active_vocabulary').select('*', { count: 'exact', head: true })
           .eq('user_id', user.id).lte('next_review_at', now),
       ]);
 

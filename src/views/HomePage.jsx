@@ -22,13 +22,13 @@ import { canReadSuggestion, suggestionHref } from '@/lib/suggestionReading';
 
 export async function fetchHomeData(userId, lang, nowMs = Date.now()) {
   const [dueResult, recentResult, allVocabResult, forecastResult, { buildForecast }] = await Promise.all([
-    supabase.from('user_vocabulary').select('*', { count: 'exact', head: true })
+    supabase.from('active_vocabulary').select('*', { count: 'exact', head: true })
       .eq('user_id', userId).lte('next_review_at', new Date(nowMs).toISOString()),
     supabase.from('reading_progress')
       .select('material_id, is_completed, updated_at, reading_materials(id, title)')
       .eq('user_id', userId).eq('is_completed', false).order('updated_at', { ascending: false }).limit(20),
     supabase.from('user_vocabulary').select('language, word_text, base_form').eq('user_id', userId),
-    supabase.from('user_vocabulary').select('word_text, interval, last_reviewed_at')
+    supabase.from('active_vocabulary').select('word_text, interval, last_reviewed_at')
       .eq('user_id', userId).eq('language', lang).not('last_reviewed_at', 'is', null).gt('interval', 0),
     import('@/lib/forecast'),
   ]);

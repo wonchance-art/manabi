@@ -39,6 +39,7 @@ export function useVocabData() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['vocabulary-exclusions', user?.id] });
       toast('단어를 삭제했습니다.', 'info');
     },
     onError: (err) => toast('삭제 실패 — ' + friendlyToastMessage(err), 'error'),
@@ -66,6 +67,7 @@ export function useVocabData() {
     },
     onSuccess: (count) => {
       queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['vocabulary-exclusions', user?.id] });
       toast(`${count}개 단어를 가져왔어요. (중복은 자동 스킵)`, 'success', 5000);
     },
     onError: (err) => toast('가져오기 실패 — ' + friendlyToastMessage(err), 'error'),
@@ -88,6 +90,7 @@ export function useVocabData() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['vocabulary-exclusions', user?.id] });
       toast('단어를 수정했어요', 'success');
     },
     onError: (err) => toast('수정 실패 — ' + friendlyToastMessage(err), 'error'),
@@ -105,6 +108,7 @@ export function useVocabData() {
     },
     onSuccess: (count) => {
       queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['vocabulary-exclusions', user?.id] });
       toast(`${count}개 단어를 삭제했습니다.`, 'info');
     },
     onError: (err) => toast('일괄 삭제 실패: ' + err.message, 'error'),

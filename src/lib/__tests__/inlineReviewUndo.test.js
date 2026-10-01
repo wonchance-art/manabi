@@ -16,7 +16,7 @@ const hook = read('src/lib/useInlineReview.js');
  */
 describe('인라인 복습 R3㉮ — 척도 정렬·스냅샷 재료·undo (ViewerPage·useInlineReview)', () => {
   const card = sliceBetween(viewer, 'const renderWordDetailCard = (classAction=null,classMeaning=null) => !selectedToken || !isSheetOpen ? null : (', 'const renderRightPanelContent =');
-  const inline = sliceBetween(card, '복습 시점이에요</div>', '</div>\n      )}');
+  const inline = sliceBetween(card, 'className="review-score-grid save-grade save-grade--inline"', '</div>\n      )}');
 
   it('인라인 채점 버튼의 라벨·순서·값이 복습 화면과 동일(1/2/3/4) — 옛 3버튼 척도 부활 금지', () => {
     expect(inline).toContain('{SAVE_GRADES.map((g) => (');
@@ -32,7 +32,7 @@ describe('인라인 복습 R3㉮ — 척도 정렬·스냅샷 재료·undo (View
     expect(hook).toContain('return { vocab, rating, nextStats, prev, reviewedAt: r.reviewedAt, queued: !!r.queued };');
     expect(hook).toContain('const r = await recordReviewCompleted(user?.id, {');
     expect(hook).toContain("if (!r?.ok) throw r?.error || new Error('review-save-failed');");
-    expect(viewer).toMatch(/\.select\('id, word_text, base_form, meaning, pos, furigana, interval, ease_factor, repetitions, next_review_at, last_reviewed_at, language'\)/);
+    expect(viewer).toMatch(/\.select\('id, word_text, base_form, meaning, pos, furigana, interval, ease_factor, repetitions, next_review_at, last_reviewed_at, language, is_excluded'\)/);
   });
 
   it('undo 뒤 user_vocabulary 5필드가 스냅샷과 동일(last_reviewed_at 원값) + vocab-words 무효화로 「복습 시점이에요」가 다시 보인다', () => {
@@ -58,7 +58,7 @@ describe('인라인 복습 R3㉮ — 척도 정렬·스냅샷 재료·undo (View
     expect(keys).toContain('if (!h.saveLocked) { e.preventDefault(); h.addToVocab?.(Number(e.key)); }');
     expect(keys).toContain('inField || h.blocked || e.isComposing || e.repeat || e.defaultPrevented');
     expect(keys).toContain('(!lastSaveRef.current && !lastInlineGradeRef.current)');
-    expect(viewer).toContain('inlineDue: !!user && isWordSaved && isTokenDue(savedWords, selectedToken) && !inlineReviewMutation.isPending,');
+    expect(viewer).toContain('inlineDue: !!user && !selectedExcluded && exclusionState.isSuccess && !exclusionState.mutation.isPending && isWordSaved && isTokenDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending,');
     expect(viewer).toContain('const undoAny = () => (lastInlineGradeRef.current ? undoInlineGrade() : undoLastSave());');
     // 선택이 바뀌어도 방금 저장한 대상은 유지하되 계정/자료 이동 시 소멸
     expect(viewer).toContain('useEffect(() => { lastSaveRef.current = null; lastInlineGradeRef.current = null; }, [id, user?.id]);');

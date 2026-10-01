@@ -59,6 +59,8 @@ import { insertConfirmedVocabulary, preservePendingVocabularyReviews } from '../
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage } from '../lib/errorMessage';
 import { SAVE_GRADES, VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
+import { useVocabularyExclusions } from '../lib/useVocabularyExclusions';
+import { exclusionWord, findVocabularyExclusion } from '../lib/vocabularyExclusion';
 import { callGemini } from '../lib/gemini';
 import { fetchWordDetailText } from '../lib/wordDetail';
 import { fetchCtxExplain } from '../lib/ctxExplain';
@@ -182,11 +184,11 @@ const KANA_ONLY = /^[\u3040-\u30ffー]+$/;
 async function fetchUserVocabWords(userId) {
   if (!userId) return { byKey: new Map(), surfaces: new Set(), bases: new Set() };
   const { data, error } = await supabase
-    .from('user_vocabulary')
+    .from('vocabulary_with_exclusions')
     // last_reviewed_at(W R3): 인라인 undo가 원값으로 되돌려야 isNewWord·「복습 시점이에요」 판정이 맞는다 — 읽기 컬럼 하나, 스키마 무변경
-    .select('id, word_text, base_form, meaning, pos, furigana, interval, ease_factor, repetitions, next_review_at, last_reviewed_at, language')
+    .select('id, word_text, base_form, meaning, pos, furigana, interval, ease_factor, repetitions, next_review_at, last_reviewed_at, language, is_excluded')
     .eq('user_id', userId);
-  if (error) return { byKey: new Map(), surfaces: new Set(), bases: new Set() };
+  if (error) throw error;
 
   const byKey = new Map(); // 'surface:<text>' or 'base:<text>' → vocab row
   const surfaces = new Set();
@@ -195,30 +197,32 @@ async function fetchUserVocabWords(userId) {
     if (v.word_text) {
       surfaces.add(v.word_text);
       byKey.set(`surface:${v.word_text}`, v);
+      byKey.set(`${v.language}:surface:${v.word_text}`, v);
     }
     if (v.base_form) {
       bases.add(v.base_form);
       if (!byKey.has(`base:${v.base_form}`)) byKey.set(`base:${v.base_form}`, v);
+      if (!byKey.has(`${v.language}:base:${v.base_form}`)) byKey.set(`${v.language}:base:${v.base_form}`, v);
     }
   }
   return { byKey, surfaces, bases };
 }
 
-function findSavedVocab(savedWords, token) {
+function findSavedVocab(savedWords, token, language) {
   if (!token) return null;
-  return savedWords.byKey?.get(`surface:${token.text}`)
-    || (token.base_form && savedWords.byKey?.get(`base:${token.base_form}`))
-    || null;
+  const base = token.sep_link || token.base_form;
+  const scoped = savedWords.byKey?.get(`${language}:surface:${token.text}`)
+    || (base && savedWords.byKey?.get(`${language}:base:${base}`));
+  const fallback = savedWords.byKey?.get(`surface:${token.text}`)
+    || (base && savedWords.byKey?.get(`base:${base}`));
+  return scoped || (fallback?.language === language ? fallback : null);
 }
-
-function isTokenSaved(savedWords, token) {
-  return !!findSavedVocab(savedWords, token);
+function isTokenSaved(savedWords, token, language) {
+  return !!findSavedVocab(savedWords, token, language);
 }
-
-function isTokenDue(savedWords, token) {
-  const v = findSavedVocab(savedWords, token);
-  if (!v?.next_review_at) return false;
-  return new Date(v.next_review_at) <= new Date();
+function isTokenDue(savedWords, token, language) {
+  const v = findSavedVocab(savedWords, token, language);
+  return !!v?.next_review_at && !v.is_excluded && new Date(v.next_review_at) <= new Date();
 }
 
 function gradeSaveKey(scope, token) {
@@ -385,6 +389,8 @@ export default function ViewerPage() {
     enabled: !!user,
     staleTime: 1000 * 30,
   });
+
+  const exclusionState = useVocabularyExclusions();
 
   // PDF 출처 메타 (있으면)
   const { data: sourcePdf } = useQuery({
@@ -1345,7 +1351,11 @@ export default function ViewerPage() {
 
   // 인라인 복습: 뷰어에서 단어 보며 바로 FSRS 평가
   const inlineReview = useInlineReview({ user, fetchProfile, toast });
-  const selectedVocab = findSavedVocab(savedWords, selectedToken);
+  const selectedVocab = findSavedVocab(savedWords, selectedToken, materialLang);
+  const selectedExclusion = findVocabularyExclusion(exclusionState.rows, {
+    vocabularyId: selectedVocab?.id, language: materialLang, word: exclusionWord(selectedToken),
+  });
+  const selectedExcluded = exclusionState.isSuccess ? !!selectedExclusion : !!selectedVocab?.is_excluded;
   // 다른 단어의 원격 저장이 진행 중이어도 현재 단어를 평가할 수 있다.
   const inlineReviewMutation = { ...inlineReview,
     isPending: pendingInlineGrades.has(`${user?.id}:${selectedVocab?.id}`),
@@ -1422,7 +1432,7 @@ export default function ViewerPage() {
         }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const vocab = findSavedVocab(savedWords, token);
+      const vocab = findSavedVocab(savedWords, token, materialLang);
       if (vocab?.id) {
         const patch = {
           ...(corrections.meaning ? { meaning: corrections.meaning } : {}),
@@ -1675,8 +1685,8 @@ export default function ViewerPage() {
 
   // W R3㉮ 인라인 복습 — 4등급 정본. 스냅샷은 훅이 돌려준 prev·reviewedAt으로 호출부가 만든다.
   const gradeInline = (rating) => {
-    const vocab = findSavedVocab(savedWords, selectedToken);
-    if (!vocab || inlineReviewMutation.isPending) return;
+    const vocab = findSavedVocab(savedWords, selectedToken, materialLang);
+    if (!vocab || selectedExcluded || !exclusionState.isSuccess || exclusionState.mutation.isPending || inlineReviewMutation.isPending) return;
     const requestKey = `${user.id}:${vocab.id}`;
     if (inlineGradeRequests.current.has(requestKey)) return;
     inlineGradeRequests.current.add(requestKey);
@@ -1757,6 +1767,7 @@ export default function ViewerPage() {
   };
 
   const addToVocab = async (grade) => {
+    if (user && (selectedExcluded || !exclusionState.isSuccess || exclusionState.mutation.isPending)) return;
     if (!user) {
       if (material?.__local) { toast('로그인하면 담겨요 — 카드의 「로그인 · 가입」으로 가세요.', 'info'); return; }
       toast('로그인이 필요합니다.', 'warning');
@@ -1885,8 +1896,8 @@ export default function ViewerPage() {
   // The body and Aa preview read the same existing learning records. The preview
   // has no token identifiers or handlers, so it cannot record an encounter/read.
   function tokenDisplayState(token) {
-    const isSaved = isTokenSaved(savedWords, token);
-    const isDue = isSaved && isTokenDue(savedWords, token);
+    const isSaved = isTokenSaved(savedWords, token, materialLang);
+    const isDue = isSaved && isTokenDue(savedWords, token, materialLang);
     const isKnown = (wordStateHl || pronDisplay === 'unknown') && !!(knownWordSet?.has(token.text) || (token.base_form && knownWordSet?.has(token.base_form)));
     const highlight = wordStateHl ? wordStateExtraClass(wordStateOf({
       isWord: isWordToken(token), isSaved, isDue, isKnown,
@@ -1911,13 +1922,13 @@ export default function ViewerPage() {
   const isDone = status === 'completed' || status === 'partial';
   const needsRecovery = !passageOf(material) && (isStaleAnalysis || (isDone && missingLineCount > 0));
   const isCompleted = readingProgress?.is_completed === true;
-  const isWordSaved = isTokenSaved(savedWords, selectedToken);
+  const isWordSaved = isTokenSaved(savedWords, selectedToken, materialLang);
   keyHandlersRef.current = {
     addToVocab, gradeInline, undo: undoAny,
     cardOpen: !!selectedToken && isSheetOpen,
     blocked: settingsOpen || sourceEditOpen || isEditingToken || !!reanalyzePanel || showReadingTest || showConversation || dictationPickerOpen || !!dictationSentence || !!quizState || !!completionModal,
-    saveLocked: isWordSaved || saveAnim,
-    inlineDue: !!user && isWordSaved && isTokenDue(savedWords, selectedToken) && !inlineReviewMutation.isPending,
+    saveLocked: isWordSaved || saveAnim || selectedExcluded || !exclusionState.isSuccess || exclusionState.mutation.isPending,
+    inlineDue: !!user && !selectedExcluded && exclusionState.isSuccess && !exclusionState.mutation.isPending && isWordSaved && isTokenDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending,
   };
   const savedCount = (savedWords.surfaces?.size || 0);
 
@@ -1930,8 +1941,8 @@ export default function ViewerPage() {
     for (const tokenId of material.processed_json.sequence || []) {
       const t = dict[tokenId];
       if (!t || t.pos === '개행') continue;
-      const vocab = findSavedVocab(savedWords, t);
-      if (vocab?.next_review_at && new Date(vocab.next_review_at) <= new Date() && !seen.has(vocab.id)) {
+      const vocab = findSavedVocab(savedWords, t, materialLang);
+      if (!vocab?.is_excluded && vocab?.next_review_at && new Date(vocab.next_review_at) <= new Date() && !seen.has(vocab.id)) {
         seen.add(vocab.id);
         count++;
       }
@@ -2301,18 +2312,31 @@ export default function ViewerPage() {
 
       </div>
       <div className="reader-card-actions">
-      {user && findSavedVocab(savedWords, selectedToken) && isTokenDue(savedWords, selectedToken) && !inlineReviewMutation.isPending && (
+      {user && <div className="save-grade__header">
+        <p className="save-grade__guide">얼마나 알겠어요?</p>
+        <button type="button" className="btn btn--ghost btn--sm" aria-pressed={selectedExcluded}
+          disabled={!exclusionState.isSuccess || exclusionState.mutation.isPending || inlineReviewMutation.isPending || saveAnim}
+          onClick={() => exclusionState.mutation.mutate(selectedExclusion ?
+            { exclusionId: selectedExclusion.id, excluded: false } : selectedVocab ?
+            { vocabularyId: selectedVocab.id, excluded: !selectedExcluded } :
+            { materialId: id, tokenId: selectedToken.id, excluded: !selectedExcluded })}>
+          {selectedExcluded ? '제외 해제' : '제외'}
+        </button>
+      </div>}
+      {user && exclusionState.isError && <button type="button" className="btn btn--ghost btn--sm" onClick={() => exclusionState.refetch()}>제외 상태 다시 확인</button>}
+
+      {user && findSavedVocab(savedWords, selectedToken, materialLang) && isTokenDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending && (
         // W R3㉮ — 척도를 정본에 맞춘다: 모름/애매/알아=1/2/3(Easy 없음)이 아니라 복습 화면과 같은 4등급.
         // 라벨·순서·클래스 = SAVE_GRADES(복습 화면 ScoreSection과 동일 계약). 키 1~4·⌘Z는 카드 리스너.
         <div style={{ padding: '10px 12px', background: 'color-mix(in srgb, var(--warning) 10%, transparent)', borderRadius: 'var(--radius-md)', marginBottom: 12, border: '1px solid var(--warning)' }}>
-          <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--warning)', marginBottom: 8 }}>복습 시점이에요</div>
+
           <div className="review-score-grid save-grade save-grade--inline">
             {SAVE_GRADES.map((g) => (
               <button
                 key={g.grade}
                 type="button"
                 onClick={() => gradeInline(g.grade)}
-                disabled={inlineReviewMutation.isPending}
+                disabled={selectedExcluded || !exclusionState.isSuccess || exclusionState.mutation.isPending || inlineReviewMutation.isPending}
                 className={`review-score-btn review-score-btn--${g.cls}`}
                 title={`${g.label} (키 ${g.key})`}
               >
@@ -2346,8 +2370,8 @@ export default function ViewerPage() {
         // 단어 목록 ✓(saveInlineVocabulary)가 그대로 맡는다.
         const isKnown = knownWordSet?.has(selectedToken.text)
           || (selectedLexKey && knownWordSet?.has(selectedLexKey));
-        if (isWordSaved && isTokenDue(savedWords,selectedToken) && !inlineReviewMutation.isPending) return null;
-        if (saveAnim || inlineReviewMutation.isPending || isWordSaved) {
+        if (isWordSaved && isTokenDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending) return null;
+        if (!selectedExcluded && (saveAnim || inlineReviewMutation.isPending || isWordSaved)) {
           return (
             <div className="word-detail-card__actrow">
               <button disabled className="btn btn--ghost btn--sm">{saveAnim || inlineReviewMutation.isPending ? '저장 중…' : '✓ 단어장에 있음'}</button>
@@ -2358,13 +2382,13 @@ export default function ViewerPage() {
         }
         return (
           <>
-            <p className="save-grade__guide">새 단어 저장 · 얼마나 알겠어요?</p>
             <div className="review-score-grid save-grade">
               {SAVE_GRADES.map((g) => (
                 <button
                   key={g.grade}
                   type="button"
                   onClick={() => addToVocab(g.grade)}
+                  disabled={selectedExcluded || !exclusionState.isSuccess || exclusionState.mutation.isPending}
                   className={`review-score-btn review-score-btn--${g.cls}`}
                   title={`${g.label} — ${g.sub} 다시 만나요 (키 ${g.key})`}
                 >

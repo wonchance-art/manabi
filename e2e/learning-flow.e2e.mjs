@@ -207,6 +207,7 @@ async function mockAuthenticatedVocab(context, { readingMaterials = [], role = '
   });
 
   await context.route('**/api/suggestions/today', (route) => json(route, []));
+  await context.route('**/api/learning/exclusions', route => route.request().method() === 'GET' ? json(route, { items: [] }) : route.continue());
   await context.route('**/auth/v1/**', async (route) => {
     if (route.request().method() === 'OPTIONS') {
       await route.fulfill({ status: 204, headers: cors });
@@ -268,12 +269,12 @@ async function mockAuthenticatedVocab(context, { readingMaterials = [], role = '
       );
       return;
     }
-    if (table === 'user_vocabulary') {
+    if (table === 'user_vocabulary' || table === 'vocabulary_with_exclusions' || table === 'active_vocabulary') {
       if (request.method() === 'GET') {
         const selectedWordsOnly = url.searchParams.get('select') === 'word_text';
         await json(route, selectedWordsOnly
           ? storedWords.map(({ word_text }) => ({ word_text }))
-          : storedWords);
+          : storedWords.map(row => ({ ...row, is_excluded: false })));
         return;
       }
       const payload = request.postDataJSON();

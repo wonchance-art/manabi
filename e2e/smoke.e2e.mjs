@@ -166,6 +166,7 @@ async function mockSupabaseSession(context, { role = 'admin', restRequests = nul
   });
 
   await context.route('**/api/suggestions/today', (route) => json(route, []));
+  await context.route('**/api/learning/exclusions', route => route.request().method() === 'GET' ? json(route, { items: [] }) : route.continue());
 
   await context.route('**/auth/v1/**', async (route) => {
     if (route.request().method() === 'OPTIONS') {

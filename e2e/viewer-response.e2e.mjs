@@ -36,6 +36,8 @@ async function setup({ due = false, fail = false, failInsert = false, width = 14
     window.SpeechSynthesisUtterance = class { constructor(text) { this.text = text; } };
     if (fail) Object.defineProperty(window, 'indexedDB', { configurable: true, value: { open() { throw new Error('fixture queue unavailable'); } } });
   }, { fail });
+  await f.context.route('**/api/learning/exclusions', r => respond(r, { items: [] }));
+  await f.context.route('**/rest/v1/vocabulary_with_exclusions*', r => respond(r, rows.map(row => ({ ...row, is_excluded: false }))));
   await f.context.route('**/api/tts?**', r => { speech.push(r.request().url()); return respond(r, { error: 'No server speech for immediate words' }, 500); });
   await f.context.route('**/api/dict?**', r => respond(r, null));
   await f.context.route('**/api/learning/vocabulary', async r => { auxiliaryStarted = true; await auxiliary.wait; return respond(r, { contextAdded: true }); });

@@ -28,6 +28,7 @@ export async function fixture({width=1440,guest=false,schema=true,shared=null}={
  const json=(route,value,status=200,extra={})=>route.fulfill({status,contentType:'application/json',headers:{...cors,...extra},body:JSON.stringify(value)});
  await context.route('**/auth/v1/**',r=>json(r,new URL(r.request().url()).pathname.endsWith('/user')?user:session));
  await context.route('**/api/analyze',r=>{analysisCalls++;return json(r,{error:'NO_AUTOMATIC_ANALYSIS'},500);});
+ await context.route('**/api/learning/exclusions',r=>r.request().method()==='GET'?json(r,{items:[]}):r.continue());
  await context.route('**/rest/v1/**',async route=>{
   const req=route.request(),url=new URL(req.url()),table=url.pathname.split('/').pop();
   if(req.method()==='OPTIONS')return route.fulfill({status:204,headers:cors});

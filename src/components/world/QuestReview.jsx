@@ -103,7 +103,7 @@ export default function QuestReview({ userId, onClose }) {
       if (!userId) { if (!cancelled) setPhase('empty'); return; }
       try {
         const { data, error } = await supabase
-          .from('user_vocabulary')
+          .from('active_vocabulary')
           .select('*')
           .eq('user_id', userId)
           .lte('next_review_at', new Date().toISOString())
