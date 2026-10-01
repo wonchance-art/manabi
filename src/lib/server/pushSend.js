@@ -106,7 +106,7 @@ export function buildPushCopy({ falling, top3, hasNewEpisode, userNextReflected,
  */
 export async function fetchForecastRows(supabase, userId, lang) {
   const { data } = await supabase
-    .from('user_vocabulary')
+    .from('active_vocabulary')
     .select('word_text, interval, last_reviewed_at')
     .eq('user_id', userId).eq('language', lang)
     .not('last_reviewed_at', 'is', null).gt('interval', 0);

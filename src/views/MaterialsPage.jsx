@@ -345,7 +345,7 @@ export default function MaterialsPage({ libraryView = null }) {
     queryKey: ['due-vocab-index', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('user_vocabulary')
+        .from('active_vocabulary')
         .select('word_text, base_form, next_review_at')
         .eq('user_id', user.id)
         .lte('next_review_at', new Date().toISOString());

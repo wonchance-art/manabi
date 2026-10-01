@@ -119,7 +119,7 @@ export async function fetchVocab(userId) {
     return rows;
   } catch (err) {
     const cached = await getCachedVocabSnapshot(userId);
-    if (!cached) throw err;             // 캐시가 없으면 기존 에러 경로 그대로(계약 5)
+    if (!cached || cached.some(row => typeof row.is_excluded !== 'boolean')) throw err;             // 캐시가 없으면 기존 에러 경로 그대로(계약 5)
     return Object.defineProperty(cached, '__offline', { value: true, enumerable: false });
   }
 }
@@ -127,7 +127,7 @@ export async function fetchVocab(userId) {
 async function fetchVocabFromNetwork(userId) {
   // 단어 본체는 무조건 fetch — JOIN 실패 시에도 단어장이 비어 보이지 않게
   const { data, error } = await supabase
-    .from('user_vocabulary')
+    .from('vocabulary_with_exclusions')
     .select('*')
     .eq('user_id', userId)
     .order('next_review_at', { ascending: true });

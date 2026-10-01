@@ -1,3 +1,4 @@
+import { loadVocabularyExclusions } from './vocabularyExclusion';
 import { loadPublishedRegistry } from './publishedChapter';
 /**
  * 공부 모드 재료 조립 (서버 전용).
@@ -209,7 +210,7 @@ async function buildWeaknessMaterials(supabase, userId, lang, ref, reviewEventRo
   let dueWords = [];
   if (weakVocab.length) {
     const words = weakVocab.map(w => w.item_key);
-    await supabase.from('user_vocabulary')
+    await supabase.from('active_vocabulary')
       .select('id, word_text, meaning, furigana, interval, ease_factor, repetitions, next_review_at')
       .eq('user_id', userId).eq('language', lang)
       .in('word_text', words)
@@ -330,18 +331,19 @@ export function applyEncounterContextExamples(exampleByWord, contextRows) {
 }
 
 export async function assembleStudyMaterials(supabase, userId, lang, { horizonHours = 0, interestGroup = null } = {}) {
-  const ref = await loadPublishedRegistry(lang, getRefLang(lang));
+  const [ref, exclusions] = await Promise.all([loadPublishedRegistry(lang, getRefLang(lang)), loadVocabularyExclusions(supabase, userId)]);
+  const excludedWords = new Set(exclusions.filter(row => row.language === lang).map(row => row.word_text));
   // due 기준 시각 — 프리페치는 now + horizonHours 로 미리 당겨 조회.
   const dueIso = new Date(Date.now() + horizonHours * 3600 * 1000).toISOString();
 
   // ── 재료 조회 (병렬) ──
   const [{ data: dueVocabRows }, { data: vocabPoolRows }, { data: dueGrammarRows }, { data: progressRows }, { data: reviewEventRowsRaw }, { data: encounterRows }] = await Promise.all([
-    supabase.from('user_vocabulary')
+    supabase.from('active_vocabulary')
       .select('id, word_text, meaning, furigana, source_sentence, language, interval, ease_factor, repetitions, next_review_at')
       .eq('user_id', userId).eq('language', lang)
       .lte('next_review_at', dueIso)
       .order('next_review_at', { ascending: true }).limit(4),
-    supabase.from('user_vocabulary')
+    supabase.from('active_vocabulary')
       .select('meaning')
       .eq('user_id', userId).eq('language', lang).limit(60),
     supabase.from('grammar_review')
@@ -461,7 +463,7 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
 
   // ── 어휘 보기 풀 — 내 단어장 뜻 + 부족하면 레벨 어휘 사전 뜻 ──
   const meaningPool = [...new Set((vocabPoolRows || []).map(r => r.meaning).filter(Boolean))];
-  const levelVocabWords = (ref.getVocab(level)?.themes || []).flatMap(t => t.words || []);
+  const levelVocabWords = (ref.getVocab(level)?.themes || []).flatMap(t => t.words || []).filter(word => !excludedWords.has(refMain(word)));
   if (meaningPool.length < 8) {
     levelVocabWords.slice(0, 40).forEach(w => {
       if (w?.ko) meaningPool.push(w.ko);
@@ -489,7 +491,7 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   // 후보 단어의 뜻·후리가나 조회 (추가 1쿼리 — user+lang 필터, 방어적)
   let warmupVocabRows = [];
   if (warmupCandidates.length) {
-    await supabase.from('user_vocabulary')
+    await supabase.from('active_vocabulary')
       .select('word_text, meaning, furigana')
       .eq('user_id', userId).eq('language', lang)
       .in('word_text', warmupCandidates)
@@ -516,7 +518,7 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   );
   const encounterVocab = buildEncounterCandidates(encounterRows, {
     wordByMain: buildRefMainWordIndex(ref),
-    exclude: [myWords, dueWordSet, recentVocabEventKeys],
+    exclude: [myWords, dueWordSet, recentVocabEventKeys, excludedWords],
   });
   // 만남 인지 문항 — 문단·프리페치·폴백 세 경로 공통으로 큐 말미에 붙일 수 있게 별도 반환.
   const encounterItems = buildEncounterItems(encounterVocab, meaningPool, dial, (dueVocabRows || []).length);

@@ -101,16 +101,23 @@ describe('④⑤⑥ 네트워크 우선 · 조용한 폴백', () => {
     await expect(fetchVocab('u1')).resolves.toHaveLength(1);
   });
 
-  it('네트워크가 죽으면 스냅샷으로 살아나고 __offline 표식이 붙는다', async () => {
+  it('제외 상태가 없는 구형 스냅샷은 학습 가능 상태로 추정하지 않는다', async () => {
     const { fetchVocab } = await import('../vocabIO.js');
     stubVocabQuery({ data: null, error: new Error('Failed to fetch') });
     cacheMock.getCachedVocabSnapshot.mockResolvedValue([{ id: 9, word_text: '雨' }]);
+    await expect(fetchVocab('u1')).rejects.toThrow('Failed to fetch');
+  });
+
+  it('네트워크가 죽으면 스냅샷으로 살아나고 __offline 표식이 붙는다', async () => {
+    const { fetchVocab } = await import('../vocabIO.js');
+    stubVocabQuery({ data: null, error: new Error('Failed to fetch') });
+    cacheMock.getCachedVocabSnapshot.mockResolvedValue([{ id: 9, word_text: '雨', is_excluded: false }]);
     const rows = await fetchVocab('u1');
     expect(rows).toHaveLength(1);
     expect(rows.__offline).toBe(true);
     // 표식은 열거 불가 — 순회·직렬화 결과가 온라인과 같아야 소비처가 무개입이다
     expect(Object.keys(rows)).toEqual(['0']);
-    expect(JSON.parse(JSON.stringify(rows))).toEqual([{ id: 9, word_text: '雨' }]);
+    expect(JSON.parse(JSON.stringify(rows))).toEqual([{ id: 9, word_text: '雨', is_excluded: false }]);
   });
 
   it('⑤ 캐시도 없으면 원래 에러 그대로 — 조용히 빈 화면을 만들지 않는다', async () => {

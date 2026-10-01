@@ -97,11 +97,12 @@ describe('N R2 — 오래됐다고 버리지 않는다 (R1 캐시와 다른 점)
 
 /* ── flush 실동작 ── */
 
-function fakeClient({ existing = [], insertError = null, words = [] } = {}) {
+function fakeClient({ existing = [], insertError = null, words = [], exclusions = [], exclusionError = null } = {}) {
   const calls = { inserted: null };
   return {
     calls,
     from(table) {
+      if (table === 'vocabulary_exclusions') return { select: () => ({ eq: () => ({ order: () => ({ range: () => Promise.resolve({ data: exclusions, error: exclusionError }) }) }) }) };
       if (table === 'review_events') {
         return {
           select: () => ({ eq: () => ({ gte: () => ({ lte: () => Promise.resolve({ data: existing }) }) }) }),
@@ -160,6 +161,24 @@ describe('N R2 — flush', () => {
     expect(client.calls.inserted, '중복이면 insert 자체를 하지 않는다').toBeNull();
     expect(r.sent, '그래도 큐에서는 비운다 — 이미 서버에 있으니 할 일이 끝났다').toBe(1);
     expect(d.remove).toHaveBeenCalledWith([7]);
+  });
+
+  it('제외된 오프라인 기록은 보존하고 다른 언어의 기록은 전송한다', async () => {
+    const d = deps([entry({ seq: 7 }), entry({ seq: 8, lang: 'Chinese', detail: { word_id: 'w2', rating: 3 } })], { persist: vi.fn() });
+    const client = fakeClient({ exclusions: [{ id: 'x', language: 'Japanese', word_text: '単語', vocabulary_id: 'w1' }] });
+    const r = await flushReviews(client, 'u1', d);
+    expect(client.calls.inserted).toHaveLength(1);
+    expect(client.calls.inserted[0].lang).toBe('Chinese');
+    expect(d.remove).toHaveBeenCalledWith([8]);
+    expect(r).toMatchObject({ sent: 1, kept: 1 });
+  });
+
+  it('제외 상태 조회 실패를 빈 목록으로 처리하지 않는다', async () => {
+    const d = deps([entry({ seq: 7 })], { persist: vi.fn() });
+    const client = fakeClient({ exclusionError: new Error('offline') });
+    expect(await flushReviews(client, 'u1', d)).toEqual({ sent: 0, kept: 1, applied: 0 });
+    expect(client.calls.inserted).toBeNull();
+    expect(d.remove).not.toHaveBeenCalled();
   });
 
   it('로그인·클라이언트가 없으면 아무 일도 하지 않는다', async () => {

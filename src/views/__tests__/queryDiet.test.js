@@ -68,6 +68,6 @@ describe('쿼리 다이어트 계약', () => {
     expect(materials).toContain('material.processed_json.dictionary');
     // fetchVocab: 단어장 화면이 전 컬럼 소비자(etym·hanja 포함) — select('*') 유지
     const io = read('src/lib/vocabIO.js');
-    expect(io).toMatch(/from\('user_vocabulary'\)\s*\.select\('\*'\)/);
+    expect(io).toMatch(/from\('vocabulary_with_exclusions'\)\s*\.select\('\*'\)/);
   });
 });

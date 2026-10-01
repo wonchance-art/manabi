@@ -41,7 +41,7 @@ export function preservePendingVocabularyReviews(fresh, current) {
   if (!current?.byKey || !fresh?.byKey) return fresh;
   const pending = new Map([...current.byKey.values()].filter(row => row?.__pendingReview).map(row => [row.id, row]));
   if (!pending.size) return fresh;
-  const byKey = new Map([...fresh.byKey].map(([key, row]) => [key, pending.get(row.id) || row]));
+  const byKey = new Map([...fresh.byKey].map(([key, row]) => [key, pending.has(row.id) ? { ...pending.get(row.id), ...(typeof row.is_excluded === 'boolean' ? { is_excluded: row.is_excluded } : {}) } : row]));
   for (const [key, row] of current.byKey) {
     if (row?.__pendingReview && !byKey.has(key)) byKey.set(key, row);
   }

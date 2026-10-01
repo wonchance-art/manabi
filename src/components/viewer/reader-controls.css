@@ -320,3 +320,8 @@
   .manabi-app .viewer-layout[data-teaching-board="split"][data-inspector-open="true"]>.viewer-center {grid-row:1;padding-top:76px;padding-bottom:calc(min(52dvh,440px) + 24px);}
   .manabi-app .viewer-layout[data-teaching-board="split"][data-inspector-open="true"] .viewer-topbar {top:68px;}
 }
+
+/* 네 평가칸과 분리된 가역 제외. 긴 안내도 버튼과 겹치지 않는다. */
+.save-grade__header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.save-grade__header .save-grade__guide { margin: 0; min-width: 0; }
+.save-grade__header > button { flex: 0 0 auto; }

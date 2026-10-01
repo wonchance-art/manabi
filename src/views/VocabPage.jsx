@@ -13,6 +13,7 @@ import Button from '../components/Button';
 import OfflineNotice, { PendingReviewsNotice } from '../components/OfflineNotice';
 import ConfirmModal from '../components/ConfirmModal';
 import VocabList from './VocabList';
+import VocabularyExclusionList from '../components/VocabularyExclusionList';
 import VocabReview from './VocabReview';
 import VocabDetailCard from './VocabDetailCard';
 import { CardGridSkeleton } from '../components/Skeleton';
@@ -355,7 +356,7 @@ function VocabWorkspace({ bookReview }) {
   const vocabMatchesSeries = useCallback(v => seriesFilter === 'all' || deckOf(v)?.key === seriesFilter, [seriesFilter]);
 
   // 현재 덱(시리즈 필터) 범위의 단어 — 히어로·현황·복습 큐가 공유
-  const deckScope = useMemo(() => vocab.filter(vocabMatchesSeries), [vocab, vocabMatchesSeries]);
+  const deckScope = useMemo(() => vocab.filter(v => !v.is_excluded && vocabMatchesSeries(v)), [vocab, vocabMatchesSeries]);
 
   // 덱 범위 구성: 미학습(신규)·학습 중·숙련 (서로 안 겹치게 분할)
   const deckStats = useMemo(() => {
@@ -385,7 +386,7 @@ function VocabWorkspace({ bookReview }) {
   );
   const currentWord = useMemo(() => {
     const id = reviewQueue[reviewIdx];
-    return id != null ? vocab.find(v => v.id === id) : undefined;
+    return id != null ? vocab.find(v => v.id === id && !v.is_excluded) : undefined;
   }, [reviewQueue, reviewIdx, vocab]);
 
   // 자동 모드: 단어 rung → 세션과 동일한 문항 유형(vocabTypeForRung)을 복습 서브모드로 매핑.
@@ -413,7 +414,7 @@ function VocabWorkspace({ bookReview }) {
   );
 
   const handleScore = async (rating) => {
-    if (!currentWord || scoringRef.current) return;
+    if (!currentWord || currentWord.is_excluded || scoringRef.current) return;
     scoringRef.current = true;
     let calculateFSRS;
     try {
@@ -472,7 +473,7 @@ function VocabWorkspace({ bookReview }) {
   };
 
   const handleSkip = () => {
-    if (!currentWord) return;
+    if (!currentWord || currentWord.is_excluded) return;
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
@@ -616,7 +617,7 @@ function VocabWorkspace({ bookReview }) {
   // 채점(handleScore → recordReviewCompleted)은 전부 이 한 길이다. 재대결이 두 번째 문이
   // 되면서 정본화: 채점 경로를 문마다 새로 만들지 않는다.
   const startSession = async (queueWords) => {
-    const queue = queueWords.map(v => v.id);
+    const queue = queueWords.filter(v => !v.is_excluded).map(v => v.id);
     if (queue.length === 0 || startingRef.current || (bookReview && (!bookScope.isSuccess || bookScope.isError || vocabError))) return;
     startingRef.current = true;
     setStartingReview(true);
@@ -658,6 +659,14 @@ function VocabWorkspace({ bookReview }) {
   };
 
   // 복습 예정(학습한 단어) 먼저, 그다음 하루 한도 내 새 단어
+  // 다른 탭에서 제외/삭제된 현재 카드는 채점 없이 다음 남은 카드로 건너뛴다.
+  useEffect(() => {
+    if (currentWord || reviewFinished || !reviewQueue.length || isLoading || vocabError) return;
+    const next = reviewQueue.findIndex((id, index) => index > reviewIdx && vocab.some(row => row.id === id && !row.is_excluded));
+    if (next >= 0) setReviewIdx(next);
+    else { setReviewIdx(reviewQueue.length); setReviewFinished(true); }
+  }, [currentWord, reviewFinished, reviewQueue, reviewIdx, vocab, isLoading, vocabError]);
+
   const startReview = () =>
     startSession([...session.reviewsDue, ...session.newAvailable.slice(0, session.newToday)]);
 
@@ -881,6 +890,7 @@ function VocabWorkspace({ bookReview }) {
                 미학습 {deckStats.neu} · 학습 중 {deckStats.learning} · 숙련 {deckStats.mastered}
               </p>
             )}
+            <VocabularyExclusionList vocab={allVocab} scopeIds={bookReview ? bookScope.data || [] : null} />
             {vocab.length === 0 ? (
               <p className="review-sec__empty">교재나 자료에서 단어를 저장하면 여기에 모여요.</p>
             ) : (
@@ -1023,6 +1033,7 @@ function VocabWorkspace({ bookReview }) {
           <button type="button" className="chip" style={{ marginBottom: 12 }} onClick={() => setTab('list')}>
             ← 돌아가기
           </button>
+          <VocabularyExclusionList vocab={allVocab} scopeIds={bookReview ? bookScope.data || [] : null} />
           <VocabList
           vocab={vocab}
           filteredVocab={filteredVocab}

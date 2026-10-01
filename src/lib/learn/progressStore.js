@@ -15,6 +15,7 @@
  */
 
 import { supabase } from '../supabase';
+import { isVocabularyExcludedError } from '../vocabularyExclusion';
 import { VOCAB_UPSERT, buildVocabRow } from '../vocabIO';
 import { normalizeSlug, slugAliases } from '../world/storageSchema.js';
 import { recordLessonActivity } from './learningActivity';
@@ -188,6 +189,8 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
     // detail.undo_of.reviewed_at으로 원 채점을 가리킨다
     return { ok: true, reviewedAt };
   } catch (err) {
+    // 제외는 연결 장애가 아니다. 실패한 평가를 성공/오프라인 재시도로 위장하지 않는다.
+    if (isVocabularyExcludedError(err)) return { ok: false, error: err };
     // 온라인인데 실패했다 — 서버가 죽었거나 연결이 방금 끊겼다. 큐에 넣어 살린다.
     // 이벤트가 이미 착지했을 수도 있는데, 온라인 경로도 같은 reviewedAt을 실어 보내므로
     // flush의 완전 일치 대조가 그 중복을 걸러낸다.

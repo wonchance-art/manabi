@@ -81,7 +81,7 @@ describe('저장 등급 — 뷰어 배선(ViewerPage)', () => {
     expect(keys).toContain('viewerCommandAllowed(e, { cardOpen: h.cardOpen, blocked: h.blocked })');
     expect(keys).toContain("e.metaKey || e.ctrlKey || e.altKey || !/^[1-4]$/.test(e.key)");
     expect(keys).toContain('if (!h.saveLocked) { e.preventDefault(); h.addToVocab?.(Number(e.key)); }');
-    expect(viewer).toContain('saveLocked: isWordSaved || saveAnim,');
+    expect(viewer).toContain('saveLocked: isWordSaved || saveAnim || selectedExcluded || !exclusionState.isSuccess || exclusionState.mutation.isPending,');
     expect(keys).toContain("document.addEventListener('keydown', onKeyDown);");
     expect(keys).toContain("return () => document.removeEventListener('keydown', onKeyDown);");
   });
