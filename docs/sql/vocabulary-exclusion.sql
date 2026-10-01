@@ -6,10 +6,12 @@ CREATE TABLE public.vocabulary_exclusions (
  language text NOT NULL CHECK(language IN ('Japanese','Chinese','English','French','Unknown')),
  word_text text NOT NULL CHECK(length(word_text) BETWEEN 1 AND 300),
  vocabulary_id uuid REFERENCES public.user_vocabulary(id) ON DELETE SET NULL,
+ retired_vocabulary_ids uuid[] NOT NULL DEFAULT '{}',
  created_at timestamptz NOT NULL DEFAULT now(),
  UNIQUE(user_id,vocabulary_id)
 );
 CREATE UNIQUE INDEX vocabulary_exclusion_unsaved_key ON public.vocabulary_exclusions(user_id,language,word_text) WHERE vocabulary_id IS NULL;
+CREATE INDEX vocabulary_exclusion_word_key ON public.vocabulary_exclusions(user_id,language,word_text);
 ALTER TABLE public.vocabulary_exclusions ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.vocabulary_exclusions FROM PUBLIC,anon,authenticated;
 GRANT SELECT,INSERT,UPDATE,DELETE ON public.vocabulary_exclusions TO authenticated;
@@ -102,9 +104,14 @@ CREATE TRIGGER lock_exclusion_owner BEFORE INSERT OR UPDATE OR DELETE ON public.
 CREATE FUNCTION public.preserve_deleted_vocabulary_exclusion() RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER SET search_path='' AS $$
 DECLARE e public.vocabulary_exclusions%rowtype;
 BEGIN
- SELECT * INTO e FROM public.vocabulary_exclusions WHERE vocabulary_id=OLD.id AND user_id=OLD.user_id;
- IF e.id IS NULL THEN RETURN OLD; END IF;
+ SELECT * INTO e FROM public.vocabulary_exclusions WHERE user_id=OLD.user_id AND (vocabulary_id=OLD.id OR (language=OLD.language AND word_text=normalize(btrim(coalesce(nullif(OLD.base_form,''),OLD.word_text)),NFC))) ORDER BY (vocabulary_id=OLD.id) DESC NULLS LAST LIMIT 1;
+ IF e.id IS NOT NULL AND NOT OLD.id=ANY(e.retired_vocabulary_ids) THEN
+  UPDATE public.vocabulary_exclusions SET retired_vocabulary_ids=array_append(retired_vocabulary_ids,OLD.id) WHERE id=e.id RETURNING * INTO e;
+ END IF;
+ IF e.id IS NULL OR e.vocabulary_id IS DISTINCT FROM OLD.id THEN RETURN OLD; END IF;
  IF EXISTS(SELECT 1 FROM public.vocabulary_exclusions WHERE user_id=e.user_id AND language=e.language AND word_text=e.word_text AND vocabulary_id IS NULL) THEN
+  UPDATE public.vocabulary_exclusions SET retired_vocabulary_ids=ARRAY(SELECT DISTINCT unnest(retired_vocabulary_ids||e.retired_vocabulary_ids))
+   WHERE user_id=e.user_id AND language=e.language AND word_text=e.word_text AND vocabulary_id IS NULL;
   DELETE FROM public.vocabulary_exclusions WHERE id=e.id;
  ELSE UPDATE public.vocabulary_exclusions SET vocabulary_id=NULL WHERE id=e.id;
  END IF;
@@ -136,7 +143,7 @@ BEGIN
  -- 기존 카드의 제외 조작과 평가 이벤트를 같은 행 잠금으로 직렬화한다.
  IF NEW.detail->>'word_id' IS NOT NULL THEN PERFORM 1 FROM public.user_vocabulary WHERE user_id=NEW.user_id AND id::text=NEW.detail->>'word_id' FOR UPDATE; END IF;
  IF EXISTS(SELECT 1 FROM public.vocabulary_exclusions e WHERE e.user_id=NEW.user_id AND (
-  e.vocabulary_id::text=NEW.detail->>'word_id' OR (e.language=NEW.lang AND e.word_text=normalize(btrim(NEW.item_key),NFC)) OR
+  e.vocabulary_id::text=NEW.detail->>'word_id' OR EXISTS(SELECT 1 FROM unnest(e.retired_vocabulary_ids) retired WHERE retired::text=NEW.detail->>'word_id') OR (e.language=NEW.lang AND e.word_text=normalize(btrim(NEW.item_key),NFC)) OR
   EXISTS(SELECT 1 FROM public.user_vocabulary v WHERE v.user_id=NEW.user_id AND v.id::text=NEW.detail->>'word_id' AND
    e.language=v.language AND e.word_text=normalize(btrim(coalesce(nullif(v.base_form,''),v.word_text)),NFC)) OR
   (NEW.detail->>'word_id' IS NULL AND EXISTS(SELECT 1 FROM public.user_vocabulary v WHERE v.id=e.vocabulary_id AND v.language=NEW.lang AND

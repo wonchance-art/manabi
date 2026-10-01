@@ -52,4 +52,9 @@ describe('가역적인 계정 단어 제외', () => {
     expect(scopedVocabularyExclusions(rows, words, [])).toEqual([]);
   });
 
+  it('삭제 후 돌아온 오프라인 평가는 원래 카드 ID로도 제외 판정한다', () => {
+    const removed = [{ id: 'x', language: 'English', word_text: 'book', vocabulary_id: null, retired_vocabulary_ids: ['old-books'] }];
+    expect(findVocabularyExclusion(removed, { vocabularyId: 'old-books', language: 'English', word: 'books' }).id).toBe('x');
+  });
+
 });

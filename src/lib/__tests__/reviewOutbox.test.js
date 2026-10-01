@@ -165,7 +165,7 @@ describe('N R2 — flush', () => {
 
   it('제외된 오프라인 기록은 보존하고 다른 언어의 기록은 전송한다', async () => {
     const d = deps([entry({ seq: 7 }), entry({ seq: 8, lang: 'Chinese', detail: { word_id: 'w2', rating: 3 } })], { persist: vi.fn() });
-    const client = fakeClient({ exclusions: [{ id: 'x', language: 'Japanese', word_text: '単語', vocabulary_id: 'w1' }] });
+    const client = fakeClient({ exclusions: [{ id: 'x', language: 'Japanese', word_text: '単語', vocabulary_id: null, retired_vocabulary_ids: ['w1'] }] });
     const r = await flushReviews(client, 'u1', d);
     expect(client.calls.inserted).toHaveLength(1);
     expect(client.calls.inserted[0].lang).toBe('Chinese');

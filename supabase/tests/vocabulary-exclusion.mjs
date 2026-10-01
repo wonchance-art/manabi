@@ -86,6 +86,7 @@ try {
   await db.query('delete from user_vocabulary where id=$1',[twins[1].id]);
   const kept=await rows("select * from vocabulary_exclusions where word_text='run'");
   assert.equal(kept.length,1);assert.equal(kept[0].vocabulary_id,null);
+  for(const twin of twins) await assert.rejects(db.query("insert into review_events(user_id,lang,source,item_key,correct,detail) values($1,'English','vocab',$2,true,$3)",[a,twin.word_text,{word_id:twin.id}]),/vocabulary_excluded/);
   await assert.rejects(db.query("insert into user_vocabulary(user_id,word_text,base_form,meaning,language) values($1,'runs','run','뜻','English')",[a]),/vocabulary_excluded/);
   await toggle({entry:kept[0].id,excluded:false});
   await db.query("insert into user_vocabulary(user_id,word_text,base_form,meaning,language) values($1,'runs','run','새 뜻','English')",[a]);
