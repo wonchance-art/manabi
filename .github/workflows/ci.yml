@@ -64,7 +64,14 @@ jobs:
       # 에러 없이 조용히 죽으므로(#869 오판 선례), 빌드와 실행이 반드시 같은 값을 써야 한다.
       # e2e:build 스크립트가 그 값을 고정해 들고 있다.
       - name: 테스트 env로 빌드
-        run: npm run e2e:build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://e2e.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: e2e-anon-key
+          NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3100
+          E2E_PUBLISHED_EDITION: 8a8c1c1fd452773810abaf8c
+        # Static reference pages also read published overrides during the build.
+        # Use the existing fixture before npm starts so the dummy host is never contacted.
+        run: NODE_OPTIONS="${NODE_OPTIONS:-} --import=$PWD/e2e/server-fetch-mock.mjs" npm run e2e:build
 
       # 브라우저는 러너에 미리 깔린 Google Chrome을 쓴다(playwright.config.mjs 기본 channel).
       - name: Chrome 확인
@@ -100,4 +107,4 @@ jobs:
             sleep 1
           done
           curl -fsS http://127.0.0.1:8878/manifest.webmanifest > /dev/null
-          node --test --test-concurrency=1 e2e/library-book-chapters.e2e.mjs e2e/library-management.e2e.mjs e2e/learning-flow-clarity.e2e.mjs e2e/textbook-reading-clarity.e2e.mjs e2e/viewer-response.e2e.mjs e2e/viewer-hun-layout.e2e.mjs e2e/viewer-exclusion.e2e.mjs
+          node --test --test-concurrency=1 e2e/library-book-chapters.e2e.mjs e2e/library-management.e2e.mjs e2e/learning-flow-clarity.e2e.mjs e2e/textbook-reading-clarity.e2e.mjs e2e/book-reading-reload.e2e.mjs e2e/viewer-response.e2e.mjs e2e/viewer-hun-layout.e2e.mjs e2e/viewer-exclusion.e2e.mjs
