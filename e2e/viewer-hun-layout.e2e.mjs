@@ -22,6 +22,15 @@ async function open(width) {
 async function select(f,index) {
  const token=f.page.locator(`[data-source-token="id_0_${index}"]`);
  await token.focus();await f.page.keyboard.press('Enter');
+ // The previous hun block is already visible. Wait for both the new headword
+ // and its deferred card focus, which otherwise steals the next token's Enter.
+ await f.page.waitForFunction(text=>{
+  const surface=document.querySelector('.reader-card-headword .surface');
+  if(!surface)return false;
+  const word=surface.cloneNode(true);
+  word.querySelectorAll('rt,.rt-an').forEach(e=>e.remove());
+  return word.textContent.trim()===text&&document.activeElement?.classList.contains('word-detail-card');
+ },entries[index][0]);
  await f.page.locator('.reader-hun').waitFor();
 }
 async function checkGeometry(f) {

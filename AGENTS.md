@@ -30,7 +30,7 @@ Claude 세션이 기획·SPEC과 협업을 조율한다. 구현 산출물은 **d
    만들지도 고치지도 않는다. "적절히 개선"은 없다 — 애매하면 PR 본문에 질문을 남기고
    구현은 allowlist 안에서 멈춘다.
 2. **브랜치**: `codex/<태스크-슬러그>` 로 만든다. force-push 금지.
-3. **게이트**: PR을 열기 전에 리포 루트에서 `npm test`(전체 vitest)를 돌려 green을
+3. **게이트**: PR을 열기 전에 리포 루트에서 `npm test`(world 제외 vitest)를 돌려 green을
    확인하고, PR 본문에 결과 수치(파일/테스트 수)를 적는다. `.env.local` 없이도 전량
    통과하도록 설계돼 있다(더미 폴백) — 시크릿을 요구하는 테스트는 없다.
 4. **계약 테스트 동봉**: 새 모듈에는 `src/lib/__tests__/` 계약 테스트를 함께 만든다.
@@ -43,7 +43,8 @@ Claude 세션이 기획·SPEC과 협업을 조율한다. 구현 산출물은 **d
 
 - **DB 스키마 금지**: `supabase/migrations/` 파일 생성·수정 금지. 스키마가 필요하면
   PR 본문에 요청만 남긴다(마이그레이션은 Claude 저작).
-- **시크릿 금지**: `.env*` 열람·출력·커밋 금지. 키·토큰을 코드에 넣지 않는다.
+- **시크릿 금지**: 실제 `.env*` 열람·출력·커밋 금지. 키·토큰을 코드에 넣지 않는다.
+  추적된 `.env.example`은 변수명·설명·빈 값/공개 fixture만 유지한다. 실제 credential을 넣지 않는다.
 - **콘텐츠 카피 금지**: 사용자에게 보이는 한국어 UX 문구·학습 콘텐츠(`src/content/**`)
   신설·수정 금지 — 문구가 필요하면 placeholder 상수로 두고 PR 본문에 요청.
 - **Claude 소유 파일 금지**: `scripts/verify-city-geo.mjs`, `docs/rfc-*.md`,
@@ -64,9 +65,13 @@ Claude 세션이 기획·SPEC과 협업을 조율한다. 구현 산출물은 **d
 
 ## 환경 셋업 (Codex Cloud 환경 설정 권장값)
 
-- 셋업 스크립트: `npm ci`
-- 확인 명령: `npm test` (world 스위트 제외 전체 vitest — 일상 게이트),
-  필요 시 `npm run lint`
+- `PROJECT_CONTEXT.md`(제품/진행 맥락)와 `CLOUD_READINESS.md`(재현 절차)를 먼저 읽는다.
+- 앱 런타임: Node 24 (`.nvmrc`), lockfile로 `npm ci`. world 저작 Node 22와 구별한다.
+- 설치 명령/Install script: `npm run setup:cloud` (Chromium 포함, Linux는 OS 패키지 설치 권한 필요).
+- 검증 명령: `npm run verify:cloud` (lint·world 제외 vitest·격리 SQL·fixture build·CI 브라우저 흐름).
+- 브라우저 없는 제한 환경은 두 명령에 `-- --no-browser`; 생략한 검수를 완료로 세지 않는다.
+- `dev:cloud`/`start:cloud`는 공개 테스트 값·폰트 fixture를 쓴다. 실제 로그인/저장 검수와 구별하고 운영에 배포하지 않는다.
+- 실제 서비스 연결은 `CLOUD_READINESS.md`의 개발용 환경변수와 일반 `npm run dev`/`build`를 사용한다.
 - 기준 브랜치: `main`
 
 ## 부록 — 월드 geo 태스크 전용 규약 (구 로컬 세션 체제에서 승계, 해당 태스크에만 적용)

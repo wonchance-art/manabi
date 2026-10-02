@@ -3,11 +3,30 @@ node_modules
 
 # Build output
 dist/
+out/
+build/
+coverage/
+*.tsbuildinfo
 
 # Environment
-.env
-.env.local
-.env.*.local
+.env*
+!.env.example
+!.env.*.example
+# Credential/auth exports, never application fixtures.
+.auth/
+playwright/.auth/
+.npmrc.local
+.npmrc
+.netrc
+.pypirc
+*.pem
+*.key
+*.p12
+*.pfx
+*.sqlite
+*.sqlite3
+credentials*.json
+service-account*.json
 
 # IDE
 .vscode/
@@ -30,6 +49,7 @@ npm-debug.log*
 
 # Supabase CLI 로컬 캐시
 supabase/.temp/
+supabase/.branches/
 
 # Codex CLI 로컬 설정
 .codex/
@@ -39,7 +59,13 @@ supabase/.temp/
 # 직접 읽으므로 예외로 남긴다.
 scripts/data/
 !scripts/data/tatoeba-*.json
-.env*.local
 
 # Local synthetic QA evidence; never public auth/session data.
 .qa/
+test-results/
+playwright-report/
+blob-report/
+.cache/
+.npm/
+.eslintcache
+.obsidian/

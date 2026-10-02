@@ -1,14 +1,12 @@
-import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const port = Number.parseInt(process.env.PLAYWRIGHT_PORT || '3100', 10);
 // Next normalizes loopback middleware redirects to localhost. Keep the cookie origin
 // identical before and after legacy/admin redirects so authenticated fixtures survive.
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || `http://localhost:${port}`;
-const browserChannel = process.env.PLAYWRIGHT_BROWSER_CHANNEL || 'chrome';
-const localChromiumPath = '/opt/pw-browsers/chromium';
-const executablePath = process.env.PLAYWRIGHT_EXECUTABLE_PATH
-  || (existsSync(localChromiumPath) ? localChromiumPath : null);
+// Default to the lockfile's installed Chromium. Chrome/custom paths remain opt-in.
+const browserChannel = process.env.PLAYWRIGHT_BROWSER_CHANNEL;
+const executablePath = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
 const serverFetchMock = new URL('./e2e/server-fetch-mock.mjs', import.meta.url).href;
 const nodeOptions = [process.env.NODE_OPTIONS, `--import="${serverFetchMock}"`]
   .filter(Boolean)
@@ -22,7 +20,7 @@ export default Object.freeze({
     launchOptions: {
       headless: true,
       args: ['--enable-precise-memory-info'],
-      ...(executablePath ? { executablePath } : { channel: browserChannel }),
+      ...(executablePath ? { executablePath } : browserChannel ? { channel: browserChannel } : {}),
     },
   },
   webServer: {

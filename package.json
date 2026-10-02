@@ -7,6 +7,12 @@
     "node": "24.x"
   },
   "scripts": {
+    "setup:cloud": "node scripts/cloud/setup.mjs",
+    "verify:cloud": "node scripts/cloud/verify.mjs",
+    "build:cloud": "node scripts/cloud/app.mjs build",
+    "dev:cloud": "node scripts/cloud/app.mjs dev",
+    "start:cloud": "node scripts/cloud/app.mjs start",
+    "test:sql": "node scripts/verification/library-book-chapters.mjs && node supabase/tests/vocabulary-exclusion.mjs && node supabase/tests/known-word-controls.mjs",
     "predev": "node scripts/world/build-overworld-fixture.mjs --check && node scripts/world/build-world-node-geo-manifest.mjs --check && node scripts/copy-pdf-worker.mjs",
     "dev": "next dev",
     "prebuild": "node scripts/check-content.mjs && node scripts/check-reading.mjs && node scripts/lint-curriculum.mjs && node scripts/world/build-overworld-fixture.mjs --check && node scripts/world/build-world-node-geo-manifest.mjs --check && node scripts/world/check-overworld-assets.mjs && node scripts/update-sw-version.mjs && node scripts/copy-pdf-worker.mjs",

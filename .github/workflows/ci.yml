@@ -64,11 +64,13 @@ jobs:
       # 에러 없이 조용히 죽으므로(#869 오판 선례), 빌드와 실행이 반드시 같은 값을 써야 한다.
       # e2e:build 스크립트가 그 값을 고정해 들고 있다.
       - name: 테스트 env로 빌드
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: npm run e2e:build
 
-      # 브라우저는 러너에 미리 깔린 Google Chrome을 쓴다(playwright.config.mjs 기본 channel).
-      - name: Chrome 확인
-        run: google-chrome --version
+      # 로컬/Cloud와 같은 lockfile의 Chromium을 사용한다(글로벌 Chrome 불필요).
+      - name: Chromium 설치
+        run: node node_modules/playwright-core/cli.js install --with-deps chromium
 
       # 조판 기하 계약 — 빌드가 필요 없어(index.css 실물 + 정적 마크업) 제일 싸므로 먼저.
       # 병음·요미가나의 실렌더 좌표(토글 시프트 0·그리드 단일값·겹침 0)를 지킨다 —

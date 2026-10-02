@@ -24,8 +24,18 @@
 
 ## 로컬 개발
 
+Node 24를 사용한다(`.nvmrc`). fresh clone/Codex Cloud 설치·검증은
+[`CLOUD_READINESS.md`](CLOUD_READINESS.md), 제품 맥락은 [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md)를 먼저 읽는다.
+
 ```bash
-npm install
+npm run setup:cloud
+npm run verify:cloud
+```
+
+실제 개발용 서비스에 연결할 때:
+
+```bash
+npm ci --include=dev
 cp .env.example .env.local   # 아래 환경 변수 채우기
 npm run dev
 ```
@@ -35,11 +45,12 @@ npm run dev
 ```
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
-GEMINI_API_KEY=
-GROQ_API_KEY=   # 선택 (폴백용)
 ```
+
+AI 기능은 `GEMINI_API_KEY`/선택 `GROQ_API_KEY`를 별도로 설정한다. 일반 읽기·서재 UI에는
+`SUPABASE_SERVICE_ROLE_KEY`가 필요하지 않다. 선택 cron/릴레이 등 서버 작업에만 사용한다.
+`.env.example`의 기본값은 fixture이므로 실제 로그인/저장을 위해서는 개발용 값으로 바꾼다.
 
 ### Supabase 설정
 
@@ -58,6 +69,8 @@ npm run start      # 프로덕션 서버
 ## 문서
 
 - [`docs/launch-checklist.md`](docs/launch-checklist.md) — 공개 런칭 시 Supabase/도메인 설정
+- [`CLOUD_READINESS.md`](CLOUD_READINESS.md) — fresh clone 설치·검증·Cloud 설정/제한
+- [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) — 제품 결정·진행/보류 상태·다음 세션 인계
 - [`docs/deployment-checklist.md`](docs/deployment-checklist.md) — DB 마이그레이션 배포 절차
 - [`docs/accessibility-audit.md`](docs/accessibility-audit.md) — 접근성 점검
 - [`docs/evaluation-and-strategy.md`](docs/evaluation-and-strategy.md) — 제품 평가·로드맵
