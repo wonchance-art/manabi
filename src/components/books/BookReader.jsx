@@ -209,6 +209,10 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
 
   useEffect(() => {
     if (!ready || (unit !== 'cover' && (!sections.length || sections[0].unit !== unit))) return;
+    // Imperative mounts precede their React portals. Restore only after the
+    // controls occupy their final space; native scroll anchoring is not exact.
+    if (examples.some(({ mount }) => !content.current?.contains(mount) || !mount.firstElementChild)
+      || content.current?.querySelector('.book-example-save:empty')) return;
     let frame, cancelled = false;
     document.fonts.ready.then(() => { if (cancelled) return; frame = requestAnimationFrame(() => {
       const id = pendingAnchor.current;
@@ -231,7 +235,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
       if (!reference && /^u\d{2}/.test(id)) update({ page: id });
     }); });
     return () => { cancelled = true; cancelAnimationFrame(frame); };
-  }, [pageId, anchorRequest, sections, unit, update, ready, measureToolbar, reference, rememberPosition]);
+  }, [pageId, anchorRequest, sections, examples, unit, update, ready, measureToolbar, reference, rememberPosition]);
 
   useEffect(() => {
     if (!sections.length) return;
