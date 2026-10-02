@@ -12,6 +12,10 @@
   font-family:var(--font-noto-kr),sans-serif;
 }
 .viewer-layout[data-reader-theme="light"] { --reader-paper:#fff; --reader-surface:#f4f6f5; }
+.viewer-layout:lang(zh-CN), .reader-modal:lang(zh-CN) {font-family:var(--font-noto-sc), 'Noto Sans SC', var(--font-noto-kr), sans-serif;}
+.viewer-layout:lang(zh-TW), .reader-modal:lang(zh-TW) {font-family:var(--font-noto-tc), 'Noto Sans TC', var(--font-noto-kr), sans-serif;}
+.viewer-layout :is(.reader-area,.reader-card-source,.reader-settings__preview):lang(ko),
+.viewer-layout :is(.reader-area,.reader-card-source,.reader-settings__preview) :lang(ko) {font-family:var(--reader-font), 'Noto Sans KR', sans-serif;}
 .viewer-layout[data-reader-theme="dark"] {
   --reader-paper:#202625; --reader-ink:#f0eee7; --reader-muted:#b7bfba; --reader-line:#4c5752; --reader-surface:#2b3430;
   --reader-selected:#394b41; --reader-accent:var(--book-dark-text);

@@ -2123,7 +2123,7 @@ export default function ViewerPage() {
       </div>}
       {!classStudyActive&&<ViewerHanjaReading items={hanjaHunOf(headText)}/>}
       {classMeaning?.editor||(!classStudyActive&&<div className={`word-detail-card__meaningrow${materialLang === 'English' && selectedToken.reading ? ' word-detail-card__meaningrow--tight' : ''}`}>
-        <div className="word-detail-card__meaning">
+        <div className="word-detail-card__meaning" lang={materialLang === 'Korean' ? effectiveExplanationLocale : undefined}>
           {materialLang === 'Korean' ? (localizedWord.loading ? vt('문맥 뜻을 불러오는 중…') : localizedWord.error ? <button onClick={localizedWord.retry}>{vt('설명을 다시 불러오기')}</button> : localizedWord.meaning) : refMeaning || selectedToken.meaning || '(뜻 없음)'}
         </div>
         {/* 리스트 단어는 자료 토큰이 아니라(id 없음) 이 자료의 교정 대상이 될 수 없다 */}
@@ -2350,7 +2350,7 @@ export default function ViewerPage() {
       ) : wordDetail?.detail ? (
         <div style={{ marginBottom: 14 }}>
           <small style={{ color: 'var(--text-muted)' }}>{materialLang === 'Chinese' ? '일반 사전 설명 · 본문의 쓰임은 ‘이 문장에서는?’에서 확인' : '일반 사전 설명 · 본문과 다른 뜻이 포함될 수 있어요'}</small>
-          <div className="pdf-detail-popup__text" dangerouslySetInnerHTML={{ __html: formatDetail(wordDetail.detail) }} />
+          <div className="pdf-detail-popup__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(wordDetail.detail) }} />
         </div>
       ) : null}
       {!wordDetail?.loading && !wordDetail?.detail && <button onClick={() => fetchWordDetail(selectedToken)} className="btn btn--ghost btn--sm">{vt("상세 설명 보기")}</button>}
@@ -2486,7 +2486,7 @@ export default function ViewerPage() {
           )}
         </div>
       )}
-      <div className="pdf-context__text" dangerouslySetInnerHTML={{ __html: formatDetail(leftPanelResult) }} />
+      <div className="pdf-context__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(leftPanelResult) }} />
 
       {/* [더 쉽게] (#1077-3) — 번역을 보기 전 원어 안의 한 계단. 결과는 원어 문장이라
           본문과 같은 :lang() 폰트 규칙을 태운다. */}
@@ -2501,7 +2501,7 @@ export default function ViewerPage() {
           {easier.loading ? (
             <div className="grammar-detail__loading">{vt("쉬운 문장 생성 중…")}</div>
           ) : (
-            <div className="pdf-context__text" lang={contentLangTag} dangerouslySetInnerHTML={{ __html: formatDetail(easier.result) }} />
+            <div className="pdf-context__text" lang={materialLang === 'Korean' ? effectiveExplanationLocale : contentLangTag} dangerouslySetInnerHTML={{ __html: formatDetail(easier.result) }} />
           )}
         </div>
       )}
@@ -2521,7 +2521,7 @@ export default function ViewerPage() {
           ) : (
             <>
               {grammar.result && (
-                <div className="pdf-context__text" dangerouslySetInnerHTML={{ __html: formatDetail(grammar.result) }} />
+                <div className="pdf-context__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(grammar.result) }} />
               )}
               {grammar.chapter && (
                 <Link href={grammar.chapter.href} className="grammar-detail__ref">{vt("→ 정본 해설: 「")}{grammar.chapter.title}」 ›

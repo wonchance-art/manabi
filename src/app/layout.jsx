@@ -1,4 +1,4 @@
-import { Inter, Noto_Sans, Noto_Sans_KR, Noto_Sans_JP, Noto_Sans_SC } from 'next/font/google';
+import { Inter, Noto_Sans, Noto_Sans_KR, Noto_Sans_JP, Noto_Sans_SC, Noto_Sans_TC } from 'next/font/google';
 import '../index.css';
 import Providers from './providers';
 
@@ -31,6 +31,14 @@ const notoSc = Noto_Sans_SC({
   subsets: ['latin'],
   weight: ['400', '500', '700'],
   variable: '--font-noto-sc',
+  display: 'swap',
+});
+
+// 대만 번체 안내·해설은 간체 자형과 독립된 글꼴을 사용한다.
+const notoTc = Noto_Sans_TC({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-noto-tc',
   display: 'swap',
 });
 
@@ -106,7 +114,7 @@ export default function RootLayout({ children }) {
           />
         )}
       </head>
-      <body className={`${inter.variable} ${notoKr.variable} ${notoJp.variable} ${notoSc.variable} ${notoSans.variable}`}>
+      <body className={`${inter.variable} ${notoKr.variable} ${notoJp.variable} ${notoSc.variable} ${notoSans.variable} ${notoTc.variable}`}>
         <Providers>{children}</Providers>
       </body>
     </html>

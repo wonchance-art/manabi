@@ -47,8 +47,8 @@ let browser;
 before(async () => { fs.mkdirSync(output, { recursive: true }); browser = await chromium.launch(config.use.launchOptions); });
 after(async () => { await browser?.close(); });
 
-async function fixture(context, { importMode = false } = {}) {
-  const writes = [], analysis = [], explanations = [], errors = [];
+async function fixture(context, { importMode = false, sentenceMode = false } = {}) {
+  const writes = [], analysis = [], explanations = [], errors = [], consoleMessages = [];
   const imported = [];
   await context.route('**/*', route => route.request().url().startsWith(base) ? route.continue() : route.abort());
   // Remove synthetic browser cookies before forwarding a page/RSC request to the local server.
@@ -65,11 +65,21 @@ async function fixture(context, { importMode = false } = {}) {
     analysis.push(route.request().postDataJSON());
     return route.fulfill({ status: 503, json: { error: 'Fixture analysis must not be requested for a UI setting change' } });
   });
+  await context.route('**/api/analyze/korean', route => {
+    const body = route.request().postDataJSON();
+    analysis.push(body);
+    if (!sentenceMode) return route.fulfill({ status: 503, json: { error: 'Reader fixture does not permit source analysis' } });
+    const dictionary = Object.fromEntries([['school', '학교에'], ['came', '왔어요']].map(([id, text]) => [id, { text, base_form: text, meaning: '合成測試詞義', explanationLocale: body.explanationLocale }]));
+    return route.fulfill({ json: { results: [{ sequence: Object.keys(dictionary), dictionary }] } });
+  });
   await context.route('**/api/gemini', route => {
     const prompt = route.request().postDataJSON()?.contents?.[0]?.parts?.[0]?.text || '';
     const locale = prompt.includes('Taiwan Traditional') ? 'zh-TW' : prompt.includes('mainland Simplified') ? 'zh-CN' : 'ko';
-    explanations.push({ locale });
-    return route.fulfill({ json: { candidates: [{ content: { parts: [{ text: JSON.stringify({ meaning: { ko: '학교로', 'zh-CN': '到学校', 'zh-TW': '到學校' }[locale], morphology: [] }) }] } }] } });
+    const sentence = prompt.includes('"translation": string') || prompt.includes('**번역**');
+    explanations.push({ locale, kind: sentence ? 'sentence' : 'word' });
+    const result = sentence ? { translation: { ko: '학교에 왔어요.', 'zh-CN': '来到了学校。', 'zh-TW': '來到了學校。' }[locale], context: { ko: '선택한 두 번째 문장입니다.', 'zh-CN': '这是选中的第二句。', 'zh-TW': '這是選取的第二句。' }[locale] } : { meaning: { ko: '학교로', 'zh-CN': '到学校', 'zh-TW': '到學校' }[locale], morphology: [] };
+    const text = sentence && locale === 'ko' ? `**번역**\n${result.translation}\n\n**맥락**\n${result.context}` : JSON.stringify(result);
+    return route.fulfill({ json: { candidates: [{ content: { parts: [{ text }] } }] } });
   });
   await context.route('**/api/learning/exclusions', route => {
     if (route.request().method() !== 'GET') writes.push({ path: '/api/learning/exclusions', body: route.request().postDataJSON() });
@@ -111,11 +121,30 @@ async function fixture(context, { importMode = false } = {}) {
   // Cookie naming follows the configured synthetic Supabase project, as in learning-flow.e2e.mjs.
   const project = new URL(config.webServer.env.NEXT_PUBLIC_SUPABASE_URL).hostname.split('.')[0];
   await context.addCookies([{ name: `sb-${project}-auth-token`, value: `base64-${encode(session)}`, url: base, sameSite: 'Lax' }]);
-  context.on('page', page => page.on('pageerror', error => errors.push(error.message)));
-  return { writes, analysis, explanations, errors, imported };
+  context.on('page', page => {
+    page.on('pageerror', error => errors.push(error.message));
+    page.on('console', message => {
+      if (['warning', 'error'].includes(message.type())) consoleMessages.push({ type: message.type(), text: message.text(), location: message.location() });
+    });
+  });
+  return { writes, analysis, explanations, errors, consoleMessages, imported };
 }
 
 const preferences = page => page.evaluate(key => JSON.parse(localStorage.getItem(key)), VIEWER_LANGUAGE_PREF_KEY);
+async function fontScope(page, locale) {
+  const families = await page.evaluate(ui => {
+    const variable = `--font-noto-${({ ko: 'kr', 'zh-CN': 'sc', 'zh-TW': 'tc' })[ui]}`;
+    const expected = getComputedStyle(document.body).getPropertyValue(variable).trim();
+    return { expected, viewer: getComputedStyle(document.querySelector('.viewer-layout')).fontFamily, modal: getComputedStyle(document.querySelector('dialog[open]')).fontFamily };
+  }, locale);
+  assert(families.expected, `${locale}: its UI font variable must be registered`);
+  const normalize = value => value.split(',')[0].replace(/["']/g, '').trim();
+  for (const target of ['viewer', 'modal']) assert.equal(normalize(families[target]), normalize(families.expected), `${locale}: ${target} uses its locale font first`);
+  if (await page.locator('.viewer-layout[data-language="Korean"]').count()) {
+    const source = await page.locator('.reader-area').evaluate(el => ({ actual: getComputedStyle(el).fontFamily, expected: getComputedStyle(document.body).getPropertyValue('--font-noto-kr') }));
+    assert.equal(normalize(source.actual), normalize(source.expected), 'Korean source uses KR independently of UI locale');
+  }
+}
 async function geometry(page, name, locale) {
   await page.evaluate(() => document.fonts.ready);
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${name}: page overflows horizontally`);
@@ -179,6 +208,7 @@ test('shared reader retains independent locale settings, exact source and learni
         assert.equal(await page.getByRole('group', { name: labels[ui].ui, exact: true }).getByRole('button', { name: options[locale], exact: true }).getAttribute('aria-pressed'), 'true');
         assert.equal(audit.explanations.length, explanationCalls, 'UI-only locale change does not regenerate meaning');
         assert.equal(await page.locator('.viewer-layout').getAttribute('data-ui-locale'), locale);
+        await fontScope(page, locale);
         await geometry(page, `${locale}-width390-${material.id}`, locale);
       }
       const explanation = material.processed_json.metadata.language === 'Korean' ? 'zh-TW' : 'ko';
@@ -223,7 +253,56 @@ test('shared reader retains independent locale settings, exact source and learni
     fs.writeFileSync(`${output}/failure.txt`, await page.locator('body').innerText().catch(() => 'Unavailable'));
     throw error;
   } finally {
-    fs.writeFileSync(`${output}/report.json`, JSON.stringify({ base, synthetic: true, writes: audit.writes, analysis: audit.analysis, explanations: audit.explanations, errors: audit.errors }, null, 2));
+    fs.writeFileSync(`${output}/report.json`, JSON.stringify({ base, synthetic: true, writes: audit.writes, analysis: audit.analysis, explanations: audit.explanations, errors: audit.errors, consoleMessages: audit.consoleMessages }, null, 2));
+    await context.close();
+  }
+});
+
+test('selected sentence refreshes explanation locale without reanalyzing source words', { timeout: 180000 }, async () => {
+  const context = await browser.newContext({ baseURL: base, viewport: { width: 390, height: 844 }, reducedMotion: 'reduce', serviceWorkers: 'block' });
+  context.setDefaultTimeout(config.timeout);
+  await context.addInitScript(key => localStorage.setItem(key, JSON.stringify({ version: 1, uiLocale: 'zh-TW', explanationLocale: 'zh-TW' })), VIEWER_LANGUAGE_PREF_KEY);
+  const audit = await fixture(context, { sentenceMode: true }), page = await context.newPage();
+  const panel = page.locator('#inspector-sentence');
+  try {
+    await page.goto('/viewer/94098');
+    await page.locator('.reader-area [data-tid="id_1_0_locale"]').click();
+    await page.locator('.reader-card-context summary').click();
+    await page.locator('.reader-card-context').getByRole('button', { name: '句子翻譯', exact: true }).click();
+    await page.locator('#inspector-sentence-tab').click();
+    await panel.locator('.pdf-context__text').filter({ hasText: '來到了學校。' }).waitFor();
+    assert((await panel.locator('.pdf-context__text').textContent()).includes('這是選取的第二句。'));
+    const originals = await page.locator('.pdf-context__original').allTextContents();
+    const words = await page.locator('.pdf-word-item__text').allTextContents();
+    assert.equal(audit.analysis.length, 1, 'the explicit first sentence action performs one source analysis');
+    assert.equal(audit.analysis[0].lines.join('\n'), '학교에 왔어요.');
+    let ui = 'zh-TW';
+    for (const locale of ['zh-CN', 'ko', 'zh-TW']) {
+      await page.getByRole('button', { name: labels[ui].settings, exact: true }).click();
+      await page.getByRole('group', { name: labels[ui].explanation, exact: true }).getByRole('button', { name: options[locale], exact: true }).click();
+      await page.getByRole('button', { name: labels[ui].close, exact: true }).click();
+      await panel.locator('.pdf-context__text').filter({ hasText: { ko: '학교에 왔어요.', 'zh-CN': '来到了学校。', 'zh-TW': '來到了學校。' }[locale] }).waitFor();
+      assert((await panel.locator('.pdf-context__text').textContent()).includes({ ko: '선택한 두 번째 문장입니다.', 'zh-CN': '这是选中的第二句。', 'zh-TW': '這是選取的第二句。' }[locale]));
+      assert.equal(audit.analysis.length, 1, 'explanation change must not reanalyze selected source words');
+      assert.deepEqual(await page.locator('.pdf-context__original').allTextContents(), originals);
+      assert.deepEqual(await page.locator('.pdf-word-item__text').allTextContents(), words);
+      const explanationCalls = audit.explanations.length;
+      await page.getByRole('button', { name: labels[ui].settings, exact: true }).click();
+      const nextUi = ui === 'zh-TW' ? 'zh-CN' : 'zh-TW';
+      await page.getByRole('group', { name: labels[ui].ui, exact: true }).getByRole('button', { name: options[nextUi], exact: true }).click();
+      ui = nextUi;
+      await page.getByRole('button', { name: labels[ui].close, exact: true }).click();
+      assert.equal(audit.explanations.length, explanationCalls, 'UI change must not regenerate selected sentence explanation');
+    }
+    await page.screenshot({ path: `${output}/selected-sentence-locale.png` });
+    assert.deepEqual(audit.writes.filter(row => !['reading_progress', 'library_reading_activity'].includes(row.table)), []);
+    assert.deepEqual(audit.errors, []);
+  } catch (error) {
+    await page.screenshot({ path: `${output}/sentence-failure.png` }).catch(() => {});
+    fs.writeFileSync(`${output}/sentence-failure.txt`, await page.locator('body').innerText().catch(() => 'Unavailable'));
+    throw error;
+  } finally {
+    fs.writeFileSync(`${output}/sentence-report.json`, JSON.stringify({ base, synthetic: true, writes: audit.writes, analysis: audit.analysis, explanations: audit.explanations, errors: audit.errors, consoleMessages: audit.consoleMessages }, null, 2));
     await context.close();
   }
 });
@@ -314,7 +393,7 @@ test('ordinary Korean import preserves real textarea paste/edit source and exclu
     fs.writeFileSync(`${output}/import-failure.txt`, await page.locator('body').innerText().catch(() => 'Unavailable'));
     throw error;
   } finally {
-    fs.writeFileSync(`${output}/import-report.json`, JSON.stringify({ base, synthetic: true, writes: audit.writes, analysis: audit.analysis, errors: audit.errors }, null, 2));
+    fs.writeFileSync(`${output}/import-report.json`, JSON.stringify({ base, synthetic: true, writes: audit.writes, analysis: audit.analysis, errors: audit.errors, consoleMessages: audit.consoleMessages }, null, 2));
     await context.close();
   }
 });
