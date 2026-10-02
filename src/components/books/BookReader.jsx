@@ -31,11 +31,11 @@ function readingText(node) {
 }
 
 export default function BookReader({ book, sectionIndex, preview = false, reference = false }) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const params = useSearchParams();
   const returnTo = params.get('returnTo');
   const { progress, update, storageAvailable, hasProgress, ready } = useReadingProgress(book.edition);
-  const content = useRef(null), root = useRef(null), toolbar = useRef(null), referenceMenu = useRef(null), dialog = useRef(null), dialogOrigin = useRef(null), pendingAnchor = useRef(null);
+  const content = useRef(null), root = useRef(null), toolbar = useRef(null), referenceMenu = useRef(null), dialog = useRef(null), dialogOrigin = useRef(null), pendingAnchor = useRef(null), pendingPosition = useRef(null);
   const [pageId, setPageId] = useState('cover'), [active, setActive] = useState('');
   const [anchorRequest, setAnchorRequest] = useState(0);
   const [sections, setSections] = useState([]), [loading, setLoading] = useState(false), [error, setError] = useState('');
@@ -80,33 +80,59 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     return () => observer.disconnect();
   }, [unit, measureToolbar]);
 
+  const rememberPosition = useCallback(current => {
+    if (authLoading || pendingAnchor.current || dialog.current?.open) return;
+    const articles = [...(content.current?.querySelectorAll('article[data-unit-page]') || [])];
+    current ||= articles.filter(article => article.getBoundingClientRect().top < Math.min(240, innerHeight * .32)).at(-1) || articles[0];
+    if (!current) return;
+    const position = {
+      href: window.location.href, document: performance.timeOrigin, edition: book.edition, account: user?.id || 'guest', reference,
+      page: current.id, offset: current.getBoundingClientRect().top - (toolbar.current?.getBoundingClientRect().bottom || 0),
+    };
+    // Keep Next's routing state and the explicit URL anchor intact. This belongs
+    // to one history entry, not to the account's reading-progress storage.
+    window.history.replaceState({ ...window.history.state, manabiBookPosition: position }, '', window.location.href);
+  }, [authLoading, book.edition, user?.id, reference]);
+
   useEffect(() => {
-    // The browser restores a history entry after popstate and can overwrite our
-    // async, font-aware anchor. Own restoration only while this reader is mounted.
+    if (authLoading) return;
+    // Own restoration while mounted, including after a bfcache return.
     const restoration = window.history.scrollRestoration;
     window.history.scrollRestoration = 'manual';
-    // Full navigations/reloads keep the history entry's setting but do not run
-    // React cleanup. Release it before leaving; reacquire it after bfcache return.
-    const release = () => { window.history.scrollRestoration = restoration; };
-    const acquire = () => { window.history.scrollRestoration = 'manual'; };
-    window.addEventListener('pagehide', release);
-    window.addEventListener('pageshow', acquire);
-    const sync = () => {
+    const sync = restorePosition => {
       let id;
       try { id = decodeURIComponent(window.location.hash.slice(1)) || 'cover'; } catch { id = 'cover'; }
       id = id.replace(/^(?:web|pdf|audio)-/, '');
+      const saved = window.history.state?.manabiBookPosition;
+      const position = restorePosition && saved?.href === window.location.href && saved.edition === book.edition
+        && saved.account === (user?.id || 'guest') && saved.reference === reference
+        && Number.isFinite(saved.offset) && sectionIndex.some(section => section.id === saved.page) ? saved : null;
+      if (position) id = position.page;
+      pendingPosition.current = position;
       pendingAnchor.current = id; setPageId(id); setActive(id);
-      // Two history entries can name the same page but restore different scroll positions.
+      // The same hash can belong to entries with distinct reading positions.
       setAnchorRequest(request => request + 1);
     };
-    sync();
-    window.addEventListener('hashchange', sync); window.addEventListener('popstate', sync);
-    return () => {
-      window.removeEventListener('hashchange', sync); window.removeEventListener('popstate', sync);
-      window.removeEventListener('pagehide', release); window.removeEventListener('pageshow', acquire);
-      release();
+    // Next preserves custom state on traversal, and clears it on fresh Link navigation.
+    // Internal reader links also clear the snapshot before pushing an explicit anchor.
+    sync(true);
+    let traversedHref;
+    const pop = () => { traversedHref = window.location.href; sync(true); };
+    const hash = () => {
+      // Traversal can emit both events; its hashchange must not erase the snapshot.
+      if (traversedHref === window.location.href) { traversedHref = null; return; }
+      traversedHref = null; sync(false);
     };
-  }, [book.edition]);
+    const release = () => { rememberPosition(); window.history.scrollRestoration = restoration; };
+    const acquire = event => { window.history.scrollRestoration = 'manual'; if (event.persisted) sync(true); };
+    window.addEventListener('hashchange', hash); window.addEventListener('popstate', pop);
+    window.addEventListener('pagehide', release); window.addEventListener('pageshow', acquire);
+    return () => {
+      window.removeEventListener('hashchange', hash); window.removeEventListener('popstate', pop);
+      window.removeEventListener('pagehide', release); window.removeEventListener('pageshow', acquire);
+      window.history.scrollRestoration = restoration;
+    };
+  }, [authLoading, book.edition, user?.id, reference, sectionIndex, rememberPosition]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -182,7 +208,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
   }, [sections, draftKey, preview]);
 
   useEffect(() => {
-    if (unit !== 'cover' && (!sections.length || sections[0].unit !== unit)) return;
+    if (!ready || (unit !== 'cover' && (!sections.length || sections[0].unit !== unit))) return;
     let frame, cancelled = false;
     document.fonts.ready.then(() => { if (cancelled) return; frame = requestAnimationFrame(() => {
       const id = pendingAnchor.current;
@@ -191,14 +217,21 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
       target?.closest('details')?.setAttribute('open', '');
       measureToolbar();
       // Complete restoration before clearing the pending anchor or tracking progress.
-      if (id === 'cover' || id === unit || id === `${unit}-start`) window.scrollTo({ top: 0, behavior: 'instant' });
+      const position = pendingPosition.current;
+      if (position && target) {
+        // Settle the sticky toolbar before applying the saved relative offset.
+        target.scrollIntoView({ block: 'start', behavior: 'instant' });
+        window.scrollTo({ top: window.scrollY + target.getBoundingClientRect().top - (toolbar.current?.getBoundingClientRect().bottom || 0) - position.offset, behavior: 'instant' });
+      }
+      else if (id === 'cover' || id === unit || id === `${unit}-start`) window.scrollTo({ top: 0, behavior: 'instant' });
       else (target || root.current)?.scrollIntoView({ block: 'start', behavior: 'instant' });
       if (target?.classList.contains('kanji-card')) { target.setAttribute('tabindex', '-1'); target.focus({ preventScroll: true }); }
-      pendingAnchor.current = null;
+      pendingAnchor.current = null; pendingPosition.current = null;
+      rememberPosition();
       if (!reference && /^u\d{2}/.test(id)) update({ page: id });
     }); });
     return () => { cancelled = true; cancelAnimationFrame(frame); };
-  }, [pageId, anchorRequest, sections, unit, update, ready, measureToolbar, reference]);
+  }, [pageId, anchorRequest, sections, unit, update, ready, measureToolbar, reference, rememberPosition]);
 
   useEffect(() => {
     if (!sections.length) return;
@@ -209,12 +242,12 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
         if (pendingAnchor.current || dialog.current?.open) return;
         const articles = [...(content.current?.querySelectorAll('article[data-unit-page]') || [])];
         const current = articles.filter(article => article.getBoundingClientRect().top < Math.min(240, innerHeight * .32)).at(-1) || articles[0];
-        if (current) { setActive(current.id); if (lesson && !reference) update({ page: current.id }); }
+        if (current) { rememberPosition(current); setActive(current.id); if (lesson && !reference) update({ page: current.id }); }
       }, 120);
     };
     window.addEventListener('scroll', track, { passive: true }); track();
     return () => { clearTimeout(timer); window.removeEventListener('scroll', track); };
-  }, [sections, lesson, update, reference]);
+  }, [sections, lesson, update, reference, rememberPosition]);
 
   useEffect(() => {
     const search = query.trim().toLocaleLowerCase();
@@ -226,6 +259,9 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
 
   const go = useCallback((id, originAnchor) => {
     dialog.current?.close();
+    rememberPosition();
+    const navigationState = { ...window.history.state };
+    delete navigationState.manabiBookPosition;
     const back=new URLSearchParams(window.location.search).get('returnTo');
     const destination=new URL(bookHref(book.edition,id),window.location.origin);
     if(back)destination.searchParams.set('returnTo',safeLibraryReturn(back));
@@ -233,14 +269,14 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     // Return from a reading link to the exact card, including after a search.
     if (originAnchor && unit === 'reference') {
       const origin = new URL(window.location.href); origin.hash = originAnchor;
-      window.history.replaceState(window.history.state, '', origin.pathname+origin.search+origin.hash);
+      window.history.replaceState(navigationState, '', origin.pathname+origin.search+origin.hash);
     }
-    window.history.pushState(window.history.state, '', destination.pathname+destination.search+destination.hash);
+    window.history.pushState(navigationState, '', destination.pathname+destination.search+destination.hash);
     setQuery('');
-    pendingAnchor.current = id; setPageId(id); setActive(id);
+    pendingPosition.current = null; pendingAnchor.current = id; setPageId(id); setActive(id);
     setAnchorRequest(request => request + 1);
     if (!reference && /^u\d{2}/.test(id)) update({ page: id });
-  }, [book.edition, unit, update, reference]);
+  }, [book.edition, unit, update, reference, rememberPosition]);
 
   function interact(event) {
     const anchor = event.target.closest('a[href]');
