@@ -144,6 +144,12 @@ async function locale(page,field,value) {
   await page.locator(`[data-${field==='uiLocale'?'ui-locale':'explanation-locale'}="${value}"]`).waitFor();
 }
 
+async function finish(f,name) {
+  await audit(f,name);
+  await f.page.screenshot({path:`${output}/${name}.png`,fullPage:true});
+  await f.context.unrouteAll({behavior:'ignoreErrors'});
+  await f.context.close();
+}
 async function audit(f,name) { await writeFile(`${output}/${name}.json`,JSON.stringify({synthetic:true,liveDatabaseVerified:false,cards:f.cards,contexts:f.contexts,writes:f.writes,events:f.events,errors:f.errors},null,2)); }
 
 test('Korean controls stay blocked before readiness and for an unavailable storage contract',async()=>{
@@ -159,7 +165,7 @@ test('Korean controls stay blocked before readiness and for an unavailable stora
     await f.page.getByRole('button',{name:'단어 직접 추가',exact:true}).click();
     assert.equal(await f.page.getByRole('button',{name:'Korean',exact:true}).count(),0);
     assert.equal(f.writes.length,0); await audit(f,'not-ready'); assert.deepEqual(f.errors,[]);
-  } finally { f.release();await f.context.close(); }
+  } finally { f.release();await finish(f,'not-ready'); }
 });
 
 test('Korean atomic save, known/exclusion restore, locale conflict, due review and exact source return',async()=>{
@@ -204,14 +210,14 @@ test('Korean atomic save, known/exclusion restore, locale conflict, due review a
     assert.ok(f.events.some(event=>event.lang==='Korean'&&event.detail?.word_id===cardId));
     assert.ok(f.writes.every(write=>write.table!=='user_vocabulary'||write.method==='PATCH'));
     await f.page.goto('/vocab',{waitUntil:'domcontentloaded'});
-    await f.page.getByRole('heading',{name:'가다',exact:true}).click();
+    await f.page.locator('.review-sec--vocab .review-sec__row').filter({hasText:'가다'}).click();
     const sourceLink=f.page.getByRole('link',{name:'이 문장 열기 ↗',exact:true});await sourceLink.waitFor();
     const href=await sourceLink.getAttribute('href');assert.ok(href.includes(`sourceContext=${contextId}`));assert.ok(!href.includes(encodeURIComponent('갔어요')));
     await f.page.goto(href,{waitUntil:'domcontentloaded'});
     await f.page.locator('[data-source-token="id_1_2"].learning-source-highlight').waitFor();
     assert.equal(await f.page.locator('[data-source-token="id_0_2"].learning-source-highlight').count(),0);
     assert.deepEqual(f.contexts,source);await audit(f,'integrated-ready');assert.deepEqual(f.errors,[]);
-  } finally { await f.context.close(); }
+  } finally { await finish(f,'integrated-ready'); }
 });
 
 
@@ -233,5 +239,5 @@ test('Verified Korean due queue reviews the existing edited card without resavin
     assert.equal(f.writes.filter(write=>write.path==='/api/learning/vocabulary').length,0);
     assert.ok(f.writes.every(write=>write.table!=='user_vocabulary'||write.method==='PATCH'));
     await audit(f,'existing-due-queue');assert.deepEqual(f.errors,[]);
-  } finally { await f.context.close(); }
+  } finally { await finish(f,'existing-due-queue'); }
 });
