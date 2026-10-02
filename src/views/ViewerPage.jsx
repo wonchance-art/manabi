@@ -347,8 +347,12 @@ export default function ViewerPage() {
   const [inlineSaving, setInlineSaving] = useState({});
   const { titleEditing, setTitleEditing, titleDraft, setTitleDraft, updateTitleMutation } = useTitleEdit(id, toast);
 
-  const cacheScope = useMemo(() => [user?.id || 'guest', id, materialLang, effectiveExplanationLocale, material?.raw_text, material?.processed_json],
-    [user?.id, id, materialLang, effectiveExplanationLocale, material?.raw_text, material?.processed_json]);
+  // 기존 자료의 한국어 단일 설명 캐시는 그대로 읽는다. 여러 설명 언어를 지원하는
+  // 어댑터만 locale을 추가하여 새 지역 해설이 기존 캐시와 섞이지 않게 한다.
+  const cacheScope = useMemo(() => languageInfo?.explanationLocales.length > 1
+    ? [user?.id || 'guest', id, materialLang, effectiveExplanationLocale, material?.raw_text, material?.processed_json]
+    : [user?.id || 'guest', id, materialLang, material?.raw_text, material?.processed_json],
+    [user?.id, id, materialLang, effectiveExplanationLocale, languageInfo, material?.raw_text, material?.processed_json]);
   useEffect(() => {
     const detail = detailGate.current, selection = selectionGate.current;
     detail.cancel();
@@ -2501,7 +2505,7 @@ export default function ViewerPage() {
           {easier.loading ? (
             <div className="grammar-detail__loading">{vt("쉬운 문장 생성 중…")}</div>
           ) : (
-            <div className="pdf-context__text" lang={materialLang === 'Korean' ? effectiveExplanationLocale : contentLangTag} dangerouslySetInnerHTML={{ __html: formatDetail(easier.result) }} />
+            <div className="pdf-context__text" lang={contentLangTag} dangerouslySetInnerHTML={{ __html: formatDetail(easier.result) }} />
           )}
         </div>
       )}
