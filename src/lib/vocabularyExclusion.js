@@ -1,5 +1,5 @@
 // 제외는 숙련도·FSRS 점수가 아니다. 기존 저장 기본형만 대조하고 언어를 추측하지 않는다.
-export const VOCABULARY_LANGUAGES = ['Japanese', 'Chinese', 'English', 'French'];
+export const VOCABULARY_LANGUAGES = ['Japanese', 'Chinese', 'English', 'French', 'Korean'];
 export const exclusionWord = token => String(token?.sep_link || token?.base_form || token?.word_text || token?.text || '').normalize('NFC').trim();
 export const exclusionKey = (language, word) => `${language || 'Unknown'}\u0000${String(word || '').normalize('NFC').trim()}`;
 export const isVocabularyExcludedError = error => error?.code === '55000' && /vocabulary_excluded/.test(error.message || '');

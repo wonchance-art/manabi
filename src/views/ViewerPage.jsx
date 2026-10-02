@@ -54,6 +54,8 @@ import { useViewerExplanation } from '../lib/useViewerExplanation';
 import { buildViewerWordPrompt, buildViewerSentencePrompt, parseViewerExplanation, formatViewerExplanation, VIEWER_EXPLANATION_VERSION } from '../lib/viewerExplanation';
 import { ViewerUiLocaleProvider } from '../lib/viewerLocaleContext';
 import { viewerLanguageInfo } from '../lib/viewerLanguage';
+import { useLearningCapabilities } from '../lib/useLearningCapabilities';
+import { koreanReadingSource, learningSourceRevision } from '../lib/learningSources';
 import { translateViewerText } from '../lib/viewerMessages';
 import { useViewerQuiz } from '../lib/useViewerQuiz';
 import { useReanalyze } from '../lib/useReanalyze';
@@ -291,7 +293,23 @@ export default function ViewerPage() {
   const languageInfo = viewerLanguageInfo(materialLang);
   const ttsSupported = browserTtsSupported && languageInfo?.capabilities.speech === 'supported';
   const effectiveExplanationLocale = languageInfo?.explanationLocales.includes(explanationLocale) ? explanationLocale : 'ko';
-  const learningStorageSupported = languageInfo?.capabilities.save === 'supported';
+  const learningCapabilities = useLearningCapabilities(materialLang);
+  const learningStorageSupported = learningCapabilities.save;
+  const [koreanSources, setKoreanSources] = useState({ scope: '', byToken: {} });
+  const koreanSourceScope = useMemo(() => materialLang === 'Korean' ? JSON.stringify([id, material?.raw_text, material?.processed_json]) : '',
+    [materialLang, id, material?.raw_text, material?.processed_json]);
+  useEffect(() => {
+    if (!koreanSourceScope) return;
+    let alive = true;
+    const [materialId, rawText, json] = JSON.parse(koreanSourceScope);
+    learningSourceRevision(rawText).then(sourceRevision => Promise.all(Object.entries(json?.dictionary || {}).map(async ([tokenId, token]) =>
+      [tokenId, await koreanReadingSource({ materialId, rawText, sourceRevision, token: { ...token, id: tokenId } })])))
+      .then(entries => { if (alive) setKoreanSources({ scope: koreanSourceScope, byToken: Object.fromEntries(entries) }); })
+      .catch(() => { if (alive) setKoreanSources({ scope: koreanSourceScope, byToken: {} }); });
+    return () => { alive = false; };
+  }, [koreanSourceScope]);
+  const [koreanSaveConflict, setKoreanSaveConflict] = useState(null);
+  useEffect(() => setKoreanSaveConflict(null), [id, user?.id, effectiveExplanationLocale]);
   useEffect(()=>{if(isStudyNote(material))noteRouter.replace(`/notes/${id}`);},[material,id,noteRouter]);
   const [activeModal, setActiveModal] = useState(null);
   useEffect(()=>{stopSpeech();},[activeModal?.kind,stopSpeech]);
@@ -661,7 +679,7 @@ export default function ViewerPage() {
   useGroupReadPush(material?.id, user?.id, readProgress);
 
   // 아는 단어 표시와 복습 보호 상태는 같은 DB 트랜잭션으로 바뀐다.
-  const knownLangCode = knownWordsLang(materialLang);
+  const knownLangCode = knownWordsLang(materialLang, learningCapabilities.known);
   const knownState = useKnownWords(knownLangCode, !!knownLangCode);
   const knownWordSet = useMemo(() => knownWordSetOf(knownState.data, exclusionState.data, knownLangCode), [knownState.data, exclusionState.data, knownLangCode]);
 
@@ -867,6 +885,8 @@ export default function ViewerPage() {
   const localizedWord = useViewerExplanation({token: selectedToken, sentence: ctxSentenceOf(selectedToken) || leftPanelText,
     locale: effectiveExplanationLocale, sourceLocale: selectedToken?.meaningLocale || selectedToken?.explanationLocale || material?.processed_json?.metadata?.explanationLocale || 'ko',
     scope: cacheScope, enabled: materialLang === 'Korean' && isSheetOpen});
+  const koreanSaveDisplayScope = useRef('');
+  koreanSaveDisplayScope.current = JSON.stringify([user?.id, id, effectiveExplanationLocale, selectedToken?.id, selectedToken?.text, material?.raw_text]);
   const resetGrammar = grammar.reset, resetEasier = easier.reset;
   useEffect(() => {
     detailGate.current.cancel(); selectionGate.current.cancel();
@@ -1402,7 +1422,7 @@ export default function ViewerPage() {
   const selectedExcluded = selectedKnown || (exclusionState.isSuccess ? !!selectedExclusion : !!selectedVocab?.is_excluded);
   const selectedKnownWord = exclusionWord(selectedVocab || selectedToken);
   const knownPending = knownState.isPendingWord(knownLangCode, selectedKnownWord);
-  const wordStateReady = learningStorageSupported && exclusionState.isSuccess && (!knownLangCode || knownState.isSuccess);
+  const wordStateReady = !learningCapabilities.isLoading && learningStorageSupported && exclusionState.isSuccess && (!knownLangCode || knownState.isSuccess);
   // 다른 단어의 원격 저장이 진행 중이어도 현재 단어를 평가할 수 있다.
   const inlineReviewMutation = { ...inlineReview,
     isPending: pendingInlineGrades.has(`${user?.id}:${selectedVocab?.id}`),
@@ -1662,15 +1682,53 @@ export default function ViewerPage() {
   const headPicked = headIsBase ? pickedRangeOf(headText, selectedToken.text) : null;
 
   function readingContextSource(token) {
+    if (materialLang === 'Korean') {
+      if (!token) return null;
+      const source = koreanSources.scope === koreanSourceScope && koreanSources.byToken[token.id];
+      return source?.surface === token.text ? source : null;
+    }
     const original = material?.processed_json?.dictionary?.[token.id];
     return original?.text === token.text
       ? { kind: 'reading', materialId: id, tokenId: token.id }
       : { kind: 'reading', materialId: id, quote: leftPanelText, surface: token.text };
   }
 
-  function contextWord(token) {
+  function contextWord(token, grade) {
+    const meaning = materialLang === 'Korean'
+      ? (token.id === selectedToken?.id && token.text === selectedToken?.text ? localizedWord.meaning
+        : (token.meaningLocale || token.explanationLocale || material?.processed_json?.metadata?.explanationLocale || 'ko') === effectiveExplanationLocale ? token.meaning : '')
+      : token.meaning;
     return buildVocabRow({ userId: user?.id, surface: token.text, base: token.sep_link || token.base_form,
-      meaning: token.meaning, language: materialLang, reading: token.furigana || token.reading, pos: token.pos });
+      meaning, language: materialLang, reading: token.furigana || token.reading, pos: token.pos, grade });
+  }
+
+  function koreanSaveReady(token) {
+    return materialLang !== 'Korean' || (!!token && !!readingContextSource(token) && !!contextWord(token).meaning
+      && !(token.id === selectedToken?.id && (localizedWord.loading || localizedWord.error)));
+  }
+
+  async function saveKoreanVocabulary(token, grade) {
+    if (!learningCapabilities.save || !wordStateReady || !koreanSaveReady(token)) return null;
+    const scope = koreanSaveDisplayScope.current, accountId = user.id;
+    try {
+      const result = await saveContext({ word: contextWord(token), source: readingContextSource(token),
+        ...(Number.isInteger(grade) && grade >= 1 && grade <= 4 ? { initialGrade: grade } : {}) });
+      if (result.vocabulary) insertConfirmedVocabulary(queryClient, accountId, result.vocabulary);
+      for (const key of ['vocab-words', 'vocab', 'vocabulary-contexts', 'book-review']) {
+        queryClient.invalidateQueries({ queryKey: [key, accountId] });
+      }
+      if (koreanSaveDisplayScope.current !== scope) return result;
+      setKoreanSaveConflict(null);
+      // The atomic RPC may reuse a card. Never manufacture an INSERT/undo snapshot.
+      lastSaveRef.current = null;
+      toast(`"${token.text}" 저장!`, 'success');
+      return result;
+    } catch (error) {
+      if (koreanSaveDisplayScope.current !== scope) return null;
+      if (error.code === 'meaning_conflict') setKoreanSaveConflict({ tokenId: token.id, text: token.text });
+      else toast('저장 실패 — ' + friendlyToastMessage(error), 'error');
+      return null;
+    }
   }
 
   // 등급 저장은 기존 조립기·undo를 유지한다. 문맥만 추가하는 RPC는 이미 저장한 FSRS를 수정하지 않는다.
@@ -1689,11 +1747,12 @@ export default function ViewerPage() {
   }
 
   const saveInlineVocabulary = async (token) => {
-    if (!learningStorageSupported) return;
+    if (!learningStorageSupported || !koreanSaveReady(token)) return;
     const key = token.sep_link || token.base_form || token.text;
     if (inlineSaving[key]) return;
     setInlineSaving(prev => ({ ...prev, [key]: true }));
     try {
+      if (materialLang === 'Korean') { await saveKoreanVocabulary(token); return; }
       await upsertViewerVocabulary(buildVocabRow({
         userId: user.id,
         surface: token.text,
@@ -1734,7 +1793,7 @@ export default function ViewerPage() {
   // W R3㉮ 인라인 복습 — 4등급 정본. 스냅샷은 훅이 돌려준 prev·reviewedAt으로 호출부가 만든다.
   const gradeInline = (rating) => {
     const vocab = findSavedVocab(savedWords, selectedToken, materialLang);
-    if (!vocab || selectedExcluded || !wordStateReady || knownPending || exclusionState.mutation.isPending || inlineReviewMutation.isPending) return;
+    if (!learningCapabilities.review || !vocab || selectedExcluded || !wordStateReady || knownPending || exclusionState.mutation.isPending || inlineReviewMutation.isPending) return;
     const requestKey = `${user.id}:${vocab.id}`;
     if (inlineGradeRequests.current.has(requestKey)) return;
     inlineGradeRequests.current.add(requestKey);
@@ -1822,7 +1881,7 @@ export default function ViewerPage() {
       toast('로그인이 필요합니다.', 'warning');
       return;
     }
-    if (!selectedToken) return;
+    if (!selectedToken || !koreanSaveReady(selectedToken)) return;
     const saveKey = gradeSaveKey(saveScopeRef.current, selectedToken);
     if (savingGrade.current.has(saveKey)) return;
     savingGrade.current.add(saveKey);
@@ -1839,6 +1898,7 @@ export default function ViewerPage() {
 
     let inserted;
     try {
+      if (materialLang === 'Korean') { await saveKoreanVocabulary(savedToken, g); return; }
       // 저장 규약(기본형 우선·출처 동봉)은 정본 조립기가 책임진다 — 저장 경로가 11개라
       // 자리마다 손으로 적으면 갈린다(실측: pdf·quick이 surface를 넣어 행이 둘로 갈렸다).
       const row = buildVocabRow({
@@ -2028,9 +2088,9 @@ export default function ViewerPage() {
               {t.furigana && <span className="pdf-word-item__reading">{t.furigana}</span>}
             </span>
             <span className="pdf-word-item__meaning" onClick={() => handleListWordClick(t)}>{materialLang !== 'Korean' || (t.meaningLocale || t.explanationLocale || 'ko') === effectiveExplanationLocale ? t.meaning : ''}</span>
-            {user && learningStorageSupported && (
+            {user && learningStorageSupported && koreanSaveReady(t) && (
               <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                {isSaved ? <SaveContextButton key={`${id}:${saveKey}:${leftPanelText}`} label={vt("문맥 추가")}
+                {isSaved ? <SaveContextButton key={`${id}:${saveKey}:${leftPanelText}:${materialLang === 'Korean' ? `${effectiveExplanationLocale}:${readingContextSource(t)?.sourceRevision}` : ''}`} label={vt("문맥 추가")}
                   word={contextWord(t)} source={readingContextSource(t)} /> : (
                   <button className="pdf-word-item__save" disabled={inlineSaving[saveKey]}
                     onClick={() => saveInlineVocabulary(t)}>{inlineSaving[saveKey] ? '…' : '★'}</button>
@@ -2365,7 +2425,7 @@ export default function ViewerPage() {
       {!learningStorageSupported && <p role="status">{vt("한국어 단어 저장·복습은 아직 준비 중이에요.")}</p>}
       {user && learningStorageSupported && <div className="save-grade__header">
         <p className="save-grade__guide">{vt("얼마나 알겠어요?")}</p>
-        {knownLangCode && <button type="button" className="btn btn--ghost btn--sm word-detail-card__known" aria-pressed={selectedKnown}
+        {learningCapabilities.known && knownLangCode && <button type="button" className="btn btn--ghost btn--sm word-detail-card__known" aria-pressed={selectedKnown}
           title={vt(selectedKnown ? '아는 단어 표시 해제' : '아는 단어로 표시')}
           disabled={!wordStateReady || knownPending || exclusionState.mutation.isPending || inlineReviewMutation.isPending || saveAnim || !selectedKnownWord || [...selectedKnownWord].length > 100}
           onClick={() => knownState.mutation.mutate({ lang: knownLangCode, wordText: selectedKnownWord,
@@ -2375,7 +2435,7 @@ export default function ViewerPage() {
       </div>}
       {user && (exclusionState.isError || knownState.isError) && <button type="button" className="btn btn--ghost btn--sm" onClick={() => { exclusionState.refetch(); knownState.refetch(); }}>{vt("상태 다시 확인")}</button>}
 
-      {user && findSavedVocab(savedWords, selectedToken, materialLang) && isTokenDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending && (
+      {user && learningCapabilities.review && findSavedVocab(savedWords, selectedToken, materialLang) && isTokenDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending && (
         // W R3㉮ — 척도를 정본에 맞춘다: 모름/애매/알아=1/2/3(Easy 없음)이 아니라 복습 화면과 같은 4등급.
         // 라벨·순서·클래스 = SAVE_GRADES(복습 화면 ScoreSection과 동일 계약). 키 1~4·⌘Z는 카드 리스너.
         <div style={{ padding: '10px 12px', background: 'color-mix(in srgb, var(--warning) 10%, transparent)', borderRadius: 'var(--radius-md)', marginBottom: 12, border: '1px solid var(--warning)' }}>
@@ -2410,6 +2470,9 @@ export default function ViewerPage() {
           </div>
         </div>
       )}
+      {user && learningStorageSupported && koreanSaveConflict?.tokenId === selectedToken.id && koreanSaveConflict.text === selectedToken.text && koreanSaveReady(selectedToken) &&
+        <SaveContextButton key={`${id}:${selectedToken.id}:${effectiveExplanationLocale}:${readingContextSource(selectedToken)?.sourceRevision}:conflict`} label={vt("이 문맥 추가")}
+          word={contextWord(selectedToken)} source={readingContextSource(selectedToken)} onSaved={() => setKoreanSaveConflict(null)} />}
       {user && learningStorageSupported && (() => {
         // 네 등급은 FSRS 평가다. 아는 단어 표시는 별도로 복습을 멈추며 원래 기록을 보존한다.
         if (isWordSaved && isTokenDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending) return null;
@@ -2417,7 +2480,7 @@ export default function ViewerPage() {
           return (
             <div className="word-detail-card__actrow">
               <button disabled className="btn btn--ghost btn--sm">{vt(saveAnim || inlineReviewMutation.isPending ? '저장 중…' : '✓ 단어장에 있음')}</button>
-              {!saveAnim && !inlineReviewMutation.isPending && <SaveContextButton key={`${id}:${selectedToken.id || selectedToken.text}:${leftPanelText}`}
+              {!saveAnim && !inlineReviewMutation.isPending && koreanSaveReady(selectedToken) && <SaveContextButton key={`${id}:${selectedToken.id || selectedToken.text}:${leftPanelText}:${materialLang === 'Korean' ? `${effectiveExplanationLocale}:${readingContextSource(selectedToken)?.sourceRevision}` : ''}`}
                 label={vt("이 문맥 추가")} word={contextWord(selectedToken)} source={readingContextSource(selectedToken)} />}
             </div>
           );
@@ -2430,7 +2493,7 @@ export default function ViewerPage() {
                   key={g.grade}
                   type="button"
                   onClick={() => addToVocab(g.grade)}
-                  disabled={selectedExcluded || !wordStateReady || knownPending || exclusionState.mutation.isPending}
+                  disabled={selectedExcluded || !wordStateReady || !koreanSaveReady(selectedToken) || knownPending || exclusionState.mutation.isPending}
                   className={`review-score-btn review-score-btn--${g.cls}`}
                   title={vt('{label} — {sub} 다시 만나요 (키 {key})', {label: vt(g.label), sub: vt(g.sub), key: g.key})}
                 >
@@ -2693,7 +2756,7 @@ export default function ViewerPage() {
           </div>
         )}
       </header>
-      {!originalParams.get('sourceEntry')&&!originalParams.get('sourceQuote')&&<ReadingSourceFocus materialId={id} ready={!!material?.processed_json?.sequence?.length} json={material?.processed_json} onTarget={setSourceFocusId} />}
+      {!originalParams.get('sourceEntry')&&!originalParams.get('sourceQuote')&&<ReadingSourceFocus rawText={material?.raw_text} materialId={id} ready={!!material?.processed_json?.sequence?.length} json={material?.processed_json} onTarget={setSourceFocusId} />}
       {positionError && <div className="error-banner" role="status">{vt("읽기 위치를 저장하지 못했어요.")}<button type="button" className="btn btn--ghost" onClick={retryPosition}>{vt("다시 저장")}</button></div>}
 
       {/* 출처 표기(v2-F R5) — CC BY는 **표기가 라이선스 조건**이다. `metadata.source`가

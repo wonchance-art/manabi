@@ -5,7 +5,7 @@ import { detectLang, displayWord } from '../lib/constants';
 import { refInline } from './refShared';
 import { refLevelLabel } from '../lib/refVocabIndex';
 
-const LANG_CODE = { Japanese: 'ja', Chinese: 'zh-Hans', English: 'en', French: 'fr' };
+const LANG_CODE = { Japanese: 'ja', Chinese: 'zh-Hans', English: 'en', French: 'fr', Korean: 'ko' };
 
 // 급수 자동 분류 필터(②) — 급수는 레퍼런스 사전에서 표시 시점 계산. 'NONE'=사전 밖.
 const LEVEL_OPTIONS = [
@@ -26,13 +26,16 @@ export default function VocabList({
   levelFilter = 'all', setLevelFilter, showLevelFilter = false, refLevelOf,
   ttsSupported, speak, setConfirmAction, deleteMutation, onWordClick,
   bulkDeleteMutation, updateVocabMutation,
+  koreanLearningSupported = false,
 }) {
+  const canModify = word => !!word && (word.language !== 'Korean' || koreanLearningSupported);
   // 단어장에 실제로 존재하는 언어(표시 순서는 고정 라벨 순)
   const LANG_LABELS = [
     { value: 'Japanese', label: '일본어' },
     { value: 'English', label: '영어' },
     { value: 'French', label: '프랑스어' },
     { value: 'Chinese', label: '중국어' },
+    { value: 'Korean', label: '한국어' },
   ];
   const langsInVocab = LANG_LABELS.filter(l => vocab.some(v => v.language === l.value));
 
@@ -93,7 +96,7 @@ export default function VocabList({
   };
 
   const confirmBulkDelete = () => {
-    if (selectedIds.size === 0) return;
+    if (selectedIds.size === 0 || [...selectedIds].some(id => !canModify(vocab.find(word => word.id === id)))) return;
     setConfirmAction({
       message: `선택한 ${selectedIds.size}개 단어를 삭제할까요?`,
       onConfirm: () => {
@@ -196,7 +199,7 @@ export default function VocabList({
                 <Button
                   size="sm"
                   onClick={confirmBulkDelete}
-                  disabled={bulkDeleteMutation?.isPending}
+                  disabled={bulkDeleteMutation?.isPending || [...selectedIds].some(id => !canModify(vocab.find(word => word.id === id)))}
                   style={{ background: 'var(--danger)' }}
                 >
                   삭제 ({selectedIds.size})
@@ -243,7 +246,7 @@ export default function VocabList({
               ? <span className="vocab-row__pos" title={v.pos}>{v.pos}</span>
               : <span className="vocab-row__pos vocab-row__pos--empty" aria-hidden="true" />}
 
-            {ttsSupported ? (
+            {ttsSupported && v.language !== 'Korean' ? (
               <button type="button" className="vocab-row__tts" title="발음 듣기" aria-label={`${v.word_text} 발음 듣기`}
                 onClick={e => { e.stopPropagation(); speak(v.word_text, v.language || detectLang(v.word_text)); }}>▷</button>
             ) : <span className="vocab-row__tts vocab-row__tts--empty" aria-hidden="true" />}
@@ -280,10 +283,12 @@ export default function VocabList({
                 : <span className="vocab-row__dot" style={{ background: stageColor }} title={stageLabel} aria-label={stageLabel} />}
               {!selectMode && updateVocabMutation && (
                 <button type="button" className="vocab-row__act" title="편집" aria-label={`${v.word_text} 편집`}
+                  disabled={!canModify(v)}
                   onClick={() => setEditing({ id: v.id, word_text: v.word_text, furigana: v.furigana || '', meaning: v.meaning || '', pos: v.pos || '' })}>✎</button>
               )}
               {!selectMode && (
                 <button type="button" className="vocab-row__act vocab-row__act--danger" title="삭제" aria-label={`${v.word_text} 삭제`}
+                  disabled={!canModify(v)}
                   onClick={() => setConfirmAction({
                     message: `"${v.word_text}" 를 단어장에서 삭제할까요?`,
                     onConfirm: () => { deleteMutation.mutate(v.id); setConfirmAction(null); },
@@ -383,7 +388,7 @@ export default function VocabList({
                     { onSuccess: () => setEditing(null) }
                   );
                 }}
-                disabled={updateVocabMutation?.isPending}
+                disabled={updateVocabMutation?.isPending || !canModify(vocab.find(word => word.id === editing.id))}
                 style={{ flex: 2 }}
               >
                 {updateVocabMutation?.isPending ? '저장 중...' : '저장'}
