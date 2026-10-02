@@ -61,10 +61,23 @@ async function scrollToArticle(page,id){
  });
  await settled(page,id);
 }
+async function captureOffset(page,id){
+ await settled(page,id);
+ return page.locator(`#${id}`).evaluate(node=>node.getBoundingClientRect().top-document.querySelector('.manabi-reader-toolbar').getBoundingClientRect().bottom);
+}
+async function retainedOffset(page,id,expected){
+ await settled(page,id);
+ const actual=await page.locator(`#${id}`).evaluate(node=>({
+  dom:node.getBoundingClientRect().top-document.querySelector('.manabi-reader-toolbar').getBoundingClientRect().bottom,
+  saved:history.state.manabiBookPosition.offset,
+ }));
+ assert.ok(Math.abs(actual.dom-expected)<2,JSON.stringify({id,expected,...actual}));
+ assert.ok(Math.abs(actual.saved-expected)<2,JSON.stringify({id,expected,...actual}));
+}
 async function visiblePosition(page,id){
- const geometry=await page.locator(`#${id}`).evaluate(node=>({top:node.getBoundingClientRect().top,toolbar:document.querySelector('.manabi-reader-toolbar').getBoundingClientRect().bottom,width:innerWidth,documentWidth:document.documentElement.scrollWidth}));
+ const geometry=await page.locator(`#${id}`).evaluate(node=>({top:node.getBoundingClientRect().top,toolbar:document.querySelector('.manabi-reader-toolbar').getBoundingClientRect().bottom,width:innerWidth,height:innerHeight,documentWidth:document.documentElement.scrollWidth}));
  assert.ok(geometry.top>=geometry.toolbar-1,JSON.stringify(geometry));
- assert.ok(geometry.top<geometry.toolbar+40,JSON.stringify(geometry));
+ assert.ok(geometry.top<Math.min(240,geometry.height*.32),JSON.stringify(geometry));
  assert.ok(geometry.documentWidth<=geometry.width+1,JSON.stringify(geometry));
 }
 async function seed(page){
@@ -90,10 +103,11 @@ for(const edition of editions)for(const width of [320,390,1440])test(`${engine.n
   const state=await f.page.evaluate(()=>({__NA:history.state.__NA,__PRIVATE_NEXTJS_INTERNALS_TREE:history.state.__PRIVATE_NEXTJS_INTERNALS_TREE}));
   await scrollToArticle(f.page,'u03-practice');await visiblePosition(f.page,'u03-practice');
   await f.page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)||'{}').page==='u03-practice',progressKey(edition));
+  const offset=await captureOffset(f.page,'u03-practice');
   const before=await storage(f.page),url=f.page.url();assert.equal(new URL(url).hash,'#u03-start');
   // Delay the body response on reload; no transient start progress may be persisted.
   let delay=true;await f.page.route('**/api/books/**/reading?*',async route=>{if(delay){delay=false;await new Promise(resolve=>setTimeout(resolve,250));}await route.continue();});
-  await f.page.reload({waitUntil:'domcontentloaded'});await settled(f.page,'u03-practice');await visiblePosition(f.page,'u03-practice');
+  await f.page.reload({waitUntil:'domcontentloaded'});await retainedOffset(f.page,'u03-practice',offset);await visiblePosition(f.page,'u03-practice');
   assert.equal(f.page.url(),url);const reloaded=await storage(f.page);
   for(const key of Object.keys(before))if(key!==progressKey(edition))assert.equal(reloaded[key],before[key],key);
   const primary=JSON.parse(reloaded[progressKey(edition)]),previous=JSON.parse(before[progressKey(edition)]);
@@ -112,26 +126,29 @@ for(const edition of editions)for(const width of [320,390,1440])test(`${engine.n
 test(`${engine.name()}: explicit anchors, same-hash history and persisted pageshow retain their own positions`,async()=>{
  const f=await fixture(390),edition=editions[0];try{
   await f.page.goto(href(edition));await settled(f.page,'u03-start');await scrollToArticle(f.page,'u03-practice');
+  const practiceOffset=await captureOffset(f.page,'u03-practice');
   // An explicit TOC click creates another entry with the same hash and starts there.
   await f.page.locator('.manabi-reader-outline a[href$="#u03-start"]').evaluate(link=>link.click());await settled(f.page,'u03-start');assert.ok(await f.page.evaluate(()=>scrollY<5));
-  await scrollToArticle(f.page,'u03-dialogue');
-  await f.page.evaluate(()=>history.back());await settled(f.page,'u03-practice');await visiblePosition(f.page,'u03-practice');
-  await f.page.evaluate(()=>history.forward());await settled(f.page,'u03-dialogue');await visiblePosition(f.page,'u03-dialogue');
-  // Leaving through a real Next Link unmounts the reader; Back must restore this entry.
-  await f.page.getByRole('link',{name:'담은 표현',exact:true}).click();
+  await scrollToArticle(f.page,'u03-dialogue');const dialogueOffset=await captureOffset(f.page,'u03-dialogue');
+  await f.page.evaluate(()=>history.back());await retainedOffset(f.page,'u03-practice',practiceOffset);await visiblePosition(f.page,'u03-practice');
+  await f.page.evaluate(()=>history.forward());await retainedOffset(f.page,'u03-dialogue',dialogueOffset);await visiblePosition(f.page,'u03-dialogue');
+  // DOM activation keeps the actual Next Link behavior without automation scrolling first.
+  const reviewOffset=await captureOffset(f.page,'u03-dialogue');
+  await f.page.getByRole('link',{name:'담은 표현',exact:true}).evaluate(link=>link.click());
   await f.page.waitForURL(url=>url.pathname.endsWith('/review'));
-  await f.page.goBack();await settled(f.page,'u03-dialogue');await visiblePosition(f.page,'u03-dialogue');
+  await f.page.goBack();await retainedOffset(f.page,'u03-dialogue',reviewOffset);await visiblePosition(f.page,'u03-dialogue');
   // A fresh Next return link honors its explicit source anchor.
   await f.page.evaluate(()=>scrollBy(0,340));await settled(f.page,'u03-dialogue');
   assert.ok(await f.page.locator('#u03-dialogue').evaluate(node=>node.getBoundingClientRect().top<document.querySelector('.manabi-reader-toolbar').getBoundingClientRect().bottom));
-  await f.page.getByRole('link',{name:'담은 표현',exact:true}).click();
+  await f.page.getByRole('link',{name:'담은 표현',exact:true}).evaluate(link=>link.click());
   await f.page.waitForURL(url=>url.pathname.endsWith('/review'));
   const returnLink=f.page.getByRole('link',{name:/교재로 돌아가기/}).first();
-  await returnLink.waitFor();await returnLink.click();await settled(f.page,'u03-dialogue');
+  await returnLink.waitFor();await returnLink.evaluate(link=>link.click());await settled(f.page,'u03-dialogue');
   assert.ok(await f.page.locator('#u03-dialogue').evaluate(node=>node.getBoundingClientRect().top>=document.querySelector('.manabi-reader-toolbar').getBoundingClientRect().bottom-1));
+  const persistedOffset=await captureOffset(f.page,'u03-dialogue');
   // Exercise persisted lifecycle handlers even when automation disables real bfcache.
   await f.page.evaluate(()=>{dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true}));scrollTo(0,0);dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));});
-  await settled(f.page,'u03-dialogue');await visiblePosition(f.page,'u03-dialogue');
+  await retainedOffset(f.page,'u03-dialogue',persistedOffset);await visiblePosition(f.page,'u03-dialogue');
   await f.page.goto(href(edition,'u03-patterns'));await settled(f.page,'u03-patterns');
   assert.equal(new URL(f.page.url()).hash,'#u03-patterns');
   // A newly opened source/TOC URL gets its explicit anchor, not the prior entry.
@@ -145,12 +162,13 @@ test(`${engine.name()}: reference reload and history preserve all primary positi
   await seed(f.page);const before=await storage(f.page);f.writes.length=0;
   for(const edition of editions){
    await f.page.goto(href(edition,'u03-start',true));await settled(f.page,'u03-start');await scrollToArticle(f.page,'u03-practice');
-   await f.page.reload();await settled(f.page,'u03-practice');await visiblePosition(f.page,'u03-practice');
+   const offset=await captureOffset(f.page,'u03-practice');
+   await f.page.reload();await retainedOffset(f.page,'u03-practice',offset);await visiblePosition(f.page,'u03-practice');
    assert.equal(new URL(f.page.url()).searchParams.get('reference'),'1');
    assert.deepEqual(await storage(f.page),before);
    await f.page.locator('.manabi-reader-outline a[href$="#u03-start"]').evaluate(link=>link.click());
    await settled(f.page,'u03-start');await f.page.evaluate(()=>history.back());
-   await settled(f.page,'u03-practice');await visiblePosition(f.page,'u03-practice');
+   await retainedOffset(f.page,'u03-practice',offset);await visiblePosition(f.page,'u03-practice');
    assert.deepEqual(await storage(f.page),before);
   }
   assert.deepEqual(f.writes.filter(write=>['library_reading_activity','user_vocabulary','save_vocabulary_context','review_events'].includes(write.table)),[]);
@@ -173,8 +191,9 @@ test(`${engine.name()}: a mid-article reload retains the visible passage rather 
  const f=await fixture(390),edition=editions[0];try{
   await f.page.goto(href(edition));await settled(f.page,'u03-start');await scrollToArticle(f.page,'u03-practice');
   await f.page.evaluate(()=>scrollBy(0,340));await settled(f.page,'u03-practice');
+  const offset=await captureOffset(f.page,'u03-practice');
   const before=await f.page.locator('#u03-practice').evaluate(node=>({top:node.getBoundingClientRect().top,y:scrollY}));
-  assert.ok(before.top<0);await f.page.reload();await settled(f.page,'u03-practice');
+  assert.ok(before.top<0);await f.page.reload();await retainedOffset(f.page,'u03-practice',offset);
   const after=await f.page.locator('#u03-practice').evaluate(node=>({top:node.getBoundingClientRect().top,y:scrollY,bottom:node.getBoundingClientRect().bottom,toolbar:document.querySelector('.manabi-reader-toolbar').getBoundingClientRect().bottom}));
   assert.ok(Math.abs(after.top-before.top)<2,JSON.stringify({before,after}));assert.ok(after.bottom>after.toolbar);
   assert.equal(JSON.parse((await storage(f.page))[progressKey(edition)]).page,'u03-practice');assert.deepEqual(f.errors,[]);
