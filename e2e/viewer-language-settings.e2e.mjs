@@ -261,7 +261,9 @@ test('shared reader retains independent locale settings, exact source and learni
 test('selected sentence refreshes explanation locale without reanalyzing source words', { timeout: 180000 }, async () => {
   const context = await browser.newContext({ baseURL: base, viewport: { width: 390, height: 844 }, reducedMotion: 'reduce', serviceWorkers: 'block' });
   context.setDefaultTimeout(config.timeout);
-  await context.addInitScript(key => localStorage.setItem(key, JSON.stringify({ version: 1, uiLocale: 'zh-TW', explanationLocale: 'zh-TW' })), VIEWER_LANGUAGE_PREF_KEY);
+  await context.addInitScript(({ key, origin }) => {
+    if (location.origin === origin) localStorage.setItem(key, JSON.stringify({ version: 1, uiLocale: 'zh-TW', explanationLocale: 'zh-TW' }));
+  }, { key: VIEWER_LANGUAGE_PREF_KEY, origin: new URL(base).origin });
   const audit = await fixture(context, { sentenceMode: true }), page = await context.newPage();
   const panel = page.locator('#inspector-sentence');
   try {
@@ -311,7 +313,9 @@ test('ordinary Korean import preserves real textarea paste/edit source and exclu
   const context = await browser.newContext({ baseURL: base, viewport: { width: 390, height: 844 }, reducedMotion: 'reduce', serviceWorkers: 'block' });
   context.setDefaultTimeout(config.timeout);
   const audit = await fixture(context, { importMode: true }), page = await context.newPage();
-  await context.addInitScript(key => localStorage.setItem(key, JSON.stringify({ version: 1, uiLocale: 'zh-TW', explanationLocale: 'zh-TW' })), VIEWER_LANGUAGE_PREF_KEY);
+  await context.addInitScript(({ key, origin }) => {
+    if (location.origin === origin) localStorage.setItem(key, JSON.stringify({ version: 1, uiLocale: 'zh-TW', explanationLocale: 'zh-TW' }));
+  }, { key: VIEWER_LANGUAGE_PREF_KEY, origin: new URL(base).origin });
   // PDF source is an existing repository fixture served only through intercepted Storage routes.
   const originalPdf = fs.readFileSync(new URL('./fixtures/composer/reading.pdf', import.meta.url), 'latin1');
   // The tiny repository PDF has 29 extracted characters, below the importer's 30-char
