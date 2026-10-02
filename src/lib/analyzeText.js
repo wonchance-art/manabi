@@ -26,6 +26,9 @@ export async function analyzeText(rawText, signal, { metadata = {}, onBatch, exi
   if (lang === 'Japanese' || lang === 'English' || lang === 'Chinese') {
     return analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson, language: lang });
   }
+  if (lang === 'Korean') {
+    return analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson, language: lang });
+  }
   // 기타 언어는 기존 Gemini per-line (fallback)
   return analyzeLineByLineGemini(rawText, signal, { metadata, onBatch, existingJson, concurrency });
 }
@@ -37,23 +40,56 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
   const lines = rawText.split('\n');
   const total = lines.length;
   const timestamp = Date.now();
+  const isKorean = language === 'Korean';
+  const explanationLocale = metadata?.explanationLocale ?? existingJson?.metadata?.explanationLocale ?? 'ko';
+  const lineOffsets = [];
+  let sourceOffset = 0;
+  for (const line of lines) {
+    lineOffsets.push(sourceOffset);
+    sourceOffset += line.length + 1;
+  }
+  const newlineToken = (idx) => ({ text: '\n', pos: '개행', ...(isKorean ? {
+    surface: '\n', language, sourceSpan: { start: lineOffsets[idx] + lines[idx].length,
+      end: lineOffsets[idx] + lines[idx].length + 1, unit: 'utf16', lineIndex: idx },
+  } : {}) });
 
-  const isRetry = !!(existingJson?.failed_indices?.length);
+  const isRetry = !!(existingJson?.failed_indices?.length) && (!isKorean ||
+    (existingJson?.metadata?.language === language && existingJson?.metadata?.explanationLocale === explanationLocale &&
+      existingJson?.metadata?.analysisVersion === 'ko-llm-v1'));
   const failedSet = new Set(isRetry ? existingJson.failed_indices : []);
+  const existingLineIds = (idx) => (existingJson?.sequence || []).filter(id =>
+    [`id_${idx}_`, `br_${idx}_`, `failed_${idx}_`].some(prefix => id.startsWith(prefix)));
+  const reusableKoreanLine = (idx) => {
+    const tokens = existingLineIds(idx).map(id => existingJson.dictionary?.[id]).filter(token => token?.pos !== '개행');
+    let offset = 0;
+    for (const token of tokens) {
+      if (!token || token.failed || typeof token.text !== 'string' || token.sourceSpan?.unit !== 'utf16' ||
+          token.sourceSpan.lineStart !== offset || token.sourceSpan.lineEnd !== offset + token.text.length) return false;
+      offset += token.text.length;
+    }
+    return offset === lines[idx].length && tokens.map(token => token.text).join('') === lines[idx];
+  };
 
   // 1. 문단 분리 — 빈 줄 기준으로 그룹핑
   const paragraphs = []; // [{ lineIndices: [0,1,2], lines: ['...','...'] }]
   let currentPara = { lineIndices: [], lines: [] };
   for (let i = 0; i < total; i++) {
-    if (!lines[i].trim()) {
+    if (isKorean ? lines[i] === '' : !lines[i].trim()) {
       if (currentPara.lineIndices.length > 0) {
         paragraphs.push(currentPara);
         currentPara = { lineIndices: [], lines: [] };
       }
       paragraphs.push({ lineIndices: [i], lines: [''], empty: true });
     } else {
+      // 한국어 요청은 단일 LLM 출력 캡 안의 작은 배치. 긴 줄은 별도 요청에서 정직하게 실패한다.
+      if (isKorean && currentPara.lines.length && (currentPara.lines.length >= 8 || lines[i].length > 200 ||
+          currentPara.lines.some((line) => line.length > 200) ||
+          currentPara.lines.reduce((sum, line) => sum + line.length, 0) + lines[i].length > 1600)) {
+        paragraphs.push(currentPara);
+        currentPara = { lineIndices: [], lines: [] };
+      }
       currentPara.lineIndices.push(i);
-      currentPara.lines.push(lines[i].trim());
+      currentPara.lines.push(isKorean ? lines[i] : lines[i].trim());
     }
   }
   if (currentPara.lineIndices.length > 0) paragraphs.push(currentPara);
@@ -73,7 +109,9 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
     dictionary: {},
     last_idx: -1,
     status: 'analyzing',
-    metadata: metadata || existingJson?.metadata || {},
+    metadata: isKorean ? { ...(existingJson?.metadata || {}), ...metadata, language, targetLanguage: 'ko',
+      explanationLocale, analysisVersion: 'ko-llm-v1', analysisEngine: 'llm', analysisQuality: 'unreviewed' }
+      : metadata || existingJson?.metadata || {},
     failed_indices: [],
   };
 
@@ -86,16 +124,18 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
     // 빈 줄 문단 → 개행만 추가
     if (para.empty) {
       const idx = para.lineIndices[0];
-      const brId = `br_${idx}_${timestamp}`;
-      currentJson.sequence.push(brId);
-      currentJson.dictionary[brId] = { text: '\n', pos: '개행' };
+      if (!isKorean || idx < total - 1) {
+        const brId = `br_${idx}_${timestamp}`;
+        currentJson.sequence.push(brId);
+        currentJson.dictionary[brId] = newlineToken(idx);
+      }
       currentJson.last_idx = idx;
       processedLines++;
       continue;
     }
 
     // 재시도 모드: 이 문단의 모든 줄이 성공 상태면 기존 토큰 재사용
-    const needsAnalysis = para.lineIndices.some(i => !isRetry || failedSet.has(i));
+    const needsAnalysis = para.lineIndices.some(i => !isRetry || failedSet.has(i) || (isKorean && !reusableKoreanLine(i)));
 
     if (!needsAnalysis) {
       // 기존 토큰 복원
@@ -106,13 +146,17 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
         );
         existing.forEach(id => {
           currentJson.sequence.push(id);
-          currentJson.dictionary[id] = existingJson.dictionary[id];
+          const token = existingJson.dictionary[id];
+          currentJson.dictionary[id] = isKorean ? (token.pos === '개행' ? newlineToken(idx) : { ...token,
+            sourceSpan: { ...token.sourceSpan, lineIndex: idx,
+              start: lineOffsets[idx] + token.sourceSpan.lineStart, end: lineOffsets[idx] + token.sourceSpan.lineEnd },
+          }) : token;
         });
         currentJson.last_idx = idx;
       }
       // 문단 사이 개행
       const lastIdx = para.lineIndices[para.lineIndices.length - 1];
-      if (lastIdx < total - 1) {
+      if (!isKorean && lastIdx < total - 1) {
         const brId = `br_${lastIdx}_end_${timestamp}`;
         currentJson.sequence.push(brId);
         currentJson.dictionary[brId] = { text: '\n', pos: '개행' };
@@ -124,14 +168,16 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
     // 서버로 문단 전송
     let response = null;
     try {
-      const res = await fetch('/api/analyze', {
+      const res = await fetch(isKorean ? '/api/analyze/korean' : '/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeader },
         signal,
-        body: JSON.stringify({ lines: para.lines, language }),
+        body: JSON.stringify({ lines: para.lines, language, ...(isKorean ? { explanationLocale } : {}) }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+      if (isKorean && (data?.metadata?.language !== language || data?.metadata?.explanationLocale !== explanationLocale ||
+          data?.metadata?.analysisVersion !== 'ko-llm-v1')) throw new Error('analysis_metadata_mismatch');
       response = data;
     } catch (e) {
       if (signal?.aborted) throw e;
@@ -143,21 +189,36 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
       const idx = para.lineIndices[li];
       const result = response?.results?.[li];
 
-      if (result) {
+      const validKoreanLine = !isKorean || (Array.isArray(result?.sequence) && result?.dictionary &&
+        result.sequence.map((id) => result.dictionary[id]?.text ?? '').join('') === lines[idx]);
+      if (result && validKoreanLine) {
         const newSeq = result.sequence.map((_, pi) => `id_${idx}_${pi}_${timestamp}`);
         result.sequence.forEach((srvId, pi) => {
           currentJson.sequence.push(newSeq[pi]);
-          currentJson.dictionary[newSeq[pi]] = result.dictionary[srvId];
+          const token = result.dictionary[srvId];
+          currentJson.dictionary[newSeq[pi]] = isKorean ? { ...token,
+            ...(token.sourceSpan ? { sourceSpan: { ...token.sourceSpan, lineIndex: idx,
+              start: lineOffsets[idx] + token.sourceSpan.start, end: lineOffsets[idx] + token.sourceSpan.end,
+              lineStart: token.sourceSpan.start, lineEnd: token.sourceSpan.end } } : {}),
+            ...(token.selectionGroup ? { selectionGroup: `ko_${idx}_${token.sourceSpan?.start}_${token.sourceSpan?.end}` } : {}),
+            ...(token.failed ? { original_line_idx: idx } : {}),
+          } : token;
         });
+        if (isKorean && (result.failed || result.sequence.some((id) => result.dictionary[id]?.failed))) {
+          currentJson.failed_indices.push(idx);
+        }
       } else {
         // 실패
         const failedId = `failed_${idx}_${timestamp}`;
         currentJson.sequence.push(failedId);
         currentJson.dictionary[failedId] = {
           text: lines[idx],
-          pos: '미분석',
+          pos: isKorean ? null : '미분석',
           failed: true,
           original_line_idx: idx,
+          ...(isKorean ? { surface: lines[idx], language, explanationLocale, analysisVersion: 'ko-llm-v1',
+            sourceSpan: { start: lineOffsets[idx], end: lineOffsets[idx] + lines[idx].length,
+              lineStart: 0, lineEnd: lines[idx].length, unit: 'utf16', lineIndex: idx } } : {}),
         };
         currentJson.failed_indices.push(idx);
       }
@@ -166,7 +227,7 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
       if (idx < total - 1) {
         const brId = `br_${idx}_${timestamp}`;
         currentJson.sequence.push(brId);
-        currentJson.dictionary[brId] = { text: '\n', pos: '개행' };
+        currentJson.dictionary[brId] = newlineToken(idx);
       }
       currentJson.last_idx = idx;
     }

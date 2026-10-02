@@ -1,6 +1,10 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
 import { bcp47ForLanguage, voicePrefixForLanguage } from './speechLang';
+import { viewerLanguageInfo } from './viewerLanguage';
+
+const readerSpeechTag = language => viewerLanguageInfo(language)?.speechLocale || bcp47ForLanguage(language);
+const readerVoiceKey = language => viewerLanguageInfo(language)?.code || voicePrefixForLanguage(language);
 
 const VOICE_KEY = 'tts_voice'; // { ja: voiceURI, en: voiceURI }
 
@@ -42,7 +46,7 @@ export function getTtsCapabilities(browser = typeof window === 'undefined' ? nul
 }
 
 export function immediateSpeechVoice(voices, language, wantedURI) {
-  const code = bcp47ForLanguage(language).toLowerCase();
+  const code = readerSpeechTag(language).toLowerCase();
   const prefix = code.split('-')[0];
   const matching = voices.filter(v => v.lang?.toLowerCase() === prefix || v.lang?.toLowerCase().startsWith(prefix + '-'));
   return matching.find(v => v.voiceURI === wantedURI)
@@ -93,17 +97,17 @@ export function useTTS() {
   const listVoices = useCallback((lang = 'Japanese') => {
     if (typeof window === 'undefined' || !window.speechSynthesis) return [];
     const all = window.speechSynthesis.getVoices();
-    const code = bcp47ForLanguage(lang);
+    const code = readerSpeechTag(lang);
     const prefix = code.split('-')[0];
     return all.filter(v => v.lang === code || v.lang.startsWith(prefix + '-'));
   }, []);
 
   const getSelectedVoice = useCallback((lang = 'Japanese') => {
-    return loadStoredVoice(voicePrefixForLanguage(lang));
+    return viewerLanguageInfo(lang)?.code === 'ko' ? loadStoredVoice('ko') : loadStoredVoice(voicePrefixForLanguage(lang));
   }, []);
 
   const setSelectedVoice = useCallback((lang, voiceURI) => {
-    saveStoredVoice(voicePrefixForLanguage(lang), voiceURI || null);
+    saveStoredVoice(readerVoiceKey(lang), voiceURI || null);
   }, []);
 
   // 같은 사용자 제스처 안에서 재생한다. 즉시 경로는 해당 언어 음성이 있을 때만 사용한다.
@@ -112,9 +116,15 @@ export function useTTS() {
     window.speechSynthesis.cancel();
     const utter = new window.SpeechSynthesisUtterance(text);
     utter.lang = bcp47ForLanguage(language);
+    // 기존 언어의 정본 기본값을 유지하고 새 뷰어 어댑터의 음성 태그를 적용한다.
+    if (viewerLanguageInfo(language)) utter.lang = readerSpeechTag(language);
     utter.rate = opts.rate ?? 0.85;
     utter.pitch = opts.pitch ?? 1;
-    const wantedURI = loadStoredVoice(voicePrefixForLanguage(language));
+    const wantedURI = loadStoredVoice(readerVoiceKey(language));
+    if (viewerLanguageInfo(language)?.code === 'ko') {
+      voice = immediateSpeechVoice(window.speechSynthesis.getVoices(), language, wantedURI);
+      if (!voice) return false;
+    }
     if (voice) utter.voice = voice;
     else if (wantedURI) {
       const v = window.speechSynthesis.getVoices().find(x => x.voiceURI === wantedURI);
@@ -134,7 +144,7 @@ export function useTTS() {
     window.speechSynthesis?.cancel();
     if (opts.preferBrowser && getTtsCapabilities().webSpeech) {
       const voice = immediateSpeechVoice(window.speechSynthesis.getVoices(), language,
-        loadStoredVoice(voicePrefixForLanguage(language)));
+        loadStoredVoice(readerVoiceKey(language)));
       const retryServer = () => {
         if (generation !== audioGeneration) return;
         playServerTTS(text, language, opts.playbackRate ?? 1, generation).catch(() => {});

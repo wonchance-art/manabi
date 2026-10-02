@@ -9,13 +9,14 @@ const TTS_MODEL = 'models/gemini-3.1-flash-tts-preview'; // 2.5-preview-tts 승�
 
 // 언어별 프리셋 음성 (Gemini prebuilt voices)
 const VOICES = {
+  Korean: 'Kore',
   Japanese: 'Kore',   // 또렷하고 차분한 톤 — 일본어 학습 예문에 적합
   English:  'Puck',   // 경쾌하고 명료한 톤
   French:   'Aoede',  // 부드러운 톤 — 프랑스어 억양과 잘 어울림
   Chinese:  'Kore',   // 중국어 자료실 개통(#965) — 성조가 또렷한 차분한 톤
 };
 
-const LANG_NAMES = { Japanese: 'Japanese', English: 'English', French: 'French', Chinese: 'Chinese' };
+const LANG_NAMES = { Korean: 'Korean', Japanese: 'Japanese', English: 'English', French: 'French', Chinese: 'Chinese' };
 
 // IP별 레이트 리밋 (비로그인 공개 레퍼런스에서도 쓰므로 IP 기준, 캐시 미스만 도달)
 const rateLimitMap = new Map();

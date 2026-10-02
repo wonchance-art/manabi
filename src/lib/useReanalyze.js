@@ -59,7 +59,7 @@ export function getParagraphs(rawText, preserveSource = false) {
  *   { fullReset: true }           — 전체 재분석
  *   { selectedLineIndices: Set }  — 선택 문단만 재분석 (나머지 기존 유지)
  */
-export function useReanalyze({ materialId, material, refetch, toast }) {
+export function useReanalyze({ materialId, material, refetch, toast, explanationLocale = 'ko' }) {
   const abortRef = useRef(null);
   const committingRef = useRef(false);
   const [committing, setCommitting] = useState(false);
@@ -95,6 +95,7 @@ export function useReanalyze({ materialId, material, refetch, toast }) {
       try {
         const record = await runPreservedReanalysis(supabase, material, controller.signal, analyzeText, {
           fullReset, resume, selectedLineIndices, rawTextOverride, baseJsonOverride,
+          ...(material?.processed_json?.metadata?.language === 'Korean' ? { explanationLocale } : {}),
           onCommitting: () => { committingRef.current = true; setCommitting(true); },
           onRecoveryProgress: progress => {
             if (activeId.current === materialId && abortRef.current === controller) setRecovery({ ...progress, materialId });

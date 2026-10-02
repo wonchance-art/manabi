@@ -24,6 +24,8 @@ import { friendlyToastMessage } from '../lib/errorMessage';
 import { titleFromBody } from '../lib/materialTitle';
 import { useQueryClient } from '@tanstack/react-query';
 import { createImportAttempt, saveImportOnce, interruptedImportJson, persistImportAnalysis } from '../lib/materialImport';
+import { useViewerLanguage } from '../lib/useViewerLanguage';
+import { VIEWER_LANGUAGES, viewerLanguageInfo } from '../lib/viewerLanguage';
 import './material-import.css';
 
 /** 입구 칩(자료 추가 정돈 R2) — 소스 순서 = 렌더 순서(PDF→EPUB→문장 목록→링크), 아래 렌더와 같은 차례. */
@@ -36,6 +38,30 @@ const ENTRIES = [
 
 /** 내용 줄 수 — 문장 목록 자료에서 "몇 문장"의 정본 셈법(빈 줄 제외). */
 const countLines = (t) => String(t || '').split('\n').filter((l) => l.trim()).length;
+
+const IMPORT_LANGUAGE_ORDER = ['ja', 'en', 'zh', 'fr', 'ko'];
+const IMPORT_DEFAULT_LEVEL = { ja: 'N3 중급', en: 'B1 중급', zh: 'H3 중급', fr: 'B1 중급' };
+const textareaText = text => text.replace(/\r\n?/g, '\n');
+// textarea의 selection/value는 CRLF를 한 글자로 센다. 원문의 UTF-16 위치로 되돌린다.
+function sourceOffsetForTextarea(text, visibleOffset) {
+  let sourceOffset = 0;
+  for (let offset = 0; offset < visibleOffset && sourceOffset < text.length; offset++) {
+    sourceOffset += text[sourceOffset] === '\r' && text[sourceOffset + 1] === '\n' ? 2 : 1;
+  }
+  return sourceOffset;
+}
+function preserveTextareaSource(previous, value) {
+  const before = textareaText(previous);
+  const after = textareaText(value);
+  let start = 0;
+  while (start < before.length && start < after.length && before[start] === after[start]) start++;
+  let suffix = 0;
+  while (suffix < before.length - start && suffix < after.length - start
+    && before[before.length - 1 - suffix] === after[after.length - 1 - suffix]) suffix++;
+  return previous.slice(0, sourceOffsetForTextarea(previous, start))
+    + value.slice(sourceOffsetForTextarea(value, start), sourceOffsetForTextarea(value, after.length - suffix))
+    + previous.slice(sourceOffsetForTextarea(previous, before.length - suffix));
+}
 
 // --- Component ---
 export default function MaterialAddPage() {
@@ -50,12 +76,18 @@ function MaterialAddForm() {
   const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { explanationLocale } = useViewerLanguage();
+  const requestedTarget = viewerLanguageInfo(searchParams.get('language'));
+  const initialLanguage = searchParams.get('direction') !== MATERIAL_DIRECTION.WRITE
+    && !['book', 'suggestion', 'pdf', 'epub'].some(key => searchParams.has(key))
+    && requestedTarget?.capabilities.text === 'supported' && requestedTarget.capabilities.analysis === 'supported'
+    ? requestedTarget.language : 'Japanese';
 
   const [title, setTitle] = useState('');
   const [rawText, setRawText] = useState('');
   const [visibility, setVisibility] = useState('private');
-  const [language, setLanguage] = useState('Japanese');
-  const [level, setLevel] = useState('N3 중급');
+  const [language, setLanguage] = useState(initialLanguage);
+  const [level, setLevel] = useState(IMPORT_DEFAULT_LEVEL[viewerLanguageInfo(initialLanguage).code] || '');
   const [pdfSource, setPdfSource] = useState(null); // { pdf, pageStart, pageEnd }
   const [epubSource, setEpubSource] = useState(false); // 개인 소장 전자책 반입 — 비공개 고정 근거
   // 링크 반입 출처(v2-F R1) — 있으면 metadata.source에 실린다. 다른 입구로 갈아타면 비운다.
@@ -63,6 +95,12 @@ function MaterialAddForm() {
   // U R3 내 노트 — 방향 축. 'write'면 한국어 본문을 허용하고 분석 큐에 넣지 않는다.
   const [direction, setDirection] = useState(() => searchParams.get('direction') === MATERIAL_DIRECTION.WRITE ? MATERIAL_DIRECTION.WRITE : MATERIAL_DIRECTION.READ);
   const isNote = direction === MATERIAL_DIRECTION.WRITE;
+  const targetLanguage = viewerLanguageInfo(language);
+  const isKoreanReading = !isNote && targetLanguage?.code === 'ko';
+  const languageOptions = Object.values(VIEWER_LANGUAGES)
+    .filter(info => info.capabilities.text === 'supported' && info.capabilities.analysis === 'supported'
+      && (!(isNote || pdfSource || epubSource) || !!LEVELS[info.language]))
+    .sort((a, b) => IMPORT_LANGUAGE_ORDER.indexOf(a.code) - IMPORT_LANGUAGE_ORDER.indexOf(b.code));
   // 자료 추가 정돈 R2(#1077 5547576227) — 입구 4장을 칩 한 줄 + 아코디언(한 번에 하나)으로.
   // 펼침 상태는 여기 하나뿐이다. 입구가 스스로 열어 달라고 할 때(딥링크·본문 폼 넘김)는
   // onOpenChange로 올라오고, 내용을 넘겨준 뒤엔 접는다(폼으로 시선을 옮긴다).
@@ -146,7 +184,7 @@ function MaterialAddForm() {
     setEpubSource(true);
     setOpenEntry('');
     setVisibility('private');
-    if (epubLang) { setLanguage(epubLang); setLevel(epubLang === 'Japanese' ? 'N3 중급' : epubLang === 'Chinese' ? 'H3 중급' : 'B1 중급'); }
+    if (epubLang) { setLanguage(epubLang); setLevel(viewerLanguageInfo(epubLang)?.code === 'ko' ? '' : epubLang === 'Japanese' ? 'N3 중급' : epubLang === 'Chinese' ? 'H3 중급' : 'B1 중급'); }
     // 상한 초과 챕터는 여기서 재분할해 받아들인다("일단 다 받아들이되" 원칙)
     const normalized = chapters.flatMap((ch) =>
       ch.text.length > CHAPTER_MAX_CHARS
@@ -186,6 +224,12 @@ function MaterialAddForm() {
   async function handleBookRegister() {
     if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
     if (!bookDraft || bookDraft.chapters.length === 0) return;
+    const bookLanguage = bookDraft.language || language;
+    const bookTarget = viewerLanguageInfo(bookLanguage);
+    const isKoreanBook = !isNote && bookTarget?.code === 'ko';
+    if (bookTarget?.code === 'ko' && (!isKoreanBook || bookDraft.origin === 'epub')) {
+      toast('한국어는 텍스트 읽기 자료로 추가해 주세요.', 'warning'); return;
+    }
     setBookRegistering(true);
     try {
       // 이어 적기면 책의 key·다음 순번·기존+새 총수(bookAppend 정본) — 새 책이면 지금까지와 같다.
@@ -198,7 +242,7 @@ function MaterialAddForm() {
         // 수만큼으로 늘어 분당 20회 제한에 걸린다. 실측(320문장·16문장/과): 일본어는 요청이
         // 20건 → 320건으로 튄다(。+히라가나 시작 조건에 걸린다). 중국어·영어는 지금은 안
         // 걸리지만(한자 시작·마침표가 종결 집합에 없음) 우연이라 기대지 않는다.
-        raw_text: bookDraft.origin === 'sentences' ? ch.text : autoSplitParagraphs(ch.text),
+        raw_text: isKoreanBook || bookDraft.origin === 'sentences' ? ch.text : autoSplitParagraphs(ch.text),
         processed_json: {
           sequence: [], dictionary: {}, last_idx: -1,
           status: 'pending', // 미분석 — 뷰어에서 "이 챕터 분석하기"로 온디맨드 실행
@@ -206,6 +250,7 @@ function MaterialAddForm() {
             // 초안이 자기 언어·난이도를 들고 왔으면 그것이 정본(문장 목록 입구는 거기서 정한다).
             language: bookDraft.language || language,
             level: bookDraft.level || level,
+            ...(isKoreanBook ? { level: '', explanationLocale } : {}),
             book: { key, title: bookDraft.title, order: startOrder + i, total },
             // 이중 언어 교재의 뜻(v2-AB R0) — 문장 키. 뷰어 드래그 번역이 Gemini 전에 본다.
             ...(ch.translations && Object.keys(ch.translations).length ? { translations: ch.translations } : {}),
@@ -268,7 +313,7 @@ function MaterialAddForm() {
     setOpenEntry('');
     setTitle(epubTitle);
     setRawText(epubText);
-    if (epubLang) { setLanguage(epubLang); setLevel(epubLang === 'Japanese' ? 'N3 중급' : 'B1 중급'); }
+    if (epubLang) { setLanguage(epubLang); setLevel(viewerLanguageInfo(epubLang)?.code === 'ko' ? '' : epubLang === 'Japanese' ? 'N3 중급' : 'B1 중급'); }
     setVisibility('private');
     toast('가져왔어요. 아래에서 확인 후 분석을 시작하세요.', 'success');
     setTimeout(() => {
@@ -285,12 +330,13 @@ function MaterialAddForm() {
       sessionStorage.removeItem('manabi_quick_draft');
       const draft = JSON.parse(raw);
       if (draft?.text) setRawText(draft.text);
-      if (draft?.language) {
-        setLanguage(draft.language);
-        setLevel(draft.language === 'Japanese' ? 'N3 중급' : 'B1 중급');
+      const draftTarget = viewerLanguageInfo(draft?.language);
+      if (draftTarget && !(isNote && draftTarget.code === 'ko')) {
+        setLanguage(draftTarget.language);
+        setLevel(draftTarget.code === 'ko' ? '' : draftTarget.language === 'Japanese' ? 'N3 중급' : 'B1 중급');
       }
     } catch { /* 초안이 깨졌으면 빈 폼 그대로 */ }
-  }, []);
+  }, [isNote, searchParams]);
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -320,6 +366,9 @@ function MaterialAddForm() {
     if (busyRef.current || savedRecordRef.current) return;
     if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
     if (!rawText.trim()) { toast('내용을 입력해주세요.', 'warning'); return; }
+    if (targetLanguage?.code === 'ko' && (!isKoreanReading || pdfSource || epubSource)) {
+      toast('한국어는 텍스트 읽기 자료로 추가해 주세요.', 'warning'); return;
+    }
     busyRef.current = true;
     setIsProcessing(true);
     setError('');
@@ -328,19 +377,22 @@ function MaterialAddForm() {
       const initJson = {
         sequence: [], dictionary: {}, last_idx: -1, status: isNote ? 'note' : "analyzing",
         metadata: {
-          language, level, updated_at: new Date().toISOString(),
+          language, level: isKoreanReading ? '' : level, updated_at: new Date().toISOString(),
+          ...(isKoreanReading ? { explanationLocale } : {}),
           ...(linkSource ? { source: linkSource } : {}),
         },
       };
       const materialRow = {
         title: title.trim() || titleFromBody(rawText) || "제목 없음",
-        raw_text: autoSplitParagraphs(rawText), processed_json: initJson,
+        // 한국어 UTF-16 source offset은 붙여넣은 원문을 기준으로 한다. 문단 삽입/정규화하지 않는다.
+        raw_text: isKoreanReading ? rawText : autoSplitParagraphs(rawText), processed_json: initJson,
         visibility: (pdfSource || epubSource || isNote) ? 'private' : visibility,
         owner_id: user.id,
         ...(isNote ? { direction: MATERIAL_DIRECTION.WRITE } : {}),
         ...(pdfSource ? { source_pdf_id: pdfSource.pdf.id, page_start: pdfSource.pageStart, page_end: pdfSource.pageEnd } : {}),
       };
-      const signature = JSON.stringify([title, rawText, language, level, visibility, isNote, pdfSource, epubSource, linkSource]);
+      const signature = JSON.stringify([title, rawText, language, level, visibility, isNote, pdfSource, epubSource, linkSource,
+        isKoreanReading ? explanationLocale : null]);
       if (importAttemptRef.current?.signature !== signature) {
         importAttemptRef.current = { signature, attempt: createImportAttempt(materialRow, crypto.randomUUID()) };
       }
@@ -562,7 +614,22 @@ function MaterialAddForm() {
           </div>
           <textarea
             value={rawText}
-            onChange={e => setRawText(e.target.value)}
+            onChange={e => {
+              const value = e.target.value;
+              setRawText(previous => isKoreanReading ? preserveTextareaSource(previous, value) : value);
+            }}
+            onPaste={event => {
+              if (!isKoreanReading) return;
+              const text = event.clipboardData?.getData('text/plain');
+              if (!text) return;
+              const input = event.currentTarget;
+              const start = sourceOffsetForTextarea(rawText, input.selectionStart);
+              const end = sourceOffsetForTextarea(rawText, input.selectionEnd);
+              event.preventDefault();
+              setRawText(previous => previous.slice(0, start) + text + previous.slice(end));
+              const caret = input.selectionStart + textareaText(text).length;
+              requestAnimationFrame(() => input.setSelectionRange(caret, caret));
+            }}
             placeholder="분석할 문장을 입력하세요 (엔터로 문단 구분)"
             className="form-textarea"
           />
@@ -646,13 +713,9 @@ function MaterialAddForm() {
           <div className="form-field">
             <label className="form-label">학습 언어</label>
             <div className="toggle-group import-language-options">
-              {/* 해부 분석이 지원하는 언어 — 일본어·영어·중국어·프랑스어 */}
-              {[
-                ['Japanese', '일본어', 'N3 중급'],
-                ['English', '영어', 'B1 중급'],
-                ['Chinese', '중국어', 'H3 중급'],
-                ['French', '프랑스어', 'B1 중급'],
-              ].map(([key, label, defaultLevel]) => (
+              {/* 한국어는 일반 텍스트 읽기 경로만 제공한다. 내 노트의 목표어 규칙은 기존 네 언어다. */}
+              {languageOptions.map(info => [info.language, info.labelKo, IMPORT_DEFAULT_LEVEL[info.code] || ''])
+                .map(([key, label, defaultLevel]) => (
                 <button
                   key={key}
                   aria-pressed={language === key}
@@ -665,10 +728,10 @@ function MaterialAddForm() {
             </div>
           </div>
 
-          <div className="form-field">
+          {!!LEVELS[language]?.length && <div className="form-field">
             <label className="form-label">권장 학습 난이도</label>
             <div className="level-group">
-              {LEVELS[language].map(lvl => (
+              {(LEVELS[language] || []).map(lvl => (
                 <button
                   key={lvl}
                   onClick={() => setLevel(lvl)}
@@ -678,7 +741,7 @@ function MaterialAddForm() {
                 </button>
               ))}
             </div>
-          </div>
+          </div>}
         </div>
 
         {/* Visibility + Kind(U R3 — 읽기 자료 / 내 노트) */}
@@ -722,7 +785,10 @@ function MaterialAddForm() {
               <button
                 type="button"
                 aria-pressed={isNote}
-                onClick={() => { setDirection(MATERIAL_DIRECTION.WRITE); setVisibility('private'); }}
+                onClick={() => {
+                  setDirection(MATERIAL_DIRECTION.WRITE); setVisibility('private');
+                  if (targetLanguage?.code === 'ko') { setLanguage('Japanese'); setLevel('N3 중급'); }
+                }}
                 className={`toggle-btn ${isNote ? 'toggle-btn--primary' : ''}`}
               >
                 내 노트
