@@ -166,6 +166,10 @@ html {
 :lang(zh) {
   font-family: var(--font-noto-sc, 'Noto Sans SC'), var(--font-noto-kr, 'Noto Sans KR'), sans-serif;
 }
+/* 대만 지역이 명시된 번체만 TC로 분리한다. 지역 없는 zh-Hant를 대만으로 추측하지 않는다. */
+:lang(zh-TW), :lang(zh-Hant-TW) {
+  font-family: var(--font-noto-tc, 'Noto Sans TC'), var(--font-noto-kr, 'Noto Sans KR'), sans-serif;
+}
 /* 일본어도 같은 결함이 있었다(오너 지적 2026-08-19): 본문이 KR 우선이라 한자가
    한국식 자형(直·骨·海·社 등이 일본 표준과 다름)으로, 가나는 KR에 글리프가 없어
    시스템 폰트로 렌더됐다. JP를 앞에 둬 한자·가나 모두 일본 표준으로 맞춘다. */
@@ -1497,11 +1501,12 @@ body.is-review-session .page-container { padding-top: 8px; }
 
 .review-score-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
 .review-score-btn {
+  min-width: 0;
   padding: 12px;
   border-radius: 8px;
   font-weight: 600;
@@ -2080,6 +2085,11 @@ a.viewer-badge:hover {
   align-items: center;
   min-height: 28px;
   margin-bottom: 0;
+}
+.viewer-topbar .viewer-back-link--icon {
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
 }
 .viewer-topbar .viewer-series-nav { margin: 0; }
 /* 오른쪽 배치는 auto 마진 한 곳(v2-Q 선례) — 왼쪽이 통째로 비어도 도구는 오른쪽에 남는다. */
@@ -3783,11 +3793,11 @@ a.viewer-badge:hover {
 
   /* Review score buttons — bigger touch targets */
   .review-score-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 8px;
   }
   .review-score-btn {
-    padding: 16px 12px;
+    padding: 16px 4px;
     font-size: 0.9rem;
   }
 
@@ -4293,6 +4303,18 @@ a.viewer-badge:hover {
   margin-bottom: 14px;
   padding-bottom: 14px;
   border-bottom: 1px solid var(--border);
+}
+/* 목록과 함께 보여도 단어 뜻이 눌리지 않게 하나의 패널 스크롤로 제공한다. */
+.viewer-layout .viewer-inspector .word-detail-card--above-list {
+  flex: none;
+  max-height: none;
+}
+.viewer-layout .viewer-inspector .word-detail-card--above-list .reader-card-body {
+  flex: none;
+  overflow: visible;
+}
+.viewer-layout .viewer-inspector .viewer-side__content:has(> .word-detail-card--above-list) {
+  height: auto;
 }
 .word-detail-card__close {
   background: none;

@@ -1,5 +1,7 @@
 import { diffLineMap } from './sourceEdit';
 import { analysisTokenLine, inspectAnalysisCoverage, mergeReanalysisLines } from './analysisCoverage';
+import { canonicalViewerLocale } from './viewerLanguage';
+import { exactSourceQuote } from './viewerLocalizedContext';
 
 const tokenLine = id => analysisTokenLine(id) ?? NaN;
 
@@ -33,7 +35,9 @@ export function preserveReanalysisTokens(material, text, result, corrections = [
     const start = offsets.get(line) || 0;
     offsets.set(line, start + token.text.length);
     const nextLine = mapping.pairs.get(line);
-    anchors.set(JSON.stringify([nextLine, start, token.text]), { id: id.replace(/^(id|br|failed)_\d+_/, `$1_${nextLine}_`), patch: patches.get(id) });
+    anchors.set(JSON.stringify([nextLine, start, token.text]), {
+      id: id.replace(/^(id|br|failed)_\d+_/, `$1_${nextLine}_`), patch: patches.get(id), token,
+    });
   }
   offsets.clear();
   const sequence = [], dictionary = {}, viewerCorrections = {};
@@ -47,9 +51,75 @@ export function preserveReanalysisTokens(material, text, result, corrections = [
     if (dictionary[target]) throw new Error('분석 결과의 식별자가 겹쳐 이전 분석을 유지합니다.');
     sequence.push(target);
     dictionary[target] = { ...token, ...(match?.patch || {}) };
+    if (match?.patch && Object.hasOwn(match.patch, 'meaning') && old.metadata?.language === 'Korean') {
+      const meaningLocale = canonicalViewerLocale(match.token.meaningLocale || match.token.explanationLocale
+        || old.metadata.explanationLocale || 'ko');
+      if (!meaningLocale) throw new Error('수정한 뜻의 설명 언어를 확인하지 못했어요. 이전 분석을 유지합니다.');
+      dictionary[target].meaningLocale = meaningLocale;
+      dictionary[target].explanationLocale = meaningLocale;
+      // A preserved Korean meaning cannot relabel freshly generated Chinese morphology.
+      if (token.explanationLocale !== meaningLocale) {
+        delete dictionary[target].morphology;
+        if (match.token.explanationLocale === meaningLocale && match.token.morphology) {
+          dictionary[target].morphology = match.token.morphology;
+        }
+      }
+    }
     if (match?.patch && Object.keys(match.patch).length) viewerCorrections[target] = Object.keys(match.patch);
   }
   return { ...result, sequence, dictionary, metadata: { ...result.metadata, viewerCorrections } };
+}
+
+// Final merges/remaps may reuse tokens with obsolete document offsets. Rebuild
+// Korean spans only from the exact final raw source, including whitespace/CRLF.
+function rebaseKoreanSourceSpans(text, json) {
+  const lines = text.split('\n'), lineOffsets = [];
+  let offset = 0;
+  for (const line of lines) { lineOffsets.push(offset); offset += line.length + 1; }
+  const cursors = new Map(), dictionary = {};
+  for (const id of json.sequence) {
+    const token = json.dictionary[id], lineIndex = tokenLine(id);
+    const line = lines[lineIndex], lineStart = cursors.get(lineIndex) || 0;
+    if (line === undefined) throw new Error('원문 위치를 확인하지 못했어요. 이전 분석을 유지합니다.');
+    if (token.pos === '개행') {
+      if (token.text !== '\n' || lineStart !== line.length || lineIndex >= lines.length - 1) {
+        throw new Error('원문 줄바꿈이 일치하지 않아 이전 분석을 유지합니다.');
+      }
+    } else {
+      if (line.slice(lineStart, lineStart + token.text.length) !== token.text) {
+        throw new Error('원문 범위가 일치하지 않아 이전 분석을 유지합니다.');
+      }
+      cursors.set(lineIndex, lineStart + token.text.length);
+    }
+    dictionary[id] = { ...token, sourceSpan: {
+      start: lineOffsets[lineIndex] + lineStart, end: lineOffsets[lineIndex] + lineStart + token.text.length,
+      unit: 'utf16', lineIndex, lineStart, lineEnd: lineStart + token.text.length,
+    } };
+    if (exactSourceQuote(text, dictionary[id].sourceSpan, token.text) === null) {
+      throw new Error('원문 문자 범위를 확인하지 못했어요. 이전 분석을 유지합니다.');
+    }
+  }
+  if (json.sequence.map(id => dictionary[id].text).join('') !== text) {
+    throw new Error('원문 전체가 일치하지 않아 이전 분석을 유지합니다.');
+  }
+  return { ...json, dictionary };
+}
+
+// Selective analysis changes document provenance, but untouched legacy tokens
+// may rely on the old document locale. Pin their provenance before that fallback
+// changes; freshly generated tokens keep their own explanation language.
+function preserveRetainedKoreanLocales(original, result) {
+  if (original.metadata?.language !== 'Korean') return result;
+  const dictionary = { ...result.dictionary };
+  for (const id of result.sequence) {
+    const token = dictionary[id];
+    if (!token || token !== original.dictionary?.[id] || token.pos === '개행') continue;
+    const explanationLocale = canonicalViewerLocale(token.explanationLocale || original.metadata.explanationLocale || 'ko');
+    const meaningLocale = canonicalViewerLocale(token.meaningLocale || explanationLocale);
+    if (!explanationLocale || !meaningLocale) throw new Error('기존 뜻의 설명 언어를 확인하지 못했어요. 이전 분석을 유지합니다.');
+    dictionary[id] = { ...token, explanationLocale, meaningLocale };
+  }
+  return { ...result, dictionary };
 }
 
 export function completeAnalysis(result, text) {
@@ -100,6 +170,11 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
   checkAbort();
   const attempt = crypto.randomUUID();
   const metadata = { ...original?.metadata, viewerRevision: attempt, updated_at: new Date().toISOString() };
+  if (metadata.language === 'Korean' && options.explanationLocale !== undefined) {
+    const locale = canonicalViewerLocale(options.explanationLocale);
+    if (!locale) throw new Error('설명 언어를 확인해 주세요.');
+    metadata.explanationLocale = locale;
+  }
   // 삭제/줄 이동만 있으면 리맵된 분석을 그대로 검증한다. AI 재호출이 필요하지 않다.
   let result = selected?.length === 0
     ? { ...structuredClone(original), status: 'completed', failed_indices: [] }
@@ -115,9 +190,15 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
     },
   });
   checkAbort();
-  if (selected?.length) result = mergeReanalysisLines(rawText, original, result, selected);
+  if (selected?.length) result = preserveRetainedKoreanLocales(original,
+    mergeReanalysisLines(rawText, original, result, selected));
   if (!completeAnalysis(result, rawText)) throw new Error('새 분석을 완료하지 못했어요. 기존 원문과 분석은 그대로 유지됩니다.');
-  const json = preserveReanalysisTokens(material, rawText, { ...result, metadata }, corrections || []);
+  const provenance = Object.fromEntries(['targetLanguage', 'explanationLocale', 'analysisVersion', 'analysisEngine', 'analysisQuality']
+    .filter(key => result.metadata?.[key] !== undefined).map(key => [key, result.metadata[key]]));
+  const mergedMetadata = { ...result.metadata, ...metadata, ...provenance,
+    viewerRevision: attempt, updated_at: metadata.updated_at };
+  let json = preserveReanalysisTokens(material, rawText, { ...result, metadata: mergedMetadata }, corrections || []);
+  if (metadata.language === 'Korean') json = rebaseKoreanSourceSpans(rawText, json);
   if (!completeAnalysis(json, rawText)) throw new Error('분석 연결을 확인하지 못했어요. 기존 원문과 분석은 그대로 유지됩니다.');
   checkAbort();
   options.onCommitting?.();

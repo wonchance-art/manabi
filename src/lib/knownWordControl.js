@@ -1,6 +1,6 @@
 // 표시의 원래 키는 삭제에 쓰고, 대조만 NFC/기본형으로 한다. 뜻이나 SRS는 고치지 않는다.
 import { exclusionWord, scopedVocabularyExclusions } from './vocabularyExclusion';
-export const KNOWN_LANGUAGES = { ja: 'Japanese', zh: 'Chinese', en: 'English', fr: 'French' };
+export const KNOWN_LANGUAGES = { ja: 'Japanese', zh: 'Chinese', en: 'English', fr: 'French', ko: 'Korean' };
 export const normalizeKnownWord = word => String(word || '').normalize('NFC').trim();
 export function knownWordKeys(rows, lang, token, exclusion) {
   const keys = new Set([normalizeKnownWord(token?.text || token?.word_text), exclusionWord(token)]);

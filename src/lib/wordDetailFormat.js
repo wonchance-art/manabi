@@ -24,7 +24,7 @@ export function formatDetail(text) {
   const cleaned = (startIdx > 0 ? lines.slice(startIdx) : lines).join('\n');
   return escapeHtml(cleaned)
     .replace(/\*\*(.+?)\*\*/g, (_, m) => {
-      if (/^(번역|맥락|발음|뜻|뉘앙스|예문)$/.test(m.trim())) {
+      if (/^(번역|맥락|발음|뜻|뉘앙스|예문|구조|패턴|활용|말투|형태 분석|翻译|翻譯|语境|語境|发音|發音|释义|釋義|例句|结构|結構|模式|句型|用法|语气|語氣|语气与敬语|語氣與敬語|形态分析|形態分析)$/.test(m.trim())) {
         return `<hr class="pdf-detail-hr" /><strong class="pdf-detail-heading">${m}</strong>`;
       }
       return `<strong>${m}</strong>`;

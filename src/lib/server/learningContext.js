@@ -1,7 +1,8 @@
 import {resolveBookSelection} from '@/lib/textbook/sources';
 import { loadChapter, getGrammarManifest } from '@/content/refGrammarLoaders';
 import { loadPublishedRegistry } from '@/lib/publishedChapter';
-import { LEARNING_LANGUAGES, materialIdValid, normalizeLearningWord, tokenContext } from '@/lib/learningSources';
+import { LEARNING_LANGUAGES, LANGUAGE_BASE, materialIdValid, normalizeLearningWord, tokenContext, koreanTokenContext, learningSourceRevision } from '@/lib/learningSources';
+import {absoluteSourceSpan, exactSourceQuote} from '@/lib/viewerLocalizedContext';
 import {isStudyNote, noteFromMaterial} from '@/lib/studyNotes';
 
 export const fail = (status, message, extra = {}) => { throw Object.assign(new Error(message), { status, ...extra }); };
@@ -22,7 +23,7 @@ export async function readBody(request) {
   return body;
 }
 export function chapterMeta(lang, slug) {
-  if (!LEARNING_LANGUAGES.includes(lang) || typeof slug !== 'string') fail(400, '교재를 선택해 주세요.');
+  if (!LANGUAGE_BASE[lang] || typeof slug !== 'string') fail(400, '교재를 선택해 주세요.');
   const manifest = getGrammarManifest(lang);
   const chapter = manifest.levels.flatMap(level => level.chapters).find(c => c.slug === slug);
   if (!chapter) fail(404, '교재 단원을 찾을 수 없어요.');
@@ -32,7 +33,7 @@ export function chapterMeta(lang, slug) {
 export async function accessibleMaterial(supabase, userId, kind, id) {
   if (!materialIdValid(kind, id)) fail(400, '자료 주소가 올바르지 않아요.');
   const table = kind === 'pdf' ? 'uploaded_pdfs' : 'reading_materials';
-  const fields = kind === 'pdf' ? 'id,title,owner_id,page_count,language' : 'id,title,owner_id,visibility,processed_json,raw_text';
+  const fields = kind === 'pdf' ? 'id,title,owner_id,page_count,language' : 'id,title,owner_id,visibility,direction,processed_json,raw_text';
   const { data, error } = await supabase.from(table).select(fields).eq('id', id).maybeSingle();
   checkDb(error);
   // 기존 permissive RLS가 남은 환경에서도 명시적인 접근 검사로 비공개 내용을 반환하지 않는다.
@@ -45,12 +46,31 @@ export async function resolveSave(supabase, userId, payload) {
   if (!source || typeof source !== 'object' || !word || typeof word !== 'object') fail(400,'입력 내용을 확인해 주세요.');
   const lang = word.language;
   if (!LEARNING_LANGUAGES.includes(lang)) fail(400, '지원하는 언어를 선택해 주세요.');
+  if (lang === 'Korean' && (source.kind !== 'reading' || source.noteCandidateId)) fail(400, '출처를 선택해 주세요.');
   let normalized = { word_text: normalizeLearningWord(word.base_form || word.word_text), meaning: String(word.meaning || '').trim(), language: lang,
     furigana: String(word.furigana || '').slice(0, 500), pos: String(word.pos || '').slice(0, 80) };
   let resolved;
   if (source.kind === 'reading') {
     const material = await accessibleMaterial(supabase, userId, 'reading', source.materialId);
-    if (source.noteCandidateId) {
+    if (lang === 'Korean') {
+      // 기존 쓰기 노트의 목표어/표시 locale은 한국어 학습 원문 분류의 근거가 아니다.
+      if (isStudyNote(material) || material.direction === 'write') fail(400, '자료의 언어를 다시 확인해 주세요.');
+      const context = koreanTokenContext(material.processed_json, source.tokenId, material.raw_text);
+      const span = absoluteSourceSpan(material.raw_text, source.sourceSpan);
+      const quoteSpan = absoluteSourceSpan(material.raw_text, source.quoteSpan);
+      if (!context || !span || !quoteSpan || source.sourceRevision !== await learningSourceRevision(material.raw_text)
+        || span.start !== context.sourceSpan.start || span.end !== context.sourceSpan.end
+        || quoteSpan.start !== context.quoteSpan.start || quoteSpan.end !== context.quoteSpan.end
+        || source.surface !== context.token.text || typeof source.quote !== 'string'
+        || exactSourceQuote(material.raw_text, span, source.surface) === null
+        || exactSourceQuote(material.raw_text, quoteSpan, source.quote) === null) fail(400, '자료에서 문장을 다시 선택해 주세요.');
+      const token = context.token;
+      normalized = {...normalized, word_text: normalizeLearningWord(token.sep_link || token.base_form || token.text),
+        furigana: token.furigana || token.reading || '', pos: token.pos || ''};
+      resolved = {kind: 'reading', materialId: String(material.id), quote: context.quote, translation: '',
+        locator: {version: 1, sourceRevision: source.sourceRevision, sourceSpan: context.sourceSpan,
+          quoteSpan: context.quoteSpan, surface: token.text}};
+    } else if (source.noteCandidateId) {
       if (material.owner_id !== userId || material.visibility !== 'private' || !isStudyNote(material)) fail(404, '내 개인 노트에서 표현을 선택해 주세요.');
       const note = noteFromMaterial(material), candidate = note.candidates.find(item => item.id === source.noteCandidateId);
       if (!candidate?.reviewed || candidate.excluded || !candidate.text.trim() || !candidate.meaning.trim() || candidate.language !== lang) fail(400, '노트에서 표기와 뜻을 먼저 확인해 주세요.');
@@ -58,20 +78,21 @@ export async function resolveSave(supabase, userId, payload) {
       resolved = {kind: 'reading', materialId: String(material.id), quote: candidate.original || candidate.text, translation: candidate.meaning,
         locator: {notePage: candidate.pageId, noteCandidate: candidate.id, surface: candidate.text}};
       return {word: normalized, source: resolved};
-    }
-    const context = tokenContext(material.processed_json, source.tokenId);
-    if (context) {
-      if (context.language !== lang) fail(400, '자료의 언어를 다시 확인해 주세요.');
-      const token = context.token;
-      normalized = { ...normalized, word_text: normalizeLearningWord(token.sep_link || token.base_form || token.text), meaning: String(token.meaning || normalized.meaning).trim(), furigana: token.furigana || token.reading || '', pos: token.pos || '' };
-      resolved = { kind: 'reading', materialId: String(material.id), quote: context.quote.slice(0,4000), translation: '', locator: { tokenId: source.tokenId, surface: token.text } };
     } else {
-      const quote = String(source.quote || '').trim(), surface = String(source.surface || '').trim();
-      const compact = text => String(text || '').normalize('NFC').replace(/\s+/g,'');
-      if (!quote || quote.length > 4000 || !surface || !compact(quote).includes(compact(surface)) || !compact(material.raw_text).includes(compact(quote))) fail(400,'자료에서 문장을 다시 선택해 주세요.');
-      const actualLang = material.processed_json?.metadata?.language;
-      if (actualLang && actualLang !== lang) fail(400,'자료의 언어를 다시 확인해 주세요.');
-      resolved = {kind:'reading',materialId:String(material.id),quote,translation:'',locator:{surface}};
+      const context = tokenContext(material.processed_json, source.tokenId);
+      if (context) {
+        if (context.language !== lang) fail(400, '자료의 언어를 다시 확인해 주세요.');
+        const token = context.token;
+        normalized = { ...normalized, word_text: normalizeLearningWord(token.sep_link || token.base_form || token.text), meaning: String(token.meaning || normalized.meaning).trim(), furigana: token.furigana || token.reading || '', pos: token.pos || '' };
+        resolved = { kind: 'reading', materialId: String(material.id), quote: context.quote.slice(0,4000), translation: '', locator: { tokenId: source.tokenId, surface: token.text } };
+      } else {
+        const quote = String(source.quote || '').trim(), surface = String(source.surface || '').trim();
+        const compact = text => String(text || '').normalize('NFC').replace(/\s+/g,'');
+        if (!quote || quote.length > 4000 || !surface || !compact(quote).includes(compact(surface)) || !compact(material.raw_text).includes(compact(quote))) fail(400,'자료에서 문장을 다시 선택해 주세요.');
+        const actualLang = material.processed_json?.metadata?.language;
+        if (actualLang && actualLang !== lang) fail(400,'자료의 언어를 다시 확인해 주세요.');
+        resolved = {kind:'reading',materialId:String(material.id),quote,translation:'',locator:{surface}};
+      }
     }
   } else if (source.kind === 'pdf') {
     const pdf = await accessibleMaterial(supabase, userId, 'pdf', source.pdfId);

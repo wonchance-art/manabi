@@ -8,6 +8,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { recordReviewCompleted } from '../lib/learn/progressStore';
 import { useTTS } from '../lib/useTTS';
+import { useLearningCapabilities } from '../lib/useLearningCapabilities';
 import { callGemini } from '../lib/gemini';
 import Button from '../components/Button';
 import OfflineNotice, { PendingReviewsNotice } from '../components/OfflineNotice';
@@ -60,7 +61,12 @@ function VocabWorkspace({ bookReview }) {
   const { user, fetchProfile } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
-  const { speak, supported: ttsSupported } = useTTS();
+  const { speak: speakSupported, supported: ttsSupported } = useTTS();
+  const koreanCapabilities = useLearningCapabilities('Korean');
+  const reviewSupported = useCallback(word => word?.language !== 'Korean' || koreanCapabilities.review, [koreanCapabilities.review]);
+  const speak = useCallback((text, language, ...options) => {
+    if (language !== 'Korean') speakSupported(text, language, ...options);
+  }, [speakSupported]);
   const [tab, setTab] = useState('list');
   const [startingReview, setStartingReview] = useState(false);
   const startingRef = useRef(false);
@@ -163,6 +169,25 @@ function VocabWorkspace({ bookReview }) {
     scoreMutation, deleteMutation, csvImportMutation,
     updateVocabMutation, bulkDeleteMutation,
   } = useVocabData();
+  const mutationGuard = useRef(null);
+  mutationGuard.current = { accountId: user?.id, koreanSave: koreanCapabilities.save, rows: allVocab };
+  const canMutateWords = ids => {
+    const current = mutationGuard.current;
+    return workspaceAlive.current && !!user?.id && current.accountId === user.id
+      && ids.every(id => {
+        const word = current.rows.find(row => row.id === id);
+        return !!word && (word.language !== 'Korean' || current.koreanSave);
+      });
+  };
+  const guardedDeleteMutation = { ...deleteMutation, mutate: (id, ...options) => {
+    if (canMutateWords([id])) deleteMutation.mutate(id, ...options);
+  } };
+  const guardedBulkDeleteMutation = { ...bulkDeleteMutation, mutate: (ids, ...options) => {
+    if (canMutateWords(ids)) bulkDeleteMutation.mutate(ids, ...options);
+  } };
+  const guardedUpdateVocabMutation = { ...updateVocabMutation, mutate: (body, ...options) => {
+    if (canMutateWords([body.id])) updateVocabMutation.mutate(body, ...options);
+  } };
   const bookScope = useQuery({
     queryKey: ['book-review', user?.id, 'scope', bookReview?.bookId],
     enabled: !!user && !!bookReview,
@@ -219,6 +244,7 @@ function VocabWorkspace({ bookReview }) {
       // 사용자가 고른 언어가 먼저다. 없으면 **확신할 때만** 채우고, 못 가르면 비워 둔다
       // (표기 추측을 DB에 박지 않는다 — 옛 중국어 단어가 일본어로 굳던 자리다).
       const guess = draft.language || detectLangConfident(text);
+      if (guess === 'Korean') throw new Error('지원하는 언어를 선택해 주세요.');
       const row = {
         user_id: user.id,
         word_text: text,
@@ -356,7 +382,7 @@ function VocabWorkspace({ bookReview }) {
   const vocabMatchesSeries = useCallback(v => seriesFilter === 'all' || deckOf(v)?.key === seriesFilter, [seriesFilter]);
 
   // 현재 덱(시리즈 필터) 범위의 단어 — 히어로·현황·복습 큐가 공유
-  const deckScope = useMemo(() => vocab.filter(v => !v.is_excluded && vocabMatchesSeries(v)), [vocab, vocabMatchesSeries]);
+  const deckScope = useMemo(() => vocab.filter(v => !v.is_excluded && reviewSupported(v) && vocabMatchesSeries(v)), [vocab, vocabMatchesSeries, reviewSupported]);
 
   // 덱 범위 구성: 미학습(신규)·학습 중·숙련 (서로 안 겹치게 분할)
   const deckStats = useMemo(() => {
@@ -386,8 +412,8 @@ function VocabWorkspace({ bookReview }) {
   );
   const currentWord = useMemo(() => {
     const id = reviewQueue[reviewIdx];
-    return id != null ? vocab.find(v => v.id === id && !v.is_excluded) : undefined;
-  }, [reviewQueue, reviewIdx, vocab]);
+    return id != null ? vocab.find(v => v.id === id && !v.is_excluded && reviewSupported(v)) : undefined;
+  }, [reviewQueue, reviewIdx, vocab, reviewSupported]);
 
   // 자동 모드: 단어 rung → 세션과 동일한 문항 유형(vocabTypeForRung)을 복습 서브모드로 매핑.
   // rung≤1→choice(문맥 객관식), 2→cloze(단서회상 — 여기선 문맥 객관식으로 수렴), 3→typing, ≥4→listening.
@@ -397,7 +423,7 @@ function VocabWorkspace({ bookReview }) {
     const rung = vocabRungs[word.word_text] ?? 0;
     const vtype = vocabTypeForRung(rung, 'normal');
     if (vtype === 'vocab-typing') return 'typing';
-    if (vtype === 'vocab-listening') return ttsSupported ? 'listening' : 'context';
+    if (vtype === 'vocab-listening') return ttsSupported && word.language !== 'Korean' ? 'listening' : 'context';
     return 'context'; // vocab-choice
   };
   const contextOptions = useMemo(() => {
@@ -410,11 +436,11 @@ function VocabWorkspace({ bookReview }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewIdx, currentWord?.id]);
   const effectiveMode = usableVocabReviewMode(
-    reviewMode === 'auto' ? autoSubMode(currentWord) : reviewMode, currentWord, contextOptions,
+    reviewMode === 'auto' ? autoSubMode(currentWord) : currentWord?.language === 'Korean' && reviewMode === 'listening' ? 'context' : reviewMode, currentWord, contextOptions,
   );
 
   const handleScore = async (rating) => {
-    if (!currentWord || currentWord.is_excluded || scoringRef.current) return;
+    if (!currentWord || !reviewSupported(currentWord) || currentWord.is_excluded || scoringRef.current) return;
     scoringRef.current = true;
     let calculateFSRS;
     try {
@@ -473,7 +499,7 @@ function VocabWorkspace({ bookReview }) {
   };
 
   const handleSkip = () => {
-    if (!currentWord || currentWord.is_excluded) return;
+    if (!currentWord || !reviewSupported(currentWord) || currentWord.is_excluded) return;
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
@@ -617,7 +643,7 @@ function VocabWorkspace({ bookReview }) {
   // 채점(handleScore → recordReviewCompleted)은 전부 이 한 길이다. 재대결이 두 번째 문이
   // 되면서 정본화: 채점 경로를 문마다 새로 만들지 않는다.
   const startSession = async (queueWords) => {
-    const queue = queueWords.filter(v => !v.is_excluded).map(v => v.id);
+    const queue = queueWords.filter(v => !v.is_excluded && reviewSupported(v)).map(v => v.id);
     if (queue.length === 0 || startingRef.current || (bookReview && (!bookScope.isSuccess || bookScope.isError || vocabError))) return;
     startingRef.current = true;
     setStartingReview(true);
@@ -661,11 +687,11 @@ function VocabWorkspace({ bookReview }) {
   // 복습 예정(학습한 단어) 먼저, 그다음 하루 한도 내 새 단어
   // 다른 탭에서 제외/삭제된 현재 카드는 채점 없이 다음 남은 카드로 건너뛴다.
   useEffect(() => {
-    if (currentWord || reviewFinished || !reviewQueue.length || isLoading || vocabError) return;
-    const next = reviewQueue.findIndex((id, index) => index > reviewIdx && vocab.some(row => row.id === id && !row.is_excluded));
+    if (currentWord || reviewFinished || !reviewQueue.length || isLoading || vocabError || koreanCapabilities.isLoading) return;
+    const next = reviewQueue.findIndex((id, index) => index > reviewIdx && vocab.some(row => row.id === id && !row.is_excluded && reviewSupported(row)));
     if (next >= 0) setReviewIdx(next);
     else { setReviewIdx(reviewQueue.length); setReviewFinished(true); }
-  }, [currentWord, reviewFinished, reviewQueue, reviewIdx, vocab, isLoading, vocabError]);
+  }, [currentWord, reviewFinished, reviewQueue, reviewIdx, vocab, isLoading, vocabError, koreanCapabilities.isLoading, reviewSupported]);
 
   const startReview = () =>
     startSession([...session.reviewsDue, ...session.newAvailable.slice(0, session.newToday)]);
@@ -910,7 +936,7 @@ function VocabWorkspace({ bookReview }) {
                         onClick={() => setDetailWord(v)}
                         aria-label={`${v.word_text} — ${v.meaning} 상세 열기`}
                       >
-                        <span className="review-sec__word" lang={({ French: 'fr', Japanese: 'ja', English: 'en', Chinese: 'zh' })[v.language]}>{v.word_text}</span>
+                        <span className="review-sec__word" lang={({ French: 'fr', Japanese: 'ja', English: 'en', Chinese: 'zh', Korean: 'ko' })[v.language]}>{v.word_text}</span>
                         <span className="review-sec__meaning">{v.meaning}</span>
                         <span className={`review-sec__due${due === '지금' ? ' review-sec__due--now' : ''}`}>{due}</span>
                       </button>
@@ -1050,11 +1076,12 @@ function VocabWorkspace({ bookReview }) {
           showLevelFilter={showLevelFilter}
           refLevelOf={refLevelOf}
           ttsSupported={ttsSupported}
+          koreanLearningSupported={koreanCapabilities.save}
           speak={speak}
           setConfirmAction={setConfirmAction}
-          deleteMutation={deleteMutation}
-          bulkDeleteMutation={bulkDeleteMutation}
-          updateVocabMutation={updateVocabMutation}
+          deleteMutation={guardedDeleteMutation}
+          bulkDeleteMutation={guardedBulkDeleteMutation}
+          updateVocabMutation={guardedUpdateVocabMutation}
           onWordClick={setDetailWord}
           />
         </>
@@ -1081,7 +1108,7 @@ function VocabWorkspace({ bookReview }) {
           contextOptions={contextOptions}
           handleScore={handleScore}
           handleSkip={handleSkip}
-          ttsSupported={ttsSupported}
+          ttsSupported={ttsSupported && currentWord?.language !== 'Korean'}
           speak={speak}
           exampleSentences={exampleSentences}
           exampleLoading={exampleLoading}
@@ -1091,7 +1118,7 @@ function VocabWorkspace({ bookReview }) {
       ) : null}
 
       {detailWord && (
-        <VocabDetailCard showBookContexts={!!bookReview} word={detailWord} onClose={() => setDetailWord(null)} speak={speak} ttsSupported={ttsSupported} />
+        <div lang={detailWord.language === 'Korean' ? 'ko' : undefined}><VocabDetailCard showBookContexts={!!bookReview || (detailWord.language === 'Korean' && koreanCapabilities.review)} word={detailWord} onClose={() => setDetailWord(null)} speak={speak} ttsSupported={ttsSupported && detailWord.language !== 'Korean'} /></div>
       )}
 
       {/* 수동 단어 추가 모달 */}

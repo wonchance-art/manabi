@@ -150,11 +150,17 @@ describe('⑤ 훈음 — 표제어 아래 독립적인 글자/라벨 짝', () =>
     expect(cssRules(CSS)).not.toContain('.rt-hun');
   });
 
-  it('읽기 유무/혼종과 무관하게 같은 표제어의 훈음을 뜻 앞에 제공한다', () => {
-    const render=card();
+  it('읽기 유무/혼종과 무관하게 같은 표제어의 훈음을 뜻과 원문 뒤에 제공한다', () => {
+    const render=sliceBetween(read(VIEWER), 'const renderWordDetailCard =', '<div className="reader-card-actions">');
     expect(render).toContain('<ViewerHanjaReading items={hanjaHunOf(headText)}/>');
-    expect(render.indexOf('<ViewerHanjaReading')).toBeGreaterThan(render.indexOf('aria-label="발음 듣기" title="발음 듣기"'));
-    expect(render.indexOf('<ViewerHanjaReading')).toBeLessThan(render.indexOf('word-detail-card__meaningrow'));
+    const head=render.indexOf('className="reader-card-headword"');
+    const meaning=render.indexOf('word-detail-card__meaningrow');
+    const context=render.indexOf('className="reader-card-context"');
+    const hun=render.indexOf('<ViewerHanjaReading');
+    expect(head).toBeGreaterThan(-1);
+    expect(meaning).toBeGreaterThan(head);
+    expect(context).toBeGreaterThan(meaning);
+    expect(hun).toBeGreaterThan(context);
     const block=read('src/components/viewer/ViewerHanjaReading.jsx');
     expect(block).toContain('<dt lang="zh-Hans">{ch}</dt><dd>{label}</dd>');
     expect(block).toContain('key={`${index}:${ch}`}');

@@ -16,6 +16,7 @@
 
 import { supabase } from '../supabase';
 import { isVocabularyExcludedError } from '../vocabularyExclusion';
+import { isLearningStorageUnavailableError } from '../learningCapabilities';
 import { VOCAB_UPSERT, buildVocabRow } from '../vocabIO';
 import { normalizeSlug, slugAliases } from '../world/storageSchema.js';
 import { recordLessonActivity } from './learningActivity';
@@ -190,7 +191,7 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
     return { ok: true, reviewedAt };
   } catch (err) {
     // 제외는 연결 장애가 아니다. 실패한 평가를 성공/오프라인 재시도로 위장하지 않는다.
-    if (isVocabularyExcludedError(err)) return { ok: false, error: err };
+    if (isVocabularyExcludedError(err) || isLearningStorageUnavailableError(err)) return { ok: false, error: err };
     // 온라인인데 실패했다 — 서버가 죽었거나 연결이 방금 끊겼다. 큐에 넣어 살린다.
     // 이벤트가 이미 착지했을 수도 있는데, 온라인 경로도 같은 reviewedAt을 실어 보내므로
     // flush의 완전 일치 대조가 그 중복을 걸러낸다.
@@ -495,6 +496,13 @@ async function enqueueReviewRemote(userId, lang, slug) {
  */
 async function recordReviewEventRemote(userId, event) {
   if (!userId || !event) return;
+
+  // 한국어 저장소 guard는 연결 장애가 아니다. 이벤트 실패도 호출부에 전달한다.
+  if (event.lang === 'Korean') {
+    const { error } = await supabase.from('review_events').insert([{user_id: userId, ...event}]);
+    if (error) throw error;
+    return;
+  }
 
   const { logReviewEvents } = await import('../reviewEvents');
   return logReviewEvents(userId, [event]);

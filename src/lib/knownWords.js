@@ -8,7 +8,8 @@ import { supabase } from './supabase';
 import { encounterLookupLang } from './refVocabLookup';
 
 /** 표기 언어 코드 — 만남 기록과 같은 매핑('Japanese'→'ja' 등). 미지원 언어는 null. */
-export function knownWordsLang(materialLang) {
+export function knownWordsLang(materialLang, koreanStorageSupported = false) {
+  if (materialLang === 'Korean') return koreanStorageSupported === true ? 'ko' : null;
   return encounterLookupLang(materialLang);
 }
 

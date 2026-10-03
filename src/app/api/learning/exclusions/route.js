@@ -1,7 +1,9 @@
 import { requireUser } from '@/lib/supabaseServer';
 import { reply, errorReply, checkDb, fail, readBody, accessibleMaterial } from '@/lib/server/learningContext';
-import { tokenContext, UUID } from '@/lib/learningSources';
+import { koreanTokenContext, tokenContext, UUID } from '@/lib/learningSources';
 import { VOCABULARY_LANGUAGES, exclusionWord, loadVocabularyExclusions } from '@/lib/vocabularyExclusion';
+import { requireLearningCapability } from '@/lib/server/learningCapabilities';
+import { isStudyNote } from '@/lib/studyNotes';
 
 export const dynamic = 'force-dynamic';
 export async function GET() {
@@ -25,14 +27,28 @@ export async function POST(request) {
     if (body.exclusionId) {
       if (!UUID.test(body.exclusionId) || body.excluded) fail(400, '제외된 단어를 다시 선택해 주세요.');
       exclusionId = body.exclusionId;
+      const { data: entry, error: readError } = await auth.supabase.from('vocabulary_exclusions')
+        .select('language').eq('user_id', auth.user.id).eq('id', exclusionId).maybeSingle();
+      if (!readError && entry?.language === 'Korean') await requireLearningCapability(auth.supabase, 'Korean', 'exclude');
     } else if (body.vocabularyId) {
       if (!UUID.test(body.vocabularyId)) fail(400, '단어를 다시 선택해 주세요.');
       vocabularyId = body.vocabularyId;
+      const { data: vocabulary, error: readError } = await auth.supabase.from('user_vocabulary')
+        .select('language').eq('user_id', auth.user.id).eq('id', vocabularyId).maybeSingle();
+      if (!readError && vocabulary?.language === 'Korean') await requireLearningCapability(auth.supabase, 'Korean', 'exclude');
     } else {
       const material = await accessibleMaterial(auth.supabase, auth.user.id, 'reading', body.materialId);
-      const context = tokenContext(material.processed_json, body.tokenId);
+      const context = material.processed_json?.metadata?.language === 'Korean'
+        ? koreanTokenContext(material.processed_json, body.tokenId, material.raw_text)
+        : tokenContext(material.processed_json, body.tokenId);
       if (!context || !VOCABULARY_LANGUAGES.includes(context.language)) fail(400, '자료의 단어를 다시 선택해 주세요.');
       language = context.language; word = exclusionWord(context.token);
+      if (language === 'Korean') {
+        if (material.direction === 'write' || material.processed_json?.metadata?.direction === 'write' || isStudyNote(material)) {
+          fail(400, '읽기 자료에서 단어를 다시 선택해 주세요.');
+        }
+        await requireLearningCapability(auth.supabase, language, 'exclude');
+      }
       if (!word || word.length > 300) fail(400, '단어 표기를 확인해 주세요.');
     }
     const { data, error } = await auth.supabase.rpc('set_vocabulary_exclusion', {

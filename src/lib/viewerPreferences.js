@@ -50,6 +50,7 @@ export function writeViewerPreferences(storage, language, values) {
   storage.setItem(VIEWER_PREF_KEY, JSON.stringify({version:2,common,languages:{...(previous?.version === 2 ? previous.languages : {}),[language]:specific}}));
 }
 export function readerFontFamily(language, choice) {
+  if (language === 'Korean') return choice === 'inter' ? "var(--font-inter), var(--font-noto-kr), 'Noto Sans KR', sans-serif" : "var(--font-noto-kr), 'Noto Sans KR', sans-serif";
   if (language === 'Chinese') return choice === 'serif' ? "var(--font-reader-serif, var(--font-noto-sc)), var(--font-noto-sc), serif" : "var(--font-noto-sc), 'Noto Sans SC', sans-serif";
   if (language === 'Japanese') return "var(--font-noto-jp), 'Noto Sans JP', sans-serif";
   return choice === 'inter' ? 'var(--font-inter), sans-serif' : 'var(--font-noto-sans), sans-serif';
