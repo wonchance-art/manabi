@@ -443,3 +443,6 @@
 .manabi-app .viewer-layout .reader-card-body .reader-card-example__text{font-size:.875rem;line-height:1.6;overflow-wrap:anywhere;margin-bottom:12px}
 .manabi-app .viewer-layout .reader-card-body .reader-card-example__reading{font-size:.8125rem;line-height:1.6;margin-top:4px;color:var(--reader-muted)}
 .manabi-app .viewer-layout .reader-card-body .reader-card-example__meaning{font-size:.8125rem;line-height:1.6;margin-top:4px;color:var(--reader-muted)}
+
+.manabi-app .viewer-layout .reader-card-body .reader-card-context-actions{border:0}
+.manabi-app .viewer-layout .reader-card-context-action-label{display:inline-flex;align-items:center;gap:8px}

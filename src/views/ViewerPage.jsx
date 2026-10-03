@@ -2271,6 +2271,8 @@ export default function ViewerPage() {
 
       {ctxSentenceOf(selectedToken)&&<section className="reader-card-context" aria-label={vt("문장 속 쓰임")} key={`context:${selectedToken.id||selectedToken.text}`}>
         <section className="reader-card-source"><blockquote lang={contentLangTag}>{(()=>{const {parts,term}=splitSentenceAroundWord(ctxSentenceOf(selectedToken),selectedToken.text,null);return parts.map((part,i)=><span key={i}>{part}{i<parts.length-1&&<mark>{term}</mark>}</span>);})()}</blockquote></section>
+        <details className="reader-card-context-actions reader-card-disclosure">
+          <summary><span className="reader-card-context-action-label"><ActionIcon name="translate"/>{vt("번역")}</span><ActionIcon name="down"/></summary>
       {/* 문맥 설명 R1 — zh부터(프롬프트 검증 언어), 본문 탭 토큰만(문장 유도 가능할 때).
           즉답 카드는 그대로, 설명은 버튼을 눌러야 온다(스킴 탭 헛호출 0). */}
       {materialLang === 'Chinese' && (() => {
@@ -2294,6 +2296,7 @@ export default function ViewerPage() {
           <button className="btn btn--ghost btn--sm" onClick={()=>runSelectionAnalysis(ctxSentenceOf(selectedToken))}><ActionIcon name="translate"/>{vt("문장 번역")}</button>
           {materialLang === 'Chinese'&&!ctxExplain?.loading&&!ctxExplain?.text&&<button className="btn btn--ghost btn--sm" onClick={()=>runCtxExplain(selectedToken,ctxSentenceOf(selectedToken))}><ActionIcon name="book"/>{vt(ctxExplain?.error?'이 문장에서는? (다시 시도)':'이 문장에서는?')}</button>}
         </div>
+        </details>
       </section>}
 
       {classAction}
