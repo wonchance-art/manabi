@@ -2207,11 +2207,13 @@ export default function ViewerPage() {
                       // 넘긴다 — 혼종 중국어 토큰의 병음은 라틴이라 훨씬 좁다.
                       const yomiN = !seg.pinyin && KANA_RE.test(seg.reading || '')
                         ? [...seg.reading].length : null;
+                      // Joined pinyin remains one reading group; do not infer per-character readings.
+                      const hasPinyin=seg.pinyin||(materialLang==='Chinese'&&!KANA_RE.test(seg.reading||'')&&/\p{Script=Latin}/u.test(seg.reading||''));
                       const glyphs=chars.map((ch, j) => charSpan(ch, `${i}:${j}`, seg.pinyin ? seg.reading : null, at++));
                       return (
-                        <ruby key={i} data-pinyin={seg.pinyin ? '1' : undefined} data-yomi={seg.pinyin ? undefined : '1'}
+                        <ruby key={i} data-pinyin={hasPinyin ? '1' : undefined} data-yomi={hasPinyin ? undefined : '1'}
                           style={yomiN ? { '--yomi-n': yomiN } : undefined}>
-                          {seg.pinyin?<span className="reader-card-ruby-glyphs">{glyphs}</span>:glyphs}
+                          {hasPinyin?<span className="reader-card-ruby-glyphs">{glyphs}</span>:glyphs}
                           <span className={['rt-an', showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : ''].filter(Boolean).join(' ')}>{seg.reading}</span>
                         </ruby>
                       );
@@ -2293,7 +2295,7 @@ export default function ViewerPage() {
       })()}
 
         <div className="word-detail-card__actrow">
-          <button className="btn btn--ghost btn--sm" aria-label={vt("문장 번역")} title={vt("문장 번역")} onClick={()=>{setSentenceTabSignal(s=>s+1);runSelectedSentence(ctxSentenceOf(selectedToken),true);}}>{vt("번역")}</button>
+          <button className="btn btn--ghost btn--sm" aria-label={vt("문장 번역")} title={vt("문장 번역")} onClick={()=>{setSentenceTabSignal(s=>s+1);if(classStudyActive)runSelectionAnalysis(ctxSentenceOf(selectedToken));else runSelectedSentence(ctxSentenceOf(selectedToken),true);}}>{vt("번역")}</button>
           {materialLang === 'Chinese'&&!ctxExplain?.loading&&!ctxExplain?.text&&<button className="btn btn--ghost btn--sm" onClick={()=>runCtxExplain(selectedToken,ctxSentenceOf(selectedToken))}><ActionIcon name="book"/>{vt(ctxExplain?.error?'이 문장에서는? (다시 시도)':'이 문장에서는?')}</button>}
         </div>
         </div>

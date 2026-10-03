@@ -474,9 +474,9 @@
 .manabi-app .viewer-layout .reader-card-lexeme .word-fit .surface{text-align:start}
 /* Explicit reading rows reserve their own space without moving the body's ruby. */
 .manabi-app .viewer-layout .reader-card-lexeme .word-fit .surface:has(>ruby[data-pinyin]){display:flex;flex-wrap:wrap;align-items:flex-end;row-gap:.75rem;line-height:1.2}
-.manabi-app .viewer-layout .reader-card-lexeme .word-fit ruby[data-pinyin]{display:inline-grid;grid-template-rows:auto auto;row-gap:.375rem;min-width:max(1em,3.1rem);width:max-content;max-width:100%;vertical-align:bottom;line-height:1.2;justify-content:start}
+.manabi-app .viewer-layout .reader-card-lexeme .word-fit ruby[data-pinyin]{display:inline-grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;row-gap:.375rem;min-width:max(1em,3.1rem);width:max-content;max-width:100%;vertical-align:bottom;line-height:1.2;justify-content:start}
 .manabi-app .viewer-layout .reader-card-lexeme .word-fit ruby[data-pinyin]>.rt-an{grid-row:1;position:static;left:auto;bottom:auto;transform:none;justify-self:start;text-align:start;width:auto;max-width:100%;white-space:normal;overflow-wrap:anywhere}
-.manabi-app .viewer-layout .reader-card-ruby-glyphs{grid-row:2;display:flex;justify-content:flex-start;align-items:baseline}
+.manabi-app .viewer-layout .reader-card-ruby-glyphs{grid-row:2;display:flex;flex-wrap:wrap;justify-content:flex-start;align-items:baseline}
 .manabi-app .viewer-layout .reader-card-body .reader-card-context-actions{margin-top:4px}
 .manabi-app .viewer-layout .reader-card-body .reader-card-visible{margin:16px 0 0;padding:0;border:0}
 .manabi-app .viewer-layout .reader-card-body .reader-card-visible>h3{margin:0 0 8px;font-size:.75rem;line-height:1.5;font-weight:500;color:var(--reader-muted)}
