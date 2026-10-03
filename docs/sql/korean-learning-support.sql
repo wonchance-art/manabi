@@ -2,6 +2,9 @@
 -- No existing vocabulary/context/known/event row is updated. Existing ko known
 -- markers acquire exclusion rows through the same committed synchronization rule.
 -- Unknown installed function bodies, language checks, or unsafe prerequisites abort.
+-- Modern baseline: M09 catalog report 5963522633 at head4109513344f22f74a808e69d764eb401a32d33e8.
+-- Keep SQL wrapper/classroom/class CHECKs/policies/modern views unchanged. The
+-- modern implementation extension is confined to save_vocabulary_context_for.
 BEGIN;
 SET LOCAL lock_timeout='5s';
 SET LOCAL search_path='';
@@ -11,13 +14,16 @@ LOCK TABLE public.user_vocabulary,public.vocabulary_contexts,public.user_known_w
 DO $preflight$
 DECLARE r record; installed_proc pg_catalog.pg_proc%rowtype; language_check record; expr text; before_expr text; after_expr text;
 owner_expr text; def text; known_check_count integer;
+modern boolean:=pg_catalog.to_regprocedure('public.save_vocabulary_context_for(uuid,jsonb,jsonb,uuid,text)') IS NOT NULL;
 BEGIN
  IF EXISTS(WITH RECURSIVE roles(oid) AS (SELECT oid FROM pg_catalog.pg_roles WHERE rolname IN ('authenticated','anon') UNION SELECT m.roleid FROM pg_catalog.pg_auth_members m JOIN roles rr ON rr.oid=m.member)
   SELECT 1 FROM pg_catalog.pg_roles p JOIN roles rr ON p.oid=rr.oid WHERE p.rolsuper OR p.rolbypassrls)
  THEN RAISE EXCEPTION 'korean_support_unsafe_role_membership'; END IF;
  IF pg_catalog.to_regprocedure('public.guard_korean_learning_contract()') IS NOT NULL AND NOT EXISTS(
   SELECT 1 FROM pg_catalog.pg_proc WHERE oid=pg_catalog.to_regprocedure('public.guard_korean_learning_contract()')
-  AND pg_catalog.md5(prosrc)='4d76f715e7ff2f0a11bfd507cd99e0a2' AND NOT prosecdef AND proconfig=ARRAY['search_path=""']::text[])
+  AND pg_catalog.md5(prosrc)='4d76f715e7ff2f0a11bfd507cd99e0a2' AND NOT prosecdef AND proconfig=ARRAY['search_path=""']::text[]
+  AND proowner=(SELECT relowner FROM pg_catalog.pg_class WHERE oid='public.user_vocabulary'::pg_catalog.regclass)
+  AND prolang=(SELECT oid FROM pg_catalog.pg_language WHERE lanname='plpgsql') AND prorettype='trigger'::pg_catalog.regtype AND NOT proretset AND pronargs=0 AND provolatile='v')
  THEN RAISE EXCEPTION 'korean_support_unexpected_contract_guard'; END IF;
  IF EXISTS(SELECT 1 FROM pg_catalog.pg_trigger t JOIN pg_catalog.pg_class c ON c.oid=t.tgrelid WHERE c.relnamespace='public'::pg_catalog.regnamespace
   AND t.tgname='guard_korean_learning_contract' AND (c.relname NOT IN ('user_vocabulary','vocabulary_contexts','user_known_words','vocabulary_exclusions','review_events')
@@ -27,7 +33,9 @@ BEGIN
  IF pg_catalog.to_regprocedure('public.learning_language_capabilities()') IS NOT NULL AND NOT EXISTS(
   SELECT 1 FROM pg_catalog.pg_proc WHERE oid=pg_catalog.to_regprocedure('public.learning_language_capabilities()')
   AND NOT prosecdef AND proconfig=ARRAY['search_path=""']::text[]
-  AND (pg_catalog.md5(pg_catalog.regexp_replace(prosrc,'''[0-9a-f]{32}''','''CONTRACT_HASH''','g'))='ebeef1bf6f66890a38e8a594491619d6'
+  AND proowner=(SELECT relowner FROM pg_catalog.pg_class WHERE oid='public.user_vocabulary'::pg_catalog.regclass)
+  AND prolang=(SELECT oid FROM pg_catalog.pg_language WHERE lanname='plpgsql') AND prorettype='jsonb'::pg_catalog.regtype AND NOT proretset AND pronargs=0 AND provolatile='s'
+  AND (pg_catalog.md5(pg_catalog.regexp_replace(prosrc,'''[0-9a-f]{32}''','''CONTRACT_HASH''','g')) IN ('d37f20e64c538b7ee9f7f58fa96055a2','ebeef1bf6f66890a38e8a594491619d6')
    OR pg_catalog.md5(prosrc)='da8712353cfbe1668741183d5fd8d650'))
  THEN RAISE EXCEPTION 'korean_support_unexpected_capability_rpc'; END IF;
  FOR r IN SELECT * FROM (VALUES
@@ -92,6 +100,14 @@ BEGIN
    AND (NOT r.required_not_null OR a.attnotnull))
   THEN RAISE EXCEPTION 'korean_support_unexpected_column: %.%',r.tab,r.col; END IF;
  END LOOP;
+ IF modern THEN
+  IF current_user IS DISTINCT FROM (SELECT pg_catalog.pg_get_userbyid(relowner) FROM pg_catalog.pg_class WHERE oid='public.user_vocabulary'::pg_catalog.regclass)
+  THEN RAISE EXCEPTION 'korean_support_trusted_operator_required'; END IF;
+  FOR r IN SELECT * FROM (VALUES ('user_vocabulary','status','text'),('user_vocabulary','last_review','timestamp with time zone'),('user_vocabulary','material_id','bigint'),('user_vocabulary','created_at','timestamp with time zone'),('user_vocabulary','source_ref','text'),('user_vocabulary','etym','text'),('user_vocabulary','hanja','text'),('review_events','id','bigint'),('reading_materials','raw_text','text'),('reading_materials','processed_json','jsonb'),('reading_materials','document_json','jsonb')) expected(tab,col,type) LOOP
+   IF NOT EXISTS(SELECT 1 FROM pg_catalog.pg_attribute a WHERE a.attrelid=pg_catalog.to_regclass('public.'||r.tab) AND a.attname=r.col AND NOT a.attisdropped AND pg_catalog.format_type(a.atttypid,a.atttypmod)=r.type)
+   THEN RAISE EXCEPTION 'korean_support_unexpected_modern_column: %.%',r.tab,r.col; END IF;
+  END LOOP;
+ END IF;
  -- The committed dependent tables have fully known constraints. Match semantic
  -- definitions rather than catalog OIDs or user-selected constraint names.
  FOR r IN SELECT * FROM (VALUES
@@ -99,12 +115,12 @@ BEGIN
    ('user_known_words','CHECK (((char_length(word_text) >= 1) AND (char_length(word_text) <= 100)))','CHECK (((char_length(word_text) >= 1) AND (char_length(word_text) <= 100)))'),
    ('user_known_words','PRIMARY KEY (user_id, lang, word_text)','PRIMARY KEY (user_id, lang, word_text)'),
    ('user_known_words','FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE','FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE'),
-   ('vocabulary_contexts','CHECK ((kind = ANY (ARRAY[''textbook''::text, ''reading''::text, ''pdf''::text])))','CHECK ((kind = ANY (ARRAY[''textbook''::text, ''reading''::text, ''pdf''::text])))'),
+   ('vocabulary_contexts',CASE WHEN modern THEN 'CHECK ((kind = ANY (ARRAY[''textbook''::text, ''reading''::text, ''pdf''::text, ''class''::text])))' ELSE 'CHECK ((kind = ANY (ARRAY[''textbook''::text, ''reading''::text, ''pdf''::text])))' END,CASE WHEN modern THEN 'CHECK ((kind = ANY (ARRAY[''textbook''::text, ''reading''::text, ''pdf''::text, ''class''::text])))' ELSE 'CHECK ((kind = ANY (ARRAY[''textbook''::text, ''reading''::text, ''pdf''::text])))' END),
    ('vocabulary_contexts','CHECK ((lang = ANY (ARRAY[''Japanese''::text, ''Chinese''::text, ''English''::text, ''French''::text])))','CHECK ((lang = ANY (ARRAY[''Japanese''::text, ''Chinese''::text, ''English''::text, ''French''::text, ''Korean''::text])))'),
    ('vocabulary_contexts','CHECK ((jsonb_typeof(locator) = ''object''::text))','CHECK ((jsonb_typeof(locator) = ''object''::text))'),
    ('vocabulary_contexts','CHECK (((length(quote) >= 1) AND (length(quote) <= 4000)))','CHECK (((length(quote) >= 1) AND (length(quote) <= 4000)))'),
    ('vocabulary_contexts','CHECK ((length(translation) <= 2000))','CHECK ((length(translation) <= 2000))'),
-   ('vocabulary_contexts','CHECK ((((kind = ''textbook''::text) AND (chapter_slug IS NOT NULL) AND (material_id IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''reading''::text) AND (material_id IS NOT NULL) AND (chapter_slug IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''pdf''::text) AND (pdf_id IS NOT NULL) AND (chapter_slug IS NULL) AND (material_id IS NULL))))','CHECK ((((kind = ''textbook''::text) AND (chapter_slug IS NOT NULL) AND (material_id IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''reading''::text) AND (material_id IS NOT NULL) AND (chapter_slug IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''pdf''::text) AND (pdf_id IS NOT NULL) AND (chapter_slug IS NULL) AND (material_id IS NULL))))'),
+   ('vocabulary_contexts',CASE WHEN modern THEN 'CHECK ((((kind = ''textbook''::text) AND (chapter_slug IS NOT NULL) AND (material_id IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''reading''::text) AND (material_id IS NOT NULL) AND (chapter_slug IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''pdf''::text) AND (pdf_id IS NOT NULL) AND (chapter_slug IS NULL) AND (material_id IS NULL)) OR ((kind = ''class''::text) AND (num_nonnulls(chapter_slug, material_id, pdf_id) = 0) AND (COALESCE((locator ->> ''team''::text), ''''::text) ~ ''^[a-z0-9][a-z0-9-]{0,15}$''::text) AND (COALESCE((locator ->> ''materialId''::text), ''''::text) ~ ''^[1-9][0-9]{0,15}$''::text))))' ELSE 'CHECK ((((kind = ''textbook''::text) AND (chapter_slug IS NOT NULL) AND (material_id IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''reading''::text) AND (material_id IS NOT NULL) AND (chapter_slug IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''pdf''::text) AND (pdf_id IS NOT NULL) AND (chapter_slug IS NULL) AND (material_id IS NULL))))' END,CASE WHEN modern THEN 'CHECK ((((kind = ''textbook''::text) AND (chapter_slug IS NOT NULL) AND (material_id IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''reading''::text) AND (material_id IS NOT NULL) AND (chapter_slug IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''pdf''::text) AND (pdf_id IS NOT NULL) AND (chapter_slug IS NULL) AND (material_id IS NULL)) OR ((kind = ''class''::text) AND (num_nonnulls(chapter_slug, material_id, pdf_id) = 0) AND (COALESCE((locator ->> ''team''::text), ''''::text) ~ ''^[a-z0-9][a-z0-9-]{0,15}$''::text) AND (COALESCE((locator ->> ''materialId''::text), ''''::text) ~ ''^[1-9][0-9]{0,15}$''::text))))' ELSE 'CHECK ((((kind = ''textbook''::text) AND (chapter_slug IS NOT NULL) AND (material_id IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''reading''::text) AND (material_id IS NOT NULL) AND (chapter_slug IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''pdf''::text) AND (pdf_id IS NOT NULL) AND (chapter_slug IS NULL) AND (material_id IS NULL))))' END),
    ('vocabulary_contexts','PRIMARY KEY (id)','PRIMARY KEY (id)'),
    ('vocabulary_contexts','UNIQUE (user_id, vocabulary_id, source_key)','UNIQUE (user_id, vocabulary_id, source_key)'),
    ('vocabulary_contexts','FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE','FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE'),
@@ -122,18 +138,29 @@ BEGIN
    AND pg_catalog.pg_get_constraintdef(c.oid) IN (r.legacy_def,r.korean_def))
   THEN RAISE EXCEPTION 'korean_support_missing_constraint: %: %',r.tab,r.legacy_def; END IF;
  END LOOP;
+ IF modern THEN
+  FOR r IN SELECT * FROM (VALUES ('reading_materials','guard_source_passage_write',19,'1a35b1ec928d70551a6ff6b6db17cee3'),('reading_materials','library_book_preserve_metadata',19,'a9b4ad5b45a8864fcdf2c33af8452976'),('reading_materials','library_protect_material_delete',11,'18c684aeabe7a9a91fd97f1ba8cc7d9d'),('reading_materials','protect_composer_source',19,'fa93b2bf5f3e5eb4b2007a69f1e70c99'),('reading_materials','validate_source_passage',7,'c642edc1e173736e11da160f7f7da70e'),('uploaded_pdfs','library_protect_pdf_delete',11,'bbdcd701c0041da3d9801f0250ea4e20')) expected(tab,name,type,hash) LOOP
+   IF NOT EXISTS(SELECT 1 FROM pg_catalog.pg_trigger t WHERE t.tgrelid=pg_catalog.to_regclass('public.'||r.tab) AND t.tgname=r.name AND t.tgtype=r.type AND t.tgenabled='O'
+    AND pg_catalog.md5(pg_catalog.pg_get_triggerdef(t.oid))=r.hash)
+   THEN RAISE EXCEPTION 'korean_support_unexpected_modern_source_trigger: %.%',r.tab,r.name; END IF;
+  END LOOP;
+  IF EXISTS(SELECT 1 FROM pg_catalog.pg_trigger t JOIN pg_catalog.pg_class c ON c.oid=t.tgrelid WHERE c.relnamespace='public'::pg_catalog.regnamespace
+   AND c.relname IN ('reading_materials','uploaded_pdfs') AND NOT t.tgisinternal
+   AND NOT EXISTS(SELECT 1 FROM (VALUES ('reading_materials','guard_source_passage_write',19,'1a35b1ec928d70551a6ff6b6db17cee3'),('reading_materials','library_book_preserve_metadata',19,'a9b4ad5b45a8864fcdf2c33af8452976'),('reading_materials','library_protect_material_delete',11,'18c684aeabe7a9a91fd97f1ba8cc7d9d'),('reading_materials','protect_composer_source',19,'fa93b2bf5f3e5eb4b2007a69f1e70c99'),('reading_materials','validate_source_passage',7,'c642edc1e173736e11da160f7f7da70e'),('uploaded_pdfs','library_protect_pdf_delete',11,'bbdcd701c0041da3d9801f0250ea4e20')) reviewed(tab,name,type,hash) WHERE reviewed.tab=c.relname AND reviewed.name=t.tgname))
+  THEN RAISE EXCEPTION 'korean_support_unexpected_modern_source_trigger'; END IF;
+ END IF;
  IF EXISTS(SELECT 1 FROM pg_catalog.pg_constraint c JOIN pg_catalog.pg_class t ON t.oid=c.conrelid WHERE t.relnamespace='public'::pg_catalog.regnamespace
   AND t.relname IN ('vocabulary_contexts','user_known_words','vocabulary_exclusions') AND c.contype<>'n'
   AND NOT EXISTS(SELECT 1 FROM (VALUES ('user_known_words','CHECK ((lang ~ ''^[a-z]{2}$''::text))','CHECK ((lang ~ ''^[a-z]{2}$''::text))'),
    ('user_known_words','CHECK (((char_length(word_text) >= 1) AND (char_length(word_text) <= 100)))','CHECK (((char_length(word_text) >= 1) AND (char_length(word_text) <= 100)))'),
    ('user_known_words','PRIMARY KEY (user_id, lang, word_text)','PRIMARY KEY (user_id, lang, word_text)'),
    ('user_known_words','FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE','FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE'),
-   ('vocabulary_contexts','CHECK ((kind = ANY (ARRAY[''textbook''::text, ''reading''::text, ''pdf''::text])))','CHECK ((kind = ANY (ARRAY[''textbook''::text, ''reading''::text, ''pdf''::text])))'),
+   ('vocabulary_contexts',CASE WHEN modern THEN 'CHECK ((kind = ANY (ARRAY[''textbook''::text, ''reading''::text, ''pdf''::text, ''class''::text])))' ELSE 'CHECK ((kind = ANY (ARRAY[''textbook''::text, ''reading''::text, ''pdf''::text])))' END,CASE WHEN modern THEN 'CHECK ((kind = ANY (ARRAY[''textbook''::text, ''reading''::text, ''pdf''::text, ''class''::text])))' ELSE 'CHECK ((kind = ANY (ARRAY[''textbook''::text, ''reading''::text, ''pdf''::text])))' END),
    ('vocabulary_contexts','CHECK ((lang = ANY (ARRAY[''Japanese''::text, ''Chinese''::text, ''English''::text, ''French''::text])))','CHECK ((lang = ANY (ARRAY[''Japanese''::text, ''Chinese''::text, ''English''::text, ''French''::text, ''Korean''::text])))'),
    ('vocabulary_contexts','CHECK ((jsonb_typeof(locator) = ''object''::text))','CHECK ((jsonb_typeof(locator) = ''object''::text))'),
    ('vocabulary_contexts','CHECK (((length(quote) >= 1) AND (length(quote) <= 4000)))','CHECK (((length(quote) >= 1) AND (length(quote) <= 4000)))'),
    ('vocabulary_contexts','CHECK ((length(translation) <= 2000))','CHECK ((length(translation) <= 2000))'),
-   ('vocabulary_contexts','CHECK ((((kind = ''textbook''::text) AND (chapter_slug IS NOT NULL) AND (material_id IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''reading''::text) AND (material_id IS NOT NULL) AND (chapter_slug IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''pdf''::text) AND (pdf_id IS NOT NULL) AND (chapter_slug IS NULL) AND (material_id IS NULL))))','CHECK ((((kind = ''textbook''::text) AND (chapter_slug IS NOT NULL) AND (material_id IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''reading''::text) AND (material_id IS NOT NULL) AND (chapter_slug IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''pdf''::text) AND (pdf_id IS NOT NULL) AND (chapter_slug IS NULL) AND (material_id IS NULL))))'),
+   ('vocabulary_contexts',CASE WHEN modern THEN 'CHECK ((((kind = ''textbook''::text) AND (chapter_slug IS NOT NULL) AND (material_id IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''reading''::text) AND (material_id IS NOT NULL) AND (chapter_slug IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''pdf''::text) AND (pdf_id IS NOT NULL) AND (chapter_slug IS NULL) AND (material_id IS NULL)) OR ((kind = ''class''::text) AND (num_nonnulls(chapter_slug, material_id, pdf_id) = 0) AND (COALESCE((locator ->> ''team''::text), ''''::text) ~ ''^[a-z0-9][a-z0-9-]{0,15}$''::text) AND (COALESCE((locator ->> ''materialId''::text), ''''::text) ~ ''^[1-9][0-9]{0,15}$''::text))))' ELSE 'CHECK ((((kind = ''textbook''::text) AND (chapter_slug IS NOT NULL) AND (material_id IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''reading''::text) AND (material_id IS NOT NULL) AND (chapter_slug IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''pdf''::text) AND (pdf_id IS NOT NULL) AND (chapter_slug IS NULL) AND (material_id IS NULL))))' END,CASE WHEN modern THEN 'CHECK ((((kind = ''textbook''::text) AND (chapter_slug IS NOT NULL) AND (material_id IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''reading''::text) AND (material_id IS NOT NULL) AND (chapter_slug IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''pdf''::text) AND (pdf_id IS NOT NULL) AND (chapter_slug IS NULL) AND (material_id IS NULL)) OR ((kind = ''class''::text) AND (num_nonnulls(chapter_slug, material_id, pdf_id) = 0) AND (COALESCE((locator ->> ''team''::text), ''''::text) ~ ''^[a-z0-9][a-z0-9-]{0,15}$''::text) AND (COALESCE((locator ->> ''materialId''::text), ''''::text) ~ ''^[1-9][0-9]{0,15}$''::text))))' ELSE 'CHECK ((((kind = ''textbook''::text) AND (chapter_slug IS NOT NULL) AND (material_id IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''reading''::text) AND (material_id IS NOT NULL) AND (chapter_slug IS NULL) AND (pdf_id IS NULL)) OR ((kind = ''pdf''::text) AND (pdf_id IS NOT NULL) AND (chapter_slug IS NULL) AND (material_id IS NULL))))' END),
    ('vocabulary_contexts','PRIMARY KEY (id)','PRIMARY KEY (id)'),
    ('vocabulary_contexts','UNIQUE (user_id, vocabulary_id, source_key)','UNIQUE (user_id, vocabulary_id, source_key)'),
    ('vocabulary_contexts','FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE','FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE'),
@@ -158,17 +185,99 @@ BEGIN
    ('public.sync_known_word_review_exclusion()','ced5892a8eb03cff1645d997dfca890e','fce35cab736c4986913d0e07043d67ce','trigger',0,NULL::text[]),
    ('public.guard_known_word_review_exclusion()','71ab352aa46bf375c16b2627c7dfbf0d','70d0bab5521ce7afa3956dc12bd60f10','trigger',0,NULL::text[])
  ) expected(signature,legacy_hash,korean_hash,return_type,default_count,argnames) LOOP
+  IF modern AND r.signature='public.save_vocabulary_context(jsonb,jsonb,uuid,text)' THEN CONTINUE; END IF;
   SELECT * INTO installed_proc FROM pg_catalog.pg_proc WHERE oid=pg_catalog.to_regprocedure(r.signature);
   IF installed_proc.oid IS NULL OR pg_catalog.md5(installed_proc.prosrc) NOT IN (r.legacy_hash,r.korean_hash)
    OR installed_proc.prosecdef OR installed_proc.proconfig IS DISTINCT FROM ARRAY['search_path=""']::text[]
    OR installed_proc.prolang<>(SELECT oid FROM pg_catalog.pg_language WHERE lanname='plpgsql')
    OR installed_proc.prorettype<>r.return_type::pg_catalog.regtype OR installed_proc.proretset OR installed_proc.proisstrict
    OR installed_proc.prokind<>'f' OR installed_proc.provolatile<>'v' OR installed_proc.pronargdefaults<>r.default_count
+   OR pg_catalog.pg_get_expr(installed_proc.proargdefaults,0) IS DISTINCT FROM (CASE r.default_count WHEN 2 THEN 'NULL::uuid, NULL::text' WHEN 1 THEN 'NULL::uuid' ELSE NULL END)
    OR installed_proc.proargnames IS DISTINCT FROM r.argnames
+   OR (modern AND installed_proc.proowner<>(SELECT relowner FROM pg_catalog.pg_class WHERE oid='public.user_vocabulary'::pg_catalog.regclass))
   THEN RAISE EXCEPTION 'korean_support_unexpected_function: %',r.signature; END IF;
   IF r.return_type='trigger' AND (pg_catalog.has_function_privilege('authenticated',r.signature,'EXECUTE') OR pg_catalog.has_function_privilege('anon',r.signature,'EXECUTE'))
   THEN RAISE EXCEPTION 'korean_support_unsafe_trigger_function_privileges: %',r.signature; END IF;
+  IF modern AND ARRAY(SELECT CASE WHEN acl.grantee=0 THEN 'PUBLIC' ELSE pg_catalog.pg_get_userbyid(acl.grantee)::text END
+    FROM pg_catalog.aclexplode(coalesce(installed_proc.proacl,pg_catalog.acldefault('f',installed_proc.proowner))) acl
+    WHERE acl.privilege_type='EXECUTE' ORDER BY 1) IS DISTINCT FROM
+    (CASE WHEN r.return_type='trigger' THEN ARRAY['postgres','service_role']::text[] ELSE ARRAY['authenticated','postgres','service_role']::text[] END)
+  THEN RAISE EXCEPTION 'korean_support_unexpected_modern_function_acl: %',r.signature; END IF;
+  IF modern AND EXISTS(SELECT 1 FROM pg_catalog.aclexplode(coalesce(installed_proc.proacl,pg_catalog.acldefault('f',installed_proc.proowner))) acl WHERE acl.is_grantable)
+  THEN RAISE EXCEPTION 'korean_support_unexpected_modern_function_grant_option: %',r.signature; END IF;
  END LOOP;
+ IF modern THEN
+  IF NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='service_role' AND NOT rolsuper AND rolbypassrls)
+  THEN RAISE EXCEPTION 'korean_support_unsupported_service_role'; END IF;
+  IF (SELECT pg_catalog.pg_get_userbyid(relowner) FROM pg_catalog.pg_class WHERE oid='public.user_vocabulary'::pg_catalog.regclass)<>'postgres'
+  THEN RAISE EXCEPTION 'korean_support_unexpected_modern_table_owner'; END IF;
+  -- These are the complete, reviewed M09 bodies and security attributes.
+  -- Shared wrapper/classroom/undo/analysis/source protection are dependencies,
+  -- never replacement implementations. Only the _for Korean branch is extended.
+  FOR r IN SELECT * FROM (VALUES
+   ('public.save_vocabulary_context(jsonb,jsonb,uuid,text)','03b53aa8f7cdad5d23d503a26a873e61','03b53aa8f7cdad5d23d503a26a873e61',false,'sql','jsonb',2,'NULL::uuid, NULL::text',ARRAY['p_word','p_source','p_confirm_id','p_confirm_meaning']::text[],ARRAY['search_path=""']::text[]),
+   ('public.save_vocabulary_context_for(uuid,jsonb,jsonb,uuid,text)','1facb74b4b7d33a572cef9642341342f','541ab691c7dc776410b8e746cf898319',false,'plpgsql','jsonb',2,'NULL::uuid, NULL::text',ARRAY['p_owner','p_word','p_source','p_confirm_id','p_confirm_meaning']::text[],ARRAY['search_path=""']::text[]),
+   ('public.viewer_replace_analysis(bigint,text,jsonb,text,jsonb,uuid)','d9fa14687aa0b2afac161f4c6814781d','d9fa14687aa0b2afac161f4c6814781d',false,'plpgsql','jsonb',0,NULL::text,ARRAY['p_id','p_expected_raw','p_expected_json','p_raw','p_json','p_attempt']::text[],ARRAY['search_path=pg_catalog, public']::text[]),
+   ('public.viewer_undo_vocabulary_save(uuid,jsonb,uuid[])','ace9c01a5df4556170e29f291bf0ed51','ace9c01a5df4556170e29f291bf0ed51',true,'plpgsql','boolean',0,NULL::text,ARRAY['p_id','p_expected','p_context_ids']::text[],ARRAY['search_path=pg_catalog, public']::text[]),
+   ('public.classroom_save_vocabulary(uuid,bigint,integer,bigint,text,jsonb,jsonb,jsonb,jsonb,uuid,text)','f563cf7209213aa03433ca30be0fe4a5','f563cf7209213aa03433ca30be0fe4a5',false,'plpgsql','jsonb',3,'NULL::jsonb, NULL::uuid, NULL::text',ARRAY['p_owner','p_root','p_generation','p_material','p_expected_raw','p_expected_json','p_word','p_source','p_initial','p_confirm_id','p_confirm_meaning']::text[],ARRAY['search_path=""']::text[]),
+   ('library_private.protect_source_delete()','306cf4349016b7a66408990ac48a4d63','306cf4349016b7a66408990ac48a4d63',false,'plpgsql','trigger',0,NULL::text,NULL::text[],ARRAY['search_path=""']::text[]),
+   ('public.guard_source_passage_write()','3cca47555822970990d652c1a01205b8','3cca47555822970990d652c1a01205b8',false,'plpgsql','trigger',0,NULL::text,NULL::text[],ARRAY['search_path=pg_catalog, public']::text[]),
+   ('public.library_book_preserve_metadata()','95b5dc5352234a531599207175baf099','95b5dc5352234a531599207175baf099',false,'plpgsql','trigger',0,NULL::text,NULL::text[],ARRAY['search_path=""']::text[]),
+   ('public.validate_source_passage()','043b13610570a95efa49975299a123b2','043b13610570a95efa49975299a123b2',false,'plpgsql','trigger',0,NULL::text,NULL::text[],ARRAY['search_path=pg_catalog, public']::text[]),
+   ('public.protect_composer_source()','dea10802e0aeaef706714fdace11a603','dea10802e0aeaef706714fdace11a603',false,'plpgsql','trigger',0,NULL::text,NULL::text[],ARRAY['search_path=pg_catalog, public']::text[])
+  ) expected(signature,legacy_hash,korean_hash,definer,language,return_type,default_count,defaults_expr,argnames,config) LOOP
+   SELECT * INTO installed_proc FROM pg_catalog.pg_proc WHERE oid=pg_catalog.to_regprocedure(r.signature);
+   IF installed_proc.oid IS NULL OR pg_catalog.md5(installed_proc.prosrc) NOT IN (r.legacy_hash,r.korean_hash)
+    OR installed_proc.prosecdef IS DISTINCT FROM r.definer OR installed_proc.proconfig IS DISTINCT FROM r.config
+    OR installed_proc.prolang<>(SELECT oid FROM pg_catalog.pg_language WHERE lanname=r.language)
+    OR installed_proc.prorettype<>r.return_type::pg_catalog.regtype OR installed_proc.proretset OR installed_proc.proisstrict
+    OR installed_proc.prokind<>'f' OR installed_proc.provolatile<>'v' OR installed_proc.pronargdefaults<>r.default_count
+    OR pg_catalog.pg_get_expr(installed_proc.proargdefaults,0) IS DISTINCT FROM r.defaults_expr
+    OR installed_proc.proargnames IS DISTINCT FROM r.argnames
+    OR installed_proc.proowner<>(SELECT relowner FROM pg_catalog.pg_class WHERE oid='public.user_vocabulary'::pg_catalog.regclass)
+   THEN RAISE EXCEPTION 'korean_support_unexpected_modern_function: %',r.signature; END IF;
+  END LOOP;
+  FOR r IN SELECT * FROM (VALUES ('public.save_vocabulary_context(jsonb,jsonb,uuid,text)',ARRAY['authenticated','postgres','service_role']::text[]),
+   ('public.save_vocabulary_context_for(uuid,jsonb,jsonb,uuid,text)',ARRAY['authenticated','postgres','service_role']::text[]),
+   ('public.viewer_replace_analysis(bigint,text,jsonb,text,jsonb,uuid)',ARRAY['authenticated','postgres','service_role']::text[]),
+   ('public.viewer_undo_vocabulary_save(uuid,jsonb,uuid[])',ARRAY['authenticated','postgres','service_role']::text[]),
+   ('public.classroom_save_vocabulary(uuid,bigint,integer,bigint,text,jsonb,jsonb,jsonb,jsonb,uuid,text)',ARRAY['postgres','service_role']::text[]),
+   ('library_private.protect_source_delete()',ARRAY['postgres']::text[]),
+   ('public.guard_source_passage_write()',ARRAY['postgres','service_role']::text[]),
+   ('public.library_book_preserve_metadata()',ARRAY['postgres','service_role']::text[]),
+   ('public.validate_source_passage()',ARRAY['postgres','service_role']::text[]),
+   ('public.protect_composer_source()',ARRAY['PUBLIC','anon','authenticated','postgres','service_role']::text[])) expected(signature,roles) LOOP
+   IF ARRAY(SELECT CASE WHEN acl.grantee=0 THEN 'PUBLIC' ELSE pg_catalog.pg_get_userbyid(acl.grantee)::text END
+    FROM pg_catalog.pg_proc f CROSS JOIN LATERAL pg_catalog.aclexplode(coalesce(f.proacl,pg_catalog.acldefault('f',f.proowner))) acl
+    WHERE f.oid=pg_catalog.to_regprocedure(r.signature) AND acl.privilege_type='EXECUTE' ORDER BY 1) IS DISTINCT FROM r.roles
+    OR EXISTS(SELECT 1 FROM pg_catalog.pg_proc f CROSS JOIN LATERAL pg_catalog.aclexplode(coalesce(f.proacl,pg_catalog.acldefault('f',f.proowner))) acl
+     WHERE f.oid=pg_catalog.to_regprocedure(r.signature) AND acl.is_grantable)
+   THEN RAISE EXCEPTION 'korean_support_unexpected_modern_function_acl: %',r.signature; END IF;
+  END LOOP;
+  IF pg_catalog.has_function_privilege('authenticated','public.classroom_save_vocabulary(uuid,bigint,integer,bigint,text,jsonb,jsonb,jsonb,jsonb,uuid,text)','EXECUTE')
+   OR pg_catalog.has_function_privilege('anon','public.classroom_save_vocabulary(uuid,bigint,integer,bigint,text,jsonb,jsonb,jsonb,jsonb,uuid,text)','EXECUTE')
+   OR NOT pg_catalog.has_function_privilege('service_role','public.classroom_save_vocabulary(uuid,bigint,integer,bigint,text,jsonb,jsonb,jsonb,jsonb,uuid,text)','EXECUTE')
+   OR NOT pg_catalog.has_function_privilege('authenticated','public.save_vocabulary_context_for(uuid,jsonb,jsonb,uuid,text)','EXECUTE')
+   OR NOT pg_catalog.has_function_privilege('service_role','public.save_vocabulary_context_for(uuid,jsonb,jsonb,uuid,text)','EXECUTE')
+   OR pg_catalog.has_function_privilege('anon','public.save_vocabulary_context_for(uuid,jsonb,jsonb,uuid,text)','EXECUTE')
+  THEN RAISE EXCEPTION 'korean_support_unsafe_modern_rpc_privileges'; END IF;
+  FOR r IN SELECT * FROM (VALUES ('user_vocabulary',ARRAY['anon:DELETE','anon:INSERT','anon:MAINTAIN','anon:REFERENCES','anon:SELECT','anon:TRIGGER','anon:TRUNCATE','anon:UPDATE','authenticated:DELETE','authenticated:INSERT','authenticated:MAINTAIN','authenticated:REFERENCES','authenticated:SELECT','authenticated:TRIGGER','authenticated:TRUNCATE','authenticated:UPDATE','postgres:DELETE','postgres:INSERT','postgres:MAINTAIN','postgres:REFERENCES','postgres:SELECT','postgres:TRIGGER','postgres:TRUNCATE','postgres:UPDATE','service_role:DELETE','service_role:INSERT','service_role:MAINTAIN','service_role:REFERENCES','service_role:SELECT','service_role:TRIGGER','service_role:TRUNCATE','service_role:UPDATE']::text[],ARRAY['authenticated:DELETE','authenticated:INSERT','authenticated:MAINTAIN','authenticated:REFERENCES','authenticated:SELECT','authenticated:TRIGGER','authenticated:UPDATE','postgres:DELETE','postgres:INSERT','postgres:MAINTAIN','postgres:REFERENCES','postgres:SELECT','postgres:TRIGGER','postgres:TRUNCATE','postgres:UPDATE','service_role:DELETE','service_role:INSERT','service_role:MAINTAIN','service_role:REFERENCES','service_role:SELECT','service_role:TRIGGER','service_role:TRUNCATE','service_role:UPDATE']::text[]),
+   ('review_events',ARRAY['anon:DELETE','anon:INSERT','anon:MAINTAIN','anon:REFERENCES','anon:SELECT','anon:TRIGGER','anon:TRUNCATE','anon:UPDATE','authenticated:DELETE','authenticated:INSERT','authenticated:MAINTAIN','authenticated:REFERENCES','authenticated:SELECT','authenticated:TRIGGER','authenticated:TRUNCATE','authenticated:UPDATE','postgres:DELETE','postgres:INSERT','postgres:MAINTAIN','postgres:REFERENCES','postgres:SELECT','postgres:TRIGGER','postgres:TRUNCATE','postgres:UPDATE','service_role:DELETE','service_role:INSERT','service_role:MAINTAIN','service_role:REFERENCES','service_role:SELECT','service_role:TRIGGER','service_role:TRUNCATE','service_role:UPDATE']::text[],ARRAY['authenticated:DELETE','authenticated:INSERT','authenticated:MAINTAIN','authenticated:REFERENCES','authenticated:SELECT','authenticated:TRIGGER','authenticated:UPDATE','postgres:DELETE','postgres:INSERT','postgres:MAINTAIN','postgres:REFERENCES','postgres:SELECT','postgres:TRIGGER','postgres:TRUNCATE','postgres:UPDATE','service_role:DELETE','service_role:INSERT','service_role:MAINTAIN','service_role:REFERENCES','service_role:SELECT','service_role:TRIGGER','service_role:TRUNCATE','service_role:UPDATE']::text[]),
+   ('user_known_words',ARRAY['authenticated:DELETE','authenticated:INSERT','authenticated:MAINTAIN','authenticated:REFERENCES','authenticated:SELECT','authenticated:TRIGGER','authenticated:TRUNCATE','authenticated:UPDATE','postgres:DELETE','postgres:INSERT','postgres:MAINTAIN','postgres:REFERENCES','postgres:SELECT','postgres:TRIGGER','postgres:TRUNCATE','postgres:UPDATE','service_role:DELETE','service_role:INSERT','service_role:MAINTAIN','service_role:REFERENCES','service_role:SELECT','service_role:TRIGGER','service_role:TRUNCATE','service_role:UPDATE']::text[],ARRAY['authenticated:DELETE','authenticated:INSERT','authenticated:MAINTAIN','authenticated:REFERENCES','authenticated:SELECT','authenticated:TRIGGER','authenticated:UPDATE','postgres:DELETE','postgres:INSERT','postgres:MAINTAIN','postgres:REFERENCES','postgres:SELECT','postgres:TRIGGER','postgres:TRUNCATE','postgres:UPDATE','service_role:DELETE','service_role:INSERT','service_role:MAINTAIN','service_role:REFERENCES','service_role:SELECT','service_role:TRIGGER','service_role:TRUNCATE','service_role:UPDATE']::text[]),
+   ('vocabulary_contexts',ARRAY['authenticated:DELETE','authenticated:INSERT','authenticated:SELECT','postgres:DELETE','postgres:INSERT','postgres:MAINTAIN','postgres:REFERENCES','postgres:SELECT','postgres:TRIGGER','postgres:TRUNCATE','postgres:UPDATE','service_role:DELETE','service_role:INSERT','service_role:MAINTAIN','service_role:REFERENCES','service_role:SELECT','service_role:TRIGGER','service_role:TRUNCATE','service_role:UPDATE']::text[],ARRAY['authenticated:DELETE','authenticated:INSERT','authenticated:SELECT','postgres:DELETE','postgres:INSERT','postgres:MAINTAIN','postgres:REFERENCES','postgres:SELECT','postgres:TRIGGER','postgres:TRUNCATE','postgres:UPDATE','service_role:DELETE','service_role:INSERT','service_role:MAINTAIN','service_role:REFERENCES','service_role:SELECT','service_role:TRIGGER','service_role:TRUNCATE','service_role:UPDATE']::text[]),
+   ('vocabulary_exclusions',ARRAY['authenticated:DELETE','authenticated:INSERT','authenticated:SELECT','authenticated:UPDATE','postgres:DELETE','postgres:INSERT','postgres:MAINTAIN','postgres:REFERENCES','postgres:SELECT','postgres:TRIGGER','postgres:TRUNCATE','postgres:UPDATE','service_role:DELETE','service_role:INSERT','service_role:MAINTAIN','service_role:REFERENCES','service_role:SELECT','service_role:TRIGGER','service_role:TRUNCATE','service_role:UPDATE']::text[],ARRAY['authenticated:DELETE','authenticated:INSERT','authenticated:SELECT','authenticated:UPDATE','postgres:DELETE','postgres:INSERT','postgres:MAINTAIN','postgres:REFERENCES','postgres:SELECT','postgres:TRIGGER','postgres:TRUNCATE','postgres:UPDATE','service_role:DELETE','service_role:INSERT','service_role:MAINTAIN','service_role:REFERENCES','service_role:SELECT','service_role:TRIGGER','service_role:TRUNCATE','service_role:UPDATE']::text[]),
+   ('active_vocabulary',ARRAY['authenticated:SELECT','postgres:DELETE','postgres:INSERT','postgres:MAINTAIN','postgres:REFERENCES','postgres:SELECT','postgres:TRIGGER','postgres:TRUNCATE','postgres:UPDATE','service_role:DELETE','service_role:INSERT','service_role:MAINTAIN','service_role:REFERENCES','service_role:SELECT','service_role:TRIGGER','service_role:TRUNCATE','service_role:UPDATE']::text[],ARRAY['authenticated:SELECT','postgres:DELETE','postgres:INSERT','postgres:MAINTAIN','postgres:REFERENCES','postgres:SELECT','postgres:TRIGGER','postgres:TRUNCATE','postgres:UPDATE','service_role:DELETE','service_role:INSERT','service_role:MAINTAIN','service_role:REFERENCES','service_role:SELECT','service_role:TRIGGER','service_role:TRUNCATE','service_role:UPDATE']::text[]),
+   ('vocabulary_with_exclusions',ARRAY['authenticated:SELECT','postgres:DELETE','postgres:INSERT','postgres:MAINTAIN','postgres:REFERENCES','postgres:SELECT','postgres:TRIGGER','postgres:TRUNCATE','postgres:UPDATE','service_role:DELETE','service_role:INSERT','service_role:MAINTAIN','service_role:REFERENCES','service_role:SELECT','service_role:TRIGGER','service_role:TRUNCATE','service_role:UPDATE']::text[],ARRAY['authenticated:SELECT','postgres:DELETE','postgres:INSERT','postgres:MAINTAIN','postgres:REFERENCES','postgres:SELECT','postgres:TRIGGER','postgres:TRUNCATE','postgres:UPDATE','service_role:DELETE','service_role:INSERT','service_role:MAINTAIN','service_role:REFERENCES','service_role:SELECT','service_role:TRIGGER','service_role:TRUNCATE','service_role:UPDATE']::text[])) expected(tab,before_acl,after_acl) LOOP
+   SELECT ARRAY(SELECT CASE WHEN acl.grantee=0 THEN 'PUBLIC' ELSE pg_catalog.pg_get_userbyid(acl.grantee)::text END||':'||acl.privilege_type
+    FROM pg_catalog.pg_class c CROSS JOIN LATERAL pg_catalog.aclexplode(coalesce(c.relacl,pg_catalog.acldefault('r',c.relowner))) acl
+    WHERE c.oid=pg_catalog.to_regclass('public.'||r.tab) ORDER BY 1)::text INTO def;
+   IF (def::text[] IS DISTINCT FROM r.before_acl AND def::text[] IS DISTINCT FROM r.after_acl)
+    OR EXISTS(SELECT 1 FROM pg_catalog.pg_class c CROSS JOIN LATERAL pg_catalog.aclexplode(coalesce(c.relacl,pg_catalog.acldefault('r',c.relowner))) acl WHERE c.oid=pg_catalog.to_regclass('public.'||r.tab) AND acl.is_grantable)
+   THEN RAISE EXCEPTION 'korean_support_unexpected_modern_relation_acl: %',r.tab; END IF;
+  END LOOP;
+ END IF;
+ IF EXISTS(SELECT 1 FROM pg_catalog.pg_attribute a WHERE a.attrelid IN ('public.user_vocabulary'::pg_catalog.regclass,'public.review_events'::pg_catalog.regclass,'public.user_known_words'::pg_catalog.regclass,'public.vocabulary_contexts'::pg_catalog.regclass,'public.vocabulary_exclusions'::pg_catalog.regclass) AND a.attnum>0 AND NOT a.attisdropped AND a.attacl IS NOT NULL)
+ THEN RAISE EXCEPTION 'korean_support_unexpected_learning_column_acl'; END IF;
  -- Known/context/exclusion policies are the committed, owner-scoped contract.
  FOR r IN SELECT * FROM (VALUES
    ('user_known_words','user_known_words_delete_own','5aa1b76c7db798b1bc076c00da396b1a'),
@@ -181,11 +290,14 @@ BEGIN
  ) expected(tab,name,hash) LOOP
   IF NOT EXISTS(SELECT 1 FROM pg_catalog.pg_policy p JOIN pg_catalog.pg_class c ON c.oid=p.polrelid
    WHERE c.relnamespace='public'::pg_catalog.regnamespace AND c.relname=r.tab AND p.polname=r.name
-   AND pg_catalog.md5(row(p.polcmd,p.polpermissive,ARRAY(SELECT rolname::text FROM pg_catalog.pg_roles WHERE oid=ANY(p.polroles) ORDER BY rolname),pg_catalog.pg_get_expr(p.polqual,p.polrelid),pg_catalog.pg_get_expr(p.polwithcheck,p.polrelid))::text)=r.hash)
+   AND pg_catalog.md5(row(p.polcmd,p.polpermissive,ARRAY(SELECT CASE WHEN role_oid=0 THEN 'PUBLIC' ELSE (SELECT rolname::text FROM pg_catalog.pg_roles WHERE oid=role_oid) END FROM unnest(p.polroles) role_oid ORDER BY 1),pg_catalog.pg_get_expr(p.polqual,p.polrelid),pg_catalog.pg_get_expr(p.polwithcheck,p.polrelid))::text)=r.hash)
   THEN RAISE EXCEPTION 'korean_support_unexpected_policy: %.%',r.tab,r.name; END IF;
  END LOOP;
+ IF modern AND NOT EXISTS(SELECT 1 FROM pg_catalog.pg_policy p WHERE p.polrelid='public.vocabulary_contexts'::pg_catalog.regclass
+  AND p.polname='vocabulary_class_context_read' AND pg_catalog.md5(row(p.polcmd,p.polpermissive,ARRAY(SELECT CASE WHEN role_oid=0 THEN 'PUBLIC' ELSE (SELECT rolname::text FROM pg_catalog.pg_roles WHERE oid=role_oid) END FROM unnest(p.polroles) role_oid ORDER BY 1),pg_catalog.pg_get_expr(p.polqual,p.polrelid),pg_catalog.pg_get_expr(p.polwithcheck,p.polrelid))::text)='419dbf2cb6d3b0b71986b2dc919f5e3c')
+ THEN RAISE EXCEPTION 'korean_support_unexpected_class_policy'; END IF;
  IF (SELECT count(*) FROM pg_catalog.pg_policy p JOIN pg_catalog.pg_class c ON c.oid=p.polrelid
-  WHERE c.relnamespace='public'::pg_catalog.regnamespace AND c.relname IN ('vocabulary_contexts','user_known_words','vocabulary_exclusions'))<>7
+  WHERE c.relnamespace='public'::pg_catalog.regnamespace AND c.relname IN ('vocabulary_contexts','user_known_words','vocabulary_exclusions'))<>7+(CASE WHEN modern THEN 1 ELSE 0 END)
  THEN RAISE EXCEPTION 'korean_support_additional_policy'; END IF;
  FOR r IN SELECT * FROM (VALUES
    ('review_events','guard_excluded_review_event','guard_excluded_review_event',7,'1496652189ebc1244abc11d64cec7da5'),
@@ -209,22 +321,33 @@ BEGIN
   AND NOT EXISTS(SELECT 1 FROM (VALUES ('review_events','guard_excluded_review_event'),('user_known_words','lock_known_word_owner'),('user_known_words','sync_known_word_review_exclusion'),('user_vocabulary','guard_excluded_vocabulary'),('user_vocabulary','lock_vocabulary_exclusion_owner'),('user_vocabulary','preserve_deleted_vocabulary_exclusion'),('user_vocabulary','sync_vocabulary_exclusion_identity'),('vocabulary_exclusions','guard_known_word_review_exclusion'),('vocabulary_exclusions','lock_exclusion_owner')) reviewed(tab,name) WHERE reviewed.tab=c.relname AND reviewed.name=t.tgname)
   AND t.tgname<>'guard_korean_learning_contract')
  THEN RAISE EXCEPTION 'korean_support_unexpected_trigger'; END IF;
- FOR r IN SELECT * FROM (VALUES ('active_vocabulary','13c5a7ace84559e11eb69b4a34cd0c07'),('vocabulary_with_exclusions','b93ad83e32686013f426dad9e646600f')) expected(name,hash) LOOP
+ FOR r IN SELECT * FROM (VALUES ('active_vocabulary',CASE WHEN modern THEN '008081605dbf386a9242ac58bbfbd02f' ELSE '13c5a7ace84559e11eb69b4a34cd0c07' END),('vocabulary_with_exclusions',CASE WHEN modern THEN 'e171e8add613931bf2d3cbf25056a1f2' ELSE 'b93ad83e32686013f426dad9e646600f' END)) expected(name,hash) LOOP
   IF NOT EXISTS(SELECT 1 FROM pg_catalog.pg_class c WHERE c.relnamespace='public'::pg_catalog.regnamespace
    AND c.relname=r.name AND c.relkind='v' AND c.reloptions @> ARRAY['security_invoker=true']
    AND pg_catalog.md5(pg_catalog.pg_get_viewdef(c.oid,true))=r.hash)
   THEN RAISE EXCEPTION 'korean_support_unexpected_view: %',r.name; END IF;
  END LOOP;
- -- Original user_vocabulary/review_events DDL is absent from the repository.
- -- Accept only a simple authenticated owner predicate (both equality orders and
- -- the committed scalar SELECT auth.uid form); reject extra permissive policies.
+ -- Modern owner policies deliberately remain TO PUBLIC. The separate table
+ -- privilege reduction below removes anonymous learner-table access; do not
+ -- rewrite this observed owner/classroom contract into an older fixture.
+ IF modern THEN
+  FOR r IN SELECT * FROM (VALUES ('review_events','review_events_insert_own','c6a869d98ef0e16b67620cfaf91ce3bb'),
+   ('review_events','review_events_select_own','398dbb737a36f04aa03253a26622ddb6'),
+   ('user_vocabulary','Users can manage own vocabulary','6213f559ecfd5172b4408cc31d4f0b82')) expected(tab,name,hash) LOOP
+   IF NOT EXISTS(SELECT 1 FROM pg_catalog.pg_policy p WHERE p.polrelid=pg_catalog.to_regclass('public.'||r.tab)
+    AND p.polname=r.name AND pg_catalog.md5(row(p.polcmd,p.polpermissive,ARRAY(SELECT CASE WHEN role_oid=0 THEN 'PUBLIC' ELSE (SELECT rolname::text FROM pg_catalog.pg_roles WHERE oid=role_oid) END FROM unnest(p.polroles) role_oid ORDER BY 1),pg_catalog.pg_get_expr(p.polqual,p.polrelid),pg_catalog.pg_get_expr(p.polwithcheck,p.polrelid))::text)=r.hash)
+   THEN RAISE EXCEPTION 'korean_support_unexpected_modern_owner_policy: %.%',r.tab,r.name; END IF;
+  END LOOP;
+  IF (SELECT count(*) FROM pg_catalog.pg_policy p WHERE p.polrelid IN ('public.user_vocabulary'::pg_catalog.regclass,'public.review_events'::pg_catalog.regclass))<>3
+  THEN RAISE EXCEPTION 'korean_support_additional_modern_owner_policy'; END IF;
+ END IF;
  FOR r IN SELECT c.relname,p.polname,p.polcmd,p.polroles,p.polpermissive,
   pg_catalog.pg_get_expr(p.polqual,p.polrelid) qual,pg_catalog.pg_get_expr(p.polwithcheck,p.polrelid) chk
   FROM pg_catalog.pg_policy p JOIN pg_catalog.pg_class c ON c.oid=p.polrelid
   WHERE c.relnamespace='public'::pg_catalog.regnamespace AND c.relname IN ('user_vocabulary','review_events') LOOP
   IF NOT r.polpermissive THEN RAISE EXCEPTION 'korean_support_unreviewed_restrictive_policy: %.%',r.relname,r.polname; END IF;
   IF r.polpermissive THEN
-   IF r.polroles IS DISTINCT FROM ARRAY[(SELECT oid FROM pg_catalog.pg_roles WHERE rolname='authenticated')]::oid[]
+   IF r.polroles IS DISTINCT FROM (CASE WHEN modern THEN ARRAY[0]::oid[] ELSE ARRAY[(SELECT oid FROM pg_catalog.pg_roles WHERE rolname='authenticated')]::oid[] END)
     THEN RAISE EXCEPTION 'korean_support_unexpected_owner_roles: %.%',r.relname,r.polname; END IF;
    FOREACH owner_expr IN ARRAY ARRAY[r.qual,r.chk] LOOP
     IF owner_expr IS NOT NULL AND pg_catalog.regexp_replace(owner_expr,'[()\s]','','g') NOT IN
@@ -238,15 +361,15 @@ BEGIN
  FOR r IN SELECT * FROM (VALUES ('user_vocabulary','r'),('user_vocabulary','a'),('user_vocabulary','w'),('review_events','r'),('review_events','a')) required(tab,cmd) LOOP
   IF NOT EXISTS(SELECT 1 FROM pg_catalog.pg_policy p WHERE p.polrelid=pg_catalog.to_regclass('public.'||r.tab)
    AND p.polpermissive AND p.polcmd::text IN ('*',r.cmd)
-   AND p.polroles=ARRAY[(SELECT oid FROM pg_catalog.pg_roles WHERE rolname='authenticated')]::oid[])
+   AND p.polroles=CASE WHEN modern THEN ARRAY[0]::oid[] ELSE ARRAY[(SELECT oid FROM pg_catalog.pg_roles WHERE rolname='authenticated')]::oid[] END)
   THEN RAISE EXCEPTION 'korean_support_missing_owner_policy: %.%',r.tab,r.cmd; END IF;
  END LOOP;
  FOR r IN SELECT unnest(ARRAY['user_vocabulary','vocabulary_contexts','user_known_words','vocabulary_exclusions','review_events']) tab LOOP
   IF NOT EXISTS(SELECT 1 FROM pg_catalog.pg_class WHERE oid=pg_catalog.to_regclass('public.'||r.tab) AND relrowsecurity AND relkind='r')
    OR NOT pg_catalog.has_table_privilege('authenticated','public.'||r.tab,'SELECT')
    OR NOT pg_catalog.has_table_privilege('authenticated','public.'||r.tab,'INSERT')
-   OR pg_catalog.has_table_privilege('anon','public.'||r.tab,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE')
-   OR pg_catalog.has_table_privilege('authenticated','public.'||r.tab,'TRUNCATE')
+   OR (NOT modern AND pg_catalog.has_table_privilege('anon','public.'||r.tab,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE'))
+   OR (NOT modern AND pg_catalog.has_table_privilege('authenticated','public.'||r.tab,'TRUNCATE'))
   THEN RAISE EXCEPTION 'korean_support_unsafe_table_privileges_or_rls: %',r.tab; END IF;
  END LOOP;
  IF NOT pg_catalog.has_table_privilege('authenticated','public.user_vocabulary','UPDATE')
@@ -293,6 +416,20 @@ BEGIN
   OR EXISTS(SELECT 1 FROM pg_catalog.pg_constraint c JOIN pg_catalog.pg_attribute a ON a.attrelid=c.conrelid AND a.attname='lang' WHERE c.conrelid='public.user_known_words'::pg_catalog.regclass AND c.contype='c' AND a.attnum=ANY(c.conkey) AND pg_catalog.pg_get_expr(c.conbin,c.conrelid)<>'(lang ~ ''^[a-z]{2}$''::text)')
  THEN RAISE EXCEPTION 'korean_support_unexpected_known_language_check'; END IF;
 END $preflight$;
+
+-- Approved protective reduction only: do not alter owner policies, legitimate
+-- authenticated CRUD, service-role permissions, or adjacent source-table ACLs.
+REVOKE ALL ON public.user_vocabulary,public.review_events FROM anon;
+REVOKE TRUNCATE ON public.user_vocabulary,public.review_events,public.user_known_words FROM authenticated;
+DO $privileges$
+DECLARE tab text;
+BEGIN
+ FOREACH tab IN ARRAY ARRAY['user_vocabulary','vocabulary_contexts','user_known_words','vocabulary_exclusions','review_events'] LOOP
+  IF pg_catalog.has_table_privilege('anon','public.'||tab,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
+   OR pg_catalog.has_table_privilege('authenticated','public.'||tab,'TRUNCATE')
+  THEN RAISE EXCEPTION 'korean_support_unsafe_effective_privileges: %',tab; END IF;
+ END LOOP;
+END $privileges$;
 
 -- Existing verified v1 contract guards would reject administrative re-enable
 -- after rollback. Suspend only these guards while all affected writes are locked;
@@ -514,6 +651,87 @@ BEGIN
 END ');
   EXECUTE definition;
  END IF;
+ SELECT pg_catalog.pg_get_functiondef(pg_catalog.to_regprocedure('public.save_vocabulary_context_for(uuid,jsonb,jsonb,uuid,text)')),prosrc INTO definition,body FROM pg_catalog.pg_proc WHERE oid=pg_catalog.to_regprocedure('public.save_vocabulary_context_for(uuid,jsonb,jsonb,uuid,text)');
+ IF pg_catalog.md5(body)='1facb74b4b7d33a572cef9642341342f' THEN
+  definition:=replace(definition,body,'
+declare
+  v public.user_vocabulary%rowtype;
+  who uuid := p_owner;
+  created boolean := false;
+  added integer;
+  matches integer;
+  word text := btrim(p_word->>''word_text'');
+  meaning text := btrim(p_word->>''meaning'');
+begin
+  if who is null or (current_user <> ''service_role'' and (who is distinct from auth.uid() or p_source->>''kind''=''class'')) then raise exception ''login_required'' using errcode=''42501''; end if;
+  if word is null or length(word) not between 1 and 300 or meaning is null or length(meaning) not between 1 and 2000
+    or p_word->>''language'' is null or p_word->>''language'' not in (''Japanese'',''Chinese'',''English'',''French'',''Korean'')
+    or (p_word->>''language''=''Korean'' and p_source->>''kind''<>''reading'')
+    or p_source->>''kind'' is null or p_source->>''kind'' not in (''textbook'',''reading'',''pdf'',''class'')
+    then raise exception ''invalid_context'' using errcode=''22023''; end if;
+
+  if p_word->>''language''=''Korean'' then
+    if (public.learning_language_capabilities()->''languages''->''Korean''->>''save'')::boolean is distinct from true
+      then raise exception ''korean_learning_not_ready'' using errcode=''55000''; end if;
+    if p_word ?| array[''interval'',''ease_factor'',''repetitions'',''next_review_at''] then
+      if jsonb_typeof(p_word->''interval'') is distinct from ''number''
+        or jsonb_typeof(p_word->''ease_factor'') is distinct from ''number''
+        or jsonb_typeof(p_word->''repetitions'') is distinct from ''number''
+        or jsonb_typeof(p_word->''next_review_at'') is distinct from ''string''
+        then raise exception ''invalid_initial_schedule'' using errcode=''22023''; end if;
+      if (p_word->>''interval'')::numeric not between 0 and 36500
+        or (p_word->>''ease_factor'')::numeric not between 1 and 10
+        or (p_word->>''repetitions'')::numeric not between 0 and 100000
+        or (p_word->>''repetitions'')::numeric<>trunc((p_word->>''repetitions'')::numeric)
+        or not isfinite((p_word->>''next_review_at'')::timestamptz)
+        then raise exception ''invalid_initial_schedule'' using errcode=''22023''; end if;
+    end if;
+  end if;
+
+  -- 예전 뷰어가 활용형(word_text=books, base_form=book)으로 저장한 카드도 재사용한다.
+  -- 후보가 여러 개면 추측해서 새 카드를 만들거나 임의로 합치지 않는다.
+  select * into v from public.user_vocabulary where user_id=who and word_text=word for update;
+  if not found then
+    select count(*) into matches from public.user_vocabulary where user_id=who and language=p_word->>''language'' and base_form=word;
+    if matches > 1 then raise exception ''vocabulary_ambiguous_match''; end if;
+    if matches = 1 then
+      select * into v from public.user_vocabulary where user_id=who and language=p_word->>''language'' and base_form=word for update;
+    end if;
+  end if;
+  if v.id is null then
+    insert into public.user_vocabulary(user_id,word_text,base_form,meaning,furigana,pos,language,source_sentence,source_material_id,next_review_at)
+    values(who,word,word,meaning,coalesce(p_word->>''furigana'',''''),coalesce(p_word->>''pos'',''''),p_word->>''language'',p_source->>''quote'',
+      case when p_source->>''kind''=''reading'' then (p_source->>''materialId'')::bigint end,now())
+    on conflict(user_id,word_text) do nothing returning * into v;
+    created := found;
+    if created and p_word->>''language''=''Korean'' and p_word ? ''interval'' then
+      update public.user_vocabulary set interval=(p_word->>''interval'')::real,
+        ease_factor=(p_word->>''ease_factor'')::real,repetitions=(p_word->>''repetitions'')::integer,
+        next_review_at=(p_word->>''next_review_at'')::timestamptz where id=v.id and user_id=who returning * into v;
+    end if;
+  end if;
+  if not created and v.id is null then
+    select * into v from public.user_vocabulary where user_id=who and word_text=word for update;
+    if not found then raise exception ''word_not_available''; end if;
+  end if;
+  if not created then
+    if v.language is distinct from p_word->>''language'' then raise exception ''vocabulary_language_conflict''; end if;
+    if btrim(coalesce(v.meaning,'''')) <> meaning and not (
+      p_confirm_id is not null and v.id=p_confirm_id and v.meaning is not distinct from p_confirm_meaning
+    ) then raise exception ''vocabulary_meaning_conflict'' using detail=v.id::text; end if;
+  end if;
+
+  insert into public.vocabulary_contexts(user_id,vocabulary_id,kind,lang,chapter_slug,material_id,pdf_id,locator,quote,translation,source_key)
+  values(who,v.id,p_source->>''kind'',p_word->>''language'',p_source->>''chapterSlug'',
+    (p_source->>''materialId'')::bigint,(p_source->>''pdfId'')::uuid,coalesce(p_source->''locator'',''{}''::jsonb),
+    p_source->>''quote'',coalesce(p_source->>''translation'',''''),
+    md5((p_source - ''translation'')::text))
+  on conflict(user_id,vocabulary_id,source_key) do nothing;
+  get diagnostics added = row_count;
+  return jsonb_build_object(''vocabularyId'',v.id,''created'',created,''contextAdded'',added>0);
+end ');
+  EXECUTE definition;
+ END IF;
 END $extend$;
 
 INSERT INTO public.vocabulary_exclusions(user_id,language,word_text,known_word_keys)
@@ -551,6 +769,13 @@ BEGIN
  IF TG_OP='DELETE' THEN RETURN OLD; ELSE RETURN NEW; END IF;
 END $guard$;
 REVOKE ALL ON FUNCTION public.guard_korean_learning_contract() FROM PUBLIC,anon,authenticated;
+DO $guard_acl$
+DECLARE grantee_name text;
+BEGIN
+ FOR grantee_name IN SELECT DISTINCT pg_catalog.pg_get_userbyid(acl.grantee) FROM pg_catalog.pg_proc p
+  CROSS JOIN LATERAL pg_catalog.aclexplode(p.proacl) acl WHERE p.oid=pg_catalog.to_regprocedure('public.guard_korean_learning_contract()') AND acl.grantee<>0 AND acl.grantee<>p.proowner
+ LOOP EXECUTE pg_catalog.format('REVOKE ALL ON FUNCTION public.guard_korean_learning_contract() FROM %I',grantee_name); END LOOP;
+END $guard_acl$;
 DO $guards$
 DECLARE tab text; trigger_def text;
 BEGIN
@@ -572,7 +797,7 @@ DO $capability$
 DECLARE contract_hash text;
 BEGIN
  WITH RECURSIVE relevant_roles(oid) AS (
- SELECT oid FROM pg_catalog.pg_roles WHERE rolname IN ('authenticated','anon')
+ SELECT oid FROM pg_catalog.pg_roles WHERE rolname IN ('authenticated','anon','service_role')
  UNION SELECT m.roleid FROM pg_catalog.pg_auth_members m JOIN relevant_roles r ON r.oid=m.member
 ), tables AS (
  SELECT c.* FROM pg_catalog.pg_class c WHERE c.relnamespace='public'::pg_catalog.regnamespace
@@ -587,9 +812,11 @@ BEGIN
  UNION ALL SELECT 'policy:'||c.relname||':'||p.polname,pg_catalog.jsonb_build_array(p.polcmd,p.polpermissive,p.polroles,pg_catalog.pg_get_expr(p.polqual,p.polrelid),pg_catalog.pg_get_expr(p.polwithcheck,p.polrelid)) FROM pg_catalog.pg_policy p JOIN tables c ON c.oid=p.polrelid
  UNION ALL SELECT 'trigger:'||c.relname||':'||t.tgname,pg_catalog.jsonb_build_array(pg_catalog.pg_get_triggerdef(t.oid),t.tgenabled) FROM pg_catalog.pg_trigger t JOIN tables c ON c.oid=t.tgrelid WHERE NOT t.tgisinternal
  UNION ALL SELECT 'view:'||c.relname,pg_catalog.to_jsonb(pg_catalog.pg_get_viewdef(c.oid,true)) FROM tables c WHERE c.relkind='v'
- UNION ALL SELECT 'column:'||c.relname||':'||a.attname,pg_catalog.jsonb_build_array(a.atttypid,a.atttypmod,a.attnotnull,pg_catalog.pg_get_expr(d.adbin,d.adrelid)) FROM pg_catalog.pg_attribute a JOIN tables c ON c.oid=a.attrelid LEFT JOIN pg_catalog.pg_attrdef d ON d.adrelid=a.attrelid AND d.adnum=a.attnum WHERE a.attnum>0 AND NOT a.attisdropped
+ UNION ALL SELECT 'column:'||c.relname||':'||a.attname,pg_catalog.jsonb_build_array(a.atttypid,a.atttypmod,a.attnotnull,a.attacl,a.attidentity,a.attgenerated,pg_catalog.pg_get_expr(d.adbin,d.adrelid)) FROM pg_catalog.pg_attribute a JOIN tables c ON c.oid=a.attrelid LEFT JOIN pg_catalog.pg_attrdef d ON d.adrelid=a.attrelid AND d.adnum=a.attnum WHERE a.attnum>0 AND NOT a.attisdropped
  UNION ALL SELECT 'function:'||p.oid::text,pg_catalog.jsonb_build_array(pg_catalog.pg_get_functiondef(p.oid),p.proacl,p.proowner) FROM pg_catalog.pg_proc p WHERE p.oid IN (
  SELECT pg_catalog.to_regprocedure(f.signature) FROM (VALUES ('public.save_vocabulary_context(jsonb,jsonb,uuid,text)'),('public.set_vocabulary_exclusion(text,text,uuid,boolean,uuid)'),('public.lock_vocabulary_exclusion_owner()'),('public.preserve_deleted_vocabulary_exclusion()'),('public.guard_excluded_vocabulary()'),('public.guard_excluded_review_event()'),('public.sync_vocabulary_exclusion_identity()'),('public.sync_known_word_review_exclusion()'),('public.guard_known_word_review_exclusion()')) f(signature)
+ UNION SELECT dependency.oid FROM (VALUES ('public.save_vocabulary_context(jsonb,jsonb,uuid,text)'),('public.save_vocabulary_context_for(uuid,jsonb,jsonb,uuid,text)'),('public.viewer_replace_analysis(bigint,text,jsonb,text,jsonb,uuid)'),('public.viewer_undo_vocabulary_save(uuid,jsonb,uuid[])'),('public.classroom_save_vocabulary(uuid,bigint,integer,bigint,text,jsonb,jsonb,jsonb,jsonb,uuid,text)'),('library_private.protect_source_delete()'),('public.guard_source_passage_write()'),('public.library_book_preserve_metadata()'),('public.validate_source_passage()'),('public.protect_composer_source()')) f(signature)
+ JOIN pg_catalog.pg_proc dependency ON dependency.oid::pg_catalog.regprocedure::text=f.signature
  UNION SELECT t.tgfoid FROM pg_catalog.pg_trigger t JOIN tables c ON c.oid=t.tgrelid WHERE NOT t.tgisinternal)
 ) SELECT pg_catalog.md5(pg_catalog.jsonb_object_agg(key,val ORDER BY key)::text) FROM objects INTO contract_hash;
  EXECUTE pg_catalog.format($definition$
@@ -599,7 +826,7 @@ BEGIN
  BEGIN
   IF auth.uid() IS NULL THEN RAISE EXCEPTION 'login_required' USING ERRCODE='42501'; END IF;
   WITH RECURSIVE relevant_roles(oid) AS (
- SELECT oid FROM pg_catalog.pg_roles WHERE rolname IN ('authenticated','anon')
+ SELECT oid FROM pg_catalog.pg_roles WHERE rolname IN ('authenticated','anon','service_role')
  UNION SELECT m.roleid FROM pg_catalog.pg_auth_members m JOIN relevant_roles r ON r.oid=m.member
 ), tables AS (
  SELECT c.* FROM pg_catalog.pg_class c WHERE c.relnamespace='public'::pg_catalog.regnamespace
@@ -614,9 +841,11 @@ BEGIN
  UNION ALL SELECT 'policy:'||c.relname||':'||p.polname,pg_catalog.jsonb_build_array(p.polcmd,p.polpermissive,p.polroles,pg_catalog.pg_get_expr(p.polqual,p.polrelid),pg_catalog.pg_get_expr(p.polwithcheck,p.polrelid)) FROM pg_catalog.pg_policy p JOIN tables c ON c.oid=p.polrelid
  UNION ALL SELECT 'trigger:'||c.relname||':'||t.tgname,pg_catalog.jsonb_build_array(pg_catalog.pg_get_triggerdef(t.oid),t.tgenabled) FROM pg_catalog.pg_trigger t JOIN tables c ON c.oid=t.tgrelid WHERE NOT t.tgisinternal
  UNION ALL SELECT 'view:'||c.relname,pg_catalog.to_jsonb(pg_catalog.pg_get_viewdef(c.oid,true)) FROM tables c WHERE c.relkind='v'
- UNION ALL SELECT 'column:'||c.relname||':'||a.attname,pg_catalog.jsonb_build_array(a.atttypid,a.atttypmod,a.attnotnull,pg_catalog.pg_get_expr(d.adbin,d.adrelid)) FROM pg_catalog.pg_attribute a JOIN tables c ON c.oid=a.attrelid LEFT JOIN pg_catalog.pg_attrdef d ON d.adrelid=a.attrelid AND d.adnum=a.attnum WHERE a.attnum>0 AND NOT a.attisdropped
+ UNION ALL SELECT 'column:'||c.relname||':'||a.attname,pg_catalog.jsonb_build_array(a.atttypid,a.atttypmod,a.attnotnull,a.attacl,a.attidentity,a.attgenerated,pg_catalog.pg_get_expr(d.adbin,d.adrelid)) FROM pg_catalog.pg_attribute a JOIN tables c ON c.oid=a.attrelid LEFT JOIN pg_catalog.pg_attrdef d ON d.adrelid=a.attrelid AND d.adnum=a.attnum WHERE a.attnum>0 AND NOT a.attisdropped
  UNION ALL SELECT 'function:'||p.oid::text,pg_catalog.jsonb_build_array(pg_catalog.pg_get_functiondef(p.oid),p.proacl,p.proowner) FROM pg_catalog.pg_proc p WHERE p.oid IN (
  SELECT pg_catalog.to_regprocedure(f.signature) FROM (VALUES ('public.save_vocabulary_context(jsonb,jsonb,uuid,text)'),('public.set_vocabulary_exclusion(text,text,uuid,boolean,uuid)'),('public.lock_vocabulary_exclusion_owner()'),('public.preserve_deleted_vocabulary_exclusion()'),('public.guard_excluded_vocabulary()'),('public.guard_excluded_review_event()'),('public.sync_vocabulary_exclusion_identity()'),('public.sync_known_word_review_exclusion()'),('public.guard_known_word_review_exclusion()')) f(signature)
+ UNION SELECT dependency.oid FROM (VALUES ('public.save_vocabulary_context(jsonb,jsonb,uuid,text)'),('public.save_vocabulary_context_for(uuid,jsonb,jsonb,uuid,text)'),('public.viewer_replace_analysis(bigint,text,jsonb,text,jsonb,uuid)'),('public.viewer_undo_vocabulary_save(uuid,jsonb,uuid[])'),('public.classroom_save_vocabulary(uuid,bigint,integer,bigint,text,jsonb,jsonb,jsonb,jsonb,uuid,text)'),('library_private.protect_source_delete()'),('public.guard_source_passage_write()'),('public.library_book_preserve_metadata()'),('public.validate_source_passage()'),('public.protect_composer_source()')) f(signature)
+ JOIN pg_catalog.pg_proc dependency ON dependency.oid::pg_catalog.regprocedure::text=f.signature
  UNION SELECT t.tgfoid FROM pg_catalog.pg_trigger t JOIN tables c ON c.oid=t.tgrelid WHERE NOT t.tgisinternal)
 ) SELECT pg_catalog.md5(pg_catalog.jsonb_object_agg(key,val ORDER BY key)::text) FROM objects INTO live_hash;
   ready:=live_hash= %L;
@@ -626,5 +855,13 @@ BEGIN
  $definition$,contract_hash);
 END $capability$;
 REVOKE ALL ON FUNCTION public.learning_language_capabilities() FROM PUBLIC,anon,authenticated;
+DO $capability_acl$
+DECLARE grantee_name text;
+BEGIN
+ FOR grantee_name IN SELECT DISTINCT pg_catalog.pg_get_userbyid(acl.grantee) FROM pg_catalog.pg_proc p
+  CROSS JOIN LATERAL pg_catalog.aclexplode(p.proacl) acl WHERE p.oid=pg_catalog.to_regprocedure('public.learning_language_capabilities()') AND acl.grantee<>0 AND acl.grantee<>p.proowner
+ LOOP EXECUTE pg_catalog.format('REVOKE ALL ON FUNCTION public.learning_language_capabilities() FROM %I',grantee_name); END LOOP;
+END $capability_acl$;
 GRANT EXECUTE ON FUNCTION public.learning_language_capabilities() TO authenticated;
+NOTIFY pgrst,'reload schema';
 COMMIT;
