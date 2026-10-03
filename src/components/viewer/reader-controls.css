@@ -411,3 +411,35 @@
   .manabi-app .viewer-layout .viewer-inspector__tabs button{flex:1;min-width:64px;padding:6px}
   .manabi-app .viewer-layout .viewer-inspector__nav{order:2;flex:1 0 100%;justify-content:flex-end}
 }
+
+/* Word-body hierarchy only. Existing panel scrolling and grading geometry stay intact. */
+.manabi-app .viewer-layout .reader-card-body .word-detail-card__meta{font-size:.75rem;line-height:1.5;gap:8px;letter-spacing:0;margin-bottom:8px}
+.manabi-app .viewer-layout .reader-card-body .reader-card-headword{align-items:flex-start;gap:12px;margin-bottom:12px}
+.manabi-app .viewer-layout .reader-card-lexeme{flex:1;min-width:0}
+.manabi-app .viewer-layout .reader-card-pronunciation{font-size:.875rem;line-height:1.6;font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--reader-muted);overflow-wrap:anywhere;margin-top:4px}
+.manabi-app .viewer-layout .reader-card-body .word-detail-card__meaningrow{align-items:flex-start;gap:8px;margin-bottom:16px}
+.manabi-app .viewer-layout .reader-card-body .word-detail-card__meaning{font-size:1.375rem;line-height:1.5;letter-spacing:0;overflow-wrap:anywhere}
+.manabi-app .viewer-layout .reader-card-body .word-detail-card__edit{margin-top:calc((2.0625rem - 44px)/2)}
+.manabi-app .viewer-layout .reader-card-body .reader-card-context{padding:12px 0;margin:0;border-top:1px solid var(--reader-line)}
+.manabi-app .viewer-layout .reader-card-body .reader-card-source{padding:0;margin:0 0 8px;border:0;background:transparent}
+.manabi-app .viewer-layout .reader-card-body .reader-card-source blockquote{margin:0;padding:0;font-size:.875rem;line-height:1.75;overflow-wrap:anywhere;color:var(--reader-ink)}
+.manabi-app .viewer-layout .reader-card-body .word-detail-card__actrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:0}
+.manabi-app .viewer-layout .reader-card-body .word-detail-card__actrow button{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:6px 8px;font-size:.75rem;line-height:1.5;text-align:start;white-space:normal}
+.manabi-app .viewer-layout .reader-card-body .word-detail-card__actrow .action-icon{flex:none}
+.manabi-app .viewer-layout .reader-card-body .reader-card-disclosure{border:0;border-top:1px solid var(--reader-line);padding:0;margin:0}
+.manabi-app .viewer-layout .reader-card-body .reader-card-disclosure>summary{display:flex;align-items:center;gap:8px;min-height:44px;padding:8px 0;list-style:none;cursor:pointer;font-size:.8125rem;line-height:1.5;color:var(--reader-muted);overflow-wrap:anywhere}
+.manabi-app .viewer-layout .reader-card-body .reader-card-disclosure>summary::-webkit-details-marker{display:none}
+.manabi-app .viewer-layout .reader-card-body .reader-card-disclosure>summary::after{content:none}
+.manabi-app .viewer-layout .reader-card-body .reader-card-disclosure>summary>.action-icon{margin-left:auto;flex:none}
+.manabi-app .viewer-layout .reader-card-body .reader-card-disclosure[open]>summary>.action-icon{transform:rotate(180deg)}
+.manabi-app .viewer-layout .reader-card-body .reader-card-disclosure>summary:focus-visible{outline:2px solid var(--reader-accent);outline-offset:2px;border-radius:3px}
+.manabi-app .viewer-layout .reader-card-body .reader-japanese{margin:0 0 12px;font-size:.875rem;line-height:1.6}
+.manabi-app .viewer-layout .reader-card-body .reader-japanese__row{gap:8px}
+.manabi-app .viewer-layout .reader-card-body .reader-japanese__label{font-size:.75rem;min-width:0}
+.manabi-app .viewer-layout .reader-card-body .reader-japanese__row small,.manabi-app .viewer-layout .reader-card-body .reader-japanese__note,.manabi-app .viewer-layout .reader-card-body .reader-japanese__lookup{font-size:.75rem;line-height:1.6}
+.manabi-app .viewer-layout .reader-card-body .reader-japanese__lookup button{min-height:44px;line-height:1.5;text-align:start}
+.manabi-app .viewer-layout .reader-card-body .reader-card-example{margin:0 0 12px}
+.manabi-app .viewer-layout .reader-card-body .reader-card-example h3{margin:0 0 8px;font-size:.75rem;font-weight:500;line-height:1.5;color:var(--reader-muted)}
+.manabi-app .viewer-layout .reader-card-body .reader-card-example__text{font-size:.875rem;line-height:1.6;overflow-wrap:anywhere;margin-bottom:12px}
+.manabi-app .viewer-layout .reader-card-body .reader-card-example__reading{font-size:.8125rem;line-height:1.6;margin-top:4px;color:var(--reader-muted)}
+.manabi-app .viewer-layout .reader-card-body .reader-card-example__meaning{font-size:.8125rem;line-height:1.6;margin-top:4px;color:var(--reader-muted)}

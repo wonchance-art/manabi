@@ -20,6 +20,7 @@ import Link from 'next/link';
 import { LibraryReturnLink } from '@/components/web/LibraryReaderLink';
 import { readerReturnLabel } from '../lib/libraryReturn';
 import ActionIcon from '../components/ActionIcon';
+import ViewerReferenceExample from '../components/viewer/ViewerReferenceExample';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { cacheMaterial, getCachedMaterial } from '../lib/offlineCache';
@@ -2158,6 +2159,7 @@ export default function ViewerPage() {
         </div>
       </div>
       {classStudyActive?<div className="reader-teaching-word"><TeachingWord entry={{text:headText,reading:headReading,meaning:classMeaning?.meaning??refMeaning??selectedToken.meaning??''}} language={materialLang} display={teachingDisplay} onChar={(ch,index)=>toggleInspectChar(ch,`teaching:${index}`,null)}/><div className="reader-teaching-actions"><details><summary>{vt("표시")}</summary><WordDisplayControls language={materialLang} value={teachingDisplay} onChange={setTeachingDisplay}/></details>{ttsSupported&&<button className="word-detail-card__speak" onClick={()=>speak(headText,materialLang,ttsOptsFor(ttsRate))} aria-label={vt("발음 듣기")} title={vt("발음 듣기")} data-icon-action><ActionIcon name="audio"/></button>}{canEditToken&&selectedToken.id&&!classMeaning&&legacyTokenEditingAllowed&&<button className="word-detail-card__edit" aria-label={vt("뜻·발음 수정")} onClick={toggleTokenEditing}><ActionIcon name="edit"/></button>}</div></div>:<div className="reader-card-headword">
+      <div className="reader-card-lexeme">
       {(() => {
         // ① 폭맞춤 확대(오너 승인): CJK는 1em 격자라 크기 = 100cqi ÷ fitDivisor가 CSS
         // 수식으로 성립(.word-fit — 측정 JS 없음). 라틴 자료는 기존 크기 유지.
@@ -2219,6 +2221,8 @@ export default function ViewerPage() {
           </div>
         );
       })()}
+      {materialLang === 'English' && selectedToken.reading && <div className="reader-card-pronunciation">{selectedToken.reading}</div>}
+      </div>
       {ttsSupported && <button className="word-detail-card__speak" onClick={() => speak(headText, materialLang, { ...ttsOptsFor(ttsRate), preferBrowser: true })} aria-label="발음 듣기" {...(uiLocale === 'ko' ? {} : {'aria-label': vt('발음 듣기')})} title={vt("발음 듣기")} data-icon-action><ActionIcon name="audio"/></button>}
       </div>}
       {!classStudyActive&&<ViewerHanjaReading items={hanjaHunOf(headText)}/>}
@@ -2263,17 +2267,34 @@ export default function ViewerPage() {
           onClose={() => setIsEditingToken(false)}
         />
       )}
-      {materialLang === 'English' && selectedToken.reading && (
-        <div style={{
-          fontSize: '0.88rem',
-          color: 'var(--text-secondary)',
-          fontFamily: 'ui-monospace, "SF Mono", Menlo, monospace',
-          letterSpacing: '0.02em',
-          marginBottom: 14,
-        }}>
-          {selectedToken.reading}
+      {classStudyActive && materialLang === 'English' && selectedToken.reading && <div className="reader-card-pronunciation">{selectedToken.reading}</div>}
+
+      {ctxSentenceOf(selectedToken)&&<section className="reader-card-context" aria-label={vt("문장 속 쓰임")} key={`context:${selectedToken.id||selectedToken.text}`}>
+        <section className="reader-card-source"><blockquote lang={contentLangTag}>{(()=>{const {parts,term}=splitSentenceAroundWord(ctxSentenceOf(selectedToken),selectedToken.text,null);return parts.map((part,i)=><span key={i}>{part}{i<parts.length-1&&<mark>{term}</mark>}</span>);})()}</blockquote></section>
+      {/* 문맥 설명 R1 — zh부터(프롬프트 검증 언어), 본문 탭 토큰만(문장 유도 가능할 때).
+          즉답 카드는 그대로, 설명은 버튼을 눌러야 온다(스킴 탭 헛호출 0). */}
+      {materialLang === 'Chinese' && (() => {
+        const ctxSentence = ctxSentenceOf(selectedToken);
+        if (!ctxSentence) return null;
+        if (ctxExplain?.loading) {
+          return <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 12 }}>{vt("문장 속 쓰임을 읽는 중...")}</div>;
+        }
+        if (ctxExplain?.text) {
+          return (
+            <div style={{ fontSize: '0.84rem', lineHeight: 1.55, marginBottom: 12 }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 2 }}>{vt("이 문장에서")}</div>
+              <div style={{ color: 'var(--text-secondary)' }}>{ctxExplain.text}</div>
+            </div>
+          );
+        }
+        return null; // 버튼은 아래 액션 줄로(R R2 ④ — 2열 접기)
+      })()}
+
+        <div className="word-detail-card__actrow">
+          <button className="btn btn--ghost btn--sm" onClick={()=>runSelectionAnalysis(ctxSentenceOf(selectedToken))}><ActionIcon name="translate"/>{vt("문장 번역")}</button>
+          {materialLang === 'Chinese'&&!ctxExplain?.loading&&!ctxExplain?.text&&<button className="btn btn--ghost btn--sm" onClick={()=>runCtxExplain(selectedToken,ctxSentenceOf(selectedToken))}><ActionIcon name="book"/>{vt(ctxExplain?.error?'이 문장에서는? (다시 시도)':'이 문장에서는?')}</button>}
         </div>
-      )}
+      </section>}
 
       {classAction}
       {materialLang === 'Chinese' && <ViewerJapaneseReference key={`${selectedToken.id||selectedToken.text}:${refMeaning||''}`} userId={user?.id} word={headText} meaning={refMeaning||selectedToken.meaning||''} pos={selectedToken.pos} dictEntry={editDictEntry} loading={!dictFetched&&!dictError} dictError={dictError} jaTable={hanjaJaTable} formError={jaFormError} onRetryForm={()=>{setJaFormError(false);setJaFormRetry(n=>n+1);}}/>}
@@ -2382,43 +2403,15 @@ export default function ViewerPage() {
           </div>
         );
       })()}
-      {ctxSentenceOf(selectedToken)&&<details className="reader-card-context" key={`context:${selectedToken.id||selectedToken.text}`}>
-        <summary>{vt("문장 속 쓰임")}</summary>
-        <section className="reader-card-source"><blockquote lang={contentLangTag}>{(()=>{const {parts,term}=splitSentenceAroundWord(ctxSentenceOf(selectedToken),selectedToken.text,null);return parts.map((part,i)=><span key={i}>{part}{i<parts.length-1&&<mark>{term}</mark>}</span>);})()}</blockquote></section>
-      {/* 문맥 설명 R1 — zh부터(프롬프트 검증 언어), 본문 탭 토큰만(문장 유도 가능할 때).
-          즉답 카드는 그대로, 설명은 버튼을 눌러야 온다(스킴 탭 헛호출 0). */}
-      {materialLang === 'Chinese' && (() => {
-        const ctxSentence = ctxSentenceOf(selectedToken);
-        if (!ctxSentence) return null;
-        if (ctxExplain?.loading) {
-          return <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 12 }}>{vt("문장 속 쓰임을 읽는 중...")}</div>;
-        }
-        if (ctxExplain?.text) {
-          return (
-            <div style={{ fontSize: '0.84rem', lineHeight: 1.55, marginBottom: 12 }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 2 }}>{vt("이 문장에서")}</div>
-              <div style={{ color: 'var(--text-secondary)' }}>{ctxExplain.text}</div>
-            </div>
-          );
-        }
-        return null; // 버튼은 아래 액션 줄로(R R2 ④ — 2열 접기)
-      })()}
-
-        <div className="word-detail-card__actrow">
-          <button className="btn btn--ghost btn--sm" onClick={()=>runSelectionAnalysis(ctxSentenceOf(selectedToken))}>{vt("문장 번역")}</button>
-          {materialLang === 'Chinese'&&!ctxExplain?.loading&&!ctxExplain?.text&&<button className="btn btn--ghost btn--sm" onClick={()=>runCtxExplain(selectedToken,ctxSentenceOf(selectedToken))}>{ctxExplain?.error?'이 문장에서는? (다시 시도)':'이 문장에서는?'}</button>}
-        </div>
-      </details>}
-      <details className="reader-card-more" key={`more:${selectedToken.id||selectedToken.text}`}>
-        <summary>{vt("예문·관련 표현")}</summary>
+      <details className="reader-card-more reader-card-disclosure" key={`more:${selectedToken.id||selectedToken.text}`}>
+        <summary>{vt("예문·관련 표현")}<ActionIcon name="down"/></summary>
       {/* 정본 예문·한자 노트(② — 오너 피드백로 박스 해체): 뜻은 위 뜻 자리가 대체 표시,
           pos는 TokenPosLabel·병음은 헤더와 중복이라 생략. 예문만 새 정보라 자연 배치,
           한자 노트는 한자 대조 토글(훈음 나열)과 겹치므로 토글 꺼짐일 때만. */}
       {refVocab?.word?.ex && (
-        <details key={`example:${selectedToken.id || selectedToken.text}`} >
-          <summary>{referenceMatches ? '사전 예문' : `사전의 다른 뜻 · ${refVocab.word.ko || '뜻 확인'}`}</summary>
+        <ViewerReferenceExample key={`example:${selectedToken.id || selectedToken.text}`} matches={referenceMatches} meaning={refVocab.word.ko || vt('뜻 확인')} uiLocale={uiLocale}>
         {/* 예문 → 병음 → 뜻 */}
-        <div style={{ fontSize: '0.84rem', lineHeight: 1.55, marginBottom: 12 }}>
+        <div className="reader-card-example__text">
           <div lang="zh-Hans">{(() => {
             // 예문 속 표제어 강조 — 복습 카드의 정본 헬퍼 그대로. 이합사 삽입형(道了歉)처럼
             // 기본형이 연속으로 없으면 term이 null이라 강조 없이 둔다(조각 오탐 금지).
@@ -2429,10 +2422,10 @@ export default function ViewerPage() {
                 : <span key={i}>{part}</span>
             ));
           })()}</div>
-          <div className="pinyin-text" style={{ color: 'var(--text-muted)', fontSize: '0.76rem' }}>{refVocab.word.ex.pinyin}</div>
-          <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{refVocab.word.ex.ko}</div>
+          <div className="pinyin-text reader-card-example__reading">{refVocab.word.ex.pinyin}</div>
+          <div className="reader-card-example__meaning">{refVocab.word.ex.ko}</div>
         </div>
-        </details>
+        </ViewerReferenceExample>
       )}
       {/* ⑤ 유의어·반의어 — 예문 뒤(오너 확정 순서 R R2: 뜻 → 日 → 예문 → 유의어 → 한자).
           라벨은 칩 컨테이너의 **형제 캡션** — 인라인 라벨은 둘째 줄부터 들여쓰기가 어긋났다. */}
@@ -2453,7 +2446,7 @@ export default function ViewerPage() {
         <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 12 }}>{vt("상세 설명 생성 중...")}</div>
       ) : wordDetail?.detail ? (
         <div style={{ marginBottom: 14 }}>
-          <small style={{ color: 'var(--text-muted)' }}>{materialLang === 'Chinese' ? '일반 사전 설명 · 본문의 쓰임은 ‘이 문장에서는?’에서 확인' : '일반 사전 설명 · 본문과 다른 뜻이 포함될 수 있어요'}</small>
+          <small style={{ color: 'var(--text-muted)' }}>{vt(materialLang === 'Chinese' ? '일반 사전 설명 · 본문의 쓰임은 ‘이 문장에서는?’에서 확인' : '일반 사전 설명 · 본문과 다른 뜻이 포함될 수 있어요')}</small>
           <div className="pdf-detail-popup__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(wordDetail.detail) }} />
         </div>
       ) : null}
