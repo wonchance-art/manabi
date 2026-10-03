@@ -3,9 +3,13 @@ import {t} from '../../lib/viewerMessages';
 import ActionIcon from '../ActionIcon';
 
 // Same-context examples need only their parent's disclosure. Other senses stay separate.
-export default function ViewerReferenceExample({matches,meaning,uiLocale='ko',children}) {
+export default function ViewerReferenceExample({matches,meaning,uiLocale='ko',children,visible=false}) {
   if (matches) return <section className="reader-card-example" aria-label={t(uiLocale,'사전 예문')}>
     <h3>{t(uiLocale,'사전 예문')}</h3>
+    {children}
+  </section>;
+  if (visible) return <section className="reader-card-example" aria-label={t(uiLocale,'사전의 다른 뜻 · {meaning}',{meaning})}>
+    <h3>{t(uiLocale,'사전의 다른 뜻 · {meaning}',{meaning})}</h3>
     {children}
   </section>;
   return <details className="reader-card-example reader-card-disclosure">

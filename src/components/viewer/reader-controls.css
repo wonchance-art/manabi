@@ -456,3 +456,31 @@
 .manabi-app .viewer-layout .reader-card-body>.reader-card-more>details:not(.reader-card-disclosure)>summary::after,.manabi-app .viewer-layout .reader-card-body>details:not(.reader-card-disclosure)>summary::after{content:'';flex:none;width:20px;height:20px;margin-left:auto;background:currentColor;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m5 9 7 7 7-7' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
 .manabi-app .viewer-layout .reader-card-body>.reader-card-more>details:not(.reader-card-disclosure)[open]>summary::after,.manabi-app .viewer-layout .reader-card-body>details:not(.reader-card-disclosure)[open]>summary::after{transform:rotate(180deg)}
 .manabi-app .viewer-layout .reader-card-body>.reader-card-more>details:not(.reader-card-disclosure)>summary:focus-visible,.manabi-app .viewer-layout .reader-card-body>details:not(.reader-card-disclosure)>summary:focus-visible{outline:2px solid var(--reader-accent);outline-offset:2px;border-radius:3px}
+
+/* Shared inspector rhythm: short modes, passive tags, and one action column. */
+.manabi-app .viewer-layout .viewer-inspector{border-top:1px solid var(--reader-line);border-radius:8px}
+.manabi-app .viewer-layout .viewer-inspector__header .viewer-inspector__tabs{flex:0 1 auto;width:auto;gap:2px;padding:3px;border-radius:8px;background:color-mix(in srgb,var(--reader-line) 35%,transparent)}
+.manabi-app .viewer-layout .viewer-inspector__header .viewer-inspector__tabs button{flex:0 1 auto;min-width:44px;padding:6px 12px;font-size:.8125rem;border-radius:6px}
+.manabi-app .viewer-layout .viewer-inspector__header .viewer-inspector__tabs button[aria-selected="true"]{background:var(--reader-selected);color:var(--reader-ink);font-weight:650;box-shadow:0 0 0 1px color-mix(in srgb,var(--reader-accent) 55%,var(--reader-line))}
+.manabi-app .viewer-layout .viewer-inspector__nav,.manabi-app .viewer-layout .viewer-inspector__expand{margin-left:auto}
+.manabi-app .viewer-layout .viewer-inspector__nav+.viewer-inspector__expand{margin-left:0}
+.manabi-app .viewer-layout .reader-card-body .word-detail-card__meta{align-items:center;gap:8px;margin-bottom:16px}
+.manabi-app .viewer-layout .reader-card-body .word-detail-card__meta>span:not(:empty){display:inline-flex;align-items:center;min-height:1.5rem;max-width:100%;padding:2px 8px;border:1px solid var(--reader-line);border-radius:5px;background:color-mix(in srgb,var(--reader-line) 20%,transparent);font-size:.75rem;line-height:1.4;font-weight:400;color:var(--reader-muted);overflow-wrap:anywhere}
+.manabi-app .viewer-layout .reader-card-body .reader-card-tag:empty{display:none}
+.manabi-app .viewer-layout .reader-card-body .reader-card-headword,.manabi-app .viewer-layout .reader-card-body .word-detail-card__meaningrow{display:grid;grid-template-columns:minmax(0,1fr) 44px;column-gap:12px;text-align:start}
+.manabi-app .viewer-layout .reader-card-body .reader-card-headword:not(:has(.word-detail-card__speak)),.manabi-app .viewer-layout .reader-card-body .word-detail-card__meaningrow:not(:has(.word-detail-card__edit)){grid-template-columns:minmax(0,1fr)}
+.manabi-app .viewer-layout .reader-card-body .word-detail-card__speak{align-self:end;padding:0}
+.manabi-app .viewer-layout .reader-card-body .word-detail-card__edit{width:44px;padding:0}
+.manabi-app .viewer-layout .reader-card-lexeme .word-fit .surface{text-align:start}
+/* Explicit reading rows reserve their own space without moving the body's ruby. */
+.manabi-app .viewer-layout .reader-card-lexeme .word-fit .surface:has(>ruby[data-pinyin]){display:flex;flex-wrap:wrap;align-items:flex-end;row-gap:.75rem;line-height:1.2}
+.manabi-app .viewer-layout .reader-card-lexeme .word-fit ruby[data-pinyin]{display:inline-grid;grid-template-rows:auto auto;row-gap:.375rem;min-width:max(1em,3.1rem);width:max-content;max-width:100%;vertical-align:bottom;line-height:1.2;justify-content:start}
+.manabi-app .viewer-layout .reader-card-lexeme .word-fit ruby[data-pinyin]>.rt-an{grid-row:1;position:static;left:auto;bottom:auto;transform:none;justify-self:start;text-align:start;width:auto;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.manabi-app .viewer-layout .reader-card-ruby-glyphs{grid-row:2;display:flex;justify-content:flex-start;align-items:baseline}
+.manabi-app .viewer-layout .reader-card-body .reader-card-context-actions{margin-top:4px}
+.manabi-app .viewer-layout .reader-card-body .reader-card-visible{margin:16px 0 0;padding:0;border:0}
+.manabi-app .viewer-layout .reader-card-body .reader-card-visible>h3{margin:0 0 8px;font-size:.75rem;line-height:1.5;font-weight:500;color:var(--reader-muted)}
+.manabi-app .viewer-layout .reader-card-body .reader-card-more{margin-top:16px}
+.manabi-app .viewer-layout .reader-card-body .reader-card-more:empty{display:none}
+.manabi-app .viewer-layout .reader-card-body .reader-card-more>details,.manabi-app .viewer-layout .reader-card-body>details{border:0;padding:0;margin:12px 0}
+.manabi-app .viewer-layout .reader-card-body .reader-card-more>details>summary,.manabi-app .viewer-layout .reader-card-body>details>summary{font-size:.75rem}

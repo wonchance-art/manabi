@@ -2150,7 +2150,7 @@ export default function ViewerPage() {
       <div className="reader-card-body">
       <div className="word-detail-card__actions">
         <div className="word-detail-card__meta">
-          <TokenPosLabel token={selectedToken} />
+          <span className="reader-card-tag"><TokenPosLabel token={selectedToken} /></span>
           {/* 기본형은 표제어가 보여 준다(R R2) — 「품사 · 기본형」이 겸류 구분자와 같은 모양이라
               품사 오염으로 읽히던 중의성 소멸. 사전 읽기가 없어 표제어가 폴백일 때만 라벨 텍스트. */}
           <ViewerLabelSlot locale={uiLocale} text={vt('기본형')}>{headFallback && <span className="word-detail-card__base">기본형</span>}</ViewerLabelSlot>
@@ -2207,10 +2207,11 @@ export default function ViewerPage() {
                       // 넘긴다 — 혼종 중국어 토큰의 병음은 라틴이라 훨씬 좁다.
                       const yomiN = !seg.pinyin && KANA_RE.test(seg.reading || '')
                         ? [...seg.reading].length : null;
+                      const glyphs=chars.map((ch, j) => charSpan(ch, `${i}:${j}`, seg.pinyin ? seg.reading : null, at++));
                       return (
                         <ruby key={i} data-pinyin={seg.pinyin ? '1' : undefined} data-yomi={seg.pinyin ? undefined : '1'}
                           style={yomiN ? { '--yomi-n': yomiN } : undefined}>
-                          {chars.map((ch, j) => charSpan(ch, `${i}:${j}`, seg.pinyin ? seg.reading : null, at++))}
+                          {seg.pinyin?<span className="reader-card-ruby-glyphs">{glyphs}</span>:glyphs}
                           <span className={['rt-an', showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : ''].filter(Boolean).join(' ')}>{seg.reading}</span>
                         </ruby>
                       );
@@ -2241,7 +2242,7 @@ export default function ViewerPage() {
           ><svg className="action-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="m4 16 12-12 4 4L8 20H4v-4ZM13 7l4 4"/></svg></button>
         )}
       </div>)}
-      {materialLang === 'Korean' && <><small>{vt('분석 결과는 자동 생성되었어요.')}</small>{localizedWord.morphology.length > 0 && <details><summary>{vt('문법 해설')}</summary><ul>{localizedWord.morphology.map((item,index)=><li key={index}>{typeof item === 'string' ? item : `${item.form}: ${item.function}`}</li>)}</ul></details>}</>}
+      {materialLang === 'Korean' && <><small>{vt('분석 결과는 자동 생성되었어요.')}</small>{localizedWord.morphology.length > 0 && <section className="reader-card-visible"><h3>{vt('문법 해설')}</h3><ul>{localizedWord.morphology.map((item,index)=><li key={index}>{typeof item === 'string' ? item : `${item.form}: ${item.function}`}</li>)}</ul></section>}</>}
       {isEditingToken && !classMeaning && (
         legacyTokenEditingAllowed && canEditToken &&
         <TokenEditPanel
@@ -2271,8 +2272,7 @@ export default function ViewerPage() {
 
       {ctxSentenceOf(selectedToken)&&<section className="reader-card-context" aria-label={vt("문장 속 쓰임")} key={`context:${selectedToken.id||selectedToken.text}`}>
         <section className="reader-card-source"><blockquote lang={contentLangTag}>{(()=>{const {parts,term}=splitSentenceAroundWord(ctxSentenceOf(selectedToken),selectedToken.text,null);return parts.map((part,i)=><span key={i}>{part}{i<parts.length-1&&<mark>{term}</mark>}</span>);})()}</blockquote></section>
-        <details className="reader-card-context-actions reader-card-disclosure">
-          <summary><span className="reader-card-context-action-label"><ActionIcon name="translate"/>{vt("번역")}</span><ActionIcon name="down"/></summary>
+        <div className="reader-card-context-actions">
       {/* 문맥 설명 R1 — zh부터(프롬프트 검증 언어), 본문 탭 토큰만(문장 유도 가능할 때).
           즉답 카드는 그대로, 설명은 버튼을 눌러야 온다(스킴 탭 헛호출 0). */}
       {materialLang === 'Chinese' && (() => {
@@ -2296,11 +2296,11 @@ export default function ViewerPage() {
           <button className="btn btn--ghost btn--sm" onClick={()=>runSelectionAnalysis(ctxSentenceOf(selectedToken))}><ActionIcon name="translate"/>{vt("문장 번역")}</button>
           {materialLang === 'Chinese'&&!ctxExplain?.loading&&!ctxExplain?.text&&<button className="btn btn--ghost btn--sm" onClick={()=>runCtxExplain(selectedToken,ctxSentenceOf(selectedToken))}><ActionIcon name="book"/>{vt(ctxExplain?.error?'이 문장에서는? (다시 시도)':'이 문장에서는?')}</button>}
         </div>
-        </details>
+        </div>
       </section>}
 
       {classAction}
-      {materialLang === 'Chinese' && <ViewerJapaneseReference key={`${selectedToken.id||selectedToken.text}:${refMeaning||''}`} userId={user?.id} word={headText} meaning={refMeaning||selectedToken.meaning||''} pos={selectedToken.pos} dictEntry={editDictEntry} loading={!dictFetched&&!dictError} dictError={dictError} jaTable={hanjaJaTable} formError={jaFormError} onRetryForm={()=>{setJaFormError(false);setJaFormRetry(n=>n+1);}}/>}
+      {materialLang === 'Chinese' && <ViewerJapaneseReference key={`${selectedToken.id||selectedToken.text}:${refMeaning||''}`} userId={user?.id} word={headText} meaning={refMeaning||selectedToken.meaning||''} pos={selectedToken.pos} dictEntry={editDictEntry} loading={!dictFetched&&!dictError} dictError={dictError} jaTable={hanjaJaTable} formError={jaFormError} onRetryForm={()=>{setJaFormError(false);setJaFormRetry(n=>n+1);}} visible={!classStudyActive}/>}
 
       {inspectChar && (() => {
         // ④ 글자 카드(증강 R1~R3 — 오너 승인 2026-08-28): 헤더는 자기 완결(훈음·병음·자형 칩),
@@ -2406,13 +2406,12 @@ export default function ViewerPage() {
           </div>
         );
       })()}
-      <details className="reader-card-more reader-card-disclosure" key={`more:${selectedToken.id||selectedToken.text}`}>
-        <summary>{vt("예문·관련 표현")}<ActionIcon name="down"/></summary>
+      <section className="reader-card-more reader-card-visible" key={`more:${selectedToken.id||selectedToken.text}`}>
       {/* 정본 예문·한자 노트(② — 오너 피드백로 박스 해체): 뜻은 위 뜻 자리가 대체 표시,
           pos는 TokenPosLabel·병음은 헤더와 중복이라 생략. 예문만 새 정보라 자연 배치,
           한자 노트는 한자 대조 토글(훈음 나열)과 겹치므로 토글 꺼짐일 때만. */}
       {refVocab?.word?.ex && (
-        <ViewerReferenceExample key={`example:${selectedToken.id || selectedToken.text}`} matches={referenceMatches} meaning={refVocab.word.ko || vt('뜻 확인')} uiLocale={uiLocale}>
+        <ViewerReferenceExample key={`example:${selectedToken.id || selectedToken.text}`} matches={referenceMatches} meaning={refVocab.word.ko || vt('뜻 확인')} uiLocale={uiLocale} visible={!classStudyActive}>
         {/* 예문 → 병음 → 뜻 */}
         <div className="reader-card-example__text">
           <div lang="zh-Hans">{(() => {
@@ -2436,13 +2435,13 @@ export default function ViewerPage() {
         {synAnt?.loading?<p role="status">{vt("불러오는 중…")}</p>:synAnt?<div className="syn-ant"><div className="syn-ant__row"><span>{vt("유의어")}</span>{renderSynAntChips(synAnt.syn)}</div><div className="syn-ant__row"><span>{vt("반의어")}</span>{renderSynAntChips(synAnt.ant)}</div>{!synAnt.syn.length&&!synAnt.ant.length&&<p>{vt("표시할 항목이 없어요.")}</p>}</div>:<p>{vt("불러오지 못했어요. 접었다 다시 열어 주세요.")}</p>}
       </details>}
       {refVocab?.word?.hanja && !showHanjaKo && (
-        <details key={`hanja:${selectedToken.id||selectedToken.text}`}><ViewerLabelSlot locale={uiLocale} text={vt('한자 정보')}><summary>한자 정보</summary></ViewerLabelSlot><p>{refVocab.word.hanja}</p></details>
+        classStudyActive?<details key={`hanja:${selectedToken.id||selectedToken.text}`}><ViewerLabelSlot locale={uiLocale} text={vt('한자 정보')}><summary>한자 정보</summary></ViewerLabelSlot><p>{refVocab.word.hanja}</p></details>:<section className="reader-card-visible" key={`hanja:${selectedToken.id||selectedToken.text}`}><h3>{vt('한자 정보')}</h3><p>{refVocab.word.hanja}</p></section>
       )}
 
       {/* 문형 카드(v2-G R1) — 탭한 단어가 표지일 때만. 챕터 → 자료 역방향을 여는 자리라
           단어 카드 안에 얹는다(새 상호작용을 만들면 단어 탭과 경합한다). */}
       {selectedToken?.id && visibleScan?.byToken.get(selectedToken.id) && (
-        <details key={`pattern:${selectedToken.id}`}><summary>{vt("관련 문형 후보")}</summary><PatternCard hit={visibleScan.byToken.get(selectedToken.id)} dueSlugs={dueSlugs} weakSlugs={weakSlugs} /></details>
+        <section className="reader-card-visible" key={`pattern:${selectedToken.id}`}><h3>{vt("관련 문형 후보")}</h3><PatternCard hit={visibleScan.byToken.get(selectedToken.id)} dueSlugs={dueSlugs} weakSlugs={weakSlugs} /></section>
       )}
 
       {wordDetail?.loading ? (
@@ -2454,7 +2453,7 @@ export default function ViewerPage() {
         </div>
       ) : null}
       {!wordDetail?.loading && !wordDetail?.detail && <button onClick={() => fetchWordDetail(selectedToken)} className="btn btn--ghost btn--sm">{vt("상세 설명 보기")}</button>}
-      </details>
+      </section>
 
       </div>
       <div className="reader-card-actions">

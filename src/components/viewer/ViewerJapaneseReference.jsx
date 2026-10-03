@@ -7,7 +7,7 @@ import {useQuery} from '@tanstack/react-query';
 import {toJaForm} from '../../lib/hanjaKo';
 import {japaneseReferenceForMeaning,lookupJapaneseReference} from '../../lib/viewerJapaneseReference';
 
-export default function ViewerJapaneseReference({userId,word,meaning,pos,dictEntry,loading,dictError,jaTable,formError,onRetryForm}) {
+export default function ViewerJapaneseReference({userId,word,meaning,pos,dictEntry,loading,dictError,jaTable,formError,onRetryForm,visible=false}) {
   const uiLocale=useContext(ViewerUiLocaleContext);
   const vt=(key,values)=>t(uiLocale,key,values);
   const [requested,setRequested]=useState(false);
@@ -21,8 +21,9 @@ export default function ViewerJapaneseReference({userId,word,meaning,pos,dictEnt
   });
   const ref=query.data||dictionary;
   const same=!!ref&&ref.form===glyphForm;
-  return <details className="reader-card-comparison reader-card-disclosure">
-    <summary>{vt('일본어 대조')}<ActionIcon name="down"/></summary>
+  const Container=visible?'section':'details';
+  return <Container className={`reader-card-comparison ${visible?'reader-card-visible':'reader-card-disclosure'}`}>
+    {visible?<h3>{vt('일본어 대조')}</h3>:<summary>{vt('일본어 대조')}<ActionIcon name="down"/></summary>}
     <section className="reader-japanese" aria-label={vt('일본어 대조')}>
     <div className="reader-japanese__row">
       <span className="reader-japanese__label" title={vt('글자 모양을 일본식으로 옮긴 표기이며, 실제 일본어 단어와 다를 수 있어요.')}>{vt(same?'일본어':'일본식 자형')}</span>
@@ -37,5 +38,5 @@ export default function ViewerJapaneseReference({userId,word,meaning,pos,dictEnt
       {query.isError&&<span role="status">{vt('대응어를 불러오지 못했어요.')}</span>}
     </div>}
     </section>
-  </details>;
+  </Container>;
 }
