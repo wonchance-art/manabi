@@ -193,4 +193,4 @@
 .manabi-app [data-icon-action][aria-label]:focus-visible::after{content:attr(aria-label);position:absolute;inset:auto 0 auto auto;top:calc(100% + 6px);width:max-content;max-width:min(180px,calc(100vw - 32px));padding:5px 8px;border:1px solid var(--rule);border-radius:4px;background:var(--sheet);color:var(--ink);font:12px/1.5 var(--font-noto-kr),sans-serif;white-space:normal;overflow-wrap:anywhere;pointer-events:none;z-index:1100}
 .manabi-app .viewer-back-link[data-icon-action]:focus-visible::after{right:auto;left:0}
 .manabi-app details[open]>[data-icon-action]:focus-visible::after{display:none}
-@container manabi-shell (max-width:900px){.manabi-app .gnb{padding-inline:12px;gap:4px}.manabi-app .gnb .reader-site-menu nav{left:0;right:auto}}
+@container manabi-shell (max-width:900px){.manabi-app .gnb,.manabi-app.manabi-app--reading .gnb{padding-inline:12px;gap:4px}.manabi-app .gnb .gnb__logo{font-size:20px}.manabi-app .gnb .reader-site-menu nav{left:50%;right:auto;transform:translateX(-50%)}}
