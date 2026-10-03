@@ -344,6 +344,7 @@
 .reader-settings .reader-settings__languages .reader-setting-choices>div {flex-wrap:nowrap;gap:4px;}
 .reader-settings .reader-settings__languages b {font-size:.8rem;font-weight:500;}
 .reader-settings .reader-setting-choices button {padding:4px 8px;min-width:44px;min-height:44px;font-size:.82rem;}
+.reader-settings .reader-settings__rates button {flex:1 0 4em;}
 .reader-settings .reader-settings__tabs {padding-top:4px;}
 .reader-settings .reader-settings__tabs button {display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 4px;font-size:.8rem;}
 .reader-settings .reader-preview-toggle {width:44px;height:44px;margin:0 0 0 auto;display:flex;align-items:center;justify-content:center;}
