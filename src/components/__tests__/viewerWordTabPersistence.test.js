@@ -22,4 +22,9 @@ describe('an open word tab survives sentence activity', () => {
   it('an explicit new word still selects the word tab', () => {
     expect(resolveSignalTransition(false, true, false)).toEqual({ tab: 'right' });
   });
+
+  it('an explicit sentence request selects its tab without discarding word content', () => {
+    expect(resolveSignalTransition(true, true, true, true)).toEqual({ tab: 'left' });
+    expect(resolveSignalTransition(false, false, true, true)).toEqual({ tab: 'left' });
+  });
 });

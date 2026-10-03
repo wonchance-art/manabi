@@ -1,20 +1,20 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import {t} from '../lib/viewerMessages';
-export function resolveSignalTransition(leftRose,rightRose,preserveWordTab=false) {
-  return leftRose||rightRose?{tab:preserveWordTab?'right':leftRose?'left':'right'}:null;
+export function resolveSignalTransition(leftRose,rightRose,preserveWordTab=false,sentenceRequested=false) {
+  return leftRose||rightRose||sentenceRequested?{tab:sentenceRequested?'left':preserveWordTab?'right':leftRose?'left':'right'}:null;
 }
-export default function ViewerBottomSheet({leftContent,rightContent,leftActive,rightActive,leftSignal=0,rightSignal=0,barNav=null,onClose,suppressed=false,onOpenChange,preserveFocus=false,preserveWordTab=false,actions=null,className='',uiLocale='ko'}) {
+export default function ViewerBottomSheet({leftContent,rightContent,leftActive,rightActive,leftSignal=0,rightSignal=0,sentenceTabSignal=0,barNav=null,onClose,suppressed=false,onOpenChange,preserveFocus=false,preserveWordTab=false,actions=null,className='',uiLocale='ko'}) {
   const [tab,setTab]=useState('right'),[open,setOpen]=useState(false),[expanded,setExpanded]=useState(false);
-  const prev=useRef({left:false,right:false,leftSignal:0,rightSignal:0});
+  const prev=useRef({left:false,right:false,leftSignal,rightSignal,sentenceTabSignal});
   const root=useRef(null),drag=useRef(null),suppressedRef=useRef(suppressed);suppressedRef.current=suppressed;
   useEffect(()=>{
     const old=prev.current;
-    const transition=resolveSignalTransition((leftActive&&!old.left)||leftSignal>old.leftSignal,(rightActive&&!old.right)||rightSignal>old.rightSignal,preserveWordTab&&open&&tab==='right'&&!!rightActive);
-    prev.current={left:leftActive,right:rightActive,leftSignal,rightSignal};
+    const transition=resolveSignalTransition((leftActive&&!old.left)||leftSignal>old.leftSignal,(rightActive&&!old.right)||rightSignal>old.rightSignal,preserveWordTab&&open&&tab==='right'&&!!rightActive,sentenceTabSignal>old.sentenceTabSignal);
+    prev.current={left:leftActive,right:rightActive,leftSignal,rightSignal,sentenceTabSignal};
     if(transition){setTab(transition.tab);setOpen(true);}
     if(!leftActive&&!rightActive)setOpen(false);
-  },[leftActive,rightActive,leftSignal,rightSignal,preserveWordTab,open,tab]);
+  },[leftActive,rightActive,leftSignal,rightSignal,sentenceTabSignal,preserveWordTab,open,tab]);
   useEffect(()=>{onOpenChange?.(open);},[open,onOpenChange]);
   useEffect(()=>()=>onOpenChange?.(false),[onOpenChange]);
   useEffect(()=>{

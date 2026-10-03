@@ -4304,6 +4304,18 @@ a.viewer-badge:hover {
   padding-bottom: 14px;
   border-bottom: 1px solid var(--border);
 }
+/* 목록과 함께 보여도 단어 뜻이 눌리지 않게 하나의 패널 스크롤로 제공한다. */
+.viewer-layout .viewer-inspector .word-detail-card--above-list {
+  flex: none;
+  max-height: none;
+}
+.viewer-layout .viewer-inspector .word-detail-card--above-list .reader-card-body {
+  flex: none;
+  overflow: visible;
+}
+.viewer-layout .viewer-inspector .viewer-side__content:has(> .word-detail-card--above-list) {
+  height: auto;
+}
 .word-detail-card__close {
   background: none;
   border: none;

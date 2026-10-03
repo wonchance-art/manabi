@@ -1057,6 +1057,7 @@ export default function ViewerPage() {
   // 다른 단어를 탭해도 시트가 다시 안 올라온다(#996). 탭·드래그 때마다 카운터를 올린다.
   const [leftSheetSignal, setLeftSheetSignal] = useState(0);
   const [rightSheetSignal, setRightSheetSignal] = useState(0);
+  const [sentenceTabSignal, setSentenceTabSignal] = useState(0);
 
   // 문장 막대로 지정한 줄 — 해당 줄 전체에 지정 이펙트(#1002). 단어 클릭·드래그 시 해제.
   const [pickedLineIdx, setPickedLineIdx] = useState(null);
@@ -1083,6 +1084,7 @@ export default function ViewerPage() {
       setSelectedRangeText(text);
       grammar.reset(); // 다른 문장의 해설이 남지 않게
       easier.reset();  // 다른 문장의 쉬운 말도 함께
+      setSentenceTabSignal(s => s + 1); // 명시적 드래그 분석은 문장 탭, 기존 단어 정보는 보존.
       runSelectionAnalysis(text);
     },
   });
@@ -2500,7 +2502,7 @@ export default function ViewerPage() {
           </div>
         </div>
       )}
-      {user && learningStorageSupported && koreanSaveConflict?.tokenId === selectedToken.id && koreanSaveConflict.text === selectedToken.text && koreanSaveReady(selectedToken) &&
+      {user && learningStorageSupported && materialLang === 'Korean' && koreanSaveConflict && koreanSaveConflict.tokenId === selectedToken.id && koreanSaveConflict.text === selectedToken.text && koreanSaveReady(selectedToken) &&
         <SaveContextButton key={`${id}:${selectedToken.id}:${effectiveExplanationLocale}:${readingContextSource(selectedToken)?.sourceRevision}:conflict`} label={vt("이 문맥 추가")}
           word={contextWord(selectedToken)} source={readingContextSource(selectedToken)} onSaved={() => setKoreanSaveConflict(null)} />}
       {user && learningStorageSupported && (() => {
@@ -3332,6 +3334,7 @@ export default function ViewerPage() {
         rightActive={annotationOpen || dragTokens !== null || (selectedToken && isSheetOpen)}
         leftSignal={leftSheetSignal}
         rightSignal={rightSheetSignal}
+        sentenceTabSignal={sentenceTabSignal}
         barNav={pickedLineIdx !== null && sentences.length > 0 ? (
           <>
             {sentenceNavBtn(-1, 'viewer-sheet-bar__btn viewer-sheet-bar__btn--nav')}
