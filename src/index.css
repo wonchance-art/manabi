@@ -1501,11 +1501,12 @@ body.is-review-session .page-container { padding-top: 8px; }
 
 .review-score-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
 .review-score-btn {
+  min-width: 0;
   padding: 12px;
   border-radius: 8px;
   font-weight: 600;
@@ -2084,6 +2085,11 @@ a.viewer-badge:hover {
   align-items: center;
   min-height: 28px;
   margin-bottom: 0;
+}
+.viewer-topbar .viewer-back-link--icon {
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
 }
 .viewer-topbar .viewer-series-nav { margin: 0; }
 /* 오른쪽 배치는 auto 마진 한 곳(v2-Q 선례) — 왼쪽이 통째로 비어도 도구는 오른쪽에 남는다. */
@@ -3787,11 +3793,11 @@ a.viewer-badge:hover {
 
   /* Review score buttons — bigger touch targets */
   .review-score-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 8px;
   }
   .review-score-btn {
-    padding: 16px 12px;
+    padding: 16px 4px;
     font-size: 0.9rem;
   }
 

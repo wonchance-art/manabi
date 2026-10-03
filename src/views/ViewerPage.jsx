@@ -18,6 +18,7 @@ import { takePassageAnalysis } from '@/lib/passageAnalysis';
 import { composerOf, shouldReadComposerOriginal } from '@/lib/materialComposer';
 import Link from 'next/link';
 import { LibraryReturnLink } from '@/components/web/LibraryReaderLink';
+import { readerReturnLabel } from '../lib/libraryReturn';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { cacheMaterial, getCachedMaterial } from '../lib/offlineCache';
@@ -801,6 +802,7 @@ export default function ViewerPage() {
   // (리스트·막대 지정·집중 어둡기)를 유지해야 하므로 dragTokens·pickedLineIdx는 건드리지 않는다.
   const handleListWordClick = (t) => {
     detailGate.current.cancel();
+    t = { ...t, __viewerSentence: ctxSentenceOf(t) ?? leftPanelText, __viewerMaterialId: String(id) };
     setSelectedToken({ ...t });
     setIsSheetOpen(true);
     setWordDetail(null);
@@ -831,7 +833,7 @@ export default function ViewerPage() {
       key={x.w}
       className="syn-ant__chip"
       lang={contentLangTag}
-      onClick={() => handleListWordClick({ text: x.w, base_form: x.w, meaning: x.ko, furigana: x.r, pos: '' })}
+      onClick={() => handleListWordClick({ text: x.w, base_form: x.w, meaning: x.ko, furigana: x.r, pos: '', __viewerSentence: ctxSentenceOf(selectedToken) ?? leftPanelText, __viewerMaterialId: String(id) })}
     >
       <span>{x.w}</span>
       {x.r && <span className="syn-ant__r pinyin-text">{x.r}</span>}
@@ -881,13 +883,16 @@ export default function ViewerPage() {
   const [leftPanelLoading, setLeftPanelLoading] = useState(false);
   const selectedSentenceRef = useRef(''); selectedSentenceRef.current = leftPanelText;
   const explainSelectedSentenceRef = useRef(null);
-  useEffect(() => { ctxExplainSeq.current += 1; setCtxExplain(null); }, [selectedToken?.id, selectedToken?.text]);
+  useEffect(() => { ctxExplainSeq.current += 1; setCtxExplain(null); }, [selectedToken?.id, selectedToken?.text, selectedToken?.__viewerSentence, selectedToken?.__viewerMaterialId]);
   const ctxSentenceOf = (tok) => {
-    // 본문 탭 토큰의 id(id_<rawIdx>_…)에서 원문 줄을 되찾는다 — 리스트·칩 경유(무id)는 대상 밖
+    // 본문은 원문 줄, 무id 리스트·칩은 카드가 열린 당시의 문맥을 유지한다.
     const m = typeof tok?.id === 'string' ? tok.id.match(/^(?:id|failed)_(\d+)_/) : null;
-    return m ? material?.raw_text?.split('\n')[Number(m[1])] || null : null;
+    return m ? material?.raw_text?.split('\n')[Number(m[1])] || null
+      : tok?.__viewerMaterialId === String(id) ? tok.__viewerSentence ?? null : null;
   };
-  const localizedWord = useViewerExplanation({token: selectedToken, sentence: ctxSentenceOf(selectedToken) || leftPanelText,
+  const preserveOpenWord = !classStudyActive && !studyContext && !material?.__local
+    && !/^\/class\//.test(originalParams.get('returnTo') || '') && !!selectedToken && isSheetOpen;
+  const localizedWord = useViewerExplanation({token: selectedToken, sentence: ctxSentenceOf(selectedToken) ?? leftPanelText,
     locale: effectiveExplanationLocale, sourceLocale: selectedToken?.meaningLocale || selectedToken?.explanationLocale || material?.processed_json?.metadata?.explanationLocale || 'ko',
     scope: cacheScope, enabled: materialLang === 'Korean' && isSheetOpen});
   const koreanSaveDisplayScope = useRef('');
@@ -989,7 +994,7 @@ export default function ViewerPage() {
     try {
       let detail;
       if (materialLang === 'Korean') {
-        const sentence = ctxSentenceOf(token) || leftPanelText;
+        const sentence = ctxSentenceOf(token) ?? leftPanelText;
         const cacheKey = await viewerCacheKey('viewer_word_detail', [...cacheScope, VIEWER_EXPLANATION_VERSION], [token.text, token.base_form, sentence]);
         if (!detailGate.current.isCurrent(request)) return;
         detail = getDetailCached(cacheKey);
@@ -1126,29 +1131,30 @@ export default function ViewerPage() {
     [savedWords]
   );
 
-  // 집중 모드 순수 이동용 — 좌(번역·맥락)/우(단어 리스트·카드) 패널과 시트 활성 상태를
-  // 비운다. 시트 신호는 올리지 않는다(안 띄우는 게 목적). ViewerBottomSheet의 active가
-  // 이 상태들에서 유도되므로 비우면 시트도 스스로 잦아든다. 이전 문장 분석이 낡은 채
-  // 시트에 남는 불일치도 이걸로 차단.
+  // 이동 전 문장 분석·목록만 비운다. 기본 뷰어의 열린 단어 카드는 별도 선택이며
+  // 원래 문맥과 진행 중 상세 요청을 유지한다. 수업 host는 기존 선택 해제를 따른다.
   const clearAnalysisPanels = () => {
     setRestoredClassSource(null);
     selectionGate.current.cancel();
-    detailGate.current.cancel();
     setLeftPanelText('');
     setLeftPanelResult('');
     setLeftPanelLoading(false);
     setDragTokens(null);
     setDragAnalyzing(false);
-    setSelectedToken(null);
-    setIsSheetOpen(false);
-    setInspectChar(null);
-    setWordDetail(null);
+    if (!preserveOpenWord) {
+      detailGate.current.cancel();
+      setSelectedToken(null);
+      setIsSheetOpen(false);
+      setInspectChar(null);
+      setWordDetail(null);
+    }
   };
 
   // 이동 = 그 문장의 막대(¦)를 대신 눌러주는 것 — 지정·분석·스크롤이 한 동작.
   // 단, 집중 모드에서는 '순수 이동'(오너 지시 2026-08-20): 문장을 따라 읽는 중이라
   // 번역·맥락 시트가 매번 올라오는 게 방해고, 안 볼 번역에 Gemini 호출을 쓰는 낭비다.
-  // 분석 없이 지정·스크롤만 하고 패널은 비운다. 분석이 필요하면 막대(¦)를 누른다 —
+  // 분석 없이 지정·스크롤만 하고 문장 패널은 비운다. 열린 단어는 유지한다.
+  // 분석이 필요하면 막대(¦)를 누른다 —
   // 그 경로는 본래처럼 전체 분석이다.
   const moveSentence = (dir) => {
     if (pickedLineIdx === null) return;
@@ -1295,10 +1301,10 @@ export default function ViewerPage() {
         setLeftPanelLoading(false); setDragAnalyzing(false); request.abort();
       }
     }, 45000);
-    detailGate.current.cancel();
+    if (!preserveOpenWord) detailGate.current.cancel();
     if (!explanationOnly) {
       setLeftSheetSignal(s => s + 1);
-      setRightSheetSignal(s => s + 1);
+      if (!preserveOpenWord) setRightSheetSignal(s => s + 1);
     }
     try {
       // 왼쪽: 번역+맥락
@@ -1310,8 +1316,10 @@ export default function ViewerPage() {
       if (!explanationOnly) {
         setDragAnalyzing(true);
         setDragTokens([]);
-        setSelectedToken(null);
-        setIsSheetOpen(false);
+        if (!preserveOpenWord) {
+          setSelectedToken(null);
+          setIsSheetOpen(false);
+        }
       }
 
       // 교재 뜻(v2-AB R0) — 정제된 교재의 translations(문장 → 뜻)를 **캐시·Gemini보다 먼저** 본다.
@@ -1706,9 +1714,9 @@ export default function ViewerPage() {
       return source?.surface === token.text ? source : null;
     }
     const original = material?.processed_json?.dictionary?.[token.id];
-    return original?.text === token.text
-      ? { kind: 'reading', materialId: id, tokenId: token.id }
-      : { kind: 'reading', materialId: id, quote: leftPanelText, surface: token.text };
+    if (original?.text === token.text) return { kind: 'reading', materialId: id, tokenId: token.id };
+    const quote = ctxSentenceOf(token) ?? leftPanelText;
+    return quote ? { kind: 'reading', materialId: id, quote, surface: token.text } : null;
   }
 
   function contextWord(token, grade) {
@@ -1880,7 +1888,7 @@ export default function ViewerPage() {
       grade: Number.isInteger(grade)&&grade>=1&&grade<=4?grade:undefined,
       word: { text: token.text, base: token.sep_link || token.base_form,
         meaning: token.meaning, pos: token.pos, reading: token.furigana || token.reading,
-        language: materialLang, sourceSentence: extractSourceSentence(token.id) || leftPanelText },
+        language: materialLang, sourceSentence: extractSourceSentence(token.id) || (ctxSentenceOf(token) ?? leftPanelText) },
     });
   };
   const loginForGuestSave = async (event) => {
@@ -1907,7 +1915,7 @@ export default function ViewerPage() {
     const action = ++gradeAction.current;
     const g = Number.isInteger(grade) && grade >= 1 && grade <= 4 ? grade : undefined;
 
-    const sourceSentence = extractSourceSentence(selectedToken.id) || leftPanelText;
+    const sourceSentence = extractSourceSentence(selectedToken.id) || (ctxSentenceOf(selectedToken) ?? leftPanelText);
     const saveScope = saveScopeRef.current;
     const savedToken = selectedToken;
     const savedSource = readingContextSource(savedToken);
@@ -1996,7 +2004,7 @@ export default function ViewerPage() {
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           {!isNotFound && <button onClick={() => refetch()} className="btn btn--primary">{vt("다시 시도")}</button>}
-          <LibraryReturnLink className="btn btn--secondary">{vt("← 내 서재")}</LibraryReturnLink>
+          <LibraryReturnLink className="btn btn--secondary" aria-label={vt(readerReturnLabel(originalParams.get('returnTo')))}><span aria-hidden="true">←</span></LibraryReturnLink>
         </div>
       </div>
     );
@@ -2008,7 +2016,7 @@ export default function ViewerPage() {
       <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
         <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>{vt("비공개 자료입니다")}</h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>{vt("이 자료는 작성자만 열람할 수 있습니다.")}</p>
-        <LibraryReturnLink className="btn btn--primary">{vt("← 내 서재")}</LibraryReturnLink>
+        <LibraryReturnLink className="btn btn--primary" aria-label={vt(readerReturnLabel(originalParams.get('returnTo')))}><span aria-hidden="true">←</span></LibraryReturnLink>
       </div>
     );
   }
@@ -2334,7 +2342,7 @@ export default function ViewerPage() {
                     key={`${t.text}_${i}`}
                     className="char-inspect__word"
                     lang={contentLangTag}
-                    onClick={() => handleListWordClick({ text: t.text, base_form: t.base_form || t.text, meaning: t.meaning, furigana: t.furigana, pos: t.pos })}
+                    onClick={() => handleListWordClick({ ...t, id: json.sequence.find(tid => json.dictionary[tid] === t) })}
                   >{t.text}</button>
                 ))}
               </div>
@@ -2347,7 +2355,9 @@ export default function ViewerPage() {
                     key={v.id || v.word_text}
                     className="char-inspect__word"
                     lang={contentLangTag}
-                    onClick={() => handleListWordClick({ text: v.word_text, base_form: v.base_form || v.word_text, meaning: v.meaning, furigana: v.furigana, pos: v.pos })}
+                    onClick={() => handleListWordClick({ text: v.word_text, base_form: v.base_form || v.word_text, meaning: v.meaning, furigana: v.furigana, pos: v.pos,
+                      __viewerMaterialId: String(id), __viewerSentence: String(v.source_material_id) === String(id)
+                        && v.source_sentence?.includes(v.word_text) && material?.raw_text?.includes(v.source_sentence) ? v.source_sentence : '' })}
                   >{v.word_text}</button>
                 ))}
               </div>
@@ -2680,7 +2690,7 @@ export default function ViewerPage() {
           {classStudyActive&&originalParams.get('returnTo')?.includes('view=history')&&<LibraryReturnLink className="viewer-back-link">{vt("← 수업 기록")}</LibraryReturnLink>}
           {!classStudyActive&&(material?.__local
             ? <Link href={`/class/${material.__team}`} className="viewer-back-link">{vt("← 팀 페이지")}</Link>
-            : <LibraryReturnLink className="viewer-back-link">{vt("← 내 서재")}</LibraryReturnLink>)}
+            : <LibraryReturnLink className="viewer-back-link viewer-back-link--icon" aria-label={vt(readerReturnLabel(originalParams.get('returnTo')))} title={vt(readerReturnLabel(originalParams.get('returnTo')))}><span aria-hidden="true">←</span></LibraryReturnLink>)}
           {composerOf(material) && <Link className="viewer-back-link" href={sourcePassageHref(material,originalParams.get('returnTo')) || `/viewer/${composerOf(material)?.parentId || id}?returnTo=${encodeURIComponent(originalParams.get('returnTo') || '/materials?view=owned')}`}>{passageOf(material)?`원본의 ${passageLocation(passageOf(material))}으로 ↗`:'현재 글과 첨부 원본 ↗'}</Link>}
           {siblingNav && (
             <div className="viewer-series-nav" title={siblingNav.label}>
@@ -2712,7 +2722,7 @@ export default function ViewerPage() {
           </div>
         </div>
       <ClassSourceFocus material={material} user={user} params={originalParams} tokenRefs={tokenRefs} onResolve={(target,source)=>{
-        clearAnalysisPanels();tokenRange.clearRange();setPickedLineIdx(null);setSelectedRangeText(source.quote);
+        closeWordCard();clearAnalysisPanels();tokenRange.clearRange();setPickedLineIdx(null);setSelectedRangeText(source.quote);
         if(target.first===target.last&&json.dictionary[target.first]?.text===source.quote){setSelectedToken({...json.dictionary[target.first],id:target.first});setIsSheetOpen(true);setRightSheetSignal(v=>v+1);}
         else {tokenRange.restoreRange(target.first,target.last);setRestoredClassSource({materialId:String(material.id),quote:source.quote,anchor:classAnchorAt(textbookStream(json).text,target.start,target.end,source.quote)});setLeftPanelText(source.quote);const from=json.sequence.indexOf(target.first),to=json.sequence.indexOf(target.last);setDragTokens(json.sequence.slice(from,to+1).filter(tid=>json.dictionary[tid]?.pos!=='개행').map(tid=>({...json.dictionary[tid],id:tid})));setRightSheetSignal(v=>v+1);}
       }}/>
@@ -3314,6 +3324,7 @@ export default function ViewerPage() {
         onClose={closeWordCard}
         suppressed={modalBlocked}
         preserveFocus={annotationOpen&&!isSheetOpen&&dragTokens===null}
+        preserveWordTab={preserveOpenWord}
         onOpenChange={setInspectorOpen}
         leftContent={leftPanelContent}
         rightContent={selectedToken&&isSheetOpen?renderRightPanelContent(annotationContent&&<details className="reader-card-notes" open={annotationOpen}><summary>{vt("교재 설명")}</summary>{annotationContent}</details>):<>{annotationContent}{rightPanelContent}</>}
