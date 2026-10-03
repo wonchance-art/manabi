@@ -1,6 +1,7 @@
 // Shared viewer labels only. Learning content and server explanations are never translated here.
 // Korean source labels remain exact keys during the gradual migration of the existing viewer.
 const rows = [
+  ['본문 전체 듣기','朗读全文','朗讀全文'],['재생','播放','播放'],['일시정지','暂停','暫停'],['정지','停止','停止'],
   ['명사','名词','名詞'],['인명','人名','人名'],['지명','地名','地名'],['기관명','机构名','機構名'],['고유명사','专有名词','專有名詞'],
   ['동사','动词','動詞'],['부사성 동사','动词（副词性）','動詞（副詞性）'],['명사성 동사','动词（名词性）','動詞（名詞性）'],
   ['형용사','形容词','形容詞'],['부사성 형용사','形容词（副词性）','形容詞（副詞性）'],['명사성 형용사','形容词（名词性）','形容詞（名詞性）'],

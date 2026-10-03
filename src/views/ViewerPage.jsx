@@ -19,6 +19,7 @@ import { composerOf, shouldReadComposerOriginal } from '@/lib/materialComposer';
 import Link from 'next/link';
 import { LibraryReturnLink } from '@/components/web/LibraryReaderLink';
 import { readerReturnLabel } from '../lib/libraryReturn';
+import ActionIcon from '../components/ActionIcon';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { cacheMaterial, getCachedMaterial } from '../lib/offlineCache';
@@ -1278,7 +1279,8 @@ export default function ViewerPage() {
       title={vt(dir < 0 ? '위 문장' : '아래 문장')}
       disabled={!adjacentSentence(sentences, pickedLineIdx, dir)}
       onClick={() => moveSentence(dir)}
-    >{dir < 0 ? '▲' : '▼'}</button>
+      data-icon-action
+    ><ActionIcon name={dir<0?'up':'down'}/></button>
   );
 
   // 집중 모드 — 본문 창의 '빈 공간'(글자·컨트롤 밖) 탭 = 지정 해제(오너 확정 2026-08-20:
@@ -2155,7 +2157,7 @@ export default function ViewerPage() {
           {refVocab && <span className="word-detail-card__level">{refLevelLabel(refVocab.level)}</span>}
         </div>
       </div>
-      {classStudyActive?<div className="reader-teaching-word"><TeachingWord entry={{text:headText,reading:headReading,meaning:classMeaning?.meaning??refMeaning??selectedToken.meaning??''}} language={materialLang} display={teachingDisplay} onChar={(ch,index)=>toggleInspectChar(ch,`teaching:${index}`,null)}/><div className="reader-teaching-actions"><details><summary>{vt("표시")}</summary><WordDisplayControls language={materialLang} value={teachingDisplay} onChange={setTeachingDisplay}/></details>{ttsSupported&&<button className="word-detail-card__speak" onClick={()=>speak(headText,materialLang,ttsOptsFor(ttsRate))} aria-label={vt("발음 듣기")}>▷</button>}{canEditToken&&selectedToken.id&&!classMeaning&&legacyTokenEditingAllowed&&<button className="word-detail-card__edit" aria-label={vt("뜻·발음 수정")} onClick={toggleTokenEditing}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="m4 16 12-12 4 4L8 20H4z"/></svg></button>}</div></div>:<div className="reader-card-headword">
+      {classStudyActive?<div className="reader-teaching-word"><TeachingWord entry={{text:headText,reading:headReading,meaning:classMeaning?.meaning??refMeaning??selectedToken.meaning??''}} language={materialLang} display={teachingDisplay} onChar={(ch,index)=>toggleInspectChar(ch,`teaching:${index}`,null)}/><div className="reader-teaching-actions"><details><summary>{vt("표시")}</summary><WordDisplayControls language={materialLang} value={teachingDisplay} onChange={setTeachingDisplay}/></details>{ttsSupported&&<button className="word-detail-card__speak" onClick={()=>speak(headText,materialLang,ttsOptsFor(ttsRate))} aria-label={vt("발음 듣기")} title={vt("발음 듣기")} data-icon-action><ActionIcon name="audio"/></button>}{canEditToken&&selectedToken.id&&!classMeaning&&legacyTokenEditingAllowed&&<button className="word-detail-card__edit" aria-label={vt("뜻·발음 수정")} onClick={toggleTokenEditing}><ActionIcon name="edit"/></button>}</div></div>:<div className="reader-card-headword">
       {(() => {
         // ① 폭맞춤 확대(오너 승인): CJK는 1em 격자라 크기 = 100cqi ÷ fitDivisor가 CSS
         // 수식으로 성립(.word-fit — 측정 JS 없음). 라틴 자료는 기존 크기 유지.
@@ -2217,7 +2219,7 @@ export default function ViewerPage() {
           </div>
         );
       })()}
-      {ttsSupported && <button className="word-detail-card__speak" onClick={() => speak(headText, materialLang, { ...ttsOptsFor(ttsRate), preferBrowser: true })} aria-label="발음 듣기" {...(uiLocale === 'ko' ? {} : {'aria-label': vt('발음 듣기')})} title={vt("발음 듣기")}>▷</button>}
+      {ttsSupported && <button className="word-detail-card__speak" onClick={() => speak(headText, materialLang, { ...ttsOptsFor(ttsRate), preferBrowser: true })} aria-label="발음 듣기" {...(uiLocale === 'ko' ? {} : {'aria-label': vt('발음 듣기')})} title={vt("발음 듣기")} data-icon-action><ActionIcon name="audio"/></button>}
       </div>}
       {!classStudyActive&&<ViewerHanjaReading items={hanjaHunOf(headText)}/>}
       {classMeaning?.editor||(!classStudyActive&&<div className={`word-detail-card__meaningrow${materialLang === 'English' && selectedToken.reading ? ' word-detail-card__meaningrow--tight' : ''}`}>
@@ -2231,8 +2233,8 @@ export default function ViewerPage() {
             onClick={toggleTokenEditing}
             aria-label={vt("뜻·발음 수정")}
             title={vt("뜻·발음 수정")}
-            className={`word-detail-card__edit${isEditingToken ? ' is-on' : ''}`}
-          ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m16 3 5 5M4 15 16 3a2 2 0 0 1 3 0l2 2a2 2 0 0 1 0 3L9 20l-6 1 1-6Z"/></svg></button>
+            className={`word-detail-card__edit${isEditingToken ? ' is-on' : ''}`} data-icon-action
+          ><svg className="action-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="m4 16 12-12 4 4L8 20H4v-4ZM13 7l4 4"/></svg></button>
         )}
       </div>)}
       {materialLang === 'Korean' && <><small>{vt('분석 결과는 자동 생성되었어요.')}</small>{localizedWord.morphology.length > 0 && <details><summary>{vt('문법 해설')}</summary><ul>{localizedWord.morphology.map((item,index)=><li key={index}>{typeof item === 'string' ? item : `${item.form}: ${item.function}`}</li>)}</ul></details>}</>}
@@ -2578,16 +2580,18 @@ export default function ViewerPage() {
               onClick={() => speak(leftPanelText, materialLang, ttsOptsFor(ttsRate))}
               aria-label={vt("지정한 문장 듣기")}
               title={vt("지정한 문장 듣기")}
-              style={{ background: 'none', border: 'none', fontSize: '1.05rem', cursor: 'pointer', minWidth: 32, minHeight: 32, flexShrink: 0, color: 'var(--primary-light)' }}
-            >▷</button>
+              data-icon-action
+              style={{ background: 'none', border: 'none', cursor: 'pointer', minWidth: 44, minHeight: 44, flexShrink: 0, color: 'var(--primary-light)' }}
+            ><ActionIcon name="audio"/></button>
           )}
           {ttsSupported && (
             <button
               onClick={() => setDictationSentence(leftPanelText)}
               aria-label={vt("이 문장 받아쓰기")}
               title={vt("이 문장 받아쓰기 — 듣고 입력하면 글자 단위로 채점해요")}
-              style={{ background: 'none', border: 'none', fontSize: '1rem', cursor: 'pointer', minWidth: 32, minHeight: 32, flexShrink: 0 }}
-            >🎧</button>
+              data-icon-action
+              style={{ background: 'none', border: 'none', cursor: 'pointer', minWidth: 44, minHeight: 44, flexShrink: 0 }}
+            ><ActionIcon name="headphones"/></button>
           )}
         </div>
       )}
@@ -2600,7 +2604,8 @@ export default function ViewerPage() {
           className="grammar-btn grammar-detail__toggle"
           onClick={() => easier.run(leftPanelText)}
           disabled={!leftPanelText}
-        >{vt("🔤 더 쉽게 ▾")}</button>
+          aria-label={vt("🔤 더 쉽게 ▾")}
+        ><ActionIcon name="type"/><span>{vt("🔤 더 쉽게 ▾").replace('🔤 ','').replace(' ▾','')}</span></button>
       ) : (
         <div className="grammar-detail">
           {easier.loading ? (
@@ -2618,7 +2623,8 @@ export default function ViewerPage() {
           className="grammar-btn grammar-detail__toggle"
           onClick={() => grammar.run(leftPanelText)}
           disabled={!leftPanelText}
-        >{vt("자세히 ▾")}</button>
+          aria-label={vt("자세히 ▾")}
+        ><ActionIcon name="book"/><span>{vt("자세히 ▾").replace(' ▾','')}</span></button>
       ) : (
         <div className="grammar-detail">
           {grammar.loading ? (
@@ -2698,21 +2704,21 @@ export default function ViewerPage() {
           {classStudyActive&&originalParams.get('returnTo')?.includes('view=history')&&<LibraryReturnLink className="viewer-back-link">{vt("← 수업 기록")}</LibraryReturnLink>}
           {!classStudyActive&&(material?.__local
             ? <Link href={`/class/${material.__team}`} className="viewer-back-link">{vt("← 팀 페이지")}</Link>
-            : <LibraryReturnLink className="viewer-back-link viewer-back-link--icon" aria-label={vt(readerReturnLabel(originalParams.get('returnTo')))} title={vt(readerReturnLabel(originalParams.get('returnTo')))}><span aria-hidden="true">←</span></LibraryReturnLink>)}
+            : <LibraryReturnLink className="viewer-back-link viewer-back-link--icon" aria-label={vt(readerReturnLabel(originalParams.get('returnTo')))} title={vt(readerReturnLabel(originalParams.get('returnTo')))} data-icon-action><ActionIcon name="back"/></LibraryReturnLink>)}
           {composerOf(material) && <Link className="viewer-back-link" href={sourcePassageHref(material,originalParams.get('returnTo')) || `/viewer/${composerOf(material)?.parentId || id}?returnTo=${encodeURIComponent(originalParams.get('returnTo') || '/materials?view=owned')}`}>{passageOf(material)?`원본의 ${passageLocation(passageOf(material))}으로 ↗`:'현재 글과 첨부 원본 ↗'}</Link>}
           {siblingNav && (
             <div className="viewer-series-nav" title={siblingNav.label}>
               {siblingNav.prev ? (
-                <Link href={classStudyNeighborHref(siblingNav.prev,studyContext,originalParams.get('returnTo'))} className="viewer-series-nav__btn" title={siblingNav.prev.title} aria-label={siblingNav.prevLabel}>‹</Link>
-              ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">‹</span>}
+                <Link href={classStudyNeighborHref(siblingNav.prev,studyContext,originalParams.get('returnTo'))} className="viewer-series-nav__btn" title={siblingNav.prev.title} aria-label={siblingNav.prevLabel} data-icon-action><ActionIcon name="previous"/></Link>
+              ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true"><ActionIcon name="previous"/></span>}
               {siblingNav.pos != null && (
                 <span className="viewer-series-nav__position" title={siblingNav.label}>
                   {siblingNav.pos}/{siblingNav.total}
                 </span>
               )}
               {siblingNav.next ? (
-                <Link href={classStudyNeighborHref(siblingNav.next,studyContext,originalParams.get('returnTo'))} className="viewer-series-nav__btn" title={siblingNav.next.title} aria-label={siblingNav.nextLabel}>›</Link>
-              ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">›</span>}
+                <Link href={classStudyNeighborHref(siblingNav.next,studyContext,originalParams.get('returnTo'))} className="viewer-series-nav__btn" title={siblingNav.next.title} aria-label={siblingNav.nextLabel} data-icon-action><ActionIcon name="next"/></Link>
+              ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true"><ActionIcon name="next"/></span>}
             </div>
           )}
           {/* 도구는 도구끼리 오른쪽(v2-Q 축 그대로). 분석 중단은 지금 도는 분석에 대한 일시 제어라 여기. */}
@@ -2720,13 +2726,13 @@ export default function ViewerPage() {
             {user?.id === material?.owner_id && reanalyzeMutation.isPending && (
               <button onClick={stopReanalysis} disabled={reanalyze.committing} className="grammar-btn grammar-btn--danger">{vt("분석 중단")}</button>
             )}
-            {ttsSupported && <ListenControls text={material?.raw_text} language={materialLang} stopSignal={activeModal?.kind} playbackRate={TTS_RATES[ttsRate].web} />}
-            <button ref={settingsTrigger} className="viewer-aa" aria-label={vt("읽기 설정")} aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
-              Aa
+            {ttsSupported && <ListenControls text={material?.raw_text} language={materialLang} stopSignal={activeModal?.kind} playbackRate={TTS_RATES[ttsRate].web} compact uiLocale={uiLocale} />}
+            <button ref={settingsTrigger} className="viewer-aa" aria-label={vt("읽기 설정")} title={vt("읽기 설정")} data-icon-action aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
+              <ActionIcon name="type"/>
             </button>
-            <button className="viewer-aa" aria-haspopup="dialog" onClick={()=>changeModal('activities',true)}>{vt("학습")}</button>
-            {user?.id===material?.owner_id&&!passageOf(material)&&!isAnalyzing&&<button className="viewer-aa" aria-label={vt("자료 관리")} aria-haspopup="dialog" onClick={()=>{setActiveModal(null);setReanalyzePanel('menu');}}>⋯</button>}
-            {autoPace&&<button className="viewer-pace-toggle" aria-pressed={paceRunning} onClick={()=>paceRunning?setPaceRunning(false):startPacer()}>{vt(paceRunning?(paceHeld?'자동 진행 대기 · 중지':'자동 진행 중지'):'자동 진행 시작')}</button>}
+            <button className="viewer-aa" aria-label={vt("학습")} title={vt("학습")} data-icon-action aria-haspopup="dialog" onClick={()=>changeModal('activities',true)}><ActionIcon name="book"/></button>
+            {user?.id===material?.owner_id&&!passageOf(material)&&!isAnalyzing&&<button className="viewer-aa" aria-label={vt("자료 관리")} title={vt("자료 관리")} data-icon-action aria-haspopup="dialog" onClick={()=>{setActiveModal(null);setReanalyzePanel('menu');}}><ActionIcon name="more"/></button>}
+            {autoPace&&<button className="viewer-pace-toggle" aria-label={vt(paceRunning?(paceHeld?'자동 진행 대기 · 중지':'자동 진행 중지'):'자동 진행 시작')} title={vt(paceRunning?(paceHeld?'자동 진행 대기 · 중지':'자동 진행 중지'):'자동 진행 시작')} data-icon-action aria-pressed={paceRunning} onClick={()=>paceRunning?setPaceRunning(false):startPacer()}><ActionIcon name={paceRunning?'stop':'play'}/></button>}
           </div>
         </div>
       <ClassSourceFocus material={material} user={user} params={originalParams} tokenRefs={tokenRefs} onResolve={(target,source)=>{
@@ -2768,7 +2774,8 @@ export default function ViewerPage() {
                 className="viewer-title-edit"
                 onClick={() => { setTitleDraft(material.title); setTitleEditing(true); }}
                 title={vt("제목 편집")}
-              >{vt("편집")}</button>
+                aria-label={vt("제목 편집")} data-icon-action
+              ><ActionIcon name="edit"/></button>
             )}
           </div>
         )}

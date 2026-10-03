@@ -15,6 +15,9 @@ import { authEntryHref } from '@/lib/authRedirect';
 import VersionBadge from './VersionBadge';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/ToastContext';
+import ActionIcon from './ActionIcon';
+
+const navIcons={'/home':'home','/lessons':'book','/discover':'compass','/vocab':'review','/materials':'library'};
 
 // 미완성 기능 임시 숨김 — true로 바꾸면 학습·클래스 내비가 함께 복원된다.
 
@@ -35,7 +38,7 @@ function ReaderSiteMenu({ isAdmin }) {
     return () => { document.removeEventListener('pointerdown', closeOutside); document.removeEventListener('keydown', closeWithKey); };
   }, []);
   return <details ref={ref} className="reader-site-menu">
-    <summary>메뉴 <span aria-hidden="true">≡</span></summary>
+    <summary aria-label="메뉴" title="메뉴" data-icon-action><ActionIcon name="menu"/></summary>
     <nav aria-label="읽기 화면 내비게이션" onClick={e => { if (e.target.closest('a')) ref.current.open = false; }}>
       {MAIN_NAV.map(item => <Link key={item.href} href={item.href} prefetch={item.prefetch}>{item.label}</Link>)}
       {isAdmin && <Link href="/class" prefetch={false}>수업</Link>}
@@ -143,11 +146,6 @@ export default function Layout({ children }) {
     }
   }
 
-  const displayChar =
-    profile?.display_name?.[0] ||
-    user?.email?.[0]?.toUpperCase() ||
-    '?';
-
   // 핵심 네비게이션만 노출 — 부가 기능(가이드·통계)은 프로필 안쪽으로
   // 학습 월드(/world)는 개발 동결(2026-07 피벗)로 내비에서 내렸다 — 라우트는 유지, 직행 URL로만.
   const navLinks = MAIN_NAV;
@@ -161,7 +159,7 @@ export default function Layout({ children }) {
           <span>manabi<span className="manabi-brand-dot" aria-hidden="true" /></span>
         </Link>
 
-        <Link href="/home" prefetch={false} className="classroom-app-home" aria-label="웹앱 홈">홈</Link>
+        <Link href="/home" prefetch={false} className="classroom-app-home" aria-label="웹앱 홈" title="웹앱 홈" data-icon-action><ActionIcon name="home"/></Link>
         <nav className="gnb__nav" aria-label="메인 내비게이션">
           {navLinks.map(l => (
             <Link
@@ -170,8 +168,11 @@ export default function Layout({ children }) {
               prefetch={l.prefetch}
               className={`gnb__link ${isNavActive(l.href) ? 'active' : ''}`}
               aria-current={isNavActive(l.href) ? 'page' : undefined}
+              aria-label={l.label}
+              title={l.label}
+              data-icon-action
             >
-              <span>{l.label}</span>
+              <ActionIcon name={navIcons[l.href]}/>
             </Link>
           ))}
         </nav>
@@ -182,8 +183,9 @@ export default function Layout({ children }) {
             href="/class"
             prefetch={false}
             className={`gnb__link ${pathname.startsWith('/class') ? 'active' : ''}`}
+            aria-label="수업" title="수업" data-icon-action
           >
-            <span>수업</span>
+            <ActionIcon name="users"/>
           </Link>
         )}
         {isAdmin && (
@@ -191,8 +193,9 @@ export default function Layout({ children }) {
             href="/admin"
             className={`gnb__link ${pathname.startsWith('/admin') ? 'active' : ''}`}
             style={{ color: 'var(--admin-accent)' }}
+            aria-label="관리" title="관리" data-icon-action
           >
-            <span>관리</span>
+            <ActionIcon name="settings"/>
           </Link>
         )}
 
@@ -205,12 +208,13 @@ export default function Layout({ children }) {
           title={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
           aria-label={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
           aria-pressed={theme === 'dark'}
+          data-icon-action
         >
-          <span aria-hidden="true">◐</span>
+          <ActionIcon name={theme==='dark'?'sun':'moon'}/>
         </button>
 
         {focusedReading && <ReaderSiteMenu isAdmin={isAdmin} />}
-        <Link href={librarySearchHref(user)} prefetch={false} className="manabi-search-link" aria-label="자료 검색">⌕<span>검색</span></Link>
+        <Link href={librarySearchHref(user)} prefetch={false} className="manabi-search-link" aria-label="자료 검색" title="자료 검색" data-icon-action><ActionIcon name="search"/></Link>
         <div className="gnb__actions">
           {user ? (
             <div className="gnb__user-area">
@@ -219,8 +223,9 @@ export default function Layout({ children }) {
                 onClick={() => router.push('/profile')}
                 title={profile?.display_name || user.email}
                 aria-label="내 계정"
+                data-icon-action
               >
-                {displayChar}
+                <ActionIcon name="user"/>
               </button>
             </div>
           ) : (
