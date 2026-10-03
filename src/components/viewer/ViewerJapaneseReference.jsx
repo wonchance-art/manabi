@@ -26,7 +26,7 @@ export default function ViewerJapaneseReference({userId,word,meaning,pos,dictEnt
     {visible?<h3>{vt('일본어 대조')}</h3>:<summary>{vt('일본어 대조')}<ActionIcon name="down"/></summary>}
     <section className="reader-japanese" aria-label={vt('일본어 대조')}>
     <div className="reader-japanese__row">
-      <span className="reader-japanese__label" title={vt('글자 모양을 일본식으로 옮긴 표기이며, 실제 일본어 단어와 다를 수 있어요.')}>{vt(same?'일본어':'일본식 자형')}</span>
+      {(!visible||!same)&&<span className="reader-japanese__label" title={vt('글자 모양을 일본식으로 옮긴 표기이며, 실제 일본어 단어와 다를 수 있어요.')}>{vt(same?'일본어':'일본식 자형')}</span>}
       {glyphForm?<span lang="ja" className="reader-japanese__form">{glyphForm}</span>:<span role="status">{vt(formError?'자형을 불러오지 못했어요.':'불러오는 중…')}{formError&&onRetryForm&&<button type="button" className="btn btn--ghost btn--sm" onClick={onRetryForm}>{vt('자형 다시 불러오기')}</button>}</span>}
       {same&&query.data&&<small title={vt('현재 한국어 뜻을 기준으로 찾은 AI 대응어')}>AI</small>}
       {same&&ref&&!query.data&&<small>{vt('기존 사전')}</small>}

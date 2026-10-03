@@ -2228,7 +2228,6 @@ export default function ViewerPage() {
       </div>
       {ttsSupported && <button className="word-detail-card__speak" onClick={() => speak(headText, materialLang, { ...ttsOptsFor(ttsRate), preferBrowser: true })} aria-label="발음 듣기" {...(uiLocale === 'ko' ? {} : {'aria-label': vt('발음 듣기')})} title={vt("발음 듣기")} data-icon-action><ActionIcon name="audio"/></button>}
       </div>}
-      {!classStudyActive&&<ViewerHanjaReading items={hanjaHunOf(headText)}/>}
       {classMeaning?.editor||(!classStudyActive&&<div className={`word-detail-card__meaningrow${materialLang === 'English' && selectedToken.reading ? ' word-detail-card__meaningrow--tight' : ''}`}>
         <div className="word-detail-card__meaning" lang={materialLang === 'Korean' ? effectiveExplanationLocale : undefined}>
           {materialLang === 'Korean' ? (localizedWord.loading ? vt('문맥 뜻을 불러오는 중…') : localizedWord.error ? <button onClick={localizedWord.retry}>{vt('설명을 다시 불러오기')}</button> : localizedWord.meaning) : refMeaning || selectedToken.meaning || '(뜻 없음)'}
@@ -2244,7 +2243,6 @@ export default function ViewerPage() {
           ><svg className="action-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="m4 16 12-12 4 4L8 20H4v-4ZM13 7l4 4"/></svg></button>
         )}
       </div>)}
-      {materialLang === 'Korean' && <><small>{vt('분석 결과는 자동 생성되었어요.')}</small>{localizedWord.morphology.length > 0 && <section className="reader-card-visible"><h3>{vt('문법 해설')}</h3><ul>{localizedWord.morphology.map((item,index)=><li key={index}>{typeof item === 'string' ? item : `${item.form}: ${item.function}`}</li>)}</ul></section>}</>}
       {isEditingToken && !classMeaning && (
         legacyTokenEditingAllowed && canEditToken &&
         <TokenEditPanel
@@ -2281,13 +2279,13 @@ export default function ViewerPage() {
         const ctxSentence = ctxSentenceOf(selectedToken);
         if (!ctxSentence) return null;
         if (ctxExplain?.loading) {
-          return <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 12 }}>{vt("문장 속 쓰임을 읽는 중...")}</div>;
+          return <div className="reader-card-context-explanation is-loading">{vt("문장 속 쓰임을 읽는 중...")}</div>;
         }
         if (ctxExplain?.text) {
           return (
-            <div style={{ fontSize: '0.84rem', lineHeight: 1.55, marginBottom: 12 }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 2 }}>{vt("이 문장에서")}</div>
-              <div style={{ color: 'var(--text-secondary)' }}>{ctxExplain.text}</div>
+            <div className="reader-card-context-explanation">
+              <h3>{vt("이 문장에서")}</h3>
+              <div>{ctxExplain.text}</div>
             </div>
           );
         }
@@ -2296,11 +2294,14 @@ export default function ViewerPage() {
 
         <div className="word-detail-card__actrow">
           <button className="btn btn--ghost btn--sm" aria-label={vt("문장 번역")} title={vt("문장 번역")} onClick={()=>{setSentenceTabSignal(s=>s+1);if(classStudyActive)runSelectionAnalysis(ctxSentenceOf(selectedToken));else runSelectedSentence(ctxSentenceOf(selectedToken),true);}}>{vt("번역")}</button>
-          {materialLang === 'Chinese'&&!ctxExplain?.loading&&!ctxExplain?.text&&<button className="btn btn--ghost btn--sm" onClick={()=>runCtxExplain(selectedToken,ctxSentenceOf(selectedToken))}><ActionIcon name="book"/>{vt(ctxExplain?.error?'이 문장에서는? (다시 시도)':'이 문장에서는?')}</button>}
+          {materialLang === 'Chinese'&&!ctxExplain?.loading&&!ctxExplain?.text&&<button className="btn btn--ghost btn--sm" onClick={()=>runCtxExplain(selectedToken,ctxSentenceOf(selectedToken))}>{vt(ctxExplain?.error?'이 문장에서는? (다시 시도)':'이 문장에서는?')}</button>}
         </div>
         </div>
       </section>}
 
+      {/* 읽기를 이어 갈 단어·뜻·원문을 먼저, 켜 둔 참고 정보는 그 아래에 바로 표시한다. */}
+      {materialLang === 'Korean' && <><small>{vt('분석 결과는 자동 생성되었어요.')}</small>{localizedWord.morphology.length > 0 && <section className="reader-card-visible"><h3>{vt('문법 해설')}</h3><ul>{localizedWord.morphology.map((item,index)=><li key={index}>{typeof item === 'string' ? item : `${item.form}: ${item.function}`}</li>)}</ul></section>}</>}
+      {!classStudyActive&&<ViewerHanjaReading items={hanjaHunOf(headText)}/>}
       {classAction}
       {materialLang === 'Chinese' && <ViewerJapaneseReference key={`${selectedToken.id||selectedToken.text}:${refMeaning||''}`} userId={user?.id} word={headText} meaning={refMeaning||selectedToken.meaning||''} pos={selectedToken.pos} dictEntry={editDictEntry} loading={!dictFetched&&!dictError} dictError={dictError} jaTable={hanjaJaTable} formError={jaFormError} onRetryForm={()=>{setJaFormError(false);setJaFormRetry(n=>n+1);}} visible={!classStudyActive}/>}
 
