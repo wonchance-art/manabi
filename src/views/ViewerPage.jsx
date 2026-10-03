@@ -776,6 +776,7 @@ export default function ViewerPage() {
     setLeftPanelLoading(false);
     setDragAnalyzing(false);
     const t = { ...token, id: tokenId };
+    resetWordPanelScroll();
     setSelectedToken(t);
     setIsSheetOpen(true);
     setDragTokens(null);
@@ -800,8 +801,12 @@ export default function ViewerPage() {
 
   // ② 리스트 단어 탭 → 팝업 대신 단어 카드가 리스트 위에(오너 승인). 문장 컨텍스트
   // (리스트·막대 지정·집중 어둡기)를 유지해야 하므로 dragTokens·pickedLineIdx는 건드리지 않는다.
+  const resetWordPanelScroll = () => {
+    for (const panel of document.querySelectorAll('.viewer-inspector [data-panel="right"]')) panel.scrollTop = 0;
+  };
   const handleListWordClick = (t) => {
     detailGate.current.cancel();
+    resetWordPanelScroll(); // 동일한 단어·문맥을 다시 선택해도 카드가 화면 위에 보이도록.
     t = { ...t, __viewerSentence: ctxSentenceOf(t) ?? leftPanelText, __viewerMaterialId: String(id) };
     setSelectedToken({ ...t });
     setIsSheetOpen(true);
@@ -845,14 +850,15 @@ export default function ViewerPage() {
   // (데스크톱 우측 패널 + 모바일 시트 섹션, 둘 다 렌더 사본이라 전부 복귀).
   useEffect(() => {
     if (!selectedTokenRef.current || !isSheetOpen) return;
-    for (const el of document.querySelectorAll('.viewer-inspector .reader-card-body, .viewer-inspector [data-panel="right"]')) el.scrollTop = 0;
+    for (const el of document.querySelectorAll('.viewer-inspector .reader-card-body')) el.scrollTop = 0;
+    resetWordPanelScroll();
     const frame = requestAnimationFrame(() => {
       for (const card of document.querySelectorAll('.word-detail-card')) {
         if (card.getClientRects().length) { card.focus({ preventScroll: true }); break; }
       }
     });
     return () => cancelAnimationFrame(frame);
-  }, [selectedToken?.id, selectedToken?.text, selectedToken?.__viewerSentence, selectedToken?.__viewerMaterialId, isSheetOpen]);
+  }, [selectedToken?.id, selectedToken?.text, isSheetOpen]);
 
   // ⑤ 유의어·반의어(오너 승인) — 카드가 열리면 자동 조회. 내용어만(synAntEligible),
   // localStorage 캐시라 단어당 1회 초소형 호출. 늦게 온 응답이 다른 단어에 붙지 않게 가드.
