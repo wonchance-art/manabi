@@ -2293,7 +2293,7 @@ export default function ViewerPage() {
       })()}
 
         <div className="word-detail-card__actrow">
-          <button className="btn btn--ghost btn--sm" onClick={()=>runSelectionAnalysis(ctxSentenceOf(selectedToken))}><ActionIcon name="translate"/>{vt("문장 번역")}</button>
+          <button className="btn btn--ghost btn--sm" aria-label={vt("문장 번역")} title={vt("문장 번역")} onClick={()=>{setSentenceTabSignal(s=>s+1);runSelectedSentence(ctxSentenceOf(selectedToken),true);}}>{vt("번역")}</button>
           {materialLang === 'Chinese'&&!ctxExplain?.loading&&!ctxExplain?.text&&<button className="btn btn--ghost btn--sm" onClick={()=>runCtxExplain(selectedToken,ctxSentenceOf(selectedToken))}><ActionIcon name="book"/>{vt(ctxExplain?.error?'이 문장에서는? (다시 시도)':'이 문장에서는?')}</button>}
         </div>
         </div>
