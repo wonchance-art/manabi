@@ -173,6 +173,7 @@ export default function Layout({ children }) {
               data-icon-action
             >
               <ActionIcon name={navIcons[l.href]}/>
+              <span className="gnb__action-label">{l.label}</span>
             </Link>
           ))}
         </nav>
