@@ -278,15 +278,14 @@ test('selected sentence refreshes explanation locale without reanalyzing source 
   try {
     await page.goto('/viewer/94098');
     await page.locator('.reader-area [data-tid="id_1_0_locale"]').click();
-    await page.locator('.reader-card-context summary').click();
     await page.locator('.reader-card-context').getByRole('button', { name: '句子翻譯', exact: true }).click();
-    await page.locator('#inspector-sentence-tab').click();
+    assert.equal(await page.locator('#inspector-sentence-tab').getAttribute('aria-selected'), 'true', 'direct translation opens the sentence tab');
     await panel.locator('.pdf-context__text').filter({ hasText: '來到了學校。' }).waitFor();
     assert((await panel.locator('.pdf-context__text').textContent()).includes('這是選取的第二句。'));
     const originals = await page.locator('.pdf-context__original').allTextContents();
+    assert(originals.some(text => text.includes('학교에 왔어요.')), 'translation preserves the selected second sentence');
     const words = await page.locator('.pdf-word-item__text').allTextContents();
-    assert.equal(audit.analysis.length, 1, 'the explicit first sentence action performs one source analysis');
-    assert.equal(audit.analysis[0].lines.join('\n'), '학교에 왔어요.');
+    assert.equal(audit.analysis.length, 0, 'direct translation does not reanalyze selected source words');
     let ui = 'zh-TW';
     for (const locale of ['zh-CN', 'ko', 'zh-TW']) {
       await page.getByRole('button', { name: labels[ui].settings, exact: true }).click();
@@ -294,7 +293,7 @@ test('selected sentence refreshes explanation locale without reanalyzing source 
       await page.getByRole('button', { name: labels[ui].close, exact: true }).click();
       await panel.locator('.pdf-context__text').filter({ hasText: { ko: '학교에 왔어요.', 'zh-CN': '来到了学校。', 'zh-TW': '來到了學校。' }[locale] }).waitFor();
       assert((await panel.locator('.pdf-context__text').textContent()).includes({ ko: '선택한 두 번째 문장입니다.', 'zh-CN': '这是选中的第二句。', 'zh-TW': '這是選取的第二句。' }[locale]));
-      assert.equal(audit.analysis.length, 1, 'explanation change must not reanalyze selected source words');
+      assert.equal(audit.analysis.length, 0, 'explanation change must not reanalyze selected source words');
       assert.deepEqual(await page.locator('.pdf-context__original').allTextContents(), originals);
       assert.deepEqual(await page.locator('.pdf-word-item__text').allTextContents(), words);
       const explanationCalls = audit.explanations.length;
