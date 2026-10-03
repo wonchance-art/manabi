@@ -22,15 +22,19 @@ async function open(width) {
 async function select(f,index) {
  const token=f.page.locator(`[data-source-token="id_0_${index}"]`);
  await token.focus();await f.page.keyboard.press('Enter');
+ await f.page.locator('.word-detail-card__meaning').getByText(entries[index][2],{exact:true}).waitFor();
  await f.page.locator('.reader-hun').waitFor();
 }
 async function checkGeometry(f) {
  const data=await f.page.locator('.reader-hun').evaluate(e=>{
   const r=e=>{const b=e.getBoundingClientRect();return {x:b.x,right:b.right,y:b.y,bottom:b.bottom}};
-  return {section:r(e),meaning:r(e.closest('.word-detail-card').querySelector('.word-detail-card__meaning')),pairs:[...e.children].map(p=>({cell:r(p),ch:r(p.querySelector('dt')),label:r(p.querySelector('dd'))})),overflow:document.documentElement.scrollWidth-innerWidth};
+  const card=e.closest('.word-detail-card');
+  return {section:r(e),meaning:r(card.querySelector('.word-detail-card__meaning')),context:r(card.querySelector('.reader-card-context')),pairs:[...e.children].map(p=>({cell:r(p),ch:r(p.querySelector('dt')),label:r(p.querySelector('dd'))})),overflow:document.documentElement.scrollWidth-innerWidth};
  });
  for(const {cell,ch,label} of data.pairs){assert.ok(ch.right<=label.x+.5);assert.ok(label.right<=cell.right+.5);assert.ok(label.bottom<=cell.bottom+.5);}
- assert.ok(data.meaning.y>=data.section.bottom-.5);assert.equal(data.overflow,0);
+ assert.ok(data.meaning.bottom<=data.context.y+.5,'meaning precedes the selected source without overlap');
+ assert.ok(data.context.bottom<=data.section.y+.5,'selected source precedes Hanja labels without overlap');
+ assert.equal(data.overflow,0);
  const actions=f.page.locator('.reader-card-actions').filter({visible:true}).first();
  for(const grade of ['다시','어려움','알맞음','쉬움'])assert.equal(await actions.getByRole('button',{name:new RegExp(`^${grade}`)}).count(),1);
  assert.equal(await f.page.getByRole('button',{name:'발음 듣기',exact:true}).filter({visible:true}).count(),1);

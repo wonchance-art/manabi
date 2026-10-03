@@ -279,6 +279,7 @@ test('selected sentence refreshes explanation locale without reanalyzing source 
     await page.goto('/viewer/94098');
     await page.locator('.reader-area [data-tid="id_1_0_locale"]').click();
     await page.locator('.reader-card-context').getByRole('button', { name: '句子翻譯', exact: true }).click();
+    await page.locator('#inspector-sentence-tab[aria-selected="true"]').waitFor();
     assert.equal(await page.locator('#inspector-sentence-tab').getAttribute('aria-selected'), 'true', 'direct translation opens the sentence tab');
     await panel.locator('.pdf-context__text').filter({ hasText: '來到了學校。' }).waitFor();
     assert((await panel.locator('.pdf-context__text').textContent()).includes('這是選取的第二句。'));
