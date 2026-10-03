@@ -147,10 +147,17 @@ async function locale(page,field,value) {
 async function finish(f,name) {
   await audit(f,name);
   await f.page.screenshot({path:`${output}/${name}.png`,fullPage:true});
+  // Stop client retries before removing synthetic API routes.
+  await f.context.route('**/*',route=>route.abort());
+  await Promise.all(f.context.pages().map(page=>page.close()));
   await f.context.unrouteAll({behavior:'ignoreErrors'});
   await f.context.close();
 }
 async function audit(f,name) { await writeFile(`${output}/${name}.json`,JSON.stringify({synthetic:true,liveDatabaseVerified:false,cards:f.cards,contexts:f.contexts,writes:f.writes,events:f.events,errors:f.errors},null,2)); }
+async function noKoreanLegacyEditor(page) {
+  assert.equal(await page.locator('.word-detail-card__edit').count(),0,'Korean capability must not expose the legacy meaning/pronunciation editor');
+  assert.equal(await page.locator('.token-edit').count(),0,'Korean must not mount the legacy token editor/global-promotion panel');
+}
 
 test('Korean controls stay blocked before readiness and for an unavailable storage contract',async()=>{
   const f=await fixture({ready:false,existing:true,holdCapabilities:true});
@@ -160,6 +167,15 @@ test('Korean controls stay blocked before readiness and for an unavailable stora
     for(const key of ['1','2','3','4']) await f.page.keyboard.press(key);
     assert.equal(f.writes.length,0);
     f.release();
+    const before=structuredClone(f.cards), sources=structuredClone(f.contexts);
+    await f.page.goto(`/viewer/98133?sourceContext=${contextId}`,{waitUntil:'domcontentloaded'});
+    await f.page.locator('[data-source-token="id_1_2"].learning-source-highlight').waitFor();
+    assert.equal(await f.page.locator('[data-source-token="id_0_2"].learning-source-highlight').count(),0);
+    await f.select();
+    assert.equal(await f.actions.locator('.review-score-btn:enabled').count(),0);
+    for(const key of ['1','2','3','4']) await f.page.keyboard.press(key);
+    assert.equal(f.writes.length,0);assert.deepEqual(f.cards,before);assert.deepEqual(f.contexts,sources);
+    assert.equal(f.events.length,0,'unavailable review capability preserves saved schedule/events');
     await f.page.goto('/vocab',{waitUntil:'domcontentloaded'});
     await f.page.locator('summary[aria-label="단어장 도구"]').click();
     await f.page.getByRole('button',{name:'단어 직접 추가',exact:true}).click();
@@ -172,6 +188,8 @@ test('Korean atomic save, known/exclusion restore, locale conflict, due review a
   const f=await fixture();
   try {
     await f.open(); await f.actions.locator('.review-score-btn').first().waitFor({state:'visible'});
+    assert(await f.actions.locator('.review-score-btn').first().isEnabled(),'verified Korean atomic save stays available');
+    await noKoreanLegacyEditor(f.page);
     await f.actions.locator('.review-score-btn').first().click();
     await f.page.waitForFunction(()=>document.querySelector('.word-token--saved'));
     assert.equal(f.cards.length,1);assert.equal(f.cards[0].word_text,'가다');assert.equal(f.cards[0].meaning,'去了');
@@ -194,6 +212,7 @@ test('Korean atomic save, known/exclusion restore, locale conflict, due review a
     await f.open(); const count=f.writes.length;
     await locale(f.page,'uiLocale','zh-TW');await locale(f.page,'explanationLocale','zh-TW');
     await f.page.locator('.word-detail-card__meaning').filter({visible:true}).first().getByText('去了（台灣）',{exact:true}).waitFor();
+    await noKoreanLegacyEditor(f.page);
     assert.equal(f.writes.length,count);assert.deepEqual(f.cards,saved);assert.deepEqual(f.contexts,source);
     await f.actions.locator('.learning-context-save button').first().click();
     const conflict=f.actions.locator('.learning-context-confirm');await conflict.waitFor();

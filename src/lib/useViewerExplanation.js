@@ -4,6 +4,13 @@ import { callGemini } from './gemini';
 import { viewerCacheKey } from './viewerReliability';
 import { buildViewerWordPrompt, parseViewerExplanation } from './viewerExplanation';
 
+// Edited meanings can retain a different locale from their original morphology.
+// Missing morphology provenance alone uses the existing meaning/source fallback.
+export function storedViewerMorphology(token, locale, sourceLocale = 'ko') {
+  const morphologyLocale = token?.explanationLocale || token?.meaningLocale || sourceLocale;
+  return morphologyLocale === locale ? token?.morphology || [] : [];
+}
+
 // Localized help is a display overlay. Never replace the manuscript or a saved card's meaning.
 export function useViewerExplanation({ token, sentence, locale, sourceLocale = 'ko', scope, enabled }) {
   const [state, setState] = useState({ key: '', meaning: '', morphology: [], loading: false, error: false });
@@ -46,7 +53,7 @@ export function useViewerExplanation({ token, sentence, locale, sourceLocale = '
   const overlay = enabled && !!token?.text && locale !== sourceLocale;
   return {
     meaning: overlay ? (state.key === key ? state.meaning : '') : token?.meaning || '',
-    morphology: overlay ? (state.key === key ? state.morphology || [] : []) : token?.morphology || [],
+    morphology: overlay ? (state.key === key ? state.morphology || [] : []) : storedViewerMorphology(token, locale, sourceLocale),
     loading: overlay && (state.key !== key || state.loading),
     error: overlay && state.key === key && state.error,
     retry: () => setRetry(value => value + 1),

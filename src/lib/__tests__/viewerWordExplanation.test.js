@@ -22,7 +22,7 @@ vi.mock('react', () => ({
 }));
 vi.mock('../gemini', () => ({ callGemini: mocks.callGemini }));
 vi.mock('../viewerReliability', () => ({ viewerCacheKey: mocks.cacheKey }));
-import { useViewerExplanation } from '../useViewerExplanation';
+import { storedViewerMorphology, useViewerExplanation } from '../useViewerExplanation';
 
 const sourceToken = Object.freeze({ id: 'id_1_0_locale', text: '갔어요', base_form: '가다', meaning: '去了', explanationLocale: 'zh-CN', sourceSpan: Object.freeze({ start: 4, end: 7, unit: 'utf16' }), morphology: Object.freeze([Object.freeze({ form: '어요', function: '礼貌语尾' })]) });
 const base = { token: sourceToken, sentence: '학교에 갔어요.', locale: 'zh-TW', sourceLocale: 'zh-CN', scope: ['account', 'material', 'revision'], enabled: true };
@@ -98,5 +98,81 @@ describe('word explanation is a locale-scoped display overlay', () => {
     const current = ExplanationHarness({ ...base, locale: 'zh-CN' }); await settle();
     expect(current).toMatchObject({ meaning: sourceToken.meaning, morphology: sourceToken.morphology, loading: false, error: false });
     expect(mocks.callGemini).not.toHaveBeenCalled();
+  });
+
+  it('keeps an edited Korean meaning but hides stored Chinese morphology without generating help', async () => {
+    const token = Object.freeze({ ...sourceToken, meaning: '직접 고친 뜻', meaningLocale: 'ko' });
+    const before = JSON.stringify(token);
+    const current = ExplanationHarness({ ...base, token, locale: 'ko', sourceLocale: 'ko' });
+    await settle();
+    expect(current).toMatchObject({ meaning: '직접 고친 뜻', morphology: [], loading: false, error: false });
+    expect(mocks.callGemini).not.toHaveBeenCalled();
+    expect(mocks.cacheKey).not.toHaveBeenCalled();
+    expect(JSON.stringify(token)).toBe(before);
+  });
+
+  it('uses legacy morphology when explanation provenance is absent and the edited meaning locale matches', async () => {
+    const token = Object.freeze({ ...sourceToken, explanationLocale: undefined, meaningLocale: 'ko', meaning: '직접 고친 뜻' });
+    expect(ExplanationHarness({ ...base, token, locale: 'ko', sourceLocale: 'ko' }))
+      .toMatchObject({ meaning: token.meaning, morphology: sourceToken.morphology, loading: false, error: false });
+    await settle();
+    expect(mocks.callGemini).not.toHaveBeenCalled();
+    expect(mocks.cacheKey).not.toHaveBeenCalled();
+  });
+
+  it('checks current morphology provenance on rerender even when the request identity is unchanged', async () => {
+    const matching = Object.freeze({ ...sourceToken, meaning: '직접 고친 뜻', meaningLocale: 'ko', explanationLocale: 'ko' });
+    const props = { ...base, token: matching, locale: 'ko', sourceLocale: 'ko' };
+    expect(ExplanationHarness(props).morphology).toBe(sourceToken.morphology);
+    const different = Object.freeze({ ...matching, explanationLocale: 'zh-TW' });
+    expect(ExplanationHarness({ ...props, token: different }))
+      .toMatchObject({ meaning: matching.meaning, morphology: [], loading: false, error: false });
+    await settle();
+    expect(mocks.callGemini).not.toHaveBeenCalled();
+    expect(mocks.cacheKey).not.toHaveBeenCalled();
+    expect(matching.explanationLocale).toBe('ko');
+    expect(different.explanationLocale).toBe('zh-TW');
+  });
+
+  it('aborts pending help on return to the stored meaning locale without exposing its foreign morphology', async () => {
+    const token = Object.freeze({ ...sourceToken, meaning: '직접 고친 뜻', meaningLocale: 'ko' });
+    const pending = deferred(); mocks.callGemini.mockReturnValue(pending.promise);
+    const props = { ...base, token, sourceLocale: 'ko' };
+    ExplanationHarness(props); await settle();
+    const signal = mocks.callGemini.mock.calls[0][1];
+    const original = { ...props, locale: 'ko' };
+    expect(ExplanationHarness(original)).toMatchObject({ meaning: token.meaning, morphology: [], loading: false, error: false });
+    expect(signal.aborted).toBe(true);
+    pending.resolve(result('遲來的詞義', '遲來的文法')); await settle();
+    expect(ExplanationHarness(original)).toMatchObject({ meaning: token.meaning, morphology: [], loading: false, error: false });
+    expect(mocks.callGemini).toHaveBeenCalledTimes(1);
+    expect(mocks.cacheKey).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('stored morphology locale provenance', () => {
+  it.each([
+    ['explicit morphology locale overrides edited meaning locale', { explanationLocale: 'zh-CN', meaningLocale: 'ko' }, 'ko', 'ko', false],
+    ['explicit matching morphology survives a different meaning locale', { explanationLocale: 'zh-CN', meaningLocale: 'ko' }, 'zh-CN', 'ko', true],
+    ['Taiwan morphology is hidden from a mainland request', { explanationLocale: 'zh-TW', meaningLocale: 'zh-CN' }, 'zh-CN', 'zh-CN', false],
+    ['missing explanation provenance falls back to meaning locale', { meaningLocale: 'zh-TW' }, 'zh-TW', 'zh-CN', true],
+    ['meaning provenance overrides the caller source fallback', { meaningLocale: 'zh-TW' }, 'zh-CN', 'zh-CN', false],
+    ['legacy provenance falls back to supplied source locale', {}, 'zh-CN', 'zh-CN', true],
+    ['legacy source morphology is hidden in another locale', {}, 'ko', 'zh-CN', false],
+    ['legacy absent source defaults to Korean', {}, 'ko', undefined, true],
+    ['default Korean legacy morphology is hidden in Taiwan', {}, 'zh-TW', undefined, false],
+    ['unrecognized explicit provenance cannot borrow a matching fallback', { explanationLocale: 'unreviewed', meaningLocale: 'ko' }, 'ko', 'ko', false],
+  ])('%s', (_name, provenance, locale, sourceLocale, visible) => {
+    const token = Object.freeze({ ...sourceToken, explanationLocale: undefined, ...provenance });
+    const before = JSON.stringify(token);
+    const morphology = storedViewerMorphology(token, locale, sourceLocale);
+    if (visible) expect(morphology).toBe(sourceToken.morphology);
+    else expect(morphology).toEqual([]);
+    expect(JSON.stringify(token)).toBe(before);
+  });
+
+  it('returns no morphology for absent tokens or absent morphology', () => {
+    expect(storedViewerMorphology(undefined, 'ko')).toEqual([]);
+    expect(storedViewerMorphology(Object.freeze({ explanationLocale: 'ko' }), 'ko')).toEqual([]);
   });
 });

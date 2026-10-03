@@ -290,6 +290,11 @@ export default function ViewerPage() {
   });
 
   const materialLang = material?.processed_json?.metadata?.language || 'Japanese';
+  // The legacy editor writes one unlocalized meaning into the document/dictionary.
+  // Korean reading saves use the separate atomic, confirmed-meaning path.
+  const legacyTokenEditingAllowed = materialLang !== 'Korean';
+  const legacyTokenEditingAllowedRef = useRef(legacyTokenEditingAllowed);
+  legacyTokenEditingAllowedRef.current = legacyTokenEditingAllowed;
   const languageInfo = viewerLanguageInfo(materialLang);
   const ttsSupported = browserTtsSupported && languageInfo?.capabilities.speech === 'supported';
   const effectiveExplanationLocale = languageInfo?.explanationLocales.includes(explanationLocale) ? explanationLocale : 'ko';
@@ -1430,6 +1435,9 @@ export default function ViewerPage() {
 
   const correctTokenMutation = useMutation({
     mutationFn: async ({ tokenId, corrections }) => {
+      if (!legacyTokenEditingAllowed || !legacyTokenEditingAllowedRef.current) {
+        throw new Error('한국어 분석의 뜻은 이 편집 기능으로 수정할 수 없어요.');
+      }
       const currentJson = material?.processed_json;
       if (!currentJson?.dictionary?.[tokenId]) throw new Error('토큰을 찾을 수 없습니다.');
 
@@ -1472,6 +1480,7 @@ export default function ViewerPage() {
       if (isClient) clearAnalysisCache(localStorage);
       queryClient.invalidateQueries({ queryKey: ['material', id] });
       queryClient.invalidateQueries({ queryKey: ['token-corrections', id, tokenId] });
+      if (!legacyTokenEditingAllowed || !legacyTokenEditingAllowedRef.current) return;
       // BottomSheet에 표시되는 selectedToken도 업데이트
       setSelectedToken(prev => prev?.id === tokenId ? { ...prev, ...corrections } : prev);
       toast('수정이 저장됐어요!', 'success');
@@ -1485,9 +1494,11 @@ export default function ViewerPage() {
   // 교정 전역 적용(링큐식) — 공유 사전 승격(user_verified) + 내 단어장 동기.
   // 실패해도 이 자료의 교정(correctTokenMutation)은 이미 반영돼 있다(부분 성공 허용).
   const promoteCorrection = async (token, corrections) => {
+    if (!legacyTokenEditingAllowed || !legacyTokenEditingAllowedRef.current) return;
     try {
       let authHeader = {};
       const { data: { session } } = await supabase.auth.getSession();
+      if (!legacyTokenEditingAllowed || !legacyTokenEditingAllowedRef.current) return;
       if (session?.access_token) authHeader = { Authorization: `Bearer ${session.access_token}` };
       const res = await fetch('/api/dict-correct', {
         method: 'POST',
@@ -1499,6 +1510,7 @@ export default function ViewerPage() {
         }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!legacyTokenEditingAllowed || !legacyTokenEditingAllowedRef.current) return;
       const vocab = findSavedVocab(savedWords, token, materialLang);
       if (vocab?.id) {
         const patch = {
@@ -1648,10 +1660,16 @@ export default function ViewerPage() {
   // 뜻·발음 수동 편집(링큐식) — 자료 소유자만(materials update RLS가 소유자 한정).
   // 중국어 카드에서는 현재 뜻에 맞는 일본어 대응을 함께 조회한다. 한자 훈음 토글과 독립적이다.
   const [isEditingToken, setIsEditingToken] = useState(false);
+  const canEditToken = !!user?.id && user.id === material?.owner_id;
+  const toggleTokenEditing = () => {
+    if (legacyTokenEditingAllowedRef.current) setIsEditingToken(value => !value);
+  };
   // 편집 중 다른 토큰을 탭하면 편집을 닫는다 — 이전 단어의 편집 상태가 새 단어로
   // 이어지는 혼선 차단(마감 ③). 같은 토큰의 교정 반영(id 불변)에는 발화하지 않는다.
   useEffect(() => { setIsEditingToken(false); }, [selectedToken?.id]);
-  const canEditToken = !!user?.id && user.id === material?.owner_id;
+  useEffect(() => {
+    if (!canEditToken || !legacyTokenEditingAllowed) setIsEditingToken(false);
+  }, [canEditToken, legacyTokenEditingAllowed]);
   const selectedDictKey=selectedLexKey||selectedToken?.text;
   const { data: editDictEntry, isFetched: dictFetched, isError: dictError } = useQuery({
     queryKey: ['token-dict', materialLang, selectedDictKey],
@@ -2121,7 +2139,7 @@ export default function ViewerPage() {
           {refVocab && <span className="word-detail-card__level">{refLevelLabel(refVocab.level)}</span>}
         </div>
       </div>
-      {classStudyActive?<div className="reader-teaching-word"><TeachingWord entry={{text:headText,reading:headReading,meaning:classMeaning?.meaning??refMeaning??selectedToken.meaning??''}} language={materialLang} display={teachingDisplay} onChar={(ch,index)=>toggleInspectChar(ch,`teaching:${index}`,null)}/><div className="reader-teaching-actions"><details><summary>{vt("표시")}</summary><WordDisplayControls language={materialLang} value={teachingDisplay} onChange={setTeachingDisplay}/></details>{ttsSupported&&<button className="word-detail-card__speak" onClick={()=>speak(headText,materialLang,ttsOptsFor(ttsRate))} aria-label={vt("발음 듣기")}>▷</button>}{canEditToken&&selectedToken.id&&!classMeaning&&<button className="word-detail-card__edit" aria-label={vt("뜻·발음 수정")} onClick={()=>setIsEditingToken(v=>!v)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="m4 16 12-12 4 4L8 20H4z"/></svg></button>}</div></div>:<div className="reader-card-headword">
+      {classStudyActive?<div className="reader-teaching-word"><TeachingWord entry={{text:headText,reading:headReading,meaning:classMeaning?.meaning??refMeaning??selectedToken.meaning??''}} language={materialLang} display={teachingDisplay} onChar={(ch,index)=>toggleInspectChar(ch,`teaching:${index}`,null)}/><div className="reader-teaching-actions"><details><summary>{vt("표시")}</summary><WordDisplayControls language={materialLang} value={teachingDisplay} onChange={setTeachingDisplay}/></details>{ttsSupported&&<button className="word-detail-card__speak" onClick={()=>speak(headText,materialLang,ttsOptsFor(ttsRate))} aria-label={vt("발음 듣기")}>▷</button>}{canEditToken&&selectedToken.id&&!classMeaning&&legacyTokenEditingAllowed&&<button className="word-detail-card__edit" aria-label={vt("뜻·발음 수정")} onClick={toggleTokenEditing}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="m4 16 12-12 4 4L8 20H4z"/></svg></button>}</div></div>:<div className="reader-card-headword">
       {(() => {
         // ① 폭맞춤 확대(오너 승인): CJK는 1em 격자라 크기 = 100cqi ÷ fitDivisor가 CSS
         // 수식으로 성립(.word-fit — 측정 JS 없음). 라틴 자료는 기존 크기 유지.
@@ -2192,9 +2210,9 @@ export default function ViewerPage() {
         </div>
         {/* 리스트 단어는 자료 토큰이 아니라(id 없음) 이 자료의 교정 대상이 될 수 없다 */}
         {canEditToken && selectedToken.id && (
-          learningStorageSupported &&
+          legacyTokenEditingAllowed && learningStorageSupported &&
           <button
-            onClick={() => setIsEditingToken(v => !v)}
+            onClick={toggleTokenEditing}
             aria-label={vt("뜻·발음 수정")}
             title={vt("뜻·발음 수정")}
             className={`word-detail-card__edit${isEditingToken ? ' is-on' : ''}`}
@@ -2203,6 +2221,7 @@ export default function ViewerPage() {
       </div>)}
       {materialLang === 'Korean' && <><small>{vt('분석 결과는 자동 생성되었어요.')}</small>{localizedWord.morphology.length > 0 && <details><summary>{vt('문법 해설')}</summary><ul>{localizedWord.morphology.map((item,index)=><li key={index}>{typeof item === 'string' ? item : `${item.form}: ${item.function}`}</li>)}</ul></details>}</>}
       {isEditingToken && !classMeaning && (
+        legacyTokenEditingAllowed && canEditToken &&
         <TokenEditPanel
           key={selectedToken.id} // 토큰 전환 시 리마운트 — 이전 단어 입력값이 새 토큰에 붙는 것 차단(마감 ③)
           token={selectedToken}
@@ -2210,6 +2229,7 @@ export default function ViewerPage() {
           dictEntry={editDictEntry}
           saving={correctTokenMutation.isPending}
           onSave={(corrections, opts) => {
+            if (!legacyTokenEditingAllowed || !legacyTokenEditingAllowedRef.current) return;
             // 성공 시에만 닫는다 — 실패 시 패널·입력값 유지(재시도 가능). 전역 승격도
             // 자료 교정이 실제로 반영된 뒤에만(부분 성공 허용 계약 유지).
             correctTokenMutation.mutate(

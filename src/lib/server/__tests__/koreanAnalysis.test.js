@@ -133,6 +133,22 @@ describe('Korean structured adapter', () => {
     expect(lineText(result)).toBe('  학교에 갔어요!');
   });
 
+  it.each(['zh-CN', 'zh-TW'])('guards reproduced semantic errors without changing %s source units or claiming review', locale => {
+    const lines = ['뭐 해요?', '오늘은 안 가요.', '집에서 학교까지 걸어가요.', '약속이 있어서 못 가요.'];
+    const prompt = buildKoreanAnalysisPrompt(lines, locale);
+    expect(prompt).toContain('안/-지 않다 alone does not establish deliberate refusal or intention');
+    expect(prompt).toContain('does not assert that the action happened');
+    expect(prompt).toContain('ㅂ irregular 돕다 → 도와');
+    expect(prompt).toContain('ㄷ irregular 듣다 → 들-');
+    expect(prompt).toContain('르 irregular 모르다 → 몰라');
+    expect(prompt).toContain('하- + -여요 contracts to 해요');
+    expect(prompt).toContain('never 걸어오다');
+    expect(prompt).toContain('existential/possessive 있다/없다');
+    expect(prompt).toContain('malformed mixed-script words or stray digits');
+    expect(JSON.parse(prompt.split('SOURCE_UNITS_JSON=')[1])).toEqual(koreanSourceUnits(lines));
+    expect(koreanAnalysisMetadata(locale).analysisQuality).toBe('unreviewed');
+  });
+
   it('keeps optional pronunciation typed as Hangul rather than furigana', () => {
     const [result] = parseKoreanAnalysis(serialize([{ ...token('같이', 0, '부사', '같이'), reading: '가치' }]), ['같이']);
     expect(Object.values(result.dictionary)[0].readings).toEqual([{ system: 'hangul', text: '가치' }]);

@@ -63,6 +63,25 @@ describe('viewer explanation prompts — locale and linguistic contracts', () =>
     expect(() => buildViewerGrammarPrompt({ text: 'x', language: 'Unknown', locale: 'ko' })).toThrow();
   });
 
+  it.each(['zh-CN', 'zh-TW'])('carries reproduced analysis safeguards into all Korean explanation kinds in %s', locale => {
+    const text = '아직 밥을 안 먹었어요.';
+    const prompts = [
+      buildViewerWordPrompt({ surface: '먹었어요', lemma: '먹다', sentence: text, locale }),
+      buildViewerSentencePrompt({ text, language: 'Korean', locale }),
+      buildViewerGrammarPrompt({ text, language: 'Korean', locale }),
+    ];
+    for (const prompt of prompts) {
+      expect(prompt).toContain('does not establish deliberate refusal or intention');
+      expect(prompt).toContain('past tense does not assert that the action happened');
+      expect(prompt).toContain('아직 + negation means not yet');
+      expect(prompt).toContain('never 걸어오다');
+      expect(prompt).toContain('르 irregular 모르다 → 몰라');
+      expect(prompt).toContain('Existential/possessive 있다/없다 are adjectives');
+      expect(prompt).toContain('never simplified 礼貌');
+      expect(prompt).toContain('not verified linguistic analysis');
+    }
+  });
+
   it('uses only supplied chapter candidates and requires caller link validation', () => {
     const prompt = buildViewerGrammarPrompt({ text: '학교에 가요.', language: 'Korean', locale: 'zh-TW',
       chapters: [{ slug: 'ko-destination', topic: '목적지', level: 'beginner' }] });

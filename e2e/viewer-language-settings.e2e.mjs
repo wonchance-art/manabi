@@ -47,7 +47,15 @@ let browser;
 before(async () => { fs.mkdirSync(output, { recursive: true }); browser = await chromium.launch(config.use.launchOptions); });
 after(async () => { await browser?.close(); });
 
-async function fixture(context, { importMode = false, sentenceMode = false } = {}) {
+async function closeFixture(context) {
+  // Keep requests blocked while live pages can still run retries/unload handlers.
+  await context.route('**/*', route => route.abort());
+  await Promise.all(context.pages().map(page => page.close()));
+  await context.unrouteAll({ behavior: 'ignoreErrors' });
+  await context.close();
+}
+
+async function fixture(context, { importMode = false, sentenceMode = false, explanationReply } = {}) {
   const writes = [], analysis = [], explanations = [], errors = [], consoleMessages = [];
   const imported = [];
   await context.route('**/*', route => route.request().url().startsWith(base) ? route.continue() : route.abort());
@@ -72,13 +80,14 @@ async function fixture(context, { importMode = false, sentenceMode = false } = {
     const dictionary = Object.fromEntries([['school', '학교에'], ['came', '왔어요']].map(([id, text]) => [id, { text, base_form: text, meaning: '合成測試詞義', explanationLocale: body.explanationLocale }]));
     return route.fulfill({ json: { results: [{ sequence: Object.keys(dictionary), dictionary }] } });
   });
-  await context.route('**/api/gemini', route => {
+  await context.route('**/api/gemini', async route => {
     const prompt = route.request().postDataJSON()?.contents?.[0]?.parts?.[0]?.text || '';
     const locale = prompt.includes('Taiwan Traditional') ? 'zh-TW' : prompt.includes('mainland Simplified') ? 'zh-CN' : 'ko';
     const sentence = prompt.includes('"translation": string') || prompt.includes('**번역**');
     explanations.push({ locale, kind: sentence ? 'sentence' : 'word' });
     const result = sentence ? { translation: { ko: '학교에 왔어요.', 'zh-CN': '来到了学校。', 'zh-TW': '來到了學校。' }[locale], context: { ko: '선택한 두 번째 문장입니다.', 'zh-CN': '这是选中的第二句。', 'zh-TW': '這是選取的第二句。' }[locale] } : { meaning: { ko: '학교로', 'zh-CN': '到学校', 'zh-TW': '到學校' }[locale], morphology: [] };
-    const text = sentence && locale === 'ko' ? `**번역**\n${result.translation}\n\n**맥락**\n${result.context}` : JSON.stringify(result);
+    const normalText = sentence && locale === 'ko' ? `**번역**\n${result.translation}\n\n**맥락**\n${result.context}` : JSON.stringify(result);
+    const text = explanationReply ? await explanationReply({ locale, normalText }) : normalText;
     return route.fulfill({ json: { candidates: [{ content: { parts: [{ text }] } }] } });
   });
   await context.route('**/api/learning/exclusions', route => {
@@ -254,7 +263,7 @@ test('shared reader retains independent locale settings, exact source and learni
     throw error;
   } finally {
     fs.writeFileSync(`${output}/report.json`, JSON.stringify({ base, synthetic: true, writes: audit.writes, analysis: audit.analysis, explanations: audit.explanations, errors: audit.errors, consoleMessages: audit.consoleMessages }, null, 2));
-    await context.close();
+    await closeFixture(context);
   }
 });
 
@@ -305,7 +314,92 @@ test('selected sentence refreshes explanation locale without reanalyzing source 
     throw error;
   } finally {
     fs.writeFileSync(`${output}/sentence-report.json`, JSON.stringify({ base, synthetic: true, writes: audit.writes, analysis: audit.analysis, explanations: audit.explanations, errors: audit.errors, consoleMessages: audit.consoleMessages }, null, 2));
-    await context.close();
+    await closeFixture(context);
+  }
+});
+
+test('pending Korean explanations cancel across locales and keyboard retry preserves the selected occurrence', { timeout: 90000 }, async () => {
+  const context = await browser.newContext({ baseURL: base, viewport: { width: 320, height: 844 }, reducedMotion: 'reduce', serviceWorkers: 'block' });
+  context.setDefaultTimeout(config.timeout);
+  await context.addInitScript(({ key, origin }) => {
+    if (location.origin === origin) localStorage.setItem(key, JSON.stringify({ version: 1, uiLocale: 'ko', explanationLocale: 'ko' }));
+  }, { key: VIEWER_LANGUAGE_PREF_KEY, origin: new URL(base).origin });
+  const pending = [];
+  const arrivals = Array.from({ length: 3 }, () => Promise.withResolvers());
+  const audit = await fixture(context, { explanationReply: ({ locale, normalText }) => new Promise(resolve => {
+    pending.push({ locale, normalText, resolve }); arrivals[pending.length - 1]?.resolve();
+  }) });
+  const page = await context.newPage();
+  const meaning = page.locator('.word-detail-card__meaning').filter({ visible: true }).first();
+  let ui = 'ko';
+  const source = async () => ({ id: await page.locator('.reader-area [data-selected="true"]').getAttribute('data-tid'), sentence: (await page.locator('.reader-card-source blockquote').first().textContent()).trim() });
+  const switchLocale = async (kind, value) => {
+    const launcher = page.getByRole('button', { name: labels[ui].settings, exact: true });
+    await launcher.focus(); await page.keyboard.press('Enter');
+    const group = page.getByRole('group', { name: labels[ui][kind], exact: true });
+    await group.getByRole('button', { name: options[value], exact: true }).focus(); await page.keyboard.press('Space');
+    if (kind === 'ui') ui = value;
+    const dialog = page.locator('dialog[open]');
+    for (const [button, key] of [[dialog.getByRole('button').last(), 'Tab'], [dialog.getByRole('button').first(), 'Shift+Tab']]) {
+      await button.focus(); await page.keyboard.press(key);
+      // Native dialogs may visit browser chrome (body is the DOM focus sentinel).
+      // The next key must wrap back without reaching an interactive background node.
+      const inside = await dialog.evaluate(el => el.contains(document.activeElement));
+      if (!inside) {
+        assert(await page.evaluate(() => document.activeElement === document.body), `${key} must not focus a background control`);
+        await page.keyboard.press(key);
+      }
+      assert(await dialog.evaluate(el => el.contains(document.activeElement)), `${key} wraps inside the settings dialog`);
+    }
+    await fontScope(page, ui);
+    await page.keyboard.press('Escape');
+    await page.locator('dialog[open]').waitFor({ state: 'detached' });
+    assert(await page.getByRole('button', { name: labels[ui].settings, exact: true }).evaluate(el => document.activeElement === el), 'Escape restores focus to settings launcher');
+  };
+  try {
+    await page.goto('/viewer/94098');
+    await page.locator('.reader-area [data-tid="id_1_0_locale"]').click();
+    await meaning.getByText('문맥 뜻을 불러오는 중…', { exact: true }).waitFor();
+    const baseline = await source();
+    assert.deepEqual(baseline, { id: 'id_1_0_locale', sentence: '학교에 왔어요.' });
+    await arrivals[0].promise;
+    assert.equal(pending[0].locale, 'ko');
+    await geometry(page, 'pending-ko-width320', ui);
+    await switchLocale('explanation', 'zh-TW'); await arrivals[1].promise;
+    assert.equal(pending[1].locale, 'zh-TW');
+    pending[0].resolve(JSON.stringify({ meaning: 'STALE_KO_MEANING', morphology: ['STALE_KO_MORPHOLOGY'] }));
+    await page.setViewportSize({ width: 390, height: 844 });
+    await switchLocale('ui', 'zh-TW');
+    await meaning.getByText('正在載入語境釋義…', { exact: true }).waitFor();
+    assert.equal(pending.length, 2, 'UI-only change must not restart the pending explanation');
+    assert(!(await page.locator('.word-detail-card').first().textContent()).includes('STALE_KO'));
+    pending[1].resolve('invalid fixture explanation');
+    const retry = meaning.getByRole('button', { name: '重新載入解說', exact: true });
+    await retry.waitFor();
+    await geometry(page, 'failed-zh-TW-width390', ui);
+    await retry.focus(); await page.keyboard.press('Enter'); await arrivals[2].promise;
+    assert.equal(pending.length, 3); pending[2].resolve(pending[2].normalText);
+    await meaning.getByText('到學校', { exact: true }).waitFor();
+    for (const width of [768, 1440]) {
+      await page.setViewportSize({ width, height: 844 });
+      await geometry(page, `recovered-zh-TW-width${width}`, ui);
+      const card = page.locator('.word-detail-card').filter({ visible: true }).first();
+      assert(await card.evaluate(el => el.scrollWidth <= el.clientWidth + 1), `${width}: inspector card must fit its column`);
+    }
+    await switchLocale('explanation', 'zh-CN');
+    await meaning.getByText('到学校', { exact: true }).waitFor();
+    await switchLocale('ui', 'zh-CN');
+    assert.equal(pending.length, 3, 'source locale and UI switch need no explanation request');
+    assert.deepEqual(await source(), baseline);
+    assert.equal(await page.locator('.reader-area [data-tid="id_0_0_locale"][data-selected="true"]').count(), 0);
+    assert(!(await page.locator('.word-detail-card').first().textContent()).includes('STALE_KO'));
+    assert.deepEqual(audit.analysis, []);
+    assert.deepEqual(audit.writes.filter(row => !['reading_progress', 'library_reading_activity'].includes(row.table)), []);
+    assert.deepEqual(audit.errors, []);
+  } finally {
+    for (const request of pending) request.resolve(request.normalText);
+    fs.writeFileSync(`${output}/pending-report.json`, JSON.stringify({ base, synthetic: true, writes: audit.writes, analysis: audit.analysis, explanations: audit.explanations, errors: audit.errors, consoleMessages: audit.consoleMessages }, null, 2));
+    await closeFixture(context);
   }
 });
 
@@ -398,6 +492,6 @@ test('ordinary Korean import preserves real textarea paste/edit source and exclu
     throw error;
   } finally {
     fs.writeFileSync(`${output}/import-report.json`, JSON.stringify({ base, synthetic: true, writes: audit.writes, analysis: audit.analysis, errors: audit.errors, consoleMessages: audit.consoleMessages }, null, 2));
-    await context.close();
+    await closeFixture(context);
   }
 });

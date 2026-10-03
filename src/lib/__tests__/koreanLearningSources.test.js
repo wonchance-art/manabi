@@ -6,6 +6,7 @@ vi.mock('@/lib/publishedChapter', () => ({loadPublishedRegistry: vi.fn()}));
 import {koreanReadingSource, learningSourceRevision, readingSourceTarget, sourceHref, tokenContext, LEARNING_LANGUAGES} from '../learningSources';
 import {resolveSave, chapterMeta} from '../server/learningContext';
 import {VIEWER_LANGUAGES} from '../viewerLanguage';
+import {runPreservedReanalysis} from '../reanalysisPreservation';
 
 const span = (start, end) => ({start, end, unit: 'utf16'});
 const raw = '😀  학교에 갔어요.\r\n갔어요  학교에 갔어요.\r\n끝';
@@ -92,6 +93,41 @@ describe('Korean raw source contract', () => {
     const changed = {...row, raw_text: row.raw_text + ' changed'};
     expect(readingSourceTarget(row.processed_json, saved, await options(changed))).toBeNull();
     expect(readingSourceTarget(row.processed_json, {...saved, locator: {...saved.locator, version: 2}}, await options(row))).toBeNull();
+  });
+  it('keeps a saved repeated occurrence and its corrected meaning through two locale reanalyses', async () => {
+    const row = { ...material('학교 학교'), processed_json: {
+      status: 'completed', failed_indices: [], metadata: { language: 'Korean', explanationLocale: 'ko',
+        viewerCorrections: { id_0_2_old: ['meaning'] } },
+      sequence: ['id_0_0_old', 'id_0_1_old', 'id_0_2_old'], dictionary: {
+        id_0_0_old: { text: '학교', meaning: '첫 학교', sourceSpan: span(0, 2) },
+        id_0_1_old: { text: ' ', meaning: '', pos: '기호', sourceSpan: span(2, 3) },
+        id_0_2_old: { text: '학교', meaning: '사용자가 고친 둘째 학교', sourceSpan: span(3, 5) },
+      } } };
+    const savedSource = (await resolveSave(client(row), 'alice', await payload(row, 'id_0_2_old', '사용자가 고친 둘째 학교'))).source;
+    let current = row;
+    for (const locale of ['zh-CN', 'zh-TW']) {
+      const query = {select: () => query, eq: () => query, order: () => query, range: async () => ({data: [], error: null})};
+      const db = { from: vi.fn(() => query), rpc: vi.fn(async (_, args) => ({data: {material: {
+        ...current, raw_text: args.p_raw, processed_json: args.p_json,
+      }}, error: null})) };
+      current = await runPreservedReanalysis(db, current, new AbortController().signal, async () => ({
+        ...structuredClone(current.processed_json), metadata: {language: 'Korean', explanationLocale: locale},
+        // Fresh IDs deliberately swap the repeated tokens' previous IDs.
+        sequence: ['id_0_2_old', 'id_0_1_old', 'id_0_0_old'], dictionary: {
+          id_0_2_old: {text: '학교', meaning: `${locale} first`, explanationLocale: locale, sourceSpan: span(0, 2)},
+          id_0_1_old: {text: ' ', meaning: '', pos: '기호', sourceSpan: span(2, 3)},
+          id_0_0_old: {text: '학교', meaning: `${locale} second`, explanationLocale: locale, sourceSpan: span(3, 5)},
+        },
+      }), {explanationLocale: locale});
+      const target = readingSourceTarget(current.processed_json, savedSource, await options(current));
+      expect(target).toBe('id_0_2_old');
+      expect(current.processed_json.dictionary[target]).toMatchObject({meaning: '사용자가 고친 둘째 학교', meaningLocale: 'ko'});
+      expect(current.processed_json.dictionary.id_0_0_old.meaning).toBe(`${locale} first`);
+      const resolved = await resolveSave(client(current), 'alice', await payload(current, target, '사용자가 고친 둘째 학교'));
+      expect(resolved.source).toEqual(savedSource);
+      expect(db.from).toHaveBeenCalledWith('token_corrections');
+      expect(db.rpc).toHaveBeenCalledWith('viewer_replace_analysis', expect.objectContaining({p_expected_raw: '학교 학교'}));
+    }
   });
   it('rejects arbitrary, partial, stale and NFC/whitespace-altered selections without writes', async () => {
     const row = material(), body = await payload(row);

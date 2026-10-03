@@ -144,6 +144,55 @@ describe('Korean reanalysis metadata and exact source preservation', () => {
     expect(analyze).not.toHaveBeenCalled();
     expect(saved.processed_json.metadata.explanationLocale).toBe('ko');
   });
+  it.each([['ko', 'zh-CN'], ['zh-CN', 'zh-TW'], ['zh-TW', 'ko']])(
+    'keeps unselected legacy explanations in %s when another repeated line is regenerated in %s', async (oldLocale, nextLocale) => {
+      const row = material('학교\r\n학교', oldLocale), snapshot = structuredClone(row);
+      for (const token of Object.values(row.processed_json.dictionary)) {
+        delete token.explanationLocale;
+        delete token.meaningLocale;
+      }
+      const db = client(row), retainedId = row.processed_json.sequence[0];
+      const saved = await runPreservedReanalysis(db, row, new AbortController().signal,
+        async () => analysis(row.raw_text, nextLocale), {
+          selectedLineIndices: new Set([1]), explanationLocale: nextLocale,
+        });
+      expect(saved.processed_json.metadata.explanationLocale).toBe(nextLocale);
+      expect(saved.processed_json.dictionary[retainedId]).toMatchObject({
+        meaning: snapshot.processed_json.dictionary[retainedId].meaning,
+        morphology: snapshot.processed_json.dictionary[retainedId].morphology,
+        explanationLocale: oldLocale, meaningLocale: oldLocale,
+      });
+      const regenerated = saved.processed_json.sequence.find(id => id.startsWith('id_1_'));
+      expect(saved.processed_json.dictionary[regenerated]).toMatchObject({
+        meaning: `${nextLocale} meaning`, explanationLocale: nextLocale,
+      });
+      expect(row.processed_json.dictionary[retainedId].explanationLocale).toBeUndefined();
+    });
+  it('keeps explicit token provenance separate and defaults pre-locale retained Korean tokens to Korean', async () => {
+    const row = material('학교 학교\n끝', 'ko');
+    delete row.processed_json.metadata.explanationLocale;
+    const [first, , second] = row.processed_json.sequence;
+    delete row.processed_json.dictionary[first].explanationLocale;
+    row.processed_json.dictionary[second].explanationLocale = 'zh-CN';
+    row.processed_json.dictionary[second].meaningLocale = 'ko';
+    const snapshot = structuredClone(row), db = client(row);
+    const saved = await runPreservedReanalysis(db, row, new AbortController().signal,
+      async () => analysis(row.raw_text, 'zh-TW'), { selectedLineIndices: new Set([1]), explanationLocale: 'zh-TW' });
+    expect(saved.processed_json.dictionary[first]).toMatchObject({ explanationLocale: 'ko', meaningLocale: 'ko' });
+    expect(saved.processed_json.dictionary[second]).toMatchObject({ explanationLocale: 'zh-CN', meaningLocale: 'ko' });
+    expect(saved.processed_json.dictionary[second].morphology).toEqual(snapshot.processed_json.dictionary[second].morphology);
+    expect(row).toEqual(snapshot);
+  });
+  it('does not commit when an untouched explanation has an unsupported stored locale', async () => {
+    const row = material('학교\n끝'), retainedId = row.processed_json.sequence[0];
+    row.processed_json.dictionary[retainedId].meaningLocale = 'unknown-future-locale';
+    const snapshot = structuredClone(row), db = client(row);
+    await expect(runPreservedReanalysis(db, row, new AbortController().signal,
+      async () => analysis(row.raw_text, 'zh-CN'), { selectedLineIndices: new Set([1]), explanationLocale: 'zh-CN' }))
+      .rejects.toThrow('기존 뜻의 설명 언어');
+    expect(db.rpc).not.toHaveBeenCalled();
+    expect(row).toEqual(snapshot);
+  });
   it('rejects an explicit unsupported Korean explanation locale before generating or saving', async () => {
     const row = material(), db = client(row), analyze = vi.fn();
     await expect(runPreservedReanalysis(db, row, new AbortController().signal, analyze,

@@ -105,6 +105,23 @@ function rebaseKoreanSourceSpans(text, json) {
   return { ...json, dictionary };
 }
 
+// Selective analysis changes document provenance, but untouched legacy tokens
+// may rely on the old document locale. Pin their provenance before that fallback
+// changes; freshly generated tokens keep their own explanation language.
+function preserveRetainedKoreanLocales(original, result) {
+  if (original.metadata?.language !== 'Korean') return result;
+  const dictionary = { ...result.dictionary };
+  for (const id of result.sequence) {
+    const token = dictionary[id];
+    if (!token || token !== original.dictionary?.[id] || token.pos === '개행') continue;
+    const explanationLocale = canonicalViewerLocale(token.explanationLocale || original.metadata.explanationLocale || 'ko');
+    const meaningLocale = canonicalViewerLocale(token.meaningLocale || explanationLocale);
+    if (!explanationLocale || !meaningLocale) throw new Error('기존 뜻의 설명 언어를 확인하지 못했어요. 이전 분석을 유지합니다.');
+    dictionary[id] = { ...token, explanationLocale, meaningLocale };
+  }
+  return { ...result, dictionary };
+}
+
 export function completeAnalysis(result, text) {
   if (result?.status !== 'completed' || result.failed_indices?.length || !Array.isArray(result.sequence) || !result.dictionary) return false;
   const coverage = inspectAnalysisCoverage(text, result);
@@ -173,7 +190,8 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
     },
   });
   checkAbort();
-  if (selected?.length) result = mergeReanalysisLines(rawText, original, result, selected);
+  if (selected?.length) result = preserveRetainedKoreanLocales(original,
+    mergeReanalysisLines(rawText, original, result, selected));
   if (!completeAnalysis(result, rawText)) throw new Error('새 분석을 완료하지 못했어요. 기존 원문과 분석은 그대로 유지됩니다.');
   const provenance = Object.fromEntries(['targetLanguage', 'explanationLocale', 'analysisVersion', 'analysisEngine', 'analysisQuality']
     .filter(key => result.metadata?.[key] !== undefined).map(key => [key, result.metadata[key]]));
