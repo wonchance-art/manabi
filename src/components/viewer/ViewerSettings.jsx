@@ -7,15 +7,27 @@ import {READING_PRESETS,PRESET_META,presetActive,pronRevealAvailable,TTS_RATES} 
 import {supportsPatterns} from '../../lib/patternIndex';
 import {stepCpm} from '../../lib/readingPacer';
 import {t,translateViewerText,VIEWER_LOCALE_OPTIONS} from '../../lib/viewerMessages';
+import {viewerDefaults} from '../../lib/viewerPreferences';
+
+function Icon({name}) {
+  const paths={type:'M4 19 10 5l6 14M6 14h8M17 19l3-8 3 8M18 16h4',display:'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12ZM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6',pace:'M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5M8 12h8',detail:'M4 6h16M4 12h16M4 18h16M8 3v6M16 9v6M10 15v6',help:'M12 16v.01M9.5 9a2.5 2.5 0 1 1 3.8 2.1c-.9.5-1.3 1-1.3 2M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20',reset:'M4 10a8 8 0 1 1 1 7M4 4v6h6',undo:'M9 5 4 10l5 5M4 10h10a6 6 0 0 1 6 6v3',light:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5',sepia:'M6 3h12v18H6ZM9 8h6M9 12h6M9 16h3',dark:'M20 14a8 8 0 0 1-10-10 8 8 0 1 0 10 10'};
+  return <svg className="reader-settings__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]||paths.detail}/></svg>;
+}
+function Help({children,uiLocale='ko'}) {
+  return <details className="reader-settings__help"><summary aria-label={t(uiLocale,'설정 도움말')} title={t(uiLocale,'설정 도움말')}><Icon name="help"/></summary><div>{children}</div></details>;
+}
+function More({children,uiLocale='ko',count=0,label='세부 설정'}) {
+  return <details className="reader-settings__more"><summary><Icon name="detail"/><span>{t(uiLocale,label)}</span>{count>0&&<span className="reader-settings__changed" aria-label={t(uiLocale,'{count}개 설정 변경됨',{count})}>{count}</span>}</summary>{children}</details>;
+}
 
 function Toggle({label,note,checked,onChange,disabled=false,uiLocale='ko'}) {
   label=uiLocale==='ko'?label:t(uiLocale,label);
   note=note&&uiLocale!=='ko'?t(uiLocale,note):note;
-  return <label className="reader-setting-toggle"><span><b>{label}</b>{note&&<small>{note}</small>}</span><input type="checkbox" checked={checked} disabled={disabled} onChange={e=>onChange(e.target.checked)}/></label>;
+  return <div className="reader-setting-toggle"><label><b>{label}</b><input aria-label={label} type="checkbox" checked={checked} disabled={disabled} onChange={e=>onChange(e.target.checked)}/></label>{note&&<Help uiLocale={uiLocale}><small>{note}</small></Help>}</div>;
 }
-function Choices({label,value,items,onChange,uiLocale='ko'}) {
-  label=uiLocale==='ko'?label:t(uiLocale,label);
-  return <div className="reader-setting-choices"><b>{label}</b><div role="group" aria-label={label}>{items.map(([v,name])=><button type="button" key={v} aria-pressed={value===v} onClick={()=>onChange(v)}>{name}</button>)}</div></div>;
+function Choices({label,value,items,onChange,uiLocale='ko',shortLabel,symbols,className=''}) {
+  const fullLabel=uiLocale==='ko'?label:t(uiLocale,label);
+  return <div className={`reader-setting-choices ${className}`}><b>{shortLabel?t(uiLocale,shortLabel):fullLabel}</b><div role="group" aria-label={fullLabel}>{items.map(([v,name])=><button type="button" key={v} aria-label={name} title={name} aria-pressed={value===v} onClick={()=>onChange(v)}>{symbols?.[v]??name}</button>)}</div></div>;
 }
 function Slider({label,value,min,max,step=1,onChange,display,uiLocale='ko'}) {
   label=uiLocale==='ko'?label:t(uiLocale,label);
@@ -36,45 +48,56 @@ export default function ViewerSettings({settings:s,language,languageSettings,onC
   const set=(key,value)=>keepPosition(()=>s['set'+key[0].toUpperCase()+key.slice(1)](value));
   const undo=()=>keepPosition(()=>{s.restore(snapshot.current);if(localeSnapshot.current){languageSettings.setUiLocale(localeSnapshot.current.uiLocale);languageSettings.setExplanationLocale(localeSnapshot.current.explanationLocale);}});
   const tabs=[['type',tr('글자·배경')],['display',tr('학습 표시')],['pace',tr('읽기 진행')]];
+  const tabNames={type:tr('글자'),display:tr('표시'),pace:tr('읽기')};
+  const defaults=viewerDefaults(language);
+  const changed=keys=>keys.filter(key=>s[key]!==defaults[key]).length;
+  const localeSymbols={ko:'KO','zh-CN':'简体','zh-TW':'繁體'};
   const phonetic=language==='Chinese'||language==='Japanese';
   const paceBasis=s.paceCpm?tr('직접 정한 목표'):myCpm?(uiLocale==='ko'?`읽기 기록 ${myCpm}자/분 기준 제안`:tr('읽기 기록 {cpm}자/분 기준 제안',{cpm:myCpm})):tr('이 언어의 기본 목표');
-  return <ViewerModal uiLocale={uiLocale} title={tr('읽기 설정')} onClose={onClose} className="reader-settings" footer={<><button onClick={()=>keepPosition(()=>s.resetTab(tab))}>{tr('이 탭 기본값')}</button><button onClick={undo}>{tr('이번 변경 되돌리기')}</button></>}>
+  return <ViewerModal uiLocale={uiLocale} title={tr('읽기 설정')} onClose={onClose} className="reader-settings" footer={<><button title={tr('이 탭 기본값')} aria-label={tr('이 탭 기본값')} onClick={()=>keepPosition(()=>s.resetTab(tab))}><Icon name="reset"/></button><button title={tr('이번 변경 되돌리기')} aria-label={tr('이번 변경 되돌리기')} onClick={undo}><Icon name="undo"/></button></>}>
     {languageSettings&&<section className="reader-settings__languages" aria-label={tr('언어 설정')}>
-      <Choices label="화면 언어" uiLocale={uiLocale} value={uiLocale} items={VIEWER_LOCALE_OPTIONS} onChange={value=>keepPosition(()=>languageSettings.setUiLocale(value))}/>
-      <Choices label="설명 언어" uiLocale={uiLocale} value={languageSettings.explanationLocale} items={VIEWER_LOCALE_OPTIONS} onChange={value=>keepPosition(()=>languageSettings.setExplanationLocale(value))}/>
-      <p className="reader-setting-note">{tr('화면과 설명 언어는 각각 바꿀 수 있어요.')}</p>
+      <Choices label="화면 언어" shortLabel="화면" symbols={localeSymbols} uiLocale={uiLocale} value={uiLocale} items={VIEWER_LOCALE_OPTIONS} onChange={value=>keepPosition(()=>languageSettings.setUiLocale(value))}/>
+      <Choices label="설명 언어" shortLabel="설명" symbols={localeSymbols} uiLocale={uiLocale} value={languageSettings.explanationLocale} items={VIEWER_LOCALE_OPTIONS} onChange={value=>keepPosition(()=>languageSettings.setExplanationLocale(value))}/>
     </section>}
     <div role="tablist" aria-label={tr('설정 분류')} className="reader-settings__tabs" onKeyDown={e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const i=tabs.findIndex(([id])=>id===tab);const next=e.key==='Home'?0:e.key==='End'?2:(i+(e.key==='ArrowRight'?1:2))%3;setTab(tabs[next][0]);e.currentTarget.children[next].focus();}}>
-      {tabs.map(([id,name])=><button key={id} role="tab" id={`reading-tab-${id}`} aria-controls={`reading-pane-${id}`} aria-selected={tab===id} tabIndex={tab===id?0:-1} onClick={()=>setTab(id)}>{name}</button>)}
+      {tabs.map(([id,name])=><button key={id} role="tab" aria-label={name} title={name} id={`reading-tab-${id}`} aria-controls={`reading-pane-${id}`} aria-selected={tab===id} tabIndex={tab===id?0:-1} onClick={()=>setTab(id)}><Icon name={id}/><span>{tabNames[id]}</span></button>)}
     </div>
-    <button className="reader-preview-toggle" aria-expanded={preview} onClick={()=>setPreview(v=>!v)}>{tr('현재 문장 미리보기 {action}',{action:tr(preview?'접기':'펼치기')})}</button>
+    <button className="reader-preview-toggle" aria-label={tr('현재 문장 미리보기 {action}',{action:tr(preview?'접기':'펼치기')})} title={tr('현재 문장 미리보기 {action}',{action:tr(preview?'접기':'펼치기')})} aria-expanded={preview} onClick={()=>setPreview(v=>!v)}><Icon name="display"/></button>
     {preview&&<ViewerPreview settings={s} language={language} tokens={previewTokens}/>}
     {(s.storageError||languageSettings?.storageError)&&<p role="status" className="reader-settings__warning">{tr('이 브라우저에 저장하지 못했어요. 현재 화면에는 적용되어 있어요.')}</p>}
     <section role="tabpanel" id={`reading-pane-${tab}`} aria-labelledby={`reading-tab-${tab}`}>
       {tab==='type'&&<>
         <Slider uiLocale={uiLocale} label="본문 크기" value={s.fontSize} min={0.8} max={3} step={0.05} display={`${Math.round(s.fontSize*16)}px`} onChange={v=>set('fontSize',v)}/>
+        <Choices label="배경" className="reader-settings__themes" symbols={Object.fromEntries(['light','sepia','dark'].map(name=>[name,<Icon key={name} name={name}/>]))} uiLocale={uiLocale} value={s.theme} items={choices([['light','밝게'],['sepia','종이'],['dark','어둡게']])} onChange={v=>set('theme',v)}/>
+        {s.fontFamily==='serif'&&fontStatus!=='ready'&&<p role="status">{tr(fontStatus==='error'?'명조를 불러오지 못해 고딕으로 표시하고 있어요.':'명조 글꼴을 불러오는 중이에요.')}</p>}
+        <More uiLocale={uiLocale} count={changed(['pinyinSize','lineGap','charGap','fontFamily'])}>
         {language==='Chinese'&&<Slider uiLocale={uiLocale} label="병음 크기" value={s.pinyinSize} min={0.75} max={1} step={0.0625} display={`${Math.round(s.pinyinSize*16)}px`} onChange={v=>set('pinyinSize',v)}/>}
         <Slider uiLocale={uiLocale} label="줄 사이" value={s.lineGap} min={10} max={60} display={`${s.lineGap}px`} onChange={v=>set('lineGap',v)}/>
         <Slider uiLocale={uiLocale} label="글자 사이" value={s.charGap} min={0} max={1} step={0.05} display={`${Math.round(s.charGap*16)}px`} onChange={v=>set('charGap',v)}/>
         <Choices label="서체" uiLocale={uiLocale} value={s.fontFamily} items={choices(fontChoices(language))} onChange={v=>set('fontFamily',v)}/>
-        {s.fontFamily==='serif'&&fontStatus!=='ready'&&<p role="status">{tr(fontStatus==='error'?'명조를 불러오지 못해 고딕으로 표시하고 있어요.':'명조 글꼴을 불러오는 중이에요.')}</p>}
-        <Choices label="배경" uiLocale={uiLocale} value={s.theme} items={choices([['light','밝게'],['sepia','종이'],['dark','어둡게']])} onChange={v=>set('theme',v)}/>
+        </More>
       </>}
       {tab==='display'&&<>
-        <Choices label="읽기 모드" uiLocale={uiLocale} value={PRESET_META.find(m=>presetActive(m.key,s))?.key||'custom'} items={choices(PRESET_META.map(m=>[m.key,m.name]))} onChange={name=>keepPosition(()=>{onPreset?.();s.restore({...READING_PRESETS[name],showToneColors:language==='Chinese'&&READING_PRESETS[name].showToneColors});})}/>
-        <p className="reader-setting-note">{tr('{preset} · 문장 집중도 함께 바뀝니다. 소리와 자동 진행은 시작하지 않아요.',{preset:tr(PRESET_META.find(m=>presetActive(m.key,s))?'프리셋':'사용자 설정')})}</p>
-        {phonetic&&<><Choices label="발음 표기" uiLocale={uiLocale} value={s.pronDisplay} items={choices([['all','전체'],['unknown','새 단어만'],['none','숨김']])} onChange={v=>set('pronDisplay',v)}/><p className="reader-setting-note">{tr('새 단어만: 저장한 단어와 이미 앎 기록의 발음을 가려요.')}</p><Toggle label="탭하면 발음 보기" uiLocale={uiLocale} note="첫 탭은 발음, 다음 탭은 뜻 카드" checked={s.pronReveal} disabled={!pronRevealAvailable(s.pronDisplay)} onChange={v=>set('pronReveal',v)}/></>}
+        {phonetic&&<><Choices label="발음 표기" uiLocale={uiLocale} value={s.pronDisplay} items={choices([['all','전체'],['unknown','새 단어만'],['none','숨김']])} onChange={v=>set('pronDisplay',v)}/><Help uiLocale={uiLocale}><p className="reader-setting-note">{tr('새 단어만: 저장한 단어와 이미 앎 기록의 발음을 가려요.')}</p></Help></>}
         <Toggle label="단어 상태" uiLocale={uiLocale} note="새 단어 · 저장한 단어 · 복습할 단어를 구분해요" checked={s.wordStateHl} onChange={v=>set('wordStateHl',v)}/>
+        <More uiLocale={uiLocale} count={changed(['pronReveal','showToneColors','showHanjaKo','showPatterns','patternFilter','focusMode'])}>
+        <Choices label="읽기 모드" uiLocale={uiLocale} value={PRESET_META.find(m=>presetActive(m.key,s))?.key||'custom'} items={choices(PRESET_META.map(m=>[m.key,m.name]))} onChange={name=>keepPosition(()=>{onPreset?.();s.restore({...READING_PRESETS[name],showToneColors:language==='Chinese'&&READING_PRESETS[name].showToneColors});})}/>
+        <Help uiLocale={uiLocale}><p className="reader-setting-note">{tr('{preset} · 문장 집중도 함께 바뀝니다. 소리와 자동 진행은 시작하지 않아요.',{preset:tr(PRESET_META.find(m=>presetActive(m.key,s))?'프리셋':'사용자 설정')})}</p></Help>
+        {phonetic&&<Toggle label="탭하면 발음 보기" uiLocale={uiLocale} note="첫 탭은 발음, 다음 탭은 뜻 카드" checked={s.pronReveal} disabled={!pronRevealAvailable(s.pronDisplay)} onChange={v=>set('pronReveal',v)}/>}
         <details><summary>{tr('성조·문법·한자 표시')}</summary>
           {language==='Chinese'&&<><Toggle label="성조 색상" uiLocale={uiLocale} note="병음의 성조 부호는 유지하고 색을 더해요" checked={s.showToneColors} onChange={v=>set('showToneColors',v)}/><Toggle label="한자 대조" uiLocale={uiLocale} note="단어 카드에 한국 한자 훈음을 더해요" checked={s.showHanjaKo} onChange={v=>set('showHanjaKo',v)}/></>}
           {supportsPatterns(language)&&<><Toggle label="문법 표시" uiLocale={uiLocale} note="밑줄은 관련 문형 후보예요. 탭해서 확인하세요." checked={s.showPatterns} onChange={v=>set('showPatterns',v)}/>{s.showPatterns&&<Choices label="문법 표시 범위" uiLocale={uiLocale} value={s.patternFilter} items={choices([['all','전체'],['due','복습할 것'],['weak','약한 것']])} onChange={v=>set('patternFilter',v)}/>}<p className="reader-setting-note">{translateViewerText(uiLocale,patternNote)}</p></>}
         </details>
+        </More>
       </>}
       {tab==='pace'&&<>
         <Toggle label="문장 집중" uiLocale={uiLocale} note="읽는 문장은 선명하게, 주변 문장은 흐리게 표시해요" checked={s.focusMode} onChange={v=>set('focusMode',v)}/>
+        {ttsSupported&&<Choices label="재생 속도" uiLocale={uiLocale} value={s.ttsRate} items={Object.entries(TTS_RATES).map(([key,r])=>[key,r.label])} onChange={v=>set('ttsRate',v)}/>}
+        <More uiLocale={uiLocale} count={changed(['autoPace','paceCpm','paceStep','autoSpeakOnClick'])}>
         <Toggle label="자동 진행 허용" uiLocale={uiLocale} note="본문의 ‘자동 진행 시작’을 눌러야 이동해요" checked={s.autoPace} onChange={v=>set('autoPace',v)}/>
         {s.autoPace&&<><div className="reader-setting-choices"><b>{tr('목표 속도 · {cpm}자/분',{cpm:paceTargetCpm})}</b><div><button aria-label={tr('느리게')} onClick={()=>s.restore({paceCpm:stepCpm(paceTargetCpm,-1),paceStep:0})}>− {tr('느리게')}</button><button aria-label={tr('빠르게')} onClick={()=>s.restore({paceCpm:stepCpm(paceTargetCpm,1),paceStep:0})}>{tr('빠르게')} +</button></div></div><details><summary>{tr('속도의 기준')}</summary>{paceEstimate?.thisSec!=null&&<p>{tr('이 문장 약 {seconds}초',{seconds:paceEstimate.thisSec})}</p>}{paceEstimate?.avgSec!=null&&<p>{tr('문장 평균 약 {seconds}초',{seconds:paceEstimate.avgSec})}</p>}<p><LocaleText uiLocale={uiLocale} message="{basis} · 훈련 단계 {step}" values={{basis:paceBasis,step:s.paceStep}}>{paceBasis} · 훈련 단계 {s.paceStep}</LocaleText></p><p>{tr('자동 진행 속도는 읽기 실력이나 이해도 기록이 아니에요.')}</p><button onClick={()=>s.restore({paceCpm:null,paceStep:0})}>{tr('기본 제안으로')}</button></details></>}
-        {ttsSupported&&<><Toggle label="단어 선택 시 발음" uiLocale={uiLocale} checked={s.autoSpeakOnClick} onChange={v=>set('autoSpeakOnClick',v)}/><Choices label="재생 속도" uiLocale={uiLocale} value={s.ttsRate} items={Object.entries(TTS_RATES).map(([key,r])=>[key,r.label])} onChange={v=>set('ttsRate',v)}/></>}
+        {ttsSupported&&<Toggle label="단어 선택 시 발음" uiLocale={uiLocale} checked={s.autoSpeakOnClick} onChange={v=>set('autoSpeakOnClick',v)}/>}
+        </More>
       </>}
     </section>
   </ViewerModal>;
