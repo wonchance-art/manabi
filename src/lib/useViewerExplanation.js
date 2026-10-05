@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { callGemini } from './gemini';
 import { viewerCacheKey } from './viewerReliability';
-import { buildViewerWordPrompt, parseViewerExplanation } from './viewerExplanation';
+import { buildViewerWordPrompt, parseViewerExplanation, KOREAN_WORD_EXPLANATION_VERSION } from './viewerExplanation';
 
 // Edited meanings can retain a different locale from their original morphology.
 // Missing morphology provenance alone uses the existing meaning/source fallback.
@@ -26,7 +26,7 @@ export function useViewerExplanation({ token, sentence, locale, sourceLocale = '
     setState({ key, meaning: '', morphology: [], loading: true, error: false });
     let deadline;
     (async () => {
-      const cacheKey = await viewerCacheKey('viewer_word_locale', [scope, locale, '1'], [surface, lemma, sentence]);
+      const cacheKey = await viewerCacheKey('viewer_word_locale', [scope, locale, KOREAN_WORD_EXPLANATION_VERSION], [surface, lemma, sentence]);
       if (!current()) return;
       try {
         const cached = localStorage.getItem(cacheKey);
