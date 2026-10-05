@@ -16,7 +16,7 @@ const DAY_MS = 86400000;
  * 오늘인 단어로 폴백. language 불일치 행은 제외. 뜻 없는 행도 word_text로 포함.
  * @returns {Array<{ id, word_text, meaning }>}
  */
-export function pickOutputWords({ vocabRows, events, language, now = Date.now(), cap = 3 } = {}) {
+export function pickOutputWords({ vocabRows, events, language, now = Date.now(), cap = 3, allowFallback = true } = {}) {
   const dayStart = kstDayStartMs(now);
   const inToday = (ts) => {
     const t = new Date(ts).getTime();
@@ -43,7 +43,7 @@ export function pickOutputWords({ vocabRows, events, language, now = Date.now(),
   if (touched.size > 0) {
     pool = [...touched.entries()].map(([wid, m]) => ({ v: byId.get(wid), ...m }));
   } else {
-    pool = (vocabRows || [])
+    pool = (allowFallback ? vocabRows || [] : [])
       .filter((v) => v?.last_reviewed_at && inToday(v.last_reviewed_at))
       .map((v) => ({ v, wrong: false, lastTs: new Date(v.last_reviewed_at).getTime() }));
   }

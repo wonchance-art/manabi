@@ -153,7 +153,7 @@ describe('progressStore', () => {
         .find(([table]) => table === 'user_vocabulary');
       expect(vocabWrite, 'user_vocabulary UPDATE가 있어야 한다').toBeTruthy();
       expect(vocabWrite[1].update).toHaveBeenCalledWith({ ...nextStats, last_reviewed_at: result.reviewedAt });
-      expect(logReviewEvents).toHaveBeenCalledWith('user-123', [expect.objectContaining({ created_at: result.reviewedAt })]);
+      expect(logReviewEvents).toHaveBeenCalledWith('user-123', [expect.objectContaining({ created_at: result.reviewedAt })], { strict: true });
     });
 
     it('원격 실패는 삼키지 않는다 — { ok: false }로 호출자에게 알린다(무증상 유실 방지)', async () => {

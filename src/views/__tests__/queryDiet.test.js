@@ -37,7 +37,8 @@ describe('쿼리 다이어트 계약', () => {
     // 필요한 필드가 다 있는지는 profileStatsSelect.test.js가 렌더와 대조해 지킨다.
     expect(stats).not.toMatch(/user_vocabulary'\)[\s\S]{0,40}?\.select\('\*'\)/);
     expect(stats).not.toContain('source_sentence');
-    expect(stats).toContain('next_review_at');
+    expect(stats).toContain("fetchVocabularyLearningRows(userId, { fields: 'summary' })");
+    expect(stats).toContain('isVocabularyReviewDue');
   });
 
   it('단어장 IO — 언어 백필은 언어별 배치 UPDATE, 출처 제목 청크는 병렬', () => {
@@ -65,7 +66,8 @@ describe('쿼리 다이어트 계약', () => {
     expect(sel, 'due 배지가 dictionary·sequence를 쓰므로 통짜가 맞다').toContain('processed_json');
     // 큰 컬럼을 새로 끌어들이지 않는다 — 목록이 쓰지 않는 본문성 컬럼 금지
     expect(sel).not.toMatch(/\braw_text\b|\bcontent\b|\bfull_text\b/);
-    expect(materials).toContain('material.processed_json.dictionary');
+    expect(materials).toContain('countVocabularyDueInMaterial');
+    expect(read('src/lib/vocabularyDueIndex.js')).toContain('material?.processed_json?.dictionary');
     // fetchVocab: 단어장 화면이 전 컬럼 소비자(etym·hanja 포함) — select('*') 유지
     const io = read('src/lib/vocabIO.js');
     expect(io).toMatch(/from\('vocabulary_with_exclusions'\)\s*\.select\('\*'\)/);

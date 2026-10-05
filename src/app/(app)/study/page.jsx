@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getRefLang, REF_LANGS } from '@/content/refLangs';
 import { assembleStudyMaterials } from '@/lib/studyMaterials';
+import { canUseStudyPrefetch } from '@/lib/studyPrefetchEligibility';
 import StudySessionPage from '@/views/StudySessionPage';
 import StudyOnboarding from '@/views/StudyOnboarding';
 
@@ -60,7 +61,7 @@ export default async function Page({ searchParams }) {
   const interestGroup = cookieStore.get('study_interest')?.value || null;
 
   // ── 재료 조립 (폴백 세션·rung·dial·오늘의 문단 재료) — prefetched를 써도 라이브로 필요 ──
-  const { session, paragraphMaterials, warmup, encounterItems, band, dial, canGenerate, coldStart } =
+  const { session, paragraphMaterials, warmup, encounterItems, band, dial, canGenerate, coldStart, legacyReviewRows } =
     await assembleStudyMaterials(supabase, user.id, lang, { interestGroup });
 
   // ── 내 자료 세션(?source=mine) — 프리페치를 조회·소모하지 않고 라이브 생성을 강제한다. ──
@@ -80,7 +81,7 @@ export default async function Page({ searchParams }) {
       .order('created_at', { ascending: false }).limit(1)
       .then(async ({ data }) => {
         const row = data && data[0];
-        if (row && row.paragraph && row.materials) {
+        if (row && row.paragraph && canUseStudyPrefetch(row.materials, legacyReviewRows, user.id, lang)) {
           pregenerated = { paragraph: row.paragraph, materials: row.materials };
           // 사용 처리 — await로 유실 방지, 실패(테이블 부재 등)해도 세션은 진행
           await supabase.from('study_paragraphs')

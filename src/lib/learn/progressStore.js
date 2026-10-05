@@ -160,6 +160,11 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
   // 큐가 서버 기본값 now()에 기대면 오프라인 복습이 동기화 시각으로 찍혀 14일 창·
   // 주 경계·연속 학습일이 밀린다(v2-N R2).
   const reviewedAt = new Date().toISOString();
+  const { assertCachedLegacyFsrsAllowed, assertLegacyFsrsAllowed, isFsrsLegacyWriteError } = await import('../fsrsLegacyBoundary');
+  if (type === 'vocab') {
+    try { assertCachedLegacyFsrsAllowed(userId, detail?.word_id); }
+    catch (error) { return { ok: false, error }; }
+  }
 
   // 오프라인이면 네트워크를 아예 건드리지 않고 큐로 보낸다 — 부분 성공(이벤트는 갔는데
   // SRS는 실패)이 생길 여지를 없앤다. onLine===false는 '확실히 오프라인'만 뜻한다.
@@ -174,6 +179,7 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
 
   // 로그인 경로: 복습 이벤트 + SRS + 보상
   try {
+    if (type === 'vocab') await assertLegacyFsrsAllowed(supabase, { userId, cardId: detail?.word_id, itemKey, language: lang });
     // 1. 진도 이벤트: review_events 적재
     await recordReviewEventRemote(userId, { lang, source: type, item_key: itemKey, correct, detail, created_at: reviewedAt });
 
@@ -191,7 +197,7 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
     return { ok: true, reviewedAt };
   } catch (err) {
     // 제외는 연결 장애가 아니다. 실패한 평가를 성공/오프라인 재시도로 위장하지 않는다.
-    if (isVocabularyExcludedError(err) || isLearningStorageUnavailableError(err)) return { ok: false, error: err };
+    if (isVocabularyExcludedError(err) || isLearningStorageUnavailableError(err) || isFsrsLegacyWriteError(err)) return { ok: false, error: err };
     // 온라인인데 실패했다 — 서버가 죽었거나 연결이 방금 끊겼다. 큐에 넣어 살린다.
     // 이벤트가 이미 착지했을 수도 있는데, 온라인 경로도 같은 reviewedAt을 실어 보내므로
     // flush의 완전 일치 대조가 그 중복을 걸러낸다.
@@ -505,7 +511,7 @@ async function recordReviewEventRemote(userId, event) {
   }
 
   const { logReviewEvents } = await import('../reviewEvents');
-  return logReviewEvents(userId, [event]);
+  return logReviewEvents(userId, [event], { strict: true });
 }
 
 /**

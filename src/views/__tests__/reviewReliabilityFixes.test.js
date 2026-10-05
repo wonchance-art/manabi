@@ -7,9 +7,10 @@ const read = (file) => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
 describe('src/views 리뷰 후속 신뢰성 회귀', () => {
   it('V-05 HomePage: 모든 Supabase 응답 오류를 throw하고 오류 UI를 표시한다', () => {
     const src = read('src/views/HomePage.jsx');
-    expect(src).toContain('const dbResults = [');
-    expect(src).toContain('const failed = dbResults.find(result => result?.error)');
-    expect(src).toContain('if (failed) throw failed.error');
+    expect(src).toContain("fetchVocabularyLearningRows(userId, { fields: 'summary' })");
+    expect(src).toContain('if (recentResult.error) throw recentResult.error');
+    const loader = read('src/lib/vocabularyLearningRows.js');
+    expect(loader).toContain('if (!response.ok || body?.ok === false) throw');
     expect(src).toContain('const { data, isLoading, error, refetch } = useQuery({');
     expect(src).toContain('{error && <div');
     expect(src).toContain('role="alert"');
@@ -163,8 +164,10 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
 
     const profile = read('src/views/ProfileStats.jsx');
     const pdfSection = read('src/views/MaterialAddPdfSection.jsx');
-    expect(profile).toContain('if (heatmapResult.error) throw heatmapResult.error');
-    expect(profile).toContain('if (vocabResult.error) throw vocabResult.error');
+    // heatmap과 vocabulary가 이제 동일한 검증 완료 snapshot을 사용한다. 실패는 호출자 오류 UI로 전파한다.
+    expect(profile).toContain("await fetchVocabularyLearningRows(userId, { fields: 'summary' })");
+    expect(profile).toContain('for (const v of learning.rows)');
+    expect(profile).toContain('projections: learning.projections');
     expect(profile).toContain('학습 통계를 불러오지 못했어요.');
     expect(pdfSection).toContain('.then(({ count, error }) => {');
     expect(pdfSection).toContain('연결된 자료를 확인하지 못했습니다.');

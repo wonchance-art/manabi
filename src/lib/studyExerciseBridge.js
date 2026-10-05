@@ -166,6 +166,7 @@ export async function recordStudyReviewCompleted(userId, {
         next_review_at: word.next_review_at,
       });
     }
-    await recordReviewCompleted(userId, reviewRef, nextStats);
+    const saved = await recordReviewCompleted(userId, reviewRef, nextStats);
+    if (saved?.ok === false) throw saved.error || new Error('review-save-failed');
   }
 }

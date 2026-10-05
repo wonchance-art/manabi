@@ -28,7 +28,7 @@ export function useVocabularyExclusions() {
     mutationFn: body => request(body),
     onSuccess: (result, body) => {
       client.setQueryData(['vocabulary-exclusions', body.accountId], rows => updateVocabularyExclusions(rows || [], result));
-      for (const prefix of ['vocab', 'vocab-words', 'home-v2', 'output-words', 'book-review', 'due-vocab-index']) {
+      for (const prefix of ['vocab', 'vocab-words', 'home-v2', 'profile-stats', 'output-words', 'book-review', 'due-vocab-index']) {
         client.invalidateQueries({ queryKey: [prefix, body.accountId] });
       }
     },

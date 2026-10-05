@@ -7,6 +7,7 @@ import { authCallbackUrl } from './authRedirect';
 import { migrateGuestDrillQueue } from './drillSrs';
 import { useToast } from './ToastContext';
 import { pullProgress } from './refProgress';
+import { createProfileReadOnlyRefresh, recordExplicitProfileLogin } from './learningActivity';
 
 const AuthContext = createContext(null);
 
@@ -32,82 +33,84 @@ export function AuthProvider({ children }) {
   const subscriptionRef = useRef(null);
   const unloadingRef = useRef(false);
 
-  // 프로필 조회 및 스트릭 갱신
-  async function fetchProfile(userId, metadata = {}) {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-      
-      if (error && error.code === 'PGRST116') { // Not found
-        // 트리거가 이미 생성했을 수 있으므로 upsert(중복 무시) 후 재조회
-        await supabase
-          .from('profiles')
-          .upsert([{
-            id: userId,
-            display_name: metadata.display_name || metadata.full_name || metadata.name || '새로운 학습자',
-            streak_count: 1,
-            last_login_at: new Date().toISOString()
-          }], { onConflict: 'id', ignoreDuplicates: true });
+  const actorRef = useRef(null);
+  const authGenerationRef = useRef(0);
+  const mountedRef = useRef(true);
+  const loginActorRef = useRef(null);
+  const observedProfileRef = useRef(null);
+  const profileReaderRef = useRef(null);
 
-        const { data: profile } = await supabase
-          .from('profiles').select('*').eq('id', userId).single();
-        setProfile(profile);
-        return;
-      } else if (error) {
-        throw error;
+  function adoptUser(nextUser) {
+    if (actorRef.current !== (nextUser?.id ?? null)) {
+      authGenerationRef.current += 1;
+      actorRef.current = nextUser?.id ?? null;
+      loginActorRef.current = null;
+      observedProfileRef.current = null;
+      profileReaderRef.current?.invalidate();
+      setProfile(null);
+    }
+    setUser(nextUser ?? null);
+  }
+
+  if (!profileReaderRef.current) {
+    profileReaderRef.current = createProfileReadOnlyRefresh({
+      getActor: () => mountedRef.current ? actorRef.current : null,
+      read: actorId => supabase.from('profiles').select('*').eq('id', actorId).single(),
+      onProfile: (nextProfile, actorId) => {
+        const previous = observedProfileRef.current;
+        observedProfileRef.current = nextProfile;
+        setProfile(nextProfile);
+        // 첫 조회는 보상 이벤트가 아니다. 확정된 같은 계정의 증가만 기존 토스트로 알린다.
+        const count = nextProfile?.streak_count;
+        const message = previous && count > previous.streak_count && STREAK_MILESTONES[count];
+        if (!message || typeof sessionStorage === 'undefined') return;
+        const key = `milestone_shown_${actorId}_${nextProfile.last_streak_date}_${count}`;
+        try {
+          if (sessionStorage.getItem(key)) return;
+          sessionStorage.setItem(key, '1');
+        } catch { return; }
+        setTimeout(() => {
+          if (mountedRef.current && actorRef.current === actorId) toast(message, 'celebrate', 6000);
+        }, 1500);
+      },
+    });
+  }
+
+  // refresh와 로그인은 별개다. 누락된 프로필도 읽기 중에는 생성하지 않는다.
+  async function refreshProfileReadOnly(userId) {
+    try { return await profileReaderRef.current.refresh(userId); }
+    catch (err) {
+      if (!unloadingRef.current && mountedRef.current && actorRef.current === userId) {
+        console.error('프로필 로드/갱신 실패:', err.message);
       }
-      
-      // Streak Calculation
-      const today = new Date().toISOString().split('T')[0];
-      const lastLogin = data.last_login_at ? data.last_login_at.split('T')[0] : null;
-
-      if (lastLogin !== today) {
-        let newStreak = 1;
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-        if (lastLogin === yesterdayStr) {
-          newStreak = (data.streak_count || 0) + 1;
-        }
-
-        // Update profile in DB
-        const { data: updatedProfile, error: updateError } = await supabase
-          .from('profiles')
-          .update({
-            streak_count: newStreak,
-            last_login_at: new Date().toISOString()
-          })
-          .eq('id', userId)
-          .select()
-          .single();
-
-        if (updateError) throw updateError;
-        setProfile(updatedProfile);
-
-        // 스트릭 마일스톤 토스트 (세션당 1회)
-        const milestoneMsg = STREAK_MILESTONES[newStreak];
-        if (milestoneMsg) {
-          const key = `milestone_shown_${newStreak}`;
-          if (!sessionStorage.getItem(key)) {
-            sessionStorage.setItem(key, '1');
-            setTimeout(() => toast(milestoneMsg, 'celebrate', 6000), 1500);
-          }
-        }
-      } else {
-        setProfile(data);
-      }
-    } catch (err) {
-      // 페이지를 떠나면 브라우저가 진행 중인 fetch를 끊고, 그게 "TypeError: Failed to fetch"로 온다.
-      // 취소는 실패가 아니다 — 에러로 남기면 정상 이동마다 콘솔이 오염되고,
-      // e2e의 "콘솔 에러 0" 단언이 경합으로 깨진다(smoke visibility flaky의 원인).
-      if (unloadingRef.current) return;
-      console.error("프로필 로드/갱신 실패:", err.message);
+      return null;
     }
   }
+  const fetchProfile = refreshProfileReadOnly;
+
+  // 실제 로그인만 접속 시각을 기록한다. streak/freeze는 학습 활동 트랜잭션만 변경한다.
+  async function initializeLoginProfile(nextUser) {
+    const userId = nextUser?.id, generation = authGenerationRef.current;
+    if (!userId || actorRef.current !== userId || loginActorRef.current === userId) return;
+    loginActorRef.current = userId;
+    const current = () => mountedRef.current && actorRef.current === userId && authGenerationRef.current === generation;
+    try {
+      if (await recordExplicitProfileLogin({ client: supabase, user: nextUser, isCurrent: current })) {
+        await refreshProfileReadOnly(userId);
+      }
+    } catch (err) {
+      if (current() && !unloadingRef.current) console.error('프로필 로드/갱신 실패:', err.message);
+    }
+  }
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      profileReaderRef.current?.invalidate();
+      subscriptionRef.current?.unsubscribe();
+    };
+  }, []);
 
   // 이동 시작을 표시 — bfcache 복원(persisted)까지 고려해 pageshow에서 되돌린다.
   useEffect(() => {
@@ -143,12 +146,13 @@ export function AuthProvider({ children }) {
 
         // 기존 순서 유지: 세션 조회를 먼저 시작한 뒤 auth listener를 즉시 등록한다.
         // listener는 동기 반환 API라 lazy facade 대신 실제 client가 필요하다.
+        const sessionGeneration = authGenerationRef.current;
         const sessionRequest = client.auth.getSession();
         subscription = attachAuthListener(client, () => cancelled);
 
         return sessionRequest.then(({ data: { session } }) => {
-          if (cancelled) return;
-          setUser(session?.user ?? null);
+          if (cancelled || authGenerationRef.current !== sessionGeneration) return;
+          adoptUser(session?.user ?? null);
           if (session?.user) {
             hadSessionRef.current = true;
             fetchProfile(session.user.id, session.user.user_metadata);
@@ -172,11 +176,13 @@ export function AuthProvider({ children }) {
   function attachAuthListener(client, isCancelled = () => false) {
     subscriptionRef.current?.unsubscribe();
     const authState = client.auth.onAuthStateChange(async (event, session) => {
-      if (isCancelled()) return;
-      setUser(session?.user ?? null);
+      if (!mountedRef.current || isCancelled()) return;
+      adoptUser(session?.user ?? null);
+      setLoading(false);
       if (session?.user) {
         hadSessionRef.current = true;
-        fetchProfile(session.user.id, session.user.user_metadata);
+        // SDK는 cookie 복원/탭 복귀에도 SIGNED_IN을 보낸다. 이벤트는 로그인 쓰기의 증거가 아니다.
+        refreshProfileReadOnly(session.user.id);
       } else {
         setProfile(null);
         // 세션이 있다가 사라진 경우 — 명시적 로그아웃이 아니면 만료로 간주
@@ -201,6 +207,7 @@ export function AuthProvider({ children }) {
     if (!guestConfirmedRef.current) return;
     guestConfirmedRef.current = false;
     const client = await getSupabase();
+    if (!mountedRef.current) return;
     attachAuthListener(client);
   }
 
@@ -226,6 +233,7 @@ export function AuthProvider({ children }) {
     });
     if (error) throw error;
     await ensureAuthListener();
+    if (data.session?.user) { adoptUser(data.session.user); await initializeLoginProfile(data.session.user); }
     return data;
   }
 
@@ -237,6 +245,7 @@ export function AuthProvider({ children }) {
     });
     if (error) throw error;
     await ensureAuthListener();
+    if (data.session?.user) { adoptUser(data.session.user); await initializeLoginProfile(data.session.user); }
     return data;
   }
 
@@ -262,7 +271,7 @@ export function AuthProvider({ children }) {
   async function signOut() {
     explicitSignOutRef.current = true;
     await supabase.auth.signOut();
-    setUser(null);
+    adoptUser(null);
     setProfile(null);
   }
 
@@ -278,7 +287,8 @@ export function AuthProvider({ children }) {
     signInWithGoogle,
     signOut,
     resetPassword,
-    fetchProfile
+    fetchProfile,
+    refreshProfileReadOnly
   };
 
   return (

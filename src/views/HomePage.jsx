@@ -19,26 +19,25 @@ import { materialFit } from '@/lib/materialFit';
 import { rankSuggestions, REASON } from '@/lib/suggestionRank';
 import { detectLang, langNameKo } from '@/lib/constants';
 import { canReadSuggestion, suggestionHref } from '@/lib/suggestionReading';
+import { fetchVocabularyLearningRows } from '@/lib/vocabularyLearningRows';
+import { isVocabularyReviewDue } from '@/lib/vocabularyLearningRead';
 
 export async function fetchHomeData(userId, lang, nowMs = Date.now()) {
-  const [dueResult, recentResult, allVocabResult, forecastResult, { buildForecast }] = await Promise.all([
-    supabase.from('active_vocabulary').select('*', { count: 'exact', head: true })
-      .eq('user_id', userId).lte('next_review_at', new Date(nowMs).toISOString()),
+  // 전체 두 코호트를 같은 snapshot에서 합친 뒤 필터한다. 구형 due WHERE로 먼저 자르지 않는다.
+  const [learning, recentResult, { buildForecast }] = await Promise.all([
+    fetchVocabularyLearningRows(userId, { fields: 'summary' }),
     supabase.from('reading_progress')
       .select('material_id, is_completed, updated_at, reading_materials(id, title)')
       .eq('user_id', userId).eq('is_completed', false).order('updated_at', { ascending: false }).limit(20),
-    supabase.from('user_vocabulary').select('language, word_text, base_form').eq('user_id', userId),
-    supabase.from('active_vocabulary').select('word_text, interval, last_reviewed_at')
-      .eq('user_id', userId).eq('language', lang).not('last_reviewed_at', 'is', null).gt('interval', 0),
     import('@/lib/forecast'),
   ]);
-  const dbResults = [dueResult, recentResult, allVocabResult, forecastResult];
-  const failed = dbResults.find(result => result?.error);
-  if (failed) throw failed.error;
-  const vocab = allVocabResult.data || [];
-  return { dueCount: dueResult.count || 0, recentProgress: recentResult.data || [], vocab,
+  if (recentResult.error) throw recentResult.error;
+  const vocab = learning.rows;
+  const effectiveNow = Math.max(nowMs, Date.parse(learning.now));
+  return { dueCount: learning.projections.filter(p => isVocabularyReviewDue(p, effectiveNow)).length,
+    recentProgress: recentResult.data || [], vocab,
     vocabByLang: vocab.reduce((all, v) => { const key = v.language || detectLang(v.word_text || ''); all[key] = (all[key] || 0) + 1; return all; }, {}),
-    forecast: buildForecast(forecastResult.data || [], new Date(nowMs)) };
+    forecast: buildForecast(learning.projections.filter(p => p.vocabulary.language === lang), new Date(effectiveNow)) };
 }
 
 async function fetchSuggestions() {

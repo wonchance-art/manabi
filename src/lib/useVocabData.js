@@ -5,31 +5,84 @@ import { supabase } from './supabase';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { friendlyToastMessage } from './errorMessage';
-import { fetchVocab, csvToVocabRows } from './vocabIO';
+import { csvToVocabRows } from './vocabIO';
+import { fetchVocabularyLearningRows } from './vocabularyLearningRows';
+import { useMemo, useRef } from 'react';
 import { persistVocabGrade } from './fsrs';
+import { cacheVocabSnapshot, getCachedVocabSnapshot } from './offlineCache';
+
+const EMPTY_ROWS = Object.freeze([]);
+const EMPTY_TITLES = new Map();
+
+// 오프라인 캐시는 원문 읽기만 복원한다. 정본 확인 실패를 빈 registry로 추측하지 않는다.
+export async function fetchVocabLearningData(actorId, options = {}) {
+  const current = () => !options.signal?.aborted && (!options.getActorId || options.getActorId() === actorId);
+  try {
+    const snapshot = await fetchVocabularyLearningRows(actorId, options);
+    Promise.resolve().then(() => cacheVocabSnapshot(`learning:${actorId}`, snapshot.rows)).catch(() => {});
+    return snapshot;
+  } catch (error) {
+    if (!current()) throw error;
+    const rows = await getCachedVocabSnapshot(`learning:${actorId}`) || await getCachedVocabSnapshot(actorId);
+    if (!current() || !rows || rows.some(row => row.user_id !== actorId)) throw error;
+    return { actorId, rows, projections: EMPTY_ROWS, complete: false, registryAvailable: false, offline: true, readError: error };
+  }
+}
+
+/** 정착한 변경만 호출한다. 다른 계정의 화면/캐시를 무효화하지 않는다. */
+export function invalidateVocabularyLearning(queryClient, actorId) {
+  if (typeof actorId !== 'string' || !actorId) return Promise.resolve([]);
+  return Promise.all(['vocab', 'vocab-words', 'vocab-titles', 'home-v2', 'profile-stats', 'output-words',
+    'book-review', 'due-vocab-index', 'weekly-report', 'goal-progress', 'goal-known', 'weak-spot', 'confused-events']
+    .map(prefix => queryClient.invalidateQueries({ queryKey: [prefix, actorId] })));
+}
 
 export function useVocabData() {
   const { user } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
 
-  const { data: vocab = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['vocab', user?.id],
-    queryFn: () => fetchVocab(user.id),
+  const actorRef = useRef(user?.id);
+  actorRef.current = user?.id;
+  // 기존 vocab prefix invalidation은 유지하되 원본 배열 캐시와 snapshot을 섞지 않는다.
+  const { data: learning, isLoading, error, refetch } = useQuery({
+    queryKey: ['vocab', user?.id, 'learning'],
+    queryFn: ({ signal }) => fetchVocabLearningData(user.id, { signal, getActorId: () => actorRef.current }),
     enabled: !!user,
+  });
+  const vocab = learning?.actorId === user?.id ? learning.rows : EMPTY_ROWS;
+  const projections = learning?.actorId === user?.id ? learning.projections : EMPTY_ROWS;
+  const materialIds = useMemo(() => [...new Set(vocab.map(row => row.source_material_id).filter(Boolean))].sort(), [vocab]);
+  // 제목은 로그인 사용자의 RLS로만 읽는 표시 보조다. 실패해도 학습 정본을 대체하지 않는다.
+  const { data: materialTitles = EMPTY_TITLES } = useQuery({
+    queryKey: ['vocab-titles', user?.id, materialIds],
+    enabled: !!user && materialIds.length > 0,
+    queryFn: async ({ signal }) => {
+      const titles = new Map();
+      for (let i = 0; i < materialIds.length; i += 100) {
+        const { data, error: titleError } = await supabase.from('reading_materials').select('id, title')
+          .in('id', materialIds.slice(i, i + 100)).abortSignal(signal);
+        if (titleError) throw titleError;
+        for (const row of data || []) titles.set(row.id, row.title);
+      }
+      if (actorRef.current !== user.id) throw new Error('fsrs_stale_account');
+      return titles;
+    },
   });
 
   const scoreMutation = useMutation({
+    onMutate: () => ({ actorId: actorRef.current }),
     mutationFn: async ({ id, nextStats }) => {
       await persistVocabGrade(supabase, id, nextStats);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
+    onSuccess: (_result, _variables, context) => {
+      invalidateVocabularyLearning(queryClient, context?.actorId);
     },
-    onError: (err) => toast('업데이트 실패 — ' + friendlyToastMessage(err), 'error'),
+    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast('업데이트 실패 — ' + friendlyToastMessage(err), 'error'); },
   });
 
   const deleteMutation = useMutation({
+    onMutate: () => ({ actorId: actorRef.current }),
     mutationFn: async (id) => {
       const { error } = await supabase
         .from('user_vocabulary')
@@ -37,16 +90,18 @@ export function useVocabData() {
         .eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['vocabulary-exclusions', user?.id] });
+    onSuccess: (_result, _variables, context) => {
+      invalidateVocabularyLearning(queryClient, context?.actorId);
+      queryClient.invalidateQueries({ queryKey: ['vocabulary-exclusions', context?.actorId] });
+      if (context?.actorId !== actorRef.current) return;
       toast('단어를 삭제했습니다.', 'info');
     },
-    onError: (err) => toast('삭제 실패 — ' + friendlyToastMessage(err), 'error'),
+    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast('삭제 실패 — ' + friendlyToastMessage(err), 'error'); },
   });
 
   // CSV 불러오기
   const csvImportMutation = useMutation({
+    onMutate: () => ({ actorId: actorRef.current }),
     mutationFn: async (file) => {
       const text = await file.text();
       const rows = csvToVocabRows(text, user.id);
@@ -65,16 +120,18 @@ export function useVocabData() {
       }
       return imported;
     },
-    onSuccess: (count) => {
-      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['vocabulary-exclusions', user?.id] });
+    onSuccess: (count, _variables, context) => {
+      invalidateVocabularyLearning(queryClient, context?.actorId);
+      queryClient.invalidateQueries({ queryKey: ['vocabulary-exclusions', context?.actorId] });
+      if (context?.actorId !== actorRef.current) return;
       toast(`${count}개 단어를 가져왔어요. (중복은 자동 스킵)`, 'success', 5000);
     },
-    onError: (err) => toast('가져오기 실패 — ' + friendlyToastMessage(err), 'error'),
+    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast('가져오기 실패 — ' + friendlyToastMessage(err), 'error'); },
   });
 
   // 개별 단어 편집 (word_text/furigana/meaning/pos)
   const updateVocabMutation = useMutation({
+    onMutate: () => ({ actorId: actorRef.current }),
     mutationFn: async ({ id, updates }) => {
       const allowed = {};
       if (typeof updates.word_text === 'string') allowed.word_text = updates.word_text.trim().slice(0, 200);
@@ -88,15 +145,17 @@ export function useVocabData() {
         .eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['vocabulary-exclusions', user?.id] });
+    onSuccess: (_result, _variables, context) => {
+      invalidateVocabularyLearning(queryClient, context?.actorId);
+      queryClient.invalidateQueries({ queryKey: ['vocabulary-exclusions', context?.actorId] });
+      if (context?.actorId !== actorRef.current) return;
       toast('단어를 수정했어요', 'success');
     },
-    onError: (err) => toast('수정 실패 — ' + friendlyToastMessage(err), 'error'),
+    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast('수정 실패 — ' + friendlyToastMessage(err), 'error'); },
   });
 
   const bulkDeleteMutation = useMutation({
+    onMutate: () => ({ actorId: actorRef.current }),
     mutationFn: async (ids) => {
       if (!ids?.length) return 0;
       const { error } = await supabase
@@ -106,18 +165,24 @@ export function useVocabData() {
       if (error) throw error;
       return ids.length;
     },
-    onSuccess: (count) => {
-      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['vocabulary-exclusions', user?.id] });
+    onSuccess: (count, _variables, context) => {
+      invalidateVocabularyLearning(queryClient, context?.actorId);
+      queryClient.invalidateQueries({ queryKey: ['vocabulary-exclusions', context?.actorId] });
+      if (context?.actorId !== actorRef.current) return;
       toast(`${count}개 단어를 삭제했습니다.`, 'info');
     },
-    onError: (err) => toast('일괄 삭제 실패: ' + err.message, 'error'),
+    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast('일괄 삭제 실패: ' + err.message, 'error'); },
   });
 
   return {
     vocab,
+    projections,
+    learningAvailable: !error && learning?.actorId === user?.id && learning?.complete === true,
+    learningNow: learning?.now,
+    materialTitles,
+    isOffline: learning?.actorId === user?.id && learning?.offline === true,
     isLoading,
-    error,
+    error: error || learning?.readError,
     refetch,
     scoreMutation,
     deleteMutation,

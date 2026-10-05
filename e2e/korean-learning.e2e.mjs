@@ -6,6 +6,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { chromium } from 'playwright-core';
 import config from '../playwright.config.mjs';
+import { legacyLearningSnapshot, inactiveLearningAdmission, inactiveFsrsStatus } from './fixtures/learning-snapshot.mjs';
 const base = process.env.QA_BASE;
 assert.ok(base, 'QA_BASE must identify the integration owner\'s isolated app server');
 assert.ok(['localhost', '127.0.0.1'].includes(new URL(base).hostname));
@@ -66,6 +67,15 @@ async function fixture({ ready = true, existing = false, holdCapabilities = fals
     if (waiting) await waiting;
     return send(route,{version:1,languages:{Korean:{save:ready,review:ready,known:ready,exclude:ready}}});
   });
+  // 한국어 저장 ready/blocked와 별개인 설치 완료·비활성 FSRS 계약.
+  await context.route('**/api/learning/fsrs', route => {
+    assert.equal(route.request().method(),'GET','Inactive FSRS fixture must not receive a mutation');
+    return send(route,inactiveFsrsStatus({actorId:owner}));
+  });
+  await context.route('**/api/learning/admission', route => {
+    assert.equal(route.request().method(),'GET','Inactive admission fixture must not receive a mutation');
+    return send(route,inactiveLearningAdmission({actorId:owner}));
+  });
   await context.route('**/api/gemini', route => {
     const prompt = route.request().postDataJSON()?.contents?.[0]?.parts?.[0]?.text || '';
     const meaning = prompt.includes('Taiwan Traditional') ? '去了（台灣）' : prompt.includes('mainland Simplified') ? '去了' : '가다의 뜻';
@@ -82,8 +92,11 @@ async function fixture({ ready = true, existing = false, holdCapabilities = fals
   });
   await context.route('**/api/learning/vocabulary**', route => {
     const request=route.request(), url=new URL(request.url());
+    if(request.method()==='GET'&&url.searchParams.get('view')==='learning')return send(route,legacyLearningSnapshot({actorId:owner,rows:cards,known,exclusions,fields:url.searchParams.get('fields')}));
     if(request.method()==='GET') return send(route,url.searchParams.has('contextId')?{context:contexts.find(c=>c.id===url.searchParams.get('contextId'))}:{contexts});
-    const body=request.postDataJSON(); writes.push({path:'/api/learning/vocabulary',body});
+    const body=request.postDataJSON();
+    assert.notEqual(body?.action,'save','Inactive FSRS fixture must not receive an atomic manual save');
+    writes.push({path:'/api/learning/vocabulary',body});
     if(!ready) return send(route,{error:'storage unavailable'},503);
     const existingCard=cards.find(card=>card.word_text===body.word.word_text);
     if(existingCard && existingCard.meaning!==body.word.meaning && !(body.confirmId===existingCard.id && body.confirmMeaning===existingCard.meaning)) {
@@ -100,6 +113,7 @@ async function fixture({ ready = true, existing = false, holdCapabilities = fals
     const request=route.request(),url=new URL(request.url()),table=url.pathname.split('/').pop(),method=request.method();
     const object=request.headers().accept?.includes('vnd.pgrst.object');
     if(method==='OPTIONS') return route.fulfill({status:204,headers:cors});
+    if(url.pathname.endsWith('/rpc/fsrs_legacy_boundary')&&method==='POST') return send(route,{version:1,actorId:owner,enrolled:false});
     if(method==='HEAD') return route.fulfill({status:200,headers:{...cors,'content-range':'*/0'}});
     if(['POST','PATCH','DELETE'].includes(method)) {
       const body=method==='DELETE'?null:request.postDataJSON();
@@ -198,6 +212,8 @@ test('Korean atomic save, known/exclusion restore, locale conflict, due review a
     assert.deepEqual(first.body.source.sourceSpan,{start:14,end:17,unit:'utf16'});
     assert.equal(first.body.source.quote,raw.slice(10));assert.equal(f.contexts.length,1);
     assert.ok(!Object.hasOwn(f.contexts[0].locator,'tokenId'));
+    assert.equal(f.cards[0].last_reviewed_at,null,'saving a fresh card does not invent a first review');
+    assert.equal(await f.actions.locator('.save-grade--inline').count(),0,'fresh cards enter their first question through the review session');
     const saved=structuredClone(f.cards), source=structuredClone(f.contexts);
     await f.actions.getByRole('button',{name:'아는 단어',exact:true}).click();
     await f.actions.getByRole('button',{name:'✓ 아는 단어',exact:true}).waitFor();
@@ -222,8 +238,25 @@ test('Korean atomic save, known/exclusion restore, locale conflict, due review a
     assert.equal(f.writes.at(-1).body.confirmMeaning,'去了');
     // Use the same saved card's canonical review path; save did not create a review event.
     f.cards[0].next_review_at='2020-01-01T00:00:00Z';await f.open();
-    const inlineSaved=f.page.waitForResponse(response=>response.url().includes('/rest/v1/user_vocabulary')&&response.request().method()==='PATCH');
-    await f.actions.locator('.save-grade--inline .review-score-btn').nth(2).click();await inlineSaved;
+    assert.equal(f.cards[0].last_reviewed_at,null);assert.equal(f.events.length,0);
+    assert.equal(await f.actions.locator('.save-grade--inline').count(),0,'a past due date alone cannot make a fresh card eligible for inline review');
+    const previousDue=f.cards[0].next_review_at;
+    await f.page.addInitScript(()=>localStorage.setItem('as_review_mode','flash'));
+    await f.page.goto('/vocab',{waitUntil:'domcontentloaded'});
+    await f.page.getByRole('button',{name:'표현 1개 복습 →',exact:true}).click();
+    await f.page.getByRole('heading',{name:'가다',exact:true}).waitFor();
+    assert.equal(await f.page.locator('.review-card__answer').count(),0,'first question keeps its answer hidden until reveal');
+    await f.page.getByRole('button',{name:'정답 확인하기',exact:true}).click();
+    await f.page.locator('.review-card__meaning').waitFor();
+    assert.equal((await f.page.locator('.review-card__meaning').textContent()).trim(),'去了');
+    const scored=f.page.waitForResponse(response=>response.url().includes('/rest/v1/user_vocabulary')&&response.request().method()==='PATCH');
+    await f.page.locator('.review-score-btn--good').click();
+    const committed=await scored;assert.equal(committed.status(),200);
+    await f.page.getByRole('heading',{name:'이번 표현 복습을 마쳤어요',exact:true}).waitFor();
+    assert.ok(Number.isFinite(Date.parse(f.cards[0].last_reviewed_at)),'only the committed grade records the first review');
+    assert.equal(committed.request().postDataJSON().last_reviewed_at,f.cards[0].last_reviewed_at);
+    assert.notEqual(f.cards[0].next_review_at,previousDue);
+    await f.open();
     await f.page.waitForFunction(()=>!document.querySelector('.word-token--due'));
     assert.equal(f.cards[0].id,cardId);assert.equal(f.cards[0].meaning,'去了');assert.equal(f.cards[0].source_sentence,raw.slice(10));
     assert.ok(f.events.some(event=>event.lang==='Korean'&&event.detail?.word_id===cardId));

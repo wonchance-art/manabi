@@ -14,6 +14,7 @@
  */
 
 import { fsrs, Rating, State, createEmptyCard } from 'ts-fsrs';
+import { assertLegacyFsrsAllowed } from './fsrsLegacyBoundary.js';
 
 // 기본 파라미터로 스케줄러 생성 (한번만)
 const scheduler = fsrs();
@@ -102,6 +103,7 @@ export function calculateFSRS(rating, prevStats) {
  * 거부해 채점이 조용히 유실된다(과거 사고). client는 주입식(순수 lib 유지·테스트 용이).
  */
 export async function persistVocabGrade(client, wordId, nextStats, reviewedAt = new Date().toISOString()) {
+  await assertLegacyFsrsAllowed(client, { cardId: wordId });
   const { error } = await client
     .from('user_vocabulary')
     .update({ ...nextStats, last_reviewed_at: reviewedAt })

@@ -3,12 +3,13 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fixture } from './fixtures/material-editing-backend.mjs';
+import { legacyLearningSnapshot } from './fixtures/learning-snapshot.mjs';
 
 const owner = '00000000-0000-4000-8000-000000000172';
 const held = () => { let release; const wait = new Promise(resolve => { release = resolve; }); return { wait, release }; };
 const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' };
 const respond = (r, value, status = 200) => r.fulfill({ status, headers: cors, contentType: 'application/json', body: JSON.stringify(value) });
-const word = (text, i) => ({ id: `word-${i}`, user_id: owner, word_text: text, base_form: text, meaning: text === '猫' ? '고양이' : '개', language: 'Japanese', interval: 2, ease_factor: 5, repetitions: 1, next_review_at: '2020-01-01T00:00:00Z', last_reviewed_at: null });
+const word = (text, i) => ({ id: `word-${i}`, user_id: owner, word_text: text, base_form: text, meaning: text === '猫' ? '고양이' : '개', language: 'Japanese', interval: 2, ease_factor: 5, repetitions: 1, next_review_at: '2020-01-01T00:00:00Z', last_reviewed_at: '2019-12-31T00:00:00.000Z' });
 async function waitUntil(check) {
   const deadline = Date.now() + 3000;
   while (!check() && Date.now() < deadline) await delay(10);
@@ -37,6 +38,12 @@ async function setup({ due = false, fail = false, failInsert = false, width = 14
     if (fail) Object.defineProperty(window, 'indexedDB', { configurable: true, value: { open() { throw new Error('fixture queue unavailable'); } } });
   }, { fail });
   await f.context.route('**/api/learning/exclusions', r => respond(r, { items: [] }));
+  await f.context.route('**/api/learning/vocabulary**', r => {
+    const url = new URL(r.request().url());
+    if (url.searchParams.get('view') !== 'learning') return r.fallback();
+    assert.equal(r.request().method(), 'GET', 'The learning snapshot is read only');
+    return respond(r, legacyLearningSnapshot({ actorId: owner, rows, known: [], exclusions: [], fields: url.searchParams.get('fields') }));
+  });
   await f.context.route('**/rest/v1/vocabulary_with_exclusions*', r => respond(r, rows.map(row => ({ ...row, is_excluded: false }))));
   await f.context.route('**/api/tts?**', r => { speech.push(r.request().url()); return respond(r, { error: 'No server speech for immediate words' }, 500); });
   await f.context.route('**/api/dict?**', r => respond(r, null));
@@ -154,6 +161,7 @@ test('failed new INSERT restores four grades without inventing a saved word or c
 
 test('concurrent successful inline grades retain both schedules and personal meanings after reconnect', async () => {
   const f = await setup({ due: true });
+  const previousReviewedAt = new Map(f.rows.map(row => [row.id, row.last_reviewed_at]));
   try {
     await f.select(0);
     await f.actions.getByRole('button', { name: /^쉬움/ }).click();
@@ -163,7 +171,7 @@ test('concurrent successful inline grades retain both schedules and personal mea
     await waitUntil(() => f.reviews.length === 2);
     f.review.release();
     await f.actions.getByRole('button', { name: '✓ 단어장에 있음', exact: true }).waitFor({ timeout: 5000 });
-    await waitUntil(() => f.rows.every(row => row.last_reviewed_at));
+    await waitUntil(() => f.rows.every(row => Date.parse(row.last_reviewed_at) > Date.parse(previousReviewedAt.get(row.id))));
     assert.deepEqual(f.rows.map(row => row.meaning), ['고양이', '개']);
     assert.ok(f.rows.every(row => new Date(row.next_review_at) > new Date()));
     await f.page.reload({ waitUntil: 'domcontentloaded' });

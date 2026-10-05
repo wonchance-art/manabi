@@ -184,7 +184,7 @@ export default function StudyLibraryPage({
 
       {/* 성장 요약 */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
-        <StatTile value={knownCount} label={GROWTH_LABELS.knownWords} sub={GROWTH_COPY.knownWordSub} />
+        <StatTile value={knownCount ?? '–'} label={GROWTH_LABELS.knownWords} sub={GROWTH_COPY.knownWordSub} />
         <StatTile value={passedChapters} label={GROWTH_LABELS.passedChapters} />
         <StatTile value={weekSessions} label={GROWTH_LABELS.weekSessions} />
       </div>

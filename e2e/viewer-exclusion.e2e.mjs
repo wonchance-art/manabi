@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fixture } from './fixtures/material-editing-backend.mjs';
+import { legacyLearningSnapshot } from './fixtures/learning-snapshot.mjs';
 const owner = '00000000-0000-4000-8000-000000000172';
 const cardId = '10000000-0000-4000-8000-000000000001';
 const entryId = '20000000-0000-4000-8000-000000000001';
@@ -23,6 +24,12 @@ async function setup({ width = 1440, saved = false, due = true } = {}) {
  });
  await f.context.route('**/api/tts?**', r => json(r, { error: 'fixture native speech' }, 500));
  await f.context.route('**/api/dict?**', r => json(r, null));
+ await f.context.route('**/api/learning/vocabulary**', r => {
+  const url = new URL(r.request().url());
+  if (url.searchParams.get('view') !== 'learning') return r.fallback();
+  assert.equal(r.request().method(), 'GET', 'The learning snapshot is read only');
+  return json(r, legacyLearningSnapshot({ actorId: owner, rows: words, known, exclusions, fields: url.searchParams.get('fields') }));
+ });
  await f.context.route('**/api/learning/exclusions', async r => {
   if (r.request().method() === 'GET') return json(r, { items: exclusions });
   const body = r.request().postDataJSON();

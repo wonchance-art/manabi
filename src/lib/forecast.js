@@ -31,6 +31,7 @@
  */
 
 import { forgetting_curve, generatorParameters } from 'ts-fsrs';
+import { isVocabularyLearningProjection, vocabularyRetrievability } from './vocabularyLearningRead.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -75,20 +76,22 @@ export function buildForecast(rows, now) {
   // stability는 top3 정렬에만 쓰고 falling/top3 출력 항목에는 노출하지 않는다.
   const candidates = [];
   for (const row of rows || []) {
-    if (!hasReviewHistory(row)) continue;
+    const projected = isVocabularyLearningProjection(row);
+    if (projected ? row.review.known || row.review.excluded || !row.review.eligible ||
+        row.memory.lastReview === null || !(row.memory.stability > 0) : !hasReviewHistory(row)) continue;
 
-    const retrievabilityNow = retrievabilityAt(row, nowTs);
-    const retrievabilityEndOfDay = retrievabilityAt(row, endOfDayTs);
+    const retrievabilityNow = projected ? vocabularyRetrievability(row, nowTs) : retrievabilityAt(row, nowTs);
+    const retrievabilityEndOfDay = projected ? vocabularyRetrievability(row, endOfDayTs) : retrievabilityAt(row, endOfDayTs);
     if (retrievabilityNow == null || retrievabilityEndOfDay == null) continue;
 
     // falling = 지금은 ≥70%인데 오늘 자정엔 70% 아래로 떨어지는 단어.
     // 이미 70% 미만인 행은 제외(이미 안개 속 — due 큐가 담당할 몫이라 예보 대상이 아님).
     if (retrievabilityNow >= RETRIEVABILITY_THRESHOLD && retrievabilityEndOfDay < RETRIEVABILITY_THRESHOLD) {
       candidates.push({
-        word_text: row.word_text,
+        word_text: projected ? row.vocabulary.word_text : row.word_text,
         retrievabilityNow,
         retrievabilityEndOfDay,
-        stability: row.interval,
+        stability: projected ? row.memory.stability : row.interval,
       });
     }
   }

@@ -4,7 +4,7 @@
 // 오너 지시: "게임 통해 진행되는 건 게임 내에 띄워서" → /study 이탈 없이 캔버스 위에서 바로 복습한다.
 //
 // 데이터·채점 규약은 앱 본편과 동일해야 한다(신규 규약 금지):
-//   · due 조회 : user_vocabulary에서 next_review_at <= now 상위 N개 (VocabPage/StudySessionPage 패턴)
+//   · due 조회 : 완전 snapshot에서 평가 이력이 있는 legacy만 선택(FSRS·첫 질문은 본편에서)
 //   · SRS 갱신 : fsrs.js의 calculateFSRS (srs.js는 죽은 코드 — 절대 사용 금지)
 //                → user_vocabulary UPDATE { ...nextStats, last_reviewed_at }  (useVocabData.scoreMutation과 동일 페이로드)
 //   · 척도     : 복습 화면 정본과 같은 4등급(SAVE_GRADES — 1 다시·2 어려움·3 알맞음·4 쉬움, W R3㉯ 동결 예외
@@ -17,6 +17,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import { fetchVocabularyLearningRows } from '../../lib/vocabularyLearningRows';
+import { selectLegacyReviewRows } from '../../lib/vocabularyDueIndex';
 import { logReviewEvents } from '../../lib/reviewEvents';
 import { detectLang, displayWord } from '../../lib/constants';
 import { persistVocabGrade } from '../../lib/fsrs';
@@ -79,8 +81,13 @@ export const gbcButtonPrimary = {
 // 채점 저장은 fsrs.persistVocabGrade 정본으로 수렴 — 이 이름은 기존 테스트·호출 계약 유지용
 export const persistQuestReviewGrade = persistVocabGrade;
 
+export async function fetchQuestReviewRows(userId, { signal } = {}) {
+  const learning = await fetchVocabularyLearningRows(userId, { signal });
+  return selectLegacyReviewRows(learning, { limit: DUE_LIMIT, requireMeaning: true });
+}
+
 export default function QuestReview({ userId, onClose }) {
-  const [phase, setPhase] = useState('loading'); // loading | empty | active | done
+  const [phase, setPhase] = useState('loading'); // loading | error | empty | active | done
   const [items, setItems] = useState([]);
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -89,6 +96,9 @@ export default function QuestReview({ userId, onClose }) {
   const rightRef = useRef(0);   // quest:done의 정답 수 — 상태 클로저 지연 회피
   const gradingRef = useRef(false); // 채점 1회 잠금(더블탭 방지)
   const mountedRef = useRef(true);
+  const actorScopeRef = useRef({ userId });
+  if (actorScopeRef.current.userId !== userId) actorScopeRef.current = { userId };
+  const isCurrentScope = scope => mountedRef.current && actorScopeRef.current === scope;
   const lastGradeRef = useRef(null); // W R3㉯ undo 스냅샷(단일 레벨 — 다음 채점이 덮는다)
 
   useEffect(() => {
@@ -96,37 +106,41 @@ export default function QuestReview({ userId, onClose }) {
     return () => { mountedRef.current = false; };
   }, []);
 
-  // ── due 어휘 조회 (마운트 1회) — next_review_at <= now 상위 N개 ──
+  // ── 완전 snapshot에서 기존 평가 legacy만 고른 뒤 정렬·상한 적용 ──
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
+    setPhase('loading');
+    setItems([]);
+    setIdx(0);
+    setFlipped(false);
+    setRight(0);
+    setGradeError('');
+    rightRef.current = 0;
+    gradingRef.current = false;
+    lastGradeRef.current = null;
     (async () => {
       if (!userId) { if (!cancelled) setPhase('empty'); return; }
       try {
-        const { data, error } = await supabase
-          .from('active_vocabulary')
-          .select('*')
-          .eq('user_id', userId)
-          .lte('next_review_at', new Date().toISOString())
-          .order('next_review_at', { ascending: true })
-          .limit(DUE_LIMIT * 2); // 뜻 없는 카드를 걸러도 충분하도록 여유분
+        const usable = await fetchQuestReviewRows(userId, { signal: controller.signal });
         if (cancelled) return;
-        if (error) { setPhase('empty'); return; }
-        const usable = (data || []).filter((w) => w.meaning && w.meaning.trim()).slice(0, DUE_LIMIT);
         if (usable.length === 0) { setPhase('empty'); return; }
         setItems(usable);
         setPhase('active');
       } catch {
-        if (!cancelled) setPhase('empty');
+        if (!cancelled) setPhase('error');
       }
     })();
-    return () => { cancelled = true; };
+    return () => { cancelled = true; controller.abort(); };
   }, [userId]);
 
-  const current = items[idx];
+  const current = items[idx]?.user_id === userId ? items[idx] : null;
 
   // ── 채점 확정 — FSRS 갱신 + 이벤트 기록 + 버스 연출, 그리고 다음 문항/완료 ──
   const grade = async (rating) => {
     if (!current || gradingRef.current) return;
+    const scope = actorScopeRef.current;
+    if (!isCurrentScope(scope)) return;
     if (!Number.isInteger(rating) || rating < 1 || rating > 4) return;
     gradingRef.current = true;
     setGradeError('');
@@ -136,6 +150,7 @@ export default function QuestReview({ userId, onClose }) {
     // undo 스냅샷 — 채점 직전 5필드(select('*') 행 값 그대로) + 세션 상태. 저장 성공 뒤에만 유효화.
     lastGradeRef.current = null;
     const snapshot = {
+      userId,
       wordId: current.id, itemKey: current.word_text, word: current.word_text, lang, rating,
       prev: Object.fromEntries(QUEST_SRS_FIELDS.filter((k) => current[k] !== undefined).map((k) => [k, current[k]])),
       idx, right: rightRef.current,
@@ -146,9 +161,10 @@ export default function QuestReview({ userId, onClose }) {
     try {
       ({ calculateFSRS } = await import('../../lib/fsrs'));
     } catch {
-      gradingRef.current = false;
+      if (isCurrentScope(scope)) gradingRef.current = false;
       return;
     }
+    if (!isCurrentScope(scope)) return;
     const nextStats = calculateFSRS(rating, {
       interval: current.interval ?? 0,
       ease_factor: current.ease_factor ?? 0,
@@ -175,7 +191,7 @@ export default function QuestReview({ userId, onClose }) {
     } catch (err) {
       r = { ok: false, error: err };
     }
-    if (!mountedRef.current) return;
+    if (!isCurrentScope(scope)) return;
     if (!r?.ok) {
       setGradeError('복습 결과를 저장하지 못했어요. 연결을 확인하고 다시 눌러 주세요.');
       gradingRef.current = false;
@@ -206,21 +222,24 @@ export default function QuestReview({ userId, onClose }) {
   // 되돌릴 쓰기가 없다. 펫 count의 원 이벤트 +1 잔류는 R2와 같은 종류(undo_of가 단서).
   const undoLast = async () => {
     const last = lastGradeRef.current;
-    if (!last || gradingRef.current) return;
+    if (!last || last.userId !== userId || gradingRef.current) return;
+    const scope = actorScopeRef.current;
+    if (!isCurrentScope(scope)) return;
     lastGradeRef.current = null;
     setGradeError('');
     try {
       if (last.queued) {
         // 큐에 있던 채점은 아직 서버에 없다 — 큐 항목을 지우는 게 곧 undo(복습 화면 R2와 같은 잣대), 보상 이벤트 없음
         const { removeOutboxEntry } = await import('../../lib/reviewOutbox');
+        if (!isCurrentScope(scope)) return;
         await removeOutboxEntry({ userId, itemKey: last.itemKey, reviewedAt: last.reviewedAt });
       } else {
         const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev;
         await persistQuestReviewGrade(supabase, last.wordId, prevStats, prevReviewedAt);
       }
-      if (!mountedRef.current) return;
+      if (!isCurrentScope(scope)) return;
     } catch {
-      if (!mountedRef.current) return;
+      if (!isCurrentScope(scope)) return;
       setGradeError('되돌리지 못했어요. 연결을 확인해 주세요.');
       return;
     }
@@ -292,6 +311,12 @@ export default function QuestReview({ userId, onClose }) {
         {phase === 'loading' && (
           <p style={{ textAlign: 'center', padding: '18px 0', color: GBC.inkSoft, fontSize: '0.86rem' }}>
             불러오는 중…
+          </p>
+        )}
+
+        {phase === 'error' && (
+          <p role="alert" style={{ textAlign: 'center', color: GBC.red, fontSize: '0.86rem' }}>
+            표현을 불러오지 못했어요.
           </p>
         )}
 

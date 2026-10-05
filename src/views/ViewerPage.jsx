@@ -23,6 +23,8 @@ import ActionIcon from '../components/ActionIcon';
 import ViewerReferenceExample from '../components/viewer/ViewerReferenceExample';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
+import { buildVocabularyWordIndex, countVocabularyDueInMaterial, findIndexedVocabulary, isIndexedVocabularyDue } from '../lib/vocabularyDueIndex';
 import { cacheMaterial, getCachedMaterial } from '../lib/offlineCache';
 import SaveContextButton, { saveContext } from '../components/learning/SaveContextButton';
 import MaterialChapterLinks from '../components/learning/MaterialChapterLinks';
@@ -66,6 +68,7 @@ import { useReanalyzeUI } from '../lib/useReanalyzeUI';
 import { useReadingCompletion } from '../lib/useReadingCompletion';
 import { useGrammarNoteSave } from '../lib/useGrammarNoteSave';
 import { useInlineReview, patchVocabWordsCache } from '../lib/useInlineReview';
+import { assertLegacyFsrsAllowed } from '../lib/fsrsLegacyBoundary';
 import { insertConfirmedVocabulary, preservePendingVocabularyReviews } from '../lib/viewerVocabularyCache';
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage } from '../lib/errorMessage';
@@ -194,48 +197,22 @@ async function fetchMaterial(id) {
 // 가나만(히라가나·가타카나·장음) — ja 읽기 2차 조회에서 가나 표면은 표면 자체가 읽기다
 const KANA_ONLY = /^[\u3040-\u30ffー]+$/;
 
-async function fetchUserVocabWords(userId) {
-  if (!userId) return { byKey: new Map(), surfaces: new Set(), bases: new Set() };
-  const { data, error } = await supabase
-    .from('vocabulary_with_exclusions')
-    // last_reviewed_at(W R3): 인라인 undo가 원값으로 되돌려야 isNewWord·「복습 시점이에요」 판정이 맞는다 — 읽기 컬럼 하나, 스키마 무변경
-    .select('id, word_text, base_form, meaning, pos, furigana, interval, ease_factor, repetitions, next_review_at, last_reviewed_at, language, is_excluded')
-    .eq('user_id', userId);
-  if (error) throw error;
-
-  const byKey = new Map(); // 'surface:<text>' or 'base:<text>' → vocab row
-  const surfaces = new Set();
-  const bases = new Set();
-  for (const v of data || []) {
-    if (v.word_text) {
-      surfaces.add(v.word_text);
-      byKey.set(`surface:${v.word_text}`, v);
-      byKey.set(`${v.language}:surface:${v.word_text}`, v);
-    }
-    if (v.base_form) {
-      bases.add(v.base_form);
-      if (!byKey.has(`base:${v.base_form}`)) byKey.set(`base:${v.base_form}`, v);
-      if (!byKey.has(`${v.language}:base:${v.base_form}`)) byKey.set(`${v.language}:base:${v.base_form}`, v);
-    }
-  }
-  return { byKey, surfaces, bases };
+async function fetchUserVocabWords(userId, signal) {
+  return buildVocabularyWordIndex(await fetchVocabularyLearningRows(userId, { signal }));
 }
 
 function findSavedVocab(savedWords, token, language) {
-  if (!token) return null;
-  const base = token.sep_link || token.base_form;
-  const scoped = savedWords.byKey?.get(`${language}:surface:${token.text}`)
-    || (base && savedWords.byKey?.get(`${language}:base:${base}`));
-  const fallback = savedWords.byKey?.get(`surface:${token.text}`)
-    || (base && savedWords.byKey?.get(`base:${base}`));
-  return scoped || (fallback?.language === language ? fallback : null);
+  return findIndexedVocabulary(savedWords, token, language);
 }
+
 function isTokenSaved(savedWords, token, language) {
   return !!findSavedVocab(savedWords, token, language);
 }
 function isTokenDue(savedWords, token, language) {
-  const v = findSavedVocab(savedWords, token, language);
-  return !!v?.next_review_at && !v.is_excluded && new Date(v.next_review_at) <= new Date();
+  return isIndexedVocabularyDue(savedWords, findSavedVocab(savedWords, token, language));
+}
+function isTokenInlineDue(savedWords, token, language) {
+  return isIndexedVocabularyDue(savedWords, findSavedVocab(savedWords, token, language), { legacyOnly: true });
 }
 
 function gradeSaveKey(scope, token) {
@@ -431,13 +408,17 @@ export default function ViewerPage() {
   }, [user?.id, metCode]);
   const [selectedRangeText, setSelectedRangeText] = useState('');
 
-  const { data: savedWords = { byKey: new Map(), surfaces: new Set(), bases: new Set() } } = useQuery({
+  const { data: savedWordsData, error: savedWordsError, refetch: refetchSavedWords } = useQuery({
     queryKey: ['vocab-words', user?.id],
-    queryFn: async () => preservePendingVocabularyReviews(await fetchUserVocabWords(user.id),
+    queryFn: async ({ signal }) => preservePendingVocabularyReviews(await fetchUserVocabWords(user.id, signal),
       queryClient.getQueryData(['vocab-words', user.id])),
     enabled: !!user,
     staleTime: 1000 * 30,
   });
+
+  const savedWords = useMemo(() => savedWordsError
+    ? { ...savedWordsData, complete: false }
+    : savedWordsData || { byKey: new Map(), surfaces: new Set(), bases: new Set() }, [savedWordsData, savedWordsError]);
 
   const exclusionState = useVocabularyExclusions();
 
@@ -1446,7 +1427,7 @@ export default function ViewerPage() {
   const selectedExcluded = selectedKnown || (exclusionState.isSuccess ? !!selectedExclusion : !!selectedVocab?.is_excluded);
   const selectedKnownWord = exclusionWord(selectedVocab || selectedToken);
   const knownPending = knownState.isPendingWord(knownLangCode, selectedKnownWord);
-  const wordStateReady = !learningCapabilities.isLoading && learningStorageSupported && exclusionState.isSuccess && (!knownLangCode || knownState.isSuccess);
+  const wordStateReady = savedWords.complete === true && !learningCapabilities.isLoading && learningStorageSupported && exclusionState.isSuccess && (!knownLangCode || knownState.isSuccess);
   // 다른 단어의 원격 저장이 진행 중이어도 현재 단어를 평가할 수 있다.
   const inlineReviewMutation = { ...inlineReview,
     isPending: pendingInlineGrades.has(`${user?.id}:${selectedVocab?.id}`),
@@ -1830,7 +1811,7 @@ export default function ViewerPage() {
   // W R3㉮ 인라인 복습 — 4등급 정본. 스냅샷은 훅이 돌려준 prev·reviewedAt으로 호출부가 만든다.
   const gradeInline = (rating) => {
     const vocab = findSavedVocab(savedWords, selectedToken, materialLang);
-    if (!learningCapabilities.review || !vocab || selectedExcluded || !wordStateReady || knownPending || exclusionState.mutation.isPending || inlineReviewMutation.isPending) return;
+    if (!learningCapabilities.review || !vocab || !isTokenInlineDue(savedWords, selectedToken, materialLang) || selectedExcluded || !wordStateReady || knownPending || exclusionState.mutation.isPending || inlineReviewMutation.isPending) return;
     const requestKey = `${user.id}:${vocab.id}`;
     if (inlineGradeRequests.current.has(requestKey)) return;
     inlineGradeRequests.current.add(requestKey);
@@ -1864,6 +1845,8 @@ export default function ViewerPage() {
     if (!last || inlineReviewMutation.isPending || undoBusy.current || Date.now() > last.expiresAt) return;
     undoBusy.current = true;
     try {
+      await assertLegacyFsrsAllowed(supabase, { userId: user.id, cardId: last.wordId,
+        itemKey: last.itemKey, language: last.lang });
       if (last.queued) {
         // 기존 outbox는 전송과 삭제 사이의 잠금을 제공하지 않는다. 성공을 가장해
         // 화면만 되돌리거나 전송 중인 기록을 지우지 않고, 후속 outbox 개편까지 보존한다.
@@ -2072,27 +2055,12 @@ export default function ViewerPage() {
     cardOpen: !!selectedToken && isSheetOpen,
     blocked: settingsOpen || sourceEditOpen || isEditingToken || !!reanalyzePanel || showReadingTest || showConversation || dictationPickerOpen || !!dictationSentence || !!quizState || !!completionModal,
     saveLocked: isWordSaved || saveAnim || selectedExcluded || !wordStateReady || knownPending || exclusionState.mutation.isPending,
-    inlineDue: !!user && !selectedExcluded && wordStateReady && !knownPending && !exclusionState.mutation.isPending && isWordSaved && isTokenDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending,
+    inlineDue: !!user && !selectedExcluded && wordStateReady && !knownPending && !exclusionState.mutation.isPending && isWordSaved && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending,
   };
   const savedCount = (savedWords.surfaces?.size || 0);
 
   // 이 자료에서 복습 가능한 단어 수 (현재 로드된 토큰 기준)
-  const dueInMaterial = (() => {
-    if (!savedWords.byKey || !material?.processed_json?.dictionary) return 0;
-    const dict = material.processed_json.dictionary;
-    let count = 0;
-    const seen = new Set();
-    for (const tokenId of material.processed_json.sequence || []) {
-      const t = dict[tokenId];
-      if (!t || t.pos === '개행') continue;
-      const vocab = findSavedVocab(savedWords, t, materialLang);
-      if (!vocab?.is_excluded && vocab?.next_review_at && new Date(vocab.next_review_at) <= new Date() && !seen.has(vocab.id)) {
-        seen.add(vocab.id);
-        count++;
-      }
-    }
-    return count;
-  })();
+  const dueInMaterial = countVocabularyDueInMaterial(savedWords, material);
 
   // 리스트(문장 분석 결과)와 단어 카드는 독립 조각 — 리스트 단어를 탭하면 카드가
   // 리스트 위에 붙는다(② 오너 승인, 팝업 대체). 합성은 아래 rightPanelContent에서.
@@ -2473,7 +2441,7 @@ export default function ViewerPage() {
       </div>}
       {user && (exclusionState.isError || knownState.isError) && <button type="button" className="btn btn--ghost btn--sm" onClick={() => { exclusionState.refetch(); knownState.refetch(); }}>{vt("상태 다시 확인")}</button>}
 
-      {user && learningCapabilities.review && findSavedVocab(savedWords, selectedToken, materialLang) && isTokenDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending && (
+      {user && learningCapabilities.review && findSavedVocab(savedWords, selectedToken, materialLang) && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending && (
         // W R3㉮ — 척도를 정본에 맞춘다: 모름/애매/알아=1/2/3(Easy 없음)이 아니라 복습 화면과 같은 4등급.
         // 라벨·순서·클래스 = SAVE_GRADES(복습 화면 ScoreSection과 동일 계약). 키 1~4·⌘Z는 카드 리스너.
         <div style={{ padding: '10px 12px', background: 'color-mix(in srgb, var(--warning) 10%, transparent)', borderRadius: 'var(--radius-md)', marginBottom: 12, border: '1px solid var(--warning)' }}>
@@ -2513,7 +2481,7 @@ export default function ViewerPage() {
           word={contextWord(selectedToken)} source={readingContextSource(selectedToken)} onSaved={() => setKoreanSaveConflict(null)} />}
       {user && learningStorageSupported && (() => {
         // 네 등급은 FSRS 평가다. 아는 단어 표시는 별도로 복습을 멈추며 원래 기록을 보존한다.
-        if (isWordSaved && isTokenDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending) return null;
+        if (isWordSaved && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending) return null;
         if (!selectedExcluded && (saveAnim || inlineReviewMutation.isPending || isWordSaved)) {
           return (
             <div className="word-detail-card__actrow">
@@ -2784,10 +2752,11 @@ export default function ViewerPage() {
         {/* 배지 3종은 여태 header의 **직계 자식**이었다 — 래퍼가 없어 폭이 제각각이었고
             (inline-block 하나 vs 전체 폭 둘) 세로도 3줄을 먹었다. 한 줄로 모은다.
             인라인 style 3벌은 공용 클래스로 — v2-K R1 토큰화가 남긴 나머지다. */}
+        {savedWordsError && <p role="alert">{vt("잠시 후 다시 시도해주세요.")} <button type="button" onClick={() => refetchSavedWords()}>{vt("다시 시도")}</button></p>}
         {((user && dueInMaterial > 0) || coverage) && (
           <div className="viewer-badges">
             {user && dueInMaterial > 0 && (
-              <span className="viewer-badge viewer-badge--due" title={vt("노란 테두리 단어 클릭 → 인라인 복습")}>
+              <span className="viewer-badge viewer-badge--due" title={vt("복습할 것")}>
                 {vt('{count}개 복습 가능', {count: dueInMaterial})}</span>
             )}
             {coverage && (

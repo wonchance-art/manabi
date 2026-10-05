@@ -3,6 +3,7 @@ import { supabase } from './supabase';
 import { detectLangConfident, hasCjkText } from './constants';
 import { cacheVocabSnapshot, getCachedVocabSnapshot } from './offlineCache';
 import { calculateFSRS } from './fsrs';
+import { isVocabularyLearningProjection } from './vocabularyLearningRead';
 
 /**
  * 저장용 word_text 정규화 — item_key(=user_vocabulary.word_text) 통일 규약.
@@ -249,18 +250,32 @@ export function csvToVocabRows(text, userId) {
   }).filter(Boolean);
 }
 
-export function exportCSV(vocab) {
-  const header = ['단어', '후리가나', '의미', '품사', '다음 복습', '안정도(S)', '난이도(D)'];
-  const rows = vocab.map(v => [
-    v.word_text,
-    v.furigana || '',
-    v.meaning || '',
-    v.pos || '',
-    new Date(v.next_review_at).toLocaleDateString('ko-KR'),
-    (v.interval ?? 0).toFixed(1),
-    (v.ease_factor ?? 0).toFixed(1),
-  ]);
-  const csv = [header, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+// 사람이 읽는 일정과 원본 보존 필드를 구분한다. 가져오기는 앞의 콘텐츠 열만 사용한다.
+export function buildVocabularyCSV(vocab, projections) {
+  if (!Array.isArray(vocab) || !Array.isArray(projections)) throw new Error('vocabulary_export_unavailable');
+  const byId = new Map();
+  for (const projection of projections) {
+    if (!isVocabularyLearningProjection(projection) || byId.has(projection.vocabulary.id)) throw new Error('vocabulary_export_unavailable');
+    byId.set(projection.vocabulary.id, projection);
+  }
+  const header = ['단어', '후리가나', '의미', '품사', '다음 복습', '안정도(S)', '난이도(D)', 'schedule_meta_json'];
+  const ids = new Set();
+  const rows = vocab.map(v => {
+    const p = byId.get(v.id);
+    if (!p || ids.has(v.id) || p.vocabulary.user_id !== v.user_id) throw new Error('vocabulary_export_unavailable');
+    ids.add(v.id);
+    const originalSchedule = Object.fromEntries(['interval', 'ease_factor', 'repetitions', 'next_review_at', 'last_reviewed_at']
+      .map(key => [key, v[key] ?? null]));
+    const metadata = { format: 'manabi.vocabulary-schedule.v1', vocabularyId: v.id,
+      scheduler: p.source, memory: p.memory, review: p.review, originalSchedule };
+    return [v.word_text, v.furigana || '', v.meaning || '', v.pos || '',
+      p.review.nextQuestionAt ?? '', p.memory.stability ?? '', p.memory.difficulty ?? '', JSON.stringify(metadata)];
+  });
+  return [header, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+}
+
+export function exportCSV(vocab, projections) {
+  const csv = buildVocabularyCSV(vocab, projections);
   const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

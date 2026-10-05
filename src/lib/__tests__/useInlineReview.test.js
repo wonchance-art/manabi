@@ -70,7 +70,7 @@ describe('useInlineReview — review_events 기록', () => {
       correct: false,
       detail: { word_id: 'v1', meaning: '고양이', rating: 1, qtype: 'flash' },
       created_at: expect.any(String), // W R3: 채점 시각 동봉(undo 보상 이벤트의 열쇠)
-    }]);
+    }], { strict: true });
   });
 
   it('정답(rating>1) 시 correct:true로 기록한다', async () => {
@@ -83,7 +83,7 @@ describe('useInlineReview — review_events 기록', () => {
 
     expect(logReviewEvents).toHaveBeenCalledWith('u1', [
       expect.objectContaining({ item_key: 'chien', correct: true, detail: expect.objectContaining({ qtype: 'flash', rating: 3 }) }),
-    ]);
+    ], { strict: true });
   });
 
   it('vocab.language가 없으면 detectLang으로 유도한다', async () => {
@@ -96,6 +96,6 @@ describe('useInlineReview — review_events 기록', () => {
 
     expect(logReviewEvents).toHaveBeenCalledWith('u1', [
       expect.objectContaining({ lang: 'Japanese' }),
-    ]);
+    ], { strict: true });
   });
 });

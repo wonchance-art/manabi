@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { sliceBetween } from './helpers/sliceBetween.js';
 import { haveWordSet, vocabCoverage } from '../goalVocab.js';
+import { VOCABULARY_LEARNING_SUMMARY_FIELDS } from '../vocabularyLearningRead';
 
 /**
  * 계약: v2-D R3 어휘 축 합류 (#1077 설계 §3·§4).
@@ -111,7 +112,8 @@ describe('§5 이음새 신설 0 — 대조만 하고 아무것도 적재하지 
     // 지키려는 건 R3이 **읽기만 한다**는 것이므로 읽는 대상을 고정한다.
     const card = read('src/views/ProfileStats.jsx');
     const tables = new Set([...card.matchAll(/\.from\('(\w+)'\)/g)].map(m => m[1]));
-    expect(tables.has('user_vocabulary')).toBe(true);
+    expect(card).toContain("fetchVocabularyLearningRows(userId, { fields: 'summary' })");
+    expect(card).toContain('vocab: learning.rows');
     for (const banned of ['goal_vocab', 'user_goal_vocab', 'vocab_coverage']) {
       expect(tables.has(banned), `${banned} 같은 새 테이블을 만들지 않는다`).toBe(false);
     }
@@ -146,9 +148,8 @@ describe('배선 — 무거운 정본은 상세를 열 때만', () => {
   });
 
   it('단어장 행의 language가 조회에 있다 — 없으면 남의 언어 단어가 확보로 샌다', () => {
-    const selects = [...stats.matchAll(/\.select\('([^']+)'\)/g)].map(m => m[1]);
-    const deck = selects.find(f => f.includes('next_review_at'));
-    expect(deck.split(',').map(f => f.trim())).toContain('language');
+    expect(stats).toContain("fetchVocabularyLearningRows(userId, { fields: 'summary' })");
+    expect(VOCABULARY_LEARNING_SUMMARY_FIELDS).toContain('language');
   });
 
   it('어휘 정본이 없는 언어에서는 줄 자체가 없다 — 빈 칸이 남으면 고장으로 읽힌다', () => {

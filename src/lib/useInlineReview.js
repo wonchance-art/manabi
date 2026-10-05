@@ -5,6 +5,7 @@ import { detectLang } from './constants';
 import { recordReviewCompleted } from './learn/progressStore';
 import { calculateFSRS } from './fsrs';
 import { beginVocabularyReview, settleVocabularyReview } from './viewerVocabularyCache';
+import { assertCachedLegacyFsrsAllowed } from './fsrsLegacyBoundary';
 
 // W R3 undo 스냅샷이 복원하는 SRS 5필드(persistVocabGrade 페이로드와 같은 snake_case)
 export const INLINE_SRS_FIELDS = ['interval', 'ease_factor', 'repetitions', 'next_review_at', 'last_reviewed_at'];
@@ -44,6 +45,7 @@ export function useInlineReview({ user: account, fetchProfile, toast }) {
   const queryClient = useQueryClient();
   return useMutation({
     onMutate: async ({ vocab, rating, userId = account?.id }) => {
+      assertCachedLegacyFsrsAllowed(userId, vocab.id);
       await queryClient.cancelQueries({ queryKey: ['vocab-words', userId] });
       const nextStats = calculateFSRS(rating, vocab);
       return beginVocabularyReview(queryClient, userId, vocab, nextStats);

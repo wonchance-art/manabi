@@ -147,7 +147,7 @@ describe('배선 — 자료 경로와 안내', () => {
 
   it('캐시 사본 화면에는 안내가 붙는다(뷰어·단어장 공통 문구 1곳)', () => {
     expect(viewer).toContain('{material?.__offline && <OfflineNotice what="자료" />}');
-    expect(read('src/views/VocabPage.jsx')).toContain('{allVocab?.__offline && <OfflineNotice what="단어장" />}');
+    expect(read('src/views/VocabPage.jsx')).toContain('{isOffline && <OfflineNotice what="단어장" />}');
     expect(read('src/components/OfflineNotice.jsx')).toContain('저장해 둔 {what}{objectParticle(what)} 보여드리고 있어요');
   });
 });

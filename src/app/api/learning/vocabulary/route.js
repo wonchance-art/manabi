@@ -3,13 +3,48 @@ import { resolveSave, reply, errorReply, checkDb, fail, readBody, accessibleMate
 import { UUID, sourceHref } from '@/lib/learningSources';
 import { requireLearningCapability } from '@/lib/server/learningCapabilities';
 import { gradeToInitialStats } from '@/lib/vocabIO';
+import { fsrsServiceClient, fsrsError } from '@/lib/server/fsrsLearning';
+import { readVocabularyLearningSnapshot, saveManualVocabulary } from '@/lib/server/fsrsVocabulary';
+import { VOCABULARY_LEARNING_SUMMARY_FIELDS } from '@/lib/vocabularyLearningRead';
+
+const vocabularyErrorReply = error => {
+  if (error?.code?.startsWith('fsrs_')) { const result = fsrsError(error); return reply(result.body, result.status); }
+  return errorReply(error);
+};
+
+async function readVocabularyJson(request) {
+  // 기존 문맥 저장도 충분히 담는 상한이다. 파싱 전에 끊어 청크 전송 역시 무제한 읽지 않는다.
+  const reader = request.body?.getReader();
+  if (!reader) throw new SyntaxError('invalid_json');
+  const chunks = []; let bytes = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    bytes += value.byteLength;
+    if (bytes > 65536) {
+      await reader.cancel();
+      throw Object.assign(new Error('fsrs_invalid_request'), { code: 'fsrs_invalid_request', status: 400 });
+    }
+    chunks.push(value);
+  }
+  const combined = new Uint8Array(bytes); let offset = 0;
+  for (const chunk of chunks) { combined.set(chunk, offset); offset += chunk.byteLength; }
+  return JSON.parse(new TextDecoder().decode(combined));
+}
 
 export const dynamic = 'force-dynamic';
 export async function POST(request) {
   const auth = await requireUser();
   if (auth.error) return reply({ error: auth.error }, auth.status);
   try {
-    const body = await readBody(request);
+    const body = await readBody({ json: () => readVocabularyJson(request) });
+    if (body?.action === 'save') {
+      const origin = request.headers.get('origin');
+      if (!request.headers.get('content-type')?.toLowerCase().startsWith('application/json')
+          || JSON.stringify(body).length > 8192) return reply({ ok: false, code: 'fsrs_invalid_request' }, 400);
+      if (origin && origin !== new URL(request.url).origin) return reply({ ok: false, code: 'fsrs_invalid_origin' }, 403);
+      return reply(await saveManualVocabulary({ authClient: auth.supabase, serviceClient: fsrsServiceClient(), userId: auth.user.id, body }));
+    }
     if (!body || typeof body !== 'object') fail(400, '입력 내용을 확인해 주세요.');
     const korean = body.word?.language === 'Korean';
     if (korean) {
@@ -51,7 +86,7 @@ export async function POST(request) {
       return reply({ ...data, vocabulary });
     }
     return reply(data);
-  } catch (error) { return errorReply(error); }
+  } catch (error) { return vocabularyErrorReply(error); }
 }
 
 export async function GET(request) {
@@ -59,6 +94,14 @@ export async function GET(request) {
   if (auth.error) return reply({ error: auth.error }, auth.status);
   try {
     const params = new URL(request.url).searchParams;
+    if (params.has('view')) {
+      if (params.get('view') !== 'learning' || (params.has('fields') && params.get('fields') !== 'summary')
+          || params.size !== (params.has('fields') ? 2 : 1)) return reply({ ok: false, code: 'fsrs_invalid_request' }, 400);
+      const snapshot = await readVocabularyLearningSnapshot({ authClient: auth.supabase, serviceClient: fsrsServiceClient(), userId: auth.user.id });
+      if (params.get('fields') === 'summary') return reply({ ...snapshot, rows: snapshot.rows.map(row =>
+        Object.fromEntries(VOCABULARY_LEARNING_SUMMARY_FIELDS.filter(key => Object.hasOwn(row, key)).map(key => [key, row[key]]))) });
+      return reply(snapshot);
+    }
     const contextId = params.get('contextId');
     if(params.has('contextId')) {
       if(!UUID.test(contextId || '')) fail(400,'저장한 문맥을 다시 선택해 주세요.');
@@ -76,7 +119,7 @@ export async function GET(request) {
       .eq('user_id', auth.user.id).eq('vocabulary_id', id).order('created_at', { ascending: true }).limit(50);
     checkDb(error);
     return reply({ contexts: (data || []).map(source => ({ ...source, href: sourceHref(source) })).filter(source => source.href) });
-  } catch (error) { return errorReply(error); }
+  } catch (error) { return vocabularyErrorReply(error); }
 }
 
 export async function DELETE(request) {

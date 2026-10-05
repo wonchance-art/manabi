@@ -86,7 +86,8 @@ describe('되돌린 채점 제외 계약 (W 후속 ②)', () => {
     expect(read('src/lib/weaknessRows.js')).toContain('return dropUndoneEvents(data || []);');
 
     const output = read('src/lib/useOutputWords.js');
-    expect(output).toContain("select('source, item_key, correct, created_at, detail')");
+    expect(output).toContain("select('id, source, item_key, correct, created_at, detail', { count: 'exact' })");
+    expect(output).toContain('completeRows');
     expect(output).toContain('events: dropUndoneEvents(events.data || [])');
 
     expect(read('src/lib/studyMaterials.js')).toContain('const reviewEventRows = dropUndoneEvents(reviewEventRowsRaw || []);');

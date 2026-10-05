@@ -5,6 +5,7 @@ import { after, before, test } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { chromium } from 'playwright-core';
 import config from '../playwright.config.mjs';
+import { legacyLearningSnapshot, inactiveLearningAdmission, inactiveFsrsStatus } from './fixtures/learning-snapshot.mjs';
 import { WORLD_STORAGE_KEYS } from '../src/lib/world/storageSchema.js';
 import { runPeerLoadBenchmark } from './world-peer-bench.mjs';
 
@@ -167,6 +168,19 @@ async function mockSupabaseSession(context, { role = 'admin', restRequests = nul
 
   await context.route('**/api/suggestions/today', (route) => json(route, []));
   await context.route('**/api/learning/exclusions', route => route.request().method() === 'GET' ? json(route, { items: [] }) : route.continue());
+  await context.route('**/api/learning/vocabulary?view=learning*', route => {
+    assert.equal(route.request().method(), 'GET', 'The installed inactive snapshot fixture accepts reads only');
+    const fields = new URL(route.request().url()).searchParams.get('fields');
+    return json(route, legacyLearningSnapshot({ actorId: session.user.id, rows: [], fields }));
+  });
+  await context.route('**/api/learning/fsrs', route => {
+    assert.equal(route.request().method(), 'GET', 'Inactive FSRS fixture must not receive a mutation');
+    return json(route, inactiveFsrsStatus({ actorId: session.user.id }));
+  });
+  await context.route('**/api/learning/admission', route => {
+    assert.equal(route.request().method(), 'GET', 'Inactive admission fixture must not receive a mutation');
+    return json(route, inactiveLearningAdmission({ actorId: session.user.id }));
+  });
 
   await context.route('**/auth/v1/**', async (route) => {
     if (route.request().method() === 'OPTIONS') {
