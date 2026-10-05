@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { FIT_BAND, REASON, SUGGESTION_TOP_N, fitCloseness, rankSuggestions, usableFit } from '../suggestionRank';
 import { FIT_MIN_TYPES } from '../materialFit';
+import { VOCABULARY_LEARNING_SUMMARY_FIELDS } from '../vocabularyLearningRead';
 
 const read = (p) => fs.readFileSync(path.join(process.cwd(), p), 'utf8');
 const card = (over) => ({ id: over.id, language: 'Japanese', level: 'N5', title: over.id, ...over });
@@ -92,7 +93,8 @@ describe('홈 배선 (HomePage)', () => {
     expect(home).toContain("levelOf: s => getIdealLevel(s.language, data?.vocabByLang?.[s.language] || 0),");
     // 재료: 추천 material_id의 processed_json만(상한 12) + 이 화면이 이미 끌어온 단어 행으로 {surfaces, bases}
     expect(home).toContain(".select('id, processed_json').in('id', fitIds)");
-    expect(home).toContain("select('language, word_text, base_form')");
+    expect(home).toContain("fetchVocabularyLearningRows(userId, { fields: 'summary' })");
+    expect(VOCABULARY_LEARNING_SUMMARY_FIELDS).toEqual(expect.arrayContaining(['language', 'word_text', 'base_form']));
     expect(home).toContain('materialFit(m.processed_json, known)');
     // 뷰어의 fetchUserVocabWords를 옮기지 않았다(offlineCache 앵커)
     expect(home).not.toContain('fetchUserVocabWords');

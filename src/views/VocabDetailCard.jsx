@@ -1,11 +1,12 @@
 import { memo, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { displayWord } from '../lib/constants';
-import { isNewWord } from '../lib/vocabStudy';
+import { isVocabularyReviewDue, isVocabularyUnreviewed, vocabularyRetrievability } from '../lib/vocabularyLearningRead';
+import { fsrsIntervalLabel } from '../lib/useFsrsReview';
 import VocabularyContexts from '../components/learning/VocabularyContexts';
 import { wordStage } from '../lib/growthStats';
 
-const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak, ttsSupported, showBookContexts = false }) {
+const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak, ttsSupported, showBookContexts = false, projection, now: at = new Date() }) {
   const dialogRef = useRef(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -40,19 +41,20 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
     };
   }, []);
 
-  const now = new Date();
+  const now = new Date(Math.max(new Date(at).getTime(), Date.parse(projection?.review.evaluatedAt) || 0));
   const created = new Date(v.created_at);
   const daysSinceCreated = Math.max(1, Math.round((now - created) / 86400000));
-  const nextReview = new Date(v.next_review_at);
-  const isDue = nextReview <= now;
-  const interval = v.interval ?? 0;
-  const reps = v.repetitions ?? 0;
-  const ease = v.ease_factor ?? 0;
-  const retention = Math.round(Math.exp(-1 / Math.max(interval, 0.5)) * 100);
-
-  const isNew = isNewWord(v);
+  const nextReview = projection?.review.nextQuestionAt ? new Date(projection.review.nextQuestionAt) : null;
+  const isDue = !!projection && isVocabularyReviewDue(projection, now);
+  const memory = projection?.memory;
+  const reps = memory?.lapses;
+  const interval = memory?.due && (memory?.lastReview || memory?.introducedAt) ? fsrsIntervalLabel(memory.due, memory.lastReview || memory.introducedAt) : '—';
+  const measured = projection ? vocabularyRetrievability(projection, now) : null;
+  const retention = measured == null ? null : Math.round(measured * 100);
+  const retentionLabel = retention == null ? '—' : `${retention}%`;
+  const isNew = !!projection && isVocabularyUnreviewed(projection);
   // 단계 판정은 growthStats가 진다 — 경계값이 「아는 단어」 카운터와 갈리지 않게(부채 ②).
-  const stage = wordStage(v);
+  const stage = projection ? wordStage(projection) : { key: 'new', label: '—' };
 
   return (
     <div className="vocab-detail-overlay" onClick={onClose}>
@@ -78,19 +80,19 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
 
         <div className="vocab-detail-card__stats">
           <div className="vocab-detail-stat">
-            <span className="vocab-detail-stat__value">{isNew ? '아직' : `${reps}회`}</span>
+            <span className="vocab-detail-stat__value">{isNew ? '아직' : reps == null ? '—' : `${reps}회`}</span>
             <span className="vocab-detail-stat__label">다시 한 횟수</span>
           </div>
           <div className="vocab-detail-stat">
-            <span className="vocab-detail-stat__value">{interval < 1 ? '<1일' : `${Math.round(interval)}일`}</span>
+            <span className="vocab-detail-stat__value">{interval}</span>
             <span className="vocab-detail-stat__label">복습 간격</span>
           </div>
           <div className="vocab-detail-stat">
-            <span className="vocab-detail-stat__value">{retention}%</span>
+            <span className="vocab-detail-stat__value">{retentionLabel}</span>
             <span className="vocab-detail-stat__label">기억 강도</span>
           </div>
           <div className="vocab-detail-stat">
-            <span className="vocab-detail-stat__value">{ease.toFixed(1)}</span>
+            <span className="vocab-detail-stat__value">{memory?.difficulty == null ? '—' : memory.difficulty.toFixed(1)}</span>
             <span className="vocab-detail-stat__label">난이도</span>
           </div>
         </div>
@@ -104,16 +106,16 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
               <span className="vocab-detail-timeline__date">{created.toLocaleDateString('ko-KR')}</span>
               <span className="vocab-detail-timeline__event">단어 수집</span>
             </div>
-            {v.last_reviewed_at && (
+            {memory?.lastReview && (
               <div className="vocab-detail-timeline__item">
                 <span className="vocab-detail-timeline__dot" style={{ background: 'var(--accent)' }} aria-hidden="true" />
-                <span className="vocab-detail-timeline__date">{new Date(v.last_reviewed_at).toLocaleDateString('ko-KR')}</span>
+                <span className="vocab-detail-timeline__date">{new Date(memory?.lastReview).toLocaleDateString('ko-KR')}</span>
                 <span className="vocab-detail-timeline__event">마지막 복습{reps > 0 ? ` · 다시 ${reps}회` : ''}</span>
               </div>
             )}
             <div className="vocab-detail-timeline__item">
               <span className="vocab-detail-timeline__dot" style={{ background: isDue ? 'var(--danger)' : 'var(--warning)' }} aria-hidden="true" />
-              <span className="vocab-detail-timeline__date">{nextReview.toLocaleDateString('ko-KR')}</span>
+              <span className="vocab-detail-timeline__date">{nextReview ? nextReview.toLocaleString('ko-KR') : '—'}</span>
               <span className="vocab-detail-timeline__event">{isDue ? '복습 필요!' : '다음 복습 예정'}</span>
             </div>
           </div>
@@ -124,10 +126,10 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
           <h3 className="vocab-detail-card__section-title">성장 지표</h3>
           <div className="vocab-detail-growth-bar">
             <span className="vocab-detail-growth-bar__label">기억 강도</span>
-            <div className="vocab-detail-growth-bar__track" role="progressbar" aria-label="기억 강도" aria-valuemin="0" aria-valuemax="100" aria-valuenow={retention}>
-              <div className="vocab-detail-growth-bar__fill" style={{ width: `${retention}%`, background: retention > 70 ? 'var(--accent)' : retention > 40 ? 'var(--warning)' : 'var(--danger)' }} />
+            <div className="vocab-detail-growth-bar__track" role="progressbar" aria-label="기억 강도" aria-valuemin="0" aria-valuemax="100" aria-valuenow={retention ?? undefined}>
+              <div className="vocab-detail-growth-bar__fill" style={{ width: `${retention ?? 0}%`, background: retention > 70 ? 'var(--accent)' : retention > 40 ? 'var(--warning)' : 'var(--danger)' }} />
             </div>
-            <span className="vocab-detail-growth-bar__pct">{retention}%</span>
+            <span className="vocab-detail-growth-bar__pct">{retentionLabel}</span>
           </div>
           <div className="vocab-detail-growth-bar">
             <span className="vocab-detail-growth-bar__label">학습 기간</span>

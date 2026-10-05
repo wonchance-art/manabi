@@ -6,7 +6,9 @@
  * 순수 모듈(외부 의존 없음) — 그대로 단위 테스트한다.
  */
 
-/** 아는 단어 기준 — SRS interval(안정도)이 이 일수 이상이면 '아는 단어'로 본다. */
+import { isVocabularyLearningProjection } from './vocabularyLearningRead.js';
+
+/** 아는 단어 기준 — 읽기용 안정도가 이 일수 이상이면 '아는 단어'로 본다. */
 export const KNOWN_WORD_MIN_INTERVAL = 7;
 
 /**
@@ -15,7 +17,7 @@ export const KNOWN_WORD_MIN_INTERVAL = 7;
  * @param {{interval?: number|null}} row - user_vocabulary 한 행
  */
 export function isKnownWord(row) {
-  return (row?.interval ?? 0) >= KNOWN_WORD_MIN_INTERVAL;
+  return (isVocabularyLearningProjection(row) ? row.memory.stability ?? 0 : row?.interval ?? 0) >= KNOWN_WORD_MIN_INTERVAL;
 }
 
 /** '숙련' 경계 — 이 모듈 밖에서 쓰지 않는다(단어 상세 카드의 단계 라벨 전용). */
@@ -38,8 +40,9 @@ export const MASTERED_MIN_INTERVAL = 30;
  * @returns {{key: 'new'|'early'|'learning'|'mastered', label: string}}
  */
 export function wordStage(row) {
-  if (!row?.last_reviewed_at) return { key: 'new', label: '신규' };
-  const interval = row?.interval ?? 0;
+  const projected = isVocabularyLearningProjection(row);
+  if (!(projected ? row.memory.lastReview : row?.last_reviewed_at)) return { key: 'new', label: '신규' };
+  const interval = projected ? row.memory.stability ?? 0 : row?.interval ?? 0;
   if (interval >= MASTERED_MIN_INTERVAL) return { key: 'mastered', label: '숙련' };
   if (interval >= KNOWN_WORD_MIN_INTERVAL) return { key: 'learning', label: '학습 중' };
   return { key: 'early', label: '초기' };

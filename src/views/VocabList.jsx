@@ -4,6 +4,8 @@ import Button from '../components/Button';
 import { detectLang, displayWord } from '../lib/constants';
 import { refInline } from './refShared';
 import { refLevelLabel } from '../lib/refVocabIndex';
+import { wordStage } from '../lib/growthStats';
+import { isVocabularyReviewDue } from '../lib/vocabularyLearningRead';
 
 const LANG_CODE = { Japanese: 'ja', Chinese: 'zh-Hans', English: 'en', French: 'fr', Korean: 'ko' };
 
@@ -26,9 +28,9 @@ export default function VocabList({
   levelFilter = 'all', setLevelFilter, showLevelFilter = false, refLevelOf,
   ttsSupported, speak, setConfirmAction, deleteMutation, onWordClick,
   bulkDeleteMutation, updateVocabMutation,
-  koreanLearningSupported = false,
+  koreanLearningSupported = false, readOnly = false, learningById, now = new Date(),
 }) {
-  const canModify = word => !!word && (word.language !== 'Korean' || koreanLearningSupported);
+  const canModify = word => !readOnly && !!word && (word.language !== 'Korean' || koreanLearningSupported);
   // 단어장에 실제로 존재하는 언어(표시 순서는 고정 라벨 순)
   const LANG_LABELS = [
     { value: 'Japanese', label: '일본어' },
@@ -217,10 +219,11 @@ export default function VocabList({
             if (selectMode) toggleSelect(v.id);
             else onWordClick?.(v);
           };
-          const itv = v.interval ?? 0;
-          const stageColor = itv >= 30 ? 'var(--accent)' : itv >= 7 ? 'var(--warning)' : 'var(--danger)';
-          const stageLabel = v.is_excluded ? '제외' : itv >= 30 ? '숙련' : itv >= 7 ? '학습 중' : '초기';
-          const due = !v.is_excluded && new Date(v.next_review_at) <= new Date();
+          const learning = learningById?.get(v.id);
+          const stage = learning ? wordStage(learning) : null;
+          const stageColor = stage?.key === 'mastered' ? 'var(--accent)' : stage?.key === 'learning' ? 'var(--warning)' : 'var(--danger)';
+          const stageLabel = learning?.review.excluded ? '제외' : stage?.label || '—';
+          const due = !!learning && isVocabularyReviewDue(learning, Math.max(new Date(now).getTime(), Date.parse(learning.review.evaluatedAt)));
           const lc = LANG_CODE[v.language];
           const refLevel = refLevelLabel(refLevelOf?.(v));
           return (

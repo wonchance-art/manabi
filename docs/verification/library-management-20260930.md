@@ -1,5 +1,22 @@
 # 내 서재 관리 — 구현·검수 기록
 
+## 2026-10-02 완료 증거 대조 — M07-002
+
+기준 main은 `c9ad8a51a0d14b2479b62037a8451be70e098ed1`이다. 아래 2026-09-30 본문은 로컬 후보·운영 SQL 적용·병합 준비 당시 기록이다. 실패와 당시 남은 조건을 보존하고, 이후 확인한 병합/CI/운영 버전은 아래에 구분한다. 근거는 [#1327 PR 본문과 병합 기록](https://github.com/wonchance-art/manabi/pull/1327) 및 [M07 최초 보고](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-5950764680)다. 이번 대조에서 UI·DB·설치·전체 검사를 재실행하지 않았다.
+
+| 구분 | 확인된 증거 | 남은 범위 |
+| --- | --- | --- |
+| 구현·병합 | 로컬 실행 후보 `a761c7bb8b2466fbc913dd60d4c53e44659f6a84`, 최종 PR head `a7748d9f36805fb28cf365472a172c97d871adf7`까지 앱 실행 입력 동일. #1327은 2026-09-30T14:00:54Z squash main `4e69202fcd1c2aa701b13e590a59f5b633ae41f9`로 MERGED | 구현·병합을 반복할 대상 아님. 영구 원본 삭제 D·입력 편의 E는 기존 후속 범위 유지 |
+| 최종 후보 필수 CI | [run 36725071585](https://github.com/wonchance-art/manabi/actions/runs/36725071585)의 [lint·콘텐츠·Vitest](https://github.com/wonchance-art/manabi/actions/runs/36725071585/job/109919737206), [E2E](https://github.com/wonchance-art/manabi/actions/runs/36725071585/job/109919737516) 모두 PASS | 아래 본문의 이전 후보 run `36723785339`와 구분. 현재 문서 변경의 공유 게이트 결과로 주장하지 않음 |
+| 운영 SQL·권한 | 운영 적용 version `20260930135103`, SQL SHA-256 `ed6fc5623ec556d2f52d64adb4dc7c9c577ea0d260a402e9b935af1be1d49f6d`; PR 본문에 owner RLS/invoker RPC·권한·보안 advisors 확인 기록 | 기존 자동 승인 검토가 차단한 전체 개인 데이터 지문 대조는 미수행. 격리 보존 검수/운영 메타데이터로 전체 운영 개인 기록의 전후 동일성을 주장하지 않음 |
+| 후속 운영 버전·스키마 | M07 최초 보고는 당시 [운영 /api/version](https://teset-gilt.vercel.app/api/version)의 main `c9ad8a51a0d14b2479b62037a8451be70e098ed1` / production 일치와 관련 8개 표 RLS, 서재 RPC 5개 invoker/빈 search_path/anon 실행 불가/authenticated 실행 가능을 기록 | 이후 운영 배포에 병합 구현이 포함된 증거이며, 실제 계정의 서재 조작·복원 왕복을 증명하지 않음. 이 문서 대조에서 운영 endpoint를 새로 조회하지 않음 |
+| 정상 계정 서재 보존 왕복 | 아직 미확인 | 운영 SHA·언어/레벨·자료 ID·판본을 고정한 정리→휴지통→재접속→복원/undo→원문/복습 복귀 및 그 범위의 개인 기록 전후 대조 |
+| 실제 기기·경쟁 | 격리 PGlite와 합성 Chromium의 기존 검수만 있음 | 물리 기기·일반 학생·다중 DB 연결 경쟁 미확인. 브라우저 폭별 합성 검수를 물리 기기 검수로 세지 않음 |
+
+실계정 왕복의 보존 확인 대상은 원문·첨부·개인 뜻/출처·읽기 위치·FSRS 일정/평가 이력·신구판 답안·소유권이다. [#1335 정상 로그인 단어 검수](https://github.com/wonchance-art/manabi/pull/1335#issuecomment-5942256413)는 저장 미도래 단어의 표시/해제 표본이며 이 서재 왕복을 대체하지 않는다. `bundledEditionId=7f`도 번들 기본값으로 운영 발행 포인터의 증거가 아니다. 구현·운영 SQL·병합 완료와 이 미확인 범위를 분리한다.
+
+M07 최초 보고의 기준 main [필수 CI](https://github.com/wonchance-art/manabi/actions/runs/36971809417) 및 [world CI](https://github.com/wonchance-art/manabi/actions/runs/36971809450)는 SUCCESS다. 같은 보고의 로컬 전체 검사 418파일/4,396검사 PASS, 1파일/1검사 FAIL(독해 자가검사의 자식 stdout)은 별도 미해결 결과였으며 원격 green이나 2026-09-30 후보 검수로 덮지 않는다. 후속 원인 규명과 공유 게이트는 M00 담당이며 이 문서 작업의 새 검수 완료로 기록하지 않는다.
+
 2026-09-30 KST. 오너의 ‘구현 ㄱㄱ / 미니멀리즘 / 문구 최대한 자제’에 따른 A/B/C 구현이다. [설계](../manabi-library-management-design-20260930.md)의 원본 정리 D와 입력 편의 E는 후속이다. 월드와 manabi-30의 보류를 유지한다.
 
 ## 기준과 범위

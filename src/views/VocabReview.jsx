@@ -3,6 +3,8 @@ import Link from 'next/link';
 import Button from '../components/Button';
 import { detectLang, displayWord, splitSentenceAroundWord } from '../lib/constants';
 import VocabularyContexts from '../components/learning/VocabularyContexts';
+import { wordStage } from '../lib/growthStats';
+import { vocabularyReviewCalendar } from '../lib/vocabularyLearningRows';
 
 function ScoreSection({ word, onScore }) {
   return (
@@ -11,7 +13,7 @@ function ScoreSection({ word, onScore }) {
       <VocabularyContexts key={word.id} vocabularyId={word.id} word={word} readOnly />
       <p className="review-score-guide">기억이 얼마나 잘 됐나요?<span className="review-keys-hint"> · 키 1~4 · 되돌리기 Ctrl/⌘+Z</span></p>
       {/* 숫자 배지 = 키 안내(W R2) — 라벨 텍스트는 버튼 첫 자식 그대로(saveGrade 계약이 이 소스에서 라벨을 뽑는다) */}
-      <div className="review-score-grid">
+      <div className="review-score-grid" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
         <button onClick={() => onScore(1)} className="review-score-btn review-score-btn--again" title="오늘 다시 나와요">다시<span className="save-grade__key" aria-hidden="true">1</span></button>
         <button onClick={() => onScore(2)} className="review-score-btn review-score-btn--hard" title="간격이 짧아져요">어려움<span className="save-grade__key" aria-hidden="true">2</span></button>
         <button onClick={() => onScore(3)} className="review-score-btn review-score-btn--good" title="정확히 기억했다면 이걸로">알맞음<span className="save-grade__key" aria-hidden="true">3</span></button>
@@ -34,7 +36,7 @@ export function quizOptClass(selected, isAnswer, isThis) {
 }
 
 export default function VocabReview({
-  vocab, reviewWords, reviewIdx, currentWord, bookReview = null,
+  vocab, projections = [], learningAvailable = false, now = new Date(), reviewWords, reviewIdx, currentWord, admissionPending = false, admissionError = null, onAdmissionRetry, bookReview = null,
   reviewFinished, reviewMode, effectiveMode, setReviewMode,
   showAnswer, setShowAnswer, showHint, setShowHint,
   typingAnswer, setTypingAnswer, contextSelected, setContextSelected, contextOptions,
@@ -71,7 +73,7 @@ export default function VocabReview({
             </div>
             <div className="review-done__stat-divider" />
             <div className="review-done__stat">
-              <span className="review-done__stat-value">{vocab.filter(v => v.interval >= 30).length}</span>
+              <span className="review-done__stat-value">{learningAvailable ? projections.filter(row => wordStage(row).key === 'mastered').length : '—'}</span>
               <span className="review-done__stat-label">숙련 표현</span>
             </div>
             <div className="review-done__stat-divider" />
@@ -83,18 +85,8 @@ export default function VocabReview({
 
           {/* 향후 7일 복습 스케줄 미리보기 */}
           {(() => {
-            const days = Array.from({ length: 7 }, (_, i) => {
-              const d = new Date();
-              d.setDate(d.getDate() + i + 1); // 내일부터
-              d.setHours(0, 0, 0, 0);
-              const next = new Date(d);
-              next.setDate(d.getDate() + 1);
-              const count = vocab.filter(v => {
-                const r = new Date(v.next_review_at);
-                return r >= d && r < next;
-              }).length;
-              return { date: d, count };
-            });
+            const at = Math.max(new Date(now).getTime(), ...projections.map(row => Date.parse(row.review.evaluatedAt)));
+            const days = learningAvailable ? vocabularyReviewCalendar(projections, at, { startOffset: 1 }) : [];
             const max = Math.max(...days.map(d => d.count), 1);
             const total = days.reduce((s, d) => s + d.count, 0);
             return (
@@ -103,7 +95,7 @@ export default function VocabReview({
                   <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                     앞으로 7일 복습 일정
                   </span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>총 {total}개 예정</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>총 {learningAvailable ? total : '—'}개 예정</span>
                 </div>
                 <div style={{ display: 'flex', gap: 4, alignItems: 'flex-end', height: 50 }}>
                   {days.map((d, i) => (
@@ -116,10 +108,10 @@ export default function VocabReview({
                           borderRadius: 'var(--radius-sm)',
                           transition: 'height 0.4s',
                         }}
-                        title={`${d.date.toLocaleDateString('ko-KR')}: ${d.count}개`}
+                        title={`${d.key}: ${d.count}개`}
                       />
                       <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
-                        {['일','월','화','수','목','금','토'][d.date.getDay()]}
+                        {d.key.slice(5).replace('-', '/')}
                       </span>
                       {d.count > 0 && (
                         <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--primary-light)' }}>{d.count}</span>
@@ -150,9 +142,14 @@ export default function VocabReview({
             {bookReview ? '이 교재 표현 목록으로' : '목록으로'}
           </Button>
         </div>
+      ) : admissionPending || admissionError ? (
+        <div className="card review-card review-card--center" role={admissionError ? 'alert' : 'status'}>
+          <p>{admissionError ? '복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.' : '복습 준비 중…'}</p>
+          {admissionError && <Button variant="ghost" onClick={onAdmissionRetry}>다시 시도</Button>}
+        </div>
       ) : reviewWords.length > 0 && currentWord ? (
         <>
-          <div className="card review-card">
+          <div className="card review-card" style={{ padding: 0 }}>
             <div className="review-card__progress review-card__progress--tools">
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 {mode === 'flash' && !showAnswer && currentWord?.source_sentence && (

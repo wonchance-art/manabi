@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import { VOCABULARY_LEARNING_SUMMARY_FIELDS } from '../../lib/vocabularyLearningRead';
 
 const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ProfileStats.jsx'), 'utf8');
 
@@ -13,14 +14,14 @@ const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ProfileStats.jsx
  * 조용한 고장이 나흘간 살아 있었다. 조회와 렌더가 다른 곳에 있어 눈으로는 안 잡힌다.
  */
 describe('ProfileStats — 조회 필드 ⊇ 렌더 필드', () => {
-  // 타일용 조회 = user_vocabulary select 중 next_review_at(복습 시각)을 끌어오는 것.
-  // 줄바꿈 체이닝에 취약한 위치 정규식 대신 필드 내용으로 고른다.
-  const selects = [...src.matchAll(/\.select\('([^']+)'\)/g)].map((m) => m[1]);
-  const tileSelect = selects.find((f) => f.includes('next_review_at'));
-  const fields = (tileSelect || '').split(',').map((f) => f.trim());
+  // 019: 조회는 complete snapshot API로 이동했다. 실제 전송 allowlist를 렌더 필드와 대조한다.
+  const fields = VOCABULARY_LEARNING_SUMMARY_FIELDS;
 
   it('복습 타일 조회를 찾을 수 있다', () => {
-    expect(tileSelect, 'user_vocabulary에서 next_review_at을 끄는 select가 있어야 한다').toBeTruthy();
+    expect(src).toContain("fetchVocabularyLearningRows(userId, { fields: 'summary' })");
+    expect(src).toContain('projections: learning.projections');
+    expect(src).toContain('<VocabStats vocab={vocab} projections={projections} learningAvailable');
+    expect(src).toContain('isVocabularyReviewDue(p, now)');
   });
 
   it.each(['id', 'word_text', 'meaning'])('타일이 그리는 %s가 조회에 있다', (field) => {

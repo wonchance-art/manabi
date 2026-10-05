@@ -11,6 +11,8 @@ import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '../lib/supabase';
+import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
+import { buildVocabularyWordIndex, countVocabularyDueInMaterial } from '../lib/vocabularyDueIndex';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { parseTitle } from '../lib/seriesMeta';
@@ -340,24 +342,10 @@ export default function MaterialsPage({ libraryView = null }) {
   // 내 그룹들이 이번 주 같이 읽는 자료 (v2-F R3) — 홈이 쓰는 캐시를 그대로 타 추가 왕복 0.
   const groupReadIds = useGroupReadIds();
 
-  // 복습 대기 중인 단어 (Reading-as-Review용)
-  const { data: dueVocabIndex } = useQuery({
+  // 새 FSRS와 legacy를 완전 snapshot에서 함께 읽되 원본 단어는 유지한다.
+  const { data: dueVocabIndex, error: dueVocabError, refetch: refetchDueVocab } = useQuery({
     queryKey: ['due-vocab-index', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('active_vocabulary')
-        .select('word_text, base_form, next_review_at')
-        .eq('user_id', user.id)
-        .lte('next_review_at', new Date().toISOString());
-      if (error) throw error;
-      const surfaces = new Set();
-      const bases = new Set();
-      for (const v of data || []) {
-        if (v.word_text) surfaces.add(v.word_text);
-        if (v.base_form) bases.add(v.base_form);
-      }
-      return { surfaces, bases };
-    },
+    queryFn: async ({ signal }) => buildVocabularyWordIndex(await fetchVocabularyLearningRows(user.id, { signal, fields: 'summary' })),
     enabled: !!user,
     staleTime: 1000 * 60,
   });
@@ -393,21 +381,7 @@ export default function MaterialsPage({ libraryView = null }) {
   });
 
   function countDueInMaterial(material) {
-    if (!dueVocabIndex || !material?.processed_json?.dictionary) return 0;
-    const dict = material.processed_json.dictionary;
-    const seen = new Set();
-    let count = 0;
-    for (const tokenId of material.processed_json.sequence || []) {
-      const t = dict[tokenId];
-      if (!t || t.pos === '개행') continue;
-      const key = t.base_form || t.text;
-      if (seen.has(key)) continue;
-      if (dueVocabIndex.surfaces.has(t.text) || (t.base_form && dueVocabIndex.bases.has(t.base_form))) {
-        seen.add(key);
-        count++;
-      }
-    }
-    return count;
+    return dueVocabError ? null : countVocabularyDueInMaterial(dueVocabIndex, material);
   }
 
   const { data: materials = [], isLoading, error: materialsError, refetch: refetchMaterials } = useQuery({
@@ -666,6 +640,7 @@ export default function MaterialsPage({ libraryView = null }) {
         )}
       </div>
 
+      {dueVocabError && <div className="library-query-state" role="alert">표현을 불러오지 못했어요. <button type="button" onClick={() => refetchDueVocab()}>다시 불러오기</button></div>}
       {progressError && <div className="library-query-state" role="alert">읽음 기록을 불러오지 못했어요. <button type="button" onClick={() => refetchProgress()}>다시 불러오기</button></div>}
       {showPdfs && pdfsError && <div className="library-query-state" role="alert">PDF 목록을 불러오지 못했어요. <button type="button" onClick={() => refetchPdfs()}>다시 불러오기</button></div>}
       {showPdfs && pdfsLoading && <p role="status">PDF 목록 확인 중…</p>}

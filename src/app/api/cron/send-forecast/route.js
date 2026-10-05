@@ -60,7 +60,7 @@ async function handle(request) {
     byUser.get(sub.user_id).push(sub);
   }
 
-  let checked = 0, sent = 0, silent = 0, cleaned = 0;
+  let checked = 0, sent = 0, silent = 0, cleaned = 0, unavailable = 0;
 
   for (const [userId, userSubs] of byUser) {
     checked++;
@@ -69,10 +69,16 @@ async function handle(request) {
     // 하루 1회 상한 — 오늘 이미 발송했으면 스킵.
     if (await hasSentToday(supabase, userId)) { silent++; continue; }
 
-    const [forecastRows, newEpisode] = await Promise.all([
-      fetchForecastRows(supabase, userId, lang),
-      detectNewEpisode(supabase, userId, lang),
-    ]);
+    let forecastRows, newEpisode;
+    try {
+      [forecastRows, newEpisode] = await Promise.all([
+        fetchForecastRows(supabase, userId, lang),
+        detectNewEpisode(supabase, userId, lang),
+      ]);
+    } catch {
+      unavailable++;
+      continue;
+    }
     const forecast = buildForecast(forecastRows, new Date());
     const copy = buildPushCopy({
       falling: forecast.falling,
@@ -103,7 +109,7 @@ async function handle(request) {
     }
   }
 
-  return Response.json({ checked, sent, silent, cleaned });
+  return Response.json({ checked, sent, silent, cleaned, unavailable });
 }
 
 export async function POST(request) { return handle(request); }

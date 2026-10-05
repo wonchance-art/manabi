@@ -39,10 +39,15 @@ export async function POST(request) {
   }
 
   const lang = subs[0]?.lang;
-  const [forecastRows, newEpisode] = await Promise.all([
-    fetchForecastRows(supabase, auth.user.id, lang),
-    detectNewEpisode(supabase, auth.user.id, lang),
-  ]);
+  let forecastRows, newEpisode;
+  try {
+    [forecastRows, newEpisode] = await Promise.all([
+      fetchForecastRows(supabase, auth.user.id, lang),
+      detectNewEpisode(supabase, auth.user.id, lang),
+    ]);
+  } catch {
+    return Response.json({ error: 'fsrs_snapshot_unavailable' }, { status: 503 });
+  }
   const forecast = buildForecast(forecastRows, new Date());
   const copy = buildPushCopy({
     falling: forecast.falling,

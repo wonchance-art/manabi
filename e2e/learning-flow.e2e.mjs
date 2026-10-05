@@ -6,6 +6,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { chromium } from 'playwright-core';
 import config from '../playwright.config.mjs';
 import { viewerCacheKey } from '../src/lib/viewerReliability.js';
+import { legacyLearningSnapshot, inactiveLearningAdmission, inactiveFsrsStatus } from './fixtures/learning-snapshot.mjs';
 
 let browser;
 let server;
@@ -208,6 +209,23 @@ async function mockAuthenticatedVocab(context, { readingMaterials = [], role = '
 
   await context.route('**/api/suggestions/today', (route) => json(route, []));
   await context.route('**/api/learning/exclusions', route => route.request().method() === 'GET' ? json(route, { items: [] }) : route.continue());
+  await context.route('**/api/learning/vocabulary**', route => {
+    const request = route.request(), url = new URL(request.url());
+    if (request.method() === 'GET' && url.searchParams.get('view') === 'learning') {
+      return json(route, legacyLearningSnapshot({ actorId: session.user.id, rows: storedWords, fields: url.searchParams.get('fields') }));
+    }
+    if (request.method() === 'POST') assert.notEqual(request.postDataJSON()?.action, 'save', 'Inactive FSRS fixture must not receive an atomic manual save');
+    return route.continue();
+  });
+  // 기존 학습 흐름 fixture: 보호 SQL은 설치됐지만 새 FSRS 등록은 비활성이고 등록 카드도 없다.
+  await context.route('**/api/learning/fsrs', route => {
+    assert.equal(route.request().method(), 'GET', 'Inactive FSRS fixture must not receive a mutation');
+    return json(route, inactiveFsrsStatus({ actorId: session.user.id }));
+  });
+  await context.route('**/api/learning/admission', route => {
+    assert.equal(route.request().method(), 'GET', 'Inactive admission fixture must not receive a mutation');
+    return json(route, inactiveLearningAdmission({ actorId: session.user.id }));
+  });
   await context.route('**/auth/v1/**', async (route) => {
     if (route.request().method() === 'OPTIONS') {
       await route.fulfill({ status: 204, headers: cors });
@@ -226,6 +244,10 @@ async function mockAuthenticatedVocab(context, { readingMaterials = [], role = '
 
     const url = new URL(request.url());
     const table = url.pathname.split('/').pop();
+    if (url.pathname.endsWith('/rpc/fsrs_legacy_boundary') && request.method() === 'POST') {
+      await json(route, { version: 1, actorId: session.user.id, enrolled: false });
+      return;
+    }
     // SRS 정본 경로 검증용 — 어느 테이블에 무엇을 썼는지 전부 모은다.
     if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method())) {
       let payload = null;
@@ -278,6 +300,18 @@ async function mockAuthenticatedVocab(context, { readingMaterials = [], role = '
         return;
       }
       const payload = request.postDataJSON();
+      if (request.method() === 'PATCH') {
+        assert.ok(payload && typeof payload === 'object' && !Array.isArray(payload));
+        const idFilter = url.searchParams.get('id');
+        assert.match(idFilter || '', /^eq\..+$/, 'Vocabulary PATCH must identify its stored row');
+        writes.push({ ...payload });
+        const existing = storedWords.findIndex(item => (
+          item.id === idFilter.slice(3) && item.user_id === session.user.id
+        ));
+        if (existing >= 0) storedWords[existing] = { ...storedWords[existing], ...payload };
+        await json(route, []);
+        return;
+      }
       const rows = Array.isArray(payload) ? payload : [payload];
       for (const row of rows) {
         writes.push({ ...row });

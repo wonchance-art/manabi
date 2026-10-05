@@ -7,6 +7,8 @@ import { logReviewEvents } from './reviewEvents';
 import { buildReadingMetric } from './readingTimer';
 import { fetchMaterialRoundRows } from './readingSpeedRows';
 import { compareRound } from './readingSpeedHistory';
+import { fetchVocabularyLearningRows } from './vocabularyLearningRows';
+import { isVocabularyReviewDue } from './vocabularyLearningRead';
 
 // 공부 모드 지원 언어 키 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
 // 이 훅은 'use client'라 ViewerPage에 물리면 뷰어 번들이 폭발한다. 실사용은 멤버십 체크 1곳뿐.
@@ -37,18 +39,17 @@ export function useReadingCompletion({
       }, { onConflict: 'user_id,material_id' });
       if (error) throw error;
 
-      const now = new Date().toISOString();
-      const [
-        { count: wordsSaved },
-        { count: dueCount },
-      ] = await Promise.all([
-        supabase.from('user_vocabulary').select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id).eq('source_material_id', materialId),
-        supabase.from('active_vocabulary').select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id).lte('next_review_at', now),
-      ]);
-
-      return { wordsSaved: wordsSaved || 0, dueCount: dueCount || 0 };
+      // 완독 저장은 이미 성공했다. 보조 조회 장애를 0개로 바꾸거나 완독 재시도로 보내지 않는다.
+      try {
+        const learning = await fetchVocabularyLearningRows(user.id, { fields: 'summary' });
+        const now = Math.max(Date.now(), Date.parse(learning.now));
+        return {
+          wordsSaved: learning.rows.filter(row => row.source_material_id === materialId).length,
+          dueCount: learning.projections.filter(p => isVocabularyReviewDue(p, now)).length,
+        };
+      } catch {
+        return { wordsSaved: null, dueCount: null };
+      }
     },
     onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ['reading-progress', user?.id, materialId] });

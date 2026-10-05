@@ -6,6 +6,7 @@ import { readFile, mkdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { chromium } from 'playwright-core';
 import config from '../../playwright.config.mjs';
+import { legacyLearningSnapshot, inactiveLearningAdmission, inactiveFsrsStatus } from './learning-snapshot.mjs';
 const baseURL = process.env.COMPOSER_BASE_URL || 'http://localhost:8872';
 assert.ok(['127.0.0.1','localhost'].includes(new URL(baseURL).hostname));
 const screenshots = process.env.COMPOSER_SCREENSHOTS;
@@ -29,9 +30,28 @@ export async function fixture({width=1440,guest=false,schema=true,shared=null}={
  await context.route('**/auth/v1/**',r=>json(r,new URL(r.request().url()).pathname.endsWith('/user')?user:session));
  await context.route('**/api/analyze',r=>{analysisCalls++;return json(r,{error:'NO_AUTOMATIC_ANALYSIS'},500);});
  await context.route('**/api/learning/exclusions',r=>r.request().method()==='GET'?json(r,{items:[]}):r.continue());
+ await context.route('**/api/learning/vocabulary**',route=>{
+  const request=route.request(),url=new URL(request.url());
+  if(request.method()==='GET'&&url.searchParams.get('view')==='learning'){
+   // This backend stores reading materials only; its existing vocabulary REST result is [].
+   return guest?json(route,{ok:false,code:'fsrs_auth_required'},401):json(route,legacyLearningSnapshot({actorId:owner,rows:[],fields:url.searchParams.get('fields')}));
+  }
+  if(request.method()==='POST')assert.notEqual(request.postDataJSON()?.action,'save','Inactive FSRS fixture must not receive an atomic manual save');
+  return route.continue();
+ });
+ // 기존 합성 카드만 가진 설치 완료·비활성 FSRS 계약. 오류/미설치를 빈 목록으로 바꾸지 않는다.
+ await context.route('**/api/learning/fsrs',r=>{
+  assert.equal(r.request().method(),'GET','Inactive FSRS fixture must not receive a mutation');
+  return guest?json(r,{ok:false,code:'fsrs_auth_required'},401):json(r,inactiveFsrsStatus({actorId:owner}));
+ });
+ await context.route('**/api/learning/admission',r=>{
+  assert.equal(r.request().method(),'GET','Inactive admission fixture must not receive a mutation');
+  return guest?json(r,{ok:false,code:'fsrs_auth_required'},401):json(r,inactiveLearningAdmission({actorId:owner}));
+ });
  await context.route('**/rest/v1/**',async route=>{
   const req=route.request(),url=new URL(req.url()),table=url.pathname.split('/').pop();
   if(req.method()==='OPTIONS')return route.fulfill({status:204,headers:cors});
+  if(url.pathname.endsWith('/rpc/fsrs_legacy_boundary')&&req.method()==='POST')return guest?json(route,{message:'missing fixture identity'},401):json(route,{version:1,actorId:owner,enrolled:false});
   if(table==='profiles')return json(route,{id:owner,display_name:'E2E 학습자',role:'learner',onboarded:true,last_login_at:new Date().toISOString(),streak_count:1});
   if(table==='reading_materials'){
    if(req.method()==='POST'){

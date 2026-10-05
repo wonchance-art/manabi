@@ -4,12 +4,13 @@
  * 약점 진단·맞춤 드릴의 데이터 축. 실패해도 학습 흐름을 막지 않는다(fire-and-forget).
  */
 import { supabase } from './supabase.js';
+import { assertLegacyFsrsAllowed } from './fsrsLegacyBoundary';
 
 /**
  * @param {string} userId
  * @param {Array<{lang: string, source: string, item_key: string, correct: boolean, detail?: Object}>} events
  */
-export function logReviewEvents(userId, events) {
+export function logReviewEvents(userId, events, { strict = false } = {}) {
   if (!userId || !Array.isArray(events) || events.length === 0) return;
   const rows = events
     .filter(e => e && e.lang && e.source && e.item_key && typeof e.correct === 'boolean')
@@ -27,7 +28,18 @@ export function logReviewEvents(userId, events) {
       ...(e.created_at ? { created_at: e.created_at } : {}),
     }));
   if (rows.length === 0) return;
-  supabase.from('review_events').insert(rows).then(() => {}, () => {});
+  const write = async () => {
+    for (const row of rows) {
+      if (row.source === 'vocab' || (row.source === 'ui' && row.detail?.qtype === 'undo')) {
+        await assertLegacyFsrsAllowed(supabase, { userId, cardId: row.detail?.word_id,
+          itemKey: row.detail?.undo_of?.item_key || row.item_key, language: row.lang });
+      }
+    }
+    const { error } = await supabase.from('review_events').insert(rows);
+    if (error) throw error;
+  };
+  const result = write();
+  return strict ? result : result.catch(() => {});
 }
 
 /**

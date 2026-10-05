@@ -9,6 +9,10 @@ import { useToast } from '../lib/ToastContext';
 import { recordReviewCompleted } from '../lib/learn/progressStore';
 import { useTTS } from '../lib/useTTS';
 import { useLearningCapabilities } from '../lib/useLearningCapabilities';
+import { useFsrsReview, fsrsIntervalLabel } from '../lib/useFsrsReview';
+import { useLearningAdmission } from '../lib/useLearningAdmission';
+import { isSettledFsrsActivity } from '../lib/learningActivity';
+import FsrsReviewSession from '../components/vocab/FsrsReviewSession';
 import { callGemini } from '../lib/gemini';
 import Button from '../components/Button';
 import OfflineNotice, { PendingReviewsNotice } from '../components/OfflineNotice';
@@ -23,7 +27,9 @@ import { detectLang, detectLangConfident, hasCjkText } from '../lib/constants';
 import { stripSourceLangInMeaning } from '../lib/studySession';
 import { authEntryHref } from '../lib/authRedirect';
 import { bookReviewHref, fetchBookVocabularyIds } from '../lib/bookReviewNavigation';
-import { useVocabData } from '../lib/useVocabData';
+import { useVocabData, invalidateVocabularyLearning } from '../lib/useVocabData';
+import { isVocabularyReviewAvailable, isVocabularyReviewDue, isVocabularyUnreviewed } from '../lib/vocabularyLearningRead';
+import { wordStage } from '../lib/growthStats';
 import { confusedVocabWords, CONFUSED_MIN, CONFUSED_SINCE_DAYS } from '../lib/confusedQueue';
 import { dropUndoneEvents } from '../lib/undoneReviews';
 import { fetchUndoMarkers } from '../lib/undoneReviewsRows';
@@ -36,6 +42,7 @@ import { deriveVocabRungs, vocabTypeForRung } from '../lib/skillRung';
 import { exportCSV, exportAnki } from '../lib/vocabIO';
 import { loadRefVocabIndex } from '../lib/refVocabIndex';
 import { logReviewEvents } from '../lib/reviewEvents';
+import { withLegacyReviewLock } from '../lib/legacyReviewSync';
 import {
   deckOf, fisherYatesShuffle, isNewWord, usableVocabReviewMode,
   loadIntroIds, saveIntroIds,
@@ -58,7 +65,7 @@ export default function VocabPage({ bookReview = null }) {
 }
 
 function VocabWorkspace({ bookReview }) {
-  const { user, fetchProfile } = useAuth();
+  const { user, refreshProfileReadOnly } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
   const { speak: speakSupported, supported: ttsSupported } = useTTS();
@@ -71,7 +78,18 @@ function VocabWorkspace({ bookReview }) {
   const [startingReview, setStartingReview] = useState(false);
   const startingRef = useRef(false);
   const workspaceAlive = useRef(true);
-  useEffect(() => { workspaceAlive.current = true; return () => { workspaceAlive.current = false; }; }, []);
+  const gradeLifetimeRef = useRef(0);
+  useEffect(() => {
+    workspaceAlive.current = true;
+    const lifetime = gradeLifetimeRef.current;
+    return () => {
+      workspaceAlive.current = false;
+      gradeLifetimeRef.current = lifetime + 1;
+      pendingGradeRef.current = 0;
+      scoringRef.current = false;
+      lastGradeRef.current = null;
+    };
+  }, []);
   const [reviewIdx, setReviewIdx] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [reviewFinished, setReviewFinished] = useState(false);
@@ -137,10 +155,11 @@ function VocabWorkspace({ bookReview }) {
 
   // 복습 큐 — startReview에서 스냅샷으로 고정 (채점해도 재배열/스킵 없음)
   const [reviewQueue, setReviewQueue] = useState([]);
+  const [reviewSessionId, setReviewSessionId] = useState(0);
 
   // 미전송 복습 수(v2-N R2). 폴링하지 않는다 — 카드가 넘어갈 때(reviewIdx)와 Layout이
   // 동기화를 마치고 쏘는 신호, 두 시점에만 다시 센다. 게스트·큐 불가 환경은 0.
-  const [pendingReviewCount, setPendingReviewCount] = useState(0);
+  const [legacyPendingReviewCount, setPendingReviewCount] = useState(0);
   useEffect(() => {
     if (!user?.id) { setPendingReviewCount(0); return; }
     let alive = true;
@@ -165,15 +184,23 @@ function VocabWorkspace({ bookReview }) {
   const [detailWord, setDetailWord] = useState(null);
 
   const {
-    vocab: allVocab, isLoading, error: vocabError, refetch: refetchVocab,
+    vocab: allVocab, projections, learningAvailable, learningNow, materialTitles, isOffline, isLoading, error: vocabError, refetch: refetchVocab,
     scoreMutation, deleteMutation, csvImportMutation,
     updateVocabMutation, bulkDeleteMutation,
   } = useVocabData();
+  const effectiveNow = Math.max(Date.now(), Date.parse(learningNow) || 0);
+  const learningById = useMemo(() => new Map(projections.map(row => [row.vocabulary.id, row])), [projections]);
+  const deckFor = useCallback(word => deckOf({ ...word, reading_materials: { title: materialTitles.get(word.source_material_id) } }), [materialTitles]);
+  const reviewAvailable = useCallback(word => learningAvailable && isVocabularyReviewAvailable(learningById.get(word.id)), [learningAvailable, learningById]);
+  const reviewDueAt = useCallback(word => {
+    const projection = learningById.get(word.id);
+    return projection?.review.available && projection.review.nextQuestionAt ? Date.parse(projection.review.nextQuestionAt) : Infinity;
+  }, [learningById]);
   const mutationGuard = useRef(null);
   mutationGuard.current = { accountId: user?.id, koreanSave: koreanCapabilities.save, rows: allVocab };
   const canMutateWords = ids => {
     const current = mutationGuard.current;
-    return workspaceAlive.current && !!user?.id && current.accountId === user.id
+    return workspaceAlive.current && !!user?.id && current.accountId === user.id && learningAvailable
       && ids.every(id => {
         const word = current.rows.find(row => row.id === id);
         return !!word && (word.language !== 'Korean' || current.koreanSave);
@@ -198,6 +225,25 @@ function VocabWorkspace({ bookReview }) {
     const ids = new Set(bookScope.data || []);
     return allVocab.filter(word => ids.has(word.id));
   }, [allVocab, bookReview, bookScope.data]);
+  const fsrsScopeIds = useMemo(() => vocab.filter(word => reviewAvailable(word) && reviewSupported(word)
+    && (seriesFilter === 'all' || deckFor(word)?.key === seriesFilter)).map(word => word.id),
+  [vocab, reviewSupported, seriesFilter, reviewAvailable, deckFor]);
+  const fsrsControllerRef = useRef(null), quotaSignature = useRef(null);
+  const admission = useLearningAdmission({ accountId: user?.id, onQuota: quota => {
+    const signature = JSON.stringify([quota.learningDay, quota.policyRevision, quota.used, quota.active, quota.fsrsEnabled]);
+    if (signature !== quotaSignature.current) {
+      quotaSignature.current = signature;
+      fsrsControllerRef.current?.refresh();
+    }
+  } });
+  const fsrsReview = useFsrsReview({ accountId: user?.id, words: allVocab, scopeIds: fsrsScopeIds, dailyNewLimit: newPerDay,
+    onAdmission: () => admission.controller.refresh(),
+    onApplied: (actorId, event) => {
+      invalidateVocabularyLearning(queryClient, actorId);
+      if (isSettledFsrsActivity(event, actorId)) refreshProfileReadOnly(actorId)?.catch(() => {});
+    } });
+  fsrsControllerRef.current = fsrsReview.controller;
+  const pendingReviewCount = legacyPendingReviewCount + fsrsReview.pending.length;
 
   // 수동 단어 추가 모달
   const [manualAddOpen, setManualAddOpen] = useState(false);
@@ -208,6 +254,9 @@ function VocabWorkspace({ bookReview }) {
   // 세 군데 마운트된다). 수동 추가 다이얼로그가 열려 있으면 그 리스너(Escape/Tab)만 산다 — 두
   // 리스너가 경쟁하지 않는다. 핸들러는 ref로 읽어 렌더마다 리스너를 갈아 끼우지 않는다.
   const lastGradeRef = useRef(null);
+  const pendingGradeRef = useRef(0);
+  const gradeSequenceRef = useRef(0);
+  const gradeSessionRef = useRef(0);
   const reviewKeysRef = useRef({});
   useEffect(() => {
     if (tab !== 'review' || reviewFinished || manualAddOpen) return undefined;
@@ -233,40 +282,67 @@ function VocabWorkspace({ bookReview }) {
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [tab, reviewFinished, manualAddOpen]);
+  // 종료 화면에서는 숫자 채점을 재개하지 않고 직전 채점 undo만 받는다.
+  useEffect(() => {
+    if (tab !== 'review' || !reviewFinished || manualAddOpen) return undefined;
+    function onFinishedUndo(e) {
+      const t = e.target;
+      const inField = !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+      const h = reviewKeysRef.current;
+      if (inField || !h.canUndo || e.altKey || !(e.metaKey || e.ctrlKey) || !/^[zZ]$/.test(e.key)) return;
+      e.preventDefault();
+      h.undo?.();
+    }
+    document.addEventListener('keydown', onFinishedUndo);
+    return () => document.removeEventListener('keydown', onFinishedUndo);
+  }, [tab, reviewFinished, manualAddOpen]);
   const [manualDraft, setManualDraft] = useState({ word_text: '', furigana: '', meaning: '', pos: '', language: 'Japanese' });
   const manualDialogRef = useRef(null);
   const manualAddPendingRef = useRef(false);
 
   const manualAddMutation = useMutation({
     mutationFn: async (draft) => {
+      const actorId = user?.id;
       const text = draft.word_text.trim();
       if (!text) throw new Error('단어를 입력해주세요');
       // 사용자가 고른 언어가 먼저다. 없으면 **확신할 때만** 채우고, 못 가르면 비워 둔다
       // (표기 추측을 DB에 박지 않는다 — 옛 중국어 단어가 일본어로 굳던 자리다).
       const guess = draft.language || detectLangConfident(text);
       if (guess === 'Korean') throw new Error('지원하는 언어를 선택해 주세요.');
-      const row = {
-        user_id: user.id,
+      if (!(await fsrsReview.controller.refresh()) || !workspaceAlive.current || mutationGuard.current.accountId !== actorId) {
+        throw new Error('복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.');
+      }
+      const vocabulary = {
         word_text: text,
         base_form: hasCjkText(text) ? text : text.toLowerCase(),
         furigana: draft.furigana.trim(),
         meaning: draft.meaning.trim(),
         pos: draft.pos.trim(),
         ...(guess ? { language: guess } : {}),
-        next_review_at: new Date().toISOString(),
       };
-      const { error } = await supabase
-        .from('user_vocabulary')
+      if (fsrsReview.controller.getSnapshot().enabled) {
+        // 활성 경로는 저장과 등록이 같은 트랜잭션이다. 실패를 기존 INSERT로 바꾸지 않는다.
+        return fsrsReview.controller.saveVocabulary(vocabulary);
+      }
+      const row = { user_id: actorId, ...vocabulary, next_review_at: new Date().toISOString() };
+      const { error } = await supabase.from('user_vocabulary')
         .upsert([row], { onConflict: 'user_id,word_text', ignoreDuplicates: true });
       if (error) throw error;
+      return { ok: true, actorId, stale: !workspaceAlive.current || mutationGuard.current.accountId !== actorId };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
+    onSuccess: (result) => {
+      if (!workspaceAlive.current || result?.stale || (result?.actorId && result.actorId !== mutationGuard.current.accountId)) return;
+      if (result?.ok !== true) {
+        toast('복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.', 'error', 5000);
+        return;
+      }
+      if (result.actorId !== user?.id) return;
+      invalidateVocabularyLearning(queryClient, result.actorId);
       toast('단어를 추가했어요', 'success');
       setManualAddOpen(false);
       setManualDraft({ word_text: '', furigana: '', meaning: '', pos: '', language: 'Japanese' });
     },
-    onError: (err) => toast('추가 실패 — ' + friendlyToastMessage(err), 'error'),
+    onError: (err) => { if (workspaceAlive.current && mutationGuard.current.accountId === user?.id) toast('추가 실패 — ' + friendlyToastMessage(err), 'error'); },
   });
   manualAddPendingRef.current = manualAddMutation.isPending;
 
@@ -336,7 +412,7 @@ function VocabWorkspace({ bookReview }) {
       list = list.filter(x => x._item.language === langFilter);
     }
     if (seriesFilter !== 'all') {
-      list = list.filter(x => deckOf(x._item)?.key === seriesFilter);
+      list = list.filter(x => deckFor(x._item)?.key === seriesFilter);
     }
     if (levelFilter !== 'all' && zhRefIndex) {
       // 급수 필터는 중국어 한정 스코프 — 'NONE'은 레퍼런스 사전 밖 단어(미분류).
@@ -351,14 +427,14 @@ function VocabWorkspace({ bookReview }) {
     list = list.map(x => x._item); // 인덱스 랩 해제
 
     if (sortBy === 'due') {
-      list = [...list].sort((a, b) => new Date(a.next_review_at) - new Date(b.next_review_at));
+      list = [...list].sort((a, b) => reviewDueAt(a) - reviewDueAt(b));
     } else if (sortBy === 'newest') {
       list = [...list].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     } else if (sortBy === 'alpha') {
       list = [...list].sort((a, b) => (a.word_text || '').localeCompare(b.word_text || '', 'ja'));
     }
     return list;
-  }, [vocabSearchIndex, search, sortBy, langFilter, seriesFilter, levelFilter, zhRefIndex]);
+  }, [vocabSearchIndex, search, sortBy, langFilter, seriesFilter, levelFilter, zhRefIndex, deckFor, reviewDueAt]);
 
   useEffect(() => { setVisibleCount(30); }, [search, sortBy, langFilter, levelFilter]);
 
@@ -366,11 +442,11 @@ function VocabWorkspace({ bookReview }) {
   const availableSeries = useMemo(() => {
     const set = new Map(); // key → display label (교재 덱 + 리더 시리즈)
     for (const v of vocab) {
-      const d = deckOf(v);
+      const d = deckFor(v);
       if (d && !set.has(d.key)) set.set(d.key, d.label);
     }
     return [...set.entries()].map(([key, label]) => ({ key, label }));
-  }, [vocab]);
+  }, [vocab, deckFor]);
 
   // seriesFilter 무효화: 더이상 vocab에 없는 시리즈가 선택돼있으면 'all'로
   useEffect(() => {
@@ -379,41 +455,61 @@ function VocabWorkspace({ bookReview }) {
     }
   }, [seriesFilter, availableSeries]);
 
-  const vocabMatchesSeries = useCallback(v => seriesFilter === 'all' || deckOf(v)?.key === seriesFilter, [seriesFilter]);
+  const vocabMatchesSeries = useCallback(v => seriesFilter === 'all' || deckFor(v)?.key === seriesFilter, [seriesFilter, deckFor]);
 
   // 현재 덱(시리즈 필터) 범위의 단어 — 히어로·현황·복습 큐가 공유
-  const deckScope = useMemo(() => vocab.filter(v => !v.is_excluded && reviewSupported(v) && vocabMatchesSeries(v)), [vocab, vocabMatchesSeries, reviewSupported]);
+  const deckScope = useMemo(() => vocab.filter(v => {
+    const projection = learningById.get(v.id);
+    return projection && !projection.review.excluded && !projection.review.known && reviewSupported(v) && vocabMatchesSeries(v);
+  }), [vocab, vocabMatchesSeries, reviewSupported, learningById]);
 
   // 덱 범위 구성: 미학습(신규)·학습 중·숙련 (서로 안 겹치게 분할)
   const deckStats = useMemo(() => {
     let neu = 0, learning = 0, mastered = 0;
     for (const v of deckScope) {
-      if (isNewWord(v)) neu++;
-      else if ((v.interval ?? 0) >= 30) mastered++;
+      const projection = learningById.get(v.id);
+      if (isVocabularyUnreviewed(projection)) neu++;
+      else if (wordStage(projection).key === 'mastered') mastered++;
       else learning++;
     }
     return { total: deckScope.length, neu, learning, mastered };
-  }, [deckScope]);
+  }, [deckScope, learningById]);
 
   // 오늘 세션 미리보기 — 복습 예정 + (하루 한도 내) 새 단어
-  const remainingNew = Math.max(0, newPerDay - introIds.filter(id => allVocab.some(v => v.id === id)).length);
+  const remainingNew = admission.compatibility
+    ? Math.max(0, newPerDay - introIds.filter(id => allVocab.some(v => v.id === id)).length)
+    : admission.quota?.active ? admission.quota.remaining : 0;
   const session = useMemo(() => {
-    const now = new Date();
-    const reviewsDue = deckScope.filter(v => !isNewWord(v) && new Date(v.next_review_at) <= now);
-    const newAvailable = deckScope.filter(v => isNewWord(v) && new Date(v.next_review_at) <= now);
-    const newToday = Math.min(newAvailable.length, remainingNew);
-    return { reviewsDue, newAvailable, newToday, count: reviewsDue.length + newToday };
-  }, [deckScope, remainingNew]);
+    if (!admission.quota) return { reviewsDue: [], newAvailable: [], newToday: 0, count: 0 };
+    const now = new Date(effectiveNow);
+    const admitted = new Set(admission.quota.admittedLegacyCardIds || []);
+    const legacyScope = deckScope.filter(v => learningById.get(v.id)?.source === 'legacy' && !fsrsReview.enrolledIds.includes(v.id) && fsrsReview.controller.canLegacy(v.id));
+    const reviewsDue = legacyScope.filter(v => !isVocabularyUnreviewed(learningById.get(v.id)) && isVocabularyReviewDue(learningById.get(v.id), now));
+    const newAvailable = legacyScope.filter(v => isVocabularyUnreviewed(learningById.get(v.id)) && isVocabularyReviewDue(learningById.get(v.id), now));
+    const resumed = newAvailable.filter(v => admitted.has(v.id));
+    const unseen = newAvailable.filter(v => !admitted.has(v.id));
+    const fsrsNew = fsrsReview.ready.filter(entry => entry.card.state === 'New' && !entry.firstQuestionAt).length;
+    const fsrsCount = fsrsReview.ready.length - fsrsNew + Math.min(fsrsNew, remainingNew);
+    const newToday = resumed.length + Math.min(unseen.length, Math.max(0, remainingNew - Math.min(fsrsNew, remainingNew)));
+    return { reviewsDue, newAvailable: [...resumed, ...unseen], newToday, count: reviewsDue.length + newToday + fsrsCount };
+  }, [deckScope, remainingNew, fsrsReview.enrolledIds, fsrsReview.ready, fsrsReview.controller, learningById, effectiveNow, admission.quota]);
 
   // 복습 큐(스냅샷) → 단어 객체. 길이 안정(삭제돼도 null 유지)해 인덱스 정렬 보존.
   const reviewSessionWords = useMemo(
     () => reviewQueue.map(id => vocab.find(v => v.id === id) || null),
     [reviewQueue, vocab]
   );
-  const currentWord = useMemo(() => {
+  const candidateWord = useMemo(() => {
     const id = reviewQueue[reviewIdx];
-    return id != null ? vocab.find(v => v.id === id && !v.is_excluded && reviewSupported(v)) : undefined;
-  }, [reviewQueue, reviewIdx, vocab, reviewSupported]);
+    return id != null && fsrsReview.controller.canLegacy(id) ? vocab.find(v => v.id === id && reviewAvailable(v) && reviewSupported(v)) : undefined;
+  }, [reviewQueue, reviewIdx, vocab, reviewSupported, reviewAvailable, fsrsReview.controller, fsrsReview.registryAvailable, fsrsReview.enrolledIds]);
+
+  const questionKey = `${reviewSessionId}:${reviewIdx}`;
+  const currentWord = admission.current?.accountId === user?.id && admission.current.cardId === candidateWord?.id
+    && admission.current.questionKey === questionKey ? candidateWord : undefined;
+  useEffect(() => {
+    if (tab === 'review' && !reviewFinished && candidateWord) admission.controller.question(candidateWord.id, questionKey);
+  }, [tab, reviewFinished, candidateWord?.id, questionKey, admission.controller]);
 
   // 자동 모드: 단어 rung → 세션과 동일한 문항 유형(vocabTypeForRung)을 복습 서브모드로 매핑.
   // rung≤1→choice(문맥 객관식), 2→cloze(단서회상 — 여기선 문맥 객관식으로 수렴), 3→typing, ≥4→listening.
@@ -440,25 +536,35 @@ function VocabWorkspace({ bookReview }) {
   );
 
   const handleScore = async (rating) => {
-    if (!currentWord || !reviewSupported(currentWord) || currentWord.is_excluded || scoringRef.current) return;
+    const actorId = user?.id;
+    const lifetime = gradeLifetimeRef.current;
+    const currentActor = () => workspaceAlive.current && gradeLifetimeRef.current === lifetime && mutationGuard.current.accountId === actorId;
+    const currentQuestion = () => admission.controller.getSnapshot().current?.questionKey === questionKey
+      && admission.controller.getSnapshot().current?.cardId === currentWord?.id;
+    if (!currentActor() || !currentQuestion() || !currentWord || !fsrsReview.controller.canLegacy(currentWord.id) || !reviewSupported(currentWord) || currentWord.is_excluded || scoringRef.current) return;
     scoringRef.current = true;
     let calculateFSRS;
     try {
       ({ calculateFSRS } = await import('../lib/fsrs'));
     } catch {
+      if (!currentActor()) return;
       scoringRef.current = false;
       toast('복습 계산을 불러오지 못했어요. 다시 시도해주세요.', 'error');
       return;
     }
+    if (!currentActor()) return;
+    if (!currentQuestion()) { scoringRef.current = false; return; }
     const wasNew = isNewWord(currentWord);
     // W R2 undo 스냅샷 — 채점 직전 SRS 5필드(행에 있는 값 그대로, null 포함) + 세션 상태. 단일
-    // 레벨. 유효화는 recordReviewCompleted의 .then 이후(채점 진행 중 undo 차단 — 경쟁 조건).
-    lastGradeRef.current = null;
+    // 레벨. 저장 실패에도 마지막 성공 스냅샷을 남기며, 저장 중 undo는 차단한다.
+    const sequence = ++gradeSequenceRef.current;
+    const gradeSession = gradeSessionRef.current;
     const snapshot = {
       wordId: currentWord.id, itemKey: currentWord.word_text, word: currentWord.word_text,
       lang: currentWord.language || detectLang(currentWord.word_text), rating,
       prev: Object.fromEntries(SRS_FIELDS.filter((k) => currentWord[k] !== undefined).map((k) => [k, currentWord[k]])),
-      wasNew, reviewIdx, requeued: rating === 1,
+      wasNew, reviewIdx, requeued: rating === 1, sequence,
+      legacyBudgetCompatibility: admission.current?.compatibility === true,
     };
     const prevInterval = currentWord.interval ?? 0;
     const nextStats = calculateFSRS(rating, {
@@ -471,6 +577,7 @@ function VocabWorkspace({ bookReview }) {
     const qtype = ({ flash: 'flash', context: 'choice', typing: 'typing', listening: 'listening' })[effectiveMode] || 'choice';
     // 낙관 전진(카드는 즉시 넘어감) + 실패는 반드시 표면화 — 과거 '채점해도 SRS가
     // 안 전진하는 조용한 실패' 재발 방지의 두 번째 겹(첫 겹은 아래 페이로드 계약).
+    pendingGradeRef.current++;
     recordReviewCompleted(user.id, {
       type: 'vocab',
       itemKey: currentWord.word_text,
@@ -486,20 +593,27 @@ function VocabWorkspace({ bookReview }) {
       repetitions: nextStats.repetitions ?? 0,
       next_review_at: nextStats.next_review_at,
     }).then((r) => {
+      if (!currentActor()) return;
       if (r?.ok === false) { toast('복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.', 'error', 5000); return; }
-      if (!workspaceAlive.current) return;
-      queryClient.invalidateQueries({ queryKey: ['vocab', user.id] });
-      lastGradeRef.current = { ...snapshot, reviewedAt: r?.reviewedAt || null, queued: !!r?.queued };
+      invalidateVocabularyLearning(queryClient, actorId);
+      if (!r?.queued) refreshProfileReadOnly(actorId)?.catch(() => {});
+      if (gradeSessionRef.current !== gradeSession) return;
+      if ((lastGradeRef.current?.sequence ?? 0) <= sequence) {
+        lastGradeRef.current = { ...snapshot, reviewedAt: r?.reviewedAt || null, queued: !!r?.queued };
+      }
+    }).catch(() => {
+      if (currentActor()) toast('복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.', 'error', 5000);
+    }).finally(() => {
+      if (currentActor()) pendingGradeRef.current = Math.max(0, pendingGradeRef.current - 1);
     });
     // 기존 scoreMutation은 progressStore 내부에서 처리됨
-    fetchProfile(user.id);
-    if (wasNew) registerNewIntro(currentWord.id);            // 새 단어 첫 학습 → 오늘 한도 차감
+    if (wasNew && admission.current?.compatibility) registerNewIntro(currentWord.id);            // 새 단어 첫 학습 → 오늘 한도 차감
     goNextReview(rating === 1 ? currentWord.id : null);      // '다시'는 이번 세션 끝에 재노출
     scoringRef.current = false;
   };
 
   const handleSkip = () => {
-    if (!currentWord || !reviewSupported(currentWord) || currentWord.is_excluded) return;
+    if (scoringRef.current || pendingGradeRef.current || !currentWord || !fsrsReview.controller.canLegacy(currentWord.id) || !reviewSupported(currentWord) || currentWord.is_excluded) return;
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
@@ -508,7 +622,7 @@ function VocabWorkspace({ bookReview }) {
       wordId: currentWord.id, itemKey: currentWord.word_text, word: currentWord.word_text,
       lang: currentWord.language || detectLang(currentWord.word_text), rating: null, skip: true,
       prev: Object.fromEntries(SRS_FIELDS.filter((k) => currentWord[k] !== undefined).map((k) => [k, currentWord[k]])),
-      wasNew: false, reviewIdx, requeued: false, reviewedAt: null, queued: false,
+      wasNew: false, reviewIdx, requeued: false, reviewedAt: null, queued: false, sequence: ++gradeSequenceRef.current,
     };
     scoreMutation.mutate({ id: currentWord.id, nextStats: { next_review_at: tomorrow.toISOString() } });
     goNextReview();
@@ -518,41 +632,68 @@ function VocabWorkspace({ bookReview }) {
   // 못 지운다 → ① 스냅샷 5필드를 그대로 UPDATE(last_reviewed_at이 null이었으면 null — 그래야
   // isNewWord가 다시 참) ② 세션 되감기 ③ source:'ui' 보상 이벤트(isGradedReviewEvent가 ui를 이미
   // 제외하므로 리포트·약점 진단 무오염, detail.undo_of가 원 채점을 가리킨다) — 오프라인 큐에 있던
-  // 채점은 ①③ 대신 outbox 항목 제거(아직 서버에 안 갔으니 지우는 게 곧 undo). redo 없음.
+  // 채점도 전송/부분 성공과 조정하는 내구성 undo를 기다린다. redo 없음.
   const undoLastGrade = async () => {
+    const actorId = user?.id;
+    const lifetime = gradeLifetimeRef.current;
+    const currentActor = () => workspaceAlive.current && gradeLifetimeRef.current === lifetime && mutationGuard.current.accountId === actorId;
     const last = lastGradeRef.current;
     if (!last || scoringRef.current) return;
-    lastGradeRef.current = null;
+    if (pendingGradeRef.current) return;
+    if (!currentActor() || !fsrsReview.controller.canLegacy(last.wordId)) return;
+    scoringRef.current = true;
     try {
+      // 기존 호출 계약은 유지하며 로컬 삭제 대신 확인된 undo 완료로 연결한다.
+      const removeOutboxEntry = async identity => {
+        const { undoQueuedReview } = await import('../lib/reviewOutbox');
+        if (!currentActor()) throw new Error('fsrs_stale_account');
+        const result = await undoQueuedReview(supabase, { ...last, ...identity }, {
+          getAccountId: () => workspaceAlive.current && gradeLifetimeRef.current === lifetime ? mutationGuard.current.accountId : null,
+        });
+        if (result?.ok !== true || result.queued !== false || result.status !== 'settled') {
+          throw result?.error || new Error('review_undo_failed');
+        }
+        return result;
+      };
       if (last.queued) {
-        const { removeOutboxEntry } = await import('../lib/reviewOutbox');
         await removeOutboxEntry({ userId: user.id, itemKey: last.itemKey, reviewedAt: last.reviewedAt });
       } else {
         const { persistVocabGrade } = await import('../lib/fsrs');
-        const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev;
-        await persistVocabGrade(supabase, last.wordId, prevStats, prevReviewedAt);
-        if (!last.skip && last.reviewedAt) {
-          logReviewEvents(user.id, [{
-            lang: last.lang, source: 'ui', item_key: last.itemKey, correct: true,
-            detail: { qtype: 'undo', undo_of: { item_key: last.itemKey, rating: last.rating, reviewed_at: last.reviewedAt } },
-          }]);
-        }
+        await withLegacyReviewLock(actorId, async () => {
+          if (!currentActor()) throw new Error('fsrs_stale_account');
+          const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev;
+          await persistVocabGrade(supabase, last.wordId, prevStats, prevReviewedAt);
+          if (!currentActor()) throw new Error('fsrs_stale_account');
+          if (!last.skip && last.reviewedAt) {
+            await logReviewEvents(user.id, [{
+              lang: last.lang, source: 'ui', item_key: last.itemKey, correct: true,
+              detail: { qtype: 'undo', undo_of: { item_key: last.itemKey, rating: last.rating, reviewed_at: last.reviewedAt } },
+            }], { strict: true });
+          }
+        });
       }
     } catch (err) {
+      if (!currentActor()) return;
       toast('되돌리기 실패 — ' + friendlyToastMessage(err), 'error');
       return;
+    } finally {
+      if (currentActor()) scoringRef.current = false;
     }
+    if (!currentActor() || lastGradeRef.current !== last) return;
+    lastGradeRef.current = null;
     // 세션 되감기 — 재노출된 큐 항목 제거 · 신규 한도 복원 · 종료 화면이었으면 되살림
     if (last.requeued) setReviewQueue((q) => (q[q.length - 1] === last.wordId ? q.slice(0, -1) : q));
-    if (last.wasNew) {
+    if (last.wasNew && last.legacyBudgetCompatibility) {
       setIntroIds((prev) => { const next = prev.filter((id) => id !== last.wordId); saveIntroIds(next); return next; });
     }
+    admission.controller.leave();
+    setReviewSessionId(id => id + 1);
     setReviewIdx(last.reviewIdx);
     setShowAnswer(true);
     setContextSelected(null);
     setTypingAnswer('');
     setReviewFinished(false);
-    queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
+    invalidateVocabularyLearning(queryClient, user?.id);
     toast(`되돌렸어요 — 「${last.word}」 다시 채점`, 'info');
   };
 
@@ -598,6 +739,7 @@ function VocabWorkspace({ bookReview }) {
   }
 
   const goNextReview = (requeueId = null) => {
+    admission.controller.leave();
     setShowHint(false);
     setTypingAnswer('');
     setContextSelected(null);
@@ -626,7 +768,7 @@ function VocabWorkspace({ bookReview }) {
 
       // 시리즈별 reading_progress 갱신 (교재 진도와 동일한 키 사용)
       // 복습한 단어가 속한 시리즈를 mark as completed
-      const deck = deckOf(reviewedWords[0]); // 현재 필터의 덱/시리즈
+      const deck = deckFor(reviewedWords[0]); // 현재 필터의 덱/시리즈
       if (!deck || !deck.key) return;
 
       // localStorage에 기록 (StudySessionPage 라인 768-773과 동일 패턴)
@@ -642,8 +784,11 @@ function VocabWorkspace({ bookReview }) {
   // 세션 시작 공통 경로 — 진입점(오늘 복습·재대결)은 **큐만** 다르고, rung 유도·상태 초기화·
   // 채점(handleScore → recordReviewCompleted)은 전부 이 한 길이다. 재대결이 두 번째 문이
   // 되면서 정본화: 채점 경로를 문마다 새로 만들지 않는다.
-  const startSession = async (queueWords) => {
-    const queue = queueWords.filter(v => !v.is_excluded && reviewSupported(v)).map(v => v.id);
+  const startSession = async (queueWords, { includeFsrs = false } = {}) => {
+    if (!(await admission.controller.refresh()) || !(await fsrsReview.controller.refresh()) || !workspaceAlive.current) return;
+    const registry = fsrsReview.controller.getSnapshot();
+    if (includeFsrs && registry.enabled && registry.ready.length) { setTab('fsrs'); return; }
+    const queue = queueWords.filter(v => reviewAvailable(v) && reviewSupported(v) && fsrsReview.controller.canLegacy(v.id)).map(v => v.id);
     if (queue.length === 0 || startingRef.current || (bookReview && (!bookScope.isSuccess || bookScope.isError || vocabError))) return;
     startingRef.current = true;
     setStartingReview(true);
@@ -669,9 +814,12 @@ function VocabWorkspace({ bookReview }) {
     if (!workspaceAlive.current) return;
     startingRef.current = false;
     setStartingReview(false);
+    gradeSessionRef.current++;
     lastGradeRef.current = null;
     setVocabRungs(rungs);
 
+    admission.controller.leave();
+    setReviewSessionId(id => id + 1);
     setReviewQueue(queue);
     setTab('review');
     setReviewIdx(0);
@@ -687,14 +835,14 @@ function VocabWorkspace({ bookReview }) {
   // 복습 예정(학습한 단어) 먼저, 그다음 하루 한도 내 새 단어
   // 다른 탭에서 제외/삭제된 현재 카드는 채점 없이 다음 남은 카드로 건너뛴다.
   useEffect(() => {
-    if (currentWord || reviewFinished || !reviewQueue.length || isLoading || vocabError || koreanCapabilities.isLoading) return;
-    const next = reviewQueue.findIndex((id, index) => index > reviewIdx && vocab.some(row => row.id === id && !row.is_excluded && reviewSupported(row)));
+    if (candidateWord || reviewFinished || !reviewQueue.length || isLoading || vocabError || koreanCapabilities.isLoading || !fsrsReview.registryAvailable) return;
+    const next = reviewQueue.findIndex((id, index) => index > reviewIdx && fsrsReview.controller.canLegacy(id) && vocab.some(row => row.id === id && reviewAvailable(row) && reviewSupported(row)));
     if (next >= 0) setReviewIdx(next);
     else { setReviewIdx(reviewQueue.length); setReviewFinished(true); }
-  }, [currentWord, reviewFinished, reviewQueue, reviewIdx, vocab, isLoading, vocabError, koreanCapabilities.isLoading, reviewSupported]);
+  }, [candidateWord, reviewFinished, reviewQueue, reviewIdx, vocab, isLoading, vocabError, koreanCapabilities.isLoading, reviewSupported, reviewAvailable, fsrsReview.registryAvailable, fsrsReview.controller]);
 
   const startReview = () =>
-    startSession([...session.reviewsDue, ...session.newAvailable.slice(0, session.newToday)]);
+    startSession([...session.reviewsDue, ...session.newAvailable.slice(0, session.newToday)], { includeFsrs: true });
 
   // ⚔ 헷갈린 단어 재대결(#1077-15) — 최근 2주 오답 가중 상위(computeWeakness 정본)만 모은
   // 집중 큐. 배너·선택은 조회만 하고, 채점은 위 공통 경로 그대로라 여기서 맞히면 약점
@@ -763,7 +911,7 @@ function VocabWorkspace({ bookReview }) {
   // 복습 세션 중에는 페이지 크롬(헤더·통계·필터·하단 네비)을 걷어낸다.
   // 하단 네비는 Layout 소유라 컴포넌트에서 못 지운다 — body 클래스로 CSS에 알린다.
   // 훅은 아래 `if (!user)` 조기 return보다 **위**에 있어야 한다(#838 Hooks 순서 사고와 같은 자리).
-  const inSession = tab === 'review' && !reviewFinished;
+  const inSession = tab === 'fsrs' || tab === 'review' && !reviewFinished;
   // W R2 — 지금 화면에 있는 4버튼 줄(상태로 판정, DOM 질의 금지)
   const quizMode = effectiveMode === 'context' || effectiveMode === 'listening';
   const reviewKeyRow = !currentWord ? null
@@ -772,7 +920,7 @@ function VocabWorkspace({ bookReview }) {
     : quizMode && contextSelected !== null && contextOptions[contextSelected]?.id !== currentWord.id ? 'wrong'
     : null;
   reviewKeysRef.current = {
-    row: inSession ? reviewKeyRow : null,
+    row: tab === 'review' && inSession ? reviewKeyRow : null,
     score: handleScore, pick: pickContextOption, reveal: () => setShowAnswer(true),
     undo: undoLastGrade, canUndo: !!lastGradeRef.current && !scoringRef.current,
   };
@@ -801,11 +949,43 @@ function VocabWorkspace({ bookReview }) {
     );
   }
 
+  const vocabList = (<VocabList
+          vocab={vocab}
+          readOnly={!learningAvailable}
+          learningById={learningAvailable ? learningById : undefined}
+          now={effectiveNow}
+          filteredVocab={filteredVocab}
+          visibleCount={visibleCount}
+          setVisibleCount={setVisibleCount}
+          search={search}
+          setSearch={setSearch}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          langFilter={langFilter}
+          setLangFilter={setLangFilter}
+          levelFilter={levelFilter}
+          setLevelFilter={setLevelFilter}
+          showLevelFilter={showLevelFilter}
+          refLevelOf={refLevelOf}
+          ttsSupported={ttsSupported}
+          koreanLearningSupported={koreanCapabilities.save}
+          speak={speak}
+          setConfirmAction={setConfirmAction}
+          deleteMutation={guardedDeleteMutation}
+          bulkDeleteMutation={guardedBulkDeleteMutation}
+          updateVocabMutation={guardedUpdateVocabMutation}
+          onWordClick={setDetailWord}
+          />);
+
   return (
     <div className={`page-container manabi-review-room${bookReview ? ' is-book-scoped' : ''}`}>
 
       {/* 네트워크가 죽어 캐시 스냅샷으로 살아난 화면임을 알린다(v2-N R1) */}
-      {allVocab?.__offline && <OfflineNotice what="단어장" />}
+      {isOffline && <OfflineNotice what="단어장" />}
+      {admission.error && tab !== 'review' && <div role="alert" className="card">
+        <p>복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.</p>
+        <Button variant="ghost" onClick={() => admission.controller.retryConfiguration().catch(() => {})}>다시 시도</Button>
+      </div>}
       <PendingReviewsNotice count={pendingReviewCount} />
 
       {/* 헤더 — 세션 중에는 없앤다. 부제와 총계는 아래 통계와 중복이라 뺐다. */}
@@ -823,7 +1003,7 @@ function VocabWorkspace({ bookReview }) {
         <div className="manabi-row"><Link href={bookReview.returnTo}>← 교재로</Link><Link href="/vocab">전체 복습 보기</Link></div>
       </section>}
       {/* 세션 상단바 — 나가기 · 진행. 카드 안에 있던 '남은 단어'를 여기로 올려 문항만 남긴다. */}
-      {inSession && (() => {
+      {inSession && tab !== 'fsrs' && (() => {
         const total = reviewQueue.length || 1;
         const doneCount = Math.min(reviewIdx, total);
         return (
@@ -852,8 +1032,13 @@ function VocabWorkspace({ bookReview }) {
         <CardGridSkeleton height={120} />
       ) : bookReview && bookScope.isError ? (
         <section className="review-room-state" role="alert"><h2>이 교재의 표현 범위를 불러오지 못했어요.</h2><p>다시 확인한 뒤 복습을 시작해 주세요.</p><button type="button" className="btn btn--primary" onClick={() => bookScope.refetch()}>범위 다시 불러오기</button></section>
-      ) : vocabError && (!vocab.length || bookReview) ? (
+      ) : vocabError || !learningAvailable ? (
+        <>
         <section className="review-room-state" role="alert"><h2>표현을 불러오지 못했어요.</h2><p>연결을 확인한 뒤 다시 불러와 주세요. 복습 기록은 그대로 남아 있어요.</p><button type="button" className="btn btn--primary" onClick={() => refetchVocab()}>다시 불러오기</button></section>
+        {vocab.length > 0 && vocabList}
+        </>
+      ) : tab === 'fsrs' ? (
+        <FsrsReviewSession review={fsrsReview} onExit={() => setTab('list')} />
       ) : tab === 'list' ? (
         /* ── 대시보드 — 각 영역을 같은 문법(제목·수 / 오른쪽 진입 / 요약 / 미리보기)으로 조망한다.
            목록을 다 펼치지 않는다: 단어장은 임박 5개만, 나머지는 클릭해서 들어간다.
@@ -864,10 +1049,10 @@ function VocabWorkspace({ bookReview }) {
           <section className="card vocab-hero" aria-labelledby="review-today-title">
             <div className="vocab-hero__top"><span className="vocab-hero__kicker">오늘 할 일</span><span className="manabi-eyebrow">01 / RECALL</span></div>
             <h2 id="review-today-title">{session.count ? '오늘 다시 볼 표현' : vocab.length ? '잠시, 읽기로 돌아가요.' : '첫 표현을 담아 보세요.'}</h2>
-            {session.count > 0 ? <>
+            {admission.status !== 'ready' ? <p role="status" className="review-room-note">복습 준비 중…</p> : session.count > 0 ? <>
               <div className="review-room-number"><strong className="vocab-hero__num">{session.count}</strong><span>개의 표현</span></div>
               <p className="review-room-note">{session.reviewsDue.length > 0 && `기억을 확인할 표현 ${session.reviewsDue.length}개`}{session.reviewsDue.length > 0 && session.newToday > 0 && ' · '}{session.newToday > 0 && `처음 익힐 표현 ${session.newToday}개`}</p>
-              <Button onClick={startReview} disabled={startingReview} className="review-room-start">{startingReview ? '복습 준비 중…' : `표현 ${session.count}개 복습 →`}</Button>
+              <Button onClick={startReview} disabled={startingReview || !fsrsReview.registryAvailable || admission.status !== 'ready'} className="review-room-start">{startingReview || fsrsReview.status === 'loading' ? '복습 준비 중…' : `표현 ${session.count}개 복습 →`}</Button>
             </> : <>
               <p className="review-room-note">{!vocab.length ? '교재 예문의 ‘이 예문 담기’로 기억하고 싶은 문장을 골라 주세요.' : seriesFilter !== 'all' && !deckScope.length ? '이 범위에는 아직 담은 표현이 없어요. 아래에서 범위를 바꿀 수 있어요.' : session.newAvailable.length ? `오늘 새 표현 한도에 도달했어요. 남은 ${session.newAvailable.length}개는 다음에 익혀요.` : '지금 다시 볼 표현은 없어요. 다음 복습까지 새로운 문장을 만나 보세요.'}</p>
               <Link href={bookReview?.returnTo || (vocab.length ? '/home' : '/books/japanese-n5')} className="btn btn--primary">{bookReview ? '읽던 교재로 돌아가기 →' : vocab.length ? '오늘로 →' : '교재에서 표현 고르기 →'}</Link>
@@ -875,6 +1060,13 @@ function VocabWorkspace({ bookReview }) {
             {!bookReview && <p className="review-room-scope">복습 범위 · {seriesFilter === 'all' ? '전체 표현' : availableSeries.find(x => x.key === seriesFilter)?.label ?? seriesFilter}</p>}
             {reviewQueue.length > reviewIdx && !reviewFinished && <button type="button" className="review-room-resume" onClick={() => setTab('review')}>멈춘 복습 이어가기 · {reviewIdx} / {reviewQueue.length} →</button>}
             {vocabError && <p role="alert">최신 표현을 확인하지 못했어요. <button type="button" onClick={() => refetchVocab()}>다시 불러오기</button></p>}
+            {fsrsReview.status === 'error' && <p role="alert">복습 일정을 확인하고 있어요… <button type="button" onClick={() => fsrsReview.controller.refresh()}>다시 시도</button></p>}
+            {fsrsReview.error?.message === 'fsrs_sync_blocked' && <p role="alert">복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.
+              <button type="button" onClick={() => fsrsReview.controller.retrySync()}>다시 시도</button>
+            </p>}
+            {fsrsReview.pendingSaves.length > 0 && <p role="alert">복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.
+              <button type="button" onClick={() => fsrsReview.pendingSaves.forEach(row => fsrsReview.controller.retrySave(row.operationId))}>다시 시도</button>
+            </p>}
           </section>
           {!bookReview && <section className="review-room-grammar" aria-labelledby="review-grammar-title">
             <p className="manabi-eyebrow">02 / PATTERNS</p><h2 id="review-grammar-title">문법도 한 번 더.</h2>
@@ -922,12 +1114,13 @@ function VocabWorkspace({ bookReview }) {
             ) : (
               <div className="review-sec__rows">
                 {[...deckScope]
-                  .sort((x, y) => new Date(x.next_review_at ?? '9999') - new Date(y.next_review_at ?? '9999'))
+                  .sort((x, y) => reviewDueAt(x) - reviewDueAt(y))
                   .slice(0, 5)
                   .map(v => {
-                    const t = v.next_review_at ? new Date(v.next_review_at) : null;
-                    const days = t ? Math.ceil((t - new Date()) / 86400000) : null;
-                    const due = !t ? '새 단어' : days <= 0 ? '지금' : days === 1 ? '내일' : `${days}일 후`;
+                    const t = Number.isFinite(reviewDueAt(v)) ? new Date(reviewDueAt(v)) : null;
+                    const remaining = t ? t.getTime() - effectiveNow : null;
+                    const days = t ? Math.ceil(remaining / 86400000) : null;
+                    const due = !t ? '—' : remaining <= 0 ? '지금' : remaining < 86400000 ? fsrsIntervalLabel(t.toISOString(), new Date(effectiveNow).toISOString()) : days === 1 ? '내일' : `${days}일 후`;
                     return (
                       <button
                         key={v.id}
@@ -953,7 +1146,7 @@ function VocabWorkspace({ bookReview }) {
                   <button type="button" className="vocab-tools__item" onClick={() => setManualAddOpen(true)}>
                     단어 직접 추가
                   </button>
-                  <button type="button" className="vocab-tools__item" onClick={() => exportCSV(vocab)}>
+                  <button type="button" className="vocab-tools__item" disabled={!learningAvailable} onClick={() => exportCSV(vocab, projections)}>
                     CSV 내보내기
                   </button>
                   <button type="button" className="vocab-tools__item" onClick={() => exportAnki(vocab)}>
@@ -1018,8 +1211,9 @@ function VocabWorkspace({ bookReview }) {
                     </label>
                     <select
                       id="new-per-day"
-                      value={newPerDay}
-                      onChange={e => setNewPerDay(parseInt(e.target.value, 10))}
+                      value={admission.compatibility ? newPerDay : admission.quota?.limit ?? newPerDay}
+                      disabled={admission.status !== 'ready' || admission.busy}
+                      onChange={e => admission.compatibility ? setNewPerDay(Number(e.target.value)) : admission.controller.configure(Number(e.target.value))}
                       style={{
                         width: '100%', padding: '6px 8px', fontSize: '0.85rem',
                         borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)',
@@ -1060,38 +1254,21 @@ function VocabWorkspace({ bookReview }) {
             ← 돌아가기
           </button>
           <VocabularyExclusionList vocab={allVocab} scopeIds={bookReview ? bookScope.data || [] : null} />
-          <VocabList
-          vocab={vocab}
-          filteredVocab={filteredVocab}
-          visibleCount={visibleCount}
-          setVisibleCount={setVisibleCount}
-          search={search}
-          setSearch={setSearch}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          langFilter={langFilter}
-          setLangFilter={setLangFilter}
-          levelFilter={levelFilter}
-          setLevelFilter={setLevelFilter}
-          showLevelFilter={showLevelFilter}
-          refLevelOf={refLevelOf}
-          ttsSupported={ttsSupported}
-          koreanLearningSupported={koreanCapabilities.save}
-          speak={speak}
-          setConfirmAction={setConfirmAction}
-          deleteMutation={guardedDeleteMutation}
-          bulkDeleteMutation={guardedBulkDeleteMutation}
-          updateVocabMutation={guardedUpdateVocabMutation}
-          onWordClick={setDetailWord}
-          />
+          {vocabList}
         </>
       ) : tab === 'review' ? (
         <VocabReview
           bookReview={bookReview}
           vocab={vocab}
+          projections={projections.filter(row => vocab.some(word => word.id === row.vocabulary.id))}
+          learningAvailable={learningAvailable}
+          now={effectiveNow}
           reviewWords={reviewSessionWords}
           reviewIdx={reviewIdx}
           currentWord={currentWord}
+          admissionPending={!!candidateWord && !currentWord && !admission.error}
+          admissionError={!!candidateWord && !currentWord ? admission.error : null}
+          onAdmissionRetry={() => admission.controller.question(candidateWord.id, questionKey)}
           reviewFinished={reviewFinished}
           pickContextOption={pickContextOption}
           reviewMode={reviewMode}
@@ -1118,7 +1295,7 @@ function VocabWorkspace({ bookReview }) {
       ) : null}
 
       {detailWord && (
-        <div lang={detailWord.language === 'Korean' ? 'ko' : undefined}><VocabDetailCard showBookContexts={!!bookReview || (detailWord.language === 'Korean' && koreanCapabilities.review)} word={detailWord} onClose={() => setDetailWord(null)} speak={speak} ttsSupported={ttsSupported && detailWord.language !== 'Korean'} /></div>
+        <div lang={detailWord.language === 'Korean' ? 'ko' : undefined}><VocabDetailCard now={effectiveNow} projection={learningAvailable ? learningById.get(detailWord.id) : undefined} showBookContexts={!!bookReview || (detailWord.language === 'Korean' && koreanCapabilities.review)} word={detailWord} onClose={() => setDetailWord(null)} speak={speak} ttsSupported={ttsSupported && detailWord.language !== 'Korean'} /></div>
       )}
 
       {/* 수동 단어 추가 모달 */}

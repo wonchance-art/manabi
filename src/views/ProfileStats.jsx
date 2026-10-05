@@ -20,44 +20,29 @@ import { loadRefVocabIndex } from '../lib/refVocabIndex';
 import { fetchKnownWords, knownWordsLang } from '../lib/knownWords';
 import Button from '../components/Button';
 import VocabStats from './VocabStats';
+import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
+import { isVocabularyReviewAvailable, isVocabularyReviewDue } from '../lib/vocabularyLearningRead';
+import { kstDayStartMs, kstDateString } from '../lib/growthStats';
 
 const LANG_KO = { Japanese: '일본어', English: '영어', Chinese: '중국어', French: '프랑스어' };
 // 진도 탭은 국기 이모지만(오너 지정 — 좁은 폭 글자 잘림 해소). 이름은 aria-label·title로.
 const LANG_FLAG = { Japanese: '🇯🇵', English: '🇬🇧', Chinese: '🇨🇳', French: '🇫🇷' };
 
-async function fetchProfileStats(userId) {
-  const heatmapStart = new Date();
-  heatmapStart.setHours(0, 0, 0, 0);
-  heatmapStart.setDate(heatmapStart.getDate() - 179);
-
-  const [
-    heatmapResult,
-    vocabResult,
-  ] = await Promise.all([
-    supabase.from('user_vocabulary').select('created_at').eq('user_id', userId).gte('created_at', heatmapStart.toISOString()),
-    // 통계는 세 시각 컬럼, 복습 타일은 id·표기·뜻만 소비 — 전 컬럼(*)을 단어 수만큼
-    // 끌지 않는다(쿼리 다이어트 #1079). **타일이 그리는 필드는 반드시 여기 있어야 한다** —
-    // #1079가 표기·뜻을 빼는 바람에 타일이 빈 글자를 돌리고 있었다(2026-08-24 수리).
-    // 드리프트 재발은 profileStatsSelect 계약 테스트가 막는다.
-    supabase.from('user_vocabulary')
-      .select('id, word_text, meaning, language, created_at, last_reviewed_at, next_review_at')
-      .eq('user_id', userId),
-  ]);
-  if (heatmapResult.error) throw heatmapResult.error;
-  if (vocabResult.error) throw vocabResult.error;
-  const heatmapRows = heatmapResult.data;
-  const allVocab = vocabResult.data;
-
+export async function fetchProfileStats(userId, now = Date.now()) {
+  const learning = await fetchVocabularyLearningRows(userId, { fields: 'summary' });
+  const heatmapStart = kstDayStartMs(now) - 179 * 86400000;
   const heatmapDayCounts = {};
-  for (const v of (heatmapRows || [])) {
-    const day = v.created_at.slice(0, 10);
+  for (const v of learning.rows) {
+    const created = Date.parse(v.created_at);
+    if (!Number.isFinite(created) || created < heatmapStart) continue;
+    const day = kstDateString(created);
     heatmapDayCounts[day] = (heatmapDayCounts[day] || 0) + 1;
   }
-
-  return { vocab: allVocab || [], heatmapDayCounts };
+  return { vocab: learning.rows, projections: learning.projections, now: learning.now, heatmapDayCounts };
 }
 
-const isToday = ts => ts && new Date(ts).toDateString() === new Date().toDateString();
+const isToday = (ts, now = Date.now()) => !!ts && Date.parse(ts) >= kstDayStartMs(now)
+  && Date.parse(ts) < kstDayStartMs(now) + 86400000;
 
 /** 가장 최근 학습 기록이 있는 언어 — 진도 탭 기본값 */
 function lastActiveLang(refManifest) {
@@ -103,7 +88,9 @@ export default function ProfileStats({ refManifest = {} }) {
       </div>
     </div>
   );
-  const vocab = data?.vocab || [];
+  if (!data) return null;
+  const vocab = data.vocab;
+  const projections = data?.projections || [];
   const streak = profile?.streak_count ?? 0;
   const streakFreeze = profile?.streak_freeze_count;
   const hasHeatmap = data?.heatmapDayCounts && Object.keys(data.heatmapDayCounts).length > 0;
@@ -114,10 +101,10 @@ export default function ProfileStats({ refManifest = {} }) {
           숨김이 '위젯 사라짐'으로 읽히는 문제와는 다르다: 사라지는 게 아니라 아직 생긴
           적이 없고, 세우는 자리는 늘 자리를 지키는 D-Day 타일 안에 있다. */}
       <GoalTrackCard refManifest={refManifest} vocab={vocab} />
-      <GoalTile vocab={vocab} />
+      <GoalTile vocab={vocab} projections={projections} />
       <DdayTile refManifest={refManifest} />
       <div className="bento-item bento--2x2">
-        <ReviewTile vocab={vocab} />
+        <ReviewTile projections={projections} />
       </div>
       <StatTile
         label="스트릭"
@@ -133,7 +120,7 @@ export default function ProfileStats({ refManifest = {} }) {
       </div>
       {vocab.length > 0 && (
         <div className="bento-item bento--2x2">
-          <VocabStats vocab={vocab} profile={profile} section="memory" />
+          <VocabStats vocab={vocab} projections={projections} learningAvailable now={data.now} profile={profile} section="memory" />
         </div>
       )}
       {hasHeatmap && (
@@ -256,12 +243,12 @@ function WeakSpotLine({ weekStartMs }) {
 
 /* ── 목표 타일 — 오늘 달성률 표시 전용. 탭하면 마이페이지에서 목표 편집(정본 슬라이더). ── */
 
-function GoalTile({ vocab }) {
+function GoalTile({ vocab, projections }) {
   const { profile } = useAuth();
 
   const gReview = profile?.goal_review ?? 5;
   const gWords = profile?.goal_words ?? 5;
-  const reviewsToday = vocab.filter(v => isToday(v.last_reviewed_at)).length;
+  const reviewsToday = projections.filter(p => isToday(p.memory?.lastReview)).length;
   const wordsToday = vocab.filter(v => isToday(v.created_at)).length;
   // 달성률 — 복습·수집 목표 기준 (완독은 목표 설정만 지원)
   const pct = Math.round(
@@ -580,25 +567,18 @@ function TileModal({ title, onClose, children }) {
 
 /* ── 단어 복습 라이브 타일 — 단어가 시간차로 넘어가는 메트로식 타일, 클릭 시 단어장 ── */
 
-function ReviewTile({ vocab }) {
-  const now = Date.now();
-  // 복습 대기 단어 우선, 없으면 최근 수집 단어
-  const pool = useMemo(() => {
-    const due = vocab
-      .filter(v => v.next_review_at && new Date(v.next_review_at).getTime() <= now)
-      .sort((a, b) => new Date(a.next_review_at) - new Date(b.next_review_at));
-    if (due.length > 0) return due.slice(0, 20);
-    return [...vocab]
-      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-      .slice(0, 20);
+function ReviewTile({ projections }) {
+  const now = Math.max(Date.now(), ...projections.map(p => Date.parse(p.review.evaluatedAt)));
+  // 기억 일정과 노출 후 대기 시간을 구분한 같은 projection으로 목록·수를 계산한다.
+  const { pool, dueCount } = useMemo(() => {
+    const due = projections.filter(p => isVocabularyReviewDue(p, now))
+      .sort((a, b) => Date.parse(a.review.nextQuestionAt) - Date.parse(b.review.nextQuestionAt));
+    const candidates = due.length ? due : projections.filter(isVocabularyReviewAvailable)
+      .sort((a, b) => Date.parse(b.vocabulary.created_at) - Date.parse(a.vocabulary.created_at));
+    return { pool: candidates.slice(0, 20).map(p => p.vocabulary), dueCount: due.length };
     // now는 렌더 시점 고정으로 충분
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vocab]);
-  const dueCount = useMemo(
-    () => vocab.filter(v => v.next_review_at && new Date(v.next_review_at).getTime() <= now).length,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [vocab]
-  );
+  }, [projections]);
 
   const [idx, setIdx] = useState(0);
   useEffect(() => {

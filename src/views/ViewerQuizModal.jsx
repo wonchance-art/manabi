@@ -121,7 +121,7 @@ export default function ViewerQuizModal({
 
             <div className="completion-stats">
               <div className="completion-stat">
-                <span className="completion-stat__value">{completionModal.wordsSaved}</span>
+                <span className="completion-stat__value">{completionModal.wordsSaved ?? '–'}</span>
                 <span className="completion-stat__label">저장한 단어</span>
               </div>
               <div className="completion-stat completion-stat--divider" />
@@ -139,7 +139,7 @@ export default function ViewerQuizModal({
                 </div>
               ) : (
                 <div className="completion-stat">
-                  <span className="completion-stat__value">{completionModal.dueCount}</span>
+                  <span className="completion-stat__value">{completionModal.dueCount ?? '–'}</span>
                   <span className="completion-stat__label">복습 대기 중</span>
                 </div>
               )}

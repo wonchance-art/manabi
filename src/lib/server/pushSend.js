@@ -14,7 +14,8 @@
 
 import { createClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
-import { buildForecast } from '../forecast.js';
+import { readVocabularyLearningSnapshot } from './fsrsVocabulary.js';
+import { projectVocabularyLearningRows } from '../vocabularyLearningRows.js';
 
 // ── VAPID 설정 ──────────────────────────────────────────────────────────
 
@@ -100,17 +101,11 @@ export function buildPushCopy({ falling, top3, hasNewEpisode, userNextReflected,
 
 // ── 재료 조회 ────────────────────────────────────────────────────────────
 
-/**
- * 예보 재료 — user_vocabulary에서 학습 이력 있는 행만(홈 망각 예보의 forecastRows 쿼리와 동일 필터).
- * buildForecast는 순수함수라 이 재료를 그대로 넘기면 클라와 동일한 계산을 서버에서 재현한다.
- */
+/** 인증된 사용자 또는 cron 구독 소유자의 완전한 기억 상태를 언어별로 읽는다. */
 export async function fetchForecastRows(supabase, userId, lang) {
-  const { data } = await supabase
-    .from('active_vocabulary')
-    .select('word_text, interval, last_reviewed_at')
-    .eq('user_id', userId).eq('language', lang)
-    .not('last_reviewed_at', 'is', null).gt('interval', 0);
-  return data || [];
+  const snapshot = await readVocabularyLearningSnapshot({ serviceClient: supabase, userId });
+  const { projections } = projectVocabularyLearningRows(snapshot, { actorId: userId });
+  return projections.filter(row => row.vocabulary.language === lang);
 }
 
 /**

@@ -61,7 +61,11 @@ function fixture({contract = ready, capabilityError = null, rejectMixed = false,
     if (networkError) return {error: networkError};
     state.events.push(...rows); return {error: null};
   });
-  const rpc = vi.fn(async () => ({data: state.contract, error: state.capabilityError}));
+  // 언어 readiness와 새 FSRS 카드 경계는 서로 다른 RPC다. 기존 언어 장애를
+  // 모든 함수의 응답으로 재사용하지 않고 두 계약을 독립적으로 검증한다.
+  const rpc = vi.fn(async name => name === 'fsrs_legacy_boundary'
+    ? {data: {version: 1, actorId: 'alice', enrolled: false}, error: null}
+    : {data: state.contract, error: state.capabilityError});
   const client = {rpc, from(table) {
     const query = {select: () => query, eq: (field, value) => {scopes.push([table, field, value]); return query;},
       order: () => query, range: async () => ({data: [], error: null}), gte: () => query,
@@ -90,7 +94,10 @@ describe('Korean outbox capability and rollback isolation', () => {
     for (const mode of ['error', 'missing', 'throw']) {
       const f = fixture({capabilityError: new Error('missing RPC')});
       if (mode === 'missing') delete f.client.rpc;
-      if (mode === 'throw') f.rpc.mockRejectedValueOnce(new Error('offline'));
+      if (mode === 'throw') f.rpc.mockImplementation(async name => {
+        if (name === 'learning_language_capabilities') throw new Error('offline');
+        return {data: {version: 1, actorId: 'alice', enrolled: false}, error: null};
+      });
       expect(await flushReviews(f.client, 'alice', f.deps)).toEqual({sent: 1, kept: 1, applied: 1});
       expect(f.state.pending.map(row => row.lang)).toEqual(['Korean']);
     }
@@ -129,7 +136,8 @@ describe('Korean outbox capability and rollback isolation', () => {
   it('does not query capabilities for legacy-only queues', async () => {
     const f = fixture(); f.state.pending = [entry(1, 'French')];
     expect(await flushReviews(f.client, 'alice', f.deps)).toEqual({sent: 1, kept: 0, applied: 1});
-    expect(f.rpc).not.toHaveBeenCalled();
+    expect(f.rpc).not.toHaveBeenCalledWith('learning_language_capabilities');
+    expect(f.rpc).toHaveBeenCalledWith('fsrs_legacy_boundary', expect.objectContaining({p_card_id: 'French-card'}));
   });
   it('preserves all events on ordinary mixed-batch network failure', async () => {
     const f = fixture({networkError: new Error('offline')});

@@ -2,7 +2,10 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getRefLang, REF_LANGS } from '@/content/refLangs';
 import StudyLibraryPage from '@/views/StudyLibraryPage';
-import { KNOWN_WORD_MIN_INTERVAL, kstWeekStartIso } from '@/lib/growthStats';
+import { isKnownWord, kstWeekStartIso } from '@/lib/growthStats';
+import { fsrsServiceClient } from '@/lib/server/fsrsLearning';
+import { readVocabularyLearningSnapshot } from '@/lib/server/fsrsVocabulary';
+import { projectVocabularyLearningRows } from '@/lib/vocabularyLearningRows';
 
 export const metadata = { title: '서재' };
 export const dynamic = 'force-dynamic';
@@ -69,15 +72,18 @@ export default async function Page({ searchParams }) {
     await build().then(({ count }) => { n = count || 0; }, () => {});
     return n;
   };
-  const [knownCount, totalVocab, passedChapters, weekSessions] = await Promise.all([
-    // ① 아는 단어 근사 — interval(안정도) 기준 (정의: growthStats.isKnownWord)
-    countOf(() => supabase.from('user_vocabulary')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id).eq('language', lang).gte('interval', KNOWN_WORD_MIN_INTERVAL)),
-    // 전체 단어 수
-    countOf(() => supabase.from('user_vocabulary')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id).eq('language', lang)),
+  const [learningSummary, passedChapters, weekSessions] = await Promise.all([
+    // 상태 snapshot 전체를 확인한 후 언어·숙련 기준을 적용한다. 조회 실패는 0개가 아니다.
+    (async () => {
+      try {
+        const raw = await readVocabularyLearningSnapshot({ serviceClient: fsrsServiceClient(), userId: user.id });
+        const learning = projectVocabularyLearningRows(raw, { actorId: user.id });
+        const projections = learning.projections.filter(p => p.vocabulary.language === lang);
+        return { knownCount: projections.filter(isKnownWord).length, totalVocab: projections.length };
+      } catch {
+        return { knownCount: null, totalVocab: null };
+      }
+    })(),
     // ② 통과 챕터
     countOf(() => supabase.from('user_ref_progress')
       .select('slug', { count: 'exact', head: true })
@@ -91,7 +97,7 @@ export default async function Page({ searchParams }) {
   return (
     <StudyLibraryPage
       paragraphs={paragraphs}
-      summary={{ knownCount, totalVocab, passedChapters, weekSessions }}
+      summary={{ ...learningSummary, passedChapters, weekSessions }}
       lang={lang}
       langCode={ref.langCode}
       langName={ref.name}

@@ -1,5 +1,8 @@
 import { loadVocabularyExclusions } from './vocabularyExclusion';
 import { loadPublishedRegistry } from './publishedChapter';
+import { fsrsServiceClient } from './server/fsrsLearning';
+import { readVocabularyLearningSnapshot } from './server/fsrsVocabulary';
+import { selectLegacyReviewRows } from './vocabularyDueIndex';
 /**
  * 공부 모드 재료 조립 (서버 전용).
  * study/page.jsx의 서버 재료 조립을 그대로 옮겨 재사용한다 —
@@ -178,7 +181,7 @@ function isKstSunday(nowMs = Date.now()) {
  * vocab≤3·grammar≤2로 재료화한다. 약점 항목 2개 미만이거나 조회 실패면 null(일반 세션).
  * @returns {Promise<{duePatterns: Array, dueWords: Array}|null>}
  */
-async function buildWeaknessMaterials(supabase, userId, lang, ref, reviewEventRows) {
+async function buildWeaknessMaterials(supabase, userId, lang, ref, reviewEventRows, legacyRows) {
   const nowMs = Date.now();
   if (!isKstSunday(nowMs)) return null;
   const weekStartIso = new Date(kstWeekStartMs(nowMs)).toISOString();
@@ -194,8 +197,10 @@ async function buildWeaknessMaterials(supabase, userId, lang, ref, reviewEventRo
 
   // 최근 14일 약점 집계 (오답이 있는 것만)
   const sinceMs = nowMs - 14 * 86400000;
-  const weak = computeWeakness(reviewEventRows, { sinceMs, cap: 20 }).filter(w => w.wrong > 0);
-  const weakVocab = weak.filter(w => w.source === 'vocab').slice(0, 3);
+  const legacyByWord = new Map(legacyRows.map(row => [row.word_text, row]));
+  const weak = computeWeakness(reviewEventRows.filter(event => event.source !== 'vocab' || legacyByWord.has(event.item_key)),
+    { sinceMs, cap: 20 }).filter(w => w.wrong > 0);
+  const weakVocab = weak.filter(w => w.source === 'vocab' && legacyByWord.has(w.item_key)).slice(0, 3);
   // grammar 약점 후보에서 인트로 레벨(OT/A0) 챕터 제외 — 복습 대상이 아니다
   const weakGrammar = weak
     .filter(w => w.source === 'grammar')
@@ -206,22 +211,9 @@ async function buildWeaknessMaterials(supabase, userId, lang, ref, reviewEventRo
     .slice(0, 2);
   if (weakVocab.length + weakGrammar.length < 2) return null;
 
-  // vocab 약점 → user_vocabulary 행 (dueWords 형태)
-  let dueWords = [];
-  if (weakVocab.length) {
-    const words = weakVocab.map(w => w.item_key);
-    await supabase.from('active_vocabulary')
-      .select('id, word_text, meaning, furigana, interval, ease_factor, repetitions, next_review_at')
-      .eq('user_id', userId).eq('language', lang)
-      .in('word_text', words)
-      .then(({ data }) => {
-        const byWord = new Map((data || []).map(r => [r.word_text, r]));
-        dueWords = weakVocab
-          .map(w => byWord.get(w.item_key))
-          .filter(r => r && r.meaning)
-          .map(r => ({ word: r.word_text, meaning: r.meaning, row: r }));
-      }, () => {});
-  }
+  // 완전 snapshot에서 먼저 제외한 legacy 후보만 약점 슬롯을 차지한다.
+  const dueWords = weakVocab.map(w => legacyByWord.get(w.item_key))
+    .filter(row => row.meaning).map(row => ({ word: row.word_text, meaning: row.meaning, row }));
 
   // grammar 약점 → 챕터 첫 pattern 섹션 (duePatterns 형태). grammar_review 있으면 그 srs.
   let duePatterns = [];
@@ -331,21 +323,20 @@ export function applyEncounterContextExamples(exampleByWord, contextRows) {
 }
 
 export async function assembleStudyMaterials(supabase, userId, lang, { horizonHours = 0, interestGroup = null } = {}) {
-  const [ref, exclusions] = await Promise.all([loadPublishedRegistry(lang, getRefLang(lang)), loadVocabularyExclusions(supabase, userId)]);
+  const [ref, exclusions, learning] = await Promise.all([loadPublishedRegistry(lang, getRefLang(lang)),
+    loadVocabularyExclusions(supabase, userId),
+    readVocabularyLearningSnapshot({ serviceClient: fsrsServiceClient(), userId })]);
   const excludedWords = new Set(exclusions.filter(row => row.language === lang).map(row => row.word_text));
   // due 기준 시각 — 프리페치는 now + horizonHours 로 미리 당겨 조회.
-  const dueIso = new Date(Date.now() + horizonHours * 3600 * 1000).toISOString();
+  const nowMs = Math.max(Date.now(), Date.parse(learning.now));
+  const dueIso = new Date(nowMs + horizonHours * 3600 * 1000).toISOString();
+  const legacyRows = selectLegacyReviewRows(learning, { language: lang, at: nowMs, dueOnly: false });
+  const dueVocabRows = selectLegacyReviewRows(learning, { language: lang, at: dueIso, limit: 4 });
+  const languageRows = learning.rows.filter(row => row.language === lang);
+  const vocabPoolRows = legacyRows.slice(0, 60);
 
   // ── 재료 조회 (병렬) ──
-  const [{ data: dueVocabRows }, { data: vocabPoolRows }, { data: dueGrammarRows }, { data: progressRows }, { data: reviewEventRowsRaw }, { data: encounterRows }] = await Promise.all([
-    supabase.from('active_vocabulary')
-      .select('id, word_text, meaning, furigana, source_sentence, language, interval, ease_factor, repetitions, next_review_at')
-      .eq('user_id', userId).eq('language', lang)
-      .lte('next_review_at', dueIso)
-      .order('next_review_at', { ascending: true }).limit(4),
-    supabase.from('active_vocabulary')
-      .select('meaning')
-      .eq('user_id', userId).eq('language', lang).limit(60),
+  const [{ data: dueGrammarRows }, { data: progressRows }, { data: reviewEventRowsRaw }, { data: encounterRows }] = await Promise.all([
     supabase.from('grammar_review')
       .select('*')
       .eq('user_id', userId).eq('lang', lang)
@@ -378,7 +369,7 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
 
   // ── 콜드스타트 — 추가 쿼리 없이 이미 조회한 행에서만 유도(온보딩 표시 근거) ──
   const chapterSlugs = new Set(ref.ALL_CHAPTERS.map(c => c.slug));
-  const coldStart = deriveColdStart(progressRows, vocabPoolRows, reviewEventRows, chapterSlugs);
+  const coldStart = deriveColdStart(progressRows, languageRows, reviewEventRows, chapterSlugs);
 
   // ── 숙련 rung · 난이도 다이얼 유도 (review_events 순수 함수) ──
   const eventsAsc = (reviewEventRows || []).slice().reverse();
@@ -473,7 +464,6 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   // ── 워밍업 재료 — 최근(24~72h) 정답 어휘로 즉시 시작할 인지형 2문항 ──
   // 문단 AI 생성 레이턴시를 가리기 위한 것. due 어휘와 겹치면 제외한다.
   const dueWordSet = new Set((dueVocabRows || []).map(r => r.word_text).filter(Boolean));
-  const nowMs = Date.now();
   const warmLo = nowMs - 72 * 3600 * 1000;
   const warmHi = nowMs - 24 * 3600 * 1000;
   // 오답 우선 워밍업(buildWarmupItems)에 맞춰 오답·정답을 가리지 않고 후보를 모은다(행 조회용).
@@ -481,35 +471,25 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   const warmSeen = new Set();
   for (const e of reviewEventRows || []) {          // 최신순(desc)
     if (warmupCandidates.length >= 10) break;
-    if (e.source !== 'vocab' || !e.item_key) continue;
+    if (e.source !== 'vocab' || !e.item_key || !legacyRows.some(row => row.word_text === e.item_key)) continue;
     const t = new Date(e.created_at).getTime();
     if (!(t >= warmLo && t <= warmHi)) continue;
     if (warmSeen.has(e.item_key) || dueWordSet.has(e.item_key)) continue;
     warmSeen.add(e.item_key);
     warmupCandidates.push(e.item_key);
   }
-  // 후보 단어의 뜻·후리가나 조회 (추가 1쿼리 — user+lang 필터, 방어적)
-  let warmupVocabRows = [];
-  if (warmupCandidates.length) {
-    await supabase.from('active_vocabulary')
-      .select('word_text, meaning, furigana')
-      .eq('user_id', userId).eq('language', lang)
-      .in('word_text', warmupCandidates)
-      .then(({ data }) => { warmupVocabRows = data || []; }, () => {});
-  }
+  // 같은 완전 snapshot의 legacy 후보만 사용한다(후보 cap 이전에도 같은 경계 적용).
+  const warmupVocabRows = legacyRows.filter(row => warmupCandidates.includes(row.word_text));
   // 콜드스타트 폴백 — 이력이 없으면 레벨 사전 단어로 (SRS 미반영)
-  const warmupFallback = sample(levelVocabWords, 12)
+  const savedWordSet = new Set(languageRows.map(row => row.word_text));
+  const warmupFallback = sample(levelVocabWords.filter(word => !savedWordSet.has(refMain(word))), 12)
     .map(w => ({ word_text: refMain(w), meaning: w.ko || '', furigana: refPron(w) || null }))
     .filter(w => w.word_text && w.meaning && !dueWordSet.has(w.word_text))
     .slice(0, 4);
   const warmup = buildWarmupItems(reviewEventRows || [], warmupVocabRows, meaningPool, dueWordSet, warmupFallback);
 
   // ── 내 단어장 전량(word_text) — 문단 재료(기지어)와 만남 후보의 담김 제외 필터가 공유 ──
-  const { data: myWordRows } = await supabase
-    .from('user_vocabulary')
-    .select('word_text')
-    .eq('user_id', userId).eq('language', lang).limit(800);
-  const myWordList = (myWordRows || []).map(r => r.word_text).filter(Boolean);
+  const myWordList = languageRows.map(row => row.word_text).filter(Boolean);
   const myWords = new Set(myWordList);
 
   // ── 만남 인지 후보(rfc-adaptive-quiz §4.1) — 만남 − 담김 − 최근 출제(이미 조회한 400행 재사용) ──
@@ -575,7 +555,7 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   const theme = pickTheme(THEMES, avoidThemes, interestGroup);
 
   // ── 주간 약점 세션 — KST 일요일·이번 주 미실시면 신규 0·약점 재료로 대체 ──
-  const weakness = await buildWeaknessMaterials(supabase, userId, lang, ref, reviewEventRows || []);
+  const weakness = await buildWeaknessMaterials(supabase, userId, lang, ref, reviewEventRows || [], legacyRows);
 
   // 약점 세션이 아니면 직전 화를 이어 연재. 충족 시 prevArc·episode(prev+1)를 재료에 실어 보낸다.
   const arc = deriveArc(latestUsedRow, { now: Date.now(), weekly: !!weakness });
@@ -614,5 +594,5 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   // 재료가 문법도 단어도 없으면 문단 생성 스킵 (폴백 세션만)
   const canGenerate = !!(paragraphMaterials.newPattern || paragraphMaterials.duePatterns.length || paragraphMaterials.dueWords.length);
 
-  return { session, paragraphMaterials, warmup, encounterItems, level, band, dial, canGenerate, coldStart };
+  return { session, paragraphMaterials, warmup, encounterItems, level, band, dial, canGenerate, coldStart, legacyReviewRows: legacyRows };
 }

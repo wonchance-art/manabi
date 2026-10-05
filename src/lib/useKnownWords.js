@@ -23,7 +23,7 @@ export function useKnownWords(lang = null, enabled = true) {
       client.setQueryData(['known-words-all', body.accountId], rows => updateKnownWords(rows, body));
       // known과 복습 보호는 한 DB 트랜잭션이다. 성공 후 모든 실제 출제 소비자도 다시 읽는다.
       return Promise.all(['known-words', 'known-words-all', 'vocabulary-exclusions', 'vocab', 'vocab-words',
-        'home-v2', 'output-words', 'book-review', 'due-vocab-index'].map(prefix =>
+        'home-v2', 'profile-stats', 'output-words', 'book-review', 'due-vocab-index'].map(prefix =>
         client.invalidateQueries({ queryKey: [prefix, body.accountId] })));
     },
     onError: (error, body) => { if (activeOwner.current === body.accountId) toast(error.message || '잠시 후 다시 시도해 주세요.', 'error'); },

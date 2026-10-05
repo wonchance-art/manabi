@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { wordStage } from '../lib/growthStats';
+import { vocabularyRetrievability } from '../lib/vocabularyLearningRead';
+import { vocabularyReviewCalendar } from '../lib/vocabularyLearningRows';
 import { LEVELS, detectLang, langNameKo, profileLevel } from '../lib/constants';
 
 /**
@@ -82,7 +85,12 @@ function LangTabs({ activeLangs, current, onChange }) {
 }
 
 // section prop: undefined = 전체, 'levels' = 진행도+커버리지, 'memory' = 기억건강+스케줄, 'hardwords' = 요주의
-export default function VocabStats({ vocab, profile, section }) {
+export default function VocabStats({ vocab, profile, section, projections = [], learningAvailable = false, now = new Date() }) {
+  const learningById = new Map(projections.map(row => [row.vocabulary.id, row]));
+  const evaluatedAt = Math.max(new Date(now).getTime(), ...projections.map(row => Date.parse(row.review.evaluatedAt)));
+  const hardWords = projections.filter(row => row.memory.lapses >= 2).sort((a, b) => b.memory.lapses - a.memory.lapses || (a.memory.stability ?? Infinity) - (b.memory.stability ?? Infinity)).slice(0, 5);
+  const calendar = learningAvailable ? vocabularyReviewCalendar(projections, evaluatedAt) : [];
+  const maxCount = Math.max(1, ...calendar.map(day => day.count));
   const profileLangs = profile?.learning_language || [];
   // 언어 목록은 정본(`LEVELS`)에서 나온다 — 지역 목록을 또 만들면 언어가 늘 때마다 갈린다
   // (실측: 중국어가 이 하드코딩 하나 때문에 급수 진도를 못 보고 있었다).
@@ -105,7 +113,7 @@ export default function VocabStats({ vocab, profile, section }) {
         const meta = LANG_META[effLevelLang];
         const langVocab = getLangVocab(vocab, effLevelLang);
         const total = langVocab.length;
-        const mastered = langVocab.filter(v => (v.interval ?? 0) >= 30).length;
+        const mastered = learningAvailable ? langVocab.filter(v => learningById.has(v.id) && wordStage(learningById.get(v.id)).key === 'mastered').length : null;
         // 컬럼 선택은 정본으로 — 삼항 체인은 언어가 늘 때마다 마지막 가지가 오답이 된다.
         const { level: targetLevel, count: targetCount } =
           targetOf(effLevelLang, profileLevel(profile, effLevelLang) || meta.defaultTarget);
@@ -133,7 +141,7 @@ export default function VocabStats({ vocab, profile, section }) {
             {/* 커버리지 차트 */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
               <h3 style={{ fontSize: '1rem', margin: 0 }}>{meta.coverageTitle}</h3>
-              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>수집 {total} · 숙련 {mastered}</span>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>수집 {total} · 숙련 {mastered ?? '—'}</span>
             </div>
             <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end', height: 100, padding: '4px 0' }}>
               {levels.map(([label, t]) => {
@@ -163,24 +171,20 @@ export default function VocabStats({ vocab, profile, section }) {
       })()}
 
       {/* 요주의 단어 TOP 5 */}
-      {showHard && vocab.filter(v => (v.repetitions || 0) >= 2).length > 0 && (
+      {showHard && learningAvailable && hardWords.length > 0 && (
         <div className="card" >
           <h3 style={{ fontSize: '0.95rem', marginBottom: 12 }}>요주의 단어 TOP 5</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {[...vocab]
-              .filter(v => (v.repetitions || 0) >= 2)
-              .sort((a, b) => (b.repetitions || 0) - (a.repetitions || 0) || (a.interval ?? 0) - (b.interval ?? 0))
-              .slice(0, 5)
-              .map(v => (
+            {hardWords.map(({ vocabulary: v, memory }) => (
                 <div key={v.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ fontWeight: 700, fontSize: '0.95rem', minWidth: 70 }}>{v.word_text}</span>
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.meaning}</span>
                   <span style={{
                     fontSize: '0.75rem', fontWeight: 600,
-                    color: (v.repetitions || 0) > 4 ? 'var(--danger)' : 'var(--warning)',
+                    color: memory.lapses > 4 ? 'var(--danger)' : 'var(--warning)',
                     background: 'var(--bg-secondary)', borderRadius: 99, padding: '2px 8px', flexShrink: 0,
                   }}>
-                    Again {v.repetitions ?? 0}
+                    Again {memory.lapses}
                   </span>
                 </div>
               ))}
@@ -190,27 +194,26 @@ export default function VocabStats({ vocab, profile, section }) {
 
       {/* 기억 건강 리포트 */}
       {showMemory && vocab.length > 0 && (() => {
-        const now = Date.now();
         const retentionBuckets = { high: 0, mid: 0, low: 0, forgotten: 0 };
         let totalRetention = 0;
-        vocab.forEach(v => {
-          const lastReview = v.last_reviewed_at || v.created_at;
-          const daysSince = (now - new Date(lastReview).getTime()) / (1000 * 60 * 60 * 24);
-          const stability = Math.max(v.interval ?? 0.5, 0.5);
-          const retention = Math.exp(-daysSince / (stability * 9));
+        let measuredCount = 0;
+        if (learningAvailable) projections.forEach(projection => {
+          const retention = vocabularyRetrievability(projection, evaluatedAt);
+          if (retention == null) return;
+          measuredCount++;
           totalRetention += retention;
           if (retention >= 0.9) retentionBuckets.high++;
           else if (retention >= 0.7) retentionBuckets.mid++;
           else if (retention >= 0.4) retentionBuckets.low++;
           else retentionBuckets.forgotten++;
         });
-        const avgRetention = Math.round((totalRetention / vocab.length) * 100);
+        const avgRetention = measuredCount ? Math.round((totalRetention / measuredCount) * 100) : null;
         return (
           <div className="card" >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
               <h3 style={{ fontSize: '0.95rem' }}>기억 건강</h3>
               <span style={{ fontSize: '0.82rem', fontWeight: 700, color: avgRetention >= 80 ? 'var(--accent)' : avgRetention >= 50 ? 'var(--warning)' : 'var(--danger)' }}>
-                유지율 {avgRetention}%
+                유지율 {avgRetention == null ? '—' : `${avgRetention}%`}
               </span>
             </div>
             <div className="retention-buckets">
@@ -222,7 +225,7 @@ export default function VocabStats({ vocab, profile, section }) {
               ].map(b => (
                 <div key={b.label} className="retention-bucket">
                   <span style={{ fontSize: '0.75rem', color: b.color }}>{b.emoji}</span>
-                  <span className="retention-bucket__count" style={{ color: b.color }}>{b.count}</span>
+                  <span className="retention-bucket__count" style={{ color: b.color }}>{measuredCount ? b.count : '—'}</span>
                   <span className="retention-bucket__label">{b.label}</span>
                 </div>
               ))}
@@ -232,14 +235,7 @@ export default function VocabStats({ vocab, profile, section }) {
                 <>
                   <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '16px 0 6px' }}>복습 스케줄</p>
                   <div className="forecast-chart">
-                    {[...Array(7)].map((_, i) => {
-                      const date = new Date();
-                      date.setDate(date.getDate() + i);
-                      const count = vocab.filter(v => new Date(v.next_review_at).toDateString() === date.toDateString()).length;
-                      const maxCount = Math.max(...[...Array(7)].map((_, k) => {
-                        const d = new Date(); d.setDate(d.getDate() + k);
-                        return vocab.filter(v => new Date(v.next_review_at).toDateString() === d.toDateString()).length;
-                      }), 1);
+                    {calendar.map(({ key, count }, i) => {
                       return (
                         <div key={i} className="forecast-col">
                           <div className="forecast-count">{count > 0 ? count : '\u00A0'}</div>
@@ -249,7 +245,7 @@ export default function VocabStats({ vocab, profile, section }) {
                               background: count === 0 ? 'var(--border)' : i === 0 ? 'var(--accent)' : 'var(--primary-light)',
                             }} />
                           </div>
-                          <div className="forecast-label">{i === 0 ? '오늘' : `${date.getMonth()+1}/${date.getDate()}`}</div>
+                          <div className="forecast-label">{i === 0 ? '오늘' : key.slice(5).replace('-', '/')}</div>
                         </div>
                       );
                     })}
