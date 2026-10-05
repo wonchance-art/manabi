@@ -80,7 +80,21 @@ describe('localized Korean explanations preserve source and requested terminolog
     expect(props.token.morphology).toEqual([{ form: '-지', function: '부정 연결 어미' }]);
   });
 
-  it.each(['1', 'ko-word-locale-v2'])('regenerates the old %s display cache without changing or deleting stored source meanings', async version => {
+  it.each([
+    ['걸어요', '걷다', '공원에서 걸어요.', '-어요', '-아요'],
+    ['잡아요', '잡다', '공을 잡아요.', '-아요', '-어요'],
+  ])('keeps the observed polite ending of %s in the actual explanation request', async (surface, lemma, sentence, ending, other) => {
+    props.token = Object.freeze({ text: surface, base_form: lemma, meaning: 'unchanged source meaning' });
+    props.sentence = sentence;
+    render(); await flush();
+    expect(network.calls).toHaveLength(1);
+    expect(network.calls[0].prompt).toContain(`The observed source ending is ${ending}`);
+    expect(network.calls[0].prompt).toContain(`do not replace it with ${other}`);
+    expect(JSON.parse(network.calls[0].prompt.split('INPUT_JSON=').at(-1))).toEqual({ surface, lemma, sentence });
+    expect(props.token.meaning).toBe('unchanged source meaning');
+  });
+
+  it.each(['1', 'ko-word-locale-v2', 'ko-word-locale-v3'])('regenerates the old %s display cache without changing or deleting stored source meanings', async version => {
     const oldKey = await viewerCacheKey('viewer_word_locale', [props.scope, props.locale, version],
       [props.token.text, props.token.base_form, props.sentence]);
     const old = JSON.stringify({ meaning: '還沒有讀', morphology: ['Auxiliary Verb 않다', 'negate 動詞'] });

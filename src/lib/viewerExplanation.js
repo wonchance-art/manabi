@@ -3,7 +3,7 @@ import { viewerLanguageInfo, VIEWER_UI_LOCALES } from './viewerLanguage.js';
 import { t } from './viewerMessages.js';
 
 export const VIEWER_EXPLANATION_VERSION = 'viewer-explanation-v1';
-export const KOREAN_WORD_EXPLANATION_VERSION = 'ko-word-locale-v3';
+export const KOREAN_WORD_EXPLANATION_VERSION = 'ko-word-locale-v4';
 const MAX_RAW_LENGTH = 24_000;
 const FIELD_LIMIT = 4000;
 const FIELDS = {
@@ -72,10 +72,17 @@ export function buildViewerWordPrompt({ surface, lemma, sentence, locale } = {})
     lemma: sourceString(lemma, 'lemma', 300, true),
     sentence: sourceString(sentence, 'sentence', 6000, true),
   };
+  // 실제 표면형의 말끝만 관찰한다. lemma를 교정하거나 저장된 분석을 바꾸지 않는다.
+  const endingRule = input.surface.endsWith('어요')
+    ? 'The observed source ending is -어요; if explaining this polite terminal ending, do not replace it with -아요.'
+    : input.surface.endsWith('아요')
+      ? 'The observed source ending is -아요; if explaining this polite terminal ending, do not replace it with -어요.'
+      : '';
   return `${basePrompt(language, locale, '{"meaning": string, "morphology"?: string[]}')}
 meaning: the selected expression's contextual meaning, not a list of unrelated dictionary senses. Explain only what the sentence supports. The supplied lemma is a hint and may be wrong; check it against the surface and context without rewriting either input.
 morphology: optionally up to 12 short explanations of useful particles, endings or conjugation. Keep the dictionary lemma in Korean inside an explanation when helpful. Omit this field when there is no useful grammar detail.
 Label the dictionary form as ${dictionaryLabel}, followed by the unchanged Korean form. Never print the English word lemma as an explanation label. All explanatory labels and prose must use the requested locale; JSON keys remain unchanged.
+${endingRule}
 INPUT_JSON=${JSON.stringify(input)}`;
 }
 
