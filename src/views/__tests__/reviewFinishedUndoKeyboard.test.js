@@ -1,11 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
+import { sliceBetween } from '../../lib/__tests__/helpers/sliceBetween.js';
 
 // 실제 페이지의 키 리스너를 실행해 종료 화면의 undo 도달성을 검사한다.
 // 저장/계정 경계는 기존 undo 검사와 같은 핸들러가 담당한다.
 const page = readFileSync(new URL('../VocabPage.jsx', import.meta.url), 'utf8');
-const start = page.indexOf('  useEffect(() => {', page.indexOf('const reviewKeysRef = useRef({});'));
-const effectSource = page.slice(start, page.indexOf('  const [manualDraft,', start));
+const effectSource = sliceBetween(
+  sliceBetween(page, 'const reviewKeysRef = useRef({});', '  const [manualDraft,'),
+  '  useEffect(() => {',
+);
 const runEffect = new Function('useEffect', 'document', 'tab', 'reviewFinished', 'manualAddOpen', 'reviewKeysRef', effectSource);
 
 function mount({ tab = 'review', finished = true, dialog = false, canUndo = true } = {}) {
