@@ -42,6 +42,7 @@ import { deriveVocabRungs, vocabTypeForRung } from '../lib/skillRung';
 import { exportCSV, exportAnki } from '../lib/vocabIO';
 import { loadRefVocabIndex } from '../lib/refVocabIndex';
 import { logReviewEvents } from '../lib/reviewEvents';
+import { withLegacyReviewLock } from '../lib/legacyReviewSync';
 import {
   deckOf, fisherYatesShuffle, isNewWord, usableVocabReviewMode,
   loadIntroIds, saveIntroIds,
@@ -77,7 +78,18 @@ function VocabWorkspace({ bookReview }) {
   const [startingReview, setStartingReview] = useState(false);
   const startingRef = useRef(false);
   const workspaceAlive = useRef(true);
-  useEffect(() => { workspaceAlive.current = true; return () => { workspaceAlive.current = false; }; }, []);
+  const gradeLifetimeRef = useRef(0);
+  useEffect(() => {
+    workspaceAlive.current = true;
+    const lifetime = gradeLifetimeRef.current;
+    return () => {
+      workspaceAlive.current = false;
+      gradeLifetimeRef.current = lifetime + 1;
+      pendingGradeRef.current = 0;
+      scoringRef.current = false;
+      lastGradeRef.current = null;
+    };
+  }, []);
   const [reviewIdx, setReviewIdx] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [reviewFinished, setReviewFinished] = useState(false);
@@ -242,6 +254,9 @@ function VocabWorkspace({ bookReview }) {
   // 세 군데 마운트된다). 수동 추가 다이얼로그가 열려 있으면 그 리스너(Escape/Tab)만 산다 — 두
   // 리스너가 경쟁하지 않는다. 핸들러는 ref로 읽어 렌더마다 리스너를 갈아 끼우지 않는다.
   const lastGradeRef = useRef(null);
+  const pendingGradeRef = useRef(0);
+  const gradeSequenceRef = useRef(0);
+  const gradeSessionRef = useRef(0);
   const reviewKeysRef = useRef({});
   useEffect(() => {
     if (tab !== 'review' || reviewFinished || manualAddOpen) return undefined;
@@ -508,7 +523,8 @@ function VocabWorkspace({ bookReview }) {
 
   const handleScore = async (rating) => {
     const actorId = user?.id;
-    const currentActor = () => workspaceAlive.current && mutationGuard.current.accountId === actorId;
+    const lifetime = gradeLifetimeRef.current;
+    const currentActor = () => workspaceAlive.current && gradeLifetimeRef.current === lifetime && mutationGuard.current.accountId === actorId;
     const currentQuestion = () => admission.controller.getSnapshot().current?.questionKey === questionKey
       && admission.controller.getSnapshot().current?.cardId === currentWord?.id;
     if (!currentActor() || !currentQuestion() || !currentWord || !fsrsReview.controller.canLegacy(currentWord.id) || !reviewSupported(currentWord) || currentWord.is_excluded || scoringRef.current) return;
@@ -517,21 +533,23 @@ function VocabWorkspace({ bookReview }) {
     try {
       ({ calculateFSRS } = await import('../lib/fsrs'));
     } catch {
-      scoringRef.current = false;
       if (!currentActor()) return;
+      scoringRef.current = false;
       toast('복습 계산을 불러오지 못했어요. 다시 시도해주세요.', 'error');
       return;
     }
-    if (!currentActor() || !currentQuestion()) { scoringRef.current = false; return; }
+    if (!currentActor()) return;
+    if (!currentQuestion()) { scoringRef.current = false; return; }
     const wasNew = isNewWord(currentWord);
     // W R2 undo 스냅샷 — 채점 직전 SRS 5필드(행에 있는 값 그대로, null 포함) + 세션 상태. 단일
-    // 레벨. 유효화는 recordReviewCompleted의 .then 이후(채점 진행 중 undo 차단 — 경쟁 조건).
-    lastGradeRef.current = null;
+    // 레벨. 저장 실패에도 마지막 성공 스냅샷을 남기며, 저장 중 undo는 차단한다.
+    const sequence = ++gradeSequenceRef.current;
+    const gradeSession = gradeSessionRef.current;
     const snapshot = {
       wordId: currentWord.id, itemKey: currentWord.word_text, word: currentWord.word_text,
       lang: currentWord.language || detectLang(currentWord.word_text), rating,
       prev: Object.fromEntries(SRS_FIELDS.filter((k) => currentWord[k] !== undefined).map((k) => [k, currentWord[k]])),
-      wasNew, reviewIdx, requeued: rating === 1,
+      wasNew, reviewIdx, requeued: rating === 1, sequence,
       legacyBudgetCompatibility: admission.current?.compatibility === true,
     };
     const prevInterval = currentWord.interval ?? 0;
@@ -545,6 +563,7 @@ function VocabWorkspace({ bookReview }) {
     const qtype = ({ flash: 'flash', context: 'choice', typing: 'typing', listening: 'listening' })[effectiveMode] || 'choice';
     // 낙관 전진(카드는 즉시 넘어감) + 실패는 반드시 표면화 — 과거 '채점해도 SRS가
     // 안 전진하는 조용한 실패' 재발 방지의 두 번째 겹(첫 겹은 아래 페이로드 계약).
+    pendingGradeRef.current++;
     recordReviewCompleted(user.id, {
       type: 'vocab',
       itemKey: currentWord.word_text,
@@ -564,7 +583,14 @@ function VocabWorkspace({ bookReview }) {
       if (r?.ok === false) { toast('복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.', 'error', 5000); return; }
       invalidateVocabularyLearning(queryClient, actorId);
       if (!r?.queued) refreshProfileReadOnly(actorId)?.catch(() => {});
-      lastGradeRef.current = { ...snapshot, reviewedAt: r?.reviewedAt || null, queued: !!r?.queued };
+      if (gradeSessionRef.current !== gradeSession) return;
+      if ((lastGradeRef.current?.sequence ?? 0) <= sequence) {
+        lastGradeRef.current = { ...snapshot, reviewedAt: r?.reviewedAt || null, queued: !!r?.queued };
+      }
+    }).catch(() => {
+      if (currentActor()) toast('복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.', 'error', 5000);
+    }).finally(() => {
+      if (currentActor()) pendingGradeRef.current = Math.max(0, pendingGradeRef.current - 1);
     });
     // 기존 scoreMutation은 progressStore 내부에서 처리됨
     if (wasNew && admission.current?.compatibility) registerNewIntro(currentWord.id);            // 새 단어 첫 학습 → 오늘 한도 차감
@@ -573,7 +599,7 @@ function VocabWorkspace({ bookReview }) {
   };
 
   const handleSkip = () => {
-    if (!currentWord || !fsrsReview.controller.canLegacy(currentWord.id) || !reviewSupported(currentWord) || currentWord.is_excluded) return;
+    if (scoringRef.current || pendingGradeRef.current || !currentWord || !fsrsReview.controller.canLegacy(currentWord.id) || !reviewSupported(currentWord) || currentWord.is_excluded) return;
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
@@ -582,7 +608,7 @@ function VocabWorkspace({ bookReview }) {
       wordId: currentWord.id, itemKey: currentWord.word_text, word: currentWord.word_text,
       lang: currentWord.language || detectLang(currentWord.word_text), rating: null, skip: true,
       prev: Object.fromEntries(SRS_FIELDS.filter((k) => currentWord[k] !== undefined).map((k) => [k, currentWord[k]])),
-      wasNew: false, reviewIdx, requeued: false, reviewedAt: null, queued: false,
+      wasNew: false, reviewIdx, requeued: false, reviewedAt: null, queued: false, sequence: ++gradeSequenceRef.current,
     };
     scoreMutation.mutate({ id: currentWord.id, nextStats: { next_review_at: tomorrow.toISOString() } });
     goNextReview();
@@ -592,37 +618,55 @@ function VocabWorkspace({ bookReview }) {
   // 못 지운다 → ① 스냅샷 5필드를 그대로 UPDATE(last_reviewed_at이 null이었으면 null — 그래야
   // isNewWord가 다시 참) ② 세션 되감기 ③ source:'ui' 보상 이벤트(isGradedReviewEvent가 ui를 이미
   // 제외하므로 리포트·약점 진단 무오염, detail.undo_of가 원 채점을 가리킨다) — 오프라인 큐에 있던
-  // 채점은 ①③ 대신 outbox 항목 제거(아직 서버에 안 갔으니 지우는 게 곧 undo). redo 없음.
+  // 채점도 전송/부분 성공과 조정하는 내구성 undo를 기다린다. redo 없음.
   const undoLastGrade = async () => {
     const actorId = user?.id;
-    const currentActor = () => workspaceAlive.current && mutationGuard.current.accountId === actorId;
+    const lifetime = gradeLifetimeRef.current;
+    const currentActor = () => workspaceAlive.current && gradeLifetimeRef.current === lifetime && mutationGuard.current.accountId === actorId;
     const last = lastGradeRef.current;
     if (!last || scoringRef.current) return;
+    if (pendingGradeRef.current) return;
     if (!currentActor() || !fsrsReview.controller.canLegacy(last.wordId)) return;
-    lastGradeRef.current = null;
+    scoringRef.current = true;
     try {
+      // 기존 호출 계약은 유지하며 로컬 삭제 대신 확인된 undo 완료로 연결한다.
+      const removeOutboxEntry = async identity => {
+        const { undoQueuedReview } = await import('../lib/reviewOutbox');
+        if (!currentActor()) throw new Error('fsrs_stale_account');
+        const result = await undoQueuedReview(supabase, { ...last, ...identity }, {
+          getAccountId: () => workspaceAlive.current && gradeLifetimeRef.current === lifetime ? mutationGuard.current.accountId : null,
+        });
+        if (result?.ok !== true || result.queued !== false || result.status !== 'settled') {
+          throw result?.error || new Error('review_undo_failed');
+        }
+        return result;
+      };
       if (last.queued) {
-        const { removeOutboxEntry } = await import('../lib/reviewOutbox');
         await removeOutboxEntry({ userId: user.id, itemKey: last.itemKey, reviewedAt: last.reviewedAt });
       } else {
         const { persistVocabGrade } = await import('../lib/fsrs');
-        if (!currentActor()) return;
-        const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev;
-        await persistVocabGrade(supabase, last.wordId, prevStats, prevReviewedAt);
-        if (!currentActor()) return;
-        if (!last.skip && last.reviewedAt) {
-          logReviewEvents(user.id, [{
-            lang: last.lang, source: 'ui', item_key: last.itemKey, correct: true,
-            detail: { qtype: 'undo', undo_of: { item_key: last.itemKey, rating: last.rating, reviewed_at: last.reviewedAt } },
-          }]);
-        }
+        await withLegacyReviewLock(actorId, async () => {
+          if (!currentActor()) throw new Error('fsrs_stale_account');
+          const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev;
+          await persistVocabGrade(supabase, last.wordId, prevStats, prevReviewedAt);
+          if (!currentActor()) throw new Error('fsrs_stale_account');
+          if (!last.skip && last.reviewedAt) {
+            await logReviewEvents(user.id, [{
+              lang: last.lang, source: 'ui', item_key: last.itemKey, correct: true,
+              detail: { qtype: 'undo', undo_of: { item_key: last.itemKey, rating: last.rating, reviewed_at: last.reviewedAt } },
+            }], { strict: true });
+          }
+        });
       }
     } catch (err) {
       if (!currentActor()) return;
       toast('되돌리기 실패 — ' + friendlyToastMessage(err), 'error');
       return;
+    } finally {
+      if (currentActor()) scoringRef.current = false;
     }
-    if (!currentActor()) return;
+    if (!currentActor() || lastGradeRef.current !== last) return;
+    lastGradeRef.current = null;
     // 세션 되감기 — 재노출된 큐 항목 제거 · 신규 한도 복원 · 종료 화면이었으면 되살림
     if (last.requeued) setReviewQueue((q) => (q[q.length - 1] === last.wordId ? q.slice(0, -1) : q));
     if (last.wasNew && last.legacyBudgetCompatibility) {
@@ -756,6 +800,7 @@ function VocabWorkspace({ bookReview }) {
     if (!workspaceAlive.current) return;
     startingRef.current = false;
     setStartingReview(false);
+    gradeSessionRef.current++;
     lastGradeRef.current = null;
     setVocabRungs(rungs);
 

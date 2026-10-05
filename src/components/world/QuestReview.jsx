@@ -19,7 +19,7 @@ import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { fetchVocabularyLearningRows } from '../../lib/vocabularyLearningRows';
 import { selectLegacyReviewRows } from '../../lib/vocabularyDueIndex';
-import { logReviewEvents } from '../../lib/reviewEvents';
+import { logReviewEvents as writeReviewEvents } from '../../lib/reviewEvents';
 import { detectLang, displayWord } from '../../lib/constants';
 import { persistVocabGrade } from '../../lib/fsrs';
 import { recordReviewCompleted } from '../../lib/learn/progressStore';
@@ -225,28 +225,51 @@ export default function QuestReview({ userId, onClose }) {
     if (!last || last.userId !== userId || gradingRef.current) return;
     const scope = actorScopeRef.current;
     if (!isCurrentScope(scope)) return;
-    lastGradeRef.current = null;
+    gradingRef.current = true;
     setGradeError('');
     try {
       if (last.queued) {
-        // 큐에 있던 채점은 아직 서버에 없다 — 큐 항목을 지우는 게 곧 undo(복습 화면 R2와 같은 잣대), 보상 이벤트 없음
-        const { removeOutboxEntry } = await import('../../lib/reviewOutbox');
+        // queued 응답 뒤에도 flush가 착지했을 수 있다. 원본과 취소 의도를 보존하며 보상 완료를 기다린다.
+        const { undoQueuedReview } = await import('../../lib/reviewOutbox');
         if (!isCurrentScope(scope)) return;
+        const removeOutboxEntry = async (identity) => {
+          const result = await undoQueuedReview(supabase, { ...last, ...identity }, {
+            getAccountId: () => isCurrentScope(scope) ? userId : null,
+          });
+          if (result?.ok !== true || result.status !== 'settled' || result.queued !== false) {
+            throw new Error('legacy_review_undo_unconfirmed');
+          }
+        };
         await removeOutboxEntry({ userId, itemKey: last.itemKey, reviewedAt: last.reviewedAt });
       } else {
-        const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev;
-        await persistQuestReviewGrade(supabase, last.wordId, prevStats, prevReviewedAt);
+        const { withLegacyReviewLock } = await import('../../lib/legacyReviewSync');
+        await withLegacyReviewLock(userId, async () => {
+          if (!isCurrentScope(scope)) throw new Error('legacy_review_account_changed');
+          const { last_reviewed_at: prevReviewedAt = null, ...prevStats } = last.prev;
+          await persistQuestReviewGrade(supabase, last.wordId, prevStats, prevReviewedAt);
+          if (!isCurrentScope(scope)) throw new Error('legacy_review_account_changed');
+          // 기존 호출 모양을 유지하되 strict 보상 응답까지 같은 잠금 안에서 기다린다.
+          let markerWrite;
+          const logReviewEvents = (actor, events) => {
+            markerWrite = writeReviewEvents(actor, events, { strict: true });
+            return markerWrite;
+          };
+          if (!last.queued) logReviewEvents(userId, [{
+            lang: last.lang, source: 'ui', item_key: last.itemKey, correct: true,
+            detail: { qtype: 'undo', undo_of: { item_key: last.itemKey, rating: last.rating, reviewed_at: last.reviewedAt } },
+          }]);
+          await markerWrite;
+        });
       }
       if (!isCurrentScope(scope)) return;
     } catch {
       if (!isCurrentScope(scope)) return;
       setGradeError('되돌리지 못했어요. 연결을 확인해 주세요.');
       return;
+    } finally {
+      if (isCurrentScope(scope)) gradingRef.current = false;
     }
-    if (!last.queued) logReviewEvents(userId, [{
-      lang: last.lang, source: 'ui', item_key: last.itemKey, correct: true,
-      detail: { qtype: 'undo', undo_of: { item_key: last.itemKey, rating: last.rating, reviewed_at: last.reviewedAt } },
-    }]);
+    if (lastGradeRef.current === last) lastGradeRef.current = null;
     rightRef.current = last.right;
     setRight(last.right);
     setIdx(last.idx);

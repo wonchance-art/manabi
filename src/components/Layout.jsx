@@ -57,6 +57,8 @@ export default function Layout({ children }) {
   const [isOffline, setIsOffline] = useState(false);
   const [resendingConfirm, setResendingConfirm] = useState(false);
   const toast = useToast();
+  const reviewActorRef = useRef(user?.id ?? null);
+  reviewActorRef.current = user?.id ?? null;
 
   // 이메일 미검증 사용자 감지 (Supabase에서 confirm 필수가 꺼진 경우)
   const needsEmailConfirm = !!user && user.email && !user.email_confirmed_at && !user.confirmed_at;
@@ -95,11 +97,16 @@ export default function Layout({ children }) {
     let alive = true;
     const sync = async () => {
       try {
-        const [{ flushReviews }, { persistVocabGrade }] = await Promise.all([
+        const [{ flushReviews: flushActorReviews }, { persistVocabGrade }] = await Promise.all([
           import('../lib/reviewOutbox'),
           import('../lib/fsrs'),
         ]);
+        if (!alive || reviewActorRef.current !== user.id) return;
+        const flushReviews = (client, accountId, options) => flushActorReviews(client, accountId, {
+          ...options, getAccountId: () => alive ? reviewActorRef.current : null,
+        });
         const r = await flushReviews(supabase, user.id, { persist: persistVocabGrade });
+        if (reviewActorRef.current !== user.id) return;
         if (!alive || r.sent === 0) return;
         toast(`복습 ${r.sent}개를 저장했어요.`, 'success');
         // 대기 수를 띄우는 화면(단어장)이 다시 세게 한다 — 폴링 대신 신호.

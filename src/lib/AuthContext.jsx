@@ -35,6 +35,7 @@ export function AuthProvider({ children }) {
 
   const actorRef = useRef(null);
   const authGenerationRef = useRef(0);
+  const explicitLoginRequestRef = useRef(0);
   const mountedRef = useRef(true);
   const loginActorRef = useRef(null);
   const observedProfileRef = useRef(null);
@@ -107,6 +108,7 @@ export function AuthProvider({ children }) {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      explicitLoginRequestRef.current += 1;
       profileReaderRef.current?.invalidate();
       subscriptionRef.current?.unsubscribe();
     };
@@ -177,6 +179,7 @@ export function AuthProvider({ children }) {
     subscriptionRef.current?.unsubscribe();
     const authState = client.auth.onAuthStateChange(async (event, session) => {
       if (!mountedRef.current || isCancelled()) return;
+      if (event === 'SIGNED_OUT') explicitLoginRequestRef.current += 1;
       adoptUser(session?.user ?? null);
       setLoading(false);
       if (session?.user) {
@@ -211,6 +214,19 @@ export function AuthProvider({ children }) {
     attachAuthListener(client);
   }
 
+  async function acceptExplicitLogin(data, request, generation) {
+    const nextUser = data.session?.user;
+    // SDK의 본인 SIGNED_IN은 응답보다 먼저 온다. 본인 actor는 허용하고 후착 타인 결과만 버린다.
+    const current = () => mountedRef.current && explicitLoginRequestRef.current === request
+      && (authGenerationRef.current === generation || actorRef.current === nextUser?.id);
+    if (!current()) return;
+    await ensureAuthListener();
+    if (nextUser && current()) {
+      adoptUser(nextUser);
+      await initializeLoginProfile(nextUser);
+    }
+  }
+
   // 로그인 시 앱 어디서든 레퍼런스 진도 동기화 — [강의]/[홈] 외 페이지에서도 기기 간 병합되도록.
   // user.id 변경(로그인/앱 진입) 시 1회만 도므로 force로 throttle 무시 — 다른 기기가 방금 올린 진도를 확실히 끌어온다.
   useEffect(() => {
@@ -223,6 +239,7 @@ export function AuthProvider({ children }) {
 
   // 이메일 회원가입
   async function signUp(email, password, displayName) {
+    const request = ++explicitLoginRequestRef.current, generation = authGenerationRef.current;
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -232,20 +249,19 @@ export function AuthProvider({ children }) {
       },
     });
     if (error) throw error;
-    await ensureAuthListener();
-    if (data.session?.user) { adoptUser(data.session.user); await initializeLoginProfile(data.session.user); }
+    await acceptExplicitLogin(data, request, generation);
     return data;
   }
 
   // 이메일 로그인
   async function signIn(email, password) {
+    const request = ++explicitLoginRequestRef.current, generation = authGenerationRef.current;
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
     });
     if (error) throw error;
-    await ensureAuthListener();
-    if (data.session?.user) { adoptUser(data.session.user); await initializeLoginProfile(data.session.user); }
+    await acceptExplicitLogin(data, request, generation);
     return data;
   }
 
@@ -269,6 +285,7 @@ export function AuthProvider({ children }) {
 
   // 로그아웃
   async function signOut() {
+    explicitLoginRequestRef.current += 1;
     explicitSignOutRef.current = true;
     await supabase.auth.signOut();
     adoptUser(null);

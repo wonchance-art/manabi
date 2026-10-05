@@ -20,6 +20,7 @@ import { isLearningStorageUnavailableError } from '../learningCapabilities';
 import { VOCAB_UPSERT, buildVocabRow } from '../vocabIO';
 import { normalizeSlug, slugAliases } from '../world/storageSchema.js';
 import { recordLessonActivity } from './learningActivity';
+import { withLegacyReviewOnlineLock } from '../legacyReviewSync';
 
 export { normalizeSlug } from '../world/storageSchema.js';
 
@@ -170,7 +171,7 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
   // SRS는 실패)이 생길 여지를 없앤다. onLine===false는 '확실히 오프라인'만 뜻한다.
   if (typeof navigator !== 'undefined' && navigator.onLine === false) {
     const queued = await queueReviewOffline(
-      userId, { type, itemKey, lang, correct, detail }, nextStats, reviewedAt,
+      userId, { type, itemKey, lang, correct, detail }, nextStats, reviewedAt, false,
     );
     // 큐에 못 담았으면 그건 진짜 유실이다 — 성공이라 말하면 안 된다(사생활 모드 등).
     // reviewedAt 동봉(W R2) — undo가 outbox 항목(itemKey + reviewedAt)을 찾아 지우는 열쇠
@@ -179,28 +180,34 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
 
   // 로그인 경로: 복습 이벤트 + SRS + 보상
   try {
-    if (type === 'vocab') await assertLegacyFsrsAllowed(supabase, { userId, cardId: detail?.word_id, itemKey, language: lang });
-    // 1. 진도 이벤트: review_events 적재
-    await recordReviewEventRemote(userId, { lang, source: type, item_key: itemKey, correct, detail, created_at: reviewedAt });
+    const reviewKey = type === 'vocab' && detail?.word_id
+      ? JSON.stringify(['vocab', detail.word_id]) : JSON.stringify([type, lang, itemKey]);
+    return await withLegacyReviewOnlineLock(userId, reviewKey, async () => {
+      if (type === 'vocab') await assertLegacyFsrsAllowed(supabase, { userId, cardId: detail?.word_id, itemKey, language: lang });
+      // flush/undo의 조회→쓰기와 온라인 기록 전체가 같은 actor 경계를 공유한다.
+      // 1. 진도 이벤트: review_events 적재
+      await recordReviewEventRemote(userId, { lang, source: type, item_key: itemKey, correct, detail, created_at: reviewedAt });
 
-    // 2. SRS: 어휘·문법·문형 다음 복습 스케줄
-    if (type === 'vocab' && detail?.word_id && nextStats.next_review_at) {
-      await updateVocabNextReviewRemote(userId, detail.word_id, nextStats, reviewedAt);
-    } else if (type === 'grammar' || type === 'pattern') {
-      // 문법/문형은 기존 grammarSrs에서 처리 (이 함수는 진도만)
-    }
+      // 2. SRS: 어휘·문법·문형 다음 복습 스케줄
+      if (type === 'vocab' && detail?.word_id && nextStats.next_review_at) {
+        await updateVocabNextReviewRemote(userId, detail.word_id, nextStats, reviewedAt);
+      } else if (type === 'grammar' || type === 'pattern') {
+        // 문법/문형은 기존 grammarSrs에서 처리 (이 함수는 진도만)
+      }
 
-    // 3. 보상: 활동 기록
-    await recordActivityRemote(userId, lang, 'review_completed', { type, correct });
-    // reviewedAt 동봉(W R2) — 원 이벤트는 못 지우므로(RLS SELECT·INSERT뿐) undo 보상 이벤트가
-    // detail.undo_of.reviewed_at으로 원 채점을 가리킨다
-    return { ok: true, reviewedAt };
+      // 3. 보상: 활동 기록
+      await recordActivityRemote(userId, lang, 'review_completed', { type, correct });
+      // reviewedAt 동봉(W R2) — 원 이벤트는 못 지우므로(RLS SELECT·INSERT뿐) undo 보상 이벤트가
+      // detail.undo_of.reviewed_at으로 원 채점을 가리킨다
+      return { ok: true, reviewedAt };
+    });
   } catch (err) {
     // 제외는 연결 장애가 아니다. 실패한 평가를 성공/오프라인 재시도로 위장하지 않는다.
     if (isVocabularyExcludedError(err) || isLearningStorageUnavailableError(err) || isFsrsLegacyWriteError(err)) return { ok: false, error: err };
     // 온라인인데 실패했다 — 서버가 죽었거나 연결이 방금 끊겼다. 큐에 넣어 살린다.
     // 이벤트가 이미 착지했을 수도 있는데, 온라인 경로도 같은 reviewedAt을 실어 보내므로
     // flush의 완전 일치 대조가 그 중복을 걸러낸다.
+    // 온라인 lock이 해제된 뒤 enqueue 자체의 lock을 얻는다. 내부 재취득은 deadlock이다.
     const queued = await queueReviewOffline(
       userId, { type, itemKey, lang, correct, detail }, nextStats, reviewedAt,
     );
@@ -216,7 +223,7 @@ export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
  * 미전송 복습 큐로 보낸다(v2-N R2). 어휘가 아니거나 큐를 못 쓰면 false.
  * 동적 import — IndexedDB 계층을 로그인·온라인 정상 경로의 번들에서 떼어 놓는다.
  */
-async function queueReviewOffline(userId, ref, nextStats, reviewedAt) {
+async function queueReviewOffline(userId, ref, nextStats, reviewedAt, remoteAttempted = true) {
   try {
     const { enqueueReview } = await import('../reviewOutbox');
     return await enqueueReview({
@@ -228,6 +235,8 @@ async function queueReviewOffline(userId, ref, nextStats, reviewedAt) {
       detail: ref.detail ?? null,
       nextStats: nextStats?.next_review_at ? nextStats : null,
       reviewedAt,
+      // false은 위의 명시적 offline 무전송 분기에서만 온다. 온라인 응답 유실은 보수적으로 true다.
+      remoteAttempted,
     });
   } catch {
     return false;
