@@ -55,10 +55,10 @@ afterEach(() => {
 
 describe('localized Korean explanations preserve source and requested terminology', () => {
   it.each([
-    ['ko', 'natural Korean grammatical terms', '보조 동사'],
-    ['zh-CN', 'natural Simplified Chinese grammatical terms', '助动词'],
-    ['zh-TW', 'natural Taiwan Traditional Chinese grammatical terms', '助動詞'],
-  ])('sends locale proofreading through the actual word overlay in %s', async (locale, rule, term) => {
+    ['ko', 'natural Korean grammatical terms', '보조 동사', '기본형'],
+    ['zh-CN', 'natural Simplified Chinese grammatical terms', '助动词', '原形'],
+    ['zh-TW', 'natural Taiwan Traditional Chinese grammatical terms', '助動詞', '原形'],
+  ])('sends locale proofreading through the actual word overlay in %s', async (locale, rule, term, dictionaryLabel) => {
     props.locale = locale;
     props.sourceLocale = locale === 'ko' ? 'zh-CN' : 'ko';
     render(); await flush();
@@ -67,6 +67,8 @@ describe('localized Korean explanations preserve source and requested terminolog
     expect(prompt).toContain(rule);
     expect(prompt).toContain(term);
     expect(prompt).toContain('Do not copy English grammatical labels');
+    expect(prompt).toContain(`Label the dictionary form as ${dictionaryLabel}`);
+    expect(prompt).toContain('Never print the English word lemma as an explanation label');
     if (locale === 'ko') expect(prompt).not.toContain('Proofread explanations for complete, natural Chinese terms');
     expect(JSON.parse(prompt.split('INPUT_JSON=').at(-1))).toEqual({
       surface: '읽지', lemma: '읽다', sentence: props.sentence,
@@ -78,8 +80,8 @@ describe('localized Korean explanations preserve source and requested terminolog
     expect(props.token.morphology).toEqual([{ form: '-지', function: '부정 연결 어미' }]);
   });
 
-  it('regenerates the old mixed-language display cache without changing or deleting stored source meanings', async () => {
-    const oldKey = await viewerCacheKey('viewer_word_locale', [props.scope, props.locale, '1'],
+  it.each(['1', 'ko-word-locale-v2'])('regenerates the old %s display cache without changing or deleting stored source meanings', async version => {
+    const oldKey = await viewerCacheKey('viewer_word_locale', [props.scope, props.locale, version],
       [props.token.text, props.token.base_form, props.sentence]);
     const old = JSON.stringify({ meaning: '還沒有讀', morphology: ['Auxiliary Verb 않다', 'negate 動詞'] });
     cache.set(oldKey, old);
