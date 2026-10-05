@@ -282,6 +282,20 @@ function VocabWorkspace({ bookReview }) {
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [tab, reviewFinished, manualAddOpen]);
+  // 종료 화면에서는 숫자 채점을 재개하지 않고 직전 채점 undo만 받는다.
+  useEffect(() => {
+    if (tab !== 'review' || !reviewFinished || manualAddOpen) return undefined;
+    function onFinishedUndo(e) {
+      const t = e.target;
+      const inField = !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+      const h = reviewKeysRef.current;
+      if (inField || !h.canUndo || e.altKey || !(e.metaKey || e.ctrlKey) || !/^[zZ]$/.test(e.key)) return;
+      e.preventDefault();
+      h.undo?.();
+    }
+    document.addEventListener('keydown', onFinishedUndo);
+    return () => document.removeEventListener('keydown', onFinishedUndo);
+  }, [tab, reviewFinished, manualAddOpen]);
   const [manualDraft, setManualDraft] = useState({ word_text: '', furigana: '', meaning: '', pos: '', language: 'Japanese' });
   const manualDialogRef = useRef(null);
   const manualAddPendingRef = useRef(false);
