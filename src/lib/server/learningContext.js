@@ -4,6 +4,7 @@ import { loadPublishedRegistry } from '@/lib/publishedChapter';
 import { LEARNING_LANGUAGES, LANGUAGE_BASE, materialIdValid, normalizeLearningWord, tokenContext, koreanTokenContext, learningSourceRevision } from '@/lib/learningSources';
 import {absoluteSourceSpan, exactSourceQuote} from '@/lib/viewerLocalizedContext';
 import {isStudyNote, noteFromMaterial} from '@/lib/studyNotes';
+import {koreanMeaningEnvelopeMatches} from '@/lib/koreanWordMeaning';
 
 export const fail = (status, message, extra = {}) => { throw Object.assign(new Error(message), { status, ...extra }); };
 export function checkDb(error) { if (error) fail(503, '자료 연결을 저장하거나 불러오지 못했어요. 잠시 후 다시 시도해 주세요.'); }
@@ -65,6 +66,8 @@ export async function resolveSave(supabase, userId, payload) {
         || exactSourceQuote(material.raw_text, span, source.surface) === null
         || exactSourceQuote(material.raw_text, quoteSpan, source.quote) === null) fail(400, '자료에서 문장을 다시 선택해 주세요.');
       const token = context.token;
+      if (Object.hasOwn(word, 'meaningCandidate') && !koreanMeaningEnvelopeMatches(word.meaningCandidate,
+        {token, source, meaning: normalized.meaning})) fail(400, '자료에서 문장을 다시 선택해 주세요.');
       normalized = {...normalized, word_text: normalizeLearningWord(token.sep_link || token.base_form || token.text),
         furigana: token.furigana || token.reading || '', pos: token.pos || ''};
       resolved = {kind: 'reading', materialId: String(material.id), quote: context.quote, translation: '',
