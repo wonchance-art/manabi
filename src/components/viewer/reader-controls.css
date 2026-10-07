@@ -446,10 +446,10 @@
 .manabi-app .viewer-layout .viewer-topbar .viewer-back-link[data-icon-action]:not(:has(.action-icon)){width:auto;padding-inline:6px}
 .manabi-app .viewer-layout .viewer-inspector__header{gap:4px}
 @container reader (max-width:460px){
-  .manabi-app .viewer-layout .viewer-inspector__header{flex-wrap:wrap;padding:6px 8px}
+  /* ^/v는 탭과 같은 한 줄(VIEWER-R0 버그 4) — 별도 줄로 떨어지면 390px 단어창 스크롤 창이 176~198px로 준다. */
+  .manabi-app .viewer-layout .viewer-inspector__header{flex-wrap:nowrap;padding:2px 8px}
   .manabi-app .viewer-layout .viewer-inspector__tabs{flex:1;min-width:0}
   .manabi-app .viewer-layout .viewer-inspector__tabs button{flex:1;min-width:64px;padding:6px}
-  .manabi-app .viewer-layout .viewer-inspector__nav{order:2;flex:1 0 100%;justify-content:flex-end}
 }
 
 /* Word-body hierarchy only. Existing panel scrolling and grading geometry stay intact. */

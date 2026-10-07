@@ -3,7 +3,7 @@ export const VIEWER_PREF_KEY = 'viewer_preferences_v2';
 export const COMMON_KEYS = ['theme', 'ttsRate'];
 export const TAB_KEYS = {
   type: ['fontSize', 'pinyinSize', 'lineGap', 'charGap', 'fontFamily', 'theme'],
-  display: ['pronDisplay', 'pronReveal', 'wordStateHl', 'showToneColors', 'showHanjaKo', 'showPatterns', 'patternFilter'],
+  display: ['pronDisplay', 'wordStateHl', 'showToneColors', 'showHanjaKo', 'showPatterns', 'patternFilter'],
   pace: ['focusMode', 'autoPace', 'paceCpm', 'paceStep', 'autoSpeakOnClick', 'ttsRate'],
 };
 export function fontChoices(language) {
@@ -13,7 +13,7 @@ export function fontChoices(language) {
 }
 export function viewerDefaults(language) {
   return {fontSize:1.6, pinyinSize:0.75, lineGap:15, charGap:0.25, theme:'sepia', fontFamily:'sans',
-    pronDisplay:'all', pronReveal:false, autoSpeakOnClick:false, ttsRate:'normal', showHanjaKo:false,
+    pronDisplay:'all', autoSpeakOnClick:false, ttsRate:'normal', showHanjaKo:false,
     showToneColors:false, focusMode:false, wordStateHl:false, showPatterns:false, patternFilter:'all',
     autoPace:false, paceCpm:null, paceStep:0};
 }
