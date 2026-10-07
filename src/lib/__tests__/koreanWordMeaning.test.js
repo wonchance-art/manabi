@@ -1,6 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {buildKoreanWordMeaningPrompt, parseKoreanWordMeaning, koreanWordMeaningInput, koreanMeaningEnvelope,
-  koreanMeaningEnvelopeMatches, koreanLexicalMeaningLocale, KOREAN_LEXICAL_MEANING_LOCALES, savedKoreanCardMeaning} from '../koreanWordMeaning';
+  koreanMeaningEnvelopeMatches, koreanLexicalMeaningLocale, KOREAN_LEXICAL_MEANING_LOCALES, savedKoreanCardMeaning,
+  koreanLexicalMeaningAllowed} from '../koreanWordMeaning';
 
 const response = (patch = {}) => JSON.stringify({lemma:'가다',lemmaStatus:'matched',lexicalMeaning:'去',...patch});
 const source = {kind:'reading', materialId:211, tokenId:'second', surface:'갔어요', sourceRevision:`reading-source:v2:${'a'.repeat(64)}`,
@@ -88,5 +89,22 @@ describe('adding a source to an existing card reuses its meaning instead of a re
     expect(savedKoreanCardMeaning({...card, meaning:'  '}, params.token)).toBeNull();
     expect(savedKoreanCardMeaning(null, params.token)).toBeNull();
     expect(savedKoreanCardMeaning(card, null)).toBeNull();
+  });
+});
+
+describe('lexical generation is limited to signed-in readers who can save', () => {
+  it('allows a call only with an account, a confirmed save capability and a zh explanation locale', () => {
+    expect(koreanLexicalMeaningAllowed({accountId:'alice', canSave:true, locale:'zh-CN'})).toBe(true);
+    expect(koreanLexicalMeaningAllowed({accountId:'alice', canSave:true, locale:'zh-TW'})).toBe(true);
+  });
+  it.each([
+    [{accountId:null, canSave:true, locale:'zh-CN'}, 'signed out'],
+    [{accountId:'alice', canSave:false, locale:'zh-CN'}, 'save capability unavailable or still loading'],
+    [{accountId:'alice', canSave:undefined, locale:'zh-TW'}, 'capability unknown'],
+    [{accountId:'alice', canSave:'true', locale:'zh-TW'}, 'non-boolean capability'],
+    [{accountId:'alice', canSave:true, locale:'ko'}, 'ko held'],
+    [undefined, 'no context'],
+  ])('makes zero calls for %j (%s)', input => {
+    expect(koreanLexicalMeaningAllowed(input)).toBe(false);
   });
 });

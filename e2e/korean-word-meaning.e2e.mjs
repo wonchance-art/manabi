@@ -350,6 +350,40 @@ test('an existing card keeps its meaning: add-context reuses it without generati
   } finally {await finish(f,'lexical-existing-preservation');}
 });
 
+test('the lexical section follows the zh explanation locale without a stale value and is absent for held ko',async()=>{
+  const f=await fixture();
+  const shown=async()=>(await f.page.locator('[data-korean-lexical-meaning]').filter({visible:true}).locator('p').allTextContents()).map(text=>text.trim());
+  try {
+    await f.page.goto('/viewer/98133',{waitUntil:'domcontentloaded'});
+    await f.page.locator('[data-source-token="id_1_0"]').click(); await f.actions.waitFor();
+    for (const [code,value] of [['zh-CN','学校'],['zh-TW','學校']]) {
+      if (code!=='zh-CN') await locale(f.page,'explanationLocale',code);
+      await f.page.locator('[data-korean-lexical-meaning]').filter({visible:true}).getByText(value,{exact:true}).waitFor();
+      assert.deepEqual(await shown(),[value],`${code}: only the current locale's lexical meaning is shown`);
+    }
+    await locale(f.page,'explanationLocale','ko');
+    // The fixture's ko word explanation is '갔다' for every word; it proves the ko card finished rendering.
+    await f.page.locator('[data-korean-context-meaning]').filter({visible:true}).getByText('갔다',{exact:true}).waitFor();
+    assert.equal(await f.page.locator('[data-korean-lexical-meaning]').count(),0,'ko: no lexical section, no stale zh value');
+    const locales=f.requests.filter(p=>p.includes('lexicalMeaning')).map(p=>JSON.parse(p.split('INPUT_JSON=').at(-1)).locale);
+    assert.deepEqual(locales,['zh-CN','zh-TW'],'one lexical request per zh locale and none for ko');
+    assert.equal(f.writes.length,0); assert.deepEqual(f.errors,[]);
+  } finally {await finish(f,'lexical-locale-follow');}
+});
+
+test('a reader who cannot save makes no lexical generation call',async()=>{
+  const f=await fixture({ready:false});
+  try {
+    await f.page.goto('/viewer/98133',{waitUntil:'domcontentloaded'});
+    await f.page.locator('[data-source-token="id_1_2"]').click();
+    await f.page.locator('[data-korean-context-meaning]').filter({visible:true}).getByText('去了',{exact:true}).waitFor();
+    assert.equal(await f.page.locator('[data-korean-lexical-meaning]').count(),0,'no lexical section without save capability');
+    assert.equal(await f.page.locator('.save-grade .review-score-btn').count(),0);
+    assert.equal(f.requests.filter(p=>p.includes('lexicalMeaning')).length,0,'no /api/gemini lexical call without save capability');
+    assert.equal(f.writes.length,0); assert.deepEqual(f.errors,[]);
+  } finally {await finish(f,'lexical-cannot-save');}
+});
+
 test('lexical/context labels and save controls remain reachable at narrow widths and enlarged text',async()=>{
   const f=await fixture();
   try {

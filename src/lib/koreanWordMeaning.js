@@ -5,6 +5,10 @@ export const KOREAN_WORD_MEANING_LOCALES = Object.freeze(['ko', 'zh-CN', 'zh-TW'
 // 수정에 쓰지 않은 표본에서도 실패. 보류 언어는 생성·표시·저장 모두 기존(main) 경로를 쓴다.
 export const KOREAN_LEXICAL_MEANING_LOCALES = Object.freeze(['zh-CN', 'zh-TW']);
 export const koreanLexicalMeaningLocale = locale => KOREAN_LEXICAL_MEANING_LOCALES.includes(locale);
+// 생성 호출은 로그인해 저장할 수 있는 독자에게만 한다(/api/gemini는 IP당 분당 60회). 읽기 전용은 0회.
+export function koreanLexicalMeaningAllowed({accountId, canSave, locale} = {}) {
+  return !!accountId && canSave === true && koreanLexicalMeaningLocale(locale);
+}
 const fields = ['lemma', 'lemmaStatus', 'lexicalMeaning'];
 const normalize = value => typeof value === 'string' ? value.normalize('NFC').trim() : '';
 const spanValid = span => span?.unit === 'utf16' && Number.isInteger(span.start) && Number.isInteger(span.end) && span.start >= 0 && span.end > span.start;

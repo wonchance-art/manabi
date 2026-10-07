@@ -117,7 +117,7 @@ import { prepareViewerSaveUndo, undoViewerSave } from '../lib/viewerSaveUndo';
 import { contextualMeaning, refreshViewerToken, referenceMatchesContext, createViewerRequestGate, viewerCacheKey, viewerCommandAllowed } from '../lib/viewerReliability';
 import { clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
 import {useKoreanWordMeaning} from '../lib/useKoreanWordMeaning';
-import {koreanWordMeaningInput, koreanMeaningEnvelope, koreanLexicalMeaningLocale, savedKoreanCardMeaning, selectedKoreanWordTokens, koreanListContextRequest, koreanListContextEntries} from '../lib/koreanWordMeaning';
+import {koreanWordMeaningInput, koreanMeaningEnvelope, koreanLexicalMeaningAllowed, savedKoreanCardMeaning, selectedKoreanWordTokens, koreanListContextRequest, koreanListContextEntries} from '../lib/koreanWordMeaning';
 import { lookupTranslation, bookMeaningPanelText } from '../lib/bilingualSplit';
 import { isLocalId, parseLocalId, chaptersForLocalNav } from '../lib/classBoard';
 import { getSharedCopy } from '../lib/sharedStore';
@@ -890,8 +890,10 @@ export default function ViewerPage() {
     [user?.id, id, effectiveExplanationLocale, koreanSourceScope]);
   // 목록·카드가 같은 규칙으로 '이 읽기 도움이 어느 설명 언어인가'를 판단한다.
   const koreanReadingLocale = token => token?.meaningLocale || token?.explanationLocale || material?.processed_json?.metadata?.explanationLocale || 'ko';
-  // 새 기본형 뜻 경로는 zh 설명 언어에서만 쓴다. ko는 사전 근거 도입 전까지 main 저장 동작 그대로.
-  const koreanLexical = materialLang === 'Korean' && koreanLexicalMeaningLocale(effectiveExplanationLocale);
+  // 새 기본형 뜻 경로는 zh 설명 언어에서, 로그인해 저장할 수 있을 때만 쓴다(읽기 전용은 생성 0회).
+  // ko는 사전 근거 도입 전까지 main 저장 동작 그대로.
+  const koreanLexical = materialLang === 'Korean' && koreanLexicalMeaningAllowed({accountId: user?.id,
+    canSave: learningCapabilities.save, locale: effectiveExplanationLocale});
   function meaningInputFor(token) {
     if (!koreanLexical || !token) return null;
     return koreanWordMeaningInput({accountId: user?.id, materialId: id, token, source: readingContextSource(token), locale: effectiveExplanationLocale});
