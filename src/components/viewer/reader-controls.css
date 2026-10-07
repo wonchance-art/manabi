@@ -50,7 +50,8 @@
 .viewer-layout .reader-area .word-token .surface {text-shadow:none;color:inherit;}
 /* Selection adds a quiet neutral wash; learning states keep their own hues. */
 .viewer-layout :is(.reader-area,.reader-settings__preview) {--picked-bg:color-mix(in srgb,var(--reader-ink) 7%,var(--reader-paper));}
-.viewer-layout .reader-area--focus .word-token:not(.word-token--picked):not([data-selected="true"]) {opacity:.28;color:var(--reader-ink);}
+/* Focus dims the other sentences to 0.5 (owner-confirmed, VIEWER-V2-ROUNDS-001 §5 AD-R2) — the only focus opacity rule. */
+.viewer-layout .reader-area--focus .word-token:not(.word-token--picked):not([data-selected="true"]) {opacity:.5;color:var(--reader-ink);}
 .viewer-layout .reader-area--focus .word-token:is(.word-token--picked,[data-selected="true"]) {opacity:1;color:var(--reader-ink);}
 .viewer-layout .reader-area .word-token--picked {color:var(--reader-ink);}
 .viewer-layout .reader-area--focus .word-token:is(.word-token--picked,[data-selected="true"]) .surface {opacity:1;}
@@ -64,6 +65,8 @@
 .viewer-layout .word-token[data-selected="true"] .surface::before {animation:none;}
 .viewer-layout .word-token[data-selected="true"]::before {content:"";position:absolute;z-index:1;left:0;right:0;top:calc(var(--hl-band-top) - var(--hl-frame-top));height:calc(var(--hl-frame-top) + var(--hl-band-h) + var(--hl-frame-bottom));border:1.5px solid var(--word-selection-line,color-mix(in srgb,var(--reader-ink) 55%,transparent));border-radius:6px;pointer-events:none;}
 .viewer-layout .word-token--pattern:is(.word-token--saved,.word-token--due) {--hl-frame-bottom:calc(var(--hl-mark-gap) * 2 + 5.5px);}
+/* New-word underline (AD-R2, state colours on only) takes the same second slot under a pattern line. */
+.viewer-layout .reader-area--hl .word-token--pattern:is(.word-token--new,.word-token--met) {--hl-frame-bottom:calc(var(--hl-mark-gap) * 2 + 5.5px);}
 .viewer-layout .viewer-h1 .word-token[data-selected="true"]::before {font-size:1.5em;}
 .viewer-layout .viewer-h2 .word-token[data-selected="true"]::before {font-size:1.25em;}
 .viewer-layout .viewer-h3 .word-token[data-selected="true"]::before {font-size:1.1em;}
