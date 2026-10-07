@@ -20,7 +20,7 @@ const sliceBetween = (src, start, end) => {
   expect(j, `missing end after ${start}`).toBeGreaterThan(i);
   return src.slice(i, j);
 };
-const panel = () => sliceBetween(viewer, 'const leftPanelContent =', '\n  // --dragging');
+const panel = () => sliceBetween(viewer, 'const renderSentencePanel = () => {', '\n  // --dragging');
 
 describe('[문장] 탭 — 목업 순서', () => {
   it('원문 → 번역 → [더 쉽게][자세히] → 문형 → 단어별 뜻', () => {

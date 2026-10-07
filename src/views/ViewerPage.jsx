@@ -118,8 +118,9 @@ import { useEasierText } from '../lib/useEasierText';
 import { prepareViewerSaveUndo, undoViewerSave } from '../lib/viewerSaveUndo';
 import { contextualMeaning, refreshViewerToken, referenceMatchesContext, createViewerRequestGate, viewerCacheKey, viewerCommandAllowed } from '../lib/viewerReliability';
 import { clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
-import { SENTENCE_TX_QUERY, canonicalSentence, classifySentenceOpen, fetchSentenceTranslation, peekSentenceTranslationKey,
+import { SENTENCE_TX_LOGIN_REQUIRED, SENTENCE_TX_QUERY, canonicalSentence, classifySentenceOpen, fetchSentenceTranslation, peekSentenceTranslationKey,
   sentenceBookMeaning, sentencePrefetchLimiter, sentenceTranslationKey, sentenceTranslationQuery, sentenceTxStats } from '../lib/sentenceTranslation';
+import { sentencePanelOriginal, sentencePanelTokenIds, sentencePatternHits, sentenceWordGlosses } from '../lib/viewerSentenceGlosses';
 import { useSentencePrefetch } from '../lib/useSentencePrefetch';
 import { isLocalId, parseLocalId, chaptersForLocalNav } from '../lib/classBoard';
 import { getSharedCopy } from '../lib/sharedStore';
@@ -910,6 +911,9 @@ export default function ViewerPage() {
   // 문형 한 줄의 팝오버(Q6 — 비모달, 접힘 0). 다른 단어로 가면 닫는다.
   const [patternOpen, setPatternOpen] = useState(false);
   useEffect(() => { setPatternOpen(false); }, [selectedToken?.id, selectedToken?.text]);
+  // [문장] 탭의 문형 팝오버(AE-R2 PR ③) — 몇 번째 문형이 열렸나. 탭 문장이 바뀌면 닫는다.
+  const [sentencePatternOpen, setSentencePatternOpen] = useState(null);
+  useEffect(() => { setSentencePatternOpen(null); }, [leftPanelText]);
   const preserveOpenWord = !classStudyActive && !studyContext && !material?.__local
     && !/^\/class\//.test(originalParams.get('returnTo') || '') && !!selectedToken && isSheetOpen;
   const localizedWord = useViewerExplanation({token: selectedToken, sentence: ctxSentenceOf(selectedToken) ?? leftPanelText,
@@ -1360,7 +1364,10 @@ export default function ViewerPage() {
         setLeftPanelResult(bookMeaning);
         setLeftPanelLoading(false);
       }
-      const translationArgs = { ...sentenceTxArgs(sel), purpose: 'viewer-sentence', onAi: (event) => sentenceTxStats.ai(event) };
+      // 게스트(AE-R2 PR ③ · Q4): AI는 로그인 사용자만 — 캐시·교재 맵이 없으면 요청하지 않고 번역 칸에 로그인 안내를 둔다
+      // (예전: /api/gemini 401 → 「설명을 가져오지 못했어요」).
+      const translationArgs = { ...sentenceTxArgs(sel), purpose: 'viewer-sentence', onAi: (event) => sentenceTxStats.ai(event),
+        ...(user ? {} : { beforeAi: () => false }) };
       const fromCard = cardSentenceOpen.current?.sentence === sel ? cardSentenceOpen.current : null;
       cardSentenceOpen.current = null;
       // 병렬 실행
@@ -1374,7 +1381,11 @@ export default function ViewerPage() {
           if (!current()) return;
           setLeftPanelResult(text);
           setLeftPanelLoading(false);
-        }).catch(() => { if (current()) { setLeftPanelResult('설명을 가져오지 못했어요. 문장을 다시 선택해 주세요.'); setLeftPanelLoading(false); } }),
+        }).catch((error) => {
+          if (!current()) return;
+          setLeftPanelResult(!user && error?.message === 'SENTENCE_TX_SKIPPED' ? SENTENCE_TX_LOGIN_REQUIRED : '설명을 가져오지 못했어요. 문장을 다시 선택해 주세요.');
+          setLeftPanelLoading(false);
+        }),
 
         // 단어 분석 — 문장 단위 캐시(좌측 번역과 대칭). 적중하면 서버 요청 자체가 사라져
         // 문맥 판별·뜻 조회가 함께 절감된다(§C4).
@@ -2731,110 +2742,170 @@ export default function ViewerPage() {
   };
   const rightPanelContent=renderRightPanelContent();
 
-  const leftPanelContent = leftPanelLoading ? (
-    <div className="pdf-side__empty">
-      <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{vt("번역 + 맥락 생성 중...")}</span>
-    </div>
-  ) : leftPanelResult ? (
-    <div className="viewer-side__content">
-      <div className="pdf-context__title">{vt("번역 · 맥락")}</div>
-      {leftPanelText && (
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
-          <div className="pdf-context__original" lang={contentLangTag} style={{ flex: 1, minWidth: 0 }}>&quot;{leftPanelText.length > 120 ? leftPanelText.slice(0, 120) + '…' : leftPanelText}&quot;</div>
-          {ttsSupported && (
-            <button
-              onClick={() => speak(leftPanelText, materialLang, ttsOptsFor(ttsRate))}
-              aria-label={vt("지정한 문장 듣기")}
-              title={vt("지정한 문장 듣기")}
-              data-icon-action
-              style={{ background: 'none', border: 'none', cursor: 'pointer', minWidth: 44, minHeight: 44, flexShrink: 0, color: 'var(--primary-light)' }}
-            ><ActionIcon name="audio"/></button>
-          )}
-          {ttsSupported && (
-            <button
-              onClick={() => setDictationSentence(leftPanelText)}
-              aria-label={vt("이 문장 받아쓰기")}
-              title={vt("이 문장 받아쓰기 — 듣고 입력하면 글자 단위로 채점해요")}
-              data-icon-action
-              style={{ background: 'none', border: 'none', cursor: 'pointer', minWidth: 44, minHeight: 44, flexShrink: 0 }}
-            ><ActionIcon name="headphones"/></button>
-          )}
-        </div>
-      )}
-      <div className="pdf-context__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(leftPanelResult) }} />
-
-      {/* [더 쉽게] (#1077-3) — 번역을 보기 전 원어 안의 한 계단. 결과는 원어 문장이라
-          본문과 같은 :lang() 폰트 규칙을 태운다. */}
-      {!easier.open ? (
-        <button
-          className="grammar-btn grammar-detail__toggle"
-          onClick={() => easier.run(leftPanelText)}
-          disabled={!leftPanelText}
-          aria-label={vt("🔤 더 쉽게 ▾")}
-        ><ActionIcon name="type"/><span>{vt("🔤 더 쉽게 ▾").replace('🔤 ','').replace(' ▾','')}</span></button>
-      ) : (
-        <div className="grammar-detail">
-          {easier.loading ? (
-            <div className="grammar-detail__loading">{vt("쉬운 문장 생성 중…")}</div>
-          ) : (
-            <div className="pdf-context__text" lang={contentLangTag} dangerouslySetInnerHTML={{ __html: formatDetail(easier.result) }} />
-          )}
-        </div>
-      )}
-
-      {/* [자세히] — 문법 온디맨드(구조+패턴 통합, 정본 챕터 연결). 번역·어휘는 이미
-          위(맥락)와 오른쪽(단어 목록)이 담당하므로 여기서 반복하지 않는다. */}
-      {!grammar.open ? (
-        <button
-          className="grammar-btn grammar-detail__toggle"
-          onClick={() => grammar.run(leftPanelText)}
-          disabled={!leftPanelText}
-          aria-label={vt("자세히 ▾")}
-        ><ActionIcon name="book"/><span>{vt("자세히 ▾").replace(' ▾','')}</span></button>
-      ) : (
-        <div className="grammar-detail">
-          {grammar.loading ? (
-            <div className="grammar-detail__loading">{vt("문법 해설 생성 중…")}</div>
+  // ── [문장] 탭(뷰어 v2 AE-R2 PR ③ · 설계서 docs/manabi-viewer-v2-ae-r2.md §3·§11 목업, 정본 §4) ──
+  // 순서: 원문 줄(누른 단어만 칠) → 번역 → [더 쉽게][자세히] → 문형 → 단어별 뜻. 번역만 늦게 오고(T3) 나머지는 T0라
+  // 진행 표시는 번역 칸에만 둔다 — 원문 줄과 번역 칸 머리는 번역이 와도 움직이지 않고 그 아래만 밀린다.
+  // 내용의 원천은 지금처럼 패널 상태(leftPanelText·Result) 하나다(카드 [문장] 탭·막대·이동·드래그·수업이 같은 경로).
+  // 단어별 뜻·문형은 자료 토큰에서 만든다(재분석·드래그 목록·만남 기록 0 — 설계서 §3.3). 「AI」 표시는 두지 않는다.
+  const renderSentencePanel = () => {
+    const cardLine = selectedToken && isSheetOpen ? lineIndexOfToken(selectedToken) : null;
+    const fromCard = cardLine !== null && canonicalSentence(ctxSentenceOf(selectedToken)) === leftPanelText;
+    const json = material?.processed_json;
+    const tokenIds = sentencePanelTokenIds({ text: leftPanelText, rawLines: material?.raw_text?.split('\n') || [], lineTokens: lineTokensByIndex,
+      sequence: json?.sequence, dictionary: json?.dictionary, range: tokenRange.range });
+    const original = sentencePanelOriginal({ text: leftPanelText, tokens: fromCard ? lineTokensByIndex.get(cardLine) || [] : [], tokenId: fromCard ? selectedToken.id : null });
+    const glosses = sentenceWordGlosses(json?.dictionary, tokenIds, { language: materialLang });
+    const patterns = sentencePatternHits(visibleScan, tokenIds);
+    // 번역 칸 머리는 결과와 같은 마크업(formatDetail의 **번역** 제목, 설명 언어)으로 먼저 그린다 — 결과가 와도 제자리.
+    const headLocale = ['ko', 'zh-CN', 'zh-TW'].includes(effectiveExplanationLocale) ? effectiveExplanationLocale : 'ko';
+    const head = `**${translateViewerText(headLocale, '번역')}**`;
+    const result = leftPanelLoading || leftPanelResult === SENTENCE_TX_LOGIN_REQUIRED ? '' : leftPanelResult;
+    return (
+      <div className="viewer-side__content reader-sentence">
+        {leftPanelText && (
+          <div className="reader-sentence__source">
+            <p className="pdf-context__original reader-sentence__original" lang={contentLangTag}>{original.before}{original.term && <mark className="reader-card-sentence__term">{original.term}</mark>}{original.after}</p>
+            {ttsSupported && (
+              <button
+                className="reader-sentence__icon"
+                onClick={() => speak(leftPanelText, materialLang, ttsOptsFor(ttsRate))}
+                aria-label={vt("지정한 문장 듣기")}
+                title={vt("지정한 문장 듣기")}
+                data-icon-action
+              ><ActionIcon name="audio"/></button>
+            )}
+            {ttsSupported && (
+              <button
+                className="reader-sentence__icon"
+                onClick={() => setDictationSentence(leftPanelText)}
+                aria-label={vt("이 문장 받아쓰기")}
+                title={vt("이 문장 받아쓰기 — 듣고 입력하면 글자 단위로 채점해요")}
+                data-icon-action
+              ><ActionIcon name="headphones"/></button>
+            )}
+          </div>
+        )}
+        <div className="reader-sentence__translation">
+          {result ? (
+            <div className="pdf-context__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(/\*\*/.test(result) ? result : `${head}\n${result}`) }} />
           ) : (
             <>
-              {grammar.result && (
-                <div className="pdf-context__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(grammar.result) }} />
-              )}
-              {grammar.chapter?.href && (
-                <Link href={grammar.chapter.href} className="grammar-detail__ref">{vt("→ 정본 해설: 「")}{grammar.chapter.title}」 ›
-                </Link>
-              )}
-              {grammar.chapter && !grammar.chapter.href && <p className="grammar-detail__loading grammar-detail__archived">{vt("→ 정본 해설: 「")}{grammar.chapter.title}」 · {vt("보관된 교재라 열 수 없어요")}</p>}
-              {user && learningStorageSupported && grammar.result && (
-                <button
-                  onClick={() => saveGrammarNoteMutation.mutate()}
-                  disabled={saveGrammarNoteMutation.isPending || saveGrammarNoteMutation.isSuccess}
-                  className="grammar-btn grammar-detail__save"
-                >
-                  {saveGrammarNoteMutation.isSuccess ? '✓ 저장됨' : saveGrammarNoteMutation.isPending ? '저장 중…' : '노트에 저장'}
-                </button>
-              )}
-              <div className="grammar-detail__ask">
-                <input
-                  value={grammar.question}
-                  onChange={(e) => grammar.setQuestion(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') grammar.ask(leftPanelText); }}
-                  placeholder={vt("이 문장에 대해 더 묻기")}
-                  aria-label={vt("문법 추가 질문")}
-                  className="form-input"
-                />
-                <button
-                  className="grammar-btn"
-                  onClick={() => grammar.ask(leftPanelText)}
-                  disabled={grammar.asking || !grammar.question.trim()}
-                >{grammar.asking ? '…' : '질문'}</button>
-              </div>
+              <div className="pdf-context__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(head) }} />
+              {leftPanelResult === SENTENCE_TX_LOGIN_REQUIRED
+                ? <Link href="/auth" className="reader-sentence__login">{vt('로그인하면 이 문장의 번역을 볼 수 있어요 →')}</Link>
+                : <p className="reader-sentence__pending" role="status">{vt('번역 중…')}</p>}
             </>
           )}
         </div>
-      )}
-    </div>
-  ) : (
+
+        {/* [더 쉽게] (#1077-3) · [자세히] — 한 줄에 나란히(목업 §11). 번역과 무관해 T0부터 누를 수 있다. */}
+        <div className="reader-sentence__actions">
+          {!easier.open && (
+            <button
+              className="grammar-btn grammar-detail__toggle"
+              onClick={() => easier.run(leftPanelText)}
+              disabled={!leftPanelText}
+              aria-label={vt("🔤 더 쉽게 ▾")}
+            ><ActionIcon name="type"/><span>{vt("🔤 더 쉽게 ▾").replace('🔤 ','').replace(' ▾','')}</span></button>
+          )}
+          {!grammar.open && (
+            <button
+              className="grammar-btn grammar-detail__toggle"
+              onClick={() => grammar.run(leftPanelText)}
+              disabled={!leftPanelText}
+              aria-label={vt("자세히 ▾")}
+            ><ActionIcon name="book"/><span>{vt("자세히 ▾").replace(' ▾','')}</span></button>
+          )}
+        </div>
+        {/* 쉬운 문장은 원어라 본문과 같은 :lang() 폰트 규칙을 태운다. */}
+        {easier.open && (
+          <div className="grammar-detail">
+            {easier.loading ? (
+              <div className="grammar-detail__loading">{vt("쉬운 문장 생성 중…")}</div>
+            ) : (
+              <div className="pdf-context__text" lang={contentLangTag} dangerouslySetInnerHTML={{ __html: formatDetail(easier.result) }} />
+            )}
+          </div>
+        )}
+        {/* [자세히] — 문법 온디맨드(구조+패턴 통합, 정본 챕터 연결). 번역은 위 칸이, 단어 뜻은 아래 단어별 뜻이 맡는다. */}
+        {grammar.open && (
+          <div className="grammar-detail">
+            {grammar.loading ? (
+              <div className="grammar-detail__loading">{vt("문법 해설 생성 중…")}</div>
+            ) : (
+              <>
+                {grammar.result && (
+                  <div className="pdf-context__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(grammar.result) }} />
+                )}
+                {grammar.chapter?.href && (
+                  <Link href={grammar.chapter.href} className="grammar-detail__ref">{vt("→ 정본 해설: 「")}{grammar.chapter.title}」 ›
+                  </Link>
+                )}
+                {grammar.chapter && !grammar.chapter.href && <p className="grammar-detail__loading grammar-detail__archived">{vt("→ 정본 해설: 「")}{grammar.chapter.title}」 · {vt("보관된 교재라 열 수 없어요")}</p>}
+                {user && learningStorageSupported && grammar.result && (
+                  <button
+                    onClick={() => saveGrammarNoteMutation.mutate()}
+                    disabled={saveGrammarNoteMutation.isPending || saveGrammarNoteMutation.isSuccess}
+                    className="grammar-btn grammar-detail__save"
+                  >
+                    {saveGrammarNoteMutation.isSuccess ? '✓ 저장됨' : saveGrammarNoteMutation.isPending ? '저장 중…' : '노트에 저장'}
+                  </button>
+                )}
+                <div className="grammar-detail__ask">
+                  <input
+                    value={grammar.question}
+                    onChange={(e) => grammar.setQuestion(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') grammar.ask(leftPanelText); }}
+                    placeholder={vt("이 문장에 대해 더 묻기")}
+                    aria-label={vt("문법 추가 질문")}
+                    className="form-input"
+                  />
+                  <button
+                    className="grammar-btn"
+                    onClick={() => grammar.ask(leftPanelText)}
+                    disabled={grammar.asking || !grammar.question.trim()}
+                  >{grammar.asking ? '…' : '질문'}</button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* 문형 — 문법 표시를 켰을 때 이 문장 토큰에 걸린 문형. 카드의 「문형 한 줄」과 같은 요약 문구·PatternCard. */}
+        {patterns.length > 0 && (
+          <div className="reader-sentence__patterns">
+            {patterns.map((hit, index) => (
+              <div key={`${hit.kernel}:${(hit.tokenIds || []).join(',')}`}>
+                <button type="button" className="reader-card-pattern__line" aria-haspopup="dialog" aria-expanded={sentencePatternOpen === index}
+                  onClick={() => setSentencePatternOpen(open => open === index ? null : index)}>
+                  <span className="reader-card-pattern__label">{vt('문형')}</span>{' · '}<span lang={contentLangTag}>{hit.patterns?.[0]?.pattern || hit.kernel}</span>{' ›'}
+                </button>
+                {sentencePatternOpen === index && (
+                  <div className="reader-card-pattern__pop" role="dialog" aria-label={vt('문형')} onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setSentencePatternOpen(null); } }}>
+                    <PatternCard hit={hit} dueSlugs={dueSlugs} weakSlugs={weakSlugs} />
+                    <button type="button" className="btn btn--ghost btn--sm" onClick={() => setSentencePatternOpen(null)}>{vt('닫기')}</button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 단어별 뜻 — 자료 토큰(이미 화면의 뜻·교정 반영), 요청 0. 탭 이름에는 표시가 없다(정본). */}
+        {glosses.length > 0 && (
+          <section className="reader-sentence__glosses" aria-label={vt('단어별 뜻')}>
+            <p className="reader-card-section__label">{vt('단어별 뜻')}</p>
+            <ul>
+              {glosses.map(g => (
+                <li key={g.key}><span lang={contentLangTag}>{g.text}</span>{g.reading && <> <span className="reader-sentence__reading" lang={contentLangTag}>{g.reading}</span></>} <span>{g.meaning}</span></li>
+              ))}
+            </ul>
+          </section>
+        )}
+      </div>
+    );
+  };
+  const leftPanelContent = leftPanelLoading || leftPanelResult ? renderSentencePanel() : (
     <div className="pdf-side__empty">{vt("텍스트를 드래그하면")}<br />{vt("번역과 맥락이 여기에")}</div>
   );
 
