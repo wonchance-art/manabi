@@ -63,7 +63,7 @@
 .viewer-layout .word-token[data-selected="true"] {position:relative;}
 .viewer-layout .word-token[data-selected="true"] .surface::before {animation:none;}
 .viewer-layout .word-token[data-selected="true"]::before {content:"";position:absolute;z-index:1;left:0;right:0;top:calc(var(--hl-band-top) - var(--hl-frame-top));height:calc(var(--hl-frame-top) + var(--hl-band-h) + var(--hl-frame-bottom));border:1.5px solid var(--word-selection-line,color-mix(in srgb,var(--reader-ink) 55%,transparent));border-radius:6px;pointer-events:none;}
-.viewer-layout .word-token--pattern:is(.word-token--saved,.word-token--due) {--hl-frame-bottom:7.5px;}
+.viewer-layout .word-token--pattern:is(.word-token--saved,.word-token--due) {--hl-frame-bottom:calc(var(--hl-mark-gap) * 2 + 5.5px);}
 .viewer-layout .viewer-h1 .word-token[data-selected="true"]::before {font-size:1.5em;}
 .viewer-layout .viewer-h2 .word-token[data-selected="true"]::before {font-size:1.25em;}
 .viewer-layout .viewer-h3 .word-token[data-selected="true"]::before {font-size:1.1em;}
@@ -82,8 +82,25 @@
 /* Pinyin sits above the selection frame (VIEWER-R0 bug 6a). The ruby box is the 2.2em surface line, so
    (0.58 / 2.2) * 100% is --hl-band-top; the frame's outer top is --hl-band-top - --hl-frame-top. Both
    come from the same two values (pinyinRuby.test.js fails if either side changes alone). The old
-   0.65 / 2.2 base predates fixed-size pinyin (#1294) and let the pinyin tail cross the frame. */
-.viewer-layout :is(.reader-area,.reader-settings__preview) ruby[data-pinyin] > .rt-an {bottom:calc(100% - (0.58 / 2.2) * 100% + var(--hl-frame-top) + 0.1em);}
+   0.65 / 2.2 base predates fixed-size pinyin (#1294) and let the pinyin tail cross the frame.
+   Box gap = --hl-pinyin-gap (2.5px) + 0.05em: Noto Sans descenders (g y j q p) leave the 1.2 line box
+   by ~0.03em, and device-pixel snapping costs up to 0.33px, so the ink stays >= 2px above the frame
+   (real-font QA: 0.1em alone measured 1.0px). */
+.viewer-layout :is(.reader-area,.reader-settings__preview) ruby[data-pinyin] > .rt-an {bottom:calc(100% - (0.58 / 2.2) * 100% + var(--hl-frame-top) + var(--hl-pinyin-gap) + 0.05em);}
+/* Row-gap floor while pinyin is shown (VIEWER-R0 bug 6 follow-up). The next row's pinyin reaches
+   1.25P + frame top + pinyin gap - 0.58em above its row (box, P = pinyin size; ink is ~0.1P lower) and
+   the deepest mark (selection frame of a pattern + saved word: band + 2 x mark gap + 5.5px) hangs
+   1.62em + ... - 2.2em below the previous row. The gap the reader uses is max(line gap setting, that sum
+   + 1px), so small text with large pinyin never stacks pinyin on the marks above (real-font QA: 12.8px
+   text, 16px pinyin, 15px gap overlapped by 3.3px). Worst case always, so selecting never shifts lines.
+   ViewerPage and ViewerPreview write gap as max(line gap, var(--hl-row-gap-min, 0px)); viewerDefaults
+   and the saved line gap are unchanged. */
+.viewer-layout[data-pron-spacing="reserved"] :is(.reader-area,.reader-settings__preview) {--hl-row-gap-min:calc(var(--pinyin-size) * 1.25 + var(--hl-frame-top) + var(--hl-pinyin-gap) + var(--hl-mark-gap) * 2 + 5.5px + 1px - 1.16em);}
+/* Yomi keeps its native-ruby baseline (0.65 / 2.2) wherever that already clears the frame, and rises
+   only when it would not (small text: at 12.8px the kana ink came within 0.67px of the frame). The yomi
+   box inherits the 2.2 line height, so its kana ink sits ~0.6em (yomi size) above the box bottom;
+   0.55em keeps the ink >= --hl-pinyin-gap above the frame's outer top. */
+.viewer-layout :is(.reader-area,.reader-settings__preview) ruby[data-yomi] > .rt-an {bottom:max(calc(100% - (0.65 / 2.2) * 100%),calc(100% - (0.58 / 2.2) * 100% + var(--hl-frame-top) + var(--hl-pinyin-gap) - 0.55em));}
 /* Keep the neutral color less specific than the optional tone classes below. */
 .viewer-layout :is(.reader-area,.reader-settings__preview) ruby:where([data-pinyin]) > .rt-an {color:var(--reader-muted);}
 .viewer-layout[data-pron-spacing="reserved"] .reader-area ruby[data-pinyin] {width:max(1em,var(--pinyin-cell));}
@@ -413,13 +430,14 @@
 /* Aa preview shows whole rows only (VIEWER-R0 bug 7): 3.5em against 2.3em rows cut the second row in
    half. Height = rows x 2.3em (the preview line-height) + row gaps + padding; ViewerPreview passes the
    line gap and 2 rows up to 2rem text, 1 row above (keeps the box near its old size at 3rem). The
-   padding is the pinyin's reach above a row (bug 6a baseline: frame gap + 0.1em + the 1.2 line box,
-   plus ~0.1em for the glyph area overflowing that box, minus the row's 0.63em above the band): on top it keeps the first row's pinyin in, at the bottom it is the fade zone for the next
-   row's pinyin, so no row is ever shown in part. The fade also takes the last 0.25em of the last row
+   padding is the pinyin's reach above a row (bug 6a baseline: frame top + pinyin gap + 0.05em + the
+   1.2 line box, ~0.15em for the glyph area overflowing that box and 2px slack, minus the row's 0.63em
+   above the band): on top it keeps the first row's pinyin in, at the bottom it is the fade zone for the next
+   row's pinyin, so no row is ever shown in part. The fade also takes the last 0.3em of the last row
    (blank under its glyph band and underline): at 0.8rem text with 1rem pinyin the next row's pinyin
    reaches above its row by more than the line gap. */
-.reader-settings .reader-settings__preview {--preview-pad:6px;margin:0 0 4px;padding:var(--preview-pad) 10px;max-height:calc(var(--preview-rows,2) * 2.3em + (var(--preview-rows,2) - 1) * var(--preview-row-gap,15px) + 2 * var(--preview-pad));border-radius:3px;-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - var(--preview-pad) - .25em),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - var(--preview-pad) - .25em),transparent);}
-.reader-settings .reader-settings__preview:lang(zh) {--preview-pad:max(6px,calc(var(--pinyin-size) * 1.4 + var(--hl-frame-top) + 2px - 0.63em));}
+.reader-settings .reader-settings__preview {--preview-pad:6px;margin:0 0 4px;padding:var(--preview-pad) 10px;max-height:calc(var(--preview-rows,2) * 2.3em + (var(--preview-rows,2) - 1) * var(--preview-row-gap,15px) + 2 * var(--preview-pad));border-radius:3px;-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - var(--preview-pad) - .3em),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - var(--preview-pad) - .3em),transparent);}
+.reader-settings .reader-settings__preview:lang(zh) {--preview-pad:max(6px,calc(var(--pinyin-size) * 1.4 + var(--hl-frame-top) + var(--hl-pinyin-gap) + 2px - 0.63em));}
 .reader-settings .reader-settings__preview:lang(ja) {--preview-pad:max(6px,.25em);}
 .reader-settings .reader-setting-range {padding:10px 0;}
 .reader-settings .reader-setting-range label {font-size:.82rem;}

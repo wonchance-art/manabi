@@ -734,16 +734,16 @@ for (const fs of [12.8, 25.6, 48]) {
         // 면 칠 높이는 불변(1.04em) — 밑줄이 띠 밖으로 나가도 칠은 늘지 않는다
         check(Math.abs(g.band.h - 1.04 * g.fs) < 0.05, '칠 높이', `${at}: 띠 높이 ${g.band.h} ≠ 1.04em`);
         if (g.underline) {
-          check(g.underline.top >= g.band.bottom + 1 - 0.01, '6b 밑줄', `${at}: 밑줄 윗변 ${g.underline.top.toFixed(2)} < 띠 아랫변 ${g.band.bottom.toFixed(2)} + 1`);
-          check(g.underline.bottom <= g.frame.innerBottom + 0.01, '밑줄 테두리 안', `${at}: 밑줄이 테두리 밖으로 나갔다`);
+          check(g.underline.top >= g.band.bottom + 2 - 0.01, '6b 밑줄', `${at}: 밑줄 윗변 ${g.underline.top.toFixed(2)} < 띠 아랫변 ${g.band.bottom.toFixed(2)} + 2`);
+          check(g.underline.bottom <= g.frame.innerBottom - 0.5 + 0.01, '밑줄 테두리 안', `${at}: 밑줄이 테두리 선에 닿거나 밖으로 나갔다`);
           check(g.band.clip === 'content-box', '칠 번짐', `${at}: 밑줄 여백까지 면 칠이 번진다(clip ${g.band.clip})`);
         }
         if (g.mark) {
-          check(g.mark.top >= g.band.bottom + 1 - 0.01 && g.mark.bottom <= g.frame.innerBottom + 0.01, '문형선 자리', `${at}: 문형 밑줄이 띠 밖·테두리 안 자리가 아니다`);
+          check(g.mark.top >= g.band.bottom + 2 - 0.01 && g.mark.bottom <= g.frame.innerBottom + 0.01, '문형선 자리', `${at}: 문형 밑줄이 띠 밖·테두리 안 자리가 아니다`);
           if (g.underline) check(g.mark.bottom <= g.underline.top - 0.5, '문형선·밑줄 겹침', `${at}: 문형 밑줄과 저장 밑줄이 겹친다`);
         }
-        // 6a — 병음(중국어)은 테두리 바깥 윗변보다 1px 이상 위
-        if (g.rt && !g.ja) check(g.rt.bottom <= g.frame.outerTop - 1 + 0.01, '6a 병음', `${at}: 병음 아래 끝 ${g.rt.bottom.toFixed(2)} > 테두리 바깥 윗변 ${g.frame.outerTop.toFixed(2)} − 1`);
+        // 6a — 병음(중국어) 상자는 테두리 바깥 윗변보다 2.5px 이상 위(실글꼴 내림획·화소 맞춤 여유 — 잉크 2px)
+        if (g.rt && !g.ja) check(g.rt.bottom <= g.frame.outerTop - 2.5 + 0.01, '6a 병음', `${at}: 병음 아래 끝 ${g.rt.bottom.toFixed(2)} > 테두리 바깥 윗변 ${g.frame.outerTop.toFixed(2)} − 2.5`);
       }
       // 고르기 전·후로 글자·병음이 1px도 안 움직인다(테두리는 자리만 갖고 흐름에 없다)
       await page.locator('.word-token').evaluateAll((ts) => ts.forEach((t) => t.removeAttribute('data-selected')));
@@ -758,10 +758,50 @@ for (const fs of [12.8, 25.6, 48]) {
   });
 }
 
-test('R0 버그 6 — 요미가나 기준점은 그대로다(6a는 병음만), 테두리·밑줄(6b)은 위 행렬이 일본어에도 잰다', async () => {
-  await page.setContent(R0_PAGE(r0Area({ fs: 25.6, lang: 'ja' }, r0Line(R0_JA, { ja: true }))));
-  const fromTop = await page.evaluate(() => [...document.querySelectorAll('.rt-an')].map((rt) => rt.getBoundingClientRect().bottom - rt.closest('.surface').getBoundingClientRect().top));
-  for (const v of fromTop) assert.ok(Math.abs(v - 0.65 * 25.6) < 0.6, `요미 아래 끝이 옛 기준점(0.65em)에서 움직였다: ${v}`);
+test('R0 버그 6 — 다음 줄 병음이 앞줄의 테두리·밑줄·문형선에 얹히지 않는다(작은 글자 × 큰 병음 × 최소 줄 간격)', async () => {
+  // 병음을 테두리 위로 올리면서 생긴 줄 사이 겹침(실글꼴: 12.8px·병음 16px·간격 15px에서 −3.3px)의
+  // 방지선. ViewerPage와 같이 간격을 max(줄 간격, --hl-row-gap-min)으로 쓰고, 가장 깊은 표지(문형+저장
+  // 선택 테두리)를 모든 토큰에 둔 채 상자 기준으로 잰다(병음 상자 위 끝은 잉크보다 ≈0.1P 높다).
+  const bad = [];
+  for (const fs of [12.8, 25.6, 48]) for (const py of [12, 16]) for (const gap of [10, 15]) {
+    const v = { cls: 'word-token--saved', pattern: true, selected: true };
+    const line = Array.from({ length: 6 }, () => [R0_ZH[4], R0_ZH[2], R0_ZH[1]]).flat().map((x) => r0Tok(x.segs, { ...x, ...v })).join('');
+    await page.setContent(R0_PAGE(r0Area({ fs }, line).replace(/gap:15px \.25rem/, `gap:max(${gap}px, var(--hl-row-gap-min, 0px)) .25rem;width:${Math.round(fs * 14)}px`), { py }));
+    const rows = await page.evaluate(() => {
+      const m = new Map();
+      for (const t of document.querySelectorAll('.word-token')) {
+        const s = t.querySelector('.surface').getBoundingClientRect(), f = getComputedStyle(t, '::before'), tr = t.getBoundingClientRect();
+        const k = Math.round(s.top), e = m.get(k) || { rtTop: Infinity, markBottom: -Infinity };
+        for (const rt of t.querySelectorAll('.rt-an')) e.rtTop = Math.min(e.rtTop, rt.getBoundingClientRect().top);
+        e.markBottom = Math.max(e.markBottom, tr.top + parseFloat(f.top) + parseFloat(f.height));
+        m.set(k, e);
+      }
+      return [...m.entries()].sort((a, b) => a[0] - b[0]).map((x) => x[1]);
+    });
+    if (rows.length < 2) bad.push(`${fs}px·병음 ${py}·간격 ${gap}: 줄이 하나뿐 — 전제 실패`);
+    for (let i = 0; i + 1 < rows.length; i++) {
+      const clear = rows[i + 1].rtTop - rows[i].markBottom;
+      if (clear < 1 - 0.01) bad.push(`${fs}px·병음 ${py}·간격 ${gap}: 다음 줄 병음 상자 위 끝이 앞줄 테두리 아래 끝과 ${clear.toFixed(2)}px`);
+    }
+  }
+  assert.deepEqual(bad, []);
+});
+
+test('R0 버그 6 — 요미가나는 테두리에 닿을 때만 올라간다(작은 글자), 테두리·밑줄(6b)은 위 행렬이 일본어에도 잰다', async () => {
+  // 요미 상자는 2.2 줄 높이를 물려받아 가나 잉크가 상자 아래 끝보다 ≈0.6em(요미 크기) 위에 있다.
+  // 「잉크 아래 끝 ≈ 상자 아래 끝 − 0.55em(요미)」가 테두리 바깥 윗변 − 2.5px 이하여야 한다(실글꼴:
+  // 옛 0.65em 자리는 본문 12.8px에서 테두리와 0.67px). 25.6px 이상에서는 옛 자리를 그대로 둔다.
+  for (const fs of [12.8, 25.6, 48]) {
+    await page.setContent(R0_PAGE(r0Area({ fs, lang: 'ja' }, r0Line(R0_JA, { ja: true, selected: true }))));
+    const g = await r0Geometry();
+    const fromTop = await page.evaluate(() => [...document.querySelectorAll('.rt-an')].map((rt) => rt.getBoundingClientRect().bottom - rt.closest('.surface').getBoundingClientRect().top));
+    g.forEach((t, i) => {
+      const inkBottom = t.rt.bottom - 0.55 * (fs / 2);
+      assert.ok(inkBottom <= t.frame.outerTop - 2.5 + 0.01, `${fs}px ${t.name}: 요미 잉크 추정 아래 끝 ${inkBottom.toFixed(2)} > 테두리 ${t.frame.outerTop.toFixed(2)} − 2.5`);
+      assert.ok(fromTop[i] <= 0.65 * fs + 0.01, `${fs}px ${t.name}: 요미가 옛 자리보다 내려갔다 ${fromTop[i]}`);
+      if (fs >= 25.6) assert.ok(Math.abs(fromTop[i] - 0.65 * fs) < 0.6, `${fs}px ${t.name}: 큰 글자에서 요미가 옛 기준점(0.65em)에서 움직였다: ${fromTop[i]}`);
+    });
+  }
 });
 
 test('R0 버그 6 — 터치 화면 줄 첫 토큰: 테두리가 문장 막대를 감싸지 않는다', async () => {
