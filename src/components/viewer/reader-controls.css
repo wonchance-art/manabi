@@ -16,11 +16,24 @@
 .viewer-layout:lang(zh-TW), .reader-modal:lang(zh-TW) {font-family:var(--font-noto-tc), 'Noto Sans TC', var(--font-noto-kr), sans-serif;}
 .viewer-layout :is(.reader-area,.reader-card-source,.reader-settings__preview):lang(ko),
 .viewer-layout :is(.reader-area,.reader-card-source,.reader-settings__preview) :lang(ko) {font-family:var(--reader-font), 'Noto Sans KR', sans-serif;}
-.viewer-layout[data-reader-theme="dark"] {
+.viewer-layout[data-reader-theme="dark"],
+.manabi-app:has(.viewer-layout[data-reader-theme="dark"]) > .gnb {
   --reader-paper:#202625; --reader-ink:#f0eee7; --reader-muted:#b7bfba; --reader-line:#4c5752; --reader-surface:#2b3430;
   --reader-selected:#394b41; --reader-accent:var(--book-dark-text);
   --tone-1:#a8c9ff; --tone-2:#99d7b2; --tone-3:#ebce84; --tone-4:#ffabb8; --tone-0:#c4cbc6;
 }
+/* The site header lives outside .viewer-layout, so the dark reading theme left it on the light shell
+   paper (VIEWER-R0 bug 8). It takes the same palette as the rule above and maps the shell tokens its
+   links, icons, menu and focus labels already use. Tokens are re-declared, not inherited: .manabi-app
+   resolves --text-primary etc. to light values before the header sees them. Other themes and pages
+   keep the shell header. */
+.manabi-app:has(.viewer-layout[data-reader-theme="dark"]) > .gnb {
+  --paper:var(--reader-paper); --sheet:var(--reader-surface); --ink:var(--reader-ink); --muted:var(--reader-muted); --rule:var(--reader-line);
+  --bg-primary:var(--reader-paper); --bg-secondary:var(--reader-surface); --bg-card:var(--reader-surface); --bg-elevated:var(--reader-surface);
+  --text-primary:var(--reader-ink); --text-secondary:var(--reader-muted); --text-muted:var(--reader-muted); --border:var(--reader-line);
+  --gnb-bg:var(--reader-paper); color:var(--reader-ink); color-scheme:dark;
+}
+.manabi-app:has(.viewer-layout[data-reader-theme="dark"]) > .gnb .gnb__logo {color:var(--reader-ink);-webkit-text-fill-color:currentColor;}
 .viewer-layout .viewer-center {width:100%;max-width:760px;flex:none;min-width:0;overflow:visible;margin:0 auto;padding:0 0 110px;}
 .viewer-layout .reader-area {background:var(--reader-paper);color:var(--reader-ink);border:0;border-radius:0;box-shadow:none;padding:20px 16px;margin-inline:0;}
 .viewer-layout .analyzing-banner {flex-wrap:wrap;gap:12px;color:var(--reader-ink);}
@@ -43,9 +56,21 @@
 .viewer-layout .reader-area--focus .word-token:is(.word-token--picked,[data-selected="true"]) .surface {opacity:1;}
 /* Use the glyph band, not the ruby line box. No second fill obscures the state. */
 .viewer-layout .word-token[data-selected="true"] {background:transparent;}
-.viewer-layout .word-token[data-selected="true"] .surface::before {box-shadow:inset 0 0 0 1.5px var(--word-selection-line,color-mix(in srgb,var(--reader-ink) 55%,transparent));animation:none;}
-.viewer-layout .reader-area--hl .word-token--new {--word-selection-line:var(--ws-new-ln);}
-.viewer-layout .reader-area--hl .word-token--met {--word-selection-line:var(--ws-met-ln);}
+/* Selection frame (VIEWER-R0 bug 6, owner-confirmed "A + frame margin" 2026-10-07): the band is a
+   fill whose edges touch the glyph ink, so the frame is not drawn on it. It sits --hl-frame-top above
+   and --hl-frame-bottom below the band, token width (never over a neighbour), above the band (z 1).
+   Its own em must be the surface's: headings enlarge only .surface, so the frame follows them. */
+.viewer-layout .word-token[data-selected="true"] {position:relative;}
+.viewer-layout .word-token[data-selected="true"] .surface::before {animation:none;}
+.viewer-layout .word-token[data-selected="true"]::before {content:"";position:absolute;z-index:1;left:0;right:0;top:calc(var(--hl-band-top) - var(--hl-frame-top));height:calc(var(--hl-frame-top) + var(--hl-band-h) + var(--hl-frame-bottom));border:1.5px solid var(--word-selection-line,color-mix(in srgb,var(--reader-ink) 55%,transparent));border-radius:6px;pointer-events:none;}
+.viewer-layout .word-token--pattern:is(.word-token--saved,.word-token--due) {--hl-frame-bottom:7.5px;}
+.viewer-layout .viewer-h1 .word-token[data-selected="true"]::before {font-size:1.5em;}
+.viewer-layout .viewer-h2 .word-token[data-selected="true"]::before {font-size:1.25em;}
+.viewer-layout .viewer-h3 .word-token[data-selected="true"]::before {font-size:1.1em;}
+/* Touch layouts keep the sentence bar inside the line's first token (15px + 3px, index.css). */
+@media (hover:none) {.viewer-layout .word-token[data-selected="true"]:has(> .line-pick)::before {left:18px;}}
+/* "Met" words share the new-word display (VIEWER-R0 bug 11). */
+.viewer-layout .reader-area--hl :is(.word-token--new,.word-token--met) {--word-selection-line:var(--ws-new-ln);}
 .viewer-layout .reader-area--hl .word-token--saved {--word-selection-line:var(--ws-learn-ln);}
 .viewer-layout .reader-area--hl .word-token--due {--word-selection-line:var(--warning);}
 .viewer-layout :is(button,input,textarea,summary):focus-visible {outline:2px solid var(--reader-accent);outline-offset:3px;}
@@ -54,6 +79,11 @@
 .viewer-layout :is(.reader-area,.reader-card-source,.word-fit,.reader-settings__preview):lang(zh),.viewer-layout :is(.reader-area,.reader-card-source,.word-fit,.reader-settings__preview) :lang(zh) {font-family:var(--reader-font);}
 /* Annotation font and width are independent from the user's body size. */
 .viewer-layout .reader-area ruby[data-pinyin] > .rt-an {font-size:var(--pinyin-size);font-family:var(--font-noto-sans),sans-serif;letter-spacing:0;line-height:1.2;opacity:1;}
+/* Pinyin sits above the selection frame (VIEWER-R0 bug 6a). The ruby box is the 2.2em surface line, so
+   (0.58 / 2.2) * 100% is --hl-band-top; the frame's outer top is --hl-band-top - --hl-frame-top. Both
+   come from the same two values (pinyinRuby.test.js fails if either side changes alone). The old
+   0.65 / 2.2 base predates fixed-size pinyin (#1294) and let the pinyin tail cross the frame. */
+.viewer-layout :is(.reader-area,.reader-settings__preview) ruby[data-pinyin] > .rt-an {bottom:calc(100% - (0.58 / 2.2) * 100% + var(--hl-frame-top) + 0.1em);}
 /* Keep the neutral color less specific than the optional tone classes below. */
 .viewer-layout :is(.reader-area,.reader-settings__preview) ruby:where([data-pinyin]) > .rt-an {color:var(--reader-muted);}
 .viewer-layout[data-pron-spacing="reserved"] .reader-area ruby[data-pinyin] {width:max(1em,var(--pinyin-cell));}
@@ -348,7 +378,17 @@
 .reader-settings .reader-settings__tabs {padding-top:4px;}
 .reader-settings .reader-settings__tabs button {display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 4px;font-size:.8rem;}
 .reader-settings .reader-preview-toggle {width:44px;height:44px;margin:0 0 0 auto;display:flex;align-items:center;justify-content:center;}
-.reader-settings .reader-settings__preview {margin:0 0 4px;max-height:3.5em;padding:6px 10px;border-radius:3px;}
+/* Aa preview shows whole rows only (VIEWER-R0 bug 7): 3.5em against 2.3em rows cut the second row in
+   half. Height = rows x 2.3em (the preview line-height) + row gaps + padding; ViewerPreview passes the
+   line gap and 2 rows up to 2rem text, 1 row above (keeps the box near its old size at 3rem). The
+   padding is the pinyin's reach above a row (bug 6a baseline: frame gap + 0.1em + the 1.2 line box,
+   plus ~0.1em for the glyph area overflowing that box, minus the row's 0.63em above the band): on top it keeps the first row's pinyin in, at the bottom it is the fade zone for the next
+   row's pinyin, so no row is ever shown in part. The fade also takes the last 0.25em of the last row
+   (blank under its glyph band and underline): at 0.8rem text with 1rem pinyin the next row's pinyin
+   reaches above its row by more than the line gap. */
+.reader-settings .reader-settings__preview {--preview-pad:6px;margin:0 0 4px;padding:var(--preview-pad) 10px;max-height:calc(var(--preview-rows,2) * 2.3em + (var(--preview-rows,2) - 1) * var(--preview-row-gap,15px) + 2 * var(--preview-pad));border-radius:3px;-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - var(--preview-pad) - .25em),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - var(--preview-pad) - .25em),transparent);}
+.reader-settings .reader-settings__preview:lang(zh) {--preview-pad:max(6px,calc(var(--pinyin-size) * 1.4 + var(--hl-frame-top) + 2px - 0.63em));}
+.reader-settings .reader-settings__preview:lang(ja) {--preview-pad:max(6px,.25em);}
 .reader-settings .reader-setting-range {padding:10px 0;}
 .reader-settings .reader-setting-range label {font-size:.82rem;}
 .reader-settings .reader-setting-range label>span {margin-top:4px;gap:8px;}
