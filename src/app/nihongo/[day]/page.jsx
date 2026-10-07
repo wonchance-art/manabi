@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import course from '@/content/community/nihongo42';
 import { JaText, refInline, Callout } from '@/views/refShared';
+import { ARCHIVED_TEXTBOOK_NOTICE, learnerHref } from '@/lib/bookNavigation';
 
 export function generateStaticParams() {
   return course.days.map((d) => ({ day: String(d.day) }));
@@ -88,12 +89,21 @@ function Chapter({ c, i }) {
         <div className="fr-callout fr-callout--tip">
           <span className="fr-callout__label">📖 더 깊이 — 레퍼런스</span>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 2 }}>
-            {c.links.map((l, k) => (
-              <Link key={k} href={`/japanese/grammar/${l.slug}`} className="btn btn--ghost btn--sm">
-                {l.label} ↗
-              </Link>
-            ))}
+            {c.links.map((l, k) => {
+              // 옛 교재 챕터는 관리자 보관함으로만 열린다 — 링크 대신 이름만 남긴다(VIEWER-R0-BUGS-001 버그 3).
+              const href = learnerHref(`/japanese/grammar/${l.slug}`);
+              return href ? (
+                <Link key={k} href={href} className="btn btn--ghost btn--sm">
+                  {l.label} ↗
+                </Link>
+              ) : (
+                <span key={k} style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{l.label}</span>
+              );
+            })}
           </div>
+          {c.links.some((l) => !learnerHref(`/japanese/grammar/${l.slug}`)) && (
+            <p style={{ margin: '6px 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{ARCHIVED_TEXTBOOK_NOTICE}</p>
+          )}
         </div>
       ) : null}
     </section>
