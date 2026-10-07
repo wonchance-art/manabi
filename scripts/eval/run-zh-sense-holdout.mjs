@@ -5,9 +5,10 @@
 //   B0  현행 + 정답 품사 가정: pickZhMeaning(후보, 기대 품사). 경계는 현행 토크나이저 결과. 호출 0(오프라인).
 //   B1  현행 실제 경로: tokenizeZhLine → collectZhPosMarks → disambiguateZhPos(현행 프롬프트, light 1회/문단)
 //       → resolveZhTokenPos → pickZhMeaning. 제품 함수를 그대로 import해 부른다.
-//   N   시안: 같은 마크 + 「뜻 후보」·[묶음 판정]을 붙인 eval 전용 프롬프트(zhSenseHoldout.mjs
-//       buildZhSensePromptDraft) → 같은 callLLM('light', temperature 0, timeout 15초, Groq 없음) →
-//       validateSensePickDraft(설계서 §4.3) → 선택. 제품 코드에는 넣지 않는다.
+//   N   제품 켜짐 경로(AD-R4 PR② — 상수 ZH_SENSE_REVIEW와 무관하게 함수로 직접 부른다): 같은 마크 →
+//       attachZhSenseCandidates(뜻 후보, 설계서 §4.1) + [묶음 판정] 쌍(등재 = isZhRegisteredWord, §5.1) →
+//       disambiguateZhPos(같은 light 1회, 프롬프트 buildZhPosPrompt, 응답 검증 validateZhSensePick §4.3) →
+//       resolveZhTokenSense로 토큰 뜻 결정(라우트와 같은 함수). 묶기 적용은 PR④ 전이라 이 실행기에서만 흉내 낸다.
 //
 // 사용(Node 24, 리포 루트):
 //   node scripts/eval/run-zh-sense-holdout.mjs --dry-run        # 세트 검증 + B0 + 현행 토큰화·프롬프트 대조(호출 0)
@@ -25,7 +26,7 @@ import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   ARMS, CATEGORIES, SPLITS, baselineB0, buildParagraphs, buildZhSensePromptDraft, collectPairCandidates,
-  evaluateRelease, scoreCase, summarize, validateHoldout, validateSensePickDraft,
+  evaluateRelease, scoreCase, summarize, validateHoldout,
 } from './zhSenseHoldout.mjs';
 
 // 제품 서버 모듈은 번들러 관례(확장자 없는 상대 import·JSON import)를 쓴다. 이 프로세스에서만 Node가 풀 수 있게 한다.
@@ -46,7 +47,7 @@ registerHooks({
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const holdoutPath = join(root, 'docs/verification/zh-sense-holdout-20261008.json');
-const productPaths = ['src/lib/server/disambiguateZhPos.js', 'src/lib/server/tokenizeZh.js', 'src/lib/server/llm.js'];
+const productPaths = ['src/lib/server/disambiguateZhPos.js', 'src/lib/server/zhSenseReview.js', 'src/lib/server/zhRegistered.js', 'src/lib/server/tokenizeZh.js', 'src/lib/server/llm.js'];
 const sha = (path) => createHash('sha256').update(readFileSync(path)).digest('hex');
 const mod = (rel) => import(pathToFileURL(join(root, rel)).href);
 
@@ -67,10 +68,8 @@ const cases = set.cases.filter((c) => (splitOpt === 'all' || c.split === splitOp
 
 const { tokenizeZhLine } = await mod('src/lib/server/tokenizeZh.js');
 const { collectZhPosMarks, disambiguateZhPos, resolveZhTokenPos, pickZhMeaning, splitZhToken, zhPosMarkKey } = await mod('src/lib/server/disambiguateZhPos.js');
-const { parseJsonLenient } = await mod('src/lib/server/fetchMeanings.js');
-const { isCanonPos } = await mod('src/lib/server/posCanon.js');
-const { isZhRealWord } = await mod('src/lib/server/zhTokenFix.js');
-const isCanonZh = (p) => isCanonPos('Chinese', p);
+const { attachZhSenseCandidates, createZhSenseStats, resolveZhTokenSense } = await mod('src/lib/server/zhSenseReview.js');
+const { isZhRegisteredWord } = await mod('src/lib/server/zhRegistered.js');
 
 let head = 'unknown';
 try { head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(); } catch { /* git 없음 */ }
@@ -115,8 +114,8 @@ const mergedAt = (tokens, c) => {
   return !!a && a.end >= c.target.index + c.boundary.pair[0].length + 1;
 };
 
-/** 한 팔의 사례 결과(뜻 또는 경계). senseByKey: N의 검증된 뜻 선택(B1은 빈 맵). */
-function outcomeFor(c, lineIdx, prep, picks, senseByKey = new Map(), joinApplied = new Set()) {
+/** 한 팔의 사례 결과(뜻 또는 경계). senseOn: N(제품 켜짐 경로 — 라우트와 같은 resolveZhTokenSense). */
+function outcomeFor(c, lineIdx, prep, picks, senseOn = false, joinApplied = new Set()) {
   const tokens = finalTokens(prep.tokenizedLines[lineIdx].tokens, lineIdx, picks);
   if (c.cat === 'D') {
     if (mergedAt(tokens, c)) return { merged: true };
@@ -131,27 +130,24 @@ function outcomeFor(c, lineIdx, prep, picks, senseByKey = new Map(), joinApplied
   const key = zhPosMarkKey(lineIdx, t.text);
   const cached = prep.cache.get(cacheKey(t));
   const { pos } = resolveZhTokenPos({ pick: picks.get(key), cachedPos: cached?.pos, tokenPos: t.pos, tokenPosAll: t.pos_all });
-  const chosen = senseByKey.get(key);
-  if (chosen?.sense) return { meaning: chosen.sense.meaning, via: chosen.sense.via, pos, ...(chosen.sense.meaningCheck ? { meaningCheck: chosen.sense.meaningCheck } : {}) };
+  const chosen = senseOn ? resolveZhTokenSense(picks.get(key), t) : null;
+  if (chosen?.meaning) return { meaning: chosen.meaning, via: chosen.via, pos, ...(chosen.meaningCheck ? { meaningCheck: chosen.meaningCheck } : {}) };
   return { meaning: pickZhMeaning(cached?.meanings, pos), via: 'fallback', pos, ...(chosen?.meaningCheck ? { meaningCheck: chosen.meaningCheck } : {}) };
 }
 
-/** N 마크: 현행 마크 + 뜻 후보(설계서 §4.1) + 묶음 판정 쌍(§4.2). */
+/** N 마크: 현행 마크 + 뜻 후보(제품 attachZhSenseCandidates, 설계서 §4.1) + 묶음 판정 쌍(§4.2). */
 function buildNMarks(prep) {
-  const marks = prep.marks.map((m) => ({ ...m }));
+  const base = prep.marks.map((m) => ({ ...m }));
   if (markAllTargets) {
     prep.cases.forEach((c, lineIdx) => {
       if (c.cat === 'D') return;
       const key = zhPosMarkKey(lineIdx, c.target.surface);
-      if (!marks.some((m) => m.key === key)) marks.push({ lineIdx, word: c.target.surface, key });
+      if (!base.some((m) => m.key === key)) base.push({ lineIdx, word: c.target.surface, key });
     });
   }
-  for (const m of marks) {
-    const row = prep.cache.get(m.word); // 중국어는 base_form === 표면형(이합사 조각은 이 세트에 없음)
-    const n = row?.meanings?.length || 0;
-    if (row && row.source !== 'user_verified' && n >= (offerSingle ? 1 : 2)) m.candidates = row.meanings.slice(0, 3);
-  }
-  const pairs = marks.length ? collectPairCandidates(prep.tokenizedLines, isZhRealWord) : [];
+  const marks = attachZhSenseCandidates(base, { tokenizedLines: prep.tokenizedLines, cache: prep.cache, minMeanings: offerSingle ? 1 : 2 });
+  const isRegistered = (form) => isZhRegisteredWord(form, prep.cache.get(form));
+  const pairs = marks.length ? collectPairCandidates(prep.tokenizedLines, isRegistered) : [];
   for (const p of pairs) {
     const key = zhPosMarkKey(p.lineIdx, p.a);
     let m = marks.find((x) => x.key === key);
@@ -161,26 +157,11 @@ function buildNMarks(prep) {
   return marks;
 }
 
-function applyN(prep, marksN, parsed) {
-  const picks = new Map();
-  const senseByKey = new Map();
+/** N 결과에서 묶음 판정 true인 쌍(이 실행기에서만 흉내 내는 자동 묶기 — 제품 적용은 PR④). */
+function joinsFrom(marksN, picks) {
   const joinApplied = new Set();
-  const stat = { offered: marksN.filter((m) => m.candidates).length, picked: 0, ctx: 0, doubt: 0, discarded: 0, joinAsked: marksN.filter((m) => m.pair).length, joinApplied: 0, lengthMismatch: false };
-  if (!Array.isArray(parsed) || parsed.length !== marksN.length) { stat.lengthMismatch = true; return { picks, senseByKey, joinApplied, stat }; }
-  parsed.forEach((entry, i) => {
-    const m = marksN[i];
-    const v = validateSensePickDraft(entry, m, isCanonZh);
-    if (m.pair && v.join === true) { joinApplied.add(`${m.lineIdx}:${m.pairStart}`); stat.joinApplied++; }
-    if (m.oov && Array.isArray(entry?.split) && entry.split.length >= 2) {
-      const parts = entry.split.map((p) => ({ t: typeof p?.t === 'string' ? p.t.trim() : '', pos: typeof p?.pos === 'string' && p.pos.trim() ? p.pos.trim().slice(0, 20) : null }));
-      if (parts.every((p) => p.t) && parts.map((p) => p.t).join('') === m.word) { picks.set(m.key, { pos: v.pos ?? null, all: v.all ?? [], parts }); return; }
-    }
-    if (m.pairOnly || v.discarded) { if (m.candidates && v.discarded) stat.discarded++; return; }
-    picks.set(m.key, { pos: v.pos, all: v.all });
-    if (v.sense) { senseByKey.set(m.key, v); if (v.sense.via === 'ctx') stat.ctx++; else stat.picked++; if (v.sense.meaningCheck === 'doubt') stat.doubt++; }
-    else if (m.candidates) { if (v.senseDiscarded) stat.discarded++; if (v.meaningCheck === 'doubt') { stat.doubt++; senseByKey.set(m.key, v); } }
-  });
-  return { picks, senseByKey, joinApplied, stat };
+  for (const m of marksN) if (m.pair && picks.get(m.key)?.join === true) joinApplied.add(`${m.lineIdx}:${m.pairStart}`);
+  return joinApplied;
 }
 
 // ───────────── fetch 감시(호출 수·dry-run 차단) ─────────────
@@ -244,7 +225,6 @@ if (dryRun) {
 
 if (!dryRun) {
   if (!process.env.GEMINI_API_KEY) { console.error('GEMINI_API_KEY가 이 셸에 없습니다. 키 값은 채팅·파일에 붙이지 말고 환경 변수로만 넣으세요.'); process.exit(2); }
-  const { callLLM } = await mod('src/lib/server/llm.js');
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   for (const [pi, prep] of paragraphs.entries()) {
     const ps = { paragraph: pi, split: prep.split, ids: prep.cases.map((c) => c.id), marks: prep.marks.length };
@@ -264,20 +244,16 @@ if (!dryRun) {
     if (arms.includes('N')) {
       const marksN = buildNMarks(prep);
       const before = fetchCount;
-      let parsed = null;
-      let meta = null;
-      let error = null;
-      if (marksN.length) {
-        try {
-          const r = await callLLM('light', buildZhSensePromptDraft(prep.lines, marksN), { temperature: 0, timeoutMs: 15_000, groq: false, route: 'eval-zh-sense-holdout' });
-          meta = r.meta;
-          parsed = parseJsonLenient(r.text);
-        } catch (e) { error = `call: ${e?.status ?? ''} ${e?.code ?? e?.message ?? e}`.trim(); }
-      }
-      const { picks, senseByKey, joinApplied, stat } = applyN(prep, marksN, parsed);
-      Object.assign(ps, { nCalls: fetchCount - before, nMs: meta?.ms ?? null, nModel: meta?.model ?? null, marksN: marksN.length, zhSense: stat });
+      const logBefore = llmLog.length;
+      const stat = createZhSenseStats(marksN);
+      const picks = marksN.length ? await disambiguateZhPos(prep.lines, marksN, { senseStats: stat }) : new Map();
+      const log = llmLog.slice(logBefore).find((l) => l.route === 'disambiguateZhPos');
+      const error = log && !log.ok ? `call: ${log.status}` : null;
+      const joinApplied = joinsFrom(marksN, picks);
+      stat.joinApplied = joinApplied.size; // 실행기 흉내 값(제품 라우트는 PR④ 전까지 0)
+      Object.assign(ps, { nCalls: fetchCount - before, nMs: log?.ms ?? null, nModel: log?.model ?? null, marksN: marksN.length, zhSense: stat });
       prep.cases.forEach((c, lineIdx) => {
-        const out = error ? { error } : outcomeFor(c, lineIdx, prep, picks, senseByKey, joinApplied);
+        const out = error ? { error } : outcomeFor(c, lineIdx, prep, picks, true, joinApplied);
         rows.push({ arm: 'N', paragraph: pi, id: c.id, cat: c.cat, split: c.split, ...out, ...scoreCase(c, out) });
       });
       if (pi < paragraphs.length - 1) await sleep(delayMs);

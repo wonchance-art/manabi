@@ -13,7 +13,7 @@
 | 파일 | 내용 |
 |---|---|
 | `docs/verification/zh-sense-holdout-20261008.json` | 사례 80개(조정 40 · 보류 40), 규칙, 구성, 켜는 기준 |
-| `scripts/eval/zhSenseHoldout.mjs` | 순수 채점기 · 세트 검증 · N 시안 프롬프트와 응답 검증(eval 전용) · 집계 · 켜는 기준 |
+| `scripts/eval/zhSenseHoldout.mjs` | 순수 채점기 · 세트 검증 · 집계 · 켜는 기준. N 프롬프트·응답 검증·뜻 정규화는 PR②부터 제품 `src/lib/server/zhSenseReview.js`를 import해 PR① 이름으로 다시 내보낸다 |
 | `scripts/eval/run-zh-sense-holdout.mjs` | 실행기. `--dry-run`은 호출 0 |
 | `src/lib/__tests__/zhSenseHoldout.test.js` | 세트 무결성과 채점·검증·프롬프트 계약 |
 | `docs/sql/zh-sense-holdout-snapshot-readonly.sql` | 운영 사전 후보 스냅숏(읽기 전용 SELECT) |
@@ -80,12 +80,12 @@
 |---|---|---|
 | B0 현행(정답 품사 가정) | `pickZhMeaning(candidates, 기대 품사)`. 경계는 현행 `tokenizeZhLine` 결과. 품사를 맞혀도 남는 오답의 하한이다 | 0 |
 | B1 현행(실제) | 제품 함수 그대로: `tokenizeZhLine` → `collectZhPosMarks` → `disambiguateZhPos`(현행 프롬프트) → `resolveZhTokenPos` → `pickZhMeaning` | 문단당 1 |
-| N 시안 | 같은 마크 + 「뜻 후보 ①②③」·`[묶음 판정]` 프롬프트(`buildZhSensePromptDraft`) → 같은 `callLLM('light', temperature 0, 15초, Groq 없음)` → `validateSensePickDraft`(설계서 §4.3) → 선택 | 문단당 1 |
+| N 제품 켜짐 경로(PR②) | 같은 마크 → `attachZhSenseCandidates`(뜻 후보) + `[묶음 판정]` 쌍 → 제품 `disambiguateZhPos`(같은 light 1회, 프롬프트 `buildZhPosPrompt`, 검증 `validateZhSensePick` §4.3) → `resolveZhTokenSense`(라우트와 같은 함수). 상수 `ZH_SENSE_REVIEW`와 무관하게 함수로 직접 부른다 | 문단당 1 |
 
 - 사례는 6문장씩 문단으로 묶어 실제 분석 요청처럼 보낸다(조정 7문단 · 보류 7문단, 범주를 번갈아 섞음).
 - 캐시는 사례 후보만 넣는다(`base_form → {pos: 후보 품사 「·」 연결, meanings: 후보}`). 다른 단어는 캐시가 없어 jieba 품사만으로 마크된다. 운영보다 마크가 조금 다를 수 있다.
-- N 시안 프롬프트는 마크에 후보·쌍이 없으면 현행 `buildZhPosPrompt`와 바이트 단위로 같다. 단위 테스트와 `--dry-run`이 실제 현행 함수 출력과 대조하고, 다르면 실패한다(현행 프롬프트가 바뀌면 시안을 먼저 맞춘다).
-- N의 후보 붙이기는 설계서 §4.1 1차 규칙(뜻 2개 이상, `user_verified` 아님, 최대 3개)이다. 쌍은 이웃 두 한자 토큰을 이은 꼴이 등재(`isZhRealWord` = HSK 표 + `ZH_KEEP_MERGED`)인 것만, 요청당 20개, 다른 마크가 있을 때만 싣는다. 사전 gemini 행 쌍(미등재 → 「묶을까요?」)은 스냅숏이 없어 아직 재지 않는다.
+- N 프롬프트는 마크에 후보·쌍이 없으면 AD-R4 이전 현행 프롬프트와 바이트 단위로 같다. 단위 테스트와 `--dry-run`이 실제 판별기가 보낸 본문과 대조하고, 라우트 스냅숏(`src/lib/server/__tests__/zhSenseReviewRoute.test.js`)이 상수 꺼짐 = 현행을 고정한다.
+- N의 후보 붙이기는 설계서 §4.1 1차 규칙(뜻 2개 이상, `user_verified` 아님, 최대 3개)이다. 쌍은 이웃 두 한자 토큰을 이은 꼴이 등재(PR②부터 제품 정의 `isZhRegisteredWord` = HSK 표 + `ZH_KEEP_MERGED` + 이합사 사전 + `user_verified`·`jmdict` 행. 이 세트의 dry-run 결과는 이전 정의와 같다)인 것만, 요청당 20개, 다른 마크가 있을 때만 싣는다. 사전 gemini 행 쌍(미등재 → 「묶을까요?」)은 스냅숏이 없어 아직 재지 않는다.
 - N에서 경계가 바뀌는 것은 「등재 + `join: true`」 자동 묶기뿐이다. 이미 한 토큰으로 오병합된 꼴(把手机·人才·打包带)은 N이 묻지 않으므로 B1과 같게 나온다. 이것도 결과로 남긴다.
 
 ## 자동 판정 규칙 (`scripts/eval/zhSenseHoldout.mjs` `scoreCase`)
@@ -101,7 +101,7 @@
 - 고른 뜻이 후보 문구와 정확히 같으면 그 후보 번호로 본다(폴백 `pickZhMeaning`도 후보 문구를 돌려준다).
 - 자동 묶기가 오병합을 만든 경우는 `wrongAutoMerge`로 따로 센다.
 
-## N 응답 검증 (eval 전용 시안 · 설계서 §4.3)
+## N 응답 검증 (제품 `validateZhSensePick` · 설계서 §4.3)
 
 | 응답 | 처리 |
 |---|---|
@@ -114,7 +114,7 @@
 | `sense: 0` + `ctx` 없음·초과·비한글 | 버림 → `pickZhMeaning` + `meaningCheck: doubt` |
 | `join` | `[묶음 판정]` 마크에서 boolean일 때만 받는다 |
 
-뜻 정규화(괄호 보충 제거 → 쉼표 조각 비교)는 AE-R1 `buildSenseList`와 같은 방향의 eval 전용 구현이다. 그 함수가 병합되면 PR②는 그것을 import한다(중복 신설 금지).
+뜻 정규화(괄호 보충 제거 → 쉼표 조각 비교)는 제품 `zhSenseFragments`(PR②에서 이 채점기의 구현을 옮김)다. AE-R1 `buildSenseList`가 병합되면 그쪽으로 합친다(중복 신설 금지).
 
 ## 켜는 기준 (보류 세트, `evaluateRelease`)
 

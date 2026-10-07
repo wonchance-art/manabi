@@ -1,20 +1,22 @@
-// 중국어 「이 문장 뜻」 측정 세트(ZH-SENSE-HOLDOUT-001) 채점 — 순수 함수(네트워크·DB·제품 모듈 import 없음).
-// 설계: docs/manabi-viewer-v2-ad-r4.md §3·§4 (AD-R4 PR①). 제품 코드에는 아무것도 더하지 않는다.
+// 중국어 「이 문장 뜻」 측정 세트(ZH-SENSE-HOLDOUT-001) 채점 — 순수 함수(네트워크·DB 없음).
+// 설계: docs/manabi-viewer-v2-ad-r4.md §3·§4 (AD-R4 PR① 측정 세트 · PR② 서버).
 //
 // - 자동 판정은 1차 선별이다. PASS/FAIL은 사례의 허용·금지 지정과 정확히 대조한 결과이고,
 //   지정 밖은 REVIEW로 사람에게 넘긴다. 같은 모델의 자기 승인으로 REVIEW를 통과시키지 않는다.
-// - N(후보 고르기 합친 시안) 프롬프트와 응답 검증은 **이 파일에만** 있는 eval 전용 시안이다.
-//   제품 반영은 PR②에서 따로 한다(설계서 §10).
+// - N 팔의 프롬프트·응답 검증·뜻 정규화는 PR②에서 제품 모듈(src/lib/server/zhSenseReview.js — import 없는
+//   순수 모듈)로 옮겼다. 이 파일은 그 정본을 import해 PR① 이름(…Draft·senseFragments·matchCandidate)으로
+//   다시 내보낸다 — 중복 구현을 두지 않고, 측정이 제품과 같은 프롬프트·검증을 쓰게 한다.
+import {
+  ZH_SENSE_MAX_CANDIDATES, buildZhPosPrompt, matchZhSenseCandidate, validateZhSensePick, zhSenseFragments,
+} from '../../src/lib/server/zhSenseReview.js';
 
 export const SPLITS = Object.freeze(['tune', 'holdout']);
 export const CATEGORIES = Object.freeze(['A', 'B', 'C', 'D', 'E', 'F']);
 export const VERDICTS = Object.freeze(['PASS', 'FAIL', 'REVIEW', 'BLOCKED', 'ERROR']);
 export const ARMS = Object.freeze(['B0', 'B1', 'N']);
 
-const MAX_CANDIDATES = 3;      // 설계서 §4.1 — 사전 행 meanings 상한과 같다
-const CTX_MAX_CHARS = 10;      // 설계서 §4.3
+const MAX_CANDIDATES = ZH_SENSE_MAX_CANDIDATES; // 설계서 §4.1 — 사전 행 meanings 상한과 같다
 const MAX_PAIRS = 20;          // 설계서 §4.2 — 요청당 묶음 판정 상한
-const CIRCLED = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨'];
 const HANGUL = /[가-힣]/;
 const HAS_HANZI = /[一-鿿]/;
 
@@ -106,28 +108,11 @@ export function validateHoldout(set) {
 
 // ───────────────────────── 뜻 정규화 ─────────────────────────
 
-/**
- * 뜻 문구 → 비교 조각. 괄호 보충을 빼고 쉼표·세미콜론·슬래시로 나눈다.
- * (AE-R1 buildSenseList 규칙과 같은 방향. 그 함수가 병합되면 PR②에서 그것을 import한다.)
- */
-export function senseFragments(text) {
-  return clean(text)
-    .replace(/[（(][^）)]*[）)]/g, ' ')
-    .split(/[,，;；/／、]/u)
-    .map((s) => s.replace(/\s+/g, ' ').trim())
-    .filter(Boolean);
-}
+/** 뜻 문구 → 비교 조각(정본: zhSenseReview.js zhSenseFragments). */
+export const senseFragments = zhSenseFragments;
 
-/** ctx 문구가 후보 하나와 같은 뜻 조각이면 그 후보 번호(1부터), 아니면 0. */
-export function matchCandidate(candidates, text) {
-  const frags = senseFragments(text);
-  if (!frags.length) return 0;
-  const i = (candidates || []).findIndex((m) => {
-    const mine = senseFragments(m?.meaning);
-    return frags.every((f) => mine.includes(f));
-  });
-  return i + 1;
-}
+/** ctx 문구가 후보 하나와 같은 뜻 조각이면 그 후보 번호(1부터), 아니면 0(정본: matchZhSenseCandidate). */
+export const matchCandidate = matchZhSenseCandidate;
 
 // ───────────────────────── 채점 ─────────────────────────
 
@@ -282,103 +267,14 @@ export function collectPairCandidates(tokenizedLines, isRegistered, limit = MAX_
   return pairs.slice(0, limit);
 }
 
-// ───────────────────────── N 시안 프롬프트(eval 전용) ─────────────────────────
+// ───────────────────────── N 프롬프트 · 응답 검증(제품 정본 재수출) ─────────────────────────
 
 /**
- * N 시안 프롬프트 — 현행 buildZhPosPrompt(src/lib/server/disambiguateZhPos.js)에 설계서 §4.2의
- * 추가분(뜻 후보·sense·ctx·묶음 판정)만 더한다. 마크에 candidates·pair가 하나도 없으면 현행 프롬프트와
- * 바이트 단위로 같아야 한다 — zhSenseHoldout.test.js와 실행기 --dry-run이 실제 현행 함수 출력과 대조한다.
- * @param {string[]} lines
- * @param {Array<{lineIdx, word, oov?, candidates?: Array<{meaning,pos}>, pair?: [string,string]}>} marks
+ * N 프롬프트 — 제품 buildZhPosPrompt(src/lib/server/zhSenseReview.js) 그 자체. 마크에 candidates·pair가 하나도
+ * 없으면 AD-R4 이전 현행 프롬프트와 바이트 단위로 같다 — zhSenseHoldout.test.js와 실행기 --dry-run이
+ * 실제 판별기(disambiguateZhPos)가 보낸 본문과 대조해 회귀를 막는다.
  */
-export function buildZhSensePromptDraft(lines, marks) {
-  const usedLineIdxs = [...new Set(marks.map((m) => m.lineIdx))];
-  const lineNo = new Map(usedLineIdxs.map((idx, i) => [idx, i + 1]));
-  const sentenceList = usedLineIdxs.map((idx) => `${lineNo.get(idx)}. ${lines[idx]}`).join('\n');
-  const hasSense = marks.some((m) => m.candidates?.length);
-  const hasJoin = marks.some((m) => m.pair);
-  const wordList = marks
-    .map((m, i) => {
-      let line = `${i + 1}. "${m.word}" (문장 ${lineNo.get(m.lineIdx)})${m.oov ? ' [단어성 판정]' : ''}`;
-      if (m.pair) line += ` [묶음 판정: ${m.pair[0]}+${m.pair[1]}]`;
-      if (m.candidates?.length) line += ` 뜻 후보: ${m.candidates.map((c, k) => `${CIRCLED[k]}${c.meaning}(${c.pos})`).join(' ')}`;
-      return line;
-    })
-    .join('\n');
-  const extraExamples = [
-    ...(hasSense ? ['  { "all": ["동사"], "pos": "동사", "sense": 2 },', '  { "all": ["동사"], "pos": "동사", "sense": 0, "ctx": "질투하다" },'] : []),
-    ...(hasJoin ? ['  { "all": ["양사"], "pos": "양사", "join": false },'] : []),
-  ];
-  const extraRules = [
-    ...(hasSense ? [
-      '- sense: 「뜻 후보」가 있는 단어만. 이 문장에서 맞는 후보의 번호(1부터). 맞는 후보가 없으면 0',
-      '- ctx: sense가 0일 때만. 이 문장에서의 한국어 뜻, 10자 이내',
-      '- 후보 문구를 고쳐 쓰지 말고 번호로만 답할 것. 뜻 후보가 없는 단어에는 sense를 넣지 말 것',
-    ] : []),
-    ...(hasJoin ? ['- join: [묶음 판정] 표시 항목만. 표시된 두 토큰이 이 문장에서 한 단어로 쓰였으면 true, 아니면 false'] : []),
-  ];
-  return `다음은 중국어 문장 목록과, 각 문장에서 품사를 판정할 단어 목록입니다.
+export const buildZhSensePromptDraft = buildZhPosPrompt;
 
-## 문장
-${sentenceList}
-
-## 단어
-${wordList}
-
-각 단어에 대해 JSON 배열로 답하세요.
-
-## 출력 형식 (단어 목록과 순서·길이 정확히 일치)
-[
-  { "all": ["동사", "명사"], "pos": "동사" },
-  { "all": ["명사"], "pos": "명사" },
-  { "all": [], "pos": null, "split": [{"t": "笔", "pos": "명사"}, {"t": "在", "pos": "전치사"}] },
-${extraExamples.length ? `${extraExamples.join('\n')}\n` : ''}  ...
-]
-
-## 규칙
-- all: 이 단어가 중국어에서 일반적으로 갖는 품사 후보 (흔한 순, 1~3개)
-- pos: 지정된 문장의 맥락에서 이 단어가 실제로 쓰인 품사 — 반드시 all 중 하나
-- split: [단어성 판정] 표시 항목만 — 이 표기가 실제 쓰이는 한 단어(신조어·전문어·고유명사
-  포함)면 split을 넣지 말 것. 별개 단어들이 우연히 이웃해 붙은 조합일 때만 순서대로
-  분해해 각 부분의 표기(t)와 그 문장에서의 품사(pos)를 적을 것 (부분들을 이으면 원 표기와
-  정확히 일치해야 함)
-${extraRules.length ? `${extraRules.join('\n')}\n` : ''}- 품사 명칭: 명사/동사/형용사/부사/전치사/접속사/조사/대명사/양사/수사/감탄사/성어/지명/인명/고유명사
-- 설명/주석 금지, JSON만 출력`;
-}
-
-/**
- * N 응답 항목 하나 검증(설계서 §4.3 표) — eval 전용 시안.
- * @param {object} entry 모델 응답 배열의 i번째
- * @param {{word, candidates?, pair?}} mark
- * @param {(pos:string)=>boolean} [isCanon] 품사 정본 필터(현행과 같게 all을 거른다)
- * @returns {{discarded?: 'pos', pos?, all?, sense?: {meaning, via:'sense'|'ctx', meaningCheck?}, senseDiscarded?: string, meaningCheck?: 'doubt', join?: boolean}}
- */
-export function validateSensePickDraft(entry, mark, isCanon = () => true) {
-  const all = Array.isArray(entry?.all)
-    ? entry.all.filter((p) => typeof p === 'string' && p.trim()).map((p) => p.trim().slice(0, 20)).filter(isCanon).slice(0, 4)
-    : [];
-  const pos = typeof entry?.pos === 'string' ? entry.pos.trim().slice(0, 20) : '';
-  const out = {};
-  if (mark.pair && typeof entry?.join === 'boolean') out.join = entry.join;
-  if (!pos || !all.includes(pos)) return { ...out, discarded: 'pos' }; // 지금 규칙 — 그 단어는 폴백
-  out.pos = pos;
-  out.all = all;
-  const cands = mark.candidates || [];
-  if (!cands.length || !('sense' in (entry || {}))) return out; // 후보 없는 단어의 sense는 무시
-  const { sense } = entry;
-  if (Number.isInteger(sense) && sense >= 1 && sense <= cands.length) {
-    const c = cands[sense - 1];
-    out.sense = { meaning: c.meaning, via: 'sense', ...(c.pos && c.pos !== pos ? { meaningCheck: 'doubt' } : {}) };
-    return out;
-  }
-  if (sense === 0) {
-    const ctx = typeof entry.ctx === 'string' ? clean(entry.ctx) : '';
-    if (ctx && len(ctx) <= CTX_MAX_CHARS && HANGUL.test(ctx) && !HAS_HANZI.test(ctx)) {
-      const same = matchCandidate(cands, ctx);
-      out.sense = same ? { meaning: cands[same - 1].meaning, via: 'sense' } : { meaning: ctx, via: 'ctx', meaningCheck: 'ctx' };
-      return out;
-    }
-    return { ...out, senseDiscarded: 'ctx 없음·초과·비한글', meaningCheck: 'doubt' };
-  }
-  return { ...out, senseDiscarded: `범위 밖·비정수 sense(${JSON.stringify(sense)})` };
-}
+/** N 응답 항목 하나 검증(설계서 §4.3 표) — 제품 validateZhSensePick 그 자체. */
+export const validateSensePickDraft = validateZhSensePick;
