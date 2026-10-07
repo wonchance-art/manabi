@@ -130,7 +130,10 @@ describe('문법 [자세히] 배선 계약', () => {
   });
 
   it('좌측 번역·맥락은 buildContextPrompt를 쓴다(말투 통합)', () => {
-    expect(read('src/views/ViewerPage.jsx')).toContain('callGemini(buildContextPrompt(sel, langName), request.signal)');
+    // AE-R2 PR ②(설계서 docs/manabi-viewer-v2-ae-r2.md §2·§6.1): 번역 핵심이 단일 키 모듈로 옮겨 갔다 — 같은 프롬프트,
+    // signal 없이(시트를 닫아도 끝까지 받아 저장). 뷰어는 그 모듈의 쿼리를 쓴다.
+    expect(read('src/lib/sentenceTranslation.js')).toContain('buildContextPrompt(sentence, langName)');
+    expect(read('src/views/ViewerPage.jsx')).toContain('queryClient.fetchQuery(sentenceTranslationQuery(');
   });
 
   it('해설 결과는 문장 단위 캐시를 거친다(재열람 무료)', () => {
