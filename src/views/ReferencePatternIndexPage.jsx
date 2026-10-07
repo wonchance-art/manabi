@@ -59,21 +59,22 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
   );
 
   // 이미 단어장에 저장된 문형 표시 (어휘 페이지와 같은 user_vocabulary 사용)
+  const userId = user?.id;
   useEffect(() => {
-    if (!user || allItems.length === 0) { setSavedSet(new Set()); return; }
+    if (!userId || allItems.length === 0) { setSavedSet(new Set()); return; }
     let cancel = false;
     (async () => {
       try {
         // 어휘 페이지와 같은 청크 조회 정본(fetchSavedWordSet) — 문형 수가 늘어도
         // 단일 .in() 길이 한계에 안 걸린다(규약 통일, 구조 정리 C)
-        const saved = await fetchSavedWordSet(supabase, user.id, allItems.map(i => i.pattern));
+        const saved = await fetchSavedWordSet(supabase, userId, allItems.map(i => i.pattern));
         if (!cancel) setSavedSet(saved);
       } catch {
         if (!cancel) toast?.('저장 상태를 불러오지 못했어요', 'warning');
       }
     })();
     return () => { cancel = true; };
-  }, [user?.id, allItems, toast]);
+  }, [userId, allItems, toast]);
 
   async function savePattern(item) {
     if (!user) return toast?.('로그인하면 문형을 단어장에 저장할 수 있어요', 'info');

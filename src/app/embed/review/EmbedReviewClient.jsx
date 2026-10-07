@@ -145,7 +145,7 @@ export default function EmbedReviewClient() {
             {completed ? `복습 완료 · ${lastDone.right} / ${lastDone.total}` : '닫았어요'}
           </p>
           <p style={{ fontSize: '0.74rem', color: GBC.inkSoft, margin: 0, lineHeight: 1.5 }}>
-            due가 남았으면 이어서, 없으면 "복습할 게 없어요"가 떠요.
+            due가 남았으면 이어서, 없으면 &quot;복습할 게 없어요&quot;가 떠요.
           </p>
           <button type="button" onClick={startReview} style={{ ...gbcButtonPrimary, alignSelf: 'center', marginTop: 4 }}>
             다시 복습

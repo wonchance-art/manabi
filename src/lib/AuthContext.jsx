@@ -172,6 +172,9 @@ export function AuthProvider({ children }) {
       cancelled = true;
       subscription?.unsubscribe();
     };
+    // 마운트 1회 세션 복원. attachAuthListener·fetchProfile은 매 렌더 새 함수라 의존성에 넣으면
+    // 렌더마다 세션 조회와 auth 구독을 다시 붙인다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // auth listener 등록 — 마운트 시(쿠키 있음)와 게스트 상태에서의 로그인 성공 직후 양쪽에서 쓴다.

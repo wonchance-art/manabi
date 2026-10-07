@@ -852,6 +852,8 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
       },
     };
     return () => { if (controlsRef) controlsRef.current = null; };
+    // destination은 phase==='error'에서만 읽고, 새 시도는 늘 'saving'을 거치므로 phase 전환마다 재구성돼 최신이다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [controlsRef, onOpenChapter, onOpenReading, corridorStatus?.phase, regionStatus?.phase, regionStatus?.preview, airHubStatus?.phase, airportExitStatus?.phase]);
 
   // ── 스토리 조작(대사 진행·뜻 토글) — 셸 A/B 콜백이 참조하도록 ref에 최신본을 심는다 ──
@@ -2652,6 +2654,8 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
       sceneRef.current = null;
       if (gameRef.current) { gameRef.current.destroy(true); gameRef.current = null; }
     };
+    // Phaser 게임은 마운트 1회 생성한다(재생성 = 월드 리셋). 생성 후 바뀌는 미리보기 권한은 canAccessPreviewRegionsRef로 읽는다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const activeOverworldRegion = overworldRegionByScene(activeScene);

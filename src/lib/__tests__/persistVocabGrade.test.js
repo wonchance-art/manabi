@@ -68,7 +68,7 @@ describe('배선 계약 — 중복 부활 금지', () => {
 
   it('규약 통일 — 문형 저장 조회는 어휘와 같은 청크 정본, PDF 번역 프롬프트는 뷰어와 같은 정본', () => {
     const pattern = read('src/views/ReferencePatternIndexPage.jsx');
-    expect(pattern).toContain('fetchSavedWordSet(supabase, user.id,');
+    expect(pattern).toContain('fetchSavedWordSet(supabase, userId,');
     const pdf = read('src/views/PdfViewerPage.jsx');
     expect(pdf).toContain('callGemini(buildContextPrompt(text, langName))');
     expect(pdf).not.toContain('내용 이해를 돕는 배경 설명'); // 하드코딩 사본 부활 금지

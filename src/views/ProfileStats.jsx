@@ -430,10 +430,13 @@ function DdayTile({ refManifest }) {
     try { setLocal(JSON.parse(localStorage.getItem('as_dday') || 'null')); } catch {}
   }, []);
 
-  // 서버 값 우선, 없으면 로컬 폴백
-  const dday = profile?.dday_date
-    ? { date: profile.dday_date, label: profile.dday_label || '' }
-    : local;
+  // 서버 값 우선, 없으면 로컬 폴백. 매 렌더 새 객체면 아래 diff 메모가 매번 다시 계산되므로 메모한다.
+  const ddayDate = profile?.dday_date;
+  const ddayLabel = profile?.dday_label;
+  const dday = useMemo(
+    () => (ddayDate ? { date: ddayDate, label: ddayLabel || '' } : local),
+    [ddayDate, ddayLabel, local],
+  );
 
   // 서버가 비어 있고 로컬에 있으면 1회 끌어올림 (기기 마이그레이션)
   useEffect(() => {
@@ -654,6 +657,8 @@ function LevelCoverageCard({ refManifest }) {
         checkMap: JSON.parse(localStorage.getItem(`${ref.readKey}_check`) || '{}'),
       };
     } catch { return { readSet: new Set(), checkMap: {} }; }
+    // merged는 본문에서 읽지 않는 재읽기 신호다 — 서버 병합이 localStorage를 바꾼 뒤 다시 읽게 한다(빼면 병합 반영 안 됨).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ref, mounted, merged]);
 
   if (!ref) return null;

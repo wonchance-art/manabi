@@ -878,6 +878,25 @@
 
 ## Claude (claude/*)
 ### doing
+- **Codex 정지 중 학습 작업 인수 (2026-10-07 13:00 KST~, 오너 지시 — [인수 선언](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6030524345))**:
+  기준 main `978ff6bd`. 작업마다 `claude/*` 브랜치를 쓴다(오너 허락). Codex 복귀 시 같은 파일 착수 전 #1337 최신 Claude 보고를 확인한다.
+  - #1343 `claude/work-env-agent-setup-1v9a0a` — 앱·테스트 런타임 Node 24 정정(CLAUDE.md)·`.nvmrc`. CI green, 병합 승인 대기.
+    `codex/cloud-readiness-20261002`의 `scripts/cloud/verify.mjs`는 CI 복제로 8일 만에 e2e 3·SQL 1 누락 드리프트 → 이식 배제.
+  - #1344 `claude/textbook-answer-a11y` — 교재 해설 이유 글 대비 4.37→AA·14px, 해설 위계, 접힘·예문 링크 44px.
+    수정 전 e2e 실패 재현 → 수정 후 PASS. 교재 피드백 잔여 PR-B(부제 반복·해석 문구·물음 표식, 목업 대기)·PR-C(활용 안내, 오너 문구).
+  - #1345 `claude/viewer-annotations-hook` — VIEWER-BOUNDARY PR-1(공용 훅 + 팀 페이지 교사 관리). 원 설계 결함 4건으로
+    '설명 유지·mount 이동' 안으로 축소. PR-0 운영 집계 대기, PR-3는 #1342 이후.
+  - #1342 인수(`claude/korean-word-meaning`, Codex 브랜치 미수정) — [교차 검수](https://github.com/wonchance-art/manabi/pull/1342#issuecomment-6030711476):
+    e2e 실패 2건 원인·교차 언어 목록 퇴행·성능 2건. 오너 결정: 기존 e2e 기대값 갱신 허용(보강 2곳), 'AI 생성' 표기 출시,
+    한국어기초사전 설계·수록률 측정 착수. 목록 ★ 한 번 저장의 분리 여부는 결정 대기.
+  - #1347 `claude/happy-darwin-il3hd3` — ESLint flat config가 .jsx 270개를 조용히 건너뛰던 것 수정(`files` 항목).
+    드러난 오류 5건 정리(따옴표 4·global-error 하드 링크 1은 사유 주석), exhaustive-deps 등 경고 23건은 경고 유지.
+    계약 `eslintConfigScope.test.js`. lint 0 errors·npm test 480/5303 PASS.
+  - #1348 `claude/happy-darwin-il3hd3` — #1347 후속: .jsx 훅 의존성 경고 23건 판정. 코드 수정 7(동작 불변)·
+    의도된 의존성 16(줄 단위 disable+사유, 월드 7건은 주석만). lint 25→2 warnings·npm test 480/5303·test:world 130/1102 PASS.
+  - ⚠ 운영 마이그레이션 이력 ≠ main `supabase/migrations`(스택 #1316~#1321 SQL 3건·10월 활성화 이력). 다음 마이그레이션 병합 시
+    `supabase-migrations.yml` 실패 가능성 — 운영 READ ONLY 확인 전 스택 PR 닫기 보류.
+  - 이 컨테이너에서 불가(오너/M09): 운영 DB 조회·적용, 운영 배포, 정상 실계정 검수(10-06 04:00 경계 이후 학습 검수 포함).
 ### todo (오너 전건 승인 2026-07-18 — owner-gate 해제분 포함, Codex-1 확장 큐 = #150 코멘트 5012160829)
 - 🧊 **이 아래 전량 = 게임·월드 트랙 동결**(오너 "게임 월드는 ㄴㄴ" 2026-08-25).
   2026-08-26 전수 대조 결과 **비월드 잔여 0**: #1077 인박스 승인분 전량 완결(2·3·6·11·
