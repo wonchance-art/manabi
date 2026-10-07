@@ -113,6 +113,7 @@ import { listHanjaHunEum } from '../lib/hanjaKo';
 import { viewerJapaneseGlyphTable } from '../lib/viewerJapaneseReference';
 import { useGrammarDetail } from '../lib/useGrammarDetail';
 import { useEasierText } from '../lib/useEasierText';
+import { openForSentence, sentencePanelBelongsToLine } from '../lib/viewerSentenceScope';
 import { buildContextPrompt } from '../lib/grammarDetail';
 import { prepareViewerSaveUndo, undoViewerSave } from '../lib/viewerSaveUndo';
 import { contextualMeaning, refreshViewerToken, referenceMatchesContext, createViewerRequestGate, viewerCacheKey, viewerCommandAllowed } from '../lib/viewerReliability';
@@ -400,7 +401,9 @@ export default function ViewerPage() {
     })();
     return () => { cancel = true; };
   }, [user?.id, metCode]);
-  const [selectedRangeText, setSelectedRangeText] = useState('');
+  // 지정(막대·드래그·이동) 문장 기록. 노트 저장은 더 이상 이것을 읽지 않는다 — 해설을 만든 문장(grammar.forText)을
+  // 쓴다(AE-R2 §5.2). 지정 경로의 기록 자체는 focusMode 계약이 고정하고 있어 그대로 둔다.
+  const [, setSelectedRangeText] = useState('');
 
   const { data: savedWordsData, error: savedWordsError, refetch: refetchSavedWords } = useQuery({
     queryKey: ['vocab-words', user?.id],
@@ -593,12 +596,17 @@ export default function ViewerPage() {
     }),
   });
 
+  // 저장 문장 = 해설을 만든 문장(AE-R2 §5.2). 막대·드래그 지정(selectedRangeText)은 단어창 「번역」 경로에서
+  // 바뀌지 않아 빈 문자열이나 앞서 지정한 다른 문장이 저장됐다. 노트 데이터 구조는 그대로다.
   const saveGrammarNoteMutation = useGrammarNoteSave({
     user, materialId: id,
-    selectedText: selectedRangeText,
+    selectedText: grammar.forText,
     explanation: grammar.result,
     toast,
   });
+  // 다른 문장의 해설을 저장한 뒤에도 새 해설의 「노트에 저장」이 「✓ 저장됨」으로 막히지 않게.
+  const resetNoteSave = saveGrammarNoteMutation.reset;
+  useEffect(() => { resetNoteSave(); }, [grammar.forText, resetNoteSave]);
 
   // 재분석 로직 + UI
   const reanalyze = useReanalyze({ materialId: id, material, refetch, toast, explanationLocale: effectiveExplanationLocale });
@@ -746,6 +754,12 @@ export default function ViewerPage() {
     setLeftPanelLoading(false);
     setDragAnalyzing(false);
     const t = { ...token, id: tokenId };
+    // 다른 줄 단어 = [문장] 탭의 앞 문장 번역은 이 카드의 문장이 아니다 — 비워서 남지 않게(AE-R2 §1.2).
+    // 같은 줄(막대 문장·그 줄 안 드래그)은 그 줄의 번역이라 둔다. 수업 모드는 자기 경로를 유지한다.
+    if (!classStudyActive && !sentencePanelBelongsToLine(leftPanelText, ctxSentenceOf(t))) {
+      setLeftPanelText('');
+      setLeftPanelResult('');
+    }
     resetWordPanelScroll();
     setSelectedToken(t);
     setIsSheetOpen(true);
@@ -858,6 +872,13 @@ export default function ViewerPage() {
   const [leftPanelResult, setLeftPanelResult] = useState('');
   const [leftPanelLoading, setLeftPanelLoading] = useState(false);
   const selectedSentenceRef = useRef(''); selectedSentenceRef.current = leftPanelText;
+  // [더 쉽게]·[자세히]는 그 결과를 만든 문장에만 붙는다(AE-R2 §5.1) — 탭 문장이 바뀌는 모든 길(막대·이동·
+  // 단어창 「번역」·수업 출처 복원·다른 줄 단어)에서 진행 중 요청까지 끊는다. 표시는 openForSentence가 한 번 더 가린다.
+  const resetGrammar = grammar.reset, resetEasier = easier.reset;
+  useEffect(() => {
+    if (grammar.forText && grammar.forText !== leftPanelText) resetGrammar();
+    if (easier.forText && easier.forText !== leftPanelText) resetEasier();
+  }, [leftPanelText, grammar.forText, easier.forText, resetGrammar, resetEasier]);
   const explainSelectedSentenceRef = useRef(null);
   useEffect(() => { ctxExplainSeq.current += 1; setCtxExplain(null); }, [selectedToken?.id, selectedToken?.text, selectedToken?.__viewerSentence, selectedToken?.__viewerMaterialId]);
   const ctxSentenceOf = (tok) => {
@@ -873,7 +894,6 @@ export default function ViewerPage() {
     scope: cacheScope, enabled: materialLang === 'Korean' && isSheetOpen});
   const koreanSaveDisplayScope = useRef('');
   koreanSaveDisplayScope.current = JSON.stringify([user?.id, id, effectiveExplanationLocale, selectedToken?.id, selectedToken?.text, material?.raw_text]);
-  const resetGrammar = grammar.reset, resetEasier = easier.reset;
   useEffect(() => {
     detailGate.current.cancel(); selectionGate.current.cancel();
     setLeftPanelLoading(false); setDragAnalyzing(false); setLeftPanelResult('');
@@ -2632,7 +2652,7 @@ export default function ViewerPage() {
 
       {/* [더 쉽게] (#1077-3) — 번역을 보기 전 원어 안의 한 계단. 결과는 원어 문장이라
           본문과 같은 :lang() 폰트 규칙을 태운다. */}
-      {!easier.open ? (
+      {!openForSentence(easier, leftPanelText) ? (
         <button
           className="grammar-btn grammar-detail__toggle"
           onClick={() => easier.run(leftPanelText)}
@@ -2651,7 +2671,7 @@ export default function ViewerPage() {
 
       {/* [자세히] — 문법 온디맨드(구조+패턴 통합, 정본 챕터 연결). 번역·어휘는 이미
           위(맥락)와 오른쪽(단어 목록)이 담당하므로 여기서 반복하지 않는다. */}
-      {!grammar.open ? (
+      {!openForSentence(grammar, leftPanelText) ? (
         <button
           className="grammar-btn grammar-detail__toggle"
           onClick={() => grammar.run(leftPanelText)}
@@ -2672,7 +2692,7 @@ export default function ViewerPage() {
                 </Link>
               )}
               {grammar.chapter && !grammar.chapter.href && <p className="grammar-detail__loading grammar-detail__archived">{vt("→ 정본 해설: 「")}{grammar.chapter.title}」 · {vt("보관된 교재라 열 수 없어요")}</p>}
-              {user && learningStorageSupported && grammar.result && (
+              {user && learningStorageSupported && grammar.result && grammar.forText && (
                 <button
                   onClick={() => saveGrammarNoteMutation.mutate()}
                   disabled={saveGrammarNoteMutation.isPending || saveGrammarNoteMutation.isSuccess}
