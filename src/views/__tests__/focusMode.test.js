@@ -109,7 +109,12 @@ describe('집중 모드 배선', () => {
     expect(sheet).toContain('if(!leftActive&&!rightActive)return null;');
     const fallback = sliceBetween(viewer, 'fallback={boardActions=>', '<ViewerBottomSheet');
     expect(fallback).not.toContain('pickedLineIdx');
-    expect(viewer).toContain('/> : sentenceMoveBar} />}');
+    // 수업 판(boardActions)에서는 예전처럼 아무것도 띄우지 않는다 — 수업 경로 보존(V2 §0.2).
+    expect(viewer).toContain('/> : boardActions ? null : sentenceMoveBar} />}');
+    expect(viewer).toContain('active: pickedLineIdx !== null && sentences.length > 0 && !classStudyActive,');
+    // 막대가 떠 있으면 본문 끝이 막대 위로 오고, 문장 이동 위치 계산도 막대를 바닥으로 본다.
+    expect(read('src/lib/useReaderLayout.js')).toContain("'.viewer-inspector,.class-reader-dock,.sentence-move-bar'");
+    expect(read('src/components/viewer/sentence-move-bar.css')).toContain('.viewer-layout:has(.sentence-move-bar)>.viewer-center {padding-bottom:calc(var(--sentence-move-bar-space) + 48px);}');
     const bar = sliceBetween(viewer, 'const translatePickedSentence', 'function extractSourceSentence');
     expect(bar).toContain('runSelectionAnalysis(pickedSentence.text);');
     expect(bar).not.toContain('callGemini');

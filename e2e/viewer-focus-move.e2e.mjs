@@ -12,24 +12,30 @@ const lines=[
  [['我们','wǒ men','우리'],['明天','míng tiān','내일'],['去','qù','가다'],['公园','gōng yuán','공원'],['。','','마침표']],
  [['今天','jīn tiān','오늘'],['天气','tiān qì','날씨'],['很','hěn','매우'],['好','hǎo','좋다'],['。','','마침표']],
 ];
-const texts=lines.map(l=>l.map(w=>w[0]).join(''));
-const sequence=[],dictionary={};
-lines.forEach((words,line)=>{
- words.forEach(([text,furigana,meaning],i)=>{const id=`id_${line}_${i}`;sequence.push(id);dictionary[id]={text,base_form:text,furigana,meaning,pos:/[。，]/.test(text)?'기호':'명사'};});
- if(line<lines.length-1){const id=`id_${line}_${words.length}`;sequence.push(id);dictionary[id]={text:'\n',base_form:'',furigana:'',meaning:'',pos:'개행'};}
-});
+function build(lines) {
+ const texts=lines.map(l=>l.map(w=>w[0]).join(''));
+ const sequence=[],dictionary={};
+ lines.forEach((words,line)=>{
+  words.forEach(([text,furigana,meaning],i)=>{const id=`id_${line}_${i}`;sequence.push(id);dictionary[id]={text,base_form:text,furigana,meaning,pos:/^[。，、.,!?！？]$/.test(text)?'기호':'명사'};});
+  if(line<lines.length-1){const id=`id_${line}_${words.length}`;sequence.push(id);dictionary[id]={text:'\n',base_form:'',furigana:'',meaning:'',pos:'개행'};}
+ });
+ return {texts,sequence,dictionary};
+}
+const zh=build(lines),texts=zh.texts;
 
-async function open(width,height=844,prefs={focusMode:true,autoSpeakOnClick:false}) {
+async function open(width,height=844,prefs={focusMode:true,autoSpeakOnClick:false},{language='Chinese',material=zh,meta={translations:{[texts[0]]:'눈앞의 경기장은 사진보다 더 웅장하다.'}},common,visibility}={}) {
  const f=await fixture({width});
  await f.page.setViewportSize({width,height});
- await f.context.addInitScript(prefs=>{
+ await f.context.addInitScript(({language,prefs,common})=>{
   // 새 컨텍스트에 한 번만 심는다 — 이후에는 UI가 실제로 저장한 값을 읽는다.
-  if(!localStorage.getItem('viewer_preferences_v2'))localStorage.setItem('viewer_preferences_v2',JSON.stringify({version:2,languages:{Chinese:prefs}}));
- },prefs);
+  if(!localStorage.getItem('viewer_preferences_v2'))localStorage.setItem('viewer_preferences_v2',JSON.stringify({version:2,...(common?{common}:{}),languages:{[language]:prefs}}));
+ },{language,prefs,common});
  await f.context.route('**/api/dict?**',r=>r.fulfill({contentType:'application/json',body:'null'}));
- await f.context.route('**/api/gemini',r=>r.fulfill({contentType:'application/json',body:JSON.stringify({text:'검수용 맥락'})}));
- f.rows.push({id:94131,user_id:owner,title:'문장 집중 이동 검수',raw_text:texts.join('\n'),source_type:'text',created_at:new Date().toISOString(),
-  processed_json:{status:'completed',metadata:{language:'Chinese',translations:{[texts[0]]:'눈앞의 경기장은 사진보다 더 웅장하다.'}},sequence,dictionary}});
+ f.requests=[];
+ await f.context.route('**/api/gemini',r=>{f.requests.push({url:'/api/gemini',body:r.request().postData()||''});return r.fulfill({contentType:'application/json',body:JSON.stringify({text:'검수용 맥락'})});});
+ await f.context.route(/\/api\/analyze(\/korean)?$/,r=>{f.requests.push({url:new URL(r.request().url()).pathname,body:r.request().postData()||''});return r.fulfill({contentType:'application/json',body:JSON.stringify({results:[]})});});
+ f.rows.push({id:94131,user_id:owner,...(visibility?{visibility,owner_id:owner}:{}),title:'문장 집중 이동 검수',raw_text:material.texts.join('\n'),source_type:'text',created_at:new Date().toISOString(),
+  processed_json:{status:'completed',metadata:{language,...meta},sequence:material.sequence,dictionary:material.dictionary}});
  await f.page.goto('/viewer/94131',{waitUntil:'domcontentloaded',timeout:120000});
  await f.page.locator('[data-source-token="id_0_0"]').waitFor();
  return f;
@@ -207,6 +213,121 @@ test('display detail badge counts only changed controls visible inside that grou
   assert.equal(await badge(),0);
   await f.page.getByRole('tab',{name:'읽기 진행',exact:true}).click();
   assert.equal(await f.page.getByRole('checkbox',{name:'문장 집중'}).isChecked(),true,'focus mode itself is untouched');
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+// 메인 검수 보완 ① — 막대가 떠 있는 동안 본문 끝(마지막 문장·「다 읽었다면」 줄)이 막대 위로 드러나고,
+// ^/v로 화면 아래쪽 문장까지 내려가도 지정 문장이 막대에 가리지 않는다. 비공개 자료(댓글 없음)라
+// 「다 읽었다면」이 본문 맨 끝이다 — 가장 빠듯한 경우.
+const longZh=build(Array.from({length:24},(_,i)=>lines[i%lines.length]));
+for(const [width,height] of [[390,844],[1280,900]])test(`${width}px: the move bar never covers the end of the text or the designated sentence`,{timeout:240000},async()=>{
+ const f=await open(width,height,undefined,{material:longZh,meta:{},visibility:'private'});
+ try{
+  await token(f,0,0).click();await bar(f).waitFor();
+  const barTop=async()=>(await bar(f).boundingBox()).y;
+  const sentenceBottom=()=>f.page.locator('.word-token--picked').evaluateAll(els=>Math.max(...els.map(el=>el.getBoundingClientRect().bottom)));
+  await f.page.evaluate(()=>scrollTo({top:document.scrollingElement.scrollHeight,behavior:'instant'}));await f.page.waitForTimeout(200);
+  const end=await f.page.evaluate(()=>{
+   const actions=document.querySelector('.post-reading-actions')?.getBoundingClientRect();
+   const tokens=[...document.querySelectorAll('[data-source-token^="id_23_"]')].map(el=>el.getBoundingClientRect().bottom);
+   const center=document.querySelector('.viewer-center'),last=[...center.children].filter(el=>el.getClientRects().length).at(-1).getBoundingClientRect();
+   return {actions:actions?.bottom,lastLine:Math.max(...tokens),last:last.bottom};
+  });
+  const top=await barTop();
+  assert.ok(end.actions!=null,'「다 읽었다면」 row is rendered');
+  assert.ok(end.actions<=top,`「다 읽었다면」 row bottom ${end.actions} <= bar top ${top}`);
+  assert.ok(end.lastLine<=top,`last sentence bottom ${end.lastLine} <= bar top ${top}`);
+  assert.ok(end.last<=top,`last reader block bottom ${end.last} <= bar top ${top}`);
+  await f.page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));await f.page.waitForTimeout(100);
+  const down=bar(f).getByRole('button',{name:'아래 문장',exact:true}),up=bar(f).getByRole('button',{name:'위 문장',exact:true});
+  for(let line=1;line<24;line++){
+   await down.click();await f.page.waitForTimeout(80);
+   assert.deepEqual(await pickedLines(f),[String(line)]);
+   const b=await sentenceBottom(),t=await barTop();
+   assert.ok(b<=t,`line ${line}: designated sentence bottom ${b} <= bar top ${t}`);
+  }
+  for(let line=22;line>=19;line--){
+   await up.click();await f.page.waitForTimeout(80);
+   const b=await sentenceBottom(),t=await barTop();
+   assert.ok(b<=t,`back to line ${line}: ${b} <= ${t}`);
+  }
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+// 메인 검수 보완 ②(a) — 막대의 계산색 대비: 글자 ≥4.5:1, 아이콘·테두리 ≥3:1(종이·어둡게).
+// 비활성 버튼은 WCAG 예외라 하한 대신 「활성보다 흐리다」만 고정하고 값을 남긴다.
+for(const theme of ['sepia','dark'])test(`${theme}: move bar text, icon and edge contrast`,{timeout:180000},async()=>{
+ const f=await open(390,844,undefined,{common:{theme,ttsRate:'normal'}});
+ try{
+  assert.equal(await f.page.locator('.viewer-layout').getAttribute('data-reader-theme'),theme);
+  await token(f,0,0).click();await bar(f).waitFor();
+  const c=await bar(f).evaluate(barEl=>{
+   const parse=s=>{let m=s.match(/rgba?\(([^)]+)\)/);if(m){const p=m[1].split(/[\s,/]+/).filter(Boolean).map(Number);return [p[0],p[1],p[2],p[3]??1];}
+    m=s.match(/color\(srgb ([^)]+)\)/);if(m){const p=m[1].split(/[\s/]+/).filter(Boolean).map(Number);return [p[0]*255,p[1]*255,p[2]*255,p[3]??1];}
+    throw new Error('unparsed colour '+s);};
+   const lum=([r,g,b])=>[r,g,b].map(v=>{v/=255;return v<=.03928?v/12.92:((v+.055)/1.055)**2.4;}).reduce((a,v,i)=>a+v*[.2126,.7152,.0722][i],0);
+   const over=(fg,bg,alpha=1)=>{const a=fg[3]*alpha;return [0,1,2].map(i=>fg[i]*a+bg[i]*(1-a));};
+   const ratio=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);};
+   const cs=el=>getComputedStyle(el);
+   const bg=parse(cs(barEl).backgroundColor),page=parse(cs(barEl.closest('.viewer-layout')).backgroundColor);
+   const btn=name=>barEl.querySelector(`button[aria-label="${name}"]`)||[...barEl.querySelectorAll('button')].find(b=>b.textContent.trim()===name);
+   const fgOf=el=>over(parse(cs(el).color),bg,Number(cs(el).opacity));
+   const translate=btn('번역');
+   return {
+    pos:ratio(fgOf(barEl.querySelector('.sentence-move-bar__pos')),bg),
+    translateText:ratio(fgOf(translate),bg),
+    translateEdge:ratio(over(parse(cs(translate).borderTopColor),bg),bg),
+    barEdgeOnBar:ratio(over(parse(cs(barEl).borderTopColor),bg),bg),
+    barEdgeOnPage:ratio(over(parse(cs(barEl).borderTopColor),page),page),
+    down:ratio(fgOf(btn('아래 문장')),bg),close:ratio(fgOf(btn('문장 지정 해제')),bg),
+    upDisabled:btn('위 문장').disabled?ratio(fgOf(btn('위 문장')),bg):null,
+   };
+  });
+  console.log(`[move-bar-contrast] ${theme} ${JSON.stringify(Object.fromEntries(Object.entries(c).map(([k,v])=>[k,v&&Math.round(v*100)/100])))}`);
+  for(const k of ['pos','translateText'])assert.ok(c[k]>=4.5,`${theme} ${k} text ${c[k]} >= 4.5`);
+  for(const k of ['translateEdge','barEdgeOnBar','barEdgeOnPage','down','close'])assert.ok(c[k]>=3,`${theme} ${k} ${c[k]} >= 3`);
+  assert.ok(c.upDisabled!=null&&c.upDisabled<c.down,'disabled ^ is visibly dimmer than enabled v');
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+// 메인 검수 보완 ③ — 일본어·한국어 자료에서도 막대가 렌더되고 ^/v·번역이 동작한다.
+// 번역은 기존 경로(문장 맥락 요청 1회 + 단어 분석 1회)로만 나간다.
+const ja=build([
+ [['今日','きょう','오늘'],['は','','은'],['友達','ともだち','친구'],['と','','와'],['駅前','えきまえ','역 앞'],['の','','의'],['喫茶店','きっさてん','찻집'],['で','','에서'],['会いました','あいました','만났습니다'],['。','','마침표']],
+ [['紅茶','こうちゃ','홍차'],['を','','을'],['飲みました','のみました','마셨습니다'],['。','','마침표']],
+ [['店','みせ','가게'],['は','','은'],['静か','しずか','조용함'],['でした','','이었습니다'],['。','','마침표']],
+]);
+const ko=build([
+ [['오늘은','','오늘'],['친구와','','친구'],['공원에','','공원'],['갔어요','','가다'],['.','','마침표']],
+ [['날씨가','','날씨'],['아주','','매우'],['좋았어요','','좋다'],['.','','마침표']],
+ [['내일도','','내일'],['또','','다시'],['만나요','','만나다'],['.','','마침표']],
+]);
+for(const [language,material,analyzePath] of [['Japanese',ja,'/api/analyze'],['Korean',ko,'/api/analyze/korean']])test(`${language}: move bar renders, ^/v move and 번역 uses the existing sentence path once`,{timeout:180000},async()=>{
+ const f=await open(390,844,{focusMode:true,autoSpeakOnClick:false},{language,material,meta:{}});
+ try{
+  await token(f,0,2).click();await bar(f).waitFor();
+  assert.deepEqual(await pickedLines(f),['0']);assert.deepEqual(await visibleInspectors(f),[]);
+  assert.equal(await bar(f).getByText('1 / 3',{exact:true}).count(),1);
+  await bar(f).getByRole('button',{name:'아래 문장',exact:true}).click();
+  assert.deepEqual(await pickedLines(f),['1']);
+  await bar(f).getByRole('button',{name:'아래 문장',exact:true}).click();
+  await bar(f).getByRole('button',{name:'위 문장',exact:true}).click();
+  assert.deepEqual(await pickedLines(f),['1']);
+  assert.equal(f.requests.length,0,'pure moves send no request');
+  await bar(f).getByRole('button',{name:'번역',exact:true}).click();
+  await f.page.locator('#inspector-sentence-tab[aria-selected="true"]').waitFor();
+  await f.page.waitForTimeout(1000);
+  const sentence=material.texts[1];
+  const gemini=f.requests.filter(r=>r.url==='/api/gemini'),analysis=f.requests.filter(r=>r.url===analyzePath);
+  assert.equal(gemini.length,1,'one sentence-context request');
+  assert.ok(gemini[0].body.includes(sentence),'context request carries the designated sentence');
+  assert.equal(analysis.length,1,`one word-analysis request on ${analyzePath}`);
+  assert.deepEqual(JSON.parse(analysis[0].body).lines,[sentence]);
+  assert.equal(f.requests.length,2,'no other AI/analysis request');
+  assert.equal(await bar(f).count(),0);
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
 });

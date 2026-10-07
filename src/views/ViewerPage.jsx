@@ -1383,6 +1383,8 @@ export default function ViewerPage() {
   // 문장 이동 막대(VIEWER-R0-BUGS-001 버그 4) — 문장이 지정됐는데 보조 패널에 보일 내용이
   // 없을 때(집중 모드 첫 탭·순수 이동 뒤·단어창을 닫은 뒤) 빈 패널(탭 머리만) 대신 뜬다.
   // 패널에 내용이 생기면 막대는 사라지고 ^/v는 패널 머리(barNav)로 옮겨 간다 — 둘은 동시에 없다.
+  // 수업 모드(classStudyActive)는 도크·판이 자기 경로를 가진다 — 판 fallback에서는 막대를 띄우지 않고
+  // (예전에도 접힌 패널은 보이지 않았다) Alt+↑/↓도 끈다. runSelectionAnalysis·수업 버튼은 그대로다.
   // 「번역」 = 지정된 문장의 막대(¦) 재탭과 같은 경로(runSelectionAnalysis: 교재 뜻 → 캐시 →
   // 기존 번역 요청). 새 AI 경로를 만들지 않는다. 열리는 곳은 보조 패널의 문장 탭이다.
   const translatePickedSentence = () => {
@@ -1411,7 +1413,8 @@ export default function ViewerPage() {
   // 막대 버튼과 같은 moveSentence라 집중 모드에서는 순수 이동이다.
   const sentenceKeyRef = useRef({});
   sentenceKeyRef.current = {
-    active: pickedLineIdx !== null && sentences.length > 0,
+    // 수업 모드는 자기 도크·판 경로가 있다 — 이 단축키·막대는 기본 뷰어에서만(V2 §0.2 수업 경로 보존).
+    active: pickedLineIdx !== null && sentences.length > 0 && !classStudyActive,
     blocked: modalBlocked || tokenRange.dragging, // 설정·받아쓰기·읽기 확인 등은 모두 activeModal — modalBlocked에 든다
     move: moveSentence,
   };
@@ -3372,7 +3375,7 @@ export default function ViewerPage() {
             {sentenceNavBtn(1, 'viewer-sheet-bar__btn viewer-sheet-bar__btn--nav')}
           </>
         ) : null}
-      /> : sentenceMoveBar} />}
+      /> : boardActions ? null : sentenceMoveBar} />}
       </TextbookAnnotations>
 
       {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} languageSettings={languageSettings} onClose={closeReadingSettings} keepPosition={keepReadingPosition} previewTokens={previewTokens} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus}/>}
