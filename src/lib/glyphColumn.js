@@ -25,6 +25,16 @@ export function jaWordFromTable(word, jaTable) {
 }
 
 /**
+ * 수기 동형이의어 경고(jaWords.json warn — scripts/hanja-curated.mjs JA_FALSE_FRIENDS) → {form, meaning}, 없으면 null.
+ * 이 단어는 일본어에 같은 표기가 있지만 주된 뜻이 다르다(回复 ↔ 回復 '회복'). 日 줄에 올리지 않고 경고로만 보인다.
+ */
+export function jaWarnFromTable(word, jaTable) {
+  const w = text(word);
+  const v = w && jaTable?.warn ? jaTable.warn[w] : undefined;
+  return Array.isArray(v) && typeof v[0] === 'string' && typeof v[1] === 'string' && v[0] && v[1] ? { form: v[0], meaning: v[1] } : null;
+}
+
+/**
  * 사전 행 ja → {form, yomi, diff, warn} (요미를 지키는 검증판). 형식이 어긋나면 null.
  * 요미는 가나만 30자 이하, 표기는 마크업·줄바꿈 없이 80자 이하.
  * (normalizeJapaneseReference도 PR ②부터 요미를 지키지만, 형식이 어긋난 요미를 버리고 표기는 남긴다 — 日 줄은 더 엄격하게
@@ -58,6 +68,7 @@ export function jaGlyphRow({ word, dictEntry, jaTable } = {}) {
   const n = [...w].length;
   const table = jaWordFromTable(w, jaTable);
   const ok = (form, yomi) => !!form && !!yomi && HAN_ONLY.test(form) && [...form].length === n && KANA.test(yomi);
+  if (jaWarnFromTable(w, jaTable)) return null; // 수기 동형이의어 — 사전 행이 같은 표기라 해도 日 줄에 올리지 않는다
   const ja = getJaRef(dictEntry);
   if (ja === null) return null; // 판정 완료 · 대응 없음
   const fromTable = table && ok(table.form, table.yomi)

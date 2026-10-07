@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { toTraditional, toTraditionalTW, zhengForm, zhengSure } from '../hanjaKo';
-import { glyphColumnLayout, glyphRows, jaGlyphRow, jaWordFromTable, readDictJa } from '../glyphColumn';
+import { glyphColumnLayout, glyphRows, jaGlyphRow, jaWarnFromTable, jaWordFromTable, readDictJa } from '../glyphColumn';
 import { loadJaWordsTable, loadZhengTable, prefetchGlyphTables, resetGlyphTablesForTest } from '../glyphTables';
 import { JA_FALSE_FRIENDS } from '../../../scripts/hanja-curated.mjs';
 
@@ -360,6 +360,39 @@ describe('日 — 확인된 단어 표기 우선, 글자 단위 폴백은 확인
       expect(jaWordFromTable(word, jaWords), word).toBeNull();
       expect(jaGlyphRow({ word, jaTable: jaWords }), word).toBeNull();
     }
+  });
+});
+
+// AE-R3 PR ② 검수(2026-10-08 KST): 回复(답장) ↔ 回復(회복)처럼 뜻이 갈리는 동형이의어는 확인 표기로 보이면 오해를 부른다.
+// 수기 거부 목록(JA_FALSE_FRIENDS)을 jaWords.json warn으로도 내보내 日 줄을 숨기고 경고로 보인다.
+describe('日 — 수기 동형이의어는 日 줄 대신 경고(jaWords.json warn)', () => {
+  it('warn = 표제어 우주 안의 거부 목록 키 전부, [일본어 표기, 주된 뜻] — 값 형식 「표기 — 뜻(중국어는 …)」에서 가른다', () => {
+    const keys = Object.keys(jaWords.warn);
+    expect(keys).toEqual([...keys].sort(byCodePoint));
+    expect(keys.length).toBeGreaterThanOrEqual(50);
+    for (const k of keys) {
+      expect(Object.hasOwn(JA_FALSE_FRIENDS, k), k).toBe(true);
+      expect(k in jaWords.words, k).toBe(false);
+      const [form, meaning] = jaWords.warn[k];
+      expect(JA_FALSE_FRIENDS[k].startsWith(`${form} — ${meaning}(중국어`), k).toBe(true);
+      expect([...form].length).toBe([...k].length);
+    }
+    expect(jaWords.warn.回复).toEqual(['回復', '회복']);
+    expect(jaWords.warn.汽车).toEqual(['汽車', '기차']);
+    expect(jaWords.warn.老师).toEqual(['老師', '노스승·노승']);
+  });
+
+  it('回复은 日 줄이 없다 — 게스트도, 사전 행이 같은 표기(回復)를 같은 단어로 적어도', () => {
+    expect(jaWordFromTable('回复', jaWords)).toBeNull();
+    expect(jaWarnFromTable('回复', jaWords)).toEqual({ form: '回復', meaning: '회복' });
+    expect(jaGlyphRow({ word: '回复', jaTable: jaWords })).toBeNull();
+    expect(jaGlyphRow({ word: '回复', dictEntry: dictWith({ form: '回復', yomi: 'かいふく' }), jaTable: jaWords })).toBeNull();
+    expect(jaWarnFromTable('壮观', jaWords)).toBeNull();
+  });
+
+  it('#1368 재생성으로 들어온 나머지 9항은 같은 단어로 판정해 日 줄에 남는다(PR ② 검수)', () => {
+    const same = { 了解: '了解', 厨房: '厨房', 回归: '回帰', 失踪: '失踪', 携带: '携帯', 斗志: '闘志', 联合: '連合', 质朴: '質朴', 踪迹: '踪跡' };
+    for (const [w, form] of Object.entries(same)) expect(jaGlyphRow({ word: w, jaTable: jaWords }), w).toMatchObject({ form, source: 'jmdict' });
   });
 });
 

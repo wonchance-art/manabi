@@ -710,6 +710,45 @@ test('AE-R3 390: 体育场(사전 ja) 안 2 — 글자 칸 정렬 ±2px, 같은 
  }finally{await f.context.close();}
 });
 
+// 메인 세션 결정(10-08): 안 2가 390 첫 화면 계약(표제어·이 문장 뜻 줄·하단)을 깨면 결함 — 우선순위 표제어·뜻·하단 > 자형 표.
+// 3줄 문장 속 体育场(사전 ja → 안 2): 1단계 문장 줄 2줄 예산, 그래도 넘치면 2단계 자형 표를 뜻 줄 아래로(표제어 옆엔 正 한 칸).
+test('AE-R3 390 첫 화면 우선: 3줄 문장 + 体育场(안 2) — 표제어·뜻 줄·4등급이 스크롤 없이, 자형 줄은 뜻 줄 아래(접힘 0)',{timeout:180000},async()=>{
+ const m=cardMaterial();
+ const f=await open(m,{prefs:zhPrefs,rows:glyphRows});
+ try{
+  await until(()=>f.bulk.length>=1);
+  const longId=m.sequence.find(id=>id.startsWith('id_2_')&&m.dictionary[id].text==='体育场');
+  await tap(f,longId,'경기장');
+  await f.page.waitForTimeout(400);
+  assertFirstScreen(await measure(f.page),{label:'3-line + 体育场 table 390'});
+  const s=await f.page.evaluate(()=>{
+   const card=[...document.querySelectorAll('#inspector-word')].find(el=>el.getClientRects().length);
+   const meaning=card.querySelector('.word-detail-card__meaning').getBoundingClientRect();
+   const below=card.querySelector('.reader-card-glyph--below');
+   const beside=card.querySelector('.word-fit-wrap > .reader-card-glyph');
+   return {tight:card.querySelector('.reader-card-sentence')?.hasAttribute('data-tight'),
+    below:below?{top:below.getBoundingClientRect().top,text:below.textContent,layout:below.dataset.layout}:null,meaningBottom:meaning.bottom,
+    beside:beside?{layout:beside.dataset.layout,text:beside.textContent}:null,details:card.querySelectorAll('details,[aria-expanded="false"]').length};
+  });
+  assert.equal(s.tight,true,'step 1: the sentence line drops to the 2-line budget');
+  assert.ok(s.below,'step 2: the glyph rows move below the meaning line');
+  assert.ok(s.below.top>=s.meaningBottom-.5,'below block is under the meaning line');
+  assert.ok(s.below.text.includes('体育場')&&s.below.text.includes('たいいくじょう'),s.below.text);
+  if(s.beside){assert.equal(s.beside.layout,'side');assert.equal(s.beside.text,'正體育場','beside the headword: the 正 row only');assert.ok(!s.below.text.includes('體育場'));}
+  else assert.ok(s.below.text.includes('體育場'),'正 row goes below when it does not fit beside');
+  assert.equal(s.details,0,'no folds');
+  // 다른 단어로 가면 단계가 0으로 — 짧은 문장의 体育场은 문장 줄 3줄 예산 · 표제어 아래 표(안 2) 그대로
+  await tap(f,'id_0_2','경기장');
+  await f.page.waitForTimeout(400);
+  const t=await glyphGeometry(f.page);
+  assert.equal(t.layout,'table');
+  assertFirstScreen(await measure(f.page),{label:'1-line + 体育场 table 390'});
+  assert.equal(await f.page.locator('#inspector-word .reader-card-glyph--below').filter({visible:true}).count(),0);
+  if(process.env.COMPOSER_SCREENSHOTS)await f.page.screenshot({path:`${process.env.COMPOSER_SCREENSHOTS}/glyph-budget-390.png`});
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
 test('AE-R3: 老师(diff) · 汽车(warn) → 日 숨김 · 「일본어로는」 줄, 尽量(ja null) → 正만 + [✦ 일본어로는?](기존 클라 AI, 「AI」 표 0, 사전 쓰기 0) · 일본어 자료엔 자형 열 0',{timeout:180000},async()=>{
  const f=await open(glyphMaterial(),{prefs:zhPrefs,rows:glyphRows});
  try{

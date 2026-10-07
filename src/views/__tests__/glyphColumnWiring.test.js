@@ -39,7 +39,23 @@ describe('자형 열 배선 — 표제어 덩어리 안, 일반 모드만', () =
     expect(head.indexOf('<ViewerGlyphColumn')).toBeGreaterThan(head.indexOf('<div className="word-fit-wrap">'));
     const teaching = sliceBetween(card, 'classStudyActive?<div className="reader-teaching-word">', ':<div className="reader-card-headword">');
     expect(teaching).not.toContain('ViewerGlyphColumn');
-    expect(card.match(/<ViewerGlyphColumn/g)).toHaveLength(1);
+    // 표제어 옆 1곳(+ 첫 화면 우선 2단계의 正 한 칸) · 뜻 줄 아래 1곳 — 셋 다 수업 모드 판서 밖
+    expect(card.match(/<ViewerGlyphColumn/g)).toHaveLength(3);
+  });
+
+  // 메인 세션 결정(10-08): 안 2가 390 첫 화면(표제어·이 문장 뜻 줄·하단)을 깨면 결함이다 — 우선순위 표제어·뜻·하단 > 자형 표.
+  it('첫 화면 우선 — 뜻 줄이 밀리면 1단계 문장 줄 2줄 예산, 2단계 자형 표를 뜻 줄 아래로(표제어 옆엔 正 한 칸), 접힘 0', () => {
+    expect(column).toContain("const meaning = body?.querySelector('.word-detail-card__meaning');");
+    expect(column).toMatch(/onBudget\(budgetStep \+ 1\)/);
+    expect(viewer).toContain('cardSentenceOf(selectedToken, glyphStep >= 1)');
+    expect(viewer).toContain('clipSentenceToBudget(found, tight ? { budget: SENTENCE_LINE_BUDGET_TIGHT } : undefined)');
+    expect(card).toContain('data-tight={glyphStep >= 1 || undefined}');
+    expect(css.replace(/\s+/g, ' ')).toMatch(/\.reader-card-sentence\[data-tight\] \{-webkit-line-clamp:2;line-clamp:2;\}/);
+    const below = sliceBetween(card, '{/* 첫 화면 우선 2단계', '{/* 사전 뜻 줄 교정 직후');
+    expect(below).toContain('forceLayout="stack"');
+    expect(below).not.toMatch(/<details|aria-expanded/);
+    expect(card.indexOf('{/* 첫 화면 우선 2단계')).toBeGreaterThan(card.indexOf("refMeaning || selectedToken.meaning || '(뜻 없음)'"));
+    expect(card).toContain('sideOnly onSideMiss');
   });
 
   it('표 칸 정렬은 표제어 글자 자리(data-glyph-i)를 잰다 — 셀 순서 = 표제어 코드포인트 순서', () => {

@@ -78,6 +78,17 @@ describe('더 알아보기 · 일본어로는 — 사전 diff/warn은 내용, �
     expect(owner.fetching).toBe(0);
     expect(renderMore({word:'尽量',meaning:'되도록',userId:null,dictEntry:null}).markup).toBe('');
   });
+  it('수기 동형이의어(回复 ↔ 回復 회복) — 게스트에게도 경고 줄, 로그인이면 경고 + [✦ 일본어로는?], 日 줄은 없다',()=>{
+    const guest=renderMore({word:'回复',meaning:'답장하다',userId:null,dictEntry:null});
+    expect(text(guest.markup)).toBe(t('ko','일본어 {form}는 ‘{meaning}’',{form:'回復',meaning:'회복'}));
+    const owner=renderMore({word:'回复',meaning:'답장하다',userId:'u1',dictEntry:null});
+    expect(owner.markup).toContain('reader-card-learn__ask');
+    expect(text(owner.markup)).toContain('회복');
+    // 사전 행이 같은 표기를 같은 단어로 적어도 경고를 붙인다
+    const dict=renderMore({word:'回复',meaning:'답장하다',userId:'u1',dictEntry:{meanings:[{meaning:'답장하다',pos:'동사',ja:{form:'回復',yomi:'かいふく'}}]}});
+    expect(text(dict.markup)).toContain('‘회복’');
+    expect(renderColumn('回复')).not.toContain('reader-card-glyph__row--ja');
+  });
   it('사전 행을 아직 받는 중이면 버튼을 미리 세우지 않는다(1초 안 칸에 스피너·버튼 깜빡임 0)',()=>{
     expect(renderMore({word:'尽量',meaning:'되도록',userId:'u1',dictEntry:undefined,dictLoading:true}).markup).toBe('');
   });

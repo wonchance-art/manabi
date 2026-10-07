@@ -109,7 +109,7 @@ import '../components/viewer/reader-controls.css';
 import '../components/viewer/sentence-move-bar.css';
 const ChineseSerif = dynamic(() => import('../components/viewer/ChineseSerif'), {ssr:false});
 import { hunRubyCells } from '../lib/viewerHunRuby';
-import { sentenceAroundToken, sentenceAroundTerm, clipSentenceToBudget } from '../lib/viewerSentenceLine';
+import { sentenceAroundToken, sentenceAroundTerm, clipSentenceToBudget, SENTENCE_LINE_BUDGET_TIGHT } from '../lib/viewerSentenceLine';
 import { buildSenseList, senseListCount } from '../lib/viewerSenseList';
 import { nextReviewForSavedWord } from '../lib/viewerNextReview';
 import { viewerJapaneseGlyphTable } from '../lib/viewerJapaneseReference';
@@ -901,7 +901,7 @@ export default function ViewerPage() {
     }
     return lines;
   }, [material?.processed_json]);
-  const cardSentenceOf = (tok) => {
+  const cardSentenceOf = (tok, tight = false) => {
     const line = ctxSentenceOf(tok);
     if (!tok || !line) return null;
     const m = typeof tok.id === 'string' ? /^(?:id|failed)_(\d+)_/.exec(tok.id) : null;
@@ -910,7 +910,7 @@ export default function ViewerPage() {
     const found = index >= 0
       ? sentenceAroundToken({ line, tokens, index, language: materialLang, term: tok.text })
       : sentenceAroundTerm({ line, term: tok.text, language: materialLang });
-    return found ? clipSentenceToBudget(found) : null;
+    return found ? clipSentenceToBudget(found, tight ? { budget: SENTENCE_LINE_BUDGET_TIGHT } : undefined) : null;
   };
   // 문형 한 줄의 팝오버(Q6 — 비모달, 접힘 0). 다른 단어로 가면 닫는다.
   const [patternOpen, setPatternOpen] = useState(false);
@@ -1812,6 +1812,13 @@ export default function ViewerPage() {
   // 우리 사전(레퍼런스 어휘) 연동(②) — 급수 뱃지 + 정본 뜻·예문·한자 노트 자동 표시
   // 어휘 키 — 이합사 O 조각(sep_link)은 VO로 조회·저장·표시한다. base_form은 만남 기록 전용으로 남긴다.
   const selectedLexKey = selectedToken?.sep_link || selectedToken?.base_form;
+  // 첫 화면 우선 단계(AE-R3 PR② — 아래 cardSentence 주석) — 카드(토큰 · 기본형)마다 따로, 오르기만 한다.
+  const glyphCardKey = selectedToken ? `${selectedToken.id || selectedToken.text}:${selectedLexKey || ''}` : '';
+  const [glyphBudget, setGlyphBudget] = useState({ key: '', step: 0, zhengBelow: false });
+  const glyphStep = glyphBudget.key === glyphCardKey ? glyphBudget.step : 0;
+  const glyphZhengBelow = glyphBudget.key === glyphCardKey && glyphBudget.zhengBelow;
+  const raiseGlyphBudget = useCallback((key, step) => setGlyphBudget((cur) => (cur.key === key && cur.step >= step ? cur : { key, step, zhengBelow: cur.key === key && cur.zhengBelow })), []);
+  const glyphZhengMiss = useCallback((key) => setGlyphBudget((cur) => (cur.key === key && cur.zhengBelow ? cur : { key, step: cur.key === key ? cur.step : 0, zhengBelow: true })), []);
   const refVocab = useRefVocabEntry(materialLang, selectedLexKey || selectedToken?.text);
   // 본문 문맥(수동 교정 포함)이 카드와 저장의 기준. 사전의 다른 뜻은 접어 구분한다.
   const refMeaning = contextualMeaning(selectedToken) || null;
@@ -2290,7 +2297,10 @@ export default function ViewerPage() {
   // 위쪽을 밀지 않는다. 일반 모드 단어 탭에는 접힘(details·aria-expanded=false)이 없다. 수업 모드는 수업 전용
   // 버튼·뜻 출처·접힘·runSelectionAnalysis 경로를 지금대로 두고 공통 배치(문장 줄·칩·표제어·뜻)만 같이 바뀐다(정본 §0.2).
   // 문장 줄: 누른 토큰이 든 한 문장, 누른 자리만 칠한다(3줄 예산 밖은 앞뒤 …, 안전망 CSS line-clamp).
-  const cardSentence = selectedToken && isSheetOpen ? cardSentenceOf(selectedToken) : null;
+  // 첫 화면 우선(AE-R3 PR② — 메인 세션 결정 10-08, AE-R1 PR② 합격 계약): 표제어·이 문장 뜻 줄·하단이 시트 첫 화면에 다 보여야 한다.
+  // 자형 열이 뜻 줄을 본문 밖으로 밀면(ViewerGlyphColumn이 잰다) 1단계 = 문장 줄 2줄 예산, 2단계 = 자형 표를 뜻 줄 아래로
+  // (표제어 옆에는 正 한 칸만). 카드마다 오르기만 하고, 다른 단어를 열면 0으로 돌아간다.
+  const cardSentence = selectedToken && isSheetOpen ? cardSentenceOf(selectedToken, glyphStep >= 1) : null;
   // 사전 뜻 목록(B안 · 표시만 — 줄을 눌러 이 자리 뜻으로 교정하는 것은 PR ③): 사전 행(≤3) + refVocab, 정규화로 합치고
   // 이 문장 뜻과 같은 줄을 칠한다. 「AI」 표시는 없다(오너 결정 2026-10-07 23:45 KST — Q4).
   const senseGroups = selectedToken && isSheetOpen ? buildSenseList({ dictEntry: editDictEntry, refWord: refVocab?.word, token: selectedToken, language: materialLang, reading: headReading }) : [];
@@ -2350,7 +2360,7 @@ export default function ViewerPage() {
   const renderWordDetailCard = (classAction=null,classMeaning=null) => !selectedToken || !isSheetOpen ? null : (
     <div key={selectedToken.id||selectedToken.text} tabIndex={-1} className={`word-detail-card${dragTokens !== null ? ' word-detail-card--above-list' : ''}`}>
       <div className="reader-card-body">
-      {cardSentence && <p className="reader-card-sentence" lang={contentLangTag} key={`sentence:${selectedToken.id||selectedToken.text}`}>{cardSentence.before}{cardSentence.term && <mark className="reader-card-sentence__term">{cardSentence.term}</mark>}{cardSentence.after}</p>}
+      {cardSentence && <p className="reader-card-sentence" data-tight={glyphStep >= 1 || undefined} lang={contentLangTag} key={`sentence:${selectedToken.id||selectedToken.text}`}>{cardSentence.before}{cardSentence.term && <mark className="reader-card-sentence__term">{cardSentence.term}</mark>}{cardSentence.after}</p>}
       <div className="word-detail-card__actions">
         <div className="word-detail-card__meta">
           <span className="reader-card-tag"><TokenPosLabel token={selectedToken} /></span>
@@ -2437,7 +2447,9 @@ export default function ViewerPage() {
               </span>
             </div>
             {/* 자형 열(正 · 日) — 표제어 오른쪽(안 1) 또는 글자 칸에 맞춘 표(안 2). 수업 모드 판서에는 없다(설계서 Q3). */}
-            {materialLang === 'Chinese' && <ViewerGlyphColumn word={headText} zheng={glyph.zheng} ja={glyph.ja} hunCells={hunCells} cardKey={`${selectedToken.id || selectedToken.text}:${headText}`} labels={{ zheng: vt('대만 정체'), ja: vt('일본어 표기') }} />}
+            {materialLang === 'Chinese' && (glyphStep < 2
+              ? <ViewerGlyphColumn word={headText} zheng={glyph.zheng} ja={glyph.ja} hunCells={hunCells} cardKey={glyphCardKey} labels={{ zheng: vt('대만 정체'), ja: vt('일본어 표기') }} budgetStep={glyphStep} onBudget={(step) => raiseGlyphBudget(glyphCardKey, step)} />
+              : !glyphZhengBelow && <ViewerGlyphColumn word={headText} zheng={glyph.zheng} ja={null} hunCells={hunCells} cardKey={`${glyphCardKey}:side`} labels={{ zheng: vt('대만 정체'), ja: vt('일본어 표기') }} sideOnly onSideMiss={() => glyphZhengMiss(glyphCardKey)} />)}
           </div>
         );
       })()}
@@ -2565,6 +2577,8 @@ export default function ViewerPage() {
           ><svg className="action-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="m4 16 12-12 4 4L8 20H4v-4ZM13 7l4 4"/></svg></button>
         )}
       </div>)}
+      {/* 첫 화면 우선 2단계: 자형 표를 뜻 줄 아래로(스크롤 아래 — 표제어 옆에는 正 한 칸만). 접힘 0. */}
+      {!classStudyActive && materialLang === 'Chinese' && glyphStep >= 2 && <ViewerGlyphColumn className="reader-card-glyph--below" forceLayout="stack" word={headText} zheng={glyphZhengBelow ? glyph.zheng : null} ja={glyph.ja} cardKey={`${glyphCardKey}:below`} labels={{ zheng: vt('대만 정체'), ja: vt('일본어 표기') }} />}
       {/* 사전 뜻 줄 교정 직후 한 줄(설계서 §3.4) — 되돌리기 = 이전 값 그대로 같은 mutation 1회. 그 토큰을 다시 열 때까지. */}
       {senseUndo?.tokenId === selectedToken.id && <p className="reader-card-sense-undo"><span role="status">{vt('뜻을 바꿨어요')}</span>{' · '}<button type="button" className="btn btn--ghost btn--sm" disabled={senseBusy} onClick={undoSense}>{vt('되돌리기')}</button></p>}
       {isEditingToken && !classMeaning && (

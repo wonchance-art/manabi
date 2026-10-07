@@ -127,6 +127,7 @@
 .word-fit--hun-reserved .surface {padding-bottom:calc(.8125rem * 1.35 + .13em);}
 /* AE-R1 문장 줄(§2.1): 15px 회색 한 문장, 누른 자리만 배경 + 굵게. 버튼 0. 3줄 안전망. */
 .reader-card-sentence {margin:0 0 4px;font-size:.9375rem;line-height:1.6;color:var(--reader-muted);overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden;}
+.reader-card-sentence[data-tight] {-webkit-line-clamp:2;line-clamp:2;}
 .reader-card-sentence__term {background:var(--reader-selected);color:var(--reader-ink);font-weight:700;border-radius:3px;padding:0 1px;}
 /* 구획은 라벨 + 가는 선(접힘 0). */
 .reader-card-senses,.reader-card-learn,.reader-card-notes,.reader-card-hanja,.reader-card-pattern {border-top:1px solid var(--reader-line);padding-top:8px;margin:0 0 12px;}
@@ -345,6 +346,8 @@
 /* 안 2b(stack): 표마저 넘칠 때 — 칸 맞춤 없이 표제어 아래 두 줄 묶음(줄 모양은 안 1과 같다). */
 .reader-card-glyph[data-layout="stack"] {display:flex;flex-direction:column;gap:2px;margin:4px 0 0;}
 .reader-card-glyph[data-layout="stack"] .reader-card-glyph__row {flex-wrap:wrap;gap:.125rem .65em;}
+/* 첫 화면 우선 2단계: 뜻 줄 아래(스크롤 아래)로 내린 자형 줄 — 뜻 줄과 사전 뜻 목록 사이. */
+.reader-card-glyph--below {margin:-8px 0 12px;}
 .reader-card-glyph__row {display:flex;align-items:baseline;gap:.65em;}
 .reader-card-glyph[data-layout="table"] .reader-card-glyph__row {flex-wrap:wrap;gap:.125rem 0;}
 .reader-card-glyph__row.is-ghost {visibility:hidden;}
