@@ -60,7 +60,7 @@ import { buildViewerWordPrompt, buildViewerSentencePrompt, parseViewerExplanatio
 import { ViewerUiLocaleProvider } from '../lib/viewerLocaleContext';
 import { viewerLanguageInfo } from '../lib/viewerLanguage';
 import { useLearningCapabilities } from '../lib/useLearningCapabilities';
-import { koreanReadingSource, koreanTokenContext, learningSourceRevision } from '../lib/learningSources';
+import { koreanReadingSource, learningSourceRevision } from '../lib/learningSources';
 import { translateViewerText } from '../lib/viewerMessages';
 import { useViewerQuiz } from '../lib/useViewerQuiz';
 import { useReanalyze } from '../lib/useReanalyze';
@@ -117,7 +117,7 @@ import { prepareViewerSaveUndo, undoViewerSave } from '../lib/viewerSaveUndo';
 import { contextualMeaning, refreshViewerToken, referenceMatchesContext, createViewerRequestGate, viewerCacheKey, viewerCommandAllowed } from '../lib/viewerReliability';
 import { clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
 import {useKoreanWordMeaning} from '../lib/useKoreanWordMeaning';
-import {koreanWordMeaningInput, koreanMeaningEnvelope, selectedKoreanWordTokens} from '../lib/koreanWordMeaning';
+import {koreanWordMeaningInput, koreanMeaningEnvelope, selectedKoreanWordTokens, koreanListContextRequest, koreanListContextEntries} from '../lib/koreanWordMeaning';
 import { lookupTranslation, bookMeaningPanelText } from '../lib/bilingualSplit';
 import { isLocalId, parseLocalId, chaptersForLocalNav } from '../lib/classBoard';
 import { getSharedCopy } from '../lib/sharedStore';
@@ -885,8 +885,13 @@ export default function ViewerPage() {
   };
   const preserveOpenWord = !classStudyActive && !studyContext && !material?.__local
     && !/^\/class\//.test(originalParams.get('returnTo') || '') && !!selectedToken && isSheetOpen;
-  const koreanMeaningOwnerScope = JSON.stringify([user?.id, id, effectiveExplanationLocale, koreanSourceScope]);
+  // koreanSourceScope는 원문·분석 전체 직렬화다. 렌더마다 다시 감싸지 않고 계정·자료·언어·원문이
+  // 바뀔 때만 만든다. 같은 문자열 인스턴스라 행마다의 소유 범위 비교도 즉시 끝난다.
+  const koreanMeaningOwnerScope = useMemo(() => JSON.stringify([user?.id, id, effectiveExplanationLocale, koreanSourceScope]),
+    [user?.id, id, effectiveExplanationLocale, koreanSourceScope]);
   const koreanMeaningOwnerRef = useRef(koreanMeaningOwnerScope); koreanMeaningOwnerRef.current = koreanMeaningOwnerScope;
+  // 목록·카드가 같은 규칙으로 '이 읽기 도움이 어느 설명 언어인가'를 판단한다.
+  const koreanReadingLocale = token => token?.meaningLocale || token?.explanationLocale || material?.processed_json?.metadata?.explanationLocale || 'ko';
   function meaningInputFor(token) {
     if (materialLang !== 'Korean' || !token) return null;
     return koreanWordMeaningInput({accountId: user?.id, materialId: id, token, source: readingContextSource(token), locale: effectiveExplanationLocale});
@@ -1096,11 +1101,11 @@ export default function ViewerPage() {
   // 드래그 선택·문장 버튼 공용 — 왼쪽 번역+맥락, 오른쪽 단어 리스트 분석
   // 문장 이동(▲/▼) — 지정 가능한 문장 목록. 렌더의 lineGroups와 같은 규칙으로
   // sequence에서 파생한다(문장 막대와 단위 동조 — sentenceNav 계약 참조).
-  const sentences = useMemo(() => {
+  // 줄 묶음은 한 번 계산해 문장 이동과 한국어 문장 목록(줄별 tokenIds)이 함께 쓴다.
+  const readerLineGroups = useMemo(() => {
     const seq = material?.processed_json?.sequence;
     const dict = material?.processed_json?.dictionary;
     if (!seq?.length || !dict) return [];
-    const rawLines = material?.raw_text?.split('\n') ?? [];
     const lineGroups = [];
     let curGroup = { rawIdx: 0, tokenIds: [] };
     for (const tokenId of seq) {
@@ -1117,8 +1122,11 @@ export default function ViewerPage() {
       }
     }
     if (curGroup.tokenIds.length) lineGroups.push(curGroup);
-    return pickableSentences(lineGroups, rawLines);
-  }, [material?.processed_json, material?.raw_text]);
+    return lineGroups;
+  }, [material?.processed_json]);
+  const sentences = useMemo(() => pickableSentences(readerLineGroups, material?.raw_text?.split('\n') ?? []),
+    [readerLineGroups, material?.raw_text]);
+  const lineTokenIdsOf = rawIdx => readerLineGroups.find(group => group.rawIdx === rawIdx)?.tokenIds || [];
 
   // 어휘 커버리지 배지(#1077-2) — 서재 카드와 **같은 엔진·같은 인덱스**(materialFit ←
   // 담김 ∪ '이미 앎'). 뷰어에서만 다른 수를 보이면 두 화면이 서로를 반증한다.
@@ -1169,7 +1177,7 @@ export default function ViewerPage() {
     tokenRange.clearRange();
     setPickedLineIdx(target.rawIdx);
     setSelectedRangeText(target.text);
-    selectSentenceSource(target.text, koreanLineTokenIds(target.rawIdx));
+    selectSentenceSource(target.text, lineTokenIdsOf(target.rawIdx));
     if (focusMode) clearAnalysisPanels();
     else runSelectionAnalysis(target.text);
     const el = tokenRefs.current[target.firstTokenId];
@@ -1297,14 +1305,49 @@ export default function ViewerPage() {
     clearAnalysisPanels();
   };
 
-  function koreanLineTokenIds(rawIdx) {
-    return (material?.processed_json?.sequence || []).filter(tokenId => {
-      const source = koreanTokenContext(material.processed_json, tokenId, material.raw_text);
-      return source && material.raw_text.slice(0, source.quoteSpan.start).split(/\r\n|\r|\n/).length - 1 === rawIdx;
-    });
-  }
   function selectSentenceSource(text, tokenIds) {
     selectionSourceRef.current = {text, tokenIds, scope: koreanSourceScope};
+  }
+  // main과 같은 목록 읽기 도움: 저장 분석의 설명 언어가 현재와 다르면 각 출현의 원문 줄을 현재
+  // 설명 언어로 다시 분석한다. 같은 범위의 결과만 그 출현 행에 붙여 같은 기본형을 합치지 않는다.
+  async function refreshKoreanListContext(rows, sources, request, current) {
+    const locale = effectiveExplanationLocale;
+    const {lines, positions} = koreanListContextRequest(rows.filter(row => koreanReadingLocale(row) !== locale), sources);
+    if (!lines.length) return;
+    try {
+      const anKey = await viewerCacheKey('viewer_an', cacheScope, ['korean-list-context', locale, lines]).catch(() => null);
+      if (!current()) return;
+      let entries = isClient && anKey ? readAnalysisCache(localStorage, anKey) : null;
+      if (!entries) {
+        let authHeader = {};
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.access_token) authHeader = { Authorization: `Bearer ${session.access_token}` };
+        } catch {}
+        if (!current()) return;
+        const res = await fetch('/api/analyze/korean', {
+          signal: request.signal, method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeader },
+          body: JSON.stringify({ lines, language: 'Korean', explanationLocale: locale }),
+        });
+        if (!res.ok) throw new Error('ANALYSIS_FAILED');
+        const data = await res.json();
+        if (!current()) return;
+        entries = koreanListContextEntries(data?.results, positions, locale);
+        if (isClient && anKey) writeAnalysisCache(localStorage, anKey, entries);
+      }
+      const byId = new Map(entries.map(entry => [entry.id, entry]));
+      // 행 제거(✕)는 유지하고, 출처·기본형은 저장 토큰 그대로 둔 채 읽기 도움만 현재 언어로 바꾼다.
+      setDragTokens(prev => prev?.map(row => {
+        const entry = byId.get(row.id);
+        return entry?.text === row.text && typeof entry.meaning === 'string' && entry.meaning
+          ? {...row, meaning: entry.meaning, meaningLocale: locale, explanationLocale: locale,
+            morphology: Array.isArray(entry.morphology) ? entry.morphology : []} : row;
+      }) ?? prev);
+    } catch (error) {
+      // 저장 토큰 목록은 그대로 두고, main과 같은 안내로 다시 선택하게 한다.
+      if (current() && error?.name !== 'AbortError') toast('단어 분석을 가져오지 못했어요. 문장을 다시 선택해 주세요.', 'error');
+    }
   }
   const runSelectionAnalysis = async (sel) => {
     const selection = selectionSourceRef.current;
@@ -1380,8 +1423,9 @@ export default function ViewerPage() {
                   token: {...material.processed_json?.dictionary?.[tokenId], id: tokenId}})])));
             }
             if (!current()) return;
-            setDragTokens(selectedKoreanWordTokens(material?.processed_json?.dictionary, tokenIds, sources));
-            setDragAnalyzing(false);
+            const rows = selectedKoreanWordTokens(material?.processed_json?.dictionary, tokenIds, sources);
+            setDragTokens(rows);
+            await refreshKoreanListContext(rows, sources, request, current);
             return;
           }
           const anKey = await viewerCacheKey('viewer_an', cacheScope, sel).catch(() => null);
@@ -2163,7 +2207,7 @@ export default function ViewerPage() {
             </span>
             <span className="pdf-word-item__meaning" onClick={() => handleListWordClick(t)}>{materialLang === 'Korean'
               ? <>{lexical ? `${saved ? vt('✓ 단어장에 있음') : vt('기본형')} · ${vt('뜻')}: ${lexical}`
-                : (t.meaningLocale || t.explanationLocale || material?.processed_json?.metadata?.explanationLocale || 'ko') === effectiveExplanationLocale ? `${vt('맥락')}: ${t.meaning || ''}` : ''}</>
+                : koreanReadingLocale(t) === effectiveExplanationLocale && t.meaning ? `${vt('맥락')}: ${t.meaning}` : ''}</>
               : t.meaning}</span>
             {user && learningStorageSupported && (materialLang === 'Korean' ? !!meaningInput : koreanSaveReady(t)) && (
               <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
@@ -2344,7 +2388,7 @@ export default function ViewerPage() {
       })()}
 
         <div className="word-detail-card__actrow">
-          <button className="btn btn--ghost btn--sm" aria-label={vt("문장 번역")} title={vt("문장 번역")} onClick={()=>{setSentenceTabSignal(s=>s+1);if(classStudyActive){selectSentenceSource(ctxSentenceOf(selectedToken), koreanLineTokenIds(Number(selectedToken.id?.match(/^(?:id|failed)_(\d+)_/)?.[1])));runSelectionAnalysis(ctxSentenceOf(selectedToken));}else runSelectedSentence(ctxSentenceOf(selectedToken),true);}}>{vt("번역")}</button>
+          <button className="btn btn--ghost btn--sm" aria-label={vt("문장 번역")} title={vt("문장 번역")} onClick={()=>{setSentenceTabSignal(s=>s+1);if(classStudyActive){selectSentenceSource(ctxSentenceOf(selectedToken), lineTokenIdsOf(Number(selectedToken.id?.match(/^(?:id|failed)_(\d+)_/)?.[1])));runSelectionAnalysis(ctxSentenceOf(selectedToken));}else runSelectedSentence(ctxSentenceOf(selectedToken),true);}}>{vt("번역")}</button>
           {materialLang === 'Chinese'&&!ctxExplain?.loading&&!ctxExplain?.text&&<button className="btn btn--ghost btn--sm" onClick={()=>runCtxExplain(selectedToken,ctxSentenceOf(selectedToken))}>{vt(ctxExplain?.error?'이 문장에서는? (다시 시도)':'이 문장에서는?')}</button>}
         </div>
         </div>
@@ -3063,7 +3107,7 @@ export default function ViewerPage() {
                   setSelectedRangeText(lineHead.text); // 문법 버튼 활성 경로
                   // 집중 모드 단일 규칙: 지정 '밖' 막대 = 순수 이동(지정 먼저), 지정된
                   // 문장의 막대 재탭 = 본래처럼 전체 분석. 집중 꺼짐 = 항상 분석.
-                  selectSentenceSource(lineHead.text, koreanLineTokenIds(lineHead.rawIdx));
+                  selectSentenceSource(lineHead.text, lineHead.tokenIds);
                   if (focusMode && pickedLineIdx !== lineHead.rawIdx) clearAnalysisPanels();
                   else runSelectionAnalysis(lineHead.text);
                 }}
@@ -3218,7 +3262,7 @@ export default function ViewerPage() {
             return (
               <span key={gi} className={hClass || undefined} style={{ display: 'contents' }}>
                 {lineTokenIds.slice(startIdx).map((id, ti) =>
-                  renderToken(id, ti === 0 && lineText.length >= 2 ? { text: lineText, rawIdx } : null, isPicked, paceSlices?.get(id) || null)
+                  renderToken(id, ti === 0 && lineText.length >= 2 ? { text: lineText, rawIdx, tokenIds: lineTokenIds } : null, isPicked, paceSlices?.get(id) || null)
                 )}
                 {gi < lineGroups.length - 1 && <div className="line-break" />}
               </span>

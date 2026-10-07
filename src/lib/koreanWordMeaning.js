@@ -80,3 +80,34 @@ export function selectedKoreanWordTokens(dictionary, tokenIds, sources) {
       ? [{...token, id}] : [];
   });
 }
+
+// List reading help (main parity): when the stored analysis is in another explanation locale,
+// re-analyze each occurrence's own source line and keep its exact line-relative span.
+export function koreanListContextRequest(rows, sources) {
+  const lines = [], lineOf = new Map(), positions = {};
+  for (const row of Array.isArray(rows) ? rows : []) {
+    const source = sources?.[row?.id];
+    if (!source || source.tokenId !== row.id || source.surface !== row.text || typeof source.quote !== 'string'
+      || !spanValid(source.sourceSpan) || !spanValid(source.quoteSpan)) continue;
+    const line = source.quote.replace(/(?:\r\n|\r|\n)$/, '');
+    const start = source.sourceSpan.start - source.quoteSpan.start, end = source.sourceSpan.end - source.quoteSpan.start;
+    if (start < 0 || end > line.length || line.slice(start, end) !== row.text) continue;
+    if (!lineOf.has(source.quoteSpan.start)) { lineOf.set(source.quoteSpan.start, lines.length); lines.push(line); }
+    positions[row.id] = {line: lineOf.get(source.quoteSpan.start), start, end, surface: row.text};
+  }
+  return {lines, positions};
+}
+
+// A fresh token supplies help only for the same span and surface; a repeated lemma elsewhere never does.
+export function koreanListContextEntries(results, positions, locale) {
+  return Object.entries(positions || {}).flatMap(([id, {line, start, end, surface}]) => {
+    const result = Array.isArray(results) ? results[line] : null;
+    const token = (Array.isArray(result?.sequence) ? result.sequence : []).map(key => result.dictionary?.[key])
+      .find(item => item?.sourceSpan?.start === start && item.sourceSpan.end === end);
+    if (!token || token.failed || token.text !== surface || token.explanationLocale !== locale
+      || typeof token.meaning !== 'string' || !token.meaning.trim()) return [];
+    const morphology = Array.isArray(token.morphology) ? token.morphology.filter(item =>
+      typeof item?.form === 'string' && typeof item.function === 'string').map(({form, function: fn}) => ({form, function: fn})) : [];
+    return [{id, text: surface, meaning: token.meaning.trim(), morphology}];
+  });
+}

@@ -241,6 +241,60 @@ test('a cold list saves with one click using the selected second occurrence',asy
   } finally {await finish(f,'lexical-list-one-click');}
 });
 
+test('list rows re-analyze each occurrence line in another explanation locale and the card still saves that occurrence',async()=>{
+  const f=await fixture();
+  const analyses=[];
+  await f.context.route('**/api/analyze/korean',route=>{
+    const body=route.request().postDataJSON(); analyses.push(body);
+    const gloss={'학교에':{ko:'학교로','zh-CN':'到学校','zh-TW':'到學校（臺灣）'},'갔어요':{ko:'갔다','zh-CN':'去了','zh-TW':'去了（臺灣）'}};
+    const results=body.lines.map((line,lineIndex)=>{
+      const tokens=[...line.matchAll(/[^\s.]+|\s+|\./g)];
+      const sequence=tokens.map((_,index)=>`ko_${lineIndex}_${index}`);
+      const dictionary=Object.fromEntries(tokens.map((match,index)=>[sequence[index],{text:match[0],surface:match[0],meaning:gloss[match[0]]?.[body.explanationLocale]||'',
+        explanationLocale:body.explanationLocale,sourceSpan:{start:match.index,end:match.index+match[0].length,unit:'utf16',lineIndex},morphology:[]}]));
+      return {sequence,dictionary};
+    });
+    return route.fulfill({status:200,headers:{'access-control-allow-origin':'*'},json:{results,metadata:{language:'Korean',explanationLocale:body.explanationLocale}}});
+  });
+  await f.page.addInitScript(()=>localStorage.setItem('viewer_language:v1',JSON.stringify({version:1,uiLocale:'ko',explanationLocale:'zh-TW'})));
+  const rows=()=>f.page.locator('.pdf-word-item').filter({visible:true});
+  const pickSecondLine=async()=>{
+    await f.page.locator('.line-pick').nth(1).click();
+    await f.page.getByRole('tab',{name:'단어',exact:true}).click();
+    await rows().filter({hasText:'갔어요'}).first().waitFor();
+  };
+  // The list stops showing its analysis notice only after any reanalysis request was settled.
+  const settled=()=>f.page.waitForFunction(()=>![...document.querySelectorAll('div')].some(el=>el.textContent==='분석 중...'&&el.offsetParent));
+  try {
+    await f.page.goto('/viewer/98133',{waitUntil:'domcontentloaded'});
+    await f.page.locator('[data-source-token="id_1_2"]').waitFor();
+    await pickSecondLine();
+    // Stored analysis is zh-CN; the zh-TW reader gets current-locale help for each occurrence row.
+    await rows().filter({hasText:'갔어요'}).first().locator('.pdf-word-item__meaning').getByText('去了（臺灣）').waitFor();
+    await rows().filter({hasText:'학교에'}).first().locator('.pdf-word-item__meaning').getByText('到學校（臺灣）').waitFor();
+    await settled();
+    assert.deepEqual(await rows().locator('.pdf-word-item__text').allTextContents(),['학교에','갔어요']);
+    assert.deepEqual(analyses,[{lines:['학교에 갔어요.'],language:'Korean',explanationLocale:'zh-TW'}]);
+    // The stored zh-CN analysis already is the current-locale help: no redundant source analysis.
+    await locale(f.page,'explanationLocale','zh-CN');
+    await pickSecondLine();
+    await rows().filter({hasText:'갔어요'}).first().locator('.pdf-word-item__meaning').getByText('去了').waitFor();
+    await settled();
+    assert.equal(analyses.length,1);
+    assert.equal(f.writes.length,0);
+    // A list row keeps its exact occurrence, so the word card saves the second sentence's source.
+    await rows().filter({hasText:'갔어요'}).first().locator('.pdf-word-item__text').click();
+    await f.page.locator('[data-korean-lexical-meaning]').filter({visible:true}).getByText('去',{exact:true}).waitFor();
+    await f.actions.locator('.save-grade .review-score-btn').nth(0).click();
+    await f.page.waitForFunction(()=>document.querySelector('.word-token--saved'));
+    assert.equal(f.cards.length,1); assert.equal(f.cards[0].meaning,'去');
+    const write=f.writes.find(w=>w.path==='/api/learning/vocabulary');
+    assert.deepEqual(write.body.source.sourceSpan,{start:14,end:17,unit:'utf16'});
+    assert.equal(write.body.word.meaningCandidate.locale,'zh-CN');
+    assert.deepEqual(f.errors,[]);
+  } finally {await finish(f,'lexical-list-cross-locale');}
+});
+
 test('uncertain lemma retains reading help and blocks all automatic grade saves',async()=>{
   const f=await fixture({meaningResponse:()=>({lemma:'오다',lemmaStatus:'matched',lexicalMeaning:'来'})});
   try {

@@ -31,7 +31,8 @@ function readingMaterial(id, language, words) {
     [...row, ['\n', '']].forEach(([text, meaning, lemma = text], index) => {
       const tokenId = `id_${line}_${index}_locale`;
       sequence.push(tokenId);
-      dictionary[tokenId] = { text, base_form: lemma, meaning, pos: text === '\n' ? '개행' : '명사', sourceSpan: { start: offset, end: offset + text.length } };
+      // Korean reading sources require a UTF-16 span; without it the lexical candidate is never requested.
+      dictionary[tokenId] = { text, base_form: lemma, meaning, pos: text === '\n' ? '개행' : '명사', sourceSpan: { start: offset, end: offset + text.length, ...(language === 'Korean' ? { unit: 'utf16' } : {}) } };
       offset += text.length;
     });
   }
@@ -56,7 +57,7 @@ async function closeFixture(context) {
 }
 
 async function fixture(context, { importMode = false, sentenceMode = false, explanationReply } = {}) {
-  const writes = [], analysis = [], explanations = [], errors = [], consoleMessages = [];
+  const writes = [], analysis = [], explanations = [], lexical = [], errors = [], consoleMessages = [];
   const imported = [];
   await context.route('**/*', route => route.request().url().startsWith(base) ? route.continue() : route.abort());
   // Remove synthetic browser cookies before forwarding a page/RSC request to the local server.
@@ -82,6 +83,13 @@ async function fixture(context, { importMode = false, sentenceMode = false, expl
   });
   await context.route('**/api/gemini', async route => {
     const prompt = route.request().postDataJSON()?.contents?.[0]?.parts?.[0]?.text || '';
+    // The lexical candidate is separate from the held contextual-explanation fixture.
+    if (prompt.includes('lexicalMeaning')) {
+      const input = JSON.parse(prompt.split('INPUT_JSON=').at(-1));
+      lexical.push({ locale: input.locale, lemma: input.lemma });
+      const lexicalMeaning = input.locale === 'ko' ? '교육 기관' : input.locale === 'zh-TW' ? '學校' : '学校';
+      return route.fulfill({json:{candidates:[{content:{parts:[{text:JSON.stringify({lemma:input.lemma,lemmaStatus:'matched',lexicalMeaning})}]}}]}});
+    }
     const locale = prompt.includes('Taiwan Traditional') ? 'zh-TW' : prompt.includes('mainland Simplified') ? 'zh-CN' : 'ko';
     const sentence = prompt.includes('"translation": string') || prompt.includes('**번역**');
     explanations.push({ locale, kind: sentence ? 'sentence' : 'word' });
@@ -136,7 +144,7 @@ async function fixture(context, { importMode = false, sentenceMode = false, expl
       if (['warning', 'error'].includes(message.type())) consoleMessages.push({ type: message.type(), text: message.text(), location: message.location() });
     });
   });
-  return { writes, analysis, explanations, errors, consoleMessages, imported };
+  return { writes, analysis, explanations, lexical, errors, consoleMessages, imported };
 }
 
 const preferences = page => page.evaluate(key => JSON.parse(localStorage.getItem(key)), VIEWER_LANGUAGE_PREF_KEY);
@@ -196,7 +204,9 @@ test('shared reader retains independent locale settings, exact source and learni
       await page.goto(`/viewer/${material.id}`);
       await token().waitFor(); await token().click();
       await page.locator('.word-detail-card').waitFor();
-      if (material.processed_json.metadata.language === 'Korean') await page.waitForFunction(() => document.querySelector('.word-detail-card__meaning')?.textContent.trim() === '학교로');
+      if (material.processed_json.metadata.language === 'Korean') await page.waitForFunction(() => document.querySelector('[data-korean-context-meaning] p')?.textContent.trim() === '학교로');
+      // The lexical count below needs the opened card's first lexical request to have finished.
+      if (material.processed_json.metadata.language === 'Korean') await page.waitForFunction(() => document.querySelector('[data-korean-lexical-meaning] p')?.textContent.trim() === '교육 기관');
       const baselineSource = await source(), baselineMaterial = JSON.stringify(material), baselineSaved = JSON.stringify(saved);
       assert.equal(baselineSource.text, material.raw_text.split('\n')[1], 'source must refer to the second occurrence, with its distinct sentence');
       const known = page.locator('.word-detail-card__known');
@@ -211,11 +221,12 @@ test('shared reader retains independent locale settings, exact source and learni
       if (material.processed_json.metadata.language === 'Chinese') await select('explanation', 'ko');
       for (const locale of ['ko', 'zh-CN', 'zh-TW']) {
         const before = await preferences(page);
-        const explanationCalls = audit.explanations.length;
+        const explanationCalls = audit.explanations.length, lexicalCalls = audit.lexical.length;
         await select('ui', locale);
         assert.equal((await preferences(page)).explanationLocale, before?.explanationLocale || 'ko');
         assert.equal(await page.getByRole('group', { name: labels[ui].ui, exact: true }).getByRole('button', { name: options[locale], exact: true }).getAttribute('aria-pressed'), 'true');
         assert.equal(audit.explanations.length, explanationCalls, 'UI-only locale change does not regenerate meaning');
+        assert.equal(audit.lexical.length, lexicalCalls, 'UI-only locale change does not regenerate the lexical meaning');
         assert.equal(await page.locator('.viewer-layout').getAttribute('data-ui-locale'), locale);
         await fontScope(page, locale);
         await geometry(page, `${locale}-width390-${material.id}`, locale);
@@ -226,7 +237,8 @@ test('shared reader retains independent locale settings, exact source and learni
           await select('explanation', locale);
           assert.deepEqual(await preferences(page), { version: 1, uiLocale: 'zh-TW', explanationLocale: locale });
           assert.equal(await page.locator('.viewer-layout').getAttribute('data-explanation-locale'), locale);
-          await page.waitForFunction(meaning => document.querySelector('.word-detail-card__meaning')?.textContent.trim() === meaning, { ko: '학교로', 'zh-CN': '到学校', 'zh-TW': '到學校' }[locale]);
+          await page.waitForFunction(meaning => document.querySelector('[data-korean-context-meaning] p')?.textContent.trim() === meaning, { ko: '학교로', 'zh-CN': '到学校', 'zh-TW': '到學校' }[locale]);
+          await page.waitForFunction(meaning => document.querySelector('[data-korean-lexical-meaning] p')?.textContent.trim() === meaning, { ko: '교육 기관', 'zh-CN': '学校', 'zh-TW': '學校' }[locale]);
         }
       }
       await close();

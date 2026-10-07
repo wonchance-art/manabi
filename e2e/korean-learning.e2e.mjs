@@ -78,6 +78,11 @@ async function fixture({ ready = true, existing = false, holdCapabilities = fals
   });
   await context.route('**/api/gemini', route => {
     const prompt = route.request().postDataJSON()?.contents?.[0]?.parts?.[0]?.text || '';
+    if (prompt.includes('lexicalMeaning')) {
+      const input = JSON.parse(prompt.split('INPUT_JSON=').at(-1));
+      const lexicalMeaning = input.locale === 'ko' ? '다른 곳으로 이동하다' : input.locale === 'zh-TW' ? '前往' : '去';
+      return send(route,{candidates:[{content:{parts:[{text:JSON.stringify({lemma:input.lemma,lemmaStatus:'matched',lexicalMeaning})}]}}]});
+    }
     const meaning = prompt.includes('Taiwan Traditional') ? '去了（台灣）' : prompt.includes('mainland Simplified') ? '去了' : '가다의 뜻';
     return send(route,{candidates:[{content:{parts:[{text:JSON.stringify({meaning,morphology:[]})}]}}]});
   });
@@ -202,11 +207,12 @@ test('Korean atomic save, known/exclusion restore, locale conflict, due review a
   const f=await fixture();
   try {
     await f.open(); await f.actions.locator('.review-score-btn').first().waitFor({state:'visible'});
+    await f.page.locator('[data-korean-lexical-meaning]').filter({visible:true}).getByText('去',{exact:true}).waitFor();
     assert(await f.actions.locator('.review-score-btn').first().isEnabled(),'verified Korean atomic save stays available');
     await noKoreanLegacyEditor(f.page);
     await f.actions.locator('.review-score-btn').first().click();
     await f.page.waitForFunction(()=>document.querySelector('.word-token--saved'));
-    assert.equal(f.cards.length,1);assert.equal(f.cards[0].word_text,'가다');assert.equal(f.cards[0].meaning,'去了');
+    assert.equal(f.cards.length,1);assert.equal(f.cards[0].word_text,'가다');assert.equal(f.cards[0].meaning,'去');
     const first=f.writes.find(write=>write.path==='/api/learning/vocabulary');
     assert.equal(first.body.initialGrade,1);assert.equal(first.body.source.surface,'갔어요');
     assert.deepEqual(first.body.source.sourceSpan,{start:14,end:17,unit:'utf16'});
@@ -235,7 +241,7 @@ test('Korean atomic save, known/exclusion restore, locale conflict, due review a
     assert.deepEqual(f.cards,saved);assert.deepEqual(f.contexts,source);
     await conflict.locator('button').first().click();await conflict.waitFor({state:'detached'});
     assert.deepEqual(f.cards,saved);assert.deepEqual(f.contexts,source);
-    assert.equal(f.writes.at(-1).body.confirmMeaning,'去了');
+    assert.equal(f.writes.at(-1).body.confirmMeaning,'去');
     // Use the same saved card's canonical review path; save did not create a review event.
     f.cards[0].next_review_at='2020-01-01T00:00:00Z';await f.open();
     assert.equal(f.cards[0].last_reviewed_at,null);assert.equal(f.events.length,0);
@@ -248,7 +254,7 @@ test('Korean atomic save, known/exclusion restore, locale conflict, due review a
     assert.equal(await f.page.locator('.review-card__answer').count(),0,'first question keeps its answer hidden until reveal');
     await f.page.getByRole('button',{name:'정답 확인하기',exact:true}).click();
     await f.page.locator('.review-card__meaning').waitFor();
-    assert.equal((await f.page.locator('.review-card__meaning').textContent()).trim(),'去了');
+    assert.equal((await f.page.locator('.review-card__meaning').textContent()).trim(),'去');
     const scored=f.page.waitForResponse(response=>response.url().includes('/rest/v1/user_vocabulary')&&response.request().method()==='PATCH');
     await f.page.locator('.review-score-btn--good').click();
     const committed=await scored;assert.equal(committed.status(),200);
@@ -258,7 +264,7 @@ test('Korean atomic save, known/exclusion restore, locale conflict, due review a
     assert.notEqual(f.cards[0].next_review_at,previousDue);
     await f.open();
     await f.page.waitForFunction(()=>!document.querySelector('.word-token--due'));
-    assert.equal(f.cards[0].id,cardId);assert.equal(f.cards[0].meaning,'去了');assert.equal(f.cards[0].source_sentence,raw.slice(10));
+    assert.equal(f.cards[0].id,cardId);assert.equal(f.cards[0].meaning,'去');assert.equal(f.cards[0].source_sentence,raw.slice(10));
     assert.ok(f.events.some(event=>event.lang==='Korean'&&event.detail?.word_id===cardId));
     assert.ok(f.writes.every(write=>write.table!=='user_vocabulary'||write.method==='PATCH'));
     await f.page.goto('/vocab',{waitUntil:'domcontentloaded'});
