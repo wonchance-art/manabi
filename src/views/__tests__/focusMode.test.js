@@ -102,6 +102,30 @@ describe('집중 모드 배선', () => {
     expect(viewer).toContain('onClickCapture={tokenRange.handleClickCapture}');
   });
 
+  // VIEWER-R0-BUGS-001 버그 4 — 첫 탭(순수 이동) 뒤 빈 보조 패널(탭 머리만, 390px 113px) 대신 문장 이동 막대.
+  // 실렌더 기하·터치·키보드는 e2e/viewer-focus-move.e2e.mjs가 지키고, 여기는 배선만 잡는다.
+  it('문장 지정만으로는 보조 패널을 띄우지 않고 이동 막대가 대신한다 — 번역은 막대(¦) 재탭과 같은 경로', () => {
+    const sheet = read('src/components/ViewerBottomSheet.jsx');
+    expect(sheet).toContain('if(!leftActive&&!rightActive)return null;');
+    const fallback = sliceBetween(viewer, 'fallback={boardActions=>', '<ViewerBottomSheet');
+    expect(fallback).not.toContain('pickedLineIdx');
+    // 수업 판(boardActions)에서는 예전처럼 아무것도 띄우지 않는다 — 수업 경로 보존(V2 §0.2).
+    expect(viewer).toContain('/> : boardActions ? null : sentenceMoveBar} />}');
+    expect(viewer).toContain('active: pickedLineIdx !== null && sentences.length > 0 && !classStudyActive,');
+    // 막대가 떠 있으면 본문 끝이 막대 위로 오고, 문장 이동 위치 계산도 막대를 바닥으로 본다.
+    expect(read('src/lib/useReaderLayout.js')).toContain("'.viewer-inspector,.class-reader-dock,.sentence-move-bar'");
+    expect(read('src/components/viewer/sentence-move-bar.css')).toContain('.viewer-layout:has(.sentence-move-bar)>.viewer-center {padding-bottom:calc(var(--sentence-move-bar-space) + 48px);}');
+    const bar = sliceBetween(viewer, 'const translatePickedSentence', 'function extractSourceSentence');
+    expect(bar).toContain('runSelectionAnalysis(pickedSentence.text);');
+    expect(bar).not.toContain('callGemini');
+    expect(bar).toContain("{sentenceNavBtn(-1, 'sentence-move-bar__btn')}");
+    expect(bar).toContain("{sentenceNavBtn(1, 'sentence-move-bar__btn')}");
+    expect(bar).toContain('onClick={closeMoveBar}');
+    expect(sliceBetween(viewer, 'const closeMoveBar', '};')).toContain('releasePickedSentence();');
+    expect(sliceBetween(viewer, 'const handleReaderBlankClick', 'const runSelectionAnalysis')).toContain('releasePickedSentence();');
+    expect(read('src/components/viewer/sentence-move-bar.css')).toMatch(/\.sentence-move-bar button \{[^}]*min-width:44px;min-height:44px;/);
+  });
+
   it("문장 집중은 읽기 진행 탭에 있다", () => {
     const options=read('src/components/viewer/ViewerSettings.jsx'); expect(options).toContain('label="문장 집중"'); expect(options).toContain("set('focusMode',v)"); expect(options).toContain("tab==='pace'");
   });
