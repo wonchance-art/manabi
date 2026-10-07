@@ -2933,7 +2933,7 @@ export default function ViewerPage() {
         style={{
           fontSize: `${fontSize*(classStudyActive&&classBoardLayout==='split'?.8:1)}rem`,
           fontFamily: readerFontFamily(materialLang,fontFamily),
-          gap: `${lineGap}px ${charGap}rem`, '--char-gap': `${charGap}rem`,
+          gap: `max(${lineGap}px, var(--hl-row-gap-min, 0px)) ${charGap}rem`, '--char-gap': `${charGap}rem`,
           // 체류 표시는 CSS 애니메이션이 시간을 잰다 — JS 프레임 루프 0(설계 §7①).
           ...(paceDwell ? { '--pace-dwell': `${paceDwell}ms` } : null),
         }}
@@ -3080,6 +3080,8 @@ export default function ViewerPage() {
             const hasReading = !!rubySegments?.some((seg) => seg.kanji);
             const pronHidden = hasReading && pronHiddenFor(pronDisplay, { isKnown: tokKnown, isSaved });
             const furiOff = pronHidden;
+            // 문형 밑줄은 전용 요소 — .surface::after는 지정 이음매 자리라 고르면 사라졌다(R0 버그 1).
+            const patternMark = visibleScan?.byToken.has(tokenId) ? <span className="pattern-mark" aria-hidden="true" /> : null;
             return (
               <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
                 data-tid={tokenId}
@@ -3107,10 +3109,10 @@ export default function ViewerPage() {
                             {seg.kanji}<span className={['rt-an', showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : ''].filter(Boolean).join(' ')}>{seg.reading}</span>
                           </ruby>
                         : <span key={i}>{seg.plain}</span>
-                    )}
+                    )}{patternMark}
                   </span>
                 ) : (
-                  <span className="surface">{token.text}</span>
+                  <span className="surface">{token.text}{patternMark}</span>
                 )}
               </div>
             );

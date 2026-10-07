@@ -8,7 +8,7 @@ import {readerFontFamily} from '../../lib/viewerPreferences';
 export default function ViewerPreview({settings:s,language,tokens=[]}) {
   const phonetic=language==='Chinese'||language==='Japanese';
   const example=language==='Korean'?'':language==='Chinese'?'今天一起读书。':language==='Japanese'?'いっしょに読みましょう。':language==='French'?'Lisez à votre rythme.':'Read at your own pace.';
-  return <div className={`reader-settings__preview reader-area--${s.theme}${s.wordStateHl?' reader-area--hl':''}`} lang={language==='Korean'?'ko':language==='Chinese'?'zh-Hans':language==='Japanese'?'ja':language==='French'?'fr':'en'} style={{fontSize:`${s.fontSize}rem`,fontFamily:language==='Korean'?"var(--font-noto-kr, 'Noto Sans KR'), sans-serif":readerFontFamily(language,s.fontFamily),gap:`${s.lineGap}px ${s.charGap}rem`,'--char-gap':`${s.charGap}rem`,'--pinyin-size':`${s.pinyinSize}rem`}}>
+  return <div className={`reader-settings__preview reader-area--${s.theme}${s.wordStateHl?' reader-area--hl':''}`} lang={language==='Korean'?'ko':language==='Chinese'?'zh-Hans':language==='Japanese'?'ja':language==='French'?'fr':'en'} style={{fontSize:`${s.fontSize}rem`,fontFamily:language==='Korean'?"var(--font-noto-kr, 'Noto Sans KR'), sans-serif":readerFontFamily(language,s.fontFamily),gap:`var(--preview-row-gap) ${s.charGap}rem`,'--char-gap':`${s.charGap}rem`,'--pinyin-size':`${s.pinyinSize}rem`,'--preview-row-gap':`max(${s.lineGap}px, var(--hl-row-gap-min, 0px))`,'--preview-rows':s.fontSize>2?1:2}}>
     {(tokens.length?tokens:[{text:example}]).map((token,i)=>{
       const segments=phonetic&&token.furigana?splitRuby(token.text,token.furigana):null;
       const hidden=pronHiddenFor(s.pronDisplay,{isSaved:!!token.previewSaved,isKnown:!!token.previewKnown});

@@ -51,8 +51,10 @@ describe('하이라이트 글자 밴드 (index.css)', () => {
   });
 
   it('상태 하이라이트(B안)·저장 밑줄·복습 펄스가 전부 ::before를 칠한다', () => {
-    expect(css).toMatch(/\.reader-area--hl \.word-token--new:not\(\.word-token--picked\) \.surface::before \{\s*background: var\(--ws-new\);/);
-    expect(css).toMatch(/\.reader-area--hl \.word-token--met:not\(\.word-token--picked\) \.surface::before \{\s*background: var\(--ws-met\);/);
+    // 「만난 말」은 새 단어와 같은 표시(VIEWER-R0 버그 11 — 오너 확정 2026-10-07): 옅은 파랑
+    // --ws-met(바탕 대비 1.10:1)이 사실상 안 보였다. 클래스·만남 기록은 그대로, 표시만 합친다.
+    expect(css).toMatch(/\.reader-area--hl :is\(\.word-token--new, \.word-token--met\):not\(\.word-token--picked\) \.surface::before \{\s*background: var\(--ws-new\);/);
+    expect(css).not.toMatch(/--ws-met/);
     expect(css).toMatch(/\.word-token--saved \.surface::before \{\s*border-bottom: 2px solid var\(--primary-light\);/);
     expect(css).toMatch(/\.word-token--due \.surface::before \{[^}]*animation: due-pulse/s);
   });
@@ -70,8 +72,6 @@ describe('하이라이트 글자 밴드 (index.css)', () => {
 
   it('T1 혼색 — 지정 중 4상태의 밴드가 지정색×상태색 color-mix로 칠해진다', () => {
     for (const [cls, src] of [
-      ['new', '--ws-new-ln'],
-      ['met', '--ws-met-ln'],
       ['saved', '--ws-learn-ln'],
       ['due', '--warning'],
     ]) {
@@ -80,6 +80,8 @@ describe('하이라이트 글자 밴드 (index.css)', () => {
       );
       expect(css).toMatch(re);
     }
+    // 새 단어·만난 말은 한 묶음(VIEWER-R0 버그 11) — 지정 혼색도 같은 규칙 하나
+    expect(css).toMatch(/\.reader-area--hl \.word-token--picked:is\(\.word-token--new, \.word-token--met\) \.surface::before \{[^}]*color-mix\(in srgb, var\(--ws-new-ln\) \d+%, var\(--picked-bg/s);
     // 밑줄 강등 문법(2px dotted)은 폐기 — 부활 금지
     expect(css).not.toMatch(/2px dotted var\(--ws-/);
   });
