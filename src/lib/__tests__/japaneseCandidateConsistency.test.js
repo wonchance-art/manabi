@@ -7,7 +7,8 @@ describe('local Japanese dictionary candidates',()=>{
   const table=viewerJapaneseGlyphTable(generated);
   expect(toJaForm('出神 表达 大家',table)).toBe('出神 表達 大家');
   expect(toJaForm('老师 图书馆',table)).toBe('老師 図書館');
-  expect(generated.出).toBe('齣');
+  // 생성 표가 원천에서 고쳐졌다(2026-10-07 KST — 일본 표준 한자 보존). 오버레이는 회귀 방어로 남는다.
+  expect(generated.出).toBeUndefined();
   expect(table).not.toBe(generated);
   expect(viewerJapaneseGlyphTable(null)).toBeNull();
  });

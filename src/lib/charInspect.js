@@ -83,7 +83,9 @@ export function charEtym(ch, etymTable, { koTable, hunTable, jaTable } = {}) {
   const e = etymTable[ch];
   if (!e) return null;
   const [s, r, c, t, p, k] = [e[0] || 0, e[1] || '', e[2] || '', e[3] || '', e[4] || '', e[5] || ''];
-  const jaOfTrad = jaTable
+  // 보존 표식(jaTable[ch] === ch — 일본 표준 한자, generate-hanja-ja.mjs)이면 사슬을 잇지
+  // 않는다: 面의 번체 麵 → 麺은 面의 일본 자형이 아니다(일본은 面을 그대로 쓴다).
+  const jaOfTrad = jaTable && jaTable[ch] !== ch
     ? [...t].map((x) => jaTable[x]).find((f) => f && f !== ch) || null
     : null;
   return {
