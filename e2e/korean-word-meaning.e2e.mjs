@@ -350,6 +350,42 @@ test('an existing card keeps its meaning: add-context reuses it without generati
   } finally {await finish(f,'lexical-existing-preservation');}
 });
 
+test('a card saved elsewhere after the page loaded still goes through the explicit meaning confirmation and keeps its meaning',async()=>{
+  const f=await fixture();
+  try {
+    await f.open();
+    await f.page.locator('[data-korean-lexical-meaning]').filter({visible:true}).getByText('去',{exact:true}).waitFor();
+    // 다른 탭·기기에서 같은 기본형이 다른 뜻으로 먼저 저장됐다(이 화면의 단어장 조회 이후).
+    f.cards.push({id:cardId,user_id:owner,word_text:'가다',base_form:'가다',meaning:'Another tab meaning',language:'Korean',
+      interval:8,ease_factor:2.5,repetitions:4,next_review_at:'2099-01-01T00:00:00Z',last_reviewed_at:'2019-01-01T00:00:00Z',
+      created_at:'2019-01-01T00:00:00Z',source_sentence:raw.slice(10),source_material_id:98133});
+    const before=structuredClone(f.cards);
+    await f.actions.locator('.save-grade .review-score-btn').nth(0).click();
+    // 등급 저장은 뜻 충돌로 거절되고, 같은 뜻인지 묻는 단계로만 이어진다.
+    await f.actions.getByRole('button',{name:'이 문맥 추가',exact:true}).click();
+    const confirm=f.actions.locator('.learning-context-confirm');await confirm.waitFor();
+    await confirm.getByText('Another tab meaning',{exact:true}).waitFor();await confirm.getByText('去',{exact:true}).waitFor();
+    assert.deepEqual(f.cards,before,'a refused save changes nothing');assert.equal(f.contexts.length,0);
+    // 취소하면 아무것도 쓰지 않는다.
+    const count=f.writes.length;
+    await confirm.getByRole('button',{name:'취소',exact:true}).click();await confirm.waitFor({state:'detached'});
+    assert.equal(f.writes.length,count);
+    // 같은 뜻이라고 확인하면 기존 카드의 뜻을 그대로 두고 문맥만 더한다(직전에 보여 준 payload 재사용, 재생성 없음).
+    await f.actions.getByRole('button',{name:'이 문맥 추가',exact:true}).click();await confirm.waitFor();
+    const generated=f.requests.filter(p=>p.includes('lexicalMeaning')).length;
+    await confirm.getByRole('button',{name:'같은 뜻이에요 · 문맥 추가',exact:true}).click();
+    // 성공하면 충돌 단추가 닫힌다(main과 같은 onSaved 동작) — 화면 문구 대신 실제 쓰기와 저장 상태로 확인한다.
+    await confirm.waitFor({state:'detached'});
+    await f.page.waitForFunction(()=>document.querySelector('.word-token--saved'));
+    const write=f.writes.at(-1);
+    assert.equal(write.body.confirmId,cardId);assert.equal(write.body.confirmMeaning,'Another tab meaning');
+    assert.deepEqual(f.cards,before,'meaning, schedule and history of the card saved elsewhere are unchanged');
+    assert.equal(f.contexts.length,1);assert.deepEqual(f.contexts[0].locator.sourceSpan,{start:14,end:17,unit:'utf16'});
+    assert.equal(f.requests.filter(p=>p.includes('lexicalMeaning')).length,generated,'confirmation reuses the shown payload without another generation');
+    assert.deepEqual(f.errors,[]);
+  } finally {await finish(f,'lexical-concurrent-conflict');}
+});
+
 test('the lexical section follows the zh explanation locale without a stale value and is absent for held ko',async()=>{
   const f=await fixture();
   const shown=async()=>(await f.page.locator('[data-korean-lexical-meaning]').filter({visible:true}).locator('p').allTextContents()).map(text=>text.trim());
