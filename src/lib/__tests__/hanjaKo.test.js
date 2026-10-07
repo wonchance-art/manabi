@@ -2,7 +2,8 @@ import {viewerDefaults} from '../viewerPreferences';
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { applyDueum, readHanjaKo, hanjaHunEum, listHanjaHunEum, toJaForm } from '../hanjaKo.js';
+import { applyDueum, readHanjaKo, hanjaHunEum, listHanjaHunEum, toJaForm, hanjaReadingsOf, toTraditional, koLookupForms } from '../hanjaKo.js';
+import { sliceBetween } from './helpers/sliceBetween.js';
 
 // 계약: 한자 대조(옵트인) 1단계 — 한국 한자음은 발음 앵커이지 뜻이 아니다(오너 확정).
 // 어두 두음법칙 적용(노사·여자), 미등재 글자가 섞이면 표시 생략(null).
@@ -248,5 +249,157 @@ describe('한자 대조 배선 계약', () => {
     const blockAt = src.indexOf('<ViewerJapaneseReference');
     expect(meaningAt).toBeGreaterThan(-1);
     expect(blockAt).toBeGreaterThan(meaningAt);
+  });
+});
+
+// R0+ — 훈음·한자음을 正 꼴로 찾기(VIEWER-V2-ROUNDS-001 §1, §10 '정체 조회 골든 · 2,474쌍 회귀').
+// 간체 글자 그대로 찾으면 간체와 모양이 같은 옛 글자의 훈음이 나온다(技术 → '삽주뿌리 출').
+// 중국어 단어는 OpenCC s2t로 바꾼 정체 꼴로 찾고, 한국 다음자 예외만 수기 표로 겹친다.
+const readData = (f) => JSON.parse(fs.readFileSync(path.join(process.cwd(), 'src/lib/data', f), 'utf8'));
+
+describe('R0+ 正 꼴 훈음 조회', () => {
+  const ko = readData('hanjaKo.json');
+  const hun = readData('hanjaHun.json');
+  const trad = readData('hanjaTrad.json');
+  const labelsOf = (word) => (listHanjaHunEum(word, ko, hun, trad) || []).map((x) => x.label);
+
+  it('골든 — 간체 동형 옛 글자 대신 정체 꼴의 훈음', () => {
+    expect(labelsOf('技术')).toEqual(['재주 기', '재주 술']); // 지금: 삽주뿌리 출(朮)
+    expect(labelsOf('价格')).toEqual(['값 가', '이를 격']); // 지금: 착할 개
+    expect(labelsOf('广场')).toEqual(['넓을 광', '마당 장']); // 지금: 바윗집 엄
+    expect(labelsOf('确实')).toEqual(['굳을 확', '열매 실']); // 지금: 확실할 학
+    expect(labelsOf('证明')).toEqual(['증거 증', '밝을 명']); // 지금: 간할 정
+    expect(labelsOf('工厂')).toEqual(['장인 공', '헛간 창']); // 지금: 엄(훈 없음)
+  });
+
+  it('골든 — 단어 단위 변환이 다음자를 푼다(음 기준)', () => {
+    const eumAt = (word, i) => hanjaReadingsOf(word, { koTable: ko, hunTable: hun, tradTable: trad })[i].eum;
+    expect(eumAt('干净', 0)).toBe('건'); // 乾
+    expect(eumAt('干部', 0)).toBe('간'); // 幹
+    expect(eumAt('一只', 1)).toBe('척'); // 隻 — 수량 구절(분석기가 한 토큰으로 낸다)
+    expect(eumAt('只是', 0)).toBe('지'); // 只
+    expect(eumAt('台风', 0)).toBe('태'); // 颱
+    expect(eumAt('公里', 1)).toBe('리'); // 里(裏 아님)
+  });
+
+  it('골든 — 한국 다음자 예외(KO_WORD_FORMS)가 s2t 꼴보다 우선한다', () => {
+    expect(labelsOf('音乐')[1]).toBe('풍류 악'); // s2t 音樂 → 樂 기본 음 '락'
+    expect(labelsOf('老板')[1]).toBe('널조각 판'); // s2t 老闆 → 闆 '반'
+    expect(labelsOf('抽烟')[1]).toBe('연기 연'); // s2t 抽菸 → 菸 '어'
+    expect(labelsOf('借口')[0]).toBe('빌 차'); // s2t 藉口 → 藉 '자'
+    expect(labelsOf('老板娘')[1]).toBe('널조각 판'); // 더 긴 단어 속에서도 그 자리만 겹친다
+    // HSK 표제어 전수 감사에서 찾은 같은 부류(지금 맞는 음이 s2t로 틀어지는 단어)
+    expect(labelsOf('乐器')[0]).toBe('풍류 악'); // 악기(樂 기본 음 '락')
+    expect(labelsOf('快乐')[1]).toBe('즐길 락(낙)'); // 쾌락 — 예외 밖은 s2t 꼴 그대로
+    expect(labelsOf('吸烟')[1]).toBe('연기 연'); // 흡연
+    expect(labelsOf('苹果')[0]).toMatch(/ 평$/); // 평과(蘋 '빈' 아님)
+  });
+
+  it('toTraditional — OpenCC s2t 문자열 자체(AE-R3 正 줄·AE-R4 재사용), 예외는 조회에만', () => {
+    expect(toTraditional('干净', trad)).toBe('乾淨');
+    expect(toTraditional('干部', trad)).toBe('幹部');
+    expect(toTraditional('一只', trad)).toBe('一隻');
+    expect(toTraditional('只是', trad)).toBe('只是');
+    expect(toTraditional('台风', trad)).toBe('颱風');
+    expect(toTraditional('公里', trad)).toBe('公里');
+    expect(toTraditional('技术', trad)).toBe('技術');
+    expect(toTraditional('出租车', trad)).toBe('出租車'); // 대만 어휘(計程車)로 바꾸지 않는다 — 글자 꼴만
+    expect(toTraditional('老板', trad)).toBe('老闆'); // 한국 예외는 정체 꼴을 바꾸지 않는다
+    expect(toTraditional('音乐', trad)).toBe('音樂');
+    expect(koLookupForms('老板', trad)).toEqual(['老', '板']);
+    expect(toTraditional('技术', null)).toBe('技术'); // 표 미로드 = 원문
+  });
+
+  it('정체 표가 없으면(일본어·로딩 전) 지금처럼 글자 그대로 찾는다', () => {
+    expect(listHanjaHunEum('台', ko, hun)).toEqual([{ ch: '台', label: hanjaHunEum('台', ko, hun) }]);
+    expect(listHanjaHunEum('技术', ko, hun).map((x) => x.label)).toEqual(['재주 기', '삽주뿌리 출']);
+    expect(hanjaReadingsOf('学習', { koTable: ko, hunTable: hun }).map((x) => x.label))
+      .toEqual(listHanjaHunEum('学習', ko, hun).map((x) => x.label));
+  });
+
+  it('생성 데이터 — 출처·라이선스 머리, 구절 사전 전체가 아닌 부분 표, 예외는 수기 표 그대로', async () => {
+    const { KO_WORD_FORMS, KR_VARIANTS } = await import('../../../scripts/hanja-curated.mjs');
+    expect(trad._source).toMatch(/OpenCC/);
+    expect(trad._source).toMatch(/Apache License 2\.0/);
+    expect(Object.keys(trad.chars).length).toBeGreaterThan(2500);
+    expect(Object.keys(trad.phrases).length).toBeLessThan(2000); // STPhrases 약 4.9만 행을 싣지 않는다
+    expect(Object.entries(trad.chars).every(([k, v]) => k !== v && [...k].length === 1 && [...v].length === 1)).toBe(true);
+    expect(Object.entries(trad.phrases).every(([k, v]) => [...k].length === [...v].length)).toBe(true);
+    expect(trad.koForms).toEqual(KO_WORD_FORMS);
+    expect(trad.krVariants).toEqual(KR_VARIANTS);
+  });
+});
+
+// 회귀 계약 — 우리 사전(src/content/chinese/vocab)의 한자어 표기(hanja 필드) 쌍.
+// 쌍 = hanja 필드 첫 '한글(漢字)' 표기 중 한글·한자·중국어 표제어의 글자 수가 모두 같은 것,
+// (표제어, 한글, 한자) 중복 제거 = 2,474쌍(2026-10-07 실측, 설계 세션 기준과 같은 수).
+// 비교는 첫 음절 두음법칙을 양쪽 다 정규화한다(노판 = 로판 — 두음은 표시 관례이지 음 오류가 아니다).
+describe('R0+ 회귀 — 우리 사전 한자어 표기 2,474쌍', () => {
+  const ko = readData('hanjaKo.json');
+  const hun = readData('hanjaHun.json');
+  const trad = readData('hanjaTrad.json');
+  const RE = /([가-힣]+)\(([\p{Script=Han}]+)\)/u;
+  const same = (eums, want) => {
+    if (eums.some((e) => !e)) return false;
+    const a = [...eums.join('')];
+    const b = [...want];
+    if (a.length !== b.length) return false;
+    a[0] = applyDueum(a[0]);
+    b[0] = applyDueum(b[0]);
+    return a.join('') === b.join('');
+  };
+
+  it('불일치 ≤ 44(간체 조회 123), 지금 맞는 단어 중 새로 틀리는 것 0', async () => {
+    const dir = path.join(process.cwd(), 'src/content/chinese/vocab');
+    const pairs = new Map();
+    for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.js')).sort()) {
+      const mod = await import(`../../content/chinese/vocab/${f.replace(/\.js$/, '')}.js`);
+      for (const theme of mod.default?.themes || []) for (const w of theme.words || []) {
+        const m = w?.hanja && RE.exec(w.hanja);
+        if (!m) continue;
+        const [, hangul, hz] = m;
+        if ([...hangul].length !== [...hz].length || [...hz].length !== [...w.zh].length) continue;
+        pairs.set(`${w.zh}|${hangul}|${hz}`, { zh: w.zh, hangul });
+      }
+    }
+    expect(pairs.size).toBeGreaterThanOrEqual(2474);
+    const before = [];
+    const after = [];
+    const regressed = [];
+    for (const { zh, hangul } of pairs.values()) {
+      const oldOk = same([...zh].map((c) => ko[c]), hangul);
+      const newOk = same(hanjaReadingsOf(zh, { koTable: ko, hunTable: hun, tradTable: trad }).map((x) => x.eum), hangul);
+      if (!oldOk) before.push(zh);
+      if (!newOk) after.push(zh);
+      if (oldOk && !newOk) regressed.push(`${zh}(${hangul})`);
+    }
+    expect(regressed).toEqual([]);
+    expect(after.length).toBeLessThanOrEqual(44);
+    expect(before.length).toBeGreaterThan(after.length); // 간체 조회 123 → 正 꼴 44(실측)
+  });
+});
+
+// 소스 계약 — 세 경로(단어창 훈음·글자 카드·교실 판서)가 같은 조회 함수를 쓴다(§1 방향 5).
+describe('R0+ 세 경로 단일 조회', () => {
+  const read = (p) => fs.readFileSync(path.join(process.cwd(), p), 'utf8');
+
+  it('listHanjaHunEum·charDetail·teachingWordLayout이 모두 hanjaReadingsOf를 거친다', () => {
+    const list = sliceBetween(read('src/lib/hanjaKo.js'), 'export function listHanjaHunEum', '\n}');
+    expect(list).toContain('hanjaReadingsOf(');
+    const detail = sliceBetween(read('src/lib/charInspect.js'), 'export function charDetail', '\n}');
+    expect(detail).toContain('hanjaReadingsOf(');
+    expect(detail).not.toMatch(/hanjaHunEum\(ch/); // 글자 단독 조회로 돌아가지 않는다
+    const layout = read('src/lib/teachingWordLayout.js');
+    expect(layout).toContain('hanjaReadingsOf(text');
+    expect(layout).toMatch(/tradTable:language==='Chinese'\?trad:null/); // 일본어는 정체 변환 대상 아님
+    expect(layout).not.toContain('listHanjaHunEum(text,ko,hun)');
+  });
+
+  it('뷰어는 중국어 단어창 훈음과 글자 카드에 같은 정체 표를 넘긴다', () => {
+    const src = read('src/views/ViewerPage.jsx');
+    expect(src).toContain("import('../lib/data/hanjaTrad.json')");
+    expect(src).toContain('listHanjaHunEum(text, hanjaKoTable, hanjaHunTable, hanjaTradTable)');
+    expect(src).toMatch(/charDetail\(inspectChar\.ch, \{ koTable: hanjaKoTable, hunTable: hanjaHunTable, jaTable: hanjaJaTable \}, inspectWord\)/);
+    expect(src).toMatch(/const inspectWord = materialLang === 'Chinese' && [^\n]*\{ word: headText, tradTable: hanjaTradTable \}/);
   });
 });
