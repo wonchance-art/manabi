@@ -98,10 +98,59 @@ export function toTraditional(text, tradTable) {
   const s = String(text || '');
   if (!s || !tradTable) return s;
   const phrases = tradTable.phrases || {};
-  const chars = tradTable.chars || {};
   if (phrases[s]) return phrases[s];
+  return s2tSegments(s, tradTable).map((g) => g.out).join('');
+}
+
+/**
+ * s2t 런타임 분절 — [{len, out, phrase}]. phrase = 표 안 구절 최장 일치로 바뀐 조각.
+ * toTraditional과 「모호하면 숨김」 판정(zhengSure)이 같은 분절을 쓴다(판정과 변환이 갈리지 않게).
+ */
+function s2tSegments(s, tradTable) {
+  const phrases = tradTable.phrases || {};
+  const chars = tradTable.chars || {};
   const cs = [...s];
   const limit = phraseLimit(tradTable);
+  const segs = [];
+  for (let i = 0; i < cs.length;) {
+    let hit = 0;
+    for (let len = Math.min(limit, cs.length - i); len >= 2 && !hit; len--) {
+      const seg = cs.slice(i, i + len).join('');
+      if (phrases[seg]) { segs.push({ len, out: phrases[seg], phrase: true }); hit = len; }
+    }
+    if (hit) { i += hit; continue; }
+    segs.push({ len: 1, out: chars[cs[i]] || cs[i], phrase: false });
+    i++;
+  }
+  return segs;
+}
+
+// ── 正 줄 — 대만 표준 자형(OpenCC s2tw, AE-R3 · VIEWER-V2-ROUNDS-001 §6) ──────
+// s2tw = s2t 다음에 [TWVariantsPhrases → TWVariants]를 한 번 더 건다(OpenCC 공식 s2tw.json).
+// 吃饭: s2t 喫飯 → s2tw 吃飯 · 群众: 羣衆 → 群眾 · 着急: 着急 → 著急. 어휘 변환(s2twp —
+// 出租车 → 計程車)은 하지 않는다(글자 꼴만). 표는 hanjaTrad.json의 tw·twPhrases·amb·ok
+// (scripts/generate-hanja-trad.mjs). 훈음 조회 꼴(koLookupForms — 한국 정자 기준)과는 별개다.
+
+const twCache = new WeakMap();
+function twParts(table) {
+  let p = twCache.get(table);
+  if (!p) {
+    let limit = 0;
+    for (const k of Object.keys(table.twPhrases || {})) limit = Math.max(limit, [...k].length);
+    let okLimit = 0;
+    for (const w of table.ok || []) okLimit = Math.max(okLimit, [...w].length);
+    p = { limit, okLimit, amb: new Set([...String(table.amb || '')]), ok: new Set(table.ok || []) };
+    twCache.set(table, p);
+  }
+  return p;
+}
+
+/** s2t 결과에 대만 이체 단계만 — 구절(TWVariantsPhrases) 최장 일치 → 글자(TWVariants). */
+function applyTwVariants(s, table) {
+  const phrases = table.twPhrases || {};
+  const chars = table.tw || {};
+  const { limit } = twParts(table);
+  const cs = [...s];
   let out = '';
   for (let i = 0; i < cs.length;) {
     let hit = 0;
@@ -114,6 +163,67 @@ export function toTraditional(text, tradTable) {
     i++;
   }
   return out;
+}
+
+/**
+ * 중국어 문자열 → 대만 표준 자형(OpenCC s2tw). 표 미로드면 원문 그대로.
+ * 표제어(HSK·우리 사전)에서는 OpenCC 전체 s2tw와 같다(생성 때 전수 검증).
+ * @param {string} text
+ * @param {object} tradTable - hanjaTrad.json(tw·twPhrases 포함)
+ */
+export function toTraditionalTW(text, tradTable) {
+  const t = toTraditional(text, tradTable);
+  if (!t || !tradTable) return t;
+  return applyTwVariants(t, tradTable);
+}
+
+/**
+ * 「모호하면 숨김」 — 정체 꼴을 확신할 수 있는가.
+ * 모호 글자(amb: 정체 후보가 둘 이상이고 대만 꼴도 갈리는 글자 — 干 幹/乾 · 发 發/髮)가 없으면
+ * 확신. 1자 단어의 모호 글자는 문맥이 없어 항상 불확실. 그 밖에는 모든 모호 글자 자리가 표 안
+ * 구절 일치로 바뀌었거나, 단어가 검증 표제어 목록(ok — 모호 글자를 첫 후보로 맞힌 표제어)에
+ * 있어야 확신한다. 표 밖 토큰의 모호 글자를 글자 첫 후보로 채운 경우는 불확실(숨김).
+ */
+export function zhengSure(word, tradTable) {
+  const s = String(word || '');
+  if (!s || !tradTable) return false;
+  const { amb, ok } = twParts(tradTable);
+  const cs = [...s];
+  if (!cs.some((c) => amb.has(c))) return true;
+  if (cs.length === 1) return false;
+  if (ok.has(s)) return true;
+  const covered = [];
+  for (const g of s2tSegments(s, tradTable)) for (let k = 0; k < g.len; k++) covered.push(g.phrase);
+  if (cs.every((c, i) => !amb.has(c) || covered[i])) return true;
+  // 검증 표제어를 품은 표 밖 토큰(发展中 ⊃ 发展): 그 조각의 변환이 표제어 단독 변환과 같을 때만 덮인다
+  // (경계를 넘는 구절이 조각의 꼴을 바꿨다면 검증이 성립하지 않는다).
+  const { okLimit } = twParts(tradTable);
+  const tw = [...toTraditionalTW(s, tradTable)];
+  for (let i = 0; i < cs.length; i++) {
+    for (let len = Math.min(okLimit, cs.length - i); len >= 2; len--) {
+      const sub = cs.slice(i, i + len).join('');
+      if (!ok.has(sub) || tw.slice(i, i + len).join('') !== toTraditionalTW(sub, tradTable)) continue;
+      for (let k = i; k < i + len; k++) covered[k] = true;
+    }
+  }
+  return cs.every((c, i) => !amb.has(c) || covered[i]);
+}
+
+/**
+ * 正 줄 판정 — 보일 때만 {form, diff}, 아니면 null.
+ * null: 표 미로드 · 한자 없음 · 간체와 꼴이 같음(眼前) · 모호(zhengSure 거짓) · 글자 수가 어긋남.
+ * diff[i] = i번째 글자가 간체와 다름(초록 칠 자리).
+ */
+export function zhengForm(word, tradTable) {
+  const s = String(word || '').trim();
+  if (!s || !tradTable || !/\p{Script=Han}/u.test(s)) return null;
+  const form = toTraditionalTW(s, tradTable);
+  if (form === s) return null;
+  const cs = [...s];
+  const fs = [...form];
+  if (fs.length !== cs.length) return null;
+  if (!zhengSure(s, tradTable)) return null;
+  return { form, diff: cs.map((c, i) => fs[i] !== c) };
 }
 
 /**
