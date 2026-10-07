@@ -3,6 +3,7 @@
 - 작성: 2026-10-07 KST · 설계 에이전트(코드 무변경, 이 문서만 커밋)
 - 기준 브랜치: `claude/viewer-r0-integration` `3e62884f`(R0 버그 PR 4개 + R0+ 통합, main 미병합). 행 번호는 모두 이 커밋 기준이다.
 - 정본: VIEWER-V2-ROUNDS-001(이하 「정본」) §2·§3·§10·§11. **배치는 오너 확정이라 다시 설계하지 않는다.** 이 문서는 현재 코드 위에 그 배치를 얹는 방법, 데이터 출처, 계약, PR 분할, 정본끼리·정본과 코드의 충돌을 다룬다.
+- 개정 2026-10-07 23:45 KST: 오너 결정으로 단어창 「AI」 표 폐기(정본 §2.1 뜻 줄 예외, AD-R3·AD-R4 포함) — §2 뜻 줄 · §3.1 · §3.2-4 · §10.1 Q4 반영.
 - 측정: e2e 목 빌드(`npm run e2e:build`, 글꼴은 목 — 실글꼴 아님) + 합성 자료 실측. 운영 DB·실계정은 보지 않았다. 측정하지 못한 것은 「미측정」으로 적었다.
 
 ---
@@ -87,7 +88,7 @@
 | 문장 줄 | `ctxSentenceOf`(줄 찾기), `json.sequence`·`dictionary` | `sentenceAroundToken()` 순수 함수(§4), `.reader-card-sentence` 15px 회색, 누른 자리만 `<mark>`(배경+굵게) | 원문·토큰 = **T0** | 같은 줄 표시(공통 배치). 수업 전용 버튼은 이 줄에 넣지 않는다 |
 | 칩 줄(품사·급수 + 🔊 줄 끝) | `TokenPosLabel`, `refLevelLabel`, 듣기 버튼(`:2262`) | 듣기 버튼을 표제어 옆에서 칩 줄 끝으로 옮김(44px) | `pos` = T0 · 급수 = refVocab(자료 열 때 `useRefVocabEntry`가 이미 로드, `refVocabIndex.js:79-86`) = **T0\*** | `TeachingWord` 쪽 듣기 그대로 |
 | 표제어 덩어리(기본형 · 병음 위 · 훈음 아래) | `splitRuby`, `fitDivisor`, `word-fit` 격자, `headPicked`, `hanjaReadingsOf`(R0+ 단일 조회) | **훈음 루비 셀**: 글자마다 `<span class="word-fit__hun">`(한자 아래), 칸 벌림 `--hun-n`(훈음 글자 수), 넘치면 훈/음 두 줄. 자형 열 자리(AE-R3)는 `grid-template-columns: 1fr auto`의 빈 열로만 둔다 | 표면 = token 읽기 **T0**. 기본형(이합사 VO·활용형)이면 사전 `reading` = **T2 → T0\***(일괄 조회). 훈음 표 = 한자 대조 켰을 때 자료 열 때 이미 로드(`:1664-1678`) = **T0\*** | `TeachingWord` 유지 |
-| 뜻 줄(20px 굵게 + ✎) | 뜻 줄 `:2264-2278`, ✎ `toggleTokenEditing` | 「AI」 작은 표(조건은 Q4), 「ⓘ 문맥과 다를 수 있어요」 자리(AD-R4 전까지 그리지 않음) | `token.meaning` = **T0** · ko는 `useViewerExplanation`(AI) = T3 → 한 줄 높이 예약 | `classMeaning.editor` 유지 |
+| 뜻 줄(20px 굵게 + ✎) | 뜻 줄 `:2264-2278`, ✎ `toggleTokenEditing` | 「ⓘ 문맥과 다를 수 있어요」 자리(AD-R4 전까지 그리지 않음). **「AI」 표는 만들지 않는다**(오너 결정 2026-10-07 23:45 KST — Q4) | `token.meaning` = **T0** · ko는 `useViewerExplanation`(AI) = T3 → 한 줄 높이 예약 | `classMeaning.editor` 유지 |
 | 문형 한 줄 「문형 · … ›」 | `visibleScan.byToken`, `PatternCard` | 한 줄 요약(`hit.kernel` + 첫 문형 제목), 누르면 그 자리에 `PatternCard` | 문형 인덱스는 문법 표시를 켰을 때만 로드(`:1593-1602`) → 켜져 있으면 **T0** | 같음 |
 | 사전 뜻 목록 | `editDictEntry.meanings`, `refVocab.word`, `splitSentenceAroundWord`(예문 강조), `buildMeaningOptions`(교정 후보와 같은 합치기) | `buildSenseList()` 순수 함수(§3.2), 칠한 줄 + 「문맥상」, 예문은 그 뜻 바로 아래 | 사전 = **T2 → T0\***(일괄 조회). refVocab = T0\*. 게스트는 `morpheme_dictionary` RLS가 막는다(인증 사용자만 읽기, 마이그레이션 `20260415000200`) → refVocab만 | 수업 모드에서도 공통 배치로 보인다(뜻 출처 `classMeaning`은 뜻 줄만) |
 | 한자 정보 | `:2475-2477` | 자리만 이동(사전 뜻 다음), 접힘 0 | refVocab = T0\* | `<details>` 유지 |
@@ -125,7 +126,7 @@
 | `morpheme_dictionary.meanings` | `[{meaning, priority, pos?, ja?, en_pos_v?}]` ≤3. 뜻별 `pos`는 zh·en만(정본 품사 밖이면 뗌). zh 첫 뜻에 `ja:{form,yomi,diff?,warn}` 또는 `null`. 행 `pos`는 겸류면 `동사·명사`. `source`: `gemini`·`user_verified`·`jmdict`·`jmdict_en`. `detail_text` 열 | 카드: `useQuery(['token-dict', lang, sep_link‖base_form‖text])`, `select('meanings, reading, pos')`, `staleTime 60s`, zh는 시트 열림마다·ja/en은 편집 중이거나 기본형일 때만 켜짐(`:1739-1756`). **자료 단위 일괄 조회 없음.** 수업 화면은 따로 같은 조회(`ClassroomReader.jsx:127`). RLS 읽기 = 인증 사용자만 | `fetchMeanings.js:184-259`, 마이그레이션 `20260415000200`·`20260417000100` |
 | 토큰 뜻(이 문장 뜻) | `processed_json.dictionary[id].meaning` — 분석 때 `pickZhMeaning(cached.meanings, pos)`(문맥 품사와 같은 뜻 우선, 없으면 첫 뜻) · ja는 첫 뜻 · en은 문맥 판별 | 자료와 함께 옴 = T0 | `analyze/route.js:271-276`, `disambiguateZhPos.js:203` |
 | refVocab | `{zh, pinyin, ko, pos, ex:{zh,pinyin,ko}, hanja?}` + level. zh만(30청크) | `loadRefVocabIndex` 언어별 1회, ViewerPage 마운트 때 시작 | `refVocabIndex.js:31-86` |
-| 「AI 문맥 뜻」 판별 근거 | **없다.** 토큰에 출처 표시 필드가 없고, 사용자 교정도 `processed_json`을 덮을 뿐 표시가 남지 않는다(`token_corrections` 이력은 있으나 클라이언트가 읽지 않음 — `['token-corrections']` 키는 무효화만, `:1537`). 사전 뜻 자체도 대부분 `source:'gemini'`다 | — | `correctTokenMutation` `:1491-1544` |
+| 「AI 문맥 뜻」 판별 근거 | **필요 없어졌다** — 「AI」 표 폐기(오너 결정 2026-10-07 23:45 KST, Q4). 참고로 근거도 **없다.** 토큰에 출처 표시 필드가 없고, 사용자 교정도 `processed_json`을 덮을 뿐 표시가 남지 않는다(`token_corrections` 이력은 있으나 클라이언트가 읽지 않음 — `['token-corrections']` 키는 무효화만, `:1537`). 사전 뜻 자체도 대부분 `source:'gemini'`다 | — | `correctTokenMutation` `:1491-1544` |
 | 다음 복습 날짜 | `projection.review.nextQuestionAt`(ISO) | `savedWords`(`/api/learning/vocabulary?view=learning`, 자료 열 때) → `buildVocabularyWordIndex`의 `projectionsById` | `vocabularyDueIndex.js:13-31`, `vocabularyLearningRead.js:65-80` |
 | 유의어 캐시 | `pdf_cache:synant:v1:` + SHA-256(언어, [기본형, 뜻, 읽기]) | localStorage, 키 계산이 비동기 | `synAnt.js:40-77` |
 | 상세 설명 캐시 | localStorage `pdf_cache:detail:${lang}:${base_form‖text}` → `/api/word-detail`(`detail_text`) → Gemini | 키가 `base_form`이다(사전 키는 `sep_link‖base_form`) — 이합사 O 조각에서 키가 갈린다(기존 결함, 범위 밖이면 보고만) | `wordDetail.js:52-70` |
@@ -139,7 +140,7 @@
 1. 사전 뜻을 순서대로 넣는다. 뜻 `pos`가 없으면 행 `pos`의 첫 후보로 묶는다(ja는 행 `pos`).
 2. refVocab `ko`를 정규화 비교로 합친다. 같으면 그 줄에 `example = ref.ex`를 붙이고, 다르면 refVocab `pos` 묶음 끝에 한 줄을 더한다.
 3. 정규화 제안: NFC → 괄호 보충 `(…)`·`（…）` 제거 → `[,;、，/]`로 나눠 다듬은 조각 집합 → **집합이 같으면 같은 뜻**. 「장관이다, 웅장하다」 = 「(경관이) 웅장하다, 장관이다」. 부분 겹침은 합치지 않는다(오합 방지).
-4. `current` = `token.meaning`과 정규화가 같은 줄. 없으면 칠한 줄이 0이고 뜻 줄에 「AI」 표 후보(Q4).
+4. `current` = `token.meaning`과 정규화가 같은 줄. 없으면 칠한 줄이 0이다(「문맥상」은 사전 줄과 같을 때만). 「AI」 표·판정 함수는 만들지 않는다(오너 결정 2026-10-07 23:45 KST — Q4).
 5. 번호 ①②③은 묶음을 넘어 이어 센다(정본 목업 ① 형용사, ② 명사).
 6. `buildMeaningOptions`(`tokenEditOptions.js:9`)와 같은 트림·중복 제거 규칙을 쓴다. 두 함수가 같은 집합을 내는지 단위 계약을 둔다(교정 후보와 목록이 어긋나지 않게).
 
@@ -354,7 +355,7 @@
 | Q1 | 「번역」 버튼을 없애면 AE-R2 전까지 단어 탭에서 그 문장 해석을 여는 길이 없다. [문장] 탭은 비어 있다(「텍스트를 드래그하면」 안내, `ViewerPage.jsx:2705`). AE-R1에서 **[문장] 탭을 누르면 기존 번역 전용 경로(`runSelectedSentence(sel,true)`)를 부르게** 해도 되나? | 정본 §2.1 「문장 해석은 [문장] 탭으로」, §4 선처리는 AE-R2 | 예. 경로·캐시·AI 호출 조건은 지금 버튼과 같다(탭이 트리거). AE-R2가 0.3초 선처리를 그 앞에 얹는다 |
 | Q2 | 일본어 대조 블록을 AE-R1에서 내리면 AE-R3까지 「일본어 대응」과 AI 찾기가 화면에서 없어진다. 공백을 감수하나, 아니면 AE-R3까지 블록을 사전 뜻 목록 아래에 두나? | 정본 §2.1 없어지는 것 vs §3 자형 열은 「자리만」 | AE-R3 착수가 바로 이어지면 감수. 아니면 유지 후 AE-R3에서 교체 |
 | Q3 | 사전 뜻 줄을 눌러 교정하는 것은 자료 소유자만 가능하다(`reading_materials` RLS, `canEditToken`). 공개 자료 열람자·한국어·수업 모드에서는 표시만 하나? | 정본 §2.1 「다른 뜻을 누르면 교정」 | 표시만(누름 영역 없음). 열람자용 개인 교정은 새 범위 |
-| Q4 | 「AI」 표 판정 근거가 지금 데이터에 없다. 토큰에 뜻 출처가 없고, 사용자가 직접 입력한 교정 뜻도 「사전 목록에 없는 뜻」이 된다. AE-R1에서는 그리지 않고 AD-R4가 토큰에 출처(`meaning_source:'ai_context'`)를 남길 때부터 그리나? | 정본 §2.1 뜻 줄 예외, §8 | AE-R1은 판정 함수와 자리만, 표시 0 |
+| Q4 | ~~「AI」 표 판정 근거가 지금 데이터에 없다 — AE-R1은 판정 함수와 자리만 둘까?~~ **결정됨(오너 2026-10-07 23:45 KST, #1337 기록 예정): 단어창 「AI」 표시는 없앤다.** 정본 §2.1 뜻 줄 예외의 「AI」 표는 폐기(AD-R3·AD-R4 포함). 판정 함수·자리도 만들지 않는다. 「사전 목록 밖 뜻」 구분이 필요한 다른 용도(「문맥상」은 사전 줄과 같을 때만)는 그대로 | 정본 §2.1 뜻 줄 예외, §8 | 폐기 — `buildSenseList`에 AI 판정 없음 |
 | Q5 | 소스 계약 「단어 탭 안 이 문장에서 0」이 품사 칩 툴팁 「이 문장에서는 동사로 쓰였어요」와 겹친다(그 문구는 테스트 2개가 고정). 계약을 보이는 텍스트·버튼 이름으로 좁혀도 되나? | 정본 §3 합격, `TokenPosLabel.jsx:23` | 예. 툴팁은 유지 |
 | Q6 | 「문형 · … ›」을 누르면 「그 자리에서 문형 카드가 열린다」 — 펼침이면 `aria-expanded=false`가 생겨 「접힘 0」과 충돌한다 | 정본 §2.1 문형 한 줄 vs 접힘 0 | 비모달 팝오버(`aria-haspopup="dialog"`, 한자 창과 같은 방식)로 열기. 또는 문형 줄만 계약 예외 |
 | Q7 | 「미저장·복습 시점 = 등급」인데, FSRS 코호트 카드는 지금 뷰어에서 인라인 평가를 막는다(`isTokenInlineDue` legacyOnly, `fsrsLegacyBoundary`). 그 카드가 복습 시점이면 저장 줄 「다음 복습 오늘」로 두나? | 정본 §2 하단, `ViewerPage.jsx:215-217` | 저장 줄 + 「복습 차례」 문구. 인라인 평가 확대는 학습 기록 경로 변경이라 하지 않는다 |
