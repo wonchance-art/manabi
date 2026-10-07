@@ -1620,6 +1620,16 @@ export default function ViewerPage() {
 
     return () => { alive = false; };
   }, [showHanjaKo, materialLang, hanjaKoTable, inspectChar]);
+  // R0+: 중국어 훈음은 정체 꼴로 찾는다(技术 → 재주 술) — 같은 조건에서 정체 표도 지연 로드.
+  const [hanjaTradTable, setHanjaTradTable] = useState(null);
+  useEffect(() => {
+    if (materialLang !== 'Chinese' || hanjaTradTable || !(showHanjaKo || inspectChar !== null)) return undefined;
+    let alive = true;
+    import('../lib/data/hanjaTrad.json')
+      .then((m) => { if (alive) setHanjaTradTable(m.default || m); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [showHanjaKo, materialLang, hanjaTradTable, inspectChar]);
   const [jaFormError,setJaFormError] = useState(false);
   const [jaFormRetry,setJaFormRetry] = useState(0);
   useEffect(() => {
@@ -1645,8 +1655,8 @@ export default function ViewerPage() {
     return () => { alive = false; };
   }, [inspectChar, hanjaEtymTable]);
   const hanjaHunOf = (text) => (
-    materialLang === 'Chinese' && showHanjaKo && hanjaKoTable && hanjaHunTable
-      ? listHanjaHunEum(text, hanjaKoTable, hanjaHunTable)
+    materialLang === 'Chinese' && showHanjaKo && hanjaKoTable && hanjaHunTable && hanjaTradTable
+      ? listHanjaHunEum(text, hanjaKoTable, hanjaHunTable, hanjaTradTable)
       : null
   );
   // 우리 사전(레퍼런스 어휘) 연동(②) — 급수 뱃지 + 정본 뜻·예문·한자 노트 자동 표시
@@ -2277,7 +2287,9 @@ export default function ViewerPage() {
         // ④ 글자 카드(증강 R1~R3 — 오너 승인 2026-08-28): 헤더는 자기 완결(훈음·병음·자형 칩),
         // 주인공은 구성(1단 분해 — 성분 탭 = 재귀 탐색)과 다시 만나기(이 자료·내 단어).
         // 부수는 설명하지 않는다 — 성분 배지 + 메타 한 줄이 전부(설계 확정).
-        const d = charDetail(inspectChar.ch, { koTable: hanjaKoTable, hunTable: hanjaHunTable, jaTable: hanjaJaTable }) || {};
+        // R0+: 중국어 표제어 글자는 단어의 정체 꼴로 찾는다(단어창 훈음과 같은 조회). 성분·자형 칩은 글자 그대로.
+        const inspectWord = materialLang === 'Chinese' && !/^(form|comp)_/.test(inspectChar.key) ? { word: headText, tradTable: hanjaTradTable } : null;
+        const d = charDetail(inspectChar.ch, { koTable: hanjaKoTable, hunTable: hanjaHunTable, jaTable: hanjaJaTable }, inspectWord) || {};
         const etym = charEtym(inspectChar.ch, hanjaEtymTable, { koTable: hanjaKoTable, hunTable: hanjaHunTable, jaTable: hanjaJaTable });
         // ④ 자형 칩 탭 이동(R5 — 오너 확정 "④ 포함"): 日·繁·简·正 어느 자형이든 탭하면
         // 그 자형의 카드로 — 신자체처럼 훈이 '음만'인 글자도 정자 카드로 건너가 온전한
