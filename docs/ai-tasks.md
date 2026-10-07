@@ -889,6 +889,9 @@
   - #1342 인수(`claude/korean-word-meaning`, Codex 브랜치 미수정) — [교차 검수](https://github.com/wonchance-art/manabi/pull/1342#issuecomment-6030711476):
     e2e 실패 2건 원인·교차 언어 목록 퇴행·성능 2건. 오너 결정: 기존 e2e 기대값 갱신 허용(보강 2곳), 'AI 생성' 표기 출시,
     한국어기초사전 설계·수록률 측정 착수. 목록 ★ 한 번 저장의 분리 여부는 결정 대기.
+  - #1347 `claude/happy-darwin-il3hd3` — ESLint flat config가 .jsx 270개를 조용히 건너뛰던 것 수정(`files` 항목).
+    드러난 오류 5건 정리(따옴표 4·global-error 하드 링크 1은 사유 주석), exhaustive-deps 등 경고 23건은 경고 유지.
+    계약 `eslintConfigScope.test.js`. lint 0 errors·npm test 480/5303 PASS.
   - ⚠ 운영 마이그레이션 이력 ≠ main `supabase/migrations`(스택 #1316~#1321 SQL 3건·10월 활성화 이력). 다음 마이그레이션 병합 시
     `supabase-migrations.yml` 실패 가능성 — 운영 READ ONLY 확인 전 스택 PR 닫기 보류.
   - 이 컨테이너에서 불가(오너/M09): 운영 DB 조회·적용, 운영 배포, 정상 실계정 검수(10-06 04:00 경계 이후 학습 검수 포함).

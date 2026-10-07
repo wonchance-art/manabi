@@ -15,7 +15,7 @@ export default function TermsPage() {
 
       <h2 style={h2}>1. 서비스 개요</h2>
       <p>
-        Anatomy Studio(이하 "서비스")는 외국어 학습을 돕기 위한 개인용 학습 도구입니다.
+        Anatomy Studio(이하 &quot;서비스&quot;)는 외국어 학습을 돕기 위한 개인용 학습 도구입니다.
         사용자가 업로드한 텍스트·PDF를 분석하고, 단어장과 복습 스케줄을 제공합니다.
       </p>
 

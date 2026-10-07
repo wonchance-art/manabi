@@ -30,6 +30,9 @@ export default function GlobalError({ error, reset }) {
             >
               다시 시도
             </button>
+            {/* 루트 레이아웃이 깨진 상태라 클라이언트 라우터를 믿을 수 없다 — 문서 전체를 새로 받는
+                하드 내비게이션이 의도다(<Link>로 바꾸면 깨진 트리 안에서 소프트 전환을 시도한다). */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a
               href="/"
               style={{
