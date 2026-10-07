@@ -23,8 +23,8 @@ function build(lines) {
 }
 const zh=build(lines),texts=zh.texts;
 
-async function open(width,height=844,prefs={focusMode:true,autoSpeakOnClick:false},{language='Chinese',material=zh,meta={translations:{[texts[0]]:'눈앞의 경기장은 사진보다 더 웅장하다.'}},common,visibility}={}) {
- const f=await fixture({width});
+async function open(width,height=844,prefs={focusMode:true,autoSpeakOnClick:false},{language='Chinese',material=zh,meta={translations:{[texts[0]]:'눈앞의 경기장은 사진보다 더 웅장하다.'}},common,visibility,guest=false}={}) {
+ const f=await fixture({width,guest});
  await f.page.setViewportSize({width,height});
  await f.context.addInitScript(({language,prefs,common})=>{
   // 새 컨텍스트에 한 번만 심는다 — 이후에는 UI가 실제로 저장한 값을 읽는다.
@@ -329,5 +329,107 @@ for(const [language,material,analyzePath] of [['Japanese',ja,'/api/analyze'],['K
   assert.equal(f.requests.length,2,'no other AI/analysis request');
   assert.equal(await bar(f).count(),0);
   assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+// 뷰어 v2 AE-R2 PR ② — 문장 번역 단일 키 + 선처리(설계서 docs/manabi-viewer-v2-ae-r2.md §2·§4·§6.2, 정본 §4).
+// 같은 문장·같은 설정 = 같은 키 = 요청 1회. 카드가 열린 채 같은 줄에 0.3초 머물면 선처리 1회(light·재시도 0),
+// [문장] 탭은 선처리 전이라도 누르는 즉시 같은 키로 시작한다. 교재 맵·0.3초 안 닫기·게스트는 요청 0.
+// 학습 이벤트 0: review_events 쓰기·/api/analyze 0. 1280px 옆 패널(390px 시트는 아래 줄을 덮는다 — #1362 선례).
+async function sentenceAi(f,{delay=0,material=zh}={}){
+ f.ai=[];f.learning=[];
+ f.page.on('request',req=>{
+  const url=req.url();
+  if(/\/api\/analyze/.test(url)||(/review_events/.test(url)&&req.method()!=='GET'))f.learning.push(`${req.method()} ${new URL(url).pathname}`);
+ });
+ await f.page.route('**/api/gemini',async r=>{
+  const body=r.request().postDataJSON()||{},prompt=body.contents?.[0]?.parts?.[0]?.text||'';
+  const line=material.texts.findIndex(t=>prompt.includes(t));
+  f.ai.push({line,purpose:body.purpose??null,tier:body.tier??null,at:Date.now()});
+  if(delay)await new Promise(res=>setTimeout(res,delay));
+  return r.fulfill({contentType:'application/json',body:JSON.stringify({candidates:[{content:{parts:[{text:`**번역**\n문장 번역 표지 ${line}`}]}}]})}).catch(()=>{});
+ });
+}
+const aiFor=(f,line)=>f.ai.filter(r=>r.line===line);
+const leftPanel=f=>f.page.locator('[data-panel="left"]').filter({visible:true});
+const sentenceTab=f=>f.page.locator('#inspector-sentence-tab').filter({visible:true});
+const closePanel=f=>f.page.getByRole('button',{name:'보조 패널 닫기',exact:true}).filter({visible:true}).click();
+const cardOpen=(f,line,i)=>f.page.locator('.word-detail-card__meaning').filter({visible:true}).getByText(zh.dictionary[`id_${line}_${i}`].meaning,{exact:true}).waitFor();
+const noFocus={focusMode:false,autoSpeakOnClick:false};
+
+test('AE-R2 ②: dwelling 0.3s on a card prefetches its sentence once; the [문장] tab then sends nothing new',{timeout:180000},async()=>{
+ const f=await open(1280,900,noFocus);
+ try{
+  await sentenceAi(f);
+  // 같은 줄 단어 세 개를 차례로 — 줄이 같으면 타이머를 다시 세지 않고 1회만.
+  await token(f,1,1).click();await cardOpen(f,1,1);
+  await token(f,1,3).click();await cardOpen(f,1,3);
+  await token(f,1,6).click();await cardOpen(f,1,6);
+  await f.page.waitForTimeout(1200);
+  assert.equal(f.ai.length,1,`one AI request after dwelling on line 1: ${JSON.stringify(f.ai)}`);
+  assert.deepEqual([f.ai[0].line,f.ai[0].purpose,f.ai[0].tier],[1,'viewer-sentence-prefetch','light'],'prefetch carries its purpose and the light tier');
+  // [문장] 탭 = 이미 준비된 같은 키 — 새 요청 0, 번역이 바로 보인다.
+  await sentenceTab(f).click();
+  await leftPanel(f).getByText('문장 번역 표지 1').first().waitFor({timeout:1000});
+  await f.page.waitForTimeout(500);
+  assert.equal(f.ai.length,1,'the sentence tab reuses the prefetched translation');
+  // 같은 문장 반복 열람(닫고 다른 단어로 다시) = 여전히 1회.
+  await closePanel(f);
+  await token(f,1,0).click();await cardOpen(f,1,0);
+  await f.page.waitForTimeout(600);
+  await sentenceTab(f).click();
+  await leftPanel(f).getByText('문장 번역 표지 1').first().waitFor({timeout:1000});
+  assert.equal(aiFor(f,1).length,1,'reopening the same sentence sends no request');
+  // 교재 맵이 있는 줄(0)은 머물러도 요청 0.
+  await token(f,0,2).click();await cardOpen(f,0,2);
+  await f.page.waitForTimeout(1000);
+  assert.equal(aiFor(f,0).length,0,'a textbook translation needs no request');
+  // 0.3초 안에 닫으면 0.
+  await token(f,2,1).click();await cardOpen(f,2,1);
+  await closePanel(f);
+  await f.page.waitForTimeout(1000);
+  assert.equal(aiFor(f,2).length,0,'closing within 0.3s sends nothing');
+  assert.equal(f.ai.length,1,'no other AI request');
+  assert.deepEqual(f.learning,[],'no learning events or reanalysis');
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+test('AE-R2 ②: the [문장] tab starts at once under the same key, and a started translation survives tapping away',{timeout:180000},async()=>{
+ const f=await open(1280,900,noFocus);
+ try{
+  await sentenceAi(f,{delay:800});
+  // 시작한 번역은 다른 줄 단어를 눌러도 끝까지 받아 저장 — 다시 열면 요청 0.
+  await token(f,2,0).click();await cardOpen(f,2,0);
+  await sentenceTab(f).click();
+  await token(f,0,0).click();await cardOpen(f,0,0);
+  await f.page.waitForTimeout(1500);
+  await token(f,2,3).click();await cardOpen(f,2,3);
+  await sentenceTab(f).click();
+  await f.page.waitForTimeout(1200);
+  await leftPanel(f).getByText('문장 번역 표지 2').first().waitFor();
+  assert.equal(aiFor(f,2).length,1,`same sentence = one request even after tapping away: ${JSON.stringify(aiFor(f,2))}`);
+  // 0.3초 전에 [문장] 탭 — 선처리를 기다리지 않고 사용자 요청으로 바로 시작, 이어지는 선처리는 그 요청에 합류.
+  await token(f,3,0).click();await cardOpen(f,3,0);
+  const tapped=Date.now();
+  await sentenceTab(f).click();
+  await f.page.waitForTimeout(1500);
+  assert.equal(aiFor(f,3).length,1,`one request for line 3: ${JSON.stringify(f.ai)}`);
+  assert.equal(aiFor(f,3)[0].purpose,'viewer-sentence','the tab itself started the request (no 0.3s wait)');
+  assert.ok(aiFor(f,3)[0].at-tapped<300,`started immediately: ${aiFor(f,3)[0].at-tapped}ms`);
+  await leftPanel(f).getByText('문장 번역 표지 3').first().waitFor();
+  assert.deepEqual(f.learning,[],'no learning events or reanalysis');
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+test('AE-R2 ②: guests get no prefetch request',{timeout:180000},async()=>{
+ const f=await open(1280,900,noFocus,{guest:true,visibility:'public'});
+ try{
+  await sentenceAi(f);
+  await token(f,1,1).click();await cardOpen(f,1,1);
+  await f.page.waitForTimeout(1200);
+  assert.equal(f.ai.length,0,'guests send no prefetch request');
+  assert.deepEqual(f.learning,[]);
  }finally{await f.context.close();}
 });
