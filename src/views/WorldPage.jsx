@@ -1035,6 +1035,20 @@ export default function WorldPage() {
               <WorldGate status={worldStatus} reason={worldStatusReason} spawnLoading={worldSpawn === undefined} onRetry={retryWorldNet} retrying={worldRetrying} />
             )}
           </div>
+          {/* 도시 지형 OSM(ODbL) 표기 — 지도 곁 표기 의무라 베젤 각인 결로 작게 둔다(정본 lib/dataCredits.js).
+              새 탭으로 연다 — 같은 탭 이동은 멀티 접속을 끊는다. */}
+          <a
+            href="/credits#openstreetmap"
+            target="_blank"
+            rel="noopener"
+            style={{
+              position: 'absolute', bottom: 3, left: 18,
+              fontFamily: GBC.font, fontSize: '0.5rem', letterSpacing: '0.3px',
+              color: SHELL.engrave, textDecoration: 'none',
+            }}
+          >
+            © OpenStreetMap 기여자
+          </a>
         </div>
 
         {/* ── 근처 사람 (presence) — 👥 버튼으로 여닫는 도트 패널: 음소거·신고 ── */}
