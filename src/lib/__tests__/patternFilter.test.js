@@ -264,8 +264,10 @@ describe('배선 — 필터를 우회할 길이 없다', () => {
     expect(viewerDefaults('Chinese').patternFilter).toBe('all');expect(validateViewerPreferences({patternFilter:'broken'},'Chinese').patternFilter).toBe('all');
   });
 
-  it('세그먼트는 문법 표시를 켠 지원 언어에서만 — 끄면 고를 것이 없다', () => {
-    const options=read('src/components/viewer/ViewerSettings.jsx');expect(options).toContain('supportsPatterns(language)');expect(options).toContain('s.showPatterns&&<Choices label="문법 표시 범위"');expect(options).toContain("set('patternFilter',v)");
+  // AD-R2 Aa(정본 §5 「쓸 수 없는 옵션은 꺼진 채 흐리게 두고 이유를 적는다」, 설계 Q6): 문법 표시를 끄면 범위는
+  // 사라지지 않고 흐린 채 남아 이유를 적는다 — 끄면 고를 수 없다는 계약은 그대로다.
+  it('세그먼트는 지원 언어에서만, 문법 표시를 끄면 고를 수 없다(흐리게 + 이유)', () => {
+    const options=read('src/components/viewer/ViewerSettings.jsx');expect(options).toContain('supportsPatterns(language)');expect(options).toContain('<Choices label="문법 표시 범위"');expect(options).toContain('disabled={!s.showPatterns}');expect(options).toContain("reason={s.showPatterns?null:tr('문법 표시를 켜면 고를 수 있어요')}");expect(options).toContain("set('patternFilter',v)");
   });
 
   it('카드의 두 표식은 그 집합을 읽었을 때만 — 전체 모드·비로그인에는 아무 표시도 없다', () => {

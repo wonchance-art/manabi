@@ -222,7 +222,6 @@ try {
   const annotationColors=selector=>page.locator(selector).evaluateAll(es=>es.map(e=>getComputedStyle(e).color));
   const annotationBefore=await annotationColors('.reader-settings__preview .rt-an');
   assert.deepEqual(annotationBefore,await annotationColors(sampleSelector+' .rt-an'));
-  await dialog().getByText('성조·문법·한자 표시',{exact:true}).click();
   await page.getByRole('checkbox',{name:/^성조 색상/}).check();await delay(250);
   const annotationToned=await annotationColors('.reader-settings__preview .rt-an');
   assert.deepEqual(annotationToned,await annotationColors(sampleSelector+' .rt-an'));
