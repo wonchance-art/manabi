@@ -369,6 +369,8 @@ export default function MyPage() {
           <Link href="/terms" style={{ color: 'inherit' }}>이용약관</Link>
           {' · '}
           <Link href="/privacy" style={{ color: 'inherit' }}>개인정보 처리방침</Link>
+          {' · '}
+          <Link href="/credits" style={{ color: 'inherit' }}>자료 출처</Link>
         </div>
       </div>
 
