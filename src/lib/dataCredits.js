@@ -7,7 +7,8 @@
 // 담은 자원으로의 링크로 표기를 허용한다. 예외는 지도 곁 표기를 요구하는 OSM 하나(/world 베젤).
 //
 // 항목을 더하면 dataCredits.test.js의 원천 표지 목록도 함께 본다 — 코드에 원천 표지가
-// 있는데 여기 없으면 CI가 잡는다. JMdict는 운영 행 존재 확인 전이라 싣지 않는다(PR #1350).
+// 있는데 여기 없으면 CI가 잡는다. JMdict는 싣지 않는다 — import 라우트만 있고 운영
+// morpheme_dictionary의 source=jmdict* 행이 0건(오너 조회 2026-10-07)이라 사용자에게 닿지 않는다.
 
 export const DATA_CREDITS_UPDATED = '2026년 10월 7일';
 

@@ -27,8 +27,8 @@ function walk(dir, out = []) {
 }
 
 // 원천 표지 → 자료 출처 id. 표지는 생성기·콘텐츠 헤더가 실제로 쓰는 문자열이다.
-// JMdict는 import 라우트만 있고 운영 행 존재가 미확인이라 아직 싣지 않는다(PR #1350) —
-// 행이 확인되면 이 표와 dataCredits.js에 함께 넣는다.
+// JMdict는 import 라우트만 있고 운영 source=jmdict* 행이 0건(오너 조회 2026-10-07)이라 싣지 않는다 —
+// 그 라우트로 실제 적재하면 이 표와 dataCredits.js에 함께 넣는다.
 const MARKERS = [
   { re: /CC-CEDICT/, id: 'cc-cedict' },
   { re: /ivankra\/hsk30/, id: 'hsk30' },
