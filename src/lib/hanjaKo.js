@@ -140,20 +140,28 @@ export function koLookupForms(word, tradTable) {
   return forms;
 }
 
-/** 한 글자의 훈음 해석 — 조회 꼴(form) → 한국 정자 이체 → 원 글자 순. */
+/** 같은 음 계열인가 — 두음 변형까지 같은 음으로 본다(뇨·료, 낙·락). */
+function sameEumFamily(a, b) {
+  return !!a && !!b && (a === b || applyDueum(a) === applyDueum(b));
+}
+
+/**
+ * 한 글자의 훈음 해석 — 조회 꼴(form) → 한국 정자 이체 → 원 글자 순.
+ * 화면 악화 0 원칙: 바꾼 글자의 음이 원 글자의 지금 음과 같은 계열이면 지금 라벨(원 글자의
+ * 훈음)을 그대로 쓴다. 정체 꼴이 바꾸는 것은 음부터 틀렸던 글자(术 출→術 술)뿐이고, 같은 음에서
+ * 훈만 바꾸는 것은 검수한 허용 쌍(hunUpgrade — 后→後 「뒤」 등)만이다.
+ */
 function resolveReading(ch, form, { koTable, hunTable, tradTable }) {
   const kr = tradTable?.krVariants?.[form];
   const cands = [...new Set([form, kr].filter(Boolean))];
   const pick = (c) => ({ from: c, eum: koTable?.[c] || null, hun: (koTable?.[c] && hunTable?.[c]) || null });
-  // ① 바꾼 글자(또는 그 한국 정자)에 훈·음이 함께 있으면 그것
-  let hit = cands.map(pick).find((r) => r.eum && r.hun);
-  // ② 바꾼 글자에 음만 있으면 — 원 글자가 같은 음의 훈을 가질 때만 그 훈음(한국이 간체 쪽
-  //    꼴을 정자로 쓰는 글자: 脚 다리 각 ↔ 腳 · 毁 헐 훼 ↔ 毀). 음이 다르면 다른 계보라 음만 둔다.
-  if (!hit) {
-    const eumOnly = cands.map(pick).find((r) => r.eum);
+  // ① 바꾼 글자(또는 그 한국 정자)에 훈·음이 함께 있으면 그것, 없으면 음만이라도
+  let hit = cands.map(pick).find((r) => r.eum && r.hun) || cands.map(pick).find((r) => r.eum);
+  if (hit && hit.from !== ch) {
+    // ② 음이 지금과 같은 계열이면 지금 라벨 유지 — 허용 쌍만 정체 훈으로
     const own = pick(ch);
-    const sameEum = eumOnly && own.hun && (own.eum === eumOnly.eum || applyDueum(own.eum) === applyDueum(eumOnly.eum));
-    hit = sameEum ? own : eumOnly;
+    const upgrade = hit.hun && (tradTable?.hunUpgrade || []).includes(ch + hit.from);
+    if (own.eum && sameEumFamily(own.eum, hit.eum) && !upgrade) hit = own;
   }
   // ③ 바꾼 글자에 아무것도 없으면 지금처럼 원 글자
   if (!hit) hit = pick(ch);

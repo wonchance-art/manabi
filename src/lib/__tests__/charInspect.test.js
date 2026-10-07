@@ -51,9 +51,9 @@ describe('charDetail — 正 꼴 조회(R0+)', () => {
   const tradTable = readData('hanjaTrad.json');
   const tables = { koTable, hunTable };
 
-  it('표제어 글자 — 技术의 术은 術 재주 술, 工厂의 厂은 廠 헛간 창, 价格의 价는 價 값 가', () => {
+  it('표제어 글자 — 技术의 术은 術 재주 술, 工厂의 厂은 廠 공장 창, 价格의 价는 價 값 가', () => {
     expect(charDetail('术', tables, { word: '技术', tradTable }).hunEum).toBe('재주 술');
-    expect(charDetail('厂', tables, { word: '工厂', tradTable }).hunEum).toBe('헛간 창');
+    expect(charDetail('厂', tables, { word: '工厂', tradTable }).hunEum).toBe('공장 창');
     expect(charDetail('价', tables, { word: '价格', tradTable }).hunEum).toBe('값 가');
     expect(charDetail('干', tables, { word: '干净', tradTable }).hunEum).toBe('하늘 건');
     expect(charDetail('干', tables, { word: '干部', tradTable }).hunEum).toBe('줄기 간');

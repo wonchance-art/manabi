@@ -82,7 +82,7 @@ describe('teaching word hun labels use the traditional form (R0+)',()=>{
  const hunOf=(text,reading,language='Chinese')=>teachingWordLayout({...value,text,reading,language}).parts.filter(p=>p.role==='hun').map(p=>p.text).join(' ');
  it('reads Chinese characters through their traditional form',()=>{
   expect(hunOf('技术','jì shù')).toContain('재주 술');expect(hunOf('技术','jì shù')).not.toContain('삽주뿌리');
-  expect(hunOf('工厂','gōng chǎng')).toContain('헛간 창');
+  expect(hunOf('工厂','gōng chǎng')).toContain('공장 창');
   expect(hunOf('价格','jià gé')).toContain('값 가');
   expect(hunOf('干净','gān jìng')).toContain('하늘 건');
   expect(hunOf('干部','gàn bù')).toContain('줄기 간');
@@ -90,7 +90,7 @@ describe('teaching word hun labels use the traditional form (R0+)',()=>{
  });
  it('keeps Japanese glyph lookup unchanged (no simplified-to-traditional conversion)',()=>{
   expect(hunOf('台','たい','Japanese')).toBe('별 태');
-  expect(hunOf('台风','tái fēng')).toContain('몹시 부는 바람 태');
+  expect(hunOf('舞台','wǔ tái')).toContain('대 대'); // 중국어는 정체 臺(대)로 — 일본어 台는 위처럼 글자 그대로
  });
  it('saves the same corrected label into native board cards',()=>{
   const card=wordCardSkeleton({...value,text:'技术',reading:'jì shù'},'t',{x:0,y:0},palette);
