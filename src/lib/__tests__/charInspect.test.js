@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { charDetail, charEtym, isInspectableChar, materialWordsWithChar, wordsWithChar } from '../charInspect.js';
+import { listHanjaHunEum } from '../hanjaKo.js';
 
 // 계약: 글자 탐색(④) — 탭 대상은 한자만, 정보는 기존 테이블에서, 미등재는 조용히 생략.
 
@@ -38,6 +39,47 @@ describe('charDetail', () => {
   it('한자가 아니면 null, 테이블 미로드는 전부 null 필드(로딩 중 안전)', () => {
     expect(charDetail('あ', { koTable, hunTable, jaTable })).toBeNull();
     expect(charDetail('强', {})).toEqual({ hunEum: null, eum: null, ja: null });
+  });
+});
+
+// R0+(VIEWER-V2-ROUNDS-001 §1) — 중국어 표제어 글자는 단어의 정체 꼴로 찾는다. 단어창 훈음
+// 줄과 같은 조회(hanjaReadingsOf)라 같은 단어에서 두 자리가 다른 훈음을 보이지 않는다.
+describe('charDetail — 正 꼴 조회(R0+)', () => {
+  const readData = (f) => JSON.parse(fs.readFileSync(path.join(process.cwd(), 'src/lib/data', f), 'utf8'));
+  const koTable = readData('hanjaKo.json');
+  const hunTable = readData('hanjaHun.json');
+  const tradTable = readData('hanjaTrad.json');
+  const tables = { koTable, hunTable };
+
+  it('표제어 글자 — 技术의 术은 術 재주 술, 工厂의 厂은 廠 공장 창, 价格의 价는 價 값 가', () => {
+    expect(charDetail('术', tables, { word: '技术', tradTable }).hunEum).toBe('재주 술');
+    expect(charDetail('厂', tables, { word: '工厂', tradTable }).hunEum).toBe('공장 창');
+    expect(charDetail('价', tables, { word: '价格', tradTable }).hunEum).toBe('값 가');
+    expect(charDetail('干', tables, { word: '干净', tradTable }).hunEum).toBe('하늘 건');
+    expect(charDetail('干', tables, { word: '干部', tradTable }).hunEum).toBe('줄기 간');
+    expect(charDetail('乐', tables, { word: '音乐', tradTable }).hunEum).toBe('풍류 악'); // 한국 예외
+  });
+
+  it('단어창 훈음 줄(listHanjaHunEum)과 같은 값', () => {
+    for (const word of ['技术', '价格', '广场', '确实', '证明', '工厂', '干净', '一只', '老板']) {
+      const list = listHanjaHunEum(word, koTable, hunTable, tradTable).map((x) => x.label);
+      const cards = [...word].map((ch, index) => {
+        const d = charDetail(ch, tables, { word, index, tradTable });
+        return d.hunEum || d.eum;
+      });
+      expect(cards, word).toEqual(list);
+    }
+  });
+
+  it('맥락이 없으면(일본어·성분·자형 칩) 글자 그대로 — 성분 厂은 엄', () => {
+    expect(charDetail('厂', tables)).toEqual({ hunEum: null, eum: '엄', ja: null });
+    expect(charDetail('术', tables).hunEum).toBe('삽주뿌리 출'); // 맥락 없는 단독 글자는 지금 그대로
+    expect(charDetail('広', tables)).toEqual(charDetail('広', tables, null));
+  });
+
+  it('정체 표가 아직 없으면 훈·음을 비운다(간체 동형 훈음을 잠깐도 보이지 않는다)', () => {
+    expect(charDetail('术', { ...tables, jaTable: { 术: '術' } }, { word: '技术', tradTable: null }))
+      .toEqual({ hunEum: null, eum: null, ja: '術' });
   });
 });
 
