@@ -13,11 +13,14 @@ const senseKey = value => text(value).normalize('NFKC').replace(/[\s,，·;；]/
 export function viewerJapaneseGlyphTable(table) {
   return table ? {...table,出:'出',表:'表',家:'家'} : null;
 }
+// AE-R3 PR②(설계서 §3.3 ⑴ · §7.1): 요미와 diff(같은 뜻 다른 말)를 버리지 않는다 — 「더 알아보기 · 일본어로는」 줄이
+// 老师 → 先生 せんせい처럼 요미와 함께 보인다. 요미는 가나만 30자 이하이고, 어긋나면 요미만 버린다(표기는 지킨다).
+const KANA_YOMI = /^[ぁ-ゖァ-ヺー]+$/u;
 export function normalizeJapaneseReference(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
-  const form = text(value.form), warn = text(value.warn);
+  const form = text(value.form), warn = text(value.warn), yomi = text(value.yomi);
   if (!form || form.length > 80 || /[\r\n<>]/.test(form) || warn.length > 120 || /[\r\n<>]/.test(warn)) return null;
-  return {form,warn:warn||null};
+  return {form,yomi:yomi && yomi.length <= 30 && KANA_YOMI.test(yomi) ? yomi : null,diff:value.diff === true,warn:warn||null};
 }
 const posKeys=value=>(text(value).match(/대명사|접속사|형용사|명사|동사|부사|전치사|개사|조사|양사|수사|감탄사|성어/g) || []).map(p=>p==='전치사'?'개사':p);
 export function japaneseReferenceForMeaning(entry, meaning, {pos,form} = {}) {

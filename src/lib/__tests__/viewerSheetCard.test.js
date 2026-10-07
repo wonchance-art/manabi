@@ -196,11 +196,15 @@ describe('⑤ 훈음 — 표제어 글자 아래 루비 셀(칸 벌림·두 줄,
     expect(rules).not.toContain('.reader-hun');
   });
 
-  it('일본어 대응은 기존의 독립된 의미/자형 조회를 유지한다', () => {
-    const block=read('src/components/viewer/ViewerJapaneseReference.jsx');
-    expect(block).not.toMatch(/huns\.map/);
-    expect(block).toContain('toJaForm(word,jaTable)');
-    expect(block).toContain('ref?.warn');
+  // AE-R3 PR② 개정(설계서 §7.2 — 대조 블록 → 자형 열 + 더 알아보기 줄): 일본어 대응은 여전히 훈음과 독립된 조회다 —
+  // 자형(日 줄, 확인된 표기)과 의미(「일본어로는」 줄, 뜻별 사전 행 · 경고)를 따로 잇는다.
+  it('일본어 대응은 훈음과 독립된 의미/자형 조회를 유지한다 — 자형 열 日 줄 + 「일본어로는」 줄', () => {
+    const column=read('src/components/viewer/ViewerGlyphColumn.jsx');
+    const more=read('src/components/viewer/ViewerJapaneseMore.jsx');
+    for (const block of [column, more]) expect(block).not.toMatch(/huns\.map|HunCell/);
+    expect(more).toContain('ref.warn');
+    expect(more).toContain('japaneseReferenceForMeaning(');
+    expect(column).toContain('lang="ja"');
   });
 });
 

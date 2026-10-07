@@ -234,25 +234,25 @@ describe('한자 대조 배선 계약', () => {
   // 다시 그릴 일이 없다. 글자별 신자체는 사라진 게 아니라 **글자 카드**로 옮겨 앉았고
   // (char-inspect의 日 칩 — 繁·简·正까지 함께, 탭 이동까지 된다) 단어 수준 대조는 日
   // 줄이 그대로 진다. 그래서 이 계약은 '어디서 신자체를 보는가'를 두 자리로 고정한다.
-  it('일본식 자형 — 글자 카드와 현재 뜻에 맞는 일본어 대조를 보존한다', () => {
+  // AE-R3 PR② 개정(설계서 §5·§7.1 — 대조 블록 props 단언 제거, 글자 카드 日 칩 단언만): 단어 수준 일본어는 자형 열
+  // 日 줄(확인된 표기)과 더 알아보기 「일본어로는」 줄이 진다. 글자별 신자체(toJaForm · hanjaJa)는 글자 카드에만 남는다.
+  it('일본식 자형 — 글자 카드 日 칩은 hanjaJa를 그대로 쓰고, 단어창은 글자 변환을 쓰지 않는다', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
     expect(src).toContain("import('../lib/data/hanjaJa.json')");
     // 글자별 신자체 — 글자 카드 헤더의 자형 칩(탭하면 그 자형 카드로)
     expect(src).toMatch(/formChip\('日',/);
     expect(src).toMatch(/jaTable: hanjaJaTable/);
-    expect(src).toContain('word={headText}');
-    expect(src).toContain('jaTable={hanjaJaTable}');
-    const component=fs.readFileSync(path.join(process.cwd(), 'src/components/viewer/ViewerJapaneseReference.jsx'), 'utf8');
-    expect(component).toContain('toJaForm(word,jaTable)');
-    expect(component).toContain('ref?.warn');
+    expect(src).not.toContain('jaTable={hanjaJaTable}');
+    expect(src).not.toMatch(/\btoJaForm\s*\(/);
+    expect(fs.existsSync(path.join(process.cwd(), 'src/components/viewer/ViewerJapaneseReference.jsx'))).toBe(false);
   });
 
-  it('배치 개선 — 대조 블록은 헤더가 아니라 뜻 아래에 있다', () => {
+  it('배치 — 「일본어로는」 줄(더 알아보기)은 헤더가 아니라 뜻 아래에 있다', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
     const meaningAt = src.indexOf("refMeaning || selectedToken.meaning || '(뜻 없음)'");
-    const blockAt = src.indexOf('<ViewerJapaneseReference');
+    const lineAt = src.indexOf('<ViewerJapaneseMore');
     expect(meaningAt).toBeGreaterThan(-1);
-    expect(blockAt).toBeGreaterThan(meaningAt);
+    expect(lineAt).toBeGreaterThan(meaningAt);
   });
 });
 

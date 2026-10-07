@@ -113,6 +113,8 @@ import { sentenceAroundToken, sentenceAroundTerm, clipSentenceToBudget } from '.
 import { buildSenseList, senseListCount } from '../lib/viewerSenseList';
 import { nextReviewForSavedWord } from '../lib/viewerNextReview';
 import { viewerJapaneseGlyphTable } from '../lib/viewerJapaneseReference';
+import { glyphRows } from '../lib/glyphColumn';
+import { loadJaWordsTable, prefetchGlyphTables } from '../lib/glyphTables';
 import { useGrammarDetail } from '../lib/useGrammarDetail';
 import { useEasierText } from '../lib/useEasierText';
 import { buildContextPrompt } from '../lib/grammarDetail';
@@ -140,7 +142,8 @@ import { normalizeRefWordKey } from '../lib/refWordNormalize';
 import { isWordToken, wordStateOf, wordStateExtraClass } from '../lib/wordState';
 import { TTS_RATES, ttsOptsFor, pronHiddenFor } from '../lib/readingSheet';
 import { getBook } from '../lib/bookMeta';
-import ViewerJapaneseReference from '../components/viewer/ViewerJapaneseReference';
+import ViewerGlyphColumn from '../components/viewer/ViewerGlyphColumn';
+import ViewerJapaneseMore from '../components/viewer/ViewerJapaneseMore';
 import TokenEditPanel from './TokenEditPanel';
 import { senseCorrectionFor, revertCorrections } from '../lib/tokenEditOptions';
 import SourceEditModal from './SourceEditModal';
@@ -203,6 +206,8 @@ async function fetchMaterial(id) {
 // 단어창 훈음 루비 셀의 기준 칸 — 카드 병음 칸 폭(reader-controls.css `.word-fit ruby[data-pinyin] {width:max(1em,3.1rem)}`
 // = 3.1rem ≈ 49.6px). 이 폭 안에 드는 훈음은 한 줄 그대로, 넘으면 그 칸만 벌리고(--hun-n) ×1.6을 넘으면 훈/음 두 줄.
 const HUN_RUBY_CELL = Object.freeze({ glyphPx: 49.6 });
+// 자형 열(正 · 日)이 없는 카드 — 비중국어 · 시트 닫힘(AE-R3 PR②).
+const NO_GLYPH = Object.freeze({ zheng: null, ja: null });
 
 // 가나만(히라가나·가타카나·장음) — ja 읽기 2차 조회에서 가나 표면은 표면 자체가 읽기다
 const KANA_ONLY = /^[\u3040-\u30ffー]+$/;
@@ -1747,23 +1752,42 @@ export default function ViewerPage() {
     return () => { alive = false; };
   }, [showHanjaKo, materialLang, hanjaKoTable, inspectChar]);
   // R0+: 중국어 훈음은 정체 꼴로 찾는다(技术 → 재주 술) — 같은 조건에서 정체 표도 지연 로드.
+  // AE-R3 PR②(설계서 §8): 정체 표는 자형 열 正 줄도 쓴다 — 단어창을 열면(isSheetOpen) 바로, 그 전에는 아래 유휴 미리 받기.
   const [hanjaTradTable, setHanjaTradTable] = useState(null);
   useEffect(() => {
-    if (materialLang !== 'Chinese' || hanjaTradTable || !(showHanjaKo || inspectChar !== null)) return undefined;
+    if (materialLang !== 'Chinese' || hanjaTradTable || !(showHanjaKo || inspectChar !== null || isSheetOpen)) return undefined;
     let alive = true;
     import('../lib/data/hanjaTrad.json')
       .then((m) => { if (alive) setHanjaTradTable(m.default || m); })
       .catch(() => {});
     return () => { alive = false; };
-  }, [showHanjaKo, materialLang, hanjaTradTable, inspectChar]);
-  const [jaFormError,setJaFormError] = useState(false);
-  const [jaFormRetry,setJaFormRetry] = useState(0);
+  }, [showHanjaKo, materialLang, hanjaTradTable, inspectChar, isSheetOpen]);
+  // 자형 열 日 줄의 일본어 표기 표(JMdict 파생 jaWords.json, CC BY-SA 4.0) — 정체 표와 함께 T1(설계서 §2.2·§8):
+  // 중국어 자료를 열면 유휴 시간에 두 표를 미리 받는다. 한국어·일본어·영어 자료는 받지 않는다.
+  const [jaWordsTable, setJaWordsTable] = useState(null);
   useEffect(() => {
-    if (hanjaJaTable || !((materialLang === 'Chinese' && isSheetOpen) || inspectChar)) return undefined;
+    if (materialLang !== 'Chinese') return undefined;
     let alive = true;
-    import('../lib/data/hanjaJa.json').then(m => {if(alive){setHanjaJaTable(viewerJapaneseGlyphTable(m.default||m));setJaFormError(false);}}).catch(()=>{if(alive)setJaFormError(true);});
+    const cancel = prefetchGlyphTables({ onLoad: ({ zheng, jaWords }) => {
+      if (!alive) return;
+      if (zheng) setHanjaTradTable((cur) => cur || zheng);
+      if (jaWords) setJaWordsTable((cur) => cur || jaWords);
+    } });
+    return () => { alive = false; cancel(); };
+  }, [materialLang]);
+  useEffect(() => {
+    if (materialLang !== 'Chinese' || !isSheetOpen || jaWordsTable) return undefined;
+    let alive = true;
+    loadJaWordsTable().then((t) => { if (alive) setJaWordsTable(t); }).catch(() => {});
+    return () => { alive = false; };
+  }, [materialLang, isSheetOpen, jaWordsTable]);
+  // 일본식 자형 표(hanjaJa)는 글자 카드 日 칩만 쓴다 — 단어창(日 줄)은 확인된 표기만 보이므로 시트를 열 때 받지 않는다(설계서 §8).
+  useEffect(() => {
+    if (hanjaJaTable || !inspectChar) return undefined;
+    let alive = true;
+    import('../lib/data/hanjaJa.json').then(m => {if(alive)setHanjaJaTable(viewerJapaneseGlyphTable(m.default||m));}).catch(()=>{});
     return ()=>{alive=false;};
-  }, [materialLang,isSheetOpen,inspectChar,hanjaJaTable,jaFormRetry]);
+  }, [inspectChar,hanjaJaTable]);
   // 자원 테이블(증강 R2·R3 — 획수·부수·1단 분해·간번체, 563KB)과 구성 풀이 스토리
   // (R4 — 최빈 시드 저작분)는 글자 카드가 실제로 열릴 때만 지연 로드 — 한자 대조
   // 토글만으로는 안 부른다(단어 줄엔 자원이 안 쓰인다).
@@ -2274,6 +2298,9 @@ export default function ViewerPage() {
   // 뷰어 인라인 평가를 넓히지 않는다 — 학습 기록 경로 무변경).
   const selectedSavedRow = user && isWordSaved ? findSavedVocab(savedWords, selectedToken, materialLang) : null;
   const nextReview = selectedSavedRow ? nextReviewForSavedWord(savedWords, selectedSavedRow, { locale: uiLocale }) : null;
+  // 자형 열(正 · 日, AE-R3 PR② — 정본 §6 · 설계서 §2·§3): 표제어(기본형) · 정체 표 · 사전 행(日 판정) · 일본어 표기 표.
+  // 日 줄은 확인된 표기만 — 글자 변환(toJaForm) 폴백은 확인되지 않은 꼴이라 올리지 않는다(메인 세션 결정 10-08, 설계서 §3.2).
+  const glyph = materialLang === 'Chinese' && selectedToken && isSheetOpen ? glyphRows({ word: headText, tradTable: hanjaTradTable, dictEntry: editDictEntry, jaTable: jaWordsTable }) : NO_GLYPH;
   // 훈음 표(한자 대조 켬)가 아직 없으면 루비 줄 높이를 먼저 잡는다(설계서 §5.2 — 표는 자료를 열 때 받는다).
   const hunPending = materialLang === 'Chinese' && showHanjaKo && !(hanjaKoTable && hanjaHunTable && hanjaTradTable);
   // 기본형 표제어 읽기가 아직 오지 않았으면 루비 자리(line-height 1.9)를 비워 둔다 — 조회 뒤 읽기가 없을 때만 noruby.
@@ -2361,9 +2388,11 @@ export default function ViewerPage() {
         const hunAt = (i) => hunCells?.[i] || null;
         const column = (key, glyph, cells) => <span key={key} className="word-fit__col">{glyph}<span className="word-fit__hunrow">{cells}</span></span>;
         const isPickedAt = (i) => !!headPicked && i >= headPicked[0] && i < headPicked[1];
+        // data-glyph-i = 표제어 안 코드포인트 순번 — 자형 열 안 2 표가 이 자리를 재서 칸을 맞춘다(AE-R3).
         const charSpan = (ch, key, reading, i) => isInspectableChar(ch) ? (
           <span
             key={key}
+            data-glyph-i={i}
             role="button"
             tabIndex={0}
             className={`word-fit__char${inspectChar?.key === key ? ' word-fit__char--active' : ''}${isPickedAt(i) ? ' word-fit__char--picked' : ''}`}
@@ -2371,7 +2400,7 @@ export default function ViewerPage() {
             onClick={() => toggleInspectChar(ch, key, reading)}
             onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), toggleInspectChar(ch, key, reading))}
           >{ch}</span>
-        ) : <span key={key} className={isPickedAt(i) ? 'word-fit__char--picked' : undefined}>{ch}</span>;
+        ) : <span key={key} data-glyph-i={i} className={isPickedAt(i) ? 'word-fit__char--picked' : undefined}>{ch}</span>;
         return (
           <div className="word-fit-wrap">
             <div
@@ -2407,6 +2436,8 @@ export default function ViewerPage() {
                   : [...headText].map((ch, j) => charSpan(ch, `p:${j}`, null, j)).map((glyph, j) => hunCells ? column(`p:${j}`, glyph, <HunCell cell={hunAt(j)} />) : glyph)}
               </span>
             </div>
+            {/* 자형 열(正 · 日) — 표제어 오른쪽(안 1) 또는 글자 칸에 맞춘 표(안 2). 수업 모드 판서에는 없다(설계서 Q3). */}
+            {materialLang === 'Chinese' && <ViewerGlyphColumn word={headText} zheng={glyph.zheng} ja={glyph.ja} hunCells={hunCells} cardKey={`${selectedToken.id || selectedToken.text}:${headText}`} labels={{ zheng: vt('대만 정체'), ja: vt('일본어 표기') }} />}
           </div>
         );
       })()}
@@ -2625,9 +2656,6 @@ export default function ViewerPage() {
         </>;
       })()}
 
-      {/* 일본어 대조 — AE-R3(자형 열)이 대신할 때까지 사전 뜻 목록 아래에 남긴다(Q2 결정 — 정본 §0.2 회귀 없음). */}
-      {materialLang === 'Chinese' && <ViewerJapaneseReference key={`${selectedToken.id||selectedToken.text}:${refMeaning||''}`} userId={user?.id} word={headText} meaning={refMeaning||selectedToken.meaning||''} pos={selectedToken.pos} dictEntry={editDictEntry} loading={!dictFetched&&!dictError} dictError={dictError} jaTable={hanjaJaTable} formError={jaFormError} onRetryForm={()=>{setJaFormError(false);setJaFormRetry(n=>n+1);}} visible={!classStudyActive}/>}
-
       {/* 한자 정보(우리 사전 노트, 가짜 동족어 경고 포함) — 한자 대조가 꺼져 있을 때, 사전 뜻 다음. 일반 모드 접힘 0, 수업 모드 접힘 그대로. */}
       {refVocab?.word?.hanja && !showHanjaKo && (
         classStudyActive?<details key={`hanja:${selectedToken.id||selectedToken.text}`}><ViewerLabelSlot locale={uiLocale} text={vt('한자 정보')}><summary>한자 정보</summary></ViewerLabelSlot><p>{refVocab.word.hanja}</p></details>:<section className="reader-card-visible reader-card-hanja" key={`hanja:${selectedToken.id||selectedToken.text}`}><h3>{vt('한자 정보')}</h3><p>{refVocab.word.hanja}</p></section>
@@ -2645,7 +2673,12 @@ export default function ViewerPage() {
         {wordDetail?.loading ? <p role="status">{vt("상세 설명 생성 중...")}</p>
           : wordDetail?.detail ? <div className="reader-card-learn__detail"><small>{vt('일반 사전 설명 · 본문과 다른 뜻이 포함될 수 있어요')}</small><div className="pdf-detail-popup__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(wordDetail.detail) }} /></div>
           : <button type="button" onClick={() => fetchWordDetail(selectedToken)} className="btn btn--ghost btn--sm reader-card-learn__ask">{vt("✦ 자세한 설명")}</button>}
+        {/* 일본어로는(AE-R3 PR② — 일본어 대조 블록 대체, 설계서 §5): 日 줄이 숨겨졌을 때만(수업 모드는 자형 열이 없으므로 항상) —
+            사전 diff/warn이 있으면 내용, 없으면 로그인 사용자에게 요청 버튼(기존 클라 AI 그대로, 「AI」 표 없음). 쓰기 0. */}
+        {materialLang === 'Chinese' && (classStudyActive || !glyph.ja) && <ViewerJapaneseMore key={`ja:${selectedToken.id||selectedToken.text}:${refMeaning||''}`} userId={user?.id} word={headText} meaning={refMeaning||selectedToken.meaning||''} pos={selectedToken.pos} dictEntry={editDictEntry} jaTable={jaWordsTable} dictLoading={!dictFetched&&!dictError} />}
       </section>
+      {/* 출처 줄(정본 §2.1 · 설계서 §6 O1 보수안): 日 줄이 JMdict 파생 표에서 왔을 때만 — EDRDG가 화면마다 표기를 요구한다. */}
+      {glyph.ja?.source === 'jmdict' && !classStudyActive && <p className="reader-card-credit"><Link href="/credits#jmdict">{vt('일본어 읽기 · JMdict (EDRDG) · CC BY-SA 4.0')}{' ›'}</Link></p>}
 
       </div>
       <div className="reader-card-actions">
