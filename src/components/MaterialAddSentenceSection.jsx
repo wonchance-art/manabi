@@ -50,6 +50,8 @@ export default function MaterialAddSentenceSection({
     setMode('append');
     setBookKey(initialBookKey);
     onOpenChange?.(true);
+    // 딥링크 도착 시에만 연다 — 부모가 새 onOpenChange를 넘길 때마다 다시 열면 사용자가 접은 입구가 되살아난다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialBookKey, books]);
 
   // 과당 문장 수는 책의 마지막 과에서 물려받는다(교재마다 다르다). 못 읽으면 지금 값 그대로 — 사람이 고친다.
@@ -67,6 +69,8 @@ export default function MaterialAddSentenceSection({
     setText(seedText);
     onOpenChange?.(true);
     onSeedConsumed?.();
+    // 넘겨받은 문장 목록 1회 소비 — 콜백 정체성이 바뀌어도 다시 열거나 다시 소비하지 않는다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seedText]);
 
   const stats = sentenceListStats(text);

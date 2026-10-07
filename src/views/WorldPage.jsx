@@ -222,6 +222,8 @@ function WorldChatBox({ messages, selfId, status, guest = false, expanded, onTog
       if (i >= total) clearInterval(t);
     }, 30);
     return () => clearInterval(t);
+    // 새 메시지(id)일 때만 타자기를 다시 시작한다 — 같은 메시지의 새 객체로는 재시작하지 않는다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [latest ? latest.id : null]);
 
   // 펼침·새 메시지 시 로그를 맨 아래로 스크롤.
@@ -726,6 +728,8 @@ export default function WorldPage() {
       setWorldRetrying(false);
       bus.emit('peers:update', new Map()); // 남은 원격 캐릭터 정리
     };
+    // 접속은 계정(userId)별 1회 — devGuest는 진입 동안 고정이고 toast 정체성 변화로 재접속하지 않는다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   // ── 도트 채팅 배선 (net.js·voice 와 독립 — 자체 world-chat 채널) ──
@@ -802,6 +806,8 @@ export default function WorldPage() {
       .then((d) => { if (!cancelled) setWorldSpawn(d?.position ?? null); })
       .catch(() => { if (!cancelled) setWorldSpawn(null); }); // 조회 실패는 조용히 — 기본 스폰
     return () => { cancelled = true; };
+    // 스폰 조회는 userId별 1회 — devGuest는 진입 동안 고정이다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   // ── 좌표 실시간 기록 → 주기 저장 + 이탈 시 최종 저장 ──
