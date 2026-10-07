@@ -30,6 +30,13 @@ html:has(.viewer-layout .viewer-pace-float) {scroll-padding-bottom:calc(54px + m
 .viewer-layout .viewer-pace-float__btn[aria-pressed="true"] .action-icon {color:var(--reader-accent);}
 .viewer-layout .viewer-pace-float__btn:hover {background:var(--reader-selected);color:var(--reader-accent);}
 .viewer-layout .viewer-pace-float__btn:focus-visible {outline:2px solid var(--reader-accent);outline-offset:1px;}
+/* 접힌 시트(내용을 닫았지만 문장 번역 등이 남아 바닥에 머무는 패널): 1120 미만은 머리줄이 남아 그 안 ▶가 맡고(--wide 숨김),
+   1120 이상은 접힌 시트가 통째로 숨으므로(reader-controls.css) 단독 버튼이 같은 바닥 자리를 맡는다 — 어느 상태에서도 ▶/■ 하나. */
+.viewer-layout .viewer-pace-float--wide {display:none;}
+@container reader (min-width:1120px) {
+  .viewer-layout .viewer-pace-float--wide {display:flex;}
+}
+.viewer-layout .viewer-inspector.is-collapsed .viewer-inspector__pace[aria-pressed="true"] {color:var(--reader-accent);}
 @container reader (max-width:600px) {
   .viewer-layout .sentence-move-bar {left:8px;right:8px;transform:none;max-width:none;}
   .viewer-layout .sentence-move-bar .sentence-move-bar__translate {margin-left:auto;}

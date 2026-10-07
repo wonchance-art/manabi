@@ -91,7 +91,7 @@ export async function verifyReaderDesign({page,board,scene,head,saveScreen,waitF
     await page.keyboard.press('Escape');
   }
   check('personal desktop/tablet/phone layouts retain the complete word card and main-page color system');
-  await page.getByRole('button',{name:'읽기 설정',exact:true})[activate]();
+  await page.getByRole('button',{name:'Aa 읽기 설정',exact:true})[activate]();
   await page.getByRole('dialog',{name:'읽기 설정',exact:true}).waitFor();
   await saveScreen('reader-settings-phone');
   await page.keyboard.press('Escape');await word().waitFor();

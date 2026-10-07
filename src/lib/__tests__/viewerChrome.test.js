@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { sliceBetween } from './helpers/sliceBetween.js';
+import { VIEWER_MESSAGE_LOCALES, t as tm } from '../viewerMessages.js';
 
 /**
  * 계약: v2-Q 뷰어 크롬 정돈 (#1077 설계 5486578406, 오너 "Q ㄱㄱ" 2026-09-01).
@@ -372,12 +373,28 @@ describe('⑨ AD-R2 읽기 크롬 — 영문 0 · 라벨 툴바 · 통계 한 �
     // 아이콘 칸 규칙(data-icon-action = 44×44 고정, 라벨은 aria뿐)에서 뺐다 — 툴바 안에 하나도 남지 않는다
     expect(t, '툴바에 아이콘만 있는 버튼이 남았다').not.toContain('data-icon-action');
     expect(t).toMatch(/className="viewer-tool viewer-tool--aa"[\s\S]{0,240}?\}>\s*<span aria-hidden="true">Aa<\/span>/);
+    // 보이는 라벨은 접근 이름 안에 든다(WCAG 2.5.3 Label in Name, 검수 보완 ②) — Aa는 이름 「Aa 읽기 설정」, 학습은 aria 없이 글자가 이름.
+    expect(t).toContain('aria-label={`Aa ${vt("읽기 설정")}`}');
+    expect(sliceBetween(t, '<button className="viewer-tool" aria-haspopup="dialog"', '</button>'), '학습: 보이는 글자와 다른 aria-label 금지').not.toContain('aria-label');
     expect(t).toMatch(/className="viewer-tool"[\s\S]{0,160}?\}>\s*<ActionIcon name="book"\/><span>\{vt\("학습"\)\}<\/span>/);
     expect(t).toContain('<ListenControls');
     const listen = read('src/components/ListenControls.jsx');
     const start = sliceBetween(listen, '{!playing ? (', ') : (');
     expect(start, '듣기 시작 버튼에 보이는 라벨').toMatch(/compact\?<><ActionIcon name="audio"\/><span>\{label\('듣기'\)\}<\/span><\/>/);
     expect(start, '듣기 시작 버튼은 아이콘 칸 규칙에서 빠진다').not.toContain('data-icon-action');
+  });
+
+  it('보이는 라벨 ⊂ 접근 이름 — 듣기·Aa·학습·자동 진행, 화면 언어 3종(WCAG 2.5.3)', () => {
+    for (const locale of VIEWER_MESSAGE_LOCALES) {
+      expect(tm(locale, '본문 전체 듣기'), `${locale} 듣기`).toContain(tm(locale, '듣기'));
+      for (const name of ['자동 진행 시작', '자동 진행 중지', '자동 진행 대기 · 중지']) {
+        expect(tm(locale, name), `${locale} ${name}`).toContain(tm(locale, '자동 진행'));
+      }
+    }
+    // 듣기 버튼의 접근 이름(본문 전체 듣기)과 보이는 라벨(듣기)은 같은 화면 언어로 나온다 — 둘 다 label() = t(uiLocale)
+    const listen = read('src/components/ListenControls.jsx');
+    expect(listen).toContain("aria-label={compact?label('본문 전체 듣기'):undefined}");
+    expect(listen).toContain("<span>{label('듣기')}</span>");
   });
 
   it('⋯ 자료 관리는 「학습」 창 안 — 툴바에 라벨 없는 ⋯가 없다(Q1 ③·Q2)', () => {
@@ -395,9 +412,20 @@ describe('⑨ AD-R2 읽기 크롬 — 영문 0 · 라벨 툴바 · 통계 한 �
     expect(at("{autoPace&&paceToggle('sentence-move-bar__btn sentence-move-bar__pace')}")).toBeGreaterThan(at('sentenceNavBtn(1,'));
     expect(at("{autoPace&&paceToggle('sentence-move-bar__btn sentence-move-bar__pace')}")).toBeLessThan(at('sentence-move-bar__translate'));
     // 단독 버튼 = 막대가 없을 때만 · 시트·모달이 열려 있으면 없다(정본 §5 「시트가 열려 있으면 숨긴다」)
-    expect(src).toContain('const moveBarShown = pickedSentence !== null && !classStudyActive;');
+    expect(src).toContain('const moveBarShown = pickedSentence !== null && !classStudyActive && !sheetPresent;');
     expect(src).toContain('const paceFloatShown = autoPace && sentences.length > 0 && !moveBarShown && !inspectorOpen && !isSheetOpen && !modalBlocked;');
-    expect(src).toMatch(/\{paceFloatShown&&<div className="viewer-pace-float">\{paceToggle\('viewer-pace-float__btn',true\)\}<\/div>\}/);
+    expect(src).toContain("{paceFloatShown&&<div className={`viewer-pace-float${sheetStripShown?' viewer-pace-float--wide':''}`}>{paceToggle('viewer-pace-float__btn',true)}</div>}");
+    // 접힌 시트(내용은 닫혔지만 바닥에 남은 패널)에서도 자동 진행에 닿는다(검수 보완 ①): 1120 미만 = 머리줄 안 ▶,
+    // 1120 이상 = 접힌 시트가 통째로 숨으므로 단독 버튼(--wide). main은 툴바 ▶가 늘 있었다 — 닿을 길 0은 회귀다.
+    expect(src).toContain('const sheetStripShown = sheetPresent && !inspectorOpen && !classStudyActive;');
+    expect(src).toContain("collapsedActions={autoPace&&sentences.length>0&&!modalBlocked?paceToggle('viewer-inspector__pace'):null}");
+    expect(src).toContain('onPresentChange={setSheetPresent}');
+    const sheet = read('src/components/ViewerBottomSheet.jsx');
+    expect(sheet).toContain('{!open&&collapsedActions}');
+    expect(sheet).toContain('useEffect(()=>{onPresentChange?.(present);},[present,onPresentChange]);');
+    const barCss = read('src/components/viewer/sentence-move-bar.css');
+    expect(barCss).toContain('.viewer-layout .viewer-pace-float--wide {display:none;}');
+    expect(sliceBetween(barCss, '@container reader (min-width:1120px) {', '}')).toContain('.viewer-pace-float--wide {display:flex;');
     // 접근 이름 3종은 그대로 — readingPacer·viewer-reading-controls e2e가 이 이름으로 누른다
     const toggle = sliceBetween(src, 'const paceToggle = ', '\n  };');
     for (const name of ['자동 진행 대기 · 중지', '자동 진행 중지', '자동 진행 시작']) expect(toggle).toContain(`'${name}'`);

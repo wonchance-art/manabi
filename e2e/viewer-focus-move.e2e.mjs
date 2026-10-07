@@ -172,7 +172,7 @@ test('saved pronReveal is ignored: a hidden-reading word opens its card on the f
   await f.page.locator('.word-detail-card__meaning').getByText('경기장',{exact:true}).waitFor({timeout:5000});
   assert.equal(await token(f,0,2).locator('.surface--furi-off').count(),1,'first tap opens the card instead of revealing the reading');
   await f.page.getByRole('button',{name:'보조 패널 닫기',exact:true}).click();
-  await f.page.getByRole('button',{name:'읽기 설정',exact:true}).click();
+  await f.page.getByRole('button',{name:'Aa 읽기 설정',exact:true}).click();
   await f.page.getByRole('tab',{name:'학습 표시',exact:true}).click();
   await f.page.getByText('성조·문법·한자 표시',{exact:true}).click();
   assert.equal(await f.page.getByRole('checkbox',{name:'탭하면 발음 보기'}).count(),0,'reveal switch removed');
@@ -193,7 +193,7 @@ test('saved pronReveal is ignored: a hidden-reading word opens its card on the f
 test('display detail badge counts only changed controls visible inside that group',{timeout:180000},async()=>{
  const f=await open(1280,900,{focusMode:true,pronReveal:true,showToneColors:true,autoSpeakOnClick:false});
  try{
-  await f.page.getByRole('button',{name:'읽기 설정',exact:true}).click();
+  await f.page.getByRole('button',{name:'Aa 읽기 설정',exact:true}).click();
   await f.page.getByRole('tab',{name:'학습 표시',exact:true}).click();
   const group=f.page.locator('details.reader-settings__more').filter({hasText:'성조·문법·한자 표시'});
   const badge=async()=>{const el=group.locator('summary .reader-settings__changed');return await el.count()?Number(await el.textContent()):0;};
@@ -341,7 +341,7 @@ const chromeFacts=f=>f.page.evaluate(()=>{
  const tools=[...document.querySelectorAll('.viewer-topbar__tools button')].filter(b=>b.getClientRects().length);
  const topbar=document.querySelector('.viewer-topbar'),area=document.querySelector('.reader-area');
  const chrome=[topbar,document.querySelector('.reader-edition'),document.querySelector('.viewer-badges')].filter(Boolean).map(el=>el.innerText).join('\n');
- return {labels:tools.map(b=>b.innerText.trim()),boxes:tools.map(b=>({w:r(b).width,h:r(b).height,mid:r(b).top+r(b).height/2,right:r(b).right})),
+ return {labels:tools.map(b=>b.innerText.trim()),names:tools.map(b=>(b.getAttribute('aria-label')||b.innerText).trim()),boxes:tools.map(b=>({w:r(b).width,h:r(b).height,mid:r(b).top+r(b).height/2,right:r(b).right})),
   topbar:r(topbar).height,chrome,latin:(chrome.match(/[A-Za-z]{2,}/g)||[]).filter(w=>w!=='Aa'),
   areaBorder:getComputedStyle(area).borderTopWidth,areaBg:getComputedStyle(area).backgroundColor,pageBg:getComputedStyle(document.querySelector('.viewer-layout')).backgroundColor,
   titleLeft:r(document.querySelector('.viewer-titlerow .page-header__title')).left,textLeft:r(area).left+parseFloat(getComputedStyle(area).paddingLeft),
@@ -353,6 +353,9 @@ for(const width of [390,1280])test(`${width}px: labelled one-row toolbar, no Eng
   const c=await chromeFacts(f);
   console.log(`[ad-r2-chrome] ${width} ${JSON.stringify({labels:c.labels,boxes:c.boxes.map(b=>Math.round(b.w)),topbar:c.topbar,titleLeft:c.titleLeft,textLeft:c.textLeft})}`);
   assert.deepEqual(c.labels,LABELS.ko,'every toolbar button shows a visible label');
+  // WCAG 2.5.3 Label in Name — 보이는 라벨이 접근 이름 안에 든다(본문 전체 듣기 ⊃ 듣기 · Aa 읽기 설정 ⊃ Aa · 학습).
+  c.labels.forEach((label,i)=>assert.ok(c.names[i].includes(label),`accessible name "${c.names[i]}" contains visible "${label}"`));
+  assert.deepEqual(c.names,['본문 전체 듣기','Aa 읽기 설정','학습']);
   for(const b of c.boxes)assert.ok(b.w>=44&&b.h>=44,`toolbar target ${b.w}x${b.h} >= 44`);
   const mids=c.boxes.map(b=>b.mid);assert.ok(Math.max(...mids)-Math.min(...mids)<=2,`toolbar stays one row: ${mids}`);
   assert.ok(c.topbar<=60,`path row stays one line: ${c.topbar}px`);
@@ -376,6 +379,7 @@ for(const locale of ['zh-CN','zh-TW'])test(`390px ${locale}: toolbar labels and 
  try{
   const c=await chromeFacts(f);
   assert.deepEqual(c.labels,LABELS[locale]);
+  c.labels.forEach((label,i)=>assert.ok(c.names[i].includes(label),`${locale}: accessible name "${c.names[i]}" contains visible "${label}"`));
   assert.deepEqual(c.latin,[],`no English chrome: ${c.chrome}`);
   assert.doesNotMatch(c.chrome,/[가-힣]/,`no Korean left in ${locale} chrome: ${c.chrome}`);
   assert.deepEqual(f.errors,[]);
@@ -446,6 +450,48 @@ for(const [width,height] of [[390,844],[1280,900]])test(`${width}px: auto-advanc
   await token(f,1,1).click();await bar(f).waitFor();
   assert.equal(await float.count(),0);
   assert.equal(await bar(f).getByRole('button',{name:'자동 진행 시작',exact:true}).count(),1);
+  assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+// 검수 보완 ① — 접힌 시트(문장 번역을 본 뒤 패널을 닫으면 내용이 남아 바닥에 머문다)에서도 자동 진행을 시작·정지할 수 있다.
+// main은 툴바 ▶가 늘 있었다. 1120 미만 = 남은 머리줄 안 ▶, 1120 이상 = 접힌 시트가 통째로 숨으므로 바닥 단독 버튼. 겹침 0 · 가림 0 · 키보드.
+for(const [width,height] of [[390,844],[1280,900]])test(`${width}px: auto-advance stays reachable while the sheet is collapsed`,{timeout:240000},async()=>{
+ const f=await open(width,height,{focusMode:true,autoPace:true,paceCpm:30,autoSpeakOnClick:false});
+ try{
+  await token(f,0,0).click();await bar(f).waitFor();
+  await bar(f).getByRole('button',{name:'번역',exact:true}).click();
+  await f.page.locator('#inspector-sentence').getByText('눈앞의 경기장은 사진보다 더 웅장하다.').first().waitFor();
+  assert.equal(await paceButtons(f).count(),0,'open sheet: no auto-advance button');
+  await f.page.getByRole('button',{name:'보조 패널 닫기',exact:true}).click();
+  await f.page.locator('.viewer-inspector.is-collapsed').waitFor({state:'attached'});
+  assert.equal(await bar(f).count(),0,'the collapsed sheet keeps the bottom slot (no move bar)');
+  assert.deepEqual(await pickedLines(f),['0']);
+  const visible=paceButtons(f).or(f.page.locator('.viewer-inspector__pace').filter({visible:true}));
+  assert.equal(await visible.count(),1,'exactly one auto-advance control while collapsed');
+  const where=await visible.evaluate(b=>b.closest('.viewer-inspector')?'strip':b.closest('.viewer-pace-float')?'float':'other');
+  assert.equal(where,width<1120?'strip':'float',`collapsed control lives in the ${width<1120?'sheet strip':'floating slot'}`);
+  const box=await visible.boundingBox();assert.ok(box.width>=44&&box.height>=44,'44px target');
+  let o=await bottomOverlaps(f);assert.deepEqual(o.hits,[]);assert.ok(o.inView);
+  // 키보드: Enter로 시작(지정 문장 그대로 · 진행 중 표시) → Enter로 정지
+  await visible.focus();await f.page.keyboard.press('Enter');
+  await f.page.locator('.reader-area--pacing').waitFor();
+  assert.deepEqual(await pickedLines(f),['0']);
+  const stop=f.page.getByRole('button',{name:'자동 진행 중지',exact:true}).filter({visible:true});
+  assert.equal(await stop.count(),1,'running state shows ■ in the same place');
+  await stop.focus();await f.page.keyboard.press('Enter');
+  await f.page.getByRole('button',{name:'자동 진행 시작',exact:true}).filter({visible:true}).waitFor();
+  assert.equal(await f.page.locator('.reader-area--pacing').count(),0);
+  o=await bottomOverlaps(f);assert.deepEqual(o.hits,[]);
+  // 가림 0: 지정 문장과 본문 끝이 바닥 요소 위로 드러난다(이동 막대 여백 규칙과 같은 기준)
+  const bottomTop=()=>f.page.evaluate(()=>Math.min(innerHeight,...[...document.querySelectorAll('.viewer-inspector, .viewer-pace-float, .sentence-move-bar')].filter(el=>el.getClientRects().length).map(el=>el.getBoundingClientRect().top)));
+  const sentenceBottom=await f.page.locator('.word-token--picked').evaluateAll(els=>Math.max(...els.map(el=>el.getBoundingClientRect().bottom)));
+  assert.ok(sentenceBottom<=await bottomTop(),'designated sentence is not covered');
+  await f.page.evaluate(()=>scrollTo({top:document.scrollingElement.scrollHeight,behavior:'instant'}));await f.page.waitForTimeout(200);
+  const last=await f.page.evaluate(()=>{const c=document.querySelector('.viewer-center');return [...c.children].filter(el=>el.getClientRects().length).at(-1).getBoundingClientRect().bottom;});
+  const top=await bottomTop();
+  assert.ok(last<=top,`end of the page ${last} <= bottom control top ${top}`);
   assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}

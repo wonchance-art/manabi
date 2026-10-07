@@ -177,7 +177,7 @@ test('shared reader retains independent locale settings, exact source and learni
   const audit = await fixture(context), page = await context.newPage();
   let ui = 'ko';
   const token = () => page.locator('.reader-area [data-tid="id_1_0_locale"]');
-  const launch = () => page.getByRole('button', { name: labels[ui].settings, exact: true });
+  const launch = () => page.getByRole('button', { name: `Aa ${labels[ui].settings}`, exact: true });
   const open = async () => { await launch().click(); await page.getByRole('dialog', { name: labels[ui].settings, exact: true }).waitFor(); };
   const close = async () => {
     await page.getByRole('button', { name: labels[ui].close, exact: true }).click();
@@ -289,7 +289,7 @@ test('selected sentence refreshes explanation locale without reanalyzing source 
     assert.equal(audit.analysis.length, 0, 'direct translation does not reanalyze selected source words');
     let ui = 'zh-TW';
     for (const locale of ['zh-CN', 'ko', 'zh-TW']) {
-      await page.getByRole('button', { name: labels[ui].settings, exact: true }).click();
+      await page.getByRole('button', { name: `Aa ${labels[ui].settings}`, exact: true }).click();
       await page.getByRole('group', { name: labels[ui].explanation, exact: true }).getByRole('button', { name: options[locale], exact: true }).click();
       await page.getByRole('button', { name: labels[ui].close, exact: true }).click();
       await panel.locator('.pdf-context__text').filter({ hasText: { ko: '학교에 왔어요.', 'zh-CN': '来到了学校。', 'zh-TW': '來到了學校。' }[locale] }).waitFor();
@@ -298,7 +298,7 @@ test('selected sentence refreshes explanation locale without reanalyzing source 
       assert.deepEqual(await page.locator('.pdf-context__original').allTextContents(), originals);
       assert.deepEqual(await page.locator('.pdf-word-item__text').allTextContents(), words);
       const explanationCalls = audit.explanations.length;
-      await page.getByRole('button', { name: labels[ui].settings, exact: true }).click();
+      await page.getByRole('button', { name: `Aa ${labels[ui].settings}`, exact: true }).click();
       const nextUi = ui === 'zh-TW' ? 'zh-CN' : 'zh-TW';
       await page.getByRole('group', { name: labels[ui].ui, exact: true }).getByRole('button', { name: options[nextUi], exact: true }).click();
       ui = nextUi;
@@ -334,7 +334,7 @@ test('pending Korean explanations cancel across locales and keyboard retry prese
   let ui = 'ko';
   const source = async () => ({ id: await page.locator('.reader-area [data-selected="true"]').getAttribute('data-tid'), sentence: (await page.locator('.reader-card-source blockquote').first().textContent()).trim() });
   const switchLocale = async (kind, value) => {
-    const launcher = page.getByRole('button', { name: labels[ui].settings, exact: true });
+    const launcher = page.getByRole('button', { name: `Aa ${labels[ui].settings}`, exact: true });
     await launcher.focus(); await page.keyboard.press('Enter');
     const group = page.getByRole('group', { name: labels[ui][kind], exact: true });
     await group.getByRole('button', { name: options[value], exact: true }).focus(); await page.keyboard.press('Space');
@@ -354,7 +354,7 @@ test('pending Korean explanations cancel across locales and keyboard retry prese
     await fontScope(page, ui);
     await page.keyboard.press('Escape');
     await page.locator('dialog[open]').waitFor({ state: 'detached' });
-    assert(await page.getByRole('button', { name: labels[ui].settings, exact: true }).evaluate(el => document.activeElement === el), 'Escape restores focus to settings launcher');
+    assert(await page.getByRole('button', { name: `Aa ${labels[ui].settings}`, exact: true }).evaluate(el => document.activeElement === el), 'Escape restores focus to settings launcher');
   };
   try {
     await page.goto('/viewer/94098');

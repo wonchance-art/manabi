@@ -151,7 +151,7 @@ async function locale(page,field,value) {
     'zh-TW':{settings:'閱讀設定',close:'關閉閱讀設定',uiLocale:'介面語言',explanationLocale:'解說語言'}};
   const options={ko:'한국어','zh-CN':'中文（简体）','zh-TW':'繁體中文（台灣）'};
   let ui=await page.locator('.viewer-layout').getAttribute('data-ui-locale');
-  await page.getByRole('button',{name:labels[ui].settings,exact:true}).click();
+  await page.getByRole('button',{name:`Aa ${labels[ui].settings}`,exact:true}).click();
   await page.getByRole('group',{name:labels[ui][field],exact:true}).getByRole('button',{name:options[value],exact:true}).click();
   if(field==='uiLocale') ui=value;
   await page.getByRole('button',{name:labels[ui].close,exact:true}).click();

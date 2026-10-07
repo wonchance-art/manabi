@@ -1229,9 +1229,13 @@ export default function ViewerPage() {
         startPacer();
       }}><ActionIcon name={paceRunning ? 'stop' : 'play'}/>{withLabel&&<span>{vt('자동 진행')}</span>}</button>;
   };
-  // 문장 이동 막대가 뜨는 조건(#1356): 지정 문장 + 기본 뷰어(수업 모드는 자기 도크 — 막대 없음). 보조 패널에 내용이
-  // 있으면 막대 대신 시트가 뜨는데, 그때는 inspectorOpen·isSheetOpen이 단독 버튼을 따로 막는다.
-  const moveBarShown = pickedSentence !== null && !classStudyActive;
+  // 문장 이동 막대가 뜨는 조건(#1356): 지정 문장 + 기본 뷰어(수업 모드는 자기 도크 — 막대 없음) + 보조 패널이 바닥에 없음
+  // (패널에 내용이 있으면 막대 대신 시트가 뜬다). 패널은 닫아도 내용이 남으면 접힌 채 바닥에 머문다(sheetPresent).
+  const [sheetPresent, setSheetPresent] = useState(false);
+  const moveBarShown = pickedSentence !== null && !classStudyActive && !sheetPresent;
+  // 접힌 시트(내용이 화면을 덮지 않음)에서도 자동 진행에 닿아야 한다(main은 툴바 ▶가 늘 있었다): 1120 미만은 남은 머리줄 안
+  // ▶(collapsedActions)가, 1120 이상은 접힌 시트가 통째로 숨으므로 단독 버튼(--wide, CSS가 그 폭에서만 보인다)이 맡는다.
+  const sheetStripShown = sheetPresent && !inspectorOpen && !classStudyActive;
   const paceFloatShown = autoPace && sentences.length > 0 && !moveBarShown && !inspectorOpen && !isSheetOpen && !modalBlocked;
 
   useReadingPacer({
@@ -2785,14 +2789,14 @@ export default function ViewerPage() {
           )}
           {/* 도구는 도구끼리 오른쪽(v2-Q 축 그대로). 분석 중단은 지금 도는 분석에 대한 일시 제어라 여기.
               AD-R2(VIEWER-V2-ROUNDS-001 §5): 아이콘 + 보이는 짧은 라벨(듣기 · Aa · 학습). 접근 이름은 그대로라
-              보이는 라벨이 이름 안에 든다. ⋯ 자료 관리는 「학습」 창 항목으로(설계 Q1 ③ — 시리즈 내비 + 소유자의
+              보이는 라벨이 이름 안에 든다(Aa는 「Aa 읽기 설정」 — WCAG 2.5.3). ⋯ 자료 관리는 「학습」 창 항목으로(설계 Q1 ③ — 시리즈 내비 + 소유자의
               390px 두 줄 해소), 자동 진행은 바닥 한 자리(단독 버튼 ↔ 문장 이동 막대 안, 설계 Q3 A)로 옮겼다. */}
           <div className="viewer-topbar__tools">
             {user?.id === material?.owner_id && reanalyzeMutation.isPending && (
               <button onClick={stopReanalysis} disabled={reanalyze.committing} className="grammar-btn grammar-btn--danger">{vt("분석 중단")}</button>
             )}
             {ttsSupported && <ListenControls text={material?.raw_text} language={materialLang} stopSignal={activeModal?.kind} playbackRate={TTS_RATES[ttsRate].web} compact uiLocale={uiLocale} />}
-            <button ref={settingsTrigger} className="viewer-tool viewer-tool--aa" aria-label={vt("읽기 설정")} title={vt("읽기 설정")} aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
+            <button ref={settingsTrigger} className="viewer-tool viewer-tool--aa" aria-label={`Aa ${vt("읽기 설정")}`} title={vt("읽기 설정")} aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
               <span aria-hidden="true">Aa</span>
             </button>
             <button className="viewer-tool" aria-haspopup="dialog" onClick={()=>changeModal('activities',true)}>
@@ -3411,6 +3415,8 @@ export default function ViewerPage() {
         preserveFocus={annotationOpen&&!isSheetOpen&&dragTokens===null}
         preserveWordTab={preserveOpenWord}
         onOpenChange={setInspectorOpen}
+        onPresentChange={setSheetPresent}
+        collapsedActions={autoPace&&sentences.length>0&&!modalBlocked?paceToggle('viewer-inspector__pace'):null}
         leftContent={leftPanelContent}
         rightContent={selectedToken&&isSheetOpen?renderRightPanelContent(annotationContent&&<details className="reader-card-notes" open={annotationOpen}><summary>{vt("교재 설명")}</summary>{annotationContent}</details>):<>{annotationContent}{rightPanelContent}</>}
         leftActive={leftPanelLoading || !!leftPanelResult}
@@ -3426,7 +3432,7 @@ export default function ViewerPage() {
         ) : null}
       /> : boardActions ? null : sentenceMoveBar} />}
       </TextbookAnnotations>
-      {paceFloatShown&&<div className="viewer-pace-float">{paceToggle('viewer-pace-float__btn',true)}</div>}
+      {paceFloatShown&&<div className={`viewer-pace-float${sheetStripShown?' viewer-pace-float--wide':''}`}>{paceToggle('viewer-pace-float__btn',true)}</div>}
 
       {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} languageSettings={languageSettings} onClose={closeReadingSettings} keepPosition={keepReadingPosition} previewTokens={previewTokens} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus}/>}
       {modal('activities')&&<ViewerModal uiLocale={uiLocale} title={vt("학습")} onClose={()=>setActiveModal(null)}><div className="reader-activity-menu">
