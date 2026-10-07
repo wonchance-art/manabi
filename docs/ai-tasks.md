@@ -880,15 +880,19 @@
 ### doing
 - **Codex 정지 중 학습 작업 인수 (2026-10-07 13:00 KST~, 오너 지시 — [인수 선언](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6030524345))**:
   기준 main `978ff6bd`. 작업마다 `claude/*` 브랜치를 쓴다(오너 허락). Codex 복귀 시 같은 파일 착수 전 #1337 최신 Claude 보고를 확인한다.
-  - #1343 `claude/work-env-agent-setup-1v9a0a` — 앱·테스트 런타임 Node 24 정정(CLAUDE.md)·`.nvmrc`. CI green, 병합 승인 대기.
+  - #1343 — 앱·테스트 런타임 Node 24 정정(CLAUDE.md)·`.nvmrc`. **병합 41fd0639**(오너 승인).
     `codex/cloud-readiness-20261002`의 `scripts/cloud/verify.mjs`는 CI 복제로 8일 만에 e2e 3·SQL 1 누락 드리프트 → 이식 배제.
   - #1344 `claude/textbook-answer-a11y` — 교재 해설 이유 글 대비 4.37→AA·14px, 해설 위계, 접힘·예문 링크 44px.
     수정 전 e2e 실패 재현 → 수정 후 PASS. 교재 피드백 잔여 PR-B(부제 반복·해석 문구·물음 표식, 목업 대기)·PR-C(활용 안내, 오너 문구).
   - #1345 `claude/viewer-annotations-hook` — VIEWER-BOUNDARY PR-1(공용 훅 + 팀 페이지 교사 관리). 원 설계 결함 4건으로
     '설명 유지·mount 이동' 안으로 축소. PR-0 운영 집계 대기, PR-3는 #1342 이후.
-  - #1342 인수(`claude/korean-word-meaning`, Codex 브랜치 미수정) — [교차 검수](https://github.com/wonchance-art/manabi/pull/1342#issuecomment-6030711476):
-    e2e 실패 2건 원인·교차 언어 목록 퇴행·성능 2건. 오너 결정: 기존 e2e 기대값 갱신 허용(보강 2곳), 'AI 생성' 표기 출시,
-    한국어기초사전 설계·수록률 측정 착수. 목록 ★ 한 번 저장의 분리 여부는 결정 대기.
+  - #1346 `claude/korean-word-meaning` — #1342 인수([교차 검수](https://github.com/wonchance-art/manabi/pull/1342#issuecomment-6030711476)).
+    오너 결정: 기존 e2e 기대값 갱신 허용, 목록 ★ 제외, 'AI 생성' 표기 없음. 엄격 재검토로 설명 언어 ko 보류(22건 중 문제 4건)
+    — zh만 새 경로. 거짓 뜻 충돌 방지·생성 호출 저장 가능 상태 한정·경합 충돌 e2e. CI green. 남은 것: Preview 실계정,
+    zh 미사용 표본 60건(`docs/verification/korean-word-meaning-holdout-20261007.*`) 실제 생성 실행(키 있는 환경)·사람 판정.
+  - `claude/krdict-senses` — 한국어기초사전 1단계 기반(오너 채택): `docs/sql` 설치·롤백 SQL, 임포트(dry-run 기본·결정적),
+    검증 모듈. `user_vocabulary` 열 추가는 한국어 지원 해시 봉인을 꺼서(PGlite 재현) 별도 연결 표로 둔다. 운영 적용은
+    공식본 대조 후. 공식 API는 대역 언어에 중국어 없음 → 전체 내려받기가 정본. 애인→爱人처럼 사전 대역도 감수 필요.
   - #1347 `claude/happy-darwin-il3hd3` — ESLint flat config가 .jsx 270개를 조용히 건너뛰던 것 수정(`files` 항목).
     드러난 오류 5건 정리(따옴표 4·global-error 하드 링크 1은 사유 주석), exhaustive-deps 등 경고 23건은 경고 유지.
     계약 `eslintConfigScope.test.js`. lint 0 errors·npm test 480/5303 PASS.
