@@ -156,10 +156,14 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
     expect(line).not.toContain('splitSentenceAroundWord');
   });
 
-  it('사전 뜻 목록은 표시만(Q3) — buildSenseList, 누름 영역·교정 호출 0', () => {
+  // PR③ 개정(정본 §2.1 「다른 뜻을 누르면 그 뜻이 이 자리 뜻으로 교정」, 설계서 §3.4·§8 PR③): PR②의 「표시만」은
+  // 쓰기 경로를 PR③으로 미룬 단계 계약이었다. 줄 누름은 권한(senseEditable)이 있을 때만이고, 쓰기는 chooseSense →
+  // 기존 correctTokenMutation 하나(senseCorrection.test.js가 상세를 잡는다). 목록 안에서 mutation을 직접 부르지 않는다.
+  it('사전 뜻 목록 — buildSenseList, 줄 교정은 senseEditable일 때만 chooseSense(PR③)', () => {
     expect(viewer).toMatch(/import \{[^}]*\bbuildSenseList\b[^}]*\} from '\.\.\/lib\/viewerSenseList'/);
     const senses = sliceBetween(card, 'className="reader-card-senses"', '</section>');
-    expect(senses).not.toMatch(/onClick|correctTokenMutation|role="button"/);
+    expect(senses).not.toMatch(/correctTokenMutation|role="button"/);
+    expect(senses).toContain('onClick={() => chooseSense(item)}');
     expect(senses).toContain('reader-card-sense__context');
   });
 

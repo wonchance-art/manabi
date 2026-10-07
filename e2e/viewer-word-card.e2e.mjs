@@ -44,7 +44,7 @@ const dictRows={
  Japanese:{食べる:{meanings:[{meaning:'먹다',priority:1}],reading:'たべる',pos:'동사'}},
 };
 
-async function open(material,{guest=false,dict='ok',prefs={focusMode:false,autoSpeakOnClick:false},width=390,height=844,saved=null}={}) {
+async function open(material,{guest=false,dict='ok',prefs={focusMode:false,autoSpeakOnClick:false},width=390,height=844,saved=null,own=false,rows:rowOverride=null,details={}}={}) {
  const f=await fixture({width,guest});
  await f.page.setViewportSize({width,height});
  await f.context.addInitScript(({language,prefs})=>{
@@ -54,8 +54,10 @@ async function open(material,{guest=false,dict='ok',prefs={focusMode:false,autoS
  await f.context.route('**/api/gemini',r=>r.fulfill({contentType:'application/json',body:JSON.stringify({text:'검수용'})}));
  await f.context.route(/\/api\/analyze(\/korean)?$/,r=>r.fulfill({contentType:'application/json',body:JSON.stringify({results:[]})}));
  // 픽스처 뒤에 등록한 경로가 먼저 받는다 — morpheme_dictionary 요청만 세고 합성 행으로 답한다.
- f.bulk=[];f.single=[];
- const rows=dictRows[material.language]||{};
+ // PR ③: 공유 detail_text 지연 조회(select=detail_text)는 f.detail로 따로 센다 — f.single은 카드 사전 행(뜻·읽기) 단건 조회만.
+ f.bulk=[];f.single=[];f.detail=[];f.requests=[];
+ f.page.on('request',req=>f.requests.push({method:req.method(),url:req.url()}));
+ const rows=rowOverride||dictRows[material.language]||{};
  await f.context.route('**/rest/v1/morpheme_dictionary**',route=>{
   const req=route.request(),url=new URL(req.url());
   const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'GET,OPTIONS'};
@@ -69,7 +71,12 @@ async function open(material,{guest=false,dict='ok',prefs={focusMode:false,autoS
    if(dict==='fail')return route.fulfill({status:503,contentType:'application/json',headers:cors,body:JSON.stringify({message:'fixture outage'})});
    return send(keys.filter(k=>rows[k]).map(k=>({base_form:k,...rows[k]})));
   }
-  const key=filter.slice(3);f.single.push(key);
+  const key=filter.slice(3);
+  if(url.searchParams.get('select')==='detail_text'){
+   f.detail.push(key);const d=details[key]?{detail_text:details[key]}:null;
+   return send(req.headers().accept?.includes('vnd.pgrst.object')?d:d?[d]:[]);
+  }
+  f.single.push(key);
   const row=rows[key]||null;
   return send(req.headers().accept?.includes('vnd.pgrst.object')?row:row?[row]:[]);
  });
@@ -79,7 +86,7 @@ async function open(material,{guest=false,dict='ok',prefs={focusMode:false,autoS
   if(route.request().method()!=='GET'||url.searchParams.get('view')!=='learning')return route.fallback();
   return route.fulfill({contentType:'application/json',body:JSON.stringify(legacyLearningSnapshot({actorId:owner,rows:saved,fields:url.searchParams.get('fields')}))});
  });
- f.rows.push({id:94171,user_id:owner,title:'표제어 일괄 조회 검수',raw_text:material.texts.join('\n'),source_type:'text',created_at:new Date().toISOString(),
+ f.rows.push({id:94171,user_id:owner,...(own?{owner_id:owner}:{}),title:'표제어 일괄 조회 검수',raw_text:material.texts.join('\n'),source_type:'text',created_at:new Date().toISOString(),
   processed_json:{status:'completed',metadata:{language:material.language},sequence:material.sequence,dictionary:material.dictionary}});
  await f.page.goto('/viewer/94171',{waitUntil:'domcontentloaded',timeout:120000});
  await f.page.locator('[data-source-token="id_0_0"]').waitFor();
@@ -439,6 +446,163 @@ test('ko and en materials: sentence line · headword · meaning · bottom render
   assert.deepEqual(await line.locator('mark').allTextContents(),['was']);
   assertFirstScreen(await measure(f.page),{label:'en 390 unsaved'});
   await assertNoFoldsNoLegacyButtons(f,'en');
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+// ───────────────────────── PR ③ 이 자리 뜻 교정·되돌리기 · ⋯ 메뉴 · 공유 detail_text(설계서 §3.4·§7.3·§8) ─────────────────────────
+// 쓰기는 기존 correctTokenMutation(processed_json PATCH + token_corrections 이력) 하나 — 전역 승격(/api/dict-correct)·
+// 단어장(user_vocabulary)·FSRS·사전 쓰기는 0이어야 한다(정본 §0.2). 합성 백엔드(f.rows)만 바뀐다.
+const twoSenses={...dictRows.Chinese,壮观:{meanings:[{meaning:'웅장하다, 장관이다',priority:1,pos:'형용사'},{meaning:'장관, 웅장한 경관',priority:2,pos:'명사'}],reading:'zhuàng guān',pos:'형용사·명사'}};
+const writesSince=(f,mark)=>f.requests.slice(mark).filter(r=>!['GET','HEAD','OPTIONS'].includes(r.method));
+const visibleHeader=f=>f.page.locator('.viewer-inspector__header').filter({visible:true});
+
+test('owner: tapping another dictionary sense corrects this spot only; 「되돌리기」 restores the previous value',{timeout:180000},async()=>{
+ const m=cardMaterial();
+ const original=structuredClone(m.dictionary.id_0_7);
+ const f=await open(m,{prefs:zhPrefs,own:true,rows:twoSenses});
+ try{
+  await until(()=>f.bulk.length>=1);
+  await tap(f,'id_0_7','웅장하다, 장관이다');
+  const senses=f.page.locator('#inspector-word .reader-card-senses');
+  await senses.waitFor();
+  assert.equal(await senses.locator('.reader-card-sense').count(),2);
+  assert.equal(await senses.locator('.reader-card-sense.is-current button').count(),0,'the current sense is not pressable');
+  const pick=senses.getByRole('button',{name:/장관, 웅장한 경관/});
+  assert.equal(await pick.count(),1,'the other sense is a button');
+  const box=await pick.boundingBox();
+  assert.ok(box.height>=44,`sense row target ≥ 44px: ${box.height}`);
+  const stored=()=>f.rows.find(r=>r.id===94171).processed_json.dictionary.id_0_7;
+  const mark=f.requests.length;
+  await pick.click();
+  const meaning=f.page.locator('#inspector-word .word-detail-card__meaning');
+  await meaning.getByText('장관, 웅장한 경관',{exact:true}).waitFor();
+  const undoLine=f.page.locator('#inspector-word .reader-card-sense-undo');
+  await undoLine.waitFor();
+  assert.match(await undoLine.innerText(),/뜻을 바꿨어요/);
+  assert.ok((await senses.locator('.reader-card-sense.is-current').innerText()).includes('장관, 웅장한 경관'),'the chosen line is now the 문맥상 line');
+  await until(()=>stored().meaning==='장관, 웅장한 경관');
+  assert.equal(stored().pos,'명사','the sense pos travels with the meaning (TokenEditPanel chip rule)');
+  assert.equal(stored().furigana,original.furigana,'reading untouched');
+  assert.equal(await f.page.getByText('수정이 저장됐어요!',{exact:true}).count(),0,'the inline line replaces the toast');
+  await undoLine.getByRole('button',{name:'되돌리기',exact:true}).click();
+  await meaning.getByText('웅장하다, 장관이다',{exact:true}).waitFor();
+  await until(()=>stored().meaning==='웅장하다, 장관이다');
+  assert.deepEqual(stored(),original,'undo restores the previous token exactly');
+  await until(async()=>(await undoLine.count())===0);
+  assert.ok((await senses.locator('.reader-card-sense.is-current').innerText()).includes('웅장하다, 장관이다'));
+  await f.page.waitForTimeout(500);
+  const writes=writesSince(f,mark);
+  assert.equal(writes.filter(r=>r.method==='PATCH'&&r.url.includes('/rest/v1/reading_materials')).length,2,'one write to correct, one to undo');
+  assert.equal(writes.filter(r=>r.method==='POST'&&r.url.includes('/rest/v1/token_corrections')).length,2,'correction history for both');
+  const other=writes.filter(r=>!r.url.includes('/rest/v1/reading_materials')&&!r.url.includes('/rest/v1/token_corrections'));
+  assert.deepEqual(other,[],'no dict-correct, vocabulary, FSRS or dictionary writes');
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+test('not the owner: dictionary senses are display-only and there is no ⋯ menu',{timeout:180000},async()=>{
+ const m=cardMaterial();
+ const f=await open(m,{prefs:zhPrefs,rows:twoSenses});
+ try{
+  await until(()=>f.bulk.length>=1);
+  await tap(f,'id_0_7','웅장하다, 장관이다');
+  const senses=f.page.locator('#inspector-word .reader-card-senses');
+  await senses.waitFor();
+  assert.equal(await senses.locator('.reader-card-sense').count(),2);
+  assert.equal(await senses.locator('button').count(),0,'no pressable sense line');
+  const mark=f.requests.length;
+  await senses.getByText('장관, 웅장한 경관',{exact:true}).click();
+  await f.page.waitForTimeout(600);
+  assert.deepEqual(writesSince(f,mark),[],'no write');
+  assert.equal(await f.page.locator('#inspector-word .word-detail-card__meaning').innerText(),'웅장하다, 장관이다');
+  assert.equal(await f.page.locator('#inspector-word .reader-card-sense-undo').count(),0);
+  assert.equal(await visibleHeader(f).getByRole('button',{name:'분석 고치기',exact:true}).count(),0,'no ⋯ when there is nothing to fix');
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+test('⋯ menu: 44px, keyboard open · move · Esc closes and returns focus, the item opens the editor; one header row at 390 and 320',{timeout:180000},async()=>{
+ const m=cardMaterial();
+ const f=await open(m,{prefs:zhPrefs,own:true,rows:twoSenses});
+ try{
+  await tap(f,'id_0_7','웅장하다, 장관이다');
+  const more=visibleHeader(f).getByRole('button',{name:'분석 고치기',exact:true});
+  await more.waitFor();
+  assert.equal(await more.getAttribute('aria-haspopup'),'menu');
+  assert.equal(await more.getAttribute('aria-expanded'),'false');
+  const b=await more.boundingBox();
+  assert.ok(b.width>=44&&b.height>=44,`⋯ target ${b.width}×${b.height}`);
+  assert.ok((await visibleHeader(f).boundingBox()).height<=56,'390 header stays one row with ⋯');
+  const active=()=>f.page.evaluate(()=>({role:document.activeElement?.getAttribute('role'),label:document.activeElement?.getAttribute('aria-label'),text:document.activeElement?.textContent?.trim()}));
+  await more.focus();
+  await f.page.keyboard.press('Enter');
+  const menu=f.page.getByRole('menu');
+  await menu.waitFor();
+  assert.equal(await more.getAttribute('aria-expanded'),'true');
+  assert.deepEqual(await menu.getByRole('menuitem').allTextContents(),['뜻·발음 수정']);
+  assert.deepEqual(await active(),{role:'menuitem',label:null,text:'뜻·발음 수정'},'focus moves to the first item');
+  await f.page.keyboard.press('ArrowDown');
+  assert.equal((await active()).role,'menuitem','arrow keys stay inside the menu');
+  await f.page.keyboard.press('Escape');
+  await until(async()=>(await menu.count())===0);
+  assert.equal((await active()).label,'분석 고치기','focus returns to ⋯');
+  assert.ok(await f.page.locator('#inspector-word').isVisible(),'Esc closes the menu, not the sheet');
+  await f.page.keyboard.press('ArrowDown');
+  await menu.waitFor();
+  await f.page.keyboard.press('Enter');
+  await f.page.locator('#inspector-word .token-edit').waitFor();
+  assert.equal(await menu.count(),0,'choosing an item closes the menu');
+  // [문장] 탭에는 ⋯이 없다(단어 탭 전용).
+  await f.page.getByRole('tab',{name:'문장 번역'}).click();
+  await until(async()=>(await visibleHeader(f).getByRole('button',{name:'분석 고치기',exact:true}).count())===0);
+  await f.page.getByRole('tab',{name:'단어'}).click();
+  await more.waitFor();
+  // 320px: ⤢를 숨겨 한 줄을 지킨다(설계서 §6 — 끌어 올리기로 대신).
+  await f.page.setViewportSize({width:320,height:700});
+  await f.page.waitForTimeout(400);
+  const g=await f.page.evaluate(()=>{const h=[...document.querySelectorAll('.viewer-inspector__header')].find(el=>el.getClientRects().length);const r=h.getBoundingClientRect();
+   const btn=h.querySelector('[aria-label="분석 고치기"]').getBoundingClientRect();const ex=h.querySelector('.viewer-inspector__expand');
+   return {height:r.height,right:r.right,btnRight:btn.right,btnW:btn.width,expand:ex?ex.getClientRects().length:0,overflow:document.documentElement.scrollWidth-innerWidth};});
+  assert.ok(g.height<=56,`320 header one row: ${g.height}`);
+  assert.equal(g.overflow,0,'no horizontal page overflow at 320');
+  assert.ok(g.btnRight<=g.right+.5&&g.btnW>=44,`⋯ inside the header at 320 ${JSON.stringify(g)}`);
+  assert.equal(g.expand,0,'⤢ hidden at 320 when ⋯ is present');
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+test('「자세한 설명」: shared detail_text is read once per card when 더 알아보기 comes into view; reopening makes 0 requests',{timeout:180000},async()=>{
+ const m=cardMaterial();
+ const f=await open(m,{prefs:zhPrefs,rows:twoSenses,details:{壮观:'**뜻**\n1. 웅장하다\n\n**뉘앙스**\n공유 설명 검수용.'}});
+ try{
+  await until(()=>f.bulk.length>=1);
+  await tap(f,'id_0_7','웅장하다, 장관이다');
+  const learn=f.page.locator('#inspector-word .reader-card-learn');
+  await learn.waitFor({state:'attached'});
+  await f.page.waitForTimeout(700);
+  const below=await learn.evaluate(el=>el.getBoundingClientRect().top>=el.closest('.reader-card-body').getBoundingClientRect().bottom);
+  assert.equal(below,true,'더 알아보기 starts below the 390 first screen');
+  assert.deepEqual(f.detail,[],'no detail_text request before the section is in view');
+  await learn.scrollIntoViewIfNeeded();
+  await learn.getByText('공유 설명 검수용.').waitFor();
+  assert.equal(await learn.getByRole('button',{name:'✦ 자세한 설명',exact:true}).count(),0,'content instead of the button');
+  assert.deepEqual(f.detail,['壮观']);
+  // 설명이 없는 단어: 1회 조회 뒤 버튼 그대로(조용히).
+  await tap(f,'id_0_2','경기장');
+  await learn.scrollIntoViewIfNeeded();
+  await until(()=>f.detail.length===2);
+  await f.page.waitForTimeout(300);
+  assert.equal(await learn.getByRole('button',{name:'✦ 자세한 설명',exact:true}).count(),1);
+  // 같은 단어 재열람 = 메모리 캐시, 0요청.
+  await tap(f,'id_0_7','웅장하다, 장관이다');
+  await learn.scrollIntoViewIfNeeded();
+  await learn.getByText('공유 설명 검수용.').waitFor();
+  await tap(f,'id_0_2','경기장');
+  await learn.scrollIntoViewIfNeeded();
+  await f.page.waitForTimeout(700);
+  assert.deepEqual(f.detail,['壮观','体育场'],'reopening the same words adds no request');
+  assert.equal(f.requests.filter(r=>r.url.includes('/api/word-detail')||r.url.includes('/api/gemini')).length,0,'no AI or word-detail API call');
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
 });
