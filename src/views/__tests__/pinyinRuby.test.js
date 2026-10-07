@@ -53,6 +53,11 @@ describe('병음 조판 계약', () => {
     // 테두리 아랫변은 밑줄 칸에서 유도 — 밑줄 간격을 바꾸면 테두리가 따라간다(선이 겹치지 않게).
     expect(css).toContain('--hl-frame-bottom: calc(var(--hl-mark-gap) + 4px);');
     expect(readerCss).toContain('.word-token--pattern:is(.word-token--saved,.word-token--due) {--hl-frame-bottom:calc(var(--hl-mark-gap) * 2 + 5.5px);}');
+    // 병음을 올린 만큼 줄 사이 겹침이 생기지 않게 — 본문·Aa 미리보기 모두 줄 간격의 하한을 둔다
+    // (실글꼴: 12.8px·병음 16px·간격 15px에서 다음 줄 병음이 앞줄 테두리에 3.3px 얹혔다). 저장된 줄 간격은 그대로.
+    expect(readerCss).toMatch(/\.viewer-layout\[data-pron-spacing="reserved"\] :is\(\.reader-area,\.reader-settings__preview\) \{--hl-row-gap-min:calc\(var\(--pinyin-size\) \* [\d.]+ \+ var\(--hl-frame-top\) \+ var\(--hl-pinyin-gap\) \+ var\(--hl-mark-gap\) \* 2 \+ 5\.5px \+ 1px - 1\.16em\);\}/);
+    expect(viewer).toContain("gap: `max(${lineGap}px, var(--hl-row-gap-min, 0px)) ${charGap}rem`");
+    expect(read('src/components/viewer/ViewerPreview.jsx')).toContain("'--preview-row-gap':`max(${s.lineGap}px, var(--hl-row-gap-min, 0px))`");
     // 요미는 원래 자리(0.65 / 2.2)를 지키되, 테두리에 닿을 때만 같은 두 값으로 올라간다.
     const yomi = readerCss.match(/ruby\[data-yomi\] > \.rt-an \{bottom:max\(calc\(100% - \(0\.65 \/ 2\.2\) \* 100%\),calc\(100% - \(([\d.]+) \/ ([\d.]+)\) \* 100% \+ var\(--hl-frame-top\) \+ var\(--hl-pinyin-gap\) - [\d.]+em\)\);\}/);
     expect(yomi, 'yomi baseline rule').not.toBeNull();

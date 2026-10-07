@@ -2865,7 +2865,7 @@ export default function ViewerPage() {
         style={{
           fontSize: `${fontSize*(classStudyActive&&classBoardLayout==='split'?.8:1)}rem`,
           fontFamily: readerFontFamily(materialLang,fontFamily),
-          gap: `${lineGap}px ${charGap}rem`, '--char-gap': `${charGap}rem`,
+          gap: `max(${lineGap}px, var(--hl-row-gap-min, 0px)) ${charGap}rem`, '--char-gap': `${charGap}rem`,
           // 체류 표시는 CSS 애니메이션이 시간을 잰다 — JS 프레임 루프 0(설계 §7①).
           ...(paceDwell ? { '--pace-dwell': `${paceDwell}ms` } : null),
         }}

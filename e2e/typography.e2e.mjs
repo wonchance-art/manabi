@@ -739,6 +739,35 @@ for (const fs of [12.8, 25.6, 48]) {
   });
 }
 
+test('R0 버그 6 — 다음 줄 병음이 앞줄의 테두리·밑줄·문형선에 얹히지 않는다(작은 글자 × 큰 병음 × 최소 줄 간격)', async () => {
+  // 병음을 테두리 위로 올리면서 생긴 줄 사이 겹침(실글꼴: 12.8px·병음 16px·간격 15px에서 −3.3px)의
+  // 방지선. ViewerPage와 같이 간격을 max(줄 간격, --hl-row-gap-min)으로 쓰고, 가장 깊은 표지(문형+저장
+  // 선택 테두리)를 모든 토큰에 둔 채 상자 기준으로 잰다(병음 상자 위 끝은 잉크보다 ≈0.1P 높다).
+  const bad = [];
+  for (const fs of [12.8, 25.6, 48]) for (const py of [12, 16]) for (const gap of [10, 15]) {
+    const v = { cls: 'word-token--saved', pattern: true, selected: true };
+    const line = Array.from({ length: 6 }, () => [R0_ZH[4], R0_ZH[2], R0_ZH[1]]).flat().map((x) => r0Tok(x.segs, { ...x, ...v })).join('');
+    await page.setContent(R0_PAGE(r0Area({ fs }, line).replace(/gap:15px \.25rem/, `gap:max(${gap}px, var(--hl-row-gap-min, 0px)) .25rem;width:${Math.round(fs * 14)}px`), { py }));
+    const rows = await page.evaluate(() => {
+      const m = new Map();
+      for (const t of document.querySelectorAll('.word-token')) {
+        const s = t.querySelector('.surface').getBoundingClientRect(), f = getComputedStyle(t, '::before'), tr = t.getBoundingClientRect();
+        const k = Math.round(s.top), e = m.get(k) || { rtTop: Infinity, markBottom: -Infinity };
+        for (const rt of t.querySelectorAll('.rt-an')) e.rtTop = Math.min(e.rtTop, rt.getBoundingClientRect().top);
+        e.markBottom = Math.max(e.markBottom, tr.top + parseFloat(f.top) + parseFloat(f.height));
+        m.set(k, e);
+      }
+      return [...m.entries()].sort((a, b) => a[0] - b[0]).map((x) => x[1]);
+    });
+    if (rows.length < 2) bad.push(`${fs}px·병음 ${py}·간격 ${gap}: 줄이 하나뿐 — 전제 실패`);
+    for (let i = 0; i + 1 < rows.length; i++) {
+      const clear = rows[i + 1].rtTop - rows[i].markBottom;
+      if (clear < 1 - 0.01) bad.push(`${fs}px·병음 ${py}·간격 ${gap}: 다음 줄 병음 상자 위 끝이 앞줄 테두리 아래 끝과 ${clear.toFixed(2)}px`);
+    }
+  }
+  assert.deepEqual(bad, []);
+});
+
 test('R0 버그 6 — 요미가나는 테두리에 닿을 때만 올라간다(작은 글자), 테두리·밑줄(6b)은 위 행렬이 일본어에도 잰다', async () => {
   // 요미 상자는 2.2 줄 높이를 물려받아 가나 잉크가 상자 아래 끝보다 ≈0.6em(요미 크기) 위에 있다.
   // 「잉크 아래 끝 ≈ 상자 아래 끝 − 0.55em(요미)」가 테두리 바깥 윗변 − 2.5px 이하여야 한다(실글꼴:

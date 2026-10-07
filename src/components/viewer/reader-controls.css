@@ -87,6 +87,15 @@
    by ~0.03em, and device-pixel snapping costs up to 0.33px, so the ink stays >= 2px above the frame
    (real-font QA: 0.1em alone measured 1.0px). */
 .viewer-layout :is(.reader-area,.reader-settings__preview) ruby[data-pinyin] > .rt-an {bottom:calc(100% - (0.58 / 2.2) * 100% + var(--hl-frame-top) + var(--hl-pinyin-gap) + 0.05em);}
+/* Row-gap floor while pinyin is shown (VIEWER-R0 bug 6 follow-up). The next row's pinyin reaches
+   1.25P + frame top + pinyin gap - 0.58em above its row (box, P = pinyin size; ink is ~0.1P lower) and
+   the deepest mark (selection frame of a pattern + saved word: band + 2 x mark gap + 5.5px) hangs
+   1.62em + ... - 2.2em below the previous row. The gap the reader uses is max(line gap setting, that sum
+   + 1px), so small text with large pinyin never stacks pinyin on the marks above (real-font QA: 12.8px
+   text, 16px pinyin, 15px gap overlapped by 3.3px). Worst case always, so selecting never shifts lines.
+   ViewerPage and ViewerPreview write gap as max(line gap, var(--hl-row-gap-min, 0px)); viewerDefaults
+   and the saved line gap are unchanged. */
+.viewer-layout[data-pron-spacing="reserved"] :is(.reader-area,.reader-settings__preview) {--hl-row-gap-min:calc(var(--pinyin-size) * 1.25 + var(--hl-frame-top) + var(--hl-pinyin-gap) + var(--hl-mark-gap) * 2 + 5.5px + 1px - 1.16em);}
 /* Yomi keeps its native-ruby baseline (0.65 / 2.2) wherever that already clears the frame, and rises
    only when it would not (small text: at 12.8px the kana ink came within 0.67px of the frame). The yomi
    box inherits the 2.2 line height, so its kana ink sits ~0.6em (yomi size) above the box bottom;
