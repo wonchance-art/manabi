@@ -236,12 +236,12 @@ test('Korean atomic save, known/exclusion restore, locale conflict, due review a
     await f.page.locator('.word-detail-card__meaning').filter({visible:true}).first().getByText('去了（台灣）',{exact:true}).waitFor();
     await noKoreanLegacyEditor(f.page);
     assert.equal(f.writes.length,count);assert.deepEqual(f.cards,saved);assert.deepEqual(f.contexts,source);
+    // The saved card's meaning is reused for add-context: no regenerated candidate, so no false locale conflict.
     await f.actions.locator('.learning-context-save button').first().click();
-    const conflict=f.actions.locator('.learning-context-confirm');await conflict.waitFor();
+    await f.actions.locator('.learning-context-save').getByText('이미 담아둔 문맥이에요.',{exact:true}).waitFor();
+    assert.equal(await f.actions.locator('.learning-context-confirm').count(),0,'an existing card meaning raises no locale conflict');
     assert.deepEqual(f.cards,saved);assert.deepEqual(f.contexts,source);
-    await conflict.locator('button').first().click();await conflict.waitFor({state:'detached'});
-    assert.deepEqual(f.cards,saved);assert.deepEqual(f.contexts,source);
-    assert.equal(f.writes.at(-1).body.confirmMeaning,'去');
+    assert.equal(f.writes.at(-1).body.word.meaning,'去');assert.ok(!Object.hasOwn(f.writes.at(-1).body,'confirmMeaning'));
     // Use the same saved card's canonical review path; save did not create a review event.
     f.cards[0].next_review_at='2020-01-01T00:00:00Z';await f.open();
     assert.equal(f.cards[0].last_reviewed_at,null);assert.equal(f.events.length,0);

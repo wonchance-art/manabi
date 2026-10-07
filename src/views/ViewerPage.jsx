@@ -117,7 +117,7 @@ import { prepareViewerSaveUndo, undoViewerSave } from '../lib/viewerSaveUndo';
 import { contextualMeaning, refreshViewerToken, referenceMatchesContext, createViewerRequestGate, viewerCacheKey, viewerCommandAllowed } from '../lib/viewerReliability';
 import { clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
 import {useKoreanWordMeaning} from '../lib/useKoreanWordMeaning';
-import {koreanWordMeaningInput, koreanMeaningEnvelope, koreanLexicalMeaningLocale, selectedKoreanWordTokens, koreanListContextRequest, koreanListContextEntries} from '../lib/koreanWordMeaning';
+import {koreanWordMeaningInput, koreanMeaningEnvelope, koreanLexicalMeaningLocale, savedKoreanCardMeaning, selectedKoreanWordTokens, koreanListContextRequest, koreanListContextEntries} from '../lib/koreanWordMeaning';
 import { lookupTranslation, bookMeaningPanelText } from '../lib/bilingualSplit';
 import { isLocalId, parseLocalId, chaptersForLocalNav } from '../lib/classBoard';
 import { getSharedCopy } from '../lib/sharedStore';
@@ -897,11 +897,14 @@ export default function ViewerPage() {
     return koreanWordMeaningInput({accountId: user?.id, materialId: id, token, source: readingContextSource(token), locale: effectiveExplanationLocale});
   }
   const selectedMeaningInput = meaningInputFor(selectedToken);
+  // 이미 저장한 기본형은 카드의 뜻을 그대로 쓰므로 새 후보를 만들지도 보이지도 않는다.
+  const selectedSavedMeaning = koreanLexical ? savedKoreanCardMeaning(findSavedVocab(savedWords, selectedToken, materialLang), selectedToken) : null;
+  const koreanLexicalShown = !!selectedMeaningInput && !selectedSavedMeaning;
   const localizedWord = useViewerExplanation({token: selectedToken, sentence: ctxSentenceOf(selectedToken) ?? leftPanelText,
     locale: effectiveExplanationLocale, sourceLocale: selectedToken?.meaningLocale || selectedToken?.explanationLocale || material?.processed_json?.metadata?.explanationLocale || 'ko',
     scope: cacheScope, enabled: materialLang === 'Korean' && isSheetOpen});
   const koreanMeanings = useKoreanWordMeaning({ownerScope: koreanMeaningOwnerScope, input: selectedMeaningInput,
-    enabled: koreanLexical && isSheetOpen});
+    enabled: koreanLexicalShown && isSheetOpen});
   const wordMeaning = koreanMeanings.selected;
   const koreanSaveDisplayScope = useRef('');
   koreanSaveDisplayScope.current = JSON.stringify([user?.id, id, effectiveExplanationLocale, selectedToken?.id, selectedToken?.text, material?.raw_text]);
@@ -1828,6 +1831,12 @@ export default function ViewerPage() {
     const input = meaningInputFor(token), scope = koreanMeaningOwnerScope;
     const source = readingContextSource(token);
     if (!input || !koreanActionRef.current.permitted) throw new Error(vt('상태 다시 확인'));
+    const savedMeaning = savedKoreanCardMeaning(findSavedVocab(savedWords, token, materialLang), token);
+    if (savedMeaning) {
+      // 기존 카드: 다시 생성하지 않고 그 뜻으로 이 출처만 더한다(봉투 없음 → 서버의 기존 수동 계약, 카드 뜻 불변).
+      return {word: buildVocabRow({ userId: user?.id, surface: token.text, base: token.sep_link || token.base_form,
+        meaning: savedMeaning, language: materialLang, reading: token.furigana || token.reading, pos: token.pos }), source};
+    }
     const candidate = await koreanMeanings.ensure(input);
     const current = koreanActionRef.current;
     if (current.ownerScope !== scope || !current.permitted || current.inputFor(current.selected)?.key !== input.key) {
@@ -2315,7 +2324,7 @@ export default function ViewerPage() {
         <div className="word-detail-card__meaning" lang={materialLang === 'Korean' ? effectiveExplanationLocale : undefined}>
           {materialLang === 'Korean' ? <>
             {selectedVocab && <section data-korean-saved-meaning><small>{vt('✓ 단어장에 있음')} · {vt('뜻')}</small><p>{selectedVocab.meaning}</p></section>}
-            {selectedMeaningInput && <section data-korean-lexical-meaning aria-label={`${vt('기본형')} · ${vt('뜻')}`}><small>{vt('기본형')} · {vt('뜻')}</small><p>{wordMeaning.status === 'ready' ? wordMeaning.lexicalMeaning
+            {koreanLexicalShown && <section data-korean-lexical-meaning aria-label={`${vt('기본형')} · ${vt('뜻')}`}><small>{vt('기본형')} · {vt('뜻')}</small><p>{wordMeaning.status === 'ready' ? wordMeaning.lexicalMeaning
               : ['idle', 'loading'].includes(wordMeaning.status) ? vt('불러오는 중…') : vt('(뜻 없음)')}</p>
               {['error', 'uncertain'].includes(wordMeaning.status) && <button onClick={koreanMeanings.retry}>{vt('설명을 다시 불러오기')}</button>}
             </section>}

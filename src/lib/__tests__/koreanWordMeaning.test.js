@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import {buildKoreanWordMeaningPrompt, parseKoreanWordMeaning, koreanWordMeaningInput, koreanMeaningEnvelope,
-  koreanMeaningEnvelopeMatches, koreanLexicalMeaningLocale, KOREAN_LEXICAL_MEANING_LOCALES} from '../koreanWordMeaning';
+  koreanMeaningEnvelopeMatches, koreanLexicalMeaningLocale, KOREAN_LEXICAL_MEANING_LOCALES, savedKoreanCardMeaning} from '../koreanWordMeaning';
 
 const response = (patch = {}) => JSON.stringify({lemma:'가다',lemmaStatus:'matched',lexicalMeaning:'去',...patch});
 const source = {kind:'reading', materialId:211, tokenId:'second', surface:'갔어요', sourceRevision:`reading-source:v2:${'a'.repeat(64)}`,
@@ -73,5 +73,20 @@ describe('ko explanation locale is held until a verified dictionary source exist
     const candidate = koreanMeaningEnvelope(koreanWordMeaningInput(params), {lemma:'가다', lemmaStatus:'matched', lexicalMeaning:'去'});
     expect(koreanMeaningEnvelopeMatches(candidate, {token:params.token, source, meaning:'去'})).toBe(true);
     expect(koreanMeaningEnvelopeMatches({...candidate, locale:'ko'}, {token:params.token, source, meaning:'去'})).toBe(false);
+  });
+});
+
+describe('adding a source to an existing card reuses its meaning instead of a regenerated candidate', () => {
+  const card = {id:'card', language:'Korean', word_text:'가다', base_form:'가다', meaning:'Learner edited meaning'};
+  it('uses the saved meaning for the same server card identity (word_text = lemma)', () => {
+    expect(savedKoreanCardMeaning(card, params.token)).toBe('Learner edited meaning');
+    expect(savedKoreanCardMeaning({...card, word_text:' 가다 '}, {...params.token, base_form:'가다'.normalize('NFD')})).toBe('Learner edited meaning');
+  });
+  it('never borrows another card matched only by surface, another language or an empty meaning', () => {
+    expect(savedKoreanCardMeaning({...card, word_text:'갔어요'}, params.token)).toBeNull();
+    expect(savedKoreanCardMeaning({...card, language:'Japanese'}, params.token)).toBeNull();
+    expect(savedKoreanCardMeaning({...card, meaning:'  '}, params.token)).toBeNull();
+    expect(savedKoreanCardMeaning(null, params.token)).toBeNull();
+    expect(savedKoreanCardMeaning(card, null)).toBeNull();
   });
 });

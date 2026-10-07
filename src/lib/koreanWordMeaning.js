@@ -75,6 +75,14 @@ export function koreanMeaningEnvelopeMatches(candidate, {token, source, meaning}
     && sameSpan(candidate.sourceSpan, source.sourceSpan);
 }
 
+// 같은 기본형 카드가 이미 있으면 그 뜻을 그대로 쓴다. 생성 문자열은 출현마다 달라질 수 있어
+// 서버 RPC의 정확 비교에서 거짓 뜻 충돌을 만든다. 카드 식별은 서버와 같은 word_text 규칙이다.
+export function savedKoreanCardMeaning(saved, token) {
+  const lemma = normalize(token?.sep_link || token?.base_form || token?.text);
+  return saved?.language === 'Korean' && !!lemma && normalize(saved.word_text) === lemma
+    && typeof saved.meaning === 'string' && saved.meaning.trim() ? saved.meaning : null;
+}
+
 // Sources are already validated by koreanReadingSource. Preserve occurrences, not just lemmas.
 export function selectedKoreanWordTokens(dictionary, tokenIds, sources) {
   if (!Array.isArray(tokenIds)) return [];

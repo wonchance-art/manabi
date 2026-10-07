@@ -325,24 +325,27 @@ test('ko explanation is held: no lexical candidate is requested or shown and the
   } finally {await finish(f,'lexical-ko-held');}
 });
 
-test('existing edited meaning is distinct from the candidate and survives both conflict choices',async()=>{
+test('an existing card keeps its meaning: add-context reuses it without generation or a false conflict',async()=>{
   const f=await fixture({existing:true});
   f.cards[0].next_review_at='2099-01-01T00:00:00Z';
   try {
     const before=structuredClone(f.cards), sources=structuredClone(f.contexts);
-    await f.open();
+    await f.page.goto('/viewer/98133',{waitUntil:'domcontentloaded'});
+    // The first occurrence is a new source for the card already saved from the second sentence.
+    await f.page.locator('[data-source-token="id_0_2"]').click(); await f.actions.waitFor();
     await f.page.locator('[data-korean-saved-meaning]').filter({visible:true}).getByText('Learner edited meaning',{exact:true}).waitFor();
-    await f.page.locator('[data-korean-lexical-meaning]').filter({visible:true}).getByText('去',{exact:true}).waitFor();
+    assert.equal(await f.page.locator('[data-korean-lexical-meaning]').count(),0,'a saved card needs no newly generated candidate');
     await f.actions.getByRole('button',{name:'이 문맥 추가',exact:true}).click();
-    const conflict=f.actions.locator('.learning-context-confirm');await conflict.waitFor();
-    await conflict.getByRole('button',{name:'취소',exact:true}).click();
-    assert.deepEqual(f.cards,before);assert.deepEqual(f.contexts,sources);
-    await f.actions.getByRole('button',{name:'이 문맥 추가',exact:true}).click();await conflict.waitFor();
-    await conflict.getByRole('button',{name:'같은 뜻이에요 · 문맥 추가',exact:true}).click();
-    await conflict.waitFor({state:'detached'});
-    assert.deepEqual(f.cards,before);assert.deepEqual(f.contexts,sources);
-    assert.equal(f.writes.at(-1).body.confirmMeaning,'Learner edited meaning');
-    assert.equal(f.writes.at(-1).body.word.meaning,'去');
+    await f.actions.getByText('출처와 함께 담았어요. 기존 복습 일정은 유지됩니다.',{exact:true}).waitFor();
+    assert.equal(await f.actions.locator('.learning-context-confirm').count(),0,'the saved meaning raises no false meaning conflict');
+    const write=f.writes.at(-1);
+    assert.equal(write.body.word.meaning,'Learner edited meaning');
+    assert.ok(!Object.hasOwn(write.body.word,'meaningCandidate'),'the existing meaning is not presented as a generated candidate');
+    assert.ok(!Object.hasOwn(write.body,'confirmMeaning'));
+    assert.deepEqual(write.body.source.sourceSpan,{start:4,end:7,unit:'utf16'});
+    assert.deepEqual(f.cards,before,'meaning, schedule and history of the existing card are unchanged');
+    assert.equal(f.contexts.length,sources.length+1);
+    assert.equal(f.requests.filter(p=>p.includes('lexicalMeaning')).length,0);
     assert.deepEqual(f.errors,[]);
   } finally {await finish(f,'lexical-existing-preservation');}
 });
