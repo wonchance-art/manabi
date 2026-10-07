@@ -899,6 +899,7 @@
     생성 JSON 옆 README·LICENSES 원문, 계약 `dataCredits.test.js`(코드 원천 표지 ↔ 목록). npm test 481/5328 PASS.
     JMdict: 운영 `morpheme_dictionary` source=jmdict* 0건(오너 조회 2026-10-07) → 표기 불요, import 라우트로 적재 시 추가.
     FLELex는 CC BY-NC-SA — 유료화 전 교체/제거 검토(오너 결정 2026-10-07).
+  - #1353 `claude/happy-darwin-il3hd3` — 익명 default export 2건(lessonAdapters·lessonModel)에 이름 부여 → lint 0 errors·0 warnings.
   - ⚠ 운영 마이그레이션 이력 ≠ main `supabase/migrations`(스택 #1316~#1321 SQL 3건·10월 활성화 이력). 다음 마이그레이션 병합 시
     `supabase-migrations.yml` 실패 가능성 — 운영 READ ONLY 확인 전 스택 PR 닫기 보류.
   - 이 컨테이너에서 불가(오너/M09): 운영 DB 조회·적용, 운영 배포, 정상 실계정 검수(10-06 04:00 경계 이후 학습 검수 포함).

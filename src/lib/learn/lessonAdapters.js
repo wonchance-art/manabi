@@ -454,9 +454,11 @@ export class ChineseAdapter {
   }
 }
 
-export default {
+const lessonAdapters = {
   JapaneseAdapter,
   FrenchAdapter,
   EnglishAdapter,
   ChineseAdapter,
 };
+
+export default lessonAdapters;
