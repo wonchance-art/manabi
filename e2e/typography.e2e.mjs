@@ -99,7 +99,10 @@ for (const theme of ['light','sepia','dark']) {
       assert.deepEqual(picked[i].pron,before[i].pron);
       assert.equal(picked[i].opacity,'1');
     }
-    assert.equal(new Set(picked.map(t=>t.color)).size,5,'selection must preserve five distinct learning states');
+    // VIEWER-R0 bug 11 (owner 2026-10-07): "met" shares the new-word display, so selection keeps four
+    // distinct states (new = met, saved, due, known) instead of five.
+    assert.equal(picked[1].color,picked[0].color,'met keeps the new-word blend while selected');
+    assert.equal(new Set(picked.map(t=>t.color)).size,4,'selection must preserve four distinct learning states');
     await page.locator('.word-token').evaluateAll(tokens=>tokens.forEach(t=>t.classList.remove('word-token--picked')));
     assert.deepEqual(await read(),before,'clearing selection restores every state without shifting text');
     await page.locator('.reader-area').evaluate(e=>e.classList.remove('reader-area--hl'));
@@ -619,3 +622,192 @@ test('Aa 중국어 명조 — 실제 글자까지 본문과 같은 서체, 병�
   assert.equal(fonts.preview,fonts.body,'미리보기의 실제 한자가 전역 :lang(zh) 고딕 규칙으로 바뀌면 안 된다');
   assert.match(fonts.preview,/Georgia/);assert.match(fonts.pinyin,/Arial/);
 });
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * VIEWER-R0 — 띠 밖 표지(문형 밑줄·선택 테두리·병음·저장 밑줄) 기하와 「만난 말」 표시.
+ * 마크업은 ViewerPage renderToken과 같은 계약이다(.pattern-mark는 .surface 안 — 소스 쪽은
+ * patternIndex.test.js가 지킨다). 상자 기준이라 러너 글꼴과 무관하다. 실글꼴(Noto) 잉크
+ * 측정은 이 파일 범위 밖이다(러너에 Noto CJK가 없다).
+ * ────────────────────────────────────────────────────────────────────────── */
+// 셸 토큰(.manabi-app — --ink 등)이 있어야 선택선·문형선 색이 실제 값으로 풀린다.
+const SHELL_CSS = fs.readFileSync(new URL('../src/components/web/web-shell.css', import.meta.url), 'utf8');
+const R0_PAGE = (areas, { py = 12, family = 'sans-serif' } = {}) => `<style>${CSS}\n${SHELL_CSS}\n${READER_CSS}</style>
+<style>*,*::before,*::after{transition:none!important;animation:none!important}body{margin:0}.reader-area{min-height:0}</style>
+<div class="manabi-app"><div class="viewer-layout" data-reader-theme="sepia" data-pron-spacing="reserved" style="--book-main:#466c5d;--book-wash:#e3ebe5;--book-dark-text:#acccb8;--pinyin-size:${py}px;--pinyin-cell:${(py * 3.6).toFixed(1)}px;--reader-font:${family}">${areas}</div></div>`;
+const r0Area = ({ fs = 25.6, hl = false, theme = 'sepia', lang = 'zh-Hans', family = 'sans-serif' }, body) =>
+  `<div class="reader-area reader-area--${theme}${hl ? ' reader-area--hl' : ''}" lang="${lang}" style="font-size:${fs}px;font-family:${family};gap:15px .25rem;--char-gap:.25rem;padding:24px 16px">${body}<i class="r0-probe" style="position:absolute;width:0;height:0;background:var(--pattern-line)"></i></div>`;
+const r0Tok = (segs, { cls = '', selected = false, pattern = false, linePick = false, ja = false } = {}) =>
+  `<div class="word-token${cls ? ` ${cls}` : ''}${pattern ? ' word-token--pattern' : ''}"${selected ? ' data-selected="true"' : ''}>${linePick ? '<button class="line-pick"></button>' : ''}<span class="surface">${
+    segs.map(([c, r]) => (r ? `<ruby ${ja ? 'data-yomi' : 'data-pinyin'}="1">${c}<span class="rt-an">${r}</span></ruby>` : `<span>${c}</span>`)).join('')
+  }${pattern ? '<span class="pattern-mark" aria-hidden="true"></span>' : ''}</span></div>`;
+
+// 상태별 토큰 — 저장·복습·미저장 × 문형 유무, 줄 첫 토큰(막대), 새 단어·만난 말
+const R0_ZH = [
+  { name: '眼前 미저장+막대', segs: [['眼', 'yǎn'], ['前', 'qián']], linePick: true },
+  { name: '体育场 저장', segs: [['体', 'tǐ'], ['育', 'yù'], ['场', 'chǎng']], cls: 'word-token--saved' },
+  { name: '比 문형', segs: [['比', 'bǐ']], pattern: true },
+  { name: '照片 복습', segs: [['照', 'zhào'], ['片', 'piàn']], cls: 'word-token--saved word-token--due' },
+  { name: '尽量 문형+저장', segs: [['尽', 'jǐn'], ['量', 'liàng']], cls: 'word-token--saved', pattern: true },
+  { name: '熬夜 새 단어', segs: [['熬', 'áo'], ['夜', 'yè']], cls: 'word-token--new' },
+  { name: '爱惜 만난 말', segs: [['爱', 'ài'], ['惜', 'xī']], cls: 'word-token--met' },
+  { name: '。', segs: [['。', '']] },
+];
+const R0_JA = [
+  { name: 'ja 喫茶店 미저장', segs: [['喫茶店', 'きっさてん']] },
+  { name: 'ja 駅前 저장', segs: [['駅前', 'えきまえ']], cls: 'word-token--saved' },
+  { name: 'ja 会 복습', segs: [['会', 'あ'], ['いました', '']], cls: 'word-token--saved word-token--due' },
+];
+
+/** 토큰별 상자 기하 — 띠(.surface::before)·테두리(.word-token::before, 없으면 옛 inset 그림자)·
+ *  병음·밑줄·문형 밑줄. 띠 = 면 칠 범위(top~top+height): content-box면 height가 칠 높이이고,
+ *  옛 border-box는 밑줄이 그 안에 있다 — 두 경우 모두 이 식이 「띠」다. */
+const r0Geometry = (p = page) => p.evaluate(() => [...document.querySelectorAll('.word-token')].map((t) => {
+  const px = (v) => parseFloat(v) || 0;
+  const s = t.querySelector('.surface'), sr = s.getBoundingClientRect(), tr = t.getBoundingClientRect();
+  const b = getComputedStyle(s, '::before');
+  const bandTop = sr.top + px(b.top), bandBottom = bandTop + px(b.height), bb = px(b.borderBottomWidth);
+  const boxBottom = b.boxSizing === 'content-box' ? bandBottom + px(b.paddingBottom) + bb : bandBottom;
+  const f = getComputedStyle(t, '::before');
+  let frame = null;
+  if (f.content && f.content !== 'none' && f.content !== 'normal' && f.position === 'absolute') {
+    const top = tr.top + px(f.top);
+    frame = { outerTop: top, innerTop: top + px(f.borderTopWidth), innerBottom: top + px(f.height) - px(f.borderBottomWidth),
+      outerBottom: top + px(f.height), left: tr.left + px(f.left), right: tr.right - px(f.right) };
+  } else if (/inset/.test(b.boxShadow)) { // 옛 문법: 띠 안쪽 1.5px 그림자
+    const padBottom = boxBottom - bb;
+    frame = { outerTop: bandTop, innerTop: bandTop + 1.5, innerBottom: padBottom - 1.5, outerBottom: padBottom, left: sr.left, right: sr.right };
+  }
+  const rt = s.querySelector('.rt-an')?.getBoundingClientRect();
+  const mark = s.querySelector('.pattern-mark')?.getBoundingClientRect();
+  return {
+    name: t.dataset.name, fs: px(getComputedStyle(s).fontSize), ja: !!s.querySelector('ruby[data-yomi]'),
+    token: { l: tr.left, r: tr.right }, surface: { l: sr.left, r: sr.right, top: sr.top },
+    band: { top: bandTop, bottom: bandBottom, h: px(b.height), clip: b.backgroundClip },
+    underline: bb > 0 ? { top: boxBottom - bb, bottom: boxBottom } : null,
+    frame, rt: rt ? { top: rt.top, bottom: rt.bottom, l: rt.left, r: rt.right } : null,
+    mark: mark && mark.height > 0 ? { top: mark.top, bottom: mark.bottom } : null,
+  };
+}));
+
+const r0Line = (list, opts) => list.map((x) => r0Tok(x.segs, { ...x, ...opts }).replace('<div class="word-token', `<div data-name="${x.name}" class="word-token`)).join('');
+
+for (const fs of [12.8, 25.6, 48]) {
+  test(`R0 버그 6 — 본문 ${fs}px: 병음·선택 테두리·저장 밑줄이 띠 밖 자기 자리에 있다(병음 12·16px × 고딕·명조 × 상태색 켬·끔)`, async () => {
+    // 기준별로 위반을 모은다 — 한 건에서 멈추면 어느 기준이 깨졌는지 전체 그림이 안 보인다.
+    const bad = {};
+    const check = (ok, key, msg) => { if (!ok) (bad[key] ||= []).push(msg); };
+    for (const py of [12, 16]) for (const family of ['sans-serif', 'serif']) for (const hl of [false, true]) {
+      const label = `${fs}px·병음 ${py}px·${family}·상태색 ${hl ? '켬' : '끔'}`;
+      await page.setContent(R0_PAGE(
+        r0Area({ fs, hl, family }, r0Line(R0_ZH, { selected: true }))
+        + r0Area({ fs, hl, family, lang: 'ja' }, r0Line(R0_JA, { selected: true, ja: true })),
+        { py, family }));
+      const all = await r0Geometry();
+      for (const g of all) {
+        const at = `${label} ${g.name}`;
+        assert.ok(g.frame, `${at}: 선택 테두리가 없다`);
+        // 6b — 테두리는 띠(면 칠)에서 떨어진다: 위 1px+, 아래 2px+
+        check(g.frame.innerTop <= g.band.top - 1 + 0.01, '6b 테두리 위', `${at}: 안쪽 윗변 ${g.frame.innerTop.toFixed(2)} > 띠 윗변 ${g.band.top.toFixed(2)} − 1`);
+        check(g.frame.innerBottom >= g.band.bottom + 2 - 0.01, '6b 테두리 아래', `${at}: 안쪽 아랫변 ${g.frame.innerBottom.toFixed(2)} < 띠 아랫변 ${g.band.bottom.toFixed(2)} + 2`);
+        // 좌우는 토큰 폭 그대로 — 이웃을 침범하지 않고, 글자 상자는 다 감싼다
+        check(g.frame.left >= g.token.l - 0.01 && g.frame.right <= g.token.r + 0.01, '좌우 침범', `${at}: 테두리가 토큰 밖으로 나갔다`);
+        check(g.frame.left <= g.surface.l + 0.5 && g.frame.right >= g.surface.r - 0.5, '좌우 감쌈', `${at}: 테두리가 글자 상자보다 좁다`);
+        // 면 칠 높이는 불변(1.04em) — 밑줄이 띠 밖으로 나가도 칠은 늘지 않는다
+        check(Math.abs(g.band.h - 1.04 * g.fs) < 0.05, '칠 높이', `${at}: 띠 높이 ${g.band.h} ≠ 1.04em`);
+        if (g.underline) {
+          check(g.underline.top >= g.band.bottom + 1 - 0.01, '6b 밑줄', `${at}: 밑줄 윗변 ${g.underline.top.toFixed(2)} < 띠 아랫변 ${g.band.bottom.toFixed(2)} + 1`);
+          check(g.underline.bottom <= g.frame.innerBottom + 0.01, '밑줄 테두리 안', `${at}: 밑줄이 테두리 밖으로 나갔다`);
+          check(g.band.clip === 'content-box', '칠 번짐', `${at}: 밑줄 여백까지 면 칠이 번진다(clip ${g.band.clip})`);
+        }
+        if (g.mark) {
+          check(g.mark.top >= g.band.bottom + 1 - 0.01 && g.mark.bottom <= g.frame.innerBottom + 0.01, '문형선 자리', `${at}: 문형 밑줄이 띠 밖·테두리 안 자리가 아니다`);
+          if (g.underline) check(g.mark.bottom <= g.underline.top - 0.5, '문형선·밑줄 겹침', `${at}: 문형 밑줄과 저장 밑줄이 겹친다`);
+        }
+        // 6a — 병음(중국어)은 테두리 바깥 윗변보다 1px 이상 위
+        if (g.rt && !g.ja) check(g.rt.bottom <= g.frame.outerTop - 1 + 0.01, '6a 병음', `${at}: 병음 아래 끝 ${g.rt.bottom.toFixed(2)} > 테두리 바깥 윗변 ${g.frame.outerTop.toFixed(2)} − 1`);
+      }
+      // 고르기 전·후로 글자·병음이 1px도 안 움직인다(테두리는 자리만 갖고 흐름에 없다)
+      await page.locator('.word-token').evaluateAll((ts) => ts.forEach((t) => t.removeAttribute('data-selected')));
+      const plain = await r0Geometry();
+      plain.forEach((g, i) => {
+        assert.deepEqual([g.surface, g.rt], [all[i].surface, all[i].rt], `${label} ${g.name}: 선택이 글자·병음 좌표를 바꿨다`);
+        assert.equal(g.frame, null, `${label} ${g.name}: 고르지 않았는데 테두리가 있다`);
+      });
+    }
+    const summary = Object.entries(bad).map(([k, v]) => `${k} ${v.length}건 — 예: ${v[0]}`);
+    assert.deepEqual(summary, [], `기하 위반:\n${summary.join('\n')}`);
+  });
+}
+
+test('R0 버그 6 — 요미가나 기준점은 그대로다(6a는 병음만), 테두리·밑줄(6b)은 위 행렬이 일본어에도 잰다', async () => {
+  await page.setContent(R0_PAGE(r0Area({ fs: 25.6, lang: 'ja' }, r0Line(R0_JA, { ja: true }))));
+  const fromTop = await page.evaluate(() => [...document.querySelectorAll('.rt-an')].map((rt) => rt.getBoundingClientRect().bottom - rt.closest('.surface').getBoundingClientRect().top));
+  for (const v of fromTop) assert.ok(Math.abs(v - 0.65 * 25.6) < 0.6, `요미 아래 끝이 옛 기준점(0.65em)에서 움직였다: ${v}`);
+});
+
+test('R0 버그 6 — 터치 화면 줄 첫 토큰: 테두리가 문장 막대를 감싸지 않는다', async () => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 700 }, hasTouch: true, isMobile: true });
+  try {
+    const p = await context.newPage();
+    await p.setContent(R0_PAGE(r0Area({ fs: 25.6 }, r0Line(R0_ZH.slice(0, 2), { selected: true }))));
+    const out = await p.evaluate(() => {
+      const t = document.querySelector('.word-token'), f = getComputedStyle(t, '::before');
+      return { hoverNone: matchMedia('(hover: none)').matches, frameLeft: t.getBoundingClientRect().left + parseFloat(f.left), surfaceLeft: t.querySelector('.surface').getBoundingClientRect().left };
+    });
+    assert.ok(out.hoverNone, '터치 컨텍스트가 (hover: none)이 아니다 — 전제가 무너졌다');
+    assert.ok(Math.abs(out.frameLeft - out.surfaceLeft) < 0.5, `테두리 왼변 ${out.frameLeft} ≠ 글자 상자 왼변 ${out.surfaceLeft}`);
+  } finally { await context.close(); }
+});
+
+test('R0 버그 1 — 문형 밑줄은 문장 지정·드래그·단어 선택 중에도 남는다(높이 ≥1px·폭 ≥80%)', async () => {
+  // 드래그 범위와 문장 지정은 같은 클래스(word-token--picked)를 쓴다(ViewerPage pickedClass) —
+  // 이음매(:has(+ picked))가 생기는 「뒤에 지정 토큰이 이어지는」 자리에 문형 토큰을 둔다.
+  const line = [R0_ZH[0], R0_ZH[2], R0_ZH[3], R0_ZH[4], R0_ZH[1], R0_ZH[7]];
+  const states = {
+    '고르기 전': () => {},
+    '문장 지정·드래그': (ts) => ts.forEach((t) => t.classList.add('word-token--picked')),
+    '단어 선택(집중 흐름)': (ts) => ts.forEach((t) => { t.classList.add('word-token--picked'); if (t.classList.contains('word-token--pattern')) t.dataset.selected = 'true'; }),
+  };
+  for (const hl of [false, true]) for (const [state, apply] of Object.entries(states)) {
+    await page.setContent(R0_PAGE(r0Area({ fs: 25.6, hl }, r0Line(line))));
+    await page.locator('.word-token').evaluateAll(apply);
+    const marks = await page.evaluate(() => {
+      const want = getComputedStyle(document.querySelector('.r0-probe')).backgroundColor;
+      if (!want || want === 'rgba(0, 0, 0, 0)') throw new Error(`--pattern-line이 풀리지 않았다: ${want}`);
+      return [...document.querySelectorAll('.word-token--pattern')].map((t) => {
+        const s = t.querySelector('.surface'), cands = [];
+        const m = s.querySelector('.pattern-mark');
+        if (m) { const r = m.getBoundingClientRect(); cands.push({ w: r.width, h: r.height, bg: getComputedStyle(m).backgroundColor }); }
+        const a = getComputedStyle(s, '::after');
+        if (a.content !== 'none') cands.push({ w: parseFloat(a.width), h: parseFloat(a.height), bg: a.backgroundColor });
+        return { name: t.dataset.name, width: s.getBoundingClientRect().width, line: cands.find((c) => c.bg === want && c.h > 0) || null, cands };
+      });
+    });
+    assert.equal(marks.length, 2, '문형 토큰 둘(比·尽量)이 있어야 한다');
+    for (const m of marks) {
+      const at = `${state}·상태색 ${hl ? '켬' : '끔'} ${m.name}`;
+      assert.ok(m.line, `${at}: 문형 밑줄이 없다 — 후보 ${JSON.stringify(m.cands)}`);
+      assert.ok(m.line.h >= 1, `${at}: 밑줄 높이 ${m.line.h}px < 1px`);
+      assert.ok(m.line.w >= m.width * 0.8, `${at}: 밑줄 폭 ${m.line.w}px < 토큰 폭 ${m.width}px의 80%`);
+    }
+  }
+});
+
+for (const theme of ['light', 'sepia', 'dark']) {
+  test(`R0 버그 11 — 「만난 말」은 새 단어와 같은 표시다(${theme}: 칠·지정 혼색·선택 테두리)`, async () => {
+    await page.setContent(R0_PAGE(r0Area({ fs: 25.6, hl: true, theme }, r0Line([R0_ZH[5], R0_ZH[6]]))));
+    const read = () => page.evaluate(() => [...document.querySelectorAll('.word-token')].map((t) => {
+      const b = getComputedStyle(t.querySelector('.surface'), '::before'), f = getComputedStyle(t, '::before');
+      return { band: b.backgroundColor, frame: f.content !== 'none' ? f.borderTopColor : b.boxShadow };
+    }));
+    const plain = await read();
+    assert.deepEqual(plain[1], plain[0], `만난 말 칠 ${plain[1].band} ≠ 새 단어 칠 ${plain[0].band}`);
+    await page.locator('.word-token').evaluateAll((ts) => ts.forEach((t) => t.classList.add('word-token--picked')));
+    const picked = await read();
+    assert.equal(picked[1].band, picked[0].band, '지정 중 혼색도 같아야 한다');
+    assert.notEqual(picked[0].band, plain[0].band, '지정하면 색은 바뀐다(T1 혼색 유지)');
+    await page.locator('.word-token').evaluateAll((ts) => ts.forEach((t) => { t.classList.remove('word-token--picked'); t.dataset.selected = 'true'; }));
+    const selected = await read();
+    assert.equal(selected[1].frame, selected[0].frame, '선택 테두리 색도 같아야 한다');
+  });
+}

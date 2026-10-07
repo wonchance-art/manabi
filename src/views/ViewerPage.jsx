@@ -3013,6 +3013,8 @@ export default function ViewerPage() {
             const pronHidden = hasReading && pronHiddenFor(pronDisplay, { isKnown: tokKnown, isSaved });
             const pronRevealed = revealedPron.has(tokenId);
             const furiOff = pronHidden && !pronRevealed;
+            // 문형 밑줄은 전용 요소 — .surface::after는 지정 이음매 자리라 고르면 사라졌다(R0 버그 1).
+            const patternMark = visibleScan?.byToken.has(tokenId) ? <span className="pattern-mark" aria-hidden="true" /> : null;
             return (
               <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
                 data-tid={tokenId}
@@ -3040,10 +3042,10 @@ export default function ViewerPage() {
                             {seg.kanji}<span className={['rt-an', showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : ''].filter(Boolean).join(' ')}>{seg.reading}</span>
                           </ruby>
                         : <span key={i}>{seg.plain}</span>
-                    )}
+                    )}{patternMark}
                   </span>
                 ) : (
-                  <span className="surface">{token.text}</span>
+                  <span className="surface">{token.text}{patternMark}</span>
                 )}
               </div>
             );
