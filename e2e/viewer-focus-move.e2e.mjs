@@ -350,7 +350,7 @@ const unfocused={focusMode:false,autoSpeakOnClick:false};
 const book0='눈앞의 경기장은 사진보다 더 웅장하다.';
 
 test('AE-R2 §5.1: 더 쉽게·자세히 results do not linger under another sentence',{timeout:180000},async()=>{
- const f=await open(390,844,unfocused);
+ const f=await open(1280,900,unfocused);
  try{
   await aiByLine(f);
   const left=sentencePanel(f);
@@ -374,7 +374,7 @@ test('AE-R2 §5.1: 더 쉽게·자세히 results do not linger under another sen
 });
 
 for(const [language,material,meta,first] of [['Chinese',zh,undefined,book0],['Japanese',ja,{},'문장 번역 표지 0']])test(`AE-R2 §1.2 ${language}: tapping a word on another line does not show the previous sentence translation`,{timeout:180000},async()=>{
- const f=await open(390,844,unfocused,{language,material,...(meta?{meta}:{})});
+ const f=await open(1280,900,unfocused,{language,material,...(meta?{meta}:{})});
  try{
   await aiByLine(f,material);
   const left=sentencePanel(f);
@@ -397,7 +397,7 @@ for(const [language,material,meta,first] of [['Chinese',zh,undefined,book0],['Ja
 });
 
 test('AE-R2 §5.2: a grammar note saves the sentence its explanation was made from',{timeout:180000},async()=>{
- const f=await open(390,844,unfocused);
+ const f=await open(1280,900,unfocused);
  try{
   await aiByLine(f);
   const notes=[];
