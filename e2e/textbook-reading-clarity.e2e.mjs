@@ -86,3 +86,34 @@ test('one reference menu exposes distinct destinations; linked materials open fo
   await check(f,'references-390');
  }finally{await f.context.close();}
 });
+
+test('answer reasons stay readable (AA contrast, 14px+) and recall/example controls keep 44px targets in both editions',async()=>{
+ const f=await fixture({guest:true,width:390});try{
+  // 글자색과, 실제로 칠해진 가장 가까운 조상 배경의 WCAG 대비.
+  const reason=async(scope)=>f.page.locator(`${scope} details.answers .answer>:is(small,.small)`).first().evaluate(el=>{
+   const rgb=c=>c.match(/[\d.]+/g).map(Number),lum=([r,g,b])=>{const t=[r,g,b].map(v=>{v/=255;return v<=.03928?v/12.92:((v+.055)/1.055)**2.4});return .2126*t[0]+.7152*t[1]+.0722*t[2];};
+   let bg=el;while(bg&&(getComputedStyle(bg).backgroundColor==='rgba(0, 0, 0, 0)'||getComputedStyle(bg).backgroundColor==='transparent'))bg=bg.parentElement;
+   const a=lum(rgb(getComputedStyle(el).color)),b=lum(rgb(bg?getComputedStyle(bg).backgroundColor:'rgb(255,255,255)'));
+   return {contrast:(Math.max(a,b)+.05)/(Math.min(a,b)+.05),size:parseFloat(getComputedStyle(el).fontSize)};
+  });
+  const expand=async(scope,kind='details.answers')=>{const box=f.page.locator(`${scope} ${kind}`).first();await box.locator('summary').click();await box.locator('.answer').first().waitFor();return box;};
+  for(const version of [old,edition]){
+   await open(f,'u01-practice',version);await expand('#u01-practice');
+   const r=await reason('#u01-practice');assert.ok(r.contrast>=4.5&&r.size>=14,JSON.stringify(r));
+   await open(f,'u03-family-check',version);const box=await expand('#u03-family-check');
+   const h3=await box.evaluate(b=>{const a=b.querySelector('.answer>h3:first-child'),ps=[...a.parentElement.querySelectorAll(':scope>p')].map(p=>parseFloat(getComputedStyle(p).fontSize));return {top:parseFloat(getComputedStyle(a).marginTop),answer:ps[0],reason:ps[1]};});
+   assert.ok(h3.top===0&&h3.reason<h3.answer,JSON.stringify(h3));
+   await open(f,'grammarIndex-1',version);const recall=f.page.locator('#grammarIndex-1 .grammar-recall>details').first();
+   assert.ok((await recall.locator('summary').boundingBox()).height>=44);
+   await recall.locator('summary').focus();await f.page.keyboard.press('Enter');assert.notEqual(await recall.getAttribute('open'),null);
+   await open(f,'u03-study1',version);const signin=f.page.locator('#u03-study1 .manabi-example-signin').first();await signin.waitFor();
+   assert.ok((await signin.boundingBox()).height>=44);
+   await check(f,`answer-reading-${version.slice(0,2)}-390`);
+  }
+  // 고른 뒤 이유 확인(신판): 정답 줄 > 이유 문단 ≥ 오답 목록 — 원고 18px 그대로면 이유가 정답과 같은 크기로 읽힌다.
+  await open(f,'guide-katakana-long');const review=await expand('#guide-katakana-long','details.review-answers');
+  const order=await review.evaluate(b=>{const a=[...b.querySelectorAll('.answer')].find(x=>x.querySelector(':scope>ul')),fs=el=>parseFloat(getComputedStyle(el).fontSize);
+   return {answer:fs(a.querySelector(':scope>p:has(>strong)')),reason:fs(a.querySelector(':scope>p:not(:has(>strong))')),wrong:fs(a.querySelector(':scope>ul'))};});
+  assert.ok(order.answer>order.reason&&order.reason>=order.wrong,JSON.stringify(order));
+ }finally{await f.context.close();}
+});
