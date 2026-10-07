@@ -29,7 +29,8 @@ export default function ViewerBottomSheet({leftContent,rightContent,leftActive,r
   },[open,tab,rightSignal,preserveFocus]);
   const close=()=>{setOpen(false);onClose?.();};
   const localizedAria=label=>uiLocale==='ko'?{}:{'aria-label':t(uiLocale,label)};
-  if(!leftActive&&!rightActive&&!barNav)return null;
+  // 보일 내용이 없으면 패널도 없다 — 문장 지정만 있을 때는 ViewerPage의 문장 이동 막대가 대신한다(VIEWER-R0 버그 4).
+  if(!leftActive&&!rightActive)return null;
   const tabs=<div className="viewer-inspector__tabs" role="tablist" aria-label="읽기 보조 패널" {...localizedAria('읽기 보조 패널')} onKeyDown={e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=e.key==='Home'?'right':e.key==='End'?'left':tab==='right'?'left':'right';setTab(next);setOpen(true);e.currentTarget.querySelector(next==='right'?'#inspector-word-tab':'#inspector-sentence-tab')?.focus();}}>
     <button role="tab" id="inspector-word-tab" aria-controls="inspector-word" aria-selected={tab==='right'} tabIndex={tab==='right'?0:-1} onClick={()=>{setTab('right');setOpen(true);}} aria-label="단어" {...localizedAria('단어')}><span>{t(uiLocale,'단어')}</span></button>
     <button role="tab" id="inspector-sentence-tab" aria-controls="inspector-sentence" aria-selected={tab==='left'} tabIndex={tab==='left'?0:-1} onClick={()=>{setTab('left');setOpen(true);}} aria-label="문장 번역" {...localizedAria('문장 번역')}><span>{t(uiLocale,'문장')}</span></button>

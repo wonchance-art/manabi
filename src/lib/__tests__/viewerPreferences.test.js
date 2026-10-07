@@ -1,6 +1,7 @@
 import {describe,it,expect} from 'vitest';
 import {VIEWER_PREF_KEY,readViewerPreferences,writeViewerPreferences,validateViewerPreferences,viewerDefaults,fontChoices} from '../viewerPreferences';
 import {pinyinCellWidth,PINYIN_MEASURE_SYLLABLES} from '../pinyinLayout';
+import {READING_PRESETS,presetActive} from '../readingSheet';
 const storage=(entries={})=>{const data=new Map(Object.entries(entries));return {getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)};};
 describe('viewer preferences migration and isolation',()=>{
  it('uses paper only when unset; keeps explicitly saved dark and legacy valid size',()=>{
@@ -24,6 +25,33 @@ describe('viewer preferences migration and isolation',()=>{
   expect(validateViewerPreferences({fontSize:-3,pinyinSize:9,lineGap:Infinity,charGap:'1',paceCpm:0,paceStep:1.5,theme:'red',pronReveal:'false'},'Chinese')).toEqual(viewerDefaults('Chinese'));
   expect(readViewerPreferences(storage({[VIEWER_PREF_KEY]:'{broken'}),'Chinese')).toEqual(viewerDefaults('Chinese'));
   expect(()=>writeViewerPreferences({getItem:()=>null,setItem:()=>{throw Error('quota');}},'Chinese',viewerDefaults('Chinese'))).toThrow('quota');
+ });
+ // Y 설계 ③(#1077 5548350811) — 제거한 「탭하면 발음 보기」(pronReveal)의 저장값은 읽지 않고,
+ // 같은 묶음의 다른 설정·다른 언어·공통 값은 그대로 둔다. 다음 쓰기에서 그 키만 빠진다.
+ it('ignores a stored pronReveal while preserving every other saved preference',()=>{
+  const saved={fontSize:2.2,pinyinSize:1,lineGap:30,charGap:.5,fontFamily:'serif',pronDisplay:'unknown',pronReveal:true,autoSpeakOnClick:true,
+   showHanjaKo:true,showToneColors:true,focusMode:true,wordStateHl:true,showPatterns:true,patternFilter:'due',autoPace:true,paceCpm:300,paceStep:2};
+  const store=storage({[VIEWER_PREF_KEY]:JSON.stringify({version:2,common:{theme:'dark',ttsRate:'fast'},languages:{Chinese:saved,Japanese:{pronDisplay:'none',pronReveal:true,fontSize:1.2}}})});
+  const read=readViewerPreferences(store,'Chinese');
+  expect(read).not.toHaveProperty('pronReveal');
+  const {pronReveal:_dropped,...rest}=saved;
+  expect(read).toEqual({...rest,theme:'dark',ttsRate:'fast'});
+  expect(Object.keys(viewerDefaults('Chinese'))).not.toContain('pronReveal');
+  writeViewerPreferences(store,'Chinese',{...read,showHanjaKo:false});
+  const after=JSON.parse(store.getItem(VIEWER_PREF_KEY));
+  expect(after.languages.Chinese).not.toHaveProperty('pronReveal');
+  expect(after.languages.Chinese).toMatchObject({...rest,showHanjaKo:false});
+  expect(after.languages.Japanese).toEqual({pronDisplay:'none',pronReveal:true,fontSize:1.2}); // 다른 언어 원본은 건드리지 않는다
+  expect(readViewerPreferences(store,'Japanese')).toMatchObject({pronDisplay:'none',fontSize:1.2});
+  expect(readViewerPreferences(store,'Japanese')).not.toHaveProperty('pronReveal');
+ });
+ it('an old recall-preset combination stays as plain user settings (no preset is lit)',()=>{
+  const old={pronDisplay:'unknown',pronReveal:true,wordStateHl:true,focusMode:false,showToneColors:false};
+  const read=readViewerPreferences(storage({[VIEWER_PREF_KEY]:JSON.stringify({version:2,languages:{Chinese:old}})}),'Chinese');
+  expect(read).toMatchObject({pronDisplay:'unknown',wordStateHl:true,focusMode:false,showToneColors:false});
+  expect(Object.keys(READING_PRESETS).filter(name=>presetActive(name,read))).toEqual([]);
+  expect(presetActive('immerse',{...read,...READING_PRESETS.immerse})).toBe(true);
+  expect(presetActive('study',{...read,...READING_PRESETS.study})).toBe(true);
  });
  it('does not advertise unloaded KR fonts as Chinese choices',()=>{
   expect(fontChoices('Chinese')).toEqual([['sans','고딕'],['serif','명조']]);expect(fontChoices('Japanese')).toHaveLength(1);

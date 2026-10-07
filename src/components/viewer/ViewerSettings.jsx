@@ -3,7 +3,7 @@ import {useRef,useState} from 'react';
 import ViewerModal from './ViewerModal';
 import {fontChoices} from '../../lib/viewerPreferences';
 import ViewerPreview from './ViewerPreview';
-import {READING_PRESETS,PRESET_META,presetActive,pronRevealAvailable,TTS_RATES} from '../../lib/readingSheet';
+import {READING_PRESETS,PRESET_META,presetActive,TTS_RATES} from '../../lib/readingSheet';
 import {supportsPatterns} from '../../lib/patternIndex';
 import {stepCpm} from '../../lib/readingPacer';
 import {t,translateViewerText,VIEWER_LOCALE_OPTIONS} from '../../lib/viewerMessages';
@@ -34,11 +34,20 @@ function Slider({label,value,min,max,step=1,onChange,display,uiLocale='ko'}) {
   const set=v=>onChange(Math.max(min,Math.min(max,Math.round(v*10000)/10000)));
   return <div className="reader-setting-range"><label>{label}<output>{display??value}</output><span><button type="button" aria-label={t(uiLocale,'{label} 줄이기',{label})} disabled={value<=min} onClick={()=>set(value-step)}>−</button><input aria-label={label} type="range" value={value} min={min} max={max} step={step} onChange={e=>set(Number(e.target.value))}/><button type="button" aria-label={t(uiLocale,'{label} 늘리기',{label})} disabled={value>=max} onClick={()=>set(value+step)}>+</button></span></label></div>;
 }
+// 「성조·문법·한자 표시」 묶음 안에 실제로 그리는 설정만 — 아래 렌더 조건과 같은 판정이다.
+// 묶음 밖(읽기 진행 탭의 문장 집중)이나 숨은 하위 항목(문법 표시가 꺼진 동안의 범위)을 세면
+// 묶음을 열어도 바뀐 항목을 찾을 수 없다(VIEWER-R0-BUGS-001 버그 10).
+export function displayDetailKeys(language,s) {
+  return [
+    ...(language==='Chinese'?['showToneColors','showHanjaKo']:[]),
+    ...(supportsPatterns(language)?['showPatterns',...(s?.showPatterns?['patternFilter']:[])]:[]),
+  ];
+}
 // A text slot keeps the Korean JSX default while other locales use one whole message.
 function LocaleText({uiLocale='ko',message,values,children}) {
   return uiLocale==='ko'?children:t(uiLocale,message,values);
 }
-export default function ViewerSettings({settings:s,language,languageSettings,onClose,keepPosition,previewTokens=[],paceTargetCpm,paceEstimate,myCpm,patternNote,ttsSupported,fontStatus,onPreset}) {
+export default function ViewerSettings({settings:s,language,languageSettings,onClose,keepPosition,previewTokens=[],paceTargetCpm,paceEstimate,myCpm,patternNote,ttsSupported,fontStatus}) {
   const snapshot=useRef(s.snapshot());
   const localeSnapshot=useRef(languageSettings?{uiLocale:languageSettings.uiLocale,explanationLocale:languageSettings.explanationLocale}:null);
   const [tab,setTab]=useState('type'),[preview,setPreview]=useState(true);
@@ -80,10 +89,9 @@ export default function ViewerSettings({settings:s,language,languageSettings,onC
       {tab==='display'&&<>
         {phonetic&&<><Choices label="발음 표기" uiLocale={uiLocale} value={s.pronDisplay} items={choices([['all','전체'],['unknown','새 단어만'],['none','숨김']])} onChange={v=>set('pronDisplay',v)}/><Help uiLocale={uiLocale}><p className="reader-setting-note">{tr('새 단어만: 저장한 단어와 이미 앎 기록의 발음을 가려요.')}</p></Help></>}
         <Toggle label="단어 상태" uiLocale={uiLocale} note="새 단어 · 저장한 단어 · 복습할 단어를 구분해요" checked={s.wordStateHl} onChange={v=>set('wordStateHl',v)}/>
-        <More uiLocale={uiLocale} label="성조·문법·한자 표시" count={changed(['pronReveal','showToneColors','showHanjaKo','showPatterns','patternFilter','focusMode'])}>
-        <Choices label="읽기 모드" uiLocale={uiLocale} value={PRESET_META.find(m=>presetActive(m.key,s))?.key||'custom'} items={choices(PRESET_META.map(m=>[m.key,m.name]))} onChange={name=>keepPosition(()=>{onPreset?.();s.restore({...READING_PRESETS[name],showToneColors:language==='Chinese'&&READING_PRESETS[name].showToneColors});})}/>
+        <More uiLocale={uiLocale} label="성조·문법·한자 표시" count={changed(displayDetailKeys(language,s))}>
+        <Choices label="읽기 모드" uiLocale={uiLocale} value={PRESET_META.find(m=>presetActive(m.key,s))?.key||'custom'} items={choices(PRESET_META.map(m=>[m.key,m.name]))} onChange={name=>keepPosition(()=>{s.restore({...READING_PRESETS[name],showToneColors:language==='Chinese'&&READING_PRESETS[name].showToneColors});})}/>
         <Help uiLocale={uiLocale}><p className="reader-setting-note">{tr('{preset} · 문장 집중도 함께 바뀝니다. 소리와 자동 진행은 시작하지 않아요.',{preset:tr(PRESET_META.find(m=>presetActive(m.key,s))?'프리셋':'사용자 설정')})}</p></Help>
-        {phonetic&&<Toggle label="탭하면 발음 보기" uiLocale={uiLocale} note="첫 탭은 발음, 다음 탭은 뜻 카드" checked={s.pronReveal} disabled={!pronRevealAvailable(s.pronDisplay)} onChange={v=>set('pronReveal',v)}/>}
           {language==='Chinese'&&<><Toggle label="성조 색상" uiLocale={uiLocale} note="병음의 성조 부호는 유지하고 색을 더해요" checked={s.showToneColors} onChange={v=>set('showToneColors',v)}/><Toggle label="한자 대조" uiLocale={uiLocale} note="단어 카드에 한국 한자 훈음을 더해요" checked={s.showHanjaKo} onChange={v=>set('showHanjaKo',v)}/></>}
           {supportsPatterns(language)&&<><Toggle label="문법 표시" uiLocale={uiLocale} note="밑줄은 관련 문형 후보예요. 탭해서 확인하세요." checked={s.showPatterns} onChange={v=>set('showPatterns',v)}/>{s.showPatterns&&<Choices label="문법 표시 범위" uiLocale={uiLocale} value={s.patternFilter} items={choices([['all','전체'],['due','복습할 것'],['weak','약한 것']])} onChange={v=>set('patternFilter',v)}/>}<p className="reader-setting-note">{translateViewerText(uiLocale,patternNote)}</p></>}
         </More>

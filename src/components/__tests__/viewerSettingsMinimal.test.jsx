@@ -1,7 +1,10 @@
 import {createElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {describe,expect,it} from 'vitest';
-import ViewerSettings from '../viewer/ViewerSettings';
+import {readFileSync} from 'node:fs';
+import ViewerSettings,{displayDetailKeys} from '../viewer/ViewerSettings';
+import {supportsPatterns} from '../../lib/patternIndex';
+import {sliceBetween} from '../../lib/__tests__/helpers/sliceBetween.js';
 import {viewerDefaults} from '../../lib/viewerPreferences';
 import {t,VIEWER_MESSAGE_LOCALES} from '../../lib/viewerMessages';
 
@@ -57,5 +60,32 @@ describe('minimal reader settings keep essential controls and recoverable prefer
     expect(html).toContain('aria-label="글자·배경"');
     expect(html).toContain('aria-label="현재 문장 미리보기 접기"');
     expect(html).toContain('aria-hidden="true"');
+  });
+});
+
+// VIEWER-R0-BUGS-001 버그 10 — 「성조·문법·한자 표시」 개수는 그 묶음 안에 그려지는 항목만 센다.
+// 읽기 진행 탭의 문장 집중(focusMode), 묶음 위의 발음 표기·단어 상태, 제거된 탭 공개는 묶음 밖이다.
+describe('display detail change count',()=>{
+  const source=readFileSync(new URL('../viewer/ViewerSettings.jsx',import.meta.url),'utf8');
+  const group=sliceBetween(source,'label="성조·문법·한자 표시"',"{tab==='pace'");
+  it('counts exactly the keys rendered inside the group, per language and visibility',()=>{
+    expect(displayDetailKeys('Chinese',viewerDefaults('Chinese'))).toEqual(['showToneColors','showHanjaKo','showPatterns']);
+    expect(displayDetailKeys('Chinese',{...viewerDefaults('Chinese'),showPatterns:true})).toEqual(['showToneColors','showHanjaKo','showPatterns','patternFilter']);
+    expect(displayDetailKeys('Japanese',viewerDefaults('Japanese'))).toEqual(supportsPatterns('Japanese')?['showPatterns']:[]);
+    for(const language of ['Chinese','Japanese','Korean','English']){
+      const keys=displayDetailKeys(language,{...viewerDefaults(language),showPatterns:true});
+      for(const outside of ['focusMode','pronDisplay','wordStateHl','autoPace'])expect(keys).not.toContain(outside);
+      // 세는 키는 모두 묶음 안에서 set('<key>',…)로 그려진다 — 렌더와 개수가 갈리지 않는다.
+      for(const key of keys)expect(group).toContain(`set('${key}',v)`);
+    }
+    expect(group).toContain('count={changed(displayDetailKeys(language,s))}');
+    expect(sliceBetween(group,'label="성조·문법·한자 표시"','</More>')).not.toContain("set('focusMode'");
+  });
+  it('a changed setting outside the group never raises its badge',()=>{
+    const d=viewerDefaults('Chinese');
+    const s={...d,focusMode:true,pronDisplay:'none',wordStateHl:true};
+    expect(displayDetailKeys('Chinese',s).filter(k=>s[k]!==d[k])).toEqual([]);
+    const t2={...s,showToneColors:true,patternFilter:'due'};
+    expect(displayDetailKeys('Chinese',t2).filter(k=>t2[k]!==d[k])).toEqual(['showToneColors']); // 문법 표시가 꺼져 범위는 안 보인다
   });
 });

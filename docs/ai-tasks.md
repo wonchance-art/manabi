@@ -894,9 +894,19 @@
     계약 `eslintConfigScope.test.js`. lint 0 errors·npm test 480/5303 PASS.
   - #1348 `claude/happy-darwin-il3hd3` — #1347 후속: .jsx 훅 의존성 경고 23건 판정. 코드 수정 7(동작 불변)·
     의도된 의존성 16(줄 단위 disable+사유, 월드 7건은 주석만). lint 25→2 warnings·npm test 480/5303·test:world 130/1102 PASS.
+  - #1350 `claude/epic-cray-ylahmx` — 제3자 데이터 출처 감사(2026-10-07 19시 KST). 화면 표기 0이던 CC-CEDICT·FLELex·OSM 등
+    15개 원천을 정본 `lib/dataCredits.js` → `/credits`로 싣고 설정·도움말 작은 링크, /world 베젤 OSM 한 줄(오너: 눈에 덜 띄게).
+    생성 JSON 옆 README·LICENSES 원문, 계약 `dataCredits.test.js`(코드 원천 표지 ↔ 목록). npm test 481/5328 PASS.
+    JMdict: 운영 `morpheme_dictionary` source=jmdict* 0건(오너 조회 2026-10-07) → 표기 불요, import 라우트로 적재 시 추가.
+    FLELex는 CC BY-NC-SA — 유료화 전 교체/제거 검토(오너 결정 2026-10-07).
+  - #1353 `claude/happy-darwin-il3hd3` — 익명 default export 2건(lessonAdapters·lessonModel)에 이름 부여 → lint 0 errors·0 warnings.
   - ⚠ 운영 마이그레이션 이력 ≠ main `supabase/migrations`(스택 #1316~#1321 SQL 3건·10월 활성화 이력). 다음 마이그레이션 병합 시
     `supabase-migrations.yml` 실패 가능성 — 운영 READ ONLY 확인 전 스택 PR 닫기 보류.
   - 이 컨테이너에서 불가(오너/M09): 운영 DB 조회·적용, 운영 배포, 정상 실계정 검수(10-06 04:00 경계 이후 학습 검수 포함).
+- **뷰어 v2 (2026-10-07 21:10 KST~, 오너 지시 「이 세션이 뷰어 v2 맡아」 — [착수](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6037135867))**:
+  정본 = [R0 버그](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6031758159) · [v2 라운드](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036574287). R0 → R0+ → AE-R1 → AE-R2 → AD-R2 → AE-R3 → AD-R3 → AD-R4 → AE-R4, 라운드마다 PR.
+  - `claude/viewer-r0-links` — 버그 3: 학습자 링크 관문 `learnerHref`(옛 교재 주소 → null + 「보관된 교재라 열 수 없어요」). 대응 데이터 없어 매핑 안 함.
+  - `claude/viewer-r0-css`(1·2·6·7·8·11) · `claude/viewer-r0-sheet`(4·9·10) · `claude/viewer-v2-r0plus`(정체 꼴 훈음) 진행 중.
 ### todo (오너 전건 승인 2026-07-18 — owner-gate 해제분 포함, Codex-1 확장 큐 = #150 코멘트 5012160829)
 - 🧊 **이 아래 전량 = 게임·월드 트랙 동결**(오너 "게임 월드는 ㄴㄴ" 2026-08-25).
   2026-08-26 전수 대조 결과 **비월드 잔여 0**: #1077 인박스 승인분 전량 완결(2·3·6·11·
@@ -4862,6 +4872,9 @@
 상세: docs/world-city-roadmap-cn-au.md. 유럽 2차 잔여·호주 나머지는 백로그 동결.
 
 ## owner-gate (오너 결정 대기 — 착수 금지)
+- **유료화 전 FLELex 파생 어휘 교체/제거**(2026-10-07 오너 결정 「출처 표기로 유지, 유료화 전 검토」, #1350):
+  FLELex는 CC BY-NC-SA 4.0(비영리·동일조건). `src/content/french/vocab/*_flelex*.js`가 등급을 쓴다.
+  유료 기능·광고 도입 결정 시 상업 이용 가능한 등급 원천으로 바꾸거나 해당 어휘를 뺀다.
 - **도시 NPC 대화 진입 이원화 검토**(2026-08-22 실측): 도시 안 chapter+npc 노드는
   전부 문화 도어로 라우팅되고 NpcDialog는 chapter 없는 노드(현재 fr 채움 NPC·전국맵
   라멘/신사)만 연다. 도쿄·오사카 채움 NPC 4종은 npc==id(직접 대화 후보 계약)인데

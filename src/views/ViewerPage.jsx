@@ -107,6 +107,7 @@ import ViewerHanjaReading from '../components/viewer/ViewerHanjaReading';
 import ViewerModal from '../components/viewer/ViewerModal';
 import dynamic from 'next/dynamic';
 import '../components/viewer/reader-controls.css';
+import '../components/viewer/sentence-move-bar.css';
 const ChineseSerif = dynamic(() => import('../components/viewer/ChineseSerif'), {ssr:false});
 import { listHanjaHunEum } from '../lib/hanjaKo';
 import { viewerJapaneseGlyphTable } from '../lib/viewerJapaneseReference';
@@ -133,7 +134,7 @@ import { syncVocabEncounters } from '../components/world/vocabEncounterSync';
 import { encounterLookupLang, loadMetWordKeys, loadRefVocabLookup } from '../lib/refVocabLookup';
 import { normalizeRefWordKey } from '../lib/refWordNormalize';
 import { isWordToken, wordStateOf, wordStateExtraClass } from '../lib/wordState';
-import { TTS_RATES, ttsOptsFor, pronHiddenFor, shouldRevealPron } from '../lib/readingSheet';
+import { TTS_RATES, ttsOptsFor, pronHiddenFor } from '../lib/readingSheet';
 import { getBook } from '../lib/bookMeta';
 import ViewerJapaneseReference from '../components/viewer/ViewerJapaneseReference';
 import TokenEditPanel from './TokenEditPanel';
@@ -316,7 +317,7 @@ export default function ViewerPage() {
   const settings = useViewerSettings(materialLang);
   const { fontSize,lineGap,charGap,showHanjaKo,showToneColors,wordStateHl,showPatterns,patternFilter,
     focusMode,setFocusMode,autoPace,paceCpm,paceStep,setPaceStep,theme,fontFamily,pronDisplay,
-    pronReveal,autoSpeakOnClick,ttsRate,pinyinSize } = settings;
+    autoSpeakOnClick,ttsRate,pinyinSize } = settings;
 
   const settingsTrigger = useRef(null);
   const quiz = useViewerQuiz();
@@ -333,13 +334,6 @@ export default function ViewerPage() {
 
   // ④ 글자 탐색 — 카드의 큰 단어에서 탭한 한자({ ch, key, reading }). 단어가 바뀌면 리셋.
   const [inspectChar, setInspectChar] = useState(null);
-  // 발음을 공개한 토큰(v1-4 R1). **세션 로컬 Set 하나** — localStorage·DB 어디에도 쓰지
-  // 않는다. 자료를 나가면 리셋되는 것이 맞다: 다음에 또 인출 연습이 돼야 한다(설계 §4).
-  const [revealedPron, setRevealedPron] = useState(() => new Set());
-  // 자료를 옮기면 공개를 접는다. 앱 라우터는 /viewer/[id] 사이 이동에서 이 컴포넌트를
-  // 다시 마운트하지 않으므로, 지우지 않으면 지난 자료의 공개가 tokenId가 겹치는 만큼
-  // 새 자료에 비친다. (빈 Set일 땐 그대로 둔다 — 첫 렌더에 헛 리렌더를 만들지 않는다.)
-  useEffect(() => { setRevealedPron((prev) => (prev.size ? new Set() : prev)); }, [id, pronDisplay, pronReveal, material?.processed_json]);
   const [commentInput, setCommentInput] = useState('');
   const [pendingGradeSaves, setPendingGradeSaves] = useState(() => new Set());
   const savingGrade = useRef(new Set());
@@ -724,7 +718,7 @@ export default function ViewerPage() {
   useEffect(() => { lastSaveRef.current = null; lastInlineGradeRef.current = null; }, [id, user?.id]);
   useEffect(() => { gradeAction.current += 1; }, [id, user?.id]);
 
-  const handleTokenClick = (token, tokenId, opts = {}) => {
+  const handleTokenClick = (token, tokenId) => {
     setRestoredClassSource(null);
     if (token.pos === '개행') return;
     // 집중 모드 단일 규칙(오너 확정 2026-08-20): 지정 문장 '밖' 탭 = 순수 이동 — 지정만
@@ -744,16 +738,9 @@ export default function ViewerPage() {
         return;
       }
     }
-    // 「가려진 것만 한 번 더」(v1-4 R1) — 탭은 그 자리에서 가장 덜 아는 것을 연다.
-    // 순서가 계약이다: ① 집중 모드 문장 밖 = 이동(위에서 이미 return) → ② 발음이
-    // 가려져 있으면 공개 → ③ 그 외 카드 시트. 가려지지 않은 단어는 지금과 완전히 같다.
-    // 공개는 화면 클래스 한 겹만 벗긴다 — review_events·user_vocabulary에 아무것도 쓰지
-    // 않는다. '탭해서 봤다 = 모른다'는 신호가 약해(궁금해서·확인차·오탭) FSRS에 흘리면
-    // 복습 전체가 흔들린다(설계 §4).
-    if (shouldRevealPron(pronReveal, pronDisplay, { hidden: opts.pronHidden, revealed: opts.pronRevealed })) {
-      setRevealedPron((prev) => new Set(prev).add(tokenId));
-      return;
-    }
+    // 탭 규칙은 두 단계다(Y 설계 ③ — 발음 공개 단계 제거, 오너 확정 2026-09-05):
+    // ① 집중 모드 문장 밖 = 이동(위에서 이미 return) → ② 그 외 단어 카드. 발음이 가려진
+    // 단어도 첫 탭에 카드가 열린다(카드가 발음을 보여 준다).
     detailGate.current.cancel();
     selectionGate.current.cancel();
     setLeftPanelLoading(false);
@@ -1257,8 +1244,9 @@ export default function ViewerPage() {
   const sentenceNavBtn = (dir, className) => (
     <button
       className={className}
-      aria-label={vt(dir < 0 ? '위 문장' : '아래 문장')}
-      title={vt(dir < 0 ? '위 문장' : '아래 문장')}
+      aria-label={dir < 0 ? vt('위 문장') : vt('아래 문장')}
+      title={dir < 0 ? vt('위 문장 · Alt+↑') : vt('아래 문장 · Alt+↓')}
+      aria-keyshortcuts={dir < 0 ? 'Alt+ArrowUp' : 'Alt+ArrowDown'}
       disabled={!adjacentSentence(sentences, pickedLineIdx, dir)}
       onClick={() => moveSentence(dir)}
       data-icon-action
@@ -1275,6 +1263,10 @@ export default function ViewerPage() {
     if (!focusMode) return;
     if (e.target.closest('.word-token, .line-pick, .sentence-nav, .range-grip, button, a')) return;
     if (pickedLineIdx === null && !tokenRange.range) return;
+    releasePickedSentence();
+  };
+  // 지정 해제 한 벌 — 빈 공간 탭과 문장 이동 막대의 ×가 같은 해제를 쓴다.
+  const releasePickedSentence = () => {
     tokenRange.clearRange();
     setPickedLineIdx(null);
     setSelectedRangeText('');
@@ -1387,6 +1379,69 @@ export default function ViewerPage() {
     } finally { clearTimeout(deadline); }
   };
   explainSelectedSentenceRef.current = runSelectedSentence;
+
+  // 문장 이동 막대(VIEWER-R0-BUGS-001 버그 4) — 문장이 지정됐는데 보조 패널에 보일 내용이
+  // 없을 때(집중 모드 첫 탭·순수 이동 뒤·단어창을 닫은 뒤) 빈 패널(탭 머리만) 대신 뜬다.
+  // 패널에 내용이 생기면 막대는 사라지고 ^/v는 패널 머리(barNav)로 옮겨 간다 — 둘은 동시에 없다.
+  // 수업 모드(classStudyActive)는 도크·판이 자기 경로를 가진다 — 판 fallback에서는 막대를 띄우지 않고
+  // (예전에도 접힌 패널은 보이지 않았다) Alt+↑/↓도 끈다. runSelectionAnalysis·수업 버튼은 그대로다.
+  // 「번역」 = 지정된 문장의 막대(¦) 재탭과 같은 경로(runSelectionAnalysis: 교재 뜻 → 캐시 →
+  // 기존 번역 요청). 새 AI 경로를 만들지 않는다. 열리는 곳은 보조 패널의 문장 탭이다.
+  const translatePickedSentence = () => {
+    if (!pickedSentence) return;
+    tokenRange.clearRange();
+    setSelectedRangeText(pickedSentence.text);
+    setSentenceTabSignal(s => s + 1);
+    runSelectionAnalysis(pickedSentence.text);
+  };
+  const moveBarRef = useRef(null);
+  const moveBarFocus = useRef(null);
+  const closeMoveBar = () => {
+    const first = pickedSentence ? tokenRefs.current[pickedSentence.firstTokenId] : null;
+    releasePickedSentence();
+    first?.focus({ preventScroll: true }); // 막대가 사라져도 키보드 위치를 문장 머리에 남긴다
+  };
+  // 경계에서 누른 ^/v가 비활성되면 포커스가 body로 빠진다 — 반대 버튼으로 옮겨 이어서 누르게 한다.
+  useEffect(() => {
+    const bar = moveBarRef.current, last = moveBarFocus.current;
+    if (!bar || !last?.disabled || !bar.contains(last)) return;
+    const active = document.activeElement;
+    if (active && active !== last && active !== document.body) return;
+    bar.querySelector('button:not(:disabled)')?.focus();
+  }, [pickedLineIdx]);
+  // Alt+↑ / Alt+↓ — 문장이 지정된 동안의 키보드 이동(입력란·모달·조합 중에는 무시).
+  // 막대 버튼과 같은 moveSentence라 집중 모드에서는 순수 이동이다.
+  const sentenceKeyRef = useRef({});
+  sentenceKeyRef.current = {
+    // 수업 모드는 자기 도크·판 경로가 있다 — 이 단축키·막대는 기본 뷰어에서만(V2 §0.2 수업 경로 보존).
+    active: pickedLineIdx !== null && sentences.length > 0 && !classStudyActive,
+    blocked: modalBlocked || tokenRange.dragging, // 설정·받아쓰기·읽기 확인 등은 모두 activeModal — modalBlocked에 든다
+    move: moveSentence,
+  };
+  useEffect(() => {
+    function onKeyDown(e) {
+      if (!e.altKey || e.metaKey || e.ctrlKey || e.shiftKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+      const h = sentenceKeyRef.current;
+      if (!h.active || h.blocked || e.defaultPrevented || e.isComposing || e.repeat) return;
+      if (e.target?.closest?.('input, textarea, select, [contenteditable="true"], [role="textbox"], dialog')) return;
+      e.preventDefault();
+      h.move(e.key === 'ArrowUp' ? -1 : 1);
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
+  const pickedPosition = pickedSentence ? sentences.indexOf(pickedSentence) + 1 : 0;
+  const sentenceMoveBar = pickedSentence ? (
+    <div ref={moveBarRef} className="sentence-move-bar" role="toolbar" aria-label={vt('문장 이동')} aria-orientation="horizontal"
+      onFocus={e => { moveBarFocus.current = e.target; }}
+      onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeMoveBar(); } }}>
+      {sentenceNavBtn(-1, 'sentence-move-bar__btn')}
+      <span className="sentence-move-bar__pos" role="status">{pickedPosition} / {sentences.length}</span>
+      {sentenceNavBtn(1, 'sentence-move-bar__btn')}
+      <button type="button" className="sentence-move-bar__translate" title={vt('이 문장 번역 보기')} onClick={translatePickedSentence}>{vt('번역')}</button>
+      <button type="button" className="sentence-move-bar__btn sentence-move-bar__close" aria-label={vt('문장 지정 해제')} title={vt('문장 지정 해제')} onClick={closeMoveBar} data-icon-action><ActionIcon name="close"/></button>
+    </div>
+  ) : null;
 
 
 
@@ -1620,6 +1675,16 @@ export default function ViewerPage() {
 
     return () => { alive = false; };
   }, [showHanjaKo, materialLang, hanjaKoTable, inspectChar]);
+  // R0+: 중국어 훈음은 정체 꼴로 찾는다(技术 → 재주 술) — 같은 조건에서 정체 표도 지연 로드.
+  const [hanjaTradTable, setHanjaTradTable] = useState(null);
+  useEffect(() => {
+    if (materialLang !== 'Chinese' || hanjaTradTable || !(showHanjaKo || inspectChar !== null)) return undefined;
+    let alive = true;
+    import('../lib/data/hanjaTrad.json')
+      .then((m) => { if (alive) setHanjaTradTable(m.default || m); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [showHanjaKo, materialLang, hanjaTradTable, inspectChar]);
   const [jaFormError,setJaFormError] = useState(false);
   const [jaFormRetry,setJaFormRetry] = useState(0);
   useEffect(() => {
@@ -1645,8 +1710,8 @@ export default function ViewerPage() {
     return () => { alive = false; };
   }, [inspectChar, hanjaEtymTable]);
   const hanjaHunOf = (text) => (
-    materialLang === 'Chinese' && showHanjaKo && hanjaKoTable && hanjaHunTable
-      ? listHanjaHunEum(text, hanjaKoTable, hanjaHunTable)
+    materialLang === 'Chinese' && showHanjaKo && hanjaKoTable && hanjaHunTable && hanjaTradTable
+      ? listHanjaHunEum(text, hanjaKoTable, hanjaHunTable, hanjaTradTable)
       : null
   );
   // 우리 사전(레퍼런스 어휘) 연동(②) — 급수 뱃지 + 정본 뜻·예문·한자 노트 자동 표시
@@ -2277,7 +2342,9 @@ export default function ViewerPage() {
         // ④ 글자 카드(증강 R1~R3 — 오너 승인 2026-08-28): 헤더는 자기 완결(훈음·병음·자형 칩),
         // 주인공은 구성(1단 분해 — 성분 탭 = 재귀 탐색)과 다시 만나기(이 자료·내 단어).
         // 부수는 설명하지 않는다 — 성분 배지 + 메타 한 줄이 전부(설계 확정).
-        const d = charDetail(inspectChar.ch, { koTable: hanjaKoTable, hunTable: hanjaHunTable, jaTable: hanjaJaTable }) || {};
+        // R0+: 중국어 표제어 글자는 단어의 정체 꼴로 찾는다(단어창 훈음과 같은 조회). 성분·자형 칩은 글자 그대로.
+        const inspectWord = materialLang === 'Chinese' && !/^(form|comp)_/.test(inspectChar.key) ? { word: headText, tradTable: hanjaTradTable } : null;
+        const d = charDetail(inspectChar.ch, { koTable: hanjaKoTable, hunTable: hanjaHunTable, jaTable: hanjaJaTable }, inspectWord) || {};
         const etym = charEtym(inspectChar.ch, hanjaEtymTable, { koTable: hanjaKoTable, hunTable: hanjaHunTable, jaTable: hanjaJaTable });
         // ④ 자형 칩 탭 이동(R5 — 오너 확정 "④ 포함"): 日·繁·简·正 어느 자형이든 탭하면
         // 그 자형의 카드로 — 신자체처럼 훈이 '음만'인 글자도 정자 카드로 건너가 온전한
@@ -2600,10 +2667,11 @@ export default function ViewerPage() {
               {grammar.result && (
                 <div className="pdf-context__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(grammar.result) }} />
               )}
-              {grammar.chapter && (
+              {grammar.chapter?.href && (
                 <Link href={grammar.chapter.href} className="grammar-detail__ref">{vt("→ 정본 해설: 「")}{grammar.chapter.title}」 ›
                 </Link>
               )}
+              {grammar.chapter && !grammar.chapter.href && <p className="grammar-detail__loading grammar-detail__archived">{vt("→ 정본 해설: 「")}{grammar.chapter.title}」 · {vt("보관된 교재라 열 수 없어요")}</p>}
               {user && learningStorageSupported && grammar.result && (
                 <button
                   onClick={() => saveGrammarNoteMutation.mutate()}
@@ -2645,7 +2713,7 @@ export default function ViewerPage() {
     <div className={`viewer-3col viewer-layout viewer-theme-${theme}${tokenRange.dragging ? ' viewer-3col--dragging' : ''}`}
       style={{...textbookThemeStyle(materialLang),'--board-ratio':`${classBoardRatio}%`,'--reader-font':readerFontFamily(materialLang,fontFamily),'--pinyin-size':`${pinyinSize}rem`,'--pinyin-cell':`${pinyinCell}px`}}
       lang={uiLocale} data-ui-locale={uiLocale} data-explanation-locale={effectiveExplanationLocale} data-reader-theme={theme} data-language={materialLang} data-class-study={classStudyActive} data-teaching-board={classStudyActive?classBoardLayout:''} data-inspector-open={inspectorOpen&&!modalBlocked}
-      data-pron-spacing={materialLang==='Chinese'&&(pronDisplay!=='none'||pronReveal)?'reserved':'natural'}
+      data-pron-spacing={materialLang==='Chinese'&&pronDisplay!=='none'?'reserved':'natural'}
       data-left-active={!!(leftPanelLoading || leftPanelResult)}
       data-right-active={!!(dragTokens !== null || (selectedToken && isSheetOpen))}>
 
@@ -3011,8 +3079,7 @@ export default function ViewerPage() {
             // 참으로 두면 탭이 아무 일도 없이 먹힌다(카드가 안 열린다).
             const hasReading = !!rubySegments?.some((seg) => seg.kanji);
             const pronHidden = hasReading && pronHiddenFor(pronDisplay, { isKnown: tokKnown, isSaved });
-            const pronRevealed = revealedPron.has(tokenId);
-            const furiOff = pronHidden && !pronRevealed;
+            const furiOff = pronHidden;
             // 문형 밑줄은 전용 요소 — .surface::after는 지정 이음매 자리라 고르면 사라졌다(R0 버그 1).
             const patternMark = visibleScan?.byToken.has(tokenId) ? <span className="pattern-mark" aria-hidden="true" /> : null;
             return (
@@ -3025,8 +3092,8 @@ export default function ViewerPage() {
                 className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}`}
                 style={paceStyle}
                 role="button" tabIndex={0}
-                onClick={() => handleTokenClick(token, tokenId, { pronHidden, pronRevealed })}
-                onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleTokenClick(token, tokenId, { pronHidden, pronRevealed }))}>
+                onClick={() => handleTokenClick(token, tokenId)}
+                onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleTokenClick(token, tokenId))}>
                 {linePick}
                 {rubySegments ? (
                   <span className={`surface${furiOff ? ' surface--furi-off' : ''}`}>
@@ -3301,7 +3368,7 @@ export default function ViewerPage() {
         sentenceContent={(leftPanelLoading||leftPanelResult)?leftPanelContent:null}
         onActive={setClassStudyActive} onPresenting={setClassPresenting} suppressed={modalBlocked&&!classPresenting}
         onSelectionClose={closeWordCard}
-        fallback={boardActions=>(annotationOpen || leftPanelLoading || leftPanelResult || dragTokens !== null || (selectedToken && isSheetOpen) || pickedLineIdx !== null) && <ViewerBottomSheet
+        fallback={boardActions=>(annotationOpen || leftPanelLoading || leftPanelResult || dragTokens !== null || (selectedToken && isSheetOpen)) ? <ViewerBottomSheet
         actions={boardActions}
         uiLocale={uiLocale}
         className={boardActions?'viewer-inspector--board':''}
@@ -3323,10 +3390,10 @@ export default function ViewerPage() {
             {sentenceNavBtn(1, 'viewer-sheet-bar__btn viewer-sheet-bar__btn--nav')}
           </>
         ) : null}
-      />} />}
+      /> : boardActions ? null : sentenceMoveBar} />}
       </TextbookAnnotations>
 
-      {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} languageSettings={languageSettings} onClose={closeReadingSettings} keepPosition={keepReadingPosition} previewTokens={previewTokens} onPreset={()=>setRevealedPron(new Set())} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus}/>}
+      {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} languageSettings={languageSettings} onClose={closeReadingSettings} keepPosition={keepReadingPosition} previewTokens={previewTokens} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus}/>}
       {modal('activities')&&<ViewerModal uiLocale={uiLocale} title={vt("학습")} onClose={()=>setActiveModal(null)}><div className="reader-activity-menu">
         {user&&!String(id).startsWith('local:')&&<Link className="btn btn--secondary" href={`/notes/new?${new URLSearchParams({material:String(id),language:materialLang})}`}>{vt("내 학습 노트 펼치기 ↗")}</Link>}
         {ttsSupported&&sentences.length>0&&<button onClick={()=>setDictationPickerOpen(true)}><b>{vt("받아쓰기")}</b><span>{vt("추천 문장 하나를 골라 듣고 써요")}</span></button>}

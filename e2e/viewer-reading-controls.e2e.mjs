@@ -331,8 +331,9 @@ try {
  await fresh(390,844);await aa('글자·배경');await range('본문 크기',.8);await range('병음 크기',1);await closeAa();
  const metrics=await page.locator('.reader-area ruby[data-pinyin]').evaluateAll(nodes=>nodes.map(n=>{const a=n.querySelector('.rt-an'),r=n.getBoundingClientRect(),ar=a.getBoundingClientRect();return {cell:r.width,font:parseFloat(getComputedStyle(a).fontSize),width:ar.width};}));
  assert(metrics.length>20);assert(metrics.every(m=>m.font>=15.9&&m.width<=m.cell+1));assert.equal(new Set(metrics.map(m=>Math.round(m.cell))).size,1);await shotAt('mobile-pinyin-large');pass('16px pinyin stays uniform and contained with minimum body size');
- await aa('학습 표시');await page.getByRole('button',{name:'숨김',exact:true}).click();await page.getByRole('checkbox',{name:/탭하면 발음 보기/}).check();await closeAa();
- const widthBefore=await wordA().evaluate(e=>e.getBoundingClientRect().width);await tap(wordA());assert.equal(await page.locator('.word-detail-card').count(),0);const widthAfter=await wordA().evaluate(e=>e.getBoundingClientRect().width);assert(Math.abs(widthBefore-widthAfter)<1);await tap(wordA());assert(await panel().isVisible());pass('hidden reading reveals on first tap without reflow; second opens card');
+ await aa('학습 표시');await page.getByRole('button',{name:'숨김',exact:true}).click();assert.equal(await page.getByRole('checkbox',{name:/탭하면 발음 보기/}).count(),0);await closeAa();
+ // Y 설계 ③(#1077 5548350811, 오너 확정 2026-09-05): 발음 공개 단계는 없다 — 가려진 단어도 첫 탭에 카드, 폭은 그대로.
+ const widthBefore=await wordA().evaluate(e=>e.getBoundingClientRect().width);await tap(wordA());assert(await panel().isVisible());const widthAfter=await wordA().evaluate(e=>e.getBoundingClientRect().width);assert(Math.abs(widthBefore-widthAfter)<1);pass('hidden reading opens the card on first tap without reflow');
  // Grade controls stay within the same visible panel, even with expanded information.
  await fresh(390,844);
  const lowWord=page.locator('[data-tid="id_12_0_audit"]');

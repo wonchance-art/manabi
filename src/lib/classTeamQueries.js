@@ -58,6 +58,17 @@ export async function fetchBookChapters(bookKey) {
     .sort((a, b) => a.order - b.order);
 }
 
+/** 교재 설명 위치 확인용 본문 토큰(sequence·dictionary) — 팀 페이지에서 과를 고를 때만 1건. */
+export async function fetchChapterText(id) {
+  const { data, error } = await supabase
+    .from('reading_materials')
+    .select('id, processed_json->sequence, processed_json->dictionary')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? { sequence: data.sequence || [], dictionary: data.dictionary || {} } : null;
+}
+
 /** 과 제목에서 책 제목 접두(「교재 — 3과」)를 걷어낸다 — 자료실 책 카드와 같은 규칙. */
 export function chapterLabel(title) {
   const t = String(title || '');

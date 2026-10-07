@@ -1,0 +1,24 @@
+/* 문장 이동 막대(VIEWER-R0-BUGS-001 버그 4) — 문장이 지정됐는데 보조 패널에 보일 내용이 없을 때
+   빈 패널(탭 머리만, 113px) 대신 뜨는 한 줄. 보조 패널과 동시에 뜨지 않으므로 같은 바닥 자리를 쓴다.
+   [^] n/m [v] [번역] [×] — 누름 영역 44px, 색은 읽기 토큰만. */
+/* 막대가 차지하는 바닥 높이: 테두리 1+1 + 위아래 4+4 + 버튼 44 = 54px, 바닥 띄움, 여유 12px. */
+.viewer-layout {--sentence-move-bar-space:calc(54px + max(8px, env(safe-area-inset-bottom)) + 12px);}
+/* 막대가 떠 있는 동안 본문 끝(마지막 문장·「다 읽었다면」 줄)이 막대 위로 완전히 올라오게 한다.
+   scroll-padding은 포커스·scrollIntoView가 막대 밑에 멈추지 않게 하는 몫이다. */
+.viewer-layout:has(.sentence-move-bar)>.viewer-center {padding-bottom:calc(var(--sentence-move-bar-space) + 48px);}
+html:has(.viewer-layout .sentence-move-bar) {scroll-padding-bottom:calc(54px + max(8px, env(safe-area-inset-bottom)) + 12px);}
+/* 테두리는 바탕 대비 3:1 이상(종이·어둡게 모두) — 칠 선(--reader-line)은 어둡게에서 2:1이라 쓰지 않는다. */
+.viewer-layout .sentence-move-bar {--sentence-move-bar-edge:color-mix(in srgb,var(--reader-ink) 55%,var(--reader-paper));position:fixed;z-index:95;left:50%;transform:translateX(-50%);bottom:max(8px,env(safe-area-inset-bottom));display:flex;align-items:center;gap:4px;max-width:calc(100% - 16px);padding:4px 8px;border:1px solid var(--sentence-move-bar-edge);border-radius:8px;background:var(--reader-paper);color:var(--reader-ink);box-shadow:0 8px 28px color-mix(in srgb,var(--reader-ink) 12%,transparent);}
+.viewer-layout.viewer-3col--dragging .sentence-move-bar {pointer-events:none;}
+.viewer-layout .sentence-move-bar button {display:inline-flex;align-items:center;justify-content:center;flex:none;min-width:44px;min-height:44px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--reader-ink);cursor:pointer;}
+.viewer-layout .sentence-move-bar button:disabled {opacity:.35;cursor:default;}
+.viewer-layout .sentence-move-bar button:not(:disabled):hover {background:var(--reader-selected);color:var(--reader-accent);}
+.viewer-layout .sentence-move-bar button:focus-visible {outline:2px solid var(--reader-accent);outline-offset:1px;}
+.viewer-layout .sentence-move-bar .sentence-move-bar__translate {padding:0 16px;border:1px solid var(--reader-accent);font-size:.875rem;font-weight:600;line-height:1.2;color:var(--reader-accent);}
+.viewer-layout .sentence-move-bar__pos {min-width:4.5em;text-align:center;font-size:.8125rem;line-height:1.2;font-variant-numeric:tabular-nums;color:var(--reader-muted);white-space:nowrap;}
+.viewer-layout .sentence-move-bar__close {margin-left:auto;}
+@container reader (max-width:600px) {
+  .viewer-layout .sentence-move-bar {left:8px;right:8px;transform:none;max-width:none;}
+  .viewer-layout .sentence-move-bar .sentence-move-bar__translate {margin-left:auto;}
+  .viewer-layout .sentence-move-bar__close {margin-left:0;}
+}
