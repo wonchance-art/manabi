@@ -2218,7 +2218,8 @@ export default function ViewerPage() {
               {t.furigana && <span className="pdf-word-item__reading">{t.furigana}</span>}
             </span>
             <span className="pdf-word-item__meaning" onClick={() => handleListWordClick(t)}>{materialLang !== 'Korean' || koreanReadingLocale(t) === effectiveExplanationLocale ? t.meaning : ''}</span>
-            {/* 한국어 목록은 main처럼 저장 단추 없이 읽기 도움만 보인다. 저장은 기본형 뜻을 먼저 보여 주는 단어창에서. */}
+            {/* 한국어 목록은 저장 단추 없이 읽기 도움만 보인다. 이전 ★는 선택 범위 기준 분석 id가 원문 id와 겹칠 때만 떠
+                문맥 뜻을(때로 다른 줄의 출처로) 저장했다. 저장은 기본형 뜻을 먼저 보여 주는 단어창에서. */}
             {user && learningStorageSupported && materialLang !== 'Korean' && koreanSaveReady(t) && (
               <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                 {isSaved ? <SaveContextButton key={`${id}:${saveKey}:${leftPanelText}:${materialLang === 'Korean' ? `${effectiveExplanationLocale}:${readingContextSource(t)?.sourceRevision}` : ''}`} label={vt("문맥 추가")}
