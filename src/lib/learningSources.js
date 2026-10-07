@@ -1,3 +1,4 @@
+import {boundaryCoveringToken} from './boundaryEdits';
 import {bookSourceHref} from './textbook/sources';
 import {absoluteSourceSpan, exactSourceQuote} from './viewerLocalizedContext';
 import {viewerCacheKey} from './viewerReliability';
@@ -125,6 +126,10 @@ export function readingSourceTarget(json, {locator = {}, quote = '', lang} = {},
   const inside=(start,end)=>!saved || ranges.some(r=>start>=r.start && end<=r.end);
   const exact=spans.filter(s=>s.id===locator.tokenId && (!surface || compactSource(s.token.text)===surface) && inside(s.start,s.end));
   if(exact.length===1) return exact[0].id;
+  // 묶기·나누기(AD-R3 §4.3): 저장 id가 경계 기록 base에 있으면 그 자리를 통째로 덮는 지금 토큰 하나로 돌아간다.
+  const coveringId=boundaryCoveringToken(json,locator.tokenId,surface);
+  const covering=coveringId?spans.find(s=>s.id===coveringId):null;
+  if(covering && inside(covering.start,covering.end)) return covering.id;
   if(!surface) return null;
   const candidates=[],starts=new Map(spans.map(s=>[s.start,s])),ends=new Set(spans.map(s=>s.end));
   for(let at=body.indexOf(surface);at>=0;at=body.indexOf(surface,at+1)) {
