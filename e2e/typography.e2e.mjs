@@ -875,7 +875,7 @@ for (const theme of ['light', 'sepia', 'dark']) {
  * 축: 상태색 켬·끔 × 종이(sepia)·어둡게(dark)·밝게 × 선택(테두리)·지정(띠)·미선택 × 문형 동시.
  * 위 버그 6 행렬도 「更 문형+새 단어」 행과 새 단어·만난 말 밑줄을 같은 기준(띠 + 2px, 테두리 안 0.5px)으로 잰다. */
 for (const theme of ['sepia', 'dark', 'light']) {
-  test(`AD-R2 — 새 단어는 밑줄·면 칠 없음, 학습 중·복습은 면 칠(${theme} × 상태색 켬·끔 × 선택·지정·미선택 × 문형 동시)`, async () => {
+  test(`AD-R2 — 새 단어는 밑줄·면 칠 없음(선택 중 숨김·지정 중 유지), 학습 중·복습은 면 칠(${theme} × 상태색 켬·끔 × 선택·지정·미선택 × 문형 동시)`, async () => {
     const LIST = [
       { name: '熬夜 새 단어', segs: [['熬', 'áo'], ['夜', 'yè']], cls: 'word-token--new', kind: 'new' },
       { name: '爱惜 만난 말', segs: [['爱', 'ài'], ['惜', 'xī']], cls: 'word-token--met', kind: 'new' },
@@ -904,6 +904,9 @@ for (const theme of ['sepia', 'dark', 'light']) {
         if (x.kind === 'new') {
           check(c.bg === pickedBg, `${at}: 면 칠 ${c.bg} — 새 단어는 칠하지 않는다(지정 중이면 중립 지정 띠 ${pickedBg}만)`);
           if (!hl) { check(c.ulw === 0 || c.ulc === clear, `${at}: 상태색 끔인데 밑줄이 있다`); return; }
+          // 선택(단어창 열림)은 밑줄 없음 — 파란 밑줄 + 파란 테두리 아랫선이 이중 밑줄로 읽혔다(검수 2026-10-07).
+          // 지정(문장 선택·드래그)은 밑줄 유지.
+          if (mode === '선택') { check(c.ulw === 0 || c.ulc === clear, `${at}: 선택 중에는 새 단어 밑줄을 숨긴다(테두리가 자리를 표시)`); return; }
           check(c.ulw >= 1 && c.ulw <= 2 && c.ulc === want, `${at}: 밑줄 ${c.ulw}px ${c.ulc} ≠ 1~2px ${want}`);
           check(g.underline && g.underline.top >= g.band.bottom + 2 - 0.01, `${at}: 밑줄이 띠 아래 첫 칸(띠 + 2px)보다 위다`);
           check(g.band.clip === 'content-box', `${at}: 지정 띠가 밑줄 여백까지 번진다`);

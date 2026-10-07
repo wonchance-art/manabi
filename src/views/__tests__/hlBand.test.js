@@ -57,27 +57,32 @@ describe('하이라이트 글자 밴드 (index.css)', () => {
     // 얇은 파란 밑줄이다. 면 칠(띠)은 학습 중·복습에만 — 첫 자료에서 화면이 파랗게 덮이던 문제.
     expect(css).not.toMatch(/--ws-new:/);
     expect(css).not.toMatch(/:is\(\.word-token--new, \.word-token--met\)[^{]*\.surface::before \{[^}]*background(?:-color)?:/);
-    expect(css).toMatch(/\.reader-area--hl \.word-token:is\(\.word-token--new, \.word-token--met\) \.surface::before \{[^}]*border-bottom: 1\.5px solid var\(--ws-new-ln\);/s);
+    expect(css).toMatch(/\.reader-area--hl \.word-token:is\(\.word-token--new, \.word-token--met\):not\(\[data-selected="true"\]\) \.surface::before \{[^}]*border-bottom: 1\.5px solid var\(--ws-new-ln\);/s);
     expect(css).not.toMatch(/--ws-met/);
     expect(css).toMatch(/\.word-token--saved \.surface::before \{\s*border-bottom: 2px solid var\(--primary-light\);/);
     expect(css).toMatch(/\.word-token--due \.surface::before \{[^}]*animation: due-pulse/s);
   });
 
-  it('새 단어 밑줄은 #1354 「밑줄 자리」를 탄다 — 띠 아래 --hl-mark-gap, 문형이 있으면 둘째 칸, 좌표 신설 0', () => {
+  it('새 단어 밑줄은 #1354 「밑줄 자리」를 탄다 — 띠 아래 --hl-mark-gap, 문형이 있으면 둘째 칸, 좌표 신설 0, 선택 중엔 숨김·지정 중엔 유지', () => {
     // AD-R2: 좌표를 새로 만들지 않는다. 저장·복습 밑줄과 같은 content-box·여백·clip 문법이고,
     // 문형 밑줄과 겹치면 저장·복습과 같은 식으로 한 칸 더 내린다(설계서 §4).
-    const rule = css.match(/\.reader-area--hl \.word-token:is\(\.word-token--new, \.word-token--met\) \.surface::before \{[^}]*\}/s)?.[0] || '';
+    const rule = css.match(/\.reader-area--hl \.word-token:is\(\.word-token--new, \.word-token--met\):not\(\[data-selected="true"\]\) \.surface::before \{[^}]*\}/s)?.[0] || '';
     expect(rule).toContain('box-sizing: content-box;');
     expect(rule).toContain('padding-bottom: var(--hl-mark-gap);');
     expect(rule).toContain('background-clip: content-box;');
     expect(rule).not.toMatch(/background(?:-color)?:/); // 지정 띠(--picked-bg)를 덮지 않는다
-    expect(css).toMatch(/\.reader-area--hl \.word-token--pattern:is\(\.word-token--new, \.word-token--met\) \.surface::before \{\s*padding-bottom: calc\(var\(--hl-mark-gap\) \* 2 \+ 1\.5px\);/);
+    expect(css).toMatch(/\.reader-area--hl \.word-token--pattern:is\(\.word-token--new, \.word-token--met\):not\(\[data-selected="true"\]\) \.surface::before \{\s*padding-bottom: calc\(var\(--hl-mark-gap\) \* 2 \+ 1\.5px\);/);
     // 파일 순서: 상태·지정 규칙 뒤(같은 「밑줄 자리」 블록) — 위로 옮기면 상태 규칙이 이긴다
-    expect(css.indexOf('.reader-area--hl .word-token:is(.word-token--new, .word-token--met) .surface::before {'))
+    expect(css.indexOf('.reader-area--hl .word-token:is(.word-token--new, .word-token--met):not([data-selected="true"]) .surface::before {'))
       .toBeGreaterThan(css.indexOf('.reader-area--hl .word-token--picked.word-token--due .surface::before'));
-    // 선택 테두리도 저장·복습과 같은 규칙으로 문형 + 새 단어 밑줄 아래까지 내려간다(상태색 켬일 때만 밑줄이 있다)
+    // 선택(data-selected — 단어창 열림)에서는 밑줄을 숨긴다: 파란 밑줄 + 파란 테두리 아랫선이 2px 간격으로
+    // 붙어 이중 밑줄로 읽혔다(검수 2026-10-07). 상태는 단어창이, 자리는 테두리가 보여 준다. 지정(picked)은
+    // 유지 — 밑줄 규칙의 제외는 data-selected 하나뿐이다. 선택 중엔 밑줄이 없으니 테두리를 문형+새 단어
+    // 밑줄 아래로 늘리는 규칙도 없다(#1354 기하 그대로 — 문형만 있는 토큰과 같은 테두리).
+    expect(css).not.toMatch(/:is\(\.word-token--new, \.word-token--met\)[^{]*:not\(\.word-token--picked\)[^{]*\.surface::before/);
+    expect(css).not.toMatch(/\[data-selected="true"\]:is\(\.word-token--new, \.word-token--met\)/);
     const reader = fs.readFileSync(path.join(process.cwd(), 'src/components/viewer/reader-controls.css'), 'utf8');
-    expect(reader).toContain('.viewer-layout .reader-area--hl .word-token--pattern:is(.word-token--new,.word-token--met) {--hl-frame-bottom:calc(var(--hl-mark-gap) * 2 + 5.5px);}');
+    expect(reader).not.toMatch(/:is\(\.word-token--new,\.word-token--met\) \{--hl-frame-bottom/);
   });
 
   it('상태 알약(②b) — 알약 문법(5px·확장 0)은 기반 ::before 공통, --hl 전용 기하 오버라이드 없음', () => {

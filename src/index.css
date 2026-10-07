@@ -3029,14 +3029,16 @@ a.viewer-badge:hover {
    저장 밑줄(2px)보다 얇고 문형 밑줄(회색 1.5px)과 같은 두께·다른 색. 상태색(--hl)이 켜졌을 때만이고
    :not(picked) 가드가 없다 — 지정 중에도 중립 지정 띠 위에 밑줄이 남는다(혼색 없음). background를
    쓰지 않는다: 지정 띠(--picked-bg)를 지우면 안 된다. 미리보기(.reader-settings__preview)도
-   reader-area--hl 클래스를 받으므로 같은 규칙을 탄다. 특이도 (0,4,1) — 이 블록을 위로 옮기지 말 것. */
-.reader-area--hl .word-token:is(.word-token--new, .word-token--met) .surface::before {
+   reader-area--hl 클래스를 받으므로 같은 규칙을 탄다. 특이도 (0,5,1) — 이 블록을 위로 옮기지 말 것.
+   선택(data-selected — 단어창 열림)은 제외: 파란 밑줄 + 파란 선택 테두리 아랫선이 2px 간격으로 붙어
+   이중 밑줄로 읽혔다(검수 2026-10-07). 상태는 단어창이, 자리는 테두리가 보여 준다. 지정은 유지. */
+.reader-area--hl .word-token:is(.word-token--new, .word-token--met):not([data-selected="true"]) .surface::before {
   box-sizing: content-box;
   padding-bottom: var(--hl-mark-gap);
   background-clip: content-box;
   border-bottom: 1.5px solid var(--ws-new-ln);
 }
-.reader-area--hl .word-token--pattern:is(.word-token--new, .word-token--met) .surface::before {
+.reader-area--hl .word-token--pattern:is(.word-token--new, .word-token--met):not([data-selected="true"]) .surface::before {
   padding-bottom: calc(var(--hl-mark-gap) * 2 + 1.5px);
 }
 
