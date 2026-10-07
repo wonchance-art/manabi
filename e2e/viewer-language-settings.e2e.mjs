@@ -205,8 +205,8 @@ test('shared reader retains independent locale settings, exact source and learni
       await token().waitFor(); await token().click();
       await page.locator('.word-detail-card').waitFor();
       if (material.processed_json.metadata.language === 'Korean') await page.waitForFunction(() => document.querySelector('[data-korean-context-meaning] p')?.textContent.trim() === '학교로');
-      // The lexical count below needs the opened card's first lexical request to have finished.
-      if (material.processed_json.metadata.language === 'Korean') await page.waitForFunction(() => document.querySelector('[data-korean-lexical-meaning] p')?.textContent.trim() === '교육 기관');
+      // The default ko explanation is held: the card renders no lexical section at all (it would render synchronously).
+      if (material.processed_json.metadata.language === 'Korean') assert.equal(await page.locator('[data-korean-lexical-meaning]').count(), 0, 'ko explanation shows no generated lexical meaning');
       const baselineSource = await source(), baselineMaterial = JSON.stringify(material), baselineSaved = JSON.stringify(saved);
       assert.equal(baselineSource.text, material.raw_text.split('\n')[1], 'source must refer to the second occurrence, with its distinct sentence');
       const known = page.locator('.word-detail-card__known');
@@ -238,7 +238,8 @@ test('shared reader retains independent locale settings, exact source and learni
           assert.deepEqual(await preferences(page), { version: 1, uiLocale: 'zh-TW', explanationLocale: locale });
           assert.equal(await page.locator('.viewer-layout').getAttribute('data-explanation-locale'), locale);
           await page.waitForFunction(meaning => document.querySelector('[data-korean-context-meaning] p')?.textContent.trim() === meaning, { ko: '학교로', 'zh-CN': '到学校', 'zh-TW': '到學校' }[locale]);
-          await page.waitForFunction(meaning => document.querySelector('[data-korean-lexical-meaning] p')?.textContent.trim() === meaning, { ko: '교육 기관', 'zh-CN': '学校', 'zh-TW': '學校' }[locale]);
+          if (locale === 'ko') assert.equal(await page.locator('[data-korean-lexical-meaning]').count(), 0, 'ko explanation is held: no generated lexical meaning');
+          else await page.waitForFunction(meaning => document.querySelector('[data-korean-lexical-meaning] p')?.textContent.trim() === meaning, { 'zh-CN': '学校', 'zh-TW': '學校' }[locale]);
         }
       }
       await close();

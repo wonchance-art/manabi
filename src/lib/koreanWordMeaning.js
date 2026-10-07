@@ -1,6 +1,10 @@
 // 어휘 뜻은 저장 대상, 문맥 뜻은 읽기 도움이다. 구조 검증은 언어적 정답 판정이 아니다.
 export const KOREAN_WORD_MEANING_VERSION = 'korean-word-meaning-v2';
 export const KOREAN_WORD_MEANING_LOCALES = Object.freeze(['ko', 'zh-CN', 'zh-TW']);
+// ko 단일어 뜻풀이는 검증된 사전 근거(한국어기초사전) 도입 전까지 보류한다. 실측: ko 22건 중 문제 4건,
+// 수정에 쓰지 않은 표본에서도 실패. 보류 언어는 생성·표시·저장 모두 기존(main) 경로를 쓴다.
+export const KOREAN_LEXICAL_MEANING_LOCALES = Object.freeze(['zh-CN', 'zh-TW']);
+export const koreanLexicalMeaningLocale = locale => KOREAN_LEXICAL_MEANING_LOCALES.includes(locale);
 const fields = ['lemma', 'lemmaStatus', 'lexicalMeaning'];
 const normalize = value => typeof value === 'string' ? value.normalize('NFC').trim() : '';
 const spanValid = span => span?.unit === 'utf16' && Number.isInteger(span.start) && Number.isInteger(span.end) && span.start >= 0 && span.end > span.start;
@@ -46,7 +50,7 @@ export function parseKoreanWordMeaning(raw, expectedLemma) {
 
 export function koreanWordMeaningInput({accountId, materialId, token, source, locale}) {
   const lemma = token?.sep_link || token?.base_form || '';
-  if (!accountId || !token?.id || !normalize(lemma) || !KOREAN_WORD_MEANING_LOCALES.includes(locale)
+  if (!accountId || !token?.id || !normalize(lemma) || !koreanLexicalMeaningLocale(locale)
     || source?.kind !== 'reading' || String(source.materialId) !== String(materialId) || source.tokenId !== token.id
     || source.surface !== token.text || !spanValid(source.sourceSpan) || !spanValid(source.quoteSpan)
     || !/^reading-source:v2:[a-f0-9]{64}$/.test(source.sourceRevision) || !source.quote) return null;
@@ -64,7 +68,7 @@ export function koreanMeaningEnvelope(input, result) {
 
 export function koreanMeaningEnvelopeMatches(candidate, {token, source, meaning}) {
   if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) return false;
-  return candidate.version === KOREAN_WORD_MEANING_VERSION && KOREAN_WORD_MEANING_LOCALES.includes(candidate.locale)
+  return candidate.version === KOREAN_WORD_MEANING_VERSION && koreanLexicalMeaningLocale(candidate.locale)
     && !!normalize(candidate.lemma) && normalize(candidate.lemma) === normalize(token?.sep_link || token?.base_form)
     && typeof candidate.lexicalMeaning === 'string' && !!candidate.lexicalMeaning.trim() && candidate.lexicalMeaning.length <= 500
     && candidate.lexicalMeaning === meaning && candidate.sourceRevision === source.sourceRevision

@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import {buildKoreanWordMeaningPrompt, parseKoreanWordMeaning, koreanWordMeaningInput, koreanMeaningEnvelope,
-  koreanMeaningEnvelopeMatches} from '../koreanWordMeaning';
+  koreanMeaningEnvelopeMatches, koreanLexicalMeaningLocale, KOREAN_LEXICAL_MEANING_LOCALES} from '../koreanWordMeaning';
 
 const response = (patch = {}) => JSON.stringify({lemma:'가다',lemmaStatus:'matched',lexicalMeaning:'去',...patch});
 const source = {kind:'reading', materialId:211, tokenId:'second', surface:'갔어요', sourceRevision:`reading-source:v2:${'a'.repeat(64)}`,
@@ -56,5 +56,22 @@ describe('Korean lexical and contextual meaning contract', () => {
       expect(prompt).toContain('untrusted source data');
     }
     expect(() => buildKoreanWordMeaningPrompt({surface:'벽',lemma:'벽',sentence:'벽',locale:'en'})).toThrow();
+  });
+});
+
+describe('ko explanation locale is held until a verified dictionary source exists', () => {
+  it('opens the lexical path only for zh-CN and zh-TW', () => {
+    expect(KOREAN_LEXICAL_MEANING_LOCALES).toEqual(['zh-CN', 'zh-TW']);
+    expect(['ko', 'zh-CN', 'zh-TW', 'en', undefined].map(koreanLexicalMeaningLocale)).toEqual([false, true, true, false, false]);
+  });
+  it('creates no generation input for ko, so the card neither requests, shows nor saves a lexical candidate', () => {
+    expect(koreanWordMeaningInput({...params, locale:'ko'})).toBeNull();
+    expect(koreanMeaningEnvelope(koreanWordMeaningInput({...params, locale:'ko'}), {lemma:'가다', lemmaStatus:'matched', lexicalMeaning:'다른 곳으로 이동하다'})).toBeNull();
+    for (const locale of ['zh-CN', 'zh-TW']) expect(koreanWordMeaningInput({...params, locale})?.locale).toBe(locale);
+  });
+  it('rejects a ko envelope at the server boundary even when every other field matches', () => {
+    const candidate = koreanMeaningEnvelope(koreanWordMeaningInput(params), {lemma:'가다', lemmaStatus:'matched', lexicalMeaning:'去'});
+    expect(koreanMeaningEnvelopeMatches(candidate, {token:params.token, source, meaning:'去'})).toBe(true);
+    expect(koreanMeaningEnvelopeMatches({...candidate, locale:'ko'}, {token:params.token, source, meaning:'去'})).toBe(false);
   });
 });

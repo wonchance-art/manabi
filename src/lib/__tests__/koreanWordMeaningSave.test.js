@@ -26,7 +26,7 @@ describe('lexical meaning through the real reading save resolver',()=>{
     expect(readingSourceTarget(material.processed_json,result.source,{rawText:raw,sourceRevision:body.source.sourceRevision})).toBe('second');
     expect(material).toEqual(before);
   });
-  it.each([{lemma:'학교'},{locale:'en'},{version:'old'},{lexicalMeaning:'在墙上'},{sourceRevision:'old'},{sourceSpan:{start:0,end:2,unit:'utf16'}}])('rejects mismatched envelope %j before an RPC',async patch=>{
+  it.each([{lemma:'학교'},{locale:'en'},{locale:'ko'},{version:'old'},{lexicalMeaning:'在墙上'},{sourceRevision:'old'},{sourceSpan:{start:0,end:2,unit:'utf16'}}])('rejects mismatched envelope %j before an RPC',async patch=>{
     const body=await payload(), db=client(material);
     body.word.meaningCandidate={...body.word.meaningCandidate,...patch};
     await expect(resolveSave(db,'alice',body)).rejects.toMatchObject({status:400}); expect(db.rpc).not.toHaveBeenCalled();

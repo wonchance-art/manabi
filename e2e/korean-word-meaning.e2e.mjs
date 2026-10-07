@@ -88,7 +88,7 @@ async function fixture({ ready = true, existing = false, holdCapabilities = fals
     if (meaningDelay) await new Promise(resolve => setTimeout(resolve, meaningDelay));
     const input = JSON.parse(prompt.split('INPUT_JSON=').at(-1));
     const meaning = input.lemma === '학교' ? (input.locale === 'zh-TW' ? '學校' : input.locale === 'ko' ? '교육 기관' : '学校')
-      : input.locale === 'ko' ? '다른 곳으로 이동하다' : '去';
+      : input.locale === 'ko' ? '다른 곳으로 이동하다' : input.locale === 'zh-TW' ? '前往' : '去';
     const reply = meaningResponse ? meaningResponse(input) : {lemma:input.lemma,lemmaStatus:'matched',lexicalMeaning:meaning};
     return send(route,{candidates:[{content:{parts:[{text:JSON.stringify(reply)}]}}]});
   });
@@ -293,14 +293,36 @@ test('an earlier locale response cannot supply a later save',async()=>{
   const f=await fixture({meaningDelay:300});
   try {
     await f.open();
-    await locale(f.page,'explanationLocale','ko');
-    await f.page.locator('[data-korean-lexical-meaning]').filter({visible:true}).getByText('다른 곳으로 이동하다',{exact:true}).waitFor();
+    await locale(f.page,'explanationLocale','zh-TW');
+    await f.page.locator('[data-korean-lexical-meaning]').filter({visible:true}).getByText('前往',{exact:true}).waitFor();
     await f.actions.locator('.save-grade .review-score-btn').nth(1).click();
     await f.page.waitForFunction(()=>document.querySelector('.word-token--saved'));
-    assert.equal(f.cards[0].meaning,'다른 곳으로 이동하다');
-    assert.equal(f.writes[0].body.word.meaningCandidate.locale,'ko');
+    assert.equal(f.cards[0].meaning,'前往');
+    assert.equal(f.writes[0].body.word.meaningCandidate.locale,'zh-TW');
     assert.deepEqual(f.errors,[]);
   } finally {await finish(f,'lexical-locale-race');}
+});
+
+test('ko explanation is held: no lexical candidate is requested or shown and the main save path is unchanged',async()=>{
+  const f=await fixture();
+  try {
+    await f.open();
+    await f.page.locator('[data-korean-lexical-meaning]').filter({visible:true}).getByText('去',{exact:true}).waitFor();
+    const lexical=()=>f.requests.filter(p=>p.includes('lexicalMeaning')).length, before=lexical();
+    await locale(f.page,'explanationLocale','ko');
+    await f.page.locator('[data-korean-context-meaning]').filter({visible:true}).getByText('갔다',{exact:true}).waitFor();
+    assert.equal(await f.page.locator('[data-korean-lexical-meaning]').count(),0,'ko shows no generated lexical meaning');
+    assert.equal(lexical(),before,'ko requests no lexical candidate');
+    await f.actions.locator('.save-grade .review-score-btn').nth(0).click();
+    await f.page.waitForFunction(()=>document.querySelector('.word-token--saved'));
+    // main behavior: the current-locale contextual meaning, without a lexical envelope.
+    assert.equal(f.cards.length,1); assert.equal(f.cards[0].meaning,'갔다');
+    const write=f.writes.find(w=>w.path==='/api/learning/vocabulary');
+    assert.ok(!Object.hasOwn(write.body.word,'meaningCandidate'),'ko save carries no lexical envelope');
+    assert.deepEqual(write.body.source.sourceSpan,{start:14,end:17,unit:'utf16'});
+    assert.equal(lexical(),before);
+    assert.deepEqual(f.errors,[]);
+  } finally {await finish(f,'lexical-ko-held');}
 });
 
 test('existing edited meaning is distinct from the candidate and survives both conflict choices',async()=>{
