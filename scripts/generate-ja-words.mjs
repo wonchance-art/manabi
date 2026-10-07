@@ -31,8 +31,11 @@
 //   3. 뜻 관문 = CC-CEDICT 영문 뜻(고유명사·이체 안내 제외)과 EDICT 항목 영문 뜻의 내용어 겹침.
 //      겹침이 가장 큰 항목(같으면 (P) 공통어 → 파일 순)이 겹침 ≥2이거나, 겹침 1이면서 (P)이면 통과.
 //      첫 후보가 관문에 떨어지면 다음 후보를 본다.
-//   4. 요미 = 고른 항목에서 그 표기에 걸린 요미(ik·ok·rk·sk 요미 제외, 가나만) 중 (P) 공통어 요미 → 파일 순.
-//      EDICT는 같은 표기의 요미를 가나 순으로 늘어놓아 JMdict 요미 순서가 없다. (P) 없이 요미가 둘 이상이면 뺀다.
+//   4. 요미 = 고른 항목에서 그 표기에 걸린 요미(ik·ok·rk·sk 요미 제외, 가나만) 중 (P) 공통어 요미.
+//      **요미 우선순위 없는 입력에서는 다중 요미를 버린다**: EDICT는 같은 표기의 요미를 가나 순으로
+//      늘어놓아 JMdict 요미 순서가 없다. 그래서 (P) 등급으로도 하나로 좁혀지지 않으면(최상위 등급에 요미가
+//      둘 이상) 표에서 뺀다 — 파일 순으로 고르면 틀린 읽기가 나간다(情緒 じょうしょ·気質 かたぎ). 日 줄을
+//      숨기는 편이 오답보다 낫다. 요미 순서를 담은 JMdict XML을 입력으로 쓰게 되면 이 규칙을 그 순서로 바꾼다.
 //   5. JA_FALSE_FRIENDS 키는 관문을 통과해도 뺀다.
 //   6. 계약: 표기는 표제어와 글자 수가 같고 한자만이며 kJNV 구자체를 담지 않는다. 어기면 실패.
 //   7. 출력 키는 코드포인트 순. 값 = 표기가 표제어와 같으면 요미 문자열, 다르면 [표기, 요미].
@@ -167,13 +170,15 @@ for (const w of words) {
     // 옛말·전문어 동형어다(再见 ↔ 再見 'seeing again' · 马上 ↔ 馬上 'on horseback' — 표본 감수 2026-10-07).
     if (report) report.push({ w, form, s: best.s, common: best.e.common, gloss: best.e.body.slice(0, 120), yomi: best.e.readings.map((r) => r.kana).join('/') });
     if (best.s >= 2 || (best.s === 1 && best.e.common)) {
-      // EDICT 줄 순서는 JMdict 요미 순서가 아니다(가나 순 정렬 — 気質 かたぎ·きしつ). 그래서 (P) 공통어
-      // 요미를 먼저 고른다. (P) 요미가 둘 이상이면 파일 순(둘 다 공통 읽기 — 情緒 じょうしょ·じょうちょ).
-      // (P) 없이 요미가 둘 이상이면 하나로 정할 근거가 없어 싣지 않는다(包子 ほうす·パオズ — 모호하면 숨김).
+      // EDICT 줄 순서는 JMdict 요미 순서가 아니다(가나 순 정렬 — 気質 かたぎ·きしつ). (P) 공통어 요미가
+      // 하나뿐이면 그것, 최상위 등급에 요미가 둘 이상이면 하나로 정할 근거가 없어 뺀다(규칙 4 — 모호하면 숨김).
       const rs = [...best.e.readings].sort((x, y) => Number(y.common) - Number(x.common));
-      const tie = rs.length > 1 && rs[0].common === rs[1].common;
-      if (tie && !rs[0].common) { stats.yomiDropped.push(`${w}:${rs.map((r) => r.kana).join('/')}`); pick = 'drop'; break; }
-      if (tie) stats.yomiTie.push(`${w}:${rs.filter((r) => r.common).map((r) => r.kana).join('/')}`);
+      if (rs.length > 1 && rs[0].common === rs[1].common) {
+        const top = rs.filter((r) => r.common === rs[0].common).map((r) => r.kana).join('/');
+        (rs[0].common ? stats.yomiTie : stats.yomiDropped).push(`${w}:${top}`);
+        pick = 'drop';
+        break;
+      }
       pick = { form, yomi: rs[0].kana, via: ['B', 'C', 'A'][ci] };
       break;
     }
@@ -211,5 +216,5 @@ console.log(`jaWords.json 생성 — ${n}항 (표제어 ${stats.words} · 표기
 console.log(`  입력 — EDICT ${created} 원본 ${edictHash} · CC-CEDICT ${sha256(cedictBuf)} · kJNV ${sha256(kjnvBuf)} (${kjnv.size}행)`);
 if (report) fs.writeFileSync(reportPath, JSON.stringify(report, null, 1));
 console.log(`  거부 — ${stats.rejected.join(' ')} · 표제어 밖(예방) ${outsideFalse.join(' ')}`);
-console.log(`  (P) 요미 둘 이상(파일 순) ${stats.yomiTie.length} — ${stats.yomiTie.join(' ')}`);
-console.log(`  요미 미정으로 뺌 ${stats.yomiDropped.length} — ${stats.yomiDropped.join(' ')}`);
+console.log(`  요미 미정으로 뺌 ${stats.yomiTie.length + stats.yomiDropped.length} — (P) 요미 둘 이상 ${stats.yomiTie.length}: ${stats.yomiTie.join(' ')}`);
+console.log(`    (P) 없는 다중 요미 ${stats.yomiDropped.length}: ${stats.yomiDropped.join(' ')}`);

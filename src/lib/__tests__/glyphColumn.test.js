@@ -257,6 +257,12 @@ describe('日 데이터 — jaWords.json(JMdict 파생, CC BY-SA 4.0)', () => {
     expect(entry(w)).toBeNull();
   });
 
+  // 요미 우선순위 없는 입력(EDICT — 가나 순 정렬)에서 다중 요미는 버린다: 파일 순으로 고르면
+  // 情緒 じょうしょ(1순위 じょうちょ)·気質 かたぎ(1순위 きしつ)처럼 틀린 읽기가 나간다(생성 로그 「요미 미정으로 뺌」).
+  it.each(['情绪', '气质', '分泌', '半年', '唯一', '明日', '牧场', '诗歌', '包子', '字典'])('요미가 하나로 정해지지 않는 %s — 표에 없다', (w) => {
+    expect(entry(w)).toBeNull();
+  });
+
   it('수기 거부 목록(JA_FALSE_FRIENDS)의 키는 모두 표에서 빠진다', () => {
     expect(Object.keys(JA_FALSE_FRIENDS).length).toBeGreaterThanOrEqual(20);
     expect(Object.keys(JA_FALSE_FRIENDS).filter((w) => w in words)).toEqual([]);
