@@ -523,7 +523,7 @@ describe('R0+ 세 경로 단일 조회', () => {
     const src = read('src/views/ViewerPage.jsx');
     expect(src).toContain("import('../lib/data/hanjaTrad.json')");
     // AE-R1 개정(설계서 §7.2): 단어창 훈음은 별도 목록(listHanjaHunEum) 대신 루비 셀 — 같은 정체 표·같은 조회 함수.
-    expect(src).toContain('hunRubyCells(text, { koTable: hanjaKoTable, hunTable: hanjaHunTable, tradTable: hanjaTradTable })');
+    expect(src).toContain('hunRubyCells(text, { koTable: hanjaKoTable, hunTable: hanjaHunTable, tradTable: hanjaTradTable }, HUN_RUBY_CELL)');
     expect(sliceBetween(read('src/lib/viewerHunRuby.js'), 'export function hunRubyCells', '\n}')).toContain('hanjaReadingsOf(');
     expect(src).toMatch(/charDetail\(inspectChar\.ch, \{ koTable: hanjaKoTable, hunTable: hanjaHunTable, jaTable: hanjaJaTable \}, inspectWord\)/);
     expect(src).toMatch(/const inspectWord = materialLang === 'Chinese' && [^\n]*\{ word: headText, tradTable: hanjaTradTable \}/);

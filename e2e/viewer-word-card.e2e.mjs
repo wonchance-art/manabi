@@ -201,6 +201,9 @@ function cardMaterial() {
  return build([
   [w('眼前','yǎn qián','눈앞'),w('的','de','~의','조사'),w('体育场','tǐ yù chǎng','경기장'),w('比','bǐ','~보다','전치사'),w('照片','zhào piàn','사진'),w('上','shàng','위'),w('更','gèng','더','부사'),w('壮观','zhuàng guān','웅장하다, 장관이다','형용사'),w('。','','','기호')],
   [w('我们','wǒ men','우리','대명사'),w('去','qù','가다','동사'),w('公园','gōng yuán','공원'),w('。','','','기호'),w('我们','wǒ men','우리','대명사'),w('明天','míng tiān','내일'),w('去','qù','가다','동사'),w('公园','gōng yuán','공원'),w('。','','','기호')],
+  // 3줄 예산(60자)을 넘는 한 문장 — 앞뒤 …로 줄이고도 문장 3줄 + 뜻 1줄이 첫 화면에 든다(설계서 §5.1·§10.2).
+  (()=>{const s='虽然今天早上的天气非常不好而且外面还一直在下着很大的雨但是我们还是决定按照原来的计划一起去市中心新建的体育场看一场非常精彩的足球比赛';
+   const out=[];for(let i=0;i<s.length;){if(s.startsWith('体育场',i)){out.push(w('体育场','tǐ yù chǎng','경기장'));i+=3;}else{out.push(w(s[i],'','글자','명사'));i+=1;}}out.push(w('。','','','기호'));return out;})(),
  ],'Chinese');
 }
 const zhPrefs={focusMode:false,autoSpeakOnClick:false,showHanjaKo:true};
@@ -274,6 +277,15 @@ test('390px zh unsaved: sentence line · chips · headword(+hun ruby) · meaning
   for(const name of ['✦ 비슷한 말 찾기','✦ 자세한 설명'])assert.equal(await f.page.locator('#inspector-word').getByRole('button',{name,exact:true}).count(),1,name);
   await assertNoFoldsNoLegacyButtons(f,'zh 390');
   if(process.env.COMPOSER_SCREENSHOTS)await f.page.screenshot({path:`${process.env.COMPOSER_SCREENSHOTS}/card-zh-390.png`});
+  // 긴 문장: 한 문장을 3줄 예산으로 줄여(양 끝 …) 누른 자리를 남기고, 첫 화면 계약은 그대로.
+  const longId=m.sequence.find(id=>id.startsWith('id_2_')&&m.dictionary[id].text==='体育场');
+  await tap(f,longId,'경기장');
+  const long=await line.innerText();
+  assert.ok(long.includes('…')&&long.includes('体育场')&&[...long].length<=62,long);
+  assert.deepEqual(await line.locator('mark').allTextContents(),['体育场']);
+  const g=await measure(f.page);
+  assert.ok(g.sentence.height<=3*24+1,`sentence line ≤ 3 lines: ${g.sentence.height}`);
+  assertFirstScreen(g,{label:'zh 390 long sentence'});
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
 });

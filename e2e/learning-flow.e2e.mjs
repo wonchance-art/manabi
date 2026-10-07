@@ -785,7 +785,8 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
     await assertVisible(sheet, 'word detail sheet');
     assert.equal(await leftTab.getAttribute('aria-selected'), 'false', 'a token tap keeps sentence detail closed');
     assert.equal(await rightTab.getAttribute('aria-selected'), 'true', 'a token tap opens the word tab');
-    await assertVisible(sheet.getByText('중국어', { exact: true }), 'selected word meaning');
+    // AE-R1: 같은 뜻이 사전 뜻 목록(.reader-card-sense__meaning)에도 보이므로 뜻 줄로 좁힌다(VIEWER-V2-ROUNDS-001 §2.1).
+    await assertVisible(sheet.locator('.word-detail-card__meaning').getByText('중국어', { exact: true }), 'selected word meaning');
     // AE-R1(VIEWER-V2-ROUNDS-001 §2.1 「더 알아보기 — 이미 만든 결과(캐시)가 있으면 버튼 대신 내용」, 설계서 §7.2):
     // 펼침(details) 없이 시드한 캐시가 카드를 열 때 바로 칩으로 보인다 — 누를 것도, Gemini 호출도 없다.
     await assertVisible(sheet.getByText('더 알아보기',{exact:true}), 'more-to-learn section is directly visible in the word card');
@@ -850,7 +851,7 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
     await wordToken.click();
     assert.equal(await leftTab.getAttribute('aria-selected'), 'false', 'a word tap leaves the sentence tab closed');
     assert.equal(await rightTab.getAttribute('aria-selected'), 'true', 'a word tap keeps the word tab open');
-    await assertVisible(sheet.getByText('중국어', { exact: true }), 'word detail replaces sentence word results');
+    await assertVisible(sheet.locator('.word-detail-card__meaning').getByText('중국어', { exact: true }), 'word detail replaces sentence word results');
 
     await sheet.getByRole('button', { name: '보조 패널 닫기', exact: true }).click();
     await bookNav.getByRole('link', { name: '다음 과', exact: true }).click();

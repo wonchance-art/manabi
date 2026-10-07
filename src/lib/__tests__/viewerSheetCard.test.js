@@ -181,7 +181,7 @@ describe('⑤ 훈음 — 표제어 글자 아래 루비 셀(칸 벌림·두 줄,
     const head = sliceBetween(render, 'className="reader-card-headword"', '<div className={`word-detail-card__meaningrow');
     expect(head).toContain('<HunCell');
     expect(render).toContain('const hunCells = hanjaHunOf(headText);');
-    expect(sliceBetween(viewer, 'const hanjaHunOf = (text) => (', ');')).toContain('hunRubyCells(text, { koTable: hanjaKoTable, hunTable: hanjaHunTable, tradTable: hanjaTradTable })');
+    expect(sliceBetween(viewer, 'const hanjaHunOf = (text) => (', ');')).toContain('hunRubyCells(text, { koTable: hanjaKoTable, hunTable: hanjaHunTable, tradTable: hanjaTradTable }, HUN_RUBY_CELL)');
     const cell = read('src/components/viewer/HunCell.jsx');
     expect(cell).toContain("'--hun-n'");
     expect(cell).toContain('data-label={cell.label}');
@@ -192,7 +192,7 @@ describe('⑤ 훈음 — 표제어 글자 아래 루비 셀(칸 벌림·두 줄,
     const blocks = [...rules.matchAll(/[^{}]*\.word-fit__(?:hun|col)[^{}]*\{([^}]+)\}/g)].map((m) => m[1]);
     expect(blocks.length).toBeGreaterThan(1);
     for (const body of blocks) expect(body).not.toMatch(/position:\s*absolute|text-overflow|overflow:\s*hidden|(?:^|;)\s*height:/);
-    expect(rules).toMatch(/\.word-fit__hun[^{}]*\{[^}]*min-width:\s*calc\(var\(--hun-n/);
+    expect(rules).toMatch(/\.word-fit__hun[^{}]*\{[^}]*min-width:\s*min\(calc\(var\(--hun-n/);
     expect(rules).not.toContain('.reader-hun');
   });
 

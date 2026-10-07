@@ -189,7 +189,8 @@ test('shared reader retains independent locale settings, exact source and learni
     await page.getByRole('dialog', { name: labels[ui].settings, exact: true }).waitFor();
     assert(await page.locator('dialog[open]').evaluate(el => el.contains(document.activeElement)), 'locale switch retains focus inside the settings dialog');
   };
-  const source = async () => ({ id: await page.locator('.reader-area [data-selected="true"]').getAttribute('data-tid'), text: (await page.locator('.reader-card-source blockquote').textContent()).trim(), materialLanguage: await page.locator('.viewer-layout').getAttribute('data-language') });
+  // AE-R1(VIEWER-V2-ROUNDS-001 §2.1 문장 줄): 카드의 원문 인용은 「문장 속 쓰임」 blockquote가 아니라 문장 줄(.reader-card-sentence)이다.
+  const source = async () => ({ id: await page.locator('.reader-area [data-selected="true"]').getAttribute('data-tid'), text: (await page.locator('#inspector-word .reader-card-sentence').textContent()).trim(), materialLanguage: await page.locator('.viewer-layout').getAttribute('data-language') });
   try {
     for (const material of materials) {
       await page.setViewportSize({ width: 390, height: 844 });
@@ -335,7 +336,7 @@ test('pending Korean explanations cancel across locales and keyboard retry prese
   const page = await context.newPage();
   const meaning = page.locator('.word-detail-card__meaning').filter({ visible: true }).first();
   let ui = 'ko';
-  const source = async () => ({ id: await page.locator('.reader-area [data-selected="true"]').getAttribute('data-tid'), sentence: (await page.locator('.reader-card-source blockquote').first().textContent()).trim() });
+  const source = async () => ({ id: await page.locator('.reader-area [data-selected="true"]').getAttribute('data-tid'), sentence: (await page.locator('#inspector-word .reader-card-sentence').first().textContent()).trim() });
   const switchLocale = async (kind, value) => {
     const launcher = page.getByRole('button', { name: labels[ui].settings, exact: true });
     await launcher.focus(); await page.keyboard.press('Enter');

@@ -116,14 +116,17 @@
 .viewer-layout .word-fit ruby[data-pinyin] > .rt-an {font-size:.9375rem;letter-spacing:0;opacity:1;line-height:1.2;}
 /* AE-R1 훈음 루비 셀(VIEWER-V2-ROUNDS-001 §2.1 표제어 덩어리): 한자 글자 칸 아래 흐름 배치 — 절대배치·잘라내기 0.
    칸 폭 = max(글자 칸, 훈음 셀). 셀 최소 폭은 --hun-n(훈음 글꼴 em, hunRubyCells 계산)이라 긴 훈이면 그 칸만 벌어지고,
-   상한(글자 폭 3배)을 넘는 긴 풀이(data-wrap)는 칸 안에서 줄바꿈한다. 병음 앵커(.rt-an bottom 식)는 ruby 상자 기준이라 그대로. */
-.word-fit__col {display:inline-flex;flex-direction:column;align-items:center;}
-.word-fit__hunrow {display:inline-flex;justify-content:center;gap:.25rem;}
-.word-fit__hun {display:inline-flex;flex-direction:column;align-items:center;min-width:calc(var(--hun-n, 0) * 1em);padding:0 .125rem;font-family:var(--font-noto-kr, 'Noto Sans KR'), sans-serif;font-size:.8125rem;font-weight:400;line-height:1.35;letter-spacing:0;color:var(--reader-muted);white-space:nowrap;text-align:center;}
-.word-fit__hun[data-wrap] {max-width:calc(var(--hun-n, 0) * 1em);white-space:normal;overflow-wrap:anywhere;}
-.word-fit--hun-reserved .surface {padding-bottom:calc(.8125rem * 1.35);}
+   상한(글자 폭 3배)을 넘는 긴 풀이(data-wrap)는 칸 안에서 줄바꿈한다. 병음 앵커(.rt-an bottom 식)는 ruby 상자 기준이라 그대로.
+   글자 줄상자(line-height 1.2) 밖으로 나오는 글꼴 내용 영역(Noto CJK ≈0.124em)만큼 훈음 줄을 띄운다(.13em). */
+.word-fit__col {display:inline-flex;flex-direction:column;align-items:center;vertical-align:top;margin-bottom:.25rem;}
+/* 칩 줄 끝 듣기(§2.1): 누름 영역 44px는 그대로 두고 줄 높이에는 넣지 않는다 — 390 첫 화면 예산(설계서 §5.1). */
+.viewer-layout .word-detail-card__actions > .word-detail-card__speak {margin-block:-9px;}
+.word-fit__hunrow {display:inline-flex;justify-content:center;gap:.25rem;margin-top:.13em;}
+.word-fit__hun {display:inline-flex;flex-direction:column;align-items:center;min-width:min(calc(var(--hun-n, 0) * 1em), 100cqi);padding:0 .125rem;font-family:var(--font-noto-kr, 'Noto Sans KR'), sans-serif;font-size:.8125rem;font-weight:400;line-height:1.35;letter-spacing:0;color:var(--reader-muted);white-space:nowrap;text-align:center;}
+.word-fit__hun[data-wrap] {max-width:min(calc(var(--hun-n, 0) * 1em), 100cqi);white-space:normal;overflow-wrap:anywhere;}
+.word-fit--hun-reserved .surface {padding-bottom:calc(.8125rem * 1.35 + .13em);}
 /* AE-R1 문장 줄(§2.1): 15px 회색 한 문장, 누른 자리만 배경 + 굵게. 버튼 0. 3줄 안전망. */
-.reader-card-sentence {margin:0 0 6px;font-size:.9375rem;line-height:1.6;color:var(--reader-muted);overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden;}
+.reader-card-sentence {margin:0 0 4px;font-size:.9375rem;line-height:1.6;color:var(--reader-muted);overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden;}
 .reader-card-sentence__term {background:var(--reader-selected);color:var(--reader-ink);font-weight:700;border-radius:3px;padding:0 1px;}
 /* 구획은 라벨 + 가는 선(접힘 0). */
 .reader-card-senses,.reader-card-learn,.reader-card-notes,.reader-card-hanja,.reader-card-pattern {border-top:1px solid var(--reader-line);padding-top:8px;margin:0 0 12px;}
@@ -500,6 +503,9 @@
   .manabi-app .viewer-layout .viewer-inspector__header{flex-wrap:nowrap;padding:2px 8px}
   .manabi-app .viewer-layout .viewer-inspector__tabs{flex:1;min-width:0}
   .manabi-app .viewer-layout .viewer-inspector__tabs button{flex:1;min-width:64px;padding:6px}
+  /* AE-R1 Q9: 좁은 시트(390)에서만 미저장 등급 부제(「1분 후」 등)를 숨겨 첫 화면 예산 「문장 3줄 + 뜻 1줄」을 지킨다
+     (실글꼴 실측: 부제가 있으면 3줄 문장의 뜻 줄이 본문 끝을 4.5px 넘었다). 같은 문구는 버튼 title에 남는다. */
+  .manabi-app .viewer-layout .reader-card-actions .save-grade__sub{display:none}
 }
 
 /* Word-body hierarchy only. Existing panel scrolling and grading geometry stay intact. */
