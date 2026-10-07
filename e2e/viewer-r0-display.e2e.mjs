@@ -66,8 +66,10 @@ for(const width of [1280,390])test(`R0 bug 1 — grammar underline survives sent
   assertLine(await patternLine(f,0,3),'word selection 比');
   // Auto-pace runs on the picked sentence.
   await f.page.keyboard.press('Escape');await f.page.waitForTimeout(150);
-  await token(f,0,0).locator('.line-pick').click({force:true});
-  await f.page.getByRole('button',{name:'자동 진행 시작'}).click();
+  // AD-R2 PR ①(VIEWER-V2-ROUNDS-001 §5, 설계 Q3 A): 자동 진행은 툴바가 아니라 바닥 한 자리 — 지정 문장이 있으면 문장 이동 막대 안
+  // ▶이고, 시트가 열려 있으면 없다. 지정이 Esc 뒤에도 남아 있으면 ¦를 다시 누르지 않는다(지정 문장 ¦ 재탭 = 번역 시트).
+  if(!await token(f,0,3).evaluate(t=>t.classList.contains('word-token--picked')))await token(f,0,0).locator('.line-pick').click({force:true});
+  await f.page.getByRole('toolbar',{name:'문장 이동',exact:true}).getByRole('button',{name:'자동 진행 시작',exact:true}).click();
   await f.page.locator('.reader-area.reader-area--pacing').waitFor();
   assertLine(await patternLine(f,0,3),'auto-pace 比');
   await f.page.getByRole('button',{name:/자동 진행.*중지/}).click();

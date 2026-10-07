@@ -45,8 +45,8 @@
 .viewer-layout .viewer-topbar {flex-wrap:wrap;position:sticky;top:var(--gnb-height);z-index:35;margin-bottom:0;padding-block:8px 12px;background:var(--reader-paper);gap:12px;}
 .viewer-layout .viewer-topbar::before {content:"";position:absolute;inset:0 calc(-1 * var(--reader-gutter)) -1px;z-index:-1;background:var(--reader-paper);pointer-events:none;}
 .viewer-layout .viewer-topbar__tools {display:flex;flex-wrap:wrap;gap:8px;margin-left:auto;}
-.viewer-layout .viewer-aa,.viewer-pace-toggle {min-height:44px;min-width:44px;border:1px solid var(--reader-line);border-radius:10px;background:var(--reader-paper);color:var(--reader-ink);padding:8px 12px;cursor:pointer;font-size:.9rem;}
-.viewer-layout .viewer-aa:hover {background:var(--reader-selected);}
+.viewer-layout .viewer-tool {min-height:44px;min-width:44px;border:1px solid var(--reader-line);border-radius:10px;background:var(--reader-paper);color:var(--reader-ink);padding:8px 12px;cursor:pointer;font-size:.9rem;}
+.viewer-layout .viewer-tool:hover {background:var(--reader-selected);}
 .viewer-layout .reader-area .word-token .surface {text-shadow:none;color:inherit;}
 /* Selection adds a quiet neutral wash; learning states keep their own hues. */
 .viewer-layout :is(.reader-area,.reader-settings__preview) {--picked-bg:color-mix(in srgb,var(--reader-ink) 7%,var(--reader-paper));}
@@ -289,15 +289,20 @@
 
 /* Reading-room chrome follows the home page's paper, ink and editorial rules.
    Body typography, annotation settings and learning-state colors remain reader owned. */
-.manabi-app .viewer-layout {background:var(--reader-surface);gap:28px;min-height:calc(100dvh - var(--gnb-height));}
+/* AD-R2(VIEWER-V2-ROUNDS-001 §5 「본문 테두리 카드 제거」): 본문은 종이 위에 바로 놓인다 — 뷰어 바탕 전체가 종이다.
+   본문 바탕(--reader-paper)은 그대로라 종이 기준 혼색(선택 띠·상태 띠)의 대비가 변하지 않는다(설계 Q5). 경로 줄·시트는 주변색. */
+.manabi-app .viewer-layout {background:var(--reader-paper);gap:28px;min-height:calc(100dvh - var(--gnb-height));}
 .manabi-app .viewer-layout .viewer-topbar {background:var(--reader-surface);border-bottom:1px solid var(--reader-line);gap:8px;padding:6px 0;min-height:58px;}
 .manabi-app .viewer-layout .viewer-topbar::before {background:var(--reader-surface);}
 .manabi-app .viewer-layout .viewer-back-link {font-size:13px;color:var(--reader-muted);min-height:44px;display:inline-flex;align-items:center;}
 .manabi-app .viewer-layout .viewer-topbar__tools {gap:4px;align-items:center;}
-.manabi-app .viewer-layout :is(.viewer-aa,.viewer-pace-toggle,.viewer-series-nav__btn) {border-color:transparent;border-radius:3px;background:transparent;box-shadow:none;min-width:44px;min-height:44px;color:var(--reader-ink);}
-.manabi-app .viewer-layout .viewer-aa {font-size:13px;padding:8px 11px;font-weight:500;}
-.manabi-app .viewer-layout .viewer-aa[aria-label="읽기 설정"] {font-family:var(--font-manrope),sans-serif;font-size:20px;letter-spacing:-1px;}
-.manabi-app .viewer-layout :is(.viewer-aa,.viewer-pace-toggle,.viewer-series-nav__btn):hover {background:var(--reader-selected);color:var(--reader-accent);}
+.manabi-app .viewer-layout :is(.viewer-tool,.viewer-series-nav__btn) {border-color:transparent;border-radius:3px;background:transparent;box-shadow:none;min-width:44px;min-height:44px;color:var(--reader-ink);}
+/* 경로 줄 도구 = 아이콘 20 + 간격 4 + 보이는 라벨 13px 500, 좌우 10px(AD-R2 설계 §9.2). Aa는 글자 자체가 라벨. */
+.manabi-app .viewer-layout .viewer-topbar__tools .viewer-tool {display:inline-flex;align-items:center;justify-content:center;gap:4px;flex:none;padding:0 10px;font-size:13px;font-weight:500;line-height:1.2;white-space:nowrap;}
+.manabi-app .viewer-layout .viewer-topbar__tools .viewer-tool .action-icon {flex:none;}
+.manabi-app .viewer-layout .viewer-topbar__tools .viewer-tool--aa {font-family:var(--font-manrope),sans-serif;font-size:17px;font-weight:600;letter-spacing:-.5px;}
+.manabi-app .viewer-layout .viewer-topbar__tools .viewer-tool:focus-visible {outline:2px solid var(--reader-accent);outline-offset:1px;}
+.manabi-app .viewer-layout :is(.viewer-tool,.viewer-series-nav__btn):hover {background:var(--reader-selected);color:var(--reader-accent);}
 .manabi-app .viewer-layout .viewer-series-nav {gap:0;}
 .manabi-app .viewer-layout .viewer-series-nav__btn {font-size:27px;font-weight:400;padding:0;}
 .manabi-app .viewer-layout .viewer-series-nav__position {font-size:12px;min-width:35px;text-align:center;font-variant-numeric:tabular-nums;color:var(--reader-muted);}
@@ -305,7 +310,6 @@
 .manabi-app .viewer-layout .listen-controls>.btn {border:0;border-radius:3px;padding:8px 10px;font-size:13px;font-weight:500;color:var(--reader-ink);background:transparent;min-height:44px;}
 .manabi-app .viewer-layout .viewer-header {display:block;padding:32px 0 24px;margin:0;border:0;}
 .manabi-app .viewer-layout .reader-edition {font-size:11px;letter-spacing:.7px;color:var(--reader-accent);margin:0 0 14px;}
-.reader-edition>span {letter-spacing:1.4px;color:var(--reader-muted);margin-right:4px;}
 .manabi-app .viewer-layout .viewer-titlerow {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:baseline;margin-bottom:14px;}
 .manabi-app .viewer-layout .viewer-titlerow .page-header__title {font-size:clamp(27px,3cqi,40px);line-height:1.35;letter-spacing:-1.1px;font-weight:700;color:var(--reader-ink);}
 .manabi-app .viewer-layout .viewer-title-edit {border:0;background:transparent;border-radius:3px;font-size:12px;color:var(--reader-muted);padding:8px;min-height:44px;flex:none;}
@@ -314,7 +318,13 @@
 .manabi-app .viewer-layout .viewer-badges {gap:8px 18px;margin:8px 0 0;}
 .manabi-app .viewer-layout .viewer-badge {border:0;border-radius:0;padding:0;background:none;color:var(--reader-muted);box-shadow:none;font-size:11px;animation:none;}
 .manabi-app .viewer-layout .viewer-badge--due {color:var(--reader-accent);}
-.manabi-app .viewer-layout .reader-area {padding:clamp(18px,3cqi,32px);border:1px solid var(--reader-line);border-radius:3px;background:var(--reader-paper);}
+/* 통계 줄 한 덩어리(AD-R2) — 「아는 단어 · 새 단어 · N개 수집 → 단어장」. 블록이라 가운뎃점 앞뒤 공백이 살고,
+   좁은 화면에서는 덩어리 안에서 줄을 바꾼다. 수집 링크는 무채색 밑줄(크롬 강조색은 복습 하나). 세로 여백은 누름 영역만
+   넓히고 줄 높이는 바꾸지 않는다(인라인 패딩). */
+.manabi-app .viewer-layout .viewer-stats {display:block;line-height:1.7;}
+.manabi-app .viewer-layout .viewer-stats__vocab {color:inherit;padding-block:10px;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--reader-line);}
+.manabi-app .viewer-layout .viewer-stats__vocab:hover {color:var(--reader-ink);text-decoration-color:currentColor;}
+.manabi-app .viewer-layout .reader-area {padding-block:clamp(18px,3cqi,32px);padding-inline:0;border:0;border-radius:0;background:var(--reader-paper);}
 .manabi-app .viewer-layout .reader-hint {font-size:12px;color:var(--reader-muted);line-height:1.7;}
 .manabi-app .viewer-layout .viewer-attribution {font-size:12px;color:var(--reader-muted);line-height:1.8;}
 .manabi-app .viewer-layout .viewer-inspector {border-radius:5px;border-top:3px solid var(--reader-accent);box-shadow:0 12px 32px color-mix(in srgb,var(--reader-ink) 8%,transparent);}
@@ -344,7 +354,7 @@
 @container reader (max-width:600px) {
   .manabi-app .viewer-layout .viewer-header {padding-block:24px 18px;}
   .manabi-app .viewer-layout .viewer-titlerow {align-items:flex-start;}
-  .manabi-app .viewer-layout .reader-area {padding:20px 14px;}
+  .manabi-app .viewer-layout .reader-area {padding-block:20px;}
   .manabi-app .viewer-layout .viewer-topbar {column-gap:0;}
   .manabi-app .viewer-layout .viewer-series-nav__btn {min-width:40px;}
   .manabi-app .viewer-layout .viewer-inspector {inset-inline:8px;border-radius:6px;}

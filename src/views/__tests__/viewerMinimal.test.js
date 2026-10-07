@@ -19,7 +19,7 @@ const VIEWER = 'src/views/ViewerPage.jsx';
 
 const src = () => read(VIEWER);
 /** 본문 위 크롬 전부 — 헤더 시작부터 리더 카드 직전까지. */
-const above = () => stripComments(sliceBetween(src(), '<header className="page-header viewer-header">', 'className={`card reader-area'));
+const above = () => stripComments(sliceBetween(src(), '<header className="page-header viewer-header">', 'className={`reader-area reader-area--'));
 /** 본문 아래 — 리더 카드 끝(문장 이동 필 뒤)부터 댓글까지. */
 const below = () => stripComments(sliceBetween(src(), '<TokenRangeGrips', '{settingsOpen&&<ViewerSettings'));
 const aCss = () => stripComments(sliceBetween(read('src/index.css'), '/* ========= 뷰어 정돈 A안', '/* ========= /뷰어 정돈 A안 ========= */'));
@@ -38,7 +38,7 @@ describe('① 본문 위에는 경로·제목·도구만 — 끝의 행동 0', (
 
   it('경로 줄 하나에 [← 자료실 · 형제 내비] 왼쪽, [도구] 오른쪽 — 도구는 듣기·Aa(+분석 중단)', () => {
     const bar = sliceBetween(src(), '<div className="viewer-topbar">', '{titleEditing && user?.id === material?.owner_id');
-    const order = ['className="viewer-back-link"', '<div className="viewer-series-nav"', 'className="viewer-topbar__tools"', '<ListenControls', 'className="viewer-aa"']
+    const order = ['className="viewer-back-link"', '<div className="viewer-series-nav"', 'className="viewer-topbar__tools"', '<ListenControls', 'className="viewer-tool viewer-tool--aa"']
       .map((s) => { const i = bar.indexOf(s); expect(i, `${s} 없음`).toBeGreaterThan(-1); return i; });
     expect([...order].sort((x, y) => x - y)).toEqual(order);
     // 경로 줄은 헤더 **안** 첫 자식 — 제목보다 앞

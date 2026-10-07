@@ -411,7 +411,7 @@ test('경로 줄 — 경로(뒤로가기·형제 내비)는 왼쪽, 도구는 �
     <div class="viewer-series-nav" title="《HSK 5 문장 320》"><span class="viewer-series-nav__btn">◀</span><span class="viewer-series-nav__position">3/20</span><span class="viewer-series-nav__btn">▶</span></div>
     <div class="viewer-topbar__tools">
       <div class="listen-controls"><button class="btn btn--ghost btn--sm">▷ 듣기</button></div>
-      <button class="viewer-aa">Aa</button>
+      <button class="viewer-tool viewer-tool--aa"><span aria-hidden="true">Aa</span></button>
     </div>
   </div>`));
   const back = (await boxes('.viewer-back-link'))[0];
@@ -429,7 +429,7 @@ test('경로 줄 — 뒤로가기·내비가 없어도 도구는 오른쪽에 �
   // 두 경우를 다 감당하는 것은 auto 마진뿐이라, 그 근거를 여기서 못 박는다(v2-Q 선례 그대로).
   await page.setContent(chromePage(`<div class="viewer-topbar">
     <div class="viewer-topbar__tools">
-      <button class="viewer-aa">Aa</button>
+      <button class="viewer-tool viewer-tool--aa"><span aria-hidden="true">Aa</span></button>
     </div>
   </div>`));
   const tools = (await boxes('.viewer-topbar__tools'))[0];

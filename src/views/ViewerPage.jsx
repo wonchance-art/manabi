@@ -1102,6 +1102,9 @@ export default function ViewerPage() {
     const fit = materialFit(material.processed_json, index);
     return fit.total >= FIT_MIN_TYPES ? fit : null;
   }, [user, material?.processed_json, savedWords, knownWordSet]);
+  // 「N개 수집 → 단어장」(AD-R2 설계 Q4) — 이 자료의 내용어 중 단어장에 담긴 수. 같은 엔진에 '이미 앎'을 합치기 전
+  // 인덱스를 넣는다(담은 것만 센다). 표본 하한은 두지 않는다 — 수집은 비율이 아니라 개수라 0% 오표기 위험이 없다.
+  const collectedInMaterial = useMemo(() => (user && material?.processed_json ? materialFit(material.processed_json, savedWords).known : 0), [user, material?.processed_json, savedWords]);
 
   // 받아쓰기 추천용 담은 단어 집합 — 표기·기본형 합집합(엔진이 text.includes로 대조).
   const dictationSavedSet = useMemo(
@@ -1212,6 +1215,24 @@ export default function ViewerPage() {
     : null;
   // 카드·시트 열림 = 찾아보는 중 — 진행도 측정도 함께 멈춘다(I-a와 같은 신호).
   const paceHeld = inspectorOpen || isSheetOpen || modalBlocked || tokenRange.dragging || background;
+  // 자동 진행 버튼 한 벌(AD-R2 설계 Q3 A — 바닥 한 자리). 지정 문장이 있으면 문장 이동 막대 안 아이콘(44px),
+  // 없으면 바닥에 뜬 「▶ 자동 진행」. 같은 이름·동작을 다른 옷으로 입는다 — 접근 이름 3종은 툴바 시절 그대로다
+  // (readingPacer 계약·viewer-reading-controls e2e가 이 이름으로 누른다). 시트·창이 열리면 둘 다 없다(정본 §5).
+  const paceFocusRef = useRef(false);
+  const paceToggle = (className, withLabel = false) => {
+    const name = vt(paceRunning ? (paceHeld ? '자동 진행 대기 · 중지' : '자동 진행 중지') : '자동 진행 시작');
+    return <button type="button" className={className} aria-label={name} title={name} aria-pressed={paceRunning} data-icon-action={withLabel ? undefined : ''}
+      onClick={e => {
+        if (paceRunning) { setPaceRunning(false); return; }
+        // 단독 버튼은 시작과 함께 사라진다(막대가 대신 뜬다) — 누른 손의 포커스를 막대 안 ■로 넘긴다.
+        paceFocusRef.current = withLabel && e.currentTarget === document.activeElement;
+        startPacer();
+      }}><ActionIcon name={paceRunning ? 'stop' : 'play'}/>{withLabel&&<span>{vt('자동 진행')}</span>}</button>;
+  };
+  // 문장 이동 막대가 뜨는 조건(#1356): 지정 문장 + 기본 뷰어(수업 모드는 자기 도크 — 막대 없음). 보조 패널에 내용이
+  // 있으면 막대 대신 시트가 뜨는데, 그때는 inspectorOpen·isSheetOpen이 단독 버튼을 따로 막는다.
+  const moveBarShown = pickedSentence !== null && !classStudyActive;
+  const paceFloatShown = autoPace && sentences.length > 0 && !moveBarShown && !inspectorOpen && !isSheetOpen && !modalBlocked;
 
   useReadingPacer({
     enabled: paceArmed,
@@ -1409,6 +1430,12 @@ export default function ViewerPage() {
     if (active && active !== last && active !== document.body) return;
     bar.querySelector('button:not(:disabled)')?.focus();
   }, [pickedLineIdx]);
+  // 단독 「▶ 자동 진행」으로 시작하면 그 버튼은 사라지고 막대가 뜬다 — 키보드 위치를 막대 안 ■에 이어 둔다.
+  useEffect(() => {
+    if (!paceFocusRef.current || !paceRunning) return;
+    paceFocusRef.current = false;
+    moveBarRef.current?.querySelector('.sentence-move-bar__pace')?.focus({ preventScroll: true });
+  }, [paceRunning, pickedLineIdx]);
   // Alt+↑ / Alt+↓ — 문장이 지정된 동안의 키보드 이동(입력란·모달·조합 중에는 무시).
   // 막대 버튼과 같은 moveSentence라 집중 모드에서는 순수 이동이다.
   const sentenceKeyRef = useRef({});
@@ -1438,6 +1465,7 @@ export default function ViewerPage() {
       {sentenceNavBtn(-1, 'sentence-move-bar__btn')}
       <span className="sentence-move-bar__pos" role="status">{pickedPosition} / {sentences.length}</span>
       {sentenceNavBtn(1, 'sentence-move-bar__btn')}
+      {autoPace&&paceToggle('sentence-move-bar__btn sentence-move-bar__pace')}
       <button type="button" className="sentence-move-bar__translate" title={vt('이 문장 번역 보기')} onClick={translatePickedSentence}>{vt('번역')}</button>
       <button type="button" className="sentence-move-bar__btn sentence-move-bar__close" aria-label={vt('문장 지정 해제')} title={vt('문장 지정 해제')} onClick={closeMoveBar} data-icon-action><ActionIcon name="close"/></button>
     </div>
@@ -2755,18 +2783,21 @@ export default function ViewerPage() {
               ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true"><ActionIcon name="next"/></span>}
             </div>
           )}
-          {/* 도구는 도구끼리 오른쪽(v2-Q 축 그대로). 분석 중단은 지금 도는 분석에 대한 일시 제어라 여기. */}
+          {/* 도구는 도구끼리 오른쪽(v2-Q 축 그대로). 분석 중단은 지금 도는 분석에 대한 일시 제어라 여기.
+              AD-R2(VIEWER-V2-ROUNDS-001 §5): 아이콘 + 보이는 짧은 라벨(듣기 · Aa · 학습). 접근 이름은 그대로라
+              보이는 라벨이 이름 안에 든다. ⋯ 자료 관리는 「학습」 창 항목으로(설계 Q1 ③ — 시리즈 내비 + 소유자의
+              390px 두 줄 해소), 자동 진행은 바닥 한 자리(단독 버튼 ↔ 문장 이동 막대 안, 설계 Q3 A)로 옮겼다. */}
           <div className="viewer-topbar__tools">
             {user?.id === material?.owner_id && reanalyzeMutation.isPending && (
               <button onClick={stopReanalysis} disabled={reanalyze.committing} className="grammar-btn grammar-btn--danger">{vt("분석 중단")}</button>
             )}
             {ttsSupported && <ListenControls text={material?.raw_text} language={materialLang} stopSignal={activeModal?.kind} playbackRate={TTS_RATES[ttsRate].web} compact uiLocale={uiLocale} />}
-            <button ref={settingsTrigger} className="viewer-aa" aria-label={vt("읽기 설정")} title={vt("읽기 설정")} data-icon-action aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
-              <ActionIcon name="type"/>
+            <button ref={settingsTrigger} className="viewer-tool viewer-tool--aa" aria-label={vt("읽기 설정")} title={vt("읽기 설정")} aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
+              <span aria-hidden="true">Aa</span>
             </button>
-            <button className="viewer-aa" aria-label={vt("학습")} title={vt("학습")} data-icon-action aria-haspopup="dialog" onClick={()=>changeModal('activities',true)}><ActionIcon name="book"/></button>
-            {user?.id===material?.owner_id&&!passageOf(material)&&!isAnalyzing&&<button className="viewer-aa" aria-label={vt("자료 관리")} title={vt("자료 관리")} data-icon-action aria-haspopup="dialog" onClick={()=>{setActiveModal(null);setReanalyzePanel('menu');}}><ActionIcon name="more"/></button>}
-            {autoPace&&<button className="viewer-pace-toggle" aria-label={vt(paceRunning?(paceHeld?'자동 진행 대기 · 중지':'자동 진행 중지'):'자동 진행 시작')} title={vt(paceRunning?(paceHeld?'자동 진행 대기 · 중지':'자동 진행 중지'):'자동 진행 시작')} data-icon-action aria-pressed={paceRunning} onClick={()=>paceRunning?setPaceRunning(false):startPacer()}><ActionIcon name={paceRunning?'stop':'play'}/></button>}
+            <button className="viewer-tool" aria-haspopup="dialog" onClick={()=>changeModal('activities',true)}>
+              <ActionIcon name="book"/><span>{vt("학습")}</span>
+            </button>
           </div>
         </div>
       <ClassSourceFocus material={material} user={user} params={originalParams} tokenRefs={tokenRefs} onResolve={(target,source)=>{
@@ -2776,7 +2807,7 @@ export default function ViewerPage() {
       }}/>
       <ClassCopyNotice key={String(id)} material={material} user={user} returnTo={originalParams.get('returnTo')}/>
       <header className="page-header viewer-header">
-        <p className="reader-metadata reader-edition"><span>READING ROOM /</span> {vt(languageInfo?.labelKo || langNameKo(materialLang))}{material?.processed_json?.metadata?.level ? ` · ${material.processed_json.metadata.level}` : ''} · {vt(material.visibility === 'public' ? '공개 읽기' : '내 자료')}</p>
+        <p className="reader-metadata reader-edition">{vt(languageInfo?.labelKo || langNameKo(materialLang))}{material?.processed_json?.metadata?.level ? ` · ${material.processed_json.metadata.level}` : ''} · {vt(material.visibility === 'public' ? '공개 읽기' : '내 자료')}</p>
         {composerOf(material) && <p className="reader-metadata">{passageOf(material)?`${passageLocation(passageOf(material))}에서 고른 학습 구간이에요. 원본은 위의 링크에서 열 수 있어요.`:'학습에 사용한 본문이에요. 현재 글은 위의 링크에서 열 수 있어요.'}</p>}
         {titleEditing && user?.id === material?.owner_id && !composerOf(material) ? (
           <form
@@ -2821,17 +2852,20 @@ export default function ViewerPage() {
             (inline-block 하나 vs 전체 폭 둘) 세로도 3줄을 먹었다. 한 줄로 모은다.
             인라인 style 3벌은 공용 클래스로 — v2-K R1 토큰화가 남긴 나머지다. */}
         {savedWordsError && <p role="alert">{vt("잠시 후 다시 시도해주세요.")} <button type="button" onClick={() => refetchSavedWords()}>{vt("다시 시도")}</button></p>}
-        {((user && dueInMaterial > 0) || coverage) && (
+        {((user && dueInMaterial > 0) || coverage || collectedInMaterial > 0) && (
           <div className="viewer-badges">
             {user && dueInMaterial > 0 && (
               <span className="viewer-badge viewer-badge--due" title={vt("복습할 것")}>
                 {vt('{count}개 복습 가능', {count: dueInMaterial})}</span>
             )}
-            {coverage && (
-              <span
-                className="viewer-badge"
-                title={vt("담은 단어와 '이미 알아요' 표시를 합쳐 센 값 — 서재 맞춤도와 같은 계산이에요")}
-              >{vt('아는 단어 {percent}% · 새 단어 {count}개', {percent: Math.round(coverage.coverage * 100), count: coverage.unknown})}</span>
+            {/* 통계 줄 한 덩어리(AD-R2 §5 「크롬 정리」): 커버리지 · 이 자료에서 담은 수 → 단어장. 수집 칩은 #1331이
+                지웠고(전체 단어장 수였다), 여기서는 이 자료 기준 수로 같은 줄에 되돌린다(설계 Q4). */}
+            {(coverage || collectedInMaterial > 0) && (
+              <span className="viewer-badge viewer-stats">
+                {coverage && <span title={vt("담은 단어와 '이미 알아요' 표시를 합쳐 센 값 — 서재 맞춤도와 같은 계산이에요")}>{vt('아는 단어 {percent}% · 새 단어 {count}개', {percent: Math.round(coverage.coverage * 100), count: coverage.unknown})}</span>}
+                {coverage && collectedInMaterial > 0 && ' · '}
+                {collectedInMaterial > 0 && <Link href="/vocab" prefetch={false} className="viewer-stats__vocab">{vt('{count}개 수집 → 단어장', {count: collectedInMaterial})}</Link>}
+              </span>
             )}
           </div>
         )}
@@ -2929,7 +2963,7 @@ export default function ViewerPage() {
       {/* Reader Area — 인앱 토큰 범위 지정(드래그) 이벤트는 여기서 위임 수신 */}
       <div
         ref={readerRef}
-        className={`card reader-area reader-area--${theme}${focusMode && (pickedLineIdx !== null || tokenRange.range) ? ' reader-area--focus' : ''}${wordStateHl ? ' reader-area--hl' : ''}${paceDwell ? ' reader-area--pacing' : ''}${paceDwell && paceHeld ? ' reader-area--pacing-hold' : ''}`}
+        className={`reader-area reader-area--${theme}${focusMode && (pickedLineIdx !== null || tokenRange.range) ? ' reader-area--focus' : ''}${wordStateHl ? ' reader-area--hl' : ''}${paceDwell ? ' reader-area--pacing' : ''}${paceDwell && paceHeld ? ' reader-area--pacing-hold' : ''}`}
         style={{
           fontSize: `${fontSize*(classStudyActive&&classBoardLayout==='split'?.8:1)}rem`,
           fontFamily: readerFontFamily(materialLang,fontFamily),
@@ -3392,6 +3426,7 @@ export default function ViewerPage() {
         ) : null}
       /> : boardActions ? null : sentenceMoveBar} />}
       </TextbookAnnotations>
+      {paceFloatShown&&<div className="viewer-pace-float">{paceToggle('viewer-pace-float__btn',true)}</div>}
 
       {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} languageSettings={languageSettings} onClose={closeReadingSettings} keepPosition={keepReadingPosition} previewTokens={previewTokens} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus}/>}
       {modal('activities')&&<ViewerModal uiLocale={uiLocale} title={vt("학습")} onClose={()=>setActiveModal(null)}><div className="reader-activity-menu">
@@ -3400,6 +3435,8 @@ export default function ViewerPage() {
         {ttsSupported&&pickedSentence&&<button onClick={()=>setDictationSentence(pickedSentence.text)}><b>{vt("선택 문장 받아쓰기")}</b><span>{vt("지금 지정한 문장으로 시작해요")}</span></button>}
         {isDone&&<><button onClick={()=>setShowReadingTest(true)}><b>{vt("읽기 확인")}</b><span>{vt("전체 자료 · 기존 읽기 확인 기록에 연결돼요")}</span></button><button onClick={()=>setShowConversation(true)}><b>{vt("회화 연습")}</b><span>{vt("전체 자료를 주제로 대화해요")}</span></button></>}
         {!isDone&&<p>{vt("자료 분석이 끝나면 읽기 확인과 회화 연습을 사용할 수 있어요.")}</p>}
+        {/* 툴바 ⋯의 후신(AD-R2 설계 Q1 ③) — 조건·동작은 그대로, 자리만 「학습」 창의 마지막 항목. */}
+        {user?.id===material?.owner_id&&!passageOf(material)&&!isAnalyzing&&<button onClick={()=>{setActiveModal(null);setReanalyzePanel('menu');}}><b>{vt("자료 관리")}</b><span>{vt("다시 분석하거나 원문을 고쳐요")}</span></button>}
       </div></ViewerModal>}
       {/* 리딩 테스트 인라인 확장 */}
       {isDone && showReadingTest && (
