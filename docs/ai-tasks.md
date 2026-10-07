@@ -905,8 +905,14 @@
   - 이 컨테이너에서 불가(오너/M09): 운영 DB 조회·적용, 운영 배포, 정상 실계정 검수(10-06 04:00 경계 이후 학습 검수 포함).
 - **뷰어 v2 (2026-10-07 21:10 KST~, 오너 지시 「이 세션이 뷰어 v2 맡아」 — [착수](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6037135867))**:
   정본 = [R0 버그](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6031758159) · [v2 라운드](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036574287). R0 → R0+ → AE-R1 → AE-R2 → AD-R2 → AE-R3 → AD-R3 → AD-R4 → AE-R4, 라운드마다 PR.
-  - `claude/viewer-r0-links` — 버그 3: 학습자 링크 관문 `learnerHref`(옛 교재 주소 → null + 「보관된 교재라 열 수 없어요」). 대응 데이터 없어 매핑 안 함.
-  - `claude/viewer-r0-css`(1·2·6·7·8·11) · `claude/viewer-r0-sheet`(4·9·10) · `claude/viewer-v2-r0plus`(정체 꼴 훈음) 진행 중.
+  - ✅ R0·R0+ 병합(오너 승인 「실글꼴 검수로 대신하고 병합해」): #1352 옛 교재 링크 `learnerHref` · #1355 정체 꼴 훈음(hanjaTrad) ·
+    #1356 문장 이동 막대·pronReveal/recall 제거 · #1354 문형 표식·성조 색·선택 테두리·줄 간격 하한(실글꼴 6a/6b 수정). 운영 사후 검수(M09) 대기.
+  - 새 라운드 PR은 merge-ready에서 멈춤(오너 2026-10-08 「merge 할 수 있기 바로 전까지」 — 매시 자동 재개 루틴):
+    설계 #1358(AE-R1)·#1360(AE-R2·AD-R2)·#1361(AE-R3·AE-R4)·#1363(AD-R3·AD-R4) · AE-R1 #1359(데이터)→#1367(단어창 골격)→PR③ 진행 ·
+    AE-R2 #1362(문장 범위) · AD-R2 #1369(크롬)·#1366(새 단어 밑줄) · AE-R3 #1365(일본어 단어 표 jaWords, CC BY-SA) ·
+    AD-R4 측정 세트(ZH-SENSE-HOLDOUT-001, 실호출·운영 스냅숏 대기) · AE-R4 PR① 진행.
+  - 발견 결함 수정: #1364 dict-correct 권한(소유자/관리자 + 자료 토큰 — 먼저 병합 권장) · #1368 일본식 자형(面→麺·方面→方麺).
+  - 오너 결정 대기: 한국어 어절 자르기 A/B(B 권장) · 공유 사전 정책 ⓐ/ⓑ/ⓒ · JA_FALSE_FRIENDS 59 감수 · #1368 트레이드오프.
 ### todo (오너 전건 승인 2026-07-18 — owner-gate 해제분 포함, Codex-1 확장 큐 = #150 코멘트 5012160829)
 - 🧊 **이 아래 전량 = 게임·월드 트랙 동결**(오너 "게임 월드는 ㄴㄴ" 2026-08-25).
   2026-08-26 전수 대조 결과 **비월드 잔여 0**: #1077 인박스 승인분 전량 완결(2·3·6·11·
