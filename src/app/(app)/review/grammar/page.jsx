@@ -8,6 +8,8 @@ import { loadPublishedRegistry } from '@/lib/publishedChapter';
 import { buildDrillReviewQuiz, drillIdFromQueueSlug, findDrillContext } from '@/lib/drillSrs';
 import GrammarReviewSession from '@/views/GrammarReviewSession';
 import GuestGrammarReview from '@/views/GuestGrammarReview';
+// 옛 교재 챕터 주소는 관리자 보관함으로만 열린다 — 학습자 링크는 null(VIEWER-R0-BUGS-001 버그 3).
+import { learnerHref } from '@/lib/bookNavigation';
 
 export const metadata = { title: '문법 복습' };
 export const dynamic = 'force-dynamic';
@@ -78,7 +80,7 @@ function toDrillItem(row, registries) {
     title: `${found.chapter.title} · 드릴`,
     order: found.chapter.order,
     level: found.chapter.level,
-    href: `${ref.base}/grammar/${found.chapter.slug}`,
+    href: learnerHref(`${ref.base}/grammar/${found.chapter.slug}`),
     quiz,
   };
 }
@@ -110,7 +112,7 @@ function toItem(row, registries) {
     title: found.chapter.title,
     order: found.chapter.order,
     level: found.chapter.level,
-    href: `${ref.base}/grammar/${row.slug}`,
+    href: learnerHref(`${ref.base}/grammar/${row.slug}`),
     quiz,
   };
 }
@@ -228,7 +230,7 @@ export default async function Page() {
         level: found.chapter.level,
         order: found.chapter.order,
         title: `${found.chapter.title} · 드릴`,
-        href: `${ref.base}/grammar/${found.chapter.slug}`,
+        href: learnerHref(`${ref.base}/grammar/${found.chapter.slug}`),
         dueAt: row.next_review_at,
       };
     }
@@ -247,7 +249,7 @@ export default async function Page() {
       level: ch.level,
       order: ch.order,
       title: ch.title,
-      href: `${ref.base}/grammar/${row.slug}`,
+      href: learnerHref(`${ref.base}/grammar/${row.slug}`),
       dueAt: row.next_review_at,
     };
   }).filter(Boolean);

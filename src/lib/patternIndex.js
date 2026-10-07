@@ -28,6 +28,8 @@
  * LLM은 한 번도 부르지 않고(1단 스캔), 새로 적재하는 기록도 없다.
  */
 
+import { learnerHref } from './bookNavigation';
+
 /** 한 표지가 이어 붙을 수 있는 최대 토큰 수 — 성어(4자)까지 닿게. */
 export const MAX_SPAN = 4;
 
@@ -134,6 +136,8 @@ export function isUsableKernel(kernel, lang) {
  * @param {{base?: string, validSlugs?: Set<string>}} [opts]
  *   base: 챕터 주소 앞머리('/chinese'). validSlugs: 정본 챕터 slug —
  *   주면 목록에 없는 `ch`는 **링크를 만들지 않는다**(환각·오타 차단).
+ *   옛 교재 챕터 주소는 관리자 보관함으로 옮겨져 learnerHref가 null로 막는다 — `ch`(복습 표식 열쇠)는 남고
+ *   `href`만 비며, 카드는 링크 대신 보관 안내를 보인다(VIEWER-R0-BUGS-001 버그 3).
  * @returns {Map<string, Array<object>>} 커널 → 패턴들(입력 순서 그대로 — 결정성)
  */
 export function buildKernelIndex(sets, { base = '', validSlugs, lang } = {}) {
@@ -156,7 +160,7 @@ export function buildKernelIndex(sets, { base = '', validSlugs, lang } = {}) {
           ex2: item.ex2 || null,
           note: item.note || '',
           ch,
-          href: ch ? `${base}/grammar/${ch}` : null,
+          href: ch ? learnerHref(`${base}/grammar/${ch}`) : null,
         };
         // 슬롯이 없는 표기는 구문이 아니라 어휘 항목이다 — 밑줄이 문법을 가리키지 않는다.
         if (lang === 'Japanese' && !hasSlotMarker(item.pattern)) continue;

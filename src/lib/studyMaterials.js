@@ -23,6 +23,8 @@ import { weakChapterSet, promoteWeakFirst } from './weaknessProfile';
 import { levelBand } from '@/lib/writingPrompts';
 import { kstWeekStartMs } from './growthStats'; // 상대 경로 — vitest가 실모듈을 로드한다(@ 별칭 없음)
 import { dropUndoneEvents } from './undoneReviews';
+// 옛 교재 챕터 주소는 관리자 보관함으로만 열린다 — 세션 카드의 「자세히」 링크는 null로 비운다(VIEWER-R0-BUGS-001 버그 3).
+import { learnerHref } from './bookNavigation';
 import { THEMES } from '@/lib/studyParagraph';
 
 /**
@@ -240,7 +242,7 @@ async function buildWeaknessMaterials(supabase, userId, lang, ref, reviewEventRo
         pattern: sec.pattern,
         patternKo: sec.patternKo || '',
         srs,
-        meta: { slug, title: ch.title, level: ch.level, order: ch.order, href: `${ref.base}/grammar/${slug}` },
+        meta: { slug, title: ch.title, level: ch.level, order: ch.order, href: learnerHref(`${ref.base}/grammar/${slug}`) },
       };
     }).filter(Boolean);
   }
@@ -403,7 +405,7 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
     if (!items.length) return null;
     return {
       srs: { lang: row.lang, slug: row.slug, interval: row.interval, ease_factor: row.ease_factor, repetitions: row.repetitions, next_review_at: row.next_review_at },
-      meta: { slug: row.slug, title: found.chapter.title, level: found.chapter.level, order: found.chapter.order, href: `${ref.base}/grammar/${row.slug}` },
+      meta: { slug: row.slug, title: found.chapter.title, level: found.chapter.level, order: found.chapter.order, href: learnerHref(`${ref.base}/grammar/${row.slug}`) },
       items,
     };
   }).filter(Boolean);
@@ -428,7 +430,7 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
     if (items.length < 2) continue;                    // 퀴즈 못 만드는 챕터(카나 등)는 건너뜀
     const patternSec = ch.sections.find(s => s.pattern);
     newChapter = {
-      meta: { lang, slug: ch.slug, title: ch.title, level: ch.level, order: ch.order, href: `${ref.base}/grammar/${ch.slug}` },
+      meta: { lang, slug: ch.slug, title: ch.title, level: ch.level, order: ch.order, href: learnerHref(`${ref.base}/grammar/${ch.slug}`) },
       teach: patternSec ? {
         pattern: patternSec.pattern,
         patternKo: patternSec.patternKo || '',
