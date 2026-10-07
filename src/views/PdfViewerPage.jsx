@@ -243,6 +243,9 @@ export default function PdfViewerPage() {
     };
     document.addEventListener('paste', handler);
     return () => document.removeEventListener('paste', handler);
+    // handleAnalyze가 렌더 값으로 읽는 것은 language·savedVocab(markKnown)뿐이고 나머지는 ref·setter다 —
+    // 함수 자체를 넣으면 렌더마다 paste 리스너를 다시 붙인다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language, savedVocab]);
 
   async function handleSaveWord(token) {

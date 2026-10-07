@@ -38,6 +38,8 @@ function cityIdForNode(node) {
 }
 
 export default function StampAlbum({ devGuest = false, stamps, onClose }) {
+  // stamps가 Set이 아닐 때만 매 렌더 새 빈 Set이 된다 — 그때 도시 로드 효과는 즉시 반환해 재실행 비용이 없다.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const owned = stamps instanceof Set ? stamps : new Set();
   const [visitedAt, setVisitedAt] = useState({}); // { nodeId: isoString }
   const [activeTabId, setActiveTabId] = useState(STAMP_ALBUM_TABS[0].id);

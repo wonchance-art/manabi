@@ -20,6 +20,8 @@ export default function TextbookAnnotations({material,user,team,first,last,block
  const closePresentation=useCallback(()=>setPresentation(null),[]);
  useEffect(()=>{onPresenting?.(!!presentation);return()=>onPresenting?.(false);},[presentation,onPresenting]);
  useEffect(()=>{if(anchor&&!editor&&!pending)setActive(anchor);},[anchor,editor,pending]);
+ // epoch는 DOM 노드가 아니라 저장 세대 카운터다 — 정리 시점의 current를 올리는 것이 의도(진행 중 save 무효화).
+ // eslint-disable-next-line react-hooks/exhaustive-deps
  useEffect(()=>{if(!user)return;let alive=true;listClassOperations(scope).then(rows=>{if(alive&&rows[0]?.pending){setPending(rows[0].pending);setMessage('저장 확인을 기다리는 주의점이 있어요.');}}).catch(()=>{if(alive)setMessage('이 기기의 저장 대기 내용을 확인하지 못했어요.');});return()=>{alive=false;epoch.current++;};},[scope,user]);
  useEffect(()=>{
   if(blocked||editor||pending||first)return;

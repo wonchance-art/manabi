@@ -290,7 +290,6 @@ export default function StudySessionPage({
         if (data?.ok && data.preview) setNextPreview(data.preview);
       } catch {}
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished, user?.id, lang]);
 
   // ── push_open 계측 — /study 진입 URL에 src=push면 review_events 1회 적재(기획 v4 §5) ──
@@ -323,7 +322,6 @@ export default function StudySessionPage({
     getSubscriptionState().then((s) => {
       setPushPrime(s.subscribed ? null : 'show');
     }).catch(() => setPushPrime(null));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished]);
 
   // 주간 회고 — weekly 세션 결과 화면에서 1회. 주간 리포트 정본(fetchWeeklyReportRows → buildWeeklyReport)
