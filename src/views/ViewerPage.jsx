@@ -2600,10 +2600,11 @@ export default function ViewerPage() {
               {grammar.result && (
                 <div className="pdf-context__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(grammar.result) }} />
               )}
-              {grammar.chapter && (
+              {grammar.chapter?.href && (
                 <Link href={grammar.chapter.href} className="grammar-detail__ref">{vt("→ 정본 해설: 「")}{grammar.chapter.title}」 ›
                 </Link>
               )}
+              {grammar.chapter && !grammar.chapter.href && <p className="grammar-detail__loading grammar-detail__archived">{vt("→ 정본 해설: 「")}{grammar.chapter.title}」 · {vt("보관된 교재라 열 수 없어요")}</p>}
               {user && learningStorageSupported && grammar.result && (
                 <button
                   onClick={() => saveGrammarNoteMutation.mutate()}
