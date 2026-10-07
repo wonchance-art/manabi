@@ -7,13 +7,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { callGemini, GEMINI_TIER } from './gemini';
 import { createViewerRequestGate, viewerCacheKey } from './viewerReliability';
 import { canonicalViewerLocale, viewerLanguageInfo } from './viewerLanguage';
+import { learnerHref } from './bookNavigation';
 import { buildViewerGrammarPrompt, parseViewerExplanation, formatViewerExplanation } from './viewerExplanation';
 import {
   buildGrammarPrompt, formatChapterCandidates, grammarCacheKey, parseGrammarResult,
 } from './grammarDetail';
 
-/** 레퍼런스 문법 챕터 후보 — 매니페스트는 무거우므로 [자세히]를 처음 누를 때만 지연 로드. */
-async function loadChapterCandidates(language) {
+/** 레퍼런스 문법 챕터 후보 — 매니페스트는 무거우므로 [자세히]를 처음 누를 때만 지연 로드.
+ * 옛 교재 챕터 주소는 관리자 보관함으로 옮겨져 learnerHref가 null로 막는다 — 후보(slug·제목)는
+ * 해설 프롬프트에 그대로 쓰이고 링크만 비며, 화면은 보관 안내를 보인다(VIEWER-R0-BUGS-001 버그 3). */
+export async function loadChapterCandidates(language) {
   try {
     const { REF_GRAMMAR_MANIFEST } = await import('../content/refGrammarManifest');
     const lang = REF_GRAMMAR_MANIFEST?.languages?.[language];
@@ -21,10 +24,16 @@ async function loadChapterCandidates(language) {
     const base = lang.base || '';
     return Object.values(lang.levels)
       .flatMap((lv) => lv?.chapters || [])
-      .map((ch) => ({ ...ch, href: `${base}/grammar/${ch.slug}` }));
+      .map((ch) => ({ ...ch, href: learnerHref(`${base}/grammar/${ch.slug}`) }));
   } catch {
     return []; // 챕터 링크는 부가 기능 — 실패해도 해설은 나온다
   }
+}
+
+/** 이 수정 전에 문장 캐시에 저장된 정본 해설 링크도 같은 관문을 지난다(옛 주소가 남아 있다). */
+export function cachedChapter(chapter) {
+  if (!chapter || typeof chapter !== 'object') return null;
+  return { ...chapter, href: learnerHref(chapter.href) };
 }
 
 export function useGrammarDetail({ materialLang, toast, explanationLocale = 'ko', scope = '' }) {
@@ -75,7 +84,7 @@ export function useGrammarDetail({ materialLang, toast, explanationLocale = 'ko'
         if (cached) {
           const saved = JSON.parse(cached);
           if (typeof saved?.body === 'string') {
-            setResult(saved.body); setChapter(saved.chapter || null); return;
+            setResult(saved.body); setChapter(cachedChapter(saved.chapter)); return;
           }
         }
       } catch { /* 캐시 손상은 무시하고 새로 조회 */ }

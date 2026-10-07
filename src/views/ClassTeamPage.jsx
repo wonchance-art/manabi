@@ -19,6 +19,7 @@ import { useToast } from '../lib/ToastContext';
 import { ClassroomShell,ClassroomState,ClassCover } from '../components/classroom/ClassroomUI';
 import {canTeachClass,startingChapter,classWorkspaceHref} from '../lib/classWorkspace';
 import ClassTeamSettings from '../components/classroom/ClassTeamSettings';
+import ClassTextbookNotes from '../components/classroom/ClassTextbookNotes';
 import { classroomPlainText } from '../lib/classroomModel';
 import Button from '../components/Button';
 import MaterialGroupCard from '../components/MaterialGroupCard';
@@ -127,7 +128,7 @@ function OwnerView({ root, user, teamKey, toast }) {
     {tab==='notes'?<>
       {notesLoading?<p role="status">수업 노트를 불러오는 중…</p>:notesError?<div className="classroom-notice" role="alert">노트를 불러오지 못했어요. <button onClick={()=>retryNotes()}>다시 불러오기</button></div>:latest&&<Link href={openHref(latest.id)} className="classroom-featured-note"><span className="classroom-eyebrow">최근 수업 노트</span><h2>{dayLabel(latest.day)}에 함께 배운 것들.</h2><p>{latest.title}</p><b>노트 읽기 →</b></Link>}
       {!notesLoading&&!notesError&&<ClassStudyHistory notes={history} coverage={coverageQuery.data||[]} chapters={chapters} onOpen={n=>router.push(classEntryHref(openHref(n.id),teamKey,n))} onCopy={n=>copyNote(n.id)}/>}</>
-      :team.bookKey?<MaterialGroupCard open title={chapters[0]?.title?.split(' — ')[0]||'수업 교재'} meta={`공유된 ${chapters.length}과${team.bookTotal?` · 전체 ${team.bookTotal}과`:''}`} rows={chapters.map(c=>({key:c.id,onClick:()=>router.push(openHref(c.id)),lead:c.order,title:chapterLabel(c.title),right:String(c.id)===team.chapterId?<span>이어서 볼 과</span>:null}))}/>:<div className="classroom-empty"><b>자유롭게 배우는 수업입니다.</b><p>교재를 연결하면 이곳에서 바로 펼쳐볼 수 있어요.</p><button className="classroom-button classroom-button--quiet" onClick={()=>setSettingsOpen(true)}>교재 연결</button></div>}
+      :team.bookKey?<><MaterialGroupCard open title={chapters[0]?.title?.split(' — ')[0]||'수업 교재'} meta={`공유된 ${chapters.length}과${team.bookTotal?` · 전체 ${team.bookTotal}과`:''}`} rows={chapters.map(c=>({key:c.id,onClick:()=>router.push(openHref(c.id)),lead:c.order,title:chapterLabel(c.title),right:String(c.id)===team.chapterId?<span>이어서 볼 과</span>:null}))}/>{chapters.length>0&&<ClassTextbookNotes user={user} teamKey={teamKey} chapters={chapters} initialId={start?.id}/>}</>:<div className="classroom-empty"><b>자유롭게 배우는 수업입니다.</b><p>교재를 연결하면 이곳에서 바로 펼쳐볼 수 있어요.</p><button className="classroom-button classroom-button--quiet" onClick={()=>setSettingsOpen(true)}>교재 연결</button></div>}
   </ClassroomShell>;
 }
 

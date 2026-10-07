@@ -5,7 +5,7 @@ import {fixture} from './fixtures/material-editing-backend.mjs';
 
 const owner='00000000-0000-4000-8000-000000000172';
 const entries=[
- ['连弩','lián nǔ','연발 쇠뇌'],['俑','','부장 인형'],['T恤','T xù','티셔츠'],['弩弩弩弩','nǔ nǔ nǔ nǔ','반복 글자 검수'],
+ ['连弩','lián nǔ','연발 쇠뇌'],['俑','','부장 인형'],['T恤','T xù','티셔츠'],['弩弩弩弩','nǔ nǔ nǔ nǔ','반복 글자 검수'],['技术','jì shù','기술'],['一点','yì diǎn','조금'],
 ];
 async function open(width) {
  const f=await fixture({width});
@@ -65,6 +65,26 @@ for(const width of [1440,390,320])test(`viewer Korean labels/${width}px: long, a
   await f.page.locator('[data-source-token="id_0_0"]').focus();await f.page.keyboard.press('Enter');
   await f.page.locator('.word-detail-card__meaning').getByText(entries[0][2],{exact:true}).waitFor();
   assert.equal(await f.page.locator('.reader-hun').count(),0,'disabled preference survives reload');
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+// R0+(VIEWER-V2-ROUNDS-001 §1): 간체 동형 옛 글자(术 '삽주뿌리 출') 대신 정체 꼴(術 '재주 술')로 찾는다.
+// 단어창 훈음 줄과 글자 카드가 같은 조회를 쓰므로 같은 값을 보인다.
+test('viewer Korean labels: traditional-form lookup in the word card and the character card',async()=>{
+ const f=await open(390);
+ try{
+  const index=entries.findIndex(e=>e[0]==='技术');
+  await select(f,index);
+  const labels=await f.page.locator('.reader-hun dd').allTextContents();
+  assert.ok(labels.includes('재주 술'),labels.join(' / '));
+  assert.ok(!labels.some(l=>l.includes('삽주뿌리')),labels.join(' / '));
+  await f.page.locator('.word-fit__char',{hasText:'术'}).first().click();
+  await f.page.locator('.char-inspect__hun').filter({hasText:'재주 술'}).waitFor();
+  // 같은 음 글자는 지금 훈음 유지(화면 악화 0) — 点은 정체 點 '더러울 점'이 아니라 지금 '검은 점 점'
+  await select(f,entries.findIndex(e=>e[0]==='一点'));
+  const dot=await f.page.locator('.reader-hun dd').allTextContents();
+  assert.ok(dot.includes('검은 점 점'),dot.join(' / '));
+  assert.ok(!dot.some(l=>l.includes('더러울')),dot.join(' / '));
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
 });

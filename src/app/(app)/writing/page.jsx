@@ -2,6 +2,8 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getRefLang } from '@/content/refLangs';
 import WritingStudioPage from '@/views/WritingStudioPage';
+// 옛 교재 챕터 주소는 관리자 보관함으로만 열린다 — 학습자 링크는 null(VIEWER-R0-BUGS-001 버그 3).
+import { learnerHref } from '@/lib/bookNavigation';
 
 export const metadata = { title: '작문' };
 export const dynamic = 'force-dynamic';
@@ -45,7 +47,7 @@ export default async function Page() {
         level: ch.level,
         order: ch.order,
         topic: ch.topic || '',
-        href: `${ref.base}/grammar/${r.slug}`,
+        href: learnerHref(`${ref.base}/grammar/${r.slug}`),
         patterns: ch.sections
           .filter(s => s.pattern)
           .slice(0, 3)
