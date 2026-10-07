@@ -213,7 +213,9 @@ describe('한자 대조 배선 계약', () => {
   it('훈음(①)도 같은 토글 아래 지연 로드되어 단어 카드에 병기된다(팝업은 ②로 카드 단일화)', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
     expect(src).toContain("import('../lib/data/hanjaHun.json')");
-    expect(src).toContain('listHanjaHunEum');
+    // AE-R1 개정(VIEWER-V2-ROUNDS-001 §2.1 훈음 루비, 설계서 §7.2): 단어창 훈음은 별도 목록(listHanjaHunEum) 대신
+    // 루비 셀(hunRubyCells → hanjaReadingsOf, R0+ 단일 조회)
+    expect(src).toContain('hunRubyCells');
     expect(src).toMatch(/hanjaHunOf\(headText\)/); // R R2: 훈음은 표제어(기본형) 글자 기준
     // 팝업 부활 금지 — 리스트 단어도 같은 카드 한 벌을 쓴다(오너 승인 ②)
     expect(src).not.toContain('popupWord');
@@ -520,7 +522,9 @@ describe('R0+ 세 경로 단일 조회', () => {
   it('뷰어는 중국어 단어창 훈음과 글자 카드에 같은 정체 표를 넘긴다', () => {
     const src = read('src/views/ViewerPage.jsx');
     expect(src).toContain("import('../lib/data/hanjaTrad.json')");
-    expect(src).toContain('listHanjaHunEum(text, hanjaKoTable, hanjaHunTable, hanjaTradTable)');
+    // AE-R1 개정(설계서 §7.2): 단어창 훈음은 별도 목록(listHanjaHunEum) 대신 루비 셀 — 같은 정체 표·같은 조회 함수.
+    expect(src).toContain('hunRubyCells(text, { koTable: hanjaKoTable, hunTable: hanjaHunTable, tradTable: hanjaTradTable })');
+    expect(sliceBetween(read('src/lib/viewerHunRuby.js'), 'export function hunRubyCells', '\n}')).toContain('hanjaReadingsOf(');
     expect(src).toMatch(/charDetail\(inspectChar\.ch, \{ koTable: hanjaKoTable, hunTable: hanjaHunTable, jaTable: hanjaJaTable \}, inspectWord\)/);
     expect(src).toMatch(/const inspectWord = materialLang === 'Chinese' && [^\n]*\{ word: headText, tradTable: hanjaTradTable \}/);
   });

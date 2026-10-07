@@ -278,7 +278,10 @@ test('selected sentence refreshes explanation locale without reanalyzing source 
   try {
     await page.goto('/viewer/94098');
     await page.locator('.reader-area [data-tid="id_1_0_locale"]').click();
-    await page.locator('.reader-card-context').getByRole('button', { name: '句子翻譯', exact: true }).click();
+    // AE-R1 Q1(VIEWER-V2-ROUNDS-001 §2.1 「문장 해석은 [문장] 탭으로」, 설계서 §7.2): 단어 탭의 「번역」 버튼 대신
+    // [문장] 탭(접근 이름 句子翻譯)을 누르면 같은 번역 전용 경로(runSelectedSentence(sel, true))가 열린다.
+    await page.locator('.reader-card-sentence').waitFor();
+    await page.getByRole('tab', { name: '句子翻譯', exact: true }).click();
     await page.locator('#inspector-sentence-tab[aria-selected="true"]').waitFor();
     assert.equal(await page.locator('#inspector-sentence-tab').getAttribute('aria-selected'), 'true', 'direct translation opens the sentence tab');
     await panel.locator('.pdf-context__text').filter({ hasText: '來到了學校。' }).waitFor();
