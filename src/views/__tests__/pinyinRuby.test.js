@@ -41,10 +41,22 @@ describe('병음 조판 계약', () => {
     const lineHeight = css.match(/\.word-token \.surface \{\s*line-height: ([\d.]+);/)?.[1];
     expect(band).toBe('0.58');
     expect(css).toMatch(/\.reader-settings__preview,\s*\.reader-area \{[^}]*--hl-frame-top: \d+(\.\d+)?px;/s);
-    const pinyin = readerCss.match(/\.viewer-layout :is\(\.reader-area,\.reader-settings__preview\) ruby\[data-pinyin\] > \.rt-an \{bottom:calc\(100% - \(([\d.]+) \/ ([\d.]+)\) \* 100% \+ var\(--hl-frame-top\) \+ [\d.]+em\);\}/);
+    const pinyin = readerCss.match(/\.viewer-layout :is\(\.reader-area,\.reader-settings__preview\) ruby\[data-pinyin\] > \.rt-an \{bottom:calc\(100% - \(([\d.]+) \/ ([\d.]+)\) \* 100% \+ var\(--hl-frame-top\) \+ var\(--hl-pinyin-gap\) \+ [\d.]+em\);\}/);
     expect(pinyin, 'pinyin baseline rule').not.toBeNull();
     expect(pinyin[1]).toBe(band);
     expect(pinyin[2]).toBe(lineHeight);
+    // 실글꼴 여유(R0 실글꼴 검수 2026-10-07): 내림획(g·y·j)이 1.2 줄 상자 밖으로 ≈0.03em 나오고
+    // 화소 맞춤이 ±0.33px라, 상자 간격 0.1em(1.2px)은 잉크 1.0px였다 — 2.5px 아래로 내리지 말 것.
+    expect(parseFloat(css.match(/--hl-pinyin-gap: ([\d.]+)px;/)?.[1])).toBeGreaterThanOrEqual(2.5);
+    // 灬·体 아래 획(1.60em)과 띠(1.62em)가 0.3px뿐이라 밑줄은 띠 + 2px 이상이어야 잉크 1px이 남는다.
+    expect(parseFloat(css.match(/--hl-mark-gap: ([\d.]+)px;/)?.[1])).toBeGreaterThanOrEqual(2);
+    // 테두리 아랫변은 밑줄 칸에서 유도 — 밑줄 간격을 바꾸면 테두리가 따라간다(선이 겹치지 않게).
+    expect(css).toContain('--hl-frame-bottom: calc(var(--hl-mark-gap) + 4px);');
+    expect(readerCss).toContain('.word-token--pattern:is(.word-token--saved,.word-token--due) {--hl-frame-bottom:calc(var(--hl-mark-gap) * 2 + 5.5px);}');
+    // 요미는 원래 자리(0.65 / 2.2)를 지키되, 테두리에 닿을 때만 같은 두 값으로 올라간다.
+    const yomi = readerCss.match(/ruby\[data-yomi\] > \.rt-an \{bottom:max\(calc\(100% - \(0\.65 \/ 2\.2\) \* 100%\),calc\(100% - \(([\d.]+) \/ ([\d.]+)\) \* 100% \+ var\(--hl-frame-top\) \+ var\(--hl-pinyin-gap\) - [\d.]+em\)\);\}/);
+    expect(yomi, 'yomi baseline rule').not.toBeNull();
+    expect([yomi[1], yomi[2]]).toEqual([band, lineHeight]);
     const frame = readerCss.match(/\.viewer-layout \.word-token\[data-selected="true"\]::before \{[^}]*\}/)?.[0] || '';
     expect(frame).toContain('top:calc(var(--hl-band-top) - var(--hl-frame-top))');
     expect(frame).toContain('height:calc(var(--hl-frame-top) + var(--hl-band-h) + var(--hl-frame-bottom))');
