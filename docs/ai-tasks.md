@@ -897,6 +897,10 @@
   - ⚠ 운영 마이그레이션 이력 ≠ main `supabase/migrations`(스택 #1316~#1321 SQL 3건·10월 활성화 이력). 다음 마이그레이션 병합 시
     `supabase-migrations.yml` 실패 가능성 — 운영 READ ONLY 확인 전 스택 PR 닫기 보류.
   - 이 컨테이너에서 불가(오너/M09): 운영 DB 조회·적용, 운영 배포, 정상 실계정 검수(10-06 04:00 경계 이후 학습 검수 포함).
+- **뷰어 v2 (2026-10-07 21:10 KST~, 오너 지시 「이 세션이 뷰어 v2 맡아」 — [착수](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6037135867))**:
+  정본 = [R0 버그](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6031758159) · [v2 라운드](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036574287). R0 → R0+ → AE-R1 → AE-R2 → AD-R2 → AE-R3 → AD-R3 → AD-R4 → AE-R4, 라운드마다 PR.
+  - `claude/viewer-r0-links` — 버그 3: 학습자 링크 관문 `learnerHref`(옛 교재 주소 → null + 「보관된 교재라 열 수 없어요」). 대응 데이터 없어 매핑 안 함.
+  - `claude/viewer-r0-css`(1·2·6·7·8·11) · `claude/viewer-r0-sheet`(4·9·10) · `claude/viewer-v2-r0plus`(정체 꼴 훈음) 진행 중.
 ### todo (오너 전건 승인 2026-07-18 — owner-gate 해제분 포함, Codex-1 확장 큐 = #150 코멘트 5012160829)
 - 🧊 **이 아래 전량 = 게임·월드 트랙 동결**(오너 "게임 월드는 ㄴㄴ" 2026-08-25).
   2026-08-26 전수 대조 결과 **비월드 잔여 0**: #1077 인박스 승인분 전량 완결(2·3·6·11·
