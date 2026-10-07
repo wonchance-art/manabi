@@ -220,27 +220,6 @@ test('lexical meaning survives save, reload, review reveal and exact source retu
   } finally {await finish(f,'lexical-save-review-source');}
 });
 
-test('a cold list saves with one click using the selected second occurrence',async()=>{
-  const f=await fixture({meaningDelay:250});
-  try {
-    await f.page.goto('/viewer/98133',{waitUntil:'domcontentloaded'});
-    await f.page.locator('[data-source-token="id_1_2"]').waitFor();
-    await f.page.locator('.line-pick').nth(1).click();
-    await f.page.getByRole('tab',{name:'단어',exact:true}).click();
-    const row=f.page.locator('.pdf-word-item').filter({hasText:'갔어요'}).filter({visible:true}).first();
-    await row.waitFor();
-    const save=row.getByRole('button',{name:'저장',exact:true});
-    await save.evaluate(button=>{button.click();button.click();});
-    await row.getByText(/✓ 단어장에 있음/).waitFor();
-    assert.equal(f.cards.length,1); assert.equal(f.cards[0].meaning,'去');
-    assert.equal(f.writes.filter(w=>w.path==='/api/learning/vocabulary').length,1);
-    assert.deepEqual(f.writes[0].body.source.sourceSpan,{start:14,end:17,unit:'utf16'});
-    assert.equal(f.requests.filter(p=>p.includes('lexicalMeaning')).length,1);
-    assert.equal(await f.page.locator('.word-detail-card').count(),0,'saving does not require opening a word card');
-    assert.deepEqual(f.errors,[]);
-  } finally {await finish(f,'lexical-list-one-click');}
-});
-
 test('list rows re-analyze each occurrence line in another explanation locale and the card still saves that occurrence',async()=>{
   const f=await fixture();
   const analyses=[];
@@ -270,15 +249,17 @@ test('list rows re-analyze each occurrence line in another explanation locale an
     await f.page.locator('[data-source-token="id_1_2"]').waitFor();
     await pickSecondLine();
     // Stored analysis is zh-CN; the zh-TW reader gets current-locale help for each occurrence row.
-    await rows().filter({hasText:'갔어요'}).first().locator('.pdf-word-item__meaning').getByText('去了（臺灣）').waitFor();
-    await rows().filter({hasText:'학교에'}).first().locator('.pdf-word-item__meaning').getByText('到學校（臺灣）').waitFor();
+    await rows().filter({hasText:'갔어요'}).first().locator('.pdf-word-item__meaning').getByText('去了（臺灣）',{exact:true}).waitFor();
+    await rows().filter({hasText:'학교에'}).first().locator('.pdf-word-item__meaning').getByText('到學校（臺灣）',{exact:true}).waitFor();
     await settled();
+    // main parity: a Korean list row is reading help only; saving happens from the word card.
+    assert.equal(await rows().locator('button').count(),0,'Korean list rows expose no one-click save/add/dismiss controls');
     assert.deepEqual(await rows().locator('.pdf-word-item__text').allTextContents(),['학교에','갔어요']);
     assert.deepEqual(analyses,[{lines:['학교에 갔어요.'],language:'Korean',explanationLocale:'zh-TW'}]);
     // The stored zh-CN analysis already is the current-locale help: no redundant source analysis.
     await locale(f.page,'explanationLocale','zh-CN');
     await pickSecondLine();
-    await rows().filter({hasText:'갔어요'}).first().locator('.pdf-word-item__meaning').getByText('去了').waitFor();
+    await rows().filter({hasText:'갔어요'}).first().locator('.pdf-word-item__meaning').getByText('去了',{exact:true}).waitFor();
     await settled();
     assert.equal(analyses.length,1);
     assert.equal(f.writes.length,0);

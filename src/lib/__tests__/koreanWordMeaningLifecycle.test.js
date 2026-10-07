@@ -25,7 +25,7 @@ describe('Korean lexical request lifecycle', () => {
     const third=f.store.acquire(input); await third.promise; third.release();
     expect(f.generate).toHaveBeenCalledTimes(1);
   });
-  it('shares a pending request between the card and list save without cancelling the latter', async () => {
+  it('shares a pending request between the card display and its save action without cancelling the latter', async () => {
     const pending=deferred(), f=fixture({generate:vi.fn(()=>pending.promise)});
     const card=f.store.acquire(input), list=f.store.acquire(input);
     await tick(); card.release();
