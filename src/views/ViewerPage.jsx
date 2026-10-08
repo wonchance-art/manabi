@@ -56,7 +56,7 @@ import { useTTS } from '../lib/useTTS';
 import { useViewerSettings } from '../lib/useViewerSettings';
 import { useViewerLanguage } from '../lib/useViewerLanguage';
 import { useViewerExplanation } from '../lib/useViewerExplanation';
-import { buildViewerWordPrompt, buildViewerSentencePrompt, parseViewerExplanation, formatViewerExplanation, VIEWER_EXPLANATION_VERSION } from '../lib/viewerExplanation';
+import { buildViewerWordPrompt, parseViewerExplanation, formatViewerExplanation, VIEWER_EXPLANATION_VERSION } from '../lib/viewerExplanation';
 import { ViewerUiLocaleProvider } from '../lib/viewerLocaleContext';
 import { viewerLanguageInfo } from '../lib/viewerLanguage';
 import { useLearningCapabilities } from '../lib/useLearningCapabilities';
@@ -118,11 +118,12 @@ import { loadJaWordsTable, prefetchGlyphTables } from '../lib/glyphTables';
 import { useGrammarDetail } from '../lib/useGrammarDetail';
 import { useEasierText } from '../lib/useEasierText';
 import { openForSentence, sentencePanelBelongsToLine } from '../lib/viewerSentenceScope';
-import { buildContextPrompt } from '../lib/grammarDetail';
 import { prepareViewerSaveUndo, undoViewerSave } from '../lib/viewerSaveUndo';
 import { contextualMeaning, refreshViewerToken, referenceMatchesContext, createViewerRequestGate, viewerCacheKey, viewerCommandAllowed } from '../lib/viewerReliability';
 import { clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
-import { lookupTranslation, bookMeaningPanelText } from '../lib/bilingualSplit';
+import { SENTENCE_TX_QUERY, canonicalSentence, classifySentenceOpen, fetchSentenceTranslation, peekSentenceTranslationKey,
+  sentenceBookMeaning, sentencePrefetchLimiter, sentenceTranslationKey, sentenceTranslationQuery, sentenceTxStats } from '../lib/sentenceTranslation';
+import { useSentencePrefetch } from '../lib/useSentencePrefetch';
 import { isLocalId, parseLocalId, chaptersForLocalNav } from '../lib/classBoard';
 import { getSharedCopy } from '../lib/sharedStore';
 import { readIndexCache } from '../lib/classClient';
@@ -1428,31 +1429,31 @@ export default function ViewerPage() {
         }
       }
 
-      // 교재 뜻(v2-AB R0) — 정제된 교재의 translations(문장 → 뜻)를 **캐시·Gemini보다 먼저** 본다.
-      // 정확 일치만(부분 추측 금지), 적중하면 번역 요청 0 — 비로그인 학생(프록시 없음)도 교재 뜻은 본다.
-      const langName = languageInfo?.labelKo || langNameKo(materialLang);
-      const bookMeaning = lookupTranslation(effectiveExplanationLocale === 'ko' ? material?.processed_json?.metadata?.translations : null, sel);
-      const cacheKey = bookMeaning ? null : await viewerCacheKey('viewer_tx', cacheScope, sel).catch(() => null);
+      // 번역 = 단일 키(AE-R2 PR ② — sentenceTranslation.js). 교재 뜻(v2-AB R0)을 **캐시·AI보다 먼저** 본다 — 정확
+      // 일치만, 적중하면 번역 요청 0(비로그인 학생도 교재 뜻은 본다). 그다음 viewer_tx 키의 쿼리 하나: 선처리가
+      // 끝났으면 즉시 읽고, 진행 중이면 그 요청에 합류하고, 없으면 지금 시작한다(같은 문장·같은 설정 = 요청 1회).
+      // 쿼리는 signal을 쓰지 않아 다른 단어로 가도 끝까지 받아 저장한다 — 패널에는 이 요청이 현재일 때만 반영.
+      const bookMeaning = sentenceBookMeaningOf(sel);
+      const cacheKey = bookMeaning ? null : await sentenceTranslationKey(cacheScope, sel).catch(() => null);
       if (!current()) return;
-      const cached = bookMeaning ? bookMeaningPanelText(bookMeaning) : (() => { try { return cacheKey && localStorage.getItem(cacheKey); } catch { return null; } })();
-      if (cached) {
-        setLeftPanelResult(cached);
+      if (bookMeaning) {
+        setLeftPanelResult(bookMeaning);
         setLeftPanelLoading(false);
       }
-
-      const requestContext = () => {
-        if (effectiveExplanationLocale === 'ko') return cached ? Promise.resolve() : callGemini(buildContextPrompt(sel, langName), request.signal);
-        return cached ? Promise.resolve() : callGemini(buildViewerSentencePrompt({text: sel, language: materialLang, locale: effectiveExplanationLocale}), request.signal);
-      };
+      const translationArgs = { ...sentenceTxArgs(sel), purpose: 'viewer-sentence', onAi: (event) => sentenceTxStats.ai(event) };
+      const fromCard = cardSentenceOpen.current?.sentence === sel ? cardSentenceOpen.current : null;
+      cardSentenceOpen.current = null;
       // 병렬 실행
       await Promise.allSettled([
-        // 번역+맥락 (캐시 미스 시에만)
-        cached ? Promise.resolve() : requestContext().then(raw => {
+        // 번역+맥락 (교재 뜻이 없을 때만)
+        bookMeaning ? Promise.resolve() : (cacheKey
+          ? queryClient.fetchQuery(sentenceTranslationQuery({ cacheKey, ...translationArgs }))
+          : fetchSentenceTranslation({ cacheKey: null, ...translationArgs })
+        ).then(({ text }) => {
+          if (fromCard) sentenceTxStats.ready({ ms: Date.now() - fromCard.at });
           if (!current()) return;
-          const text = effectiveExplanationLocale === 'ko' ? raw?.candidates?.[0]?.content?.parts?.[0]?.text || raw || '' : formatViewerExplanation(parseViewerExplanation(raw, 'sentence'), effectiveExplanationLocale, 'sentence');
           setLeftPanelResult(text);
           setLeftPanelLoading(false);
-          try { if (text && cacheKey) localStorage.setItem(cacheKey, text); } catch {}
         }).catch(() => { if (current()) { setLeftPanelResult('설명을 가져오지 못했어요. 문장을 다시 선택해 주세요.'); setLeftPanelLoading(false); } }),
 
         // 단어 분석 — 문장 단위 캐시(좌측 번역과 대칭). 적중하면 서버 요청 자체가 사라져
@@ -1501,6 +1502,36 @@ export default function ViewerPage() {
     } finally { clearTimeout(deadline); }
   };
   explainSelectedSentenceRef.current = runSelectedSentence;
+
+  // ── 문장 탭 선처리(AE-R2 PR ② · 정본 §4) — 카드가 열린 채 같은 줄에 0.3초 머물면 그 줄 번역을 같은 키로 미리
+  // 받는다. 패널·탭·학습 기록·재분석은 건드리지 않는다(학습 이벤트 0). 교재 맵·viewer_tx 적중이면 요청 0.
+  // 수업 모드(현행 경로 유지)·게스트(AI는 로그인 사용자만)·무id 리스트 단어(드래그가 이미 번역을 불렀다)는 0.
+  const sentenceTxArgs = (sentence) => ({
+    sentence, locale: effectiveExplanationLocale, language: materialLang,
+    langName: languageInfo?.labelKo || langNameKo(materialLang), storage: (() => { try { return isClient ? window.localStorage : null; } catch { return null; } })(),
+  });
+  const sentenceBookMeaningOf = (sentence) => sentenceBookMeaning({
+    translations: material?.processed_json?.metadata?.translations, locale: effectiveExplanationLocale, sentence });
+  const cardSentenceOpen = useRef(null); // 측정 — 카드에서 [문장] 탭을 연 순간(적중·합류·없음, 준비까지 걸린 시간)
+  const lineIndexOfToken = (tok) => {
+    const m = typeof tok?.id === 'string' ? /^(?:id|failed)_(\d+)_/.exec(tok.id) : null;
+    return m ? Number(m[1]) : null;
+  };
+  const prefetchLineKey = !classStudyActive && user && isSheetOpen && lineIndexOfToken(selectedToken) !== null
+    ? `${id}:${lineIndexOfToken(selectedToken)}:${effectiveExplanationLocale}` : null;
+  const prefetchCardSentence = async () => {
+    const sentence = canonicalSentence(ctxSentenceOf(selectedToken));
+    if (!sentence || sentenceBookMeaningOf(sentence)) return;
+    const cacheKey = await sentenceTranslationKey(cacheScope, sentence).catch(() => null);
+    if (!cacheKey) return;
+    sentenceTxStats.prefetchStart();
+    queryClient.prefetchQuery(sentenceTranslationQuery({
+      cacheKey, ...sentenceTxArgs(sentence), purpose: 'viewer-sentence-prefetch', attempts: 1,
+      beforeAi: () => { const ok = sentencePrefetchLimiter.take(); if (!ok) sentenceTxStats.prefetchLimited(); return ok; },
+      onAi: (event) => sentenceTxStats.ai(event),
+    }));
+  };
+  useSentencePrefetch({ lineKey: prefetchLineKey, start: prefetchCardSentence });
 
   // 문장 이동 막대(VIEWER-R0-BUGS-001 버그 4) — 문장이 지정됐는데 보조 패널에 보일 내용이
   // 없을 때(집중 모드 첫 탭·순수 이동 뒤·단어창을 닫은 뒤) 빈 패널(탭 머리만) 대신 뜬다.
@@ -2524,10 +2555,16 @@ export default function ViewerPage() {
   // 기본형 표제어 읽기가 아직 오지 않았으면 루비 자리(line-height 1.9)를 비워 둔다 — 조회 뒤 읽기가 없을 때만 noruby.
   const headReadingPending = headIsBase && !dictFetched && !dictError;
   // Q1: 단어 탭의 「번역」 버튼 대신 [문장] 탭을 누르면 그 문장을 기존 번역 전용 경로로 연다(경로·캐시·AI 조건 동일).
+  // AE-R2 PR ②: 문장은 막대와 같은 정리(canonicalSentence)라 카드·막대·선처리가 같은 키를 쓴다. 누르는 즉시 같은 키로
+  // 시작한다(0.3초 대기 없음) — 선처리가 끝났으면 바로 읽고, 진행 중이면 합류한다. 측정은 열린 순간의 상태만 센다.
   const openSentenceTranslation = () => {
     if (classStudyActive || !selectedToken || !isSheetOpen || senseReviewOpen) return; // 목록이 열려 있으면 [문장] 탭 = 그 목록
-    const sentence = ctxSentenceOf(selectedToken);
+    const sentence = canonicalSentence(ctxSentenceOf(selectedToken));
     if (!sentence || (sentence === leftPanelText && (leftPanelLoading || leftPanelResult))) return;
+    const key = peekSentenceTranslationKey(cacheScope, sentence);
+    const ready = sentenceBookMeaningOf(sentence) ? 'book' : classifySentenceOpen(key ? queryClient.getQueryState([SENTENCE_TX_QUERY, key]) : null);
+    sentenceTxStats.open({ key, ready });
+    cardSentenceOpen.current = { sentence, at: Date.now() };
     runSelectedSentence(sentence, true);
   };
   // AE-R1 PR③ 사전 뜻 줄 → 「이 자리 뜻」 교정(정본 §2.1 · 설계서 §3.4). 쓰기는 TokenEditPanel과 같은 correctTokenMutation

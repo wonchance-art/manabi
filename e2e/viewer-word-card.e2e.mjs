@@ -44,6 +44,8 @@ const dictRows={
  Japanese:{食べる:{meanings:[{meaning:'먹다',priority:1}],reading:'たべる',pos:'동사'}},
 };
 
+const SENTENCE_PREFETCH='viewer-sentence-prefetch';
+const notPrefetch=r=>r.purpose!==SENTENCE_PREFETCH;
 async function open(material,{guest=false,dict='ok',prefs={focusMode:false,autoSpeakOnClick:false},width=390,height=844,saved=null,own=false,rows:rowOverride=null,details={}}={}) {
  const f=await fixture({width,guest});
  await f.page.setViewportSize({width,height});
@@ -56,7 +58,13 @@ async function open(material,{guest=false,dict='ok',prefs={focusMode:false,autoS
  // 픽스처 뒤에 등록한 경로가 먼저 받는다 — morpheme_dictionary 요청만 세고 합성 행으로 답한다.
  // PR ③: 공유 detail_text 지연 조회(select=detail_text)는 f.detail로 따로 센다 — f.single은 카드 사전 행(뜻·읽기) 단건 조회만.
  f.bulk=[];f.single=[];f.detail=[];f.requests=[];
- f.page.on('request',req=>f.requests.push({method:req.method(),url:req.url()}));
+ // AE-R2 PR②: 카드가 0.3초 열려 있으면 그 줄 번역 선처리(/api/gemini, purpose 'viewer-sentence-prefetch')가 1회 나간다 —
+ // 쓰기도 단어 설명 AI도 아니라 아래 「쓰기 0」·「AI 호출 0」 단언에서 그것만 뺀다(다른 AI 호출은 그대로 잡는다).
+ f.page.on('request',req=>{
+  let purpose;
+  if(/\/api\/gemini/.test(req.url()))try{purpose=req.postDataJSON()?.purpose;}catch{purpose=undefined;}
+  f.requests.push({method:req.method(),url:req.url(),...(purpose===SENTENCE_PREFETCH?{purpose}:{})});
+ });
  const rows=rowOverride||dictRows[material.language]||{};
  await f.context.route('**/rest/v1/morpheme_dictionary**',route=>{
   const req=route.request(),url=new URL(req.url());
@@ -457,7 +465,7 @@ test('ko and en materials: sentence line · headword · meaning · bottom render
 // 쓰기는 기존 correctTokenMutation(processed_json PATCH + token_corrections 이력) 하나 — 전역 승격(/api/dict-correct)·
 // 단어장(user_vocabulary)·FSRS·사전 쓰기는 0이어야 한다(정본 §0.2). 합성 백엔드(f.rows)만 바뀐다.
 const twoSenses={...dictRows.Chinese,壮观:{meanings:[{meaning:'웅장하다, 장관이다',priority:1,pos:'형용사'},{meaning:'장관, 웅장한 경관',priority:2,pos:'명사'}],reading:'zhuàng guān',pos:'형용사·명사'}};
-const writesSince=(f,mark)=>f.requests.slice(mark).filter(r=>!['GET','HEAD','OPTIONS'].includes(r.method));
+const writesSince=(f,mark)=>f.requests.slice(mark).filter(r=>!['GET','HEAD','OPTIONS'].includes(r.method)&&notPrefetch(r));
 const visibleHeader=f=>f.page.locator('.viewer-inspector__header').filter({visible:true});
 
 test('owner: tapping another dictionary sense corrects this spot only; 「되돌리기」 restores the previous value',{timeout:180000},async()=>{
@@ -606,7 +614,7 @@ test('「자세한 설명」: shared detail_text is read once per card when 더 
   await learn.scrollIntoViewIfNeeded();
   await f.page.waitForTimeout(700);
   assert.deepEqual(f.detail,['壮观','体育场'],'reopening the same words adds no request');
-  assert.equal(f.requests.filter(r=>r.url.includes('/api/word-detail')||r.url.includes('/api/gemini')).length,0,'no AI or word-detail API call');
+  assert.equal(f.requests.filter(r=>(r.url.includes('/api/word-detail')||r.url.includes('/api/gemini'))&&notPrefetch(r)).length,0,'no AI or word-detail API call');
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
 });
@@ -771,10 +779,10 @@ test('AE-R3: 老师(diff) · 汽车(warn) → 日 숨김 · 「일본어로는�
   await ask.waitFor({state:'attached'});
   g=await glyphGeometry(f.page);
   assert.equal(g.zheng.text,'儘量');assert.equal(g.ja,null);assert.equal(g.learnJa,null);
-  assert.equal(f.requests.filter(r=>r.url.includes('/api/gemini')).length,0,'no AI call before the button');
+  assert.equal(f.requests.filter(r=>r.url.includes('/api/gemini')&&notPrefetch(r)).length,0,'no AI call before the button');
   await ask.scrollIntoViewIfNeeded();await ask.click();
   await learn.locator('.reader-card-learn__ja').getByText('できるだけ',{exact:true}).waitFor();
-  assert.equal(f.requests.filter(r=>r.url.includes('/api/gemini')).length,1);
+  assert.equal(f.requests.filter(r=>r.url.includes('/api/gemini')&&notPrefetch(r)).length,1);
   const text=await f.page.locator('#inspector-word').filter({visible:true}).innerText();
   assert.ok(!/\bAI\b/.test(text),'no 「AI」 label');
   assert.equal(f.requests.filter(r=>r.url.includes('/rest/v1/morpheme_dictionary')&&r.method!=='GET'&&r.method!=='OPTIONS').length,0,'no dictionary writes');
