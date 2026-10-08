@@ -108,11 +108,11 @@ export function moveSession(schedule, totalDays, day, date) {
   const s = parseSchedule(schedule);
   if (!s) throw new ScheduleError('먼저 첫 수업 날짜를 정해 주세요.');
   if (!isDate(date)) throw new ScheduleError('날짜를 다시 골라 주세요.');
-  if (!(day >= 1 && day <= totalDays)) throw new ScheduleError('없는 Day예요.');
+  if (!(day >= 1 && day <= totalDays)) throw new ScheduleError('없는 수업 회차예요.');
   if (day === 1) return { ...s, start: date, moves: {} };
   const built = buildSchedule(s, totalDays);
   const prev = built.sessions[day - 2].date;
-  if (date <= prev) throw new ScheduleError(`Day ${day - 1}(${shortDate(prev)})보다 뒤 날짜여야 해요.`);
+  if (date <= prev) throw new ScheduleError(`앞 수업(${shortDate(prev)})보다 뒤 날짜여야 해요.`);
   const moves = Object.fromEntries(Object.entries(s.moves).filter(([k]) => Number(k) < day));
   if (date !== nextClassDate(prev, s.weekdays)) moves[day] = date;
   return { ...s, moves };

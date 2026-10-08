@@ -38,7 +38,7 @@ import ClassStudyHistory from '../components/classroom/ClassStudyHistory';
 import {classHistoryEntries} from '../lib/classStudyHistory';
 import ClassSaveResume from '../components/classroom/ClassSaveResume';
 import {classEntryHref,cacheClassSource} from '../lib/classHistoryNavigation';
-import { CourseTab } from '../components/classroom/ClassCourseUI';
+import { CourseTab } from '../components/classroom/ClassCourseSchedule';
 
 const RELOCK_MSG = '암호를 다시 입력해 주세요 — 선생님이 바꿨거나 30일이 지났어요.';
 const errMsg = (err) => (err?.status === 429 ? '잠시 후 다시 시도해 주세요.' : err?.message || '알 수 없는 오류');

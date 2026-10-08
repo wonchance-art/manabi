@@ -56,11 +56,11 @@ describe('코스 데이터 — nihongo42', () => {
     expect(course.days.flatMap((d) => d.chapters.map((c) => c.n))).toEqual(Array.from({ length: 42 }, (_, i) => i + 1));
   });
 
-  it('Day마다 문화·여행 카드 한 장(제목·장소·본문·일본어 한 문장)', () => {
+  it('수업 회차마다 문화·여행 카드 한 장(제목·장소·한 줄 사실·일본어 한 문장)', () => {
     for (const d of course.days) {
-      expect(d.culture?.title, `Day ${d.day}`).toBeTruthy();
+      expect(d.culture?.title, d.range).toBeTruthy();
       expect(d.culture.place).toBeTruthy();
-      expect(d.culture.body.length).toBeGreaterThan(60);
+      expect(d.culture.facts.length).toBeGreaterThanOrEqual(3);
       expect(d.culture.phrase.ja).toMatch(/[ぁ-んァ-ン一-龯]/);
       expect(d.culture.phrase.ko).toBeTruthy();
     }
@@ -258,8 +258,53 @@ describe('공개 범위 — 교재 문장은 암호 뒤에서만', () => {
   });
 });
 
+describe('설명은 한 줄에 한 가지(오너 결정 2026-10-08 — 줄이 넘어가면 집중이 떨어진다)', () => {
+  // 휴대폰(390px) 본문 폭 기준 글자 폭(em) — 한글·가나·한자 1, 공백 .28, ASCII .58, 가운뎃점 .35. 굵게(**)는 폭 0.
+  const em = (s) => [...String(s).replace(/\*\*/g, '')].reduce((n, ch) => n + (ch === ' ' ? 0.28 : ch.codePointAt(0) < 0x80 ? 0.58 : ch === '·' ? 0.35 : 1), 0);
+  const course = loadCourse('nihongo42');
+
+  it('모든 챕터에 핵심 정리(만드는 법 + 한 줄 핵심 2~3개)', () => {
+    for (const c of course.days.flatMap((d) => d.chapters)) {
+      expect(c.brief?.form, `Ch.${c.n}`).toBeTruthy();
+      expect(c.brief.points.length, `Ch.${c.n}`).toBeGreaterThanOrEqual(2);
+      expect(c.brief.points.length, `Ch.${c.n}`).toBeLessThanOrEqual(3);
+      expect(!!c.brief.ng, `Ch.${c.n} ✕/○ 짝`).toBe(!!c.brief.ok);
+    }
+  });
+
+  it('핵심 줄 ≤ 18em(15px) · 만드는 법 ≤ 20em(14px) · 문화 사실 ≤ 19em(14.5px) — 휴대폰에서도 한 줄', () => {
+    const over = [];
+    for (const c of course.days.flatMap((d) => d.chapters)) {
+      for (const p of c.brief.points) if (em(p) > 18) over.push(`Ch.${c.n} ${p}`);
+      if (em(c.brief.form) > 20) over.push(`Ch.${c.n} form ${c.brief.form}`);
+    }
+    for (const d of course.days) {
+      expect(d.culture.facts.length, d.range).toBeGreaterThanOrEqual(3);
+      for (const f of d.culture.facts) if (em(f) > 19) over.push(`${d.range} ${f}`);
+    }
+    expect(over).toEqual([]);
+  });
+
+  it('수업 화면에는 긴 해설 문단·교재 밖 참고 예문을 싣지 않는다', () => {
+    const c = course.days[0].chapters[0];
+    expect(c).not.toHaveProperty('explain');
+    expect(c).not.toHaveProperty('examples');
+    expect(course.days[0].culture).not.toHaveProperty('body');
+  });
+});
+
+describe('「Day」 표기 0 — 수업 회차는 챕터 범위로 부른다(오너 결정 2026-10-08)', () => {
+  it('코스 화면·공개 /nihongo 화면의 사용자 문구에 Day가 없다', () => {
+    const files = ['src/views/ClassCourseDayPage.jsx', 'src/views/ClassCourseTestPage.jsx', 'src/components/classroom/ClassCourseSchedule.jsx',
+      'src/components/classroom/ClassCourseUI.jsx', 'src/lib/classCourse.js', 'src/lib/classSchedule.js', 'src/app/nihongo/page.jsx', 'src/app/nihongo/[day]/page.jsx'];
+    const hits = files.flatMap((f) => read(f).split('\n').map((line, i) => [f, i + 1, line])
+      .filter(([, , line]) => !/^\s*(\*|\/\/|\/\*)/.test(line) && /(^|[\s'"`>(])Day([\s{$]|이|별|마다)/.test(line)));
+    expect(hits).toEqual([]);
+  });
+});
+
 describe('화면 — 오너가 정한 섹션 이름', () => {
-  it('Day 페이지 세 섹션 · 빈 칸 문구 · 테스트 입구', () => {
+  it('챕터 페이지 섹션 · 빈 칸 문구 · 테스트 입구', () => {
     const day = read('src/views/ClassCourseDayPage.jsx');
     for (const name of ['함께 읽고 연습', '예문 연습']) expect(day).toContain(name);
     expect(day).not.toContain('응용 문장');

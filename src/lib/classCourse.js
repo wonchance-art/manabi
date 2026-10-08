@@ -41,8 +41,8 @@ export function normalizeLine(d) {
 }
 
 /**
- * 공개 패턴 설명(nihongo42.js) + 수업 전용 문장(nihongo42Class.js) → 화면 페이로드.
- * 레퍼런스 링크는 싣지 않는다(옛 교재 챕터는 학습자에게 닫혀 있다).
+ * 공개 패턴(nihongo42.js — 표제·패턴·바꿔 쓰기) + 수업 전용(nihongo42Class.js — 교재 문장·핵심 정리·문화) → 화면 페이로드.
+ * 긴 해설 문단·AI 참고 예문·레퍼런스 링크는 싣지 않는다 — 수업 화면은 교재 본문 + 한 줄 핵심 정리만(오너 결정 2026-10-08).
  */
 export function buildCoursePayload(base, cls) {
   const dayExtra = new Map((cls?.days || []).map((d) => [Number(d.day), d]));
@@ -60,9 +60,10 @@ export function buildCoursePayload(base, cls) {
         dialogue: (extra.dialogue || []).map(normalizeLine).filter(Boolean),
         chapters: d.chapters.map((c) => {
           const p = cls?.practice?.[c.n] || {};
+          const b = cls?.briefs?.[c.n] || null;
           return {
-            n: c.n, title: c.title, titleHi: c.titleHi || null, jp: c.jp, jpYomi: c.jpYomi || null, ko: c.ko,
-            explain: c.explain || null, pitfall: c.pitfall || null, alts: c.alts || [], examples: c.examples || [],
+            n: c.n, title: c.title, titleHi: c.titleHi || null, jp: c.jp, jpYomi: c.jpYomi || null, ko: c.ko, alts: c.alts || [],
+            brief: b ? { form: str(b.form) || null, points: (b.points || []).map(str).filter(Boolean), ng: str(b.ng) || null, ok: str(b.ok) || null } : null,
             drills: (p.drills || []).map(normalizeDrill).filter(Boolean).slice(0, DRILLS_PER_CHAPTER),
           };
         }),
@@ -71,7 +72,7 @@ export function buildCoursePayload(base, cls) {
   };
 }
 
-/** Day 입력 현황 — 목록 배지·「아직 입력되지 않았어요」 판정. */
+/** 수업 회차 입력 현황 — 목록 배지·「아직 입력되지 않았어요」 판정. */
 export function dayProgress(day) {
   const chapters = day?.chapters || [];
   return {
@@ -130,8 +131,8 @@ export function levelQuota(size) {
 /** 제약 단계 — 앞에서부터 시도, 채워지는 가장 엄격한 단계를 쓴다. */
 const STAGES = [
   { perDay: 1, families: true, uniqueChapter: true, note: null },
-  { perDay: 2, families: true, uniqueChapter: true, note: '입력된 Day가 적어 같은 Day에서 2문제까지 냈어요.' },
-  { perDay: Infinity, families: false, uniqueChapter: true, note: '입력된 범위가 좁아 Day·비슷한 패턴 제한을 풀었어요.' },
+  { perDay: 2, families: true, uniqueChapter: true, note: '입력된 범위가 좁아 같은 수업 회차에서 2문제까지 냈어요.' },
+  { perDay: Infinity, families: false, uniqueChapter: true, note: '입력된 범위가 좁아 회차·비슷한 패턴 제한을 풀었어요.' },
   { perDay: Infinity, families: false, uniqueChapter: false, note: '입력된 패턴이 10개보다 적어 같은 패턴이 두 번 이상 나왔어요.' },
 ];
 

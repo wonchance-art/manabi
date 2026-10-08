@@ -27,16 +27,18 @@ describe('코스 탭 — 학생', () => {
   const html = render({ schedule });
   it('챕터는 Ch.N · 일본어 패턴 · 한국어 제목으로', () => {
     expect(html).toContain('<span class="course-day__n">Ch.1</span><span lang="ja" class="course-day__jp">~する時があります</span>');
+    expect(html).toContain('<b>Ch.1~3</b>');
     expect(html).toContain('course-hl');
   });
   it('날짜·진행·달력·시험·휴강', () => {
     expect(html).toContain('10/13(화)');
-    expect(html).toContain('1바퀴 · Day 3/14 완료');
-    expect(html).toContain('다음 수업 10/22(목) · Day 4');
+    expect(html).toContain('1바퀴 · 3/14회 완료');
+    expect(html).toContain('다음 수업 10/22(목) · Ch.10~12');
     expect(html).toContain('2026년 10월');
     expect(html).toContain('수업 + 시험');
     expect(html).toContain('12/1(화)</b><span class="course-chip course-chip--break">휴강');
-    expect(html).toContain('다음 바퀴 Day 1은 12/3(목)');
+    expect(html).toContain('다음 바퀴(Ch.1~3)는 12/3(목)');
+    expect(html).not.toMatch(/Day/);
   });
   it('편집 수단이 없다', () => {
     expect(html).not.toContain('날짜 변경');

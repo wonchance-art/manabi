@@ -1,7 +1,5 @@
 'use client';
 import { JaText } from '../../views/refShared';
-import { useClassCourse, courseErrorText } from '../../lib/classCourseClient';
-import CourseSchedule from './ClassCourseSchedule';
 import './class-course.css';
 
 export const PENDING_TEXT = '아직 입력되지 않았어요';
@@ -19,6 +17,11 @@ export function SpeakButton({ text, speak }) {
 
 export function Ja({ ja, yomi }) {
   return yomi ? <JaText ja={ja} yomi={yomi} fallbackPron={false} /> : <span lang="ja">{ja}</span>;
+}
+
+/** **굵게** → 형광펜 강조(교재 화면과 같은 표시). */
+export function Hi({ text }) {
+  return String(text || '').split(/\*\*(.+?)\*\*/g).map((p, i) => (i % 2 ? <strong key={i} className="course-hl">{p}</strong> : p));
 }
 
 /** 교재 원문을 고친 예문 — 원문은 취소선(지우지 않고 보여 준다). 시험·연습의 모범답은 고친 문장. */
@@ -44,17 +47,4 @@ export function HideToggle({ value, onChange, label = '가리기' }) {
 export function Masked({ hidden, onReveal, children, label }) {
   if (!hidden) return children;
   return <button type="button" className="course-masked" onClick={onReveal}>{label} — 탭해서 보기</button>;
-}
-
-/**
- * 수업 홈 「코스」 탭 — 팀에 코스가 연결돼 있을 때만. 교재 문장은 서버 전용이라 오너도 코스 라우트를 거친다
- * 오너(root를 넘긴 쪽)에게만 일정 편집이 열린다.
- * (오너 뷰의 「API 라우트 0」은 RLS로 읽는 자료 행 얘기다 — 코스는 자료 행이 아니다. 오너 경로는 로그인 Bearer라
- * 해제 토큰·SHARE_LINK_SECRET 없이 열린다).
- */
-export function CourseTab({ teamKey, user, root = null }) {
-  const q = useClassCourse(teamKey, user?.id);
-  if (q.isLoading) return <p role="status">코스를 불러오는 중…</p>;
-  if (q.error) return <div className="classroom-notice" role="alert">{courseErrorText(q.error)} <button onClick={() => q.refetch()}>다시 불러오기</button></div>;
-  return <CourseSchedule course={q.data.course} teamKey={teamKey} user={user} root={root} schedule={q.data.team?.schedule} />;
 }

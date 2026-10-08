@@ -46,10 +46,13 @@ function Timer({ sec }) {
   return <span className={`course-timer${cls}`} aria-label={`경과 ${sec}초`}>⏱ {sec}초</span>;
 }
 
+/** 출제 범위 — 입력된 챕터를 이어진 구간으로 묶어 「Ch.1~42」처럼. */
 function rangeLabel(pool) {
-  const days = [...new Set(pool.map((x) => x.day))].sort((a, b) => a - b);
-  if (!days.length) return '없음';
-  return days.length === days[days.length - 1] - days[0] + 1 ? `Day ${days[0]}~${days[days.length - 1]}` : `Day ${days.join('·')}`;
+  const ns = [...new Set(pool.map((x) => x.n))].sort((a, b) => a - b);
+  if (!ns.length) return '없음';
+  const runs = [];
+  for (const n of ns) { const last = runs[runs.length - 1]; if (last && n === last[1] + 1) last[1] = n; else runs.push([n, n]); }
+  return runs.map(([a, b]) => (a === b ? `Ch.${a}` : `Ch.${a}~${b}`)).join(' · ');
 }
 
 function TestMode({ course, pool, teacher, speak }) {
@@ -146,6 +149,7 @@ function TestMode({ course, pool, teacher, speak }) {
 
 function PracticeMode({ course, pool, speak }) {
   const days = useMemo(() => [...new Set(pool.map((x) => x.day))].sort((a, b) => a - b), [pool]);
+  const rangeOf = useMemo(() => new Map(course.days.map((d) => [d.day, d.range])), [course]);
   const [range, setRange] = useState('all');
   const [dir, setDir] = useState('ko2ja');
   const [round, setRound] = useState(() => newSheetNo());
@@ -161,7 +165,7 @@ function PracticeMode({ course, pool, speak }) {
 
   if (pool.length === 0) return <CoursePending what="연습에 쓸 교재 예문" total={course.days.length * 30} />;
   const opts = <div className="course-practice-opts">
-    <label>범위<select value={range} onChange={(e) => { setRange(e.target.value); reset(); }}><option value="all">전체 ({pool.length}문장)</option>{days.map((d) => <option key={d} value={String(d)}>Day {d}</option>)}</select></label>
+    <label>범위<select value={range} onChange={(e) => { setRange(e.target.value); reset(); }}><option value="all">전체 ({pool.length}문장)</option>{days.map((d) => <option key={d} value={String(d)}>{rangeOf.get(d)}</option>)}</select></label>
     <label>방향<select value={dir} onChange={(e) => { setDir(e.target.value); reset(); }}><option value="ko2ja">한국어 → 일본어</option><option value="ja2ko">일본어 → 한국어</option></select></label>
   </div>;
 
@@ -180,7 +184,7 @@ function PracticeMode({ course, pool, speak }) {
   const next = (knew) => { if (!knew) setMissed((m) => [...m, x.id]); setShown(false); setAt(at + 1); };
   const ko2ja = dir === 'ko2ja';
   return <>{opts}<div className="course-card">
-    <div className="course-card__top"><span>{at + 1} / {deck.length}</span><span>Day {x.day} · Ch.{x.n}</span></div>
+    <div className="course-card__top"><span>{at + 1} / {deck.length}</span><span>Ch.{x.n}</span></div>
     {ko2ja ? <p className="course-card__prompt">{x.ko}</p> : <p className="course-card__prompt" lang="ja"><Ja ja={x.ja} yomi={x.yomi} /> <SpeakButton text={x.ja} speak={speak} /></p>}
     {shown ? <div className="course-answer">
       {ko2ja ? <div className="course-answer__ja"><Ja ja={x.ja} yomi={x.yomi} /> <SpeakButton text={x.ja} speak={speak} /></div> : <div className="course-answer__ko">{x.ko}</div>}
@@ -215,20 +219,22 @@ export default function ClassCourseTestPage() {
   const testDate = currentSchedule(q.data.team?.schedule, course.days.length, kstToday())?.built.testDate;
   const total = course.days.length * 30;
   return <ClassroomShell lang="Japanese" teamHome>
-    <div className="course-back-row"><Link className="classroom-back" href={`/class/${teamKey}?view=course`}>← 코스 목록</Link></div>
-    <header className="course-head"><span className="classroom-eyebrow">{course.title}</span><h1>테스트</h1></header>
+    <div className="tb-page">
+    <nav className="tb-top"><Link href={`/class/${teamKey}?view=course`}>← 챕터 목록</Link></nav>
+    <header className="tb-head"><h1>테스트</h1><p className="tb-head__meta">{course.title} · 10문제 중 8문제 이상 합격</p></header>
     <div className="course-test-modes" role="group" aria-label="테스트 종류">
       <button type="button" aria-pressed={active === 'test'} onClick={() => setMode('test')}>{teacher ? '시험 (10문제)' : '모의 시험 (10문제)'}</button>
       <button type="button" aria-pressed={active === 'practice'} onClick={() => setMode('practice')}>연습</button>
     </div>
-    <div className="course-test-meta"><span>출제 범위: {rangeLabel(pool)}</span><span>예문 {pool.length}/{total} 입력</span>{testDate && <span>시험일 {shortDate(testDate)} (Day {course.days.length} 수업 날)</span>}</div>
+    <div className="course-test-meta"><span>출제 범위: {rangeLabel(pool)}</span>{pool.length < total && <span>예문 {pool.length}/{total} 입력</span>}{testDate && <span>시험일 {shortDate(testDate)} ({course.days[course.days.length - 1].range} 수업 날)</span>}</div>
     {active === 'test' && pool.length >= TEST_SIZE && <SheetNote pool={pool} course={course} />}
     {active === 'test' ? <TestMode course={course} pool={pool} teacher={teacher} speak={speak} /> : <PracticeMode course={course} pool={pool} speak={speak} />}
+    </div>
   </ClassroomShell>;
 }
 
 /** 입력된 범위가 좁아 출제 규칙을 풀었을 때만 알린다(시험지 번호와 무관하게 범위로 판정). */
 function SheetNote({ pool, course }) {
   const note = useMemo(() => buildTestSheet(pool, course.families, { seed: 1 }).note, [pool, course.families]);
-  return note ? <p className="course-test-note" role="note">{note} 교재 예문이 더 들어오면 Day마다 한 문제씩, 모두 다른 패턴으로 나와요.</p> : null;
+  return note ? <p className="course-test-note" role="note">{note} 교재 예문이 더 들어오면 수업 회차마다 한 문제씩, 모두 다른 패턴으로 나와요.</p> : null;
 }

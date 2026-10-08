@@ -91,7 +91,7 @@ describe('날짜 옮기기 — 뒤 일정 자동 변동', () => {
 
   it('앞 Day와 같거나 이른 날은 거절 · Day 1을 옮기면 바퀴 시작이 바뀐다', () => {
     expect(() => moveSession(s0, N, 3, '2026-10-15')).toThrow(ScheduleError);
-    expect(() => moveSession(s0, N, 3, '2026-10-14')).toThrow(/Day 2/);
+    expect(() => moveSession(s0, N, 3, '2026-10-14')).toThrow(/앞 수업\(10\/15\(목\)\)보다 뒤/);
     expect(() => moveSession(s0, N, 3, 'nope')).toThrow(ScheduleError);
     const m = moveSession(moveSession(s0, N, 6, '2026-10-30'), N, 1, '2026-10-20');
     expect(m).toMatchObject({ start: '2026-10-20', moves: {} });
