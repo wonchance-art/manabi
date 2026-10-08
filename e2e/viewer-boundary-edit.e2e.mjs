@@ -700,7 +700,7 @@ test('390 owner ko: 축약·불규칙은 칼선 없이 공식(도와요) · 일�
   assert.equal(await none.getByRole('button',{name:'나누기',exact:true}).isDisabled(),true);
   await shot(f,'ko-no-cut-390');
   await none.getByRole('button',{name:'취소',exact:true}).click();
-  const part=await openKoreanSplit(f,'id_0_4','공부했어요');
+  const part=await openKoreanSplit(f,'id_0_4','공부했다');
   assert.deepEqual(await part.locator('.viewer-boundary-split__char').allTextContents(),['공부','했어요']);
   await part.locator('.viewer-boundary-split__cut').click();
   assert.deepEqual((await part.locator('.viewer-boundary-split__gloss li').allInnerTexts()).map(t=>t.replace(/\s+/g,' ').trim()),
