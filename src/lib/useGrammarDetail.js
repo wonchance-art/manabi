@@ -41,6 +41,7 @@ export function useGrammarDetail({ materialLang, toast, explanationLocale = 'ko'
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
   const [chapter, setChapter] = useState(null); // {slug, title, level}
+  const [forText, setForText] = useState(''); // 이 해설을 만든 문장 — 표시·노트 저장의 문장(AE-R2 §5.1·§5.2)
   const [question, setQuestion] = useState('');
   const [asking, setAsking] = useState(false);
   const gate = useRef(createViewerRequestGate());
@@ -56,7 +57,7 @@ export function useGrammarDetail({ materialLang, toast, explanationLocale = 'ko'
   /** 지정 문장이 바뀌면 이전 해설을 닫고 비운다(다른 문장 결과가 남지 않게). */
   const reset = useCallback(() => {
     cancel();
-    setOpen(false); setResult(''); setChapter(null); setQuestion('');
+    setOpen(false); setResult(''); setChapter(null); setQuestion(''); setForText('');
     setLoading(false); setAsking(false);
   }, [cancel]);
   useEffect(() => { reset(); return cancel; }, [requestScope, reset, cancel]);
@@ -69,6 +70,7 @@ export function useGrammarDetail({ materialLang, toast, explanationLocale = 'ko'
     setOpen(true);
     setLoading(true);
     setResult(''); setChapter(null); setQuestion(''); setAsking(false);
+    setForText(text);
     deadline.current = setTimeout(() => {
       if (!current()) return;
       setLoading(false); setResult('');
@@ -147,5 +149,5 @@ export function useGrammarDetail({ materialLang, toast, explanationLocale = 'ko'
     }
   }, [question, asking, loading, result, locale, language, requestScope, toast, cancel]);
 
-  return { open, loading, result, chapter, question, setQuestion, asking, run, ask, reset };
+  return { open, loading, result, chapter, forText, question, setQuestion, asking, run, ask, reset };
 }

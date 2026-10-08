@@ -148,6 +148,11 @@ function isLoneNoun(text) {
 export function isZhRealWord(word) {
   return !!ZH_HSK_LEVEL[word] || ZH_KEEP_MERGED.has(word);
 }
+
+/** 이합사 사전(수제 + HSK 2층)에 있는 VO 표기인가 — 경계 「등재」 정의(zhRegistered.js)가 쓴다. */
+export function isZhSeparableWord(word) {
+  return Object.hasOwn(ZH_SEPARABLE, word);
+}
 const isRealWord = isZhRealWord;
 
 /** 바로 앞 토큰이 「수량 자리」인가 — 양사가 양사로 읽히는 유일한 자리. */

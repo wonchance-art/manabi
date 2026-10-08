@@ -60,9 +60,12 @@ describe('getJaWarn — 동형이의어 경고(3단계)', () => {
 
 // 기존 데이터 API는 보존하고, 뷰어는 현재 의미와 일치하는 행만 사용한다.
 describe('ja 대응 배선 계약', () => {
-  it('중국어 카드가 훈음 토글과 독립적으로 일본어 대조를 표시한다', () => {
+  // AE-R3 PR② 개정(설계서 §7.2 — 블록 문자열 → 자형 열 배선, 사전 조회 조건은 유지: 日 줄이 사전 행을 쓴다).
+  it('중국어 카드가 훈음 토글과 독립적으로 자형 열(日 줄 = 사전 행 ja 판정 + JMdict 표)을 표시한다', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
-    expect(src).toContain("materialLang === 'Chinese' && <ViewerJapaneseReference");
+    expect(src).toContain("const glyph = materialLang === 'Chinese' && selectedToken && isSheetOpen ? glyphRows({ word: headText, tradTable: hanjaTradTable, dictEntry: editDictEntry, jaTable: jaWordsTable }) : NO_GLYPH;");
+    expect(src).not.toContain('showHanjaKo && glyphRows');
+    expect(fs.readFileSync(path.join(process.cwd(), 'src/lib/glyphColumn.js'), 'utf8')).toContain('getJaRef(dictEntry)');
     expect(src).toContain('dictEntry={editDictEntry}');
     expect(src).not.toContain('popupDictEntry');
     expect(src).toMatch(/isEditingToken \|\| \(isSheetOpen && materialLang === 'Chinese'\)/);
