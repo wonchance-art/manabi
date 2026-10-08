@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { toTraditional, toTraditionalTW, zhengForm, zhengSure } from '../hanjaKo';
-import { glyphColumnLayout, glyphRows, jaGlyphRow, jaWordFromTable, readDictJa } from '../glyphColumn';
+import { glyphColumnLayout, glyphRows, jaGlyphRow, jaWarnFromTable, jaWordFromTable, readDictJa } from '../glyphColumn';
 import { loadJaWordsTable, loadZhengTable, prefetchGlyphTables, resetGlyphTablesForTest } from '../glyphTables';
 import { JA_FALSE_FRIENDS } from '../../../scripts/hanja-curated.mjs';
 
@@ -326,5 +326,110 @@ describe('지연 로드(T1) — 유휴 시간에 두 표를 한 번만', () => {
     prefetchGlyphTables({ scheduler: { idle: (fn) => { run = fn; return 1; } } });
     run();
     expect((await loadZhengTable()).amb).toBe(trad.amb);
+  });
+});
+
+// AE-R3 PR ②(메인 세션 결정 2026-10-08 KST): 日 줄 = 「확인된 단어 표기(jaWords.json) 우선 → 없을 때만 글자 단위 폴백」.
+// 폴백(toJaForm, #1368 보수 규칙)은 확인되지 않은 꼴이라 日 줄에 「확인 표기처럼」 보이지 않는다 — 설계서 §3.2 규정대로
+// 표시하지 않는다(계산 꼴은 jaWords 생성기의 열쇠 후보로만 쓴다). #1368이 글자 단위로 고칠 수 없었던 악화 표본은
+// 확인 표기로 나온다.
+describe('日 — 확인된 단어 표기 우선, 글자 단위 폴백은 확인 표기처럼 보이지 않는다(PR ②)', () => {
+  const WORSENED_BY_1368 = {
+    以后: '以後', 最后: '最後', 机会: '機会', 准备: '準備', 标准: '標準', 根据: '根拠',
+    杂志: '雑誌', 制造: '製造', 特征: '特徴', 战斗: '戦闘', 干杯: '乾杯', 头发: '頭髪',
+  };
+  it('#1368 악화 표본 12개는 日 줄에 확인 표기(JMdict)로 나온다 — 게스트·로그인 모두', () => {
+    for (const [word, form] of Object.entries(WORSENED_BY_1368)) {
+      expect(jaGlyphRow({ word, jaTable: jaWords }), word).toMatchObject({ form, source: 'jmdict' });
+      expect(jaGlyphRow({ word, dictEntry: { meanings: [{ meaning: '뜻' }] }, jaTable: jaWords }), word).toMatchObject({ form, source: 'jmdict' });
+    }
+  });
+
+  it('사전 행이 글자 변환 꼴(以后 · 准备)을 적어도 확인 표기가 이긴다 — 사전 행은 판정(null·diff·warn)만 가른다', () => {
+    expect(jaGlyphRow({ word: '以后', dictEntry: dictWith({ form: '以后', yomi: 'いご' }), jaTable: jaWords }))
+      .toEqual({ form: '以後', yomi: 'いご', source: 'jmdict', diff: [false, true] });
+    expect(jaGlyphRow({ word: '准备', dictEntry: dictWith({ form: '准備', yomi: 'じゅんび' }), jaTable: jaWords }))
+      .toMatchObject({ form: '準備', source: 'jmdict' });
+    // 판정은 그대로 사전 행이 가른다
+    expect(jaGlyphRow({ word: '以后', dictEntry: dictWith(null), jaTable: jaWords })).toBeNull();
+    expect(jaGlyphRow({ word: '以后', dictEntry: dictWith({ form: '今後', yomi: 'こんご', diff: true }), jaTable: jaWords })).toBeNull();
+  });
+
+  it('확인 표기가 없는 단어는 글자 변환 꼴을 日 줄에 올리지 않는다 — 日历(日歴) · 后来 · 手机', () => {
+    for (const word of ['日历', '后来', '手机']) {
+      expect(jaWordFromTable(word, jaWords), word).toBeNull();
+      expect(jaGlyphRow({ word, jaTable: jaWords }), word).toBeNull();
+    }
+  });
+});
+
+// AE-R3 PR ② 검수(2026-10-08 KST): 回复(답장) ↔ 回復(회복)처럼 뜻이 갈리는 동형이의어는 확인 표기로 보이면 오해를 부른다.
+// 수기 거부 목록(JA_FALSE_FRIENDS)을 jaWords.json warn으로도 내보내 日 줄을 숨기고 경고로 보인다.
+describe('日 — 수기 동형이의어는 日 줄 대신 경고(jaWords.json warn)', () => {
+  it('warn = 표제어 우주 안의 거부 목록 키 전부, [일본어 표기, 주된 뜻] — 값 형식 「표기 — 뜻(중국어는 …)」에서 가른다', () => {
+    const keys = Object.keys(jaWords.warn);
+    expect(keys).toEqual([...keys].sort(byCodePoint));
+    expect(keys.length).toBeGreaterThanOrEqual(50);
+    for (const k of keys) {
+      expect(Object.hasOwn(JA_FALSE_FRIENDS, k), k).toBe(true);
+      expect(k in jaWords.words, k).toBe(false);
+      const [form, meaning] = jaWords.warn[k];
+      expect(JA_FALSE_FRIENDS[k].startsWith(`${form} — ${meaning}(중국어`), k).toBe(true);
+      expect([...form].length).toBe([...k].length);
+    }
+    expect(jaWords.warn.回复).toEqual(['回復', '회복']);
+    expect(jaWords.warn.汽车).toEqual(['汽車', '기차']);
+    expect(jaWords.warn.老师).toEqual(['老師', '노스승·노승']);
+  });
+
+  it('回复은 日 줄이 없다 — 게스트도, 사전 행이 같은 표기(回復)를 같은 단어로 적어도', () => {
+    expect(jaWordFromTable('回复', jaWords)).toBeNull();
+    expect(jaWarnFromTable('回复', jaWords)).toEqual({ form: '回復', meaning: '회복' });
+    expect(jaGlyphRow({ word: '回复', jaTable: jaWords })).toBeNull();
+    expect(jaGlyphRow({ word: '回复', dictEntry: dictWith({ form: '回復', yomi: 'かいふく' }), jaTable: jaWords })).toBeNull();
+    expect(jaWarnFromTable('壮观', jaWords)).toBeNull();
+  });
+
+  it('#1368 재생성으로 들어온 나머지 9항은 같은 단어로 판정해 日 줄에 남는다(PR ② 검수)', () => {
+    const same = { 了解: '了解', 厨房: '厨房', 回归: '回帰', 失踪: '失踪', 携带: '携帯', 斗志: '闘志', 联合: '連合', 质朴: '質朴', 踪迹: '踪跡' };
+    for (const [w, form] of Object.entries(same)) expect(jaGlyphRow({ word: w, jaTable: jaWords }), w).toMatchObject({ form, source: 'jmdict' });
+  });
+});
+
+describe('안 1 폭 — 실글꼴 보정(PR ②): 오른쪽 열 구분선(padding 12 + 테두리 1)까지 넣는다', () => {
+  it('壮观: 표제어 99.2 + 간격 16 + 구분선 13 + 열 133 = 261.2px — 그 폭이면 안 1, 1px 모자라면 안 2', () => {
+    const input = { chars: 2, zheng: true, ja: { yomi: 'そうかん' } };
+    expect(glyphColumnLayout({ ...input, containerPx: 261.2 })).toBe('side');
+    expect(glyphColumnLayout({ ...input, containerPx: 260.2 })).toBe('table');
+  });
+  it('안 2 표마저 넘치면 안 2b(stack) — 라벨 칸(1.75rem)만큼 들인 표제어가 한 줄에 안 들어갈 때(글자 200% · 긴 단어)', () => {
+    const tiyu = { chars: 3, zheng: true, ja: { yomi: 'たいいくじょう' } };
+    // 3 × 99.2(200%) = 297.6 + 56 = 353.6
+    expect(glyphColumnLayout({ ...tiyu, scale: 2, containerPx: 353.6 })).toBe('table');
+    expect(glyphColumnLayout({ ...tiyu, scale: 2, containerPx: 332 })).toBe('stack');
+    expect(glyphColumnLayout({ ...tiyu, containerPx: 332 })).toBe('table');
+    // 그려진 칸 폭(긴 병음·훈음)이 추정보다 넓으면 그 폭으로 판정한다
+    expect(glyphColumnLayout({ ...tiyu, containerPx: 332, hunPx: [110, 110, 110] })).toBe('stack');
+  });
+});
+
+describe('지연 로드(T1) — 받은 표를 호출부에 넘긴다(PR ② 배선)', () => {
+  it('유휴 예약이 돌면 두 표를 onLoad로 넘기고, 취소하면 넘기지 않는다', async () => {
+    resetGlyphTablesForTest();
+    let run = null;
+    const onLoad = vi.fn();
+    prefetchGlyphTables({ scheduler: { idle: (fn) => { run = fn; return 1; } }, onLoad });
+    run();
+    await vi.waitFor(() => expect(onLoad).toHaveBeenCalledTimes(1));
+    const [{ zheng, jaWords: ja }] = onLoad.mock.calls[0];
+    expect(zheng.amb).toBe(trad.amb);
+    expect(jaWordFromTable('壮观', ja)).toEqual({ form: '壮観', yomi: 'そうかん' });
+    const late = vi.fn();
+    let run2 = null;
+    const cancel = prefetchGlyphTables({ scheduler: { idle: (fn) => { run2 = fn; return 2; } }, onLoad: late });
+    run2();
+    cancel();
+    await new Promise((r) => setTimeout(r, 20));
+    expect(late).not.toHaveBeenCalled();
   });
 });

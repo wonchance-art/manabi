@@ -19,6 +19,8 @@ const CJK_LANGUAGES = new Set(['Chinese', 'Japanese']);
 
 /** 3줄 예산(설계서 §10.2) — 전각 글자 60자. 반각 글자는 0.375자로 세어 라틴 160자와 같다. */
 export const SENTENCE_LINE_BUDGET = 60;
+/** 2줄 예산 — 자형 표가 있는 카드가 시트 첫 화면을 넘을 때 문장 줄을 먼저 줄인다(AE-R3 PR② 첫 화면 우선). */
+export const SENTENCE_LINE_BUDGET_TIGHT = 40;
 const NARROW_WEIGHT = 60 / 160;
 const ELLIPSIS = '…';
 

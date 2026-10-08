@@ -51,25 +51,29 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
 
   // AE-R1 개정(VIEWER-V2-ROUNDS-001 §2 순서 · §10 「블록 순서는 §2 순서로」, 설계서 §7.1):
   // 문장 줄 → 칩 줄 → 표제어 → 뜻 → 문형 → 사전 뜻 목록(예문은 그 뜻 아래) → 한자 정보 → 교재 설명 → 더 알아보기.
-  // 일본어 대조는 AE-R3(자형 열)까지 사전 뜻 목록 아래에 남긴다(Q2 결정 — §0.2 회귀 없음).
-  it('본문 블록 순서 — 문장 줄 → 칩 → 표제어 → 뜻 → 문형 → 사전 뜻(예문) → (日 대조) → 한자 정보 → 교재 설명 → 더 알아보기', () => {
+  // AE-R3 PR② 개정(정본 §2.1 「없어지는 것: 일본어 대조 블록(자형 열이 대신한다)」·§6, 설계서 §5·§7.1): 일본어 대조 블록 자리는
+  // 비고, 표제어 안 자형 열(正·日)과 더 알아보기 「일본어로는」 줄 · 카드 아래 출처 줄(JMdict일 때)이 대신한다.
+  it('본문 블록 순서 — 문장 줄 → 칩 → 표제어(자형 열) → 뜻 → 문형 → 사전 뜻(예문) → 한자 정보 → 교재 설명 → 더 알아보기(일본어로는) → 출처 줄', () => {
     const at = (s) => { const i = card.indexOf(s); expect(i, s).toBeGreaterThan(-1); return i; };
     const order = [
       at('<p className="reader-card-sentence"'),
       at('<div className="word-detail-card__actions">'),
       at('<div className="reader-card-headword">'),
+      at('<ViewerGlyphColumn'),
       at("refMeaning || selectedToken.meaning || '(뜻 없음)'"),
       at('className="reader-card-pattern"'),
       at('senseListCount(senseGroups) > 0'),
       at('splitSentenceAroundWord(refVocab.word.ex.zh, headText, null)'),
       at('className="reader-card-senses"'),
       at('{item.example && !classStudyActive && example}'),
-      at('<ViewerJapaneseReference'),
       at("<h3>{vt('한자 정보')}</h3>"),
       at('{classAction}'),
       at('className="reader-card-learn"'),
       at('className="syn-ant"'),
+      at('<ViewerJapaneseMore'),
+      at('className="reader-card-credit"'),
     ];
+    expect(card).not.toContain('<ViewerJapaneseReference');
     for (let i = 1; i < order.length; i += 1) expect(order[i - 1], `block ${i - 1} before ${i}`).toBeLessThan(order[i]);
     // 글자 카드(AE-R4 전까지)는 표제어 바로 아래 — 뜻보다 위(정본 §3 「위치만 표제어 바로 아래」)
     expect(at('<div className="char-inspect">')).toBeGreaterThan(at('<div className="reader-card-headword">'));
@@ -85,12 +89,15 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
     expect(ex).toMatch(/i < arr\.length - 1/);
   });
 
-  it('일본어 대조가 자형과 의미를 구분하며 동일 표기는 한 번만 표시한다', () => {
-    const component=read('src/components/viewer/ViewerJapaneseReference.jsx');
-    expect(component).toContain('japaneseReferenceForMeaning(dictEntry,meaning,{pos,form:glyphForm})');
-    expect(component).toContain('ref.form===glyphForm');
-    expect(component).toContain('ref&&!same');
-    expect(component).toContain('같은 뜻');
+  // AE-R3 PR② 개정(설계서 §5·§7.1 — 기준점 <ViewerJapaneseReference 제거 → 자형 열 계약): 자형(같은 단어의 일본어 표기)은
+  // 日 줄, 의미(같은 뜻 다른 말 · 동형이의어 경고)는 「일본어로는」 줄 — 둘이 섞이지 않고, 같은 표기를 두 번 보이지 않는다
+  // (日 줄이 보이면 「일본어로는」 줄은 없다).
+  it('자형 열(日 = 같은 단어 표기)과 「일본어로는」 줄(다른 말·경고)이 자형과 의미를 구분하고 동일 표기는 한 번만 표시한다', () => {
+    const more=read('src/components/viewer/ViewerJapaneseMore.jsx');
+    expect(more).toContain('japaneseReferenceForMeaning(dictEntry,meaning,{pos,form:hint||word})');
+    expect(card).toContain('<ViewerGlyphColumn word={headText} zheng={glyph.zheng} ja={glyph.ja}');
+    expect(card).toMatch(/\(classStudyActive \|\| !glyph\.ja\) && <ViewerJapaneseMore/);
+    expect(more).toContain("vt('일본어로는')");
   });
 
   it("유의어와 반의어는 구분된 줄에서 제공한다", () => {

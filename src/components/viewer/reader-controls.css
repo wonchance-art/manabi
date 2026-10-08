@@ -127,6 +127,7 @@
 .word-fit--hun-reserved .surface {padding-bottom:calc(.8125rem * 1.35 + .13em);}
 /* AE-R1 문장 줄(§2.1): 15px 회색 한 문장, 누른 자리만 배경 + 굵게. 버튼 0. 3줄 안전망. */
 .reader-card-sentence {margin:0 0 4px;font-size:.9375rem;line-height:1.6;color:var(--reader-muted);overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden;}
+.reader-card-sentence[data-tight] {-webkit-line-clamp:2;line-clamp:2;}
 .reader-card-sentence__term {background:var(--reader-selected);color:var(--reader-ink);font-weight:700;border-radius:3px;padding:0 1px;}
 /* 구획은 라벨 + 가는 선(접힘 0). */
 .reader-card-senses,.reader-card-learn,.reader-card-notes,.reader-card-hanja,.reader-card-pattern {border-top:1px solid var(--reader-line);padding-top:8px;margin:0 0 12px;}
@@ -326,15 +327,50 @@
 .viewer-layout .reader-card-context .reader-card-source {border:0;margin:0 0 8px;padding:0;}
 .viewer-layout .reader-card-more>details {margin:0;padding:0;border:0;}
 .viewer-layout .reader-card-more>details>summary {font-size:.8rem;}
-.reader-japanese {margin:0 0 12px;font-size:.85rem;line-height:1.7;}
-.reader-japanese__row {display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
-.reader-japanese__label {font-size:.7rem;color:var(--reader-muted);min-width:64px;}
-.reader-japanese__row :is(.reader-japanese__form,strong) {font-family:var(--font-noto-jp),sans-serif;font-size:1rem;font-weight:500;overflow-wrap:anywhere;}
-.reader-japanese__row strong {font-weight:600;}
-.reader-japanese__row small {font-size:.6rem;color:var(--reader-muted);}
-.reader-japanese__note {margin:2px 0 0;font-size:.73rem;color:var(--reader-muted);}
-.reader-japanese__lookup {font-size:.75rem;color:var(--reader-muted);}
-.reader-japanese__lookup button {padding:0;border:0;background:transparent;color:var(--reader-accent);cursor:pointer;}
+/* AE-R3 PR② 자형 열(正 · 日 — VIEWER-V2-ROUNDS-001 §2·§6, 설계서 docs/manabi-viewer-v2-ae-r3.md §4·§12). 일본어 대조 블록 규칙을 대신한다.
+   안 1(side): 표제어(.word-fit) 오른쪽 열 — 표제어 폭은 내용만큼, 열은 줄지 않는다. 세로 가운데 맞춤은 ViewerGlyphColumn이
+   그리기 전에 잰 margin-top(첫 글자 줄 가운데 기준)이 한다. 안 2(table): 표제어를 라벨 칸(--glyph-gutter)만큼 들이고
+   그 아래 正·日 두 줄을 글자 칸에 맞춘다(칸 자리는 data-glyph-i를 잰 값). 흐름 배치만 — 절대배치·잘라내기 0. */
+.word-fit-wrap:has(> .reader-card-glyph[data-layout="side"]) {display:flex;align-items:flex-start;gap:16px;}
+.word-fit-wrap:has(> .reader-card-glyph[data-layout="side"]) > .word-fit {flex:0 1 auto;min-width:0;}
+.word-fit-wrap:has(> .reader-card-glyph[data-layout="table"]) > .word-fit {margin-inline-start:1.75rem;}
+.reader-card-glyph {font-size:1rem;line-height:1.4;letter-spacing:0;color:var(--reader-ink);font-weight:400;}
+/* 안 1 세로 맞춤: 열 가운데 = 첫 글자 줄 가운데. 글자 줄 가운데 = 병음 줄(.9375rem × 1.2) + 간격 .375rem + 글자 칸(1.2em)의 절반,
+   병음이 없으면(noruby) 글자 칸 절반, 읽기를 기다리는 중(루비 없음·noruby 아님 — 줄 높이 1.9)이면 1.9em의 절반. em = 표제어 글꼴
+   (.viewer-layout .word-fit과 같은 식 — 같은 컨테이너 기준 cqi). 열 높이 = 줄 수 × 1.4rem + 사이 2px. 재는 JS 없이 첫 프레임부터. */
+.reader-card-glyph[data-layout="side"] {--glyph-head:clamp(2rem,4cqi,2.25rem);--glyph-mid:calc(1.5rem + .6 * var(--glyph-head));flex:none;display:flex;flex-direction:column;gap:2px;margin-top:calc(var(--glyph-mid) - var(--glyph-rows, 1) * .7rem - (var(--glyph-rows, 1) - 1) * 1px);padding-inline-start:12px;border-inline-start:1px solid var(--reader-line);white-space:nowrap;}
+.word-fit--noruby ~ .reader-card-glyph[data-layout="side"] {--glyph-mid:calc(.6 * var(--glyph-head));}
+.word-fit:not(.word-fit--noruby):not(:has(ruby)) ~ .reader-card-glyph[data-layout="side"] {--glyph-mid:calc(.95 * var(--glyph-head));}
+.reader-card-glyph[data-layout="side"] .reader-card-glyph__row {height:1.4rem;}
+.reader-card-glyph[data-layout="table"] {display:flex;flex-direction:column;gap:2px;margin:2px 0 0;}
+/* 안 2b(stack): 표마저 넘칠 때 — 칸 맞춤 없이 표제어 아래 두 줄 묶음(줄 모양은 안 1과 같다). */
+.reader-card-glyph[data-layout="stack"] {display:flex;flex-direction:column;gap:2px;margin:4px 0 0;}
+.reader-card-glyph[data-layout="stack"] .reader-card-glyph__row {flex-wrap:wrap;gap:.125rem .65em;}
+/* 첫 화면 우선 2단계: 뜻 줄 아래(스크롤 아래)로 내린 자형 줄 — 뜻 줄과 사전 뜻 목록 사이. */
+.reader-card-glyph--below {margin:-8px 0 12px;}
+.reader-card-glyph__row {display:flex;align-items:baseline;gap:.65em;}
+.reader-card-glyph[data-layout="table"] .reader-card-glyph__row {flex-wrap:wrap;gap:.125rem 0;}
+.reader-card-glyph__row.is-ghost {visibility:hidden;}
+.reader-card-glyph__label {flex:none;width:1em;font-size:.8125rem;line-height:inherit;color:var(--reader-muted);text-align:center;}
+.reader-card-glyph[data-layout="table"] .reader-card-glyph__label {width:1.75rem;font-size:.8125rem;text-align:start;}
+.reader-card-glyph__form {display:inline-flex;flex:none;}
+.viewer-layout .reader-card-glyph [lang="zh-Hant-TW"] {font-family:var(--font-noto-tc),'Noto Sans TC',var(--font-noto-kr),sans-serif;}
+.viewer-layout .reader-card-glyph [lang="ja"] {font-family:var(--font-noto-jp),'Noto Sans JP',var(--font-noto-kr),sans-serif;}
+.reader-card-glyph__ch {display:inline-block;width:1em;text-align:center;}
+.reader-card-glyph__ch.is-diff {color:var(--reader-accent);}
+.reader-card-glyph:is([data-layout="side"],[data-layout="stack"]) .reader-card-glyph__ch.is-diff {text-decoration:underline dotted var(--reader-accent);text-decoration-thickness:1.5px;text-underline-offset:.22em;}
+.reader-card-glyph[data-layout="table"] .reader-card-glyph__ch.is-same {opacity:.45;}
+.reader-card-glyph__yomi {white-space:nowrap;color:var(--reader-muted);}
+.reader-card-glyph[data-layout="table"] .reader-card-glyph__yomi {margin-inline-start:.75em;}
+/* 더 알아보기 · 「일본어로는」 한 줄(설계서 §5)과 JMdict 출처 줄(§6 — 日 줄이 JMdict 표에서 온 카드만, 작게). */
+.reader-card-learn__ja {font-size:.875rem;line-height:1.6;overflow-wrap:anywhere;}
+.reader-card-learn__ja-label {font-size:.75rem;color:var(--reader-muted);}
+.reader-card-learn__ja strong {font-weight:600;}
+.reader-card-learn__ja-warn {color:var(--reader-muted);}
+.reader-card-credit {margin:-8px 0 8px;font-size:.75rem;line-height:1.5;}
+.reader-card-credit a {display:inline-flex;align-items:center;min-height:44px;color:var(--reader-muted);text-decoration:none;}
+.reader-card-credit a:hover {text-decoration:underline;}
+.reader-card-credit a:focus-visible {outline:2px solid var(--reader-accent);outline-offset:2px;border-radius:3px;}
 
 /* Reading-room chrome follows the home page's paper, ink and editorial rules.
    Body typography, annotation settings and learning-state colors remain reader owned. */
@@ -548,12 +584,6 @@
 .manabi-app .viewer-layout .reader-card-body .reader-card-disclosure>summary>.action-icon{margin-left:auto;flex:none}
 .manabi-app .viewer-layout .reader-card-body .reader-card-disclosure[open]>summary>.action-icon{transform:rotate(180deg)}
 .manabi-app .viewer-layout .reader-card-body .reader-card-disclosure>summary:focus-visible{outline:2px solid var(--reader-accent);outline-offset:2px;border-radius:3px}
-.manabi-app .viewer-layout .reader-card-body .reader-japanese{margin:0 0 12px;font-size:.875rem;line-height:1.6}
-.manabi-app .viewer-layout .reader-card-body .reader-card-visible>.reader-japanese{margin-bottom:0}
-.manabi-app .viewer-layout .reader-card-body .reader-japanese__row{gap:8px}
-.manabi-app .viewer-layout .reader-card-body .reader-japanese__label{font-size:.75rem;min-width:0}
-.manabi-app .viewer-layout .reader-card-body .reader-japanese__row small,.manabi-app .viewer-layout .reader-card-body .reader-japanese__note,.manabi-app .viewer-layout .reader-card-body .reader-japanese__lookup{font-size:.75rem;line-height:1.6}
-.manabi-app .viewer-layout .reader-card-body .reader-japanese__lookup button{min-height:44px;line-height:1.5;text-align:start}
 .manabi-app .viewer-layout .reader-card-body .reader-card-example{margin:0 0 12px}
 .manabi-app .viewer-layout .reader-card-body .reader-card-example h3{margin:0 0 8px;font-size:.75rem;font-weight:500;line-height:1.5;color:var(--reader-muted)}
 .manabi-app .viewer-layout .reader-card-body .reader-card-example__text{font-size:.875rem;line-height:1.6;overflow-wrap:anywhere;margin-bottom:12px}

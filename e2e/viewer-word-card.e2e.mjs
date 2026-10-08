@@ -388,16 +388,19 @@ test('network held: the upper blocks are in the first frame and do not move from
     const q=s=>document.querySelector(`#inspector-word ${s}`);
     const top=el=>el&&el.getClientRects().length?el.getBoundingClientRect().top:null;
     resolve({sentence:top(q('.reader-card-sentence')),chips:top(q('.word-detail-card__actions')),head:top(q('.reader-card-headword')),meaning:top(q('.word-detail-card__meaning')),
-     meaningText:q('.word-detail-card__meaning')?.textContent,
+     meaningText:q('.word-detail-card__meaning')?.textContent,glyph:top(q('.reader-card-glyph')),glyphText:q('.reader-card-glyph')?.textContent,
      grades:document.querySelectorAll('#inspector-word .reader-card-actions .review-score-btn').length,hun:document.querySelectorAll('#inspector-word .word-fit__hun').length});
    }));
   }));
   const tops=()=>f.page.evaluate(()=>{const q=s=>document.querySelector(`#inspector-word ${s}`);const top=el=>el&&el.getClientRects().length?el.getBoundingClientRect().top:null;
-   return {sentence:top(q('.reader-card-sentence')),chips:top(q('.word-detail-card__actions')),head:top(q('.reader-card-headword')),meaning:top(q('.word-detail-card__meaning'))};});
+   return {sentence:top(q('.reader-card-sentence')),chips:top(q('.word-detail-card__actions')),head:top(q('.reader-card-headword')),meaning:top(q('.word-detail-card__meaning')),glyph:top(q('.reader-card-glyph'))};});
   for(const k of UPPER)assert.notEqual(t0[k],null,`${k} is in the first frame with the network held`);
   assert.equal(t0.meaningText,'경기장');
   assert.equal(t0.grades,4,'grades in the first frame');
   assert.equal(t0.hun,3,'hun ruby in the first frame (tables were loaded when the material opened)');
+  // AE-R3 PR②(설계서 §7.3 「T0~T3 첫 화면 위쪽 이동 0 — 자형 열 포함」): 정체 표는 자료를 열 때 받았으므로 正 줄도 첫 프레임에 있다.
+  assert.notEqual(t0.glyph,null,'glyph column in the first frame');
+  assert.ok(/正\s*體育場/.test(t0.glyphText),t0.glyphText);
   const frames=[];
   await f.page.waitForTimeout(300);frames.push(await tops());
   await f.page.waitForTimeout(700);frames.push(await tops());
@@ -405,7 +408,7 @@ test('network held: the upper blocks are in the first frame and do not move from
   await f.context.unroute('**/rest/v1/**',hold);await f.context.unroute('**/api/**',hold);
   for(const route of held.splice(0))await route.fallback().catch(()=>{});
   await f.page.waitForTimeout(2000);frames.push(await tops());
-  for(const frame of frames)for(const k of UPPER)assert.equal(frame[k],t0[k],`${k} moved: ${t0[k]} → ${frame[k]}`);
+  for(const frame of frames)for(const k of [...UPPER,'glyph'])assert.equal(frame[k],t0[k],`${k} moved: ${t0[k]} → ${frame[k]}`);
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
 });
@@ -605,4 +608,185 @@ test('「자세한 설명」: shared detail_text is read once per card when 더 
   assert.equal(f.requests.filter(r=>r.url.includes('/api/word-detail')||r.url.includes('/api/gemini')).length,0,'no AI or word-detail API call');
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
+});
+
+// ───────────────────────── AE-R3 PR ② 자형 열(正 · 日) · 일본어 대조 블록 교체 · 출처(설계서 docs/manabi-viewer-v2-ae-r3.md §4·§5·§6·§7.3) ─────────────────────────
+// 표시만(쓰기 0). 정본 §6 합격: 正은 다를 때만 · 日은 확인된 단어만 요미와 함께 · 2자 안 1, 넘치면 안 2 · 요미 문자열 안 줄바꿈 0 ·
+// 안 1 세로 가운데 ±2px · 日 요미가 JMdict에서 온 카드에 출처 줄. 사전 행(합성): 体育场 = 사전 ja(같은 단어) · 老师 = diff · 汽车 = diff+warn · 尽量 = ja null.
+const glyphRows={...dictRows.Chinese,
+ 体育场:{meanings:[{meaning:'경기장',priority:1,pos:'명사',ja:{form:'体育場',yomi:'たいいくじょう',warn:null}}],reading:'tǐ yù chǎng',pos:'명사'},
+ 老师:{meanings:[{meaning:'선생님',priority:1,pos:'명사',ja:{form:'先生',yomi:'せんせい',diff:true,warn:null}}],reading:'lǎo shī',pos:'명사'},
+ 汽车:{meanings:[{meaning:'자동차',priority:1,pos:'명사',ja:{form:'自動車',yomi:'じどうしゃ',diff:true,warn:'기차'}}],reading:'qì chē',pos:'명사'},
+ 尽量:{meanings:[{meaning:'되도록',priority:1,pos:'부사',ja:null}],reading:'jǐn liàng',pos:'부사'},
+};
+function glyphMaterial() {
+ const w=(text,furigana,meaning,pos='명사')=>({text,base_form:text,furigana,meaning,pos});
+ return build([
+  [w('眼前','yǎn qián','눈앞'),w('的','de','~의','조사'),w('体育场','tǐ yù chǎng','경기장'),w('比','bǐ','~보다','전치사'),w('照片','zhào piàn','사진'),w('上','shàng','위'),w('更','gèng','더','부사'),w('壮观','zhuàng guān','웅장하다, 장관이다','형용사'),w('。','','','기호')],
+  [w('老师','lǎo shī','선생님'),w('坐','zuò','타다','동사'),w('汽车','qì chē','자동차'),w('，','','','기호'),w('她','tā','그녀','대명사'),w('尽量','jǐn liàng','되도록','부사'),w('早','zǎo','일찍','부사'),w('来','lái','오다','동사'),w('。','','','기호')],
+ ],'Chinese');
+}
+// 보이는 단어창의 자형 열 기하 — 행 텍스트 · lang · 칠 · 첫 글자 줄 가운데와 열 가운데 · 표 칸 정렬.
+const glyphGeometry=page=>page.evaluate(()=>{
+ const card=[...document.querySelectorAll('#inspector-word')].find(el=>el.getClientRects().length);
+ const col=card?.querySelector('.reader-card-glyph');
+ if(!col)return null;
+ const box=el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height,cx:r.left+r.width/2,cy:r.top+r.height/2};};
+ const row=kind=>{const el=col.querySelector(`.reader-card-glyph__row--${kind}`);if(!el)return null;const form=el.querySelector('.reader-card-glyph__form'),yomi=el.querySelector('.reader-card-glyph__yomi');
+  return {text:form.textContent,lang:form.getAttribute('lang'),ghost:el.classList.contains('is-ghost'),cells:[...el.querySelectorAll('.reader-card-glyph__ch')].map(c=>({...box(c),diff:c.classList.contains('is-diff'),opacity:getComputedStyle(c).opacity,color:getComputedStyle(c).color,underline:getComputedStyle(c).textDecorationStyle})),
+   yomi:yomi?{text:yomi.textContent,lang:yomi.getAttribute('lang'),lines:yomi.getClientRects().length,...box(yomi)}:null};};
+ const glyphs=[...card.querySelectorAll('.word-fit [data-glyph-i]')].map(box);
+ const fit=card.querySelector('.word-fit'),body=card.querySelector('.reader-card-body');
+ return {layout:col.dataset.layout,col:box(col),zheng:row('zheng'),ja:row('ja'),glyphs,fit:box(fit),body:box(body),accent:getComputedStyle(card.closest('.viewer-layout')).getPropertyValue('--reader-accent').trim(),
+  hun:[...card.querySelectorAll('.word-fit__hun')].map(box),pinyin:[...card.querySelectorAll('.word-fit .rt-an')].map(box),
+  credit:card.querySelector('.reader-card-credit a')?.getAttribute('href')||null,creditText:card.querySelector('.reader-card-credit')?.innerText||'',
+  learnJa:card.querySelector('.reader-card-learn__ja')?.innerText||null,text:card.innerText,old:card.querySelectorAll('.reader-card-comparison,.reader-japanese').length};
+});
+const overlaps=(a,b)=>a.left<b.right-.5&&b.left<a.right-.5&&a.top<b.bottom-.5&&b.top<a.bottom-.5;
+
+test('AE-R3 390 · 1440: 壮观 안 1 — 正 壯觀 · 日 壮観 そうかん, 세로 가운데 ±2px, 표제어·훈음·병음과 겹침 0, JMdict 출처 줄 · 「AI」 0 · 대조 블록 0',{timeout:180000},async()=>{
+ for(const [width,height] of [[390,844],[1440,900]]){
+  const f=await open(glyphMaterial(),{prefs:zhPrefs,rows:glyphRows,width,height});
+  try{
+   await until(()=>f.bulk.length>=1);
+   await tap(f,'id_0_7','웅장하다, 장관이다');
+   await f.page.locator('#inspector-word .reader-card-glyph').filter({visible:true}).waitFor();
+   await f.page.locator('#inspector-word .word-fit__hun').filter({visible:true}).first().waitFor();
+   await f.page.waitForTimeout(300);
+   const g=await glyphGeometry(f.page);
+   const label=`壮观 ${width}`;
+   assert.equal(g.layout,'side',`${label}: 2-char word is 안 1`);
+   assert.equal(g.zheng.text,'壯觀');assert.equal(g.zheng.lang,'zh-Hant-TW');
+   assert.equal(g.ja.text,'壮観');assert.equal(g.ja.lang,'ja');
+   assert.equal(g.ja.yomi.text,'そうかん');assert.equal(g.ja.yomi.lang,'ja');assert.equal(g.ja.yomi.lines,1,`${label}: yomi on one line`);
+   assert.deepEqual(g.zheng.cells.map(c=>c.diff),[true,true]);assert.deepEqual(g.ja.cells.map(c=>c.diff),[false,true],'only 観 differs from 观');
+   assert.ok(g.zheng.cells.every(c=>c.underline==='dotted'),`${label}: differing glyphs are dotted-underlined`);
+   assert.notEqual(g.ja.cells[0].underline,'dotted','same glyph is not underlined');
+   const mid=g.glyphs[0].cy;
+   assert.ok(Math.abs(g.col.cy-mid)<=2,`${label}: column middle ${g.col.cy} vs glyph row middle ${mid}`);
+   for(const b of [...g.glyphs,...g.hun,...g.pinyin])assert.ok(!overlaps(g.col,b),`${label}: column overlaps the headword ${JSON.stringify(b)}`);
+   assert.ok(g.col.left>=g.fit.right,`${label}: column is right of the headword`);
+   assert.ok(g.col.right<=g.body.right+.5,`${label}: column inside the card`);
+   assert.equal(g.credit,'/credits#jmdict',`${label}: JMdict credit line (日 from the JMdict table)`);
+   assert.ok(g.creditText.includes('JMdict (EDRDG)')&&g.creditText.includes('CC BY-SA 4.0'));
+   assert.equal(g.learnJa,null,'日 shown → no 「일본어로는」 line');
+   assert.equal(g.old,0,'the Japanese comparison block is gone');
+   assert.ok(!/\bAI\b/.test(g.text),`${label}: no 「AI」 label in the card`);
+   for(const gone of ['일본어 대조','일본식 자형','같은 뜻','기존 사전'])assert.ok(!g.text.includes(gone),`${label}: 「${gone}」 gone`);
+   assertFirstScreen(await measure(f.page),{label,side:width>=1280});
+   if(process.env.COMPOSER_SCREENSHOTS)await f.page.screenshot({path:`${process.env.COMPOSER_SCREENSHOTS}/glyph-zhuangguan-${width}.png`});
+   // 眼前 = 日만(正 없음 — 간체 = 정체), 다른 글자 0
+   await tap(f,'id_0_0','눈앞');
+   await f.page.waitForTimeout(300);
+   const e=await glyphGeometry(f.page);
+   assert.equal(e.zheng,null,'眼前: no 正 row');assert.equal(e.ja.text,'眼前');assert.equal(e.ja.yomi.text,'がんぜん');assert.ok(e.ja.cells.every(c=>!c.diff));
+   assert.ok(Math.abs(e.col.cy-e.glyphs[0].cy)<=2,`眼前 ${width}: column middle`);
+   assert.deepEqual(f.errors,[]);
+  }finally{await f.context.close();}
+ }
+});
+
+test('AE-R3 390: 体育场(사전 ja) 안 2 — 글자 칸 정렬 ±2px, 같은 글자 흐림 0.45 · 다른 글자 초록, 요미 한 줄, 출처 줄 없음(사전 행), 첫 화면',{timeout:180000},async()=>{
+ const f=await open(glyphMaterial(),{prefs:zhPrefs,rows:glyphRows});
+ try{
+  await until(()=>f.bulk.length>=1);
+  await tap(f,'id_0_2','경기장');
+  await f.page.locator('#inspector-word .reader-card-glyph[data-layout="table"]').filter({visible:true}).waitFor();
+  await f.page.waitForTimeout(300);
+  const g=await glyphGeometry(f.page);
+  assert.equal(g.zheng.text,'體育場');assert.equal(g.ja.text,'体育場');assert.equal(g.ja.yomi.text,'たいいくじょう');
+  assert.equal(g.ja.yomi.lines,1,'yomi string does not break');
+  assert.ok(g.ja.yomi.height<=16*1.6,`yomi is one line high: ${g.ja.yomi.height}`);
+  for(const r of [g.zheng,g.ja])r.cells.forEach((c,i)=>assert.ok(Math.abs(c.cx-g.glyphs[i].cx)<=2,`${r.text}[${i}] x ${c.cx} vs headword ${g.glyphs[i].cx}`));
+  assert.deepEqual(g.zheng.cells.map(c=>c.diff),[true,false,true]);assert.deepEqual(g.ja.cells.map(c=>c.diff),[false,false,true]);
+  for(const c of [...g.zheng.cells,...g.ja.cells])assert.equal(c.opacity,c.diff?'1':'0.45');
+  assert.notEqual(g.zheng.cells[0].color,g.zheng.cells[1].color,'differing glyph is painted');
+  assert.ok(g.zheng.cells[0].top>=Math.max(...g.glyphs.map(b=>b.bottom),...g.hun.map(b=>b.bottom))-.5,'table rows are below the headword and hun ruby');
+  for(const b of [...g.glyphs,...g.hun,...g.pinyin])for(const c of [...g.zheng.cells,...g.ja.cells])assert.ok(!overlaps(c,b),'table cell overlaps the headword');
+  assert.equal(g.credit,null,'日 from the dictionary row → no JMdict credit line');
+  assertFirstScreen(await measure(f.page),{label:'体育场 table 390'});
+  if(process.env.COMPOSER_SCREENSHOTS)await f.page.screenshot({path:`${process.env.COMPOSER_SCREENSHOTS}/glyph-tiyuchang-390.png`});
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+// 메인 세션 결정(10-08): 안 2가 390 첫 화면 계약(표제어·이 문장 뜻 줄·하단)을 깨면 결함 — 우선순위 표제어·뜻·하단 > 자형 표.
+// 3줄 문장 속 体育场(사전 ja → 안 2): 1단계 문장 줄 2줄 예산, 그래도 넘치면 2단계 자형 표를 뜻 줄 아래로(표제어 옆엔 正 한 칸).
+test('AE-R3 390 첫 화면 우선: 3줄 문장 + 体育场(안 2) — 표제어·뜻 줄·4등급이 스크롤 없이, 자형 줄은 뜻 줄 아래(접힘 0)',{timeout:180000},async()=>{
+ const m=cardMaterial();
+ const f=await open(m,{prefs:zhPrefs,rows:glyphRows});
+ try{
+  await until(()=>f.bulk.length>=1);
+  const longId=m.sequence.find(id=>id.startsWith('id_2_')&&m.dictionary[id].text==='体育场');
+  await tap(f,longId,'경기장');
+  await f.page.waitForTimeout(400);
+  assertFirstScreen(await measure(f.page),{label:'3-line + 体育场 table 390'});
+  const s=await f.page.evaluate(()=>{
+   const card=[...document.querySelectorAll('#inspector-word')].find(el=>el.getClientRects().length);
+   const meaning=card.querySelector('.word-detail-card__meaning').getBoundingClientRect();
+   const below=card.querySelector('.reader-card-glyph--below');
+   const beside=card.querySelector('.word-fit-wrap > .reader-card-glyph');
+   return {tight:card.querySelector('.reader-card-sentence')?.hasAttribute('data-tight'),
+    below:below?{top:below.getBoundingClientRect().top,text:below.textContent,layout:below.dataset.layout}:null,meaningBottom:meaning.bottom,
+    beside:beside?{layout:beside.dataset.layout,text:beside.textContent}:null,details:card.querySelectorAll('details,[aria-expanded="false"]').length};
+  });
+  assert.equal(s.tight,true,'step 1: the sentence line drops to the 2-line budget');
+  assert.ok(s.below,'step 2: the glyph rows move below the meaning line');
+  assert.ok(s.below.top>=s.meaningBottom-.5,'below block is under the meaning line');
+  assert.ok(s.below.text.includes('体育場')&&s.below.text.includes('たいいくじょう'),s.below.text);
+  if(s.beside){assert.equal(s.beside.layout,'side');assert.equal(s.beside.text,'正體育場','beside the headword: the 正 row only');assert.ok(!s.below.text.includes('體育場'));}
+  else assert.ok(s.below.text.includes('體育場'),'正 row goes below when it does not fit beside');
+  assert.equal(s.details,0,'no folds');
+  // 다른 단어로 가면 단계가 0으로 — 짧은 문장의 体育场은 문장 줄 3줄 예산 · 표제어 아래 표(안 2) 그대로
+  await tap(f,'id_0_2','경기장');
+  await f.page.waitForTimeout(400);
+  const t=await glyphGeometry(f.page);
+  assert.equal(t.layout,'table');
+  assertFirstScreen(await measure(f.page),{label:'1-line + 体育场 table 390'});
+  assert.equal(await f.page.locator('#inspector-word .reader-card-glyph--below').filter({visible:true}).count(),0);
+  if(process.env.COMPOSER_SCREENSHOTS)await f.page.screenshot({path:`${process.env.COMPOSER_SCREENSHOTS}/glyph-budget-390.png`});
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+test('AE-R3: 老师(diff) · 汽车(warn) → 日 숨김 · 「일본어로는」 줄, 尽量(ja null) → 正만 + [✦ 일본어로는?](기존 클라 AI, 「AI」 표 0, 사전 쓰기 0) · 일본어 자료엔 자형 열 0',{timeout:180000},async()=>{
+ const f=await open(glyphMaterial(),{prefs:zhPrefs,rows:glyphRows});
+ try{
+  await f.context.route('**/api/gemini',r=>r.fulfill({contentType:'application/json',body:JSON.stringify({candidates:[{content:{parts:[{text:JSON.stringify({form:'できるだけ',warn:null})}]}}]})}));
+  await until(()=>f.bulk.length>=1);
+  const learn=f.page.locator('#inspector-word .reader-card-learn').filter({visible:true});
+  await tap(f,'id_1_0','선생님');
+  await learn.locator('.reader-card-learn__ja').waitFor({state:'attached'});
+  let g=await glyphGeometry(f.page);
+  assert.equal(g.zheng.text,'老師');assert.equal(g.ja,null,'老师: 日 hidden (diff)');assert.equal(g.credit,null);
+  assert.ok(/일본어로는\s*先生\s*せんせい/.test(g.learnJa),g.learnJa);
+  await tap(f,'id_1_2','자동차');
+  await learn.locator('.reader-card-learn__ja').getByText('自動車',{exact:true}).waitFor({state:'attached'});
+  g=await glyphGeometry(f.page);
+  assert.equal(g.ja,null,'汽车: 日 hidden (warn)');
+  assert.ok(g.learnJa.includes('自動車')&&g.learnJa.includes('じどうしゃ')&&g.learnJa.includes('같은 한자 표기는 일본어에서 ‘기차’라는 뜻이에요.'),g.learnJa);
+  await tap(f,'id_1_5','되도록');
+  const ask=learn.getByRole('button',{name:'✦ 일본어로는?',exact:true});
+  await ask.waitFor({state:'attached'});
+  g=await glyphGeometry(f.page);
+  assert.equal(g.zheng.text,'儘量');assert.equal(g.ja,null);assert.equal(g.learnJa,null);
+  assert.equal(f.requests.filter(r=>r.url.includes('/api/gemini')).length,0,'no AI call before the button');
+  await ask.scrollIntoViewIfNeeded();await ask.click();
+  await learn.locator('.reader-card-learn__ja').getByText('できるだけ',{exact:true}).waitFor();
+  assert.equal(f.requests.filter(r=>r.url.includes('/api/gemini')).length,1);
+  const text=await f.page.locator('#inspector-word').filter({visible:true}).innerText();
+  assert.ok(!/\bAI\b/.test(text),'no 「AI」 label');
+  assert.equal(f.requests.filter(r=>r.url.includes('/rest/v1/morpheme_dictionary')&&r.method!=='GET'&&r.method!=='OPTIONS').length,0,'no dictionary writes');
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+ // 일본어 자료: 자형 열·일본어 표 0(회귀 없음)
+ const ja=build([[{text:'天気',base_form:'天気',furigana:'てんき',meaning:'날씨',pos:'명사'},{text:'。',base_form:'。',pos:'기호'}]],'Japanese');
+ const j=await open(ja);
+ try{
+  await tap(j,'id_0_0','날씨');
+  await j.page.waitForTimeout(300);
+  assert.equal(await j.page.locator('#inspector-word .reader-card-glyph').count(),0);
+  assert.equal(await j.page.locator('#inspector-word .reader-card-credit').count(),0);
+  assert.deepEqual(j.errors,[]);
+ }finally{await j.context.close();}
 });
