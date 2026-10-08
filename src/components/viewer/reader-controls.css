@@ -143,6 +143,20 @@
 .reader-card-sense__meaning {overflow-wrap:anywhere;}
 .reader-card-sense__context {font-size:.75rem;color:var(--reader-accent);white-space:nowrap;}
 .reader-card-sense > .reader-card-example__text {grid-column:3 / -1;margin:2px 0 0;}
+/* AE-R1 PR③ 사전 뜻 줄 교정(권한이 있을 때만 버튼) — 줄 전체가 44px 누름 영역, 칸 배치는 표시 줄과 같다. */
+.reader-card-sense__pick {grid-column:1 / -1;display:grid;grid-template-columns:4.25em 1.25em minmax(0,1fr) auto;column-gap:4px;align-items:center;min-height:44px;margin:-4px -6px;padding:4px 6px;border:0;border-radius:4px;background:transparent;color:inherit;font:inherit;line-height:inherit;text-align:start;cursor:pointer;}
+.reader-card-sense__pick:hover {background:color-mix(in srgb,var(--reader-selected) 60%,transparent);}
+.reader-card-sense__pick:focus-visible {outline:2px solid var(--reader-accent);outline-offset:-2px;}
+.reader-card-sense__pick:disabled {cursor:progress;}
+.reader-card-sense-undo {display:flex;flex-wrap:wrap;align-items:center;gap:0 4px;margin:-6px 0 8px;font-size:.8125rem;color:var(--reader-muted);}
+.reader-card-sense-undo button {min-height:44px;}
+/* 머리줄 ⋯ 메뉴(분석 고치기) — 목록은 ⋯ 아래 오른쪽 정렬, 항목 44px. */
+.viewer-sheet-menu {position:relative;display:flex;flex:none;}
+.viewer-inspector__header .viewer-sheet-menu__button {width:44px;min-width:44px;height:44px;padding:0;}
+.viewer-sheet-menu__list {position:absolute;top:calc(100% + 2px);right:0;z-index:5;display:flex;flex-direction:column;min-width:10rem;padding:4px;border:1px solid var(--reader-line);border-radius:8px;background:var(--reader-paper);box-shadow:0 8px 24px color-mix(in srgb,var(--reader-ink) 16%,transparent);}
+.viewer-inspector__header .viewer-sheet-menu__item {display:block;width:100%;min-height:44px;padding:8px 12px;border-radius:6px;color:var(--reader-ink);font-size:.875rem;text-align:start;white-space:nowrap;}
+.viewer-inspector__header .viewer-sheet-menu__item:is(:hover,:focus-visible) {background:var(--reader-selected);outline:none;}
+.viewer-inspector__header .viewer-sheet-menu__item:focus-visible {box-shadow:inset 0 0 0 2px var(--reader-accent);}
 .reader-card-learn {display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px;}
 .reader-card-learn > :not(.reader-card-learn__ask) {flex:1 0 100%;margin:0;}
 .reader-card-learn__ask {flex:0 1 auto;}
@@ -566,6 +580,13 @@
 .manabi-app .viewer-layout .viewer-inspector__header .viewer-inspector__tabs button[aria-selected="true"]{background:var(--reader-selected);color:var(--reader-ink);font-weight:650;box-shadow:0 0 0 1px color-mix(in srgb,var(--reader-accent) 55%,var(--reader-line))}
 .manabi-app .viewer-layout .viewer-inspector__nav,.manabi-app .viewer-layout .viewer-inspector__expand{margin-left:auto}
 .manabi-app .viewer-layout .viewer-inspector__nav+.viewer-inspector__expand{margin-left:0}
+/* ⋯(AE-R1 PR③)은 ^/v 뒤 · ⤢ 앞 — 오른쪽 묶음의 첫 요소가 남는 폭을 가져간다. */
+.manabi-app .viewer-layout .viewer-sheet-menu{margin-left:auto}
+.manabi-app .viewer-layout .viewer-inspector__nav+.viewer-sheet-menu,.manabi-app .viewer-layout .viewer-sheet-menu+.viewer-inspector__expand{margin-left:0}
+/* 320px 컨테이너(머리 302px)는 ⋯까지 한 줄에 못 든다 — ⤢를 숨기고 끌어 올리기로 대신한다(설계서 §6). */
+@container reader (max-width:359px){
+  .manabi-app .viewer-layout .viewer-inspector__header:has(.viewer-sheet-menu) .viewer-inspector__expand{display:none}
+}
 .manabi-app .viewer-layout .reader-card-body .word-detail-card__meta{align-items:center;gap:8px;margin-bottom:16px}
 .manabi-app .viewer-layout .reader-card-body .word-detail-card__meta>span:not(:empty){display:inline-flex;align-items:center;min-height:1.5rem;max-width:100%;padding:2px 8px;border:1px solid var(--reader-line);border-radius:5px;background:color-mix(in srgb,var(--reader-line) 20%,transparent);font-size:.75rem;line-height:1.4;font-weight:400;color:var(--reader-muted);overflow-wrap:anywhere}
 .manabi-app .viewer-layout .reader-card-body .reader-card-tag:empty{display:none}

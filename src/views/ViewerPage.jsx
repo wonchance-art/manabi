@@ -76,7 +76,7 @@ import { SAVE_GRADES, VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { useVocabularyExclusions } from '../lib/useVocabularyExclusions';
 import { exclusionWord, findVocabularyExclusion } from '../lib/vocabularyExclusion';
 import { callGemini } from '../lib/gemini';
-import { fetchWordDetailText, peekWordDetailText } from '../lib/wordDetail';
+import { fetchWordDetailText, peekWordDetailText, fetchSharedDetailText } from '../lib/wordDetail';
 import { pinyinToneClass } from '../lib/pinyinTone';
 import { splitRuby, KANA_RE } from '../lib/splitRuby';
 import { pickedRangeOf } from '../lib/headwordPick';
@@ -142,6 +142,7 @@ import { TTS_RATES, ttsOptsFor, pronHiddenFor } from '../lib/readingSheet';
 import { getBook } from '../lib/bookMeta';
 import ViewerJapaneseReference from '../components/viewer/ViewerJapaneseReference';
 import TokenEditPanel from './TokenEditPanel';
+import { senseCorrectionFor, revertCorrections } from '../lib/tokenEditOptions';
 import SourceEditModal from './SourceEditModal';
 import TokenPosLabel from './TokenPosLabel';
 import TokenRangeGrips from './TokenRangeGrips';
@@ -1028,6 +1029,33 @@ export default function ViewerPage() {
       .catch(() => {});
     return () => { alive = false; };
   }, [selectedToken, isSheetOpen, materialLang]);
+  // AE-R1 PR③ 공유 detail_text(정본 §2.1 「이미 만든 결과(공유 detail_text)가 있으면 버튼 대신 내용」): 일괄 미리 받기는
+  // detail_text를 싣지 않으므로(최대 4,000자), 「더 알아보기」 구역이 화면에 들어올 때 카드당 1회 그 열만 읽는다
+  // (IntersectionObserver, 미지원이면 카드 열림 뒤 1회). 같은 단어 재열람은 메모리 캐시로 0요청, 실패는 조용히 버튼 그대로.
+  // 비로그인은 사전 읽기 RLS(인증 사용자만)라 묻지 않는다. AI·/api/word-detail은 부르지 않는다(버튼이 기존 경로를 탄다).
+  const learnRef = useRef(null);
+  useEffect(() => {
+    if (!selectedToken || !isSheetOpen || materialLang === 'Korean' || !user?.id) return undefined;
+    let alive = true, asked = false, observer = null;
+    const token = selectedToken;
+    const ask = () => {
+      if (asked) return;
+      asked = true;
+      observer?.disconnect();
+      fetchSharedDetailText(supabase, selectedToken, materialLang)
+        .then((shared) => (shared ? peekWordDetailText(token, materialLang) : null))
+        // 이미 받은 설명·생성 중인 요청이 있으면 덮지 않는다(버튼 경로 우선).
+        .then((detail) => { if (alive && detail) setWordDetail((current) => current?.detail || current?.loading ? current : { detail, loading: false }); })
+        .catch(() => {});
+    };
+    const target = learnRef.current;
+    if (typeof IntersectionObserver === 'undefined') ask();
+    else if (target) {
+      observer = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) ask(); });
+      observer.observe(target);
+    }
+    return () => { alive = false; observer?.disconnect(); };
+  }, [selectedToken?.id, selectedToken?.text, selectedToken?.base_form, isSheetOpen, materialLang, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 오른쪽 패널: 드래그 시 단어 리스트 모드
   const [dragTokens, setDragTokens] = useState(null); // null이면 단일 클릭 모드
@@ -1572,7 +1600,7 @@ export default function ViewerPage() {
       }
       return { tokenId, corrections };
     },
-    onSuccess: ({ tokenId, corrections }) => {
+    onSuccess: ({ tokenId, corrections }, variables) => {
       // 교정된 뜻이 캐시된 분석 결과에 남아 낡지 않게 무효화(§C4 무효화 규칙)
       if (isClient) clearAnalysisCache(localStorage);
       queryClient.invalidateQueries({ queryKey: ['material', id] });
@@ -1580,7 +1608,8 @@ export default function ViewerPage() {
       if (!legacyTokenEditingAllowed || !legacyTokenEditingAllowedRef.current) return;
       // BottomSheet에 표시되는 selectedToken도 업데이트
       setSelectedToken(prev => prev?.id === tokenId ? { ...prev, ...corrections } : prev);
-      toast('수정이 저장됐어요!', 'success');
+      // 사전 뜻 줄 교정(AE-R1 PR③)은 카드 안 「뜻을 바꿨어요 · 되돌리기」 줄이 알린다 — 토스트를 겹치지 않는다.
+      if (!variables?.quiet) toast('수정이 저장됐어요!', 'success');
     },
     onError: (err) => toast('수정 실패 — ' + friendlyToastMessage(err), 'error'),
   });
@@ -1779,6 +1808,15 @@ export default function ViewerPage() {
   useEffect(() => {
     if (!canEditToken || !legacyTokenEditingAllowed) setIsEditingToken(false);
   }, [canEditToken, legacyTokenEditingAllowed]);
+  // AE-R1 PR③(VIEWER-V2-ROUNDS-001 §2.1 · 설계서 §3.4): 사전 뜻 줄 교정과 ⋯ 메뉴는 ✎와 같은 권한 — 자료 소유자 ·
+  // 자료 토큰(id) · 비한국어 · 저장 지원. 수업 모드는 표시만(Q3). 열람자 개인 교정은 새 범위라 하지 않는다(설계서 §10.3).
+  const senseEditable = canEditToken && !!selectedToken?.id && legacyTokenEditingAllowed && learningStorageSupported && !classStudyActive;
+  const openTokenEditing = () => {
+    if (legacyTokenEditingAllowedRef.current) setIsEditingToken(true);
+  };
+  // 「뜻을 바꿨어요 · 되돌리기」 — 그 토큰을 다시 열 때까지(다른 단어·시트 닫기에서 지운다). before = 바꾼 칸의 이전 값.
+  const [senseUndo, setSenseUndo] = useState(null); // { tokenId, before, corrections }
+  useEffect(() => { setSenseUndo(null); }, [selectedToken?.id, isSheetOpen]);
   const selectedDictKey=selectedLexKey||selectedToken?.text;
   const { data: editDictEntry, isFetched: dictFetched, isError: dictError } = useQuery({
     queryKey: ['token-dict', materialLang, selectedDictKey],
@@ -2249,6 +2287,35 @@ export default function ViewerPage() {
     if (!sentence || (sentence === leftPanelText && (leftPanelLoading || leftPanelResult))) return;
     runSelectedSentence(sentence, true);
   };
+  // AE-R1 PR③ 사전 뜻 줄 → 「이 자리 뜻」 교정(정본 §2.1 · 설계서 §3.4). 쓰기는 TokenEditPanel과 같은 correctTokenMutation
+  // (processed_json + token_corrections 이력) 하나 — 전역 승격(promoteCorrection)·단어장·FSRS는 건드리지 않는다(정본 §0.2).
+  // 누른 줄이 「문맥상」 줄(버튼 아님)로 바뀌므로 포커스를 잃지 않게 되돌리기 버튼으로, 되돌린 뒤에는 그 줄로 옮긴다.
+  const focusInCard = (selector) => requestAnimationFrame(() => [...document.querySelectorAll(`#inspector-word ${selector}`)].find((el) => el.getClientRects().length)?.focus({ preventScroll: true }));
+  const senseBusy = correctTokenMutation.isPending;
+  const chooseSense = (item) => {
+    if (!senseEditable || senseBusy || !legacyTokenEditingAllowedRef.current) return;
+    const corrections = senseCorrectionFor(selectedToken, editDictEntry, item.meaning);
+    if (!corrections) return;
+    const before = revertCorrections(selectedToken, corrections);
+    const tokenId = selectedToken.id;
+    correctTokenMutation.mutate(
+      { tokenId: selectedToken.id, corrections, quiet: true },
+      { onSuccess: () => { setSenseUndo({ tokenId, before, corrections }); focusInCard('.reader-card-sense-undo button'); } }
+    );
+  };
+  const undoSense = () => {
+    if (!senseUndo || senseUndo.tokenId !== selectedToken?.id || senseBusy) return;
+    const chosen = senseUndo.corrections.meaning;
+    correctTokenMutation.mutate(
+      { tokenId: senseUndo.tokenId, corrections: senseUndo.before, quiet: true },
+      { onSuccess: () => { setSenseUndo(null); focusInCard(`.reader-card-sense__pick[data-meaning="${CSS.escape(chosen || '')}"]`); } }
+    );
+  };
+  // 머리줄 ⋯ = 분석 고치기(정본 §2). 지금은 「뜻·발음 수정」 하나, AD-R3가 묶기·나누기를 더한다. 고칠 것이 없으면 ⋯도 없다.
+  const sheetMenu = senseEditable && selectedToken && isSheetOpen ? {
+    label: vt('분석 고치기'),
+    items: [{ id: 'edit', label: vt('뜻·발음 수정'), onSelect: openTokenEditing }],
+  } : null;
   // 수업 모드는 수업 전용 버튼과 경로(runSelectionAnalysis)를 지금대로 둔다(정본 §0.2).
   const renderClassSentenceAction = () => (
     ctxSentenceOf(selectedToken) ? <div className="word-detail-card__actrow reader-card-class-actions">
@@ -2469,6 +2536,8 @@ export default function ViewerPage() {
           ><svg className="action-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="m4 16 12-12 4 4L8 20H4v-4ZM13 7l4 4"/></svg></button>
         )}
       </div>)}
+      {/* 사전 뜻 줄 교정 직후 한 줄(설계서 §3.4) — 되돌리기 = 이전 값 그대로 같은 mutation 1회. 그 토큰을 다시 열 때까지. */}
+      {senseUndo?.tokenId === selectedToken.id && <p className="reader-card-sense-undo"><span role="status">{vt('뜻을 바꿨어요')}</span>{' · '}<button type="button" className="btn btn--ghost btn--sm" disabled={senseBusy} onClick={undoSense}>{vt('되돌리기')}</button></p>}
       {isEditingToken && !classMeaning && (
         legacyTokenEditingAllowed && canEditToken &&
         <TokenEditPanel
@@ -2537,15 +2606,21 @@ export default function ViewerPage() {
           <section className="reader-card-senses" aria-label={vt('사전 뜻 · {count}개', { count })} key={`senses:${selectedToken.id||selectedToken.text}`}>
             <h3 className="reader-card-section__label">{vt('사전 뜻 · {count}개', { count })}</h3>
             <ol className="reader-card-sense-list">
-              {senseGroups.flatMap((group) => group.items.map((item, k) => (
-                <li key={item.n} className={`reader-card-sense${item.current ? ' is-current' : ''}`}>
+              {senseGroups.flatMap((group) => group.items.map((item, k) => {
+                const line = <>
                   <span className="reader-card-sense__pos">{k === 0 && group.pos ? vt(group.pos) : ''}</span>
                   <span className="reader-card-sense__n" aria-hidden="true">{'①②③④⑤⑥⑦⑧⑨⑩'[item.n - 1] || `${item.n}.`}</span>
                   <span className="reader-card-sense__meaning">{item.meaning}</span>
                   {item.current && <span className="reader-card-sense__context">{vt('문맥상')}</span>}
+                </>;
+                return <li key={item.n} className={`reader-card-sense${item.current ? ' is-current' : ''}`}>
+                  {/* PR③: 권한이 있으면 「문맥상」이 아닌 줄을 눌러 그 뜻을 이 자리 뜻으로(정본 §2.1). 없으면 표시만(Q3). */}
+                  {senseEditable && !item.current ? <button type="button" className="reader-card-sense__pick" data-meaning={item.meaning}
+                    aria-label={vt('이 자리 뜻으로 바꾸기 · {meaning}', { meaning: item.meaning })} title={vt('이 자리 뜻으로 바꾸기 · {meaning}', { meaning: item.meaning })}
+                    disabled={senseBusy} onClick={() => chooseSense(item)}>{line}</button> : line}
                   {item.example && !classStudyActive && example}
-                </li>
-              )))}
+                </li>;
+              }))}
             </ol>
           </section>
           {classStudyActive && example && <ViewerReferenceExample key={`example:${selectedToken.id || selectedToken.text}`} matches={referenceMatches} meaning={refVocab.word.ko || vt('뜻 확인')} uiLocale={uiLocale} visible={false}>{example}</ViewerReferenceExample>}
@@ -2564,7 +2639,7 @@ export default function ViewerPage() {
       {classAction}
 
       {/* 더 알아보기(정본 §2.1) — AI로 새로 만드는 것이라 요청 버튼. 이미 만든 결과(캐시)가 있으면 버튼 대신 내용. */}
-      <section className="reader-card-learn" aria-label={vt('더 알아보기')} key={`learn:${selectedToken.id||selectedToken.text}`}>
+      <section ref={learnRef} className="reader-card-learn" aria-label={vt('더 알아보기')} key={`learn:${selectedToken.id||selectedToken.text}`}>
         <h3 className="reader-card-section__label">{vt('더 알아보기')}</h3>
         {synAntEligible(selectedToken,materialLang) && (synAnt?.loading ? <p role="status">{vt("불러오는 중…")}</p>
           : synAnt && !synAnt.error ? <div className="syn-ant"><div className="syn-ant__row"><span>{vt("유의어")}</span>{renderSynAntChips(synAnt.syn)}</div><div className="syn-ant__row"><span>{vt("반의어")}</span>{renderSynAntChips(synAnt.ant)}</div>{!synAnt.syn.length&&!synAnt.ant.length&&<p>{vt("표시할 항목이 없어요.")}</p>}</div>
@@ -3483,6 +3558,7 @@ export default function ViewerPage() {
         rightSignal={rightSheetSignal}
         sentenceTabSignal={sentenceTabSignal}
         onSentenceTab={openSentenceTranslation}
+        menu={sheetMenu}
         barNav={pickedLineIdx !== null && sentences.length > 0 ? (
           <>
             {sentenceNavBtn(-1, 'viewer-sheet-bar__btn viewer-sheet-bar__btn--nav')}
