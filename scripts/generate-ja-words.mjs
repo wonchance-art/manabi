@@ -39,6 +39,8 @@
 //   5. JA_FALSE_FRIENDS 키는 관문을 통과해도 뺀다.
 //   6. 계약: 표기는 표제어와 글자 수가 같고 한자만이며 kJNV 구자체를 담지 않는다. 어기면 실패.
 //   7. 출력 키는 코드포인트 순. 값 = 표기가 표제어와 같으면 요미 문자열, 다르면 [표기, 요미].
+//   8. warn = JA_FALSE_FRIENDS 중 표제어 우주 안의 키 → [일본어 표기, 일본어의 주된 뜻](값 '표기 — 뜻(중국어는 …)'을 가른다,
+//      형식이 어긋나면 실패). 뷰어는 이 단어의 日 줄을 숨기고 「일본어로는」 줄에 경고로 보인다(AE-R3 PR ②).
 //
 // 산출물 src/lib/data/jaWords.json — **이 파일만 CC BY-SA 4.0**(JMdict 파생 데이터베이스).
 // 앱 코드에는 걸리지 않는다. 고지: src/lib/data/README.md · LICENSES/CC-BY-SA-4.0.txt · /credits#jmdict.
@@ -196,16 +198,25 @@ for (const w of words) {
 }
 // 표제어 밖 키는 예방용이다(나중에 우리 사전에 들어와도 새지 않게) — 로그로만 남긴다.
 const outsideFalse = Object.keys(JA_FALSE_FRIENDS).filter((k) => !words.includes(k));
+const FF_RE = /^([\p{Script=Han}々]+) — (.+?)\(중국어/u;
+const warn = {};
+for (const k of Object.keys(JA_FALSE_FRIENDS).filter((key) => words.includes(key)).sort(byCodePoint)) {
+  const m = FF_RE.exec(JA_FALSE_FRIENDS[k]);
+  if (!m || [...m[1]].length !== [...k].length) throw new Error(`JA_FALSE_FRIENDS 형식 위반: ${k} — ${JA_FALSE_FRIENDS[k]}`);
+  warn[k] = [m[1], m[2].trim()];
+}
 
 const result = {
   _source: `JMdict/EDICT (EDRDG, https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project) — EDICT Created: ${created}, `
     + `edict sha256 ${edictHash} (gunzip, EUC-JP). Derived by scripts/generate-ja-words.mjs: 중국어 표제어(HSK 3.0 ∪ 우리 사전)와 같은 표기의 `
     + '일본어 단어만 골라 표기·요미를 실음(열쇠: Unihan kJapaneseNewVariant · OpenCC s2t · hanjaJa, 뜻 관문: CC-CEDICT 영문 뜻 겹침, '
-    + '거부 목록: scripts/hanja-curated.mjs JA_FALSE_FRIENDS). 값 = 요미(표기가 표제어와 같음) 또는 [표기, 요미].',
+    + '거부 목록: scripts/hanja-curated.mjs JA_FALSE_FRIENDS). 값 = 요미(표기가 표제어와 같음) 또는 [표기, 요미]. '
+    + 'warn = 거부 목록(수기 저작)의 표제어 → [일본어 표기, 일본어의 주된 뜻] — 동형이의어 경고.',
   _license: 'CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/) — 이 파일만. '
     + 'JMdict/EDICT © Electronic Dictionary Research and Development Group, used in conformance with the Group\'s licence '
     + '(https://www.edrdg.org/edrdg/licence.html). 고지 원문: src/lib/data/LICENSES/CC-BY-SA-4.0.txt.',
   words: Object.fromEntries(Object.keys(out).sort(byCodePoint).map((k) => [k, out[k]])),
+  warn,
 };
 const dest = path.join(root, 'src/lib/data/jaWords.json');
 const json = JSON.stringify(result);
@@ -215,6 +226,6 @@ console.log(`jaWords.json 생성 — ${n}항 (표제어 ${stats.words} · 표기
   + ` · 열쇠 B ${stats.viaB} / C ${stats.viaC} / A ${stats.viaA} · ${Buffer.byteLength(json)}B · gzip ${zlib.gzipSync(json, { level: 9 }).length}B`);
 console.log(`  입력 — EDICT ${created} 원본 ${edictHash} · CC-CEDICT ${sha256(cedictBuf)} · kJNV ${sha256(kjnvBuf)} (${kjnv.size}행)`);
 if (report) fs.writeFileSync(reportPath, JSON.stringify(report, null, 1));
-console.log(`  거부 — ${stats.rejected.join(' ')} · 표제어 밖(예방) ${outsideFalse.join(' ')}`);
+console.log(`  거부 — ${stats.rejected.join(' ')} · 표제어 밖(예방) ${outsideFalse.join(' ')} · warn ${Object.keys(warn).length}항`);
 console.log(`  요미 미정으로 뺌 ${stats.yomiTie.length + stats.yomiDropped.length} — (P) 요미 둘 이상 ${stats.yomiTie.length}: ${stats.yomiTie.join(' ')}`);
 console.log(`    (P) 없는 다중 요미 ${stats.yomiDropped.length}: ${stats.yomiDropped.join(' ')}`);

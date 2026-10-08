@@ -41,6 +41,8 @@ for (const [language, width] of [['Chinese', 1440], ['Chinese', 390], ['Japanese
     const f = await open(language, width);
     try {
       await f.token.click();
+      // AE-R1(VIEWER-V2-ROUNDS-001 §2.1 문형 한 줄, Q6): 문형 카드는 「문형 · … ›」 줄을 누르면 그 자리 팝오버로 열린다.
+      await f.page.locator('.reader-card-pattern__line').filter({ visible: true }).first().click();
       const card = f.page.locator('.pattern-card').filter({ visible: true }).first();
       await card.waitFor({ timeout: 30000 });
       await card.locator('.pattern-card__archived').first().waitFor();
@@ -62,6 +64,7 @@ test('문형 카드 보관 안내는 화면 언어(zh-TW)를 따른다', { timeo
   const f = await open('Chinese', 1440, 'zh-TW');
   try {
     await f.token.click();
+    await f.page.locator('.reader-card-pattern__line').filter({ visible: true }).first().click();
     const notice = f.page.locator('.pattern-card__archived').filter({ visible: true }).first();
     await notice.waitFor({ timeout: 30000 });
     assert.equal(await notice.innerText(), '這是已封存的教材，無法開啟');

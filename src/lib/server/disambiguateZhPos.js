@@ -10,6 +10,13 @@
 import { parseJsonLenient } from './fetchMeanings.js';
 import { isCanonPos } from './posCanon';
 import { callLLM } from './llm.js';
+import { buildZhPosPrompt, tallyZhSense, validateZhSensePick, zhSensePickFrom } from './zhSenseReview.js';
+
+// AD-R4 중국어 「이 문장 뜻」 검수(설계서 docs/manabi-viewer-v2-ad-r4.md §4) — 코드 상수로 꺼진 채 출시한다.
+// 새 환경 변수는 쓰지 않는다. 측정 세트(docs/verification/zh-sense-holdout-20261008.*) 보류 세트에서
+// 켜는 기준(§3.5)을 넘을 때만 결과표를 붙인 별도 PR로 켠다. 꺼져 있으면 라우트가 후보를 붙이지 않아
+// 프롬프트·응답 처리·DB 쓰기·응답 모양이 현행과 바이트 단위로 같다(zhSenseReviewRoute.test.js 스냅숏).
+export const ZH_SENSE_REVIEW = false;
 
 // 판별 대상 품사 — 명·동·형 계열과 jieba 겸류 라벨(vn·vd·an·ad의 한국어 표기).
 // 대명사·조사·전치사·수사·양사·지명·인명 등은 품사가 안정적이라 묻지 않는다(호출 크기 절감).
@@ -25,6 +32,7 @@ const MAX_MARKS = 120;
 const splitPos = (s) => String(s || '').split('·').map((x) => x.trim()).filter(Boolean);
 
 const markKey = (lineIdx, word) => `${lineIdx}:${word}`;
+const isCanonZh = (p) => isCanonPos('Chinese', p);
 
 /**
  * 판별할 (줄, 단어) 목록 수집.
@@ -57,49 +65,16 @@ export function collectZhPosMarks(tokenizedLines, cache) {
       // 단어성 판정 대상: 품사 단서가 전혀 없는 다자 토큰 — jieba x-병합 OOV.
       // 실측상 우연 병합(笔在·这宗)과 실제 신조어(社恐)가 섞여 있어 기계 분리는 불가,
       // 문맥 판별기가 함께 판정한다(같은 호출 — 추가 비용 없음).
-      const oov = labels.length === 0 && [...t.text].length >= 2;
+      // 사용자가 정한 경계(boundary 표식, AD-R3 §0.4)는 판정에 넣지 않는다 — 일반 품사 마크만.
+      const oov = !t.boundary && labels.length === 0 && [...t.text].length >= 2;
       marks.push({ lineIdx, word: t.text, key, ...(oov ? { oov: true } : {}) });
     }
   });
   return marks.slice(0, MAX_MARKS);
 }
 
-function buildZhPosPrompt(lines, marks) {
-  // 판별 단어가 있는 줄만 실어 프롬프트를 줄인다(원 줄 번호 → 표시 번호 재부여).
-  const usedLineIdxs = [...new Set(marks.map((m) => m.lineIdx))];
-  const lineNo = new Map(usedLineIdxs.map((idx, i) => [idx, i + 1]));
-  const sentenceList = usedLineIdxs.map((idx) => `${lineNo.get(idx)}. ${lines[idx]}`).join('\n');
-  const wordList = marks
-    .map((m, i) => `${i + 1}. "${m.word}" (문장 ${lineNo.get(m.lineIdx)})${m.oov ? ' [단어성 판정]' : ''}`)
-    .join('\n');
-  return `다음은 중국어 문장 목록과, 각 문장에서 품사를 판정할 단어 목록입니다.
-
-## 문장
-${sentenceList}
-
-## 단어
-${wordList}
-
-각 단어에 대해 JSON 배열로 답하세요.
-
-## 출력 형식 (단어 목록과 순서·길이 정확히 일치)
-[
-  { "all": ["동사", "명사"], "pos": "동사" },
-  { "all": ["명사"], "pos": "명사" },
-  { "all": [], "pos": null, "split": [{"t": "笔", "pos": "명사"}, {"t": "在", "pos": "전치사"}] },
-  ...
-]
-
-## 규칙
-- all: 이 단어가 중국어에서 일반적으로 갖는 품사 후보 (흔한 순, 1~3개)
-- pos: 지정된 문장의 맥락에서 이 단어가 실제로 쓰인 품사 — 반드시 all 중 하나
-- split: [단어성 판정] 표시 항목만 — 이 표기가 실제 쓰이는 한 단어(신조어·전문어·고유명사
-  포함)면 split을 넣지 말 것. 별개 단어들이 우연히 이웃해 붙은 조합일 때만 순서대로
-  분해해 각 부분의 표기(t)와 그 문장에서의 품사(pos)를 적을 것 (부분들을 이으면 원 표기와
-  정확히 일치해야 함)
-- 품사 명칭: 명사/동사/형용사/부사/전치사/접속사/조사/대명사/양사/수사/감탄사/성어/지명/인명/고유명사
-- 설명/주석 금지, JSON만 출력`;
-}
+// 프롬프트는 zhSenseReview.js의 buildZhPosPrompt가 정본이다(뜻 후보가 없으면 AD-R4 이전 프롬프트와 바이트 동일 —
+// 측정 실행기가 같은 함수를 import해 제품과 같은 프롬프트로 잰다).
 
 /**
  * 판별 실행 — 요청당 Gemini flash-lite 1회.
@@ -107,10 +82,12 @@ ${wordList}
  * @param {Array<{lineIdx, word, key}>} marks - collectZhPosMarks 결과
  * @param {object} [opts]
  * @param {number|null} [opts.deadlineMs] - 이 시각(epoch ms)을 넘겼으면 호출 자체를 생략
- * @returns {Promise<Map<string, {pos: string, all: string[]}>>} mark.key → 판정
+ * @param {object|null} [opts.senseStats] - createZhSenseStats 결과(뜻 검수 켜짐일 때만) — 검증 결과를 센다
+ * @returns {Promise<Map<string, {pos: string, all: string[], sense?, meaningCheck?, join?}>>} mark.key → 판정
+ *   (sense·meaningCheck·join은 뜻 후보·묶음 판정이 실린 마크에만 — 없는 마크의 pick은 현행 모양 그대로)
  */
 export async function disambiguateZhPos(lines, marks, opts = {}) {
-  const { deadlineMs = null } = opts;
+  const { deadlineMs = null, senseStats = null } = opts;
   const picks = new Map();
   if (!marks.length) return picks;
   const apiKey = process.env.GEMINI_API_KEY;
@@ -139,6 +116,16 @@ export async function disambiguateZhPos(lines, marks, opts = {}) {
       const parts = mark.oov ? validateSplitParts(entry?.split, mark.word) : null;
       if (parts) {
         picks.set(mark.key, { pos: pos && all.includes(pos) ? pos : null, all, parts });
+        return;
+      }
+      // 뜻 후보·묶음 판정이 실린 마크(AD-R4 켜짐에서만 생긴다): 후보 밖 답은 그 단어만 버린다(§4.3).
+      if (mark.candidates?.length || mark.pair) {
+        // 검증기는 같은 X 게이트 식(zhSenseReview.js parseZhPosEntry — 측정 실행기와 공유)으로 all·pos를 다시 읽는다.
+        // 위 인라인 식은 posCanon.test.js가 이 파일에 고정한 계약이라 그대로 둔다.
+        const v = validateZhSensePick(entry, mark, isCanonZh);
+        if (senseStats) tallyZhSense(senseStats, mark, v);
+        const pick = zhSensePickFrom(v, mark);
+        if (pick) picks.set(mark.key, pick);
         return;
       }
       if (!pos || !all.includes(pos)) return; // pos∉all은 모델 위반 — 버리고 이 단어는 폴백
