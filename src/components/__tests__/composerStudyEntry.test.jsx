@@ -86,7 +86,11 @@ describe('KO-COMPOSER — 한국어 선택지는 계정 지원 응답을 따른�
     for (const source of [composer, original]) { expect(source).toMatch(/\{ languages[^}]*\} = useStudyLanguages\(\)/); expect(source).not.toContain('COMPOSER_LANGUAGES.map'); }
     expect(composer).toContain('<StudyLanguageChips'); expect(original).toContain('<StudyLanguageChips');
     expect(composer).not.toContain('composer-options');
-    expect(readFileSync('src/components/materials/PassageStudy.jsx', 'utf8')).toContain('PASSAGE_LANGUAGES.map');
+    const passage = readFileSync('src/components/materials/PassageStudy.jsx', 'utf8');
+    expect(passage).toMatch(/\{ languages: studyChoices \} = useStudyLanguages\(\)/);
+    expect(passage).toContain('passageLanguageChoices(studyChoices)');
+    expect(passage).toContain('{passageLanguages.map(value =>');
+    expect(passage).not.toContain('PASSAGE_LANGUAGES.map');
   });
 });
 

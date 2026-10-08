@@ -9,7 +9,7 @@ import { LEARNING_LANGUAGES } from '../learningSources';
 import { COMPOSER_LANGUAGES, composerRow, createComposerSave, newComposerDraft, studyLanguages,
   guessStudyLanguage, guessedLanguagePatch, composerStudyState, shouldReadComposerOriginal } from '../materialComposer';
 import { documentOf, openDocumentStudy, openStudyOrOriginal } from '../materialDocument';
-import { openSourcePassage, PASSAGE_LANGUAGES } from '../sourcePassage';
+import { openSourcePassage, PASSAGE_LANGUAGES, passageLanguageChoices } from '../sourcePassage';
 import { LEVELS } from '../constants';
 
 const owner = '00000000-0000-4000-8000-000000000321';
@@ -91,14 +91,24 @@ describe('KO-COMPOSER — 정본 언어 목록 재사용', () => {
     expect(study).toMatchObject({ raw_text: '새로 쓴 글이에요.', processed_json: { status: 'pending',
       metadata: { language: 'Korean', level: '', explanationLocale: 'ko', composer: { role: 'study', parentId: '42' } } } });
   });
-  it('구간 학습은 DB의 open_source_passage가 네 언어만 받으므로 한국어를 클라이언트에서 먼저 막는다(DB 변경 전까지)', async () => {
-    const sql = readFileSync('supabase/migrations/20260908060607_source_passage_study.sql', 'utf8');
-    const rpc = sql.match(/p_language NOT IN \(([^)]+)\)/)[1].split(',').map(value => value.trim().replace(/'/g, ''));
-    expect(new Set(PASSAGE_LANGUAGES)).toEqual(new Set(rpc));
-    expect(PASSAGE_LANGUAGES.every(language => COMPOSER_LANGUAGES.includes(language))).toBe(true);
-    const client = { rpc: vi.fn() };
-    await expect(openSourcePassage(client, { id: 42 }, {}, '학교', 'Korean')).rejects.toThrow('PASSAGE_LANGUAGE');
-    expect(client.rpc).not.toHaveBeenCalled();
+  it('구간 학습 언어는 작성 언어 전부이고, 적용 SQL(KO-PASSAGE-001)이 여는 DB 목록과 같다', async () => {
+    const listOf = text => text.split(',').map(value => value.trim().replace(/'/g, ''));
+    const migration = readFileSync('supabase/migrations/20260908060607_source_passage_study.sql', 'utf8');
+    const apply = readFileSync('docs/sql/korean-source-passage.sql', 'utf8');
+    const before = listOf(migration.match(/p_language NOT IN \(([^)]+)\)/)[1]);
+    const after = listOf(apply.match(/new_list constant text := 'NOT IN \(([^)]+)\)'/)[1]);
+    expect(new Set(after)).toEqual(new Set([...before, 'Korean']));
+    expect(new Set(PASSAGE_LANGUAGES)).toEqual(new Set(after));
+    expect(PASSAGE_LANGUAGES).toEqual(COMPOSER_LANGUAGES);
+    const client = { rpc: vi.fn(async () => ({ data: { id: 7, processed_json: { metadata: { composer: { version: 1, role: 'study', passage: { kind: 'body' } } } } }, error: null })) };
+    await openSourcePassage(client, { id: 42 }, { kind: 'body' }, '학교', 'Korean');
+    expect(client.rpc).toHaveBeenCalledWith('open_source_passage', expect.objectContaining({ p_language: 'Korean', p_parent: '42' }));
+    await expect(openSourcePassage(client, { id: 42 }, {}, 'escuela', 'Spanish')).rejects.toThrow('PASSAGE_LANGUAGE');
+  });
+  it('화면의 구간 언어 선택지는 계정 계약을 따른다 — 한국어는 지원 계정에서만', () => {
+    expect(passageLanguageChoices(studyLanguages(true))).toContain('Korean');
+    expect(passageLanguageChoices(studyLanguages(false))).not.toContain('Korean');
+    expect(passageLanguageChoices(studyLanguages(false))).toEqual(FOUR);
   });
 });
 
