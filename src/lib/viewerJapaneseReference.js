@@ -7,7 +7,9 @@ const senseKey = value => text(value).normalize('NFKC').replace(/[\s,，·;；]/
 // not a word translation (出神 / 表达 / 大家 remain separate lexical questions).
 // Current Japanese forms: 文化庁「常用漢字表」2010, entries 出・表・家.
 // Keep the generated table intact; both viewer glyph rows and character cards
-// receive this corrected view of it.
+// receive this corrected view of it. Since 2026-10-07 the generator itself keeps
+// every Japanese joyo/jinmeiyo kanji unchanged (scripts/generate-hanja-ja.mjs),
+// so this overlay is a regression guard rather than the fix.
 export function viewerJapaneseGlyphTable(table) {
   return table ? {...table,出:'出',表:'表',家:'家'} : null;
 }

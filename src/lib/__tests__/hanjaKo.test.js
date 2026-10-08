@@ -189,7 +189,9 @@ describe('hanjaJa.json 생성 데이터', () => {
     expect(ja['学']).toBeUndefined();
     expect(ja['台']).toBeUndefined();
     expect(ja['老']).toBeUndefined();
-    expect(Object.entries(ja).every(([k, v]) => k !== v)).toBe(true);
+    // 예외는 보존 표식뿐(2026-10-07 KST 다대일 오류 수정): 일본 표준 한자 중 번체 경유
+    // 사슬이 다른 글자로 닿는 것(面 → 麵 → 麺)만 자기 자신으로 적어 글자 카드 사슬을 멈춘다.
+    expect(Object.entries(ja).filter(([k, v]) => k === v).map(([k]) => k).join('')).toBe('庄征据斗系面');
   });
 
   it('hanjaKo 등재 글자에만 붙는 오버레이고 2,500자 이상이다', () => {
