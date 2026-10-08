@@ -65,7 +65,8 @@ export function collectZhPosMarks(tokenizedLines, cache) {
       // 단어성 판정 대상: 품사 단서가 전혀 없는 다자 토큰 — jieba x-병합 OOV.
       // 실측상 우연 병합(笔在·这宗)과 실제 신조어(社恐)가 섞여 있어 기계 분리는 불가,
       // 문맥 판별기가 함께 판정한다(같은 호출 — 추가 비용 없음).
-      const oov = labels.length === 0 && [...t.text].length >= 2;
+      // 사용자가 정한 경계(boundary 표식, AD-R3 §0.4)는 판정에 넣지 않는다 — 일반 품사 마크만.
+      const oov = !t.boundary && labels.length === 0 && [...t.text].length >= 2;
       marks.push({ lineIdx, word: t.text, key, ...(oov ? { oov: true } : {}) });
     }
   });

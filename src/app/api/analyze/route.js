@@ -22,6 +22,9 @@ import {
 } from '@/lib/server/disambiguateEnPos';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 import { collectMissingBaseForms } from '@/lib/server/dictLookup';
+import {
+  applyRequestBoundaries, boundaryBaseTokens, boundaryLineResult, readRequestBoundaries,
+} from '@/lib/server/analyzeBoundaries';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // Vercel Node.js 함수: 최대 60초
@@ -77,7 +80,7 @@ export async function POST(request) {
     return Response.json({ error: 'Bad JSON' }, { status: 400 });
   }
 
-  const { lines: rawLines, language } = body;
+  const { lines: rawLines, language, boundaries } = body;
   if (!Array.isArray(rawLines) || rawLines.length === 0) {
     return Response.json({ error: 'lines required' }, { status: 400 });
   }
@@ -86,6 +89,11 @@ export async function POST(request) {
   }
   // 줄 수·줄 길이 캡 — 토큰화·Gemini 팬아웃 비용을 상한. 정상 세션(수 줄)은 영향 없음.
   const lines = rawLines.slice(0, MAX_LINES).map((l) => String(l ?? '').slice(0, MAX_LINE_LEN));
+  // AD-R3: 이 자료의 단어 경계 기록(줄 = 요청 안 번호). 없으면 기존 경로 그대로(기록 0 = 동작 동일).
+  const boundaryRequest = readRequestBoundaries(boundaries, lines.length);
+  if (!boundaryRequest.ok) {
+    return Response.json({ error: 'boundaries invalid' }, { status: 400 });
+  }
 
   try {
     // 1. 각 줄 토큰화 (언어별)
@@ -93,7 +101,7 @@ export async function POST(request) {
     const tokenizer = language === 'Japanese' ? tokenizeJaLine
       : language === 'Chinese' ? tokenizeZhLine
       : tokenizeEnLine;
-    const tokenizedLines = await Promise.all(
+    const rawTokenizedLines = await Promise.all(
       lines.map(async (line) => ({
         original: line,
         tokens: language === 'Japanese'
@@ -101,11 +109,16 @@ export async function POST(request) {
           : tokenizer(line),          // 영어·중국어는 sync
       }))
     );
+    // 1.5. AD-R3 단어 경계 — 토큰화 직후 칼선을 적용한다. 새 조각과 기록의 원래 토큰(base)이 아래 사전 조회·뜻 조회·
+    // 품사 판별·병음을 그대로 탄다(§3.4). 기록이 없으면 null — 아래 경로는 원래 토큰 그대로.
+    const boundaryState = applyRequestBoundaries(rawTokenizedLines, boundaryRequest.byLine, language);
+    const tokenizedLines = boundaryState?.tokenizedLines ?? rawTokenizedLines;
+    const lookupLines = boundaryState?.lookupLines ?? tokenizedLines;
 
     // 2. 모든 기본 base_form 수집 (중복 제거). 영어는 POS별 lemma 후보 사전 행도 같은 요청에서
     // MAX_MISSING cap 안에 조회한다. 후보 행이 없으면 문맥 pick을 적용하지 않고 기본 키로 폴백.
     const allBaseForms = new Set();
-    for (const { tokens } of tokenizedLines) {
+    for (const { tokens } of lookupLines) {
       for (const t of tokens) {
         if (t.base_form) allBaseForms.add(t.sep_link || t.base_form);
       }
@@ -131,7 +144,7 @@ export async function POST(request) {
     // 어휘 토큰만 조회한다 — 문장부호도 base_form을 달고 나오므로 거르지 않으면 Gemini에 뜻을 묻고
     // 공유 사전에 적재된다(운영 감사에서 실제 4행 발견). 판정·수확은 `collectMissingBaseForms`가
     // 소유하고 계약이 지킨다 — 라우트 안의 루프였을 때는 「거르고 있는가」를 못 박을 수 없었다.
-    const missingList = collectMissingBaseForms(tokenizedLines, cache);
+    const missingList = collectMissingBaseForms(lookupLines, cache);
 
     // 4.2. 중국어 자가 치유 — 재조회 대상: ① 다중 품사 행인데 뜻에 pos 태그가 없음(겸류사
     // 뜻 정렬에 필요) ② 일본어 대응(ja) 미판정(한자 대조 2단계 백필). 미싱 경로를 그대로
@@ -242,13 +255,15 @@ export async function POST(request) {
       // OOV 우연 병합 분리 — 판별기가 "별개 단어들의 우연 결합"으로 판정한 토큰(笔在→笔/在)은
       // 부분 토큰들로 조립한다(실단어 신조어(社恐)는 유지 verdict). 클라이언트(analyzeText)가
       // 서버 id를 위치 기준으로 재부여하므로 토큰 수 변화는 안전하다.
+      // 사용자가 정한 경계(boundary 표식, AD-R3 §0.4)는 AI 분리 판정이 다시 가르지 않는다.
       const lineTokens = language === 'Chinese'
         ? tokens.flatMap((t) => {
-            const parts = posPicks.get(zhPosMarkKey(lineIdx, t.text))?.parts;
+            const parts = t.boundary ? null : posPicks.get(zhPosMarkKey(lineIdx, t.text))?.parts;
             return parts?.length ? splitZhToken(t, parts) : [t];
           })
         : tokens;
-      lineTokens.forEach((t, tokenIdx) => {
+      // 경계 기록의 원래 토큰(base)도 같은 조립을 탄 뒤 boundaryLineResult가 boundaryApplied로 떼어 낸다.
+      [...lineTokens, ...boundaryBaseTokens(boundaryState, lineIdx)].forEach((t, tokenIdx) => {
         const tokenId = `id_${lineIdx}_${tokenIdx}_${timestamp}`;
         sequence.push(tokenId);
         const enKey = enPosMarkKey(lineIdx, tokenIdx);
@@ -291,13 +306,14 @@ export async function POST(request) {
           pos,
           meaning,
           base_form: outputBaseForm,
+          ...(t.boundary ? { boundary: t.boundary } : {}),
           ...(t.sep_link ? { sep_link: t.sep_link } : {}),
           ...(posAll ? { pos_all: posAll } : {}),
           // 화면 표시용 내부 표식('ctx' 문맥 뜻 | 'doubt' 의심) — 「AI」 표로 그리지 않는다(오너 결정 10-07).
           ...(zhSense?.meaningCheck ? { meaningCheck: zhSense.meaningCheck } : {}),
         };
       });
-      return { sequence, dictionary };
+      return boundaryLineResult(boundaryState, lineIdx, sequence, dictionary);
     });
 
     // 중국어 자가 치유 ② — 문맥 판별이 알아낸 다중 후보를 단일 pos 레거시 gemini 행에 기록
