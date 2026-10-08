@@ -2293,6 +2293,7 @@ export default function ViewerPage() {
 
   // W R3㉮ 인라인 복습 — 4등급 정본. 스냅샷은 훅이 돌려준 prev·reviewedAt으로 호출부가 만든다.
   const gradeInline = (rating) => {
+    if (koreanPieceSelected) return; // AD-R3 §7.5: 한국어 나눈 조각은 등급 대상이 아니다(키 1~4 포함)
     const vocab = findSavedVocab(savedWords, selectedToken, materialLang);
     if (!learningCapabilities.review || !vocab || !isTokenInlineDue(savedWords, selectedToken, materialLang) || selectedExcluded || !wordStateReady || knownPending || exclusionState.mutation.isPending || inlineReviewMutation.isPending) return;
     const requestKey = `${user.id}:${vocab.id}`;
@@ -2537,8 +2538,8 @@ export default function ViewerPage() {
     addToVocab, gradeInline, undo: undoAny,
     cardOpen: !!selectedToken && isSheetOpen,
     blocked: settingsOpen || sourceEditOpen || isEditingToken || !!reanalyzePanel || showReadingTest || showConversation || dictationPickerOpen || !!dictationSentence || !!quizState || !!completionModal,
-    saveLocked: isWordSaved || saveAnim || selectedExcluded || !wordStateReady || knownPending || exclusionState.mutation.isPending || koreanPieceSelected,
-    inlineDue: !!user && !koreanPieceSelected && !selectedExcluded && wordStateReady && !knownPending && !exclusionState.mutation.isPending && isWordSaved && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending,
+    saveLocked: isWordSaved || saveAnim || selectedExcluded || !wordStateReady || knownPending || exclusionState.mutation.isPending,
+    inlineDue: !!user && !selectedExcluded && wordStateReady && !knownPending && !exclusionState.mutation.isPending && isWordSaved && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending,
   };
   const savedCount = (savedWords.surfaces?.size || 0);
 

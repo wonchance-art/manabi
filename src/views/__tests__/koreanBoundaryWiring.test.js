@@ -32,7 +32,9 @@ describe('AD-R3 §7.5 한국어 나누기 배선', () => {
   it('나눈 조각: 문맥 설명 AI 오버레이 꺼짐 · 저장/등급(버튼·키보드) 없음 · 더 알아보기(AI 요청 버튼) 없음', () => {
     expect(viewer).toContain("scope: cacheScope, enabled: materialLang === 'Korean' && isSheetOpen && !koreanPieceSelected});");
     expect(sliceBetween(viewer, 'function koreanSaveReady(token) {', '\n  }')).toContain('!koreanBoundaryPiece(material?.processed_json, token.id)');
-    expect(viewer).toContain('|| koreanPieceSelected,\n    inlineDue: !!user && !koreanPieceSelected');
+    // 키 1~4: 저장(addToVocab)은 koreanSaveReady에서, 인라인 등급은 gradeInline 첫 줄에서 막는다.
+    expect(sliceBetween(viewer, 'const addToVocab = async (grade) => {', '\n  };')).toContain('if (!selectedToken || !koreanSaveReady(selectedToken)) return;');
+    expect(sliceBetween(viewer, 'const gradeInline = (rating) => {', '\n  };')).toContain('if (koreanPieceSelected) return;');
     expect(viewer).toContain('{user && learningStorageSupported && !koreanPieceSelected && (() => {\n        // 네 등급은 FSRS 평가다.');
     expect(viewer).toContain('{user && learningCapabilities.review && !koreanPieceSelected && findSavedVocab(');
     expect(viewer).toContain('{!koreanPieceSelected && <section ref={learnRef}');
