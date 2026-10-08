@@ -23,7 +23,8 @@ export default function ViewerBottomSheet({leftContent,rightContent,leftActive,r
     if(!open||suppressedRef.current||preserveFocus)return;
     if(root.current?.querySelector('.viewer-inspector__tabs')?.contains(document.activeElement))return;
     const frame=requestAnimationFrame(()=>{
-      const target=root.current?.querySelector(`[data-panel="${tab}"] .word-detail-card`)||root.current?.querySelector('[role=tab][aria-selected=true]');
+      // AD-R4 PR③: 탭 내용이 단어 카드가 아니면 data-sheet-focus 요소(「뜻 확인 필요」 목록 머리)가 첫 포커스를 받는다.
+      const target=root.current?.querySelector(`[data-panel="${tab}"] .word-detail-card`)||root.current?.querySelector(`[data-panel="${tab}"] [data-sheet-focus]`)||root.current?.querySelector('[role=tab][aria-selected=true]');
       target?.focus({preventScroll:true});
     });
     return ()=>cancelAnimationFrame(frame);

@@ -1012,3 +1012,175 @@ test('AE-R4: 일본어 자료는 글자 카드 그대로(한자 창 0)',{timeout
   assert.deepEqual(j.errors,[]);
  }finally{await j.context.close();}
 });
+
+// ───────────────────────── AD-R4 PR③ 「뜻 확인 필요 N개」 줄 · 목록 · 카드 ⓘ(설계서 docs/manabi-viewer-v2-ad-r4.md §6·§7·§9.1·§10) ─────────────────────────
+// 서버 상수 ZH_SENSE_REVIEW는 꺼진 채라 운영 자료에는 표식이 없다 — 여기서는 meaningCheck가 실린 처리 결과(합성 픽스처)로 화면을 잰다.
+// 쓰기는 AE-R1 PR③ 사전 뜻 교정 경로(correctTokenMutation: processed_json PATCH + token_corrections 이력) 하나 — 단어장·FSRS·
+// 공유 사전·전역 승격(/api/dict-correct) 쓰기 0. 「AI」 표시 0. 정본 목업 문장: 我给妈妈打了一个电话。他吃醋了。/ 运动员的身体素质非常好。
+function senseMaterial({flags=true}={}) {
+ const w=(text,furigana,meaning,pos='명사',extra={})=>({text,base_form:text,furigana,meaning,pos,...(flags?extra:{})});
+ return build([
+  [w('我','wǒ','나','대명사'),w('给','gěi','~에게','전치사'),w('妈妈','mā ma','엄마'),w('打','dǎ','(전화를) 걸다','동사',{meaningCheck:'doubt'}),w('了','le','~했다','조사'),w('一个','yí gè','한 개','수량사'),w('电话','diàn huà','전화'),w('。','','','기호'),
+   w('他','tā','그','대명사'),w('吃醋','chī cù','질투하다','동사',{meaningCheck:'ctx'}),w('了','le','~했다','조사'),w('。','','','기호')],
+  [w('运动员','yùn dòng yuán','운동선수'),w('的','de','~의','조사'),w('身体','shēn tǐ','몸'),w('素质','sù zhì','자질'),w('非常','fēi cháng','매우','부사'),w('好','hǎo','좋다','형용사'),w('。','','','기호')],
+ ],'Chinese');
+}
+const senseRows={
+ 打:{meanings:[{meaning:'때리다, 치다',priority:1,pos:'동사'},{meaning:'(전화를) 걸다',priority:2,pos:'동사'},{meaning:'(운동을) 하다',priority:3,pos:'동사'}],reading:'dǎ',pos:'동사'},
+ 吃醋:{meanings:[{meaning:'식초를 먹다',priority:1,pos:'동사'}],reading:'chī cù',pos:'동사'},
+};
+const reviewLine=f=>f.page.locator('.viewer-sense-review-line');
+const reviewList=f=>f.page.locator('#inspector-sentence .viewer-sense-review').filter({visible:true});
+const storedToken=(f,id)=>f.rows.find(r=>r.id===94171).processed_json.dictionary[id];
+const closeSheet=async f=>{const close=f.page.getByRole('button',{name:'보조 패널 닫기',exact:true});if(await close.count()&&await close.isVisible())await close.click();};
+
+test('AD-R4 390 owner: 「뜻 확인 필요 2개 [보기]」 → 시트 [문장] 탭 자리 목록 · 후보 교정 1회 → 표식 삭제 · N 감소 · [이대로 둘게요] → N 0 · 카드 ⓘ · 단어장 쓰기 0',{timeout:240000},async()=>{
+ const m=senseMaterial();
+ const f=await open(m,{prefs:zhPrefs,own:true,rows:senseRows});
+ try{
+  await until(()=>f.bulk.length>=1);
+  const line=reviewLine(f);
+  await line.waitFor();
+  assert.equal((await line.innerText()).replace(/\s+/g,' ').trim(),'ⓘ 뜻 확인 필요 2개 보기','one line: ⓘ · count · [보기] · ✕(icon)');
+  for(const name of ['보기','뜻 확인 필요 알림 닫기']){
+   const box=await line.getByRole('button',{name,exact:true}).boundingBox();
+   assert.ok(box.height>=44&&box.width>=44,`${name} target ≥ 44px: ${JSON.stringify(box)}`);
+  }
+  // 자리: 통계 줄(viewer-badges) 아래, 본문 위
+  const geo=await f.page.evaluate(()=>{const r=s=>document.querySelector(s)?.getBoundingClientRect();return {badges:r('.viewer-badges'),line:r('.viewer-sense-review-line'),reader:r('.reader-area')};});
+  if(geo.badges)assert.ok(geo.line.top>=geo.badges.bottom-.5,'below the stats line');
+  assert.ok(geo.line.bottom<=geo.reader.top+.5,'above the text');
+  // 카드 ⓘ: 표식이 있는 단어만, 뜻 줄 아래 — 첫 화면 계약 그대로
+  await tap(f,'id_0_9','질투하다');
+  await f.page.locator('#inspector-word .word-fit__hun').first().waitFor();
+  const tip=f.page.locator('#inspector-word .reader-card-meaning-check').filter({visible:true});
+  assert.equal(await tip.innerText(),'ⓘ 문맥과 다를 수 있어요');
+  const g=await measure(f.page);
+  assertFirstScreen(g,{label:'zh 390 card with ⓘ'});
+  const tipBox=await tip.boundingBox();
+  assert.ok(tipBox.y>=g.meaning.bottom-.5,'ⓘ sits under the meaning line');
+  const senses=f.page.locator('#inspector-word .reader-card-senses');
+  await senses.waitFor();
+  assert.equal(await senses.locator('.reader-card-sense.is-current').count(),0,'context meaning outside the dictionary list: no painted line');
+  if(process.env.COMPOSER_SCREENSHOTS)await f.page.screenshot({path:`${process.env.COMPOSER_SCREENSHOTS}/sense-review-card-390.png`});
+  await tap(f,'id_0_6','전화');
+  assert.equal(await f.page.locator('#inspector-word .reader-card-meaning-check').count(),0,'no ⓘ without the marker');
+  // [보기] → 목록(새 화면 아님 — 시트 [문장] 탭 자리)
+  await closeSheet(f);
+  await line.getByRole('button',{name:'보기',exact:true}).click();
+  const list=reviewList(f);
+  await list.waitFor();
+  assert.equal(await f.page.locator('#inspector-sentence-tab').getAttribute('aria-selected'),'true','the [문장] tab holds the list');
+  await until(async()=>(await f.page.evaluate(()=>document.activeElement?.id))==='viewer-sense-review-title');
+  assert.equal(await list.locator('h2').innerText(),'뜻 확인 필요 · 2개');
+  const rows=list.locator('.viewer-sense-review__row');
+  assert.equal(await rows.count(),2,'sentence order: 打 then 吃醋');
+  const [da,cu]=[rows.nth(0),rows.nth(1)];
+  assert.equal(await da.locator('mark').innerText(),'打');
+  assert.equal(await da.locator('.viewer-sense-review__sentence').innerText(),'我给妈妈打了一个电话。');
+  assert.equal(await da.locator('.viewer-sense-review__now').innerText(),'지금: (전화를) 걸다');
+  await da.locator('.viewer-sense-review__option').first().waitFor();
+  assert.deepEqual(await da.locator('.viewer-sense-review__option').evaluateAll(els=>els.map(e=>[e.dataset.meaning,e.getAttribute('aria-pressed')])),
+   [['때리다, 치다','false'],['(전화를) 걸다','true'],['(운동을) 하다','false']]);
+  assert.equal(await cu.locator('mark').innerText(),'吃醋');
+  assert.equal(await cu.locator('.viewer-sense-review__now').innerText(),'지금: 질투하다','context meaning shown as is (no tag)');
+  assert.deepEqual(await cu.locator('.viewer-sense-review__option').evaluateAll(els=>els.map(e=>[e.dataset.meaning,e.getAttribute('aria-pressed')])),[['식초를 먹다','false']]);
+  for(const b of await list.locator('button').all()){const box=await b.boundingBox();assert.ok(box.height>=44,`list target ≥ 44px: ${await b.innerText()} ${box.height}`);}
+  const listText=await list.innerText();
+  assert.doesNotMatch(listText+(await line.innerText()),/\bAI\b|인공지능/,'no 「AI」 label');
+  if(process.env.COMPOSER_SCREENSHOTS)await f.page.screenshot({path:`${process.env.COMPOSER_SCREENSHOTS}/sense-review-list-390.png`});
+  // 후보 교정 1회 → 그 토큰의 표식 삭제 · N 감소, 쓰기는 기존 교정 경로 하나
+  const mark=f.requests.length;
+  await da.getByRole('button',{name:'때리다, 치다'}).click();
+  await until(()=>storedToken(f,'id_0_3').meaning==='때리다, 치다');
+  assert.ok(!Object.hasOwn(storedToken(f,'id_0_3'),'meaningCheck'),'the marker is removed with the same PATCH');
+  assert.equal(storedToken(f,'id_0_3').pos,'동사');
+  assert.equal(storedToken(f,'id_0_3').furigana,'dǎ','reading untouched');
+  assert.equal(storedToken(f,'id_0_9').meaningCheck,'ctx','other tokens keep their marker');
+  await until(async()=>(await line.innerText()).includes('뜻 확인 필요 1개'));
+  await until(async()=>(await list.locator('h2').innerText())==='뜻 확인 필요 · 1개');
+  assert.equal(await da.locator('.viewer-sense-review__now').innerText(),'지금: 때리다, 치다');
+  assert.equal(await da.locator('.viewer-sense-review__option[aria-pressed="true"]').getAttribute('data-meaning'),'때리다, 치다');
+  assert.equal(await da.locator('.viewer-sense-review__done').innerText(),'확인했어요','the fixed row stays in place');
+  await f.page.waitForTimeout(400);
+  let writes=writesSince(f,mark);
+  assert.equal(writes.filter(r=>r.method==='PATCH'&&r.url.includes('/rest/v1/reading_materials')).length,1,'one correction write');
+  assert.equal(writes.filter(r=>r.method==='POST'&&r.url.includes('/rest/v1/token_corrections')).length,1,'correction history');
+  assert.deepEqual(writes.filter(r=>!r.url.includes('/rest/v1/reading_materials')&&!r.url.includes('/rest/v1/token_corrections')&&!r.url.includes('/rest/v1/library_reading_activity')),[],'no vocabulary, FSRS, dict-correct or dictionary writes');
+  // [이대로 둘게요] = 지금 뜻을 확정 교정 → 표식 삭제 → N 0이면 줄이 없다
+  const mark2=f.requests.length;
+  await cu.getByRole('button',{name:'이대로 둘게요',exact:true}).click();
+  await until(()=>!Object.hasOwn(storedToken(f,'id_0_9'),'meaningCheck'));
+  assert.equal(storedToken(f,'id_0_9').meaning,'질투하다','the current meaning is kept');
+  assert.equal(storedToken(f,'id_0_3').meaning,'때리다, 치다','the earlier correction is not overwritten by a stale copy');
+  await until(async()=>(await line.count())===0);
+  assert.equal(await cu.locator('.viewer-sense-review__done').innerText(),'확인했어요');
+  await f.page.waitForTimeout(400);
+  writes=writesSince(f,mark2);
+  assert.equal(writes.filter(r=>r.method==='PATCH'&&r.url.includes('/rest/v1/reading_materials')).length,1);
+  assert.equal(writes.filter(r=>r.method==='POST'&&r.url.includes('/rest/v1/token_corrections')).length,1);
+  assert.deepEqual(writes.filter(r=>!r.url.includes('/rest/v1/reading_materials')&&!r.url.includes('/rest/v1/token_corrections')&&!r.url.includes('/rest/v1/library_reading_activity')),[]);
+  // 카드 ⓘ도 사라진다
+  await tap(f,'id_0_9','질투하다');
+  assert.equal(await f.page.locator('#inspector-word .reader-card-meaning-check').count(),0,'ⓘ disappears once confirmed');
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+test('AD-R4: 열람자는 줄 0(카드 ⓘ만) · 소유자라도 N=0이면 줄 0 · ✕는 그 viewerRevision 동안 다시 띄우지 않는다',{timeout:240000},async()=>{
+ const viewer=await open(senseMaterial(),{prefs:zhPrefs,rows:senseRows});
+ try{
+  await until(()=>viewer.bulk.length>=1);
+  await viewer.page.waitForTimeout(800);
+  assert.equal(await reviewLine(viewer).count(),0,'not the owner: no line');
+  await tap(viewer,'id_0_9','질투하다');
+  assert.equal(await viewer.page.locator('#inspector-word .reader-card-meaning-check').filter({visible:true}).innerText(),'ⓘ 문맥과 다를 수 있어요','viewers still see the card ⓘ');
+  assert.equal(await viewer.page.locator('#inspector-word .reader-card-sense__pick').count(),0,'and cannot correct');
+  assert.deepEqual(viewer.errors,[]);
+ }finally{await viewer.context.close();}
+ const clean=await open(senseMaterial({flags:false}),{prefs:zhPrefs,own:true,rows:senseRows});
+ try{
+  await until(()=>clean.bulk.length>=1);
+  await clean.page.waitForTimeout(800);
+  assert.equal(await reviewLine(clean).count(),0,'owner with N = 0: no line');
+  await tap(clean,'id_0_3','(전화를) 걸다');
+  assert.equal(await clean.page.locator('#inspector-word .reader-card-meaning-check').count(),0);
+  assert.deepEqual(clean.errors,[]);
+ }finally{await clean.context.close();}
+ const own=await open(senseMaterial(),{prefs:zhPrefs,own:true,rows:senseRows});
+ try{
+  await reviewLine(own).waitFor();
+  const mark=own.requests.length;
+  await reviewLine(own).getByRole('button',{name:'뜻 확인 필요 알림 닫기',exact:true}).click();
+  await until(async()=>(await reviewLine(own).count())===0);
+  assert.equal(await own.page.evaluate(()=>localStorage.getItem('viewer_sense_review_dismissed:94171:0')),'1');
+  // 자료를 열 때의 읽기 활동 기록(library_reading_activity)은 시점이 늦게 올 수 있어 뺀다 — 닫기 자체는 쓰기 0.
+  assert.deepEqual(writesSince(own,mark).filter(r=>!r.url.includes('/rest/v1/library_reading_activity')),[],'dismiss is local only');
+  await own.page.reload({waitUntil:'domcontentloaded'});
+  await own.page.locator('[data-source-token="id_0_0"]').waitFor();
+  await own.page.waitForTimeout(800);
+  assert.equal(await reviewLine(own).count(),0,'stays dismissed for this revision');
+  assert.deepEqual(own.errors,[]);
+ }finally{await own.context.close();}
+});
+
+test('AD-R4 1280 owner: 옆 패널 [문장] 탭 자리 목록 — 후보는 한 줄에 하나, 누름 영역 44px',{timeout:240000},async()=>{
+ const f=await open(senseMaterial(),{prefs:zhPrefs,own:true,rows:senseRows,width:1280,height:900});
+ try{
+  await until(()=>f.bulk.length>=1);
+  await reviewLine(f).getByRole('button',{name:'보기',exact:true}).click();
+  const list=reviewList(f);
+  await list.waitFor();
+  const panel=await f.page.locator('.viewer-inspector').filter({visible:true}).boundingBox();
+  assert.ok(panel.width<=400,`side panel, not a sheet: ${panel.width}`);
+  const opts=list.locator('.viewer-sense-review__row').first().locator('.viewer-sense-review__option');
+  await opts.first().waitFor();
+  const boxes=await opts.evaluateAll(els=>els.map(e=>{const b=e.getBoundingClientRect();return {x:b.left,y:b.top,h:b.height};}));
+  assert.equal(boxes.length,3);
+  assert.ok(boxes.every(b=>Math.abs(b.x-boxes[0].x)<1&&b.h>=44),`stacked one per line: ${JSON.stringify(boxes)}`);
+  assert.ok(boxes[1].y>boxes[0].y&&boxes[2].y>boxes[1].y);
+  assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth-innerWidth),0,'no horizontal overflow');
+  if(process.env.COMPOSER_SCREENSHOTS)await f.page.screenshot({path:`${process.env.COMPOSER_SCREENSHOTS}/sense-review-list-1280.png`});
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});

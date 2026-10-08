@@ -76,3 +76,15 @@ export function revertCorrections(beforeToken, corrections) {
   for (const key of Object.keys(corrections || {})) out[key] = beforeToken?.[key] ?? '';
   return out;
 }
+
+/**
+ * 교정 적용 — 토큰에 교정 칸을 덮고, 뜻을 교정했으면 「뜻 확인 필요」 내부 표식(meaningCheck)을 지운다
+ * (뷰어 v2 AD-R4 §6.2·§6.3·§7: 사용자가 정한 뜻이 이긴다). 같은 뜻을 확정하는 교정([이대로 둘게요])도 지운다.
+ * correctTokenMutation이 저장 직전과 카드 갱신에 같은 함수를 쓴다(새 쓰기 경로 아님).
+ * @returns {object} 새 토큰
+ */
+export function applyTokenCorrections(token, corrections) {
+  const next = { ...token, ...corrections };
+  if (corrections && Object.hasOwn(corrections, 'meaning')) delete next.meaningCheck;
+  return next;
+}
