@@ -12,11 +12,13 @@
 
 | 파일 | 내용 |
 |---|---|
-| `docs/verification/zh-sense-holdout-20261008.json` | 사례 80개(조정 40 · 보류 40), 규칙, 구성, 켜는 기준 |
+| `docs/verification/zh-sense-holdout-20261008.json` | 사례 80개(조정 40 · 보류 40), 규칙, 구성, 켜는 기준, 운영 사전 스냅숏(`snapshot` — 행 18 · 행 없음 19) |
 | `scripts/eval/zhSenseHoldout.mjs` | 순수 채점기 · 세트 검증 · 집계 · 켜는 기준. N 프롬프트·응답 검증·뜻 정규화는 PR②부터 제품 `src/lib/server/zhSenseReview.js`를 import해 PR① 이름으로 다시 내보낸다 |
-| `scripts/eval/run-zh-sense-holdout.mjs` | 실행기. `--dry-run`은 호출 0 |
+| `scripts/eval/run-zh-sense-holdout.mjs` | 실행기. `--dry-run`은 호출 0. 사전 캐시는 `snapshot.rows`(운영 행) — 행 없는 표제어만 임시 후보 |
+| `scripts/eval/generate-zh-sense-candidates.mjs` | 운영 행 없는 표제어를 제품 생성 경로(`fetchMeaningsForMissing`)로 만들어 얼린다. DB 쓰기 0, `--dry-run`은 호출 0 |
+| `scripts/eval/productImportHooks.mjs` | 두 스크립트가 제품 서버 모듈(번들러식 import)을 Node에서 불러오게 하는 로더 훅 |
 | `src/lib/__tests__/zhSenseHoldout.test.js` | 세트 무결성과 채점·검증·프롬프트 계약 |
-| `docs/sql/zh-sense-holdout-snapshot-readonly.sql` | 운영 사전 후보 스냅숏(읽기 전용 SELECT) |
+| `docs/sql/zh-sense-holdout-snapshot-readonly.sql` | 운영 사전 후보 스냅숏(읽기 전용 SELECT) — 2026-10-08 M09 실행분이 `snapshot` |
 
 ## 보류 세트 규칙
 
@@ -60,19 +62,42 @@
 - 경계 사례(D)는 `candidates` 대신 `boundary: { pair: ["个", "人"], join: false, why }`를 갖는다. 대상 표면형은 쌍의 앞 토큰이다.
 - 번체 쌍둥이(F)는 `twinOf`로 간체 사례를 가리키고 기대 답이 같다.
 
-## 후보는 아직 임시다 — 운영 스냅숏으로 교체 필요
+## 후보 — 운영 스냅숏 교체(2026-10-08) · 남은 19표제어는 생성 대기
 
-- 지금 `candidates`는 **운영 사전 행이 아니다.** refVocab 뜻(`src/content/chinese/vocab/*.js`의 `ko`)을 사람이 뜻 단위로 나눈 임시 후보다. 64건 모두 `candidatesSource`가 `provisional:*`이다.
-  - `provisional:refVocab` — refVocab 뜻을 나누기만 함.
-  - `provisional:refVocab+drafted` — refVocab에 없는 뜻을 보탬(在 진행 · 给 동사/전치사 분리 · 还 「그런대로」 · 对 전치사 · 都 「벌써」).
-  - `provisional:drafted` — refVocab에 표제어 뜻이 없음(打는 dá 「다스」만 있다).
-- 교체 절차:
-  1. `docs/sql/zh-sense-holdout-snapshot-readonly.sql`의 Q1·Q2를 오너 PC 또는 M09에서 실행한다(SELECT만, read only 트랜잭션).
-  2. 사례마다 `candidates`를 그 행의 `meanings` 앞 3개(순서 그대로)로 바꾸고, `candidatesSource`를 `morpheme_dictionary@YYYY-MM-DD`로 적는다.
-  3. `accept`·`forbidden` 번호를 새 후보 순서에 맞춰 다시 매긴다. 운영 행에 이미 문맥 뜻이 있는 E 사례는 그 번호를 `accept.sense`로 옮기지 말고 사례를 바꾼다(E는 「후보 밖」을 재는 범주다).
-  4. 행이 없거나 `source: user_verified`인 표제어는 후보가 붙지 않으므로(설계서 §4.1) 같은 범주의 다른 사례로 바꾼다.
-  5. 교체는 실행 **전에** 끝낸다. 실행 뒤 교체는 보류 세트 소모다.
-- 교체 전에 돌린 결과는 「임시 후보」 결과로만 기록한다(결과 파일 머리에 임시 후보 수가 찍힌다).
+M09가 `docs/sql/zh-sense-holdout-snapshot-readonly.sql`의 Q1·Q2를 read only 트랜잭션으로 원문 그대로 실행했다([보고](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6047879865)). 결과 행 18개(Q1 16 · Q2 2)는 세트 `snapshot.rows`에 그대로 두었다. 모두 `source: gemini`다.
+
+| 표제어 상태 | 표제어 | 사례 | 후보 |
+|---|---|---|---|
+| 운영 행 있음 | 16(在 对 工作 帮助 想 才 打 把 给 菜 要 要求 让 走 还 都) | 37 | 운영 행 앞 3개 그대로 · `candidatesSource: morpheme_dictionary@2026-10-08` |
+| 운영 행 없음(생성 대기) | 19(`snapshot.missing`) | 27 | PR①의 임시 후보 유지 · `provisional:*` |
+
+### 운영 행으로 바꾸며 드러난 것
+- **운영 행은 얇다.** 1~3뜻이고 문맥상 흔한 뜻이 자주 빠져 있다. 打 = 때리다/치다/하다(「(전화를) 걸다」 없음) · 在 = ~에/~에서(「있다」「~하고 있다」 없음) · 才·对·把·要·都·想은 뜻 1개다.
+- **37건 중 15건은 맞는 뜻이 후보에 없다.** 운영에서 학습자가 실제로 받는 후보가 그렇기 때문에 사례를 바꾸지 않았다. 대신 E가 아니어도 `accept.ctx`(후보 밖 정답)로 둔다. 시안(N)이 이 사례를 맞히려면 `sense: 0` + `ctx`가 필요하다.
+  - 대상: A06 · B01 · B10 · F01 · B19 · C01 · C03 · C08 · C10 · F07 · C12 · C13 · C14 · C16 · E05.
+- **1차 규칙(뜻 2개 이상만 후보)에서는 보류 쪽 운영 행 사례 16건 중 5건에만 후보가 붙는다.**
+  - 붙지 않는 11건: B19 · B20 · C09~C16 · F07. 행이 뜻 1개다.
+  - 이 11건은 기본 실행에서 N이 B1과 같은 답을 낸다. 조정 쪽은 21건 중 20건에 후보가 붙는다.
+  - 그래서 `--offer-single`(설계서 Q3, 뜻 1개 행에도 후보) 측정이 기능어 범주(C)의 실제 효과를 가른다. 기본 실행과 함께 돌려 둘 다 보고한다.
+- 번호·순서가 임시 후보와 달라진 표제어:
+  - 给: ①~에게 ②주다로 순서가 반대다.
+  - 菜: ①채소 ②요리로 순서가 반대다.
+  - 帮助: 명사 뜻이 없다.
+  - 기대 답은 운영 번호로 다시 매겼다. 결과를 보기 전(B0 dry-run 전)에 정했고, 뒤에 고치지 않았다.
+- 경계(D): 이은 꼴 11개 중 운영 행은 个人(개인/자신)·人才(인재) 둘이다. 둘 다 gemini 행이라 등재 판정(`user_verified`·`jmdict`)에는 들지 않는다. 실행기는 이 행을 운영처럼 캐시에 넣어 「묶을까요?」 경로까지 잰다.
+
+### 생성 대기 19표제어 — 측정 전에 얼린다
+- 행이 없다고 그 단어에 후보가 영영 안 붙는 것은 아니다. 운영에서는 그 단어를 처음 분석할 때 `/api/analyze`가 `fetchMeaningsForMissing`으로 행을 만들어 넣고, 다음 요청부터 그 행이 후보가 된다.
+  - 그래서 사례를 다른 표제어로 바꾸지 않는다. 같은 생성 경로로 행을 만들어 얼린다. 설계 당시 절차의 「같은 범주의 다른 사례로 바꾼다」를 대체한다.
+- `scripts/eval/generate-zh-sense-candidates.mjs`가 제품 `fetchMeaningsForMissing`을 그대로 부른다.
+  - 같은 프롬프트·light 등급·정규화를 쓴다.
+  - 입력은 운영 `collectMissingBaseForms`와 같은 {표제어, 토크나이저 품사, 병음}이다. 문장은 보내지 않는다. 그래서 측정 문장이 새지 않고 보류 세트를 소모하지 않는다.
+  - DB 클라이언트 자리에 받기만 하는 가짜를 넘겨 DB 쓰기는 0이다.
+- 순서:
+  1. 생성 키가 있는 환경(오너 PC 또는 M09)에서 생성 스크립트를 실행하고 결과 JSON을 #1337에 올린다.
+  2. Claude가 행을 세트에 넣는다(`snapshot.generated`). 후보를 바꾸고 기대 답 번호를 다시 매긴 뒤 PR로 낸다.
+  3. 그다음에 측정한다.
+- 임시 후보가 보류 세트에 남아 있으면 `evaluateRelease`가 「보류」를 낸다. 사유에 임시 후보 사례 목록이 찍힌다.
 
 ## 비교하는 세 팔
 
@@ -124,35 +149,39 @@
 
 추가: 요청(문단)당 호출 수가 B1과 같고, 판별 호출 p95 지연 증가가 1초 이하다. 호출 오류가 있으면 재실행 전까지 보류, REVIEW가 남으면 「사람 판정 대기」다. B1 FAIL이 0이면 줄일 오답이 없어 켜지 않는다. 숫자는 설계 쪽 제안이며 오너가 더 엄격하게 정할 수 있다(설계서 §12.3).
 
-## 현재 측정값 (호출 0 — `--dry-run`, 임시 후보 기준)
+## 현재 측정값 (호출 0 — `--dry-run`, 운영 스냅숏 37건 + 임시 후보 27건)
 
-| 팔 / 세트 | PASS | FAIL | REVIEW | BLOCKED | 치명 FAIL |
-|---|---|---|---|---|---|
-| B0 / 조정 | 23 | 15 | 2 | 0 | B01 · B02 · B05 · B06 · B08 · B09 · B10 · D05 · D06 · D08 |
-| B0 / 보류 | 23 | 15 | 2 | 0 | B12 · B16 · B17 · B19 · B20 · D13 · D15 · D16 |
+| 팔 / 세트 | PASS | FAIL | REVIEW | BLOCKED |
+|---|---|---|---|---|
+| B0 / 조정 | 20 | 16 | 4 | 0 |
+| B0 / 보류 | 20 | 16 | 4 | 0 |
 
 | 범주 | B0 조정(P/F/R) | B0 보류(P/F/R) |
 |---|---|---|
-| A | 6/0/0 | 6/0/0 |
-| B | 3/7/0 | 3/5/2 |
-| C | 6/1/1 | 6/2/0 |
+| A | 5/1/0 | 6/0/0 |
+| B | 4/6/0 | 4/4/2 |
+| C | 3/2/3 | 3/4/1 |
 | D | 5/3/0 | 5/3/0 |
 | E | 0/3/1 | 0/4/0 |
-| F | 3/1/0 | 3/1/0 |
+| F | 3/1/0 | 2/1/1 |
 
-- 정답 품사를 줘도 B(같은 품사 다의)는 20건 중 12건이 틀린다. 품사 판별만으로는 못 고치는 몫이고, 시안이 겨냥하는 곳이다. A(겸류)는 품사만 맞으면 12/12가 맞는다 — 실제 B1은 품사 판별이 틀릴 때만 진다.
-- 현행 토크나이저는 뜻 사례 64개의 대상 표면형을 모두 한 토큰으로 낸다(BLOCKED 0). 번체 문장은 jieba가 글자 단위로 자르고 품사를 못 붙이지만(媽/媽 미상, 還 기타), 대상이 한 글자라 대상 자체는 잡힌다.
-- 경계 현행: 不客气 · 得了(됐어) · 有空儿은 나뉘고(묶여야 함), 把手(请把手机) · 人才(这个人才来) · 打包带는 오병합된다. 나뉘어야 하는 9건(조정 5: 一个人 · 得了第一名 · 做完了 · 很多方面 · 很多云 / 보류 4: 很多媒体 · 得了感冒 · 看完了 · 两个人)은 지금 올바르게 나뉜다 — 「등재만으로 자동 묶기」를 하면 깨질 자리다.
-- 문단 마크 수는 8~21(평균 약 15), 프롬프트는 현행 약 0.8~1.1천 자 → 시안 약 1.25~1.7천 자다.
+- 임시 후보만 쓰던 PR① 값(조정·보류 모두 23/15/2)에서 FAIL이 1건씩 늘고 PASS가 3건씩 줄었다. 맞는 뜻이 운영 후보에 없는 사례가 생겨서다(A06 帮助 명사, C03 在 진행, C08 还 정도 등).
+- REVIEW가 늘어난 이유: 운영 후보 중에는 기대 답과 가깝지만 같지 않은 줄이 있다(在 「~에」, 还 「여전히, 아직」, 对 「~에 대해」). 이런 줄은 금지하지 않고 사람 판정에 둔다.
+- 생성 후보를 얼리면 이 표는 다시 바뀐다. 생성 대기 27건의 B0는 임시 후보 값이다.
+- 현행 토크나이저는 뜻 사례 64개의 대상 표면형을 모두 한 토큰으로 낸다(BLOCKED 0, 현행 토큰화 불일치 0).
+- 경계 현행은 PR①과 같다: 不客气 · 得了(됐어) · 有空儿은 나뉘고(묶여야 함), 把手 · 人才 · 打包带는 오병합된다.
 
 ## 실행 방법 (생성 키가 있는 환경 — 오너 PC 또는 M09)
 
 ```sh
-git fetch origin claude/viewer-v2-ad-r4-measure && git checkout claude/viewer-v2-ad-r4-measure
+git fetch origin main && git checkout origin/main   # 측정 세트·실행기는 main에 있다(#1370 병합)
 nvm use            # Node 24
 npm ci
+node scripts/eval/generate-zh-sense-candidates.mjs --dry-run       # 생성 대기 표제어·입력 품사 확인(호출 0)
+GEMINI_API_KEY=… node scripts/eval/generate-zh-sense-candidates.mjs # 생성 후보 얼리기(DB 쓰기 0) → 결과 JSON을 #1337에 → Claude가 세트 반영 PR
 node scripts/eval/run-zh-sense-holdout.mjs --dry-run              # 세트 검증 · B0 · 현행 토큰화 · 프롬프트 대조(호출 0)
 GEMINI_API_KEY=… node scripts/eval/run-zh-sense-holdout.mjs        # B0 + B1 + N, 문단 14개 × 2회 = 28회
+GEMINI_API_KEY=… node scripts/eval/run-zh-sense-holdout.mjs --offer-single --arms n --out <dir2>   # Q3: 뜻 1개 행에도 후보(보류 운영 행 11건이 여기서만 움직인다)
 GEMINI_API_KEY=… node scripts/eval/run-zh-sense-holdout.mjs --split tune   # 프롬프트 조정은 조정 세트로만
 ```
 
@@ -170,9 +199,10 @@ GEMINI_API_KEY=… node scripts/eval/run-zh-sense-holdout.mjs --split tune   # �
 
 ## 한계
 
-- 후보가 임시다. 운영 스냅숏으로 바꾸면 번호와 일부 사례가 바뀐다. 교체 전 실행 결과로 켜기를 판정하지 않는다.
+- 운영 행이 없는 19표제어(27사례)는 아직 임시 후보다. 생성 후보로 얼리기 전 실행 결과로 켜기를 판정하지 않는다(`evaluateRelease`가 막는다).
+- 운영 스냅숏은 2026-10-08 한 시점이다. 그 뒤 자가 치유·교정으로 행이 바뀌면 운영과 어긋난다. 켜기 PR 직전에 같은 SQL로 다시 확인한다.
 - 사례 초안·기대 답은 한 모델이 썼다. 중국어 사용자 감수 전에는 확정이 아니다. 애매한 답(送你回家의 「보내다」, 还想喝一杯의 「아직」, 冲咖啡의 「끼얹다」)은 금지로 두지 않고 REVIEW로 남겼다.
 - 운영 캐시를 흉내 내지 않는다(사례 후보 외 단어는 캐시 없음). 마크 수·프롬프트 길이는 운영과 다를 수 있다.
-- 경계 쌍은 HSK 표 + `ZH_KEEP_MERGED` 등재만 본다. `user_verified`·`jmdict` 행과 gemini 행(미등재 후보)은 스냅숏 SQL Q2를 받은 뒤 반영한다.
+- 경계 쌍의 등재 판정은 HSK 표 + `ZH_KEEP_MERGED` + 이합사 + `user_verified`·`jmdict` 행이다. 스냅숏 Q2에서 이은 꼴 11개 중 운영 행은 个人·人才 둘(gemini — 미등재)뿐이라, 「묶을까요?」 후보는 이 둘에서만 생길 수 있다.
 - OOV 단어성 판정(笔在·社恐류, 설계서 Q2)은 이 세트에 들어 있지 않다. 현행 jieba가 그 꼴을 x-병합하지 않는 문장이 많아(笔在 → 用笔/在) 재현 문장을 따로 찾아야 한다.
 - 표본 수가 범주당 4~10건이다. 켜는 기준은 보류 40건 전체 FAIL로 보며, 범주별 비율은 참고값이다.
