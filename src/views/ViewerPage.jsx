@@ -21,7 +21,7 @@ import { LibraryReturnLink } from '@/components/web/LibraryReaderLink';
 import { readerReturnLabel } from '../lib/libraryReturn';
 import ActionIcon from '../components/ActionIcon';
 import ViewerReferenceExample from '../components/viewer/ViewerReferenceExample';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
 import { buildVocabularyWordIndex, countVocabularyDueInMaterial, findIndexedVocabulary, isIndexedVocabularyDue } from '../lib/vocabularyDueIndex';
@@ -128,7 +128,7 @@ import { readIndexCache } from '../lib/classClient';
 import { useRefVocabEntry, useRefVocabIndex, refLevelLabel } from '../lib/refVocabIndex';
 import { loadHanjaPanelTable, onIdle, prefetchHanjaPanel } from '../lib/viewerHanjaPanel';
 import { useTokenDictPrefetch } from '../lib/useTokenDictPrefetch';
-import { tokenDictPrefetchEnabled } from '../lib/tokenDictPrefetch';
+import { tokenDictPrefetchEnabled, tokenDictQueryKey, tokenDictKeyOf, prefetchTokenDict } from '../lib/tokenDictPrefetch';
 import { knownWordsLang } from '../lib/knownWords';
 import { useKnownWords } from '../lib/useKnownWords';
 import { knownWordKeys, normalizeKnownWord, knownWordSetOf } from '../lib/knownWordControl';
@@ -147,7 +147,9 @@ import ViewerGlyphColumn from '../components/viewer/ViewerGlyphColumn';
 import ViewerHanjaPopover from '../components/viewer/ViewerHanjaPopover';
 import ViewerJapaneseMore from '../components/viewer/ViewerJapaneseMore';
 import TokenEditPanel from './TokenEditPanel';
-import { senseCorrectionFor, revertCorrections } from '../lib/tokenEditOptions';
+import { senseCorrectionFor, revertCorrections, applyTokenCorrections } from '../lib/tokenEditOptions';
+import { senseReviewItems, senseReviewDismissKey, senseReviewOptions, keepSenseCorrection, needsMeaningCheck } from '../lib/viewerSenseReview';
+import ViewerSenseReview from '../components/viewer/ViewerSenseReview';
 import SourceEditModal from './SourceEditModal';
 import TokenPosLabel from './TokenPosLabel';
 import TokenRangeGrips from './TokenRangeGrips';
@@ -811,6 +813,7 @@ export default function ViewerPage() {
     setWordDetail(null);
     setInspectChar(null);
     setIsEditingToken(false);
+    setSenseReviewIds(null); // AD-R4 「뜻 확인 필요」 목록도 시트와 함께 닫는다
   };
 
   // ④ 같은 글자 재탭 = 닫기, 다른 글자 = 교체
@@ -1364,6 +1367,7 @@ export default function ViewerPage() {
       }
     }, 45000);
     if (!preserveOpenWord) detailGate.current.cancel();
+    setSenseReviewIds(null); // 새 문장 번역이 [문장] 탭 자리를 받는다(AD-R4 목록은 [보기]로 다시 연다)
     if (!explanationOnly) {
       setLeftSheetSignal(s => s + 1);
       if (!preserveOpenWord) setRightSheetSignal(s => s + 1);
@@ -1577,7 +1581,8 @@ export default function ViewerPage() {
       const beforeToken = currentJson.dictionary[tokenId];
       const updatedDict = {
         ...currentJson.dictionary,
-        [tokenId]: { ...beforeToken, ...corrections },
+        // 뜻을 교정하면 「뜻 확인 필요」 표식(meaningCheck)도 지운다(AD-R4 §6.2·§7) — 같은 PATCH 한 번.
+        [tokenId]: applyTokenCorrections(beforeToken, corrections),
       };
       const updatedJson = { ...currentJson, dictionary: updatedDict };
 
@@ -1588,6 +1593,9 @@ export default function ViewerPage() {
         const { error } = await supabase.from('reading_materials')
           .update({ processed_json: updatedJson }).eq('id', id);
         if (error) throw error;
+        // 다시 받기 전에 다음 교정이 낡은 자료(이 교정 전)를 통째로 덮어쓰지 않게 캐시에 저장한 값을 바로 둔다
+        // (AD-R4 목록은 여러 줄을 잇달아 고친다). 무효화·다시 받기는 아래 onSuccess가 그대로 한다.
+        queryClient.setQueryData(['material', id], (prev) => (prev ? { ...prev, processed_json: updatedJson } : prev));
       }
 
       // 교정 히스토리 로그 (실패해도 수정 자체는 유지)
@@ -1615,7 +1623,7 @@ export default function ViewerPage() {
       queryClient.invalidateQueries({ queryKey: ['token-corrections', id, tokenId] });
       if (!legacyTokenEditingAllowed || !legacyTokenEditingAllowedRef.current) return;
       // BottomSheet에 표시되는 selectedToken도 업데이트
-      setSelectedToken(prev => prev?.id === tokenId ? { ...prev, ...corrections } : prev);
+      setSelectedToken(prev => prev?.id === tokenId ? applyTokenCorrections(prev, corrections) : prev);
       // 사전 뜻 줄 교정(AE-R1 PR③)은 카드 안 「뜻을 바꿨어요 · 되돌리기」 줄이 알린다 — 토스트를 겹치지 않는다.
       if (!variables?.quiet) toast('수정이 저장됐어요!', 'success');
     },
@@ -1887,6 +1895,46 @@ export default function ViewerPage() {
   // 「뜻을 바꿨어요 · 되돌리기」 — 그 토큰을 다시 열 때까지(다른 단어·시트 닫기에서 지운다). before = 바꾼 칸의 이전 값.
   const [senseUndo, setSenseUndo] = useState(null); // { tokenId, before, corrections }
   useEffect(() => { setSenseUndo(null); }, [selectedToken?.id, isSheetOpen]);
+  // ── AD-R4 PR③ 「뜻 확인 필요 N개」(설계서 docs/manabi-viewer-v2-ad-r4.md §6·§7) ──
+  // 재료 = 토큰 내부 표식 meaningCheck(서버 상수 ZH_SENSE_REVIEW가 켜졌을 때만 붙음 — 꺼진 지금은 0). 중국어만.
+  // 목록은 시트 [문장] 탭 자리에 열리고(새 화면 아님), 연 순간의 토큰 id를 붙들어 고친 줄도 그 자리에 남긴다.
+  const senseReviewList = useMemo(() => senseReviewItems(material?.processed_json, materialLang), [material?.processed_json, materialLang]);
+  const senseReviewKey = senseReviewDismissKey(id, material?.processed_json);
+  const [senseReviewDismissed, setSenseReviewDismissed] = useState(null); // 닫은 키(그 자료의 그 viewerRevision)
+  useEffect(() => {
+    let stored = null;
+    try { stored = localStorage.getItem(senseReviewKey) ? senseReviewKey : null; } catch { stored = null; }
+    setSenseReviewDismissed(stored);
+  }, [senseReviewKey]);
+  const dismissSenseReview = () => {
+    setSenseReviewDismissed(senseReviewKey);
+    try { localStorage.setItem(senseReviewKey, '1'); } catch { /* 개인 편의 — 실패해도 이번 화면에서는 닫힌다 */ }
+  };
+  const [senseReviewIds, setSenseReviewIds] = useState(null); // null = 목록 닫힘
+  const senseReviewOpen = senseReviewIds !== null;
+  useEffect(() => { setSenseReviewIds(null); }, [id]);
+  const senseReviewTokens = (senseReviewIds || []).map((tokenId) => {
+    const token = material?.processed_json?.dictionary?.[tokenId];
+    return token ? { ...token, id: tokenId } : null;
+  }).filter(Boolean);
+  // 후보 = 카드와 같은 사전 행 캐시(['token-dict', lang, key]). 새 읽기 경로 없이 자료를 열 때의 일괄 조회(prefetchTokenDict)가
+  // 채운 값을 구독만 하고, 비어 있는 키만 같은 일괄 조회로 받는다. 실패하면 후보 없이 [이대로 둘게요]만 남는다.
+  const senseReviewDictKeys = [...new Set(senseReviewTokens.map(tokenDictKeyOf).filter(Boolean))];
+  const senseReviewDictSignature = senseReviewOpen ? `${materialLang}\u0000${senseReviewDictKeys.join('\u0000')}` : '';
+  const [senseReviewDictFailed, setSenseReviewDictFailed] = useState('');
+  useEffect(() => {
+    if (!senseReviewDictSignature) return;
+    let alive = true;
+    prefetchTokenDict({ supabase, queryClient, language: materialLang, keys: senseReviewDictKeys })
+      .then((r) => { if (alive && r.failed) setSenseReviewDictFailed(senseReviewDictSignature); })
+      .catch(() => { if (alive) setSenseReviewDictFailed(senseReviewDictSignature); });
+    return () => { alive = false; };
+    // senseReviewDictKeys는 signature가 대표한다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [senseReviewDictSignature, queryClient, materialLang]);
+  const senseReviewDict = useQueries({
+    queries: (senseReviewOpen ? senseReviewDictKeys : []).map((key) => ({ queryKey: tokenDictQueryKey(materialLang, key), enabled: false })),
+  });
   const selectedDictKey=selectedLexKey||selectedToken?.text;
   const { data: editDictEntry, isFetched: dictFetched, isError: dictError } = useQuery({
     queryKey: ['token-dict', materialLang, selectedDictKey],
@@ -2358,7 +2406,7 @@ export default function ViewerPage() {
   const headReadingPending = headIsBase && !dictFetched && !dictError;
   // Q1: 단어 탭의 「번역」 버튼 대신 [문장] 탭을 누르면 그 문장을 기존 번역 전용 경로로 연다(경로·캐시·AI 조건 동일).
   const openSentenceTranslation = () => {
-    if (classStudyActive || !selectedToken || !isSheetOpen) return;
+    if (classStudyActive || !selectedToken || !isSheetOpen || senseReviewOpen) return; // 목록이 열려 있으면 [문장] 탭 = 그 목록
     const sentence = ctxSentenceOf(selectedToken);
     if (!sentence || (sentence === leftPanelText && (leftPanelLoading || leftPanelResult))) return;
     runSelectedSentence(sentence, true);
@@ -2392,6 +2440,45 @@ export default function ViewerPage() {
     label: vt('분석 고치기'),
     items: [{ id: 'edit', label: vt('뜻·발음 수정'), onSelect: openTokenEditing }],
   } : null;
+  // AD-R4 PR③ 「뜻 확인 필요 N개 [보기]」 — 자료 소유자(고칠 수 있는 사람)만, N>0일 때만, 분석이 끝난 뒤(§6.1).
+  // 권한은 사전 뜻 줄 교정(senseEditable)과 같은 판정이고, 수업 모드에서는 숨긴다(§13). 구간 학습(passage)은 교정 RPC가
+  // 표식을 지울 수 없어(토큰 || 교정 병합) 제외한다. 열람자에게는 줄·목록이 없고 카드 ⓘ만 보인다.
+  const senseReviewAllowed = canEditToken && legacyTokenEditingAllowed && learningStorageSupported && !classStudyActive
+    && materialLang === 'Chinese' && isDone && !passageOf(material);
+  const senseReviewShown = senseReviewAllowed && senseReviewList.length > 0 && senseReviewDismissed !== senseReviewKey;
+  const openSenseReview = () => {
+    if (!senseReviewAllowed || !senseReviewList.length) return;
+    setSenseReviewIds(senseReviewList.map((item) => item.id));
+    setSenseReviewDictFailed('');
+    setSentenceTabSignal(s => s + 1);
+  };
+  // 목록 교정 = 카드 사전 뜻 줄 교정과 같은 규칙(senseCorrectionFor)·같은 쓰기(correctTokenMutation, quiet) 한 번.
+  // 표식 삭제는 그 mutation 안(applyTokenCorrections)에서. 전역 승격·단어장·FSRS·사전 쓰기 0(§7).
+  const chooseReviewSense = (row, meaning) => {
+    if (!senseReviewAllowed || senseBusy || !legacyTokenEditingAllowedRef.current) return;
+    const corrections = senseCorrectionFor(row.token, row.dictEntry, meaning);
+    if (!corrections) return;
+    correctTokenMutation.mutate({ tokenId: row.id, corrections, quiet: true });
+  };
+  // [이대로 둘게요] = 지금 뜻을 확정 교정으로 저장(§6.2) — 같은 mutation이라 이력이 남고 재분석 때 이 뜻이 보존된다.
+  const keepReviewSense = (row) => {
+    if (!senseReviewAllowed || senseBusy || !legacyTokenEditingAllowedRef.current) return;
+    const corrections = keepSenseCorrection(row.token);
+    if (!corrections) return;
+    correctTokenMutation.mutate({ tokenId: row.id, corrections, quiet: true });
+  };
+  const senseReviewRows = senseReviewTokens.map((token) => {
+    const key = tokenDictKeyOf(token);
+    const query = senseReviewDict[senseReviewDictKeys.indexOf(key)];
+    const dictEntry = query?.data;
+    const pending = dictEntry === undefined && senseReviewDictFailed !== senseReviewDictSignature;
+    return { id: token.id, token, dictEntry: dictEntry ?? null, sentence: cardSentenceOf(token),
+      options: pending ? null : senseReviewOptions(dictEntry ?? null, token), resolved: !needsMeaningCheck(token) };
+  });
+  const senseReviewContent = senseReviewOpen && senseReviewAllowed ? (
+    <ViewerSenseReview rows={senseReviewRows} remaining={senseReviewList.length} busy={senseBusy}
+      onChoose={chooseReviewSense} onKeep={keepReviewSense} contentLang={contentLangTag} vt={vt} />
+  ) : null;
   // 수업 모드는 수업 전용 버튼과 경로(runSelectionAnalysis)를 지금대로 둔다(정본 §0.2).
   const renderClassSentenceAction = () => (
     ctxSentenceOf(selectedToken) ? <div className="word-detail-card__actrow reader-card-class-actions">
@@ -2620,6 +2707,8 @@ export default function ViewerPage() {
           ><svg className="action-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="m4 16 12-12 4 4L8 20H4v-4ZM13 7l4 4"/></svg></button>
         )}
       </div>)}
+      {/* AD-R4 PR③ 카드 ⓘ(설계서 §6.3) — 뜻 확인 필요 표식이 있을 때만, 뜻 줄 아래. 사전 뜻 줄에서 다른 뜻을 고르면 교정이 표식을 지워 사라진다. 「AI」 표시 없음. */}
+      {!classStudyActive && materialLang === 'Chinese' && needsMeaningCheck(selectedToken) && <p className="reader-card-meaning-check"><span aria-hidden="true">ⓘ </span>{vt('문맥과 다를 수 있어요')}</p>}
       {/* 첫 화면 우선 2단계: 자형 표를 뜻 줄 아래로(스크롤 아래 — 표제어 옆에는 正 한 칸만). 접힘 0. */}
       {!classStudyActive && materialLang === 'Chinese' && glyphStep >= 2 && <ViewerGlyphColumn className="reader-card-glyph--below" forceLayout="stack" word={headText} zheng={glyphZhengBelow ? glyph.zheng : null} ja={glyph.ja} cardKey={`${glyphCardKey}:below`} labels={{ zheng: vt('대만 정체'), ja: vt('일본어 표기') }} />}
       {/* 사전 뜻 줄 교정 직후 한 줄(설계서 §3.4) — 되돌리기 = 이전 값 그대로 같은 mutation 1회. 그 토큰을 다시 열 때까지. */}
@@ -3101,6 +3190,15 @@ export default function ViewerPage() {
               >{vt('아는 단어 {percent}% · 새 단어 {count}개', {percent: Math.round(coverage.coverage * 100), count: coverage.unknown})}</span>
             )}
           </div>
+        )}
+        {/* AD-R4 PR③ 「뜻 확인 필요 N개 [보기]」(설계서 §6.1·§6.4) — 통계 줄 아래 한 줄. 소유자만 · N>0만 · ✕는 이 viewerRevision 동안. 「AI」 표시 없음. */}
+        {senseReviewShown && (
+          <p className="viewer-sense-review-line">
+            <span aria-hidden="true" className="viewer-sense-review-line__icon">ⓘ</span>
+            <span className="viewer-sense-review-line__text">{vt('뜻 확인 필요 {count}개', {count: senseReviewList.length})}</span>
+            <button type="button" className="btn btn--ghost btn--sm viewer-sense-review-line__open" aria-expanded={senseReviewOpen} onClick={openSenseReview}>{vt('보기')}</button>
+            <button type="button" className="viewer-sense-review-line__close" aria-label={vt('뜻 확인 필요 알림 닫기')} title={vt('뜻 확인 필요 알림 닫기')} onClick={dismissSenseReview} data-icon-action><ActionIcon name="close"/></button>
+          </p>
         )}
       </header>
       {!originalParams.get('sourceEntry')&&!originalParams.get('sourceQuote')&&<ReadingSourceFocus rawText={material?.raw_text} materialId={id} ready={!!material?.processed_json?.sequence?.length} json={material?.processed_json} onTarget={setSourceFocusId} />}
@@ -3635,7 +3733,7 @@ export default function ViewerPage() {
         sentenceContent={(leftPanelLoading||leftPanelResult)?leftPanelContent:null}
         onActive={setClassStudyActive} onPresenting={setClassPresenting} suppressed={modalBlocked&&!classPresenting}
         onSelectionClose={closeWordCard}
-        fallback={boardActions=>(annotationOpen || leftPanelLoading || leftPanelResult || dragTokens !== null || (selectedToken && isSheetOpen)) ? <ViewerBottomSheet
+        fallback={boardActions=>(annotationOpen || leftPanelLoading || leftPanelResult || senseReviewContent || dragTokens !== null || (selectedToken && isSheetOpen)) ? <ViewerBottomSheet
         actions={boardActions}
         uiLocale={uiLocale}
         className={boardActions?'viewer-inspector--board':''}
@@ -3644,9 +3742,9 @@ export default function ViewerPage() {
         preserveFocus={annotationOpen&&!isSheetOpen&&dragTokens===null}
         preserveWordTab={preserveOpenWord}
         onOpenChange={setInspectorOpen}
-        leftContent={leftPanelContent}
+        leftContent={senseReviewContent || leftPanelContent}
         rightContent={selectedToken&&isSheetOpen?renderRightPanelContent(annotationContent&&<section className="reader-card-notes" aria-label={vt("교재 설명")}><h3 className="reader-card-section__label">{vt("교재 설명")}</h3>{annotationContent}</section>):<>{annotationContent}{rightPanelContent}</>}
-        leftActive={leftPanelLoading || !!leftPanelResult}
+        leftActive={leftPanelLoading || !!leftPanelResult || !!senseReviewContent}
         rightActive={annotationOpen || dragTokens !== null || (selectedToken && isSheetOpen)}
         leftSignal={leftSheetSignal}
         rightSignal={rightSheetSignal}

@@ -52,6 +52,8 @@ export function preserveReanalysisTokens(material, text, result, corrections = [
     if (dictionary[target]) throw new Error('분석 결과의 식별자가 겹쳐 이전 분석을 유지합니다.');
     sequence.push(target);
     dictionary[target] = { ...token, ...(match?.patch || {}) };
+    // 뷰어 v2 AD-R4 §7: 뜻을 교정한 토큰은 교정값이 이기므로 서버의 「뜻 확인 필요」 표식(meaningCheck)을 지운다.
+    if (match?.patch && Object.hasOwn(match.patch, 'meaning')) delete dictionary[target].meaningCheck;
     if (match?.patch && Object.hasOwn(match.patch, 'meaning') && old.metadata?.language === 'Korean') {
       const meaningLocale = canonicalViewerLocale(match.token.meaningLocale || match.token.explanationLocale
         || old.metadata.explanationLocale || 'ko');
