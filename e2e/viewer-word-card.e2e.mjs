@@ -543,7 +543,8 @@ test('⋯ menu: 44px, keyboard open · move · Esc closes and returns focus, the
   const menu=f.page.getByRole('menu');
   await menu.waitFor();
   assert.equal(await more.getAttribute('aria-expanded'),'true');
-  assert.deepEqual(await menu.getByRole('menuitem').allTextContents(),['뜻·발음 수정']);
+  // AD-R3 PR③(설계서 docs/manabi-viewer-v2-ad-r3.md §6.1 — ⋯에 「옆 단어와 묶기」·「나누기」를 더한다, AE-R1 §2 예고): 첫 항목은 그대로 「뜻·발음 수정」.
+  assert.deepEqual(await menu.getByRole('menuitem').allTextContents(),['뜻·발음 수정','옆 단어와 묶기','나누기']);
   assert.deepEqual(await active(),{role:'menuitem',label:null,text:'뜻·발음 수정'},'focus moves to the first item');
   await f.page.keyboard.press('ArrowDown');
   assert.equal((await active()).role,'menuitem','arrow keys stay inside the menu');

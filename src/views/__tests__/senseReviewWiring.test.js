@@ -105,8 +105,9 @@ describe('뜻 확인 필요 — 배선 (ViewerPage)', () => {
   it('[보기] → 시트 [문장] 탭 자리에 목록(새 화면 아님) · 시트를 닫거나 새 문장 번역이 오면 목록을 닫는다', () => {
     const open = sliceBetween(viewer, 'const openSenseReview = () => {', '\n  };');
     expect(open).toContain('setSentenceTabSignal(s => s + 1);');
-    expect(viewer).toContain('leftContent={senseReviewContent || leftPanelContent}');
-    expect(viewer).toContain('leftActive={leftPanelLoading || !!leftPanelResult || !!senseReviewContent}');
+    // AD-R3 PR③: 재분석 알림 [보기]의 「적용하지 못한 단어 경계」 목록도 같은 자리를 쓴다(뜻 확인 목록이 먼저).
+    expect(viewer).toContain('leftContent={senseReviewContent || boundaryPendingContent || leftPanelContent}');
+    expect(viewer).toContain('leftActive={leftPanelLoading || !!leftPanelResult || !!senseReviewContent || !!boundaryPendingContent}');
     expect(sliceBetween(viewer, 'const closeWordCard = () => {', '\n  };')).toContain('setSenseReviewIds(null);');
     expect(sliceBetween(viewer, 'const runSelectedSentence = async (sel, explanationOnly = false) => {', 'try {')).toContain('setSenseReviewIds(null);');
     expect(sliceBetween(viewer, 'const openSentenceTranslation = () => {', '\n  };')).toContain('senseReviewOpen) return;');

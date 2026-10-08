@@ -189,7 +189,7 @@ function serverPiece(result, piece) {
     .filter(entry => entry.token && entry.token.pos !== '개행');
   const span = boundarySpans(entries).find(item => item.start === piece.start && item.end === piece.end);
   if (!span || compactBoundaryText(span.entry.token.text) !== compactBoundaryText(piece.text)) return null;
-  const { id: _drop, ...token } = span.entry.token; // eslint-disable-line no-unused-vars
+  const { id: _drop, ...token } = span.entry.token;
   return { ...token, boundary: token.boundary || 'user' };
 }
 
