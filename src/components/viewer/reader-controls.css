@@ -755,6 +755,13 @@
 .viewer-sense-review__done,.viewer-sense-review__loading {display:flex;align-items:center;min-height:44px;margin:0;font-size:.8125rem;color:var(--reader-muted);}
 @container reader (min-width:1120px) { .viewer-sense-review__options {flex-direction:column;align-items:flex-start;} }
 /* /AD-R4 PR③ */
+/* AD-R4 PR④ 경계 후보 줄 「한 단어로 묶을까요? [묶기] [아니요]」(설계서 §6.2·§6.4 목업) — [묶기]는 같은 자리 AD-R3 확인 줄. 색은 뷰어 별칭 토큰만. */
+.viewer-sense-review__join {display:flex;flex-wrap:wrap;align-items:center;gap:0 8px;}
+.viewer-sense-review__ask {margin:0;font-size:.875rem;line-height:1.5;color:var(--reader-ink);}
+.viewer-sense-review__join-actions {display:inline-flex;gap:6px;}
+.viewer-sense-review__join-yes,.viewer-sense-review__join-no {min-height:44px;}
+.viewer-sense-review__row--boundary .viewer-boundary-confirm {margin-top:4px;}
+/* /AD-R4 PR④ */
 
 /* AD-R3 PR③ 「이 자료」 한 단어로 묶기 · 나누기(뷰어 v2 설계서 docs/manabi-viewer-v2-ad-r3.md §6.3 목업). 누름 영역 44px · 색은 뷰어 별칭 토큰만. 「AI」 표시 없음. */
 .viewer-boundary-merge {display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin:4px 0 8px;}

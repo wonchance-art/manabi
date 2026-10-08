@@ -80,13 +80,13 @@
 |---|---|---|
 | B0 현행(정답 품사 가정) | `pickZhMeaning(candidates, 기대 품사)`. 경계는 현행 `tokenizeZhLine` 결과. 품사를 맞혀도 남는 오답의 하한이다 | 0 |
 | B1 현행(실제) | 제품 함수 그대로: `tokenizeZhLine` → `collectZhPosMarks` → `disambiguateZhPos`(현행 프롬프트) → `resolveZhTokenPos` → `pickZhMeaning` | 문단당 1 |
-| N 제품 켜짐 경로(PR②) | 같은 마크 → `attachZhSenseCandidates`(뜻 후보) + `[묶음 판정]` 쌍 → 제품 `disambiguateZhPos`(같은 light 1회, 프롬프트 `buildZhPosPrompt`, 검증 `validateZhSensePick` §4.3) → `resolveZhTokenSense`(라우트와 같은 함수). 상수 `ZH_SENSE_REVIEW`와 무관하게 함수로 직접 부른다 | 문단당 1 |
+| N 제품 켜짐 경로(PR②·PR④) | 같은 마크 → `attachZhSenseCandidates`(뜻 후보) + 제품 `[묶음 판정]` 쌍(`collectZhBoundaryPairs` · `attachZhBoundaryPairs`) → 제품 `disambiguateZhPos`(같은 light 1회, 프롬프트 `buildZhPosPrompt`, 검증 `validateZhSensePick` §4.3) → 제품 경계 결정 `applyZhBoundaryJoins`(라우트와 같은 함수 — D 범주는 이 최종 토큰으로 채점) → `resolveZhTokenSense`. 상수 `ZH_SENSE_REVIEW`·`ZH_BOUNDARY_REVIEW`와 무관하게 함수로 직접 부른다 | 문단당 1 |
 
 - 사례는 6문장씩 문단으로 묶어 실제 분석 요청처럼 보낸다(조정 7문단 · 보류 7문단, 범주를 번갈아 섞음).
 - 캐시는 사례 후보만 넣는다(`base_form → {pos: 후보 품사 「·」 연결, meanings: 후보}`). 다른 단어는 캐시가 없어 jieba 품사만으로 마크된다. 운영보다 마크가 조금 다를 수 있다.
 - N 프롬프트는 마크에 후보·쌍이 없으면 AD-R4 이전 현행 프롬프트와 바이트 단위로 같다. 단위 테스트와 `--dry-run`이 실제 판별기가 보낸 본문과 대조하고, 라우트 스냅숏(`src/lib/server/__tests__/zhSenseReviewRoute.test.js`)이 상수 꺼짐 = 현행을 고정한다.
 - N의 후보 붙이기는 설계서 §4.1 1차 규칙(뜻 2개 이상, `user_verified` 아님, 최대 3개)이다. 쌍은 이웃 두 한자 토큰을 이은 꼴이 등재(PR②부터 제품 정의 `isZhRegisteredWord` = HSK 표 + `ZH_KEEP_MERGED` + 이합사 사전 + `user_verified`·`jmdict` 행. 이 세트의 dry-run 결과는 이전 정의와 같다)인 것만, 요청당 20개, 다른 마크가 있을 때만 싣는다. 사전 gemini 행 쌍(미등재 → 「묶을까요?」)은 스냅숏이 없어 아직 재지 않는다.
-- N에서 경계가 바뀌는 것은 「등재 + `join: true`」 자동 묶기뿐이다. 이미 한 토큰으로 오병합된 꼴(把手机·人才·打包带)은 N이 묻지 않으므로 B1과 같게 나온다. 이것도 결과로 남긴다.
+- N에서 경계가 바뀌는 것은 「등재 + `join: true`」 자동 묶기뿐이다(PR④부터 제품 `applyZhBoundaryJoins` — 표식 `ai_registered`, 「묶을까요?」 후보는 `boundarySuggest`로 남아 채점에서 REVIEW). 라우트는 묶은 꼴의 사전 행(뜻)이 있어야 묶지만, 실행기는 뜻 조회를 재지 않으므로 이 조건을 두지 않는다. 이미 한 토큰으로 오병합된 꼴(把手机·人才·打包带)은 N이 묻지 않으므로 B1과 같게 나온다. 이것도 결과로 남긴다.
 
 ## 자동 판정 규칙 (`scripts/eval/zhSenseHoldout.mjs` `scoreCase`)
 

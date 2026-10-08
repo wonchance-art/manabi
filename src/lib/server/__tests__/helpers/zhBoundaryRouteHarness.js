@@ -108,6 +108,18 @@ export async function runRoute(POST, { lines = ZB_LINES, language = 'Chinese', e
   return { status: res.status, calls, ops: state.ops, body };
 }
 
+/** 클라이언트 분석(analyzeText → fetch('/api/analyze'))을 라우트로 곧장 잇는 fetch 대역 — 재분석 계약용. */
+export function routeFetch(POST, bodies = []) {
+  return async (url, init = {}) => {
+    bodies.push({ url: String(url), body: init.body });
+    const res = await POST(new Request('https://test/api/analyze', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer test' }, body: init.body,
+    }));
+    const json = await res.json();
+    return { ok: res.ok, status: res.status, json: async () => json };
+  };
+}
+
 // 사용자 경계 기록(AD-R3) — 不客气·身体素质를 이 자료에서 「나뉜 채」로 정한 기록(분석기 칼선과 같다 = redundant → 표식)과,
 // 원문이 바뀌어 적용하지 못한(pending) 个人 자리 기록. 기록이 있는 구간에는 자동 묶기·후보가 0이어야 한다.
 export const ZB_USER_BOUNDARIES = [
