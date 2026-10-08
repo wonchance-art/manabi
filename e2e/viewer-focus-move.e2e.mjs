@@ -407,12 +407,12 @@ test('AE-R2 §5.2: a grammar note saves the sentence its explanation was made fr
    return r.fulfill({status:201,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:'[]'});
   });
   const left=sentencePanel(f);
-  // 막대로 문장 0을 지정(selectedRangeText = 문장 0) → 다른 줄(2) 단어창의 「번역」 → [자세히] → 저장.
+  // 막대로 문장 0을 지정(selectedRangeText = 문장 0) → 다른 줄(2) 단어창에서 [문장] 탭(단어창 「번역」 버튼 자리 — AE-R1 PR②) → [자세히] → 저장.
   await pick(f,0).click();
   await left.getByText(book0).first().waitFor();
   await token(f,2,1).click();
   await f.page.locator('.word-detail-card__meaning').filter({visible:true}).getByText('내일',{exact:true}).waitFor();
-  await f.page.locator('.word-detail-card__actrow').filter({visible:true}).getByRole('button',{name:'문장 번역',exact:true}).click();
+  await openSentenceTab(f);
   await left.getByText('문장 번역 표지 2',{exact:true}).waitFor();
   await left.getByRole('button',{name:'자세히 ▾',exact:true}).click();
   await left.getByText('문법 해설 표지 2',{exact:true}).waitFor();
