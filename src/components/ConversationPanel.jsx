@@ -9,11 +9,20 @@ import Button from './Button';
 import OutputWordChips from './OutputWordChips';
 import { bcp47ForLanguage } from '../lib/speechLang';
 import { langNameKo } from '../lib/constants';
+import { isImeComposing } from '../lib/imeComposing';
 
 const STORAGE_KEY = 'conversation:';
 
 export function isConversationRequestCurrent(requestRef, requestId, materialRef, materialId) {
   return requestRef.current === requestId && materialRef.current === materialId;
+}
+
+// Enter = 전송, Shift+Enter = 줄바꿈. IME 후보 확정 Enter는 조합 중이므로 보내지 않는다
+// (반쯤 조합된 중국어·일본어가 전송되던 문제 — #1077 v2-Z 검토).
+export function handleConversationKeyDown(e, send) {
+  if (e.key !== 'Enter' || e.shiftKey || isImeComposing(e)) return;
+  e.preventDefault();
+  send();
 }
 
 export default function ConversationPanel({ rawText, language, materialId, materialTitle, onClose, inline = false, nextLesson = null }) {
@@ -214,10 +223,7 @@ Output PART 1, then a blank line, then PART 2 (if any). No labels, no other text
   }
 
   function onKeyDown(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      send();
-    }
+    handleConversationKeyDown(e, send);
   }
 
   const placeholder = `${targetLangKo}로 자유롭게 답변해 보세요`;

@@ -23,8 +23,8 @@ function build(lines) {
 }
 const zh=build(lines),texts=zh.texts;
 
-async function open(width,height=844,prefs={focusMode:true,autoSpeakOnClick:false},{language='Chinese',material=zh,meta={translations:{[texts[0]]:'눈앞의 경기장은 사진보다 더 웅장하다.'}},common,visibility,uiLocale}={}) {
- const f=await fixture({width});
+async function open(width,height=844,prefs={focusMode:true,autoSpeakOnClick:false},{language='Chinese',material=zh,meta={translations:{[texts[0]]:'눈앞의 경기장은 사진보다 더 웅장하다.'}},common,visibility,guest=false,uiLocale}={}) {
+ const f=await fixture({width,guest});
  await f.page.setViewportSize({width,height});
  await f.context.addInitScript(({language,prefs,common,uiLocale})=>{
   // 새 컨텍스트에 한 번만 심는다 — 이후에는 UI가 실제로 저장한 값을 읽는다.
@@ -378,6 +378,323 @@ for(const [language,material,analyzePath] of [['Japanese',ja,'/api/analyze'],['K
   assert.deepEqual(JSON.parse(analysis[0].body).lines,[sentence]);
   assert.equal(f.requests.length,2,'no other AI/analysis request');
   assert.equal(await bar(f).count(),0);
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+// 뷰어 v2 AE-R2 PR ② — 문장 번역 단일 키 + 선처리(설계서 docs/manabi-viewer-v2-ae-r2.md §2·§4·§6.2, 정본 §4).
+// 같은 문장·같은 설정 = 같은 키 = 요청 1회. 카드가 열린 채 같은 줄에 0.3초 머물면 선처리 1회(light·재시도 0),
+// [문장] 탭은 선처리 전이라도 누르는 즉시 같은 키로 시작한다. 교재 맵·0.3초 안 닫기·게스트는 요청 0.
+// 학습 이벤트 0: review_events 쓰기·/api/analyze 0. 1280px 옆 패널(390px 시트는 아래 줄을 덮는다 — #1362 선례).
+async function sentenceAi(f,{delay=0,material=zh}={}){
+ f.ai=[];f.learning=[];
+ f.page.on('request',req=>{
+  const url=req.url();
+  if(/\/api\/analyze/.test(url)||(/review_events/.test(url)&&req.method()!=='GET'))f.learning.push(`${req.method()} ${new URL(url).pathname}`);
+ });
+ await f.page.route('**/api/gemini',async r=>{
+  const body=r.request().postDataJSON()||{},prompt=body.contents?.[0]?.parts?.[0]?.text||'';
+  const line=material.texts.findIndex(t=>prompt.includes(t));
+  f.ai.push({line,purpose:body.purpose??null,tier:body.tier??null,at:Date.now()});
+  if(delay)await new Promise(res=>setTimeout(res,delay));
+  return r.fulfill({contentType:'application/json',body:JSON.stringify({candidates:[{content:{parts:[{text:`**번역**\n문장 번역 표지 ${line}`}]}}]})}).catch(()=>{});
+ });
+}
+const aiFor=(f,line)=>f.ai.filter(r=>r.line===line);
+const leftPanel=f=>f.page.locator('[data-panel="left"]').filter({visible:true});
+const sentenceTab=f=>f.page.locator('#inspector-sentence-tab').filter({visible:true});
+const closePanel=f=>f.page.getByRole('button',{name:'보조 패널 닫기',exact:true}).filter({visible:true}).click();
+const cardOpen=(f,line,i)=>f.page.locator('.word-detail-card__meaning').filter({visible:true}).getByText(zh.dictionary[`id_${line}_${i}`].meaning,{exact:true}).waitFor();
+const noFocus={focusMode:false,autoSpeakOnClick:false};
+
+test('AE-R2 ②: dwelling 0.3s on a card prefetches its sentence once; the [문장] tab then sends nothing new',{timeout:180000},async()=>{
+ const f=await open(1280,900,noFocus);
+ try{
+  await sentenceAi(f);
+  // 같은 줄 단어 세 개를 차례로 — 줄이 같으면 타이머를 다시 세지 않고 1회만.
+  await token(f,1,1).click();await cardOpen(f,1,1);
+  await token(f,1,3).click();await cardOpen(f,1,3);
+  await token(f,1,6).click();await cardOpen(f,1,6);
+  await f.page.waitForTimeout(1200);
+  assert.equal(f.ai.length,1,`one AI request after dwelling on line 1: ${JSON.stringify(f.ai)}`);
+  assert.deepEqual([f.ai[0].line,f.ai[0].purpose,f.ai[0].tier],[1,'viewer-sentence-prefetch','light'],'prefetch carries its purpose and the light tier');
+  // [문장] 탭 = 이미 준비된 같은 키 — 새 요청 0, 번역이 바로 보인다.
+  await sentenceTab(f).click();
+  await leftPanel(f).getByText('문장 번역 표지 1').first().waitFor({timeout:1000});
+  await f.page.waitForTimeout(500);
+  assert.equal(f.ai.length,1,'the sentence tab reuses the prefetched translation');
+  // 같은 문장 반복 열람(닫고 다른 단어로 다시) = 여전히 1회.
+  await closePanel(f);
+  await token(f,1,0).click();await cardOpen(f,1,0);
+  await f.page.waitForTimeout(600);
+  await sentenceTab(f).click();
+  await leftPanel(f).getByText('문장 번역 표지 1').first().waitFor({timeout:1000});
+  assert.equal(aiFor(f,1).length,1,'reopening the same sentence sends no request');
+  // 교재 맵이 있는 줄(0)은 머물러도 요청 0.
+  await token(f,0,2).click();await cardOpen(f,0,2);
+  await f.page.waitForTimeout(1000);
+  assert.equal(aiFor(f,0).length,0,'a textbook translation needs no request');
+  // 0.3초 안에 닫으면 0.
+  await token(f,2,1).click();await cardOpen(f,2,1);
+  await closePanel(f);
+  await f.page.waitForTimeout(1000);
+  assert.equal(aiFor(f,2).length,0,'closing within 0.3s sends nothing');
+  assert.equal(f.ai.length,1,'no other AI request');
+  assert.deepEqual(f.learning,[],'no learning events or reanalysis');
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+test('AE-R2 ②: the [문장] tab starts at once under the same key, and a started translation survives tapping away',{timeout:180000},async()=>{
+ const f=await open(1280,900,noFocus);
+ try{
+  await sentenceAi(f,{delay:800});
+  // 시작한 번역은 다른 줄 단어를 눌러도 끝까지 받아 저장 — 다시 열면 요청 0.
+  await token(f,2,0).click();await cardOpen(f,2,0);
+  await sentenceTab(f).click();
+  await token(f,0,0).click();await cardOpen(f,0,0);
+  await f.page.waitForTimeout(1500);
+  await token(f,2,3).click();await cardOpen(f,2,3);
+  await sentenceTab(f).click();
+  await f.page.waitForTimeout(1200);
+  await leftPanel(f).getByText('문장 번역 표지 2').first().waitFor();
+  assert.equal(aiFor(f,2).length,1,`same sentence = one request even after tapping away: ${JSON.stringify(aiFor(f,2))}`);
+  // 0.3초 전에 [문장] 탭 — 선처리를 기다리지 않고 사용자 요청으로 바로 시작, 이어지는 선처리는 그 요청에 합류.
+  await token(f,3,0).click();await cardOpen(f,3,0);
+  const tapped=Date.now();
+  await sentenceTab(f).click();
+  await f.page.waitForTimeout(1500);
+  assert.equal(aiFor(f,3).length,1,`one request for line 3: ${JSON.stringify(f.ai)}`);
+  assert.equal(aiFor(f,3)[0].purpose,'viewer-sentence','the tab itself started the request (no 0.3s wait)');
+  assert.ok(aiFor(f,3)[0].at-tapped<300,`started immediately: ${aiFor(f,3)[0].at-tapped}ms`);
+  await leftPanel(f).getByText('문장 번역 표지 3').first().waitFor();
+  assert.deepEqual(f.learning,[],'no learning events or reanalysis');
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+test('AE-R2 ②: guests get no prefetch request',{timeout:180000},async()=>{
+ const f=await open(1280,900,noFocus,{guest:true,visibility:'public'});
+ try{
+  await sentenceAi(f);
+  await token(f,1,1).click();await cardOpen(f,1,1);
+  await f.page.waitForTimeout(1200);
+  assert.equal(f.ai.length,0,'guests send no prefetch request');
+  assert.deepEqual(f.learning,[]);
+ }finally{await f.context.close();}
+});
+
+// 뷰어 v2 AE-R2 PR ③ — [문장] 탭 재배치(설계서 docs/manabi-viewer-v2-ae-r2.md §3·§11 목업, 정본 §4 「[문장] 탭」).
+// 순서: 원문 줄(누른 단어만 칠, 120자 자르기 없음) → 번역(진행 표시는 이 칸에만) → [더 쉽게][자세히] → 문형 → 단어별 뜻.
+// 단어별 뜻은 자료 토큰에서(요청 0·만남 0). 게스트는 캐시·교재 맵이 없으면 AI 대신 로그인 안내. 「AI」 표시 0.
+const sentenceBox=(f,sel)=>leftPanel(f).locator(sel).first().evaluate(el=>{const b=el.getBoundingClientRect();return {top:b.top,bottom:b.bottom,left:b.left,right:b.right};});
+const glossTexts=f=>leftPanel(f).locator('.reader-sentence__glosses li').allInnerTexts();
+
+test('AE-R2 ③: [문장] tab reads original (tapped word marked) → translation → [더 쉽게][자세히] → 문형 → 단어별 뜻, no AI label',{timeout:240000},async()=>{
+ const f=await open(1280,900,{...noFocus,showPatterns:true,patternFilter:'all'});
+ try{
+  await sentenceAi(f);
+  await token(f,0,3).click();await cardOpen(f,0,3);
+  await sentenceTab(f).click();
+  await leftPanel(f).getByText('눈앞의 경기장은 사진보다 더 웅장하다.').first().waitFor();
+  const original=leftPanel(f).locator('.pdf-context__original');
+  assert.equal((await original.innerText()).trim(),texts[0],'the whole line, no quotes, no 120-char cut');
+  assert.deepEqual(await original.locator('mark').allInnerTexts(),['比'],'only the tapped word is marked');
+  await leftPanel(f).getByText('📘 교재에 실린 뜻이에요.').first().waitFor();
+  await leftPanel(f).locator('.reader-sentence__patterns').getByText(/比/).first().waitFor({timeout:30000});
+  assert.deepEqual(await glossTexts(f),['眼前 yǎnqián 눈앞','的 de ~의','体育场 tǐyùchǎng 경기장','比 bǐ ~보다','照片 zhàopiàn 사진','上 shàng 위','更 gèng 더','壮观 zhuàngguān 웅장하다'],'word glosses from the material tokens, punctuation excluded');
+  const y={original:await sentenceBox(f,'.pdf-context__original'),translation:await sentenceBox(f,'.reader-sentence__translation'),
+   actions:await sentenceBox(f,'.reader-sentence__actions'),patterns:await sentenceBox(f,'.reader-sentence__patterns'),glosses:await sentenceBox(f,'.reader-sentence__glosses')};
+  assert.ok(y.original.bottom<=y.translation.top+.5&&y.translation.bottom<=y.actions.top+.5&&y.actions.bottom<=y.patterns.top+.5&&y.patterns.bottom<=y.glosses.top+.5,`section order ${JSON.stringify(y)}`);
+  const toggles=leftPanel(f).locator('.reader-sentence__actions .grammar-detail__toggle');
+  assert.equal(await toggles.count(),2,'[더 쉽게][자세히] side by side');
+  const [easy,detail]=[await toggles.nth(0).boundingBox(),await toggles.nth(1).boundingBox()];
+  assert.ok(Math.abs(easy.y-detail.y)<1&&easy.x<detail.x,'the two buttons share one row');
+  for(const b of [easy,detail])assert.ok(b.height>=44,'44px targets');
+  // 문형 줄을 누르면 그 자리에 문형 카드(카드의 「문형 한 줄」과 같은 PatternCard).
+  await leftPanel(f).locator('.reader-sentence__patterns button').first().click();
+  await leftPanel(f).locator('.pattern-card').first().waitFor({timeout:30000});
+  assert.doesNotMatch(await leftPanel(f).innerText(),/\bAI\b/,'no AI label in the sentence tab');
+  assert.equal(f.ai.length,0,'a textbook line needs no request');
+  assert.deepEqual(f.learning,[],'glosses and patterns send no reanalysis or learning event');
+  assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+test('AE-R2 ③: before the translation arrives only its slot shows 「번역 중…」; nothing above moves; another line never shows the old translation',{timeout:240000},async()=>{
+ const f=await open(1280,900,noFocus);
+ try{
+  await sentenceAi(f,{delay:1500});
+  await token(f,1,6).click();await cardOpen(f,1,6);
+  await sentenceTab(f).click();
+  await leftPanel(f).getByText('번역 중…',{exact:true}).waitFor({timeout:1000});
+  assert.deepEqual(await leftPanel(f).locator('.pdf-context__original mark').allInnerTexts(),['爱惜'],'original line is drawn at T0');
+  assert.equal((await glossTexts(f)).length,7,'word glosses are drawn before the translation');
+  assert.equal(await leftPanel(f).locator('.reader-sentence__actions .grammar-detail__toggle').first().isEnabled(),true,'[더 쉽게] is ready at T0');
+  const before={original:await sentenceBox(f,'.pdf-context__original'),head:await sentenceBox(f,'.reader-sentence__translation .pdf-detail-heading')};
+  await leftPanel(f).getByText('문장 번역 표지 1').first().waitFor();
+  assert.equal(await leftPanel(f).getByText('번역 중…',{exact:true}).count(),0);
+  const after={original:await sentenceBox(f,'.pdf-context__original'),head:await sentenceBox(f,'.reader-sentence__translation .pdf-detail-heading')};
+  assert.ok(Math.abs(before.original.top-after.original.top)<.5&&Math.abs(before.head.top-after.head.top)<.5,`original and translation head stay put: ${JSON.stringify({before,after})}`);
+  // 다른 줄 단어의 [문장] 탭 = 그 줄. 앞 문장 번역이 남지 않는다(설계서 §1.2·§6.2).
+  await token(f,2,3).click();await cardOpen(f,2,3);
+  await sentenceTab(f).click();
+  assert.equal((await leftPanel(f).locator('.pdf-context__original').innerText()).trim(),texts[2]);
+  assert.deepEqual(await leftPanel(f).locator('.pdf-context__original mark').allInnerTexts(),['公园']);
+  assert.equal(await leftPanel(f).getByText('문장 번역 표지 1').count(),0,'the previous sentence translation is gone');
+  await leftPanel(f).getByText('문장 번역 표지 2').first().waitFor();
+  assert.deepEqual(f.learning,[]);
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+test('AE-R2 ③: guests see a login prompt instead of an AI request; textbook lines still show',{timeout:240000},async()=>{
+ const f=await open(1280,900,noFocus,{guest:true,visibility:'public'});
+ try{
+  await sentenceAi(f);
+  await token(f,1,1).click();await cardOpen(f,1,1);
+  await sentenceTab(f).click();
+  const login=leftPanel(f).getByRole('link',{name:'로그인하면 이 문장의 번역을 볼 수 있어요 →',exact:true});
+  await login.waitFor({timeout:5000});
+  assert.equal(new URL(await login.evaluate(a=>a.href)).pathname,'/auth');
+  assert.ok((await login.boundingBox()).height>=44,'login prompt keeps a 44px target');
+  assert.equal((await glossTexts(f)).length,7,'word glosses still show for guests');
+  await f.page.waitForTimeout(800);
+  assert.equal(f.ai.length,0,'guests send no AI request');
+  assert.equal(await leftPanel(f).getByText('설명을 가져오지 못했어요',{exact:false}).count(),0);
+  await token(f,0,2).click();await cardOpen(f,0,2);
+  await sentenceTab(f).click();
+  await leftPanel(f).getByText('눈앞의 경기장은 사진보다 더 웅장하다.').first().waitFor();
+  assert.equal(await login.count(),0,'a textbook translation needs no login');
+  assert.equal(f.ai.length,0);
+  assert.deepEqual(f.learning,[]);
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+// 한국어·일본어·영어 자료 각 1건 — 같은 배치(원문 칠·번역·단어별 뜻), 학습 이벤트 0.
+const spaced=lines=>{const m=build(lines);m.texts=lines.map(l=>l.map(w=>w[0]).join(' ').replace(/ ([.,!?])/g,'$1'));return m;};
+for(const [language,material,line,i,mark,glosses] of [
+ ['Japanese',build([[['今日','きょう','오늘'],['は','','은'],['天気','てんき','날씨'],['が','','이'],['いい','','좋다'],['。','','마침표']],[['紅茶','こうちゃ','홍차'],['を','','을'],['飲みました','のみました','마셨습니다'],['。','','마침표']]]),1,2,'飲みました',['紅茶 こうちゃ 홍차','を 을','飲みました のみました 마셨습니다']],
+ ['Korean',spaced([[['오늘은','','오늘'],['날씨가','','날씨'],['좋아요','','좋다'],['.','','마침표']],[['친구와','','친구'],['공원에','','공원'],['갔어요','','가다'],['.','','마침표']]]),1,1,'공원에',['친구와 친구','공원에 공원','갔어요 가다']],
+ ['English',spaced([[['It','','그것'],['is','','이다'],['sunny','','화창한'],['.','','마침표']],[['We','','우리'],['walked','','걸었다'],['home','','집으로'],['.','','마침표']]]),1,1,'walked',['We 우리','walked 걸었다','home 집으로']],
+])test(`AE-R2 ③: ${language} [문장] tab keeps the same layout`,{timeout:240000},async()=>{
+ const f=await open(1280,900,noFocus,{language,material,meta:{}});
+ try{
+  await sentenceAi(f,{material});
+  await token(f,line,i).click();
+  await f.page.locator('#inspector-word .reader-card-sentence').filter({visible:true}).waitFor();
+  await sentenceTab(f).click();
+  await leftPanel(f).getByText(`문장 번역 표지 ${line}`).first().waitFor();
+  assert.equal((await leftPanel(f).locator('.pdf-context__original').innerText()).trim(),material.texts[line]);
+  assert.deepEqual(await leftPanel(f).locator('.pdf-context__original mark').allInnerTexts(),[mark]);
+  assert.deepEqual(await glossTexts(f),glosses);
+  assert.doesNotMatch(await leftPanel(f).innerText(),/\bAI\b/);
+  assert.deepEqual(f.learning,[],'no reanalysis or learning event');
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+// 뷰어 v2 AE-R2 PR ① — [문장] 탭의 문장 키 결과는 그 결과를 만든 문장에만 붙는다(설계서 §5·§1.2).
+// AI 응답은 「종류 표지 줄번호」로 돌려 어느 문장의 결과가 화면에 남았는지 가린다(합성 자료·계정 쓰기 없음).
+const aiKind=body=>body.includes('의 문법을 한국어로 해설')?'문법 해설':body.includes('더 쉬운 어휘')?'쉬운 문장':'문장 번역';
+async function aiByLine(f,material=zh){
+ f.ai=[];
+ await f.page.route('**/api/gemini',r=>{
+  const body=r.request().postData()||'',line=material.texts.findIndex(t=>body.includes(t)),text=`${aiKind(body)} 표지 ${line}`;
+  f.ai.push(text);
+  return r.fulfill({contentType:'application/json',body:JSON.stringify({candidates:[{content:{parts:[{text}]}}]})});
+ });
+}
+const pick=(f,line)=>f.page.getByRole('button',{name:'문장 전체 분석',exact:true}).nth(line);
+const sentencePanel=f=>f.page.locator('[data-panel="left"]').filter({visible:true});
+const openSentenceTab=f=>f.page.locator('#inspector-sentence-tab').filter({visible:true}).click();
+const unfocused={focusMode:false,autoSpeakOnClick:false};
+const book0='눈앞의 경기장은 사진보다 더 웅장하다.';
+
+test('AE-R2 §5.1: 더 쉽게·자세히 results do not linger under another sentence',{timeout:180000},async()=>{
+ const f=await open(1280,900,unfocused);
+ try{
+  await aiByLine(f);
+  const left=sentencePanel(f);
+  await pick(f,0).click();
+  await left.getByText(book0).first().waitFor();
+  await left.getByRole('button',{name:'🔤 더 쉽게 ▾',exact:true}).click();
+  await left.getByText('쉬운 문장 표지 0',{exact:true}).waitFor();
+  await left.getByRole('button',{name:'자세히 ▾',exact:true}).click();
+  await left.getByText('문법 해설 표지 0',{exact:true}).waitFor();
+  await pick(f,2).click();
+  await left.getByText('문장 번역 표지 2').first().waitFor();
+  assert.equal(await left.getByText('문법 해설 표지 0').count(),0,'sentence 0 grammar is gone under sentence 2');
+  assert.equal(await left.getByText('쉬운 문장 표지 0').count(),0,'sentence 0 easier text is gone under sentence 2');
+  assert.equal(await left.getByRole('button',{name:'자세히 ▾',exact:true}).count(),1,'자세히 is closed again');
+  assert.equal(await left.getByRole('button',{name:'🔤 더 쉽게 ▾',exact:true}).count(),1,'더 쉽게 is closed again');
+  // 다시 열면 그 문장(2)의 결과가 온다.
+  await left.getByRole('button',{name:'자세히 ▾',exact:true}).click();
+  await left.getByText('문법 해설 표지 2',{exact:true}).waitFor();
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+for(const [language,material,meta,first] of [['Chinese',zh,undefined,book0],['Japanese',ja,{},'문장 번역 표지 0']])test(`AE-R2 §1.2 ${language}: tapping a word on another line does not show the previous sentence translation`,{timeout:180000},async()=>{
+ const f=await open(1280,900,unfocused,{language,material,...(meta?{meta}:{})});
+ try{
+  await aiByLine(f,material);
+  const left=sentencePanel(f);
+  await pick(f,0).click();
+  await left.getByText(first).first().waitFor();
+  // 같은 줄 단어 = 그 줄의 번역이라 남는다(보존).
+  await token(f,0,2).click();
+  await f.page.locator('.word-detail-card__meaning').filter({visible:true}).getByText(material.dictionary.id_0_2.meaning,{exact:true}).waitFor();
+  await openSentenceTab(f);
+  await left.getByText(first).first().waitFor();
+  // 다른 줄 단어 = 앞 문장(0)의 번역이 [문장] 탭에 남지 않는다.
+  await token(f,2,1).click();
+  await f.page.locator('.word-detail-card__meaning').filter({visible:true}).getByText(material.dictionary.id_2_1.meaning,{exact:true}).waitFor();
+  await openSentenceTab(f);
+  await f.page.waitForTimeout(200);
+  assert.equal(await left.getByText(first).count(),0,'line 0 translation is not shown for a line 2 word');
+  assert.equal(await left.getByText(material.texts[0]).count(),0,'line 0 original is not shown either');
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+test('AE-R2 §5.2: a grammar note saves the sentence its explanation was made from',{timeout:180000},async()=>{
+ const f=await open(1280,900,unfocused);
+ try{
+  await aiByLine(f);
+  const notes=[];
+  await f.page.route('**/rest/v1/grammar_notes**',r=>{
+   const req=r.request();
+   if(req.method()==='POST'){const body=req.postDataJSON();notes.push(Array.isArray(body)?body[0]:body);}
+   return r.fulfill({status:201,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:'[]'});
+  });
+  const left=sentencePanel(f);
+  // 막대로 문장 0을 지정(selectedRangeText = 문장 0) → 다른 줄(2) 단어창에서 [문장] 탭(단어창 「번역」 버튼 자리 — AE-R1 PR②) → [자세히] → 저장.
+  await pick(f,0).click();
+  await left.getByText(book0).first().waitFor();
+  await token(f,2,1).click();
+  await f.page.locator('.word-detail-card__meaning').filter({visible:true}).getByText('내일',{exact:true}).waitFor();
+  await openSentenceTab(f);
+  await left.getByText('문장 번역 표지 2').first().waitFor();
+  await left.getByRole('button',{name:'자세히 ▾',exact:true}).click();
+  await left.getByText('문법 해설 표지 2',{exact:true}).waitFor();
+  await left.getByRole('button',{name:'노트에 저장',exact:true}).click();
+  await left.getByRole('button',{name:'✓ 저장됨',exact:true}).waitFor();
+  assert.equal(notes.length,1);
+  assert.equal(notes[0].selected_text,texts[2],'the note keeps the explained sentence, not the earlier designation');
+  assert.ok(notes[0].explanation.includes('문법 해설 표지 2'));
+  assert.equal(String(notes[0].material_id),'94131');
+  // 다음 문장의 해설은 다시 저장할 수 있고, 그 문장으로 저장된다.
+  await pick(f,1).click();
+  await left.getByText('문장 번역 표지 1').first().waitFor();
+  await left.getByRole('button',{name:'자세히 ▾',exact:true}).click();
+  await left.getByText('문법 해설 표지 1',{exact:true}).waitFor();
+  await left.getByRole('button',{name:'노트에 저장',exact:true}).click();
+  await left.getByRole('button',{name:'✓ 저장됨',exact:true}).waitFor();
+  assert.equal(notes.length,2);
+  assert.equal(notes[1].selected_text,texts[1]);
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
 });

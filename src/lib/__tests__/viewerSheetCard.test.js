@@ -76,10 +76,15 @@ describe('③ 카드 — 빈 줄을 메타가 쓰고, 뜻이 제 무게를 갖�
     expect((card().match(/<TokenPosLabel/g) || []).length, '메타가 두 곳에 있다').toBe(1);
   });
 
-  it('발음은 표제어와 같은 줄, 닫기는 패널에 한 곳만 둔다', () => {
+  // AE-R1 개정(VIEWER-V2-ROUNDS-001 §2.1 칩 줄 「듣기 버튼(44px)은 같은 줄 끝」, 설계서 §7.1): 듣기는 칩 줄 끝.
+  it('발음은 칩 줄(품사·급수) 끝, 닫기는 패널에 한 곳만 둔다', () => {
     const head = sliceBetween(card(), '<div className="reader-card-headword">', '<div className={`word-detail-card__meaningrow');
     expect(head).toContain('word-fit-wrap');
-    expect(head).toContain('aria-label="발음 듣기"');
+    expect(head).not.toContain('aria-label="발음 듣기"');
+    const chips = sliceBetween(card(), '<div className="word-detail-card__actions">', '{classStudyActive?');
+    expect(chips).toContain('word-detail-card__meta');
+    expect(chips).toContain('aria-label="발음 듣기"');
+    expect(chips.indexOf('aria-label="발음 듣기"')).toBeGreaterThan(chips.indexOf('word-detail-card__meta'));
     expect(card()).not.toContain('word-detail-card__close');
     expect(read(SHEET).match(/aria-label="보조 패널 닫기"/g)).toHaveLength(1);
     expect(card()).toContain('<svg');
@@ -93,6 +98,13 @@ describe('③ 카드 — 빈 줄을 메타가 쓰고, 뜻이 제 무게를 갖�
     expect(rem(meaning)).toBeGreaterThan(rem(meta));
     expect(rem(meaning), '본문 크기(1rem)보다도 커야 한 단계 올린 것이다').toBeGreaterThan(1);
     expect(meaning, '굵기도 함께 올린다').toMatch(/font-weight/);
+    // AE-R1(VIEWER-V2-ROUNDS-001 §2.1 뜻 줄 「20px 굵게」): 읽기실(.manabi-app) 덮어쓰기까지 20px·700.
+    const rules = cssRules('src/components/viewer/reader-controls.css');
+    for (const selector of ['.manabi-app .viewer-layout .word-detail-card__meaning {', '.manabi-app .viewer-layout .reader-card-body .word-detail-card__meaning{']) {
+      const block = sliceBetween(rules, selector, '}');
+      expect(block, selector).toMatch(/font-size:\s*(1\.25rem|20px)/);
+      expect(block, selector).toMatch(/font-weight:\s*700/);
+    }
   });
 
   it('편집이 뜻 옆에 붙는다 — 뜻 상자가 남는 폭을 다 먹으면 멀어진다', () => {
@@ -128,6 +140,13 @@ describe('④ 손대지 않은 것', () => {
       .toMatch(/max-width/);
   });
 
+  // AE-R1(VIEWER-V2-ROUNDS-001 §2.1 시트 높이, 설계서 §6·§7.3): 기본 min(55dvh,440px) · 끝까지 올리면 85dvh — 그대로.
+  it('시트 높이는 정본 값 그대로 — min(55dvh,440px) / 펼침 85dvh', () => {
+    const rules = cssRules('src/components/viewer/reader-controls.css');
+    expect(sliceBetween(rules, '.viewer-inspector {', '}')).toContain('height:min(55dvh,440px)');
+    expect(rules).toContain('.viewer-inspector.is-expanded {height:85dvh;}');
+  });
+
   it('데스크톱 좌우 칸 경로는 무접촉 — 시트는 1179px 이하에서만 뜬다', () => {
     const css = read(CSS);
     const guard = css.indexOf('@media (max-width: 1179px)');
@@ -137,9 +156,12 @@ describe('④ 손대지 않은 것', () => {
   });
 });
 
-// 2026-10-01 오너 채택: 긴 훈음은 루비와 분리해 필요한 높이를 확보한다.
-describe('⑤ 훈음 — 표제어 아래 독립적인 글자/라벨 짝', () => {
-  it('병음 앵커는 보존하고 훈음은 루비 안에서 제거한다', () => {
+// AE-R1 개정(VIEWER-V2-ROUNDS-001 §2.1 표제어 덩어리 「훈음은 한자 아래 루비로 되돌린다(v2-AD §3.2, 오너 확정).
+// 별도 훈음 목록(ViewerHanjaReading)은 없앤다. 훈음이 글자 폭을 넘으면 그 글자 칸을 벌린다(--hun-n), 그래도 넘치면
+// 훈과 음을 두 줄로」, §10 「viewerSheetCard: 훈음 목록 → 루비」, 설계서 §7.1). 2026-10-01 「루비와 분리」 결정을 대체한다.
+// 옛 금지(rt-hun 절대배치 루비)와 「잘라내기·절대배치 금지」는 새 루비 셀에 그대로 적용한다.
+describe('⑤ 훈음 — 표제어 글자 아래 루비 셀(칸 벌림·두 줄, 절대배치·잘라내기 0)', () => {
+  it('병음 앵커는 보존하고 옛 rt-hun 절대배치 루비는 되살리지 않는다', () => {
     const css = read(CSS);
     const lh = /\.word-fit \.surface \{[^}]*line-height:\s*([\d.]+)/.exec(css)?.[1];
     const pin = sliceBetween(css, '.word-fit ruby[data-pinyin] > .rt-an, ', '}');
@@ -150,38 +172,39 @@ describe('⑤ 훈음 — 표제어 아래 독립적인 글자/라벨 짝', () =>
     expect(cssRules(CSS)).not.toContain('.rt-hun');
   });
 
-  it('읽기 유무/혼종과 무관하게 같은 표제어의 훈음을 뜻과 원문 뒤에 제공한다', () => {
-    const render=sliceBetween(read(VIEWER), 'const renderWordDetailCard =', '<div className="reader-card-actions">');
-    expect(render).toContain('<ViewerHanjaReading items={hanjaHunOf(headText)}/>');
-    const head=render.indexOf('className="reader-card-headword"');
-    const meaning=render.indexOf('word-detail-card__meaningrow');
-    const context=render.indexOf('className="reader-card-context"');
-    const hun=render.indexOf('<ViewerHanjaReading');
-    expect(head).toBeGreaterThan(-1);
-    expect(meaning).toBeGreaterThan(head);
-    expect(context).toBeGreaterThan(meaning);
-    expect(hun).toBeGreaterThan(context);
-    const block=read('src/components/viewer/ViewerHanjaReading.jsx');
-    expect(block).toContain('<dt lang="zh-Hans">{ch}</dt><dd>{label}</dd>');
-    expect(block).toContain('key={`${index}:${ch}`}');
-    expect(block).not.toContain('<ruby');
+  it('훈음은 표제어 안 글자 칸 아래 루비 셀 — 같은 조회(hanjaHunOf(headText) → hunRubyCells), 별도 목록 0', () => {
+    const viewer = read(VIEWER);
+    const render = sliceBetween(viewer, 'const renderWordDetailCard =', '<div className="reader-card-actions">');
+    expect(render).not.toContain('<ViewerHanjaReading');
+    expect(viewer).not.toContain('ViewerHanjaReading');
+    expect(fs.existsSync(path.join(process.cwd(), 'src/components/viewer/ViewerHanjaReading.jsx'))).toBe(false);
+    const head = sliceBetween(render, 'className="reader-card-headword"', '<div className={`word-detail-card__meaningrow');
+    expect(head).toContain('<HunCell');
+    expect(render).toContain('const hunCells = hanjaHunOf(headText);');
+    expect(sliceBetween(viewer, 'const hanjaHunOf = (text) => (', ');')).toContain('hunRubyCells(text, { koTable: hanjaKoTable, hunTable: hanjaHunTable, tradTable: hanjaTradTable }, HUN_RUBY_CELL)');
+    const cell = read('src/components/viewer/HunCell.jsx');
+    expect(cell).toContain("'--hun-n'");
+    expect(cell).toContain('data-label={cell.label}');
   });
 
-  it('각 라벨은 잘라내거나 절대배치하지 않고 셀 안에서 줄바꿈한다', () => {
-    const rules=read('src/components/viewer/reader-controls.css');
-    expect(rules).toContain('grid-template-columns:1.5em minmax(0,1fr)');
-    expect(rules).toContain('.reader-hun dd {margin:0;min-width:0;white-space:normal;overflow-wrap:anywhere;}');
-    for(const [,body] of rules.matchAll(/\.reader-hun[^{}]*\{([^}]+)\}/g)) {
-      expect(body).not.toMatch(/position:\s*absolute|text-overflow|overflow:\s*hidden|(?:^|;)height:/);
-    }
-    expect(rules).not.toMatch(/\.word-token[^{}]*reader-hun/);
+  it('루비 셀은 잘라내거나 절대배치하지 않는다 — 넘침은 칸 벌림(--hun-n) 또는 두 줄', () => {
+    const rules = cssRules('src/components/viewer/reader-controls.css') + cssRules(CSS);
+    const blocks = [...rules.matchAll(/[^{}]*\.word-fit__(?:hun|col)[^{}]*\{([^}]+)\}/g)].map((m) => m[1]);
+    expect(blocks.length).toBeGreaterThan(1);
+    for (const body of blocks) expect(body).not.toMatch(/position:\s*absolute|text-overflow|overflow:\s*hidden|(?:^|;)\s*height:/);
+    expect(rules).toMatch(/\.word-fit__hun[^{}]*\{[^}]*min-width:\s*min\(calc\(var\(--hun-n/);
+    expect(rules).not.toContain('.reader-hun');
   });
 
-  it('일본어 대응은 기존의 독립된 의미/자형 조회를 유지한다', () => {
-    const block=read('src/components/viewer/ViewerJapaneseReference.jsx');
-    expect(block).not.toMatch(/huns\.map/);
-    expect(block).toContain('toJaForm(word,jaTable)');
-    expect(block).toContain('ref?.warn');
+  // AE-R3 PR② 개정(설계서 §7.2 — 대조 블록 → 자형 열 + 더 알아보기 줄): 일본어 대응은 여전히 훈음과 독립된 조회다 —
+  // 자형(日 줄, 확인된 표기)과 의미(「일본어로는」 줄, 뜻별 사전 행 · 경고)를 따로 잇는다.
+  it('일본어 대응은 훈음과 독립된 의미/자형 조회를 유지한다 — 자형 열 日 줄 + 「일본어로는」 줄', () => {
+    const column=read('src/components/viewer/ViewerGlyphColumn.jsx');
+    const more=read('src/components/viewer/ViewerJapaneseMore.jsx');
+    for (const block of [column, more]) expect(block).not.toMatch(/huns\.map|HunCell/);
+    expect(more).toContain('ref.warn');
+    expect(more).toContain('japaneseReferenceForMeaning(');
+    expect(column).toContain('lang="ja"');
   });
 });
 

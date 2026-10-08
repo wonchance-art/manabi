@@ -95,7 +95,7 @@ async function fixture(context, { importMode = false, sentenceMode = false, expl
     explanations.push({ locale, kind: sentence ? 'sentence' : 'word' });
     const result = sentence ? { translation: { ko: '학교에 왔어요.', 'zh-CN': '来到了学校。', 'zh-TW': '來到了學校。' }[locale], context: { ko: '선택한 두 번째 문장입니다.', 'zh-CN': '这是选中的第二句。', 'zh-TW': '這是選取的第二句。' }[locale] } : { meaning: { ko: '학교로', 'zh-CN': '到学校', 'zh-TW': '到學校' }[locale], morphology: [] };
     const normalText = sentence && locale === 'ko' ? `**번역**\n${result.translation}\n\n**맥락**\n${result.context}` : JSON.stringify(result);
-    const text = explanationReply ? await explanationReply({ locale, normalText }) : normalText;
+    const text = explanationReply ? await explanationReply({ locale, normalText, kind: sentence ? 'sentence' : 'word' }) : normalText;
     return route.fulfill({ json: { candidates: [{ content: { parts: [{ text }] } }] } });
   });
   await context.route('**/api/learning/exclusions', route => {
@@ -201,14 +201,20 @@ test('shared reader retains independent locale settings, exact source and learni
     await page.getByRole('dialog', { name: labels[ui].settings, exact: true }).waitFor();
     assert(await page.locator('dialog[open]').evaluate(el => el.contains(document.activeElement)), 'locale switch retains focus inside the settings dialog');
   };
-  const source = async () => ({ id: await page.locator('.reader-area [data-selected="true"]').getAttribute('data-tid'), text: (await page.locator('.reader-card-source blockquote').textContent()).trim(), materialLanguage: await page.locator('.viewer-layout').getAttribute('data-language') });
+  // AE-R1(VIEWER-V2-ROUNDS-001 §2.1 문장 줄): 카드의 원문 인용은 「문장 속 쓰임」 blockquote가 아니라 문장 줄(.reader-card-sentence)이다.
+  const source = async () => ({ id: await page.locator('.reader-area [data-selected="true"]').getAttribute('data-tid'), text: (await page.locator('#inspector-word .reader-card-sentence').textContent()).trim(), materialLanguage: await page.locator('.viewer-layout').getAttribute('data-language') });
   try {
     for (const material of materials) {
       await page.setViewportSize({ width: 390, height: 844 });
       await page.goto(`/viewer/${material.id}`);
+      const sentenceCalls = () => audit.explanations.filter(row => row.kind === 'sentence').length, sentencesBefore = sentenceCalls();
       await token().waitFor(); await token().click();
       await page.locator('.word-detail-card').waitFor();
       if (material.processed_json.metadata.language === 'Korean') await page.waitForFunction(() => document.querySelector('.word-detail-card__meaning')?.textContent.trim() === '학교로');
+      // AE-R2 PR ②(설계서 docs/manabi-viewer-v2-ae-r2.md §6.1): 카드가 열린 채 0.3초면 그 줄 번역을 한 번 선처리한다.
+      // 아래 「UI만 바꾸면 추가 호출 0」의 기준은 그 요청이 도착한 뒤에 잡는다(단언 자체는 그대로).
+      for (let i = 0; i < 50 && sentenceCalls() === sentencesBefore; i++) await page.waitForTimeout(100);
+      assert.equal(sentenceCalls(), sentencesBefore + 1, 'the open card prefetches its sentence once');
       const baselineSource = await source(), baselineMaterial = JSON.stringify(material), baselineSaved = JSON.stringify(saved);
       assert.equal(baselineSource.text, material.raw_text.split('\n')[1], 'source must refer to the second occurrence, with its distinct sentence');
       const known = page.locator('.word-detail-card__known');
@@ -302,7 +308,10 @@ test('selected sentence refreshes explanation locale without reanalyzing source 
   try {
     await page.goto('/viewer/94098');
     await page.locator('.reader-area [data-tid="id_1_0_locale"]').click();
-    await page.locator('.reader-card-context').getByRole('button', { name: '句子翻譯', exact: true }).click();
+    // AE-R1 Q1(VIEWER-V2-ROUNDS-001 §2.1 「문장 해석은 [문장] 탭으로」, 설계서 §7.2): 단어 탭의 「번역」 버튼 대신
+    // [문장] 탭(접근 이름 句子翻譯)을 누르면 같은 번역 전용 경로(runSelectedSentence(sel, true))가 열린다.
+    await page.locator('.reader-card-sentence').waitFor();
+    await page.getByRole('tab', { name: '句子翻譯', exact: true }).click();
     await page.locator('#inspector-sentence-tab[aria-selected="true"]').waitFor();
     assert.equal(await page.locator('#inspector-sentence-tab').getAttribute('aria-selected'), 'true', 'direct translation opens the sentence tab');
     await panel.locator('.pdf-context__text').filter({ hasText: '來到了學校。' }).waitFor();
@@ -350,13 +359,14 @@ test('pending Korean explanations cancel across locales and keyboard retry prese
   }, { key: VIEWER_LANGUAGE_PREF_KEY, origin: new URL(base).origin });
   const pending = [];
   const arrivals = Array.from({ length: 3 }, () => Promise.withResolvers());
-  const audit = await fixture(context, { explanationReply: ({ locale, normalText }) => new Promise(resolve => {
+  // 보류는 단어 설명만 — 카드의 문장 선처리(AE-R2 PR ②, 설계서 §6.1)는 바로 답해 단어 설명 순서를 흐리지 않는다.
+  const audit = await fixture(context, { explanationReply: ({ locale, normalText, kind }) => kind === 'sentence' ? normalText : new Promise(resolve => {
     pending.push({ locale, normalText, resolve }); arrivals[pending.length - 1]?.resolve();
   }) });
   const page = await context.newPage();
   const meaning = page.locator('.word-detail-card__meaning').filter({ visible: true }).first();
   let ui = 'ko';
-  const source = async () => ({ id: await page.locator('.reader-area [data-selected="true"]').getAttribute('data-tid'), sentence: (await page.locator('.reader-card-source blockquote').first().textContent()).trim() });
+  const source = async () => ({ id: await page.locator('.reader-area [data-selected="true"]').getAttribute('data-tid'), sentence: (await page.locator('#inspector-word .reader-card-sentence').first().textContent()).trim() });
   const switchLocale = async (kind, value) => {
     const launcher = page.getByRole('button', { name: `Aa ${labels[ui].settings}`, exact: true });
     await launcher.focus(); await page.keyboard.press('Enter');

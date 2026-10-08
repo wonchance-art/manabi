@@ -4,11 +4,14 @@
 // CC-CEDICT·FLELex·OSM 화면 표기 0). 화면·테스트·데이터 README가 따로 적으면 셋이 갈린다.
 // 배치 원칙(오너 지시 「가능한 한 사용자 눈에 잘 안 들어오는 곳에」): 학습 화면에는 표기를
 // 띄우지 않고 설정·도움말의 작은 링크로만 이 화면에 닿는다. CC 4.0 §3(a)(2)는 고지 정보를
-// 담은 자원으로의 링크로 표기를 허용한다. 예외는 지도 곁 표기를 요구하는 OSM 하나(/world 베젤).
+// 담은 자원으로의 링크로 표기를 허용한다. 예외는 지도 곁 표기를 요구하는 OSM(/world 베젤)과,
+// 화면마다 표기를 요구하는 EDRDG 조건에 따른 JMdict 카드 출처 줄 — 뷰어 단어창 日 줄이 JMdict 파생 표에서 온 카드에만
+// 한 줄 「일본어 읽기 · JMdict (EDRDG) · CC BY-SA 4.0 ›」(→ /credits#jmdict). AE-R3 PR②(설계서 §6 O1 보수안, 정본 §2.1).
 //
 // 항목을 더하면 dataCredits.test.js의 원천 표지 목록도 함께 본다 — 코드에 원천 표지가
-// 있는데 여기 없으면 CI가 잡는다. JMdict는 싣지 않는다 — import 라우트만 있고 운영
-// morpheme_dictionary의 source=jmdict* 행이 0건(오너 조회 2026-10-07)이라 사용자에게 닿지 않는다.
+// 있는데 여기 없으면 CI가 잡는다. JMdict는 AE-R3(뷰어 v2 자형 열 日 줄)부터 싣는다 — 동봉 파생 표
+// src/lib/data/jaWords.json(CC BY-SA 4.0, 이 파일만)이 중국어 단어의 일본어 표기·읽기로 화면에 닿는다
+// (오너 승인 범위 결정 #1337 2026-10-07).
 
 export const DATA_CREDITS_UPDATED = '2026년 10월 7일';
 
@@ -65,6 +68,16 @@ export const DATA_CREDIT_SECTIONS = [
         licenseUrl: 'https://opensource.org/license/mit',
         sourceUrl: 'https://github.com/jamsinclair/open-anki-jlpt-decks',
       },
+      {
+        id: 'jmdict',
+        name: 'JMdict (EDRDG)',
+        holder: '© Electronic Dictionary Research and Development Group',
+        use: '중국어 단어의 일본어 표기·읽기',
+        license: 'CC BY-SA 4.0',
+        licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+        sourceUrl: 'https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project',
+        changes: '중국어 표제어와 같은 표기의 일본어 단어만 골라 읽기와 함께 썼습니다. 가공한 표도 같은 라이선스로 제공합니다.',
+      },
     ],
   },
   {
@@ -74,7 +87,7 @@ export const DATA_CREDIT_SECTIONS = [
         id: 'unihan',
         name: 'Unicode Unihan',
         holder: '© Unicode, Inc.',
-        use: '획수·부수·정체/간체 대응',
+        use: '획수·부수·정체/간체 대응·일본 상용/인명용 한자 목록·형성자 소리 계열·대표 병음',
         license: 'Unicode License v3',
         licenseUrl: 'https://www.unicode.org/license.txt',
         sourceUrl: 'https://www.unicode.org/charts/unihan.html',

@@ -4,8 +4,10 @@
 // 캐시로 재탭·재독을 무호출로 만든다(wordDetail 3단 캐시의 경량형 — 문장별이라 공유
 // 사전(DB) 층은 두지 않는다).
 
-const keyOf = (language, sentence, word) =>
-  `ctx_explain:${language}:${word}:${String(sentence).slice(0, 120)}`;
+// 이합사 O 조각은 기본형을 VO(sep_link)로 보내므로 키에도 VO를 붙인다 — 기본형 歉으로 만든 옛 캐시를
+// 읽지 않게(그 밖의 토큰은 키 불변, AE-R2 §5.3).
+const keyOf = (language, sentence, word, sepLink) =>
+  `ctx_explain:${language}:${word}${sepLink ? `>${sepLink}` : ''}:${String(sentence).slice(0, 120)}`;
 
 function localGet(key) {
   if (typeof window === 'undefined') return null;
@@ -22,7 +24,7 @@ function localSet(key, val) {
  */
 export async function fetchCtxExplain({ language, sentence, token, materialId, tokenKey }) {
   const word = token.text;
-  const cacheKey = keyOf(language, sentence, word);
+  const cacheKey = keyOf(language, sentence, word, token.sep_link);
   const cached = localGet(cacheKey);
   if (typeof cached === 'string' && cached) return cached;
 
@@ -38,7 +40,7 @@ export async function fetchCtxExplain({ language, sentence, token, materialId, t
     headers: { 'Content-Type': 'application/json', ...authHeader },
     body: JSON.stringify({
       language,
-      token: { sentence, word, base: token.base_form || '', pos: token.pos || '' },
+      token: { sentence, word, base: token.sep_link || token.base_form || '', pos: token.pos || '' },
       materialId: materialId || '',
       tokenKey: tokenKey || '',
     }),

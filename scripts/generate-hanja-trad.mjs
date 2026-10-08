@@ -22,32 +22,45 @@
 //   hunUpgrade — 같은 음에서 정체 훈으로 바꿔도 되는 검수 쌍(그 밖은 지금 화면 훈 유지).
 //   키는 코드포인트 순 정렬(결정성).
 //
-// 재생성: node scripts/generate-hanja-trad.mjs <STCharacters.txt> <STPhrases.txt> <STPhrases_GeneratedFromRegionalPhrases.txt>
+// AE-R3 正 줄(VIEWER-V2-ROUNDS-001 §6 — 대만 표준 자형, OpenCC 공식 s2tw.json 구성):
+//   tw        — TWVariants.txt 전체(38자, 吃·群·為·著 …). s2t 결과 위에 글자 단위로 건다.
+//   twPhrases — TWVariantsPhrases.txt 전체(4행, 喫을 지키는 예외). tw보다 먼저 최장 일치.
+//   amb       — 모호 글자: STCharacters 후보가 둘 이상이고 후보들의 대만 꼴이 서로 다른 글자(문자열).
+//   ok        — 검증 표제어: 모호 글자를 포함하는데 그 자리가 구절 표 일치로 덮이지 않는 표제어
+//               (글자 첫 후보로 맞힌 发展·历史 등). 클라이언트는 표 밖 토큰과 이것을 구별해
+//               「모호하면 숨김」을 판정한다(hanjaKo.js zhengSure).
+//   표제어 전부에서 런타임 s2tw(toTraditionalTW) = OpenCC 전체 s2tw를 생성 때 검증한다.
+//   s2twp(어휘 변환 TWPhrases — 出租车 → 計程車)는 싣지 않는다(글자 꼴만).
+//
+// 재생성: node scripts/generate-hanja-trad.mjs <STCharacters.txt> <STPhrases.txt> <STPhrases_GeneratedFromRegionalPhrases.txt> <TWVariants.txt> <TWVariantsPhrases.txt>
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-import { toTraditional, koLookupForms } from '../src/lib/hanjaKo.js';
+import { fileURLToPath } from 'node:url';
+import { toTraditional, toTraditionalTW, zhengSure, koLookupForms } from '../src/lib/hanjaKo.js';
 import { KR_VARIANTS, KO_WORD_FORMS, HUN_TRAD_UPGRADE } from './hanja-curated.mjs';
+import { readZhHeadwords } from './zh-headwords.mjs';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const [charsPath, phrasesPath, regionalPath] = process.argv.slice(2);
-if (!charsPath || !phrasesPath || !regionalPath) {
-  console.error('사용법: node scripts/generate-hanja-trad.mjs <STCharacters.txt> <STPhrases.txt> <STPhrases_GeneratedFromRegionalPhrases.txt>');
+const [charsPath, phrasesPath, regionalPath, twPath, twPhrasesPath] = process.argv.slice(2);
+if (!charsPath || !phrasesPath || !regionalPath || !twPath || !twPhrasesPath) {
+  console.error('사용법: node scripts/generate-hanja-trad.mjs <STCharacters.txt> <STPhrases.txt> <STPhrases_GeneratedFromRegionalPhrases.txt> <TWVariants.txt> <TWVariantsPhrases.txt>');
   process.exit(1);
 }
 
-/** OpenCC 텍스트 사전 — key → 첫 후보. 같은 키가 다시 나오면 앞 행 우선. */
-function readDict(file) {
+/** OpenCC 텍스트 사전 — key → 후보 배열. 같은 키가 다시 나오면 앞 행 우선. */
+function readDictAll(file) {
   const m = new Map();
   for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
     if (!line || line.startsWith('#')) continue;
     const [k, v] = line.split('\t');
     if (!k || !v) continue;
-    const first = v.trim().split(' ')[0];
-    if (first && !m.has(k)) m.set(k, first);
+    const cands = v.trim().split(' ').filter(Boolean);
+    if (cands.length && !m.has(k)) m.set(k, cands);
   }
   return m;
 }
+/** OpenCC 텍스트 사전 — key → 첫 후보. */
+const readDict = (file) => new Map([...readDictAll(file)].map(([k, v]) => [k, v[0]]));
 
 const charDict = readDict(charsPath);
 const phraseDict = readDict(phrasesPath);
@@ -80,12 +93,7 @@ const chars = sortObj([...charDict].filter(([k, v]) => [...k].length === 1 && [.
 
 // 2) 표제어 수집 — HSK + 우리 사전(zh), 한자 포함 2자 이상
 const HAN = /\p{Script=Han}/u;
-const heads = new Set(Object.keys(JSON.parse(fs.readFileSync(path.join(root, 'src/lib/data/zhHskLevel.json'), 'utf8'))));
-const vocabDir = path.join(root, 'src/content/chinese/vocab');
-for (const f of fs.readdirSync(vocabDir).filter((x) => x.endsWith('.js')).sort()) {
-  const mod = await import(pathToFileURL(path.join(vocabDir, f)).href);
-  for (const theme of mod.default?.themes || []) for (const w of theme.words || []) if (w?.zh) heads.add(w.zh);
-}
+const heads = await readZhHeadwords(root);
 for (const k of Object.keys(KO_WORD_FORMS)) heads.add(k);
 // 수량 구절 — 분석기(jieba)는 수사·지시사 + 양사를 한 토큰으로 낸다(一只·几只·两只手 실측).
 // 표제어가 아니어도 토큰으로 자주 나오므로, 그런 꼴(3자 이하, 수사·지시사로 시작)의 구절
@@ -133,15 +141,61 @@ for (const p of HUN_TRAD_UPGRADE) {
   if ([...p].length !== 2 || !mapsTo(simp, trad)) throw new Error(`HUN_TRAD_UPGRADE 쌍이 s2t 변환에 없음: ${p}`);
 }
 
+// 6) 正 줄 — 대만 이체(s2tw 둘째 단계)와 「모호하면 숨김」 판정 데이터
+const twAll = readDictAll(twPath);
+const twPhraseAll = readDictAll(twPhrasesPath);
+for (const [k, v] of twAll) if ([...k].length !== 1 || [...v[0]].length !== 1) throw new Error(`TWVariants가 한 글자 대응이 아님: ${k} → ${v[0]}`);
+for (const [k, v] of twPhraseAll) if ([...k].length !== [...v[0]].length) throw new Error(`TWVariantsPhrases 길이 불일치: ${k} → ${v[0]}`);
+const tw = sortObj([...twAll].map(([k, v]) => [k, v[0]]));
+const twPhrases = sortObj([...twPhraseAll].map(([k, v]) => [k, v[0]]));
+let twLimit = 0;
+for (const k of Object.keys(twPhrases)) twLimit = Math.max(twLimit, [...k].length);
+/** OpenCC 전체 s2tw — 전체 s2t 뒤에 [TWVariantsPhrases(최장 일치) → TWVariants]. */
+function fullS2tw(text) {
+  const cs = [...fullS2t(text)];
+  let out = '';
+  for (let i = 0; i < cs.length;) {
+    let hit = 0;
+    for (let len = Math.min(twLimit, cs.length - i); len >= 2 && !hit; len--) {
+      const seg = cs.slice(i, i + len).join('');
+      if (twPhrases[seg]) { out += twPhrases[seg]; hit = len; }
+    }
+    if (hit) { i += hit; continue; }
+    out += tw[cs[i]] || cs[i];
+    i++;
+  }
+  return out;
+}
+const twOf = (c) => tw[c] || c;
+const ambChars = [...readDictAll(charsPath)]
+  .filter(([k, v]) => [...k].length === 1 && v.length > 1 && new Set(v.map(twOf)).size > 1)
+  .map(([k]) => k)
+  .sort(byCodePoint);
+const twTable = { chars: table.chars, phrases: table.phrases, tw, twPhrases, amb: ambChars.join(''), ok: [] };
+const twMismatch = words.filter((w) => toTraditionalTW(w, twTable) !== fullS2tw(w));
+if (twMismatch.length) throw new Error(`표제어 s2tw 불일치 ${twMismatch.length}: ${twMismatch.slice(0, 10).join(' ')}`);
+// ok — 모호 글자를 담았지만 구절 표 일치로 덮이지 않는 표제어(2자 이상). 위 검증으로 이들의 런타임
+// s2tw는 OpenCC 전체 s2tw와 같다(1자 표제어는 문맥이 없어 싣지 않는다 — 항상 숨김).
+const ambSet = new Set(ambChars);
+const okWords = words.filter((w) => [...w].some((c) => ambSet.has(c)) && !zhengSure(w, twTable));
+const twFinal = { ...twTable, ok: okWords }; // 새 객체 — hanjaKo.js가 표 객체별로 amb·ok 집합을 캐시한다
+if (words.some((w) => !zhengSure(w, twFinal))) throw new Error('ok 목록을 더해도 확신하지 못하는 표제어가 남음');
+const twChanged = words.filter((w) => toTraditional(w, twTable) !== toTraditionalTW(w, twTable));
+
 const out = {
   _source: 'OpenCC (https://github.com/BYVoid/OpenCC) via npm opencc-data@1.4.1 — STCharacters.txt · STPhrases.txt · '
-    + 'STPhrases_GeneratedFromRegionalPhrases.txt, Apache License 2.0. Derived subset generated by scripts/generate-hanja-trad.mjs '
-    + '(chars: first candidate diff-only; phrases: HSK·우리 사전 표제어·수량 구절 중 글자 변환과 다른 단어). koForms·krVariants·hunUpgrade: scripts/hanja-curated.mjs.',
+    + 'STPhrases_GeneratedFromRegionalPhrases.txt · TWVariants.txt · TWVariantsPhrases.txt, Apache License 2.0. Derived subset generated by scripts/generate-hanja-trad.mjs '
+    + '(chars: first candidate diff-only; phrases: HSK·우리 사전 표제어·수량 구절 중 글자 변환과 다른 단어; tw·twPhrases: s2tw 대만 이체 단계 전체; '
+    + 'amb: 대만 꼴이 갈리는 모호 글자; ok: 모호 글자를 담은 표제어 중 구절 표 밖에서 검증된 단어). koForms·krVariants·hunUpgrade: scripts/hanja-curated.mjs.',
   chars: table.chars,
   phrases: table.phrases,
   koForms: sortObj(Object.entries(KO_WORD_FORMS)),
   krVariants: sortObj(Object.entries(KR_VARIANTS)),
   hunUpgrade: [...HUN_TRAD_UPGRADE].sort(byCodePoint),
+  tw,
+  twPhrases,
+  amb: twTable.amb,
+  ok: okWords,
 };
 const dest = path.join(root, 'src/lib/data/hanjaTrad.json');
 fs.writeFileSync(dest, JSON.stringify(out));
@@ -151,5 +205,7 @@ console.log(
   + ` (대상 ${words.length} — 수량 구절 ${quant} 포함, 길이 변환 제외 ${lengthSkipped}) · 예외 ${Object.keys(out.koForms).length}`
   + ` · ${(fs.statSync(dest).size / 1024).toFixed(1)}KB`
 );
+console.log(`  正(s2tw) — 대만 이체 ${Object.keys(tw).length}자 · 이체 구절 ${Object.keys(twPhrases).length} · 모호 글자 ${ambChars.length}`
+  + ` · 검증 표제어 ${okWords.length} · 대만 이체로 결과가 바뀐 표제어 ${twChanged.length} · s2tw ≠ 간체 ${words.filter((w) => toTraditionalTW(w, twTable) !== w).length}/${words.length}`);
 // 예외 동작 표본 — 생성 로그로 감수
 for (const k of Object.keys(out.koForms)) console.log(`  예외 ${k}: s2t ${toTraditional(k, check)} → 조회 ${koLookupForms(k, check).join('')}`);

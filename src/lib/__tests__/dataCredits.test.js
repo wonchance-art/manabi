@@ -27,14 +27,15 @@ function walk(dir, out = []) {
 }
 
 // 원천 표지 → 자료 출처 id. 표지는 생성기·콘텐츠 헤더가 실제로 쓰는 문자열이다.
-// JMdict는 import 라우트만 있고 운영 source=jmdict* 행이 0건(오너 조회 2026-10-07)이라 싣지 않는다 —
-// 그 라우트로 실제 적재하면 이 표와 dataCredits.js에 함께 넣는다.
+// JMdict는 AE-R3부터 동봉 파생 표(src/lib/data/jaWords.json, CC BY-SA 4.0)로 화면에 닿는다 — 표지·항목을
+// 함께 둔다(설계서 docs/manabi-viewer-v2-ae-r3.md §6·§7.2, 오너 승인 범위 결정 #1337 2026-10-07).
 const MARKERS = [
   { re: /CC-CEDICT/, id: 'cc-cedict' },
   { re: /ivankra\/hsk30/, id: 'hsk30' },
   { re: /drkameleon\/complete-hsk-vocabulary/, id: 'complete-hsk-vocabulary' },
   { re: /kuromoji/, id: 'kuromoji-ipadic' },
   { re: /open-anki-jlpt-decks/, id: 'open-anki-jlpt-decks' },
+  { re: /JMdict/, id: 'jmdict' },
   { re: /Unihan/, id: 'unihan' },
   { re: /BabelStone/, id: 'babelstone-ids' },
   { re: /opencc-data/, id: 'opencc' },

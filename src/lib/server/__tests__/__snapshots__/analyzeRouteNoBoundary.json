@@ -1,0 +1,1087 @@
+{
+  "Chinese": {
+    "status": 200,
+    "calls": [
+      {
+        "tier": "light",
+        "route": "disambiguateZhPos",
+        "prompt": "다음은 중국어 문장 목록과, 각 문장에서 품사를 판정할 단어 목록입니다.\n\n## 문장\n1. 运动员的身体素质非常好。\n2. 他是我的社恐朋友。\n\n## 단어\n1. \"运动员\" (문장 1)\n2. \"身体\" (문장 1)\n3. \"素质\" (문장 1)\n4. \"好\" (문장 1)\n5. \"是\" (문장 2)\n6. \"社\" (문장 2)\n7. \"朋友\" (문장 2)\n\n각 단어에 대해 JSON 배열로 답하세요.\n\n## 출력 형식 (단어 목록과 순서·길이 정확히 일치)\n[\n  { \"all\": [\"동사\", \"명사\"], \"pos\": \"동사\" },\n  { \"all\": [\"명사\"], \"pos\": \"명사\" },\n  { \"all\": [], \"pos\": null, \"split\": [{\"t\": \"笔\", \"pos\": \"명사\"}, {\"t\": \"在\", \"pos\": \"전치사\"}] },\n  ...\n]\n\n## 규칙\n- all: 이 단어가 중국어에서 일반적으로 갖는 품사 후보 (흔한 순, 1~3개)\n- pos: 지정된 문장의 맥락에서 이 단어가 실제로 쓰인 품사 — 반드시 all 중 하나\n- split: [단어성 판정] 표시 항목만 — 이 표기가 실제 쓰이는 한 단어(신조어·전문어·고유명사\n  포함)면 split을 넣지 말 것. 별개 단어들이 우연히 이웃해 붙은 조합일 때만 순서대로\n  분해해 각 부분의 표기(t)와 그 문장에서의 품사(pos)를 적을 것 (부분들을 이으면 원 표기와\n  정확히 일치해야 함)\n- 품사 명칭: 명사/동사/형용사/부사/전치사/접속사/조사/대명사/양사/수사/감탄사/성어/지명/인명/고유명사\n- 설명/주석 금지, JSON만 출력",
+        "opts": {
+          "temperature": 0,
+          "timeoutMs": 15000,
+          "groq": false,
+          "route": "disambiguateZhPos"
+        }
+      },
+      {
+        "tier": "light",
+        "route": "fetchMeanings",
+        "prompt": "다음은 중국어(간체) 단어 목록입니다. 각 단어의 품사, 병음, 한국어 뜻을 JSON 배열로 알려주세요.\n\n1. \"我\" (대명사)\n2. \"社\" (명사)\n3. \"恐\" (부사)\n4. \"运动员\" (명사)\n5. \"的\" (조사)\n6. \"身体\" (명사)\n7. \"素质\" (명사)\n8. \"非常\" (부사)\n9. \"好\" (형용사)\n10. \"他\" (대명사)\n11. \"是\" (동사)\n12. \"朋友\" (명사)\n\n## 출력 형식 (순서와 길이 정확히 일치)\n[\n  { \"pos\": \"명사\", \"reading\": \"túshūguǎn\", \"meanings\": [{\"meaning\": \"도서관\", \"pos\": \"명사\"}], \"ja\": {\"form\": \"図書館\", \"yomi\": \"としょかん\"} },\n  { \"pos\": \"동사·명사\", \"reading\": \"gōngzuò\", \"meanings\": [{\"meaning\": \"일하다\", \"pos\": \"동사\"}, {\"meaning\": \"일, 직업\", \"pos\": \"명사\"}], \"ja\": {\"form\": \"仕事\", \"yomi\": \"しごと\", \"diff\": true, \"warn\": null} },\n  { \"pos\": \"명사\", \"reading\": \"qìchē\", \"meanings\": [{\"meaning\": \"자동차\", \"pos\": \"명사\"}], \"ja\": {\"form\": \"自動車\", \"yomi\": \"じどうしゃ\", \"diff\": true, \"warn\": \"기차\"} },\n  ...\n]\n\n## 규칙\n- pos는 한국어로 (명사/동사/형용사/부사/전치사/접속사/조사/대명사/양사/수사/감탄사/성어)\n- 여러 품사로 두루 쓰이는 단어(겸류사)는 흔한 순으로 '·'로 이어 모두 적기 (예: 工作·学习 → \"동사·명사\")\n- 각 뜻(meanings 항목)에 그 뜻이 속하는 품사(pos)를 붙이기 — 겸류사는 품사마다 뜻 최소 1개\n- ja: 이 단어의 일본어 대응 — form은 일본어에서 실제 그 뜻으로 쓰는 표기(신자체), yomi는 히라가나 읽기.\n  같은 한자어를 일본어도 같은 뜻으로 쓰면 diff 생략(図書館), 일본어에선 다른 단어를 쓰면 그 단어를 form에 넣고 diff: true(老师→先生).\n  기능어(的·了 등)나 마땅한 대응이 없으면 ja: null\n- ja.warn: 동형이의어 경고 — 이 단어와 같은 표기(신자체로 옮긴 형태)가 일본어에 존재하는데 뜻이 다를 때만,\n  일본어에서의 그 뜻을 15자 이내로 (예: 汽车→\"기차\", 手纸→\"편지\", 勉强→\"공부\"). 해당 없으면 warn: null\n- reading은 성조 기호가 붙은 병음 (예: 图书馆→túshūguǎn, 中国→Zhōngguó)\n- 각 단어에 1~3개 주요 의미 (가장 흔한 순)\n- 의미는 10자 이내로 간결하게\n- 다음자(多音字)는 가장 일반적인 독음 기준\n- 조사(的, 了, 着 등)는 한국어 대응 기능 설명 (\"~의\", \"완료\", \"진행\" 등)\n- 설명/주석 금지, JSON만 출력",
+        "opts": {
+          "temperature": 0,
+          "timeoutMs": 20000,
+          "groqTimeoutMs": 15000,
+          "retry": {
+            "max": 3,
+            "delays": [
+              5000,
+              10000,
+              20000,
+              40000
+            ]
+          },
+          "deadlineMs": 1791374435000,
+          "route": "fetchMeanings"
+        }
+      }
+    ],
+    "ops": [
+      {
+        "rpc": "touch_morphemes",
+        "args": {
+          "lang": "Chinese",
+          "base_forms": [
+            "运动员",
+            "的",
+            "身体",
+            "素质",
+            "非常",
+            "好",
+            "他",
+            "是",
+            "我",
+            "社",
+            "恐",
+            "朋友"
+          ]
+        }
+      },
+      {
+        "table": "morpheme_dictionary",
+        "op": "select",
+        "filters": [
+          [
+            "eq",
+            "language",
+            "Chinese"
+          ],
+          [
+            "in",
+            "base_form",
+            [
+              "运动员",
+              "的",
+              "身体",
+              "素质",
+              "非常",
+              "好",
+              "。",
+              "他",
+              "是",
+              "我",
+              "社",
+              "恐",
+              "朋友"
+            ]
+          ]
+        ],
+        "cols": "base_form, meanings, pos, reading, source"
+      },
+      {
+        "table": "morpheme_dictionary",
+        "op": "upsert",
+        "filters": [],
+        "payload": [
+          {
+            "base_form": "我",
+            "language": "Chinese",
+            "pos": "명사",
+            "reading": "wǒ",
+            "meanings": [
+              {
+                "meaning": "我의 뜻",
+                "priority": 1,
+                "pos": "명사",
+                "ja": null
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "社",
+            "language": "Chinese",
+            "pos": "명사",
+            "reading": "shè",
+            "meanings": [
+              {
+                "meaning": "社의 뜻",
+                "priority": 1,
+                "pos": "명사",
+                "ja": null
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "恐",
+            "language": "Chinese",
+            "pos": "명사",
+            "reading": "kǒng",
+            "meanings": [
+              {
+                "meaning": "恐의 뜻",
+                "priority": 1,
+                "pos": "명사",
+                "ja": null
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "运动员",
+            "language": "Chinese",
+            "pos": "명사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "运动员의 뜻",
+                "priority": 1,
+                "pos": "명사",
+                "ja": null
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "的",
+            "language": "Chinese",
+            "pos": "명사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "的의 뜻",
+                "priority": 1,
+                "pos": "명사",
+                "ja": null
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "身体",
+            "language": "Chinese",
+            "pos": "명사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "身体의 뜻",
+                "priority": 1,
+                "pos": "명사",
+                "ja": null
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "素质",
+            "language": "Chinese",
+            "pos": "명사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "素质의 뜻",
+                "priority": 1,
+                "pos": "명사",
+                "ja": null
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "非常",
+            "language": "Chinese",
+            "pos": "명사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "非常의 뜻",
+                "priority": 1,
+                "pos": "명사",
+                "ja": null
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "好",
+            "language": "Chinese",
+            "pos": "명사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "好의 뜻",
+                "priority": 1,
+                "pos": "명사",
+                "ja": null
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "他",
+            "language": "Chinese",
+            "pos": "명사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "他의 뜻",
+                "priority": 1,
+                "pos": "명사",
+                "ja": null
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "是",
+            "language": "Chinese",
+            "pos": "명사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "是의 뜻",
+                "priority": 1,
+                "pos": "명사",
+                "ja": null
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "朋友",
+            "language": "Chinese",
+            "pos": "명사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "朋友의 뜻",
+                "priority": 1,
+                "pos": "명사",
+                "ja": null
+              }
+            ],
+            "source": "gemini"
+          }
+        ],
+        "opts": {
+          "onConflict": "base_form,language",
+          "ignoreDuplicates": false
+        }
+      }
+    ],
+    "body": {
+      "results": [
+        {
+          "sequence": [
+            "id_0_0_1791374400000",
+            "id_0_1_1791374400000",
+            "id_0_2_1791374400000",
+            "id_0_3_1791374400000",
+            "id_0_4_1791374400000",
+            "id_0_5_1791374400000",
+            "id_0_6_1791374400000"
+          ],
+          "dictionary": {
+            "id_0_0_1791374400000": {
+              "text": "运动员",
+              "furigana": "yùn dòng yuán",
+              "pos": "명사",
+              "meaning": "运动员의 뜻",
+              "base_form": "运动员"
+            },
+            "id_0_1_1791374400000": {
+              "text": "的",
+              "furigana": "de",
+              "pos": "명사",
+              "meaning": "的의 뜻",
+              "base_form": "的"
+            },
+            "id_0_2_1791374400000": {
+              "text": "身体",
+              "furigana": "shēn tǐ",
+              "pos": "명사",
+              "meaning": "身体의 뜻",
+              "base_form": "身体"
+            },
+            "id_0_3_1791374400000": {
+              "text": "素质",
+              "furigana": "sù zhì",
+              "pos": "명사",
+              "meaning": "素质의 뜻",
+              "base_form": "素质"
+            },
+            "id_0_4_1791374400000": {
+              "text": "非常",
+              "furigana": "fēi cháng",
+              "pos": "명사",
+              "meaning": "非常의 뜻",
+              "base_form": "非常"
+            },
+            "id_0_5_1791374400000": {
+              "text": "好",
+              "furigana": "hǎo",
+              "pos": "명사",
+              "meaning": "好의 뜻",
+              "base_form": "好"
+            },
+            "id_0_6_1791374400000": {
+              "text": "。",
+              "furigana": null,
+              "pos": "기호",
+              "meaning": "",
+              "base_form": "。"
+            }
+          }
+        },
+        {
+          "sequence": [
+            "id_1_0_1791374400000",
+            "id_1_1_1791374400000",
+            "id_1_2_1791374400000",
+            "id_1_3_1791374400000",
+            "id_1_4_1791374400000",
+            "id_1_5_1791374400000",
+            "id_1_6_1791374400000",
+            "id_1_7_1791374400000"
+          ],
+          "dictionary": {
+            "id_1_0_1791374400000": {
+              "text": "他",
+              "furigana": "tā",
+              "pos": "명사",
+              "meaning": "他의 뜻",
+              "base_form": "他"
+            },
+            "id_1_1_1791374400000": {
+              "text": "是",
+              "furigana": "shì",
+              "pos": "명사",
+              "meaning": "是의 뜻",
+              "base_form": "是"
+            },
+            "id_1_2_1791374400000": {
+              "text": "我",
+              "furigana": "wǒ",
+              "pos": "명사",
+              "meaning": "我의 뜻",
+              "base_form": "我"
+            },
+            "id_1_3_1791374400000": {
+              "text": "的",
+              "furigana": "de",
+              "pos": "명사",
+              "meaning": "的의 뜻",
+              "base_form": "的"
+            },
+            "id_1_4_1791374400000": {
+              "text": "社",
+              "furigana": "shè",
+              "pos": "명사",
+              "meaning": "社의 뜻",
+              "base_form": "社"
+            },
+            "id_1_5_1791374400000": {
+              "text": "恐",
+              "furigana": "kǒng",
+              "pos": "명사",
+              "meaning": "恐의 뜻",
+              "base_form": "恐"
+            },
+            "id_1_6_1791374400000": {
+              "text": "朋友",
+              "furigana": "péng you",
+              "pos": "명사",
+              "meaning": "朋友의 뜻",
+              "base_form": "朋友"
+            },
+            "id_1_7_1791374400000": {
+              "text": "。",
+              "furigana": null,
+              "pos": "기호",
+              "meaning": "",
+              "base_form": "。"
+            }
+          }
+        }
+      ],
+      "stats": {
+        "totalTokens": 13,
+        "cacheHits": 12,
+        "geminiCalls": 12,
+        "enPos": {
+          "marks": 0,
+          "httpCalls": 0,
+          "backfillRows": 0,
+          "fallbacks": 0
+        }
+      }
+    }
+  },
+  "Japanese": {
+    "status": 200,
+    "calls": [
+      {
+        "tier": "light",
+        "route": "fetchMeanings",
+        "prompt": "다음은 일본어 단어 목록입니다. 각 단어의 한국어 뜻과 히라가나 읽기를 JSON 배열로 알려주세요.\n\n1. \"は\" (조사)\n2. \"だ\" (조동사)\n3. \"に\" (조사)\n4. \"行く\" (동사)\n5. \"ます\" (조동사)\n6. \"天気予報\" (명사)\n7. \"を\" (조사)\n8. \"見る\" (동사)\n9. \"た\" (조동사)\n\n## 출력 형식 (순서와 길이 정확히 일치)\n[\n  { \"reading\": \"ひらがな読み\", \"meanings\": [{\"meaning\": \"기본 뜻\"}, {\"meaning\": \"보조 뜻(있으면)\"}] },\n  { \"reading\": \"...\", \"meanings\": [{\"meaning\": \"...\"}] },\n  ...\n]\n\n## 규칙\n- reading: 가장 일반적인 문맥에서의 히라가나 읽기 (예: 一日→いちにち, 今日→きょう, 大人→おとな)\n- 한자가 없는 단어(히라가나/카타카나/기호)는 reading을 null로\n- 각 단어에 1~2개 주요 의미 (가장 흔한 순)\n- 의미는 10자 이내로 간결하게\n- 조사(は, が 등)와 조동사(ます, た 등)는 한국어 대응어 (\"은/는\", \"이/가\", \"~합니다\" 등)\n- 설명/주석 금지, JSON만 출력",
+        "opts": {
+          "temperature": 0,
+          "timeoutMs": 20000,
+          "groqTimeoutMs": 15000,
+          "retry": {
+            "max": 3,
+            "delays": [
+              5000,
+              10000,
+              20000,
+              40000
+            ]
+          },
+          "deadlineMs": 1791374435000,
+          "route": "fetchMeanings"
+        }
+      }
+    ],
+    "ops": [
+      {
+        "rpc": "touch_morphemes",
+        "args": {
+          "lang": "Japanese",
+          "base_forms": [
+            "明日",
+            "は",
+            "申し込む",
+            "だ",
+            "映画館",
+            "に",
+            "行く",
+            "ます",
+            "天気予報",
+            "を",
+            "見る",
+            "た"
+          ]
+        }
+      },
+      {
+        "table": "morpheme_dictionary",
+        "op": "select",
+        "filters": [
+          [
+            "eq",
+            "language",
+            "Japanese"
+          ],
+          [
+            "in",
+            "base_form",
+            [
+              "明日",
+              "は",
+              "申し込む",
+              "だ",
+              "映画館",
+              "に",
+              "行く",
+              "ます",
+              "。",
+              "天気予報",
+              "を",
+              "見る",
+              "た"
+            ]
+          ]
+        ],
+        "cols": "base_form, meanings, pos, reading, source"
+      },
+      {
+        "table": "morpheme_dictionary",
+        "op": "upsert",
+        "filters": [],
+        "payload": [
+          {
+            "base_form": "は",
+            "language": "Japanese",
+            "pos": "조사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "は의 뜻",
+                "priority": 1,
+                "pos": "명사"
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "だ",
+            "language": "Japanese",
+            "pos": "조동사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "だ의 뜻",
+                "priority": 1,
+                "pos": "명사"
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "に",
+            "language": "Japanese",
+            "pos": "조사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "に의 뜻",
+                "priority": 1,
+                "pos": "명사"
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "行く",
+            "language": "Japanese",
+            "pos": "동사",
+            "reading": "いき",
+            "meanings": [
+              {
+                "meaning": "行く의 뜻",
+                "priority": 1,
+                "pos": "명사"
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "ます",
+            "language": "Japanese",
+            "pos": "조동사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "ます의 뜻",
+                "priority": 1,
+                "pos": "명사"
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "天気予報",
+            "language": "Japanese",
+            "pos": "명사",
+            "reading": "てんきよほう",
+            "meanings": [
+              {
+                "meaning": "天気予報의 뜻",
+                "priority": 1,
+                "pos": "명사"
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "を",
+            "language": "Japanese",
+            "pos": "조사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "を의 뜻",
+                "priority": 1,
+                "pos": "명사"
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "見る",
+            "language": "Japanese",
+            "pos": "동사",
+            "reading": "み",
+            "meanings": [
+              {
+                "meaning": "見る의 뜻",
+                "priority": 1,
+                "pos": "명사"
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "た",
+            "language": "Japanese",
+            "pos": "조동사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "た의 뜻",
+                "priority": 1,
+                "pos": "명사"
+              }
+            ],
+            "source": "gemini"
+          }
+        ],
+        "opts": {
+          "onConflict": "base_form,language",
+          "ignoreDuplicates": false
+        }
+      }
+    ],
+    "body": {
+      "results": [
+        {
+          "sequence": [
+            "id_0_0_1791374400000",
+            "id_0_1_1791374400000",
+            "id_0_2_1791374400000",
+            "id_0_3_1791374400000",
+            "id_0_4_1791374400000",
+            "id_0_5_1791374400000",
+            "id_0_6_1791374400000",
+            "id_0_7_1791374400000",
+            "id_0_8_1791374400000"
+          ],
+          "dictionary": {
+            "id_0_0_1791374400000": {
+              "text": "明日",
+              "furigana": "あした",
+              "pos": "명사",
+              "meaning": "내일",
+              "base_form": "明日"
+            },
+            "id_0_1_1791374400000": {
+              "text": "は",
+              "furigana": null,
+              "pos": "조사",
+              "meaning": "は의 뜻",
+              "base_form": "は"
+            },
+            "id_0_2_1791374400000": {
+              "text": "申し込ん",
+              "furigana": "もうしこむ",
+              "pos": "동사",
+              "meaning": "신청하다",
+              "base_form": "申し込む"
+            },
+            "id_0_3_1791374400000": {
+              "text": "だ",
+              "furigana": null,
+              "pos": "조동사",
+              "meaning": "だ의 뜻",
+              "base_form": "だ"
+            },
+            "id_0_4_1791374400000": {
+              "text": "映画館",
+              "furigana": "えいがかん",
+              "pos": "명사",
+              "meaning": "영화관",
+              "base_form": "映画館"
+            },
+            "id_0_5_1791374400000": {
+              "text": "に",
+              "furigana": null,
+              "pos": "조사",
+              "meaning": "に의 뜻",
+              "base_form": "に"
+            },
+            "id_0_6_1791374400000": {
+              "text": "行き",
+              "furigana": "いき",
+              "pos": "동사",
+              "meaning": "行く의 뜻",
+              "base_form": "行く"
+            },
+            "id_0_7_1791374400000": {
+              "text": "ます",
+              "furigana": null,
+              "pos": "조동사",
+              "meaning": "ます의 뜻",
+              "base_form": "ます"
+            },
+            "id_0_8_1791374400000": {
+              "text": "。",
+              "furigana": null,
+              "pos": "기호",
+              "meaning": "",
+              "base_form": "。"
+            }
+          }
+        },
+        {
+          "sequence": [
+            "id_1_0_1791374400000",
+            "id_1_1_1791374400000",
+            "id_1_2_1791374400000",
+            "id_1_3_1791374400000",
+            "id_1_4_1791374400000"
+          ],
+          "dictionary": {
+            "id_1_0_1791374400000": {
+              "text": "天気予報",
+              "furigana": "てんきよほう",
+              "pos": "명사",
+              "meaning": "天気予報의 뜻",
+              "base_form": "天気予報"
+            },
+            "id_1_1_1791374400000": {
+              "text": "を",
+              "furigana": null,
+              "pos": "조사",
+              "meaning": "を의 뜻",
+              "base_form": "を"
+            },
+            "id_1_2_1791374400000": {
+              "text": "見",
+              "furigana": "み",
+              "pos": "동사",
+              "meaning": "見る의 뜻",
+              "base_form": "見る"
+            },
+            "id_1_3_1791374400000": {
+              "text": "た",
+              "furigana": null,
+              "pos": "조동사",
+              "meaning": "た의 뜻",
+              "base_form": "た"
+            },
+            "id_1_4_1791374400000": {
+              "text": "。",
+              "furigana": null,
+              "pos": "기호",
+              "meaning": "",
+              "base_form": "。"
+            }
+          }
+        }
+      ],
+      "stats": {
+        "totalTokens": 13,
+        "cacheHits": 12,
+        "geminiCalls": 9,
+        "enPos": {
+          "marks": 0,
+          "httpCalls": 0,
+          "backfillRows": 0,
+          "fallbacks": 0
+        }
+      }
+    }
+  },
+  "English": {
+    "status": 200,
+    "calls": [
+      {
+        "tier": "light",
+        "route": "disambiguateEnPos",
+        "prompt": "다음 영어 문장의 표시된 각 occurrence에 대해 품사와 lemma를 판정하세요.\n\n## 문장\n1. I picked up the book.\n2. She looked after them.\n\n## occurrence\n1. \"I\" (문장 1, occurrence 1; lemma: 명사/동사/형용사/부사/전치사/접속사/관사/대명사/조동사/감탄사/수사=i)\n2. \"picked\" (문장 1, occurrence 2; lemma: 명사/형용사/부사/전치사/접속사/관사/대명사/조동사/감탄사/수사=picked, 동사=pick)\n3. \"book\" (문장 1, occurrence 5; lemma: 명사/동사/형용사/부사/전치사/접속사/관사/대명사/조동사/감탄사/수사=book)\n4. \"She\" (문장 2, occurrence 1; lemma: 명사/동사/형용사/부사/전치사/접속사/관사/대명사/조동사/감탄사/수사=she)\n5. \"looked\" (문장 2, occurrence 2; lemma: 명사/형용사/부사/전치사/접속사/관사/대명사/조동사/감탄사/수사=looked, 동사=look)\n6. \"after\" (문장 2, occurrence 3; lemma: 명사/동사/형용사/부사/전치사/접속사/관사/대명사/조동사/감탄사/수사=after)\n7. \"them\" (문장 2, occurrence 4; lemma: 명사/동사/형용사/부사/전치사/접속사/관사/대명사/조동사/감탄사/수사=them)\n\n## 출력 형식 (목록과 순서·길이 정확히 일치)\n[\n  { \"all\": [\"동사\", \"명사\"], \"pos\": \"동사\", \"base_form\": \"record\" },\n  { \"all\": [\"명사\"], \"pos\": \"명사\", \"base_form\": \"saw\" }\n]\n\n## 규칙\n- all: 해당 표기가 일반적으로 갖는 품사 후보, 흔한 순 1~3개\n- pos: 이 문장 occurrence의 실제 품사이며 반드시 all 중 하나\n- base_form: occurrence 줄에 제시된 lemma 후보 중 pos에 대응하는 값만 사용\n- 품사 명칭: 명사/동사/형용사/부사/전치사/접속사/관사/대명사/조동사/감탄사/수사\n- 같은 줄의 같은 표기도 occurrence마다 독립 판정\n- 설명/주석 금지, JSON만 출력",
+        "opts": {
+          "temperature": 0,
+          "timeoutMs": 15000,
+          "groq": false,
+          "route": "disambiguateEnPos"
+        }
+      },
+      {
+        "tier": "light",
+        "route": "fetchMeanings",
+        "prompt": "다음은 영어 단어 목록입니다. 각 단어의 품사, IPA 발음, 한국어 뜻을 JSON 배열로 알려주세요.\n\n1. \"i\"\n2. \"book\"\n3. \"she\"\n4. \"look\"\n5. \"after\"\n6. \"them\"\n\n## 출력 형식 (순서와 길이 정확히 일치)\n[\n  { \"pos\": \"동사·명사\", \"ipa\": \"/ˈrek.ɔːd/\", \"meanings\": [{\"meaning\": \"기록하다\", \"pos\": \"동사\"}, {\"meaning\": \"기록\", \"pos\": \"명사\"}] },\n  { \"pos\": \"명사\", \"ipa\": \"/wɜːrd/\", \"meanings\": [{\"meaning\": \"단어\", \"pos\": \"명사\"}] },\n  ...\n]\n\n## 규칙\n- pos는 한국어로 (명사/동사/형용사/부사/전치사/접속사/관사/대명사/조동사/감탄사/수사)\n- 여러 품사로 쓰이는 단어는 흔한 순으로 '·'로 이어 후보를 모두 적기(최대 3개)\n- 각 meanings 항목에 그 뜻의 pos를 반드시 붙이고, pos 후보마다 뜻을 최소 1개 포함\n- ipa는 슬래시 포함 IPA 발음 기호\n- 각 단어에 1~3개 주요 의미 (가장 흔한 순)\n- 의미는 10자 이내로 간결하게\n- 복수형이어도 단수 기준 뜻 (apples → \"사과\")\n- 과거형이어도 원형 기준 뜻 (ran → \"달리다\")\n- 설명/주석 금지, JSON만 출력",
+        "opts": {
+          "temperature": 0,
+          "timeoutMs": 20000,
+          "groqTimeoutMs": 15000,
+          "retry": {
+            "max": 3,
+            "delays": [
+              5000,
+              10000,
+              20000,
+              40000
+            ]
+          },
+          "deadlineMs": 1791374435000,
+          "route": "fetchMeanings"
+        }
+      }
+    ],
+    "ops": [
+      {
+        "rpc": "touch_morphemes",
+        "args": {
+          "lang": "English",
+          "base_forms": [
+            "i",
+            "pick",
+            "up",
+            "the",
+            "book",
+            "she",
+            "look",
+            "after",
+            "them"
+          ]
+        }
+      },
+      {
+        "table": "morpheme_dictionary",
+        "op": "select",
+        "filters": [
+          [
+            "eq",
+            "language",
+            "English"
+          ],
+          [
+            "in",
+            "base_form",
+            [
+              "i",
+              "pick",
+              "up",
+              "the",
+              "book",
+              ".",
+              "she",
+              "look",
+              "after",
+              "them",
+              "picked",
+              "looked"
+            ]
+          ]
+        ],
+        "cols": "base_form, meanings, pos, reading, source"
+      },
+      {
+        "table": "morpheme_dictionary",
+        "op": "upsert",
+        "filters": [],
+        "payload": [
+          {
+            "base_form": "i",
+            "language": "English",
+            "pos": "명사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "i의 뜻",
+                "priority": 1,
+                "pos": "명사",
+                "en_pos_v": 1
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "book",
+            "language": "English",
+            "pos": "명사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "book의 뜻",
+                "priority": 1,
+                "pos": "명사",
+                "en_pos_v": 1
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "she",
+            "language": "English",
+            "pos": "명사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "she의 뜻",
+                "priority": 1,
+                "pos": "명사",
+                "en_pos_v": 1
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "look",
+            "language": "English",
+            "pos": "명사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "look의 뜻",
+                "priority": 1,
+                "pos": "명사",
+                "en_pos_v": 1
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "after",
+            "language": "English",
+            "pos": "명사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "after의 뜻",
+                "priority": 1,
+                "pos": "명사",
+                "en_pos_v": 1
+              }
+            ],
+            "source": "gemini"
+          },
+          {
+            "base_form": "them",
+            "language": "English",
+            "pos": "명사",
+            "reading": null,
+            "meanings": [
+              {
+                "meaning": "them의 뜻",
+                "priority": 1,
+                "pos": "명사",
+                "en_pos_v": 1
+              }
+            ],
+            "source": "gemini"
+          }
+        ],
+        "opts": {
+          "onConflict": "base_form,language",
+          "ignoreDuplicates": true
+        }
+      }
+    ],
+    "body": {
+      "results": [
+        {
+          "sequence": [
+            "id_0_0_1791374400000",
+            "id_0_1_1791374400000",
+            "id_0_2_1791374400000",
+            "id_0_3_1791374400000",
+            "id_0_4_1791374400000",
+            "id_0_5_1791374400000"
+          ],
+          "dictionary": {
+            "id_0_0_1791374400000": {
+              "text": "I",
+              "furigana": null,
+              "pos": "명사",
+              "meaning": "i의 뜻",
+              "base_form": "i"
+            },
+            "id_0_1_1791374400000": {
+              "text": "picked",
+              "furigana": null,
+              "pos": "동사",
+              "meaning": "고르다",
+              "base_form": "pick"
+            },
+            "id_0_2_1791374400000": {
+              "text": "up",
+              "furigana": null,
+              "pos": "부사",
+              "meaning": "위로",
+              "base_form": "up"
+            },
+            "id_0_3_1791374400000": {
+              "text": "the",
+              "furigana": null,
+              "pos": "관사",
+              "meaning": "그",
+              "base_form": "the"
+            },
+            "id_0_4_1791374400000": {
+              "text": "book",
+              "furigana": null,
+              "pos": "명사",
+              "meaning": "book의 뜻",
+              "base_form": "book"
+            },
+            "id_0_5_1791374400000": {
+              "text": ".",
+              "furigana": null,
+              "pos": "기호",
+              "meaning": "",
+              "base_form": "."
+            }
+          }
+        },
+        {
+          "sequence": [
+            "id_1_0_1791374400000",
+            "id_1_1_1791374400000",
+            "id_1_2_1791374400000",
+            "id_1_3_1791374400000",
+            "id_1_4_1791374400000"
+          ],
+          "dictionary": {
+            "id_1_0_1791374400000": {
+              "text": "She",
+              "furigana": null,
+              "pos": "명사",
+              "meaning": "she의 뜻",
+              "base_form": "she"
+            },
+            "id_1_1_1791374400000": {
+              "text": "looked",
+              "furigana": null,
+              "pos": "명사",
+              "meaning": "look의 뜻",
+              "base_form": "look"
+            },
+            "id_1_2_1791374400000": {
+              "text": "after",
+              "furigana": null,
+              "pos": "명사",
+              "meaning": "after의 뜻",
+              "base_form": "after"
+            },
+            "id_1_3_1791374400000": {
+              "text": "them",
+              "furigana": null,
+              "pos": "명사",
+              "meaning": "them의 뜻",
+              "base_form": "them"
+            },
+            "id_1_4_1791374400000": {
+              "text": ".",
+              "furigana": null,
+              "pos": "기호",
+              "meaning": "",
+              "base_form": "."
+            }
+          }
+        }
+      ],
+      "stats": {
+        "totalTokens": 10,
+        "cacheHits": 9,
+        "geminiCalls": 6,
+        "enPos": {
+          "marks": 7,
+          "httpCalls": 1,
+          "backfillRows": 0,
+          "fallbacks": 2
+        }
+      }
+    }
+  }
+}

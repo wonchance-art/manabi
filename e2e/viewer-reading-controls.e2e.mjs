@@ -251,7 +251,7 @@ try {
   assert.equal(await panel().getByRole('button',{name:/닫기/}).count(),1,'only one close control');
   assert.equal(await panel().locator('.word-detail-card__edit svg').count(),1,'consistent vector edit icon');
   const density=await page.evaluate(()=>{
-   const body=document.querySelector('.reader-card-body').getBoundingClientRect(),meaning=document.querySelector('.word-detail-card__meaning').getBoundingClientRect(),ja=document.querySelector('.reader-japanese').getBoundingClientRect();
+   const body=document.querySelector('.reader-card-body').getBoundingClientRect(),meaning=document.querySelector('.word-detail-card__meaning').getBoundingClientRect(),ja=(document.querySelector('.reader-card-glyph')||document.querySelector('.word-detail-card__meaning')).getBoundingClientRect(); // AE-R3 PR②: 일본어 대조 블록 → 표제어 자형 열
    const nav=document.querySelector('.gnb').getBoundingClientRect(),bar=document.querySelector('.viewer-topbar'),br=bar.getBoundingClientRect();
    return {meaningBottom:meaning.bottom,bodyBottom:body.bottom,japaneseBottom:ja.bottom,navBottom:nav.bottom,barTop:br.top,barMargin:parseFloat(getComputedStyle(bar).marginBottom),font:parseFloat(getComputedStyle(document.querySelector('.word-fit')).fontSize)};
   });
@@ -274,43 +274,46 @@ try {
  // The compact inspector keeps core meaning / Japanese visible and extra tools reachable.
  await fresh(390,844);await tap(wordA());
  await panel().getByText('愛惜',{exact:true}).waitFor();
- assert.equal(await panel().locator('.reader-japanese__row').count(),1,'same form and meaning appear only once');
+ // AE-R3 PR②(설계서 §5·§7.2): 일본어 대조 블록 대신 더 알아보기 「일본어로는」 한 줄 — 같은 표기는 한 번만.
+ assert.equal(await panel().getByText('愛惜',{exact:true}).count(),1,'same form and meaning appear only once');
+ assert.equal(await panel().locator('.reader-card-learn__ja').count(),1);
  assert.equal(japaneseCalls.length,0,'dictionary data must not trigger AI');
  assert.equal(await panel().locator('footer').count(),0,'no repeated footer rail');
- assert.equal(await panel().locator('.reader-card-context[open],.reader-card-more[open]').count(),0);
+ assert.equal(await panel().locator('#inspector-word details').count(),0,'AE-R1: no folds in the word tab');
  assert(await panel().getByText('새 단어 저장 · 얼마나 알겠어요?',{exact:true}).isVisible());
  await shotAt('minimal-mobile-default');
- const contextSummary=panel().getByText('문장 속 쓰임',{exact:true});await contextSummary.focus();await page.keyboard.press('Enter');
- assert(await panel().locator('.reader-card-source blockquote').isVisible());
- await panel().getByRole('button',{name:'이 문장에서는?',exact:true}).click();await panel().getByText('A문장-爱惜-설명',{exact:true}).waitFor();
- await contextSummary.click();
+ assert(await panel().locator('.reader-card-sentence').isVisible(),'AE-R1: the sentence line replaces the quoted line');
  await panel().getByRole('button',{name:'뜻·발음 수정',exact:true}).click();assert(await panel().locator('input').first().isVisible());await panel().getByRole('button',{name:'뜻·발음 수정',exact:true}).click();
- await panel().getByText('예문·관련 표현',{exact:true}).click();await panel().getByRole('button',{name:'상세 설명 보기',exact:true}).click();await panel().getByText('상세설명-대상-爱惜',{exact:true}).waitFor();
- await panel().getByText('유의어·반의어',{exact:true}).click();await panel().locator('.syn-ant__chip').first().waitFor();
- await panel().getByText('예문·관련 표현',{exact:true}).click();
- await panel().locator('.word-fit__char').first().click();assert(await panel().locator('.char-inspect').isVisible());await panel().locator('.word-fit__char').first().click();
+ await panel().getByRole('button',{name:'✦ 자세한 설명',exact:true}).click();await panel().getByText('상세설명-대상-爱惜',{exact:true}).waitFor();
+ await panel().getByRole('button',{name:'✦ 비슷한 말 찾기',exact:true}).click();await panel().locator('.syn-ant__chip').first().waitFor();
+ // AE-R4 PR②(설계서 docs/manabi-viewer-v2-ae-r4.md §7.1): 중국어 일반 모드의 글자 탭 = 한자 창(글자 카드 대체). 열면 창으로 포커스, 같은 글자 다시 = 닫힘.
+ await panel().locator('.word-fit__char').first().click();await panel().locator('.hanja-pop').waitFor();assert.equal(await panel().locator('.char-inspect').count(),0);
+ assert.equal(await page.evaluate(()=>document.activeElement?.classList.contains('hanja-pop')),true);
+ await panel().locator('.word-fit__char').first().click();await panel().locator('.hanja-pop').waitFor({state:'detached'});
  await panel().getByRole('tab',{name:'문장 번역',exact:true}).click();await page.keyboard.press('ArrowLeft');assert.equal(await panel().getByRole('tab',{name:'단어',exact:true}).getAttribute('aria-selected'),'true');
  await delay(60);assert.equal(await page.evaluate(()=>document.activeElement?.id),'inspector-word-tab');await page.keyboard.press('ArrowRight');await delay(60);assert.equal(await page.evaluate(()=>document.activeElement?.id),'inspector-sentence-tab');await page.keyboard.press('ArrowLeft');
  assert.equal(writes.filter(w=>['user_vocabulary','reading_materials','morpheme_dictionary'].includes(w.table)).length,0);
  pass('minimal card preserves editing, character lookup, context, synonyms, details, keyboard tabs and fixed saving');
  // Another dictionary sense must never be shown as the translation of this sense.
  japaneseRows.周末={meanings:[{meaning:'다른 뜻',ja:{form:'間違い'}}]};
- await page.keyboard.press('Escape');await tap(wordB());await panel().getByRole('button',{name:'일본어 대응 찾기',exact:true}).waitFor();
+ await page.keyboard.press('Escape');await tap(wordB());await panel().getByRole('button',{name:'✦ 일본어로는?',exact:true}).waitFor();
  assert(!(await panel().innerText()).includes('間違い'));japaneseFail=true;
- await panel().getByRole('button',{name:'일본어 대응 찾기',exact:true}).click();await panel().getByRole('button',{name:'일본어 다시 찾기',exact:true}).waitFor();
- japaneseFail=false;await panel().getByRole('button',{name:'일본어 다시 찾기',exact:true}).click();await panel().getByText('週末',{exact:true}).waitFor();
- assert.equal(await panel().locator('.reader-japanese__row').count(),2);assert(await panel().getByText('AI',{exact:true}).isVisible());
+ await panel().getByRole('button',{name:'✦ 일본어로는?',exact:true}).click();await panel().getByText('대응어를 불러오지 못했어요.',{exact:true}).waitFor();
+ japaneseFail=false;await panel().getByRole('button',{name:'✦ 일본어로는?',exact:true}).click();await panel().getByText('週末',{exact:true}).waitFor();
+ // 「AI」 표 보임 단언은 오너 결정(단어창 「AI」 표시 없음, 10-07 23:45 KST)으로 반대로 — 설계서 §7.2.
+ assert.equal(await panel().locator('.reader-card-learn__ja').count(),1);assert.equal(await panel().getByText('AI',{exact:true}).count(),0);
  assert.equal(writes.filter(w=>w.table==='morpheme_dictionary').length,0);
  pass('missing or mismatched Japanese sense supports explicit lookup, failure and retry without dictionary writes');
  // Different equivalent and false-friend warning remain distinct from converted glyphs.
  await fresh(590,869);records[0].processed_json.dictionary.id_0_2_audit={text:'勉强',base_form:'勉强',meaning:'억지로 하다',furigana:'miǎn qiǎng',pos:'동사'};japaneseRows.勉强={meanings:[{meaning:'억지로 하다',ja:{form:'無理強い',warn:'공부'}}]};
  await page.reload();await wordA().waitFor();await tap(wordA());await panel().getByText('無理強い',{exact:true}).waitFor();
- assert.equal(await panel().locator('.reader-japanese__row').count(),2);assert.equal(await panel().locator('.reader-japanese__form').innerText(),'勉強');assert((await panel().locator('.reader-japanese__note').innerText()).includes('공부'));
+ // AE-R3 PR②: 글자 변환 꼴(勉強)은 日 줄에 오르지 않는다(warn → 日 숨김), 正 줄은 대만 정체, 경고는 「일본어로는」 줄.
+ assert.equal(await panel().locator('.reader-card-glyph__row--ja').count(),0);assert.equal(await panel().locator('.reader-card-glyph__row--zheng .reader-card-glyph__form').innerText(),'勉強');assert((await panel().locator('.reader-card-learn__ja').innerText()).includes('공부'));
  await shotAt('minimal-japanese-different-meaning');pass('shinjitai, semantic equivalent and false-friend meaning are distinct');
  // A delayed answer for A cannot be attached to word B.
  await fresh(390,844);japaneseRows={};await tap(wordA());japaneseDelay=1200;
- await panel().getByRole('button',{name:'일본어 대응 찾기',exact:true}).click();await page.keyboard.press('Escape');await tap(wordB());await delay(1500);
- assert(!(await panel().innerText()).includes('大切にする'));await panel().getByRole('button',{name:'일본어 대응 찾기',exact:true}).waitFor();
+ await panel().getByRole('button',{name:'✦ 일본어로는?',exact:true}).click();await page.keyboard.press('Escape');await tap(wordB());await delay(1500);
+ assert(!(await panel().innerText()).includes('大切にする'));await panel().getByRole('button',{name:'✦ 일본어로는?',exact:true}).waitFor();
  pass('Japanese lookup cancellation prevents stale word answers');
 
  if(!process.env.QA_MINIMAL_ONLY){
@@ -344,7 +347,7 @@ try {
  await shotAt('mobile-selected-source-visible');pass('low word selection, Aa return and sheet resize keep the source above the inspector');
  await page.mouse.move(220,250);await page.mouse.wheel(0,250);await delay(250);const manualY=await page.evaluate(()=>scrollY);
  await page.setViewportSize({width:390,height:820});await delay(150);assert(Math.abs(await page.evaluate(()=>scrollY)-manualY)<2);pass('manual reading scroll wins over a later sheet resize');
- await fresh(390,844);await tap(wordA());await page.locator('.reader-card-body').getByText('예문·관련 표현',{exact:true}).click();await page.locator('.reader-card-body').getByText('유의어·반의어',{exact:true}).click();await page.locator('.syn-ant__chip').first().waitFor();
+ await fresh(390,844);await tap(wordA());await page.locator('.reader-card-body').getByRole('button',{name:'✦ 비슷한 말 찾기',exact:true}).click();await page.locator('.syn-ant__chip').first().waitFor();
  const controls=await page.locator('.save-grade').boundingBox(),panelBounds=await panel().boundingBox(),tabs=await page.locator('.viewer-inspector__tabs').boundingBox();assert(controls.y>=tabs.y+tabs.height&&controls.y+controls.height<=panelBounds.y+panelBounds.height);await shotAt('mobile-card-actions');pass('mobile grades remain fixed below scrolling details and a single top rail');
  await page.getByRole('button',{name:'Aa 읽기 설정',exact:true}).click();await page.keyboard.press('1');assert.equal(vocab.length,0);await page.keyboard.press('Escape');assert(await panel().isVisible());await page.getByRole('button',{name:'보조 패널 닫기',exact:true}).click();await page.keyboard.press('1');assert.equal(vocab.length,0);pass('modal and closed inspector cannot grade a hidden card');
  // Theme changes reach the body, native modal and inspector surfaces.

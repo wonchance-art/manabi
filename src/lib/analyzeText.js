@@ -1,5 +1,6 @@
 import { callGemini, parseGeminiJSON, buildTokenizationPrompt } from './gemini';
 import { canonizeTokenPos } from './server/posCanon';
+import { boundaryParagraphRequest, readBoundaryEdits, settleBoundaryRecord } from './boundaryEdits';
 
 /**
  * 텍스트를 형태소 분석해 processed_json 구조를 생성합니다.
@@ -114,6 +115,9 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
       : metadata || existingJson?.metadata || {},
     failed_indices: [],
   };
+  // AD-R3 단어 경계(§3.5): 재분석이 넘긴 metadata.viewerBoundaries(줄 번호는 이미 새 원문 기준)를 문단 요청에 싣고,
+  // 서버 적용 결과로 기록을 갱신한다. 한국어는 승인 밖이라 싣지도 바꾸지도 않는다. 기록이 없으면 요청·결과가 현행 그대로다.
+  const boundaryEdits = isKorean ? [] : [...readBoundaryEdits(currentJson)];
 
   let processedLines = 0;
 
@@ -166,13 +170,15 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
     }
 
     // 서버로 문단 전송
+    const sentBoundaries = boundaryEdits.length ? boundaryParagraphRequest(boundaryEdits, para.lineIndices) : [];
     let response = null;
     try {
       const res = await fetch(isKorean ? '/api/analyze/korean' : '/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeader },
         signal,
-        body: JSON.stringify({ lines: para.lines, language, ...(isKorean ? { explanationLocale } : {}) }),
+        body: JSON.stringify({ lines: para.lines, language, ...(isKorean ? { explanationLocale } : {}),
+          ...(sentBoundaries.length ? { boundaries: sentBoundaries.map(item => item.payload) } : {}) }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
@@ -207,6 +213,12 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
         if (isKorean && (result.failed || result.sequence.some((id) => result.dictionary[id]?.failed))) {
           currentJson.failed_indices.push(idx);
         }
+        // 경계 기록 갱신 — 서버가 줄마다 받은 순서대로 boundaryApplied를 돌려준다. base 새 id는 `id_<줄>_b<k>_<시각>`.
+        let baseSeq = 0;
+        sentBoundaries.filter(item => item.payload.line === li).forEach((item, k) => {
+          boundaryEdits[item.index] = settleBoundaryRecord(boundaryEdits[item.index], result.boundaryApplied?.[k],
+            () => `id_${idx}_b${baseSeq++}_${timestamp}`);
+        });
       } else {
         // 실패
         const failedId = `failed_${idx}_${timestamp}`;
@@ -233,6 +245,9 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
     }
 
     processedLines += para.lineIndices.length;
+    if (sentBoundaries.length) {
+      currentJson.metadata = { ...currentJson.metadata, viewerBoundaries: { ...currentJson.metadata.viewerBoundaries, edits: [...boundaryEdits] } };
+    }
 
     // 문단 완료 → 즉시 DB 저장 (실시간 갱신)
     currentJson.metadata = {

@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import { after, before, test } from 'node:test';
 import { chromium } from 'playwright-core';
 import config from '../playwright.config.mjs';
+import { hunRubyCells } from '../src/lib/viewerHunRuby.js';
 
 /**
  * 조판 기하 e2e — 실제 렌더 좌표로 병음·요미가나 계약을 지킨다.
@@ -452,29 +453,47 @@ test('경로 줄 — 뒤로가기·내비가 없어도 도구는 오른쪽에 �
 });
 
 
-// Long Korean labels need their own height; the original pinyin grid remains unchanged.
-const HUN_CARD = (withHun) => `<div class="word-fit-wrap"><div class="word-fit" lang="zh-Hans" style="--fit-n:2">
+// The original pinyin grid remains unchanged (HUN_CARD(false) is the plain pinyin card used below).
+const HUN_CARD = () => `<div class="word-fit-wrap"><div class="word-fit" lang="zh-Hans" style="--fit-n:2">
   <span class="surface"><ruby data-pinyin="1">杯<span class="rt-an">bēi</span></ruby><ruby data-pinyin="1">子<span class="rt-an">zi</span></ruby></span>
-</div></div>${withHun ? '<dl class="reader-hun"><div class="reader-hun__pair"><dt>杯</dt><dd>잔 배</dd></div><div class="reader-hun__pair"><dt>子</dt><dd>아들 자</dd></div></dl>' : ''}`;
+</div></div>`;
 
-const longHun=JSON.parse(fs.readFileSync(new URL('../src/lib/data/hanjaHun.json',import.meta.url),'utf8')).弩+' 노';
-const longHunCard=`<div class="reader-card-headword">${HUN_CARD(false)}</div><dl class="reader-hun" lang="ko"><div class="reader-hun__pair"><dt lang="zh-Hans">连</dt><dd>연할 련(연)</dd></div><div class="reader-hun__pair"><dt lang="zh-Hans">弩</dt><dd>${longHun}</dd></div></dl><div class="word-detail-card__meaning">연발 쇠뇌</div>`;
+// AE-R1 개정(VIEWER-V2-ROUNDS-001 §2.1 표제어 덩어리 — 「훈음은 한자 아래 루비로 되돌린다. 별도 훈음 목록은 없앤다.
+// 겹침 방지: 훈음이 글자 폭을 넘으면 그 글자 칸을 벌린다(--hun-n), 그래도 넘치면 훈과 음을 두 줄로」, 설계서 §7.2):
+// 옛 별도 목록(.reader-hun) 대신 실제 셀 계산(hunRubyCells)으로 만든 루비 셀 마크업을 index.css·reader-controls.css
+// 실물로 그려, 긴 풀이 훈(弩)도 잘리지 않고 자기 칸 안에서 줄바꿈하며 이웃 칸·글자·뜻과 겹치지 않는지 잰다.
+const readData=f=>JSON.parse(fs.readFileSync(new URL(`../src/lib/data/${f}`,import.meta.url),'utf8'));
+const hunTables={koTable:readData('hanjaKo.json'),hunTable:readData('hanjaHun.json'),tradTable:readData('hanjaTrad.json')};
+const longHun=hunTables.hunTable.弩+' 노';
+const hunCols=(word,readings)=>hunRubyCells(word,hunTables).map((cell,i)=>`<span class="word-fit__col"><ruby data-pinyin="1"><span class="reader-card-ruby-glyphs"><span class="word-fit__char">${cell.ch}</span></span><span class="rt-an">${readings[i]}</span></ruby><span class="word-fit__hunrow">${cell.label?`<span class="word-fit__hun" lang="ko" data-label="${cell.label}"${cell.wrap?' data-wrap="1"':''} style="--hun-n:${cell.hunN}">${cell.lines.map(l=>`<span class="word-fit__hun-line">${l}</span>`).join('')}</span>`:''}</span></span>`).join('');
+const longHunCard=`<div class="reader-card-headword"><div class="word-fit-wrap"><div class="word-fit word-fit--hun" lang="zh-Hans" style="--fit-n:2"><span class="surface">${hunCols('连弩',['lián','nǔ'])}</span></div></div></div><div class="word-detail-card__meaning">연발 쇠뇌</div>`;
 for(const width of [170,300,680])for(const scale of [1,2]) {
- test(`긴 훈음 — ${width}px 카드/${scale*100}% 확대에서 온전한 짝·높이·무겹침`,async()=>{
+ test(`긴 훈음 루비 — ${width}px 카드/${scale*100}% 확대에서 온전한 셀·칸 벌림·무겹침`,async()=>{
   await page.setContent(PAGE(`<style>#row{padding:0;width:${width}px;zoom:${scale}}</style>${longHunCard}`));
-  const geometry=await page.evaluate(()=>{
+  const g=await page.evaluate(()=>{
    const r=e=>{const b=e.getBoundingClientRect();return {x:b.x,right:b.right,y:b.y,bottom:b.bottom,height:b.height}};
-   return {pairs:[...document.querySelectorAll('.reader-hun__pair')].map(e=>({cell:r(e),ch:r(e.querySelector('dt')),label:r(e.querySelector('dd'))})),section:r(document.querySelector('.reader-hun')),head:r(document.querySelector('.word-fit')),meaning:r(document.querySelector('.word-detail-card__meaning')),full:document.querySelector('.reader-hun dd:last-child')?.textContent};
+   const ink=e=>{const range=document.createRange();range.selectNodeContents(e);return r(range);};
+   return {row:r(document.querySelector('#row')),meaning:r(document.querySelector('.word-detail-card__meaning')),
+    cols:[...document.querySelectorAll('.word-fit__col')].map(col=>({col:r(col),glyph:ink(col.querySelector('.word-fit__char')),hun:r(col.querySelector('.word-fit__hun')),
+     style:(s=>({position:s.position,overflow:s.overflow,textOverflow:s.textOverflow}))(getComputedStyle(col.querySelector('.word-fit__hun')))})),
+    labels:[...document.querySelectorAll('.word-fit__hun')].map(e=>e.dataset.label),text:[...document.querySelectorAll('.word-fit__hun')].map(e=>e.textContent)};
   });
-  for(const {cell,ch,label} of geometry.pairs) {
-   assert.ok(ch.right<=label.x+.5,'character must stay beside its own label');
-   assert.ok(label.right<=cell.right+.5,'long label must stay inside its own cell');
-   assert.ok(label.bottom<=cell.bottom+.5,'the cell must reserve the label height');
+  assert.equal(g.cols.length,2);
+  for(const {col,glyph,hun,style} of g.cols){
+   assert.notEqual(style.position,'absolute','hun cell is in flow');
+   assert.equal(style.overflow,'visible');assert.equal(style.textOverflow,'clip');
+   assert.ok(hun.y>=glyph.bottom-.5,'hun label sits below its own glyph');
+   assert.ok(hun.x>=col.x-.5&&hun.right<=col.right+.5,'hun label stays inside its own column');
+   assert.ok(hun.x>=g.row.x-.5&&hun.right<=g.row.right+.5,`hun label stays inside the card: ${JSON.stringify(hun)} / ${JSON.stringify(g.row)}`);
+   assert.ok(g.meaning.y>=hun.bottom-.5,'meaning must follow all wrapped labels');
   }
-  assert.ok(geometry.section.y>=geometry.head.bottom-.5);
-  assert.ok(geometry.meaning.y>=geometry.section.bottom-.5,'meaning must follow all wrapped labels');
-  assert.ok(await page.locator('.reader-hun dd').last().textContent()===longHun);
-  if(width===170)assert.ok(geometry.pairs[1].cell.y>=geometry.pairs[0].cell.bottom-.5,'narrow cards stack complete pairs');
+  const [a,b]=g.cols;
+  const overlap=(p,q)=>Math.min(p.right,q.right)-Math.max(p.x,q.x)>.5&&Math.min(p.bottom,q.bottom)-Math.max(p.y,q.y)>.5;
+  assert.ok(!overlap(a.col,b.col),'neighbouring columns do not overlap');
+  assert.ok(!overlap(a.hun,b.glyph)&&!overlap(b.hun,a.glyph),'a label never covers the neighbouring glyph');
+  assert.deepEqual(g.labels,['연할 련(연)',longHun],'complete labels — nothing truncated');
+  assert.ok(g.text[1].replace(/\s/g,'').includes(longHun.replace(/\s/g,'')),'the long gloss is fully rendered');
+  assert.ok(b.hun.height>a.hun.height,'the long gloss wraps inside its capped cell instead of widening without bound');
  });
 }
 
