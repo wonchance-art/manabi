@@ -860,3 +860,10 @@
 .viewer-boundary-pending__word {margin:0;font-size:.9375rem;line-height:1.5;color:var(--reader-ink);}
 .viewer-boundary-pending__sentence {margin:0;font-size:.875rem;line-height:1.5;color:var(--reader-muted);overflow-wrap:anywhere;}
 /* /AD-R3 PR③ */
+/* AD-R3 §7.5 한국어 나누기(B안) — 조각마다 기존 형태 분석 설명 · 나눌 자리 없을 때 공식 한 줄 · 조각 카드 저장 제외 안내. 색은 뷰어 별칭 토큰만. */
+.viewer-boundary-split__gloss {list-style:none;margin:2px 0 4px;padding:0;display:flex;flex-direction:column;gap:2px;max-width:100%;}
+.viewer-boundary-split__gloss li {display:flex;flex-wrap:wrap;gap:0 8px;font-size:.875rem;line-height:1.5;color:var(--reader-muted);overflow-wrap:anywhere;}
+.viewer-boundary-split__gloss b {color:var(--reader-ink);font-weight:700;}
+.viewer-boundary-split__note {margin:0;font-size:.9375rem;line-height:1.6;color:var(--reader-ink);overflow-wrap:anywhere;}
+.reader-card-boundary-note {margin:0 0 8px;font-size:.875rem;line-height:1.5;color:var(--reader-muted);}
+/* /AD-R3 §7.5 */

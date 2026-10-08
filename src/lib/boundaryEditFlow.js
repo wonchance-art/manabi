@@ -61,6 +61,7 @@ export function boundaryReasonMessage(reason) {
     case 'no_neighbor': return ['옆에 묶을 단어가 없어요'];
     case 'pending_edit': return ['적용하지 못한 단어 경계와 겹쳐서 고칠 수 없어요'];
     case 'stale_edits': return ['단어 경계 기록이 지금 분석과 달라요. 다시 분석한 뒤 고쳐 주세요'];
+    case 'no_literal_cut': return ['이 단어는 나눌 자리가 없어요.'];
     default: return ['이 범위는 고칠 수 없어요'];
   }
 }
