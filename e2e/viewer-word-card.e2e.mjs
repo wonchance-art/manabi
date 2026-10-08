@@ -799,12 +799,14 @@ const savedCanguan=()=>{const day=86400000,now=Date.now();return [{id:'card-cang
 const visibleCard=page=>page.locator('#inspector-word').filter({visible:true});
 const popOf=page=>visibleCard(page).locator('.hanja-pop');
 // 카드 요소(문장 줄 · 칩 · 표제어 글자 · 훈음 · 뜻 · 등급) 사각형 — 창을 열고 닫아도 0px.
-const cardBoxes=page=>page.evaluate(()=>{
+// 재기 전에 포인터를 카드 밖(좌상단)으로 치운다: 등급 버튼은 :hover에서 translateY(-1px)라, 카드를 연 탭 자리가 마침 등급 버튼
+// 위면 「열기 전」만 1px 떠 보인다(CI 실측 780 → 781 — 창과 무관한 hover 변형). 레이아웃 이동만 비교한다.
+const cardBoxes=async page=>{await page.mouse.move(0,0);return page.evaluate(()=>{
  const card=[...document.querySelectorAll('#inspector-word')].find(el=>el.getClientRects().length);
  const r=el=>{const b=el.getBoundingClientRect();return [b.left,b.top,b.width,b.height].map(v=>Math.round(v*10)/10).join(',');};
  return ['.reader-card-sentence','.word-detail-card__actions','.word-fit [data-glyph-i]','.word-fit__hun','.word-detail-card__meaning','.reader-card-actions .review-score-btn,.save-grade__saved']
   .flatMap(s=>[...card.querySelectorAll(s)].filter(el=>el.getClientRects().length).map(el=>`${s}:${r(el)}`));
-});
+});};
 // 창 기하 — 크기 · 한 줄 · 넘침 · 보임 · 등급 버튼과의 거리 · 포커스.
 const popGeometry=page=>page.evaluate(()=>{
  const card=[...document.querySelectorAll('#inspector-word')].find(el=>el.getClientRects().length);
@@ -950,7 +952,8 @@ test('AE-R4 390 · 1440: 壮观의 观 → 한자 창(머리 · 구성 · 같은
    await guan.click();await pop.waitFor();
    await visibleCard(f.page).locator('.reader-card-sentence').click();
    await pop.waitFor({state:'detached'});
-   assert.equal(await f.page.evaluate(()=>document.activeElement?.textContent),'观','outside press returns focus to the glyph');
+   // 복귀는 누른 몸짓(click)이 끝난 뒤다 — 그 사이 카드 상자(tabIndex=-1)로 간 기본 포커스를 글자로 되돌린다.
+   await until(()=>f.page.evaluate(()=>document.activeElement?.textContent==='观'),2000).catch(async()=>assert.fail(`outside press returns focus to the glyph (active: ${await f.page.evaluate(()=>document.activeElement?.className)})`));
    assert.deepEqual(await cardBoxes(f.page),before);
    // ✕
    await guan.click();await pop.waitFor();

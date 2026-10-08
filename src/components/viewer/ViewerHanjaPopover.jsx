@@ -35,6 +35,32 @@ const PINYIN = 'zh-Latn-pinyin';
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), Math.max(lo, hi));
 const toneOf = (on, syl) => (on && syl ? pinyinToneClass(syl) : undefined);
 
+/** 포커스를 받아도 조작이 아닌 자리 — 몸통·카드 상자(tabIndex=-1)·본문. 여기로 간 포커스는 그 글자로 돌려준다. */
+const isPassiveFocus = (el) => !el || el === document.body || (el.tabIndex < 0 && !el.matches('input,textarea,select,button,a[href],[contenteditable="true"]'));
+
+/**
+ * 바깥 누르기 뒤 포커스 복귀. 누른 자리의 기본 포커스 이동(mousedown — 가장 가까운 tabIndex 조상, 예: 카드 상자)은 pointerdown
+ * 뒤에 오고, 터치는 click 직전에야 온다. 그래서 시간(setTimeout)에 기대지 않고 그 몸짓이 끝날 때까지(click 또는 600ms) 생기는
+ * focusin을 보고, 비조작 자리로 간 포커스만 글자로 되돌린다. 마지막에 한 번 더 확인한다(포커스가 아예 안 움직인 경우).
+ */
+function restoreAfterOutsidePress(anchor) {
+  let done = false;
+  const back = () => { if (anchor.isConnected && isPassiveFocus(document.activeElement)) anchor.focus({ preventScroll: true }); };
+  const onFocusIn = (e) => { if (e.target !== anchor && isPassiveFocus(e.target)) queueMicrotask(back); };
+  const settle = () => {
+    if (done) return;
+    done = true;
+    document.removeEventListener('focusin', onFocusIn, true);
+    document.removeEventListener('click', onClick, true);
+    clearTimeout(timer);
+    back();
+  };
+  const onClick = () => setTimeout(settle, 0);
+  document.addEventListener('focusin', onFocusIn, true);
+  document.addEventListener('click', onClick, true);
+  const timer = setTimeout(settle, 600);
+}
+
 /** 병음 한 덩어리 — 성조 색 설정을 따른다(R0 버그 2와 같은 규칙: 켜면 음절마다 pinyin-tone--N). */
 function Pinyin({ text, tones, className = '' }) {
   if (!text) return null;
@@ -170,15 +196,10 @@ export default function ViewerHanjaPopover({ inspect, word, tables = {}, savedRo
     const onDown = (e) => {
       const t = e.target;
       if (!shown() || ref.current?.contains(t) || isHeadChar(t)) return; // 표제어 글자는 toggleInspectChar가 닫거나 바꾼다
-      // 바깥 누르기: 닫고, 눌린 곳의 기본 포커스 이동(mousedown)이 끝난 뒤 포커스가 조작 요소로 가지 않았으면 그 글자로 돌려준다
-      // (카드 상자 tabIndex=-1·본문 같은 비조작 자리). 버튼·입력·다른 낱말로 옮긴 포커스는 빼앗지 않는다.
+      // 바깥 누르기: 닫고 그 글자로 포커스를 돌려준다 — 단, 누른 자리가 조작 요소(버튼·입력·다른 낱말)면 그 포커스를 빼앗지 않는다.
       const anchor = anchorOf();
       onClose();
-      setTimeout(() => {
-        const a = document.activeElement;
-        const passive = !a || a === document.body || (a.tabIndex < 0 && !a.matches('input,textarea,select,button,a[href],[contenteditable="true"]'));
-        if (anchor?.isConnected && passive) anchor.focus({ preventScroll: true });
-      }, 0);
+      if (anchor) restoreAfterOutsidePress(anchor);
     };
     document.addEventListener('keydown', onKey, true);
     document.addEventListener('pointerdown', onDown, true);
