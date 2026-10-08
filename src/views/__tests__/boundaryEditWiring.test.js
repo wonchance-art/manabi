@@ -61,7 +61,7 @@ describe('AD-R3 PR③ 배선 — 진입점 조건', () => {
   });
   it('재분석 알림: 목업 문구 + [보기] → [문장] 탭 자리 목록(useReanalyze onPendingBoundaries)', () => {
     expect(viewer).toContain('onPendingBoundaries: showPendingBoundaries');
-    expect(viewer).toContain("vt('분석을 다시 했어요. 직접 고친 단어 경계 {count}개는 원문이 바뀌어 적용하지 못했어요.', { count })");
+    expect(viewer).toContain("vt('분석을 다시 했어요. 직접 고친 단어 경계 {count}개는 이번 분석에 적용하지 못했어요.', { count })");
     expect(sliceBetween(viewer, 'const showPendingBoundaries = (count) =>', "'warning', 10000);")).toContain('setBoundaryPendingOpen(true); setSentenceTabSignal(s => s + 1);');
   });
 });

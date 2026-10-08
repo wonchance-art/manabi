@@ -368,7 +368,7 @@ test('재분석에서 적용하지 못한 경계: 목업 알림 + [보기] → [
  try{
   await f.page.getByRole('button',{name:'자료 관리',exact:true}).click();
   await f.page.locator('.reanalyze-panel__item').filter({hasText:'전체 분석'}).click();
-  const toast=f.page.getByText('분석을 다시 했어요. 직접 고친 단어 경계 1개는 원문이 바뀌어 적용하지 못했어요.',{exact:false});
+  const toast=f.page.getByText('분석을 다시 했어요. 직접 고친 단어 경계 1개는 이번 분석에 적용하지 못했어요.',{exact:false});
   await toast.waitFor({timeout:30000});
   await until(()=>row(f).processed_json.metadata.viewerBoundaries?.edits?.[0]?.status==='pending');
   await f.page.getByRole('button',{name:'보기',exact:true}).last().click();

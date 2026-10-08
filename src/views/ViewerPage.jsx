@@ -631,7 +631,7 @@ export default function ViewerPage() {
   const [boundaryUndo, setBoundaryUndo] = useState(null);
   const [boundaryPendingOpen, setBoundaryPendingOpen] = useState(false);
   // 재분석에서 적용하지 못한 경계(pending)는 목업 문구 + [보기] → [문장] 탭 자리 목록(설계서 §6.3 마지막 목업).
-  const showPendingBoundaries = (count) => toast(<span>{vt('분석을 다시 했어요. 직접 고친 단어 경계 {count}개는 원문이 바뀌어 적용하지 못했어요.', { count })}{' '}
+  const showPendingBoundaries = (count) => toast(<span>{vt('분석을 다시 했어요. 직접 고친 단어 경계 {count}개는 이번 분석에 적용하지 못했어요.', { count })}{' '}
     <button type="button" className="btn btn--ghost btn--sm" style={{ pointerEvents: 'auto' }}
       onClick={() => { setSenseReviewIds(null); setBoundaryPendingOpen(true); setSentenceTabSignal(s => s + 1); }}>{vt('보기')}</button></span>, 'warning', 10000);
 
