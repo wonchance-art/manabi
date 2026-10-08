@@ -247,7 +247,7 @@ try {
    const a=lum(rgb(getComputedStyle(surface).color)),b=lum(rgb(band.backgroundColor));
    return {picked:getComputedStyle(picked).opacity,rest:getComputedStyle(rest).opacity,tokenBg:getComputedStyle(selected).backgroundColor,outline:getComputedStyle(selected).outlineStyle,shadow:band.boxShadow,frame:getComputedStyle(selected,"::before").borderTopStyle,band:parseFloat(band.height),cell:surface.getBoundingClientRect().height,contrast:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
   });
-  assert.equal(focusRead.picked,'1');assert.equal(focusRead.rest,'0.28');assert(focusRead.contrast>=7,JSON.stringify(focusRead));
+  assert.equal(focusRead.picked,'1');assert.equal(focusRead.rest,'0.5');assert(focusRead.contrast>=7,JSON.stringify(focusRead));
   assert.equal(focusRead.tokenBg,'rgba(0, 0, 0, 0)');assert.equal(focusRead.outline,'none');assert.equal(focusRead.frame,"solid");assert(!focusRead.shadow.includes("inset"),"R0 bug 6: the frame left the band");assert(focusRead.band<focusRead.cell*.55);
   assert.equal(await panel().getByRole('button',{name:/닫기/}).count(),1,'only one close control');
   assert.equal(await panel().locator('.word-detail-card__edit svg').count(),1,'consistent vector edit icon');

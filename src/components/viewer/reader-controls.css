@@ -52,7 +52,8 @@
 .viewer-layout .reader-area .word-token .surface {text-shadow:none;color:inherit;}
 /* Selection adds a quiet neutral wash; learning states keep their own hues. */
 .viewer-layout :is(.reader-area,.reader-settings__preview) {--picked-bg:color-mix(in srgb,var(--reader-ink) 7%,var(--reader-paper));}
-.viewer-layout .reader-area--focus .word-token:not(.word-token--picked):not([data-selected="true"]) {opacity:.28;color:var(--reader-ink);}
+/* Focus dims the other sentences to 0.5 (owner-confirmed, VIEWER-V2-ROUNDS-001 §5 AD-R2) — the only focus opacity rule. */
+.viewer-layout .reader-area--focus .word-token:not(.word-token--picked):not([data-selected="true"]) {opacity:.5;color:var(--reader-ink);}
 .viewer-layout .reader-area--focus .word-token:is(.word-token--picked,[data-selected="true"]) {opacity:1;color:var(--reader-ink);}
 .viewer-layout .reader-area .word-token--picked {color:var(--reader-ink);}
 .viewer-layout .reader-area--focus .word-token:is(.word-token--picked,[data-selected="true"]) .surface {opacity:1;}
