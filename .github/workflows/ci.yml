@@ -107,4 +107,4 @@ jobs:
             sleep 1
           done
           curl -fsS http://127.0.0.1:8878/manifest.webmanifest > /dev/null
-          QA_BASE=http://127.0.0.1:8878 node --test --test-concurrency=1 e2e/library-book-chapters.e2e.mjs e2e/library-management.e2e.mjs e2e/learning-flow-clarity.e2e.mjs e2e/textbook-reading-clarity.e2e.mjs e2e/book-reading-reload.e2e.mjs e2e/viewer-response.e2e.mjs e2e/viewer-hun-layout.e2e.mjs e2e/viewer-exclusion.e2e.mjs e2e/viewer-language-settings.e2e.mjs e2e/viewer-focus-move.e2e.mjs e2e/viewer-r0-display.e2e.mjs e2e/korean-learning.e2e.mjs e2e/learner-archive-links.e2e.mjs
+          QA_BASE=http://127.0.0.1:8878 node --test --test-concurrency=1 e2e/library-book-chapters.e2e.mjs e2e/library-management.e2e.mjs e2e/learning-flow-clarity.e2e.mjs e2e/textbook-reading-clarity.e2e.mjs e2e/book-reading-reload.e2e.mjs e2e/viewer-response.e2e.mjs e2e/viewer-hun-layout.e2e.mjs e2e/viewer-exclusion.e2e.mjs e2e/viewer-language-settings.e2e.mjs e2e/viewer-focus-move.e2e.mjs e2e/viewer-r0-display.e2e.mjs e2e/korean-learning.e2e.mjs e2e/learner-archive-links.e2e.mjs e2e/viewer-word-card.e2e.mjs e2e/viewer-boundary-edit.e2e.mjs

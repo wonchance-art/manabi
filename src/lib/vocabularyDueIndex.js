@@ -41,22 +41,43 @@ export function findIndexedVocabulary(index, token, language) {
   return scoped || (fallback?.language === language ? fallback : null);
 }
 
-export function isIndexedVocabularyDue(index, row, { at = Date.now(), legacyOnly = false } = {}) {
-  if (!row || index?.complete !== true || index.registryAvailable !== true) return false;
+// 카드 한 장의 현재 projection — legacy의 성공/undo/오프라인 캐시 패치만 반영한다. FSRS cohort와 registry는 고정한다.
+function currentIndexedProjection(index, row, now) {
+  if (!row || index?.complete !== true || index.registryAvailable !== true) return null;
   let projection = index.projectionsById?.get(row.id);
-  if (!projection || row.user_id !== index.actorId || row.__pendingReview) return false;
-  const now = Math.max(schedulerTime(at), schedulerTime(index.now));
+  if (!projection || row.user_id !== index.actorId || row.__pendingReview) return null;
   if (projection.source === 'legacy' && reviewFields.some(field => row[field] !== projection.vocabulary[field])) {
-    // 기존 legacy의 성공/undo/오프라인 캐시 패치만 반영한다. FSRS cohort와 registry는 고정한다.
     const vocabulary = { ...projection.vocabulary };
     for (const field of reviewFields) vocabulary[field] = row[field];
     try {
       projection = projectVocabularyLearning({ actorId: index.actorId, vocabulary,
         registry: index.registryById.get(row.id), enabled: index.enabled, registryAvailable: true, complete: true, at: now });
-    } catch { return false; }
+    } catch { return null; }
   }
+  return projection;
+}
+
+export function isIndexedVocabularyDue(index, row, { at = Date.now(), legacyOnly = false } = {}) {
+  if (!row || index?.complete !== true || index.registryAvailable !== true) return false;
+  const now = Math.max(schedulerTime(at), schedulerTime(index.now));
+  const projection = currentIndexedProjection(index, row, now);
+  if (!projection) return false;
   if (legacyOnly && (projection.source !== 'legacy' || projection.memory.lastReview === null)) return false;
   return isVocabularyReviewDue(projection, now);
+}
+
+/**
+ * 저장 카드의 다음 복습(AE-R1 하단 저장 줄 「다음 복습 10월 12일」) — 읽기 전용, 추가 조회 없음.
+ * projectionsById의 review.nextQuestionAt을 그대로 쓴다(isIndexedVocabularyDue와 같은 projection).
+ * 복습 대상이 아니면(아는 단어·제외·부적격·FSRS 비활성·일정 없음·평가 전송 중) null.
+ * @returns {{at:string, due:boolean, source:string}|null}
+ */
+export function indexedVocabularyNextReview(index, row, { at = Date.now() } = {}) {
+  if (!row || index?.complete !== true || index.registryAvailable !== true) return null;
+  const now = Math.max(schedulerTime(at), schedulerTime(index.now));
+  const projection = currentIndexedProjection(index, row, now);
+  if (!projection || !isVocabularyReviewAvailable(projection) || projection.review.nextQuestionAt === null) return null;
+  return { at: projection.review.nextQuestionAt, due: isVocabularyReviewDue(projection, now), source: projection.source };
 }
 
 export function countVocabularyDueInMaterial(index, material, at) {

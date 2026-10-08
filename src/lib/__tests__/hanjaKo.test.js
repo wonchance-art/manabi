@@ -189,7 +189,9 @@ describe('hanjaJa.json 생성 데이터', () => {
     expect(ja['学']).toBeUndefined();
     expect(ja['台']).toBeUndefined();
     expect(ja['老']).toBeUndefined();
-    expect(Object.entries(ja).every(([k, v]) => k !== v)).toBe(true);
+    // 예외는 보존 표식뿐(2026-10-07 KST 다대일 오류 수정): 일본 표준 한자 중 번체 경유
+    // 사슬이 다른 글자로 닿는 것(面 → 麵 → 麺)만 자기 자신으로 적어 글자 카드 사슬을 멈춘다.
+    expect(Object.entries(ja).filter(([k, v]) => k === v).map(([k]) => k).join('')).toBe('庄征据斗系面');
   });
 
   it('hanjaKo 등재 글자에만 붙는 오버레이고 2,500자 이상이다', () => {
@@ -213,7 +215,9 @@ describe('한자 대조 배선 계약', () => {
   it('훈음(①)도 같은 토글 아래 지연 로드되어 단어 카드에 병기된다(팝업은 ②로 카드 단일화)', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
     expect(src).toContain("import('../lib/data/hanjaHun.json')");
-    expect(src).toContain('listHanjaHunEum');
+    // AE-R1 개정(VIEWER-V2-ROUNDS-001 §2.1 훈음 루비, 설계서 §7.2): 단어창 훈음은 별도 목록(listHanjaHunEum) 대신
+    // 루비 셀(hunRubyCells → hanjaReadingsOf, R0+ 단일 조회)
+    expect(src).toContain('hunRubyCells');
     expect(src).toMatch(/hanjaHunOf\(headText\)/); // R R2: 훈음은 표제어(기본형) 글자 기준
     // 팝업 부활 금지 — 리스트 단어도 같은 카드 한 벌을 쓴다(오너 승인 ②)
     expect(src).not.toContain('popupWord');
@@ -230,25 +234,25 @@ describe('한자 대조 배선 계약', () => {
   // 다시 그릴 일이 없다. 글자별 신자체는 사라진 게 아니라 **글자 카드**로 옮겨 앉았고
   // (char-inspect의 日 칩 — 繁·简·正까지 함께, 탭 이동까지 된다) 단어 수준 대조는 日
   // 줄이 그대로 진다. 그래서 이 계약은 '어디서 신자체를 보는가'를 두 자리로 고정한다.
-  it('일본식 자형 — 글자 카드와 현재 뜻에 맞는 일본어 대조를 보존한다', () => {
+  // AE-R3 PR② 개정(설계서 §5·§7.1 — 대조 블록 props 단언 제거, 글자 카드 日 칩 단언만): 단어 수준 일본어는 자형 열
+  // 日 줄(확인된 표기)과 더 알아보기 「일본어로는」 줄이 진다. 글자별 신자체(toJaForm · hanjaJa)는 글자 카드에만 남는다.
+  it('일본식 자형 — 글자 카드 日 칩은 hanjaJa를 그대로 쓰고, 단어창은 글자 변환을 쓰지 않는다', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
     expect(src).toContain("import('../lib/data/hanjaJa.json')");
     // 글자별 신자체 — 글자 카드 헤더의 자형 칩(탭하면 그 자형 카드로)
     expect(src).toMatch(/formChip\('日',/);
     expect(src).toMatch(/jaTable: hanjaJaTable/);
-    expect(src).toContain('word={headText}');
-    expect(src).toContain('jaTable={hanjaJaTable}');
-    const component=fs.readFileSync(path.join(process.cwd(), 'src/components/viewer/ViewerJapaneseReference.jsx'), 'utf8');
-    expect(component).toContain('toJaForm(word,jaTable)');
-    expect(component).toContain('ref?.warn');
+    expect(src).not.toContain('jaTable={hanjaJaTable}');
+    expect(src).not.toMatch(/\btoJaForm\s*\(/);
+    expect(fs.existsSync(path.join(process.cwd(), 'src/components/viewer/ViewerJapaneseReference.jsx'))).toBe(false);
   });
 
-  it('배치 개선 — 대조 블록은 헤더가 아니라 뜻 아래에 있다', () => {
+  it('배치 — 「일본어로는」 줄(더 알아보기)은 헤더가 아니라 뜻 아래에 있다', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
     const meaningAt = src.indexOf("refMeaning || selectedToken.meaning || '(뜻 없음)'");
-    const blockAt = src.indexOf('<ViewerJapaneseReference');
+    const lineAt = src.indexOf('<ViewerJapaneseMore');
     expect(meaningAt).toBeGreaterThan(-1);
-    expect(blockAt).toBeGreaterThan(meaningAt);
+    expect(lineAt).toBeGreaterThan(meaningAt);
   });
 });
 
@@ -520,7 +524,9 @@ describe('R0+ 세 경로 단일 조회', () => {
   it('뷰어는 중국어 단어창 훈음과 글자 카드에 같은 정체 표를 넘긴다', () => {
     const src = read('src/views/ViewerPage.jsx');
     expect(src).toContain("import('../lib/data/hanjaTrad.json')");
-    expect(src).toContain('listHanjaHunEum(text, hanjaKoTable, hanjaHunTable, hanjaTradTable)');
+    // AE-R1 개정(설계서 §7.2): 단어창 훈음은 별도 목록(listHanjaHunEum) 대신 루비 셀 — 같은 정체 표·같은 조회 함수.
+    expect(src).toContain('hunRubyCells(text, { koTable: hanjaKoTable, hunTable: hanjaHunTable, tradTable: hanjaTradTable }, HUN_RUBY_CELL)');
+    expect(sliceBetween(read('src/lib/viewerHunRuby.js'), 'export function hunRubyCells', '\n}')).toContain('hanjaReadingsOf(');
     expect(src).toMatch(/charDetail\(inspectChar\.ch, \{ koTable: hanjaKoTable, hunTable: hanjaHunTable, jaTable: hanjaJaTable \}, inspectWord\)/);
     expect(src).toMatch(/const inspectWord = materialLang === 'Chinese' && [^\n]*\{ word: headText, tradTable: hanjaTradTable \}/);
   });

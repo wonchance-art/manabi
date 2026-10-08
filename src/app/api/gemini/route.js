@@ -11,6 +11,12 @@ import { callLLM, resolveTier, LLMError } from '@/lib/server/llm';
 const MAX_TEXT_BYTES = 32 * 1024;
 // 출력 토큰 서버 상한 — 관측된 최대 사용처(단어상세·독해문항·문단번역)보다 넉넉, 출력 폭주 차단.
 const MAX_OUTPUT_TOKENS = 8192;
+// 측정용 용도 꼬리표(뷰어 v2 AE-R2 §4.2 (가)) — 허용 목록만 `[llm]` 로그·llm-stats의 route로 나눠 센다.
+// 목록 밖·없음은 지금처럼 'gemini-proxy'. 원문·사용자 식별자는 싣지 않는다(스키마 0).
+const PROXY_PURPOSES = new Set(['viewer-sentence', 'viewer-sentence-prefetch']);
+function proxyRoute(purpose) {
+  return PROXY_PURPOSES.has(purpose) ? `gemini-proxy:${purpose}` : 'gemini-proxy';
+}
 
 // IP별 요청 카운터 (서버리스 인스턴스 재시작 시 초기화 — 충분한 억지력)
 const rateLimitMap = new Map();
@@ -164,7 +170,7 @@ export async function POST(request) {
   try {
     const { text, meta } = await callLLM(resolved.tier, contents, {
       generationConfig: safeGenConfig,
-      route: 'gemini-proxy',
+      route: proxyRoute(body.purpose),
     });
     const latency = Date.now() - started;
     stats.latencySum += latency;
