@@ -13,7 +13,6 @@ import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../lib/AuthContext';
-import { useTTS } from '../lib/useTTS';
 import { canTeachClass } from '../lib/classWorkspace';
 import { fetchTeamRoot } from '../lib/classTeamQueries';
 import { useClassCourse, courseErrorText } from '../lib/classCourseClient';
@@ -22,7 +21,7 @@ import {
 } from '../lib/classCourse';
 import { currentSchedule, kstToday, shortDate } from '../lib/classSchedule';
 import { ClassroomShell, ClassroomState } from '../components/classroom/ClassroomUI';
-import { CoursePending, SpeakButton, Ja, TextbookOriginal, FixNote } from '../components/classroom/ClassCourseUI';
+import { CoursePending, JaLine, TextbookOriginal, FixNote } from '../components/classroom/ClassCourseUI';
 
 const WARN_SEC = 5, LATE_SEC = 10;
 const dots = (lv) => '●'.repeat(lv) + '○'.repeat(3 - lv);
@@ -55,7 +54,7 @@ function rangeLabel(pool) {
   return runs.map(([a, b]) => (a === b ? `Ch.${a}` : `Ch.${a}~${b}`)).join(' · ');
 }
 
-function TestMode({ course, pool, teacher, speak }) {
+function TestMode({ course, pool, teacher }) {
   const router = useRouter();
   const search = useSearchParams();
   const urlSheet = Number(search.get('sheet'));
@@ -123,7 +122,7 @@ function TestMode({ course, pool, teacher, speak }) {
         <span className="course-line__no">{k + 1}</span>
         <span>{x.ko}</span>
         <button type="button" className={`course-mark course-mark--${marks[x.id] ? 'pass' : 'fail'}`} aria-label={`${k + 1}번 판정 바꾸기`} onClick={() => setMarks((m) => ({ ...m, [x.id]: !m[x.id] }))}>{marks[x.id] ? '○ 통과' : '✕ 실패'}</button>
-        <span className="course-review__ja"><Ja ja={x.ja} yomi={x.yomi} /> · Ch.{x.n}</span>
+        <span className="course-review__ja"><JaLine ja={x.ja} yomi={x.yomi} br={x.br} /> · Ch.{x.n}</span>
       </li>)}</ol>
       <p className="course-keys">판정을 눌러 고칠 수 있어요. 결과는 저장되지 않아요.</p>
       <div className="course-actions"><button className="classroom-button classroom-button--quiet" onClick={again}>같은 시험지 다시</button><button className="classroom-button" onClick={fresh}>새 시험지</button></div>
@@ -136,7 +135,7 @@ function TestMode({ course, pool, teacher, speak }) {
     <div className="course-test-meta">{revealed && <span>Ch.{item.n}</span>}<span className="course-dots" aria-label={`난이도 ${LEVEL[item.lv]}`}>{dots(item.lv)}</span></div>
     <p className="course-card__prompt">{item.ko}</p>
     {revealed ? <div className="course-answer">
-      <div className="course-answer__ja"><Ja ja={item.ja} yomi={item.yomi} /> <SpeakButton text={item.ja} speak={speak} /></div>
+      <div className="course-answer__ja"><JaLine ja={item.ja} yomi={item.yomi} br={item.br} /></div>
       <TextbookOriginal text={item.textbook} />
       <FixNote note={item.note} />
       <p>목표 패턴: <span lang="ja">{item.pattern}</span> (Ch.{item.n} {item.title})</p>
@@ -147,7 +146,7 @@ function TestMode({ course, pool, teacher, speak }) {
   </div>;
 }
 
-function PracticeMode({ course, pool, speak }) {
+function PracticeMode({ course, pool }) {
   const days = useMemo(() => [...new Set(pool.map((x) => x.day))].sort((a, b) => a - b), [pool]);
   const rangeOf = useMemo(() => new Map(course.days.map((d) => [d.day, d.range])), [course]);
   const [range, setRange] = useState('all');
@@ -185,9 +184,9 @@ function PracticeMode({ course, pool, speak }) {
   const ko2ja = dir === 'ko2ja';
   return <>{opts}<div className="course-card">
     <div className="course-card__top"><span>{at + 1} / {deck.length}</span><span>Ch.{x.n}</span></div>
-    {ko2ja ? <p className="course-card__prompt">{x.ko}</p> : <p className="course-card__prompt" lang="ja"><Ja ja={x.ja} yomi={x.yomi} /> <SpeakButton text={x.ja} speak={speak} /></p>}
+    {ko2ja ? <p className="course-card__prompt">{x.ko}</p> : <p className="course-card__prompt course-card__prompt--ja"><JaLine ja={x.ja} yomi={x.yomi} br={x.br} /></p>}
     {shown ? <div className="course-answer">
-      {ko2ja ? <div className="course-answer__ja"><Ja ja={x.ja} yomi={x.yomi} /> <SpeakButton text={x.ja} speak={speak} /></div> : <div className="course-answer__ko">{x.ko}</div>}
+      {ko2ja ? <div className="course-answer__ja"><JaLine ja={x.ja} yomi={x.yomi} br={x.br} /></div> : <div className="course-answer__ko">{x.ko}</div>}
       <TextbookOriginal text={x.textbook} />
       <FixNote note={x.note} />
       <p>패턴: <span lang="ja">{x.pattern}</span> (Ch.{x.n} {x.title})</p>
@@ -200,7 +199,6 @@ export default function ClassCourseTestPage() {
   const { team: teamKey } = useParams();
   const search = useSearchParams();
   const { user, loading } = useAuth();
-  const { speak } = useTTS();
   const q = useClassCourse(teamKey, user?.id, !loading);
   const { data: root } = useQuery({
     queryKey: ['class-root', user?.id, teamKey],
@@ -228,7 +226,7 @@ export default function ClassCourseTestPage() {
     </div>
     <div className="course-test-meta"><span>출제 범위: {rangeLabel(pool)}</span>{pool.length < total && <span>예문 {pool.length}/{total} 입력</span>}{testDate && <span>시험일 {shortDate(testDate)} ({course.days[course.days.length - 1].range} 수업 날)</span>}</div>
     {active === 'test' && pool.length >= TEST_SIZE && <SheetNote pool={pool} course={course} />}
-    {active === 'test' ? <TestMode course={course} pool={pool} teacher={teacher} speak={speak} /> : <PracticeMode course={course} pool={pool} speak={speak} />}
+    {active === 'test' ? <TestMode course={course} pool={pool} teacher={teacher} /> : <PracticeMode course={course} pool={pool} />}
     </div>
   </ClassroomShell>;
 }

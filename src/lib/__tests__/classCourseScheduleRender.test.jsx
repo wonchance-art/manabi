@@ -6,7 +6,7 @@ import { sliceBetween } from './helpers/sliceBetween.js';
 
 /**
  * 코스 탭 표시 계약(오너 확정 2026-10-08) — 정적 렌더로 사용자가 보는 결과를 고정한다.
- * - 챕터 줄 = Ch.N · 일본어 패턴 · 한국어 제목(옛 /nihongo 목록처럼)
+ * - 챕터 줄 = Ch.N · 일본어 패턴 · 한국어 제목(강조 없이 — 오너 결정 2026-10-08)
  * - 날짜·진행·달력·시험(마지막 Day)·휴강 줄
  * - 일정 편집(날짜 변경·일정 만들기)은 팀 루트 소유자에게만 — 학생 화면에는 편집 수단이 없다
  */
@@ -28,7 +28,9 @@ describe('코스 탭 — 학생', () => {
   it('챕터는 Ch.N · 일본어 패턴 · 한국어 제목으로', () => {
     expect(html).toContain('<span class="course-day__n">Ch.1</span><span lang="ja" class="course-day__jp">~する時があります</span>');
     expect(html).toContain('<b>Ch.1~3</b>');
-    expect(html).toContain('course-hl');
+    expect(html).toContain('<span class="course-day__ko">~할 때가 있어요</span>');
+    expect(html).not.toContain('course-hl');
+    expect(html).not.toContain('칸 숫자');
   });
   it('날짜·진행·달력·시험·휴강', () => {
     expect(html).toContain('10/13(화)');

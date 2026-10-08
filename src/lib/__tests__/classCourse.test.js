@@ -9,7 +9,7 @@ import { loadCourse } from '../server/classCourse.js';
 import { alignFurigana } from '../../../scripts/check-furigana.mjs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { TextbookOriginal, FixNote } from '../../components/classroom/ClassCourseUI.jsx';
+import { TextbookOriginal, FixNote, JaLine, HideToggle } from '../../components/classroom/ClassCourseUI.jsx';
 import nihongo42Class from '../../content/community/nihongo42Class.js';
 import { getTeam, buildTeamRootRow } from '../classBoard.js';
 import { indexFromRows } from '../server/classIndex.js';
@@ -300,6 +300,46 @@ describe('「Day」 표기 0 — 수업 회차는 챕터 범위로 부른다(오
     const hits = files.flatMap((f) => read(f).split('\n').map((line, i) => [f, i + 1, line])
       .filter(([, , line]) => !/^\s*(\*|\/\/|\/\*)/.test(line) && /(^|[\s'"`>(])Day([\s{$]|이|별|마다)/.test(line)));
     expect(hits).toEqual([]);
+  });
+});
+
+describe('문장 줄바꿈·화면 정리(오너 결정 2026-10-08)', () => {
+  const course = loadCourse('nihongo42');
+  const lines = course.days.flatMap((d) => [...d.dialogue, d.culture.phrase, ...d.chapters.flatMap((c) => c.drills)]);
+
+  it('12자 넘는 문장은 모두 어절 경계가 있고, 어절 하나는 12자 이하(휴대폰 한 줄 안)', () => {
+    expect(lines).toHaveLength(504);
+    for (const x of lines) {
+      if (x.ja.length > 12) expect(x.br.length, x.ja).toBeGreaterThan(0);
+      const cuts = [0, ...x.br, x.ja.length];
+      for (let i = 1; i < cuts.length; i += 1) expect(cuts[i] - cuts[i - 1], x.ja).toBeLessThanOrEqual(12);
+    }
+  });
+
+  it('JaLine — 어절마다 줄바꿈 없는 덩어리, 글자는 하나도 잃지 않는다(504문장 전부)', () => {
+    for (const x of lines) {
+      const html = renderToStaticMarkup(createElement(JaLine, x));
+      const text = html.replace(/<span class="rt-an">[^<]*<\/span>/g, '').replace(/<[^>]+>/g, '');
+      expect(text, x.ja).toBe(x.ja);
+      const groups = html.match(/class="jl__p"/g).length;
+      expect(groups, x.ja).toBeGreaterThanOrEqual(x.ja.length > 12 ? 2 : 1);
+      expect(groups, x.ja).toBeLessThanOrEqual(x.br.length + 1);
+    }
+    const one = renderToStaticMarkup(createElement(JaLine, { ja: '僕は図書館で本を借りる時があります。', yomi: 'ぼくはとしょかんでほんをかりるときがあります。', br: [2, 6, 8, 13] }));
+    expect(one.match(/class="jl__p"/g)).toHaveLength(5);
+  });
+
+  it('듣기(확성기) 버튼 없음 · 가리기 버튼은 「뜻」「음」 · 달력 범례에 「칸 숫자」 없음 · 목록의 챕터 뜻은 강조 없이', () => {
+    const files = ['src/views/ClassCourseDayPage.jsx', 'src/views/ClassCourseTestPage.jsx', 'src/components/classroom/ClassCourseUI.jsx', 'src/components/classroom/ClassCourseSchedule.jsx'];
+    for (const f of files) {
+      expect(read(f), f).not.toMatch(/SpeakButton|useTTS|🔊/);
+      expect(read(f), f).not.toMatch(/한국어 가리기|일본어 가리기/);
+    }
+    const toggle = renderToStaticMarkup(createElement(HideToggle, { hide: { ko: true, ja: false }, onToggle: () => {} }));
+    expect(toggle).toContain('aria-pressed="true" aria-label="뜻 가리기" title="뜻 가리기">뜻</button>');
+    expect(toggle).toContain('>음</button>');
+    expect(read('src/components/classroom/ClassCourseSchedule.jsx')).not.toContain('칸 숫자');
+    expect(read('src/components/classroom/ClassCourseSchedule.jsx')).toContain('<span className="course-day__ko">{c.title}</span>');
   });
 });
 

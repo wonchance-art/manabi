@@ -1,5 +1,5 @@
 'use client';
-import { JaText } from '../../views/refShared';
+import { JaText, alignFurigana } from '../../views/refShared';
 import './class-course.css';
 
 export const PENDING_TEXT = '아직 입력되지 않았어요';
@@ -9,10 +9,35 @@ export function CoursePending({ what, total }) {
   return <p className="course-pending" role="note"><b>{PENDING_TEXT}.</b> {what}{total ? ` 0/${total}` : ''} — 교재에서 옮겨 오면 여기에 표시돼요.</p>;
 }
 
-/** speak = 페이지에서 한 번 만든 useTTS().speak (버튼마다 음성 목록 구독을 만들지 않는다). */
-export function SpeakButton({ text, speak }) {
-  if (!text || !speak) return null;
-  return <button type="button" className="course-speak" aria-label="일본어 듣기" onClick={() => speak(text, 'Japanese')}>🔊</button>;
+/**
+ * 문장 한 줄 — 어절(br) 사이에서만 줄이 바뀐다. 후리가나 덩어리 사이 아무 데서나 꺾여
+ * 「す。」만 다음 줄로 떨어지던 것을 막는다(오너 지적 2026-10-08). 줄 길이는 CSS가 고르게(balance).
+ */
+export function JaLine({ ja, yomi, br }) {
+  const segs = (yomi && alignFurigana(ja, yomi)) || [{ text: ja }];
+  const cuts = new Set(br || []);
+  const phrases = [[]];
+  let pos = 0;
+  for (const sg of segs) {
+    if (sg.rt) {
+      if (pos > 0 && cuts.has(pos) && phrases[phrases.length - 1].length) phrases.push([]);
+      phrases[phrases.length - 1].push(sg);
+    } else {
+      let from = 0;
+      for (let i = 0; i < sg.text.length; i += 1) {
+        if (cuts.has(pos + i) && (i > from || phrases[phrases.length - 1].length)) {
+          if (i > from) phrases[phrases.length - 1].push({ text: sg.text.slice(from, i) });
+          phrases.push([]);
+          from = i;
+        }
+      }
+      phrases[phrases.length - 1].push({ text: sg.text.slice(from) });
+    }
+    pos += sg.text.length;
+  }
+  return <span lang="ja" className="ja-ruby jl">{phrases.filter((p) => p.length).map((p, i) => <span key={i} className="jl__p">
+    {p.map((sg, k) => (sg.rt ? <ruby key={k}>{sg.text}<span className="rt-an">{sg.rt}</span></ruby> : <span key={k}>{sg.text}</span>))}
+  </span>)}</span>;
 }
 
 export function Ja({ ja, yomi }) {
@@ -35,11 +60,11 @@ export function FixNote({ note }) {
   return <p className="course-fix-note"><b>✏️ 피드백</b> {note}</p>;
 }
 
-/** 가리기 — both | hide-ko | hide-ja */
-export function HideToggle({ value, onChange, label = '가리기' }) {
-  const options = [['both', '모두 보기'], ['hide-ko', '한국어 가리기'], ['hide-ja', '일본어 가리기']];
-  return <div className="course-hide" role="group" aria-label={label}>
-    {options.map(([v, text]) => <button key={v} type="button" aria-pressed={value === v} onClick={() => onChange(v)}>{text}</button>)}
+/** 가리기 — 「뜻」(한국어)·「음」(일본어) 각각 켜고 끄기. 눌린 쪽이 가려진다. */
+export function HideToggle({ hide, onToggle }) {
+  return <div className="course-hide" role="group" aria-label="가리기">
+    <button type="button" aria-pressed={hide.ko} aria-label="뜻 가리기" title="뜻 가리기" onClick={() => onToggle('ko')}>뜻</button>
+    <button type="button" aria-pressed={hide.ja} aria-label="음 가리기" title="음 가리기" onClick={() => onToggle('ja')}>음</button>
   </div>;
 }
 

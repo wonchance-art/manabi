@@ -22,7 +22,7 @@ import {
   monthGrid, nextClassDate, kstToday, shortDate, parseSchedule, DEFAULT_WEEKDAYS, WEEKDAY_KO, ScheduleError,
 } from '../../lib/classSchedule';
 import { holidayName } from '../../lib/krHolidays';
-import { Hi } from './ClassCourseUI';
+import './class-course.css';
 import { useClassCourse, courseErrorText } from '../../lib/classCourseClient';
 
 const same = (a, b) => JSON.stringify(parseSchedule(a)) === JSON.stringify(parseSchedule(b));
@@ -116,7 +116,6 @@ function CourseCalendar({ built, today, teamKey, ranges }) {
       <span><i className="course-cal__key course-cal__key--test" />시험</span>
       <span><i className="course-cal__key course-cal__key--break" />휴강</span>
       <span><i className="course-cal__key course-cal__key--holiday" />공휴일</span>
-      <span>칸 숫자 = 챕터 · {built.weekdays.map((d) => WEEKDAY_KO[d]).join('·')} 수업</span>
     </p>
   </section>;
 }
@@ -212,7 +211,7 @@ export default function CourseSchedule({ course, teamKey, user, root, schedule }
               {d.chapters.map((c) => <span key={c.n} className="course-day__ch">
                 <span className="course-day__n">Ch.{c.n}</span>
                 <span lang="ja" className="course-day__jp">{c.jp[0]}</span>
-                <span className="course-day__ko"><Hi text={c.titleHi || c.title} /></span>
+                <span className="course-day__ko">{c.title}</span>
               </span>)}
             </span>
           </Link>

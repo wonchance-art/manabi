@@ -27,17 +27,19 @@ export const courseOptions = () => Object.values(COURSES);
 
 const str = (v) => (typeof v === 'string' ? v.trim() : '');
 const level = (v) => ([1, 2, 3].includes(Number(v)) ? Number(v) : null);
+/** 어절 경계(줄바꿈 허용 위치) — 문장 길이 안의 오름차순 정수만. */
+const breaksOf = (br, ja) => (Array.isArray(br) ? [...new Set(br.map(Number))].filter((n) => Number.isInteger(n) && n > 0 && n < ja.length).sort((a, b) => a - b) : []);
 
 export function normalizeDrill(d) {
   const ja = str(d?.ja), ko = str(d?.ko);
   if (!ja || !ko) return null;
   const textbook = str(d.textbook), note = str(d.note);
-  return { ja, ko, yomi: str(d.yomi) || null, lv: level(d.lv), ...(textbook ? { textbook, note: note || null } : {}) };
+  return { ja, ko, yomi: str(d.yomi) || null, br: breaksOf(d.br, ja), lv: level(d.lv), ...(textbook ? { textbook, note: note || null } : {}) };
 }
 export function normalizeLine(d) {
   const ja = str(d?.ja);
   if (!ja) return null;
-  return { who: str(d.who) || null, ja, yomi: str(d.yomi) || null, ko: str(d.ko) || null };
+  return { who: str(d.who) || null, ja, yomi: str(d.yomi) || null, br: breaksOf(d.br, ja), ko: str(d.ko) || null };
 }
 
 /**
@@ -93,7 +95,7 @@ export function coursePool(course) {
   for (const d of course?.days || []) {
     for (const c of d.chapters || []) {
       (c.drills || []).forEach((dr, i) => {
-        items.push({ id: `${c.n}-${i + 1}`, n: c.n, day: d.day, i: i + 1, ja: dr.ja, ko: dr.ko, yomi: dr.yomi, lv: dr.lv, textbook: dr.textbook || null, note: dr.note || null, pattern: c.jp?.[0] || '', title: c.title, auto: !dr.lv });
+        items.push({ id: `${c.n}-${i + 1}`, n: c.n, day: d.day, i: i + 1, ja: dr.ja, ko: dr.ko, yomi: dr.yomi, br: dr.br || [], lv: dr.lv, textbook: dr.textbook || null, note: dr.note || null, pattern: c.jp?.[0] || '', title: c.title, auto: !dr.lv });
       });
     }
   }
