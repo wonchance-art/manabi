@@ -13,7 +13,9 @@ import { fetchMeaningsForMissing } from '@/lib/server/fetchMeanings';
 import {
   collectZhPosMarks, disambiguateZhPos, resolveZhTokenPos, zhPosMarkKey,
   pickZhMeaning, needsZhMeaningPosRefresh, needsZhJaBackfill, buildZhPosWriteback, splitZhToken,
+  ZH_SENSE_REVIEW,
 } from '@/lib/server/disambiguateZhPos';
+import { attachZhSenseCandidates, createZhSenseStats, resolveZhTokenSense } from '@/lib/server/zhSenseReview';
 import {
   collectEnLemmaLookupForms, collectEnPosMarks, disambiguateEnPos, enPosMarkKey,
   needsEnPosBackfill, resolveEnTokenContext,
@@ -179,9 +181,17 @@ export async function POST(request) {
     // 명/동/형 계열 한자어를 모아 flash-lite 1회로 "품사 후보 전체 + 이 문장에서의 품사"를
     // 받는다. 뜻 조회와 서로 독립(판별은 pos만, 뜻 조회는 meaning만)이라 병렬 실행 —
     // 미싱이 있는 요청에선 벽시계 추가가 없다. 실패 시 기존 pos 폴백(그레이스풀).
-    const zhMarks = language === 'Chinese' ? collectZhPosMarks(tokenizedLines, cache) : [];
+    // AD-R4 뜻 검수(중국어만, 상수 꺼짐으로 출시): 켜지면 같은 판별 호출의 단어 줄에 사전 뜻 후보를
+    // 붙이고 번호로 받는다(호출 수 0 증가). 미싱·재조회 단어는 뜻이 바뀌는 중이라 후보에서 뺀다.
+    // 꺼져 있으면 마크·프롬프트·응답 처리가 현행 그대로다(zhSenseReviewRoute.test.js 스냅숏).
+    const zhSenseOn = language === 'Chinese' && ZH_SENSE_REVIEW;
+    const zhPosMarks = language === 'Chinese' ? collectZhPosMarks(tokenizedLines, cache) : [];
+    const zhMarks = zhSenseOn
+      ? attachZhSenseCandidates(zhPosMarks, { tokenizedLines, cache, refreshForms: new Set(missingList.map((m) => m.base_form)) })
+      : zhPosMarks;
+    const zhSenseStats = zhSenseOn ? createZhSenseStats(zhMarks) : null;
     const zhPosPicksPromise = zhMarks.length > 0
-      ? disambiguateZhPos(lines, zhMarks, { deadlineMs: startedAt + 35_000 })
+      ? disambiguateZhPos(lines, zhMarks, { deadlineMs: startedAt + 35_000, ...(zhSenseStats ? { senseStats: zhSenseStats } : {}) })
       : Promise.resolve(new Map());
     // 4.6. 영어 품사·lemma 문맥 판별 — 동일 표기 반복도 occurrence key로 독립 판정.
     // 뜻 조회와 병렬이며, 선택 lemma 행이 cache에 없으면 응답 조립에서 현행 값으로 폴백한다.
@@ -283,8 +293,10 @@ export async function POST(request) {
             ? { pos: enResolved.pos, posAll: enResolved.posAll }
             : { pos: cached?.pos || t.pos, posAll: null };
         // 뜻도 문맥 품사를 따른다 — 짚힌 pos와 일치하는 뜻 우선, 없으면 첫 뜻(기존 동작).
+        // 뜻 검수 켜짐: 검증된 후보 번호·문맥 뜻이 있으면 그것(토큰에만 — 사전 행에 쓰지 않는다).
+        const zhSense = zhSenseOn ? resolveZhTokenSense(posPicks.get(zhPosMarkKey(lineIdx, t.text)), t) : null;
         const meaning = language === 'Chinese'
-          ? pickZhMeaning(cached?.meanings, pos)
+          ? (zhSense?.meaning || pickZhMeaning(cached?.meanings, pos))
           : language === 'English'
             ? enResolved.meaning
             : (cached?.meanings?.[0]?.meaning || '');
@@ -297,6 +309,8 @@ export async function POST(request) {
           ...(t.boundary ? { boundary: t.boundary } : {}),
           ...(t.sep_link ? { sep_link: t.sep_link } : {}),
           ...(posAll ? { pos_all: posAll } : {}),
+          // 화면 표시용 내부 표식('ctx' 문맥 뜻 | 'doubt' 의심) — 「AI」 표로 그리지 않는다(오너 결정 10-07).
+          ...(zhSense?.meaningCheck ? { meaningCheck: zhSense.meaningCheck } : {}),
         };
       });
       return boundaryLineResult(boundaryState, lineIdx, sequence, dictionary);
@@ -342,6 +356,7 @@ export async function POST(request) {
           backfillRows: enBackfillRows,
           fallbacks: enFallbacks,
         },
+        ...(zhSenseStats ? { zhSense: zhSenseStats } : {}),
       },
     });
   } catch (err) {
