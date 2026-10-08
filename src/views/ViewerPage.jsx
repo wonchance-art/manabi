@@ -125,7 +125,8 @@ import { lookupTranslation, bookMeaningPanelText } from '../lib/bilingualSplit';
 import { isLocalId, parseLocalId, chaptersForLocalNav } from '../lib/classBoard';
 import { getSharedCopy } from '../lib/sharedStore';
 import { readIndexCache } from '../lib/classClient';
-import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
+import { useRefVocabEntry, useRefVocabIndex, refLevelLabel } from '../lib/refVocabIndex';
+import { loadHanjaPanelTable, onIdle, prefetchHanjaPanel } from '../lib/viewerHanjaPanel';
 import { useTokenDictPrefetch } from '../lib/useTokenDictPrefetch';
 import { tokenDictPrefetchEnabled } from '../lib/tokenDictPrefetch';
 import { knownWordsLang } from '../lib/knownWords';
@@ -143,6 +144,7 @@ import { isWordToken, wordStateOf, wordStateExtraClass } from '../lib/wordState'
 import { TTS_RATES, ttsOptsFor, pronHiddenFor } from '../lib/readingSheet';
 import { getBook } from '../lib/bookMeta';
 import ViewerGlyphColumn from '../components/viewer/ViewerGlyphColumn';
+import ViewerHanjaPopover from '../components/viewer/ViewerHanjaPopover';
 import ViewerJapaneseMore from '../components/viewer/ViewerJapaneseMore';
 import TokenEditPanel from './TokenEditPanel';
 import { senseCorrectionFor, revertCorrections } from '../lib/tokenEditOptions';
@@ -812,6 +814,7 @@ export default function ViewerPage() {
   };
 
   // ④ 같은 글자 재탭 = 닫기, 다른 글자 = 교체
+  const closeInspectChar = useCallback(() => setInspectChar(null), []);
   const toggleInspectChar = (ch, key, reading) => {
     setInspectChar(prev => (prev?.key === key ? null : { ch, key, reading }));
   };
@@ -1737,6 +1740,24 @@ export default function ViewerPage() {
   const [hanjaKoTable, setHanjaKoTable] = useState(null);
   const [hanjaHunTable, setHanjaHunTable] = useState(null);
   const [hanjaJaTable, setHanjaJaTable] = useState(null);
+  // AE-R4 PR②(VIEWER-V2-ROUNDS-001 §9 · 설계서 docs/manabi-viewer-v2-ae-r4.md §8 · §11.4): 중국어 일반 모드에서 표제어 글자를
+  // 누르면 글자 카드 대신 한자 창(ViewerHanjaPopover)이 뜬다. 일본어 자료·수업 판서(classStudyActive)는 글자 카드 그대로(Q2).
+  const hanjaPopoverMode = materialLang === 'Chinese' && !classStudyActive;
+  const [hanjaPanelTable, setHanjaPanelTable] = useState(null);
+  // T1: 중국어 자료를 열면 유휴 시간에 한자 창 표(hanjaPanel.json, ≈31KB gzip)를 받아 둔다 — 정체 표(AE-R3)와 같은 시점.
+  useEffect(() => {
+    if (materialLang !== 'Chinese' || hanjaPanelTable) return undefined;
+    let alive = true;
+    const cancel = prefetchHanjaPanel({ onLoad: (t) => { if (alive && t) setHanjaPanelTable((cur) => cur || t); } });
+    return () => { alive = false; cancel(); };
+  }, [materialLang, hanjaPanelTable]);
+  // 미리 받기 전에 창이 열리면 바로 받는다.
+  useEffect(() => {
+    if (!hanjaPopoverMode || !inspectChar || hanjaPanelTable) return undefined;
+    let alive = true;
+    loadHanjaPanelTable().then((t) => { if (alive) setHanjaPanelTable((cur) => cur || t); }).catch(() => {});
+    return () => { alive = false; };
+  }, [hanjaPopoverMode, inspectChar, hanjaPanelTable]);
   useEffect(() => {
     // ④ 글자 탐색이 열리면 토글·언어와 무관하게 로드(음 테이블은 신자체도 수록 — 실측 확인)
     const needed = (showHanjaKo && materialLang === 'Chinese') || inspectChar !== null;
@@ -1751,6 +1772,17 @@ export default function ViewerPage() {
 
     return () => { alive = false; };
   }, [showHanjaKo, materialLang, hanjaKoTable, inspectChar]);
+  // AE-R4 PR②(설계서 §8 · §11.2): 한자 창 머리·조각·타일이 훈음 표를 쓰므로 중국어 단어창을 처음 열 때 유휴 시간에 받아 둔다
+  // (첫 탭 T1 0.3초). 한자 대조 토글·글자 탭 조건의 즉시 로드(위)는 그대로다.
+  useEffect(() => {
+    if (materialLang !== 'Chinese' || !isSheetOpen || hanjaKoTable) return undefined;
+    let alive = true;
+    const cancel = onIdle(() => {
+      import('../lib/data/hanjaKo.json').then((m) => { if (alive) setHanjaKoTable((cur) => cur || m.default || m); }).catch(() => {});
+      import('../lib/data/hanjaHun.json').then((m) => { if (alive) setHanjaHunTable((cur) => cur || m.default || m); }).catch(() => {});
+    });
+    return () => { alive = false; cancel(); };
+  }, [materialLang, isSheetOpen, hanjaKoTable]);
   // R0+: 중국어 훈음은 정체 꼴로 찾는다(技术 → 재주 술) — 같은 조건에서 정체 표도 지연 로드.
   // AE-R3 PR②(설계서 §8): 정체 표는 자형 열 正 줄도 쓴다 — 단어창을 열면(isSheetOpen) 바로, 그 전에는 아래 유휴 미리 받기.
   const [hanjaTradTable, setHanjaTradTable] = useState(null);
@@ -1784,17 +1816,19 @@ export default function ViewerPage() {
   // 일본식 자형 표(hanjaJa)는 글자 카드 日 칩만 쓴다 — 단어창(日 줄)은 확인된 표기만 보이므로 시트를 열 때 받지 않는다(설계서 §8).
   useEffect(() => {
     if (hanjaJaTable || !inspectChar) return undefined;
+    if (hanjaPopoverMode) return undefined; // 한자 창은 日 꼴을 보이지 않는다(설계서 §8 — 일본어 자료·수업 판서 글자 카드만)
     let alive = true;
     import('../lib/data/hanjaJa.json').then(m => {if(alive)setHanjaJaTable(viewerJapaneseGlyphTable(m.default||m));}).catch(()=>{});
     return ()=>{alive=false;};
-  }, [inspectChar,hanjaJaTable]);
+  }, [inspectChar,hanjaJaTable,hanjaPopoverMode]);
   // 자원 테이블(증강 R2·R3 — 획수·부수·1단 분해·간번체, 563KB)과 구성 풀이 스토리
   // (R4 — 최빈 시드 저작분)는 글자 카드가 실제로 열릴 때만 지연 로드 — 한자 대조
   // 토글만으로는 안 부른다(단어 줄엔 자원이 안 쓰인다).
   const [hanjaEtymTable, setHanjaEtymTable] = useState(null);
   const [hanjaStoryTable, setHanjaStoryTable] = useState(null);
   useEffect(() => {
-    if (inspectChar === null || hanjaEtymTable) return undefined;
+    // AE-R4 PR②: 중국어 일반 모드는 한자 창이라 자원·스토리 표(165KB gzip)를 받지 않는다(설계서 §8).
+    if (inspectChar === null || hanjaEtymTable || hanjaPopoverMode) return undefined;
     let alive = true;
     import('../lib/data/hanjaEtym.json')
       .then((m) => { if (alive) setHanjaEtymTable(m.default || m); })
@@ -1803,7 +1837,12 @@ export default function ViewerPage() {
       .then((m) => { if (alive) setHanjaStoryTable(m.default || m); })
       .catch(() => {});
     return () => { alive = false; };
-  }, [inspectChar, hanjaEtymTable]);
+  }, [inspectChar, hanjaEtymTable, hanjaPopoverMode]);
+  // 한자 창 입력(AE-R4 PR②) — 표·내 단어·우리 사전 색인. 참조가 바뀔 때만 창이 다시 고른다.
+  const hanjaPopTables = useMemo(() => ({ koTable: hanjaKoTable, hunTable: hanjaHunTable, tradTable: hanjaTradTable, panel: hanjaPanelTable }),
+    [hanjaKoTable, hanjaHunTable, hanjaTradTable, hanjaPanelTable]);
+  const savedRowList = useMemo(() => [...(savedWords.byKey?.values() || [])], [savedWords]);
+  const refVocabIndex = useRefVocabIndex(hanjaPopoverMode ? materialLang : null);
   const hanjaHunOf = (text) => (
     materialLang === 'Chinese' && showHanjaKo && hanjaKoTable && hanjaHunTable && hanjaTradTable
       ? hunRubyCells(text, { koTable: hanjaKoTable, hunTable: hanjaHunTable, tradTable: hanjaTradTable }, HUN_RUBY_CELL)
@@ -2403,8 +2442,10 @@ export default function ViewerPage() {
           <span
             key={key}
             data-glyph-i={i}
+            data-inspect-key={key}
             role="button"
             tabIndex={0}
+            aria-haspopup={hanjaPopoverMode ? 'dialog' : undefined}
             className={`word-fit__char${inspectChar?.key === key ? ' word-fit__char--active' : ''}${isPickedAt(i) ? ' word-fit__char--picked' : ''}`}
             title={vt("글자 정보")}
             onClick={() => toggleInspectChar(ch, key, reading)}
@@ -2456,7 +2497,7 @@ export default function ViewerPage() {
       {materialLang === 'English' && selectedToken.reading && <div className="reader-card-pronunciation">{selectedToken.reading}</div>}
       </div>
       </div>}
-      {inspectChar && (() => {
+      {inspectChar && !hanjaPopoverMode && (() => {
         // ④ 글자 카드(증강 R1~R3 — 오너 승인 2026-08-28): 헤더는 자기 완결(훈음·병음·자형 칩),
         // 주인공은 구성(1단 분해 — 성분 탭 = 재귀 탐색)과 다시 만나기(이 자료·내 단어).
         // 부수는 설명하지 않는다 — 성분 배지 + 메타 한 줄이 전부(설계 확정).
@@ -2799,6 +2840,12 @@ export default function ViewerPage() {
         );
       })()}
       </div>
+      {/* 한자 창(AE-R4 PR② — 설계서 §4): 단어창 위 층. 본문 스크롤 상자 밖이라 잘리지 않고, 카드 흐름 밖이라 카드 요소 이동 0.
+          표시만(쓰기 0). 중국어 일반 모드만 — 일본어 자료·수업 판서는 위 글자 카드. */}
+      {inspectChar && hanjaPopoverMode && <div className="hanja-pop-layer">
+        <ViewerHanjaPopover inspect={inspectChar} word={headText} tables={hanjaPopTables} savedRows={savedRowList} material={material?.processed_json}
+          refIndex={refVocabIndex} showToneColors={showToneColors} uiLocale={uiLocale} vt={vt} onClose={closeInspectChar} />
+      </div>}
     </div>
   );
 

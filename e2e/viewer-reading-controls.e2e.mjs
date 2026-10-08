@@ -287,7 +287,10 @@ try {
  await panel().getByRole('button',{name:'뜻·발음 수정',exact:true}).click();assert(await panel().locator('input').first().isVisible());await panel().getByRole('button',{name:'뜻·발음 수정',exact:true}).click();
  await panel().getByRole('button',{name:'✦ 자세한 설명',exact:true}).click();await panel().getByText('상세설명-대상-爱惜',{exact:true}).waitFor();
  await panel().getByRole('button',{name:'✦ 비슷한 말 찾기',exact:true}).click();await panel().locator('.syn-ant__chip').first().waitFor();
- await panel().locator('.word-fit__char').first().click();assert(await panel().locator('.char-inspect').isVisible());await panel().locator('.word-fit__char').first().click();
+ // AE-R4 PR②(설계서 docs/manabi-viewer-v2-ae-r4.md §7.1): 중국어 일반 모드의 글자 탭 = 한자 창(글자 카드 대체). 열면 창으로 포커스, 같은 글자 다시 = 닫힘.
+ await panel().locator('.word-fit__char').first().click();await panel().locator('.hanja-pop').waitFor();assert.equal(await panel().locator('.char-inspect').count(),0);
+ assert.equal(await page.evaluate(()=>document.activeElement?.classList.contains('hanja-pop')),true);
+ await panel().locator('.word-fit__char').first().click();await panel().locator('.hanja-pop').waitFor({state:'detached'});
  await panel().getByRole('tab',{name:'문장 번역',exact:true}).click();await page.keyboard.press('ArrowLeft');assert.equal(await panel().getByRole('tab',{name:'단어',exact:true}).getAttribute('aria-selected'),'true');
  await delay(60);assert.equal(await page.evaluate(()=>document.activeElement?.id),'inspector-word-tab');await page.keyboard.press('ArrowRight');await delay(60);assert.equal(await page.evaluate(()=>document.activeElement?.id),'inspector-sentence-tab');await page.keyboard.press('ArrowLeft');
  assert.equal(writes.filter(w=>['user_vocabulary','reading_materials','morpheme_dictionary'].includes(w.table)).length,0);

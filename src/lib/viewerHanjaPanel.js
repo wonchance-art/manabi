@@ -19,7 +19,7 @@ const HAN = /\p{Script=Han}/u;
 const HANGUL = /[가-힣]/;
 const chars = (s) => [...String(s || '')];
 
-// ── 지연 로드(T1 — 중국어 자료를 열 때 유휴 시간에 미리 받는다, 배선은 PR ②) ──────────
+// ── 지연 로드(T1 — 중국어 자료를 열 때 유휴 시간에 미리 받는다, 배선 = ViewerPage, PR ②) ──────────
 let panelPromise = null;
 /** hanjaPanel.json 지연 로드 — 한 번만 받고, 실패하면 다음 호출에서 다시 받는다. */
 export function loadHanjaPanelTable() {
@@ -30,6 +30,36 @@ export function loadHanjaPanelTable() {
       throw err;
     });
   return panelPromise;
+}
+
+/**
+ * 유휴 시간에 한 번 run을 부른다(requestIdleCallback, 없으면 setTimeout 0). 반환값 = 예약 취소 함수.
+ * @param {() => void} run
+ * @param {{timeout?: number, scheduler?: {idle?: Function, cancelIdle?: Function}}} [opts]
+ */
+export function onIdle(run, { timeout = 2000, scheduler } = {}) {
+  const idle = scheduler?.idle ?? (typeof requestIdleCallback === 'function' ? requestIdleCallback : null);
+  const cancelIdle = scheduler?.cancelIdle ?? (typeof cancelIdleCallback === 'function' ? cancelIdleCallback : null);
+  let done = false;
+  const once = () => { if (!done) { done = true; run(); } };
+  if (idle) {
+    const id = idle(once, { timeout });
+    return () => { done = true; if (cancelIdle) cancelIdle(id); };
+  }
+  const id = setTimeout(once, 0);
+  return () => { done = true; clearTimeout(id); };
+}
+
+/**
+ * 한자 창 표 미리 받기(T1 — PR ② 배선): 중국어 자료를 열면 유휴 시간에 hanjaPanel.json을 받아 둔다(AE-R3 정체 표와 같은 시점).
+ * 실패는 조용히 넘긴다(창은 머리만 그린다). onLoad(table)은 받았을 때 한 번, 취소한 뒤에는 부르지 않는다.
+ */
+export function prefetchHanjaPanel({ onLoad, ...opts } = {}) {
+  let cancelled = false;
+  const cancel = onIdle(() => {
+    loadHanjaPanelTable().then((t) => { if (!cancelled) onLoad?.(t); }).catch(() => {});
+  }, opts);
+  return () => { cancelled = true; cancel(); };
 }
 
 // ── 병음 음절 ──────────────────────────────────────────────────────
