@@ -78,6 +78,15 @@ export function preserveReanalysisTokens(material, text, result, corrections = [
 
 const PATCH_KEYS = ['meaning', 'furigana', 'reading', 'pos'];
 const renameLine = (id, line) => (typeof id === 'string' ? id.replace(/^(id|br|failed)_\d+_/, `$1_${line}_`) : id);
+// AD-R3 PR③(PR② 판단 1): base id 줄 접두가 바뀌어도 옛 저장 문맥이 묶인 자리를 찾도록 원래 id를 별칭(was)으로 남긴다.
+// boundaryCoveringToken이 id 또는 별칭으로 찾는다. 가장 최근 8개만 둔다(줄 이동이 거듭돼도 기록이 커지지 않게).
+const BASE_ALIAS_LIMIT = 8;
+function withAlias(entry, id) {
+  if (!entry || id === entry.id) return entry;
+  const was = [...new Set([...(Array.isArray(entry.was) ? entry.was : []), entry.id].filter(item => typeof item === 'string' && item !== id))]
+    .slice(-BASE_ALIAS_LIMIT);
+  return { ...entry, id, ...(was.length ? { was } : {}) };
+}
 
 /**
  * 기록의 줄 번호를 새 원문으로 옮긴다. 같은 줄(diffLineMap 쌍)은 그 줄로, 바뀐 줄은 앞뒤 유지 줄 사이 구간의 옛·새 줄 수가
@@ -103,7 +112,7 @@ export function mapBoundaryEdits(oldRaw, newRaw, edits) {
     const line = target(record?.line);
     if (line === null) return { ...record, line: null, status: 'pending' };
     if (line === record.line) return record;
-    return { ...record, line, base: (record.base || []).map(entry => ({ ...entry, id: renameLine(entry?.id, line) })) };
+    return { ...record, line, base: (record.base || []).map(entry => withAlias(entry, renameLine(entry?.id, line))) };
   });
 }
 
@@ -139,7 +148,7 @@ function preserveBoundaryBase(json, prior, mapped, oldMetadata, corrections) {
       if (j < 0) return entry;
       const original = prior[i].base[j], patch = {};
       for (const key of keys(original?.id)) if (original?.token?.[key] !== undefined) patch[key] = original.token[key];
-      return { id: oldBase[j].id, token: { ...entry.token, ...patch } };
+      return { id: oldBase[j].id, ...(Array.isArray(oldBase[j].was) ? { was: oldBase[j].was } : {}), token: { ...entry.token, ...patch } };
     }) };
   });
   return { ...json, metadata: { ...json.metadata, viewerBoundaries: { ...json.metadata.viewerBoundaries, edits } } };
