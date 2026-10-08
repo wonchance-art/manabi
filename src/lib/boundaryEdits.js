@@ -8,7 +8,9 @@
 //   되살린다 — 「묶기 → 나누기」 「나누기 → 묶기」 「재절단 → 되돌리기」가 id·뜻·병음까지 원상태가 되는 이유는 이것 하나다.
 // · 불변식: ① 한 줄의 기록은 서로 겹치지 않는다 ② base는 분석기 토큰만 ③ 기록 구간 양 끝은 지금 토큰 경계.
 //
-// ── 범위(PR①): 계산만 한다. 저장(viewer_replace_analysis)·서버 분석(/api/analyze boundaries)·화면은 PR②③.
+// ── 범위(PR①): 계산만 한다. 저장(viewer_replace_analysis)·화면은 PR③.
+// PR②: /api/analyze `boundaries` 서버 적용(server/analyzeBoundaries.js → applyBoundaryLayers)과 재분석 연결
+// (analyzeHybrid → boundaryParagraphRequest·settleBoundaryRecord, runPreservedReanalysis → 줄 이동·base id 승계).
 // 원문·판본·저장 단어·FSRS·출처에 닿는 쓰기는 없다. 한국어는 어절 칼선 오너 결정(안 A/B, §7.4) 전이라 모든 함수가
 // 명시적으로 거부(무변경)한다. 승인 범위 언어는 중국어·일본어·영어뿐이다.
 // 브라우저·서버 공용 — 서버 전용 모듈·Node 내장을 import하지 않는다(boundaryEdits.test.js 계약).
@@ -239,6 +241,8 @@ export function editBoundaries(lineTokens, edits, request = {}, options = {}) {
  * 구간 글자가 기록 text와 다르면 줄에서 정확히 한 번 나올 때만 옮기고, 양 끝이 새 토큰 경계와 맞지 않거나
  * 찾지 못하면 pending으로 남긴다(조용히 버리지 않는다). 기록이 없거나 하나도 적용되지 않으면 입력 배열을 그대로 돌려준다.
  * 결과 {tokens, results: [{id, status, start?, end?, cuts?, base, reason?, moved?, redundant?}]}(입력 순서).
+ * options.markRedundant(서버 적용): 분석기가 이미 같은 칼선을 낸 기록의 토큰에도 표식을 단다 — 사용자가 정한 경계를
+ * AI 단어성 판정(OOV 분리)이 다시 가르지 않게 한다(§0.4). options.markers: 기록별 표식(applyBoundaryLayers가 쓴다).
  */
 export function applyBoundaryEdits(lineTokens, lineEdits, options = {}) {
   const list = Array.isArray(lineEdits) ? lineEdits : [];
@@ -247,6 +251,8 @@ export function applyBoundaryEdits(lineTokens, lineEdits, options = {}) {
   if (blocked) return {tokens: lineTokens, results: list.map(record => pending(record, blocked))};
   if (!Array.isArray(lineTokens)) return {tokens: lineTokens, results: list.map(record => pending(record, 'invalid_line'))};
   const marker = BOUNDARY_MARKERS.includes(options.marker) ? options.marker : 'user';
+  const markers = Array.isArray(options.markers) ? options.markers : [];
+  const markerAt = index => (BOUNDARY_MARKERS.includes(markers[index]) ? markers[index] : marker);
   const spans = boundarySpans(lineTokens), compact = lineCompact(spans), bounds = boundsOf(spans);
   const results = new Array(list.length), regions = [];
   // 입력 순서대로 적용한다 — 겹치면 앞의 기록이 이기고 뒤의 것은 pending(한 자료 안 기록은 불변식 1로 겹치지 않는다).
@@ -270,12 +276,12 @@ export function applyBoundaryEdits(lineTokens, lineEdits, options = {}) {
     if (region.some(span => span.start === span.end)) { results[index] = pending(record, 'whitespace_inside'); return; }
     if (regions.some(other => other.s < e && other.e > s)) { results[index] = pending(record, 'overlap'); return; }
     const redundant = sameCuts(want, cutsWithin(spans, s, e));
-    regions.push({s, e, want, region, redundant});
+    regions.push({s, e, want, region, redundant, marker: markerAt(index)});
     results[index] = {id: record.id ?? null, status: 'applied', start: s, end: e, cuts: want, base: region.map(span => span.entry),
       ...(delta ? {moved: true} : {}), ...(redundant ? {redundant: true} : {})};
   });
 
-  const active = regions.filter(item => !item.redundant);
+  const active = options.markRedundant ? regions : regions.filter(item => !item.redundant);
   if (!active.length) return {tokens: lineTokens, results};
   const context = {language: options.language, lineText: options.lineText, compact};
   const tokens = [];
@@ -287,13 +293,67 @@ export function applyBoundaryEdits(lineTokens, lineEdits, options = {}) {
     for (let k = 0; k + 1 < points.length; k++) {
       const a = points[k], b = points[k + 1];
       const same = item.region.find(candidate => candidate.start === a && candidate.end === b);
-      if (same) { tokens.push({...same.entry, token: {...same.entry.token, boundary: marker}}); continue; }
+      if (same) { tokens.push({...same.entry, token: {...same.entry.token, boundary: item.marker}}); continue; }
       const text = pieceText(spans, a, b, context);
-      tokens.push({id: null, token: composeBoundaryPiece({language: options.language, text, parts: partsOf(spans, a, b), marker})});
+      tokens.push({id: null, token: composeBoundaryPiece({language: options.language, text, parts: partsOf(spans, a, b), marker: item.marker})});
     }
   }
   return {tokens, results};
 }
+
+/**
+ * 범위 간 적용 순서(§3.4): layers = [{marker:'shared_rule', edits}, {marker:'user_rule', edits}, {marker:'user', edits}]처럼
+ * **적용 순서대로** 받고, 뒤 층이 이긴다. applyBoundaryEdits는 겹치면 앞 기록이 이기므로 뒤 층부터 넣어 한 번에 적용한다
+ * — base는 언제나 분석기 원래 토큰이다(불변식 ②). 결과 {tokens, layers: [층마다 입력 순서의 results]}.
+ * 지금은 「이 자료」('user') 층만 쓴다. 사용자·공유 규칙 표는 PR④.
+ */
+export function applyBoundaryLayers(lineTokens, layers, options = {}) {
+  const list = Array.isArray(layers) ? layers : [];
+  const records = [], markers = [], owners = [];
+  for (let k = list.length - 1; k >= 0; k--) {
+    const edits = Array.isArray(list[k]?.edits) ? list[k].edits : [];
+    edits.forEach((record, i) => { records.push(record); markers.push(list[k].marker); owners.push([k, i]); });
+  }
+  const {tokens, results} = applyBoundaryEdits(lineTokens, records, {...options, markers});
+  const out = list.map(layer => new Array(Array.isArray(layer?.edits) ? layer.edits.length : 0));
+  results.forEach((result, j) => { const [k, i] = owners[j]; out[k][i] = result; });
+  return {tokens, layers: out};
+}
+
+// ── 재분석 연결(PR②, analyzeHybrid) ────────────────────────────────────────
+
+/**
+ * 문단 하나의 분석 요청에 실을 기록. 줄 번호를 문단 안 번호로 바꾸고 요청 필드(§3.4)만 싣는다 — base는 보내지 않는다.
+ * [{index(자료 기록 목록 위치), payload: {line, start, end, text, cuts, id}}]. 없으면 [] — 요청 본문에 키를 넣지 않는다.
+ */
+export function boundaryParagraphRequest(edits, lineIndices) {
+  const at = new Map((lineIndices || []).map((line, k) => [line, k]));
+  const sent = [];
+  (Array.isArray(edits) ? edits : []).forEach((record, index) => {
+    if (!at.has(record?.line)) return;
+    const {start, end, text, cuts} = record;
+    sent.push({index, payload: {line: at.get(record.line), start, end, text, cuts, id: record.id ?? null}});
+  });
+  return sent;
+}
+
+/**
+ * 서버 적용 결과로 기록 하나를 갱신한다(§3.5-3). applied면 좌표·칼선과 base(새 분석기 토큰, makeId로 새 id)를 바꾸고,
+ * 아니면(pending·결과 없음·base 글자가 기록과 다름) 기록을 그대로 두고 status만 pending — 조용히 버리지 않는다.
+ * 옛 base id·교정값 승계는 재분석 보존(reanalysisPreservation.preserveBoundaryBase)이 한다.
+ */
+export function settleBoundaryRecord(record, result, makeId) {
+  const base = Array.isArray(result?.base) ? result.base : [];
+  const ok = result?.status === 'applied' && base.length > 0 && Number.isInteger(result.start) && Number.isInteger(result.end)
+    && Array.isArray(result.cuts) && base.every(token => typeof token?.text === 'string')
+    && base.map(token => compactBoundaryText(token.text)).join('') === record?.text;
+  if (!ok) return record?.status === 'pending' ? record : {...record, status: 'pending'};
+  return {...record, start: result.start, end: result.end, cuts: result.cuts,
+    base: base.map(token => ({id: makeId(), token})), status: 'applied'};
+}
+
+/** 적용하지 못한(pending) 기록 수 — 재분석 결과 알림(§3.4 「적용하지 못한 단어 경계 N개」). */
+export const pendingBoundaryCount = json => readBoundaryEdits(json).filter(record => record?.status === 'pending').length;
 
 // ── processed_json 좌표 변환 ─────────────────────────────────────────────
 

@@ -9,6 +9,7 @@ import { runPreservedReanalysis } from './reanalysisPreservation';
 import { passageOf } from './sourcePassage';
 import { runPassageAnalysis } from './passageAnalysis';
 import { inspectAnalysisCoverage } from './analysisCoverage';
+import { pendingBoundaryCount } from './boundaryEdits';
 
 const STALE_THRESHOLD_MS = 3 * 60 * 1000;
 
@@ -112,6 +113,8 @@ export function useReanalyze({ materialId, material, refetch, toast, explanation
       if (json?.__passageNotAcquired) { refetch?.(); return; }
       if (json?.status === 'failed') toast?.('분석에 실패했어요. 원문은 그대로 남아 있어요.', 'error');
       else if (json?.status === 'partial') toast?.('일부 줄은 분석을 다시 시도해야 해요.', 'warning');
+      // AD-R3: 직접 고친 단어 경계를 적용하지 못했으면 조용히 넘기지 않고 개수를 알린다(기록은 pending으로 남는다).
+      else if (pendingBoundaryCount(json)) toast?.(`분석을 다시 했어요. 직접 고친 단어 경계 ${pendingBoundaryCount(json)}개는 적용하지 못했어요.`, 'warning');
       else toast?.('분석 완료!', 'success');
       refetch?.();
     },
