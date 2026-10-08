@@ -1,5 +1,6 @@
 .passage-toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; padding:20px 0; margin-bottom:24px; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); }
 .passage-toolbar p { margin:8px 0 0; font-size:13px; color:var(--muted); }
+.passage-note { font-size:12px; line-height:1.7; color:var(--muted); }
 .passage-toolbar--selected { position:sticky; top:var(--gnb-height); z-index:20; background:var(--paper); }
 .passage-dialog { margin:auto; inset:0; padding:0; border:1px solid var(--rule); background:var(--sheet); color:var(--ink); width:min(540px, calc(100% - 24px)); max-height:calc(100dvh - 40px); overflow:auto; overscroll-behavior:contain; }
 .passage-dialog::backdrop { background:var(--scrim); }

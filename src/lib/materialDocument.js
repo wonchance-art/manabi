@@ -1,5 +1,5 @@
 import { COMPOSER_LANGUAGES, composerOf, composerTitle, newComposerDraft, validateComposer,
-  attachmentPath, safeAssetPath, normalizeSourceUrl, uploadOriginal } from './materialComposer';
+  attachmentPath, safeAssetPath, normalizeSourceUrl, uploadOriginal, koreanStudyMetadata } from './materialComposer';
 import { createImportAttempt, saveImportOnce } from './materialImport';
 
 export function isStudySnapshot(material) { return composerOf(material)?.role === 'study'; }
@@ -104,7 +104,8 @@ async function studyAttemptId(root, body, language) {
   return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-5${hash.slice(13, 16)}-a${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
 }
 
-export async function openDocumentStudy(client, material, language) {
+// 한국어 학습 행은 기존 한국어 가져오기와 같은 메타(level '' · explanationLocale)를 싣는다. 다른 언어 행은 그대로다.
+export async function openDocumentStudy(client, material, language, { explanationLocale } = {}) {
   if (!COMPOSER_LANGUAGES.includes(language)) throw new Error('LANGUAGE_REQUIRED');
   const latest = await readEditableMaterial(client, material.id, material.owner_id);
   const doc = documentOf(latest);
@@ -114,7 +115,7 @@ export async function openDocumentStudy(client, material, language) {
   if (doc.body === latest.raw_text && json.metadata.language === language) return latest;
   // First use of an unclassified v1 original can keep its established source address.
   if (doc.body === latest.raw_text && !json.sequence?.length && json.status === 'saved' && !json.metadata.language) {
-    const next = { ...json, status: 'pending', metadata: { ...json.metadata, language } };
+    const next = { ...json, status: 'pending', metadata: { ...json.metadata, language, ...koreanStudyMetadata(language, explanationLocale) } };
     const { data, error } = await client.from('reading_materials').update({ processed_json: next })
       .eq('id', latest.id).eq('owner_id', latest.owner_id).eq('processed_json', JSON.stringify(json)).select('id');
     if (error) throw error;
@@ -124,6 +125,7 @@ export async function openDocumentStudy(client, material, language) {
   const id = await studyAttemptId(latest, doc.body, language);
   const row = { owner_id: latest.owner_id, visibility: 'private', title: latest.title, raw_text: doc.body,
     processed_json: { status: 'pending', sequence: [], dictionary: {}, last_idx: -1, metadata: { language,
+      ...koreanStudyMetadata(language, explanationLocale),
       composer: { version: 1, role: 'study', parentId: String(latest.id), sourceRevision: doc.revision,
         hasBody: true, excerpt: doc.excerpt, assets: [], links: [] } } } };
   const attempt = createImportAttempt(row, id);
@@ -131,3 +133,4 @@ export async function openDocumentStudy(client, material, language) {
   try { return await saveImportOnce(client, attempt); }
   catch (error) { if (error?.code !== '23505') throw error; return saveImportOnce(client, attempt); }
 }
+

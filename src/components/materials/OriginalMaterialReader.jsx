@@ -5,8 +5,9 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { langNameKo } from '@/lib/constants';
-import { COMPOSER_LANGUAGES, normalizeSourceUrl } from '@/lib/materialComposer';
+import { normalizeSourceUrl, studyLanguageLabel } from '@/lib/materialComposer';
+import { useStudyLanguages } from '@/lib/useStudyLanguages';
+import { useViewerLanguage } from '@/lib/useViewerLanguage';
 import { documentOf, documentError, openDocumentStudy } from '@/lib/materialDocument';
 import { LibraryReturnLink } from '@/components/web/LibraryReaderLink';
 import { safeLibraryReturn } from '@/lib/libraryReturn';
@@ -42,6 +43,8 @@ export default function OriginalMaterialReader({ material }) {
       return data;}});
   const returnSource=passageOf(origin.data);
 
+  const { languages } = useStudyLanguages();
+  const { explanationLocale } = useViewerLanguage();
   const [language, setLanguage] = useState(composer.language || '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -87,10 +90,10 @@ export default function OriginalMaterialReader({ material }) {
   const sources=useMemo(()=>[bodySource,...(fileSource?.source?.assetHash===asset?.hash?(fileSource?.siblings||[fileSource]):[])].filter(Boolean),[bodySource,fileSource,asset?.hash]);
   const preferredKey=fileSource?.source?.assetHash===asset?.hash?fileSource?.key:bodySource?.key;
   async function studyBody() {
-    if (busy || !COMPOSER_LANGUAGES.includes(language)) return;
+    if (busy || !languages.includes(language)) return;
     setBusy(true); setError('');
     try {
-      const record = await openDocumentStudy(supabase, material, language);
+      const record = await openDocumentStudy(supabase, material, language, { explanationLocale });
       await queryClient.invalidateQueries({ queryKey: ['material', String(record.id)] });
       const search = new URLSearchParams({ study: '1', returnTo: safeLibraryReturn(params.get('returnTo')) });
       router.push(`/viewer/${record.id}?${search}`);
@@ -109,7 +112,7 @@ export default function OriginalMaterialReader({ material }) {
     {assets.length > 1 && <div className="original-file-picker"><label htmlFor="original-file-select">첨부 원본 {assets.length}개</label><select id="original-file-select" value={assetIndex} onChange={e=>{const index=Number(e.target.value);setAssetIndex(index);const selected=assets[index],point=sync.selected(`asset:${selected.hash}`);if(point)sync.note(point.source,point.locator);applyPosition(point);}}>{assets.map((item, index) => <option key={item.hash} value={index}>{item.name}</option>)}</select></div>}
     {asset && sync.state.ready && (!passageId||!origin.isPending) && <OriginalFileReader key={`${asset.hash}:${passageId||''}:${restore.id}`} material={material} asset={asset} onSource={onFileSource} returnSource={returnSource?.assetHash===asset.hash?returnSource:null} sourceMaterial={returnSource?.assetHash===asset.hash?origin.data:null} initialLocator={!passageId?sync.selected(positionSourceKey({kind:asset.kind,assetHash:asset.hash}))?.locator:null} restoreId={restore.id} onPosition={sync.note} canRecord={canRecord} />}
     <PassageSources material={material}/>
-    {composer.body?.trim() && <details className="original-study"><summary>자료 도구 · 본문 전체 학습</summary><p>학습할 언어를 고르면 읽기·표현 저장 화면으로 이어집니다. 수정한 본문으로 공부해도 이전 표현의 출처는 남아 있습니다.</p><label htmlFor="original-language">학습 언어</label><select id="original-language" value={language} onChange={e => setLanguage(e.target.value)} disabled={busy}><option value="">언어 선택</option>{COMPOSER_LANGUAGES.map(value => <option key={value} value={value}>{langNameKo(value)}</option>)}</select><button className="manabi-button" disabled={busy || !language} onClick={studyBody}>{busy ? '여는 중…' : '본문 학습하기 ↗'}</button>{error && <p role="alert">{error}</p>}</details>}
+    {composer.body?.trim() && <details className="original-study"><summary>자료 도구 · 본문 전체 학습</summary><p>학습할 언어를 고르면 읽기·표현 저장 화면으로 이어집니다. 수정한 본문으로 공부해도 이전 표현의 출처는 남아 있습니다.</p><label htmlFor="original-language">학습 언어</label><select id="original-language" value={language} onChange={e => setLanguage(e.target.value)} disabled={busy}><option value="">언어 선택</option>{languages.map(value => <option key={value} value={value}>{studyLanguageLabel(value)}</option>)}</select><button className="manabi-button" disabled={busy || !language} onClick={studyBody}>{busy ? '여는 중…' : '본문 학습하기 ↗'}</button>{error && <p role="alert">{error}</p>}</details>}
     <footer className="original-bottom"><LibraryReturnLink /><Link href="/materials/add">새 자료 작성 ↗</Link></footer>
   </section>;
 }

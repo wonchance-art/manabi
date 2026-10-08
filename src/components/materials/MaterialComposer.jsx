@@ -9,12 +9,13 @@ import {useCollections} from '@/components/library/LibraryCollections';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { langNameKo } from '@/lib/constants';
-import { COMPOSER_LANGUAGES, MAX_ATTACHMENTS, MAX_BODY_CHARS, MAX_LINKS, composerError,
+import { MAX_ATTACHMENTS, MAX_BODY_CHARS, MAX_LINKS, composerError,
   composerTitle, createComposerSave, newComposerDraft, normalizeSourceUrl, prepareComposerFile,
-  saveComposerOnce, validateComposer } from '@/lib/materialComposer';
+  saveComposerOnce, studyLanguageLabel, validateComposer } from '@/lib/materialComposer';
 import { readComposerDraft, removeComposerDraft, writeComposerDraft } from '@/lib/composerDraft';
 import { createDocumentSave, documentError, editDraft, readEditableMaterial, saveDocumentOnce } from '@/lib/materialDocument';
+import { useStudyLanguages } from '@/lib/useStudyLanguages';
+import { useViewerLanguage } from '@/lib/useViewerLanguage';
 import './material-composer.css';
 
 export default function MaterialComposer() {
@@ -29,6 +30,8 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
   const collections=useCollections(ownerId);
   const scope = material ? String(material.id) : '';
   const editing = !!scope;
+  const { languages } = useStudyLanguages();
+  const { explanationLocale } = useViewerLanguage();
   const initialMaterial = useRef(material);
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -175,7 +178,7 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
       // Finish the durable checkpoint before any network write. If IDB is unavailable,
       // keep the frozen in-memory attempt and clearly report the recovery limitation.
       await persistDraft(current).catch(() => setDraftStatus('창을 닫으면 이 저장 요청을 복구할 수 없어요. 완료될 때까지 기다려 주세요.'));
-      if (!saveRef.current) saveRef.current = editing ? createDocumentSave(ownerId, current) : createComposerSave(ownerId, current);
+      if (!saveRef.current) saveRef.current = editing ? createDocumentSave(ownerId, current) : createComposerSave(ownerId, current, { explanationLocale });
       const save = editing ? saveDocumentOnce : saveComposerOnce;
       const record = await save(supabase, saveRef.current, value => { if (alive.current) setStage(value); });
       const saved = { ...current, savedId: record.id };
@@ -254,7 +257,7 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
       {linkOpen && <div className="composer-link-input"><label htmlFor="composer-link">담아 둘 링크</label><div><input ref={linkField} id="composer-link" type="url" placeholder="https://" value={linkInput} disabled={locked} onChange={e => setLinkInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addLink(); } if (e.key === 'Escape') { setLinkOpen(false); setLinkInput(''); } }} /><button type="button" disabled={locked} onClick={() => addLink()}>추가</button></div></div>}
       <div className="composer-tools"><input ref={fileInput} className="sr-only" type="file" tabIndex={-1} accept=".pdf,.epub,application/pdf,application/epub+zip" multiple disabled={locked || preparing} onChange={e => { addFiles([...e.target.files]); e.target.value = ''; }} aria-label="첨부 파일 선택" />
         <button type="button" disabled={locked || preparing} onClick={() => fileInput.current?.click()}>＋ 파일</button><button type="button" disabled={locked} aria-expanded={linkOpen} onClick={() => setLinkOpen(value => !value)}>↗ 링크</button><small>{preparing ? '파일 확인 중…' : '끌어 놓아도 좋아요 · 파일당 50MB'}</small></div>
-      <details className="composer-options"><summary>학습 정보 <span>선택</span></summary><label htmlFor="composer-language">이 자료로 공부할 언어</label><select id="composer-language" value={draft.language} disabled={locked} onChange={e => change({ language: e.target.value })}><option value="">나중에 정하기</option>{COMPOSER_LANGUAGES.map(language => <option key={language} value={language}>{langNameKo(language)}</option>)}</select><p>지금 지정하지 않아도 저장하고 읽을 수 있어요.</p></details>
+      <details className="composer-options"><summary>학습 정보 <span>선택</span></summary><label htmlFor="composer-language">이 자료로 공부할 언어</label><select id="composer-language" value={draft.language} disabled={locked} onChange={e => change({ language: e.target.value })}><option value="">나중에 정하기</option>{languages.map(language => <option key={language} value={language}>{studyLanguageLabel(language)}</option>)}</select><p>지금 지정하지 않아도 저장하고 읽을 수 있어요.</p></details>
       {notice && !error && <p className="composer-notice" role="status">{notice}</p>}
       {error && <div className="composer-error" role="alert">{error}{draft.frozen && !conflict && <p>저장 결과가 확정될 때까지 내용을 유지합니다. 아래에서 다시 저장해 주세요.</p>}{conflict && <div className="composer-conflict-actions"><button type="button" onClick={downloadDraft}>내 초안 텍스트 내려받기</button><button type="button" onClick={reloadLatest}>최신 글로 다시 수정</button></div>}</div>}
       {draft.collectionId&&<p className="composer-info">저장한 뒤 ‘{collections.data?.find(c=>c.id===draft.collectionId)?.name||'선택한 모음집'}’에 담습니다.</p>}
