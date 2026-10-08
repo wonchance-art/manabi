@@ -46,6 +46,16 @@ function localSet(key, val) {
 }
 
 /**
+ * 로컬 캐시만 본다(네트워크·AI 0) — 단어창 「더 알아보기」가 이미 받은 설명을 버튼 대신 바로 보이기 위해
+ * (VIEWER-V2-ROUNDS-001 §2.1 · AE-R1 설계서 §3.3). 키는 fetchWordDetailText와 같다. 없으면 null.
+ */
+export async function peekWordDetailText(token, language) {
+  const local = localGet(`${language}:${token.base_form || token.text}`);
+  if (!local) return null;
+  try { const parsed = JSON.parse(local); return parsed ? await withExamplePinyin(parsed, language) : null; } catch { return null; }
+}
+
+/**
  * 단어 상세 설명 가져오기 — DB → localStorage → Gemini (3단 캐시)
  * @returns {Promise<string>} detail text
  */

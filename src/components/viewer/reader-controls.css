@@ -114,10 +114,45 @@
 .viewer-layout .word-fit .surface {white-space:normal;overflow-wrap:anywhere;}
 .viewer-layout .word-fit ruby[data-pinyin] {width:max(1em,3.1rem);}
 .viewer-layout .word-fit ruby[data-pinyin] > .rt-an {font-size:.9375rem;letter-spacing:0;opacity:1;line-height:1.2;}
-.reader-hun {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,10rem),1fr));gap:.25rem 1rem;margin:0 0 .5rem;padding:0;color:var(--reader-muted);font-size:.8125rem;line-height:1.6;}
-.reader-hun__pair {display:grid;grid-template-columns:1.5em minmax(0,1fr);gap:.5em;align-items:start;min-width:0;}
-.reader-hun dt {margin:0;font-weight:500;font-family:var(--reader-font);color:var(--reader-ink);}
-.reader-hun dd {margin:0;min-width:0;white-space:normal;overflow-wrap:anywhere;}
+/* AE-R1 훈음 루비 셀(VIEWER-V2-ROUNDS-001 §2.1 표제어 덩어리): 한자 글자 칸 아래 흐름 배치 — 절대배치·잘라내기 0.
+   칸 폭 = max(글자 칸, 훈음 셀). 셀 최소 폭은 --hun-n(훈음 글꼴 em, hunRubyCells 계산)이라 긴 훈이면 그 칸만 벌어지고,
+   상한(글자 폭 3배)을 넘는 긴 풀이(data-wrap)는 칸 안에서 줄바꿈한다. 병음 앵커(.rt-an bottom 식)는 ruby 상자 기준이라 그대로.
+   글자 줄상자(line-height 1.2) 밖으로 나오는 글꼴 내용 영역(Noto CJK ≈0.124em)만큼 훈음 줄을 띄운다(.13em). */
+.word-fit__col {display:inline-flex;flex-direction:column;align-items:center;vertical-align:top;margin-bottom:.25rem;}
+/* 칩 줄 끝 듣기(§2.1): 누름 영역 44px는 그대로 두고 줄 높이에는 넣지 않는다 — 390 첫 화면 예산(설계서 §5.1). */
+.viewer-layout .word-detail-card__actions > .word-detail-card__speak {margin-block:-9px;}
+.word-fit__hunrow {display:inline-flex;justify-content:center;gap:.25rem;margin-top:.13em;}
+.word-fit__hun {display:inline-flex;flex-direction:column;align-items:center;min-width:min(calc(var(--hun-n, 0) * 1em), 100cqi);padding:0 .125rem;font-family:var(--font-noto-kr, 'Noto Sans KR'), sans-serif;font-size:.8125rem;font-weight:400;line-height:1.35;letter-spacing:0;color:var(--reader-muted);white-space:nowrap;text-align:center;}
+.word-fit__hun[data-wrap] {max-width:min(calc(var(--hun-n, 0) * 1em), 100cqi);white-space:normal;overflow-wrap:anywhere;}
+.word-fit--hun-reserved .surface {padding-bottom:calc(.8125rem * 1.35 + .13em);}
+/* AE-R1 문장 줄(§2.1): 15px 회색 한 문장, 누른 자리만 배경 + 굵게. 버튼 0. 3줄 안전망. */
+.reader-card-sentence {margin:0 0 4px;font-size:.9375rem;line-height:1.6;color:var(--reader-muted);overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden;}
+.reader-card-sentence__term {background:var(--reader-selected);color:var(--reader-ink);font-weight:700;border-radius:3px;padding:0 1px;}
+/* 구획은 라벨 + 가는 선(접힘 0). */
+.reader-card-senses,.reader-card-learn,.reader-card-notes,.reader-card-hanja,.reader-card-pattern {border-top:1px solid var(--reader-line);padding-top:8px;margin:0 0 12px;}
+.reader-card-section__label {margin:0 0 6px;font-size:.75rem;font-weight:500;line-height:1.5;color:var(--reader-muted);}
+.reader-card-pattern__line {display:flex;align-items:center;gap:0;width:100%;min-height:44px;padding:4px 0;border:0;background:transparent;color:var(--reader-ink);font-size:.875rem;text-align:start;cursor:pointer;overflow-wrap:anywhere;}
+.reader-card-pattern__label {color:var(--reader-muted);font-size:.75rem;}
+.reader-card-pattern__pop {margin:4px 0 0;padding:8px 10px;border:1px solid var(--reader-line);border-radius:6px;background:var(--reader-paper);}
+.reader-card-sense-list {list-style:none;margin:0;padding:0;}
+.reader-card-sense {display:grid;grid-template-columns:4.25em 1.25em minmax(0,1fr) auto;column-gap:4px;align-items:baseline;padding:4px 6px;margin:0 -6px;border-radius:4px;font-size:.9375rem;line-height:1.55;}
+.reader-card-sense.is-current {background:var(--reader-selected);}
+.reader-card-sense.is-current .reader-card-sense__meaning {font-weight:700;}
+.reader-card-sense__pos {font-size:.75rem;color:var(--reader-muted);overflow-wrap:anywhere;}
+.reader-card-sense__n {color:var(--reader-muted);}
+.reader-card-sense__meaning {overflow-wrap:anywhere;}
+.reader-card-sense__context {font-size:.75rem;color:var(--reader-accent);white-space:nowrap;}
+.reader-card-sense > .reader-card-example__text {grid-column:3 / -1;margin:2px 0 0;}
+.reader-card-learn {display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px;}
+.reader-card-learn > :not(.reader-card-learn__ask) {flex:1 0 100%;margin:0;}
+.reader-card-learn__ask {flex:0 1 auto;}
+/* 하단 저장 줄(§2.1): ✓ 단어장에 있음 · 다음 복습 날짜 [이 문맥 추가] ☐ 아는 단어 — 넘치면 두 줄. */
+.save-grade__saved {display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:0;}
+.save-grade__status {display:inline-flex;align-items:center;flex-wrap:wrap;gap:0 6px;margin-right:auto;font-size:.8125rem;color:var(--reader-muted);}
+.viewer-layout .reader-card-actions .save-grade__in:disabled {padding:0;border:0;background:transparent;color:var(--reader-ink);font-weight:600;opacity:1;min-height:44px;}
+.save-grade__next::before {content:'· ';}
+.word-detail-card__known {display:inline-flex;align-items:center;gap:6px;}
+.word-detail-card__known[aria-pressed="false"]::before {content:'';flex:none;width:14px;height:14px;border:1.5px solid currentColor;border-radius:3px;}
 .viewer-layout .word-detail-card {padding:0;border:0;box-shadow:none;color:var(--reader-ink);font-size:1rem;}
 .viewer-layout .word-detail-card__meaning {font-size:1.125rem;line-height:1.6;}
 .viewer-layout .word-detail-card__actions {margin-bottom:0;min-height:20px;}
@@ -322,7 +357,7 @@
 .manabi-app .viewer-layout .viewer-inspector__contents {background:var(--reader-paper);}
 .manabi-app .viewer-layout .viewer-inspector__tabs button {flex:0 1 auto;min-width:64px;font-size:12px;}
 .manabi-app .viewer-layout .reader-card-body {padding:16px 20px;}
-.manabi-app .viewer-layout .word-detail-card__meaning {font-size:22px;font-weight:700;letter-spacing:-.4px;}
+.manabi-app .viewer-layout .word-detail-card__meaning {font-size:20px;font-weight:700;letter-spacing:-.4px;}
 .manabi-app .viewer-layout .word-detail-card__meta {font-size:11px;letter-spacing:.3px;}
 .manabi-app .viewer-layout .reader-card-actions {padding:10px 14px;background:var(--reader-surface);}
 .manabi-app .viewer-layout .reader-card-actions .review-score-btn {border-radius:3px;}
@@ -468,6 +503,9 @@
   .manabi-app .viewer-layout .viewer-inspector__header{flex-wrap:nowrap;padding:2px 8px}
   .manabi-app .viewer-layout .viewer-inspector__tabs{flex:1;min-width:0}
   .manabi-app .viewer-layout .viewer-inspector__tabs button{flex:1;min-width:64px;padding:6px}
+  /* AE-R1 Q9: 좁은 시트(390)에서만 미저장 등급 부제(「1분 후」 등)를 숨겨 첫 화면 예산 「문장 3줄 + 뜻 1줄」을 지킨다
+     (실글꼴 실측: 부제가 있으면 3줄 문장의 뜻 줄이 본문 끝을 4.5px 넘었다). 같은 문구는 버튼 title에 남는다. */
+  .manabi-app .viewer-layout .reader-card-actions .save-grade__sub{display:none}
 }
 
 /* Word-body hierarchy only. Existing panel scrolling and grading geometry stay intact. */
@@ -476,8 +514,8 @@
 .manabi-app .viewer-layout .reader-card-lexeme{flex:1;min-width:0}
 .manabi-app .viewer-layout .reader-card-pronunciation{font-size:.875rem;line-height:1.6;font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--reader-muted);overflow-wrap:anywhere;margin-top:4px}
 .manabi-app .viewer-layout .reader-card-body .word-detail-card__meaningrow{align-items:flex-start;gap:8px;margin-bottom:16px}
-.manabi-app .viewer-layout .reader-card-body .word-detail-card__meaning{font-size:1.375rem;line-height:1.5;letter-spacing:0;overflow-wrap:anywhere}
-.manabi-app .viewer-layout .reader-card-body .word-detail-card__edit{margin-top:calc((2.0625rem - 44px)/2)}
+.manabi-app .viewer-layout .reader-card-body .word-detail-card__meaning{font-size:1.25rem;font-weight:700;line-height:1.5;letter-spacing:0;overflow-wrap:anywhere}
+.manabi-app .viewer-layout .reader-card-body .word-detail-card__edit{margin-top:calc((1.875rem - 44px)/2)}
 .manabi-app .viewer-layout .reader-card-body .reader-card-context{padding:12px 0 0;margin:0;border-top:1px solid var(--reader-line)}
 .manabi-app .viewer-layout .reader-card-body .reader-card-source{padding:0;margin:0 0 8px;border:0;background:transparent}
 .manabi-app .viewer-layout .reader-card-body .reader-card-source blockquote{margin:0;padding:0;font-size:.875rem;line-height:1.75;overflow-wrap:anywhere;color:var(--reader-ink)}
@@ -489,7 +527,6 @@
 .manabi-app .viewer-layout .reader-card-body .reader-card-context-explanation{margin-bottom:8px;font-size:.875rem;line-height:1.6;color:var(--reader-ink);overflow-wrap:anywhere}
 .manabi-app .viewer-layout .reader-card-body .reader-card-context-explanation.is-loading{color:var(--reader-muted)}
 .manabi-app .viewer-layout .reader-card-body .reader-card-context-explanation>h3{margin:0 0 8px;font-size:.75rem;line-height:1.5;font-weight:500;color:var(--reader-muted)}
-.manabi-app .viewer-layout .reader-card-body>.reader-hun{grid-template-columns:repeat(auto-fit,minmax(min(100%,8rem),1fr));gap:8px 16px;margin:12px 0 0;padding-top:12px;border-top:1px solid var(--reader-line)}
 .manabi-app .viewer-layout .reader-card-body .reader-card-disclosure{border:0;border-top:1px solid var(--reader-line);padding:0;margin:0}
 .manabi-app .viewer-layout .reader-card-body .reader-card-disclosure>summary{display:flex;align-items:center;gap:8px;min-height:44px;padding:8px 0;list-style:none;cursor:pointer;font-size:.8125rem;line-height:1.5;color:var(--reader-muted);overflow-wrap:anywhere}
 .manabi-app .viewer-layout .reader-card-body .reader-card-disclosure>summary::-webkit-details-marker{display:none}
