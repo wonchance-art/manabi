@@ -87,7 +87,7 @@ for(const width of [1440,390,320])test(`viewer Korean labels/${width}px: long, a
  }finally{await f.context.close();}
 });
 // R0+(VIEWER-V2-ROUNDS-001 §1): 간체 동형 옛 글자(术 '삽주뿌리 출') 대신 정체 꼴(術 '재주 술')로 찾는다.
-// 단어창 훈음 줄과 글자 카드가 같은 조회를 쓰므로 같은 값을 보인다.
+// 단어창 훈음 줄과 한자 창(AE-R4 — 중국어 일반 모드의 글자 카드 대체)이 같은 조회를 쓰므로 같은 값을 보인다.
 test('viewer Korean labels: traditional-form lookup in the word card and the character card',async()=>{
  const f=await open(390);
  try{
@@ -96,8 +96,11 @@ test('viewer Korean labels: traditional-form lookup in the word card and the cha
   const labels=await f.page.locator('#inspector-word .word-fit__hun').evaluateAll(els=>els.map(e=>e.dataset.label));
   assert.ok(labels.includes('재주 술'),labels.join(' / '));
   assert.ok(!labels.some(l=>l.includes('삽주뿌리')),labels.join(' / '));
+  // AE-R4 PR②(설계서 docs/manabi-viewer-v2-ae-r4.md §7.1 · 정본 §9): 중국어 일반 모드의 글자 탭은 글자 카드 대신 한자 창 —
+  // 창 머리 훈음도 같은 정체 조회(hanjaPanelModel → hanjaReadingsOf)라 같은 값(재주 술)을 보인다.
   await f.page.locator('.word-fit__char',{hasText:'术'}).first().click();
-  await f.page.locator('.char-inspect__hun').filter({hasText:'재주 술'}).waitFor();
+  await f.page.locator('.hanja-pop__hun').filter({hasText:'재주 술'}).waitFor();
+  assert.equal(await f.page.locator('.char-inspect').count(),0);
   // 같은 음 글자는 지금 훈음 유지(화면 악화 0) — 点은 정체 點 '더러울 점'이 아니라 지금 '검은 점 점'
   await select(f,entries.findIndex(e=>e[0]==='一点'));
   const dot=await f.page.locator('#inspector-word .word-fit__hun').evaluateAll(els=>els.map(e=>e.dataset.label));

@@ -14,6 +14,7 @@ export function useEasierText({ materialLang, toast, explanationLocale = 'ko', s
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
+  const [forText, setForText] = useState(''); // 이 결과를 만든 문장 — 표시는 탭 문장과 같을 때만(AE-R2 §5.1)
   const gate = useRef(createViewerRequestGate());
   const deadline = useRef(null);
   const locale = canonicalViewerLocale(explanationLocale);
@@ -26,7 +27,7 @@ export function useEasierText({ materialLang, toast, explanationLocale = 'ko', s
 
   /** 지정 문장이 바뀌면 닫고 비운다 — 다른 문장의 쉬운 말이 남지 않게(grammar.reset과 같은 자리). */
   const reset = useCallback(() => {
-    cancel(); setOpen(false); setResult(''); setLoading(false);
+    cancel(); setOpen(false); setResult(''); setForText(''); setLoading(false);
   }, [cancel]);
   useEffect(() => { reset(); return cancel; }, [requestScope, reset, cancel]);
 
@@ -38,6 +39,7 @@ export function useEasierText({ materialLang, toast, explanationLocale = 'ko', s
     setOpen(true);
     setLoading(true);
     setResult('');
+    setForText(text);
     deadline.current = setTimeout(() => {
       if (!current()) return;
       setLoading(false); setOpen(false);
@@ -67,5 +69,5 @@ export function useEasierText({ materialLang, toast, explanationLocale = 'ko', s
     }
   }, [materialLang, locale, language, requestScope, toast, cancel]);
 
-  return { open, loading, result, run, reset };
+  return { open, loading, result, forText, run, reset };
 }
