@@ -1680,7 +1680,12 @@ export default function ViewerPage() {
       setBoundaryPanel(null);
       const token = out.material?.processed_json?.dictionary?.[out.selectId];
       if (token) {
+        // 본문 토큰을 누른 것과 같은 카드(handleTokenClick) — 옛 분할의 드래그 단어 목록은 닫는다(묶은 뒤 카드 목업: 하단 고정).
         detailGate.current.cancel();
+        selectionGate.current.cancel();
+        setLeftPanelLoading(false);
+        setDragAnalyzing(false);
+        setDragTokens(null);
         resetWordPanelScroll();
         setSelectedToken({ ...token, id: out.selectId });
         setIsSheetOpen(true);

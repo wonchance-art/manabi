@@ -201,14 +201,14 @@ test('390 owner zh: 드래그 → [한 단어로 묶기] → 확인 줄(이 자�
   const mark=f.requests.length;
   await confirm.getByRole('button',{name:'묶기',exact:true}).click();
   await card(f).locator('.word-detail-card__meaning').getByText('신체 조건',{exact:true}).waitFor();
-  assert.match(await card(f).locator('.reader-card-headword').innerText(),/身\s*体\s*素\s*质/);
+  assert.equal((await card(f).locator('.reader-card-headword [data-glyph-i]').allTextContents()).join(''),'身体素质','headword is the merged word');
   const origin=card(f).locator('.reader-card-boundary');
   assert.equal((await origin.innerText()).replace(/\s+/g,' ').trim(),'직접 묶은 단어 · 나누기');
   const undo=card(f).locator('.reader-card-boundary-undo');
   assert.equal((await undo.innerText()).replace(/\s+/g,' ').trim(),'묶었어요 · 되돌리기');
   assert.doesNotMatch(await card(f).innerText(),/\bAI\b/,'no 「AI」 label');
-  assertFirstScreen(await measure(f.page),'zh 390 merged card');
   await shot(f,'boundary-merged-card-390');
+  assertFirstScreen(await measure(f.page),'zh 390 merged card');
   await until(async()=>(await bodyLine(f,0)).length===6);
   assert.deepEqual(await bodyLine(f,0),['运动员','的','身体素质','非常','好','。']);
   // 저장: RPC 1회(원문 그대로) · 이력 1행 · 그 줄만 분석
