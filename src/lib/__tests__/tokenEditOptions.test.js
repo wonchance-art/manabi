@@ -83,7 +83,7 @@ describe('편집 배선 계약 (ViewerPage.jsx)', () => {
     expect(src).toContain('<TokenEditPanel');
     expect(src).toMatch(/correctTokenMutation\.mutate\(\s*\{ tokenId: selectedToken\.id, corrections \}/);
     // 실패 시 패널·입력값 유지: 닫기와 전역 승격이 per-call onSuccess 안에 있어야 한다
-    expect(src).toMatch(/onSuccess: \(\) => \{\s*if \(opts\?\.applyGlobal\) promoteCorrection\(selectedToken, corrections\);\s*setIsEditingToken\(false\);/);
+    expect(src).toMatch(/onSuccess: \(\) => \{\s*if \(opts\?\.applyGlobal\) promoteCorrection\(selectedToken, corrections\);\s*else if \(opts\?\.applyVocab\) applyCorrectionToVocab\(selectedToken, corrections\);\s*setIsEditingToken\(false\);/);
   });
 
   it('토큰 전환 시 리마운트·편집 닫기(마감 ③ — 이전 입력값이 새 토큰에 붙는 것 차단)', () => {

@@ -3,10 +3,10 @@
 // 기존 행을 읽어 교정을 선두로 병합(buildPromotedEntry)하고 user_verified로 upsert —
 // 이후 모든 분석 경로가 교정을 따르고, 자가 치유 로직은 이 행을 덮지 않는다.
 //
-// 권한(2026-10-07): 공유 사전은 전 사용자 화면·분석에 쓰이고 user_verified 행은 자가 치유가
-// 되돌리지 않으므로, 로그인만으로는 쓸 수 없다. 화면이 이 옵션을 보이는 범위와 같게 —
-// 요청한 material_id의 소유자(또는 관리자)이고, 그 자료의 processed_json에 그 단어가 실제로
-// 있을 때만 upsert한다. 자료 언어와 다른 사전도 덮지 못한다.
+// 권한(2026-10-07 → 오너 결정 ⓒ 2026-10-09): 공유 사전은 전 사용자 화면·분석에 쓰이고 user_verified
+// 행은 자가 치유가 되돌리지 않으므로 **관리자만** 쓴다. 자료 소유자의 교정은 그 자료(token_corrections)와
+// 자기 단어장에만 남고 여기로 오지 않는다(화면도 관리자에게만 이 옵션을 보인다). 관리자도 요청한
+// material_id의 processed_json에 그 단어가 실제로 있을 때만, 자료 언어의 사전만 upsert한다.
 
 import { createClient } from '@supabase/supabase-js';
 import { buildPromotedEntry } from '@/lib/server/promoteDictCorrection';
@@ -77,15 +77,17 @@ export async function POST(request) {
   );
 
   try {
-    // ⑴ 권한: 그 자료의 소유자 또는 관리자. 없는 자료도 같은 403(존재 여부를 흘리지 않는다).
+    // ⑴ 권한: 관리자만(오너 결정 ⓒ). 자료 소유자여도 공유 사전은 바꾸지 않는다. 관리자에게도 없는 자료는 403.
+    if (!(await isAdminUser(user.id))) {
+      return Response.json({ error: '공유 사전은 관리자만 고칠 수 있어요.' }, { status: 403 });
+    }
     const { data: material, error: matErr } = await supabase
       .from('reading_materials')
       .select('id, owner_id, processed_json')
       .eq('id', materialId)
       .maybeSingle();
     if (matErr) throw matErr;
-    const isOwner = !!material && material.owner_id === user.id;
-    if (!isOwner && !(material && await isAdminUser(user.id))) {
+    if (!material) {
       return Response.json({ error: '이 자료의 단어만 사전에 반영할 수 있어요.' }, { status: 403 });
     }
     // ⑵ 범위: 자료 언어의 사전만, 그 자료에 실제로 있는 단어만.
@@ -116,7 +118,7 @@ export async function POST(request) {
     // 감사 흔적(새 테이블 없이 서버 로그 1줄) — 누가 어느 자료에서 공유 사전을 바꿨는지.
     // 뜻 본문은 남기지 않는다(자료 쪽 교정 이력은 token_corrections에 이미 있다).
     console.info('[api/dict-correct] promoted', JSON.stringify({
-      user_id: user.id, material_id: materialId, language, base_form: baseForm, by: isOwner ? 'owner' : 'admin',
+      user_id: user.id, material_id: materialId, language, base_form: baseForm, by: 'admin',
     }));
     return Response.json({ ok: true });
   } catch (err) {
