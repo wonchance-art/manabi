@@ -122,6 +122,8 @@ import { isLocalId, parseLocalId, chaptersForLocalNav } from '../lib/classBoard'
 import { getSharedCopy } from '../lib/sharedStore';
 import { readIndexCache } from '../lib/classClient';
 import { useRefVocabEntry, refLevelLabel } from '../lib/refVocabIndex';
+import { useTokenDictPrefetch } from '../lib/useTokenDictPrefetch';
+import { tokenDictPrefetchEnabled } from '../lib/tokenDictPrefetch';
 import { knownWordsLang } from '../lib/knownWords';
 import { useKnownWords } from '../lib/useKnownWords';
 import { knownWordKeys, normalizeKnownWord, knownWordSetOf } from '../lib/knownWordControl';
@@ -1755,6 +1757,9 @@ export default function ViewerPage() {
     enabled: materialLang !== 'Korean' && (isEditingToken || (isSheetOpen && materialLang === 'Chinese') || (!!selectedToken && !!selectedLexKey && selectedLexKey !== selectedToken.text)) && !!selectedDictKey,
     staleTime: 1000 * 60,
   });
+  // AE-R1 §5.3: 자료를 열 때 고유 표제어를 100개씩 받아 위 조회와 같은 캐시 키를 미리 채운다(화면 출력 무변경).
+  useTokenDictPrefetch({ supabase, queryClient, language: materialLang, processedJson: material?.processed_json,
+    enabled: tokenDictPrefetchEnabled({ user, language: materialLang, processedJson: material?.processed_json, status: material?.status }) });
   // R R2 표제어 — 표면 ≠ 기본형(이합사 조각 道→道歉·歉→道歉, 활용형 食べた→食べる)이면 카드
   // 표제어를 기본형으로 쓰고 탭한 구간만 강조한다. 뜻·유의어·예문·日 대응이 전부 기본형의
   // 것인데 표제어만 표면이면 「길 도」 밑에 「사과하다」가 선다(오너 보고 2026-09-02).
