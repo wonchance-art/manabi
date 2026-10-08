@@ -159,8 +159,17 @@ describe('BRAND-APPLY-001 ⑤ 바꾸면 안 되는 내부 이름(데이터·캐�
     ['src/app/api/import/link/route.js', "'AnatomyStudio/1.0 (language-learning)'"],
     ['src/app/robots.js', "'https://anatomy-studio.vercel.app'"],
     ['src/app/sitemap.js', "'https://anatomy-studio.vercel.app'"],
+    // Anki 태그 — 바꾸면 기존 사용자의 Anki 덱과 이어지지 않는다(오너 결정 2026-10-09: 파일 이름만 manabi로).
+    ['src/lib/vocabIO.js', "const tags = ['anatomy-studio',"],
   ])('%s — %s 유지', (file, needle) => {
     expect(read(file)).toContain(needle);
+  });
+
+  it('단어장 CSV·Anki 내보내기 파일 이름은 manabi로(태그는 위에서 유지)', () => {
+    const io = read('src/lib/vocabIO.js');
+    expect(io).toContain('a.download = `manabi_vocab_${');
+    expect(io).toContain('a.download = `manabi_vocab_anki_${');
+    expect(io).not.toMatch(/download = `anatomy_/);
   });
 
   it('sw.js CACHE_NAME 접두사 anatomy-studio-v 유지', () => {
