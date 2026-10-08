@@ -3,7 +3,7 @@
 // 왜: Gemini 호출이 5곳(api/gemini 프록시 · explain · study-paragraph · writing-feedback ·
 // fetchMeanings, 거기에 disambiguateZhPos/EnPos의 URL 직접 호출)에 각자 복사돼 모델 문자열·
 // 폴백 순서·Groq 응답 변환·용량 재시도가 다섯 번 반복됐다. 호출부는 **티어**(light/standard)만
-// 말하고, 모델·폴백·프로바이더는 이 파일의 표 한 곳이 정한다. 모델 식별자(`gemini-…`·`qwen/…`)와
+// 말하고, 모델·폴백·프로바이더는 이 파일의 표 한 곳이 정한다. 모델 식별자(`gemini-…`·`openai/gpt-oss-…`)와
 // Gemini 엔드포인트가 사는 곳은 리포에서 이 파일(+ 별 라인인 api/tts)뿐 — llm.test.js가 grep으로 잡는다.
 //
 // 동작 계약(R1 — 호출부 동작 무변경):
@@ -31,18 +31,20 @@ export const TIERS = Object.freeze({
 });
 export const TIER_NAMES = Object.freeze(Object.keys(TIERS));
 
-/** Groq 최종 폴백 — preview 모델. R3에서 GA·저가 모델로 교체(#1077 5551860999 §R3). */
-export const GROQ_MODEL = 'qwen/qwen3.6-27b';
+/**
+ * Groq 최종 폴백 — production(GA) 모델. preview(qwen3-32b → qwen3.6-27b)는 두 번 퇴역해 폴백이 죽었다
+ * (#1077 AA R3-a). 출력 단가가 본선 lite보다 낮다(폴백 단가 ≤ 본선 원칙).
+ */
+export const GROQ_MODEL = 'openai/gpt-oss-120b';
 
 /**
  * 구버전 클라 번들 하위호환 — 배포 직후 캐시된 클라가 보내는 body.model(옛 이름)을 티어로 매핑한다.
- * 목록 밖은 400(현행 allowlist 의미 유지). 한 릴리스 유지 뒤 제거. 2.5-flash는 2026-10-16 퇴역(R3에서 삭제).
+ * 목록 밖은 400(현행 allowlist 의미 유지). 2.5 매핑 두 줄은 R1 뒤 한 릴리스 유지 조건이 차 R3-a에서
+ * 삭제했다(2.5-flash 2026-10-16 퇴역, 2.5-Lite 승격 안 함) — 이제 2.5 이름은 400이다.
  */
 export const LEGACY_MODEL_TIERS = Object.freeze({
   'models/gemini-3.6-flash': 'standard',
-  'models/gemini-2.5-flash': 'standard',
   'models/gemini-3.5-flash-lite': 'light',
-  'models/gemini-2.5-flash-lite': 'light',
 });
 
 /** 현재 Gemini 3 Flash/Lite의 최소 추론 설정. 완전 off는 지원하지 않는다.
@@ -164,11 +166,17 @@ const normalizeGeminiUsage = (u) => ({
   out: Number(u?.candidatesTokenCount) || 0,
   thinking: Number(u?.thoughtsTokenCount) || 0,
 });
-const normalizeGroqUsage = (u) => ({
-  in: Number(u?.prompt_tokens) || 0,
-  out: Number(u?.completion_tokens) || 0,
-  thinking: 0,
-});
+// gpt-oss는 completion_tokens에 추론 토큰을 포함해 센다 — Gemini(candidatesTokenCount는 추론 제외)와
+// 집계 단위를 맞추려고 reasoning_tokens를 thinking으로 떼어 내고 out에서 뺀다. 필드가 없으면 thinking 0.
+const normalizeGroqUsage = (u) => {
+  const completion = Number(u?.completion_tokens) || 0;
+  const thinking = Number(u?.completion_tokens_details?.reasoning_tokens) || 0;
+  return {
+    in: Number(u?.prompt_tokens) || 0,
+    out: Math.max(0, completion - thinking),
+    thinking,
+  };
+};
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const mentionsThinking = (detail) => JSON.stringify(detail ?? '').toLowerCase().includes('thinking');
 
@@ -207,8 +215,8 @@ async function groqOnce(contents, generationConfig, { groqKey, signal }) {
         messages: [{ role: 'user', content: promptText }],
         temperature: generationConfig?.temperature ?? 0,
         stream: false,
-        // Qwen thinking 모드 비활성화(불필요한 추론 토큰 낭비 방지) — 기존 5곳 공통
-        reasoning_effort: 'none',
+        // gpt-oss는 추론을 끌 수 없어 최소치 low(low|medium|high만 받는다 — 'none'은 qwen 전용이라 400)
+        reasoning_effort: 'low',
         ...(wantJson ? { response_format: { type: 'json_object' } } : {}),
       }),
     });
