@@ -7,8 +7,9 @@
 // 담은 자원으로의 링크로 표기를 허용한다. 예외는 지도 곁 표기를 요구하는 OSM 하나(/world 베젤).
 //
 // 항목을 더하면 dataCredits.test.js의 원천 표지 목록도 함께 본다 — 코드에 원천 표지가
-// 있는데 여기 없으면 CI가 잡는다. JMdict는 싣지 않는다 — import 라우트만 있고 운영
-// morpheme_dictionary의 source=jmdict* 행이 0건(오너 조회 2026-10-07)이라 사용자에게 닿지 않는다.
+// 있는데 여기 없으면 CI가 잡는다. JMdict는 AE-R3(뷰어 v2 자형 열 日 줄)부터 싣는다 — 동봉 파생 표
+// src/lib/data/jaWords.json(CC BY-SA 4.0, 이 파일만)이 중국어 단어의 일본어 표기·읽기로 화면에 닿는다
+// (오너 승인 범위 결정 #1337 2026-10-07).
 
 export const DATA_CREDITS_UPDATED = '2026년 10월 7일';
 
@@ -65,6 +66,16 @@ export const DATA_CREDIT_SECTIONS = [
         licenseUrl: 'https://opensource.org/license/mit',
         sourceUrl: 'https://github.com/jamsinclair/open-anki-jlpt-decks',
       },
+      {
+        id: 'jmdict',
+        name: 'JMdict (EDRDG)',
+        holder: '© Electronic Dictionary Research and Development Group',
+        use: '중국어 단어의 일본어 표기·읽기',
+        license: 'CC BY-SA 4.0',
+        licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+        sourceUrl: 'https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project',
+        changes: '중국어 표제어와 같은 표기의 일본어 단어만 골라 읽기와 함께 썼습니다. 가공한 표도 같은 라이선스로 제공합니다.',
+      },
     ],
   },
   {
@@ -74,7 +85,7 @@ export const DATA_CREDIT_SECTIONS = [
         id: 'unihan',
         name: 'Unicode Unihan',
         holder: '© Unicode, Inc.',
-        use: '획수·부수·정체/간체 대응',
+        use: '획수·부수·정체/간체 대응·일본 상용/인명용 한자 목록',
         license: 'Unicode License v3',
         licenseUrl: 'https://www.unicode.org/license.txt',
         sourceUrl: 'https://www.unicode.org/charts/unihan.html',
