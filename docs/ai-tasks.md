@@ -883,6 +883,9 @@
   · `/class/[team]/test`(전체 예문 10문제·8 합격·패턴 중복 0·Day당 1·비슷한 패턴 묶음당 1·난이도 3/4/3·시험지 번호 재현 / 연습 한↔일).
   교재 문장 `nihongo42Class.js`는 서버 전용(`/api/class/[team]/course` — 해제 토큰 또는 루트 소유자 Bearer). 교재 문장 입력 대기(빈 칸 「아직 입력되지 않았어요」).
   계약 `classCourse.test.js`. 오너 몫: culcom 팀 생성(허브 링크 주소 입력 추가), culcom2 삭제(삭제 UI 없음 — SQL 안내), 운영 `SHARE_LINK_SECRET` 확인.
+  2차(같은 날 오너 지시): 코스 탭 상단 달력·바퀴 진행 막대, Day 줄 = 날짜 + Ch·일본어 패턴·한국어(옛 /nihongo 표시),
+  화·목 + 한국 공휴일 제외(`krHolidays.js` 2026·2027 — 노동절·제헌절 반영, 표 밖 해는 경고), 마지막 Day = 수업+시험, 다음 수업일 휴강,
+  휴강 뒤 다음 바퀴 자동. 날짜 변경은 팀 루트 소유자만 그 Day 줄에서(미리보기 → 저장, 뒤 일정 자동 재계산·원래대로). 계약 `classSchedule.test.js`·`classCourseScheduleRender.test.jsx`.
 - **Codex 정지 중 학습 작업 인수 (2026-10-07 13:00 KST~, 오너 지시 — [인수 선언](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6030524345))**:
   기준 main `978ff6bd`. 작업마다 `claude/*` 브랜치를 쓴다(오너 허락). Codex 복귀 시 같은 파일 착수 전 #1337 최신 Claude 보고를 확인한다.
   - #1343 `claude/work-env-agent-setup-1v9a0a` — 앱·테스트 런타임 Node 24 정정(CLAUDE.md)·`.nvmrc`. CI green, 병합 승인 대기.
