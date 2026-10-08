@@ -445,7 +445,9 @@ export function replaceBoundaryLine(json, line, entries, edits) {
 export function boundaryCoveringToken(json, tokenId, surface) {
   if (typeof tokenId !== 'string' || json?.metadata?.language === 'Korean') return null;
   for (const record of readBoundaryEdits(json)) {
-    const at = Array.isArray(record?.base) ? record.base.findIndex(entry => entry?.id === tokenId) : -1;
+    // id 또는 원래 id 별칭(was — 원문 위에 줄을 넣어 줄 접두가 바뀐 base, reanalysisPreservation.mapBoundaryEdits)으로 찾는다.
+    const at = Array.isArray(record?.base) ? record.base.findIndex(entry => entry?.id === tokenId
+      || (Array.isArray(entry?.was) && entry.was.includes(tokenId))) : -1;
     if (at < 0 || !Number.isInteger(record.line) || !Number.isInteger(record.start)) continue;
     const saved = compactBoundaryText(tokenText(record.base[at]));
     if (!saved || (surface && saved !== surface)) return null;

@@ -150,6 +150,12 @@ import TokenEditPanel from './TokenEditPanel';
 import { senseCorrectionFor, revertCorrections, applyTokenCorrections } from '../lib/tokenEditOptions';
 import { senseReviewItems, senseReviewDismissKey, senseReviewOptions, keepSenseCorrection, needsMeaningCheck } from '../lib/viewerSenseReview';
 import ViewerSenseReview from '../components/viewer/ViewerSenseReview';
+import { BoundaryMergeConfirm, BoundaryMergeRow, BoundaryPendingList, BoundarySplitPanel } from '../components/viewer/ViewerBoundaryEdit';
+import {
+  BoundaryEditError, boundaryEditContext, boundaryEntryAllowed, boundaryReasonHidden, boundaryReasonMessage, boundaryTokenOrigin,
+  boundaryUndoValid, commitBoundaryEdit, pendingBoundaryRows, planBoundaryMerge, planBoundarySplit, planNeighborMerge, splitPreview,
+  undoBoundaryEdit,
+} from '../lib/boundaryEditFlow';
 import SourceEditModal from './SourceEditModal';
 import TokenPosLabel from './TokenPosLabel';
 import TokenRangeGrips from './TokenRangeGrips';
@@ -618,8 +624,19 @@ export default function ViewerPage() {
     toast,
   });
 
+  // ── AD-R3 PR③ 「이 자료」 한 단어로 묶기 · 나누기 상태(설계서 docs/manabi-viewer-v2-ad-r3.md §4.1·§6) ──
+  // boundaryPanel = {kind:'drag', key}(드래그 확인 줄) | {kind:'neighbor', tokenId, side}(⋯ 옆 단어와 묶기) | {kind:'split', tokenId}.
+  // boundaryUndo = 「묶었어요/나눴어요 · 되돌리기」 — 그 토큰을 다시 열 때까지. boundaryPendingOpen = 재분석 알림 [보기] 목록.
+  const [boundaryPanel, setBoundaryPanel] = useState(null);
+  const [boundaryUndo, setBoundaryUndo] = useState(null);
+  const [boundaryPendingOpen, setBoundaryPendingOpen] = useState(false);
+  // 재분석에서 적용하지 못한 경계(pending)는 목업 문구 + [보기] → [문장] 탭 자리 목록(설계서 §6.3 마지막 목업).
+  const showPendingBoundaries = (count) => toast(<span>{vt('분석을 다시 했어요. 직접 고친 단어 경계 {count}개는 이번 분석에 적용하지 못했어요.', { count })}{' '}
+    <button type="button" className="btn btn--ghost btn--sm" style={{ pointerEvents: 'auto' }}
+      onClick={() => { setSenseReviewIds(null); setBoundaryPendingOpen(true); setSentenceTabSignal(s => s + 1); }}>{vt('보기')}</button></span>, 'warning', 10000);
+
   // 재분석 로직 + UI
-  const reanalyze = useReanalyze({ materialId: id, material, refetch, toast, explanationLocale: effectiveExplanationLocale });
+  const reanalyze = useReanalyze({ materialId: id, material, refetch, toast, explanationLocale: effectiveExplanationLocale, onPendingBoundaries: showPendingBoundaries });
   const reanalyzeMutation = reanalyze.mutation;
   const startPassageMutation = reanalyzeMutation.mutate;
   useEffect(() => {
@@ -814,6 +831,7 @@ export default function ViewerPage() {
     setInspectChar(null);
     setIsEditingToken(false);
     setSenseReviewIds(null); // AD-R4 「뜻 확인 필요」 목록도 시트와 함께 닫는다
+    setBoundaryPendingOpen(false);
   };
 
   // ④ 같은 글자 재탭 = 닫기, 다른 글자 = 교체
@@ -1368,6 +1386,7 @@ export default function ViewerPage() {
     }, 45000);
     if (!preserveOpenWord) detailGate.current.cancel();
     setSenseReviewIds(null); // 새 문장 번역이 [문장] 탭 자리를 받는다(AD-R4 목록은 [보기]로 다시 연다)
+    setBoundaryPendingOpen(false); // AD-R3 적용 못 한 경계 목록도 같은 자리라 닫는다
     if (!explanationOnly) {
       setLeftSheetSignal(s => s + 1);
       if (!preserveOpenWord) setRightSheetSignal(s => s + 1);
@@ -1630,6 +1649,66 @@ export default function ViewerPage() {
     onError: (err) => toast('수정 실패 — ' + friendlyToastMessage(err), 'error'),
   });
 
+  // AD-R3 PR③ 묶기·나누기·되돌리기 쓰기 — boundaryEditFlow 하나(그 줄만 /api/analyze boundaries → viewer_replace_analysis
+  // 원자 교체(원문 그대로) + token_corrections 이력 1행). 단어장·FSRS·평가 이력·개인 뜻·출처·사전·전역 승격 호출 0(§4.2).
+  // correctTokenMutation(기대값 비교 없는 PATCH)을 쓰지 않는다 — 경계는 sequence를 바꾸므로 분석 저장과 경합하면 안 된다(§1.3).
+  const analyzeBoundaryLine = async (body) => {
+    let authHeader = {};
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) authHeader = { Authorization: `Bearer ${session.access_token}` };
+    } catch { /* 비로그인은 소유자가 아니라 여기 오지 않는다 */ }
+    const res = await fetch('/api/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader }, body: JSON.stringify(body) });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+    return data;
+  };
+  const boundaryMutation = useMutation({
+    mutationFn: async ({ request, undo }) => {
+      if (!legacyTokenEditingAllowedRef.current) throw new BoundaryEditError('korean');
+      const current = queryClient.getQueryData(['material', id]) || material;
+      const deps = { client: supabase, analyze: analyzeBoundaryLine, userId: user?.id };
+      if (undo) return { ...(await undoBoundaryEdit(current, undo, deps)), kind: 'undo' };
+      return commitBoundaryEdit(current, request, deps);
+    },
+    onSuccess: (out) => {
+      if (!out) return;
+      queryClient.setQueryData(['material', id], out.material);
+      if (isClient) clearAnalysisCache(localStorage); // 드래그 단어 목록 캐시가 옛 분할을 돌려주지 않게(§1.4)
+      queryClient.invalidateQueries({ queryKey: ['material', id] });
+      tokenRange.clearRange();
+      setBoundaryPanel(null);
+      const token = out.material?.processed_json?.dictionary?.[out.selectId];
+      if (token) {
+        // 본문 토큰을 누른 것과 같은 카드(handleTokenClick) — 옛 분할의 드래그 단어 목록은 닫는다(묶은 뒤 카드 목업: 하단 고정).
+        detailGate.current.cancel();
+        selectionGate.current.cancel();
+        setLeftPanelLoading(false);
+        setDragAnalyzing(false);
+        setDragTokens(null);
+        resetWordPanelScroll();
+        setSelectedToken({ ...token, id: out.selectId });
+        setIsSheetOpen(true);
+        setWordDetail(null);
+        setInspectChar(null);
+        setIsEditingToken(false);
+        setRightSheetSignal(s => s + 1);
+      }
+      setBoundaryUndo(out.kind === 'undo' ? null : { tokenId: out.selectId, kind: out.kind, undo: out.undo });
+    },
+    onError: (err) => {
+      const text = err?.code === '40001' ? vt('다른 창에서 자료가 바뀌었어요. 다시 열어 확인해 주세요.')
+        : err instanceof BoundaryEditError && err.reason !== 'analysis_mismatch' ? vt(...boundaryReasonMessage(err.reason))
+          : vt('단어 경계를 적용하지 못했어요. 잠시 뒤 다시 해 주세요.');
+      toast(text, 'error');
+    },
+  });
+  // 다른 단어를 열거나 시트를 닫으면 ⋯ 패널·되돌리기 줄을 닫는다(드래그 확인 줄은 드래그 범위가 정한다).
+  useEffect(() => {
+    setBoundaryPanel(panel => (panel?.kind === 'drag' || (panel && panel.tokenId === selectedToken?.id && isSheetOpen) ? panel : null));
+    setBoundaryUndo(undo => (undo && undo.tokenId === selectedToken?.id && isSheetOpen ? undo : null));
+  }, [selectedToken?.id, isSheetOpen]);
+
 
 
 
@@ -1890,7 +1969,9 @@ export default function ViewerPage() {
   // 자료 토큰(id) · 비한국어 · 저장 지원. 수업 모드는 표시만(Q3). 열람자 개인 교정은 새 범위라 하지 않는다(설계서 §10.3).
   const senseEditable = canEditToken && !!selectedToken?.id && legacyTokenEditingAllowed && learningStorageSupported && !classStudyActive;
   const openTokenEditing = () => {
-    if (legacyTokenEditingAllowedRef.current) setIsEditingToken(true);
+    if (!legacyTokenEditingAllowedRef.current) return;
+    setBoundaryPanel(null); // AD-R3 ⋯ 패널(옆 단어와 묶기·나누기)과 편집 패널은 한 번에 하나
+    setIsEditingToken(true);
   };
   // 「뜻을 바꿨어요 · 되돌리기」 — 그 토큰을 다시 열 때까지(다른 단어·시트 닫기에서 지운다). before = 바꾼 칸의 이전 값.
   const [senseUndo, setSenseUndo] = useState(null); // { tokenId, before, corrections }
@@ -2435,10 +2516,67 @@ export default function ViewerPage() {
       { onSuccess: () => { setSenseUndo(null); focusInCard(`.reader-card-sense__pick[data-meaning="${CSS.escape(chosen || '')}"]`); } }
     );
   };
-  // 머리줄 ⋯ = 분석 고치기(정본 §2). 지금은 「뜻·발음 수정」 하나, AD-R3가 묶기·나누기를 더한다. 고칠 것이 없으면 ⋯도 없다.
+  // ── AD-R3 PR③ 「이 자료」 묶기·나누기 진입점(설계서 §6.1 · §4.4 · Q4 · §12.2) ──
+  // 소유자(canEditToken) · 중·일·영 · 수업 사본(source_ref·기기 사본)·구간 학습(passage)·수업 모드 제외 · 분석 완료 · 재분석 중 아님.
+  // 한국어는 어절 칼선 오너 결정 전이라 메뉴·드래그 항목 자체가 없다(legacyTokenEditingAllowed 포함).
+  const boundaryCtx = boundaryEditContext(material, { userId: user?.id, classMode: classStudyActive, passage: !!passageOf(material) });
+  const boundaryAllowed = canEditToken && legacyTokenEditingAllowed && boundaryEntryAllowed(boundaryCtx) && isDone
+    && !material?.__offline && !reanalyzeMutation.isPending;
+  const boundaryBusy = boundaryMutation.isPending;
+  const boundarySavedParts = (tokenIds) => [...new Set((tokenIds || []).map(tid => json.dictionary?.[tid]).filter(t => t && isTokenSaved(savedWords, t, materialLang)).map(t => t.text))];
+  const openBoundaryPanel = (panel) => { setIsEditingToken(false); setBoundaryPanel(panel); };
+  // 드래그 「한 단어로 묶기」 — [문장] 탭 원문 줄 아래(목업). 드래그 동작·번역 경로는 그대로, 버튼 하나만 더한다.
+  const dragRange = boundaryAllowed && tokenRange.range && !tokenRange.dragging ? tokenRange.range : null;
+  const dragKey = dragRange ? `${dragRange.start}:${dragRange.end}` : '';
+  const dragPlan = dragRange ? planBoundaryMerge(material, dragRange.start, dragRange.end, boundaryCtx) : null;
+  const boundaryMergeBlock = dragPlan && !boundaryReasonHidden(dragPlan.reason) ? (
+    boundaryPanel?.kind === 'drag' && boundaryPanel.key === dragKey
+      ? <BoundaryMergeConfirm key={dragKey} plan={dragPlan} savedWords={boundarySavedParts(dragPlan.ids)} busy={boundaryBusy} contentLang={contentLangTag} vt={vt}
+        onConfirm={() => boundaryMutation.mutate({ request: dragPlan.request })} onCancel={() => setBoundaryPanel(null)} />
+      : <BoundaryMergeRow plan={dragPlan} reasonText={dragPlan.ok ? null : boundaryReasonMessage(dragPlan.reason)} vt={vt}
+        onStart={() => setBoundaryPanel({ kind: 'drag', key: dragKey })} />
+  ) : null;
+  // 카드: 「직접 묶은 단어 · [나누기]」(Q1) · 「묶었어요/나눴어요 · [되돌리기]」 · ⋯ 패널(옆 단어와 묶기 · 나누기).
+  const cardTokenId = boundaryAllowed && selectedToken?.id && isSheetOpen ? selectedToken.id : null;
+  const boundaryOrigin = cardTokenId ? boundaryTokenOrigin(json, cardTokenId) : null;
+  const boundaryUndoShown = !!cardTokenId && boundaryUndo?.tokenId === cardTokenId && boundaryUndoValid(json, boundaryUndo.undo);
+  const renderBoundaryCard = () => {
+    if (!cardTokenId) return null;
+    const panel = boundaryPanel?.tokenId === cardTokenId ? boundaryPanel : null;
+    let panelNode = null;
+    if (panel?.kind === 'split') {
+      const plan = planBoundarySplit(material, cardTokenId, boundaryCtx);
+      panelNode = <BoundarySplitPanel key={`split:${cardTokenId}`} plan={plan} reasonText={plan.ok ? null : boundaryReasonMessage(plan.reason)}
+        preview={cuts => splitPreview(plan, cuts)} busy={boundaryBusy} contentLang={contentLangTag} vt={vt}
+        onConfirm={cuts => boundaryMutation.mutate({ request: { line: plan.line, start: plan.start, end: plan.end, cuts } })} onCancel={() => setBoundaryPanel(null)} />;
+    } else if (panel?.kind === 'neighbor') {
+      const plans = planNeighborMerge(material, cardTokenId, boundaryCtx);
+      const side = panel.side || (plans.next.ok || !plans.prev.ok ? 'next' : 'prev');
+      const plan = plans[side];
+      const reason = plan.ok ? null : boundaryReasonMessage(plan.reason === 'no_neighbor' && side === 'next' && plans.prev.reason !== 'no_neighbor' ? plans.prev.reason : plan.reason);
+      panelNode = <BoundaryMergeConfirm key={`neighbor:${cardTokenId}`} plan={plan} reasonText={reason} busy={boundaryBusy} contentLang={contentLangTag} vt={vt}
+        choice={plans.prev.ok || plans.next.ok ? { value: side, prev: plans.prev.ok, next: plans.next.ok, onChange: value => setBoundaryPanel({ ...panel, side: value }) } : null}
+        savedWords={plan.ok ? boundarySavedParts(plan.ids) : []}
+        onConfirm={() => plan.ok && boundaryMutation.mutate({ request: plan.request })} onCancel={() => setBoundaryPanel(null)} />;
+    }
+    return <>
+      {boundaryOrigin === 'merged' && <p className="reader-card-boundary"><span>{vt('직접 묶은 단어')}</span>{' · '}<button type="button" className="btn btn--ghost btn--sm"
+        disabled={boundaryBusy} onClick={() => openBoundaryPanel({ kind: 'split', tokenId: cardTokenId })}>{vt('나누기')}</button></p>}
+      {boundaryUndoShown && <p className="reader-card-boundary-undo"><span role="status">{vt(boundaryUndo.kind === 'merge' ? '묶었어요' : '나눴어요')}</span>{' · '}<button type="button"
+        className="btn btn--ghost btn--sm" disabled={boundaryBusy} onClick={() => boundaryMutation.mutate({ undo: boundaryUndo.undo })}>{vt('되돌리기')}</button></p>}
+      {panelNode}
+    </>;
+  };
+  const boundaryPendingRows = boundaryPendingOpen && canEditToken && legacyTokenEditingAllowed ? pendingBoundaryRows(material) : [];
+  const boundaryPendingContent = boundaryPendingRows.length ? <BoundaryPendingList rows={boundaryPendingRows} contentLang={contentLangTag} vt={vt} /> : null;
+  // 머리줄 ⋯ = 분석 고치기(정본 §2). 「뜻·발음 수정」 + AD-R3 「옆 단어와 묶기」·「나누기」(이 자료 소유자 · 중·일·영). 고칠 것이 없으면 ⋯도 없다.
   const sheetMenu = senseEditable && selectedToken && isSheetOpen ? {
     label: vt('분석 고치기'),
-    items: [{ id: 'edit', label: vt('뜻·발음 수정'), onSelect: openTokenEditing }],
+    items: [{ id: 'edit', label: vt('뜻·발음 수정'), onSelect: openTokenEditing },
+      ...(cardTokenId ? [
+        { id: 'merge-neighbor', label: vt('옆 단어와 묶기'), onSelect: () => openBoundaryPanel({ kind: 'neighbor', tokenId: cardTokenId, side: null }) },
+        { id: 'split', label: vt('나누기'), onSelect: () => openBoundaryPanel({ kind: 'split', tokenId: cardTokenId }) },
+      ] : [])],
   } : null;
   // AD-R4 PR③ 「뜻 확인 필요 N개 [보기]」 — 자료 소유자(고칠 수 있는 사람)만, N>0일 때만, 분석이 끝난 뒤(§6.1).
   // 권한은 사전 뜻 줄 교정(senseEditable)과 같은 판정이고, 수업 모드에서는 숨긴다(§13). 구간 학습(passage)은 교정 RPC가
@@ -2448,6 +2586,7 @@ export default function ViewerPage() {
   const senseReviewShown = senseReviewAllowed && senseReviewList.length > 0 && senseReviewDismissed !== senseReviewKey;
   const openSenseReview = () => {
     if (!senseReviewAllowed || !senseReviewList.length) return;
+    setBoundaryPendingOpen(false);
     setSenseReviewIds(senseReviewList.map((item) => item.id));
     setSenseReviewDictFailed('');
     setSentenceTabSignal(s => s + 1);
@@ -2709,6 +2848,8 @@ export default function ViewerPage() {
       </div>)}
       {/* AD-R4 PR③ 카드 ⓘ(설계서 §6.3) — 뜻 확인 필요 표식이 있을 때만, 뜻 줄 아래. 사전 뜻 줄에서 다른 뜻을 고르면 교정이 표식을 지워 사라진다. 「AI」 표시 없음. */}
       {!classStudyActive && materialLang === 'Chinese' && needsMeaningCheck(selectedToken) && <p className="reader-card-meaning-check"><span aria-hidden="true">ⓘ </span>{vt('문맥과 다를 수 있어요')}</p>}
+      {/* AD-R3 PR③ 직접 묶은 단어 · 되돌리기 · ⋯ 패널(설계서 §6.3 목업 — 뜻 줄 바로 아래). 이 자료 소유자 · 중·일·영만. 「AI」 표시 없음. */}
+      {!classStudyActive && renderBoundaryCard()}
       {/* 첫 화면 우선 2단계: 자형 표를 뜻 줄 아래로(스크롤 아래 — 표제어 옆에는 正 한 칸만). 접힘 0. */}
       {!classStudyActive && materialLang === 'Chinese' && glyphStep >= 2 && <ViewerGlyphColumn className="reader-card-glyph--below" forceLayout="stack" word={headText} zheng={glyphZhengBelow ? glyph.zheng : null} ja={glyph.ja} cardKey={`${glyphCardKey}:below`} labels={{ zheng: vt('대만 정체'), ja: vt('일본어 표기') }} />}
       {/* 사전 뜻 줄 교정 직후 한 줄(설계서 §3.4) — 되돌리기 = 이전 값 그대로 같은 mutation 1회. 그 토큰을 다시 열 때까지. */}
@@ -2956,6 +3097,7 @@ export default function ViewerPage() {
 
   const leftPanelContent = leftPanelLoading ? (
     <div className="pdf-side__empty">
+      {boundaryMergeBlock}
       <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{vt("번역 + 맥락 생성 중...")}</span>
     </div>
   ) : leftPanelResult ? (
@@ -2984,6 +3126,8 @@ export default function ViewerPage() {
           )}
         </div>
       )}
+      {/* AD-R3 PR③: 드래그한 범위 「⊕ 한 단어로 묶기」 — 원문 줄 아래 · 번역 위(목업). 같은 자리에 확인 줄. */}
+      {boundaryMergeBlock}
       <div className="pdf-context__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(leftPanelResult) }} />
 
       {/* [더 쉽게] (#1077-3) — 번역을 보기 전 원어 안의 한 계단. 결과는 원어 문장이라
@@ -3733,7 +3877,7 @@ export default function ViewerPage() {
         sentenceContent={(leftPanelLoading||leftPanelResult)?leftPanelContent:null}
         onActive={setClassStudyActive} onPresenting={setClassPresenting} suppressed={modalBlocked&&!classPresenting}
         onSelectionClose={closeWordCard}
-        fallback={boardActions=>(annotationOpen || leftPanelLoading || leftPanelResult || senseReviewContent || dragTokens !== null || (selectedToken && isSheetOpen)) ? <ViewerBottomSheet
+        fallback={boardActions=>(annotationOpen || leftPanelLoading || leftPanelResult || senseReviewContent || boundaryPendingContent || dragTokens !== null || (selectedToken && isSheetOpen)) ? <ViewerBottomSheet
         actions={boardActions}
         uiLocale={uiLocale}
         className={boardActions?'viewer-inspector--board':''}
@@ -3742,9 +3886,9 @@ export default function ViewerPage() {
         preserveFocus={annotationOpen&&!isSheetOpen&&dragTokens===null}
         preserveWordTab={preserveOpenWord}
         onOpenChange={setInspectorOpen}
-        leftContent={senseReviewContent || leftPanelContent}
+        leftContent={senseReviewContent || boundaryPendingContent || leftPanelContent}
         rightContent={selectedToken&&isSheetOpen?renderRightPanelContent(annotationContent&&<section className="reader-card-notes" aria-label={vt("교재 설명")}><h3 className="reader-card-section__label">{vt("교재 설명")}</h3>{annotationContent}</section>):<>{annotationContent}{rightPanelContent}</>}
-        leftActive={leftPanelLoading || !!leftPanelResult || !!senseReviewContent}
+        leftActive={leftPanelLoading || !!leftPanelResult || !!senseReviewContent || !!boundaryPendingContent}
         rightActive={annotationOpen || dragTokens !== null || (selectedToken && isSheetOpen)}
         leftSignal={leftSheetSignal}
         rightSignal={rightSheetSignal}

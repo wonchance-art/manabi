@@ -755,3 +755,40 @@
 .viewer-sense-review__done,.viewer-sense-review__loading {display:flex;align-items:center;min-height:44px;margin:0;font-size:.8125rem;color:var(--reader-muted);}
 @container reader (min-width:1120px) { .viewer-sense-review__options {flex-direction:column;align-items:flex-start;} }
 /* /AD-R4 PR③ */
+
+/* AD-R3 PR③ 「이 자료」 한 단어로 묶기 · 나누기(뷰어 v2 설계서 docs/manabi-viewer-v2-ad-r3.md §6.3 목업). 누름 영역 44px · 색은 뷰어 별칭 토큰만. 「AI」 표시 없음. */
+.viewer-boundary-merge {display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin:4px 0 8px;}
+.viewer-boundary-merge__start {display:inline-flex;align-items:center;gap:6px;min-height:44px;}
+.viewer-boundary-merge__icon {color:var(--reader-accent);font-weight:700;}
+.viewer-boundary__reason {margin:0;font-size:.8125rem;line-height:1.5;color:var(--reader-muted);text-align:start;}
+.viewer-boundary-confirm {display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin:4px 0 10px;text-align:start;}
+.viewer-boundary-confirm__choice,.viewer-boundary-confirm__actions {display:flex;flex-wrap:wrap;gap:4px 8px;}
+.viewer-boundary-confirm__choice button,.viewer-boundary-confirm__actions button {min-height:44px;}
+.viewer-boundary-confirm__choice button[aria-pressed="true"] {font-weight:700;box-shadow:inset 0 -2px 0 var(--reader-accent);}
+.viewer-boundary-confirm__preview,.viewer-boundary-split__preview {margin:0;font-size:1rem;line-height:1.6;color:var(--reader-ink);overflow-wrap:anywhere;}
+.viewer-boundary-confirm__op {color:var(--reader-muted);}
+.viewer-boundary-confirm__scope {margin:0;padding:0;border:0;}
+.viewer-boundary-confirm__scope label {display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:.875rem;color:var(--reader-ink);}
+.viewer-boundary-confirm__scope input {width:18px;height:18px;margin:0;accent-color:var(--reader-accent);}
+.viewer-boundary-confirm__note {margin:0;font-size:.8125rem;line-height:1.5;color:var(--reader-muted);}
+.viewer-boundary-confirm .sr-only,.viewer-boundary-split .sr-only {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;}
+.reader-card-boundary,.reader-card-boundary-undo {display:flex;flex-wrap:wrap;align-items:center;gap:0 4px;margin:-6px 0 8px;font-size:.8125rem;color:var(--reader-muted);}
+.reader-card-boundary button,.reader-card-boundary-undo button {min-height:44px;}
+.viewer-boundary-split {display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin:0 0 10px;max-width:100%;}
+.viewer-boundary-split__title {margin:0;font-size:.875rem;font-weight:700;line-height:1.5;color:var(--reader-ink);}
+.viewer-boundary-split__title:focus-visible {outline:2px solid var(--reader-accent);outline-offset:2px;}
+.viewer-boundary-split__chars {display:flex;flex-wrap:wrap;align-items:center;max-width:100%;font-size:1.25rem;line-height:1.4;color:var(--reader-ink);}
+.viewer-boundary-split__unit {display:inline-flex;align-items:center;}
+.viewer-boundary-split__char {padding:0 2px;}
+.viewer-boundary-split__cut {display:inline-flex;align-items:center;justify-content:center;width:44px;min-width:44px;height:44px;padding:0;border:0;border-radius:4px;background:transparent;cursor:pointer;}
+.viewer-boundary-split__line {display:block;width:0;height:24px;border-left:2px dashed var(--reader-line);}
+.viewer-boundary-split__cut[aria-pressed="true"] .viewer-boundary-split__line {border-left:3px solid var(--reader-accent);}
+.viewer-boundary-split__cut:hover:not(:disabled) {background:color-mix(in srgb,var(--reader-selected) 60%,transparent);}
+.viewer-boundary-split__cut:focus-visible {outline:2px solid var(--reader-accent);outline-offset:-2px;}
+.viewer-boundary-pending__title {margin:0 0 6px;font-size:.875rem;font-weight:700;line-height:1.5;color:var(--reader-ink);}
+.viewer-boundary-pending__title:focus-visible {outline:2px solid var(--reader-accent);outline-offset:-2px;}
+.viewer-boundary-pending__list {list-style:none;margin:0;padding:0;}
+.viewer-boundary-pending__row {padding:8px 0;border-top:1px solid var(--reader-line);}
+.viewer-boundary-pending__word {margin:0;font-size:.9375rem;line-height:1.5;color:var(--reader-ink);}
+.viewer-boundary-pending__sentence {margin:0;font-size:.875rem;line-height:1.5;color:var(--reader-muted);overflow-wrap:anywhere;}
+/* /AD-R3 PR③ */
