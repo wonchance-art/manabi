@@ -2198,7 +2198,14 @@ export default function ViewerPage() {
     if (pieceLocale !== effectiveExplanationLocale) return vt('이 조각 설명은 분석한 설명 언어로만 있어요.');
     const morphemes = koreanMorphemes(token);
     const formula = morphemes.length > 1 ? koreanFormula({ text: token.text, morphemes }) : null;
-    return formula ? `${formula.surface} = ${formula.terms.join(' + ')}${formula.kind ? ` (${formula.kind === 'contracted' ? vt('줄어든 꼴') : vt('모양이 바뀐 꼴')})` : ''}` : token?.meaning || '';
+    return formula ? koreanFormulaText(formula) : token?.meaning || '';
+  }
+  // 공식 「했어요 = 하다 + -였- + -어요 (줄어든 꼴)」 — 꼴 이름만 화면 언어(vt), 형태는 한글 그대로.
+  function koreanFormulaTail(formula) {
+    return `= ${formula.terms.join(' + ')}${formula.kind ? ` (${formula.kind === 'contracted' ? vt('줄어든 꼴') : vt('모양이 바뀐 꼴')})` : ''}`;
+  }
+  function koreanFormulaText(formula) {
+    return formula ? `${formula.surface} ${koreanFormulaTail(formula)}` : null;
   }
 
   async function saveKoreanVocabulary(token, grade) {
@@ -2665,8 +2672,6 @@ export default function ViewerPage() {
   const koreanPlan = koreanCardTokenId ? planKoreanSplit(material, koreanCardTokenId, boundaryCtx, { locale: effectiveExplanationLocale }) : null;
   const koreanMenuShown = !!koreanPlan && (koreanPlan.ok || koreanPlan.reason === 'no_literal_cut');
   const koreanPiece = koreanCardTokenId ? koreanBoundaryPiece(json, koreanCardTokenId) : null;
-  const koreanFormulaText = (formula) => formula ? `${formula.surface} = ${formula.terms.join(' + ')}${formula.kind
-    ? ` (${formula.kind === 'contracted' ? vt('줄어든 꼴') : vt('모양이 바뀐 꼴')})` : ''}` : null;
   const renderKoreanBoundaryCard = () => {
     const panel = boundaryPanel?.tokenId === koreanCardTokenId && boundaryPanel.kind === 'split' ? boundaryPanel : null;
     const undoShown = boundaryUndo?.tokenId === koreanCardTokenId && boundaryUndoValid(json, boundaryUndo.undo);
@@ -2680,7 +2685,7 @@ export default function ViewerPage() {
         note={koreanPlan.ok ? null : koreanFormulaText(koreanPlan.formula)} initialCuts={koreanPlan.ok ? koreanPlan.initialCuts : []}
         preview={cuts => splitPreview(koreanPlan, cuts)}
         glosses={cuts => koreanSplitPreview(koreanPlan, cuts).map(piece => ({ text: piece.text, lang: piece.formula ? undefined : effectiveExplanationLocale,
-          note: piece.formula ? koreanFormulaText(piece.formula) : piece.morphemes.map(m => m.function).filter(Boolean).join(' · ') }))}
+          note: piece.formula ? koreanFormulaTail(piece.formula) : piece.morphemes.map(m => m.function).filter(Boolean).join(' · ') }))}
         busy={boundaryBusy} contentLang={contentLangTag} vt={vt}
         onConfirm={cuts => boundaryMutation.mutate({ request: { line: koreanPlan.line, start: koreanPlan.start, end: koreanPlan.end, cuts } })} onCancel={() => setBoundaryPanel(null)} />}
     </>;
