@@ -17,6 +17,11 @@ export const SENTENCE_TX_QUERY = 'viewer-sentence-tx';
 export const SENTENCE_TX_GC_MS = 30 * 60 * 1000;
 export const SENTENCE_PREFETCH_DWELL_MS = 300;
 export const SENTENCE_PREFETCH_PER_MINUTE = 20;
+/**
+ * 패널 결과 자리 표지 — 게스트가 캐시·교재 맵 없이 연 문장(AE-R2 PR ③ · 설계서 Q4). AI를 부르지 않고 번역 칸에
+ * 로그인 안내를 그린다. 결과 문자열 자리에 두어 「패널에 내용이 있다」 판정(leftActive 등)이 그대로 성립한다.
+ */
+export const SENTENCE_TX_LOGIN_REQUIRED = '\u0000viewer-sentence:login-required';
 
 /** 카드 문장 = 막대와 같은 정리(앞뒤 공백·`# ` 제목 표지)를 한 원문 줄. 여러 줄(드래그 문맥)은 그대로. */
 export function canonicalSentence(text) {

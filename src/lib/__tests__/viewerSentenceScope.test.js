@@ -73,12 +73,16 @@ describe('훅 — 결과와 함께 그 결과의 문장(forText)을 든다', () 
 
 describe('ViewerPage 배선', () => {
   const page = codeOf(read('src/views/ViewerPage.jsx'));
-  const left = sliceBetween(page, 'const leftPanelContent =', '<ViewerUiLocaleProvider value={uiLocale}>');
+  // [문장] 탭 마크업은 AE-R2 PR③(#1378)부터 renderSentencePanel 안에 있다(leftPanelContent는 그것을 부르기만 한다).
+  const left = sliceBetween(page, 'const renderSentencePanel = () => {', '<ViewerUiLocaleProvider value={uiLocale}>');
 
   it('[더 쉽게]·[자세히]의 열림은 지금 탭 문장 기준 — 모든 문장 변경 경로를 한 자리에서 덮는다', () => {
-    expect(left).toContain('!openForSentence(easier, leftPanelText) ? (');
-    expect(left).toContain('!openForSentence(grammar, leftPanelText) ? (');
-    expect(left).not.toMatch(/!(?:easier|grammar)\.open\b/);
+    // 버튼 줄(닫힘)과 결과 칸(열림) 네 자리 모두 같은 판정(PR③ 배치: 버튼 한 줄 + 아래 결과 칸).
+    expect(left).toContain('{!openForSentence(easier, leftPanelText) && (');
+    expect(left).toContain('{!openForSentence(grammar, leftPanelText) && (');
+    expect(left).toContain('{openForSentence(easier, leftPanelText) && (');
+    expect(left).toContain('{openForSentence(grammar, leftPanelText) && (');
+    expect(left).not.toMatch(/(?:easier|grammar)\.open\b/);
   });
 
   it('탭 문장이 바뀌면 진행 중 요청까지 끊는다(다른 문장 결과로 돌아오지 않게)', () => {

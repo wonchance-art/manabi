@@ -137,6 +137,25 @@
 .reader-card-pattern__line {display:flex;align-items:center;gap:0;width:100%;min-height:44px;padding:4px 0;border:0;background:transparent;color:var(--reader-ink);font-size:.875rem;text-align:start;cursor:pointer;overflow-wrap:anywhere;}
 .reader-card-pattern__label {color:var(--reader-muted);font-size:.75rem;}
 .reader-card-pattern__pop {margin:4px 0 0;padding:8px 10px;border:1px solid var(--reader-line);border-radius:6px;background:var(--reader-paper);}
+/* AE-R2 PR ③ [문장] 탭(설계서 docs/manabi-viewer-v2-ae-r2.md §3·§11): 원문 줄(누른 단어 칠) → 번역 → [더 쉽게][자세히]
+   → 문형 → 단어별 뜻. 구획은 가는 선(접힘 0). 진행 표시는 번역 칸에만 한 줄 — 그 위(원문·번역 머리)는 움직이지 않는다. */
+.reader-sentence__source {display:flex;align-items:flex-start;gap:4px;}
+/* 원문 줄은 카드 문장 줄과 같은 결(상자 없이, 누른 자리만 칠) — 칠이 상자 배경에 묻히지 않게. 자르지 않는다. */
+.reader-sentence__original {flex:1;min-width:0;margin:0 0 8px;padding:10px 0 0;border:0;border-radius:0;background:none;font-size:.9375rem;line-height:1.6;color:var(--reader-ink);}
+.reader-sentence__icon {flex-shrink:0;min-width:44px;min-height:44px;border:0;background:none;color:inherit;cursor:pointer;}
+.reader-sentence__icon:first-of-type {color:var(--reader-accent);}
+.reader-sentence__pending {margin:0;font-size:.9rem;line-height:1.75;color:var(--reader-muted);}
+.reader-sentence__login {display:inline-flex;align-items:center;min-height:44px;font-size:.9rem;line-height:1.5;color:var(--reader-accent);text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere;}
+.reader-sentence__actions {display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.reader-sentence__actions:empty {display:none;}
+.reader-sentence__actions .grammar-detail__toggle {width:auto;margin-top:0;flex:0 1 auto;}
+.reader-sentence__patterns,.reader-sentence__glosses {border-top:1px solid var(--reader-line);padding-top:8px;margin:12px 0 0;}
+/* 한 항목(낱말 · 읽기 · 뜻) 안에서는 어절 단위로만 꺾고, 구분점은 앞 항목 끝에 붙여 줄머리에 오지 않게 한다. */
+.reader-sentence__glosses ul {list-style:none;margin:0;padding:0;font-size:.9375rem;line-height:1.7;word-break:keep-all;overflow-wrap:anywhere;}
+.reader-sentence__glosses li {display:inline;}
+.reader-sentence__glosses li:not(:last-child)::after {content:"\00a0· ";color:var(--reader-muted);}
+.reader-sentence__patterns .reader-card-pattern__line {gap:.3em;}
+.reader-sentence__reading {font-size:.875em;color:var(--reader-muted);}
 .reader-card-sense-list {list-style:none;margin:0;padding:0;}
 .reader-card-sense {display:grid;grid-template-columns:4.25em 1.25em minmax(0,1fr) auto;column-gap:4px;align-items:baseline;padding:4px 6px;margin:0 -6px;border-radius:4px;font-size:.9375rem;line-height:1.55;}
 .reader-card-sense.is-current {background:var(--reader-selected);}
