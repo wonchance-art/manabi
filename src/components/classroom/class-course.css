@@ -124,10 +124,6 @@
 .course-alts span.course-tag {font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;background:var(--class-wash);color:var(--class-ink);margin-right:6px}
 .course-examples summary {cursor:pointer;color:var(--text-muted);font-size:13px;margin-top:8px}
 
-.course-apply {list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-.course-apply li {padding:12px 14px;border:1px solid var(--border);border-radius:12px}
-.course-apply__ko {font-size:16px;font-weight:600;line-height:1.6}
-.course-apply__answer {margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 
 .course-cta {display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:20px;border-radius:16px;background:var(--class-wash);margin:8px 0 28px}
 .course-cta p {margin:0;color:var(--text-secondary);font-size:14px}

@@ -19,7 +19,6 @@ export const COURSE_KEY_RE = /^[a-z0-9][a-z0-9-]{0,31}$/;
 export const TEST_SIZE = 10;
 export const PASS_MARK = 8;
 export const DRILLS_PER_CHAPTER = 10;
-export const APPLY_PER_CHAPTER = 3;
 
 export function courseInfo(key) {
   return typeof key === 'string' && Object.hasOwn(COURSES, key) ? COURSES[key] : null;
@@ -33,12 +32,6 @@ export function normalizeDrill(d) {
   const ja = str(d?.ja), ko = str(d?.ko);
   if (!ja || !ko) return null;
   return { ja, ko, yomi: str(d.yomi) || null, lv: level(d.lv) };
-}
-export function normalizeApply(d) {
-  const ko = str(d?.ko);
-  if (!ko) return null;
-  const accepts = Array.isArray(d.accepts) ? d.accepts.map(str).filter(Boolean) : [];
-  return { ko, ja: str(d.ja) || null, yomi: str(d.yomi) || null, accepts };
 }
 export function normalizeLine(d) {
   const ja = str(d?.ja);
@@ -70,7 +63,6 @@ export function buildCoursePayload(base, cls) {
             n: c.n, title: c.title, titleHi: c.titleHi || null, jp: c.jp, jpYomi: c.jpYomi || null, ko: c.ko,
             explain: c.explain || null, pitfall: c.pitfall || null, alts: c.alts || [], examples: c.examples || [],
             drills: (p.drills || []).map(normalizeDrill).filter(Boolean).slice(0, DRILLS_PER_CHAPTER),
-            apply: (p.apply || []).map(normalizeApply).filter(Boolean).slice(0, APPLY_PER_CHAPTER),
           };
         }),
       };
@@ -85,8 +77,6 @@ export function dayProgress(day) {
     dialogue: (day?.dialogue || []).length,
     drills: chapters.reduce((s, c) => s + (c.drills?.length || 0), 0),
     drillsTotal: chapters.length * DRILLS_PER_CHAPTER,
-    apply: chapters.reduce((s, c) => s + (c.apply?.length || 0), 0),
-    applyTotal: chapters.length * APPLY_PER_CHAPTER,
   };
 }
 

@@ -4,7 +4,7 @@
  * 수업 코스 Day 페이지 `/class/[team]/course/[day]` (오너 확정 2026-10-08).
  *
  *   🗾 문화 카드 → 함께 읽고 연습(대화 스크립트) → 오늘의 패턴(설명) → 예문 연습(패턴별 10)
- *   → 응용 문장 번역해보기(패턴별 3, 한→일) → 테스트 입구 · 이전/다음 Day
+ *   → 테스트 입구 · 이전/다음 Day (한→일 번역 칸은 오너 결정으로 없앴다 2026-10-08)
  *
  * 교재 문장이 아직 없는 칸은 「아직 입력되지 않았어요」로 자리를 지킨다. 본문을 뷰어로 읽는 길은
  * 수업 교재(책 묶음)의 Day번째 과가 있을 때만 열린다 — 학생은 수업 홈의 받기 경로(`?open=`)를 탄다.
@@ -113,30 +113,6 @@ function Drills({ chapters, speak }) {
   </section>;
 }
 
-function Apply({ chapters, speak }) {
-  const [open, setOpen] = useState(() => new Set());
-  const toggle = (k) => setOpen((s) => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; });
-  return <section id="apply" className="course-section" aria-labelledby="apply-title">
-    <div className="course-section__head"><h2 id="apply-title">응용 문장 번역해보기</h2></div>
-    <p className="course-line__ko">한국어 문장을 일본어로 말해 보고, 정답을 펼쳐 확인하세요.</p>
-    {chapters.map((c, i) => <div key={c.n}>
-      <h3><span className="course-num">{CIRCLED[i]}</span><span lang="ja">{c.jp[0]}</span></h3>
-      {c.apply.length === 0 ? <CoursePending what="응용 문장" total={3} /> : <ol className="course-apply">
-        {c.apply.map((a, k) => {
-          const id = `${c.n}-${k}`;
-          return <li key={id}>
-            <div className="course-apply__ko">{i + 1}-{k + 1}. {a.ko}</div>
-            {a.ja ? <div className="course-apply__answer">
-              {open.has(id) ? <><span className="course-line__ja"><Ja ja={a.ja} yomi={a.yomi} /></span><SpeakButton text={a.ja} speak={speak} /></> : null}
-              <button type="button" className="classroom-text-button" aria-expanded={open.has(id)} onClick={() => toggle(id)}>{open.has(id) ? '정답 접기' : '정답 보기'}</button>
-            </div> : <div className="course-apply__answer course-line__ko">정답 미입력 — 선생님과 함께 확인해요.</div>}
-          </li>;
-        })}
-      </ol>}
-    </div>)}
-  </section>;
-}
-
 export default function ClassCourseDayPage() {
   const { team: teamKey, day: dayParam } = useParams();
   const { user, loading } = useAuth();
@@ -184,7 +160,6 @@ export default function ClassCourseDayPage() {
     <Dialogue lines={day.dialogue} speak={speak} />
     <Patterns chapters={day.chapters} />
     <Drills chapters={day.chapters} speak={speak} />
-    <Apply chapters={day.chapters} speak={speak} />
 
     <div className="course-cta"><p>Day 1~{course.days.length} 전체 예문에서 10문제 · 8문제 이상이면 합격</p><Link className="classroom-button" href={`/class/${teamKey}/test`}>🎯 테스트 보기</Link></div>
     <nav className="course-pager" aria-label="Day 이동">
