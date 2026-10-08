@@ -23,7 +23,7 @@ async function fixture({width=1440,guest=false}={}) {
  const session={access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:owner,aud:'authenticated',role:'authenticated',iat:now,exp:now+3600})}.e2e`,refresh_token:'e2e-refresh',expires_in:3600,expires_at:now+3600,token_type:'bearer',user};
  if(!guest)await context.addCookies([{name:'sb-e2e-auth-token',value:`base64-${enc(session)}`,url:baseURL,sameSite:'Lax'}]);
  const rows=[], objects=new Map(), errors=[];
- let failNextInsert=false,loseNextReply=false,failUpload=false,analysisCalls=0;
+ let failNextInsert=false,loseNextReply=false,failUpload=false,failObjectRead=false,analysisCalls=0;
  const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'GET,POST,PATCH,DELETE,OPTIONS,HEAD','access-control-expose-headers':'content-range'};
  const json=(route,value,status=200,extra={})=>route.fulfill({status,contentType:'application/json',headers:{...cors,...extra},body:JSON.stringify(value)});
  await context.route('**/auth/v1/**',r=>json(r,new URL(r.request().url()).pathname.endsWith('/user')?user:session));
@@ -42,6 +42,7 @@ async function fixture({width=1440,guest=false}={}) {
     if(loseNextReply){loseNextReply=false;return route.abort('failed');}
     return json(route,[{id:row.id}]);
    }
+   if(failObjectRead&&req.method()==='GET'&&url.searchParams.get('select')==='*'&&url.searchParams.has('id')&&url.searchParams.has('owner_id')){failObjectRead=false;return json(route,{message:'fixture read failure'},503);}
    let found=rows.filter(row=>[...url.searchParams].every(([key,value])=>{
     if(!value.startsWith('eq.'))return true;
     if(key.includes('importAttempt'))return row.processed_json.metadata.importAttempt===value.slice(3);
@@ -73,7 +74,7 @@ async function fixture({width=1440,guest=false}={}) {
  const page=await context.newPage();
  page.on('pageerror',err=>errors.push(err.message));
  page.on('dialog',dialog=>dialog.accept());
- return {context,page,rows,objects,errors,get analysisCalls(){return analysisCalls;},lose:()=>{loseNextReply=true;},failInsert:()=>{failNextInsert=true;},failUpload:()=>{failUpload=true;}};
+ return {context,page,rows,objects,errors,get analysisCalls(){return analysisCalls;},lose:()=>{loseNextReply=true;},failInsert:()=>{failNextInsert=true;},failUpload:()=>{failUpload=true;},failStudyRead:()=>{failObjectRead=true;}};
 }
 async function editor(f){await f.page.goto('/materials/add');await f.page.locator('#composer-title').waitFor();}
 async function saved(f){await f.page.locator('.original-reader').waitFor();assert.equal(f.analysisCalls,0);assert.deepEqual(f.errors,[]);}
@@ -81,12 +82,12 @@ async function noOverflow(page){assert.equal(await page.evaluate(()=>document.do
 
 test('single editor: private text, draft recovery, exact body, library round trip and no automatic analysis',async()=>{
  const f=await fixture();try{
-  await editor(f);assert.equal(await f.page.getByRole('button',{name:'저장',exact:true}).count(),1);
+  await editor(f);assert.equal(await f.page.getByRole('button',{name:'저장만',exact:true}).count(),1);assert.equal(await f.page.getByRole('button',{name:'저장하고 공부하기',exact:true}).isDisabled(),true);await f.page.getByText('본문이 있어야 공부할 수 있어요',{exact:true}).waitFor();
   await f.page.locator('#composer-title').fill('창가에서 읽는 프랑스어');await f.page.locator('#composer-body').fill('Bonjour.\n\n  내가 쓴 문장은 그대로 남습니다.');
   await f.page.getByText('이 기기에 초안 보관됨',{exact:true}).waitFor();await f.page.reload();
   assert.equal(await f.page.locator('#composer-body').inputValue(),'Bonjour.\n\n  내가 쓴 문장은 그대로 남습니다.');
   if(screenshots)await f.page.screenshot({path:`${screenshots}/editor-desktop.png`,fullPage:true});
-  await f.page.getByRole('button',{name:'저장',exact:true}).click();await saved(f);
+  await f.page.getByRole('button',{name:'저장만',exact:true}).click();await saved(f);
   assert.equal(f.rows.length,1);assert.equal(f.rows[0].visibility,'private');assert.equal(f.rows[0].processed_json.metadata.language,null);
   assert.equal(await f.page.locator('.original-writing').textContent(),f.rows[0].raw_text);
   await f.page.getByRole('link',{name:'← 내 서재',exact:true}).first().click();await f.page.locator('.mat-card').filter({hasText:'창가에서 읽는 프랑스어'}).getByRole('link').first().click();await saved(f);
@@ -110,7 +111,7 @@ test('EPUB plus body and link: preserves authored content; stores original; safe
   await f.page.locator('input[type=file]').setInputFiles({name:'reading.epub',mimeType:'application/epub+zip',buffer:bytes.epub});await f.page.locator('.composer-attachment').waitFor();
   assert.equal(await f.page.locator('#composer-title').inputValue(),'내가 정한 제목');assert.equal(await f.page.locator('#composer-body').inputValue(),'내가 쓴 글.');
   await f.page.getByRole('button',{name:'↗ 링크',exact:true}).click();await f.page.locator('#composer-link').fill('https://example.org/reading');
-  await f.page.getByRole('button',{name:'저장',exact:true}).click();await saved(f);await f.page.locator('.original-epub').waitFor();
+  await f.page.getByRole('button',{name:'저장만',exact:true}).click();await saved(f);await f.page.locator('.original-epub').waitFor();
   assert.equal(f.rows.length,1);assert.equal(f.objects.size,1);assert.equal(await f.page.evaluate(()=>window.EPUB_EXECUTED),undefined);
   await f.page.getByRole('combobox',{name:'목차',exact:true}).selectOption('1');await f.page.getByRole('heading',{name:'Another day',exact:true}).waitFor();
   assert.equal(await f.page.locator('.original-writing').textContent(),'내가 쓴 글.');
@@ -130,7 +131,7 @@ test('URL only and narrow/mobile keyboard UI: no forced language and long source
 test('lost response -> refresh -> retry reconciles one saved original',async()=>{
  const f=await fixture();try{
   await editor(f);await f.page.locator('#composer-body').fill('Keep this exact original.');f.lose();
-  await f.page.getByRole('button',{name:'저장',exact:true}).click();await f.page.locator('.composer-error').waitFor();assert.equal(f.rows.length,1);
+  await f.page.getByRole('button',{name:'저장만',exact:true}).click();await f.page.locator('.composer-error').waitFor();assert.equal(f.rows.length,1);
   await f.page.reload();await f.page.getByRole('button',{name:'다시 저장',exact:true}).click();await saved(f);assert.equal(f.rows.length,1);
  }finally{await f.context.close();}
 });
@@ -147,7 +148,7 @@ test('upload failure keeps authored text and creates no broken library item',asy
  const f=await fixture({width:390});try{
   await editor(f);await f.page.locator('#composer-title').fill('원본과 함께 보관');await f.page.locator('#composer-body').fill('파일 오류가 나도 남을 글.');
   await f.page.locator('input[type=file]').setInputFiles({name:'reading.pdf',mimeType:'application/pdf',buffer:bytes.pdf});await f.page.locator('.composer-attachment').waitFor();f.failUpload();
-  await f.page.getByRole('button',{name:'저장',exact:true}).click();await f.page.locator('.composer-error').waitFor();
+  await f.page.getByRole('button',{name:'저장만',exact:true}).click();await f.page.locator('.composer-error').waitFor();
   assert.equal(f.rows.length,0);assert.equal(await f.page.locator('#composer-body').inputValue(),'파일 오류가 나도 남을 글.');
   await f.page.reload();assert.equal(await f.page.locator('#composer-title').inputValue(),'원본과 함께 보관');assert.equal(await f.page.locator('.composer-attachment').count(),1);await noOverflow(f.page);
  }finally{await f.context.close();}
@@ -157,12 +158,83 @@ test('focused editor at 390px: hidden native picker, visible save, four language
  const f=await fixture({width:390});try{
   await editor(f);assert.ok((await f.page.locator('input[type=file]').boundingBox()).width<=1);
   await f.page.locator('#composer-title').fill('길어도 줄이 깨지지 않는 읽기 자료 제목 '.repeat(6));await f.page.locator('#composer-body').fill('새로운 문장 하나를 남깁니다.');
-  await f.page.getByText('학습 정보',{exact:false}).first().click();
-  for(const language of ['Japanese','Chinese','English','French'])assert.equal(await f.page.locator(`#composer-language option[value=${language}]`).count(),1);
-  await f.page.locator('#composer-language').selectOption('French');
+  // WRITE-STUDY-ENTRY-001: 언어는 접힌 칸이 아니라 상시 보이는 칩 줄(라디오 그룹)이다.
+  const group=f.page.getByRole('radiogroup',{name:'공부할 언어'});
+  for(const label of ['일본어','중국어','영어','프랑스어'])assert.equal(await group.getByRole('radio',{name:label,exact:true}).count(),1);
+  await group.getByRole('radio',{name:'프랑스어',exact:true}).click();
   await f.page.getByRole('button',{name:'↗ 링크',exact:true}).click();assert.equal(await f.page.locator('#composer-link').evaluate(el=>el===document.activeElement),true);
   await f.page.locator('#composer-link').press('Escape');await noOverflow(f.page);
   if(screenshots)await f.page.screenshot({path:`${screenshots}/editor-mobile.png`,fullPage:true});
-  await f.page.getByRole('button',{name:'저장',exact:true}).click();await saved(f);await noOverflow(f.page);assert.equal(f.rows[0].processed_json.metadata.language,'French');
+  await f.page.getByRole('button',{name:'저장만',exact:true}).click();await saved(f);await noOverflow(f.page);assert.equal(f.rows[0].processed_json.metadata.language,'French');
+ }finally{await f.context.close();}
+});
+
+// WRITE-STUDY-ENTRY-001 · KO-COMPOSER-001 (#1337, 2026-10-08): 직접 쓴 글은 바로 공부로.
+const languageGroup=page=>page.getByRole('radiogroup',{name:'공부할 언어'});
+const studyButton=page=>page.getByRole('button',{name:'저장하고 공부하기',exact:true});
+async function koreanAccount(f){await f.context.route('**/api/learning/capabilities',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({version:1,languages:{Korean:{save:true,review:true,known:true,exclude:true}}})}));}
+
+test('save and study: Japanese is guessed from the script, one save, the existing study address, no automatic analysis',async()=>{
+ const f=await fixture({width:390});try{
+  await editor(f);await f.page.locator('#composer-body').fill('今日は雨なので、家で本を読みました。\n明日は晴れるといいな。');
+  await f.page.getByText('글자를 보고 골랐어요',{exact:true}).waitFor();
+  assert.equal(await languageGroup(f.page).getByRole('radio',{name:'일본어',exact:true}).getAttribute('aria-checked'),'true');
+  assert.equal(await studyButton(f.page).isEnabled(),true);await noOverflow(f.page);
+  await studyButton(f.page).click();await f.page.waitForURL(/\/viewer\/94000\?study=1&returnTo=/);
+  await f.page.getByRole('button',{name:'본문 분석하기',exact:true}).waitFor();
+  assert.equal(f.rows.length,1);assert.equal(f.rows[0].processed_json.metadata.language,'Japanese');assert.equal(f.analysisCalls,0);assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+test('save and study: a 60,000-character text opens the same pending study screen without bulk analysis',async()=>{
+ const f=await fixture();try{
+  await editor(f);await f.page.locator('#composer-body').fill('今日は雨なので、家で本を読みました。\n'.repeat(3200));
+  await f.page.getByText('글자를 보고 골랐어요',{exact:true}).waitFor();await studyButton(f.page).click();
+  await f.page.waitForURL(/\/viewer\/94000\?study=1/);await f.page.getByRole('button',{name:'본문 분석하기',exact:true}).waitFor();
+  await f.page.waitForTimeout(1500);assert.equal(f.analysisCalls,0);assert.equal(f.rows.length,1);assert.equal(f.rows[0].processed_json.status,'saved');
+ }finally{await f.context.close();}
+});
+
+test('save and study: Latin text needs one chip, a user choice is never overwritten, a failed study open keeps the save and opens the original',async()=>{
+ const f=await fixture();try{
+  await editor(f);await f.page.locator('#composer-body').fill('It rained today, so I read at home.');
+  await f.page.getByText('공부할 언어를 골라 주세요',{exact:true}).waitFor();assert.equal(await studyButton(f.page).isDisabled(),true);
+  assert.equal(await languageGroup(f.page).getByRole('radio',{checked:true}).count(),0);
+  const english=languageGroup(f.page).getByRole('radio',{name:'영어',exact:true});await english.focus();await f.page.keyboard.press('ArrowRight');
+  assert.equal(await languageGroup(f.page).getByRole('radio',{name:'프랑스어',exact:true}).getAttribute('aria-checked'),'true');
+  await f.page.keyboard.press('ArrowLeft');assert.equal(await english.getAttribute('aria-checked'),'true');assert.equal(await english.evaluate(el=>el===document.activeElement),true);
+  assert.equal(await studyButton(f.page).isEnabled(),true);assert.equal(await f.page.getByText('글자를 보고 골랐어요',{exact:true}).count(),0);
+  await f.page.locator('#composer-body').fill('今日は雨なので、家で本を読みました。');assert.equal(await english.getAttribute('aria-checked'),'true');
+  f.failStudyRead();await studyButton(f.page).click();
+  await f.page.getByText('자료는 저장했어요. 학습 화면을 열지 못해 원본으로 엽니다.',{exact:true}).waitFor();await f.page.locator('.original-reader').waitFor();
+  assert.equal(new URL(f.page.url()).searchParams.has('study'),false);assert.equal(f.rows.length,1);assert.equal(f.rows[0].processed_json.metadata.language,'English');assert.equal(f.analysisCalls,0);
+ }finally{await f.context.close();}
+});
+
+test('Korean account: Korean is offered and guessed, and the study row carries the Korean import metadata',async()=>{
+ const f=await fixture();try{
+  await koreanAccount(f);await editor(f);
+  await languageGroup(f.page).getByRole('radio',{name:'한국어',exact:true}).waitFor();
+  await f.page.locator('#composer-body').fill('오늘은 비가 와서 집에서 책을 읽었어요.\n내일은 맑으면 좋겠어요.');
+  await f.page.getByText('글자를 보고 골랐어요',{exact:true}).waitFor();
+  assert.equal(await languageGroup(f.page).getByRole('radio',{name:'한국어',exact:true}).getAttribute('aria-checked'),'true');
+  await studyButton(f.page).click();await f.page.waitForURL(/\/viewer\/94000\?study=1/);
+  assert.deepEqual(Object.fromEntries(['language','level','explanationLocale'].map(key=>[key,f.rows[0].processed_json.metadata[key]])),{language:'Korean',level:'',explanationLocale:'ko'});
+  assert.equal(f.rows.length,1);assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+test('original screen: a text-only item studies from the top; attachments keep the passage entry and the bottom tools',async()=>{
+ const f=await fixture();try{
+  await editor(f);await f.page.locator('#composer-body').fill('It rained today, so I read at home.');await f.page.getByRole('button',{name:'저장만',exact:true}).click();await saved(f);
+  assert.equal(await f.page.locator('.original-study').count(),0);await f.page.getByRole('button',{name:'일부만 고르기',exact:true}).waitFor();
+  const entry=f.page.getByRole('button',{name:'이 글로 공부하기 ↗',exact:true});assert.equal(await entry.isDisabled(),true);
+  await languageGroup(f.page).getByRole('radio',{name:'영어',exact:true}).click();await entry.click();
+  await f.page.waitForURL(/\/viewer\/94000\?study=1/);assert.equal(f.rows.length,1);assert.equal(f.rows[0].processed_json.metadata.language,'English');assert.equal(f.analysisCalls,0);
+  await f.page.goto('/materials/add');await f.page.getByRole('button',{name:'새 자료 작성'}).click();await f.page.locator('#composer-body').fill('Bonjour.');
+  await f.page.locator('input[type=file]').setInputFiles({name:'reading.pdf',mimeType:'application/pdf',buffer:bytes.pdf});await f.page.locator('.composer-attachment').waitFor();
+  await f.page.getByRole('button',{name:'저장만',exact:true}).click();await f.page.locator('.original-reader').waitFor();
+  await f.page.getByRole('button',{name:'학습할 부분 고르기',exact:true}).waitFor();assert.equal(await f.page.locator('.original-study summary').innerText(),'자료 도구 · 본문 전체 학습');
+  assert.equal(await f.page.getByRole('button',{name:'이 글로 공부하기 ↗'}).count(),0);
  }finally{await f.context.close();}
 });

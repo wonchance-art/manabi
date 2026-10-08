@@ -12,7 +12,8 @@ import { codePointLength, domSourceText, selectedSourceRange, quoteRange, passag
   PASSAGE_MAX_CHARS, PASSAGE_LANGUAGES, openSourcePassage, passageError } from '@/lib/sourcePassage';
 import './source-passage.css';
 
-export default function PassageStudy({ material, sources, preferredKey }) {
+// primary·children·openerLabel·idleText는 글만 있는 자료의 상단 입구(WRITE-STUDY-ENTRY-001)만 쓴다. 첨부 자료는 현행 그대로다.
+export default function PassageStudy({ material, sources, preferredKey, primary = null, children = null, openerLabel = '학습할 부분 고르기', idleText = '' }) {
   const router = useRouter(), params = useSearchParams(), cache = useQueryClient();
   const dialog = useRef(null), opener = useRef(null), frozen = useRef(null);
   const [selection, setSelection] = useState(null);
@@ -93,10 +94,12 @@ export default function PassageStudy({ material, sources, preferredKey }) {
   const originalTooLong = codePointLength(draft?.quote?.exact) > 4000;
   const sourceChoices = sources.filter(item => item.source.kind === 'body' || item.key === preferredKey || item.key === draft?.item.key);
   const preferred = sources.find(value => value.key === preferredKey) || sources[0];
+  const openerButton = <button ref={opener} className={primary ? 'passage-toolbar__secondary' : 'manabi-button'} disabled={!sources.length} onPointerDown={() => { frozen.current = selection; }} onClick={open}>{selection ? '선택한 부분 공부하기' : openerLabel}</button>;
   return <>
     <div className={`passage-toolbar${selection ? ' passage-toolbar--selected' : ''}`}>
-      <div><span className="manabi-eyebrow">READ INTO LEARNING</span><p>{selectionNotice || (selection ? '고른 문장을 학습으로 이어가세요.' : preferred ? `${passageLocation(preferred.source)}에서 필요한 부분만 골라 보세요.` : '원본이 열리면 학습할 부분을 고를 수 있어요.')}</p></div>
-      <button ref={opener} className="manabi-button" disabled={!sources.length} onPointerDown={() => { frozen.current = selection; }} onClick={open}>{selection ? '선택한 부분 공부하기' : '학습할 부분 고르기'}</button>
+      <div><span className="manabi-eyebrow">READ INTO LEARNING</span><p>{selectionNotice || (selection ? '고른 문장을 학습으로 이어가세요.' : idleText || (preferred ? `${passageLocation(preferred.source)}에서 필요한 부분만 골라 보세요.` : '원본이 열리면 학습할 부분을 고를 수 있어요.'))}</p></div>
+      {primary ? <div className="passage-toolbar__actions">{primary}{openerButton}</div> : openerButton}
+      {children}
     </div>
     <dialog ref={dialog} className="passage-dialog" aria-labelledby="passage-heading" onCancel={event => { event.preventDefault(); close(); }}>
       {draft && <div className="passage-panel" data-language={language}>

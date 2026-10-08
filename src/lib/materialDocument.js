@@ -134,3 +134,13 @@ export async function openDocumentStudy(client, material, language, { explanatio
   catch (error) { if (error?.code !== '23505') throw error; return saveImportOnce(client, attempt); }
 }
 
+// 「저장하고 공부하기」·「이 글로 공부하기」 — 새 학습 경로 없이 openDocumentStudy를 그대로 쓴다.
+// 학습 화면을 열지 못해도 자료는 이미 저장됐으므로 다시 저장하지 않고 원본 화면 주소를 돌려준다.
+export async function openStudyOrOriginal(client, record, language, { explanationLocale, returnTo }) {
+  try {
+    const study = await openDocumentStudy(client, record, language, { explanationLocale });
+    return { study, href: `/viewer/${study.id}?${new URLSearchParams({ study: '1', returnTo })}` };
+  } catch (error) {
+    return { error, href: `/viewer/${record.id}?returnTo=${encodeURIComponent(returnTo)}` };
+  }
+}

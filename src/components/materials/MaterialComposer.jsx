@@ -8,14 +8,17 @@ import {safeLibraryReturn} from '@/lib/libraryReturn';
 import {useCollections} from '@/components/library/LibraryCollections';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/AuthContext';
+import { useToast } from '@/lib/ToastContext';
 import { supabase } from '@/lib/supabase';
-import { MAX_ATTACHMENTS, MAX_BODY_CHARS, MAX_LINKS, composerError,
-  composerTitle, createComposerSave, newComposerDraft, normalizeSourceUrl, prepareComposerFile,
-  saveComposerOnce, studyLanguageLabel, validateComposer } from '@/lib/materialComposer';
+import { MATERIAL_DIRECTION, isWriteMaterial } from '@/lib/constants';
+import { MAX_ATTACHMENTS, MAX_BODY_CHARS, MAX_LINKS, composerError, composerStudyState,
+  composerTitle, createComposerSave, guessedLanguagePatch, newComposerDraft, normalizeSourceUrl, prepareComposerFile,
+  saveComposerOnce, validateComposer } from '@/lib/materialComposer';
 import { readComposerDraft, removeComposerDraft, writeComposerDraft } from '@/lib/composerDraft';
-import { createDocumentSave, documentError, editDraft, readEditableMaterial, saveDocumentOnce } from '@/lib/materialDocument';
+import { createDocumentSave, documentError, editDraft, openStudyOrOriginal, readEditableMaterial, saveDocumentOnce } from '@/lib/materialDocument';
 import { useStudyLanguages } from '@/lib/useStudyLanguages';
 import { useViewerLanguage } from '@/lib/useViewerLanguage';
+import StudyLanguageChips from './StudyLanguageChips';
 import './material-composer.css';
 
 export default function MaterialComposer() {
@@ -23,15 +26,31 @@ export default function MaterialComposer() {
   const params=useSearchParams();
   if (loading) return <div className="page-container" role="status">계정을 확인하고 있어요…</div>;
   if (!user) return <section className="composer-gate"><p className="manabi-eyebrow">YOUR LIBRARY</p><h1>내 서재에 담아 두세요.</h1><p>글과 파일, 링크를 한곳에서 읽을 수 있어요.</p><Link className="manabi-button" href="/auth?from=/materials/add">로그인하고 작성하기 ↗</Link></section>;
-  return <ComposerForm key={user.id} ownerId={user.id} collection={collectionId(params.get('collection'))} returnTo={safeLibraryReturn(params.get('returnTo'))} />;
+  return <ComposerForm key={user.id} ownerId={user.id} collection={collectionId(params.get('collection'))} returnTo={safeLibraryReturn(params.get('returnTo'))} note={params.get('direction') === MATERIAL_DIRECTION.WRITE} />;
 }
 
-export function ComposerForm({ ownerId, material = null, returnTo = '/materials?view=owned', collection=null }) {
+// 저장 버튼 둘(WRITE-STUDY-ENTRY-001): 「저장만」(현행 — 원본 화면) · 「저장하고 공부하기」(주 버튼).
+// 공부할 수 없는 자료(쓰기 노트·본문 없는 첨부)에는 학습 버튼 없이 기존 「저장」만 둔다.
+export function ComposerSaveActions({ study, editing, frozen, busy, intent, disabled, onStudy }) {
+  const saveLabel = busy && intent !== 'study' ? '저장 중…' : frozen ? '다시 저장' : editing ? '변경 저장' : study.visible ? '저장만' : '저장';
+  return <div className="composer-save-actions">
+    <button type="submit" className={study.visible ? 'composer-save-only' : 'manabi-button'} disabled={disabled}>{saveLabel}</button>
+    {study.visible && <button type="button" className="manabi-button" disabled={disabled || !study.ready} aria-describedby={study.reason ? 'composer-study-reason' : undefined} onClick={onStudy}>{busy && intent === 'study' ? '저장 중…' : '저장하고 공부하기'}</button>}
+    {study.visible && study.reason && <small id="composer-study-reason" className="composer-study-reason">{study.reason}</small>}
+  </div>;
+}
+
+export function ComposerForm({ ownerId, material = null, returnTo = '/materials?view=owned', collection=null, note = false }) {
   const collections=useCollections(ownerId);
   const scope = material ? String(material.id) : '';
   const editing = !!scope;
+  const writeNote = note || isWriteMaterial(material);
+  const toast = useToast();
   const { languages } = useStudyLanguages();
+  const languagesRef = useRef(languages);
+  languagesRef.current = languages;
   const { explanationLocale } = useViewerLanguage();
+  const [intent, setIntent] = useState('');
   const initialMaterial = useRef(material);
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -99,14 +118,25 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
   const change = useCallback((patch) => {
     const current = draftRef.current;
     if (!current || current.frozen || submitRef.current) return;
-    const next = { ...current, ...patch, dirty: true };
+    let next = { ...current, ...patch, dirty: true };
+    // 본문이 바뀌면 글자로 언어를 짐작한다 — 사용자가 고른 값·편집 중인 자료의 저장된 언어는 덮지 않는다.
+    if ('body' in patch) next = { ...next, ...guessedLanguagePatch(next, languagesRef.current, { editing }) };
     draftRef.current = next; setDraft(next); setError(''); setDraftStatus('초안 보관 중…');
     persistDraft(next).then(() => {
       if (alive.current && draftRef.current === next) setDraftStatus('이 기기에 초안 보관됨');
     }).catch(() => {
       if (alive.current) setDraftStatus('초안을 보관하지 못했어요. 창을 닫기 전에 저장해 주세요.');
     });
-  }, [persistDraft]);
+  }, [persistDraft, editing]);
+
+  // 한국어 지원 확인이 늦게 도착하거나 이 기기의 초안을 불러온 뒤에도 같은 짐작 규칙을 한 번 적용한다.
+  const draftId = draft?.id;
+  useEffect(() => {
+    const current = draftRef.current;
+    if (!current || current.savedId) return;
+    const patch = guessedLanguagePatch(current, languages, { editing });
+    if (patch) change(patch);
+  }, [languages, editing, change, draftId]);
 
   useEffect(() => {
     const protect = event => {
@@ -160,10 +190,12 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
     finally { prepareRef.current = false; if (alive.current) setPreparing(false); }
   }
 
-  async function submit(event) {
-    event.preventDefault();
+  async function submit(event, action = 'save') {
+    event?.preventDefault();
     if (submitRef.current || prepareRef.current || draftRef.current?.savedId) return;
     let current = draftRef.current;
+    const study = action === 'study';
+    if (study && !composerStudyState(current, languagesRef.current, { note: writeNote }).ready) return;
     try {
       if (linkInput.trim() && !current.frozen) {
         const url = normalizeSourceUrl(linkInput);
@@ -171,7 +203,7 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
       }
       validateComposer(current);
     } catch (err) { setError(err.message); return; }
-    submitRef.current = true; setBusy(true); setError('');
+    submitRef.current = true; setBusy(true); setError(''); setIntent(action);
     current = { ...current, frozen: true };
     draftRef.current = current; setDraft(current); setLinkInput('');
     try {
@@ -188,11 +220,19 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
       queryClient.invalidateQueries({ queryKey: ['library-reading-v2'] });
       await queryClient.invalidateQueries({ queryKey: ['material', String(record.id)] });
       if (!alive.current) return;
-      draftRef.current = saved; setDraft(saved); setDraftStatus('서재에 저장됨'); setStage('저장했어요. 자료를 엽니다…');
+      draftRef.current = saved; setDraft(saved); setDraftStatus('서재에 저장됨'); setStage(study ? '저장했어요. 학습 화면을 엽니다…' : '저장했어요. 자료를 엽니다…');
       if(saved.collectionId){
         try { await addToCollection(supabase,ownerId,saved.collectionId,{target_kind:'material',target_id:String(record.id)}); }
         catch { if(alive.current)setError('자료는 저장했지만 모음집에 담지 못했어요. 자료를 다시 저장할 필요는 없습니다.'); return; }
         queryClient.invalidateQueries({queryKey:['personal-library',ownerId]});
+      }
+      if (study) {
+        // 원본 화면 「이 글로 공부하기」와 같은 openDocumentStudy. 열지 못해도 자료는 저장됐으니 원본으로 간다.
+        const next = await openStudyOrOriginal(supabase, record, current.language, { explanationLocale, returnTo });
+        if (next.study) await queryClient.invalidateQueries({ queryKey: ['material', String(next.study.id)] });
+        else toast('자료는 저장했어요. 학습 화면을 열지 못해 원본으로 엽니다.', 'warning', 8000);
+        router.push(next.href);
+        return;
       }
       router.push(`/viewer/${record.id}?returnTo=${encodeURIComponent(returnTo)}`);
     } catch (err) { if (alive.current) { setError(documentError(err) || composerError(err)); setConflict(err?.message === 'EDIT_CONFLICT'); } }
@@ -257,11 +297,11 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
       {linkOpen && <div className="composer-link-input"><label htmlFor="composer-link">담아 둘 링크</label><div><input ref={linkField} id="composer-link" type="url" placeholder="https://" value={linkInput} disabled={locked} onChange={e => setLinkInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addLink(); } if (e.key === 'Escape') { setLinkOpen(false); setLinkInput(''); } }} /><button type="button" disabled={locked} onClick={() => addLink()}>추가</button></div></div>}
       <div className="composer-tools"><input ref={fileInput} className="sr-only" type="file" tabIndex={-1} accept=".pdf,.epub,application/pdf,application/epub+zip" multiple disabled={locked || preparing} onChange={e => { addFiles([...e.target.files]); e.target.value = ''; }} aria-label="첨부 파일 선택" />
         <button type="button" disabled={locked || preparing} onClick={() => fileInput.current?.click()}>＋ 파일</button><button type="button" disabled={locked} aria-expanded={linkOpen} onClick={() => setLinkOpen(value => !value)}>↗ 링크</button><small>{preparing ? '파일 확인 중…' : '끌어 놓아도 좋아요 · 파일당 50MB'}</small></div>
-      <details className="composer-options"><summary>학습 정보 <span>선택</span></summary><label htmlFor="composer-language">이 자료로 공부할 언어</label><select id="composer-language" value={draft.language} disabled={locked} onChange={e => change({ language: e.target.value })}><option value="">나중에 정하기</option>{languages.map(language => <option key={language} value={language}>{studyLanguageLabel(language)}</option>)}</select><p>지금 지정하지 않아도 저장하고 읽을 수 있어요.</p></details>
+      <StudyLanguageChips id="composer-language" languages={languages} value={languages.includes(draft.language) ? draft.language : ''} guessed={!!draft.languageGuessed} disabled={locked} onChange={language => change({ language, languageChosen: true, languageGuessed: false })} />
       {notice && !error && <p className="composer-notice" role="status">{notice}</p>}
       {error && <div className="composer-error" role="alert">{error}{draft.frozen && !conflict && <p>저장 결과가 확정될 때까지 내용을 유지합니다. 아래에서 다시 저장해 주세요.</p>}{conflict && <div className="composer-conflict-actions"><button type="button" onClick={downloadDraft}>내 초안 텍스트 내려받기</button><button type="button" onClick={reloadLatest}>최신 글로 다시 수정</button></div>}</div>}
       {draft.collectionId&&<p className="composer-info">저장한 뒤 ‘{collections.data?.find(c=>c.id===draft.collectionId)?.name||'선택한 모음집'}’에 담습니다.</p>}
-      <footer className="composer-save"><span role="status">{busy ? stage : draftStatus}</span><button type="submit" className="manabi-button" disabled={busy || preparing || conflict}>{busy ? '저장 중…' : draft.frozen ? '다시 저장' : editing ? '변경 저장' : '저장'}</button></footer>
+      <footer className="composer-save"><span role="status">{busy ? stage : draftStatus}</span><ComposerSaveActions study={composerStudyState(draft, languages, { note: writeNote })} editing={editing} frozen={draft.frozen} busy={busy} intent={intent} disabled={busy || preparing || conflict} onStudy={() => submit(null, 'study')} /></footer>
     </form>
     <div className="composer-after"><span>{editing ? '첨부를 빼도 이전 원본은 보관됩니다. 새 본문으로 학습하면 별도의 학습 기록으로 이어집니다.' : '저장한 뒤 바로 읽을 수 있어요. 표현 학습은 읽는 화면에서 시작해요.'}</span>{!editing && <Link href="/materials/add?advanced=1">기존 책에 이어 붙이기·문장 목록 ↗</Link>}</div>
   </section>;

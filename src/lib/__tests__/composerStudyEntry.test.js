@@ -1,12 +1,14 @@
 // KO-COMPOSER-001 · WRITE-STUDY-ENTRY-001 (#1337, 2026-10-08) — 자료 작성·글 자료 학습 입구의 계약.
 // ⑴ 자료 언어 목록은 정본(LEARNING_LANGUAGES)을 재사용한다 — 목록 두 벌이 한국어 누락의 원인이었다.
 // ⑵ 한국어는 계정의 배포 계약이 확인됐을 때만 고를 수 있고, 학습 행 메타는 기존 한국어 가져오기와 같다.
+// ⑶ 언어 칩 짐작은 글자 종류로만 하고, 사용자가 고른 값·저장된 값은 덮지 않는다.
+// ⑷ 「저장하고 공부하기」는 기존 openDocumentStudy를 그대로 쓰고, 실패해도 다시 저장하지 않는다.
 import { describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { LEARNING_LANGUAGES } from '../learningSources';
 import { COMPOSER_LANGUAGES, composerRow, createComposerSave, newComposerDraft, studyLanguages,
-  shouldReadComposerOriginal } from '../materialComposer';
-import { documentOf, openDocumentStudy } from '../materialDocument';
+  guessStudyLanguage, guessedLanguagePatch, composerStudyState, shouldReadComposerOriginal } from '../materialComposer';
+import { documentOf, openDocumentStudy, openStudyOrOriginal } from '../materialDocument';
 import { openSourcePassage, PASSAGE_LANGUAGES } from '../sourcePassage';
 import { LEVELS } from '../constants';
 
@@ -97,5 +99,63 @@ describe('KO-COMPOSER — 정본 언어 목록 재사용', () => {
     const client = { rpc: vi.fn() };
     await expect(openSourcePassage(client, { id: 42 }, {}, '학교', 'Korean')).rejects.toThrow('PASSAGE_LANGUAGE');
     expect(client.rpc).not.toHaveBeenCalled();
+  });
+});
+
+describe('WRITE-STUDY-ENTRY — 글자로 짐작', () => {
+  const all = [...FOUR, 'Korean'];
+  it('한글 글 → 한국어(지원 계정만), 가나 포함 → 일본어, 한자만 → 중국어, 라틴 → 짐작 없음', () => {
+    expect(guessStudyLanguage('오늘은 비가 와서 집에서 책을 읽었어요.', all)).toBe('Korean');
+    expect(guessStudyLanguage('오늘은 비가 와서 집에서 책을 읽었어요.', FOUR)).toBe('');
+    expect(guessStudyLanguage('今日は雨なので家で本を読みました。', all)).toBe('Japanese');
+    expect(guessStudyLanguage('今天下雨，我在家看书。', all)).toBe('Chinese');
+    expect(guessStudyLanguage('It rained today, so I read at home.', all)).toBe('');
+    expect(guessStudyLanguage('Il a plu aujourd’hui, j’ai lu à la maison.', all)).toBe('');
+    expect(guessStudyLanguage('', all)).toBe('');
+  });
+  it('섞인 글은 지배 문자가 없으면 짐작하지 않는다(영어 글 속 일본어 한 단어 등)', () => {
+    expect(guessStudyLanguage('My favourite word is すき and I use it every day.', all)).toBe('');
+  });
+  it('사용자가 고른 뒤에는 본문을 바꿔도 덮지 않는다 · 편집 중인 자료는 저장된 언어를 그대로 둔다', () => {
+    const draft = { ...newComposerDraft(uuid(6)), body: '今日は雨です。' };
+    expect(guessedLanguagePatch(draft, all)).toEqual({ language: 'Japanese', languageGuessed: true });
+    const guessed = { ...draft, language: 'Japanese', languageGuessed: true, body: '今天下雨。' };
+    expect(guessedLanguagePatch(guessed, all)).toEqual({ language: 'Chinese', languageGuessed: true });
+    expect(guessedLanguagePatch({ ...guessed, body: 'Rain today.' }, all)).toEqual({ language: '', languageGuessed: false });
+    const chosen = { ...draft, language: 'English', languageChosen: true, body: '今日は雨です。' };
+    expect(guessedLanguagePatch(chosen, all)).toBeNull();
+    expect(guessedLanguagePatch({ ...draft, language: '', languageChosen: true }, all)).toBeNull();
+    // 이전 초안(선택 상자로 고른 값)도 사용자의 선택이다.
+    expect(guessedLanguagePatch({ ...draft, language: 'French' }, all)).toBeNull();
+    expect(guessedLanguagePatch({ ...draft, language: '' }, all, { editing: true })).toBeNull();
+  });
+});
+
+describe('WRITE-STUDY-ENTRY — 「저장하고 공부하기」 상태', () => {
+  const draft = { ...newComposerDraft(uuid(7)) };
+  it('본문 + 언어가 있어야 켜지고, 아니면 이유를 보인다', () => {
+    expect(composerStudyState({ ...draft, body: 'Bonjour', language: 'French' }, FOUR)).toEqual({ visible: true, ready: true, reason: '' });
+    expect(composerStudyState({ ...draft, body: 'Bonjour' }, FOUR)).toEqual({ visible: true, ready: false, reason: '공부할 언어를 골라 주세요' });
+    expect(composerStudyState({ ...draft, language: 'French' }, FOUR)).toEqual({ visible: true, ready: false, reason: '본문이 있어야 공부할 수 있어요' });
+    // 지원이 확인되지 않은 언어(예: 계정 미지원 한국어)는 고른 것으로 치지 않는다.
+    expect(composerStudyState({ ...draft, body: '학교', language: 'Korean' }, FOUR).ready).toBe(false);
+  });
+  it('첨부·링크만 있고 본문이 없으면 숨긴다 · 쓰기 노트에는 두지 않는다', () => {
+    expect(composerStudyState({ ...draft, files: [{ hash: 'a' }], language: 'French' }, FOUR).visible).toBe(false);
+    expect(composerStudyState({ ...draft, links: ['https://example.org'] }, FOUR).visible).toBe(false);
+    expect(composerStudyState({ ...draft, body: 'Bonjour', files: [{ hash: 'a' }], language: 'French' }, FOUR).visible).toBe(true);
+    expect(composerStudyState({ ...draft, body: 'Bonjour', language: 'French' }, FOUR, { note: true }).visible).toBe(false);
+  });
+  it('저장된 자료로 기존 학습 경로를 1회 열고, 실패하면 다시 저장하지 않고 원본 주소를 돌려준다', async () => {
+    const db = backend(seed({ body: '今日は雨です。', language: 'Japanese' }));
+    const record = structuredClone(db.rows[0]);
+    const opened = await openStudyOrOriginal(db.client, record, 'Japanese', { returnTo: '/materials?view=owned' });
+    expect(opened.href).toBe('/viewer/42?study=1&returnTo=%2Fmaterials%3Fview%3Downed');
+    expect(opened.study.id).toBe(42); expect(db.writes).toEqual([]);
+    db.failRead();
+    const failed = await openStudyOrOriginal(db.client, record, 'Japanese', { returnTo: '/materials?view=owned' });
+    expect(failed.study).toBeUndefined(); expect(failed.error).toBeTruthy();
+    expect(failed.href).toBe('/viewer/42?returnTo=%2Fmaterials%3Fview%3Downed');
+    expect(db.writes).toEqual([]);
   });
 });
