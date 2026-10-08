@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { sliceBetween } from './helpers/sliceBetween.js';
+import { VIEWER_MESSAGE_LOCALES, t as tm } from '../viewerMessages.js';
 
 /**
  * 계약: v2-Q 뷰어 크롬 정돈 (#1077 설계 5486578406, 오너 "Q ㄱㄱ" 2026-09-01).
@@ -44,7 +45,7 @@ const actionbar = () => sliceBetween(read(VIEWER), '<div className="viewer-topba
 /** A안이 새로 쓴 CSS 블록 — 경로 줄·다 읽었다면. */
 const aCss = () => sliceBetween(read(CSS), '/* ========= 뷰어 정돈 A안', '/* ========= /뷰어 정돈 A안 ========= */');
 /** 이 라운드가 새로 쓴 CSS만 — 파일 전역 검사는 남의 규칙에 걸려 헛돈다. */
-const newCss = () => sliceBetween(read(CSS), '/* 뷰어 크롬 배지(v2-Q)', '.viewer-aa {');
+const newCss = () => sliceBetween(read(CSS), '/* 뷰어 크롬 배지(v2-Q)', '/* 경로 줄 도구(AD-R2');
 
 describe('① 자료 범위 배지가 한 컨테이너 안 — 폭 어긋남의 원인 제거', () => {
   it('자료 범위 배지는 .viewer-badges 안에 있다(header 직계 자식 금지)', () => {
@@ -62,7 +63,9 @@ describe('① 자료 범위 배지가 한 컨테이너 안 — 폭 어긋남의 
   });
 
   it('배지가 하나도 없으면 래퍼를 그리지 않는다 — 빈 여백만 남는 줄 금지', () => {
-    expect(header()).toMatch(/\{\(\(user && dueInMaterial > 0\) \|\| coverage\) && \(\s*\n\s*<div className="viewer-badges">/);
+    // 개정(AD-R2 PR ①, VIEWER-V2-ROUNDS-001 §5 「크롬 정리」): 이 자료에서 담은 수(「N개 수집 → 단어장」)가 셋째 조건으로 들어왔다.
+    // 커버리지 표본 미달이어도 수집이 있으면 줄을 그린다 — 조건이 하나도 없으면 여전히 래퍼 0.
+    expect(header()).toMatch(/\{\(\(user && dueInMaterial > 0\) \|\| coverage \|\| collectedInMaterial > 0\) && \(\s*\n\s*<div className="viewer-badges">/);
   });
 });
 
@@ -341,5 +344,116 @@ describe('⑧ 오버레이 스크림 — 값이 하나다', () => {
       .map((v) => Number(/([\d.]+)\s*\)$/.exec(v)?.[1]));
     expect(alphas, '토큰 밖 스크림 값이 생겼다').toEqual([]);
     expect(read(CSS)).toContain('--scrim: rgba(0, 0, 0, 0.45);');
+  });
+});
+
+/**
+ * ⑨ 뷰어 v2 AD-R2 PR ① 읽기 크롬 (VIEWER-V2-ROUNDS-001 §5 「툴바」·「크롬 정리」·「자동 진행」, 2026-10-07).
+ *
+ * 설계서(docs/manabi-viewer-v2-ad-r2.md, claude/viewer-v2-r2-design) §9 질문은 회신 전이라 제안값을 계약으로 박는다:
+ *   Q1 ③ ⋯ 자료 관리 → 「학습」 창 항목(폭과 무관한 한 규칙) — 시리즈 내비 + 소유자 조합의 390px 두 줄(406.6 > 366)을 없앤다
+ *   Q2 해소 — 툴바에 라벨 없는 ⋯가 남지 않는다
+ *   Q3 A 한 자리 — 지정 문장이 없으면 바닥에 뜬 「▶ 자동 진행」, 있으면 문장 이동 막대 안 ▶/■(44px), 시트가 열리면 둘 다 없다
+ *   Q4 「N개 수집」은 이 자료 기준 — materialFit(json, savedWords).known(아는 단어 합치기 전, 추가 조회 0)
+ *   Q5 카드 없는 본문 바탕 = --reader-paper(종이) — 띠·선택 혼색이 종이 기준이라 본문 바탕을 바꾸지 않는다
+ * 기하(한 줄·44px·겹침 0·시트 열림 시 0개)는 e2e/viewer-focus-move.e2e.mjs가 실제 뷰어 좌표로 지킨다.
+ */
+const tools = () => sliceBetween(read(VIEWER), '<div className="viewer-topbar__tools">', '<ClassSourceFocus')
+  .replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
+const MANABI_CSS = 'src/components/viewer/reader-controls.css';
+
+describe('⑨ AD-R2 읽기 크롬 — 영문 0 · 라벨 툴바 · 통계 한 덩어리 · 카드 0 · 자동 진행 한 자리', () => {
+  it('영문 크롬 「READING ROOM /」이 소스·CSS 어디에도 없다', () => {
+    for (const f of [VIEWER, CSS, MANABI_CSS]) expect(read(f), f).not.toMatch(/READING ROOM|reader-edition\s*>\s*span/);
+    expect(header()).toContain('<p className="reader-metadata reader-edition">{vt(');
+  });
+
+  it('도구 버튼은 아이콘만이 아니다 — 듣기·Aa·학습이 보이는 글자를 그린다', () => {
+    const t = tools();
+    // 아이콘 칸 규칙(data-icon-action = 44×44 고정, 라벨은 aria뿐)에서 뺐다 — 툴바 안에 하나도 남지 않는다
+    expect(t, '툴바에 아이콘만 있는 버튼이 남았다').not.toContain('data-icon-action');
+    expect(t).toMatch(/className="viewer-tool viewer-tool--aa"[\s\S]{0,240}?\}>\s*<span aria-hidden="true">Aa<\/span>/);
+    // 보이는 라벨은 접근 이름 안에 든다(WCAG 2.5.3 Label in Name, 검수 보완 ②) — Aa는 이름 「Aa 읽기 설정」, 학습은 aria 없이 글자가 이름.
+    expect(t).toContain('aria-label={`Aa ${vt("읽기 설정")}`}');
+    expect(sliceBetween(t, '<button className="viewer-tool" aria-haspopup="dialog"', '</button>'), '학습: 보이는 글자와 다른 aria-label 금지').not.toContain('aria-label');
+    expect(t).toMatch(/className="viewer-tool"[\s\S]{0,160}?\}>\s*<ActionIcon name="book"\/><span>\{vt\("학습"\)\}<\/span>/);
+    expect(t).toContain('<ListenControls');
+    const listen = read('src/components/ListenControls.jsx');
+    const start = sliceBetween(listen, '{!playing ? (', ') : (');
+    expect(start, '듣기 시작 버튼에 보이는 라벨').toMatch(/compact\?<><ActionIcon name="audio"\/><span>\{label\('듣기'\)\}<\/span><\/>/);
+    expect(start, '듣기 시작 버튼은 아이콘 칸 규칙에서 빠진다').not.toContain('data-icon-action');
+  });
+
+  it('보이는 라벨 ⊂ 접근 이름 — 듣기·Aa·학습·자동 진행, 화면 언어 3종(WCAG 2.5.3)', () => {
+    for (const locale of VIEWER_MESSAGE_LOCALES) {
+      expect(tm(locale, '본문 전체 듣기'), `${locale} 듣기`).toContain(tm(locale, '듣기'));
+      for (const name of ['자동 진행 시작', '자동 진행 중지', '자동 진행 대기 · 중지']) {
+        expect(tm(locale, name), `${locale} ${name}`).toContain(tm(locale, '자동 진행'));
+      }
+    }
+    // 듣기 버튼의 접근 이름(본문 전체 듣기)과 보이는 라벨(듣기)은 같은 화면 언어로 나온다 — 둘 다 label() = t(uiLocale)
+    const listen = read('src/components/ListenControls.jsx');
+    expect(listen).toContain("aria-label={compact?label('본문 전체 듣기'):undefined}");
+    expect(listen).toContain("<span>{label('듣기')}</span>");
+  });
+
+  it('⋯ 자료 관리는 「학습」 창 안 — 툴바에 라벨 없는 ⋯가 없다(Q1 ③·Q2)', () => {
+    expect(tools()).not.toMatch(/자료 관리|name="more"/);
+    const menu = sliceBetween(read(VIEWER), "{modal('activities')&&<ViewerModal", '</ViewerModal>}');
+    expect(menu).toMatch(/\{user\?\.id===material\?\.owner_id&&!passageOf\(material\)&&!isAnalyzing&&<button[^>]*onClick=\{\(\)=>\{setActiveModal\(null\);setReanalyzePanel\('menu'\);\}\}><b>\{vt\("자료 관리"\)\}<\/b>/);
+  });
+
+  it('자동 진행은 툴바에 없다 — 바닥 한 자리(단독 「▶ 자동 진행」 ↔ 막대 안 ▶/■)', () => {
+    const src = read(VIEWER);
+    expect(tools(), '툴바에 자동 진행이 남았다').not.toMatch(/자동 진행|viewer-pace|startPacer/);
+    const bar = sliceBetween(src, 'const sentenceMoveBar = pickedSentence ? (', ') : null;');
+    const at = (s) => { const i = bar.indexOf(s); expect(i, `${s} 없음`).toBeGreaterThan(-1); return i; };
+    // 막대 안 위치 = 「번역」 바로 앞(설계 §9.2), 자동 진행 허용일 때만
+    expect(at("{autoPace&&paceToggle('sentence-move-bar__btn sentence-move-bar__pace')}")).toBeGreaterThan(at('sentenceNavBtn(1,'));
+    expect(at("{autoPace&&paceToggle('sentence-move-bar__btn sentence-move-bar__pace')}")).toBeLessThan(at('sentence-move-bar__translate'));
+    // 단독 버튼 = 막대가 없을 때만 · 시트·모달이 열려 있으면 없다(정본 §5 「시트가 열려 있으면 숨긴다」)
+    expect(src).toContain('const moveBarShown = pickedSentence !== null && !classStudyActive && !sheetPresent;');
+    expect(src).toContain('const paceFloatShown = autoPace && sentences.length > 0 && !moveBarShown && !inspectorOpen && !isSheetOpen && !modalBlocked;');
+    expect(src).toContain("{paceFloatShown&&<div className={`viewer-pace-float${sheetStripShown?' viewer-pace-float--wide':''}`}>{paceToggle('viewer-pace-float__btn',true)}</div>}");
+    // 접힌 시트(내용은 닫혔지만 바닥에 남은 패널)에서도 자동 진행에 닿는다(검수 보완 ①): 1120 미만 = 머리줄 안 ▶,
+    // 1120 이상 = 접힌 시트가 통째로 숨으므로 단독 버튼(--wide). main은 툴바 ▶가 늘 있었다 — 닿을 길 0은 회귀다.
+    expect(src).toContain('const sheetStripShown = sheetPresent && !inspectorOpen && !classStudyActive;');
+    expect(src).toContain("collapsedActions={autoPace&&sentences.length>0&&!modalBlocked?paceToggle('viewer-inspector__pace'):null}");
+    expect(src).toContain('onPresentChange={setSheetPresent}');
+    const sheet = read('src/components/ViewerBottomSheet.jsx');
+    expect(sheet).toContain('{!open&&collapsedActions}');
+    expect(sheet).toContain('useEffect(()=>{onPresentChange?.(present);},[present,onPresentChange]);');
+    const barCss = read('src/components/viewer/sentence-move-bar.css');
+    expect(barCss).toContain('.viewer-layout .viewer-pace-float--wide {display:none;}');
+    expect(sliceBetween(barCss, '@container reader (min-width:1120px) {', '}')).toContain('.viewer-pace-float--wide {display:flex;');
+    // 접근 이름 3종은 그대로 — readingPacer·viewer-reading-controls e2e가 이 이름으로 누른다
+    const toggle = sliceBetween(src, 'const paceToggle = ', '\n  };');
+    for (const name of ['자동 진행 대기 · 중지', '자동 진행 중지', '자동 진행 시작']) expect(toggle).toContain(`'${name}'`);
+    expect(toggle).toContain("{withLabel&&<span>{vt('자동 진행')}</span>}");
+  });
+
+  it('통계 줄 한 덩어리 — 「N개 수집 → 단어장」은 커버리지와 같은 배지 안의 /vocab 링크, 수는 이 자료 기준(Q4)', () => {
+    const src = read(VIEWER);
+    expect(src).toContain('const collectedInMaterial = useMemo(() => (user && material?.processed_json ? materialFit(material.processed_json, savedWords).known : 0), [user, material?.processed_json, savedWords]);');
+    const stats = sliceBetween(header(), '<span className="viewer-badge viewer-stats"', '</Link>}');
+    expect(stats).toContain("vt('아는 단어 {percent}% · 새 단어 {count}개'");
+    expect(stats).toMatch(/<Link href="\/vocab" prefetch=\{false\} className="viewer-stats__vocab">\{vt\('\{count\}개 수집 → 단어장', \{count: collectedInMaterial\}\)\}$/);
+    // 수집 링크도 무채색 — 크롬 강조색은 복습 하나(위 ⑥)
+    const link = sliceBetween(read(MANABI_CSS), '.manabi-app .viewer-layout .viewer-stats__vocab {', '}');
+    expect(link).toContain('color:inherit');
+    expect(link).not.toMatch(/--warning|--reader-accent|--accent|--primary/);
+  });
+
+  it('본문 테두리 카드 0 — 뷰어 바탕이 종이, 본문 왼쪽 끝 = 제목 왼쪽 끝(Q5)', () => {
+    expect(read(VIEWER), '카드 클래스가 본문에 남았다').not.toContain('className={`card reader-area');
+    const css = read(MANABI_CSS);
+    expect(sliceBetween(css, '.manabi-app .viewer-layout {', '}')).toContain('background:var(--reader-paper)');
+    const area = sliceBetween(css, '.manabi-app .viewer-layout .reader-area {', '}');
+    expect(area).toContain('border:0');
+    expect(area).toContain('border-radius:0');
+    expect(area).toContain('padding-inline:0');
+    expect(area, '테두리 카드 부활').not.toMatch(/border:\s*1px/);
+    // 경로 줄은 주변색 그대로(설계 Q5 — 경로 줄·시트의 --reader-surface 유지)
+    expect(sliceBetween(css, '.manabi-app .viewer-layout .viewer-topbar {', '}')).toContain('background:var(--reader-surface)');
   });
 });

@@ -79,3 +79,25 @@ describe('reanalysis preserves the active source until complete', () => {
     await expect(runPreservedReanalysis(c, old, new AbortController().signal, async () => generated())).rejects.toThrow('다른 창');
   });
 });
+
+// 뷰어 v2 AD-R4 §7 · §9.1 「교정 우선」: 서버가 「뜻 확인 필요」 표식(meaningCheck)을 내도, 사용자가 뜻을 교정한 토큰은
+// 교정값이 이기고 표식이 지워진다. 교정하지 않은 토큰과 뜻 아닌 칸(발음)만 교정한 토큰은 표식을 그대로 둔다.
+describe('AD-R4: a corrected meaning clears the meaningCheck marker on reanalysis', () => {
+  const flagged = () => {
+    const result = generated();
+    result.dictionary.id_0_0_new.meaningCheck = 'doubt';
+    result.dictionary.id_0_1_new.meaningCheck = 'ctx';
+    return result;
+  };
+  it('drops meaningCheck where the meaning was corrected, keeps the corrected value', () => {
+    const result = preserveReanalysisTokens(old, old.raw_text, flagged(), [{ token_id: 'id_0_0_old', after_value: { meaning: '담다' } }]);
+    expect(result.dictionary.id_0_0_old.meaning).toBe('담다');
+    expect(result.dictionary.id_0_0_old).not.toHaveProperty('meaningCheck');
+    expect(result.dictionary.id_0_1_old.meaningCheck).toBe('ctx');
+  });
+  it('a reading-only correction does not clear the marker', () => {
+    const result = preserveReanalysisTokens(old, old.raw_text, flagged(), [{ token_id: 'id_0_0_old', after_value: { furigana: 'chéng' } }]);
+    expect(result.dictionary.id_0_0_old.furigana).toBe('chéng');
+    expect(result.dictionary.id_0_0_old.meaningCheck).toBe('doubt');
+  });
+});

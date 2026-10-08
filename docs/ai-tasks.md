@@ -900,13 +900,27 @@
     JMdict: 운영 `morpheme_dictionary` source=jmdict* 0건(오너 조회 2026-10-07) → 표기 불요, import 라우트로 적재 시 추가.
     FLELex는 CC BY-NC-SA — 유료화 전 교체/제거 검토(오너 결정 2026-10-07).
   - #1353 `claude/happy-darwin-il3hd3` — 익명 default export 2건(lessonAdapters·lessonModel)에 이름 부여 → lint 0 errors·0 warnings.
+  - `claude/trusting-planck-ekfai6` — 대화 패널 IME 조합 Enter 미전송(#1077 v2-Z 검토 6049930267, 코드 수준 확인). 판정 정본
+    `lib/imeComposing.js`로 이동·`isClassComposing` 재수출, 계약 = componentReliabilityFixes. npm test 486/5386 PASS(Node 24).
+    같은 파일 튜터 프롬프트의 중화권 정치 서술 배제 규칙 부재(하드리밋 ⑷)는 오너 결정 대기 — 범위 밖.
   - ⚠ 운영 마이그레이션 이력 ≠ main `supabase/migrations`(스택 #1316~#1321 SQL 3건·10월 활성화 이력). 다음 마이그레이션 병합 시
     `supabase-migrations.yml` 실패 가능성 — 운영 READ ONLY 확인 전 스택 PR 닫기 보류.
   - 이 컨테이너에서 불가(오너/M09): 운영 DB 조회·적용, 운영 배포, 정상 실계정 검수(10-06 04:00 경계 이후 학습 검수 포함).
 - **뷰어 v2 (2026-10-07 21:10 KST~, 오너 지시 「이 세션이 뷰어 v2 맡아」 — [착수](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6037135867))**:
   정본 = [R0 버그](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6031758159) · [v2 라운드](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036574287). R0 → R0+ → AE-R1 → AE-R2 → AD-R2 → AE-R3 → AD-R3 → AD-R4 → AE-R4, 라운드마다 PR.
-  - `claude/viewer-r0-links` — 버그 3: 학습자 링크 관문 `learnerHref`(옛 교재 주소 → null + 「보관된 교재라 열 수 없어요」). 대응 데이터 없어 매핑 안 함.
-  - `claude/viewer-r0-css`(1·2·6·7·8·11) · `claude/viewer-r0-sheet`(4·9·10) · `claude/viewer-v2-r0plus`(정체 꼴 훈음) 진행 중.
+  - ✅ R0·R0+ 병합(오너 승인 「실글꼴 검수로 대신하고 병합해」): #1352 옛 교재 링크 `learnerHref` · #1355 정체 꼴 훈음(hanjaTrad) ·
+    #1356 문장 이동 막대·pronReveal/recall 제거 · #1354 문형 표식·성조 색·선택 테두리·줄 간격 하한(실글꼴 6a/6b 수정). 운영 사후 검수(M09) 대기.
+  - 새 라운드 PR은 merge-ready에서 멈춤(오너 2026-10-08 01:20 KST 「merge 할 수 있기 바로 전까지」). 전부 CI green·ready, 병합 순서(스택):
+    설계 #1358·#1360·#1361·#1363 · AE-R1 #1358→#1359→#1367→#1374 · AE-R2 #1362 / #1367→#1376→#1378 · AD-R2 #1369·#1366→#1375 ·
+    AE-R3 #1365·#1368→#1379(#1374 위) · AE-R4 #1365→#1371, #1379→#1380 · AD-R4 #1370→#1372, #1380→#1382 ·
+    AD-R3 #1373→#1377, #1382→#1383 · AD-R4 PR④(경계 후보, 상수 꺼짐 — #1383 위).
+  - 상수 꺼짐으로 출시(운영 동작 동일): AD-R4 `ZH_SENSE_REVIEW`(#1372)·`ZH_BOUNDARY_REVIEW`(PR④) — 켜기는 Gemini 실측·사람 판정 후 별도 PR.
+  - 발견 결함 수정: #1364 dict-correct 권한(먼저 병합 권장) · #1368 일본식 자형(面→麺) · #1380 한자 창 바깥 누르기 포커스.
+  - 콘텐츠 감수(Claude): 동형이의어 경고 53항(流氓·交接·当面 수정, 回复 추가) · 재분석 알림 문구(「원문이 바뀌어」 단정 제거).
+  - 보류(오너/M09): AE-R3 PR③(공유 사전 요미 쓰기 — 공유 사전 정책 대기) · AD-R3 PR④(규칙 표 DDL — Preview 리허설) ·
+    AD-R3 한국어(어절 칼선 A/B) · 상수 켜기(Gemini 실측) · Preview·정상 실계정 검수 전반.
+  - 오너 결정 대기: 한국어 어절 자르기 A/B(B 권장) · 공유 사전 정책 ⓐ/ⓑ/ⓒ · #1368 트레이드오프 · #1376 번역 등급 light ·
+    #1374 관리자 교정 허용·✎ 메뉴 이동 · #1378 수업 화면 배치·긴 줄 문형 상한 · #1380 창 위치 · #1383 수업 원본 경고.
 ### todo (오너 전건 승인 2026-07-18 — owner-gate 해제분 포함, Codex-1 확장 큐 = #150 코멘트 5012160829)
 - 🧊 **이 아래 전량 = 게임·월드 트랙 동결**(오너 "게임 월드는 ㄴㄴ" 2026-08-25).
   2026-08-26 전수 대조 결과 **비월드 잔여 0**: #1077 인박스 승인분 전량 완결(2·3·6·11·

@@ -2,6 +2,7 @@ import { diffLineMap } from './sourceEdit';
 import { analysisTokenLine, inspectAnalysisCoverage, mergeReanalysisLines } from './analysisCoverage';
 import { canonicalViewerLocale } from './viewerLanguage';
 import { exactSourceQuote } from './viewerLocalizedContext';
+import { compactBoundaryText, readBoundaryEdits } from './boundaryEdits';
 
 const tokenLine = id => analysisTokenLine(id) ?? NaN;
 
@@ -51,6 +52,8 @@ export function preserveReanalysisTokens(material, text, result, corrections = [
     if (dictionary[target]) throw new Error('분석 결과의 식별자가 겹쳐 이전 분석을 유지합니다.');
     sequence.push(target);
     dictionary[target] = { ...token, ...(match?.patch || {}) };
+    // 뷰어 v2 AD-R4 §7: 뜻을 교정한 토큰은 교정값이 이기므로 서버의 「뜻 확인 필요」 표식(meaningCheck)을 지운다.
+    if (match?.patch && Object.hasOwn(match.patch, 'meaning')) delete dictionary[target].meaningCheck;
     if (match?.patch && Object.hasOwn(match.patch, 'meaning') && old.metadata?.language === 'Korean') {
       const meaningLocale = canonicalViewerLocale(match.token.meaningLocale || match.token.explanationLocale
         || old.metadata.explanationLocale || 'ko');
@@ -68,6 +71,87 @@ export function preserveReanalysisTokens(material, text, result, corrections = [
     if (match?.patch && Object.keys(match.patch).length) viewerCorrections[target] = Object.keys(match.patch);
   }
   return { ...result, sequence, dictionary, metadata: { ...result.metadata, viewerCorrections } };
+}
+
+// ── AD-R3 PR② 단어 경계 기록(metadata.viewerBoundaries)의 재분석 연결(§3.5) ──
+// 기록 줄 번호는 material.raw_text 기준이다(원문 수정의 baseJsonOverride도 metadata는 옮기지 않는다).
+
+const PATCH_KEYS = ['meaning', 'furigana', 'reading', 'pos'];
+const renameLine = (id, line) => (typeof id === 'string' ? id.replace(/^(id|br|failed)_\d+_/, `$1_${line}_`) : id);
+// AD-R3 PR③(PR② 판단 1): base id 줄 접두가 바뀌어도 옛 저장 문맥이 묶인 자리를 찾도록 원래 id를 별칭(was)으로 남긴다.
+// boundaryCoveringToken이 id 또는 별칭으로 찾는다. 가장 최근 8개만 둔다(줄 이동이 거듭돼도 기록이 커지지 않게).
+const BASE_ALIAS_LIMIT = 8;
+function withAlias(entry, id) {
+  if (!entry || id === entry.id) return entry;
+  const was = [...new Set([...(Array.isArray(entry.was) ? entry.was : []), entry.id].filter(item => typeof item === 'string' && item !== id))]
+    .slice(-BASE_ALIAS_LIMIT);
+  return { ...entry, id, ...(was.length ? { was } : {}) };
+}
+
+/**
+ * 기록의 줄 번호를 새 원문으로 옮긴다. 같은 줄(diffLineMap 쌍)은 그 줄로, 바뀐 줄은 앞뒤 유지 줄 사이 구간의 옛·새 줄 수가
+ * 같을 때만 같은 순번의 줄로 옮긴다(줄 수정 1:1 — 그 줄은 다시 분석되고 서버가 글자 위치를 다시 확인한다). 그 밖(삭제·
+ * 여러 줄이 얽힌 변경)은 줄을 잃은 pending(line: null)으로 남긴다 — 조용히 버리지 않는다. 줄이 옮겨지면 base id의 줄 접두도
+ * preserveReanalysisTokens의 id 이동과 같이 바꾼다. 원문이 같으면 입력 그대로.
+ */
+export function mapBoundaryEdits(oldRaw, newRaw, edits) {
+  if (oldRaw === newRaw) return edits;
+  const oldLines = String(oldRaw ?? '').split('\n'), newLines = String(newRaw ?? '').split('\n');
+  const mapping = diffLineMap(oldLines, newLines);
+  if (!mapping.ok) throw new Error('원문 변경 범위가 너무 커서 안전하게 연결하지 못했어요.');
+  const kept = [...mapping.pairs.keys()].sort((a, b) => a - b);
+  const target = line => {
+    if (!Number.isInteger(line) || line < 0 || line >= oldLines.length) return null;
+    if (mapping.pairs.has(line)) return mapping.pairs.get(line);
+    const before = kept.filter(k => k < line).at(-1) ?? -1, after = kept.find(k => k > line) ?? oldLines.length;
+    const newBefore = before < 0 ? -1 : mapping.pairs.get(before);
+    const newAfter = after >= oldLines.length ? newLines.length : mapping.pairs.get(after);
+    return after - before === newAfter - newBefore ? newBefore + (line - before) : null;
+  };
+  return edits.map(record => {
+    const line = target(record?.line);
+    if (line === null) return { ...record, line: null, status: 'pending' };
+    if (line === record.line) return record;
+    return { ...record, line, base: (record.base || []).map(entry => withAlias(entry, renameLine(entry?.id, line))) };
+  });
+}
+
+/**
+ * 재분석 뒤 기록 확정: 결과에서 가져온 줄(전체 재분석 = 모든 줄, 선택 재분석 = 선택 줄)의 기록만 서버 적용 결과로 바꾼다.
+ * 같은 문단이라 함께 분석됐어도 선택 밖 줄은 기존 토큰을 쓰므로 기록도 그대로 둔다(mergeReanalysisLines와 같은 규칙).
+ */
+function settleReanalysisBoundaries(mapped, analyzed, takeLine) {
+  if (!Array.isArray(analyzed) || analyzed.length !== mapped.length) return mapped;
+  return mapped.map((record, i) => (Number.isInteger(record?.line) && takeLine(record.line) ? analyzed[i] : record));
+}
+
+/**
+ * 새 base 토큰에 옛 base id와 교정값을 잇는다(PR① 「PR②에서 정할 것」 1). preserveReanalysisTokens와 같은 규칙 —
+ * 같은 줄(이동 반영)·같은 글자 위치(기록 안 공백 뺀 위치)·같은 표면일 때만. 교정 필드는 viewerCorrections 표시와 교정
+ * 이력의 키, 값은 옛 base 토큰에 실제로 있던 것. 그래서 묶기 전에 저장한 단어의 문맥이 재분석 뒤에도 §4.3 규칙으로
+ * 돌아가고, 다시 나누면 원래 id로 정확히 돌아간다.
+ */
+function preserveBoundaryBase(json, prior, mapped, oldMetadata, corrections) {
+  const settled = readBoundaryEdits(json);
+  const keys = id => {
+    const out = new Set((oldMetadata?.viewerCorrections?.[id] || []).filter(key => PATCH_KEYS.includes(key)));
+    for (const row of corrections) if (row.token_id === id) for (const key of Object.keys(row.after_value || {})) if (PATCH_KEYS.includes(key)) out.add(key);
+    return out;
+  };
+  const offsets = base => { let at = 0; return base.map(entry => { const from = at; at += compactBoundaryText(entry?.token?.text).length; return from; }); };
+  const edits = settled.map((record, i) => {
+    if (record === mapped[i] || record?.status !== 'applied' || !Array.isArray(prior[i]?.base)) return record;
+    const oldBase = mapped[i].base || [], oldAt = offsets(oldBase), newAt = offsets(record.base);
+    return { ...record, base: record.base.map((entry, k) => {
+      const j = oldBase.findIndex((old, n) => oldAt[n] === newAt[k]
+        && compactBoundaryText(old?.token?.text) === compactBoundaryText(entry.token?.text));
+      if (j < 0) return entry;
+      const original = prior[i].base[j], patch = {};
+      for (const key of keys(original?.id)) if (original?.token?.[key] !== undefined) patch[key] = original.token[key];
+      return { id: oldBase[j].id, ...(Array.isArray(oldBase[j].was) ? { was: oldBase[j].was } : {}), token: { ...entry.token, ...patch } };
+    }) };
+  });
+  return { ...json, metadata: { ...json.metadata, viewerBoundaries: { ...json.metadata.viewerBoundaries, edits } } };
 }
 
 // Final merges/remaps may reuse tokens with obsolete document offsets. Rebuild
@@ -170,6 +254,10 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
   checkAbort();
   const attempt = crypto.randomUUID();
   const metadata = { ...original?.metadata, viewerRevision: attempt, updated_at: new Date().toISOString() };
+  // AD-R3: 경계 기록을 새 원문 줄로 옮겨 분석 요청에 싣는다(analyzeHybrid가 문단마다 boundaries로 보낸다). 기록 0이면 무변경.
+  const priorBoundaries = metadata.language === 'Korean' ? [] : readBoundaryEdits(original);
+  const mappedBoundaries = priorBoundaries.length ? mapBoundaryEdits(material.raw_text || '', rawText, priorBoundaries) : null;
+  if (mappedBoundaries) metadata.viewerBoundaries = { ...metadata.viewerBoundaries, edits: mappedBoundaries };
   if (metadata.language === 'Korean' && options.explanationLocale !== undefined) {
     const locale = canonicalViewerLocale(options.explanationLocale);
     if (!locale) throw new Error('설명 언어를 확인해 주세요.');
@@ -190,6 +278,8 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
     },
   });
   checkAbort();
+  const settledBoundaries = mappedBoundaries && (selected?.length === 0 ? mappedBoundaries
+    : settleReanalysisBoundaries(mappedBoundaries, readBoundaryEdits(result), line => !selected || selected.includes(line)));
   if (selected?.length) result = preserveRetainedKoreanLocales(original,
     mergeReanalysisLines(rawText, original, result, selected));
   if (!completeAnalysis(result, rawText)) throw new Error('새 분석을 완료하지 못했어요. 기존 원문과 분석은 그대로 유지됩니다.');
@@ -197,7 +287,9 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
     .filter(key => result.metadata?.[key] !== undefined).map(key => [key, result.metadata[key]]));
   const mergedMetadata = { ...result.metadata, ...metadata, ...provenance,
     viewerRevision: attempt, updated_at: metadata.updated_at };
+  if (settledBoundaries) mergedMetadata.viewerBoundaries = { ...metadata.viewerBoundaries, edits: settledBoundaries };
   let json = preserveReanalysisTokens(material, rawText, { ...result, metadata: mergedMetadata }, corrections || []);
+  if (settledBoundaries) json = preserveBoundaryBase(json, priorBoundaries, mappedBoundaries, material.processed_json?.metadata, corrections);
   if (metadata.language === 'Korean') json = rebaseKoreanSourceSpans(rawText, json);
   if (!completeAnalysis(json, rawText)) throw new Error('분석 연결을 확인하지 못했어요. 기존 원문과 분석은 그대로 유지됩니다.');
   checkAbort();
