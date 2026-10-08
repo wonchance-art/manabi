@@ -87,7 +87,7 @@ export const DATA_CREDIT_SECTIONS = [
         id: 'unihan',
         name: 'Unicode Unihan',
         holder: '© Unicode, Inc.',
-        use: '획수·부수·정체/간체 대응·일본 상용/인명용 한자 목록',
+        use: '획수·부수·정체/간체 대응·일본 상용/인명용 한자 목록·형성자 소리 계열·대표 병음',
         license: 'Unicode License v3',
         licenseUrl: 'https://www.unicode.org/license.txt',
         sourceUrl: 'https://www.unicode.org/charts/unihan.html',

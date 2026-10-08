@@ -790,3 +790,228 @@ test('AE-R3: 老师(diff) · 汽车(warn) → 日 숨김 · 「일본어로는�
   assert.deepEqual(j.errors,[]);
  }finally{await j.context.close();}
 });
+
+// ───────────────────────── AE-R4 PR ② 한자 창(팝오버) · 글자 카드 교체(설계서 docs/manabi-viewer-v2-ae-r4.md §4·§7.2 · 정본 §9 합격) ─────────────────────────
+// 표시만(쓰기 0). 중국어 일반 모드에서 표제어 한자를 누르면 글자 카드 대신 비모달 한자 창. 합격: 창 안 모든 줄 한 줄 · 열기·닫기·드릴다운·
+// 다른 글자 사이 카드 요소 이동 0px · 창 크기 불변 · Esc·바깥 누르기로 닫고 포커스가 그 글자로 · 390 첫 화면에서 등급 4버튼을 가리지 않음
+// (창 아래 끝 ≤ 등급 버튼 위 − 3px, 시안 여유) · 창 전체가 보임 · 키보드만으로 열기·드릴다운·닫기 · 일본어 자료는 글자 카드 그대로.
+const savedCanguan=()=>{const day=86400000,now=Date.now();return [{id:'card-canguan',word_text:'参观',base_form:'参观',meaning:'참관하다',language:'Chinese',created_at:new Date(now-day).toISOString(),interval:3,ease_factor:2.5,repetitions:1,last_reviewed_at:new Date(now-day).toISOString(),next_review_at:new Date(now+5*day).toISOString(),source_material_id:94171}];};
+const visibleCard=page=>page.locator('#inspector-word').filter({visible:true});
+const popOf=page=>visibleCard(page).locator('.hanja-pop');
+// 카드 요소(문장 줄 · 칩 · 표제어 글자 · 훈음 · 뜻 · 등급) 사각형 — 창을 열고 닫아도 0px.
+// 재기 전에 포인터를 카드 밖(좌상단)으로 치운다: 등급 버튼은 :hover에서 translateY(-1px)라, 카드를 연 탭 자리가 마침 등급 버튼
+// 위면 「열기 전」만 1px 떠 보인다(CI 실측 780 → 781 — 창과 무관한 hover 변형). 레이아웃 이동만 비교한다.
+const cardBoxes=async page=>{await page.mouse.move(0,0);return page.evaluate(()=>{
+ const card=[...document.querySelectorAll('#inspector-word')].find(el=>el.getClientRects().length);
+ const r=el=>{const b=el.getBoundingClientRect();return [b.left,b.top,b.width,b.height].map(v=>Math.round(v*10)/10).join(',');};
+ return ['.reader-card-sentence','.word-detail-card__actions','.word-fit [data-glyph-i]','.word-fit__hun','.word-detail-card__meaning','.reader-card-actions .review-score-btn,.save-grade__saved']
+  .flatMap(s=>[...card.querySelectorAll(s)].filter(el=>el.getClientRects().length).map(el=>`${s}:${r(el)}`));
+});};
+// 창 기하 — 크기 · 한 줄 · 넘침 · 보임 · 등급 버튼과의 거리 · 포커스.
+const popGeometry=page=>page.evaluate(()=>{
+ const card=[...document.querySelectorAll('#inspector-word')].find(el=>el.getClientRects().length);
+ const pop=card?.querySelector('.hanja-pop');
+ if(!pop||!pop.getClientRects().length)return null;
+ const b=el=>{const x=el.getBoundingClientRect();return {top:x.top,bottom:x.bottom,left:x.left,right:x.right,width:x.width,height:x.height};};
+ const p=b(pop),body=b(card.querySelector('.reader-card-body')),cardBox=b(card.querySelector('.word-detail-card')||card);
+ const grade=[...card.querySelectorAll('.reader-card-actions :is(.review-score-btn,.save-grade__saved)')].find(el=>el.getClientRects().length);
+ const rows=[...pop.querySelectorAll('.hanja-pop__head,.hanja-pop__parts,.hanja-pop__tile > span,.hanja-pop__fam,.hanja-pop__note')].filter(el=>el.getClientRects().length);
+ const lines=el=>{const range=document.createRange();range.selectNodeContents(el);let n=0,bottom=-Infinity;for(const r of [...range.getClientRects()].filter(r=>r.width>0).sort((a,b)=>a.top-b.top)){if(r.top>=bottom-1){n++;bottom=r.bottom;}else bottom=Math.max(bottom,r.bottom);}return n;}; // 줄 상자 수 — 세로로 겹치지 않는 사각형 무리
+ const multi=[...pop.querySelectorAll('.hanja-pop__hun,.hanja-pop__pl,.hanja-pop__tile > span,.hanja-pop__note,.hanja-pop__fc > *,.hanja-pop__unknown')].filter(el=>el.getClientRects().length&&el.textContent.trim()&&lines(el)>1).map(el=>el.className+':'+el.textContent);
+ const over=rows.filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.className+':'+el.textContent);
+ const content=[...pop.children].filter(el=>el.getClientRects().length&&!el.classList.contains('hanja-pop__arrow')&&!el.classList.contains('hanja-pop__close')).map(b);
+ const anchor=card.querySelector('.word-fit__char--active');
+ const arrow=pop.querySelector('.hanja-pop__arrow');
+ return {pop:p,body,card:cardBox,vh:innerHeight,vw:innerWidth,gradeTop:grade?b(grade).top:null,multi,over,contentBottom:Math.max(...content.map(c=>c.bottom)),
+  anchor:anchor?b(anchor):null,arrowX:arrow&&getComputedStyle(arrow).display!=='none'?b(arrow).left+b(arrow).width/2:null,view:pop.dataset.view,compact:pop.dataset.compact||null,shifted:pop.dataset.shifted||null,
+  focus:document.activeElement===pop?'pop':document.activeElement?.closest?.('.hanja-pop')?document.activeElement.className:document.activeElement?.dataset?.inspectKey!=null?`char:${document.activeElement.textContent}`:document.activeElement?.tagName,
+  text:pop.innerText,dialog:{role:pop.getAttribute('role'),modal:pop.getAttribute('aria-modal'),label:document.getElementById(pop.getAttribute('aria-labelledby'))?.textContent||null},
+  oldCard:card.querySelectorAll('.char-inspect').length};
+});
+function assertPopGeometry(g,{label,width}) {
+ assert.ok(g,`${label}: popover visible`);
+ assert.equal(g.dialog.role,'dialog');assert.equal(g.dialog.modal,'false');assert.ok(g.dialog.label,`${label}: labelled by its head`);
+ assert.ok(Math.abs(g.pop.width-width)<=1,`${label}: width ${g.pop.width} (expected ${width})`);
+ assert.ok([170,152].some(h=>Math.abs(g.pop.height-h)<=1),`${label}: fixed height ${g.pop.height}`);
+ assert.deepEqual(g.multi,[],`${label}: every line in the popover is one line`);
+ assert.deepEqual(g.over,[],`${label}: no row overflows its box`);
+ assert.ok(g.contentBottom<=g.pop.bottom+.5,`${label}: content stays inside the fixed box (${g.contentBottom} / ${g.pop.bottom})`);
+ assert.ok(g.pop.left>=g.body.left-.5&&g.pop.right<=g.body.right+.5,`${label}: inside the card horizontally`);
+ assert.ok(g.pop.top>=g.body.top-.5&&g.pop.bottom<=Math.min(g.vh,g.card.bottom)+.5,`${label}: the whole popover is visible (no clipping) ${JSON.stringify(g.pop)}`);
+ if(g.gradeTop!==null)assert.ok(g.pop.bottom<=g.gradeTop-3+.5,`${label}: does not cover the grade buttons (${g.pop.bottom} ≤ ${g.gradeTop} − 3)`);
+ assert.equal(g.oldCard,0,`${label}: no character card in Chinese general mode`);
+ assert.ok(!/\bAI\b/.test(g.text),`${label}: no 「AI」 label`);
+}
+// 색 대비 — 머리 훈(뜻 색)·음(소리 색)·뜻 조각 글자·표지가 그 바탕 위에서 4.5:1 이상(종이·밝게·어둡게).
+const popContrast=page=>page.evaluate(()=>{
+ const card=[...document.querySelectorAll('#inspector-word')].find(el=>el.getClientRects().length);
+ const pop=card.querySelector('.hanja-pop');
+ const parse=s=>{let m=s.match(/rgba?\(([^)]+)\)/);if(m){const v=m[1].split(/[ ,/]+/).filter(Boolean).map(Number);return {rgb:v.slice(0,3),a:v[3]??1};}
+  m=s.match(/color\(srgb ([^)]+)\)/);if(m){const v=m[1].split(/[ /]+/).filter(Boolean).map(Number);return {rgb:v.slice(0,3).map(x=>x*255),a:v[3]??1};}return null;};
+ const lum=([r,g,b])=>{const f=c=>{c/=255;return c<=.03928?c/12.92:((c+.055)/1.055)**2.4;};return .2126*f(r)+.7152*f(g)+.0722*f(b);};
+ const ratio=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);};
+ const bgOf=el=>{for(let e=el;e;e=e.parentElement){const c=parse(getComputedStyle(e).backgroundColor);if(c&&c.a>=.99)return c.rgb;}return [255,255,255];};
+ const pair=sel=>{const el=pop.querySelector(sel);if(!el)return null;const c=parse(getComputedStyle(el).color);return {sel,color:getComputedStyle(el).color,ratio:Math.round(ratio(c.rgb,bgOf(el))*100)/100};};
+ const same=(a,b)=>getComputedStyle(pop.querySelector(a)).color===getComputedStyle(pop.querySelector(b)).color;
+ return {pairs:['.hanja-pop__hun .is-meaning','.hanja-pop__hun .is-sound','.hanja-pop__piece.is-meaning','.hanja-pop__piece.is-meaning i','.hanja-pop__piece.is-sound strong','.hanja-pop__piece.is-sound i','.hanja-pop__ch--zheng','.hanja-pop__tile em'].map(pair),
+  meaningLinked:same('.hanja-pop__hun .is-meaning','.hanja-pop__piece.is-meaning b'),soundLinked:same('.hanja-pop__hun .is-sound','.hanja-pop__piece.is-sound strong'),
+  meaningVsSound:getComputedStyle(pop.querySelector('.hanja-pop__hun .is-meaning')).color!==getComputedStyle(pop.querySelector('.hanja-pop__hun .is-sound')).color};
+});
+
+test('AE-R4 390 · 1440: 壮观의 观 → 한자 창(머리 · 구성 · 같은 한자어) — 한 줄 · 크기 고정 · 이동 0 · 등급 가림 0 · 키보드로 열기·드릴다운·닫기 · Esc·바깥·같은 글자로 닫힘 · 색 대비',{timeout:240000},async()=>{
+ for(const [width,height,popWidth] of [[390,844,346],[1440,900,318]]){
+  const f=await open(glyphMaterial(),{prefs:zhPrefs,rows:glyphRows,width,height,saved:savedCanguan()});
+  const label=`观 ${width}`;
+  try{
+   await until(()=>f.bulk.length>=1);
+   await tap(f,'id_0_7','웅장하다, 장관이다');
+   await visibleCard(f.page).locator('.word-fit__hun').first().waitFor();
+   await f.page.waitForTimeout(400);
+   const before=await cardBoxes(f.page);
+   const mark=f.requests.length;
+   // 키보드만: 표제어 글자에 포커스 → Enter로 연다 → 창으로 포커스
+   const guan=visibleCard(f.page).locator('.word-fit__char',{hasText:'观'});
+   await guan.focus();await f.page.keyboard.press('Enter');
+   const pop=popOf(f.page);
+   await pop.waitFor();
+   await pop.locator('.hanja-pop__tile').nth(2).waitFor();
+   await pop.locator('.hanja-pop__piece.is-sound').waitFor();
+   await f.page.waitForTimeout(200);
+   let g=await popGeometry(f.page);
+   assertPopGeometry(g,{label,width:popWidth});
+   assert.equal(g.focus,'pop',`${label}: focus moves into the popover`);
+   assert.ok(g.arrowX!==null&&Math.abs(g.arrowX-(g.anchor.left+g.anchor.width/2))<=1.5,`${label}: arrow points at the tapped glyph`);
+   const size=[g.pop.width,g.pop.height].join('x'),place=[g.pop.left,g.pop.top].join(',');
+   assert.deepEqual(await cardBoxes(f.page),before,`${label}: opening moves no card element`);
+   assert.equal(await pop.locator('.hanja-pop__head').innerText().then(t=>t.replace(/\s+/g,' ').trim()),'观 guān → 觀 볼 관');
+   assert.equal(await pop.locator('.hanja-pop__piece.is-meaning').getAttribute('aria-label'),'見 볼 견, 뜻 조각');
+   assert.equal(await pop.locator('.hanja-pop__piece.is-sound').getAttribute('aria-label'),'雚 황새 관, 소리 조각');
+   const tiles=await pop.locator('.hanja-pop__tile .hanja-pop__tzh').allInnerTexts();
+   assert.ok(tiles.length===3&&tiles[0]==='参观'&&!tiles.includes('壮观'),`${label}: 3 tiles, my word first, current word excluded: ${tiles}`);
+   assert.equal(await pop.locator('.hanja-pop__tile').first().locator('.hanja-pop__mine').innerText(),'내 단어');
+   assert.equal(await pop.locator('.hanja-pop__tile').first().locator('em').allInnerTexts().then(x=>x.join('|')),'guān|观|관');
+   assert.equal(await pop.locator('.hanja-pop__parts .hanja-pop__py').count(),0,'no pinyin on the pieces');
+   // 색 연결 · 대비(종이 · 밝게 · 어둡게)
+   for(const theme of ['sepia','light','dark']){
+    await f.page.evaluate(t=>document.querySelector('.viewer-layout').setAttribute('data-reader-theme',t),theme);
+    const c=await popContrast(f.page);
+    assert.ok(c.meaningLinked&&c.soundLinked&&c.meaningVsSound,`${label} ${theme}: head hun/eum colors = piece colors ${JSON.stringify(c)}`);
+    for(const p of c.pairs)assert.ok(p&&p.ratio>=4.5,`${label} ${theme}: contrast ${JSON.stringify(p)}`);
+   }
+   await f.page.evaluate(()=>document.querySelector('.viewer-layout').setAttribute('data-reader-theme','sepia'));
+   if(process.env.COMPOSER_SCREENSHOTS)await f.page.screenshot({path:`${process.env.COMPOSER_SCREENSHOTS}/hanja-pop-guan-${width}.png`});
+   // 키보드 드릴다운: Tab → 見(뜻 조각) → Tab → 雚(소리 조각) → Enter → 같은 소리 글자 화면, 포커스는 ‹
+   await f.page.keyboard.press('Tab');
+   assert.equal(await f.page.evaluate(()=>document.activeElement?.dataset?.piece),'見');
+   await f.page.keyboard.press('Tab');
+   assert.equal(await f.page.evaluate(()=>document.activeElement?.dataset?.piece),'雚');
+   await f.page.keyboard.press('Enter');
+   await pop.locator('.hanja-pop__fc').nth(4).waitFor();
+   g=await popGeometry(f.page);
+   assertPopGeometry(g,{label:`${label} drill`,width:popWidth});
+   assert.equal(g.view,'sound');assert.equal([g.pop.width,g.pop.height].join('x'),size,'drilldown keeps the size');assert.equal([g.pop.left,g.pop.top].join(','),place,'drilldown keeps the place');
+   assert.equal(await f.page.evaluate(()=>document.activeElement?.classList.contains('hanja-pop__back')),true,'focus on ‹');
+   assert.deepEqual(await pop.locator('.hanja-pop__fc b').allInnerTexts(),['觀','權','歡','勸','灌']);
+   assert.equal(await pop.locator('.hanja-pop__fc .hanja-pop__fpy').first().innerText(),'guān');
+   assert.equal(await pop.locator('.hanja-pop__note').innerText(),'雚이 들면 대개 관·권·환 (guan·quan·huan)');
+   assert.deepEqual(await cardBoxes(f.page),before,`${label}: drilldown moves no card element`);
+   if(process.env.COMPOSER_SCREENSHOTS)await f.page.screenshot({path:`${process.env.COMPOSER_SCREENSHOTS}/hanja-pop-drill-${width}.png`});
+   await f.page.keyboard.press('Enter'); // ‹
+   await pop.locator('.hanja-pop__piece.is-sound').waitFor();
+   await until(()=>f.page.evaluate(()=>document.activeElement?.dataset?.piece==='雚'));
+   // 뜻 조각 → 그 글자의 창(見 → 见으로 단어를 찾는다), ‹로 돌아간다
+   await f.page.keyboard.press('Shift+Tab');await f.page.keyboard.press('Enter');
+   await visibleCard(f.page).locator('.hanja-pop[data-view="char"]').waitFor();
+   g=await popGeometry(f.page);
+   assertPopGeometry(g,{label:`${label} 見`,width:popWidth});
+   assert.equal([g.pop.width,g.pop.height].join('x'),size);
+   assert.match(await pop.locator('.hanja-pop__head').innerText(),/見\s*jiàn\s*볼 견/);
+   const jianTiles=await pop.locator('.hanja-pop__tile .hanja-pop__tzh').allInnerTexts();
+   assert.ok(jianTiles.length>0&&jianTiles.every(w=>w.includes('见')),`見 window finds words with 见: ${jianTiles}`);
+   await f.page.keyboard.press('Enter'); // ‹
+   await pop.locator('.hanja-pop__piece.is-meaning').waitFor();
+   // Esc → 닫히고 포커스가 观으로
+   await f.page.keyboard.press('Escape');
+   await pop.waitFor({state:'detached'});
+   assert.equal(await f.page.evaluate(()=>document.activeElement?.textContent),'观','Esc returns focus to the glyph');
+   assert.equal(await visibleCard(f.page).locator('.word-detail-card__meaning').count(),1,'Esc closes only the popover, not the word card');
+   assert.deepEqual(await cardBoxes(f.page),before,`${label}: closing moves no card element`);
+   // 마우스: 열기 → 다른 글자(壮)는 내용만 바뀌고 크기 그대로 → 같은 글자 다시 → 닫힘
+   await guan.click();await pop.locator('.hanja-pop__tile').first().waitFor();
+   const zhuang=visibleCard(f.page).locator('.word-fit__char',{hasText:'壮'});
+   await zhuang.click();
+   await until(async()=>(await pop.locator('.hanja-pop__head').innerText()).includes('壯'));
+   g=await popGeometry(f.page);
+   assertPopGeometry(g,{label:`${label} 壮`,width:popWidth});
+   assert.equal([g.pop.width,g.pop.height].join('x'),size,'another glyph keeps the size');
+   assert.ok(Math.abs(g.arrowX-(g.anchor.left+g.anchor.width/2))<=1.5,'arrow follows the new glyph');
+   assert.deepEqual(await cardBoxes(f.page),before,`${label}: switching glyphs moves no card element`);
+   await zhuang.click();
+   await pop.waitFor({state:'detached'});
+   // 바깥 누르기 → 닫히고 포커스가 그 글자로
+   await guan.click();await pop.waitFor();
+   await visibleCard(f.page).locator('.reader-card-sentence').click();
+   await pop.waitFor({state:'detached'});
+   // 복귀는 누른 몸짓(click)이 끝난 뒤다 — 그 사이 카드 상자(tabIndex=-1)로 간 기본 포커스를 글자로 되돌린다.
+   await until(()=>f.page.evaluate(()=>document.activeElement?.textContent==='观'),2000).catch(async()=>assert.fail(`outside press returns focus to the glyph (active: ${await f.page.evaluate(()=>document.activeElement?.className)})`));
+   assert.deepEqual(await cardBoxes(f.page),before);
+   // ✕
+   await guan.click();await pop.waitFor();
+   await pop.getByRole('button',{name:'닫기',exact:true}).click();
+   await pop.waitFor({state:'detached'});
+   assert.deepEqual(writesSince(f,mark).filter(r=>/\/rest\/v1\/(?!rpc\/)|\/api\/(learning|dict-correct)/.test(r.url)),[],'display only: no writes while the popover is used');
+   assert.deepEqual(f.errors,[]);
+  }finally{await f.context.close();}
+ }
+});
+
+test('AE-R4 390 첫 화면 우선: 3줄 문장 속 体育场의 场 · 技术의 术(역할 미상) — 창이 등급 버튼을 가리지 않고 다 보이며, 닫으면 첫 화면 계약 그대로',{timeout:180000},async()=>{
+ const m=cardMaterial();
+ const f=await open(m,{prefs:zhPrefs,rows:glyphRows});
+ try{
+  await until(()=>f.bulk.length>=1);
+  const longId=m.sequence.find(id=>id.startsWith('id_2_')&&m.dictionary[id].text==='体育场');
+  await tap(f,longId,'경기장');
+  await f.page.waitForTimeout(400);
+  const before=await cardBoxes(f.page);
+  await visibleCard(f.page).locator('.word-fit__char',{hasText:'场'}).click();
+  const pop=popOf(f.page);
+  await pop.locator('.hanja-pop__head').waitFor();
+  await f.page.waitForTimeout(300);
+  const g=await popGeometry(f.page);
+  assertPopGeometry(g,{label:'场 3-line 390',width:346});
+  assert.deepEqual(await cardBoxes(f.page),before,'opening moves no card element');
+  if(process.env.COMPOSER_SCREENSHOTS)await f.page.screenshot({path:`${process.env.COMPOSER_SCREENSHOTS}/hanja-pop-budget-390.png`});
+  await f.page.keyboard.press('Escape');await pop.waitFor({state:'detached'});
+  assertFirstScreen(await measure(f.page),{label:'3-line + 体育场 after the popover'});
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+ const t=build([[{text:'技术',base_form:'技术',furigana:'jì shù',meaning:'기술',pos:'명사'},{text:'。',base_form:'。',pos:'기호'}]],'Chinese');
+ const h=await open(t,{prefs:zhPrefs,width:1440,height:900});
+ try{
+  await tap(h,'id_0_0','기술');
+  await visibleCard(h.page).locator('.word-fit__char',{hasText:'术'}).click();
+  const pop=popOf(h.page);
+  await pop.locator('.hanja-pop__parts.is-unknown').waitFor();
+  const g=await popGeometry(h.page);
+  assertPopGeometry(g,{label:'术 1440',width:318});
+  assert.equal((await pop.locator('.hanja-pop__head').innerText()).replace(/\s+/g,' ').trim(),'术 shù → 術 재주 술');
+  assert.equal(await pop.locator('.hanja-pop__head .is-meaning, .hanja-pop__head .is-sound, .hanja-pop__parts .is-meaning, .hanja-pop__parts .is-sound').count(),0,'unknown role: no role colors');
+  assert.ok((await pop.locator('.hanja-pop__parts').innerText()).includes('역할 미상'));
+  assert.equal(await pop.locator('.hanja-pop__parts [title="삽주뿌리 출"]').count(),1,'original hun of 术 stays in the title');
+  if(process.env.COMPOSER_SCREENSHOTS)await h.page.screenshot({path:`${process.env.COMPOSER_SCREENSHOTS}/hanja-pop-shu-1440.png`});
+  assert.deepEqual(h.errors,[]);
+ }finally{await h.context.close();}
+});
+
+test('AE-R4: 일본어 자료는 글자 카드 그대로(한자 창 0)',{timeout:180000},async()=>{
+ const ja=build([[{text:'天気',base_form:'天気',furigana:'てんき',meaning:'날씨',pos:'명사'},{text:'。',base_form:'。',pos:'기호'}]],'Japanese');
+ const j=await open(ja);
+ try{
+  await tap(j,'id_0_0','날씨');
+  await visibleCard(j.page).locator('.word-fit__char',{hasText:'天'}).click();
+  await visibleCard(j.page).locator('.char-inspect').waitFor();
+  assert.equal(await visibleCard(j.page).locator('.hanja-pop').count(),0);
+  assert.deepEqual(j.errors,[]);
+ }finally{await j.context.close();}
+});
