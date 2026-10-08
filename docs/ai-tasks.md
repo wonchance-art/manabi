@@ -886,6 +886,7 @@
   2차(같은 날 오너 지시): 코스 탭 상단 달력·바퀴 진행 막대, Day 줄 = 날짜 + Ch·일본어 패턴·한국어(옛 /nihongo 표시),
   화·목 + 한국 공휴일 제외(`krHolidays.js` 2026·2027 — 노동절·제헌절 반영, 표 밖 해는 경고), 마지막 Day = 수업+시험, 다음 수업일 휴강,
   휴강 뒤 다음 바퀴 자동. 날짜 변경은 팀 루트 소유자만 그 Day 줄에서(미리보기 → 저장, 뒤 일정 자동 재계산·원래대로). 계약 `classSchedule.test.js`·`classCourseScheduleRender.test.jsx`.
+  3차: 교재 원문 반영 — 대화 14편·예문 420(42×10), 한국어 해석·후리가나(분석기 생성 → 오독 16문장 사람 교정, 전 문장 정렬 계약). 응용 문장 칸 삭제(오너 결정). 원문 오탈자 5건 손질은 파일 머리에 기록.
 - **Codex 정지 중 학습 작업 인수 (2026-10-07 13:00 KST~, 오너 지시 — [인수 선언](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6030524345))**:
   기준 main `978ff6bd`. 작업마다 `claude/*` 브랜치를 쓴다(오너 허락). Codex 복귀 시 같은 파일 착수 전 #1337 최신 Claude 보고를 확인한다.
   - #1343 `claude/work-env-agent-setup-1v9a0a` — 앱·테스트 런타임 Node 24 정정(CLAUDE.md)·`.nvmrc`. CI green, 병합 승인 대기.
