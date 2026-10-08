@@ -47,7 +47,7 @@ export default function Nihongo42Page() {
               className="card"
               style={{ display: 'block', padding: '14px 16px', textDecoration: 'none', color: 'inherit' }}
             >
-              {/* 헤더 줄: Day N · Ch.X~Y */}
+              {/* 헤더 줄: Ch.X~Y (수업 한 회차 = 챕터 3개) */}
               <div
                 style={{
                   display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 9,
@@ -56,9 +56,6 @@ export default function Nihongo42Page() {
                 }}
               >
                 <span style={{ fontWeight: 800, fontSize: '1.02rem', color: THEME.color, whiteSpace: 'nowrap' }}>
-                  Day <span style={numSlot}>{d.day}</span>
-                </span>
-                <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                   Ch.<span style={numSlot}>{first}</span>~<span style={numSlot}>{last}</span>
                 </span>
                 <span style={{ marginLeft: 'auto', color: 'var(--text-muted)', fontSize: '0.95rem' }}>→</span>
@@ -99,7 +96,7 @@ export default function Nihongo42Page() {
       </div>
 
       <footer style={{ marginTop: 36, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-        Day 카드를 눌러 그날의 표현 3개를 패턴·예문과 함께 자세히 확인하세요.
+        카드를 눌러 챕터 3개의 표현을 패턴·예문과 함께 자세히 확인하세요.
       </footer>
     </div>
   );

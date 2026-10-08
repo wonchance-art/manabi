@@ -4,12 +4,17 @@
  * 구조 한 줄: 「수업 정리본 = 그날의 자료 행 하나, 팀 설정 = 루트 자료 하나」. 새 테이블 0 —
  * 팀·정리본 정보는 전부 `reading_materials.processed_json.metadata.team`에만 산다.
  *
- *   팀 루트 자료   metadata.team = { key, name, lang, bookKey, bookTotal, chapterId, pwHash, pwSalt, pwGen, root: true }
+ *   팀 루트 자료   metadata.team = { key, name, lang, bookKey, bookTotal, chapterId, course, pwHash, pwSalt, pwGen, root: true }
+ *                  course = 연결한 수업 코스 키(classCourse.COURSES) — 있으면 팀 페이지에 「코스」 탭
+ *                  schedule = 코스 일정(classSchedule) — { start, weekdays, moves, round }
  *   그날 정리본    metadata.team = { key, day, chapterId }   · raw_text = 항목마다 한 문단(빈 줄 구분)
  *
  * 항목을 문단(빈 줄)으로 가르는 이유: 분석 파이프라인(analyzeText)이 문단 단위로 재사용/재분석을
  * 가르므로, 한 항목 = 한 문단이어야 「추가 1건 = 재분석 그 줄만」 계약이 성립한다.
  */
+
+import { COURSE_KEY_RE } from './classCourse.js';
+import { parseSchedule } from './classSchedule.js';
 
 /** 팀 키 — URL 조각. 소문자·숫자·하이픈 1~16자, 하이픈으로 시작하지 않는다(`/class/a`). 생성 후 불변. */
 export const TEAM_KEY_RE = /^[a-z0-9][a-z0-9-]{0,15}$/;
@@ -34,6 +39,8 @@ export function getTeam(metadata) {
     out.bookKey = typeof t.bookKey === 'string' && t.bookKey ? t.bookKey : null;
     out.bookTotal = Number.isFinite(Number(t.bookTotal)) && Number(t.bookTotal) > 0 ? Number(t.bookTotal) : null;
     out.chapterId = t.chapterId != null && String(t.chapterId) ? String(t.chapterId) : null;
+    out.course = typeof t.course === 'string' && COURSE_KEY_RE.test(t.course) ? t.course : null;
+    out.schedule = parseSchedule(t.schedule);
     out.pwHash = typeof t.pwHash === 'string' ? t.pwHash : null;
     out.pwSalt = typeof t.pwSalt === 'string' ? t.pwSalt : null;
     out.pwGen = Number.isFinite(Number(t.pwGen)) ? Number(t.pwGen) : 0;
@@ -132,12 +139,13 @@ export function buildDayNoteRow({ team, day, ownerId, firstLine, chapterId = nul
 }
 
 /** 팀 루트 자료 행(신규). 암호는 **해시·솔트만** 받는다 — 평문은 이 모듈에 들어오지 않는다. */
-export function buildTeamRootRow({ key, name, lang, bookKey = null, bookTotal = null, pwHash, pwSalt, ownerId }) {
+export function buildTeamRootRow({ key, name, lang, bookKey = null, bookTotal = null, course = null, pwHash, pwSalt, ownerId }) {
   if (!isTeamKey(key)) throw new Error('팀 키는 소문자·숫자·하이픈 1~16자예요.');
   const team = {
     key, name: String(name || '').trim() || key, lang: lang || 'Japanese',
     ...(bookKey ? { bookKey } : {}),
     ...(Number(bookTotal) > 0 ? { bookTotal: Number(bookTotal) } : {}),
+    ...(course && COURSE_KEY_RE.test(course) ? { course } : {}),
     pwHash, pwSalt, pwGen: 1, root: true,
   };
   return {
