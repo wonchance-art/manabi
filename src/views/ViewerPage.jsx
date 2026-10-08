@@ -1638,6 +1638,8 @@ export default function ViewerPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify({
+          // 서버는 이 자료의 소유자(또는 관리자)·이 자료에 있는 단어인지 확인한 뒤에만 승격한다.
+          material_id: id,
           base_form: token.sep_link || token.base_form || token.text,
           language: materialLang,
           corrections,
