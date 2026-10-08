@@ -1,0 +1,824 @@
+{
+  "plain": {
+    "status": 200,
+    "calls": [
+      {
+        "tier": "light",
+        "route": "disambiguateZhPos",
+        "prompt": "다음은 중국어 문장 목록과, 각 문장에서 품사를 판정할 단어 목록입니다.\n\n## 문장\n1. 他一个人去旅行。\n2. 不客气。\n3. 运动员的身体素质非常好。\n4. 得了，别再说了。\n5. 这个人才来了三天。\n\n## 단어\n1. \"人\" (문장 1)\n2. \"去\" (문장 1)\n3. \"旅行\" (문장 1)\n4. \"客气\" (문장 2)\n5. \"运动员\" (문장 3)\n6. \"身体\" (문장 3)\n7. \"素质\" (문장 3)\n8. \"好\" (문장 3)\n9. \"得\" (문장 4)\n10. \"人才\" (문장 5)\n11. \"来\" (문장 5)\n\n각 단어에 대해 JSON 배열로 답하세요.\n\n## 출력 형식 (단어 목록과 순서·길이 정확히 일치)\n[\n  { \"all\": [\"동사\", \"명사\"], \"pos\": \"동사\" },\n  { \"all\": [\"명사\"], \"pos\": \"명사\" },\n  { \"all\": [], \"pos\": null, \"split\": [{\"t\": \"笔\", \"pos\": \"명사\"}, {\"t\": \"在\", \"pos\": \"전치사\"}] },\n  ...\n]\n\n## 규칙\n- all: 이 단어가 중국어에서 일반적으로 갖는 품사 후보 (흔한 순, 1~3개)\n- pos: 지정된 문장의 맥락에서 이 단어가 실제로 쓰인 품사 — 반드시 all 중 하나\n- split: [단어성 판정] 표시 항목만 — 이 표기가 실제 쓰이는 한 단어(신조어·전문어·고유명사\n  포함)면 split을 넣지 말 것. 별개 단어들이 우연히 이웃해 붙은 조합일 때만 순서대로\n  분해해 각 부분의 표기(t)와 그 문장에서의 품사(pos)를 적을 것 (부분들을 이으면 원 표기와\n  정확히 일치해야 함)\n- 품사 명칭: 명사/동사/형용사/부사/전치사/접속사/조사/대명사/양사/수사/감탄사/성어/지명/인명/고유명사\n- 설명/주석 금지, JSON만 출력",
+        "opts": {
+          "temperature": 0,
+          "timeoutMs": 15000,
+          "groq": false,
+          "route": "disambiguateZhPos"
+        }
+      }
+    ],
+    "ops": [
+      {
+        "table": "morpheme_dictionary",
+        "op": "select",
+        "filters": [
+          [
+            "eq",
+            "language",
+            "Chinese"
+          ],
+          [
+            "in",
+            "base_form",
+            [
+              "他",
+              "一",
+              "个",
+              "人",
+              "去",
+              "旅行",
+              "。",
+              "不",
+              "客气",
+              "运动员",
+              "的",
+              "身体",
+              "素质",
+              "非常",
+              "好",
+              "得",
+              "了",
+              "，",
+              "别",
+              "再说",
+              "这个",
+              "人才",
+              "来",
+              "三天"
+            ]
+          ]
+        ],
+        "cols": "base_form, meanings, pos, reading, source"
+      },
+      {
+        "rpc": "touch_morphemes",
+        "args": {
+          "lang": "Chinese",
+          "base_forms": [
+            "他",
+            "一",
+            "个",
+            "人",
+            "去",
+            "旅行",
+            "不",
+            "客气",
+            "运动员",
+            "的",
+            "身体",
+            "素质",
+            "非常",
+            "好",
+            "得",
+            "了",
+            "别",
+            "再说",
+            "这个",
+            "人才",
+            "来",
+            "三天"
+          ]
+        }
+      }
+    ],
+    "body": {
+      "results": [
+        {
+          "sequence": [
+            "id_0_0_1791428400000",
+            "id_0_1_1791428400000",
+            "id_0_2_1791428400000",
+            "id_0_3_1791428400000",
+            "id_0_4_1791428400000",
+            "id_0_5_1791428400000",
+            "id_0_6_1791428400000"
+          ],
+          "dictionary": {
+            "id_0_0_1791428400000": {
+              "text": "他",
+              "furigana": "tā",
+              "pos": "대명사",
+              "meaning": "그",
+              "base_form": "他"
+            },
+            "id_0_1_1791428400000": {
+              "text": "一",
+              "furigana": "yí",
+              "pos": "수사",
+              "meaning": "하나",
+              "base_form": "一"
+            },
+            "id_0_2_1791428400000": {
+              "text": "个",
+              "furigana": "ge",
+              "pos": "양사",
+              "meaning": "개",
+              "base_form": "个"
+            },
+            "id_0_3_1791428400000": {
+              "text": "人",
+              "furigana": "rén",
+              "pos": "명사",
+              "meaning": "사람",
+              "base_form": "人"
+            },
+            "id_0_4_1791428400000": {
+              "text": "去",
+              "furigana": "qù",
+              "pos": "명사",
+              "meaning": "가다",
+              "base_form": "去"
+            },
+            "id_0_5_1791428400000": {
+              "text": "旅行",
+              "furigana": "lǚ xíng",
+              "pos": "동사",
+              "meaning": "여행하다",
+              "base_form": "旅行",
+              "pos_all": "동사·명사"
+            },
+            "id_0_6_1791428400000": {
+              "text": "。",
+              "furigana": null,
+              "pos": "기호",
+              "meaning": "",
+              "base_form": "。"
+            }
+          }
+        },
+        {
+          "sequence": [
+            "id_1_0_1791428400000",
+            "id_1_1_1791428400000",
+            "id_1_2_1791428400000"
+          ],
+          "dictionary": {
+            "id_1_0_1791428400000": {
+              "text": "不",
+              "furigana": "bú",
+              "pos": "부사",
+              "meaning": "아니다",
+              "base_form": "不"
+            },
+            "id_1_1_1791428400000": {
+              "text": "客气",
+              "furigana": "kè qi",
+              "pos": "형용사",
+              "meaning": "예의 바르다",
+              "base_form": "客气"
+            },
+            "id_1_2_1791428400000": {
+              "text": "。",
+              "furigana": null,
+              "pos": "기호",
+              "meaning": "",
+              "base_form": "。"
+            }
+          }
+        },
+        {
+          "sequence": [
+            "id_2_0_1791428400000",
+            "id_2_1_1791428400000",
+            "id_2_2_1791428400000",
+            "id_2_3_1791428400000",
+            "id_2_4_1791428400000",
+            "id_2_5_1791428400000",
+            "id_2_6_1791428400000"
+          ],
+          "dictionary": {
+            "id_2_0_1791428400000": {
+              "text": "运动员",
+              "furigana": "yùn dòng yuán",
+              "pos": "명사",
+              "meaning": "운동선수",
+              "base_form": "运动员"
+            },
+            "id_2_1_1791428400000": {
+              "text": "的",
+              "furigana": "de",
+              "pos": "조사",
+              "meaning": "~의",
+              "base_form": "的"
+            },
+            "id_2_2_1791428400000": {
+              "text": "身体",
+              "furigana": "shēn tǐ",
+              "pos": "명사",
+              "meaning": "몸",
+              "base_form": "身体"
+            },
+            "id_2_3_1791428400000": {
+              "text": "素质",
+              "furigana": "sù zhì",
+              "pos": "명사",
+              "meaning": "자질",
+              "base_form": "素质"
+            },
+            "id_2_4_1791428400000": {
+              "text": "非常",
+              "furigana": "fēi cháng",
+              "pos": "부사",
+              "meaning": "매우",
+              "base_form": "非常"
+            },
+            "id_2_5_1791428400000": {
+              "text": "好",
+              "furigana": "hǎo",
+              "pos": "명사",
+              "meaning": "좋다",
+              "base_form": "好"
+            },
+            "id_2_6_1791428400000": {
+              "text": "。",
+              "furigana": null,
+              "pos": "기호",
+              "meaning": "",
+              "base_form": "。"
+            }
+          }
+        },
+        {
+          "sequence": [
+            "id_3_0_1791428400000",
+            "id_3_1_1791428400000",
+            "id_3_2_1791428400000",
+            "id_3_3_1791428400000",
+            "id_3_4_1791428400000",
+            "id_3_5_1791428400000",
+            "id_3_6_1791428400000"
+          ],
+          "dictionary": {
+            "id_3_0_1791428400000": {
+              "text": "得",
+              "furigana": "dé",
+              "pos": "동사",
+              "meaning": "얻다",
+              "base_form": "得",
+              "pos_all": "조사·동사"
+            },
+            "id_3_1_1791428400000": {
+              "text": "了",
+              "furigana": "le",
+              "pos": "조사",
+              "meaning": "완료",
+              "base_form": "了"
+            },
+            "id_3_2_1791428400000": {
+              "text": "，",
+              "furigana": null,
+              "pos": "기호",
+              "meaning": "",
+              "base_form": "，"
+            },
+            "id_3_3_1791428400000": {
+              "text": "别",
+              "furigana": "bié",
+              "pos": "부사",
+              "meaning": "~하지 마라",
+              "base_form": "别"
+            },
+            "id_3_4_1791428400000": {
+              "text": "再说",
+              "furigana": "zài shuō",
+              "pos": "접속사",
+              "meaning": "게다가",
+              "base_form": "再说"
+            },
+            "id_3_5_1791428400000": {
+              "text": "了",
+              "furigana": "le",
+              "pos": "조사",
+              "meaning": "완료",
+              "base_form": "了"
+            },
+            "id_3_6_1791428400000": {
+              "text": "。",
+              "furigana": null,
+              "pos": "기호",
+              "meaning": "",
+              "base_form": "。"
+            }
+          }
+        },
+        {
+          "sequence": [
+            "id_4_0_1791428400000",
+            "id_4_1_1791428400000",
+            "id_4_2_1791428400000",
+            "id_4_3_1791428400000",
+            "id_4_4_1791428400000",
+            "id_4_5_1791428400000"
+          ],
+          "dictionary": {
+            "id_4_0_1791428400000": {
+              "text": "这个",
+              "furigana": "zhè ge",
+              "pos": "대명사",
+              "meaning": "이것",
+              "base_form": "这个"
+            },
+            "id_4_1_1791428400000": {
+              "text": "人才",
+              "furigana": "rén cái",
+              "pos": "명사",
+              "meaning": "인재",
+              "base_form": "人才"
+            },
+            "id_4_2_1791428400000": {
+              "text": "来",
+              "furigana": "lái",
+              "pos": "명사",
+              "meaning": "오다",
+              "base_form": "来"
+            },
+            "id_4_3_1791428400000": {
+              "text": "了",
+              "furigana": "le",
+              "pos": "조사",
+              "meaning": "완료",
+              "base_form": "了"
+            },
+            "id_4_4_1791428400000": {
+              "text": "三天",
+              "furigana": "sān tiān",
+              "pos": "수사",
+              "meaning": "사흘",
+              "base_form": "三天"
+            },
+            "id_4_5_1791428400000": {
+              "text": "。",
+              "furigana": null,
+              "pos": "기호",
+              "meaning": "",
+              "base_form": "。"
+            }
+          }
+        }
+      ],
+      "stats": {
+        "totalTokens": 24,
+        "cacheHits": 22,
+        "geminiCalls": 0,
+        "enPos": {
+          "marks": 0,
+          "httpCalls": 0,
+          "backfillRows": 0,
+          "fallbacks": 0
+        }
+      }
+    }
+  },
+  "withRecords": {
+    "status": 200,
+    "calls": [
+      {
+        "tier": "light",
+        "route": "disambiguateZhPos",
+        "prompt": "다음은 중국어 문장 목록과, 각 문장에서 품사를 판정할 단어 목록입니다.\n\n## 문장\n1. 他一个人去旅行。\n2. 不客气。\n3. 运动员的身体素质非常好。\n4. 得了，别再说了。\n5. 这个人才来了三天。\n\n## 단어\n1. \"人\" (문장 1)\n2. \"去\" (문장 1)\n3. \"旅行\" (문장 1)\n4. \"客气\" (문장 2)\n5. \"运动员\" (문장 3)\n6. \"身体\" (문장 3)\n7. \"素质\" (문장 3)\n8. \"好\" (문장 3)\n9. \"得\" (문장 4)\n10. \"人才\" (문장 5)\n11. \"来\" (문장 5)\n\n각 단어에 대해 JSON 배열로 답하세요.\n\n## 출력 형식 (단어 목록과 순서·길이 정확히 일치)\n[\n  { \"all\": [\"동사\", \"명사\"], \"pos\": \"동사\" },\n  { \"all\": [\"명사\"], \"pos\": \"명사\" },\n  { \"all\": [], \"pos\": null, \"split\": [{\"t\": \"笔\", \"pos\": \"명사\"}, {\"t\": \"在\", \"pos\": \"전치사\"}] },\n  ...\n]\n\n## 규칙\n- all: 이 단어가 중국어에서 일반적으로 갖는 품사 후보 (흔한 순, 1~3개)\n- pos: 지정된 문장의 맥락에서 이 단어가 실제로 쓰인 품사 — 반드시 all 중 하나\n- split: [단어성 판정] 표시 항목만 — 이 표기가 실제 쓰이는 한 단어(신조어·전문어·고유명사\n  포함)면 split을 넣지 말 것. 별개 단어들이 우연히 이웃해 붙은 조합일 때만 순서대로\n  분해해 각 부분의 표기(t)와 그 문장에서의 품사(pos)를 적을 것 (부분들을 이으면 원 표기와\n  정확히 일치해야 함)\n- 품사 명칭: 명사/동사/형용사/부사/전치사/접속사/조사/대명사/양사/수사/감탄사/성어/지명/인명/고유명사\n- 설명/주석 금지, JSON만 출력",
+        "opts": {
+          "temperature": 0,
+          "timeoutMs": 15000,
+          "groq": false,
+          "route": "disambiguateZhPos"
+        }
+      }
+    ],
+    "ops": [
+      {
+        "table": "morpheme_dictionary",
+        "op": "select",
+        "filters": [
+          [
+            "eq",
+            "language",
+            "Chinese"
+          ],
+          [
+            "in",
+            "base_form",
+            [
+              "他",
+              "一",
+              "个",
+              "人",
+              "去",
+              "旅行",
+              "。",
+              "不",
+              "客气",
+              "运动员",
+              "的",
+              "身体",
+              "素质",
+              "非常",
+              "好",
+              "得",
+              "了",
+              "，",
+              "别",
+              "再说",
+              "这个",
+              "人才",
+              "来",
+              "三天"
+            ]
+          ]
+        ],
+        "cols": "base_form, meanings, pos, reading, source"
+      },
+      {
+        "rpc": "touch_morphemes",
+        "args": {
+          "lang": "Chinese",
+          "base_forms": [
+            "他",
+            "一",
+            "个",
+            "人",
+            "去",
+            "旅行",
+            "不",
+            "客气",
+            "运动员",
+            "的",
+            "身体",
+            "素质",
+            "非常",
+            "好",
+            "得",
+            "了",
+            "别",
+            "再说",
+            "这个",
+            "人才",
+            "来",
+            "三天"
+          ]
+        }
+      }
+    ],
+    "body": {
+      "results": [
+        {
+          "sequence": [
+            "id_0_0_1791428400000",
+            "id_0_1_1791428400000",
+            "id_0_2_1791428400000",
+            "id_0_3_1791428400000",
+            "id_0_4_1791428400000",
+            "id_0_5_1791428400000",
+            "id_0_6_1791428400000"
+          ],
+          "dictionary": {
+            "id_0_0_1791428400000": {
+              "text": "他",
+              "furigana": "tā",
+              "pos": "대명사",
+              "meaning": "그",
+              "base_form": "他"
+            },
+            "id_0_1_1791428400000": {
+              "text": "一",
+              "furigana": "yí",
+              "pos": "수사",
+              "meaning": "하나",
+              "base_form": "一"
+            },
+            "id_0_2_1791428400000": {
+              "text": "个",
+              "furigana": "ge",
+              "pos": "양사",
+              "meaning": "개",
+              "base_form": "个"
+            },
+            "id_0_3_1791428400000": {
+              "text": "人",
+              "furigana": "rén",
+              "pos": "명사",
+              "meaning": "사람",
+              "base_form": "人"
+            },
+            "id_0_4_1791428400000": {
+              "text": "去",
+              "furigana": "qù",
+              "pos": "명사",
+              "meaning": "가다",
+              "base_form": "去"
+            },
+            "id_0_5_1791428400000": {
+              "text": "旅行",
+              "furigana": "lǚ xíng",
+              "pos": "동사",
+              "meaning": "여행하다",
+              "base_form": "旅行",
+              "pos_all": "동사·명사"
+            },
+            "id_0_6_1791428400000": {
+              "text": "。",
+              "furigana": null,
+              "pos": "기호",
+              "meaning": "",
+              "base_form": "。"
+            }
+          },
+          "boundaryApplied": [
+            {
+              "id": "b_0_2_4",
+              "status": "pending",
+              "reason": "text_mismatch",
+              "base": []
+            }
+          ]
+        },
+        {
+          "sequence": [
+            "id_1_0_1791428400000",
+            "id_1_1_1791428400000",
+            "id_1_2_1791428400000"
+          ],
+          "dictionary": {
+            "id_1_0_1791428400000": {
+              "text": "不",
+              "furigana": "bú",
+              "pos": "부사",
+              "meaning": "아니다",
+              "base_form": "不",
+              "boundary": "user"
+            },
+            "id_1_1_1791428400000": {
+              "text": "客气",
+              "furigana": "kè qi",
+              "pos": "형용사",
+              "meaning": "예의 바르다",
+              "base_form": "客气",
+              "boundary": "user"
+            },
+            "id_1_2_1791428400000": {
+              "text": "。",
+              "furigana": null,
+              "pos": "기호",
+              "meaning": "",
+              "base_form": "。"
+            }
+          },
+          "boundaryApplied": [
+            {
+              "id": "b_1_0_3",
+              "status": "applied",
+              "start": 0,
+              "end": 3,
+              "cuts": [
+                1
+              ],
+              "base": [
+                {
+                  "text": "不",
+                  "furigana": "bú",
+                  "pos": "부사",
+                  "meaning": "아니다",
+                  "base_form": "不"
+                },
+                {
+                  "text": "客气",
+                  "furigana": "kè qi",
+                  "pos": "형용사",
+                  "meaning": "예의 바르다",
+                  "base_form": "客气"
+                }
+              ],
+              "redundant": true
+            }
+          ]
+        },
+        {
+          "sequence": [
+            "id_2_0_1791428400000",
+            "id_2_1_1791428400000",
+            "id_2_2_1791428400000",
+            "id_2_3_1791428400000",
+            "id_2_4_1791428400000",
+            "id_2_5_1791428400000",
+            "id_2_6_1791428400000"
+          ],
+          "dictionary": {
+            "id_2_0_1791428400000": {
+              "text": "运动员",
+              "furigana": "yùn dòng yuán",
+              "pos": "명사",
+              "meaning": "운동선수",
+              "base_form": "运动员"
+            },
+            "id_2_1_1791428400000": {
+              "text": "的",
+              "furigana": "de",
+              "pos": "조사",
+              "meaning": "~의",
+              "base_form": "的"
+            },
+            "id_2_2_1791428400000": {
+              "text": "身体",
+              "furigana": "shēn tǐ",
+              "pos": "명사",
+              "meaning": "몸",
+              "base_form": "身体",
+              "boundary": "user"
+            },
+            "id_2_3_1791428400000": {
+              "text": "素质",
+              "furigana": "sù zhì",
+              "pos": "명사",
+              "meaning": "자질",
+              "base_form": "素质",
+              "boundary": "user"
+            },
+            "id_2_4_1791428400000": {
+              "text": "非常",
+              "furigana": "fēi cháng",
+              "pos": "부사",
+              "meaning": "매우",
+              "base_form": "非常"
+            },
+            "id_2_5_1791428400000": {
+              "text": "好",
+              "furigana": "hǎo",
+              "pos": "명사",
+              "meaning": "좋다",
+              "base_form": "好"
+            },
+            "id_2_6_1791428400000": {
+              "text": "。",
+              "furigana": null,
+              "pos": "기호",
+              "meaning": "",
+              "base_form": "。"
+            }
+          },
+          "boundaryApplied": [
+            {
+              "id": "b_2_4_8",
+              "status": "applied",
+              "start": 4,
+              "end": 8,
+              "cuts": [
+                6
+              ],
+              "base": [
+                {
+                  "text": "身体",
+                  "furigana": "shēn tǐ",
+                  "pos": "명사",
+                  "meaning": "몸",
+                  "base_form": "身体"
+                },
+                {
+                  "text": "素质",
+                  "furigana": "sù zhì",
+                  "pos": "명사",
+                  "meaning": "자질",
+                  "base_form": "素质"
+                }
+              ],
+              "redundant": true
+            }
+          ]
+        },
+        {
+          "sequence": [
+            "id_3_0_1791428400000",
+            "id_3_1_1791428400000",
+            "id_3_2_1791428400000",
+            "id_3_3_1791428400000",
+            "id_3_4_1791428400000",
+            "id_3_5_1791428400000",
+            "id_3_6_1791428400000"
+          ],
+          "dictionary": {
+            "id_3_0_1791428400000": {
+              "text": "得",
+              "furigana": "dé",
+              "pos": "동사",
+              "meaning": "얻다",
+              "base_form": "得",
+              "pos_all": "조사·동사"
+            },
+            "id_3_1_1791428400000": {
+              "text": "了",
+              "furigana": "le",
+              "pos": "조사",
+              "meaning": "완료",
+              "base_form": "了"
+            },
+            "id_3_2_1791428400000": {
+              "text": "，",
+              "furigana": null,
+              "pos": "기호",
+              "meaning": "",
+              "base_form": "，"
+            },
+            "id_3_3_1791428400000": {
+              "text": "别",
+              "furigana": "bié",
+              "pos": "부사",
+              "meaning": "~하지 마라",
+              "base_form": "别"
+            },
+            "id_3_4_1791428400000": {
+              "text": "再说",
+              "furigana": "zài shuō",
+              "pos": "접속사",
+              "meaning": "게다가",
+              "base_form": "再说"
+            },
+            "id_3_5_1791428400000": {
+              "text": "了",
+              "furigana": "le",
+              "pos": "조사",
+              "meaning": "완료",
+              "base_form": "了"
+            },
+            "id_3_6_1791428400000": {
+              "text": "。",
+              "furigana": null,
+              "pos": "기호",
+              "meaning": "",
+              "base_form": "。"
+            }
+          }
+        },
+        {
+          "sequence": [
+            "id_4_0_1791428400000",
+            "id_4_1_1791428400000",
+            "id_4_2_1791428400000",
+            "id_4_3_1791428400000",
+            "id_4_4_1791428400000",
+            "id_4_5_1791428400000"
+          ],
+          "dictionary": {
+            "id_4_0_1791428400000": {
+              "text": "这个",
+              "furigana": "zhè ge",
+              "pos": "대명사",
+              "meaning": "이것",
+              "base_form": "这个"
+            },
+            "id_4_1_1791428400000": {
+              "text": "人才",
+              "furigana": "rén cái",
+              "pos": "명사",
+              "meaning": "인재",
+              "base_form": "人才"
+            },
+            "id_4_2_1791428400000": {
+              "text": "来",
+              "furigana": "lái",
+              "pos": "명사",
+              "meaning": "오다",
+              "base_form": "来"
+            },
+            "id_4_3_1791428400000": {
+              "text": "了",
+              "furigana": "le",
+              "pos": "조사",
+              "meaning": "완료",
+              "base_form": "了"
+            },
+            "id_4_4_1791428400000": {
+              "text": "三天",
+              "furigana": "sān tiān",
+              "pos": "수사",
+              "meaning": "사흘",
+              "base_form": "三天"
+            },
+            "id_4_5_1791428400000": {
+              "text": "。",
+              "furigana": null,
+              "pos": "기호",
+              "meaning": "",
+              "base_form": "。"
+            }
+          }
+        }
+      ],
+      "stats": {
+        "totalTokens": 24,
+        "cacheHits": 22,
+        "geminiCalls": 0,
+        "enPos": {
+          "marks": 0,
+          "httpCalls": 0,
+          "backfillRows": 0,
+          "fallbacks": 0
+        }
+      }
+    }
+  }
+}
