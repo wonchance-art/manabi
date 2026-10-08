@@ -1,0 +1,219 @@
+import { describe, expect, it } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+import {
+  COURSES, courseInfo, buildCoursePayload, coursePool, buildTestSheet, levelQuota, passMark, siblingChapters,
+  dayProgress, TEST_SIZE, PASS_MARK,
+} from '../classCourse.js';
+import { loadCourse } from '../server/classCourse.js';
+import nihongo42Class from '../../content/community/nihongo42Class.js';
+import { getTeam, buildTeamRootRow } from '../classBoard.js';
+import { indexFromRows } from '../server/classIndex.js';
+import { classSettingsPatch } from '../classWorkspace.js';
+
+/**
+ * 계약: 수업 코스 + 테스트 (오너 확정 2026-10-08).
+ * - 섹션 이름은 오너가 정했다: 함께 읽고 연습 · 예문 연습 · 응용 문장 번역해보기. 빈 칸은 「아직 입력되지 않았어요」
+ * - 시험 = 코스 전체 예문에서 10문제 · 8문제 이상 합격 · 모두 다른 패턴 · Day당 1문제 · 비슷한 패턴 묶음당 1문제
+ *   · 난이도 3/4/3 · 같은 시험지 번호 = 같은 시험지
+ * - 교재 문장 파일은 서버 라우트만 읽는다(팀 암호 뒤) — 클라이언트 번들 import 금지
+ */
+
+const root = process.cwd();
+const read = (f) => fs.readFileSync(path.join(root, f), 'utf8');
+
+/** 42챕터 × 10문장 가짜 코스 — 문장 길이를 섞어 난이도 3분위가 고루 생기게. */
+function fakeCourse({ days = 14, drills = 10, lv = null } = {}) {
+  const base = { title: 'T', subtitle: 'S', days: [] };
+  const practice = {};
+  let n = 0;
+  for (let d = 1; d <= days; d += 1) {
+    const chapters = [];
+    for (let k = 0; k < 3; k += 1) {
+      n += 1;
+      chapters.push({ n, title: `패턴${n}`, jp: [`~p${n}`], ko: ['k'] });
+      practice[n] = {
+        drills: Array.from({ length: drills }, (_, i) => ({ ja: 'あ'.repeat(5 + ((i * 7 + n) % 25)) + '。', ko: `문장 ${n}-${i}`, ...(lv ? { lv } : {}) })),
+        apply: [],
+      };
+    }
+    base.days.push({ day: d, range: `Ch.${n - 2}~${n}`, chapters });
+  }
+  return buildCoursePayload(base, { key: 'fake', families: nihongo42Class.families, days: [], practice });
+}
+
+describe('코스 데이터 — nihongo42', () => {
+  const course = loadCourse('nihongo42');
+
+  it('등록된 코스만 열리고, 14일 × 3패턴 = 42챕터', () => {
+    expect(courseInfo('nihongo42')).toBe(COURSES.nihongo42);
+    expect(courseInfo('nope')).toBeNull();
+    expect(loadCourse('nope')).toBeNull();
+    expect(course.days).toHaveLength(14);
+    expect(course.days.flatMap((d) => d.chapters.map((c) => c.n))).toEqual(Array.from({ length: 42 }, (_, i) => i + 1));
+  });
+
+  it('Day마다 문화·여행 카드 한 장(제목·장소·본문·일본어 한 문장)', () => {
+    for (const d of course.days) {
+      expect(d.culture?.title, `Day ${d.day}`).toBeTruthy();
+      expect(d.culture.place).toBeTruthy();
+      expect(d.culture.body.length).toBeGreaterThan(60);
+      expect(d.culture.phrase.ja).toMatch(/[ぁ-んァ-ン一-龯]/);
+      expect(d.culture.phrase.ko).toBeTruthy();
+    }
+  });
+
+  it('입력된 교재 문장은 형식을 지킨다 — 예문은 일본어·한국어 둘 다, 챕터당 예문 ≤10 · 응용 ≤3', () => {
+    for (const [n, p] of Object.entries(nihongo42Class.practice)) {
+      expect(Number(n)).toBeGreaterThanOrEqual(1);
+      expect(Number(n)).toBeLessThanOrEqual(42);
+      expect(p.drills.length, `Ch.${n}`).toBeLessThanOrEqual(10);
+      expect(p.apply.length, `Ch.${n}`).toBeLessThanOrEqual(3);
+      for (const d of p.drills) { expect(d.ja, `Ch.${n}`).toBeTruthy(); expect(d.ko, `Ch.${n}`).toBeTruthy(); if (d.lv != null) expect([1, 2, 3]).toContain(d.lv); }
+      for (const a of p.apply) expect(a.ko, `Ch.${n}`).toBeTruthy();
+    }
+    for (const d of nihongo42Class.days) for (const l of d.dialogue) expect(l.ja, `Day ${d.day}`).toBeTruthy();
+  });
+
+  it('비슷한 패턴 묶음은 실제 챕터만, 묶음마다 두 챕터 이상', () => {
+    for (const f of course.families) {
+      expect(f.chapters.length).toBeGreaterThanOrEqual(2);
+      for (const n of f.chapters) expect(n >= 1 && n <= 42).toBe(true);
+    }
+    expect(siblingChapters(16, course.families)).toEqual([17]);
+    expect(siblingChapters(1, course.families)).toEqual([]);
+  });
+
+  it('입력 현황 — 비어 있으면 0/30', () => {
+    const empty = { chapters: [{ drills: [], apply: [] }, { drills: [], apply: [] }, { drills: [], apply: [] }], dialogue: [] };
+    expect(dayProgress(empty)).toMatchObject({ drills: 0, drillsTotal: 30, apply: 0, applyTotal: 9, dialogue: 0 });
+  });
+});
+
+describe('시험지 — 42챕터가 다 찼을 때', () => {
+  const course = fakeCourse();
+  const pool = coursePool(course);
+  const famOf = (n) => course.families.map((f, k) => (f.chapters.includes(n) ? k : -1)).filter((k) => k >= 0);
+
+  it('합격선 8/10 · 난이도 배분 3/4/3', () => {
+    expect(TEST_SIZE).toBe(10);
+    expect(PASS_MARK).toBe(8);
+    expect(passMark(10)).toBe(8);
+    expect(levelQuota(10)).toEqual({ 1: 3, 2: 4, 3: 3 });
+  });
+
+  it('난이도 자동 추정은 3분위로 고르게, 지정한 lv는 그대로', () => {
+    const counts = { 1: 0, 2: 0, 3: 0 };
+    pool.forEach((x) => { counts[x.lv] += 1; });
+    expect(counts).toEqual({ 1: 140, 2: 140, 3: 140 });
+    expect(coursePool(fakeCourse({ lv: 3 })).every((x) => x.lv === 3)).toBe(true);
+  });
+
+  it('300개 시험지 전부: 10문제 · 패턴 중복 0 · Day당 1문제 · 묶음당 1문제 · 3/4/3 · 첫 문제는 쉬움', () => {
+    for (let seed = 1000; seed < 1300; seed += 1) {
+      const sheet = buildTestSheet(pool, course.families, { seed });
+      expect(sheet.items).toHaveLength(10);
+      expect(sheet.note).toBeNull();
+      expect(new Set(sheet.items.map((x) => x.n)).size).toBe(10);
+      expect(new Set(sheet.items.map((x) => x.day)).size).toBe(10);
+      const fams = sheet.items.flatMap((x) => famOf(x.n));
+      expect(new Set(fams).size, `seed ${seed}`).toBe(fams.length);
+      const lv = { 1: 0, 2: 0, 3: 0 };
+      sheet.items.forEach((x) => { lv[x.lv] += 1; });
+      expect(lv, `seed ${seed}`).toEqual({ 1: 3, 2: 4, 3: 3 });
+      expect(sheet.items[0].lv).toBe(1);
+    }
+  });
+
+  it('같은 시험지 번호 = 같은 시험지, 다른 번호는 다른 시험지', () => {
+    const a = buildTestSheet(pool, course.families, { seed: 4821 }).items.map((x) => x.id);
+    expect(buildTestSheet(pool, course.families, { seed: 4821 }).items.map((x) => x.id)).toEqual(a);
+    expect(buildTestSheet(pool, course.families, { seed: 4822 }).items.map((x) => x.id)).not.toEqual(a);
+  });
+
+  it('새 시험지는 직전 시험지 문장을 다시 내지 않는다', () => {
+    const first = buildTestSheet(pool, course.families, { seed: 1234 }).items.map((x) => x.id);
+    const next = buildTestSheet(pool, course.families, { seed: 5678, exclude: first }).items.map((x) => x.id);
+    expect(next.filter((id) => first.includes(id))).toEqual([]);
+  });
+});
+
+describe('시험지 — 입력이 덜 됐을 때', () => {
+  it('Day 1만(30문장) — 10문제를 내되 같은 패턴은 연속하지 않고 한 패턴에 몰리지 않는다 · 안내 문구', () => {
+    const pool = coursePool(fakeCourse({ days: 1 }));
+    for (let seed = 1; seed < 100; seed += 1) {
+      const sheet = buildTestSheet(pool, nihongo42Class.families, { seed });
+      expect(sheet.items).toHaveLength(10);
+      expect(sheet.note).toBeTruthy();
+      expect(new Set(sheet.items.map((x) => x.id)).size).toBe(10);
+      sheet.items.forEach((x, k) => { if (k) expect(x.n, `seed ${seed}`).not.toBe(sheet.items[k - 1].n); });
+      const per = {};
+      sheet.items.forEach((x) => { per[x.n] = (per[x.n] || 0) + 1; });
+      expect(Math.max(...Object.values(per))).toBeLessThanOrEqual(4);
+    }
+  });
+
+  it('예문이 10개보다 적으면 short — 화면은 시험 대신 입력 대기 안내', () => {
+    const pool = coursePool(fakeCourse({ days: 1, drills: 3 })).slice(0, 7);
+    const sheet = buildTestSheet(pool, [], { seed: 1 });
+    expect(sheet.short).toBe(true);
+    expect(sheet.items).toHaveLength(7);
+  });
+
+  it('지금 nihongo42는 예문 0개 — 풀이 비어 있다', () => {
+    expect(coursePool(loadCourse('nihongo42'))).toEqual([]);
+  });
+});
+
+describe('팀 ↔ 코스 연결', () => {
+  it('팀 루트 metadata.team.course — 형식이 맞을 때만 읽고, 목록 페이로드에 실린다', () => {
+    const meta = (course) => ({ team: { key: 'culcom', root: true, name: 'A', course } });
+    expect(getTeam(meta('nihongo42')).course).toBe('nihongo42');
+    expect(getTeam(meta('Bad Key!')).course).toBeNull();
+    expect(getTeam(meta(undefined)).course).toBeNull();
+    const row = buildTeamRootRow({ key: 'culcom', name: 'A', lang: 'Japanese', course: 'nihongo42', pwHash: 'h', pwSalt: 's', ownerId: 'u' });
+    expect(row.processed_json.metadata.team.course).toBe('nihongo42');
+    const team = getTeam(row.processed_json.metadata);
+    expect(indexFromRows({ team }).team.course).toBe('nihongo42');
+  });
+
+  it('설정 저장 — 등록된 코스만, 바뀌었을 때만 patch에 실린다', () => {
+    const team = { name: '수업', lang: 'Japanese', bookKey: null, course: null };
+    expect(classSettingsPatch(team, { ...team, course: 'nihongo42' }, [])).toMatchObject({ course: 'nihongo42' });
+    expect(classSettingsPatch({ ...team, course: 'nihongo42' }, { ...team, course: '' }, [])).toMatchObject({ course: null });
+    expect(classSettingsPatch(team, { ...team, course: '' }, [])).not.toHaveProperty('course');
+    expect(() => classSettingsPatch(team, { ...team, course: 'nope' }, [])).toThrow();
+  });
+});
+
+describe('공개 범위 — 교재 문장은 암호 뒤에서만', () => {
+  const walk = (dir) => fs.readdirSync(path.join(root, dir), { withFileTypes: true }).flatMap((e) => {
+    const p = `${dir}/${e.name}`;
+    if (e.isDirectory()) return e.name === '__tests__' ? [] : walk(p);
+    return /\.(jsx?|tsx?)$/.test(e.name) ? [p] : [];
+  });
+
+  it('nihongo42Class를 import하는 곳은 서버 모듈 하나뿐', () => {
+    const importers = walk('src').filter((f) => /(from\s*|import\s*\()['"][^'"]*nihongo42Class/.test(read(f)) && !f.endsWith('nihongo42Class.js'));
+    expect(importers).toEqual(['src/lib/server/classCourse.js']);
+    expect(read('src/lib/server/classCourse.js')).not.toMatch(/['"]use client['"]/);
+  });
+
+  it('코스 라우트 — 토큰은 목록과 같은 문, 토큰이 없으면 루트 소유자 로그인만, 코스 없으면 404, 캐시 금지', () => {
+    const src = read('src/app/api/class/[team]/course/route.js');
+    expect(src).toMatch(/authorizeTeamRequest\(request, key\)/);
+    expect(src).toMatch(/requireUser\(request\)/);
+    expect(src).toMatch(/loaded\.root\.owner_id !== auth\.user\.id/);
+    expect(src).toMatch(/'no_course' }, 404/);
+    expect(src).toMatch(/private, no-store/);
+  });
+});
+
+describe('화면 — 오너가 정한 섹션 이름', () => {
+  it('Day 페이지 세 섹션 · 빈 칸 문구 · 테스트 입구', () => {
+    const day = read('src/views/ClassCourseDayPage.jsx');
+    for (const name of ['함께 읽고 연습', '예문 연습', '응용 문장 번역해보기']) expect(day).toContain(name);
+    expect(read('src/components/classroom/ClassCourseUI.jsx')).toContain("PENDING_TEXT = '아직 입력되지 않았어요'");
+    expect(day).toContain('/test');
+  });
+});
