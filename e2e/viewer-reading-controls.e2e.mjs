@@ -160,7 +160,7 @@ async function fresh(width=1138,height=900,suffix=''){
 function pass(name){checks.push(name);console.log('PASS '+name);}
 async function shotAt(name){await page.screenshot({path:out+'/'+name+'.png'});}
 await context.addInitScript(()=>{window.SpeechRecognition=class{start(){window.__speechLang=this.lang;}stop(){this.onend?.();}abort(){this.onend?.();}};});
-async function aa(tab){await page.getByRole('button',{name:'읽기 설정',exact:true}).click();if(tab)await page.getByRole('tab',{name:tab,exact:true}).click();}
+async function aa(tab){await page.getByRole('button',{name:'Aa 읽기 설정',exact:true}).click();if(tab)await page.getByRole('tab',{name:tab,exact:true}).click();}
 async function closeAa(){await page.getByRole('button',{name:'읽기 설정 닫기',exact:true}).click();}
 const dialog=()=>page.getByRole('dialog',{name:'읽기 설정',exact:true});
 const panel=()=>page.locator('.viewer-inspector');
@@ -350,7 +350,7 @@ try {
  await page.setViewportSize({width:390,height:820});await delay(150);assert(Math.abs(await page.evaluate(()=>scrollY)-manualY)<2);pass('manual reading scroll wins over a later sheet resize');
  await fresh(390,844);await tap(wordA());await page.locator('.reader-card-body').getByRole('button',{name:'✦ 비슷한 말 찾기',exact:true}).click();await page.locator('.syn-ant__chip').first().waitFor();
  const controls=await page.locator('.save-grade').boundingBox(),panelBounds=await panel().boundingBox(),tabs=await page.locator('.viewer-inspector__tabs').boundingBox();assert(controls.y>=tabs.y+tabs.height&&controls.y+controls.height<=panelBounds.y+panelBounds.height);await shotAt('mobile-card-actions');pass('mobile grades remain fixed below scrolling details and a single top rail');
- await page.getByRole('button',{name:'읽기 설정',exact:true}).click();await page.keyboard.press('1');assert.equal(vocab.length,0);await page.keyboard.press('Escape');assert(await panel().isVisible());await page.getByRole('button',{name:'보조 패널 닫기',exact:true}).click();await page.keyboard.press('1');assert.equal(vocab.length,0);pass('modal and closed inspector cannot grade a hidden card');
+ await page.getByRole('button',{name:'Aa 읽기 설정',exact:true}).click();await page.keyboard.press('1');assert.equal(vocab.length,0);await page.keyboard.press('Escape');assert(await panel().isVisible());await page.getByRole('button',{name:'보조 패널 닫기',exact:true}).click();await page.keyboard.press('1');assert.equal(vocab.length,0);pass('modal and closed inspector cannot grade a hidden card');
  // Theme changes reach the body, native modal and inspector surfaces.
  for(const [choice,name] of [['dark','어둡게'],['light','밝게'],['sepia','종이']]){
   await aa('글자·배경');await page.getByRole('button',{name,exact:true}).click();const surface=await dialog().evaluate(e=>getComputedStyle(e).backgroundColor);assert.notEqual(surface,'rgba(0, 0, 0, 0)');await closeAa();await tap(wordA());assert.equal(await panel().evaluate(e=>getComputedStyle(e).backgroundColor),surface);assert.equal(await page.locator('.viewer-layout').getAttribute('data-reader-theme'),choice);await shotAt('mobile-theme-'+choice);await page.getByRole('button',{name:'보조 패널 닫기',exact:true}).click();

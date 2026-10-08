@@ -230,7 +230,7 @@ test('390 owner zh: 드래그 → [한 단어로 묶기] → 확인 줄(이 자�
   // 전체 재분석 → 서버 적용으로 유지(기록 applied, 묶은 토큰 id 승계)
   const mergedId=(await tokenTexts(f,0))[2];
   const mark2=f.requests.length;
-  await f.page.getByRole('button',{name:'자료 관리',exact:true}).click();
+  await f.page.getByRole('button',{name:'학습',exact:true}).click();await f.page.getByRole('dialog',{name:'학습'}).getByRole('button',{name:/^자료 관리/}).click(); // AD-R2 Q1 ③: 툴바 ⋯ → 「학습」 창 항목
   await f.page.locator('.reanalyze-panel__item').filter({hasText:'전체 분석'}).click();
   await f.page.getByText('분석 완료!',{exact:true}).waitFor({timeout:30000});
   assert.ok(f.analyze.some(b=>b.boundaries?.some(x=>x.text==='身体素质')),'reanalysis carries the record');
@@ -367,7 +367,7 @@ test('재분석에서 적용하지 못한 경계: 목업 알림 + [보기] → [
  const m=mergedZh();
  const f=await open(m,{pendingAll:true});
  try{
-  await f.page.getByRole('button',{name:'자료 관리',exact:true}).click();
+  await f.page.getByRole('button',{name:'학습',exact:true}).click();await f.page.getByRole('dialog',{name:'학습'}).getByRole('button',{name:/^자료 관리/}).click(); // AD-R2 Q1 ③: 툴바 ⋯ → 「학습」 창 항목
   await f.page.locator('.reanalyze-panel__item').filter({hasText:'전체 분석'}).click();
   const toast=f.page.getByText('분석을 다시 했어요. 직접 고친 단어 경계 1개는 이번 분석에 적용하지 못했어요.',{exact:false});
   await toast.waitFor({timeout:30000});
@@ -515,7 +515,7 @@ test('AD-R4 PR④ 390 owner zh: [아니요] → 원자 RPC 1회로 그 꼴만 �
   await f.page.waitForTimeout(600);
   assert.equal(await reviewLine(f).count(),0,'still dismissed after reload');
   // 전체 재분석 — 서버(흉내)가 身体에 후보 표식을 다시 달아도 접은 꼴은 접힌 채(원래 metadata를 이어 쓴다)
-  await f.page.getByRole('button',{name:'자료 관리',exact:true}).click();
+  await f.page.getByRole('button',{name:'학습',exact:true}).click();await f.page.getByRole('dialog',{name:'학습'}).getByRole('button',{name:/^자료 관리/}).click(); // AD-R2 Q1 ③: 툴바 ⋯ → 「학습」 창 항목
   await f.page.locator('.reanalyze-panel__item').filter({hasText:'전체 분석'}).click();
   await f.page.getByText('분석 완료!',{exact:true}).waitFor({timeout:30000});
   await until(()=>Object.values(row(f).processed_json.dictionary).some(t=>t.boundarySuggest==='身体素质'));

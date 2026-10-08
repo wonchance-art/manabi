@@ -6,7 +6,7 @@ import ViewerSheetMenu from './viewer/ViewerSheetMenu';
 export function resolveSignalTransition(leftRose,rightRose,preserveWordTab=false,sentenceRequested=false) {
   return leftRose||rightRose||sentenceRequested?{tab:sentenceRequested?'left':preserveWordTab?'right':leftRose?'left':'right'}:null;
 }
-export default function ViewerBottomSheet({leftContent,rightContent,leftActive,rightActive,leftSignal=0,rightSignal=0,sentenceTabSignal=0,barNav=null,onSentenceTab=null,menu=null,onClose,suppressed=false,onOpenChange,preserveFocus=false,preserveWordTab=false,actions=null,className='',uiLocale='ko'}) {
+export default function ViewerBottomSheet({leftContent,rightContent,leftActive,rightActive,leftSignal=0,rightSignal=0,sentenceTabSignal=0,barNav=null,onSentenceTab=null,menu=null,collapsedActions=null,onClose,suppressed=false,onOpenChange,onPresentChange,preserveFocus=false,preserveWordTab=false,actions=null,className='',uiLocale='ko'}) {
   const [tab,setTab]=useState('right'),[open,setOpen]=useState(false),[expanded,setExpanded]=useState(false);
   const prev=useRef({left:false,right:false,leftSignal,rightSignal,sentenceTabSignal});
   const root=useRef(null),drag=useRef(null),suppressedRef=useRef(suppressed);suppressedRef.current=suppressed;
@@ -19,6 +19,10 @@ export default function ViewerBottomSheet({leftContent,rightContent,leftActive,r
   },[leftActive,rightActive,leftSignal,rightSignal,sentenceTabSignal,preserveWordTab,open,tab]);
   useEffect(()=>{onOpenChange?.(open);},[open,onOpenChange]);
   useEffect(()=>()=>onOpenChange?.(false),[onOpenChange]);
+  // 패널이 바닥에 놓여 있는지(펼침·접힘 무관) — 접힌 머리줄과 다른 바닥 요소가 겹치지 않게 부모가 자리를 나눈다(AD-R2).
+  const present=!!(leftActive||rightActive);
+  useEffect(()=>{onPresentChange?.(present);},[present,onPresentChange]);
+  useEffect(()=>()=>onPresentChange?.(false),[onPresentChange]);
   useEffect(()=>{
     if(!open||suppressedRef.current||preserveFocus)return;
     if(root.current?.querySelector('.viewer-inspector__tabs')?.contains(document.activeElement))return;
@@ -42,7 +46,7 @@ export default function ViewerBottomSheet({leftContent,rightContent,leftActive,r
   </div>;
   return <aside ref={root} className={`viewer-inspector ${className}${expanded?' is-expanded':''}${!open?' is-collapsed':''}`} hidden={suppressed} lang={uiLocale} aria-label="읽기 보조 패널" {...localizedAria('읽기 보조 패널')} onMouseUp={e=>e.stopPropagation()} onKeyDown={e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close();}}}>
     <header className="viewer-inspector__header" onTouchStart={e=>{drag.current=e.target.closest('button')?null:e.touches[0].clientY;}} onTouchEnd={e=>{if(drag.current==null)return;const delta=e.changedTouches[0].clientY-drag.current;drag.current=null;if(delta>70)close();else if(delta < -45)setExpanded(true);}} onTouchCancel={()=>{drag.current=null;}}>
-      {tabs}{barNav&&<div className="viewer-inspector__nav" aria-label="문장 이동" {...localizedAria('문장 이동')}>{barNav}</div>}{open&&tab==='right'&&menu?.items?.length>0&&<ViewerSheetMenu label={menu.label} items={menu.items}/>}{open&&<><button className="viewer-inspector__expand" onClick={()=>setExpanded(v=>!v)} aria-label={t(uiLocale,expanded?'패널 줄이기':'패널 펼치기')} title={t(uiLocale,expanded?'패널 줄이기':'패널 펼치기')} data-icon-action><ActionIcon name={expanded?'collapse':'expand'}/></button><button className="viewer-inspector__close" onClick={close} aria-label="보조 패널 닫기" {...localizedAria('보조 패널 닫기')} title={t(uiLocale,'보조 패널 닫기')} data-icon-action><ActionIcon name="close"/></button></>}
+      {tabs}{barNav&&<div className="viewer-inspector__nav" aria-label="문장 이동" {...localizedAria('문장 이동')}>{barNav}</div>}{!open&&collapsedActions}{open&&tab==='right'&&menu?.items?.length>0&&<ViewerSheetMenu label={menu.label} items={menu.items}/>}{open&&<><button className="viewer-inspector__expand" onClick={()=>setExpanded(v=>!v)} aria-label={t(uiLocale,expanded?'패널 줄이기':'패널 펼치기')} title={t(uiLocale,expanded?'패널 줄이기':'패널 펼치기')} data-icon-action><ActionIcon name={expanded?'collapse':'expand'}/></button><button className="viewer-inspector__close" onClick={close} aria-label="보조 패널 닫기" {...localizedAria('보조 패널 닫기')} title={t(uiLocale,'보조 패널 닫기')} data-icon-action><ActionIcon name="close"/></button></>}
     </header>
     <div hidden={!open} className="viewer-inspector__contents">
       <div role="tabpanel" id="inspector-word" data-panel="right" aria-labelledby="inspector-word-tab" hidden={tab!=='right'}>{rightContent}</div>

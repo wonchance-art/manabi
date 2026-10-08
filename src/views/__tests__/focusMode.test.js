@@ -113,7 +113,8 @@ describe('집중 모드 배선', () => {
     expect(viewer).toContain('/> : boardActions ? null : sentenceMoveBar} />}');
     expect(viewer).toContain('active: pickedLineIdx !== null && sentences.length > 0 && !classStudyActive,');
     // 막대가 떠 있으면 본문 끝이 막대 위로 오고, 문장 이동 위치 계산도 막대를 바닥으로 본다.
-    expect(read('src/lib/useReaderLayout.js')).toContain("'.viewer-inspector,.class-reader-dock,.sentence-move-bar'");
+    // 개정(AD-R2 PR ①, VIEWER-V2-ROUNDS-001 §5 「자동 진행」): 같은 바닥 자리의 단독 「▶ 자동 진행」도 바닥 요소로 본다.
+    expect(read('src/lib/useReaderLayout.js')).toContain("'.viewer-inspector,.class-reader-dock,.sentence-move-bar,.viewer-pace-float'");
     expect(read('src/components/viewer/sentence-move-bar.css')).toContain('.viewer-layout:has(.sentence-move-bar)>.viewer-center {padding-bottom:calc(var(--sentence-move-bar-space) + 48px);}');
     const bar = sliceBetween(viewer, 'const translatePickedSentence', 'function extractSourceSentence');
     expect(bar).toContain('runSelectionAnalysis(pickedSentence.text);');

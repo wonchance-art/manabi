@@ -1996,19 +1996,24 @@ a.viewer-badge:hover {
 /* 액션바(v2-Q)는 뷰어 정돈 A안(이슈 1077 코멘트 5547935464)에서 해체됐다 — 도구는 경로 줄 오른쪽(.viewer-topbar__tools),
    행동은 본문 아래(.post-reading). 규칙은 아래 「뷰어 정돈 A안」 블록에 있다. */
 
-.viewer-aa {
+/* 경로 줄 도구(AD-R2 — 옛 .viewer-aa) — 아이콘 + 보이는 짧은 라벨. 읽기실 옷은 reader-controls.css가 입힌다. */
+.viewer-tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   border: 1.5px solid var(--border);
   background: var(--bg-elevated);
   color: var(--text-primary);
   border-radius: 10px;
-  padding: 6px 14px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  font-family: Georgia, serif;
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
   cursor: pointer;
-  min-height: 36px;
+  min-height: 44px;
 }
-.viewer-aa:hover { border-color: var(--primary); color: var(--primary-light); }
+.viewer-tool:hover { border-color: var(--primary); color: var(--primary-light); }
 
 /* iOS 실기 선례(시연 수리): 버튼이 시스템 폰트로 새지 않게 시트 전체에 상속 고정 */
 

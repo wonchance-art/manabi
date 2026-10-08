@@ -23,13 +23,14 @@ function build(lines) {
 }
 const zh=build(lines),texts=zh.texts;
 
-async function open(width,height=844,prefs={focusMode:true,autoSpeakOnClick:false},{language='Chinese',material=zh,meta={translations:{[texts[0]]:'눈앞의 경기장은 사진보다 더 웅장하다.'}},common,visibility,guest=false}={}) {
+async function open(width,height=844,prefs={focusMode:true,autoSpeakOnClick:false},{language='Chinese',material=zh,meta={translations:{[texts[0]]:'눈앞의 경기장은 사진보다 더 웅장하다.'}},common,visibility,guest=false,uiLocale}={}) {
  const f=await fixture({width,guest});
  await f.page.setViewportSize({width,height});
- await f.context.addInitScript(({language,prefs,common})=>{
+ await f.context.addInitScript(({language,prefs,common,uiLocale})=>{
   // 새 컨텍스트에 한 번만 심는다 — 이후에는 UI가 실제로 저장한 값을 읽는다.
   if(!localStorage.getItem('viewer_preferences_v2'))localStorage.setItem('viewer_preferences_v2',JSON.stringify({version:2,...(common?{common}:{}),languages:{[language]:prefs}}));
- },{language,prefs,common});
+  if(uiLocale&&!localStorage.getItem('viewer_language:v1'))localStorage.setItem('viewer_language:v1',JSON.stringify({version:1,uiLocale,explanationLocale:'ko'}));
+ },{language,prefs,common,uiLocale:uiLocale||null});
  await f.context.route('**/api/dict?**',r=>r.fulfill({contentType:'application/json',body:'null'}));
  f.requests=[];
  await f.context.route('**/api/gemini',r=>{f.requests.push({url:'/api/gemini',body:r.request().postData()||''});return r.fulfill({contentType:'application/json',body:JSON.stringify({text:'검수용 맥락'})});});
@@ -171,7 +172,7 @@ test('saved pronReveal is ignored: a hidden-reading word opens its card on the f
   await f.page.locator('.word-detail-card__meaning').getByText('경기장',{exact:true}).waitFor({timeout:5000});
   assert.equal(await token(f,0,2).locator('.surface--furi-off').count(),1,'first tap opens the card instead of revealing the reading');
   await f.page.getByRole('button',{name:'보조 패널 닫기',exact:true}).click();
-  await f.page.getByRole('button',{name:'읽기 설정',exact:true}).click();
+  await f.page.getByRole('button',{name:'Aa 읽기 설정',exact:true}).click();
   await f.page.getByRole('tab',{name:'학습 표시',exact:true}).click();
   await f.page.getByText('성조·문법·한자 표시',{exact:true}).click();
   assert.equal(await f.page.getByRole('checkbox',{name:'탭하면 발음 보기'}).count(),0,'reveal switch removed');
@@ -192,7 +193,7 @@ test('saved pronReveal is ignored: a hidden-reading word opens its card on the f
 test('display detail badge counts only changed controls visible inside that group',{timeout:180000},async()=>{
  const f=await open(1280,900,{focusMode:true,pronReveal:true,showToneColors:true,autoSpeakOnClick:false});
  try{
-  await f.page.getByRole('button',{name:'읽기 설정',exact:true}).click();
+  await f.page.getByRole('button',{name:'Aa 읽기 설정',exact:true}).click();
   await f.page.getByRole('tab',{name:'학습 표시',exact:true}).click();
   const group=f.page.locator('details.reader-settings__more').filter({hasText:'성조·문법·한자 표시'});
   const badge=async()=>{const el=group.locator('summary .reader-settings__changed');return await el.count()?Number(await el.textContent()):0;};
@@ -645,6 +646,170 @@ test('AE-R2 §5.2: a grammar note saves the sentence its explanation was made fr
   await left.getByRole('button',{name:'✓ 저장됨',exact:true}).waitFor();
   assert.equal(notes.length,2);
   assert.equal(notes[1].selected_text,texts[1]);
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+// 뷰어 v2 AD-R2 PR ① 읽기 크롬(VIEWER-V2-ROUNDS-001 §5, 설계서 docs/manabi-viewer-v2-ad-r2.md §2.1·§9 제안값 Q1~Q5).
+// 툴바 = 보이는 라벨(듣기 · Aa · 학습), ⋯ 자료 관리는 「학습」 창 안, 영문 크롬 0, 본문 테두리 카드 0.
+const LABELS={ko:['듣기','Aa','학습'],'zh-CN':['朗读','Aa','学习'],'zh-TW':['朗讀','Aa','學習']};
+const chromeFacts=f=>f.page.evaluate(()=>{
+ const r=el=>el.getBoundingClientRect();
+ const tools=[...document.querySelectorAll('.viewer-topbar__tools button')].filter(b=>b.getClientRects().length);
+ const topbar=document.querySelector('.viewer-topbar'),area=document.querySelector('.reader-area');
+ const chrome=[topbar,document.querySelector('.reader-edition'),document.querySelector('.viewer-badges')].filter(Boolean).map(el=>el.innerText).join('\n');
+ return {labels:tools.map(b=>b.innerText.trim()),names:tools.map(b=>(b.getAttribute('aria-label')||b.innerText).trim()),boxes:tools.map(b=>({w:r(b).width,h:r(b).height,mid:r(b).top+r(b).height/2,right:r(b).right})),
+  topbar:r(topbar).height,chrome,latin:(chrome.match(/[A-Za-z]{2,}/g)||[]).filter(w=>w!=='Aa'),
+  areaBorder:getComputedStyle(area).borderTopWidth,areaBg:getComputedStyle(area).backgroundColor,pageBg:getComputedStyle(document.querySelector('.viewer-layout')).backgroundColor,
+  titleLeft:r(document.querySelector('.viewer-titlerow .page-header__title')).left,textLeft:r(area).left+parseFloat(getComputedStyle(area).paddingLeft),
+  overflow:document.documentElement.scrollWidth>innerWidth,vw:innerWidth};
+});
+for(const width of [390,1280])test(`${width}px: labelled one-row toolbar, no English chrome, no body card; 자료 관리 lives in the 학습 window`,{timeout:180000},async()=>{
+ const f=await open(width,width<600?844:900,undefined,{visibility:'private'});
+ try{
+  const c=await chromeFacts(f);
+  console.log(`[ad-r2-chrome] ${width} ${JSON.stringify({labels:c.labels,boxes:c.boxes.map(b=>Math.round(b.w)),topbar:c.topbar,titleLeft:c.titleLeft,textLeft:c.textLeft})}`);
+  assert.deepEqual(c.labels,LABELS.ko,'every toolbar button shows a visible label');
+  // WCAG 2.5.3 Label in Name — 보이는 라벨이 접근 이름 안에 든다(본문 전체 듣기 ⊃ 듣기 · Aa 읽기 설정 ⊃ Aa · 학습).
+  c.labels.forEach((label,i)=>assert.ok(c.names[i].includes(label),`accessible name "${c.names[i]}" contains visible "${label}"`));
+  assert.deepEqual(c.names,['본문 전체 듣기','Aa 읽기 설정','학습']);
+  for(const b of c.boxes)assert.ok(b.w>=44&&b.h>=44,`toolbar target ${b.w}x${b.h} >= 44`);
+  const mids=c.boxes.map(b=>b.mid);assert.ok(Math.max(...mids)-Math.min(...mids)<=2,`toolbar stays one row: ${mids}`);
+  assert.ok(c.topbar<=60,`path row stays one line: ${c.topbar}px`);
+  assert.ok(Math.max(...c.boxes.map(b=>b.right))<=c.vw,'toolbar fits the viewport');
+  assert.deepEqual(c.latin,[],`no English chrome: ${c.chrome}`);
+  assert.equal(c.areaBorder,'0px','no bordered card around the text');
+  assert.equal(c.areaBg,c.pageBg,'text sits directly on the paper');
+  assert.ok(Math.abs(c.textLeft-c.titleLeft)<=1,`text starts where the title starts: ${c.textLeft} vs ${c.titleLeft}`);
+  assert.equal(await f.page.locator('.viewer-topbar').getByRole('button',{name:'자료 관리',exact:true}).count(),0,'no unlabeled ⋯ in the toolbar');
+  await f.page.getByRole('button',{name:'학습',exact:true}).click();
+  const manage=f.page.getByRole('dialog',{name:'학습'}).getByRole('button',{name:/^자료 관리/});
+  await manage.click();
+  await f.page.getByRole('dialog',{name:'자료 관리'}).getByRole('button',{name:/^전체 분석/}).waitFor();
+  assert.equal(await f.page.getByRole('dialog',{name:'학습'}).count(),0,'학습 window yields to 자료 관리');
+  assert.equal(c.overflow,false);
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+for(const locale of ['zh-CN','zh-TW'])test(`390px ${locale}: toolbar labels and chrome follow the screen language`,{timeout:180000},async()=>{
+ const f=await open(390,844,undefined,{uiLocale:locale});
+ try{
+  const c=await chromeFacts(f);
+  assert.deepEqual(c.labels,LABELS[locale]);
+  c.labels.forEach((label,i)=>assert.ok(c.names[i].includes(label),`${locale}: accessible name "${c.names[i]}" contains visible "${label}"`));
+  assert.deepEqual(c.latin,[],`no English chrome: ${c.chrome}`);
+  assert.doesNotMatch(c.chrome,/[가-힣]/,`no Korean left in ${locale} chrome: ${c.chrome}`);
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+// 자동 진행 · 문장 이동 막대 한 자리(설계 Q3 A): 지정 없음 = 바닥 「▶ 자동 진행」, 지정 = 막대 안 ▶/■, 시트·창 열림 = 0개.
+// 정본 §5 합격 「시트가 열려 있으면 자동 진행 버튼이 없다」. 목표 속도를 30자/분으로 낮춰(첫 문장 16초) 진행 중 상태를 붙잡는다.
+const paceButtons=f=>f.page.locator('.viewer-pace-float button, .sentence-move-bar__pace').filter({visible:true});
+const bottomOverlaps=f=>f.page.evaluate(()=>{
+ const boxes=[...document.querySelectorAll('.sentence-move-bar, .viewer-pace-float, .viewer-inspector')].filter(el=>el.getClientRects().length).map(el=>({cls:el.className,...el.getBoundingClientRect().toJSON()}));
+ const hits=[];
+ for(let i=0;i<boxes.length;i++)for(let j=i+1;j<boxes.length;j++){const a=boxes[i],b=boxes[j];if(a.left<b.right&&b.left<a.right&&a.top<b.bottom&&b.top<a.bottom)hits.push(`${a.cls} × ${b.cls}`);}
+ return {hits,inView:boxes.every(b=>b.left>=0&&b.right<=innerWidth+.5&&b.bottom<=innerHeight+.5)};
+});
+for(const [width,height] of [[390,844],[1280,900]])test(`${width}px: auto-advance shares one bottom slot with the move bar and disappears while a sheet is open`,{timeout:240000},async()=>{
+ const f=await open(width,height,{focusMode:true,autoPace:true,paceCpm:30,autoSpeakOnClick:false});
+ try{
+  // ⓐ 지정 없음 → 단독 버튼 하나(보이는 라벨 + 44px), 막대 없음
+  const float=f.page.locator('.viewer-pace-float');
+  await float.waitFor();
+  assert.equal(await bar(f).count(),0);
+  const start=float.getByRole('button',{name:'자동 진행 시작',exact:true});
+  assert.equal((await start.innerText()).trim(),'자동 진행');
+  const fb=await start.boundingBox();assert.ok(fb.width>=44&&fb.height>=44);
+  assert.equal(await paceButtons(f).count(),1);
+  assert.equal(await f.page.locator('.viewer-topbar').getByRole('button',{name:/자동 진행/}).count(),0,'not in the toolbar');
+  // ⓑ 키보드로 시작 → 문장 지정 + 막대 안 ■로 포커스가 옮겨 간다(단독 버튼은 사라진다)
+  await start.focus();await f.page.keyboard.press('Enter');
+  await bar(f).waitFor();
+  await f.page.locator('.reader-area--pacing').waitFor();
+  assert.equal(await float.count(),0,'the floating button yields to the bar');
+  assert.deepEqual(await pickedLines(f),['0']);
+  const stop=bar(f).getByRole('button',{name:'자동 진행 중지',exact:true});
+  assert.equal(await stop.count(),1,'bar carries ■ while running');
+  assert.equal(await f.page.evaluate(()=>document.activeElement?.getAttribute('aria-label')),'자동 진행 중지','focus follows into the bar');
+  const sb=await stop.boundingBox();assert.ok(sb.width>=44&&sb.height>=44);
+  let o=await bottomOverlaps(f);assert.deepEqual(o.hits,[]);assert.ok(o.inView,'bottom controls stay in the viewport');
+  const barBox=await bar(f).boundingBox();assert.ok(barBox.height<=60&&barBox.x+barBox.width<=width+.5,`bar stays one row inside ${width}px`);
+  // 순서: ^ v ▶/■ 번역 × (번역 바로 앞)
+  const order=await bar(f).locator('button').evaluateAll(bs=>bs.map(b=>b.getAttribute('aria-label')||b.textContent.trim()));
+  assert.deepEqual(order,['위 문장','아래 문장','자동 진행 중지','번역','문장 지정 해제']);
+  // ⓒ 진행 중 시트 열림(같은 문장 두 번째 탭) → 자동 진행 버튼 0개, 겹침 0
+  await token(f,0,2).click();
+  await f.page.locator('.word-detail-card__meaning').getByText('경기장',{exact:true}).waitFor();
+  assert.equal(await paceButtons(f).count(),0,'no auto-advance button while the sheet is open');
+  o=await bottomOverlaps(f);assert.deepEqual(o.hits,[]);
+  // ⓓ 시트를 닫으면 막대와 ■가 돌아오고, Enter로 멈추면 ▶(이름 「자동 진행 시작」)
+  await f.page.getByRole('button',{name:'보조 패널 닫기',exact:true}).click();
+  await bar(f).waitFor();
+  assert.equal(await paceButtons(f).count(),1);
+  await bar(f).getByRole('button',{name:/^자동 진행/}).focus();await f.page.keyboard.press('Enter');
+  await bar(f).getByRole('button',{name:'자동 진행 시작',exact:true}).waitFor();
+  assert.equal(await f.page.locator('.reader-area--pacing').count(),0,'stopped');
+  // ⓔ 지정 해제(×) → 막대가 사라지고 단독 버튼이 같은 바닥 자리로 돌아온다
+  await bar(f).getByRole('button',{name:'문장 지정 해제',exact:true}).click();
+  await bar(f).waitFor({state:'detached'});
+  await float.waitFor();
+  assert.equal(await paceButtons(f).count(),1);
+  // ⓕ 창(학습 모달)이 열리면 단독 버튼도 없다 — 막대는 #1356대로 모달 뒤에 남으므로 지정 없는 상태에서 본다
+  await f.page.getByRole('button',{name:'학습',exact:true}).click();
+  await f.page.getByRole('dialog',{name:'학습'}).waitFor();
+  assert.equal(await paceButtons(f).count(),0,'no floating auto-advance button behind a modal');
+  await f.page.keyboard.press('Escape');
+  await f.page.getByRole('dialog',{name:'학습'}).waitFor({state:'detached'});
+  await float.waitFor();
+  // 단어 탭(집중 해제 상태 아님 — 첫 탭은 순수 이동)으로 지정해도 막대 안 ▶로 옮겨 간다
+  await token(f,1,1).click();await bar(f).waitFor();
+  assert.equal(await float.count(),0);
+  assert.equal(await bar(f).getByRole('button',{name:'자동 진행 시작',exact:true}).count(),1);
+  assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+// 검수 보완 ① — 접힌 시트(문장 번역을 본 뒤 패널을 닫으면 내용이 남아 바닥에 머문다)에서도 자동 진행을 시작·정지할 수 있다.
+// main은 툴바 ▶가 늘 있었다. 1120 미만 = 남은 머리줄 안 ▶, 1120 이상 = 접힌 시트가 통째로 숨으므로 바닥 단독 버튼. 겹침 0 · 가림 0 · 키보드.
+for(const [width,height] of [[390,844],[1280,900]])test(`${width}px: auto-advance stays reachable while the sheet is collapsed`,{timeout:240000},async()=>{
+ const f=await open(width,height,{focusMode:true,autoPace:true,paceCpm:30,autoSpeakOnClick:false});
+ try{
+  await token(f,0,0).click();await bar(f).waitFor();
+  await bar(f).getByRole('button',{name:'번역',exact:true}).click();
+  await f.page.locator('#inspector-sentence').getByText('눈앞의 경기장은 사진보다 더 웅장하다.').first().waitFor();
+  assert.equal(await paceButtons(f).count(),0,'open sheet: no auto-advance button');
+  await f.page.getByRole('button',{name:'보조 패널 닫기',exact:true}).click();
+  await f.page.locator('.viewer-inspector.is-collapsed').waitFor({state:'attached'});
+  assert.equal(await bar(f).count(),0,'the collapsed sheet keeps the bottom slot (no move bar)');
+  assert.deepEqual(await pickedLines(f),['0']);
+  const visible=paceButtons(f).or(f.page.locator('.viewer-inspector__pace').filter({visible:true}));
+  assert.equal(await visible.count(),1,'exactly one auto-advance control while collapsed');
+  const where=await visible.evaluate(b=>b.closest('.viewer-inspector')?'strip':b.closest('.viewer-pace-float')?'float':'other');
+  assert.equal(where,width<1120?'strip':'float',`collapsed control lives in the ${width<1120?'sheet strip':'floating slot'}`);
+  const box=await visible.boundingBox();assert.ok(box.width>=44&&box.height>=44,'44px target');
+  let o=await bottomOverlaps(f);assert.deepEqual(o.hits,[]);assert.ok(o.inView);
+  // 키보드: Enter로 시작(지정 문장 그대로 · 진행 중 표시) → Enter로 정지
+  await visible.focus();await f.page.keyboard.press('Enter');
+  await f.page.locator('.reader-area--pacing').waitFor();
+  assert.deepEqual(await pickedLines(f),['0']);
+  const stop=f.page.getByRole('button',{name:'자동 진행 중지',exact:true}).filter({visible:true});
+  assert.equal(await stop.count(),1,'running state shows ■ in the same place');
+  await stop.focus();await f.page.keyboard.press('Enter');
+  await f.page.getByRole('button',{name:'자동 진행 시작',exact:true}).filter({visible:true}).waitFor();
+  assert.equal(await f.page.locator('.reader-area--pacing').count(),0);
+  o=await bottomOverlaps(f);assert.deepEqual(o.hits,[]);
+  // 가림 0: 지정 문장과 본문 끝이 바닥 요소 위로 드러난다(이동 막대 여백 규칙과 같은 기준)
+  const bottomTop=()=>f.page.evaluate(()=>Math.min(innerHeight,...[...document.querySelectorAll('.viewer-inspector, .viewer-pace-float, .sentence-move-bar')].filter(el=>el.getClientRects().length).map(el=>el.getBoundingClientRect().top)));
+  const sentenceBottom=await f.page.locator('.word-token--picked').evaluateAll(els=>Math.max(...els.map(el=>el.getBoundingClientRect().bottom)));
+  assert.ok(sentenceBottom<=await bottomTop(),'designated sentence is not covered');
+  await f.page.evaluate(()=>scrollTo({top:document.scrollingElement.scrollHeight,behavior:'instant'}));await f.page.waitForTimeout(200);
+  const last=await f.page.evaluate(()=>{const c=document.querySelector('.viewer-center');return [...c.children].filter(el=>el.getClientRects().length).at(-1).getBoundingClientRect().bottom;});
+  const top=await bottomTop();
+  assert.ok(last<=top,`end of the page ${last} <= bottom control top ${top}`);
+  assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
 });

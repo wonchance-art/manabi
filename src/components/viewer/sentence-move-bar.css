@@ -7,9 +7,13 @@
    scroll-padding은 포커스·scrollIntoView가 막대 밑에 멈추지 않게 하는 몫이다. */
 .viewer-layout:has(.sentence-move-bar)>.viewer-center {padding-bottom:calc(var(--sentence-move-bar-space) + 48px);}
 html:has(.viewer-layout .sentence-move-bar) {scroll-padding-bottom:calc(54px + max(8px, env(safe-area-inset-bottom)) + 12px);}
+/* 단독 「▶ 자동 진행」(AD-R2)도 같은 바닥 자리라 같은 여백을 쓴다(막대보다 낮다 — 46px). */
+.viewer-layout:has(.viewer-pace-float)>.viewer-center {padding-bottom:calc(var(--sentence-move-bar-space) + 48px);}
+html:has(.viewer-layout .viewer-pace-float) {scroll-padding-bottom:calc(54px + max(8px, env(safe-area-inset-bottom)) + 12px);}
 /* 테두리는 바탕 대비 3:1 이상(종이·어둡게 모두) — 칠 선(--reader-line)은 어둡게에서 2:1이라 쓰지 않는다. */
-.viewer-layout .sentence-move-bar {--sentence-move-bar-edge:color-mix(in srgb,var(--reader-ink) 55%,var(--reader-paper));position:fixed;z-index:95;left:50%;transform:translateX(-50%);bottom:max(8px,env(safe-area-inset-bottom));display:flex;align-items:center;gap:4px;max-width:calc(100% - 16px);padding:4px 8px;border:1px solid var(--sentence-move-bar-edge);border-radius:8px;background:var(--reader-paper);color:var(--reader-ink);box-shadow:0 8px 28px color-mix(in srgb,var(--reader-ink) 12%,transparent);}
-.viewer-layout.viewer-3col--dragging .sentence-move-bar {pointer-events:none;}
+.viewer-layout :is(.sentence-move-bar,.viewer-pace-float) {--sentence-move-bar-edge:color-mix(in srgb,var(--reader-ink) 55%,var(--reader-paper));}
+.viewer-layout .sentence-move-bar {position:fixed;z-index:95;left:50%;transform:translateX(-50%);bottom:max(8px,env(safe-area-inset-bottom));display:flex;align-items:center;gap:4px;max-width:calc(100% - 16px);padding:4px 8px;border:1px solid var(--sentence-move-bar-edge);border-radius:8px;background:var(--reader-paper);color:var(--reader-ink);box-shadow:0 8px 28px color-mix(in srgb,var(--reader-ink) 12%,transparent);}
+.viewer-layout.viewer-3col--dragging :is(.sentence-move-bar,.viewer-pace-float) {pointer-events:none;}
 .viewer-layout .sentence-move-bar button {display:inline-flex;align-items:center;justify-content:center;flex:none;min-width:44px;min-height:44px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--reader-ink);cursor:pointer;}
 .viewer-layout .sentence-move-bar button:disabled {opacity:.35;cursor:default;}
 .viewer-layout .sentence-move-bar button:not(:disabled):hover {background:var(--reader-selected);color:var(--reader-accent);}
@@ -17,8 +21,30 @@ html:has(.viewer-layout .sentence-move-bar) {scroll-padding-bottom:calc(54px + m
 .viewer-layout .sentence-move-bar .sentence-move-bar__translate {padding:0 16px;border:1px solid var(--reader-accent);font-size:.875rem;font-weight:600;line-height:1.2;color:var(--reader-accent);}
 .viewer-layout .sentence-move-bar__pos {min-width:4.5em;text-align:center;font-size:.8125rem;line-height:1.2;font-variant-numeric:tabular-nums;color:var(--reader-muted);white-space:nowrap;}
 .viewer-layout .sentence-move-bar__close {margin-left:auto;}
+/* 자동 진행 바닥 한 자리(AD-R2 설계 Q3 A) — 지정 문장이 있으면 막대 안 ▶/■(번역 바로 앞, 44px), 없으면 같은 자리에
+   뜬 단독 「▶ 자동 진행」. 둘은 동시에 뜨지 않고, 시트·창이 열리면 둘 다 없다(정본 §5). 진행 중 ■는 강조색으로 상태를 보인다. */
+.viewer-layout .sentence-move-bar .sentence-move-bar__pace[aria-pressed="true"] {color:var(--reader-accent);}
+.viewer-layout .viewer-pace-float {position:fixed;z-index:95;left:50%;transform:translateX(-50%);bottom:max(8px,env(safe-area-inset-bottom));display:flex;padding:4px;border:1px solid var(--sentence-move-bar-edge);border-radius:8px;background:var(--reader-paper);color:var(--reader-ink);box-shadow:0 8px 28px color-mix(in srgb,var(--reader-ink) 12%,transparent);}
+.viewer-layout .viewer-pace-float__btn {display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;padding:0 14px;border:0;border-radius:6px;background:transparent;color:var(--reader-ink);font-size:.875rem;font-weight:600;line-height:1.2;white-space:nowrap;cursor:pointer;}
+.viewer-layout .viewer-pace-float__btn .action-icon {flex:none;}
+.viewer-layout .viewer-pace-float__btn[aria-pressed="true"] .action-icon {color:var(--reader-accent);}
+.viewer-layout .viewer-pace-float__btn:hover {background:var(--reader-selected);color:var(--reader-accent);}
+.viewer-layout .viewer-pace-float__btn:focus-visible {outline:2px solid var(--reader-accent);outline-offset:1px;}
+/* 접힌 시트(내용을 닫았지만 문장 번역 등이 남아 바닥에 머무는 패널): 1120 미만은 머리줄이 남아 그 안 ▶가 맡고(--wide 숨김),
+   1120 이상은 접힌 시트가 통째로 숨으므로(reader-controls.css) 단독 버튼이 같은 바닥 자리를 맡는다 — 어느 상태에서도 ▶/■ 하나. */
+.viewer-layout .viewer-pace-float--wide {display:none;}
+@container reader (min-width:1120px) {
+  .viewer-layout .viewer-pace-float--wide {display:flex;}
+}
+.viewer-layout .viewer-inspector.is-collapsed .viewer-inspector__pace[aria-pressed="true"] {color:var(--reader-accent);}
 @container reader (max-width:600px) {
   .viewer-layout .sentence-move-bar {left:8px;right:8px;transform:none;max-width:none;}
   .viewer-layout .sentence-move-bar .sentence-move-bar__translate {margin-left:auto;}
   .viewer-layout .sentence-move-bar__close {margin-left:0;}
+}
+/* 320px대(컨테이너 = 화면 − 여백 24): ▶가 더해지면 빈 폭(23px)이 모자란다 — 자동 진행 허용일 때만 위치 표시 최소 폭·번역 좌우 여백을
+   줄인다. 360px(컨테이너 336)은 줄이지 않아도 들어간다(실측 332/344). */
+@container reader (max-width:320px) {
+  .viewer-layout .sentence-move-bar:has(.sentence-move-bar__pace) .sentence-move-bar__pos {min-width:0;}
+  .viewer-layout .sentence-move-bar:has(.sentence-move-bar__pace) .sentence-move-bar__translate {padding:0 10px;}
 }

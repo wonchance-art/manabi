@@ -71,7 +71,7 @@ for(const width of [1440,390,320])test(`viewer Korean labels/${width}px: long, a
   await f.page.evaluate(()=>document.documentElement.style.fontSize='200%');
   await checkGeometry(f);
   await f.page.evaluate(()=>document.documentElement.style.fontSize='');
-  await f.page.getByRole('button',{name:'읽기 설정',exact:true}).click();
+  await f.page.getByRole('button',{name:'Aa 읽기 설정',exact:true}).click();
   await f.page.getByRole('tab',{name:'학습 표시',exact:true}).click();
   await f.page.getByText('성조·문법·한자 표시',{exact:true}).click();
   const toggle=f.page.getByRole('checkbox',{name:'한자 대조'});
