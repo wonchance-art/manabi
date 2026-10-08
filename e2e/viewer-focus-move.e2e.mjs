@@ -174,7 +174,6 @@ test('saved pronReveal is ignored: a hidden-reading word opens its card on the f
   await f.page.getByRole('button',{name:'보조 패널 닫기',exact:true}).click();
   await f.page.getByRole('button',{name:'Aa 읽기 설정',exact:true}).click();
   await f.page.getByRole('tab',{name:'학습 표시',exact:true}).click();
-  await f.page.getByText('성조·문법·한자 표시',{exact:true}).click();
   assert.equal(await f.page.getByRole('checkbox',{name:'탭하면 발음 보기'}).count(),0,'reveal switch removed');
   const modes=await f.page.getByRole('group',{name:'읽기 모드',exact:true}).getByRole('button').evaluateAll(b=>b.map(x=>x.getAttribute('aria-label')));
   assert.deepEqual(modes,['몰입 읽기','학습 모드'],'recall preset removed');
@@ -188,32 +187,82 @@ test('saved pronReveal is ignored: a hidden-reading word opens its card on the f
  }finally{await f.context.close();}
 });
 
-// VIEWER-R0-BUGS-001 버그 10 — 「성조·문법·한자 표시」 묶음의 변경 개수 = 그 묶음 안에 보이는 바뀐 항목 수.
-// 읽기 진행 탭의 문장 집중(focusMode)과 제거된 pronReveal은 세지 않는다.
-test('display detail badge counts only changed controls visible inside that group',{timeout:180000},async()=>{
- const f=await open(1280,900,{focusMode:true,pronReveal:true,showToneColors:true,autoSpeakOnClick:false});
+// AD-R2 Aa(정본 §5 Aa · 설계 §6.1 viewerSettingsMinimal ③ · §6.2 「Aa 창 높이 고정」「표시 탭 평평 · 범례」 · Q6~Q8 제안값).
+// R0 버그 10의 「성조·문법·한자 표시」 묶음 개수 뱃지는 묶음과 함께 사라진다 — 숨기는 곳이 없어 셀 것도 없다.
+// 설정 저장 경로·키는 그대로다: 쓰기 뒤에도 언어별 키 집합이 같고, 쓸 수 없는 옵션 뒤의 저장값(범위 「복습할 것」)이 남는다.
+const STORED_KEYS=['autoPace','autoSpeakOnClick','charGap','focusMode','fontFamily','fontSize','lineGap','paceCpm','paceStep','patternFilter','pinyinSize','pronDisplay','showHanjaKo','showPatterns','showToneColors','wordStateHl'];
+for(const [width,height] of [[390,844],[1280,900],[320,640]])test(`${width}px: Aa — tabs on top, one window height for every tab, a flat display tab with legends and reasons`,{timeout:180000},async()=>{
+ const f=await open(width,height,{focusMode:true,showToneColors:true,showPatterns:false,patternFilter:'due',autoSpeakOnClick:false});
  try{
   await f.page.getByRole('button',{name:'Aa 읽기 설정',exact:true}).click();
-  await f.page.getByRole('tab',{name:'학습 표시',exact:true}).click();
-  const group=f.page.locator('details.reader-settings__more').filter({hasText:'성조·문법·한자 표시'});
-  const badge=async()=>{const el=group.locator('summary .reader-settings__changed');return await el.count()?Number(await el.textContent()):0;};
-  const visibleChanged=()=>group.evaluate(details=>{
-   details.open=true;
-   const boxes=[...details.querySelectorAll('input[type=checkbox]')].filter(b=>b.getClientRects().length&&b.checked).length; // 묶음 안 스위치의 기본값은 모두 꺼짐
-   const range=details.querySelector('[role=group][aria-label="문법 표시 범위"] [aria-pressed=true]');
-   return boxes+(range&&range.getAttribute('aria-label')!=='전체'?1:0);
-  });
-  assert.equal(await badge(),1,'only 성조 색상 changed inside the group');
-  assert.equal(await badge(),await visibleChanged());
-  await group.getByRole('checkbox',{name:'문법 표시'}).click();
-  await group.getByRole('group',{name:'문법 표시 범위',exact:true}).getByRole('button',{name:'복습할 것',exact:true}).click();
-  assert.equal(await badge(),3);assert.equal(await badge(),await visibleChanged());
-  await group.getByRole('checkbox',{name:'성조 색상'}).click();
-  await group.getByRole('checkbox',{name:'문법 표시'}).click();
-  assert.equal(await badge(),await visibleChanged(),'a filter hidden with its switch is not counted');
-  assert.equal(await badge(),0);
-  await f.page.getByRole('tab',{name:'읽기 진행',exact:true}).click();
-  assert.equal(await f.page.getByRole('checkbox',{name:'문장 집중'}).isChecked(),true,'focus mode itself is untouched');
+  const dialog=f.page.getByRole('dialog',{name:'읽기 설정',exact:true});await dialog.waitFor();
+  await f.page.evaluate(()=>document.fonts.ready);
+  assert.equal(await dialog.locator('.reader-modal__body').evaluate(b=>b.firstElementChild?.getAttribute('role')),'tablist','the tabs are the first thing in the window');
+  const geometry=()=>dialog.evaluate(d=>{const r=d.getBoundingClientRect();return {h:r.height,top:r.top,bottom:r.bottom,left:r.left,right:r.right,sw:d.scrollWidth,cw:d.clientWidth,vw:innerWidth,vh:innerHeight};});
+  const heights=[];
+  for(const tab of ['글자·배경','학습 표시','읽기 진행','학습 표시']){
+   await dialog.getByRole('tab',{name:tab,exact:true}).click();await f.page.waitForTimeout(120);
+   const g=await geometry();heights.push(g.h);
+   assert.ok(g.left>=-.5&&g.right<=g.vw+.5&&g.top>=-.5&&g.bottom<=g.vh+.5,`${tab}: the window stays inside the viewport ${JSON.stringify(g)}`);
+   assert.ok(g.sw<=g.cw+1,`${tab}: no horizontal overflow`);
+  }
+  assert.equal(Math.max(...heights)-Math.min(...heights),0,`one window height for every tab: ${heights}`);
+  assert.ok(heights[0]<=720.5,`window height is capped at 720px: ${heights[0]}`);
+  // 「표시」 탭: 접힌 묶음 없이 모든 옵션이 바로 보인다 — 맨 아래는 언어 선택 상자 둘.
+  const pane=dialog.getByRole('tabpanel');
+  assert.equal(await dialog.locator('details.reader-settings__more').count(),0,'the display tab has no collapsed group');
+  for(const [role,name] of [['group','읽기 모드'],['group','발음 표기'],['checkbox','단어 상태'],['checkbox','성조 색상'],['checkbox','한자 대조'],['checkbox','문법 표시'],['group','문법 표시 범위'],['combobox','화면 언어'],['combobox','설명 언어']]){
+   const el=pane.getByRole(role,{name,exact:true});await el.scrollIntoViewIfNeeded();
+   assert.ok(await el.isVisible(),`${name} is visible without opening anything`);
+  }
+  // 창 높이가 고정이므로 넘치는 내용은 탭 본문만 스크롤한다 — 탭·미리보기·하단은 제자리.
+  const fixedParts=()=>dialog.evaluate(d=>({tabs:d.querySelector('[role=tablist]').getBoundingClientRect().top,footer:d.querySelector('.reader-modal__footer').getBoundingClientRect().bottom,dialog:d.getBoundingClientRect().bottom,
+   bodyOverflow:(b=>b.scrollHeight-b.clientHeight)(d.querySelector('.reader-modal__body')),pane:getComputedStyle(d.querySelector('[role=tabpanel]')).overflowY}));
+  await pane.evaluate(p=>p.scrollTo({top:0,behavior:'instant'}));const top=await fixedParts();
+  await pane.evaluate(p=>p.scrollTo({top:p.scrollHeight,behavior:'instant'}));const bottom=await fixedParts();
+  assert.equal(top.pane,'auto');assert.ok(top.bodyOverflow<=1&&bottom.bodyOverflow<=1,'only the tab panel scrolls');
+  assert.equal(bottom.tabs,top.tabs,'tabs stay at the top while the panel scrolls');
+  assert.ok(bottom.footer<=bottom.dialog+.5,'footer stays inside the window');
+  // 범례: 본문과 같은 클래스로 그린 상태 견본 셋 + 성조 견본 넷. 옵션이 꺼져 있어도 보인다.
+  // 모양 = 띠 색 | 밑줄(두께·선·색 — 두께 0이거나 투명이면 none). 글자색(currentColor)은 모양에 넣지 않는다.
+  const legend=await pane.locator('.reader-settings__legend .word-token').evaluateAll(ts=>ts.map(t=>{const s=getComputedStyle(t.querySelector('.surface'),'::before'),line=s.borderBottomWidth==='0px'||s.borderBottomColor==='rgba(0, 0, 0, 0)'?'none':`${s.borderBottomWidth} ${s.borderBottomStyle} ${s.borderBottomColor}`;return {text:t.textContent,look:`${s.backgroundColor}|${line}`};}));
+  assert.deepEqual(legend.map(l=>l.text),['새 단어','학습 중','복습']);
+  assert.equal(new Set(legend.map(l=>l.look)).size,3,`three distinct state marks: ${JSON.stringify(legend)}`);
+  for(const l of legend)assert.notEqual(l.look,'rgba(0, 0, 0, 0)|none',`${l.text} is visibly marked`);
+  const tones=await pane.locator('.reader-settings__tones .rt-an').evaluateAll(es=>es.map(e=>getComputedStyle(e).color));
+  assert.equal(tones.length,4);assert.equal(new Set(tones).size,4,`four tone colours: ${tones}`);
+  // 같은 CSS — 「단어 상태」를 켜면 본문 새 단어가 범례의 「새 단어」와 같은 모양이다.
+  await pane.getByRole('checkbox',{name:'단어 상태',exact:true}).check();
+  const bodyNew=await f.page.locator('.reader-area .word-token--new:not(.word-token--picked) .surface').first().evaluate(e=>{const s=getComputedStyle(e,'::before'),line=s.borderBottomWidth==='0px'||s.borderBottomColor==='rgba(0, 0, 0, 0)'?'none':`${s.borderBottomWidth} ${s.borderBottomStyle} ${s.borderBottomColor}`;return `${s.backgroundColor}|${line}`;});
+  assert.equal(bodyNew,legend[0].look,'the legend new-word mark is the body new-word mark');
+  await pane.getByRole('checkbox',{name:'단어 상태',exact:true}).uncheck();
+  // 쓸 수 없는 옵션: 문법 표시가 꺼져 있으면 범위는 흐린 채 남고 이유를 적는다. 저장된 범위는 그대로 보인다.
+  const range=pane.getByRole('group',{name:'문법 표시 범위',exact:true}),reason=pane.getByText('문법 표시를 켜면 고를 수 있어요',{exact:true});
+  for(const b of await range.getByRole('button').all())assert.equal(await b.isDisabled(),true,'range is unavailable while grammar marks are off');
+  assert.equal(await range.getByRole('button',{name:'복습할 것',exact:true}).getAttribute('aria-pressed'),'true','the stored range stays visible');
+  assert.ok(await reason.isVisible());
+  await pane.getByRole('checkbox',{name:'문법 표시',exact:true}).check();
+  assert.equal(await range.getByRole('button',{name:'전체',exact:true}).isDisabled(),false);assert.equal(await reason.count(),0);
+  await pane.getByRole('checkbox',{name:'문법 표시',exact:true}).uncheck();
+  // 중국어 자료는 설명 언어가 한국어 하나 — 설명 상자는 꺼진 채 이유를 적고, 화면 언어는 고를 수 있다.
+  const explanation=pane.getByRole('combobox',{name:'설명 언어',exact:true});
+  assert.equal(await explanation.isDisabled(),true);assert.equal(await explanation.inputValue(),'ko');
+  assert.ok(await pane.getByText('이 자료의 설명 언어는 한국어로 제공돼요.',{exact:true}).isVisible());
+  assert.equal(await pane.getByRole('combobox',{name:'화면 언어',exact:true}).isDisabled(),false);
+  // 하단은 보이는 글자, 잘림 0. 창 안 글자 덩어리는 창 밖으로 나가지 않는다.
+  const footer=await dialog.locator('.reader-modal__footer button').evaluateAll(bs=>bs.map(b=>({text:b.innerText.trim(),clip:b.scrollWidth>b.clientWidth+1,h:b.getBoundingClientRect().height})));
+  assert.deepEqual(footer.map(b=>b.text),['이 탭 기본값','이번 변경 되돌리기']);
+  for(const b of footer)assert.ok(!b.clip&&b.h>=44,`${b.text}: ${JSON.stringify(b)}`);
+  for(const tab of ['글자·배경','학습 표시','읽기 진행']){
+   await dialog.getByRole('tab',{name:tab,exact:true}).click();
+   const clipped=await dialog.evaluate(d=>{const box=d.getBoundingClientRect();return [...d.querySelectorAll('b,button,select,small,label,.reader-settings__legend,.reader-settings__tones,.reader-setting-note')].filter(e=>e.getClientRects().length&&e.textContent.trim())
+    .filter(e=>{const r=e.getBoundingClientRect(),block=getComputedStyle(e).display!=='inline';return r.left<box.left-.5||r.right>box.right+.5||(block&&e.scrollWidth>e.clientWidth+1);}).map(e=>e.textContent.trim().slice(0,24));});
+   assert.deepEqual(clipped,[],`${tab}: no clipped label`);
+  }
+  await f.page.keyboard.press('Escape');
+  const stored=await f.page.evaluate(()=>JSON.parse(localStorage.getItem('viewer_preferences_v2')).languages.Chinese);
+  assert.deepEqual(Object.keys(stored).sort(),STORED_KEYS,'no preference key added or removed');
+  assert.equal(stored.patternFilter,'due');assert.equal(stored.showPatterns,false);assert.equal(stored.showToneColors,true);assert.equal(stored.focusMode,true);assert.equal(stored.wordStateHl,false);
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
 });

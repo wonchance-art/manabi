@@ -2582,7 +2582,9 @@ a.viewer-badge:hover {
    세로 범위는 잉크 실측(픽셀 스캔): 병음 잉크(y·g 디센더 포함) 0.32~0.50em ·
    한자 잉크 0.58~1.54em(셀 top 기준) → 0.58~1.62em 밴드면 병음과 0.08em 여유,
    글자는 온전 포함. 소비처(밴드·이음매·문장 막대)가 전부 이 두 변수를 공유한다.
-   ※ .surface line-height(2.2)를 바꾸면 이 값도 다시 재야 한다(rt-an bottom과 동일 계약). */
+   ※ .surface line-height(2.2)를 바꾸면 이 값도 다시 재야 한다(rt-an bottom과 동일 계약).
+   Aa 범례(.reader-settings__legend, AD-R2)도 본문과 같은 상태 클래스를 그리므로 같은 좌표를 받는다. */
+.reader-settings__legend,
 .reader-settings__preview,
 .reader-area {
   --hl-band-top: 0.58em;

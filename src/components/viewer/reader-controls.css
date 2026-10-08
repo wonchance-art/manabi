@@ -502,11 +502,42 @@
 .reader-settings .reader-modal__header>button>span {font-size:24px;}
 .reader-settings .reader-modal__body {padding:0 16px 12px;}
 .reader-settings .reader-modal__footer {padding:4px 12px max(4px,env(safe-area-inset-bottom));}
-.reader-settings .reader-modal__footer button {display:flex;align-items:center;justify-content:center;min-width:44px;padding:0;}
-.reader-settings .reader-settings__languages {display:grid;gap:0;padding:8px 0;border-bottom:1px solid var(--reader-line);}
-.reader-settings .reader-settings__languages .reader-setting-choices {display:grid;grid-template-columns:3.2em minmax(0,1fr);align-items:center;padding:2px 0;gap:8px;}
-.reader-settings .reader-settings__languages .reader-setting-choices>div {flex-wrap:nowrap;gap:4px;}
-.reader-settings .reader-settings__languages b {font-size:.8rem;font-weight:500;}
+.reader-settings .reader-modal__footer button {display:flex;align-items:center;justify-content:center;min-width:44px;padding:0 8px;}
+/* AD-R2 Aa — 창 높이는 탭과 무관하게 고정한다(정본 Y②, 설계 Q8 제안값 min(85dvh,720px); 키보드·작은 화면은
+   .reader-modal의 max-height가 더 줄인다). 탭·미리보기·하단은 제자리이고 넘치는 탭 본문만 스크롤한다. */
+.reader-settings {height:min(85dvh,720px);}
+.reader-settings .reader-modal__body {flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.reader-settings .reader-modal__body>* {flex:none;}
+.reader-settings .reader-modal__body>[role="tabpanel"] {flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;margin-inline:-6px;padding-inline:6px;} /* 여백 6px = 포커스 테두리(2+2px)가 스크롤 상자에 잘리지 않게 */
+@media (max-height:500px) {
+  .reader-settings .reader-modal__body {display:block;overflow:visible;}
+  .reader-settings .reader-modal__body>[role="tabpanel"] {overflow:visible;}
+}
+/* 「표시」 탭 맨 아래 언어 한 줄 — 선택 상자 둘(화면 · 설명). */
+.reader-settings .reader-settings__languages {margin-top:8px;padding:10px 0 4px;border-top:1px solid var(--reader-line);}
+.reader-settings .reader-setting-toggle+.reader-settings__languages {margin-top:0;border-top:0;} /* 스위치 줄의 아래 선과 겹쳐 두 줄이 되지 않게 */
+.reader-settings .reader-settings__language-row {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.reader-settings .reader-setting-select {display:flex;align-items:center;gap:8px;min-width:0;font-size:.82rem;font-weight:500;}
+.reader-settings .reader-setting-select>span {flex:none;}
+.reader-settings .reader-setting-select select {flex:1;min-width:0;min-height:44px;padding:0 8px;border:1px solid var(--reader-line);border-radius:3px;background:var(--reader-paper);color:var(--reader-ink);font:inherit;font-size:.85rem;font-weight:400;cursor:pointer;}
+.reader-settings .reader-setting-select select:disabled {opacity:.55;cursor:default;}
+.reader-settings .reader-setting-select:has(select:disabled)>span {color:var(--reader-muted);}
+/* 선택 묶음의 「?」는 이름 줄 오른쪽 — 44px 타깃은 그대로, 위아래 음수 여백으로 줄 높이를 늘리지 않는다. 펼치면 아래로 한 줄. */
+.reader-settings .reader-setting-choices__head {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 8px;}
+.reader-settings .reader-setting-choices__head>.reader-settings__help {margin:-12px 0;}
+.reader-settings .reader-setting-choices__head>.reader-settings__help[open] {flex:0 0 100%;margin:-12px 0 0;}
+.reader-settings .reader-setting-choices__head>.reader-settings__help[open]>summary {margin-left:auto;}
+/* 쓸 수 없는 옵션: 꺼진 채 흐리게 + 이유 한 줄. */
+.reader-settings .reader-setting-reason {flex:0 0 100%;display:block;margin:0 0 6px;font-size:.78rem;line-height:1.5;color:var(--reader-muted);overflow-wrap:anywhere;}
+.reader-settings .reader-setting-toggle:has(input:disabled)>label {cursor:default;color:var(--reader-muted);}
+.reader-settings .reader-setting-choices--off>b {color:var(--reader-muted);}
+.reader-settings .reader-setting-choices--off button {opacity:.5;cursor:default;}
+/* 범례 — 상태 견본은 본문과 같은 클래스(.word-token--*)를 --hl 범위에서 그린다. 바탕은 테마 클래스의 면 칠 대신 창 종이. */
+.reader-settings .reader-settings__legend,.reader-settings .reader-settings__tones {flex:0 0 100%;display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;margin:0 0 8px;font-size:.78rem;color:var(--reader-ink);background:none;}
+.reader-settings .reader-settings__legend .word-token {pointer-events:none;cursor:default;}
+.reader-settings .reader-settings__legend .surface {padding-inline:4px;color:var(--reader-ink);}
+.reader-settings .reader-settings__tones>span {display:inline-flex;align-items:baseline;gap:4px;line-height:2;}
+.reader-settings .reader-settings__tones .rt-an {font-family:var(--font-noto-sans),sans-serif;font-size:1rem;font-weight:600;}
 .reader-settings .reader-setting-choices button {padding:4px 8px;min-width:44px;min-height:44px;font-size:.82rem;}
 .reader-settings .reader-settings__rates button {flex:1 0 4em;}
 .reader-settings .reader-settings__tabs {padding-top:4px;}
@@ -535,7 +566,7 @@
 .reader-settings .reader-settings__themes button:nth-child(2) {background:#f7f4eb;color:#594d35;}
 .reader-settings .reader-settings__themes button:nth-child(3) {background:#242824;color:#ecefe9;}
 .reader-settings .reader-settings__themes button[aria-pressed="true"] {outline:2px solid var(--reader-accent);outline-offset:2px;}
-.reader-settings .reader-setting-toggle {padding:4px 0;gap:4px;align-items:flex-start;}
+.reader-settings .reader-setting-toggle {padding:4px 0;gap:4px;align-items:flex-start;flex-wrap:wrap;}
 .reader-settings .reader-setting-toggle>label {min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex:1;cursor:pointer;}
 .reader-settings .reader-setting-toggle input {appearance:none;width:38px;height:24px;border-radius:20px;background:var(--reader-line);position:relative;margin:10px 0;cursor:pointer;}
 .reader-settings .reader-setting-toggle input::before {content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--reader-paper);}
@@ -554,7 +585,7 @@
 .reader-settings .reader-setting-toggle:has(>.reader-settings__help[open]) {flex-wrap:wrap;}
 .reader-settings .reader-setting-toggle>.reader-settings__help[open] {flex:0 0 100%;}
 .reader-settings .reader-setting-toggle>.reader-settings__help[open]>summary {margin-left:auto;}
-.reader-settings :is(button,input,summary):focus-visible {outline:2px solid var(--reader-accent);outline-offset:2px;}
+.reader-settings :is(button,input,summary,select):focus-visible {outline:2px solid var(--reader-accent);outline-offset:2px;}
 @media (forced-colors:active) {
   .reader-settings .reader-setting-toggle input {appearance:auto;width:24px;height:24px;}
   .reader-settings .reader-setting-toggle input::before {display:none;}

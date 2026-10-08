@@ -101,7 +101,6 @@ for(const theme of ['sepia','dark'])test(`R0 bug 2 — headword pinyin carries t
   await f.page.keyboard.press('Escape');
   await f.page.getByRole('button',{name:'Aa 읽기 설정',exact:true}).click();
   await f.page.getByRole('tab',{name:'학습 표시',exact:true}).click();
-  await f.page.getByText('성조·문법·한자 표시',{exact:true}).click();
   await f.page.getByRole('checkbox',{name:/^성조 색상/}).uncheck();
   await f.page.keyboard.press('Escape');
   await selectWord(f,0,2);
