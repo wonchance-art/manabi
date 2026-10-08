@@ -11,7 +11,7 @@ export function generateStaticParams() {
 export function generateMetadata({ params }) {
   const d = course.days.find((x) => String(x.day) === String(params.day));
   return {
-    title: d ? `Day ${d.day} · ${course.title}` : course.title,
+    title: d ? `${d.range} · ${course.title}` : course.title,
     robots: { index: false, follow: false },
     alternates: { canonical: null },
   };
@@ -128,7 +128,7 @@ export default function Nihongo42DayPage({ params }) {
           일본어 회화 표현 42
         </div>
         <h1 style={{ fontSize: '1.6rem', margin: '4px 0 0', fontVariantNumeric: 'tabular-nums' }}>
-          Day {d.day} <span style={{ color: 'var(--text-muted)', fontWeight: 500, fontSize: '1.05rem' }}>· {d.range}</span>
+          {d.range}
         </h1>
       </header>
 
@@ -153,17 +153,17 @@ export default function Nihongo42DayPage({ params }) {
         ))}
       </div>
 
-      <nav className="fr-pager" aria-label="Day 이동">
+      <nav className="fr-pager" aria-label="챕터 이동">
         {prev ? (
           <Link href={`/nihongo/${prev.day}`} className="fr-pager__link">
             <span className="fr-pager__dir">← 이전</span>
-            <span className="fr-pager__title">Day {prev.day} · {prev.range}</span>
+            <span className="fr-pager__title">{prev.range}</span>
           </Link>
         ) : <span />}
         {next ? (
           <Link href={`/nihongo/${next.day}`} className="fr-pager__link fr-pager__link--next">
             <span className="fr-pager__dir">다음 →</span>
-            <span className="fr-pager__title">Day {next.day} · {next.range}</span>
+            <span className="fr-pager__title">{next.range}</span>
           </Link>
         ) : <span />}
       </nav>

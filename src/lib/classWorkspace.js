@@ -1,4 +1,5 @@
 import {TEAM_KEY_RE, getTeam, todayKey} from './classBoard';
+import {courseInfo} from './classCourse';
 
 // A teacher owns this team; a global role or a reader URL never grants access.
 export function canTeachClass(user, root, material = null) {
@@ -31,15 +32,18 @@ export function classSettingsPatch(team, draft, books) {
   const bookKey = draft.bookKey || null;
   const selected = books.find(book => book.key === bookKey);
   if (bookKey && bookKey !== team.bookKey && !selected) throw new Error('연결할 교재를 다시 선택해 주세요.');
+  const course = draft.course || null;
+  if (course && !courseInfo(course)) throw new Error('연결할 코스를 다시 선택해 주세요.');
   return {name, lang: draft.lang, bookKey,
-    ...(bookKey !== team.bookKey ? {chapterId: null, bookTotal: selected?.count || null} : {})};
+    ...(bookKey !== team.bookKey ? {chapterId: null, bookTotal: selected?.count || null} : {}),
+    ...('course' in draft && course !== (team.course || null) ? {course} : {})};
 }
 
 // A remembered chapter may change while the settings form is open. Keep fields
 // the teacher did not touch, but never overwrite another writer's setting.
 export function rebaseClassSettings(base, latest, draft) {
   const merged = {...draft};
-  for (const field of ['name','lang','bookKey']) {
+  for (const field of ['name','lang','bookKey','course']) {
     const before = base[field] || '', now = latest[field] || '', input = draft[field] || '';
     if (input === before) merged[field] = now;
     else if (now !== before && now !== input) {
