@@ -20,6 +20,7 @@ import { canTeachClass, classWorkspaceHref } from '../lib/classWorkspace';
 import { fetchTeamRoot, fetchBookChapters } from '../lib/classTeamQueries';
 import { readIndexCache } from '../lib/classClient';
 import { useClassCourse, courseErrorText } from '../lib/classCourseClient';
+import { currentSchedule, kstToday, shortDate, sessionStatus } from '../lib/classSchedule';
 import { refInline, Callout } from './refShared';
 import { ClassroomShell, ClassroomState } from '../components/classroom/ClassroomUI';
 import { CoursePending, SpeakButton, Ja, HideToggle, Masked } from '../components/classroom/ClassCourseUI';
@@ -151,12 +152,21 @@ export default function ClassCourseDayPage() {
   if (!day) return <ClassroomState title="없는 Day예요."><Link className="classroom-button" href={`/class/${teamKey}?view=course`}>코스 목록</Link></ClassroomState>;
 
   const prev = course.days[idx - 1], next = course.days[idx + 1];
+  const today = kstToday();
+  const session = currentSchedule(q.data.team?.schedule, course.days.length, today)?.built.sessions[idx] || null;
+  const isTest = idx === course.days.length - 1;
   const home = `/class/${teamKey}?view=course`;
   return <ClassroomShell lang="Japanese" teamHome>
     <div className="course-back-row"><Link className="classroom-back" href={home}>← 코스 목록</Link><Link className="classroom-text-button" href={`/class/${teamKey}/test`}>🎯 테스트</Link></div>
     <header className="course-head">
       <span className="classroom-eyebrow">{course.title}</span>
       <h1>Day {day.day} <small>{day.range}</small></h1>
+      {(session || isTest) && <p className="course-head__date">
+        {session && <b>{shortDate(session.date)}</b>}
+        {session && sessionStatus(session.date, today) === 'today' && <span className="course-chip course-chip--next">오늘</span>}
+        {session && sessionStatus(session.date, today) === 'done' && <span className="course-chip">완료</span>}
+        {isTest && <span className="course-chip course-chip--test">수업 + 시험</span>}
+      </p>}
       <ol className="course-toc">{day.chapters.map((c, i) => <li key={c.n}><a href={`#ch-${c.n}`}><span>{CIRCLED[i]} Ch.{c.n}</span><span>{c.title}</span></a></li>)}</ol>
     </header>
 

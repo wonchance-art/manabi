@@ -4,16 +4,78 @@
 .course-list__head h2 {font-size:24px;letter-spacing:-.03em;margin:8px 0 4px}
 .course-list__head p {margin:0;color:var(--text-secondary);font-size:14px}
 .course-days {list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-.course-day-row {display:grid;grid-template-columns:auto 1fr auto;gap:4px 14px;align-items:baseline;padding:14px 16px;border:1px solid var(--border);border-radius:12px;background:var(--bg-primary);color:var(--text-primary);text-decoration:none}
-.course-day-row:hover {border-color:var(--class-main)}
-.course-day-row b {color:var(--class-ink);font-variant-numeric:tabular-nums;white-space:nowrap}
-.course-day-row__titles {font-size:14px;line-height:1.55;color:var(--text-secondary);word-break:keep-all}
-.course-badge {font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap;background:var(--bg-secondary);color:var(--text-muted)}
-.course-badge--done {background:var(--class-wash);color:var(--class-ink)}
+.course-day {border:1px solid var(--border);border-radius:12px;background:var(--bg-primary);overflow:hidden}
+.course-day--next {border-color:var(--class-main);box-shadow:0 0 0 1px var(--class-main)}
+.course-day--today {border-color:var(--class-main);background:var(--class-wash)}
+.course-day--done .course-day__body {opacity:.72}
+.course-day__date {display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 16px 0;font-variant-numeric:tabular-nums}
+.course-day__date b {font-size:15px;color:var(--text-primary);margin-right:4px}
+.course-day__edit {margin-left:auto;font-size:13px}
+.course-chip {font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--bg-secondary);color:var(--text-secondary)}
+.course-chip--next,.course-chip--test {background:var(--class-main);color:#fff}
+.course-chip--break {background:var(--bg-secondary);color:var(--danger)}
+.course-chip--holiday {color:var(--danger)}
+.course-day__body {display:block;padding:10px 16px 14px;color:var(--text-primary);text-decoration:none}
+.course-day__body:hover .course-day__go {color:var(--class-ink)}
+.course-day__head {display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums}
+.course-day__head b {color:var(--class-ink);font-size:16px}
+.course-day__head > span:nth-child(2) {font-size:13px;color:var(--text-muted)}
+.course-day__go {margin-left:auto;color:var(--text-muted)}
+.course-day__chapters {display:grid;grid-template-columns:auto auto 1fr;gap:8px 12px;align-items:baseline}
+.course-day__ch {display:contents}
+.course-day__n {color:var(--class-ink);font-weight:700;font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.course-day__jp {font-size:15px;font-weight:600;word-break:keep-all}
+.course-day__ko {font-size:14px;color:var(--text-secondary);line-height:1.5;word-break:keep-all;text-align:right}
+.course-hl {background:linear-gradient(transparent 55%,color-mix(in srgb,var(--class-main) 26%,transparent) 55%);font-weight:700;color:var(--text-primary);border-radius:2px;padding:0 1px}
+.course-day__note {margin:6px 16px 12px;font-size:14px;color:var(--text-secondary)}
+.course-badge {font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:var(--bg-secondary);color:var(--text-muted)}
+
+.course-progress {margin:0 0 16px;padding:14px 16px;border-radius:14px;background:var(--class-wash)}
+.course-progress__top {display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:space-between;align-items:baseline;font-size:14px;color:var(--text-secondary)}
+.course-progress__top b {color:var(--text-primary);font-size:15px}
+.course-progress__bar {height:8px;border-radius:999px;background:var(--bg-primary);margin:10px 0 6px;overflow:hidden}
+.course-progress__bar span {display:block;height:100%;background:var(--class-main);border-radius:999px}
+.course-progress__foot {display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums}
+
+.course-cal {margin:0 0 20px;padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--bg-primary)}
+.course-cal__nav {display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.course-cal__nav button {min-width:40px;min-height:40px;border-radius:999px;border:1px solid var(--border);background:var(--bg-primary);color:var(--text-primary);font-size:18px}
+.course-cal__grid {width:100%;border-collapse:collapse;table-layout:fixed}
+.course-cal__grid th {font-size:12px;font-weight:600;color:var(--text-muted);padding:4px 0}
+.course-cal__grid th:first-child,.course-cal__cell--holiday .course-cal__num {color:var(--danger)}
+.course-cal__grid td {padding:2px;vertical-align:top;height:52px}
+.course-cal__cell > a,.course-cal__cell > div {display:flex;flex-direction:column;align-items:center;gap:2px;height:100%;padding:4px 2px;border-radius:8px;text-decoration:none;color:var(--text-primary)}
+.course-cal__num {font-size:13px;font-variant-numeric:tabular-nums}
+.course-cal__tag {font-size:10px;font-weight:700;line-height:1.2;text-align:center;word-break:keep-all;color:var(--text-muted)}
+.course-cal__cell--class > a {background:var(--class-wash)}
+.course-cal__cell--class .course-cal__tag {color:var(--class-ink)}
+.course-cal__cell--test > a {background:var(--class-main)}
+.course-cal__cell--test .course-cal__num,.course-cal__cell--test .course-cal__tag {color:#fff}
+.course-cal__cell--break > div {background:var(--bg-secondary)}
+.course-cal__cell--break .course-cal__tag {color:var(--danger)}
+.course-cal__cell--next .course-cal__tag {color:var(--class-ink)}
+.course-cal__cell--holiday .course-cal__tag {color:var(--danger)}
+.course-cal__cell--done > a {opacity:.6}
+.course-cal__cell--today > a,.course-cal__cell--today > div {outline:2px solid var(--class-ink);outline-offset:-2px}
+.course-cal__legend {display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;margin:8px 0 0;font-size:12px;color:var(--text-muted)}
+.course-cal__key {display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:-6px}
+.course-cal__key--class {background:var(--class-wash);border:1px solid var(--class-main)}
+.course-cal__key--test {background:var(--class-main)}
+.course-cal__key--break {background:var(--bg-secondary);border:1px solid var(--danger)}
+.course-cal__key--holiday {background:var(--danger)}
+
+.course-date-edit {margin:8px 16px 4px;padding:12px;border-radius:12px;background:var(--bg-secondary);display:flex;flex-direction:column;gap:8px;font-size:14px}
+.course-date-edit label {display:flex;flex-direction:column;gap:4px;font-weight:600}
+.course-date-edit p {margin:0;color:var(--text-secondary);line-height:1.6}
+.course-date-edit .course-date-edit__error {color:var(--danger)}
+.course-date-edit__actions {display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.course-list > .course-date-edit {margin:0 0 16px}
 
 .course-back-row {display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
 .course-head h1 {font-size:clamp(28px,4cqi,40px);letter-spacing:-.04em;margin:8px 0 12px;font-variant-numeric:tabular-nums}
 .course-head h1 small {font-size:.5em;color:var(--text-muted);font-weight:500;letter-spacing:0}
+.course-head__date {display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:-4px 0 14px;font-variant-numeric:tabular-nums}
+.course-head__date b {font-size:16px}
 .course-toc {list-style:none;margin:0 0 20px;padding:0;display:flex;flex-direction:column;gap:6px}
 .course-toc a {display:flex;gap:10px;align-items:baseline;color:var(--text-primary);text-decoration:none;font-size:15px}
 .course-toc a span:first-child {color:var(--class-ink);font-weight:700;font-size:13px;min-width:3.4em}
@@ -115,8 +177,9 @@
 /* 접힘은 수업 셸 폭 기준(@container) — 뷰포트 쿼리 총량 동결(ui-conventions §2). */
 @container (max-width: 600px) {
   .course-card {padding:20px 16px}
-  .course-day-row {grid-template-columns:auto 1fr}
-  .course-day-row .course-badge {grid-column:1 / -1;justify-self:start}
+  .course-day__chapters {grid-template-columns:auto 1fr}
+  .course-day__ko {grid-column:2;text-align:left;margin-top:-6px}
+  .course-cal__grid td {height:46px}
   .course-line {grid-template-columns:auto 1fr}
   .course-drills .course-line {grid-template-columns:2em 1fr}
   .course-line .course-speak {grid-column:2;justify-self:start}

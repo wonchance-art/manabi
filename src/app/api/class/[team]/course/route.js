@@ -34,7 +34,7 @@ export async function GET(request, { params }) {
     if (access.error) return access.error;
     const course = loadCourse(access.team.course);
     if (!course) return reply({ error: 'no_course' }, 404);
-    return reply({ team: { key: access.team.key, name: access.team.name, lang: access.team.lang }, course });
+    return reply({ team: { key: access.team.key, name: access.team.name, lang: access.team.lang, schedule: access.team.schedule || null }, course });
   } catch (err) {
     console.error('[api/class/course]', err?.message);
     return reply({ error: 'internal' }, 500);

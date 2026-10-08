@@ -6,6 +6,7 @@
  *
  *   팀 루트 자료   metadata.team = { key, name, lang, bookKey, bookTotal, chapterId, course, pwHash, pwSalt, pwGen, root: true }
  *                  course = 연결한 수업 코스 키(classCourse.COURSES) — 있으면 팀 페이지에 「코스」 탭
+ *                  schedule = 코스 일정(classSchedule) — { start, weekdays, moves, round }
  *   그날 정리본    metadata.team = { key, day, chapterId }   · raw_text = 항목마다 한 문단(빈 줄 구분)
  *
  * 항목을 문단(빈 줄)으로 가르는 이유: 분석 파이프라인(analyzeText)이 문단 단위로 재사용/재분석을
@@ -13,6 +14,7 @@
  */
 
 import { COURSE_KEY_RE } from './classCourse.js';
+import { parseSchedule } from './classSchedule.js';
 
 /** 팀 키 — URL 조각. 소문자·숫자·하이픈 1~16자, 하이픈으로 시작하지 않는다(`/class/a`). 생성 후 불변. */
 export const TEAM_KEY_RE = /^[a-z0-9][a-z0-9-]{0,15}$/;
@@ -38,6 +40,7 @@ export function getTeam(metadata) {
     out.bookTotal = Number.isFinite(Number(t.bookTotal)) && Number(t.bookTotal) > 0 ? Number(t.bookTotal) : null;
     out.chapterId = t.chapterId != null && String(t.chapterId) ? String(t.chapterId) : null;
     out.course = typeof t.course === 'string' && COURSE_KEY_RE.test(t.course) ? t.course : null;
+    out.schedule = parseSchedule(t.schedule);
     out.pwHash = typeof t.pwHash === 'string' ? t.pwHash : null;
     out.pwSalt = typeof t.pwSalt === 'string' ? t.pwSalt : null;
     out.pwGen = Number.isFinite(Number(t.pwGen)) ? Number(t.pwGen) : 0;

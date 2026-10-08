@@ -20,6 +20,7 @@ import { useClassCourse, courseErrorText } from '../lib/classCourseClient';
 import {
   coursePool, buildTestSheet, newSheetNo, passMark, siblingChapters, shuffled, seededRandom, TEST_SIZE,
 } from '../lib/classCourse';
+import { currentSchedule, kstToday, shortDate } from '../lib/classSchedule';
 import { ClassroomShell, ClassroomState } from '../components/classroom/ClassroomUI';
 import { CoursePending, SpeakButton, Ja } from '../components/classroom/ClassCourseUI';
 
@@ -207,6 +208,7 @@ export default function ClassCourseTestPage() {
   if (q.error) return <ClassroomState title={courseErrorText(q.error)}><Link className="classroom-button" href={`/class/${teamKey}`}>수업 홈으로</Link></ClassroomState>;
 
   const active = mode || (teacher ? 'test' : 'practice');
+  const testDate = currentSchedule(q.data.team?.schedule, course.days.length, kstToday())?.built.testDate;
   const total = course.days.length * 30;
   return <ClassroomShell lang="Japanese" teamHome>
     <div className="course-back-row"><Link className="classroom-back" href={`/class/${teamKey}?view=course`}>← 코스 목록</Link></div>
@@ -215,7 +217,7 @@ export default function ClassCourseTestPage() {
       <button type="button" aria-pressed={active === 'test'} onClick={() => setMode('test')}>{teacher ? '시험 (10문제)' : '모의 시험 (10문제)'}</button>
       <button type="button" aria-pressed={active === 'practice'} onClick={() => setMode('practice')}>연습</button>
     </div>
-    <div className="course-test-meta"><span>출제 범위: {rangeLabel(pool)}</span><span>예문 {pool.length}/{total} 입력</span></div>
+    <div className="course-test-meta"><span>출제 범위: {rangeLabel(pool)}</span><span>예문 {pool.length}/{total} 입력</span>{testDate && <span>시험일 {shortDate(testDate)} (Day {course.days.length} 수업 날)</span>}</div>
     {active === 'test' && pool.length >= TEST_SIZE && <SheetNote pool={pool} course={course} />}
     {active === 'test' ? <TestMode course={course} pool={pool} teacher={teacher} speak={speak} /> : <PracticeMode course={course} pool={pool} speak={speak} />}
   </ClassroomShell>;
