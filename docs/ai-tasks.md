@@ -902,8 +902,10 @@
   정본 = [R0 버그](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6031758159) · [v2 라운드](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036574287).
   - **M09 운영 사후 검수 배정** [VIEWER-V2-POSTDEPLOY-001](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6055568056)
     (운영 `b909f9c1` · 비관리자 실계정 · 320/390/1440 · iOS Safari · 보존 지문 Q6·Q8 · 공유 사전 쓰기 금지). 보고 대기 — FAIL은 재현 테스트 먼저 → PR.
-  - Claude 다음: ZH-SENSE-HOLDOUT-001 측정 후보를 M09 스냅숏 [6047879865](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6047879865)로
-    교체하는 PR(실행 전 교체 — 보류 세트 소모 방지) → M09 Gemini 측정 배정 → 사람 판정 → 상수 켜기 별도 PR.
+  - ZH-SENSE-HOLDOUT-001 측정 후보 교체(`claude/work-env-agent-setup-1v9a0a`): M09 스냅숏 [6047879865](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6047879865)로
+    운영 행 있는 16표제어(37사례) 교체 · 행 없는 19표제어(27사례)는 생성 대기(`generate-zh-sense-candidates.mjs`, DB 쓰기 0).
+    발견: 운영 행이 얇아 37건 중 15건은 맞는 뜻이 후보에 없음(→ ctx 정답) · 보류 운영 행 16건 중 1차 규칙 후보는 5건뿐(→ `--offer-single` 병행).
+    다음: M09 생성 실행 → Claude 세트 반영·재번호 PR → M09 Gemini 측정(기본 + `--offer-single`) → 사람 판정 → 상수 켜기 별도 PR.
   - 상수 꺼진 채 운영: AD-R4 `ZH_SENSE_REVIEW`(#1372) · `ZH_BOUNDARY_REVIEW`(#1384) — 운영 동작 동일(바이트 스냅숏).
   - 보류: AE-R3 PR③(공유 사전 요미 쓰기 — 공유 사전 정책 대기) · AD-R3 PR④(규칙 표 DDL — 미구현, 구현 후 Preview 리허설) ·
     AD-R3 한국어(어절 칼선 A/B).

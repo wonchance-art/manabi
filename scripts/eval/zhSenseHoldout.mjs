@@ -16,7 +16,9 @@ export const VERDICTS = Object.freeze(['PASS', 'FAIL', 'REVIEW', 'BLOCKED', 'ERR
 export const ARMS = Object.freeze(['B0', 'B1', 'N']);
 
 const MAX_CANDIDATES = ZH_SENSE_MAX_CANDIDATES; // 설계서 §4.1 — 사전 행 meanings 상한과 같다
-const MAX_PAIRS = 20;          // 설계서 §4.2 — 요청당 묶음 판정 상한
+const MAX_PAIRS = 20;
+/** 운영 사전 스냅숏에서 온 후보의 candidatesSource 머리(뒤에 날짜). 임시 후보는 provisional:*. */
+export const SNAPSHOT_SOURCE = 'morpheme_dictionary@';          // 설계서 §4.2 — 요청당 묶음 판정 상한
 const HANGUL = /[가-힣]/;
 const HAS_HANZI = /[一-鿿]/;
 
@@ -43,6 +45,7 @@ export function validateHoldout(set) {
   const ids = new Set();
   const sentenceSplit = new Map();
   const byId = new Map(cases.map((c) => [c.id, c]));
+  const snapshotRows = new Map((set?.snapshot?.rows || []).map((r) => [r.base_form, r]));
   for (const c of cases) {
     const at = c?.id ?? '(id 없음)';
     if (ids.has(c.id)) problems.push(`${at}: id 중복`);
@@ -80,7 +83,15 @@ export function validateHoldout(set) {
     if ((c.forbidden || []).some((f) => !clean(f.why))) problems.push(`${at}: 금지 오답에 이유 없음`);
     if (c.cat === 'E') {
       if (!acceptCtx.length || acceptSense.length) problems.push(`${at}: E는 후보 밖 정답(accept.ctx)만`);
-    } else if (!acceptSense.length) problems.push(`${at}: accept.sense 비어 있음`);
+    } else if (!acceptSense.length && !acceptCtx.length) problems.push(`${at}: accept 비어 있음(sense 또는 ctx)`);
+    // 운영 행 후보는 스냅숏 행의 앞 3개와 순서·문구·품사가 같아야 한다(손으로 고친 후보가 「운영 행」으로 둔갑하지 않게).
+    if (String(c.candidatesSource || '').startsWith(SNAPSHOT_SOURCE)) {
+      const row = snapshotRows.get(t.base);
+      const want = row ? row.meanings.slice(0, MAX_CANDIDATES).map((m) => ({ meaning: m.meaning, pos: m.pos })) : null;
+      const got = (c.candidates || []).map((m) => ({ meaning: m.meaning, pos: m.pos }));
+      if (!row) problems.push(`${at}: 스냅숏에 ${t.base} 행 없음`);
+      else if (JSON.stringify(want) !== JSON.stringify(got)) problems.push(`${at}: 후보가 스냅숏 ${t.base} 행과 다름`);
+    }
     for (const s of [...acceptSense, ...forbidSense]) if (!Number.isInteger(s) || s < 1 || s > n) problems.push(`${at}: 후보 번호 ${s} 범위 밖`);
     const overlap = acceptSense.filter((s) => forbidSense.includes(s));
     if (overlap.length) problems.push(`${at}: 허용과 금지가 겹침 ${overlap.join(',')}`);
@@ -104,6 +115,17 @@ export function validateHoldout(set) {
     }
   }
   return problems;
+}
+
+/**
+ * 운영 사전에 아직 행이 없어 임시 후보로 남은 표제어(생성 대기) — 뜻 사례의 기본형, 중복 없이 정렬.
+ * 측정 전에 scripts/eval/generate-zh-sense-candidates.mjs가 운영 생성 경로(fetchMeaningsForMissing)로 얼린다.
+ */
+export function pendingCandidateForms(set) {
+  const forms = (set?.cases || [])
+    .filter((c) => c.cat !== 'D' && String(c.candidatesSource || '').startsWith('provisional'))
+    .map((c) => c.target.base);
+  return [...new Set(forms)].sort();
 }
 
 // ───────────────────────── 뜻 정규화 ─────────────────────────
@@ -216,6 +238,9 @@ export function evaluateRelease(set, rows, stats) {
   const failB1 = fails(b1).length;
   const failN = fails(n).length;
   const reduction = failB1 ? (failB1 - failN) / failB1 : 0;
+  // 운영 행이 아닌 임시 후보로 잰 사례가 남아 있으면 결과가 운영을 대표하지 않는다 — 생성 후보로 얼린 뒤 다시 잰다.
+  const provisional = (set.cases || []).filter((c) => c.split === split && c.cat !== 'D' && String(c.candidatesSource || '').startsWith('provisional')).map((c) => c.id);
+  if (provisional.length) reasons.push(`임시 후보 ${provisional.length}건(${provisional.join(', ')}) — 운영 생성 경로로 얼린 후보로 바꾸기 전에는 판정하지 않는다`);
   if (errors) reasons.push(`호출 오류 ${errors}건 — 재실행 필요`);
   if (criteria.criticalFailBelowB1 !== false && !(critFail(n) < critFail(b1))) reasons.push(`치명 범주 FAIL이 줄지 않음(B1 ${critFail(b1)} → N ${critFail(n)})`);
   if (wrongAutoMerge.length > (criteria.wrongAutoMergeMax ?? 0)) reasons.push(`오병합 자동 적용 ${wrongAutoMerge.length}건: ${wrongAutoMerge.join(', ')}`);

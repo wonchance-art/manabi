@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  baselineB0, buildParagraphs, buildZhSensePromptDraft, collectPairCandidates, evaluateRelease, matchCandidate,
-  scoreCase, senseFragments, summarize, validateHoldout, validateSensePickDraft,
+  SNAPSHOT_SOURCE, baselineB0, buildParagraphs, buildZhSensePromptDraft, collectPairCandidates, evaluateRelease, matchCandidate,
+  pendingCandidateForms, scoreCase, senseFragments, summarize, validateHoldout, validateSensePickDraft,
 } from '../../../scripts/eval/zhSenseHoldout.mjs';
 import { disambiguateZhPos, pickZhMeaning, zhPosMarkKey } from '../server/disambiguateZhPos.js';
 import { isCanonPos } from '../server/posCanon.js';
@@ -13,6 +13,16 @@ import { isCanonPos } from '../server/posCanon.js';
 const set = JSON.parse(readFileSync(new URL('../../../docs/verification/zh-sense-holdout-20261008.json', import.meta.url), 'utf8'));
 const byId = (id) => set.cases.find((c) => c.id === id);
 const clone = (x) => JSON.parse(JSON.stringify(x));
+
+// 채점·검증 규칙 시험용 고정 사례 — 세트 PR①의 임시 후보 그대로 얼린 것. 세트 후보는 운영 스냅숏·생성 후보로 바뀌므로
+// 규칙 시험이 세트 데이터 변화에 끌려가지 않게 여기 둔다(세트 자체의 무결성은 위 「측정 세트」 묶음이 본다).
+const FIX = {
+  B01: { id: 'B01', cat: 'B', split: 'tune', pos: '동사', candidates: [{ meaning: '때리다, 치다', pos: '동사' }, { meaning: '(전화를) 걸다', pos: '동사' }, { meaning: '(운동을) 하다', pos: '동사' }], accept: { sense: [2] }, forbidden: [{ sense: 1, why: '전화를 때리지 않는다' }, { sense: 3, why: '운동이 아님' }] },
+  B13: { id: 'B13', cat: 'B', split: 'holdout', pos: '동사', candidates: [{ meaning: '보내다', pos: '동사' }, { meaning: '선물하다', pos: '동사' }, { meaning: '배웅하다', pos: '동사' }], accept: { sense: [2] }, forbidden: [{ sense: 3, why: '배웅이 아님' }] },
+  C01: { id: 'C01', cat: 'C', split: 'tune', pos: '동사', candidates: [{ meaning: '~에 있다', pos: '동사' }, { meaning: '~에서', pos: '전치사' }, { meaning: '~하고 있다', pos: '부사' }], accept: { sense: [1] }, forbidden: [{ sense: 3, why: '진행이 아님' }] },
+  E03: { id: 'E03', cat: 'E', split: 'tune', pos: '형용사', candidates: [{ meaning: '불', pos: '명사' }], accept: { ctx: ['인기', '잘나가', '핫하', '유행'] }, forbidden: [{ sense: 1, why: '불이 아님' }, { ctx: '화나', why: '화가 난 것이 아님' }, { ctx: '화가', why: '화가 난 것이 아님' }] },
+  E04: { id: 'E04', cat: 'E', split: 'tune', pos: '동사', candidates: [{ meaning: '검다', pos: '형용사' }], accept: { ctx: ['해킹'] }, forbidden: [{ sense: 1, why: '색이 아님' }, { ctx: '검', why: '색이 아님' }, { ctx: '어둡', why: '밝기가 아님' }] },
+};
 
 describe('측정 세트 — 무결성', () => {
   it('형식 검증을 통과하고 조정 40 · 보류 40이다', () => {
@@ -56,9 +66,9 @@ describe('측정 세트 — 무결성', () => {
     }
   });
 
-  it('E는 후보 밖 정답(ctx)만, 나머지 뜻 사례는 후보 번호 정답을 갖는다', () => {
+  it('E는 후보 밖 정답(ctx)만, 나머지 뜻 사례는 후보 번호 또는 후보 밖 정답을 갖는다(운영 행에 맞는 뜻이 없으면 ctx)', () => {
     for (const c of set.cases.filter((x) => x.cat === 'E')) expect(c.accept.ctx?.length && !c.accept.sense, c.id).toBeTruthy();
-    for (const c of set.cases.filter((x) => !['D', 'E'].includes(x.cat))) expect(c.accept.sense?.length, c.id).toBeGreaterThan(0);
+    for (const c of set.cases.filter((x) => !['D', 'E'].includes(x.cat))) expect((c.accept.sense?.length || 0) + (c.accept.ctx?.length || 0), c.id).toBeGreaterThan(0);
   });
 
   it('기대 품사와 후보 품사는 중국어 품사 정본 안에 있다', () => {
@@ -68,8 +78,23 @@ describe('측정 세트 — 무결성', () => {
     }
   });
 
-  it('후보는 아직 운영 스냅숏이 아니라 임시 후보임을 사례마다 표시한다', () => {
-    for (const c of set.cases.filter((x) => x.cat !== 'D')) expect(c.candidatesSource, c.id).toMatch(/^provisional:/);
+  it('운영 행이 있는 표제어는 스냅숏 행 그대로(앞 3개·순서·품사), 없는 표제어만 임시 후보(생성 대기)다', () => {
+    const rows = new Map(set.snapshot.rows.map((r) => [r.base_form, r]));
+    for (const c of set.cases.filter((x) => x.cat !== 'D')) {
+      const row = rows.get(c.target.base);
+      if (row) {
+        expect(c.candidatesSource, c.id).toBe(`${SNAPSHOT_SOURCE}${set.snapshot.date}`);
+        expect(c.candidates, c.id).toEqual(row.meanings.slice(0, 3).map((m) => ({ meaning: m.meaning, pos: m.pos })));
+      } else expect(c.candidatesSource, c.id).toMatch(/^provisional:/);
+    }
+  });
+
+  it('스냅숏은 M09 읽기 전용 조회 결과이고, 생성 대기 표제어 = 스냅숏의 「행 없음」 19개다', () => {
+    expect(set.snapshot.report).toMatch(/issuecomment-6047879865$/);
+    expect(set.snapshot.sql).toBe('docs/sql/zh-sense-holdout-snapshot-readonly.sql');
+    expect(set.snapshot.rows.every((r) => r.source === 'gemini')).toBe(true);
+    expect(set.snapshot.missing).toHaveLength(19);
+    expect(pendingCandidateForms(set)).toEqual([...set.snapshot.missing].sort());
   });
 
   it('번체 쌍둥이는 쌍과 같은 세트·같은 기대 답이다', () => {
@@ -86,8 +111,16 @@ describe('측정 세트 — 무결성', () => {
     expect(validateHoldout(shared).join('\n')).toContain('A07: 조정·보류가 같은 문장을 공유함');
 
     const overlap = clone(set);
-    overlap.cases.find((c) => c.id === 'B01').forbidden.push({ sense: 2, why: 'x' });
-    expect(validateHoldout(overlap).join('\n')).toContain('B01: 허용과 금지가 겹침 2');
+    overlap.cases.find((c) => c.id === 'A01').forbidden.push({ sense: 1, why: 'x' });
+    expect(validateHoldout(overlap).join('\n')).toContain('A01: 허용과 금지가 겹침 1');
+
+    const forged = clone(set);
+    forged.cases.find((c) => c.id === 'B01').candidates[1].meaning = '(전화를) 걸다';
+    expect(validateHoldout(forged).join('\n')).toContain('B01: 후보가 스냅숏 打 행과 다름');
+
+    const empty = clone(set);
+    empty.cases.find((c) => c.id === 'C10').accept = {};
+    expect(validateHoldout(empty).join('\n')).toContain('C10: accept 비어 있음');
 
     const moved = clone(set);
     moved.cases.find((c) => c.id === 'C01').target.index = 0;
@@ -104,10 +137,7 @@ describe('측정 세트 — 무결성', () => {
 });
 
 describe('채점 — 판정 규칙', () => {
-  const B01 = byId('B01'); // 打电话: ②(전화를) 걸다 허용, ①·③ 금지
-  const B13 = byId('B13'); // 送花: ② 허용, ③ 금지, ① 지정 밖
-  const E03 = byId('E03'); // 火: 후보 밖 「인기 있다」
-  const E04 = byId('E04'); // 黑: 1글자 금지 표현 「검」
+  const { B01, B13, E03, E04 } = FIX; // 打电话 ②걸다 허용·①③ 금지 / 送花 ② 허용·③ 금지·① 지정 밖 / 火 후보 밖 「인기」 / 黑 1글자 금지 「검」
 
   it('허용 후보 = PASS, 금지 후보 = FAIL, 지정 밖 후보 = REVIEW', () => {
     expect(scoreCase(B01, { meaning: '(전화를) 걸다' })).toMatchObject({ verdict: 'PASS', sense: 2 });
@@ -145,9 +175,10 @@ describe('채점 — 판정 규칙', () => {
     expect(scoreCase(D05, {}).verdict).toBe('ERROR');
   });
 
-  it('B0는 현행 pickZhMeaning(후보, 정답 품사) — 품사를 맞혀도 같은 품사 다의는 첫 뜻이다', () => {
+  it('B0는 현행 pickZhMeaning(후보, 정답 품사) — 운영 후보로도 같은 품사 다의는 첫 뜻이다', () => {
     expect(scoreCase(byId('A02'), baselineB0(byId('A02'), pickZhMeaning)).verdict, '겸류는 품사로 갈린다').toBe('PASS');
-    expect(scoreCase(B01, baselineB0(B01, pickZhMeaning)).verdict, '같은 품사 다의는 못 가른다').toBe('FAIL');
+    expect(scoreCase(byId('B01'), baselineB0(byId('B01'), pickZhMeaning)).verdict, '打电话 → 운영 첫 뜻 「때리다」').toBe('FAIL');
+    expect(scoreCase(byId('C04'), baselineB0(byId('C04'), pickZhMeaning)).verdict, '给 동사 — 운영 행 품사 태그로 「주다」').toBe('PASS');
     expect(scoreCase(byId('C10'), baselineB0(byId('C10'), pickZhMeaning)).verdict).toBe('FAIL');
     expect(scoreCase(byId('D06'), baselineB0(byId('D06'), pickZhMeaning, true)).verdict, '현행 把手 오병합').toBe('FAIL');
     expect(baselineB0(byId('D06'), pickZhMeaning).error).toBeTruthy();
@@ -163,7 +194,7 @@ describe('채점 — 판정 규칙', () => {
 });
 
 describe('N 시안 응답 검증 — 설계서 §4.3 표', () => {
-  const cands = byId('B01').candidates;
+  const cands = FIX.B01.candidates;
   const mark = { word: '打', candidates: cands };
   const isCanon = (p) => isCanonPos('Chinese', p);
 
@@ -172,7 +203,7 @@ describe('N 시안 응답 검증 — 설계서 §4.3 표', () => {
   });
   it('정수 sense 1..n은 그 후보 문구를 그대로 쓴다. 후보 품사가 판정 품사와 다르면 doubt', () => {
     expect(validateSensePickDraft({ all: ['동사'], pos: '동사', sense: 2 }, mark, isCanon).sense).toEqual({ meaning: '(전화를) 걸다', via: 'sense' });
-    const zai = byId('C01').candidates;
+    const zai = FIX.C01.candidates;
     expect(validateSensePickDraft({ all: ['동사', '전치사'], pos: '동사', sense: 2 }, { word: '在', candidates: zai }, isCanon).sense)
       .toEqual({ meaning: '~에서', via: 'sense', meaningCheck: 'doubt' });
   });
@@ -230,7 +261,7 @@ describe('N 시안 프롬프트 — 현행 프롬프트 + 추가분', () => {
 
   it('후보 있는 단어에만 「뜻 후보」를, 쌍의 앞 토큰에만 [묶음 판정]을 붙이고 규칙을 더한다', () => {
     const withExtras = [
-      { ...marks[0], candidates: byId('B01').candidates },
+      { ...marks[0], candidates: FIX.B01.candidates },
       marks[1],
       { lineIdx: 1, word: '个', key: zhPosMarkKey(1, '个'), pair: ['个', '人'] },
     ];
@@ -265,23 +296,34 @@ describe('실행 묶음 · 쌍 후보 · 켜는 기준', () => {
 
   const rowsOf = (arm, verdicts) => Object.entries(verdicts).map(([id, verdict]) => ({ arm, id, cat: byId(id).cat, split: byId(id).split, verdict }));
   const stats = { b1: { calls: [1, 1], ms: [800, 900] }, n: { calls: [1, 1], ms: [900, 1200] } };
+  // 판정 규칙 시험은 생성 후보로 얼린 뒤의 세트를 흉내 낸다(임시 후보가 남으면 그 자체가 보류 사유 — 아래 따로 시험).
+  const frozen = clone(set);
+  for (const c of frozen.cases) if (String(c.candidatesSource).startsWith('provisional')) c.candidatesSource = 'generated:test';
+
+  it('보류 세트에 임시 후보가 남아 있으면 다른 기준을 넘어도 보류다', () => {
+    const b1 = rowsOf('B1', { B11: 'FAIL', B12: 'FAIL', C10: 'FAIL', A07: 'PASS', D09: 'PASS' });
+    const n = rowsOf('N', { B11: 'PASS', B12: 'PASS', C10: 'FAIL', A07: 'PASS', D09: 'PASS' });
+    const r = evaluateRelease(set, [...b1, ...n], stats);
+    expect(r.status).toBe('보류');
+    expect(r.reasons.join('\n')).toMatch(/^임시 후보 \d+건\(A07, A08, .*\) — 운영 생성 경로로 얼린 후보로 바꾸기 전에는 판정하지 않는다$/m);
+  });
 
   it('보류 세트에서 치명 FAIL 감소 · 전체 FAIL 30% 이상 감소 · PASS→FAIL ≤1 · 호출 수 같음이면 충족', () => {
     const b1 = rowsOf('B1', { B11: 'FAIL', B12: 'FAIL', C10: 'FAIL', A07: 'PASS', D09: 'PASS' });
     const n = rowsOf('N', { B11: 'PASS', B12: 'PASS', C10: 'FAIL', A07: 'PASS', D09: 'PASS' });
-    expect(evaluateRelease(set, [...b1, ...n], stats)).toMatchObject({ status: '켜기 기준 충족', reasons: [] });
+    expect(evaluateRelease(frozen, [...b1, ...n], stats)).toMatchObject({ status: '켜기 기준 충족', reasons: [] });
   });
 
   it('조정 세트 결과는 기준에 넣지 않는다', () => {
     const rows = [...rowsOf('B1', { B01: 'FAIL', B02: 'FAIL' }), ...rowsOf('N', { B01: 'PASS', B02: 'PASS' })];
-    expect(evaluateRelease(set, rows, stats).status).toBe('보류');
+    expect(evaluateRelease(frozen, rows, stats).status).toBe('보류');
   });
 
   it('자동 오병합 1건, PASS→FAIL 2건, 감소 30% 미만, 호출 수 차이는 각각 보류 사유다', () => {
     const b1 = rowsOf('B1', { B11: 'FAIL', B12: 'FAIL', B13: 'FAIL', A07: 'PASS', A08: 'PASS', D09: 'PASS' });
     const n = rowsOf('N', { B11: 'PASS', B12: 'FAIL', B13: 'FAIL', A07: 'FAIL', A08: 'FAIL', D09: 'FAIL' });
     n.find((r) => r.id === 'D09').wrongAutoMerge = true;
-    const r = evaluateRelease(set, [...b1, ...n], { b1: stats.b1, n: { calls: [1, 2], ms: stats.n.ms } });
+    const r = evaluateRelease(frozen, [...b1, ...n], { b1: stats.b1, n: { calls: [1, 2], ms: stats.n.ms } });
     expect(r.status).toBe('보류');
     const text = r.reasons.join('\n');
     expect(text).toContain('오병합 자동 적용 1건: D09');
@@ -292,8 +334,8 @@ describe('실행 묶음 · 쌍 후보 · 켜는 기준', () => {
 
   it('기준을 넘어도 REVIEW가 남으면 사람 판정 대기, 호출 오류가 있으면 보류', () => {
     const b1 = rowsOf('B1', { B11: 'FAIL', B12: 'FAIL', A07: 'PASS' });
-    expect(evaluateRelease(set, [...b1, ...rowsOf('N', { B11: 'PASS', B12: 'PASS', A07: 'REVIEW' })], stats).status).toBe('사람 판정 대기');
-    expect(evaluateRelease(set, [...b1, ...rowsOf('N', { B11: 'PASS', B12: 'ERROR', A07: 'PASS' })], stats).reasons.join()).toContain('호출 오류');
+    expect(evaluateRelease(frozen, [...b1, ...rowsOf('N', { B11: 'PASS', B12: 'PASS', A07: 'REVIEW' })], stats).status).toBe('사람 판정 대기');
+    expect(evaluateRelease(frozen, [...b1, ...rowsOf('N', { B11: 'PASS', B12: 'ERROR', A07: 'PASS' })], stats).reasons.join()).toContain('호출 오류');
   });
 
   it('집계는 팔·세트별 판정 수와 치명 범주 FAIL을 센다', () => {

@@ -11,7 +11,9 @@
 //       제품 경계 결정(applyZhBoundaryJoins — 등재 + join:true만 자동 묶기, 미등재 + join:true는 후보) →
 //       resolveZhTokenSense로 토큰 뜻 결정(라우트와 같은 함수). D 범주는 이 최종 토큰으로 채점한다.
 //       라우트와 다른 점 하나: 묶은 꼴의 뜻을 붙일 수 있는지(canJoin — 라우트는 사전 행이 있어야 묶는다, 행이 없는 등재 꼴은 같은
-//       병렬 뜻 조회로 받는다)는 재지 않는다. 세트 후보 스냅숏에는 이은 꼴의 행이 없고, 뜻 조회는 경계 판정과 다른 축이기 때문이다.
+//       병렬 뜻 조회로 받는다)는 재지 않는다. 뜻 조회는 경계 판정과 다른 축이기 때문이다.
+//   사전 캐시: 세트 snapshot.rows(운영 morpheme_dictionary 스냅숏)를 운영과 같은 모양으로 넣는다. 운영에 아직 행이 없는
+//       표제어만 사례의 임시 후보(provisional)를 쓴다 — 결과 머리에 그 수가 찍히고, 남아 있으면 켜기 판정에 쓰지 않는다.
 //
 // 사용(Node 24, 리포 루트):
 //   node scripts/eval/run-zh-sense-holdout.mjs --dry-run        # 세트 검증 + B0 + 현행 토큰화·프롬프트 대조(호출 0)
@@ -23,30 +25,14 @@
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { registerHooks } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import './productImportHooks.mjs'; // 제품 서버 모듈의 번들러식 import를 이 프로세스에서 풀게 한다(동적 import 전에 등록)
 import {
-  ARMS, CATEGORIES, SPLITS, baselineB0, buildParagraphs, buildZhSensePromptDraft,
-  evaluateRelease, scoreCase, summarize, validateHoldout,
+  ARMS, CATEGORIES, SNAPSHOT_SOURCE, SPLITS, baselineB0, buildParagraphs, buildZhSensePromptDraft,
+  evaluateRelease, pendingCandidateForms, scoreCase, summarize, validateHoldout,
 } from './zhSenseHoldout.mjs';
-
-// 제품 서버 모듈은 번들러 관례(확장자 없는 상대 import·JSON import)를 쓴다. 이 프로세스에서만 Node가 풀 수 있게 한다.
-registerHooks({
-  resolve(specifier, context, next) {
-    try { return next(specifier, context); } catch (err) {
-      if (/^\.{1,2}\//.test(specifier) && !/\.(?:[cm]?js|json)$/.test(specifier)) return next(`${specifier}.js`, context);
-      throw err;
-    }
-  },
-  load(url, context, next) {
-    if (url.startsWith('file:') && url.endsWith('.json')) {
-      return { format: 'module', source: `export default ${readFileSync(fileURLToPath(url), 'utf8')};`, shortCircuit: true };
-    }
-    return next(url, context);
-  },
-});
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const holdoutPath = join(root, 'docs/verification/zh-sense-holdout-20261008.json');
@@ -83,6 +69,8 @@ const provenance = {
   tier: 'light', generation: { temperature: 0, timeoutMs: 15000, groq: false },
   options: { split: splitOpt, offerSingle, markAllTargets },
   provisionalCandidates: cases.filter((c) => String(c.candidatesSource || '').startsWith('provisional')).length,
+  pendingForms: pendingCandidateForms({ cases }),
+  snapshot: set.snapshot ? { date: set.snapshot.date, report: set.snapshot.report, rows: set.snapshot.rows.length } : null,
 };
 
 // ───────────── 문단 준비(오프라인) ─────────────
@@ -92,13 +80,26 @@ const spansOf = (tokens) => { let at = 0; return tokens.map((t) => { const s = {
 const tokenAt = (tokens, index) => spansOf(tokens).find((s) => s.start <= index && index < s.end) || null;
 const cacheKey = (t) => t.sep_link || t.base_form;
 
+// 운영 사전 스냅숏 행(세트 snapshot.rows) — 사례 후보의 출처이자, 이은 꼴(个人·人才 등) gemini 행의 근거.
+// 라우트가 같은 base_form 쿼리로 읽는 행과 같은 모양(행 pos는 겸류 「·」 연결 그대로 — 마크 판정 입력)이다.
+const snapshotRows = new Map((set.snapshot?.rows || []).map((r) => [r.base_form, r]));
+
 function prepare(par) {
   const lines = par.cases.map((c) => c.sentence);
   const tokenizedLines = lines.map((line) => ({ original: line, tokens: tokenizeZhLine(line) }));
   const cache = new Map();
   for (const c of par.cases) {
     if (!c.candidates) continue;
-    cache.set(c.target.base, { base_form: c.target.base, pos: uniq(c.candidates.map((m) => m.pos)).join('·'), meanings: c.candidates.map((m) => ({ meaning: m.meaning, pos: m.pos })), source: 'snapshot' });
+    const row = String(c.candidatesSource || '').startsWith(SNAPSHOT_SOURCE) ? snapshotRows.get(c.target.base) : null;
+    cache.set(c.target.base, row
+      ? { base_form: row.base_form, pos: row.pos, meanings: row.meanings.map((m) => ({ meaning: m.meaning, pos: m.pos })), source: row.source }
+      : { base_form: c.target.base, pos: uniq(c.candidates.map((m) => m.pos)).join('·'), meanings: c.candidates.map((m) => ({ meaning: m.meaning, pos: m.pos })), source: 'provisional' });
+  }
+  // 이 문단에 나오는 다른 스냅숏 행(경계 사례의 이은 꼴 등)도 운영처럼 캐시에 둔다.
+  for (const [form, row] of snapshotRows) {
+    if (!cache.has(form) && lines.some((line) => line.includes(form))) {
+      cache.set(form, { base_form: row.base_form, pos: row.pos, meanings: row.meanings.map((m) => ({ meaning: m.meaning, pos: m.pos })), source: row.source });
+    }
   }
   const marks = collectZhPosMarks(tokenizedLines, cache);
   return { ...par, lines, tokenizedLines, cache, marks };

@@ -9,7 +9,8 @@
     "조정(tune) 세트는 프롬프트를 고치는 데 써도 된다. 조정 세트 결과는 켜는 기준에 넣지 않는다.",
     "조정·보류는 문장을 공유하지 않는다. 번체 쌍둥이(F)는 자기 쌍과 같은 세트에 둔다.",
     "문장은 refVocab 예문 또는 직접 지은 QA 예시다. 개인 학습 원문은 넣지 않는다.",
-    "candidates는 운영 사전 스냅숏이 아니라 refVocab 뜻을 사람이 뜻 단위로 나눈 임시 후보다(candidatesSource가 provisional:*). 운영 스냅숏(docs/sql/zh-sense-holdout-snapshot-readonly.sql)으로 교체하기 전 실행 결과는 「임시 후보」로 표시한다. 교체 때 기대 답 번호도 다시 매긴다.",
+    "candidates는 운영 사전 행(candidatesSource가 morpheme_dictionary@날짜)이거나, 운영에 아직 행이 없는 표제어의 임시 후보(provisional:*)다. 임시 후보는 생성 대기이며 측정 전에 운영 생성 경로로 얼린 행으로 바꾼다. 임시 후보가 남은 채 돌린 결과는 「임시 후보」로 표시하고 켜기 판정에 쓰지 않는다.",
+    "운영 행에 맞는 뜻이 없으면 E가 아니어도 accept.ctx(후보 밖 정답)로 둔다. 운영에서 학습자가 실제로 받는 후보가 그렇기 때문이다.",
     "accept.sense는 맞는 후보 번호(1부터), accept.ctx는 후보 밖 정답의 허용 표현 조각이다. forbidden에 든 번호·표현이 나오면 FAIL, 허용이면 PASS, 그 밖은 사람이 판정하는 REVIEW다.",
     "REVIEW는 사람이 판정해 기록하기 전에는 통과로 세지 않는다. 판정자는 생성 모델이 아니어야 하고, 가능하면 중국어 사용자다."
   ],
@@ -78,12 +79,12 @@
           "pos": "동사"
         },
         {
-          "meaning": "일",
+          "meaning": "일, 직업",
           "pos": "명사"
         }
       ],
-      "candidatesSource": "provisional:refVocab",
-      "candidatesNote": "「일하다, 일」",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행과 임시 후보의 뜻 순서가 같아 기대 답 번호 유지",
       "accept": {
         "sense": [
           1
@@ -115,12 +116,12 @@
           "pos": "동사"
         },
         {
-          "meaning": "일",
+          "meaning": "일, 직업",
           "pos": "명사"
         }
       ],
-      "candidatesSource": "provisional:refVocab",
-      "candidatesNote": "「일하다, 일」",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행과 임시 후보의 뜻 순서가 같아 기대 답 번호 유지",
       "accept": {
         "sense": [
           2
@@ -226,12 +227,12 @@
           "pos": "동사"
         },
         {
-          "meaning": "도움",
-          "pos": "명사"
+          "meaning": "지원하다",
+          "pos": "동사"
         }
       ],
-      "candidatesSource": "provisional:refVocab",
-      "candidatesNote": "「돕다, 도움」",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행 ①돕다 ②지원하다(둘 다 동사). ②는 지정 밖(사람 판정)",
       "accept": {
         "sense": [
           1
@@ -239,8 +240,8 @@
       },
       "forbidden": [
         {
-          "sense": 2,
-          "why": "목적어 别人을 받는 동사"
+          "ctx": "도움",
+          "why": "명사 뜻 — 이 문장은 동사(돕다)"
         }
       ],
       "why": "겸류 동사 용법",
@@ -263,21 +264,25 @@
           "pos": "동사"
         },
         {
-          "meaning": "도움",
-          "pos": "명사"
+          "meaning": "지원하다",
+          "pos": "동사"
         }
       ],
-      "candidatesSource": "provisional:refVocab",
-      "candidatesNote": "「돕다, 도움」",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행에 명사 뜻이 없다 → 후보 밖 정답(도움)",
       "accept": {
-        "sense": [
-          2
+        "ctx": [
+          "도움"
         ]
       },
       "forbidden": [
         {
           "sense": 1,
-          "why": "的 뒤 명사(jieba는 동사로 태깅)"
+          "why": "동사 뜻 — 이 문장은 명사(도움)"
+        },
+        {
+          "sense": 2,
+          "why": "동사 뜻 — 이 문장은 명사(도움)"
         }
       ],
       "why": "겸류 명사 용법",
@@ -378,8 +383,8 @@
           "pos": "명사"
         }
       ],
-      "candidatesSource": "provisional:refVocab",
-      "candidatesNote": "「요구하다; 요구」",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행과 임시 후보의 뜻 순서가 같아 기대 답 번호 유지",
       "accept": {
         "sense": [
           1
@@ -415,8 +420,8 @@
           "pos": "명사"
         }
       ],
-      "candidatesSource": "provisional:refVocab",
-      "candidatesNote": "「요구하다; 요구」",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행과 임시 후보의 뜻 순서가 같아 기대 답 번호 유지",
       "accept": {
         "sense": [
           2
@@ -518,23 +523,28 @@
       "pos": "동사",
       "candidates": [
         {
-          "meaning": "때리다, 치다",
+          "meaning": "때리다",
           "pos": "동사"
         },
         {
-          "meaning": "(전화를) 걸다",
+          "meaning": "치다",
           "pos": "동사"
         },
         {
-          "meaning": "(운동을) 하다",
+          "meaning": "하다",
           "pos": "동사"
         }
       ],
-      "candidatesSource": "provisional:drafted",
-      "candidatesNote": "refVocab에는 打 dá(다스)만 있어 세 뜻을 모두 보탬(설계서 §3.2 예시와 같음)",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행 ①때리다 ②치다 ③하다 — 「(전화를) 걸다」 없음 → 후보 밖 정답. ③하다는 「전화를 하다」로 읽힐 수 있어 지정 밖(사람 판정)",
       "accept": {
-        "sense": [
-          2
+        "ctx": [
+          "걸다",
+          "걸었",
+          "걸어",
+          "전화하",
+          "전화를 하",
+          "통화"
         ]
       },
       "forbidden": [
@@ -543,8 +553,8 @@
           "why": "전화를 때리지 않는다"
         },
         {
-          "sense": 3,
-          "why": "운동이 아님"
+          "sense": 2,
+          "why": "전화를 치지 않는다"
         }
       ],
       "why": "같은 품사 다의 — 打电话",
@@ -563,20 +573,20 @@
       "pos": "동사",
       "candidates": [
         {
-          "meaning": "때리다, 치다",
+          "meaning": "때리다",
           "pos": "동사"
         },
         {
-          "meaning": "(전화를) 걸다",
+          "meaning": "치다",
           "pos": "동사"
         },
         {
-          "meaning": "(운동을) 하다",
+          "meaning": "하다",
           "pos": "동사"
         }
       ],
-      "candidatesSource": "provisional:drafted",
-      "candidatesNote": "refVocab에는 打 dá(다스)만 있어 세 뜻을 모두 보탬(설계서 §3.2 예시와 같음)",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행 ③하다",
       "accept": {
         "sense": [
           3
@@ -589,7 +599,7 @@
         },
         {
           "sense": 2,
-          "why": "전화가 아님"
+          "why": "공을 쳐서 하는 운동이 아님"
         }
       ],
       "why": "같은 품사 다의 — 打篮球",
@@ -608,33 +618,30 @@
       "pos": "동사",
       "candidates": [
         {
-          "meaning": "때리다, 치다",
+          "meaning": "때리다",
           "pos": "동사"
         },
         {
-          "meaning": "(전화를) 걸다",
+          "meaning": "치다",
           "pos": "동사"
         },
         {
-          "meaning": "(운동을) 하다",
+          "meaning": "하다",
           "pos": "동사"
         }
       ],
-      "candidatesSource": "provisional:drafted",
-      "candidatesNote": "refVocab에는 打 dá(다스)만 있어 세 뜻을 모두 보탬(설계서 §3.2 예시와 같음)",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행 ①때리다 ②치다 모두 맞음",
       "accept": {
         "sense": [
-          1
+          1,
+          2
         ]
       },
       "forbidden": [
         {
-          "sense": 2,
-          "why": "전화가 아님"
-        },
-        {
           "sense": 3,
-          "why": "운동이 아님"
+          "why": "운동·행위 일반이 아닌 때림"
         }
       ],
       "why": "같은 품사 다의 — 사람을 때리다",
@@ -796,8 +803,8 @@
           "pos": "동사"
         }
       ],
-      "candidatesSource": "provisional:refVocab",
-      "candidatesNote": "「걷다, 가다」",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행과 임시 후보의 뜻 순서가 같아 기대 답 번호 유지",
       "accept": {
         "sense": [
           1
@@ -833,8 +840,8 @@
           "pos": "동사"
         }
       ],
-      "candidatesSource": "provisional:refVocab",
-      "candidatesNote": "「걷다, 가다」",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행과 임시 후보의 뜻 순서가 같아 기대 답 번호 유지",
       "accept": {
         "sense": [
           2
@@ -862,25 +869,21 @@
       "pos": "동사",
       "candidates": [
         {
-          "meaning": "~하고 싶다",
-          "pos": "동사"
-        },
-        {
           "meaning": "생각하다",
           "pos": "동사"
         }
       ],
-      "candidatesSource": "provisional:refVocab",
-      "candidatesNote": "「~하고 싶다, 생각하다」",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행은 ①생각하다 하나 — 1차 규칙(뜻 2개 이상)에서 후보가 붙지 않는다",
       "accept": {
         "sense": [
-          2
+          1
         ]
       },
       "forbidden": [
         {
-          "sense": 1,
-          "why": "「이 문제를 하고 싶다」가 아님"
+          "ctx": "싶다",
+          "why": "바람(~하고 싶다)이 아닌 생각"
         }
       ],
       "why": "같은 품사 다의 — 생각하다",
@@ -899,23 +902,28 @@
       "pos": "동사",
       "candidates": [
         {
-          "meaning": "때리다, 치다",
+          "meaning": "때리다",
           "pos": "동사"
         },
         {
-          "meaning": "(전화를) 걸다",
+          "meaning": "치다",
           "pos": "동사"
         },
         {
-          "meaning": "(운동을) 하다",
+          "meaning": "하다",
           "pos": "동사"
         }
       ],
-      "candidatesSource": "provisional:drafted",
-      "candidatesNote": "refVocab에는 打 dá(다스)만 있어 세 뜻을 모두 보탬(설계서 §3.2 예시와 같음)",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "B01와 같은 운영 행·같은 기대 답",
       "accept": {
-        "sense": [
-          2
+        "ctx": [
+          "걸다",
+          "걸었",
+          "걸어",
+          "전화하",
+          "전화를 하",
+          "통화"
         ]
       },
       "forbidden": [
@@ -924,8 +932,8 @@
           "why": "전화를 때리지 않는다"
         },
         {
-          "sense": 3,
-          "why": "같은 줄 앞의 打(농구)와 뜻이 다르다"
+          "sense": 2,
+          "why": "전화를 치지 않는다"
         }
       ],
       "why": "같은 줄 같은 단어 — 마크 키 (줄, 단어) 공유 단순화의 크기(설계서 §13)",
@@ -1100,7 +1108,7 @@
       "pos": "동사",
       "candidates": [
         {
-          "meaning": "~하게 하다, 시키다",
+          "meaning": "~하게 하다",
           "pos": "동사"
         },
         {
@@ -1108,8 +1116,8 @@
           "pos": "동사"
         }
       ],
-      "candidatesSource": "provisional:refVocab",
-      "candidatesNote": "「~하게 하다, 시키다, 양보하다」",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행과 임시 후보의 뜻 순서가 같아 기대 답 번호 유지",
       "accept": {
         "sense": [
           1
@@ -1137,7 +1145,7 @@
       "pos": "동사",
       "candidates": [
         {
-          "meaning": "~하게 하다, 시키다",
+          "meaning": "~하게 하다",
           "pos": "동사"
         },
         {
@@ -1145,8 +1153,8 @@
           "pos": "동사"
         }
       ],
-      "candidatesSource": "provisional:refVocab",
-      "candidatesNote": "「~하게 하다, 시키다, 양보하다」",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행과 임시 후보의 뜻 순서가 같아 기대 답 번호 유지",
       "accept": {
         "sense": [
           2
@@ -1248,33 +1256,26 @@
       "pos": "동사",
       "candidates": [
         {
-          "meaning": "~하려고 하다",
-          "pos": "동사"
-        },
-        {
-          "meaning": "원하다",
-          "pos": "동사"
-        },
-        {
-          "meaning": "필요하다",
+          "meaning": "원하다, ~해야 한다",
           "pos": "동사"
         }
       ],
-      "candidatesSource": "provisional:refVocab",
-      "candidatesNote": "「~하려고 하다, 원하다, 필요하다」",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행은 ①「원하다, ~해야 한다」 하나 → 후보 밖 정답. 1차 규칙에서 후보 없음",
       "accept": {
-        "sense": [
-          3
+        "ctx": [
+          "걸리",
+          "걸린",
+          "소요",
+          "필요",
+          "들다",
+          "든다"
         ]
       },
       "forbidden": [
         {
           "sense": 1,
-          "why": "의지가 아님"
-        },
-        {
-          "sense": 2,
-          "why": "희망이 아님 — 시간이 걸리다"
+          "why": "원함·당위가 아닌 시간 소요(걸리다)"
         }
       ],
       "why": "같은 품사 다의 — (시간이) 걸리다·필요하다",
@@ -1293,29 +1294,25 @@
       "pos": "동사",
       "candidates": [
         {
-          "meaning": "~하려고 하다",
-          "pos": "동사"
-        },
-        {
-          "meaning": "원하다",
-          "pos": "동사"
-        },
-        {
-          "meaning": "필요하다",
+          "meaning": "원하다, ~해야 한다",
           "pos": "동사"
         }
       ],
-      "candidatesSource": "provisional:refVocab",
-      "candidatesNote": "「~하려고 하다, 원하다, 필요하다」",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행 ①「원하다, ~해야 한다」(원하다 조각이 맞음). 1차 규칙에서 후보 없음",
       "accept": {
         "sense": [
-          2
+          1
         ]
       },
       "forbidden": [
         {
-          "sense": 1,
-          "why": "명사 목적어 앞 — 「~하려고 하다」가 아님"
+          "ctx": "걸리",
+          "why": "시간 소요가 아닌 원함"
+        },
+        {
+          "ctx": "하려고",
+          "why": "의지·예정이 아닌 원함(달라)"
         }
       ],
       "why": "같은 품사 다의 — 원하다(「필요하다」는 사람 판정)",
@@ -1334,29 +1331,27 @@
       "pos": "동사",
       "candidates": [
         {
-          "meaning": "~에 있다",
-          "pos": "동사"
+          "meaning": "~에",
+          "pos": "전치사"
         },
         {
           "meaning": "~에서",
           "pos": "전치사"
-        },
-        {
-          "meaning": "~하고 있다",
-          "pos": "부사"
         }
       ],
-      "candidatesSource": "provisional:refVocab+drafted",
-      "candidatesNote": "「~에 있다, ~에서」 + 진행(~하고 있다) 보탬",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행 ①~에 ②~에서(둘 다 전치사) — 「~에 있다」 없음 → 후보 밖 정답. ①은 지정 밖(사람 판정)",
       "accept": {
-        "sense": [
-          1
+        "ctx": [
+          "있다",
+          "있어",
+          "있음"
         ]
       },
       "forbidden": [
         {
-          "sense": 3,
-          "why": "진행이 아님"
+          "sense": 2,
+          "why": "장소 전치사(~에서)가 아닌 존재 동사(있다)"
         }
       ],
       "why": "在 동사 — ~에 있다(「~에서」는 사람 판정)",
@@ -1375,20 +1370,16 @@
       "pos": "전치사",
       "candidates": [
         {
-          "meaning": "~에 있다",
-          "pos": "동사"
+          "meaning": "~에",
+          "pos": "전치사"
         },
         {
           "meaning": "~에서",
           "pos": "전치사"
-        },
-        {
-          "meaning": "~하고 있다",
-          "pos": "부사"
         }
       ],
-      "candidatesSource": "provisional:refVocab+drafted",
-      "candidatesNote": "「~에 있다, ~에서」 + 진행(~하고 있다) 보탬",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행 ②~에서. ①~에는 지정 밖(사람 판정)",
       "accept": {
         "sense": [
           2
@@ -1396,8 +1387,8 @@
       },
       "forbidden": [
         {
-          "sense": 3,
-          "why": "장소 앞 — 진행이 아님"
+          "ctx": "있다",
+          "why": "존재·진행이 아닌 장소 전치사(~에서)"
         }
       ],
       "why": "在 전치사 — ~에서",
@@ -1416,33 +1407,32 @@
       "pos": "부사",
       "candidates": [
         {
-          "meaning": "~에 있다",
-          "pos": "동사"
+          "meaning": "~에",
+          "pos": "전치사"
         },
         {
           "meaning": "~에서",
           "pos": "전치사"
-        },
-        {
-          "meaning": "~하고 있다",
-          "pos": "부사"
         }
       ],
-      "candidatesSource": "provisional:refVocab+drafted",
-      "candidatesNote": "「~에 있다, ~에서」 + 진행(~하고 있다) 보탬",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행에 진행 뜻이 없다 → 후보 밖 정답",
       "accept": {
-        "sense": [
-          3
+        "ctx": [
+          "하고 있",
+          "하는 중",
+          "진행",
+          "중이다"
         ]
       },
       "forbidden": [
         {
           "sense": 1,
-          "why": "동사 앞 — 존재가 아님"
+          "why": "장소 전치사가 아닌 진행(~하고 있다)"
         },
         {
           "sense": 2,
-          "why": "장소가 아님"
+          "why": "장소 전치사가 아닌 진행(~하고 있다)"
         }
       ],
       "why": "在 부사 — 진행",
@@ -1461,25 +1451,25 @@
       "pos": "동사",
       "candidates": [
         {
-          "meaning": "주다",
-          "pos": "동사"
-        },
-        {
           "meaning": "~에게",
           "pos": "전치사"
+        },
+        {
+          "meaning": "주다",
+          "pos": "동사"
         }
       ],
-      "candidatesSource": "provisional:refVocab+drafted",
-      "candidatesNote": "「~에게 (주다)」를 동사·전치사 두 뜻으로 나눔",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행은 ①~에게 ②주다 — 임시 후보와 순서가 반대",
       "accept": {
         "sense": [
-          1
+          2
         ]
       },
       "forbidden": [
         {
-          "sense": 2,
-          "why": "뒤에 동사가 없다 — 주다(jieba는 전치사로 태깅)"
+          "sense": 1,
+          "why": "전치사(~에게)가 아닌 동사(주다)"
         }
       ],
       "why": "给 동사",
@@ -1498,25 +1488,25 @@
       "pos": "전치사",
       "candidates": [
         {
-          "meaning": "주다",
-          "pos": "동사"
-        },
-        {
           "meaning": "~에게",
           "pos": "전치사"
+        },
+        {
+          "meaning": "주다",
+          "pos": "동사"
         }
       ],
-      "candidatesSource": "provisional:refVocab+drafted",
-      "candidatesNote": "「~에게 (주다)」를 동사·전치사 두 뜻으로 나눔",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행은 ①~에게 ②주다 — 임시 후보와 순서가 반대",
       "accept": {
         "sense": [
-          2
+          1
         ]
       },
       "forbidden": [
         {
-          "sense": 1,
-          "why": "뒤에 동사 打电话 — 전치사"
+          "sense": 2,
+          "why": "동사(주다)가 아닌 전치사(~에게)"
         }
       ],
       "why": "给 전치사",
@@ -1535,20 +1525,16 @@
       "pos": "부사",
       "candidates": [
         {
-          "meaning": "아직",
+          "meaning": "여전히, 아직",
           "pos": "부사"
         },
         {
-          "meaning": "더, 또",
-          "pos": "부사"
-        },
-        {
-          "meaning": "그런대로, 꽤",
+          "meaning": "게다가, 또",
           "pos": "부사"
         }
       ],
-      "candidatesSource": "provisional:refVocab+drafted",
-      "candidatesNote": "「아직, 더, 또」 + 「그런대로, 꽤」 보탬",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행 ①여전히, 아직 ②게다가, 또 — 「그런대로」 없음",
       "accept": {
         "sense": [
           1
@@ -1557,11 +1543,7 @@
       "forbidden": [
         {
           "sense": 2,
-          "why": "반복이 아님"
-        },
-        {
-          "sense": 3,
-          "why": "정도가 아님"
+          "why": "추가(또)가 아닌 아직"
         }
       ],
       "why": "还 — 아직",
@@ -1580,20 +1562,16 @@
       "pos": "부사",
       "candidates": [
         {
-          "meaning": "아직",
+          "meaning": "여전히, 아직",
           "pos": "부사"
         },
         {
-          "meaning": "더, 또",
-          "pos": "부사"
-        },
-        {
-          "meaning": "그런대로, 꽤",
+          "meaning": "게다가, 또",
           "pos": "부사"
         }
       ],
-      "candidatesSource": "provisional:refVocab+drafted",
-      "candidatesNote": "「아직, 더, 또」 + 「그런대로, 꽤」 보탬",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행 ②게다가, 또. ①여전히, 아직은 원래도 애매해 지정 밖(사람 판정)",
       "accept": {
         "sense": [
           2
@@ -1601,8 +1579,8 @@
       },
       "forbidden": [
         {
-          "sense": 3,
-          "why": "정도가 아님"
+          "ctx": "그런대로",
+          "why": "정도(그런대로)가 아닌 추가(더)"
         }
       ],
       "why": "还 — 더, 또(「아직」은 사람 판정)",
@@ -1621,33 +1599,32 @@
       "pos": "부사",
       "candidates": [
         {
-          "meaning": "아직",
+          "meaning": "여전히, 아직",
           "pos": "부사"
         },
         {
-          "meaning": "더, 또",
-          "pos": "부사"
-        },
-        {
-          "meaning": "그런대로, 꽤",
+          "meaning": "게다가, 또",
           "pos": "부사"
         }
       ],
-      "candidatesSource": "provisional:refVocab+drafted",
-      "candidatesNote": "「아직, 더, 또」 + 「그런대로, 꽤」 보탬",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행에 정도 뜻이 없다 → 후보 밖 정답",
       "accept": {
-        "sense": [
-          3
+        "ctx": [
+          "그런대로",
+          "제법",
+          "그럭저럭",
+          "비교적"
         ]
       },
       "forbidden": [
         {
           "sense": 1,
-          "why": "시간이 아님"
+          "why": "시간(아직)이 아닌 정도"
         },
         {
           "sense": 2,
-          "why": "추가가 아님"
+          "why": "추가(또)가 아닌 정도"
         }
       ],
       "why": "还 — 그런대로, 꽤",
@@ -1666,16 +1643,12 @@
       "pos": "부사",
       "candidates": [
         {
-          "meaning": "비로소, 이제야",
-          "pos": "부사"
-        },
-        {
-          "meaning": "겨우",
+          "meaning": "비로소",
           "pos": "부사"
         }
       ],
-      "candidatesSource": "provisional:refVocab",
-      "candidatesNote": "「비로소, 이제야, 겨우」",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행은 ①비로소 하나 — 1차 규칙에서 후보 없음",
       "accept": {
         "sense": [
           1
@@ -1683,8 +1656,8 @@
       },
       "forbidden": [
         {
-          "sense": 2,
-          "why": "늦음(이제야)이지 수량의 적음(겨우)이 아님"
+          "ctx": "겨우",
+          "why": "수량 적음(겨우)이 아닌 늦음(이제야)"
         }
       ],
       "why": "才 — 이제야",
@@ -1703,25 +1676,24 @@
       "pos": "부사",
       "candidates": [
         {
-          "meaning": "비로소, 이제야",
-          "pos": "부사"
-        },
-        {
-          "meaning": "겨우",
+          "meaning": "비로소",
           "pos": "부사"
         }
       ],
-      "candidatesSource": "provisional:refVocab",
-      "candidatesNote": "「비로소, 이제야, 겨우」",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행은 ①비로소 하나 → 후보 밖 정답. 1차 규칙에서 후보 없음",
       "accept": {
-        "sense": [
-          2
+        "ctx": [
+          "겨우",
+          "고작",
+          "불과",
+          "밖에"
         ]
       },
       "forbidden": [
         {
           "sense": 1,
-          "why": "수량의 적음 — 비로소가 아님"
+          "why": "늦음(비로소)이 아닌 수량 적음(겨우)"
         }
       ],
       "why": "才 — 겨우",
@@ -1740,16 +1712,12 @@
       "pos": "전치사",
       "candidates": [
         {
-          "meaning": "~을/를 (처치문)",
+          "meaning": "~을",
           "pos": "전치사"
-        },
-        {
-          "meaning": "~자루",
-          "pos": "양사"
         }
       ],
-      "candidatesSource": "provisional:refVocab",
-      "candidatesNote": "「~을/를 (처치문); ~자루(양사)」",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행은 ①~을 하나 — 1차 규칙에서 후보 없음",
       "accept": {
         "sense": [
           1
@@ -1757,8 +1725,8 @@
       },
       "forbidden": [
         {
-          "sense": 2,
-          "why": "처치문 — 양사가 아님"
+          "ctx": "자루",
+          "why": "양사가 아닌 처치문 전치사"
         }
       ],
       "why": "把 전치사",
@@ -1777,25 +1745,21 @@
       "pos": "양사",
       "candidates": [
         {
-          "meaning": "~을/를 (처치문)",
+          "meaning": "~을",
           "pos": "전치사"
-        },
-        {
-          "meaning": "~자루",
-          "pos": "양사"
         }
       ],
-      "candidatesSource": "provisional:refVocab",
-      "candidatesNote": "「~을/를 (처치문); ~자루(양사)」",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행은 ①~을 하나 → 후보 밖 정답. 1차 규칙에서 후보 없음",
       "accept": {
-        "sense": [
-          2
+        "ctx": [
+          "자루"
         ]
       },
       "forbidden": [
         {
           "sense": 1,
-          "why": "一 뒤 양사 — 처치문이 아님"
+          "why": "처치문 전치사가 아닌 양사(자루)"
         }
       ],
       "why": "把 양사",
@@ -1814,25 +1778,26 @@
       "pos": "형용사",
       "candidates": [
         {
-          "meaning": "맞다, 옳다",
-          "pos": "형용사"
-        },
-        {
-          "meaning": "~에게, ~에 대해",
+          "meaning": "~에 대해",
           "pos": "전치사"
         }
       ],
-      "candidatesSource": "provisional:refVocab+drafted",
-      "candidatesNote": "「맞다, 옳다」 + 전치사 뜻 보탬",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행은 ①~에 대해 하나 → 후보 밖 정답. 1차 규칙에서 후보 없음",
       "accept": {
-        "sense": [
-          1
+        "ctx": [
+          "맞다",
+          "맞아",
+          "옳다",
+          "옳아",
+          "맞는",
+          "옳은"
         ]
       },
       "forbidden": [
         {
-          "sense": 2,
-          "why": "정도보어 자리 형용사(jieba는 전치사로 태깅)"
+          "sense": 1,
+          "why": "전치사(~에 대해)가 아닌 형용사(맞다)"
         }
       ],
       "why": "对 형용사",
@@ -1851,25 +1816,22 @@
       "pos": "전치사",
       "candidates": [
         {
-          "meaning": "맞다, 옳다",
-          "pos": "형용사"
-        },
-        {
-          "meaning": "~에게, ~에 대해",
+          "meaning": "~에 대해",
           "pos": "전치사"
         }
       ],
-      "candidatesSource": "provisional:refVocab+drafted",
-      "candidatesNote": "「맞다, 옳다」 + 전치사 뜻 보탬",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행은 ①~에 대해 하나 — 이 문장의 「~에게」와 달라 후보 밖 정답. ①은 지정 밖(사람 판정). 1차 규칙에서 후보 없음",
       "accept": {
-        "sense": [
-          2
+        "ctx": [
+          "에게",
+          "한테"
         ]
       },
       "forbidden": [
         {
-          "sense": 1,
-          "why": "대상 앞 전치사 — 「맞다」가 아님"
+          "ctx": "맞다",
+          "why": "형용사(맞다)가 아닌 대상 전치사"
         }
       ],
       "why": "对 전치사",
@@ -1890,14 +1852,10 @@
         {
           "meaning": "모두, 다",
           "pos": "부사"
-        },
-        {
-          "meaning": "벌써, 이미",
-          "pos": "부사"
         }
       ],
-      "candidatesSource": "provisional:refVocab+drafted",
-      "candidatesNote": "「모두, 다」 + 「벌써, 이미」 보탬",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행은 ①모두, 다 하나 — 1차 규칙에서 후보 없음",
       "accept": {
         "sense": [
           1
@@ -1905,8 +1863,8 @@
       },
       "forbidden": [
         {
-          "sense": 2,
-          "why": "범위 — 「벌써」가 아님"
+          "ctx": "벌써",
+          "why": "시간(벌써)이 아닌 범위(모두)"
         }
       ],
       "why": "都 — 모두",
@@ -1927,23 +1885,20 @@
         {
           "meaning": "모두, 다",
           "pos": "부사"
-        },
-        {
-          "meaning": "벌써, 이미",
-          "pos": "부사"
         }
       ],
-      "candidatesSource": "provisional:refVocab+drafted",
-      "candidatesNote": "「모두, 다」 + 「벌써, 이미」 보탬",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행은 ①모두, 다 하나 → 후보 밖 정답. 1차 규칙에서 후보 없음",
       "accept": {
-        "sense": [
-          2
+        "ctx": [
+          "벌써",
+          "이미"
         ]
       },
       "forbidden": [
         {
           "sense": 1,
-          "why": "시간 강조 — 「모두」가 아님"
+          "why": "범위(모두)가 아닌 시간(벌써)"
         }
       ],
       "why": "都 — 벌써",
@@ -2478,16 +2433,16 @@
       "pos": "형용사",
       "candidates": [
         {
-          "meaning": "요리",
+          "meaning": "채소",
           "pos": "명사"
         },
         {
-          "meaning": "채소",
+          "meaning": "요리",
           "pos": "명사"
         }
       ],
-      "candidatesSource": "provisional:refVocab",
-      "candidatesNote": "「요리, 채소」",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행 ①채소 ②요리 — 임시 후보와 순서가 반대, 문맥 뜻 없음(E 유지)",
       "accept": {
         "ctx": [
           "서툴",
@@ -2502,11 +2457,11 @@
       "forbidden": [
         {
           "sense": 1,
-          "why": "요리가 아님"
+          "why": "명사 뜻(채소) — 이 문장은 「서툴다」"
         },
         {
           "sense": 2,
-          "why": "채소가 아님"
+          "why": "명사 뜻(요리) — 이 문장은 「서툴다」"
         }
       ],
       "why": "후보 밖 — 실력이 형편없다",
@@ -2648,23 +2603,28 @@
       "pos": "동사",
       "candidates": [
         {
-          "meaning": "때리다, 치다",
+          "meaning": "때리다",
           "pos": "동사"
         },
         {
-          "meaning": "(전화를) 걸다",
+          "meaning": "치다",
           "pos": "동사"
         },
         {
-          "meaning": "(운동을) 하다",
+          "meaning": "하다",
           "pos": "동사"
         }
       ],
-      "candidatesSource": "provisional:drafted",
-      "candidatesNote": "B01와 같은 후보(번체 표제어 행은 운영 스냅숏에서 따로 확인)",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "B01와 같은 운영 행·같은 기대 답",
       "accept": {
-        "sense": [
-          2
+        "ctx": [
+          "걸다",
+          "걸었",
+          "걸어",
+          "전화하",
+          "전화를 하",
+          "통화"
         ]
       },
       "forbidden": [
@@ -2673,8 +2633,8 @@
           "why": "전화를 때리지 않는다"
         },
         {
-          "sense": 3,
-          "why": "운동이 아님"
+          "sense": 2,
+          "why": "전화를 치지 않는다"
         }
       ],
       "twinOf": "B01",
@@ -2748,8 +2708,8 @@
           "pos": "동사"
         }
       ],
-      "candidatesSource": "provisional:refVocab",
-      "candidatesNote": "B07와 같은 후보(번체 표제어 행은 운영 스냅숏에서 따로 확인)",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "운영 행과 임시 후보의 뜻 순서가 같아 기대 답 번호 유지",
       "accept": {
         "sense": [
           1
@@ -2900,25 +2860,24 @@
       "pos": "부사",
       "candidates": [
         {
-          "meaning": "비로소, 이제야",
-          "pos": "부사"
-        },
-        {
-          "meaning": "겨우",
+          "meaning": "비로소",
           "pos": "부사"
         }
       ],
-      "candidatesSource": "provisional:refVocab",
-      "candidatesNote": "C10와 같은 후보(번체 표제어 행은 운영 스냅숏에서 따로 확인)",
+      "candidatesSource": "morpheme_dictionary@2026-10-08",
+      "candidatesNote": "C10와 같은 운영 행·같은 기대 답",
       "accept": {
-        "sense": [
-          2
+        "ctx": [
+          "겨우",
+          "고작",
+          "불과",
+          "밖에"
         ]
       },
       "forbidden": [
         {
           "sense": 1,
-          "why": "수량의 적음 — 비로소가 아님"
+          "why": "늦음(비로소)이 아닌 수량 적음(겨우)"
         }
       ],
       "twinOf": "C10",
@@ -2947,10 +2906,11 @@
         }
       ],
       "candidatesSource": "provisional:refVocab+drafted",
-      "candidatesNote": "C14와 같은 후보(번체 표제어 행은 운영 스냅숏에서 따로 확인)",
+      "candidatesNote": "C14와 같은 후보(번체 표제어 행은 운영 스냅숏에서 따로 확인) · 쌍(C14)의 운영 행 기준 기대 답을 따름(이 표제어는 생성 대기)",
       "accept": {
-        "sense": [
-          2
+        "ctx": [
+          "에게",
+          "한테"
         ]
       },
       "forbidden": [
@@ -2963,5 +2923,299 @@
       "why": "번체 쌍둥이 — C14(간체)와 같은 문장·같은 기대 답. 두 결과의 차이가 글자체 영향이다",
       "source": "C14 문장의 번체 표기(작성자 변환)"
     }
-  ]
+  ],
+  "snapshot": {
+    "date": "2026-10-08",
+    "report": "https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6047879865",
+    "sql": "docs/sql/zh-sense-holdout-snapshot-readonly.sql",
+    "by": "M09 — Q1·Q2를 read only 트랜잭션으로 원문 그대로 실행(#1370 head 444d06a0)",
+    "rows": [
+      {
+        "base_form": "个人",
+        "pos": "명사·대명사",
+        "source": "gemini",
+        "meanings": [
+          {
+            "meaning": "개인",
+            "pos": "명사"
+          },
+          {
+            "meaning": "자신",
+            "pos": "명사"
+          }
+        ],
+        "query": "Q2"
+      },
+      {
+        "base_form": "人才",
+        "pos": "명사",
+        "source": "gemini",
+        "meanings": [
+          {
+            "meaning": "인재",
+            "pos": "명사"
+          }
+        ],
+        "query": "Q2"
+      },
+      {
+        "base_form": "在",
+        "pos": "전치사",
+        "source": "gemini",
+        "meanings": [
+          {
+            "meaning": "~에",
+            "pos": "전치사"
+          },
+          {
+            "meaning": "~에서",
+            "pos": "전치사"
+          }
+        ],
+        "query": "Q1"
+      },
+      {
+        "base_form": "对",
+        "pos": "전치사",
+        "source": "gemini",
+        "meanings": [
+          {
+            "meaning": "~에 대해",
+            "pos": "전치사"
+          }
+        ],
+        "query": "Q1"
+      },
+      {
+        "base_form": "工作",
+        "pos": "동사·명사",
+        "source": "gemini",
+        "meanings": [
+          {
+            "meaning": "일하다",
+            "pos": "동사"
+          },
+          {
+            "meaning": "일, 직업",
+            "pos": "명사"
+          }
+        ],
+        "query": "Q1"
+      },
+      {
+        "base_form": "帮助",
+        "pos": "동사·전치사",
+        "source": "gemini",
+        "meanings": [
+          {
+            "meaning": "돕다",
+            "pos": "동사"
+          },
+          {
+            "meaning": "지원하다",
+            "pos": "동사"
+          }
+        ],
+        "query": "Q1"
+      },
+      {
+        "base_form": "想",
+        "pos": "동사·부사",
+        "source": "gemini",
+        "meanings": [
+          {
+            "meaning": "생각하다",
+            "pos": "동사"
+          }
+        ],
+        "query": "Q1"
+      },
+      {
+        "base_form": "才",
+        "pos": "부사",
+        "source": "gemini",
+        "meanings": [
+          {
+            "meaning": "비로소",
+            "pos": "부사"
+          }
+        ],
+        "query": "Q1"
+      },
+      {
+        "base_form": "打",
+        "pos": "동사",
+        "source": "gemini",
+        "meanings": [
+          {
+            "meaning": "때리다",
+            "pos": "동사"
+          },
+          {
+            "meaning": "치다",
+            "pos": "동사"
+          },
+          {
+            "meaning": "하다",
+            "pos": "동사"
+          }
+        ],
+        "query": "Q1"
+      },
+      {
+        "base_form": "把",
+        "pos": "전치사",
+        "source": "gemini",
+        "meanings": [
+          {
+            "meaning": "~을",
+            "pos": "전치사"
+          }
+        ],
+        "query": "Q1"
+      },
+      {
+        "base_form": "给",
+        "pos": "전치사·동사",
+        "source": "gemini",
+        "meanings": [
+          {
+            "meaning": "~에게",
+            "pos": "전치사"
+          },
+          {
+            "meaning": "주다",
+            "pos": "동사"
+          }
+        ],
+        "query": "Q1"
+      },
+      {
+        "base_form": "菜",
+        "pos": "명사",
+        "source": "gemini",
+        "meanings": [
+          {
+            "meaning": "채소",
+            "pos": "명사"
+          },
+          {
+            "meaning": "요리",
+            "pos": "명사"
+          }
+        ],
+        "query": "Q1"
+      },
+      {
+        "base_form": "要",
+        "pos": "동사·형용사",
+        "source": "gemini",
+        "meanings": [
+          {
+            "meaning": "원하다, ~해야 한다",
+            "pos": "동사"
+          }
+        ],
+        "query": "Q1"
+      },
+      {
+        "base_form": "要求",
+        "pos": "동사·명사",
+        "source": "gemini",
+        "meanings": [
+          {
+            "meaning": "요구하다",
+            "pos": "동사"
+          },
+          {
+            "meaning": "요구",
+            "pos": "명사"
+          }
+        ],
+        "query": "Q1"
+      },
+      {
+        "base_form": "让",
+        "pos": "동사·전치사",
+        "source": "gemini",
+        "meanings": [
+          {
+            "meaning": "~하게 하다",
+            "pos": "동사"
+          },
+          {
+            "meaning": "양보하다",
+            "pos": "동사"
+          }
+        ],
+        "query": "Q1"
+      },
+      {
+        "base_form": "走",
+        "pos": "동사",
+        "source": "gemini",
+        "meanings": [
+          {
+            "meaning": "걷다",
+            "pos": "동사"
+          },
+          {
+            "meaning": "가다",
+            "pos": "동사"
+          }
+        ],
+        "query": "Q1"
+      },
+      {
+        "base_form": "还",
+        "pos": "부사",
+        "source": "gemini",
+        "meanings": [
+          {
+            "meaning": "여전히, 아직",
+            "pos": "부사"
+          },
+          {
+            "meaning": "게다가, 또",
+            "pos": "부사"
+          }
+        ],
+        "query": "Q1"
+      },
+      {
+        "base_form": "都",
+        "pos": "부사",
+        "source": "gemini",
+        "meanings": [
+          {
+            "meaning": "모두, 다",
+            "pos": "부사"
+          }
+        ],
+        "query": "Q1"
+      }
+    ],
+    "missing": [
+      "习惯",
+      "健康",
+      "冲",
+      "包",
+      "叫",
+      "坑",
+      "對",
+      "带",
+      "帶",
+      "开",
+      "晒",
+      "火",
+      "炒",
+      "讓",
+      "计划",
+      "送",
+      "還",
+      "開",
+      "黑"
+    ],
+    "missingNote": "운영 사전에 아직 행이 없는 표제어. 운영에서는 이 단어를 처음 분석할 때 fetchMeaningsForMissing이 같은 생성 프롬프트로 행을 만든다. scripts/eval/generate-zh-sense-candidates.mjs로 같은 경로를 DB 쓰기 없이 돌려 후보를 얼린 뒤, 측정 전에 기대 답을 다시 매긴다."
+  }
 }
