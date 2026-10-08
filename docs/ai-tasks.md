@@ -878,49 +878,28 @@
 
 ## Claude (claude/*)
 ### doing
-- **Codex 정지 중 학습 작업 인수 (2026-10-07 13:00 KST~, 오너 지시 — [인수 선언](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6030524345))**:
-  기준 main `978ff6bd`. 작업마다 `claude/*` 브랜치를 쓴다(오너 허락). Codex 복귀 시 같은 파일 착수 전 #1337 최신 Claude 보고를 확인한다.
-  - #1343 `claude/work-env-agent-setup-1v9a0a` — 앱·테스트 런타임 Node 24 정정(CLAUDE.md)·`.nvmrc`. CI green, 병합 승인 대기.
-    `codex/cloud-readiness-20261002`의 `scripts/cloud/verify.mjs`는 CI 복제로 8일 만에 e2e 3·SQL 1 누락 드리프트 → 이식 배제.
-  - #1344 `claude/textbook-answer-a11y` — 교재 해설 이유 글 대비 4.37→AA·14px, 해설 위계, 접힘·예문 링크 44px.
-    수정 전 e2e 실패 재현 → 수정 후 PASS. 교재 피드백 잔여 PR-B(부제 반복·해석 문구·물음 표식, 목업 대기)·PR-C(활용 안내, 오너 문구).
-  - #1345 `claude/viewer-annotations-hook` — VIEWER-BOUNDARY PR-1(공용 훅 + 팀 페이지 교사 관리). 원 설계 결함 4건으로
-    '설명 유지·mount 이동' 안으로 축소. PR-0 운영 집계 대기, PR-3는 #1342 이후.
-  - #1342 인수(`claude/korean-word-meaning`, Codex 브랜치 미수정) — [교차 검수](https://github.com/wonchance-art/manabi/pull/1342#issuecomment-6030711476):
-    e2e 실패 2건 원인·교차 언어 목록 퇴행·성능 2건. 오너 결정: 기존 e2e 기대값 갱신 허용(보강 2곳), 'AI 생성' 표기 출시,
-    한국어기초사전 설계·수록률 측정 착수. 목록 ★ 한 번 저장의 분리 여부는 결정 대기.
-  - #1347 `claude/happy-darwin-il3hd3` — ESLint flat config가 .jsx 270개를 조용히 건너뛰던 것 수정(`files` 항목).
-    드러난 오류 5건 정리(따옴표 4·global-error 하드 링크 1은 사유 주석), exhaustive-deps 등 경고 23건은 경고 유지.
-    계약 `eslintConfigScope.test.js`. lint 0 errors·npm test 480/5303 PASS.
-  - #1348 `claude/happy-darwin-il3hd3` — #1347 후속: .jsx 훅 의존성 경고 23건 판정. 코드 수정 7(동작 불변)·
-    의도된 의존성 16(줄 단위 disable+사유, 월드 7건은 주석만). lint 25→2 warnings·npm test 480/5303·test:world 130/1102 PASS.
-  - #1350 `claude/epic-cray-ylahmx` — 제3자 데이터 출처 감사(2026-10-07 19시 KST). 화면 표기 0이던 CC-CEDICT·FLELex·OSM 등
-    15개 원천을 정본 `lib/dataCredits.js` → `/credits`로 싣고 설정·도움말 작은 링크, /world 베젤 OSM 한 줄(오너: 눈에 덜 띄게).
-    생성 JSON 옆 README·LICENSES 원문, 계약 `dataCredits.test.js`(코드 원천 표지 ↔ 목록). npm test 481/5328 PASS.
-    JMdict: 운영 `morpheme_dictionary` source=jmdict* 0건(오너 조회 2026-10-07) → 표기 불요, import 라우트로 적재 시 추가.
-    FLELex는 CC BY-NC-SA — 유료화 전 교체/제거 검토(오너 결정 2026-10-07).
-  - #1353 `claude/happy-darwin-il3hd3` — 익명 default export 2건(lessonAdapters·lessonModel)에 이름 부여 → lint 0 errors·0 warnings.
-  - `claude/trusting-planck-ekfai6` — 대화 패널 IME 조합 Enter 미전송(#1077 v2-Z 검토 6049930267, 코드 수준 확인). 판정 정본
-    `lib/imeComposing.js`로 이동·`isClassComposing` 재수출, 계약 = componentReliabilityFixes. npm test 486/5386 PASS(Node 24).
-    같은 파일 튜터 프롬프트의 중화권 정치 서술 배제 규칙 부재(하드리밋 ⑷)는 오너 결정 대기 — 범위 밖.
+- **Codex 정지 중 학습 작업 인수 (2026-10-07 13:00 KST~, 오너 지시 — [인수 선언](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6030524345))** — 남은 것만(병합분은 done):
+  Codex 복귀 시 같은 파일 착수 전 #1337 최신 Claude 보고를 확인한다.
+  - #1346 `claude/korean-word-meaning` — 한국어 저장 뜻(#1342 인수, Codex 브랜치 미수정). 뜻 표본 측정(M09 배정 CLAUDE-M09-001-3) →
+    오너 REVIEW 판정 → Preview·실계정 검수 후 병합. 목록 ★ 한 번 저장의 분리 여부는 오너 결정 대기.
+  - #1349 `claude/krdict-senses` — 한국어기초사전 1단계 기반. 공식본 dry-run 대조(M09 CLAUDE-M09-001-5) 대기.
+  - #1344 교재 피드백 잔여 PR-B(부제 반복·해석 문구·물음 표식, 목업 대기)·PR-C(활용 안내, 오너 문구) · #1345 후속 PR-0(운영 집계)·PR-3.
+  - 튜터 프롬프트의 중화권 정치 서술 배제 규칙 부재(하드리밋 ⑷) — 오너 결정 대기(#1381 범위 밖).
   - ⚠ 운영 마이그레이션 이력 ≠ main `supabase/migrations`(스택 #1316~#1321 SQL 3건·10월 활성화 이력). 다음 마이그레이션 병합 시
     `supabase-migrations.yml` 실패 가능성 — 운영 READ ONLY 확인 전 스택 PR 닫기 보류.
-  - 이 컨테이너에서 불가(오너/M09): 운영 DB 조회·적용, 운영 배포, 정상 실계정 검수(10-06 04:00 경계 이후 학습 검수 포함).
-- **뷰어 v2 (2026-10-07 21:10 KST~, 오너 지시 「이 세션이 뷰어 v2 맡아」 — [착수](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6037135867))**:
-  정본 = [R0 버그](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6031758159) · [v2 라운드](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036574287). R0 → R0+ → AE-R1 → AE-R2 → AD-R2 → AE-R3 → AD-R3 → AD-R4 → AE-R4, 라운드마다 PR.
-  - ✅ R0·R0+ 병합(오너 승인 「실글꼴 검수로 대신하고 병합해」): #1352 옛 교재 링크 `learnerHref` · #1355 정체 꼴 훈음(hanjaTrad) ·
-    #1356 문장 이동 막대·pronReveal/recall 제거 · #1354 문형 표식·성조 색·선택 테두리·줄 간격 하한(실글꼴 6a/6b 수정). 운영 사후 검수(M09) 대기.
-  - 새 라운드 PR은 merge-ready에서 멈춤(오너 2026-10-08 01:20 KST 「merge 할 수 있기 바로 전까지」). 전부 CI green·ready, 병합 순서(스택):
-    설계 #1358·#1360·#1361·#1363 · AE-R1 #1358→#1359→#1367→#1374 · AE-R2 #1362 / #1367→#1376→#1378 · AD-R2 #1369·#1366→#1375 ·
-    AE-R3 #1365·#1368→#1379(#1374 위) · AE-R4 #1365→#1371, #1379→#1380 · AD-R4 #1370→#1372, #1380→#1382 ·
-    AD-R3 #1373→#1377, #1382→#1383 · AD-R4 PR④(경계 후보, 상수 꺼짐 — #1383 위).
-  - 상수 꺼짐으로 출시(운영 동작 동일): AD-R4 `ZH_SENSE_REVIEW`(#1372)·`ZH_BOUNDARY_REVIEW`(PR④) — 켜기는 Gemini 실측·사람 판정 후 별도 PR.
-  - 발견 결함 수정: #1364 dict-correct 권한(먼저 병합 권장) · #1368 일본식 자형(面→麺) · #1380 한자 창 바깥 누르기 포커스.
-  - 콘텐츠 감수(Claude): 동형이의어 경고 53항(流氓·交接·当面 수정, 回复 추가) · 재분석 알림 문구(「원문이 바뀌어」 단정 제거).
-  - 보류(오너/M09): AE-R3 PR③(공유 사전 요미 쓰기 — 공유 사전 정책 대기) · AD-R3 PR④(규칙 표 DDL — Preview 리허설) ·
-    AD-R3 한국어(어절 칼선 A/B) · 상수 켜기(Gemini 실측) · Preview·정상 실계정 검수 전반.
+  - 이 컨테이너에서 불가(오너/M09): 운영 DB 조회·적용, 정상 실계정 검수(10-06 04:00 경계 이후 학습 검수 = CLAUDE-M09-001-2 진행 중).
+- **뷰어 v2 (2026-10-07 21:10 KST~, 오너 지시 「이 세션이 뷰어 v2 맡아」)** — 구현 큐 전부 병합·운영 배포(2026-10-08 16:50 KST, done 참조).
+  정본 = [R0 버그](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6031758159) · [v2 라운드](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036574287).
+  - **M09 운영 사후 검수 배정** [VIEWER-V2-POSTDEPLOY-001](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6055568056)
+    (운영 `b909f9c1` · 비관리자 실계정 · 320/390/1440 · iOS Safari · 보존 지문 Q6·Q8 · 공유 사전 쓰기 금지). 보고 대기 — FAIL은 재현 테스트 먼저 → PR.
+  - Claude 다음: ZH-SENSE-HOLDOUT-001 측정 후보를 M09 스냅숏 [6047879865](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6047879865)로
+    교체하는 PR(실행 전 교체 — 보류 세트 소모 방지) → M09 Gemini 측정 배정 → 사람 판정 → 상수 켜기 별도 PR.
+  - 상수 꺼진 채 운영: AD-R4 `ZH_SENSE_REVIEW`(#1372) · `ZH_BOUNDARY_REVIEW`(#1384) — 운영 동작 동일(바이트 스냅숏).
+  - 보류: AE-R3 PR③(공유 사전 요미 쓰기 — 공유 사전 정책 대기) · AD-R3 PR④(규칙 표 DDL — 미구현, 구현 후 Preview 리허설) ·
+    AD-R3 한국어(어절 칼선 A/B).
   - 오너 결정 대기: 한국어 어절 자르기 A/B(B 권장) · 공유 사전 정책 ⓐ/ⓑ/ⓒ · #1368 트레이드오프 · #1376 번역 등급 light ·
-    #1374 관리자 교정 허용·✎ 메뉴 이동 · #1378 수업 화면 배치·긴 줄 문형 상한 · #1380 창 위치 · #1383 수업 원본 경고.
+    #1374 관리자 교정 허용·✎ 메뉴 이동 · #1378 수업 화면 배치·긴 줄 문형 상한 · #1380 창 위치 · #1382 교정 캐시 즉시 반영·passage 제외 ·
+    #1383 수업 원본 경고 · #1384 행 없는 등재 꼴 뜻 조회.
 ### todo (오너 전건 승인 2026-07-18 — owner-gate 해제분 포함, Codex-1 확장 큐 = #150 코멘트 5012160829)
 - 🧊 **이 아래 전량 = 게임·월드 트랙 동결**(오너 "게임 월드는 ㄴㄴ" 2026-08-25).
   2026-08-26 전수 대조 결과 **비월드 잔여 0**: #1077 인박스 승인분 전량 완결(2·3·6·11·
@@ -941,6 +920,16 @@
 - 런던 위성 마이크로 픽(재량 위임 해석): 윈저+옥스퍼드 2곳 추천 — 레만호 완성 후 순번
 - 일본 4도시 COPY 슬롯 이식(다국어 UI 확정 시) / 아토미움 = marker-only 유지 확인
 ### done (최근)
+- **뷰어 v2 전 라운드 병합·운영 배포 (2026-10-08 16:50 KST, 오너 「#1364부터 순서대로 병합해」 — [병합 보고](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6055334125))**:
+  25 PR squash: #1364 · 설계 #1358·#1360·#1361·#1363 · AE-R1 #1359·#1367·#1374 · AE-R3 #1365·#1368·#1379 · AD-R4 #1370·#1372·#1382·#1384 ·
+  AD-R3 #1373·#1377·#1383 · AE-R4 #1371·#1380 · AE-R2 #1362·#1376·#1378 · AD-R2 #1369·#1366·#1375. main `b909f9c1` CI 3종 green · Vercel Production 완료.
+  · 스택은 부모 squash 뒤 「갈라진 지점 기준 3-way」로 main 병합 → main 대비 diff = 원 PR diff 줄 단위 일치 확인 → base main → CI → 검증 SHA로 squash(force-push 0).
+  · AE-R2·AD-R2는 큰 묶음과 실제 충돌(ViewerPage·ViewerBottomSheet·e2e) — 사전 검증 트리(npm test 526/6,099 · e2e 131/131)의 단계를 main에 재현,
+    조정 커밋은 해당 PR에 귀속(#1362·#1376·#1378·#1369). #1380 첫 CI의 교재 페이지 대기 시간 초과 1건은 diff 무관 확인 후 재실행 1회 green.
+  · 앞서 병합: R0·R0+ #1352·#1354·#1355·#1356(오너 「실글꼴 검수로 대신하고 병합해」, 운영 반영 M09 확인 `db86e433`).
+- **Codex 정지 중 학습 작업 인수 — 병합분 (2026-10-07)**: #1343 Node 24·`.nvmrc` · #1344 교재 해설 AA·44px · #1345 교재 설명 공용 훅·팀 페이지 ·
+  #1347·#1348·#1353 ESLint .jsx 포함·경고 0 · #1350 제3자 데이터 출처(/credits — FLELex CC BY-NC-SA는 유료화 전 교체/제거 검토, 오너 결정 10-07) · #1351 M09 경계 이후 검수표·READ ONLY SQL ·
+  #1381 대화 패널 IME 조합 Enter. #1342(Codex)는 #1346으로 인수해 닫음.
 - **🏫 AB 수업 판 · 교재 정제 · 암호 공유 R0+R1+R2 — 설계 5603827169·팀 페이지 상세 5604199672 전량 구현 (2026-09-09, 오너 「착수해」)**:
   브랜치 `claude/chinese-pos-context-selection-u23tt0`(merged 이력 위 재기점 → `origin/main` b42d863), draft PR(라운드별 커밋 3 + 보드).
   · **R0 교재 정제** — `bilingualSplit.js`(한글 비율 ≥60% 줄 = 뜻, 바로 앞 원어와 **문장 키**로 짝, 짝 없는 줄은 미배정으로 노출,
