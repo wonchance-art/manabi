@@ -89,9 +89,18 @@ for (const theme of ['light','sepia','dark']) {
     const read=()=>page.locator('.word-token').evaluateAll(tokens=>tokens.map(t=>{
       const surface=t.querySelector('.surface'),ruby=surface.querySelector('ruby'),rt=surface.querySelector('.rt-an');
       const rect=e=>{const r=e.getBoundingClientRect();return [r.x,r.y,r.width,r.height];};
-      return {color:getComputedStyle(surface,'::before').backgroundColor,opacity:getComputedStyle(surface).opacity,glyph:rect(ruby),pron:rect(rt)};
+      const b=getComputedStyle(surface,'::before'),w=parseFloat(b.borderBottomWidth)||0,line=w>0&&!/rgba\(\d+, \d+, \d+, 0\)/.test(b.borderBottomColor)?b.borderBottomColor:null;
+      return {color:b.backgroundColor,line,opacity:getComputedStyle(surface).opacity,glyph:rect(ruby),pron:rect(rt)};
     }));
     const before=await read();
+    // AD-R2(VIEWER-V2-ROUNDS-001 §5 — 오너 확정, 08-27 B안 수정): 새 단어·만난 말은 면 칠 없이 밑줄,
+    // 면 칠은 학습 중·복습에만.
+    for(const i of [0,1]) {
+      assert.equal(before[i].color,'rgba(0, 0, 0, 0)',`${states[i]}: new words must not be filled`);
+      assert.ok(before[i].line,`${states[i]}: new words must carry an underline`);
+    }
+    for(const i of [2,3]) assert.notEqual(before[i].color,'rgba(0, 0, 0, 0)',`${states[i]}: learning/due keep their fill`);
+    assert.equal(before[4].color,'rgba(0, 0, 0, 0)');assert.equal(before[4].line,null,'known words stay unmarked');
     await page.locator('.word-token').evaluateAll(tokens=>tokens.forEach(t=>t.classList.add('word-token--picked')));
     const picked=await read();
     for(let i=0;i<states.length;i++) {
@@ -101,14 +110,19 @@ for (const theme of ['light','sepia','dark']) {
       assert.equal(picked[i].opacity,'1');
     }
     // VIEWER-R0 bug 11 (owner 2026-10-07): "met" shares the new-word display, so selection keeps four
-    // distinct states (new = met, saved, due, known) instead of five.
-    assert.equal(picked[1].color,picked[0].color,'met keeps the new-word blend while selected');
-    assert.equal(new Set(picked.map(t=>t.color)).size,4,'selection must preserve four distinct learning states');
+    // distinct states (new = met, saved, due, known) instead of five. AD-R2: the new-word state is now the
+    // underline (kept while selected over the neutral selection band), so a state is fill + underline.
+    assert.deepEqual([picked[1].color,picked[1].line],[picked[0].color,picked[0].line],'met keeps the new-word display while selected');
+    assert.equal(picked[0].line,before[0].line,'selected new words keep the same underline');
+    assert.equal(picked[0].color,picked[4].color,'selected new words sit on the plain selection band (no blend)');
+    assert.equal(new Set(picked.map(t=>`${t.color}|${t.line}`)).size,4,'selection must preserve four distinct learning states');
     await page.locator('.word-token').evaluateAll(tokens=>tokens.forEach(t=>t.classList.remove('word-token--picked')));
     assert.deepEqual(await read(),before,'clearing selection restores every state without shifting text');
     await page.locator('.reader-area').evaluate(e=>e.classList.remove('reader-area--hl'));
     await page.locator('.word-token').evaluateAll(tokens=>tokens.forEach(t=>t.classList.add('word-token--picked')));
-    assert.equal(new Set((await read()).map(t=>t.color)).size,1,'state mode off keeps the ordinary selection band');
+    const off=await read();
+    assert.equal(new Set(off.map(t=>t.color)).size,1,'state mode off keeps the ordinary selection band');
+    assert.equal(off[0].line,null,'state mode off: new words carry no underline');
   });
 }
 
@@ -217,7 +231,8 @@ test('집중 모드 — 지정 문장만 원래 밝기, 나머지는 어둡고, 
     };
   });
   assert.equal(focus.ops[0], 1, `지정 토큰은 원래 밝기여야 함: ${focus.ops[0]}`);
-  assert.deepEqual(focus.ops,[1,.28,.28], "지정 문장은 선명하게, 주변 문장은 28%로 낮춘다");
+  // AD-R2(VIEWER-V2-ROUNDS-001 §5 — 오너 확정): 흐림 0.28 → 0.5. 주변 문장도 읽히는 밝기(종이 3.08:1).
+  assert.deepEqual(focus.ops,[1,.5,.5], "지정 문장은 선명하게, 주변 문장은 50%로 낮춘다");
   await page.setContent(PAGE(line(false)));
   const off = await page.evaluate(() => {
     const toks = [...document.querySelectorAll('#row2 .word-token')];
@@ -412,7 +427,7 @@ test('경로 줄 — 경로(뒤로가기·형제 내비)는 왼쪽, 도구는 �
     <div class="viewer-series-nav" title="《HSK 5 문장 320》"><span class="viewer-series-nav__btn">◀</span><span class="viewer-series-nav__position">3/20</span><span class="viewer-series-nav__btn">▶</span></div>
     <div class="viewer-topbar__tools">
       <div class="listen-controls"><button class="btn btn--ghost btn--sm">▷ 듣기</button></div>
-      <button class="viewer-aa">Aa</button>
+      <button class="viewer-tool viewer-tool--aa"><span aria-hidden="true">Aa</span></button>
     </div>
   </div>`));
   const back = (await boxes('.viewer-back-link'))[0];
@@ -430,7 +445,7 @@ test('경로 줄 — 뒤로가기·내비가 없어도 도구는 오른쪽에 �
   // 두 경우를 다 감당하는 것은 auto 마진뿐이라, 그 근거를 여기서 못 박는다(v2-Q 선례 그대로).
   await page.setContent(chromePage(`<div class="viewer-topbar">
     <div class="viewer-topbar__tools">
-      <button class="viewer-aa">Aa</button>
+      <button class="viewer-tool viewer-tool--aa"><span aria-hidden="true">Aa</span></button>
     </div>
   </div>`));
   const tools = (await boxes('.viewer-topbar__tools'))[0];
@@ -670,6 +685,7 @@ const R0_ZH = [
   { name: '熬夜 새 단어', segs: [['熬', 'áo'], ['夜', 'yè']], cls: 'word-token--new' },
   { name: '爱惜 만난 말', segs: [['爱', 'ài'], ['惜', 'xī']], cls: 'word-token--met' },
   { name: '。', segs: [['。', '']] },
+  { name: '更 문형+새 단어', segs: [['更', 'gèng']], cls: 'word-token--new', pattern: true },
 ];
 const R0_JA = [
   { name: 'ja 喫茶店 미저장', segs: [['喫茶店', 'きっさてん']] },
@@ -857,16 +873,71 @@ for (const theme of ['light', 'sepia', 'dark']) {
     await page.setContent(R0_PAGE(r0Area({ fs: 25.6, hl: true, theme }, r0Line([R0_ZH[5], R0_ZH[6]]))));
     const read = () => page.evaluate(() => [...document.querySelectorAll('.word-token')].map((t) => {
       const b = getComputedStyle(t.querySelector('.surface'), '::before'), f = getComputedStyle(t, '::before');
-      return { band: b.backgroundColor, frame: f.content !== 'none' ? f.borderTopColor : b.boxShadow };
+      return { band: b.backgroundColor, line: `${b.borderBottomWidth} ${b.borderBottomColor}`, frame: f.content !== 'none' ? f.borderTopColor : b.boxShadow };
     }));
     const plain = await read();
     assert.deepEqual(plain[1], plain[0], `만난 말 칠 ${plain[1].band} ≠ 새 단어 칠 ${plain[0].band}`);
     await page.locator('.word-token').evaluateAll((ts) => ts.forEach((t) => t.classList.add('word-token--picked')));
     const picked = await read();
-    assert.equal(picked[1].band, picked[0].band, '지정 중 혼색도 같아야 한다');
-    assert.notEqual(picked[0].band, plain[0].band, '지정하면 색은 바뀐다(T1 혼색 유지)');
+    assert.deepEqual(picked[1], picked[0], '지정 중 표시(띠·밑줄)도 같아야 한다');
+    assert.notEqual(picked[0].band, plain[0].band, '지정하면 지정 띠가 깔린다');
+    assert.equal(picked[0].line, plain[0].line, '지정 중에도 밑줄은 그대로다(AD-R2)');
     await page.locator('.word-token').evaluateAll((ts) => ts.forEach((t) => { t.classList.remove('word-token--picked'); t.dataset.selected = 'true'; }));
     const selected = await read();
     assert.equal(selected[1].frame, selected[0].frame, '선택 테두리 색도 같아야 한다');
+  });
+}
+
+/* ── AD-R2 새 단어 밑줄(VIEWER-V2-ROUNDS-001 §5 — 오너 확정, 08-27 B안 수정) ──────────────────────
+ * 새 단어·만난 말 = 얇은 파란 밑줄(면 칠 없음), 면 칠은 학습 중·복습에만. 밑줄은 #1354 「밑줄 자리」
+ * (띠 아래 --hl-mark-gap, 문형 밑줄이 있으면 둘째 칸)에 이름만 더한다 — 좌표 신설 0.
+ * 축: 상태색 켬·끔 × 종이(sepia)·어둡게(dark)·밝게 × 선택(테두리)·지정(띠)·미선택 × 문형 동시.
+ * 위 버그 6 행렬도 「更 문형+새 단어」 행과 새 단어·만난 말 밑줄을 같은 기준(띠 + 2px, 테두리 안 0.5px)으로 잰다. */
+for (const theme of ['sepia', 'dark', 'light']) {
+  test(`AD-R2 — 새 단어는 밑줄·면 칠 없음(선택 중 숨김·지정 중 유지), 학습 중·복습은 면 칠(${theme} × 상태색 켬·끔 × 선택·지정·미선택 × 문형 동시)`, async () => {
+    const LIST = [
+      { name: '熬夜 새 단어', segs: [['熬', 'áo'], ['夜', 'yè']], cls: 'word-token--new', kind: 'new' },
+      { name: '爱惜 만난 말', segs: [['爱', 'ài'], ['惜', 'xī']], cls: 'word-token--met', kind: 'new' },
+      { name: '更 문형+새 단어', segs: [['更', 'gèng']], cls: 'word-token--new', pattern: true, kind: 'new' },
+      { name: '体育场 저장', segs: [['体', 'tǐ'], ['育', 'yù'], ['场', 'chǎng']], cls: 'word-token--saved', kind: 'fill' },
+      { name: '照片 복습', segs: [['照', 'zhào'], ['片', 'piàn']], cls: 'word-token--saved word-token--due', kind: 'fill' },
+      { name: '尽量 문형+저장', segs: [['尽', 'jǐn'], ['量', 'liàng']], cls: 'word-token--saved', pattern: true, kind: 'fill' },
+      { name: '眼前 미저장', segs: [['眼', 'yǎn'], ['前', 'qián']], kind: 'plain' },
+    ];
+    const bad = [];
+    const check = (ok, msg) => { if (!ok) bad.push(msg); };
+    for (const hl of [true, false]) for (const mode of ['미선택', '지정', '선택']) {
+      await page.setContent(R0_PAGE(r0Area({ fs: 25.6, hl, theme }, r0Line(LIST, { selected: mode === '선택' }))
+        + `<i id="ln" class="reader-area reader-area--${theme}" style="position:absolute;width:0;height:0;padding:0;min-height:0;color:var(--ws-new-ln)"></i>`));
+      if (mode === '지정') await page.locator('.word-token').evaluateAll((ts) => ts.forEach((t) => t.classList.add('word-token--picked')));
+      const want = await page.evaluate(() => getComputedStyle(document.getElementById('ln')).color);
+      const geo = await r0Geometry();
+      const css = await page.evaluate(() => [...document.querySelectorAll('.word-token')].map((t) => {
+        const b = getComputedStyle(t.querySelector('.surface'), '::before');
+        return { bg: b.backgroundColor, ulw: parseFloat(b.borderBottomWidth) || 0, ulc: b.borderBottomColor };
+      }));
+      const clear = 'rgba(0, 0, 0, 0)';
+      const pickedBg = mode === '지정' ? css[LIST.findIndex((x) => x.kind === 'plain')].bg : clear;
+      LIST.forEach((x, i) => {
+        const at = `${theme}·상태색 ${hl ? '켬' : '끔'}·${mode} ${x.name}`, c = css[i], g = geo[i];
+        if (x.kind === 'new') {
+          check(c.bg === pickedBg, `${at}: 면 칠 ${c.bg} — 새 단어는 칠하지 않는다(지정 중이면 중립 지정 띠 ${pickedBg}만)`);
+          if (!hl) { check(c.ulw === 0 || c.ulc === clear, `${at}: 상태색 끔인데 밑줄이 있다`); return; }
+          // 선택(단어창 열림)은 밑줄 없음 — 파란 밑줄 + 파란 테두리 아랫선이 이중 밑줄로 읽혔다(검수 2026-10-07).
+          // 지정(문장 선택·드래그)은 밑줄 유지.
+          if (mode === '선택') { check(c.ulw === 0 || c.ulc === clear, `${at}: 선택 중에는 새 단어 밑줄을 숨긴다(테두리가 자리를 표시)`); return; }
+          check(c.ulw >= 1 && c.ulw <= 2 && c.ulc === want, `${at}: 밑줄 ${c.ulw}px ${c.ulc} ≠ 1~2px ${want}`);
+          check(g.underline && g.underline.top >= g.band.bottom + 2 - 0.01, `${at}: 밑줄이 띠 아래 첫 칸(띠 + 2px)보다 위다`);
+          check(g.band.clip === 'content-box', `${at}: 지정 띠가 밑줄 여백까지 번진다`);
+          if (x.pattern) check(g.mark && g.underline && g.mark.bottom <= g.underline.top - 0.5, `${at}: 문형 밑줄 다음 칸이 아니다(겹침)`);
+          if (g.frame && g.underline) check(g.underline.bottom <= g.frame.innerBottom - 0.5 + 0.01, `${at}: 밑줄 ${g.underline.bottom.toFixed(2)}이 선택 테두리 선 ${g.frame.innerBottom.toFixed(2)}에 닿는다`);
+        } else if (x.kind === 'fill') {
+          if (hl) check(c.bg !== clear && c.bg !== pickedBg, `${at}: 학습 중·복습은 면 칠이어야 한다(${c.bg})`);
+        } else {
+          check(c.bg === pickedBg && (c.ulw === 0 || c.ulc === clear), `${at}: 아는/미저장 단어에 표시가 생겼다`);
+        }
+      });
+    }
+    assert.deepEqual(bad, []);
   });
 }

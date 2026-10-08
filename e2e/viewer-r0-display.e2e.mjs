@@ -66,8 +66,10 @@ for(const width of [1280,390])test(`R0 bug 1 — grammar underline survives sent
   assertLine(await patternLine(f,0,3),'word selection 比');
   // Auto-pace runs on the picked sentence.
   await f.page.keyboard.press('Escape');await f.page.waitForTimeout(150);
-  await token(f,0,0).locator('.line-pick').click({force:true});
-  await f.page.getByRole('button',{name:'자동 진행 시작'}).click();
+  // AD-R2 PR ①(VIEWER-V2-ROUNDS-001 §5, 설계 Q3 A): 자동 진행은 툴바가 아니라 바닥 한 자리 — 지정 문장이 있으면 문장 이동 막대 안
+  // ▶이고, 시트가 열려 있으면 없다. 지정이 Esc 뒤에도 남아 있으면 ¦를 다시 누르지 않는다(지정 문장 ¦ 재탭 = 번역 시트).
+  if(!await token(f,0,3).evaluate(t=>t.classList.contains('word-token--picked')))await token(f,0,0).locator('.line-pick').click({force:true});
+  await f.page.getByRole('toolbar',{name:'문장 이동',exact:true}).getByRole('button',{name:'자동 진행 시작',exact:true}).click();
   await f.page.locator('.reader-area.reader-area--pacing').waitFor();
   assertLine(await patternLine(f,0,3),'auto-pace 比');
   await f.page.getByRole('button',{name:/자동 진행.*중지/}).click();
@@ -97,9 +99,8 @@ for(const theme of ['sepia','dark'])test(`R0 bug 2 — headword pinyin carries t
   assert.deepEqual(card,body,'headword syllables must match the body syllables');
   // Tone colors off: the headword returns to one default color.
   await f.page.keyboard.press('Escape');
-  await f.page.getByRole('button',{name:'읽기 설정',exact:true}).click();
+  await f.page.getByRole('button',{name:'Aa 읽기 설정',exact:true}).click();
   await f.page.getByRole('tab',{name:'학습 표시',exact:true}).click();
-  await f.page.getByText('성조·문법·한자 표시',{exact:true}).click();
   await f.page.getByRole('checkbox',{name:/^성조 색상/}).uncheck();
   await f.page.keyboard.press('Escape');
   await selectWord(f,0,2);
@@ -134,7 +135,7 @@ for(const width of [1280,390])test(`R0 bug 7 — the Aa preview shows only whole
  for(const [fontSize,pinyinSize] of [[0.8,1],[1.6,0.75],[1.6,1],[2,1],[3,0.75],[3,1]]){
   const f=await open({width,zh:{fontSize,pinyinSize}});
   try{
-   await f.page.getByRole('button',{name:'읽기 설정',exact:true}).click();
+   await f.page.getByRole('button',{name:'Aa 읽기 설정',exact:true}).click();
    await f.page.locator('.reader-settings__preview .rt-an').first().waitFor();
    await f.page.evaluate(()=>document.fonts.ready);
    const p=await previewRows(f),label=`${fontSize}rem · pinyin ${pinyinSize}rem`;

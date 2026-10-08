@@ -251,7 +251,11 @@ export function buildParagraphs(cases, size = 6) {
   return out;
 }
 
-/** 이웃 두 한자 토큰을 이은 꼴이 등재(isRegistered)인 쌍 — N의 [묶음 판정] 후보(설계서 §5.2, 요청당 ≤20). */
+/**
+ * 이웃 두 한자 토큰을 이은 꼴이 등재(isRegistered)인 쌍 — PR① 시안의 [묶음 판정] 후보(설계서 §5.2, 요청당 ≤20).
+ * PR④부터 실행기 N 팔은 제품 collectZhBoundaryPairs(src/lib/server/zhBoundaryReview.js — 사전 행·기록 구간·OOV 제외까지)를 쓴다.
+ * 이 시안은 PR① 단위 계약(zhSenseHoldout.test.js)을 위해 남긴다.
+ */
 export function collectPairCandidates(tokenizedLines, isRegistered, limit = MAX_PAIRS) {
   const pairs = [];
   tokenizedLines.forEach(({ tokens }, lineIdx) => {

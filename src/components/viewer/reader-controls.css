@@ -47,12 +47,13 @@
 .viewer-layout .viewer-topbar {flex-wrap:wrap;position:sticky;top:var(--gnb-height);z-index:35;margin-bottom:0;padding-block:8px 12px;background:var(--reader-paper);gap:12px;}
 .viewer-layout .viewer-topbar::before {content:"";position:absolute;inset:0 calc(-1 * var(--reader-gutter)) -1px;z-index:-1;background:var(--reader-paper);pointer-events:none;}
 .viewer-layout .viewer-topbar__tools {display:flex;flex-wrap:wrap;gap:8px;margin-left:auto;}
-.viewer-layout .viewer-aa,.viewer-pace-toggle {min-height:44px;min-width:44px;border:1px solid var(--reader-line);border-radius:10px;background:var(--reader-paper);color:var(--reader-ink);padding:8px 12px;cursor:pointer;font-size:.9rem;}
-.viewer-layout .viewer-aa:hover {background:var(--reader-selected);}
+.viewer-layout .viewer-tool {min-height:44px;min-width:44px;border:1px solid var(--reader-line);border-radius:10px;background:var(--reader-paper);color:var(--reader-ink);padding:8px 12px;cursor:pointer;font-size:.9rem;}
+.viewer-layout .viewer-tool:hover {background:var(--reader-selected);}
 .viewer-layout .reader-area .word-token .surface {text-shadow:none;color:inherit;}
 /* Selection adds a quiet neutral wash; learning states keep their own hues. */
 .viewer-layout :is(.reader-area,.reader-settings__preview) {--picked-bg:color-mix(in srgb,var(--reader-ink) 7%,var(--reader-paper));}
-.viewer-layout .reader-area--focus .word-token:not(.word-token--picked):not([data-selected="true"]) {opacity:.28;color:var(--reader-ink);}
+/* Focus dims the other sentences to 0.5 (owner-confirmed, VIEWER-V2-ROUNDS-001 §5 AD-R2) — the only focus opacity rule. */
+.viewer-layout .reader-area--focus .word-token:not(.word-token--picked):not([data-selected="true"]) {opacity:.5;color:var(--reader-ink);}
 .viewer-layout .reader-area--focus .word-token:is(.word-token--picked,[data-selected="true"]) {opacity:1;color:var(--reader-ink);}
 .viewer-layout .reader-area .word-token--picked {color:var(--reader-ink);}
 .viewer-layout .reader-area--focus .word-token:is(.word-token--picked,[data-selected="true"]) .surface {opacity:1;}
@@ -137,6 +138,25 @@
 .reader-card-pattern__line {display:flex;align-items:center;gap:0;width:100%;min-height:44px;padding:4px 0;border:0;background:transparent;color:var(--reader-ink);font-size:.875rem;text-align:start;cursor:pointer;overflow-wrap:anywhere;}
 .reader-card-pattern__label {color:var(--reader-muted);font-size:.75rem;}
 .reader-card-pattern__pop {margin:4px 0 0;padding:8px 10px;border:1px solid var(--reader-line);border-radius:6px;background:var(--reader-paper);}
+/* AE-R2 PR ③ [문장] 탭(설계서 docs/manabi-viewer-v2-ae-r2.md §3·§11): 원문 줄(누른 단어 칠) → 번역 → [더 쉽게][자세히]
+   → 문형 → 단어별 뜻. 구획은 가는 선(접힘 0). 진행 표시는 번역 칸에만 한 줄 — 그 위(원문·번역 머리)는 움직이지 않는다. */
+.reader-sentence__source {display:flex;align-items:flex-start;gap:4px;}
+/* 원문 줄은 카드 문장 줄과 같은 결(상자 없이, 누른 자리만 칠) — 칠이 상자 배경에 묻히지 않게. 자르지 않는다. */
+.reader-sentence__original {flex:1;min-width:0;margin:0 0 8px;padding:10px 0 0;border:0;border-radius:0;background:none;font-size:.9375rem;line-height:1.6;color:var(--reader-ink);}
+.reader-sentence__icon {flex-shrink:0;min-width:44px;min-height:44px;border:0;background:none;color:inherit;cursor:pointer;}
+.reader-sentence__icon:first-of-type {color:var(--reader-accent);}
+.reader-sentence__pending {margin:0;font-size:.9rem;line-height:1.75;color:var(--reader-muted);}
+.reader-sentence__login {display:inline-flex;align-items:center;min-height:44px;font-size:.9rem;line-height:1.5;color:var(--reader-accent);text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere;}
+.reader-sentence__actions {display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.reader-sentence__actions:empty {display:none;}
+.reader-sentence__actions .grammar-detail__toggle {width:auto;margin-top:0;flex:0 1 auto;}
+.reader-sentence__patterns,.reader-sentence__glosses {border-top:1px solid var(--reader-line);padding-top:8px;margin:12px 0 0;}
+/* 한 항목(낱말 · 읽기 · 뜻) 안에서는 어절 단위로만 꺾고, 구분점은 앞 항목 끝에 붙여 줄머리에 오지 않게 한다. */
+.reader-sentence__glosses ul {list-style:none;margin:0;padding:0;font-size:.9375rem;line-height:1.7;word-break:keep-all;overflow-wrap:anywhere;}
+.reader-sentence__glosses li {display:inline;}
+.reader-sentence__glosses li:not(:last-child)::after {content:"\00a0· ";color:var(--reader-muted);}
+.reader-sentence__patterns .reader-card-pattern__line {gap:.3em;}
+.reader-sentence__reading {font-size:.875em;color:var(--reader-muted);}
 .reader-card-sense-list {list-style:none;margin:0;padding:0;}
 .reader-card-sense {display:grid;grid-template-columns:4.25em 1.25em minmax(0,1fr) auto;column-gap:4px;align-items:baseline;padding:4px 6px;margin:0 -6px;border-radius:4px;font-size:.9375rem;line-height:1.55;}
 .reader-card-sense.is-current {background:var(--reader-selected);}
@@ -376,15 +396,20 @@
 
 /* Reading-room chrome follows the home page's paper, ink and editorial rules.
    Body typography, annotation settings and learning-state colors remain reader owned. */
-.manabi-app .viewer-layout {background:var(--reader-surface);gap:28px;min-height:calc(100dvh - var(--gnb-height));}
+/* AD-R2(VIEWER-V2-ROUNDS-001 §5 「본문 테두리 카드 제거」): 본문은 종이 위에 바로 놓인다 — 뷰어 바탕 전체가 종이다.
+   본문 바탕(--reader-paper)은 그대로라 종이 기준 혼색(선택 띠·상태 띠)의 대비가 변하지 않는다(설계 Q5). 경로 줄·시트는 주변색. */
+.manabi-app .viewer-layout {background:var(--reader-paper);gap:28px;min-height:calc(100dvh - var(--gnb-height));}
 .manabi-app .viewer-layout .viewer-topbar {background:var(--reader-surface);border-bottom:1px solid var(--reader-line);gap:8px;padding:6px 0;min-height:58px;}
 .manabi-app .viewer-layout .viewer-topbar::before {background:var(--reader-surface);}
 .manabi-app .viewer-layout .viewer-back-link {font-size:13px;color:var(--reader-muted);min-height:44px;display:inline-flex;align-items:center;}
 .manabi-app .viewer-layout .viewer-topbar__tools {gap:4px;align-items:center;}
-.manabi-app .viewer-layout :is(.viewer-aa,.viewer-pace-toggle,.viewer-series-nav__btn) {border-color:transparent;border-radius:3px;background:transparent;box-shadow:none;min-width:44px;min-height:44px;color:var(--reader-ink);}
-.manabi-app .viewer-layout .viewer-aa {font-size:13px;padding:8px 11px;font-weight:500;}
-.manabi-app .viewer-layout .viewer-aa[aria-label="읽기 설정"] {font-family:var(--font-manrope),sans-serif;font-size:20px;letter-spacing:-1px;}
-.manabi-app .viewer-layout :is(.viewer-aa,.viewer-pace-toggle,.viewer-series-nav__btn):hover {background:var(--reader-selected);color:var(--reader-accent);}
+.manabi-app .viewer-layout :is(.viewer-tool,.viewer-series-nav__btn) {border-color:transparent;border-radius:3px;background:transparent;box-shadow:none;min-width:44px;min-height:44px;color:var(--reader-ink);}
+/* 경로 줄 도구 = 아이콘 20 + 간격 4 + 보이는 라벨 13px 500, 좌우 10px(AD-R2 설계 §9.2). Aa는 글자 자체가 라벨. */
+.manabi-app .viewer-layout .viewer-topbar__tools .viewer-tool {display:inline-flex;align-items:center;justify-content:center;gap:4px;flex:none;padding:0 10px;font-size:13px;font-weight:500;line-height:1.2;white-space:nowrap;}
+.manabi-app .viewer-layout .viewer-topbar__tools .viewer-tool .action-icon {flex:none;}
+.manabi-app .viewer-layout .viewer-topbar__tools .viewer-tool--aa {font-family:var(--font-manrope),sans-serif;font-size:17px;font-weight:600;letter-spacing:-.5px;}
+.manabi-app .viewer-layout .viewer-topbar__tools .viewer-tool:focus-visible {outline:2px solid var(--reader-accent);outline-offset:1px;}
+.manabi-app .viewer-layout :is(.viewer-tool,.viewer-series-nav__btn):hover {background:var(--reader-selected);color:var(--reader-accent);}
 .manabi-app .viewer-layout .viewer-series-nav {gap:0;}
 .manabi-app .viewer-layout .viewer-series-nav__btn {font-size:27px;font-weight:400;padding:0;}
 .manabi-app .viewer-layout .viewer-series-nav__position {font-size:12px;min-width:35px;text-align:center;font-variant-numeric:tabular-nums;color:var(--reader-muted);}
@@ -392,7 +417,6 @@
 .manabi-app .viewer-layout .listen-controls>.btn {border:0;border-radius:3px;padding:8px 10px;font-size:13px;font-weight:500;color:var(--reader-ink);background:transparent;min-height:44px;}
 .manabi-app .viewer-layout .viewer-header {display:block;padding:32px 0 24px;margin:0;border:0;}
 .manabi-app .viewer-layout .reader-edition {font-size:11px;letter-spacing:.7px;color:var(--reader-accent);margin:0 0 14px;}
-.reader-edition>span {letter-spacing:1.4px;color:var(--reader-muted);margin-right:4px;}
 .manabi-app .viewer-layout .viewer-titlerow {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:baseline;margin-bottom:14px;}
 .manabi-app .viewer-layout .viewer-titlerow .page-header__title {font-size:clamp(27px,3cqi,40px);line-height:1.35;letter-spacing:-1.1px;font-weight:700;color:var(--reader-ink);}
 .manabi-app .viewer-layout .viewer-title-edit {border:0;background:transparent;border-radius:3px;font-size:12px;color:var(--reader-muted);padding:8px;min-height:44px;flex:none;}
@@ -401,7 +425,13 @@
 .manabi-app .viewer-layout .viewer-badges {gap:8px 18px;margin:8px 0 0;}
 .manabi-app .viewer-layout .viewer-badge {border:0;border-radius:0;padding:0;background:none;color:var(--reader-muted);box-shadow:none;font-size:11px;animation:none;}
 .manabi-app .viewer-layout .viewer-badge--due {color:var(--reader-accent);}
-.manabi-app .viewer-layout .reader-area {padding:clamp(18px,3cqi,32px);border:1px solid var(--reader-line);border-radius:3px;background:var(--reader-paper);}
+/* 통계 줄 한 덩어리(AD-R2) — 「아는 단어 · 새 단어 · N개 수집 → 단어장」. 블록이라 가운뎃점 앞뒤 공백이 살고,
+   좁은 화면에서는 덩어리 안에서 줄을 바꾼다. 수집 링크는 무채색 밑줄(크롬 강조색은 복습 하나). 세로 여백은 누름 영역만
+   넓히고 줄 높이는 바꾸지 않는다(인라인 패딩). */
+.manabi-app .viewer-layout .viewer-stats {display:block;line-height:1.7;}
+.manabi-app .viewer-layout .viewer-stats__vocab {color:inherit;padding-block:10px;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--reader-line);}
+.manabi-app .viewer-layout .viewer-stats__vocab:hover {color:var(--reader-ink);text-decoration-color:currentColor;}
+.manabi-app .viewer-layout .reader-area {padding-block:clamp(18px,3cqi,32px);padding-inline:0;border:0;border-radius:0;background:var(--reader-paper);}
 .manabi-app .viewer-layout .reader-hint {font-size:12px;color:var(--reader-muted);line-height:1.7;}
 .manabi-app .viewer-layout .viewer-attribution {font-size:12px;color:var(--reader-muted);line-height:1.8;}
 .manabi-app .viewer-layout .viewer-inspector {border-radius:5px;border-top:3px solid var(--reader-accent);box-shadow:0 12px 32px color-mix(in srgb,var(--reader-ink) 8%,transparent);}
@@ -431,7 +461,7 @@
 @container reader (max-width:600px) {
   .manabi-app .viewer-layout .viewer-header {padding-block:24px 18px;}
   .manabi-app .viewer-layout .viewer-titlerow {align-items:flex-start;}
-  .manabi-app .viewer-layout .reader-area {padding:20px 14px;}
+  .manabi-app .viewer-layout .reader-area {padding-block:20px;}
   .manabi-app .viewer-layout .viewer-topbar {column-gap:0;}
   .manabi-app .viewer-layout .viewer-series-nav__btn {min-width:40px;}
   .manabi-app .viewer-layout .viewer-inspector {inset-inline:8px;border-radius:6px;}
@@ -472,11 +502,42 @@
 .reader-settings .reader-modal__header>button>span {font-size:24px;}
 .reader-settings .reader-modal__body {padding:0 16px 12px;}
 .reader-settings .reader-modal__footer {padding:4px 12px max(4px,env(safe-area-inset-bottom));}
-.reader-settings .reader-modal__footer button {display:flex;align-items:center;justify-content:center;min-width:44px;padding:0;}
-.reader-settings .reader-settings__languages {display:grid;gap:0;padding:8px 0;border-bottom:1px solid var(--reader-line);}
-.reader-settings .reader-settings__languages .reader-setting-choices {display:grid;grid-template-columns:3.2em minmax(0,1fr);align-items:center;padding:2px 0;gap:8px;}
-.reader-settings .reader-settings__languages .reader-setting-choices>div {flex-wrap:nowrap;gap:4px;}
-.reader-settings .reader-settings__languages b {font-size:.8rem;font-weight:500;}
+.reader-settings .reader-modal__footer button {display:flex;align-items:center;justify-content:center;min-width:44px;padding:0 8px;}
+/* AD-R2 Aa — 창 높이는 탭과 무관하게 고정한다(정본 Y②, 설계 Q8 제안값 min(85dvh,720px); 키보드·작은 화면은
+   .reader-modal의 max-height가 더 줄인다). 탭·미리보기·하단은 제자리이고 넘치는 탭 본문만 스크롤한다. */
+.reader-settings {height:min(85dvh,720px);}
+.reader-settings .reader-modal__body {flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.reader-settings .reader-modal__body>* {flex:none;}
+.reader-settings .reader-modal__body>[role="tabpanel"] {flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;margin-inline:-6px;padding-inline:6px;} /* 여백 6px = 포커스 테두리(2+2px)가 스크롤 상자에 잘리지 않게 */
+@media (max-height:500px) {
+  .reader-settings .reader-modal__body {display:block;overflow:visible;}
+  .reader-settings .reader-modal__body>[role="tabpanel"] {overflow:visible;}
+}
+/* 「표시」 탭 맨 아래 언어 한 줄 — 선택 상자 둘(화면 · 설명). */
+.reader-settings .reader-settings__languages {margin-top:8px;padding:10px 0 4px;border-top:1px solid var(--reader-line);}
+.reader-settings .reader-setting-toggle+.reader-settings__languages {margin-top:0;border-top:0;} /* 스위치 줄의 아래 선과 겹쳐 두 줄이 되지 않게 */
+.reader-settings .reader-settings__language-row {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.reader-settings .reader-setting-select {display:flex;align-items:center;gap:8px;min-width:0;font-size:.82rem;font-weight:500;}
+.reader-settings .reader-setting-select>span {flex:none;}
+.reader-settings .reader-setting-select select {flex:1;min-width:0;min-height:44px;padding:0 8px;border:1px solid var(--reader-line);border-radius:3px;background:var(--reader-paper);color:var(--reader-ink);font:inherit;font-size:.85rem;font-weight:400;cursor:pointer;}
+.reader-settings .reader-setting-select select:disabled {opacity:.55;cursor:default;}
+.reader-settings .reader-setting-select:has(select:disabled)>span {color:var(--reader-muted);}
+/* 선택 묶음의 「?」는 이름 줄 오른쪽 — 44px 타깃은 그대로, 위아래 음수 여백으로 줄 높이를 늘리지 않는다. 펼치면 아래로 한 줄. */
+.reader-settings .reader-setting-choices__head {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 8px;}
+.reader-settings .reader-setting-choices__head>.reader-settings__help {margin:-12px 0;}
+.reader-settings .reader-setting-choices__head>.reader-settings__help[open] {flex:0 0 100%;margin:-12px 0 0;}
+.reader-settings .reader-setting-choices__head>.reader-settings__help[open]>summary {margin-left:auto;}
+/* 쓸 수 없는 옵션: 꺼진 채 흐리게 + 이유 한 줄. */
+.reader-settings .reader-setting-reason {flex:0 0 100%;display:block;margin:0 0 6px;font-size:.78rem;line-height:1.5;color:var(--reader-muted);overflow-wrap:anywhere;}
+.reader-settings .reader-setting-toggle:has(input:disabled)>label {cursor:default;color:var(--reader-muted);}
+.reader-settings .reader-setting-choices--off>b {color:var(--reader-muted);}
+.reader-settings .reader-setting-choices--off button {opacity:.5;cursor:default;}
+/* 범례 — 상태 견본은 본문과 같은 클래스(.word-token--*)를 --hl 범위에서 그린다. 바탕은 테마 클래스의 면 칠 대신 창 종이. */
+.reader-settings .reader-settings__legend,.reader-settings .reader-settings__tones {flex:0 0 100%;display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;margin:0 0 8px;font-size:.78rem;color:var(--reader-ink);background:none;}
+.reader-settings .reader-settings__legend .word-token {pointer-events:none;cursor:default;}
+.reader-settings .reader-settings__legend .surface {padding-inline:4px;color:var(--reader-ink);}
+.reader-settings .reader-settings__tones>span {display:inline-flex;align-items:baseline;gap:4px;line-height:2;}
+.reader-settings .reader-settings__tones .rt-an {font-family:var(--font-noto-sans),sans-serif;font-size:1rem;font-weight:600;}
 .reader-settings .reader-setting-choices button {padding:4px 8px;min-width:44px;min-height:44px;font-size:.82rem;}
 .reader-settings .reader-settings__rates button {flex:1 0 4em;}
 .reader-settings .reader-settings__tabs {padding-top:4px;}
@@ -505,7 +566,7 @@
 .reader-settings .reader-settings__themes button:nth-child(2) {background:#f7f4eb;color:#594d35;}
 .reader-settings .reader-settings__themes button:nth-child(3) {background:#242824;color:#ecefe9;}
 .reader-settings .reader-settings__themes button[aria-pressed="true"] {outline:2px solid var(--reader-accent);outline-offset:2px;}
-.reader-settings .reader-setting-toggle {padding:4px 0;gap:4px;align-items:flex-start;}
+.reader-settings .reader-setting-toggle {padding:4px 0;gap:4px;align-items:flex-start;flex-wrap:wrap;}
 .reader-settings .reader-setting-toggle>label {min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex:1;cursor:pointer;}
 .reader-settings .reader-setting-toggle input {appearance:none;width:38px;height:24px;border-radius:20px;background:var(--reader-line);position:relative;margin:10px 0;cursor:pointer;}
 .reader-settings .reader-setting-toggle input::before {content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--reader-paper);}
@@ -524,7 +585,7 @@
 .reader-settings .reader-setting-toggle:has(>.reader-settings__help[open]) {flex-wrap:wrap;}
 .reader-settings .reader-setting-toggle>.reader-settings__help[open] {flex:0 0 100%;}
 .reader-settings .reader-setting-toggle>.reader-settings__help[open]>summary {margin-left:auto;}
-.reader-settings :is(button,input,summary):focus-visible {outline:2px solid var(--reader-accent);outline-offset:2px;}
+.reader-settings :is(button,input,summary,select):focus-visible {outline:2px solid var(--reader-accent);outline-offset:2px;}
 @media (forced-colors:active) {
   .reader-settings .reader-setting-toggle input {appearance:auto;width:24px;height:24px;}
   .reader-settings .reader-setting-toggle input::before {display:none;}
@@ -755,6 +816,13 @@
 .viewer-sense-review__done,.viewer-sense-review__loading {display:flex;align-items:center;min-height:44px;margin:0;font-size:.8125rem;color:var(--reader-muted);}
 @container reader (min-width:1120px) { .viewer-sense-review__options {flex-direction:column;align-items:flex-start;} }
 /* /AD-R4 PR③ */
+/* AD-R4 PR④ 경계 후보 줄 「한 단어로 묶을까요? [묶기] [아니요]」(설계서 §6.2·§6.4 목업) — [묶기]는 같은 자리 AD-R3 확인 줄. 색은 뷰어 별칭 토큰만. */
+.viewer-sense-review__join {display:flex;flex-wrap:wrap;align-items:center;gap:0 8px;}
+.viewer-sense-review__ask {margin:0;font-size:.875rem;line-height:1.5;color:var(--reader-ink);}
+.viewer-sense-review__join-actions {display:inline-flex;gap:6px;}
+.viewer-sense-review__join-yes,.viewer-sense-review__join-no {min-height:44px;}
+.viewer-sense-review__row--boundary .viewer-boundary-confirm {margin-top:4px;}
+/* /AD-R4 PR④ */
 
 /* AD-R3 PR③ 「이 자료」 한 단어로 묶기 · 나누기(뷰어 v2 설계서 docs/manabi-viewer-v2-ad-r3.md §6.3 목업). 누름 영역 44px · 색은 뷰어 별칭 토큰만. 「AI」 표시 없음. */
 .viewer-boundary-merge {display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin:4px 0 8px;}

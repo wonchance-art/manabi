@@ -765,6 +765,12 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
         JSON.stringify({ syn: [{ w: '汉语', r: 'hànyǔ', ko: '중국어(한어)' }], ant: [] }),
       );
     }, synonymKey);
+    // AE-R2 PR ②(설계서 docs/manabi-viewer-v2-ae-r2.md §4·§6.1): 카드가 열린 채 0.3초면 그 줄 번역을 선처리한다 —
+    // 줄 번역도 같은 viewer_tx 키로 사전 시드해 「Gemini 0회」 계약을 유지한다(선처리는 캐시를 읽고 끝난다).
+    const cardLineKey = await viewerCacheKey('viewer_tx', [session.user.id, '91001', 'Chinese', fixtures[0].raw_text, fixtures[0].processed_json], fixtures[0].raw_text.split('\n')[0]);
+    await page.evaluate((key) => {
+      localStorage.setItem(key, '**번역**\n오늘 우리는 중국어를 배웁니다.');
+    }, cardLineKey);
 
     // 뷰어 정돈 A안: 책 챕터 내비는 시리즈와 같은 경로 줄 내비(.viewer-series-nav)다 — 책 이름은
     // 툴팁에만(H1이 이미 「책 — 과」를 든다), 화면에는 위치만.

@@ -23,7 +23,9 @@ export const BOUNDARY_LIMITS = Object.freeze({
   maxChars: Object.freeze({Chinese: 12, Japanese: 12, English: 40}),
   maxEdits: 200,
 });
-export const BOUNDARY_MARKERS = Object.freeze(['user', 'user_rule', 'shared_rule']);
+// 'ai_registered' = AD-R4 PR④ 서버 자동 묶기(등재 + 이 문장에서 한 단어 판정, server/zhBoundaryReview.js). 기록(viewerBoundaries)을
+// 남기지 않는 분석기 쪽 경계라 사용자가 나누면 AD-R3 기록('user')이 이긴다.
+export const BOUNDARY_MARKERS = Object.freeze(['user', 'user_rule', 'shared_rule', 'ai_registered']);
 
 const SPACE = /\s/u;
 const HIRAGANA = /^[ぁ-ゟー]+$/u;
@@ -361,6 +363,24 @@ export const pendingBoundaryCount = json => readBoundaryEdits(json).filter(recor
 export function readBoundaryEdits(json) {
   const store = json?.metadata?.viewerBoundaries;
   return store?.version === 1 && Array.isArray(store.edits) ? store.edits : [];
+}
+
+// ── AD-R4 PR④ 경계 후보(「한 단어로 묶을까요?」)를 [아니요]로 접은 꼴 ──
+// metadata.viewerBoundaryDismissed = [이은 꼴…](이 자료 전체 · 최근 BOUNDARY_DISMISSED_LIMIT개). 서버는 재분석마다 후보 표식
+// (토큰 boundarySuggest)을 다시 달지만, 재분석은 원래 metadata를 이어 쓰므로(runPreservedReanalysis) 접은 꼴은 재분석 뒤에도 접힌 채다.
+export const BOUNDARY_DISMISSED_LIMIT = 200;
+
+/** 접은 꼴 집합. 형식이 아니면 빈 집합. */
+export function dismissedBoundaryForms(json) {
+  const list = json?.metadata?.viewerBoundaryDismissed;
+  return new Set(Array.isArray(list) ? list.filter(form => typeof form === 'string' && form) : []);
+}
+
+/** form을 접은 꼴에 더한 새 processed_json(입력은 바꾸지 않는다 · 토큰·기록·원문 무변경). */
+export function withBoundarySuggestionDismissed(json, form) {
+  const list = [...dismissedBoundaryForms(json)].filter(item => item !== form);
+  list.push(form);
+  return {...json, metadata: {...json?.metadata, viewerBoundaryDismissed: list.slice(-BOUNDARY_DISMISSED_LIMIT)}};
 }
 
 /** 원문 줄 하나의 토큰 [{id, token}](개행 제외). 줄 번호는 토큰 id 접두다(analysisTokenLine). */

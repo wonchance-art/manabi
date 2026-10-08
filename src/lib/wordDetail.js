@@ -102,8 +102,12 @@ export async function fetchSharedDetailText(client, token, language) {
  * @returns {Promise<string>} detail text
  */
 export async function fetchWordDetailText(token, language) {
-  const baseForm = token.base_form || token.text;
+  // 어휘 키 = sep_link ?? base_form — 이합사 O 조각(道了歉의 歉)은 VO(道歉)로 조회·저장한다. 카드 조회·
+  // 단어장 저장·만남과 같은 규칙(뷰어 v2 AE-R2 §5.3). 예전 歉 키(localStorage·DB 행)는 읽지 않을 뿐 지우지 않는다.
+  const baseForm = token.sep_link || token.base_form || token.text;
   const cacheKey = `${language}:${baseForm}`;
+  // 프롬프트 표제: 중국어는 굴절이 없어 어휘 키가 곧 표제(이합사 두 조각 모두 VO). 그 밖의 언어는 기존대로 표면형.
+  const headword = (token.sep_link || language === 'Chinese') ? baseForm : token.text;
 
   // 1. localStorage
   const local = localGet(cacheKey);
@@ -123,7 +127,7 @@ export async function fetchWordDetailText(token, language) {
 
   // 3. Gemini
   const langName = langNameKo(language);
-  const prompt = `"${token.text}" (${token.pos || ''})
+  const prompt = `"${headword}" (${token.pos || ''})
 
 **뜻**
 1. 간결한 뜻 (3~5단어)

@@ -25,6 +25,10 @@ import { collectMissingBaseForms } from '@/lib/server/dictLookup';
 import {
   applyRequestBoundaries, boundaryBaseTokens, boundaryLineResult, readRequestBoundaries,
 } from '@/lib/server/analyzeBoundaries';
+import {
+  ZH_BOUNDARY_REVIEW, applyZhBoundaryJoins, attachZhBoundaryPairs, collectZhBoundaryPairs, collectZhPairLookupForms,
+  zhBoundaryBlockedRegions,
+} from '@/lib/server/zhBoundaryReview';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // Vercel Node.js 함수: 최대 60초
@@ -114,6 +118,11 @@ export async function POST(request) {
     const boundaryState = applyRequestBoundaries(rawTokenizedLines, boundaryRequest.byLine, language);
     const tokenizedLines = boundaryState?.tokenizedLines ?? rawTokenizedLines;
     const lookupLines = boundaryState?.lookupLines ?? tokenizedLines;
+    // 1.6. AD-R4 PR④ 경계 검수(중국어만, 상수 ZH_BOUNDARY_REVIEW 꺼짐으로 출시) — 켜지면 이웃 한자 쌍을 같은 판별 호출에
+    // [묶음 판정]으로 싣는다. 이 자료 경계 기록 구간(적용 못 한 기록 포함)과 겹치는 쌍은 만들지 않는다(사용자 경계가 이긴다).
+    // 꺼져 있으면 아래 어떤 단계도 이 블록의 값을 쓰지 않는다(zhBoundaryReviewRoute.test.js 스냅숏 = 현행).
+    const zhBoundaryOn = language === 'Chinese' && ZH_BOUNDARY_REVIEW;
+    const zhBoundaryBlocked = zhBoundaryOn ? zhBoundaryBlockedRegions(boundaryRequest.byLine, boundaryState) : null;
 
     // 2. 모든 기본 base_form 수집 (중복 제거). 영어는 POS별 lemma 후보 사전 행도 같은 요청에서
     // MAX_MISSING cap 안에 조회한다. 후보 행이 없으면 문맥 pick을 적용하지 않고 기본 키로 폴백.
@@ -128,6 +137,10 @@ export async function POST(request) {
       for (const form of collectEnLemmaLookupForms(tokenizedLines, MAX_MISSING)) {
         lookupBaseForms.add(form);
       }
+    }
+    // 경계 검수 켜짐: 이은 꼴도 같은 쿼리로 읽는다(gemini 행 = 미등재 후보 근거 · 등재 꼴의 뜻). DB 쿼리는 1회 그대로(§5.2).
+    if (zhBoundaryOn) {
+      for (const form of collectZhPairLookupForms(tokenizedLines, zhBoundaryBlocked)) lookupBaseForms.add(form);
     }
 
     // 3. DB에서 기존 의미 조회
@@ -186,10 +199,22 @@ export async function POST(request) {
     // 꺼져 있으면 마크·프롬프트·응답 처리가 현행 그대로다(zhSenseReviewRoute.test.js 스냅숏).
     const zhSenseOn = language === 'Chinese' && ZH_SENSE_REVIEW;
     const zhPosMarks = language === 'Chinese' ? collectZhPosMarks(tokenizedLines, cache) : [];
-    const zhMarks = zhSenseOn
+    // 경계 검수 켜짐: 쌍은 다른 마크가 있을 때만 싣는다(쌍 때문에 판별 호출이 새로 생기지 않게 — §4.2).
+    const zhPairs = zhBoundaryOn && zhPosMarks.length
+      ? collectZhBoundaryPairs(tokenizedLines, { cache, marks: zhPosMarks, blocked: zhBoundaryBlocked })
+      : [];
+    // 등재 꼴인데 사전 행이 없으면(jieba가 늘 갈라 행이 쌓이지 않는 不客气류) 같은 병렬 뜻 조회에 싣는다 — 묶을 때 뜻을 붙인다.
+    // 진짜 미싱 뒤에 붙어 MAX_MISSING 캡에서 미싱이 우선이고, 뜻을 못 받으면 그 쌍은 묶지 않는다(현행 그대로).
+    for (const p of zhPairs) {
+      if (p.registered && !cache.has(p.form) && !missingList.some((item) => item.base_form === p.form)) {
+        missingList.push({ base_form: p.form, pos: null, reading: p.reading || null });
+      }
+    }
+    const zhSenseMarks = zhSenseOn
       ? attachZhSenseCandidates(zhPosMarks, { tokenizedLines, cache, refreshForms: new Set(missingList.map((m) => m.base_form)) })
       : zhPosMarks;
-    const zhSenseStats = zhSenseOn ? createZhSenseStats(zhMarks) : null;
+    const zhMarks = zhPairs.length ? attachZhBoundaryPairs(zhSenseMarks, zhPairs) : zhSenseMarks;
+    const zhSenseStats = zhSenseOn || zhBoundaryOn ? createZhSenseStats(zhMarks) : null;
     const zhPosPicksPromise = zhMarks.length > 0
       ? disambiguateZhPos(lines, zhMarks, { deadlineMs: startedAt + 35_000, ...(zhSenseStats ? { senseStats: zhSenseStats } : {}) })
       : Promise.resolve(new Map());
@@ -229,6 +254,17 @@ export async function POST(request) {
       meaningsPromise,
     ]);
     const enPosPicks = enPosResult.picks;
+    // 4.7. 경계 검수 켜짐 — 등재 + join:true만 자동으로 묶고(표식 ai_registered), 미등재 + join:true는 앞 토큰에 후보 표식.
+    // 묶은 꼴의 뜻을 붙일 수 없으면(사전 행 없음) 묶지 않는다. 꺼져 있으면 zhPairs가 비어 조립 줄은 tokenizedLines 그대로다.
+    let assemblyLines = tokenizedLines;
+    if (zhPairs.length) {
+      const joined = applyZhBoundaryJoins(tokenizedLines, zhPairs, posPicks, {
+        canJoin: (form) => (cache.get(form)?.meanings || []).some((item) => item?.meaning),
+      });
+      assemblyLines = joined.tokenizedLines;
+      zhSenseStats.joinApplied = joined.applied;
+      zhSenseStats.joinSuggested = joined.suggested;
+    }
 
     // 5. processed_json 호환 응답 조립
     // 불필요 furigana 필터: 히라가나·카타카나·기호만인 토큰은 reading 무시
@@ -249,7 +285,7 @@ export async function POST(request) {
     const enMarkKeys = new Set(enMarks.map((mark) => mark.key));
     const usedBaseFormsSet = new Set();
     let enFallbacks = 0;
-    const results = tokenizedLines.map(({ tokens }, lineIdx) => {
+    const results = assemblyLines.map(({ tokens }, lineIdx) => {
       const sequence = [];
       const dictionary = {};
       // OOV 우연 병합 분리 — 판별기가 "별개 단어들의 우연 결합"으로 판정한 토큰(笔在→笔/在)은
@@ -307,6 +343,8 @@ export async function POST(request) {
           meaning,
           base_form: outputBaseForm,
           ...(t.boundary ? { boundary: t.boundary } : {}),
+          // AD-R4 PR④ 미등재 묶음 후보(앞 토큰에만 — 뷰어 「한 단어로 묶을까요?」). 경계는 바꾸지 않는다.
+          ...(t.boundarySuggest ? { boundarySuggest: t.boundarySuggest } : {}),
           ...(t.sep_link ? { sep_link: t.sep_link } : {}),
           ...(posAll ? { pos_all: posAll } : {}),
           // 화면 표시용 내부 표식('ctx' 문맥 뜻 | 'doubt' 의심) — 「AI」 표로 그리지 않는다(오너 결정 10-07).

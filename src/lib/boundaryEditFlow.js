@@ -10,6 +10,7 @@
 import {
   BOUNDARY_LANGUAGES, BOUNDARY_LIMITS, assignBoundaryPieceIds, boundaryLineEntries, boundaryMergeEligibility,
   boundarySpans, boundarySplitEligibility, compactBoundaryText, editBoundaries, readBoundaryEdits, replaceBoundaryLine,
+  withBoundarySuggestionDismissed,
 } from './boundaryEdits';
 import { analysisTokenLine } from './analysisCoverage';
 import { replaceViewerAnalysis } from './reanalysisPreservation';
@@ -296,6 +297,21 @@ export async function undoBoundaryEdit(material, undo, deps) {
     after: { source: 'boundary_edit', id: undo.recordId, cuts: cutsInside(undo.beforeEntries, undo.start, undo.end), scope: 'material', undo: true },
   });
   return { material: saved, selectId: spans.find(span => span.start === undo.start)?.entry.id ?? undo.beforeEntries[0]?.id };
+}
+
+/**
+ * AD-R4 PR④ 경계 후보 [아니요] — 그 꼴을 이 자료의 접은 꼴(metadata.viewerBoundaryDismissed)에 더한다(설계서 §6.2).
+ * 쓰기는 묶기·나누기와 같은 원자 RPC(viewer_replace_analysis — 기대값 비교·소유자 확인, 원문 그대로) 하나. 토큰·기록·저장 단어·
+ * FSRS·사전 쓰기 0. 중국어만. 결과 {material(저장된 행)}.
+ */
+export async function dismissBoundarySuggestion(material, form, deps) {
+  const json = material?.processed_json;
+  if (json?.metadata?.language !== 'Chinese') throw new BoundaryEditError('unsupported_language');
+  if (typeof form !== 'string' || !form) throw new BoundaryEditError('invalid_range');
+  const attempt = deps.attempt || crypto.randomUUID();
+  const next = withBoundarySuggestionDismissed(json, form);
+  const nextJson = { ...next, metadata: { ...next.metadata, viewerRevision: attempt } };
+  return { material: await replaceViewerAnalysis(deps.client, material, material.raw_text, nextJson, attempt) };
 }
 
 /** 적용하지 못한(pending) 기록 목록 — 재분석 알림 [보기]. {id, text(칼선 │), sentence(그 줄 원문 또는 null)} */

@@ -125,19 +125,23 @@ describe('③ 교재 뜻은 Gemini 전에 — 정확 일치만', () => {
     expect(t).toContain('📘 교재');
   });
 
-  it('뷰어 배선 — runSelectionAnalysis가 캐시·Gemini보다 먼저 translations를 본다', () => {
+  it('뷰어 배선 — 번역 길은 캐시·AI보다 먼저 translations를 본다(단일 키 모듈, AE-R2 PR ②)', () => {
+    // 개정 근거: 설계서 docs/manabi-viewer-v2-ae-r2.md §6.1 — 번역 핵심(교재 맵 → viewer_tx → AI)이 sentenceTranslation.js로
+    // 모였다. 순서 단언은 그 모듈로 옮기고, 뷰어는 교재 맵을 먼저 본 뒤 적중하면 키·쿼리 없이 패널을 채운다는 단언으로 바꾼다.
+    const mod = read('src/lib/sentenceTranslation.js');
+    const book = mod.indexOf('lookupTranslation(');
+    const fetchFn = sliceBetween(mod, 'export async function fetchSentenceTranslation(', 'export function sentenceTranslationQuery(');
+    expect(book).toBeGreaterThan(-1);
+    expect(book).toBeLessThan(mod.indexOf('export async function fetchSentenceTranslation('));
+    expect(fetchFn.indexOf('storage.getItem(cacheKey)')).toBeGreaterThan(-1);
+    expect(fetchFn.indexOf('storage.getItem(cacheKey)')).toBeLessThan(fetchFn.indexOf('buildContextPrompt('));
+    expect(mod).toContain("viewerCacheKey('viewer_tx', scope, sentence)");
+    expect(mod).toContain("import { lookupTranslation, bookMeaningPanelText } from './bilingualSplit.js';");
     const viewer = read('src/views/ViewerPage.jsx');
     const fn = sliceBetween(viewer, 'const runSelectionAnalysis = async (sel) => {', 'const inlineReview = useInlineReview(');
-    const lookup = fn.indexOf('lookupTranslation(');
-    const cache = fn.indexOf("viewerCacheKey('viewer_tx'");
-    const gemini = fn.indexOf('callGemini(buildContextPrompt(');
-    expect(lookup).toBeGreaterThan(-1);
-    expect(lookup).toBeLessThan(cache);
-    expect(cache).toBeLessThan(gemini);
-    // 적중하면 번역 요청을 만들지 않는다 — cached 분기와 같은 문을 탄다
-    expect(fn).toMatch(/const bookMeaning = lookupTranslation\([\s\S]{0,400}?const cached = bookMeaning \? bookMeaningPanelText\(bookMeaning\)/);
-    expect(fn).toContain('cached ? Promise.resolve() : callGemini(');
-    expect(viewer).toContain("import { lookupTranslation, bookMeaningPanelText } from '../lib/bilingualSplit';");
+    // 적중하면 번역 요청을 만들지 않는다 — 키 계산·쿼리 모두 건너뛴다
+    expect(fn).toMatch(/const bookMeaning = sentenceBookMeaningOf\(sel\);\s+const cacheKey = bookMeaning \? null : await sentenceTranslationKey\(/);
+    expect(fn).toContain('bookMeaning ? Promise.resolve() : (cacheKey');
   });
 });
 

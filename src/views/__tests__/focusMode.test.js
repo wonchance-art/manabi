@@ -24,7 +24,12 @@ describe('집중 모드 배선', () => {
   });
 
   it('주변은 흐리게 하고 지정 문장·열린 단어는 선명하게 유지한다', () => {
-    expect(readerCss).toContain('.word-token:not(.word-token--picked):not([data-selected="true"]) {opacity:.28');
+    // 흐림 0.5(VIEWER-V2-ROUNDS-001 §5 AD-R2 — 오너 확정). 0.28은 주변 문장 대비가 종이 1.77:1로
+    // 위치 감각만 남고 읽히지 않았다. 계약은 실제로 이기는 규칙(reader-controls.css)에 건다.
+    expect(readerCss).toContain('.word-token:not(.word-token--picked):not([data-selected="true"]) {opacity:.5;');
+    // index.css의 옛 기본 규칙(0.18)은 특이도에 져서 한 번도 적용되지 않던 죽은 값이었다 — 값이
+    // 둘이면 어느 쪽이 진짜인지 오독된다. 집중 흐림 값은 한 곳에만 둔다.
+    expect(css).not.toMatch(/\.reader-area--focus \.word-token:not\(\.word-token--picked\) \{[^}]*opacity/);
     expect(readerCss).toContain('.word-token:is(.word-token--picked,[data-selected="true"]) {opacity:1');
     expect(readerCss).toContain('.word-token:is(.word-token--picked,[data-selected="true"]) .surface {opacity:1;}');
   });
@@ -113,7 +118,8 @@ describe('집중 모드 배선', () => {
     expect(viewer).toContain('/> : boardActions ? null : sentenceMoveBar} />}');
     expect(viewer).toContain('active: pickedLineIdx !== null && sentences.length > 0 && !classStudyActive,');
     // 막대가 떠 있으면 본문 끝이 막대 위로 오고, 문장 이동 위치 계산도 막대를 바닥으로 본다.
-    expect(read('src/lib/useReaderLayout.js')).toContain("'.viewer-inspector,.class-reader-dock,.sentence-move-bar'");
+    // 개정(AD-R2 PR ①, VIEWER-V2-ROUNDS-001 §5 「자동 진행」): 같은 바닥 자리의 단독 「▶ 자동 진행」도 바닥 요소로 본다.
+    expect(read('src/lib/useReaderLayout.js')).toContain("'.viewer-inspector,.class-reader-dock,.sentence-move-bar,.viewer-pace-float'");
     expect(read('src/components/viewer/sentence-move-bar.css')).toContain('.viewer-layout:has(.sentence-move-bar)>.viewer-center {padding-bottom:calc(var(--sentence-move-bar-space) + 48px);}');
     const bar = sliceBetween(viewer, 'const translatePickedSentence', 'function extractSourceSentence');
     expect(bar).toContain('runSelectionAnalysis(pickedSentence.text);');

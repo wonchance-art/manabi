@@ -5,6 +5,8 @@
 // 쓰기는 이 파일에 없다 — 목록 교정은 기존 correctTokenMutation(AE-R1 PR③ 사전 뜻 교정 경로)이 한다.
 
 import { buildSenseList } from './viewerSenseList.js';
+import { analysisTokenLine } from './analysisCoverage.js';
+import { boundaryLineEntries, boundarySpans, dismissedBoundaryForms, readBoundaryEdits } from './boundaryEdits.js';
 
 const CHECKS = new Set(['ctx', 'doubt']);
 
@@ -14,10 +16,14 @@ export function needsMeaningCheck(token) {
 }
 
 /**
- * 이 자료의 「뜻 확인 필요」 토큰 — 문장(분석 순서) 순. 중국어만(한국어·일본어·영어 무변경, 설계서 §8).
- * 사용자가 뜻을 교정한 토큰(재분석 보존 표시 viewerCorrections에 meaning)은 빠진다(§6.1·§7) — 교정 경로가 표식을
- * 지우지만, 표식이 남은 옛 데이터에서도 교정값이 이긴다.
- * @returns {Array<{id:string, token:object}>}
+ * 이 자료의 「뜻 확인 필요」 항목 — 문장(분석) 순. 중국어만(한국어·일본어·영어 무변경, 설계서 §8).
+ * N = 뜻 표식(meaningCheck) 토큰 수 + 경계 후보 수(§6.1). 두 종류가 한 목록에 문장 순서로 섞인다.
+ * - 뜻 항목 {id, token}: 사용자가 뜻을 교정한 토큰(재분석 보존 표시 viewerCorrections에 meaning)은 빠진다(§6.1·§7) — 교정
+ *   경로가 표식을 지우지만, 표식이 남은 옛 데이터에서도 교정값이 이긴다.
+ * - 경계 항목 {kind:'boundary', id, tokenId, nextId, form, parts, token}(AD-R4 PR④ 「한 단어로 묶을까요?」): 서버가 미등재 쌍의
+ *   앞 토큰에 단 boundarySuggest. 바로 뒤 토큰과 이으면 그 꼴일 때만, 두 토큰 모두 경계 표식이 없고, 그 줄의 경계 기록(적용·대기)
+ *   구간과 겹치지 않을 때만(사용자 경계가 이긴다), [아니요]로 접은 꼴(metadata.viewerBoundaryDismissed)이 아닐 때만.
+ * @returns {Array<{id:string, token:object}|{kind:'boundary', id:string, tokenId:string, nextId:string, form:string, parts:string[], token:object}>}
  */
 export function senseReviewItems(processedJson, language) {
   if (language !== 'Chinese') return [];
@@ -25,15 +31,43 @@ export function senseReviewItems(processedJson, language) {
   const sequence = Array.isArray(processedJson?.sequence) ? processedJson.sequence : [];
   if (!dictionary) return [];
   const corrected = processedJson?.metadata?.viewerCorrections || {};
+  const boundary = boundaryCheck(processedJson);
   const out = [];
-  for (const id of sequence) {
+  sequence.forEach((id, k) => {
     const token = dictionary[id];
-    if (!token || token.pos === '개행' || token.failed || !needsMeaningCheck(token)) continue;
-    if (Array.isArray(corrected[id]) && corrected[id].includes('meaning')) continue;
-    out.push({ id, token: { ...token, id } });
-  }
+    if (!token || token.pos === '개행' || token.failed) return;
+    if (needsMeaningCheck(token) && !(Array.isArray(corrected[id]) && corrected[id].includes('meaning'))) {
+      out.push({ id, token: { ...token, id } });
+    }
+    const suggestion = boundary(id, token, sequence[k + 1]);
+    if (suggestion) out.push(suggestion);
+  });
   return out;
 }
+
+/** 경계 후보 판정기(자료 하나) — 기록·접은 꼴은 한 번만 읽는다. */
+function boundaryCheck(json) {
+  const dismissed = dismissedBoundaryForms(json);
+  let records = null;
+  return (id, token, nextId) => {
+    const form = token?.boundarySuggest;
+    if (typeof form !== 'string' || !form || dismissed.has(form) || token.boundary) return null;
+    const next = json.dictionary?.[nextId];
+    const line = analysisTokenLine(id);
+    if (!next || next.pos === '개행' || next.failed || next.boundary || line === null || analysisTokenLine(nextId) !== line) return null;
+    if (`${token.text}${next.text}` !== form) return null;
+    records ??= readBoundaryEdits(json);
+    if (records.some((r) => r?.line === line)) {
+      const spans = boundarySpans(boundaryLineEntries(json, line));
+      const a = spans.find((s) => s.entry.id === id), b = spans.find((s) => s.entry.id === nextId);
+      if (!a || !b || records.some((r) => r?.line === line && Number.isInteger(r.start) && Number.isInteger(r.end) && r.start < b.end && r.end > a.start)) return null;
+    }
+    return { kind: 'boundary', id: `${id}~${nextId}`, tokenId: id, nextId, form, parts: [token.text, next.text], token: { ...token, id } };
+  };
+}
+
+/** 경계 후보 항목인가. */
+export const isBoundarySuggestion = (item) => item?.kind === 'boundary';
 
 /**
  * 닫기 기억 키(설계서 §6.1 · §12.2) — 그 자료의 그 viewerRevision 동안. 재분석하면 revision이 바뀌어 다시 보인다.
