@@ -900,6 +900,9 @@
     JMdict: 운영 `morpheme_dictionary` source=jmdict* 0건(오너 조회 2026-10-07) → 표기 불요, import 라우트로 적재 시 추가.
     FLELex는 CC BY-NC-SA — 유료화 전 교체/제거 검토(오너 결정 2026-10-07).
   - #1353 `claude/happy-darwin-il3hd3` — 익명 default export 2건(lessonAdapters·lessonModel)에 이름 부여 → lint 0 errors·0 warnings.
+  - `claude/trusting-planck-ekfai6` — 대화 패널 IME 조합 Enter 미전송(#1077 v2-Z 검토 6049930267, 코드 수준 확인). 판정 정본
+    `lib/imeComposing.js`로 이동·`isClassComposing` 재수출, 계약 = componentReliabilityFixes. npm test 486/5386 PASS(Node 24).
+    같은 파일 튜터 프롬프트의 중화권 정치 서술 배제 규칙 부재(하드리밋 ⑷)는 오너 결정 대기 — 범위 밖.
   - ⚠ 운영 마이그레이션 이력 ≠ main `supabase/migrations`(스택 #1316~#1321 SQL 3건·10월 활성화 이력). 다음 마이그레이션 병합 시
     `supabase-migrations.yml` 실패 가능성 — 운영 READ ONLY 확인 전 스택 PR 닫기 보류.
   - 이 컨테이너에서 불가(오너/M09): 운영 DB 조회·적용, 운영 배포, 정상 실계정 검수(10-06 04:00 경계 이후 학습 검수 포함).
