@@ -11,8 +11,8 @@
 // ── 범위(PR①): 계산만 한다. 저장(viewer_replace_analysis)·화면은 PR③.
 // PR②: /api/analyze `boundaries` 서버 적용(server/analyzeBoundaries.js → applyBoundaryLayers)과 재분석 연결
 // (analyzeHybrid → boundaryParagraphRequest·settleBoundaryRecord, runPreservedReanalysis → 줄 이동·base id 승계).
-// 원문·판본·저장 단어·FSRS·출처에 닿는 쓰기는 없다. 한국어는 어절 칼선 오너 결정(안 A/B, §7.4) 전이라 모든 함수가
-// 명시적으로 거부(무변경)한다. 승인 범위 언어는 중국어·일본어·영어뿐이다.
+// 원문·판본·저장 단어·FSRS·출처에 닿는 쓰기는 없다. 한국어는 서버 적용·묶기·조건 판정 함수가 모두 명시적으로 거부(무변경)한다.
+// 오너 B안(2026-10-09) 한국어 어절 안 나누기만 editBoundaries의 allowKorean으로 열린다(§7.5 · koreanBoundarySplit.js).
 // 브라우저·서버 공용 — 서버 전용 모듈·Node 내장을 import하지 않는다(boundaryEdits.test.js 계약).
 import {analysisTokenLine} from './analysisCoverage';
 
@@ -164,7 +164,7 @@ const shiftedSpans = (entries, offset) => boundarySpans(entries).map(span => ({.
 /**
  * 경계 편집 한 번(§3.2). lineTokens = 그 줄의 지금 토큰 [{id, token}], edits = 자료의 기록 목록(다른 줄 기록은 그대로 둔다),
  * request = {line, start, end, cuts}: [start, end) 안의 칼선을 cuts로 바꾼다. 묶기 = cuts [], 나누기 = cuts [칼선…].
- * options = {language, id?, at?, lineText?}. 결과:
+ * options = {language, id?, at?, lineText?, allowKorean?}. 결과:
  * · 거부 {ok:false, reason, tokens: lineTokens, edits}(같은 참조 — 아무것도 바꾸지 않는다)
  * · {ok:true, changed, restored, tokens, edits, record, pieces}. restored면 base를 id째 되살렸고 서버 호출이 필요 없다.
  *   pieces = 서버가 분석해야 할 새 조각 [{index, start, end, text}](그 자리 토큰은 id:null · needsAnalysis:true).
@@ -175,7 +175,9 @@ export function editBoundaries(lineTokens, edits, request = {}, options = {}) {
   const reject = reason => result({ok: false, reason});
   const {language} = options;
   const blocked = languageReason(language);
-  if (blocked) return reject(blocked);
+  // 한국어(§7.5 B안): 어절 안 나누기만 — 호출 쪽(boundaryEditFlow.commitBoundaryEdit)이 그 어절의 후보 칼선 안인지 먼저 확인하고
+  // allowKorean으로 연다. 조각은 서버가 아니라 morphology로 만든다(koreanBoundarySplit.js). 그 밖의 호출은 지금처럼 거부한다.
+  if (blocked && !(blocked === 'korean' && options.allowKorean === true)) return reject(blocked);
   if (!Array.isArray(lineTokens) || !lineTokens.length) return reject('invalid_line');
   const {line, start, end, cuts} = request || {};
   const spans = boundarySpans(lineTokens), compact = lineCompact(spans), bounds = boundsOf(spans);
