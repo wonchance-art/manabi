@@ -107,9 +107,9 @@ function CourseCalendar({ built, today, teamKey }) {
         const s = byDate.get(date), hol = holidayName(date);
         const kind = s ? (s.day === total ? 'test' : 'class') : date === built.breakDate ? 'break' : date === built.nextStart ? 'next' : null;
         const cls = ['course-cal__cell', kind && `course-cal__cell--${kind}`, s && sessionStatus(date, today) === 'done' && 'course-cal__cell--done', date === today && 'course-cal__cell--today', hol && 'course-cal__cell--holiday'].filter(Boolean).join(' ');
-        const label = s ? (s.day === total ? `Day ${s.day} 시험` : `Day ${s.day}`) : kind === 'break' ? '휴강' : kind === 'next' ? '다음 바퀴' : hol || '';
+        const label = s ? (s.day === total ? `Day ${s.day} 시험` : `Day ${s.day}`) : kind === 'break' ? '휴강' : kind === 'next' ? '다음 바퀴' : hol ? (hol.startsWith('대체공휴일') ? '대체휴일' : hol) : '';
         const inner = <><span className="course-cal__num">{+date.slice(8)}</span>{label && <span className="course-cal__tag">{label}</span>}</>;
-        return <td key={di} className={cls} aria-label={`${shortDate(date)}${label ? ` ${label}` : ''}${date === today ? ' 오늘' : ''}`}>
+        return <td key={di} className={cls} aria-label={`${shortDate(date)}${label ? ` ${label}` : ''}${hol && label !== hol ? ` ${hol}` : ''}${date === today ? ' 오늘' : ''}`}>
           {s ? <Link href={`/class/${teamKey}/course/${s.day}`}>{inner}</Link> : <div>{inner}</div>}
         </td>;
       })}</tr>)}</tbody>
