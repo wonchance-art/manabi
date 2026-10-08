@@ -148,13 +148,14 @@ import ViewerHanjaPopover from '../components/viewer/ViewerHanjaPopover';
 import ViewerJapaneseMore from '../components/viewer/ViewerJapaneseMore';
 import TokenEditPanel from './TokenEditPanel';
 import { senseCorrectionFor, revertCorrections, applyTokenCorrections } from '../lib/tokenEditOptions';
-import { senseReviewItems, senseReviewDismissKey, senseReviewOptions, keepSenseCorrection, needsMeaningCheck } from '../lib/viewerSenseReview';
+import { senseReviewItems, senseReviewDismissKey, senseReviewOptions, keepSenseCorrection, needsMeaningCheck, isBoundarySuggestion } from '../lib/viewerSenseReview';
+import { dismissedBoundaryForms } from '../lib/boundaryEdits';
 import ViewerSenseReview from '../components/viewer/ViewerSenseReview';
 import { BoundaryMergeConfirm, BoundaryMergeRow, BoundaryPendingList, BoundarySplitPanel } from '../components/viewer/ViewerBoundaryEdit';
 import {
   BoundaryEditError, boundaryEditContext, boundaryEntryAllowed, boundaryReasonHidden, boundaryReasonMessage, boundaryTokenOrigin,
   boundaryUndoValid, commitBoundaryEdit, pendingBoundaryRows, planBoundaryMerge, planBoundarySplit, planNeighborMerge, splitPreview,
-  undoBoundaryEdit,
+  undoBoundaryEdit, dismissBoundarySuggestion,
 } from '../lib/boundaryEditFlow';
 import SourceEditModal from './SourceEditModal';
 import TokenPosLabel from './TokenPosLabel';
@@ -1703,6 +1704,21 @@ export default function ViewerPage() {
       toast(text, 'error');
     },
   });
+  // AD-R4 PR④ 경계 후보 [아니요] — 그 꼴을 이 자료에서 접는다(metadata.viewerBoundaryDismissed). 묶기·나누기와 같은 원자 RPC 하나,
+  // 토큰·기록·단어장·FSRS·사전 쓰기 0. 재분석은 원래 metadata를 이어 쓰므로 접은 꼴은 재분석 뒤에도 접힌 채다.
+  const boundaryDismissMutation = useMutation({
+    mutationFn: async (form) => {
+      if (!legacyTokenEditingAllowedRef.current) throw new BoundaryEditError('korean');
+      const current = queryClient.getQueryData(['material', id]) || material;
+      return dismissBoundarySuggestion(current, form, { client: supabase });
+    },
+    onSuccess: (out) => {
+      if (!out?.material) return;
+      queryClient.setQueryData(['material', id], out.material);
+      queryClient.invalidateQueries({ queryKey: ['material', id] });
+    },
+    onError: (err) => toast(err?.code === '40001' ? vt('다른 창에서 자료가 바뀌었어요. 다시 열어 확인해 주세요.') : vt('저장하지 못했어요. 잠시 뒤 다시 해 주세요.'), 'error'),
+  });
   // 다른 단어를 열거나 시트를 닫으면 ⋯ 패널·되돌리기 줄을 닫는다(드래그 확인 줄은 드래그 범위가 정한다).
   useEffect(() => {
     setBoundaryPanel(panel => (panel?.kind === 'drag' || (panel && panel.tokenId === selectedToken?.id && isSheetOpen) ? panel : null));
@@ -1994,7 +2010,9 @@ export default function ViewerPage() {
   const [senseReviewIds, setSenseReviewIds] = useState(null); // null = 목록 닫힘
   const senseReviewOpen = senseReviewIds !== null;
   useEffect(() => { setSenseReviewIds(null); }, [id]);
-  const senseReviewTokens = (senseReviewIds || []).map((tokenId) => {
+  // 경계 후보(AD-R4 PR④) 줄은 연 순간의 스냅숏 객체로 붙든다 — 묶거나 접은 뒤에도 그 자리에 「묶었어요」/「확인했어요」로 남게.
+  const [suggestConfirm, setSuggestConfirm] = useState(null); // [묶기]로 확인 줄을 연 경계 후보 줄 id
+  const senseReviewTokens = (senseReviewIds || []).filter((entry) => typeof entry === 'string').map((tokenId) => {
     const token = material?.processed_json?.dictionary?.[tokenId];
     return token ? { ...token, id: tokenId } : null;
   }).filter(Boolean);
@@ -2587,7 +2605,8 @@ export default function ViewerPage() {
   const openSenseReview = () => {
     if (!senseReviewAllowed || !senseReviewList.length) return;
     setBoundaryPendingOpen(false);
-    setSenseReviewIds(senseReviewList.map((item) => item.id));
+    setSuggestConfirm(null);
+    setSenseReviewIds(senseReviewList.map((item) => (isBoundarySuggestion(item) ? { ...item, sentence: boundarySuggestSentence(item) } : item.id)));
     setSenseReviewDictFailed('');
     setSentenceTabSignal(s => s + 1);
   };
@@ -2614,9 +2633,39 @@ export default function ViewerPage() {
     return { id: token.id, token, dictEntry: dictEntry ?? null, sentence: cardSentenceOf(token),
       options: pending ? null : senseReviewOptions(dictEntry ?? null, token), resolved: !needsMeaningCheck(token) };
   });
+  // ── AD-R4 PR④ 경계 후보 줄(설계서 §6.2) — [묶기]는 그 자리에서 AD-R3 확인 줄(planBoundaryMerge → boundaryMutation → commitBoundaryEdit,
+  // 새 쓰기 경로 0), [아니요]는 boundaryDismissMutation. [묶기]를 열 수 있는 조건은 AD-R3 진입점과 같다(boundaryAllowed).
+  const boundarySuggestSentence = (item) => {
+    const found = cardSentenceOf(item.token);
+    if (!found || found.term !== item.parts[0] || !found.after.startsWith(item.parts[1])) return null;
+    return { before: found.before, after: found.after.slice(item.parts[1].length) };
+  };
+  const liveSuggestions = new Set(senseReviewList.filter(isBoundarySuggestion).map((item) => `${item.id}|${item.form}`));
+  const dismissedSuggestions = dismissedBoundaryForms(material?.processed_json);
+  const suggestBusy = boundaryMutation.isPending || boundaryDismissMutation.isPending;
+  const planSuggestedMerge = (snap) => {
+    const sequence = json.sequence || [];
+    const start = sequence.indexOf(snap.tokenId);
+    return start >= 0 && sequence[start + 1] === snap.nextId ? planBoundaryMerge(material, start, start + 1, boundaryCtx) : { ok: false, reason: 'invalid_range' };
+  };
+  const boundarySuggestRow = (snap) => {
+    const active = liveSuggestions.has(`${snap.id}|${snap.form}`);
+    const plan = active && boundaryAllowed && suggestConfirm === snap.id ? planSuggestedMerge(snap) : null;
+    return {
+      ...snap, active, dismissed: dismissedSuggestions.has(snap.form), joinable: boundaryAllowed,
+      confirm: plan ? <BoundaryMergeConfirm key={`suggest:${snap.id}`} plan={plan} reasonText={plan.ok ? null : boundaryReasonMessage(plan.reason)}
+        savedWords={plan.ok ? boundarySavedParts(plan.ids) : []} busy={suggestBusy} contentLang={contentLangTag} vt={vt}
+        onConfirm={() => plan.ok && boundaryMutation.mutate({ request: plan.request })} onCancel={() => setSuggestConfirm(null)} /> : null,
+    };
+  };
+  const joinSuggestion = (row) => { if (boundaryAllowed && !suggestBusy) setSuggestConfirm(row.id); };
+  const dismissSuggestion = (row) => { if (canEditToken && !suggestBusy) boundaryDismissMutation.mutate(row.form); };
+  const senseReviewRowById = new Map(senseReviewRows.map((row) => [row.id, row]));
+  const senseReviewAllRows = (senseReviewIds || []).map((entry) => (typeof entry === 'string' ? senseReviewRowById.get(entry) : boundarySuggestRow(entry))).filter(Boolean);
   const senseReviewContent = senseReviewOpen && senseReviewAllowed ? (
-    <ViewerSenseReview rows={senseReviewRows} remaining={senseReviewList.length} busy={senseBusy}
-      onChoose={chooseReviewSense} onKeep={keepReviewSense} contentLang={contentLangTag} vt={vt} />
+    <ViewerSenseReview rows={senseReviewAllRows} remaining={senseReviewList.length} busy={senseBusy}
+      onChoose={chooseReviewSense} onKeep={keepReviewSense} onJoin={joinSuggestion} onDismiss={dismissSuggestion} boundaryBusy={suggestBusy}
+      contentLang={contentLangTag} vt={vt} />
   ) : null;
   // 수업 모드는 수업 전용 버튼과 경로(runSelectionAnalysis)를 지금대로 둔다(정본 §0.2).
   const renderClassSentenceAction = () => (

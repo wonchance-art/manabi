@@ -5,10 +5,13 @@
 //   B0  현행 + 정답 품사 가정: pickZhMeaning(후보, 기대 품사). 경계는 현행 토크나이저 결과. 호출 0(오프라인).
 //   B1  현행 실제 경로: tokenizeZhLine → collectZhPosMarks → disambiguateZhPos(현행 프롬프트, light 1회/문단)
 //       → resolveZhTokenPos → pickZhMeaning. 제품 함수를 그대로 import해 부른다.
-//   N   제품 켜짐 경로(AD-R4 PR② — 상수 ZH_SENSE_REVIEW와 무관하게 함수로 직접 부른다): 같은 마크 →
-//       attachZhSenseCandidates(뜻 후보, 설계서 §4.1) + [묶음 판정] 쌍(등재 = isZhRegisteredWord, §5.1) →
+//   N   제품 켜짐 경로(AD-R4 PR②·PR④ — 상수 ZH_SENSE_REVIEW·ZH_BOUNDARY_REVIEW와 무관하게 함수로 직접 부른다): 같은 마크 →
+//       attachZhSenseCandidates(뜻 후보, 설계서 §4.1) + 제품 [묶음 판정] 쌍(collectZhBoundaryPairs · attachZhBoundaryPairs, §5.2) →
 //       disambiguateZhPos(같은 light 1회, 프롬프트 buildZhPosPrompt, 응답 검증 validateZhSensePick §4.3) →
-//       resolveZhTokenSense로 토큰 뜻 결정(라우트와 같은 함수). 묶기 적용은 PR④ 전이라 이 실행기에서만 흉내 낸다.
+//       제품 경계 결정(applyZhBoundaryJoins — 등재 + join:true만 자동 묶기, 미등재 + join:true는 후보) →
+//       resolveZhTokenSense로 토큰 뜻 결정(라우트와 같은 함수). D 범주는 이 최종 토큰으로 채점한다.
+//       라우트와 다른 점 하나: 묶은 꼴의 뜻을 붙일 수 있는지(canJoin — 라우트는 사전 행이 있어야 묶는다, 행이 없는 등재 꼴은 같은
+//       병렬 뜻 조회로 받는다)는 재지 않는다. 세트 후보 스냅숏에는 이은 꼴의 행이 없고, 뜻 조회는 경계 판정과 다른 축이기 때문이다.
 //
 // 사용(Node 24, 리포 루트):
 //   node scripts/eval/run-zh-sense-holdout.mjs --dry-run        # 세트 검증 + B0 + 현행 토큰화·프롬프트 대조(호출 0)
@@ -25,7 +28,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
-  ARMS, CATEGORIES, SPLITS, baselineB0, buildParagraphs, buildZhSensePromptDraft, collectPairCandidates,
+  ARMS, CATEGORIES, SPLITS, baselineB0, buildParagraphs, buildZhSensePromptDraft,
   evaluateRelease, scoreCase, summarize, validateHoldout,
 } from './zhSenseHoldout.mjs';
 
@@ -47,7 +50,7 @@ registerHooks({
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const holdoutPath = join(root, 'docs/verification/zh-sense-holdout-20261008.json');
-const productPaths = ['src/lib/server/disambiguateZhPos.js', 'src/lib/server/zhSenseReview.js', 'src/lib/server/zhRegistered.js', 'src/lib/server/tokenizeZh.js', 'src/lib/server/llm.js'];
+const productPaths = ['src/lib/server/disambiguateZhPos.js', 'src/lib/server/zhSenseReview.js', 'src/lib/server/zhRegistered.js', 'src/lib/server/zhBoundaryReview.js', 'src/lib/boundaryEdits.js', 'src/lib/server/tokenizeZh.js', 'src/lib/server/llm.js'];
 const sha = (path) => createHash('sha256').update(readFileSync(path)).digest('hex');
 const mod = (rel) => import(pathToFileURL(join(root, rel)).href);
 
@@ -69,7 +72,7 @@ const cases = set.cases.filter((c) => (splitOpt === 'all' || c.split === splitOp
 const { tokenizeZhLine } = await mod('src/lib/server/tokenizeZh.js');
 const { collectZhPosMarks, disambiguateZhPos, resolveZhTokenPos, pickZhMeaning, splitZhToken, zhPosMarkKey } = await mod('src/lib/server/disambiguateZhPos.js');
 const { attachZhSenseCandidates, createZhSenseStats, resolveZhTokenSense } = await mod('src/lib/server/zhSenseReview.js');
-const { isZhRegisteredWord } = await mod('src/lib/server/zhRegistered.js');
+const { applyZhBoundaryJoins, attachZhBoundaryPairs, collectZhBoundaryPairs } = await mod('src/lib/server/zhBoundaryReview.js');
 
 let head = 'unknown';
 try { head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(); } catch { /* git 없음 */ }
@@ -101,8 +104,9 @@ function prepare(par) {
   return { ...par, lines, tokenizedLines, cache, marks };
 }
 
+// 라우트 조립과 같다 — 경계 표식(사용자 기록·자동 묶기)이 붙은 토큰은 OOV 분리를 하지 않는다.
 const finalTokens = (tokens, lineIdx, picks) => tokens.flatMap((t) => {
-  const parts = picks.get(zhPosMarkKey(lineIdx, t.text))?.parts;
+  const parts = t.boundary ? null : picks.get(zhPosMarkKey(lineIdx, t.text))?.parts;
   return parts?.length ? splitZhToken(t, parts) : [t];
 });
 const targetFound = (prep, c, lineIdx) => {
@@ -114,13 +118,16 @@ const mergedAt = (tokens, c) => {
   return !!a && a.end >= c.target.index + c.boundary.pair[0].length + 1;
 };
 
-/** 한 팔의 사례 결과(뜻 또는 경계). senseOn: N(제품 켜짐 경로 — 라우트와 같은 resolveZhTokenSense). */
-function outcomeFor(c, lineIdx, prep, picks, senseOn = false, joinApplied = new Set()) {
-  const tokens = finalTokens(prep.tokenizedLines[lineIdx].tokens, lineIdx, picks);
+/**
+ * 한 팔의 사례 결과(뜻 또는 경계). senseOn: N(제품 켜짐 경로 — 라우트와 같은 resolveZhTokenSense).
+ * lines: 경계를 정한 뒤의 줄(N = applyZhBoundaryJoins 결과, B1 = 토크나이저 그대로).
+ */
+function outcomeFor(c, lineIdx, prep, picks, senseOn = false, lines = prep.tokenizedLines) {
+  const tokens = finalTokens(lines[lineIdx].tokens, lineIdx, picks);
   if (c.cat === 'D') {
-    if (mergedAt(tokens, c)) return { merged: true };
-    if (joinApplied.has(`${lineIdx}:${c.target.index}`)) return { merged: true, autoMerged: true };
-    return { merged: false };
+    const at = tokenAt(tokens, c.target.index);
+    const merged = mergedAt(tokens, c);
+    return { merged, autoMerged: merged && at?.t.boundary === 'ai_registered', suggested: !merged && at?.t.boundarySuggest === c.boundary.pair.join('') };
   }
   const at = tokenAt(tokens, c.target.index);
   if (!at || at.start !== c.target.index || at.t.text !== c.target.surface) {
@@ -135,8 +142,8 @@ function outcomeFor(c, lineIdx, prep, picks, senseOn = false, joinApplied = new 
   return { meaning: pickZhMeaning(cached?.meanings, pos), via: 'fallback', pos, ...(chosen?.meaningCheck ? { meaningCheck: chosen.meaningCheck } : {}) };
 }
 
-/** N 마크: 현행 마크 + 뜻 후보(제품 attachZhSenseCandidates, 설계서 §4.1) + 묶음 판정 쌍(§4.2). */
-function buildNMarks(prep) {
+/** N 마크: 현행 마크 + 뜻 후보(제품 attachZhSenseCandidates, 설계서 §4.1) + 제품 묶음 판정 쌍(§4.2·§5.2). {marks, pairs} */
+function buildN(prep) {
   const base = prep.marks.map((m) => ({ ...m }));
   if (markAllTargets) {
     prep.cases.forEach((c, lineIdx) => {
@@ -146,22 +153,9 @@ function buildNMarks(prep) {
     });
   }
   const marks = attachZhSenseCandidates(base, { tokenizedLines: prep.tokenizedLines, cache: prep.cache, minMeanings: offerSingle ? 1 : 2 });
-  const isRegistered = (form) => isZhRegisteredWord(form, prep.cache.get(form));
-  const pairs = marks.length ? collectPairCandidates(prep.tokenizedLines, isRegistered) : [];
-  for (const p of pairs) {
-    const key = zhPosMarkKey(p.lineIdx, p.a);
-    let m = marks.find((x) => x.key === key);
-    if (!m) { m = { lineIdx: p.lineIdx, word: p.a, key, pairOnly: true }; marks.push(m); }
-    if (!m.pair) { m.pair = [p.a, p.b]; m.pairStart = p.start; }
-  }
-  return marks;
-}
-
-/** N 결과에서 묶음 판정 true인 쌍(이 실행기에서만 흉내 내는 자동 묶기 — 제품 적용은 PR④). */
-function joinsFrom(marksN, picks) {
-  const joinApplied = new Set();
-  for (const m of marksN) if (m.pair && picks.get(m.key)?.join === true) joinApplied.add(`${m.lineIdx}:${m.pairStart}`);
-  return joinApplied;
+  // 라우트와 같은 규칙: 쌍은 다른 마크가 있을 때만, 단어성 판정 마크는 현행 마크(prep.marks) 기준.
+  const pairs = prep.marks.length ? collectZhBoundaryPairs(prep.tokenizedLines, { cache: prep.cache, marks: prep.marks }) : [];
+  return { marks: pairs.length ? attachZhBoundaryPairs(marks, pairs) : marks, pairs };
 }
 
 // ───────────── fetch 감시(호출 수·dry-run 차단) ─────────────
@@ -212,7 +206,7 @@ if (dryRun) {
     const current = captured[0] ?? '';
     const draftNoExtras = prep.marks.length ? buildZhSensePromptDraft(prep.lines, prep.marks) : '';
     if (current !== draftNoExtras && !promptDrift) promptDrift = `문단 ${pi}: N 시안(추가분 없음)이 현행 buildZhPosPrompt와 다름 — 현행 프롬프트가 바뀌었으면 시안을 먼저 맞춘다`;
-    const marksN = buildNMarks(prep);
+    const { marks: marksN } = buildN(prep);
     const targetsFound = prep.cases.filter((c, lineIdx) => c.cat === 'D' || targetFound(prep, c, lineIdx)).length;
     parStats.push({
       paragraph: pi, split: prep.split, ids: prep.cases.map((c) => c.id), marks: prep.marks.length, marksN: marksN.length,
@@ -242,18 +236,19 @@ if (!dryRun) {
       await sleep(delayMs);
     }
     if (arms.includes('N')) {
-      const marksN = buildNMarks(prep);
+      const { marks: marksN, pairs } = buildN(prep);
       const before = fetchCount;
       const logBefore = llmLog.length;
       const stat = createZhSenseStats(marksN);
       const picks = marksN.length ? await disambiguateZhPos(prep.lines, marksN, { senseStats: stat }) : new Map();
       const log = llmLog.slice(logBefore).find((l) => l.route === 'disambiguateZhPos');
       const error = log && !log.ok ? `call: ${log.status}` : null;
-      const joinApplied = joinsFrom(marksN, picks);
-      stat.joinApplied = joinApplied.size; // 실행기 흉내 값(제품 라우트는 PR④ 전까지 0)
+      const joined = applyZhBoundaryJoins(prep.tokenizedLines, pairs, picks); // 제품 경계 결정(라우트 4.7과 같은 함수)
+      stat.joinApplied = joined.applied;
+      stat.joinSuggested = joined.suggested;
       Object.assign(ps, { nCalls: fetchCount - before, nMs: log?.ms ?? null, nModel: log?.model ?? null, marksN: marksN.length, zhSense: stat });
       prep.cases.forEach((c, lineIdx) => {
-        const out = error ? { error } : outcomeFor(c, lineIdx, prep, picks, true, joinApplied);
+        const out = error ? { error } : outcomeFor(c, lineIdx, prep, picks, true, joined.tokenizedLines);
         rows.push({ arm: 'N', paragraph: pi, id: c.id, cat: c.cat, split: c.split, ...out, ...scoreCase(c, out) });
       });
       if (pi < paragraphs.length - 1) await sleep(delayMs);
