@@ -278,17 +278,13 @@ try {
  assert.equal(await panel().locator('.reader-japanese__row').count(),1,'same form and meaning appear only once');
  assert.equal(japaneseCalls.length,0,'dictionary data must not trigger AI');
  assert.equal(await panel().locator('footer').count(),0,'no repeated footer rail');
- assert.equal(await panel().locator('.reader-card-context[open],.reader-card-more[open]').count(),0);
+ assert.equal(await panel().locator('#inspector-word details').count(),0,'AE-R1: no folds in the word tab');
  assert(await panel().getByText('새 단어 저장 · 얼마나 알겠어요?',{exact:true}).isVisible());
  await shotAt('minimal-mobile-default');
- const contextSummary=panel().getByText('문장 속 쓰임',{exact:true});await contextSummary.focus();await page.keyboard.press('Enter');
- assert(await panel().locator('.reader-card-source blockquote').isVisible());
- await panel().getByRole('button',{name:'이 문장에서는?',exact:true}).click();await panel().getByText('A문장-爱惜-설명',{exact:true}).waitFor();
- await contextSummary.click();
+ assert(await panel().locator('.reader-card-sentence').isVisible(),'AE-R1: the sentence line replaces the quoted line');
  await panel().getByRole('button',{name:'뜻·발음 수정',exact:true}).click();assert(await panel().locator('input').first().isVisible());await panel().getByRole('button',{name:'뜻·발음 수정',exact:true}).click();
- await panel().getByText('예문·관련 표현',{exact:true}).click();await panel().getByRole('button',{name:'상세 설명 보기',exact:true}).click();await panel().getByText('상세설명-대상-爱惜',{exact:true}).waitFor();
- await panel().getByText('유의어·반의어',{exact:true}).click();await panel().locator('.syn-ant__chip').first().waitFor();
- await panel().getByText('예문·관련 표현',{exact:true}).click();
+ await panel().getByRole('button',{name:'✦ 자세한 설명',exact:true}).click();await panel().getByText('상세설명-대상-爱惜',{exact:true}).waitFor();
+ await panel().getByRole('button',{name:'✦ 비슷한 말 찾기',exact:true}).click();await panel().locator('.syn-ant__chip').first().waitFor();
  await panel().locator('.word-fit__char').first().click();assert(await panel().locator('.char-inspect').isVisible());await panel().locator('.word-fit__char').first().click();
  await panel().getByRole('tab',{name:'문장 번역',exact:true}).click();await page.keyboard.press('ArrowLeft');assert.equal(await panel().getByRole('tab',{name:'단어',exact:true}).getAttribute('aria-selected'),'true');
  await delay(60);assert.equal(await page.evaluate(()=>document.activeElement?.id),'inspector-word-tab');await page.keyboard.press('ArrowRight');await delay(60);assert.equal(await page.evaluate(()=>document.activeElement?.id),'inspector-sentence-tab');await page.keyboard.press('ArrowLeft');
@@ -345,7 +341,7 @@ try {
  await shotAt('mobile-selected-source-visible');pass('low word selection, Aa return and sheet resize keep the source above the inspector');
  await page.mouse.move(220,250);await page.mouse.wheel(0,250);await delay(250);const manualY=await page.evaluate(()=>scrollY);
  await page.setViewportSize({width:390,height:820});await delay(150);assert(Math.abs(await page.evaluate(()=>scrollY)-manualY)<2);pass('manual reading scroll wins over a later sheet resize');
- await fresh(390,844);await tap(wordA());await page.locator('.reader-card-body').getByText('예문·관련 표현',{exact:true}).click();await page.locator('.reader-card-body').getByText('유의어·반의어',{exact:true}).click();await page.locator('.syn-ant__chip').first().waitFor();
+ await fresh(390,844);await tap(wordA());await page.locator('.reader-card-body').getByRole('button',{name:'✦ 비슷한 말 찾기',exact:true}).click();await page.locator('.syn-ant__chip').first().waitFor();
  const controls=await page.locator('.save-grade').boundingBox(),panelBounds=await panel().boundingBox(),tabs=await page.locator('.viewer-inspector__tabs').boundingBox();assert(controls.y>=tabs.y+tabs.height&&controls.y+controls.height<=panelBounds.y+panelBounds.height);await shotAt('mobile-card-actions');pass('mobile grades remain fixed below scrolling details and a single top rail');
  await page.getByRole('button',{name:'읽기 설정',exact:true}).click();await page.keyboard.press('1');assert.equal(vocab.length,0);await page.keyboard.press('Escape');assert(await panel().isVisible());await page.getByRole('button',{name:'보조 패널 닫기',exact:true}).click();await page.keyboard.press('1');assert.equal(vocab.length,0);pass('modal and closed inspector cannot grade a hidden card');
  // Theme changes reach the body, native modal and inspector surfaces.

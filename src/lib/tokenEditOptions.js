@@ -53,3 +53,26 @@ export function buildTokenCorrections(token, { meaning, reading, meaningPos } = 
   if (corrections.meaning && meaningPos) corrections.pos = meaningPos;
   return Object.keys(corrections).length > 0 ? corrections : null;
 }
+
+/**
+ * 사전 뜻 목록의 줄을 눌러 「이 자리 뜻」으로 교정할 때의 교정 구성(AE-R1 PR③ · VIEWER-V2-ROUNDS-001 §2.1 사전 뜻 목록).
+ * TokenEditPanel에서 그 뜻 칩을 고르고 저장한 것과 같다 — 뜻 + (그 뜻에 품사 태그가 있으면) 품사. 발음은 싣지 않는다.
+ * 품사는 buildMeaningOptions의 뜻별 pos만 쓴다(행 품사·refVocab 품사로 토큰 품사를 바꾸지 않는다).
+ * @returns {object|null} 저장할 교정 — 지금 뜻과 같거나 빈 뜻이면 null(쓰기 0)
+ */
+export function senseCorrectionFor(token, dictEntry, meaning) {
+  const next = String(meaning || '').trim();
+  if (!next || next === (token?.meaning || '')) return null;
+  const option = buildMeaningOptions(dictEntry, token).find((opt) => opt.meaning === next);
+  return { meaning: next, ...(option?.pos ? { pos: option.pos } : {}) };
+}
+
+/**
+ * 되돌리기 교정 — 바꾼 칸(corrections의 키)만 이전 토큰 값 그대로. 이전에 값이 없던 칸은 빈 문자열.
+ * @returns {object}
+ */
+export function revertCorrections(beforeToken, corrections) {
+  const out = {};
+  for (const key of Object.keys(corrections || {})) out[key] = beforeToken?.[key] ?? '';
+  return out;
+}
