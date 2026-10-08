@@ -7,6 +7,9 @@ import {
 } from '../classCourse.js';
 import { loadCourse } from '../server/classCourse.js';
 import { alignFurigana } from '../../../scripts/check-furigana.mjs';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { TextbookOriginal, FixNote } from '../../components/classroom/ClassCourseUI.jsx';
 import nihongo42Class from '../../content/community/nihongo42Class.js';
 import { getTeam, buildTeamRootRow } from '../classBoard.js';
 import { indexFromRows } from '../server/classIndex.js';
@@ -187,6 +190,18 @@ describe('교재 문장 — nihongo42 실데이터(오너 제공 2026-10-08)', (
     expect(yomi.get('毎日本を読んでください。／考えてみます。')).toMatch(/^まいにちほんを/);
     expect(yomi.get('明後日は遠足に行くことになっています。')).toMatch(/^あさって/);
     expect(yomi.get('いくらお腹が空いても、我慢します。')).toContain('すいても');
+  });
+
+  it('교재 원문 보존·교체(오너 결정) — Ch.41 원문은 취소선+피드백, 시험 모범답은 고친 문장 · Ch.24 7번 교체 · 중복 0', () => {
+    const fixed = pool.find((x) => x.textbook === 'お金がないから買わないしかないです。');
+    expect(fixed).toMatchObject({ n: 41, ja: 'お金がないから、買うのを諦めるしかないです。' });
+    expect(fixed.note).toContain('しかない');
+    expect(pool.filter((x) => x.textbook)).toHaveLength(1);
+    expect(pool.find((x) => x.id === '24-7')).toMatchObject({ ja: 'すぐに本を返しに行かなければなりません。', ko: '바로 책을 돌려주러 가야 해요.' });
+    expect(new Set(pool.map((x) => x.ja)).size).toBe(420);
+    const html = renderToStaticMarkup(createElement(TextbookOriginal, { text: fixed.textbook }));
+    expect(html).toContain('<del lang="ja">お金がないから買わないしかないです。</del>');
+    expect(renderToStaticMarkup(createElement(FixNote, { note: fixed.note }))).toContain('피드백');
   });
 
   it('실데이터로도 시험지 불변식이 선다 — 패턴 중복 0 · Day당 1 · 3/4/3', () => {

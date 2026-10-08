@@ -21,6 +21,17 @@ export function Ja({ ja, yomi }) {
   return yomi ? <JaText ja={ja} yomi={yomi} fallbackPron={false} /> : <span lang="ja">{ja}</span>;
 }
 
+/** 교재 원문을 고친 예문 — 원문은 취소선(지우지 않고 보여 준다). 시험·연습의 모범답은 고친 문장. */
+export function TextbookOriginal({ text }) {
+  if (!text) return null;
+  return <div className="course-fix-orig"><span className="course-tag">교재 원문</span><del lang="ja">{text}</del></div>;
+}
+
+export function FixNote({ note }) {
+  if (!note) return null;
+  return <p className="course-fix-note"><b>✏️ 피드백</b> {note}</p>;
+}
+
 /** 가리기 — both | hide-ko | hide-ja */
 export function HideToggle({ value, onChange, label = '가리기' }) {
   const options = [['both', '모두 보기'], ['hide-ko', '한국어 가리기'], ['hide-ja', '일본어 가리기']];

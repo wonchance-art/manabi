@@ -23,7 +23,7 @@ import { useClassCourse, courseErrorText } from '../lib/classCourseClient';
 import { currentSchedule, kstToday, shortDate, sessionStatus } from '../lib/classSchedule';
 import { refInline, Callout } from './refShared';
 import { ClassroomShell, ClassroomState } from '../components/classroom/ClassroomUI';
-import { CoursePending, SpeakButton, Ja, HideToggle, Masked } from '../components/classroom/ClassCourseUI';
+import { CoursePending, SpeakButton, Ja, HideToggle, Masked, TextbookOriginal, FixNote } from '../components/classroom/ClassCourseUI';
 
 const CIRCLED = ['①', '②', '③'];
 
@@ -102,8 +102,10 @@ function Drills({ chapters, speak }) {
           return <li key={id} className="course-line">
             <span className="course-line__no">{k + 1}</span>
             <div>
+              {!(mode === 'hide-ja' && !shown.has(id)) && <TextbookOriginal text={d.textbook} />}
               <div className="course-line__ja"><Masked hidden={mode === 'hide-ja' && !shown.has(id)} onReveal={() => reveal(id)} label="일본어"><Ja ja={d.ja} yomi={d.yomi} /></Masked></div>
               <div className="course-line__ko"><Masked hidden={mode === 'hide-ko' && !shown.has(id)} onReveal={() => reveal(id)} label="한국어">{d.ko}</Masked></div>
+              <FixNote note={d.note} />
             </div>
             <SpeakButton text={d.ja} speak={speak} />
           </li>;

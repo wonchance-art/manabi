@@ -122,6 +122,12 @@
 .course-pattern__explain strong {color:var(--text-primary)}
 .course-alts {display:flex;flex-direction:column;gap:6px;margin:10px 0;font-size:14px}
 .course-alts span.course-tag {font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;background:var(--class-wash);color:var(--class-ink);margin-right:6px}
+/* 교재 원문을 고친 예문 — 원문 취소선 + 피드백(오너 결정 2026-10-08) */
+.course-fix-orig {display:flex;flex-wrap:wrap;gap:6px;align-items:baseline;font-size:14px;color:var(--text-muted);margin-bottom:8px}
+.course-fix-orig del {text-decoration:line-through;text-decoration-color:var(--danger);text-decoration-thickness:2px}
+.course-fix-note {margin:6px 0 0;padding:8px 10px;border-left:3px solid var(--warning);background:var(--bg-secondary);border-radius:0 8px 8px 0;font-size:13px;line-height:1.65;color:var(--text-secondary)}
+.course-fix-note b {color:var(--text-primary);margin-right:4px}
+.course-answer .course-fix-orig,.course-answer .course-fix-note {margin-top:8px}
 .course-examples summary {cursor:pointer;color:var(--text-muted);font-size:13px;margin-top:8px}
 
 

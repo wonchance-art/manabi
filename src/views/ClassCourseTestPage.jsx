@@ -22,7 +22,7 @@ import {
 } from '../lib/classCourse';
 import { currentSchedule, kstToday, shortDate } from '../lib/classSchedule';
 import { ClassroomShell, ClassroomState } from '../components/classroom/ClassroomUI';
-import { CoursePending, SpeakButton, Ja } from '../components/classroom/ClassCourseUI';
+import { CoursePending, SpeakButton, Ja, TextbookOriginal, FixNote } from '../components/classroom/ClassCourseUI';
 
 const WARN_SEC = 5, LATE_SEC = 10;
 const dots = (lv) => '●'.repeat(lv) + '○'.repeat(3 - lv);
@@ -134,6 +134,8 @@ function TestMode({ course, pool, teacher, speak }) {
     <p className="course-card__prompt">{item.ko}</p>
     {revealed ? <div className="course-answer">
       <div className="course-answer__ja"><Ja ja={item.ja} yomi={item.yomi} /> <SpeakButton text={item.ja} speak={speak} /></div>
+      <TextbookOriginal text={item.textbook} />
+      <FixNote note={item.note} />
       <p>목표 패턴: <span lang="ja">{item.pattern}</span> (Ch.{item.n} {item.title})</p>
       {sibs.length > 0 && <p>비슷한 패턴({sibs.map((n) => `Ch.${n} ${titleOf.get(n) || ''}`.trim()).join(' · ')})으로 답해도 뜻이 맞으면 통과</p>}
     </div> : <div className="course-actions" style={{ margin: '0 0 18px' }}><button type="button" className="classroom-button classroom-button--quiet" onClick={() => setRevealed(true)}>{teacher ? '모범답 보기 (선생님)' : '모범답 보기'}</button></div>}
@@ -182,6 +184,8 @@ function PracticeMode({ course, pool, speak }) {
     {ko2ja ? <p className="course-card__prompt">{x.ko}</p> : <p className="course-card__prompt" lang="ja"><Ja ja={x.ja} yomi={x.yomi} /> <SpeakButton text={x.ja} speak={speak} /></p>}
     {shown ? <div className="course-answer">
       {ko2ja ? <div className="course-answer__ja"><Ja ja={x.ja} yomi={x.yomi} /> <SpeakButton text={x.ja} speak={speak} /></div> : <div className="course-answer__ko">{x.ko}</div>}
+      <TextbookOriginal text={x.textbook} />
+      <FixNote note={x.note} />
       <p>패턴: <span lang="ja">{x.pattern}</span> (Ch.{x.n} {x.title})</p>
     </div> : <div className="course-actions" style={{ margin: '0 0 18px' }}><button type="button" className="classroom-button classroom-button--quiet" onClick={() => setShown(true)}>정답 보기</button></div>}
     <div className="course-judge"><button type="button" className="course-judge__pass" onClick={() => next(true)}>○ 알았어요</button><button type="button" className="course-judge__fail" onClick={() => next(false)}>✕ 다시 볼래요</button></div>
