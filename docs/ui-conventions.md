@@ -204,3 +204,62 @@ R3에서 `myplan` 격자를 실제로 옮겨 그 차이를 실측했다 — 260p
 
 새 계약을 심을 때는 **일부러 깨뜨려 FAIL을 1회 확인**하고 커밋한다(v2-L에서
 공허 통과가 실측된 뒤 굳은 절차). 앵커 슬라이스는 `helpers/sliceBetween`만 쓴다.
+
+## 6. 브랜드 (BRAND-APPLY-001 — 오너 지시 2026-10-08)
+
+출처: #1337 인계 6055913357(개정 1: 점 색 해바라기). 값은 `src/lib/__tests__/brandAssets.test.js`가
+고정한다 — 문서는 낡지만 계약은 CI에서 잡는다.
+
+### 이름과 값
+
+| 이름 | 값 | 같은 값을 쓰는 곳 |
+|---|---|---|
+| manabi 로즈 | `#994A5A` | `.manabi-app --primary` = `theme-color` meta = manifest `theme_color` = 아이콘 바탕 = 글자 로고 점 |
+| 크림 | `#FFF4E6` | 아이콘의 m |
+| 해바라기 | `#FFD04D` | 아이콘의 점 |
+| 종이 | `#FFFDF9` | `.manabi-app` 바탕 = manifest `background_color`(설치 앱 첫 화면) = 공유 미리보기 바탕 |
+
+### 점의 뜻
+
+- 모양은 **마침표**(문장 하나를 끝까지 읽음), 색은 뷰어의 「담은 단어」 형광 노랑(`--ws-learn-ln`)과
+  같은 계열(복습의 시작). 뷰어 형광 색을 바꾸면 이 점과의 연결도 함께 검토한다.
+
+### 배치는 두 가지만
+
+1. **아이콘**: 로즈 바탕 + 크림 m + 해바라기 점.
+2. **글자 로고**: 종이 바탕 + 먹 글자(Manrope 800) + 로즈 점(`.manabi-brand-dot`).
+
+- 노란 점은 로즈 바탕 위에서만 쓴다(종이 위에서는 대비 1.44라 사라진다).
+- **점은 기준선 위**: 아이콘에서는 점 아래끝 = m 기둥 아래끝, 글자 로고에서는 마침표 자리
+  (`margin:0 0 0 2px` — 빈 inline-block의 기준선은 아래 margin 끝이다). 점만 떼어 장식으로 쓰지 않는다.
+- `.manabi-brand-dot`은 `var(--primary)`를 쓴다. `.manabi-app` 밖에서는 `--primary`가 옛 공용
+  토큰(`#C0522A`)으로 풀리므로, 밖에서 쓰게 되면 값을 고정한다.
+
+### 아이콘 바탕 밝기 규칙
+
+- 밝은(`#DCD3CA`)·어두운(`#1E1B22`) 배경화면 양쪽 대비 **2.5 이상**(로즈: 4.1 / 2.8).
+- 그림은 바탕과 **4:1 이상**(크림 5.6, 해바라기 4.1).
+
+### 파일
+
+| 파일 | 원본 | 형식 | 용도 |
+|---|---|---|---|
+| `public/icon.svg` | 마스터 | SVG, 사각 꽉 채움 | manifest `any` |
+| `public/favicon.svg` | 32px 이하 전용 판(획 68, 점을 떼어 놓음, `rx=112`) | SVG | 브라우저 탭 |
+| `public/icon-192.png` · `icon-512.png` | `icon.svg` | 불투명 RGB | manifest `any`, 푸시 알림 `icon` |
+| `public/icon-maskable-512.png` | maskable 마스터(그림 86% 축소) | 불투명 RGB | manifest `maskable` |
+| `public/apple-touch-icon.png` | `icon.svg` | 180px, 알파 없는 RGB | iOS 홈 화면 |
+| `public/badge-96.png` | badge 마스터 | 투명 바탕 흰 실루엣 | 안드로이드 알림 `badge` |
+
+- 모서리는 OS가 자른다 — `icon.svg`·PNG에 둥근 모서리를 넣지 않는다(`favicon.svg`만 예외).
+- `"any maskable"` 겸용을 쓰지 않는다(꽉 채움과 안전 영역을 한 그림이 다 만족하지 못한다).
+- PNG는 SVG 마스터를 한 번 렌더해 커밋한다. 빌드 때 생성하지 않는다.
+- 국기·이모지를 아이콘·공유 미리보기에 쓰지 않는다(하드리밋 IP ⑴, 기기별 글꼴 차이).
+
+### 바꾸면 안 되는 내부 이름
+
+사용자에게 보이지 않고, 바꾸면 데이터·캐시가 끊긴다. 옛 이름이 남아 있어도 정상이다.
+
+- IndexedDB: `anatomy-offline-cache` · `anatomy-pdf-cache` · `anatomy-class-shared`(기존 오프라인 저장분).
+- `public/sw.js` `CACHE_NAME` 접두사 `anatomy-studio-v`(`scripts/update-sw-version.mjs`).
+- `window.__anatomyErrorHooked`, UA `AnatomyStudio/1.0`, `robots.js`·`sitemap.js` 기본 도메인.
