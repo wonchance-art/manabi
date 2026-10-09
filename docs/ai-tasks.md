@@ -894,24 +894,33 @@
     오너 REVIEW 판정 → Preview·실계정 검수 후 병합. 목록 ★ 한 번 저장의 분리 여부는 오너 결정 대기.
   - #1349 `claude/krdict-senses` — 한국어기초사전 1단계 기반. 공식본 dry-run 대조(M09 CLAUDE-M09-001-5) 대기.
   - #1344 교재 피드백 잔여 PR-B(부제 반복·해석 문구·물음 표식, 목업 대기)·PR-C(활용 안내, 오너 문구) · #1345 후속 PR-0(운영 집계)·PR-3.
-  - 튜터 프롬프트의 중화권 정치 서술 배제 규칙 부재(하드리밋 ⑷) — 오너 결정 대기(#1381 범위 밖).
+  - 튜터 프롬프트의 중화권 정치 서술 배제(하드리밋 ⑷) → #1389 `conversationSafetyRules`(두 프롬프트 주입) — M09 Preview 대기.
   - ⚠ 운영 마이그레이션 이력 ≠ main `supabase/migrations`(스택 #1316~#1321 SQL 3건·10월 활성화 이력). 다음 마이그레이션 병합 시
     `supabase-migrations.yml` 실패 가능성 — 운영 READ ONLY 확인 전 스택 PR 닫기 보류.
   - 이 컨테이너에서 불가(오너/M09): 운영 DB 조회·적용, 정상 실계정 검수(10-06 04:00 경계 이후 학습 검수 = CLAUDE-M09-001-2 진행 중).
 - **뷰어 v2 (2026-10-07 21:10 KST~, 오너 지시 「이 세션이 뷰어 v2 맡아」)** — 구현 큐 전부 병합·운영 배포(2026-10-08 16:50 KST, done 참조).
   정본 = [R0 버그](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6031758159) · [v2 라운드](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036574287).
-  - **M09 운영 사후 검수 배정** [VIEWER-V2-POSTDEPLOY-001](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6055568056)
-    (운영 `b909f9c1` · 비관리자 실계정 · 320/390/1440 · iOS Safari · 보존 지문 Q6·Q8 · 공유 사전 쓰기 금지). 보고 대기 — FAIL은 재현 테스트 먼저 → PR.
-  - ZH-SENSE-HOLDOUT-001 측정 후보 교체(`claude/work-env-agent-setup-1v9a0a`): M09 스냅숏 [6047879865](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6047879865)로
-    운영 행 있는 16표제어(37사례) 교체 · 행 없는 19표제어(27사례)는 생성 대기(`generate-zh-sense-candidates.mjs`, DB 쓰기 0).
-    발견: 운영 행이 얇아 37건 중 15건은 맞는 뜻이 후보에 없음(→ ctx 정답) · 보류 운영 행 16건 중 1차 규칙 후보는 5건뿐(→ `--offer-single` 병행).
-    다음: M09 생성 실행 → Claude 세트 반영·재번호 PR → M09 Gemini 측정(기본 + `--offer-single`) → 사람 판정 → 상수 켜기 별도 PR.
+  - **M09 운영 사후 검수** [VIEWER-V2-POSTDEPLOY-001](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6055568056):
+    V1~V8 보고(10-08 20:07 KST) 코드 결함 0([판정 회신](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6059173748)).
+    남은 것 = 320/390/1440 폭 · iOS 실기기 · 게스트 · Network 요청 수 → **뷰어 동결**(뷰어 68파일 병합 보류)은 이 집계 뒤 해제.
+  - M09 Preview 점검 대기(10-09 10:50 KST 현재 착수 표식 없음): #1389 회화 안전 규칙 · #1391 교재 함수 추적 · #1390 브랜드 · #1392 작성 한국어.
+    통과 보고 → 검증 SHA squash 병합.
+  - ZH-SENSE-HOLDOUT-001: 운영 행 있는 16표제어 교체 병합(#1387). 행 없는 19표제어는 생성 대기 —
+    LLM-BENCH(#1395)의 단어 뜻 과제가 같은 운영 생성 프롬프트라 그 Gemini light 응답으로 오프라인 정규화해 채운다(M09 키 대기 해소).
+  - **LLM-BENCH-001 모델 비교 측정**(#1395 병합 `72117edb`, 운영 배포 10-09 07:45 KST): `/admin/llm-bench`(관리자, 쓰기 0) —
+    Gemini 3.6 Flash · 3.5 Flash-Lite · Groq gpt-oss · Haiku 5.5 · GPT-6 Luna에 같은 고정 입력(ZH 뜻 고르기 64사례 · 뜻 생성 19어 · 번역 3).
+    오너 실행 → 결과 JSON → Claude 분석(품질·p95·비용) · 선택형 과제는 OpenAI Decisions API(Luna, 프리뷰) 별도 비교 후보. 오너 「나중에」(10-09).
   - 상수 꺼진 채 운영: AD-R4 `ZH_SENSE_REVIEW`(#1372) · `ZH_BOUNDARY_REVIEW`(#1384) — 운영 동작 동일(바이트 스냅숏).
-  - 보류: AE-R3 PR③(공유 사전 요미 쓰기 — 공유 사전 정책 대기) · AD-R3 PR④(규칙 표 DDL — 미구현, 구현 후 Preview 리허설) ·
-    AD-R3 한국어(어절 칼선 A/B).
-  - 오너 결정 대기: 한국어 어절 자르기 A/B(B 권장) · 공유 사전 정책 ⓐ/ⓑ/ⓒ · #1368 트레이드오프 · #1376 번역 등급 light ·
-    #1374 관리자 교정 허용·✎ 메뉴 이동 · #1378 수업 화면 배치·긴 줄 문형 상한 · #1380 창 위치 · #1382 교정 캐시 즉시 반영·passage 제외 ·
-    #1383 수업 원본 경고 · #1384 행 없는 등재 꼴 뜻 조회.
+  - **오너 결정(10-09 「전부 권장대로」)** 반영:
+    ① Anki 내보내기 파일 이름만 manabi(태그 `anatomy-studio` 유지) → #1390 ·
+    ② 한국어 구간 학습 DB → **#1393**(`docs/sql/korean-source-passage.sql` 적용·복원 SQL + PGlite 6검사, `supabase/migrations` 밖 — 병합해도 운영 db push 없음;
+       순서 #1392 병합 → 운영 SQL 적용·md5 확인 → #1393 병합) ·
+    ③ 한국어 어절 B안 → **#1396**(어절 안 형태소 칼선, 동결 뒤 병합) ·
+    ④ 공유 사전 **ⓒ**(소유자 교정은 자기 자료·단어장만, 공유 사전은 관리자만) → **#1394**(동결 뒤 병합) ·
+    ⑤ #1376 번역 light 유지 · ⑥ 화면 세부 #1374·#1378·#1380·#1382·#1383·#1384 현행 유지.
+  - 보류: AE-R3 PR③(공유 사전 요미 쓰기 — ⓒ 확정으로 재정리 필요) · AD-R3 PR④(규칙 표 DDL — 검수 뒤, 오너 10-08) ·
+    한국어 어절 넘는 묶기(할 수 있다 — 별도 질문).
+  - 오너 결정 대기: #1368 트레이드오프 · #1396 꼴 이름 2종·조각 간격.
 ### todo (오너 전건 승인 2026-07-18 — owner-gate 해제분 포함, Codex-1 확장 큐 = #150 코멘트 5012160829)
 - 🧊 **이 아래 전량 = 게임·월드 트랙 동결**(오너 "게임 월드는 ㄴㄴ" 2026-08-25).
   2026-08-26 전수 대조 결과 **비월드 잔여 0**: #1077 인박스 승인분 전량 완결(2·3·6·11·
