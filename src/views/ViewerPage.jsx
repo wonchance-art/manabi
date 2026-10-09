@@ -281,7 +281,7 @@ export default function ViewerPage() {
   const classBoardTarget=useRef(null),classBoardHeaderTarget=useRef(null);
   const [classBoardRatio,setClassBoardRatio]=useState(60);
   const [classPresenting,setClassPresenting]=useState(false);
-  const { user, profile, fetchProfile } = useAuth();
+  const { user, profile, fetchProfile, isAdmin } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
 
@@ -1822,10 +1822,37 @@ export default function ViewerPage() {
 
 
 
-  // 교정 전역 적용(링큐식) — 공유 사전 승격(user_verified) + 내 단어장 동기.
+  // 교정을 내 단어장 카드에도(저장한 단어일 때만). 공유 사전과 무관한 개인 데이터 — 뜻·발음·품사 칸만.
+  const syncSavedVocab = async (token, corrections) => {
+    const vocab = findSavedVocab(savedWords, token, materialLang);
+    if (!vocab?.id) return false;
+    const patch = {
+      ...(corrections.meaning ? { meaning: corrections.meaning } : {}),
+      ...(corrections.furigana ? { furigana: corrections.furigana } : {}),
+      ...(corrections.pos ? { pos: corrections.pos } : {}),
+    };
+    if (Object.keys(patch).length === 0) return false;
+    const { error } = await supabase.from('user_vocabulary').update(patch).eq('id', vocab.id);
+    if (error) throw error;
+    queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
+    return true;
+  };
+
+  // 소유자 교정의 「내 단어장에도 반영」(오너 결정 ⓒ) — 공유 사전 요청 없이 내 카드만.
+  const applyCorrectionToVocab = async (token, corrections) => {
+    if (!legacyTokenEditingAllowed || !legacyTokenEditingAllowedRef.current) return;
+    try {
+      const synced = await syncSavedVocab(token, corrections);
+      toast(synced ? '단어장에도 반영했어요!' : '단어장에 없는 단어예요 — 이 자료에만 반영했어요.', synced ? 'success' : 'info');
+    } catch {
+      toast('단어장 반영은 실패했어요 — 이 자료에는 반영됐어요.', 'warning');
+    }
+  };
+
+  // 교정 전역 적용(링큐식, 관리자 전용 — 오너 결정 ⓒ) — 공유 사전 승격(user_verified) + 내 단어장 동기.
   // 실패해도 이 자료의 교정(correctTokenMutation)은 이미 반영돼 있다(부분 성공 허용).
   const promoteCorrection = async (token, corrections) => {
-    if (!legacyTokenEditingAllowed || !legacyTokenEditingAllowedRef.current) return;
+    if (!isAdmin || !legacyTokenEditingAllowed || !legacyTokenEditingAllowedRef.current) return;
     try {
       let authHeader = {};
       const { data: { session } } = await supabase.auth.getSession();
@@ -1835,7 +1862,7 @@ export default function ViewerPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify({
-          // 서버는 이 자료의 소유자(또는 관리자)·이 자료에 있는 단어인지 확인한 뒤에만 승격한다.
+          // 서버는 관리자·이 자료에 있는 단어인지 확인한 뒤에만 승격한다.
           material_id: id,
           base_form: token.sep_link || token.base_form || token.text,
           language: materialLang,
@@ -1844,18 +1871,7 @@ export default function ViewerPage() {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       if (!legacyTokenEditingAllowed || !legacyTokenEditingAllowedRef.current) return;
-      const vocab = findSavedVocab(savedWords, token, materialLang);
-      if (vocab?.id) {
-        const patch = {
-          ...(corrections.meaning ? { meaning: corrections.meaning } : {}),
-          ...(corrections.furigana ? { furigana: corrections.furigana } : {}),
-          ...(corrections.pos ? { pos: corrections.pos } : {}),
-        };
-        if (Object.keys(patch).length > 0) {
-          await supabase.from('user_vocabulary').update(patch).eq('id', vocab.id);
-          queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
-        }
-      }
+      await syncSavedVocab(token, corrections).catch(() => false); // 사전 승격은 이미 성공 — 카드 동기 실패로 뒤집지 않는다(기존 동작)
       if (isClient) clearAnalysisCache(localStorage); // 승격된 뜻 반영(§C4)
       toast('사전과 단어장에도 반영했어요!', 'success');
     } catch {
@@ -3010,6 +3026,7 @@ export default function ViewerPage() {
           token={selectedToken}
           language={materialLang}
           dictEntry={editDictEntry}
+          sharedEdit={isAdmin}
           saving={correctTokenMutation.isPending}
           onSave={(corrections, opts) => {
             if (!legacyTokenEditingAllowed || !legacyTokenEditingAllowedRef.current) return;
@@ -3020,6 +3037,7 @@ export default function ViewerPage() {
               {
                 onSuccess: () => {
                   if (opts?.applyGlobal) promoteCorrection(selectedToken, corrections);
+                  else if (opts?.applyVocab) applyCorrectionToVocab(selectedToken, corrections);
                   setIsEditingToken(false);
                 },
               }
