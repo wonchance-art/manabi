@@ -18,24 +18,31 @@ const AFTER = { validate: 'dbae2ddf1a7d5e40b54eb8ed7834e4b8', open: 'ac4f6a7f38a
 let checks = 0;
 const check = async (name, fn) => { await fn(); checks++; console.log(`PASS ${name}`); };
 
+// 운영 카탈로그(korean-learning-support.mjs의 M09 관측 fixture) + korean-learning-support.sql 적용 상태에서 시작한다 —
+// learning_language_capabilities()의 카탈로그 지문이 validate_source_passage() 본문을 포함하므로(r1 운영 FAIL 2026-10-09),
+// 최소 스키마로는 그 연동을 검증할 수 없다. open_source_passage는 fixture에 없어 마이그레이션 원문 그대로 더한다.
+const learningTest = await read('./korean-learning-support.mjs');
+const fixtureStart = 'const modernFixtureSql = `';
+const modernFixture = learningTest.slice(learningTest.indexOf(fixtureStart) + fixtureStart.length,
+  learningTest.indexOf('\n`;\n\nasync function verifyModernCatalog'));
+assert.ok(modernFixture.startsWith('-- M09 modern learning catalog fixture') && !modernFixture.includes('${'));
+const support = await read('../../docs/sql/korean-learning-support.sql');
+const openRpc = `${migration.match(/CREATE OR REPLACE FUNCTION public\.open_source_passage[\s\S]*?\n\$\$;/)[0]}
+REVOKE ALL ON FUNCTION public.open_source_passage(bigint,jsonb,text,text) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.open_source_passage(bigint,jsonb,text,text) TO authenticated;`;
+
 async function fresh() {
   const db = new PGlite();
-  await db.exec(`CREATE ROLE anon; CREATE ROLE authenticated; CREATE SCHEMA auth;
-  GRANT USAGE ON SCHEMA auth TO anon, authenticated;
-  CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
-  CREATE TABLE public.reading_materials(id bigserial PRIMARY KEY, owner_id uuid, visibility text, title text,
-    raw_text text, processed_json jsonb, document_json jsonb);
-  ALTER TABLE public.reading_materials ENABLE ROW LEVEL SECURITY;
-  CREATE POLICY owner_rows ON public.reading_materials FOR ALL TO authenticated USING (owner_id = auth.uid()) WITH CHECK (owner_id = auth.uid());
-  GRANT SELECT, INSERT, UPDATE ON public.reading_materials TO authenticated;
-  GRANT USAGE ON SEQUENCE public.reading_materials_id_seq TO authenticated;`);
-  await db.exec(migration);
+  await db.exec(modernFixture);
+  await db.exec(`INSERT INTO auth.users VALUES('${a}'),('${b}'); INSERT INTO public.profiles VALUES('${a}'),('${b}');`);
+  await db.exec(support);
+  await db.exec(openRpc);
   const parents = {};
   for (const [owner, language, body] of [[a, 'Korean', '오늘은 도서관에서 신문을 읽었어요. 내일도 갈 거예요.'],
     [a, 'Japanese', '今日は図書館で新聞を読みました。'], [b, 'Korean', '남의 글이에요. 학교에 가요.']]) {
     const { rows } = await db.query(`INSERT INTO public.reading_materials(owner_id,visibility,title,raw_text,processed_json)
       VALUES($1,'private','내 글',$2,$3) RETURNING id`, [owner, body,
-      { status: 'completed', metadata: { language, composer: { version: 1, role: 'source', hasBody: true } } }]);
+      { status: 'completed', metadata: { language, importAttempt: `qa-${owner}-${language}`, composer: { version: 1, role: 'source', hasBody: true } } }]);
     parents[`${owner === a ? 'a' : 'b'}:${language}`] = { id: rows[0].id, body };
   }
   return { db, parents };
@@ -49,6 +56,15 @@ async function identity(db, id) {
 const md5s = async db => Object.fromEntries((await rows(db, `SELECT proname, md5(prosrc) AS h FROM pg_proc
   WHERE oid IN ('public.validate_source_passage()'::regprocedure, 'public.open_source_passage(bigint,jsonb,text,text)'::regprocedure)`))
   .map(r => [r.proname === 'validate_source_passage' ? 'validate' : 'open', r.h]));
+// 한국어 학습 capability(저장·복습·아는 단어·제외) — 로그인 사용자로 읽는다.
+async function korean(db) {
+  await identity(db, a);
+  const flags = (await rows(db, 'SELECT public.learning_language_capabilities() AS r'))[0].r.languages.Korean;
+  await db.exec('RESET ROLE');
+  return flags;
+}
+const READY = { save: true, review: true, known: true, exclude: true };
+const OFF = { save: false, review: false, known: false, exclude: false };
 const attrs = async db => rows(db, `SELECT proname, proowner, proacl::text, prosecdef, proconfig, provolatile, proparallel, proisstrict
   FROM pg_proc WHERE pronamespace = 'public'::regnamespace ORDER BY proname`);
 const quoteOf = (body, exact) => { const start = Array.from(body).join('').indexOf(exact); return { exact, start, end: start + exact.length, prefix: '', suffix: '' }; };
@@ -61,6 +77,7 @@ const allMaterials = db => rows(db, 'SELECT * FROM public.reading_materials ORDE
 await check('적용 전: 한국어 구간은 RPC(PASSAGE_LANGUAGE)·트리거(PASSAGE_INVALID) 모두 거절 — 마이그레이션 본문 해시가 적용 SQL의 기대값과 같다', async () => {
   const { db, parents } = await fresh();
   assert.deepEqual(await md5s(db), BEFORE);
+  assert.deepEqual(await korean(db), READY);
   await identity(db, a);
   await assert.rejects(open(db, parents['a:Korean'], '도서관에서 신문을 읽었어요.', 'Korean'), /PASSAGE_LANGUAGE/);
   await assert.rejects(db.query(`INSERT INTO public.reading_materials(owner_id,visibility,title,raw_text,processed_json) VALUES($1,'private','t','학교',$2)`,
@@ -69,19 +86,72 @@ await check('적용 전: 한국어 구간은 RPC(PASSAGE_LANGUAGE)·트리거(PA
   await db.close();
 });
 
-await check('적용: 두 함수 본문은 언어 목록 한 줄만 바뀌고 소유자·권한·속성·트리거와 기존 행은 그대로', async () => {
+const capability = async db => (await rows(db, `SELECT md5(regexp_replace(prosrc, 'ready:=live_hash= ''[0-9a-f]{32}''', '')) AS template,
+  substring(prosrc FROM 'ready:=live_hash= ''([0-9a-f]{32})''') AS published FROM pg_proc WHERE oid='public.learning_language_capabilities()'::regprocedure`))[0];
+const triggers = db => rows(db, `SELECT tgname, pg_get_triggerdef(oid) AS def, tgenabled FROM pg_trigger
+  WHERE tgrelid='public.reading_materials'::regclass AND NOT tgisinternal ORDER BY tgname`);
+
+await check('적용: 두 함수 본문은 언어 목록 한 줄만, capability RPC는 지문 상수만 바뀌고 한국어 학습은 계속 켜져 있다 — 소유자·권한·속성·트리거·기존 행 그대로', async () => {
   const { db } = await fresh();
   const beforeAttrs = await attrs(db);
   const beforeRows = await allMaterials(db);
+  const beforeTriggers = await triggers(db);
+  const beforeCap = await capability(db);
   await db.exec(apply);
   assert.deepEqual(await md5s(db), AFTER);
+  assert.deepEqual(await korean(db), READY); // r1은 여기서 OFF였다(운영 FAIL 2026-10-09)
+  const afterCap = await capability(db);
+  assert.equal(afterCap.template, beforeCap.template);
+  assert.notEqual(afterCap.published, beforeCap.published);
   assert.deepEqual(await attrs(db), beforeAttrs);
   assert.deepEqual(await allMaterials(db), beforeRows);
-  const [{ n }] = await rows(db, `SELECT count(*)::int AS n FROM pg_trigger WHERE tgrelid='public.reading_materials'::regclass AND NOT tgisinternal`);
-  assert.equal(n, 2);
+  assert.deepEqual(await triggers(db), beforeTriggers);
   await db.exec(apply); // 재실행은 무변화
   assert.deepEqual(await md5s(db), AFTER);
+  assert.deepEqual(await capability(db), afterCap);
   assert.deepEqual(await attrs(db), beforeAttrs);
+  assert.deepEqual(await korean(db), READY);
+  await db.close();
+});
+
+await check('이미 어긋난 카탈로그(r1만 적용된 운영 상태 등)는 다시 승인하지 않는다 — 전체 중단, 무변화, 한국어 학습은 꺼진 그대로', async () => {
+  const { db } = await fresh();
+  // r1: 지문 재게시 없이 트리거 본문만 바꾼 상태를 재현한다.
+  await db.exec(`DO $r1$ DECLARE src text; BEGIN
+    SELECT replace(prosrc, 'NOT IN (''Japanese'',''Chinese'',''English'',''French'')', 'NOT IN (''Japanese'',''Chinese'',''English'',''French'',''Korean'')')
+      INTO src FROM pg_proc WHERE oid='public.validate_source_passage()'::regprocedure;
+    EXECUTE format('CREATE OR REPLACE FUNCTION public.validate_source_passage() RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER SET search_path = pg_catalog, public AS %L', src);
+  END $r1$;`);
+  assert.deepEqual(await korean(db), OFF);
+  const before = { md5: await md5s(db), cap: await capability(db) };
+  await assert.rejects(db.exec(apply), /korean_passage_capability_not_ready/);
+  await db.exec('ROLLBACK');
+  await assert.rejects(db.exec(rollback), /korean_passage_capability_not_ready/);
+  await db.exec('ROLLBACK');
+  assert.deepEqual({ md5: await md5s(db), cap: await capability(db) }, before);
+  assert.deepEqual(await korean(db), OFF);
+  // 운영 복구 경로(r1 복원 = 본문만 원래대로): 지문이 게시값으로 돌아와 한국어 학습이 다시 켜지고, 그 뒤 이 파일은 정상 적용된다.
+  await db.exec(`DO $r1_restore$ DECLARE src text; BEGIN
+    SELECT replace(prosrc, 'NOT IN (''Japanese'',''Chinese'',''English'',''French'',''Korean'')', 'NOT IN (''Japanese'',''Chinese'',''English'',''French'')')
+      INTO src FROM pg_proc WHERE oid='public.validate_source_passage()'::regprocedure;
+    EXECUTE format('CREATE OR REPLACE FUNCTION public.validate_source_passage() RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER SET search_path = pg_catalog, public AS %L', src);
+  END $r1_restore$;`);
+  assert.deepEqual(await md5s(db), BEFORE);
+  assert.deepEqual(await korean(db), READY);
+  await db.exec(apply);
+  assert.deepEqual(await md5s(db), AFTER);
+  assert.deepEqual(await korean(db), READY);
+  await db.close();
+});
+
+await check('capability RPC 본문이 검수한 형태와 다르면 전체 중단, 무변화', async () => {
+  const { db } = await fresh();
+  const def = (await rows(db, `SELECT pg_get_functiondef('public.learning_language_capabilities()'::regprocedure) AS d`))[0].d;
+  await db.exec(def.replace("'save',ready", "'save',ready AND true"));
+  const before = { md5: await md5s(db), cap: await capability(db) };
+  await assert.rejects(db.exec(apply), /korean_passage_unexpected_capability_body/);
+  await db.exec('ROLLBACK');
+  assert.deepEqual({ md5: await md5s(db), cap: await capability(db) }, before);
   await db.close();
 });
 
@@ -130,6 +200,7 @@ await check('운영 본문이 예상과 다르면 트랜잭션 전체가 중단�
 await check('복원: 원래 본문 해시로 돌아가고, 이미 만든 한국어 구간 행은 남으며 새 한국어 구간만 다시 거절', async () => {
   const { db, parents } = await fresh();
   const beforeAttrs = await attrs(db);
+  const beforeCap = await capability(db);
   await db.exec(apply);
   await identity(db, a);
   await open(db, parents['a:Korean'], '내일도 갈 거예요.', 'Korean');
@@ -137,6 +208,8 @@ await check('복원: 원래 본문 해시로 돌아가고, 이미 만든 한국�
   const kept = await allMaterials(db);
   await db.exec(rollback);
   assert.deepEqual(await md5s(db), BEFORE);
+  assert.deepEqual(await korean(db), READY);
+  assert.equal((await capability(db)).template, beforeCap.template);
   assert.deepEqual(await attrs(db), beforeAttrs);
   assert.deepEqual(await allMaterials(db), kept);
   await identity(db, a);
@@ -144,6 +217,7 @@ await check('복원: 원래 본문 해시로 돌아가고, 이미 만든 한국�
   await db.exec('RESET ROLE');
   await db.exec(rollback); // 재실행은 무변화
   assert.deepEqual(await md5s(db), BEFORE);
+  assert.deepEqual(await korean(db), READY);
   await db.close();
 });
 
