@@ -96,7 +96,7 @@ describe('KO-COMPOSER — 정본 언어 목록 재사용', () => {
     const migration = readFileSync('supabase/migrations/20260908060607_source_passage_study.sql', 'utf8');
     const apply = readFileSync('docs/sql/korean-source-passage.sql', 'utf8');
     const before = listOf(migration.match(/p_language NOT IN \(([^)]+)\)/)[1]);
-    const after = listOf(apply.match(/new_list constant text := 'NOT IN \(([^)]+)\)'/)[1]);
+    const after = listOf(apply.match(/to_list constant text := 'NOT IN \(([^)]+)\)'/)[1]);
     expect(new Set(after)).toEqual(new Set([...before, 'Korean']));
     expect(new Set(PASSAGE_LANGUAGES)).toEqual(new Set(after));
     expect(PASSAGE_LANGUAGES).toEqual(COMPOSER_LANGUAGES);
