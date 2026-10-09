@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { client, admin, release, edition, candidate } = vi.hoisted(() => ({ client: vi.fn(), admin: vi.fn(), release: vi.fn(), edition: vi.fn(), candidate: vi.fn() }));
 vi.mock('@/lib/supabaseServer', () => ({ createSupabaseServerClient: client, requireAdmin: admin }));
-vi.mock('@/lib/textbook/server', () => ({ readRelease: release, readEdition: edition, candidate, currentCandidate: candidate, verifiedAsset: vi.fn(), textbookError: (status, message) => Object.assign(new Error(message), { status }) }));
+vi.mock('@/lib/textbook/server', () => ({ readRelease: release, readEdition: edition, candidate, currentCandidate: candidate, verifiedReadingHtml: vi.fn(), textbookError: (status, message) => Object.assign(new Error(message), { status }) }));
 import { publishedReading } from '../server/bookReading';
 const book = { editionId: '7f572327dc67893e9453246c', contentHash: 'verified-content', artifactManifest: { bundleHash: 'verified-assets' } };
 beforeEach(() => {

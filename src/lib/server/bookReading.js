@@ -1,6 +1,6 @@
 import { cache } from 'react';
 import { createSupabaseServerClient, requireAdmin } from '@/lib/supabaseServer';
-import { candidate, currentCandidate, readEdition, readRelease, verifiedAsset, textbookError } from '@/lib/textbook/server';
+import { candidate, currentCandidate, readEdition, readRelease, verifiedReadingHtml, textbookError } from '@/lib/textbook/server';
 import { extractReadingSections, readingSectionLabel } from '@/lib/bookReadingHtml';
 
 export async function publishedReading(editionId, allowPreview = false) {
@@ -20,7 +20,7 @@ export async function publishedReading(editionId, allowPreview = false) {
 
 export const readingSections = cache(async (edition) => {
   const book = await candidate(edition);
-  const { bytes } = await verifiedAsset(book, 'index.html');
+  const { bytes } = await verifiedReadingHtml(book);
   const sections = extractReadingSections(bytes.toString('utf8'));
   if (!sections.length) throw textbookError(503, '교재 본문을 불러오지 못했어요.');
   return sections.map(section => ({ ...section, title: readingSectionLabel(section, book.pages) }));

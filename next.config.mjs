@@ -26,7 +26,9 @@ const nextConfig = {
   // 사전·WASM이 서버 번들에 포함되도록 — kuromoji(ja) 사전과 jieba-wasm(zh)의 .wasm.
   // (네이티브 @node-rs/jieba는 서버리스 플랫폼 바이너리 로드 실패로 WASM 교체 — 단일 파일·플랫폼 무관)
   outputFileTracingIncludes: {
-    '/api/books/japanese-n5/**': ['./src/content/textbookEditions/**/*'],
+    // 교재 폴더 전체(음성·PDF·글꼴)는 asset 경로만 받는다. 키는 picomatch 글롭이라 '[edition]'을 쓰면
+    // 문자 집합으로 해석된다 — '*'로 쓴다. reading 경로는 자동 추적으로 bundle.json·index.html을 받는다.
+    '/api/books/japanese-n5/*/asset': ['./src/content/textbookEditions/**/*'],
     '/api/admin/books/japanese-n5': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],
     '/books/japanese-n5': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/**/index.html', './src/content/textbookEditions/index.json'],
     '/books/japanese-n5/**': ['./src/content/textbookEditions/**/bundle.json', './src/content/textbookEditions/index.json'],

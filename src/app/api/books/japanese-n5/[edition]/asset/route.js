@@ -1,5 +1,6 @@
 import {createSupabaseServerClient,requireAdmin} from '@/lib/supabaseServer';
-import {candidate,readEdition,verifiedAsset,respond,respondError,textbookError} from '@/lib/textbook/server';
+import {candidate,readEdition,respond,respondError,textbookError} from '@/lib/textbook/server';
+import {verifiedAsset} from '@/lib/textbook/assetFile';
 export const runtime='nodejs';export const dynamic='force-dynamic';
 export async function GET(request,{params}){try{const {edition}=await params;const db=await createSupabaseServerClient();let published=null;try{published=await readEdition(db,edition)}catch(e){if(e.status!==503)throw e;}
  if(!published){const auth=await requireAdmin();if(auth.error)return respond({error:'아직 공개되지 않은 판본이에요.'},auth.status===401?401:404)}
