@@ -11,25 +11,25 @@ const viewer = read('src/views/ViewerPage.jsx');
 const route = read('src/app/api/explain/route.js');
 const client = read('src/lib/ctxExplain.js');
 
+// AE-R1 개정(VIEWER-V2-ROUNDS-001 §2.1 「없어지는 것: 단어 탭의 「이 문장에서는?」 버튼·「이 문장에서」 문구」,
+// §3 「suspect 기록이 비는 것을 감수 — AD-R4가 대신할 때까지」, 설계서 §2.1·§7.1): 카드의 버튼·상태·호출을 걷는다.
+// 서버 token 분기와 ctxExplain.js(클라이언트 캐시)는 AD-R4가 대체할 때까지 남긴다(아래 서버·클라이언트 계약 유지).
 describe('카드 배선(ViewerPage)', () => {
-  it('버튼형 — 자동 조회가 아니라 [이 문장에서는?] 탭이 유일한 트리거', () => {
-    expect(viewer).toContain("import { fetchCtxExplain } from '../lib/ctxExplain'");
-    expect(viewer).toContain('이 문장에서는?');
-    expect(viewer).toContain('runCtxExplain(selectedToken,ctxSentenceOf(selectedToken))');
-    // 카드 열림 이펙트에서 fetchCtxExplain을 자동 호출하지 않는다
-    expect(viewer).not.toMatch(/useEffect\([\s\S]{0,400}fetchCtxExplain/);
+  it('단어 탭에 「이 문장에서는?」 트리거가 없고 카드가 /api/explain token 분기를 부르지 않는다', () => {
+    expect(viewer).not.toContain("from '../lib/ctxExplain'");
+    expect(viewer).not.toContain('fetchCtxExplain');
+    expect(viewer).not.toContain('이 문장에서는?');
+    expect(viewer).not.toContain('runCtxExplain');
   });
 
-  it('본문 탭 토큰만 — id(id_<rawIdx>_…)에서 원문 줄을 되찾고, zh부터 노출', () => {
+  it('원문 줄 유도(id_<rawIdx>_…)는 문장 줄·번역·저장 문맥이 계속 쓴다', () => {
     expect(viewer).toMatch(/id\|failed/); // ctxSentenceOf의 rawIdx 유도 정규식
-    expect(viewer).toContain("materialLang === 'Chinese' && (() => {");
-    expect(viewer).toContain('const ctxSentence = ctxSentenceOf(selectedToken)');
+    expect(viewer).toContain('const ctxSentenceOf = (tok) => {');
   });
 
-  it('늦은 응답 가드(시퀀스) + 토큰 전환 시 상태 리셋', () => {
-    expect(viewer).toContain('ctxExplainSeq.current += 1; setCtxExplain(null);');
-    expect(viewer).toContain('const seq = ++ctxExplainSeq.current;');
-    expect(viewer).toMatch(/ctxExplainSeq\.current === seq/);
+  it('카드 전용 문맥 설명 상태(ctxExplain·시퀀스)가 남지 않는다', () => {
+    expect(viewer).not.toContain('ctxExplainSeq');
+    expect(viewer).not.toContain('setCtxExplain');
   });
 });
 

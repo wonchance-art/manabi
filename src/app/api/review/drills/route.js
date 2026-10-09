@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getRefLang } from '@/content/refLangs';
 import { buildDrillReviewQuiz, drillIdFromQueueSlug, findDrillContext } from '@/lib/drillSrs';
+// 옛 교재 챕터 주소는 관리자 보관함으로만 열린다 — 학습자 링크는 null(VIEWER-R0-BUGS-001 버그 3).
+import { learnerHref } from '@/lib/bookNavigation';
 
 /**
  * 게스트 복습 큐(localStorage) → 세션 문항 조립.
@@ -53,7 +55,7 @@ export async function POST(request) {
       title: `${found.chapter.title} · 드릴`,
       order: found.chapter.order,
       level: found.chapter.level,
-      href: `${ref.base}/grammar/${found.chapter.slug}`,
+      href: learnerHref(`${ref.base}/grammar/${found.chapter.slug}`),
       quiz,
     });
   }

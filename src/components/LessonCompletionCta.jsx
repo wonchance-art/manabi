@@ -80,16 +80,19 @@ export default function LessonCompletionCta({ lessonRef, nextLesson }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const pendingRef = useRef(false);
+  // 효과는 원시값(lang·slug)에만 반응한다 — 호출측이 매 렌더 새 lessonRef 객체를 넘겨도 재조회하지 않는다.
+  const lessonLang = lessonRef?.lang;
+  const lessonSlug = lessonRef?.slug;
 
   useEffect(() => {
-    if (authLoading || !lessonRef?.lang || !lessonRef?.slug) return undefined;
+    if (authLoading || !lessonLang || !lessonSlug) return undefined;
 
     let active = true;
     setLoading(true);
     setCompleted(false);
     setError('');
 
-    readLessonCompleted(getLessonProgress, user?.id, lessonRef)
+    readLessonCompleted(getLessonProgress, user?.id, { lang: lessonLang, slug: lessonSlug })
       .then((isCompleted) => {
         if (active) setCompleted(isCompleted);
       })
@@ -103,7 +106,7 @@ export default function LessonCompletionCta({ lessonRef, nextLesson }) {
     return () => {
       active = false;
     };
-  }, [authLoading, lessonRef?.lang, lessonRef?.slug, user?.id]);
+  }, [authLoading, lessonLang, lessonSlug, user?.id]);
 
   async function completeLesson() {
     if (!claimLessonCompletion(pendingRef, completed)) return;

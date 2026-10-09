@@ -66,6 +66,16 @@ function cacheSet(key, val) {
   try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
 }
 
+/**
+ * 캐시만 본다(네트워크 0) — 단어창 「더 알아보기」가 이미 만든 결과를 버튼 대신 바로 보이기 위해
+ * (VIEWER-V2-ROUNDS-001 §2.1 더 알아보기 · AE-R1 설계서 §3.3). 키는 fetchSynAnt와 같다. 없으면 null.
+ */
+export async function peekSynAnt(token, language) {
+  const key = await viewerCacheKey('pdf_cache:synant', language, [token.sep_link || token.base_form || token.text, token.meaning, token.furigana || token.reading]);
+  const cached = cacheGet(key);
+  return cached && Array.isArray(cached.syn) && Array.isArray(cached.ant) ? cached : null;
+}
+
 /** 유의어·반의어 조회 — localStorage 캐시 → Gemini(초소형 프롬프트) 2단. */
 export async function fetchSynAnt(token, language) {
   const key = await viewerCacheKey('pdf_cache:synant', language, [token.sep_link || token.base_form || token.text, token.meaning, token.furigana || token.reading]);

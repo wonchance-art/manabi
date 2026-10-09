@@ -878,6 +878,40 @@
 
 ## Claude (claude/*)
 ### doing
+- **수업 코스 「니혼고 42」 + 테스트 (2026-10-08 KST, 오너 지시 — 수업 페이지로 꺼내 암호 `culcom` 팀)** `claude/loving-bardeen-mkj3te`:
+  팀 루트 `metadata.team.course` → 수업 홈 「코스」 탭 · Day 페이지(문화 카드·함께 읽고 연습·오늘의 패턴·예문 연습·응용 문장 번역해보기)
+  · `/class/[team]/test`(전체 예문 10문제·8 합격·패턴 중복 0·Day당 1·비슷한 패턴 묶음당 1·난이도 3/4/3·시험지 번호 재현 / 연습 한↔일).
+  교재 문장 `nihongo42Class.js`는 서버 전용(`/api/class/[team]/course` — 해제 토큰 또는 루트 소유자 Bearer). 교재 문장 입력 대기(빈 칸 「아직 입력되지 않았어요」).
+  계약 `classCourse.test.js`. 오너 몫: culcom 팀 생성(허브 링크 주소 입력 추가), culcom2 삭제(삭제 UI 없음 — SQL 안내), 운영 `SHARE_LINK_SECRET` 확인.
+  2차(같은 날 오너 지시): 코스 탭 상단 달력·바퀴 진행 막대, Day 줄 = 날짜 + Ch·일본어 패턴·한국어(옛 /nihongo 표시),
+  화·목 + 한국 공휴일 제외(`krHolidays.js` 2026·2027 — 노동절·제헌절 반영, 표 밖 해는 경고), 마지막 Day = 수업+시험, 다음 수업일 휴강,
+  휴강 뒤 다음 바퀴 자동. 날짜 변경은 팀 루트 소유자만 그 Day 줄에서(미리보기 → 저장, 뒤 일정 자동 재계산·원래대로). 계약 `classSchedule.test.js`·`classCourseScheduleRender.test.jsx`.
+  3차: 교재 원문 반영 — 대화 14편·예문 420(42×10), 한국어 해석·후리가나(분석기 생성 → 오독 16문장 사람 교정, 전 문장 정렬 계약). 응용 문장 칸 삭제(오너 결정). 원문 오탈자 5건 손질은 파일 머리에 기록.
+  4차: 「Day」 표기 전량 제거 → 챕터 범위(Ch.1~3)로(공개 /nihongo 포함). 챕터 페이지를 교재 화면 문법으로 재구성 — 공식 상자·한 줄 핵심(42챕터 저작)·✕/○ 대조·제목이 테두리 안의 예문 상자, 긴 해설·교재 밖 예문 제거, 문화 카드 한 줄 사실화. 설명 줄 폭 계약(휴대폰 한 줄)·Day 0 계약.
+- **Codex 정지 중 학습 작업 인수 (2026-10-07 13:00 KST~, 오너 지시 — [인수 선언](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6030524345))** — 남은 것만(병합분은 done):
+  Codex 복귀 시 같은 파일 착수 전 #1337 최신 Claude 보고를 확인한다.
+  - #1346 `claude/korean-word-meaning` — 한국어 저장 뜻(#1342 인수, Codex 브랜치 미수정). 뜻 표본 측정(M09 배정 CLAUDE-M09-001-3) →
+    오너 REVIEW 판정 → Preview·실계정 검수 후 병합. 목록 ★ 한 번 저장의 분리 여부는 오너 결정 대기.
+  - #1349 `claude/krdict-senses` — 한국어기초사전 1단계 기반. 공식본 dry-run 대조(M09 CLAUDE-M09-001-5) 대기.
+  - #1344 교재 피드백 잔여 PR-B(부제 반복·해석 문구·물음 표식, 목업 대기)·PR-C(활용 안내, 오너 문구) · #1345 후속 PR-0(운영 집계)·PR-3.
+  - 튜터 프롬프트의 중화권 정치 서술 배제 규칙 부재(하드리밋 ⑷) — 오너 결정 대기(#1381 범위 밖).
+  - ⚠ 운영 마이그레이션 이력 ≠ main `supabase/migrations`(스택 #1316~#1321 SQL 3건·10월 활성화 이력). 다음 마이그레이션 병합 시
+    `supabase-migrations.yml` 실패 가능성 — 운영 READ ONLY 확인 전 스택 PR 닫기 보류.
+  - 이 컨테이너에서 불가(오너/M09): 운영 DB 조회·적용, 정상 실계정 검수(10-06 04:00 경계 이후 학습 검수 = CLAUDE-M09-001-2 진행 중).
+- **뷰어 v2 (2026-10-07 21:10 KST~, 오너 지시 「이 세션이 뷰어 v2 맡아」)** — 구현 큐 전부 병합·운영 배포(2026-10-08 16:50 KST, done 참조).
+  정본 = [R0 버그](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6031758159) · [v2 라운드](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036574287).
+  - **M09 운영 사후 검수 배정** [VIEWER-V2-POSTDEPLOY-001](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6055568056)
+    (운영 `b909f9c1` · 비관리자 실계정 · 320/390/1440 · iOS Safari · 보존 지문 Q6·Q8 · 공유 사전 쓰기 금지). 보고 대기 — FAIL은 재현 테스트 먼저 → PR.
+  - ZH-SENSE-HOLDOUT-001 측정 후보 교체(`claude/work-env-agent-setup-1v9a0a`): M09 스냅숏 [6047879865](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6047879865)로
+    운영 행 있는 16표제어(37사례) 교체 · 행 없는 19표제어(27사례)는 생성 대기(`generate-zh-sense-candidates.mjs`, DB 쓰기 0).
+    발견: 운영 행이 얇아 37건 중 15건은 맞는 뜻이 후보에 없음(→ ctx 정답) · 보류 운영 행 16건 중 1차 규칙 후보는 5건뿐(→ `--offer-single` 병행).
+    다음: M09 생성 실행 → Claude 세트 반영·재번호 PR → M09 Gemini 측정(기본 + `--offer-single`) → 사람 판정 → 상수 켜기 별도 PR.
+  - 상수 꺼진 채 운영: AD-R4 `ZH_SENSE_REVIEW`(#1372) · `ZH_BOUNDARY_REVIEW`(#1384) — 운영 동작 동일(바이트 스냅숏).
+  - 보류: AE-R3 PR③(공유 사전 요미 쓰기 — 공유 사전 정책 대기) · AD-R3 PR④(규칙 표 DDL — 미구현, 구현 후 Preview 리허설) ·
+    AD-R3 한국어(어절 칼선 A/B).
+  - 오너 결정 대기: 한국어 어절 자르기 A/B(B 권장) · 공유 사전 정책 ⓐ/ⓑ/ⓒ · #1368 트레이드오프 · #1376 번역 등급 light ·
+    #1374 관리자 교정 허용·✎ 메뉴 이동 · #1378 수업 화면 배치·긴 줄 문형 상한 · #1380 창 위치 · #1382 교정 캐시 즉시 반영·passage 제외 ·
+    #1383 수업 원본 경고 · #1384 행 없는 등재 꼴 뜻 조회.
 ### todo (오너 전건 승인 2026-07-18 — owner-gate 해제분 포함, Codex-1 확장 큐 = #150 코멘트 5012160829)
 - 🧊 **이 아래 전량 = 게임·월드 트랙 동결**(오너 "게임 월드는 ㄴㄴ" 2026-08-25).
   2026-08-26 전수 대조 결과 **비월드 잔여 0**: #1077 인박스 승인분 전량 완결(2·3·6·11·
@@ -898,6 +932,16 @@
 - 런던 위성 마이크로 픽(재량 위임 해석): 윈저+옥스퍼드 2곳 추천 — 레만호 완성 후 순번
 - 일본 4도시 COPY 슬롯 이식(다국어 UI 확정 시) / 아토미움 = marker-only 유지 확인
 ### done (최근)
+- **뷰어 v2 전 라운드 병합·운영 배포 (2026-10-08 16:50 KST, 오너 「#1364부터 순서대로 병합해」 — [병합 보고](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6055334125))**:
+  25 PR squash: #1364 · 설계 #1358·#1360·#1361·#1363 · AE-R1 #1359·#1367·#1374 · AE-R3 #1365·#1368·#1379 · AD-R4 #1370·#1372·#1382·#1384 ·
+  AD-R3 #1373·#1377·#1383 · AE-R4 #1371·#1380 · AE-R2 #1362·#1376·#1378 · AD-R2 #1369·#1366·#1375. main `b909f9c1` CI 3종 green · Vercel Production 완료.
+  · 스택은 부모 squash 뒤 「갈라진 지점 기준 3-way」로 main 병합 → main 대비 diff = 원 PR diff 줄 단위 일치 확인 → base main → CI → 검증 SHA로 squash(force-push 0).
+  · AE-R2·AD-R2는 큰 묶음과 실제 충돌(ViewerPage·ViewerBottomSheet·e2e) — 사전 검증 트리(npm test 526/6,099 · e2e 131/131)의 단계를 main에 재현,
+    조정 커밋은 해당 PR에 귀속(#1362·#1376·#1378·#1369). #1380 첫 CI의 교재 페이지 대기 시간 초과 1건은 diff 무관 확인 후 재실행 1회 green.
+  · 앞서 병합: R0·R0+ #1352·#1354·#1355·#1356(오너 「실글꼴 검수로 대신하고 병합해」, 운영 반영 M09 확인 `db86e433`).
+- **Codex 정지 중 학습 작업 인수 — 병합분 (2026-10-07)**: #1343 Node 24·`.nvmrc` · #1344 교재 해설 AA·44px · #1345 교재 설명 공용 훅·팀 페이지 ·
+  #1347·#1348·#1353 ESLint .jsx 포함·경고 0 · #1350 제3자 데이터 출처(/credits — FLELex CC BY-NC-SA는 유료화 전 교체/제거 검토, 오너 결정 10-07) · #1351 M09 경계 이후 검수표·READ ONLY SQL ·
+  #1381 대화 패널 IME 조합 Enter. #1342(Codex)는 #1346으로 인수해 닫음.
 - **🏫 AB 수업 판 · 교재 정제 · 암호 공유 R0+R1+R2 — 설계 5603827169·팀 페이지 상세 5604199672 전량 구현 (2026-09-09, 오너 「착수해」)**:
   브랜치 `claude/chinese-pos-context-selection-u23tt0`(merged 이력 위 재기점 → `origin/main` b42d863), draft PR(라운드별 커밋 3 + 보드).
   · **R0 교재 정제** — `bilingualSplit.js`(한글 비율 ≥60% 줄 = 뜻, 바로 앞 원어와 **문장 키**로 짝, 짝 없는 줄은 미배정으로 노출,
@@ -4843,6 +4887,9 @@
 상세: docs/world-city-roadmap-cn-au.md. 유럽 2차 잔여·호주 나머지는 백로그 동결.
 
 ## owner-gate (오너 결정 대기 — 착수 금지)
+- **유료화 전 FLELex 파생 어휘 교체/제거**(2026-10-07 오너 결정 「출처 표기로 유지, 유료화 전 검토」, #1350):
+  FLELex는 CC BY-NC-SA 4.0(비영리·동일조건). `src/content/french/vocab/*_flelex*.js`가 등급을 쓴다.
+  유료 기능·광고 도입 결정 시 상업 이용 가능한 등급 원천으로 바꾸거나 해당 어휘를 뺀다.
 - **도시 NPC 대화 진입 이원화 검토**(2026-08-22 실측): 도시 안 chapter+npc 노드는
   전부 문화 도어로 라우팅되고 NpcDialog는 chapter 없는 노드(현재 fr 채움 NPC·전국맵
   라멘/신사)만 연다. 도쿄·오사카 채움 NPC 4종은 npc==id(직접 대화 후보 계약)인데

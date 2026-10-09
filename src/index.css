@@ -151,12 +151,15 @@ html {
    특이도(rt.pinyin-tone--N)로는 순서에서 진다 — 실제로 본문만 색이 안 나왔다(오너
    발견 2026-08-19). .word-token 조합(0,2,1)을 병기해 순서와 무관하게 이기게 한다.
    단독 선택자는 시트·팝업(.word-token 밖) 병음용. 토글이 꺼지면 클래스 자체가 안
-   붙어 기본색으로 복귀 — CSS 상태 분기 불요. */
-.word-token :is(rt, .rt-an).pinyin-tone--1, :is(rt, .rt-an).pinyin-tone--1 { color: var(--tone-1); }
-.word-token :is(rt, .rt-an).pinyin-tone--2, :is(rt, .rt-an).pinyin-tone--2 { color: var(--tone-2); }
-.word-token :is(rt, .rt-an).pinyin-tone--3, :is(rt, .rt-an).pinyin-tone--3 { color: var(--tone-3); }
-.word-token :is(rt, .rt-an).pinyin-tone--4, :is(rt, .rt-an).pinyin-tone--4 { color: var(--tone-4); }
-.word-token :is(rt, .rt-an).pinyin-tone--0, :is(rt, .rt-an).pinyin-tone--0 { color: var(--tone-0); }
+   붙어 기본색으로 복귀 — CSS 상태 분기 불요.
+   단어창 표제어(.word-fit)도 같은 함정이다(VIEWER-R0 버그 2): 기본색 규칙
+   `.word-fit :is(rt, .rt-an)`(0,2,0)이 파일 뒤쪽에 있어 단독 선택자(0,2,0)를 순서로 이겼다 —
+   성조 색을 켜도 표제어 병음만 한 색이었다. .word-fit 조합(0,3,0)을 병기해 순서와 무관하게 이긴다. */
+.word-token :is(rt, .rt-an).pinyin-tone--1, .word-fit :is(rt, .rt-an).pinyin-tone--1, :is(rt, .rt-an).pinyin-tone--1 { color: var(--tone-1); }
+.word-token :is(rt, .rt-an).pinyin-tone--2, .word-fit :is(rt, .rt-an).pinyin-tone--2, :is(rt, .rt-an).pinyin-tone--2 { color: var(--tone-2); }
+.word-token :is(rt, .rt-an).pinyin-tone--3, .word-fit :is(rt, .rt-an).pinyin-tone--3, :is(rt, .rt-an).pinyin-tone--3 { color: var(--tone-3); }
+.word-token :is(rt, .rt-an).pinyin-tone--4, .word-fit :is(rt, .rt-an).pinyin-tone--4, :is(rt, .rt-an).pinyin-tone--4 { color: var(--tone-4); }
+.word-token :is(rt, .rt-an).pinyin-tone--0, .word-fit :is(rt, .rt-an).pinyin-tone--0, :is(rt, .rt-an).pinyin-tone--0 { color: var(--tone-0); }
 
 /* ── 중국어 자형 (오너 확정 2026-08-19: Noto Sans SC) ──
    lang="zh*" 표식이 있는 모든 중국어를 간체 표준 자형으로 렌더한다. 표식이 없으면
@@ -1993,19 +1996,24 @@ a.viewer-badge:hover {
 /* 액션바(v2-Q)는 뷰어 정돈 A안(이슈 1077 코멘트 5547935464)에서 해체됐다 — 도구는 경로 줄 오른쪽(.viewer-topbar__tools),
    행동은 본문 아래(.post-reading). 규칙은 아래 「뷰어 정돈 A안」 블록에 있다. */
 
-.viewer-aa {
+/* 경로 줄 도구(AD-R2 — 옛 .viewer-aa) — 아이콘 + 보이는 짧은 라벨. 읽기실 옷은 reader-controls.css가 입힌다. */
+.viewer-tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   border: 1.5px solid var(--border);
   background: var(--bg-elevated);
   color: var(--text-primary);
   border-radius: 10px;
-  padding: 6px 14px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  font-family: Georgia, serif;
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
   cursor: pointer;
-  min-height: 36px;
+  min-height: 44px;
 }
-.viewer-aa:hover { border-color: var(--primary); color: var(--primary-light); }
+.viewer-tool:hover { border-color: var(--primary); color: var(--primary-light); }
 
 /* iOS 실기 선례(시연 수리): 버튼이 시스템 폰트로 새지 않게 시트 전체에 상속 고정 */
 
@@ -2470,11 +2478,10 @@ a.viewer-badge:hover {
    소유하므로 클래스 분기 하나로 끝나고, opacity는 엔진 중립적이다(WebKit rt 선례).
    .reader-area--focus는 집중 모드 ON + 지정 존재일 때만 붙는다 — 지정이 없으면
    전부 원래 밝기(뷰어 진입 직후 화면이 통째로 어두워지는 일이 없다).
-   18%: 위치 감각(문서의 어디쯤인지)은 남기면서 읽기 간섭은 끊는 값 — 기기에서
-   보고 조정할 취향 지점. 병음·성조색·저장 표식은 토큰 내부라 함께 어두워진다. */
-.reader-area--focus .word-token:not(.word-token--picked) {
-  opacity: 0.18;
-}
+   흐림 값은 reader-controls.css 한 곳(0.5 — VIEWER-V2-ROUNDS-001 §5 AD-R2 오너 확정)에만 둔다.
+   여기 있던 0.18 규칙은 특이도에 져서 한 번도 적용되지 않던 죽은 값이라 지웠다(값이 둘이면
+   어느 쪽이 진짜인지 오독된다). 0.5: 주변 문장도 읽히는 밝기(본문 글자 대비 종이 3.08:1 ·
+   어둡게 4.41:1). 병음·성조색·저장 표식은 토큰 내부라 함께 어두워진다. */
 
 /* ruby 후리가나·병음 */
 .word-token ruby {
@@ -2575,7 +2582,9 @@ a.viewer-badge:hover {
    세로 범위는 잉크 실측(픽셀 스캔): 병음 잉크(y·g 디센더 포함) 0.32~0.50em ·
    한자 잉크 0.58~1.54em(셀 top 기준) → 0.58~1.62em 밴드면 병음과 0.08em 여유,
    글자는 온전 포함. 소비처(밴드·이음매·문장 막대)가 전부 이 두 변수를 공유한다.
-   ※ .surface line-height(2.2)를 바꾸면 이 값도 다시 재야 한다(rt-an bottom과 동일 계약). */
+   ※ .surface line-height(2.2)를 바꾸면 이 값도 다시 재야 한다(rt-an bottom과 동일 계약).
+   Aa 범례(.reader-settings__legend, AD-R2)도 본문과 같은 상태 클래스를 그리므로 같은 좌표를 받는다. */
+.reader-settings__legend,
 .reader-settings__preview,
 .reader-area {
   --hl-band-top: 0.58em;
@@ -2586,6 +2595,21 @@ a.viewer-badge:hover {
      글꼴(PingFang 등)에서 바닥이 1~2px 짧았다(오너 실기 보고) — 전각 한 자 크기
      그대로가 글꼴 무관 정답. 밴드 하단(1.62em)과의 차 0.04em이 밴드의 아래 여유. */
   --hl-glyph-h: 1em;
+  /* 띠 밖 표지의 자리(VIEWER-R0 버그 1·6 — 「A + 테두리 여백」 오너 확정 2026-10-07).
+     띠는 면 칠용이라 가장자리가 글자 잉크에 붙어 있다(위 = 잉크 위 끝, 아래 = 잉크 + 0.04em).
+     그 가장자리에 선을 그리면 글자·병음에 닿는다 — 선은 모두 띠 밖 고정 px 자리에 둔다.
+     ① 띠 아래 첫 칸(띠 + --hl-mark-gap): 문형 밑줄, 없으면 저장·복습 밑줄(둘 다면 문형 다음).
+     ② 선택 테두리: 바깥 윗변 = 띠 윗변 − --hl-frame-top, 바깥 아랫변 = 띠 아랫변 + --hl-frame-bottom.
+     ③ 병음 기준점: 테두리 바깥 윗변 위(reader-controls.css — 같은 --hl-frame-top을 쓴다).
+     px인 이유: 본문 최소(12.8px)에서도 1px 이상이어야 한다 — em이면 작은 글자에서 0에 수렴.
+     값의 근거(실글꼴 Noto 잉크 측정, 화소 맞춤 ±0.33px 포함): 灬·体 등 아래 획은 1.60em까지
+     내려와 띠 아랫변(1.62em)과 0.3px 안팎뿐이다 — 밑줄–잉크 1px 이상을 지키려면 띠 + 2px.
+     병음은 g·y·j·q·p 내림획이 1.2 줄 상자 밖으로 ≈0.03em 나오므로 상자 간격 2.5px + 0.05em
+     (잉크 2px 이상). 테두리 아래 = 밑줄 칸(gap + 2px 선) + 0.5px 틈 + 1.5px 선 → gap + 4px. */
+  --hl-mark-gap: 2px;
+  --hl-frame-top: 3px;
+  --hl-pinyin-gap: 2.5px;
+  --hl-frame-bottom: calc(var(--hl-mark-gap) + 4px);
   /* 이합사 연동 띠(R4b) — 지정 보라의 옅은 판. picked-bg에서 파생해 테마를 그대로 탄다. */
   --sep-linked-bg: color-mix(in srgb, var(--picked-bg) 45%, transparent);
   /* 문법 표지 밑줄(v2-G R1) — '후보'라는 톤이 색으로도 읽혀야 한다. 상태색을 쓰지
@@ -2621,15 +2645,20 @@ a.viewer-badge:hover {
 
 /* ── 문법 표지 밑줄 (v2-G R1) ──
    1단 표지어 스캔은 "이 문장이 이 문형이다"를 단정하지 못한다 — 그래서 면 칠(밴드)이
-   아니라 가는 밑줄이고, 색도 옅다. 좌표는 밴드·문장 막대와 같은 글자 잉크 기준
-   (--hl-band-top + --hl-glyph-h): 인라인 상자 바닥에 붙이면 루비 여백만큼 떠서
-   남의 줄처럼 보인다(v2-I 체류 선에서 실측한 그 함정). */
-.word-token--pattern .surface::after {
-  content: '';
+   아니라 가는 밑줄이고, 색도 옅다. 좌표는 밴드와 같은 글자 잉크 기준(띠 아랫변 + 첫 칸):
+   인라인 상자 바닥에 붙이면 루비 여백만큼 떠서 남의 줄처럼 보인다(v2-I 체류 선에서
+   실측한 그 함정).
+   자리는 의사 요소가 아니라 전용 요소(.pattern-mark, ViewerPage renderToken)다
+   (VIEWER-R0 버그 1): 예전 .surface::after는 지정 이음매(아래 :has(+ picked) 규칙)와 같은
+   의사 요소라, 그 문장을 고르면(문장 지정·드래그·단어 선택) 이음매가 특이도로 이겨
+   밑줄이 6px 조각이 됐다. 띠(::before)·이음매(::after)·선택 테두리(.word-token::before)·
+   체류 선(.word-token::after)이 의사 요소 넷을 다 쓰므로 다섯째는 요소여야 한다.
+   z-index 없음 = .surface 스택 문맥 안 띠(z −1)·이음매(z −2)보다 위. */
+.pattern-mark {
   position: absolute;
   left: 0;
   right: 0;
-  top: calc(var(--hl-band-top) + var(--hl-glyph-h) + 0.06em);
+  top: calc(var(--hl-band-top) + var(--hl-band-h) + var(--hl-mark-gap, 2px));
   height: 1.5px;
   border-radius: 1px;
   background: var(--pattern-line);
@@ -2899,7 +2928,8 @@ a.viewer-badge:hover {
 
 /* 저장·복습 밑줄도 밴드가 진다 — 인라인 시절 border-bottom은 글꼴 기준선 띠 하단에
    붙었지만, inline-block 승격 후 surface 테두리는 2.2em 상자 밑(글자에서 먼 곳)이라
-   ::before(밴드 하단 = 글자 바로 밑 1.62em)로 옮기는 것이 위치·레이아웃 양쪽에서 정답. */
+   ::before(밴드 하단 = 글자 바로 밑 1.62em)로 옮기는 것이 위치·레이아웃 양쪽에서 정답.
+   ※ 밑줄은 띠 **밖**에 그린다(VIEWER-R0 버그 6b) — 아래 「밑줄 자리」 규칙. */
 .word-token--saved .surface {
   opacity: 0.6;
 }
@@ -2925,28 +2955,24 @@ a.viewer-badge:hover {
 }
 
 /* ── 단어 상태 하이라이트 (링큐식 B안 — 오너 확정 2026-08-27, 목업 아티팩트 합의) ──
-   신규(파랑 진)·만난 말(파랑 연)·학습 중(노랑)·복습(주황, 기존 펄스 유지)·앎(무표시).
+   신규(파란 밑줄 — AD-R2)·만난 말(= 신규, R0 버그 11)·학습 중(노랑 띠)·복습(주황 띠, 기존 펄스
+   유지)·앎(무표시). 면 칠은 학습 중·복습에만 쓴다(VIEWER-V2-ROUNDS-001 §5 — 오너 확정, 08-27 B안
+   수정): 처음 여는 자료는 대부분 새 단어라 파란 칠이 화면을 덮었다.
    .reader-area--hl가 붙을 때만 발동(툴바 🖍 토글 — 옵트인 기본 꺼짐). 색은 테마별
    변수(--picked-bg 선례). :not(--picked) 가드 — 문장/단어 지정 배경이 항상 이긴다. */
 .reader-area--light,
 .reader-area--sepia {
-  --ws-new: rgba(37, 99, 235, 0.15);
-  --ws-met: rgba(37, 99, 235, 0.07);
   --ws-learn: rgba(212, 160, 8, 0.18);
   --ws-due: rgba(212, 150, 42, 0.26);
 }
 .reader-area--dark {
-  --ws-new: rgba(110, 160, 246, 0.22);
-  --ws-met: rgba(110, 160, 246, 0.10);
   --ws-learn: rgba(227, 185, 60, 0.20);
   --ws-due: rgba(232, 169, 79, 0.30);
 }
-.reader-area--hl .word-token--new:not(.word-token--picked) .surface::before {
-  background: var(--ws-new);
-}
-.reader-area--hl .word-token--met:not(.word-token--picked) .surface::before {
-  background: var(--ws-met);
-}
+/* 「만난 말」은 새 단어와 같은 표시다(VIEWER-R0 버그 11 — 오너 확정 2026-10-07). 따로 둔
+   옅은 파랑(알파 0.07)은 바탕 대비 1.10:1(종이)·1.18:1(어둡게)로 사실상 안 보였다.
+   클래스(word-token--met)와 만남 기록은 그대로 두고 표시만 합친다. 별도 색 토큰 부활 금지.
+   새 단어의 밑줄은 아래 「밑줄 자리」 블록에 있다(AD-R2 — 상태 규칙보다 뒤여야 이긴다). */
 /* 학습 중: 밑줄+흐림 대신 배경 — 흐림(0.6)을 풀어야 노랑이 탁해지지 않는다(목업 B). */
 .reader-area--hl .word-token--saved:not(.word-token--picked) .surface { opacity: 1; }
 .reader-area--hl .word-token--saved:not(.word-token--picked) .surface::before {
@@ -2966,7 +2992,8 @@ a.viewer-badge:hover {
 
 /* 지정(단어·문장·범위 = --picked) 중에도 상태 정보 유지(오너 지적 2026-08-27) —
    T1 혼색(킨들 겹침 문법, 오너 확정 2026-08-29): 밑줄 강등 대신 그 단어 밴드의 색을
-   지정색×상태색 혼색으로 만든다. 상태가 끝까지 '배경'이라는 한 언어로 살아, 지정
+   지정색×상태색 혼색으로 만든다(면 칠 상태인 학습 중·복습만 — 새 단어는 AD-R2부터 밑줄이라
+   혼색 없이 중립 지정 띠 위에 같은 밑줄이 남는다). 상태가 끝까지 '배경'이라는 한 언어로 살아, 지정
    전이에서 형태·범위가 불변이고 색만 넘어간다. 혼합 비율은 시연 확정값(연한 met일수록
    높게). 혼색도 불투명 등가(--picked-bg 기반 color-mix)라 #1013 원칙이 유지된다.
    picked+due는 기본 규칙의 주황 밑줄+펄스가 혼색 위에 그대로 남는다(:not 가드가
@@ -2974,19 +3001,11 @@ a.viewer-badge:hover {
 .reader-area--light,
 .reader-area--sepia {
   --ws-new-ln: #2563eb;
-  --ws-met-ln: #85ace8;
   --ws-learn-ln: #c99700;
 }
 .reader-area--dark {
   --ws-new-ln: #6ea0f6;
-  --ws-met-ln: #55719e;
   --ws-learn-ln: #e3b93c;
-}
-.reader-area--hl .word-token--picked.word-token--new .surface::before {
-  background: color-mix(in srgb, var(--ws-new-ln) 26%, var(--picked-bg, var(--primary-glow)));
-}
-.reader-area--hl .word-token--picked.word-token--met .surface::before {
-  background: color-mix(in srgb, var(--ws-met-ln) 30%, var(--picked-bg, var(--primary-glow)));
 }
 .reader-area--hl .word-token--picked.word-token--saved .surface { opacity: 1; }
 .reader-area--hl .word-token--picked.word-token--saved .surface::before {
@@ -2995,6 +3014,39 @@ a.viewer-badge:hover {
 }
 .reader-area--hl .word-token--picked.word-token--due .surface::before {
   background: color-mix(in srgb, var(--warning) 32%, var(--picked-bg, var(--primary-glow)));
+}
+
+/* 밑줄 자리(VIEWER-R0 버그 6b — 「A + 테두리 여백」 오너 확정 2026-10-07).
+   전역 border-box라 2px 밑줄이 띠 **안쪽**(1.62em − 2px)에 그려져 글자 아래 획과 2~3px
+   겹쳤다(08-29 설계는 글자 바로 밑을 의도). content-box로 띠 높이(면 칠)는 그대로 두고
+   밑줄을 띠 아래 --hl-mark-gap 뒤로 내린다. 문형 밑줄이 그 첫 칸을 쓰면 한 칸 더 내린다.
+   background-clip: content-box — 상태 규칙의 background 단축 속성이 clip을 border-box로
+   되돌리면 면 칠이 투명 밑줄·여백까지 번진다(학습 중·복습 칠 높이 +4px). 특이도
+   (0,4,1)·파일 순서로 위 상태·혼색 규칙(최대 0,4,1)을 이긴다 — 이 블록을 위로 옮기지 말 것. */
+:is(.reader-area, .reader-settings__preview) .word-token:is(.word-token--saved, .word-token--due) .surface::before {
+  box-sizing: content-box;
+  padding-bottom: var(--hl-mark-gap);
+  background-clip: content-box;
+}
+:is(.reader-area, .reader-settings__preview) .word-token--pattern:is(.word-token--saved, .word-token--due) .surface::before {
+  padding-bottom: calc(var(--hl-mark-gap) * 2 + 1.5px);
+}
+/* 새 단어·만난 말 = 얇은 파란 밑줄(AD-R2 — VIEWER-V2-ROUNDS-001 §5 오너 확정, 08-27 B안 수정).
+   자리는 위 규칙과 같다(좌표 신설 0): 띠 아래 --hl-mark-gap, 문형 밑줄이 있으면 둘째 칸. 1.5px =
+   저장 밑줄(2px)보다 얇고 문형 밑줄(회색 1.5px)과 같은 두께·다른 색. 상태색(--hl)이 켜졌을 때만이고
+   :not(picked) 가드가 없다 — 지정 중에도 중립 지정 띠 위에 밑줄이 남는다(혼색 없음). background를
+   쓰지 않는다: 지정 띠(--picked-bg)를 지우면 안 된다. 미리보기(.reader-settings__preview)도
+   reader-area--hl 클래스를 받으므로 같은 규칙을 탄다. 특이도 (0,5,1) — 이 블록을 위로 옮기지 말 것.
+   선택(data-selected — 단어창 열림)은 제외: 파란 밑줄 + 파란 선택 테두리 아랫선이 2px 간격으로 붙어
+   이중 밑줄로 읽혔다(검수 2026-10-07). 상태는 단어창이, 자리는 테두리가 보여 준다. 지정은 유지. */
+.reader-area--hl .word-token:is(.word-token--new, .word-token--met):not([data-selected="true"]) .surface::before {
+  box-sizing: content-box;
+  padding-bottom: var(--hl-mark-gap);
+  background-clip: content-box;
+  border-bottom: 1.5px solid var(--ws-new-ln);
+}
+.reader-area--hl .word-token--pattern:is(.word-token--new, .word-token--met):not([data-selected="true"]) .surface::before {
+  padding-bottom: calc(var(--hl-mark-gap) * 2 + 1.5px);
 }
 
 /* failed 토큰 전용 빈 furigana 영역 */

@@ -21,7 +21,7 @@
 .book-reading-content .example+.example{border-color:#e8dade}
 .book-reading-content .book-example-save{margin-top:10px}
 .book-reading-content .book-example-save p{font-size:11px;line-height:1.7}
-.book-reading-content .book-example-save button{font-size:11px;border:0;padding:7px 0;background:transparent;color:var(--mauve);min-height:36px;text-align:left;white-space:normal}
+.book-reading-content .book-example-save button{font-size:11px;border:0;padding:7px 0;background:transparent;color:var(--mauve);min-height:44px;text-align:left;white-space:normal}
 .book-reading-content .scene,.book-reading-content .dialogue{background:#faf4f4;border:1px solid #dfc8ce;border-left:4px solid var(--mauve);border-radius:6px;padding:22px 25px}
 .book-reading-content .words{border:1px solid var(--line);border-radius:6px;padding:13px 22px;background:#fffdfb}
 .book-reading-content .words>div+div{border-top:1px solid var(--line)}
@@ -35,6 +35,15 @@
 .book-reading-content .answers summary{color:var(--mauve);padding:12px 16px;min-height:44px;cursor:pointer}
 .book-reading-content .answers>.answer{margin:0;padding:18px;border-top:1px solid var(--line);border-bottom:0;min-width:0}
 .book-reading-content .answers>.answer>small{display:block;line-height:1.9;margin-top:8px}
+/* 해설 이유 글: 원고의 12px·--muted(#796d70)는 해설 바탕 #f6efef 위 4.37:1로 AA 미달 — 14px·--ink로 올리고 위계는 크기로 둔다. */
+.book-reading-content .answers>.answer>:is(small,.small){font-size:14px;color:var(--ink)}
+.book-reading-content .answers>.answer>h3:first-child{margin-top:0}
+/* 원고 .answer>p 18px는 짧은 정답 줄용 — 이어지는 긴 이유 문단이 오답 목록보다 커지지 않게 한다. */
+.book-reading-content .answers>.answer>h3+p~p,.book-reading-content .review-answers>.answer>p{font-size:15px;line-height:1.95}
+.book-reading-content .review-answers>.answer>p:has(>strong){font-size:16px}
+.book-reading-content .review-answers>.answer>ul{font-size:15px;line-height:1.9;padding-left:1.1em}
+/* 찾아보기 "예시와 설명" 접힘 — .answers 규칙 밖이라 브라우저 기본 높이였다. display는 바꾸지 않아 펼침 표식을 유지한다. */
+.book-reading-content .grammar-recall>details>summary{min-height:44px;padding-block:10px;cursor:pointer;color:var(--mauve)}
 .book-reading-content .answers>:not(summary,.answer){margin:16px 18px}
 .book-reading-content .answers .examples{margin-top:14px}
 .book-reading-content .is-duplicate-stage{display:none}
@@ -62,7 +71,7 @@
 @container manabi-reader (max-width:550px){
 .book-reading-content .paper{padding:34px 0 18px}.book-reading-content h2{font-size:24px}.book-reading-content .pattern{padding:0;margin:24px 0 34px}.book-reading-content .pattern h3{font-size:21px}.book-reading-content .examples{padding:16px 17px 9px}.book-reading-content .example>[lang=ja]{font-size:22px}.book-reading-content .scene,.book-reading-content .dialogue{padding:18px}.book-reading-content .words{padding:10px 15px}.book-reading-content .words [lang=ja]{font-size:21px}.book-reading-content .words>div{gap:12px}.book-reading-content .explanation{font-size:15px}.book-reading-content .turn{padding:13px 0}}
 
-.book-reading-content .manabi-example-signin{font-size:11px;display:inline-flex;align-items:center;min-height:36px;color:#994a5a;padding:7px 0}
+.book-reading-content .manabi-example-signin{font-size:11px;display:inline-flex;align-items:center;min-height:44px;color:#994a5a;padding:7px 0}
 
 /* Cover page, exercise and reference anchors alike, including wrapped toolbars. */
 .book-reader .book-reading-content [id]{scroll-margin-top:var(--book-scroll-offset)}

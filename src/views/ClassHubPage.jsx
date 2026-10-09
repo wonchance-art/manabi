@@ -26,6 +26,7 @@ import { ClassroomShell,ClassroomState,ClassCover } from '../components/classroo
 import ClassroomJoin from '../components/classroom/ClassroomJoin';
 import { saveClassroomMetadata } from '../lib/classroomModel';
 import { hashPassword, makeSalt, validatePassword } from '../lib/classPassword';
+import { courseOptions } from '../lib/classCourse';
 
 const LANG_OPTIONS = ['Japanese', 'Chinese', 'English', 'French'];
 
@@ -75,7 +76,7 @@ export default function ClassHubPage() {
   const bookByKey = useMemo(() => new Map(books.map((b) => [b.key, b])), [books]);
 
   const [creating, setCreating] = useState(false);
-  const [draft, setDraft] = useState({ key: '', name: '', lang: 'Japanese', bookKey: '', bookTotal: '', password: '' });
+  const [draft, setDraft] = useState({ key: '', name: '', lang: 'Japanese', bookKey: '', bookTotal: '', course: '', password: '' });
   const [busy, setBusy] = useState(false);
   const [revealed, setRevealed] = useState(null); // { key, name, password } — 생성·변경 직후 한 번만
   const [editing, setEditing] = useState(null);   // 설정 중인 팀(루트 자료)
@@ -100,7 +101,7 @@ export default function ClassHubPage() {
       const pwHash = await hashPassword(draft.password, pwSalt);
       const row = buildTeamRootRow({
         key, name: draft.name, lang: draft.lang, bookKey: draft.bookKey || null,
-        bookTotal: draft.bookTotal ? Number(draft.bookTotal) : null, pwHash, pwSalt, ownerId: user.id,
+        bookTotal: draft.bookTotal ? Number(draft.bookTotal) : null, course: draft.course || null, pwHash, pwSalt, ownerId: user.id,
       });
       const existing = await supabase.from('reading_materials').select('id, processed_json').eq('owner_id',user.id).eq('processed_json->metadata->team->>key',key).eq('processed_json->metadata->team->>root','true').maybeSingle();
       if(existing.error) throw existing.error;
@@ -108,7 +109,7 @@ export default function ClassHubPage() {
       if(existingTeam && await hashPassword(draft.password,existingTeam.pwSalt)!==existingTeam.pwHash) { refresh(); throw new Error('이전 요청으로 이미 만들어진 수업이에요. 목록에서 공유 암호를 변경해 주세요.'); }
       if(!existing.data){const {error}=await supabase.from('reading_materials').insert(row);if(error)throw error;}
       setRevealed({ key, name: existingTeam?.name || row.processed_json.metadata.team.name, password: draft.password });
-      setDraft({ key: '', name: '', lang: 'Japanese', bookKey: '', bookTotal: '', password: '' });
+      setDraft({ key: '', name: '', lang: 'Japanese', bookKey: '', bookTotal: '', course: '', password: '' });
       setCreating(false);
       refresh();
     } catch (err) {
@@ -120,7 +121,7 @@ export default function ClassHubPage() {
 
   function openEdit(team) {
     setEditing(team);
-    setEditDraft({ name: team.name, lang: team.lang, bookKey: team.bookKey || '', bookTotal: team.bookTotal ? String(team.bookTotal) : '' });
+    setEditDraft({ name: team.name, lang: team.lang, bookKey: team.bookKey || '', bookTotal: team.bookTotal ? String(team.bookTotal) : '', course: team.course || '' });
   }
 
   async function handleEditSave(e) {
@@ -133,6 +134,7 @@ export default function ClassHubPage() {
         lang: editDraft.lang,
         bookKey: editDraft.bookKey || null,
         bookTotal: editDraft.bookTotal ? Number(editDraft.bookTotal) : null,
+        course: editDraft.course || null,
       });
       await saveClassroomMetadata(supabase,editing.material,next.metadata);
       toast('설정을 저장했어요.', 'success');
@@ -211,6 +213,19 @@ export default function ClassHubPage() {
           </div>
           <div className="form-row">
             <div className="form-field">
+              <label className="form-label" htmlFor="team-key">링크 주소 (/class/…)</label>
+              <input id="team-key" className="form-input" value={draft.key} onChange={(e) => setDraft((d) => ({ ...d, key: e.target.value.trim().toLowerCase() }))} placeholder="예: culcom" maxLength={16} autoComplete="off" spellCheck={false} />
+            </div>
+            <div className="form-field">
+              <label className="form-label" htmlFor="team-course">수업 코스 (선택)</label>
+              <select id="team-course" className="form-input" value={draft.course} onChange={(e) => setDraft((d) => ({ ...d, course: e.target.value }))}>
+                <option value="">코스 없음</option>
+                {courseOptions().map((c) => <option key={c.key} value={c.key}>{c.title}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="form-row">
+            <div className="form-field">
               <label className="form-label" htmlFor="team-total">교재 전체 과 수 (선택)</label>
               <input id="team-total" className="form-input" type="number" min={1} value={draft.bookTotal} onChange={(e) => setDraft((d) => ({ ...d, bookTotal: e.target.value }))} placeholder="41" />
             </div>
@@ -268,6 +283,13 @@ export default function ClassHubPage() {
                         <label className="form-label">교재 총 과 수</label>
                         <input className="form-input" type="number" min={1} value={editDraft.bookTotal} onChange={(e) => setEditDraft((d) => ({ ...d, bookTotal: e.target.value }))} />
                       </div>
+                    </div>
+                    <div className="form-field">
+                      <label className="form-label">수업 코스</label>
+                      <select className="form-input" value={editDraft.course} onChange={(e) => setEditDraft((d) => ({ ...d, course: e.target.value }))}>
+                        <option value="">코스 없음</option>
+                        {courseOptions().map((c) => <option key={c.key} value={c.key}>{c.title}</option>)}
+                      </select>
                     </div>
                     <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>팀 키(<code>{t.key}</code>)는 링크 주소라 바꿀 수 없어요.</p>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>

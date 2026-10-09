@@ -12,6 +12,8 @@ import { logReviewEvents } from '../lib/reviewEvents';
 import { harvestWritingGaps, gapKey } from '../lib/writingGaps';
 import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { recordActivity } from '../lib/streak';
+// 첨삭 태그·추천 챕터 링크는 옛 교재 주소일 수 있다(저장된 이력 포함) — 보관함으로만 열리므로 링크를 내지 않는다(VIEWER-R0-BUGS-001 버그 3).
+import { learnerHref } from '../lib/bookNavigation';
 
 const LANGS = [
   { key: 'Japanese', label: '일본어' },
@@ -500,8 +502,8 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
                       {Array.isArray(h.errors) && h.errors.length > 0 && (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
                           {h.errors.map((e, i) => (
-                            e.href
-                              ? <Link key={i} href={e.href} className="chip" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>{e.tag} →</Link>
+                            learnerHref(e.href)
+                              ? <Link key={i} href={learnerHref(e.href)} className="chip" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>{e.tag} →</Link>
                               : <span key={i} className="chip" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>{e.tag}</span>
                           ))}
                         </div>
@@ -562,8 +564,8 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
                     <span lang={lc} style={{ color: 'var(--danger)', textDecoration: 'line-through' }}>{e.part}</span>
                     {' → '}
                     <strong lang={lc} style={{ color: 'var(--accent-text)' }}>{e.fix}</strong>
-                    {e.href ? (
-                      <Link href={e.href} className="chip" style={{ marginLeft: 8, fontSize: '0.72rem', padding: '2px 8px' }} title="관련 챕터 열기">
+                    {learnerHref(e.href) ? (
+                      <Link href={learnerHref(e.href)} className="chip" style={{ marginLeft: 8, fontSize: '0.72rem', padding: '2px 8px' }} title="관련 챕터 열기">
                         {e.tag} →
                       </Link>
                     ) : (
@@ -592,8 +594,8 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
               <Button onClick={startRevision} style={{ flex: 1.4 }}>고쳐서 다시 쓰기</Button>
             )}
             <Button variant="secondary" onClick={reset} style={{ flex: 1 }}>새 작문 쓰기</Button>
-            {selectedChapter && tab === 'chapter' && (
-              <Link href={selectedChapter.href} className="btn btn--ghost btn--md" style={{ flex: 1, textAlign: 'center' }}>
+            {learnerHref(selectedChapter?.href) && tab === 'chapter' && (
+              <Link href={learnerHref(selectedChapter.href)} className="btn btn--ghost btn--md" style={{ flex: 1, textAlign: 'center' }}>
                 챕터 다시 보기 →
               </Link>
             )}

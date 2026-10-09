@@ -220,9 +220,18 @@ describe('배선 — 기본 꺼짐, 켜야 로드', () => {
     expect(card).toContain("visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''");
     // 단정하는 면 칠이 아니라 가는 밑줄 — 톤이 CSS에도 남아야 한다
     const css = read('src/index.css');
-    const rule = sliceBetween(css, '.word-token--pattern .surface::after {', '}');
+    const rule = sliceBetween(css, '.pattern-mark {', '}');
     expect(rule).toContain('height: 1.5px;');
     expect(rule).toContain('background: var(--pattern-line);');
+    // VIEWER-R0 버그 1: 밑줄은 전용 요소(.pattern-mark, .surface 안)다. .surface::after는 지정
+    // 이음매(.word-token--picked:has(+ .word-token--picked) .surface::after) 자리라, 같은 의사
+    // 요소를 쓰면 그 문장을 고르는 순간 이음매가 특이도로 이겨 밑줄이 사라진다.
+    expect(css).not.toMatch(/\.word-token--pattern[^{,]*::after/);
+    expect(css.match(/background: var\(--pattern-line\)/g)).toHaveLength(1); // 그리는 곳은 .pattern-mark 하나
+    expect(css).toContain('.word-token--picked:has(+ .word-token--picked) .surface::after {');
+    expect(card).toContain(`const patternMark = visibleScan?.byToken.has(tokenId) ? <span className="pattern-mark" aria-hidden="true" /> : null;`);
+    expect(card).toContain('<span className="surface">{token.text}{patternMark}</span>');
+    expect(card).toMatch(/: <span key=\{i\}>\{seg\.plain\}<\/span>\s*\)\}\{patternMark\}\s*<\/span>/);
   });
 
   it('카드는 단어 카드 안에 얹는다 — 새 상호작용을 만들면 단어 탭과 경합한다', () => {

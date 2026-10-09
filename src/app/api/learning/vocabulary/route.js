@@ -1,6 +1,6 @@
 import { requireUser } from '@/lib/supabaseServer';
 import { resolveSave, reply, errorReply, checkDb, fail, readBody, accessibleMaterial } from '@/lib/server/learningContext';
-import { UUID, sourceHref } from '@/lib/learningSources';
+import { UUID, sourceArchived, sourceHref } from '@/lib/learningSources';
 import { requireLearningCapability } from '@/lib/server/learningCapabilities';
 import { gradeToInitialStats } from '@/lib/vocabIO';
 import { fsrsServiceClient, fsrsError } from '@/lib/server/fsrsLearning';
@@ -118,7 +118,8 @@ export async function GET(request) {
       .select('id,kind,lang,chapter_slug,material_id,pdf_id,locator,quote,translation,created_at')
       .eq('user_id', auth.user.id).eq('vocabulary_id', id).order('created_at', { ascending: true }).limit(50);
     checkDb(error);
-    return reply({ contexts: (data || []).map(source => ({ ...source, href: sourceHref(source) })).filter(source => source.href) });
+    // 보관된 옛 교재 문맥은 링크 없이 문장과 보관 표시로 남긴다(행은 읽기만 — VIEWER-R0-BUGS-001 버그 3).
+    return reply({ contexts: (data || []).map(source => ({ ...source, href: sourceHref(source), ...(sourceArchived(source) ? { archived: true } : {}) })).filter(source => source.href || source.archived) });
   } catch (error) { return vocabularyErrorReply(error); }
 }
 

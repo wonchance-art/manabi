@@ -45,4 +45,4 @@ export function classroomSaveLabel({error, online, queue, loading}) {
   if (loading) return '수업 기록 확인 중…';
   return '서버 저장 확인됨';
 }
-export const isClassComposing = (event, composing) => !!(composing || event?.isComposing || event?.nativeEvent?.isComposing || event?.keyCode === 229 || event?.nativeEvent?.keyCode === 229);
+export { isImeComposing as isClassComposing } from './imeComposing';

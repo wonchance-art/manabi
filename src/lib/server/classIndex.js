@@ -59,7 +59,7 @@ export function indexFromRows({ team, chapterRows = [], noteRows = [] }) {
     .sort((a, b) => (a.day < b.day ? 1 : a.day > b.day ? -1 : 0));
   const bookTitle = chapterRows.map((r) => getBook(r.processed_json?.metadata)?.title).find(Boolean) || null;
   return {
-    team: { key: team.key, name: team.name, lang: team.lang, bookKey: team.bookKey, bookTitle, bookTotal: team.bookTotal, chapterId: team.chapterId },
+    team: { key: team.key, name: team.name, lang: team.lang, bookKey: team.bookKey, bookTitle, bookTotal: team.bookTotal, chapterId: team.chapterId, ...(team.course ? { course: team.course } : {}), ...(team.schedule ? { schedule: team.schedule } : {}) },
     chapters,
     notes,
   };

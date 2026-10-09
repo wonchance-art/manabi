@@ -10,14 +10,18 @@
  * 톤은 **후보**다. 1단 표지어 스캔이라 是…的와 단순 是를 구별하지 못한다 — "이 문장은
  * 이 문형이다"가 아니라 "이 표지가 쓰이는 문형은 이런 것들"이라고 말한다.
  */
-import { useMemo } from 'react';
+import { useContext, useMemo } from 'react';
 import Link from 'next/link';
 import { orderPatternsByMark } from '../lib/patternIndex';
+import { ARCHIVED_TEXTBOOK_NOTICE } from '../lib/bookNavigation';
+import { ViewerUiLocaleContext } from '../lib/viewerLocaleContext';
+import { translateViewerText } from '../lib/viewerMessages';
 
 /** 한 표지가 여러 문형에 걸릴 때 몇 개까지 펼칠지 — 把는 14개다. 나머지는 수로만. */
 export const PATTERN_CARD_MAX = 3;
 
 export default function PatternCard({ hit, dueSlugs, weakSlugs }) {
+  const uiLocale = useContext(ViewerUiLocaleContext);
   // 표식이 붙은 문형이 앞으로 온다(v2-G R2) — 잘리는 자리가 3개뿐이라 순서가 곧 노출이다.
   // 두 축을 합쳐서 민다: '전체'로 보는 중에도 지금 봐야 할 것이 잘려 나가면 안 된다.
   const marked = useMemo(() => {
@@ -60,6 +64,9 @@ export default function PatternCard({ hit, dueSlugs, weakSlugs }) {
           {/* 챕터 링크가 이 카드의 존재 이유 — 본문에서 만난 문법을 배운 자리로 되돌린다.
               정본에 없는 slug는 인덱스가 이미 링크를 지웠으므로 죽은 화살표가 남지 않는다. */}
           {p.href && <Link className="pattern-card__go" href={p.href}>챕터로 →</Link>}
+          {/* 옛 교재 챕터는 관리자 보관함으로 옮겨져 학습자가 열 수 없다 — 홈으로 튕기는 링크 대신
+              이유를 말한다(VIEWER-R0-BUGS-001 버그 3). 새 책 위치 대응이 확정되면 href가 다시 채워진다. */}
+          {!p.href && p.ch && <div className="pattern-card__more pattern-card__archived">{translateViewerText(uiLocale, ARCHIVED_TEXTBOOK_NOTICE)}</div>}
         </div>
       ))}
 

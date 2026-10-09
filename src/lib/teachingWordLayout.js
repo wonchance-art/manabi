@@ -1,7 +1,10 @@
 import {splitRuby} from './splitRuby';
-import {listHanjaHunEum} from './hanjaKo';
+import {hanjaReadingsOf} from './hanjaKo';
 import ko from './data/hanjaKo.json';
 import hun from './data/hanjaHun.json';
+// 중국어 훈음은 정체 꼴로 찾는다(R0+ — 技术 → 재주 술). 판서 카드는 훈음 글자를 캔버스에
+// 저장하므로 표가 동기로 있어야 한다(지연 로드 중 간체 동형 훈음이 저장되면 남는다).
+import trad from './data/hanjaTrad.json';
 
 export const annotatedLanguage = language => ['Chinese','Japanese'].includes(language);
 const han = /\p{Script=Han}/u;
@@ -14,6 +17,8 @@ export function wordSegments(text, reading, language) {
       (language==='Chinese' && !parts.every(part=>part.pinyin))) return [{kanji:text,reading}];
   return parts;
 }
+// Code-point offset of each segment, so lower labels follow the character position.
+const withStarts=segments=>{let start=0;return segments.map(segment=>{const out={...segment,start};start+=[...(segment.kanji||segment.plain||'')].length;return out;});};
 const units = text => [...text].reduce((n,ch)=>n+(/[\u0020-\u007e]/.test(ch)?(/[il .,'!]/.test(ch)?.3:.6):1),0);
 export const measureWordText = (text,size) => units(text)*size;
 function wrap(text, width, size, measure) {
@@ -31,19 +36,23 @@ function wrap(text, width, size, measure) {
 export function teachingWordLayout(value, {fontSize=42,maxWidth=620,measure=measureWordText,compact=false}={}) {
   const {text='',reading='',meaning='',language}=value, cjk=annotatedLanguage(language);
   const size=fontSize, readSize=language==='Japanese'?size*.5:Math.max(12,size*.34), hunSize=Math.max(12,size*.28), meaningSize=Math.max(18,size*.55);
-  const labels=new Map(((cjk?listHanjaHunEum(text,ko,hun):[]) || []).map(v=>[v.ch,v.label]));
+  // Labels by character position: one word can read the same glyph differently only through its traditional form.
+  const labels=cjk?hanjaReadingsOf(text,{koTable:ko,hunTable:hun,tradTable:language==='Chinese'?trad:null}).map(v=>v.label):[];
+  const textChars=[...text],byChar=new Map();labels.forEach((label,i)=>{if(label&&!byChar.has(textChars[i]))byChar.set(textChars[i],label);});
+  // If ruby segments ever drift from the text, fall back to the first label of that glyph.
+  const labelAt=(i,ch)=>(textChars[i]===ch?labels[i]:byChar.get(ch))||null;
   const showReading=cjk&&value.showReading!==false, showHun=cjk&&value.showHun!==false, showMeaning=value.showMeaning!==false;
   let readBand=cjk&&reading&&(!compact||showReading)?readSize*1.35+3:0;
-  const hunBand=labels.size&&(!compact||showHun)?hunSize*2.5:0;
+  const hunBand=labels.some(Boolean)&&(!compact||showHun)?hunSize*2.5:0;
   let rowHeight=readBand+size*1.25+hunBand;
   const gap=size*.4;
   let maxLeft=Math.max(size*1.8,(maxWidth-gap)*.51);
   const parts=[];let x=0,y=0,index=0,readingIndex=0,leftWidth=0;
   const add=(role,text,x,y,width,fontSize,extra={})=>parts.push({role,text,x,y,width,height:fontSize*1.25,fontSize,...extra});
-  let groups=wordSegments(text,reading,language);
+  let groups=withStarts(wordSegments(text,reading,language));
   const segmentSize=segment=>{
     const chars=[...(segment.kanji||segment.plain||'')];
-    const widths=chars.map(ch=>Math.max(measure(ch,size),labels.has(ch)?Math.min(measure(labels.get(ch),hunSize),hunSize*4.5):0));
+    const widths=chars.map((ch,i)=>Math.max(measure(ch,size),labelAt(segment.start+i,ch)?Math.min(measure(labelAt(segment.start+i,ch),hunSize),hunSize*4.5):0));
     return {chars,widths,total:Math.max(widths.reduce((a,b)=>a+b,0),segment.reading?measure(segment.reading,readSize):0)};
   };
   // Short words stay together when the meaning still has a readable right column.
@@ -55,11 +64,11 @@ export function teachingWordLayout(value, {fontSize=42,maxWidth=620,measure=meas
     const lines=wrap(reading,maxLeft,readSize,measure);
     leftWidth=Math.max(0,...lines.map(line=>measure(line,readSize)));
     if(!compact||showReading){lines.forEach((line,i)=>add('reading',line,0,i*readSize*1.25,maxLeft,readSize,{index:i,visible:showReading,align:'left'}));y=lines.length*readSize*1.25+4;}
-    groups=[...text].map(plain=>({plain}));readBand=0;rowHeight=size*1.25+hunBand;
+    groups=[...text].map((plain,start)=>({plain,start}));readBand=0;rowHeight=size*1.25+hunBand;
   }
   const lineStarts=new Set();
   if(cjk){
-    groups=groups.flatMap(segment=>segment.reading?[segment]:[...(segment.kanji||segment.plain||'')].map(plain=>({plain})));
+    groups=groups.flatMap(segment=>segment.reading?[segment]:[...(segment.kanji||segment.plain||'')].map((plain,j)=>({plain,start:segment.start+j})));
     const widths=groups.map(segment=>segmentSize(segment).total);
     const rows=[{indices:[],width:0}];
     widths.forEach((width,index)=>{if(rows.at(-1).indices.length&&rows.at(-1).width+width>maxLeft)rows.push({indices:[],width:0});rows.at(-1).indices.push(index);rows.at(-1).width+=width;});
@@ -85,7 +94,7 @@ export function teachingWordLayout(value, {fontSize=42,maxWidth=620,measure=meas
       const ch=chars[i],w=widths[i]+extra;
       if(!segment.reading&&x&&x+w>maxLeft){leftWidth=Math.max(leftWidth,x);x=0;y+=rowHeight+size*.28;}
       add('text',ch,x,y+readBand,w,size,{index:index++,align:'center'});
-      const label=labels.get(ch);
+      const label=labelAt(segment.start+i,ch);
       if(label&&han.test(ch)){
         const separator=label.lastIndexOf(' ');
         const lines=measure(label,hunSize)>w&&separator>0?[label.slice(0,separator),label.slice(separator+1)]:wrap(label,w,hunSize,measure);

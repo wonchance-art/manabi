@@ -107,8 +107,10 @@ export default function ListenControls({ text, language = 'Japanese', stopSignal
   return (
     <div className="listen-controls">
       {!playing ? (
-        <button className="btn btn--ghost btn--sm" onClick={play} title={label('본문 전체 듣기')} aria-label={compact?label('본문 전체 듣기'):undefined} data-icon-action={compact||undefined}>
-          {compact?<ActionIcon name="audio"/>:'▷ 듣기'}
+        // 뷰어 툴바(compact)도 보이는 라벨을 단다(AD-R2 §5) — 접근 이름 「본문 전체 듣기」 안에 보이는 「듣기」가 든다.
+        // 재생 중 컨트롤(▶/⏸/⏹)은 지금처럼 아이콘만이다(설계 §9.2 — 라벨은 정지 상태 버튼에만).
+        <button className={compact?'btn btn--ghost btn--sm viewer-tool':'btn btn--ghost btn--sm'} onClick={play} title={label('본문 전체 듣기')} aria-label={compact?label('본문 전체 듣기'):undefined}>
+          {compact?<><ActionIcon name="audio"/><span>{label('듣기')}</span></>:'▷ 듣기'}
         </button>
       ) : (
         <div className="listen-controls__panel">

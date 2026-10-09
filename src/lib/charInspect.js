@@ -5,7 +5,7 @@
 // 증강 R1~R3(오너 승인 2026-08-28): 자원 블록(charEtym — hanjaEtym.json: 획수·부수·
 // 1단 분해·간번체)과 자료 재등장 스캔(materialWordsWithChar — 신규 데이터 0)을 더한다.
 
-import { hanjaHunEum } from './hanjaKo';
+import { hanjaHunEum, hanjaReadingsOf } from './hanjaKo';
 
 const HAN_RE = /\p{Script=Han}/u;
 
@@ -18,14 +18,28 @@ export function isInspectableChar(ch) {
 /**
  * 글자 하나의 정보 — { hunEum, eum, ja }. 훈음('굳셀 강')이 있으면 그것이 대표,
  * 훈 미등재면 음만(eum), 일본식 자형은 상이할 때만(ja). 한자가 아니면 null.
+ * 훈·음은 단어창 훈음 줄과 같은 조회 함수(hanjaReadingsOf)로 찾는다(R0+).
+ * context = { word, index?, tradTable } — 중국어 표제어 글자를 눌렀을 때만 넘긴다.
+ * 그러면 단어를 정체 꼴로 바꾼 그 자리 글자로 찾는다(技术의 术 → 術 '재주 술').
+ * index가 없거나 맞지 않으면 그 글자의 첫 자리. 정체 표가 아직 없으면 훈·음을 비워 둔다
+ * (간체 동형 글자의 엉뚱한 훈음을 잠깐이라도 보이지 않게 — 로딩 중 안전).
+ * context가 없으면(일본어·성분·자형 칩) 글자 그대로 찾는다.
  */
-export function charDetail(ch, tables = {}) {
+export function charDetail(ch, tables = {}, context = null) {
   if (!isInspectableChar(ch)) return null;
   const { koTable, hunTable, jaTable } = tables;
-  const hunEum = koTable && hunTable ? hanjaHunEum(ch, koTable, hunTable) : null;
-  const eum = !hunEum && koTable?.[ch] ? koTable[ch] : null;
   const jaForm = jaTable?.[ch];
   const ja = jaForm && jaForm !== ch ? jaForm : null;
+  const word = context?.word ? String(context.word) : '';
+  const chars = [...word];
+  let index = Number.isInteger(context?.index) && chars[context.index] === ch ? context.index : chars.indexOf(ch);
+  if (index < 0 || !word) index = -1;
+  if (index >= 0 && !context.tradTable) return { hunEum: null, eum: null, ja };
+  const reading = index >= 0
+    ? hanjaReadingsOf(word, { koTable, hunTable, tradTable: context.tradTable })[index]
+    : hanjaReadingsOf(ch, { koTable, hunTable })[0];
+  const hunEum = koTable && hunTable && reading.hun ? reading.label : null;
+  const eum = !hunEum && reading.eum ? reading.eum : null;
   return { hunEum, eum, ja };
 }
 
@@ -69,7 +83,9 @@ export function charEtym(ch, etymTable, { koTable, hunTable, jaTable } = {}) {
   const e = etymTable[ch];
   if (!e) return null;
   const [s, r, c, t, p, k] = [e[0] || 0, e[1] || '', e[2] || '', e[3] || '', e[4] || '', e[5] || ''];
-  const jaOfTrad = jaTable
+  // 보존 표식(jaTable[ch] === ch — 일본 표준 한자, generate-hanja-ja.mjs)이면 사슬을 잇지
+  // 않는다: 面의 번체 麵 → 麺은 面의 일본 자형이 아니다(일본은 面을 그대로 쓴다).
+  const jaOfTrad = jaTable && jaTable[ch] !== ch
     ? [...t].map((x) => jaTable[x]).find((f) => f && f !== ch) || null
     : null;
   return {

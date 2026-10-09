@@ -151,13 +151,16 @@ async function fixture({ ready = true, existing = false, holdCapabilities = fals
 }
 
 async function locale(page,field,value) {
-  const labels={ko:{settings:'읽기 설정',close:'읽기 설정 닫기',uiLocale:'화면 언어',explanationLocale:'설명 언어'},
-    'zh-CN':{settings:'阅读设置',close:'关闭阅读设置',uiLocale:'界面语言',explanationLocale:'讲解语言'},
-    'zh-TW':{settings:'閱讀設定',close:'關閉閱讀設定',uiLocale:'介面語言',explanationLocale:'解說語言'}};
-  const options={ko:'한국어','zh-CN':'中文（简体）','zh-TW':'繁體中文（台灣）'};
+  const labels={ko:{settings:'읽기 설정',close:'읽기 설정 닫기',uiLocale:'화면 언어',explanationLocale:'설명 언어',display:'학습 표시'},
+    'zh-CN':{settings:'阅读设置',close:'关闭阅读设置',uiLocale:'界面语言',explanationLocale:'讲解语言',display:'学习显示'},
+    'zh-TW':{settings:'閱讀設定',close:'關閉閱讀設定',uiLocale:'介面語言',explanationLocale:'解說語言',display:'學習顯示'}};
   let ui=await page.locator('.viewer-layout').getAttribute('data-ui-locale');
-  await page.getByRole('button',{name:labels[ui].settings,exact:true}).click();
-  await page.getByRole('group',{name:labels[ui][field],exact:true}).getByRole('button',{name:options[value],exact:true}).click();
+  await page.getByRole('button',{name:`Aa ${labels[ui].settings}`,exact:true}).click();
+  // AD-R2 Aa(정본 §5 Aa): 언어는 「표시」 탭 맨 아래 선택 상자다. 선택지 표기는 「한국어 · 简体中文 · 繁體中文」.
+  await page.getByRole('tab',{name:labels[ui].display,exact:true}).click();
+  const box=page.getByRole('combobox',{name:labels[ui][field],exact:true});
+  assert.deepEqual(await box.locator('option').allTextContents(),['한국어','简体中文','繁體中文']);
+  await box.selectOption(value);
   if(field==='uiLocale') ui=value;
   await page.getByRole('button',{name:labels[ui].close,exact:true}).click();
   await page.locator(`[data-${field==='uiLocale'?'ui-locale':'explanation-locale'}="${value}"]`).waitFor();

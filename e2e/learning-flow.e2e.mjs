@@ -765,6 +765,12 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
         JSON.stringify({ syn: [{ w: '汉语', r: 'hànyǔ', ko: '중국어(한어)' }], ant: [] }),
       );
     }, synonymKey);
+    // AE-R2 PR ②(설계서 docs/manabi-viewer-v2-ae-r2.md §4·§6.1): 카드가 열린 채 0.3초면 그 줄 번역을 선처리한다 —
+    // 줄 번역도 같은 viewer_tx 키로 사전 시드해 「Gemini 0회」 계약을 유지한다(선처리는 캐시를 읽고 끝난다).
+    const cardLineKey = await viewerCacheKey('viewer_tx', [session.user.id, '91001', 'Chinese', fixtures[0].raw_text, fixtures[0].processed_json], fixtures[0].raw_text.split('\n')[0]);
+    await page.evaluate((key) => {
+      localStorage.setItem(key, '**번역**\n오늘 우리는 중국어를 배웁니다.');
+    }, cardLineKey);
 
     // 뷰어 정돈 A안: 책 챕터 내비는 시리즈와 같은 경로 줄 내비(.viewer-series-nav)다 — 책 이름은
     // 툴팁에만(H1이 이미 「책 — 과」를 든다), 화면에는 위치만.
@@ -785,9 +791,11 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
     await assertVisible(sheet, 'word detail sheet');
     assert.equal(await leftTab.getAttribute('aria-selected'), 'false', 'a token tap keeps sentence detail closed');
     assert.equal(await rightTab.getAttribute('aria-selected'), 'true', 'a token tap opens the word tab');
-    await assertVisible(sheet.getByText('중국어', { exact: true }), 'selected word meaning');
-    await assertVisible(sheet.getByText('유의어·반의어',{exact:true}), 'related-word control is directly available in the word card');
-    await sheet.getByText('유의어·반의어',{exact:true}).click();
+    // AE-R1: 같은 뜻이 사전 뜻 목록(.reader-card-sense__meaning)에도 보이므로 뜻 줄로 좁힌다(VIEWER-V2-ROUNDS-001 §2.1).
+    await assertVisible(sheet.locator('.word-detail-card__meaning').getByText('중국어', { exact: true }), 'selected word meaning');
+    // AE-R1(VIEWER-V2-ROUNDS-001 §2.1 「더 알아보기 — 이미 만든 결과(캐시)가 있으면 버튼 대신 내용」, 설계서 §7.2):
+    // 펼침(details) 없이 시드한 캐시가 카드를 열 때 바로 칩으로 보인다 — 누를 것도, Gemini 호출도 없다.
+    await assertVisible(sheet.getByText('더 알아보기',{exact:true}), 'more-to-learn section is directly visible in the word card');
     await assertVisible(sheet.getByText('汉语', { exact: true }), 'preseeded synonym chip in the word card');
 
     const selectedText = '我们学习中文';
@@ -849,7 +857,7 @@ test('viewer: 토큰·문장 지정 시트 전환과 책 챕터 내비를 검증
     await wordToken.click();
     assert.equal(await leftTab.getAttribute('aria-selected'), 'false', 'a word tap leaves the sentence tab closed');
     assert.equal(await rightTab.getAttribute('aria-selected'), 'true', 'a word tap keeps the word tab open');
-    await assertVisible(sheet.getByText('중국어', { exact: true }), 'word detail replaces sentence word results');
+    await assertVisible(sheet.locator('.word-detail-card__meaning').getByText('중국어', { exact: true }), 'word detail replaces sentence word results');
 
     await sheet.getByRole('button', { name: '보조 패널 닫기', exact: true }).click();
     await bookNav.getByRole('link', { name: '다음 과', exact: true }).click();

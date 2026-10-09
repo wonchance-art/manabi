@@ -96,15 +96,16 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
   );
 
   // 이미 단어장에 있는 단어 표시 + 익힘(복습 2회 이상 통과) 집합
+  const userId = user?.id;
   useEffect(() => {
-    if (!user || allWords.length === 0) { setSavedSet(new Set()); setLearnedSet(new Set()); return; }
+    if (!userId || allWords.length === 0) { setSavedSet(new Set()); setLearnedSet(new Set()); return; }
     let cancel = false;
     (async () => {
       try {
         const keys = allWords.map(w => refMain(w));
         const [saved, learned] = await Promise.all([
-          fetchSavedWordSet(supabase, user.id, keys),
-          fetchLearnedWordSet(supabase, user.id, keys),
+          fetchSavedWordSet(supabase, userId, keys),
+          fetchLearnedWordSet(supabase, userId, keys),
         ]);
         if (!cancel) { setSavedSet(saved); setLearnedSet(learned); }
       } catch {
@@ -112,7 +113,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
       }
     })();
     return () => { cancel = true; };
-  }, [user?.id, allWords]);
+  }, [userId, allWords]);
 
   // 월드 만남 기록 로드 — 로컬 단독이라 게스트도 보인다. 알 수 없는 언어 코드는 빈 집합.
   useEffect(() => {

@@ -7,7 +7,8 @@ describe('local Japanese dictionary candidates',()=>{
   const table=viewerJapaneseGlyphTable(generated);
   expect(toJaForm('出神 表达 大家',table)).toBe('出神 表達 大家');
   expect(toJaForm('老师 图书馆',table)).toBe('老師 図書館');
-  expect(generated.出).toBe('齣');
+  // 생성 표가 원천에서 고쳐졌다(2026-10-07 KST — 일본 표준 한자 보존). 오버레이는 회귀 방어로 남는다.
+  expect(generated.出).toBeUndefined();
   expect(table).not.toBe(generated);
   expect(viewerJapaneseGlyphTable(null)).toBeNull();
  });
@@ -16,12 +17,12 @@ describe('local Japanese dictionary candidates',()=>{
   expect(japaneseReferenceForMeaning(entry,'아끼다',{form:'愛惜',pos:'동사'})).toBeNull();
  });
  it('keeps an explicitly different Japanese equivalent',()=>{
-  expect(japaneseReferenceForMeaning({meanings:[{meaning:'주최국',ja:{form:'ホスト国',diff:true}}]},'주최국',{form:'東道主'})).toEqual({form:'ホスト国',warn:null});
+  expect(japaneseReferenceForMeaning({meanings:[{meaning:'주최국',ja:{form:'ホスト国',diff:true}}]},'주최국',{form:'東道主'})).toEqual({form:'ホスト国',yomi:null,diff:true,warn:null});
  });
  it('rejects an explicit sense-level part-of-speech mismatch, without guessing missing metadata',()=>{
   const entry={meanings:[{meaning:'뜻',pos:'명사',ja:{form:'意味'}}]};
   expect(japaneseReferenceForMeaning(entry,'뜻',{pos:'대명사'})).toBeNull();
-  expect(japaneseReferenceForMeaning(entry,'뜻')).toEqual({form:'意味',warn:null});
+  expect(japaneseReferenceForMeaning(entry,'뜻')).toEqual({form:'意味',yomi:null,diff:false,warn:null});
  });
  it('accepts overlapping compound parts of speech and equivalent preposition labels',()=>{
   const entry={meanings:[{meaning:'일',pos:'동사·명사',ja:{form:'仕事'}}]};

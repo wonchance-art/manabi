@@ -23,17 +23,24 @@ export async function requireUser(request) {
   return { user };
 }
 
-// 로그인 + profiles.role==='admin'. 비로그인 401, 비관리자 403.
-export async function requireAdmin(request) {
-  const auth = await requireUser(request);
-  if (auth.error) return auth;
+// profiles.role==='admin' 판별(service-role 조회). 이미 로그인 검증을 마친 라우트가
+// 「소유자 또는 관리자」처럼 관리자를 예외로 둘 때 재사용한다. 조회 실패는 관리자 아님.
+export async function isAdminUser(userId) {
+  if (!userId) return false;
   const admin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY,
     { auth: { persistSession: false } }
   );
   const { data: profile } = await admin
-    .from('profiles').select('role').eq('id', auth.user.id).single();
-  if (profile?.role !== 'admin') return { error: '관리자 전용 기능이에요.', status: 403 };
+    .from('profiles').select('role').eq('id', userId).single();
+  return profile?.role === 'admin';
+}
+
+// 로그인 + profiles.role==='admin'. 비로그인 401, 비관리자 403.
+export async function requireAdmin(request) {
+  const auth = await requireUser(request);
+  if (auth.error) return auth;
+  if (!(await isAdminUser(auth.user.id))) return { error: '관리자 전용 기능이에요.', status: 403 };
   return { user: auth.user };
 }

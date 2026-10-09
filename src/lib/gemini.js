@@ -1,8 +1,13 @@
 import { POS_CANON } from './server/posCanon';
 // 클라는 모델이 아니라 **티어**를 말한다(AA R1) — 모델·폴백·Groq는 서버 llm.js의 TIERS가 정한다.
 export const GEMINI_TIER = 'standard';
+// 문장 번역(뷰어 [문장] 탭·막대·드래그·선처리) 등급 — 한 상수(뷰어 v2 AE-R2 정본 §4 「light로 시작」, 설계서 Q2).
+// 선처리와 사용자 요청이 같은 키·같은 캐시를 쓰므로 길마다 등급이 다르면 먼저 머문 문장만 다른 품질로 저장된다.
+// 등급을 올릴 때는 viewer_tx 키 버전(v2 → v3)도 함께 올린다(sentenceTranslation.js).
+export const SENTENCE_TX_TIER = 'light';
 
-async function callGeminiOnce(prompt, signal, { tier = GEMINI_TIER, model, ...generationConfig } = {}) {
+// purpose = 측정용 용도 꼬리표(프록시 허용 목록만 route로 찍힌다). generationConfig로 새면 Gemini가 400을 낸다.
+async function callGeminiOnce(prompt, signal, { tier = GEMINI_TIER, model, purpose, ...generationConfig } = {}) {
   // Supabase 세션 토큰 첨부 (서버 측 인증용)
   let authHeader = {};
   try {
@@ -22,6 +27,7 @@ async function callGeminiOnce(prompt, signal, { tier = GEMINI_TIER, model, ...ge
       tier,
       // 하위호환 힌트 — 옛 호출부가 model을 주면 그대로 싣는다(프록시가 티어로 매핑, 한 릴리스 유지)
       ...(model ? { model } : {}),
+      ...(purpose ? { purpose } : {}),
       ...(Object.keys(generationConfig).length > 0 ? { generationConfig } : {})
     })
   });
@@ -63,15 +69,17 @@ function isCapacityError(err) {
 
 /**
  * callGemini: 용량/속도 에러에 자동 재시도 (최대 4회, 5/10/20초 백오프)
+ * opts.attempts — 시도 횟수 상한(기본 4). 문장 선처리는 1(재시도 0 — AE-R2 「AI 1회」). generationConfig로 넘기지 않는다.
  */
 export async function callGemini(prompt, signal, opts = {}) {
-  const MAX_RETRIES = 4;
+  const { attempts, ...callOpts } = opts;
+  const MAX_RETRIES = Number.isInteger(attempts) && attempts > 0 ? Math.min(attempts, 4) : 4;
   const DELAYS = [5000, 10000, 20000, 40000];
   let lastErr = null;
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
-      return await callGeminiOnce(prompt, signal, opts);
+      return await callGeminiOnce(prompt, signal, callOpts);
     } catch (e) {
       lastErr = e;
       if (signal?.aborted) throw e;

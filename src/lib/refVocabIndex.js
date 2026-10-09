@@ -73,6 +73,17 @@ export function refLevelLabel(level) {
   return m ? `HSK ${m[1]}` : level ? '생활' : null;
 }
 
+/** 인덱스 자체 훅(한자 창 같은 표제어 밖 조회용, AE-R4) — 같은 1회 로드 캐시를 쓴다. 미지원 언어·로딩 중은 null. */
+export function useRefVocabIndex(language) {
+  const [index, setIndex] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    loadRefVocabIndex(language).then((ix) => { if (alive) setIndex(ix); }).catch(() => {});
+    return () => { alive = false; };
+  }, [language]);
+  return index;
+}
+
 /** 단어의 사전 항목 조회 훅 — 인덱스는 언어별 1회 로드 후 캐시. */
 export function useRefVocabEntry(language, word) {
   const [index, setIndex] = useState(null);
