@@ -50,8 +50,8 @@ describe('AA R1 — 소스 계약: 모델·엔드포인트는 llm.js 한 곳', (
     expect(filesMatching(/generativelanguage\.googleapis\.com/)).toEqual([TTS, LLM].sort());
   });
 
-  it('모델 식별자(gemini-N · qwen/)는 llm.js(+ tts)에만 있다', () => {
-    expect(filesMatching(/gemini-\d|qwen\//)).toEqual([TTS, LLM].sort());
+  it('모델 식별자(gemini-N · qwen/ · gpt-oss)는 llm.js(+ tts)에만 있다', () => {
+    expect(filesMatching(/gemini-\d|qwen\/|gpt-oss/)).toEqual([TTS, LLM].sort());
   });
 
   it('Groq 엔드포인트·모델 상수는 llm.js에만 있다', () => {
@@ -122,8 +122,20 @@ describe('AA R1 — callLLM 동작 계약', () => {
     expect(TIER_NAMES).toEqual(['light', 'standard']);
     expect(TIERS.light).toEqual({ primary: 'gemini-3.5-flash-lite', fallbacks: [] });
     expect(TIERS.standard).toEqual({ primary: 'gemini-3.6-flash', fallbacks: ['gemini-3.5-flash-lite'] });
-    expect(GROQ_MODEL).toMatch(/^qwen\//);
     expect(Object.values(LEGACY_MODEL_TIERS).every((t) => TIER_NAMES.includes(t))).toBe(true);
+  });
+
+  it('AA R3-a — Groq 최종 폴백은 production(GA) 모델이다(preview 재도입 금지)', async () => {
+    const { GROQ_MODEL } = await fresh();
+    expect(GROQ_MODEL).toBe('openai/gpt-oss-120b');
+    // preview(qwen3-32b → qwen3.6-27b)는 두 번 퇴역해 폴백이 죽었다 — preview 접두로 되돌아가지 않는다
+    expect(GROQ_MODEL).not.toMatch(/^(qwen\/|meta-llama\/llama-4|moonshotai\/|deepseek)/);
+  });
+
+  it('AA R3-a — 옛 2.5 매핑은 삭제됐다(2026-10-16 퇴역, 2.5-Lite 승격 안 함)', async () => {
+    const { LEGACY_MODEL_TIERS } = await fresh();
+    expect(Object.keys(LEGACY_MODEL_TIERS).some((m) => m.includes('2.5'))).toBe(false);
+    expect(Object.keys(LEGACY_MODEL_TIERS)).not.toContain('models/gemini-2.5-flash');
   });
 
   it('resolveTier — tier 우선, 옛 model은 매핑, 목록 밖은 오류, 둘 다 없으면 standard', async () => {
@@ -131,9 +143,9 @@ describe('AA R1 — callLLM 동작 계약', () => {
     expect(resolveTier({ tier: 'light', model: 'models/gemini-3.6-flash' })).toEqual({ tier: 'light' });
     expect(resolveTier({ tier: 'pro' })).toEqual({ error: 'unsupported_tier' });
     expect(resolveTier({ model: 'models/gemini-3.6-flash' })).toEqual({ tier: 'standard' });
-    expect(resolveTier({ model: 'models/gemini-2.5-flash' })).toEqual({ tier: 'standard' });
+    expect(resolveTier({ model: 'models/gemini-2.5-flash' })).toEqual({ error: 'unsupported_model' });
     expect(resolveTier({ model: 'models/gemini-3.5-flash-lite' })).toEqual({ tier: 'light' });
-    expect(resolveTier({ model: 'models/gemini-2.5-flash-lite' })).toEqual({ tier: 'light' });
+    expect(resolveTier({ model: 'models/gemini-2.5-flash-lite' })).toEqual({ error: 'unsupported_model' });
     expect(resolveTier({ model: 'models/gemini-3.6-pro' })).toEqual({ error: 'unsupported_model' });
     expect(resolveTier({})).toEqual({ tier: 'standard' });
   });
@@ -259,7 +271,9 @@ describe('AA R1 — callLLM 동작 계약', () => {
     const groqCall = fetchSpy.mock.calls[2];
     expect(groqCall[1].headers.Authorization).toBe('Bearer groq-test-key');
     const body = bodyOf(groqCall);
-    expect(body).toMatchObject({ model: GROQ_MODEL, temperature: 0.6, stream: false, reasoning_effort: 'none', response_format: { type: 'json_object' } });
+    expect(body).toMatchObject({ model: GROQ_MODEL, temperature: 0.6, stream: false, reasoning_effort: 'low', response_format: { type: 'json_object' } });
+    // gpt-oss는 low|medium|high만 받는다 — 'none'(qwen 전용)이 남으면 교체 후에도 400으로 폴백이 죽는다
+    expect(body.reasoning_effort).not.toBe('none');
     expect(body.messages).toEqual([{ role: 'user', content: '문단을 만들어\n\nJSON 객체 하나로만 응답하세요.' }]);
   });
 
@@ -274,6 +288,24 @@ describe('AA R1 — callLLM 동작 계약', () => {
     expect(body.response_format).toBeUndefined();
     expect(body.temperature).toBe(0);
     expect(body.messages[0].content).toBe('해설');
+  });
+
+  it('AA R3-a — Groq usage: reasoning_tokens가 있으면 thinking으로 분리하고 out에서 뺀다(Gemini 집계 단위와 같게)', async () => {
+    vi.stubEnv('GROQ_API_KEY', 'groq-test-key');
+    const groqWith = (usage) => ({ ok: true, status: 200, json: async () => ({ choices: [{ message: { content: 'g' } }], usage }) });
+    let usage = { prompt_tokens: 20, completion_tokens: 50, completion_tokens_details: { reasoning_tokens: 30 } };
+    vi.stubGlobal('fetch', vi.fn(async (url) => (isGroq(url) ? groqWith(usage) : geminiFail(503))));
+    const { callLLM } = await fresh();
+    let { meta } = await callLLM('light', 'p');
+    expect(meta.usage).toEqual({ in: 20, out: 20, thinking: 30 });
+    // 필드가 없으면 현행과 같다
+    usage = { prompt_tokens: 7, completion_tokens: 3 };
+    ({ meta } = await callLLM('light', 'p'));
+    expect(meta.usage).toEqual({ in: 7, out: 3, thinking: 0 });
+    // 비정상 값(추론 > 완료)이어도 out은 0 아래로 내려가지 않는다
+    usage = { prompt_tokens: 1, completion_tokens: 2, completion_tokens_details: { reasoning_tokens: 5 } };
+    ({ meta } = await callLLM('light', 'p'));
+    expect(meta.usage).toEqual({ in: 1, out: 0, thinking: 5 });
   });
 
   it('Gemini 키가 없고 Groq 키만 있으면 Gemini 체인을 건너뛰고 바로 Groq', async () => {

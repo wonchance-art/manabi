@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anatomy-studio-v1345f7852d1c5daf';
+const CACHE_NAME = 'anatomy-studio-ve47be8a8c7a9d527';
 
 const PRECACHE_URLS = [
   '/',
@@ -121,8 +121,8 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(title, {
       body,
-      icon: '/icon.svg',
-      badge: '/icon.svg',
+      icon: '/icon-192.png',
+      badge: '/badge-96.png',
       data: { url },
     })
   );

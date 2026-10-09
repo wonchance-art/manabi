@@ -280,7 +280,7 @@ export function exportCSV(vocab, projections) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `anatomy_vocab_${new Date().toISOString().split('T')[0]}.csv`;
+  a.download = `manabi_vocab_${new Date().toISOString().split('T')[0]}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -311,7 +311,7 @@ export function exportAnki(vocab) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `anatomy_vocab_anki_${new Date().toISOString().split('T')[0]}.txt`;
+  a.download = `manabi_vocab_anki_${new Date().toISOString().split('T')[0]}.txt`;
   a.click();
   URL.revokeObjectURL(url);
 }

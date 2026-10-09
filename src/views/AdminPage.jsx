@@ -308,6 +308,12 @@ export default function AdminPage() {
                 desc: '학습 월드 전체 지도를 캔버스 한 장에 그려 줌·팬으로 훑어보는 도구 — 노드 배치·콘텐츠 마운트 계획용. 탭/호버 시 타일 좌표와 위경도 역산 표시. 관리자 전용.',
               },
               {
+                href: '/admin/llm-bench',
+                icon: '⚖️',
+                title: '모델 비교 측정 — 같은 입력으로 품질·속도·비용',
+                desc: '뜻 고르기(ZH 측정 세트)·단어 뜻 생성·문장 번역을 Gemini·Groq·Haiku·Luna에 같은 프롬프트로 보내 정답률·지연·토큰을 표로 봅니다. 쓰기 0. 관리자 전용.',
+              },
+              {
                 href: '/admin/metrics',
                 icon: '📊',
                 title: '학습 지표 — 본인 데이터 기준',

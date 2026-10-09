@@ -1,18 +1,16 @@
 {
-  "name": "Anatomy Studio",
-  "short_name": "Anatomy",
-  "description": "AI가 문장을 해부하는 언어 학습 앱",
+  "name": "manabi",
+  "short_name": "manabi",
+  "description": "읽고, 담고, 제때 다시 만나는 외국어 서재",
   "start_url": "/home",
   "display": "standalone",
-  "background_color": "#0F0F1A",
-  "theme_color": "#7C5CFC",
+  "background_color": "#FFFDF9",
+  "theme_color": "#994A5A",
   "orientation": "portrait",
   "icons": [
-    {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
