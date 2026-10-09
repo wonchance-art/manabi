@@ -158,8 +158,9 @@ import { BoundaryMergeConfirm, BoundaryMergeRow, BoundaryPendingList, BoundarySp
 import {
   BoundaryEditError, boundaryEditContext, boundaryEntryAllowed, boundaryReasonHidden, boundaryReasonMessage, boundaryTokenOrigin,
   boundaryUndoValid, commitBoundaryEdit, pendingBoundaryRows, planBoundaryMerge, planBoundarySplit, planNeighborMerge, splitPreview,
-  undoBoundaryEdit, dismissBoundarySuggestion,
+  undoBoundaryEdit, dismissBoundarySuggestion, koreanBoundaryPiece, koreanSplitEntryAllowed, koreanSplitPreview, planKoreanSplit,
 } from '../lib/boundaryEditFlow';
+import { koreanFormula, koreanMorphemes } from '../lib/koreanBoundarySplit';
 import SourceEditModal from './SourceEditModal';
 import TokenPosLabel from './TokenPosLabel';
 import TokenRangeGrips from './TokenRangeGrips';
@@ -304,6 +305,8 @@ export default function ViewerPage() {
   const legacyTokenEditingAllowed = materialLang !== 'Korean';
   const legacyTokenEditingAllowedRef = useRef(legacyTokenEditingAllowed);
   legacyTokenEditingAllowedRef.current = legacyTokenEditingAllowed;
+  // AD-R3 §7.5 한국어 나누기(오너 B안) — 아래 진입점 판정(koreanSplitAllowed)이 렌더마다 채운다. 경계 쓰기 mutation의 한국어 문.
+  const koreanSplitAllowedRef = useRef(false);
   const languageInfo = viewerLanguageInfo(materialLang);
   const ttsSupported = browserTtsSupported && languageInfo?.capabilities.speech === 'supported';
   const effectiveExplanationLocale = languageInfo?.explanationLocales.includes(explanationLocale) ? explanationLocale : 'ko';
@@ -968,9 +971,11 @@ export default function ViewerPage() {
   useEffect(() => { setSentencePatternOpen(null); }, [leftPanelText]);
   const preserveOpenWord = !classStudyActive && !studyContext && !material?.__local
     && !/^\/class\//.test(originalParams.get('returnTo') || '') && !!selectedToken && isSheetOpen;
+  // AD-R3 §7.5 한국어 나눈 조각 — 뜻은 저장된 형태 분석 설명뿐이다. 문맥 설명 오버레이(AI)·단어장 저장·등급을 붙이지 않는다.
+  const koreanPieceSelected = materialLang === 'Korean' && !!selectedToken?.id && !!koreanBoundaryPiece(material?.processed_json, selectedToken.id);
   const localizedWord = useViewerExplanation({token: selectedToken, sentence: ctxSentenceOf(selectedToken) ?? leftPanelText,
     locale: effectiveExplanationLocale, sourceLocale: selectedToken?.meaningLocale || selectedToken?.explanationLocale || material?.processed_json?.metadata?.explanationLocale || 'ko',
-    scope: cacheScope, enabled: materialLang === 'Korean' && isSheetOpen});
+    scope: cacheScope, enabled: materialLang === 'Korean' && isSheetOpen && !koreanPieceSelected});
   const koreanSaveDisplayScope = useRef('');
   koreanSaveDisplayScope.current = JSON.stringify([user?.id, id, effectiveExplanationLocale, selectedToken?.id, selectedToken?.text, material?.raw_text]);
   useEffect(() => {
@@ -1760,7 +1765,7 @@ export default function ViewerPage() {
   };
   const boundaryMutation = useMutation({
     mutationFn: async ({ request, undo }) => {
-      if (!legacyTokenEditingAllowedRef.current) throw new BoundaryEditError('korean');
+      if (!legacyTokenEditingAllowedRef.current && !koreanSplitAllowedRef.current) throw new BoundaryEditError('korean');
       const current = queryClient.getQueryData(['material', id]) || material;
       const deps = { client: supabase, analyze: analyzeBoundaryLine, userId: user?.id };
       if (undo) return { ...(await undoBoundaryEdit(current, undo, deps)), kind: 'undo' };
@@ -2198,8 +2203,25 @@ export default function ViewerPage() {
   }
 
   function koreanSaveReady(token) {
-    return materialLang !== 'Korean' || (!!token && !!readingContextSource(token) && !!contextWord(token).meaning
+    return materialLang !== 'Korean' || (!!token && !koreanBoundaryPiece(material?.processed_json, token.id) && !!readingContextSource(token) && !!contextWord(token).meaning
       && !(token.id === selectedToken?.id && (localizedWord.loading || localizedWord.error)));
+  }
+
+  // AD-R3 §7.5 한국어 나눈 조각의 뜻 줄 — 형태소 하나면 그 설명, 여러 개(합친 꼴)면 공식. 형태 분석 언어가 지금 설명 언어와
+  // 다르면 다른 언어 설명을 보이지 않고 안내만(문맥 설명 AI 오버레이를 부르지 않는다).
+  function koreanPieceMeaning(token) {
+    const pieceLocale = token?.explanationLocale || token?.meaningLocale || material?.processed_json?.metadata?.explanationLocale || 'ko';
+    if (pieceLocale !== effectiveExplanationLocale) return vt('이 조각 설명은 분석한 설명 언어로만 있어요.');
+    const morphemes = koreanMorphemes(token);
+    const formula = morphemes.length > 1 ? koreanFormula({ text: token.text, morphemes }) : null;
+    return formula ? koreanFormulaText(formula) : token?.meaning || '';
+  }
+  // 공식 「했어요 = 하다 + -였- + -어요 (줄어든 꼴)」 — 꼴 이름만 화면 언어(vt), 형태는 한글 그대로.
+  function koreanFormulaTail(formula) {
+    return `= ${formula.terms.join(' + ')}${formula.kind ? ` (${formula.kind === 'contracted' ? vt('줄어든 꼴') : vt('모양이 바뀐 꼴')})` : ''}`;
+  }
+  function koreanFormulaText(formula) {
+    return formula ? `${formula.surface} ${koreanFormulaTail(formula)}` : null;
   }
 
   async function saveKoreanVocabulary(token, grade) {
@@ -2287,6 +2309,7 @@ export default function ViewerPage() {
 
   // W R3㉮ 인라인 복습 — 4등급 정본. 스냅샷은 훅이 돌려준 prev·reviewedAt으로 호출부가 만든다.
   const gradeInline = (rating) => {
+    if (koreanPieceSelected) return; // AD-R3 §7.5: 한국어 나눈 조각은 등급 대상이 아니다(키 1~4 포함)
     const vocab = findSavedVocab(savedWords, selectedToken, materialLang);
     if (!learningCapabilities.review || !vocab || !isTokenInlineDue(savedWords, selectedToken, materialLang) || selectedExcluded || !wordStateReady || knownPending || exclusionState.mutation.isPending || inlineReviewMutation.isPending) return;
     const requestKey = `${user.id}:${vocab.id}`;
@@ -2657,6 +2680,33 @@ export default function ViewerPage() {
   const boundaryAllowed = canEditToken && legacyTokenEditingAllowed && boundaryEntryAllowed(boundaryCtx) && isDone
     && !material?.__offline && !reanalyzeMutation.isPending;
   const boundaryBusy = boundaryMutation.isPending;
+  // AD-R3 §7.5 한국어 나누기(오너 B안 2026-10-09) — 어절 안 나누기만, 같은 권한 조건(소유자 · 사본/구간/수업 모드 제외 · 분석 완료 ·
+  // 재분석 중 아님). 형태 분석이 지금 설명 언어로 있고 형태소가 둘 이상일 때만 ⋯ 「나누기」. 어절을 넘는 묶기(드래그 · 옆 단어와 묶기)는 없다.
+  const koreanSplitAllowed = materialLang === 'Korean' && canEditToken && koreanSplitEntryAllowed(boundaryCtx) && isDone
+    && !material?.__offline && !reanalyzeMutation.isPending;
+  koreanSplitAllowedRef.current = koreanSplitAllowed;
+  const koreanCardTokenId = koreanSplitAllowed && selectedToken?.id && isSheetOpen ? selectedToken.id : null;
+  const koreanPlan = koreanCardTokenId ? planKoreanSplit(material, koreanCardTokenId, boundaryCtx, { locale: effectiveExplanationLocale }) : null;
+  const koreanMenuShown = !!koreanPlan && (koreanPlan.ok || koreanPlan.reason === 'no_literal_cut');
+  const koreanPiece = koreanCardTokenId ? koreanBoundaryPiece(json, koreanCardTokenId) : null;
+  const renderKoreanBoundaryCard = () => {
+    const panel = boundaryPanel?.tokenId === koreanCardTokenId && boundaryPanel.kind === 'split' ? boundaryPanel : null;
+    const undoShown = boundaryUndo?.tokenId === koreanCardTokenId && boundaryUndoValid(json, boundaryUndo.undo);
+    const restore = koreanPiece ? { line: koreanPiece.record.line, start: koreanPiece.record.start, end: koreanPiece.record.end, cuts: [] } : null;
+    return <>
+      {restore && <p className="reader-card-boundary"><span>{vt('나눈 조각')}</span>{' · '}<button type="button" className="btn btn--ghost btn--sm"
+        disabled={boundaryBusy} onClick={() => boundaryMutation.mutate({ request: restore })}>{vt('원래대로')}</button></p>}
+      {undoShown && <p className="reader-card-boundary-undo"><span role="status">{vt(boundaryUndo.kind === 'restore' ? '원래대로 했어요' : '나눴어요')}</span>{' · '}<button type="button"
+        className="btn btn--ghost btn--sm" disabled={boundaryBusy} onClick={() => boundaryMutation.mutate({ undo: boundaryUndo.undo })}>{vt('되돌리기')}</button></p>}
+      {panel && koreanPlan && <BoundarySplitPanel key={`ko-split:${koreanCardTokenId}`} plan={koreanPlan} reasonText={koreanPlan.ok ? null : boundaryReasonMessage(koreanPlan.reason)}
+        note={koreanPlan.ok ? null : koreanFormulaText(koreanPlan.formula)} initialCuts={koreanPlan.ok ? koreanPlan.initialCuts : []}
+        preview={cuts => splitPreview(koreanPlan, cuts)}
+        glosses={cuts => koreanSplitPreview(koreanPlan, cuts).map(piece => ({ text: piece.text, lang: piece.formula ? undefined : effectiveExplanationLocale,
+          note: piece.formula ? koreanFormulaTail(piece.formula) : piece.morphemes.map(m => m.function).filter(Boolean).join(' · ') }))}
+        busy={boundaryBusy} contentLang={contentLangTag} vt={vt}
+        onConfirm={cuts => boundaryMutation.mutate({ request: { line: koreanPlan.line, start: koreanPlan.start, end: koreanPlan.end, cuts } })} onCancel={() => setBoundaryPanel(null)} />}
+    </>;
+  };
   const boundarySavedParts = (tokenIds) => [...new Set((tokenIds || []).map(tid => json.dictionary?.[tid]).filter(t => t && isTokenSaved(savedWords, t, materialLang)).map(t => t.text))];
   const openBoundaryPanel = (panel) => { setIsEditingToken(false); setBoundaryPanel(panel); };
   // 드래그 「한 단어로 묶기」 — [문장] 탭 원문 줄 아래(목업). 드래그 동작·번역 경로는 그대로, 버튼 하나만 더한다.
@@ -2675,6 +2725,7 @@ export default function ViewerPage() {
   const boundaryOrigin = cardTokenId ? boundaryTokenOrigin(json, cardTokenId) : null;
   const boundaryUndoShown = !!cardTokenId && boundaryUndo?.tokenId === cardTokenId && boundaryUndoValid(json, boundaryUndo.undo);
   const renderBoundaryCard = () => {
+    if (koreanCardTokenId) return renderKoreanBoundaryCard();
     if (!cardTokenId) return null;
     const panel = boundaryPanel?.tokenId === cardTokenId ? boundaryPanel : null;
     let panelNode = null;
@@ -2701,7 +2752,7 @@ export default function ViewerPage() {
       {panelNode}
     </>;
   };
-  const boundaryPendingRows = boundaryPendingOpen && canEditToken && legacyTokenEditingAllowed ? pendingBoundaryRows(material) : [];
+  const boundaryPendingRows = boundaryPendingOpen && canEditToken && (legacyTokenEditingAllowed || materialLang === 'Korean') ? pendingBoundaryRows(material) : [];
   const boundaryPendingContent = boundaryPendingRows.length ? <BoundaryPendingList rows={boundaryPendingRows} contentLang={contentLangTag} vt={vt} /> : null;
   // 머리줄 ⋯ = 분석 고치기(정본 §2). 「뜻·발음 수정」 + AD-R3 「옆 단어와 묶기」·「나누기」(이 자료 소유자 · 중·일·영). 고칠 것이 없으면 ⋯도 없다.
   const sheetMenu = senseEditable && selectedToken && isSheetOpen ? {
@@ -2711,6 +2762,10 @@ export default function ViewerPage() {
         { id: 'merge-neighbor', label: vt('옆 단어와 묶기'), onSelect: () => openBoundaryPanel({ kind: 'neighbor', tokenId: cardTokenId, side: null }) },
         { id: 'split', label: vt('나누기'), onSelect: () => openBoundaryPanel({ kind: 'split', tokenId: cardTokenId }) },
       ] : [])],
+  } : koreanMenuShown ? {
+    // 한국어(§7.5): 뜻·발음 수정·옆 단어와 묶기 없이 「나누기」 하나.
+    label: vt('분석 고치기'),
+    items: [{ id: 'split', label: vt('나누기'), onSelect: () => openBoundaryPanel({ kind: 'split', tokenId: koreanCardTokenId }) }],
   } : null;
   // AD-R4 PR③ 「뜻 확인 필요 N개 [보기]」 — 자료 소유자(고칠 수 있는 사람)만, N>0일 때만, 분석이 끝난 뒤(§6.1).
   // 권한은 사전 뜻 줄 교정(senseEditable)과 같은 판정이고, 수업 모드에서는 숨긴다(§13). 구간 학습(passage)은 교정 RPC가
@@ -2998,7 +3053,7 @@ export default function ViewerPage() {
       })()}
       {classMeaning?.editor||(!classStudyActive&&<div className={`word-detail-card__meaningrow${materialLang === 'English' && selectedToken.reading ? ' word-detail-card__meaningrow--tight' : ''}`}>
         <div className="word-detail-card__meaning" lang={materialLang === 'Korean' ? effectiveExplanationLocale : undefined}>
-          {materialLang === 'Korean' ? (localizedWord.loading ? vt('문맥 뜻을 불러오는 중…') : localizedWord.error ? <button onClick={localizedWord.retry}>{vt('설명을 다시 불러오기')}</button> : localizedWord.meaning) : refMeaning || selectedToken.meaning || '(뜻 없음)'}
+          {materialLang === 'Korean' ? (koreanPieceSelected ? koreanPieceMeaning(selectedToken) : localizedWord.loading ? vt('문맥 뜻을 불러오는 중…') : localizedWord.error ? <button onClick={localizedWord.retry}>{vt('설명을 다시 불러오기')}</button> : localizedWord.meaning) : refMeaning || selectedToken.meaning || '(뜻 없음)'}
         </div>
         {/* 리스트 단어는 자료 토큰이 아니라(id 없음) 이 자료의 교정 대상이 될 수 없다 */}
         {canEditToken && selectedToken.id && (
@@ -3118,8 +3173,9 @@ export default function ViewerPage() {
       {/* 일반 모드 = 교재 설명(접힘 없는 section), 수업 모드 = 수업 상세 + 교재 설명(지금대로). */}
       {classAction}
 
-      {/* 더 알아보기(정본 §2.1) — AI로 새로 만드는 것이라 요청 버튼. 이미 만든 결과(캐시)가 있으면 버튼 대신 내용. */}
-      <section ref={learnRef} className="reader-card-learn" aria-label={vt('더 알아보기')} key={`learn:${selectedToken.id||selectedToken.text}`}>
+      {/* 더 알아보기(정본 §2.1) — AI로 새로 만드는 것이라 요청 버튼. 이미 만든 결과(캐시)가 있으면 버튼 대신 내용.
+          한국어 나눈 조각(§7.5)은 기존 형태 분석 설명만 쓴다 — AI 요청 버튼을 두지 않는다. */}
+      {!koreanPieceSelected && <section ref={learnRef} className="reader-card-learn" aria-label={vt('더 알아보기')} key={`learn:${selectedToken.id||selectedToken.text}`}>
         <h3 className="reader-card-section__label">{vt('더 알아보기')}</h3>
         {synAntEligible(selectedToken,materialLang) && (synAnt?.loading ? <p role="status">{vt("불러오는 중…")}</p>
           : synAnt && !synAnt.error ? <div className="syn-ant"><div className="syn-ant__row"><span>{vt("유의어")}</span>{renderSynAntChips(synAnt.syn)}</div><div className="syn-ant__row"><span>{vt("반의어")}</span>{renderSynAntChips(synAnt.ant)}</div>{!synAnt.syn.length&&!synAnt.ant.length&&<p>{vt("표시할 항목이 없어요.")}</p>}</div>
@@ -3130,14 +3186,15 @@ export default function ViewerPage() {
         {/* 일본어로는(AE-R3 PR② — 일본어 대조 블록 대체, 설계서 §5): 日 줄이 숨겨졌을 때만(수업 모드는 자형 열이 없으므로 항상) —
             사전 diff/warn이 있으면 내용, 없으면 로그인 사용자에게 요청 버튼(기존 클라 AI 그대로, 「AI」 표 없음). 쓰기 0. */}
         {materialLang === 'Chinese' && (classStudyActive || !glyph.ja) && <ViewerJapaneseMore key={`ja:${selectedToken.id||selectedToken.text}:${refMeaning||''}`} userId={user?.id} word={headText} meaning={refMeaning||selectedToken.meaning||''} pos={selectedToken.pos} dictEntry={editDictEntry} jaTable={jaWordsTable} dictLoading={!dictFetched&&!dictError} />}
-      </section>
+      </section>}
       {/* 출처 줄(정본 §2.1 · 설계서 §6 O1 보수안): 日 줄이 JMdict 파생 표에서 왔을 때만 — EDRDG가 화면마다 표기를 요구한다. */}
       {glyph.ja?.source === 'jmdict' && !classStudyActive && <p className="reader-card-credit"><Link href="/credits#jmdict">{vt('일본어 읽기 · JMdict (EDRDG) · CC BY-SA 4.0')}{' ›'}</Link></p>}
 
       </div>
       <div className="reader-card-actions">
-      {!learningStorageSupported && <p role="status">{vt("한국어 단어 저장·복습은 아직 준비 중이에요.")}</p>}
-      {user && learningStorageSupported && (() => {
+      {koreanPieceSelected && <p className="reader-card-boundary-note" role="status">{vt('나눈 조각은 단어장에 담지 않아요.')}</p>}
+      {!learningStorageSupported && !koreanPieceSelected && <p role="status">{vt("한국어 단어 저장·복습은 아직 준비 중이에요.")}</p>}
+      {user && learningStorageSupported && !koreanPieceSelected && (() => {
         // 아는 단어 = 등급 줄(또는 저장 줄) 오른쪽 체크(정본 §2.1 하단, 오너 확정). aria-pressed·문구·쓰기 경로는 그대로.
         const knownToggle = learningCapabilities.known && knownLangCode && <button type="button" className="btn btn--ghost btn--sm word-detail-card__known" aria-pressed={selectedKnown}
           title={vt(selectedKnown ? '아는 단어 표시 해제' : '아는 단어로 표시')}
@@ -3166,7 +3223,7 @@ export default function ViewerPage() {
       })()}
       {user && (exclusionState.isError || knownState.isError) && <button type="button" className="btn btn--ghost btn--sm" onClick={() => { exclusionState.refetch(); knownState.refetch(); }}>{vt("상태 다시 확인")}</button>}
 
-      {user && learningCapabilities.review && findSavedVocab(savedWords, selectedToken, materialLang) && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending && (
+      {user && learningCapabilities.review && !koreanPieceSelected && findSavedVocab(savedWords, selectedToken, materialLang) && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending && (
         // W R3㉮ — 척도를 정본에 맞춘다: 모름/애매/알아=1/2/3(Easy 없음)이 아니라 복습 화면과 같은 4등급.
         // 라벨·순서·클래스 = SAVE_GRADES(복습 화면 ScoreSection과 동일 계약). 키 1~4·⌘Z는 카드 리스너.
         <div style={{ padding: '10px 12px', background: 'color-mix(in srgb, var(--warning) 10%, transparent)', borderRadius: 'var(--radius-md)', marginBottom: 12, border: '1px solid var(--warning)' }}>
@@ -3188,7 +3245,7 @@ export default function ViewerPage() {
           </div>
         </div>
       )}
-      {!user && material?.__local && (
+      {!user && material?.__local && !koreanPieceSelected && (
         // 팀 사본(v2-AB R2 S2) — 담기 CTA. 「로그인이 필요합니다」 토스트 대신 돌아올 길이 있는 시트.
         <div className="save-grade__guest">
           <p className="save-grade__guide">{vt('로그인하면 「{word}」이(가) 내 단어장에 담기고 며칠 뒤 복습으로 돌아와요.', {word: headText})}</p>
@@ -3204,7 +3261,7 @@ export default function ViewerPage() {
       {user && learningStorageSupported && materialLang === 'Korean' && koreanSaveConflict && koreanSaveConflict.tokenId === selectedToken.id && koreanSaveConflict.text === selectedToken.text && koreanSaveReady(selectedToken) &&
         <SaveContextButton key={`${id}:${selectedToken.id}:${effectiveExplanationLocale}:${readingContextSource(selectedToken)?.sourceRevision}:conflict`} label={vt("이 문맥 추가")}
           word={contextWord(selectedToken)} source={readingContextSource(selectedToken)} onSaved={() => setKoreanSaveConflict(null)} />}
-      {user && learningStorageSupported && (() => {
+      {user && learningStorageSupported && !koreanPieceSelected && (() => {
         // 네 등급은 FSRS 평가다. 아는 단어 표시는 별도로 복습을 멈추며 원래 기록을 보존한다.
         if (isWordSaved && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending) return null;
         if (!selectedExcluded && (saveAnim || inlineReviewMutation.isPending)) {
