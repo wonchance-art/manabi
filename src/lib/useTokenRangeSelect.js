@@ -234,7 +234,7 @@ export function useTokenRangeSelect({ sequence, dictionary, enabled = true, onSe
     const text = composeRangeText(sequence, dictionary, s, e).trim();
     if (text.length >= 2) {
       setRange({ start: s, end: e });
-      onSelect?.(text);
+      onSelect?.(text, {start: s, end: e, tokenIds: sequence.slice(s, e + 1)});
     } else {
       clearRange(); // 1자 이하는 단어 클릭이 담당 — 지정 무효
     }

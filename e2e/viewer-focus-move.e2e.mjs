@@ -12,12 +12,15 @@ const lines=[
  [['我们','wǒ men','우리'],['明天','míng tiān','내일'],['去','qù','가다'],['公园','gōng yuán','공원'],['。','','마침표']],
  [['今天','jīn tiān','오늘'],['天气','tiān qì','날씨'],['很','hěn','매우'],['好','hǎo','좋다'],['。','','마침표']],
 ];
-function build(lines) {
+// utf16Spans: 한국어 저장 분석처럼 토큰마다 원문 UTF-16 범위를 둔다(#1346 — 한국어 문장 단어 목록은 정확한 출처가 있는 저장 토큰만 쓴다).
+function build(lines,{utf16Spans=false}={}) {
  const texts=lines.map(l=>l.map(w=>w[0]).join(''));
  const sequence=[],dictionary={};
+ let offset=0;
+ const span=text=>{const start=offset;offset+=text.length;return utf16Spans?{sourceSpan:{start,end:offset,unit:'utf16'}}:{};};
  lines.forEach((words,line)=>{
-  words.forEach(([text,furigana,meaning],i)=>{const id=`id_${line}_${i}`;sequence.push(id);dictionary[id]={text,base_form:text,furigana,meaning,pos:/^[。，、.,!?！？]$/.test(text)?'기호':'명사'};});
-  if(line<lines.length-1){const id=`id_${line}_${words.length}`;sequence.push(id);dictionary[id]={text:'\n',base_form:'',furigana:'',meaning:'',pos:'개행'};}
+  words.forEach(([text,furigana,meaning],i)=>{const id=`id_${line}_${i}`;sequence.push(id);dictionary[id]={text,base_form:text,furigana,meaning,pos:/^[。，、.,!?！？]$/.test(text)?'기호':'명사',...span(text)};});
+  if(line<lines.length-1){const id=`id_${line}_${words.length}`;sequence.push(id);dictionary[id]={text:'\n',base_form:'',furigana:'',meaning:'',pos:'개행',...span('\n')};}
  });
  return {texts,sequence,dictionary};
 }
@@ -354,7 +357,7 @@ const ko=build([
  [['오늘은','','오늘'],['친구와','','친구'],['공원에','','공원'],['갔어요','','가다'],['.','','마침표']],
  [['날씨가','','날씨'],['아주','','매우'],['좋았어요','','좋다'],['.','','마침표']],
  [['내일도','','내일'],['또','','다시'],['만나요','','만나다'],['.','','마침표']],
-]);
+],{utf16Spans:true});
 for(const [language,material,analyzePath] of [['Japanese',ja,'/api/analyze'],['Korean',ko,'/api/analyze/korean']])test(`${language}: move bar renders, ^/v move and 번역 uses the existing sentence path once`,{timeout:180000},async()=>{
  const f=await open(390,844,{focusMode:true,autoSpeakOnClick:false},{language,material,meta:{}});
  try{
@@ -374,9 +377,17 @@ for(const [language,material,analyzePath] of [['Japanese',ja,'/api/analyze'],['K
   const gemini=f.requests.filter(r=>r.url==='/api/gemini'),analysis=f.requests.filter(r=>r.url===analyzePath);
   assert.equal(gemini.length,1,'one sentence-context request');
   assert.ok(gemini[0].body.includes(sentence),'context request carries the designated sentence');
-  assert.equal(analysis.length,1,`one word-analysis request on ${analyzePath}`);
-  assert.deepEqual(JSON.parse(analysis[0].body).lines,[sentence]);
-  assert.equal(f.requests.length,2,'no other AI/analysis request');
+  if(language==='Korean'){
+   // #1346(한국어 기본형 뜻): 한국어 문장 단어 목록은 그 줄의 저장 토큰(정확한 출처)으로 만들고, 저장 분석과 설명 언어가
+   // 같으면 /api/analyze/korean을 다시 부르지 않는다(설명 언어가 다를 때만 그 줄을 재분석 — korean-word-meaning e2e).
+   assert.equal(analysis.length,0,`same explanation locale: no word-analysis request on ${analyzePath}`);
+   assert.deepEqual(await f.page.locator('.pdf-word-item__text').allTextContents(),['날씨가','아주','좋았어요'],'the list is the designated sentence\'s own tokens');
+   assert.equal(f.requests.length,1,'no other AI/analysis request');
+  }else{
+   assert.equal(analysis.length,1,`one word-analysis request on ${analyzePath}`);
+   assert.deepEqual(JSON.parse(analysis[0].body).lines,[sentence]);
+   assert.equal(f.requests.length,2,'no other AI/analysis request');
+  }
   assert.equal(await bar(f).count(),0);
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}

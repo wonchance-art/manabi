@@ -39,7 +39,8 @@ function readingMaterial(id, language, words) {
     [...row, ['\n', '']].forEach(([text, meaning, lemma = text], index) => {
       const tokenId = `id_${line}_${index}_locale`;
       sequence.push(tokenId);
-      dictionary[tokenId] = { text, base_form: lemma, meaning, pos: text === '\n' ? '개행' : '명사', sourceSpan: { start: offset, end: offset + text.length } };
+      // Korean reading sources require a UTF-16 span; without it the lexical candidate is never requested.
+      dictionary[tokenId] = { text, base_form: lemma, meaning, pos: text === '\n' ? '개행' : '명사', sourceSpan: { start: offset, end: offset + text.length, ...(language === 'Korean' ? { unit: 'utf16' } : {}) } };
       offset += text.length;
     });
   }
@@ -64,7 +65,7 @@ async function closeFixture(context) {
 }
 
 async function fixture(context, { importMode = false, sentenceMode = false, explanationReply } = {}) {
-  const writes = [], analysis = [], explanations = [], errors = [], consoleMessages = [];
+  const writes = [], analysis = [], explanations = [], lexical = [], errors = [], consoleMessages = [];
   const imported = [];
   await context.route('**/*', route => route.request().url().startsWith(base) ? route.continue() : route.abort());
   // Remove synthetic browser cookies before forwarding a page/RSC request to the local server.
@@ -90,6 +91,13 @@ async function fixture(context, { importMode = false, sentenceMode = false, expl
   });
   await context.route('**/api/gemini', async route => {
     const prompt = route.request().postDataJSON()?.contents?.[0]?.parts?.[0]?.text || '';
+    // The lexical candidate is separate from the held contextual-explanation fixture.
+    if (prompt.includes('lexicalMeaning')) {
+      const input = JSON.parse(prompt.split('INPUT_JSON=').at(-1));
+      lexical.push({ locale: input.locale, lemma: input.lemma });
+      const lexicalMeaning = input.locale === 'ko' ? '교육 기관' : input.locale === 'zh-TW' ? '學校' : '学校';
+      return route.fulfill({json:{candidates:[{content:{parts:[{text:JSON.stringify({lemma:input.lemma,lemmaStatus:'matched',lexicalMeaning})}]}}]}});
+    }
     const locale = prompt.includes('Taiwan Traditional') ? 'zh-TW' : prompt.includes('mainland Simplified') ? 'zh-CN' : 'ko';
     const sentence = prompt.includes('"translation": string') || prompt.includes('**번역**');
     explanations.push({ locale, kind: sentence ? 'sentence' : 'word' });
@@ -144,7 +152,7 @@ async function fixture(context, { importMode = false, sentenceMode = false, expl
       if (['warning', 'error'].includes(message.type())) consoleMessages.push({ type: message.type(), text: message.text(), location: message.location() });
     });
   });
-  return { writes, analysis, explanations, errors, consoleMessages, imported };
+  return { writes, analysis, explanations, lexical, errors, consoleMessages, imported };
 }
 
 const preferences = page => page.evaluate(key => JSON.parse(localStorage.getItem(key)), VIEWER_LANGUAGE_PREF_KEY);
@@ -210,7 +218,9 @@ test('shared reader retains independent locale settings, exact source and learni
       const sentenceCalls = () => audit.explanations.filter(row => row.kind === 'sentence').length, sentencesBefore = sentenceCalls();
       await token().waitFor(); await token().click();
       await page.locator('.word-detail-card').waitFor();
-      if (material.processed_json.metadata.language === 'Korean') await page.waitForFunction(() => document.querySelector('.word-detail-card__meaning')?.textContent.trim() === '학교로');
+      if (material.processed_json.metadata.language === 'Korean') await page.waitForFunction(() => document.querySelector('[data-korean-context-meaning] p')?.textContent.trim() === '학교로');
+      // This read-only reader cannot save, so the card renders no lexical section at all (it would render synchronously).
+      if (material.processed_json.metadata.language === 'Korean') assert.equal(await page.locator('[data-korean-lexical-meaning]').count(), 0, 'a reader who cannot save sees no generated lexical meaning');
       // AE-R2 PR ②(설계서 docs/manabi-viewer-v2-ae-r2.md §6.1): 카드가 열린 채 0.3초면 그 줄 번역을 한 번 선처리한다.
       // 아래 「UI만 바꾸면 추가 호출 0」의 기준은 그 요청이 도착한 뒤에 잡는다(단언 자체는 그대로).
       for (let i = 0; i < 50 && sentenceCalls() === sentencesBefore; i++) await page.waitForTimeout(100);
@@ -239,11 +249,12 @@ test('shared reader retains independent locale settings, exact source and learni
       }
       for (const locale of ['ko', 'zh-CN', 'zh-TW']) {
         const before = await preferences(page);
-        const explanationCalls = audit.explanations.length;
+        const explanationCalls = audit.explanations.length, lexicalCalls = audit.lexical.length;
         await select('ui', locale);
         assert.equal((await preferences(page)).explanationLocale, before?.explanationLocale || 'ko');
         assert.equal(await localeBox(page, ui, 'ui').inputValue(), locale);
         assert.equal(audit.explanations.length, explanationCalls, 'UI-only locale change does not regenerate meaning');
+        assert.equal(audit.lexical.length, lexicalCalls, 'UI-only locale change does not regenerate the lexical meaning');
         assert.equal(await page.locator('.viewer-layout').getAttribute('data-ui-locale'), locale);
         await fontScope(page, locale);
         await geometry(page, `${locale}-width390-${material.id}`, locale);
@@ -255,7 +266,10 @@ test('shared reader retains independent locale settings, exact source and learni
           await select('explanation', locale);
           assert.deepEqual(await preferences(page), { version: 1, uiLocale: 'zh-TW', explanationLocale: locale });
           assert.equal(await page.locator('.viewer-layout').getAttribute('data-explanation-locale'), locale);
-          await page.waitForFunction(meaning => document.querySelector('.word-detail-card__meaning')?.textContent.trim() === meaning, { ko: '학교로', 'zh-CN': '到学校', 'zh-TW': '到學校' }[locale]);
+          await page.waitForFunction(meaning => document.querySelector('[data-korean-context-meaning] p')?.textContent.trim() === meaning, { ko: '학교로', 'zh-CN': '到学校', 'zh-TW': '到學校' }[locale]);
+          // Read-only reader: no lexical section and no stale value in any explanation locale (savable case: korean-word-meaning.e2e).
+          assert.equal(await page.locator('[data-korean-lexical-meaning]').count(), 0, `${locale}: a reader who cannot save sees no generated lexical meaning`);
+          assert.equal(audit.lexical.length, 0, `${locale}: a reader who cannot save makes no lexical generation call`);
         }
       }
       await close();
@@ -286,6 +300,7 @@ test('shared reader retains independent locale settings, exact source and learni
     assert.deepEqual(audit.analysis, [], 'changing display settings must not invoke source analysis');
     const protectedWrites = audit.writes.filter(row => !['reading_progress', 'library_reading_activity'].includes(row.table));
     assert.deepEqual(protectedWrites, [], 'locale switches must not create/update vocabulary, known words, review events or SRS');
+    assert.deepEqual(audit.lexical, [], 'a reader who cannot save makes no lexical generation call');
     assert.deepEqual(audit.errors, []);
   } catch (error) {
     await page.screenshot({ path: `${output}/failure.png` }).catch(() => {});
@@ -340,6 +355,7 @@ test('selected sentence refreshes explanation locale without reanalyzing source 
     }
     await page.screenshot({ path: `${output}/selected-sentence-locale.png` });
     assert.deepEqual(audit.writes.filter(row => !['reading_progress', 'library_reading_activity'].includes(row.table)), []);
+    assert.deepEqual(audit.lexical, [], 'a reader who cannot save makes no lexical generation call');
     assert.deepEqual(audit.errors, []);
   } catch (error) {
     await page.screenshot({ path: `${output}/sentence-failure.png` }).catch(() => {});
@@ -432,6 +448,7 @@ test('pending Korean explanations cancel across locales and keyboard retry prese
     assert(!(await page.locator('.word-detail-card').first().textContent()).includes('STALE_KO'));
     assert.deepEqual(audit.analysis, []);
     assert.deepEqual(audit.writes.filter(row => !['reading_progress', 'library_reading_activity'].includes(row.table)), []);
+    assert.deepEqual(audit.lexical, [], 'a reader who cannot save makes no lexical generation call');
     assert.deepEqual(audit.errors, []);
   } finally {
     for (const request of pending) request.resolve(request.normalText);

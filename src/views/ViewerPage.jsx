@@ -121,6 +121,8 @@ import { openForSentence, sentencePanelBelongsToLine } from '../lib/viewerSenten
 import { prepareViewerSaveUndo, undoViewerSave } from '../lib/viewerSaveUndo';
 import { contextualMeaning, refreshViewerToken, referenceMatchesContext, createViewerRequestGate, viewerCacheKey, viewerCommandAllowed } from '../lib/viewerReliability';
 import { clearAnalysisCache, readAnalysisCache, writeAnalysisCache } from '../lib/viewerAnalysisCache';
+import {useKoreanWordMeaning} from '../lib/useKoreanWordMeaning';
+import {koreanWordMeaningInput, koreanMeaningEnvelope, koreanLexicalMeaningAllowed, savedKoreanCardMeaning, selectedKoreanWordTokens, koreanListContextRequest, koreanListContextEntries} from '../lib/koreanWordMeaning';
 import { SENTENCE_TX_LOGIN_REQUIRED, SENTENCE_TX_QUERY, canonicalSentence, classifySentenceOpen, fetchSentenceTranslation, peekSentenceTranslationKey,
   sentenceBookMeaning, sentencePrefetchLimiter, sentenceTranslationKey, sentenceTranslationQuery, sentenceTxStats } from '../lib/sentenceTranslation';
 import { sentencePanelOriginal, sentencePanelTokenIds, sentencePatternHits, sentenceWordGlosses } from '../lib/viewerSentenceGlosses';
@@ -370,6 +372,7 @@ export default function ViewerPage() {
   const inlineGradeRequests = useRef(new Set());
   const [pendingInlineGrades, setPendingInlineGrades] = useState(() => new Set());
   const [inlineSaving, setInlineSaving] = useState({});
+  const selectionSourceRef = useRef(null);
   const { titleEditing, setTitleEditing, titleDraft, setTitleDraft, updateTitleMutation } = useTitleEdit(id, toast);
 
   // 기존 자료의 한국어 단일 설명 캐시는 그대로 읽는다. 여러 설명 언어를 지원하는
@@ -968,9 +971,30 @@ export default function ViewerPage() {
   useEffect(() => { setSentencePatternOpen(null); }, [leftPanelText]);
   const preserveOpenWord = !classStudyActive && !studyContext && !material?.__local
     && !/^\/class\//.test(originalParams.get('returnTo') || '') && !!selectedToken && isSheetOpen;
+  // koreanSourceScope는 원문·분석 전체 직렬화다. 렌더마다 다시 감싸지 않고 계정·자료·언어·원문이
+  // 바뀔 때만 만든다. 같은 문자열 인스턴스라 행마다의 소유 범위 비교도 즉시 끝난다.
+  const koreanMeaningOwnerScope = useMemo(() => JSON.stringify([user?.id, id, effectiveExplanationLocale, koreanSourceScope]),
+    [user?.id, id, effectiveExplanationLocale, koreanSourceScope]);
+  // 목록·카드가 같은 규칙으로 '이 읽기 도움이 어느 설명 언어인가'를 판단한다.
+  const koreanReadingLocale = token => token?.meaningLocale || token?.explanationLocale || material?.processed_json?.metadata?.explanationLocale || 'ko';
+  // 새 기본형 뜻 경로는 zh 설명 언어에서, 로그인해 저장할 수 있을 때만 쓴다(읽기 전용은 생성 0회).
+  // ko는 사전 근거 도입 전까지 main 저장 동작 그대로.
+  const koreanLexical = materialLang === 'Korean' && koreanLexicalMeaningAllowed({accountId: user?.id,
+    canSave: learningCapabilities.save, locale: effectiveExplanationLocale});
+  function meaningInputFor(token) {
+    if (!koreanLexical || !token) return null;
+    return koreanWordMeaningInput({accountId: user?.id, materialId: id, token, source: readingContextSource(token), locale: effectiveExplanationLocale});
+  }
+  const selectedMeaningInput = meaningInputFor(selectedToken);
+  // 이미 저장한 기본형은 카드의 뜻을 그대로 쓰므로 새 후보를 만들지도 보이지도 않는다.
+  const selectedSavedMeaning = koreanLexical ? savedKoreanCardMeaning(findSavedVocab(savedWords, selectedToken, materialLang), selectedToken) : null;
+  const koreanLexicalShown = !!selectedMeaningInput && !selectedSavedMeaning;
   const localizedWord = useViewerExplanation({token: selectedToken, sentence: ctxSentenceOf(selectedToken) ?? leftPanelText,
     locale: effectiveExplanationLocale, sourceLocale: selectedToken?.meaningLocale || selectedToken?.explanationLocale || material?.processed_json?.metadata?.explanationLocale || 'ko',
     scope: cacheScope, enabled: materialLang === 'Korean' && isSheetOpen});
+  const koreanMeanings = useKoreanWordMeaning({ownerScope: koreanMeaningOwnerScope, input: selectedMeaningInput,
+    enabled: koreanLexicalShown && isSheetOpen});
+  const wordMeaning = koreanMeanings.selected;
   const koreanSaveDisplayScope = useRef('');
   koreanSaveDisplayScope.current = JSON.stringify([user?.id, id, effectiveExplanationLocale, selectedToken?.id, selectedToken?.text, material?.raw_text]);
   useEffect(() => {
@@ -1179,13 +1203,14 @@ export default function ViewerPage() {
     sequence: material?.processed_json?.sequence,
     dictionary: material?.processed_json?.dictionary,
     enabled: true,
-    onSelect: (text) => {
+    onSelect: (text, selection) => {
       setRestoredClassSource(null);
       setPickedLineIdx(null); // 막대 지정 이펙트와 상호 배타
       setSelectedRangeText(text);
       grammar.reset(); // 다른 문장의 해설이 남지 않게
       easier.reset();  // 다른 문장의 쉬운 말도 함께
       setSentenceTabSignal(s => s + 1); // 명시적 드래그 분석은 문장 탭, 기존 단어 정보는 보존.
+      selectSentenceSource(text, selection?.tokenIds);
       runSelectionAnalysis(text);
     },
   });
@@ -1193,11 +1218,11 @@ export default function ViewerPage() {
   // 드래그 선택·문장 버튼 공용 — 왼쪽 번역+맥락, 오른쪽 단어 리스트 분석
   // 문장 이동(▲/▼) — 지정 가능한 문장 목록. 렌더의 lineGroups와 같은 규칙으로
   // sequence에서 파생한다(문장 막대와 단위 동조 — sentenceNav 계약 참조).
-  const sentences = useMemo(() => {
+  // 줄 묶음은 한 번 계산해 문장 이동과 한국어 문장 목록(줄별 tokenIds)이 함께 쓴다.
+  const readerLineGroups = useMemo(() => {
     const seq = material?.processed_json?.sequence;
     const dict = material?.processed_json?.dictionary;
     if (!seq?.length || !dict) return [];
-    const rawLines = material?.raw_text?.split('\n') ?? [];
     const lineGroups = [];
     let curGroup = { rawIdx: 0, tokenIds: [] };
     for (const tokenId of seq) {
@@ -1214,8 +1239,11 @@ export default function ViewerPage() {
       }
     }
     if (curGroup.tokenIds.length) lineGroups.push(curGroup);
-    return pickableSentences(lineGroups, rawLines);
-  }, [material?.processed_json, material?.raw_text]);
+    return lineGroups;
+  }, [material?.processed_json]);
+  const sentences = useMemo(() => pickableSentences(readerLineGroups, material?.raw_text?.split('\n') ?? []),
+    [readerLineGroups, material?.raw_text]);
+  const lineTokenIdsOf = rawIdx => readerLineGroups.find(group => group.rawIdx === rawIdx)?.tokenIds || [];
 
   // 어휘 커버리지 배지(#1077-2) — 서재 카드와 **같은 엔진·같은 인덱스**(materialFit ←
   // 담김 ∪ '이미 앎'). 뷰어에서만 다른 수를 보이면 두 화면이 서로를 반증한다.
@@ -1269,6 +1297,7 @@ export default function ViewerPage() {
     tokenRange.clearRange();
     setPickedLineIdx(target.rawIdx);
     setSelectedRangeText(target.text);
+    selectSentenceSource(target.text, lineTokenIdsOf(target.rawIdx));
     if (focusMode) clearAnalysisPanels();
     else runSelectionAnalysis(target.text);
     const el = tokenRefs.current[target.firstTokenId];
@@ -1423,10 +1452,58 @@ export default function ViewerPage() {
     clearAnalysisPanels();
   };
 
+  function selectSentenceSource(text, tokenIds) {
+    selectionSourceRef.current = {text, tokenIds, scope: koreanSourceScope};
+  }
+  // main과 같은 목록 읽기 도움: 저장 분석의 설명 언어가 현재와 다르면 각 출현의 원문 줄을 현재
+  // 설명 언어로 다시 분석한다. 같은 범위의 결과만 그 출현 행에 붙여 같은 기본형을 합치지 않는다.
+  async function refreshKoreanListContext(rows, sources, request, current) {
+    const locale = effectiveExplanationLocale;
+    const {lines, positions} = koreanListContextRequest(rows.filter(row => koreanReadingLocale(row) !== locale), sources);
+    if (!lines.length) return;
+    try {
+      const anKey = await viewerCacheKey('viewer_an', cacheScope, ['korean-list-context', locale, lines]).catch(() => null);
+      if (!current()) return;
+      let entries = isClient && anKey ? readAnalysisCache(localStorage, anKey) : null;
+      if (!entries) {
+        let authHeader = {};
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.access_token) authHeader = { Authorization: `Bearer ${session.access_token}` };
+        } catch {}
+        if (!current()) return;
+        const res = await fetch('/api/analyze/korean', {
+          signal: request.signal, method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeader },
+          body: JSON.stringify({ lines, language: 'Korean', explanationLocale: locale }),
+        });
+        if (!res.ok) throw new Error('ANALYSIS_FAILED');
+        const data = await res.json();
+        if (!current()) return;
+        entries = koreanListContextEntries(data?.results, positions, locale);
+        if (isClient && anKey) writeAnalysisCache(localStorage, anKey, entries);
+      }
+      const byId = new Map(entries.map(entry => [entry.id, entry]));
+      // 행 제거(✕)는 유지하고, 출처·기본형은 저장 토큰 그대로 둔 채 읽기 도움만 현재 언어로 바꾼다.
+      setDragTokens(prev => prev?.map(row => {
+        const entry = byId.get(row.id);
+        return entry?.text === row.text && typeof entry.meaning === 'string' && entry.meaning
+          ? {...row, meaning: entry.meaning, meaningLocale: locale, explanationLocale: locale,
+            morphology: Array.isArray(entry.morphology) ? entry.morphology : []} : row;
+      }) ?? prev);
+    } catch (error) {
+      // 저장 토큰 목록은 그대로 두고, main과 같은 안내로 다시 선택하게 한다.
+      if (current() && error?.name !== 'AbortError') toast('단어 분석을 가져오지 못했어요. 문장을 다시 선택해 주세요.', 'error');
+    }
+  }
   const runSelectionAnalysis = async (sel) => {
     return runSelectedSentence(sel);
   };
   const runSelectedSentence = async (sel, explanationOnly = false) => {
+    // 한국어 단어 목록의 출처 토큰: 이 문장을 고른 동작이 남긴 줄별 tokenIds(같은 원문 범위·같은 문장일 때만).
+    // 단어 분석은 explanationOnly=false 경로(runSelectionAnalysis)에서만 쓰이고, 호출 시점에 동기로 읽는다.
+    const selection = selectionSourceRef.current;
+    const tokenIds = selection?.scope === koreanSourceScope && selection.text === sel ? selection.tokenIds : [];
     const request = selectionGate.current.start();
     const current = () => selectionGate.current.isCurrent(request);
     const deadline = setTimeout(() => {
@@ -1495,6 +1572,20 @@ export default function ViewerPage() {
         // 단어 분석 — 문장 단위 캐시(좌측 번역과 대칭). 적중하면 서버 요청 자체가 사라져
         // 문맥 판별·뜻 조회가 함께 절감된다(§C4).
         explanationOnly ? Promise.resolve() : (async () => {
+          if (materialLang === 'Korean') {
+            let sources = koreanSources.scope === koreanSourceScope ? koreanSources.byToken : null;
+            if (!sources) {
+              const revision = await learningSourceRevision(material.raw_text);
+              sources = Object.fromEntries(await Promise.all((tokenIds || []).map(async tokenId => [tokenId,
+                await koreanReadingSource({materialId: id, rawText: material.raw_text, sourceRevision: revision,
+                  token: {...material.processed_json?.dictionary?.[tokenId], id: tokenId}})])));
+            }
+            if (!current()) return;
+            const rows = selectedKoreanWordTokens(material?.processed_json?.dictionary, tokenIds, sources);
+            setDragTokens(rows);
+            await refreshKoreanListContext(rows, sources, request, current);
+            return;
+          }
           const anKey = await viewerCacheKey('viewer_an', cacheScope, sel).catch(() => null);
           if (!current()) return;
           const anCached = isClient && anKey ? readAnalysisCache(localStorage, anKey) : null;
@@ -1581,6 +1672,7 @@ export default function ViewerPage() {
     tokenRange.clearRange();
     setSelectedRangeText(pickedSentence.text);
     setSentenceTabSignal(s => s + 1);
+    selectSentenceSource(pickedSentence.text, lineTokenIdsOf(pickedSentence.rawIdx));
     runSelectionAnalysis(pickedSentence.text);
   };
   const moveBarRef = useRef(null);
@@ -2172,25 +2264,60 @@ export default function ViewerPage() {
     return quote ? { kind: 'reading', materialId: id, quote, surface: token.text } : null;
   }
 
-  function contextWord(token, grade) {
+  function contextWord(token, grade, prepared) {
+    if (materialLang === 'Korean' && !koreanLexical) {
+      // 보류 언어(ko): main과 같은 저장 — 열린 단어는 현재 설명 언어의 문맥 뜻, 목록 토큰은 같은 언어일 때만.
+      const meaning = token.id === selectedToken?.id && token.text === selectedToken?.text ? localizedWord.meaning
+        : koreanReadingLocale(token) === effectiveExplanationLocale ? token.meaning : '';
+      return buildVocabRow({ userId: user?.id, surface: token.text, base: token.sep_link || token.base_form,
+        meaning, language: materialLang, reading: token.furigana || token.reading, pos: token.pos, grade });
+    }
+    const input = materialLang === 'Korean' ? meaningInputFor(token) : null;
+    const candidate = prepared || koreanMeanings.peek(input);
     const meaning = materialLang === 'Korean'
-      ? (token.id === selectedToken?.id && token.text === selectedToken?.text ? localizedWord.meaning
-        : (token.meaningLocale || token.explanationLocale || material?.processed_json?.metadata?.explanationLocale || 'ko') === effectiveExplanationLocale ? token.meaning : '')
+      ? (candidate.status === 'ready' ? candidate.lexicalMeaning : '')
       : token.meaning;
-    return buildVocabRow({ userId: user?.id, surface: token.text, base: token.sep_link || token.base_form,
+    const word = buildVocabRow({ userId: user?.id, surface: token.text, base: token.sep_link || token.base_form,
       meaning, language: materialLang, reading: token.furigana || token.reading, pos: token.pos, grade });
+    if (materialLang === 'Korean') word.meaningCandidate = koreanMeaningEnvelope(input, candidate);
+    return word;
   }
 
   function koreanSaveReady(token) {
-    return materialLang !== 'Korean' || (!!token && !!readingContextSource(token) && !!contextWord(token).meaning
-      && !(token.id === selectedToken?.id && (localizedWord.loading || localizedWord.error)));
+    if (materialLang !== 'Korean') return true;
+    if (!koreanLexical) return !!token && !!readingContextSource(token) && !!contextWord(token).meaning
+      && !(token.id === selectedToken?.id && (localizedWord.loading || localizedWord.error));
+    return koreanMeanings.peek(meaningInputFor(token)).status === 'ready';
+  }
+
+  const koreanActionRef = useRef(null);
+  koreanActionRef.current = {ownerScope: koreanMeaningOwnerScope, permitted: learningCapabilities.save && wordStateReady,
+    selected: selectedToken, inputFor: meaningInputFor};
+  async function prepareKoreanPayload(token) {
+    const input = meaningInputFor(token), scope = koreanMeaningOwnerScope;
+    const source = readingContextSource(token);
+    if (!input || !koreanActionRef.current.permitted) throw new Error(vt('상태 다시 확인'));
+    const savedMeaning = savedKoreanCardMeaning(findSavedVocab(savedWords, token, materialLang), token);
+    if (savedMeaning) {
+      // 기존 카드: 다시 생성하지 않고 그 뜻으로 이 출처만 더한다(봉투 없음 → 서버의 기존 수동 계약, 카드 뜻 불변).
+      return {word: buildVocabRow({ userId: user?.id, surface: token.text, base: token.sep_link || token.base_form,
+        meaning: savedMeaning, language: materialLang, reading: token.furigana || token.reading, pos: token.pos }), source};
+    }
+    const candidate = await koreanMeanings.ensure(input);
+    const current = koreanActionRef.current;
+    if (current.ownerScope !== scope || !current.permitted || current.inputFor(current.selected)?.key !== input.key) {
+      throw Object.assign(new Error('Korean save cancelled'), {name: 'AbortError'});
+    }
+    if (candidate.status !== 'ready') throw new Error(vt('설명을 다시 불러오기'));
+    return {word: contextWord(token, undefined, candidate), source};
   }
 
   async function saveKoreanVocabulary(token, grade) {
     if (!learningCapabilities.save || !wordStateReady || !koreanSaveReady(token)) return null;
     const scope = koreanSaveDisplayScope.current, accountId = user.id;
     try {
-      const result = await saveContext({ word: contextWord(token), source: readingContextSource(token),
+      const payload = koreanLexical ? await prepareKoreanPayload(token) : { word: contextWord(token), source: readingContextSource(token) };
+      const result = await saveContext({ ...payload,
         ...(Number.isInteger(grade) && grade >= 1 && grade <= 4 ? { initialGrade: grade } : {}) });
       if (result.vocabulary) insertConfirmedVocabulary(queryClient, accountId, result.vocabulary);
       for (const key of ['vocab-words', 'vocab', 'vocabulary-contexts', 'book-review']) {
@@ -2203,6 +2330,7 @@ export default function ViewerPage() {
       toast(`"${token.text}" 저장!`, 'success');
       return result;
     } catch (error) {
+      if (error.name === 'AbortError') return null;
       if (koreanSaveDisplayScope.current !== scope) return null;
       if (error.code === 'meaning_conflict') setKoreanSaveConflict({ tokenId: token.id, text: token.text });
       else toast('저장 실패 — ' + friendlyToastMessage(error), 'error');
@@ -2553,8 +2681,10 @@ export default function ViewerPage() {
               {t.text}
               {t.furigana && <span className="pdf-word-item__reading">{t.furigana}</span>}
             </span>
-            <span className="pdf-word-item__meaning" onClick={() => handleListWordClick(t)}>{materialLang !== 'Korean' || (t.meaningLocale || t.explanationLocale || 'ko') === effectiveExplanationLocale ? t.meaning : ''}</span>
-            {user && learningStorageSupported && koreanSaveReady(t) && (
+            <span className="pdf-word-item__meaning" onClick={() => handleListWordClick(t)}>{materialLang !== 'Korean' || koreanReadingLocale(t) === effectiveExplanationLocale ? t.meaning : ''}</span>
+            {/* 한국어 목록은 저장 단추 없이 읽기 도움만 보인다. 이전 ★는 선택 범위 기준 분석 id가 원문 id와 겹칠 때만 떠
+                문맥 뜻을(때로 다른 줄의 출처로) 저장했다. 저장은 기본형 뜻을 먼저 보여 주는 단어창에서. */}
+            {user && learningStorageSupported && materialLang !== 'Korean' && koreanSaveReady(t) && (
               <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                 {isSaved ? <SaveContextButton key={`${id}:${saveKey}:${leftPanelText}:${materialLang === 'Korean' ? `${effectiveExplanationLocale}:${readingContextSource(t)?.sourceRevision}` : ''}`} label={vt("문맥 추가")}
                   word={contextWord(t)} source={readingContextSource(t)} /> : (
@@ -2770,7 +2900,7 @@ export default function ViewerPage() {
   // 수업 모드는 수업 전용 버튼과 경로(runSelectionAnalysis)를 지금대로 둔다(정본 §0.2).
   const renderClassSentenceAction = () => (
     ctxSentenceOf(selectedToken) ? <div className="word-detail-card__actrow reader-card-class-actions">
-      <button className="btn btn--ghost btn--sm" aria-label={vt("문장 번역")} title={vt("문장 번역")} onClick={()=>{setSentenceTabSignal(s=>s+1);runSelectionAnalysis(ctxSentenceOf(selectedToken));}}>{vt("번역")}</button>
+      <button className="btn btn--ghost btn--sm" aria-label={vt("문장 번역")} title={vt("문장 번역")} onClick={()=>{setSentenceTabSignal(s=>s+1);selectSentenceSource(ctxSentenceOf(selectedToken), lineTokenIdsOf(Number(selectedToken.id?.match(/^(?:id|failed)_(\d+)_/)?.[1])));runSelectionAnalysis(ctxSentenceOf(selectedToken));}}>{vt("번역")}</button>
     </div> : null
   );
   const renderWordDetailCard = (classAction=null,classMeaning=null) => !selectedToken || !isSheetOpen ? null : (
@@ -2982,7 +3112,17 @@ export default function ViewerPage() {
       })()}
       {classMeaning?.editor||(!classStudyActive&&<div className={`word-detail-card__meaningrow${materialLang === 'English' && selectedToken.reading ? ' word-detail-card__meaningrow--tight' : ''}`}>
         <div className="word-detail-card__meaning" lang={materialLang === 'Korean' ? effectiveExplanationLocale : undefined}>
-          {materialLang === 'Korean' ? (localizedWord.loading ? vt('문맥 뜻을 불러오는 중…') : localizedWord.error ? <button onClick={localizedWord.retry}>{vt('설명을 다시 불러오기')}</button> : localizedWord.meaning) : refMeaning || selectedToken.meaning || '(뜻 없음)'}
+          {materialLang === 'Korean' ? <>
+            {selectedVocab && <section data-korean-saved-meaning><small>{vt('✓ 단어장에 있음')} · {vt('뜻')}</small><p>{selectedVocab.meaning}</p></section>}
+            {koreanLexicalShown && <section data-korean-lexical-meaning aria-label={`${vt('기본형')} · ${vt('뜻')}`}><small>{vt('기본형')} · {vt('뜻')}</small><p>{wordMeaning.status === 'ready' ? wordMeaning.lexicalMeaning
+              : ['idle', 'loading'].includes(wordMeaning.status) ? vt('불러오는 중…') : vt('(뜻 없음)')}</p>
+              {['error', 'uncertain'].includes(wordMeaning.status) && <button onClick={koreanMeanings.retry}>{vt('설명을 다시 불러오기')}</button>}
+            </section>}
+            {(localizedWord.meaning || localizedWord.loading || localizedWord.error) && <section data-korean-context-meaning aria-label={`${vt('맥락')} · ${selectedToken.text}`}><small>{vt('맥락')} · {selectedToken.text}</small>
+              {localizedWord.loading ? <p>{vt('문맥 뜻을 불러오는 중…')}</p> : localizedWord.meaning && <p>{localizedWord.meaning}</p>}
+              {localizedWord.error && <button onClick={localizedWord.retry}>{vt('설명을 다시 불러오기')}</button>}
+            </section>}
+          </> : refMeaning || selectedToken.meaning || '(뜻 없음)'}
         </div>
         {/* 리스트 단어는 자료 토큰이 아니라(id 없음) 이 자료의 교정 대상이 될 수 없다 */}
         {canEditToken && selectedToken.id && (
@@ -3140,8 +3280,8 @@ export default function ViewerPage() {
               <button disabled className="btn btn--ghost btn--sm save-grade__in">{vt('✓ 단어장에 있음')}</button>
               {nextReview && <span className="save-grade__next">{nextReview.due ? vt('복습 차례') : vt('다음 복습 {date}', { date: nextReview.label })}</span>}
             </span>
-            {koreanSaveReady(selectedToken) && <SaveContextButton key={`${id}:${selectedToken.id || selectedToken.text}:${leftPanelText}:${materialLang === 'Korean' ? `${effectiveExplanationLocale}:${readingContextSource(selectedToken)?.sourceRevision}` : ''}`}
-              label={vt("이 문맥 추가")} word={contextWord(selectedToken)} source={readingContextSource(selectedToken)} />}
+            {(koreanLexical ? !!selectedMeaningInput : koreanSaveReady(selectedToken)) && <SaveContextButton key={koreanLexical ? selectedMeaningInput.key : `${id}:${selectedToken.id || selectedToken.text}:${leftPanelText}:${materialLang === 'Korean' ? `${effectiveExplanationLocale}:${readingContextSource(selectedToken)?.sourceRevision}` : ''}`}
+              label={vt("이 문맥 추가")} word={contextWord(selectedToken)} source={readingContextSource(selectedToken)} preparePayload={koreanLexical ? () => prepareKoreanPayload(selectedToken) : undefined} />}
             {knownToggle}
           </div>
         );
@@ -3184,8 +3324,8 @@ export default function ViewerPage() {
         </div>
       )}
       {user && learningStorageSupported && materialLang === 'Korean' && koreanSaveConflict && koreanSaveConflict.tokenId === selectedToken.id && koreanSaveConflict.text === selectedToken.text && koreanSaveReady(selectedToken) &&
-        <SaveContextButton key={`${id}:${selectedToken.id}:${effectiveExplanationLocale}:${readingContextSource(selectedToken)?.sourceRevision}:conflict`} label={vt("이 문맥 추가")}
-          word={contextWord(selectedToken)} source={readingContextSource(selectedToken)} onSaved={() => setKoreanSaveConflict(null)} />}
+        <SaveContextButton key={koreanLexical ? `${selectedMeaningInput?.key}:conflict` : `${id}:${selectedToken.id}:${effectiveExplanationLocale}:${readingContextSource(selectedToken)?.sourceRevision}:conflict`} label={vt("이 문맥 추가")}
+          word={contextWord(selectedToken)} source={readingContextSource(selectedToken)} preparePayload={koreanLexical ? () => prepareKoreanPayload(selectedToken) : undefined} onSaved={() => setKoreanSaveConflict(null)} />}
       {user && learningStorageSupported && (() => {
         // 네 등급은 FSRS 평가다. 아는 단어 표시는 별도로 복습을 멈추며 원래 기록을 보존한다.
         if (isWordSaved && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending) return null;
@@ -3771,6 +3911,7 @@ export default function ViewerPage() {
                   setSelectedRangeText(lineHead.text); // 문법 버튼 활성 경로
                   // 집중 모드 단일 규칙: 지정 '밖' 막대 = 순수 이동(지정 먼저), 지정된
                   // 문장의 막대 재탭 = 본래처럼 전체 분석. 집중 꺼짐 = 항상 분석.
+                  selectSentenceSource(lineHead.text, lineHead.tokenIds);
                   if (focusMode && pickedLineIdx !== lineHead.rawIdx) clearAnalysisPanels();
                   else runSelectionAnalysis(lineHead.text);
                 }}
@@ -3926,7 +4067,7 @@ export default function ViewerPage() {
             return (
               <span key={gi} className={hClass || undefined} style={{ display: 'contents' }}>
                 {lineTokenIds.slice(startIdx).map((id, ti) =>
-                  renderToken(id, ti === 0 && lineText.length >= 2 ? { text: lineText, rawIdx } : null, isPicked, paceSlices?.get(id) || null)
+                  renderToken(id, ti === 0 && lineText.length >= 2 ? { text: lineText, rawIdx, tokenIds: lineTokenIds } : null, isPicked, paceSlices?.get(id) || null)
                 )}
                 {gi < lineGroups.length - 1 && <div className="line-break" />}
               </span>
