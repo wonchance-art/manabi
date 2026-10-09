@@ -1013,6 +1013,40 @@ test('AE-R4 390 첫 화면 우선: 3줄 문장 속 体育场의 场 · 技术의
  }finally{await h.context.close();}
 });
 
+// M09 V7 FAIL(2026-10-09, #1337 6074340330): 창을 연 채 화면이 390×844 → 320×640으로 줄면 창이 등급 버튼을 덮고 화면 아래로
+// 20px 넘쳤다(닫았다 다시 열면 정상). 크기 맞춤(한 단계 작게 · 위로 올림)을 글자를 열 때 한 번만 정해, 창 크기가 바뀌어도 옛 값을 썼기 때문.
+test('AE-R4: 창을 연 채 화면이 390×844 → 320×640으로 줄어도 다 보이고 등급 버튼을 가리지 않는다(다시 연 것과 같은 자리)',{timeout:180000},async()=>{
+ const geometryOk=(g,label)=>{
+  assert.ok(g,`${label}: popover visible`);
+  assert.ok(g.pop.left>=g.body.left-.5&&g.pop.right<=g.body.right+.5,`${label}: inside the card horizontally`);
+  assert.ok(g.pop.top>=g.body.top-.5&&g.pop.bottom<=Math.min(g.vh,g.card.bottom)+.5,`${label}: the whole popover is visible ${JSON.stringify({pop:g.pop,body:g.body,card:g.card,vh:g.vh})}`);
+  if(g.gradeTop!==null)assert.ok(g.pop.bottom<=g.gradeTop-3+.5,`${label}: does not cover the grade buttons (${g.pop.bottom} ≤ ${g.gradeTop} − 3)`);
+ };
+ const f=await open(glyphMaterial(),{prefs:zhPrefs,rows:glyphRows,width:390,height:844,saved:savedCanguan()});
+ try{
+  await until(()=>f.bulk.length>=1);
+  await tap(f,'id_0_7','웅장하다, 장관이다');
+  await visibleCard(f.page).locator('.word-fit__hun').first().waitFor();
+  await visibleCard(f.page).locator('.word-fit__char',{hasText:'观'}).click();
+  const pop=popOf(f.page);
+  await pop.locator('.hanja-pop__head').waitFor();
+  await f.page.waitForTimeout(300);
+  geometryOk(await popGeometry(f.page),'观 opened at 390×844');
+  await f.page.setViewportSize({width:320,height:640});
+  await f.page.waitForTimeout(500);
+  const resized=await popGeometry(f.page);
+  geometryOk(resized,'观 still open after 390×844 → 320×640');
+  await f.page.keyboard.press('Escape');await pop.waitFor({state:'detached'});
+  await visibleCard(f.page).locator('.word-fit__char',{hasText:'观'}).click();
+  await pop.locator('.hanja-pop__head').waitFor();
+  await f.page.waitForTimeout(300);
+  const fresh=await popGeometry(f.page);
+  geometryOk(fresh,'观 reopened at 320×640');
+  assert.ok(Math.abs(resized.pop.top-fresh.pop.top)<=1&&Math.abs(resized.pop.height-fresh.pop.height)<=1,`resized popover matches a fresh open (${resized.pop.top}/${resized.pop.height} vs ${fresh.pop.top}/${fresh.pop.height})`);
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
 test('AE-R4: 일본어 자료는 글자 카드 그대로(한자 창 0)',{timeout:180000},async()=>{
  const ja=build([[{text:'天気',base_form:'天気',furigana:'てんき',meaning:'날씨',pos:'명사'},{text:'。',base_form:'。',pos:'기호'}]],'Japanese');
  const j=await open(ja);

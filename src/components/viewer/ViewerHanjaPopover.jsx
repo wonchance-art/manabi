@@ -133,6 +133,8 @@ export default function ViewerHanjaPopover({ inspect, word, tables = {}, savedRo
   // 기준 상자는 단어창(.word-detail-card — 본문 + 하단). 창은 본문 스크롤 상자 밖 층(.hanja-pop-layer)에 있어 잘리지 않고,
   // 본문을 스크롤하면 글자를 따라간다(scroll 이벤트). 규격은 글자를 열 때 한 번 정한다: 창 아래 끝이 등급 버튼(저장 단어는
   // 저장 줄) 위 끝 − 3px 안에 들면 기본, 아니면 한 단계 작게, 그래도 넘치면 그만큼 위로 올린다(화살표 숨김).
+  // 화면(창) 크기가 바뀌면 다시 정한다 — 연 채 390×844 → 320×640이면 옛 규격이 등급 버튼을 덮고 화면 밖으로 넘쳤다(M09 V7 2026-10-09).
+  // 스크롤만으로는 다시 정하지 않는다(창 크기 고정).
   const fitRef = useRef({ key: null, level: 0, shift: 0 });
   const place = useCallback(() => {
     const pop = ref.current;
@@ -165,13 +167,20 @@ export default function ViewerHanjaPopover({ inspect, word, tables = {}, savedRo
     if (!body) return undefined;
     const onScroll = () => place();
     body.addEventListener('scroll', onScroll, { passive: true });
-    const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(() => place()) : null;
+    // 크기가 바뀌면 규격을 버리고 레이아웃이 자리 잡은 다음 프레임에 다시 정한다(resize 이벤트 시점 값은 중간 상태라 그대로 쓰면 어긋난다).
+    let frame = 0;
+    const refit = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => { fitRef.current = { key: null, level: 0, shift: 0 }; place(); });
+    };
+    window.addEventListener('resize', refit);
+    const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(refit) : null;
     if (ro) {
       ro.observe(card);
       const head = body.querySelector('.reader-card-headword');
       if (head) ro.observe(head);
     }
-    return () => { body.removeEventListener('scroll', onScroll); ro?.disconnect(); };
+    return () => { body.removeEventListener('scroll', onScroll); window.removeEventListener('resize', refit); cancelAnimationFrame(frame); ro?.disconnect(); };
   }, [place]);
 
   // 열리면(다른 글자로 바뀌어도) 창으로 포커스 — 비모달이라 가두지는 않는다. 자리가 잡혀 보인 뒤에 옮긴다(숨은 상자는 포커스를 못 받는다).
