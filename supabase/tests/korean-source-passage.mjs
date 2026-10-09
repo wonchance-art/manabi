@@ -11,6 +11,7 @@ const read = path => fs.readFile(new URL(path, import.meta.url), 'utf8');
 const migration = await read('../migrations/20260908060607_source_passage_study.sql');
 const apply = await read('../../docs/sql/korean-source-passage.sql');
 const rollback = await read('../../docs/sql/korean-source-passage-rollback.sql');
+const diagnose = await read('../../docs/sql/korean-source-passage-diagnose.sql');
 const a = '10000000-0000-0000-0000-000000000001';
 const b = '10000000-0000-0000-0000-000000000002';
 const BEFORE = { validate: '043b13610570a95efa49975299a123b2', open: '099b30885e28aa9d888567cade758f39' };
@@ -217,6 +218,22 @@ await check('복원: 원래 본문 해시로 돌아가고, 이미 만든 한국�
   await db.exec('RESET ROLE');
   await db.exec(rollback); // 재실행은 무변화
   assert.deepEqual(await md5s(db), BEFORE);
+  assert.deepEqual(await korean(db), READY);
+  await db.close();
+});
+
+await check('진단 SQL: 적용 블록은 적용 파일과 바이트 동일, 두 역할의 응답·지문을 남기고 ROLLBACK — 아무것도 바뀌지 않는다', async () => {
+  const block = sql => sql.slice(sql.indexOf('DO $apply$'), sql.indexOf('$apply$;\n', sql.indexOf('DO $apply$') + 10));
+  assert.equal(block(diagnose), block(apply));
+  assert.ok(diagnose.trimEnd().endsWith('ROLLBACK;') && !/^\s*COMMIT\s*;/m.test(diagnose));
+  const { db } = await fresh();
+  const before = { md5: await md5s(db), cap: await capability(db), attrs: await attrs(db), rows: await allMaterials(db) };
+  const out = (await db.exec(diagnose)).filter(r => r.rows.length).map(r => r.rows);
+  const answers = out.find(rs => rs[0]?.answer);
+  assert.equal(answers.length, 4);
+  for (const a of answers) assert.deepEqual(JSON.parse(a.answer).languages.Korean, READY);
+  assert.deepEqual(out.find(rs => rs[0]?.before_h)?.map(r => r.key).length, 1); // r2가 바꾸는 키는 트리거 함수 하나
+  assert.deepEqual({ md5: await md5s(db), cap: await capability(db), attrs: await attrs(db), rows: await allMaterials(db) }, before);
   assert.deepEqual(await korean(db), READY);
   await db.close();
 });
