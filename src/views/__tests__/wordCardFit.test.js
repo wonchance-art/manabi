@@ -55,7 +55,7 @@ describe('④ 글자 탐색 계약', () => {
   });
 
   it('글자 패널 — 훈음·병음·日 자형 + 이 글자가 든 내 단어(칩 탭 = 그 단어 카드로)', () => {
-    expect(viewer).toContain("charDetail(inspectChar.ch, { koTable: hanjaKoTable, hunTable: hanjaHunTable, jaTable: hanjaJaTable })");
+    expect(viewer).toContain("charDetail(inspectChar.ch, { koTable: hanjaKoTable, hunTable: hanjaHunTable, jaTable: hanjaJaTable }, inspectWord)"); // R0+(VIEWER-V2-ROUNDS-001 §1-5): 중국어 표제어 글자는 단어 맥락(정체 꼴)으로 찾는다
     expect(viewer).toContain('wordsWithChar(inspectChar.ch');
     expect(viewer).toContain('char-inspect__words-label');
     // 칩은 카드 교체 경로(handleListWordClick) 재사용 — 새 상태 없음

@@ -502,14 +502,18 @@ function VocabWorkspace({ bookReview }) {
   const candidateWord = useMemo(() => {
     const id = reviewQueue[reviewIdx];
     return id != null && fsrsReview.controller.canLegacy(id) ? vocab.find(v => v.id === id && reviewAvailable(v) && reviewSupported(v)) : undefined;
+    // controller는 안정 객체라 canLegacy 결과가 바뀌는 신호(registryAvailable·enrolledIds)를 명시해 다시 판정한다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewQueue, reviewIdx, vocab, reviewSupported, reviewAvailable, fsrsReview.controller, fsrsReview.registryAvailable, fsrsReview.enrolledIds]);
 
   const questionKey = `${reviewSessionId}:${reviewIdx}`;
   const currentWord = admission.current?.accountId === user?.id && admission.current.cardId === candidateWord?.id
     && admission.current.questionKey === questionKey ? candidateWord : undefined;
+  // 같은 카드면 새 객체여도 다시 묻지 않는다 — id에만 반응한다.
+  const candidateId = candidateWord?.id;
   useEffect(() => {
-    if (tab === 'review' && !reviewFinished && candidateWord) admission.controller.question(candidateWord.id, questionKey);
-  }, [tab, reviewFinished, candidateWord?.id, questionKey, admission.controller]);
+    if (tab === 'review' && !reviewFinished && candidateId !== undefined) admission.controller.question(candidateId, questionKey);
+  }, [tab, reviewFinished, candidateId, questionKey, admission.controller]);
 
   // 자동 모드: 단어 rung → 세션과 동일한 문항 유형(vocabTypeForRung)을 복습 서브모드로 매핑.
   // rung≤1→choice(문맥 객관식), 2→cloze(단서회상 — 여기선 문맥 객관식으로 수렴), 3→typing, ≥4→listening.

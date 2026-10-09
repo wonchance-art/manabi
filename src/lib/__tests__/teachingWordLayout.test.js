@@ -76,3 +76,25 @@ describe('multiple teaching expressions with annotations and ink',()=>{
   expect(rows(teachingWordLayout({...phrase,showReading:false,showHun:false,showMeaning:false}))).toEqual(rows(layout));
  });
 });
+// R0+(VIEWER-V2-ROUNDS-001 §1) — 판서 훈음도 단어창·글자 카드와 같은 正 꼴 조회를 쓴다.
+// 판서 카드는 훈음 글자를 캔버스에 저장하므로 틀린 훈음(技术 '삽주뿌리 출')이 남지 않아야 한다.
+describe('teaching word hun labels use the traditional form (R0+)',()=>{
+ const hunOf=(text,reading,language='Chinese')=>teachingWordLayout({...value,text,reading,language}).parts.filter(p=>p.role==='hun').map(p=>p.text).join(' ');
+ it('reads Chinese characters through their traditional form',()=>{
+  expect(hunOf('技术','jì shù')).toContain('재주 술');expect(hunOf('技术','jì shù')).not.toContain('삽주뿌리');
+  expect(hunOf('工厂','gōng chǎng')).toContain('공장 창');
+  expect(hunOf('价格','jià gé')).toContain('값 가');
+  expect(hunOf('干净','gān jìng')).toContain('하늘 건');
+  expect(hunOf('干部','gàn bù')).toContain('줄기 간');
+  expect(hunOf('老板','lǎo bǎn')).toContain('널조각 판');
+ });
+ it('keeps Japanese glyph lookup unchanged (no simplified-to-traditional conversion)',()=>{
+  expect(hunOf('台','たい','Japanese')).toBe('별 태');
+  expect(hunOf('舞台','wǔ tái')).toContain('대 대'); // 중국어는 정체 臺(대)로 — 일본어 台는 위처럼 글자 그대로
+ });
+ it('saves the same corrected label into native board cards',()=>{
+  const card=wordCardSkeleton({...value,text:'技术',reading:'jì shù'},'t',{x:0,y:0},palette);
+  const hun=card.filter(el=>el.customData?.manabiField==='hun').map(el=>el.text).join(' ');
+  expect(hun).toContain('재주 술');expect(hun).not.toContain('삽주뿌리');
+ });
+});

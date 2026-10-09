@@ -3,7 +3,7 @@
 // 왜: Gemini 호출이 5곳(api/gemini 프록시 · explain · study-paragraph · writing-feedback ·
 // fetchMeanings, 거기에 disambiguateZhPos/EnPos의 URL 직접 호출)에 각자 복사돼 모델 문자열·
 // 폴백 순서·Groq 응답 변환·용량 재시도가 다섯 번 반복됐다. 호출부는 **티어**(light/standard)만
-// 말하고, 모델·폴백·프로바이더는 이 파일의 표 한 곳이 정한다. 모델 식별자(`gemini-…`·`qwen/…`)와
+// 말하고, 모델·폴백·프로바이더는 이 파일의 표 한 곳이 정한다. 모델 식별자(`gemini-…`·`openai/gpt-oss-…`)와
 // Gemini 엔드포인트가 사는 곳은 리포에서 이 파일(+ 별 라인인 api/tts)뿐 — llm.test.js가 grep으로 잡는다.
 //
 // 동작 계약(R1 — 호출부 동작 무변경):
@@ -31,18 +31,20 @@ export const TIERS = Object.freeze({
 });
 export const TIER_NAMES = Object.freeze(Object.keys(TIERS));
 
-/** Groq 최종 폴백 — preview 모델. R3에서 GA·저가 모델로 교체(#1077 5551860999 §R3). */
-export const GROQ_MODEL = 'qwen/qwen3.6-27b';
+/**
+ * Groq 최종 폴백 — production(GA) 모델. preview(qwen3-32b → qwen3.6-27b)는 두 번 퇴역해 폴백이 죽었다
+ * (#1077 AA R3-a). 출력 단가가 본선 lite보다 낮다(폴백 단가 ≤ 본선 원칙).
+ */
+export const GROQ_MODEL = 'openai/gpt-oss-120b';
 
 /**
  * 구버전 클라 번들 하위호환 — 배포 직후 캐시된 클라가 보내는 body.model(옛 이름)을 티어로 매핑한다.
- * 목록 밖은 400(현행 allowlist 의미 유지). 한 릴리스 유지 뒤 제거. 2.5-flash는 2026-10-16 퇴역(R3에서 삭제).
+ * 목록 밖은 400(현행 allowlist 의미 유지). 2.5 매핑 두 줄은 R1 뒤 한 릴리스 유지 조건이 차 R3-a에서
+ * 삭제했다(2.5-flash 2026-10-16 퇴역, 2.5-Lite 승격 안 함) — 이제 2.5 이름은 400이다.
  */
 export const LEGACY_MODEL_TIERS = Object.freeze({
   'models/gemini-3.6-flash': 'standard',
-  'models/gemini-2.5-flash': 'standard',
   'models/gemini-3.5-flash-lite': 'light',
-  'models/gemini-2.5-flash-lite': 'light',
 });
 
 /** 현재 Gemini 3 Flash/Lite의 최소 추론 설정. 완전 off는 지원하지 않는다.
@@ -164,11 +166,17 @@ const normalizeGeminiUsage = (u) => ({
   out: Number(u?.candidatesTokenCount) || 0,
   thinking: Number(u?.thoughtsTokenCount) || 0,
 });
-const normalizeGroqUsage = (u) => ({
-  in: Number(u?.prompt_tokens) || 0,
-  out: Number(u?.completion_tokens) || 0,
-  thinking: 0,
-});
+// gpt-oss는 completion_tokens에 추론 토큰을 포함해 센다 — Gemini(candidatesTokenCount는 추론 제외)와
+// 집계 단위를 맞추려고 reasoning_tokens를 thinking으로 떼어 내고 out에서 뺀다. 필드가 없으면 thinking 0.
+const normalizeGroqUsage = (u) => {
+  const completion = Number(u?.completion_tokens) || 0;
+  const thinking = Number(u?.completion_tokens_details?.reasoning_tokens) || 0;
+  return {
+    in: Number(u?.prompt_tokens) || 0,
+    out: Math.max(0, completion - thinking),
+    thinking,
+  };
+};
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const mentionsThinking = (detail) => JSON.stringify(detail ?? '').toLowerCase().includes('thinking');
 
@@ -207,8 +215,8 @@ async function groqOnce(contents, generationConfig, { groqKey, signal }) {
         messages: [{ role: 'user', content: promptText }],
         temperature: generationConfig?.temperature ?? 0,
         stream: false,
-        // Qwen thinking 모드 비활성화(불필요한 추론 토큰 낭비 방지) — 기존 5곳 공통
-        reasoning_effort: 'none',
+        // gpt-oss는 추론을 끌 수 없어 최소치 low(low|medium|high만 받는다 — 'none'은 qwen 전용이라 400)
+        reasoning_effort: 'low',
         ...(wantJson ? { response_format: { type: 'json_object' } } : {}),
       }),
     });
@@ -220,6 +228,95 @@ async function groqOnce(contents, generationConfig, { groqKey, signal }) {
   const text = data?.choices?.[0]?.message?.content;
   if (!text) return { ok: false, status: res.status, code: 'empty', detail: data };
   return { ok: true, status: res.status, text, usage: normalizeGroqUsage(data?.usage) };
+}
+
+// ───────────── 모델 비교 측정 전용(LLM-BENCH-001, #1077 AA R3-b) ─────────────
+// 관리자 측정 API(/api/admin/llm-bench)만 부른다. callLLM(운영 경로)·티어·폴백·텔레메트리와 무관하다 —
+// 여기 모델은 운영 요청에 쓰이지 않는다. 모델 식별자가 이 파일에만 산다는 계약(llm.test.js)을 따라 표를 여기에 둔다.
+// 단가($/MTok, 입력·출력)는 2026-10-09 공개가 — 비교용 추정이며 청구액이 아니다.
+export const BENCH_MODELS = Object.freeze({
+  'gemini-3.6-flash': Object.freeze({ provider: 'gemini', model: 'gemini-3.6-flash', env: 'GEMINI_API_KEY', label: 'Gemini 3.6 Flash (standard 현행)', price: [0.75, 3.75] }),
+  'gemini-3.5-flash-lite': Object.freeze({ provider: 'gemini', model: 'gemini-3.5-flash-lite', env: 'GEMINI_API_KEY', label: 'Gemini 3.5 Flash-Lite (light 현행)', price: [0.30, 2.50] }),
+  'gpt-oss-120b': Object.freeze({ provider: 'groq', model: GROQ_MODEL, env: 'GROQ_API_KEY', label: 'Groq gpt-oss-120b (최종 폴백)', price: [0.15, 0.60] }),
+  'claude-haiku-5-5': Object.freeze({ provider: 'anthropic', model: 'claude-haiku-5-5', env: 'ANTHROPIC_API_KEY', label: 'Claude Haiku 5.5 (thinking 끔)', price: [0.10, 0.50] }),
+  'gpt-6-luna': Object.freeze({ provider: 'openai', model: 'gpt-6-luna', env: 'OPENAI_API_KEY', label: 'GPT-6 Luna (reasoning none)', price: [0.10, 0.50] }),
+});
+const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
+// Gemini 밖 모델에는 JSON 강제 모드를 쓰지 않는다 — 우리 프롬프트는 배열을 요구하는데 json_object는 객체만 허용한다.
+// 대신 같은 꼬리 한 줄을 세 모델에 똑같이 붙인다(공정 비교).
+const BENCH_JSON_TAIL = '\n\nJSON만 출력하세요(설명·코드 블록 없이).';
+
+async function openAICompatOnce(endpoint, key, body, signal) {
+  let res;
+  let data;
+  try {
+    res = await fetch(endpoint, {
+      method: 'POST', signal,
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      body: JSON.stringify(body),
+    });
+    data = await res.json();
+  } catch (e) {
+    return { ok: false, status: 0, code: 'network', detail: { error: e?.message || 'fetch failed' } };
+  }
+  if (!res.ok) return { ok: false, status: res.status, code: 'http', detail: data };
+  const text = data?.choices?.[0]?.message?.content;
+  if (!text) return { ok: false, status: res.status, code: 'empty', detail: data };
+  return { ok: true, status: res.status, text, usage: normalizeGroqUsage(data?.usage) };
+}
+
+async function anthropicOnce(model, prompt, { key, signal, maxTokens }) {
+  // 지연 로드 — 이 SDK는 측정 경로에서만 쓰여 운영 함수 번들에 싣지 않는다.
+  const { default: Anthropic } = await import('@anthropic-ai/sdk');
+  const client = new Anthropic({ apiKey: key, maxRetries: 0 });
+  try {
+    // Haiku 5.5: 샘플링 인자(temperature 등)는 400 — 보내지 않는다. thinking 끔은 effort high 이하에서만 허용.
+    const msg = await client.messages.create({
+      model, max_tokens: maxTokens,
+      thinking: { type: 'disabled' },
+      output_config: { effort: 'low' },
+      messages: [{ role: 'user', content: prompt }],
+    }, { signal });
+    if (msg.stop_reason === 'refusal') return { ok: false, status: 200, code: 'refusal', detail: { stop_reason: 'refusal' } };
+    const text = msg.content.filter((b) => b.type === 'text').map((b) => b.text).join('');
+    if (!text) return { ok: false, status: 200, code: 'empty', detail: { stop_reason: msg.stop_reason } };
+    return { ok: true, status: 200, text, usage: { in: msg.usage?.input_tokens || 0, out: msg.usage?.output_tokens || 0, thinking: 0 }, stop: msg.stop_reason };
+  } catch (e) {
+    if (e instanceof Anthropic.APIError) return { ok: false, status: e.status || 0, code: 'http', detail: { type: e.error?.error?.type || null, message: e.message } };
+    return { ok: false, status: 0, code: 'network', detail: { error: e?.message || 'failed' } };
+  }
+}
+
+/**
+ * 측정 1회 — 같은 프롬프트를 모델 하나에. 운영과 같게: Gemini는 THINKING_OFF_CONFIG(+ 호출부의 temperature 0·JSON MIME),
+ * Groq는 reasoning low, Luna는 reasoning none, Haiku는 thinking 끔·effort low.
+ * @returns {Promise<{ok, text?, ms, usage?, status, code?, detail?}>} — 던지지 않는다. 키 없음은 code 'no_key'.
+ */
+export async function benchOnce(id, prompt, { json = false, timeoutMs = 45_000, maxTokens = 4096 } = {}) {
+  const spec = BENCH_MODELS[id];
+  if (!spec) return { ok: false, code: 'unknown_model', status: 400, ms: 0 };
+  const key = process.env[spec.env];
+  if (!key) return { ok: false, code: 'no_key', status: 0, ms: 0 };
+  const started = Date.now();
+  const signal = makeSignal(null, timeoutMs);
+  const tailed = json ? prompt + BENCH_JSON_TAIL : prompt;
+  let r;
+  if (spec.provider === 'gemini') {
+    const cfg = { temperature: 0, ...(json ? { responseMimeType: 'application/json' } : {}), thinkingConfig: THINKING_OFF_CONFIG };
+    r = await geminiOnce(spec.model, toContents(prompt), cfg, { apiKey: key, signal });
+    if (!r.ok && r.status === 400 && mentionsThinking(r.detail)) {
+      const { thinkingConfig: _drop, ...plain } = cfg;
+      r = await geminiOnce(spec.model, toContents(prompt), plain, { apiKey: key, signal: makeSignal(null, timeoutMs) });
+    }
+  } else if (spec.provider === 'groq') {
+    r = await openAICompatOnce(GROQ_ENDPOINT, key, { model: spec.model, messages: [{ role: 'user', content: tailed }], temperature: 0, stream: false, reasoning_effort: 'low' }, signal);
+  } else if (spec.provider === 'openai') {
+    // 추론 모델은 기본값 밖 temperature를 거부할 수 있어 보내지 않는다.
+    r = await openAICompatOnce(OPENAI_ENDPOINT, key, { model: spec.model, messages: [{ role: 'user', content: tailed }], reasoning_effort: 'none' }, signal);
+  } else {
+    r = await anthropicOnce(spec.model, tailed, { key, signal, maxTokens });
+  }
+  return { ...r, ms: Date.now() - started };
 }
 
 /**

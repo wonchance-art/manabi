@@ -5,6 +5,7 @@ import { assembleStudyMaterials } from '@/lib/studyMaterials';
 import { canUseStudyPrefetch } from '@/lib/studyPrefetchEligibility';
 import StudySessionPage from '@/views/StudySessionPage';
 import StudyOnboarding from '@/views/StudyOnboarding';
+import { learnerHref } from '@/lib/bookNavigation';
 
 export const metadata = { title: '오늘 학습' };
 export const dynamic = 'force-dynamic';
@@ -18,10 +19,16 @@ export const dynamic = 'force-dynamic';
 function findScriptTrack(ref) {
   if (!ref?.ALL_CHAPTERS?.length) return null;
   const intro = ref.ALL_CHAPTERS.filter(c => ref.isIntroLevel?.(c.level));
+  // 문자 챕터는 옛 교재라 관리자 보관함으로만 열린다. 열 수 없는 챕터로 보내는 안내 단계는
+  // 막다른 길이므로 건너뛴다(null → 바로 관심사 질문) — VIEWER-R0-BUGS-001 버그 3.
+  const track = (chapter, kind) => {
+    const href = learnerHref(`${ref.base}/grammar/${chapter.slug}`);
+    return href ? { slug: chapter.slug, href, kind } : null;
+  };
   const kanaCh = intro.find(c => c.kana);
-  if (kanaCh) return { slug: kanaCh.slug, href: `${ref.base}/grammar/${kanaCh.slug}`, kind: 'kana' };
+  if (kanaCh) return track(kanaCh, 'kana');
   const pinyinCh = intro.find(c => /pinyin/i.test(c.slug));
-  if (pinyinCh) return { slug: pinyinCh.slug, href: `${ref.base}/grammar/${pinyinCh.slug}`, kind: 'pinyin' };
+  if (pinyinCh) return track(pinyinCh, 'pinyin');
   return null;
 }
 

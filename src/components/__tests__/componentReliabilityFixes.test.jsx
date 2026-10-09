@@ -22,6 +22,7 @@ vi.mock('../../lib/supabase', () => ({
 
 import { unwrapAccountExportResults } from '../AccountSettings';
 import {
+  handleConversationKeyDown,
   isConversationRequestCurrent,
 } from '../ConversationPanel';
 import {
@@ -66,6 +67,29 @@ describe('components C-04~C-13 reliability fixes', () => {
 
     expect(source('../ConversationPanel.jsx')).toContain('skipPersistRef.current = true');
     expect(source('../ReadingTest.jsx')).toContain('skipPersistRef.current = true');
+  });
+
+  it('대화 입력은 IME 조합 중 Enter를 보내지 않고 일반 Enter만 보낸다', () => {
+    const press = (event) => {
+      const send = vi.fn();
+      const preventDefault = vi.fn();
+      handleConversationKeyDown({ key: 'Enter', keyCode: 13, preventDefault, ...event }, send);
+      return { sent: send.mock.calls.length, prevented: preventDefault.mock.calls.length };
+    };
+    // Chrome/Firefox: isComposing, Safari: keyCode 229 — React 합성 이벤트와 nativeEvent 양쪽
+    for (const composing of [
+      { isComposing: true },
+      { nativeEvent: { isComposing: true } },
+      { keyCode: 229 },
+      { nativeEvent: { keyCode: 229 } },
+    ]) {
+      expect(press(composing)).toEqual({ sent: 0, prevented: 0 });
+    }
+    expect(press({ nativeEvent: { isComposing: false, keyCode: 13 } })).toEqual({ sent: 1, prevented: 1 });
+    expect(press({ shiftKey: true })).toEqual({ sent: 0, prevented: 0 });
+    expect(press({ key: 'a', keyCode: 65 })).toEqual({ sent: 0, prevented: 0 });
+    // 입력창이 실제로 이 판정을 거친다(우회 경로 재발 방지)
+    expect(source('../ConversationPanel.jsx')).toMatch(/function onKeyDown\(e\) \{\s*handleConversationKeyDown\(e, send\);/);
   });
 
   it('음성 옵션의 선택과 미리듣기를 형제 버튼으로 렌더한다', () => {

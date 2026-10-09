@@ -71,6 +71,7 @@ export default function HelpPage() {
           <Link href="/guide" className="btn btn--ghost btn--sm">사용 가이드</Link>
           <Link href="/terms" className="btn btn--ghost btn--sm">이용약관</Link>
           <Link href="/privacy" className="btn btn--ghost btn--sm">개인정보</Link>
+          <Link href="/credits" className="btn btn--ghost btn--sm">자료 출처</Link>
         </div>
       </div>
     </div>

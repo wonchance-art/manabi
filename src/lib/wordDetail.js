@@ -46,12 +46,68 @@ function localSet(key, val) {
 }
 
 /**
+ * 로컬 캐시만 본다(네트워크·AI 0) — 단어창 「더 알아보기」가 이미 받은 설명을 버튼 대신 바로 보이기 위해
+ * (VIEWER-V2-ROUNDS-001 §2.1 · AE-R1 설계서 §3.3). 키는 fetchWordDetailText와 같다. 없으면 null.
+ */
+export async function peekWordDetailText(token, language) {
+  const key = `${language}:${token.base_form || token.text}`;
+  const local = localGet(key);
+  if (local) {
+    try { const parsed = JSON.parse(local); if (parsed) return await withExamplePinyin(parsed, language); } catch { /* 아래 메모리 캐시 */ }
+  }
+  const shared = sharedDetailMemo.get(key);
+  return shared ? withExamplePinyin(shared, language) : null;
+}
+
+// 공유 detail_text 메모리 캐시 — `${language}:${base_form‖text}` → 설명 문자열 또는 null(없음). 실패는 담지 않는다.
+const sharedDetailMemo = new Map();
+const sharedDetailInflight = new Map();
+/** 테스트 전용 — 메모리 캐시 비우기. */
+export function resetSharedDetailMemo() { sharedDetailMemo.clear(); sharedDetailInflight.clear(); }
+
+/**
+ * 「더 알아보기」의 공유 설명 지연 조회(AE-R1 PR③ · VIEWER-V2-ROUNDS-001 §2.1 「이미 만든 결과(공유 detail_text)가 있으면
+ * 버튼 대신 내용」). morpheme_dictionary.detail_text 한 열만 읽는다 — AI·/api/word-detail 0, 쓰기 0.
+ * 키는 fetchWordDetailText와 같은 base_form ‖ text(그 경로가 이 행에 설명을 채운다). 같은 단어는 메모리 캐시로 다시
+ * 묻지 않고(없음 포함), 실패는 조용히 null이며 기억하지 않는다(다음 열람에 다시 시도). 원문을 그대로 돌려준다
+ * (병음 합성은 peekWordDetailText가 표시 때 한다).
+ * @returns {Promise<string|null>}
+ */
+export async function fetchSharedDetailText(client, token, language) {
+  const baseForm = token?.base_form || token?.text;
+  if (!client || !baseForm || !language) return null;
+  const key = `${language}:${baseForm}`;
+  if (sharedDetailMemo.has(key)) return sharedDetailMemo.get(key);
+  if (sharedDetailInflight.has(key)) return sharedDetailInflight.get(key);
+  const request = (async () => {
+    try {
+      const { data, error } = await client.from('morpheme_dictionary').select('detail_text')
+        .eq('language', language).eq('base_form', baseForm).maybeSingle();
+      if (error) return null;
+      const detail = typeof data?.detail_text === 'string' && data.detail_text.trim() ? data.detail_text : null;
+      sharedDetailMemo.set(key, detail);
+      return detail;
+    } catch {
+      return null;
+    } finally {
+      sharedDetailInflight.delete(key);
+    }
+  })();
+  sharedDetailInflight.set(key, request);
+  return request;
+}
+
+/**
  * 단어 상세 설명 가져오기 — DB → localStorage → Gemini (3단 캐시)
  * @returns {Promise<string>} detail text
  */
 export async function fetchWordDetailText(token, language) {
-  const baseForm = token.base_form || token.text;
+  // 어휘 키 = sep_link ?? base_form — 이합사 O 조각(道了歉의 歉)은 VO(道歉)로 조회·저장한다. 카드 조회·
+  // 단어장 저장·만남과 같은 규칙(뷰어 v2 AE-R2 §5.3). 예전 歉 키(localStorage·DB 행)는 읽지 않을 뿐 지우지 않는다.
+  const baseForm = token.sep_link || token.base_form || token.text;
   const cacheKey = `${language}:${baseForm}`;
+  // 프롬프트 표제: 중국어는 굴절이 없어 어휘 키가 곧 표제(이합사 두 조각 모두 VO). 그 밖의 언어는 기존대로 표면형.
+  const headword = (token.sep_link || language === 'Chinese') ? baseForm : token.text;
 
   // 1. localStorage
   const local = localGet(cacheKey);
@@ -71,7 +127,7 @@ export async function fetchWordDetailText(token, language) {
 
   // 3. Gemini
   const langName = langNameKo(language);
-  const prompt = `"${token.text}" (${token.pos || ''})
+  const prompt = `"${headword}" (${token.pos || ''})
 
 **뜻**
 1. 간결한 뜻 (3~5단어)

@@ -18,6 +18,8 @@ export default function FsrsReviewSession({ review, onExit }) {
   const { current, busy, error, ready, nextWakeAt, lastGrade, controller } = review;
   useEffect(() => {
     if (canAutoStartFsrsReview({ current, busy, error, ready })) controller.question();
+    // 판정은 ready.length만 본다 — 배열 정체성만 바뀐 갱신에서 질문을 다시 열지 않는다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current, busy, error, ready.length, controller]);
   useEffect(() => {
     const keydown = event => {

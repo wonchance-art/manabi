@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import { after, before, test } from 'node:test';
 import { chromium } from 'playwright-core';
 import config from '../playwright.config.mjs';
+import { hunRubyCells } from '../src/lib/viewerHunRuby.js';
 
 /**
  * 조판 기하 e2e — 실제 렌더 좌표로 병음·요미가나 계약을 지킨다.
@@ -88,9 +89,18 @@ for (const theme of ['light','sepia','dark']) {
     const read=()=>page.locator('.word-token').evaluateAll(tokens=>tokens.map(t=>{
       const surface=t.querySelector('.surface'),ruby=surface.querySelector('ruby'),rt=surface.querySelector('.rt-an');
       const rect=e=>{const r=e.getBoundingClientRect();return [r.x,r.y,r.width,r.height];};
-      return {color:getComputedStyle(surface,'::before').backgroundColor,opacity:getComputedStyle(surface).opacity,glyph:rect(ruby),pron:rect(rt)};
+      const b=getComputedStyle(surface,'::before'),w=parseFloat(b.borderBottomWidth)||0,line=w>0&&!/rgba\(\d+, \d+, \d+, 0\)/.test(b.borderBottomColor)?b.borderBottomColor:null;
+      return {color:b.backgroundColor,line,opacity:getComputedStyle(surface).opacity,glyph:rect(ruby),pron:rect(rt)};
     }));
     const before=await read();
+    // AD-R2(VIEWER-V2-ROUNDS-001 §5 — 오너 확정, 08-27 B안 수정): 새 단어·만난 말은 면 칠 없이 밑줄,
+    // 면 칠은 학습 중·복습에만.
+    for(const i of [0,1]) {
+      assert.equal(before[i].color,'rgba(0, 0, 0, 0)',`${states[i]}: new words must not be filled`);
+      assert.ok(before[i].line,`${states[i]}: new words must carry an underline`);
+    }
+    for(const i of [2,3]) assert.notEqual(before[i].color,'rgba(0, 0, 0, 0)',`${states[i]}: learning/due keep their fill`);
+    assert.equal(before[4].color,'rgba(0, 0, 0, 0)');assert.equal(before[4].line,null,'known words stay unmarked');
     await page.locator('.word-token').evaluateAll(tokens=>tokens.forEach(t=>t.classList.add('word-token--picked')));
     const picked=await read();
     for(let i=0;i<states.length;i++) {
@@ -99,12 +109,20 @@ for (const theme of ['light','sepia','dark']) {
       assert.deepEqual(picked[i].pron,before[i].pron);
       assert.equal(picked[i].opacity,'1');
     }
-    assert.equal(new Set(picked.map(t=>t.color)).size,5,'selection must preserve five distinct learning states');
+    // VIEWER-R0 bug 11 (owner 2026-10-07): "met" shares the new-word display, so selection keeps four
+    // distinct states (new = met, saved, due, known) instead of five. AD-R2: the new-word state is now the
+    // underline (kept while selected over the neutral selection band), so a state is fill + underline.
+    assert.deepEqual([picked[1].color,picked[1].line],[picked[0].color,picked[0].line],'met keeps the new-word display while selected');
+    assert.equal(picked[0].line,before[0].line,'selected new words keep the same underline');
+    assert.equal(picked[0].color,picked[4].color,'selected new words sit on the plain selection band (no blend)');
+    assert.equal(new Set(picked.map(t=>`${t.color}|${t.line}`)).size,4,'selection must preserve four distinct learning states');
     await page.locator('.word-token').evaluateAll(tokens=>tokens.forEach(t=>t.classList.remove('word-token--picked')));
     assert.deepEqual(await read(),before,'clearing selection restores every state without shifting text');
     await page.locator('.reader-area').evaluate(e=>e.classList.remove('reader-area--hl'));
     await page.locator('.word-token').evaluateAll(tokens=>tokens.forEach(t=>t.classList.add('word-token--picked')));
-    assert.equal(new Set((await read()).map(t=>t.color)).size,1,'state mode off keeps the ordinary selection band');
+    const off=await read();
+    assert.equal(new Set(off.map(t=>t.color)).size,1,'state mode off keeps the ordinary selection band');
+    assert.equal(off[0].line,null,'state mode off: new words carry no underline');
   });
 }
 
@@ -213,7 +231,8 @@ test('집중 모드 — 지정 문장만 원래 밝기, 나머지는 어둡고, 
     };
   });
   assert.equal(focus.ops[0], 1, `지정 토큰은 원래 밝기여야 함: ${focus.ops[0]}`);
-  assert.deepEqual(focus.ops,[1,.28,.28], "지정 문장은 선명하게, 주변 문장은 28%로 낮춘다");
+  // AD-R2(VIEWER-V2-ROUNDS-001 §5 — 오너 확정): 흐림 0.28 → 0.5. 주변 문장도 읽히는 밝기(종이 3.08:1).
+  assert.deepEqual(focus.ops,[1,.5,.5], "지정 문장은 선명하게, 주변 문장은 50%로 낮춘다");
   await page.setContent(PAGE(line(false)));
   const off = await page.evaluate(() => {
     const toks = [...document.querySelectorAll('#row2 .word-token')];
@@ -408,7 +427,7 @@ test('경로 줄 — 경로(뒤로가기·형제 내비)는 왼쪽, 도구는 �
     <div class="viewer-series-nav" title="《HSK 5 문장 320》"><span class="viewer-series-nav__btn">◀</span><span class="viewer-series-nav__position">3/20</span><span class="viewer-series-nav__btn">▶</span></div>
     <div class="viewer-topbar__tools">
       <div class="listen-controls"><button class="btn btn--ghost btn--sm">▷ 듣기</button></div>
-      <button class="viewer-aa">Aa</button>
+      <button class="viewer-tool viewer-tool--aa"><span aria-hidden="true">Aa</span></button>
     </div>
   </div>`));
   const back = (await boxes('.viewer-back-link'))[0];
@@ -426,7 +445,7 @@ test('경로 줄 — 뒤로가기·내비가 없어도 도구는 오른쪽에 �
   // 두 경우를 다 감당하는 것은 auto 마진뿐이라, 그 근거를 여기서 못 박는다(v2-Q 선례 그대로).
   await page.setContent(chromePage(`<div class="viewer-topbar">
     <div class="viewer-topbar__tools">
-      <button class="viewer-aa">Aa</button>
+      <button class="viewer-tool viewer-tool--aa"><span aria-hidden="true">Aa</span></button>
     </div>
   </div>`));
   const tools = (await boxes('.viewer-topbar__tools'))[0];
@@ -434,29 +453,47 @@ test('경로 줄 — 뒤로가기·내비가 없어도 도구는 오른쪽에 �
 });
 
 
-// Long Korean labels need their own height; the original pinyin grid remains unchanged.
-const HUN_CARD = (withHun) => `<div class="word-fit-wrap"><div class="word-fit" lang="zh-Hans" style="--fit-n:2">
+// The original pinyin grid remains unchanged (HUN_CARD(false) is the plain pinyin card used below).
+const HUN_CARD = () => `<div class="word-fit-wrap"><div class="word-fit" lang="zh-Hans" style="--fit-n:2">
   <span class="surface"><ruby data-pinyin="1">杯<span class="rt-an">bēi</span></ruby><ruby data-pinyin="1">子<span class="rt-an">zi</span></ruby></span>
-</div></div>${withHun ? '<dl class="reader-hun"><div class="reader-hun__pair"><dt>杯</dt><dd>잔 배</dd></div><div class="reader-hun__pair"><dt>子</dt><dd>아들 자</dd></div></dl>' : ''}`;
+</div></div>`;
 
-const longHun=JSON.parse(fs.readFileSync(new URL('../src/lib/data/hanjaHun.json',import.meta.url),'utf8')).弩+' 노';
-const longHunCard=`<div class="reader-card-headword">${HUN_CARD(false)}</div><dl class="reader-hun" lang="ko"><div class="reader-hun__pair"><dt lang="zh-Hans">连</dt><dd>연할 련(연)</dd></div><div class="reader-hun__pair"><dt lang="zh-Hans">弩</dt><dd>${longHun}</dd></div></dl><div class="word-detail-card__meaning">연발 쇠뇌</div>`;
+// AE-R1 개정(VIEWER-V2-ROUNDS-001 §2.1 표제어 덩어리 — 「훈음은 한자 아래 루비로 되돌린다. 별도 훈음 목록은 없앤다.
+// 겹침 방지: 훈음이 글자 폭을 넘으면 그 글자 칸을 벌린다(--hun-n), 그래도 넘치면 훈과 음을 두 줄로」, 설계서 §7.2):
+// 옛 별도 목록(.reader-hun) 대신 실제 셀 계산(hunRubyCells)으로 만든 루비 셀 마크업을 index.css·reader-controls.css
+// 실물로 그려, 긴 풀이 훈(弩)도 잘리지 않고 자기 칸 안에서 줄바꿈하며 이웃 칸·글자·뜻과 겹치지 않는지 잰다.
+const readData=f=>JSON.parse(fs.readFileSync(new URL(`../src/lib/data/${f}`,import.meta.url),'utf8'));
+const hunTables={koTable:readData('hanjaKo.json'),hunTable:readData('hanjaHun.json'),tradTable:readData('hanjaTrad.json')};
+const longHun=hunTables.hunTable.弩+' 노';
+const hunCols=(word,readings)=>hunRubyCells(word,hunTables).map((cell,i)=>`<span class="word-fit__col"><ruby data-pinyin="1"><span class="reader-card-ruby-glyphs"><span class="word-fit__char">${cell.ch}</span></span><span class="rt-an">${readings[i]}</span></ruby><span class="word-fit__hunrow">${cell.label?`<span class="word-fit__hun" lang="ko" data-label="${cell.label}"${cell.wrap?' data-wrap="1"':''} style="--hun-n:${cell.hunN}">${cell.lines.map(l=>`<span class="word-fit__hun-line">${l}</span>`).join('')}</span>`:''}</span></span>`).join('');
+const longHunCard=`<div class="reader-card-headword"><div class="word-fit-wrap"><div class="word-fit word-fit--hun" lang="zh-Hans" style="--fit-n:2"><span class="surface">${hunCols('连弩',['lián','nǔ'])}</span></div></div></div><div class="word-detail-card__meaning">연발 쇠뇌</div>`;
 for(const width of [170,300,680])for(const scale of [1,2]) {
- test(`긴 훈음 — ${width}px 카드/${scale*100}% 확대에서 온전한 짝·높이·무겹침`,async()=>{
+ test(`긴 훈음 루비 — ${width}px 카드/${scale*100}% 확대에서 온전한 셀·칸 벌림·무겹침`,async()=>{
   await page.setContent(PAGE(`<style>#row{padding:0;width:${width}px;zoom:${scale}}</style>${longHunCard}`));
-  const geometry=await page.evaluate(()=>{
+  const g=await page.evaluate(()=>{
    const r=e=>{const b=e.getBoundingClientRect();return {x:b.x,right:b.right,y:b.y,bottom:b.bottom,height:b.height}};
-   return {pairs:[...document.querySelectorAll('.reader-hun__pair')].map(e=>({cell:r(e),ch:r(e.querySelector('dt')),label:r(e.querySelector('dd'))})),section:r(document.querySelector('.reader-hun')),head:r(document.querySelector('.word-fit')),meaning:r(document.querySelector('.word-detail-card__meaning')),full:document.querySelector('.reader-hun dd:last-child')?.textContent};
+   const ink=e=>{const range=document.createRange();range.selectNodeContents(e);return r(range);};
+   return {row:r(document.querySelector('#row')),meaning:r(document.querySelector('.word-detail-card__meaning')),
+    cols:[...document.querySelectorAll('.word-fit__col')].map(col=>({col:r(col),glyph:ink(col.querySelector('.word-fit__char')),hun:r(col.querySelector('.word-fit__hun')),
+     style:(s=>({position:s.position,overflow:s.overflow,textOverflow:s.textOverflow}))(getComputedStyle(col.querySelector('.word-fit__hun')))})),
+    labels:[...document.querySelectorAll('.word-fit__hun')].map(e=>e.dataset.label),text:[...document.querySelectorAll('.word-fit__hun')].map(e=>e.textContent)};
   });
-  for(const {cell,ch,label} of geometry.pairs) {
-   assert.ok(ch.right<=label.x+.5,'character must stay beside its own label');
-   assert.ok(label.right<=cell.right+.5,'long label must stay inside its own cell');
-   assert.ok(label.bottom<=cell.bottom+.5,'the cell must reserve the label height');
+  assert.equal(g.cols.length,2);
+  for(const {col,glyph,hun,style} of g.cols){
+   assert.notEqual(style.position,'absolute','hun cell is in flow');
+   assert.equal(style.overflow,'visible');assert.equal(style.textOverflow,'clip');
+   assert.ok(hun.y>=glyph.bottom-.5,'hun label sits below its own glyph');
+   assert.ok(hun.x>=col.x-.5&&hun.right<=col.right+.5,'hun label stays inside its own column');
+   assert.ok(hun.x>=g.row.x-.5&&hun.right<=g.row.right+.5,`hun label stays inside the card: ${JSON.stringify(hun)} / ${JSON.stringify(g.row)}`);
+   assert.ok(g.meaning.y>=hun.bottom-.5,'meaning must follow all wrapped labels');
   }
-  assert.ok(geometry.section.y>=geometry.head.bottom-.5);
-  assert.ok(geometry.meaning.y>=geometry.section.bottom-.5,'meaning must follow all wrapped labels');
-  assert.ok(await page.locator('.reader-hun dd').last().textContent()===longHun);
-  if(width===170)assert.ok(geometry.pairs[1].cell.y>=geometry.pairs[0].cell.bottom-.5,'narrow cards stack complete pairs');
+  const [a,b]=g.cols;
+  const overlap=(p,q)=>Math.min(p.right,q.right)-Math.max(p.x,q.x)>.5&&Math.min(p.bottom,q.bottom)-Math.max(p.y,q.y)>.5;
+  assert.ok(!overlap(a.col,b.col),'neighbouring columns do not overlap');
+  assert.ok(!overlap(a.hun,b.glyph)&&!overlap(b.hun,a.glyph),'a label never covers the neighbouring glyph');
+  assert.deepEqual(g.labels,['연할 련(연)',longHun],'complete labels — nothing truncated');
+  assert.ok(g.text[1].replace(/\s/g,'').includes(longHun.replace(/\s/g,'')),'the long gloss is fully rendered');
+  assert.ok(b.hun.height>a.hun.height,'the long gloss wraps inside its capped cell instead of widening without bound');
  });
 }
 
@@ -619,3 +656,288 @@ test('Aa 중국어 명조 — 실제 글자까지 본문과 같은 서체, 병�
   assert.equal(fonts.preview,fonts.body,'미리보기의 실제 한자가 전역 :lang(zh) 고딕 규칙으로 바뀌면 안 된다');
   assert.match(fonts.preview,/Georgia/);assert.match(fonts.pinyin,/Arial/);
 });
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * VIEWER-R0 — 띠 밖 표지(문형 밑줄·선택 테두리·병음·저장 밑줄) 기하와 「만난 말」 표시.
+ * 마크업은 ViewerPage renderToken과 같은 계약이다(.pattern-mark는 .surface 안 — 소스 쪽은
+ * patternIndex.test.js가 지킨다). 상자 기준이라 러너 글꼴과 무관하다. 실글꼴(Noto) 잉크
+ * 측정은 이 파일 범위 밖이다(러너에 Noto CJK가 없다).
+ * ────────────────────────────────────────────────────────────────────────── */
+// 셸 토큰(.manabi-app — --ink 등)이 있어야 선택선·문형선 색이 실제 값으로 풀린다.
+const SHELL_CSS = fs.readFileSync(new URL('../src/components/web/web-shell.css', import.meta.url), 'utf8');
+const R0_PAGE = (areas, { py = 12, family = 'sans-serif' } = {}) => `<style>${CSS}\n${SHELL_CSS}\n${READER_CSS}</style>
+<style>*,*::before,*::after{transition:none!important;animation:none!important}body{margin:0}.reader-area{min-height:0}</style>
+<div class="manabi-app"><div class="viewer-layout" data-reader-theme="sepia" data-pron-spacing="reserved" style="--book-main:#466c5d;--book-wash:#e3ebe5;--book-dark-text:#acccb8;--pinyin-size:${py}px;--pinyin-cell:${(py * 3.6).toFixed(1)}px;--reader-font:${family}">${areas}</div></div>`;
+const r0Area = ({ fs = 25.6, hl = false, theme = 'sepia', lang = 'zh-Hans', family = 'sans-serif' }, body) =>
+  `<div class="reader-area reader-area--${theme}${hl ? ' reader-area--hl' : ''}" lang="${lang}" style="font-size:${fs}px;font-family:${family};gap:15px .25rem;--char-gap:.25rem;padding:24px 16px">${body}<i class="r0-probe" style="position:absolute;width:0;height:0;background:var(--pattern-line)"></i></div>`;
+const r0Tok = (segs, { cls = '', selected = false, pattern = false, linePick = false, ja = false } = {}) =>
+  `<div class="word-token${cls ? ` ${cls}` : ''}${pattern ? ' word-token--pattern' : ''}"${selected ? ' data-selected="true"' : ''}>${linePick ? '<button class="line-pick"></button>' : ''}<span class="surface">${
+    segs.map(([c, r]) => (r ? `<ruby ${ja ? 'data-yomi' : 'data-pinyin'}="1">${c}<span class="rt-an">${r}</span></ruby>` : `<span>${c}</span>`)).join('')
+  }${pattern ? '<span class="pattern-mark" aria-hidden="true"></span>' : ''}</span></div>`;
+
+// 상태별 토큰 — 저장·복습·미저장 × 문형 유무, 줄 첫 토큰(막대), 새 단어·만난 말
+const R0_ZH = [
+  { name: '眼前 미저장+막대', segs: [['眼', 'yǎn'], ['前', 'qián']], linePick: true },
+  { name: '体育场 저장', segs: [['体', 'tǐ'], ['育', 'yù'], ['场', 'chǎng']], cls: 'word-token--saved' },
+  { name: '比 문형', segs: [['比', 'bǐ']], pattern: true },
+  { name: '照片 복습', segs: [['照', 'zhào'], ['片', 'piàn']], cls: 'word-token--saved word-token--due' },
+  { name: '尽量 문형+저장', segs: [['尽', 'jǐn'], ['量', 'liàng']], cls: 'word-token--saved', pattern: true },
+  { name: '熬夜 새 단어', segs: [['熬', 'áo'], ['夜', 'yè']], cls: 'word-token--new' },
+  { name: '爱惜 만난 말', segs: [['爱', 'ài'], ['惜', 'xī']], cls: 'word-token--met' },
+  { name: '。', segs: [['。', '']] },
+  { name: '更 문형+새 단어', segs: [['更', 'gèng']], cls: 'word-token--new', pattern: true },
+];
+const R0_JA = [
+  { name: 'ja 喫茶店 미저장', segs: [['喫茶店', 'きっさてん']] },
+  { name: 'ja 駅前 저장', segs: [['駅前', 'えきまえ']], cls: 'word-token--saved' },
+  { name: 'ja 会 복습', segs: [['会', 'あ'], ['いました', '']], cls: 'word-token--saved word-token--due' },
+];
+
+/** 토큰별 상자 기하 — 띠(.surface::before)·테두리(.word-token::before, 없으면 옛 inset 그림자)·
+ *  병음·밑줄·문형 밑줄. 띠 = 면 칠 범위(top~top+height): content-box면 height가 칠 높이이고,
+ *  옛 border-box는 밑줄이 그 안에 있다 — 두 경우 모두 이 식이 「띠」다. */
+const r0Geometry = (p = page) => p.evaluate(() => [...document.querySelectorAll('.word-token')].map((t) => {
+  const px = (v) => parseFloat(v) || 0;
+  const s = t.querySelector('.surface'), sr = s.getBoundingClientRect(), tr = t.getBoundingClientRect();
+  const b = getComputedStyle(s, '::before');
+  const bandTop = sr.top + px(b.top), bandBottom = bandTop + px(b.height), bb = px(b.borderBottomWidth);
+  const boxBottom = b.boxSizing === 'content-box' ? bandBottom + px(b.paddingBottom) + bb : bandBottom;
+  const f = getComputedStyle(t, '::before');
+  let frame = null;
+  if (f.content && f.content !== 'none' && f.content !== 'normal' && f.position === 'absolute') {
+    const top = tr.top + px(f.top);
+    frame = { outerTop: top, innerTop: top + px(f.borderTopWidth), innerBottom: top + px(f.height) - px(f.borderBottomWidth),
+      outerBottom: top + px(f.height), left: tr.left + px(f.left), right: tr.right - px(f.right) };
+  } else if (/inset/.test(b.boxShadow)) { // 옛 문법: 띠 안쪽 1.5px 그림자
+    const padBottom = boxBottom - bb;
+    frame = { outerTop: bandTop, innerTop: bandTop + 1.5, innerBottom: padBottom - 1.5, outerBottom: padBottom, left: sr.left, right: sr.right };
+  }
+  const rt = s.querySelector('.rt-an')?.getBoundingClientRect();
+  const mark = s.querySelector('.pattern-mark')?.getBoundingClientRect();
+  return {
+    name: t.dataset.name, fs: px(getComputedStyle(s).fontSize), ja: !!s.querySelector('ruby[data-yomi]'),
+    token: { l: tr.left, r: tr.right }, surface: { l: sr.left, r: sr.right, top: sr.top },
+    band: { top: bandTop, bottom: bandBottom, h: px(b.height), clip: b.backgroundClip },
+    underline: bb > 0 ? { top: boxBottom - bb, bottom: boxBottom } : null,
+    frame, rt: rt ? { top: rt.top, bottom: rt.bottom, l: rt.left, r: rt.right } : null,
+    mark: mark && mark.height > 0 ? { top: mark.top, bottom: mark.bottom } : null,
+  };
+}));
+
+const r0Line = (list, opts) => list.map((x) => r0Tok(x.segs, { ...x, ...opts }).replace('<div class="word-token', `<div data-name="${x.name}" class="word-token`)).join('');
+
+for (const fs of [12.8, 25.6, 48]) {
+  test(`R0 버그 6 — 본문 ${fs}px: 병음·선택 테두리·저장 밑줄이 띠 밖 자기 자리에 있다(병음 12·16px × 고딕·명조 × 상태색 켬·끔)`, async () => {
+    // 기준별로 위반을 모은다 — 한 건에서 멈추면 어느 기준이 깨졌는지 전체 그림이 안 보인다.
+    const bad = {};
+    const check = (ok, key, msg) => { if (!ok) (bad[key] ||= []).push(msg); };
+    for (const py of [12, 16]) for (const family of ['sans-serif', 'serif']) for (const hl of [false, true]) {
+      const label = `${fs}px·병음 ${py}px·${family}·상태색 ${hl ? '켬' : '끔'}`;
+      await page.setContent(R0_PAGE(
+        r0Area({ fs, hl, family }, r0Line(R0_ZH, { selected: true }))
+        + r0Area({ fs, hl, family, lang: 'ja' }, r0Line(R0_JA, { selected: true, ja: true })),
+        { py, family }));
+      const all = await r0Geometry();
+      for (const g of all) {
+        const at = `${label} ${g.name}`;
+        assert.ok(g.frame, `${at}: 선택 테두리가 없다`);
+        // 6b — 테두리는 띠(면 칠)에서 떨어진다: 위 1px+, 아래 2px+
+        check(g.frame.innerTop <= g.band.top - 1 + 0.01, '6b 테두리 위', `${at}: 안쪽 윗변 ${g.frame.innerTop.toFixed(2)} > 띠 윗변 ${g.band.top.toFixed(2)} − 1`);
+        check(g.frame.innerBottom >= g.band.bottom + 2 - 0.01, '6b 테두리 아래', `${at}: 안쪽 아랫변 ${g.frame.innerBottom.toFixed(2)} < 띠 아랫변 ${g.band.bottom.toFixed(2)} + 2`);
+        // 좌우는 토큰 폭 그대로 — 이웃을 침범하지 않고, 글자 상자는 다 감싼다
+        check(g.frame.left >= g.token.l - 0.01 && g.frame.right <= g.token.r + 0.01, '좌우 침범', `${at}: 테두리가 토큰 밖으로 나갔다`);
+        check(g.frame.left <= g.surface.l + 0.5 && g.frame.right >= g.surface.r - 0.5, '좌우 감쌈', `${at}: 테두리가 글자 상자보다 좁다`);
+        // 면 칠 높이는 불변(1.04em) — 밑줄이 띠 밖으로 나가도 칠은 늘지 않는다
+        check(Math.abs(g.band.h - 1.04 * g.fs) < 0.05, '칠 높이', `${at}: 띠 높이 ${g.band.h} ≠ 1.04em`);
+        if (g.underline) {
+          check(g.underline.top >= g.band.bottom + 2 - 0.01, '6b 밑줄', `${at}: 밑줄 윗변 ${g.underline.top.toFixed(2)} < 띠 아랫변 ${g.band.bottom.toFixed(2)} + 2`);
+          check(g.underline.bottom <= g.frame.innerBottom - 0.5 + 0.01, '밑줄 테두리 안', `${at}: 밑줄이 테두리 선에 닿거나 밖으로 나갔다`);
+          check(g.band.clip === 'content-box', '칠 번짐', `${at}: 밑줄 여백까지 면 칠이 번진다(clip ${g.band.clip})`);
+        }
+        if (g.mark) {
+          check(g.mark.top >= g.band.bottom + 2 - 0.01 && g.mark.bottom <= g.frame.innerBottom + 0.01, '문형선 자리', `${at}: 문형 밑줄이 띠 밖·테두리 안 자리가 아니다`);
+          if (g.underline) check(g.mark.bottom <= g.underline.top - 0.5, '문형선·밑줄 겹침', `${at}: 문형 밑줄과 저장 밑줄이 겹친다`);
+        }
+        // 6a — 병음(중국어) 상자는 테두리 바깥 윗변보다 2.5px 이상 위(실글꼴 내림획·화소 맞춤 여유 — 잉크 2px)
+        if (g.rt && !g.ja) check(g.rt.bottom <= g.frame.outerTop - 2.5 + 0.01, '6a 병음', `${at}: 병음 아래 끝 ${g.rt.bottom.toFixed(2)} > 테두리 바깥 윗변 ${g.frame.outerTop.toFixed(2)} − 2.5`);
+      }
+      // 고르기 전·후로 글자·병음이 1px도 안 움직인다(테두리는 자리만 갖고 흐름에 없다)
+      await page.locator('.word-token').evaluateAll((ts) => ts.forEach((t) => t.removeAttribute('data-selected')));
+      const plain = await r0Geometry();
+      plain.forEach((g, i) => {
+        assert.deepEqual([g.surface, g.rt], [all[i].surface, all[i].rt], `${label} ${g.name}: 선택이 글자·병음 좌표를 바꿨다`);
+        assert.equal(g.frame, null, `${label} ${g.name}: 고르지 않았는데 테두리가 있다`);
+      });
+    }
+    const summary = Object.entries(bad).map(([k, v]) => `${k} ${v.length}건 — 예: ${v[0]}`);
+    assert.deepEqual(summary, [], `기하 위반:\n${summary.join('\n')}`);
+  });
+}
+
+test('R0 버그 6 — 다음 줄 병음이 앞줄의 테두리·밑줄·문형선에 얹히지 않는다(작은 글자 × 큰 병음 × 최소 줄 간격)', async () => {
+  // 병음을 테두리 위로 올리면서 생긴 줄 사이 겹침(실글꼴: 12.8px·병음 16px·간격 15px에서 −3.3px)의
+  // 방지선. ViewerPage와 같이 간격을 max(줄 간격, --hl-row-gap-min)으로 쓰고, 가장 깊은 표지(문형+저장
+  // 선택 테두리)를 모든 토큰에 둔 채 상자 기준으로 잰다(병음 상자 위 끝은 잉크보다 ≈0.1P 높다).
+  const bad = [];
+  for (const fs of [12.8, 25.6, 48]) for (const py of [12, 16]) for (const gap of [10, 15]) {
+    const v = { cls: 'word-token--saved', pattern: true, selected: true };
+    const line = Array.from({ length: 6 }, () => [R0_ZH[4], R0_ZH[2], R0_ZH[1]]).flat().map((x) => r0Tok(x.segs, { ...x, ...v })).join('');
+    await page.setContent(R0_PAGE(r0Area({ fs }, line).replace(/gap:15px \.25rem/, `gap:max(${gap}px, var(--hl-row-gap-min, 0px)) .25rem;width:${Math.round(fs * 14)}px`), { py }));
+    const rows = await page.evaluate(() => {
+      const m = new Map();
+      for (const t of document.querySelectorAll('.word-token')) {
+        const s = t.querySelector('.surface').getBoundingClientRect(), f = getComputedStyle(t, '::before'), tr = t.getBoundingClientRect();
+        const k = Math.round(s.top), e = m.get(k) || { rtTop: Infinity, markBottom: -Infinity };
+        for (const rt of t.querySelectorAll('.rt-an')) e.rtTop = Math.min(e.rtTop, rt.getBoundingClientRect().top);
+        e.markBottom = Math.max(e.markBottom, tr.top + parseFloat(f.top) + parseFloat(f.height));
+        m.set(k, e);
+      }
+      return [...m.entries()].sort((a, b) => a[0] - b[0]).map((x) => x[1]);
+    });
+    if (rows.length < 2) bad.push(`${fs}px·병음 ${py}·간격 ${gap}: 줄이 하나뿐 — 전제 실패`);
+    for (let i = 0; i + 1 < rows.length; i++) {
+      const clear = rows[i + 1].rtTop - rows[i].markBottom;
+      if (clear < 1 - 0.01) bad.push(`${fs}px·병음 ${py}·간격 ${gap}: 다음 줄 병음 상자 위 끝이 앞줄 테두리 아래 끝과 ${clear.toFixed(2)}px`);
+    }
+  }
+  assert.deepEqual(bad, []);
+});
+
+test('R0 버그 6 — 요미가나는 테두리에 닿을 때만 올라간다(작은 글자), 테두리·밑줄(6b)은 위 행렬이 일본어에도 잰다', async () => {
+  // 요미 상자는 2.2 줄 높이를 물려받아 가나 잉크가 상자 아래 끝보다 ≈0.6em(요미 크기) 위에 있다.
+  // 「잉크 아래 끝 ≈ 상자 아래 끝 − 0.55em(요미)」가 테두리 바깥 윗변 − 2.5px 이하여야 한다(실글꼴:
+  // 옛 0.65em 자리는 본문 12.8px에서 테두리와 0.67px). 25.6px 이상에서는 옛 자리를 그대로 둔다.
+  for (const fs of [12.8, 25.6, 48]) {
+    await page.setContent(R0_PAGE(r0Area({ fs, lang: 'ja' }, r0Line(R0_JA, { ja: true, selected: true }))));
+    const g = await r0Geometry();
+    const fromTop = await page.evaluate(() => [...document.querySelectorAll('.rt-an')].map((rt) => rt.getBoundingClientRect().bottom - rt.closest('.surface').getBoundingClientRect().top));
+    g.forEach((t, i) => {
+      const inkBottom = t.rt.bottom - 0.55 * (fs / 2);
+      assert.ok(inkBottom <= t.frame.outerTop - 2.5 + 0.01, `${fs}px ${t.name}: 요미 잉크 추정 아래 끝 ${inkBottom.toFixed(2)} > 테두리 ${t.frame.outerTop.toFixed(2)} − 2.5`);
+      assert.ok(fromTop[i] <= 0.65 * fs + 0.01, `${fs}px ${t.name}: 요미가 옛 자리보다 내려갔다 ${fromTop[i]}`);
+      if (fs >= 25.6) assert.ok(Math.abs(fromTop[i] - 0.65 * fs) < 0.6, `${fs}px ${t.name}: 큰 글자에서 요미가 옛 기준점(0.65em)에서 움직였다: ${fromTop[i]}`);
+    });
+  }
+});
+
+test('R0 버그 6 — 터치 화면 줄 첫 토큰: 테두리가 문장 막대를 감싸지 않는다', async () => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 700 }, hasTouch: true, isMobile: true });
+  try {
+    const p = await context.newPage();
+    await p.setContent(R0_PAGE(r0Area({ fs: 25.6 }, r0Line(R0_ZH.slice(0, 2), { selected: true }))));
+    const out = await p.evaluate(() => {
+      const t = document.querySelector('.word-token'), f = getComputedStyle(t, '::before');
+      return { hoverNone: matchMedia('(hover: none)').matches, frameLeft: t.getBoundingClientRect().left + parseFloat(f.left), surfaceLeft: t.querySelector('.surface').getBoundingClientRect().left };
+    });
+    assert.ok(out.hoverNone, '터치 컨텍스트가 (hover: none)이 아니다 — 전제가 무너졌다');
+    assert.ok(Math.abs(out.frameLeft - out.surfaceLeft) < 0.5, `테두리 왼변 ${out.frameLeft} ≠ 글자 상자 왼변 ${out.surfaceLeft}`);
+  } finally { await context.close(); }
+});
+
+test('R0 버그 1 — 문형 밑줄은 문장 지정·드래그·단어 선택 중에도 남는다(높이 ≥1px·폭 ≥80%)', async () => {
+  // 드래그 범위와 문장 지정은 같은 클래스(word-token--picked)를 쓴다(ViewerPage pickedClass) —
+  // 이음매(:has(+ picked))가 생기는 「뒤에 지정 토큰이 이어지는」 자리에 문형 토큰을 둔다.
+  const line = [R0_ZH[0], R0_ZH[2], R0_ZH[3], R0_ZH[4], R0_ZH[1], R0_ZH[7]];
+  const states = {
+    '고르기 전': () => {},
+    '문장 지정·드래그': (ts) => ts.forEach((t) => t.classList.add('word-token--picked')),
+    '단어 선택(집중 흐름)': (ts) => ts.forEach((t) => { t.classList.add('word-token--picked'); if (t.classList.contains('word-token--pattern')) t.dataset.selected = 'true'; }),
+  };
+  for (const hl of [false, true]) for (const [state, apply] of Object.entries(states)) {
+    await page.setContent(R0_PAGE(r0Area({ fs: 25.6, hl }, r0Line(line))));
+    await page.locator('.word-token').evaluateAll(apply);
+    const marks = await page.evaluate(() => {
+      const want = getComputedStyle(document.querySelector('.r0-probe')).backgroundColor;
+      if (!want || want === 'rgba(0, 0, 0, 0)') throw new Error(`--pattern-line이 풀리지 않았다: ${want}`);
+      return [...document.querySelectorAll('.word-token--pattern')].map((t) => {
+        const s = t.querySelector('.surface'), cands = [];
+        const m = s.querySelector('.pattern-mark');
+        if (m) { const r = m.getBoundingClientRect(); cands.push({ w: r.width, h: r.height, bg: getComputedStyle(m).backgroundColor }); }
+        const a = getComputedStyle(s, '::after');
+        if (a.content !== 'none') cands.push({ w: parseFloat(a.width), h: parseFloat(a.height), bg: a.backgroundColor });
+        return { name: t.dataset.name, width: s.getBoundingClientRect().width, line: cands.find((c) => c.bg === want && c.h > 0) || null, cands };
+      });
+    });
+    assert.equal(marks.length, 2, '문형 토큰 둘(比·尽量)이 있어야 한다');
+    for (const m of marks) {
+      const at = `${state}·상태색 ${hl ? '켬' : '끔'} ${m.name}`;
+      assert.ok(m.line, `${at}: 문형 밑줄이 없다 — 후보 ${JSON.stringify(m.cands)}`);
+      assert.ok(m.line.h >= 1, `${at}: 밑줄 높이 ${m.line.h}px < 1px`);
+      assert.ok(m.line.w >= m.width * 0.8, `${at}: 밑줄 폭 ${m.line.w}px < 토큰 폭 ${m.width}px의 80%`);
+    }
+  }
+});
+
+for (const theme of ['light', 'sepia', 'dark']) {
+  test(`R0 버그 11 — 「만난 말」은 새 단어와 같은 표시다(${theme}: 칠·지정 혼색·선택 테두리)`, async () => {
+    await page.setContent(R0_PAGE(r0Area({ fs: 25.6, hl: true, theme }, r0Line([R0_ZH[5], R0_ZH[6]]))));
+    const read = () => page.evaluate(() => [...document.querySelectorAll('.word-token')].map((t) => {
+      const b = getComputedStyle(t.querySelector('.surface'), '::before'), f = getComputedStyle(t, '::before');
+      return { band: b.backgroundColor, line: `${b.borderBottomWidth} ${b.borderBottomColor}`, frame: f.content !== 'none' ? f.borderTopColor : b.boxShadow };
+    }));
+    const plain = await read();
+    assert.deepEqual(plain[1], plain[0], `만난 말 칠 ${plain[1].band} ≠ 새 단어 칠 ${plain[0].band}`);
+    await page.locator('.word-token').evaluateAll((ts) => ts.forEach((t) => t.classList.add('word-token--picked')));
+    const picked = await read();
+    assert.deepEqual(picked[1], picked[0], '지정 중 표시(띠·밑줄)도 같아야 한다');
+    assert.notEqual(picked[0].band, plain[0].band, '지정하면 지정 띠가 깔린다');
+    assert.equal(picked[0].line, plain[0].line, '지정 중에도 밑줄은 그대로다(AD-R2)');
+    await page.locator('.word-token').evaluateAll((ts) => ts.forEach((t) => { t.classList.remove('word-token--picked'); t.dataset.selected = 'true'; }));
+    const selected = await read();
+    assert.equal(selected[1].frame, selected[0].frame, '선택 테두리 색도 같아야 한다');
+  });
+}
+
+/* ── AD-R2 새 단어 밑줄(VIEWER-V2-ROUNDS-001 §5 — 오너 확정, 08-27 B안 수정) ──────────────────────
+ * 새 단어·만난 말 = 얇은 파란 밑줄(면 칠 없음), 면 칠은 학습 중·복습에만. 밑줄은 #1354 「밑줄 자리」
+ * (띠 아래 --hl-mark-gap, 문형 밑줄이 있으면 둘째 칸)에 이름만 더한다 — 좌표 신설 0.
+ * 축: 상태색 켬·끔 × 종이(sepia)·어둡게(dark)·밝게 × 선택(테두리)·지정(띠)·미선택 × 문형 동시.
+ * 위 버그 6 행렬도 「更 문형+새 단어」 행과 새 단어·만난 말 밑줄을 같은 기준(띠 + 2px, 테두리 안 0.5px)으로 잰다. */
+for (const theme of ['sepia', 'dark', 'light']) {
+  test(`AD-R2 — 새 단어는 밑줄·면 칠 없음(선택 중 숨김·지정 중 유지), 학습 중·복습은 면 칠(${theme} × 상태색 켬·끔 × 선택·지정·미선택 × 문형 동시)`, async () => {
+    const LIST = [
+      { name: '熬夜 새 단어', segs: [['熬', 'áo'], ['夜', 'yè']], cls: 'word-token--new', kind: 'new' },
+      { name: '爱惜 만난 말', segs: [['爱', 'ài'], ['惜', 'xī']], cls: 'word-token--met', kind: 'new' },
+      { name: '更 문형+새 단어', segs: [['更', 'gèng']], cls: 'word-token--new', pattern: true, kind: 'new' },
+      { name: '体育场 저장', segs: [['体', 'tǐ'], ['育', 'yù'], ['场', 'chǎng']], cls: 'word-token--saved', kind: 'fill' },
+      { name: '照片 복습', segs: [['照', 'zhào'], ['片', 'piàn']], cls: 'word-token--saved word-token--due', kind: 'fill' },
+      { name: '尽量 문형+저장', segs: [['尽', 'jǐn'], ['量', 'liàng']], cls: 'word-token--saved', pattern: true, kind: 'fill' },
+      { name: '眼前 미저장', segs: [['眼', 'yǎn'], ['前', 'qián']], kind: 'plain' },
+    ];
+    const bad = [];
+    const check = (ok, msg) => { if (!ok) bad.push(msg); };
+    for (const hl of [true, false]) for (const mode of ['미선택', '지정', '선택']) {
+      await page.setContent(R0_PAGE(r0Area({ fs: 25.6, hl, theme }, r0Line(LIST, { selected: mode === '선택' }))
+        + `<i id="ln" class="reader-area reader-area--${theme}" style="position:absolute;width:0;height:0;padding:0;min-height:0;color:var(--ws-new-ln)"></i>`));
+      if (mode === '지정') await page.locator('.word-token').evaluateAll((ts) => ts.forEach((t) => t.classList.add('word-token--picked')));
+      const want = await page.evaluate(() => getComputedStyle(document.getElementById('ln')).color);
+      const geo = await r0Geometry();
+      const css = await page.evaluate(() => [...document.querySelectorAll('.word-token')].map((t) => {
+        const b = getComputedStyle(t.querySelector('.surface'), '::before');
+        return { bg: b.backgroundColor, ulw: parseFloat(b.borderBottomWidth) || 0, ulc: b.borderBottomColor };
+      }));
+      const clear = 'rgba(0, 0, 0, 0)';
+      const pickedBg = mode === '지정' ? css[LIST.findIndex((x) => x.kind === 'plain')].bg : clear;
+      LIST.forEach((x, i) => {
+        const at = `${theme}·상태색 ${hl ? '켬' : '끔'}·${mode} ${x.name}`, c = css[i], g = geo[i];
+        if (x.kind === 'new') {
+          check(c.bg === pickedBg, `${at}: 면 칠 ${c.bg} — 새 단어는 칠하지 않는다(지정 중이면 중립 지정 띠 ${pickedBg}만)`);
+          if (!hl) { check(c.ulw === 0 || c.ulc === clear, `${at}: 상태색 끔인데 밑줄이 있다`); return; }
+          // 선택(단어창 열림)은 밑줄 없음 — 파란 밑줄 + 파란 테두리 아랫선이 이중 밑줄로 읽혔다(검수 2026-10-07).
+          // 지정(문장 선택·드래그)은 밑줄 유지.
+          if (mode === '선택') { check(c.ulw === 0 || c.ulc === clear, `${at}: 선택 중에는 새 단어 밑줄을 숨긴다(테두리가 자리를 표시)`); return; }
+          check(c.ulw >= 1 && c.ulw <= 2 && c.ulc === want, `${at}: 밑줄 ${c.ulw}px ${c.ulc} ≠ 1~2px ${want}`);
+          check(g.underline && g.underline.top >= g.band.bottom + 2 - 0.01, `${at}: 밑줄이 띠 아래 첫 칸(띠 + 2px)보다 위다`);
+          check(g.band.clip === 'content-box', `${at}: 지정 띠가 밑줄 여백까지 번진다`);
+          if (x.pattern) check(g.mark && g.underline && g.mark.bottom <= g.underline.top - 0.5, `${at}: 문형 밑줄 다음 칸이 아니다(겹침)`);
+          if (g.frame && g.underline) check(g.underline.bottom <= g.frame.innerBottom - 0.5 + 0.01, `${at}: 밑줄 ${g.underline.bottom.toFixed(2)}이 선택 테두리 선 ${g.frame.innerBottom.toFixed(2)}에 닿는다`);
+        } else if (x.kind === 'fill') {
+          if (hl) check(c.bg !== clear && c.bg !== pickedBg, `${at}: 학습 중·복습은 면 칠이어야 한다(${c.bg})`);
+        } else {
+          check(c.bg === pickedBg && (c.ulw === 0 || c.ulc === clear), `${at}: 아는/미저장 단어에 표시가 생겼다`);
+        }
+      });
+    }
+    assert.deepEqual(bad, []);
+  });
+}

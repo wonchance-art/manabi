@@ -31,6 +31,16 @@ export function legacyTextbookTarget(pathname) {
   return null;
 }
 
+// 학습자 화면에 내보내는 주소의 마지막 관문. 옛 교재 공개 URL은 #1287부터 관리자 보관함으로만 열리므로
+// (middleware → /admin/legacy-textbooks → 비관리자는 /), 학습자 링크로 만들면 홈으로 튕긴다.
+// 옛 챕터와 새 책 위치의 대응은 데이터로 확정된 것이 없어 추측해 옮기지 않는다 — null을 돌려주고,
+// 호출부는 링크 자리에 ARCHIVED_TEXTBOOK_NOTICE를 보인다(VIEWER-R0-BUGS-001 버그 3).
+export const ARCHIVED_TEXTBOOK_NOTICE = '보관된 교재라 열 수 없어요';
+export function learnerHref(href) {
+  if (typeof href !== 'string' || !href) return null;
+  return legacyTextbookTarget(href.replace(/[?#].*$/s, '')) ? null : href;
+}
+
 export function readingUnit(pageId, sectionIndex) {
   if (!pageId || pageId === 'cover' || pageId.startsWith('toc')) return 'cover';
   const exact = sectionIndex.find(section => section.id === pageId || section.anchors.includes(pageId));

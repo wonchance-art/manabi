@@ -222,6 +222,8 @@ function WorldChatBox({ messages, selfId, status, guest = false, expanded, onTog
       if (i >= total) clearInterval(t);
     }, 30);
     return () => clearInterval(t);
+    // 새 메시지(id)일 때만 타자기를 다시 시작한다 — 같은 메시지의 새 객체로는 재시작하지 않는다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [latest ? latest.id : null]);
 
   // 펼침·새 메시지 시 로그를 맨 아래로 스크롤.
@@ -726,6 +728,8 @@ export default function WorldPage() {
       setWorldRetrying(false);
       bus.emit('peers:update', new Map()); // 남은 원격 캐릭터 정리
     };
+    // 접속은 계정(userId)별 1회 — devGuest는 진입 동안 고정이고 toast 정체성 변화로 재접속하지 않는다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   // ── 도트 채팅 배선 (net.js·voice 와 독립 — 자체 world-chat 채널) ──
@@ -802,6 +806,8 @@ export default function WorldPage() {
       .then((d) => { if (!cancelled) setWorldSpawn(d?.position ?? null); })
       .catch(() => { if (!cancelled) setWorldSpawn(null); }); // 조회 실패는 조용히 — 기본 스폰
     return () => { cancelled = true; };
+    // 스폰 조회는 userId별 1회 — devGuest는 진입 동안 고정이다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   // ── 좌표 실시간 기록 → 주기 저장 + 이탈 시 최종 저장 ──
@@ -1029,6 +1035,20 @@ export default function WorldPage() {
               <WorldGate status={worldStatus} reason={worldStatusReason} spawnLoading={worldSpawn === undefined} onRetry={retryWorldNet} retrying={worldRetrying} />
             )}
           </div>
+          {/* 도시 지형 OSM(ODbL) 표기 — 지도 곁 표기 의무라 베젤 각인 결로 작게 둔다(정본 lib/dataCredits.js).
+              새 탭으로 연다 — 같은 탭 이동은 멀티 접속을 끊는다. */}
+          <a
+            href="/credits#openstreetmap"
+            target="_blank"
+            rel="noopener"
+            style={{
+              position: 'absolute', bottom: 3, left: 18,
+              fontFamily: GBC.font, fontSize: '0.5rem', letterSpacing: '0.3px',
+              color: SHELL.engrave, textDecoration: 'none',
+            }}
+          >
+            © OpenStreetMap 기여자
+          </a>
         </div>
 
         {/* ── 근처 사람 (presence) — 👥 버튼으로 여닫는 도트 패널: 음소거·신고 ── */}

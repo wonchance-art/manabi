@@ -50,18 +50,29 @@ describe('findChapterForTag', () => {
 });
 
 describe('attachTagLinks', () => {
-  it('오류에 href를 부착하고, 못 찾으면 그대로 둔다', () => {
-    const fb = {
-      sentences: [{
-        original: 'a', corrected: 'b',
-        errors: [
-          { part: 'x', fix: 'y', why: 'z', tag: '가능형' },
-          { part: 'x', fix: 'y', why: 'z', tag: '없는문법' },
-        ],
-      }],
-    };
+  // 계약 개정(VIEWER-R0-BUGS-001 버그 3): 옛 교재 챕터 주소(/japanese/grammar/…)는 관리자 보관함으로만
+  // 열려 학습자 링크로 붙이면 홈으로 튕긴다. 매칭은 그대로 하되 보관 주소에는 href를 붙이지 않는다.
+  const feedback = () => ({
+    sentences: [{
+      original: 'a', corrected: 'b',
+      errors: [
+        { part: 'x', fix: 'y', why: 'z', tag: '가능형' },
+        { part: 'x', fix: 'y', why: 'z', tag: '없는문법' },
+      ],
+    }],
+  });
+  it('공개 주소면 href를 부착하고, 못 찾으면 그대로 둔다', () => {
+    const fb = feedback();
+    attachTagLinks(fb, { ...REF, base: '/public-route' });
+    expect(fb.sentences[0].errors[0].href).toBe('/public-route/grammar/n4-03-potential');
+    expect(fb.sentences[0].errors[1].href).toBeUndefined();
+  });
+
+  it('보관된 옛 교재 챕터는 찾아도 링크를 붙이지 않는다', () => {
+    const fb = feedback();
+    expect(findChapterForTag(REF, '가능형')).toMatchObject({ slug: 'n4-03-potential' });
     attachTagLinks(fb, REF);
-    expect(fb.sentences[0].errors[0].href).toBe('/japanese/grammar/n4-03-potential');
+    expect(fb.sentences[0].errors[0].href).toBeUndefined();
     expect(fb.sentences[0].errors[1].href).toBeUndefined();
   });
 

@@ -38,7 +38,8 @@ describe('viewer message contract',()=>{
     expect(t('zh-TW','읽기 설정')).toBe('閱讀設定');
     expect(t('zh-TW','저장')).toBe('儲存');
     expect(t('zh-TW','문법 표시')).toBe('文法標示');
-    expect(VIEWER_LOCALE_OPTIONS).toEqual([['ko','한국어'],['zh-CN','中文（简体）'],['zh-TW','繁體中文（台灣）']]);
+    // AD-R2 Aa — 표기 통일 「한국어 · 简体中文 · 繁體中文」(정본 §5 Aa).
+    expect(VIEWER_LOCALE_OPTIONS).toEqual([['ko','한국어'],['zh-CN','简体中文'],['zh-TW','繁體中文']]);
   });
   it('rejects unsupported locales, missing keys and missing substitutions',()=>{
     expect(()=>t('zh-Hant','저장')).toThrow(/Unsupported/);
@@ -65,6 +66,7 @@ describe('shared viewer locale rendering',()=>{
       settings:{...defaults,snapshot:()=>defaults},language:'Korean',
       languageSettings:{uiLocale:locale,explanationLocale:'ko',setUiLocale:()=>{},setExplanationLocale:()=>{}},
       previewTokens:tokens,keepPosition:callback=>callback(),onClose:()=>{},
+      initialTab:'display', // AD-R2 Aa: 언어 선택은 「표시」 탭 맨 아래(정본 §5 Aa)
     }));
     expect(markup).toContain(`aria-label="${t(locale,'화면 언어')}"`);
     expect(markup).toContain(`aria-label="${t(locale,'설명 언어')}"`);

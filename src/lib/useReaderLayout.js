@@ -14,7 +14,7 @@ export function readerVisibleBounds(root) {
   const bottom=Math.min((viewport?.height||window.innerHeight)+(viewport?.offsetTop||0),pane?.bottom??Infinity);
   const toolbars=[...(root?.closest('.viewer-layout')?.querySelectorAll('.viewer-topbar,.class-workspace-topbar')||[])].filter(el=>!el.hidden);
   const top=Math.max(64,viewport?.offsetTop||0,pane?.top||0,...toolbars.map(el=>el.getBoundingClientRect().bottom+8));
-  const panels=[...(root?.closest('.viewer-layout')||document).querySelectorAll('.viewer-inspector,.class-reader-dock')];
+  const panels=[...(root?.closest('.viewer-layout')||document).querySelectorAll('.viewer-inspector,.class-reader-dock,.sentence-move-bar,.viewer-pace-float')];
   const edges=panels.filter(panel=>!panel.hidden&&getComputedStyle(panel).position==='fixed').map(panel=>panel.getBoundingClientRect()).filter(rect=>rect.width>0).map(rect=>rect.top);
   return {top,bottom:Math.min(bottom,...edges)};
 }

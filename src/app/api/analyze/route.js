@@ -13,13 +13,22 @@ import { fetchMeaningsForMissing } from '@/lib/server/fetchMeanings';
 import {
   collectZhPosMarks, disambiguateZhPos, resolveZhTokenPos, zhPosMarkKey,
   pickZhMeaning, needsZhMeaningPosRefresh, needsZhJaBackfill, buildZhPosWriteback, splitZhToken,
+  ZH_SENSE_REVIEW,
 } from '@/lib/server/disambiguateZhPos';
+import { attachZhSenseCandidates, createZhSenseStats, resolveZhTokenSense } from '@/lib/server/zhSenseReview';
 import {
   collectEnLemmaLookupForms, collectEnPosMarks, disambiguateEnPos, enPosMarkKey,
   needsEnPosBackfill, resolveEnTokenContext,
 } from '@/lib/server/disambiguateEnPos';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 import { collectMissingBaseForms } from '@/lib/server/dictLookup';
+import {
+  applyRequestBoundaries, boundaryBaseTokens, boundaryLineResult, readRequestBoundaries,
+} from '@/lib/server/analyzeBoundaries';
+import {
+  ZH_BOUNDARY_REVIEW, applyZhBoundaryJoins, attachZhBoundaryPairs, collectZhBoundaryPairs, collectZhPairLookupForms,
+  zhBoundaryBlockedRegions,
+} from '@/lib/server/zhBoundaryReview';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // Vercel Node.js 함수: 최대 60초
@@ -75,7 +84,7 @@ export async function POST(request) {
     return Response.json({ error: 'Bad JSON' }, { status: 400 });
   }
 
-  const { lines: rawLines, language } = body;
+  const { lines: rawLines, language, boundaries } = body;
   if (!Array.isArray(rawLines) || rawLines.length === 0) {
     return Response.json({ error: 'lines required' }, { status: 400 });
   }
@@ -84,6 +93,11 @@ export async function POST(request) {
   }
   // 줄 수·줄 길이 캡 — 토큰화·Gemini 팬아웃 비용을 상한. 정상 세션(수 줄)은 영향 없음.
   const lines = rawLines.slice(0, MAX_LINES).map((l) => String(l ?? '').slice(0, MAX_LINE_LEN));
+  // AD-R3: 이 자료의 단어 경계 기록(줄 = 요청 안 번호). 없으면 기존 경로 그대로(기록 0 = 동작 동일).
+  const boundaryRequest = readRequestBoundaries(boundaries, lines.length);
+  if (!boundaryRequest.ok) {
+    return Response.json({ error: 'boundaries invalid' }, { status: 400 });
+  }
 
   try {
     // 1. 각 줄 토큰화 (언어별)
@@ -91,7 +105,7 @@ export async function POST(request) {
     const tokenizer = language === 'Japanese' ? tokenizeJaLine
       : language === 'Chinese' ? tokenizeZhLine
       : tokenizeEnLine;
-    const tokenizedLines = await Promise.all(
+    const rawTokenizedLines = await Promise.all(
       lines.map(async (line) => ({
         original: line,
         tokens: language === 'Japanese'
@@ -99,11 +113,21 @@ export async function POST(request) {
           : tokenizer(line),          // 영어·중국어는 sync
       }))
     );
+    // 1.5. AD-R3 단어 경계 — 토큰화 직후 칼선을 적용한다. 새 조각과 기록의 원래 토큰(base)이 아래 사전 조회·뜻 조회·
+    // 품사 판별·병음을 그대로 탄다(§3.4). 기록이 없으면 null — 아래 경로는 원래 토큰 그대로.
+    const boundaryState = applyRequestBoundaries(rawTokenizedLines, boundaryRequest.byLine, language);
+    const tokenizedLines = boundaryState?.tokenizedLines ?? rawTokenizedLines;
+    const lookupLines = boundaryState?.lookupLines ?? tokenizedLines;
+    // 1.6. AD-R4 PR④ 경계 검수(중국어만, 상수 ZH_BOUNDARY_REVIEW 꺼짐으로 출시) — 켜지면 이웃 한자 쌍을 같은 판별 호출에
+    // [묶음 판정]으로 싣는다. 이 자료 경계 기록 구간(적용 못 한 기록 포함)과 겹치는 쌍은 만들지 않는다(사용자 경계가 이긴다).
+    // 꺼져 있으면 아래 어떤 단계도 이 블록의 값을 쓰지 않는다(zhBoundaryReviewRoute.test.js 스냅숏 = 현행).
+    const zhBoundaryOn = language === 'Chinese' && ZH_BOUNDARY_REVIEW;
+    const zhBoundaryBlocked = zhBoundaryOn ? zhBoundaryBlockedRegions(boundaryRequest.byLine, boundaryState) : null;
 
     // 2. 모든 기본 base_form 수집 (중복 제거). 영어는 POS별 lemma 후보 사전 행도 같은 요청에서
     // MAX_MISSING cap 안에 조회한다. 후보 행이 없으면 문맥 pick을 적용하지 않고 기본 키로 폴백.
     const allBaseForms = new Set();
-    for (const { tokens } of tokenizedLines) {
+    for (const { tokens } of lookupLines) {
       for (const t of tokens) {
         if (t.base_form) allBaseForms.add(t.sep_link || t.base_form);
       }
@@ -113,6 +137,10 @@ export async function POST(request) {
       for (const form of collectEnLemmaLookupForms(tokenizedLines, MAX_MISSING)) {
         lookupBaseForms.add(form);
       }
+    }
+    // 경계 검수 켜짐: 이은 꼴도 같은 쿼리로 읽는다(gemini 행 = 미등재 후보 근거 · 등재 꼴의 뜻). DB 쿼리는 1회 그대로(§5.2).
+    if (zhBoundaryOn) {
+      for (const form of collectZhPairLookupForms(tokenizedLines, zhBoundaryBlocked)) lookupBaseForms.add(form);
     }
 
     // 3. DB에서 기존 의미 조회
@@ -129,7 +157,7 @@ export async function POST(request) {
     // 어휘 토큰만 조회한다 — 문장부호도 base_form을 달고 나오므로 거르지 않으면 Gemini에 뜻을 묻고
     // 공유 사전에 적재된다(운영 감사에서 실제 4행 발견). 판정·수확은 `collectMissingBaseForms`가
     // 소유하고 계약이 지킨다 — 라우트 안의 루프였을 때는 「거르고 있는가」를 못 박을 수 없었다.
-    const missingList = collectMissingBaseForms(tokenizedLines, cache);
+    const missingList = collectMissingBaseForms(lookupLines, cache);
 
     // 4.2. 중국어 자가 치유 — 재조회 대상: ① 다중 품사 행인데 뜻에 pos 태그가 없음(겸류사
     // 뜻 정렬에 필요) ② 일본어 대응(ja) 미판정(한자 대조 2단계 백필). 미싱 경로를 그대로
@@ -166,9 +194,29 @@ export async function POST(request) {
     // 명/동/형 계열 한자어를 모아 flash-lite 1회로 "품사 후보 전체 + 이 문장에서의 품사"를
     // 받는다. 뜻 조회와 서로 독립(판별은 pos만, 뜻 조회는 meaning만)이라 병렬 실행 —
     // 미싱이 있는 요청에선 벽시계 추가가 없다. 실패 시 기존 pos 폴백(그레이스풀).
-    const zhMarks = language === 'Chinese' ? collectZhPosMarks(tokenizedLines, cache) : [];
+    // AD-R4 뜻 검수(중국어만, 상수 꺼짐으로 출시): 켜지면 같은 판별 호출의 단어 줄에 사전 뜻 후보를
+    // 붙이고 번호로 받는다(호출 수 0 증가). 미싱·재조회 단어는 뜻이 바뀌는 중이라 후보에서 뺀다.
+    // 꺼져 있으면 마크·프롬프트·응답 처리가 현행 그대로다(zhSenseReviewRoute.test.js 스냅숏).
+    const zhSenseOn = language === 'Chinese' && ZH_SENSE_REVIEW;
+    const zhPosMarks = language === 'Chinese' ? collectZhPosMarks(tokenizedLines, cache) : [];
+    // 경계 검수 켜짐: 쌍은 다른 마크가 있을 때만 싣는다(쌍 때문에 판별 호출이 새로 생기지 않게 — §4.2).
+    const zhPairs = zhBoundaryOn && zhPosMarks.length
+      ? collectZhBoundaryPairs(tokenizedLines, { cache, marks: zhPosMarks, blocked: zhBoundaryBlocked })
+      : [];
+    // 등재 꼴인데 사전 행이 없으면(jieba가 늘 갈라 행이 쌓이지 않는 不客气류) 같은 병렬 뜻 조회에 싣는다 — 묶을 때 뜻을 붙인다.
+    // 진짜 미싱 뒤에 붙어 MAX_MISSING 캡에서 미싱이 우선이고, 뜻을 못 받으면 그 쌍은 묶지 않는다(현행 그대로).
+    for (const p of zhPairs) {
+      if (p.registered && !cache.has(p.form) && !missingList.some((item) => item.base_form === p.form)) {
+        missingList.push({ base_form: p.form, pos: null, reading: p.reading || null });
+      }
+    }
+    const zhSenseMarks = zhSenseOn
+      ? attachZhSenseCandidates(zhPosMarks, { tokenizedLines, cache, refreshForms: new Set(missingList.map((m) => m.base_form)) })
+      : zhPosMarks;
+    const zhMarks = zhPairs.length ? attachZhBoundaryPairs(zhSenseMarks, zhPairs) : zhSenseMarks;
+    const zhSenseStats = zhSenseOn || zhBoundaryOn ? createZhSenseStats(zhMarks) : null;
     const zhPosPicksPromise = zhMarks.length > 0
-      ? disambiguateZhPos(lines, zhMarks, { deadlineMs: startedAt + 35_000 })
+      ? disambiguateZhPos(lines, zhMarks, { deadlineMs: startedAt + 35_000, ...(zhSenseStats ? { senseStats: zhSenseStats } : {}) })
       : Promise.resolve(new Map());
     // 4.6. 영어 품사·lemma 문맥 판별 — 동일 표기 반복도 occurrence key로 독립 판정.
     // 뜻 조회와 병렬이며, 선택 lemma 행이 cache에 없으면 응답 조립에서 현행 값으로 폴백한다.
@@ -206,6 +254,17 @@ export async function POST(request) {
       meaningsPromise,
     ]);
     const enPosPicks = enPosResult.picks;
+    // 4.7. 경계 검수 켜짐 — 등재 + join:true만 자동으로 묶고(표식 ai_registered), 미등재 + join:true는 앞 토큰에 후보 표식.
+    // 묶은 꼴의 뜻을 붙일 수 없으면(사전 행 없음) 묶지 않는다. 꺼져 있으면 zhPairs가 비어 조립 줄은 tokenizedLines 그대로다.
+    let assemblyLines = tokenizedLines;
+    if (zhPairs.length) {
+      const joined = applyZhBoundaryJoins(tokenizedLines, zhPairs, posPicks, {
+        canJoin: (form) => (cache.get(form)?.meanings || []).some((item) => item?.meaning),
+      });
+      assemblyLines = joined.tokenizedLines;
+      zhSenseStats.joinApplied = joined.applied;
+      zhSenseStats.joinSuggested = joined.suggested;
+    }
 
     // 5. processed_json 호환 응답 조립
     // 불필요 furigana 필터: 히라가나·카타카나·기호만인 토큰은 reading 무시
@@ -226,19 +285,21 @@ export async function POST(request) {
     const enMarkKeys = new Set(enMarks.map((mark) => mark.key));
     const usedBaseFormsSet = new Set();
     let enFallbacks = 0;
-    const results = tokenizedLines.map(({ tokens }, lineIdx) => {
+    const results = assemblyLines.map(({ tokens }, lineIdx) => {
       const sequence = [];
       const dictionary = {};
       // OOV 우연 병합 분리 — 판별기가 "별개 단어들의 우연 결합"으로 판정한 토큰(笔在→笔/在)은
       // 부분 토큰들로 조립한다(실단어 신조어(社恐)는 유지 verdict). 클라이언트(analyzeText)가
       // 서버 id를 위치 기준으로 재부여하므로 토큰 수 변화는 안전하다.
+      // 사용자가 정한 경계(boundary 표식, AD-R3 §0.4)는 AI 분리 판정이 다시 가르지 않는다.
       const lineTokens = language === 'Chinese'
         ? tokens.flatMap((t) => {
-            const parts = posPicks.get(zhPosMarkKey(lineIdx, t.text))?.parts;
+            const parts = t.boundary ? null : posPicks.get(zhPosMarkKey(lineIdx, t.text))?.parts;
             return parts?.length ? splitZhToken(t, parts) : [t];
           })
         : tokens;
-      lineTokens.forEach((t, tokenIdx) => {
+      // 경계 기록의 원래 토큰(base)도 같은 조립을 탄 뒤 boundaryLineResult가 boundaryApplied로 떼어 낸다.
+      [...lineTokens, ...boundaryBaseTokens(boundaryState, lineIdx)].forEach((t, tokenIdx) => {
         const tokenId = `id_${lineIdx}_${tokenIdx}_${timestamp}`;
         sequence.push(tokenId);
         const enKey = enPosMarkKey(lineIdx, tokenIdx);
@@ -268,8 +329,10 @@ export async function POST(request) {
             ? { pos: enResolved.pos, posAll: enResolved.posAll }
             : { pos: cached?.pos || t.pos, posAll: null };
         // 뜻도 문맥 품사를 따른다 — 짚힌 pos와 일치하는 뜻 우선, 없으면 첫 뜻(기존 동작).
+        // 뜻 검수 켜짐: 검증된 후보 번호·문맥 뜻이 있으면 그것(토큰에만 — 사전 행에 쓰지 않는다).
+        const zhSense = zhSenseOn ? resolveZhTokenSense(posPicks.get(zhPosMarkKey(lineIdx, t.text)), t) : null;
         const meaning = language === 'Chinese'
-          ? pickZhMeaning(cached?.meanings, pos)
+          ? (zhSense?.meaning || pickZhMeaning(cached?.meanings, pos))
           : language === 'English'
             ? enResolved.meaning
             : (cached?.meanings?.[0]?.meaning || '');
@@ -279,11 +342,16 @@ export async function POST(request) {
           pos,
           meaning,
           base_form: outputBaseForm,
+          ...(t.boundary ? { boundary: t.boundary } : {}),
+          // AD-R4 PR④ 미등재 묶음 후보(앞 토큰에만 — 뷰어 「한 단어로 묶을까요?」). 경계는 바꾸지 않는다.
+          ...(t.boundarySuggest ? { boundarySuggest: t.boundarySuggest } : {}),
           ...(t.sep_link ? { sep_link: t.sep_link } : {}),
           ...(posAll ? { pos_all: posAll } : {}),
+          // 화면 표시용 내부 표식('ctx' 문맥 뜻 | 'doubt' 의심) — 「AI」 표로 그리지 않는다(오너 결정 10-07).
+          ...(zhSense?.meaningCheck ? { meaningCheck: zhSense.meaningCheck } : {}),
         };
       });
-      return { sequence, dictionary };
+      return boundaryLineResult(boundaryState, lineIdx, sequence, dictionary);
     });
 
     // 중국어 자가 치유 ② — 문맥 판별이 알아낸 다중 후보를 단일 pos 레거시 gemini 행에 기록
@@ -326,6 +394,7 @@ export async function POST(request) {
           backfillRows: enBackfillRows,
           fallbacks: enFallbacks,
         },
+        ...(zhSenseStats ? { zhSense: zhSenseStats } : {}),
       },
     });
   } catch (err) {

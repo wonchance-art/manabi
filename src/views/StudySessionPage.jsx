@@ -22,6 +22,7 @@ import { buildWeeklyReport } from '../lib/weeklyReport';
 import { fetchWeeklyReportRows } from '../lib/weeklyReportRows';
 import { splitSentenceAroundWord } from '../lib/constants';
 import { mapParagraphToItems } from '../lib/studyParagraph';
+import { ARCHIVED_TEXTBOOK_NOTICE, learnerHref } from '../lib/bookNavigation';
 
 /** 로컬 날짜 YYYY-MM-DD — 격일 산출 문항 노출 판정용 */
 function ymdLocal(d) {
@@ -290,7 +291,6 @@ export default function StudySessionPage({
         if (data?.ok && data.preview) setNextPreview(data.preview);
       } catch {}
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished, user?.id, lang]);
 
   // ── push_open 계측 — /study 진입 URL에 src=push면 review_events 1회 적재(기획 v4 §5) ──
@@ -323,7 +323,6 @@ export default function StudySessionPage({
     getSubscriptionState().then((s) => {
       setPushPrime(s.subscribed ? null : 'show');
     }).catch(() => setPushPrime(null));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished]);
 
   // 주간 회고 — weekly 세션 결과 화면에서 1회. 주간 리포트 정본(fetchWeeklyReportRows → buildWeeklyReport)
@@ -946,19 +945,25 @@ export default function StudySessionPage({
         </div>
 
         {/* 2. 새 챕터 */}
-        {newMeta && newItems.length > 0 && (
-          <Link href={newMeta.href} className="card" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', marginBottom: 12 }}>
-            <span style={{ flex: 1 }}>
-              <span style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600 }}>
-                {chapterPassed ? '새 챕터 통과!' : '새 챕터 — 다음 세션에서 다시'}
+        {/* 옛 교재 챕터는 보관함으로 옮겨져 열 수 없다 — 링크 없는 요약 카드(VIEWER-R0-BUGS-001 버그 3).
+            프리페치로 저장된 문단 재료에는 옛 주소가 남아 있을 수 있어 화면에서도 관문을 지난다. */}
+        {newMeta && newItems.length > 0 && (() => {
+          const href = learnerHref(newMeta.href);
+          const Card = href ? Link : 'div';
+          return (
+            <Card {...(href ? { href } : {})} className="card" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', marginBottom: 12 }}>
+              <span style={{ flex: 1 }}>
+                <span style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600 }}>
+                  {chapterPassed ? '새 챕터 통과!' : '새 챕터 — 다음 세션에서 다시'}
+                </span>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  {newMeta.level} #{newMeta.order} {newMeta.title} · {newRight}/{newItems.length}
+                </span>
               </span>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                {newMeta.level} #{newMeta.order} {newMeta.title} · {newRight}/{newItems.length}
-              </span>
-            </span>
-            <span aria-hidden="true" style={{ color: 'var(--text-muted)' }}>→</span>
-          </Link>
-        )}
+              {href && <span aria-hidden="true" style={{ color: 'var(--text-muted)' }}>→</span>}
+            </Card>
+          );
+        })()}
 
         {/* 3. 다시 볼 것 */}
         {wrong.length > 0 && (
@@ -1145,10 +1150,13 @@ export default function StudySessionPage({
           )}
           <div style={{ display: 'flex', gap: 10, marginTop: 16, alignItems: 'center' }}>
             <Button onClick={next} style={{ flex: 1 }}>문제 풀기 →</Button>
-            {item.newChapter && (
-              <Link href={item.newChapter.href} className="study-textlink" style={{ flexShrink: 0 }}>
+            {learnerHref(item.newChapter?.href) && (
+              <Link href={learnerHref(item.newChapter.href)} className="study-textlink" style={{ flexShrink: 0 }}>
                 새 문법 자세히
               </Link>
+            )}
+            {item.newChapter && !learnerHref(item.newChapter.href) && (
+              <span className="study-archived-note" style={{ flexShrink: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>{ARCHIVED_TEXTBOOK_NOTICE}</span>
             )}
           </div>
         </div>
@@ -1177,9 +1185,13 @@ export default function StudySessionPage({
           </ul>
           <div style={{ display: 'flex', gap: 10, marginTop: 16, alignItems: 'center' }}>
             <Button onClick={next} style={{ flex: 1 }}>바로 문제로 →</Button>
-            <Link href={item.chapter.href} className="study-textlink" style={{ flexShrink: 0 }}>
-              교재에서 자세히
-            </Link>
+            {learnerHref(item.chapter.href) ? (
+              <Link href={learnerHref(item.chapter.href)} className="study-textlink" style={{ flexShrink: 0 }}>
+                교재에서 자세히
+              </Link>
+            ) : (
+              <span className="study-archived-note" style={{ flexShrink: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>{ARCHIVED_TEXTBOOK_NOTICE}</span>
+            )}
           </div>
         </div>
       )}

@@ -10,6 +10,9 @@ import { logReviewEvents } from '../lib/reviewEvents';
 import { applyGuestReviewResult, drillIdFromQueueSlug } from '../lib/drillSrs';
 import { recordActivity } from '../lib/streak';
 import { textbookThemeStyle } from '../lib/textbookTheme';
+// 옛 교재 챕터·예문 주소는 관리자 보관함으로만 열린다. 게스트 API·문항 출처(sourceRef)까지 화면에서 한 번 더
+// 관문을 지나 홈으로 튕기는 링크를 내지 않는다(VIEWER-R0-BUGS-001 버그 3).
+import { ARCHIVED_TEXTBOOK_NOTICE, learnerHref } from '../lib/bookNavigation';
 import '../components/admin/textbook.css';
 import '../components/web/review-room.css';
 
@@ -250,8 +253,11 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
           챕터 {results.length}개 · 정답 {totalRight}/{totalQ}. 결과에 따라 다음 복습일이 조정됐어요.
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
-          {results.map((r, i) => (
-            <Link key={i} href={r.item.href} className="card" style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          {results.map((r, i) => {
+            const href = learnerHref(r.item.href);
+            const Card = href ? Link : 'div';
+            return (
+            <Card key={i} {...(href ? { href } : {})} className="card" style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{ fontSize: '1.1rem' }}>{r.item.flag}</span>
               <span style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ display: 'block', fontSize: '0.92rem', fontWeight: 600 }}>#{r.item.order} {r.item.title}</span>
@@ -260,9 +266,10 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
                   {r.nextDays ? ` · 다음 복습 ${r.nextDays}일 후` : ''}
                 </span>
               </span>
-              <span aria-hidden="true" style={{ color: 'var(--text-muted)' }}>→</span>
-            </Link>
-          ))}
+              {href && <span aria-hidden="true" style={{ color: 'var(--text-muted)' }}>→</span>}
+            </Card>
+            );
+          })}
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <Link href="/home" className="btn btn--ghost btn--md">홈으로</Link>
@@ -392,8 +399,8 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
                     )}
                   </div>
                 )}
-                {ans && q.sourceRef?.href && <p style={{ marginTop: 12, fontSize: '0.84rem' }}>
-                  <Link href={q.sourceRef.href} target="_blank" rel="noopener noreferrer" prefetch={false}>
+                {ans && learnerHref(q.sourceRef?.href) && <p style={{ marginTop: 12, fontSize: '0.84rem' }}>
+                  <Link href={learnerHref(q.sourceRef.href)} target="_blank" rel="noopener noreferrer" prefetch={false}>
                     교재에서 이 예문 보기 ↗
                   </Link>
                 </p>}
@@ -414,7 +421,8 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
               : graded
                 ? ' · 복습 결과를 저장했어요.'
                 : ''}
-            {rightCount < total && <> 헷갈렸다면 <Link href={item.href} target="_blank" rel="noopener noreferrer" prefetch={false} style={{ textDecoration: 'underline' }}>챕터를 다시 열어</Link> 확인해 보세요.</>}
+            {rightCount < total && learnerHref(item.href) && <> 헷갈렸다면 <Link href={learnerHref(item.href)} target="_blank" rel="noopener noreferrer" prefetch={false} style={{ textDecoration: 'underline' }}>챕터를 다시 열어</Link> 확인해 보세요.</>}
+            {rightCount < total && !learnerHref(item.href) && <> 이 챕터는 {ARCHIVED_TEXTBOOK_NOTICE}.</>}
           </p>
           <div className="fr-check__verdict-actions">
             {gradeError ? (

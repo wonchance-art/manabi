@@ -23,7 +23,7 @@
 .manabi-app--reading .viewer-topbar { position: sticky; top: 56px; z-index: 45; margin-bottom: 18px; padding-block: 8px; background: var(--paper); border-bottom: 1px solid var(--rule); }
 .manabi-app--reading .viewer-titlerow { margin-bottom: 24px; }
 .manabi-app--reading .viewer-topbar a,
-.manabi-app--reading .viewer-aa,
+.manabi-app--reading .viewer-tool,
 .manabi-app--reading .viewer-title-edit { min-height: 44px; }
 .manabi-app--reading .viewer-series-nav__btn { min-width: 44px; }
 .manabi-app--reading .viewer-titlerow .page-header__title { color: var(--ink); -webkit-text-fill-color: currentColor; background: none; font-size: clamp(25px, 2.5vw, 34px); font-weight: 650; line-height: 1.55; letter-spacing: -1px; overflow-wrap: anywhere; }

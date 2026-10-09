@@ -41,6 +41,8 @@ function AuthForm() {
       setIsLogin(false);
       setIsForgot(false);
     }
+    // 도착 URL의 error·mode를 진입 시 1회만 반영한다 — 이후 URL 변화로 사용자가 고른 탭을 되돌리지 않는다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleSubmit(e) {

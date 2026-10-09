@@ -1,0 +1,418 @@
+{
+  "status": 200,
+  "calls": [
+    {
+      "tier": "light",
+      "route": "disambiguateZhPos",
+      "prompt": "다음은 중국어 문장 목록과, 각 문장에서 품사를 판정할 단어 목록입니다.\n\n## 문장\n1. 我给妈妈打了一个电话。\n2. 我在工作，他们计划去北京。\n3. 他打篮球。\n4. 他吃醋了。\n\n## 단어\n1. \"给\" (문장 1)\n2. \"妈妈\" (문장 1)\n3. \"打\" (문장 1)\n4. \"电话\" (문장 1)\n5. \"在\" (문장 2)\n6. \"工作\" (문장 2)\n7. \"计划\" (문장 2)\n8. \"去\" (문장 2)\n9. \"打\" (문장 3)\n10. \"篮球\" (문장 3)\n11. \"吃醋\" (문장 4)\n\n각 단어에 대해 JSON 배열로 답하세요.\n\n## 출력 형식 (단어 목록과 순서·길이 정확히 일치)\n[\n  { \"all\": [\"동사\", \"명사\"], \"pos\": \"동사\" },\n  { \"all\": [\"명사\"], \"pos\": \"명사\" },\n  { \"all\": [], \"pos\": null, \"split\": [{\"t\": \"笔\", \"pos\": \"명사\"}, {\"t\": \"在\", \"pos\": \"전치사\"}] },\n  ...\n]\n\n## 규칙\n- all: 이 단어가 중국어에서 일반적으로 갖는 품사 후보 (흔한 순, 1~3개)\n- pos: 지정된 문장의 맥락에서 이 단어가 실제로 쓰인 품사 — 반드시 all 중 하나\n- split: [단어성 판정] 표시 항목만 — 이 표기가 실제 쓰이는 한 단어(신조어·전문어·고유명사\n  포함)면 split을 넣지 말 것. 별개 단어들이 우연히 이웃해 붙은 조합일 때만 순서대로\n  분해해 각 부분의 표기(t)와 그 문장에서의 품사(pos)를 적을 것 (부분들을 이으면 원 표기와\n  정확히 일치해야 함)\n- 품사 명칭: 명사/동사/형용사/부사/전치사/접속사/조사/대명사/양사/수사/감탄사/성어/지명/인명/고유명사\n- 설명/주석 금지, JSON만 출력",
+      "opts": {
+        "temperature": 0,
+        "timeoutMs": 15000,
+        "groq": false,
+        "route": "disambiguateZhPos"
+      }
+    },
+    {
+      "tier": "light",
+      "route": "fetchMeanings",
+      "prompt": "다음은 중국어(간체) 단어 목록입니다. 각 단어의 품사, 병음, 한국어 뜻을 JSON 배열로 알려주세요.\n\n1. \"妈妈\" (명사)\n2. \"篮球\" (명사)\n\n## 출력 형식 (순서와 길이 정확히 일치)\n[\n  { \"pos\": \"명사\", \"reading\": \"túshūguǎn\", \"meanings\": [{\"meaning\": \"도서관\", \"pos\": \"명사\"}], \"ja\": {\"form\": \"図書館\", \"yomi\": \"としょかん\"} },\n  { \"pos\": \"동사·명사\", \"reading\": \"gōngzuò\", \"meanings\": [{\"meaning\": \"일하다\", \"pos\": \"동사\"}, {\"meaning\": \"일, 직업\", \"pos\": \"명사\"}], \"ja\": {\"form\": \"仕事\", \"yomi\": \"しごと\", \"diff\": true, \"warn\": null} },\n  { \"pos\": \"명사\", \"reading\": \"qìchē\", \"meanings\": [{\"meaning\": \"자동차\", \"pos\": \"명사\"}], \"ja\": {\"form\": \"自動車\", \"yomi\": \"じどうしゃ\", \"diff\": true, \"warn\": \"기차\"} },\n  ...\n]\n\n## 규칙\n- pos는 한국어로 (명사/동사/형용사/부사/전치사/접속사/조사/대명사/양사/수사/감탄사/성어)\n- 여러 품사로 두루 쓰이는 단어(겸류사)는 흔한 순으로 '·'로 이어 모두 적기 (예: 工作·学习 → \"동사·명사\")\n- 각 뜻(meanings 항목)에 그 뜻이 속하는 품사(pos)를 붙이기 — 겸류사는 품사마다 뜻 최소 1개\n- ja: 이 단어의 일본어 대응 — form은 일본어에서 실제 그 뜻으로 쓰는 표기(신자체), yomi는 히라가나 읽기.\n  같은 한자어를 일본어도 같은 뜻으로 쓰면 diff 생략(図書館), 일본어에선 다른 단어를 쓰면 그 단어를 form에 넣고 diff: true(老师→先生).\n  기능어(的·了 등)나 마땅한 대응이 없으면 ja: null\n- ja.warn: 동형이의어 경고 — 이 단어와 같은 표기(신자체로 옮긴 형태)가 일본어에 존재하는데 뜻이 다를 때만,\n  일본어에서의 그 뜻을 15자 이내로 (예: 汽车→\"기차\", 手纸→\"편지\", 勉强→\"공부\"). 해당 없으면 warn: null\n- reading은 성조 기호가 붙은 병음 (예: 图书馆→túshūguǎn, 中国→Zhōngguó)\n- 각 단어에 1~3개 주요 의미 (가장 흔한 순)\n- 의미는 10자 이내로 간결하게\n- 다음자(多音字)는 가장 일반적인 독음 기준\n- 조사(的, 了, 着 등)는 한국어 대응 기능 설명 (\"~의\", \"완료\", \"진행\" 등)\n- 설명/주석 금지, JSON만 출력",
+      "opts": {
+        "temperature": 0,
+        "timeoutMs": 20000,
+        "groqTimeoutMs": 15000,
+        "retry": {
+          "max": 3,
+          "delays": [
+            5000,
+            10000,
+            20000,
+            40000
+          ]
+        },
+        "deadlineMs": 1791370835000,
+        "route": "fetchMeanings"
+      }
+    }
+  ],
+  "ops": [
+    {
+      "table": "morpheme_dictionary",
+      "op": "select",
+      "filters": [
+        [
+          "eq",
+          "language",
+          "Chinese"
+        ],
+        [
+          "in",
+          "base_form",
+          [
+            "我",
+            "给",
+            "妈妈",
+            "打",
+            "了",
+            "一",
+            "个",
+            "电话",
+            "。",
+            "在",
+            "工作",
+            "，",
+            "他们",
+            "计划",
+            "去",
+            "北京",
+            "他",
+            "篮球",
+            "吃醋"
+          ]
+        ]
+      ],
+      "cols": "base_form, meanings, pos, reading, source"
+    },
+    {
+      "table": "morpheme_dictionary",
+      "op": "upsert",
+      "filters": [],
+      "payload": [
+        {
+          "base_form": "妈妈",
+          "language": "Chinese",
+          "pos": "명사",
+          "reading": "mā ma",
+          "meanings": [
+            {
+              "meaning": "妈妈의 뜻",
+              "priority": 1,
+              "pos": "명사",
+              "ja": null
+            }
+          ],
+          "source": "gemini"
+        },
+        {
+          "base_form": "篮球",
+          "language": "Chinese",
+          "pos": "명사",
+          "reading": null,
+          "meanings": [
+            {
+              "meaning": "篮球의 뜻",
+              "priority": 1,
+              "pos": "명사",
+              "ja": null
+            }
+          ],
+          "source": "gemini"
+        }
+      ],
+      "opts": {
+        "onConflict": "base_form,language",
+        "ignoreDuplicates": false
+      }
+    },
+    {
+      "table": "morpheme_dictionary",
+      "op": "update",
+      "filters": [
+        [
+          "eq",
+          "language",
+          "Chinese"
+        ],
+        [
+          "eq",
+          "source",
+          "gemini"
+        ],
+        [
+          "in",
+          "base_form",
+          [
+            "打"
+          ]
+        ]
+      ],
+      "payload": {
+        "pos": "동사·명사"
+      }
+    },
+    {
+      "rpc": "touch_morphemes",
+      "args": {
+        "lang": "Chinese",
+        "base_forms": [
+          "我",
+          "给",
+          "妈妈",
+          "打",
+          "了",
+          "一",
+          "个",
+          "电话",
+          "在",
+          "工作",
+          "他们",
+          "计划",
+          "去",
+          "北京",
+          "他",
+          "篮球",
+          "吃醋"
+        ]
+      }
+    }
+  ],
+  "body": {
+    "results": [
+      {
+        "sequence": [
+          "id_0_0_1791370800000",
+          "id_0_1_1791370800000",
+          "id_0_2_1791370800000",
+          "id_0_3_1791370800000",
+          "id_0_4_1791370800000",
+          "id_0_5_1791370800000",
+          "id_0_6_1791370800000",
+          "id_0_7_1791370800000",
+          "id_0_8_1791370800000"
+        ],
+        "dictionary": {
+          "id_0_0_1791370800000": {
+            "text": "我",
+            "furigana": "wǒ",
+            "pos": "대명사",
+            "meaning": "나",
+            "base_form": "我"
+          },
+          "id_0_1_1791370800000": {
+            "text": "给",
+            "furigana": "gěi",
+            "pos": "명사",
+            "meaning": "~에게",
+            "base_form": "给"
+          },
+          "id_0_2_1791370800000": {
+            "text": "妈妈",
+            "furigana": "mā ma",
+            "pos": "명사",
+            "meaning": "妈妈의 뜻",
+            "base_form": "妈妈"
+          },
+          "id_0_3_1791370800000": {
+            "text": "打",
+            "furigana": "dǎ",
+            "pos": "동사",
+            "meaning": "때리다, 치다",
+            "base_form": "打",
+            "pos_all": "동사·명사"
+          },
+          "id_0_4_1791370800000": {
+            "text": "了",
+            "furigana": "le",
+            "pos": "조사",
+            "meaning": "완료",
+            "base_form": "了"
+          },
+          "id_0_5_1791370800000": {
+            "text": "一",
+            "furigana": "yí",
+            "pos": "수사",
+            "meaning": "하나",
+            "base_form": "一"
+          },
+          "id_0_6_1791370800000": {
+            "text": "个",
+            "furigana": "ge",
+            "pos": "양사",
+            "meaning": "개",
+            "base_form": "个"
+          },
+          "id_0_7_1791370800000": {
+            "text": "电话",
+            "furigana": "diàn huà",
+            "pos": "명사",
+            "meaning": "전화",
+            "base_form": "电话"
+          },
+          "id_0_8_1791370800000": {
+            "text": "。",
+            "furigana": null,
+            "pos": "기호",
+            "meaning": "",
+            "base_form": "。"
+          }
+        }
+      },
+      {
+        "sequence": [
+          "id_1_0_1791370800000",
+          "id_1_1_1791370800000",
+          "id_1_2_1791370800000",
+          "id_1_3_1791370800000",
+          "id_1_4_1791370800000",
+          "id_1_5_1791370800000",
+          "id_1_6_1791370800000",
+          "id_1_7_1791370800000",
+          "id_1_8_1791370800000"
+        ],
+        "dictionary": {
+          "id_1_0_1791370800000": {
+            "text": "我",
+            "furigana": "wǒ",
+            "pos": "대명사",
+            "meaning": "나",
+            "base_form": "我"
+          },
+          "id_1_1_1791370800000": {
+            "text": "在",
+            "furigana": "zài",
+            "pos": "명사",
+            "meaning": "~에서",
+            "base_form": "在"
+          },
+          "id_1_2_1791370800000": {
+            "text": "工作",
+            "furigana": "gōng zuò",
+            "pos": "명사",
+            "meaning": "일, 직업",
+            "base_form": "工作",
+            "pos_all": "동사·명사"
+          },
+          "id_1_3_1791370800000": {
+            "text": "，",
+            "furigana": null,
+            "pos": "기호",
+            "meaning": "",
+            "base_form": "，"
+          },
+          "id_1_4_1791370800000": {
+            "text": "他们",
+            "furigana": "tā men",
+            "pos": "대명사",
+            "meaning": "그들",
+            "base_form": "他们"
+          },
+          "id_1_5_1791370800000": {
+            "text": "计划",
+            "furigana": "jì huà",
+            "pos": "동사",
+            "meaning": "계획하다",
+            "base_form": "计划",
+            "pos_all": "동사·명사"
+          },
+          "id_1_6_1791370800000": {
+            "text": "去",
+            "furigana": "qù",
+            "pos": "동사",
+            "meaning": "가다",
+            "base_form": "去"
+          },
+          "id_1_7_1791370800000": {
+            "text": "北京",
+            "furigana": "běi jīng",
+            "pos": "지명",
+            "meaning": "베이징",
+            "base_form": "北京"
+          },
+          "id_1_8_1791370800000": {
+            "text": "。",
+            "furigana": null,
+            "pos": "기호",
+            "meaning": "",
+            "base_form": "。"
+          }
+        }
+      },
+      {
+        "sequence": [
+          "id_2_0_1791370800000",
+          "id_2_1_1791370800000",
+          "id_2_2_1791370800000",
+          "id_2_3_1791370800000"
+        ],
+        "dictionary": {
+          "id_2_0_1791370800000": {
+            "text": "他",
+            "furigana": "tā",
+            "pos": "대명사",
+            "meaning": "그",
+            "base_form": "他"
+          },
+          "id_2_1_1791370800000": {
+            "text": "打",
+            "furigana": "dǎ",
+            "pos": "동사",
+            "meaning": "때리다, 치다",
+            "base_form": "打"
+          },
+          "id_2_2_1791370800000": {
+            "text": "篮球",
+            "furigana": "lán qiú",
+            "pos": "명사",
+            "meaning": "篮球의 뜻",
+            "base_form": "篮球"
+          },
+          "id_2_3_1791370800000": {
+            "text": "。",
+            "furigana": null,
+            "pos": "기호",
+            "meaning": "",
+            "base_form": "。"
+          }
+        }
+      },
+      {
+        "sequence": [
+          "id_3_0_1791370800000",
+          "id_3_1_1791370800000",
+          "id_3_2_1791370800000",
+          "id_3_3_1791370800000"
+        ],
+        "dictionary": {
+          "id_3_0_1791370800000": {
+            "text": "他",
+            "furigana": "tā",
+            "pos": "대명사",
+            "meaning": "그",
+            "base_form": "他"
+          },
+          "id_3_1_1791370800000": {
+            "text": "吃醋",
+            "furigana": "chī cù",
+            "pos": "동사",
+            "meaning": "식초를 먹다",
+            "base_form": "吃醋"
+          },
+          "id_3_2_1791370800000": {
+            "text": "了",
+            "furigana": "le",
+            "pos": "조사",
+            "meaning": "완료",
+            "base_form": "了"
+          },
+          "id_3_3_1791370800000": {
+            "text": "。",
+            "furigana": null,
+            "pos": "기호",
+            "meaning": "",
+            "base_form": "。"
+          }
+        }
+      }
+    ],
+    "stats": {
+      "totalTokens": 19,
+      "cacheHits": 17,
+      "geminiCalls": 2,
+      "enPos": {
+        "marks": 0,
+        "httpCalls": 0,
+        "backfillRows": 0,
+        "fallbacks": 0
+      }
+    }
+  }
+}

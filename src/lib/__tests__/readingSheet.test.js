@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
 import { TTS_RATES, ttsOptsFor, pronHiddenFor, READING_PRESETS, PRESET_META, presetActive } from '../readingSheet.js';
 
 // 계약: 읽기 설정 시트 캐논(오너 확정 2026-08-27) — 값 체계가 흔들리면 시트 UI가 아니라
@@ -45,19 +47,19 @@ describe('발음 표기 3단 — pronHiddenFor', () => {
 });
 
 describe('읽기 모드 프리셋', () => {
-  // 이 계약은 처음에 표 전체를 toEqual로 얼리고 키 목록까지 못 박아, v1-4가 표시 축을
-  // 하나 늘리자(pronReveal) **정당한 변경에서 깨졌다**. 요구는 「4키」가 아니라
-  // ⑴ 프리셋은 셋 ⑵ 각 프리셋의 표시 의도는 오너 확정값 ⑶ **조판은 불가침**이다.
-  // 구현 모양이 아니라 그 셋을 잡도록 고쳐 쓴다.
-  it('몰입/학습/암기 3장 — 오너 확정 표시값 그대로', () => {
-    expect(Object.keys(READING_PRESETS).sort()).toEqual(['immerse', 'recall', 'study']);
+  // 이 계약은 처음에 표 전체를 toEqual로 얼리고 키 목록까지 못 박아, 표시 축이 하나
+  // 늘자 **정당한 변경에서 깨졌다**. 요구는 「몇 키」가 아니라 ⑴ 프리셋 목록
+  // ⑵ 각 프리셋의 표시 의도는 오너 확정값 ⑶ **조판은 불가침**이다.
+  // 프리셋 목록: Y 설계 ③(#1077 5548350811, 오너 확정 2026-09-05)으로 🙈 「암기 확인」을
+  // 그 스위치(탭하면 발음 보기)와 함께 제거해 몰입·학습 2장이다(readingSheet.test.js:53 개정 지시).
+  it('몰입/학습 2장 — 오너 확정 표시값 그대로', () => {
+    expect(Object.keys(READING_PRESETS).sort()).toEqual(['immerse', 'study']);
     expect(READING_PRESETS.immerse).toMatchObject({ pronDisplay: 'none',    wordStateHl: false, focusMode: true,  showToneColors: false });
     expect(READING_PRESETS.study).toMatchObject({   pronDisplay: 'all',     wordStateHl: true,  focusMode: false, showToneColors: true });
-    expect(READING_PRESETS.recall).toMatchObject({  pronDisplay: 'unknown', wordStateHl: true,  focusMode: false, showToneColors: false });
   });
 
   it('조판은 불가침 — 프리셋은 표시 의도만 바꾼다', () => {
-    // 새 표시 키(pronReveal 같은)는 자유롭게 붙되, 글자·배경·행간에는 손대지 않는다.
+    // 새 표시 키는 자유롭게 붙되, 글자·배경·행간에는 손대지 않는다.
     const TYPESETTING = ['fontSize', 'lineGap', 'charGap', 'theme', 'fontFamily'];
     for (const [name, p] of Object.entries(READING_PRESETS)) {
       for (const k of TYPESETTING) {
@@ -77,7 +79,7 @@ describe('읽기 모드 프리셋', () => {
   });
 
   // 손으로 적은 설정 사본을 쓰면 프리셋에 키가 하나 늘 때마다 이 단언이 같이 깨진다
-  // (v1-4의 pronReveal에서 실제로 깨졌다). 프리셋 자신을 기준으로 삼고, 대신 **전 키를
+  // (v1-4에서 실제로 깨졌다). 프리셋 자신을 기준으로 삼고, 대신 **전 키를
   // 하나씩 틀어** 원래 요구("한 키만 틀어져도 꺼진다")를 더 넓게 확인한다.
   it('presetActive — 정확 일치만 활성, 한 키만 틀어져도 꺼진다', () => {
     const exact = { ...READING_PRESETS.immerse };
@@ -91,5 +93,22 @@ describe('읽기 모드 프리셋', () => {
     }
     expect(presetActive('없는프리셋', { pronDisplay: 'none' })).toBe(false);
     expect(presetActive('immerse', undefined)).toBe(false);
+  });
+});
+
+// Y 설계 ③(#1077 5548350811, 오너 확정 2026-09-05) — 「탭하면 발음 보기」·「암기 확인」 제거.
+// 설계 계약: 뷰어 소스에 그 식별자가 0이다(죽은 코드 금지). 주석은 세지 않는다.
+describe('발음 공개 단계·암기 확인 제거', () => {
+  const strip = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"`])\/\/.*$/gm, '$1');
+  const files = ['src/views/ViewerPage.jsx', 'src/components/viewer/ViewerSettings.jsx', 'src/lib/readingSheet.js', 'src/lib/viewerPreferences.js', 'src/lib/useViewerSettings.js'];
+  it.each(files)('%s에 pronReveal·revealedPron·shouldRevealPron·pronRevealAvailable·recall 식별자가 없다', (file) => {
+    const code = strip(fs.readFileSync(path.join(process.cwd(), file), 'utf8'));
+    expect(code).not.toMatch(/\b(pronReveal|revealedPron|setRevealedPron|pronRevealed|shouldRevealPron|pronRevealAvailable|recall)\b/);
+  });
+  it('가려진 발음이 탭 공개 없이 그대로 가림 판정만 따른다 — 「발음 표기」 3단은 남는다', () => {
+    const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
+    expect(viewer).toContain('const furiOff = pronHidden;');
+    expect(viewer).toContain("data-pron-spacing={materialLang==='Chinese'&&pronDisplay!=='none'?'reserved':'natural'}");
+    expect(PRESET_META.map(m => m.key)).toEqual(['immerse', 'study']);
   });
 });

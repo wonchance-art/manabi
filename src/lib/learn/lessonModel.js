@@ -438,7 +438,7 @@ export const DURATION_MIN_MINUTES = 15;
 export const DURATION_MAX_MINUTES = 20;
 export const DURATION_SPLIT_THRESHOLD = 25; // 25분 이상이면 분할 검토
 
-export default {
+const lessonModel = {
   validateCourse,
   validateUnit,
   validateLesson,
@@ -453,3 +453,5 @@ export default {
   DURATION_MAX_MINUTES,
   DURATION_SPLIT_THRESHOLD,
 };
+
+export default lessonModel;

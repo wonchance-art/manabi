@@ -133,3 +133,23 @@ button.classroom-featured-note {width:100%;border:0;text-align:left;font:inherit
  .class-team-heading h1 {word-break:keep-all;overflow-wrap:anywhere;}
  .class-team-heading>.classroom-actions {justify-content:flex-end;}
 }
+
+/* 팀 페이지 교재 설명 관리 — 수업 화면의 .textbook-notes(--reader-* 토큰)와 분리: 팀 페이지에는 reader 토큰이 없다. */
+.class-textbook-notes {border-top:1px solid var(--border);margin-top:24px;padding-top:4px;}
+.class-textbook-notes>h2 {margin:0;font-size:inherit;}
+.class-textbook-notes__toggle {display:flex;width:100%;justify-content:space-between;align-items:center;gap:12px;min-height:48px;padding:8px 0;border:0;background:none;color:var(--text-primary);font-size:18px;font-weight:700;text-align:left;}
+.class-textbook-notes__toggle span {font-size:13px;font-weight:500;color:var(--class-ink);}
+.class-textbook-notes label {display:grid;gap:6px;font-size:13px;color:var(--text-secondary);margin:8px 0 12px;}
+.class-textbook-notes article {margin-top:12px;padding:12px 16px;border-left:3px solid var(--class-ink);background:var(--class-wash);border-radius:0 8px 8px 0;}
+.class-textbook-notes q {display:block;font-size:13px;color:var(--text-secondary);overflow-wrap:anywhere;}
+.class-textbook-notes article>p,.class-textbook-notes pre {white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0;font:inherit;line-height:1.7;}
+.class-textbook-notes article>p {font-weight:600;}
+.class-textbook-notes small {display:block;font-size:12px;color:var(--text-secondary);}
+.class-textbook-notes__actions,.class-textbook-notes form footer {display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.class-textbook-notes form footer {margin-top:8px;}
+.class-textbook-notes textarea {display:block;width:100%;}
+.class-textbook-notes details {margin-top:8px;font-size:13px;}
+.class-textbook-notes summary {min-height:44px;line-height:44px;cursor:pointer;}
+.class-textbook-notes details p {line-height:1.7;}
+.class-textbook-notes__empty,.class-textbook-notes__hint {font-size:13px;color:var(--text-secondary);line-height:1.7;}
+.class-textbook-notes__hint a {display:inline-flex;align-items:center;min-height:44px;color:var(--class-ink);}

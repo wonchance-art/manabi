@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import course from '@/content/community/nihongo42';
 import { JaText, refInline, Callout } from '@/views/refShared';
+import { ARCHIVED_TEXTBOOK_NOTICE, learnerHref } from '@/lib/bookNavigation';
 
 export function generateStaticParams() {
   return course.days.map((d) => ({ day: String(d.day) }));
@@ -10,7 +11,7 @@ export function generateStaticParams() {
 export function generateMetadata({ params }) {
   const d = course.days.find((x) => String(x.day) === String(params.day));
   return {
-    title: d ? `Day ${d.day} · ${course.title}` : course.title,
+    title: d ? `${d.range} · ${course.title}` : course.title,
     robots: { index: false, follow: false },
     alternates: { canonical: null },
   };
@@ -88,12 +89,21 @@ function Chapter({ c, i }) {
         <div className="fr-callout fr-callout--tip">
           <span className="fr-callout__label">📖 더 깊이 — 레퍼런스</span>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 2 }}>
-            {c.links.map((l, k) => (
-              <Link key={k} href={`/japanese/grammar/${l.slug}`} className="btn btn--ghost btn--sm">
-                {l.label} ↗
-              </Link>
-            ))}
+            {c.links.map((l, k) => {
+              // 옛 교재 챕터는 관리자 보관함으로만 열린다 — 링크 대신 이름만 남긴다(VIEWER-R0-BUGS-001 버그 3).
+              const href = learnerHref(`/japanese/grammar/${l.slug}`);
+              return href ? (
+                <Link key={k} href={href} className="btn btn--ghost btn--sm">
+                  {l.label} ↗
+                </Link>
+              ) : (
+                <span key={k} style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{l.label}</span>
+              );
+            })}
           </div>
+          {c.links.some((l) => !learnerHref(`/japanese/grammar/${l.slug}`)) && (
+            <p style={{ margin: '6px 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{ARCHIVED_TEXTBOOK_NOTICE}</p>
+          )}
         </div>
       ) : null}
     </section>
@@ -118,7 +128,7 @@ export default function Nihongo42DayPage({ params }) {
           일본어 회화 표현 42
         </div>
         <h1 style={{ fontSize: '1.6rem', margin: '4px 0 0', fontVariantNumeric: 'tabular-nums' }}>
-          Day {d.day} <span style={{ color: 'var(--text-muted)', fontWeight: 500, fontSize: '1.05rem' }}>· {d.range}</span>
+          {d.range}
         </h1>
       </header>
 
@@ -143,17 +153,17 @@ export default function Nihongo42DayPage({ params }) {
         ))}
       </div>
 
-      <nav className="fr-pager" aria-label="Day 이동">
+      <nav className="fr-pager" aria-label="챕터 이동">
         {prev ? (
           <Link href={`/nihongo/${prev.day}`} className="fr-pager__link">
             <span className="fr-pager__dir">← 이전</span>
-            <span className="fr-pager__title">Day {prev.day} · {prev.range}</span>
+            <span className="fr-pager__title">{prev.range}</span>
           </Link>
         ) : <span />}
         {next ? (
           <Link href={`/nihongo/${next.day}`} className="fr-pager__link fr-pager__link--next">
             <span className="fr-pager__dir">다음 →</span>
-            <span className="fr-pager__title">Day {next.day} · {next.range}</span>
+            <span className="fr-pager__title">{next.range}</span>
           </Link>
         ) : <span />}
       </nav>

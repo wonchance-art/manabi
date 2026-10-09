@@ -1,3 +1,5 @@
+import { learnerHref } from './bookNavigation';
+
 /**
  * 작문 첨삭의 오류 태그 → 관련 문법 챕터 매칭.
  * AI가 붙인 자유 문자열 태그("조사 が", "성수 일치")를 레지스트리의
@@ -51,7 +53,9 @@ export function attachTagLinks(feedback, ref) {
     for (const e of s.errors || []) {
       if (!cache.has(e.tag)) cache.set(e.tag, findChapterForTag(ref, e.tag));
       const hit = cache.get(e.tag);
-      if (hit) e.href = `${ref.base}/grammar/${hit.slug}`;
+      // 옛 교재 챕터 주소는 관리자 보관함으로만 열린다 — 학습자에게는 링크를 붙이지 않는다(VIEWER-R0-BUGS-001 버그 3).
+      const href = hit ? learnerHref(`${ref.base}/grammar/${hit.slug}`) : null;
+      if (href) e.href = href;
     }
   }
   return feedback;
