@@ -550,3 +550,198 @@ test('AD-R4 PR④ 1280 owner zh: 옆 패널 목록의 경계 후보 줄 · [묶�
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
 });
+
+// ───────────────────────── AD-R3 §7.5 한국어 나누기 — 오너 B안(2026-10-09) ─────────────────────────
+// 어절 안 칼선은 morphology form이 표면에 글자 그대로 있는 자리만(왼쪽부터). 축약·불규칙은 칼선 없이 공식. 조각 뜻 = 기존 morphology.
+// 나누기·원래대로·되돌리기는 분석(/api/analyze·/api/analyze/korean) 0 · 쓰기는 원자 RPC + 교정 이력뿐. 재분석은 뷰어 쪽 재적용.
+const KM=(form,fn)=>({form,function:fn});
+const KO_EOJEOL={
+ 저는:{lemma:'저',pos:'대명사',meaning:'저(말하는 이)',morphology:[KM('저','말하는 이를 낮춘 1인칭 대명사'),KM('는','주제를 나타내는 조사')]},
+ 도서관에서:{lemma:'도서관',pos:'명사',meaning:'도서관에서(장소)',morphology:[KM('도서관','명사. 책을 모아 두고 읽는 곳'),KM('에서','장소를 나타내는 조사')]},
+ 공부했어요:{lemma:'공부하다',pos:'동사',meaning:'공부했다',morphology:[KM('공부','명사. 배우고 익힘'),KM('하-','동사 하다의 어간'),KM('-였-','과거 시제 어미'),KM('-어요','해요체 종결 어미')]},
+ 친구를:{lemma:'친구',pos:'명사',meaning:'친구를',morphology:[KM('친구','명사. 가깝게 사귄 사람'),KM('를','목적어를 나타내는 조사')]},
+ 도와요:{lemma:'돕다',pos:'동사',meaning:'돕는다',morphology:[KM('돕-','ㅂ 불규칙 동사 돕다의 어간'),KM('-아요','해요체 종결 어미')]},
+};
+const KO_LINES=['저는 도서관에서 공부했어요.','친구를 도와요.'];
+const KO_META={language:'Korean',targetLanguage:'ko',explanationLocale:'ko',analysisVersion:'ko-llm-v1',analysisEngine:'llm',analysisQuality:'unreviewed'};
+// 한 줄 → 서버 조립 모양(어절 · 공백 · 문장부호 토큰). absolute = 자료 원문 기준 시작 위치(없으면 줄 기준 = 서버 응답).
+function koTokens(line,lineIndex,absolute=null){
+ return [...line.matchAll(/[^\s.]+|\s+|\./gu)].map(m=>{
+  const text=m[0],s=m.index,e=s+text.length,ws=/^\s+$/u.test(text),punct=text==='.',w=KO_EOJEOL[text];
+  return {text,surface:text,lemma:ws||punct?'':w?.lemma??text,base_form:ws||punct?null:w?.lemma??text,pos:ws||punct?'기호':w?.pos??'명사',
+   meaning:ws||punct?'':w?.meaning??text,language:'Korean',
+   sourceSpan:absolute===null?{start:s,end:e,unit:'utf16',lineIndex}:{start:absolute+s,end:absolute+e,unit:'utf16',lineIndex,lineStart:s,lineEnd:e},
+   selectionGroup:`ko_${lineIndex}_${s}_${e}`,explanationLocale:'ko',analysisVersion:'ko-llm-v1',...(ws?{whitespace:true}:{}),...(w?.morphology?{morphology:w.morphology}:{})};
+ });
+}
+function buildKorean(){
+ const raw=KO_LINES.join('\n'),sequence=[],dictionary={};let at=0;
+ KO_LINES.forEach((line,li)=>{
+  koTokens(line,li,at).forEach((t,k)=>{sequence.push(`id_${li}_${k}`);dictionary[`id_${li}_${k}`]=t;});
+  if(li<KO_LINES.length-1){sequence.push(`br_${li}_0`);dictionary[`br_${li}_0`]={text:'\n',pos:'개행',surface:'\n',language:'Korean',sourceSpan:{start:at+line.length,end:at+line.length+1,unit:'utf16',lineIndex:li}};}
+  at+=line.length+1;
+ });
+ return {raw,language:'Korean',json:{status:'completed',metadata:{...KO_META},sequence,dictionary}};
+}
+// /api/analyze/korean 흉내 — 서버(koreanAnalysis renderTokens)처럼 어절 틀 그대로만 돌려준다(경계 기록을 적용하지 않는다).
+async function routeKorean(f){
+ f.koAnalyze=[];
+ await f.context.route('**/api/analyze/korean',route=>{
+  const body=route.request().postDataJSON();f.koAnalyze.push(body);
+  const results=body.lines.map((line,li)=>{const list=koTokens(line,li);return {sequence:list.map((_,k)=>`ko_${li}_${k}`),dictionary:Object.fromEntries(list.map((t,k)=>[`ko_${li}_${k}`,t]))};});
+  return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({results,metadata:{...KO_META,explanationLocale:body.explanationLocale}})});
+ });
+}
+const KO_ALLOWED=[...ALLOWED,/\/api\/analyze\/korean$/];
+function assertOnlyKoreanWrites(f,label,from){
+ const bad=writes(f,from).filter(r=>!KO_ALLOWED.some(p=>p.test(new URL(r.url).pathname)));
+ assert.deepEqual(bad,[],`${label}: no vocabulary · FSRS · review · context · dictionary · reading_materials PATCH writes`);
+}
+const koLine=(f,line)=>{const j=row(f).processed_json;return j.sequence.filter(id=>new RegExp(`^id_${line}_`).test(id)).map(id=>j.dictionary[id].text);};
+const sheetMore=f=>f.page.locator('.viewer-inspector__header').filter({visible:true}).getByRole('button',{name:'분석 고치기',exact:true});
+async function openKoreanSplit(f,id,meaning){
+ await closeSheet(f);
+ await f.page.locator(`[data-source-token="${id}"]`).click();
+ await card(f).locator('.word-detail-card__meaning').getByText(meaning,{exact:true}).waitFor();
+ await sheetMore(f).click();
+ const menu=f.page.getByRole('menu');await menu.waitFor();
+ assert.deepEqual(await menu.getByRole('menuitem').allTextContents(),['나누기'],'Korean ⋯ = 「나누기」 only (no 묶기 · no 뜻·발음 수정)');
+ await menu.getByRole('menuitem',{name:'나누기',exact:true}).click();
+ const split=card(f).locator('.viewer-boundary-split');await split.waitFor();
+ return split;
+}
+
+test('390 owner ko: ⋯ 나누기(형태소 칼선만) → 도서관 │ 에서(분석 0 · RPC·이력뿐) → 조각 카드(저장·등급·AI 없음) → 새로고침·전체 재분석 유지 → 원래대로',{timeout:240000},async()=>{
+ const m=buildKorean();
+ const f=await open(m);
+ try{
+  await routeKorean(f);
+  const split=await openKoreanSplit(f,'id_0_2','도서관에서(장소)');
+  assert.equal((await split.locator('h3').innerText()).trim(),'어디서 나눌까요?');
+  const cuts=split.locator('.viewer-boundary-split__cut');
+  assert.equal(await cuts.count(),1,'one literal morpheme boundary');
+  const box=await cuts.first().boundingBox();assert.ok(box.width>=44&&box.height>=44,`cut slot 44px: ${JSON.stringify(box)}`);
+  assert.deepEqual((await split.locator('.viewer-boundary-split__char').allTextContents()),['도서관','에서']);
+  const go=split.getByRole('button',{name:'나누기',exact:true});
+  assert.equal(await go.isDisabled(),true,'no cut → [나누기] off');
+  await split.getByRole('button',{name:'도서관와(과) 에서 사이에서 나누기',exact:true}).click();
+  assert.equal((await split.locator('.viewer-boundary-split__preview').innerText()).replace(/\s+/g,' ').trim(),'도서관 │ 에서');
+  assert.deepEqual((await split.locator('.viewer-boundary-split__gloss li').allInnerTexts()).map(t=>t.replace(/\s+/g,' ').trim()),
+   ['도서관 명사. 책을 모아 두고 읽는 곳','에서 장소를 나타내는 조사'],'each piece carries its stored morphology explanation');
+  assert.doesNotMatch(await split.innerText(),/\bAI\b/);
+  assert.equal((await measure(f.page)).overflow,0);
+  await shot(f,'ko-split-panel-390');
+  const mark=f.requests.length;
+  await go.click();
+  await card(f).locator('.word-detail-card__meaning').getByText('명사. 책을 모아 두고 읽는 곳',{exact:true}).waitFor();
+  await until(()=>koLine(f,0).length===7);
+  assert.deepEqual(koLine(f,0),['저는',' ','도서관','에서',' ','공부했어요','.']);
+  assert.equal(f.koAnalyze.length,0,'no Korean analysis');
+  assert.equal(f.analyze.length,0,'no /api/analyze');
+  assert.equal(f.rpc.length,1);
+  assert.equal(f.rpc[0].p_raw,m.raw);assert.equal(f.rpc[0].p_expected_raw,m.raw);
+  assert.equal(f.corrections.length,1);
+  const rec=row(f).processed_json.metadata.viewerBoundaries.edits[0];
+  assert.deepEqual({line:rec.line,start:rec.start,end:rec.end,text:rec.text,cuts:rec.cuts,status:rec.status,base:rec.base.map(b=>b.id)},
+   {line:0,start:2,end:7,text:'도서관에서',cuts:[5],status:'applied',base:['id_0_2']});
+  assert.deepEqual(f.corrections[0].after_value,{source:'boundary_edit',id:rec.id,cuts:[5],scope:'material'});
+  assert.equal(f.corrections[0].token_id,'id_0_2');
+  // 조각 카드: 나눈 조각 · [원래대로] / 나눴어요 · [되돌리기] / 저장 제외 안내(등급·더 알아보기 없음)
+  assert.equal((await card(f).locator('.reader-card-boundary').innerText()).replace(/\s+/g,' ').trim(),'나눈 조각 · 원래대로');
+  assert.equal((await card(f).locator('.reader-card-boundary-undo').innerText()).replace(/\s+/g,' ').trim(),'나눴어요 · 되돌리기');
+  assert.equal((await card(f).locator('.reader-card-boundary-note').innerText()).trim(),'나눈 조각은 단어장에 담지 않아요.');
+  assert.equal(await card(f).locator('.reader-card-actions .review-score-btn').count(),0,'no grade buttons on a piece');
+  assert.equal(await card(f).locator('.reader-card-learn').count(),0,'no AI request buttons on a piece');
+  assert.doesNotMatch(await card(f).innerText(),/\bAI\b/);
+  assert.equal((await measure(f.page)).overflow,0);
+  await shot(f,'ko-piece-card-390');
+  await f.page.waitForTimeout(400);
+  assertOnlyKoreanWrites(f,'ko split',mark);
+  // 새로고침 → 유지
+  await f.page.reload({waitUntil:'domcontentloaded'});
+  await f.page.locator('[data-source-token="id_0_0"]').waitFor();
+  assert.deepEqual(koLine(f,0),['저는',' ','도서관','에서',' ','공부했어요','.'],'kept after reload');
+  // 전체 재분석 → 서버는 어절만 → 뷰어가 다시 나눔(기록 applied, 요청에 경계를 싣지 않음)
+  const mark2=f.requests.length;
+  await f.page.getByRole('button',{name:'학습',exact:true}).click();await f.page.getByRole('dialog',{name:'학습'}).getByRole('button',{name:/^자료 관리/}).click();
+  await f.page.locator('.reanalyze-panel__item').filter({hasText:'전체 분석'}).click();
+  await f.page.getByText('분석 완료!',{exact:true}).waitFor({timeout:30000});
+  assert.ok(f.koAnalyze.length>0,'reanalysis ran');
+  assert.ok(f.koAnalyze.every(b=>!('boundaries' in b)),'Korean requests carry no boundary records');
+  await until(()=>koLine(f,0).join('|')==='저는| |도서관|에서| |공부했어요|.');
+  assert.equal(row(f).processed_json.metadata.viewerBoundaries.edits[0].status,'applied');
+  assert.equal(row(f).raw_text,m.raw);
+  await f.page.waitForTimeout(400);
+  assertOnlyKoreanWrites(f,'ko reanalysis',mark2);
+  // 원래대로 → 원래 어절 토큰(id_0_2)이 돌아온다(분석 0)
+  const pieceId=row(f).processed_json.sequence.find(id=>row(f).processed_json.dictionary[id].text==='에서');
+  await closeSheet(f);
+  await f.page.locator(`[data-source-token="${pieceId}"]`).click();
+  await card(f).locator('.word-detail-card__meaning').getByText('장소를 나타내는 조사',{exact:true}).waitFor();
+  const calls=f.koAnalyze.length;
+  await card(f).locator('.reader-card-boundary').getByRole('button',{name:'원래대로',exact:true}).click();
+  await until(()=>row(f).processed_json.sequence.includes('id_0_2'));
+  assert.deepEqual(koLine(f,0),['저는',' ','도서관에서',' ','공부했어요','.']);
+  assert.equal(row(f).processed_json.metadata.viewerBoundaries,undefined,'no record left');
+  assert.equal(f.koAnalyze.length,calls,'restore needs no analysis');
+  await card(f).locator('.reader-card-boundary-undo').getByText('원래대로 했어요',{exact:true}).waitFor();
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+test('390 owner ko: 축약·불규칙은 칼선 없이 공식(도와요) · 일부만(공부 │ 했어요 = 줄어든 꼴) · 비소유자는 ⋯ 없음',{timeout:240000},async()=>{
+ const m=buildKorean();
+ const f=await open(m);
+ try{
+  const none=await openKoreanSplit(f,'id_1_2','돕는다');
+  assert.equal(await none.locator('.viewer-boundary-split__cut').count(),0,'no cut line for an irregular form');
+  assert.equal((await none.locator('.viewer-boundary__reason').innerText()).trim(),'이 단어는 나눌 자리가 없어요.');
+  assert.equal((await none.locator('.viewer-boundary-split__note').innerText()).trim(),'도와요 = 돕다 + -아요 (모양이 바뀐 꼴)');
+  assert.equal(await none.getByRole('button',{name:'나누기',exact:true}).isDisabled(),true);
+  await shot(f,'ko-no-cut-390');
+  await none.getByRole('button',{name:'취소',exact:true}).click();
+  const part=await openKoreanSplit(f,'id_0_4','공부했다');
+  assert.deepEqual(await part.locator('.viewer-boundary-split__char').allTextContents(),['공부','했어요']);
+  await part.locator('.viewer-boundary-split__cut').click();
+  assert.deepEqual((await part.locator('.viewer-boundary-split__gloss li').allInnerTexts()).map(t=>t.replace(/\s+/g,' ').trim()),
+   ['공부 명사. 배우고 익힘','했어요 = 하다 + -였- + -어요 (줄어든 꼴)']);
+  await shot(f,'ko-partial-390');
+  await part.getByRole('button',{name:'나누기',exact:true}).click();
+  await card(f).locator('.word-detail-card__meaning').getByText('명사. 배우고 익힘',{exact:true}).waitFor();
+  await until(()=>koLine(f,0).join('|')==='저는| |도서관에서| |공부|했어요|.');
+  const tail=row(f).processed_json.sequence.find(id=>row(f).processed_json.dictionary[id].text==='했어요');
+  await closeSheet(f);
+  await f.page.locator(`[data-source-token="${tail}"]`).click();
+  await card(f).locator('.word-detail-card__meaning').getByText('했어요 = 하다 + -였- + -어요 (줄어든 꼴)',{exact:true}).waitFor();
+  assert.match(await card(f).locator('.reader-card-visible').innerText(),/-였-: 과거 시제 어미/,'morpheme list under 문법 해설');
+  await shot(f,'ko-fused-piece-390');
+  assert.equal(f.analyze.length,0);
+  assertOnlyKoreanWrites(f,'ko partial');
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+ const viewer=await open(buildKorean(),{own:false});
+ try{
+  await viewer.page.locator('[data-source-token="id_0_2"]').click();
+  await card(viewer).locator('.word-detail-card__meaning').getByText('도서관에서(장소)',{exact:true}).waitFor();
+  await viewer.page.waitForTimeout(300);
+  assert.equal(await sheetMore(viewer).count(),0,'no ⋯ for a non-owner');
+  assert.deepEqual(writes(viewer).filter(r=>/viewer_replace_analysis|token_corrections/.test(r.url)),[]);
+ }finally{await viewer.context.close();}
+});
+
+test('1280 owner ko: 옆 패널 나누기 패널 · 조각 카드',{timeout:240000},async()=>{
+ const f=await open(buildKorean(),{width:1280,height:900});
+ try{
+  const split=await openKoreanSplit(f,'id_0_2','도서관에서(장소)');
+  await split.locator('.viewer-boundary-split__cut').click();
+  const g=await f.page.evaluate(()=>{const p=[...document.querySelectorAll('.viewer-inspector')].find(e=>e.getClientRects().length);
+   return {w:p.getBoundingClientRect().width,split:document.querySelector('.viewer-boundary-split').getBoundingClientRect().width,overflow:document.documentElement.scrollWidth-innerWidth};});
+  assert.ok(g.split<=g.w,'the split panel fits the side panel');
+  assert.equal(g.overflow,0);
+  await shot(f,'ko-split-panel-1280');
+  await split.getByRole('button',{name:'나누기',exact:true}).click();
+  await card(f).locator('.word-detail-card__meaning').getByText('명사. 책을 모아 두고 읽는 곳',{exact:true}).waitFor();
+  await shot(f,'ko-piece-card-1280');
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});

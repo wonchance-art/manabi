@@ -7,7 +7,7 @@ const longBody=Array.from({length:60},(_,i)=>`${String(i+1).padStart(2,'0')} �
 async function create(f,{body='A quiet page to read.',files=['pdf','epub']}={}){
  await f.page.goto('/materials/add');await f.page.locator('#composer-title').fill('어디서든 이어지는 문장');await f.page.locator('#composer-body').fill(body);
  if(files.length)await f.page.locator('input[type=file]').setInputFiles(files.map(kind=>new URL(`./fixtures/composer/reading.${kind}`,import.meta.url).pathname));
- await f.page.getByRole('button',{name:'저장',exact:true}).click();await f.page.locator('.original-reader').waitFor();if(body)await f.page.locator('.original-writing').waitFor();
+ await f.page.getByRole('button',{name:body?'저장만':'저장',exact:true}).click();await f.page.locator('.original-reader').waitFor();if(body)await f.page.locator('.original-writing').waitFor();
  await f.page.getByText('읽던 위치가 계정에 저장됩니다.',{exact:true}).waitFor();return f.rows[0];
 }
 async function rows(f){await f.shared.queueState.queue;return (await f.db.query('select * from original_reading_positions order by version desc')).rows;}

@@ -26,17 +26,26 @@
 .composer-file-mark { color: var(--ja); font-size: 25px; }
 .composer-attachment button { flex: 0 0 44px; min-height: 44px; border: none; background: transparent; color: var(--muted); font-size: 22px; }
 .composer-link-input { padding: 20px 0; }
-.composer-link-input label, .composer-options label { display: block; font-size: 13px; margin-bottom: 10px; }
+.composer-link-input label { display: block; font-size: 13px; margin-bottom: 10px; }
 .composer-link-input > div { display: flex; gap: 8px; }
 .composer-link-input input { flex: 1; min-width: 0; min-height: 44px; font: inherit; background: transparent; border: 1px solid var(--rule); padding: 8px 12px; color: var(--ink); }
-.composer-options { font-size: 13px; border-top: 1px solid var(--rule); padding: 12px 0; }
-.composer-options summary { cursor: pointer; min-height: 44px; align-content: center; }
-.composer-options summary span { margin-left: 8px; color: var(--muted); font-size: 11px; }
-.composer-options select, .original-reader select { width: 100%; min-height: 44px; font: inherit; color: inherit; background: var(--sheet); border: 1px solid var(--rule); padding: 8px; }
-.composer-options p, .composer-notice { font-size: 12px; line-height: 1.8; color: var(--muted); }
-.composer-save { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 24px 0 0; margin-top: 12px; border-top: 1px solid var(--rule); }
+/* 「공부할 언어」 칩 줄(WRITE-STUDY-ENTRY-001) — 작성 화면·원본 화면 공용. 좁은 폭에서는 줄을 바꾼다. */
+.study-language { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 14px 0; border-top: 1px solid var(--rule); font-size: 13px; min-width: 0; }
+.study-language__label { color: var(--ink); }
+.study-language__chips { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.study-language__chips > button.study-language__chip[role="radio"] { min-height: 44px; min-width: 44px; padding: 0 14px; border: 1px solid var(--rule); border-radius: 22px; background: var(--paper); color: var(--ink); font-size: 13px; font-weight: 400; }
+.study-language__chips > button.study-language__chip[aria-checked="true"] { border-color: var(--ja); background: color-mix(in srgb, var(--ja) 12%, var(--sheet)); font-weight: 600; }
+.study-language__chips > button.study-language__chip[aria-checked="true"]::before { content: '✓ '; content: '✓ ' / ''; color: var(--ja); } /* 표시만 — 칩 이름(접근성 이름)에는 넣지 않는다 */
+.study-language__hint { font-size: 11px; color: var(--muted); }
+.original-reader select { width: 100%; min-height: 44px; font: inherit; color: inherit; background: var(--sheet); border: 1px solid var(--rule); padding: 8px; }
+.composer-notice { font-size: 12px; line-height: 1.8; color: var(--muted); }
+.composer-save { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 20px; padding: 24px 0 0; margin-top: 12px; border-top: 1px solid var(--rule); }
 .composer-save > span { max-width: 70%; font-size: 11px; line-height: 1.7; color: var(--muted); }
 .composer-save button { min-width: 92px; justify-content: center; }
+.composer-save-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-left: auto; }
+.composer-save-actions button { word-break: keep-all; }
+.composer-save-actions .composer-save-only { min-height: 48px; padding: 12px 18px; background: var(--paper); color: var(--ink); border: 1px solid var(--rule); border-radius: 3px; font-size: 14px; }
+.composer-study-reason { flex-basis: 100%; text-align: right; font-size: 11px; line-height: 1.7; color: var(--muted); }
 .composer-error { font-size: 13px; padding: 16px; background: color-mix(in srgb, var(--danger) 8%, var(--sheet)); color: var(--danger); line-height: 1.8; }
 .composer-error p { margin: 8px 0 0; }
 .composer-conflict-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
@@ -52,4 +61,8 @@
   .composer-tools small { flex-basis: 100%; margin: 8px 0 0; }
   .composer-body { font-size: 16px; min-height: 260px; }
   .composer-top span { letter-spacing: 0; }
+  .composer-save > span { max-width: none; flex-basis: 100%; }
+  .composer-save-actions { width: 100%; }
+  .composer-save-actions button { flex: 1 1 auto; padding-left: 12px; padding-right: 12px; }
+  .composer-study-reason { text-align: left; }
 }

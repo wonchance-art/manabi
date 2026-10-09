@@ -63,7 +63,7 @@ export default function OnboardingModal() {
     <div className="onboarding-overlay">
       <div className="onboarding-modal">
         <div className="onboarding-modal__header">
-          <h2 className="onboarding-modal__title">Anatomy Studio에 오신 걸 환영해요!</h2>
+          <h2 className="onboarding-modal__title">manabi에 오신 걸 환영해요!</h2>
           <p className="onboarding-modal__sub">학습 시작 전에 몇 가지만 알려주세요.</p>
         </div>
 

@@ -121,7 +121,7 @@ export default function AccountSettings({ user, toast, signOut }) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `anatomy-studio_${user.email}_${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `manabi_${user.email}_${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
       setExportMsg(null);
