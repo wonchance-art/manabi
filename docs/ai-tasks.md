@@ -894,7 +894,7 @@
     오너 REVIEW 판정 → Preview·실계정 검수 후 병합. 목록 ★ 한 번 저장의 분리 여부는 오너 결정 대기.
   - #1349 `claude/krdict-senses` — 한국어기초사전 1단계 기반. 공식본 dry-run 대조(M09 CLAUDE-M09-001-5) 대기.
   - #1344 교재 피드백 잔여 PR-B(부제 반복·해석 문구·물음 표식, 목업 대기)·PR-C(활용 안내, 오너 문구) · #1345 후속 PR-0(운영 집계)·PR-3.
-  - 튜터 프롬프트의 중화권 정치 서술 배제(하드리밋 ⑷) → #1389 `conversationSafetyRules`(두 프롬프트 주입) — M09 Preview 대기.
+  - 튜터 프롬프트의 중화권 정치 서술 배제(하드리밋 ⑷) → #1389 `conversationSafetyRules`(두 프롬프트 주입) — 병합 `85f59a77`(10-09, 오너 예외 승인).
   - ⚠ 운영 마이그레이션 이력 ≠ main `supabase/migrations`(스택 #1316~#1321 SQL 3건·10월 활성화 이력). 다음 마이그레이션 병합 시
     `supabase-migrations.yml` 실패 가능성 — 운영 READ ONLY 확인 전 스택 PR 닫기 보류.
   - 이 컨테이너에서 불가(오너/M09): 운영 DB 조회·적용, 정상 실계정 검수(10-06 04:00 경계 이후 학습 검수 = CLAUDE-M09-001-2 진행 중).
@@ -902,9 +902,13 @@
   정본 = [R0 버그](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6031758159) · [v2 라운드](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036574287).
   - **M09 운영 사후 검수** [VIEWER-V2-POSTDEPLOY-001](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6055568056):
     V1~V8 보고(10-08 20:07 KST) 코드 결함 0([판정 회신](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6059173748)).
-    남은 것 = 320/390/1440 폭 · iOS 실기기 · 게스트 · Network 요청 수 → **뷰어 동결**(뷰어 68파일 병합 보류)은 이 집계 뒤 해제.
-  - M09 Preview 점검 대기(10-09 10:50 KST 현재 착수 표식 없음): #1389 회화 안전 규칙 · #1391 교재 함수 추적 · #1390 브랜드 · #1392 작성 한국어.
-    통과 보고 → 검증 SHA squash 병합.
+    V7 FAIL(한자 창 화면 축소)은 #1398 병합 `de369ea2` → M09 운영 재검 PASS로 **뷰어 동결 해제**(10-09).
+    남은 것 = iOS 실기기 · 200% · 게스트 — 오너 실기기 몫.
+  - **10-09 병합 6건 — 오너 예외 승인**([M09 기록](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6077113595), 「병합하쇼」):
+    #1389 `85f59a77` · #1391 `ac74c2ad` · #1390 `3a48222f` · #1392 `a5714bf7` · #1394 `8b39e30f` · #1396 `dc9884d3`.
+    main CI 3건·Vercel 배포 green([병합 보고](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6077460480)).
+    Preview 실계정 로그인 차단(OAuth가 운영으로 복귀 — Supabase Redirect URL에 Preview 도메인 추가는 오너 몫) 때문에
+    **「M09 실계정 검수 통과」가 아니다** — 회화·작성/출처 복귀·공유 사전 요청 0·한국어 나누기 실행은 오너 실사용 확인으로 남김.
   - ZH-SENSE-HOLDOUT-001: 운영 행 있는 16표제어 교체 병합(#1387). 행 없는 19표제어는 생성 대기 —
     LLM-BENCH(#1395)의 단어 뜻 과제가 같은 운영 생성 프롬프트라 그 Gemini light 응답으로 오프라인 정규화해 채운다(M09 키 대기 해소).
   - **LLM-BENCH-001 모델 비교 측정**(#1395 병합 `72117edb`, 운영 배포 10-09 07:45 KST): `/admin/llm-bench`(관리자, 쓰기 0) —
@@ -914,11 +918,11 @@
   - **오너 결정(10-09 「전부 권장대로」)** 반영:
     ① Anki 내보내기 파일 이름만 manabi(태그 `anatomy-studio` 유지) → #1390 ·
     ② 한국어 구간 학습 DB → **#1393**(`docs/sql/korean-source-passage.sql` 적용·복원 SQL + PGlite 6검사, `supabase/migrations` 밖 — 병합해도 운영 db push 없음;
-       순서 #1392 병합 → 운영 SQL 적용·md5 확인 → #1393 병합) ·
-    ③ 한국어 어절 B안 → **#1396**(어절 안 형태소 칼선, 동결 뒤 병합) ·
-    ④ 공유 사전 **ⓒ**(소유자 교정은 자기 자료·단어장만, 공유 사전은 관리자만) → **#1394**(동결 뒤 병합) ·
+       순서 #1392 병합 ✓ → 운영 SQL 적용·md5 확인([M09 배정](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6077460480)) → #1393 병합) ·
+    ③ 한국어 어절 B안 → **#1396** 병합 ·
+    ④ 공유 사전 **ⓒ**(소유자 교정은 자기 자료·단어장만, 공유 사전은 관리자만) → **#1394** 병합 ·
     ⑤ #1376 번역 light 유지 · ⑥ 화면 세부 #1374·#1378·#1380·#1382·#1383·#1384 현행 유지.
-  - 보류: AE-R3 PR③(공유 사전 요미 쓰기 — ⓒ 확정으로 재정리 필요) · AD-R3 PR④(규칙 표 DDL — 검수 뒤, 오너 10-08) ·
+  - 보류: AE-R3 PR③(공유 사전 요미 쓰기 — ⓒ 확정으로 재정리 필요, ⓑ 권장 · 오너 「나중에」) · AD-R3 PR④(규칙 표 DDL — 동결 해제로 착수 가능) ·
     한국어 어절 넘는 묶기(할 수 있다 — 별도 질문).
   - 오너 결정 대기: #1368 트레이드오프 · #1396 꼴 이름 2종·조각 간격.
 ### todo (오너 전건 승인 2026-07-18 — owner-gate 해제분 포함, Codex-1 확장 큐 = #150 코멘트 5012160829)
