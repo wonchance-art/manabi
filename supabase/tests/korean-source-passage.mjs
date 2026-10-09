@@ -228,11 +228,13 @@ await check('진단 SQL: 적용 블록은 적용 파일과 바이트 동일, 두
   assert.ok(diagnose.trimEnd().endsWith('ROLLBACK;') && !/^\s*COMMIT\s*;/m.test(diagnose));
   const { db } = await fresh();
   const before = { md5: await md5s(db), cap: await capability(db), attrs: await attrs(db), rows: await allMaterials(db) };
-  const out = (await db.exec(diagnose)).filter(r => r.rows.length).map(r => r.rows);
-  const answers = out.find(rs => rs[0]?.answer);
-  assert.equal(answers.length, 4);
-  for (const a of answers) assert.deepEqual(JSON.parse(a.answer).languages.Korean, READY);
-  assert.deepEqual(out.find(rs => rs[0]?.before_h)?.map(r => r.key).length, 1); // r2가 바꾸는 키는 트리거 함수 하나
+  const results = (await db.exec(diagnose)).filter(r => r.rows.length);
+  const { diagnosis } = results.at(-1).rows[0]; // 운영 도구는 마지막 SELECT만 돌려준다 — 결과 넷이 한 행에 있어야 한다
+  assert.equal(diagnosis.answers.length, 4);
+  for (const a of diagnosis.answers) assert.deepEqual(JSON.parse(a.answer).languages.Korean, READY);
+  assert.equal(diagnosis.digests.length, 4);
+  assert.deepEqual(diagnosis.role_diffs, []);
+  assert.equal(diagnosis.changed_keys.length, 1); // r2가 바꾸는 키는 트리거 함수 하나
   assert.deepEqual({ md5: await md5s(db), cap: await capability(db), attrs: await attrs(db), rows: await allMaterials(db) }, before);
   assert.deepEqual(await korean(db), READY);
   await db.close();

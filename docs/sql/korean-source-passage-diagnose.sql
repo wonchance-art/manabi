@@ -3,7 +3,7 @@
 -- authenticated app saw Korean disabled (M09 22:32 KST). This runs the r2 apply block inside one transaction,
 -- captures the capability RPC's own fingerprint objects as the admin role and as authenticated (key + md5 only,
 -- no definitions), and the RPC answer for each, before and after — then ROLLBACK.
--- Output: ① answers ② per-role digests ③ keys that differ by role ④ keys changed by r2.
+-- Output: one final row `diagnosis` (jsonb) — answers · digests · role_diffs · changed_keys (tools return only the last SELECT).
 -- The apply block below is byte-identical to docs/sql/korean-source-passage.sql at the same commit
 -- (supabase/tests/korean-source-passage.mjs checks this).
 BEGIN;
@@ -131,19 +131,27 @@ SELECT pg_temp.ko_capture('after');
 RESET ROLE;
 SET LOCAL search_path='';
 
--- 결과 ①: 단계·역할별 capability 응답(오류면 ERROR 코드)
-SELECT stage, who, answer FROM pg_temp.ko_answer ORDER BY stage DESC, who;
--- 결과 ②: 단계·역할별 키 수와 전체 지문(키 순서 정렬 md5)
+-- 결과 ①~④: Management API / CLI / MCP는 마지막 SELECT만 돌려주므로(M09 실측 2026-10-09) 한 JSON에 묶는다.
+--   answers 단계·역할별 응답 · digests 단계·역할별 키 수·digest · role_diffs 역할에 따라 다른 키 · changed_keys r2가 바꾼 키
+SELECT pg_catalog.jsonb_build_object(
+  'answers', (SELECT COALESCE(pg_catalog.jsonb_agg(pg_catalog.to_jsonb(r)), '[]'::pg_catalog.jsonb) FROM (
+SELECT stage, who, answer FROM pg_temp.ko_answer ORDER BY stage DESC, who
+  ) r),
+  'digests', (SELECT COALESCE(pg_catalog.jsonb_agg(pg_catalog.to_jsonb(r)), '[]'::pg_catalog.jsonb) FROM (
 SELECT stage, who, pg_catalog.count(*) AS keys, pg_catalog.md5(pg_catalog.string_agg(key || '=' || h, ',' ORDER BY key)) AS digest
-  FROM pg_temp.ko_diag GROUP BY stage, who ORDER BY stage DESC, who;
--- 결과 ③: 같은 단계에서 역할에 따라 다른 키(값 본문은 내보내지 않는다 — 키 이름과 md5만)
+  FROM pg_temp.ko_diag GROUP BY stage, who ORDER BY stage DESC, who
+  ) r),
+  'role_diffs', (SELECT COALESCE(pg_catalog.jsonb_agg(pg_catalog.to_jsonb(r)), '[]'::pg_catalog.jsonb) FROM (
 SELECT a.stage, COALESCE(a.key, b.key) AS key, a.h AS admin_h, b.h AS authenticated_h
   FROM (SELECT * FROM pg_temp.ko_diag WHERE who <> 'authenticated') a
   FULL JOIN (SELECT * FROM pg_temp.ko_diag WHERE who = 'authenticated') b ON a.stage = b.stage AND a.key = b.key
- WHERE a.h IS DISTINCT FROM b.h ORDER BY 1 DESC, 2;
--- 결과 ④: before → after 사이에 바뀐 키(관리자 역할 기준)
+ WHERE a.h IS DISTINCT FROM b.h ORDER BY 1 DESC, 2
+  ) r),
+  'changed_keys', (SELECT COALESCE(pg_catalog.jsonb_agg(pg_catalog.to_jsonb(r)), '[]'::pg_catalog.jsonb) FROM (
 SELECT COALESCE(x.key, y.key) AS key, x.h AS before_h, y.h AS after_h
   FROM (SELECT * FROM pg_temp.ko_diag WHERE stage = 'before' AND who <> 'authenticated') x
   FULL JOIN (SELECT * FROM pg_temp.ko_diag WHERE stage = 'after' AND who <> 'authenticated') y ON x.key = y.key
- WHERE x.h IS DISTINCT FROM y.h ORDER BY 1;
+ WHERE x.h IS DISTINCT FROM y.h ORDER BY 1
+  ) r)
+) AS diagnosis;
 ROLLBACK;
