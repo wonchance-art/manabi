@@ -91,6 +91,8 @@ describe('KO-COMPOSER — 한국어 선택지는 계정 지원 응답을 따른�
     expect(passage).toContain('passageLanguageChoices(studyChoices)');
     expect(passage).toContain('{passageLanguages.map(value =>');
     expect(passage).not.toContain('PASSAGE_LANGUAGES.map');
+    // 한국어 구간이 열렸으니(KO-PASSAGE-001) 「한국어는 일부만 고를 수 없다」 안내는 남기지 않는다.
+    expect(passage).not.toContain('일부만 골라 공부할 수 없어요');
   });
 });
 
