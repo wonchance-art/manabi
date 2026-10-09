@@ -8,8 +8,8 @@ const original='Hello.\n\nThis is the first source.';
 async function seed(f,{file=false}={}){
  await f.page.goto('/materials/add');await f.page.locator('#composer-title').fill('비 오는 오후의 독서');await f.page.locator('#composer-body').fill(original);
  if(file)await f.page.locator('input[type=file]').setInputFiles(new URL('./fixtures/composer/reading.epub',import.meta.url).pathname);
- await f.page.locator('.composer-options summary').click();await f.page.locator('#composer-language').selectOption('English');
- await f.page.getByRole('button',{name:'저장',exact:true}).click();await f.page.locator('.original-reader').waitFor();return f.rows[0].id;
+ await f.page.getByRole('radiogroup',{name:'공부할 언어'}).getByRole('radio',{name:'영어',exact:true}).click();
+ await f.page.getByRole('button',{name:'저장만',exact:true}).click();await f.page.locator('.original-reader').waitFor();return f.rows[0].id;
 }
 async function edit(f){await f.page.getByRole('link',{name:'수정',exact:true}).click();try { await f.page.locator('#composer-title').waitFor(); } catch (error) { console.error(await f.page.locator('main').innerText()); throw error; }}
 async function save(f){await f.page.getByRole('button',{name:'변경 저장',exact:true}).click();await f.page.locator('.original-reader').waitFor();}
@@ -20,7 +20,7 @@ test('desktop: current document edits, same address, old source intact, new stud
   const id=await seed(f,{file:true}),before=JSON.stringify(f.rows[0].processed_json);await edit(f);
   assert.equal(await f.page.locator('#composer-body').inputValue(),original);
   await f.page.locator('#composer-title').fill('비 오는 오후, 다시 읽는 문장');await f.page.locator('#composer-body').fill('Bonjour.\n\nUn nouveau départ.');
-  await f.page.locator('.composer-options summary').click();await f.page.locator('#composer-language').selectOption('French');
+  await f.page.getByRole('radiogroup',{name:'공부할 언어'}).getByRole('radio',{name:'프랑스어',exact:true}).click();
   await f.page.getByText('이 기기에 초안 보관됨',{exact:true}).waitFor();await f.page.reload();await f.page.locator('#composer-body').waitFor();
   assert.equal(await f.page.locator('#composer-body').inputValue(),'Bonjour.\n\nUn nouveau départ.');
   if(shots)await f.page.screenshot({path:`${shots}/editing-desktop.png`,fullPage:true});await save(f);

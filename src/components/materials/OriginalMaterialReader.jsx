@@ -5,9 +5,11 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { langNameKo } from '@/lib/constants';
-import { COMPOSER_LANGUAGES, normalizeSourceUrl } from '@/lib/materialComposer';
+import { guessStudyLanguage, normalizeSourceUrl, studyLanguageLabel } from '@/lib/materialComposer';
 import { documentOf, documentError, openDocumentStudy } from '@/lib/materialDocument';
+import { useStudyLanguages } from '@/lib/useStudyLanguages';
+import { useViewerLanguage } from '@/lib/useViewerLanguage';
+import StudyLanguageChips from './StudyLanguageChips';
 import { LibraryReturnLink } from '@/components/web/LibraryReaderLink';
 import { safeLibraryReturn } from '@/lib/libraryReturn';
 import './material-composer.css';
@@ -42,7 +44,10 @@ export default function OriginalMaterialReader({ material }) {
       return data;}});
   const returnSource=passageOf(origin.data);
 
+  const { languages, koreanChecking } = useStudyLanguages();
+  const { explanationLocale } = useViewerLanguage();
   const [language, setLanguage] = useState(composer.language || '');
+  const [picked, setPicked] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [assetIndex, setAssetIndex] = useState(()=>Math.max(0,(composer.assets||[]).findIndex(item=>item.hash===params.get('asset'))));
@@ -86,11 +91,18 @@ export default function OriginalMaterialReader({ material }) {
   const asset = assets[Math.min(assetIndex, Math.max(0, assets.length - 1))];
   const sources=useMemo(()=>[bodySource,...(fileSource?.source?.assetHash===asset?.hash?(fileSource?.siblings||[fileSource]):[])].filter(Boolean),[bodySource,fileSource,asset?.hash]);
   const preferredKey=fileSource?.source?.assetHash===asset?.hash?fileSource?.key:bodySource?.key;
-  async function studyBody() {
-    if (busy || !COMPOSER_LANGUAGES.includes(language)) return;
+  // 첨부 없이 글만 있는 자료(WRITE-STUDY-ENTRY-001): 상단 「이 글로 공부하기」가 대표 입구다.
+  // 저장된 언어가 있으면 바로 열고, 없으면 칩 줄을 펼쳐 글자로 짐작한 값을 미리 고른다. 첨부 자료는 현행 그대로.
+  const textOnly = !!composer.body?.trim() && !assets.length;
+  const savedLanguage = languages.includes(composer.language) ? composer.language : '';
+  const savedPending = composer.language === 'Korean' && !savedLanguage && koreanChecking;
+  const guess = useMemo(() => textOnly && !savedLanguage ? guessStudyLanguage(composer.body, languages) : '', [textOnly, savedLanguage, composer.body, languages]);
+  const entryLanguage = picked ?? (savedLanguage || guess);
+  async function studyBody(target = language) {
+    if (busy || !languages.includes(target)) return;
     setBusy(true); setError('');
     try {
-      const record = await openDocumentStudy(supabase, material, language);
+      const record = await openDocumentStudy(supabase, material, target, { explanationLocale });
       await queryClient.invalidateQueries({ queryKey: ['material', String(record.id)] });
       const search = new URLSearchParams({ study: '1', returnTo: safeLibraryReturn(params.get('returnTo')) });
       router.push(`/viewer/${record.id}?${search}`);
@@ -103,13 +115,21 @@ export default function OriginalMaterialReader({ material }) {
     {passageId&&origin.isPending&&<p role="status">학습 구간의 출처를 확인하는 중…</p>}
     {passageId&&origin.isError&&<p role="alert">해당 구간의 출처를 열 수 없어요. 현재 자료는 그대로 읽을 수 있습니다.</p>}
     {origin.data&&<PassageSourceFocus material={origin.data} sources={sources}/>}
-    <PassageStudy material={material} sources={sources} preferredKey={preferredKey}/>
+    <PassageStudy material={material} sources={sources} preferredKey={preferredKey} {...(textOnly ? {
+      openerLabel: '일부만 고르기', idleText: '글 전체로 공부하거나 필요한 부분만 골라 보세요.',
+      primary: <button className="manabi-button" disabled={busy || !entryLanguage} aria-describedby={!entryLanguage ? 'original-entry-reason' : undefined} onClick={() => studyBody(entryLanguage)}>{busy ? '여는 중…' : '이 글로 공부하기 ↗'}</button>,
+      children: <>
+        {!savedLanguage && !savedPending && <StudyLanguageChips id="original-entry-language" languages={languages} value={entryLanguage} guessed={picked === null && !!guess} disabled={busy} onChange={setPicked} />}
+        {!entryLanguage && !savedPending && <small id="original-entry-reason" className="original-entry-reason">공부할 언어를 골라 주세요</small>}
+        {error && <p role="alert" className="original-entry-error">{error}</p>}
+      </>,
+    } : {})}/>
     {sync.state.ready&&composer.body?.trim() && <article ref={bodyElement} className="original-writing" aria-label="작성한 본문">{composer.body}</article>}
     {!!links.length && <section className="original-links" aria-label="담아 둔 링크">{links.map(url => <a key={url} href={url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer"><div><small>ORIGINAL LINK</small><strong>{new URL(url).hostname}</strong><span>{url}</span></div><b aria-hidden="true">↗</b></a>)}<p>링크의 원문은 해당 사이트에서 열립니다.</p></section>}
     {assets.length > 1 && <div className="original-file-picker"><label htmlFor="original-file-select">첨부 원본 {assets.length}개</label><select id="original-file-select" value={assetIndex} onChange={e=>{const index=Number(e.target.value);setAssetIndex(index);const selected=assets[index],point=sync.selected(`asset:${selected.hash}`);if(point)sync.note(point.source,point.locator);applyPosition(point);}}>{assets.map((item, index) => <option key={item.hash} value={index}>{item.name}</option>)}</select></div>}
     {asset && sync.state.ready && (!passageId||!origin.isPending) && <OriginalFileReader key={`${asset.hash}:${passageId||''}:${restore.id}`} material={material} asset={asset} onSource={onFileSource} returnSource={returnSource?.assetHash===asset.hash?returnSource:null} sourceMaterial={returnSource?.assetHash===asset.hash?origin.data:null} initialLocator={!passageId?sync.selected(positionSourceKey({kind:asset.kind,assetHash:asset.hash}))?.locator:null} restoreId={restore.id} onPosition={sync.note} canRecord={canRecord} />}
     <PassageSources material={material}/>
-    {composer.body?.trim() && <details className="original-study"><summary>자료 도구 · 본문 전체 학습</summary><p>학습할 언어를 고르면 읽기·표현 저장 화면으로 이어집니다. 수정한 본문으로 공부해도 이전 표현의 출처는 남아 있습니다.</p><label htmlFor="original-language">학습 언어</label><select id="original-language" value={language} onChange={e => setLanguage(e.target.value)} disabled={busy}><option value="">언어 선택</option>{COMPOSER_LANGUAGES.map(value => <option key={value} value={value}>{langNameKo(value)}</option>)}</select><button className="manabi-button" disabled={busy || !language} onClick={studyBody}>{busy ? '여는 중…' : '본문 학습하기 ↗'}</button>{error && <p role="alert">{error}</p>}</details>}
+    {composer.body?.trim() && !textOnly && <details className="original-study"><summary>자료 도구 · 본문 전체 학습</summary><p>학습할 언어를 고르면 읽기·표현 저장 화면으로 이어집니다. 수정한 본문으로 공부해도 이전 표현의 출처는 남아 있습니다.</p><label htmlFor="original-language">학습 언어</label><select id="original-language" value={language} onChange={e => setLanguage(e.target.value)} disabled={busy}><option value="">언어 선택</option>{languages.map(value => <option key={value} value={value}>{studyLanguageLabel(value)}</option>)}</select><button className="manabi-button" disabled={busy || !language} onClick={() => studyBody(language)}>{busy ? '여는 중…' : '본문 학습하기 ↗'}</button>{error && <p role="alert">{error}</p>}</details>}
     <footer className="original-bottom"><LibraryReturnLink /><Link href="/materials/add">새 자료 작성 ↗</Link></footer>
   </section>;
 }

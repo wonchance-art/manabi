@@ -2,6 +2,10 @@ import { composerOf, COMPOSER_LANGUAGES } from './materialComposer';
 import { safeLibraryReturn } from './libraryReturn';
 
 export const PASSAGE_MAX_CHARS = 1500;
+// 구간 학습은 DB의 open_source_passage·validate_source_passage(20260908060607)가 네 언어만 받는다.
+// 한국어 구간은 RPC/트리거 변경이 필요해 이번 범위(KO-COMPOSER-001, 스키마 변경 없음)에서 멈췄다 — 그 전까지
+// 서버가 거절할 언어를 보여 주지 않는다. 계약 테스트가 이 목록을 마이그레이션의 언어 목록과 대조한다.
+export const PASSAGE_LANGUAGES = Object.freeze(COMPOSER_LANGUAGES.filter(language => language !== 'Korean'));
 export const passageOf = material => composerOf(material)?.passage || null;
 export const codePointLength = text => Array.from(text || '').length;
 const cpSlice = (text, start, end) => Array.from(text).slice(start, end).join('');
@@ -103,7 +107,7 @@ export function sourcePassageHref(material, returnTo) {
 }
 
 export async function openSourcePassage(client, material, source, text, language) {
-  if (!COMPOSER_LANGUAGES.includes(language)) throw new Error('PASSAGE_LANGUAGE');
+  if (!PASSAGE_LANGUAGES.includes(language)) throw new Error('PASSAGE_LANGUAGE');
   if (!text.trim() || codePointLength(text) > PASSAGE_MAX_CHARS) throw new Error('PASSAGE_LENGTH');
   const { data, error } = await client.rpc('open_source_passage', {
     p_parent: String(material.id), p_source: source, p_text: text, p_language: language,

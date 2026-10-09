@@ -51,6 +51,11 @@ export const VIEWER_LANGUAGES = createViewerLanguageRegistry([
   },
 ]);
 
+/** 텍스트 읽기 자료로 열 수 있는 언어 — 등록부의 text·analysis가 모두 supported(자료 입구들의 공통 조건). */
+export function textReadingSupported(info) {
+  return info?.capabilities.text === 'supported' && info.capabilities.analysis === 'supported';
+}
+
 /** 알려진 DB 이름 또는 선언된 BCP47 태그만 매핑한다. 표기 추측/목표어 폴백은 없다. */
 export function viewerLanguageInfo(language, registry = VIEWER_LANGUAGES) {
   if (typeof language !== 'string') return null;

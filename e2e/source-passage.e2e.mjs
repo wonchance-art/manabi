@@ -26,10 +26,10 @@ async function setup(options={}){
 async function create(f,files=[]){
  await f.page.goto('/materials/add');await f.page.locator('#composer-title').fill('다시 펼치는 오후의 문장');await f.page.locator('#composer-body').fill('A quiet afternoon.\nAnother page to read.\nOne word at a time.');
  if(files.length)await f.page.locator('input[type=file]').setInputFiles(files.map(kind=>new URL(`./fixtures/composer/reading.${kind}`,import.meta.url).pathname));
- await f.page.locator('.composer-options summary').click();await f.page.locator('#composer-language').selectOption('English');await f.page.getByRole('button',{name:'저장',exact:true}).click();await f.page.locator('.original-reader').waitFor();
+ await f.page.getByRole('radiogroup',{name:'공부할 언어'}).getByRole('radio',{name:'영어',exact:true}).click();await f.page.getByRole('button',{name:'저장만',exact:true}).click();await f.page.locator('.original-reader').waitFor();
  return f.rows[0];
 }
-async function pick(f){await f.page.getByRole('button',{name:'학습할 부분 고르기',exact:true}).click();await f.page.getByRole('button',{name:'1번째 글 선택',exact:true}).click();}
+async function pick(f){await f.page.getByRole('button',{name:/^(학습할 부분 고르기|일부만 고르기)$/}).click();await f.page.getByRole('button',{name:'1번째 글 선택',exact:true}).click();}
 async function start(f){await f.page.getByRole('button',{name:'이 부분 공부하기',exact:true}).click();await f.page.locator('.reader-area').waitFor();await f.page.waitForFunction(()=>document.querySelectorAll('[data-source-token]').length>0);await f.page.locator('.analyzing-banner').waitFor({state:'hidden'});}
 async function noOverflow(f){assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);assert.deepEqual(f.errors,[]);}
 
@@ -66,7 +66,7 @@ test('selection, keyboard cancel, length bound and failed analysis retry preserv
   await create(f);await f.page.locator('.original-writing').evaluate(el=>{const range=document.createRange();range.setStart(el.firstChild,0);range.setEnd(el.firstChild,17);const selection=getSelection();selection.removeAllRanges();selection.addRange(range);});
   await f.page.getByRole('button',{name:'선택한 부분 공부하기',exact:true}).click();assert.equal(await f.page.locator('.passage-quote').innerText(),'A quiet afternoon');
   await f.page.keyboard.press('Escape');assert.equal(await f.page.locator('dialog[open]').count(),0);assert.equal(f.rows.length,1);
-  await f.page.getByRole('button',{name:/^(선택한 부분 공부하기|학습할 부분 고르기)$/}).click();await f.page.getByRole('button',{name:'내용 다듬기',exact:true}).click();await f.page.getByLabel('학습할 내용',{exact:true}).fill('x'.repeat(1501));assert.equal(await f.page.getByRole('button',{name:'이 부분 공부하기',exact:true}).isDisabled(),true);
+  await f.page.getByRole('button',{name:/^(선택한 부분 공부하기|일부만 고르기)$/}).click();await f.page.getByRole('button',{name:'내용 다듬기',exact:true}).click();await f.page.getByLabel('학습할 내용',{exact:true}).fill('x'.repeat(1501));assert.equal(await f.page.getByRole('button',{name:'이 부분 공부하기',exact:true}).isDisabled(),true);
   await f.page.getByLabel('학습할 내용',{exact:true}).fill('A quiet afternoon.');f.fail(true);await f.page.getByRole('button',{name:'이 부분 공부하기',exact:true}).click();await f.page.getByRole('button',{name:'재분석',exact:true}).waitFor();assert.equal(f.rows.length,2);
   f.fail(false);await f.page.getByRole('button',{name:'재분석',exact:true}).click();await f.page.waitForFunction(()=>document.querySelectorAll('[data-source-token]').length>0);assert.equal(f.rows.length,2);assert.equal(f.rows[1].raw_text,'A quiet afternoon.');await noOverflow(f);
  }finally{await f.close();}
@@ -83,7 +83,7 @@ test('lost response reuses one snapshot; small screens, keyboard and manual inpu
   f.losePassageReply();await f.page.getByRole('button',{name:'이 부분 공부하기',exact:true}).click();await f.page.getByRole('alert').filter({hasText:'구간을 열지 못했어요'}).waitFor();assert.equal(f.rows.length,2);assert.equal(f.calls,0);
   await start(f);assert.equal(f.rows.length,2);assert.equal(f.calls,1);
   await f.page.getByRole('link',{name:'원본의 작성한 본문으로 ↗'}).click();await f.page.locator('.original-reader').waitFor();
-  const open=f.page.getByRole('button',{name:'학습할 부분 고르기',exact:true});await open.focus();await f.page.keyboard.press('Enter');await f.page.keyboard.press('Escape');assert.equal(await open.evaluate(el=>el===document.activeElement),true);
+  const open=f.page.getByRole('button',{name:'일부만 고르기',exact:true});await open.focus();await f.page.keyboard.press('Enter');await f.page.keyboard.press('Escape');assert.equal(await open.evaluate(el=>el===document.activeElement),true);
   await open.click();await f.page.getByRole('button',{name:'추출된 글이 어색한가요? 직접 입력',exact:true}).click();await f.page.getByLabel('학습할 내용',{exact:true}).fill('A sentence I transcribed.');
   await f.page.locator('dialog').getByLabel('학습 언어',{exact:true}).selectOption('');assert.equal(await f.page.getByRole('button',{name:'이 부분 공부하기',exact:true}).isDisabled(),true);await f.page.locator('dialog').getByLabel('학습 언어',{exact:true}).selectOption('English');await start(f);
   assert.equal(f.rows[2].processed_json.metadata.composer.passage.manual,true);assert.equal(f.rows[2].processed_json.metadata.composer.passage.quote,undefined);

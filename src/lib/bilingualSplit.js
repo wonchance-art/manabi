@@ -22,7 +22,8 @@ export const KO_LINE_THRESHOLD = 0.6;
 /** 반입 배너 노출 문턱 — 짝 지어진 뜻 줄 / 원어 줄. */
 export const BILINGUAL_HINT_RATIO = 0.4;
 
-const HANGUL_RE = /[ᄀ-ᇿ㄰-㆏ꥠ-꥿가-힯ힰ-퟿]/u;
+/** 한글 낱자·자모 — 표기로 한국어를 가르는 정본(자료 작성의 언어 짐작도 재사용한다). */
+export const HANGUL_RE = /[ᄀ-ᇿ㄰-㆏ꥠ-꥿가-힯ힰ-퟿]/u;
 // 글자로 세는 것: 문자(L) + 표의문자 확장. 숫자·구두점·기호·공백은 비율 계산에서 뺀다.
 const LETTER_RE = /\p{L}/u;
 
