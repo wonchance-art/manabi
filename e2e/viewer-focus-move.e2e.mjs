@@ -488,6 +488,14 @@ test('AE-R2 ②: guests get no prefetch request',{timeout:180000},async()=>{
 // 순서: 원문 줄(누른 단어만 칠, 120자 자르기 없음) → 번역(진행 표시는 이 칸에만) → [더 쉽게][자세히] → 문형 → 단어별 뜻.
 // 단어별 뜻은 자료 토큰에서(요청 0·만남 0). 게스트는 캐시·교재 맵이 없으면 AI 대신 로그인 안내. 「AI」 표시 0.
 const sentenceBox=(f,sel)=>leftPanel(f).locator(sel).first().evaluate(el=>{const b=el.getBoundingClientRect();return {top:b.top,bottom:b.bottom,left:b.left,right:b.right};});
+// 번역 도착 직후 결과 칸(dangerouslySetInnerHTML)이 한 번 더 다시 쓰이면, 미리 잡아 둔 제목 노드는 문서에서 떨어져
+// getBoundingClientRect가 0×0이 된다(CI 3회 실측 10-09·10-10, 로컬 재현 0 — 「보일 때까지 기다리기」만으로는 못 막음).
+// 패널은 그대로이므로 패널 안에서 매 프레임 제목을 새로 찾아, 붙어 있는 노드가 크기를 가질 때 잰다(최대 2초).
+// 계약(원문·번역 제목 위치 불변)은 그대로다 — 끝내 못 찾으면 0×0을 돌려 단언이 실패한다.
+const visibleSentenceBox=(f,sel)=>leftPanel(f).evaluate((panel,sel)=>new Promise(resolve=>{const until=performance.now()+2000;
+ const tick=()=>{const el=panel.querySelector(sel);const b=el?.getBoundingClientRect();
+  if(b&&b.height>0)resolve({top:b.top,bottom:b.bottom,left:b.left,right:b.right});
+  else if(performance.now()>until)resolve({top:0,bottom:0,left:0,right:0});else requestAnimationFrame(tick);};tick();}),sel);
 const glossTexts=f=>leftPanel(f).locator('.reader-sentence__glosses li').allInnerTexts();
 
 test('AE-R2 ③: [문장] tab reads original (tapped word marked) → translation → [더 쉽게][자세히] → 문형 → 단어별 뜻, no AI label',{timeout:240000},async()=>{
@@ -535,7 +543,7 @@ test('AE-R2 ③: before the translation arrives only its slot shows 「번역 �
   const before={original:await sentenceBox(f,'.pdf-context__original'),head:await sentenceBox(f,'.reader-sentence__translation .pdf-detail-heading')};
   await leftPanel(f).getByText('문장 번역 표지 1').first().waitFor();
   assert.equal(await leftPanel(f).getByText('번역 중…',{exact:true}).count(),0);
-  const after={original:await sentenceBox(f,'.pdf-context__original'),head:await sentenceBox(f,'.reader-sentence__translation .pdf-detail-heading')};
+  const after={original:await sentenceBox(f,'.pdf-context__original'),head:await visibleSentenceBox(f,'.reader-sentence__translation .pdf-detail-heading')};
   assert.ok(Math.abs(before.original.top-after.original.top)<.5&&Math.abs(before.head.top-after.head.top)<.5,`original and translation head stay put: ${JSON.stringify({before,after})}`);
   // 다른 줄 단어의 [문장] 탭 = 그 줄. 앞 문장 번역이 남지 않는다(설계서 §1.2·§6.2).
   await token(f,2,3).click();await cardOpen(f,2,3);
