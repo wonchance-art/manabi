@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { safeLibraryReturn } from '@/lib/libraryReturn';
 import { passageOf, passageLocation, samePassageSource, domPassageRange } from '@/lib/sourcePassage';
-import { langNameKo } from '@/lib/constants';
+import { studyLanguageLabel } from '@/lib/materialComposer';
 
 export function PassageSourceFocus({ material, sources }) {
   const [matched, setMatched] = useState(false);
@@ -56,5 +56,5 @@ export default function PassageSources({ material }) {
   const pages = query.data?.pages || [], total = pages[0]?.total || 0;
   if (!total) return null;
   const href = id => `/viewer/${id}?${new URLSearchParams({ study: '1', returnTo: safeLibraryReturn(params.get('returnTo')) })}`;
-  return <details className="passage-sources"><summary>학습 구간 {total}</summary><ul>{pages.flatMap(page => page.items).map(item => <li key={item.id}><Link href={href(item.id)}>{passageLocation(item.passage)} · {Array.from(item.raw_text || '').slice(0, 75).join('')}{Array.from(item.raw_text || '').length > 75 ? '…' : ''}<small>{langNameKo(item.language)} · {item.status === 'completed' ? '표현 준비됨' : item.status === 'analyzing' ? '표현 준비 중' : '이어서 준비하기'} ↗</small></Link></li>)}</ul>{query.hasNextPage && <button disabled={query.isFetchingNextPage} onClick={() => query.fetchNextPage()}>구간 더 보기</button>}</details>;
+  return <details className="passage-sources"><summary>학습 구간 {total}</summary><ul>{pages.flatMap(page => page.items).map(item => <li key={item.id}><Link href={href(item.id)}>{passageLocation(item.passage)} · {Array.from(item.raw_text || '').slice(0, 75).join('')}{Array.from(item.raw_text || '').length > 75 ? '…' : ''}<small>{studyLanguageLabel(item.language)} · {item.status === 'completed' ? '표현 준비됨' : item.status === 'analyzing' ? '표현 준비 중' : '이어서 준비하기'} ↗</small></Link></li>)}</ul>{query.hasNextPage && <button disabled={query.isFetchingNextPage} onClick={() => query.fetchNextPage()}>구간 더 보기</button>}</details>;
 }

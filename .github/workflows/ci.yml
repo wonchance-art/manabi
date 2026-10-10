@@ -46,6 +46,8 @@ jobs:
       - run: node supabase/tests/vocabulary-exclusion.mjs
       - run: node supabase/tests/known-word-controls.mjs
       - run: node supabase/tests/korean-learning-support.mjs
+      - run: node supabase/tests/korean-source-passage.mjs
+      - run: node supabase/tests/learning-contract-catalog.mjs
 
   e2e:
     name: e2e (smoke · learning-flow)

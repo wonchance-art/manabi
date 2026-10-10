@@ -86,7 +86,15 @@ describe('KO-COMPOSER — 한국어 선택지는 계정 지원 응답을 따른�
     for (const source of [composer, original]) { expect(source).toMatch(/\{ languages[^}]*\} = useStudyLanguages\(\)/); expect(source).not.toContain('COMPOSER_LANGUAGES.map'); }
     expect(composer).toContain('<StudyLanguageChips'); expect(original).toContain('<StudyLanguageChips');
     expect(composer).not.toContain('composer-options');
-    expect(readFileSync('src/components/materials/PassageStudy.jsx', 'utf8')).toContain('PASSAGE_LANGUAGES.map');
+    const passage = readFileSync('src/components/materials/PassageStudy.jsx', 'utf8');
+    expect(passage).toMatch(/\{ languages: studyChoices \} = useStudyLanguages\(\)/);
+    expect(passage).toContain('passageLanguageOptions(studyChoices)');
+    expect(passage).toContain('{passageOptions.map(option =>');
+    // 표시 이름은 정본 studyLanguageLabel에서 — langNameKo는 Korean을 「일본어」로 떨어뜨린다(M09 Preview FAIL 10-10).
+    for (const file of ['src/components/materials/PassageStudy.jsx', 'src/components/materials/PassageSources.jsx']) expect(readFileSync(file, 'utf8')).not.toContain('langNameKo');
+    expect(passage).not.toContain('PASSAGE_LANGUAGES.map');
+    // 한국어 구간이 열렸으니(KO-PASSAGE-001) 「한국어는 일부만 고를 수 없다」 안내는 남기지 않는다.
+    expect(passage).not.toContain('일부만 골라 공부할 수 없어요');
   });
 });
 
