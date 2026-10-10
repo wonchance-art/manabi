@@ -1,5 +1,6 @@
 import {describe,it,expect,vi} from 'vitest';
-import {quoteRange,findPassageQuote,samePassageSource,passageBlocks,sourcePassageHref,openSourcePassage} from '../sourcePassage';
+import {readFileSync} from 'node:fs';
+import {quoteRange,findPassageQuote,samePassageSource,passageBlocks,sourcePassageHref,openSourcePassage,passageListKey} from '../sourcePassage';
 import {runPassageAnalysis,requestPassageAnalysis,takePassageAnalysis} from '../passageAnalysis';
 const source={version:1,kind:'body',textVersion:'plain-v1',revision:'r1'};
 const material={id:22,owner_id:'owner',raw_text:'First.\nSecond.',processed_json:{status:'pending',sequence:[],dictionary:{},metadata:{language:'English',composer:{version:1,role:'study',parentId:'12',passage:source}}}};
@@ -14,5 +15,11 @@ describe('analysis intent and run',()=>{
  it('consumes an explicit action once, scoped to the account',()=>{requestPassageAnalysis('one',22);expect(takePassageAnalysis('two',22)).toBe(false);expect(takePassageAnalysis('one',22)).toBe(true);expect(takePassageAnalysis('one',22)).toBe(false);});
  it('reuses completed or concurrently leased data without an analysis request',async()=>{const analyze=vi.fn(),client={rpc:vi.fn().mockResolvedValue({data:{acquired:false,material:{...material,processed_json:{...material.processed_json,status:'completed'}}}})};const result=await runPassageAnalysis(client,material,new AbortController().signal,analyze);expect(result.status).toBe('completed');expect(analyze).not.toHaveBeenCalled();});
  it('persists batches and final status on the same run, never inserts another material',async()=>{const calls=[];const client={rpc:vi.fn(async(name,p)=>{calls.push(p);return {data:{acquired:true,material:{...material,processed_json:p.p_json||{...material.processed_json,status:'analyzing'}}}};})};const analyze=vi.fn(async(text,signal,{onBatch,metadata})=>{const j={sequence:['id_0_0'],dictionary:{id_0_0:{text:'First'}},metadata,status:'completed'};await onBatch({currentJson:j});return j;});await runPassageAnalysis(client,material,new AbortController().signal,analyze);expect(calls).toHaveLength(3);expect(calls[1].p_json.status).toBe('analyzing');expect(calls[2].p_json.status).toBe('completed');expect(new Set(calls.map(p=>p.p_attempt)).size).toBe(1);});
+ it('구간 분석이 끝나면 원본의 구간 목록 캐시를 무효화한다 — 목록·생성·완료가 같은 키(원문 복귀 직후 「이어서 준비하기」 잔류 방지)',()=>{
+  expect(passageListKey(material.owner_id,material.processed_json.metadata.composer.parentId)).toEqual(passageListKey('owner',12));
+  const reanalyze=readFileSync('src/lib/useReanalyze.js','utf8');
+  expect(reanalyze).toMatch(/runPassageAnalysis\([\s\S]*?\);[\s\S]{0,240}invalidateQueries\(\{ queryKey: passageListKey\(material\.owner_id, parentId\) \}\)/);
+  for(const file of ['src/components/materials/PassageSources.jsx','src/components/materials/PassageStudy.jsx'])expect(readFileSync(file,'utf8')).toContain('passageListKey(material.owner_id, material.id)');
+ });
  it('releases an aborted preparation without replacing the selected source',async()=>{const controller=new AbortController();controller.abort();const calls=[];const client={rpc:vi.fn(async(name,p)=>{calls.push(p);return {data:{acquired:true,material:{...material,processed_json:p.p_json||material.processed_json}}};})};await expect(runPassageAnalysis(client,material,controller.signal,vi.fn())).rejects.toThrow('Aborted');expect(calls.at(-1).p_json.status).toBe('pending');expect(calls.at(-1).p_json.metadata.composer.passage).toEqual(source);});
 });

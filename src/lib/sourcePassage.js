@@ -11,6 +11,9 @@ export const passageLanguageChoices = studyChoices => PASSAGE_LANGUAGES.filter(l
 // 표시 이름은 작성 화면 칩과 같은 정본(studyLanguageLabel) — langNameKo는 Korean이 없어 「일본어」로 떨어진다(M09 Preview FAIL 10-10).
 export const passageLanguageOptions = studyChoices => passageLanguageChoices(studyChoices).map(value => ({ value, label: studyLanguageLabel(value) }));
 export const passageOf = material => composerOf(material)?.passage || null;
+// 원본(부모)의 구간 목록 캐시 키 — 목록·구간 생성·구간 분석 완료가 같은 키를 쓴다(전역 staleTime 2분이라 분석 완료 뒤
+// 무효화하지 않으면 원문 복귀 직후 목록이 「이어서 준비하기」로 남았다 — M09 Preview·운영 관찰 10-10).
+export const passageListKey = (ownerId, parentId) => ['passage-list', ownerId, String(parentId)];
 export const codePointLength = text => Array.from(text || '').length;
 const cpSlice = (text, start, end) => Array.from(text).slice(start, end).join('');
 
