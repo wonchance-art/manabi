@@ -16,8 +16,12 @@
 --   2. changes the two language lists;
 --   3. recomputes the fingerprint with the same query and republishes only that constant in the RPC body
 --      (same oid, owner, ACL, attributes; template md5 unchanged).
--- No table, row, policy, grant, owner, trigger, or other function is touched. Existing rows are not read
--- or written. Korean vocabulary saves keep the korean-learning-support.sql capability checks
+--   4. (r3, 2026-10-10) republishes the FSRS core pin (fsrs_private.settings.contract_hash), because the core
+--      fingerprint hashes the complete capability definition; manual/admission/profile contracts must stay put and
+--      fsrs_private.require_admission_integrity() must pass before and after. r2 skipped this and FSRS snapshot failed
+--      with 55000 in production (11:22–11:26 KST). Verified against the M09 production contract fixture (#1399).
+-- No table definition, policy, grant, owner, trigger, or other function is touched. The only row written is the
+-- single FSRS config row's contract_hash (step 4). Learner rows are not read or written. Korean vocabulary saves keep the korean-learning-support.sql capability checks
 -- (a passage is a reading_materials row, so its saves stay kind='reading').
 --
 -- Unknown installed bodies or attributes abort the whole transaction. Re-running after success is a no-op.
@@ -40,6 +44,13 @@ DECLARE
   live_before text;
   live_after text;
   cap_src text;
+  core_pub text;
+  core_before text;
+  core_after text;
+  manual_before text;
+  admission_before text;
+  profile_before text;
+  n integer;
   -- korean-learning-support.sql publishes the constant into this one line; the rest of the body is pinned.
   cap_line constant text := 'ready:=live_hash= ''([0-9a-f]{32})''';
   cap_template_md5 constant text := '4a497440fb53bc1a27c1975875c7d737';
@@ -60,6 +71,18 @@ BEGIN
   IF published IS NULL OR fingerprint IS NULL THEN RAISE EXCEPTION 'korean_passage_unexpected_capability_body'; END IF;
   EXECUTE fingerprint INTO live_before;
   IF live_before IS DISTINCT FROM published THEN RAISE EXCEPTION 'korean_passage_capability_not_ready'; END IF;
+
+  -- 1b. FSRS contracts (production-only SQL; docs/verification/learning-contract-dependencies-20261010.md): the core
+  --     fingerprint hashes the complete capability definition, so republishing the capability constant must republish
+  --     the core pin too (r2 production FAIL 2026-10-10). All four contracts must equal their pins now.
+  IF pg_catalog.to_regclass('fsrs_private.settings') IS NULL THEN RAISE EXCEPTION 'korean_passage_fsrs_contract_missing'; END IF;
+  PERFORM fsrs_private.require_admission_integrity();
+  SELECT s.contract_hash INTO STRICT core_pub FROM fsrs_private.settings s FOR UPDATE;
+  core_before := fsrs_private.contract_hash();
+  IF core_before IS DISTINCT FROM core_pub THEN RAISE EXCEPTION 'korean_passage_fsrs_not_ready'; END IF;
+  manual_before := fsrs_private.manual_contract_hash();
+  admission_before := fsrs_private.admission_contract_hash();
+  profile_before := fsrs_private.activity_profile_hash();
 
   -- 2. The two language lists.
   FOR r IN SELECT * FROM (VALUES
@@ -114,6 +137,20 @@ BEGIN
   THEN RAISE EXCEPTION 'korean_passage_capability_postcondition'; END IF;
   EXECUTE fingerprint INTO live_before;
   IF live_before IS DISTINCT FROM live_after THEN RAISE EXCEPTION 'korean_passage_capability_postcondition'; END IF;
+
+  -- 4. Republish the FSRS core pin with the same core fingerprint function; manual, admission and profile must not move.
+  core_after := fsrs_private.contract_hash();
+  IF core_after IS DISTINCT FROM core_pub THEN
+    UPDATE fsrs_private.settings SET contract_hash = core_after WHERE contract_hash = core_pub;
+    GET DIAGNOSTICS n = ROW_COUNT;
+    IF n <> 1 THEN RAISE EXCEPTION 'korean_passage_fsrs_postcondition'; END IF;
+  END IF;
+  IF fsrs_private.manual_contract_hash() IS DISTINCT FROM manual_before
+    OR fsrs_private.admission_contract_hash() IS DISTINCT FROM admission_before
+    OR fsrs_private.activity_profile_hash() IS DISTINCT FROM profile_before
+    OR (SELECT s.contract_hash FROM fsrs_private.settings s) IS DISTINCT FROM fsrs_private.contract_hash()
+  THEN RAISE EXCEPTION 'korean_passage_fsrs_postcondition'; END IF;
+  PERFORM fsrs_private.require_admission_integrity();
 END;
 $apply$;
 COMMIT;

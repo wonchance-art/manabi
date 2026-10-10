@@ -140,7 +140,9 @@ kuromoji 상위 품사만 받아 보조동사·접미사 병합이 휴리스틱 
 **철사는 한 겹이 아니다(2026-10-10 r2 재적용 FAIL로 실측):** `fsrs_private.contract_hash()`(FSRS core 계약)가 capability 함수의
 정의 전체를 지문에 넣는다 — capability 상수만 재게시해도 `fsrs_vocabulary_snapshot`이 55000 `learning_admission_unavailable`로
 막혔다(11:22~11:26 KST). FSRS core·admission SQL은 저장소에 없어(운영 전용) CI로 연쇄를 검증할 수 없다 →
-LEARN-CONTRACT-CATALOG-001(운영 정의 READ ONLY 추출 → fixture)이 끝나기 전에는 이 범위의 DB 변경을 운영에 적용하지 않는다.
+LEARN-CONTRACT-CATALOG-001(#1399)로 운영 정의를 `supabase/tests/fixtures/m09-learning-contracts-20261010.sql`에 옮겼다 —
+이 범위의 SQL은 그 fixture 위 PGlite에서 「적용·복원 후 Korean ready + FSRS 계약 넷 게시=실측 + snapshot 동일」을 단언한 뒤에만
+운영에 낸다(본보기 r3: capability 상수 재게시 뒤 같은 트랜잭션에서 `fsrs_private.settings.contract_hash` 재게시).
 사후 게이트에 `/api/learning/capabilities`뿐 아니라 FSRS snapshot·저장·복습 경로를 넣는다.
 
 ### 4.9 ui 이벤트 규약 (행동 계측 — review_events 재사용, 마이그레이션 0)

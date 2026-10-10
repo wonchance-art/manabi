@@ -19,25 +19,24 @@ const AFTER = { validate: 'dbae2ddf1a7d5e40b54eb8ed7834e4b8', open: 'ac4f6a7f38a
 let checks = 0;
 const check = async (name, fn) => { await fn(); checks++; console.log(`PASS ${name}`); };
 
-// 운영 카탈로그(korean-learning-support.mjs의 M09 관측 fixture) + korean-learning-support.sql 적용 상태에서 시작한다 —
-// learning_language_capabilities()의 카탈로그 지문이 validate_source_passage() 본문을 포함하므로(r1 운영 FAIL 2026-10-09),
-// 최소 스키마로는 그 연동을 검증할 수 없다. open_source_passage는 fixture에 없어 마이그레이션 원문 그대로 더한다.
+// 운영 카탈로그에서 시작한다: 10-03 M09 관측 fixture → korean-learning-support.sql → 10-10 M09 운영 학습 계약 fixture(#1399 —
+// FSRS core·manual·admission·activity 계약과 open_source_passage 포함). learning_language_capabilities()의 지문이
+// validate_source_passage() 본문을 넣고(r1 운영 FAIL 2026-10-09), FSRS core 지문이 capability 정의 전체를 넣으므로
+// (r2 운영 FAIL 2026-10-10) 최소 스키마로는 그 연쇄를 검증할 수 없다.
 const learningTest = await read('./korean-learning-support.mjs');
 const fixtureStart = 'const modernFixtureSql = `';
 const modernFixture = learningTest.slice(learningTest.indexOf(fixtureStart) + fixtureStart.length,
   learningTest.indexOf('\n`;\n\nasync function verifyModernCatalog'));
 assert.ok(modernFixture.startsWith('-- M09 modern learning catalog fixture') && !modernFixture.includes('${'));
 const support = await read('../../docs/sql/korean-learning-support.sql');
-const openRpc = `${migration.match(/CREATE OR REPLACE FUNCTION public\.open_source_passage[\s\S]*?\n\$\$;/)[0]}
-REVOKE ALL ON FUNCTION public.open_source_passage(bigint,jsonb,text,text) FROM PUBLIC,anon;
-GRANT EXECUTE ON FUNCTION public.open_source_passage(bigint,jsonb,text,text) TO authenticated;`;
+const contracts = await read('./fixtures/m09-learning-contracts-20261010.sql');
 
 async function fresh() {
   const db = new PGlite();
   await db.exec(modernFixture);
-  await db.exec(`INSERT INTO auth.users VALUES('${a}'),('${b}'); INSERT INTO public.profiles VALUES('${a}'),('${b}');`);
   await db.exec(support);
-  await db.exec(openRpc);
+  await db.exec(contracts);
+  await db.exec(`INSERT INTO auth.users(id) VALUES('${a}'),('${b}'); INSERT INTO public.profiles(id) VALUES('${a}'),('${b}');`);
   const parents = {};
   for (const [owner, language, body] of [[a, 'Korean', '오늘은 도서관에서 신문을 읽었어요. 내일도 갈 거예요.'],
     [a, 'Japanese', '今日は図書館で新聞を読みました。'], [b, 'Korean', '남의 글이에요. 학교에 가요.']]) {
@@ -65,6 +64,20 @@ async function korean(db) {
   return flags;
 }
 const READY = { save: true, review: true, known: true, exclude: true };
+// FSRS 계약 넷의 게시값 = 실측, 그리고 FSRS snapshot(require_admission_integrity를 먼저 부른다) — 시각(now) 제외.
+const pins = async db => (await rows(db, `SELECT
+  (SELECT contract_hash FROM fsrs_private.settings)=fsrs_private.contract_hash() AS core,
+  (SELECT contract_hash FROM fsrs_private.manual_save_settings)=fsrs_private.manual_contract_hash() AS manual,
+  (SELECT contract_hash FROM fsrs_private.admission_settings)=fsrs_private.admission_contract_hash() AS admission,
+  (SELECT profile_contract_hash FROM fsrs_private.activity_settings)=fsrs_private.activity_profile_hash() AS activity`))[0];
+const PINNED = { core: true, manual: true, admission: true, activity: true };
+async function fsrs(db) {
+  await db.exec('RESET ROLE');
+  await db.query("SELECT set_config('request.jwt.claim.sub',$1,false)", [a]);
+  const { now, ...rest } = (await rows(db, 'SELECT public.fsrs_vocabulary_snapshot($1) AS v', [a]))[0].v;
+  assert.ok(now);
+  return rest;
+}
 const OFF = { save: false, review: false, known: false, exclude: false };
 const attrs = async db => rows(db, `SELECT proname, proowner, proacl::text, prosecdef, proconfig, provolatile, proparallel, proisstrict
   FROM pg_proc WHERE pronamespace = 'public'::regnamespace ORDER BY proname`);
@@ -98,9 +111,13 @@ await check('적용: 두 함수 본문은 언어 목록 한 줄만, capability R
   const beforeRows = await allMaterials(db);
   const beforeTriggers = await triggers(db);
   const beforeCap = await capability(db);
+  const beforeFsrs = await fsrs(db);
+  assert.deepEqual(await pins(db), PINNED);
   await db.exec(apply);
   assert.deepEqual(await md5s(db), AFTER);
   assert.deepEqual(await korean(db), READY); // r1은 여기서 OFF였다(운영 FAIL 2026-10-09)
+  assert.deepEqual(await pins(db), PINNED); // r2는 core가 어긋나 FSRS가 55000이었다(운영 FAIL 2026-10-10)
+  assert.deepEqual(await fsrs(db), beforeFsrs);
   const afterCap = await capability(db);
   assert.equal(afterCap.template, beforeCap.template);
   assert.notEqual(afterCap.published, beforeCap.published);
@@ -112,6 +129,8 @@ await check('적용: 두 함수 본문은 언어 목록 한 줄만, capability R
   assert.deepEqual(await capability(db), afterCap);
   assert.deepEqual(await attrs(db), beforeAttrs);
   assert.deepEqual(await korean(db), READY);
+  assert.deepEqual(await pins(db), PINNED);
+  assert.deepEqual(await fsrs(db), beforeFsrs);
   await db.close();
 });
 
@@ -210,6 +229,8 @@ await check('복원: 원래 본문 해시로 돌아가고, 이미 만든 한국�
   await db.exec(rollback);
   assert.deepEqual(await md5s(db), BEFORE);
   assert.deepEqual(await korean(db), READY);
+  assert.deepEqual(await pins(db), PINNED);
+  await fsrs(db);
   assert.equal((await capability(db)).template, beforeCap.template);
   assert.deepEqual(await attrs(db), beforeAttrs);
   assert.deepEqual(await allMaterials(db), kept);
@@ -237,6 +258,17 @@ await check('진단 SQL: 적용 블록은 적용 파일과 바이트 동일, 두
   assert.equal(diagnosis.changed_keys.length, 1); // r2가 바꾸는 키는 트리거 함수 하나
   assert.deepEqual({ md5: await md5s(db), cap: await capability(db), attrs: await attrs(db), rows: await allMaterials(db) }, before);
   assert.deepEqual(await korean(db), READY);
+  assert.deepEqual(await pins(db), PINNED);
+  await db.close();
+});
+
+await check('FSRS 계약이 이미 어긋나 있으면(게시≠실측) 적용하지 않는다 — 전체 중단, 무변화', async () => {
+  const { db } = await fresh();
+  await db.exec("UPDATE fsrs_private.settings SET contract_hash = '00000000000000000000000000000000'");
+  const before = { md5: await md5s(db), cap: await capability(db), core: (await rows(db, 'SELECT contract_hash FROM fsrs_private.settings'))[0] };
+  await assert.rejects(db.exec(apply), /learning_admission_unavailable|korean_passage_fsrs_not_ready/);
+  await db.exec('ROLLBACK');
+  assert.deepEqual({ md5: await md5s(db), cap: await capability(db), core: (await rows(db, 'SELECT contract_hash FROM fsrs_private.settings'))[0] }, before);
   await db.close();
 });
 
