@@ -488,6 +488,10 @@ test('AE-R2 ②: guests get no prefetch request',{timeout:180000},async()=>{
 // 순서: 원문 줄(누른 단어만 칠, 120자 자르기 없음) → 번역(진행 표시는 이 칸에만) → [더 쉽게][자세히] → 문형 → 단어별 뜻.
 // 단어별 뜻은 자료 토큰에서(요청 0·만남 0). 게스트는 캐시·교재 맵이 없으면 AI 대신 로그인 안내. 「AI」 표시 0.
 const sentenceBox=(f,sel)=>leftPanel(f).locator(sel).first().evaluate(el=>{const b=el.getBoundingClientRect();return {top:b.top,bottom:b.bottom,left:b.left,right:b.right};});
+// 번역 도착 직후 결과 칸이 다시 그려지는 순간에는 이전 제목 노드가 0×0으로 잡힐 수 있다(CI 2회 실측 10-09·10-10, 로컬 재현 0).
+// 위치 비교 대상은 「화면에 보이는」 제목이므로 보일 때까지 기다린 뒤 잰다 — 계약(위쪽이 움직이지 않음)은 그대로.
+const visibleSentenceBox=async(f,sel)=>{const el=leftPanel(f).locator(sel).filter({visible:true}).first();await el.waitFor({state:'visible',timeout:5000});
+ return el.evaluate(n=>{const b=n.getBoundingClientRect();return {top:b.top,bottom:b.bottom,left:b.left,right:b.right};});};
 const glossTexts=f=>leftPanel(f).locator('.reader-sentence__glosses li').allInnerTexts();
 
 test('AE-R2 ③: [문장] tab reads original (tapped word marked) → translation → [더 쉽게][자세히] → 문형 → 단어별 뜻, no AI label',{timeout:240000},async()=>{
@@ -535,7 +539,7 @@ test('AE-R2 ③: before the translation arrives only its slot shows 「번역 �
   const before={original:await sentenceBox(f,'.pdf-context__original'),head:await sentenceBox(f,'.reader-sentence__translation .pdf-detail-heading')};
   await leftPanel(f).getByText('문장 번역 표지 1').first().waitFor();
   assert.equal(await leftPanel(f).getByText('번역 중…',{exact:true}).count(),0);
-  const after={original:await sentenceBox(f,'.pdf-context__original'),head:await sentenceBox(f,'.reader-sentence__translation .pdf-detail-heading')};
+  const after={original:await sentenceBox(f,'.pdf-context__original'),head:await visibleSentenceBox(f,'.reader-sentence__translation .pdf-detail-heading')};
   assert.ok(Math.abs(before.original.top-after.original.top)<.5&&Math.abs(before.head.top-after.head.top)<.5,`original and translation head stay put: ${JSON.stringify({before,after})}`);
   // 다른 줄 단어의 [문장] 탭 = 그 줄. 앞 문장 번역이 남지 않는다(설계서 §1.2·§6.2).
   await token(f,2,3).click();await cardOpen(f,2,3);
