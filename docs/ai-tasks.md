@@ -917,8 +917,13 @@
   - 상수 꺼진 채 운영: AD-R4 `ZH_SENSE_REVIEW`(#1372) · `ZH_BOUNDARY_REVIEW`(#1384) — 운영 동작 동일(바이트 스냅숏).
   - **오너 결정(10-09 「전부 권장대로」)** 반영:
     ① Anki 내보내기 파일 이름만 manabi(태그 `anatomy-studio` 유지) → #1390 ·
-    ② 한국어 구간 학습 DB → **#1393**(`docs/sql/korean-source-passage.sql` 적용·복원 SQL + PGlite 6검사, `supabase/migrations` 밖 — 병합해도 운영 db push 없음;
-       순서 #1392 병합 ✓ → 운영 SQL 적용·md5 확인([M09 배정](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6077460480)) → #1393 병합) ·
+    ② 한국어 구간 학습(KO-PASSAGE-001) → **#1393 병합 `2185f939`**(검증 head `012a13d4`, 운영 배포 green) — 운영 SQL **r3 적용 PASS**:
+       capability 상수 `1c25422c…` 재게시 + FSRS core `a027567f…` 연쇄 재게시, manual·admission·profile 핀 불변.
+       장애 2건 기록: r1(10-09 17:50~22:10, capability 지문 tripwire 미인지 — 복원) · r2 재적용(10-10 11:22~11:26, core가 capability 정의를 해시 — 복원).
+       재발 방지 = #1399 운영 계약 픽스처(`supabase/tests/fixtures/m09-learning-contracts-20261010.sql`, #1393에 동봉 병합) 위 PGlite 10검사 + CI 카탈로그 검사,
+       규칙 = `docs/architecture-and-handoff.md` §4.9-1. 사후 검수 PASS — 남은 것 `/api/learning/capabilities` HTTP 200 직접 확인(M09 Mac 잠금 해제 후).
+       후속 **#1402**(분석 완료 뒤 원본 구간 목록 캐시 무효화 — 「이어서 준비하기」 잔류) Preview 검수 대기 ·
+       e2e AE-R2 ③ 플레이크 #1400 `453ad0f2` · #1401 `e25d097d` 병합 ·
     ③ 한국어 어절 B안 → **#1396** 병합 ·
     ④ 공유 사전 **ⓒ**(소유자 교정은 자기 자료·단어장만, 공유 사전은 관리자만) → **#1394** 병합 ·
     ⑤ #1376 번역 light 유지 · ⑥ 화면 세부 #1374·#1378·#1380·#1382·#1383·#1384 현행 유지.
