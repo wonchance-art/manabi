@@ -9,7 +9,7 @@ import { LEARNING_LANGUAGES } from '../learningSources';
 import { COMPOSER_LANGUAGES, composerRow, createComposerSave, newComposerDraft, studyLanguages,
   guessStudyLanguage, guessedLanguagePatch, composerStudyState, shouldReadComposerOriginal } from '../materialComposer';
 import { documentOf, openDocumentStudy, openStudyOrOriginal } from '../materialDocument';
-import { openSourcePassage, PASSAGE_LANGUAGES, passageLanguageChoices } from '../sourcePassage';
+import { openSourcePassage, PASSAGE_LANGUAGES, passageLanguageChoices, passageLanguageOptions } from '../sourcePassage';
 import { LEVELS } from '../constants';
 
 const owner = '00000000-0000-4000-8000-000000000321';
@@ -109,6 +109,10 @@ describe('KO-COMPOSER — 정본 언어 목록 재사용', () => {
     expect(passageLanguageChoices(studyLanguages(true))).toContain('Korean');
     expect(passageLanguageChoices(studyLanguages(false))).not.toContain('Korean');
     expect(passageLanguageChoices(studyLanguages(false))).toEqual(FOUR);
+    // 화면에 나가는 라벨 그대로 — 한국어는 「한국어」, 다섯 라벨이 서로 다르다(같은 이름 두 개 = 고를 수 없는 선택지).
+    const labels = passageLanguageOptions(studyLanguages(true)).map(option => option.label);
+    expect(labels).toEqual(['일본어', '중국어', '영어', '프랑스어', '한국어']);
+    expect(new Set(labels).size).toBe(labels.length);
   });
 });
 

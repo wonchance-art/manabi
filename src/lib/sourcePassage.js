@@ -1,4 +1,4 @@
-import { composerOf, COMPOSER_LANGUAGES } from './materialComposer';
+import { composerOf, COMPOSER_LANGUAGES, studyLanguageLabel } from './materialComposer';
 import { safeLibraryReturn } from './libraryReturn';
 
 export const PASSAGE_MAX_CHARS = 1500;
@@ -8,6 +8,8 @@ export const PASSAGE_MAX_CHARS = 1500;
 // 화면의 한국어 선택지는 계정 계약(useStudyLanguages)으로 한 번 더 거른다.
 export const PASSAGE_LANGUAGES = COMPOSER_LANGUAGES;
 export const passageLanguageChoices = studyChoices => PASSAGE_LANGUAGES.filter(language => studyChoices.includes(language));
+// 표시 이름은 작성 화면 칩과 같은 정본(studyLanguageLabel) — langNameKo는 Korean이 없어 「일본어」로 떨어진다(M09 Preview FAIL 10-10).
+export const passageLanguageOptions = studyChoices => passageLanguageChoices(studyChoices).map(value => ({ value, label: studyLanguageLabel(value) }));
 export const passageOf = material => composerOf(material)?.passage || null;
 export const codePointLength = text => Array.from(text || '').length;
 const cpSlice = (text, start, end) => Array.from(text).slice(start, end).join('');

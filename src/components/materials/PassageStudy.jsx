@@ -5,12 +5,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { documentOf } from '@/lib/materialDocument';
-import { langNameKo } from '@/lib/constants';
 import { safeLibraryReturn } from '@/lib/libraryReturn';
 import { requestPassageAnalysis } from '@/lib/passageAnalysis';
 import { useStudyLanguages } from '@/lib/useStudyLanguages';
 import { codePointLength, domSourceText, selectedSourceRange, quoteRange, passageBlocks, passageLocation,
-  PASSAGE_MAX_CHARS, PASSAGE_LANGUAGES, passageLanguageChoices, openSourcePassage, passageError } from '@/lib/sourcePassage';
+  PASSAGE_MAX_CHARS, PASSAGE_LANGUAGES, passageLanguageOptions, openSourcePassage, passageError } from '@/lib/sourcePassage';
 import './source-passage.css';
 
 // primary·children·openerLabel·idleText는 글만 있는 자료의 상단 입구(WRITE-STUDY-ENTRY-001)만 쓴다. 첨부 자료는 현행 그대로다.
@@ -24,7 +23,8 @@ export default function PassageStudy({ material, sources, preferredKey, primary 
   const [language, setLanguage] = useState(PASSAGE_LANGUAGES.includes(documentLanguage) ? documentLanguage : '');
   // 한국어는 작성 화면과 같은 계정 계약을 따른다(KO-PASSAGE-001) — 확인 중·미지원이면 선택지에서 빠지고 고른 값도 비운다.
   const { languages: studyChoices } = useStudyLanguages();
-  const passageLanguages = useMemo(() => passageLanguageChoices(studyChoices), [studyChoices]);
+  const passageOptions = useMemo(() => passageLanguageOptions(studyChoices), [studyChoices]);
+  const passageLanguages = useMemo(() => passageOptions.map(option => option.value), [passageOptions]);
   const chosen = passageLanguages.includes(language) ? language : '';
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
   const [shownBlocks, setShownBlocks] = useState(40);
@@ -124,7 +124,7 @@ export default function PassageStudy({ material, sources, preferredKey, primary 
         {!draft.sourceText.trim() && <p className="passage-warning" role="status">이 부분의 글자를 가져올 수 없어요. 공부할 문장을 직접 입력하면 이 위치와 함께 보관합니다.</p>}
         {(draft.editing || draft.manual) && <div className="passage-input"><label htmlFor="passage-study-text">학습할 내용</label><textarea id="passage-study-text" aria-describedby="passage-text-note" value={draft.text} disabled={busy} onChange={event => setDraft({ ...draft, text: event.target.value })} rows={6} /><small id="passage-text-note">{draft.manual ? '직접 입력한 내용 · 출처는 쪽·장까지 연결됩니다.' : '학습할 내용만 다듬습니다. 선택했던 원문도 함께 보관됩니다.'}</small></div>}
         {!draft.quote && !draft.manual && <button className="passage-manual" onClick={() => setDraft({ ...draft, manual: true, editing: true, text: '' })}>추출된 글이 어색한가요? 직접 입력</button>}
-        <div className="passage-settings"><div><label htmlFor="passage-language">학습 언어</label><select id="passage-language" value={chosen} disabled={busy} onChange={event => setLanguage(event.target.value)}><option value="">언어 선택</option>{passageLanguages.map(value => <option key={value} value={value}>{langNameKo(value)}</option>)}</select></div><span className={count > PASSAGE_MAX_CHARS ? 'passage-warning' : ''}>{count.toLocaleString()} / {PASSAGE_MAX_CHARS.toLocaleString()}자</span></div>
+        <div className="passage-settings"><div><label htmlFor="passage-language">학습 언어</label><select id="passage-language" value={chosen} disabled={busy} onChange={event => setLanguage(event.target.value)}><option value="">언어 선택</option>{passageOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></div><span className={count > PASSAGE_MAX_CHARS ? 'passage-warning' : ''}>{count.toLocaleString()} / {PASSAGE_MAX_CHARS.toLocaleString()}자</span></div>
         {count > PASSAGE_MAX_CHARS && <p role="alert" className="passage-warning">조금 더 짧게 골라 주세요. 선택한 내용을 임의로 잘라내지 않습니다.</p>}
         {originalTooLong && <p role="alert" className="passage-warning">원문 선택 범위가 너무 길어요. 원본에서 짧은 구간을 다시 선택하거나 직접 입력해 주세요.</p>}
         {error && <p role="alert" className="passage-warning">{error}</p>}
