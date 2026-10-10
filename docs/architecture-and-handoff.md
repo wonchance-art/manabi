@@ -137,6 +137,11 @@ kuromoji 상위 품사만 받아 보조동사·접미사 병합이 휴리스틱 
 규칙: 같은 트랜잭션에서 ⑴ 적용 전 지문 = 게시값 확인(어긋났으면 중단) ⑵ 변경 ⑶ capability RPC 본문의 그 질의로 재계산해 상수만 재게시.
 본보기 = `docs/sql/korean-source-passage.sql`. PGlite 검사에 「적용 후 Korean ready=true」를 반드시 넣는다
 (`supabase/tests/korean-source-passage.mjs`의 M09 관측 카탈로그 fixture 재사용).
+**철사는 한 겹이 아니다(2026-10-10 r2 재적용 FAIL로 실측):** `fsrs_private.contract_hash()`(FSRS core 계약)가 capability 함수의
+정의 전체를 지문에 넣는다 — capability 상수만 재게시해도 `fsrs_vocabulary_snapshot`이 55000 `learning_admission_unavailable`로
+막혔다(11:22~11:26 KST). FSRS core·admission SQL은 저장소에 없어(운영 전용) CI로 연쇄를 검증할 수 없다 →
+LEARN-CONTRACT-CATALOG-001(운영 정의 READ ONLY 추출 → fixture)이 끝나기 전에는 이 범위의 DB 변경을 운영에 적용하지 않는다.
+사후 게이트에 `/api/learning/capabilities`뿐 아니라 FSRS snapshot·저장·복습 경로를 넣는다.
 
 ### 4.9 ui 이벤트 규약 (행동 계측 — review_events 재사용, 마이그레이션 0)
 예보 탭·푸시 같은 **행동 계측**은 신규 테이블 없이 `review_events`에 `source:'ui'`로 적재한다 (헌법 3 — 신규 테이블 최후의 수단). 형태: `{source:'ui', item_key:'-', correct:true, detail:{qtype, ...}}`. `correct`는 NOT NULL이라 의미 없이 `true`로 채우고, **종류는 `detail.qtype`로 구분**한다(집계는 `detail->>'qtype'` 필터 — `admin_v3_metrics`). qtype 종류: `forecast_tap`(예보 카드 탭), `push_optin`(구독 동의), `push_sent`(발송), `push_open`(알림 클릭). **rung·FSRS 계산은 `source:'vocab'`만 보므로 ui 이벤트와 무간섭**(skillRung/fsrs 필터). **EWMA 다이얼은 필터가 없어 구멍이었다** — studyMaterials의 gradedEvents가 `ui`·`dict`를 제외하고 공급한다(2026-07 정정). 새 source 추가 시 이 세 필터(skillRung·fsrs·gradedEvents)를 모두 점검하라. 저용량(하루 수 건) 전제이며, **월 1만 건을 초과하면 분리 테이블로 승격**한다(레드팀 응답 §7). 적재는 `logReviewEvents`(reviewEvents.js) 재사용, 실패는 조용히 무시.
