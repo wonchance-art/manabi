@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { safeLibraryReturn } from '@/lib/libraryReturn';
-import { passageOf, passageLocation, samePassageSource, domPassageRange } from '@/lib/sourcePassage';
+import { passageOf, passageLocation, samePassageSource, domPassageRange, passageListKey } from '@/lib/sourcePassage';
 import { studyLanguageLabel } from '@/lib/materialComposer';
 
 export function PassageSourceFocus({ material, sources }) {
@@ -39,7 +39,7 @@ export function PassageSourceFocus({ material, sources }) {
 export default function PassageSources({ material }) {
   const params = useSearchParams();
   const query = useInfiniteQuery({
-    queryKey: ['passage-list', material.owner_id, String(material.id)], initialPageParam: 0,
+    queryKey: passageListKey(material.owner_id, material.id), initialPageParam: 0,
     queryFn: async ({ pageParam }) => {
       const { data, count, error } = await supabase.from('reading_materials')
         .select('id,title,raw_text,language:processed_json->metadata->language,passage:processed_json->metadata->composer->passage,status:processed_json->>status', { count: 'exact' })

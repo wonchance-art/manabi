@@ -9,7 +9,7 @@ import { safeLibraryReturn } from '@/lib/libraryReturn';
 import { requestPassageAnalysis } from '@/lib/passageAnalysis';
 import { useStudyLanguages } from '@/lib/useStudyLanguages';
 import { codePointLength, domSourceText, selectedSourceRange, quoteRange, passageBlocks, passageLocation,
-  PASSAGE_MAX_CHARS, PASSAGE_LANGUAGES, passageLanguageOptions, openSourcePassage, passageError } from '@/lib/sourcePassage';
+  PASSAGE_MAX_CHARS, PASSAGE_LANGUAGES, passageLanguageOptions, passageListKey, openSourcePassage, passageError } from '@/lib/sourcePassage';
 import './source-passage.css';
 
 // primary·children·openerLabel·idleText는 글만 있는 자료의 상단 입구(WRITE-STUDY-ENTRY-001)만 쓴다. 첨부 자료는 현행 그대로다.
@@ -84,7 +84,7 @@ export default function PassageStudy({ material, sources, preferredKey, primary 
       if (!alive.current) return;
       cache.setQueryData(['material', String(record.id)], record);
       await Promise.all([
-        cache.invalidateQueries({ queryKey: ['passage-list', material.owner_id, String(material.id)] }),
+        cache.invalidateQueries({ queryKey: passageListKey(material.owner_id, material.id) }),
         cache.invalidateQueries({ queryKey: ['personal-library', material.owner_id] }),
       ]);
       requestPassageAnalysis(material.owner_id, record.id);
