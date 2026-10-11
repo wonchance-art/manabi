@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../lib/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { toKoreanError } from '../lib/authErrors';
+import { toKoreanError, INVALID_CREDENTIALS_MESSAGE, EMAIL_NOT_CONFIRMED_MESSAGE } from '../lib/authErrors';
 import { supabase } from '../lib/supabase';
 import { authReturnPath } from '../lib/authRedirect';
 
@@ -22,7 +22,8 @@ function AuthForm() {
   const [newPw, setNewPw] = useState('');
   const [confirmNewPw, setConfirmNewPw] = useState('');
 
-  const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
+  const { signIn, signUp, signInWithGoogle, resetPassword, resendConfirmation } = useAuth();
+  const [resending, setResending] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   // 오픈 리다이렉트 차단: 앱 내부 절대경로만 허용한다(//evil.com·https://evil.com 등은 기본값으로).
@@ -31,10 +32,14 @@ function AuthForm() {
 
   useEffect(() => {
     if (searchParams.get('error') === 'auth_callback_failed') {
-      setError('로그인을 완료하지 못했어요. 다시 시도해 주세요.');
-    }
-    if (searchParams.get('error') === 'email_confirm_failed') {
-      setError('이메일 인증에 실패했습니다. 다시 회원가입을 시도해주세요.');
+      // 메일 링크(PKCE)는 요청한 브라우저에서만 교환된다. 다른 기기에서 열면 실패로 돌아오지만
+      // 가입 인증 자체는 이미 끝났을 수 있다 — 재설정 링크와 그 밖의 경우를 나눠 다음 행동을 알려 준다.
+      if (/^\/auth\?(?:.*&)?mode=reset(?:&|$)/.test(from)) {
+        setError('재설정 링크를 열지 못했어요. 링크를 요청한 브라우저에서 열거나, 재설정 링크를 다시 받아 주세요.');
+        setIsForgot(true);
+      } else {
+        setError('로그인을 완료하지 못했어요. 메일의 인증 링크를 다른 기기나 브라우저에서 열었다면 인증은 이미 끝났을 수 있으니 여기서 로그인해 보세요.');
+      }
     }
     if (searchParams.get('mode') === 'reset') {
       setIsReset(true);
@@ -79,6 +84,19 @@ function AuthForm() {
       }
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleResend() {
+    setResending(true);
+    try {
+      await resendConfirmation(email);
+      setError('');
+      setSuccess('인증 메일을 다시 보냈습니다. 받은 편지함과 스팸함을 확인해주세요.');
+    } catch (err) {
+      setError(toKoreanError(err?.message || String(err)) || '요청을 처리하지 못했습니다. 다시 시도해주세요.');
+    } finally {
+      setResending(false);
     }
   }
 
@@ -222,13 +240,31 @@ function AuthForm() {
 
           {error && error === 'ALREADY_REGISTERED' ? (
             <div className="auth-alert auth-alert--error" role="alert">
-              이미 가입된 이메일입니다.{' '}
+              이미 가입된 이메일입니다. 로그인하거나 Google로 계속하세요.{' '}
               <button
                 type="button"
                 onClick={() => { setIsLogin(true); setError(''); setSuccess(''); }}
                 className="auth-alert__link"
               >
                 로그인하러 가기 →
+              </button>
+            </div>
+          ) : error === INVALID_CREDENTIALS_MESSAGE && isLogin ? (
+            <div className="auth-alert auth-alert--error" role="alert">
+              {error}
+              <br />
+              Google로 가입하셨다면 위의 「Google로 계속하기」를 눌러 주세요.
+            </div>
+          ) : error === EMAIL_NOT_CONFIRMED_MESSAGE && isLogin ? (
+            <div className="auth-alert auth-alert--error" role="alert">
+              {error}{' '}
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={resending || !email}
+                className="auth-alert__link"
+              >
+                {resending ? '보내는 중...' : '인증 메일 다시 보내기'}
               </button>
             </div>
           ) : error ? (

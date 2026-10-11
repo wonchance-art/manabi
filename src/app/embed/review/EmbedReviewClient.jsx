@@ -200,6 +200,10 @@ function LoginPanel({ onNewTab }) {
       <p style={{ fontSize: '0.74rem', color: GBC.inkSoft, margin: 0, lineHeight: 1.5 }}>
         로그인하면 오늘 복습할 단어가 바로 떠요.
       </p>
+      {/* Google 로그인은 iframe에서 쓸 수 없다 — Google 가입자는 앱의 「비밀번호 만들기」로 이메일 로그인을 먼저 연다. */}
+      <p style={{ fontSize: '0.7rem', color: GBC.inkSoft, margin: 0, lineHeight: 1.5 }}>
+        Google로 가입했다면 manabi 「내 계정」에서 「비밀번호 만들기」를 먼저 해 주세요.
+      </p>
       <input
         type="email" inputMode="email" autoComplete="email" placeholder="이메일"
         value={email} onChange={(e) => setEmail(e.target.value)} required style={inputStyle}
