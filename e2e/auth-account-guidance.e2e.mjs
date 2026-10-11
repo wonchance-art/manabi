@@ -7,6 +7,7 @@
 //  B 비밀번호 불일치 — Google 가입자를 위한 「Google로 계속하기」 안내가 함께 나온다.
 //  C 이메일 미인증 — 「인증 메일 다시 보내기」가 /auth/v1/resend(type=signup)를 부르고 결과를 알린다.
 //  D 메일 링크 교환 실패 — 일반 링크와 재설정 링크가 각각 다음 행동을 알려 준다.
+//  R 온보딩 전 계정이 재설정 링크로 /auth?mode=reset에 오면 새 비밀번호 칸이 가려지지 않는다(M09 실검수 FAIL 재현).
 import assert from 'node:assert/strict';
 import { before, after, test } from 'node:test';
 import { chromium } from 'playwright-core';
@@ -126,4 +127,45 @@ test('D 메일 링크 교환 실패는 일반 링크와 재설정 링크의 다�
   await reset.page.getByRole('button', { name: '재설정 링크 보내기' }).waitFor();
   assert.deepEqual([...general.errors, ...reset.errors], []);
   await reset.context.close();
+});
+
+test('R 온보딩 전 계정도 재설정 화면의 새 비밀번호 칸을 쓸 수 있다', async () => {
+  const context = await browser.newContext({ baseURL: base, viewport: { width: 390, height: 844 }, serviceWorkers: 'block', reducedMotion: 'reduce' });
+  const now = Math.floor(Date.now() / 1000), enc = value => Buffer.from(JSON.stringify(value)).toString('base64url');
+  const user = { id: '00000000-0000-4000-8000-0000000000c1', aud: 'authenticated', role: 'authenticated', email: 'new-reset@example.com',
+    email_confirmed_at: new Date().toISOString(), app_metadata: { provider: 'email', providers: ['email'] }, user_metadata: {}, identities: [{ provider: 'email' }] };
+  const session = { access_token: [enc({ alg: 'HS256', typ: 'JWT' }), enc({ sub: user.id, aud: 'authenticated', role: 'authenticated', iat: now, exp: now + 3600 }), 'fixture'].join('.'),
+    refresh_token: 'fixture', expires_in: 3600, expires_at: now + 3600, token_type: 'bearer', user };
+  const errors = [];
+  await context.addCookies([{ name: 'sb-e2e-auth-token', value: 'base64-' + Buffer.from(JSON.stringify(session)).toString('base64url'), url: base, sameSite: 'Lax' }]);
+  await context.route('**/*', route => {
+    const request = route.request(), url = new URL(request.url());
+    if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
+    if (url.pathname.startsWith('/auth/v1/')) return route.fulfill({ headers: cors, json: url.pathname.endsWith('/user') ? user : session });
+    if (url.pathname.startsWith('/rest/v1/')) {
+      const profile = { id: user.id, role: 'learner', onboarded: false, display_name: '새 학습자', last_login_at: new Date().toISOString() };
+      return route.fulfill({ headers: cors, json: url.pathname.endsWith('/profiles') ? profile : [] });
+    }
+    if (url.origin === base && url.pathname.startsWith('/api/')) return route.fulfill({ json: {} });
+    if (url.origin === base) return route.continue({ headers: { ...request.headers(), cookie: '' } });
+    return route.abort();
+  });
+  const page = await context.newPage();
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/auth?mode=reset');
+  await page.getByRole('heading', { name: '새 비밀번호 설정', exact: true }).waitFor();
+  // 로그인·프로필 조회가 끝난 뒤(온보딩이 떴다면 떴을 시점)까지 기다린 다음 실제 최상위 요소를 잰다.
+  await page.waitForResponse(response => new URL(response.url()).pathname.endsWith('/rest/v1/profiles')).catch(() => {});
+  await page.waitForTimeout(500);
+  assert.equal(await page.locator('.onboarding-overlay').count(), 0);
+  const field = page.getByLabel('새 비밀번호', { exact: true });
+  const covered = await field.evaluate(input => {
+    const box = input.getBoundingClientRect();
+    const top = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+    return top !== input && !input.contains(top);
+  });
+  assert.equal(covered, false);
+  await field.fill('fixture-password-24');
+  assert.deepEqual(errors, []);
+  await context.close();
 });
