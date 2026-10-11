@@ -17,7 +17,17 @@ export function unwrapAccountExportResults(results) {
   return Object.fromEntries(EXPORT_KEYS.map((key, index) => [key, results[index]?.data ?? null]));
 }
 
+// 이메일·비밀번호로 로그인할 수 있는 계정인지 — Google로만 가입한 계정은 확인할 현재 비밀번호가 없다.
+export function hasPasswordLogin(user) {
+  if (Array.isArray(user?.identities) && user.identities.length > 0) {
+    return user.identities.some(identity => identity?.provider === 'email');
+  }
+  const providers = user?.app_metadata?.providers;
+  return Array.isArray(providers) ? providers.includes('email') : user?.app_metadata?.provider === 'email';
+}
+
 export default function AccountSettings({ user, toast, signOut }) {
+  const passwordLogin = hasPasswordLogin(user);
   const [pwMode, setPwMode] = useState(false);
   const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
@@ -69,12 +79,13 @@ export default function AccountSettings({ user, toast, signOut }) {
     e.preventDefault();
     if (newPw.length < 8) { toast('새 비밀번호는 8자 이상이어야 해요', 'warning'); return; }
     if (newPw !== confirmPw) { toast('새 비밀번호 확인이 일치하지 않아요', 'warning'); return; }
+    // 잠금 풀린 기기를 남이 만져도 비밀번호를 바꿔 계정을 가져가지 못하게, 이메일 계정은 현재 비밀번호를 반드시 확인한다.
+    if (passwordLogin && !currentPw) { toast('현재 비밀번호를 입력해 주세요', 'warning'); return; }
 
     setSubmitting(true);
     try {
-      // Supabase는 현재 비밀번호 재확인이 기본으론 없음 — 재로그인 없이 updateUser 가능
-      // 그래도 UX 상 현재 비번 확인 (signInWithPassword 재시도)
-      if (currentPw) {
+      // Supabase updateUser는 현재 비밀번호를 묻지 않는다 — 같은 계정으로 다시 로그인해 확인한다.
+      if (passwordLogin) {
         const { error: reauthErr } = await supabase.auth.signInWithPassword({
           email: user.email,
           password: currentPw,
@@ -87,7 +98,7 @@ export default function AccountSettings({ user, toast, signOut }) {
       }
       const { error } = await supabase.auth.updateUser({ password: newPw });
       if (error) throw error;
-      toast('비밀번호가 변경됐어요', 'success');
+      toast(passwordLogin ? '비밀번호가 변경됐어요' : '비밀번호를 만들었어요. 이제 이메일로도 로그인할 수 있어요', 'success');
       setPwMode(false);
       setCurrentPw(''); setNewPw(''); setConfirmPw('');
     } catch (err) {
@@ -167,7 +178,7 @@ export default function AccountSettings({ user, toast, signOut }) {
         {!pwMode ? (
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <Button size="sm" variant="secondary" onClick={() => setPwMode(true)}>
-              비밀번호 변경
+              {passwordLogin ? '비밀번호 변경' : '비밀번호 만들기'}
             </Button>
             <Button size="sm" variant="ghost" onClick={handleExportMyData} disabled={!!exportMsg}>
               내 데이터 내보내기
@@ -178,14 +189,22 @@ export default function AccountSettings({ user, toast, signOut }) {
           </div>
         ) : (
           <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <input
-              type="password"
-              placeholder="현재 비밀번호 (확인용, 선택)"
-              value={currentPw}
-              onChange={e => setCurrentPw(e.target.value)}
-              className="form-input"
-              autoComplete="current-password"
-            />
+            {passwordLogin ? (
+              <input
+                type="password"
+                placeholder="현재 비밀번호"
+                aria-label="현재 비밀번호"
+                value={currentPw}
+                onChange={e => setCurrentPw(e.target.value)}
+                className="form-input"
+                autoComplete="current-password"
+                required
+              />
+            ) : (
+              <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                Google로 가입한 계정이에요. 비밀번호를 만들면 이메일로도 로그인할 수 있어요.
+              </p>
+            )}
             <input
               type="password"
               placeholder="새 비밀번호 (8자 이상)"
@@ -207,7 +226,7 @@ export default function AccountSettings({ user, toast, signOut }) {
             />
             <div style={{ display: 'flex', gap: 6 }}>
               <Button type="submit" size="sm" disabled={submitting}>
-                {submitting ? '변경 중...' : '변경'}
+                {submitting ? '저장 중...' : passwordLogin ? '변경' : '만들기'}
               </Button>
               <Button
                 type="button" size="sm" variant="ghost"
