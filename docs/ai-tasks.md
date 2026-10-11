@@ -922,7 +922,8 @@
        장애 2건 기록: r1(10-09 17:50~22:10, capability 지문 tripwire 미인지 — 복원) · r2 재적용(10-10 11:22~11:26, core가 capability 정의를 해시 — 복원).
        재발 방지 = #1399 운영 계약 픽스처(`supabase/tests/fixtures/m09-learning-contracts-20261010.sql`, #1393에 동봉 병합) 위 PGlite 10검사 + CI 카탈로그 검사,
        규칙 = `docs/architecture-and-handoff.md` §4.9-1. 사후 검수 PASS — 남은 것 `/api/learning/capabilities` HTTP 200 직접 확인(M09 Mac 잠금 해제 후).
-       후속 **#1402**(분석 완료 뒤 원본 구간 목록 캐시 무효화 — 「이어서 준비하기」 잔류) Preview 검수 대기 ·
+       후속 **#1402 병합 `25305204`**(KO-PASSAGE-002 — 분석 완료 뒤 원본 구간 목록 캐시 무효화) — M09 Preview 실계정 일·한 PASS,
+       운영 반영 확인(10-10 23:01 KST). Preview 첫 빌드 next/font 실패 → 빌드 1회 자동 재시도(BUILD-FONT-RETRY-001) ·
        e2e AE-R2 ③ 플레이크 #1400 `453ad0f2` · #1401 `e25d097d` 병합 ·
     ③ 한국어 어절 B안 → **#1396** 병합 ·
     ④ 공유 사전 **ⓒ**(소유자 교정은 자기 자료·단어장만, 공유 사전은 관리자만) → **#1394** 병합 ·
