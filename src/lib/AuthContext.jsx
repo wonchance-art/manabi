@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { getSupabase, supabase } from '../lib/supabase';
 import { hasSupabaseSessionCookie } from './authCookie';
 import { authCallbackUrl } from './authRedirect';
+import { isRepeatedSignup } from './authErrors';
 import { migrateGuestDrillQueue } from './drillSrs';
 import { useToast } from './ToastContext';
 import { pullProgress } from './refProgress';
@@ -252,8 +253,20 @@ export function AuthProvider({ children }) {
       },
     });
     if (error) throw error;
+    // 이미 가입된 이메일(Google 가입 포함)은 성공처럼 돌아오고 메일도 가지 않는다 — 화면이 알아보도록 오류로 바꾼다.
+    if (isRepeatedSignup(data)) throw new Error('User already registered');
     await acceptExplicitLogin(data, request, generation);
     return data;
+  }
+
+  // 가입 인증 메일 다시 보내기 — 없는 주소·이미 인증된 주소도 Supabase는 같은 성공으로 답한다.
+  async function resendConfirmation(email) {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: authCallbackUrl(window.location.origin) },
+    });
+    if (error) throw error;
   }
 
   // 이메일 로그인
@@ -307,6 +320,7 @@ export function AuthProvider({ children }) {
     signInWithGoogle,
     signOut,
     resetPassword,
+    resendConfirmation,
     fetchProfile,
     refreshProfileReadOnly
   };
