@@ -1,6 +1,69 @@
 import { callGemini, parseGeminiJSON, buildTokenizationPrompt } from './gemini';
 import { canonizeTokenPos } from './server/posCanon';
-import { boundaryParagraphRequest, readBoundaryEdits, settleBoundaryRecord } from './boundaryEdits';
+import { boundaryParagraphRequest, compactBoundaryText, readBoundaryEdits, settleBoundaryRecord } from './boundaryEdits';
+import { locateLineTokens, splitSentenceRanges } from './viewerSentenceLine';
+
+// /api/analyze 입력 캡 미러 — route.js의 MAX_LINES·MAX_LINE_LEN과 같은 값(analyzeLongLines.test.js가 핀).
+// 서버는 캡을 넘은 줄에 truncated 표식을 단다. 자료 분석은 캡 안으로 나눠 보내 표식이 오지 않게 한다.
+export const ANALYZE_MAX_LINES = 100;
+export const ANALYZE_MAX_LINE_LEN = 200;
+const CLAUSE_END = /[、，,;；:：]/u;
+const SPACE = /\s/u;
+
+/**
+ * 서버 줄 캡을 넘는 줄(중·일·영)을 요청 조각 [{start, end}](UTF-16, end 제외)로 나눈다. 캡 안이면 줄 전체 한 조각.
+ * 칼선 우선순위: 문장 끝(splitSentenceRanges — 문장을 캡 안에서 최대한 묶는다) → 공백 → 、，,;: 뒤 → 캡 자리.
+ * canCut(p)가 false인 자리(단어 경계 기록 구간 안)는 자르지 않는다. 조각 양 끝 공백은 뺀다(공백은 토큰이 아니다).
+ */
+export function splitAnalysisLine(line, { language, maxLen = ANALYZE_MAX_LINE_LEN, canCut = () => true } = {}) {
+  const text = String(line ?? '');
+  if (text.length <= maxLen) return [{ start: 0, end: text.length }];
+  const sentenceEnds = new Set(splitSentenceRanges(text, { language }).map((range) => range.end));
+  const tests = [(p) => sentenceEnds.has(p), (p) => SPACE.test(text[p]), (p) => CLAUSE_END.test(text[p - 1]), () => true];
+  const segments = [];
+  let start = 0;
+  for (;;) {
+    while (start < text.length && SPACE.test(text[start])) start += 1;
+    if (start >= text.length) break;
+    let end = text.length;
+    if (end - start > maxLen) {
+      const limit = start + maxLen;
+      const cutAt = (test) => {
+        for (let p = limit; p > start; p -= 1) {
+          const code = text.charCodeAt(p);
+          if (code >= 0xDC00 && code <= 0xDFFF) continue; // 서로게이트 쌍 안쪽은 자르지 않는다
+          if (test(p) && canCut(p)) return p;
+        }
+        return -1;
+      };
+      end = tests.reduce((found, test) => (found > 0 ? found : cutAt(test)), -1);
+      if (end < 0) end = limit; // 모든 자리가 기록 구간 안(기록은 40자 이하라 실제로는 없다) — 그 기록은 pending이 된다
+    }
+    let trimmed = end;
+    while (trimmed > start && SPACE.test(text[trimmed - 1])) trimmed -= 1;
+    segments.push({ start, end: trimmed });
+    start = end;
+  }
+  return segments.length ? segments : [{ start: 0, end: text.length }];
+}
+
+/**
+ * 분석 토큰이 줄 전체를 덮는가 — 잘리거나 어긋난 줄을 '완료'로 저장하지 않는다(커버리지 정본 inspectAnalysisCoverage 쪽 판정).
+ * 토큰은 줄 안에 순서대로 있어야 하고, 토큰 사이·뒤 빈틈은 일·중이면 공백뿐, 영어면 영숫자가 없어야 한다
+ * (영어 토크나이저는 공백과 — ’ % 같은 기호를 토큰으로 내지 않는다 — 그 빈틈까지 실패로 보면 정상 줄이 깨진다).
+ */
+function tokensCoverLine(line, texts, language) {
+  const spots = locateLineTokens(line, texts);
+  if (spots.some((spot, k) => !spot && texts[k] && texts[k] !== '\n')) return false;
+  const gapOk = (gap) => (language === 'English' ? !/[A-Za-z0-9]/.test(gap) : !gap.trim());
+  let cursor = 0;
+  for (const spot of spots) {
+    if (!spot) continue;
+    if (!gapOk(line.slice(cursor, spot.start))) return false;
+    cursor = spot.end;
+  }
+  return gapOk(line.slice(cursor));
+}
 
 /**
  * 텍스트를 형태소 분석해 processed_json 구조를 생성합니다.
@@ -169,54 +232,102 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
       continue;
     }
 
-    // 서버로 문단 전송
+    // 서버로 문단 전송 — 서버 줄 캡(ANALYZE_MAX_LINE_LEN)을 넘는 중·일·영 줄은 문장 단위 조각으로 나눠 보내고 결과를
+    // 원래 줄로 잇는다(id_<줄>_<순번>은 줄 안에서 이어 매긴다 — 보통 분석한 줄과 같은 모양). 요청은 ANALYZE_MAX_LINES 조각씩.
+    // 경계 기록은 그 구간이 든 조각에 조각 좌표로 싣고, 칼선은 기록 구간 안에 두지 않는다. 한국어는 나누지 않는다(현행).
+    // 조각을 나누지 않은 문단(100줄 이하 · 줄마다 캡 안)의 요청 본문은 현행과 바이트 단위로 같다.
     const sentBoundaries = boundaryEdits.length ? boundaryParagraphRequest(boundaryEdits, para.lineIndices) : [];
-    let response = null;
-    try {
-      const res = await fetch(isKorean ? '/api/analyze/korean' : '/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeader },
-        signal,
-        body: JSON.stringify({ lines: para.lines, language, ...(isKorean ? { explanationLocale } : {}),
-          ...(sentBoundaries.length ? { boundaries: sentBoundaries.map(item => item.payload) } : {}) }),
+    const units = []; // 요청 한 줄 = {text, offset(조각 앞 공백 뺀 글자 수), sent(이 조각에 실은 기록, 기록 목록 순서)}
+    const homeOf = new Map(); // 기록 항목 → 실은 조각
+    const lineUnits = para.lines.map((text, li) => {
+      const records = sentBoundaries.filter(item => item.payload.line === li);
+      const at = p => compactBoundaryText(text.slice(0, p)).length;
+      const ranges = isKorean ? [{ start: 0, end: text.length }] : splitAnalysisLine(text, { language,
+        canCut: p => !records.some(({ payload }) => payload.start < at(p) && at(p) < payload.end) });
+      const own = ranges.map(range => ({ text: text.slice(range.start, range.end), offset: at(range.start), sent: [] }));
+      units.push(...own);
+      for (const item of records) {
+        const { start, end } = item.payload;
+        // 한 조각이면 지금처럼 그 줄 기록을 모두 싣는다(옮김·pending은 서버가 정한다). 여러 조각이면 구간이 든 조각에만.
+        const home = own.length === 1 ? own[0] : own.find(unit => Number.isInteger(start) && Number.isInteger(end)
+          && start >= unit.offset && end <= unit.offset + compactBoundaryText(unit.text).length);
+        if (home) { home.sent.push(item); homeOf.set(item, home); }
+      }
+      return own;
+    });
+    const unitResults = new Map();
+    for (let from = 0; from < units.length; from += ANALYZE_MAX_LINES) {
+      const chunk = units.slice(from, from + ANALYZE_MAX_LINES);
+      const boundariesBody = sentBoundaries.filter(item => chunk.includes(homeOf.get(item))).map(item => {
+        const unit = homeOf.get(item), line = chunk.indexOf(unit), { payload } = item;
+        return unit.offset ? { ...payload, line, start: payload.start - unit.offset, end: payload.end - unit.offset,
+          cuts: Array.isArray(payload.cuts) ? payload.cuts.map(cut => cut - unit.offset) : payload.cuts } : { ...payload, line };
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
-      if (isKorean && (data?.metadata?.language !== language || data?.metadata?.explanationLocale !== explanationLocale ||
-          data?.metadata?.analysisVersion !== 'ko-llm-v1')) throw new Error('analysis_metadata_mismatch');
-      response = data;
-    } catch (e) {
-      if (signal?.aborted) throw e;
-      console.error('[analyzeHybrid] paragraph failed:', e?.message);
+      let response = null;
+      try {
+        const res = await fetch(isKorean ? '/api/analyze/korean' : '/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeader },
+          signal,
+          body: JSON.stringify({ lines: chunk.map(unit => unit.text), language, ...(isKorean ? { explanationLocale } : {}),
+            ...(boundariesBody.length ? { boundaries: boundariesBody } : {}) }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+        if (isKorean && (data?.metadata?.language !== language || data?.metadata?.explanationLocale !== explanationLocale ||
+            data?.metadata?.analysisVersion !== 'ko-llm-v1')) throw new Error('analysis_metadata_mismatch');
+        response = data;
+      } catch (e) {
+        if (signal?.aborted) throw e;
+        console.error('[analyzeHybrid] paragraph failed:', e?.message);
+      }
+      chunk.forEach((unit, k) => unitResults.set(unit, response?.results?.[k] ?? null));
     }
 
     // 문단 결과 조립
     for (let li = 0; li < para.lineIndices.length; li++) {
       const idx = para.lineIndices[li];
-      const result = response?.results?.[li];
+      const results = lineUnits[li].map(unit => unitResults.get(unit));
+      const result = results[0];
 
-      const validKoreanLine = !isKorean || (Array.isArray(result?.sequence) && result?.dictionary &&
-        result.sequence.map((id) => result.dictionary[id]?.text ?? '').join('') === lines[idx]);
-      if (result && validKoreanLine) {
-        const newSeq = result.sequence.map((_, pi) => `id_${idx}_${pi}_${timestamp}`);
-        result.sequence.forEach((srvId, pi) => {
-          currentJson.sequence.push(newSeq[pi]);
-          const token = result.dictionary[srvId];
-          currentJson.dictionary[newSeq[pi]] = isKorean ? { ...token,
-            ...(token.sourceSpan ? { sourceSpan: { ...token.sourceSpan, lineIndex: idx,
-              start: lineOffsets[idx] + token.sourceSpan.start, end: lineOffsets[idx] + token.sourceSpan.end,
-              lineStart: token.sourceSpan.start, lineEnd: token.sourceSpan.end } } : {}),
-            ...(token.selectionGroup ? { selectionGroup: `ko_${idx}_${token.sourceSpan?.start}_${token.sourceSpan?.end}` } : {}),
-            ...(token.failed ? { original_line_idx: idx } : {}),
-          } : token;
-        });
+      // 한국어: 토큰을 이으면 원문 줄과 같아야 한다(현행). 중·일·영: 조각이 하나라도 없거나 잘렸거나(truncated)
+      // 줄을 다 덮지 못하면 실패(복구 가능)로 남긴다 — 뒷부분이 사라진 줄을 조용히 '완료'로 저장하지 않는다.
+      const validLine = isKorean
+        ? !!result && Array.isArray(result.sequence) && !!result.dictionary &&
+          result.sequence.map((id) => result.dictionary[id]?.text ?? '').join('') === lines[idx]
+        : results.every(item => item && Array.isArray(item.sequence) && item.dictionary && !item.truncated) &&
+          tokensCoverLine(para.lines[li], results.flatMap(item => item.sequence.map(id => item.dictionary[id]?.text ?? '')), language);
+      if (validLine) {
+        let pi = 0;
+        for (const item of results) {
+          for (const srvId of item.sequence) {
+            const newId = `id_${idx}_${pi++}_${timestamp}`;
+            currentJson.sequence.push(newId);
+            const token = item.dictionary[srvId];
+            currentJson.dictionary[newId] = isKorean ? { ...token,
+              ...(token.sourceSpan ? { sourceSpan: { ...token.sourceSpan, lineIndex: idx,
+                start: lineOffsets[idx] + token.sourceSpan.start, end: lineOffsets[idx] + token.sourceSpan.end,
+                lineStart: token.sourceSpan.start, lineEnd: token.sourceSpan.end } } : {}),
+              ...(token.selectionGroup ? { selectionGroup: `ko_${idx}_${token.sourceSpan?.start}_${token.sourceSpan?.end}` } : {}),
+              ...(token.failed ? { original_line_idx: idx } : {}),
+            } : token;
+          }
+        }
         if (isKorean && (result.failed || result.sequence.some((id) => result.dictionary[id]?.failed))) {
           currentJson.failed_indices.push(idx);
         }
-        // 경계 기록 갱신 — 서버가 줄마다 받은 순서대로 boundaryApplied를 돌려준다. base 새 id는 `id_<줄>_b<k>_<시각>`.
+        // 경계 기록 갱신 — 서버가 조각마다 받은 순서대로 boundaryApplied를 돌려준다. 좌표는 줄 좌표로 되돌린다.
+        // base 새 id는 `id_<줄>_b<k>_<시각>`. 실을 조각이 없던 기록은 조용히 버리지 않고 pending(settleBoundaryRecord).
         let baseSeq = 0;
-        sentBoundaries.filter(item => item.payload.line === li).forEach((item, k) => {
-          boundaryEdits[item.index] = settleBoundaryRecord(boundaryEdits[item.index], result.boundaryApplied?.[k],
+        sentBoundaries.filter(item => item.payload.line === li).forEach((item) => {
+          const unit = homeOf.get(item);
+          const applied = unit ? unitResults.get(unit)?.boundaryApplied?.[unit.sent.indexOf(item)] : undefined;
+          const shifted = unit?.offset && applied?.status === 'applied' && Number.isInteger(applied.start)
+            && Number.isInteger(applied.end) && Array.isArray(applied.cuts)
+            ? { ...applied, start: applied.start + unit.offset, end: applied.end + unit.offset,
+              cuts: applied.cuts.map(cut => cut + unit.offset) }
+            : applied;
+          boundaryEdits[item.index] = settleBoundaryRecord(boundaryEdits[item.index], shifted,
             () => `id_${idx}_b${baseSeq++}_${timestamp}`);
         });
       } else {
