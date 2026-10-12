@@ -1,8 +1,11 @@
 'use client';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {useAuth} from '@/lib/AuthContext';
-import {supabase} from '@/lib/supabase';
+import {getSupabase,supabase} from '@/lib/supabase';
 import {createOriginalPositionSession} from '@/lib/originalReadingPosition';
+
+// Wait for the client and its auth session before the position request's timeout starts.
+const ready=async()=>{const client=await getSupabase();await client.auth.getSession();};
 
 export default function useOriginalReadingPosition(material,sources,enabled=true){
  const {user}=useAuth();
@@ -12,7 +15,7 @@ export default function useOriginalReadingPosition(material,sources,enabled=true
  useEffect(()=>{
   if(!enabled||user?.id!==material.owner_id){setState({ready:!enabled,phase:'loading',records:[],local:{}});return;}
   let storage=null;try{storage=window.localStorage;}catch{/* Cloud sync still works without local storage. */}
-  const manager=createOriginalPositionSession({client:supabase,ownerId:user.id,materialId:material.id,sources:JSON.parse(signature),storage,onChange:setState});
+  const manager=createOriginalPositionSession({client:supabase,ownerId:user.id,materialId:material.id,sources:JSON.parse(signature),storage,onChange:setState,ready});
   session.current=manager;current.current=null;setState(manager.snapshot());void manager.refresh();
   const refresh=()=>{if(document.visibilityState==='visible')void manager.refresh();};
   const flush=()=>{if(document.visibilityState==='hidden')void manager.flush();else refresh();};

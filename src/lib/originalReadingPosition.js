@@ -40,10 +40,10 @@ function validRecord(value,owner,id){
 
 // One queue per original. A server revision spans its sources, so an offline PDF
 // cannot silently replace a more recent EPUB resume target. No device clock ordering.
-export function createOriginalPositionSession({client,ownerId,materialId,sources,storage,onChange=()=>{},onSaved=()=>{},uuid=()=>crypto.randomUUID(),delay=500,timeout=4000}){
+export function createOriginalPositionSession({client,ownerId,materialId,sources,storage,onChange=()=>{},onSaved=()=>{},uuid=()=>crypto.randomUUID(),delay=500,timeout=4000,ready:whenReady=()=>{},retryDelays=[1000,3000],online=()=>typeof navigator==='undefined'||navigator.onLine!==false,warn=message=>console.warn(message)}){
  const key=originalSyncKey(ownerId,materialId),allowed=new Set(sources.map(positionSourceKey)),writer=uuid();
  let records=[],head=null,local={},lastKey=null,pending=null,queued=null,ready=false,phase='loading',remote=null,localAvailable=!!storage;
- let timer=null,running=null,refreshing=null,closed=false,initialized=false,errorCode='';
+ let timer=null,running=null,refreshing=null,closed=false,initialized=false,errorCode='',backoff=null;
  const version=()=>head?.version||0;
  const report=()=>{if(!closed)onChange(snapshot());};
  const persist=(claim=false)=>{try{if(!storage)throw new Error('NO_STORAGE');const current=JSON.parse(storage.getItem(key)||'null');if(!claim&&current?.writer&&current.writer!==writer)return;storage.setItem(key,JSON.stringify({version:1,writer,records,head,local,lastKey,pending,queued}));localAvailable=true;}catch{localAvailable=false;}};
@@ -69,16 +69,26 @@ export function createOriginalPositionSession({client,ownerId,materialId,sources
   if(head)return allowed.has(head.source_key)?head:null;
   return records[0]||(lastKey&&local[lastKey])||null;
  }
+ // The timeout measures the request only. Loading the client and waiting for its auth
+ // session (lock or token refresh after a long review) must not abort the first read.
  async function request(name,args){
+  await whenReady();
   const abort=new AbortController();const timer=setTimeout(()=>abort.abort(),timeout);
   try{return await client.rpc(name,args).abortSignal(abort.signal);}finally{clearTimeout(timer);}
  }
- function failure(error){errorCode=error?.message||'';phase=/POSITION_SOURCE_CHANGED|POSITION_ACCESS/.test(errorCode)?'unavailable':'offline';persist();report();}
+ // 'offline' is only claimed when the browser says so; a failed read while online is 'failed'.
+ function failure(error,load=false){
+  errorCode=error?.message||error?.code||'';
+  phase=/POSITION_SOURCE_CHANGED|POSITION_ACCESS/.test(errorCode)?'unavailable':load&&online()?'failed':'offline';
+  warn(`[original-position] ${load?'read':'save'} failed: ${errorCode.slice(0,160)}`);
+  persist();report();
+ }
+ const wait=ms=>new Promise(resolve=>{backoff={resolve,timer:setTimeout(()=>{backoff=null;resolve();},ms)};});
  async function refresh(){
   if(closed)return;if(refreshing)return refreshing;
   refreshing=(async()=>{
    if(running)await running;
-   try{
+   for(let attempt=0;;attempt++)try{
     const {data,error}=await request('get_original_reading_positions',{p_owner:ownerId,p_material:String(materialId),p_keys:[...allowed]});
     if(closed)return;
     if(error)throw error;if(!Array.isArray(data?.records))throw new Error('POSITION_UNAVAILABLE');
@@ -96,7 +106,14 @@ export function createOriginalPositionSession({client,ownerId,materialId,sources
     }else{head=nextHead;remote=null;phase='synced';}
     ready=true;initialized=true;persist();report();
     if(phase!=='conflict'&&(pending||queued))await flush();
-   }catch(error){if(!closed){ready=true;initialized=true;failure(error);}}
+    return;
+   }catch(error){
+    if(closed)return;
+    // Transient read failures (timeout, expired token, a brief network drop) retry quietly;
+    // the phase stays as it was. POSITION_* answers are definite and are not retried.
+    if(!/POSITION_/.test(error?.message||'')&&attempt<retryDelays.length&&online()){await wait(retryDelays[attempt]);if(closed)return;continue;}
+    ready=true;initialized=true;failure(error,true);return;
+   }
   })();
   try{await refreshing;}finally{refreshing=null;}
  }
@@ -139,5 +156,5 @@ export function createOriginalPositionSession({client,ownerId,materialId,sources
   pending=null;queued=null;remote=null;phase='synced';record(point.source,point.locator);void flush();
  }
  return {snapshot,selected,refresh,record,flush,acceptRemote,keepCurrent,
-  dispose(){closed=true;clearTimeout(timer);void flush();}};
+  dispose(){closed=true;clearTimeout(timer);if(backoff){clearTimeout(backoff.timer);backoff.resolve();backoff=null;}void flush();}};
 }
