@@ -154,7 +154,10 @@ const wordA=()=>page.locator('[data-tid="id_0_2_audit"]'),wordB=()=>page.locator
 async function tap(loc){await loc.evaluate(e=>window.scrollBy(0,e.getBoundingClientRect().top-180));await loc.click();}
 async function fresh(width=1138,height=900,suffix=''){
  race=false;detailWait=0;analysisFail=false;reanalysis=false;japaneseFail=false;japaneseDelay=0;japaneseCalls=[];japaneseRows={爱惜:{meanings:[{meaning:'아끼다',ja:{form:'愛惜',warn:null}}]}};analysisMode='ok';readingInvalid=false;writeFail=false;records=structuredClone(baseline);known=[];vocab=[];contexts=[];reads=[];writes.length=0;
- await page.evaluate(()=>{for(const k of Object.keys(localStorage))if(k.startsWith('pdf_cache:')||k.startsWith('viewer_')||k.startsWith('reading_test'))localStorage.removeItem(k);}).catch(()=>{});
+ await page.evaluate(()=>{for(const k of Object.keys(localStorage))if(k.startsWith('pdf_cache:')||k.startsWith('viewer_')||k.startsWith('reading_test'))localStorage.removeItem(k);
+  // 이 검사는 세로 스크롤 동작(복원 감사·수동 scrollY·200% 글자 스크롤 보정)을 고정한다 — 기본이 쪽 넘김(READER-PAGED-001)이 된 뒤에도
+  // 스크롤 보기를 고른 사람으로 연다. 쪽 넘김 동작은 e2e/viewer-paged-reader.e2e.mjs가 본다.
+  localStorage.setItem('viewer_preferences_v2',JSON.stringify({version:2,common:{readerView:'scroll'},languages:{}}));}).catch(()=>{});
  await page.setViewportSize({width,height});await page.goto(base+'/viewer/94001'+suffix);await wordA().waitFor();await page.evaluate(()=>document.fonts.ready);
 }
 function pass(name){checks.push(name);console.log('PASS '+name);}

@@ -271,8 +271,10 @@ for(const [width,height] of [[390,844],[1280,900],[320,640]])test(`${width}px: A
 // ^/v로 화면 아래쪽 문장까지 내려가도 지정 문장이 막대에 가리지 않는다. 비공개 자료(댓글 없음)라
 // 「다 읽었다면」이 본문 맨 끝이다 — 가장 빠듯한 경우.
 const longZh=build(Array.from({length:24},(_,i)=>lines[i%lines.length]));
+// 스크롤 보기 — 막대가 떠 있는 동안 본문 끝까지 막대 위로 올라온다(아래 여백·scroll-padding). 기본이 쪽 넘김(READER-PAGED-001)이 된
+// 뒤에도 스크롤 보기를 고른 사람의 화면으로 그대로 고정한다. 쪽 넘김 보기의 같은 약속은 바로 아래 검사가 본다.
 for(const [width,height] of [[390,844],[1280,900]])test(`${width}px: the move bar never covers the end of the text or the designated sentence`,{timeout:240000},async()=>{
- const f=await open(width,height,undefined,{material:longZh,meta:{},visibility:'private'});
+ const f=await open(width,height,undefined,{material:longZh,meta:{},visibility:'private',common:{readerView:'scroll'}});
  try{
   await token(f,0,0).click();await bar(f).waitFor();
   const barTop=async()=>(await bar(f).boundingBox()).y;
@@ -302,6 +304,32 @@ for(const [width,height] of [[390,844],[1280,900]])test(`${width}px: the move ba
    const b=await sentenceBottom(),t=await barTop();
    assert.ok(b<=t,`back to line ${line}: ${b} <= ${t}`);
   }
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+// 쪽 넘김 보기(READER-PAGED-001) — 막대는 쪽 막대 자리(바닥 한 자리)에 앉아 쪽 상자를 덮지 않는다. ▼로 다른 쪽 문장에 가면
+// 그 쪽으로 넘어가고, 지정 문장은 언제나 쪽 상자 안(=막대 위)에 보인다.
+for(const [width,height] of [[390,844],[1280,900]])test(`${width}px paged: the move bar sits in the page bar slot and sentence moves turn to the sentence's page`,{timeout:240000},async()=>{
+ const f=await open(width,height,undefined,{material:longZh,meta:{},visibility:'private'});
+ try{
+  await token(f,0,0).click();await bar(f).waitFor();
+  const pages=f.page.locator('[data-reader-pages="paged"]');
+  const box=await pages.boundingBox(),top=(await bar(f).boundingBox()).y;
+  assert.ok(box.y+box.height<=top+1,`page box bottom ${box.y+box.height} <= bar top ${top}`);
+  assert.equal(await f.page.locator('.reader-pagebar').evaluate(el=>getComputedStyle(el).visibility),'hidden','the page bar yields its slot to the move bar');
+  const visible=()=>f.page.evaluate(()=>{const b=document.querySelector('[data-reader-pages="paged"]').getBoundingClientRect();return [...document.querySelectorAll('.word-token--picked')].every(el=>{const r=el.getBoundingClientRect();return r.left>=b.left-1&&r.right<=b.right+1&&r.top>=b.top-1&&r.bottom<=b.bottom+1;});});
+  const page=()=>f.page.locator('.reader-pagebar__pos').textContent().then(t=>+t.match(/^(\d+)/)[1]);
+  const down=bar(f).getByRole('button',{name:'아래 문장',exact:true});
+  let turned=false;
+  for(let line=1;line<24;line++){
+   const before=await page();
+   await down.click();await f.page.waitForTimeout(80);
+   assert.deepEqual(await pickedLines(f),[String(line)]);
+   assert.ok(await visible(),`line ${line}: the designated sentence is on the shown page`);
+   if(await page()>before)turned=true;
+  }
+  assert.ok(turned,'moving down the sentences turned at least one page');
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
 });
@@ -770,7 +798,7 @@ const bottomOverlaps=f=>f.page.evaluate(()=>{
  return {hits,inView:boxes.every(b=>b.left>=0&&b.right<=innerWidth+.5&&b.bottom<=innerHeight+.5)};
 });
 for(const [width,height] of [[390,844],[1280,900]])test(`${width}px: auto-advance shares one bottom slot with the move bar and disappears while a sheet is open`,{timeout:240000},async()=>{
- const f=await open(width,height,{focusMode:true,autoPace:true,paceCpm:30,autoSpeakOnClick:false});
+ const f=await open(width,height,{focusMode:true,autoPace:true,paceCpm:30,autoSpeakOnClick:false},{common:{readerView:'scroll'}}); // 자동 진행 = 스크롤 보기 전용(READER-PAGED-001 §4)
  try{
   // ⓐ 지정 없음 → 단독 버튼 하나(보이는 라벨 + 44px), 막대 없음
   const float=f.page.locator('.viewer-pace-float');
@@ -832,7 +860,7 @@ for(const [width,height] of [[390,844],[1280,900]])test(`${width}px: auto-advanc
 // 검수 보완 ① — 접힌 시트(문장 번역을 본 뒤 패널을 닫으면 내용이 남아 바닥에 머문다)에서도 자동 진행을 시작·정지할 수 있다.
 // main은 툴바 ▶가 늘 있었다. 1120 미만 = 남은 머리줄 안 ▶, 1120 이상 = 접힌 시트가 통째로 숨으므로 바닥 단독 버튼. 겹침 0 · 가림 0 · 키보드.
 for(const [width,height] of [[390,844],[1280,900]])test(`${width}px: auto-advance stays reachable while the sheet is collapsed`,{timeout:240000},async()=>{
- const f=await open(width,height,{focusMode:true,autoPace:true,paceCpm:30,autoSpeakOnClick:false});
+ const f=await open(width,height,{focusMode:true,autoPace:true,paceCpm:30,autoSpeakOnClick:false},{common:{readerView:'scroll'}}); // 자동 진행 = 스크롤 보기 전용(READER-PAGED-001 §4)
  try{
   await token(f,0,0).click();await bar(f).waitFor();
   await bar(f).getByRole('button',{name:'번역',exact:true}).click();
@@ -867,6 +895,26 @@ for(const [width,height] of [[390,844],[1280,900]])test(`${width}px: auto-advanc
   const top=await bottomTop();
   assert.ok(last<=top,`end of the page ${last} <= bottom control top ${top}`);
   assert.equal(await f.page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+// 쪽 넘김 보기(READER-PAGED-001 설계 §4 P0)에서는 자동 진행을 끈다 — 허용 설정이 켜져 있어도 바닥 버튼·막대 안 ▶가 없고,
+// Aa는 그 이유를 한 줄로 보인다. 저장값(autoPace)은 건드리지 않아 스크롤 보기로 돌아가면 그대로 쓸 수 있다.
+test('390px paged: auto-advance is off in the paged view and Aa says why',{timeout:180000},async()=>{
+ const f=await open(390,844,{focusMode:true,autoPace:true,paceCpm:30,autoSpeakOnClick:false});
+ try{
+  await f.page.locator('[data-reader-pages="paged"]').waitFor();
+  assert.equal(await f.page.locator('.viewer-pace-float').count(),0,'no floating auto-advance button');
+  await token(f,0,0).click();await bar(f).waitFor();
+  assert.equal(await bar(f).getByRole('button',{name:'자동 진행 시작',exact:true}).count(),0,'no auto-advance in the move bar');
+  await f.page.getByRole('button',{name:'Aa 읽기 설정',exact:true}).click();
+  await f.page.getByRole('tab',{name:'읽기 진행',exact:true}).click();
+  await f.page.locator('details.reader-settings__more > summary').click();
+  const toggle=f.page.getByRole('checkbox',{name:'자동 진행 허용',exact:true});
+  assert.equal(await toggle.isDisabled(),true);
+  await f.page.getByText('쪽 넘김 보기에서는 자동 진행을 쓰지 않아요. 스크롤 보기에서 쓸 수 있어요.',{exact:true}).waitFor();
+  assert.equal(await f.page.evaluate(()=>JSON.parse(localStorage.getItem('viewer_preferences_v2')).languages.Chinese.autoPace),true,'the stored permission is kept');
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
 });
