@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { LEVELS } from '../lib/constants';
+import { syncAuthDisplayName } from '../lib/authDisplayName';
 import { hasVapidKey, getSubscriptionState, subscribePush, unsubscribePush } from '../lib/push';
 import Button from '../components/Button';
 import AccountSettings from '../components/AccountSettings';
@@ -154,6 +155,7 @@ export default function MyPage() {
         ({ error } = await supabase.from('profiles').update(base).eq('id', user.id));
       }
       if (error) throw error;
+      await syncAuthDisplayName(supabase, user, base.display_name);
     },
     onSuccess: () => { fetchProfile(user.id, user.user_metadata); queryClient.invalidateQueries({ queryKey: ['home', user.id] }); toast('프로필이 저장됐습니다.', 'success'); },
     onError: (err) => toast(err.message, 'error'),
