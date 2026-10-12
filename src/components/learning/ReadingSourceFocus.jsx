@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '../../lib/AuthContext';
 import { learningSourceRevision, readingSourceTarget, UUID } from '../../lib/learningSources';
+import { revealInReader } from '../../lib/usePagedReader';
 
 export default function ReadingSourceFocus({ materialId, ready, json, rawText, onTarget }) {
   const {user,loading}=useAuth();
@@ -42,7 +43,7 @@ export default function ReadingSourceFocus({ materialId, ready, json, rawText, o
       const target=tokenId?[...document.querySelectorAll('[data-source-token]')].find(el=>el.dataset.sourceToken===tokenId):null;
       if(!target) {setMessage('예문의 위치가 바뀌었거나 같은 표현이 여러 곳에 있어요. 저장한 문맥과 함께 확인해 주세요.');return;}
       onTarget(tokenId);
-      target.scrollIntoView({block:'center'});
+      revealInReader(target,{block:'center'}); // 쪽 넘김 보기면 그 토큰의 쪽으로(READER-PAGED-001)
     }
     focus().catch(error=>{if(!request.signal.aborted&&!interacted){setMessage(error.message);setFailed(true);}});
     return ()=>{request.abort();window.removeEventListener('pointerdown',stop,true);window.removeEventListener('keydown',stop,true);};

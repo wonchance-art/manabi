@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useRef,useState,useCallback} from 'react';
-import {captureReadingAnchor,restoreReadingAnchor,selectedTokenScrollDelta} from './readingViewport';
+import {captureReadingAnchor,restoreReadingAnchor,selectedTokenScrollDelta,compactSheetHeight} from './readingViewport';
+import {pagerFor} from './usePagedReader';
 
 // A split classroom scrolls its textbook column; ordinary reading scrolls the page.
 export function readerScrollTarget(root) {
@@ -57,12 +58,32 @@ export function useSelectedTokenVisibility(readerRef, tokenRefs, tokenId, enable
     const root = readerRef.current, token = tokenRefs.current[tokenId];
     if (!enabled || !root || !token) return;
     const panel = root.closest('.viewer-layout')?.querySelector('.viewer-inspector');
-    let frame, settleFrame, releaseFrame, interrupted = false;
+    let frame, settleFrame, releaseFrame, interrupted = false, compactFor = '';
     const reveal = () => {
       cancelAnimationFrame(frame); cancelAnimationFrame(settleFrame);
       // Let modal teardown and the display-change anchor settle first.
       frame = requestAnimationFrame(() => { settleFrame = requestAnimationFrame(() => {
         if (interrupted || !token.isConnected || panel?.hidden) return;
+        // 쪽 넘김 보기(READER-PAGED-001): 세로로 끌어오지 않는다 — 고른 단어의 쪽으로 넘기고, 바닥 시트가 단어를
+        // 덮으면 시트를 낮게 연다(목업 C, 본문은 다시 흐르지 않는다).
+        const pager = pagerFor(root);
+        if (pager) {
+          pager.reveal(token);
+          // 시트 높이는 단어(와 화면 크기)마다 한 번 정한다 — 카드 내용이 늦게 차도 시트가 출렁이지 않게(한자 창 등이 자리를 잡는다).
+          const sizeKey = `${window.innerWidth}x${window.visualViewport?.height || window.innerHeight}`;
+          if (panel && compactFor !== sizeKey && getComputedStyle(panel).position === 'fixed' && !panel.classList.contains('is-expanded') && !panel.classList.contains('is-collapsed')) {
+            compactFor = sizeKey;
+            delete panel.dataset.compact;
+            const natural = panel.getBoundingClientRect();
+            // 낮춰도 카드의 첫 화면(표제어·뜻 + 바닥 등급 줄 — AE-R2 계약)은 스크롤 없이 남아야 한다: 그 높이를 실제 배치에서 잰다.
+            const word = panel.querySelector('#inspector-word:not([hidden])'), meaning = word?.querySelector('.word-detail-card__meaning'), actions = word?.querySelector('.reader-card-actions');
+            const scrolled = word?.querySelector('.reader-card-body')?.scrollTop || 0;
+            const core = meaning && actions ? Math.ceil(meaning.getBoundingClientRect().bottom + scrolled - natural.top + (natural.bottom - actions.getBoundingClientRect().top) + 12) : undefined;
+            const height = compactSheetHeight({ tokenBottom: token.getBoundingClientRect().bottom, sheetTop: natural.top, sheetBottom: natural.bottom, ...(core ? { min: core } : null) });
+            if (height !== null && height < natural.height) { panel.style.setProperty('--reader-sheet-compact', `${height}px`); panel.dataset.compact = 'true'; }
+          }
+          return;
+        }
         if (panel?.classList.contains('viewer-inspector--board')) {
           const bounds = readerVisibleBounds(root), rect = token.getBoundingClientRect();
           const bottom = Math.ceil(bounds.top + rect.height + 24 - (window.visualViewport?.offsetTop || 0));
@@ -93,6 +114,7 @@ export function useSelectedTokenVisibility(readerRef, tokenRefs, tokenId, enable
       observer?.disconnect(); cancelAnimationFrame(frame); cancelAnimationFrame(settleFrame); cancelAnimationFrame(releaseFrame);
       delete root.dataset.selectionRevealing;
       panel?.style.removeProperty('--reader-selected-bottom');
+      panel?.style.removeProperty('--reader-sheet-compact'); if (panel) delete panel.dataset.compact;
       window.removeEventListener('resize', reveal); window.visualViewport?.removeEventListener('resize', reveal);
       for (const event of ['wheel', 'touchmove', 'pointerdown', 'keydown']) window.removeEventListener(event, interrupt);
     };

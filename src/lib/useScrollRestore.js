@@ -3,9 +3,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { createPositionWriter } from './readingPositionWriter';
+import { pagerFor } from './usePagedReader';
 
 /**
  * 자료 재진입 시 마지막 읽은 위치로 자동 스크롤 복원 + 스크롤 위치 저장 (debounce 2s).
+ * 쪽 넘김 보기(READER-PAGED-001)에서는 같은 토큰 번호로 그 토큰이 있는 쪽을 연다 — 쪽 번호는 저장하지 않는다.
+ * 쪽을 넘길 때의 저장은 뷰어가 usePagedReader의 onUserPage로 saveScrollPosition을 부른다.
  * @returns {{ saveScrollPosition, tokenRefs }}
  *   tokenRefs: 본문 토큰 DOM ref 등록용 (token id → element)
  *   saveScrollPosition(tokenIdx): 호출 시 2초 후 DB 저장
@@ -68,7 +71,9 @@ export function useScrollRestore({ user, materialId, material, readingProgress, 
       if (restoredKey.current === key) return;
       const el = tokenRefs.current[tokenId];
       if (el) {
-        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        const pager = pagerFor(el);
+        if (pager) pager.reveal(el);
+        else el.scrollIntoView({ behavior: 'instant', block: 'center' });
         restoredKey.current = key;
       }
     }, 300);
@@ -81,6 +86,8 @@ export function useScrollRestore({ user, materialId, material, readingProgress, 
     if (!sequence?.length || !user?.id) return;
     let timer;
     const remember = () => {
+      // 쪽 넘김 보기는 세로 위치로 고르면 다른 단의 토큰이 잡힌다 — 쪽 넘김 쪽(onUserPage)이 저장한다.
+      if (pagerFor(readerRef?.current)) return;
       const elements = sequence.map((id, index) => ({ el: tokenRefs.current[id], index })).filter(item => item.el?.isConnected);
       if (!elements.length) return;
       let low = 0, high = elements.length - 1;

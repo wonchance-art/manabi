@@ -179,15 +179,16 @@ describe('unavailable options',()=>{
 describe('stored preferences are untouched by the Aa layout',()=>{
   it('keeps the exact key set, tab key groups and defaults',()=>{
     expect(TAB_KEYS).toEqual({
-      type:['fontSize','pinyinSize','lineGap','charGap','fontFamily','theme'],
+      type:['fontSize','pinyinSize','lineGap','charGap','fontFamily','theme','readerView'],
       display:['pronDisplay','wordStateHl','showToneColors','showHanjaKo','showPatterns','patternFilter'],
       pace:['focusMode','autoPace','paceCpm','paceStep','autoSpeakOnClick','ttsRate'],
     });
-    expect(COMMON_KEYS).toEqual(['theme','ttsRate']);
+    // readerView(READER-PAGED-001 — 오너 승인 「기본 쪽 넘김, Aa에서 스크롤」)만 더했다: 기기의 읽는 방식이라 공통 값.
+    expect(COMMON_KEYS).toEqual(['theme','ttsRate','readerView']);
     for(const language of ['Chinese','Japanese','Korean','English'])expect(viewerDefaults(language)).toEqual({fontSize:1.6,pinyinSize:0.75,lineGap:15,charGap:0.25,theme:'sepia',fontFamily:'sans',
       pronDisplay:'all',autoSpeakOnClick:false,ttsRate:'normal',showHanjaKo:false,
       showToneColors:false,focusMode:false,wordStateHl:false,showPatterns:false,patternFilter:'all',
-      autoPace:false,paceCpm:null,paceStep:0});
+      autoPace:false,paceCpm:null,paceStep:0,readerView:'paged'});
   });
   it('round-trips a value hidden behind an unavailable option (range while grammar is off, grammar in Korean)',()=>{
     expect(validateViewerPreferences({showPatterns:false,patternFilter:'weak'},'Chinese').patternFilter).toBe('weak');

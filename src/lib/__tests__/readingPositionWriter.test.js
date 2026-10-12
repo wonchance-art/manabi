@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { createPositionWriter } from '../readingPositionWriter';
+import { sliceBetween } from './helpers/sliceBetween.js';
 afterEach(()=>vi.useRealTimers());
 describe('reading position writes',()=>{
   it('flushes the last position when leaving before the debounce interval',async()=>{
@@ -29,5 +30,22 @@ describe('reading position writes',()=>{
     const writer=createPositionWriter(async n=>{positions.push(n);if(n===1)await new Promise((_,reject)=>{rejectFirst=reject;});});
     writer.schedule(1);writer.flush();await Promise.resolve();writer.schedule(9);const next=writer.flush();
     rejectFirst(new Error('old request failed'));await next;await writer.close();expect(positions).toEqual([1,9]);
+  });
+});
+
+describe('paged view keeps the token-index position (READER-PAGED-001)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const restore = readFileSync(new URL('../useScrollRestore.js', import.meta.url), 'utf8');
+  const viewer = readFileSync(new URL('../../views/ViewerPage.jsx', import.meta.url), 'utf8');
+  it('restores the saved token on its page instead of scrolling, and never records vertical positions there', () => {
+    expect(restore).toContain('if (pager) pager.reveal(el);');
+    expect(restore).toContain("else el.scrollIntoView({ behavior: 'instant', block: 'center' });");
+    expect(restore).toContain('if (pagerFor(readerRef?.current)) return;');
+  });
+  it('saves the first token of a turned-to page through the same writer; the stored value is a token index', () => {
+    const turn = sliceBetween(viewer, 'onUserPage: anchor => {', 'canSwipe:');
+    expect(turn).toContain('material?.processed_json?.sequence?.indexOf(tokenId)');
+    expect(turn).toContain('saveScrollPosition(index)');
+    expect(viewer).toContain(".select('is_completed, last_token_idx')");
   });
 });
