@@ -160,6 +160,7 @@ import {
   boundaryUndoValid, commitBoundaryEdit, pendingBoundaryRows, planBoundaryMerge, planBoundarySplit, planNeighborMerge, splitPreview,
   undoBoundaryEdit, dismissBoundarySuggestion, koreanBoundaryPiece, koreanSplitEntryAllowed, koreanSplitPreview, planKoreanSplit,
 } from '../lib/boundaryEditFlow';
+import { fetchWithRateLimitRetry } from '../lib/analyzeText';
 import { koreanFormula, koreanMorphemes } from '../lib/koreanBoundarySplit';
 import SourceEditModal from './SourceEditModal';
 import TokenPosLabel from './TokenPosLabel';
@@ -1763,7 +1764,8 @@ export default function ViewerPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.access_token) authHeader = { Authorization: `Bearer ${session.access_token}` };
     } catch { /* 비로그인은 소유자가 아니라 여기 오지 않는다 */ }
-    const res = await fetch('/api/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader }, body: JSON.stringify(body) });
+    // 분당 20회(429)는 자료 분석과 같이 Retry-After만큼 기다려 다시 보낸다(analyzeText.fetchWithRateLimitRetry).
+    const res = await fetchWithRateLimitRetry('/api/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader }, body: JSON.stringify(body) });
     const data = await res.json().catch(() => null);
     if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
     return data;
