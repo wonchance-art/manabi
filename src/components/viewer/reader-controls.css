@@ -129,10 +129,12 @@
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) .zh-cell {display:inline-flex;justify-content:center;width:var(--zh-cell);}
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) .zh-run {display:inline-flex;justify-content:center;white-space:nowrap;width:calc((var(--zh-cells,1) * var(--zh-cell)) + ((var(--zh-cells,1) - 1) * var(--char-gap,0px)));}
 .viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) :is(ruby,.zh-cell,.zh-run) + :is(ruby,.zh-cell,.zh-run) {margin-left:var(--char-gap,0px);}
-/* Touch layouts put the sentence bar inline before the line's first word (15px + 3px, index.css). In Chinese it takes
-   exactly one cell, so a paragraph's first line is indented by one column and stays on the grid. */
+/* Touch layouts put the sentence bar inline before the line's first word (index.css: 24px hit width, margin -9px/+3px,
+   so it takes 18px of the line — #1323). In Chinese it takes exactly one cell instead: width = pitch + 9 - 3 keeps the
+   same margins (bar stays at left 9px, hit area ≥ 24px), so a paragraph's first line is indented by one column and
+   stays on the grid. */
 @media (hover:none) {
-  .viewer-layout[data-language="Chinese"] .reader-area .line-pick {width:calc(var(--zh-pitch) - 3px);}
+  .viewer-layout[data-language="Chinese"] .reader-area .line-pick {width:calc(var(--zh-pitch) + 6px);}
   .viewer-layout[data-language="Chinese"] .reader-area .word-token[data-selected="true"]:has(> .line-pick)::before {left:var(--zh-pitch);}
 }
 .viewer-layout :is(.reader-area,.reader-settings__preview) :is(.rt-an,rt).pinyin-tone--1 {color:var(--tone-1);}
