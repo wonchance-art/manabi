@@ -1,0 +1,80 @@
+/* 쪽 넘김 보기(READER-PAGED-001, 오너 승인 설계 §3) — CSS 다단 + 가로 scrollLeft. 라이브러리 없음.
+   · 상자 높이는 usePagedReader가 --reader-page-height로 준다(보이는 화면 높이 − 상자 위 − 아래 쪽 막대).
+   · column-width를 상자보다 넓게(100vw) 두면 단이 하나로 접혀 단 폭 = 상자 폭이다 — 폭을 JS로 잴 필요가 없다.
+   · 쪽 이동은 overflow:hidden 상자의 scrollLeft라 브라우저 찾기·포커스 이동이 쪽을 따라온다.
+   · 스크롤 보기(data-reader-pages="scroll")에는 아무 규칙도 걸리지 않는다 — 지금 그대로. */
+[data-reader-pages="paged"] {
+  position: relative; /* 지정 그립·이합사 아치의 기준(본문 영역은 단마다 쪼개진다) */
+  box-sizing: border-box;
+  height: var(--reader-page-height, calc(100dvh - 180px));
+  padding-block: 8px 0;
+  column-width: 100vw;
+  column-gap: 64px; /* ≥ 좌우 안쪽 여백 2배 — 옆 쪽의 글자·막대가 여백으로 비치지 않는다 */
+  column-fill: auto;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  touch-action: pan-y pinch-zoom; /* 가로 밀기는 쪽 넘김이 받는다 — 세로·확대는 브라우저 몫 그대로 */
+}
+[data-reader-pages="paged"] .reader-area { position: static; min-height: 0; }
+/* 호버 기기의 문장 막대(.line-pick)는 줄 왼쪽 여백(−28px)에 나간다 — 상자가 잘라 내지 않게 안쪽 여백을 두고,
+   넓은 화면에서는 같은 만큼 밖으로 내어 본문 단의 자리를 그대로 둔다(폰은 막대가 줄 안 인라인이라 필요 없다). */
+@media (hover: hover) {
+  .viewer-layout [data-reader-pages="paged"] { padding-inline: 28px; }
+  @container reader (min-width: 840px) { .viewer-layout [data-reader-pages="paged"] { margin-inline: -28px; } }
+}
+.reader-pages-frame { position: relative; }
+.reader-page-probe { position: absolute; top: 0; left: 0; width: 1em; height: 1em; visibility: hidden; pointer-events: none; }
+
+.reader-pagebar {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  min-height: 52px; padding: 4px 0;
+  border-top: 1px solid var(--reader-line, var(--rule));
+  background: var(--reader-paper, var(--paper));
+  color: var(--reader-ink, var(--ink));
+}
+.reader-pagebar__btn {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  min-width: 44px; min-height: 44px; padding: 0;
+  border: 0; border-radius: 6px; background: transparent; color: inherit; cursor: pointer;
+}
+.reader-pagebar__btn:disabled { opacity: .35; cursor: default; }
+.reader-pagebar__btn:not(:disabled):hover { background: var(--reader-selected, var(--sheet)); color: var(--reader-accent, var(--ink)); }
+.reader-pagebar__btn:focus-visible { outline: 2px solid var(--reader-accent, var(--ink)); outline-offset: 1px; }
+.reader-pagebar__pos { font-size: .8125rem; line-height: 1.2; font-variant-numeric: tabular-nums; color: var(--reader-muted, var(--muted)); white-space: nowrap; }
+
+/* 여백 띠(목업 B) — 본문 단 바깥 왼쪽·오른쪽. 넓은 화면에서만 보인다(아래 컨테이너 쿼리). */
+.reader-page-strip {
+  display: none; position: absolute; top: 0; bottom: 0; width: 48px; min-height: 44px; padding: 0;
+  align-items: center; justify-content: center;
+  border: 0; border-radius: 6px; background: transparent; color: var(--reader-muted, var(--muted));
+  font-size: 28px; line-height: 1; cursor: pointer; opacity: .45;
+}
+.reader-page-strip--prev { right: 100%; margin-right: 36px; }
+.reader-page-strip--next { left: 100%; margin-left: 36px; }
+.reader-page-strip:not(:disabled):hover { opacity: 1; background: var(--reader-selected, var(--sheet)); color: var(--reader-accent, var(--ink)); }
+.reader-page-strip:disabled { opacity: 0; cursor: default; pointer-events: none; }
+@container reader (min-width: 1000px) { .viewer-layout .reader-page-strip { display: flex; } }
+.original-reader { container-name: original-reader; }
+@container original-reader (min-width: 900px) { .original-reader .reader-page-strip { display: flex; } }
+
+/* ── 분석 뷰어 ── 바닥은 쪽 막대 몫이라 본문 아래 여백(스크롤 보기용)을 걷는다. 진행률은 쪽 막대가 보인다. */
+html .viewer-layout[data-reader-view="paged"] > .viewer-center { padding-bottom: 0; }
+.viewer-layout[data-reader-view="paged"] .viewer-progress-bar { display: none; }
+/* 바닥 자리는 하나 — 문장 이동 막대나(모든 폭) 바닥 보조 패널(1120 미만)이 뜨면 쪽 막대는 그 밑에 숨는다.
+   본문 높이는 그대로라 다시 흐르지 않는다(목업 C). 밀기·키보드·여백 띠로는 계속 넘긴다. */
+.viewer-layout[data-reader-view="paged"]:has(.sentence-move-bar) .reader-pagebar { visibility: hidden; }
+@container reader (max-width: 1119px) {
+  .viewer-layout[data-reader-view="paged"]:has(.viewer-inspector:not([hidden])) .reader-pagebar { visibility: hidden; }
+  /* 고른 단어가 시트 밑에 깔리면 시트를 낮게 연다(본문은 그대로) — 높이는 useSelectedTokenVisibility가 잰다. */
+    .viewer-layout[data-reader-view="paged"] .viewer-inspector[data-compact="true"]:not(.is-expanded):not(.is-collapsed) { height: var(--reader-sheet-compact, 40dvh); }
+}
+
+/* ── 원본 리더 ── 본문 글만 쪽으로 나눈다(첨부 파일 읽기는 스크롤 그대로). */
+.original-pages-frame { position: relative; max-width: 760px; }
+.original-reader [data-reader-pages="paged"] .original-writing { max-width: none; padding-block: 8px 24px; }
+
+@media (prefers-reduced-motion: reduce) { [data-reader-pages] { scroll-behavior: auto; } }
+@media print {
+  [data-reader-pages="paged"] { height: auto; columns: auto; overflow: visible; }
+  .reader-pagebar, .reader-page-strip { display: none; }
+}
