@@ -29,23 +29,31 @@
 그래서 목업 대비는 픽셀이 아니라 배치 · 위계 · 요소 · 문구 단위로 본다.
 
 ## 설계 목록
-| id | 코드 | 설계 | 단계 | 목업 원본 | 인계 |
-|---|---|---|---|---|---|
-| ak | LEARN-HOME-AK-001 | 배움 · 서재 · 산책 메뉴 + 배움 대시보드 + 현황 | 인계됨 · 미착수 | [ak.html](mocks/ak/ak.html) | #1337 [6079839308](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6079839308) · [6106711900](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6106711900) |
-| rev | REV-SCOPE R1-A · R1-B | 복습 범위 · 개수 · 진입점 / 세션 · 카드 · 학습 단계 | 인계됨 · 미착수 | [rev.html](mocks/rev/rev.html) | #1337 [6106712027](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6106712027) · [6106712130](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6106712130) |
-| onb | ONB-001 | 첫 방문 온보딩 + 내 언어 + 중국어권 한국어(준비 중) | 인계됨 · 미착수 | [onb.html](mocks/onb/onb.html) | #1337 [6106712231](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6106712231) |
-| ad | AD-R3 · AD-R4 | 뷰어 정돈 2차 | 병합됨 · 목업 대비 확인 대기 | 아티팩트만 | — |
-| ae | AE-R2 · AE-R3 | 단어창 3차 | 병합됨 · 목업 대비 확인 대기 | 아티팩트만 | — |
-| brand | BRAND | 아이콘 · 브랜드 | 병합됨 · 반영 확인 | 아티팩트만 | — |
-| conv | v2-Z | 대화 모드 | 상태 미확인 | 아티팩트만 | — |
-| lv | — | 레벨별 단어 · 문형 다시 열기 | 상태 미확인 | 아티팩트만 | — |
-| mail | MAIL-K | 인증 메일 | 병합됨 · 화면 벽 밖 | 아티팩트만 | — |
+설계마다의 단계(인계됨 · 병합됨 등)와 연결 장면은 [`registry.json`](registry.json) 한 곳에만 적는다. 여기에 다시 쓰지 않는다
+(두 곳에 적으면 갈린다). 저장소에 목업 원본이 있는 설계:
 
-「아티팩트만」인 설계는 이미 병합됐거나 상태를 확인하는 중이다. 화면 벽 2판에서 장면과 대조할 때
-필요한 것부터 이 폴더로 옮긴다.
+| id | 코드 | 목업 원본 |
+|---|---|---|
+| ak | LEARN-HOME-AK-001 — 배움 · 서재 · 산책 메뉴 + 배움 대시보드 + 현황 | [mocks/ak/ak.html](mocks/ak/ak.html) |
+| rev | REV-SCOPE R1-A · R1-B — 복습 범위 · 개수 · 진입점 / 세션 · 카드 · 학습 단계 | [mocks/rev/rev.html](mocks/rev/rev.html) |
+| onb | ONB-001 — 첫 방문 온보딩 + 내 언어 + 중국어권 한국어(준비 중) | [mocks/onb/onb.html](mocks/onb/onb.html) |
+
+나머지(ad · ae · brand · conv · lv · mail)는 아직 아티팩트에만 있다. 화면 벽 2판에서 장면과 대조할 때 필요한 것부터 옮긴다.
+
+### registry.json 항목
+| 필드 | 뜻 |
+|---|---|
+| `id` · `code` · `title` | 설계 이름. `code`는 인계문(#1337)의 작업 코드 |
+| `stage` | 진행 단계. 설계 세션이 인계 · 병합 때 고친다 |
+| `source` | 목업 원본 경로(없으면 `null`) |
+| `mirror` | 같은 목업의 claude.ai 아티팩트 사본(비공개 — Codex는 못 연다) |
+| `handoff` | 인계 코멘트 링크 |
+| `scenes` | 이 설계로 바뀔 화면 벽 장면 id |
+| `frames` | 지금 화면과 대조할 목업 프레임 |
+| `planned` | 아직 화면이 없는 확정 설계(화면 벽 「예정」 타일) |
 
 ## 목업 읽는 법 (개발 세션)
 - HTML 원본을 브라우저로 열면 목업 전체(설명 · 결정 · 화면 크기별 그림)가 보인다.
 - 인계문(#1337)의 수용 기준과 문구가 우선이다. 목업은 배치 · 위계 · 상태를 보여 주는 그림이다.
 - 문구는 인계문과 글자까지 맞춘다. 다르게 써야 하면 PR에 이유를 적는다 — 화면 벽은 이 경우
-  자동 승인하지 않고 오너에게 올린다([`wall-rules.md`](wall-rules.md) §5).
+  자동 승인하지 않고 오너에게 올린다([`wall-rules.md`](wall-rules.md) §6).
