@@ -52,6 +52,15 @@ describe('multiple teaching expressions with annotations and ink',()=>{
   const rebuilt=wordCardSkeleton(edited,'b',{x:0,y:0},palette);
   expect(rebuilt.some(el=>el.customData?.manabiField==='reading')).toBe(false);
  });
+ it('drops wrap-point spaces at row ends when a wrapped meaning is edited on the canvas',()=>{
+  const card=wordCardSkeleton({...value,meaning:'상대방의 입장에서 생각하다'},'m',{x:0,y:0},palette,{maxWidth:280});
+  const rows=card.filter(el=>el.customData?.manabiField==='meaning').sort((a,b)=>a.customData.index-b.customData.index);
+  expect(rows.length).toBeGreaterThan(1);
+  const last=rows.at(-1);last.text=last.originalText=`${last.customData.value}!`;
+  const edited=readCard(card[0],card).meaning;
+  expect(edited.split('\n').every(row=>!/\s$/u.test(row))).toBe(true);
+  expect(edited.replace(/\s/g,'')).toBe('상대방의입장에서생각하다!');
+ });
  it('wraps long expressions without placing a whole reading over each token',()=>{
   const text='一边学习一边复习',reading='いちべんがくしゅういちべんふくしゅう';
   const layout=teachingWordLayout({...value,text,reading,language:'Japanese'},{maxWidth:360});
@@ -64,6 +73,7 @@ describe('multiple teaching expressions with annotations and ink',()=>{
   const short=teachingWordLayout({...value,text:'换位思考',reading:'huàn wèi sī kǎo',meaning:'상대방의 입장에서 생각하다'},{fontSize:35,maxWidth:280});
   expect(rows(short)).toEqual(['换位思考']);
   expect(short.width).toBeLessThanOrEqual(280);
+  expect(short.parts.filter(p=>p.role==='meaning').map(p=>p.text.trim())).toEqual(['상대방의','입장에서','생각하다']);
   const phrase={...value,text:'换个角度想一想',reading:'huàn gè jiǎo dù xiǎng yī xiǎng'};
   const layout=teachingWordLayout(phrase);
   expect(rows(layout)).toHaveLength(2);
@@ -74,6 +84,14 @@ describe('multiple teaching expressions with annotations and ink',()=>{
   expect(rows(narrow).every(row=>[...row].length>=2)).toBe(true);
   expect(layout.parts.filter(p=>p.role==='reading').map(p=>p.text)).toEqual(phrase.reading.split(' '));
   expect(rows(teachingWordLayout({...phrase,showReading:false,showHun:false,showMeaning:false}))).toEqual(rows(layout));
+ });
+ it('preserves explicit meaning paragraphs and falls back for an overlong word',()=>{
+  const meaning='첫 번째 뜻\n아주아주아주아주아주긴한단어';
+  const layout=teachingWordLayout({...value,meaning},{maxWidth:220});
+  const lines=layout.parts.filter(p=>p.role==='meaning');
+  expect(lines.map(p=>p.text).join('').replace(/\s/g,'')).toBe(meaning.replace(/\s/g,''));
+  expect(lines.some(p=>p.text.endsWith('뜻'))).toBe(true);
+  expect(lines.length).toBeGreaterThan(3);
  });
 });
 // R0+(VIEWER-V2-ROUNDS-001 §1) — 판서 훈음도 단어창·글자 카드와 같은 正 꼴 조회를 쓴다.

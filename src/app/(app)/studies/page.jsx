@@ -12,7 +12,7 @@ export default function Page() {
     <div className="page-container">
       <header style={{ marginBottom: 18 }}>
         <h1 style={{ margin: '0 0 6px' }}>지역학</h1>
-        <p style={{ margin: 0, opacity: 0.85 }}>
+        <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
           언어 너머의 나라 이해. 지리·역사·경제·사회·문화를 공적 통계와 통설 기준으로 정리한 레퍼런스 문서.
         </p>
       </header>
@@ -20,10 +20,10 @@ export default function Page() {
         <section className="fr-section" key={country.id}>
           <h2 className="fr-section__heading">
             <Link href={`/studies/${country.id}`}>{country.nameKo}</Link>
-            <span style={{ marginLeft: 8, fontSize: '0.8rem', opacity: 0.6 }}>{country.nameLocal}</span>
+            <span style={{ marginLeft: 8, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{country.nameLocal}</span>
           </h2>
           <p className="fr-section__para">{country.intro}</p>
-          <p className="fr-section__para" style={{ fontSize: '0.82rem', opacity: 0.7 }}>
+          <p className="fr-section__para" style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
             문서 {country.docs.length}편
           </p>
         </section>

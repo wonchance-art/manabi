@@ -15,10 +15,13 @@
 :root {
   /* ── Natural Color Palette ── */
   /* 핵심: 번트 시에나(불·흙) + 포레스트 그린(숲·생명) */
-  --primary: #C0522A;
-  --primary-light: #E07848;
-  --primary-dark: #8A3818;
-  --primary-glow: rgba(192, 82, 42, 0.18);
+  /* v2 로즈(COLOR-V2-UNIFY-001, 2026-10-12) — 셸(.manabi-app)과 같은 브랜드 색. 셸 밖(오류·404·도움말 등)과
+     셸이 다시 정의하지 않는 파생 토큰(glow·border-hover)에 옛 주황이 남던 것을 정리했다.
+     --primary는 배경용(흰 글자 6.0:1), 글자에는 --primary-light(어두운 바탕 5.5:1 이상)를 쓴다. */
+  --primary: #994A5A;
+  --primary-light: #D9909E;
+  --primary-dark: #793B48;
+  --primary-glow: rgba(153, 74, 90, 0.18);
   /* 배경으로 쓸 때 흰 글자 대비가 4.13이라 AA(4.5) 미달이었다 — 5%만 어둡혀 4.51.
      글자로 쓸 때는 아래 --accent-text를 쓴다(반대 방향으로 밝혀야 하므로 토큰이 둘로 갈린다). */
   --accent: #468357;
@@ -52,6 +55,8 @@
   --speaker-2: #E0729A;
   --danger: #C84040;
   --warning: #D4962A;
+  /* 경고 「글자」 — --warning(#D4962A)은 테두리·바탕용이라 글자로는 대비가 모자란다. 라이트 값은 [data-theme="light"]와 셸에서. */
+  --warning-text: #E6B35C;
 
   /* 모달 스크림 — 뒤 화면을 덮는 검정. 값이 흩어져 있던 것을 토큰으로 모은다(v2-K 잔여).
      검정이라 테마별 재정의가 없다(밝은 테마에서도 덮는 쪽은 검정이다).
@@ -65,7 +70,7 @@
   --bg-card: #2D2318;
   --bg-elevated: #382B1E;
   --border: rgba(255, 215, 170, 0.08);
-  --border-hover: rgba(192, 82, 42, 0.35);
+  --border-hover: rgba(217, 144, 158, 0.35);
 
   /* Text */
   --text-primary: #F4EDE4;
@@ -101,14 +106,15 @@
   --bg-card: #FDFAF6;
   --bg-elevated: #E8DDD0;
   --border: rgba(100, 65, 30, 0.10);
-  --border-hover: rgba(192, 82, 42, 0.40);
+  --border-hover: rgba(153, 74, 90, 0.40);
 
   --text-primary: #261A0E;
   --text-secondary: #6B5040;
   --text-muted: #7C6450; /* WCAG 개선: 9E8270 → 7C6450 (3.2 → 4.8) */
 
   /* WCAG 개선: 라이트 모드에서 링크/강조색 대비 강화 */
-  --primary-light: #B85A30; /* E07848 → B85A30 (3.0 → 4.8) */
+  --primary-light: #994A5A; /* v2 로즈 — 라이트 바탕 글자 5.3:1 이상(COLOR-V2-UNIFY-001) */
+  --warning-text: #7A4E0E;
   --accent: #3A6D49;        /* 4A8A5C → 3A6D49 (3.3 → 5.0) */
   --accent-text: #3A6D49;   /* 라이트에선 글자도 같은 값으로 충분(5.0) — 다크의 밝은 변형을 물려받으면 안 된다 */
 
@@ -336,7 +342,7 @@ button {
 .gnb__link.active {
   color: white;
   background: var(--primary);
-  box-shadow: 0 2px 12px rgba(192, 82, 42, 0.35);
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--primary) 35%, transparent);
 }
 
 .gnb__link-icon {
@@ -2770,17 +2776,17 @@ a.viewer-badge:hover {
 
 /* 문장 전체 지정 막대 — 줄 첫 토큰 안에 인라인으로 앉혀 한자와 라인박스·baseline을 공유.
    절대배치(앵커)는 루비(요미가나·병음) 줄에서 rt 높이 쪽으로 어긋났다(#984 실측) — 인라인이 정답.
-   음수 마진(-28+6=-22=폭 상쇄)으로 본문을 밀지 않고 왼쪽 여백에 나간다. */
+   음수 마진(-30+6=-24=폭 상쇄)으로 본문을 밀지 않고 왼쪽 여백에 나간다. */
 .line-pick {
-  /* 히트 영역은 넓게(22px × 2.2em), 시각은 ::before의 얇은 인용 막대만.
+  /* 히트 영역은 넓게(24px × 2.2em — WCAG 2.5.8 최소 타깃, #1323), 시각은 ::before의 얇은 인용 막대만.
      버튼이 줄상자와 같은 2.2em·top 정렬이라 버튼 top = 셀 top — 막대를 버튼 기준
      절대배치하면 글자 좌표계(--hl-band-top 등)를 보정값 없이 그대로 쓴다.
      middle 정렬+실측 보정은 x-height(글꼴)에 의존해 실기(PingFang)에서 어긋났었다
      (오너 보고 2026-08-29). */
   position: relative;
-  width: 22px;
+  width: 24px;
   height: 2.2em;
-  margin-left: -28px;
+  margin-left: -30px;
   margin-right: 6px;
   vertical-align: top;
   display: none;
@@ -2815,17 +2821,19 @@ a.viewer-badge:hover {
   .line-pick:hover { opacity: 1; }
 }
 /* 호버 없는 기기(모바일) — 호버로 부를 수 없고 왼쪽 여백도 없으므로,
-   각 줄 첫 글자 앞 인라인 자리에 상시 은은하게 표시(#1000 오너 보고). */
+   각 줄 첫 글자 앞 인라인 자리에 상시 은은하게 표시(#1000 오너 보고).
+   히트 폭 24px 중 9px는 음수 마진으로 왼쪽 여백에 내보내 본문 몫은 기존 18px(15+3)
+   그대로 — 막대(::before left 9px)와 글자 자리는 움직이지 않는다(#1323). */
 @media (hover: none) {
   .line-pick {
     display: inline-flex;
     opacity: 0.45;
-    margin-left: 0;
+    margin-left: -9px;
     margin-right: 3px;
-    width: 15px;
+    width: 24px;
     justify-content: flex-start;
   }
-  .line-pick::before { left: 0; right: auto; } /* 모바일: 기존 flex-start 자리 그대로 */
+  .line-pick::before { left: 9px; right: auto; } /* 모바일: 기존 flex-start 자리 그대로 */
   .line-pick:active { opacity: 1; }
 }
 
@@ -5896,7 +5904,7 @@ a.viewer-badge:hover {
 .toast--error   { border-color: rgba(255, 107, 107, 0.35); background: rgba(255, 107, 107, 0.1); }
 .toast--warning { border-color: rgba(255, 217, 61, 0.35);  background: rgba(255, 217, 61, 0.08); }
 .toast--info    { border-color: var(--border-hover);        background: var(--primary-glow); }
-.toast--celebrate { border-color: rgba(192, 82, 42, 0.4); background: rgba(192, 82, 42, 0.12); }
+.toast--celebrate { border-color: color-mix(in srgb, var(--primary) 40%, transparent); background: color-mix(in srgb, var(--primary) 12%, transparent); }
 
 @media (max-width: 768px) {
   .toast-container {
@@ -6368,10 +6376,7 @@ a.viewer-badge:hover {
   color: var(--text-primary);
 }
 .guide-hero__accent {
-  background: linear-gradient(135deg, #E8763C, #F5C34A);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--primary-light);
 }
 .guide-hero__sub {
   color: var(--text-secondary);
@@ -6391,15 +6396,15 @@ a.viewer-badge:hover {
 
 .guide-cta__btn {
   white-space: nowrap;
-  background: linear-gradient(135deg, #E8763C, #D85840);
+  background: var(--primary);
   color: #fff;
-  box-shadow: 0 4px 14px rgba(232,118,60,0.3);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--primary) 30%, transparent);
   border-radius: var(--radius-md);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 .guide-cta__btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(232,118,60,0.4);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--primary) 40%, transparent);
 }
 
 @keyframes celebOverlayIn {
@@ -6788,8 +6793,8 @@ a.viewer-badge:hover {
   letter-spacing: 0.02em; margin-bottom: 4px;
 }
 .fr-callout__body { font-size: 0.86rem; line-height: 1.7; color: var(--text-secondary); word-break: keep-all; }
-.fr-callout--pitfall { border-color: #E8763C; background: rgba(232,118,60,0.1); }
-.fr-callout--pitfall .fr-callout__label { color: #E8763C; }
+.fr-callout--pitfall { border-color: var(--warning); background: color-mix(in srgb, var(--warning) 10%, transparent); }
+.fr-callout--pitfall .fr-callout__label { color: var(--warning-text); }
 .fr-callout--vsen { border-color: #4DABF7; background: rgba(77,171,247,0.1); }
 .fr-callout--vsen .fr-callout__label { color: #4DABF7; }
 .fr-callout--etym { border-color: #51A85C; background: rgba(81,168,92,0.1); }
@@ -6847,14 +6852,14 @@ a.viewer-badge:hover {
   margin: 12px 0 4px;
   padding: 12px 14px;
   border-radius: var(--radius-sm);
-  border-left: 3px solid #E8763C;
-  background: rgba(232,118,60,0.08);
+  border-left: 3px solid var(--primary);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
 }
 .hanja-bridge__label {
   display: block;
   font-size: 0.74rem; font-weight: 800;
   letter-spacing: 0.02em; margin-bottom: 8px;
-  color: #E8763C;
+  color: var(--primary-light);
 }
 /* 표로 — 简/繁/日 열과 → 화살표가 행마다 세로로 정렬 (글자 수 무관) */
 .hanja-bridge__scroll { overflow-x: auto; }
@@ -6867,7 +6872,7 @@ a.viewer-badge:hover {
 .hanja-bridge__c b {
   font-size: 0.6rem; font-weight: 800;
   padding: 1px 4px; border-radius: 4px; margin-right: 5px;
-  background: rgba(232,118,60,0.18); color: #E8763C;
+  background: color-mix(in srgb, var(--primary) 18%, transparent); color: var(--primary-light);
   vertical-align: middle;
 }
 .hanja-bridge__a { color: var(--text-muted); font-size: 0.8rem; padding: 0 12px; vertical-align: baseline; }
@@ -7956,7 +7961,7 @@ a.viewer-badge:hover {
 /* 판정은 상태를 알리는 것이지 성적이 아니다 — 셋 다 같은 채도로 두고 색만 나눈다. */
 .goal-track__verdict.is-easy { background: rgba(74,138,92,0.16); color: #4A8A5C; }
 .goal-track__verdict.is-ontrack { background: var(--bg-elevated); color: var(--text-secondary); }
-.goal-track__verdict.is-late { background: rgba(232,118,60,0.16); color: #E8763C; }
+.goal-track__verdict.is-late { background: color-mix(in srgb, var(--warning) 16%, transparent); color: var(--warning-text); }
 /* 진도 막대 — 진도표(myplan-bar)와 같은 결. 숫자와 같은 것을 말하되 한눈에 들어온다. */
 /* flex-shrink 0 — 좁은 화면에서 본문이 두 줄이 되면 6px 막대가 0으로 눌려 사라진다(실측). */
 .goal-track__bar { flex: 0 0 6px; border-radius: 99px; background: var(--bg-elevated); overflow: hidden; }
@@ -8476,8 +8481,7 @@ a.viewer-badge:hover {
 
 /* ── 진입 화면(사설 도구) — 홍보 섹션 없이 트랙 선택만 ── */
 
-/* --primary(#C0522A)는 대비 2.92지만 버튼 '배경'으로 40곳에서 쓰여 토큰 자체를 못 바꾼다.
-   글자에는 이미 4.53인 --primary-light를 쓴다. */
+/* --primary는 버튼 '배경'용이다(어두운 바탕 위 글자로는 3.0). 글자에는 --primary-light를 쓴다. */
 
 /* ── 일본학 지도 — 와이드 2열(지도+카드), 모바일 스택 ── */
 .jpmap-layout { display: flex; flex-direction: column; gap: 12px; }

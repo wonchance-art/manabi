@@ -935,7 +935,10 @@
        남은 것(M09): 운영 반영 확인 → 템플릿 5종 재전환 → 실제 재설정 메일 다른 브라우저 검수 ·
        **MAIL-KO-001**(10-12 오너 「A안으로 진행, [manabi] 빼고 이름 넣어줘」): 인증 메일 5종 한국어 HTML(로그인 카드 A안) `supabase/templates/` —
        제목 [manabi] 제거 · 「OO님,」은 재설정·이메일 변경만(확인 전 주소로 가는 가입·로그인 링크 메일은 사용자 입력 금지 — 피싱 경계) ·
-       닉네임 저장 시 auth display_name 동기화 · 계약 `authEmailTemplates.test.js` → M09 4단계 재전환을 이 HTML로 한 번에 + 실메일 앱 검수 ·
+       닉네임 저장 시 auth display_name 동기화 · 계약 `authEmailTemplates.test.js` → **#1406 병합 `fc7dd3f9`** · M09 5종 적용(서버 본문 5/5 일치) ·
+       실메일 Gmail 3/3·네이버 받은편지함, 재설정 「OO님,」 치환 PASS(Gmail 다크·Apple 미검수, 오너 「여기까지」 10-12 14:27 KST) · DMARC p=none 추가(M09) ·
+    **COLOR-V2-UNIFY-001 + WALL-001**(10-12 오너 「통일」·「권장대로 진행」): 옛 주황 → v2 로즈(루트 토큰·하드코딩 21줄, 경고 의미색은 --warning-text) ·
+       오류 화면 5곳 원문(error.message·stack) 미노출 · 루트 오류·404 v2 셸 · /books 목차·읽기 기록, /studies 대비 AA · 계약 `colorV2Unify.test.js` ·
        도메인 **manabi.co.kr**(호스팅케이알 10-11 구입, Vercel 네임서버) + Resend SMTP 발신 도메인 Verified(10-12 12:05 KST) —
        기록 `docs/deployment-checklist.md` §5 · 오너 남은 일: 대표 도메인(www/apex) 통일·자동 갱신 확인·메일 한도 상향 ·
     ③ 한국어 어절 B안 → **#1396** 병합 ·
@@ -944,6 +947,8 @@
   - **ZH-GRID-001**(10-12 오너 승인 목업): 중국어 본문 격자 조판 — 한자·전각 부호 = 같은 한 칸(병음 칸 / 끄면 1em), 낱말 사이 간격 0·「글자 간격」은 칸마다,
     반각 묶음(2024·iPhone) 칸 올림, 닫는 부호 줄머리 금지(禁则), 터치 문장 막대 한 칸, Aa 미리보기 동일 · 일·중 기본 글자 간격 0(옛 기본 0.25 저장값 1회 이행, 표식 `cjkGap0`) ·
     브랜치 `claude/zh-grid` · e2e viewer-zh-grid 신설(CI 목록 추가).
+  - **PR-TRIAGE-1323**(10-12 오너 「권장대로 전부 진행」): 정체 PR #1323에서 살릴 2가지 이식 — 뷰어 단어 버튼 안 중첩 버튼 분리·닫을 때 초점 복귀·문장 막대 24px,
+    설명판 뜻 단어 경계 줄바꿈(`wrapMeaning`) · 계약 `wordTokenNesting.test.js` · 이식 PR 병합 뒤 #1323 닫기.
   - 보류: AE-R3 PR③(공유 사전 요미 쓰기 — ⓒ 확정으로 재정리 필요, ⓑ 권장 · 오너 「나중에」) · AD-R3 PR④(규칙 표 DDL — 동결 해제로 착수 가능) ·
     한국어 어절 넘는 묶기(할 수 있다 — 별도 질문).
   - 오너 결정 대기: #1368 트레이드오프 · #1396 꼴 이름 2종·조각 간격.

@@ -142,7 +142,8 @@ test('ZH-GRID-001 — Aa preview follows the body grid; word selection frame sta
   await f.page.keyboard.press('Escape');
   // A word followed by a comma carries the 禁则 hold margin; its selection frame must still be the word's box.
   const t=f.page.locator(`.reader-area [data-source-token="${tid(0,7)}"]`);
-  await t.focus();await f.page.keyboard.press('Enter');
+  // 단어 조작은 안쪽 .surface가 받는다(#1323 이식, #1413) — 바깥 토큰은 초점을 받지 않는다.
+  await t.locator('.surface[role="button"]').focus();await f.page.keyboard.press('Enter');
   await f.page.waitForFunction(id=>document.querySelector(`.reader-area [data-source-token="${id}"]`)?.getAttribute('data-selected')==='true',tid(0,7));
   const frame=await t.evaluate(e=>{const s=e.querySelector('.surface').getBoundingClientRect(),b=getComputedStyle(e,'::before');return {surface:s.width,frame:parseFloat(b.width),hold:e.style.getPropertyValue('--zh-hold')};});
   assert.equal(frame.hold,'1','fixture premise: 壮观 is held with its comma');
