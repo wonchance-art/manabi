@@ -834,6 +834,33 @@ test('R0 버그 6 — 터치 화면 줄 첫 토큰: 테두리가 문장 막대�
   } finally { await context.close(); }
 });
 
+// ZH-GRID-001(오너 승인 목업 2026-10-12): 터치 화면은 문장 막대가 줄 첫 낱말 앞에 인라인으로 앉는다. 중국어에서는
+// 그 자리가 정확히 한 칸이라 문단 첫 줄이 한 칸 들여 쓰이고, 이어지는 줄과 같은 격자에 남는다(간격 0·0.5rem).
+for (const gap of ['0rem', '.5rem']) test(`중국어 격자 — 터치 화면 문장 막대는 한 칸을 차지해 다음 줄과 세로가 맞는다(자간 ${gap})`, async () => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 700 }, hasTouch: true, isMobile: true });
+  try {
+    const p = await context.newPage();
+    const cell = (c) => `<span class="zh-cell">${c}</span>`;
+    const word = (segs, { linePick = false, selected = false } = {}) => `<div class="word-token"${selected ? ' data-selected="true"' : ''}>${linePick ? '<button class="line-pick"></button>' : ''}<span class="surface">${segs.map(([c, r]) => (r ? `<ruby data-pinyin="1">${c}<span class="rt-an">${r}</span></ruby>` : cell(c))).join('')}</span></div>`;
+    const words = [word([['眼', 'yǎn'], ['前', 'qián']], { linePick: true, selected: true }), word([['的', 'de']]), word([['体', 'tǐ'], ['育', 'yù'], ['场', 'chǎng']]), word([['，']]),
+      ...Array.from({ length: 12 }, () => word([['我', 'wǒ'], ['们', 'men']]))].join('');
+    await p.setContent(R0_PAGE(r0Area({ fs: 25.6 }, words).replace('gap:15px .25rem;--char-gap:.25rem', `gap:15px 0;--char-gap:${gap};width:340px`)).replace('class="viewer-layout"', 'class="viewer-layout" data-language="Chinese"'));
+    const out = await p.evaluate(() => {
+      const cells = [...document.querySelectorAll('.surface > :is(ruby,.zh-cell)')].map((e) => { const b = e.getBoundingClientRect(); return { l: b.left, w: b.width, top: Math.round(e.closest('.surface').getBoundingClientRect().top) }; });
+      const t = document.querySelector('.word-token'), f = getComputedStyle(t, '::before');
+      return { hoverNone: matchMedia('(hover: none)').matches, cells, frameLeft: t.getBoundingClientRect().left + parseFloat(f.left), surfaceLeft: t.querySelector('.surface').getBoundingClientRect().left, areaLeft: document.querySelector('.reader-area').getBoundingClientRect().left + 16 };
+    });
+    assert.ok(out.hoverNone, '터치 컨텍스트가 (hover: none)이 아니다 — 전제가 무너졌다');
+    const pitch = out.cells[1].l - out.cells[0].l, tops = [...new Set(out.cells.map((c) => c.top))];
+    assert.ok(tops.length >= 2, `전제: 두 줄 이상(${tops.length})`);
+    assert.ok(new Set(out.cells.map((c) => c.w.toFixed(1))).size === 1, `칸 폭 단일값: ${out.cells.map((c) => c.w)}`);
+    const x0 = out.cells.find((c) => c.top === tops[1]).l;
+    for (const c of out.cells) { const off = (((c.l - x0) % pitch) + pitch) % pitch; assert.ok(Math.min(off, pitch - off) <= 1, `x ${c.l}이 ${pitch}px 격자에서 ${off.toFixed(1)}px 어긋남`); }
+    assert.ok(Math.abs(out.cells[0].l - x0 - pitch) <= 1, `첫 줄 들여쓰기 = 한 칸: ${out.cells[0].l - x0} vs ${pitch}`);
+    assert.ok(Math.abs(out.frameLeft - out.surfaceLeft) < 0.5, `테두리 왼변 ${out.frameLeft} ≠ 글자 상자 왼변 ${out.surfaceLeft}`);
+  } finally { await context.close(); }
+});
+
 test('R0 버그 1 — 문형 밑줄은 문장 지정·드래그·단어 선택 중에도 남는다(높이 ≥1px·폭 ≥80%)', async () => {
   // 드래그 범위와 문장 지정은 같은 클래스(word-token--picked)를 쓴다(ViewerPage pickedClass) —
   // 이음매(:has(+ picked))가 생기는 「뒤에 지정 토큰이 이어지는」 자리에 문형 토큰을 둔다.
