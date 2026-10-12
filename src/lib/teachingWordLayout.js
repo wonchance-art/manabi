@@ -31,6 +31,20 @@ function wrap(text, width, size, measure) {
   return rows;
 }
 
+// 뜻은 좁은 오른쪽 칸에 놓이므로 한국어·라틴 뜻을 띄어쓰기(단어) 경계에서 줄바꿈한다.
+// 명시적 줄바꿈(\n)은 문단으로 보존하고, 한 단어가 칸보다 넓을 때만 글자 단위로 되돌린다.
+// 공백은 행에 그대로 남긴다 — 캔버스 편집이 행을 이어 붙여 원래 뜻을 복원한다.
+function wrapMeaning(text, width, size, measure) {
+  return String(text).split('\n').flatMap(paragraph => {
+    const rows=[];let row='';
+    for(const token of paragraph.match(/\s+|\S+/gu)||[]) {
+      if(row&&!/^\s/u.test(token)&&measure(token,size)<=width&&measure(row+token,size)>width){rows.push(row);row='';}
+      for(const ch of token){if(row&&measure(row+ch,size)>width){rows.push(row);row='';}row+=ch;}
+    }
+    rows.push(row);return rows;
+  });
+}
+
 // One layout model for native editable canvas elements and DOM word previews.
 // All annotations exist even when hidden; visibility never moves surrounding ink.
 export function teachingWordLayout(value, {fontSize=42,maxWidth=620,measure=measureWordText,compact=false}={}) {
@@ -107,7 +121,7 @@ export function teachingWordLayout(value, {fontSize=42,maxWidth=620,measure=meas
   }
   const remaining=Math.max(meaningSize*3,maxWidth-leftWidth-gap);
   const meaningWidth=Math.min(remaining,Math.max(meaningSize*2,measure(meaning||' ',meaningSize)));
-  const meaningLines=wrap(meaning,meaningWidth,meaningSize,measure);
+  const meaningLines=wrapMeaning(meaning,meaningWidth,meaningSize,measure);
   const meaningTop=readBand+(size*1.25-meaningSize*1.25)/2;
   meaningLines.forEach((line,index)=>add('meaning',line,leftWidth+gap,meaningTop+index*meaningSize*1.4,meaningWidth,meaningSize,{index,visible:showMeaning,align:'left'}));
   const width=leftWidth+(meaning||!compact?gap+meaningWidth:0), height=Math.max(y+rowHeight,meaningTop+meaningLines.length*meaningSize*1.4);

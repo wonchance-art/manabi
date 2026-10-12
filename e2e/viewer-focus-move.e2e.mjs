@@ -82,7 +82,7 @@ test('390px: first tap shows only the move bar; touch and keyboard move; second 
   await up.focus();await f.page.keyboard.press('Enter');
   assert.deepEqual(await pickedLines(f),['0']);
   assert.equal(await f.page.evaluate(()=>document.activeElement?.getAttribute('aria-label')),'아래 문장','focus moves off the button disabled at the boundary');
-  await token(f,0,2).focus();
+  await token(f,0,2).locator('.surface[role="button"]').focus(); // 키보드 초점 자리는 단어 조작 .surface(#1323)
   await f.page.keyboard.press('Alt+ArrowDown');await f.page.keyboard.press('Alt+ArrowDown');
   assert.deepEqual(await pickedLines(f),['2']);
   await f.page.keyboard.press('Alt+ArrowUp');

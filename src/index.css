@@ -2776,17 +2776,17 @@ a.viewer-badge:hover {
 
 /* 문장 전체 지정 막대 — 줄 첫 토큰 안에 인라인으로 앉혀 한자와 라인박스·baseline을 공유.
    절대배치(앵커)는 루비(요미가나·병음) 줄에서 rt 높이 쪽으로 어긋났다(#984 실측) — 인라인이 정답.
-   음수 마진(-28+6=-22=폭 상쇄)으로 본문을 밀지 않고 왼쪽 여백에 나간다. */
+   음수 마진(-30+6=-24=폭 상쇄)으로 본문을 밀지 않고 왼쪽 여백에 나간다. */
 .line-pick {
-  /* 히트 영역은 넓게(22px × 2.2em), 시각은 ::before의 얇은 인용 막대만.
+  /* 히트 영역은 넓게(24px × 2.2em — WCAG 2.5.8 최소 타깃, #1323), 시각은 ::before의 얇은 인용 막대만.
      버튼이 줄상자와 같은 2.2em·top 정렬이라 버튼 top = 셀 top — 막대를 버튼 기준
      절대배치하면 글자 좌표계(--hl-band-top 등)를 보정값 없이 그대로 쓴다.
      middle 정렬+실측 보정은 x-height(글꼴)에 의존해 실기(PingFang)에서 어긋났었다
      (오너 보고 2026-08-29). */
   position: relative;
-  width: 22px;
+  width: 24px;
   height: 2.2em;
-  margin-left: -28px;
+  margin-left: -30px;
   margin-right: 6px;
   vertical-align: top;
   display: none;
@@ -2821,17 +2821,19 @@ a.viewer-badge:hover {
   .line-pick:hover { opacity: 1; }
 }
 /* 호버 없는 기기(모바일) — 호버로 부를 수 없고 왼쪽 여백도 없으므로,
-   각 줄 첫 글자 앞 인라인 자리에 상시 은은하게 표시(#1000 오너 보고). */
+   각 줄 첫 글자 앞 인라인 자리에 상시 은은하게 표시(#1000 오너 보고).
+   히트 폭 24px 중 9px는 음수 마진으로 왼쪽 여백에 내보내 본문 몫은 기존 18px(15+3)
+   그대로 — 막대(::before left 9px)와 글자 자리는 움직이지 않는다(#1323). */
 @media (hover: none) {
   .line-pick {
     display: inline-flex;
     opacity: 0.45;
-    margin-left: 0;
+    margin-left: -9px;
     margin-right: 3px;
-    width: 15px;
+    width: 24px;
     justify-content: flex-start;
   }
-  .line-pick::before { left: 0; right: auto; } /* 모바일: 기존 flex-start 자리 그대로 */
+  .line-pick::before { left: 9px; right: auto; } /* 모바일: 기존 flex-start 자리 그대로 */
   .line-pick:active { opacity: 1; }
 }
 

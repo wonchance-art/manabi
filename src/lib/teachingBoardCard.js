@@ -17,7 +17,9 @@ export function readCard(anchor, elements) {
     for(const role of ['text','reading','meaning']){
       const parts=fields.filter(el=>el.customData.manabiField===role).sort((a,b)=>a.customData.index-b.customData.index);
       if(parts.some(el=>el.text!==el.customData.displayText)){
-        result[role]=parts.map(el=>el.text===el.customData.displayText?el.customData.value:el.originalText||el.text).join(role==='reading'&&value.language==='Chinese'?' ':role==='meaning'?'\n':'');
+        // 뜻 행은 띄어쓰기 경계에서 접혀 행 끝에 공백이 남는다(wrapMeaning) — 줄바꿈으로 이을 때 행 끝 공백만 걷는다.
+        const rows=parts.map(el=>el.text===el.customData.displayText?el.customData.value:el.originalText||el.text);
+        result[role]=(role==='meaning'?rows.map(row=>row.replace(/\s+$/u,'')):rows).join(role==='reading'&&value.language==='Chinese'?' ':role==='meaning'?'\n':'');
       }
     }
     if(result.text!==value.text){result.source={kind:'manual'};result.reading='';}
