@@ -15,7 +15,7 @@ export default function ViewerError({ error, reset }) {
     ? { icon: '', title: '네트워크 연결 오류', desc: '인터넷 연결을 확인한 후 다시 시도해주세요.' }
     : isAnalyzing
     ? { icon: '', title: 'AI가 아직 분석 중입니다', desc: '잠시 후 다시 시도해주세요. 분석에는 수십 초가 걸릴 수 있어요.' }
-    : { icon: '', title: '콘텐츠를 불러올 수 없습니다', desc: error?.message || '텍스트 뷰어에서 오류가 발생했습니다.' };
+    : { icon: '', title: '콘텐츠를 불러올 수 없습니다', desc: '잠시 후 다시 시도해 주세요.' };
 
   return (
     <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
