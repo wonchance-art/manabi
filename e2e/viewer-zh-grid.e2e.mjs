@@ -49,9 +49,15 @@ const glyphs=(f,root='.reader-area')=>f.page.locator(root).evaluate(area=>{
   }
  }
  const area_=area.getBoundingClientRect(),cs=getComputedStyle(area);
- return {glyphs:out,contentLeft:area_.left+parseFloat(cs.paddingLeft),contentRight:area_.right-parseFloat(cs.paddingRight)};
+ // 쪽 넘김 보기(READER-PAGED-001)는 본문을 단(쪽)으로 가로로 늘어놓는다 — 쪽마다 왼쪽 끝에서 격자가 다시 시작하므로
+ // 글자의 쪽 번호와 쪽 간격(단 폭 + 단 간격, usePagedReader.measure와 같은 식)을 함께 돌려준다. 스크롤 보기는 한 쪽.
+ const pages=area.closest('[data-reader-pages="paged"]');
+ let step=0,pageLeft=0;
+ if(pages){const ps=getComputedStyle(pages),pr=pages.getBoundingClientRect();pageLeft=pr.left+parseFloat(ps.paddingLeft);step=(pages.clientWidth-parseFloat(ps.paddingLeft)-parseFloat(ps.paddingRight))+(parseFloat(ps.columnGap)||0);}
+ for(const g of out){g.page=step?Math.floor((g.left-pageLeft+1)/step):0;g.x=g.left-g.page*step;}
+ return {glyphs:out,step,contentLeft:area_.left+parseFloat(cs.paddingLeft),contentRight:area_.right-parseFloat(cs.paddingRight)};
 });
-const rowsOf=list=>{const m=new Map();for(const g of list){if(!m.has(g.top))m.set(g.top,[]);m.get(g.top).push(g);}return [...m.values()];};
+const rowsOf=list=>{const m=new Map();for(const g of list){const k=`${g.page??0}:${g.top}`;if(!m.has(k))m.set(k,[]);m.get(k).push(g);}return [...m.values()];};
 
 function checkGrid(data,label) {
  const bad=[],cells=data.glyphs.filter(g=>!g.run);
@@ -60,9 +66,10 @@ function checkGrid(data,label) {
  // Pitch = the step between two hanzi of one word (体育场).
  const word=cells.filter(g=>g.token==='体育场');
  const pitch=word[1].left-word[0].left;
- const x0=Math.min(...data.glyphs.map(g=>g.left));
+ // 쪽 안 좌표(g.x)로 잰다 — 쪽 넘김 보기에서 두 번째 쪽부터는 쪽 간격만큼 오른쪽에 놓이고, 격자는 쪽마다 같은 자리에서 시작한다.
+ const x0=Math.min(...data.glyphs.map(g=>g.x??g.left));
  for(const g of data.glyphs){
-  const off=((g.left-x0)%pitch+pitch)%pitch;
+  const off=(((g.x??g.left)-x0)%pitch+pitch)%pitch;
   if(Math.min(off,pitch-off)>1)bad.push(`${label}: ${g.text} (${g.token}) at x ${g.left.toFixed(1)} is ${off.toFixed(1)}px off the ${pitch.toFixed(1)}px column grid`);
   if(g.run){const k=Math.round((g.width+pitch-cell)/pitch);if(Math.abs(k*pitch-(pitch-cell)-g.width)>1)bad.push(`${label}: half-width run ${g.text} is ${g.width.toFixed(1)}px, not a whole number of cells`);}
  }
@@ -116,7 +123,8 @@ test('ZH-GRID-001 — 禁则 holds at every wrap width, and actually engages (a 
    const data=await glyphs(f),r=checkGrid(data,`${width}px`);bad.push(...r.bad);
    const rows=rowsOf(data.glyphs);
    for(let i=1;i<rows.length;i++){
-    const head=rows[i][0],prevEnd=Math.max(...rows[i-1].map(g=>g.right));
+    const head=rows[i][0];if((rows[i-1][0].page??0)!==(head.page??0))continue;// 쪽이 바뀌는 자리는 줄바꿈이 아니다
+    const prevEnd=Math.max(...rows[i-1].map(g=>g.right-(g.page??0)*data.step));
     // The head word is followed by closing punctuation and would itself have fitted on the previous row.
     const headWidth=Math.max(...rows[i].filter(g=>g.token===head.token).map(g=>g.right))-head.left;
     if(head.hold&&prevEnd+(r.pitch-r.cell)+headWidth<=data.contentRight+.5)engaged++;
