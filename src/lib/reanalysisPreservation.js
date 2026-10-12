@@ -255,7 +255,7 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
   checkAbort();
   const attempt = crypto.randomUUID();
   const metadata = { ...original?.metadata, viewerRevision: attempt, updated_at: new Date().toISOString() };
-  // AD-R3: 경계 기록을 새 원문 줄로 옮겨 분석 요청에 싣는다(analyzeHybrid가 문단마다 boundaries로 보낸다). 기록 0이면 무변경.
+  // AD-R3: 경계 기록을 새 원문 줄로 옮겨 분석 요청에 싣는다(analyzeHybrid가 그 줄이 실린 요청에 boundaries로 보낸다). 기록 0이면 무변경.
   const priorBoundaries = metadata.language === 'Korean' ? [] : readBoundaryEdits(original);
   const mappedBoundaries = priorBoundaries.length ? mapBoundaryEdits(material.raw_text || '', rawText, priorBoundaries) : null;
   if (mappedBoundaries) metadata.viewerBoundaries = { ...metadata.viewerBoundaries, edits: mappedBoundaries };

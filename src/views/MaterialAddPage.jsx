@@ -9,8 +9,9 @@ import Button from '../components/Button';
 import { analyzeText } from '../lib/analyzeText';
 import { autoSplitParagraphs } from '../lib/splitParagraphs';
 import {
-  splitTextIntoChapters, CHAPTER_MAX_CHARS, looksLikeSentenceList, LINES_PER_REQUEST_CAP,
+  splitTextIntoChapters, fitChaptersToCap, BODY_CAP_LABEL, looksLikeSentenceList, LINES_PER_REQUEST_CAP,
 } from '../lib/bookSplit';
+import { MAX_BODY_CHARS } from '../lib/materialComposer';
 import { makeBookKey } from '../lib/bookMeta';
 import { bookKeyForDraft, appendPlanOf, listAppendableBooks, countContentLines } from '../lib/bookAppend';
 import { chapterError } from '../lib/libraryBookChapters';
@@ -185,21 +186,20 @@ function MaterialAddForm() {
     setOpenEntry('');
     setVisibility('private');
     if (epubLang) { setLanguage(epubLang); setLevel(viewerLanguageInfo(epubLang)?.code === 'ko' ? '' : epubLang === 'Japanese' ? 'N3 중급' : epubLang === 'Chinese' ? 'H3 중급' : 'B1 중급'); }
-    // 상한 초과 챕터는 여기서 재분할해 받아들인다("일단 다 받아들이되" 원칙)
-    const normalized = chapters.flatMap((ch) =>
-      ch.text.length > CHAPTER_MAX_CHARS
-        ? splitTextIntoChapters(ch.text).map((sub, i, arr) => ({
-            title: arr.length > 1 ? `${ch.title} (${i + 1}/${arr.length})` : ch.title,
-            text: sub.text,
-          }))
-        : [{ title: ch.title, text: ch.text }]
-    );
+    // EPUB의 원래 장 구분을 그대로 쓴다 — 길다고 다시 나누지 않는다(쪽 넘김 리더 승인 §5).
+    // 저장 상한(MAX_BODY_CHARS)을 넘는 장만 그 장을 문단 경계에서 나누고, 나눴다고 알린다.
+    const { chapters: normalized, oversized } = fitChaptersToCap(chapters);
     setBookDraft({ title: bookTitle, chapters: normalized, privateOnly: true, origin: 'epub' });
     setBookDoneCount(0);
-    toast(`챕터 ${normalized.length}개를 준비했어요. 목록을 확인하고 등록하세요.`, 'success');
+    if (oversized.length > 0) {
+      const names = oversized.length === 1 ? `「${oversized[0]}」` : `「${oversized[0]}」 외 ${oversized.length - 1}개`;
+      toast(`챕터 ${normalized.length}개를 준비했어요. ${names} 장은 ${BODY_CAP_LABEL}를 넘어 문단 경계에서 나눴어요. 목록을 확인하고 등록하세요.`, 'warning');
+    } else {
+      toast(`챕터 ${normalized.length}개를 준비했어요. 목록을 확인하고 등록하세요.`, 'success');
+    }
   };
 
-  // 긴 붙여넣기 텍스트 → 챕터 자동 분할 초안(P2). 경계는 아래 목록에서 손볼 수 있다.
+  // 사용자가 고르는 나누기(P2) — 권유하지 않고 본문 칸 머리의 선택지로만 둔다(§5). 경계는 아래 목록에서 손볼 수 있다.
   const handleSplitToBook = () => {
     const chapters = splitTextIntoChapters(rawText);
     if (chapters.length < 2) { toast('나눌 챕터 경계를 찾지 못했어요 — 그대로 한 자료로 등록해 주세요.', 'info'); return; }
@@ -596,6 +596,12 @@ function MaterialAddForm() {
         <div className="form-field">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
             <label className="form-label" style={{ marginBottom: 0 }}>본문 텍스트</label>
+            <span style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            {rawText.trim() && !bookDraft && (
+              <Button size="sm" variant="ghost" onClick={handleSplitToBook}>
+                챕터로 나누기
+              </Button>
+            )}
             <Button
               size="sm"
               variant="ghost"
@@ -611,6 +617,7 @@ function MaterialAddForm() {
             >
               클립보드 붙여넣기
             </Button>
+            </span>
           </div>
           <textarea
             value={rawText}
@@ -634,17 +641,8 @@ function MaterialAddForm() {
             className="form-textarea"
           />
           {rawText.length > 0 && (
-            <div className={`form-char-count ${rawText.length > 50000 ? 'form-char-count--over' : rawText.length > 30000 ? 'form-char-count--warn' : ''}`}>
+            <div className={`form-char-count ${rawText.length > MAX_BODY_CHARS ? 'form-char-count--over' : ''}`}>
               {rawText.length.toLocaleString()}자 · 약 {rawText.split('\n').filter(l => l.trim()).length}개 문단
-              {rawText.length > 10000 && !bookDraft && (
-                <button
-                  type="button"
-                  onClick={handleSplitToBook}
-                  style={{ marginLeft: 10, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary-light)', fontSize: '0.8rem', fontWeight: 700, textDecoration: 'underline' }}
-                >
-                  챕터로 나눠 책으로 등록
-                </button>
-              )}
             </div>
           )}
 

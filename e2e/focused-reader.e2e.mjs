@@ -86,6 +86,8 @@ try {
  await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last().click();await page.waitForURL('**/home');
  await page.getByRole('link',{name:'자료 검색',exact:true}).click();await page.locator('#library-search').waitFor();await check('early login navigation resolves the search page, not stale Home');
  assert(!prefetches.includes('/home'),'Home must not prefetch across authentication');
+ // 세로 스크롤 읽기(상단 막대 고정·Aa 위치 보정)를 고정하는 검사 — 기본이 쪽 넘김(READER-PAGED-001)이 된 뒤에는 스크롤 보기로 연다.
+ await page.evaluate(()=>localStorage.setItem('viewer_preferences_v2',JSON.stringify({version:2,common:{readerView:'scroll'},languages:{}})));
  await page.goto(base+'/viewer/94001');await page.locator('.word-token').first().waitFor();assert.equal(await page.locator('main').count(),1);assert(await page.locator('.gnb__nav').isHidden());assert(await page.locator('.viewer-side--right').isHidden());assert.equal(await page.locator('.viewer-sheet-bar').count(),0);await check('reader starts without empty panels or a second main landmark');
  const menu=page.locator('.reader-site-menu summary');await menu.focus();await page.keyboard.press('Enter');await page.getByRole('navigation',{name:'읽기 화면 내비게이션'}).getByRole('link',{name:'교재',exact:true}).waitFor();await page.keyboard.press('Escape');assert(await menu.evaluate(el=>document.activeElement===el));await check('compact menu opens by keyboard and Escape restores focus');
  await shot('reader-desktop');

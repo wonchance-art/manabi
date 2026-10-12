@@ -78,6 +78,8 @@ async function shot(name){await page.evaluate(()=>scrollTo({top:0,behavior:'inst
 try {
  await page.goto(base+'/materials');await page.getByRole('link',{name:'자료 검색',exact:true}).click();await page.locator('#library-search').waitFor();assert.match(page.url(),/tab=public/);assert(await page.locator('#library-search').evaluate(el=>document.activeElement===el));await check('guest search opens a focused, working public search');
  await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last().click();await page.waitForURL('**/home');await page.getByRole('heading',{level:1}).filter({hasText:'다음 페이지'}).waitFor();
+ // 세로 스크롤 읽기 흐름을 고정하는 검사 — 기본이 쪽 넘김(READER-PAGED-001)이 된 뒤에는 스크롤 보기로 연다.
+ await page.evaluate(()=>localStorage.setItem('viewer_preferences_v2',JSON.stringify({version:2,common:{readerView:'scroll'},languages:{}})));
  await page.getByRole('link',{name:'자료 검색',exact:true}).click();await page.locator('#library-search').waitFor();assert.match(page.url(),/view=owned/);await check('member search opens owned materials');
  await page.goto(base+'/materials/add?advanced=1');await page.locator('.form-textarea').fill('あさです。\n\nひるです。\n\nよるです。');await page.locator('.form-input').first().fill('내가 가져온 하루');
  saveFail=true;await page.getByRole('button',{name:'저장하고 읽기 준비',exact:true}).click();await page.getByRole('alert').filter({hasText:'저장 오류'}).waitFor();assert.equal(await page.locator('.form-textarea').inputValue(),'あさです。\n\nひるです。\n\nよるです。');assert.equal(records.length,0);await check('save failure preserves the input and creates no row');

@@ -5,9 +5,15 @@
 // 오차를 UI가 흡수하는 것이 품질의 핵심(조사 결론).
 
 import { splitBilingual } from './bilingualSplit';
+import { MAX_BODY_CHARS } from './materialComposer';
 
-export const CHAPTER_MAX_CHARS = 45000;   // MaterialAddPage 50k 캡 아래 안전 여유
+// 사용자가 「챕터로 나누기」를 골랐을 때의 기본 크기 — 읽기 단위의 제안일 뿐 상한이 아니다.
+// 자동 재분할은 하지 않는다(쪽 넘김 리더 승인 2026-10-12 §5). 저장 상한은 MAX_BODY_CHARS 하나다.
+export const CHAPTER_MAX_CHARS = 45000;
 export const CHAPTER_TARGET_CHARS = 15000; // 무헤딩 길이 분할 목표 크기
+
+/** 저장 상한(작성기·DB 과 상한 정본 MAX_BODY_CHARS)을 사람이 읽는 말로 — 「20만 자」. */
+export const BODY_CAP_LABEL = `${MAX_BODY_CHARS / 10000}만 자`;
 
 const HEADING_PATTERNS = [
   /^#{1,3}\s+\S/,                                    // 마크다운 헤딩
@@ -55,15 +61,15 @@ function splitByLength(text, { targetChars, titleBase }) {
   });
   const parts = [];
   let buf = [];
-  let len = 0;
+  let len = 0; // 이음 빈 줄(\n\n)까지 센다 — 상한 바로 아래로 자를 때 2자씩 넘치지 않게
   for (const p of paras) {
-    if (len > 0 && len + p.length > targetChars) {
+    if (len > 0 && len + 2 + p.length > targetChars) {
       parts.push(buf.join('\n\n'));
       buf = [];
       len = 0;
     }
+    len += (buf.length > 0 ? 2 : 0) + p.length;
     buf.push(p);
-    len += p.length;
   }
   if (buf.length > 0) parts.push(buf.join('\n\n'));
   if (parts.length <= 1) return [{ title: titleBase, text }];
@@ -76,9 +82,11 @@ function splitByLength(text, { targetChars, titleBase }) {
  * 어느 경로든 상한(maxChars)을 넘는 챕터는 문단 경계에서 재분할된다.
  */
 export function splitTextIntoChapters(rawText, opts = {}) {
-  const { targetChars = CHAPTER_TARGET_CHARS, maxChars = CHAPTER_MAX_CHARS } = opts;
+  const { targetChars = CHAPTER_TARGET_CHARS, maxChars = CHAPTER_MAX_CHARS, headings = true } = opts;
   const text = String(rawText || '').trim();
   if (!text) return [];
+  // headings:false — 표제를 보지 않고 문단 경계 길이 분할만(상한 초과 장 하나를 자를 때)
+  if (!headings) return splitByLength(text, { targetChars: Math.min(targetChars, maxChars), titleBase: '본문' });
 
   const lines = text.split('\n');
   const sections = [];
@@ -109,7 +117,7 @@ export function splitTextIntoChapters(rawText, opts = {}) {
     chapters = splitByLength(text, { targetChars, titleBase: '본문' });
   }
 
-  // 상한 초과 챕터는 재분할 — 분석 캡(50k)과 뷰어 성능을 지키는 마지막 방어선
+  // 사용자가 나누기를 고른 경우의 크기 정리 — 너무 큰 조각은 문단 경계에서 한 번 더 나눈다
   const out = [];
   for (const ch of chapters) {
     if (ch.text.length > maxChars) {
@@ -119,6 +127,28 @@ export function splitTextIntoChapters(rawText, opts = {}) {
     }
   }
   return out;
+}
+
+/**
+ * EPUB 장 → 책 초안의 과. **원래 장 구분만 쓴다** — 길다고 다시 나누지 않는다(§5).
+ * 단 저장 상한(MAX_BODY_CHARS)을 넘는 장만 그 장 하나를 문단 경계에서 상한 바로 아래 크기로
+ * 나눈다(넘기면 저장·과 편집이 거부된다). 나눈 장 제목은 oversized로 돌려 화면이 알린다.
+ * @param {Array<{title: string, text: string}>} chapters
+ * @returns {{chapters: Array<{title: string, text: string}>, oversized: string[]}}
+ */
+export function fitChaptersToCap(chapters, cap = MAX_BODY_CHARS) {
+  const oversized = [];
+  const out = (chapters || []).flatMap((ch) => {
+    const text = String(ch.text || '');
+    if (text.length <= cap) return [{ title: ch.title, text }];
+    oversized.push(ch.title);
+    const parts = splitTextIntoChapters(text, { targetChars: cap, maxChars: cap, headings: false });
+    return parts.map((sub, i) => ({
+      title: parts.length > 1 ? `${ch.title} (${i + 1}/${parts.length})` : ch.title,
+      text: sub.text,
+    }));
+  });
+  return { chapters: out, oversized };
 }
 
 /** 미리보기 경계 조정 — index 챕터를 앞 챕터에 합친다(제목은 앞 챕터 유지). */

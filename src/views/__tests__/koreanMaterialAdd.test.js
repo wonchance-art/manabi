@@ -259,7 +259,7 @@ describe('Korean ordinary text reading import', () => {
     const first = '한 줄\n　다음 줄 ' + '가'.repeat(6000);
     const second = '마지막 😀 ' + '나'.repeat(6000);
     fill(`# 첫 글\n${first}\n# 둘째 글\n${second}`);
-    button('챕터로 나눠 책으로 등록').props.onClick();
+    button('챕터로 나누기').props.onClick();
     await find(node => node.type === 'BookDraftPanel').props.onRegister();
     const saved = mocks.insert.mock.calls[0][0];
     expect(saved.map(row => row.raw_text)).toEqual([first, second]);

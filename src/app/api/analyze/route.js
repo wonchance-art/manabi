@@ -33,7 +33,7 @@ import {
 export const runtime = 'nodejs';
 export const maxDuration = 60; // Vercel Node.js 함수: 최대 60초
 
-// 입력 캡(비용 남용 방지) — 정상 세션은 문단 단위 수 줄이라 캡에 닿지 않는다.
+// 입력 캡(비용 남용 방지). 자료 분석(analyzeText)은 여러 문단을 한 요청에 묶되 이 캡과 요청당 글자 예산 안으로 나눠 보낸다.
 const MAX_LINES = 100;      // 요청당 줄 수
 const MAX_LINE_LEN = 200;   // 줄당 문자 수
 // 요청당 Gemini 의미 조회 상한(미싱 base_form) — fetchMeanings 배치 폭발 방지.
@@ -92,7 +92,15 @@ export async function POST(request) {
     return Response.json({ error: 'language must be Japanese, English or Chinese' }, { status: 400 });
   }
   // 줄 수·줄 길이 캡 — 토큰화·Gemini 팬아웃 비용을 상한. 정상 세션(수 줄)은 영향 없음.
-  const lines = rawLines.slice(0, MAX_LINES).map((l) => String(l ?? '').slice(0, MAX_LINE_LEN));
+  // 캡을 넘은 줄은 잘라 분석하되 결과에 truncated 표식을 단다 — 조용히 자르면 뒷부분 토큰이 사라진 채
+  // 자료가 '완료'로 저장됐다(EPUB 문단·자막 8줄 합치기). 자료 분석(analyzeText)은 미리 문장 단위로 나눠 보내고,
+  // 표식이 온 줄은 실패(복구 가능)로 남긴다. 빠른 분석·드래그 분석은 앞부분 단어만 보여 주는 지금 동작 그대로다.
+  const truncatedLines = new Set();
+  const lines = rawLines.slice(0, MAX_LINES).map((l, i) => {
+    const line = String(l ?? '');
+    if (line.length > MAX_LINE_LEN) truncatedLines.add(i);
+    return line.slice(0, MAX_LINE_LEN);
+  });
   // AD-R3: 이 자료의 단어 경계 기록(줄 = 요청 안 번호). 없으면 기존 경로 그대로(기록 0 = 동작 동일).
   const boundaryRequest = readRequestBoundaries(boundaries, lines.length);
   if (!boundaryRequest.ok) {
@@ -351,7 +359,8 @@ export async function POST(request) {
           ...(zhSense?.meaningCheck ? { meaningCheck: zhSense.meaningCheck } : {}),
         };
       });
-      return boundaryLineResult(boundaryState, lineIdx, sequence, dictionary);
+      const lineResult = boundaryLineResult(boundaryState, lineIdx, sequence, dictionary);
+      return truncatedLines.has(lineIdx) ? { ...lineResult, truncated: true } : lineResult;
     });
 
     // 중국어 자가 치유 ② — 문맥 판별이 알아낸 다중 후보를 단일 pos 레거시 gemini 행에 기록

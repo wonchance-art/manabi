@@ -35,7 +35,7 @@ describe('viewer preferences migration and isolation',()=>{
   const read=readViewerPreferences(store,'Chinese');
   expect(read).not.toHaveProperty('pronReveal');
   const {pronReveal:_dropped,...rest}=saved;
-  expect(read).toEqual({...rest,theme:'dark',ttsRate:'fast'});
+  expect(read).toEqual({...rest,theme:'dark',ttsRate:'fast',readerView:'paged'});
   expect(Object.keys(viewerDefaults('Chinese'))).not.toContain('pronReveal');
   writeViewerPreferences(store,'Chinese',{...read,showHanjaKo:false});
   const after=JSON.parse(store.getItem(VIEWER_PREF_KEY));
