@@ -56,6 +56,33 @@ export function splitAnalysisLine(line, { language, maxLen = ANALYZE_MAX_LINE_LE
   return segments.length ? segments : [{ start: 0, end: text.length }];
 }
 
+/**
+ * 요청 줄 하나(앞뒤 공백 뺀 원문 줄)를 조각 [{text, offset, sent: []}]로 — 칼선은 단어 경계 기록 구간 안에 두지 않는다.
+ * offset = 조각 앞의 공백 뺀 글자 수(기록 좌표 단위 · 조각 좌표 + offset = 줄 좌표). records = 그 줄 기록 [{start, end}](줄 좌표).
+ * homes[k] = 기록 k를 실을 조각(한 조각이면 그 조각, 여러 조각이면 구간이 다 든 조각, 없으면 null).
+ * 자료 분석(analyzeHybrid)과 경계 편집(boundaryEditFlow.commitBoundaryEdit)이 같이 쓴다 — 두 경로의 조각이 갈리지 않게.
+ */
+export function analysisLineUnits(text, records = [], { language, split = true } = {}) {
+  const at = p => compactBoundaryText(text.slice(0, p)).length;
+  const ranges = split ? splitAnalysisLine(text, { language,
+    canCut: p => !records.some(record => record.start < at(p) && at(p) < record.end) }) : [{ start: 0, end: text.length }];
+  const units = ranges.map(range => ({ text: text.slice(range.start, range.end), offset: at(range.start), sent: [] }));
+  const homes = records.map(({ start, end }) => (units.length === 1 ? units[0] : units.find(unit => Number.isInteger(start)
+    && Number.isInteger(end) && start >= unit.offset && end <= unit.offset + compactBoundaryText(unit.text).length)) ?? null);
+  return { units, homes };
+}
+
+/** 기록 요청 항목(줄 좌표) → 요청 line번째 조각 좌표. offset 0이면 좌표 그대로(줄 번호만). */
+export const boundaryToUnit = (payload, unit, line) => (unit.offset ? { ...payload, line, start: payload.start - unit.offset,
+  end: payload.end - unit.offset, cuts: Array.isArray(payload.cuts) ? payload.cuts.map(cut => cut - unit.offset) : payload.cuts }
+  : { ...payload, line });
+
+/** 서버 boundaryApplied 항목(조각 좌표) → 줄 좌표. applied가 아니거나 offset 0이면 그대로. */
+export const boundaryFromUnit = (applied, unit) => (unit?.offset && applied?.status === 'applied' && Number.isInteger(applied.start)
+  && Number.isInteger(applied.end) && Array.isArray(applied.cuts)
+  ? { ...applied, start: applied.start + unit.offset, end: applied.end + unit.offset, cuts: applied.cuts.map(cut => cut + unit.offset) }
+  : applied);
+
 /** 429 응답의 Retry-After(초)를 기다릴 ms로 — 없거나 숫자가 아니면 기본 5초, 1~60초로 자른다. headers가 없는 응답도 받는다. */
 export function retryAfterMs(res) {
   let raw = null;
@@ -77,7 +104,7 @@ function waitAbortable(ms, signal) {
 }
 
 /** fetch — 429면 Retry-After만큼 기다렸다가 RATE_LIMIT_RETRIES번까지 다시 보낸다. 그래도 429면 그 응답을 돌려준다(호출부가 실패 처리). */
-async function fetchWithRateLimitRetry(url, init, signal) {
+export async function fetchWithRateLimitRetry(url, init, signal) {
   for (let attempt = 0; ; attempt += 1) {
     const res = await fetch(url, init);
     if (res?.status !== 429 || attempt >= RATE_LIMIT_RETRIES) return res;
@@ -235,18 +262,10 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
     const units = []; // 요청 한 줄 = {text, offset(조각 앞 공백 뺀 글자 수), sent(이 조각에 실은 기록, 기록 목록 순서)}
     const lineUnits = para.lines.map((text, li) => {
       const records = sentBoundaries.filter(item => item.payload.line === li);
-      const at = p => compactBoundaryText(text.slice(0, p)).length;
-      const ranges = isKorean ? [{ start: 0, end: text.length }] : splitAnalysisLine(text, { language,
-        canCut: p => !records.some(({ payload }) => payload.start < at(p) && at(p) < payload.end) });
-      const own = ranges.map(range => ({ text: text.slice(range.start, range.end), offset: at(range.start), sent: [] }));
+      // 한 조각이면 지금처럼 그 줄 기록을 모두 싣는다(옮김·pending은 서버가 정한다). 여러 조각이면 구간이 든 조각에만.
+      const { units: own, homes } = analysisLineUnits(text, records.map(item => item.payload), { language, split: !isKorean });
       units.push(...own);
-      for (const item of records) {
-        const { start, end } = item.payload;
-        // 한 조각이면 지금처럼 그 줄 기록을 모두 싣는다(옮김·pending은 서버가 정한다). 여러 조각이면 구간이 든 조각에만.
-        const home = own.length === 1 ? own[0] : own.find(unit => Number.isInteger(start) && Number.isInteger(end)
-          && start >= unit.offset && end <= unit.offset + compactBoundaryText(unit.text).length);
-        if (home) { home.sent.push(item); homeOf.set(item, home); }
-      }
+      records.forEach((item, k) => { if (homes[k]) { homes[k].sent.push(item); homeOf.set(item, homes[k]); } });
       return own;
     });
     allSent.push(...sentBoundaries);
@@ -357,11 +376,7 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
         sentBoundaries.filter(item => item.payload.line === li).forEach((item) => {
           const unit = homeOf.get(item);
           const applied = unit ? unitResults.get(unit)?.boundaryApplied?.[unit.sent.indexOf(item)] : undefined;
-          const shifted = unit?.offset && applied?.status === 'applied' && Number.isInteger(applied.start)
-            && Number.isInteger(applied.end) && Array.isArray(applied.cuts)
-            ? { ...applied, start: applied.start + unit.offset, end: applied.end + unit.offset,
-              cuts: applied.cuts.map(cut => cut + unit.offset) }
-            : applied;
+          const shifted = boundaryFromUnit(applied, unit);
           boundaryEdits[item.index] = settleBoundaryRecord(boundaryEdits[item.index], shifted,
             () => `id_${idx}_b${baseSeq++}_${timestamp}`);
         });
@@ -407,11 +422,8 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
   for (const { units } of requests) {
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
     const sent = new Set(units);
-    const boundariesBody = allSent.filter(item => sent.has(homeOf.get(item))).map(item => {
-      const unit = homeOf.get(item), line = units.indexOf(unit), { payload } = item;
-      return unit.offset ? { ...payload, line, start: payload.start - unit.offset, end: payload.end - unit.offset,
-        cuts: Array.isArray(payload.cuts) ? payload.cuts.map(cut => cut - unit.offset) : payload.cuts } : { ...payload, line };
-    });
+    const boundariesBody = allSent.filter(item => sent.has(homeOf.get(item)))
+      .map(item => boundaryToUnit(item.payload, homeOf.get(item), units.indexOf(homeOf.get(item))));
     let response = null;
     try {
       const res = await fetchWithRateLimitRetry(isKorean ? '/api/analyze/korean' : '/api/analyze', {

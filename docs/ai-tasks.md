@@ -952,6 +952,7 @@
   - **ANALYZE-LONG-LINE-001**(10-12 발견·수정, 학습 흐름 버그): 200자 넘는 일·영·중 줄이 분석에서 잘린 채 completed로 저장되던 문제 —
     문장 단위로 나눠 보내고 원래 줄로 잇기 · 서버 truncated 표식 · 모든 언어 덮기 검사 · 100줄 넘는 문단 분할 요청 · 기존 잘린 자료 복구 경로 ·
     Preview QA 429 대응: 여러 문단을 한 요청으로 묶기(글자 예산 중400·일800·영2000) · 429는 Retry-After 대기 후 2회 재시도(PR 진행).
+  - **BOUNDARY-LONG-LINE-001**(10-12, ANALYZE-LONG-LINE-001 남은 문제): 200자 넘는 줄의 200자 뒤 묶기·나누기가 analysis_mismatch로 막히던 문제 — 경계 편집도 자료 분석과 같은 조각(analysisLineUnits)으로 나눠 기록이 든 조각만 보내고 줄 좌표로 잇기 · 429 재시도 · 계약 `boundaryLongLines.test.js`(PR 진행).
   - **PR-TRIAGE-1323**(10-12 오너 「권장대로 전부 진행」): 정체 PR #1323에서 살릴 2가지 이식 — 뷰어 단어 버튼 안 중첩 버튼 분리·닫을 때 초점 복귀·문장 막대 24px,
     설명판 뜻 단어 경계 줄바꿈(`wrapMeaning`) · 계약 `wordTokenNesting.test.js` · 이식 PR 병합 뒤 #1323 닫기.
   - **ORIGINAL-POSITION-RETRY-001**(10-12 실계정 Preview QA — 복습 뒤 원본 복귀 시 온라인인데 「연결되면…」 오프라인 안내): 4초 제한을 클라이언트·auth 세션 준비 뒤에 시작 · 첫 읽기 자동 재시도 2회(1s·3s, 안내 없음) · 소진 시 오프라인(navigator.onLine=false)만 기존 문구, 온라인은 「읽던 위치를 불러오지 못했어요」+다시 시도 · errorCode console.warn — 브랜치 `claude/original-position-retry`.
