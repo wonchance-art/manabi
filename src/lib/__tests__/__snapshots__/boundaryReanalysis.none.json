@@ -4,11 +4,7 @@
       "bodies": [
         {
           "url": "/api/analyze",
-          "body": "{\"lines\":[\"运动员的身体素质非常好。\",\"他是我的社恐朋友。\"],\"language\":\"Chinese\"}"
-        },
-        {
-          "url": "/api/analyze",
-          "body": "{\"lines\":[\"身体好。\"],\"language\":\"Chinese\"}"
+          "body": "{\"lines\":[\"运动员的身体素质非常好。\",\"他是我的社恐朋友。\",\"身体好。\"],\"language\":\"Chinese\"}"
         }
       ],
       "rpcs": [],
@@ -189,11 +185,7 @@
       "bodies": [
         {
           "url": "/api/analyze",
-          "body": "{\"lines\":[\"运动员的身体素质非常好。\",\"他是我的社恐朋友。\"],\"language\":\"Chinese\"}"
-        },
-        {
-          "url": "/api/analyze",
-          "body": "{\"lines\":[\"身体好。\"],\"language\":\"Chinese\"}"
+          "body": "{\"lines\":[\"运动员的身体素质非常好。\",\"他是我的社恐朋友。\",\"身体好。\"],\"language\":\"Chinese\"}"
         }
       ],
       "rpcs": [
@@ -1319,11 +1311,7 @@
       "bodies": [
         {
           "url": "/api/analyze",
-          "body": "{\"lines\":[\"明日は申し込んだ映画館に行きます。\",\"天気予報を見た。\"],\"language\":\"Japanese\"}"
-        },
-        {
-          "url": "/api/analyze",
-          "body": "{\"lines\":[\"映画館は近い。\"],\"language\":\"Japanese\"}"
+          "body": "{\"lines\":[\"明日は申し込んだ映画館に行きます。\",\"天気予報を見た。\",\"映画館は近い。\"],\"language\":\"Japanese\"}"
         }
       ],
       "rpcs": [],
@@ -1504,11 +1492,7 @@
       "bodies": [
         {
           "url": "/api/analyze",
-          "body": "{\"lines\":[\"明日は申し込んだ映画館に行きます。\",\"天気予報を見た。\"],\"language\":\"Japanese\"}"
-        },
-        {
-          "url": "/api/analyze",
-          "body": "{\"lines\":[\"映画館は近い。\"],\"language\":\"Japanese\"}"
+          "body": "{\"lines\":[\"明日は申し込んだ映画館に行きます。\",\"天気予報を見た。\",\"映画館は近い。\"],\"language\":\"Japanese\"}"
         }
       ],
       "rpcs": [
@@ -2634,11 +2618,7 @@
       "bodies": [
         {
           "url": "/api/analyze",
-          "body": "{\"lines\":[\"I picked up the book.\",\"She looked after them.\"],\"language\":\"English\"}"
-        },
-        {
-          "url": "/api/analyze",
-          "body": "{\"lines\":[\"Pick up the pen.\"],\"language\":\"English\"}"
+          "body": "{\"lines\":[\"I picked up the book.\",\"She looked after them.\",\"Pick up the pen.\"],\"language\":\"English\"}"
         }
       ],
       "rpcs": [],
@@ -2803,11 +2783,7 @@
       "bodies": [
         {
           "url": "/api/analyze",
-          "body": "{\"lines\":[\"I picked up the book.\",\"She looked after them.\"],\"language\":\"English\"}"
-        },
-        {
-          "url": "/api/analyze",
-          "body": "{\"lines\":[\"Pick up the pen.\"],\"language\":\"English\"}"
+          "body": "{\"lines\":[\"I picked up the book.\",\"She looked after them.\",\"Pick up the pen.\"],\"language\":\"English\"}"
         }
       ],
       "rpcs": [
