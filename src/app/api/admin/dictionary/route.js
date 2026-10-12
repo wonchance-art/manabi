@@ -4,6 +4,7 @@
 // DELETE ?id=... → 항목 삭제
 
 import { createClient } from '@supabase/supabase-js';
+import { normalizeAdminMeanings } from '@/lib/server/adminDictionaryMeanings';
 
 export const runtime = 'nodejs';
 
@@ -73,21 +74,29 @@ export async function PATCH(request) {
   const { id, updates } = body || {};
   if (!id || !updates) return Response.json({ error: 'id + updates required' }, { status: 400 });
 
+  const supabase = serverSupabase();
   const allowed = {};
   if (typeof updates.pos === 'string') allowed.pos = updates.pos.slice(0, 30);
   if (typeof updates.reading === 'string') allowed.reading = updates.reading.slice(0, 100);
   if (Array.isArray(updates.meanings)) {
-    allowed.meanings = updates.meanings
-      .filter(m => m?.meaning)
-      .slice(0, 5)
-      .map((m, i) => ({ meaning: String(m.meaning).slice(0, 200), priority: i + 1 }));
+    // 뜻별 pos·en_pos_v(요청에 있으면 보존)와, 글자가 그대로인 뜻의 기존 pos·en_pos_v·ja를 이어받는다
+    // — 예전엔 {meaning, priority}만 남겨 편집 한 번에 겸류 뜻 정렬 정보가 영구히 사라졌다(MEANING-VERIFY-001).
+    const { data: current, error: readError } = await supabase
+      .from('morpheme_dictionary')
+      .select('language, meanings')
+      .eq('id', id)
+      .single();
+    if (readError || !current) return Response.json({ error: 'Not found' }, { status: 404 });
+    allowed.meanings = normalizeAdminMeanings(updates.meanings, {
+      language: current.language,
+      previous: current.meanings,
+    });
   }
   if (Object.keys(allowed).length === 0) {
     return Response.json({ error: 'No valid fields' }, { status: 400 });
   }
   allowed.source = 'user_verified'; // 관리자 편집 → 검증 상태로 승격
 
-  const supabase = serverSupabase();
   const { data, error } = await supabase
     .from('morpheme_dictionary')
     .update(allowed)

@@ -956,6 +956,7 @@
   - **BUILD-FONT-VENDOR-001**(10-13, 오너 「글꼴 저장소 내장」): 배포 빌드가 Google Fonts 10패밀리 woff2 약 950개를 매번 받다 하나만 실패해도 ERROR(#1402·#1419 Preview) — 같은 바이트를 `vendor/google-fonts`(41MB·OFL)에 두고 `next-build.mjs`가 사본을 넘김. layout 호출 무변경, 네트워크 빌드와 `.next/static/media` 956개·CSS·preload 바이트 동일 실측 · 1회 재빌드(BUILD-FONT-RETRY-001) 대체 · 계약 `next-build.test.js`(PR 진행).
   - **PR-TRIAGE-1323**(10-12 오너 「권장대로 전부 진행」): 정체 PR #1323에서 살릴 2가지 이식 — 뷰어 단어 버튼 안 중첩 버튼 분리·닫을 때 초점 복귀·문장 막대 24px,
     설명판 뜻 단어 경계 줄바꿈(`wrapMeaning`) · 계약 `wordTokenNesting.test.js` · 이식 PR 병합 뒤 #1323 닫기.
+  - **MEANING-VERIFY-001**(10-12 오너 승인 — axolotl 「우렁눈이」 저장 원인 수정): 영어 새 단어 뜻은 공유 사전 첫 저장 전 standard 검증 배치당 1회(ok 저장 · wrong+고친 뜻 저장 · unsure/실패 = 저장 없이 반환) + 생성 프롬프트 음역 규칙 + 관리자 PATCH 뜻별 pos·en_pos_v 보존 + 금지 답 표 `docs/verification/en-meaning-gold-20261012.json`(33) · `claude/meaning-verify` — 남은 것: 키 있는 실측(`scripts/eval/en-meaning-gold.mjs`)·PR·Preview.
   - **ORIGINAL-POSITION-RETRY-001**(10-12 실계정 Preview QA — 복습 뒤 원본 복귀 시 온라인인데 「연결되면…」 오프라인 안내): 4초 제한을 클라이언트·auth 세션 준비 뒤에 시작 · 첫 읽기 자동 재시도 2회(1s·3s, 안내 없음) · 소진 시 오프라인(navigator.onLine=false)만 기존 문구, 온라인은 「읽던 위치를 불러오지 못했어요」+다시 시도 · errorCode console.warn — 브랜치 `claude/original-position-retry`.
   - 보류: AE-R3 PR③(공유 사전 요미 쓰기 — ⓒ 확정으로 재정리 필요, ⓑ 권장 · 오너 「나중에」) · AD-R3 PR④(규칙 표 DDL — 동결 해제로 착수 가능) ·
     한국어 어절 넘는 묶기(할 수 있다 — 별도 질문).

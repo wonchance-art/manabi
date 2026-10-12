@@ -4,6 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // 스냅숏(__snapshots__/analyzeRouteNoBoundary.json)은 PR②의 제품 코드를 넣기 **전** 기준 커밋(PR① 15e9500a)에서 떴다.
 // 프롬프트 · 모델 응답 처리 · DB 쓰기(조회·upsert·touch) · 응답 JSON을 한 번에 고정한다. 정본: docs/manabi-viewer-v2-ad-r3.md §9 PR②
 // 「기록이 없는 자료의 분석 결과가 바이트 단위로 같음」.
+// 갱신 이력: MEANING-VERIFY-001(2026-10-12) — 영어 뜻 생성 프롬프트 규칙 2줄 · 새 단어 검증 호출(standard 1회) ·
+// 저장 행의 meanings[0].verify='ok' 표식만 더해졌다(응답 JSON은 그대로).
 
 vi.mock('../llm.js', async () => ({ callLLM: (await import('./helpers/boundaryRouteHarness.js')).callLLM }));
 vi.mock('@supabase/supabase-js', async () => (await import('./helpers/boundaryRouteHarness.js')).supabaseModule);

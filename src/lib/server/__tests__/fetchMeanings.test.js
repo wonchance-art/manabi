@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fetchMeaningsForMissing } from '../fetchMeanings.js';
+import { fetchMeaningsForMissing, resetMeaningVerifyHolds } from '../fetchMeanings.js';
 
 // 계약(#969): 캐시가 빈 언어의 미싱 100개 순차 조회는 실측 94s로 Vercel 60s 캡을 넘겨
 // 함수째 죽는다 — 병렬 웨이브 + deadline 중단(그레이스풀 디그레이드)이 이를 막는다.
@@ -9,6 +9,15 @@ const mockSupabase = { from: () => ({ upsert: async () => ({ error: null }) }) }
 function makeMissing(n) {
   return Array.from({ length: n }, (_, i) => ({ base_form: `词${i}`, pos: '명사', reading: `cí${i}` }));
 }
+
+const geminiText = (text) => ({
+  ok: true,
+  status: 200,
+  json: async () => ({ candidates: [{ content: { parts: [{ text }] } }] }),
+});
+const promptOf = (opts) => JSON.parse(opts.body).contents[0].parts[0].text;
+const isVerifyPrompt = (opts) => promptOf(opts).includes('사전 검수자');
+const modelOf = (url) => String(url).match(/models\/([^:]+):/)?.[1];
 
 function geminiOkResponse(batchLen) {
   const arr = Array.from({ length: batchLen }, () => ({
@@ -25,6 +34,7 @@ describe('fetchMeaningsForMissing — 병렬·deadline', () => {
   beforeEach(() => {
     vi.stubEnv('GEMINI_API_KEY', 'test-key');
     vi.stubEnv('GROQ_API_KEY', '');
+    resetMeaningVerifyHolds();
   });
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -130,21 +140,39 @@ describe('fetchMeaningsForMissing — 병렬·deadline', () => {
         },
       }),
     };
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      status: 200,
-      json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify(arr) }] } }] }),
-    })));
+    const fetchSpy = vi.fn(async (url, opts) => (isVerifyPrompt(opts)
+      ? geminiText(JSON.stringify([{ n: 1, verdict: 'ok', fix: null, bad: [] }]))
+      : geminiText(JSON.stringify(arr))));
+    vi.stubGlobal('fetch', fetchSpy);
     const { result } = await fetchMeaningsForMissing(
       [{ base_form: 'record', pos: null, reading: '' }], 'English', supabase
     );
     expect(result.get('record')).toMatchObject({ pos: '동사·명사', reading: '/ˈrek.ɔːd/' });
     expect(result.get('record').meanings).toEqual([
-      { meaning: '기록하다', priority: 1, pos: '동사', en_pos_v: 1 },
+      { meaning: '기록하다', priority: 1, pos: '동사', en_pos_v: 1, verify: 'ok' },
       { meaning: '기록', priority: 2, pos: '명사' },
     ]);
     expect(written).toHaveLength(1);
+    expect(written[0].meanings[0].verify).toBe('ok');
     expect(upsertOpts.ignoreDuplicates).toBe(true);
+    // 생성 light 1회 + 검증 standard 1회
+    expect(fetchSpy.mock.calls.map(([url]) => modelOf(url))).toEqual(['gemini-3.5-flash-lite', 'gemini-3.6-flash']);
+  });
+
+  it('영어 검증이 standard 본선 실패로 lite(생성과 같은 모델)에 떨어지면 자기 승인이라 저장하지 않는다', async () => {
+    const arr = [{ pos: '명사', ipa: '/wɜːd/', meanings: [{ meaning: '우렁눈이', pos: '명사' }] }];
+    const upsert = vi.fn(async () => ({ error: null }));
+    vi.stubGlobal('fetch', vi.fn(async (url, opts) => {
+      if (!isVerifyPrompt(opts)) return geminiText(JSON.stringify(arr));
+      if (modelOf(url) === 'gemini-3.6-flash') return { ok: false, status: 500, json: async () => ({ error: 'boom' }) };
+      return geminiText(JSON.stringify([{ n: 1, verdict: 'ok', fix: null, bad: [] }]));
+    }));
+    const { result, errors } = await fetchMeaningsForMissing(
+      [{ base_form: 'axolotl', pos: null, reading: '' }], 'English', { from: () => ({ upsert }) }
+    );
+    expect(upsert).not.toHaveBeenCalled();
+    expect(result.get('axolotl').meanings[0].meaning).toBe('우렁눈이'); // 이번 요청에만 반환
+    expect(errors).toContainEqual(expect.objectContaining({ stage: 'verify', reason: 'self', held: 1 }));
   });
 
   it('영어 pos·뜻별 pos 계약 위반 행은 marker·DB 갱신 없이 폐기한다', async () => {
@@ -187,6 +215,9 @@ describe('fetchMeaningsForMissing — 병렬·deadline', () => {
       { from: () => chain }
     );
     expect(result.get('word').meanings[0].en_pos_v).toBe(1);
+    // lazy backfill(existing) 행은 첫 생성이 아니라 검증 호출을 쓰지 않는다
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(result.get('word').meanings[0].verify).toBeUndefined();
     expect(calls).toContainEqual(['eq', 'language', 'English']);
     expect(calls).toContainEqual(['eq', 'base_form', 'word']);
     expect(calls).toContainEqual(['neq', 'source', 'user_verified']);
