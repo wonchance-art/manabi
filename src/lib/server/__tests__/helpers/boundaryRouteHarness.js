@@ -74,11 +74,17 @@ function meaningResponse(prompt) {
   })));
 }
 
+// 영어 새 단어 뜻 검증(MEANING-VERIFY-001): 항목마다 ok — 생성 뜻이 그대로 저장된다(verify: 'ok').
+function verifyResponse(prompt) {
+  return JSON.stringify(section(prompt, '## 항목').map((_, i) => ({ n: i + 1, verdict: 'ok', fix: null, bad: [] })));
+}
+
 export async function callLLM(tier, prompt, opts = {}) {
   state.calls.push({ tier, route: opts.route, prompt, opts: { ...opts } });
   if (opts.route === 'disambiguateZhPos') return { text: zhPosResponse(prompt) };
   if (opts.route === 'disambiguateEnPos') return { text: enPosResponse(prompt) };
   if (opts.route === 'fetchMeanings') return { text: meaningResponse(prompt) };
+  if (opts.route === 'verifyMeanings') return { text: verifyResponse(prompt) };
   return { text: '[]' };
 }
 
