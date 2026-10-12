@@ -53,6 +53,36 @@ describe('viewer preferences migration and isolation',()=>{
   expect(presetActive('immerse',{...read,...READING_PRESETS.immerse})).toBe(true);
   expect(presetActive('study',{...read,...READING_PRESETS.study})).toBe(true);
  });
+ // ZH-GRID-001(오너 2026-10-12 「일본어 중국어는 띄어쓰기 없으니 간격도 없는 걸로 디폴트」): 기본 간격 0, 옛 기본 0.25 저장값은 한 번만 0으로.
+ it('defaults the character gap to 0 for Japanese and Chinese only',()=>{
+  for(const language of ['Japanese','Chinese'])expect(viewerDefaults(language).charGap).toBe(0);
+  for(const language of ['English','French','Korean'])expect(viewerDefaults(language).charGap).toBe(0.25);
+ });
+ it('reads a stored old default 0.25 as 0 for ja/zh until the new version saves that language; keeps chosen values and English',()=>{
+  const v2=(languages,extra={})=>storage({[VIEWER_PREF_KEY]:JSON.stringify({version:2,common:{theme:'dark'},languages,...extra})});
+  const store=v2({Chinese:{charGap:.25,fontSize:2},Japanese:{charGap:.25},English:{charGap:.25}});
+  expect(readViewerPreferences(store,'Chinese')).toMatchObject({charGap:0,fontSize:2,theme:'dark'});
+  expect(readViewerPreferences(store,'Japanese').charGap).toBe(0);
+  expect(readViewerPreferences(store,'English').charGap).toBe(.25);
+  // Any other stored value is the user's choice.
+  expect(readViewerPreferences(v2({Chinese:{charGap:.5},Japanese:{charGap:0.3}}),'Chinese').charGap).toBe(.5);
+  expect(readViewerPreferences(v2({Chinese:{charGap:.5},Japanese:{charGap:0.3}}),'Japanese').charGap).toBe(.3);
+  // Saving Chinese writes 0 and the marker for Chinese only; Japanese still migrates on its own, its stored entry untouched.
+  writeViewerPreferences(store,'Chinese',readViewerPreferences(store,'Chinese'));
+  const saved=JSON.parse(store.getItem(VIEWER_PREF_KEY));
+  expect(saved.cjkGap0).toEqual(['Chinese']);expect(saved.languages.Chinese.charGap).toBe(0);
+  expect(saved.languages.Japanese).toEqual({charGap:.25});expect(readViewerPreferences(store,'Japanese').charGap).toBe(0);
+  // The marker prevents re-migration: 0.25 chosen after the change stays 0.25.
+  writeViewerPreferences(store,'Chinese',{...readViewerPreferences(store,'Chinese'),charGap:.25});
+  expect(readViewerPreferences(store,'Chinese').charGap).toBe(.25);
+  expect(readViewerPreferences(v2({Japanese:{charGap:.25}},{cjkGap0:['Japanese']}),'Japanese').charGap).toBe(.25);
+  // Writing English adds no marker and English keeps 0.25.
+  const en=storage();writeViewerPreferences(en,'English',viewerDefaults('English'));
+  expect(JSON.parse(en.getItem(VIEWER_PREF_KEY))).not.toHaveProperty('cjkGap0');expect(readViewerPreferences(en,'English').charGap).toBe(.25);
+  // Legacy per-key storage predates the change: its 0.25 is the old default too.
+  expect(readViewerPreferences(storage({viewer_charGap:'0.25'}),'Chinese').charGap).toBe(0);
+  expect(readViewerPreferences(storage({viewer_charGap:'0.25'}),'English').charGap).toBe(.25);
+ });
  it('does not advertise unloaded KR fonts as Chinese choices',()=>{
   expect(fontChoices('Chinese')).toEqual([['sans','고딕'],['serif','명조']]);expect(fontChoices('Japanese')).toHaveLength(1);
  });

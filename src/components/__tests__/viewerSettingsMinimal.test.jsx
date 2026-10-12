@@ -184,7 +184,8 @@ describe('stored preferences are untouched by the Aa layout',()=>{
       pace:['focusMode','autoPace','paceCpm','paceStep','autoSpeakOnClick','ttsRate'],
     });
     expect(COMMON_KEYS).toEqual(['theme','ttsRate']);
-    for(const language of ['Chinese','Japanese','Korean','English'])expect(viewerDefaults(language)).toEqual({fontSize:1.6,pinyinSize:0.75,lineGap:15,charGap:0.25,theme:'sepia',fontFamily:'sans',
+    // 기본값 개정은 오너 결정으로만: 일본어·중국어 글자 간격 0(ZH-GRID-001, 2026-10-12 「띄어쓰기 없으니 간격도 없는 걸로 디폴트」).
+    for(const language of ['Chinese','Japanese','Korean','English'])expect(viewerDefaults(language)).toEqual({fontSize:1.6,pinyinSize:0.75,lineGap:15,charGap:['Chinese','Japanese'].includes(language)?0:0.25,theme:'sepia',fontFamily:'sans',
       pronDisplay:'all',autoSpeakOnClick:false,ttsRate:'normal',showHanjaKo:false,
       showToneColors:false,focusMode:false,wordStateHl:false,showPatterns:false,patternFilter:'all',
       autoPace:false,paceCpm:null,paceStep:0});

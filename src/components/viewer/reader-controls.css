@@ -108,6 +108,29 @@
 .viewer-layout :is(.reader-area,.reader-settings__preview) ruby:where([data-pinyin]) > .rt-an {color:var(--reader-muted);}
 .viewer-layout[data-pron-spacing="reserved"] .reader-area ruby[data-pinyin] {width:max(1em,var(--pinyin-cell));}
 .viewer-layout[data-pron-spacing="natural"] .reader-area ruby[data-pinyin] {width:1em;}
+/* Chinese grid (ZH-GRID-001, owner-approved mockup 2026-10-12): like a Chinese publication, every hanzi and every
+   full-width mark is one equal cell, so columns line up across lines. Cell = the hanzi ruby cell above (pinyin cell
+   when pinyin is reserved, 1em when not). Words get no gap of their own (flex column gap 0, ViewerPage/ViewerPreview);
+   the 「글자 간격」 --char-gap goes between every pair of cells instead: inside a word as a cell margin, between words
+   as half on each token (the surface-to-surface distance stays --char-gap, so the seam/pace bridges still close it).
+   Half-width runs (2024 · iPhone) are rounded up to whole cells (--zh-cells, measured by layoutZhRuns).
+   禁则: a token before closing punctuation reserves the marks' cells on its right (--zh-hold) and the first mark gives
+   them back on its left (--zh-pull) — positions do not move, but the word only fits where its marks fit too.
+   Keep the products in parentheses: Chrome resolved `x - var(--n) * var(--zh-pitch)` as x - n * cell + gap (measured -25px
+   for -41px at a 0.5rem gap), which pushed every held mark 2 gaps right. */
+.viewer-layout[data-pron-spacing="reserved"] {--zh-cell:max(1em,var(--pinyin-cell));}
+.viewer-layout[data-pron-spacing="natural"] {--zh-cell:1em;}
+.viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) {--zh-pitch:calc(var(--zh-cell) + var(--char-gap,0px));}
+.viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) .word-token {margin-left:calc(var(--char-gap,0px) / 2 - (var(--zh-pull,0) * var(--zh-pitch)));margin-right:calc(var(--char-gap,0px) / 2 + (var(--zh-hold,0) * var(--zh-pitch)));}
+.viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) .zh-cell {display:inline-flex;justify-content:center;width:var(--zh-cell);}
+.viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) .zh-run {display:inline-flex;justify-content:center;white-space:nowrap;width:calc((var(--zh-cells,1) * var(--zh-cell)) + ((var(--zh-cells,1) - 1) * var(--char-gap,0px)));}
+.viewer-layout[data-language="Chinese"] :is(.reader-area,.reader-settings__preview) :is(ruby,.zh-cell,.zh-run) + :is(ruby,.zh-cell,.zh-run) {margin-left:var(--char-gap,0px);}
+/* Touch layouts put the sentence bar inline before the line's first word (15px + 3px, index.css). In Chinese it takes
+   exactly one cell, so a paragraph's first line is indented by one column and stays on the grid. */
+@media (hover:none) {
+  .viewer-layout[data-language="Chinese"] .reader-area .line-pick {width:calc(var(--zh-pitch) - 3px);}
+  .viewer-layout[data-language="Chinese"] .reader-area .word-token[data-selected="true"]:has(> .line-pick)::before {left:var(--zh-pitch);}
+}
 .viewer-layout :is(.reader-area,.reader-settings__preview) :is(.rt-an,rt).pinyin-tone--1 {color:var(--tone-1);}
 .viewer-layout :is(.reader-area,.reader-settings__preview) :is(.rt-an,rt).pinyin-tone--2 {color:var(--tone-2);}
 .viewer-layout :is(.reader-area,.reader-settings__preview) :is(.rt-an,rt).pinyin-tone--3 {color:var(--tone-3);}

@@ -11,8 +11,12 @@ export function fontChoices(language) {
   if (language === 'Japanese') return [['sans', '고딕']];
   return [['sans', 'Noto Sans'], ['inter', 'Inter']];
 }
+// 띄어쓰기가 없는 일본어·중국어는 글자 간격 0이 기본(오너 2026-10-12). 옛 기본 0.25가 저장값으로 남아 있으면
+// (writeViewerPreferences는 만지지 않은 값까지 저장한다) 한 번만 0으로 읽는다 — 표식(cjkGap0)은 새 판이 그 언어를
+// 저장할 때 붙어, 그 뒤에 사용자가 고른 0.25는 그대로 둔다. 다른 값·다른 언어는 손대지 않는다.
+const GAPLESS = ['Japanese', 'Chinese'], OLD_GAP = 0.25, GAP_MARK = 'cjkGap0';
 export function viewerDefaults(language) {
-  return {fontSize:1.6, pinyinSize:0.75, lineGap:15, charGap:0.25, theme:'sepia', fontFamily:'sans',
+  return {fontSize:1.6, pinyinSize:0.75, lineGap:15, charGap:GAPLESS.includes(language) ? 0 : OLD_GAP, theme:'sepia', fontFamily:'sans',
     pronDisplay:'all', autoSpeakOnClick:false, ttsRate:'normal', showHanjaKo:false,
     showToneColors:false, focusMode:false, wordStateHl:false, showPatterns:false, patternFilter:'all',
     autoPace:false, paceCpm:null, paceStep:0};
@@ -36,10 +40,11 @@ export function validateViewerPreferences(input, language) {
 export function readViewerPreferences(storage, language) {
   const read = key => { try { return JSON.parse(storage?.getItem(key) ?? 'null'); } catch { return null; } };
   const stored = read(VIEWER_PREF_KEY);
-  if (stored?.version === 2 && stored.languages?.[language]) return validateViewerPreferences({...stored.languages[language], ...stored.common}, language);
+  const oldGap = values => GAPLESS.includes(language) && values.charGap === OLD_GAP && !(Array.isArray(stored?.[GAP_MARK]) && stored[GAP_MARK].includes(language)) ? {...values, charGap:0} : values;
+  if (stored?.version === 2 && stored.languages?.[language]) return validateViewerPreferences(oldGap({...stored.languages[language], ...stored.common}), language);
   const legacy = Object.fromEntries(Object.keys(viewerDefaults(language)).map(key => [key, read('viewer_'+key)]));
   if (!enums.pronDisplay.includes(legacy.pronDisplay)) legacy.pronDisplay = read('viewer_showFurigana') === false ? 'none' : 'all';
-  return validateViewerPreferences({...legacy, ...(stored?.version === 2 ? stored.common : {})}, language);
+  return validateViewerPreferences(oldGap({...legacy, ...(stored?.version === 2 ? stored.common : {})}), language);
 }
 export function writeViewerPreferences(storage, language, values) {
   let previous;
@@ -47,7 +52,8 @@ export function writeViewerPreferences(storage, language, values) {
   const valid = validateViewerPreferences(values, language);
   const common = Object.fromEntries(COMMON_KEYS.map(k => [k,valid[k]]));
   const specific = Object.fromEntries(Object.entries(valid).filter(([k]) => !COMMON_KEYS.includes(k)));
-  storage.setItem(VIEWER_PREF_KEY, JSON.stringify({version:2,common,languages:{...(previous?.version === 2 ? previous.languages : {}),[language]:specific}}));
+  const marked = [...new Set([...(Array.isArray(previous?.[GAP_MARK]) ? previous[GAP_MARK] : []), ...(GAPLESS.includes(language) ? [language] : [])])];
+  storage.setItem(VIEWER_PREF_KEY, JSON.stringify({version:2,common,languages:{...(previous?.version === 2 ? previous.languages : {}),[language]:specific},...(marked.length ? {[GAP_MARK]:marked} : null)}));
 }
 export function readerFontFamily(language, choice) {
   if (language === 'Korean') return choice === 'inter' ? "var(--font-inter), var(--font-noto-kr), 'Noto Sans KR', sans-serif" : "var(--font-noto-kr), 'Noto Sans KR', sans-serif";
