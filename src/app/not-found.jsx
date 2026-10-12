@@ -1,12 +1,16 @@
 import Link from 'next/link';
+// (app) 레이아웃 밖이라 셸 CSS가 따라오지 않는다 — Layout과 같은 순서로 직접 불러온다.
+import '@/components/books/reading-shell.css';
+import '@/components/web/web-shell.css';
 
 export const metadata = {
   title: '페이지를 찾을 수 없어요',
 };
 
+// 루트 404는 (app) 레이아웃 밖이라 v2 셸 토큰을 직접 입는다(COLOR-V2-UNIFY-001).
 export default function NotFound() {
   return (
-    <div style={{
+    <div className="manabi-app"><div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       justifyContent: 'center', minHeight: '70vh', padding: '40px 24px',
       color: 'var(--text-primary)', textAlign: 'center',
@@ -23,6 +27,6 @@ export default function NotFound() {
         <Link href="/materials" className="btn btn--ghost btn--md">자료실</Link>
         <Link href="/vocab" className="btn btn--ghost btn--md">단어장</Link>
       </div>
-    </div>
+    </div></div>
   );
 }

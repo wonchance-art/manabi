@@ -26,9 +26,10 @@ async function open({width=1280,common,zh}={}) {
  return f;
 }
 const token=(f,l,i)=>f.page.locator(`.reader-area [data-source-token="${tid(l,i)}"]`);
-/** Tap with the keyboard until the word card opens (focus mode: the first tap only moves the sentence pick). */
+/** Tap with the keyboard until the word card opens (focus mode: the first tap only moves the sentence pick).
+ *  The keyboard target is the word action .surface[role=button], not the outer token (#1323). */
 async function selectWord(f,l,i) {
- for(let n=0;n<2&&await token(f,l,i).getAttribute('data-selected')!=='true';n++){await token(f,l,i).focus();await f.page.keyboard.press('Enter');await f.page.waitForTimeout(200);}
+ for(let n=0;n<2&&await token(f,l,i).getAttribute('data-selected')!=='true';n++){await token(f,l,i).locator('.surface[role="button"]').focus();await f.page.keyboard.press('Enter');await f.page.waitForTimeout(200);}
  assert.equal(await token(f,l,i).getAttribute('data-selected'),'true',`${LINES[l][i][0]} did not open its word card`);
  await f.page.locator('.word-fit .rt-an').first().waitFor();
 }
