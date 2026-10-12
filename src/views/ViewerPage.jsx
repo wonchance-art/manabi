@@ -270,6 +270,10 @@ function ViewerLabelSlot({locale, text, children}) {
   return locale === 'ko' || !isValidElement(children) ? children : cloneElement(children, {}, text);
 }
 
+// 단어 토큰의 키보드 초점 자리. 바깥 .word-token은 문장 지정 막대(.line-pick)와 단어 조작
+// (.surface[role=button])을 형제로 담는 비대화형 틀이라 초점을 받지 못한다(#1323).
+// 분석 실패 토큰은 단어 조작이 없으므로 줄 머리 막대로 물러난다.
+const tokenFocusTarget = el => el?.querySelector('.surface[role="button"]') ?? el?.querySelector('.line-pick') ?? null;
 
 export default function ViewerPage() {
   const languageSettings = useViewerLanguage();
@@ -881,7 +885,8 @@ export default function ViewerPage() {
   };
 
   const closeWordCard = () => {
-    const trigger=selectedToken?.id?tokenRefs.current[selectedToken.id]:null;
+    // 초점은 카드를 연 단어 조작(.surface[role=button])으로 돌려준다(#1323).
+    const trigger=tokenFocusTarget(selectedToken?.id?tokenRefs.current[selectedToken.id]:null);
     trigger?.focus({preventScroll:true});
     detailGate.current.cancel();
     setIsSheetOpen(false);
@@ -1633,7 +1638,7 @@ export default function ViewerPage() {
   const moveBarRef = useRef(null);
   const moveBarFocus = useRef(null);
   const closeMoveBar = () => {
-    const first = pickedSentence ? tokenRefs.current[pickedSentence.firstTokenId] : null;
+    const first = tokenFocusTarget(pickedSentence ? tokenRefs.current[pickedSentence.firstTokenId] : null);
     releasePickedSentence();
     first?.focus({ preventScroll: true }); // 막대가 사라져도 키보드 위치를 문장 머리에 남긴다
   };
@@ -3930,6 +3935,17 @@ export default function ViewerPage() {
             const furiOff = pronHidden;
             // 문형 밑줄은 전용 요소 — .surface::after는 지정 이음매 자리라 고르면 사라졌다(R0 버그 1).
             const patternMark = visibleScan?.byToken.has(tokenId) ? <span className="pattern-mark" aria-hidden="true" /> : null;
+            // 단어 조작은 .surface가 맡아 문장 지정 막대(.line-pick)와 형제로 둔다 — 버튼 안의
+            // 버튼은 키보드·보조기기에서 제 의미를 잃는다(#1323). 막대의 Enter가 바깥으로 새어
+            // 단어 카드를 열던 경로도 함께 사라진다. 마우스 탭은 루비 여백까지 받도록 바깥에 둔다.
+            const wordAction = {
+              role: 'button', tabIndex: 0,
+              onKeyDown: e => {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                e.preventDefault(); e.stopPropagation();
+                handleTokenClick(token, tokenId);
+              },
+            };
             return (
               <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
                 data-tid={tokenId}
@@ -3939,12 +3955,10 @@ export default function ViewerPage() {
                 data-selected={selectedToken?.id===tokenId&&isSheetOpen?true:undefined}
                 className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}`}
                 style={paceStyle}
-                role="button" tabIndex={0}
-                onClick={() => handleTokenClick(token, tokenId)}
-                onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleTokenClick(token, tokenId))}>
+                onClick={() => handleTokenClick(token, tokenId)}>
                 {linePick}
                 {rubySegments ? (
-                  <span className={`surface${furiOff ? ' surface--furi-off' : ''}`}>
+                  <span className={`surface${furiOff ? ' surface--furi-off' : ''}`} {...wordAction}>
                     {rubySegments.map((seg, i) =>
                       seg.kanji
                         // 병음 rt는 CSS가 전 음절 단일 크기(최장 병음이 1em 셀에 들어가는
@@ -3960,7 +3974,7 @@ export default function ViewerPage() {
                     )}{patternMark}
                   </span>
                 ) : (
-                  <span className="surface">{token.text}{patternMark}</span>
+                  <span className="surface" {...wordAction}>{token.text}{patternMark}</span>
                 )}
               </div>
             );

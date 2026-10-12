@@ -230,7 +230,7 @@ describe('배선 — 기본 꺼짐, 켜야 로드', () => {
     expect(css.match(/background: var\(--pattern-line\)/g)).toHaveLength(1); // 그리는 곳은 .pattern-mark 하나
     expect(css).toContain('.word-token--picked:has(+ .word-token--picked) .surface::after {');
     expect(card).toContain(`const patternMark = visibleScan?.byToken.has(tokenId) ? <span className="pattern-mark" aria-hidden="true" /> : null;`);
-    expect(card).toContain('<span className="surface">{token.text}{patternMark}</span>');
+    expect(card).toContain('<span className="surface" {...wordAction}>{token.text}{patternMark}</span>'); // 단어 조작은 .surface(#1323)
     expect(card).toMatch(/: <span key=\{i\}>\{seg\.plain\}<\/span>\s*\)\}\{patternMark\}\s*<\/span>/);
   });
 

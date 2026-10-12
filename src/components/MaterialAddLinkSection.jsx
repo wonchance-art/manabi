@@ -16,9 +16,26 @@ import { useEffect, useState } from 'react';
 import Button from './Button';
 import { supabase } from '../lib/supabase';
 import { detectLinkKind, transcriptFromPaste } from '../lib/linkImport';
+import { MAX_BODY_CHARS } from '../lib/materialComposer';
+import { BODY_CAP_LABEL } from '../lib/bookSplit';
 
-/** 유튜브 자막은 길다 — 본문 폼 상한과 같은 결로 끊는다. */
-const MAX_CHARS = 50000;
+/**
+ * 자막 본문 맞추기 — 저장 상한(MAX_BODY_CHARS) 안이면 그대로, 넘을 때만 상한 안의 마지막 줄바꿈에서
+ * 자른다. **말없이 자르지 않는다**: 잘랐으면 원래 길이를 돌려 호출측이 화면에 알린다(§5).
+ */
+function fitTranscript(text) {
+  if (text.length <= MAX_BODY_CHARS) return { body: text, cutFrom: 0 };
+  const nl = text.lastIndexOf('\n', MAX_BODY_CHARS);
+  const body = text.slice(0, nl > MAX_BODY_CHARS * 0.9 ? nl : MAX_BODY_CHARS).trimEnd();
+  return { body, cutFrom: text.length };
+}
+
+/** 가져온 뒤 알림 — 잘랐으면 경고로 원래 길이와 남긴 길이를 말한다. */
+function deliveredMessage({ length, cutFrom }, done) {
+  return cutFrom > 0
+    ? [`자막이 ${cutFrom.toLocaleString()}자라 한 자료 상한(${BODY_CAP_LABEL})에 맞춰 앞 ${length.toLocaleString()}자만 가져왔어요. 뒷부분은 빠졌어요.`, 'warning']
+    : [done(length), 'success'];
+}
 
 export default function MaterialAddLinkSection({ toast, onReady, initialUrl = '', open = false, onOpenChange }) {
   // 펼침은 페이지(입구 칩 아코디언)가 쥔다 — 추천 카드 주소를 안고 들어올 때만 열어 달라고 알린다.
@@ -32,7 +49,7 @@ export default function MaterialAddLinkSection({ toast, onReady, initialUrl = ''
   const ready = kind === 'youtube' && !busy;
 
   function deliver({ title, text, videoId, channel, via, url: srcUrl }) {
-    const body = text.slice(0, MAX_CHARS);
+    const { body, cutFrom } = fitTranscript(text);
     onReady({
       title: title || '가져온 영상',
       rawText: body,
@@ -42,7 +59,7 @@ export default function MaterialAddLinkSection({ toast, onReady, initialUrl = ''
     setUrl('');
     setManual(null);
     setPasted('');
-    return body.length;
+    return { length: body.length, cutFrom };
   }
 
   /**
@@ -66,8 +83,7 @@ export default function MaterialAddLinkSection({ toast, onReady, initialUrl = ''
       });
       const j = await res.json().catch(() => ({}));
       if (res.ok && j?.text) {
-        const n = deliver({ ...j, url: raw });
-        toast(`자막 ${n.toLocaleString()}자를 가져왔어요.`, 'success');
+        toast(...deliveredMessage(deliver({ ...j, url: raw }), (n) => `자막 ${n.toLocaleString()}자를 가져왔어요.`));
         return;
       }
       if (res.status === 422) {
@@ -96,8 +112,7 @@ export default function MaterialAddLinkSection({ toast, onReady, initialUrl = ''
   function handlePaste() {
     const text = transcriptFromPaste(pasted);
     if (!text.trim()) { toast('붙여넣은 내용에서 본문을 찾지 못했어요.', 'error'); return; }
-    const n = deliver({ ...manual, text, via: 'paste' });
-    toast(`${n.toLocaleString()}자를 가져왔어요.`, 'success');
+    toast(...deliveredMessage(deliver({ ...manual, text, via: 'paste' }), (n) => `${n.toLocaleString()}자를 가져왔어요.`));
   }
 
   // 아코디언(자료 추가 정돈 R2) — 접혀 있으면 안 그린다. 붙여넣기 창(manual)은 접었다 펴도 남는다.
