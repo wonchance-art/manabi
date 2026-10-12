@@ -102,6 +102,8 @@ import { usePagedReader, pagerFor, overlayOrigin } from '../lib/usePagedReader';
 import { captureReadingAnchor } from '../lib/readingViewport';
 import PageBar, { PageStrips } from '../components/viewer/PageBar';
 import { pinyinCellWidth } from '../lib/pinyinLayout';
+import { zhKinsokuMarks, zhKinsokuStyle } from '../lib/zhGrid';
+import { ZhText, useZhGridRuns } from '../components/viewer/ZhText';
 import { readerFontFamily } from '../lib/viewerPreferences';
 import { textbookThemeStyle } from '../lib/textbookTheme';
 import ViewerSettings from '../components/viewer/ViewerSettings';
@@ -163,6 +165,7 @@ import {
   boundaryUndoValid, commitBoundaryEdit, pendingBoundaryRows, planBoundaryMerge, planBoundarySplit, planNeighborMerge, splitPreview,
   undoBoundaryEdit, dismissBoundarySuggestion, koreanBoundaryPiece, koreanSplitEntryAllowed, koreanSplitPreview, planKoreanSplit,
 } from '../lib/boundaryEditFlow';
+import { fetchWithRateLimitRetry } from '../lib/analyzeText';
 import { koreanFormula, koreanMorphemes } from '../lib/koreanBoundarySplit';
 import SourceEditModal from './SourceEditModal';
 import TokenPosLabel from './TokenPosLabel';
@@ -702,6 +705,9 @@ export default function ViewerPage() {
   const { readerRef, readProgress: scrollReadProgress } = useReadProgress(material);
   const {keepPosition:keepReadingPosition,layoutVersion,cancelPosition:cancelReadingPosition} = useReaderLayout(readerRef, material?.processed_json);
   const [pinyinCell,setPinyinCell] = useState(44);
+  // 중국어 격자(ZH-GRID-001): 낱말 사이 간격 없이 칸마다 같은 자간, 반각 묶음은 칸 수로 올림.
+  const zhGrid = materialLang === 'Chinese';
+  useZhGridRuns(readerRef, zhGrid);
   useEffect(()=>{
     let live=true;
     const measure=()=>{
@@ -1805,7 +1811,8 @@ export default function ViewerPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.access_token) authHeader = { Authorization: `Bearer ${session.access_token}` };
     } catch { /* 비로그인은 소유자가 아니라 여기 오지 않는다 */ }
-    const res = await fetch('/api/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader }, body: JSON.stringify(body) });
+    // 분당 20회(429)는 자료 분석과 같이 Retry-After만큼 기다려 다시 보낸다(analyzeText.fetchWithRateLimitRetry).
+    const res = await fetchWithRateLimitRetry('/api/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader }, body: JSON.stringify(body) });
     const data = await res.json().catch(() => null);
     if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
     return data;
@@ -3784,7 +3791,7 @@ export default function ViewerPage() {
         style={{
           fontSize: `${fontSize*(classStudyActive&&classBoardLayout==='split'?.8:1)}rem`,
           fontFamily: readerFontFamily(materialLang,fontFamily),
-          gap: `max(${lineGap}px, var(--hl-row-gap-min, 0px)) ${charGap}rem`, '--char-gap': `${charGap}rem`,
+          gap: `max(${lineGap}px, var(--hl-row-gap-min, 0px)) ${zhGrid ? 0 : charGap}rem`, '--char-gap': `${charGap}rem`,
           // 체류 표시는 CSS 애니메이션이 시간을 잰다 — JS 프레임 루프 0(설계 §7①).
           ...(paceDwell ? { '--pace-dwell': `${paceDwell}ms` } : null),
         }}
@@ -3876,10 +3883,14 @@ export default function ViewerPage() {
             });
           }
 
+          // 중국어 줄머리 금칙(ZH-GRID-001): 닫는 부호 묶음과 그 앞 토큰을 한 줄에 묶는 여백 표시.
+          const zhMarks = zhGrid ? zhKinsokuMarks(json.sequence, id => json.dictionary[id]) : null;
+
           const renderToken = (tokenId, lineHead = null, picked = false, paceSlice = null) => {
+            const zhStyle = zhKinsokuStyle(zhMarks?.get(tokenId));
             // 체류 선의 자기 몫 구간(v2-I R1b) — 오른쪽부터 물러나므로 마지막 토큰이 먼저 빈다.
-            const paceStyle = paceSlice
-              ? { '--pace-from': paceSlice.from, '--pace-to': paceSlice.to }
+            const paceStyle = paceSlice || zhStyle
+              ? { ...(paceSlice ? { '--pace-from': paceSlice.from, '--pace-to': paceSlice.to } : null), ...zhStyle }
               : undefined;
             const token = json.dictionary[tokenId];
             if (!token) return null;
@@ -3915,7 +3926,7 @@ export default function ViewerPage() {
                   className={`word-token word-token--failed${pickedClass}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}`} style={paceStyle} title={vt("분석 실패 — 재시도 버튼을 눌러주세요")}>
                   {linePick}
                   <span className="furigana" />
-                  <span className="surface">{token.text}</span>
+                  <span className="surface">{zhGrid ? <ZhText text={token.text} /> : token.text}</span>
                   <span className="failed-marker">!</span>
                 </div>
               );
@@ -3968,13 +3979,13 @@ export default function ViewerPage() {
                         // 무시해 iOS에서 병음이 흐름으로 새던 실기 결함의 수리(진단기 실측).
                         ? <ruby key={i} data-pinyin={seg.pinyin ? '1' : undefined}
                             data-yomi={seg.pinyin ? undefined : '1'}>
-                            {seg.kanji}<span className={['rt-an', showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : ''].filter(Boolean).join(' ')}>{seg.reading}</span>
+                            {zhGrid && !seg.pinyin ? <ZhText text={seg.kanji} /> : seg.kanji}<span className={['rt-an', showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : ''].filter(Boolean).join(' ')}>{seg.reading}</span>
                           </ruby>
-                        : <span key={i}>{seg.plain}</span>
+                        : zhGrid ? <ZhText key={i} text={seg.plain} /> : <span key={i}>{seg.plain}</span>
                     )}{patternMark}
                   </span>
                 ) : (
-                  <span className="surface" {...wordAction}>{token.text}{patternMark}</span>
+                  <span className="surface" {...wordAction}>{zhGrid ? <ZhText text={token.text} /> : token.text}{patternMark}</span>
                 )}
               </div>
             );

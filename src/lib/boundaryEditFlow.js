@@ -18,6 +18,7 @@ import {
   koreanEojeolToken, koreanFormula, koreanMorphemes, koreanPieceGroups, koreanPieceToken, koreanSplitRecordOf, koreanSplitUnits,
 } from './koreanBoundarySplit';
 import { analysisTokenLine } from './analysisCoverage';
+import { analysisLineUnits, boundaryFromUnit, boundaryToUnit } from './analyzeText';
 import { replaceViewerAnalysis } from './reanalysisPreservation';
 
 /** 화면 판정에 넘길 문맥(§6.1 · §4.4 · Q4 · §12.2). 수업 사본 = 팀 수업이 만든 사본(source_ref) 또는 기기 사본(__local). */
@@ -298,11 +299,14 @@ export class BoundaryEditError extends Error {
 
 const cutsInside = (entries, start, end) => boundarySpans(entries).map(span => span.end).filter(at => at > start && at < end);
 
-/** 서버 분석 결과(한 줄)에서 [start, end) 조각 토큰을 찾는다. 글자·양 끝이 정확히 맞을 때만. */
-function serverPiece(result, piece) {
+/**
+ * 서버 분석 결과(요청 조각 한 줄)에서 [start, end)(줄 좌표) 조각 토큰을 찾는다. 글자·양 끝이 정확히 맞을 때만.
+ * offset = 그 조각 앞의 공백 뺀 글자 수(조각 좌표 + offset = 줄 좌표 — 캡 안 줄은 0).
+ */
+function serverPiece(result, piece, offset = 0) {
   const entries = (result?.sequence || []).map(id => ({ id, token: result.dictionary?.[id] }))
     .filter(entry => entry.token && entry.token.pos !== '개행');
-  const span = boundarySpans(entries).find(item => item.start === piece.start && item.end === piece.end);
+  const span = boundarySpans(entries).find(item => item.start + offset === piece.start && item.end + offset === piece.end);
   if (!span || compactBoundaryText(span.entry.token.text) !== compactBoundaryText(piece.text)) return null;
   const { id: _drop, ...token } = span.entry.token;
   return { ...token, boundary: token.boundary || 'user' };
@@ -324,6 +328,7 @@ async function logBoundaryHistory(client, { materialId, userId, tokenId, before,
  * 묶기·나누기 한 번(§4.1). request = {line, start, end, cuts}(줄 좌표 — 묶기 cuts [], 나누기 cuts [칼선…]).
  * deps = {client(supabase), analyze(body) → 응답 JSON(/api/analyze), userId, attempt?(uuid), now?(ISO)}.
  * 1) editBoundaries로 새 기록 계산 → 2) base 복원이면 서버 호출 0, 아니면 그 줄 하나만 boundaries와 함께 분석해 조각을 받는다
+ *    (200자 넘는 줄은 자료 분석과 같은 조각으로 나눠 기록이 든 조각만)
  * → 3) 바뀐 구간 밖 토큰은 기존 객체·id 그대로 → 4) viewer_replace_analysis(원문 그대로) → 5) token_corrections 이력 1행.
  * 결과 {material(저장된 행), selectId(구간 첫 새 토큰), restored, undo(되돌리기 자료)}. 바뀐 것이 없으면 null.
  */
@@ -354,16 +359,23 @@ export async function commitBoundaryEdit(material, request, deps) {
     if (!next) throw new BoundaryEditError('analysis_mismatch');
   } else if (!run.restored) {
     const { record } = run;
+    // 서버 줄 캡(200자)을 넘는 줄은 자료 분석과 같은 조각(analysisLineUnits — 칼선은 이 줄 기록 구간 밖)으로 나누고,
+    // 새 기록이 든 조각 하나만 조각 좌표로 보낸다(조각 토큰은 그 조각 안에서만 나온다). 결과는 줄 좌표로 되돌려 맞춘다.
+    // 캡 안 줄은 한 조각 = 줄 전체 · offset 0 — 요청 본문이 지금과 같다.
+    const lineRecords = run.edits.filter(item => item?.line === line);
+    const { homes } = analysisLineUnits(lineText.trim(), lineRecords, { language });
+    const unit = homes[lineRecords.indexOf(record)];
+    if (!unit) throw new BoundaryEditError('analysis_mismatch');
     const response = await analyze({
-      lines: [lineText.trim()], language,
-      boundaries: [{ line: 0, start: record.start, end: record.end, text: record.text, cuts: record.cuts, id: record.id }],
+      lines: [unit.text], language,
+      boundaries: [boundaryToUnit({ line: 0, start: record.start, end: record.end, text: record.text, cuts: record.cuts, id: record.id }, unit, 0)],
     });
     const result = response?.results?.[0];
-    const applied = result?.boundaryApplied?.[0];
-    if (applied?.status !== 'applied' || applied.start !== record.start || applied.end !== record.end) {
+    const applied = boundaryFromUnit(result?.boundaryApplied?.[0], unit);
+    if (result?.truncated || applied?.status !== 'applied' || applied.start !== record.start || applied.end !== record.end) {
       throw new BoundaryEditError('analysis_mismatch');
     }
-    const byIndex = new Map(run.pieces.map(piece => [piece.index, serverPiece(result, piece)]));
+    const byIndex = new Map(run.pieces.map(piece => [piece.index, serverPiece(result, piece, unit.offset)]));
     if ([...byIndex.values()].some(token => !token)) throw new BoundaryEditError('analysis_mismatch');
     next = assignBoundaryPieceIds(run.tokens.map((entry, k) => (byIndex.has(k) ? { id: null, token: byIndex.get(k) } : entry)), line, attempt);
     if (!next) throw new BoundaryEditError('analysis_mismatch');

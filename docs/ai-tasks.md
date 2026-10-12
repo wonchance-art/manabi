@@ -944,11 +944,16 @@
     ③ 한국어 어절 B안 → **#1396** 병합 ·
     ④ 공유 사전 **ⓒ**(소유자 교정은 자기 자료·단어장만, 공유 사전은 관리자만) → **#1394** 병합 ·
     ⑤ #1376 번역 light 유지 · ⑥ 화면 세부 #1374·#1378·#1380·#1382·#1383·#1384 현행 유지.
+  - **ZH-GRID-001**(10-12 오너 승인 목업): 중국어 본문 격자 조판 — 한자·전각 부호 = 같은 한 칸(병음 칸 / 끄면 1em), 낱말 사이 간격 0·「글자 간격」은 칸마다,
+    반각 묶음(2024·iPhone) 칸 올림, 닫는 부호 줄머리 금지(禁则), 터치 문장 막대 한 칸, Aa 미리보기 동일 · 일·중 기본 글자 간격 0(옛 기본 0.25 저장값 1회 이행, 표식 `cjkGap0`) ·
+    브랜치 `claude/zh-grid` · e2e viewer-zh-grid 신설(CI 목록 추가).
   - **READER-PAGED-001**(10-12 오너 「화면 채우면 다음으로 넘어가도록」·「권장대로」): 서재 글 쪽 넘김 리더 설계 확정(기본 쪽 넘김·Aa 스크롤 선택·20만 자 상한 유지) —
     ① 글자 수 제한 정리 PR(EPUB 4.5만 재분할·EPUB 5만 캡·YouTube 5만 무언 절단·1만 자 권유 제거) ② P0 쪽 넘김 구현(진행).
   - **ANALYZE-LONG-LINE-001**(10-12 발견·수정, 학습 흐름 버그): 200자 넘는 일·영·중 줄이 분석에서 잘린 채 completed로 저장되던 문제 —
     문장 단위로 나눠 보내고 원래 줄로 잇기 · 서버 truncated 표식 · 모든 언어 덮기 검사 · 100줄 넘는 문단 분할 요청 · 기존 잘린 자료 복구 경로 ·
     Preview QA 429 대응: 여러 문단을 한 요청으로 묶기(글자 예산 중400·일800·영2000) · 429는 Retry-After 대기 후 2회 재시도(PR 진행).
+  - **BOUNDARY-LONG-LINE-001**(10-12, ANALYZE-LONG-LINE-001 남은 문제): 200자 넘는 줄의 200자 뒤 묶기·나누기가 analysis_mismatch로 막히던 문제 — 경계 편집도 자료 분석과 같은 조각(analysisLineUnits)으로 나눠 기록이 든 조각만 보내고 줄 좌표로 잇기 · 429 재시도 · 계약 `boundaryLongLines.test.js`(PR 진행).
+  - **BUILD-FONT-VENDOR-001**(10-13, 오너 「글꼴 저장소 내장」): 배포 빌드가 Google Fonts 10패밀리 woff2 약 950개를 매번 받다 하나만 실패해도 ERROR(#1402·#1419 Preview) — 같은 바이트를 `vendor/google-fonts`(41MB·OFL)에 두고 `next-build.mjs`가 사본을 넘김. layout 호출 무변경, 네트워크 빌드와 `.next/static/media` 956개·CSS·preload 바이트 동일 실측 · 1회 재빌드(BUILD-FONT-RETRY-001) 대체 · 계약 `next-build.test.js`(PR 진행).
   - **PR-TRIAGE-1323**(10-12 오너 「권장대로 전부 진행」): 정체 PR #1323에서 살릴 2가지 이식 — 뷰어 단어 버튼 안 중첩 버튼 분리·닫을 때 초점 복귀·문장 막대 24px,
     설명판 뜻 단어 경계 줄바꿈(`wrapMeaning`) · 계약 `wordTokenNesting.test.js` · 이식 PR 병합 뒤 #1323 닫기.
   - **MEANING-VERIFY-001**(10-12 오너 승인 — axolotl 「우렁눈이」 저장 원인 수정): 영어 새 단어 뜻은 공유 사전 첫 저장 전 standard 검증 배치당 1회(ok 저장 · wrong+고친 뜻 저장 · unsure/실패 = 저장 없이 반환) + 생성 프롬프트 음역 규칙 + 관리자 PATCH 뜻별 pos·en_pos_v 보존 + 금지 답 표 `docs/verification/en-meaning-gold-20261012.json`(33) · `claude/meaning-verify` — 남은 것: 키 있는 실측(`scripts/eval/en-meaning-gold.mjs`)·PR·Preview.

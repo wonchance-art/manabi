@@ -56,7 +56,7 @@ describe('병음 조판 계약', () => {
     // 병음을 올린 만큼 줄 사이 겹침이 생기지 않게 — 본문·Aa 미리보기 모두 줄 간격의 하한을 둔다
     // (실글꼴: 12.8px·병음 16px·간격 15px에서 다음 줄 병음이 앞줄 테두리에 3.3px 얹혔다). 저장된 줄 간격은 그대로.
     expect(readerCss).toMatch(/\.viewer-layout\[data-pron-spacing="reserved"\] :is\(\.reader-area,\.reader-settings__preview\) \{--hl-row-gap-min:calc\(var\(--pinyin-size\) \* [\d.]+ \+ var\(--hl-frame-top\) \+ var\(--hl-pinyin-gap\) \+ var\(--hl-mark-gap\) \* 2 \+ 5\.5px \+ 1px - 1\.16em\);\}/);
-    expect(viewer).toContain("gap: `max(${lineGap}px, var(--hl-row-gap-min, 0px)) ${charGap}rem`");
+    expect(viewer).toContain("gap: `max(${lineGap}px, var(--hl-row-gap-min, 0px)) ${zhGrid ? 0 : charGap}rem`");
     expect(read('src/components/viewer/ViewerPreview.jsx')).toContain("'--preview-row-gap':`max(${s.lineGap}px, var(--hl-row-gap-min, 0px))`");
     // 요미는 원래 자리(0.65 / 2.2)를 지키되, 테두리에 닿을 때만 같은 두 값으로 올라간다.
     const yomi = readerCss.match(/ruby\[data-yomi\] > \.rt-an \{bottom:max\(calc\(100% - \(0\.65 \/ 2\.2\) \* 100%\),calc\(100% - \(([\d.]+) \/ ([\d.]+)\) \* 100% \+ var\(--hl-frame-top\) \+ var\(--hl-pinyin-gap\) - [\d.]+em\)\);\}/);
@@ -99,6 +99,45 @@ describe('병음 조판 계약', () => {
     // `KANA_RE`를 같이 가져오며 실제로 걸렸다). 요구는 「splitRuby가 lib에 있고 뷰어가
     // 그걸 쓴다」이므로 그것만 고정한다.
     expect(viewer).toMatch(/import \{[^}]*\bsplitRuby\b[^}]*\} from '\.\.\/lib\/splitRuby'/);
+  });
+});
+
+// 계약: 중국어 격자(ZH-GRID-001 — 오너 승인 목업 2026-10-12). 한자·전각 부호가 모두 같은 한 칸, 낱말 사이 간격 없음,
+// 글자 간격은 칸마다, 반각 묶음은 칸 수로 올림, 닫는 부호는 줄머리 금지. 실제 좌표는 e2e viewer-zh-grid가 잰다.
+describe('중국어 격자 계약', () => {
+  const preview = read('src/components/viewer/ViewerPreview.jsx');
+  const zhRule = sel => readerCss.match(new RegExp(`\\.viewer-layout\\[data-language="Chinese"\\] :is\\(\\.reader-area,\\.reader-settings__preview\\) ${sel} \\{([^}]*)\\}`))?.[1];
+
+  it('부호 칸(.zh-cell)은 한자 칸(ruby[data-pinyin])과 같은 폭이다 — 병음 예약이면 병음 칸, 아니면 1em', () => {
+    expect(readerCss).toContain('.viewer-layout[data-pron-spacing="reserved"] {--zh-cell:max(1em,var(--pinyin-cell));}');
+    expect(readerCss).toContain('.viewer-layout[data-pron-spacing="natural"] {--zh-cell:1em;}');
+    expect(readerCss).toContain('.viewer-layout[data-pron-spacing="reserved"] .reader-area ruby[data-pinyin] {width:max(1em,var(--pinyin-cell));}');
+    expect(readerCss).toContain('.viewer-layout[data-pron-spacing="natural"] .reader-area ruby[data-pinyin] {width:1em;}');
+    expect(zhRule('\\.zh-cell')).toContain('width:var(--zh-cell);');
+    expect(zhRule('\\.zh-run')).toContain('width:calc((var(--zh-cells,1) * var(--zh-cell)) + ((var(--zh-cells,1) - 1) * var(--char-gap,0px)));');
+    // 본문 모든 경로(실패 토큰·병음 없는 토큰·병음 조각 사이 글자·음절 수가 어긋난 한자)가 칸으로 나뉜다.
+    expect(viewer.match(/zhGrid \? <ZhText text=\{token\.text\} \/> : token\.text/g)?.length).toBe(2);
+    expect(viewer).toContain('zhGrid ? <ZhText key={i} text={seg.plain} /> : <span key={i}>{seg.plain}</span>');
+    expect(viewer).toContain('zhGrid && !seg.pinyin ? <ZhText text={seg.kanji} /> : seg.kanji');
+    expect(preview).toContain('zh?<ZhText text={token.text}/>:token.text');
+  });
+
+  it('중국어는 낱말 사이 간격이 없고, 글자 간격은 모든 칸 사이에 같은 값으로 들어간다', () => {
+    expect(viewer).toContain("const zhGrid = materialLang === 'Chinese';");
+    expect(preview).toContain("gap:`var(--preview-row-gap) ${zh?0:s.charGap}rem`");
+    expect(zhRule(':is\\(ruby,\\.zh-cell,\\.zh-run\\) \\+ :is\\(ruby,\\.zh-cell,\\.zh-run\\)')).toBe('margin-left:var(--char-gap,0px);');
+    // 낱말 사이 = 반씩 양쪽 → 이웃 글자 상자 간격이 --char-gap 그대로라 지정 이음매·체류 선 잇기(−var(--char-gap))가 맞는다.
+    const token = zhRule('\\.word-token');
+    expect(token).toContain('margin-left:calc(var(--char-gap,0px) / 2 - (var(--zh-pull,0) * var(--zh-pitch)));');
+    expect(token).toContain('margin-right:calc(var(--char-gap,0px) / 2 + (var(--zh-hold,0) * var(--zh-pitch)));');
+    expect(css).toContain('right: calc(-1 * var(--char-gap, 0.25rem) - 1px);');
+  });
+
+  it('줄머리 금칙 표시는 본문과 Aa 미리보기가 같은 함수를 쓴다', () => {
+    expect(viewer).toContain('zhKinsokuMarks(json.sequence, id => json.dictionary[id])');
+    expect(preview).toContain('zhKinsokuMarks(shown.map((_,i)=>i),i=>shown[i])');
+    expect(viewer).toContain('useZhGridRuns(readerRef, zhGrid);');
+    expect(preview).toContain('useZhGridRuns(ref,zh);');
   });
 });
 
