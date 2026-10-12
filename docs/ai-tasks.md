@@ -933,6 +933,9 @@
        템플릿 원복(최소 길이 8 유지) · 수정 AUTH-GUIDE-001-R(/auth에서 온보딩 미표시 + 루트 `/?code` → /auth/callback) →
        **#1405 병합 `5a3c6b7a`**(M09, 10-12 12:08 KST — Preview 실제 QA: 재설정 칸 최상위·/home 온보딩 유지 PASS) ·
        남은 것(M09): 운영 반영 확인 → 템플릿 5종 재전환 → 실제 재설정 메일 다른 브라우저 검수 ·
+       **MAIL-KO-001**(10-12 오너 「A안으로 진행, [manabi] 빼고 이름 넣어줘」): 인증 메일 5종 한국어 HTML(로그인 카드 A안) `supabase/templates/` —
+       제목 [manabi] 제거 · 「OO님,」은 재설정·이메일 변경만(확인 전 주소로 가는 가입·로그인 링크 메일은 사용자 입력 금지 — 피싱 경계) ·
+       닉네임 저장 시 auth display_name 동기화 · 계약 `authEmailTemplates.test.js` → M09 4단계 재전환을 이 HTML로 한 번에 + 실메일 앱 검수 ·
        도메인 **manabi.co.kr**(호스팅케이알 10-11 구입, Vercel 네임서버) + Resend SMTP 발신 도메인 Verified(10-12 12:05 KST) —
        기록 `docs/deployment-checklist.md` §5 · 오너 남은 일: 대표 도메인(www/apex) 통일·자동 갱신 확인·메일 한도 상향 ·
     ③ 한국어 어절 B안 → **#1396** 병합 ·
