@@ -22,7 +22,7 @@
   .viewer-layout [data-reader-pages="paged"] { padding-inline: 28px; }
   @container reader (min-width: 840px) { .viewer-layout [data-reader-pages="paged"] { margin-inline: -28px; } }
 }
-.reader-pages-frame { position: relative; }
+.viewer-layout[data-reader-view="paged"] .reader-pages-frame { position: relative; } /* 여백 띠의 기준 — 스크롤 보기에는 걸지 않는다 */
 .reader-page-probe { position: absolute; top: 0; left: 0; width: 1em; height: 1em; visibility: hidden; pointer-events: none; }
 
 .reader-pagebar {
