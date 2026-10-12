@@ -39,8 +39,12 @@
 | ak | LEARN-HOME-AK-001 — 배움 · 서재 · 산책 메뉴 + 배움 대시보드 + 현황 | [mocks/ak/ak.html](mocks/ak/ak.html) |
 | rev | REV-SCOPE R1-A · R1-B — 복습 범위 · 개수 · 진입점 / 세션 · 카드 · 학습 단계 | [mocks/rev/rev.html](mocks/rev/rev.html) |
 | onb | ONB-001 — 첫 방문 온보딩 + 내 언어 + 중국어권 한국어(준비 중) | [mocks/onb/onb.html](mocks/onb/onb.html) |
+| ad | AD-R3 · AD-R4 — 뷰어 정돈 2차 | [mocks/ad/ad.html](mocks/ad/ad.html) (화면 캡처 내장, 약 1.6MB) |
+| ae | AE-R2 · AE-R3 — 단어창 3차 | [mocks/ae/ae.html](mocks/ae/ae.html) |
+| conv | v2-Z — 대화 모드 | [mocks/conv/conv.html](mocks/conv/conv.html) |
+| lv | AJ — 레벨별 단어 · 문형 다시 열기(인계 전) | [mocks/lv/lv.html](mocks/lv/lv.html) |
 
-나머지(ad · ae · brand · conv · lv · mail)는 아직 아티팩트에만 있다. 화면 벽 2판에서 장면과 대조할 때 필요한 것부터 옮긴다.
+brand(아이콘 · 브랜드)는 Design 타입 보드라 파일 하나로 열리지 않아 아티팩트에만 둔다. mail(인증 메일)은 앱 화면이 아니라 화면 벽 밖이다.
 
 ### registry.json 항목
 | 필드 | 뜻 |
