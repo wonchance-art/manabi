@@ -161,16 +161,18 @@
  },
  {
   "id": "lv",
-  "code": "—",
+  "code": "LEVEL-LIST-AJ-001",
   "title": "레벨별 단어 · 문형 다시 열기",
-  "stage": "설계만 · 인계 전",
+  "stage": "인계됨 · 미착수",
   "source": "docs/design/mocks/lv/lv.html",
   "mirror": "https://claude.ai/artifact/XdwcRnMCRDWAs5KBtzaSzM",
-  "handoff": [],
+  "handoff": [
+   "https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6119208984"
+  ],
   "scenes": [],
   "frames": [],
   "planned": [],
-  "note": "설계 코드 AJ — #1077 6069347526~6073688286(목업 1~8판). 인계 기록 없음. 레벨 어휘 페이지는 main에 있으나 middleware가 관리자 전용 /admin/legacy-textbooks로 돌려 사용자에게 닫혀 있다"
+  "note": "일본어 · 중국어만(영어 AJ-2 · 프랑스어 FLELex 결정 후). 순서: REV-SCOPE R1-A → AK 다음. 인계문이 목업과 다른 곳: 「제외 N」 → 「아는 단어 N」. 설계 #1077 6069347526~6073688286"
  },
  {
   "id": "mail",
