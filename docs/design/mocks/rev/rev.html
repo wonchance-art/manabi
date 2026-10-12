@@ -51,7 +51,7 @@ pre.flow{font:500 13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;backgroun
 .dev.d{width:560px;max-width:100%}.dev.m{width:340px;max-width:100%;padding:14px}
 .mockrow>div{max-width:100%}
 .dev h4{font:700 22px/1.2 'Noto Sans KR',sans-serif;margin:0 0 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.flag{font-size:13px;padding:3px 9px;border-radius:999px;border:1px solid var(--rule);background:var(--sheet);font-weight:500}
+.flag{font-size:13px;padding:3px 9px;white-space:nowrap;border-radius:999px;border:1px solid var(--rule);background:var(--sheet);font-weight:500}
 .flag.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
 .chip{font:600 12.5px/1 'Noto Sans KR',sans-serif;padding:8px 11px;border-radius:999px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);min-height:32px;display:inline-flex;align-items:center;gap:6px}
@@ -194,8 +194,8 @@ u.pat{text-decoration:underline 2px var(--rose);text-underline-offset:5px}
 <h2 id="principles">2. 설계 원칙</h2>
 <ol class="princ">
 <li><b>표현 하나(방향 · 문형별)에 기억 상태 하나. 범위는 「보기」일 뿐이다.</b><span>어느 범위에서 풀든 같은 카드의 같은 일정이 갱신된다. R3에서 생기는 표현(산출) 상태 · 문형 상태도 「방향 하나 · 문형 하나에 상태 하나」로 같은 원칙을 따른다. 범위마다 점수를 따로 두지 않는다(Bunpro 덱 선례 채택, Pleco 별도 점수판 배제).</span></li>
-<li><b>언어가 첫 번째 축이다. 언어 안에서는 섞는다.</b><span>배움 화면 국기 칩으로 고른 언어가 곧 복습 언어다. 한 언어 안에서는 한 줄로 내야 간격이 넓어진다(Kornell 2009 — 큰 한 묶음이 작은 네 묶음보다 90% 학습자에게 유리했던 <em>간격</em> 연구). 다만 뜻이 비슷한 새 단어를 붙여 내면 서로 간섭한다(Tinkham 1993 · Waring 1997). 그래서 같은 과의 새 표현 · 헷갈리기 쉬운 쌍(たい/ほしい)은 줄 안에서 띄운다. 좁은 범위는 선택 사항이다.</span></li>
-<li><b>범위 하나가 개수·시작·줄을 함께 정한다.</b><span>화면마다 따로 세지 않는다. 같은 함수 하나(<code>countReviewScope</code>)가 배움 칸 · 국기 칩 · 복습방의 숫자를 낸다. 계약 테스트로 고정.</span></li>
+<li><b>언어가 첫 번째 축이다. 언어 안에서는 섞는다.</b><span>배움 화면 언어 칩으로 고른 언어가 곧 복습 언어다. 한 언어 안에서는 한 줄로 내야 간격이 넓어진다(Kornell 2009 — 큰 한 묶음이 작은 네 묶음보다 90% 학습자에게 유리했던 <em>간격</em> 연구). 다만 뜻이 비슷한 새 단어를 붙여 내면 서로 간섭한다(Tinkham 1993 · Waring 1997). 그래서 같은 과의 새 표현 · 헷갈리기 쉬운 쌍(たい/ほしい)은 줄 안에서 띄운다. 좁은 범위는 선택 사항이다.</span></li>
+<li><b>범위 하나가 개수·시작·줄을 함께 정한다.</b><span>화면마다 따로 세지 않는다. 같은 함수 하나(<code>countReviewScope</code>)가 배움 칸 · 언어 칩 · 복습방의 숫자를 낸다. 계약 테스트로 고정.</span></li>
 <li><b>일정에 반영되는 「복습」과 반영 안 되는 「집중 연습」을 나눈다.</b><span>시험 전 「5–10과 몽땅」처럼 기한 전 카드를 돌릴 때 일정이 망가지면 안 된다(Anki 미리보기 · Bunpro Cram · WaniKani Extra Study가 모두 같은 결론).</span></li>
 <li><b>명시한 범위는 실패하면 닫힌다. 저장된 설정은 덮지 않는다.</b><span>범위를 못 읽으면 「전체」로 새지 않고 빈 줄을 낸다. 지금 교재 범위 계약(<code>bookReviewNavigation.test.js</code>, n5 e2e)을 모든 범위로 넓힌다.</span></li>
 <li><b>모든 복습에는 원문으로 돌아갈 길이 있다.</b><span>카드·끝 화면·오늘 문단에서 출처 문장으로 돌아간다(LingQ · Readlang 선례).</span></li>
@@ -221,7 +221,7 @@ u.pat{text-decoration:underline 2px var(--rose);text-underline-offset:5px}
 <h2 id="scope">3. 범위 모델</h2>
 <p>검색 문법(Anki 식)은 학습자에게 무겁다. 칩으로 고르는 <b>작은 타입 하나</b>로 충분하다.</p>
 <pre class="flow">scope = {
-  lang:   'Japanese' | 'Chinese' | 'English' | 'French'      ← 필수(배움 국기 칩과 같은 값)
+  lang:   'Japanese' | 'Chinese' | 'English' | 'French'      ← 필수(배움 언어 칩과 같은 값)
   level?: 'H1'…'H6' | 'NONE'(미분류)  ·  'N5'…'N1' · CEFR은 R2
   source?: { kind:'book', bookId, from, to }                 ← 교재 과 범위(지금은 일본어 N5 한 권)
          | { kind:'deck', ref }                               ← 사전 급수 덱 등(source_ref, 예: 「중국어 · H3」)
@@ -310,7 +310,7 @@ u.pat{text-decoration:underline 2px var(--rose);text-underline-offset:5px}
   담기 ─→ 담은 표현(표현 하나 = 기억 하나)
             │
             ├→ (새 표현) 처음 보는 표현 카드 → 학습 단계 1분 · 10분
-            ├→ 복습방  [범위: 🇨🇳 · HSK 2 · 내 서재 자료]   ┄ 문법 N개 → /review/grammar (R3까지 별줄)
+            ├→ 복습방  [범위: 중국어 · HSK 2 · 내 서재 자료]   ┄ 문법 N개 → /review/grammar (R3까지 별줄)
             │     ├ 복습       → 채점 → 일정 갱신 ─┐
             │     └ 집중 연습  → 일정 그대로(연습 기록만)
             │                                     ↓
@@ -322,7 +322,7 @@ u.pat{text-decoration:underline 2px var(--rose);text-underline-offset:5px}
 <h3>5-1. 복습방 — 오너 사례: 중국어 · HSK 2 · 내 서재 자료</h3>
 <div class="mockrow">
 <div><div class="dev d" aria-label="넓은 화면 목업">
-<h4>복습 <span class="flag">🇯🇵 <b class="bdg">9</b></span><span class="flag on">🇨🇳 <b class="bdg">40</b></span></h4>
+<h4>복습 <span class="flag">일본어 <b class="bdg">9</b></span><span class="flag on">중국어 <b class="bdg">40</b></span></h4>
 <div class="chips" role="group" aria-label="범위">
 <span class="chip on">HSK 2 <span class="x">✕</span></span>
 <span class="chip on">내 서재 자료 · 2개 <span class="x">✕</span></span>
@@ -336,9 +336,9 @@ u.pat{text-decoration:underline 2px var(--rose);text-underline-offset:5px}
 <div class="btns"><span class="btn p">복습 시작 →</span><span class="btn g">집중 연습</span></div>
 <p class="note">급수를 켜면 문장 · 문형은 빠져요(급수 없음 6개). 범위 밖 중국어 복습 22개는 범위를 풀면 이어서.</p>
 </div>
-</div><p class="mcap">국기 칩 숫자 = 그 언어의 오늘 복습. 다른 언어가 급해도 놓치지 않는다. 덱 선택은 「출처 · 사전 급수 덱」으로 흡수.</p></div>
+</div><p class="mcap">언어 칩 숫자 = 그 언어의 오늘 복습. 다른 언어가 급해도 놓치지 않는다. 덱 선택은 「출처 · 사전 급수 덱」으로 흡수.</p></div>
 <div><div class="dev m" aria-label="휴대폰 목업">
-<h4>복습 <span class="flag">🇯🇵 9</span><span class="flag on">🇨🇳 40</span></h4>
+<h4>복습 <span class="flag">일본어 9</span><span class="flag on">중국어 40</span></h4>
 <div class="chips"><span class="chip on">HSK 2 ✕</span><span class="chip on">자료 2 ✕</span><span class="chip">＋</span></div>
 <div class="card"><div class="row"><div class="big">18</div><div class="sub">복습 14 · 새 4</div></div>
 <div class="chips" style="margin:10px 0 0"><span class="chip on">5분</span><span class="chip">50</span><span class="chip">전부</span></div>
@@ -351,7 +351,7 @@ u.pat{text-decoration:underline 2px var(--rose);text-underline-offset:5px}
 <div><div class="dev m" style="padding:0;overflow:hidden;background:var(--paper)">
 <div style="height:40px"></div>
 <div class="sheet">
-<h5>범위 고르기 · 🇨🇳 중국어</h5><div class="sub">중국어 담은 표현 312개 중 42개(아는 단어 제외)</div>
+<h5>범위 고르기 · 중국어</h5><div class="sub">중국어 담은 표현 312개 중 42개(아는 단어 제외)</div>
 <div class="sh-l">급수</div>
 <div class="chips"><span class="chip">H1</span><span class="chip on">H2</span><span class="chip">H3</span><span class="chip">H4+</span><span class="chip">미분류</span></div>
 <div class="sh-l">출처</div>
@@ -373,7 +373,7 @@ u.pat{text-decoration:underline 2px var(--rose);text-underline-offset:5px}
 
 <h3>5-4. 어디서 들어오나 — 진입점</h3>
 <div class="entry">
-<div class="card"><div class="k">배움 · 단어 복습 칸</div><div class="t">국기 칩 언어의 오늘 개수(범위 개수 함수)</div><div class="a">→ 복습방 [언어] · R1</div></div>
+<div class="card"><div class="k">배움 · 단어 복습 칸</div><div class="t">언어 칩 언어의 오늘 개수(범위 개수 함수)</div><div class="a">→ 복습방 [언어] · R1</div></div>
 <div class="card"><div class="k">교재 도구막대 「담은 표현」</div><div class="t">채점 없는 화면 대신</div><div class="a">→ 복습방 [교재 · 전체 과] · R1</div></div>
 <div class="card"><div class="k">교재 과 끝</div><div class="t">「이 과 표현 복습」</div><div class="a">→ 복습방 [교재 · 이 과] · R1</div></div>
 <div class="card"><div class="k">자료 뷰어</div><div class="t">「이 자료 표현 복습」</div><div class="a">→ 복습방 [자료 · 이 자료] · R1</div></div>
@@ -407,8 +407,8 @@ u.pat{text-decoration:underline 2px var(--rose);text-underline-offset:5px}
 <div class="phase">
 <div class="card"><h4>R1-A — 범위 · 개수 · 진입점 <span class="tag ok">승인됨 · 스키마 변경 없음 · 먼저 인계</span></h4>
 <ul>
-<li>범위 모델 · 주소 문법(§6-1 ①) · 범위 막대 · 범위 시트 · 국기 칩 숫자. 덱 선택은 「출처 · 사전 급수 덱」으로 흡수(설정 서랍의 덱 선택 삭제).</li>
-<li>개수 함수 <code>countReviewScope</code>(§6-1 ②) — 배움 단어 복습 칸 · 국기 칩 · 복습방이 공용. 배움 화면(AK)이 이 함수를 가져다 쓴다.</li>
+<li>범위 모델 · 주소 문법(§6-1 ①) · 범위 막대 · 범위 시트 · 언어 칩 숫자. 덱 선택은 「출처 · 사전 급수 덱」으로 흡수(설정 서랍의 덱 선택 삭제).</li>
+<li>개수 함수 <code>countReviewScope</code>(§6-1 ②) — 배움 단어 복습 칸 · 언어 칩 · 복습방이 공용. 배움 화면(AK)이 이 함수를 가져다 쓴다.</li>
 <li>교재 범위 API 일반화(과 범위), 자료 범위 id 조회(§6-1 ①). 기존 <code>?book=</code> 링크 호환.</li>
 <li>진입점: 배움 칸 · 교재 도구막대(채점 복습방으로) · 교재 과 끝 · 자료 뷰어 · 현황 레벨 어휘(HSK) · 기억 건강. 복습 경로의 메뉴 소속 = 배움.</li>
 <li>상태 문구 중 범위 관련(0개 · 못 읽음 · 한도 막힘) · 이름 통일(§6-1 ⑧).</li>
@@ -442,7 +442,7 @@ u.pat{text-decoration:underline 2px var(--rose);text-underline-offset:5px}
 <div class="scroll"><table>
 <thead><tr><th>파라미터</th><th>값</th><th>R</th></tr></thead>
 <tbody>
-<tr><td><code>lang</code></td><td>코드값 그대로 <code>Japanese | Chinese | English | French</code>(기존 <code>/study?lang=</code> · <code>/lessons?lang=</code>와 같음). 없으면 배움 국기 칩 언어</td><td>A</td></tr>
+<tr><td><code>lang</code></td><td>코드값 그대로 <code>Japanese | Chinese | English | French</code>(기존 <code>/study?lang=</code> · <code>/lessons?lang=</code>와 같음). 없으면 배움 언어 칩 언어</td><td>A</td></tr>
 <tr><td><code>level</code></td><td>중국어 <code>H1…H6 | NONE</code>(미분류, <code>refVocabIndex</code> 값). 일본어 <code>N5…N1</code>은 R2. 언어와 안 맞으면 무효</td><td>A</td></tr>
 <tr><td><code>src</code></td><td><code>book:japanese-n5:5-10</code>(→ <code>n5-book-u05…u10</code>) · <code>deck:&lt;encodeURIComponent(source_ref)&gt;</code> · <code>material:&lt;id&gt;,&lt;id&gt;</code> · <code>note:&lt;id&gt;</code> · <code>study</code>(source_ref 「오늘 학습」). 하나만</td><td>A</td></tr>
 <tr><td><code>state</code></td><td><code>due</code>(기본) · <code>new</code> · <code>fragile</code></td><td>A</td></tr>
@@ -459,8 +459,8 @@ u.pat{text-decoration:underline 2px var(--rose);text-underline-offset:5px}
   · newAllowed = 범위 안 새 표현 중 오늘 시작 가능한 수(계정 한도 남은 수 이내, 밀린 복습 규칙 적용)
   · total      = due + newAllowed   ← 화면 숫자 = 시작하는 줄 길이
   · grammarDue = 문법 복습(별줄, total에 넣지 않음)
-  · byLang     = 국기 칩 숫자</pre>
-<p>부르는 곳: 배움 단어 복습 칸(AK) · 국기 칩 · 복습방. 현황(AK)에는 복습 개수 칸이 없으므로 진입 링크만 범위 주소로 연결한다.</p>
+  · byLang     = 언어 칩 숫자</pre>
+<p>부르는 곳: 배움 단어 복습 칸(AK) · 언어 칩 · 복습방. 현황(AK)에는 복습 개수 칸이 없으므로 진입 링크만 범위 주소로 연결한다.</p>
 
 <h4 class="sh">③ 줄 만들기 — 두 엔진을 한 줄로</h4>
 <ul>
@@ -514,7 +514,7 @@ u.pat{text-decoration:underline 2px var(--rose);text-underline-offset:5px}
 <li><code>/vocab?lang=Chinese&amp;level=H2&amp;src=material:&lt;id&gt;</code>에서 화면 숫자 = 시작하는 줄 길이, 다른 언어 카드 0장(계약 테스트).</li>
 <li>무효 파라미터 · 조회 실패 → 닫힘 문구, 「전체」로 새지 않음, 저장된 설정 그대로.</li>
 <li>모든 R1 진입점의 주소 → 범위 → 주소 왕복이 같은 문자열. 기존 <code>?book=</code> 링크 동작 유지.</li>
-<li>배움 칸 · 국기 칩 · 복습방 숫자가 모두 <code>countReviewScope</code>에서 나온다. 새 표현 한도 반영, 문법은 별줄.</li>
+<li>배움 칸 · 언어 칩 · 복습방 숫자가 모두 <code>countReviewScope</code>에서 나온다. 새 표현 한도 반영, 문법은 별줄.</li>
 <li>교재 도구막대 「담은 표현」 → 채점 복습방. 복습 경로의 메뉴 소속 = 배움.</li>
 </ol>
 <p><b>R1-B</b></p>
@@ -545,12 +545,12 @@ u.pat{text-decoration:underline 2px var(--rose);text-underline-offset:5px}
 §2-4 단어 복습 칸: 「ReviewTile 그대로」 → 공용 countReviewScope({…, scope:{lang}}) 결과
       (그 언어의 오늘 복습 + 오늘 시작 가능한 새 표현)를 표시. 문법은 칸에 넣지 않음.
       0개일 때 보이는 「최근 담은 표현」은 숫자에 넣지 않음.
-      칸 누르면 → /vocab?lang=&lt;국기 칩 언어&gt;
+      칸 누르면 → /vocab?lang=&lt;언어 칩 언어&gt;
 §1 메뉴: navigationOwner에서 /vocab · /review · /study · /learn → '/home'(배움)
       (webNavigation.js:16, 계약 webNavigation.test.js 갱신)
 §3 현황: 레벨 어휘 줄(HSK) → /vocab?lang=Chinese&amp;level=H2 …,
       기억 건강 「흐릿 · 위험」 → /vocab?lang=…&amp;state=fragile.
-      현황 국기 칩은 레벨 어휘 · 기억 건강 · 아는 단어를 그 언어로 거른다.
+      현황 언어 칩은 레벨 어휘 · 기억 건강 · 아는 단어를 그 언어로 거른다.
 순서: 개수 함수는 복습 R1-A가 먼저 내고 이 건이 가져다 쓴다.</pre>
 
 <h2 id="precedent">7. 선례 · 오픈소스 — 채택 판단</h2>
@@ -598,7 +598,7 @@ u.pat{text-decoration:underline 2px var(--rose);text-underline-offset:5px}
 <tr><td>집중 연습은 일정 쓰기(FSRS 적용 · 예전 일정 갱신) 0회</td><td>원칙 4</td></tr>
 <tr><td>명시 범위를 못 읽으면 빈 줄, 저장 설정은 그대로</td><td>원칙 5, 지금 교재 계약의 일반화</td></tr>
 <tr><td>범위 ↔ 주소 왕복 직렬화가 같다</td><td>진입점 여섯이 같은 범위를 만든다</td></tr>
-<tr><td>배움 칸 · 국기 칩 · 복습방 개수가 같은 함수(<code>countReviewScope</code>)에서 나온다</td><td>원칙 3</td></tr>
+<tr><td>배움 칸 · 언어 칩 · 복습방 개수가 같은 함수(<code>countReviewScope</code>)에서 나온다</td><td>원칙 3</td></tr>
 <tr><td>(R2) 새로 담은 표현이 오늘 문단 후보에 들어간다, 한도 안에서</td><td>문제 2</td></tr>
 <tr><td>증거 모델 표 한 줄 = 테스트 하나(예: 채점은 버튼 넷 한 번으로 끝난다, 연습 기록은 사다리 계산에서 빠진다, 발음 판정 대상이 아닌 표현엔 발음 문구를 내지 않는다)</td><td>원칙 7</td></tr>
 <tr><td>집중 연습은 새 표현 한도(admission) 호출 0회</td><td>한도는 첫 질문 때 차감되므로(<code>learningAdmission.js</code>)</td></tr>
@@ -614,7 +614,7 @@ u.pat{text-decoration:underline 2px var(--rose);text-underline-offset:5px}
 <div class="scroll"><table>
 <thead><tr><th>#</th><th>결정</th><th>상태</th></tr></thead>
 <tbody>
-<tr><td>D1</td><td>복습 기본값 = 지금 언어 하나 · 국기 칩에 언어별 오늘 개수</td><td>확정(권장 승인)</td></tr>
+<tr><td>D1</td><td>복습 기본값 = 지금 언어 하나 · 언어 칩에 언어별 오늘 개수</td><td>확정(권장 승인)</td></tr>
 <tr><td>D2</td><td>집중 연습: 일정 · 한도 영향 없음 · 「몰랐어요」는 흐릿 범위로 · 기존 타이핑 · 리스닝 모드를 집중 연습으로</td><td>확정(권장 승인)</td></tr>
 <tr><td>D3</td><td>새 표현 하루 한도는 계정 하나(R1–R2), 범위 화면에 남은 수</td><td>확정(권장 승인)</td></tr>
 <tr><td>D4</td><td>일정 체계 통합(R3)은 R1 · R2 실사용 뒤 판단</td><td>확정(권장 승인)</td></tr>
