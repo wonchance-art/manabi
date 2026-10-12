@@ -1,6 +1,11 @@
 -- 한국어기초사전(krdict) 뜻 단위 정본 — 1단계 설치 SQL. 검수 후보이며 migrations가 아니다.
 -- 운영 적용은 공식본 대조 → Preview 적용·임포트 → 사후 READ ONLY 확인 뒤 별도로 한다(맨 아래 주석).
--- 출처: 국립국어원 「한국어기초사전」 https://krdict.korean.go.kr · CC BY-SA 2.0 KR.
+-- 출처: 국립국어원 「한국어기초사전」 https://krdict.korean.go.kr · CC BY-SA 2.0 KR
+--   (https://creativecommons.org/licenses/by-sa/2.0/kr/). 데이터 출처 채택 오너 승인 2026-10-12 KST.
+-- 출처 표시 의무(CC BY-SA): krdict 뜻을 보여 주는 UI는 어디든 출처·라이선스를 함께 표시한다
+--   (문구 후보 = src/lib/krdictSenses.js KRDICT_ATTRIBUTION, 파생 데이터는 같은 라이선스). 1단계(이 PR)는
+--   표·임포트·검증만 있고 화면 연결이 없다 — 표시 UI는 2단계에서 출처 표시와 함께 배선한다.
+--   라이선스 판(2.0 KR)은 XML 사본·임포트 코드 표기 기준이며, 공식 원문 대조는 공식본 대조 단계에서 확인한다.
 --
 -- 만드는 것(셋 다 새 표, 기존 행 UPDATE 0):
 --   krdict_releases          판본 메타(입력 SHA-256·산출 해시·라이선스). 판본 하나 = 행 하나.
