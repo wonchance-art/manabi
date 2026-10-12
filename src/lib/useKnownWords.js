@@ -5,6 +5,7 @@ import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { fetchKnownWords, markKnown, unmarkKnown } from './knownWords';
 import { updateKnownWords } from './knownWordControl';
+import { friendlyToastMessage } from './errorMessage';
 export function useKnownWords(lang = null, enabled = true) {
   const { user } = useAuth();
   const toast = useToast(), client = useQueryClient(), owner = user?.id;
@@ -26,7 +27,7 @@ export function useKnownWords(lang = null, enabled = true) {
         'home-v2', 'profile-stats', 'output-words', 'book-review', 'due-vocab-index'].map(prefix =>
         client.invalidateQueries({ queryKey: [prefix, body.accountId] })));
     },
-    onError: (error, body) => { if (activeOwner.current === body.accountId) toast(error.message || '잠시 후 다시 시도해 주세요.', 'error'); },
+    onError: (error, body) => { if (activeOwner.current === body.accountId) toast(friendlyToastMessage(error, '잠시 후 다시 시도해 주세요.'), 'error'); },
     onSettled: (_, __, body) => { pending.current.delete(requestKey(body)); setPendingKeys(new Set(pending.current)); },
   });
   return { ...query, rows: query.data || [], isPendingWord: (lang, wordText) => pendingKeys.has(requestKey({accountId:owner,lang,wordText})),

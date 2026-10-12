@@ -18,6 +18,7 @@ import { supabase } from '../lib/supabase';
 import { detectLinkKind, transcriptFromPaste } from '../lib/linkImport';
 import { MAX_BODY_CHARS } from '../lib/materialComposer';
 import { BODY_CAP_LABEL } from '../lib/bookSplit';
+import { friendlyToastMessage } from '../lib/errorMessage';
 
 /**
  * 자막 본문 맞추기 — 저장 상한(MAX_BODY_CHARS) 안이면 그대로, 넘을 때만 상한 안의 마지막 줄바꿈에서
@@ -91,7 +92,7 @@ export default function MaterialAddLinkSection({ toast, onReady, initialUrl = ''
         setManual({ videoId: j?.videoId || '', title: j?.title || '', channel: j?.channel || '' });
         return;
       }
-      toast(j?.message || '가져오지 못했어요.', 'error');
+      toast(friendlyToastMessage(j?.message, '가져오지 못했어요.'), 'error');
     } catch {
       toast('가져오지 못했어요 — 잠시 후 다시 시도해 주세요.', 'error');
     } finally {

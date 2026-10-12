@@ -11,6 +11,7 @@ import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
 import StudyPlanPanel from './StudyPlanPanel';
 import BookRefinePanel from '../components/BookRefinePanel';
+import { friendlyToastMessage } from '../lib/errorMessage';
 
 const SOURCE_TYPE_LABELS = {
   wikipedia_good:   'Wikipedia 우수 기사',
@@ -153,7 +154,7 @@ export default function AdminPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-overrides'] });
       toast('수정본을 삭제하고 파일 버전으로 복원했어요.', 'success');
     },
-    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
+    onError: (err) => toast('삭제 실패: ' + friendlyToastMessage(err), 'error'),
   });
 
   // 역할 변경
@@ -163,7 +164,7 @@ export default function AdminPage() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
-    onError: (err) => toast('역할 변경 실패: ' + err.message, 'error'),
+    onError: (err) => toast('역할 변경 실패: ' + friendlyToastMessage(err), 'error'),
   });
 
   // 자료 삭제
@@ -173,7 +174,7 @@ export default function AdminPage() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-materials'] }),
-    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
+    onError: (err) => toast('삭제 실패: ' + friendlyToastMessage(err), 'error'),
   });
 
   // 소스 토글
@@ -183,7 +184,7 @@ export default function AdminPage() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-sources'] }),
-    onError: (err) => toast('변경 실패: ' + err.message, 'error'),
+    onError: (err) => toast('변경 실패: ' + friendlyToastMessage(err), 'error'),
   });
 
   // 소스 추가
@@ -198,7 +199,7 @@ export default function AdminPage() {
       setNewSource(DEFAULT_NEW_SOURCE);
       toast('소스가 추가되었습니다.', 'success');
     },
-    onError: (err) => toast('추가 실패: ' + err.message, 'error'),
+    onError: (err) => toast('추가 실패: ' + friendlyToastMessage(err), 'error'),
   });
 
   // 소스 삭제
@@ -208,7 +209,7 @@ export default function AdminPage() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-sources'] }),
-    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
+    onError: (err) => toast('삭제 실패: ' + friendlyToastMessage(err), 'error'),
   });
 
   // 인증 게이트는 모든 Hooks 호출 뒤에 둔다 — 위에서 조기 반환하면 loading true→false 전이 때

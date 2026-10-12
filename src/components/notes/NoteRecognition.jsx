@@ -3,6 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import {requestNote} from '@/lib/useStudyNote';
 import {recognitionFingerprint} from '@/lib/noteRecognition';
 import BoardIcon from '@/components/classroom/BoardIcon';
+import { friendlyToastMessage } from '@/lib/errorMessage';
 
 export default function NoteRecognition({noteId,capture,sync,current,onApply,onClose}) {
   const dialog=useRef(null),request=useRef(null),alive=useRef(false);
@@ -27,7 +28,7 @@ export default function NoteRecognition({noteId,capture,sync,current,onApply,onC
       if(latest.revision!==saved.revision||result.revision!==saved.revision||result.fingerprint!==capture.fingerprint||await recognitionFingerprint(latest.document.board.pages.find(page=>page.id===capture.pageId),capture.elementIds)!==capture.fingerprint)throw new Error('노트가 바뀌었어요. 닫은 뒤 최신 필기를 다시 선택해 주세요.');
       if(!result.expressions?.length){setError('읽을 수 있는 표현을 찾지 못했어요. 글자 몇 개씩 선택하거나 직접 입력해 주세요.');return;}
       onApply(result.expressions,capture);onClose();
-    }catch(cause){if(alive.current)setError(cause.name==='AbortError'?'인식 시간이 길어졌어요. 영역을 줄여 다시 시도해 주세요.':cause.message);}
+    }catch(cause){if(alive.current)setError(cause.name==='AbortError'?'인식 시간이 길어졌어요. 영역을 줄여 다시 시도해 주세요.':friendlyToastMessage(cause));}
     finally{clearTimeout(timeout);request.current=null;if(alive.current)setBusy(false);}
   }
   return <dialog className="note-recognition" ref={dialog} aria-labelledby="note-recognition-title" onCancel={event=>{event.preventDefault();onClose();}} onKeyDown={event=>{

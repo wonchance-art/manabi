@@ -6,6 +6,7 @@ import {useQuery} from '@tanstack/react-query';
 import {requestTextbookAnnotations} from './textbookAnnotationsClient';
 import {listClassOperations,putClassOperation,deleteClassOperation} from './classroomOutbox';
 import {createTextbookSaveRunner,shouldRetryTextbookSave,textbookAnnotationScope,textbookConflictDraft,textbookOperationId} from './textbookAnnotationSync';
+import { friendlyToastMessage } from './errorMessage';
 
 const EMPTY_NOTES=[],EMPTY_HISTORY=[];
 const outbox={put:putClassOperation,send:requestTextbookAnnotations,remove:deleteClassOperation,list:listClassOperations};
@@ -31,7 +32,7 @@ export function useTextbookAnnotations({materialId,team,user,enabled=true,local=
   start:()=>{setBusy(true);setMessage('');},
   pending:setPending,
   saved:async remaining=>{setPending(remaining);savedRef.current?.();setMessage('교재에 저장했어요. 다음에 이 부분을 읽을 때 다시 나타납니다.');await refetch();},
-  failed:e=>{setMessage(e.message);if(e.conflict)setPending(p=>({...p,conflict:true}));},
+  failed:e=>{setMessage(friendlyToastMessage(e));if(e.conflict)setPending(p=>({...p,conflict:true}));},
   settled:()=>setBusy(false),
  }),[scope,id,team,refetch]);
  const retryRef=useRef(null);retryRef.current=()=>{if(shouldRetryTextbookSave(pending,runner.current.locked))save(pending);};

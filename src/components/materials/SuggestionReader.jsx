@@ -12,6 +12,7 @@ import { saveComposerOnce } from '@/lib/materialComposer';
 import { authEntryHref } from '@/lib/authRedirect';
 import { attributionParts, licenseForSource } from '@/lib/videoAttribution';
 import './suggestion-reader.css';
+import { friendlyToastMessage } from '@/lib/errorMessage';
 
 async function fetchSuggestion(id, signal) {
   const response = await fetch(`/api/suggestions/${encodeURIComponent(id)}`, { signal });
@@ -64,7 +65,7 @@ export default function SuggestionReader({ id }) {
         <button type="button" aria-label="글자 크게" disabled={fontSize >= 28} onClick={() => setFontSize(n => Math.min(28, n + 2))}>A+</button>
       </div>}
     </nav>
-    {query.isPending ? <p role="status">읽을거리를 펼치고 있어요…</p> : query.isError ? <div className="suggestion-reader__state" role="alert"><h1 id="suggestion-title">{query.error.message}</h1><p>저장된 주소를 다시 확인하거나 추천 목록으로 돌아가 주세요.</p>{query.error.status !== 404 && <button className="btn" onClick={() => query.refetch()}>다시 불러오기</button>}</div> : <>
+    {query.isPending ? <p role="status">읽을거리를 펼치고 있어요…</p> : query.isError ? <div className="suggestion-reader__state" role="alert"><h1 id="suggestion-title">{friendlyToastMessage(query.error, '자료를 불러오지 못했어요.')}</h1><p>저장된 주소를 다시 확인하거나 추천 목록으로 돌아가 주세요.</p>{query.error.status !== 404 && <button className="btn" onClick={() => query.refetch()}>다시 불러오기</button>}</div> : <>
       <header className="suggestion-reader__heading"><p className="manabi-eyebrow">MANABI / READINGS</p>
         <div className="suggestion-reader__meta"><span>{langNameKo(s.language)}</span>{s.level && <span>{s.level}</span>}<span>{source.kind === 'digest' ? '뉴스 브리핑' : source.kind === 'video' ? (readable ? '영상 자막' : '추천 영상') : '기사 발췌'}</span></div>
         <h1 id="suggestion-title">{s.title}</h1>

@@ -24,6 +24,7 @@ import {cardSkeleton, cardFields, readCard, rotateCardPart, wordCardSkeleton, ex
 import {isClassComposing} from '../../lib/classReaderDraft';
 import {boardCameraForBounds} from '../../lib/teachingBoardViewport';
 import {recognitionElements,recognitionFingerprint,RECOGNITION_IMAGE_LIMIT} from '../../lib/noteRecognition';
+import { friendlyToastMessage } from '../../lib/errorMessage';
 
 export default function TeachingBoardCanvas(props) {
   const {owner, team, day} = props;
@@ -174,7 +175,7 @@ export function SharedBoardCanvas({owner, team, day, rootId, scope, store, perso
       closeMenu();
       const capture={image,pageId:id,elementIds:ids,fingerprint};
       if(personal)personal.onRecognize(capture);else setInkCapture(capture);
-    }catch(error){if(root.current)setMessage(error.message);}finally{captureBusy.current=false;if(root.current)setCapturing(false);}
+    }catch(error){if(root.current)setMessage(friendlyToastMessage(error));}finally{captureBusy.current=false;if(root.current)setCapturing(false);}
   };
   const isCurrentInk=async capture=>{
     try{
@@ -272,7 +273,7 @@ export function SharedBoardCanvas({owner, team, day, rootId, scope, store, perso
       setMessage('판에 놓았어요. 자유롭게 옮기고 필기하세요.');
       if(!preserveDraft){attempt.current++;setBusy(false);setPanel(false);setSearching(false);setEditing(null);setInput('');setReading('');setMeaning('');setEntrySource({kind:'manual'});setLookupSource('');if(keepAdding){setSearching(true);requestAnimationFrame(()=>inputRef.current?.focus());}else closeMenu(true);}
       return true;
-    } catch (error) { setMessage(error.message);return false; }
+    } catch (error) { setMessage(friendlyToastMessage(error));return false; }
   };
   // The reader's existing word card can place an expression without consuming
   // the separate board-input draft or posting a student-facing class record.
@@ -301,7 +302,7 @@ export function SharedBoardCanvas({owner, team, day, rootId, scope, store, perso
       const next = boardExpression({...readCard(target,elements), text:input, reading, meaning, source:input.trim() === previous.text ? previous.source : {kind:'manual'}}, team.lang);
       reviseCard(target,next);
       cancelEdit();closeMenu(true);setMessage('이 판의 표현을 수정했어요.');
-    } catch (error) { setMessage(error.message); }
+    } catch (error) { setMessage(friendlyToastMessage(error)); }
   };
   const palette=()=>{const style=getComputedStyle(root.current);return {paper:style.getPropertyValue('--reader-paper').trim(),ink:style.getPropertyValue('--reader-ink').trim(),muted:style.getPropertyValue('--reader-muted').trim(),line:style.getPropertyValue('--reader-line').trim(),accent:style.getPropertyValue('--reader-accent').trim()};};
   const rebuildCard=(target,value,elements,{compact=false}={})=>{
@@ -359,7 +360,7 @@ export function SharedBoardCanvas({owner, team, day, rootId, scope, store, perso
         if(request!==attempt.current||atEdit!==editVersion.current)return;
         setCandidates(data.candidates||[]);setReading(data.reading||'');setSenses(data.senses||[]);setMeaning(data.senses?.[0]?.meaning||'');setLookupSource('내 사전');
         if(!data.senses?.length&&!data.candidates?.length)setMessage('저장된 사전 뜻이 없어요. 수업에서 적은 뜻을 입력해 주세요.');
-      }catch(error){if(request===attempt.current)setMessage(error.message);}finally{if(request===attempt.current)setBusy(false);}return;
+      }catch(error){if(request===attempt.current)setMessage(friendlyToastMessage(error));}finally{if(request===attempt.current)setBusy(false);}return;
     }
     try{
       const {data:{session}}=await supabase.auth.getSession();
@@ -375,7 +376,7 @@ export function SharedBoardCanvas({owner, team, day, rootId, scope, store, perso
       const data=await response.json();if(!response.ok)throw new Error(data.error);
       if(request!==attempt.current||atEdit!==editVersion.current)return;
       setReading(data.reading||'');setSenses(data.senses||[]);setMeaning(data.senses?.[0]?.meaning||'');setLookupSource(lookupSourceLabel(data.source));setEntrySource({kind:'manual'});
-    }catch(error){if(request===attempt.current&&atEdit===editVersion.current)setMessage(error.message||'사전을 불러오지 못했어요. 입력한 그대로 놓을 수 있어요.');}
+    }catch(error){if(request===attempt.current&&atEdit===editVersion.current)setMessage(friendlyToastMessage(error,'사전을 불러오지 못했어요. 입력한 그대로 놓을 수 있어요.'));}
     finally{if(request===attempt.current)setBusy(false);}
   };
   const cancelEdit=()=>{attempt.current++;setBusy(false);if(editing){const draft=readBoardWorkspace(scope);setInput(draft.input);setReading(draft.reading);setMeaning(draft.meaning);setEditing(null);}setPanel(false);setSearching(false);};
@@ -432,7 +433,7 @@ export function SharedBoardCanvas({owner, team, day, rootId, scope, store, perso
       if(document.current.pages.length + incoming.pages.length > BOARD_PAGE_LIMIT) throw new Error('판이 20개를 넘어요.');
       const pages=incoming.pages.map(page => ({...page,id:crypto.randomUUID()}));
       document.current={...document.current,pages:[...document.current.pages,...pages]}; changePage(pages[0].id); setMessage('기존 판을 보존하고 백업을 새 판으로 가져왔어요.');
-    } catch(error) { setMessage(error.message); }
+    } catch(error) { setMessage(friendlyToastMessage(error)); }
   };
   const recover = row => {
     commit();

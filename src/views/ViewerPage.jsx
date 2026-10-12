@@ -2548,7 +2548,7 @@ export default function ViewerPage() {
         <p style={{ color: 'var(--text-secondary)', marginBottom: 20, maxWidth: 400, margin: '0 auto 20px' }}>
           {isNotFound
             ? '이 자료는 삭제됐거나 비공개로 전환됐을 수 있어요. 연결됐던 단어는 단어장에 그대로 남아 있습니다.'
-            : (error.message || '잠시 후 다시 시도해주세요.')}
+            : friendlyToastMessage(error, '잠시 후 다시 시도해주세요.')}
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           {!isNotFound && <button onClick={() => refetch()} className="btn btn--primary">{vt("다시 시도")}</button>}

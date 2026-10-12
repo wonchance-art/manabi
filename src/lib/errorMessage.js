@@ -15,6 +15,13 @@ const PATTERNS = [
     user: '요청이 너무 많아요. 1~2분 기다린 뒤 다시 시도해주세요.',
     retry: true },
 
+  // JSON 파싱 — 인증 패턴(/token/)보다 먼저 본다: 「Unexpected token」이 「로그인이 만료됐어요」로 오분류되던 문제.
+  // gemini.js의 내부 문구(「Gemini 응답 JSON 파싱 실패」·「JSON 괄호를 찾을 수 없습니다」·
+  // 「서버 응답 형식 오류 (HTTP n)」·「Gemini 응답이 비어있습니다」)도 같은 안내로 받는다.
+  { match: /unexpected token|not valid json|json parse|JSON 파싱|JSON 괄호|응답 형식 오류|응답이 비어/i,
+    user: '응답 형식 오류예요. 다시 시도하면 대개 해결됩니다.',
+    retry: true },
+
   // 인증
   { match: /unauthor|not authenticated|jwt|token/i,
     user: '로그인이 만료됐어요. 다시 로그인해주세요.' },
@@ -40,20 +47,41 @@ const PATTERNS = [
     user: 'AI 모델 설정에 문제가 있어요. 관리자에게 문의하세요.' },
   { match: /api key/i,
     user: '서비스 설정에 문제가 있어요. 관리자에게 문의하세요.' },
-
-  // JSON 파싱
-  { match: /unexpected token|not valid json|json parse/i,
-    user: '응답 형식 오류예요. 다시 시도하면 대개 해결됩니다.',
-    retry: true },
 ];
+
+// 매칭도 안 되고 우리 한국어 안내도 아닌 오류에 보여 주는 고정 문구 — 원래 빈 메시지용 폴백이던 그 문구다.
+export const UNKNOWN_ERROR_MESSAGE = '알 수 없는 오류가 발생했어요.';
+
+const logged = new Set();
+
+// 한국어여도 내부 사정인 표지 — gemini.js의 「Gemini 응답 …」·「(HTTP 500)」, DB 열·제약 이름(snake_case),
+// 환경 변수 이름, JS 예외 이름, PostgREST 코드, 스택·마크업 조각.
+const TECHNICAL_MARKERS = /HTTP\s*\d{3}|\bJSON\b|Gemini 응답|\b[A-Za-z]*Error\b|\bnull\b|\bundefined\b|\b[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)+\b|[{}<>]|\bPGRST\d+|\bat [\w.$]+ \(/;
+
+/**
+ * 우리 API·화면이 이미 학습자용으로 쓴 한국어 안내인가 (WALL-STATES-001).
+ * 한글이 있고, 라틴 글자가 한글보다 적고, 내부 표지가 없을 때만 그대로 보여 줄 수 있다.
+ * 영어 원문(Supabase·브라우저·제공자 오류)과 내부 한국어 문구(gemini.js)는 여기서 걸러진다.
+ */
+export function isUserFacingMessage(text) {
+  if (typeof text !== 'string' || !text.trim()) return false;
+  const hangul = (text.match(/[가-힣]/g) || []).length;
+  if (!hangul) return false;
+  const latin = (text.match(/[A-Za-z]/g) || []).length;
+  if (latin > hangul) return false;
+  return !TECHNICAL_MARKERS.test(text);
+}
 
 /**
  * 기술 에러 메시지 → 사용자 친화 메시지
+ * 매칭 → 정해 둔 안내, 우리 한국어 안내 → 그대로(접두어 제거·200자), 그 밖 → 고정 문구 + 콘솔.
+ * 원문은 화면에 내지 않는다(WALL-001과 같은 원칙) — technical과 콘솔로만 남긴다.
  * @param {Error|string} err
+ * @param {{ fallback?: string }} [options] 고정 문구 대신 쓸 그 화면의 한국어 폴백
  * @returns {{ message: string, retry?: boolean, technical: string }}
  */
-export function friendlyError(err) {
-  const technical = typeof err === 'string' ? err : (err?.message || String(err));
+export function friendlyError(err, { fallback } = {}) {
+  const technical = typeof err === 'string' ? err : (err?.message || (err == null ? '' : String(err)));
 
   for (const p of PATTERNS) {
     if (p.match.test(technical)) {
@@ -61,16 +89,19 @@ export function friendlyError(err) {
     }
   }
 
-  // 매치 없으면 원본 노출 (단, 프리픽스는 제거)
-  const cleaned = technical.replace(/^(Error:|HTTP \d+:|오류:|Server Error:)\s*/i, '').slice(0, 200);
-  return {
-    message: cleaned || '알 수 없는 오류가 발생했어요.',
-    retry: false,
-    technical,
-  };
+  const cleaned = technical.replace(/^(Error:|HTTP \d+:|오류:|Server Error:)\s*/i, '').trim().slice(0, 200);
+  if (isUserFacingMessage(cleaned)) return { message: cleaned, retry: false, technical };
+
+  // 렌더 중에 불리는 자리(쿼리 오류 표시)도 있어 같은 원문은 한 번만 남긴다.
+  if (technical && !logged.has(technical)) {
+    if (logged.size >= 50) logged.clear();
+    logged.add(technical);
+    console.warn('[friendlyError] 원문은 화면에 내지 않음:', technical);
+  }
+  return { message: fallback || UNKNOWN_ERROR_MESSAGE, retry: false, technical };
 }
 
-/** 토스트용 한 줄 메시지 */
-export function friendlyToastMessage(err) {
-  return friendlyError(err).message;
+/** 토스트·오류 상자용 한 줄 메시지 — fallback은 그 화면의 한국어 폴백(없으면 고정 문구) */
+export function friendlyToastMessage(err, fallback) {
+  return friendlyError(err, { fallback }).message;
 }

@@ -6,6 +6,7 @@ import { useAuth } from '../lib/AuthContext';
 import { LEVELS } from '../lib/constants';
 import { syncAuthDisplayName } from '../lib/authDisplayName';
 import Button from './Button';
+import { friendlyToastMessage } from '../lib/errorMessage';
 
 export default function OnboardingModal() {
   const { user, profile, fetchProfile } = useAuth();
@@ -53,7 +54,7 @@ export default function OnboardingModal() {
     }
 
     if (err) {
-      setError('저장 실패: ' + err.message);
+      setError('저장 실패: ' + friendlyToastMessage(err));
       setSaving(false);
       return;
     }

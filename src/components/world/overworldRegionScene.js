@@ -34,6 +34,7 @@ import {
 import bus from './bus';
 import { overworldRegionAvatarPrefix } from './avatarRebake';
 import { presentQuestDone, presentQuestScored } from './stampCollectionPresentation';
+import { friendlyToastMessage } from '../../lib/errorMessage';
 
 const TILE = 32;
 const TEXTURE_TILE = 16;
@@ -628,7 +629,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         this.refreshNearInteraction(true);
         ctx.setStatus?.({
           phase: 'error',
-          message: error?.message || '종착 철도 허브를 저장하지 못했어요.',
+          message: friendlyToastMessage(error, '종착 철도 허브를 저장하지 못했어요.'),
         });
         return false;
       } finally {
@@ -677,7 +678,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         this.refreshNearInteraction(true);
         return true;
       } catch (error) {
-        ctx.setStatus?.({ ...this.railStatus(trip), phase: 'error', message: error?.message });
+        ctx.setStatus?.({ ...this.railStatus(trip), phase: 'error', message: friendlyToastMessage(error, '요청을 완료하지 못했어요.') });
         return false;
       } finally {
         this.railDisembarking = false;

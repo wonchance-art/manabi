@@ -8,6 +8,7 @@ import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
 import { getPdfMetadata, extractPageRange, ocrPageRange, suggestChunkSize, renderPageAsBase64 } from '../lib/pdfExtract';
 import { getCachedPdf, cachePdf } from '../lib/pdfCache';
+import { friendlyToastMessage } from '@/lib/errorMessage';
 
 const MAX_PDF_SIZE = 50 * 1024 * 1024; // 50MB
 
@@ -84,7 +85,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
       refetch();
       queryClient.invalidateQueries({ queryKey: ['pdf-ranges'] });
     },
-    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
+    onError: (err) => toast('삭제 실패: ' + friendlyToastMessage(err), 'error'),
   });
 
   const handleFileSelect = async (e) => {
@@ -171,7 +172,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
       setPageStart(1);
       setPageEnd(Math.min(suggested, pageCount));
     } catch (err) {
-      toast('업로드 실패: ' + err.message, 'error');
+      toast('업로드 실패: ' + friendlyToastMessage(err), 'error');
     } finally {
       setUploading(false);
       e.target.value = ''; // 같은 파일 재선택 가능하게
@@ -229,7 +230,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
       });
       setActivePdf(null);
     } catch (err) {
-      toast('텍스트 추출 실패: ' + err.message, 'error');
+      toast('텍스트 추출 실패: ' + friendlyToastMessage(err), 'error');
     } finally {
       setExtractingRange(false);
       setOcrProgress(null);

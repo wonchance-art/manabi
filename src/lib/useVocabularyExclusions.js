@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { updateVocabularyExclusions } from './vocabularyExclusion';
+import { friendlyToastMessage } from './errorMessage';
 
 async function request(body, signal) {
   const response = await fetch('/api/learning/exclusions', body ? {
@@ -32,7 +33,7 @@ export function useVocabularyExclusions() {
         client.invalidateQueries({ queryKey: [prefix, body.accountId] });
       }
     },
-    onError: (error, body) => { if (activeOwner.current === body.accountId) toast(error.message, 'error'); },
+    onError: (error, body) => { if (activeOwner.current === body.accountId) toast(friendlyToastMessage(error), 'error'); },
   });
   return { ...query, rows: query.data || [], mutation: { ...mutation,
     mutate: body => mutation.mutate({ ...body, accountId: owner }),

@@ -6,6 +6,7 @@ import Button from './Button';
 import { parseEpub } from '../lib/epub';
 import { MAX_BODY_CHARS } from '../lib/materialComposer';
 import { BODY_CAP_LABEL } from '../lib/bookSplit';
+import { friendlyToastMessage } from '../lib/errorMessage';
 
 /**
  * EPUB 반입 — 개인 소장 전자책에서 챕터를 골라 본문 텍스트로 가져온다.
@@ -30,7 +31,7 @@ export default function MaterialAddEpubSection({ toast, onReady, onBookReady, op
       setBook({ fileName: file.name, ...parsed });
       setSelected(new Set());
     } catch (err) {
-      toast(`EPUB을 읽지 못했어요 — ${err?.message || '알 수 없는 형식'}`, 'error');
+      toast(`EPUB을 읽지 못했어요 — ${friendlyToastMessage(err, '알 수 없는 형식')}`, 'error');
       setBook(null);
     } finally {
       setParsing(false);

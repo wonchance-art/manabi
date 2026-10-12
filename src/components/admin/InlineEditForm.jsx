@@ -16,6 +16,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '../../lib/ToastContext';
 import { CHAPTER_FIELD_LABELS } from '../../lib/chapterEditorModel';
+import { friendlyToastMessage } from '../../lib/errorMessage';
 
 async function fetchMerged(lang, slug) {
   const res = await fetch(
@@ -132,7 +133,7 @@ export default function InlineEditForm({ lang, slug, path, kind, onDone, onCance
       })
       .catch((e) => {
         if (!alive) return;
-        setError(e.message);
+        setError(friendlyToastMessage(e, '불러오기에 실패했어요.'));
         setLoading(false);
       });
     return () => { alive = false; };
@@ -174,7 +175,7 @@ export default function InlineEditForm({ lang, slug, path, kind, onDone, onCance
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(json.error || '저장에 실패했어요.');
+        setError(friendlyToastMessage(json.error, '저장에 실패했어요.'));
         setSaving(false);
         return;
       }

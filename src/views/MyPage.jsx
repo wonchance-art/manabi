@@ -12,6 +12,7 @@ import { hasVapidKey, getSubscriptionState, subscribePush, unsubscribePush } fro
 import Button from '../components/Button';
 import AccountSettings from '../components/AccountSettings';
 import InstallPrompt from '../components/InstallPrompt';
+import { friendlyToastMessage } from '../lib/errorMessage';
 
 export default function MyPage() {
   const { user, profile, fetchProfile, signOut } = useAuth();
@@ -135,7 +136,7 @@ export default function MyPage() {
       if (error) throw error;
     },
     onSuccess: () => { fetchProfile(user.id, user.user_metadata); setIsEditingGoals(false); toast('목표가 저장됐습니다.', 'success'); },
-    onError: (err) => toast(err.message, 'error'),
+    onError: (err) => toast(friendlyToastMessage(err), 'error'),
   });
 
   const saveProfileMutation = useMutation({
@@ -158,7 +159,7 @@ export default function MyPage() {
       await syncAuthDisplayName(supabase, user, base.display_name);
     },
     onSuccess: () => { fetchProfile(user.id, user.user_metadata); queryClient.invalidateQueries({ queryKey: ['home', user.id] }); toast('프로필이 저장됐습니다.', 'success'); },
-    onError: (err) => toast(err.message, 'error'),
+    onError: (err) => toast(friendlyToastMessage(err), 'error'),
   });
 
   if (!user) {

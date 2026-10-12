@@ -5,6 +5,7 @@ import {inkRows,editInkRow,inkValues} from '../../lib/teachingInk';
 import {BoardIconButton} from './BoardIcon';
 import {WordDisplayControls} from './TeachingWord';
 import {annotatedLanguage} from '../../lib/teachingWordLayout';
+import { friendlyToastMessage } from '../../lib/errorMessage';
 
 export default function BoardInkRecognition({rootId,team,capture,isCurrent,onPlace,onClose,appearance,onAppearance}) {
   const root=useRef(null),request=useRef(null),alive=useRef(false),placing=useRef(false);
@@ -31,7 +32,7 @@ export default function BoardInkRecognition({rootId,team,capture,isCurrent,onPla
       if(result.fingerprint!==capture.fingerprint||!await isCurrent(capture))throw new Error('선택한 필기가 바뀌었어요. 닫은 뒤 다시 선택해 주세요.');
       if(!result.expressions?.length){setError('읽을 수 있는 표현이 없어요. 영역을 줄이거나 ＋에서 직접 입력해 주세요.');return;}
       setRows(inkRows(result.expressions));
-    }catch(cause){if(alive.current)setError(cause.name==='AbortError'?'인식 시간이 길어졌어요. 다시 시도해 주세요.':cause.message);}
+    }catch(cause){if(alive.current)setError(cause.name==='AbortError'?'인식 시간이 길어졌어요. 다시 시도해 주세요.':friendlyToastMessage(cause));}
     finally{clearTimeout(timeout);request.current=null;if(alive.current)setBusy(false);}
   }
   const edit=(index,patch)=>{setRows(previous=>previous.map(row=>row.index===index?editInkRow(row,patch):row));setNeedsPage(false);setError('');setMessage('');};
@@ -45,7 +46,7 @@ export default function BoardInkRecognition({rootId,team,capture,isCurrent,onPla
       if(result.needsPage){setNeedsPage(true);setMessage('현재 화면에 공간이 부족해요. 원래 필기를 보존하고 새 판에 놓을 수 있어요.');return;}
       setRows(previous=>previous.map(row=>result.indices.includes(row.index)?{...row,placed:true,selected:false}:row));
       setCollapsed(true);setNeedsPage(false);setMessage(result.existing?'이미 놓은 표현을 선택했어요.':'판에 놓았어요. 학생용 기록은 요소 메뉴에서 수업에 남기기를 눌러 주세요.');
-    }catch(cause){if(alive.current)setError(cause.message);}
+    }catch(cause){if(alive.current)setError(friendlyToastMessage(cause));}
     finally{placing.current=false;if(alive.current)setApplying(false);}
   }
   return <section className="board-ink-panel" data-collapsed={collapsed} ref={root} role="dialog" aria-label="필기에서 표현 가져오기" onKeyDown={event=>{
