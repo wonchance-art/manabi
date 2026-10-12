@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>manabi 첫 방문 온보딩</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;800&family=Noto+Sans+KR:wght@400;500;700;800&family=Noto+Sans+JP:wght@500&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#f6f4ee; --sheet:#fffefb; --ink:#252721; --muted:#65675f; --rule:#d7d5cd; --rule-soft:#e6e3db;
+  --rose:#994a5a; --rose-ink:#fffefb; --ja:#994a5a; --zh:#2a7657; --en:#906021; --fr:#3a68a2;
+  --scrim:rgba(37,39,33,.42); --danger:#a8362f; --danger-bg:#f8e9e6; --note:#eeece5; --focus:#3a68a2;
+  --kr:'Noto Sans KR',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#1c1d1a; --sheet:#242520; --ink:#ecebe5; --muted:#a6a79e; --rule:#3c3d37; --rule-soft:#30312c;
+  --rose:#d48a99; --rose-ink:#1c1d1a; --ja:#d48a99; --zh:#6fbf9c; --en:#d4a35c; --fr:#86a8dd;
+  --scrim:rgba(0,0,0,.55); --danger:#f08c80; --danger-bg:#3a2522; --note:#2b2c27; --focus:#86a8dd;
+}}
+:root[data-theme="dark"]{
+  --paper:#1c1d1a; --sheet:#242520; --ink:#ecebe5; --muted:#a6a79e; --rule:#3c3d37; --rule-soft:#30312c;
+  --rose:#d48a99; --rose-ink:#1c1d1a; --ja:#d48a99; --zh:#6fbf9c; --en:#d4a35c; --fr:#86a8dd;
+  --scrim:rgba(0,0,0,.55); --danger:#f08c80; --danger-bg:#3a2522; --note:#2b2c27; --focus:#86a8dd;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.7 var(--kr);word-break:keep-all;overflow-wrap:anywhere}
+a{color:var(--rose)}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.doc{max-width:1040px;margin:0 auto;padding:40px 16px 80px}
+.wm{font:800 22px/1 'Manrope',sans-serif;letter-spacing:-1.2px;color:var(--ink)}
+.wm i{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--rose);margin-left:2px}
+.doc>header{display:grid;gap:10px;margin-bottom:34px}
+.eyebrow{font:500 12px/1.4 var(--mono);letter-spacing:.06em;color:var(--muted)}
+h1{font-size:30px;line-height:1.3;margin:0;letter-spacing:-.6px;text-wrap:balance}
+h2{font-size:20px;line-height:1.4;margin:0 0 12px;letter-spacing:-.3px;text-wrap:balance}
+h3{font-size:16px;margin:0 0 8px}
+.lede{max-width:66ch;color:var(--muted);margin:0}
+section{padding:30px 0;border-top:1px solid var(--rule)}
+p{max-width:68ch}
+.tldr{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:6px}
+.tldr div{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:14px 16px}
+.tldr b{display:block;font-size:13px;color:var(--muted);font-weight:500;margin-bottom:4px}
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:6px;background:var(--sheet)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:620px}
+th,td{text-align:left;vertical-align:top;padding:9px 12px;border-bottom:1px solid var(--rule-soft)}
+th{font-weight:700;font-size:12.5px;color:var(--muted);background:var(--note)}
+tr:last-child td{border-bottom:0}
+td code,p code,li code{white-space:nowrap;font:400 12.5px/1.5 var(--mono);background:var(--note);padding:1px 4px;border-radius:3px}
+.pill{display:inline-block;font-size:11.5px;font-weight:700;padding:1px 8px;border-radius:99px;white-space:nowrap}
+.p-yes{background:color-mix(in srgb,var(--zh) 16%,var(--sheet));color:var(--zh)}
+.p-part{background:color-mix(in srgb,var(--en) 18%,var(--sheet));color:var(--en)}
+.p-no{background:var(--note);color:var(--muted)}
+.p-bad{background:var(--danger-bg);color:var(--danger)}
+ol.plain,ul.plain{padding-left:20px;margin:0;max-width:72ch}
+ol.plain li,ul.plain li{margin:4px 0}
+
+/* ── stage ── */
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:22px;align-items:start;margin-top:14px}
+@media (max-width:900px){.stage{grid-template-columns:minmax(0,1fr)}}
+.frame{border:1px solid var(--rule);border-radius:8px;overflow:hidden;background:var(--paper)}
+.frame>figcaption{font:500 12px/1 var(--mono);color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--rule);background:var(--sheet);display:flex;justify-content:space-between;gap:8px}
+.backdrop{position:relative;padding:34px 20px;background:var(--scrim);display:flex;justify-content:center}
+.backdrop::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 22px,rgba(255,255,255,.04) 22px 23px);pointer-events:none}
+.phone{width:100%;max-width:390px;margin:0 auto;background:var(--sheet);min-height:640px;display:flex;flex-direction:column}
+
+/* ── onboarding modal (proposal) ── */
+.ob{position:relative;width:100%;max-width:520px;background:var(--sheet);border:1px solid var(--rule);border-radius:10px;box-shadow:0 18px 50px rgba(0,0,0,.18);display:flex;flex-direction:column}
+.phone .ob{max-width:none;border:0;border-radius:0;box-shadow:none;flex:1}
+.ob__top{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 0}
+.ob__step{font:500 12px/1 var(--mono);color:var(--muted)}
+.ob__head{padding:18px 24px 4px}
+.ob__head h3{font-size:21px;line-height:1.4;margin:0 0 4px;letter-spacing:-.4px}
+.ob__head p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.6}
+.ob__body{padding:16px 24px 6px;display:grid;gap:16px}
+.phone .ob__body{flex:1;padding:14px 16px 6px;align-content:start}
+.phone .ob__top,.phone .ob__head{padding-left:16px;padding-right:16px}
+.ob__foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 24px 20px;border-top:1px solid var(--rule-soft);margin-top:10px}
+.phone .ob__foot{position:sticky;bottom:0;background:var(--sheet);padding:12px 16px 16px;flex-wrap:wrap}
+.ob__hint{font-size:12.5px;color:var(--muted);line-height:1.5}
+.btn{appearance:none;border:0;border-radius:6px;font:700 14.5px/1 var(--kr);padding:13px 22px;cursor:pointer;min-height:44px}
+.btn--go{background:var(--rose);color:var(--rose-ink)}
+.btn--go[aria-disabled="true"]{background:var(--rule);color:var(--muted);cursor:not-allowed}
+.btn--back{background:transparent;color:var(--muted);padding:13px 6px}
+.phone .btn--go{flex:1}
+
+.langs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lc{--c:var(--muted);position:relative;display:flex;align-items:flex-start;gap:12px;padding:12px 12px;min-height:64px;border:1.5px solid var(--rule);border-radius:8px;background:var(--sheet);text-align:left;font:inherit;color:inherit;cursor:pointer}
+.lc[aria-checked="true"]{border-color:var(--c);background:color-mix(in srgb,var(--c) 7%,var(--sheet))}
+.lc.ja{--c:var(--ja)} .lc.zh{--c:var(--zh)} .lc.en{--c:var(--en)} .lc.fr{--c:var(--fr)}
+.gly{flex:none;width:38px;height:38px;border-radius:7px;display:grid;place-items:center;font-size:20px;line-height:1;color:var(--c);background:color-mix(in srgb,var(--c) 12%,var(--sheet))}
+.gly[lang="ja"]{font-family:'Noto Sans JP',sans-serif}
+.gly[lang="zh"]{font-family:'Noto Sans SC',sans-serif}
+.gly[lang="en"],.gly[lang="fr"]{font:800 19px/1 'Manrope',sans-serif}
+.lc__t{display:grid;gap:1px;min-width:0;justify-items:start}
+.lc__t b,.lc__t small{white-space:nowrap}
+.lc__t .main,.lc__t .mk{margin-top:4px}
+.lc__t b{font-size:14.5px}
+.lc__t small{font-size:12px;color:var(--muted)}
+.lc__mark{margin-left:auto;align-self:flex-start;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.tick{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--rule);display:grid;place-items:center}
+.lc[aria-checked="true"] .tick{background:var(--c);border-color:var(--c)}
+.lc[aria-checked="true"] .tick::after{content:"";width:8px;height:4px;border:2px solid var(--sheet);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+.main{font-size:11px;font-weight:700;color:var(--sheet);background:var(--c);border-radius:99px;padding:1px 7px;white-space:nowrap}
+.mk{font-size:11.5px;color:var(--c);text-decoration:underline;text-underline-offset:2px;white-space:nowrap;background:none;border:0;padding:0;font-family:inherit;cursor:pointer}
+.note{font-size:12.5px;color:var(--muted);background:var(--note);border-radius:6px;padding:9px 12px;line-height:1.55}
+.nick{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center}
+.nick label{font-size:13px;font-weight:700}
+.nick input{width:100%;font:400 14.5px var(--kr);color:var(--ink);background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:9px 11px;min-height:42px}
+.nick input::placeholder{color:var(--muted)}
+.nick small{grid-column:2;font-size:12px;color:var(--muted)}
+
+.lv{border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+.lv__h{display:flex;align-items:center;gap:10px;padding:10px 12px;background:color-mix(in srgb,var(--c) 7%,var(--sheet));border-bottom:1px solid var(--rule-soft)}
+.lv.ja{--c:var(--ja)} .lv.zh{--c:var(--zh)}
+.lv__h .gly{width:28px;height:28px;font-size:15px;border-radius:6px}
+.lv__h b{font-size:14.5px}
+.opt{display:flex;gap:11px;align-items:flex-start;padding:11px 12px;border-top:1px solid var(--rule-soft);cursor:pointer}
+.opt:first-of-type{border-top:0}
+.radio{flex:none;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--rule);margin-top:2px;display:grid;place-items:center}
+.opt[aria-checked="true"] .radio{border-color:var(--c)}
+.opt[aria-checked="true"] .radio::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--c)}
+.opt__t{display:grid;gap:1px;flex:1;min-width:0}
+.opt__t b{font-size:14px}
+.opt__t small{font-size:12.5px;color:var(--muted)}
+.to{font:500 11.5px/1.4 var(--mono);color:var(--c);white-space:nowrap;margin-top:3px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:2px 12px 12px 41px}
+.chip{font:500 12.5px/1 var(--kr);padding:8px 11px;border-radius:99px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);min-height:34px}
+.chip[aria-checked="true"]{background:var(--c);border-color:var(--c);color:var(--sheet);font-weight:700}
+.err{display:flex;gap:10px;align-items:flex-start;background:var(--danger-bg);color:var(--danger);border-radius:6px;padding:10px 12px;font-size:13px;line-height:1.55}
+.err b{font-weight:700}
+.dim{opacity:.5}
+.mylang{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px dashed var(--rule)}
+.mylang>span{font-size:13px;font-weight:700}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:7px;padding:2px;background:var(--note);gap:2px}
+.seg button{appearance:none;border:0;background:transparent;color:var(--muted);font:500 13px/1 var(--kr);padding:8px 11px;border-radius:5px;min-height:36px;cursor:pointer;white-space:nowrap}
+.seg button[lang="zh-CN"]{font-family:'Noto Sans SC',var(--kr)}
+.seg button[lang="zh-TW"]{font-family:'Noto Sans TC','Noto Sans SC',var(--kr)}
+.seg button[aria-checked="true"]{background:var(--sheet);color:var(--ink);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.lc.ko{--c:var(--ink)}
+.gly[lang="ko"]{font:700 19px/1 var(--kr)}
+.pend{font-size:11px;font-weight:700;color:var(--muted);border:1px dashed var(--muted);border-radius:99px;padding:0 7px;white-space:nowrap}
+.langs.langs--one{grid-template-columns:1fr}
+.zh-cn{font-family:'Noto Sans SC',var(--kr)}
+.zh-tw{font-family:'Noto Sans TC','Noto Sans SC',var(--kr)}
+.lchip.ko{--c:var(--ink)}
+
+/* study confirm + landing */
+.sq{padding:28px 18px;display:grid;gap:14px;max-width:440px;margin:0 auto}
+.sq h4{font-size:19px;margin:0;line-height:1.45;letter-spacing:-.3px}
+.sq p{margin:0;font-size:13px;color:var(--muted)}
+.sq .card{border:1.5px solid var(--zh);background:color-mix(in srgb,var(--zh) 7%,var(--sheet));border-radius:8px;padding:14px 16px;display:grid;gap:2px}
+.sq .card b{font-size:15px}
+.sq .card small{font-size:12.5px;color:var(--muted)}
+.sq .alt{font-size:13px;color:var(--muted);text-align:center}
+.land{padding:22px 18px;display:grid;gap:12px}
+.lchips{display:flex;gap:8px;flex-wrap:wrap}
+.lchip{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;padding:7px 12px;border-radius:99px;border:1px solid var(--rule);background:var(--sheet)}
+.lchip i{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.lchip.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 10%,var(--sheet));color:var(--c)}
+.lchip.zh{--c:var(--zh)} .lchip.ja{--c:var(--ja)}
+.ghost{height:12px;border-radius:4px;background:var(--rule-soft)}
+.ann{font-size:12.5px;color:var(--muted);line-height:1.6;margin:10px 0 0;max-width:none}
+.ann b{color:var(--ink)}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13.5px}
+.flow span{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:7px 11px}
+.flow em{font-style:normal;color:var(--muted)}
+.dec td:first-child{font:500 12.5px var(--mono);white-space:nowrap}
+@media (max-width:520px){
+  h1{font-size:25px}
+  .langs{grid-template-columns:1fr 1fr;gap:8px}
+  .backdrop{padding:22px 10px}
+  .ob__top,.ob__head,.ob__body,.ob__foot{padding-left:16px;padding-right:16px}
+  .lc{gap:9px;padding:10px}
+  .gly{width:32px;height:32px;font-size:17px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<main class="doc">
+<header>
+  <span class="wm">manabi<i></i></span>
+  <span class="eyebrow">첫 방문 온보딩 · 개편 시안 2판 · 결정 확정 · 2026-10-11 KST · main@182b7c30 기준</span>
+  <h1>첫 화면에서 「무엇을, 어디서부터」만 정확히 묻기</h1>
+  <p class="lede">지금 모달은 일본어·N3 중급이 미리 골라진 채 열리고, 그 값이 그대로 배움·복습·/study의 기본 언어(<code>learning_language[0]</code>)와 추천 수준이 된다. 개편은 미리 고른 값을 없애고, /study 첫 방문이 이미 쓰는 3택(처음·기초·배운 적)으로 수준 질문을 통일한다. 복습 개편 D1 「지금 언어」의 기본값이 여기서 정해진다.</p>
+  <div class="tldr">
+    <div><b>내 언어 (2판)</b>맨 위에서 한국어 · 简体中文 · 繁體中文. 중국어를 고르면 배울 언어에 <b>한국어(준비 중)만</b> 나온다</div>
+    <div><b>언어</b>미리 고른 값 없음 · 여러 개 선택 · 처음 고른 언어가 「주 언어」(바꿀 수 있음)</div>
+    <div><b>수준</b>언어마다 처음이에요 / 기초는 알아요 / 배운 적 있어요 — /study 첫 방문과 같은 문항</div>
+    <div><b>닉네임</b>가입 때 이름을 미리 채움 · 비워도 진행 (막는 입력 아님)</div>
+    <div><b>저장 실패</b>원문 오류 대신 「다시 눌러 주세요」 · 고른 답은 그대로</div>
+  </div>
+</header>
+
+<section id="audit">
+  <h2>현행 진단 — 6건</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>#</th><th>현상</th><th>근거 (main@182b7c30)</th><th>왜 문제인가</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>일본어가 미리 선택돼 열림</td><td><code>OnboardingModal.jsx:12</code> <code>useState(['Japanese'])</code></td><td>중국어만 고르려 해도 일본어를 먼저 꺼야 함. 안 끄면 <code>learning_language[0]</code>=일본어 → 홈(<code>HomePage.jsx:68</code>)·/study(<code>study/page.jsx:62</code>)·작문이 일본어로 열림</td></tr>
+      <tr><td>2</td><td>수준이 N3·B1·H3 중급으로 미리 선택</td><td><code>:13–16</code></td><td>건드리지 않고 넘어가면 입문자가 중급으로 저장 → 자료 추천 필터(<code>profileLevel</code>)·어휘 목표가 어긋남</td></tr>
+      <tr><td>3</td><td>수준을 두 번 물음</td><td>모달(급수 버튼) + <code>StudyOnboarding.jsx</code> q1(처음/기초/배운 적)</td><td>같은 질문을 다른 말로 두 번. 두 답이 서로를 모름 → 모달은 N3, /study는 「처음」처럼 갈라질 수 있음</td></tr>
+      <tr><td>4</td><td>닉네임 필수</td><td><code>:31</code> 빈 값이면 저장 거부</td><td>이메일 가입자는 이미 가입 때 입력(<code>AuthContext.jsx:250</code>). 구글 가입자는 「새로운 학습자」로 생성(<code>handle_new_user</code>) — 막는 입력이 아니라 고칠 기회면 충분</td></tr>
+      <tr><td>5</td><td>서버 오류 원문 노출</td><td><code>:56</code> <code>'저장 실패: ' + err.message</code></td><td>사용자가 할 수 있는 일을 알려주지 않음</td></tr>
+      <tr><td>6</td><td>그라데이션 머리띠·옛 문구</td><td><code>.onboarding-modal__header</code> primary→accent, 「학습 시작 전에 몇 가지만」</td><td>v2 셸(종이·잉크·브랜드 점)과 다른 시각 체계. 주 언어가 무엇을 바꾸는지 설명이 없음</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="flow">
+  <h2>흐름</h2>
+  <div class="flow">
+    <span>가입·로그인</span><em>→</em><span>① 내 언어 + 무엇을 배울까요 (언어·주 언어·닉네임)</span><em>→</em><span>② 어디서부터 (언어별 3택)</span><em>→</em><span>모달 닫힘 · 배움이 주 언어로</span><em>→</em><span>/study 첫 방문: 수준 <b>확인</b> + 관심사</span>
+  </div>
+  <p class="ann"><b>내 언어가 중국어(简体·繁體)면</b> ①에 한국어 카드 하나만 나오고 ②(수준)는 건너뛴다 — 한국어 급수 체계(TOPIK 열)가 아직 없어 물어도 저장할 곳이 없다. 이 경우 한 화면으로 끝난다.</p>
+  <p class="ann">단계 수는 현행(1화면)보다 하나 늘지만, 각 화면의 결정이 하나라 언어를 여럿 고를 때 길게 늘어지던 문제가 사라진다. 언어 1개를 고른 사용자는 ②에서 탭 한 번이면 끝난다.</p>
+</section>
+
+<section id="mock-1">
+  <h2>① 무엇을 배울까요</h2>
+  <div class="stage">
+    <figure class="frame" style="margin:0">
+      <figcaption><span>데스크톱 · 중국어 → 일본어 순으로 고른 상태</span><span>520px 모달</span></figcaption>
+      <div class="backdrop">
+        <div class="ob" role="dialog" aria-modal="true" aria-labelledby="t1">
+          <div class="ob__top"><span class="wm" style="font-size:18px">manabi<i></i></span><span class="ob__step">1 / 2</span></div>
+          <div class="ob__head">
+            <h3 id="t1">manabi에 오신 걸 환영해요</h3>
+            <p>배울 언어를 골라 주세요. 여러 개 골라도 되고, 나중에 내 정보에서 바꿀 수 있어요.</p>
+          </div>
+          <div class="ob__body">
+            <div class="mylang"><span>내 언어</span><div class="seg" role="radiogroup" aria-label="내 언어"><button role="radio" aria-checked="true" lang="ko">한국어</button><button role="radio" aria-checked="false" lang="zh-CN">简体中文</button><button role="radio" aria-checked="false" lang="zh-TW">繁體中文</button></div></div>
+            <div class="langs" role="group" aria-label="배울 언어">
+              <button class="lc ja" role="checkbox" aria-checked="true"><span class="gly" lang="ja" aria-hidden="true">あ</span><span class="lc__t"><b>일본어</b><small>日本語</small><span class="mk">주 언어로</span></span><span class="lc__mark"><span class="tick"></span></span></button>
+              <button class="lc en" role="checkbox" aria-checked="false"><span class="gly" lang="en" aria-hidden="true">A</span><span class="lc__t"><b>영어</b><small>English</small></span><span class="lc__mark"><span class="tick"></span></span></button>
+              <button class="lc fr" role="checkbox" aria-checked="false"><span class="gly" lang="fr" aria-hidden="true">É</span><span class="lc__t"><b>프랑스어</b><small>Français</small></span><span class="lc__mark"><span class="tick"></span></span></button>
+              <button class="lc zh" role="checkbox" aria-checked="true"><span class="gly" lang="zh" aria-hidden="true">中</span><span class="lc__t"><b>중국어</b><small>中文</small><span class="main">주 언어</span></span><span class="lc__mark"><span class="tick"></span></span></button>
+            </div>
+            <div class="note">주 언어는 배움·복습·오늘의 학습이 먼저 여는 언어예요. 다른 언어는 언제든 바꿔 볼 수 있어요.</div>
+            <div class="nick"><label for="n1">닉네임</label><input id="n1" value="하루" maxlength="20"><small>가입할 때 쓴 이름이에요. 그대로 둬도 돼요.</small></div>
+          </div>
+          <div class="ob__foot"><span class="ob__hint">2개 선택 · 주 언어 중국어</span><button class="btn btn--go">다음</button></div>
+        </div>
+      </div>
+      <p class="ann" style="padding:0 14px 14px"><b>내 언어</b>는 기기 언어로 미리 맞춰 둔다(모달을 어떤 말로 보여 줄지 정해야 하므로 — 「미리 선택 없음」의 유일한 예외). 바꾸면 모달 문구와 아래 목록이 즉시 바뀐다. <b>언어 순서</b>는 현행 그대로(일·영·프·중). 카드의 기호는 그 언어의 문자(あ·A·É·中)이고 색은 v2 언어 토큰(<code>--ja</code> <code>--zh</code> <code>--en</code> <code>--fr</code>) — 국기 그림 대신 쓴다. <b>주 언어</b> = 처음 고른 언어. 다른 선택 카드의 「주 언어로」를 누르면 바뀐다(카드 체크박스와 <b>별개 버튼</b> — 버튼 안에 버튼을 넣지 않는다). 주 언어를 해제하면 남은 것 중 먼저 고른 언어가 이어받는다.</p>
+    </figure>
+    <figure class="frame" style="margin:0">
+      <figcaption><span>휴대폰 · 내 언어 简体中文</span><span>390</span></figcaption>
+      <div class="phone zh-cn" lang="zh-CN">
+        <div class="ob" role="dialog" aria-modal="true" aria-labelledby="t1m">
+          <div class="ob__top"><span class="wm" style="font-size:18px">manabi<i></i></span></div>
+          <div class="ob__head"><h3 id="t1m">欢迎来到 manabi</h3><p>选择你想学的语言。以后可以在个人资料里修改。</p></div>
+          <div class="ob__body">
+            <div class="mylang"><span>我的语言</span><div class="seg" role="radiogroup" aria-label="我的语言"><button role="radio" aria-checked="false" lang="ko">한국어</button><button role="radio" aria-checked="true" lang="zh-CN">简体中文</button><button role="radio" aria-checked="false" lang="zh-TW">繁體中文</button></div></div>
+            <div class="langs langs--one" role="group" aria-label="想学的语言">
+              <button class="lc ko" role="checkbox" aria-checked="true"><span class="gly" lang="ko" aria-hidden="true">한</span><span class="lc__t"><b>韩语</b><small lang="ko">한국어</small><span class="pend">准备中</span></span><span class="lc__mark"><span class="tick"></span></span></button>
+            </div>
+            <div class="note">韩语课程还在准备中。现在可以先用阅读器读韩语文章，阅读器的界面和释义可以显示为中文。</div>
+            <div class="nick"><label for="n2">昵称</label><input id="n2" placeholder="새로운 학습자" maxlength="20"><small>可以留空，以后再改。</small></div>
+          </div>
+          <div class="ob__foot"><span class="ob__hint" style="flex-basis:100%">已选择：韩语</span><button class="btn btn--go">开始</button></div>
+        </div>
+      </div>
+      <p class="ann" style="padding:0 14px 14px">내 언어를 简体中文으로 바꾼 상태. 배울 언어는 <b>한국어 하나</b>, 「준비 중」 표식을 달고 <b>고를 수 있게 열어 둔다</b>. 선택지가 하나뿐이라 미리 체크해 둔다. 수준 단계가 없으니 단계 표시(1 / 2)도 없고 버튼은 바로 「开始」. 한국어 카드는 전용 언어색 토큰이 아직 없어 중립 잉크색으로 둔다.</p>
+    </figure>
+  </div>
+</section>
+
+<section id="mock-2">
+  <h2>② 어디서부터 시작할까요</h2>
+  <div class="stage">
+    <figure class="frame" style="margin:0">
+      <figcaption><span>데스크톱 · 중국어 「배운 적 있어요 → H3」, 일본어 「처음이에요」</span><span>520px</span></figcaption>
+      <div class="backdrop">
+        <div class="ob" role="dialog" aria-modal="true" aria-labelledby="t2">
+          <div class="ob__top"><span class="wm" style="font-size:18px">manabi<i></i></span><span class="ob__step">2 / 2</span></div>
+          <div class="ob__head"><h3 id="t2">어디서부터 시작할까요?</h3><p>딱 맞는 곳에서 시작하도록 언어마다 하나만 골라 주세요. 학습하면서 언제든 바뀌어요.</p></div>
+          <div class="ob__body">
+            <div class="lv zh" role="radiogroup" aria-labelledby="g-zh">
+              <div class="lv__h"><span class="gly" lang="zh" aria-hidden="true">中</span><b id="g-zh">중국어</b><span class="main" style="--c:var(--zh)">주 언어</span></div>
+              <div class="opt" role="radio" aria-checked="false" tabindex="-1"><span class="radio"></span><span class="opt__t"><b>처음이에요</b><small>병음·성조부터 차근차근</small></span><span class="to">H1 기초부터</span></div>
+              <div class="opt" role="radio" aria-checked="false" tabindex="-1"><span class="radio"></span><span class="opt__t"><b>기초는 알아요</b><small>인사·기본 문형은 익숙해요</small></span><span class="to">H2 초급부터</span></div>
+              <div class="opt" role="radio" aria-checked="true" tabindex="0"><span class="radio"></span><span class="opt__t"><b>배운 적 있어요</b><small>시작할 급수를 골라 주세요</small></span></div>
+              <div class="chips" role="radiogroup" aria-label="중국어 시작 급수">
+                <span class="chip" role="radio" aria-checked="false">H1 기초</span><span class="chip" role="radio" aria-checked="false">H2 초급</span><span class="chip" role="radio" aria-checked="true">H3 중급</span><span class="chip" role="radio" aria-checked="false">H4 상급</span><span class="chip" role="radio" aria-checked="false">H5 고급</span><span class="chip" role="radio" aria-checked="false">H6 마스터</span>
+              </div>
+            </div>
+            <div class="lv ja" role="radiogroup" aria-labelledby="g-ja">
+              <div class="lv__h"><span class="gly" lang="ja" aria-hidden="true">あ</span><b id="g-ja">일본어</b></div>
+              <div class="opt" role="radio" aria-checked="true" tabindex="0"><span class="radio"></span><span class="opt__t"><b>처음이에요</b><small>히라가나부터 차근차근</small></span><span class="to">N5 기초부터</span></div>
+              <div class="opt" role="radio" aria-checked="false" tabindex="-1"><span class="radio"></span><span class="opt__t"><b>기초는 알아요</b><small>인사·기본 문형은 익숙해요</small></span><span class="to">N4 기본부터</span></div>
+              <div class="opt" role="radio" aria-checked="false" tabindex="-1"><span class="radio"></span><span class="opt__t"><b>배운 적 있어요</b><small>시작할 급수를 골라 주세요</small></span></div>
+            </div>
+          </div>
+          <div class="ob__foot"><button class="btn btn--back">← 이전</button><button class="btn btn--go">시작하기</button></div>
+        </div>
+      </div>
+      <p class="ann" style="padding:0 14px 14px">문항·부제는 <code>StudyOnboarding.jsx</code> q1과 같은 말이다(「처음이에요 · 완전 처음부터 차근차근」 등 — 언어별로 첫 걸음만 구체화). 오른쪽 <code>H1 기초부터</code>는 저장될 값을 미리 보여 준다. 급수 칩은 현행처럼 입문 단계(OT·A0)를 뺀 <code>LEVELS</code> 그대로. <b>언어마다 답해야 「시작하기」가 켜진다</b> — 미리 골라 둔 값이 없으니 답하지 않은 언어가 기본값으로 새지 않는다.</p>
+    </figure>
+    <figure class="frame" style="margin:0">
+      <figcaption><span>휴대폰 · 저장 실패</span><span>390</span></figcaption>
+      <div class="phone">
+        <div class="ob" role="dialog" aria-modal="true" aria-labelledby="t2m">
+          <div class="ob__top"><span class="wm" style="font-size:18px">manabi<i></i></span><span class="ob__step">2 / 2</span></div>
+          <div class="ob__head"><h3 id="t2m">어디서부터 시작할까요?</h3><p>언어마다 하나만 골라 주세요.</p></div>
+          <div class="ob__body">
+            <div class="lv zh" role="radiogroup" aria-labelledby="g-zh2">
+              <div class="lv__h"><span class="gly" lang="zh" aria-hidden="true">中</span><b id="g-zh2">중국어</b><span class="main" style="--c:var(--zh)">주 언어</span></div>
+              <div class="opt" role="radio" aria-checked="false"><span class="radio"></span><span class="opt__t"><b>처음이에요</b><small>병음·성조부터</small></span><span class="to">H1</span></div>
+              <div class="opt" role="radio" aria-checked="true"><span class="radio"></span><span class="opt__t"><b>기초는 알아요</b><small>인사·기본 문형은 익숙해요</small></span><span class="to">H2</span></div>
+              <div class="opt" role="radio" aria-checked="false"><span class="radio"></span><span class="opt__t"><b>배운 적 있어요</b><small>급수 고르기</small></span></div>
+            </div>
+            <div class="err" role="alert"><span aria-hidden="true">!</span><span><b>저장하지 못했어요.</b> 연결을 확인하고 「시작하기」를 다시 눌러 주세요. 고른 답은 그대로 있어요.</span></div>
+          </div>
+          <div class="ob__foot"><button class="btn btn--back">← 이전</button><button class="btn btn--go">시작하기</button></div>
+        </div>
+      </div>
+      <p class="ann" style="padding:0 14px 14px">언어 1개면 이렇게 짧다. 서버 오류 원문은 콘솔로만. 저장 중엔 버튼이 「저장 중…」으로 바뀌고 두 번 눌리지 않는다. 열·스키마 오류 때 프·중 수준을 빼고 재시도하는 현행 폴백은 유지.</p>
+    </figure>
+  </div>
+</section>
+
+<section id="after">
+  <h2>모달이 닫힌 뒤</h2>
+  <div class="stage">
+    <figure class="frame" style="margin:0">
+      <figcaption><span>/study 첫 방문 (coldStart) — q1을 「확인형」으로</span><span>제안 D-O4</span></figcaption>
+      <div class="sq">
+        <span class="eyebrow">오늘의 학습 · 중국어</span>
+        <h4>중국어, H3 중급부터 시작할까요?</h4>
+        <p>처음 들어올 때 고른 급수예요.</p>
+        <div class="card"><b>이대로 시작</b><small>다음: 어떤 이야기가 좋아요? (관심사 4택)</small></div>
+        <div class="alt"><a href="#mock-2">다른 수준 고르기</a> — 기존 3택 화면으로</div>
+      </div>
+      <p class="ann" style="padding:0 14px 14px">지금 /study는 모달의 답을 모르고 같은 질문을 다시 한다. 제안: 프로필 수준이 있으면 q1을 <b>확인 한 번</b>으로 줄이고, 바꾸면 프로필 수준도 같이 고친다(정본 하나 — <code>PROFILE_LEVEL_COLUMN</code>). 건너뛴 급수의 챕터 백필·문자(가나·병음) 안내·관심사 4택은 현행 그대로. 프·중 수준이 비어 있으면(<code>null</code>) 기존 3택을 그대로 묻는다.</p>
+    </figure>
+    <figure class="frame" style="margin:0">
+      <figcaption><span>배움 첫 화면</span><span>주 언어 반영</span></figcaption>
+      <div class="land">
+        <div class="lchips"><span class="lchip zh on"><i></i>중국어</span><span class="lchip ja"><i></i>일본어</span></div>
+        <div class="ghost" style="width:72%"></div><div class="ghost" style="width:54%"></div><div class="ghost" style="width:64%"></div>
+      </div>
+      <p class="ann" style="padding:0 14px 14px">새 화면 없음 — 모달이 닫히면 지금 있는 페이지가 그대로 보인다. 배움(<code>HomePage.jsx:68</code>)·/study·작문·복습 범위 D1 「지금 언어」가 모두 <code>learning_language[0]</code>=중국어로 열린다.</p>
+    </figure>
+  </div>
+</section>
+
+<section id="ko-open">
+  <h2>중국어권 → 한국어 (준비 중) — 열어 두는 방법</h2>
+  <div class="stage">
+    <figure class="frame" style="margin:0">
+      <figcaption><span>데스크톱 · 내 언어 繁體中文</span><span>520px 모달</span></figcaption>
+      <div class="backdrop">
+        <div class="ob zh-tw" lang="zh-TW" role="dialog" aria-modal="true" aria-labelledby="t3">
+          <div class="ob__top"><span class="wm" style="font-size:18px">manabi<i></i></span></div>
+          <div class="ob__head"><h3 id="t3">歡迎來到 manabi</h3><p>選擇你想學的語言。之後可以在個人資料中修改。</p></div>
+          <div class="ob__body">
+            <div class="mylang"><span>我的語言</span><div class="seg" role="radiogroup" aria-label="我的語言"><button role="radio" aria-checked="false" lang="ko">한국어</button><button role="radio" aria-checked="false" lang="zh-CN">简体中文</button><button role="radio" aria-checked="true" lang="zh-TW">繁體中文</button></div></div>
+            <div class="langs langs--one" role="group" aria-label="想學的語言">
+              <button class="lc ko" role="checkbox" aria-checked="true"><span class="gly" lang="ko" aria-hidden="true">한</span><span class="lc__t"><b>韓語</b><small lang="ko">한국어</small><span class="pend">準備中</span></span><span class="lc__mark"><span class="tick"></span></span></button>
+            </div>
+            <div class="note">韓語課程還在準備中。現在可以先用閱讀器讀韓語文章，閱讀器的介面和釋義可以顯示為中文。</div>
+            <div class="nick"><label for="n3">暱稱</label><input id="n3" value="小林" maxlength="20"><small>註冊時填寫的名字，可以直接沿用。</small></div>
+          </div>
+          <div class="ob__foot"><span class="ob__hint">已選擇：韓語</span><button class="btn btn--go">開始</button></div>
+        </div>
+      </div>
+      <p class="ann" style="padding:0 14px 14px">중국어 문구는 시안용 초안 — 출시 전 원어민 검수 필요. 라벨은 문자 체계 이름(简体·繁體)만 쓰고 지역·국가명은 쓰지 않는다(중화권 정치 서술 배제 규약). 문구는 새로 만들지 않고 기존 <code>viewerMessages.js</code>의 <code>t(locale, key)</code> 사전에 키를 더한다.</p>
+    </figure>
+    <figure class="frame" style="margin:0">
+      <figcaption><span>모달이 닫힌 뒤 · 배움</span><span>가드 적용</span></figcaption>
+      <div class="land">
+        <div class="lchips"><span class="lchip ko on"><i></i>한국어 <span class="pend">준비 중</span></span></div>
+        <div class="note zh-cn" lang="zh-CN">韩语课程准备中 · 可以先在阅读器读韩语文章 →</div>
+        <div class="ghost" style="width:64%"></div><div class="ghost" style="width:48%"></div>
+      </div>
+      <p class="ann" style="padding:0 14px 14px">「열어 둔다」의 대가: <code>learning_language</code>=['Korean']이 저장되면 지금 코드는 아래 표처럼 <b>조용히 일본어로 넘어간다</b>. 그래서 「준비 중」 언어가 일본어로 새지 않게 막는 가드를 같은 작업에 넣고 <b>계약 테스트로 고정</b>한다. 배움 외 화면(메뉴·서재 등)은 아직 한국어 화면 — 그대로 둔다.</p>
+    </figure>
+  </div>
+  <h3 style="margin-top:22px">지금 코드에 'Korean'이 들어가면 — 가드 목록</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>자리 (main@182b7c30)</th><th>지금 동작</th><th>가드</th></tr></thead>
+    <tbody>
+      <tr><td><code>HomePage.jsx:68</code></td><td><code>lang</code>='Korean'으로 홈 데이터·추천을 조회. 4종 전용 위젯은 빈칸, 이름은 <code>langNameKo</code> 폴백으로 「일본어」가 될 수 있음</td><td>「한국어 · 준비 중」 칩 + 읽기 안내 한 줄. 일본어 폴백 금지</td></tr>
+      <tr><td><code>study/page.jsx:62</code>, <code>study/library/page.jsx:38</code></td><td><code>REF_LANGS</code>에 없어서 <b>일본어 세션</b>이 열림</td><td>준비 중 안내 화면(중국어 문구). 일본어 세션을 만들지 않음</td></tr>
+      <tr><td><code>WritingStudioPage.jsx:61</code></td><td><code>WRITING_LEVELS</code>에 없어 기본 언어(일본어)로 열림</td><td>같은 준비 중 안내</td></tr>
+      <tr><td><code>VocabStats.jsx:97</code></td><td><code>LEVELS</code>에 없어 목록에서 빠지고 일본어가 기본</td><td>한국어만 배우는 계정이면 급수 진도 칸 대신 「준비 중」 한 줄. 급수 칸은 체계가 생길 때 추가</td></tr>
+      <tr><td><code>MyPage.jsx:45</code></td><td>언어 토글에 한국어가 없음. 배열에는 남지만 보이지 않음</td><td>「내 언어」 선택 + 한국어(준비 중) 토글 표시 — 보이지 않는 값 금지</td></tr>
+      <tr><td><code>constants.js:104</code></td><td>'Korean'을 4종 강제 상수에 넣지 않는 오너 결정</td><td><b>유지</b>. <code>LEVELS</code>·<code>LANG_NAME_KO</code>에 넣지 않고, 「준비 중 언어」 판정은 <code>viewerLanguage.js</code> 등록부(<code>releaseStatus</code>·capability)를 읽는다</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="save">
+  <h2>저장 매핑 — 새 필드 없음</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>답</th><th>일본어</th><th>영어</th><th>프랑스어</th><th>중국어</th><th>/study 시작 지점 (현행 규칙)</th></tr></thead>
+    <tbody>
+      <tr><td>처음이에요</td><td>N5 기초</td><td>A1 기초</td><td>A1 기초</td><td>H1 기초</td><td><code>regular[0]</code> + 가나·병음 안내</td></tr>
+      <tr><td>기초는 알아요</td><td>N4 기본</td><td>A2 초급</td><td>A2 초급</td><td>H2 초급</td><td><code>regular[1]</code></td></tr>
+      <tr><td>배운 적 있어요</td><td>N5–N1 중 선택</td><td>A1–C2</td><td>A1–C2</td><td>H1–H6</td><td>고른 급수</td></tr>
+    </tbody>
+  </table></div>
+  <ul class="plain" style="margin-top:12px">
+    <li><b>내 언어</b> = 기존 <code>viewer_language:v1</code>(<code>useViewerLanguage</code>)의 <code>uiLocale</code>·<code>explanationLocale</code>에 같은 값으로 저장. 값은 기존 <code>ko</code>·<code>zh-CN</code>·<code>zh-TW</code>, 기기 언어 판정은 기존 <code>canonicalViewerLocale</code>(못 맞추면 한국어). <b>새 DB 열 없음</b> — 다만 이 저장은 기기별(localStorage)이라 다른 기기에서는 기기 언어로 다시 시작한다(D-L2).</li>
+    <li>내 언어가 중국어면 <code>learning_language</code>=[&#39;Korean&#39;], 수준 열은 쓰지 않음(열이 없음). 열 제약이 없어 그대로 저장된다(<code>text[]</code>, CHECK 없음).</li>
+    <li><code>learning_language</code> = [주 언어, 나머지는 고른 순서] — 배열 첫 값이 주 언어라는 현행 의미 그대로.</li>
+    <li>수준은 <b>고른 언어만</b> 쓴다. 고르지 않은 언어는 건드리지 않는다(현행은 안 고른 언어의 기본값 N3·B1까지 매번 덮어씀).</li>
+    <li><code>display_name</code>: 다듬은 값이 있으면 저장, 비면 기존 값 유지. <code>onboarded: true</code>. 프·중 열 없는 환경의 재시도 폴백 유지.</li>
+    <li>/study 칩에만 있는 중국어 <code>LIFE</code>(생활) 급수는 프로필 급수가 아니므로 매핑 밖 — 현행과 같다.</li>
+  </ul>
+</section>
+
+<section id="three">
+  <h2>3문</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>질문</th><th>답</th></tr></thead>
+    <tbody>
+      <tr><td>⑴ 순환의 어느 정거장</td><td>두 순환의 입구. 자료 읽기 순환은 주 언어로 배움·서재가 열리는 곳, /study 순환은 시작 급수(챕터 백필)가 정해지는 곳.</td></tr>
+      <tr><td>⑵ 기존 정본·부품 재사용</td><td><code>profiles</code> 기존 열, <code>LEVELS</code>·<code>PROFILE_LEVEL_COLUMN</code>, /study q1의 3택 문항과 <code>regular[0|1]</code> 규칙, v2 언어 색 토큰. 새 테이블·열·환경 변수 0.</td></tr>
+      <tr><td>⑶ 이음새를 새로 만드나</td><td>오히려 하나를 메운다 — 모달과 /study가 따로 묻던 수준을 프로필 하나로 잇는다(D-O4). 이벤트·SRS 기록은 건드리지 않음.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="precedent">
+  <h2>선례</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>사례</th><th>방식</th><th>판정</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr><td>Duolingo</td><td>「처음부터」 vs 「내 수준 찾기(적응형 배치 시험)」 2갈래</td><td><span class="pill p-part">부분 채택</span></td><td>2갈래 구조는 우리 3택과 같은 생각. 배치 시험은 문항 은행·채점기가 필요해 이식 비용이 크다 → 배제, 자가 응답 + 학습 중 조정으로 대신</td></tr>
+      <tr><td>Busuu</td><td>가입 때 배치 시험 권유, 결과 급수에서 시작하거나 처음부터 선택</td><td><span class="pill p-no">배제</span></td><td>첫 화면에 5–10분 시험은 이탈 비용. 우리 급수는 이미 학습량으로 역산 가능(<code>getIdealLevel</code>) — 시험보다 쓰면서 맞춘다</td></tr>
+      <tr><td>LingQ</td><td>가입 때 언어·시작 수준·일일 목표 선택, 수준은 언제든 변경</td><td><span class="pill p-yes">채택</span></td><td>자가 선택 + 언제든 변경 = 우리 내 정보 수정 흐름과 같다. 일일 목표는 이미 배움 대시보드에 있어 온보딩에 넣지 않는다</td></tr>
+      <tr><td>manabi /study q1 (자체)</td><td>처음 / 기초 / 배운 적 → 급수</td><td><span class="pill p-yes">채택 · 정본</span></td><td>이미 운영 중인 문항. 모달이 같은 말을 쓰면 두 화면이 한 질문이 된다</td></tr>
+    </tbody>
+  </table></div>
+  <p class="ann">조사 출처: <a href="https://blog.duolingo.com/duolingo-101-how-to-learn-a-language-on-duolingo">Duolingo 101</a> · <a href="https://blog.duolingo.com/add-new-course/">Duolingo 새 코스 추가</a> · <a href="https://help.busuu.com/hc/en-us/articles/16526383831569-What-is-a-Placement-Test">Busuu Placement Test</a> · <a href="https://lingq-support.groovehq.com/help/how-to-set-and-change-your-level">LingQ 수준 설정·변경</a>. 2026-10-11 KST 검색 기준, 앱 화면 직접 확인은 아님.</p>
+</section>
+
+<section id="precedent-l">
+  <h2>선례 — 「내 언어」를 어떻게 다루나</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>앱</th><th>방식</th><th>판정</th><th>우리 쪽 근거</th></tr></thead>
+    <tbody>
+      <tr><td>Duolingo</td><td>「I speak」 = 기준 언어. 이것이 화면 언어도 정하고, <b>고를 수 있는 코스 목록이 기준 언어에 따라 달라짐</b>. 기준 언어를 바꾸면 다른 기준 언어의 진도는 숨겨짐</td><td><span class="pill p-part">부분 채택</span></td><td>「내 언어 → 목록이 달라짐」은 그대로 채택(중국어면 한국어만). 진도 숨김은 배제 — 우리는 계정 하나에 학습 기록 하나(FSRS·review_events 공유)</td></tr>
+      <tr><td>Babbel</td><td>화면 언어(보통 모국어)와 배울 언어를 따로 둠. 코스가 모국어에 맞춰 만들어짐</td><td><span class="pill p-yes">채택</span></td><td>우리 등록부도 화면(<code>uiLocale</code>)과 설명(<code>explanationLocale</code>)을 이미 나눠 둠. 온보딩은 둘을 같은 값으로 시작하고, 나누는 건 자료 화면 설정에서</td></tr>
+      <tr><td>Busuu</td><td>가입 때 「I speak」 설정, 언어별 유창도와 함께 여러 개, 설정에서 언제든 변경</td><td><span class="pill p-part">부분 채택</span></td><td>언제든 변경은 채택. 여러 모국어·유창도는 배제 — 교환·첨삭 커뮤니티용 정보라 우리 순환에 꽂힐 정거장이 없음</td></tr>
+      <tr><td>HelloTalk</td><td>가입 때 모국어·배울 언어 선택, 모국어는 <b>나중에 못 바꾼다고 경고</b></td><td><span class="pill p-no">배제</span></td><td>상대 매칭 때문에 잠그는 것. 우리는 잠글 이유가 없음 — 화면 표시 설정일 뿐</td></tr>
+      <tr><td>LingQ</td><td>프로필의 「Native Language」가 뜻풀이 사전 언어를 정함</td><td><span class="pill p-yes">채택</span></td><td>내 언어 = 설명 언어 기본값. 우리 <code>explanationLocale</code>과 같은 역할</td></tr>
+    </tbody>
+  </table></div>
+  <p class="ann">출처: <a href="https://duolingo.fandom.com/wiki/Language_course">Duolingo Wiki — Language course</a> · <a href="https://openlab.citytech.cuny.edu/pnawiesniak-eportfolio/files/2018/11/Duolingo-Overview-and-FAQ.pdf">Duolingo Overview and FAQ</a> · <a href="https://support.babbel.com/hc/articles/19186914547346">Babbel 지원 — 화면 언어/배울 언어</a> · <a href="https://support.babbel.com/hc/articles/205600508">Babbel 지원 — 모국어별 코스</a> · <a href="https://help.busuu.com/hc/en-us/articles/15969657681425-How-do-I-indicate-which-languages-I-speak">Busuu — I speak</a> · <a href="https://screensdesign.com/showcase/hellotalk-language-learning">HelloTalk 온보딩 분석</a> · <a href="https://lingq-support.groovehq.com/help/i-dont-see-translations-in-my-language-how-do-i-change-the-dictionary-language">LingQ — 사전 언어</a>. Duolingo·HelloTalk는 2차 자료(팬 위키·디자인 분석)라 현재 앱과 다를 수 있음. 2026-10-11 KST 검색.</p>
+</section>
+
+<section id="accept">
+  <h2>수용 기준</h2>
+  <ol class="plain">
+    <li>모달을 처음 열면 어떤 언어도, 어떤 수준도 선택돼 있지 않다.</li>
+    <li>언어 0개면 「다음」이 비활성이고 이유 문구가 보인다. 고른 언어마다 답이 없으면 「시작하기」가 비활성이다.</li>
+    <li>중국어 → 일본어 순으로 고르면 <code>learning_language</code>=['Chinese','Japanese']. 「주 언어로」로 바꾸면 순서가 바뀐다. 주 언어를 해제하면 다음으로 고른 언어가 주 언어가 된다.</li>
+    <li>매핑 표대로 저장된다(예: 중국어 「기초는 알아요」 → <code>learning_level_chinese</code>='H2 초급'). 고르지 않은 언어의 수준 열은 바뀌지 않는다.</li>
+    <li>닉네임을 비워도 저장된다(기존 값 유지). 이메일 가입자는 가입 때 이름이 미리 채워져 있다.</li>
+    <li>저장 실패 시 정해진 문구만 보이고 고른 답이 남아 있다. 서버 오류 원문은 화면에 나오지 않는다.</li>
+    <li>모달이 닫히면 배움·/study가 주 언어로 열린다.</li>
+    <li>(D-O4 승인 시) coldStart인 /study에서 프로필 수준이 있으면 q1이 확인형이고, 「다른 수준 고르기」로 바꾸면 프로필 수준도 바뀐다. 수준이 없으면 기존 3택.</li>
+    <li>키보드만으로 끝까지 진행된다: 언어 카드는 체크박스, 3택·급수 칩은 라디오 그룹(화살표 이동), 단계가 바뀌면 제목으로 초점 이동. 390px에서 가로 스크롤 없음, 터치 대상 44px 이상.</li>
+    <li>「내 언어」는 기기 언어로 미리 맞춰진다(<code>canonicalViewerLocale</code>, 못 맞추면 한국어). 바꾸면 모달 문구와 배울 언어 목록이 즉시 바뀌고, 이미 고른 배울 언어는 새 목록에 없으면 해제된다.</li>
+    <li>내 언어가 简体中文·繁體中文이면 배울 언어는 한국어 하나(「准备中/準備中」)이고 미리 체크돼 있으며, 수준 단계 없이 「开始/開始」로 끝난다. 저장 값: <code>learning_language</code>=['Korean'], <code>viewer_language:v1</code>={uiLocale, explanationLocale}=고른 값.</li>
+    <li>'Korean'이 주 언어인 계정은 배움·/study·작문 어디에서도 일본어로 열리지 않는다 — 준비 중 안내를 보인다. <b>계약 테스트로 고정</b>.</li>
+    <li>한국어 사용자의 흐름·저장 값은 1판과 같다(내 언어 줄이 하나 늘 뿐).</li>
+    <li>라이트·다크 모두 v2 토큰으로 칠한다(그라데이션 머리띠 제거). <code>uiConventions.test.js</code> 통과.</li>
+  </ol>
+</section>
+
+<section id="decisions">
+  <h2>결정 — 전부 권장안으로 확정 (오너 승인 2026-10-11 KST)</h2>
+  <div class="tbl"><table class="dec">
+    <thead><tr><th>ID</th><th>결정</th><th>확정 (권장안)</th><th>대안 (기각)</th></tr></thead>
+    <tbody>
+      <tr><td>D-O1</td><td>2단계(언어 → 수준)로 나눌까</td><td>2단계. 언어를 여럿 고를 때만 길어지던 화면이 짧아진다</td><td>1화면 유지(언어 아래 수준이 펼쳐짐 — 현행 구조)</td></tr>
+      <tr><td>D-O2</td><td>미리 선택 없앰 (언어·수준 모두)</td><td>없앰. 주 언어·수준이 사용자의 실제 답이 된다</td><td>브라우저 언어 등으로 추정해 미리 선택</td></tr>
+      <tr><td>D-O3</td><td>주 언어 = 처음 고른 언어, 「주 언어로」로 변경</td><td>이대로</td><td>주 언어를 따로 묻는 3번째 단계</td></tr>
+      <tr><td>D-O4</td><td>/study q1을 확인형으로 바꾸고 변경 시 프로필 동기화 (<code>StudyOnboarding.jsx</code> 포함)</td><td>포함. 같은 질문 두 번 → 한 번 + 확인</td><td>모달만 고치고 /study는 그대로 (두 번 묻는 문제 남음)</td></tr>
+      <tr><td>D-O5</td><td>닉네임 선택 입력화</td><td>이대로 (비우면 기존 값 유지)</td><td>구글 계정 이름을 미리 채움 — 실명이 포럼에 노출될 수 있어 비권장</td></tr>
+      <tr><td>D-L1</td><td>「내 언어」 위치: ① 화면 맨 위 한 줄(기기 언어로 미리 맞춤)</td><td>이대로. 한국어 사용자는 단계가 늘지 않음</td><td>맨 앞에 별도 화면(모든 사용자 +1 단계)</td></tr>
+      <tr><td>D-L2</td><td>내 언어 저장 위치</td><td>기존 <code>viewer_language:v1</code>(기기별) — 새 DB 열 없음</td><td><code>profiles</code>에 열 추가(계정 전체에 따라옴). 비파괴지만 운영 DB 변경이라 별도 승인</td></tr>
+      <tr><td>D-L3</td><td>중국어 사용자의 한국어: 고를 수 있게 「준비 중」으로 열어 둠 + 수준 단계 생략</td><td>이대로 (오너 지시)</td><td>「알림 받기」만 두고 저장하지 않음</td></tr>
+      <tr><td>D-L4</td><td>준비 중 언어가 일본어로 새지 않게 하는 가드(배움·/study·작문·내 정보)를 같은 작업에 포함</td><td>포함. 열어 두려면 필수</td><td>온보딩만 고치고 가드는 나중(그 사이 중국어 사용자에게 일본어 세션이 열림)</td></tr>
+      <tr><td>D-L5</td><td>내 언어 목록</td><td>번역이 이미 있는 3개(한국어·简体中文·繁體中文)만</td><td>English·日本語 등 추가 — 화면 번역이 먼저 필요</td></tr>
+      <tr><td>D-O6</td><td>건너뛰기 버튼</td><td>두지 않음. 언어는 이후 모든 화면의 기본값이라 필수 답</td><td>「나중에」 → 다음 방문에 다시 뜸</td></tr>
+    </tbody>
+  </table></div>
+  <p class="ann">범위 밖, 기록만: 내 정보(<code>MyPage.jsx:46–49</code>)도 수준이 없으면 N3·B1·H3 중급으로 채워 보여 준다 — 같은 문제의 다른 자리. DB 기본값(<code>learning_level_japanese</code> NOT NULL DEFAULT 'N3 중급')은 비파괴로 둔다.</p>
+</section>
+</main>
+</body>
+</html>

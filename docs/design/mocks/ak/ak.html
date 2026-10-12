@@ -1,0 +1,810 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>배움 대화 서재 산책</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans+JP:wght@300;400&family=Noto+Sans+SC:wght@300;400&family=Noto+Serif+JP:wght@700&family=Noto+Serif+SC:wght@700&family=Noto+Serif+KR:wght@700&display=swap">
+<style>:root{--paper:#F6F4EE;--sheet:#FFFEFB;--ink:#252721;--muted:#65675F;--faint:#9C9D94;--rule:#D7D5CD;--rose:#994A5A;--rose-2:#B86A79;--glyph:#F2D7DD;--green:#4F5E57;--desk:#E4E0D6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font:15px/1.6 Manrope,'Noto Sans KR',sans-serif;-webkit-font-smoothing:antialiased}
+[lang=ja]{font-family:'Noto Sans JP','Noto Sans KR',sans-serif}
+[lang=zh]{font-family:'Noto Sans SC','Noto Sans KR',sans-serif}
+a{color:inherit;text-decoration:none;cursor:pointer}
+h1,h2,p{margin:0}
+a:focus-visible{outline:2px solid var(--rose);outline-offset:3px}
+.doc{max-width:1272px;margin:0 auto;padding:44px 16px 96px;display:flex;flex-direction:column;gap:48px}
+.eyebrow{font:700 12px 'Noto Sans KR',sans-serif;letter-spacing:.08em;color:#7E3B49;margin:0 0 14px}
+.intro h1{font-size:30px;letter-spacing:-.02em;margin:0 0 6px}
+.intro p{font-size:14.5px;color:#4A4C45;max-width:64ch}
+.note{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));border-top:1px solid #CFCBC1}
+.note li{list-style:none;padding:14px 18px 16px 0;border-bottom:1px solid #CFCBC1;font-size:13px;color:#4A4C45}
+.note b{display:block;font-size:14px;color:var(--ink);margin-bottom:2px}
+.note{margin:0;padding:0}
+.scroll{overflow-x:auto}
+
+/* 앱 프레임 */
+.frame{background:var(--paper);border-radius:14px;overflow:hidden;box-shadow:0 14px 34px rgba(37,39,33,.12);position:relative;width:1240px;max-width:none}
+.phone{max-width:100%}
+.gnb{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:72px;padding:0 32px 0 28px;border-bottom:1px solid var(--rule)}
+.logo{font:800 23px Manrope,sans-serif;letter-spacing:-1.3px}
+.logo i{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--ink);margin-left:1px}
+.nav{display:flex;align-items:center;gap:4px}
+.nl{font:500 14.5px 'Noto Sans KR',sans-serif;color:var(--muted);padding:0 14px;height:44px;display:inline-flex;align-items:center;position:relative}
+.nl.on{color:var(--ink);font-weight:700}
+.nl.on::after{content:'';position:absolute;left:14px;right:14px;bottom:4px;height:2px;background:var(--ink)}
+.nsep{width:1px;height:14px;background:var(--rule);margin:0 14px}
+.gr{justify-self:end;display:flex;gap:24px;align-items:center;font-size:13px;font-weight:700}
+.pg{padding:40px 52px 56px}
+.top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px}
+.top h1{font:700 34px/1.2 Manrope,'Noto Sans KR',sans-serif;letter-spacing:-1.2px}
+.top span{font-size:13px;color:var(--muted)}
+
+/* 벤토 — 예전 홈 .bento 정본(4열 · 행 146 · 간격 12 · 카드 반경 20 · 안쪽 24)을 그대로 */
+.bento{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:minmax(146px,auto);gap:12px}
+.w{border-radius:20px;padding:24px;background:var(--sheet);border:1px solid var(--rule);box-shadow:0 1px 3px rgba(0,0,0,.06);display:flex;flex-direction:column;min-width:0;position:relative;overflow:hidden;transition:background .15s ease}
+a.w:hover{background:#F1EEE7}
+.w--2x2{grid-column:span 2;grid-row:span 2}
+.w--2x1{grid-column:span 2}
+.w--1x1{grid-column:span 1}
+.kick{font-size:11.8px;font-weight:700;letter-spacing:.02em;color:var(--muted)}
+.wh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+
+/* 이어 읽기 — 장미 위젯 */
+.w--read{background:var(--rose);border-color:transparent;color:#fff;padding:28px}
+.w--read .kick{color:rgba(255,255,255,.72)}
+.w--read .glyph{position:absolute;right:-6px;top:-40px;font:300 230px/1 'Noto Sans JP';color:rgba(242,215,221,.42);pointer-events:none}
+.read__n{font:500 52px/1 Manrope,sans-serif;letter-spacing:-2px;margin-top:18px}
+.read__t{font-size:21px;font-weight:700;line-height:1.45;margin-top:10px;max-width:16em;word-break:keep-all}
+.read__q{font:400 15px 'Noto Sans JP';color:rgba(255,255,255,.8);margin-top:6px}
+.read__bot{margin-top:auto;display:flex;align-items:center;gap:16px;position:relative}
+.pill{display:inline-flex;align-items:center;gap:14px;height:46px;padding:0 8px 0 22px;border-radius:999px;background:#fff;color:var(--rose);font-weight:700;font-size:14.5px}
+.pill i{width:32px;height:32px;border-radius:50%;background:var(--rose);color:#fff;display:grid;place-items:center;font-style:normal}
+.bar{flex:1;max-width:220px;height:4px;border-radius:2px;background:rgba(255,255,255,.28);position:relative;overflow:hidden}
+.bar i{position:absolute;inset:0 auto 0 0;background:#fff;border-radius:2px}
+.bar-n{font:600 12px Manrope,sans-serif;color:rgba(255,255,255,.85);white-space:nowrap}
+
+/* 단어 복습 — 예전 ReviewTile 그대로 */
+.rt__due{font-size:11.8px;font-weight:600;color:var(--rose);font-variant-numeric:tabular-nums}
+.rt__cycle{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center}
+.rt__cycle.in{animation:wIn .5s ease}
+@keyframes wIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.rt__word{font:700 24.8px/1.3 'Noto Serif JP','Noto Serif KR',serif}
+.rt__meaning{font-size:13.6px;color:var(--muted)}
+.rt__cta{font-size:12.8px;font-weight:600;color:var(--rose);text-align:right}
+
+/* 오늘 학습 — 먹 위젯 */
+.w--study{background:var(--ink);border-color:transparent;color:var(--paper);flex-direction:row;align-items:center;gap:22px}
+.w--study .kick{color:rgba(246,244,238,.6)}
+.st__n{font:500 64px/1 Manrope,sans-serif;letter-spacing:-3px}
+.st__n small{font:500 15px 'Noto Sans KR';letter-spacing:0;margin-left:3px}
+.st__t{display:grid;gap:4px;flex:1}
+.st__t strong{font-size:17px}
+.go{width:44px;height:44px;border-radius:50%;background:var(--paper);color:var(--ink);display:grid;place-items:center;flex:none;font-weight:700}
+
+/* 교재 — 작은 위젯 */
+.w--lv{padding:20px}
+.lv__top{display:flex;justify-content:space-between;align-items:flex-start}
+.mc{width:36px;height:48px;border-radius:2px 3px 3px 2px;background:var(--rose);color:var(--glyph);display:grid;place-items:center;font:300 20px 'Noto Sans JP';box-shadow:inset -4px 0 5px #3b13272a}
+.mc[lang=zh]{background:var(--green);color:#DCE5DF;font-family:'Noto Sans SC'}
+.chip{font:700 12px Manrope,sans-serif;padding:3px 10px;border-radius:999px;background:#F3E4E7;color:var(--rose)}
+.chip--g{background:#E3EAE6;color:var(--green)}
+.lv__bot{margin-top:auto;display:grid;gap:1px}
+.lv__bot strong{font-size:15px}
+.lv__bot span{font-size:12px;color:var(--muted)}
+
+/* 휴대폰 — 예전 .bento 600px 규칙(2열 · 행 120) */
+.phone{width:390px;border-radius:28px}
+.phone .gnb{display:flex;justify-content:space-between;height:60px;padding:0 20px}
+.phone .gr{gap:18px}
+.phone .pg{padding:22px 16px 108px}
+.phone .top{margin-bottom:16px}
+.phone .top h1{font-size:28px}
+.phone .bento{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(120px,auto)}
+.phone .w--2x2{grid-column:span 2;grid-row:span 1}
+.phone .w--2x1{grid-column:span 2}
+.phone .w--read{min-height:260px;padding:22px}
+.phone .w--read .glyph{font-size:160px;top:-30px}
+.phone .read__n{font-size:40px;margin-top:12px}
+.phone .read__t{font-size:18px}
+.phone .rt{min-height:190px}
+.phone .w--study{padding:20px;gap:16px}
+.phone .st__n{font-size:48px}
+.tabbar{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:stretch;justify-content:space-around;background:var(--sheet);border-top:1px solid var(--rule);padding:6px 10px 18px}
+.tb{display:flex;flex-direction:column;align-items:center;gap:2px;font:500 11px 'Noto Sans KR',sans-serif;color:var(--faint);min-width:60px;min-height:48px;justify-content:center}
+.tb.on{color:var(--rose);font-weight:700}
+.tbsep{width:1px;background:var(--rule);margin:12px 0 10px}
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.pair figure{margin:0;display:flex;flex-direction:column;gap:8px}
+.pair img{width:100%;height:auto;border-radius:10px;border:1px solid #C9C3B6;display:block}
+.pair figcaption{font-weight:700;font-size:13px}
+.pair--m{grid-template-columns:repeat(2,minmax(0,300px));justify-content:start}
+@media (max-width:900px){.pair,.pair--m{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){.rt__cycle.in{animation:none}a.w{transition:none}}
+
+/* 8판 — 예전 홈 위젯 그대로(ProfileStats). 색은 지금 토큰으로만 바꿈 */
+.serif{font-family:'Noto Serif KR','Noto Serif JP',serif}
+.w--stat{align-items:center;justify-content:center;gap:4px;text-align:center}
+.st-v{font:700 27px/1.15 'Noto Serif KR',serif;font-variant-numeric:tabular-nums}
+.st-l{font-size:11.2px;color:var(--muted)}
+/* 목표 궤도 */
+.gt{grid-column:span 4;justify-content:center;gap:8px}
+.gt__head{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px}
+.gt__title{font-weight:800;font-size:15.2px}
+.gt__count{font-size:13px;color:#4A4C45;font-variant-numeric:tabular-nums}
+.gt__v{margin-left:auto;align-self:center;padding:2px 9px;border-radius:99px;font-size:11.5px;font-weight:700;background:#ECE9E1;color:#4A4C45}
+.gt__bar{flex:0 0 6px;height:6px;border-radius:99px;background:#ECE9E1;overflow:hidden}
+.gt__bar i{display:block;height:100%;background:linear-gradient(90deg,var(--rose),#6E2F3D)}
+.gt__line{font-size:13.4px;color:#4A4C45;font-variant-numeric:tabular-nums}
+.gt__line b{color:var(--ink)}
+/* 진도 */
+.sec-t{font-size:15.2px;font-weight:700}
+.lp__head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.lp__tabs{display:flex;gap:4px}
+.chip2{font-size:12.5px;font-weight:600;padding:4px 12px;border-radius:999px;border:1px solid var(--rule);color:var(--muted)}
+.chip2.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.lp__rows{display:flex;flex-direction:column;gap:9px}
+.lp__row{display:flex;align-items:center;gap:10px}
+.lp__key{font:700 16.8px/1 'Noto Serif KR',serif;width:2.8ch;flex-shrink:0}
+.lp__bar{flex:1;height:7px;position:relative;background:#ECE9E1;border-radius:99px;overflow:hidden}
+.lp__bar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px}
+.lp__bar .r{background:#E8C9CF}.lp__bar .p{background:var(--rose)}
+.lp__n{font-size:12.2px;color:var(--muted);width:4.4em;flex-shrink:0;text-align:right;font-variant-numeric:tabular-nums}
+.lp__row.is-off .lp__key{color:var(--faint)}
+.lp__legend{display:flex;gap:14px;font-size:11.2px;color:var(--muted);margin-top:auto;padding-top:10px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px}
+/* 기억 건강 */
+.mh__head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.mh__ret{font-size:13px;font-weight:700;color:#4A8A5C}
+.mh__b{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mh__b div{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 0;background:#F1EEE7;border-radius:10px}
+.mh__b small{font-size:12px}
+.mh__b b{font-size:20.8px;font-weight:800}
+.mh__b span{font-size:11.2px;color:var(--muted)}
+.mh__s{font-size:11.5px;color:var(--muted);margin:14px 0 6px}
+.fc{display:flex;align-items:stretch;justify-content:space-between;height:96px;gap:12px;padding:0 6px}
+.fc__c{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.fc__n{font-size:12px;font-weight:700}
+.fc__a{flex:1;width:100%;display:flex;align-items:flex-end}
+.fc__a i{width:100%;border-radius:4px 4px 0 0;background:#C78F9A}
+.fc__c:first-child .fc__a i{background:var(--rose)}
+.fc__l{font-size:11.2px;color:var(--muted)}
+/* 히트맵 */
+.hm{grid-column:span 4}
+.hm__head{display:flex;justify-content:space-between;align-items:baseline}
+.hm__n{font-size:12.2px;color:var(--muted)}
+.hm__s{overflow-x:auto;margin-top:10px}
+.hm__strip{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,1fr);gap:2px;min-width:320px}
+.hm__strip i{aspect-ratio:1;width:100%;min-width:9px;border-radius:2px;background:#ECE9E1}
+.l1{background:#E8C9CF!important}.l2{background:#C78F9A!important}.l3{background:var(--rose)!important}.l4{background:#6E2F3D!important}
+.w--2x2.lp,.w--2x2.mh{padding:22px 24px}
+.phone .gt,.phone .hm{grid-column:span 2}
+.phone .w--2x2.lp,.phone .w--2x2.mh{grid-row:span 2}
+.phone .hm__strip{min-width:0;grid-template-columns:none}
+.phone .fc{gap:6px;padding:0}
+.hm__strip{grid-auto-columns:minmax(9px,18px);justify-content:start;min-width:0}
+.hm__strip i{min-width:0}
+.hm__strip{grid-auto-columns:minmax(9px,1fr)}
+.phone .hm__strip{grid-auto-columns:10px}
+
+/* 9판 — 예전 홈 실측 비율: 720 칸(안 672) · 4열 159 · 행 146 · 간격 12 → 1×1 = 2×2 = 1.09 */
+.pg{padding:40px 24px 64px;max-width:720px;margin:0 auto;box-sizing:content-box}
+.frame:not(.phone) .pg{max-width:672px}
+.bento{grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:minmax(146px,auto);gap:12px}
+.w{padding:24px}
+.st-v{font-size:27.2px}
+.st-l{font-size:11.2px}
+.w--read{padding:24px}
+.w--read .glyph{font-size:190px;top:-34px;right:-10px}
+.read__n{font-size:44px;margin-top:14px}
+.read__t{font-size:18px}
+.read__bot{gap:12px}
+.pill{height:44px;padding:0 6px 0 18px;font-size:14px}
+.bar{max-width:none}
+.rt__word{font-size:24.8px}
+.w--today{background:var(--ink);border-color:transparent;color:var(--paper);grid-column:span 2;grid-row:span 2}
+.w--today .kick{color:rgba(246,244,238,.62)}
+.td__n{font:500 56px/1 Manrope,sans-serif;letter-spacing:-2.5px;margin-top:16px}
+.td__n small{font:500 15px 'Noto Sans KR';letter-spacing:0;margin-left:4px}
+.td__t{font-size:16px;font-weight:700;margin-top:8px}
+.td__chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.td__chips span{font:400 14px 'Noto Sans JP';padding:3px 10px;border:1px solid rgba(246,244,238,.3);border-radius:999px}
+.td__bot{margin-top:auto;display:flex;justify-content:flex-end}
+.td__go{display:inline-flex;align-items:center;gap:12px;height:44px;padding:0 6px 0 18px;border-radius:999px;background:var(--paper);color:var(--ink);font-weight:700;font-size:14px}
+.td__go i{width:32px;height:32px;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-items:center;font-style:normal}
+.lp__row{border-radius:6px}
+.lp__key{font-size:16.8px}
+.flag{font-size:16.8px;line-height:1;padding:4px 12px}
+.gt__title .fl{margin-right:2px}
+/* 휴대폰 — 예전 600px 규칙: 2열 · 행 120 · 2×2 → 2×1 · 4×1 → 2칸. 순서는 nth-child 대신 클래스로(예전 어긋남 수리) */
+.phone .pg{padding:22px 16px 108px;max-width:none}
+.phone .bento{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(120px,auto)}
+.phone .w--2x2,.phone .w--today{grid-column:span 2;grid-row:span 1}
+.phone .st-v{font-size:22.4px}
+.phone .o-2{order:2}.phone .o-3{order:3}
+.phone .w--read{min-height:0}
+.phone .read__n{font-size:36px}
+.phone .td__n{font-size:44px}
+.hm__strip{grid-auto-columns:1fr;min-width:320px}.phone .hm__strip{grid-auto-columns:1fr;min-width:320px}
+.w--read .glyph{font-size:150px;top:-26px;right:-14px;color:rgba(242,215,221,.3)}
+.read__t{position:relative;max-width:12em}
+.phone .w--read .glyph{font-size:130px;top:-22px}
+.phone .read__bot{margin-top:18px}
+
+/* ===== 10판 ===== */
+:root{--good:#3F7A55;--ok:#8AA86B;--warn:#B07A22;--bad:#B3443A}
+.num{font-family:'Noto Serif KR',serif;font-weight:700;letter-spacing:-.5px}
+.bento+.sect{margin-top:28px}
+.sect{display:flex;align-items:baseline;gap:12px;margin:0 0 12px;padding-top:14px;border-top:1px solid var(--rule)}
+.sect h2{font-size:15px;font-weight:700}
+.sect span{font-size:12px;color:var(--muted)}
+/* 이어 읽기 — 유일한 채움 */
+.read__n{font:700 44px/1 'Noto Serif KR',serif;letter-spacing:-1px;margin-top:14px}
+/* 오늘 학습 — 조용한 카드 */
+.w--calm{grid-column:span 2;grid-row:span 2}
+.w--calm .td__n{font:700 52px/1 'Noto Serif KR',serif;letter-spacing:-1.5px;margin-top:14px;color:var(--ink)}
+.w--calm .td__n small{font:500 15px 'Noto Sans KR';color:var(--muted)}
+.w--calm .td__t{color:var(--ink)}
+.w--calm .td__sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+.w--calm .td__chips span{border-color:var(--rule);color:var(--ink)}
+.w--calm .td__go{background:var(--ink);color:var(--paper)}
+.w--calm .td__go i{background:var(--paper);color:var(--ink)}
+/* 1×1 네 개 묶음 — 2×2 칸 안의 작은 격자(순서가 밀리지 않음) */
+.quad{grid-column:span 2;grid-row:span 2;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:12px}
+.st-v{font-family:'Noto Serif KR',serif}
+.st-l{line-height:1.45}
+.ring{position:relative;width:64px;height:64px;display:grid;place-items:center}
+.ring svg{position:absolute;inset:0}
+.ring b{font:700 17px 'Noto Serif KR',serif}
+/* 진도 = 레벨 어휘 확보 */
+.lp__row{padding:3px 0}
+.lp__n b{color:var(--ink);font-weight:600}
+.lp__bar .k{background:var(--rose)}.lp__bar .s{background:#E8C9CF}
+/* 기억 건강 — 숫자는 잉크, 색은 점에만 */
+.mh__b b{color:var(--ink)!important;font-size:19px}
+.mh__b div{padding:8px 0}
+.fc{height:78px}
+.mh__s{margin:12px 0 4px}
+/* 히트맵 범례 */
+.hm__lg{display:flex;align-items:center;gap:3px;font-size:11px;color:var(--muted);margin-top:8px;justify-content:flex-end}
+.hm__lg i{width:10px;height:10px;border-radius:2px;display:block;background:#ECE9E1}
+/* 목표 궤도 — 비었을 때 */
+.gt--empty{flex-direction:row;align-items:center;justify-content:space-between}
+.gt--empty .gt__line{max-width:30em}
+.btn-s{display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--ink);font-weight:700;font-size:13px;white-space:nowrap}
+.rt__empty{font-size:13.6px;color:var(--muted);text-align:center;line-height:1.6}
+/* B — 6열(1014) */
+.frame.wide6 .pg{max-width:1014px}
+.wide6 .bento{grid-template-columns:repeat(6,minmax(0,1fr))}
+.wide6 .gt,.wide6 .hm{grid-column:1/-1}
+.mini{transform-origin:top left}
+/* 휴대폰 */
+.phone .quad{grid-column:span 2;grid-row:span 2;grid-template-rows:repeat(2,minmax(120px,auto))}
+.phone .w--calm{grid-column:span 2;grid-row:span 1}
+.phone .sect{margin-top:22px}
+.phones{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start}
+.mh__b b{font-family:"Noto Serif KR",serif!important;font-weight:700!important}.phone .ring{width:56px;height:56px}.phone .ring b{font-size:15px}
+
+/* 11판 */
+.w--td{grid-column:span 2;grid-row:span 2}
+.td__min{font-size:11.8px;font-weight:600;color:var(--muted)}
+.td__big{font:700 24.8px/1.3 'Noto Serif KR',serif}
+.phone .w--td{grid-column:span 2;grid-row:span 1;min-height:190px}
+/* 레벨 어휘 — 확보 수 / 정본 수를 열로 정렬 */
+.lp__row{display:grid;grid-template-columns:2.8ch minmax(0,1fr) 3.4em .9em 3.6em;align-items:center;gap:0 10px}
+.lp__row .lp__bar{margin-right:4px}
+.lp__h,.lp__t{font-size:12.2px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lp__h{color:var(--ink);font-weight:600}
+.lp__t{color:var(--muted)}
+.lp__sl{font-size:12.2px;color:var(--faint);text-align:center}
+.lp__row{grid-template-columns:2.8ch minmax(0,1fr) 2.8em 5px 3.1em;gap:0 6px}.lp__row .lp__bar{margin-right:8px}
+
+/* 12판 — 오늘 학습: 오늘 문단 첫 문장 */
+.td__sent{font:700 19px/1.65 'Noto Serif JP','Noto Serif KR',serif;max-width:15em;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:keep-all}
+.td__words{font:700 20px/1.4 'Noto Serif JP',serif}
+.td__cap{font-size:12.5px;color:var(--muted)}
+.tdstates{display:grid;grid-template-columns:repeat(3,330px);gap:16px;overflow-x:auto}
+.tdstates>div{display:grid;grid-template-rows:auto 304px;gap:6px}
+.tdstates .cap{margin:0}
+@media (max-width:1100px){.tdstates{grid-template-columns:330px}}
+/* 13판 1안 — 왼쪽 열 [작은 칸 넷 / 이어 읽기] · 오른쪽 열 [단어 복습 / 오늘 문단] */
+.lay1 .p-q{grid-column:1/3;grid-row:1/3}.lay1 .p-r{grid-column:1/3;grid-row:3/5}
+.lay1 .p-v{grid-column:3/5;grid-row:1/3}.lay1 .p-t{grid-column:3/5;grid-row:3/5}
+.phone .lay1 > *{grid-column:span 2!important;grid-row:auto!important}
+.phone .lay1 .quad{grid-row:span 2!important}
+/* 확정안 빈칸 반영 */
+.tl{display:flex;align-items:center;gap:14px}
+.langsw{display:flex;gap:4px}
+.w--read .glyph{font-family:'Noto Sans JP',sans-serif}
+.gmwrap{height:304px;display:flex;align-items:flex-start}
+.gm{width:330px;background:var(--sheet);border:1px solid var(--rule);border-radius:16px;padding:20px 22px;box-shadow:0 18px 40px rgba(37,39,33,.16)}
+.gm__h{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.gm__h strong{font-size:15px}
+.gm__x{color:var(--muted)}
+.gm dl{margin:0;display:grid;gap:10px}
+.gm dl div{display:flex;gap:10px;align-items:baseline}
+.gm dt{flex:0 0 2.4em;font-size:12.5px;font-weight:700;color:var(--muted)}
+.gm dd{margin:0;font-size:13.4px;color:#4A4C45}
+.gm dd b{color:var(--ink)}
+.gm__f{display:flex;justify-content:flex-end;margin-top:16px}
+.gnb--strip{border-bottom:0}
+.logo i{width:6px;height:6px;background:var(--rose);margin:0 0 0 2px;vertical-align:baseline}
+/* 목표 궤도 — 문양: 과마다 점 하나(브랜드 마침표) */
+.gt2{flex-direction:row;align-items:center;gap:24px}
+.gt2__d{display:grid;gap:2px;flex:none;min-width:84px}
+.gt2__d b{font:700 27.2px/1.1 'Noto Serif KR',serif}
+.gt2__d small{font-size:11.2px;color:var(--muted)}
+.gt2__track{flex:1;display:grid;gap:10px;min-width:0}
+.beads{position:relative;display:flex;justify-content:space-between;align-items:center;height:12px}
+.beads i{width:7px;height:7px;border-radius:50%;background:#E4DFD5;flex:none}
+.beads i.on{background:var(--rose)}
+.beads i.now{box-shadow:0 0 0 3px #F3E4E7}
+.mark{position:absolute;top:15px;width:0;height:0;border:4px solid transparent;border-bottom:5px solid var(--ink);transform:translate(-50%,-50%)}
+.gt2__meta{display:flex;justify-content:space-between;align-items:center;font-size:11.2px;color:var(--muted);font-variant-numeric:tabular-nums}
+.gt2__meta b{color:var(--ink);font-weight:700}
+.gt2__end{display:inline-flex;align-items:center;gap:4px;color:var(--ink);font-weight:700}
+.gt2 .gt__v{margin-left:0;flex:none}
+.phone .gt2{flex-wrap:wrap;gap:12px 16px}
+.phone .gt2__track{flex-basis:100%;order:3}
+.phone .gt2 .gt__v{margin-left:auto}
+.phone .beads i{width:5px;height:5px}
+.phone .beads i.now{box-shadow:0 0 0 2px #F3E4E7}
+.gt2__d{min-width:110px;gap:6px}
+.gt2__sub{display:flex;align-items:center;gap:6px}
+.gt2__sub .gt__v{margin:0;padding:1px 8px;font-size:11px}
+.gt2__end{font-weight:700;color:var(--ink)}
+.phone .gt2__track{flex-basis:auto;order:0}
+.phone .gt2{flex-wrap:wrap}
+.phone .gt2__track{flex:1 1 100%}
+.phone .gt2{justify-content:flex-start;align-content:center}.phone .gt2 .gt__v{margin-left:0}
+/* 현황 분리 */
+.sect{justify-content:space-between}
+.sect__all{font-size:13px;font-weight:700;color:var(--ink);min-height:44px;display:inline-flex;align-items:center;margin:-12px 0}
+.crumb{display:inline-flex;align-items:center;min-height:44px;font-size:13px;font-weight:700;color:var(--muted);margin:-12px 0 0}
+/* 이어 읽기 가로 줄(4×1) */
+.rw{grid-column:span 4;grid-row:span 1;display:grid!important;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:22px;padding:0 28px;min-height:146px}
+.rw .glyph{font-size:150px;top:-30px;right:180px}
+.rw__n{font:700 44px/1 'Noto Serif KR',serif;letter-spacing:-1px;position:relative}
+.rw__t{display:grid;gap:3px;position:relative;min-width:0}
+.rw__t b{font-size:18px;line-height:1.4;word-break:keep-all}
+.rw__t span[lang]{font:400 14px 'Noto Sans JP';color:rgba(255,255,255,.8)}
+.rw .pill{position:relative}
+.phone .rw{grid-column:span 2;grid-template-columns:auto 1fr;row-gap:14px;padding:22px}
+.phone .rw .pill{grid-column:1/-1;justify-self:start}
+.phone .rw .glyph{right:-10px;font-size:120px}
+.qpair{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.qpair>.scroll{max-width:100%}
+/* 작은 칸 둘 + 반쪽 진행바 */
+.quad2{grid-template-rows:repeat(2,minmax(0,1fr))}
+.quad2>.k6--half,.quad2>.gt--half{grid-column:span 2}
+.k6--half{grid-column:span 2;grid-template-columns:auto 1fr auto!important;grid-template-rows:24px auto auto auto!important;row-gap:6px!important;column-gap:10px!important;padding:16px 18px!important;min-height:0!important;align-content:center}
+.k6--half .k6__big{font-size:24px;line-height:24px}
+.k6--half .k6__barcell{grid-column:1/-1;grid-row:3;margin-top:8px;transform:none}
+.k6--half .k6__cap{grid-column:1/-1;grid-row:4}
+.k6--half .k6__sl{grid-column:1/3}
+.k6--half .k-bar{height:8px}.k6--half .k-bar b{width:16px;height:16px;box-shadow:inset 0 0 0 3.5px var(--rose),0 1px 3px rgba(0,0,0,.12)}
+.k6--half .k6__s,.k6--half .k6__cap{font-size:11px}
+.gt--half{grid-column:span 2;flex-direction:column!important;align-items:flex-start!important;justify-content:center;gap:10px;padding:16px 18px}
+.gt--half .gt__line{font-size:12px}
+.toplink{font-size:13px;font-weight:700;color:var(--ink);min-height:44px;display:inline-flex;align-items:center}
+.phone .quad2{grid-template-rows:auto auto}
+.phone .k6--half{padding:18px 20px!important}
+.phone .quad2{grid-template-rows:minmax(120px,auto) auto}
+.qpair>.scroll .frame{width:672px}.qpair .frame:not(.phone){width:720px}
+.phone .q-status{order:3}
+.phone .quad2.q-status{grid-template-rows:auto minmax(120px,auto)}
+/* 메인 중심 잡기(잉크 실측 보정) */
+.w--read{padding-top:22px;padding-bottom:25px}
+.phone .w--read{padding-top:20px;padding-bottom:23px}
+.rt .rt__cycle,.w--td .rt__cycle{transform:translateY(2px)}
+.top{align-items:center}
+.toplink{transform:translateY(1px)}
+/* 실제 웹폰트 · 2배 픽셀 실측으로 다시 맞춤(2026-10-09) */
+.w--read{padding-top:24px;padding-bottom:23px}
+.phone .w--read{padding-top:22px;padding-bottom:21px}
+.rt,.w--td{padding-top:25px;padding-bottom:23px}
+.rt .rt__cycle{transform:none}
+.w--td .rt__cycle{transform:translateY(-1px)}
+.phone .rt{padding-top:26px;padding-bottom:22px}
+.phone .w--td{padding-top:24px;padding-bottom:24px}
+.phone .rt .rt__cycle{transform:translateY(1px)}
+.phone .w--td .rt__cycle{transform:none}
+.w--stat{padding-top:23px;padding-bottom:25px}
+.phone .w--stat{padding-top:24px;padding-bottom:24px}
+.toplink{transform:none}
+/* 교재 칸: 일본어 제목이 주, 한국어 제목은 부제(오너 지시 2026-10-09) */
+.read__ja{position:relative;font:700 20px/1.45 'Noto Serif JP',serif;margin-top:12px;max-width:13em;line-break:strict}
+.read__ko{position:relative;font-size:14px;line-height:1.5;color:rgba(255,255,255,.82);margin-top:4px;word-break:keep-all}
+.phone .read__ja{font-size:18px;margin-top:10px}
+.phone .read__ko{font-size:13px}
+/* 현황 카테고리(2026-10-09): 지속 / 목표 · 기억 */
+.cat__h{font:700 13px/1.4 'Noto Sans KR',sans-serif;color:var(--muted);letter-spacing:.02em;margin:26px 0 10px}
+.top+.cat .cat__h{margin-top:4px}
+.cat-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.bento--2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.phone .cat-pair{grid-template-columns:minmax(0,1fr);gap:0}
+.phone .bento--2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.hm--half{grid-column:span 2;height:146px;padding:18px 22px}
+.hm--half .hm__s{overflow:hidden;margin-top:8px}
+.hm--half .hm__strip{min-width:0;grid-auto-columns:minmax(0,1fr);gap:2px}
+.hm--half .hm__lg{display:none}
+.phone .hm--half{grid-column:span 2;height:auto}
+.phone .hm--half .hm__strip{min-width:0;grid-auto-columns:minmax(0,1fr)}
+.pg .hm--half .hm__strip{grid-auto-columns:10px;justify-content:start}
+.phone .pg .hm--half .hm__strip{grid-auto-columns:minmax(0,1fr)}
+.pg .hm--half{padding:16px 22px}
+.pg .hm--half .hm__s{margin-top:6px;flex:none}
+.phone .pg .hm--half{padding:18px 22px}
+.pg .hm--half{padding:14px 21px 18px}
+.phone .pg .hm--half{padding:16px 22px 20px}
+/* 묶음 제목 없이 위젯을 붙임(2026-10-09) — 묶음 사이 간격 = 위젯 간격 12px */
+.cat+.cat-pair{margin-top:12px}
+.top+.cat{margin-top:0}
+.phone .cat-pair{gap:12px}
+/* 휴대폰 현황: 작은 칸 넷을 2×2로 붙임 — 한 격자로 펴고 클래스로 순서 지정 */
+.phone .st-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(120px,auto);gap:12px}
+.phone .st-grid .cat,.phone .st-grid .cat-pair,.phone .st-grid .bento{display:contents}
+.phone .st-grid .k6--half{order:1}
+.phone .st-grid .st-today{order:2}.phone .st-grid .st-streak{order:3}
+.phone .st-grid .st-week{order:4}.phone .st-grid .st-known{order:5}
+.phone .st-grid .hm{order:6}.phone .st-grid .lp{order:7}.phone .st-grid .mh{order:8}
+/* 언어별 교재 색(정본: src/lib/textbookTheme.js · src/index.css --book-*) */
+.lang-ja{--lc:#80576A;--lw:#F3E9EC;--ld:#D9ADBF}
+.lang-zh{--lc:#466C5D;--lw:#E9EFE6;--ld:#ACCCB8}
+.lang-fr{--lc:#4D5D85;--lw:#E9EDF6;--ld:#B9C8EB}
+.lang-en{--lc:#85602F;--lw:#F5EDDF;--ld:#E1C197}
+.w--read{background:var(--lc,var(--rose))}
+.w--read .glyph{color:rgba(255,255,255,.16)}
+.w--read .pill{color:var(--lc,var(--rose))}
+.w--read .pill i{background:var(--lc,var(--rose))}
+/* 언어 색 = v2 웹 기본 틀(src/components/web/web-shell.css --ja/--zh/--en/--fr). 옅은 색은 섞어서 만든다(새 값 없음) */
+.lang-ja{--lc:#994A5A}.lang-zh{--lc:#2A7657}.lang-en{--lc:#906021}.lang-fr{--lc:#3A68A2}
+.lang-ja,.lang-zh,.lang-en,.lang-fr{--lw:color-mix(in srgb,var(--lc) 9%,var(--sheet))}
+.tdstates .cap{white-space:nowrap}
+
+.gvrow{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin-bottom:28px}
+.gvlab{font-size:14px;margin:0}.gvlab b{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--paper);font-size:12px;margin-right:6px}
+.gvlab span{display:block;font-size:12.5px;color:#55574F;margin-top:2px}
+.gvpair{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.gv{background:var(--paper);border-radius:22px;overflow-x:auto;max-width:100%;min-width:0}
+.gv:not(.gv--m)>.gvw{width:672px}.gv--m>.gvw{width:358px}
+/* 공통 정렬 격자 */
+.gvw{display:grid!important;grid-template-columns:108px minmax(0,1fr);grid-template-rows:auto auto;column-gap:28px;row-gap:12px;align-content:center;align-items:center;min-height:146px;padding:24px 28px}
+.gv__d{font:700 27.2px/1 'Noto Serif KR',serif;grid-column:1;grid-row:1;align-self:center}
+.gv__vis{grid-column:2;grid-row:1}
+.gv__sub{grid-column:1;grid-row:2;display:flex;align-items:center;gap:6px;height:20px}
+.gv__meta{grid-column:2;grid-row:2;display:flex;justify-content:space-between;align-items:center;height:20px;font-size:11.2px;color:var(--muted);font-variant-numeric:tabular-nums}
+.gv__sub small{font-size:11.2px;color:var(--muted);line-height:20px}
+.gv__meta b{color:var(--ink)}
+.gv__v{padding:0 8px;height:20px;line-height:20px;border-radius:99px;background:#ECE9E1;color:#4A4C45;font-size:11px;font-weight:700}
+/* 휴대폰: 머리 줄(D-84 ↔ 목표·판정 기준선 맞춤) / 문양 / 아래 줄 */
+.gv--m .gvw{grid-template-columns:auto 1fr;grid-template-rows:auto auto auto;column-gap:12px;row-gap:14px;padding:20px}
+.gv--m .gv__d{grid-row:1;grid-column:1;align-self:end}
+.gv--m .gv__sub{grid-row:1;grid-column:2;justify-self:end;align-self:end;height:auto}
+.gv--m .gv__vis{grid-row:2;grid-column:1/-1}
+.gv--m .gv__meta{grid-row:3;grid-column:1/-1}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@media (prefers-reduced-motion:reduce){.gvw i.now{animation:none!important}}
+.gvw i{display:block;border-radius:50%;background:#ECE7DD;position:relative;flex:none}
+.gvw i.on{background:var(--rose)}
+.gvw i.exp::after{content:'';position:absolute;left:50%;bottom:-7px;width:4px;height:4px;border-radius:50%;background:var(--ink);transform:translateX(-50%)}
+/* A */
+.gA{display:grid;gap:9px}.gA__row{display:flex;justify-content:space-between}
+.gA i{width:15px;height:15px}.gA i.now{background:#fff;box-shadow:inset 0 0 0 3px var(--rose);animation:bob 1.6s ease-in-out infinite}
+.gv--m .gA i{width:12px;height:12px}.gv--m .gA i.now{box-shadow:inset 0 0 0 2.5px var(--rose)}
+/* B */
+.gB{display:grid;grid-template-columns:repeat(14,22px);justify-content:space-between;row-gap:7px}
+.gB i{width:22px;height:22px;display:grid;place-items:center}.gB i svg{width:12px;height:12px}
+.gB i.now{background:transparent;border:2px dashed var(--rose);animation:bob 1.6s ease-in-out infinite}
+.gv--m .gB{grid-template-columns:repeat(14,18px);row-gap:5px}.gv--m .gB i{width:18px;height:18px}.gv--m .gB i svg{width:10px;height:10px}
+/* C — 고리가 두 행을 차지, 글자는 고리 세로 가운데에 맞춤 */
+.gvC{grid-template-columns:88px minmax(0,1fr)!important;align-content:center}
+.gC__wrap{grid-column:1;grid-row:1/4;position:relative;width:88px;height:88px;align-self:center}
+.gC__wrap svg{width:88px;height:88px;display:block}
+.gC__in{position:absolute;inset:0;display:grid;place-items:center;align-content:center}
+.gC__in b{font:700 22px/1 'Noto Serif KR',serif}.gC__in small{font-size:11px;color:var(--muted);line-height:1.2}
+.gvC .gv__d{grid-column:2;grid-row:1;align-self:end}
+.gvC .gv__sub{grid-column:2;grid-row:2}
+.gC__line{grid-column:2;grid-row:3;font-size:12.5px;color:#4A4C45;line-height:20px;align-self:start}
+.gv--m .gvC{grid-template-columns:88px 1fr!important;grid-template-rows:auto auto auto}
+.gv--m .gvC .gv__d{grid-column:2;grid-row:1;align-self:end}
+.gv--m .gvC .gv__sub{grid-column:2;grid-row:2;justify-self:start}
+/* D */
+.gD{display:grid;grid-template-columns:repeat(4,max-content);justify-content:space-between;row-gap:10px}
+.gD__g{display:flex;gap:5px;padding:6px 8px;border-radius:999px;background:#F3F0E9}
+.gD i{width:12px;height:12px}.gD i.exp::after{bottom:-10px}
+.gD i.now{background:#fff;box-shadow:inset 0 0 0 2.5px var(--rose);animation:bob 1.6s ease-in-out infinite}
+.gv--m .gD{grid-template-columns:repeat(3,max-content)}.gv--m .gD__g{padding:5px 7px;gap:4px}.gv--m .gD i{width:10px;height:10px}
+/* E — 점과 번호가 같은 열 */
+.gE{display:grid;grid-template-columns:auto auto repeat(10,1fr) auto auto;align-items:center;justify-items:center;column-gap:6px}
+.gE__x{font:700 12px Manrope,sans-serif;color:var(--muted)}.gE__el{color:var(--faint);letter-spacing:1px}
+.gE i{width:22px;height:22px}.gE i.exp::after{display:none}
+.gE i.now{background:#fff;box-shadow:inset 0 0 0 4px var(--rose);animation:bob 1.6s ease-in-out infinite}
+.gE--n{justify-content:initial}.gE--n small{font:600 10.5px Manrope,sans-serif;color:var(--muted)}
+.gE--n span:nth-child(1){visibility:hidden}
+.gv--m .gE i{width:18px;height:18px}.gv--m .gE{column-gap:4px}
+.gE{grid-template-rows:auto auto;row-gap:6px}.gE small{font:600 10.5px Manrope,sans-serif;color:var(--muted);height:12px;line-height:12px}.gE__el{font-size:12px}
+.kw{display:flex!important;flex-direction:column;justify-content:center;gap:12px;min-height:146px;padding:22px 26px;grid-column:auto}
+.gv--m .kw{padding:20px}
+:root{--go:#3F7A55;--go-bg:#E4EFE8;--stop:#B3443A;--stop-bg:#F7E4E1}
+.k-go{color:var(--go)}.k-stop{color:var(--stop)}
+.k-mut{color:var(--muted)}
+.k-num{font:700 27.2px/1 'Noto Serif KR',serif}
+.k-cap{font-size:11.5px;color:var(--muted)}
+.k-sig{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.k-sig--go{background:var(--go)}.k-sig--stop{background:var(--stop)}
+.k-bar{position:relative;display:block;height:10px;border-radius:99px;background:#ECE7DD}
+.k-bar i{position:absolute;inset:0 auto 0 0;border-radius:99px;background:var(--rose)}
+.k-bar b{position:absolute;top:50%;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 4px var(--rose),0 1px 3px rgba(0,0,0,.12);transform:translate(-50%,-50%)}
+/* 1 */
+.kw:has(.k1__l){flex-direction:row;align-items:center;gap:24px}
+.k1__l,.k1__r{display:grid;gap:6px;flex:none}.k1__l small,.k1__r small{font-size:11.5px}
+.k1__l small{color:var(--muted)}
+.k1__r{text-align:right}.k1__r small{display:flex;align-items:center;justify-content:flex-end}
+.k1__m{flex:1;display:grid;gap:12px;min-width:0}
+.gv--m .kw:has(.k1__l){flex-wrap:wrap;gap:14px}
+.gv--m .k1__m{order:3;flex-basis:100%}.gv--m .k1__r{margin-left:auto}
+/* 2 */
+.k2__top,.k2__bot{display:flex;justify-content:space-between;align-items:baseline;font-size:12px}
+.k2__top b{font-size:14px}
+.k2__line{position:relative;height:28px;margin:0 10px}
+.k2__track{position:absolute;left:0;right:0;top:50%;height:6px;border-radius:99px;background:#ECE7DD;transform:translateY(-50%)}
+.k2__over{position:absolute;left:100%;width:14%;top:50%;height:6px;border-radius:0 99px 99px 0;background:repeating-linear-gradient(90deg,var(--stop) 0 6px,transparent 6px 10px);transform:translateY(-50%)}
+.k2__now{position:absolute;left:0;top:50%;width:12px;height:12px;border-radius:50%;background:var(--ink);transform:translate(-50%,-50%)}
+.k2__exam{position:absolute;left:100%;top:2px;bottom:2px;width:3px;border-radius:2px;background:var(--ink);transform:translateX(-50%)}
+.k2__eta{position:absolute;top:50%;transform:translate(-50%,-50%)}
+.k2__eta i{display:block;width:18px;height:18px;border-radius:50%;background:currentColor;box-shadow:0 0 0 4px #fff}
+.k2__eta em{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);font:700 11.5px 'Noto Sans KR';font-style:normal;white-space:nowrap}
+
+/* 3 */
+.k3__dates{display:flex;align-items:flex-end;gap:22px}
+.k3__dates>span{display:grid;gap:4px}
+.k3__dates small{font-size:11.5px;color:var(--muted)}
+.k3__dates em{font-style:normal;font-size:11.5px;display:flex;align-items:center}
+.k3__arrow{font:600 11px Manrope;color:var(--faint);align-self:center}
+.k3__bar{display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px}
+/* 4 */
+.k4__row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:20px}
+.k4__goal{display:grid;gap:3px}.k4__goal b{font-size:15px}.k4__goal small{font-size:11.5px;color:var(--muted)}
+.k4__eta{display:flex;align-items:center;font:700 22px 'Noto Serif KR',serif}
+.k4__cap{display:flex;justify-content:space-between;font-size:11.5px}
+.gv--m .k4__row{grid-template-columns:1fr auto}.gv--m .k4__row .k-bar{grid-column:1/-1;grid-row:2}
+/* 5 */
+.k5__top{display:flex;justify-content:space-between;align-items:center;font-size:12px}
+.k5__d{font-size:22px;margin-right:4px}
+.k5__badge{padding:5px 12px;border-radius:99px;font-weight:700;font-size:13px}
+.k5__badge--go{background:var(--go-bg);color:var(--go)}.k5__badge--stop{background:var(--stop-bg);color:var(--stop)}
+.k5__beads{display:flex;justify-content:space-between}
+.k5__beads i{width:10px;height:10px;border-radius:50%;background:#ECE7DD}
+.k5__beads i.on{background:var(--rose)}.k5__beads i.now{background:#fff;box-shadow:inset 0 0 0 2.5px var(--rose)}
+.gv--m .k5__beads i{width:6px;height:6px}.gv--m .k5__beads i.now{box-shadow:inset 0 0 0 1.5px var(--rose)}
+.k5__cap{display:flex;justify-content:space-between;font-size:11.5px}
+
+.gv:not(.gv--m)>.kw{width:672px}.gv--m>.kw{width:358px}
+.k2__top,.k2__bot,.k4__cap,.k5__cap,.k5__top{gap:12px}
+.k2__track{right:14%}
+.k2__exam{left:86%}
+.k2__exam::after{content:'12/6';position:absolute;top:26px;left:50%;transform:translateX(-50%);font:700 11px Manrope;color:var(--ink)}
+.k2__over{left:86%;width:12%}
+.k-stop.k2__eta{left:auto}
+.k2__line{margin:14px 10px 6px}
+.k2__line{margin:12px 10px 0}.kw{gap:10px}
+.k6{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:28px;min-height:146px;padding:0 28px;position:relative}
+.gv:not(.gv--m)>.k6{width:672px}.gv--m>.k6{width:358px}
+.k6__l,.k6__r{display:grid;gap:8px;align-content:center}
+.k6__l b,.k6__r b{font:700 30px/1 'Noto Serif KR',serif;letter-spacing:-.5px}
+.k6__l small,.k6__r small{font-size:11.5px;line-height:14px;display:flex;align-items:center}
+.k6__l small{color:var(--muted)}
+.k6__r{justify-items:end;text-align:right}
+.k6__m{position:relative;align-self:center}
+.k6__m .k-bar{height:10px}
+.k6__cap{position:absolute;left:0;right:0;top:calc(100% + 14px);display:flex;justify-content:space-between;font-size:11.5px;line-height:14px;color:var(--muted)}
+.k6__cap em{font-style:normal;font-weight:700;color:var(--ink)}
+.k6--guide::after{content:'';position:absolute;left:12px;right:12px;top:50%;border-top:1px dashed #994A5A;opacity:.6;pointer-events:none}
+.gv--m .k6{grid-template-columns:1fr auto;grid-template-rows:auto auto;row-gap:22px;padding:20px 20px 40px}
+.gv--m .k6__l{grid-column:1;grid-row:1}.gv--m .k6__r{grid-column:2;grid-row:1}
+.gv--m .k6__m{grid-column:1/-1;grid-row:2}
+.gv--m .k6__l b,.gv--m .k6__r b{font-size:26px}
+
+.phone .k6{grid-template-columns:1fr auto;grid-template-rows:auto auto;row-gap:22px;padding:20px 20px 40px}
+.phone .k6__l{grid-column:1;grid-row:1}.phone .k6__r{grid-column:2;grid-row:1}
+.phone .k6__m{grid-column:1/-1;grid-row:2}
+.phone .k6__l b,.phone .k6__r b{font-size:26px}
+
+.k6{grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:30px auto;row-gap:10px;column-gap:28px;align-content:center;align-items:center;padding:0 28px}
+.k6__big{font:700 30px/30px 'Noto Serif KR',serif;letter-spacing:-.5px;grid-row:1}
+.k6__dl{grid-column:1}.k6__eta{grid-column:3;justify-self:end}
+.k6__barcell{grid-column:2;grid-row:1;align-self:center}
+.k6__s{grid-row:2;font-size:11.5px;line-height:14px;display:flex;align-items:center}
+.k6__sl{grid-column:1;color:var(--muted)}.k6__sr{grid-column:3;justify-self:end}
+.k6__cap{position:static;grid-column:2;grid-row:2;display:flex;justify-content:space-between;font-size:11.5px;line-height:14px;color:var(--muted)}
+.k6--guide::after{top:var(--gy,50%)}
+.gv--m .k6,.phone .k6{grid-template-columns:auto 1fr auto;grid-template-rows:26px auto auto auto;row-gap:8px;column-gap:12px;padding:20px}
+.gv--m .k6__big,.phone .k6__big{font-size:26px;line-height:26px}
+.gv--m .k6__barcell,.phone .k6__barcell{grid-column:1/-1;grid-row:3;transform:none;margin-top:14px}
+.gv--m .k6__cap,.phone .k6__cap{grid-column:1/-1;grid-row:4}
+.gv--m .k6__sl,.phone .k6__sl{grid-column:1/3}
+
+.k6--guide::after{display:none}
+.k6--guide .k6__barcell{position:relative}
+.k6--guide .k6__barcell::after{content:'';position:absolute;left:-400px;right:-400px;top:50%;border-top:1px dashed #994A5A;opacity:.7;pointer-events:none}
+
+/* 반쪽 진행바 — 제목 위 · 큰 숫자 한 줄 · 신호 점은 완주일 왼쪽 */
+.k6--half,.phone .k6,.gv--m .k6{grid-template-columns:auto 1fr auto!important;grid-template-rows:auto 24px auto auto!important;row-gap:6px!important}
+.k6--half .k6__sl,.phone .k6__sl{grid-column:1/-1!important;grid-row:1!important}
+.k6--half .k6__dl,.phone .k6__dl{grid-column:1;grid-row:2}
+.k6--half .k6__eta,.phone .k6__eta{grid-column:3;grid-row:2;justify-self:end;display:inline-flex;align-items:center;gap:6px}
+.k6__eta .k-sig{margin:0;width:9px;height:9px;flex:none}
+.k6--half .k6__barcell,.phone .k6__barcell{grid-column:1/-1;grid-row:3;margin-top:10px}
+.k6--half .k6__cap,.phone .k6__cap{grid-column:1/-1;grid-row:4;margin-top:2px}
+
+/* 막대 위아래 숨 */
+.k6--half .k6__barcell,.phone .k6__barcell{margin-top:18px}
+.k6--half .k6__cap,.phone .k6__cap{margin-top:10px}
+.k6--half{padding:14px 18px!important}
+
+.k6--half .k6__barcell,.phone .k6__barcell{margin-top:10px}
+.k6--half .k6__cap,.phone .k6__cap{margin-top:18px}
+
+.k6--half .k6__cap,.phone .k6__cap{margin-top:26px}
+.k6--half{padding:12px 18px!important}
+
+/* 위·아래 글자 잉크와 칸 끝 사이를 같게(실측 보정) */
+.k6--half{padding:13px 18px 11px!important}
+.phone .k6--half{padding:19px 20px 17px!important}
+
+/* 막대 = 위 큰 숫자와 아래 문구의 한가운데(실측) */
+.k6--half .k6__barcell{margin-top:16.5px}
+.k6--half .k6__cap{margin-top:19.5px}
+.phone .k6--half .k6__barcell{margin-top:17.25px}
+.phone .k6--half .k6__cap{margin-top:18.75px}
+
+.gxpair{display:flex;flex-wrap:wrap;gap:20px 64px;align-items:flex-start;padding-right:48px}@media (max-width:520px){.gxpair{overflow-x:auto;flex-wrap:nowrap;padding-bottom:6px}}
+.gx{position:relative;width:330px;flex:none}.gx.gxm{width:358px}
+.gx .k6{width:100%!important;max-width:none!important;grid-column:auto}
+.gx.gxm .k6__big{font-size:26px!important;line-height:26px!important}
+.gxE .k6{height:146px!important;min-height:0!important}
+.gxE.gxm .k6{padding:19px 20px 17px!important}.gxE.gxm .k6 .k6__barcell{margin-top:17.25px!important}.gxE.gxm .k6 .k6__cap{margin-top:18.75px!important}
+.gxtog{display:inline-flex;gap:8px;align-items:center;font-size:13px;min-height:44px;cursor:pointer}
+.gxg{position:absolute;left:-6px;right:-6px;height:0;border-top:1px dashed rgba(153,74,90,.55);pointer-events:none}
+.gxl{position:absolute;right:-44px;font:600 10.5px Manrope,sans-serif;color:#994A5A;transform:translateY(-50%);pointer-events:none;white-space:nowrap}
+.gxoff .gxg,.gxoff .gxl{display:none}
+
+.gxA:not(.gxm) .k6{height:146px!important;min-height:0!important;align-content:start!important;row-gap:0!important;grid-template-rows:auto auto auto auto!important;align-items:start!important;padding:22.0px 18px 0px!important}.gxA:not(.gxm) .k6 .k6__dl,.gxA:not(.gxm) .k6 .k6__eta{margin-top:2.0px}.gxA:not(.gxm) .k6 .k6__barcell{margin-top:28.0px!important}.gxA:not(.gxm) .k6 .k6__cap{margin-top:10.0px!important}
+.gxA.gxm .k6{height:146px!important;min-height:0!important;align-content:start!important;row-gap:0!important;grid-template-rows:auto auto auto auto!important;align-items:start!important;padding:22.0px 20px 0px!important}.gxA.gxm .k6 .k6__dl,.gxA.gxm .k6 .k6__eta{margin-top:1.0px}.gxA.gxm .k6 .k6__barcell{margin-top:27.0px!important}.gxA.gxm .k6 .k6__cap{margin-top:10.0px!important}
+.gxB:not(.gxm) .k6{height:146px!important;min-height:0!important;align-content:start!important;row-gap:0!important;grid-template-rows:auto auto auto auto!important;align-items:start!important;padding:15.0px 18px 0px!important}.gxB:not(.gxm) .k6 .k6__dl,.gxB:not(.gxm) .k6 .k6__eta{margin-top:13.0px}.gxB:not(.gxm) .k6 .k6__barcell{margin-top:20.0px!important}.gxB:not(.gxm) .k6 .k6__cap{margin-top:21.0px!important}
+.gxB.gxm .k6{height:146px!important;min-height:0!important;align-content:start!important;row-gap:0!important;grid-template-rows:auto auto auto auto!important;align-items:start!important;padding:15.0px 20px 0px!important}.gxB.gxm .k6 .k6__dl,.gxB.gxm .k6 .k6__eta{margin-top:12.0px}.gxB.gxm .k6 .k6__barcell{margin-top:20.0px!important}.gxB.gxm .k6 .k6__cap{margin-top:20.0px!important}
+.gxC:not(.gxm) .k6{height:146px!important;min-height:0!important;align-content:start!important;row-gap:0!important;grid-template-rows:auto auto auto auto!important;align-items:start!important;padding:18.0px 18px 0px!important}.gxC:not(.gxm) .k6 .k6__dl,.gxC:not(.gxm) .k6 .k6__eta{margin-top:2.0px}.gxC:not(.gxm) .k6 .k6__barcell{margin-top:10.0px!important}.gxC:not(.gxm) .k6 .k6__cap{margin-top:36.0px!important}
+.gxC.gxm .k6{height:146px!important;min-height:0!important;align-content:start!important;row-gap:0!important;grid-template-rows:auto auto auto auto!important;align-items:start!important;padding:18.0px 20px 0px!important}.gxC.gxm .k6 .k6__dl,.gxC.gxm .k6 .k6__eta{margin-top:1.0px}.gxC.gxm .k6 .k6__barcell{margin-top:9.0px!important}.gxC.gxm .k6 .k6__cap{margin-top:36.0px!important}
+.gxD:not(.gxm) .k6{height:146px!important;min-height:0!important;align-content:start!important;row-gap:0!important;grid-template-rows:auto auto auto auto!important;align-items:start!important;padding:18.0px 18px 0px!important}.gxD:not(.gxm) .k6 .k6__dl,.gxD:not(.gxm) .k6 .k6__eta{margin-top:2.0px}.gxD:not(.gxm) .k6 .k6__barcell{margin-top:23.0px!important}.gxD:not(.gxm) .k6 .k6__cap{margin-top:23.0px!important}
+.gxD.gxm .k6{height:146px!important;min-height:0!important;align-content:start!important;row-gap:0!important;grid-template-rows:auto auto auto auto!important;align-items:start!important;padding:18.0px 20px 0px!important}.gxD.gxm .k6 .k6__dl,.gxD.gxm .k6 .k6__eta{margin-top:1.0px}.gxD.gxm .k6 .k6__barcell{margin-top:23.0px!important}.gxD.gxm .k6 .k6__cap{margin-top:23.0px!important}.pg .k6--half.k6--half{height:146px!important;min-height:0!important;align-content:start!important;row-gap:0!important;grid-template-rows:auto auto auto auto!important;align-items:start!important;padding:15px 18px 0!important}.pg .k6--half.k6--half .k6__dl,.pg .k6--half.k6--half .k6__eta{margin-top:13px!important}.pg .k6--half.k6--half .k6__barcell{margin-top:20px!important}.pg .k6--half.k6--half .k6__cap{margin-top:21px!important}
+.phone .pg .k6--half.k6--half{height:146px!important;min-height:0!important;align-content:start!important;row-gap:0!important;grid-template-rows:auto auto auto auto!important;align-items:start!important;padding:15px 20px 0!important}.phone .pg .k6--half.k6--half .k6__dl,.phone .pg .k6--half.k6--half .k6__eta{margin-top:12px!important}.phone .pg .k6--half.k6--half .k6__barcell{margin-top:20px!important}.phone .pg .k6--half.k6--half .k6__cap{margin-top:20px!important}
+.rvrow{margin-bottom:34px}
+.rvset{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start;margin-top:10px}
+.rv{position:relative;display:flex;flex-direction:column;box-sizing:border-box;width:330px;height:304px;border-radius:20px;overflow:hidden;text-decoration:none;color:var(--ink);font-family:'Noto Sans KR',sans-serif;padding:24px;flex:none}
+.rv.rvm{width:358px;height:236px;padding:22px}
+.rv:focus-visible{outline:2px solid var(--lc);outline-offset:3px}
+.rv__g{position:absolute;pointer-events:none;font:300 150px/1 'Noto Sans JP','Noto Sans SC',sans-serif;right:-14px;top:-26px}
+.rvm .rv__g{font-size:120px;top:-20px}
+.rv__hd{display:block;position:relative}
+.rv__k{display:block;font:700 12px/1.4 'Noto Sans KR',sans-serif;letter-spacing:.02em}
+.rv__n{display:block;font:700 44px/1 'Noto Serif KR',serif;letter-spacing:-1px;margin-top:14px}
+.rvm .rv__n{font-size:34px;margin-top:10px}
+.rv__bd{display:block;position:relative}
+.rv__t{display:block;font:700 20px/1.45 'Noto Serif JP','Noto Serif SC',serif;line-break:strict}
+.rv__t[lang=zh]{font-family:'Noto Serif SC','Noto Serif JP',serif}
+.rvm .rv__t{font-size:18px}
+.rv__s{display:block;font-size:14px;line-height:1.5;margin-top:4px}
+.rvm .rv__s{font-size:13px}
+.rv__bot{margin-top:auto;display:flex;align-items:center;gap:12px;position:relative}
+.rv__pill{display:inline-flex;align-items:center;gap:12px;height:44px;padding:0 6px 0 18px;border-radius:999px;font-weight:700;font-size:14px;white-space:nowrap;box-sizing:border-box}
+.rv__pill i{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-style:normal}
+.rv__bar{flex:1;height:4px;border-radius:2px;position:relative;overflow:hidden}
+.rv__bar i{position:absolute;inset:0 auto 0 0;border-radius:2px}
+.rv__c{font:600 12px Manrope,sans-serif;white-space:nowrap}
+.rv__rib,.rv__ring{display:none}
+/* A 채움 */
+.rvA{background:var(--lc);color:#fff}
+.rvA .rv__g{color:rgba(255,255,255,.16)}
+.rvA .rv__k{color:rgba(255,255,255,.74)}
+.rvA .rv__t{margin-top:12px}.rvA.rvm .rv__t{margin-top:10px}
+.rvA:not(:has(.rv__n)) .rv__bd{margin-top:22px}
+.rvA .rv__s{color:rgba(255,255,255,.84)}
+.rvA .rv__pill{background:#fff;color:var(--lc)}.rvA .rv__pill i{background:var(--lc);color:#fff}
+.rvA .rv__bar{background:rgba(255,255,255,.28)}.rvA .rv__bar i{background:#fff}
+.rvA .rv__c{color:rgba(255,255,255,.86)}
+/* B 책 표지 */
+.rvB{background:var(--lw);padding-left:42px;border:1px solid color-mix(in srgb,var(--lc) 20%,transparent)}
+.rvB.rvm{padding-left:40px}
+.rvB::before{content:"";position:absolute;left:0;top:0;bottom:0;width:18px;background:var(--lc);box-shadow:inset -3px 0 0 rgba(0,0,0,.14)}
+.rvB .rv__g{display:none}
+.rvB .rv__hd{display:flex;align-items:baseline;gap:8px}
+.rvB .rv__k{color:var(--lc)}
+.rvB .rv__n{font:700 12px/1.4 Manrope,sans-serif;letter-spacing:.02em;margin:0;color:var(--lc)}
+.rvB .rv__n::after{content:"과"}
+.rvB .rv__bd{margin:auto 0}
+.rvB .rv__t{font-size:24px}.rvB.rvm .rv__t{font-size:21px}
+.rvB .rv__s{color:var(--muted)}
+.rvB .rv__bot{margin-top:0}
+.rvB .rv__pill{background:none;padding:0;height:auto;gap:6px;color:var(--lc)}
+.rvB .rv__pill i{width:auto;height:auto;background:none;color:var(--lc)}
+.rvB .rv__bar{position:absolute;left:-42px;right:-24px;bottom:-24px;height:5px;border-radius:0;background:color-mix(in srgb,var(--lc) 16%,transparent);flex:none}
+.rvB.rvm .rv__bar{left:-40px;right:-22px;bottom:-22px}
+.rvB .rv__bar i{background:var(--lc);border-radius:0}
+.rvB .rv__c{color:var(--muted);margin-left:auto}
+/* C 위아래 나눔 */
+.rvC{background:var(--sheet);border:1px solid var(--rule);padding:0}
+.rvC.rvm{padding:0}
+.rvC .rv__g{z-index:1;color:rgba(255,255,255,.17);font-size:130px;top:-16px;right:-8px}
+.rvC.rvm .rv__g{font-size:104px;top:-14px}
+.rvC .rv__hd{background:var(--lc);color:#fff;height:124px;padding:20px 24px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between}
+.rvC.rvm .rv__hd{height:92px;padding:16px 22px}
+.rvC .rv__k{color:rgba(255,255,255,.76)}
+.rvC .rv__n{margin:0;font-size:40px}.rvC.rvm .rv__n{font-size:30px}
+.rvC .rv__bd{padding:18px 24px 0}.rvC.rvm .rv__bd{padding:14px 22px 0}
+.rvC .rv__s{color:var(--muted)}
+.rvC .rv__bot{padding:0 24px 22px}.rvC.rvm .rv__bot{padding:0 22px 18px}
+.rvC .rv__pill{background:var(--lc);color:#fff}.rvC .rv__pill i{background:#fff;color:var(--lc)}
+.rvC .rv__bar{background:var(--lw)}.rvC .rv__bar i{background:var(--lc)}
+.rvC .rv__c{color:var(--muted)}
+/* D 진도 고리 */
+.rvD{background:var(--sheet);border:1px solid var(--rule);align-items:center;text-align:center}
+.rvD .rv__g{display:none}
+.rvD .rv__hd{align-self:stretch;text-align:left}
+.rvD .rv__hd .rv__n{display:none}
+.rvD .rv__k{color:var(--lc)}
+.rvD .rv__ring{display:grid;place-items:center;align-content:center;width:104px;height:104px;margin-top:6px;position:relative;flex:none}
+.rvD .rv__ring svg{position:absolute;inset:0;width:100%;height:100%}
+.rvD .rv__ring b{position:relative;font:700 30px/1 'Noto Serif KR',serif;letter-spacing:-.5px}
+.rvD .rv__ring small{position:relative;font-size:11px;color:var(--muted);margin-top:3px}
+.rvD:not(:has(.rv__n)) .rv__ring b{font:700 19px/1 Manrope,sans-serif}
+.rvD .rv__bd{margin-top:12px}
+.rvD .rv__t{font-size:19px}
+.rvD .rv__s{color:var(--muted);font-size:13px;margin-top:2px}
+.rvD .rv__bot{align-self:stretch}
+.rvD .rv__bar,.rvD .rv__c{display:none}
+.rvD .rv__pill{flex:1;justify-content:center;gap:8px;padding:0 18px;background:var(--lc);color:#fff}
+.rvD .rv__pill i{width:auto;height:auto;background:none;color:#fff}
+.rvD.rvm{display:grid;grid-template-columns:84px minmax(0,1fr);grid-template-rows:auto 1fr auto;grid-template-areas:"hd hd" "ring bd" "bot bot";column-gap:16px;text-align:left;align-items:center}
+.rvD.rvm .rv__hd{grid-area:hd}.rvD.rvm .rv__ring{grid-area:ring;width:84px;height:84px;margin:0}
+.rvD.rvm .rv__ring b{font-size:24px}
+.rvD.rvm .rv__bd{grid-area:bd;margin:0}.rvD.rvm .rv__bot{grid-area:bot}
+/* E 책갈피 */
+.rvE{background:var(--sheet);border:1px solid var(--rule)}
+.rvE .rv__g,.rvE .rv__hd .rv__n{display:none}
+.rvE .rv__rib{display:grid;justify-items:center;align-content:start;position:absolute;top:-1px;right:24px;width:40px;height:80px;padding-top:16px;box-sizing:border-box;background:var(--lc);color:#fff;font:700 15px/1 Manrope,sans-serif;clip-path:polygon(0 0,100% 0,100% 100%,50% 80%,0 100%)}
+.rvE.rvm .rv__rib{right:22px;height:66px;padding-top:12px}
+.rvE .rv__k{color:var(--lc)}
+.rvE .rv__bd{margin-top:auto;padding-right:8px}
+.rvE .rv__t{font-size:24px}.rvE.rvm .rv__t{font-size:21px}
+.rvE .rv__s{color:var(--muted)}
+.rvE .rv__bot{margin-top:22px}.rvE.rvm .rv__bot{margin-top:16px}
+.rvE .rv__pill{background:none;padding:0;height:auto;gap:6px;color:var(--lc)}
+.rvE .rv__pill i{width:auto;height:auto;background:none;color:var(--lc)}
+.rvE .rv__bar{background:var(--lw)}.rvE .rv__bar i{background:var(--lc)}
+.rvE .rv__c{color:var(--muted)}
+@media (max-width:420px){.rv{width:100%}.rv.rvm{width:100%}.rvset>.rv:not(.rvm){max-width:330px}}
+
+/* C 채택: 맨 아래 줄 [진도 숫자][막대][버튼] */
+.rvR .rv__bot{gap:12px}
+.rvR .rv__c{flex:none}
+.rvR .rv__bar{min-width:40px}
+.rvR .rv__pill{margin-left:6px}
+.rv__sp{flex:1}
+/* 대시보드 격자 안에서 */
+.bento .rvg{width:auto;height:auto;min-height:0}
+.phone .bento .rvg{height:236px}
+</style></head><body><div class="doc">
+<header class="intro"><p class="eyebrow">확정안 · 현황 분리 · 2026-10-09</p><h1>배움 · 현황</h1><p>배움: 첫 줄 [이어 읽기][진행바 · 오늘 목표 · 연속] · 둘째 줄 [단어 복습][오늘 문단]. 현황: [진행바][오늘 목표][연속] · [히트맵][이번 주 복습][아는 단어] · [레벨 어휘][기억 건강] (묶음 제목 없음). 폭 720, 예전 홈 메트로 비율.</p></header>
+<section><ul class="note"><li><b>언어 하나</b>대시보드 전체가 「지금 언어」를 따른다. 제목 옆 국기로 바꾼다(레벨 어휘 카드의 탭은 여기로 올림)</li><li><b>이어 읽기</b>책 → 내 서재 자료 → 산책 추천 순. 최근 것 하나</li><li><b>대화 숨김</b>대화 화면이 나올 때까지 메뉴는 배움 · 서재 · 산책, 구분선 없음</li><li><b>배움</b>[이어 읽기][진행바 / 오늘 목표 · 연속] / [단어 복습][오늘 문단]. 휴대폰처럼 폭이 줄면 진행바 · 작은 칸 묶음이 맨 아래로</li><li><b>현황 들어가기</b>제목 줄 오른쪽 「현황 전체 →」(날짜 자리) 또는 진행바를 누르면. 현황 = [이번 주 · 아는 단어 + 진행바] / [레벨 어휘][기억 건강] / 히트맵</li><li><b>톤</b>기억 건강·판정 색과 문구는 그대로(오너 결정)</li></ul></section>
+<section><p class="eyebrow">넓은 화면 · 720</p><div class="scroll"><div class="frame" id="a2"><header class="gnb"><span class="logo">manabi<i></i></span><nav class="nav" aria-label="주 메뉴"><a class="nl on" aria-current=page>배움</a><a class="nl">서재</a><a class="nl">산책</a></nav><span class="gr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14M21 21l-5-5"/></svg><b>로그인</b></span></header><main class="pg"><div class="top"><div class="tl"><h1>배움</h1><span class="langsw" role="tablist" aria-label="학습 언어"><span class="chip2 flag on" role="tab" aria-selected="true" aria-label="일본어" title="일본어">🇯🇵</span><span class="chip2 flag" role="tab" aria-selected="false" aria-label="중국어" title="중국어">🇨🇳</span></span></div><a class="toplink">현황 전체 →</a></div><div class="bento"><a class="rv rvC rvR lang-ja rvg w--2x2" aria-label="이어서 읽기 · 일본어 N5 · 07 · カフェは どこですか。 · 카페는 어디예요? · 6 / 42"><span class="rv__g" lang="ja" aria-hidden="true">あ</span><span class="rv__rib" aria-hidden="true">07</span><span class="rv__hd"><span class="rv__k">일본어 N5</span><span class="rv__n">07</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="39.5 276.5" transform="rotate(-90 50 50)"/></svg><b>07</b><small>과</small></span><span class="rv__bd"><span class="rv__t" lang="ja">カフェは どこですか。</span><span class="rv__s">카페는 어디예요?</span></span><span class="rv__bot"><span class="rv__c">6 / 42</span><span class="rv__bar" aria-hidden="true"><i style="width:14.3%"></i></span><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span></span></a><div class="quad quad2 q-status"><a class="w gt k6 k6--half" aria-label="JLPT N4 12/6(일) 시험까지 58일, 6/42과, 하루 0.7과면 11/29 완주 예상, 7일 여유"><small class="k6__s k6__sl">12/6(일) JLPT N4</small><b class="k6__big k6__dl">D-58</b><b class="k6__big k6__eta k-go"><span class="k-sig k-sig--go" aria-hidden="true"></span>11/29</b><span class="k6__barcell"><span class="k-bar"><i style="width:14.3%"></i><b style="left:14.3%"></b></span></span><span class="k6__cap"><span><em>6</em> / 42과</span><span class="k-go">하루 0.7과 · 7일 여유</span></span></a><a class="w w--stat"><span class="st-v">60%</span><span class="st-l">오늘 목표</span></a><a class="w w--stat" title="쉼: 7일 연속할 때마다 1개(최대 2개). 하루 빠지면 자동으로 써서 연속이 이어져요" aria-label="12일 연속 · 쉼 2 — 쉼: 7일 연속할 때마다 1개(최대 2개). 하루 빠지면 자동으로 써서 연속이 이어져요"><span class="st-v">12일</span><span class="st-l">연속 · 쉼 2</span></a></div><a class="w w--2x2 rt" data-live aria-label="단어 복습 · 24개 대기 · 복습하기"><span class="wh"><span class="kick">단어 복습</span><span class="rt__due">24개 대기</span></span><span class="rt__cycle"><span class="rt__word" lang="ja">会議</span><span class="rt__meaning">회의</span></span><span class="rt__cta">복습하기 →</span></a><a class="w w--2x2 w--td" aria-label="오늘 문단 · 시작하기"><span class="wh"><span class="kick">오늘 문단</span></span><span class="rt__cycle"><span class="td__sent" lang="ja">駅前の小さなパン屋で、今日も同じパンを買いました。</span></span><span class="rt__cta">시작하기 →</span></a></div></main></div></div></section>
+<section><p class="eyebrow">이어 읽기 칸 · 모양 시안 — C 채택, 위 배움 화면에 적용됨</p><p class="cap" style="margin:6px 0 16px">색은 v2 웹 기본 틀의 언어 색을 그대로 쓴다 — 일본어 #994A5A(브랜드 점과 같음) · 중국어 #2A7657(정본 src/components/web/web-shell.css). 옅은 바탕은 그 색을 종이색에 9% 섞은 것. 한 줄에 넓은 화면 일본어 교재 · 넓은 화면 중국어 서재 자료(과 번호 없음) · 휴대폰 일본어 교재.</p><div class="rvrow"><p class="gvlab"><b>A</b> 채움 (지금 모양)<span>칸 전체를 언어 색으로 칠한다. 가장 눈에 띄고, 배움 화면의 주인공이라는 위계가 분명하다.</span></p><div class="rvset"><a class="rv rvA lang-ja" aria-label="이어서 읽기 · 일본어 N5 · 07 · カフェは どこですか。 · 카페는 어디예요? · 6 / 42"><span class="rv__g" lang="ja" aria-hidden="true">あ</span><span class="rv__rib" aria-hidden="true">07</span><span class="rv__hd"><span class="rv__k">일본어 N5</span><span class="rv__n">07</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="39.5 276.5" transform="rotate(-90 50 50)"/></svg><b>07</b><small>과</small></span><span class="rv__bd"><span class="rv__t" lang="ja">カフェは どこですか。</span><span class="rv__s">카페는 어디예요?</span></span><span class="rv__bot"><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span><span class="rv__bar" aria-hidden="true"><i style="width:14.3%"></i></span><span class="rv__c">6 / 42</span></span></a><a class="rv rvA lang-zh" aria-label="이어서 읽기 · 내 서재 · 중국어 · 北京的早餐 · HSK 2 · 3 / 8"><span class="rv__g" lang="zh" aria-hidden="true">汉</span><span class="rv__rib" aria-hidden="true"></span><span class="rv__hd"><span class="rv__k">내 서재 · 중국어</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="103.7 276.5" transform="rotate(-90 50 50)"/></svg><b>3 / 8</b></span><span class="rv__bd"><span class="rv__t" lang="zh">北京的早餐</span><span class="rv__s">HSK 2</span></span><span class="rv__bot"><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span><span class="rv__bar" aria-hidden="true"><i style="width:37.5%"></i></span><span class="rv__c">3 / 8</span></span></a><a class="rv rvA lang-ja rvm" aria-label="이어서 읽기 · 일본어 N5 · 07 · カフェは どこですか。 · 카페는 어디예요? · 6 / 42"><span class="rv__g" lang="ja" aria-hidden="true">あ</span><span class="rv__rib" aria-hidden="true">07</span><span class="rv__hd"><span class="rv__k">일본어 N5</span><span class="rv__n">07</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="39.5 276.5" transform="rotate(-90 50 50)"/></svg><b>07</b><small>과</small></span><span class="rv__bd"><span class="rv__t" lang="ja">カフェは どこですか。</span><span class="rv__s">카페는 어디예요?</span></span><span class="rv__bot"><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span><span class="rv__bar" aria-hidden="true"><i style="width:14.3%"></i></span><span class="rv__c">6 / 42</span></span></a></div></div><div class="rvrow"><p class="gvlab"><b>B</b> 책 표지<span>옅은 언어 색 바탕에 왼쪽 책등. 진도는 칸 아래 가장자리 띠. 책을 펼치는 느낌이고 색 면적이 작아 차분하다.</span></p><div class="rvset"><a class="rv rvB lang-ja" aria-label="이어서 읽기 · 일본어 N5 · 07 · カフェは どこですか。 · 카페는 어디예요? · 6 / 42"><span class="rv__g" lang="ja" aria-hidden="true">あ</span><span class="rv__rib" aria-hidden="true">07</span><span class="rv__hd"><span class="rv__k">일본어 N5</span><span class="rv__n">07</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="39.5 276.5" transform="rotate(-90 50 50)"/></svg><b>07</b><small>과</small></span><span class="rv__bd"><span class="rv__t" lang="ja">カフェは どこですか。</span><span class="rv__s">카페는 어디예요?</span></span><span class="rv__bot"><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span><span class="rv__bar" aria-hidden="true"><i style="width:14.3%"></i></span><span class="rv__c">6 / 42</span></span></a><a class="rv rvB lang-zh" aria-label="이어서 읽기 · 내 서재 · 중국어 · 北京的早餐 · HSK 2 · 3 / 8"><span class="rv__g" lang="zh" aria-hidden="true">汉</span><span class="rv__rib" aria-hidden="true"></span><span class="rv__hd"><span class="rv__k">내 서재 · 중국어</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="103.7 276.5" transform="rotate(-90 50 50)"/></svg><b>3 / 8</b></span><span class="rv__bd"><span class="rv__t" lang="zh">北京的早餐</span><span class="rv__s">HSK 2</span></span><span class="rv__bot"><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span><span class="rv__bar" aria-hidden="true"><i style="width:37.5%"></i></span><span class="rv__c">3 / 8</span></span></a><a class="rv rvB lang-ja rvm" aria-label="이어서 읽기 · 일본어 N5 · 07 · カフェは どこですか。 · 카페는 어디예요? · 6 / 42"><span class="rv__g" lang="ja" aria-hidden="true">あ</span><span class="rv__rib" aria-hidden="true">07</span><span class="rv__hd"><span class="rv__k">일본어 N5</span><span class="rv__n">07</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="39.5 276.5" transform="rotate(-90 50 50)"/></svg><b>07</b><small>과</small></span><span class="rv__bd"><span class="rv__t" lang="ja">カフェは どこですか。</span><span class="rv__s">카페는 어디예요?</span></span><span class="rv__bot"><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span><span class="rv__bar" aria-hidden="true"><i style="width:14.3%"></i></span><span class="rv__c">6 / 42</span></span></a></div></div><div class="rvrow"><p class="gvlab"><b>C</b> 위아래 나눔 — 채택(10/9) · 버튼 오른쪽<span>위는 언어 색 머리(과 번호), 아래는 흰 종이(제목). 맨 아래 줄은 [진도 숫자][막대][이어서 읽기] — 지금 위치 → 진행 → 다음 행동 순서로 읽히고, 휴대폰에서 버튼이 엄지 닿는 오른쪽 아래에 온다.</span></p><div class="rvset"><a class="rv rvC rvR lang-ja" aria-label="이어서 읽기 · 일본어 N5 · 07 · カフェは どこですか。 · 카페는 어디예요? · 6 / 42"><span class="rv__g" lang="ja" aria-hidden="true">あ</span><span class="rv__rib" aria-hidden="true">07</span><span class="rv__hd"><span class="rv__k">일본어 N5</span><span class="rv__n">07</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="39.5 276.5" transform="rotate(-90 50 50)"/></svg><b>07</b><small>과</small></span><span class="rv__bd"><span class="rv__t" lang="ja">カフェは どこですか。</span><span class="rv__s">카페는 어디예요?</span></span><span class="rv__bot"><span class="rv__c">6 / 42</span><span class="rv__bar" aria-hidden="true"><i style="width:14.3%"></i></span><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span></span></a><a class="rv rvC rvR lang-zh" aria-label="이어서 읽기 · 내 서재 · 중국어 · 北京的早餐 · HSK 2 · 3 / 8"><span class="rv__g" lang="zh" aria-hidden="true">汉</span><span class="rv__rib" aria-hidden="true"></span><span class="rv__hd"><span class="rv__k">내 서재 · 중국어</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="103.7 276.5" transform="rotate(-90 50 50)"/></svg><b>3 / 8</b></span><span class="rv__bd"><span class="rv__t" lang="zh">北京的早餐</span><span class="rv__s">HSK 2</span></span><span class="rv__bot"><span class="rv__c">3 / 8</span><span class="rv__bar" aria-hidden="true"><i style="width:37.5%"></i></span><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span></span></a><a class="rv rvC rvR lang-ja rvm" aria-label="이어서 읽기 · 일본어 N5 · 07 · カフェは どこですか。 · 카페는 어디예요? · 6 / 42"><span class="rv__g" lang="ja" aria-hidden="true">あ</span><span class="rv__rib" aria-hidden="true">07</span><span class="rv__hd"><span class="rv__k">일본어 N5</span><span class="rv__n">07</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="39.5 276.5" transform="rotate(-90 50 50)"/></svg><b>07</b><small>과</small></span><span class="rv__bd"><span class="rv__t" lang="ja">カフェは どこですか。</span><span class="rv__s">카페는 어디예요?</span></span><span class="rv__bot"><span class="rv__c">6 / 42</span><span class="rv__bar" aria-hidden="true"><i style="width:14.3%"></i></span><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span></span></a></div></div><div class="rvrow"><p class="gvlab"><b>C′</b> 위아래 나눔 · 버튼 왼쪽(비교용)<span>C의 처음 모양. 버튼이 제목 줄과 같은 왼쪽 선에 선다.</span></p><div class="rvset"><a class="rv rvC rvC0 lang-ja" aria-label="이어서 읽기 · 일본어 N5 · 07 · カフェは どこですか。 · 카페는 어디예요? · 6 / 42"><span class="rv__g" lang="ja" aria-hidden="true">あ</span><span class="rv__rib" aria-hidden="true">07</span><span class="rv__hd"><span class="rv__k">일본어 N5</span><span class="rv__n">07</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="39.5 276.5" transform="rotate(-90 50 50)"/></svg><b>07</b><small>과</small></span><span class="rv__bd"><span class="rv__t" lang="ja">カフェは どこですか。</span><span class="rv__s">카페는 어디예요?</span></span><span class="rv__bot"><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span><span class="rv__bar" aria-hidden="true"><i style="width:14.3%"></i></span><span class="rv__c">6 / 42</span></span></a><a class="rv rvC rvC0 lang-zh" aria-label="이어서 읽기 · 내 서재 · 중국어 · 北京的早餐 · HSK 2 · 3 / 8"><span class="rv__g" lang="zh" aria-hidden="true">汉</span><span class="rv__rib" aria-hidden="true"></span><span class="rv__hd"><span class="rv__k">내 서재 · 중국어</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="103.7 276.5" transform="rotate(-90 50 50)"/></svg><b>3 / 8</b></span><span class="rv__bd"><span class="rv__t" lang="zh">北京的早餐</span><span class="rv__s">HSK 2</span></span><span class="rv__bot"><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span><span class="rv__bar" aria-hidden="true"><i style="width:37.5%"></i></span><span class="rv__c">3 / 8</span></span></a><a class="rv rvC rvC0 lang-ja rvm" aria-label="이어서 읽기 · 일본어 N5 · 07 · カフェは どこですか。 · 카페는 어디예요? · 6 / 42"><span class="rv__g" lang="ja" aria-hidden="true">あ</span><span class="rv__rib" aria-hidden="true">07</span><span class="rv__hd"><span class="rv__k">일본어 N5</span><span class="rv__n">07</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="39.5 276.5" transform="rotate(-90 50 50)"/></svg><b>07</b><small>과</small></span><span class="rv__bd"><span class="rv__t" lang="ja">カフェは どこですか。</span><span class="rv__s">카페는 어디예요?</span></span><span class="rv__bot"><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span><span class="rv__bar" aria-hidden="true"><i style="width:14.3%"></i></span><span class="rv__c">6 / 42</span></span></a></div></div><div class="rvrow"><p class="gvlab"><b>D</b> 진도 고리<span>흰 칸 가운데 진도 고리(과 번호 · 진행). 진행 상황이 첫눈에 들어오고, 색은 고리와 버튼에만 쓴다.</span></p><div class="rvset"><a class="rv rvD lang-ja" aria-label="이어서 읽기 · 일본어 N5 · 07 · カフェは どこですか。 · 카페는 어디예요? · 6 / 42"><span class="rv__g" lang="ja" aria-hidden="true">あ</span><span class="rv__rib" aria-hidden="true">07</span><span class="rv__hd"><span class="rv__k">일본어 N5</span><span class="rv__n">07</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="39.5 276.5" transform="rotate(-90 50 50)"/></svg><b>07</b><small>과</small></span><span class="rv__bd"><span class="rv__t" lang="ja">カフェは どこですか。</span><span class="rv__s">카페는 어디예요?</span></span><span class="rv__bot"><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span><span class="rv__bar" aria-hidden="true"><i style="width:14.3%"></i></span><span class="rv__c">6 / 42</span></span></a><a class="rv rvD lang-zh" aria-label="이어서 읽기 · 내 서재 · 중국어 · 北京的早餐 · HSK 2 · 3 / 8"><span class="rv__g" lang="zh" aria-hidden="true">汉</span><span class="rv__rib" aria-hidden="true"></span><span class="rv__hd"><span class="rv__k">내 서재 · 중국어</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="103.7 276.5" transform="rotate(-90 50 50)"/></svg><b>3 / 8</b></span><span class="rv__bd"><span class="rv__t" lang="zh">北京的早餐</span><span class="rv__s">HSK 2</span></span><span class="rv__bot"><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span><span class="rv__bar" aria-hidden="true"><i style="width:37.5%"></i></span><span class="rv__c">3 / 8</span></span></a><a class="rv rvD lang-ja rvm" aria-label="이어서 읽기 · 일본어 N5 · 07 · カフェは どこですか。 · 카페는 어디예요? · 6 / 42"><span class="rv__g" lang="ja" aria-hidden="true">あ</span><span class="rv__rib" aria-hidden="true">07</span><span class="rv__hd"><span class="rv__k">일본어 N5</span><span class="rv__n">07</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="39.5 276.5" transform="rotate(-90 50 50)"/></svg><b>07</b><small>과</small></span><span class="rv__bd"><span class="rv__t" lang="ja">カフェは どこですか。</span><span class="rv__s">카페는 어디예요?</span></span><span class="rv__bot"><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span><span class="rv__bar" aria-hidden="true"><i style="width:14.3%"></i></span><span class="rv__c">6 / 42</span></span></a></div></div><div class="rvrow"><p class="gvlab"><b>E</b> 책갈피<span>흰 칸 오른쪽 위에 언어 색 책갈피(과 번호)가 걸린다. 「읽던 곳에 끼워 둔」 의미가 모양에 담긴다.</span></p><div class="rvset"><a class="rv rvE lang-ja" aria-label="이어서 읽기 · 일본어 N5 · 07 · カフェは どこですか。 · 카페는 어디예요? · 6 / 42"><span class="rv__g" lang="ja" aria-hidden="true">あ</span><span class="rv__rib" aria-hidden="true">07</span><span class="rv__hd"><span class="rv__k">일본어 N5</span><span class="rv__n">07</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="39.5 276.5" transform="rotate(-90 50 50)"/></svg><b>07</b><small>과</small></span><span class="rv__bd"><span class="rv__t" lang="ja">カフェは どこですか。</span><span class="rv__s">카페는 어디예요?</span></span><span class="rv__bot"><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span><span class="rv__bar" aria-hidden="true"><i style="width:14.3%"></i></span><span class="rv__c">6 / 42</span></span></a><a class="rv rvE lang-zh" aria-label="이어서 읽기 · 내 서재 · 중국어 · 北京的早餐 · HSK 2 · 3 / 8"><span class="rv__g" lang="zh" aria-hidden="true">汉</span><span class="rv__rib" aria-hidden="true"></span><span class="rv__hd"><span class="rv__k">내 서재 · 중국어</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="103.7 276.5" transform="rotate(-90 50 50)"/></svg><b>3 / 8</b></span><span class="rv__bd"><span class="rv__t" lang="zh">北京的早餐</span><span class="rv__s">HSK 2</span></span><span class="rv__bot"><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span><span class="rv__bar" aria-hidden="true"><i style="width:37.5%"></i></span><span class="rv__c">3 / 8</span></span></a><a class="rv rvE lang-ja rvm" aria-label="이어서 읽기 · 일본어 N5 · 07 · カフェは どこですか。 · 카페는 어디예요? · 6 / 42"><span class="rv__g" lang="ja" aria-hidden="true">あ</span><span class="rv__rib" aria-hidden="true">07</span><span class="rv__hd"><span class="rv__k">일본어 N5</span><span class="rv__n">07</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="39.5 276.5" transform="rotate(-90 50 50)"/></svg><b>07</b><small>과</small></span><span class="rv__bd"><span class="rv__t" lang="ja">カフェは どこですか。</span><span class="rv__s">카페는 어디예요?</span></span><span class="rv__bot"><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span><span class="rv__bar" aria-hidden="true"><i style="width:14.3%"></i></span><span class="rv__c">6 / 42</span></span></a></div></div></section>
+<section><p class="eyebrow">현황 화면 · 넓은 화면</p><div class="scroll"><div class="frame" id="s1"><header class="gnb"><span class="logo">manabi<i></i></span><nav class="nav" aria-label="주 메뉴"><a class="nl on" aria-current=page>배움</a><a class="nl">서재</a><a class="nl">산책</a></nav><span class="gr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14M21 21l-5-5"/></svg><b>로그인</b></span></header><main class="pg"><a class="crumb">← 배움</a><div class="top"><div class="tl"><h1>현황</h1><span class="langsw" role="tablist" aria-label="학습 언어"><span class="chip2 flag on" role="tab" aria-selected="true" aria-label="일본어" title="일본어">🇯🇵</span><span class="chip2 flag" role="tab" aria-selected="false" aria-label="중국어" title="중국어">🇨🇳</span></span></div><a class="btn-s">목표 수정</a></div><div class="st-grid"><div class="cat"><div class="bento"><a class="w gt k6 k6--half" aria-label="JLPT N4 12/6(일) 시험까지 58일, 6/42과, 하루 0.7과면 11/29 완주 예상, 7일 여유"><small class="k6__s k6__sl">12/6(일) JLPT N4</small><b class="k6__big k6__dl">D-58</b><b class="k6__big k6__eta k-go"><span class="k-sig k-sig--go" aria-hidden="true"></span>11/29</b><span class="k6__barcell"><span class="k-bar"><i style="width:14.3%"></i><b style="left:14.3%"></b></span></span><span class="k6__cap"><span><em>6</em> / 42과</span><span class="k-go">하루 0.7과 · 7일 여유</span></span></a><a class="w w--stat st-today"><span class="st-v">60%</span><span class="st-l">오늘 목표</span></a><a class="w w--stat st-streak" title="쉼: 7일 연속할 때마다 1개(최대 2개). 하루 빠지면 자동으로 써서 연속이 이어져요" aria-label="12일 연속 · 쉼 2 — 쉼: 7일 연속할 때마다 1개(최대 2개). 하루 빠지면 자동으로 써서 연속이 이어져요"><span class="st-v">12일</span><span class="st-l">연속 · 쉼 2</span></a></div></div><div class="cat-pair"><div class="cat"><div class="bento bento--2"><div class="w hm hm--half"><div class="hm__head"><h2 class="sec-t">히트맵</h2><span class="hm__n">94일 · 1,372개</span></div><div class="hm__s"><div class="hm__strip"><i title="0개"></i><i title="0개"></i><i title="0개"></i><i class="l3" title="21개"></i><i title="0개"></i><i class="l2" title="14개"></i><i class="l1" title="7개"></i><i class="l2" title="14개"></i><i class="l1" title="7개"></i><i class="l1" title="7개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i class="l4" title="28개"></i><i title="0개"></i><i class="l2" title="14개"></i><i title="0개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l2" title="14개"></i><i class="l4" title="28개"></i><i title="0개"></i><i class="l2" title="14개"></i><i title="0개"></i><i class="l2" title="14개"></i><i class="l2" title="14개"></i><i class="l2" title="14개"></i><i class="l3" title="21개"></i><i class="l4" title="28개"></i><i class="l2" title="14개"></i><i class="l2" title="14개"></i><i class="l1" title="7개"></i><i class="l1" title="7개"></i><i title="0개"></i><i class="l2" title="14개"></i><i class="l1" title="7개"></i><i class="l1" title="7개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i class="l3" title="21개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i class="l1" title="7개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l1" title="7개"></i><i title="0개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l1" title="7개"></i><i class="l2" title="14개"></i><i title="0개"></i><i class="l2" title="14개"></i><i title="0개"></i><i class="l4" title="28개"></i><i class="l1" title="7개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l2" title="14개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l3" title="21개"></i><i title="0개"></i><i class="l1" title="7개"></i><i title="0개"></i><i class="l1" title="7개"></i><i title="0개"></i><i title="0개"></i><i class="l2" title="14개"></i><i class="l2" title="14개"></i><i class="l4" title="28개"></i><i class="l2" title="14개"></i><i class="l2" title="14개"></i><i title="0개"></i><i class="l1" title="7개"></i><i title="0개"></i><i class="l4" title="28개"></i><i title="0개"></i><i class="l2" title="14개"></i><i title="0개"></i><i title="0개"></i><i class="l4" title="28개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l4" title="28개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i class="l1" title="7개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l2" title="14개"></i><i class="l2" title="14개"></i><i title="0개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l2" title="14개"></i><i class="l1" title="7개"></i><i class="l2" title="14개"></i><i class="l2" title="14개"></i><i class="l1" title="7개"></i><i class="l1" title="7개"></i><i class="l1" title="7개"></i><i class="l3" title="21개"></i><i class="l1" title="7개"></i><i class="l4" title="28개"></i><i class="l3" title="21개"></i><i title="0개"></i><i title="0개"></i><i class="l4" title="28개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i class="l2" title="14개"></i><i title="0개"></i><i title="0개"></i><i class="l4" title="28개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i class="l3" title="21개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i class="l4" title="28개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l4" title="28개"></i><i class="l1" title="7개"></i><i class="l2" title="14개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l1" title="7개"></i><i title="0개"></i><i class="l3" title="21개"></i><i class="l3" title="21개"></i><i class="l4" title="28개"></i><i class="l1" title="7개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l4" title="28개"></i><i title="0개"></i><i class="l2" title="14개"></i><i class="l4" title="28개"></i><i class="l1" title="7개"></i><i title="0개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l4" title="28개"></i><i title="0개"></i><i class="l3" title="21개"></i><i class="l2" title="14개"></i><i class="l2" title="14개"></i><i title="0개"></i><i class="l1" title="7개"></i><i title="0개"></i><i class="l3" title="21개"></i></div></div><div class="hm__lg"><span>적음</span><i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><span>많음</span></div></div><div class="w w--2x2 lp"><div class="lp__head"><h2 class="sec-t">레벨 어휘</h2></div><div class="lp__rows"><a class="lp__row"><span class="lp__key">N5</span><span class="lp__bar"><i class="s" style="width:64%"></i><i class="k" style="width:44%"></i></span><span class="lp__h">612</span><span class="lp__sl">/</span><span class="lp__t">950</span></a><a class="lp__row"><span class="lp__key">N4</span><span class="lp__bar"><i class="s" style="width:21%"></i><i class="k" style="width:11%"></i></span><span class="lp__h">144</span><span class="lp__sl">/</span><span class="lp__t">701</span></a><a class="lp__row"><span class="lp__key">N3</span><span class="lp__bar"><i class="s" style="width:2%"></i><i class="k" style="width:1%"></i></span><span class="lp__h">42</span><span class="lp__sl">/</span><span class="lp__t">2,108</span></a><a class="lp__row"><span class="lp__key">N2</span><span class="lp__bar"><i class="s" style="width:0.3%"></i><i class="k" style="width:0%"></i></span><span class="lp__h">6</span><span class="lp__sl">/</span><span class="lp__t">1,906</span></a><a class="lp__row"><span class="lp__key">N1</span><span class="lp__bar"><i class="s" style="width:0%"></i><i class="k" style="width:0%"></i></span><span class="lp__h">0</span><span class="lp__sl">/</span><span class="lp__t">1,634</span></a></div><div class="lp__legend"><span><i class="dot" style="background:var(--rose)"></i>아는 단어</span><span><i class="dot" style="background:#E8C9CF"></i>복습 중</span></div></div></div></div><div class="cat"><div class="bento bento--2"><a class="w w--stat st-week"><span class="st-v">86</span><span class="st-l">이번 주 복습 · 92%</span></a><a class="w w--stat st-known"><span class="st-v">512</span><span class="st-l">아는 단어</span></a><div class="w w--2x2 mh"><div class="mh__head"><h2 class="sec-t">기억 건강</h2><span class="mh__ret" style="color:var(--ink)">유지율 84%</span></div><div class="mh__b"><div><small style="color:var(--good)">●</small><b>142</b><span>선명</span></div><div><small style="color:var(--ok)">●</small><b>38</b><span>양호</span></div><div><small style="color:var(--warn)">●</small><b>12</b><span>흐릿</span></div><div><small style="color:var(--bad)">●</small><b>4</b><span>위험</span></div></div><p class="mh__s">복습 스케줄</p><div class="fc"><div class="fc__c"><span class="fc__n">24</span><span class="fc__a"><i style="height:100%;"></i></span><span class="fc__l">오늘</span></div><div class="fc__c"><span class="fc__n">12</span><span class="fc__a"><i style="height:50%;"></i></span><span class="fc__l">10/10</span></div><div class="fc__c"><span class="fc__n">8</span><span class="fc__a"><i style="height:33%;"></i></span><span class="fc__l">10/11</span></div><div class="fc__c"><span class="fc__n">15</span><span class="fc__a"><i style="height:62%;"></i></span><span class="fc__l">10/12</span></div><div class="fc__c"><span class="fc__n">6</span><span class="fc__a"><i style="height:25%;"></i></span><span class="fc__l">10/13</span></div><div class="fc__c"><span class="fc__n">9</span><span class="fc__a"><i style="height:38%;"></i></span><span class="fc__l">10/14</span></div><div class="fc__c"><span class="fc__n">11</span><span class="fc__a"><i style="height:46%;"></i></span><span class="fc__l">10/15</span></div></div></div></div></div></div></div></main></div></div></section>
+<section><p class="eyebrow">이어 읽기 칸 · 세 경우</p><div class="tdstates"><div><p class="cap">일본어 책</p><a class="rv rvC rvR lang-ja rvg w--2x2" aria-label="이어서 읽기 · 일본어 N5 · 07 · カフェは どこですか。 · 카페는 어디예요? · 6 / 42"><span class="rv__g" lang="ja" aria-hidden="true">あ</span><span class="rv__rib" aria-hidden="true">07</span><span class="rv__hd"><span class="rv__k">일본어 N5</span><span class="rv__n">07</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="39.5 276.5" transform="rotate(-90 50 50)"/></svg><b>07</b><small>과</small></span><span class="rv__bd"><span class="rv__t" lang="ja">カフェは どこですか。</span><span class="rv__s">카페는 어디예요?</span></span><span class="rv__bot"><span class="rv__c">6 / 42</span><span class="rv__bar" aria-hidden="true"><i style="width:14.3%"></i></span><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span></span></a></div><div><p class="cap">내 서재 자료(책 없는 언어 포함)</p><a class="rv rvC rvR lang-zh rvg w--2x2" aria-label="이어서 읽기 · 내 서재 · 중국어 · 北京的早餐 · HSK 2 · 3 / 8"><span class="rv__g" lang="zh" aria-hidden="true">汉</span><span class="rv__rib" aria-hidden="true"></span><span class="rv__hd"><span class="rv__k">내 서재 · 중국어</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="103.7 276.5" transform="rotate(-90 50 50)"/></svg><b>3 / 8</b></span><span class="rv__bd"><span class="rv__t" lang="zh">北京的早餐</span><span class="rv__s">HSK 2</span></span><span class="rv__bot"><span class="rv__c">3 / 8</span><span class="rv__bar" aria-hidden="true"><i style="width:37.5%"></i></span><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span></span></a></div><div><p class="cap">둘 다 없음 — 산책 추천</p><a class="rv rvC rvR lang-ja rvg w--2x2" aria-label="읽어 보기 · 산책 추천 · 편의점에서 쓰는 말 · 일본어 · N5"><span class="rv__g" lang="ja" aria-hidden="true">文</span><span class="rv__rib" aria-hidden="true"></span><span class="rv__hd"><span class="rv__k">산책 추천</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="0.0 276.5" transform="rotate(-90 50 50)"/></svg><b></b></span><span class="rv__bd"><span class="rv__t" lang="ko">편의점에서 쓰는 말</span><span class="rv__s">일본어 · N5</span></span><span class="rv__bot"><span class="rv__sp"></span><span class="rv__pill">읽어 보기<i aria-hidden="true">→</i></span></span></a></div></div></section>
+<section><p class="eyebrow">진행바 칸 · 세로 배치 규칙별 시안 — B 채택, 위 배움 · 현황에 적용됨</p><label class="gxtog"><input type="checkbox" id="gxguide" checked> 안내선 · 간격 숫자 보기</label><p class="cap" style="margin:6px 0 14px">왼쪽 넓은 화면 칸(330×146) · 오른쪽 휴대폰 칸(358×146). 점선 = 글자 잉크(실제로 칠해진 부분)의 위·아래 끝, 숫자 = 그 사이 간격(px). 실제 웹폰트로 고해상도(2배) 화면을 찍어 픽셀로 잰 값이다(3배 화면도 ±0.3 이내 일치). 큰 숫자 줄은 D-58 글자 기준. 위아래 0.5 차이는 2배 화면 1픽셀로, 정수 여백으로 낼 수 있는 한계다.</p><div class="gvrow"><p class="gvlab"><b>A</b> 두 묶음<span>「제목 + 큰 숫자」 한 묶음, 「막대 + 문구」 한 묶음. 묶음 안은 좁게(6.5 · 7.5), 묶음 사이는 넓게(25.5), 바깥 24.5 / 25. 설명이 자기 대상에 붙어서 읽는 순서가 분명하다</span></p><div class="gxpair"><div class="gx gxA"><a class="w gt k6 k6--half" aria-label="JLPT N4 12/6(일) 시험까지 58일, 6/42과, 하루 0.7과면 11/29 완주 예상, 7일 여유"><small class="k6__s k6__sl">12/6(일) JLPT N4</small><b class="k6__big k6__dl">D-58</b><b class="k6__big k6__eta k-go"><span class="k-sig k-sig--go" aria-hidden="true"></span>11/29</b><span class="k6__barcell"><span class="k-bar"><i style="width:14.3%"></i><b style="left:14.3%"></b></span></span><span class="k6__cap"><span><em>6</em> / 42과</span><span class="k-go">하루 0.7과 · 7일 여유</span></span></a><i class="gxg" style="top:24.5px"></i><i class="gxg" style="top:36px"></i><i class="gxg" style="top:42.5px"></i><i class="gxg" style="top:61.5px"></i><i class="gxg" style="top:87px"></i><i class="gxg" style="top:103px"></i><i class="gxg" style="top:110.5px"></i><i class="gxg" style="top:121px"></i><i class="gxl" style="top:12.25px">24.5</i><i class="gxl" style="top:39.25px">6.5</i><i class="gxl" style="top:74.25px">25.5</i><i class="gxl" style="top:106.75px">7.5</i><i class="gxl" style="top:133.5px">25</i></div><div class="gx gxA gxm"><a class="w gt k6 k6--half" aria-label="JLPT N4 12/6(일) 시험까지 58일, 6/42과, 하루 0.7과면 11/29 완주 예상, 7일 여유"><small class="k6__s k6__sl">12/6(일) JLPT N4</small><b class="k6__big k6__dl">D-58</b><b class="k6__big k6__eta k-go"><span class="k-sig k-sig--go" aria-hidden="true"></span>11/29</b><span class="k6__barcell"><span class="k-bar"><i style="width:14.3%"></i><b style="left:14.3%"></b></span></span><span class="k6__cap"><span><em>6</em> / 42과</span><span class="k-go">하루 0.7과 · 7일 여유</span></span></a><i class="gxg" style="top:24.5px"></i><i class="gxg" style="top:36px"></i><i class="gxg" style="top:42px"></i><i class="gxg" style="top:62.5px"></i><i class="gxg" style="top:87px"></i><i class="gxg" style="top:103px"></i><i class="gxg" style="top:110.5px"></i><i class="gxg" style="top:121px"></i><i class="gxl" style="top:12.25px">24.5</i><i class="gxl" style="top:39.0px">6</i><i class="gxl" style="top:74.75px">24.5</i><i class="gxl" style="top:106.75px">7.5</i><i class="gxl" style="top:133.5px">25</i></div></div></div><div class="gvrow"><p class="gvlab"><b>B</b> 등간격 — 채택(10/9)<span>바깥 여백과 줄 사이를 전부 같게(17.5 ~ 18.5). 리듬이 가장 고르고, 대신 묶음 구분은 없다</span></p><div class="gxpair"><div class="gx gxB"><a class="w gt k6 k6--half" aria-label="JLPT N4 12/6(일) 시험까지 58일, 6/42과, 하루 0.7과면 11/29 완주 예상, 7일 여유"><small class="k6__s k6__sl">12/6(일) JLPT N4</small><b class="k6__big k6__dl">D-58</b><b class="k6__big k6__eta k-go"><span class="k-sig k-sig--go" aria-hidden="true"></span>11/29</b><span class="k6__barcell"><span class="k-bar"><i style="width:14.3%"></i><b style="left:14.3%"></b></span></span><span class="k6__cap"><span><em>6</em> / 42과</span><span class="k-go">하루 0.7과 · 7일 여유</span></span></a><i class="gxg" style="top:17.5px"></i><i class="gxg" style="top:29px"></i><i class="gxg" style="top:46.5px"></i><i class="gxg" style="top:65.5px"></i><i class="gxg" style="top:83px"></i><i class="gxg" style="top:99px"></i><i class="gxg" style="top:117.5px"></i><i class="gxg" style="top:128px"></i><i class="gxl" style="top:8.75px">17.5</i><i class="gxl" style="top:37.75px">17.5</i><i class="gxl" style="top:74.25px">17.5</i><i class="gxl" style="top:108.25px">18.5</i><i class="gxl" style="top:137.0px">18</i></div><div class="gx gxB gxm"><a class="w gt k6 k6--half" aria-label="JLPT N4 12/6(일) 시험까지 58일, 6/42과, 하루 0.7과면 11/29 완주 예상, 7일 여유"><small class="k6__s k6__sl">12/6(일) JLPT N4</small><b class="k6__big k6__dl">D-58</b><b class="k6__big k6__eta k-go"><span class="k-sig k-sig--go" aria-hidden="true"></span>11/29</b><span class="k6__barcell"><span class="k-bar"><i style="width:14.3%"></i><b style="left:14.3%"></b></span></span><span class="k6__cap"><span><em>6</em> / 42과</span><span class="k-go">하루 0.7과 · 7일 여유</span></span></a><i class="gxg" style="top:17.5px"></i><i class="gxg" style="top:29px"></i><i class="gxg" style="top:46px"></i><i class="gxg" style="top:66.5px"></i><i class="gxg" style="top:84px"></i><i class="gxg" style="top:100px"></i><i class="gxg" style="top:117.5px"></i><i class="gxg" style="top:128px"></i><i class="gxl" style="top:8.75px">17.5</i><i class="gxl" style="top:37.5px">17</i><i class="gxl" style="top:75.25px">17.5</i><i class="gxl" style="top:108.75px">17.5</i><i class="gxl" style="top:137.0px">18</i></div></div></div><div class="gvrow"><p class="gvlab"><b>C</b> 칸 한가운데<span>막대 중심 = 칸 높이의 정중앙(73) = 맨 위 글자와 맨 아래 글자의 한가운데. 막대가 큰 숫자 쪽으로 붙고(7.5) 문구는 아래로 떨어진다(33.5)</span></p><div class="gxpair"><div class="gx gxC"><a class="w gt k6 k6--half" aria-label="JLPT N4 12/6(일) 시험까지 58일, 6/42과, 하루 0.7과면 11/29 완주 예상, 7일 여유"><small class="k6__s k6__sl">12/6(일) JLPT N4</small><b class="k6__big k6__dl">D-58</b><b class="k6__big k6__eta k-go"><span class="k-sig k-sig--go" aria-hidden="true"></span>11/29</b><span class="k6__barcell"><span class="k-bar"><i style="width:14.3%"></i><b style="left:14.3%"></b></span></span><span class="k6__cap"><span><em>6</em> / 42과</span><span class="k-go">하루 0.7과 · 7일 여유</span></span></a><i class="gxg" style="top:20.5px"></i><i class="gxg" style="top:32px"></i><i class="gxg" style="top:38.5px"></i><i class="gxg" style="top:57.5px"></i><i class="gxg" style="top:65px"></i><i class="gxg" style="top:81px"></i><i class="gxg" style="top:114.5px"></i><i class="gxg" style="top:125px"></i><i class="gxl" style="top:10.25px">20.5</i><i class="gxl" style="top:35.25px">6.5</i><i class="gxl" style="top:61.25px">7.5</i><i class="gxl" style="top:97.75px">33.5</i><i class="gxl" style="top:135.5px">21</i></div><div class="gx gxC gxm"><a class="w gt k6 k6--half" aria-label="JLPT N4 12/6(일) 시험까지 58일, 6/42과, 하루 0.7과면 11/29 완주 예상, 7일 여유"><small class="k6__s k6__sl">12/6(일) JLPT N4</small><b class="k6__big k6__dl">D-58</b><b class="k6__big k6__eta k-go"><span class="k-sig k-sig--go" aria-hidden="true"></span>11/29</b><span class="k6__barcell"><span class="k-bar"><i style="width:14.3%"></i><b style="left:14.3%"></b></span></span><span class="k6__cap"><span><em>6</em> / 42과</span><span class="k-go">하루 0.7과 · 7일 여유</span></span></a><i class="gxg" style="top:20.5px"></i><i class="gxg" style="top:32px"></i><i class="gxg" style="top:38px"></i><i class="gxg" style="top:58.5px"></i><i class="gxg" style="top:65px"></i><i class="gxg" style="top:81px"></i><i class="gxg" style="top:114.5px"></i><i class="gxg" style="top:125px"></i><i class="gxl" style="top:10.25px">20.5</i><i class="gxl" style="top:35.0px">6</i><i class="gxl" style="top:61.75px">6.5</i><i class="gxl" style="top:97.75px">33.5</i><i class="gxl" style="top:135.5px">21</i></div></div></div><div class="gvrow"><p class="gvlab"><b>D</b> 숫자와 문구 사이 한가운데<span>막대 위 20.5 = 막대 아래 20.5, 바깥 20.5 / 21. 지금 판이 하려던 규칙을 실제 픽셀로 정확히 맞춘 것</span></p><div class="gxpair"><div class="gx gxD"><a class="w gt k6 k6--half" aria-label="JLPT N4 12/6(일) 시험까지 58일, 6/42과, 하루 0.7과면 11/29 완주 예상, 7일 여유"><small class="k6__s k6__sl">12/6(일) JLPT N4</small><b class="k6__big k6__dl">D-58</b><b class="k6__big k6__eta k-go"><span class="k-sig k-sig--go" aria-hidden="true"></span>11/29</b><span class="k6__barcell"><span class="k-bar"><i style="width:14.3%"></i><b style="left:14.3%"></b></span></span><span class="k6__cap"><span><em>6</em> / 42과</span><span class="k-go">하루 0.7과 · 7일 여유</span></span></a><i class="gxg" style="top:20.5px"></i><i class="gxg" style="top:32px"></i><i class="gxg" style="top:38.5px"></i><i class="gxg" style="top:57.5px"></i><i class="gxg" style="top:78px"></i><i class="gxg" style="top:94px"></i><i class="gxg" style="top:114.5px"></i><i class="gxg" style="top:125px"></i><i class="gxl" style="top:10.25px">20.5</i><i class="gxl" style="top:35.25px">6.5</i><i class="gxl" style="top:67.75px">20.5</i><i class="gxl" style="top:104.25px">20.5</i><i class="gxl" style="top:135.5px">21</i></div><div class="gx gxD gxm"><a class="w gt k6 k6--half" aria-label="JLPT N4 12/6(일) 시험까지 58일, 6/42과, 하루 0.7과면 11/29 완주 예상, 7일 여유"><small class="k6__s k6__sl">12/6(일) JLPT N4</small><b class="k6__big k6__dl">D-58</b><b class="k6__big k6__eta k-go"><span class="k-sig k-sig--go" aria-hidden="true"></span>11/29</b><span class="k6__barcell"><span class="k-bar"><i style="width:14.3%"></i><b style="left:14.3%"></b></span></span><span class="k6__cap"><span><em>6</em> / 42과</span><span class="k-go">하루 0.7과 · 7일 여유</span></span></a><i class="gxg" style="top:20.5px"></i><i class="gxg" style="top:32px"></i><i class="gxg" style="top:38px"></i><i class="gxg" style="top:58.5px"></i><i class="gxg" style="top:79px"></i><i class="gxg" style="top:95px"></i><i class="gxg" style="top:115.5px"></i><i class="gxg" style="top:126px"></i><i class="gxl" style="top:10.25px">20.5</i><i class="gxl" style="top:35.0px">6</i><i class="gxl" style="top:68.75px">20.5</i><i class="gxl" style="top:105.25px">20.5</i><i class="gxl" style="top:136.0px">20</i></div></div></div><div class="gvrow"><p class="gvlab"><b>E</b> 이전 화면(비교용)<span>B 적용 전 대시보드. 실제 웹폰트로 재 보니 막대 위 20.5 · 아래 22.5(2px 어긋남), 바깥 18.5 / 17 — 눈에 걸린 게 맞다</span></p><div class="gxpair"><div class="gx gxE"><a class="w gt k6 k6--half" aria-label="JLPT N4 12/6(일) 시험까지 58일, 6/42과, 하루 0.7과면 11/29 완주 예상, 7일 여유"><small class="k6__s k6__sl">12/6(일) JLPT N4</small><b class="k6__big k6__dl">D-58</b><b class="k6__big k6__eta k-go"><span class="k-sig k-sig--go" aria-hidden="true"></span>11/29</b><span class="k6__barcell"><span class="k-bar"><i style="width:14.3%"></i><b style="left:14.3%"></b></span></span><span class="k6__cap"><span><em>6</em> / 42과</span><span class="k-go">하루 0.7과 · 7일 여유</span></span></a><i class="gxg" style="top:18.5px"></i><i class="gxg" style="top:30px"></i><i class="gxg" style="top:40.5px"></i><i class="gxg" style="top:59.5px"></i><i class="gxg" style="top:80px"></i><i class="gxg" style="top:96px"></i><i class="gxg" style="top:118.5px"></i><i class="gxg" style="top:129px"></i><i class="gxl" style="top:9.25px">18.5</i><i class="gxl" style="top:35.25px">10.5</i><i class="gxl" style="top:69.75px">20.5</i><i class="gxl" style="top:107.25px">22.5</i><i class="gxl" style="top:137.5px">17</i></div><div class="gx gxE gxm"><a class="w gt k6 k6--half" aria-label="JLPT N4 12/6(일) 시험까지 58일, 6/42과, 하루 0.7과면 11/29 완주 예상, 7일 여유"><small class="k6__s k6__sl">12/6(일) JLPT N4</small><b class="k6__big k6__dl">D-58</b><b class="k6__big k6__eta k-go"><span class="k-sig k-sig--go" aria-hidden="true"></span>11/29</b><span class="k6__barcell"><span class="k-bar"><i style="width:14.3%"></i><b style="left:14.3%"></b></span></span><span class="k6__cap"><span><em>6</em> / 42과</span><span class="k-go">하루 0.7과 · 7일 여유</span></span></a><i class="gxg" style="top:18.5px"></i><i class="gxg" style="top:30px"></i><i class="gxg" style="top:40px"></i><i class="gxg" style="top:60.5px"></i><i class="gxg" style="top:80px"></i><i class="gxg" style="top:96px"></i><i class="gxg" style="top:118.5px"></i><i class="gxg" style="top:129px"></i><i class="gxl" style="top:9.25px">18.5</i><i class="gxl" style="top:35.0px">10</i><i class="gxl" style="top:70.25px">19.5</i><i class="gxl" style="top:107.25px">22.5</i><i class="gxl" style="top:137.5px">17</i></div></div></div></section>
+<section><p class="eyebrow">현황 · 레벨 목록이 없는 언어(한국어 · 프랑스어 결정 전)</p><div class="tdstates"><div><p class="cap">레벨 어휘 칸</p><div class="w w--2x2 lp"><div class="lp__head"><h2 class="sec-t">레벨 어휘</h2></div><div class="rt__cycle"><span class="td__cap">이 언어의 레벨 목록은 준비 중이에요</span></div></div></div></div></section>
+<section><p class="eyebrow">메뉴 · 대화가 나온 뒤</p><div class="scroll"><div class="frame" style="height:auto"><header class="gnb gnb--strip"><span class="logo">manabi<i></i></span><nav class="nav"><a class="nl on">배움</a><a class="nl">대화</a><span class="nsep" aria-hidden="true"></span><a class="nl">서재</a><a class="nl">산책</a></nav><span class="gr"></span></header></div></div><p class="cap">그전까지는 위 화면처럼 배움 · 서재 · 산책 셋, 구분선 없음. 아는 단어 칸을 누르면 레벨 어휘 목록의 「아는 단어」 거르기로.</p></section>
+<section><p class="eyebrow">오늘 문단 칸 · 세 상태</p><div class="tdstates"><div><p class="cap">문단 준비됨 — 첫 문장</p><a class="w w--2x2 w--td" aria-label="오늘 문단 · 시작하기"><span class="wh"><span class="kick">오늘 문단</span></span><span class="rt__cycle"><span class="td__sent" lang="ja">駅前の小さなパン屋で、今日も同じパンを買いました。</span></span><span class="rt__cta">시작하기 →</span></a></div><div><p class="cap">준비 전 — 넣을 복습 표현</p><a class="w w--2x2 w--td" aria-label="오늘 문단 · 시작하기"><span class="wh"><span class="kick">오늘 문단</span></span><span class="rt__cycle"><span class="td__words" lang="ja">今日 · 会議 · ありがとう</span><span class="td__cap">오늘 문단에 넣을 표현</span></span><span class="rt__cta">시작하기 →</span></a></div><div><p class="cap">신규 — 둘 다 없음</p><a class="w w--2x2 w--td" aria-label="오늘 문단 · 시작하기"><span class="wh"><span class="kick">오늘 문단</span></span><span class="rt__cycle"><span class="td__cap">시작하면 오늘 문단을 만들어요</span></span><span class="rt__cta">시작하기 →</span></a></div></div></section>
+<section><p class="eyebrow">휴대폰</p><div class="phones"><div class="frame phone" id="m2"><header class="gnb"><span class="logo">manabi<i></i></span><span class="gr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14M21 21l-5-5"/></svg><b>로그인</b></span></header><main class="pg"><div class="top"><div class="tl"><h1>배움</h1><span class="langsw" role="tablist" aria-label="학습 언어"><span class="chip2 flag on" role="tab" aria-selected="true" aria-label="일본어" title="일본어">🇯🇵</span><span class="chip2 flag" role="tab" aria-selected="false" aria-label="중국어" title="중국어">🇨🇳</span></span></div><a class="toplink">현황 전체 →</a></div><div class="bento"><a class="rv rvC rvR lang-ja rvg w--2x2" aria-label="이어서 읽기 · 일본어 N5 · 07 · カフェは どこですか。 · 카페는 어디예요? · 6 / 42"><span class="rv__g" lang="ja" aria-hidden="true">あ</span><span class="rv__rib" aria-hidden="true">07</span><span class="rv__hd"><span class="rv__k">일본어 N5</span><span class="rv__n">07</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="39.5 276.5" transform="rotate(-90 50 50)"/></svg><b>07</b><small>과</small></span><span class="rv__bd"><span class="rv__t" lang="ja">カフェは どこですか。</span><span class="rv__s">카페는 어디예요?</span></span><span class="rv__bot"><span class="rv__c">6 / 42</span><span class="rv__bar" aria-hidden="true"><i style="width:14.3%"></i></span><span class="rv__pill">이어서 읽기<i aria-hidden="true">→</i></span></span></a><div class="quad quad2 q-status"><a class="w gt k6 k6--half" aria-label="JLPT N4 12/6(일) 시험까지 58일, 6/42과, 하루 0.7과면 11/29 완주 예상, 7일 여유"><small class="k6__s k6__sl">12/6(일) JLPT N4</small><b class="k6__big k6__dl">D-58</b><b class="k6__big k6__eta k-go"><span class="k-sig k-sig--go" aria-hidden="true"></span>11/29</b><span class="k6__barcell"><span class="k-bar"><i style="width:14.3%"></i><b style="left:14.3%"></b></span></span><span class="k6__cap"><span><em>6</em> / 42과</span><span class="k-go">하루 0.7과 · 7일 여유</span></span></a><a class="w w--stat"><span class="st-v">60%</span><span class="st-l">오늘 목표</span></a><a class="w w--stat" title="쉼: 7일 연속할 때마다 1개(최대 2개). 하루 빠지면 자동으로 써서 연속이 이어져요" aria-label="12일 연속 · 쉼 2 — 쉼: 7일 연속할 때마다 1개(최대 2개). 하루 빠지면 자동으로 써서 연속이 이어져요"><span class="st-v">12일</span><span class="st-l">연속 · 쉼 2</span></a></div><a class="w w--2x2 rt" data-live aria-label="단어 복습 · 24개 대기 · 복습하기"><span class="wh"><span class="kick">단어 복습</span><span class="rt__due">24개 대기</span></span><span class="rt__cycle"><span class="rt__word" lang="ja">会議</span><span class="rt__meaning">회의</span></span><span class="rt__cta">복습하기 →</span></a><a class="w w--2x2 w--td" aria-label="오늘 문단 · 시작하기"><span class="wh"><span class="kick">오늘 문단</span></span><span class="rt__cycle"><span class="td__sent" lang="ja">駅前の小さなパン屋で、今日も同じパンを買いました。</span></span><span class="rt__cta">시작하기 →</span></a></div></main><nav class="tabbar" aria-label="주 메뉴"><a class="tb on" aria-current=page><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5A1.5 1.5 0 0 1 4 17.5v-12ZM20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5-.7 1.5-1.5v-12Z"/></svg><span>배움</span></a><a class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v16M9 4v16M14 4v16M18 4l3 16"/></svg><span>서재</span></a><a class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20M16 8l-3 5-5 3 3-5 5-3Z"/></svg><span>산책</span></a></nav></div><div class="frame phone" id="s1m"><header class="gnb"><span class="logo">manabi<i></i></span><span class="gr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14M21 21l-5-5"/></svg><b>로그인</b></span></header><main class="pg"><a class="crumb">← 배움</a><div class="top"><div class="tl"><h1>현황</h1><span class="langsw" role="tablist" aria-label="학습 언어"><span class="chip2 flag on" role="tab" aria-selected="true" aria-label="일본어" title="일본어">🇯🇵</span><span class="chip2 flag" role="tab" aria-selected="false" aria-label="중국어" title="중국어">🇨🇳</span></span></div><a class="btn-s">목표 수정</a></div><div class="st-grid"><div class="cat"><div class="bento"><a class="w gt k6 k6--half" aria-label="JLPT N4 12/6(일) 시험까지 58일, 6/42과, 하루 0.7과면 11/29 완주 예상, 7일 여유"><small class="k6__s k6__sl">12/6(일) JLPT N4</small><b class="k6__big k6__dl">D-58</b><b class="k6__big k6__eta k-go"><span class="k-sig k-sig--go" aria-hidden="true"></span>11/29</b><span class="k6__barcell"><span class="k-bar"><i style="width:14.3%"></i><b style="left:14.3%"></b></span></span><span class="k6__cap"><span><em>6</em> / 42과</span><span class="k-go">하루 0.7과 · 7일 여유</span></span></a><a class="w w--stat st-today"><span class="st-v">60%</span><span class="st-l">오늘 목표</span></a><a class="w w--stat st-streak" title="쉼: 7일 연속할 때마다 1개(최대 2개). 하루 빠지면 자동으로 써서 연속이 이어져요" aria-label="12일 연속 · 쉼 2 — 쉼: 7일 연속할 때마다 1개(최대 2개). 하루 빠지면 자동으로 써서 연속이 이어져요"><span class="st-v">12일</span><span class="st-l">연속 · 쉼 2</span></a></div></div><div class="cat-pair"><div class="cat"><div class="bento bento--2"><div class="w hm hm--half"><div class="hm__head"><h2 class="sec-t">히트맵</h2><span class="hm__n">94일 · 1,372개</span></div><div class="hm__s"><div class="hm__strip"><i title="0개"></i><i title="0개"></i><i title="0개"></i><i class="l3" title="21개"></i><i title="0개"></i><i class="l2" title="14개"></i><i class="l1" title="7개"></i><i class="l2" title="14개"></i><i class="l1" title="7개"></i><i class="l1" title="7개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i class="l4" title="28개"></i><i title="0개"></i><i class="l2" title="14개"></i><i title="0개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l2" title="14개"></i><i class="l4" title="28개"></i><i title="0개"></i><i class="l2" title="14개"></i><i title="0개"></i><i class="l2" title="14개"></i><i class="l2" title="14개"></i><i class="l2" title="14개"></i><i class="l3" title="21개"></i><i class="l4" title="28개"></i><i class="l2" title="14개"></i><i class="l2" title="14개"></i><i class="l1" title="7개"></i><i class="l1" title="7개"></i><i title="0개"></i><i class="l2" title="14개"></i><i class="l1" title="7개"></i><i class="l1" title="7개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i class="l3" title="21개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i class="l1" title="7개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l1" title="7개"></i><i title="0개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l1" title="7개"></i><i class="l2" title="14개"></i><i title="0개"></i><i class="l2" title="14개"></i><i title="0개"></i><i class="l4" title="28개"></i><i class="l1" title="7개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l2" title="14개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l3" title="21개"></i><i title="0개"></i><i class="l1" title="7개"></i><i title="0개"></i><i class="l1" title="7개"></i><i title="0개"></i><i title="0개"></i><i class="l2" title="14개"></i><i class="l2" title="14개"></i><i class="l4" title="28개"></i><i class="l2" title="14개"></i><i class="l2" title="14개"></i><i title="0개"></i><i class="l1" title="7개"></i><i title="0개"></i><i class="l4" title="28개"></i><i title="0개"></i><i class="l2" title="14개"></i><i title="0개"></i><i title="0개"></i><i class="l4" title="28개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l4" title="28개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i class="l1" title="7개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l2" title="14개"></i><i class="l2" title="14개"></i><i title="0개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l2" title="14개"></i><i class="l1" title="7개"></i><i class="l2" title="14개"></i><i class="l2" title="14개"></i><i class="l1" title="7개"></i><i class="l1" title="7개"></i><i class="l1" title="7개"></i><i class="l3" title="21개"></i><i class="l1" title="7개"></i><i class="l4" title="28개"></i><i class="l3" title="21개"></i><i title="0개"></i><i title="0개"></i><i class="l4" title="28개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i class="l2" title="14개"></i><i title="0개"></i><i title="0개"></i><i class="l4" title="28개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i class="l3" title="21개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i class="l4" title="28개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l4" title="28개"></i><i class="l1" title="7개"></i><i class="l2" title="14개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l1" title="7개"></i><i title="0개"></i><i class="l3" title="21개"></i><i class="l3" title="21개"></i><i class="l4" title="28개"></i><i class="l1" title="7개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l4" title="28개"></i><i title="0개"></i><i class="l2" title="14개"></i><i class="l4" title="28개"></i><i class="l1" title="7개"></i><i title="0개"></i><i title="0개"></i><i class="l1" title="7개"></i><i class="l4" title="28개"></i><i title="0개"></i><i class="l3" title="21개"></i><i class="l2" title="14개"></i><i class="l2" title="14개"></i><i title="0개"></i><i class="l1" title="7개"></i><i title="0개"></i><i class="l3" title="21개"></i></div></div><div class="hm__lg"><span>적음</span><i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><span>많음</span></div></div><div class="w w--2x2 lp"><div class="lp__head"><h2 class="sec-t">레벨 어휘</h2></div><div class="lp__rows"><a class="lp__row"><span class="lp__key">N5</span><span class="lp__bar"><i class="s" style="width:64%"></i><i class="k" style="width:44%"></i></span><span class="lp__h">612</span><span class="lp__sl">/</span><span class="lp__t">950</span></a><a class="lp__row"><span class="lp__key">N4</span><span class="lp__bar"><i class="s" style="width:21%"></i><i class="k" style="width:11%"></i></span><span class="lp__h">144</span><span class="lp__sl">/</span><span class="lp__t">701</span></a><a class="lp__row"><span class="lp__key">N3</span><span class="lp__bar"><i class="s" style="width:2%"></i><i class="k" style="width:1%"></i></span><span class="lp__h">42</span><span class="lp__sl">/</span><span class="lp__t">2,108</span></a><a class="lp__row"><span class="lp__key">N2</span><span class="lp__bar"><i class="s" style="width:0.3%"></i><i class="k" style="width:0%"></i></span><span class="lp__h">6</span><span class="lp__sl">/</span><span class="lp__t">1,906</span></a><a class="lp__row"><span class="lp__key">N1</span><span class="lp__bar"><i class="s" style="width:0%"></i><i class="k" style="width:0%"></i></span><span class="lp__h">0</span><span class="lp__sl">/</span><span class="lp__t">1,634</span></a></div><div class="lp__legend"><span><i class="dot" style="background:var(--rose)"></i>아는 단어</span><span><i class="dot" style="background:#E8C9CF"></i>복습 중</span></div></div></div></div><div class="cat"><div class="bento bento--2"><a class="w w--stat st-week"><span class="st-v">86</span><span class="st-l">이번 주 복습 · 92%</span></a><a class="w w--stat st-known"><span class="st-v">512</span><span class="st-l">아는 단어</span></a><div class="w w--2x2 mh"><div class="mh__head"><h2 class="sec-t">기억 건강</h2><span class="mh__ret" style="color:var(--ink)">유지율 84%</span></div><div class="mh__b"><div><small style="color:var(--good)">●</small><b>142</b><span>선명</span></div><div><small style="color:var(--ok)">●</small><b>38</b><span>양호</span></div><div><small style="color:var(--warn)">●</small><b>12</b><span>흐릿</span></div><div><small style="color:var(--bad)">●</small><b>4</b><span>위험</span></div></div><p class="mh__s">복습 스케줄</p><div class="fc"><div class="fc__c"><span class="fc__n">24</span><span class="fc__a"><i style="height:100%;"></i></span><span class="fc__l">오늘</span></div><div class="fc__c"><span class="fc__n">12</span><span class="fc__a"><i style="height:50%;"></i></span><span class="fc__l">10/10</span></div><div class="fc__c"><span class="fc__n">8</span><span class="fc__a"><i style="height:33%;"></i></span><span class="fc__l">10/11</span></div><div class="fc__c"><span class="fc__n">15</span><span class="fc__a"><i style="height:62%;"></i></span><span class="fc__l">10/12</span></div><div class="fc__c"><span class="fc__n">6</span><span class="fc__a"><i style="height:25%;"></i></span><span class="fc__l">10/13</span></div><div class="fc__c"><span class="fc__n">9</span><span class="fc__a"><i style="height:38%;"></i></span><span class="fc__l">10/14</span></div><div class="fc__c"><span class="fc__n">11</span><span class="fc__a"><i style="height:46%;"></i></span><span class="fc__l">10/15</span></div></div></div></div></div></div></div></main><nav class="tabbar" aria-label="주 메뉴"><a class="tb on" aria-current=page><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5A1.5 1.5 0 0 1 4 17.5v-12ZM20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5-.7 1.5-1.5v-12Z"/></svg><span>배움</span></a><a class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v16M9 4v16M14 4v16M18 4l3 16"/></svg><span>서재</span></a><a class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20M16 8l-3 5-5 3 3-5 5-3Z"/></svg><span>산책</span></a></nav></div><div class="frame phone" id="m2e"><header class="gnb"><span class="logo">manabi<i></i></span><span class="gr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14M21 21l-5-5"/></svg><b>로그인</b></span></header><main class="pg"><div class="top"><div class="tl"><h1>배움</h1><span class="langsw" role="tablist" aria-label="학습 언어"><span class="chip2 flag on" role="tab" aria-selected="true" aria-label="일본어" title="일본어">🇯🇵</span><span class="chip2 flag" role="tab" aria-selected="false" aria-label="중국어" title="중국어">🇨🇳</span></span></div><a class="toplink">현황 전체 →</a></div><div class="bento"><a class="rv rvC rvR lang-ja rvg w--2x2" aria-label="첫 페이지 열기 · 일본어 N5 · 01 · はじめまして。みおです。 · 내 이름부터 말해볼까 · 0 / 42"><span class="rv__g" lang="ja" aria-hidden="true">あ</span><span class="rv__rib" aria-hidden="true">01</span><span class="rv__hd"><span class="rv__k">일본어 N5</span><span class="rv__n">01</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="0.0 276.5" transform="rotate(-90 50 50)"/></svg><b>01</b><small>과</small></span><span class="rv__bd"><span class="rv__t" lang="ja">はじめまして。みおです。</span><span class="rv__s">내 이름부터 말해볼까</span></span><span class="rv__bot"><span class="rv__c">0 / 42</span><span class="rv__bar" aria-hidden="true"><i style="width:0.0%"></i></span><span class="rv__pill">첫 페이지 열기<i aria-hidden="true">→</i></span></span></a><div class="quad quad2 q-status"><a class="w gt gt--empty gt--half"><span><span class="gt__title">목표를 정하면</span><span class="gt__line" style="display:block;margin-top:4px">하루에 몇 과가 필요한지, 언제 끝날지 계산해 드려요</span></span><span class="btn-s">목표 정하기</span></a><a class="w w--stat"><span class="st-v">–</span><span class="st-l">오늘 목표</span></a><a class="w w--stat"><span class="st-v">–</span><span class="st-l">연속</span></a></div><a class="w w--2x2 rt"><span class="wh"><span class="kick">단어 복습</span></span><span class="rt__cycle"><span class="rt__empty">아직 수집한 단어가 없어요.<br>자료를 읽으며 단어를 모아보세요.</span></span><span class="rt__cta">읽으러 가기 →</span></a><a class="w w--2x2 w--td" aria-label="오늘 문단 · 시작하기"><span class="wh"><span class="kick">오늘 문단</span></span><span class="rt__cycle"><span class="td__cap">시작하면 오늘 문단을 만들어요</span></span><span class="rt__cta">시작하기 →</span></a></div></main><nav class="tabbar" aria-label="주 메뉴"><a class="tb on" aria-current=page><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5A1.5 1.5 0 0 1 4 17.5v-12ZM20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5-.7 1.5-1.5v-12Z"/></svg><span>배움</span></a><a class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v16M9 4v16M14 4v16M18 4l3 16"/></svg><span>서재</span></a><a class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20M16 8l-3 5-5 3 3-5 5-3Z"/></svg><span>산책</span></a></nav></div></div><p class="cap">왼쪽부터: 배움(쓰는 중) · 현황 · 배움(신규 사용자)</p></section>
+<section><p class="eyebrow">로그인 전</p><div class="scroll"><div class="frame" id="g"><header class="gnb"><span class="logo">manabi<i></i></span><nav class="nav" aria-label="주 메뉴"><a class="nl on" aria-current=page>배움</a><a class="nl">서재</a><a class="nl">산책</a></nav><span class="gr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14M21 21l-5-5"/></svg><b>로그인</b></span></header><main class="pg"><div class="top"><div class="tl"><h1>배움</h1></div></div><div class="bento"><a class="rv rvC rvR lang-ja rvg w--2x2" aria-label="첫 페이지 열기 · 일본어 N5 · 01 · はじめまして。みおです。 · 내 이름부터 말해볼까 · 0 / 42"><span class="rv__g" lang="ja" aria-hidden="true">あ</span><span class="rv__rib" aria-hidden="true">01</span><span class="rv__hd"><span class="rv__k">일본어 N5</span><span class="rv__n">01</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="0.0 276.5" transform="rotate(-90 50 50)"/></svg><b>01</b><small>과</small></span><span class="rv__bd"><span class="rv__t" lang="ja">はじめまして。みおです。</span><span class="rv__s">내 이름부터 말해볼까</span></span><span class="rv__bot"><span class="rv__c">0 / 42</span><span class="rv__bar" aria-hidden="true"><i style="width:0.0%"></i></span><span class="rv__pill">첫 페이지 열기<i aria-hidden="true">→</i></span></span></a><a class="w w--2x2 w--td" aria-label="오늘 문단 · 시작하기"><span class="wh"><span class="kick">오늘 문단 · 맛보기</span></span><span class="rt__cycle"><span class="td__sent" lang="ja">駅前の小さなパン屋で、今日も同じパンを買いました。</span></span><span class="rt__cta">시작하기 →</span></a><a class="w gt gt--empty"><span><span class="gt__title">로그인하면 여기에 쌓여요</span><span class="gt__line" style="display:block;margin-top:4px">단어 복습 · 오늘 목표 · 레벨 어휘 · 기록</span></span><span class="btn-s">로그인</span></a></div></main></div></div></section>
+<section><p class="eyebrow">신규 사용자 · 넓은 화면</p><div class="scroll"><div class="frame" id="a10e"><header class="gnb"><span class="logo">manabi<i></i></span><nav class="nav" aria-label="주 메뉴"><a class="nl on" aria-current=page>배움</a><a class="nl">서재</a><a class="nl">산책</a></nav><span class="gr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14M21 21l-5-5"/></svg><b>로그인</b></span></header><main class="pg"><div class="top"><div class="tl"><h1>배움</h1><span class="langsw" role="tablist" aria-label="학습 언어"><span class="chip2 flag on" role="tab" aria-selected="true" aria-label="일본어" title="일본어">🇯🇵</span><span class="chip2 flag" role="tab" aria-selected="false" aria-label="중국어" title="중국어">🇨🇳</span></span></div><a class="toplink">현황 전체 →</a></div><div class="bento"><a class="rv rvC rvR lang-ja rvg w--2x2" aria-label="첫 페이지 열기 · 일본어 N5 · 01 · はじめまして。みおです。 · 내 이름부터 말해볼까 · 0 / 42"><span class="rv__g" lang="ja" aria-hidden="true">あ</span><span class="rv__rib" aria-hidden="true">01</span><span class="rv__hd"><span class="rv__k">일본어 N5</span><span class="rv__n">01</span></span><span class="rv__ring" aria-hidden="true"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lw)" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="var(--lc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="0.0 276.5" transform="rotate(-90 50 50)"/></svg><b>01</b><small>과</small></span><span class="rv__bd"><span class="rv__t" lang="ja">はじめまして。みおです。</span><span class="rv__s">내 이름부터 말해볼까</span></span><span class="rv__bot"><span class="rv__c">0 / 42</span><span class="rv__bar" aria-hidden="true"><i style="width:0.0%"></i></span><span class="rv__pill">첫 페이지 열기<i aria-hidden="true">→</i></span></span></a><div class="quad quad2 q-status"><a class="w gt gt--empty gt--half"><span><span class="gt__title">목표를 정하면</span><span class="gt__line" style="display:block;margin-top:4px">하루에 몇 과가 필요한지, 언제 끝날지 계산해 드려요</span></span><span class="btn-s">목표 정하기</span></a><a class="w w--stat"><span class="st-v">–</span><span class="st-l">오늘 목표</span></a><a class="w w--stat"><span class="st-v">–</span><span class="st-l">연속</span></a></div><a class="w w--2x2 rt"><span class="wh"><span class="kick">단어 복습</span></span><span class="rt__cycle"><span class="rt__empty">아직 수집한 단어가 없어요.<br>자료를 읽으며 단어를 모아보세요.</span></span><span class="rt__cta">읽으러 가기 →</span></a><a class="w w--2x2 w--td" aria-label="오늘 문단 · 시작하기"><span class="wh"><span class="kick">오늘 문단</span></span><span class="rt__cycle"><span class="td__cap">시작하면 오늘 문단을 만들어요</span></span><span class="rt__cta">시작하기 →</span></a></div></main></div></div></section>
+</div><script>(()=>{const P=[["会議", "회의"], ["今日", "오늘"], ["ありがとう", "고마워"], ["電車", "전철"], ["週末", "주말"], ["天気", "날씨"], ["食べる", "먹다"]];document.querySelectorAll('.hm__s').forEach(x=>x.scrollLeft=x.scrollWidth);if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+document.querySelectorAll('[data-live]').forEach(el=>{let i=0,p=false;const c=el.querySelector('.rt__cycle'),w=el.querySelector('.rt__word'),m=el.querySelector('.rt__meaning');
+['mouseenter','focusin'].forEach(t=>el.addEventListener(t,()=>p=true));['mouseleave','focusout'].forEach(t=>el.addEventListener(t,()=>p=false));
+setInterval(()=>{if(p||document.hidden)return;i=(i+1)%P.length;w.textContent=P[i][0];m.textContent=P[i][1];c.classList.remove('in');void c.offsetWidth;c.classList.add('in')},3500)})})();</script><script>(()=>{const cb=document.getElementById('gxguide');if(cb)cb.addEventListener('change',()=>document.body.classList.toggle('gxoff',!cb.checked))})();</script></body></html>
