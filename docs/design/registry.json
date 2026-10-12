@@ -98,30 +98,34 @@
   "code": "AD-R3 · AD-R4",
   "title": "뷰어 정돈 2차",
   "stage": "병합됨 · 목업 대비 확인 대기",
-  "source": null,
+  "source": "docs/design/mocks/ad/ad.html",
   "mirror": "https://claude.ai/artifact/Rze24kqnDoFTLTqp2DF6x7",
-  "handoff": [],
+  "handoff": [
+   "https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036574287"
+  ],
   "scenes": [
    "viewer.e0"
   ],
   "frames": [],
   "planned": [],
-  "note": "뷰어 장면은 합성 자료가 있어야 찍힌다(2판 합성 학습자)"
+  "note": "VIEWER-V2-ROUNDS-001 6·7행. AD-R3 #1373 #1377 #1383 #1396 · AD-R4 #1370 #1372 #1382 #1384. AD-R4는 운영에서 꺼져 있다(ZH_SENSE_REVIEW · ZH_BOUNDARY_REVIEW = false). 뷰어 장면은 합성 자료가 있어야 찍힌다(WALL-002)"
  },
  {
   "id": "ae",
   "code": "AE-R2 · AE-R3",
   "title": "단어창 3차",
   "stage": "병합됨 · 목업 대비 확인 대기",
-  "source": null,
+  "source": "docs/design/mocks/ae/ae.html",
   "mirror": "https://claude.ai/artifact/F8ee34YmtTUeLobPW5YdL3",
-  "handoff": [],
+  "handoff": [
+   "https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036574287"
+  ],
   "scenes": [
    "viewer.e0"
   ],
   "frames": [],
   "planned": [],
-  "note": "단어 카드 팝오버 장면(조작 순서)은 2판"
+  "note": "VIEWER-V2-ROUNDS-001 3·5행. AE-R2 #1362 #1376 #1378 (+e2e #1400 #1401) · AE-R3 #1365 #1379. 단어 카드 팝오버는 조작 장면(WALL-002)"
  },
  {
   "id": "brand",
@@ -130,37 +134,43 @@
   "stage": "병합됨 · 반영 확인",
   "source": null,
   "mirror": "https://claude.ai/artifact/H3eixpQiKmbP45yaCxfTXn",
-  "handoff": [],
+  "handoff": [
+   "https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6055913357",
+   "https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6056214600"
+  ],
   "scenes": [],
   "frames": [],
   "planned": [],
-  "note": "3a48222f — 모든 캡처의 워드마크 · 기준선 점 확인"
+  "note": "BRAND-APPLY-001 #1390(3a48222f). Preview 검수는 일부만(계정 · 실기기 미완, 6076696754). 원본은 Design 타입 보드라 파일 하나로 열리지 않아 아티팩트로 둔다"
  },
  {
   "id": "conv",
   "code": "v2-Z",
   "title": "대화 모드 (v2-Z)",
-  "stage": "상태 미확인",
-  "source": null,
+  "stage": "인계됨 · 미착수",
+  "source": "docs/design/mocks/conv/conv.html",
   "mirror": "https://claude.ai/artifact/U5Yc3r8BNeNAy1UZy5hubW",
-  "handoff": [],
+  "handoff": [
+   "https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6050886728",
+   "https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6051438646"
+  ],
   "scenes": [],
   "frames": [],
   "planned": [],
-  "note": "main에는 회화 안전 · IME 수정만 확인됨. R1 화면 존재 여부는 2판에서 장면으로 확인"
+  "note": "CONVERSATION-V2Z-001. 접수 때 다른 인계 뒤로 미룸(6058456121). 병합된 것은 패널 안전 규칙(#1389)과 IME Enter 수정(#1381)뿐. Z-R1이 바꿀 화면은 뷰어의 ConversationPanel"
  },
  {
   "id": "lv",
   "code": "—",
   "title": "레벨별 단어 · 문형 다시 열기",
-  "stage": "상태 미확인",
-  "source": null,
+  "stage": "설계만 · 인계 전",
+  "source": "docs/design/mocks/lv/lv.html",
   "mirror": "https://claude.ai/artifact/XdwcRnMCRDWAs5KBtzaSzM",
   "handoff": [],
   "scenes": [],
   "frames": [],
   "planned": [],
-  "note": "인계 · 병합 기록을 찾지 못함 — 2판 전 확인"
+  "note": "설계 코드 AJ — #1077 6069347526~6073688286(목업 1~8판). 인계 기록 없음. 레벨 어휘 페이지는 main에 있으나 middleware가 관리자 전용 /admin/legacy-textbooks로 돌려 사용자에게 닫혀 있다"
  },
  {
   "id": "mail",
