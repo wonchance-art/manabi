@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { LEVELS } from '../lib/constants';
+import { syncAuthDisplayName } from '../lib/authDisplayName';
 import Button from './Button';
 
 export default function OnboardingModal() {
@@ -56,6 +57,7 @@ export default function OnboardingModal() {
       setSaving(false);
       return;
     }
+    await syncAuthDisplayName(supabase, user, base.display_name);
     await fetchProfile(user.id, user.user_metadata);
   }
 
@@ -63,7 +65,7 @@ export default function OnboardingModal() {
     <div className="onboarding-overlay">
       <div className="onboarding-modal">
         <div className="onboarding-modal__header">
-          <h2 className="onboarding-modal__title">Anatomy Studio에 오신 걸 환영해요!</h2>
+          <h2 className="onboarding-modal__title">manabi에 오신 걸 환영해요!</h2>
           <p className="onboarding-modal__sub">학습 시작 전에 몇 가지만 알려주세요.</p>
         </div>
 

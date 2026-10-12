@@ -6,12 +6,17 @@
 //   token_corrections 이력 한 줄(after_value.source = 'boundary_edit'). 원문(p_raw = p_expected_raw)·저장 단어·FSRS·
 //   평가 이력·개인 뜻·출처·사전은 쓰지 않는다(boundaryEditWiring.test.js 소스 계약 + e2e 요청 감시).
 // · 범위는 ① 이 자료만이다. ② 내 다른 자료·③ 공유 사전 규칙은 PR④(DDL)에서 더한다.
-// · 한국어는 어절 칼선 오너 결정(§7.4) 전이라 진입점을 열지 않는다 — 모든 판정이 'korean'으로 거부한다.
+// · 중·일·영 판정(planBoundaryMerge·planBoundarySplit…)은 한국어를 'korean'으로 거부한다. 한국어는 오너 B안(2026-10-09, §7.5)
+//   어절 안 나누기만 따로 연다(planKoreanSplit · commitBoundaryEdit 한국어 갈래) — 조각은 서버가 아니라 기존 morphology로 만들고
+//   (koreanBoundarySplit.js), 쓰기는 같은 원자 RPC + 이력 한 줄이다. 어절을 넘는 묶기는 열지 않는다.
 import {
   BOUNDARY_LANGUAGES, BOUNDARY_LIMITS, assignBoundaryPieceIds, boundaryLineEntries, boundaryMergeEligibility,
-  boundarySpans, boundarySplitEligibility, compactBoundaryText, editBoundaries, readBoundaryEdits, replaceBoundaryLine,
+  boundarySpans, boundarySplitEligibility, boundaryTokenRange, compactBoundaryText, editBoundaries, readBoundaryEdits, replaceBoundaryLine,
   withBoundarySuggestionDismissed,
 } from './boundaryEdits';
+import {
+  koreanEojeolToken, koreanFormula, koreanMorphemes, koreanPieceGroups, koreanPieceToken, koreanSplitRecordOf, koreanSplitUnits,
+} from './koreanBoundarySplit';
 import { analysisTokenLine } from './analysisCoverage';
 import { replaceViewerAnalysis } from './reanalysisPreservation';
 
@@ -56,6 +61,7 @@ export function boundaryReasonMessage(reason) {
     case 'no_neighbor': return ['옆에 묶을 단어가 없어요'];
     case 'pending_edit': return ['적용하지 못한 단어 경계와 겹쳐서 고칠 수 없어요'];
     case 'stale_edits': return ['단어 경계 기록이 지금 분석과 달라요. 다시 분석한 뒤 고쳐 주세요'];
+    case 'no_literal_cut': return ['이 단어는 나눌 자리가 없어요.'];
     default: return ['이 범위는 고칠 수 없어요'];
   }
 }
@@ -174,6 +180,114 @@ export function boundaryTokenOrigin(json, tokenId) {
   return null;
 }
 
+// ── 한국어 나누기(§7.5 B안) ─────────────────────────────────────────────
+
+/** 한국어 나누기 진입점(⋯ 「나누기」 · 조각 카드 줄)을 보일 수 있나 — 중·일·영과 같은 조건(소유자 · 사본/구간/수업 모드 제외), 언어만 한국어. */
+export function koreanSplitEntryAllowed(ctx) {
+  return !!ctx && ctx.owner === true && ctx.language === 'Korean' && !ctx.classCopy && !ctx.passage && !ctx.classMode;
+}
+
+function koreanGate(json, ctx) {
+  if (json?.metadata?.language !== 'Korean') return 'unsupported_language';
+  if (!ctx || ctx.owner !== true) return 'not_owner';
+  if (ctx.classCopy) return 'class_copy';
+  if (ctx.passage) return 'passage';
+  if (ctx.classMode) return 'class_mode';
+  return null;
+}
+
+/** 나눈 조각이면 {record, eojeol(원래 어절 토큰), baseId}, 아니면 null(카드 「나눈 조각 · [원래대로]」 · 저장 제외 판정). */
+export const koreanBoundaryPiece = (json, tokenId) => koreanSplitRecordOf(json, tokenId);
+
+/** 나누기 대상 어절 — 조각이면 그 기록 전체(지금 칼선 = initialCuts), 아니면 토큰 자신. */
+function koreanTarget(json, tokenId) {
+  const range = boundaryTokenRange(json, tokenId);
+  if (!range.ok) return range;
+  if (readBoundaryEdits(json).some(record => record?.line === range.line && record.status === 'pending'
+    && record.start < range.end && record.end > range.start)) return { ok: false, reason: 'pending_edit' };
+  const piece = koreanSplitRecordOf(json, tokenId);
+  if (piece) return { ok: true, line: range.line, start: piece.record.start, end: piece.record.end, eojeol: piece.eojeol, initialCuts: [...piece.record.cuts] };
+  const token = range.entry.token;
+  if (!token || token.failed || String(tokenId).startsWith('failed_')) return { ok: false, reason: 'failed' };
+  if (!koreanEojeolToken(token)) return { ok: false, reason: 'punctuation' };
+  return { ok: true, line: range.line, start: range.start, end: range.end, eojeol: token, initialCuts: [] };
+}
+
+const morphemeView = morpheme => ({ form: morpheme.form, function: morpheme.fn });
+
+/**
+ * 한국어 카드 「나누기」 계획. opts.locale = 지금 설명 언어 — 어절 형태 분석의 언어와 다르면 'locale_mismatch'(진입점 숨김).
+ * · {ok:true, language, line, start, end, chars:[조각…], cuts:[줄 좌표 후보…], initialCuts, units}
+ * · {ok:false, reason:'no_literal_cut', formula, line, start, end} — 축약·불규칙: 칼선 없이 공식만(패널에 「나눌 자리가 없어요」).
+ * · {ok:false, reason} — not_owner · class_copy · passage · class_mode · pending_edit · failed · punctuation · no_morphology · locale_mismatch · stale_edits …
+ */
+export function planKoreanSplit(material, tokenId, ctx, { locale } = {}) {
+  const json = material?.processed_json;
+  const gate = koreanGate(json, ctx);
+  if (gate) return { ok: false, reason: gate };
+  const target = koreanTarget(json, tokenId);
+  if (!target.ok) return { ok: false, reason: target.reason };
+  const { eojeol, line, start, end, initialCuts } = target;
+  const morphLocale = eojeol.explanationLocale || eojeol.meaningLocale || json.metadata?.explanationLocale || 'ko';
+  if (locale && morphLocale !== locale) return { ok: false, reason: 'locale_mismatch' };
+  if (koreanMorphemes(eojeol).length < 2) return { ok: false, reason: 'no_morphology' };
+  const { units, cuts } = koreanSplitUnits(eojeol);
+  if (!cuts.length) return { ok: false, reason: 'no_literal_cut', formula: koreanFormula(units[0]), line, start, end };
+  const absolute = cuts.map(cut => start + cut);
+  // 오래된 기록과 겹치면(stale_edits) 미리 알린다 — 지금 칼선을 바꾸는 편집 하나를 계산해 본다(쓰기 0).
+  const probe = initialCuts.length ? [] : [absolute[0]];
+  const run = editBoundaries(boundaryLineEntries(json, line), readBoundaryEdits(json), { line, start, end, cuts: probe },
+    { language: 'Korean', lineText: lineTextOf(material, line), allowKorean: true });
+  if (!run.ok) return { ok: false, reason: run.reason };
+  return { ok: true, reason: null, language: 'Korean', line, start, end, chars: units.map(unit => unit.text), cuts: absolute,
+    initialCuts, units: units.map(unit => ({ ...unit, start: start + unit.start, end: start + unit.end })) };
+}
+
+/** 고른 칼선(줄 좌표)의 미리 보기 조각 [{text, morphemes:[{form, function}], formula}] — 조각마다 기존 morphology 설명(목업 B). */
+export function koreanSplitPreview(plan, chosen) {
+  if (!plan?.ok || !Array.isArray(plan.units)) return [];
+  const groups = [[]];
+  plan.units.forEach((unit, k) => { if (k && chosen.includes(unit.start)) groups.push([]); groups.at(-1).push(unit); });
+  return groups.map(units => {
+    const merged = { text: units.map(unit => unit.text).join(''), morphemes: units.flatMap(unit => unit.morphemes) };
+    return { text: merged.text, morphemes: merged.morphemes.map(morphemeView), formula: koreanFormula(merged) };
+  });
+}
+
+/**
+ * 한국어 편집 요청의 대상 어절(원래 분석기 토큰)과 조각 묶음 — 요청 구간이 지금 기록 하나 또는 나누지 않은 어절 토큰 하나와
+ * 정확히 같고, 칼선이 그 어절의 후보 안일 때만. 아니면 BoundaryEditError(쓰기 0). 어절을 넘는 묶기는 여기서 막힌다.
+ */
+function koreanRequestEojeol(json, request) {
+  const { line, start, end, cuts } = request || {};
+  const record = readBoundaryEdits(json).find(item => item?.line === line && item.status !== 'pending' && item.start === start && item.end === end
+    && Array.isArray(item.base) && item.base.length === 1);
+  let token = record?.base[0]?.token ?? null;
+  if (!token) {
+    const inside = boundarySpans(boundaryLineEntries(json, line)).filter(span => span.end > span.start && span.start >= start && span.end <= end);
+    const only = inside.length === 1 && inside[0].start === start && inside[0].end === end ? inside[0].entry.token : null;
+    if (!only || only.boundary === 'user' || !koreanEojeolToken(only)) throw new BoundaryEditError('invalid_range');
+    token = only;
+  }
+  if (!Array.isArray(cuts) || !koreanPieceGroups(token, cuts.map(cut => cut - start))) throw new BoundaryEditError('invalid_cuts');
+  return token;
+}
+
+/** 한국어 새 조각: run.pieces(서버가 만들 자리)를 기존 morphology 조각으로 채운다. 맞지 않으면 null. */
+function koreanPieces(run) {
+  const { record } = run;
+  const eojeol = record?.base?.length === 1 ? record.base[0].token : null;
+  const groups = eojeol && koreanPieceGroups(eojeol, record.cuts.map(cut => cut - record.start));
+  if (!groups) return null;
+  const byIndex = new Map();
+  for (const piece of run.pieces) {
+    const units = groups.find(group => group[0].start === piece.start - record.start && group.at(-1).end === piece.end - record.start);
+    if (!units) return null;
+    byIndex.set(piece.index, koreanPieceToken(eojeol, units));
+  }
+  return byIndex;
+}
+
 export class BoundaryEditError extends Error {
   constructor(reason, message = reason) {
     super(message);
@@ -222,7 +336,9 @@ export async function commitBoundaryEdit(material, request, deps) {
   const lineText = lineTextOf(material, line);
   const entries = boundaryLineEntries(json, line);
   const edits = readBoundaryEdits(json);
-  const run = editBoundaries(entries, edits, request, { language, lineText, at: deps.now || new Date().toISOString() });
+  const korean = language === 'Korean';
+  if (korean) koreanRequestEojeol(json, request); // §7.5: 어절 하나 · 후보 칼선만(아니면 던진다 — 쓰기 0)
+  const run = editBoundaries(entries, edits, request, { language, lineText, at: deps.now || new Date().toISOString(), allowKorean: korean });
   if (!run.ok) throw new BoundaryEditError(run.reason);
   if (!run.changed) return null;
   const hits = edits.filter(record => !run.edits.includes(record));
@@ -230,7 +346,13 @@ export async function commitBoundaryEdit(material, request, deps) {
   const end = Math.max(request.end, ...hits.map(record => record.end));
 
   let next = run.tokens;
-  if (!run.restored) {
+  if (!run.restored && korean) {
+    // 한국어: 분석 호출 0 — 조각 뜻·위치는 원래 어절의 morphology에서(koreanBoundarySplit.koreanPieceToken).
+    const byIndex = koreanPieces(run);
+    if (!byIndex) throw new BoundaryEditError('analysis_mismatch');
+    next = assignBoundaryPieceIds(run.tokens.map((entry, k) => (byIndex.has(k) ? { id: null, token: byIndex.get(k) } : entry)), line, attempt);
+    if (!next) throw new BoundaryEditError('analysis_mismatch');
+  } else if (!run.restored) {
     const { record } = run;
     const response = await analyze({
       lines: [lineText.trim()], language,
@@ -251,8 +373,9 @@ export async function commitBoundaryEdit(material, request, deps) {
   const nextJson = { ...replaced, metadata: { ...replaced.metadata, viewerRevision: attempt } };
   const saved = await replaceViewerAnalysis(client, material, material.raw_text, nextJson, attempt);
 
-  const selectId = boundarySpans(next).find(span => span.start === request.start)?.entry.id ?? next[0].id;
-  const firstBefore = boundarySpans(entries).find(span => span.start === start)?.entry.id ?? null;
+  // 길이 0 토큰(한국어 공백 토큰)은 그 자리의 단어가 아니다 — 글자가 있는 토큰만 고른다.
+  const selectId = boundarySpans(next).find(span => span.start === request.start && span.end > span.start)?.entry.id ?? next[0].id;
+  const firstBefore = boundarySpans(entries).find(span => span.start === start && span.end > span.start)?.entry.id ?? null;
   const recordId = run.record?.id ?? hits[0]?.id ?? null;
   const cutsBefore = cutsInside(entries, start, end);
   const cutsAfter = cutsInside(next, start, end);
@@ -263,7 +386,8 @@ export async function commitBoundaryEdit(material, request, deps) {
   });
   return {
     material: saved, selectId, restored: run.restored,
-    kind: cutsAfter.length < cutsBefore.length ? 'merge' : 'split',
+    // 한국어는 묶기가 없다 — 원래 어절로 돌아가면 'restore', 그 밖은 'split'.
+    kind: korean ? (run.restored ? 'restore' : 'split') : cutsAfter.length < cutsBefore.length ? 'merge' : 'split',
     undo: { line, start, end, beforeEntries: entries, beforeEdits: edits, afterIds: next.map(entry => entry.id), afterEdits: run.edits, selectId, recordId },
   };
 }
@@ -290,7 +414,7 @@ export async function undoBoundaryEdit(material, undo, deps) {
   const nextJson = { ...replaced, metadata: { ...replaced.metadata, viewerRevision: attempt } };
   const saved = await replaceViewerAnalysis(client, material, material.raw_text, nextJson, attempt);
   const current = boundaryLineEntries(json, undo.line);
-  const spans = boundarySpans(undo.beforeEntries);
+  const spans = boundarySpans(undo.beforeEntries).filter(span => span.end > span.start);
   await logBoundaryHistory(client, {
     materialId: material.id, userId, tokenId: spans.find(span => span.start === undo.start)?.entry.id ?? null,
     before: { boundary: { line: undo.line, start: undo.start, end: undo.end, cuts: cutsInside(current, undo.start, undo.end) } },
@@ -317,7 +441,6 @@ export async function dismissBoundarySuggestion(material, form, deps) {
 /** 적용하지 못한(pending) 기록 목록 — 재분석 알림 [보기]. {id, text(칼선 │), sentence(그 줄 원문 또는 null)} */
 export function pendingBoundaryRows(material) {
   const json = material?.processed_json;
-  if (json?.metadata?.language === 'Korean') return [];
   const lines = String(material?.raw_text ?? '').split('\n');
   return readBoundaryEdits(json).filter(record => record?.status === 'pending').map((record, k) => {
     const text = String(record.text || '');

@@ -894,24 +894,56 @@
     오너 REVIEW 판정 → Preview·실계정 검수 후 병합. 목록 ★ 한 번 저장의 분리 여부는 오너 결정 대기.
   - #1349 `claude/krdict-senses` — 한국어기초사전 1단계 기반. 공식본 dry-run 대조(M09 CLAUDE-M09-001-5) 대기.
   - #1344 교재 피드백 잔여 PR-B(부제 반복·해석 문구·물음 표식, 목업 대기)·PR-C(활용 안내, 오너 문구) · #1345 후속 PR-0(운영 집계)·PR-3.
-  - 튜터 프롬프트의 중화권 정치 서술 배제 규칙 부재(하드리밋 ⑷) — 오너 결정 대기(#1381 범위 밖).
+  - 튜터 프롬프트의 중화권 정치 서술 배제(하드리밋 ⑷) → #1389 `conversationSafetyRules`(두 프롬프트 주입) — 병합 `85f59a77`(10-09, 오너 예외 승인).
   - ⚠ 운영 마이그레이션 이력 ≠ main `supabase/migrations`(스택 #1316~#1321 SQL 3건·10월 활성화 이력). 다음 마이그레이션 병합 시
     `supabase-migrations.yml` 실패 가능성 — 운영 READ ONLY 확인 전 스택 PR 닫기 보류.
   - 이 컨테이너에서 불가(오너/M09): 운영 DB 조회·적용, 정상 실계정 검수(10-06 04:00 경계 이후 학습 검수 = CLAUDE-M09-001-2 진행 중).
 - **뷰어 v2 (2026-10-07 21:10 KST~, 오너 지시 「이 세션이 뷰어 v2 맡아」)** — 구현 큐 전부 병합·운영 배포(2026-10-08 16:50 KST, done 참조).
   정본 = [R0 버그](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6031758159) · [v2 라운드](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036574287).
-  - **M09 운영 사후 검수 배정** [VIEWER-V2-POSTDEPLOY-001](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6055568056)
-    (운영 `b909f9c1` · 비관리자 실계정 · 320/390/1440 · iOS Safari · 보존 지문 Q6·Q8 · 공유 사전 쓰기 금지). 보고 대기 — FAIL은 재현 테스트 먼저 → PR.
-  - ZH-SENSE-HOLDOUT-001 측정 후보 교체(`claude/work-env-agent-setup-1v9a0a`): M09 스냅숏 [6047879865](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6047879865)로
-    운영 행 있는 16표제어(37사례) 교체 · 행 없는 19표제어(27사례)는 생성 대기(`generate-zh-sense-candidates.mjs`, DB 쓰기 0).
-    발견: 운영 행이 얇아 37건 중 15건은 맞는 뜻이 후보에 없음(→ ctx 정답) · 보류 운영 행 16건 중 1차 규칙 후보는 5건뿐(→ `--offer-single` 병행).
-    다음: M09 생성 실행 → Claude 세트 반영·재번호 PR → M09 Gemini 측정(기본 + `--offer-single`) → 사람 판정 → 상수 켜기 별도 PR.
+  - **M09 운영 사후 검수** [VIEWER-V2-POSTDEPLOY-001](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6055568056):
+    V1~V8 보고(10-08 20:07 KST) 코드 결함 0([판정 회신](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6059173748)).
+    V7 FAIL(한자 창 화면 축소)은 #1398 병합 `de369ea2` → M09 운영 재검 PASS로 **뷰어 동결 해제**(10-09).
+    남은 것 = iOS 실기기 · 200% · 게스트 — 오너 실기기 몫.
+  - **10-09 병합 6건 — 오너 예외 승인**([M09 기록](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6077113595), 「병합하쇼」):
+    #1389 `85f59a77` · #1391 `ac74c2ad` · #1390 `3a48222f` · #1392 `a5714bf7` · #1394 `8b39e30f` · #1396 `dc9884d3`.
+    main CI 3건·Vercel 배포 green([병합 보고](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6077460480)).
+    Preview 실계정 로그인 차단(OAuth가 운영으로 복귀 — Supabase Redirect URL에 Preview 도메인 추가는 오너 몫) 때문에
+    **「M09 실계정 검수 통과」가 아니다** — 회화·작성/출처 복귀·공유 사전 요청 0·한국어 나누기 실행은 오너 실사용 확인으로 남김.
+  - ZH-SENSE-HOLDOUT-001: 운영 행 있는 16표제어 교체 병합(#1387). 행 없는 19표제어는 생성 대기 —
+    LLM-BENCH(#1395)의 단어 뜻 과제가 같은 운영 생성 프롬프트라 그 Gemini light 응답으로 오프라인 정규화해 채운다(M09 키 대기 해소).
+  - **LLM-BENCH-001 모델 비교 측정**(#1395 병합 `72117edb`, 운영 배포 10-09 07:45 KST): `/admin/llm-bench`(관리자, 쓰기 0) —
+    Gemini 3.6 Flash · 3.5 Flash-Lite · Groq gpt-oss · Haiku 5.5 · GPT-6 Luna에 같은 고정 입력(ZH 뜻 고르기 64사례 · 뜻 생성 19어 · 번역 3).
+    오너 실행 → 결과 JSON → Claude 분석(품질·p95·비용) · 선택형 과제는 OpenAI Decisions API(Luna, 프리뷰) 별도 비교 후보. 오너 「나중에」(10-09).
   - 상수 꺼진 채 운영: AD-R4 `ZH_SENSE_REVIEW`(#1372) · `ZH_BOUNDARY_REVIEW`(#1384) — 운영 동작 동일(바이트 스냅숏).
-  - 보류: AE-R3 PR③(공유 사전 요미 쓰기 — 공유 사전 정책 대기) · AD-R3 PR④(규칙 표 DDL — 미구현, 구현 후 Preview 리허설) ·
-    AD-R3 한국어(어절 칼선 A/B).
-  - 오너 결정 대기: 한국어 어절 자르기 A/B(B 권장) · 공유 사전 정책 ⓐ/ⓑ/ⓒ · #1368 트레이드오프 · #1376 번역 등급 light ·
-    #1374 관리자 교정 허용·✎ 메뉴 이동 · #1378 수업 화면 배치·긴 줄 문형 상한 · #1380 창 위치 · #1382 교정 캐시 즉시 반영·passage 제외 ·
-    #1383 수업 원본 경고 · #1384 행 없는 등재 꼴 뜻 조회.
+  - **오너 결정(10-09 「전부 권장대로」)** 반영:
+    ① Anki 내보내기 파일 이름만 manabi(태그 `anatomy-studio` 유지) → #1390 ·
+    ② 한국어 구간 학습(KO-PASSAGE-001) → **#1393 병합 `2185f939`**(검증 head `012a13d4`, 운영 배포 green) — 운영 SQL **r3 적용 PASS**:
+       capability 상수 `1c25422c…` 재게시 + FSRS core `a027567f…` 연쇄 재게시, manual·admission·profile 핀 불변.
+       장애 2건 기록: r1(10-09 17:50~22:10, capability 지문 tripwire 미인지 — 복원) · r2 재적용(10-10 11:22~11:26, core가 capability 정의를 해시 — 복원).
+       재발 방지 = #1399 운영 계약 픽스처(`supabase/tests/fixtures/m09-learning-contracts-20261010.sql`, #1393에 동봉 병합) 위 PGlite 10검사 + CI 카탈로그 검사,
+       규칙 = `docs/architecture-and-handoff.md` §4.9-1. 사후 검수 PASS — 남은 것 `/api/learning/capabilities` HTTP 200 직접 확인(M09 Mac 잠금 해제 후).
+       후속 **#1402 병합 `25305204`**(KO-PASSAGE-002 — 분석 완료 뒤 원본 구간 목록 캐시 무효화) — M09 Preview 실계정 일·한 PASS,
+       운영 반영 확인(10-10 23:01 KST). Preview 첫 빌드 next/font 실패 → 빌드 1회 자동 재시도(BUILD-FONT-RETRY-001) ·
+       e2e AE-R2 ③ 플레이크 #1400 `453ad0f2` · #1401 `e25d097d` 병합 ·
+    BUILD-FONT-RETRY-001 #1403 병합 `182b7c30`(운영 반영 10-11 13:49 KST) ·
+    **AUTH-GUIDE-001**(10-11 오너 「권장대로」): 이미 가입된 이메일(identities=[])·Google 가입자 힌트·인증 메일 재발송·메일 링크 실패 안내 —
+       E·H·I 동봉(10-11 「권장대로」): /auth/confirm(token_hash)·이메일 계정 현재 비밀번호 필수·Google 계정 「비밀번호 만들기」·임베드 안내 —
+       #1404 병합 `c3fe669e`(M09, 10-11 16:10 KST) · 운영 반영 PASS(이 빌드에서 BUILD-FONT-RETRY 재빌드가 운영 첫 실발동) ·
+       템플릿 5종 전환·최소 길이 8(M09 16:36) → 실메일 검수: 인증 메일·다른 브라우저 인증 PASS, 재설정 화면을 온보딩이 가림 FAIL →
+       템플릿 원복(최소 길이 8 유지) · 수정 AUTH-GUIDE-001-R(/auth에서 온보딩 미표시 + 루트 `/?code` → /auth/callback) →
+       **#1405 병합 `5a3c6b7a`**(M09, 10-12 12:08 KST — Preview 실제 QA: 재설정 칸 최상위·/home 온보딩 유지 PASS) ·
+       남은 것(M09): 운영 반영 확인 → 템플릿 5종 재전환 → 실제 재설정 메일 다른 브라우저 검수 ·
+       **MAIL-KO-001**(10-12 오너 「A안으로 진행, [manabi] 빼고 이름 넣어줘」): 인증 메일 5종 한국어 HTML(로그인 카드 A안) `supabase/templates/` —
+       제목 [manabi] 제거 · 「OO님,」은 재설정·이메일 변경만(확인 전 주소로 가는 가입·로그인 링크 메일은 사용자 입력 금지 — 피싱 경계) ·
+       닉네임 저장 시 auth display_name 동기화 · 계약 `authEmailTemplates.test.js` → M09 4단계 재전환을 이 HTML로 한 번에 + 실메일 앱 검수 ·
+       도메인 **manabi.co.kr**(호스팅케이알 10-11 구입, Vercel 네임서버) + Resend SMTP 발신 도메인 Verified(10-12 12:05 KST) —
+       기록 `docs/deployment-checklist.md` §5 · 오너 남은 일: 대표 도메인(www/apex) 통일·자동 갱신 확인·메일 한도 상향 ·
+    ③ 한국어 어절 B안 → **#1396** 병합 ·
+    ④ 공유 사전 **ⓒ**(소유자 교정은 자기 자료·단어장만, 공유 사전은 관리자만) → **#1394** 병합 ·
+    ⑤ #1376 번역 light 유지 · ⑥ 화면 세부 #1374·#1378·#1380·#1382·#1383·#1384 현행 유지.
+  - 보류: AE-R3 PR③(공유 사전 요미 쓰기 — ⓒ 확정으로 재정리 필요, ⓑ 권장 · 오너 「나중에」) · AD-R3 PR④(규칙 표 DDL — 동결 해제로 착수 가능) ·
+    한국어 어절 넘는 묶기(할 수 있다 — 별도 질문).
+  - 오너 결정 대기: #1368 트레이드오프 · #1396 꼴 이름 2종·조각 간격.
 ### todo (오너 전건 승인 2026-07-18 — owner-gate 해제분 포함, Codex-1 확장 큐 = #150 코멘트 5012160829)
 - 🧊 **이 아래 전량 = 게임·월드 트랙 동결**(오너 "게임 월드는 ㄴㄴ" 2026-08-25).
   2026-08-26 전수 대조 결과 **비월드 잔여 0**: #1077 인박스 승인분 전량 완결(2·3·6·11·

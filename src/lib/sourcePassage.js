@@ -1,8 +1,19 @@
-import { composerOf, COMPOSER_LANGUAGES } from './materialComposer';
+import { composerOf, COMPOSER_LANGUAGES, studyLanguageLabel } from './materialComposer';
 import { safeLibraryReturn } from './libraryReturn';
 
 export const PASSAGE_MAX_CHARS = 1500;
+// 구간 학습 언어 = 작성 언어 전부. DB의 open_source_passage·validate_source_passage(20260908060607)는 네 언어만
+// 받았고, 한국어는 docs/sql/korean-source-passage.sql(KO-PASSAGE-001)을 운영에 적용한 뒤에 열린다 — 이 파일을
+// 내보내는 배포는 그 SQL 적용 확인 뒤에만 한다. 계약 테스트가 이 목록을 SQL 적용 후 언어 목록과 대조한다.
+// 화면의 한국어 선택지는 계정 계약(useStudyLanguages)으로 한 번 더 거른다.
+export const PASSAGE_LANGUAGES = COMPOSER_LANGUAGES;
+export const passageLanguageChoices = studyChoices => PASSAGE_LANGUAGES.filter(language => studyChoices.includes(language));
+// 표시 이름은 작성 화면 칩과 같은 정본(studyLanguageLabel) — langNameKo는 Korean이 없어 「일본어」로 떨어진다(M09 Preview FAIL 10-10).
+export const passageLanguageOptions = studyChoices => passageLanguageChoices(studyChoices).map(value => ({ value, label: studyLanguageLabel(value) }));
 export const passageOf = material => composerOf(material)?.passage || null;
+// 원본(부모)의 구간 목록 캐시 키 — 목록·구간 생성·구간 분석 완료가 같은 키를 쓴다(전역 staleTime 2분이라 분석 완료 뒤
+// 무효화하지 않으면 원문 복귀 직후 목록이 「이어서 준비하기」로 남았다 — M09 Preview·운영 관찰 10-10).
+export const passageListKey = (ownerId, parentId) => ['passage-list', ownerId, String(parentId)];
 export const codePointLength = text => Array.from(text || '').length;
 const cpSlice = (text, start, end) => Array.from(text).slice(start, end).join('');
 
@@ -103,7 +114,7 @@ export function sourcePassageHref(material, returnTo) {
 }
 
 export async function openSourcePassage(client, material, source, text, language) {
-  if (!COMPOSER_LANGUAGES.includes(language)) throw new Error('PASSAGE_LANGUAGE');
+  if (!PASSAGE_LANGUAGES.includes(language)) throw new Error('PASSAGE_LANGUAGE');
   if (!text.trim() || codePointLength(text) > PASSAGE_MAX_CHARS) throw new Error('PASSAGE_LENGTH');
   const { data, error } = await client.rpc('open_source_passage', {
     p_parent: String(material.id), p_source: source, p_text: text, p_language: language,

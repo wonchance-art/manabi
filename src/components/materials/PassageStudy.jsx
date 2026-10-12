@@ -4,22 +4,28 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { COMPOSER_LANGUAGES } from '@/lib/materialComposer';
 import { documentOf } from '@/lib/materialDocument';
-import { langNameKo } from '@/lib/constants';
 import { safeLibraryReturn } from '@/lib/libraryReturn';
 import { requestPassageAnalysis } from '@/lib/passageAnalysis';
+import { useStudyLanguages } from '@/lib/useStudyLanguages';
 import { codePointLength, domSourceText, selectedSourceRange, quoteRange, passageBlocks, passageLocation,
-  PASSAGE_MAX_CHARS, openSourcePassage, passageError } from '@/lib/sourcePassage';
+  PASSAGE_MAX_CHARS, PASSAGE_LANGUAGES, passageLanguageOptions, passageListKey, openSourcePassage, passageError } from '@/lib/sourcePassage';
 import './source-passage.css';
 
-export default function PassageStudy({ material, sources, preferredKey }) {
+// primary·children·openerLabel·idleText는 글만 있는 자료의 상단 입구(WRITE-STUDY-ENTRY-001)만 쓴다. 첨부 자료는 현행 그대로다.
+export default function PassageStudy({ material, sources, preferredKey, primary = null, children = null, openerLabel = '학습할 부분 고르기', idleText = '' }) {
   const router = useRouter(), params = useSearchParams(), cache = useQueryClient();
   const dialog = useRef(null), opener = useRef(null), frozen = useRef(null);
   const [selection, setSelection] = useState(null);
   const [selectionNotice, setSelectionNotice] = useState('');
   const [draft, setDraft] = useState(null);
-  const [language, setLanguage] = useState(documentOf(material)?.language || '');
+  const documentLanguage = documentOf(material)?.language || '';
+  const [language, setLanguage] = useState(PASSAGE_LANGUAGES.includes(documentLanguage) ? documentLanguage : '');
+  // 한국어는 작성 화면과 같은 계정 계약을 따른다(KO-PASSAGE-001) — 확인 중·미지원이면 선택지에서 빠지고 고른 값도 비운다.
+  const { languages: studyChoices } = useStudyLanguages();
+  const passageOptions = useMemo(() => passageLanguageOptions(studyChoices), [studyChoices]);
+  const passageLanguages = useMemo(() => passageOptions.map(option => option.value), [passageOptions]);
+  const chosen = passageLanguages.includes(language) ? language : '';
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
   const [shownBlocks, setShownBlocks] = useState(40);
   const alive = useRef(true);
@@ -74,11 +80,11 @@ export default function PassageStudy({ material, sources, preferredKey }) {
     setBusy(true); setError('');
     try {
       const source = { ...draft.item.source, quote: draft.quote, manual: draft.manual };
-      const record = await openSourcePassage(supabase, material, source, draft.text, language);
+      const record = await openSourcePassage(supabase, material, source, draft.text, chosen);
       if (!alive.current) return;
       cache.setQueryData(['material', String(record.id)], record);
       await Promise.all([
-        cache.invalidateQueries({ queryKey: ['passage-list', material.owner_id, String(material.id)] }),
+        cache.invalidateQueries({ queryKey: passageListKey(material.owner_id, material.id) }),
         cache.invalidateQueries({ queryKey: ['personal-library', material.owner_id] }),
       ]);
       requestPassageAnalysis(material.owner_id, record.id);
@@ -93,13 +99,15 @@ export default function PassageStudy({ material, sources, preferredKey }) {
   const originalTooLong = codePointLength(draft?.quote?.exact) > 4000;
   const sourceChoices = sources.filter(item => item.source.kind === 'body' || item.key === preferredKey || item.key === draft?.item.key);
   const preferred = sources.find(value => value.key === preferredKey) || sources[0];
+  const openerButton = <button ref={opener} className={primary ? 'passage-toolbar__secondary' : 'manabi-button'} disabled={!sources.length} onPointerDown={() => { frozen.current = selection; }} onClick={open}>{selection ? '선택한 부분 공부하기' : openerLabel}</button>;
   return <>
     <div className={`passage-toolbar${selection ? ' passage-toolbar--selected' : ''}`}>
-      <div><span className="manabi-eyebrow">READ INTO LEARNING</span><p>{selectionNotice || (selection ? '고른 문장을 학습으로 이어가세요.' : preferred ? `${passageLocation(preferred.source)}에서 필요한 부분만 골라 보세요.` : '원본이 열리면 학습할 부분을 고를 수 있어요.')}</p></div>
-      <button ref={opener} className="manabi-button" disabled={!sources.length} onPointerDown={() => { frozen.current = selection; }} onClick={open}>{selection ? '선택한 부분 공부하기' : '학습할 부분 고르기'}</button>
+      <div><span className="manabi-eyebrow">READ INTO LEARNING</span><p>{selectionNotice || (selection ? '고른 문장을 학습으로 이어가세요.' : idleText || (preferred ? `${passageLocation(preferred.source)}에서 필요한 부분만 골라 보세요.` : '원본이 열리면 학습할 부분을 고를 수 있어요.'))}</p></div>
+      {primary ? <div className="passage-toolbar__actions">{primary}{openerButton}</div> : openerButton}
+      {children}
     </div>
     <dialog ref={dialog} className="passage-dialog" aria-labelledby="passage-heading" onCancel={event => { event.preventDefault(); close(); }}>
-      {draft && <div className="passage-panel" data-language={language}>
+      {draft && <div className="passage-panel" data-language={chosen}>
         <header><div><span className="manabi-eyebrow">A PASSAGE TO KEEP</span><h2 id="passage-heading">이 부분 공부하기</h2></div><button type="button" aria-label="구간 선택 닫기" disabled={busy} onClick={close}>닫기</button></header>
         <p className="passage-origin">{material.title}<span>{draft.item.title ? `${draft.item.title} · ` : ''}{passageLocation(draft.item.source)}</span></p>
         {!draft.quote && sourceChoices.length > 1 && <div className="passage-source-choice"><label htmlFor="passage-source">구간을 고를 위치</label><select id="passage-source" value={draft.item.key} disabled={busy} onChange={event => chooseSource(event.target.value)}>{sourceChoices.map(item => <option key={item.key} value={item.key}>{item.title ? `${item.title} · ` : ''}{passageLocation(item.source)}</option>)}</select></div>}
@@ -116,11 +124,11 @@ export default function PassageStudy({ material, sources, preferredKey }) {
         {!draft.sourceText.trim() && <p className="passage-warning" role="status">이 부분의 글자를 가져올 수 없어요. 공부할 문장을 직접 입력하면 이 위치와 함께 보관합니다.</p>}
         {(draft.editing || draft.manual) && <div className="passage-input"><label htmlFor="passage-study-text">학습할 내용</label><textarea id="passage-study-text" aria-describedby="passage-text-note" value={draft.text} disabled={busy} onChange={event => setDraft({ ...draft, text: event.target.value })} rows={6} /><small id="passage-text-note">{draft.manual ? '직접 입력한 내용 · 출처는 쪽·장까지 연결됩니다.' : '학습할 내용만 다듬습니다. 선택했던 원문도 함께 보관됩니다.'}</small></div>}
         {!draft.quote && !draft.manual && <button className="passage-manual" onClick={() => setDraft({ ...draft, manual: true, editing: true, text: '' })}>추출된 글이 어색한가요? 직접 입력</button>}
-        <div className="passage-settings"><div><label htmlFor="passage-language">학습 언어</label><select id="passage-language" value={language} disabled={busy} onChange={event => setLanguage(event.target.value)}><option value="">언어 선택</option>{COMPOSER_LANGUAGES.map(value => <option key={value} value={value}>{langNameKo(value)}</option>)}</select></div><span className={count > PASSAGE_MAX_CHARS ? 'passage-warning' : ''}>{count.toLocaleString()} / {PASSAGE_MAX_CHARS.toLocaleString()}자</span></div>
+        <div className="passage-settings"><div><label htmlFor="passage-language">학습 언어</label><select id="passage-language" value={chosen} disabled={busy} onChange={event => setLanguage(event.target.value)}><option value="">언어 선택</option>{passageOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></div><span className={count > PASSAGE_MAX_CHARS ? 'passage-warning' : ''}>{count.toLocaleString()} / {PASSAGE_MAX_CHARS.toLocaleString()}자</span></div>
         {count > PASSAGE_MAX_CHARS && <p role="alert" className="passage-warning">조금 더 짧게 골라 주세요. 선택한 내용을 임의로 잘라내지 않습니다.</p>}
         {originalTooLong && <p role="alert" className="passage-warning">원문 선택 범위가 너무 길어요. 원본에서 짧은 구간을 다시 선택하거나 직접 입력해 주세요.</p>}
         {error && <p role="alert" className="passage-warning">{error}</p>}
-        <footer><p>선택한 구간의 뜻과 표현을 준비합니다.</p><button className="manabi-button" disabled={busy || !language || !draft.text.trim() || count > PASSAGE_MAX_CHARS || originalTooLong} onClick={start}>{busy ? '구간을 여는 중…' : '이 부분 공부하기'}</button></footer>
+        <footer><p>선택한 구간의 뜻과 표현을 준비합니다.</p><button className="manabi-button" disabled={busy || !chosen || !draft.text.trim() || count > PASSAGE_MAX_CHARS || originalTooLong} onClick={start}>{busy ? '구간을 여는 중…' : '이 부분 공부하기'}</button></footer>
       </div>}
     </dialog>
   </>;

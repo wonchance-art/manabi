@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export const metadata = {
   title: '개인정보 처리방침',
-  description: 'Anatomy Studio 개인정보 수집 및 이용 안내',
+  description: 'manabi 개인정보 수집 및 이용 안내',
 };
 
 export default function PrivacyPage() {

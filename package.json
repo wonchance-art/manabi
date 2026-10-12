@@ -10,7 +10,7 @@
     "predev": "node scripts/world/build-overworld-fixture.mjs --check && node scripts/world/build-world-node-geo-manifest.mjs --check && node scripts/copy-pdf-worker.mjs",
     "dev": "next dev",
     "prebuild": "node scripts/check-content.mjs && node scripts/check-reading.mjs && node scripts/lint-curriculum.mjs && node scripts/world/build-overworld-fixture.mjs --check && node scripts/world/build-world-node-geo-manifest.mjs --check && node scripts/world/check-overworld-assets.mjs && node scripts/update-sw-version.mjs && node scripts/copy-pdf-worker.mjs",
-    "build": "next build",
+    "build": "node scripts/next-build.mjs",
     "start": "next start",
     "lint": "eslint .",
     "check:reading": "node scripts/check-reading.mjs",

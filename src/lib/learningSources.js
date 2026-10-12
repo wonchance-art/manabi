@@ -102,7 +102,23 @@ function koreanSourceTarget(json, {locator, quote}, {rawText, sourceRevision} = 
     return currentSpan && currentSpan.start === span.start && currentSpan.end === span.end
       && exactSourceQuote(rawText, currentSpan, token.text) !== null;
   });
-  return candidates.length === 1 && koreanTokenContext(json, candidates[0], rawText) ? candidates[0] : null;
+  if (candidates.length) return candidates.length === 1 && koreanTokenContext(json, candidates[0], rawText) ? candidates[0] : null;
+  // AD-R3 §7.5 한국어 나누기: 저장한 어절을 나눴으면 같은 범위 토큰이 없다. 그 범위 시작에서 시작하는 나눈 조각(boundary 'user')들이
+  // 범위를 정확히 덮고 이어 붙인 글자가 저장 표면과 같을 때만 첫 조각으로 돌아간다(원래대로 하면 위 정확 일치로 돌아간다).
+  const sequence = json.sequence || [];
+  const first = sequence.findIndex(id => {
+    const token = json.dictionary?.[id], currentSpan = token?.boundary === 'user' && absoluteSourceSpan(rawText, token.sourceSpan);
+    return currentSpan && currentSpan.start === span.start && currentSpan.end < span.end;
+  });
+  if (first < 0) return null;
+  let text = '', at = span.start;
+  for (let i = first; i < sequence.length && at < span.end; i++) {
+    const token = json.dictionary?.[sequence[i]], currentSpan = token?.boundary === 'user' && absoluteSourceSpan(rawText, token.sourceSpan);
+    if (!currentSpan || currentSpan.start !== at || exactSourceQuote(rawText, currentSpan, token.text) === null) return null;
+    text += token.text;
+    at = currentSpan.end;
+  }
+  return at === span.end && text === locator.surface && koreanTokenContext(json, sequence[first], rawText) ? sequence[first] : null;
 }
 
 // Resolve against the current analysis. A stale ID or repeated word is not enough

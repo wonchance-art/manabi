@@ -129,6 +129,22 @@ kuromoji 상위 품사만 받아 보조동사·접미사 병합이 휴리스틱 
   실사용(자료별 due 배지 = dictionary 순회 / 단어장 = etym·hanja까지 전 컬럼 소비)이었다.
   정정은 계약 테스트(queryDiet.test.js)로 고정 — **다이어트 전에 소비 필드를 grep으로 실측하라.**
 
+### 4.9-1 한국어 학습 capability는 카탈로그 지문 철사다 (2026-10-09 운영 장애로 실측)
+`learning_language_capabilities()`(`docs/sql/korean-learning-support.sql`)는 학습 테이블·`reading_materials`·`uploaded_pdfs`의
+컬럼·제약·정책·트리거와 트리거 함수 **본문**까지 md5 지문으로 묶어 상수로 박아 두고, 같을 때만 한국어 저장·복습·아는 단어·제외를 켠다
+(회귀를 스스로 「지원」이라 주장하지 못하게 한 의도된 설계). 그래서 **이 범위를 건드리는 SQL·마이그레이션은 무엇이든 운영 한국어 학습을
+통째로 끈다** — KO-PASSAGE r1이 `validate_source_passage()` 언어 목록 한 줄만 바꾸고 17:50~복구까지 실제로 껐다.
+규칙: 같은 트랜잭션에서 ⑴ 적용 전 지문 = 게시값 확인(어긋났으면 중단) ⑵ 변경 ⑶ capability RPC 본문의 그 질의로 재계산해 상수만 재게시.
+본보기 = `docs/sql/korean-source-passage.sql`. PGlite 검사에 「적용 후 Korean ready=true」를 반드시 넣는다
+(`supabase/tests/korean-source-passage.mjs`의 M09 관측 카탈로그 fixture 재사용).
+**철사는 한 겹이 아니다(2026-10-10 r2 재적용 FAIL로 실측):** `fsrs_private.contract_hash()`(FSRS core 계약)가 capability 함수의
+정의 전체를 지문에 넣는다 — capability 상수만 재게시해도 `fsrs_vocabulary_snapshot`이 55000 `learning_admission_unavailable`로
+막혔다(11:22~11:26 KST). FSRS core·admission SQL은 저장소에 없어(운영 전용) CI로 연쇄를 검증할 수 없다 →
+LEARN-CONTRACT-CATALOG-001(#1399)로 운영 정의를 `supabase/tests/fixtures/m09-learning-contracts-20261010.sql`에 옮겼다 —
+이 범위의 SQL은 그 fixture 위 PGlite에서 「적용·복원 후 Korean ready + FSRS 계약 넷 게시=실측 + snapshot 동일」을 단언한 뒤에만
+운영에 낸다(본보기 r3: capability 상수 재게시 뒤 같은 트랜잭션에서 `fsrs_private.settings.contract_hash` 재게시).
+사후 게이트에 `/api/learning/capabilities`뿐 아니라 FSRS snapshot·저장·복습 경로를 넣는다.
+
 ### 4.9 ui 이벤트 규약 (행동 계측 — review_events 재사용, 마이그레이션 0)
 예보 탭·푸시 같은 **행동 계측**은 신규 테이블 없이 `review_events`에 `source:'ui'`로 적재한다 (헌법 3 — 신규 테이블 최후의 수단). 형태: `{source:'ui', item_key:'-', correct:true, detail:{qtype, ...}}`. `correct`는 NOT NULL이라 의미 없이 `true`로 채우고, **종류는 `detail.qtype`로 구분**한다(집계는 `detail->>'qtype'` 필터 — `admin_v3_metrics`). qtype 종류: `forecast_tap`(예보 카드 탭), `push_optin`(구독 동의), `push_sent`(발송), `push_open`(알림 클릭). **rung·FSRS 계산은 `source:'vocab'`만 보므로 ui 이벤트와 무간섭**(skillRung/fsrs 필터). **EWMA 다이얼은 필터가 없어 구멍이었다** — studyMaterials의 gradedEvents가 `ui`·`dict`를 제외하고 공급한다(2026-07 정정). 새 source 추가 시 이 세 필터(skillRung·fsrs·gradedEvents)를 모두 점검하라. 저용량(하루 수 건) 전제이며, **월 1만 건을 초과하면 분리 테이블로 승격**한다(레드팀 응답 §7). 적재는 `logReviewEvents`(reviewEvents.js) 재사용, 실패는 조용히 무시.
 

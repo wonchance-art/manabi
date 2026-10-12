@@ -78,9 +78,9 @@ describe('buildPromotedEntry — 승격 행 구성', () => {
 
 // 계약: 승격 경로 배선 — 편집 패널의 전역 적용 체크가 API·단어장 동기로 이어져야 한다.
 describe('전역 적용 배선 계약', () => {
-  it('편집 패널이 applyGlobal 옵션을 전달한다', () => {
+  it('편집 패널이 applyGlobal 옵션을 전달한다(관리자만 — 소유자는 applyVocab, 오너 결정 ⓒ)', () => {
     const src = fs.readFileSync(path.join(process.cwd(), 'src/views/TokenEditPanel.jsx'), 'utf8');
-    expect(src).toContain("onSave(pending, { applyGlobal })"); // 마감 ③에서 corrections→pending(buildTokenCorrections 결과)로 개명
+    expect(src).toContain("onSave(pending, sharedEdit ? { applyGlobal } : { applyVocab: applyGlobal })"); // 마감 ③에서 corrections→pending(buildTokenCorrections 결과)로 개명
   });
 
   it('뷰어가 승격 API와 단어장 동기를 호출한다', () => {

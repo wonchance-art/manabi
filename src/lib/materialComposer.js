@@ -1,12 +1,70 @@
 import { titleFromBody } from './materialTitle';
 import { createImportAttempt, saveImportOnce } from './materialImport';
+import { LEARNING_LANGUAGES } from './learningSources';
+import { VIEWER_LANGUAGES, canonicalViewerLocale, textReadingSupported, viewerLanguageInfo } from './viewerLanguage';
+import { HANGUL_RE, KO_LINE_THRESHOLD } from './bilingualSplit';
+import { HAN, KANA } from './constants';
 
 export const SOURCE_BUCKET = 'material-originals';
 export const MAX_FILE_BYTES = 50 * 1024 * 1024;
 export const MAX_BODY_CHARS = 200000;
 export const MAX_ATTACHMENTS = 5;
 export const MAX_LINKS = 10;
-export const COMPOSER_LANGUAGES = ['Japanese', 'Chinese', 'English', 'French'];
+// 자료 언어 목록은 따로 들지 않는다 — 정본 LEARNING_LANGUAGES를 언어 등록부 순서(일·중·영·프·한)로 쓴다.
+// 목록 두 벌이 한국어 누락(KO-COMPOSER-001, 2026-10-08)의 원인이었다. 수준(LEVELS) 4언어 상수와는 별개다.
+export const COMPOSER_LANGUAGES = Object.freeze(Object.keys(VIEWER_LANGUAGES).filter(language => LEARNING_LANGUAGES.includes(language)));
+
+/** 한국어 선택지는 계정의 배포 계약(useLearningCapabilities)이 확인됐을 때만. 확인 중·실패면 숨긴다. */
+export const koreanStudyReady = korean => korean?.save === true && !korean.isLoading && !korean.isError;
+
+/** 「공부할 언어」 선택지 — 텍스트 읽기 조건(MaterialEntry와 같은 textReadingSupported) + 한국어는 계정 확인. */
+export function studyLanguages(koreanReady) {
+  return COMPOSER_LANGUAGES.filter(language => textReadingSupported(viewerLanguageInfo(language))
+    && (language !== 'Korean' || koreanReady === true));
+}
+export const studyLanguageLabel = language => viewerLanguageInfo(language)?.labelKo || language;
+
+/** 한국어 학습 행 메타 — 기존 한국어 가져오기(MaterialAddPage 한국어 분기)와 같은 키·값. 다른 언어는 그대로. */
+export function koreanStudyMetadata(language, explanationLocale) {
+  return language === 'Korean' ? { level: '', explanationLocale: canonicalViewerLocale(explanationLocale) || 'ko' } : {};
+}
+
+const LETTER_RE = /\p{L}/u;
+const GUESS_SAMPLE = 4000;
+/**
+ * 글자 종류로만 언어를 짐작한다(모델 호출 없음). 글자의 60%(KO_LINE_THRESHOLD) 이상을 차지하는 문자가 있을 때만 답한다.
+ * 한글 → 한국어, 가나가 있는 한자·가나 글 → 일본어, 가나 없는 한자 글 → 중국어. 라틴은 영·프가 갈리지 않아 짐작하지 않는다.
+ */
+export function guessStudyLanguage(text, languages = COMPOSER_LANGUAGES) {
+  let letters = 0, hangul = 0, kana = 0, han = 0;
+  for (const ch of String(text || '').slice(0, GUESS_SAMPLE)) {
+    if (!LETTER_RE.test(ch)) continue;
+    letters += 1;
+    if (HANGUL_RE.test(ch)) hangul += 1;
+    else if (KANA.test(ch)) kana += 1;
+    else if (HAN.test(ch)) han += 1;
+  }
+  if (!letters) return '';
+  const guess = hangul / letters >= KO_LINE_THRESHOLD ? 'Korean'
+    : (kana + han) / letters >= KO_LINE_THRESHOLD ? (kana ? 'Japanese' : 'Chinese') : '';
+  return languages.includes(guess) ? guess : '';
+}
+
+/** 본문이 바뀌면 언어 칩을 다시 짐작한다. 사용자가 고른 값(선택 해제 포함)·편집 중인 자료의 저장된 언어는 덮지 않는다. */
+export function guessedLanguagePatch(draft, languages, { editing = false } = {}) {
+  if (editing || draft.languageChosen || (draft.language && !draft.languageGuessed)) return null;
+  const language = guessStudyLanguage(draft.body, languages);
+  if (language === (draft.language || '') && !!language === !!draft.languageGuessed) return null;
+  return { language, languageGuessed: !!language };
+}
+
+/** 「저장하고 공부하기」 — 쓰기 노트·본문 없는 첨부/링크 자료에는 두지 않는다. 본문과 고를 수 있는 언어가 있어야 켜진다. */
+export function composerStudyState(draft, languages, { note = false } = {}) {
+  const body = !!draft.body.trim();
+  if (note || (!body && (draft.files.length || draft.links.length))) return { visible: false, ready: false, reason: '' };
+  const reason = !body ? '본문이 있어야 공부할 수 있어요' : !languages.includes(draft.language) ? '공부할 언어를 골라 주세요' : '';
+  return { visible: true, ready: !reason, reason };
+}
 
 export function composerOf(material) {
   const value = material?.processed_json?.metadata?.composer;
@@ -67,13 +125,14 @@ export function attachmentPath(ownerId, attemptId, file) {
   return `${ownerId}/${attemptId}/${file.hash}.${file.kind}`;
 }
 
-export function composerRow(ownerId, draft) {
+export function composerRow(ownerId, draft, { explanationLocale } = {}) {
   validateComposer(draft);
+  const language = COMPOSER_LANGUAGES.includes(draft.language) ? draft.language : null;
   const assets = draft.files.map(file => ({ kind: file.kind, name: file.name, size: file.size,
     hash: file.hash, path: attachmentPath(ownerId, draft.id, file) }));
   return { owner_id: ownerId, visibility: 'private', title: composerTitle(draft), raw_text: draft.body,
     processed_json: { sequence: [], dictionary: {}, last_idx: -1, status: 'saved', metadata: {
-      language: COMPOSER_LANGUAGES.includes(draft.language) ? draft.language : null,
+      language, ...koreanStudyMetadata(language, explanationLocale),
       composer: { version: 1, hasBody: !!draft.body.trim(), excerpt: draft.body.trim().slice(0, 120), assets, links: draft.links.map(normalizeSourceUrl) },
     } } };
 }
@@ -96,8 +155,8 @@ export async function uploadOriginal(client, ownerId, draft, file) {
   throw result.error;
 }
 
-export function createComposerSave(ownerId, draft) {
-  const attempt = createImportAttempt(composerRow(ownerId, draft), draft.id);
+export function createComposerSave(ownerId, draft, options = {}) {
+  const attempt = createImportAttempt(composerRow(ownerId, draft, options), draft.id);
   // Always reconcile first, including after a browser refresh. The partial unique index
   // also protects simultaneous tabs; reconciliation alone cannot serialize an insert.
   attempt.uncertain = true;

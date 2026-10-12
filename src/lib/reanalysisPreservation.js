@@ -3,6 +3,7 @@ import { analysisTokenLine, inspectAnalysisCoverage, mergeReanalysisLines } from
 import { canonicalViewerLocale } from './viewerLanguage';
 import { exactSourceQuote } from './viewerLocalizedContext';
 import { compactBoundaryText, readBoundaryEdits } from './boundaryEdits';
+import { reapplyKoreanBoundaries } from './koreanBoundarySplit';
 
 const tokenLine = id => analysisTokenLine(id) ?? NaN;
 
@@ -258,6 +259,10 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
   const priorBoundaries = metadata.language === 'Korean' ? [] : readBoundaryEdits(original);
   const mappedBoundaries = priorBoundaries.length ? mapBoundaryEdits(material.raw_text || '', rawText, priorBoundaries) : null;
   if (mappedBoundaries) metadata.viewerBoundaries = { ...metadata.viewerBoundaries, edits: mappedBoundaries };
+  // AD-R3 §7.5 한국어 나누기: 한국어 분석기는 어절만 돌려주므로 서버에 싣지 않고, 분석 뒤 뷰어 쪽에서 다시 적용한다(아래).
+  const priorKorean = metadata.language === 'Korean' ? readBoundaryEdits(original) : [];
+  const mappedKorean = priorKorean.length ? mapBoundaryEdits(material.raw_text || '', rawText, priorKorean) : null;
+  if (mappedKorean) metadata.viewerBoundaries = { ...metadata.viewerBoundaries, edits: mappedKorean };
   if (metadata.language === 'Korean' && options.explanationLocale !== undefined) {
     const locale = canonicalViewerLocale(options.explanationLocale);
     if (!locale) throw new Error('설명 언어를 확인해 주세요.');
@@ -283,11 +288,19 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
   if (selected?.length) result = preserveRetainedKoreanLocales(original,
     mergeReanalysisLines(rawText, original, result, selected));
   if (!completeAnalysis(result, rawText)) throw new Error('새 분석을 완료하지 못했어요. 기존 원문과 분석은 그대로 유지됩니다.');
+  // 다시 분석한 줄의 한국어 기록을 새 어절 morphology로 다시 나눈다(후보 밖이면 pending). 조각 id는 아래 보존 단계가 잇는다.
+  let koreanSettled = mappedKorean;
+  if (mappedKorean && selected?.length !== 0) {
+    const applied = reapplyKoreanBoundaries(result, mappedKorean, { takeLine: line => !selected || selected.includes(line), revision: attempt });
+    result = applied.json;
+    koreanSettled = applied.edits;
+  }
   const provenance = Object.fromEntries(['targetLanguage', 'explanationLocale', 'analysisVersion', 'analysisEngine', 'analysisQuality']
     .filter(key => result.metadata?.[key] !== undefined).map(key => [key, result.metadata[key]]));
   const mergedMetadata = { ...result.metadata, ...metadata, ...provenance,
     viewerRevision: attempt, updated_at: metadata.updated_at };
   if (settledBoundaries) mergedMetadata.viewerBoundaries = { ...metadata.viewerBoundaries, edits: settledBoundaries };
+  if (koreanSettled) mergedMetadata.viewerBoundaries = { ...metadata.viewerBoundaries, edits: koreanSettled };
   let json = preserveReanalysisTokens(material, rawText, { ...result, metadata: mergedMetadata }, corrections || []);
   if (settledBoundaries) json = preserveBoundaryBase(json, priorBoundaries, mappedBoundaries, material.processed_json?.metadata, corrections);
   if (metadata.language === 'Korean') json = rebaseKoreanSourceSpans(rawText, json);

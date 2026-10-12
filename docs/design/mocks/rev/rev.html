@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>복습 개편 설계</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@700&family=Noto+Serif+JP:wght@700&family=Noto+Serif+SC:wght@700&display=swap">
+<style>
+:root{--paper:#F6F4EE;--sheet:#FFFEFB;--ink:#252721;--muted:#65675F;--faint:#8E8F86;--rule:#D7D5CD;--rose:#994A5A;--rose-wash:#F4E9EB;--zh:#2A7657;--zh-wash:#E7F0EB;--hi:#9A3B2E;--hi-wash:#F6E7E3;--mid:#8A6A1F;--mid-wash:#F4EEDD;--lo:#4F5E57;--lo-wash:#E9ECE8;--code:#EEEBE3;--on-accent:#fff;--shadow:0 1px 3px rgba(0,0,0,.06)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#191A17;--sheet:#22231F;--ink:#ECEAE3;--muted:#A9AAA1;--faint:#85867E;--rule:#3A3B35;--rose:#D48A99;--rose-wash:#3A2629;--zh:#6CC29B;--zh-wash:#1E3329;--hi:#E39A8C;--hi-wash:#3B2420;--mid:#D9B865;--mid-wash:#352D18;--lo:#A9B8B0;--lo-wash:#262B28;--code:#2C2D28;--on-accent:#141512;--shadow:none}}
+:root[data-theme="dark"]{--paper:#191A17;--sheet:#22231F;--ink:#ECEAE3;--muted:#A9AAA1;--faint:#85867E;--rule:#3A3B35;--rose:#D48A99;--rose-wash:#3A2629;--zh:#6CC29B;--zh-wash:#1E3329;--hi:#E39A8C;--hi-wash:#3B2420;--mid:#D9B865;--mid-wash:#352D18;--lo:#A9B8B0;--lo-wash:#262B28;--code:#2C2D28;--on-accent:#141512;--shadow:none}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.7 'Noto Sans KR',system-ui,sans-serif}
+.doc{max-width:860px;margin:0 auto;padding:48px 16px 96px}
+h1{font:700 34px/1.25 'Noto Serif KR',serif;margin:6px 0 14px;text-wrap:balance;letter-spacing:-.01em}
+h2{font:700 23px/1.35 'Noto Serif KR',serif;margin:56px 0 14px;text-wrap:balance}
+h3{font:700 17px/1.45 'Noto Sans KR',sans-serif;margin:28px 0 8px}
+p{margin:0 0 12px;max-width:68ch}
+.eyebrow{font:700 12px/1.4 Manrope,'Noto Sans KR',sans-serif;letter-spacing:.08em;color:var(--rose);text-transform:uppercase;margin:0}
+.lede{font-size:18px;color:var(--ink);max-width:62ch}
+.meta{font-size:13px;color:var(--muted)}
+code{font:500 .86em/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--code);padding:1px 5px;border-radius:4px;word-break:break-word}
+a{color:var(--rose)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--rose);outline-offset:3px}
+.toc{display:flex;flex-wrap:wrap;gap:6px 14px;margin:20px 0 0;padding:14px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);font-size:14px}
+.toc a{color:var(--ink);text-decoration:none;min-height:32px;display:inline-flex;align-items:center}
+.toc a:hover{color:var(--rose)}
+.tl{background:var(--sheet);border:1px solid var(--rule);border-radius:16px;padding:20px 22px;margin:22px 0;box-shadow:var(--shadow)}
+.tl b{color:var(--rose)}
+.scroll{overflow-x:auto;margin:12px 0 18px;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{text-align:left;vertical-align:top;padding:9px 10px;border-bottom:1px solid var(--rule)}
+.tt td:first-child{white-space:nowrap}
+th{font-weight:700;color:var(--muted);font-size:12.5px;white-space:nowrap}
+td code{font-size:.82em}
+.sev{display:inline-block;font:700 11.5px/1 'Noto Sans KR',sans-serif;padding:5px 8px;border-radius:999px;white-space:nowrap}
+.sev.h{background:var(--hi-wash);color:var(--hi)}.sev.m{background:var(--mid-wash);color:var(--mid)}.sev.l{background:var(--lo-wash);color:var(--lo)}
+.verdict{font-weight:700;white-space:nowrap}.v-a{color:var(--zh)}.v-p{color:var(--mid)}.v-r{color:var(--hi)}
+.princ{counter-reset:p;list-style:none;padding:0;margin:14px 0}
+.princ li{counter-increment:p;position:relative;padding:12px 0 12px 44px;border-bottom:1px solid var(--rule)}
+.princ li::before{content:counter(p);position:absolute;left:0;top:12px;width:30px;height:30px;border-radius:50%;background:var(--rose-wash);color:var(--rose);font:800 14px/30px Manrope,sans-serif;text-align:center}
+.princ b{display:block}
+.princ span{color:var(--muted);font-size:14.5px}
+pre.flow{font:500 13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--sheet);border:1px solid var(--rule);border-radius:12px;padding:16px;overflow-x:auto;margin:12px 0 18px;white-space:pre}
+/* 목업 */
+.mockrow{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start;margin:16px 0 8px}
+.mcap{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.dev{background:var(--paper);border:1px solid var(--rule);border-radius:18px;padding:18px;box-shadow:var(--shadow);flex:none}
+.dev.d{width:560px;max-width:100%}.dev.m{width:340px;max-width:100%;padding:14px}
+.mockrow>div{max-width:100%}
+.dev h4{font:700 22px/1.2 'Noto Sans KR',sans-serif;margin:0 0 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.flag{font-size:13px;padding:3px 9px;border-radius:999px;border:1px solid var(--rule);background:var(--sheet);font-weight:500}
+.flag.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
+.chip{font:600 12.5px/1 'Noto Sans KR',sans-serif;padding:8px 11px;border-radius:999px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);min-height:32px;display:inline-flex;align-items:center;gap:6px}
+.chip.on{border-color:var(--zh);color:var(--zh);background:var(--zh-wash)}
+.chip.ja.on{border-color:var(--rose);color:var(--rose);background:var(--rose-wash)}
+.chip .x{opacity:.6}
+.card{background:var(--sheet);border:1px solid var(--rule);border-radius:16px;padding:18px}
+.big{font:700 34px/1 'Noto Serif KR',serif}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.sub{font-size:13px;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 18px;border-radius:999px;font:700 14px 'Noto Sans KR',sans-serif;border:0}
+.btn.p{background:var(--zh);color:var(--on-accent)}.btn.pj{background:var(--rose);color:var(--on-accent)}
+.btn.g{background:transparent;border:1px solid var(--rule);color:var(--ink)}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.note{font-size:12px;color:var(--muted);margin-top:8px}
+.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:18px 18px 0 0;padding:16px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}
+.sheet h5{font:700 15px 'Noto Sans KR',sans-serif;margin:0 0 4px}
+.sh-l{font:700 12px/1.4 'Noto Sans KR',sans-serif;color:var(--muted);margin:14px 0 6px}
+.range{display:flex;align-items:center;gap:10px;font:600 13px Manrope,'Noto Sans KR',sans-serif}
+.range .tr{flex:1;height:6px;border-radius:3px;background:var(--rule);position:relative}
+.range .tr i{position:absolute;top:0;bottom:0;left:9.5%;right:76%;background:var(--zh);border-radius:3px}
+.range .tr b{position:absolute;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:var(--sheet);box-shadow:inset 0 0 0 3px var(--zh)}
+.strip{background:var(--mid-wash);color:var(--mid);font:700 12.5px/1.4 'Noto Sans KR',sans-serif;padding:8px 12px;border-radius:10px;margin-bottom:10px}
+.rv{background:var(--sheet);border:1px solid var(--rule);border-radius:16px;padding:20px;text-align:center}
+.rv .w{font:700 34px/1.2 'Noto Serif SC',serif;margin:6px 0}
+.rv .src{font-size:13px;color:var(--muted);margin-top:10px}
+.grades{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:14px}
+.grades span{font:700 13px 'Noto Sans KR',sans-serif;border:1px solid var(--rule);border-radius:10px;padding:10px 0;background:var(--paper)}
+.pbtns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:14px}
+.pbtns span{font:700 13px 'Noto Sans KR',sans-serif;border:1px solid var(--rule);border-radius:10px;padding:10px 0;background:var(--paper)}
+.entry{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:12px 0}
+.entry .card{padding:14px 16px}
+.entry .k{font:700 12px 'Noto Sans KR',sans-serif;color:var(--muted)}
+.entry .t{font-weight:700;margin:4px 0 2px}
+.entry .a{font-size:13px;color:var(--rose);font-weight:700}
+.phase{display:grid;gap:12px;margin:12px 0}
+.phase .card h4{font:700 16px 'Noto Sans KR',sans-serif;margin:0 0 6px}
+.phase ul{margin:0;padding-left:18px;font-size:14.5px}
+.phase li{margin:3px 0}
+.tag{font:700 11.5px 'Noto Sans KR',sans-serif;padding:4px 8px;border-radius:999px;margin-left:6px;vertical-align:2px}
+.tag.ok{background:var(--zh-wash);color:var(--zh)}.tag.gate{background:var(--hi-wash);color:var(--hi)}
+.dec{counter-reset:d;list-style:none;padding:0}
+.dec li{counter-increment:d;background:var(--sheet);border:1px solid var(--rule);border-radius:14px;padding:14px 16px 14px 54px;margin:10px 0;position:relative}
+.dec li::before{content:"D" counter(d);position:absolute;left:16px;top:14px;font:800 14px Manrope,sans-serif;color:var(--rose)}
+.dec b{display:block;margin-bottom:2px}
+.dec .rec{font-size:14px;color:var(--muted)}
+.cardgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin:16px 0 6px}
+.kc{background:var(--sheet);border:1px solid var(--rule);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.kc hr{border:0;border-top:1px dashed var(--rule);margin:6px 0;width:100%}
+.kt{font:700 11.5px 'Noto Sans KR',sans-serif;color:var(--rose);letter-spacing:.02em}
+.kf{font:700 30px/1.25 'Noto Serif SC','Noto Serif JP',serif}
+.kf.s{font:700 19px/1.5 'Noto Serif JP',serif}
+.kf.k{font:700 17px/1.5 'Noto Sans KR',sans-serif}
+.kr{font-size:13px;color:var(--muted);font-weight:500}
+.kb{font-size:15px;font-weight:500}
+.kb[lang=ja]{font:700 17px/1.5 'Noto Serif JP',serif}.kb[lang=zh]{font:700 22px/1.4 'Noto Serif SC',serif}
+.kp{font-size:12.5px;background:var(--rose-wash);color:var(--rose);border-radius:8px;padding:5px 8px;font-weight:700}
+.ks{font-size:12px;color:var(--muted)}
+.kread{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted)}
+.kread [lang=ja]{font:500 14px/2 'Noto Serif JP',serif;color:var(--ink)}
+.kplay{font:700 12px 'Noto Sans KR',sans-serif;color:var(--rose);border:1px solid var(--rule);border-radius:999px;padding:4px 10px;white-space:nowrap;margin-left:auto}
+ruby rt{font-size:.55em;color:var(--muted);font-weight:500}
+.kflag{display:inline-flex;align-self:flex-start;font:700 12px 'Noto Sans KR',sans-serif;border:1px dashed var(--mid);color:var(--mid);border-radius:999px;padding:5px 10px}
+.tgt{background:var(--rose-wash);color:var(--rose);border-radius:4px;padding:0 3px}
+u.pat{text-decoration:underline 2px var(--rose);text-underline-offset:5px}
+.kchoice{display:flex;flex-wrap:wrap;gap:6px}.kchoice span{font:500 14px 'Noto Serif JP',serif;border:1px solid var(--rule);border-radius:10px;padding:6px 10px;background:var(--paper)}
+.gbar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.gbar span{font:700 13px 'Noto Sans KR',sans-serif;border:1px solid var(--rule);border-radius:12px;min-height:48px;display:grid;place-items:center;background:var(--sheet)}
+.gbar.dim span{opacity:.4}
+.toast{display:flex;justify-content:space-between;align-items:center;background:var(--ink);color:var(--paper);border-radius:10px;padding:9px 12px;font-size:13px;font-weight:500}
+.toast span{font-weight:700;text-decoration:underline}
+.bdg{font:700 11px Manrope,sans-serif;margin-left:2px}
+.chip.off{opacity:.45;text-decoration:line-through}
+.mlist{display:grid;gap:4px;margin:4px 0 6px;font-size:13.5px}
+.mlist label{display:flex;align-items:center;gap:8px;min-height:32px}
+.cb{width:20px;height:20px;border-radius:5px;border:1px solid var(--rule);display:grid;place-items:center;font-size:12px;color:var(--on-accent)}
+.cb.on{background:var(--zh);border-color:var(--zh)}
+.sh{font:700 15px 'Noto Sans KR',sans-serif;margin:22px 0 6px}
+.foot{margin-top:56px;font-size:13px;color:var(--muted);border-top:1px solid var(--rule);padding-top:14px}
+@media (max-width:520px){h1{font-size:28px}h2{font-size:21px}.doc{padding-top:32px}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="doc">
+<p class="eyebrow">설계 3판 · 인계용 · 2026-10-10 · 기준 main 6585905a</p>
+<h1>복습 개편 설계</h1>
+<p class="lede">「중국어만, HSK 2만, 내 서재 자료만」 · 「일본어 N5 교재 5–10과만」처럼 범위를 골라 복습할 수 있게 하고, 담기부터 오늘 문단까지 끊긴 이음새를 잇는다. 새 일정 체계를 하나 더 만들지 않고, 이미 있는 부품을 엮어서 고친다.</p>
+<p class="meta">검수: 코드 실측(파일:줄 근거) · 선례: Anki · Bunpro · WaniKani · Pleco · LingQ · Readlang · 학습 연구 · 오픈소스(ts-fsrs 등)</p>
+<nav class="toc" aria-label="목차"><a href="#tldr">한눈에</a><a href="#audit">검수 결과</a><a href="#rev3">3판 · 인계 순서</a><a href="#rev2">2판 변경</a><a href="#principles">원칙</a><a href="#evidence">증거 모델</a><a href="#scope">범위 모델</a><a href="#types">종류 · 카드 규격</a><a href="#pron">발음</a><a href="#steps">학습 단계</a><a href="#flow">흐름</a><a href="#mock">화면 목업</a><a href="#phases">단계</a><a href="#precedent">선례</a><a href="#spec">R1 명세</a><a href="#accept">수용 기준</a><a href="#ak-fix">배움 정정문</a><a href="#contracts">계약 테스트</a><a href="#decisions">오너 결정</a></nav>
+
+<div class="tl" id="rev3">
+<p><b>3판 — 인계 직전 검수 반영 · 권장 항목 일괄 승인(오너 2026-10-10).</b> 결정 15개가 모두 확정됐다(§9). 인계 준비도 검수에서 나온 막힘 6건을 고쳤다: ① 학습 단계 정책 전환 규칙 ② 집중 연습 기록과 숙련 사다리 ③ 두 일정 엔진을 한 줄로 합치는 규칙 ④ 문서 안 모순 ⑤ 승인 범위 ⑥ 배움 화면 인계 정정.</p>
+<p><b>인계 순서.</b> ⑴ 배움 화면 정정(§6-5)을 #1337에 먼저 게시 → ⑵ <b>R1-A</b>(범위 · 개수 · 진입점, 개수 함수를 먼저 만들고 배움 화면이 가져다 씀) → ⑶ <b>R1-B</b>(세션 · 카드 · 학습 단계) — 학습 단계 정책 전환은 저장소 밖 FSRS SQL의 정책 검사 여부를 읽기 전용으로 먼저 확인하고, DB 손질이 필요하면 그 SQL만 따로 승인받는다 → ⑷ R2 → ⑸ R3(오너 결정 · DB).</p>
+<p style="margin:0"><b>명세 정본:</b> §6-1(R1 명세) · §6-2(수용 기준) · §8(계약 테스트). 화면은 §5, 원칙과 근거는 §2–3.</p>
+</div>
+
+<div class="tl" id="rev2">
+<p><b>2판 — 독립 검토 2건 반영(교육 설계 · 사용자 경험).</b> 1판의 잘못과 빈 곳을 고쳤다. 검토 주장은 코드로 다시 확인했다.</p>
+<div class="scroll"><table>
+<thead><tr><th>1판</th><th>문제</th><th>2판</th></tr></thead>
+<tbody>
+<tr><td>대표 사례 「중국어 · HSK 2 · 교재 5–10과」</td><td>교재는 일본어 N5 한 권뿐(<code>contract.js:2</code>). 만들 수 없는 범위였다</td><td>출처에 <b>사전 급수 덱 · 오늘 학습</b>을 더하고, 언어에 없는 출처는 흐리게. 사례 정정</td></tr>
+<tr><td>방향을 기억 단계로 전환(카드 하나)</td><td>이해와 산출은 따로 잊힌다. 한 FSRS 상태에 섞으면 산출에서 미끄러져 이해로 되돌아가는 반복</td><td><b>철회.</b> 본 복습은 이해 방향 하나. 산출은 기존 숙련 사다리(<code>skillRung.js</code>)로, R3에서 따로 상태</td></tr>
+<tr><td>「알맞음 = 뜻과 발음 둘 다」</td><td>합친 기준은 신호가 흐리다. 읽기만 틀려 「어려움」을 누르면 FSRS는 오히려 간격을 늘린다</td><td><b>뜻 · 발음 중 하나라도 못 떠올리면 「다시」</b>(오너 결정 2026-10-10). Anki처럼 버튼 넷이 전부 — 추가 질문 없음</td></tr>
+<tr><td>문형 = 예문 뜻 맞히기</td><td>내용어만으로 뜻이 풀려 문형을 거치지 않는다. 교재 문형 예문은 과당 2개 남짓</td><td>문형 부분 <b>강조 · 빈칸</b>(기존 빈칸 · 어순 문제로 <b>자동 채점</b>). 예문 풀을 그 과 대화 · 본문으로 확장</td></tr>
+<tr><td>새 표현이 담자마자 시험</td><td>익히기 전 첫 시험은 찍기 → 「다시」 → 난이도 부풀림</td><td><b>첫 학습 카드</b>(전부 보여 줌) → 학습 단계(Anki 기본 1분 · 10분)로 재확인</td></tr>
+<tr><td>세션 길이 · 밀린 복습 무대책</td><td>300개 벽, 새로고침에 진행 유실(<code>VocabPage.jsx:157</code>)</td><td>세션 길이 칩 · 밀리면 새 표현 멈춤 · 이어 하기</td></tr>
+<tr><td>배움 칸은 <code>ReviewTile</code> 그대로(AK 인계)</td><td>전 언어 합산이라 원칙 3과 충돌</td><td>배움 칸도 범위 개수 함수로. 문법은 별줄. <b>AK 인계 정정 필요</b></td></tr>
+<tr><td>5-3 목업 앞면에 병음</td><td>「앞면 읽기 숨김」 규칙과 모순</td><td>목업 정정</td></tr>
+<tr><td>「Kornell 2009 = 섞기 근거」</td><td>간격(spacing) 연구다. 비슷한 단어를 같이 섞으면 오히려 간섭</td><td>근거 정정 · 같은 과 새 표현은 줄에서 띄운다</td></tr>
+</tbody></table></div>
+</div>
+
+<div class="tl" id="tldr">
+<p><b>왜 지금 안 되나.</b> 복습 화면의 언어 칩과 HSK 필터는 <em>목록만</em> 거른다. 복습 개수·시작·줄은 설정 서랍 속 「덱」 하나만 보고, 모든 언어를 한 줄에 섞는다(<code>VocabPage.jsx:228-230, 461-495</code>).</p>
+<p><b>무엇을 바꾸나.</b> ⑴ 범위(언어 → 레벨 → 출처 → 상태) 하나가 개수·시작·줄을 함께 정한다. ⑵ 일정에 반영되는 <em>복습</em>과, 반영되지 않는 <em>집중 연습</em>을 나눈다. ⑶ 교재 · 자료 · 현황 · 배움 어디서든 그 범위로 바로 들어온다. ⑷ <b>어떤 활동이 어느 기억을 증명하는지(증거 모델)</b>를 먼저 정하고, 카드 · 채점을 거기에 맞춘다. ⑸ 새로 담은 표현이 오늘 문단에서도 빠지지 않게 한다.</p>
+<p style="margin:0"><b>순서.</b> R1은 스키마 변경 없이 화면과 줄 계산만 고친다(포괄 승인 범위). 일정 체계 통합과 언어별 한도는 R3, 오너 결정 뒤에 한다.</p>
+</div>
+
+<h2 id="audit">1. 검수 결과 — 문제 12건</h2>
+<p>복습 관련 화면 7곳(복습 · FSRS 세션 · 교재 「다시 꺼내 보는 문장」 · 오늘 문단 · 홈 · 현황 · 퀘스트 복습)과 저장 경로 6곳을 실측했다.</p>
+<div class="scroll"><table>
+<thead><tr><th>등급</th><th>문제</th><th>근거</th></tr></thead>
+<tbody>
+<tr><td><span class="sev h">높음</span></td><td><b>언어·급수 필터가 복습 줄에 안 먹는다.</b> 「중국어」를 골라도 개수·시작·카드는 전 언어가 섞인다. 급수(HSK) 필터도 목록 전용.</td><td><code>VocabPage.jsx:228-230</code> <code>:461-464</code> <code>:482-495</code> <code>:804-809</code></td></tr>
+<tr><td><span class="sev h">높음</span></td><td><b>새로 담은 표현이 오늘 문단·예보에 못 들어간다.</b> 한 번이라도 채점된 표현만 가져온다.</td><td><code>vocabularyDueIndex.js:104</code> <code>forecast.js:81</code></td></tr>
+<tr><td><span class="sev h">높음</span></td><td><b>일정이 두 갈래다.</b> FSRS 카드가 하나라도 준비되면 세션 전체를 차지하고, 오늘 문단은 예전 일정 카드만 쓴다. 담은 표현은 예전 일정으로만 들어간다(담기 화면에서 새 일정 등록 함수 호출은 <b>테스트로 금지된 의도된 설계</b> — <code>vocabularyLearningUi.test.jsx:133</code>. 이 함수를 호출해 「고치지」 말 것).</td><td><code>VocabPage.jsx:794</code> <code>studyMaterials.js:335-336</code> <code>useFsrsReview.js:204</code></td></tr>
+<tr><td><span class="sev h">높음</span></td><td><b>범위 장치가 셋으로 흩어져 있다.</b> ① 설정 서랍 속 「덱」 단일 선택 ② 교재 범위(<code>japanese-n5</code> 하드코딩) ③ 오늘 문단의 <code>?lang</code>. 공통 「지금 언어」 개념이 없다.</td><td><code>VocabPage.jsx:1169-1189</code> <code>bookReviewNavigation.js:25-29</code> <code>study/page.jsx:58-64</code></td></tr>
+<tr><td><span class="sev m">중간</span></td><td>교재 도구막대의 「담은 표현」은 <b>채점·기록이 없는</b> 「다시 꺼내 보는 문장」으로 간다.</td><td><code>BookReview.jsx</code> · <code>/api/learning/book-review</code></td></tr>
+<tr><td><span class="sev m">중간</span></td><td><b>급수는 중국어만.</b> JLPT·CEFR 단어 목록은 있지만 「단어 → 급수」 색인이 없다.</td><td><code>refVocabIndex.js:33-34</code> · <code>src/content/japanese/vocab/n5*.js</code></td></tr>
+<tr><td><span class="sev m">중간</span></td><td>홈·현황의 복습 개수는 <b>전 언어 합산</b>이고 새 표현 하루 한도를 빼지 않아 복습 화면 숫자와 다르다.</td><td><code>HomePage.jsx:37</code> <code>ProfileStats.jsx:573-581</code></td></tr>
+<tr><td><span class="sev m">중간</span></td><td>첫 일정 기준이 다르다. 교재는 「지금 바로」, 자료는 「담을 때 평가」.</td><td><code>save_vocabulary_context</code> · <code>vocabIO.js:62-67</code></td></tr>
+<tr><td><span class="sev m">중간</span></td><td>순서가 <b>기한순뿐</b>이다. 밀린 복습이 많을 때 잊기 쉬운 것부터 보여 주지 못한다.</td><td><code>fsrsReviewSession.js:108</code></td></tr>
+<tr><td><span class="sev l">낮음</span></td><td>원문 복귀가 끊긴 곳: 글쓰기에서 담은 단어(출처·뜻 없음), 오늘 문단·예보 칩(링크 없음), 교재 리더(이미 담은 표현 표시 없음).</td><td><code>WritingStudioPage.jsx:137-149</code></td></tr>
+<tr><td><span class="sev l">낮음</span></td><td>이름이 섞인다. 「단어장」과 「담은 표현」, 안내문 「‘이 예문 담기’」와 실제 버튼 「예문 담기」.</td><td><code>BookReview.jsx:31</code> <code>VocabPage.jsx:1061</code></td></tr>
+<tr><td><span class="sev l">낮음</span></td><td>범위·한도 설정이 두 곳(브라우저 저장 · 서버)에 나뉘어 기기를 바꾸면 달라진다.</td><td><code>VocabPage.jsx:123-139</code> <code>learningAdmission.js:19-28</code></td></tr>
+</tbody></table></div>
+
+<h2 id="principles">2. 설계 원칙</h2>
+<ol class="princ">
+<li><b>표현 하나(방향 · 문형별)에 기억 상태 하나. 범위는 「보기」일 뿐이다.</b><span>어느 범위에서 풀든 같은 카드의 같은 일정이 갱신된다. R3에서 생기는 표현(산출) 상태 · 문형 상태도 「방향 하나 · 문형 하나에 상태 하나」로 같은 원칙을 따른다. 범위마다 점수를 따로 두지 않는다(Bunpro 덱 선례 채택, Pleco 별도 점수판 배제).</span></li>
+<li><b>언어가 첫 번째 축이다. 언어 안에서는 섞는다.</b><span>배움 화면 국기 칩으로 고른 언어가 곧 복습 언어다. 한 언어 안에서는 한 줄로 내야 간격이 넓어진다(Kornell 2009 — 큰 한 묶음이 작은 네 묶음보다 90% 학습자에게 유리했던 <em>간격</em> 연구). 다만 뜻이 비슷한 새 단어를 붙여 내면 서로 간섭한다(Tinkham 1993 · Waring 1997). 그래서 같은 과의 새 표현 · 헷갈리기 쉬운 쌍(たい/ほしい)은 줄 안에서 띄운다. 좁은 범위는 선택 사항이다.</span></li>
+<li><b>범위 하나가 개수·시작·줄을 함께 정한다.</b><span>화면마다 따로 세지 않는다. 같은 함수 하나(<code>countReviewScope</code>)가 배움 칸 · 국기 칩 · 복습방의 숫자를 낸다. 계약 테스트로 고정.</span></li>
+<li><b>일정에 반영되는 「복습」과 반영 안 되는 「집중 연습」을 나눈다.</b><span>시험 전 「5–10과 몽땅」처럼 기한 전 카드를 돌릴 때 일정이 망가지면 안 된다(Anki 미리보기 · Bunpro Cram · WaniKani Extra Study가 모두 같은 결론).</span></li>
+<li><b>명시한 범위는 실패하면 닫힌다. 저장된 설정은 덮지 않는다.</b><span>범위를 못 읽으면 「전체」로 새지 않고 빈 줄을 낸다. 지금 교재 범위 계약(<code>bookReviewNavigation.test.js</code>, n5 e2e)을 모든 범위로 넓힌다.</span></li>
+<li><b>모든 복습에는 원문으로 돌아갈 길이 있다.</b><span>카드·끝 화면·오늘 문단에서 출처 문장으로 돌아간다(LingQ · Readlang 선례).</span></li>
+<li><b>결과는 그 결과가 증명하는 기억에만 기록한다.</b><span>이해 · 산출 · 읽기 · 문형 · 연습은 서로 다른 것을 증명한다. 한 일정에 섞으면 일정이 무엇을 재는지 흐려진다. 아래 증거 모델이 정본이고 계약 테스트로 심는다.</span></li>
+</ol>
+
+
+<h3 id="evidence">2-1. 증거 모델 — 어떤 활동이 어느 기억을 증명하나</h3>
+<p>2판의 중심이다. 카드 모양보다 먼저 정한다. 표 한 줄 = 계약 테스트 하나.</p>
+<div class="scroll"><table>
+<thead><tr><th>활동</th><th>증명하는 것</th><th>기록되는 곳</th><th>일정(FSRS) · 새 표현 한도</th></tr></thead>
+<tbody>
+<tr><td>새 표현 첫 학습 카드</td><td>익히기(부호화)</td><td>학습 단계 시작</td><td>채점 없음. 학습 단계(Anki 기본 1분 · 10분) 재확인부터 채점. 한도 1 차감</td></tr>
+<tr><td>본 복습 · 이해 카드(외국어 → 뜻)</td><td>이해 기억</td><td>FSRS 이해 상태</td><td>뜻 · 발음 <b>둘 다</b> 떠올려야 통과. 하나라도 못 하면 「다시」</td></tr>
+<tr><td>문형 빈칸 · 어순(자동 채점)</td><td>문형 산출</td><td>문형 상태(지금 <code>grammar_review</code> 과 단위, R3 문형 하나)</td><td>정답률 → 등급(기존 <code>ratingFromScore</code>)</td></tr>
+<tr><td>표현 방향(뜻 → 외국어)</td><td>산출 기억</td><td>R1–R2: 숙련 사다리(<code>skillRung</code>, 기록에서 계산) · R3: 따로 산출 상태(이해 상태가 안정되면 늦게 생성)</td><td>R1–R2 영향 없음 · R3 별도 상태</td></tr>
+<tr><td>오늘 문단 문항</td><td>맥락 속 이해 · 산출</td><td>지금: 예전 일정에 직접 기록 → R3: 같은 상태로</td><td>지금 그대로</td></tr>
+<tr><td>집중 연습 · 자기 채점(몰랐어요 / 알았어요)</td><td>— (연습)</td><td><code>review_events</code> <code>source:'practice'</code>. 숙련 사다리 · 난이도 계산 <b>제외</b>. 「몰랐어요」는 흐릿 범위 · 헷갈린 표현 줄로(§6-1 ⑤)</td><td><b>0회</b>(일정 · 한도 모두)</td></tr>
+<tr><td>집중 연습 · 정답이 정해진 문항(고르기 · 빈칸 · 쓰기 · 리스닝)</td><td>숙련 단계</td><td><code>review_events</code> <code>source:'practice'</code> + <code>detail.qtype</code>. 숙련 사다리에 <b>포함</b>(사다리가 이 출처도 읽도록)</td><td><b>0회</b>(일정 · 한도 모두)</td></tr>
+<tr><td>읽기 중 조회 없이 다시 만남</td><td>맥락 인식</td><td>기록만(R2)</td><td>영향 없음</td></tr>
+</tbody></table></div>
+
+<h2 id="scope">3. 범위 모델</h2>
+<p>검색 문법(Anki 식)은 학습자에게 무겁다. 칩으로 고르는 <b>작은 타입 하나</b>로 충분하다.</p>
+<pre class="flow">scope = {
+  lang:   'Japanese' | 'Chinese' | 'English' | 'French'      ← 필수(배움 국기 칩과 같은 값)
+  level?: 'H1'…'H6' | 'NONE'(미분류)  ·  'N5'…'N1' · CEFR은 R2
+  source?: { kind:'book', bookId, from, to }                 ← 교재 과 범위(지금은 일본어 N5 한 권)
+         | { kind:'deck', ref }                               ← 사전 급수 덱 등(source_ref, 예: 「중국어 · H3」)
+         | { kind:'material', ids:[…] }                       ← 내 서재 자료
+         | { kind:'note', ids:[…] }
+         | { kind:'study' }                                   ← 오늘 학습에서 담은 것(source_ref '오늘 학습')
+  state?: 'due'(기본) | 'new' | 'fragile'                     ← 흐릿·위험 = 잊기 쉬운 표현
+  type?:  'word' | 'sentence' | 'pattern'    (화면 이름: 단어 · 문장 · 문형)                     ← 종류(아래 3-2)
+}
+주소: /vocab?lang=Chinese&level=H2&src=material:…&state=due   ·   /vocab?lang=Japanese&src=book:japanese-n5:5-10   (문법 정본 §6-1 ①)</pre>
+<div class="scroll"><table>
+<thead><tr><th>축</th><th>데이터 근거(스키마 변경 없이)</th><th>R1</th></tr></thead>
+<tbody>
+<tr><td>언어</td><td><code>user_vocabulary.language</code> · <code>selectLegacyReviewRows({language})</code> 이미 지원</td><td>✓</td></tr>
+<tr><td>급수 HSK</td><td><code>refVocabIndex.js</code>(단어 → H1–H6)</td><td>✓</td></tr>
+<tr><td>급수 JLPT · CEFR</td><td><code>src/content/japanese/vocab/n*.js</code> 등 목록 있음, 색인 새로 만들기</td><td>R2</td></tr>
+<tr><td>교재 과 범위</td><td><code>vocabulary_contexts.chapter_slug</code> · <code>locator.bookId</code>(맥락 없는 옛 저장분 제외 — 화면에 「출처 없는 표현 N개」로 표시)</td><td>✓</td></tr>
+<tr><td>사전 급수 덱 · 오늘 학습</td><td><code>user_vocabulary.source_ref</code>(요약 조회 필드에 추가 필요 — <code>vocabularyLearningRead.js:12-13</code>)</td><td>✓</td></tr>
+<tr><td>내 서재 자료</td><td><code>source_material_id</code> · 맥락 <code>material_id</code></td><td>✓</td></tr>
+<tr><td>상태(흐릿·위험)</td><td>스냅샷의 기억 확률(retrievability)</td><td>✓</td></tr>
+</tbody></table></div>
+<p><b>새 표현 하루 한도</b>는 지금처럼 <b>계정 하나에 하나</b>로 둔다(서버 소유, <code>fsrsLearning.test.js:160</code>). 범위마다 「오늘 새 표현 10개 남음」으로 남은 양만 보여 준다. 언어별 한도는 DB 변경이라 R3.</p>
+
+
+<h3 id="types">3-2. 종류 축과 한 가지 카드 규격 — 단어 · 문장 · 문형</h3>
+<p><b>지금:</b> 단어·예문은 <code>user_vocabulary</code>(뜻 떠올리기), 문형은 <code>grammar_review</code>(문법 과정의 <em>과</em> 단위, 과 끝 문제 정답률로 자동 채점)로 따로 돈다. N5 교재의 문형 표는 문형 복습과 연결이 없고, 「예문 담기」로 담은 문장은 단어와 똑같은 카드로 나온다.</p>
+<p><b>바꾼다:</b> 세 종류 모두 <b>뒷면 규격이 같다</b>(뜻 + 읽기 + 소리). 스스로 채점하는 카드는 모두 같은 버튼 넷(다시 / 어려움 / 알맞음 / 쉬움, 키 1–4), 자동 채점 문항(문형 빈칸 · 어순, R2)만 정답률로 등급을 매긴다. 다른 건 <em>무엇을 묻느냐</em>다. 한 복습방에서 섞여 나오고, 카드 위에 종류가 붙는다. 화면 이름은 <b>단어 · 문장 · 문형</b>.</p>
+<div class="scroll"><table class="tt">
+<thead><tr><th>종류</th><th>정해지는 기준</th><th>본 복습에서 묻는 것</th><th>채점</th></tr></thead>
+<tbody>
+<tr><td><b>단어</b></td><td>담은 단어 · 짧은 구</td><td>외국어 → 뜻</td><td>스스로 · 뜻과 발음 둘 다 떠올려야 통과</td></tr>
+<tr><td><b>문장</b></td><td>「예문 담기」. 문장 끝 부호 판별은 보조, 목록에서 종류 직접 바꾸기</td><td>문장 속 <b>담은 핵심 표현(굵게)</b> → 그 뜻. 문장 전체 뜻은 맥락</td><td>스스로(핵심 표현 기준)</td></tr>
+<tr><td><b>문형</b></td><td>문형 표의 「문형 담기」(R2), 문법 과 통과</td><td>이해: 예문의 <b>문형 부분 밑줄</b> → 그 부분의 뜻 · 산출: 한국어 + <b>문형 자리 빈칸</b></td><td>이해는 스스로 · 빈칸 · 어순은 <b>자동</b>(기존 문제 유형)</td></tr>
+</tbody></table></div>
+<ul>
+<li><b>문형은 문형 부분을 거치게 묻는다.</b> 「あたらしい かばんを 買いたいです」의 뜻은 かばん · 買う만 알아도 풀린다(학습자는 문법보다 내용어를 먼저 처리한다 — VanPatten). 그래서 밑줄 · 빈칸으로 문형 자리를 직접 묻는다.</li>
+<li><b>문형 예문 풀을 넓힌다.</b> 교재 문형 예문은 과당 2개 남짓이라 「돌려 쓰기」가 두 문장 암기가 된다. 그 과 대화 · 읽기 본문에서 문형이 든 문장을 기존 문형 탐지(<code>patternIndex.js</code> 커널 대조)로 모아 풀에 더한다.</li>
+<li><b>문장은 핵심만 채점한다.</b> 담을 때 고른 표현을 굵게 보이고 그것만 묻는다. 문장 통째 암기와 「대충 뜻이면 맞음?」 같은 애매함을 없앤다(문장 수집 선례).</li>
+<li><b>방향 전환은 철회.</b> 본 복습은 이해 방향 하나. 「뜻 → 외국어」 산출은 오늘 문단과 집중 연습의 <b>정답이 정해진 문항</b>으로 기존 숙련 사다리(고르기 → 빈칸 → 쓰기 → 듣기 → 말하기)에 쌓고, R3에서 이해 상태가 안정된(약 21일) 표현에만 따로 산출 상태를 만든다(늦게 생성, 새 표현 한도에서 차감).</li>
+</ul>
+<div class="cardgrid" aria-label="종류별 카드 목업">
+<div class="kc"><div class="kt">처음 보는 표현</div><div class="kf" lang="zh">早餐</div><div class="kb">아침 식사</div><div class="kread"><span lang="zh-Latn">zǎo cān</span><span class="kplay">▷ 듣기</span></div><div class="ks">北京的早餐 · 3쪽 「我每天七点吃早餐。」</div><div class="kp" style="text-align:right">다음 →</div><div class="ks">잠시 뒤 다시 물어볼게요</div></div>
+<div class="kc"><div class="kt">단어 · 이해</div><div class="kf" lang="zh">早餐</div><hr><div class="kb">아침 식사</div><div class="kread"><span lang="zh-Latn">zǎo cān</span><span class="kplay">▷ 듣기</span></div><div class="kflag">뜻 · 발음(성조 포함) 둘 다 떠올려야 통과</div></div>
+<div class="kc"><div class="kt">문장 · 이해</div><div class="kf s" lang="ja">ここは <b class="tgt">カフェ</b>です。</div><hr><div class="kb"><b>カフェ</b> = 카페</div><div class="ks">여기는 카페예요. · 교재 7과 원문 보기 ↗</div><div class="kread"><span class="kplay">▷ 듣기</span></div></div>
+<div class="kc"><div class="kt">문형 · 이해</div><div class="kf s" lang="ja">あたらしい かばんを <u class="pat">買いたいです</u>。</div><div class="ks">밑줄 부분의 뜻은?</div><hr><div class="kb">사고 싶어요 (~하고 싶어요)</div><div class="kread"><span lang="ja"><ruby>買<rt>か</rt></ruby>いたいです</span><span class="kplay">▷ 듣기</span></div><div class="kp">문형 · ます를 뺀 모양＋たいです</div></div>
+<div class="kc"><div class="kt">문형 · 빈칸 (자동 채점)</div><div class="kf k">새 가방을 사고 싶어요.</div><div class="kf s" lang="ja">あたらしい かばんを 買い＿＿＿＿。</div><div class="kchoice"><span>たいです</span><span>ます</span><span>ほしいです</span></div><div class="ks">정답률로 등급 — 스스로 채점 없음</div></div>
+<div class="kc"><div class="kt">채점 막대(하단 고정)</div><div class="gbar"><span>다시</span><span>어려움</span><span>알맞음</span><span>쉬움</span></div><div class="ks">뜻이나 발음 중 하나라도 막혔다면 다시</div><div class="toast">알맞음 · 4일 뒤 <span>되돌리기</span></div></div>
+</div>
+<p class="mcap">앞면에는 읽기를 내지 않는다(학습 카드만 예외 — 처음엔 다 보여 준다). 예시는 실제 N5 교재 7 · 21과와 서재 자료.</p>
+<h3 id="pron">3-3. 발음 — 답의 일부, 하나라도 못 하면 「다시」 (오너 결정 2026-10-10)</h3>
+<ul>
+<li><b>뒷면 = 뜻 + 읽기 + 소리.</b> 일본어는 한자 위 후리가나(<code>ruby</code>), 중국어는 성조 부호 병음, 영어 · 프랑스어는 소리 중심(IPA는 선택 표시). 가나만 있는 표현은 읽기 줄 없이 소리만.</li>
+<li><b>앞면에는 읽기를 내지 않는다.</b> 한자어 · 중국어는 읽기를 떠올리는 것 자체가 학습이다.</li>
+<li><b>판정: 뜻 · 발음 중 하나라도 못 떠올리면 「다시」.</b> 「어려움 · 알맞음 · 쉬움」은 둘 다 떠올렸을 때, 얼마나 쉽게 떠올렸는지로 고른다. 버튼 아래 고정 문구: 「뜻이나 발음 중 하나라도 막혔다면 다시」. 선이 분명해 자기 채점이 흔들리지 않는다(WaniKani: 뜻과 읽기를 둘 다 맞혀야 통과).</li>
+<li><b>발음 판정 대상.</b> 읽기가 따로 있는 표현만 — 일본어 한자어(후리가나), 중국어(병음 · <b>성조 포함</b>). 가나만 있는 단어 · 영어 · 프랑스어는 뜻으로만 판정한다(철자와 소리가 거의 같아 따로 떠올릴 것이 없다. 일본어 억양 데이터는 없음).</li>
+<li><b>버튼 넷이 전부(Anki와 같음).</b> 「무엇을 놓쳤나」 같은 추가 질문은 두지 않는다. 틀린 직후 한 번 더 누르게 하면 대부분 건너뛰어 데이터도 듬성해진다. 발음 약점은 발음을 직접 묻는 활동 — 집중 연습의 리스닝(소리 → 뜻) · 오늘 문단의 쓰기 — 결과로 숙련 사다리에 자동으로 쌓인다(Anki에서 듣기 카드를 따로 두는 것과 같은 역할).</li>
+<li><b>대가.</b> 읽기만 틀려도 간격이 처음부터 다시 시작돼 복습량이 늘 수 있다(특히 중국어 성조). 실사용에서 표현별 · 언어별 「다시」 비율을 보고 다시 판단한다.</li>
+<li><b>소리 규격.</b> 세션 시작 버튼을 누를 때 오디오를 한 번 열어 두고(iOS 자동 재생 제한), 다음 카드 소리를 미리 받는다. 머리줄에 🔈/🔇 전환(기기별 기억, 대중교통 대비). 화면 읽기 프로그램 사용 중엔 자동 재생하지 않고 「뜻 · 읽기」를 글로 알린다. 음성을 쓸 수 없으면 ▷ 버튼을 숨기고 읽기 글만.</li>
+<li><b>「말해 보기」는 따라 말하기 연습</b>이다. 자기 발음 오류는 스스로 못 듣기 때문에 채점 근거로 쓰지 않는다.</li>
+<li><b>읽기가 비어 있는 표현(R1):</b> 뜻으로만 판정하고 발음 문구를 숨긴다. 자동 채우기는 R2.</li>
+<li><b>읽기 빈칸 채우기 · FSRS 화면 소리</b>는 1판 그대로(kuromojin · pinyin-pro로 「자동」 표시와 함께 채우기, <code>FsrsReviewSession.jsx</code>에 듣기 추가).</li>
+</ul>
+<h3 id="steps">3-4. 학습 단계 · 카드 단계 — Anki와 같게 (오너 결정 2026-10-10, 둘 다 확정)</h3>
+<div class="scroll"><table>
+<thead><tr><th></th><th>지금(<code>fsrsScheduler.js</code> anki-seconds-v1)</th><th>바꿈 — Anki 기본</th></tr></thead>
+<tbody>
+<tr><td>학습 단계</td><td>30초 → 10분(ts-fsrs가 초 단위를 지원하지 않아 직접 구현)</td><td><b>1분 → 10분</b>(ts-fsrs 기본값과도 같음)</td></tr>
+<tr><td>재학습 단계</td><td>10분</td><td><b>10분</b></td></tr>
+<tr><td>첫 답의 간격(실측)</td><td>다시 30초 · 어려움 약 5분 · 알맞음 10분 · 쉬움 계산값</td><td>다시 1분 · 어려움 6분(ts-fsrs 기본 처리, 직접 구현 <code>stepPlan</code>을 쓰면 5.5분) · 알맞음 10분 · 쉬움 8일(계산값)</td></tr>
+</tbody></table></div>
+<ul>
+<li>졸업 뒤 간격은 지금처럼 FSRS 계산값(기억률 0.9). 「쉬움」은 첫 답부터 계산값으로 바로 졸업.</li>
+<li><b>정책 전환(R1-B, 막힘 해소 규칙):</b> 새 정책값 <code>anki-v2</code>(학습 1분 · 10분, 재학습 10분). <code>validateFsrsCard</code>는 <code>anki-seconds-v1</code> · <code>anki-v2</code> 두 정책을 모두 받고, New 카드 검사(<code>fsrsScheduler.js:66</code>의 「첫 단계 이후」 조건)는 <b>그 카드의 정책</b> 첫 단계를 쓴다 — 그대로 바꾸면 기존 New 카드가 전부 무효로 빠진다(<code>fsrsReviewSession.js:101</code>). 학습 · 재학습 중인 카드는 다음 채점 때 같은 단계 순번으로 새 정책에 넘긴다. 초 단위가 필요 없어지므로 직접 구현한 <code>stepPlan</code> 대신 ts-fsrs 기본 단계 처리로 바꿀 수 있다(재사용). <b>먼저</b> 저장소 밖 FSRS SQL(RPC)이 정책값을 검사하는지 읽기 전용으로 확인하고, 손질이 필요하면 비파괴 SQL + 복원 경로를 따로 승인받는다.</li>
+<li><b>카드 단계(확정): 신규 → 학습 → 익히는 중(다음 복습까지 간격 21일 미만) → 익숙(21일 이상) → 재학습.</b> Anki의 New · Learning · Young · Mature · Relearning과 같다. 기준값 「간격」 = 다음 복습 예정일 − 마지막 복습일(일, 버림) — 새 일정 카드는 <code>scheduledDays</code>와 같고, 예전 일정 카드는 <code>next_review_at − last_reviewed_at</code>으로 잰다(예전 카드의 <code>interval</code> 칸은 실제로 안정도라 쓰지 않는다). 쓰는 곳: 단어 목록 단계 표시 · 현황 통계 · R3 표현 카드 생성 시점. 일정 계산에는 영향 없음. 기억 건강(선명 · 양호 · 흐릿 · 위험)은 별도 유지.</li>
+<li><b>개발 메모:</b> 지금 <code>growthStats.js</code>의 <code>wordStage</code>(초기 · 학습 중 7일 · 숙련 30일, FSRS 카드는 안정도 기준)를 대체한다. 같은 파일의 <code>KNOWN_WORD_MIN_INTERVAL = 7</code>은 「아는 단어」 개수 판정에도 쓰여(<code>growthStats.js:12-20</code>) 단계 경계와 분리해 그대로 둔다 — 바꾸면 현황 「아는 단어」 숫자가 달라지므로 별도 결정. 덱 구성 집계(<code>VocabPage.jsx:472</code> deckStats)도 새 단계로 함께 바꾼다.</li>
+<li>「처음 보는 표현」 카드: 버튼 「다음 →」, 안내 「잠시 뒤 다시 물어볼게요」(시간 약속 없음). 끝 화면은 학습 · 재학습 카드가 남으면 「다시 N개는 잠시 뒤 다시 나와요」.</li>
+</ul>
+
+<h2 id="flow">4. 흐름 — 바뀌기 전과 후</h2>
+<pre class="flow">지금
+  담기 ─→ 단어장(두 갈래 일정) ─┬→ 복습(/vocab) : 전 언어 혼합, 덱 하나만 고름
+                               ├→ 교재 「다시 꺼내 보는 문장」 : 채점·기록 없음
+                               └→ 오늘 문단 : 한 번 채점된 예전 일정 카드만 ✕ 새 표현 누락
+
+개편 후
+  담기 ─→ 담은 표현(표현 하나 = 기억 하나)
+            │
+            ├→ (새 표현) 처음 보는 표현 카드 → 학습 단계 1분 · 10분
+            ├→ 복습방  [범위: 🇨🇳 · HSK 2 · 내 서재 자료]   ┄ 문법 N개 → /review/grammar (R3까지 별줄)
+            │     ├ 복습       → 채점 → 일정 갱신 ─┐
+            │     └ 집중 연습  → 일정 그대로(연습 기록만)
+            │                                     ↓
+            ├→ 오늘 문단 : 같은 언어의 복습할 표현 + 오늘 한도 안의 새 표현(R2)
+            │                                     ↓
+            └──────────── 카드 · 끝 화면 · 문단에서 「원문 보기」 ←┘</pre>
+
+<h2 id="mock">5. 화면 목업</h2>
+<h3>5-1. 복습방 — 오너 사례: 중국어 · HSK 2 · 내 서재 자료</h3>
+<div class="mockrow">
+<div><div class="dev d" aria-label="넓은 화면 목업">
+<h4>복습 <span class="flag">🇯🇵 <b class="bdg">9</b></span><span class="flag on">🇨🇳 <b class="bdg">40</b></span></h4>
+<div class="chips" role="group" aria-label="범위">
+<span class="chip on">HSK 2 <span class="x">✕</span></span>
+<span class="chip on">내 서재 자료 · 2개 <span class="x">✕</span></span>
+<span class="chip">종류: 전체 ▾</span>
+<span class="chip">＋ 범위</span>
+</div>
+<div class="chips" aria-label="최근 범위"><span class="sub" style="align-self:center">최근 · R2</span><span class="chip">고정 · 중국어 · HSK 2</span><span class="chip">일본어 · 교재 5–10과</span></div>
+<div class="card">
+<div class="row"><div><div class="sub">이 범위에서 오늘</div><div class="big">18</div></div><div class="sub" style="text-align:right">복습 14 · 새 표현 4<br>새 표현 · 오늘 10개 더(일본어 · 중국어 합쳐서)</div></div>
+<div class="chips" style="margin:12px 0 0" aria-label="세션 길이"><span class="chip on">5분 · 약 20개</span><span class="chip">50개</span><span class="chip">전부</span></div>
+<div class="btns"><span class="btn p">복습 시작 →</span><span class="btn g">집중 연습</span></div>
+<p class="note">급수를 켜면 문장 · 문형은 빠져요(급수 없음 6개). 범위 밖 중국어 복습 22개는 범위를 풀면 이어서.</p>
+</div>
+</div><p class="mcap">국기 칩 숫자 = 그 언어의 오늘 복습. 다른 언어가 급해도 놓치지 않는다. 덱 선택은 「출처 · 사전 급수 덱」으로 흡수.</p></div>
+<div><div class="dev m" aria-label="휴대폰 목업">
+<h4>복습 <span class="flag">🇯🇵 9</span><span class="flag on">🇨🇳 40</span></h4>
+<div class="chips"><span class="chip on">HSK 2 ✕</span><span class="chip on">자료 2 ✕</span><span class="chip">＋</span></div>
+<div class="card"><div class="row"><div class="big">18</div><div class="sub">복습 14 · 새 4</div></div>
+<div class="chips" style="margin:10px 0 0"><span class="chip on">5분</span><span class="chip">50</span><span class="chip">전부</span></div>
+<div class="btns" style="display:grid"><span class="btn p">복습 시작 →</span><span class="btn g">집중 연습</span></div></div>
+</div><p class="mcap">휴대폰. 복습할 게 남아 있으면 집중 연습은 보조 버튼.</p></div>
+</div>
+
+<h3>5-2. 범위 고르기 시트 — 언어마다 고를 수 있는 출처가 다르다</h3>
+<div class="mockrow">
+<div><div class="dev m" style="padding:0;overflow:hidden;background:var(--paper)">
+<div style="height:40px"></div>
+<div class="sheet">
+<h5>범위 고르기 · 🇨🇳 중국어</h5><div class="sub">중국어 담은 표현 312개 중 42개(아는 단어 제외)</div>
+<div class="sh-l">급수</div>
+<div class="chips"><span class="chip">H1</span><span class="chip on">H2</span><span class="chip">H3</span><span class="chip">H4+</span><span class="chip">미분류</span></div>
+<div class="sh-l">출처</div>
+<div class="chips"><span class="chip">전체</span><span class="chip">사전 급수 덱</span><span class="chip on">내 서재 자료</span><span class="chip">노트</span><span class="chip">오늘 학습</span><span class="chip off" aria-disabled="true">교재 — 중국어 교재 없음</span></div>
+<div class="mlist"><label><span class="cb on">✓</span>北京的早餐 · 28</label><label><span class="cb on">✓</span>上海的地铁 · 14</label><label><span class="cb">　</span>我的周末 · 9</label></div>
+<div class="sh-l">상태 · 종류</div>
+<div class="chips"><span class="chip on">복습할 때 된 것</span><span class="chip">새 표현만</span><span class="chip">흐릿 · 위험</span><span class="chip">단어</span><span class="chip">문장</span></div>
+<div class="btns" style="display:grid"><span class="btn p">이 범위로 보기</span><span class="btn g">이 범위 고정 · R2</span></div>
+<p class="note">출처가 기록되지 않은 옛 표현 23개는 「출처 · 전체」에서만 나와요. 「문형」 칩은 문형 카드가 생기는 R2부터.</p>
+</div></div><p class="mcap">일본어로 바꾸면 「교재」가 살아나고 과 범위 막대(1–42과)가 나온다.</p></div>
+</div>
+
+<h3>5-3. 복습과 집중 연습</h3>
+<div class="mockrow">
+<div><div class="dev m"><div class="rv"><div class="sub">복습 · 3 / 18 · 단어</div><div class="w" lang="zh">早餐</div><div class="src">뒷면 보기 — Space</div></div><div class="gbar dim"><span>다시</span><span>어려움</span><span>알맞음</span><span>쉬움</span></div></div><p class="mcap">앞면: 글자만. 읽기 · 뜻은 숨김. 채점 막대는 하단 고정, 뒷면 전엔 잠금(두 번 탭 오채점 방지, 펼친 뒤 0.3초 입력 무시).</p></div>
+<div><div class="dev m"><div class="rv"><div class="sub">복습 · 3 / 18 · 단어</div><div class="w" lang="zh">早餐</div><div class="kb" style="margin-top:6px">아침 식사</div><div class="kread" style="justify-content:center;gap:12px"><span lang="zh-Latn">zǎo cān</span><span class="kplay" style="margin-left:0">▷ 듣기</span></div><div class="src">北京的早餐 · 3쪽 <a href="#mock">원문 보기 ↗</a></div><div class="ks" style="margin-top:10px">뜻이나 발음 중 하나라도 막혔다면 다시</div></div><div class="gbar"><span>다시</span><span>어려움</span><span>알맞음</span><span>쉬움</span></div></div><p class="mcap">뒷면: 뜻 + 병음 + 소리. 뜻 · 발음(중국어는 성조 포함) 둘 다 떠올렸을 때만 통과. 문구는 모든 언어에서 「뜻이나 발음 중 하나라도 막혔다면 다시」 하나.</p></div>
+<div><div class="dev m"><div class="strip">집중 연습 · 일정은 바뀌지 않아요</div><div class="rv"><div class="sub">집중 연습 · 7 / 42</div><div class="w" lang="zh">早餐</div><div class="kb" style="margin-top:6px">아침 식사 · zǎo cān</div><div class="pbtns"><span>몰랐어요</span><span>알았어요</span></div></div></div><p class="mcap">집중 연습: 두 단계. 연습 기록만. 「몰랐어요」는 흐릿 표시로 자동 연결(다음 「흐릿 · 위험」 범위에 나온다).</p></div>
+</div>
+
+<h3>5-4. 어디서 들어오나 — 진입점</h3>
+<div class="entry">
+<div class="card"><div class="k">배움 · 단어 복습 칸</div><div class="t">국기 칩 언어의 오늘 개수(범위 개수 함수)</div><div class="a">→ 복습방 [언어] · R1</div></div>
+<div class="card"><div class="k">교재 도구막대 「담은 표현」</div><div class="t">채점 없는 화면 대신</div><div class="a">→ 복습방 [교재 · 전체 과] · R1</div></div>
+<div class="card"><div class="k">교재 과 끝</div><div class="t">「이 과 표현 복습」</div><div class="a">→ 복습방 [교재 · 이 과] · R1</div></div>
+<div class="card"><div class="k">자료 뷰어</div><div class="t">「이 자료 표현 복습」</div><div class="a">→ 복습방 [자료 · 이 자료] · R1</div></div>
+<div class="card"><div class="k">오늘 문단 끝</div><div class="t">「남은 복습 N개」</div><div class="a">→ 복습방 [언어] · R2</div></div>
+<div class="card"><div class="k">현황 · 레벨 어휘 줄 / 기억 건강</div><div class="t">그 급수 · 흐릿 · 위험</div><div class="a">→ 복습방 [급수 / 상태] · HSK R1, JLPT R2</div></div>
+</div>
+<p>교재 「다시 꺼내 보는 문장」은 <b>교재의 담은 표현 목록</b>으로 이름을 바꾸고, 뜻 펼치기는 집중 연습으로 흡수한다. 복습방은 메뉴에서 <b>배움</b> 아래에 속한다(메뉴 불 · 「← 배움」).</p>
+
+<h3>5-5. 끝 화면</h3>
+<div class="mockrow"><div><div class="dev m"><div class="card" style="text-align:center"><div class="sub">중국어 · HSK 2 · 내 서재 자료</div><div class="big" style="margin:8px 0">오늘 몫 끝</div><div class="sub">18개 · 다시 4</div><div class="note" style="margin:10px 0 0">「다시」 4개는 잠시 뒤 다시 나와요</div><div class="btns" style="display:grid"><span class="btn g">잠시 뒤 이어 하기</span><span class="btn g">읽던 자료로 돌아가기</span><span class="btn g">범위 밖 중국어 22개 이어서</span></div></div></div><p class="mcap">「전체 복습 끝」이라고 하지 않는다(기존 계약 유지). 학습 단계 카드가 남았으면 끝이 아니라 「잠시 뒤」.</p></div></div>
+
+<h3 id="states">5-6. 상태 · 문구 규격 — 인계 전에 정해 둘 것</h3>
+<div class="scroll"><table>
+<thead><tr><th>상태</th><th>화면 문구 · 동작</th></tr></thead>
+<tbody>
+<tr><td>범위에 0개</td><td>「이 범위엔 오늘 복습할 표현이 없어요 · HSK 2를 빼면 12개」 [급수 풀기] [집중 연습]</td></tr>
+<tr><td>범위를 못 읽음(닫힘)</td><td>「범위를 불러오지 못했어요. 전체로 바꾸지 않았어요.」 [다시 시도] [범위 풀기]</td></tr>
+<tr><td>새 표현 한도에 막힘</td><td>「이 과 표현 12개 · 오늘 시작 5개(새 표현 한도) · 나머지 7개는 내일」 [지금 집중 연습으로 보기]</td></tr>
+<tr><td>밀린 복습 많음</td><td>밀린 복습이 하루 평균의 2배를 넘으면 새 표현 0 · 「밀린 복습부터 — 잊기 쉬운 순서로」</td></tr>
+<tr><td>중간에 멈춤 · 새로고침</td><td>진행 위치를 세션 저장소에 보관 · 「멈춘 복습 이어 하기 (7 / 20)」</td></tr>
+<tr><td>뜻 없는 표현(글쓰기 담기 등)</td><td>복습에서 빼고 목록에 「뜻 채우기」 표시</td></tr>
+<tr><td>출처 없는 표현</td><td>「원문 보기」 숨김 · 출처 범위에선 「전체」에서만</td></tr>
+<tr><td>카드에서 「아는 단어」 표시(#1335)</td><td>바로 빠짐 · 하단 「아는 단어로 옮겼어요 [되돌리기]」 · 시트 개수는 아는 단어 제외</td></tr>
+<tr><td>오프라인 · 저장 실패</td><td>「연결되면 이어서 보낼게요」 · 범위 주소도 오프라인 화면 대신 마지막 목록(R2)</td></tr>
+<tr><td>음성 불가</td><td>▷ 숨김 · 읽기 글만</td></tr>
+<tr><td>기존 모드(타이핑 · 문맥 · 리스닝)</td><td>타이핑 · 리스닝은 <b>집중 연습의 갈래</b>로 이동(사다리 기록), 문맥은 뒷면 출처 문장으로 흡수</td></tr>
+<tr><td>문법 복습(R1–R2)</td><td>복습방에 「문법 N개 →」 별줄로 /review/grammar 연결. 배움 칸 개수에는 넣지 않음</td></tr>
+</tbody></table></div>
+
+<h2 id="phases">6. 단계 · 인계 명세</h2>
+<div class="phase">
+<div class="card"><h4>R1-A — 범위 · 개수 · 진입점 <span class="tag ok">승인됨 · 스키마 변경 없음 · 먼저 인계</span></h4>
+<ul>
+<li>범위 모델 · 주소 문법(§6-1 ①) · 범위 막대 · 범위 시트 · 국기 칩 숫자. 덱 선택은 「출처 · 사전 급수 덱」으로 흡수(설정 서랍의 덱 선택 삭제).</li>
+<li>개수 함수 <code>countReviewScope</code>(§6-1 ②) — 배움 단어 복습 칸 · 국기 칩 · 복습방이 공용. 배움 화면(AK)이 이 함수를 가져다 쓴다.</li>
+<li>교재 범위 API 일반화(과 범위), 자료 범위 id 조회(§6-1 ①). 기존 <code>?book=</code> 링크 호환.</li>
+<li>진입점: 배움 칸 · 교재 도구막대(채점 복습방으로) · 교재 과 끝 · 자료 뷰어 · 현황 레벨 어휘(HSK) · 기억 건강. 복습 경로의 메뉴 소속 = 배움.</li>
+<li>상태 문구 중 범위 관련(0개 · 못 읽음 · 한도 막힘) · 이름 통일(§6-1 ⑧).</li>
+</ul></div>
+<div class="card"><h4>R1-B — 세션 · 카드 · 학습 단계 <span class="tag ok">승인됨 · 학습 단계 전환만 DB 확인 선행</span></h4>
+<ul>
+<li>두 엔진을 한 줄로(§6-1 ③): FSRS 독점 해제, 정렬 · 띄우기 · 학습 카드 · 세션 길이 · 밀린 복습 규칙.</li>
+<li>처음 보는 표현 카드 · 카드 뒷면(뜻 + 읽기 + 소리) · 앞면 읽기 숨김 · 「뜻이나 발음 중 하나라도 막혔다면 다시」 · 소리 규격 · 하단 고정 채점 · 되돌리기 알림 · FSRS 화면 소리.</li>
+<li>집중 연습(§6-1 ④⑤): 두 버튼 자기 채점 + 기존 타이핑 · 리스닝 모드 이동, 일정 · 한도 0회.</li>
+<li>학습 단계 Anki 기본(1분 · 10분) 정책 전환(§3-4) · 카드 단계 21일(신규 · 학습 · 익히는 중 · 익숙 · 재학습).</li>
+<li>종류 표시(단어 · 문장, R1은 읽을 때 판별만 — 직접 바꾸기는 R2) · 나머지 상태 문구(§5-6).</li>
+</ul></div>
+<div class="card"><h4>R2 — 문장 · 문형 카드와 순환 잇기</h4>
+<ul>
+<li>문장 핵심 표현 굵게 · 핵심만 채점 · 종류 직접 바꾸기(저장 위치 결정 포함). 문형: 밑줄 이해 · 빈칸 / 어순 자동 채점 · 예문 풀 확장 · 「문형 담기」 · 「문형」 칩.</li>
+<li>JLPT · CEFR 색인(현황 레벨 어휘 일본어 진입점). 읽기 자동 채우기 · 예문 후리가나 · 병음. 헷갈리는 쌍 목록(<code>confusedQueue</code> 기반)으로 띄우기 강화.</li>
+<li>오늘 문단: 범위 · 새 표현(같은 한도) + 끝에 복습방 링크. 조회 없이 다시 만남 기록.</li>
+<li>첫 일정 규칙 통일: 모든 담기 = 새 표현 + 학습 카드(뷰어의 담을 때 평가는 첫 난이도 힌트로만).</li>
+<li>최근 범위 · 고정(저장 위치 결정), 범위 주소 오프라인.</li>
+</ul></div>
+<div class="card"><h4>R3 — 기억 상태 정리 <span class="tag gate">R1 · R2 실사용 뒤 오너 판단 · DB</span></h4>
+<ul>
+<li>예전 일정 → FSRS 이관(<code>ts-fsrs</code> <code>reschedule</code>로 기록 재생). 오늘 문단 채점도 같은 상태로. 「FSRS 전면 활성화 보류」 결정을 바꾸는 일.</li>
+<li>산출 상태(이해가 「익숙」에 이른 표현에만 늦게 생성, 새 표현 한도 차감) · 문형 단위를 「과」에서 「문형 하나」로.</li>
+<li>언어별 새 표현 한도 · 개인별 최적화(리뷰 수백 건 이후).</li>
+</ul></div>
+</div>
+
+<h3 id="spec">6-1. R1 명세</h3>
+<h4 class="sh">① 범위 주소 문법 · 데이터</h4>
+<div class="scroll"><table>
+<thead><tr><th>파라미터</th><th>값</th><th>R</th></tr></thead>
+<tbody>
+<tr><td><code>lang</code></td><td>코드값 그대로 <code>Japanese | Chinese | English | French</code>(기존 <code>/study?lang=</code> · <code>/lessons?lang=</code>와 같음). 없으면 배움 국기 칩 언어</td><td>A</td></tr>
+<tr><td><code>level</code></td><td>중국어 <code>H1…H6 | NONE</code>(미분류, <code>refVocabIndex</code> 값). 일본어 <code>N5…N1</code>은 R2. 언어와 안 맞으면 무효</td><td>A</td></tr>
+<tr><td><code>src</code></td><td><code>book:japanese-n5:5-10</code>(→ <code>n5-book-u05…u10</code>) · <code>deck:&lt;encodeURIComponent(source_ref)&gt;</code> · <code>material:&lt;id&gt;,&lt;id&gt;</code> · <code>note:&lt;id&gt;</code> · <code>study</code>(source_ref 「오늘 학습」). 하나만</td><td>A</td></tr>
+<tr><td><code>state</code></td><td><code>due</code>(기본) · <code>new</code> · <code>fragile</code></td><td>A</td></tr>
+<tr><td><code>type</code></td><td><code>word | sentence</code>(R1) · <code>pattern</code>(R2)</td><td>B</td></tr>
+<tr><td>호환</td><td>기존 <code>?book=japanese-n5&amp;returnTo=</code> = <code>src=book:japanese-n5:1-42</code> + 돌아갈 곳 유지(<code>bookReviewNavigation.js:18-28</code>)</td><td>A</td></tr>
+<tr><td>무효 · 실패</td><td>어느 값이든 무효거나 id 조회가 실패하면 <b>닫힘 상태</b>(§5-6). 「전체」로 새지 않고, 저장된 설정을 덮지 않는다</td><td>A</td></tr>
+</tbody></table></div>
+<p>데이터: 교재 과 범위는 <code>/api/learning/book-review</code>에 <code>from · to</code> 추가. 자료 범위는 새 읽기 전용 조회(<code>source_material_id</code> ∪ <code>vocabulary_contexts.material_id</code>, 본인 행만). 덱 · 오늘 학습은 <code>source_ref</code> — 요약 조회 필드에 추가(<code>vocabularyLearningRead.js:12-13</code>, 계약 <code>vocabularyLearningRows.test.js:32</code> 갱신).</p>
+
+<h4 class="sh">② 개수 함수</h4>
+<pre class="flow">countReviewScope({ snapshot, fsrsEntries, quota, scope, now })
+  → { due, newAllowed, newLocked, total, grammarDue, byLang:{Japanese,Chinese,…} }
+  · due        = 범위 안 기한 된 카드(두 엔진 합) — 아는 단어 · 제외 · 뜻 없음 제외
+  · newAllowed = 범위 안 새 표현 중 오늘 시작 가능한 수(계정 한도 남은 수 이내, 밀린 복습 규칙 적용)
+  · total      = due + newAllowed   ← 화면 숫자 = 시작하는 줄 길이
+  · grammarDue = 문법 복습(별줄, total에 넣지 않음)
+  · byLang     = 국기 칩 숫자</pre>
+<p>부르는 곳: 배움 단어 복습 칸(AK) · 국기 칩 · 복습방. 현황(AK)에는 복습 개수 칸이 없으므로 진입 링크만 범위 주소로 연결한다.</p>
+
+<h4 class="sh">③ 줄 만들기 — 두 엔진을 한 줄로</h4>
+<ul>
+<li><b>합치기:</b> 범위 안 FSRS 카드와 예전 일정 카드를 한 줄로 만든다. 「FSRS 카드가 하나라도 있으면 세션을 FSRS로 전환」(<code>VocabPage.jsx:794</code>)은 없앤다. 채점은 카드마다 원래 엔진으로 저장(기존 저장 경로 재사용).</li>
+<li><b>순서:</b> 기한 지난 카드는 지금 기억 확률이 낮은 순(두 엔진 모두 스냅샷 기억 모델로 계산 — <code>forecast.js</code>와 같은 방식). 새 표현 · 학습 카드는 복습 3장마다 1장 끼운다. 같은 출처 단위(교재 과 = <code>chapter_slug</code>, 자료 = <code>material_id</code>, 덱 = <code>source_ref</code>)의 새 표현끼리는 최소 4장 띄운다.</li>
+<li><b>학습 카드 · 단계:</b> 새 표현의 첫 등장은 채점 없는 「처음 보는 표현」 카드. FSRS 카드는 학습 단계(1분 · 10분)를 따른다. 예전 일정 카드는 분 단위 단계가 없으므로 같은 세션 안에서 3장 뒤 한 번 다시 묻는 <b>세션 내 재질문</b>(줄 메타데이터만, 일정 저장 없음 — FSRS의 <code>nextQuestionAt</code>과 같은 개념)으로 처리하고, 그 첫 채점부터 일정에 반영한다.</li>
+<li><b>세션 길이:</b> 「5분 ≈ 20 · 50 · 전부」 = 서로 다른 카드 수(학습 단계 · 세션 내 재질문은 세지 않음, 새 표현 포함). 줄 앞에서부터 자른다.</li>
+<li><b>이어 하기:</b> 세션 저장소에 <code>{scopeKey, cardIds, index, startedAt}</code>. 다시 열 때 다른 곳에서 이미 채점된 카드(마지막 채점 > startedAt)는 건너뛰고, 24시간이 지나면 버린다. 지금 메모리 안 이어 하기(<code>VocabPage.jsx:1065</code>)를 대체 · 재사용.</li>
+<li><b>밀린 복습 규칙:</b> 기준 = 그 언어의 지난 14일 하루 평균 완료 복습 수(14일 기록이 없으면 20). 오늘 기한 지난 복습이 기준의 2배를 넘으면 <b>그 언어</b> 범위의 새 표현을 0으로(계정 한도는 차감하지 않음).</li>
+</ul>
+
+<h4 class="sh">④ 집중 연습</h4>
+<ul>
+<li>범위 안 표현 전체(기한과 무관)를 돈다. 자기 채점 두 버튼(몰랐어요 / 알았어요) + 기존 타이핑 · 리스닝 모드가 집중 연습의 갈래로 들어온다. 본 복습에서는 이 모드들을 뺀다.</li>
+<li><b>FSRS · 예전 일정 · 새 표현 한도 호출 0회</b>(계약). 복습할 게 남아 있으면 보조 버튼 + 「복습 N개 먼저 하면 일정에 반영돼요」.</li>
+</ul>
+
+<h4 class="sh">⑤ 연습 기록 형식 · 읽는 곳</h4>
+<p><code>review_events</code>에 <code>source:'practice'</code>, <code>item_key</code> = 단어 id, <code>detail:{qtype, scope, result}</code>(<code>qtype</code>: <code>self | choice | cloze | typing | listening</code>). <code>source</code>에 제약이 없어 스키마 변경이 필요 없다(<code>20260701000100_grammar_review.sql:47</code>). <b>기본은 모든 기존 읽는 곳에서 제외</b>하고, 아래만 포함한다.</p>
+<div class="scroll"><table>
+<thead><tr><th>읽는 곳</th><th>연습 기록</th></tr></thead>
+<tbody>
+<tr><td>숙련 사다리 · 난이도(<code>skillRung</code> · EWMA, <code>VocabPage.jsx:806</code>)</td><td>포함 — 정답이 정해진 문항(choice · cloze · typing · listening)만. <code>self</code> 제외</td></tr>
+<tr><td>헷갈린 표현 줄 · 약점(<code>confusedQueue</code> · 약점 계산)</td><td>포함 — 「몰랐어요」 · 오답</td></tr>
+<tr><td>흐릿 범위(<code>state=fragile</code>)</td><td>기억 확률 기준 + 지난 14일 연습에서 「몰랐어요」를 받은 표현</td></tr>
+<tr><td>주간 리포트 · 복습 수 통계 · 히트맵 · 읽기 속도 · 알림 · 관리자 지표 · 산출 단어 · 그 밖</td><td>제외(개발 세션이 읽는 곳 전수를 목록으로 확인)</td></tr>
+</tbody></table></div>
+
+<h4 class="sh">⑥ 카드 · 채점 문구</h4>
+<ul>
+<li>채점 문구는 모든 언어 공통 「뜻이나 발음 중 하나라도 막혔다면 다시」. 발음 판정 대상(일본어 한자어 · 중국어)이 아니거나 읽기가 비어 있으면 「뜻을 못 떠올렸다면 다시」.</li>
+<li>처음 보는 표현: 머리 「처음 보는 표현」 · 버튼 「다음 →」 · 안내 「잠시 뒤 다시 물어볼게요」.</li>
+</ul>
+
+<h4 class="sh">⑦ 종류 판별(R1)</h4>
+<p>읽을 때만 판별, 저장하지 않는다. 문장 = 교재 「예문 담기」로 담긴 것(맥락 <code>kind='textbook'</code>이고 맥락 문장과 표현이 같음) 또는 문장 끝 부호(。！？.!?)로 끝나는 것. 나머지는 단어. 직접 바꾸기는 R2.</p>
+
+<h4 class="sh">⑧ 이름 바꾸기</h4>
+<div class="scroll"><table>
+<thead><tr><th>지금</th><th>바꿈</th></tr></thead>
+<tbody>
+<tr><td>「단어장」(뷰어 「✓ 단어장에 있음」 · 「내 단어장」 · 오늘 학습 「+ 단어장에 담기」 · 글쓰기)</td><td>「담은 표현」(「✓ 담은 표현에 있음」 · 「+ 담기」)</td></tr>
+<tr><td>교재 「다시 꺼내 보는 문장」 화면</td><td>「교재의 담은 표현」(목록) — 뜻 펼치기는 집중 연습으로</td></tr>
+<tr><td>안내 「‘이 예문 담기’로 시작하세요」</td><td>「‘예문 담기’로 시작하세요」(버튼 이름과 같게). 버튼 「예문 담기」는 그대로, 종류 이름은 「문장」</td></tr>
+<tr><td>표현 복습 제목들(「N5 표현 복습」 · 「다시 꺼내 보는 문장」 등)</td><td>「복습」 + 범위 칩(예: 「복습 · 교재 5–10과」)</td></tr>
+</tbody></table></div>
+
+<h3 id="accept">6-2. 수용 기준</h3>
+<p><b>R1-A</b></p>
+<ol>
+<li><code>/vocab?lang=Chinese&amp;level=H2&amp;src=material:&lt;id&gt;</code>에서 화면 숫자 = 시작하는 줄 길이, 다른 언어 카드 0장(계약 테스트).</li>
+<li>무효 파라미터 · 조회 실패 → 닫힘 문구, 「전체」로 새지 않음, 저장된 설정 그대로.</li>
+<li>모든 R1 진입점의 주소 → 범위 → 주소 왕복이 같은 문자열. 기존 <code>?book=</code> 링크 동작 유지.</li>
+<li>배움 칸 · 국기 칩 · 복습방 숫자가 모두 <code>countReviewScope</code>에서 나온다. 새 표현 한도 반영, 문법은 별줄.</li>
+<li>교재 도구막대 「담은 표현」 → 채점 복습방. 복습 경로의 메뉴 소속 = 배움.</li>
+</ol>
+<p><b>R1-B</b></p>
+<ol start="6">
+<li>FSRS 카드와 예전 일정 카드가 한 줄에 섞여 나온다(FSRS 독점 없음). 순서 · 띄우기 규칙 테스트.</li>
+<li>새 표현 첫 등장 = 채점 없는 카드. FSRS 카드는 1분 · 10분 단계, 예전 카드는 세션 내 재질문. 기존 <code>anki-seconds-v1</code> 카드가 읽히고 채점되며 무효 카드가 늘지 않는다.</li>
+<li>앞면에 읽기 없음 · 뒷면 뜻 + 읽기 + 소리 · 발음 문구는 판정 대상에만.</li>
+<li>집중 연습은 FSRS · 예전 일정 · 한도 호출 0회, 기록은 ⑤ 표대로 읽힌다.</li>
+<li>세션 길이 선택 = 서로 다른 카드 수. 새로고침 뒤 「멈춘 복습 이어 하기 (n / N)」 정확.</li>
+<li>밀린 복습 기준을 넘으면 그 언어 새 표현 0 · 문구 · 순서 일치.</li>
+<li>§5-6 상태 12종 문구가 나오고 390px 가로 넘침 없음.</li>
+</ol>
+<p><b>공통</b></p>
+<ol start="13">
+<li>바뀌는 계약 테스트(§8)를 목적을 지키며 갱신, 전체 vitest green.</li>
+<li>Preview에서 정상 실계정으로 FSRS 카드 · 예전 일정 카드 둘 다 확인. 학습 단계 전환 전후 값(한도 사용 · 남음, 카드 유효 수)을 읽기 전용으로 KST 기록.</li>
+</ol>
+
+<h3 id="rollout">6-3. 진행 · 지켜볼 지표</h3>
+<ul>
+<li>R1-A가 개수 함수를 먼저 내고, 배움 화면(AK)이 그 함수를 쓴다(둘 다 <code>HomePage</code> · <code>VocabPage</code>를 건드림 — 순서가 바뀌면 충돌).</li>
+<li>R1-B의 학습 단계 전환은 FSRS SQL 읽기 전용 확인 → (필요 시) 비파괴 SQL 별도 승인 → 코드 전환 순서.</li>
+<li>지표: 언어 · 종류 · 발음 판정 대상별 「다시」 비율, 세션 완주율, 밀린 복습 크기, 하루 새 표현 수, 집중 연습 비중, 이어 하기 사용.</li>
+</ul>
+
+<h3 id="ak-fix">6-4. 배움 화면 인계(#1337) 정정문 — 게시용</h3>
+<pre class="flow">[정정] LEARN-HOME-AK-001
+§2-4 단어 복습 칸: 「ReviewTile 그대로」 → 공용 countReviewScope({…, scope:{lang}}) 결과
+      (그 언어의 오늘 복습 + 오늘 시작 가능한 새 표현)를 표시. 문법은 칸에 넣지 않음.
+      0개일 때 보이는 「최근 담은 표현」은 숫자에 넣지 않음.
+      칸 누르면 → /vocab?lang=&lt;국기 칩 언어&gt;
+§1 메뉴: navigationOwner에서 /vocab · /review · /study · /learn → '/home'(배움)
+      (webNavigation.js:16, 계약 webNavigation.test.js 갱신)
+§3 현황: 레벨 어휘 줄(HSK) → /vocab?lang=Chinese&amp;level=H2 …,
+      기억 건강 「흐릿 · 위험」 → /vocab?lang=…&amp;state=fragile.
+      현황 국기 칩은 레벨 어휘 · 기억 건강 · 아는 단어를 그 언어로 거른다.
+순서: 개수 함수는 복습 R1-A가 먼저 내고 이 건이 가져다 쓴다.</pre>
+
+<h2 id="precedent">7. 선례 · 오픈소스 — 채택 판단</h2>
+<div class="scroll"><table>
+<thead><tr><th>선례 · 라이브러리</th><th>범위를 다루는 방식</th><th>판단</th><th>근거</th></tr></thead>
+<tbody>
+<tr><td>Bunpro 덱 + Cram</td><td>덱은 하나의 기억 상태를 보는 창, Cram은 일정 무관</td><td class="verdict v-a">채택</td><td>원칙 1 · 4와 그대로 맞음</td></tr>
+<tr><td>WaniKani Extra Study</td><td>최근·틀린 것 연습, 「실수는 기록 안 됨」</td><td class="verdict v-a">채택</td><td>집중 연습 = 연습 기록만</td></tr>
+<tr><td>Anki 필터 덱</td><td>검색으로 임시 덱, 일정 반영 켜고 끄기</td><td class="verdict v-p">부분 채택</td><td>「범위 = 조건」·반영 토글 개념만. 카드를 실제로 옮기는 방식은 배제(빠지는 카드 함정 문서화됨)</td></tr>
+<tr><td>Anki 검색 문법</td><td><code>deck: tag: is: prop:</code></td><td class="verdict v-r">배제(필드만 채택)</td><td>학습자에겐 칩이 맞다</td></tr>
+<tr><td>Anki 프리셋</td><td>덱별 하루 한도 · 목표 기억률</td><td class="verdict v-p">부분 채택</td><td>계정·언어 단위로만. 부모/자식 덱 한도 상속은 혼란 사례로 배제</td></tr>
+<tr><td>Bunpro Ghost reviews</td><td>틀린 것만 별도 일정</td><td class="verdict v-r">배제</td><td>세 번째 일정 체계가 된다 · 누적 불만</td></tr>
+<tr><td>Pleco 카테고리 + 점수판</td><td>HSK 카테고리 필터, 프로필별 점수</td><td class="verdict v-p">부분 채택</td><td>급수 필터는 채택, 별도 점수판은 상태 분기라 배제</td></tr>
+<tr><td>LingQ · Readlang</td><td>과·자료별 단어, 원문으로 복귀</td><td class="verdict v-p">부분 채택</td><td>「이 자료 표현 복습」 + 원문 보기. 고정 간격은 배제</td></tr>
+<tr><td>WaniKani 종류 표시</td><td>부수·한자·단어를 한 줄에 섞고 색으로 구분</td><td class="verdict v-a">채택</td><td>종류 칩 + 카드 위 종류 표시</td></tr>
+<tr><td>Bunpro 문형 복습</td><td>문형을 예문으로, 예문을 돌려 씀</td><td class="verdict v-p">부분 채택</td><td>예문 돌려 쓰기는 채택, 입력 채점은 R1–R2에서 배제(스스로 채점 유지)</td></tr>
+<tr><td>WaniKani 뜻 + 읽기</td><td>뜻과 읽기를 둘 다 맞혀야 통과</td><td class="verdict v-p">부분 채택</td><td>「뜻 · 읽기 둘 다 맞아야 통과」 채택(오너 결정), 입력 채점 대신 스스로 채점 + 기준 문구</td></tr>
+<tr><td>Pleco · Anki 일본어 덱</td><td>뒷면에 병음 · 후리가나 + 소리</td><td class="verdict v-a">채택</td><td>뒷면 규격과 같음. 성조 색 표시는 나중 선택</td></tr>
+<tr><td>Anki 양방향 카드</td><td>앞뒤를 바꾼 카드를 따로 생성</td><td class="verdict v-p">R1–R2 배제 · R3 부분 채택</td><td>처음부터 둘로 만들면 복습량 두 배. R3에서 이해가 「익숙」(21일)에 이른 표현에만 산출 상태를 늦게 생성</td></tr>
+<tr><td>Duolingo 연습 허브</td><td>시스템이 골라 줌</td><td class="verdict v-r">배제</td><td>사용자 범위 선택이 없다</td></tr>
+<tr><td>Kornell 2009(간격)</td><td>큰 한 묶음이 작은 네 묶음보다 유리</td><td class="verdict v-a">채택(기본값)</td><td>언어 안 한 줄이 기본, 좁히기는 선택</td></tr>
+<tr><td>Tinkham 1993 · Waring 1997(의미 묶음 간섭)</td><td>비슷한 새 단어를 같이 배우면 간섭</td><td class="verdict v-a">채택</td><td>같은 과 새 표현 · 헷갈리는 쌍을 줄에서 띄움</td></tr>
+<tr><td>Nation · Webb · Nakata(이해 / 산출 따로)</td><td>이해와 산출은 따로 자라고 따로 잊힌다</td><td class="verdict v-a">채택</td><td>방향 전환 철회 · 산출은 사다리 → R3 별도 상태</td></tr>
+<tr><td>Dunlosky(자기 채점 과신)</td><td>답을 본 뒤 매기면 과신</td><td class="verdict v-a">채택</td><td>기준을 「둘 다 떠올렸나」 한 줄로 분명히 — 애매한 「어려움」 금지</td></tr>
+<tr><td>VanPatten(입력 처리)</td><td>내용어 먼저, 문법 형태는 뒤</td><td class="verdict v-a">채택</td><td>문형은 밑줄 · 빈칸으로 직접 묻기</td></tr>
+<tr><td>Karpicke &amp; Roediger 2008</td><td>익힌 뒤 꺼내야 효과</td><td class="verdict v-a">채택</td><td>새 표현 첫 학습 카드</td></tr>
+<tr><td>ts-fsrs (MIT, 5.4.2 · 2026-09)</td><td>일정 · 미리보기 · 기록 재생</td><td class="verdict v-a">채택(이미 사용 중 5.3.2)</td><td><code>reschedule</code>로 R3 이관 가능</td></tr>
+<tr><td>fsrs-rs 바인딩 최적화기 (MIT, 베타)</td><td>개인별 매개변수 맞춤</td><td class="verdict v-p">나중에 부분 채택</td><td>베타 · Node 전용 · 리뷰 수백 건 필요</td></tr>
+<tr><td>liqe · search-query-parser</td><td>검색 문법 파서</td><td class="verdict v-r">배제</td><td>작은 범위 타입이면 충분, 후자는 2021 이후 정체</td></tr>
+</tbody></table></div>
+
+<h3>3문 점검</h3>
+<div class="scroll"><table><tbody>
+<tr><th>⑴ 순환의 어느 정거장</th><td>자료 읽기 순환의 「FSRS 복습」 정거장과, 두 순환을 잇는 「오늘 문단 재주입」 이음새.</td></tr>
+<tr><th>⑵ 기존 부품 재사용</th><td><code>useFsrsReview({scopeIds})</code> · <code>deckScope</code> · <code>selectLegacyReviewRows({language})</code> · 교재 범위의 「서버가 id 묶음 → 클라이언트가 좁힘」 패턴 · <code>refVocabIndex</code> · 서버 새 표현 한도 · <code>VocabReview</code>/<code>FsrsReviewSession</code> 화면 · <code>sourceHref</code>. 새 일정 체계는 만들지 않는다.</td></tr>
+<tr><th>⑶ 이음새를 새로 만들지 않나</th><td>집중 연습은 일정을 쓰지 않으므로 새 상태가 생기지 않는다. 새 표현 → 오늘 문단, 교재 링크 → 채점 복습으로 오히려 끊긴 이음새 둘을 잇는다.</td></tr>
+</tbody></table></div>
+
+<h2 id="contracts">8. 심을 계약 테스트</h2>
+<div class="scroll"><table>
+<thead><tr><th>계약</th><th>왜</th></tr></thead>
+<tbody>
+<tr><td>어떤 범위든 「보이는 개수 = 시작하는 줄 길이」</td><td>숫자와 실제 세션이 어긋나지 않게(문제 1 · 7)</td></tr>
+<tr><td>언어 범위 밖 카드는 줄에 0개</td><td>오너 사례 그대로 고정</td></tr>
+<tr><td>집중 연습은 일정 쓰기(FSRS 적용 · 예전 일정 갱신) 0회</td><td>원칙 4</td></tr>
+<tr><td>명시 범위를 못 읽으면 빈 줄, 저장 설정은 그대로</td><td>원칙 5, 지금 교재 계약의 일반화</td></tr>
+<tr><td>범위 ↔ 주소 왕복 직렬화가 같다</td><td>진입점 여섯이 같은 범위를 만든다</td></tr>
+<tr><td>배움 칸 · 국기 칩 · 복습방 개수가 같은 함수(<code>countReviewScope</code>)에서 나온다</td><td>원칙 3</td></tr>
+<tr><td>(R2) 새로 담은 표현이 오늘 문단 후보에 들어간다, 한도 안에서</td><td>문제 2</td></tr>
+<tr><td>증거 모델 표 한 줄 = 테스트 하나(예: 채점은 버튼 넷 한 번으로 끝난다, 연습 기록은 사다리 계산에서 빠진다, 발음 판정 대상이 아닌 표현엔 발음 문구를 내지 않는다)</td><td>원칙 7</td></tr>
+<tr><td>집중 연습은 새 표현 한도(admission) 호출 0회</td><td>한도는 첫 질문 때 차감되므로(<code>learningAdmission.js</code>)</td></tr>
+<tr><td>새 표현의 첫 등장은 채점 없는 학습 카드</td><td>부호화 먼저</td></tr>
+<tr><td>세션 길이 선택 = 실제 세션 카드 수(학습 단계 재확인 제외)</td><td>약속한 길이 지키기</td></tr>
+<tr><td>두 엔진이 한 줄에 섞인다(FSRS 독점 없음) · 정렬 · 띄우기 규칙</td><td>§6-1 ③</td></tr>
+<tr><td>정책 두 개(<code>anki-seconds-v1</code> · <code>anki-v2</code>)가 모두 검사를 통과하고, 기존 New 카드가 무효가 되지 않는다</td><td>§3-4 정책 전환</td></tr>
+<tr><td>복습방 경로의 메뉴 소속 = 배움</td><td>메뉴 개편 뒤 불 꺼짐 방지(<code>webNavigation.js:16</code>)</td></tr>
+</tbody></table></div>
+<p>바뀌는 기존 계약(목적은 지키고 단언만 갱신): <code>refVocabWiring.test.js</code>(급수 필터 = 목록 전용) · <code>reviewReliabilityFixes.test.js:48</code>(언어 필터 상태) · <code>vocabularyLearningRows.test.js:32</code>(요약 필드에 <code>source_ref</code>) · <code>webNavigation.test.js</code>(메뉴 소속) · <code>growthStats.test.js</code> · <code>vocabularyLearningRead.test.js</code>(카드 단계) · <code>e2e/fixtures/learning-snapshot.mjs:32</code>(정책값) · <code>fsrsReviewUi.test.js</code>(학습 단계) · <code>bookReviewNavigation.test.js</code>(범위 일반화) · 문서 <code>post-boundary-learning-checklist</code>의 30초 시각들. <code>vocabularyLearningUi.test.jsx:133</code>(담기 화면의 새 일정 등록 금지)은 <b>그대로 유지</b>.</p>
+
+<h2 id="decisions">9. 결정 — 모두 확정 (2026-10-10)</h2>
+<div class="scroll"><table>
+<thead><tr><th>#</th><th>결정</th><th>상태</th></tr></thead>
+<tbody>
+<tr><td>D1</td><td>복습 기본값 = 지금 언어 하나 · 국기 칩에 언어별 오늘 개수</td><td>확정(권장 승인)</td></tr>
+<tr><td>D2</td><td>집중 연습: 일정 · 한도 영향 없음 · 「몰랐어요」는 흐릿 범위로 · 기존 타이핑 · 리스닝 모드를 집중 연습으로</td><td>확정(권장 승인)</td></tr>
+<tr><td>D3</td><td>새 표현 하루 한도는 계정 하나(R1–R2), 범위 화면에 남은 수</td><td>확정(권장 승인)</td></tr>
+<tr><td>D4</td><td>일정 체계 통합(R3)은 R1 · R2 실사용 뒤 판단</td><td>확정(권장 승인)</td></tr>
+<tr><td>D5</td><td>이름: 담은 표현 · 복습 · 집중 연습 · 종류 = 단어 · 문장 · 문형</td><td>확정(권장 승인)</td></tr>
+<tr><td>D6</td><td>한 카드 규격: 뒷면 같음, 스스로 채점 카드는 버튼 넷, 묻는 방식은 종류별</td><td>확정(오너 제안)</td></tr>
+<tr><td>D7</td><td>방향 전환 철회 — 본 복습은 이해 방향, 산출은 사다리 → R3 별도 상태</td><td>확정(권장 승인)</td></tr>
+<tr><td>D8</td><td>문형 일정 단위 = 문형 하나(R3)</td><td>확정(권장 승인)</td></tr>
+<tr><td>D9</td><td>뜻 · 발음 중 하나라도 못 떠올리면 「다시」, 추가 질문 없음(Anki와 같음)</td><td>확정(오너 결정)</td></tr>
+<tr><td>D10</td><td>처음 보는 표현 카드</td><td>확정(권장 승인)</td></tr>
+<tr><td>D11</td><td>세션 길이 선택 · 밀리면 그 언어 새 표현 멈춤</td><td>확정(권장 승인)</td></tr>
+<tr><td>D12</td><td>첫 일정 규칙 통일(R2): 모든 담기 = 새 표현 + 학습 카드</td><td>확정(권장 승인)</td></tr>
+<tr><td>D13</td><td>배움 화면 인계 정정 게시(§6-4)</td><td>확정(권장 승인) — 게시 대기</td></tr>
+<tr><td>D14</td><td>학습 단계 = Anki 기본 1분 → 10분, 재학습 10분(정책 전환 규칙 포함)</td><td>확정(오너 결정) · DB 확인 선행</td></tr>
+<tr><td>D15</td><td>카드 단계 = 신규 · 학습 · 익히는 중(21일 미만) · 익숙(21일 이상) · 재학습</td><td>확정(오너 결정)</td></tr>
+</tbody></table></div>
+<p>남은 열린 질문: 「아는 단어」 개수 기준(지금 7일)을 바꿀지 — 이번 범위 밖, 필요하면 별도 결정.</p>
+
+<p class="foot">3판(2026-10-10): 인계 직전 검수 반영 · 결정 15개 확정. 2판(2026-10-10): 교육 설계 · 사용자 경험 독립 검토 반영, 1판 대비 변경은 맨 위 표. 이 문서는 설계 세션 산출물이다. 코드 · DB는 건드리지 않았다. 근거 줄 번호는 main 6585905a 기준. 선례 출처는 #1077 기록에 링크.</p>
+</div>
+</body>
+</html>

@@ -1,7 +1,8 @@
 import {describe,it,expect} from 'vitest';
 import fs from 'node:fs';
 import {editableFields,validateManuscript,withField} from './contract';
-import {candidate,currentCandidate,contentHash,verifiedAsset,publishedBookCatalog} from './server';
+import {candidate,currentCandidate,contentHash,publishedBookCatalog} from './server';
+import {verifiedAsset} from './assetFile';
 import {resolveBookSelection,bookSourceHref} from './sources';
 import {sourceHref} from '../learningSources';
 const base={id:'japanese-n5',revision:'a'.repeat(24),lessons:[{id:'u01',number:1,title:'인사',dialog:[{ja:'こんにちは',ko:'안녕하세요'}]}]};

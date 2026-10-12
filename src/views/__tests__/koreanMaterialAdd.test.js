@@ -245,10 +245,12 @@ describe('Korean ordinary text reading import', () => {
     expect(saved.processed_json.metadata).not.toHaveProperty('explanationLocale');
   });
 
-  it('keeps global level/composer gates unchanged instead of enabling a Korean course or composer', () => {
+  // KO-COMPOSER-001(오너 지시 2026-10-08): 자료 작성 언어는 정본 LEARNING_LANGUAGES를 따른다(한국어 포함).
+  // 수준(레벨) 4언어 상수는 그대로다 — 한국어 과정/수준을 열지 않는다.
+  it('keeps global level gates unchanged; the composer follows the canonical learning languages', () => {
     expect(LEVELS.Korean).toBeUndefined();
-    expect(COMPOSER_LANGUAGES).not.toContain('Korean');
-    expect(composerRow('owner', { id: 'draft', language: 'Korean', body: '학교', title: '학교', links: [], files: [] }).processed_json.metadata.language).toBeNull();
+    expect(COMPOSER_LANGUAGES).toContain('Korean');
+    expect(composerRow('owner', { id: 'draft', language: 'Korean', body: '학교', title: '학교', links: [], files: [] }).processed_json.metadata.language).toBe('Korean');
   });
 
   it('preserves chapter originals and stores locale without starting a course or eager analysis', async () => {

@@ -6,7 +6,8 @@ import { supabase } from './supabase';
 import { analyzeText } from './analyzeText';
 import { autoSplitParagraphs } from './splitParagraphs';
 import { runPreservedReanalysis } from './reanalysisPreservation';
-import { passageOf } from './sourcePassage';
+import { passageListKey, passageOf } from './sourcePassage';
+import { composerOf } from './materialComposer';
 import { runPassageAnalysis } from './passageAnalysis';
 import { inspectAnalysisCoverage } from './analysisCoverage';
 import { pendingBoundaryCount } from './boundaryEdits';
@@ -84,8 +85,12 @@ export function useReanalyze({ materialId, material, refetch, toast, explanation
       if (passageOf(material)) {
         const controller = new AbortController();
         abortRef.current = controller;
-        return runPassageAnalysis(supabase, material, controller.signal, analyzeText,
+        const result = await runPassageAnalysis(supabase, material, controller.signal, analyzeText,
           record => queryClient.setQueryData(['material', String(materialId)], record));
+        // 원본으로 돌아가면 구간 목록이 새 상태(표현 준비됨)를 읽게 한다.
+        const parentId = composerOf(material)?.parentId;
+        if (parentId) queryClient.invalidateQueries({ queryKey: passageListKey(material.owner_id, parentId) });
+        return result;
       }
 
       const controller = new AbortController();

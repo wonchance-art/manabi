@@ -72,9 +72,15 @@ export function BoundaryMergeConfirm({ plan, reasonText, choice = null, savedWor
   );
 }
 
-/** plan = boundaryEditFlow.planBoundarySplit 결과(ok일 때만 그린다 — 아니면 이유 한 줄). preview(cuts) → 조각 목록. */
-export function BoundarySplitPanel({ plan, reasonText, preview, busy, onConfirm, onCancel, contentLang, vt }) {
-  const [chosen, setChosen] = useState([]);
+/**
+ * plan = boundaryEditFlow.planBoundarySplit 결과(ok일 때만 그린다 — 아니면 이유 한 줄). preview(cuts) → 조각 목록.
+ * 한국어(§7.5 B안, planKoreanSplit): initialCuts = 지금 칼선(조각에서 열면 골라진 채, 모두 끄면 [원래대로]) ·
+ * glosses(cuts) → [{text, note, lang}] 조각마다 기존 형태 분석 설명 · note = 나눌 자리가 없을 때 공식 한 줄.
+ */
+export function BoundarySplitPanel({ plan, reasonText, preview, busy, onConfirm, onCancel, contentLang, vt, initialCuts = [], glosses = null, note = null }) {
+  const [chosen, setChosen] = useState(initialCuts);
+  const changed = chosen.length !== initialCuts.length || chosen.some((cut, k) => cut !== initialCuts[k]);
+  const restoring = initialCuts.length > 0 && chosen.length === 0;
   const headRef = useRef(null);
   useEffect(() => {
     const frame = requestAnimationFrame(() => headRef.current?.focus({ preventScroll: true }));
@@ -101,10 +107,18 @@ export function BoundarySplitPanel({ plan, reasonText, preview, busy, onConfirm,
           <p className="viewer-boundary-split__preview" lang={contentLang} aria-live="polite">
             {preview(chosen).map((piece, k) => <span key={k}>{k > 0 && <span aria-hidden="true" className="viewer-boundary-confirm__op"> │ </span>}{piece}</span>)}
           </p>
+          {glosses && (
+            <ul className="viewer-boundary-split__gloss">
+              {glosses(chosen).map((item, k) => (
+                <li key={k}><b lang={contentLang}>{item.text}</b>{item.note && <span lang={item.lang}>{item.note}</span>}</li>
+              ))}
+            </ul>
+          )}
         </>
-      ) : <BoundaryReason reason={reasonText} vt={vt} />}
+      ) : <><BoundaryReason reason={reasonText} vt={vt} />{note && <p className="viewer-boundary-split__note">{note}</p>}</>}
       <div className="viewer-boundary-confirm__actions">
-        <button type="button" className="btn btn--primary btn--sm" disabled={busy || !plan?.ok || chosen.length === 0} onClick={() => onConfirm(chosen)}>{busy ? vt('나누는 중…') : vt('나누기')}</button>
+        <button type="button" className="btn btn--primary btn--sm" disabled={busy || !plan?.ok || (initialCuts.length ? !changed : chosen.length === 0)}
+          onClick={() => onConfirm(chosen)}>{busy ? vt('나누는 중…') : restoring ? vt('원래대로') : vt('나누기')}</button>
         <button type="button" className="btn btn--ghost btn--sm" disabled={busy} onClick={onCancel}>{vt('취소')}</button>
       </div>
     </section>

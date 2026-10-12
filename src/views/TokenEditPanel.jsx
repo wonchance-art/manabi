@@ -7,12 +7,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { buildMeaningOptions, buildReadingOptions, buildTokenCorrections } from '../lib/tokenEditOptions';
 
-export default function TokenEditPanel({ token, language, dictEntry, saving, onSave, onClose }) {
+export default function TokenEditPanel({ token, language, dictEntry, saving, onSave, onClose, sharedEdit = false }) {
   const [meaning, setMeaning] = useState(token?.meaning || '');
   const [meaningPos, setMeaningPos] = useState(null); // 칩 선택 시 동반 교정할 pos
   const [reading, setReading] = useState(token?.furigana || '');
   const [multiReadings, setMultiReadings] = useState([]);
-  // 링큐식 전역 적용 — 켜면 공유 사전(user_verified 승격)과 내 단어장에도 반영
+  // 오너 결정 ⓒ(2026-10-09): 공유 사전(user_verified 승격)은 관리자(sharedEdit)만. 그 밖의 소유자는
+  // 같은 자리의 체크로 「내 단어장」만 함께 고친다 — 공유 사전 요청은 나가지 않는다.
   const [applyGlobal, setApplyGlobal] = useState(false);
 
   // 중국어 1자 다음자 후보(还 hái/huán 등) — pinyin-pro 지연 로드, 실패해도 직접 입력 가능
@@ -43,7 +44,7 @@ export default function TokenEditPanel({ token, language, dictEntry, saving, onS
 
   const save = () => {
     if (!pending) { onClose(); return; }
-    onSave(pending, { applyGlobal });
+    onSave(pending, sharedEdit ? { applyGlobal } : { applyVocab: applyGlobal });
   };
 
   return (
@@ -102,7 +103,7 @@ export default function TokenEditPanel({ token, language, dictEntry, saving, onS
           checked={applyGlobal}
           onChange={(e) => setApplyGlobal(e.target.checked)}
         />
-        이 단어 전체에 적용 (사전·단어장)
+        {sharedEdit ? '이 단어 전체에 적용 (공유 사전·내 단어장)' : '내 단어장에도 반영'}
       </label>
 
       <div className="token-edit__actions">

@@ -16,6 +16,7 @@ import VersionBadge from './VersionBadge';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/ToastContext';
 import ActionIcon from './ActionIcon';
+import { shouldShowOnboarding } from '../lib/onboardingGate';
 
 const navIcons={'/home':'home','/lessons':'book','/discover':'compass','/vocab':'review','/materials':'library'};
 
@@ -305,7 +306,7 @@ export default function Layout({ children }) {
         {children}
       </main>
 
-      {profile && profile.onboarded === false && <OnboardingModal />}
+      {shouldShowOnboarding(profile, pathname) && <OnboardingModal />}
     </div>
   );
 }

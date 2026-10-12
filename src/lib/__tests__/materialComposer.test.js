@@ -69,7 +69,9 @@ describe('unified private material', () => {
   });
   it('keeps French/English language choices and leaves uncertain language unspecified', () => {
     for (const language of ['French','English','Japanese','Chinese']) expect(composerRow(owner, { ...draft(), body:'text', language }).processed_json.metadata.language).toBe(language);
-    expect(composerRow(owner, { ...draft(), body:'text', language:'Korean' }).processed_json.metadata.language).toBeNull();
+    // KO-COMPOSER-001(2026-10-08): 한국어는 정본 학습 언어라 보존한다. 등록되지 않은 언어만 미지정으로 둔다.
+    expect(composerRow(owner, { ...draft(), body:'text', language:'Korean' }).processed_json.metadata.language).toBe('Korean');
+    expect(composerRow(owner, { ...draft(), body:'text', language:'German' }).processed_json.metadata.language).toBeNull();
   });
   it('preserves review-to-source focus while file-only and unclassified items stay in original reading', () => {
     const material = composerRow(owner, { ...draft(), body:'Bonjour', language:'French' });
