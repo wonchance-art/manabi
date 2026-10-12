@@ -100,7 +100,9 @@ describe('⑤⑥ 진행은 moveSentence(1) 하나 — 새 상태·새 버튼 0',
   });
 
   it("진행 허용과 실제 시작을 분리하고 명시적 시작 버튼을 제공한다", () => {
-    expect(viewer).toContain('const paceArmed = paceRunning && autoPace && focusMode && pickedSentence !== null;'); expect(block).toContain('enabled: paceArmed,'); expect(viewer).toContain("useState(false)"); expect(viewer).toContain('자동 진행 시작');
+    expect(viewer).toContain('const paceArmed = paceRunning && autoPaceOn && focusMode && pickedSentence !== null;');
+    // 쪽 넘김 보기(READER-PAGED-001 설계 §4 P0)에서는 자동 진행을 끈다 — 스크롤 보기에서만 허용이 곧 진행 조건이다.
+    expect(viewer).toContain('const autoPaceOn = autoPace && !pagedActive;'); expect(block).toContain('enabled: paceArmed,'); expect(viewer).toContain("useState(false)"); expect(viewer).toContain('자동 진행 시작');
   });
 });
 

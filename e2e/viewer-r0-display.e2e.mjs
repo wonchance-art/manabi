@@ -53,7 +53,8 @@ function assertLine(m,label) {
 }
 
 for(const width of [1280,390])test(`R0 bug 1 — grammar underline survives sentence pick, word selection, drag and auto-pace (${width}px)`,async()=>{
- const f=await open({width});
+ // 자동 진행은 스크롤 보기 전용이다(READER-PAGED-001 설계 §4 P0 — 쪽 넘김 보기에서는 끈다).
+ const f=await open({width,common:{readerView:'scroll'}});
  try{
   await f.page.locator('.reader-area .word-token--pattern').nth(1).waitFor();
   const patterned=await f.page.locator('.reader-area .word-token--pattern').evaluateAll(ts=>ts.map(t=>t.dataset.text));

@@ -46,12 +46,12 @@ const dictRows={
 
 const SENTENCE_PREFETCH='viewer-sentence-prefetch';
 const notPrefetch=r=>r.purpose!==SENTENCE_PREFETCH;
-async function open(material,{guest=false,dict='ok',prefs={focusMode:false,autoSpeakOnClick:false},width=390,height=844,saved=null,own=false,rows:rowOverride=null,details={}}={}) {
+async function open(material,{guest=false,dict='ok',prefs={focusMode:false,autoSpeakOnClick:false},common=null,width=390,height=844,saved=null,own=false,rows:rowOverride=null,details={}}={}) {
  const f=await fixture({width,guest});
  await f.page.setViewportSize({width,height});
- await f.context.addInitScript(({language,prefs})=>{
-  if(!localStorage.getItem('viewer_preferences_v2'))localStorage.setItem('viewer_preferences_v2',JSON.stringify({version:2,languages:{[language]:prefs}}));
- },{language:material.language,prefs});
+ await f.context.addInitScript(({language,prefs,common})=>{
+  if(!localStorage.getItem('viewer_preferences_v2'))localStorage.setItem('viewer_preferences_v2',JSON.stringify({version:2,...(common?{common}:{}),languages:{[language]:prefs}}));
+ },{language:material.language,prefs,common});
  await f.context.route('**/api/dict?**',r=>r.fulfill({contentType:'application/json',body:'null'}));
  await f.context.route('**/api/gemini',r=>r.fulfill({contentType:'application/json',body:JSON.stringify({text:'검수용'})}));
  await f.context.route(/\/api\/analyze(\/korean)?$/,r=>r.fulfill({contentType:'application/json',body:JSON.stringify({results:[]})}));
@@ -230,7 +230,7 @@ const measure=page=>page.evaluate(()=>{
  const r=el=>{if(!el||!el.getClientRects().length)return null;const b=el.getBoundingClientRect();return {top:b.top,bottom:b.bottom,left:b.left,right:b.right,height:b.height};};
  const q=s=>panel.querySelector(`#inspector-word ${s}`);
  const body=q('.reader-card-body');
- return {sheet:r(panel),body:r(body),scrollTop:body?.scrollTop??-1,vh:innerHeight,vw:innerWidth,overflow:document.documentElement.scrollWidth-innerWidth,
+ return {sheet:r(panel),compact:panel.dataset.compact==='true',body:r(body),scrollTop:body?.scrollTop??-1,vh:innerHeight,vw:innerWidth,overflow:document.documentElement.scrollWidth-innerWidth,
   sentence:r(q('.reader-card-sentence')),chips:r(q('.word-detail-card__actions')),head:r(q('.reader-card-headword')),meaning:r(q('.word-detail-card__meaning')),
   grades:[...panel.querySelectorAll('#inspector-word .reader-card-actions .review-score-btn')].filter(b=>b.getClientRects().length).map(r),
   savedRow:r(q('.save-grade__saved'))};
@@ -239,7 +239,10 @@ function assertFirstScreen(g,{label,side=false,bottom='grades'}) {
  assert.ok(g,`${label}: a visible panel`);
  assert.equal(g.scrollTop,0,`${label}: no scroll`);
  assert.equal(g.overflow,0,`${label}: no horizontal page overflow`);
- if(!side)assert.ok(Math.abs(g.sheet.height-440)<=1,`${label}: sheet is 440px (${g.sheet.height})`);
+ // 쪽 넘김 보기(READER-PAGED-001 목업 C)는 본문을 끌어올리지 않는다 — 고른 단어가 440px 시트 밑에 깔리면 시트를 낮춘다.
+ // 낮춰도 아래 첫 화면 약속(문장·칩·표제어·뜻 + 등급)은 그대로 지킨다.
+ if(!side&&g.compact)assert.ok(g.sheet.height<440&&g.sheet.height>=240,`${label}: compact sheet ${g.sheet.height}px (paged view)`);
+ else if(!side)assert.ok(Math.abs(g.sheet.height-440)<=1,`${label}: sheet is 440px (${g.sheet.height})`);
  const view={top:g.body.top,bottom:side?Math.min(g.vh,g.body.bottom):g.body.bottom};
  for(const k of UPPER){
   assert.ok(g[k],`${label}: ${k} rendered`);
@@ -869,7 +872,9 @@ const popContrast=page=>page.evaluate(()=>{
 
 test('AE-R4 390 · 1440: 壮观의 观 → 한자 창(머리 · 구성 · 같은 한자어) — 한 줄 · 크기 고정 · 이동 0 · 등급 가림 0 · 키보드로 열기·드릴다운·닫기 · Esc·바깥·같은 글자로 닫힘 · 색 대비',{timeout:240000},async()=>{
  for(const [width,height,popWidth] of [[390,844,346],[1440,900,318]]){
-  const f=await open(glyphMaterial(),{prefs:zhPrefs,rows:glyphRows,width,height,saved:savedCanguan()});
+  // 한자 창의 자리·이동 0 계약은 원래 높이(440px) 시트 위에서 잰다 — 쪽 넘김 보기는 고른 단어가 시트에 깔리면 시트를 낮추므로
+  // (READER-PAGED-001 목업 C) 이 검사는 본문을 끌어올리는 스크롤 보기로 연다.
+  const f=await open(glyphMaterial(),{prefs:zhPrefs,common:{readerView:'scroll'},rows:glyphRows,width,height,saved:savedCanguan()});
   const label=`观 ${width}`;
   try{
    await until(()=>f.bulk.length>=1);
@@ -976,7 +981,7 @@ test('AE-R4 390 · 1440: 壮观의 观 → 한자 창(머리 · 구성 · 같은
 
 test('AE-R4 390 첫 화면 우선: 3줄 문장 속 体育场의 场 · 技术의 术(역할 미상) — 창이 등급 버튼을 가리지 않고 다 보이며, 닫으면 첫 화면 계약 그대로',{timeout:180000},async()=>{
  const m=cardMaterial();
- const f=await open(m,{prefs:zhPrefs,rows:glyphRows});
+ const f=await open(m,{prefs:zhPrefs,common:{readerView:'scroll'},rows:glyphRows}); // 원래 높이 시트 기준 계약 — 위 AE-R4와 같은 이유로 스크롤 보기
  try{
   await until(()=>f.bulk.length>=1);
   const longId=m.sequence.find(id=>id.startsWith('id_2_')&&m.dictionary[id].text==='体育场');
@@ -1093,7 +1098,8 @@ test('AD-R4 390 owner: 「뜻 확인 필요 2개 [보기]」 → 시트 [문장]
    assert.ok(box.height>=44&&box.width>=44,`${name} target ≥ 44px: ${JSON.stringify(box)}`);
   }
   // 자리: 통계 줄(viewer-badges) 아래, 본문 위
-  const geo=await f.page.evaluate(()=>{const r=s=>document.querySelector(s)?.getBoundingClientRect();return {badges:r('.viewer-badges'),line:r('.viewer-sense-review-line'),reader:r('.reader-area')};});
+  // 본문은 첫 조각(쪽 넘김 보기에서는 본문 영역이 단마다 쪼개져 전체 사각형이 단 맨 위까지 늘어난다)의 위를 본다.
+  const geo=await f.page.evaluate(()=>{const r=s=>document.querySelector(s)?.getBoundingClientRect();return {badges:r('.viewer-badges'),line:r('.viewer-sense-review-line'),reader:document.querySelector('.reader-area')?.getClientRects()[0]};});
   if(geo.badges)assert.ok(geo.line.top>=geo.badges.bottom-.5,'below the stats line');
   assert.ok(geo.line.bottom<=geo.reader.top+.5,'above the text');
   // 카드 ⓘ: 표식이 있는 단어만, 뜻 줄 아래 — 첫 화면 계약 그대로

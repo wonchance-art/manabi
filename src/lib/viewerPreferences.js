@@ -1,8 +1,9 @@
 // Browser-only reading preferences. No learning records or document data live here.
 export const VIEWER_PREF_KEY = 'viewer_preferences_v2';
-export const COMMON_KEYS = ['theme', 'ttsRate'];
+// readerView(쪽 넘김·스크롤, READER-PAGED-001)는 기기의 읽는 방식이라 언어와 무관하게 하나다 — 원본 리더도 같은 값을 읽는다.
+export const COMMON_KEYS = ['theme', 'ttsRate', 'readerView'];
 export const TAB_KEYS = {
-  type: ['fontSize', 'pinyinSize', 'lineGap', 'charGap', 'fontFamily', 'theme'],
+  type: ['fontSize', 'pinyinSize', 'lineGap', 'charGap', 'fontFamily', 'theme', 'readerView'],
   display: ['pronDisplay', 'wordStateHl', 'showToneColors', 'showHanjaKo', 'showPatterns', 'patternFilter'],
   pace: ['focusMode', 'autoPace', 'paceCpm', 'paceStep', 'autoSpeakOnClick', 'ttsRate'],
 };
@@ -19,10 +20,10 @@ export function viewerDefaults(language) {
   return {fontSize:1.6, pinyinSize:0.75, lineGap:15, charGap:GAPLESS.includes(language) ? 0 : OLD_GAP, theme:'sepia', fontFamily:'sans',
     pronDisplay:'all', autoSpeakOnClick:false, ttsRate:'normal', showHanjaKo:false,
     showToneColors:false, focusMode:false, wordStateHl:false, showPatterns:false, patternFilter:'all',
-    autoPace:false, paceCpm:null, paceStep:0};
+    autoPace:false, paceCpm:null, paceStep:0, readerView:'paged'};
 }
 const ranges = {fontSize:[0.8,3],pinyinSize:[0.75,1],lineGap:[10,60],charGap:[0,1],paceCpm:[10,2000],paceStep:[0,20]};
-const enums = {theme:['light','sepia','dark'],ttsRate:['slow','normal','fast'],pronDisplay:['all','unknown','none'],patternFilter:['all','due','weak']};
+const enums = {readerView:['paged','scroll'],theme:['light','sepia','dark'],ttsRate:['slow','normal','fast'],pronDisplay:['all','unknown','none'],patternFilter:['all','due','weak']};
 export function validateViewerPreferences(input, language) {
   const values = viewerDefaults(language);
   for (const key of Object.keys(values)) {
@@ -54,6 +55,11 @@ export function writeViewerPreferences(storage, language, values) {
   const specific = Object.fromEntries(Object.entries(valid).filter(([k]) => !COMMON_KEYS.includes(k)));
   const marked = [...new Set([...(Array.isArray(previous?.[GAP_MARK]) ? previous[GAP_MARK] : []), ...(GAPLESS.includes(language) ? [language] : [])])];
   storage.setItem(VIEWER_PREF_KEY, JSON.stringify({version:2,common,languages:{...(previous?.version === 2 ? previous.languages : {}),[language]:specific},...(marked.length ? {[GAP_MARK]:marked} : null)}));
+}
+/** 원본 리더처럼 언어가 정해지지 않은 화면이 읽는 공통 보기 값. 저장값이 없거나 깨졌으면 기본(쪽 넘김). */
+export function readReaderView(storage) {
+  try { const stored = JSON.parse(storage?.getItem(VIEWER_PREF_KEY) ?? 'null'); return enums.readerView.includes(stored?.common?.readerView) ? stored.common.readerView : 'paged'; }
+  catch { return 'paged'; }
 }
 export function readerFontFamily(language, choice) {
   if (language === 'Korean') return choice === 'inter' ? "var(--font-inter), var(--font-noto-kr), 'Noto Sans KR', sans-serif" : "var(--font-noto-kr), 'Noto Sans KR', sans-serif";

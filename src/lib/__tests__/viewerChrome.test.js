@@ -409,16 +409,16 @@ describe('⑨ AD-R2 읽기 크롬 — 영문 0 · 라벨 툴바 · 통계 한 �
     const bar = sliceBetween(src, 'const sentenceMoveBar = pickedSentence ? (', ') : null;');
     const at = (s) => { const i = bar.indexOf(s); expect(i, `${s} 없음`).toBeGreaterThan(-1); return i; };
     // 막대 안 위치 = 「번역」 바로 앞(설계 §9.2), 자동 진행 허용일 때만
-    expect(at("{autoPace&&paceToggle('sentence-move-bar__btn sentence-move-bar__pace')}")).toBeGreaterThan(at('sentenceNavBtn(1,'));
-    expect(at("{autoPace&&paceToggle('sentence-move-bar__btn sentence-move-bar__pace')}")).toBeLessThan(at('sentence-move-bar__translate'));
+    expect(at("{autoPaceOn&&paceToggle('sentence-move-bar__btn sentence-move-bar__pace')}")).toBeGreaterThan(at('sentenceNavBtn(1,'));
+    expect(at("{autoPaceOn&&paceToggle('sentence-move-bar__btn sentence-move-bar__pace')}")).toBeLessThan(at('sentence-move-bar__translate'));
     // 단독 버튼 = 막대가 없을 때만 · 시트·모달이 열려 있으면 없다(정본 §5 「시트가 열려 있으면 숨긴다」)
     expect(src).toContain('const moveBarShown = pickedSentence !== null && !classStudyActive && !sheetPresent;');
-    expect(src).toContain('const paceFloatShown = autoPace && sentences.length > 0 && !moveBarShown && !inspectorOpen && !isSheetOpen && !modalBlocked;');
+    expect(src).toContain('const paceFloatShown = autoPaceOn && sentences.length > 0 && !moveBarShown && !inspectorOpen && !isSheetOpen && !modalBlocked;');
     expect(src).toContain("{paceFloatShown&&<div className={`viewer-pace-float${sheetStripShown?' viewer-pace-float--wide':''}`}>{paceToggle('viewer-pace-float__btn',true)}</div>}");
     // 접힌 시트(내용은 닫혔지만 바닥에 남은 패널)에서도 자동 진행에 닿는다(검수 보완 ①): 1120 미만 = 머리줄 안 ▶,
     // 1120 이상 = 접힌 시트가 통째로 숨으므로 단독 버튼(--wide). main은 툴바 ▶가 늘 있었다 — 닿을 길 0은 회귀다.
     expect(src).toContain('const sheetStripShown = sheetPresent && !inspectorOpen && !classStudyActive;');
-    expect(src).toContain("collapsedActions={autoPace&&sentences.length>0&&!modalBlocked?paceToggle('viewer-inspector__pace'):null}");
+    expect(src).toContain("collapsedActions={autoPaceOn&&sentences.length>0&&!modalBlocked?paceToggle('viewer-inspector__pace'):null}");
     expect(src).toContain('onPresentChange={setSheetPresent}');
     const sheet = read('src/components/ViewerBottomSheet.jsx');
     expect(sheet).toContain('{!open&&collapsedActions}');

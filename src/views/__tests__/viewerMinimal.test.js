@@ -135,3 +135,17 @@ describe('⑤ CSS — 토큰만 · 본문 무접촉 · 44px', () => {
     }
   });
 });
+
+describe('⑥ 쪽 넘김 보기(READER-PAGED-001 목업 D) — 끝의 행동은 마지막 쪽에', () => {
+  it('제목부터 토론까지 한 흐름(다단 상자) 안이고, 「다 읽었다면」·다음 카드는 본문 뒤 끝 표식 앞이다', () => {
+    const flow = sliceBetween(src(), '<div ref={setPagesEl} className="reader-pages"', '{/* reader-pages end */}');
+    const order = ['<header className="page-header viewer-header">', 'className={`reader-area reader-area--', '<div className="post-reading">', '{(isDone || isPending) && (() => {', '<ViewerComments', '<div data-page-end aria-hidden="true" />']
+      .map((s) => { const i = flow.indexOf(s); expect(i, `${s} 없음`).toBeGreaterThan(-1); return i; });
+    expect([...order].sort((x, y) => x - y)).toEqual(order);
+    // 상단 막대(Aa·듣기)는 흐름 밖 — 어느 쪽에서든 보인다. 쪽 막대는 흐름 뒤.
+    expect(src().indexOf('<div className="viewer-topbar">')).toBeLessThan(src().indexOf('<div ref={setPagesEl} className="reader-pages"'));
+    expect(src()).toContain("{pagedActive&&<PageBar pager={pager} barRef={pageBarRef} tr={vt}/>}");
+    // 스크롤 보기는 같은 DOM에 규칙만 없다(지금 그대로) — 보기를 바꿔도 본문이 다시 만들어지지 않는다.
+    expect(src()).toContain("data-reader-pages={pagedActive?'paged':'scroll'}");
+  });
+});
