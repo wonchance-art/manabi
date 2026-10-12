@@ -24,7 +24,7 @@ async function open(width) {
 // 나가지 않으며, 뜻 줄은 훈음 아래에서 시작한다. 1440·390·320 × 글자 200%(#1333 계약 유지·확장).
 async function select(f,index) {
  const token=f.page.locator(`[data-source-token="id_0_${index}"]`);
- await token.focus();await f.page.keyboard.press('Enter');
+ await token.locator('.surface[role="button"]').focus();await f.page.keyboard.press('Enter'); // 키보드 단어 조작은 .surface(#1323)
  await f.page.locator('.word-detail-card__meaning').getByText(entries[index][2],{exact:true}).waitFor();
  await f.page.locator('#inspector-word .word-fit__hun').first().waitFor();
 }
@@ -79,7 +79,8 @@ for(const width of [1440,390,320])test(`viewer Korean labels/${width}px: long, a
   assert.equal(await f.page.locator('#inspector-word .word-fit__hun').count(),0);
   await f.page.reload({waitUntil:'domcontentloaded'});
   assert.equal(await f.page.evaluate(()=>JSON.parse(localStorage.getItem('viewer_preferences_v2')).languages.Chinese.showHanjaKo),false);
-  await f.page.locator('[data-source-token="id_0_0"]').focus();await f.page.keyboard.press('Enter');
+  // 키보드 단어 조작은 바깥 틀이 아니라 .surface[role=button]이 받는다(#1323 — 막대와 버튼 중첩 해소).
+  await f.page.locator('[data-source-token="id_0_0"] .surface[role="button"]').focus();await f.page.keyboard.press('Enter');
   await f.page.locator('.word-detail-card__meaning').getByText(entries[0][2],{exact:true}).waitFor();
   assert.equal(await f.page.locator('#inspector-word .word-fit__hun').count(),0,'disabled preference survives reload');
   assert.deepEqual(f.errors,[]);

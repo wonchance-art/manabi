@@ -70,13 +70,17 @@
 .viewer-layout .viewer-h1 .word-token[data-selected="true"]::before {font-size:1.5em;}
 .viewer-layout .viewer-h2 .word-token[data-selected="true"]::before {font-size:1.25em;}
 .viewer-layout .viewer-h3 .word-token[data-selected="true"]::before {font-size:1.1em;}
-/* Touch layouts keep the sentence bar inside the line's first token (15px + 3px, index.css). */
+/* Touch layouts keep 18px of the sentence bar inside the line's first token (24px hit - 9px gutter + 3px, index.css). */
 @media (hover:none) {.viewer-layout .word-token[data-selected="true"]:has(> .line-pick)::before {left:18px;}}
 /* "Met" words share the new-word display (VIEWER-R0 bug 11). */
 .viewer-layout .reader-area--hl :is(.word-token--new,.word-token--met) {--word-selection-line:var(--ws-new-ln);}
 .viewer-layout .reader-area--hl .word-token--saved {--word-selection-line:var(--ws-learn-ln);}
 .viewer-layout .reader-area--hl .word-token--due {--word-selection-line:var(--warning);}
 .viewer-layout :is(button,input,textarea,summary):focus-visible {outline:2px solid var(--reader-accent);outline-offset:3px;}
+/* 문장 지정 막대 — 데스크톱은 평소 투명(호버 표시)이라 키보드 초점에서도 드러내고, 고리는
+   히트 영역(왼쪽 여백까지 뻗음) 대신 보이는 막대에 둘러 화면 가장자리에 잘리지 않게 한다(#1323). */
+.viewer-layout .line-pick:focus-visible {outline:none;opacity:1;}
+.viewer-layout .line-pick:focus-visible::before {outline:2px solid var(--reader-accent);outline-offset:3px;}
 .viewer-layout [hidden] {display:none!important;}
 .viewer-layout [data-answer-hidden="true"] {visibility:hidden;}
 .viewer-layout :is(.reader-area,.reader-card-source,.word-fit,.reader-settings__preview):lang(zh),.viewer-layout :is(.reader-area,.reader-card-source,.word-fit,.reader-settings__preview) :lang(zh) {font-family:var(--reader-font);}

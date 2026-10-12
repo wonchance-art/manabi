@@ -45,7 +45,8 @@ export async function verifyReaderDesign({page,board,scene,head,saveScreen,waitF
   for(const [width,height]of [[390,844],[354,767]]){
     await page.setViewportSize({width,height});
     await token().scrollIntoViewIfNeeded();
-    if(width===354)await token().press('Enter');else await token()[activate]();
+    // 키보드 경로는 단어 조작(.surface[role=button])이 받는다(#1323) — 바깥 틀은 초점을 받지 않는다.
+    if(width===354)await token().locator('.surface[role="button"]').press('Enter');else await token()[activate]();
     await inspector.locator('.word-detail-card').waitFor();
     await page.waitForTimeout(400);
     const selected=await token().boundingBox(),popup=await inspector.boundingBox(),toolbar=await page.locator('.viewer-topbar').boundingBox();
