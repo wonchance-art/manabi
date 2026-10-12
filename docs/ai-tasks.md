@@ -946,6 +946,7 @@
     ⑤ #1376 번역 light 유지 · ⑥ 화면 세부 #1374·#1378·#1380·#1382·#1383·#1384 현행 유지.
   - **PR-TRIAGE-1323**(10-12 오너 「권장대로 전부 진행」): 정체 PR #1323에서 살릴 2가지 이식 — 뷰어 단어 버튼 안 중첩 버튼 분리·닫을 때 초점 복귀·문장 막대 24px,
     설명판 뜻 단어 경계 줄바꿈(`wrapMeaning`) · 계약 `wordTokenNesting.test.js` · 이식 PR 병합 뒤 #1323 닫기.
+  - **MEANING-VERIFY-001**(10-12 오너 승인 — axolotl 「우렁눈이」 저장 원인 수정): 영어 새 단어 뜻은 공유 사전 첫 저장 전 standard 검증 배치당 1회(ok 저장 · wrong+고친 뜻 저장 · unsure/실패 = 저장 없이 반환) + 생성 프롬프트 음역 규칙 + 관리자 PATCH 뜻별 pos·en_pos_v 보존 + 금지 답 표 `docs/verification/en-meaning-gold-20261012.json`(33) · `claude/meaning-verify` — 남은 것: 키 있는 실측(`scripts/eval/en-meaning-gold.mjs`)·PR·Preview.
   - 보류: AE-R3 PR③(공유 사전 요미 쓰기 — ⓒ 확정으로 재정리 필요, ⓑ 권장 · 오너 「나중에」) · AD-R3 PR④(규칙 표 DDL — 동결 해제로 착수 가능) ·
     한국어 어절 넘는 묶기(할 수 있다 — 별도 질문).
   - 오너 결정 대기: #1368 트레이드오프 · #1396 꼴 이름 2종·조각 간격.
