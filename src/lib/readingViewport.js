@@ -46,3 +46,12 @@ export function selectedTokenScrollDelta(rect, bounds) {
   if (rect.bottom > bottom) return rect.bottom - bottom;
   return 0;
 }
+
+// 쪽 넘김 보기(READER-PAGED-001 목업 C) — 본문은 다시 흐르지 않으므로, 바닥 시트가 고른 단어를 덮으면 시트를 낮춘다.
+// 덮지 않으면 null(원래 높이). 낮춘 높이는 단어 아래 남은 자리, 단 카드의 핵심(머리줄·표제어·뜻·등급 4버튼 — AE-R2
+// 「스크롤 없이 보인다」 계약)이 들어가는 min보다 작게는 줄이지 않는다 — 부르는 쪽이 실제 카드에서 잰 값을 주고, 못 재면
+// 390px 실측(359px)에 여유를 둔 368px. 아주 아래 줄은 그래도 덮일 수 있다(그때도 카드가 먼저다).
+export function compactSheetHeight({ tokenBottom, sheetTop, sheetBottom, min = 368, margin = 12 }) {
+  if (![tokenBottom, sheetTop, sheetBottom].every(Number.isFinite) || tokenBottom <= sheetTop - 8) return null;
+  return Math.max(min, Math.floor(sheetBottom - tokenBottom - margin));
+}

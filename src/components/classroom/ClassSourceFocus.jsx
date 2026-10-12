@@ -5,6 +5,7 @@ import { readUnlock } from '../../lib/classClient';
 import { fetchTeamRoot } from '../../lib/classTeamQueries';
 import { classSourceRequest, cachedClassSource } from '../../lib/classHistoryNavigation';
 import { resolveClassSource, sourceFromClassNote } from '../../lib/classSource';
+import { revealInReader } from '../../lib/usePagedReader';
 
 export default function ClassSourceFocus({ material, user, params, onResolve, tokenRefs }) {
   const [state, setState] = useState(null), [retry, setRetry] = useState(0);
@@ -57,7 +58,7 @@ export default function ClassSourceFocus({ material, user, params, onResolve, to
         callback.current(target, source);
         setState(null);
         frame = requestAnimationFrame(() => { frame = requestAnimationFrame(() => {
-          if (alive) tokenRefs.current[target.first]?.scrollIntoView({ block: 'center', behavior: 'instant' });
+          if (alive && tokenRefs.current[target.first]) revealInReader(tokenRefs.current[target.first], { block: 'center', behavior: 'instant' });
         }); });
       } catch (error) {
         if (alive && error.name !== 'AbortError') setState({ message: error.message, retry: !!key && !material.__local });

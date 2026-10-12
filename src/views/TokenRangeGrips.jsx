@@ -4,6 +4,7 @@
 // (무변경 릴리스는 훅이 재분석을 생략). 좌표는 reader 컨테이너 기준 절대 배치라
 // 페이지 스크롤과 무관하고, 리사이즈·폰트 변경 때 재측정한다.
 import { useLayoutEffect, useState } from 'react';
+import { overlayOrigin } from '../lib/usePagedReader';
 
 export default function TokenRangeGrips({ range, sequence, tokenRefs, readerRef, onGripDown }) {
   const [pos, setPos] = useState(null);
@@ -15,7 +16,7 @@ export default function TokenRangeGrips({ range, sequence, tokenRefs, readerRef,
       const endEl = tokenRefs.current?.[sequence[range.end]];
       const reader = readerRef.current;
       if (!startEl || !endEl || !reader) { setPos(null); return; }
-      const r = reader.getBoundingClientRect();
+      const r = overlayOrigin(reader); // 쪽 넘김 보기는 다단 상자가 기준(본문 영역은 단마다 쪼개진다)
       const s = startEl.getBoundingClientRect();
       const e = endEl.getBoundingClientRect();
       setPos({

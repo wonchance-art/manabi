@@ -66,3 +66,16 @@ describe('display changes preserve the visible text', () => {
     expect(scroll).not.toHaveBeenCalled();
   });
 });
+
+describe('display changes in the paged view (READER-PAGED-001)', () => {
+  // 화면 좌표 기준점(captureReadingAnchor)은 세로 스크롤 전용이다 — 다단에서는 다른 단의 토큰도 같은 높이에 있어
+  // 첫 단의 토큰을 잡는다. 쪽 넘김 보기에서는 Aa 변경을 그대로 적용하고, 기준 토큰 복원은 usePagedReader가 한다
+  // (pagedReader.test.js 「restores the anchor token after a resize or font change」).
+  it('bypasses the scroll anchor in the paged view and keeps it in the scroll view', async () => {
+    const { readFileSync } = await import('node:fs');
+    const viewer = readFileSync(new URL('../../views/ViewerPage.jsx', import.meta.url), 'utf8');
+    expect(viewer).toContain('keepPosition={pagedActive?change=>change():keepReadingPosition}');
+    const settings = readFileSync(new URL('../../components/viewer/ViewerSettings.jsx', import.meta.url), 'utf8');
+    expect(settings).toContain("onChange={v=>onReaderView?onReaderView(v):s.setReaderView?.(v)}");
+  });
+});

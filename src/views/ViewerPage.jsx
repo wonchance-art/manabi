@@ -98,6 +98,9 @@ import { useReadProgress } from '../lib/useReadProgress';
 import { useGroupReadPush } from '../lib/useGroupReadPush';
 import { useScrollRestore } from '../lib/useScrollRestore';
 import { useReaderLayout, readerVisibleBounds, useSelectedTokenVisibility } from '../lib/useReaderLayout';
+import { usePagedReader, pagerFor, overlayOrigin } from '../lib/usePagedReader';
+import { captureReadingAnchor } from '../lib/readingViewport';
+import PageBar, { PageStrips } from '../components/viewer/PageBar';
 import { pinyinCellWidth } from '../lib/pinyinLayout';
 import { readerFontFamily } from '../lib/viewerPreferences';
 import { textbookThemeStyle } from '../lib/textbookTheme';
@@ -476,7 +479,9 @@ export default function ViewerPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('reading_progress')
-        .select('is_completed')
+        // last_token_idx: 다시 열 때 읽던 토큰(쪽 넘김이면 그 토큰의 쪽)으로 — useScrollRestore가 읽는 값인데
+        // 예전 select에 빠져 있어 운영에서는 복원이 한 번도 돌지 않았다(e2e 모의 응답은 행 전체를 돌려줘 가려졌다).
+        .select('is_completed, last_token_idx')
         .eq('user_id', user.id)
         .eq('material_id', id)
         .maybeSingle();
@@ -694,7 +699,7 @@ export default function ViewerPage() {
   };
 
   // 읽기 진행률 바 — readerRef는 본문 컨테이너에 부착
-  const { readerRef, readProgress } = useReadProgress(material);
+  const { readerRef, readProgress: scrollReadProgress } = useReadProgress(material);
   const {keepPosition:keepReadingPosition,layoutVersion,cancelPosition:cancelReadingPosition} = useReaderLayout(readerRef, material?.processed_json);
   const [pinyinCell,setPinyinCell] = useState(44);
   useEffect(()=>{
@@ -711,8 +716,6 @@ export default function ViewerPage() {
     measure();document.fonts?.ready.then(measure);window.addEventListener('resize',measure);
     return ()=>{live=false;window.removeEventListener('resize',measure);};
   },[materialLang,fontSize,pinyinSize,material?.id,readerRef]);
-  // 그룹 같이 읽기 진도 push(§4.3) — 이번 주 지정 자료일 때만, 실패 조용히
-  useGroupReadPush(material?.id, user?.id, readProgress);
 
   // 아는 단어 표시와 복습 보호 상태는 같은 DB 트랜잭션으로 바뀐다.
   const knownLangCode = knownWordsLang(materialLang, learningCapabilities.known);
@@ -721,6 +724,42 @@ export default function ViewerPage() {
 
   // 스크롤 위치 저장(debounce 2s) + 재진입 시 자동 복원
   const { saveScrollPosition, tokenRefs, positionError, retryPosition } = useScrollRestore({ user, materialId: id, material, readingProgress, readerRef });
+
+  // 쪽 넘김 보기(READER-PAGED-001 — 기본, Aa 「보기」에서 스크롤 선택). 쪽 번호는 저장하지 않는다: 사용자가 쪽을
+  // 넘기면 그 쪽 첫 토큰 번호를 지금과 같은 reading_progress.last_token_idx로 저장하고, 다시 열면 그 토큰의 쪽으로 간다.
+  // 수업 모드는 교재 열이 스스로 스크롤하는 화면(칠판·도크)이라 스크롤 보기 그대로 둔다.
+  const [pagesEl,setPagesEl] = useState(null);
+  const pageBarRef = useRef(null), pagedGuard = useRef({}), pagedInitialAnchor = useRef(null);
+  const readerView = settings.readerView === 'scroll' ? 'scroll' : 'paged';
+  const pagedActive = readerView === 'paged' && !classStudyActive;
+  // 자동 진행은 세로 흐름(휠·터치 감지·문장 스크롤)에 맞춘 기능이라 쪽 넘김 보기에서는 끈다(설계 §4 P0) — 스크롤 보기는 그대로.
+  const autoPaceOn = autoPace && !pagedActive;
+  const pager = usePagedReader({
+    enabled: pagedActive, pages: pagesEl, barRef: pageBarRef, resetKey: id,
+    layoutKey: `${fontSize}|${lineGap}|${charGap}|${fontFamily}|${pronDisplay}|${pinyinSize}|${pinyinCell}|${fontStatus}|${uiLocale}|${wordStateHl}|${showPatterns}`,
+    initialAnchor: () => { const el = pagedInitialAnchor.current; pagedInitialAnchor.current = null; return el?.isConnected ? { kind: 'element', el } : null; },
+    onUserPage: anchor => {
+      const tokenId = anchor?.el?.dataset?.sourceToken, index = tokenId ? material?.processed_json?.sequence?.indexOf(tokenId) : -1;
+      if (index >= 0) saveScrollPosition(index);
+    },
+    // 밀기는 글자를 끌어 고르는 중이거나 단어창·보조 패널이 열려 있으면 무시한다(설계 §2).
+    canSwipe: () => !pagedGuard.current.dragging && !pagedGuard.current.sheetOpen,
+    canKey: () => !pagedGuard.current.blocked,
+    bottomGap: () => parseFloat(pagesEl && getComputedStyle(pagesEl.closest('.viewer-layout') || pagesEl).paddingBottom) || 12,
+  });
+  // 진행률 소비처(진행 막대·그룹 같이 읽기 push)는 같은 값을 받는다 — 쪽 넘김이면 쪽 기준(설계 §4).
+  const readProgress = pagedActive ? pager.progress : scrollReadProgress;
+  // 그룹 같이 읽기 진도 push(§4.3) — 이번 주 지정 자료일 때만, 실패 조용히
+  useGroupReadPush(material?.id, user?.id, readProgress);
+  // 보기 전환 — 스크롤 → 쪽이면 지금 화면 맨 위 글자를 첫 기준으로 넘긴다(쪽 → 스크롤은 훅이 기준 글자를 가운데로 데려온다).
+  const changeReaderView = next => {
+    if (next === readerView) return;
+    if (next === 'paged' && readerRef.current) {
+      const bounds = readerVisibleBounds(readerRef.current);
+      pagedInitialAnchor.current = captureReadingAnchor(readerRef.current, bounds.top, bounds.bottom)?.element || null;
+    }
+    settings.setReaderView(next);
+  };
   const [sourceFocusId, setSourceFocusId] = useState(null);
   const [restoredClassSource,setRestoredClassSource]=useState(null);
   useEffect(()=>setRestoredClassSource(null),[id]);
@@ -1020,7 +1059,7 @@ export default function ViewerPage() {
     const partnerEl = tokenRefs.current[partnerIds[0]];
     const area = readerRef.current;
     if (!svg || !anchorEl || !partnerEl || !area || !partnerIds.length) return;
-    const areaRect = area.getBoundingClientRect();
+    const areaRect = overlayOrigin(area); // 쪽 넘김이면 다단 상자 좌표(본문 영역은 단마다 쪼개진다)
     const inkTop = (el) => {
       const s = el.querySelector('.surface');
       if (!s) return null;
@@ -1282,6 +1321,9 @@ export default function ViewerPage() {
     if (focusMode) clearAnalysisPanels();
     else runSelectionAnalysis(target.text);
     const el = tokenRefs.current[target.firstTokenId];
+    // 쪽 넘김 보기: 다음 문장이 다른 쪽이면 그 쪽으로 넘긴다(설계 §4) — 세로 스크롤은 없다.
+    const paged = el && pagerFor(el);
+    if (paged) { requestAnimationFrame(() => { if (el.isConnected) paged.reveal(el, { user: true }); }); return; }
     if (el) {
       const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
       requestAnimationFrame(()=>{
@@ -1332,7 +1374,7 @@ export default function ViewerPage() {
     if (selectionToReveal && inspectorOpen) cancelReadingPosition();
     setSettingsOpen(false);
   };
-  useEffect(()=>{if(!autoPace||!focusMode||pickedLineIdx===null)setPaceRunning(false);},[autoPace,focusMode,pickedLineIdx]);
+  useEffect(()=>{if(!autoPaceOn||!focusMode||pickedLineIdx===null)setPaceRunning(false);},[autoPaceOn,focusMode,pickedLineIdx]);
   useEffect(()=>{
     const stopOnScroll=e=>{if(tokenRange.dragging||e.target?.closest?.('.reader-modal,.viewer-inspector'))return;setPaceRunning(false);};
     window.addEventListener('wheel',stopOnScroll,{passive:true});window.addEventListener('touchmove',stopOnScroll,{passive:true});
@@ -1344,7 +1386,7 @@ export default function ViewerPage() {
     const target=pickedSentence||visible||sentences[0];if(!target)return;
     setFocusMode(true);setPickedLineIdx(target.rawIdx);setPaceRunning(true);
   };
-  const paceArmed = paceRunning && autoPace && focusMode && pickedSentence !== null;
+  const paceArmed = paceRunning && autoPaceOn && focusMode && pickedSentence !== null;
   const paceDwell = paceArmed
     ? dwellMs({ chars: countReadableChars(pickedSentence.text), targetCpm: paceTargetCpm })
     : null;
@@ -1371,7 +1413,7 @@ export default function ViewerPage() {
   // 접힌 시트(내용이 화면을 덮지 않음)에서도 자동 진행에 닿아야 한다(main은 툴바 ▶가 늘 있었다): 1120 미만은 남은 머리줄 안
   // ▶(collapsedActions)가, 1120 이상은 접힌 시트가 통째로 숨으므로 단독 버튼(--wide, CSS가 그 폭에서만 보인다)이 맡는다.
   const sheetStripShown = sheetPresent && !inspectorOpen && !classStudyActive;
-  const paceFloatShown = autoPace && sentences.length > 0 && !moveBarShown && !inspectorOpen && !isSheetOpen && !modalBlocked;
+  const paceFloatShown = autoPaceOn && sentences.length > 0 && !moveBarShown && !inspectorOpen && !isSheetOpen && !modalBlocked;
 
   useReadingPacer({
     enabled: paceArmed,
@@ -1643,7 +1685,7 @@ export default function ViewerPage() {
       {sentenceNavBtn(-1, 'sentence-move-bar__btn')}
       <span className="sentence-move-bar__pos" role="status">{pickedPosition} / {sentences.length}</span>
       {sentenceNavBtn(1, 'sentence-move-bar__btn')}
-      {autoPace&&paceToggle('sentence-move-bar__btn sentence-move-bar__pace')}
+      {autoPaceOn&&paceToggle('sentence-move-bar__btn sentence-move-bar__pace')}
       <button type="button" className="sentence-move-bar__translate" title={vt('이 문장 번역 보기')} onClick={translatePickedSentence}>{vt('번역')}</button>
       <button type="button" className="sentence-move-bar__btn sentence-move-bar__close" aria-label={vt('문장 지정 해제')} title={vt('문장 지정 해제')} onClick={closeMoveBar} data-icon-action><ActionIcon name="close"/></button>
     </div>
@@ -2562,6 +2604,7 @@ export default function ViewerPage() {
     saveLocked: isWordSaved || saveAnim || selectedExcluded || !wordStateReady || knownPending || exclusionState.mutation.isPending,
     inlineDue: !!user && !selectedExcluded && wordStateReady && !knownPending && !exclusionState.mutation.isPending && isWordSaved && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending,
   };
+  pagedGuard.current = { dragging: tokenRange.dragging, sheetOpen: inspectorOpen || (!!selectedToken && isSheetOpen), blocked: keyHandlersRef.current.blocked };
   const savedCount = (savedWords.surfaces?.size || 0);
 
   // 이 자료에서 복습 가능한 단어 수 (현재 로드된 토큰 기준)
@@ -3503,6 +3546,7 @@ export default function ViewerPage() {
       lang={uiLocale} data-ui-locale={uiLocale} data-explanation-locale={effectiveExplanationLocale} data-reader-theme={theme} data-language={materialLang} data-class-study={classStudyActive} data-teaching-board={classStudyActive?classBoardLayout:''} data-inspector-open={inspectorOpen&&!modalBlocked}
       data-pron-spacing={materialLang==='Chinese'&&pronDisplay!=='none'?'reserved':'natural'}
       data-left-active={!!(leftPanelLoading || leftPanelResult)}
+      data-reader-view={pagedActive?'paged':'scroll'}
       data-right-active={!!(dragTokens !== null || (selectedToken && isSheetOpen))}>
 
       {/* 중앙 — 뷰어 본문 */}
@@ -3560,6 +3604,10 @@ export default function ViewerPage() {
             </button>
           </div>
         </div>
+      {/* 쪽 넘김 보기(READER-PAGED-001)의 흐름 — 상단 막대 아래 전부(제목·본문·「다 읽었다면」·다음 편·토론)가 쪽으로
+          나뉜다. 스크롤 보기(data-reader-pages="scroll")에서는 아무 규칙도 없는 평범한 블록이다(지금 그대로). */}
+      <div className="reader-pages-frame">
+      <div ref={setPagesEl} className="reader-pages" data-reader-pages={pagedActive?'paged':'scroll'}>
       <ClassSourceFocus material={material} user={user} params={originalParams} tokenRefs={tokenRefs} onResolve={(target,source)=>{
         closeWordCard();clearAnalysisPanels();tokenRange.clearRange();setPickedLineIdx(null);setSelectedRangeText(source.quote);
         if(target.first===target.last&&json.dictionary[target.first]?.text===source.quote){setSelectedToken({...json.dictionary[target.first],id:target.first});setIsSheetOpen(true);setRightSheetSignal(v=>v+1);}
@@ -3746,6 +3794,8 @@ export default function ViewerPage() {
       >
         {/* 이합사 연결 아치 오버레이 — reader-area(position:relative, 그립 선례) 좌표계 */}
         <svg ref={sepArcRef} className="sep-arc" aria-hidden="true" />
+        {/* 쪽 넘김 보기의 글자 크기 탐침(1em) — rem·글자 크기가 바뀌면 쪽을 다시 나눈다(usePagedReader). */}
+        <span className="reader-page-probe" data-page-probe aria-hidden="true" />
         {isAnalyzing && !needsRecovery && (
           <div className="analyzing-banner">
             <span>{vt(reanalyze.committing ? '검증한 분석을 저장 중입니다…' : reanalyzeMutation.isPending ? '새 분석을 준비 중입니다. 기존 자료는 유지됩니다.' : '문단 단위로 분석 중입니다...')}</span>
@@ -4167,6 +4217,11 @@ export default function ViewerPage() {
       )}
 
 
+      <div data-page-end aria-hidden="true" />
+      </div>{/* reader-pages end */}
+      {pagedActive&&<PageStrips pager={pager} tr={vt}/>}
+      </div>
+      {pagedActive&&<PageBar pager={pager} barRef={pageBarRef} tr={vt}/>}
       </div>{/* viewer-center end */}
 
       <TextbookAnnotations key={`${id}:${user?.id||'guest'}`} material={material} user={user}
@@ -4190,7 +4245,7 @@ export default function ViewerPage() {
         preserveWordTab={preserveOpenWord}
         onOpenChange={setInspectorOpen}
         onPresentChange={setSheetPresent}
-        collapsedActions={autoPace&&sentences.length>0&&!modalBlocked?paceToggle('viewer-inspector__pace'):null}
+        collapsedActions={autoPaceOn&&sentences.length>0&&!modalBlocked?paceToggle('viewer-inspector__pace'):null}
         leftContent={senseReviewContent || boundaryPendingContent || leftPanelContent}
         rightContent={selectedToken&&isSheetOpen?renderRightPanelContent(annotationContent&&<section className="reader-card-notes" aria-label={vt("교재 설명")}><h3 className="reader-card-section__label">{vt("교재 설명")}</h3>{annotationContent}</section>):<>{annotationContent}{rightPanelContent}</>}
         leftActive={leftPanelLoading || !!leftPanelResult || !!senseReviewContent || !!boundaryPendingContent}
@@ -4210,7 +4265,7 @@ export default function ViewerPage() {
       </TextbookAnnotations>
       {paceFloatShown&&<div className={`viewer-pace-float${sheetStripShown?' viewer-pace-float--wide':''}`}>{paceToggle('viewer-pace-float__btn',true)}</div>}
 
-      {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} languageSettings={languageSettings} onClose={closeReadingSettings} keepPosition={keepReadingPosition} previewTokens={previewTokens} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus}/>}
+      {settingsOpen&&<ViewerSettings settings={settings} language={materialLang} languageSettings={languageSettings} onClose={closeReadingSettings} keepPosition={pagedActive?change=>change():keepReadingPosition} onReaderView={changeReaderView} previewTokens={previewTokens} paceTargetCpm={paceTargetCpm} paceEstimate={paceHint({chars:pickedSentence?countReadableChars(pickedSentence.text):null,avgChars:paceAvgChars,targetCpm:paceTargetCpm})} myCpm={myCpm} patternNote={patternNote} ttsSupported={ttsSupported} fontStatus={fontStatus}/>}
       {modal('activities')&&<ViewerModal uiLocale={uiLocale} title={vt("학습")} onClose={()=>setActiveModal(null)}><div className="reader-activity-menu">
         {user&&!String(id).startsWith('local:')&&<Link className="btn btn--secondary" href={`/notes/new?${new URLSearchParams({material:String(id),language:materialLang})}`}>{vt("내 학습 노트 펼치기 ↗")}</Link>}
         {ttsSupported&&sentences.length>0&&<button onClick={()=>setDictationPickerOpen(true)}><b>{vt("받아쓰기")}</b><span>{vt("추천 문장 하나를 골라 듣고 써요")}</span></button>}

@@ -45,6 +45,10 @@ describe('집중 모드 배선', () => {
     for (const call of ['tokenRange.clearRange()', 'setPickedLineIdx(target.rawIdx)', 'setSelectedRangeText(target.text)', 'readerVisibleBounds', 'window.scrollBy']) {
       expect(move).toContain(call);
     }
+    // 스크롤 보기 = 위 세로 스크롤 그대로. 쪽 넘김 보기(READER-PAGED-001 §4) = 다음 문장의 쪽으로 넘긴다(세로 스크롤 없음).
+    expect(move).toContain('const paged = el && pagerFor(el);');
+    expect(move).toContain('paged.reveal(el, { user: true })');
+    expect(move.indexOf('pagerFor(el)')).toBeLessThan(move.indexOf('window.scrollBy'));
     // 집중 모드 ▲▼ = 순수 이동: 분석·시트 없음(읽기 방해 + 안 볼 번역의 Gemini 낭비),
     // 꺼짐 = 본래처럼 전체 분석. 순수 이동이 시트 신호를 올리면 계약 위반.
     expect(move).toContain('if (focusMode) clearAnalysisPanels();');

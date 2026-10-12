@@ -26,6 +26,10 @@ import useOriginalReadingPosition from './useOriginalReadingPosition';
 import OriginalPositionNotice from './OriginalPositionNotice';
 import useOriginalTextPosition from './useOriginalTextPosition';
 import {originalPositionSources,positionSourceKey} from '@/lib/originalReadingPosition';
+import {usePagedReader} from '@/lib/usePagedReader';
+import {pagedOriginalTextOffset,originalTextRange,originalReaderTopInset} from '@/lib/originalTextPosition';
+import {readReaderView} from '@/lib/viewerPreferences';
+import PageBar,{PageStrips} from '@/components/viewer/PageBar';
 
 
 export default function OriginalMaterialReader({ material }) {
@@ -86,6 +90,22 @@ export default function OriginalMaterialReader({ material }) {
     source:{version:1,kind:'body',revision:composer.revision,textVersion:'plain-v1'}}:null);},[composer.body,composer.revision,sync.state.ready]);
   const bodyPositionSource={kind:'body',revision:composer.revision||null};
   const bodyRestore=useMemo(()=>restore.point?.source.kind==='body'?{id:restore.id,offset:restore.point.locator.offset}:null,[restore]);
+  // 쪽 넘김 보기(READER-PAGED-001) — 첨부 없이 글만 있는 자료의 본문을 화면 단위 쪽으로 나눈다. 첨부 파일 읽기(PDF·EPUB)는
+  // 자기 쪽·장 조작이 있어 스크롤 그대로 둔다. 위치 정본은 지금 그대로 글자 위치(코드 포인트) — 기준은 쪽의 첫 글자다.
+  const [readerView,setReaderView]=useState('paged');
+  useEffect(()=>{try{setReaderView(readReaderView(window.localStorage));}catch{/* 저장소를 못 읽으면 기본 쪽 넘김 */}},[]);
+  const [pagesEl,setPagesEl]=useState(null);
+  const pageBar=useRef(null);
+  const bodyPaged=readerView==='paged'&&!!composer.body?.trim()&&!assets.length;
+  const pager=usePagedReader({enabled:bodyPaged&&sync.state.ready,pages:pagesEl,barRef:pageBar,anchorSelector:'.original-writing',topInset:originalReaderTopInset,
+    captureAnchor:(page,api)=>{
+      const element=bodyElement.current;if(!element)return undefined;
+      const offset=pagedOriginalTextOffset(element,range=>api.pageOf(range),page);
+      if(offset===null)return {kind:'start'};
+      return {kind:'offset',offset,page:current=>{const range=originalTextRange(element,offset);return range?current.pageOf(range):0;}};
+    },
+    // 쪽 넘김은 사용자의 명시적 이동이라 바로 기록한다(스크롤 기록의 「최근 손짓」 조건과 같은 뜻).
+    onUserPage:anchor=>{if(Number.isSafeInteger(anchor?.offset))sync.note(bodyPositionSource,{offset:anchor.offset});}});
   useOriginalTextPosition({element:bodyElement,source:bodyPositionSource,base:{},enabled:sync.state.ready,onPosition:sync.note,canRecord,restore:bodyRestore});
   const links = (composer.links || []).flatMap(value => { try { return [normalizeSourceUrl(value)]; } catch { return []; } });
   const asset = assets[Math.min(assetIndex, Math.max(0, assets.length - 1))];
@@ -124,7 +144,7 @@ export default function OriginalMaterialReader({ material }) {
         {error && <p role="alert" className="original-entry-error">{error}</p>}
       </>,
     } : {})}/>
-    {sync.state.ready&&composer.body?.trim() && <article ref={bodyElement} className="original-writing" aria-label="작성한 본문">{composer.body}</article>}
+    {sync.state.ready&&composer.body?.trim() && <><div className="original-pages-frame"><div ref={setPagesEl} className="original-pages" data-reader-pages={bodyPaged?'paged':'scroll'}><article ref={bodyElement} className="original-writing" aria-label="작성한 본문">{composer.body}</article><div data-page-end aria-hidden="true"/></div>{bodyPaged&&<PageStrips pager={pager}/>}</div>{bodyPaged&&<PageBar pager={pager} barRef={pageBar} className="original-pagebar"/>}</>}
     {!!links.length && <section className="original-links" aria-label="담아 둔 링크">{links.map(url => <a key={url} href={url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer"><div><small>ORIGINAL LINK</small><strong>{new URL(url).hostname}</strong><span>{url}</span></div><b aria-hidden="true">↗</b></a>)}<p>링크의 원문은 해당 사이트에서 열립니다.</p></section>}
     {assets.length > 1 && <div className="original-file-picker"><label htmlFor="original-file-select">첨부 원본 {assets.length}개</label><select id="original-file-select" value={assetIndex} onChange={e=>{const index=Number(e.target.value);setAssetIndex(index);const selected=assets[index],point=sync.selected(`asset:${selected.hash}`);if(point)sync.note(point.source,point.locator);applyPosition(point);}}>{assets.map((item, index) => <option key={item.hash} value={index}>{item.name}</option>)}</select></div>}
     {asset && sync.state.ready && (!passageId||!origin.isPending) && <OriginalFileReader key={`${asset.hash}:${passageId||''}:${restore.id}`} material={material} asset={asset} onSource={onFileSource} returnSource={returnSource?.assetHash===asset.hash?returnSource:null} sourceMaterial={returnSource?.assetHash===asset.hash?origin.data:null} initialLocator={!passageId?sync.selected(positionSourceKey({kind:asset.kind,assetHash:asset.hash}))?.locator:null} restoreId={restore.id} onPosition={sync.note} canRecord={canRecord} />}
