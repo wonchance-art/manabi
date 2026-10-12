@@ -4,8 +4,8 @@ import { useRef, useState } from 'react';
 import { langFromBcp47 } from '../lib/constants';
 import Button from './Button';
 import { parseEpub } from '../lib/epub';
-
-const MAX_CHARS = 50000; // MaterialAddPage 본문 상한과 동일 — 초과 반입은 여기서 막는다
+import { MAX_BODY_CHARS } from '../lib/materialComposer';
+import { BODY_CAP_LABEL } from '../lib/bookSplit';
 
 /**
  * EPUB 반입 — 개인 소장 전자책에서 챕터를 골라 본문 텍스트로 가져온다.
@@ -48,22 +48,27 @@ export default function MaterialAddEpubSection({ toast, onReady, onBookReady, op
 
   const picked = book ? [...selected].sort((a, b) => a - b).map((i) => book.chapters[i]) : [];
   const totalChars = picked.reduce((n, c) => n + c.chars, 0);
-  const over = totalChars > MAX_CHARS;
+  // 한 자료의 저장 상한(작성기·DB 정본 MAX_BODY_CHARS). 넘으면 고른 장을 책으로 묶어 넘긴다 —
+  // 책 경로가 원래 장 구분을 지키고, 상한을 넘는 장만 문단 경계에서 나눈다(fitChaptersToCap).
+  const over = totalChars > MAX_BODY_CHARS;
+  const asBook = over && !!onBookReady;
 
-  // 책 전체를 챕터별 자료로 묶어 반입(P1) — 챕터당 50k 캡은 호출측(bookSplit 재분할)이 지킨다
-  function importWholeBook() {
-    if (!book || book.chapters.length === 0) return;
+  // 책 전체(또는 고른 장)를 챕터별 자료로 묶어 반입(P1) — 장 구분은 EPUB 그대로, 상한은 호출측이 지킨다
+  function importAsBook(chapters) {
+    if (!book || chapters.length === 0) return;
     onBookReady?.({
       bookTitle: book.title || book.fileName.replace(/\.epub$/i, ''),
       language: langFromBcp47(book.language),
-      chapters: book.chapters.map((ch) => ({ title: ch.title, text: ch.text })),
+      chapters: chapters.map((ch) => ({ title: ch.title, text: ch.text })),
     });
     setBook(null);
     setSelected(new Set());
   }
+  const importWholeBook = () => importAsBook(book?.chapters || []);
 
   function importPicked() {
-    if (!book || picked.length === 0 || over) return;
+    if (!book || picked.length === 0) return;
+    if (over) { if (asBook) importAsBook(picked); return; }
     const text = picked.map((c) => c.text).join('\n\n');
     const chapterLabel = picked.length === 1
       ? picked[0].title
@@ -117,9 +122,11 @@ export default function MaterialAddEpubSection({ toast, onReady, onBookReady, op
             ))}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, gap: 10 }}>
-            <span style={{ fontSize: '0.78rem', color: over ? 'var(--danger)' : 'var(--text-muted)' }}>
-              선택 {picked.length}개 · {totalChars.toLocaleString()}/{MAX_CHARS.toLocaleString()}자
-              {over && ' — 한 번에 가져오기엔 길어요. 챕터를 나눠 반입해 주세요.'}
+            <span style={{ fontSize: '0.78rem', color: over && !asBook ? 'var(--danger)' : 'var(--text-muted)' }}>
+              선택 {picked.length}개 · {totalChars.toLocaleString()}/{MAX_BODY_CHARS.toLocaleString()}자
+              {over && (asBook
+                ? ` — 한 자료는 ${BODY_CAP_LABEL}까지라 고른 챕터를 책으로 묶어 가져와요.`
+                : ` — 한 자료는 ${BODY_CAP_LABEL}까지예요. 챕터를 나눠 반입해 주세요.`)}
             </span>
             <span style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
               {onBookReady && (
@@ -127,8 +134,8 @@ export default function MaterialAddEpubSection({ toast, onReady, onBookReady, op
                   책 전체를 챕터별로
                 </Button>
               )}
-              <Button size="sm" onClick={importPicked} disabled={picked.length === 0 || over}>
-                선택 챕터 가져오기
+              <Button size="sm" onClick={importPicked} disabled={picked.length === 0 || (over && !asBook)}>
+                {asBook ? '선택 챕터를 책으로' : '선택 챕터 가져오기'}
               </Button>
             </span>
           </div>
