@@ -17,7 +17,7 @@ vi.mock('../supabase', () => ({ supabase: { auth: { getSession: async () => ({ d
 
 import { POST } from '../../app/api/analyze/route.js';
 import { reset, routeFetch, runRoute } from '../server/__tests__/helpers/boundaryRouteHarness.js';
-import { ANALYZE_MAX_LINE_LEN, ANALYZE_MAX_LINES, analyzeText, splitAnalysisLine } from '../analyzeText';
+import { ANALYZE_MAX_LINE_LEN, ANALYZE_MAX_LINES, ANALYZE_PACK_MAX_CHARS, analyzeText, splitAnalysisLine } from '../analyzeText';
 import { runPreservedReanalysis } from '../reanalysisPreservation';
 import { inspectAnalysisCoverage } from '../analysisCoverage';
 import { tokenizeEnLine } from '../server/tokenizeEn';
@@ -164,7 +164,7 @@ describe('자료 분석 — 긴 줄을 나눠 보내고 원래 줄로 잇는다'
     const raw = `${EN_442}\nShe smiled.`;
     const json = await analyzeText(raw, signal(), { metadata: { language: 'English' } });
     expect(sentLines().every((l) => l.length <= ANALYZE_MAX_LINE_LEN)).toBe(true);
-    expect(bodies).toHaveLength(1); // 한 문단 = 한 요청(조각이 늘어도 100줄 안)
+    expect(bodies).toHaveLength(1); // 두 줄 = 한 요청(조각이 늘어도 요청 예산 안)
     expect(json).toMatchObject({ status: 'completed', failed_indices: [] });
     expect(lineTexts(json, 0)).toEqual(tokenizeEnLine(EN_442).map((t) => t.text));
     expect(lineTexts(json, 1)).toEqual(['She', 'smiled', '.']);
@@ -186,20 +186,25 @@ describe('자료 분석 — 긴 줄을 나눠 보내고 원래 줄로 잇는다'
     expect(inspectAnalysisCoverage(JA_272, json).missingIndices).toEqual([]);
   });
 
-  it('조각이 100줄을 넘으면 문단을 여러 요청으로 나눠 보낸다 — 한 줄의 조각이 두 요청에 걸쳐도 잇는다', async () => {
+  it('조각이 요청 예산(100줄 · 글자 예산)을 넘으면 문단을 여러 요청으로 나눠 보낸다 — 한 줄의 조각이 두 요청에 걸쳐도 잇는다', async () => {
+    // #1412 때는 [100, 3](100줄 캡만)이었다. 문단을 넘어 묶는 수정(analyzePacking.test.js)부터 요청당 글자 예산
+    // (ANALYZE_PACK_MAX_CHARS — 서버의 요청당 품사 판별·뜻 조회 예산)도 지킨다 — 큰 문단 하나도 같은 예산으로 나뉜다.
     const a = 'The children walked along the quiet river and talked about the stories they had read in the old library last winter.';
     const b = 'Their teacher smiled and told them that every book is a door to another world that is waiting for them.';
     const c = 'Then they went home together, still talking about the strange letter and the sleeping cat on the shelf.';
     const lines = [`${a} ${b} ${c}`, ...Array.from({ length: 50 }, () => `${a} ${b}`)];
     const json = await analyzeText(lines.join('\n'), signal(), { metadata: { language: 'English' } });
     const requests = bodies.map(({ body }) => JSON.parse(body).lines);
-    expect(requests.map((r) => r.length)).toEqual([100, 3]);
+    expect(requests.flat()).toHaveLength(103);
+    expect(requests.map((r) => r.length)).toEqual([18, 18, 18, 18, 18, 13]);
+    expect(requests.every((r) => r.length <= ANALYZE_MAX_LINES
+      && r.join('').length <= ANALYZE_PACK_MAX_CHARS.English)).toBe(true);
     expect(requests.flat().every((l) => l.length <= ANALYZE_MAX_LINE_LEN)).toBe(true);
-    // 99번째·100번째 조각 = 줄 49의 앞·뒤 문장(두 요청에 걸친 줄)
-    expect([requests[0][99], requests[1][0]]).toEqual([a, b]);
+    // 첫 요청의 마지막 조각·둘째 요청의 첫 조각 = 줄 8의 앞·뒤 문장(두 요청에 걸친 줄 — 줄 0이 3조각, 줄 1~7이 14조각)
+    expect([requests[0][17], requests[1][0]]).toEqual([a, b]);
     expect(json).toMatchObject({ status: 'completed', failed_indices: [] });
-    expect(lineTexts(json, 49)).toEqual(tokenizeEnLine(`${a} ${b}`).map((t) => t.text));
-    expectLineShape(json, 49);
+    expect(lineTexts(json, 8)).toEqual(tokenizeEnLine(`${a} ${b}`).map((t) => t.text));
+    expectLineShape(json, 8);
     expect(inspectAnalysisCoverage(lines.join('\n'), json).missingIndices).toEqual([]);
   });
 

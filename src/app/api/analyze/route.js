@@ -33,7 +33,7 @@ import {
 export const runtime = 'nodejs';
 export const maxDuration = 60; // Vercel Node.js 함수: 최대 60초
 
-// 입력 캡(비용 남용 방지) — 정상 세션은 문단 단위 수 줄이라 캡에 닿지 않는다.
+// 입력 캡(비용 남용 방지). 자료 분석(analyzeText)은 여러 문단을 한 요청에 묶되 이 캡과 요청당 글자 예산 안으로 나눠 보낸다.
 const MAX_LINES = 100;      // 요청당 줄 수
 const MAX_LINE_LEN = 200;   // 줄당 문자 수
 // 요청당 Gemini 의미 조회 상한(미싱 base_form) — fetchMeanings 배치 폭발 방지.
