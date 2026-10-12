@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light only">
+<title>manabi에 초대받았어요</title>
+</head>
+<!-- manabi 인증 메일 · A안(로그인 카드) — 정본: docs/auth-email-links.md · 계약: src/lib/__tests__/authEmailTemplates.test.js -->
+<body style="margin:0;padding:0;background:#F6F4EE;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;font-size:1px;line-height:1px;color:#F6F4EE;">초대를 수락하고 manabi를 시작하세요.&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;</div>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F6F4EE;">
+<tr><td align="center" style="padding:32px 12px;word-break:keep-all;">
+<table role="presentation" width="420" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:420px;">
+<tr><td align="left" style="padding:0 4px 18px;"><span style="font-family:Manrope,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:24px;font-weight:800;letter-spacing:-1.5px;color:#252721;">manabi<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#994A5A;margin-left:1px;"></span></span></td></tr>
+</table>
+<table role="presentation" width="420" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:420px;background:#FFFEFB;border:1px solid #D7D5CD;border-radius:20px;">
+<tr><td align="center" style="padding:40px 32px 0;"><h1 style="margin:0;font-family:Manrope,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:24px;line-height:1.35;font-weight:700;color:#252721;">manabi에 초대받았어요</h1></td></tr>
+<tr><td align="center" style="padding:10px 32px 0;"><p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:14.5px;line-height:1.7;color:#65675F;">아래 버튼으로 계정을 만들면 바로 시작할 수 있어요. 읽은 자료에서 단어를 담고, 잊을 때쯤 복습으로 다시 만나요.</p></td></tr>
+<tr><td style="padding:28px 32px 0;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td align="center" style="border-radius:12px;background-color:#994A5A;background-image:linear-gradient(135deg,#994A5A,#793B48);mso-padding-alt:14px 24px;">
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=invite" style="display:block;padding:14px 24px;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:12px;">초대 수락하고 시작하기</a>
+</td></tr></table>
+</td></tr>
+<tr><td style="padding:28px 32px 0;"><div style="height:1px;line-height:1px;font-size:1px;background:#D7D5CD;">&nbsp;</div></td></tr>
+<tr><td style="padding:18px 32px 0;"><p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:12.5px;line-height:1.65;color:#65675F;">버튼이 눌리지 않으면 이 주소를 브라우저에 붙여 넣으세요. 1시간 동안 쓸 수 있어요.<br><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=invite" style="color:#994A5A;word-break:break-all;">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=invite</a></p></td></tr>
+<tr><td style="padding:12px 32px 36px;"><p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:12.5px;line-height:1.65;color:#65675F;">초대받을 일이 없었다면 이 메일은 무시해도 돼요.</p></td></tr>
+</table>
+<p style="margin:18px 0 0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:12px;color:#65675F;">manabi · <a href="{{ .SiteURL }}" style="color:#65675F;">manabi.co.kr</a></p>
+</td></tr>
+</table>
+</body>
+</html>

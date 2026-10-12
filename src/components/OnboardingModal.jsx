@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { LEVELS } from '../lib/constants';
+import { syncAuthDisplayName } from '../lib/authDisplayName';
 import Button from './Button';
 
 export default function OnboardingModal() {
@@ -56,6 +57,7 @@ export default function OnboardingModal() {
       setSaving(false);
       return;
     }
+    await syncAuthDisplayName(supabase, user, base.display_name);
     await fetchProfile(user.id, user.user_metadata);
   }
 

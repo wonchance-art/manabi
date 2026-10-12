@@ -172,3 +172,26 @@ ALTER TABLE vocab_decks DROP COLUMN IF EXISTS source_material_id;
 ```
 
 단, 롤백 전에 해당 테이블/컬럼을 참조하는 코드 변경이 먼저 배포되어야 함.
+
+## 5. 도메인·호스팅 (2026-10-11 기록, 10-12 메일 발신 추가)
+
+| 항목 | 값 |
+|---|---|
+| 도메인 | **manabi.co.kr** |
+| 등록(구입)처 | **호스팅케이알 (hosting.kr)** — 2026-10-11 구입, 1년 ₩15,400 |
+| 만료·갱신 | 2027-10-11 무렵. 자동 갱신 여부는 호스팅케이알 마이페이지에서 확인 |
+| 네임서버 | `ns1.vercel-dns.com` / `ns2.vercel-dns.com` (Vercel에 위임) |
+| DNS 레코드 관리 | Vercel → 프로젝트 manabi → Settings → Domains. 호스팅케이알 DNS 화면은 「타사 네임서버 사용 중」으로 잠겨 있어 쓰지 않는다 |
+| 사이트 호스팅(서버) | Vercel (호스팅케이알은 도메인 등록만 담당) |
+| 기존 주소 | `teset-gilt.vercel.app` — 유지(삭제 금지) |
+| Supabase Site URL | `https://manabi.co.kr` |
+| Supabase Redirect URLs | `https://manabi.co.kr/**` · `https://www.manabi.co.kr/**` · `https://teset-gilt.vercel.app/**` + Preview·localhost 항목 |
+| Vercel 환경 변수 | `NEXT_PUBLIC_SITE_URL=https://manabi.co.kr` |
+| 인증 메일 발송 | Supabase Custom SMTP = **Resend**, 발신 도메인 `manabi.co.kr` **Verified**(2026-10-12 12:05 KST) |
+| Resend DNS(Vercel Domains) | DKIM 레코드 + 발송용 CNAME `send` → `send.forge.rmta.net`, `rsend` → `rsend-apne1.forge.rmta.net` (10-12 추가). 삭제하면 인증 메일이 전부 실패한다 |
+
+- 도메인(www 포함)을 추가하면 **Supabase Redirect URLs에 `https://<도메인>/**`를 반드시 추가**한다. 로그인 리디렉트는 브라우저 주소창 도메인 기준이고, 목록에 없으면 Supabase가 Site URL로 돌려보내 PKCE 교환이 일어나지 않는다(10-11 www 누락 → Google 로그인 실패 실측). 이렇게 Site URL `/?code=`로 떨어진 경우는 루트 페이지가 `/auth/callback`으로 넘긴다(#1405).
+- 미인증 발신 도메인으로 SMTP를 켜면 가입·재설정 메일이 **전부** `550 The manabi.co.kr domain is not verified`로 실패한다(10-11 실측). SMTP 전환은 Resend Verified를 먼저 확인한 뒤에 한다.
+- 첫 실메일(10-12)이 Gmail 스팸함에 분류됐다 — 새 도메인 평판 문제. 가입 안내에 「스팸함 확인」을 두거나 DMARC 레코드 추가를 검토한다.
+- 메일 템플릿 링크(`docs/auth-email-links.md`)는 `{{ .SiteURL }}` 기준이다.
+- 남은 일: 대표 도메인 통일(www/apex — Vercel Domains·Supabase Site URL·`NEXT_PUBLIC_SITE_URL`을 같이 맞춘다), Supabase 메일 발송 한도 상향(SMTP 동작 확인 뒤).
