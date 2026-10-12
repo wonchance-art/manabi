@@ -1,20 +1,25 @@
 'use client';
 
-// PDF 라우트 전용 에러 바운더리 — 에러를 삼키지 않고 콘솔에만 출력
+import { useEffect } from 'react';
+
+// PDF 라우트 전용 에러 바운더리 — 원문·스택은 콘솔에만 남기고 화면에는 정해진 안내만 낸다(WALL-001).
 export default function PdfError({ error, reset }) {
+  useEffect(() => { console.error('PdfError:', error); }, [error]);
+
   return (
-    <div style={{ padding: 40, maxWidth: 600, margin: '0 auto' }}>
-      <h2 style={{ color: 'var(--danger)', marginBottom: 8 }}>PDF 뷰어 에러</h2>
-      <pre style={{
-        background: 'var(--bg-secondary)', padding: 16, borderRadius: 8,
-        fontSize: '0.8rem', whiteSpace: 'pre-wrap', wordBreak: 'break-all',
-        maxHeight: 300, overflow: 'auto', marginBottom: 16,
-      }}>
-        {error?.message}
-        {'\n\n'}
-        {error?.stack}
-      </pre>
-      <button className="btn btn--primary btn--sm" onClick={reset}>다시 시도</button>
+    <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
+      <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '8px' }}>
+        PDF를 열 수 없습니다
+      </h2>
+      <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto 24px' }}>
+        잠시 후 다시 시도해 주세요.
+      </p>
+      <button className="btn btn--primary btn--md" onClick={reset}>다시 시도</button>
+      {error?.digest && (
+        <p style={{ marginTop: 20, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+          오류 ID: {error.digest}
+        </p>
+      )}
     </div>
   );
 }
