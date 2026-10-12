@@ -1,0 +1,178 @@
+[
+ {
+  "id": "ak",
+  "code": "LEARN-HOME-AK-001",
+  "title": "배움 · 서재 · 산책 메뉴 + 배움 대시보드 + 현황",
+  "stage": "인계됨 · 미착수",
+  "source": "docs/design/mocks/ak/ak.html",
+  "mirror": "https://claude.ai/artifact/KisNFx2Li3A2NFgoFpnpfS",
+  "handoff": [
+   "https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6079839308",
+   "https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6106711900"
+  ],
+  "scenes": [
+   "home.e0"
+  ],
+  "frames": [
+   "docs/design/mocks/ak/ak.home.d.jpg",
+   "docs/design/mocks/ak/ak.home.m.jpg"
+  ],
+  "planned": [
+   {
+    "title": "현황 화면",
+    "lane": "배움 · 현황",
+    "frames": [
+     "docs/design/mocks/ak/ak.stats.d.jpg",
+     "docs/design/mocks/ak/ak.stats.m.jpg"
+    ]
+   }
+  ],
+  "note": "순서: REV-SCOPE R1-A 다음(개수 함수 공용)",
+  "global": "상단 메뉴 · 휴대폰 탭 막대(모든 화면)"
+ },
+ {
+  "id": "rev",
+  "code": "REV-SCOPE-R1A · R1B",
+  "title": "복습 범위 · 개수 · 진입점 (R1-A) / 세션 · 카드 · 학습 단계 (R1-B)",
+  "stage": "인계됨 · 미착수",
+  "source": "docs/design/mocks/rev/rev.html",
+  "mirror": "https://claude.ai/artifact/Ji5H61ny5F4fMVdGdVocwG",
+  "handoff": [
+   "https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6106712027",
+   "https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6106712130"
+  ],
+  "scenes": [
+   "vocab.e0"
+  ],
+  "frames": [
+   "docs/design/mocks/rev/rev.room.jpg"
+  ],
+  "planned": [
+   {
+    "title": "범위 고르기 시트",
+    "lane": "복습",
+    "frames": [
+     "docs/design/mocks/rev/rev.sheet.jpg"
+    ]
+   },
+   {
+    "title": "복습 카드 · 집중 연습",
+    "lane": "복습",
+    "frames": [
+     "docs/design/mocks/rev/rev.card.jpg"
+    ]
+   }
+  ],
+  "note": "R1-B-2(학습 단계 정책)는 DB 손질 필요 — 운영 적용 전 오너 확인"
+ },
+ {
+  "id": "onb",
+  "code": "ONB-001",
+  "title": "첫 방문 온보딩 + 내 언어 + 중국어권 한국어(준비 중)",
+  "stage": "인계됨 · 미착수",
+  "source": "docs/design/mocks/onb/onb.html",
+  "mirror": "https://claude.ai/artifact/ByH6dnPq7XpKBVLywrY5dQ",
+  "handoff": [
+   "https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6106712231"
+  ],
+  "scenes": [
+   "onboarding.p1"
+  ],
+  "frames": [
+   "docs/design/mocks/onb/onb.step1.jpg",
+   "docs/design/mocks/onb/onb.step2.jpg"
+  ],
+  "planned": [
+   {
+    "title": "내 언어 简体·繁體 → 한국어(준비 중)",
+    "lane": "입구 · 계정",
+    "frames": [
+     "docs/design/mocks/onb/onb.zh.jpg"
+    ]
+   }
+  ],
+  "note": "중국어 문구는 출시 전 원어민 검수 필수"
+ },
+ {
+  "id": "ad",
+  "code": "AD-R3 · AD-R4",
+  "title": "뷰어 정돈 2차",
+  "stage": "병합됨 · 목업 대비 확인 대기",
+  "source": null,
+  "mirror": "https://claude.ai/artifact/Rze24kqnDoFTLTqp2DF6x7",
+  "handoff": [],
+  "scenes": [
+   "viewer.e0"
+  ],
+  "frames": [],
+  "planned": [],
+  "note": "뷰어 장면은 합성 자료가 있어야 찍힌다(2판 합성 학습자)"
+ },
+ {
+  "id": "ae",
+  "code": "AE-R2 · AE-R3",
+  "title": "단어창 3차",
+  "stage": "병합됨 · 목업 대비 확인 대기",
+  "source": null,
+  "mirror": "https://claude.ai/artifact/F8ee34YmtTUeLobPW5YdL3",
+  "handoff": [],
+  "scenes": [
+   "viewer.e0"
+  ],
+  "frames": [],
+  "planned": [],
+  "note": "단어 카드 팝오버 장면(조작 순서)은 2판"
+ },
+ {
+  "id": "brand",
+  "code": "BRAND",
+  "title": "아이콘 · 브랜드",
+  "stage": "병합됨 · 반영 확인",
+  "source": null,
+  "mirror": "https://claude.ai/artifact/H3eixpQiKmbP45yaCxfTXn",
+  "handoff": [],
+  "scenes": [],
+  "frames": [],
+  "planned": [],
+  "note": "3a48222f — 모든 캡처의 워드마크 · 기준선 점 확인"
+ },
+ {
+  "id": "conv",
+  "code": "v2-Z",
+  "title": "대화 모드 (v2-Z)",
+  "stage": "상태 미확인",
+  "source": null,
+  "mirror": "https://claude.ai/artifact/U5Yc3r8BNeNAy1UZy5hubW",
+  "handoff": [],
+  "scenes": [],
+  "frames": [],
+  "planned": [],
+  "note": "main에는 회화 안전 · IME 수정만 확인됨. R1 화면 존재 여부는 2판에서 장면으로 확인"
+ },
+ {
+  "id": "lv",
+  "code": "—",
+  "title": "레벨별 단어 · 문형 다시 열기",
+  "stage": "상태 미확인",
+  "source": null,
+  "mirror": "https://claude.ai/artifact/XdwcRnMCRDWAs5KBtzaSzM",
+  "handoff": [],
+  "scenes": [],
+  "frames": [],
+  "planned": [],
+  "note": "인계 · 병합 기록을 찾지 못함 — 2판 전 확인"
+ },
+ {
+  "id": "mail",
+  "code": "MAIL-K",
+  "title": "인증 메일",
+  "stage": "병합됨 · 화면 벽 밖",
+  "source": null,
+  "mirror": "https://claude.ai/artifact/SyPDLLk7LGGnvEbArZcqZT",
+  "handoff": [],
+  "scenes": [],
+  "frames": [],
+  "planned": [],
+  "note": "fc7dd3f9 — 메일은 앱 화면이 아니라 제외(사유 기록)"
+ }
+]
