@@ -100,10 +100,14 @@ test('paged body: turning pages saves the first character offset and another wid
   const saved=(await position(a,r=>r[0]?.source.kind==='body'&&r[0].locator.offset>100))[0];
   assert.deepEqual(Object.keys(saved.locator),['offset']);
   const visible=(f,offset)=>f.page.evaluate(offset=>{const el=document.querySelector('.original-writing'),box=el.closest('[data-reader-pages]').getBoundingClientRect(),chars=Array.from(el.textContent),r=document.createRange();r.setStart(el.firstChild,chars.slice(0,offset).join('').length);r.setEnd(el.firstChild,chars.slice(0,offset+1).join('').length);const rect=r.getBoundingClientRect();return rect.left>=box.left-1&&rect.right<=box.right+1&&rect.top>=box.top-1&&rect.bottom<=box.bottom+1;},offset);
+  // 다시 열어 복원할 때는 그 글자가 화면 안, 사이트 머리 밑에 깔리지 않은 자리에 보여야 한다.
+  const onScreen=(f,offset)=>f.page.evaluate(offset=>{const el=document.querySelector('.original-writing'),chars=Array.from(el.textContent),r=document.createRange();r.setStart(el.firstChild,chars.slice(0,offset).join('').length);r.setEnd(el.firstChild,chars.slice(0,offset+1).join('').length);const rect=r.getBoundingClientRect(),head=document.querySelector('.gnb')?.getBoundingClientRect().bottom||0;return rect.top>=head&&rect.bottom<=innerHeight;},offset);
   assert.ok(await visible(a,saved.locator.offset),'the saved character is the first one on the current page');
   b=await fixture({...options,shared:a.shared,width:390});await b.page.goto(`/viewer/${root.id}`);await b.page.locator('.original-pages[data-reader-pages="paged"]').waitFor();
   const until=Date.now()+15000;while(!(await visible(b,saved.locator.offset))&&Date.now()<until)await b.page.waitForTimeout(150);
   assert.ok(await visible(b,saved.locator.offset),'another width opens the page that holds the saved character');
+  assert.ok(await onScreen(b,saved.locator.offset),'the restored character is on screen below the site header');
+  const bar=await b.page.locator('.original-pagebar').boundingBox();assert.ok(bar&&bar.y+bar.height<=b.page.viewportSize().height+1,'the page bar stays on screen with the page');
   if(shots)await b.page.screenshot({path:`${shots}/original-paged-390.png`});
   assert.equal(root.raw_text,longBody);assert.equal(a.analysisCalls+b.analysisCalls,0);await noOverflow(a);await noOverflow(b);
  }finally{await b?.close();await a.close();}

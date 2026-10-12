@@ -32,11 +32,18 @@ export function restoreOriginalTextOffset(element,offset){
  if(pager){
   // 쪽 넘김: 그 글자가 있는 쪽을 열고, 쪽 상자가 화면 밖이면 상자를 화면으로 데려온다.
   pager.reveal(range);
-  const pages=element.closest('[data-reader-pages]'),box=pages?.getBoundingClientRect();
-  if(box&&(box.top<0||box.bottom>innerHeight))window.scrollBy({top:box.top-16,behavior:'instant'});
+  // 상자가 화면 밖이면 고정 머리(사이트 막대) 바로 아래로 데려온다 — 머리 밑에 첫 줄이 깔리지 않게.
+  const pages=element.closest('[data-reader-pages]'),box=pages?.getBoundingClientRect(),head=originalReaderTopInset();
+  if(box&&(box.top<head||box.bottom>innerHeight))window.scrollBy({top:box.top-head-8,behavior:'instant'});
   return true;
  }
  const rect=range.getBoundingClientRect();window.scrollBy({top:rect.top-104,behavior:'instant'});return true;
+}
+/** 화면 위에 고정된 사이트 머리(.gnb)의 아래 끝 — 원본 리더의 쪽 상자가 그 밑에서 시작한다. */
+export function originalReaderTopInset(){
+ const head=document.querySelector('.gnb');if(!head)return 0;
+ const position=getComputedStyle(head).position;
+ return position==='fixed'||position==='sticky'?Math.max(0,head.getBoundingClientRect().bottom):0;
 }
 /** 쪽 넘김 보기의 기준 글자 — 그 쪽의 첫 글자 위치(코드 포인트). pageOf(range)는 쪽 번호를 돌려준다. */
 export function pagedOriginalTextOffset(element,pageOf,page){

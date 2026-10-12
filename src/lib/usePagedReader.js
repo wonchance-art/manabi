@@ -32,10 +32,11 @@ export function pageLabel(page, count) { return `${clampPage(page, count) + 1} /
  * 상자 높이. 상자 위가 첫 화면 안에 있으면 남은 높이를 채운다(분석 뷰어: 상단 막대 아래 전부).
  * 위에 머리글이 길어 남는 높이가 화면의 minRatio보다 작으면 화면 하나 높이의 상자를 둔다(원본 리더: 상자로 스크롤해 읽는다).
  */
-export function pageHeightFor({ visibleHeight, top, reserve = 0, minRatio = 0.55, min = 160 }) {
+export function pageHeightFor({ visibleHeight, top, reserve = 0, inset = 0, minRatio = 0.55, min = 160 }) {
   const fill = Math.floor(visibleHeight - top - reserve);
   if (fill >= visibleHeight * minRatio) return Math.max(min, fill);
-  return Math.max(min, Math.floor(visibleHeight - reserve - 24));
+  // 화면 하나 높이의 상자 — 위에 고정된 머리(inset)와 아래 쪽 막대(reserve)를 뺀 자리.
+  return Math.max(min, Math.floor(visibleHeight - reserve - inset - 16));
 }
 // 쪽 넘김 키가 끼어들지 않는 자리 — 입력·대화상자·보조 패널·탭/슬라이더처럼 화살표를 스스로 쓰는 위젯.
 const KEY_OWNERS = 'input,textarea,select,[contenteditable=""],[contenteditable="true"],[role="textbox"],[role="slider"],[role="tablist"],[role="radiogroup"],[role="listbox"],[role="menu"],[role="spinbutton"],dialog,.reader-modal,.viewer-inspector';
@@ -139,7 +140,7 @@ export function createPagedController(pages, options = () => ({})) {
     const bar = opt().bar?.();
     const barHeight = bar && !bar.hidden ? (bar.getBoundingClientRect().height || 0) : 0;
     const top = box().top + (w.scrollY || 0);
-    const next = pageHeightFor({ visibleHeight, top, reserve: barHeight + (opt().bottomGap?.() ?? 12) });
+    const next = pageHeightFor({ visibleHeight, top, reserve: barHeight + (opt().bottomGap?.() ?? 12), inset: opt().topInset?.() ?? 0 });
     if (Math.abs(next - height) >= 1) { height = next; pages.style?.setProperty('--reader-page-height', `${next}px`); }
   }
   function measure() {
@@ -374,11 +375,11 @@ const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayout
  * 마지막 기준 토큰을 화면 가운데로 데려온다.
  * @returns {{page,count,ready,progress,label,next,prev,first,last,goTo,reveal}}
  */
-export function usePagedReader({ enabled, pages, barRef, layoutKey, resetKey, onUserPage, canSwipe, canKey, captureAnchor, anchorSelector, initialAnchor, bottomGap }) {
+export function usePagedReader({ enabled, pages, barRef, layoutKey, resetKey, onUserPage, canSwipe, canKey, captureAnchor, anchorSelector, initialAnchor, bottomGap, topInset }) {
   const [state, setState] = useState({ page: 0, count: 1, ready: false, progress: 0, label: pageLabel(0, 1) });
   const controller = useRef(null);
   const latest = useRef({});
-  latest.current = { onUserPage, canSwipe, canKey, captureAnchor, anchorSelector, initialAnchor, bottomGap, bar: () => barRef?.current || null, reducedMotion };
+  latest.current = { onUserPage, canSwipe, canKey, captureAnchor, anchorSelector, initialAnchor, bottomGap, topInset, bar: () => barRef?.current || null, reducedMotion };
   useIsoLayoutEffect(() => {
     if (!enabled || !pages) return undefined;
     const pager = createPagedController(pages, () => latest.current);

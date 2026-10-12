@@ -27,7 +27,7 @@ import OriginalPositionNotice from './OriginalPositionNotice';
 import useOriginalTextPosition from './useOriginalTextPosition';
 import {originalPositionSources,positionSourceKey} from '@/lib/originalReadingPosition';
 import {usePagedReader} from '@/lib/usePagedReader';
-import {pagedOriginalTextOffset,originalTextRange} from '@/lib/originalTextPosition';
+import {pagedOriginalTextOffset,originalTextRange,originalReaderTopInset} from '@/lib/originalTextPosition';
 import {readReaderView} from '@/lib/viewerPreferences';
 import PageBar,{PageStrips} from '@/components/viewer/PageBar';
 
@@ -97,7 +97,7 @@ export default function OriginalMaterialReader({ material }) {
   const [pagesEl,setPagesEl]=useState(null);
   const pageBar=useRef(null);
   const bodyPaged=readerView==='paged'&&!!composer.body?.trim()&&!assets.length;
-  const pager=usePagedReader({enabled:bodyPaged&&sync.state.ready,pages:pagesEl,barRef:pageBar,anchorSelector:'.original-writing',
+  const pager=usePagedReader({enabled:bodyPaged&&sync.state.ready,pages:pagesEl,barRef:pageBar,anchorSelector:'.original-writing',topInset:originalReaderTopInset,
     captureAnchor:(page,api)=>{
       const element=bodyElement.current;if(!element)return undefined;
       const offset=pagedOriginalTextOffset(element,range=>api.pageOf(range),page);

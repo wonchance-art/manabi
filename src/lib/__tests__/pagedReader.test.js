@@ -69,8 +69,9 @@ describe('page math', () => {
   });
   it('fills the rest of the first screen, or a full screen when the header is tall', () => {
     expect(pageHeightFor({ visibleHeight: 844, top: 150, reserve: 64 })).toBe(630);
-    expect(pageHeightFor({ visibleHeight: 844, top: 600, reserve: 64 })).toBe(844 - 64 - 24);
-    expect(pageHeightFor({ visibleHeight: 300, top: 250, reserve: 64, min: 160 })).toBe(212);
+    expect(pageHeightFor({ visibleHeight: 844, top: 600, reserve: 64 })).toBe(844 - 64 - 16);
+    expect(pageHeightFor({ visibleHeight: 844, top: 600, reserve: 64, inset: 56 })).toBe(844 - 64 - 56 - 16); // 고정 머리 아래
+    expect(pageHeightFor({ visibleHeight: 300, top: 250, reserve: 64, min: 160 })).toBe(220);
   });
   it('finds the first item on a page by binary search', () => {
     const pages = [0, 0, 0, 1, 1, 2, 4, 4];
