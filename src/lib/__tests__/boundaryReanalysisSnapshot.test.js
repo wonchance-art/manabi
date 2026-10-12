@@ -4,6 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // 실제 analyzeText(analyzeHybrid) → fetch → /api/analyze 라우트(가짜 모델·가짜 사전) → runPreservedReanalysis → RPC 인자까지
 // 한 줄로 잇는다. 스냅숏(__snapshots__/boundaryReanalysis.none.json)은 PR② 제품 코드를 넣기 **전** 기준 커밋(PR① 15e9500a)에서 떴다.
 // 장면: 새 분석 · 전체 재분석 · 선택 줄 재분석 · 원문 수정(줄 삽입 + 줄 수정, buildEditPlan) — 중·일·영.
+// 2026-10-12 의식적 갱신: 여러 문단을 한 요청에 묶는 수정(analyzePacking.test.js)으로 새 분석·전체 재분석의 요청 본문만
+// 문단 2번 → 1번(세 줄)으로 바뀌었다. 결과(json0)·재분석 저장 인자(rpcs)는 한 바이트도 바뀌지 않았다 — 중국어 문맥 품사 포함.
 
 vi.mock('../server/llm.js', async () => ({ callLLM: (await import('../server/__tests__/helpers/boundaryRouteHarness.js')).callLLM }));
 vi.mock('@supabase/supabase-js', async () => (await import('../server/__tests__/helpers/boundaryRouteHarness.js')).supabaseModule);
