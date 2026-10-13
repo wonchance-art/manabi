@@ -84,3 +84,17 @@ describe('loadRefVocabIndex — 사전 정정 회귀 고정(ZH-DICT-FIX-001)', (
     expect(airen.hanja).toMatch(/애인.*달라요/);
   });
 });
+
+// 계약(ZH-DICT-FIX-002, 오너 승인 2026-10-13): 첫 뜻이 한국 한자음과 같아 보이지만 뜻이 다른 가짜동족 12개.
+// 뜻(ko) 어디에도 한국어 동형어를 두지 않아 한자 창이 「같은 한자어」로 잘못 묶지 않게 하고, 한자 노트로 차이를 짚는다.
+describe('loadRefVocabIndex — 가짜동족 정정 2차 고정(ZH-DICT-FIX-002)', () => {
+  const FALSE_FRIENDS = {
+    事业: '사업', 工程: '공정', 电动车: '전동차', 协议: '협의', 协议书: '협의서', 道理: '도리',
+    情报: '정보', 言论: '언론', 若干: '약간', 文物: '문물', 标记: '표기', 精力: '정력',
+  };
+  it.each(Object.entries(FALSE_FRIENDS))('%s의 뜻에 한국어 동형어 「%s」가 없고 한자 노트가 차이를 짚는다', async (zh, ko) => {
+    const w = (await loadRefVocabIndex('Chinese')).get(zh).word;
+    expect(w.ko.includes(ko)).toBe(false);
+    expect(w.hanja).toMatch(new RegExp(`^${ko}\\(.*달라요!`));
+  });
+});
