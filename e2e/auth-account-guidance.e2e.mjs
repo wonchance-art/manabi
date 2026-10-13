@@ -54,7 +54,7 @@ test('A 이미 가입된 이메일로 가입하면 메일 발송 대신 가입�
   await page.getByLabel('비밀번호', { exact: true }).fill('fixture-password-24');
   await page.locator('form').getByRole('button', { name: '회원가입', exact: true }).click();
   await page.getByRole('alert').filter({ hasText: '이미 가입된 이메일이에요.' }).waitFor();
-  assert.match(await alertText(page), /로그인하거나 Google로 계속하세요/);
+  assert.match(await alertText(page), /로그인하거나 Google로 계속해 주세요/);
   assert.equal(await page.getByRole('status').filter({ hasText: '인증 이메일을 보냈어요' }).count(), 0);
   assert.equal(calls.filter(call => call.path.endsWith('/signup')).length, 1);
   await page.getByRole('button', { name: '로그인하러 가기 →' }).click();
