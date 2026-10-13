@@ -50,8 +50,11 @@ export function useVocabData() {
     queryFn: ({ signal }) => fetchVocabLearningData(user.id, { signal, getActorId: () => actorRef.current }),
     enabled: !!user,
   });
-  const vocab = learning?.actorId === user?.id ? learning.rows : EMPTY_ROWS;
-  const projections = learning?.actorId === user?.id ? learning.projections : EMPTY_ROWS;
+  // 로그인 전에는 query가 꺼져 learning이 없다 — `undefined === undefined`로 남의(없는) 결과를 읽지 않게
+  // 사용자 id가 있을 때만 그 사용자의 결과로 인정한다(2026-10-14 M09: 게스트 /vocab 크래시).
+  const ownLearning = user?.id && learning?.actorId === user.id ? learning : null;
+  const vocab = ownLearning ? ownLearning.rows : EMPTY_ROWS;
+  const projections = ownLearning ? ownLearning.projections : EMPTY_ROWS;
   const materialIds = useMemo(() => [...new Set(vocab.map(row => row.source_material_id).filter(Boolean))].sort(), [vocab]);
   // 제목은 로그인 사용자의 RLS로만 읽는 표시 보조다. 실패해도 학습 정본을 대체하지 않는다.
   const { data: materialTitles = EMPTY_TITLES } = useQuery({
@@ -177,12 +180,12 @@ export function useVocabData() {
   return {
     vocab,
     projections,
-    learningAvailable: !error && learning?.actorId === user?.id && learning?.complete === true,
-    learningNow: learning?.now,
+    learningAvailable: !error && ownLearning?.complete === true,
+    learningNow: ownLearning?.now,
     materialTitles,
-    isOffline: learning?.actorId === user?.id && learning?.offline === true,
+    isOffline: ownLearning?.offline === true,
     isLoading,
-    error: error || learning?.readError,
+    error: error || ownLearning?.readError,
     refetch,
     scoreMutation,
     deleteMutation,
