@@ -333,7 +333,7 @@ test('390px zh saved (before review): the saved row with the next review date re
   await tap(f,'id_0_2','경기장');
   const row=f.page.locator('#inspector-word .save-grade__saved');
   await row.waitFor();
-  assert.equal(await row.getByRole('button',{name:'✓ 단어장에 있음',exact:true}).count(),1);
+  assert.equal(await row.getByRole('button',{name:'✓ 담은 표현에 있음',exact:true}).count(),1);
   assert.match(await row.innerText(),/다음 복습 \d+월 \d+일/);
   assert.equal(await row.getByRole('button',{name:'아는 단어',exact:true}).count(),1,'known toggle sits in the saved row');
   assertFirstScreen(await measure(f.page),{label:'zh 390 saved',bottom:'saved'});

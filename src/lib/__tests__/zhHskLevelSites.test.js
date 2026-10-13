@@ -63,8 +63,10 @@ describe('⑴ 화면 급수 표시 = HSK 2026 조회 하나', () => {
     const page = read('src/views/VocabPage.jsx');
     const refLevelOf = sliceBetween(page, 'const refLevelOf = useCallback(', '), [');
     expect(refLevelOf).toContain('zhHskLevelOf(v.word_text, zhHskLevels)');
-    const filter = sliceBetween(page, "if (levelFilter !== 'all' && zhHskLevels) {", 'if (q) {');
-    expect(filter).toContain('refLevelOf(x._item)');
+    // REV-SCOPE-R1A: 급수 판정은 목록 · 개수 · 복습 줄이 함께 쓰는 범위 거르기(reviewScope.wordZhLevel)로 옮겼다 — 같은 조회.
+    const filter = sliceBetween(read('src/lib/reviewScope.js'), 'export function wordZhLevel(', '\n}');
+    expect(filter).toContain('zhHskLevelOf(word?.word_text, levels)');
+    expect(page).toContain("useQuery({ queryKey: ['zh-hsk-levels'], queryFn: loadZhHskLevels");
     const list = read('src/views/VocabList.jsx');
     expect(list).toContain('const refLevel = zhHskLevelLabel(refLevelOf?.(v));');
     expect(sliceBetween(list, 'const LEVEL_OPTIONS = [', '];')).toContain('label: zhHskLevelLabel(level)');

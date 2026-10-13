@@ -134,15 +134,16 @@ test(`${engine.name()}: explicit anchors, same-hash history and persisted pagesh
   await f.page.evaluate(()=>history.forward());await retainedOffset(f.page,'u03-dialogue',dialogueOffset);await visiblePosition(f.page,'u03-dialogue');
   // DOM activation keeps the actual Next Link behavior without automation scrolling first.
   const reviewOffset=await captureOffset(f.page,'u03-dialogue');
+  // REV-SCOPE-R1A: 도구막대 「담은 표현」은 교재 범위의 채점 복습방(/vocab?src=book:…)으로 간다.
   await f.page.getByRole('link',{name:'담은 표현',exact:true}).evaluate(link=>link.click());
-  await f.page.waitForURL(url=>url.pathname.endsWith('/review'));
+  await f.page.waitForURL(url=>url.pathname==='/vocab'&&url.searchParams.get('src')==='book:japanese-n5:1-42');
   await f.page.goBack();await retainedOffset(f.page,'u03-dialogue',reviewOffset);await visiblePosition(f.page,'u03-dialogue');
   // A fresh Next return link honors its explicit source anchor.
   await f.page.evaluate(()=>scrollBy(0,340));await settled(f.page,'u03-dialogue');
   assert.ok(await f.page.locator('#u03-dialogue').evaluate(node=>node.getBoundingClientRect().top<document.querySelector('.manabi-reader-toolbar').getBoundingClientRect().bottom));
   await f.page.getByRole('link',{name:'담은 표현',exact:true}).evaluate(link=>link.click());
-  await f.page.waitForURL(url=>url.pathname.endsWith('/review'));
-  const returnLink=f.page.getByRole('link',{name:/교재로 돌아가기/}).first();
+  await f.page.waitForURL(url=>url.pathname==='/vocab');
+  const returnLink=f.page.getByRole('link',{name:'← 교재로',exact:true}).first();
   await returnLink.waitFor();await returnLink.evaluate(link=>link.click());await settled(f.page,'u03-dialogue');
   assert.ok(await f.page.locator('#u03-dialogue').evaluate(node=>node.getBoundingClientRect().top>=document.querySelector('.manabi-reader-toolbar').getBoundingClientRect().bottom-1));
   const persistedOffset=await captureOffset(f.page,'u03-dialogue');
