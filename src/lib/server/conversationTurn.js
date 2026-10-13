@@ -70,8 +70,8 @@ function tutorLinesOf(rawText) {
   return String(rawText || '').split('\n');
 }
 
-/** 생성 응답 받기 — 한 번 부른다(폴백은 llm.js). */
-async function askTutor(callLLM, prompt, signal) {
+/** 생성 응답 받기 — 한 번 부른다(폴백은 llm.js). 평가 묶음(scripts/eval/run-conversation-eval.mjs)도 이 함수를 그대로 쓴다. */
+export async function askTutor(callLLM, prompt, signal) {
   try {
     const { text } = await callLLM('standard', prompt, {
       temperature: 0.4,
@@ -85,6 +85,24 @@ async function askTutor(callLLM, prompt, signal) {
   } catch {
     return null;
   }
+}
+
+/**
+ * 이어 쓰기 프롬프트 — 최근 12턴 · 열린 교정 상태 · 오늘 복습한 말 · 이 대화에서 담은 말.
+ * 평가 묶음도 이 함수로 프롬프트를 만든다(측정과 제품이 같은 문안).
+ */
+export function promptForTurn({ conv, rawText, text, inputMode = 'text', action = null, outputWords = [], savedWords = [], excerpt = '' }) {
+  const open = openRetryOf(conv.turns);
+  return buildTurnPrompt({
+    language: conv.language, level: conv.level, topic: conv.topic, excerpt,
+    recentTurns: (conv.turns || []).slice(-CONVERSATION_RECENT_TURNS), tutorLines: tutorLinesOf(rawText),
+    userText: action === 'reveal'
+      ? `(The student asked to see the answer. The correct sentence is shown to them: "${open?.focus.to}". Say "no problem" warmly and ask the next question. "feedback", "focus" and "repair" must be null.)`
+      : text,
+    inputMode, outputWords, savedWords,
+    open: action === 'reveal' ? null : open?.focus || null,
+    safetyRules: conversationSafetyRules(conv.language),
+  });
 }
 
 function nextConversation(conv, { meTurn, closeRetry, tutorTurn, now }) {
@@ -213,19 +231,10 @@ export async function runConversationTurn({ userId, body, deps, now = Date.now()
   // 3. 프롬프트(서버 조립) — 최근 12턴 · 열린 교정 상태 · 오늘 복습한 말 · 이 대화에서 담은 말.
   judgePoliticalTopic(text, language); // 경계만(§13) — 기본 구현은 판정 0.
   const parent = conv.parentId ? await readParent(supabase, userId, conv.parentId) : null;
-  const allLines = tutorLinesOf(material.raw_text);
-  const recentTurns = (conv.turns || []).slice(-CONVERSATION_RECENT_TURNS);
   const savedWords = await savedWordsOf(supabase, userId, materialId);
-  const prompt = buildTurnPrompt({
-    language, level: conv.level, topic: conv.topic,
+  const prompt = promptForTurn({
+    conv, rawText: material.raw_text, text, inputMode, action, outputWords, savedWords,
     excerpt: parent ? String(parent.raw_text || '').slice(0, CONVERSATION_EXCERPT_CHARS) : '',
-    recentTurns, tutorLines: allLines,
-    userText: action === 'reveal'
-      ? `(The student asked to see the answer. The correct sentence is shown to them: "${open.focus.to}". Say "no problem" warmly and ask the next question. "feedback", "focus" and "repair" must be null.)`
-      : text,
-    inputMode, outputWords, savedWords,
-    open: action === 'reveal' ? null : open?.focus || null,
-    safetyRules: conversationSafetyRules(language),
   });
   const ai = await askTutor(callLLM, prompt, signal);
   if (!ai) return fail(502, CONVERSATION_ERRORS.noReply, 'no_reply');
