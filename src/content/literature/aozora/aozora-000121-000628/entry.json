@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "personId": "000121",
+  "workId": "628",
+  "title": "ごん狐",
+  "author": "新美南吉",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1932,
+  "authorDeathYear": 1943,
+  "level": "N3 중급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000121/card628.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000121/files/628_ruby_649.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "2f214158ddc83a89c88400c8ca63cb0d6add8b625b3cea0599a26fdc19274189",
+  "textSha256": "857830bc526c22d63e795f0635beaa4cc6dcead23eab0ba3a9eec534f75e3251",
+  "attribution": {
+    "author": "新美南吉",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-14",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR",
+      "US"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000121/card628.html"
+  }
+}
