@@ -953,6 +953,7 @@
     문장 단위로 나눠 보내고 원래 줄로 잇기 · 서버 truncated 표식 · 모든 언어 덮기 검사 · 100줄 넘는 문단 분할 요청 · 기존 잘린 자료 복구 경로 ·
     Preview QA 429 대응: 여러 문단을 한 요청으로 묶기(글자 예산 중400·일800·영2000) · 429는 Retry-After 대기 후 2회 재시도(PR 진행).
   - **BOUNDARY-LONG-LINE-001**(10-12, ANALYZE-LONG-LINE-001 남은 문제): 200자 넘는 줄의 200자 뒤 묶기·나누기가 analysis_mismatch로 막히던 문제 — 경계 편집도 자료 분석과 같은 조각(analysisLineUnits)으로 나눠 기록이 든 조각만 보내고 줄 좌표로 잇기 · 429 재시도 · 계약 `boundaryLongLines.test.js`(PR 진행).
+  - **WALL-STATES-DLG-001**(10-13, WALL-STATES-001 ②~⑥⑧⑨ 객관 결함): ConfirmModal 기본 「확인」·휴지통 「이동」·제목 · 퀴즈 창 닫기/Esc/dialog·언어명 · 전체 분석·초안 비우기·편집 창 닫기 확인(`useDiscardGuard`)·ViewerModal 강제 닫힘 복구 · 상태 문구 5곳·관리자/그룹 실패 표시 · 알림 권한은 사용자 선택 2곳만·로컬 알림 SW · 메일 제목 정본 계약 · e2e `viewer-dialog-guards`(PR 진행).
   - **BUILD-FONT-VENDOR-001**(10-13, 오너 「글꼴 저장소 내장」): 배포 빌드가 Google Fonts 10패밀리 woff2 약 950개를 매번 받다 하나만 실패해도 ERROR(#1402·#1419 Preview) — 같은 바이트를 `vendor/google-fonts`(41MB·OFL)에 두고 `next-build.mjs`가 사본을 넘김. layout 호출 무변경, 네트워크 빌드와 `.next/static/media` 956개·CSS·preload 바이트 동일 실측 · 1회 재빌드(BUILD-FONT-RETRY-001) 대체 · 계약 `next-build.test.js`(PR 진행).
   - **PR-TRIAGE-1323**(10-12 오너 「권장대로 전부 진행」): 정체 PR #1323에서 살릴 2가지 이식 — 뷰어 단어 버튼 안 중첩 버튼 분리·닫을 때 초점 복귀·문장 막대 24px,
     설명판 뜻 단어 경계 줄바꿈(`wrapMeaning`) · 계약 `wordTokenNesting.test.js` · 이식 PR 병합 뒤 #1323 닫기.
