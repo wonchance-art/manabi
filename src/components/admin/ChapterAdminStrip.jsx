@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../lib/AuthContext';
 import { useToast } from '../../lib/ToastContext';
 import { chapterEditorHref } from '../../lib/chapterEditorModel';
+import { friendlyToastMessage } from '../../lib/errorMessage';
 
 export default function ChapterAdminStrip({ lang, slug, overridden = false }) {
   const { isAdmin } = useAuth();
@@ -34,7 +35,7 @@ export default function ChapterAdminStrip({ lang, slug, overridden = false }) {
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        toast(json.error || '복원에 실패했어요.', 'error');
+        toast(friendlyToastMessage(json.error, '복원에 실패했어요.'), 'error');
         return;
       }
       toast('파일 버전으로 복원했어요.', 'success');

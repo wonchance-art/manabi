@@ -11,6 +11,7 @@ import { composerOf } from './materialComposer';
 import { runPassageAnalysis } from './passageAnalysis';
 import { inspectAnalysisCoverage } from './analysisCoverage';
 import { pendingBoundaryCount } from './boundaryEdits';
+import { friendlyToastMessage } from './errorMessage';
 
 const STALE_THRESHOLD_MS = 3 * 60 * 1000;
 
@@ -127,7 +128,7 @@ export function useReanalyze({ materialId, material, refetch, toast, explanation
     },
     onError: (err, variables, scope) => {
       if (activeId.current !== scope?.materialId) return;
-      if (err.name !== 'AbortError') toast?.('분석 실패: ' + err.message, 'error');
+      if (err.name !== 'AbortError') toast?.('분석 실패: ' + friendlyToastMessage(err), 'error');
       refetch?.();
     },
   });

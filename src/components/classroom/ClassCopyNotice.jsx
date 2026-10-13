@@ -3,6 +3,7 @@ import {useRef,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {requestClassCopy} from '../../lib/classCopyClient';
 import './classroom-reader.css';
+import { friendlyToastMessage } from '../../lib/errorMessage';
 
 export default function ClassCopyNotice({material,user,returnTo}){
   const match=/^\/class\/([a-z0-9][a-z0-9-]{0,15})(?:\?|$)/.exec(returnTo||'');
@@ -16,7 +17,7 @@ export default function ClassCopyNotice({material,user,returnTo}){
   async function update(){
     setBusy(true);setError('');
     try{await requestClassCopy(team,sourceId,'update',{copyRevision:state.copyRevision,sourceRevision:state.sourceRevision});await client.invalidateQueries({queryKey:['material',String(material.id)]});await query.refetch();close();}
-    catch(e){setError(e.message);}finally{setBusy(false);}
+    catch(e){setError(friendlyToastMessage(e));}finally{setBusy(false);}
   }
   return <div className="class-copy-notice">
     {query.isLoading?<span role="status">수업의 새 내용을 확인하고 있어요…</span>:query.error?<span>새 내용을 확인하지 못했어요. <button onClick={()=>query.refetch()}>다시 확인</button></span>

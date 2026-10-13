@@ -21,6 +21,7 @@ import { fetchWordDetailText } from '../lib/wordDetail';
 import { formatDetail } from '../lib/wordDetailFormat';
 import Button from '../components/Button';
 import TokenPosLabel from './TokenPosLabel';
+import { friendlyToastMessage } from '../lib/errorMessage';
 
 // 서버 캡 미러 — route.js의 MAX_LINES·MAX_LINE_LEN과 같은 값(계약 테스트로 핀).
 const QUICK_MAX_LINES = 100;
@@ -82,7 +83,7 @@ export default function QuickPage() {
         };
       }));
     } catch (e) {
-      setError(e?.message || '분석에 실패했어요.');
+      setError(friendlyToastMessage(e, '분석에 실패했어요.'));
     } finally {
       setAnalyzing(false);
     }

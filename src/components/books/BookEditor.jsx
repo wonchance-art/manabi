@@ -3,6 +3,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import Link from 'next/link';
 import {bookHref,editableFields,validateManuscript,withField} from '@/lib/textbook/contract';
 import './books.css';
+import { friendlyToastMessage } from '@/lib/errorMessage';
 const api='/api/admin/books/japanese-n5';
 const names={title:'제목',subtitle:'부제',goal:'학습 목표',scene:'장면',words:'준비 단어',ja:'일본어',ko:'한국어',body:'설명',note:'도움말',lead:'도입',prompt:'질문',answer:'정답',why:'해설',formula:'문형',label:'표제',examples:'예문',patterns:'핵심 표현',study_pages:'표현 설명',practice_pages:'확인 활동',review_pages:'누적 복습',dialog:'대화',oral:'말하기',reading:'읽기 본문',meaning:'뜻',reading_question:'읽기 질문',reading_answer:'읽기 정답',reading_why:'읽기 해설',writing_prompt:'내 문장 질문',writing_sample:'내 문장 예시',checks:'확인 문제',cue:'제시문',options:'선택지',rows:'표',tasks:'문항',kanji:'한자 읽기',preparation:'준비 안내',prerequisite:'앞에서 배운 것',next:'다음 과 연결',culture:'문화 설명',culture_title:'문화 제목',spelling:'표기',readings:'읽는 법',text:'본문',items:'항목',parts:'부분',help:'도움말',closing:'마무리',translation:'번역'};
 const label=path=>path.map(k=>typeof k==='number'?`${k+1}번`:names[k]||(/^[\u3040-\u9fff]+$/.test(k)?k:'내용')).join(' · ');
@@ -16,7 +17,7 @@ export default function BookEditor(){
     try{const res=await fetch(api+(edition?`?edition=${edition}`:''),{cache:'no-store'});const json=await res.json();if(!res.ok)throw Error(json.error);
       if(id!==loadId.current)return;
       setData(json);setBook(json.draft?.manuscript||json.base);setDirty(false);setBackupReady(false);setReplacement(null);setGroup('lesson:0');
-    }catch(e){if(id===loadId.current)setError(e.message)}finally{if(id===loadId.current)setPending(false)}
+    }catch(e){if(id===loadId.current)setError(friendlyToastMessage(e))}finally{if(id===loadId.current)setPending(false)}
   }
   function startCandidate(){
     if(dirty||(data.draft&&!backupReady))return;
@@ -31,8 +32,8 @@ export default function BookEditor(){
     const body={action,editionId,...(action==='save'?{manuscript:book,...(replacement?{replaceDraftHash:replacement}:{})}:{}),expectedDraftVersion:data.draft?.version??null,expectedReleaseVersion:data.release?.version??null};
     const res=await fetch(api,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const result=await res.json();if(!res.ok)throw Error(result.error);
     if(action==='save'){setData(d=>({...d,draft:result.draft}));setDirty(false);setReplacement(null);setBackupReady(false);setMessage('비공개 초안을 저장했어요. 공개 교재는 발행할 때 바뀝니다.')}else{setMessage(action==='restore'?'선택한 판본으로 돌아갔어요.':'검수한 판본을 발행했어요.');await load(data.candidate.editionId)}
-  }catch(e){setError(e.message)}finally{busy.current=false;setPending(false)}}
-  async function importFile(file){if(!file)return;try{if(file.size>8*1024*1024)throw Error('원고는 8MB 이내로 불러와 주세요.');const value=JSON.parse(await file.text());const invalid=validateManuscript(value,data.base);if(invalid)throw Error(invalid);setBook(value);setDirty(true);setMessage('원고를 불러왔어요. 저장하기 전에는 초안에 반영되지 않아요.');setError('')}catch(e){setError(e.message)}}
+  }catch(e){setError(friendlyToastMessage(e))}finally{busy.current=false;setPending(false)}}
+  async function importFile(file){if(!file)return;try{if(file.size>8*1024*1024)throw Error('원고는 8MB 이내로 불러와 주세요.');const value=JSON.parse(await file.text());const invalid=validateManuscript(value,data.base);if(invalid)throw Error(invalid);setBook(value);setDirty(true);setMessage('원고를 불러왔어요. 저장하기 전에는 초안에 반영되지 않아요.');setError('')}catch(e){setError(friendlyToastMessage(e))}}
   const compatible=!!data&&!validateManuscript(book,data.base);
   const differentDraft=!!data?.draft&&data.draft.content_hash!==data.candidate.contentHash;
   const ready=!!data&&!dirty&&(!data.draft||data.draft.content_hash===data.candidate.contentHash);

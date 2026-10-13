@@ -14,6 +14,7 @@ import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { recordActivity } from '../lib/streak';
 // 첨삭 태그·추천 챕터 링크는 옛 교재 주소일 수 있다(저장된 이력 포함) — 보관함으로만 열리므로 링크를 내지 않는다(VIEWER-R0-BUGS-001 버그 3).
 import { learnerHref } from '../lib/bookNavigation';
+import { friendlyToastMessage } from '../lib/errorMessage';
 
 const LANGS = [
   { key: 'Japanese', label: '일본어' },
@@ -191,7 +192,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.feedback) {
-        setError(data?.error?.message || '첨삭에 실패했어요. 잠시 후 다시 시도해주세요.');
+        setError(friendlyToastMessage(data?.error?.message, '첨삭에 실패했어요. 잠시 후 다시 시도해주세요.'));
         return;
       }
       const fb = data.feedback;

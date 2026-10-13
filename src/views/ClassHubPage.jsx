@@ -27,6 +27,7 @@ import ClassroomJoin from '../components/classroom/ClassroomJoin';
 import { saveClassroomMetadata } from '../lib/classroomModel';
 import { hashPassword, makeSalt, validatePassword } from '../lib/classPassword';
 import { courseOptions } from '../lib/classCourse';
+import { friendlyToastMessage } from '../lib/errorMessage';
 
 const LANG_OPTIONS = ['Japanese', 'Chinese', 'English', 'French'];
 
@@ -113,7 +114,7 @@ export default function ClassHubPage() {
       setCreating(false);
       refresh();
     } catch (err) {
-      toast('수업 만들기 실패 — ' + (err?.message || '알 수 없는 오류'), 'error');
+      toast('수업 만들기 실패 — ' + friendlyToastMessage(err), 'error');
     } finally {
       setBusy(false);
     }
@@ -141,7 +142,7 @@ export default function ClassHubPage() {
       setEditing(null);
       refresh();
     } catch (err) {
-      toast('설정 저장 실패 — ' + (err?.message || '알 수 없는 오류'), 'error');
+      toast('설정 저장 실패 — ' + friendlyToastMessage(err), 'error');
     } finally {
       setBusy(false);
     }
@@ -164,7 +165,7 @@ export default function ClassHubPage() {
       setPwDraft('');
       refresh();
     } catch (err) {
-      toast('암호 변경 실패 — ' + (err?.message || '알 수 없는 오류'), 'error');
+      toast('암호 변경 실패 — ' + friendlyToastMessage(err), 'error');
     } finally {
       setBusy(false);
     }

@@ -1,9 +1,13 @@
 /**
  * Supabase 영어 에러 메시지 → 한국어 변환
  */
+import { isUserFacingMessage } from './errorMessage';
+
 // 화면이 문구에 맞춰 보조 안내(Google 로그인 힌트·인증 메일 재발송)를 붙이는 기준값.
 export const INVALID_CREDENTIALS_MESSAGE = '이메일 또는 비밀번호가 올바르지 않습니다.';
 export const EMAIL_NOT_CONFIRMED_MESSAGE = '이메일 인증이 필요합니다. 받은 편지함을 확인해주세요.';
+// 번역하지 못한 오류의 고정 문구(WALL-STATES-001) — 화면 문구 표준(docs/design/copy-standard.md)의 실패 형태.
+export const AUTH_FALLBACK_MESSAGE = '요청을 처리하지 못했어요. 다시 시도해 주세요.';
 
 /**
  * 이메일 인증을 켠 Supabase는 이미 있는 이메일로 가입해도 오류 대신 성공처럼 응답한다(가입 여부 노출 방지).
@@ -15,6 +19,7 @@ export function isRepeatedSignup(data) {
 }
 
 export function toKoreanError(message = '') {
+  if (typeof message !== 'string') message = message == null ? '' : String(message);
   const m = message.toLowerCase();
 
   if (m.includes('invalid login credentials') || m.includes('invalid_credentials'))
@@ -41,6 +46,8 @@ export function toKoreanError(message = '') {
   if (m.includes('user not found'))
     return '등록된 사용자를 찾을 수 없습니다.';
 
-  // 원문 반환 (번역 불가 시)
-  return message;
+  // 번역 불가 — 우리 한국어 안내만 그대로, 영어 원문은 화면에 내지 않고 콘솔로만 남긴다.
+  if (isUserFacingMessage(message)) return message;
+  if (message) console.warn('[toKoreanError] 원문은 화면에 내지 않음:', message);
+  return AUTH_FALLBACK_MESSAGE;
 }

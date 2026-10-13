@@ -2512,7 +2512,7 @@ export default function ViewerPage() {
     if (gradeAction.current !== action) return;
     const snapshot = undo ? { ...undo, text: savedToken.text } : null;
     lastSaveRef.current = snapshot;
-    if (linked || snapshot) toast(<span>「{savedToken.text}{vt("」 저장됨")}{snapshot && <ViewerLabelSlot locale={uiLocale} text={<>{vt('저장 취소 ·')} {UNDO_KEY_LABEL}</>}><button type="button" className="btn btn--ghost btn--sm" style={{ pointerEvents: 'auto' }} onClick={() => undoLastSave(snapshot)}>저장 취소 · {UNDO_KEY_LABEL}</button></ViewerLabelSlot>}</span>, 'success', 8000);
+    if (linked || snapshot) toast(<span>「{savedToken.text}{vt("」 단어를 저장했어요")}{snapshot && <ViewerLabelSlot locale={uiLocale} text={<>{vt('되돌리기 ·')} {UNDO_KEY_LABEL}</>}><button type="button" className="btn btn--ghost btn--sm" style={{ pointerEvents: 'auto' }} onClick={() => undoLastSave(snapshot)}>되돌리기 · {UNDO_KEY_LABEL}</button></ViewerLabelSlot>}</span>, 'success', 8000);
   };
 
   const isDragSelection=dragTokens!==null;
@@ -2548,7 +2548,7 @@ export default function ViewerPage() {
         <p style={{ color: 'var(--text-secondary)', marginBottom: 20, maxWidth: 400, margin: '0 auto 20px' }}>
           {isNotFound
             ? '이 자료는 삭제됐거나 비공개로 전환됐을 수 있어요. 연결됐던 단어는 단어장에 그대로 남아 있습니다.'
-            : (error.message || '잠시 후 다시 시도해주세요.')}
+            : friendlyToastMessage(error, '잠시 후 다시 시도해주세요.')}
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           {!isNotFound && <button onClick={() => refetch()} className="btn btn--primary">{vt("다시 시도")}</button>}

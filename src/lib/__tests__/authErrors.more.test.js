@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { toKoreanError } from '../authErrors';
+import { describe, expect, it, vi } from 'vitest';
+import { toKoreanError, AUTH_FALLBACK_MESSAGE } from '../authErrors';
 
 describe('toKoreanError additional contracts', () => {
   it.each([
@@ -22,9 +22,13 @@ describe('toKoreanError additional contracts', () => {
     ['token has expired', '링크가 만료되었습니다. 다시 요청해주세요.'],
     ['token expired', '링크가 만료되었습니다. 다시 요청해주세요.'],
     ['user not found', '등록된 사용자를 찾을 수 없습니다.'],
-    ['unmapped detail', 'unmapped detail'],
-    ['', ''],
+    // WALL-STATES-001: 번역하지 못한 영어 원문·빈 값은 원문 대신 로그인 화면의 기존 폴백 문구.
+    ['unmapped detail', AUTH_FALLBACK_MESSAGE],
+    ['', AUTH_FALLBACK_MESSAGE],
+    ['이미 처리 중인 요청이에요.', '이미 처리 중인 요청이에요.'],
   ])('%j maps deterministically', (input, expected) => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     expect(toKoreanError(input)).toBe(expected);
+    warn.mockRestore();
   });
 });
