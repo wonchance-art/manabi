@@ -30,7 +30,7 @@ vi.mock('@/content/refLangs', () => {
     slug, title: `원본 ${slug}`, level: 'A1', order: i + 1,
     sections: [{ heading: '본문', pattern: 'want', distractors: ['need','like','have'], examples: [{ en: `I want ${slug}.`, ko: '원해요.' }] }],
   }));
-  const ref = { base: '/english', name: '영어', langCode: 'en', flag: '', ALL_CHAPTERS: chapters,
+  const ref = { base: '/english', name: '영어', langCode: 'en', ALL_CHAPTERS: chapters,
     isIntroLevel: () => false, getGrammarChapters: () => chapters,
     getChapter: slug => { const chapter = chapters.find(c => c.slug === slug); return chapter ? { chapter } : null; },
   };
