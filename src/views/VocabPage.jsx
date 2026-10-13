@@ -139,6 +139,19 @@ function VocabWorkspace({ reviewScope }) {
     if (!settingsRestored || explicitScope || !scopeDraft) return;
     try { localStorage.setItem(SAVED_SCOPE_KEY, serializeReviewScope(scopeDraft).replace(/^\/vocab\??/, '')); } catch { /* 저장소 차단 시 이 화면에서만 유지 */ }
   }, [scopeDraft, settingsRestored, explicitScope]);
+  // 명시 주소로 들어온 범위를 칩 · 시트로 바꾸면 주소도 같은 범위로 바꾼다 — 새로고침 · 공유 · 뒤로 가기가 지금 범위를 잃지 않게
+  // (M09 6152793665: HSK 3 적용 뒤에도 주소가 /vocab?lang=Chinese로 남아 새로고침하면 급수가 사라짐). 저장 설정은 여전히 덮지 않는다.
+  // history.replaceState는 서버 페이지를 다시 그리지 않으므로 작업 공간(key)이 다시 마운트되지 않는다.
+  const entryUrlRef = useRef(null);
+  useEffect(() => {
+    if (!explicitScope || !scopeDraft || typeof window === 'undefined') return;
+    const current = `${window.location.pathname}${window.location.search}`;
+    entryUrlRef.current ??= current;
+    const href = serializeReviewScope(scopeDraft, { returnTo: explicitScope.returnTo });
+    // 처음 범위로 돌아오면 들어온 주소 그대로(옛 ?book= 주소 포함), 바뀐 범위는 정본 주소로 쓴다.
+    const target = href === serializeReviewScope(explicitScope.scope, { returnTo: explicitScope.returnTo }) ? entryUrlRef.current : href;
+    if (current !== target) window.history.replaceState(window.history.state, '', target);
+  }, [scopeDraft, explicitScope]);
 
   const [reviewMode, setReviewMode] = useState('auto');
 
