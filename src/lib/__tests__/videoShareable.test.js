@@ -4,8 +4,9 @@ import path from 'node:path';
 import { sliceBetween } from './helpers/sliceBetween.js';
 import {
   CC_SOURCE, PD_SOURCE, LICENSE_CC_BY, LICENSE_PUBLIC_DOMAIN,
-  attributionParts, isCreativeCommonsText, isShareableSource, licenseForSource,
+  attributionParts, isCreativeCommonsText, isShareableSource, licenseForSource, materialSource,
 } from '../videoAttribution';
+import { createSuggestionSave } from '../suggestionReading';
 import {
   MIN_BODY_CHARS, buildShareableArticle, readLicenseText, shareableSource,
 } from '../server/youtubeShareable';
@@ -213,7 +214,9 @@ describe('F R5 — 표기는 저장이 아니라 **표시**다', () => {
     const v = read('src/views/ViewerPage.jsx');
     // 파일에 이름만 남아 있는 것으로는 부족하다 — 실제로 **자료의 출처를 읽어** 그리는지
     // 봐야 한다(돌연변이 M13이 `const at = null;`로 로직만 죽이고 통과했다).
-    expect(v).toContain('attributionParts(material?.metadata?.source)');
+    expect(v).toContain('attributionParts(materialSource(material))');
+    // 행에 metadata 열은 없다 — 예전 계약이 박제했던 `material?.metadata?.source`는 늘 undefined였다(2026-10-13).
+    expect(v).not.toMatch(/material\??\.metadata\??\.source/);
     expect(v).toContain('viewer-attribution');
     expect(v, '원본 링크가 없으면 표기가 반쪽이다').toContain('원본 보기');
   });
@@ -223,6 +226,30 @@ describe('F R5 — 표기는 저장이 아니라 **표시**다', () => {
     expect(save).toContain('meta.source =');
     expect(save).toContain('license: licenseForSource(suggestion.source)');
     expect(read('src/components/materials/SuggestionReader.jsx')).toContain('{license && <span>{license}</span>}');
+  });
+
+  it('저장하는 쪽이 쓴 자리에서 읽는다 — 추천 읽기로 담은 CC BY 영상 행에 출처 줄이 생긴다', async () => {
+    // 쓰는 쪽 실물(createSuggestionSave)이 만든 행을 그대로 읽는다. 쓰는 자리와 읽는 자리가 갈리면 여기서 깨진다.
+    const save = await createSuggestionSave('owner', {
+      id: '22222222-2222-4222-8222-222222222222', date: '2026-10-13', title: 'Clip', language: 'English',
+      transcript: 'Hello.\n\nAnother paragraph.', source: CC_SOURCE, video_id: 'abcdefghijk', channel_name: 'Open Channel', level: 'B1',
+    });
+    const row = save.attempt.row;
+    expect(row.metadata, '자료 행에는 metadata 열이 없다').toBeUndefined();
+    expect(attributionParts(materialSource(row))).toEqual({
+      channel: 'Open Channel', license: 'CC BY', url: 'https://www.youtube.com/watch?v=abcdefghijk',
+    });
+  });
+
+  it('자료 추가의 링크 반입도 같은 자리(processed_json.metadata.source)에 쓴다', () => {
+    const page = read('src/views/MaterialAddPage.jsx');
+    const initJson = sliceBetween(page, 'const initJson = {', 'const materialRow = {');
+    expect(initJson).toContain('metadata: {');
+    expect(initJson).toContain('...(linkSource ? { source: linkSource } : {}),');
+    expect(materialSource({ processed_json: { metadata: { source: { kind: 'youtube', channel: 'C', url: 'u' } } } }))
+      .toEqual({ kind: 'youtube', channel: 'C', url: 'u' });
+    expect(materialSource({ metadata: { source: { kind: 'youtube', channel: 'C' } } }), '없는 열은 읽지 않는다').toBe(null);
+    expect(materialSource(null)).toBe(null);
   });
 
   it('라이선스를 모르면 라이선스 이름을 안 쓴다 — 없는 권리를 주장하지 않는다', () => {

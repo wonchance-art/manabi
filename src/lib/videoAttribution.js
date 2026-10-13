@@ -15,6 +15,9 @@
  *
  * ⚠ 실측으로 알게 된 구멍: `metadata.source`는 **저장만 되고 어디에도 표시되지 않았다**.
  * 저장은 표기가 아니다. 라이선스가 요구하는 것은 **읽는 사람에게 보이는 것**이다.
+ * ⚠ 두 번째 구멍(2026-10-13): R5의 뷰어는 `material.metadata.source`를 읽었는데, `reading_materials`에는
+ * `metadata` 열이 없다. 저장하는 쪽(자료 추가 링크·추천 읽기)은 모두 `processed_json.metadata.source`에 쓴다.
+ * 그래서 출처 줄이 한 번도 그려지지 않았다 → 읽는 자리를 {@link materialSource} 한 곳으로 모은다.
  */
 
 /** 검색으로 찾은 CC BY 영상 — 라이선스 재확인을 통과한 것만. */
@@ -60,6 +63,14 @@ export function isCreativeCommonsText(text) {
   if (s.includes('크리에이티브 커먼즈')) return true;
   // 'Standard YouTube License'는 명백한 부정 — 부분 문자열로 새지 않게 못 박는다.
   return false;
+}
+
+/**
+ * 자료 행에서 출처 기록을 꺼낸다. 저장 위치의 정본은 `processed_json.metadata.source`다
+ * (MaterialAddPage initJson·suggestionReading의 `meta.source`). 행에 `metadata` 열은 없다.
+ */
+export function materialSource(material) {
+  return material?.processed_json?.metadata?.source ?? null;
 }
 
 /**
