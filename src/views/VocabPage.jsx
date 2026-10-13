@@ -28,7 +28,7 @@ import { stripSourceLangInMeaning } from '../lib/studySession';
 import { authEntryHref } from '../lib/authRedirect';
 import { bookExpressionListHref, fetchBookVocabularyIds, fetchMaterialVocabularyIds } from '../lib/bookReviewNavigation';
 import {
-  countReviewScope, scopedFsrsCardIds, createScopeMatcher, scopeNeedsLookup, serializeReviewScope, scopeHeading,
+  countReviewScope, reviewScopeQuota, scopedFsrsCardIds, createScopeMatcher, scopeNeedsLookup, serializeReviewScope, scopeHeading,
   wordScopeLanguage, formatScopeSource, parseReviewScope, REVIEW_SCOPE_LANGS, ZH_SCOPE_LEVELS,
 } from '../lib/reviewScope';
 import ReviewScopeBar, { ReviewScopeNotice } from '../components/vocab/ReviewScopeBar';
@@ -501,9 +501,9 @@ function VocabWorkspace({ reviewScope }) {
   }, [deckScope, learningById]);
 
   // 오늘 세션 미리보기 — 복습 예정 + (하루 한도 내) 새 단어
-  const remainingNew = admission.compatibility
-    ? Math.max(0, newPerDay - introIds.filter(id => allVocab.some(v => v.id === id)).length)
-    : admission.quota?.active ? admission.quota.remaining : 0;
+  // 한도 → quota 입력은 배움 칸과 같은 함수(reviewScopeQuota)로 만든다 — 두 화면 숫자가 같은 한도를 쓴다.
+  const scopeQuota = reviewScopeQuota(admission, { newPerDay, introIds, vocabIds: allVocab.map(v => v.id) });
+  const remainingNew = scopeQuota?.remaining ?? 0;
   // 문법 대기/예정은 같은 계정 조회에서 유도한다. 실패를 0개 완료로 표시하지 않는다.
   // 행(lang · next_review_at)은 countReviewScope의 grammarDue(언어별 별줄)에도 넘긴다.
   const { data: grammarQueue, error: grammarError, isLoading: grammarLoading, refetch: refetchGrammar } = useQuery({
@@ -523,8 +523,6 @@ function VocabWorkspace({ reviewScope }) {
   // 오늘 복습 개수와 시작할 줄 — countReviewScope 하나가 낸다(배움 칸 · 언어 칩 · 복습방 공용, 계약 reviewScopeCount).
   // 같은 결과의 queue로 복습을 시작하므로 화면 숫자 = 시작하는 줄 길이다. R1-A는 기존 엔진 규칙(FSRS가 하나라도
   // 출제 가능하면 세션 전체가 FSRS)을 그대로 세고, 두 엔진 합치기는 R1-B가 한다.
-  const scopeQuota = admission.quota ? { active: admission.quota.active === true, remaining: remainingNew,
-    admittedLegacyCardIds: admission.quota.admittedLegacyCardIds || [] } : null;
   // 출처 id는 지금 범위와 같은 출처일 때만 쓴다 — 다른 출처(시트의 후보)는 조회 전이라 pending으로 센다.
   const countFor = useCallback(target => countReviewScope({
     ...scopeArgs, scope: target, levels: target.level ? scopeLevels || zhHskLevels : null,

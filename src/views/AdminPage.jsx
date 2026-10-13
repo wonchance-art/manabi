@@ -391,7 +391,7 @@ export default function AdminPage() {
                 <tr>
                   <th>닉네임</th>
                   <th>역할</th>
-                  <th>스트릭</th>
+                  <th>연속</th>
                   <th>마지막 접속</th>
                   <th>역할 변경</th>
                 </tr>

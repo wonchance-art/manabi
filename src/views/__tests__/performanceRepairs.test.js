@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { MAIN_NAV } from '../../lib/webNavigation';
+import { sliceBetween } from '../../lib/__tests__/helpers/sliceBetween';
 
 const read = (file) => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
 
@@ -35,9 +36,12 @@ describe('P1–P5 초기 전송 성능 수리 회귀', () => {
     const layout = read('src/components/Layout.jsx');
 
     // 로그인 직후 홈의 부분 prefetch가 연속 탐색을 붙잡는 회귀를 함께 방어한다.
-    expect(MAIN_NAV).toContainEqual({ href: '/home', label: '오늘', prefetch: false });
-    expect(MAIN_NAV).toContainEqual({ href: '/vocab', label: '복습', prefetch: false });
-    expect(MAIN_NAV).toContainEqual({ href: '/materials', label: '내 서재', prefetch: false });
+    expect(MAIN_NAV).toContainEqual(expect.objectContaining({ href: '/home', label: '배움', prefetch: false }));
+    expect(MAIN_NAV).toContainEqual(expect.objectContaining({ href: '/materials', label: '서재', prefetch: false }));
+    // 복습(/vocab)은 메뉴에서 빠지고 배움의 단어 복습 칸으로 들어간다 — 그 칸도 개인화 화면을 prefetch하지 않는다.
+    expect(MAIN_NAV.some(item => item.href === '/vocab')).toBe(false);
+    const tiles = read('src/components/learn/LearnTiles.jsx');
+    expect(sliceBetween(tiles, 'export function ReviewTile(', '\n}\n')).toContain('prefetch={false}');
     expect(layout).toContain('const navLinks = MAIN_NAV');
     expect(layout).toContain('const mobileNavLinks = MAIN_NAV');
     expect(layout.split('prefetch={l.prefetch}').length - 1).toBe(2);

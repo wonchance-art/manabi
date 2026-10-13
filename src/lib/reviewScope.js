@@ -135,6 +135,21 @@ function planReviewScope({ snapshot, fsrsEntries, quota, scope, now, levels, sou
     queue: { legacyIds, fsrsIds: scoped.fsrsIds } };
 }
 
+/**
+ * 새 표현 한도 → countReviewScope의 quota 입력(복습방 · 배움 칸 공용 — 두 화면 숫자가 같은 한도를 쓴다).
+ * 호환 모드(서버 한도 없음)는 이 기기의 하루 한도에서 오늘 시작한 수를 빼고, 아니면 서버의 남은 수.
+ * admission = useLearningAdmission 결과, newPerDay · introIds = 기기 설정(vocab_new_per_day · loadIntroIds),
+ * vocabIds = 지금 계정에 있는 단어 id(지운 단어의 시작 기록은 빼고 센다). 한도를 아직 모르면 null.
+ */
+export function reviewScopeQuota(admission, { newPerDay = 0, introIds = [], vocabIds = null } = {}) {
+  const quota = admission?.quota;
+  if (!quota) return null;
+  const known = vocabIds ? new Set(vocabIds) : null;
+  const started = introIds.filter(id => !known || known.has(id)).length;
+  const remaining = admission.compatibility ? Math.max(0, newPerDay - started) : quota.active ? quota.remaining : 0;
+  return { active: quota.active === true, remaining, admittedLegacyCardIds: quota.admittedLegacyCardIds || [] };
+}
+
 const GRAMMAR_LANG = { Japanese: ['japanese', 'ja'], Chinese: ['chinese', 'zh'], English: ['english', 'en'], French: ['french', 'fr'], Korean: ['korean', 'ko'] };
 function grammarDueCount(grammar, lang, at) {
   if (!Array.isArray(grammar)) return 0;
