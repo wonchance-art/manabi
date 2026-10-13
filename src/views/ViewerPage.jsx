@@ -133,7 +133,8 @@ import { useSentencePrefetch } from '../lib/useSentencePrefetch';
 import { isLocalId, parseLocalId, chaptersForLocalNav } from '../lib/classBoard';
 import { getSharedCopy } from '../lib/sharedStore';
 import { readIndexCache } from '../lib/classClient';
-import { useRefVocabEntry, useRefVocabIndex, refLevelLabel } from '../lib/refVocabIndex';
+import { useRefVocabEntry, useRefVocabIndex } from '../lib/refVocabIndex';
+import { useZhHskLevels, zhHskLevelOf, zhHskLevelLabel } from '../lib/zhHskLevel';
 import { loadHanjaPanelTable, onIdle, prefetchHanjaPanel } from '../lib/viewerHanjaPanel';
 import { useTokenDictPrefetch } from '../lib/useTokenDictPrefetch';
 import { tokenDictPrefetchEnabled, tokenDictQueryKey, tokenDictKeyOf, prefetchTokenDict } from '../lib/tokenDictPrefetch';
@@ -363,7 +364,7 @@ export default function ViewerPage() {
   const settingsTrigger = useRef(null);
   const quiz = useViewerQuiz();
   const { quizState, completionModal, setCompletionModal, generateQuiz,
-          handleQuizAnswer, advanceQuiz, finishQuiz } = quiz;
+          handleQuizAnswer, advanceQuiz, finishQuiz, closeQuiz } = quiz;
 
   const [selectedToken, setSelectedToken] = useState(null);
   const selectedTokenRef=useRef(selectedToken);selectedTokenRef.current=selectedToken;
@@ -678,7 +679,7 @@ export default function ViewerPage() {
   const {
     reanalyzePanel, setReanalyzePanel,
     selectedParas, paragraphs,
-    togglePara, startFullReanalyze, startPartialReanalyze,
+    togglePara, requestFullReanalyze, startFullReanalyze, startPartialReanalyze,
   } = useReanalyzeUI({ reanalyze, material, toast, panel:modal('manage')?activeModal.value:null, onPanelChange:value=>changeModal('manage',value) });
 
   // ③ 원문 수정(오너 승인) — 소유자 전용, 저장 시 바뀐 줄만 재분석(sourceEdit.js 계획).
@@ -2133,6 +2134,9 @@ export default function ViewerPage() {
   const raiseGlyphBudget = useCallback((key, step) => setGlyphBudget((cur) => (cur.key === key && cur.step >= step ? cur : { key, step, zhengBelow: cur.key === key && cur.zhengBelow })), []);
   const glyphZhengMiss = useCallback((key) => setGlyphBudget((cur) => (cur.key === key && cur.zhengBelow ? cur : { key, step: cur.key === key ? cur.step : 0, zhengBelow: true })), []);
   const refVocab = useRefVocabEntry(materialLang, selectedLexKey || selectedToken?.text);
+  // 메타 줄 급수 = HSK 2026 표(ZH-LEVEL-2026-001) — 우리 사전 세트 파일 위치(옛 급수)가 아니다. 표 밖 단어는 표시 없음.
+  const zhHskLevels = useZhHskLevels(materialLang === 'Chinese');
+  const hskLevelLabel = zhHskLevelLabel(zhHskLevelOf(selectedLexKey || selectedToken?.text, zhHskLevels));
   // 본문 문맥(수동 교정 포함)이 카드와 저장의 기준. 사전의 다른 뜻은 접어 구분한다.
   const refMeaning = contextualMeaning(selectedToken) || null;
   const referenceMatches = referenceMatchesContext(selectedToken, refVocab?.word);
@@ -2910,7 +2914,7 @@ export default function ViewerPage() {
               품사 오염으로 읽히던 중의성 소멸. 사전 읽기가 없어 표제어가 폴백일 때만 라벨 텍스트. */}
           <ViewerLabelSlot locale={uiLocale} text={vt('기본형')}>{headFallback && <span className="word-detail-card__base">기본형</span>}</ViewerLabelSlot>
           {materialLang === 'Korean' && selectedToken.text !== headText && <span lang="ko">{selectedToken.text} → {headText}</span>}
-          {refVocab && <span className="word-detail-card__level">{refLevelLabel(refVocab.level)}</span>}
+          {hskLevelLabel && <span className="word-detail-card__level">{hskLevelLabel}</span>}
         </div>
         {/* 듣기는 칩 줄 끝(정본 §2.1 칩 줄 — 44px 누름 영역). 수업 모드는 판서 단어 옆 듣기를 그대로 쓴다. */}
         {!classStudyActive && ttsSupported && <button className="word-detail-card__speak" onClick={() => speak(headText, materialLang, { ...ttsOptsFor(ttsRate), preferBrowser: true })} aria-label="발음 듣기" {...(uiLocale === 'ko' ? {} : {'aria-label': vt('발음 듣기')})} title={vt("발음 듣기")} data-icon-action><ActionIcon name="audio"/></button>}
@@ -3753,7 +3757,7 @@ export default function ViewerPage() {
         <ViewerModal uiLocale={uiLocale} title={vt("자료 관리")} onClose={()=>setReanalyzePanel(null)}>
           {reanalyzePanel === 'menu' && (
             <div className="reader-manage">
-              <button className="reanalyze-panel__item" onClick={startFullReanalyze}>
+              <button className="reanalyze-panel__item" onClick={requestFullReanalyze}>
                 <strong>{vt("전체 분석")}</strong>
                 <span>{vt("처음부터 다시 분석합니다")}</span>
               </button>
@@ -3765,6 +3769,16 @@ export default function ViewerPage() {
                 <strong>{vt("원문 수정")}</strong>
                 <span>{vt("텍스트를 고치면 바뀐 줄만 분석합니다")}</span>
               </button>}
+            </div>
+          )}
+          {reanalyzePanel === 'confirm-full' && (
+            <div className="reader-manage" role="group" aria-labelledby="reanalyze-confirm-title">
+              <p id="reanalyze-confirm-title" style={{ fontWeight: 700, margin: '16px 0 6px' }}>{vt("전체 분석을 다시 할까요?")}</p>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 12px', lineHeight: 1.6 }}>{vt("지금 분석 결과를 새 결과로 바꿔요. 직접 고친 뜻·단어 경계는 같은 자리에 남은 것만 이어져요.")}</p>
+              <div className="reanalyze-panel__actions">
+                <button className="btn btn--ghost btn--sm" onClick={() => setReanalyzePanel('menu')}>{vt("취소")}</button>
+                <button className="btn btn--primary btn--sm" onClick={startFullReanalyze}>{vt("전체 분석")}</button>
+              </div>
             </div>
           )}
           {reanalyzePanel === 'pick' && (
@@ -4349,7 +4363,7 @@ export default function ViewerPage() {
 
       <ViewerQuizModal
         quizState={quizState} handleQuizAnswer={handleQuizAnswer}
-        advanceQuiz={advanceQuiz} finishQuiz={finishQuiz}
+        advanceQuiz={advanceQuiz} finishQuiz={finishQuiz} closeQuiz={closeQuiz}
         completionModal={completionModal} setCompletionModal={setCompletionModal}
         material={material} nextMaterial={nextMaterial}
       />

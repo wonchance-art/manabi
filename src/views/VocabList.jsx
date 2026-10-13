@@ -1,24 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
+import ConfirmModal from '../components/ConfirmModal';
+import { hasUnsavedEdits, useDiscardGuard } from '../lib/useDiscardGuard';
 import { detectLang, displayWord } from '../lib/constants';
 import { refInline } from './refShared';
-import { refLevelLabel } from '../lib/refVocabIndex';
+import { ZH_HSK_LEVELS, zhHskLevelLabel } from '../lib/zhHskLevel';
 import { wordStage } from '../lib/growthStats';
 import { isVocabularyReviewDue } from '../lib/vocabularyLearningRead';
 
+const EDIT_FIELDS = ['word_text', 'furigana', 'meaning', 'pos'];
+
 const LANG_CODE = { Japanese: 'ja', Chinese: 'zh-Hans', English: 'en', French: 'fr', Korean: 'ko' };
 
-// 급수 자동 분류 필터(②) — 급수는 레퍼런스 사전에서 표시 시점 계산. 'NONE'=사전 밖.
+// 급수 자동 분류 필터(②) — 급수는 HSK 2026 표에서 표시 시점 계산(ZH-LEVEL-2026-001). 'NONE'=표 밖.
 const LEVEL_OPTIONS = [
   { value: 'all', label: '급수 전체' },
-  { value: 'H1', label: 'HSK 1' },
-  { value: 'H2', label: 'HSK 2' },
-  { value: 'H3', label: 'HSK 3' },
-  { value: 'H4', label: 'HSK 4' },
-  { value: 'H5', label: 'HSK 5' },
-  { value: 'H6', label: 'HSK 6' },
-  { value: 'LIFE', label: '생활' },
+  ...ZH_HSK_LEVELS.map((level) => ({ value: `H${level}`, label: zhHskLevelLabel(level) })),
   { value: 'NONE', label: '미분류' },
 ];
 
@@ -44,8 +42,18 @@ export default function VocabList({
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [editing, setEditing] = useState(null); // 편집 중인 단어
+  const [editOrigin, setEditOrigin] = useState(null); // 편집을 연 시점의 값 — 바뀐 입력 판정용
   const editDialogRef = useRef(null);
   const editingOpen = !!editing;
+  const openEdit = (v) => {
+    const initial = { id: v.id, word_text: v.word_text, furigana: v.furigana || '', meaning: v.meaning || '', pos: v.pos || '' };
+    setEditOrigin(initial);
+    setEditing(initial);
+  };
+  // 취소·Esc·배경 클릭이 고친 입력을 말없이 버리지 않게(WALL-STATES-001 ④) — 바뀐 게 있으면 한 번 묻는다.
+  const discardEdit = useDiscardGuard({ dirty: hasUnsavedEdits(editOrigin, editing, EDIT_FIELDS), onClose: () => setEditing(null) });
+  const requestEditClose = discardEdit.requestClose;
+  const isAskingDiscard = discardEdit.isAsking;
 
   useEffect(() => {
     if (!editingOpen) return undefined;
@@ -54,9 +62,11 @@ export default function VocabList({
     const selector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
     const focusInitial = window.setTimeout(() => dialog?.querySelector('[data-dialog-initial-focus]')?.focus(), 0);
     function onKeyDown(event) {
+      // 버리기 확인 창이 떠 있으면 그 창(ConfirmModal)이 Esc·Tab을 맡는다. 이 처리기는 먼저 등록돼 먼저 불린다.
+      if (isAskingDiscard()) return;
       if (event.key === 'Escape') {
         event.preventDefault();
-        setEditing(null);
+        requestEditClose();
         return;
       }
       if (event.key !== 'Tab') return;
@@ -76,7 +86,7 @@ export default function VocabList({
       document.removeEventListener('keydown', onKeyDown);
       previousFocus?.focus?.();
     };
-  }, [editingOpen]);
+  }, [editingOpen, isAskingDiscard, requestEditClose]);
 
   const toggleSelect = (id) => {
     setSelectedIds(prev => {
@@ -100,7 +110,8 @@ export default function VocabList({
   const confirmBulkDelete = () => {
     if (selectedIds.size === 0 || [...selectedIds].some(id => !canModify(vocab.find(word => word.id === id)))) return;
     setConfirmAction({
-      message: `선택한 ${selectedIds.size}개 단어를 삭제할까요?`,
+      title: `선택한 ${selectedIds.size}개 단어를 삭제할까요?`,
+      message: '삭제하면 되돌릴 수 없어요.',
       onConfirm: () => {
         bulkDeleteMutation?.mutate(Array.from(selectedIds));
         clearSelection();
@@ -225,7 +236,7 @@ export default function VocabList({
           const stageLabel = learning?.review.excluded ? '제외' : stage?.label || '—';
           const due = !!learning && isVocabularyReviewDue(learning, Math.max(new Date(now).getTime(), Date.parse(learning.review.evaluatedAt)));
           const lc = LANG_CODE[v.language];
-          const refLevel = refLevelLabel(refLevelOf?.(v));
+          const refLevel = zhHskLevelLabel(refLevelOf?.(v));
           return (
           <div
             key={v.id}
@@ -287,13 +298,14 @@ export default function VocabList({
               {!selectMode && updateVocabMutation && (
                 <button type="button" className="vocab-row__act" title="편집" aria-label={`${v.word_text} 편집`}
                   disabled={!canModify(v)}
-                  onClick={() => setEditing({ id: v.id, word_text: v.word_text, furigana: v.furigana || '', meaning: v.meaning || '', pos: v.pos || '' })}>✎</button>
+                  onClick={() => openEdit(v)}>✎</button>
               )}
               {!selectMode && (
                 <button type="button" className="vocab-row__act vocab-row__act--danger" title="삭제" aria-label={`${v.word_text} 삭제`}
                   disabled={!canModify(v)}
                   onClick={() => setConfirmAction({
-                    message: `"${v.word_text}" 를 단어장에서 삭제할까요?`,
+                    title: `"${v.word_text}" 단어를 삭제할까요?`,
+                    message: '삭제하면 되돌릴 수 없어요.',
                     onConfirm: () => { deleteMutation.mutate(v.id); setConfirmAction(null); },
                   })}>✕</button>
               )}
@@ -335,7 +347,7 @@ export default function VocabList({
 
       {/* 편집 모달 */}
       {editing && (
-        <div className="modal-overlay" onClick={() => setEditing(null)}>
+        <div className="modal-overlay" onClick={requestEditClose}>
           <div ref={editDialogRef} className="modal" role="dialog" aria-modal="true" aria-labelledby="vocab-edit-title" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
             <h3 id="vocab-edit-title" style={{ margin: '0 0 16px', fontSize: '1.05rem' }}>단어 편집</h3>
 
@@ -383,7 +395,7 @@ export default function VocabList({
             />
 
             <div style={{ display: 'flex', gap: 8 }}>
-              <Button variant="ghost" onClick={() => setEditing(null)} style={{ flex: 1 }}>취소</Button>
+              <Button variant="ghost" onClick={requestEditClose} style={{ flex: 1 }}>취소</Button>
               <Button
                 onClick={() => {
                   updateVocabMutation.mutate(
@@ -400,6 +412,13 @@ export default function VocabList({
           </div>
         </div>
       )}
+      <ConfirmModal
+        {...discardEdit.confirmProps}
+        onCancel={() => {
+          discardEdit.confirmProps.onCancel();
+          editDialogRef.current?.querySelector('[data-dialog-initial-focus]')?.focus();
+        }}
+      />
     </>
   );
 }

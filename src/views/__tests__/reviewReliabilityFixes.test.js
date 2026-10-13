@@ -170,6 +170,7 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
     expect(profile).toContain('projections: learning.projections');
     expect(profile).toContain('학습 통계를 불러오지 못했어요.');
     expect(pdfSection).toContain('.then(({ count, error }) => {');
-    expect(pdfSection).toContain('연결된 자료를 확인하지 못했습니다.');
+    // 문구 표준(2026-10-13 승인) 해요체 — 같은 오류 분기를 같은 강도로 고정한다(WALL-STATES-DLG-001).
+    expect(pdfSection).toContain('연결된 자료를 확인하지 못했어요.');
   });
 });

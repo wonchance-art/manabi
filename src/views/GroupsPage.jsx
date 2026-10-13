@@ -355,7 +355,7 @@ function GroupGoalLine({ group, weekStart, goal, snapshotSum, userId }) {
   );
 }
 
-function GroupCard({ group, snapshotRows, snapshotSum, read, goal, weekStart, userId }) {
+function GroupCard({ group, snapshotRows, snapshotSum, read, goal, weekStart, userId, readsError = false, snapshotsError = false, onRetry }) {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [confirmLeave, setConfirmLeave] = useState(false);
@@ -392,6 +392,8 @@ function GroupCard({ group, snapshotRows, snapshotSum, read, goal, weekStart, us
   };
 
   const parts = snapshotSum ? groupWeekParts(snapshotSum) : [];
+  // 불러오기 실패를 「아직 안 정함」으로 보이면 이미 정한 자료를 덮어쓰게 된다 — 실패는 실패로(WALL-STATES-001 ⑤).
+  const readFailed = readsError && !read?.material && !picking;
   return (
     <div className="card" style={{ padding: '20px 22px' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
@@ -442,7 +444,13 @@ function GroupCard({ group, snapshotRows, snapshotSum, read, goal, weekStart, us
             <Link href={`/viewer/${read.material_id}`} className="btn btn--secondary btn--sm">이어 읽기 →</Link>
           </>
         )}
-        {(!read?.material || picking) && (
+        {readFailed && (
+          <p role="alert" style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', margin: '6px 0 0' }}>
+            이번 주 자료를 불러오지 못했어요.{' '}
+            <button type="button" className="btn btn--ghost btn--sm" onClick={onRetry}>다시 시도</button>
+          </p>
+        )}
+        {(!read?.material || picking) && !readFailed && (
           picking || read?.material ? (
             <ReadPicker group={group} weekStart={weekStart} userId={userId} onDone={() => setPicking(false)} />
           ) : (
@@ -467,7 +475,12 @@ function GroupCard({ group, snapshotRows, snapshotSum, read, goal, weekStart, us
         <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 4 }}>
           이번 주 우리 ({weekRangeLabel({ startMs: snapshotSum?.weekStartMs ?? Date.now(), endMs: (snapshotSum?.weekStartMs ?? Date.now()) + 7 * 86400000 })})
         </div>
-        {parts.length > 0 ? (
+        {snapshotsError && parts.length === 0 ? (
+          <div role="alert" style={{ fontSize: '0.86rem', color: 'var(--text-secondary)' }}>
+            이번 주 기록을 불러오지 못했어요.{' '}
+            <button type="button" className="btn btn--ghost btn--sm" onClick={onRetry}>다시 시도</button>
+          </div>
+        ) : parts.length > 0 ? (
           <>
             <div style={{ fontSize: '0.92rem', fontVariantNumeric: 'tabular-nums' }}>{parts.join(' · ')}</div>
             <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: 2 }}>(그룹 합계 — 등수 없음)</div>
@@ -489,7 +502,7 @@ export default function GroupsPage() {
   const [showForms, setShowForms] = useState(false);
   const weekStart = kstWeekStartDate();
 
-  const { data: groups, isLoading } = useQuery({
+  const { data: groups, isLoading, isError: groupsError, refetch: refetchGroups } = useQuery({
     queryKey: ['study-groups', user?.id],
     queryFn: () => fetchMyGroups(user.id),
     enabled: !!user,
@@ -497,13 +510,13 @@ export default function GroupsPage() {
   });
   const groupIds = useMemo(() => (groups || []).map((g) => g.id), [groups]);
 
-  const { data: snapshots } = useQuery({
+  const { data: snapshots, isError: snapshotsError, refetch: refetchSnapshots } = useQuery({
     queryKey: ['group-snapshots', user?.id, groupIds.join(','), weekStart],
     queryFn: () => fetchGroupSnapshots(groupIds, weekStart),
     enabled: groupIds.length > 0,
     staleTime: 1000 * 60 * 5,
   });
-  const { data: reads } = useQuery({
+  const { data: reads, isError: readsError, refetch: refetchReads } = useQuery({
     queryKey: ['group-reads', user?.id, groupIds.join(','), weekStart],
     queryFn: () => fetchGroupReads(groupIds, weekStart),
     enabled: groupIds.length > 0,
@@ -578,6 +591,14 @@ export default function GroupsPage() {
 
       {isLoading ? (
         <div className="skeleton--card" style={{ height: 140 }} />
+      ) : groupsError && !groups ? (
+        /* 불러오기 실패는 「그룹 없음」 첫 화면과 구분한다(WALL-STATES-001 ⑤) */
+        <div className="card" role="alert" style={{ padding: '22px' }}>
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: '0 0 12px' }}>
+            그룹 목록을 불러오지 못했어요.
+          </p>
+          <Button variant="ghost" size="sm" onClick={() => refetchGroups()}>다시 시도</Button>
+        </div>
       ) : !groups?.length ? (
         /* 목업 C — 그룹 없음 첫 화면 */
         <div className="card" style={{ padding: '22px' }}>
@@ -598,6 +619,9 @@ export default function GroupsPage() {
               goal={goalsByGroup[g.id]}
               weekStart={weekStart}
               userId={user.id}
+              readsError={readsError}
+              snapshotsError={snapshotsError}
+              onRetry={() => { if (readsError) refetchReads(); if (snapshotsError) refetchSnapshots(); }}
             />
           ))}
           {groups.length < MAX_GROUPS_PER_USER && (

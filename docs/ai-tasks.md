@@ -878,6 +878,14 @@
 
 ## Claude (claude/*)
 ### doing
+- **대화 모드 v2-Z 전 라운드 (2026-10-14 KST, 오너 「전부 다 승인함」 — 인계 [CONVERSATION-V2Z-001](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6050886728))** `claude/project-thread-a2xmmk`:
+  순서 = 인계문 §10 그대로 Z-R1 ①서버 → ②평가 묶음 → ③화면 → Z-R2 → Z-R3, PR 하나씩.
+  · **Z-R1 ① 병합(#1438, 2026-10-14 KST)**: `/api/analyze` 핵심 → `analyzeCore.analyzeLines`(응답 동일) · `POST /api/conversation/turn` · 순수 규칙 `lib/conversation/turnModel.js`
+    (교정 상태 머신·문단 덧붙이기·한글 0자·하루 150턴 KST·40턴·낙관 잠금 409) · 안전 규칙 정본 `lib/conversation/safety.js` · 판정 경계 2개 · 화면 진입점 0.
+  · 인계문과 다른 점 1: 대화 표식을 `metadata.composer{role:'conversation'}`가 아니라 `metadata.conversation`으로 둔다 — composer v1 행은
+    DB 트리거 `protect_composer_source`가 raw_text 변경을 막아 턴 덧붙이기가 불가능. 비공개 고정·서재 묶음은 ③에서 이 표식으로 처리.
+  · **Z-R1 ②(이 PR)**: 평가 묶음 `docs/verification/conversation-eval-20261014.json` 220사례(정치 유도 20·교정 3언어×(틀림20·맞음20)·다시 말하기 60·음성 동음 20)
+    + 채점기 `scripts/eval/conversationEval.mjs`(제품 parse/정책/판정 함수 그대로) + 실행기 `run-conversation-eval.mjs`(CI 밖 수동 게이트, `--dry-run` 호출 0). 제품 코드 변화 = 서버 프롬프트·호출 함수 export뿐.
 - **수업 코스 「니혼고 42」 + 테스트 (2026-10-08 KST, 오너 지시 — 수업 페이지로 꺼내 암호 `culcom` 팀)** `claude/loving-bardeen-mkj3te`:
   팀 루트 `metadata.team.course` → 수업 홈 「코스」 탭 · Day 페이지(문화 카드·함께 읽고 연습·오늘의 패턴·예문 연습·응용 문장 번역해보기)
   · `/class/[team]/test`(전체 예문 10문제·8 합격·패턴 중복 0·Day당 1·비슷한 패턴 묶음당 1·난이도 3/4/3·시험지 번호 재현 / 연습 한↔일).
@@ -954,10 +962,12 @@
     Preview QA 429 대응: 여러 문단을 한 요청으로 묶기(글자 예산 중400·일800·영2000) · 429는 Retry-After 대기 후 2회 재시도(PR 진행).
   - **BOUNDARY-LONG-LINE-001**(10-12, ANALYZE-LONG-LINE-001 남은 문제): 200자 넘는 줄의 200자 뒤 묶기·나누기가 analysis_mismatch로 막히던 문제 — 경계 편집도 자료 분석과 같은 조각(analysisLineUnits)으로 나눠 기록이 든 조각만 보내고 줄 좌표로 잇기 · 429 재시도 · 계약 `boundaryLongLines.test.js`(PR 진행).
   - **ZH-DICT-FIX-001**(10-13, 오너 「권장대로 승인」·#1337 6145924616): 우리 사전(중국어) 뜻 결함 4건 — 学院·爱人 동형이의어 뜻·한자 주의, 本事 běnshi 「능력, 재주」, 行 xíng H1 신설 · 계약 `refVocabIndex.test.js` · 같은 유형 점검 12건 다름/18건 불확실 목록 보고(PR 진행).
+  - **WALL-STATES-DLG-001**(10-13, WALL-STATES-001 ②~⑥⑧⑨ 객관 결함): ConfirmModal 기본 「확인」·휴지통 「이동」·제목 · 퀴즈 창 닫기/Esc/dialog·언어명 · 전체 분석·초안 비우기·편집 창 닫기 확인(`useDiscardGuard`)·ViewerModal 강제 닫힘 복구 · 상태 문구 5곳·관리자/그룹 실패 표시 · 알림 권한은 사용자 선택 2곳만·로컬 알림 SW · 메일 제목 정본 계약 · e2e `viewer-dialog-guards`(PR 진행).
   - **WALL-STATES-ERR-001**(10-13, WALL-STATES-001 ①⑦ 객관 결함): 오류 원문(영어·내부 문구) 노출 93곳/51파일 → `friendlyToastMessage(err, 화면 기존 폴백)`·`toKoreanError` 폴백 · 토스트 성공/안내 `role=status`·닫기 44px·쌓임 3 · 계약 `rawErrorExposure.test.js`(정적 스캔+허용목록 8)·`toastAccessibility.test.js` · 문구 통일은 오너 결정 대기(PR 진행).
   - **YT-SOURCE-LINE-001**(10-13, 오너 「여기서 진행」): 뷰어 유튜브 출처 줄이 `reading_materials`에 없는 `metadata` 열을 읽어 한 번도 안 그려지던 문제(CC BY 표기 조건) — `materialSource()`로 `processed_json.metadata.source`를 읽고, 쓰는 쪽 실물 행 기준 계약(`videoShareable.test.js`)(PR 진행).
   - **AOZORA-P0-1**(10-13, 오너 「권장대로」·결정 D1~D6 10-12): 아오조라 「책자」 P0 1차 — #1295 aozora 모듈 이식·수정(권리 D5·JP/KR/US, txt 파서 실물 결함 4건, 장 초안·루비 잠금 재기준화), `build-literature.mjs --check`(prebuild), 분석 말미 저자 루비 잠금(사용자 교정 우선), 뷰어 출처 줄, 정책 ⑵ 퍼블릭 도메인 예외(D1)+`ipPolicy.test.js` · 실물 원문·관리자 게시는 2차(aozora.gr.jp 네트워크 허용 대기)(PR 진행).
   - **BUILD-FONT-VENDOR-001**(10-13, 오너 「글꼴 저장소 내장」): 배포 빌드가 Google Fonts 10패밀리 woff2 약 950개를 매번 받다 하나만 실패해도 ERROR(#1402·#1419 Preview) — 같은 바이트를 `vendor/google-fonts`(41MB·OFL)에 두고 `next-build.mjs`가 사본을 넘김. layout 호출 무변경, 네트워크 빌드와 `.next/static/media` 956개·CSS·preload 바이트 동일 실측 · 1회 재빌드(BUILD-FONT-RETRY-001) 대체 · 계약 `next-build.test.js`(PR 진행).
+  - **ZH-LEVEL-2026-001**(10-13, 오너 결정 급수 기준 HSK 2026 · ①~③): `zhHsk2026Level.json`(10,896단어 — 1급 300·2급 197·3급 491…, 생성 `build-zh-hsk2026.mjs` `--check`)·/credits 항목 · 분절 방벽은 2021 표 그대로 · 화면 급수 정본 `zhHskLevel.js`(zhHskLevelOf·zhHskLevelLabel 「HSK 7–9」) — 뷰어 단어창 메타 줄·단어장 뱃지/필터 전환, 세트 파일 위치 급수 폐기, AJ·AL도 이 조회 · 계약 `zhHsk2026Level.test.js`·`zhHskLevelSites.test.js`(PR 진행).
   - **PR-TRIAGE-1323**(10-12 오너 「권장대로 전부 진행」): 정체 PR #1323에서 살릴 2가지 이식 — 뷰어 단어 버튼 안 중첩 버튼 분리·닫을 때 초점 복귀·문장 막대 24px,
     설명판 뜻 단어 경계 줄바꿈(`wrapMeaning`) · 계약 `wordTokenNesting.test.js` · 이식 PR 병합 뒤 #1323 닫기.
   - **MEANING-VERIFY-001**(10-12 오너 승인 — axolotl 「우렁눈이」 저장 원인 수정): 영어 새 단어 뜻은 공유 사전 첫 저장 전 standard 검증 배치당 1회(ok 저장 · wrong+고친 뜻 저장 · unsure/실패 = 저장 없이 반환) + 생성 프롬프트 음역 규칙 + 관리자 PATCH 뜻별 pos·en_pos_v 보존 + 금지 답 표 `docs/verification/en-meaning-gold-20261012.json`(33) · `claude/meaning-verify` — 남은 것: 키 있는 실측(`scripts/eval/en-meaning-gold.mjs`)·PR·Preview.

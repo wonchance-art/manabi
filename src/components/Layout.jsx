@@ -17,6 +17,7 @@ import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/ToastContext';
 import ActionIcon from './ActionIcon';
 import { shouldShowOnboarding } from '../lib/onboardingGate';
+import { showLocalReminder } from '../lib/localReminder';
 import { friendlyToastMessage } from '@/lib/errorMessage';
 
 const navIcons={'/home':'home','/lessons':'book','/discover':'compass','/vocab':'review','/materials':'library'};
@@ -131,14 +132,13 @@ export default function Layout({ children }) {
       const todayKey = now.toISOString().slice(0, 10);
       const lastSent = localStorage.getItem('as_reminder_last_sent');
       if (parseInt(hour) === currentHour && lastSent !== todayKey) {
-        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-          new Notification('복습할 시간이에요', {
-            body: '오늘의 단어를 복습하고 스트릭을 유지하세요.',
-            icon: '/favicon.ico',
-            tag: 'as-review-reminder',
-          });
-          localStorage.setItem('as_reminder_last_sent', todayKey);
-        }
+        // 안드로이드 크롬은 페이지 생성자 알림을 거부한다 — 서비스 워커 showNotification 우선(localReminder.js).
+        showLocalReminder('복습할 시간이에요', {
+          body: '오늘의 단어를 복습하고 스트릭을 유지하세요.',
+          tag: 'as-review-reminder',
+        }).then((shown) => {
+          if (shown) { try { localStorage.setItem('as_reminder_last_sent', todayKey); } catch {} }
+        });
       }
     };
     check();

@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import ViewerModal from '../components/viewer/ViewerModal';
+import ConfirmModal from '../components/ConfirmModal';
 import { buildEditPlan } from '../lib/sourceEdit';
+import { useDiscardGuard } from '../lib/useDiscardGuard';
 
 /**
  * ③ 원문 수정 모달(오너 승인) — 자료 소유자 전용. 저장 시 바뀐 줄만 재분석한다.
@@ -30,6 +32,9 @@ export default function SourceEditModal({ open, initialText, processedJson, savi
     [open, baseline, debounced]
   );
 
+  // 취소·Esc·배경 클릭이 고친 원문을 말없이 버리지 않게 — 바뀐 게 있으면 한 번 묻는다.
+  const discard = useDiscardGuard({ dirty: open && draft !== baseline.text, onClose });
+
   if (!open) return null;
 
   const summaryText = !plan ? ''
@@ -40,7 +45,7 @@ export default function SourceEditModal({ open, initialText, processedJson, savi
       : '줄 구조만 변경 — 재분석 없이 저장';
 
   return (
-    <ViewerModal title="원문 수정" onClose={()=>{if(!saving)onClose();}}>
+    <ViewerModal title="원문 수정" onClose={()=>{if(!saving)discard.requestClose();}}>
 
         <textarea
           className="source-edit__textarea"
@@ -54,7 +59,7 @@ export default function SourceEditModal({ open, initialText, processedJson, savi
           <span className="source-edit__summary">{summaryText}</span>
           <div className="source-edit__actions">
             {saving && onStop && <button className="btn btn--ghost btn--sm" onClick={onStop} disabled={committing}>{committing ? '저장 중…' : '분석 중단'}</button>}
-            <button className="btn btn--ghost btn--sm" onClick={onClose} disabled={saving}>취소</button>
+            <button className="btn btn--ghost btn--sm" onClick={discard.requestClose} disabled={saving}>취소</button>
             <button
               className="btn btn--primary btn--sm"
               onClick={() => onSave({ ...buildEditPlan(baseline.text, draft, baseline.json), expectedRaw: baseline.text, expectedJson: baseline.json })}
@@ -64,6 +69,8 @@ export default function SourceEditModal({ open, initialText, processedJson, savi
             </button>
           </div>
         </div>
+        {/* 네이티브 <dialog>(top layer) 안에 그려야 확인 창이 편집 창 위에 뜨고 조작된다. */}
+        <ConfirmModal {...discard.confirmProps} />
     </ViewerModal>
   );
 }

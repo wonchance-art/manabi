@@ -86,7 +86,7 @@ describe('중국어 — 묶기 기록이 토큰화 직후 적용되고 기존 �
   });
 
   it('라우트 조립부: 표식 있는 토큰에는 OOV 분리(splitZhToken)를 적용하지 않는다(배선 계약)', () => {
-    const src = readFileSync(path.join(process.cwd(), 'src/app/api/analyze/route.js'), 'utf8');
+    const src = readFileSync(path.join(process.cwd(), 'src/lib/server/analyzeCore.js'), 'utf8');
     expect(src).toContain('const parts = t.boundary ? null : posPicks.get(zhPosMarkKey(lineIdx, t.text))?.parts;');
     expect(src).toContain('splitZhToken(t, parts)');
   });

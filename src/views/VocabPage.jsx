@@ -19,7 +19,7 @@ import OfflineNotice, { PendingReviewsNotice } from '../components/OfflineNotice
 import ConfirmModal from '../components/ConfirmModal';
 import VocabList from './VocabList';
 import VocabularyExclusionList from '../components/VocabularyExclusionList';
-import VocabReview from './VocabReview';
+import VocabReview, { REVIEW_PREP_FAILED } from './VocabReview';
 import VocabDetailCard from './VocabDetailCard';
 import { CardGridSkeleton } from '../components/Skeleton';
 import { friendlyToastMessage } from '../lib/errorMessage';
@@ -40,7 +40,7 @@ import { tagLabel } from '../lib/errorTags';
 // 'use client' 번들에 교재 전체가 딸려 오지 않는다.
 import { deriveVocabRungs, vocabTypeForRung } from '../lib/skillRung';
 import { exportCSV, exportAnki } from '../lib/vocabIO';
-import { loadRefVocabIndex } from '../lib/refVocabIndex';
+import { useZhHskLevels, zhHskLevelOf } from '../lib/zhHskLevel';
 import { logReviewEvents } from '../lib/reviewEvents';
 import { withLegacyReviewLock } from '../lib/legacyReviewSync';
 import {
@@ -131,7 +131,9 @@ function VocabWorkspace({ bookReview }) {
       if (!bookReview) {
         setLangFilter(localStorage.getItem('vocab_langFilter') || 'all');
         setSeriesFilter(localStorage.getItem('vocab_seriesFilter') || 'all');
-        setLevelFilter(localStorage.getItem('vocab_levelFilter') || 'all');
+        // 급수 필터 값은 HSK 2026 급수(H1~H7)·미분류뿐 — 옛 값(LIFE 등)은 전체로 되돌린다.
+        const storedLevel = localStorage.getItem('vocab_levelFilter');
+        setLevelFilter(/^(H[1-7]|NONE)$/.test(storedLevel || '') ? storedLevel : 'all');
       }
       const storedMode = localStorage.getItem('as_review_mode');
       setReviewMode(['auto', 'flash', 'typing', 'context', 'listening'].includes(storedMode) ? storedMode : 'auto');
@@ -377,24 +379,18 @@ function VocabWorkspace({ bookReview }) {
     };
   }, [manualAddOpen]);
 
-  // 급수 자동 분류(오너 승인 ②) — 급수는 저장하지 않고 표시 시점에 레퍼런스 어휘
-  // 인덱스로 계산한다(기존 단어 소급 적용). 중국어 단어가 있을 때만 1회 지연 로드.
+  // 급수 자동 분류(오너 승인 ②) — 급수는 저장하지 않고 표시 시점에 계산한다(기존 단어 소급 적용).
+  // 기준은 HSK 2026 표(ZH-LEVEL-2026-001) — 중국어 단어가 있을 때만 1회 지연 로드. 표 밖 단어는 급수 없음.
   const hasZhVocab = useMemo(() => vocab.some(v => v.language === 'Chinese'), [vocab]);
-  const [zhRefIndex, setZhRefIndex] = useState(null);
-  useEffect(() => {
-    if (!hasZhVocab || zhRefIndex) return undefined;
-    let alive = true;
-    loadRefVocabIndex('Chinese').then((ix) => { if (alive) setZhRefIndex(ix); }).catch(() => {});
-    return () => { alive = false; };
-  }, [hasZhVocab, zhRefIndex]);
+  const zhHskLevels = useZhHskLevels(hasZhVocab);
   const refLevelOf = useCallback((v) => (
-    v?.language === 'Chinese' && zhRefIndex ? (zhRefIndex.get(v.word_text)?.level || null) : null
-  ), [zhRefIndex]);
+    v?.language === 'Chinese' ? zhHskLevelOf(v.word_text, zhHskLevels) : null
+  ), [zhHskLevels]);
   // 급수 필터는 중국어 문맥에서만 의미가 있다 — 다른 언어로 좁히면 자동 해제.
   useEffect(() => {
     if (levelFilter !== 'all' && langFilter !== 'all' && langFilter !== 'Chinese') setLevelFilter('all');
   }, [langFilter, levelFilter]);
-  const showLevelFilter = hasZhVocab && !!zhRefIndex && (langFilter === 'all' || langFilter === 'Chinese');
+  const showLevelFilter = hasZhVocab && !!zhHskLevels && (langFilter === 'all' || langFilter === 'Chinese');
 
   // 검색용 인덱스 사전 계산 (vocab이 바뀔 때만 1회)
   const vocabSearchIndex = useMemo(() => {
@@ -414,11 +410,12 @@ function VocabWorkspace({ bookReview }) {
     if (seriesFilter !== 'all') {
       list = list.filter(x => deckFor(x._item)?.key === seriesFilter);
     }
-    if (levelFilter !== 'all' && zhRefIndex) {
-      // 급수 필터는 중국어 한정 스코프 — 'NONE'은 레퍼런스 사전 밖 단어(미분류).
+    if (levelFilter !== 'all' && zhHskLevels) {
+      // 급수 필터는 중국어 한정 스코프 — 'NONE'은 HSK 2026 표 밖 단어(미분류).
       list = list.filter(x => {
         if (x._item.language !== 'Chinese') return false;
-        return (zhRefIndex.get(x._item.word_text)?.level || 'NONE') === levelFilter;
+        const level = refLevelOf(x._item);
+        return (level ? `H${level}` : 'NONE') === levelFilter;
       });
     }
     if (q) {
@@ -434,7 +431,7 @@ function VocabWorkspace({ bookReview }) {
       list = [...list].sort((a, b) => (a.word_text || '').localeCompare(b.word_text || '', 'ja'));
     }
     return list;
-  }, [vocabSearchIndex, search, sortBy, langFilter, seriesFilter, levelFilter, zhRefIndex, deckFor, reviewDueAt]);
+  }, [vocabSearchIndex, search, sortBy, langFilter, seriesFilter, levelFilter, zhHskLevels, refLevelOf, deckFor, reviewDueAt]);
 
   useEffect(() => { setVisibleCount(30); }, [search, sortBy, langFilter, levelFilter]);
 
@@ -831,9 +828,9 @@ function VocabWorkspace({ bookReview }) {
     setReviewFinished(false);
     setTypingAnswer('');
     setContextSelected(null);
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
+    // 알림 권한은 여기서 묻지 않는다(WALL-STATES-001 ⑥) — 복습을 시작할 때마다 설명 없이 묻던 자리라,
+    // 한 번 거부하면 학습 끝의 푸시 안내(StudySessionPage 「내일 이야기가 도착하면 알려드릴까요?」)와
+    // 내 정보의 알림 켜기까지 막혔다. 권한은 그 두 곳에서 사용자가 고른 뒤에만 요청한다.
   };
 
   // 복습 예정(학습한 단어) 먼저, 그다음 하루 한도 내 새 단어
@@ -987,7 +984,7 @@ function VocabWorkspace({ bookReview }) {
       {/* 네트워크가 죽어 캐시 스냅샷으로 살아난 화면임을 알린다(v2-N R1) */}
       {isOffline && <OfflineNotice what="단어장" />}
       {admission.error && tab !== 'review' && <div role="alert" className="card">
-        <p>복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.</p>
+        <p>{REVIEW_PREP_FAILED}</p>
         <Button variant="ghost" onClick={() => admission.controller.retryConfiguration().catch(() => {})}>다시 시도</Button>
       </div>}
       <PendingReviewsNotice count={pendingReviewCount} />
@@ -1064,7 +1061,7 @@ function VocabWorkspace({ bookReview }) {
             {!bookReview && <p className="review-room-scope">복습 범위 · {seriesFilter === 'all' ? '전체 표현' : availableSeries.find(x => x.key === seriesFilter)?.label ?? seriesFilter}</p>}
             {reviewQueue.length > reviewIdx && !reviewFinished && <button type="button" className="review-room-resume" onClick={() => setTab('review')}>멈춘 복습 이어가기 · {reviewIdx} / {reviewQueue.length} →</button>}
             {vocabError && <p role="alert">최신 표현을 확인하지 못했어요. <button type="button" onClick={() => refetchVocab()}>다시 불러오기</button></p>}
-            {fsrsReview.status === 'error' && <p role="alert">복습 일정을 확인하고 있어요… <button type="button" onClick={() => fsrsReview.controller.refresh()}>다시 시도</button></p>}
+            {fsrsReview.status === 'error' && <p role="alert">복습 일정을 불러오지 못했어요. <button type="button" onClick={() => fsrsReview.controller.refresh()}>다시 시도</button></p>}
             {fsrsReview.error?.message === 'fsrs_sync_blocked' && <p role="alert">복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.
               <button type="button" onClick={() => fsrsReview.controller.retrySync()}>다시 시도</button>
             </p>}
@@ -1390,7 +1387,10 @@ function VocabWorkspace({ bookReview }) {
 
       <ConfirmModal
         open={!!confirmAction}
+        title={confirmAction?.title}
         message={confirmAction?.message}
+        confirmLabel="삭제"
+        variant="danger"
         onConfirm={confirmAction?.onConfirm}
         onCancel={() => setConfirmAction(null)}
       />

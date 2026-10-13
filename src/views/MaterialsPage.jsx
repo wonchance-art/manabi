@@ -857,7 +857,8 @@ export default function MaterialsPage({ libraryView = null }) {
                             e.stopPropagation();
                             closeMenu(e);
                             setConfirmAction({
-                              message: `"${m.title}" 자료를 휴지통으로 옮길까요? 학습 기록은 남습니다.`,
+                              title: `"${m.title}" 자료를 휴지통으로 옮길까요?`,
+                              message: '학습 기록은 남아 있어요.',
                               onConfirm: () => { deleteMutation.mutate(m.id); setConfirmAction(null); },
                             });
                           }}
@@ -969,9 +970,13 @@ export default function MaterialsPage({ libraryView = null }) {
         );
       })()}
 
+      {/* 휴지통 이동은 되돌릴 수 있다 — 질문 제목 + 「휴지통으로」(문구 표준 §2). 빨간 「삭제」는 영구 삭제만. */}
       <ConfirmModal
         open={!!confirmAction}
+        title={confirmAction?.title}
         message={confirmAction?.message}
+        confirmLabel="휴지통으로"
+        variant="primary"
         onConfirm={confirmAction?.onConfirm}
         onCancel={() => setConfirmAction(null)}
       />

@@ -19,6 +19,7 @@ import {readerDraftScope,readerDraftContext,classroomSaveLabel,isClassComposing}
 import {resolveClassSource} from '../../lib/classSource';
 import {useClassSelectionVisibility} from '../../lib/useReaderLayout';
 import TeachingBoard from './TeachingBoard';
+import ConfirmModal from '../ConfirmModal';
 import {wordRecordKey,savedWordRecord,pendingWordRecord} from '../../lib/teachingWordRecord';
 
 export default function ClassroomReader({annotationContent,context,user,material,selection,selectionSignal,wordContent,sentenceContent,fallback,onSelectionClose,onActive,suppressed,onPresenting,toolbarTarget,boardTarget,boardHeaderTarget,onBoardRatio,vocabularyIndex,onBoardLayout}) {
@@ -69,6 +70,9 @@ function ClassReaderSession({fallback,onSelectionClose,toolbarTarget,boardTarget
   const [manual,setManual]=useState(false),[input,setInput]=useState(''),[draft,setDraft]=useState(null),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[lookupBusy,setLookupBusy]=useState(false),[toolsOpen,setToolsOpen]=useState(false),[collapsed,setCollapsed]=useState(false),[expanded,setExpanded]=useState(false);
   const dockRef=useRef(null),bodyRef=useRef(null),presentationOriginRef=useRef(null),showButtonRef=useRef(null);
   const drafts=useClassReaderDrafts(readerDraftScope(root.owner_id,team.key,day,material.id));
+  // 초안 비우기는 되돌릴 수 없어 한 번 묻는다(WALL-STATES-001 ④). 값 = 비울 초안 행.
+  const [clearing,setClearing]=useState(null);
+  const draftLabel=row=>row?.value?.selection?.text||row?.value?.input||'빈 초안';
   const [edits,setEdits]=useState({});const lookupAttempt=useRef(0),composition=useRef(false),blockedEnter=useRef(false);
   const editVersion=useRef(0),draftVersion=useRef(0),searchRef=useRef(null);
   const current=manual?draft:selection;
@@ -176,7 +180,7 @@ function ClassReaderSession({fallback,onSelectionClose,toolbarTarget,boardTarget
     {!sourceValid&&<p role="status">이 초안의 교재 위치를 확인하지 못했어요. <button onClick={()=>{const next={...current,source:{kind:'manual'}};setDraft(next);setManual(true);persist(next);}}>직접 입력으로 사용</button></p>}
     <details className="class-reader-extra" hidden={!existing&&!savedDraft}><summary>추가 동작</summary>
       {existing&&!queued&&<button disabled={busy||!sourceValid} onClick={()=>add(true)}>한 번 더 추가</button>}
-      {savedDraft&&<button onClick={()=>clearDraft(savedDraft)}>초안 비우기</button>}
+      {savedDraft&&<button onClick={()=>setClearing(savedDraft)}>초안 비우기</button>}
     </details>
   </div>:<p className="class-reader-hint">교재의 단어를 누르거나 표현을 드래그하세요. 이 자리에서 뜻을 보고 수업에 추가합니다.</p>;
   return <>{toolbarTarget?.current&&createPortal(boardOpen?null:toolbar,toolbarTarget.current)}{!boardOpen&&<aside ref={dockRef} className={`class-reader-dock${collapsed?' is-collapsed':''}${expanded?' is-expanded':''}`} hidden={suppressed} aria-label="교재 안 수업 도구" onMouseUp={e=>e.stopPropagation()}>
@@ -191,7 +195,7 @@ function ClassReaderSession({fallback,onSelectionClose,toolbarTarget,boardTarget
 
       </div>
       {legacy&&<details className="class-reader-drafts"><summary>이전 입력 초안</summary><p>{legacy.text}</p><button onClick={()=>{legacySelected.current=legacy;const next={text:legacy.text,source:{kind:'manual'}};setManual(true);setDraft(next);setInput('');persist(next,'','','');}}>이어서 작성</button></details>}
-      {drafts.rows.length>0&&<details className="class-reader-drafts"><summary>보관된 초안 {drafts.rows.length}개</summary>{drafts.rows.map(row=><div key={row.id}><button onClick={()=>restoreDraft(row)}>{row.value.selection?.text||row.value.input||'빈 초안'} · 계속 작성</button><button aria-label={`${row.value.selection?.text||row.value.input||'빈 초안'} 초안 비우기`} onClick={()=>clearDraft(row)}>비우기</button></div>)}</details>}
+      {drafts.rows.length>0&&<details className="class-reader-drafts"><summary>보관된 초안 {drafts.rows.length}개</summary>{drafts.rows.map(row=><div key={row.id}><button onClick={()=>restoreDraft(row)}>{row.value.selection?.text||row.value.input||'빈 초안'} · 계속 작성</button><button aria-label={`${draftLabel(row)} 초안 비우기`} onClick={()=>setClearing(row)}>비우기</button></div>)}</details>}
       {!manual&&wordContent&&<div className="class-reader-word">{wordContent(current?.source?.tokenId?<>{classDetails}{annotationContent}</>:null,current?.source?.tokenId?{meaning,editor:meaningEditing?meaningControl:<button className="class-reader-meaning-edit" aria-label="수업용 뜻 수정" onClick={()=>setMeaningEditing(true)}>수정</button>}:null)}</div>}
       {(manual||!current?.source?.tokenId)&&classDetails}
       {!manual&&!current?.source?.tokenId&&annotationContent}
@@ -226,7 +230,7 @@ function ClassReaderSession({fallback,onSelectionClose,toolbarTarget,boardTarget
       const repeat=!!findStudyEntry(latestSession.note,picked)||latestSession.queue.some(row=>studySelectionKey({text:row.text,source:row.seed?.source})===sourceKey)||[...boardQueued.current.values()].some(value=>studySelectionKey(value)===sourceKey);
       boardQueued.current.set(identity,picked);
       try{await latestSession.add(picked.text,{...buildStudySeed(picked,picked.meaning,picked.reading),...(repeat?{repeat:true}:{})});}catch(error){boardQueued.current.delete(identity);throw error;}
-    }}/>} {presentation&&<TeachingPresentation owner={root.owner_id} entry={presentation} lang={team.lang} onClose={closePresentation} onRecord={presentation.recorded?undefined:()=>add(false,presentation)} originRef={presentationOriginRef} fallbackRef={showButtonRef} recordState={findStudyEntry(session.note,presentation.selection)?'수업에 기록됨 ✓':presentationQueued?presentationQueued.status==='error'?'저장 확인 필요':'서버 저장 대기':busy?'보관 중…':null}/>}</>;
+    }}/>} {presentation&&<TeachingPresentation owner={root.owner_id} entry={presentation} lang={team.lang} onClose={closePresentation} onRecord={presentation.recorded?undefined:()=>add(false,presentation)} originRef={presentationOriginRef} fallbackRef={showButtonRef} recordState={findStudyEntry(session.note,presentation.selection)?'수업에 기록됨 ✓':presentationQueued?presentationQueued.status==='error'?'저장 확인 필요':'서버 저장 대기':busy?'보관 중…':null}/>}<ConfirmModal open={!!clearing} title={`「${draftLabel(clearing)}」 초안을 비울까요?`} message="지운 초안은 되돌릴 수 없어요." confirmLabel="비우기" variant="danger" onConfirm={()=>{const row=clearing;setClearing(null);if(row)clearDraft(row);}} onCancel={()=>setClearing(null)}/></>;
 }
 
 const selectionKeyFor=selection=>studySelectionKey(selection);
