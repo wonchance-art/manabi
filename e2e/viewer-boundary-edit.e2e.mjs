@@ -194,7 +194,8 @@ test('390 owner zh: 드래그 → [한 단어로 묶기] → 확인 줄(이 자�
   assert.equal((await confirm.locator('.viewer-boundary-confirm__preview').innerText()).replace(/\s+/g,' ').trim(),'身体 + 素质 → 身体素质');
   const scope=confirm.getByRole('radio',{name:'이 자료만'});
   assert.equal(await scope.isChecked(),true,'scope ① only');
-  assert.equal(await confirm.getByRole('radio').count(),1,'no ②③ scope in PR③');
+  // PR④: 규칙 표가 있으면 ② 「내 다른 자료에도」가 함께 보인다. ③ 「모든 사용자」는 관리자만(이 계정은 아님). 기본은 ① 그대로.
+  assert.deepEqual(await confirm.getByRole('radio').evaluateAll(rs=>rs.map(r=>r.closest('label')?.innerText.replace(/\s+/g,' ').trim())),['이 자료만','내 다른 자료에도 (다음 분석부터)'],'① + ② for a non-admin owner');
   assert.equal((await confirm.locator('.viewer-boundary-confirm__note').innerText()).trim(),'단어장의 身体은(는) 그대로 있어요.');
   for(const name of ['묶기','취소']){const b=await confirm.getByRole('button',{name,exact:true}).boundingBox();assert.ok(b.height>=44,`${name} ≥ 44px`);}
   assert.doesNotMatch(await confirm.innerText(),/\bAI\b/);
