@@ -175,7 +175,7 @@ function fakeLearnerSession(role = 'learner') {
   };
 }
 
-async function mockAuthenticatedVocab(context, { readingMaterials = [], role = 'learner' } = {}) {
+async function mockAuthenticatedVocab(context, { readingMaterials = [], role = 'learner', learningLanguage } = {}) {
   await context.addInitScript(() => {
     class NoopIntersectionObserver {
       observe() {}
@@ -263,6 +263,7 @@ async function mockAuthenticatedVocab(context, { readingMaterials = [], role = '
         onboarded: true,
         streak_count: 1,
         last_login_at: '2026-08-06T00:00:00.000Z',
+        ...(learningLanguage ? { learning_language: learningLanguage } : {}),
       });
       return;
     }
@@ -656,7 +657,8 @@ test('writing: 초안과 체크리스트를 새로고침 뒤 복원하고 이어
 // 인증 세션·DB upsert·캐시 재조회 중 하나가 끊기면 실재 어휘 저장부터 복습 카드 진입까지에서 잡는다.
 test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복습 큐에 반영한다', { timeout: config.timeout * 2 }, async () => {
   await runInFreshPage(async (page, context) => {
-    const { session, storedWords, writes, writesByTable } = await mockAuthenticatedVocab(context, { role: 'admin' });
+    // 복습방은 언어 하나를 연다(REV-SCOPE D1) — 프랑스어 학습자로 둬야 주소 없는 /vocab이 프랑스어 범위다.
+    const { session, storedWords, writes, writesByTable } = await mockAuthenticatedVocab(context, { role: 'admin', learningLanguage: ['French'] });
     await page.goto('/french/vocab/a1', { waitUntil: 'domcontentloaded', timeout: config.timeout });
     await assertVisible(page.getByRole('heading', { name: 'A1 기초 어휘', exact: true }), 'French A1 vocabulary heading');
 

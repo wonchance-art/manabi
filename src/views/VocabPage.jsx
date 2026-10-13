@@ -532,7 +532,7 @@ function VocabWorkspace({ bookReview, scope }) {
   }, [reviewQueue, reviewIdx, vocab, reviewSupported, reviewAvailable, fsrsReview.controller, fsrsReview.registryAvailable, fsrsReview.enrolledIds]);
 
   const questionKey = `${reviewSessionId}:${reviewIdx}`;
-  const currentWord = admission.current?.accountId === user?.id && admission.current.cardId === candidateWord?.id
+  const currentWord = !!user && admission.current?.accountId === user.id && admission.current.cardId === candidateWord?.id
     && admission.current.questionKey === questionKey ? candidateWord : undefined;
   // 같은 카드면 새 객체여도 다시 묻지 않는다 — id에만 반응한다.
   const candidateId = candidateWord?.id;

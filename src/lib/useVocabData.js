@@ -50,8 +50,10 @@ export function useVocabData() {
     queryFn: ({ signal }) => fetchVocabLearningData(user.id, { signal, getActorId: () => actorRef.current }),
     enabled: !!user,
   });
-  const vocab = learning?.actorId === user?.id ? learning.rows : EMPTY_ROWS;
-  const projections = learning?.actorId === user?.id ? learning.projections : EMPTY_ROWS;
+  // 비로그인은 user?.id와 learning?.actorId가 둘 다 undefined라 같다고 읽힌다 — 받은 결과가 있을 때만 쓴다.
+  const ownLearning = !!learning && learning.actorId === user?.id;
+  const vocab = ownLearning ? learning.rows : EMPTY_ROWS;
+  const projections = ownLearning ? learning.projections : EMPTY_ROWS;
   const materialIds = useMemo(() => [...new Set(vocab.map(row => row.source_material_id).filter(Boolean))].sort(), [vocab]);
   // 제목은 로그인 사용자의 RLS로만 읽는 표시 보조다. 실패해도 학습 정본을 대체하지 않는다.
   const { data: materialTitles = EMPTY_TITLES } = useQuery({

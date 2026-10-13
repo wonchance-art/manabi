@@ -50,4 +50,11 @@ describe('복습방 범위 배선', () => {
     expect(page).not.toContain('‘이 예문 담기’');
     expect(read('src/views/StudySessionPage.jsx')).toContain("'+ 담기'");
   });
+
+  it('비로그인 복습방이 계정 결과 비교에서 깨지지 않는다(undefined === undefined)', () => {
+    expect(page).toContain('const currentWord = !!user && admission.current?.accountId === user.id');
+    const data = read('src/lib/useVocabData.js');
+    expect(data).toContain('const ownLearning = !!learning && learning.actorId === user?.id;');
+    expect(data).not.toContain('learning?.actorId === user?.id ? learning.rows');
+  });
 });
