@@ -62,3 +62,18 @@
 .conv-menu__list { position: absolute; right: 0; top: calc(100% + 4px); z-index: 20; display: flex; flex-direction: column; min-width: 180px; padding: 4px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); box-shadow: 0 6px 20px color-mix(in srgb, var(--text-primary) 14%, transparent); }
 .conv-menu__item { display: flex; align-items: center; min-height: 44px; padding: 0 12px; border: 0; border-radius: 8px; background: none; color: var(--text-primary); font: inherit; text-align: left; text-decoration: none; cursor: pointer; }
 .conv-menu__item:hover, .conv-menu__item:focus-visible { background: var(--bg-secondary); }
+
+/* Z-R3 — 따라 말해 보기(채점 없음) · 대화 마치기 요약. */
+.conv-feedback__heard span { color: var(--text-primary); }
+.conv-summary { display: flex; flex-direction: column; gap: 12px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 16px; background: var(--bg-card); }
+.conv-summary h2 { margin: 0; font-size: 1rem; color: var(--text-primary); }
+.conv-summary__block { display: flex; flex-direction: column; gap: 4px; }
+.conv-summary__block h3 { margin: 0; font-size: 0.88rem; color: var(--text-primary); }
+.conv-summary__block h3 span { margin-left: 4px; font-weight: 400; color: var(--text-muted); }
+.conv-summary__block p { margin: 0; font-size: 0.9rem; color: var(--text-secondary); }
+.conv-summary__pair s { color: var(--text-muted); }
+.conv-summary__note { color: var(--text-muted); font-size: 0.82rem; }
+.conv-summary__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.conv-chip--link { display: inline-flex; align-items: center; text-decoration: none; }
+.conv-chip--gap { border-color: var(--warning); }
+.conv-new__fix { padding-left: 8px; border-left: 3px solid var(--warning); }

@@ -12,7 +12,8 @@ import { langNameKo, profileLevel } from '@/lib/constants';
 import { useOutputWords } from '@/lib/useOutputWords';
 import { CONVERSATION_ERRORS, CONVERSATION_LANGUAGES, CONVERSATION_MAX_TOPIC_CHARS } from '@/lib/conversation/turnModel';
 import { startTopicConversation } from '@/lib/conversation/conversationClient';
-import { fetchConversations, conversationHref, conversationShelfMeta } from '@/lib/conversation/conversationLibrary';
+import { fetchConversations, fetchConversationTurns, conversationHref, conversationShelfMeta } from '@/lib/conversation/conversationLibrary';
+import { conversationCorrections } from '@/lib/conversation/conversationLoop';
 import {
   CONVERSATION_TOPICS, canStartConversation, conversationLevels, newConversationDefaults, recommendedLevel,
 } from '@/lib/conversation/newConversation';
@@ -39,6 +40,13 @@ export default function NewConversationPage() {
     queryKey: ['library-conversations', user?.id], enabled: !!user, staleTime: 30000,
     queryFn: () => fetchConversations(supabase, user.id),
   });
+  // 지난번 고친 말(Z-R3) — 내 최근 대화의 고친 문장(같은 언어, 최신 3개). 표시만이고, 튜터는 서버가 하루 지난 문형을 골라 다시 묻는다.
+  const past = useQuery({
+    queryKey: ['conversation-turns', user?.id], enabled: !!user, staleTime: 60000,
+    queryFn: () => fetchConversationTurns(supabase, user.id),
+  });
+  const pastFixes = [...new Set((past.data || []).filter((row) => row.language === language)
+    .flatMap((row) => conversationCorrections({ turns: row.turns }).map((c) => c.to)))].slice(0, 3);
   const returnTo = safeReaderReturn(params.get('returnTo'));
   const chosenTopic = writing ? ownTopic.trim() : topic;
   const ready = canStartConversation({ topic: chosenTopic, language, level });
@@ -116,10 +124,11 @@ export default function NewConversationPage() {
         </div>
       </section>
 
-      {outputWords.length > 0 && (
+      {(outputWords.length > 0 || pastFixes.length > 0) && (
         <section className="conv-new__group" aria-labelledby="conv-new-words">
-          <h2 id="conv-new-words">이번 대화에서 써 볼 말 <small>오늘 복습한 말</small></h2>
-          <p className="conv-new__words" lang="und">{outputWords.map((w) => w.word_text).join(' · ')}</p>
+          <h2 id="conv-new-words">이번 대화에서 써 볼 말 <small>오늘 복습한 말 · 지난번에 고친 말</small></h2>
+          {outputWords.length > 0 && <p className="conv-new__words" lang="und">{outputWords.map((w) => w.word_text).join(' · ')}</p>}
+          {pastFixes.map((to) => <p key={to} className="conv-new__words conv-new__fix" lang="und">{to}</p>)}
         </section>
       )}
 

@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { postConversationTurn, countConversationWords } from '../../lib/conversation/conversationClient';
 import { newConversationHref } from '../../lib/conversation/newConversation';
 import ConfirmModal from '../ConfirmModal';
+import ConversationSummary from './ConversationSummary';
 import { isImeComposing } from '../../lib/imeComposing';
 import { bcp47ForLanguage } from '../../lib/speechLang';
 import { langNameKo } from '../../lib/constants';
@@ -82,6 +83,8 @@ export default function ConversationThread({
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirm, setConfirm] = useState(null); // { words: number|null } — 지우기 확인창
   const [deleting, setDeleting] = useState(false);
+  const [summaryOpen, setSummaryOpen] = useState(false);
+  const [shadow, setShadow] = useState(null); // { index, heard, listening } — [따라 말해 보기](채점 없음)
   const requestRef = useRef(0);
   const materialRef = useRef(materialId);
   const recognitionRef = useRef(null);
@@ -169,6 +172,22 @@ export default function ConversationThread({
     setListening(false);
   }
 
+  // [따라 말해 보기] — 정답 문장을 들은 뒤 내 입으로 말해 본다. 받아 적은 말만 보여 주고 채점하지 않는다(시안 · 하지 않는 것: 발음 채점).
+  function startShadow(index) {
+    if (!sttSupported || shadow?.listening) return;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recog = new SR();
+    recog.lang = bcp47ForLanguage(language);
+    recog.continuous = false;
+    recog.interimResults = false;
+    recog.onresult = (event) => setShadow({ index, heard: event.results[0][0].transcript, listening: false });
+    const end = () => setShadow((prev) => (prev?.index === index ? { ...prev, listening: false } : prev));
+    recog.onend = end;
+    recog.onerror = end;
+    setShadow({ index, heard: '', listening: true });
+    try { recog.start(); } catch { end(); }
+  }
+
   const lineView = (line) => {
     const ids = tokensByLine.get(line);
     const analyzed = ids?.length && ids.every((id) => !material.processed_json.dictionary[id]?.failed);
@@ -224,6 +243,7 @@ export default function ConversationThread({
               {onNewConversation && (
                 <button type="button" role="menuitem" className="conv-menu__item" onClick={() => { setMenuOpen(false); onNewConversation(); }}>새 대화</button>
               )}
+              <button type="button" role="menuitem" className="conv-menu__item" onClick={() => { setMenuOpen(false); setSummaryOpen(true); }}>마치기</button>
               {onDelete && <button type="button" role="menuitem" className="conv-menu__item" onClick={askDelete}>지우기</button>}
             </div>
           )}
@@ -286,8 +306,18 @@ export default function ConversationThread({
                     <div className="conv-feedback__answer">
                       <p className="conv-feedback__label">이렇게 말해요</p>
                       <div className="conv-answer" lang={bcp47ForLanguage(language)}>{lineView(item.answerLine)}</div>
-                      {ttsSupported && (
-                        <button type="button" className="conv-chip" onClick={() => speak(rawLines[item.answerLine], language)} aria-label="정답 문장 듣기">🔊 듣기</button>
+                      <div className="conv-bubble__actions">
+                        {ttsSupported && (
+                          <button type="button" className="conv-chip" onClick={() => speak(rawLines[item.answerLine], language)} aria-label="정답 문장 듣기">🔊 듣기</button>
+                        )}
+                        {sttSupported && (
+                          <button type="button" className="conv-chip" disabled={shadow?.listening} onClick={() => startShadow(item.index)}>
+                            {shadow?.index === item.index && shadow.listening ? '듣는 중…' : '따라 말해 보기'}
+                          </button>
+                        )}
+                      </div>
+                      {shadow?.index === item.index && shadow.heard && (
+                        <p className="conv-feedback__heard">들린 말 <span lang={bcp47ForLanguage(language)}>{shadow.heard}</span></p>
                       )}
                     </div>
                   )}
@@ -319,6 +349,10 @@ export default function ConversationThread({
             <span>{CONVERSATION_ERRORS.conversationFull}</span>
             {onNewConversation && <button type="button" className="conv-chip" onClick={onNewConversation}>이어서 새 대화</button>}
           </div>
+        )}
+        {summaryOpen && (
+          <ConversationSummary materialId={materialId} conversation={conversation} language={language}
+            outputWords={outputWords} onClose={() => setSummaryOpen(false)} />
         )}
         <div ref={endRef} />
       </div>

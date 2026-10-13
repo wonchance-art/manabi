@@ -23,7 +23,7 @@ function fakeDb(rows = []) {
   let nextId = 1000;
   const writes = [];
   const from = (table) => {
-    const q = { table, filters: [], op: 'select', cols: '*', payload: null };
+    const q = { table, filters: [], notNull: [], op: 'select', cols: '*', payload: null };
     const run = () => {
       if (table !== 'reading_materials') return { data: [], error: null };
       if (q.op === 'insert') {
@@ -31,19 +31,25 @@ function fakeDb(rows = []) {
         writes.push({ op: 'insert', rows: q.payload });
         return { data: out, error: null };
       }
-      const match = [...store.values()].filter((r) => q.filters.every(([k, v]) => String(getPath(r, k)) === String(v)));
+      const match = [...store.values()].filter((r) => q.filters.every(([k, v]) => String(getPath(r, k)) === String(v))
+        && q.notNull.every((k) => getPath(r, k) != null));
       if (q.op === 'update') {
         for (const r of match) Object.assign(r, structuredClone(q.payload));
         writes.push({ op: 'update', payload: q.payload, matched: match.length });
         return { data: match.map((r) => ({ id: r.id })), error: null };
       }
-      const alias = q.cols.match(/(\w+):(processed_json->\S+)/);
-      return { data: match.map((r) => (alias ? { id: r.id, [alias[1]]: getPath(r, alias[2]) } : structuredClone(r))), error: null };
+      const aliases = [...q.cols.matchAll(/(\w+):(processed_json->[^,\s]+)/g)];
+      return { data: match.map((r) => (aliases.length
+        ? Object.fromEntries([['id', r.id], ['created_at', r.created_at], ...aliases.map((a) => [a[1], getPath(r, a[2])])])
+        : structuredClone(r))), error: null };
     };
     const api = {
       select(cols = '*') { if (q.op === 'select') q.cols = cols; return api; },
       eq(k, v) { q.filters.push([k, v]); return api; },
       limit() { return api; },
+      order() { return api; },
+      in() { return api; },
+      not(k, op, v) { if (op === 'is' && v === null) q.notNull.push(k); return api; },
       insert(rows) { q.op = 'insert'; q.payload = rows; return api; },
       update(p) { q.op = 'update'; q.payload = p; return api; },
       maybeSingle: async () => { const r = run(); return { data: r.data[0] || null, error: r.error }; },
@@ -275,5 +281,46 @@ describe('소스 계약', () => {
   it('대화 턴 경로는 review_events·FSRS에 쓰지 않는다(M7)', () => {
     const src = read('src/lib/server/conversationTurn.js') + read('src/lib/conversation/turnModel.js');
     expect(src).not.toMatch(/review_events|fsrs/i);
+  });
+});
+
+describe('Z-R3 순환 — 다시 꺼내기 · 새 단어 수', () => {
+  const DAY = 24 * 3600e3;
+  const past = (id, at) => convRow({ id, turns: [
+    { who: 'tutor', lines: [0], at },
+    { who: 'me', text: '我昨天见面了朋友。', at, focus: { from: '见面了朋友', to: '我昨天跟朋友见面了。', level: 'retry', state: 'fixed' } },
+  ] });
+
+  it('새 대화를 열면 하루 지난 고친 문형을 한 번 묻게 하고, 그 기록을 대화에 남긴다', async () => {
+    const db = fakeDb([past(5, NOW - 2 * DAY)]);
+    const callLLM = aiJson({ lines: [{ t: '你昨天做什么了？', ko: '어제 뭐 했어?' }] });
+    const out = await runConversationTurn({ userId: USER, now: NOW, deps: deps(db, callLLM),
+      body: { topic: '하루', language: 'Chinese', level: 'H2 초급' } });
+    expect(out.status).toBe(200);
+    expect(callLLM.mock.calls[0][1]).toContain('Earlier the student corrected a sentence to: "我昨天跟朋友见面了。"');
+    expect(db.store.get(out.body.materialId).processed_json.metadata.conversation.reask)
+      .toEqual([{ text: '我昨天见面了朋友。', from: '见面了朋友', to: '我昨天跟朋友见面了。', sourceId: '5', ok: null }]);
+  });
+
+  it('하루가 안 지났으면 묻지 않는다', async () => {
+    const db = fakeDb([past(5, NOW - 3600e3)]);
+    const callLLM = aiJson({ lines: [{ t: '你好！', ko: '안녕' }] });
+    const out = await runConversationTurn({ userId: USER, now: NOW, deps: deps(db, callLLM),
+      body: { topic: '하루', language: 'Chinese', level: 'H2 초급' } });
+    expect(callLLM.mock.calls[0][1]).not.toContain('Earlier the student corrected');
+    expect(db.store.get(out.body.materialId).processed_json.metadata.conversation.reask).toBeUndefined();
+  });
+
+  it('묻던 문형을 맞게 쓰면 ok로 닫고, 튜터 답장의 새 단어 수를 남긴다', async () => {
+    const row = convRow({ id: 9 });
+    row.processed_json.metadata.conversation.reask = [{ text: '我昨天见面了朋友。', to: '我昨天跟朋友见面了。', sourceId: '5', ok: null }];
+    const db = fakeDb([row]);
+    const callLLM = aiJson({ lines: [{ t: '太好了！', ko: '좋아!' }], feedback: null, focus: null, repair: null });
+    const out = await runConversationTurn({ userId: USER, now: NOW, deps: deps(db, callLLM),
+      body: { materialId: '9', expectedTurn: 1, text: '我今天跟朋友见面了。' } });
+    expect(out.status).toBe(200);
+    const conv = db.store.get('9').processed_json.metadata.conversation;
+    expect(conv.reask[0]).toMatchObject({ ok: true, at: NOW });
+    expect(conv.turns.at(-1)).toMatchObject({ who: 'tutor', newWords: 3 }); // 가짜 분석기는 글자마다 명사 — 太·好·了 셋(！는 글자가 아니라 뺀다)
   });
 });

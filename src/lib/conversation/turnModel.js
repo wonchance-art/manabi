@@ -363,7 +363,7 @@ const LANG_LABEL = { Chinese: 'Chinese (Mandarin, simplified)', Japanese: 'Japan
  */
 export function buildTurnPrompt({
   language, level, topic, excerpt, recentTurns = [], tutorLines = [], userText, inputMode = 'text',
-  outputWords = [], savedWords = [], open = null, safetyRules, start = false,
+  outputWords = [], savedWords = [], open = null, safetyRules, start = false, reask = null, difficulty = null,
 }) {
   const target = LANG_LABEL[language] || language;
   const beginner = isBeginnerLevel(level);
@@ -376,6 +376,10 @@ export function buildTurnPrompt({
     `Student level: ${level || 'beginner'}`,
     outputWords.length ? `Words the student reviewed today: ${outputWords.join(', ')}. If it fits naturally, weave in ONE of them. Never force them.` : null,
     savedWords.length ? `Words the student saved in this conversation: ${savedWords.join(', ')}` : null,
+    // Z-R3 다시 꺼내기 — 하루 이상 지난 고친 문형을 이 대화에서 한 번 묻는다(정답 문장은 보여 주지 않는다).
+    reask?.to ? `Earlier the student corrected a sentence to: "${reask.to}". Once in this conversation, ask a question whose natural answer needs that pattern. Do not show that sentence and do not say it is a review.` : null,
+    // Z-R3 난이도 — 직전 답장의 새 단어 수를 목표 1~2개에 맞춘다.
+    difficulty || null,
   ].filter(Boolean).join('\n');
 
   const schemaNote = `Return JSON only:

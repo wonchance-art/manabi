@@ -85,3 +85,13 @@ export async function trashConversation(materialId) {
   const result = await runLibraryOperation(supabase, 'trash', [target]);
   if (result.items.some((item) => item.status !== 'success')) throw new Error('대화가 바뀌었어요. 다시 열어 확인해 주세요.');
 }
+
+/** 이 대화에서 담은 말(마치기 요약). 내 문맥 행만 보인다(RLS). 실패하면 빈 목록. */
+export async function conversationSavedWords(materialId) {
+  const { data, error } = await supabase.from('vocabulary_contexts')
+    .select('user_vocabulary(word_text)')
+    .eq('material_id', String(materialId))
+    .limit(50);
+  if (error) return [];
+  return [...new Set((data || []).map((r) => r.user_vocabulary?.word_text).filter(Boolean))];
+}

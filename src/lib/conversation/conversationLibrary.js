@@ -50,3 +50,18 @@ export function conversationShelfMeta(row, { languageName = (l) => l } = {}) {
 
 /** 대화 자료 화면 링크 — 돌아올 곳(returnTo)은 서재 링크(LibraryReaderLink)가 붙인다. */
 export const conversationHref = (id) => `/viewer/${encodeURIComponent(id)}`;
+
+/**
+ * 내 최근 대화의 턴 기록(Z-R3 — 새 대화 「지난번 고친 말」·작문 「못 쓴 말」 파생 재료).
+ * @returns {Promise<Array<{id, created_at, language, turns, reask}>>}
+ */
+export async function fetchConversationTurns(client, userId, { limit = 20 } = {}) {
+  const { data, error } = await client.from('reading_materials')
+    .select('id,created_at,marker:processed_json->metadata->conversation->>version,language:processed_json->metadata->conversation->>language,turns:processed_json->metadata->conversation->turns,reask:processed_json->metadata->conversation->reask')
+    .eq('owner_id', userId)
+    .not('processed_json->metadata->conversation', 'is', null)
+    .order('id', { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data || []).filter((row) => row.marker != null && Array.isArray(row.turns));
+}
