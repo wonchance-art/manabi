@@ -5,7 +5,9 @@
 //
 // 기록하는 것: 모델 호출(경로 이름·티어·프롬프트·옵션) · DB 연산(테이블·연산·필터·페이로드) · 응답 JSON.
 
-export const state = { calls: [], ops: [], rows: [] };
+export const state = { calls: [], ops: [], rows: [], segmentRules: {} };
+// AD-R3 PR④ 규칙 표(user_segment_rules · shared_segment_rules): 표 이름 → 행 배열 | {error:{code}}(표 없음 등). 기본은 빈 표.
+const RULE_TABLES = ['user_segment_rules', 'shared_segment_rules'];
 
 const row = (language, base_form, pos, meanings, extra = {}) => ({
   language, base_form, pos, reading: null, source: 'gemini', meanings, ...extra,
@@ -95,11 +97,19 @@ function query(table) {
     eq(k, v) { q.filters.push(['eq', k, v]); return chain; },
     neq(k, v) { q.filters.push(['neq', k, v]); return chain; },
     in(k, v) { q.filters.push(['in', k, [...v]]); return chain; },
+    limit(n) { q.limit = n; return chain; },
     update(patch) { q.op = 'update'; q.payload = patch; return chain; },
     upsert(rows, opts) { q.op = 'upsert'; q.payload = rows; q.opts = opts; return chain; },
     then(resolve, reject) {
       state.ops.push(JSON.parse(JSON.stringify(q)));
       let data = null;
+      if (q.op === 'select' && RULE_TABLES.includes(q.table)) {
+        const stored = state.segmentRules[q.table] ?? [];
+        if (!Array.isArray(stored)) return Promise.resolve({ data: null, error: stored.error }).then(resolve, reject);
+        const language = q.filters.find(([op, k]) => op === 'eq' && k === 'language')?.[2];
+        data = stored.filter((r) => r.language === language).map(({ surface, cuts }) => ({ surface, cuts }));
+        return Promise.resolve({ data, error: null }).then(resolve, reject);
+      }
       if (q.op === 'select') {
         const forms = q.filters.find(([op, k]) => op === 'in' && k === 'base_form')?.[2] ?? [];
         const language = q.filters.find(([op, k]) => op === 'eq' && k === 'language')?.[2];
@@ -127,10 +137,11 @@ export const supabaseModule = {
 
 export const rateLimitModule = { rateLimit: () => ({ ok: true }), getClientKey: (_r, id) => `u:${id}` };
 
-export function reset(rows = ROWS) {
+export function reset(rows = ROWS, segmentRules = {}) {
   state.calls = [];
   state.ops = [];
   state.rows = rows;
+  state.segmentRules = segmentRules;
 }
 
 export const request = (body) => new Request('https://test/api/analyze', {

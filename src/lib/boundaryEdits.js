@@ -309,7 +309,8 @@ export function applyBoundaryEdits(lineTokens, lineEdits, options = {}) {
  * 범위 간 적용 순서(§3.4): layers = [{marker:'shared_rule', edits}, {marker:'user_rule', edits}, {marker:'user', edits}]처럼
  * **적용 순서대로** 받고, 뒤 층이 이긴다. applyBoundaryEdits는 겹치면 앞 기록이 이기므로 뒤 층부터 넣어 한 번에 적용한다
  * — base는 언제나 분석기 원래 토큰이다(불변식 ②). 결과 {tokens, layers: [층마다 입력 순서의 results]}.
- * 지금은 「이 자료」('user') 층만 쓴다. 사용자·공유 규칙 표는 PR④.
+ * 서버(analyzeBoundaries.applyRequestBoundaries)가 규칙 층(segmentRules.segmentRuleLayers — 'shared_rule' · 'user_rule')과
+ * 「이 자료」('user') 층을 함께 넣는다(PR④).
  */
 export function applyBoundaryLayers(lineTokens, layers, options = {}) {
   const list = Array.isArray(layers) ? layers : [];

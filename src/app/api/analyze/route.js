@@ -25,6 +25,7 @@ import { collectMissingBaseForms } from '@/lib/server/dictLookup';
 import {
   applyRequestBoundaries, boundaryBaseTokens, boundaryLineResult, readRequestBoundaries,
 } from '@/lib/server/analyzeBoundaries';
+import { loadSegmentRules, segmentRulesClient } from '@/lib/server/segmentRulesStore';
 import {
   ZH_BOUNDARY_REVIEW, applyZhBoundaryJoins, attachZhBoundaryPairs, collectZhBoundaryPairs, collectZhPairLookupForms,
   zhBoundaryBlockedRegions,
@@ -84,7 +85,7 @@ export async function POST(request) {
     return Response.json({ error: 'Bad JSON' }, { status: 400 });
   }
 
-  const { lines: rawLines, language, boundaries } = body;
+  const { lines: rawLines, language, boundaries, segmentRules } = body;
   if (!Array.isArray(rawLines) || rawLines.length === 0) {
     return Response.json({ error: 'lines required' }, { status: 400 });
   }
@@ -107,6 +108,13 @@ export async function POST(request) {
     return Response.json({ error: 'boundaries invalid' }, { status: 400 });
   }
 
+  // AD-R3 PR④ 단어 경계 규칙(② 내 다른 자료 · ③ 공유) — 자료 분석 · 재분석(analyzeHybrid)이 segmentRules: true를 실을 때만 읽는다.
+  // 사용자 JWT RLS 클라이언트로 요청당 표마다 1회. 표가 없거나 읽지 못하면 규칙 없이 그대로 간다(segmentRulesStore).
+  // 플래그가 없는 요청(드래그 분석 · 빠른 분석 · 묶기/나누기 한 줄 분석)은 읽기 0 — 지금과 같다.
+  const rulesPromise = segmentRules === true
+    ? (async () => loadSegmentRules(segmentRulesClient(token), { userId: user.id, language }))().catch(() => null)
+    : null;
+
   try {
     // 1. 각 줄 토큰화 (언어별)
     // 일본어=kuromoji(async) · 영어=lemmatizer · 중국어=jieba+병음(둘 다 sync)
@@ -123,7 +131,9 @@ export async function POST(request) {
     );
     // 1.5. AD-R3 단어 경계 — 토큰화 직후 칼선을 적용한다. 새 조각과 기록의 원래 토큰(base)이 아래 사전 조회·뜻 조회·
     // 품사 판별·병음을 그대로 탄다(§3.4). 기록이 없으면 null — 아래 경로는 원래 토큰 그대로.
-    const boundaryState = applyRequestBoundaries(rawTokenizedLines, boundaryRequest.byLine, language);
+    // 규칙은 같은 층 함수의 앞 층(공유 → 사용자)이고, 이 자료 기록이 이긴다. 맞은 규칙도 기록도 없으면 null(기존 경로 그대로).
+    const segmentRuleSet = rulesPromise ? await rulesPromise : null;
+    const boundaryState = applyRequestBoundaries(rawTokenizedLines, boundaryRequest.byLine, language, segmentRuleSet);
     const tokenizedLines = boundaryState?.tokenizedLines ?? rawTokenizedLines;
     const lookupLines = boundaryState?.lookupLines ?? tokenizedLines;
     // 1.6. AD-R4 PR④ 경계 검수(중국어만, 상수 ZH_BOUNDARY_REVIEW 꺼짐으로 출시) — 켜지면 이웃 한자 쌍을 같은 판별 호출에
