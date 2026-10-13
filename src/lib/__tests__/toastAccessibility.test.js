@@ -42,12 +42,12 @@ describe('WALL-STATES-001 ⑦ 토스트 접근성', () => {
   it('실패(error)·막힘(warning)만 alert, 성공·안내·축하는 status', () => {
     const { toast } = render();
     toast('저장했어요', 'success');
-    toast('삭제 실패 — 알 수 없는 오류가 발생했어요.', 'error');
+    toast('삭제 실패 — 문제가 발생했어요. 잠시 후 다시 시도해 주세요.', 'error');
     toast('로그인이 필요합니다.', 'warning');
     const roles = render().toasts.map((t) => [t.message, t.role]);
     expect(roles).toEqual([
       ['저장했어요', 'status'],
-      ['삭제 실패 — 알 수 없는 오류가 발생했어요.', 'alert'],
+      ['삭제 실패 — 문제가 발생했어요. 잠시 후 다시 시도해 주세요.', 'alert'],
       ['로그인이 필요합니다.', 'alert'],
     ]);
     expect(['info', 'celebrate', undefined].map(toastRole)).toEqual(['status', 'status', 'status']);

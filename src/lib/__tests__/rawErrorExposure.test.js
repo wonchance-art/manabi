@@ -39,6 +39,7 @@ const ALLOWLIST = [
   { file: 'lib/studyGroups.js', snippet: "const msg = String(error?.message || '')", reason: '분류용 지역 변수 — 아래 정규식으로 한국어 안내를 고른다' },
   { file: 'lib/libraryOperations.js', snippet: "const message=error?.message||''", reason: '분류용 지역 변수 — 코드표로 한국어 안내를 고른다' },
   { file: 'lib/originalReadingPosition.js', snippet: "errorCode=error?.message||error?.code||''", reason: '내부 오류 코드 기록 — 화면 문구는 코드표가 고른다' },
+  { file: 'lib/aozoraRuby.js', snippet: 'skipped: error.message', reason: '저자 루비 잠금 진단값 — analyzeText가 콘솔로만 남긴다' },
   { file: 'components/world/overworldPageRenderer.js', snippet: 'message: error?.message ?? String(error)', reason: '월드 렌더러 진단 기록(onError 콜백) — 화면 문구가 아니다' },
 ];
 
@@ -149,7 +150,7 @@ describe('WALL-STATES-001 ⑴ 매핑 함수 — 모르는 오류는 원문 대�
   it('화면이 준 한국어 폴백이 고정 문구보다 앞선다(패턴 매칭은 그보다 앞선다)', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     expect(friendlyToastMessage(new Error('boom'), '교재를 불러오지 못했어요.')).toBe('교재를 불러오지 못했어요.');
-    expect(friendlyToastMessage(new Error('Failed to fetch'), '교재를 불러오지 못했어요.')).toMatch(/네트워크/);
+    expect(friendlyToastMessage(new Error('Failed to fetch'), '교재를 불러오지 못했어요.')).toMatch(/인터넷 연결을 확인해 주세요/);
     expect(friendlyToastMessage(null, '교재를 불러오지 못했어요.')).toBe('교재를 불러오지 못했어요.');
     warn.mockRestore();
   });

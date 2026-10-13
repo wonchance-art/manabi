@@ -85,7 +85,7 @@ export default function BookRefinePanel({ materials, userId, toast, onRefined })
       const unassigned = rows.flatMap(({ chapter, plan }) => (plan.ok ? plan.unassigned.map((u) => ({ ...u, title: chapter.title })) : []));
       setInspect({ book, rows, stats, unassigned });
     } catch (err) {
-      toast?.('정제 검사 실패: ' + friendlyToastMessage(err, '알 수 없는 오류'), 'error');
+      toast?.('정제 검사 실패: ' + friendlyToastMessage(err), 'error');
     } finally {
       setBusy(false);
     }

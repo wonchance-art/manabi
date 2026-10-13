@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../lib/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { toKoreanError, INVALID_CREDENTIALS_MESSAGE, EMAIL_NOT_CONFIRMED_MESSAGE } from '../lib/authErrors';
+import { toKoreanError, INVALID_CREDENTIALS_MESSAGE, EMAIL_NOT_CONFIRMED_MESSAGE, AUTH_FALLBACK_MESSAGE } from '../lib/authErrors';
 import { supabase } from '../lib/supabase';
 import { authReturnPath } from '../lib/authRedirect';
 
@@ -80,7 +80,7 @@ function AuthForm() {
       if (msg === 'ALREADY_REGISTERED') {
         setError('ALREADY_REGISTERED');
       } else {
-        setError(msg || '요청을 처리하지 못했습니다. 다시 시도해주세요.');
+        setError(msg || AUTH_FALLBACK_MESSAGE);
       }
     } finally {
       setLoading(false);
@@ -94,7 +94,7 @@ function AuthForm() {
       setError('');
       setSuccess('인증 메일을 다시 보냈습니다. 받은 편지함과 스팸함을 확인해주세요.');
     } catch (err) {
-      setError(toKoreanError(err?.message || String(err)) || '요청을 처리하지 못했습니다. 다시 시도해주세요.');
+      setError(toKoreanError(err?.message || String(err)) || AUTH_FALLBACK_MESSAGE);
     } finally {
       setResending(false);
     }

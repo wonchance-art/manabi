@@ -6,8 +6,8 @@ import { isUserFacingMessage } from './errorMessage';
 // 화면이 문구에 맞춰 보조 안내(Google 로그인 힌트·인증 메일 재발송)를 붙이는 기준값.
 export const INVALID_CREDENTIALS_MESSAGE = '이메일 또는 비밀번호가 올바르지 않습니다.';
 export const EMAIL_NOT_CONFIRMED_MESSAGE = '이메일 인증이 필요합니다. 받은 편지함을 확인해주세요.';
-// 번역하지 못한 오류의 고정 문구 — 로그인 화면이 이미 폴백으로 쓰던 문구다(WALL-STATES-001).
-export const AUTH_FALLBACK_MESSAGE = '요청을 처리하지 못했습니다. 다시 시도해주세요.';
+// 번역하지 못한 오류의 고정 문구(WALL-STATES-001) — 화면 문구 표준(docs/design/copy-standard.md)의 실패 형태.
+export const AUTH_FALLBACK_MESSAGE = '요청을 처리하지 못했어요. 다시 시도해 주세요.';
 
 /**
  * 이메일 인증을 켠 Supabase는 이미 있는 이메일로 가입해도 오류 대신 성공처럼 응답한다(가입 여부 노출 방지).

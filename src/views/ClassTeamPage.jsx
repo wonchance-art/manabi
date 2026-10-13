@@ -42,7 +42,7 @@ import { CourseTab } from '../components/classroom/ClassCourseSchedule';
 import { friendlyToastMessage } from '../lib/errorMessage';
 
 const RELOCK_MSG = '암호를 다시 입력해 주세요 — 선생님이 바꿨거나 30일이 지났어요.';
-const errMsg = (err) => (err?.status === 429 ? '잠시 후 다시 시도해 주세요.' : friendlyToastMessage(err, '알 수 없는 오류'));
+const errMsg = (err) => (err?.status === 429 ? '잠시 후 다시 시도해 주세요.' : friendlyToastMessage(err));
 
 async function copyToClipboard(text, toast, done) {
   try { await navigator.clipboard.writeText(text); toast(done, 'success'); }

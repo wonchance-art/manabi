@@ -2512,7 +2512,7 @@ export default function ViewerPage() {
     if (gradeAction.current !== action) return;
     const snapshot = undo ? { ...undo, text: savedToken.text } : null;
     lastSaveRef.current = snapshot;
-    if (linked || snapshot) toast(<span>「{savedToken.text}{vt("」 저장됨")}{snapshot && <ViewerLabelSlot locale={uiLocale} text={<>{vt('저장 취소 ·')} {UNDO_KEY_LABEL}</>}><button type="button" className="btn btn--ghost btn--sm" style={{ pointerEvents: 'auto' }} onClick={() => undoLastSave(snapshot)}>저장 취소 · {UNDO_KEY_LABEL}</button></ViewerLabelSlot>}</span>, 'success', 8000);
+    if (linked || snapshot) toast(<span>「{savedToken.text}{vt("」 단어를 저장했어요")}{snapshot && <ViewerLabelSlot locale={uiLocale} text={<>{vt('되돌리기 ·')} {UNDO_KEY_LABEL}</>}><button type="button" className="btn btn--ghost btn--sm" style={{ pointerEvents: 'auto' }} onClick={() => undoLastSave(snapshot)}>되돌리기 · {UNDO_KEY_LABEL}</button></ViewerLabelSlot>}</span>, 'success', 8000);
   };
 
   const isDragSelection=dragTokens!==null;

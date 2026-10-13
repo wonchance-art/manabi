@@ -133,7 +133,7 @@ export default function InlineEditForm({ lang, slug, path, kind, onDone, onCance
       })
       .catch((e) => {
         if (!alive) return;
-        setError(friendlyToastMessage(e, '불러오기에 실패했어요.'));
+        setError(friendlyToastMessage(e, '챕터를 불러오지 못했어요.'));
         setLoading(false);
       });
     return () => { alive = false; };
