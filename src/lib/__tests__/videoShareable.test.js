@@ -4,8 +4,9 @@ import path from 'node:path';
 import { sliceBetween } from './helpers/sliceBetween.js';
 import {
   CC_SOURCE, PD_SOURCE, LICENSE_CC_BY, LICENSE_PUBLIC_DOMAIN,
-  attributionParts, isCreativeCommonsText, isShareableSource, licenseForSource,
+  attributionParts, isCreativeCommonsText, isShareableSource, licenseForSource, materialSource, safeYoutubeUrl,
 } from '../videoAttribution';
+import { createSuggestionSave } from '../suggestionReading';
 import {
   MIN_BODY_CHARS, buildShareableArticle, readLicenseText, shareableSource,
 } from '../server/youtubeShareable';
@@ -213,7 +214,9 @@ describe('F R5 — 표기는 저장이 아니라 **표시**다', () => {
     const v = read('src/views/ViewerPage.jsx');
     // 파일에 이름만 남아 있는 것으로는 부족하다 — 실제로 **자료의 출처를 읽어** 그리는지
     // 봐야 한다(돌연변이 M13이 `const at = null;`로 로직만 죽이고 통과했다).
-    expect(v).toContain('attributionParts(material?.metadata?.source)');
+    expect(v).toContain('attributionParts(materialSource(material))');
+    // 행에 metadata 열은 없다 — 예전 계약이 박제했던 `material?.metadata?.source`는 늘 undefined였다(2026-10-13).
+    expect(v).not.toMatch(/material\??\.metadata\??\.source/);
     expect(v).toContain('viewer-attribution');
     expect(v, '원본 링크가 없으면 표기가 반쪽이다').toContain('원본 보기');
   });
@@ -225,10 +228,46 @@ describe('F R5 — 표기는 저장이 아니라 **표시**다', () => {
     expect(read('src/components/materials/SuggestionReader.jsx')).toContain('{license && <span>{license}</span>}');
   });
 
+  it('저장하는 쪽이 쓴 자리에서 읽는다 — 추천 읽기로 담은 CC BY 영상 행에 출처 줄이 생긴다', async () => {
+    // 쓰는 쪽 실물(createSuggestionSave)이 만든 행을 그대로 읽는다. 쓰는 자리와 읽는 자리가 갈리면 여기서 깨진다.
+    const save = await createSuggestionSave('owner', {
+      id: '22222222-2222-4222-8222-222222222222', date: '2026-10-13', title: 'Clip', language: 'English',
+      transcript: 'Hello.\n\nAnother paragraph.', source: CC_SOURCE, video_id: 'abcdefghijk', channel_name: 'Open Channel', level: 'B1',
+    });
+    const row = save.attempt.row;
+    expect(row.metadata, '자료 행에는 metadata 열이 없다').toBeUndefined();
+    expect(attributionParts(materialSource(row))).toEqual({
+      channel: 'Open Channel', license: 'CC BY', url: 'https://www.youtube.com/watch?v=abcdefghijk',
+    });
+  });
+
+  it('자료 추가의 링크 반입도 같은 자리(processed_json.metadata.source)에 쓴다', () => {
+    const page = read('src/views/MaterialAddPage.jsx');
+    const initJson = sliceBetween(page, 'const initJson = {', 'const materialRow = {');
+    expect(initJson).toContain('metadata: {');
+    expect(initJson).toContain('...(linkSource ? { source: linkSource } : {}),');
+    expect(materialSource({ processed_json: { metadata: { source: { kind: 'youtube', channel: 'C', url: 'u' } } } }))
+      .toEqual({ kind: 'youtube', channel: 'C', url: 'u' });
+    expect(materialSource({ metadata: { source: { kind: 'youtube', channel: 'C' } } }), '없는 열은 읽지 않는다').toBe(null);
+    expect(materialSource(null)).toBe(null);
+  });
+
   it('라이선스를 모르면 라이선스 이름을 안 쓴다 — 없는 권리를 주장하지 않는다', () => {
     const at = attributionParts({ kind: 'youtube', channel: 'C', url: 'u' });
     expect(at.license).toBe('');
     expect(attributionParts({ kind: 'youtube', channel: 'C', url: 'u', license: LICENSE_CC_BY }).license).toBe('CC BY');
+  });
+
+  it('원본 링크는 https 유튜브 주소만 — 소유자가 쓴 값이 공개 자료에서 임의 링크가 되지 않는다', () => {
+    expect(safeYoutubeUrl('https://www.youtube.com/watch?v=abcdefghijk')).toBe('https://www.youtube.com/watch?v=abcdefghijk');
+    expect(safeYoutubeUrl('https://youtu.be/abcdefghijk')).toBe('https://youtu.be/abcdefghijk');
+    expect(safeYoutubeUrl('https://m.youtube.com/watch?v=abcdefghijk')).toBe('https://m.youtube.com/watch?v=abcdefghijk');
+    for (const bad of ['javascript:alert(1)', 'http://www.youtube.com/watch?v=x', 'https://youtube.com.evil.example/x',
+      'https://evilyoutube.com/x', 'https://user:pw@www.youtube.com/x', 'data:text/html,hi', '', null, 'u']) {
+      expect(safeYoutubeUrl(bad), String(bad)).toBe('');
+    }
+    expect(attributionParts({ kind: 'youtube', channel: 'C', url: 'javascript:alert(1)' })).toEqual({ channel: 'C', license: '', url: '' });
+    expect(attributionParts({ kind: 'youtube', url: 'javascript:alert(1)' }), '채널도 안전한 주소도 없으면 줄이 없다').toBe(null);
   });
 
   it('영상 출처가 아니면 표기 줄이 없다', () => {
