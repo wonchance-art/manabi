@@ -100,7 +100,7 @@ export function CourseMap({
           </div>
         </header>
         <div className={`card ${styles.empty}`} role="status">
-          레슨이 없습니다.
+          레슨이 없어요.
         </div>
       </div>
     );

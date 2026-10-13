@@ -8,7 +8,7 @@ export default function VocabError({ error, reset }) {
   return (
     <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
       <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '8px' }}>
-        단어장을 불러올 수 없습니다
+        단어장을 불러오지 못했어요
       </h2>
       <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', maxWidth: '400px', margin: '0 auto 24px' }}>
         잠시 후 다시 시도해 주세요.

@@ -45,7 +45,7 @@ test('mobile dimensions, long titles, native filter dialog, keyboard dismissal a
 
 test('independent recent failure keeps actual list; list failure offers retry, not empty state',async()=>{
  const f=await fixture();try{seed(f,1);f.setRecentFailure(true);await enter(f);await f.page.locator('.shelf-row').first().waitFor();await f.page.getByText('읽던 곳 · 불러오지 못했어요.',{exact:false}).waitFor();assert.equal(await f.page.locator('.shelf-empty').count(),0);
- f.setRecentFailure(false);f.setListFailure(true);await f.page.reload();await f.page.getByText('자료 목록 · 불러오지 못했어요.',{exact:false}).waitFor();assert.equal(await f.page.locator('.shelf-empty').count(),0);f.setListFailure(false);await f.page.getByRole('button',{name:'다시 불러오기',exact:true}).click();await f.page.locator('.shelf-row').first().waitFor();await overflow(f);
+ f.setRecentFailure(false);f.setListFailure(true);await f.page.reload();await f.page.getByText('자료 목록 · 불러오지 못했어요.',{exact:false}).waitFor();assert.equal(await f.page.locator('.shelf-empty').count(),0);f.setListFailure(false);await f.page.getByRole('button',{name:'다시 시도',exact:true}).click();await f.page.locator('.shelf-row').first().waitFor();await overflow(f);
  }finally{await f.close();}
 });
 

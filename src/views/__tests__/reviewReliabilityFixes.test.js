@@ -77,7 +77,7 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
     const confirm = src.indexOf('setResults(prev => prev.length > idx');
     expect(awaitSave).toBeGreaterThan(-1);
     expect(confirm).toBeGreaterThan(awaitSave);
-    expect(src).toContain("if (!updated) throw new Error('문법 복습 결과를 저장하지 못했습니다.')");
+    expect(src).toContain("if (!updated) throw new Error('문법 복습 결과를 저장하지 못했어요.')");
     expect(src).toContain('저장 다시 시도');
     expect(src).toContain('disabled={!graded || grading}');
   });

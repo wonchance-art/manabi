@@ -192,14 +192,14 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.feedback) {
-        setError(friendlyToastMessage(data?.error?.message, '첨삭에 실패했어요. 잠시 후 다시 시도해주세요.'));
+        setError(friendlyToastMessage(data?.error?.message, '첨삭을 받지 못했어요. 잠시 후 다시 시도해 주세요.'));
         return;
       }
       const fb = data.feedback;
       setResult(fb);
       persist(trimmed, fb);
     } catch {
-      setError('네트워크 오류가 발생했어요.');
+      setError('인터넷 연결을 확인해 주세요. 작문은 그대로 있어요.');
     } finally {
       setLoading(false);
     }

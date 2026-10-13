@@ -83,7 +83,7 @@ export default function QuickPage() {
         };
       }));
     } catch (e) {
-      setError(friendlyToastMessage(e, '분석에 실패했어요.'));
+      setError(friendlyToastMessage(e, '분석하지 못했어요.'));
     } finally {
       setAnalyzing(false);
     }
@@ -126,9 +126,9 @@ export default function QuickPage() {
       }), VOCAB_UPSERT);
       if (err) throw err;
       setSaving((prev) => ({ ...prev, [key]: 'done' }));
-      toast(`"${token.text}" 저장!`, 'success');
+      toast(`"${token.text}" 단어를 저장했어요`, 'success');
     } catch {
-      toast('저장 실패', 'error');
+      toast('단어를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.', 'error');
       setSaving((prev) => ({ ...prev, [key]: false }));
     }
   }
@@ -193,7 +193,7 @@ export default function QuickPage() {
                 한 번에 {QUICK_MAX_LINES}줄 · 줄당 {QUICK_MAX_LINE_LEN}자까지
               </span>
               <Button size="sm" onClick={handleAnalyze} disabled={!text.trim() || analyzing}>
-                {analyzing ? '분석 중...' : '분석'}
+                {analyzing ? '분석 중…' : '분석'}
               </Button>
             </div>
           </div>
@@ -256,7 +256,7 @@ export default function QuickPage() {
             </div>
             <div className="pdf-detail-popup__body">
               {wordDetail.loading
-                ? <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>상세 설명 생성 중...</div>
+                ? <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>상세 설명 생성 중…</div>
                 : <div className="pdf-detail-popup__text" dangerouslySetInnerHTML={{ __html: formatDetail(wordDetail.detail) }} />}
             </div>
             {user && (() => {
@@ -266,7 +266,7 @@ export default function QuickPage() {
                 <button className={`pdf-detail-popup__save ${saved ? 'pdf-detail-popup__save--done' : ''}`}
                   disabled={saved || !!saving[key]}
                   onClick={() => handleSaveWord(wordDetail.token, wordDetail.line)}>
-                  {saved ? '✓ 저장됨' : saving[key] ? '저장 중...' : '단어장에 저장'}
+                  {saved ? '✓ 저장됨' : saving[key] ? '저장 중…' : '단어장에 저장'}
                 </button>
               );
             })()}

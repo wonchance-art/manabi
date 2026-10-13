@@ -95,10 +95,10 @@ export function buildEditPlan(oldTextRaw, draft, processedJson) {
   const oldText = String(oldTextRaw ?? '');
   if (newText === oldText) return { ok: true, noop: true, newText };
   const d = diffLineMap(oldText.split('\n'), newText.split('\n'));
-  if (!d.ok) return { ok: false, reason: '변경이 너무 큽니다 — 전체 분석을 사용해주세요.' };
+  if (!d.ok) return { ok: false, reason: '변경이 너무 커요 — 전체 분석을 사용해 주세요.' };
   const base = processedJson || { sequence: [], dictionary: {}, failed_indices: [] };
   const r = remapProcessedJson(base, d.pairs);
-  if (!r.ok) return { ok: false, reason: '기존 분석을 옮길 수 없습니다 — 전체 분석을 사용해주세요.' };
+  if (!r.ok) return { ok: false, reason: '기존 분석을 옮길 수 없어요 — 전체 분석을 사용해 주세요.' };
   // 바뀐/추가 줄 ∪ (리맵된) 기존 실패 줄 — 실패 줄은 어차피 깨져 있어 함께 재시도
   const toAnalyze = [...new Set([...d.changedNew, ...r.json.failed_indices])].sort((x, y) => x - y);
   return {

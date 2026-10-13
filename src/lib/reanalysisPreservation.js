@@ -46,12 +46,12 @@ export function preserveReanalysisTokens(material, text, result, corrections = [
   const sequence = [], dictionary = {}, viewerCorrections = {};
   for (const id of result.sequence || []) {
     const token = result.dictionary?.[id];
-    if (!token || typeof token.text !== 'string') throw new Error('분석 결과에 빠진 항목이 있어요. 이전 분석을 유지합니다.');
+    if (!token || typeof token.text !== 'string') throw new Error('분석 결과에 빠진 항목이 있어요. 이전 분석을 그대로 둬요.');
     const line = Number(tokenLine(id)), start = offsets.get(line) || 0;
     if (token.pos !== '개행') offsets.set(line, start + token.text.length);
     const match = token.pos !== '개행' && anchors.get(JSON.stringify([line, start, token.text]));
     const target = match?.id || id;
-    if (dictionary[target]) throw new Error('분석 결과의 식별자가 겹쳐 이전 분석을 유지합니다.');
+    if (dictionary[target]) throw new Error('분석 결과의 식별자가 겹쳐 이전 분석을 그대로 둬요.');
     sequence.push(target);
     // 교정값이 분석 결과(저자 루비 잠금 포함)를 이긴다 — 독음 교정이면 잠금 표식도 지운다(사용자 교정 > 저자 루비 > 분석기).
     dictionary[target] = clearRubyLockOnCorrection({ ...token, ...(match?.patch || {}) }, match?.patch);
@@ -60,7 +60,7 @@ export function preserveReanalysisTokens(material, text, result, corrections = [
     if (match?.patch && Object.hasOwn(match.patch, 'meaning') && old.metadata?.language === 'Korean') {
       const meaningLocale = canonicalViewerLocale(match.token.meaningLocale || match.token.explanationLocale
         || old.metadata.explanationLocale || 'ko');
-      if (!meaningLocale) throw new Error('수정한 뜻의 설명 언어를 확인하지 못했어요. 이전 분석을 유지합니다.');
+      if (!meaningLocale) throw new Error('수정한 뜻의 설명 언어를 확인하지 못했어요. 이전 분석을 그대로 둬요.');
       dictionary[target].meaningLocale = meaningLocale;
       dictionary[target].explanationLocale = meaningLocale;
       // A preserved Korean meaning cannot relabel freshly generated Chinese morphology.
@@ -167,14 +167,14 @@ function rebaseKoreanSourceSpans(text, json) {
   for (const id of json.sequence) {
     const token = json.dictionary[id], lineIndex = tokenLine(id);
     const line = lines[lineIndex], lineStart = cursors.get(lineIndex) || 0;
-    if (line === undefined) throw new Error('원문 위치를 확인하지 못했어요. 이전 분석을 유지합니다.');
+    if (line === undefined) throw new Error('원문 위치를 확인하지 못했어요. 이전 분석을 그대로 둬요.');
     if (token.pos === '개행') {
       if (token.text !== '\n' || lineStart !== line.length || lineIndex >= lines.length - 1) {
-        throw new Error('원문 줄바꿈이 일치하지 않아 이전 분석을 유지합니다.');
+        throw new Error('원문 줄바꿈이 일치하지 않아 이전 분석을 그대로 둬요.');
       }
     } else {
       if (line.slice(lineStart, lineStart + token.text.length) !== token.text) {
-        throw new Error('원문 범위가 일치하지 않아 이전 분석을 유지합니다.');
+        throw new Error('원문 범위가 일치하지 않아 이전 분석을 그대로 둬요.');
       }
       cursors.set(lineIndex, lineStart + token.text.length);
     }
@@ -183,11 +183,11 @@ function rebaseKoreanSourceSpans(text, json) {
       unit: 'utf16', lineIndex, lineStart, lineEnd: lineStart + token.text.length,
     } };
     if (exactSourceQuote(text, dictionary[id].sourceSpan, token.text) === null) {
-      throw new Error('원문 문자 범위를 확인하지 못했어요. 이전 분석을 유지합니다.');
+      throw new Error('원문 문자 범위를 확인하지 못했어요. 이전 분석을 그대로 둬요.');
     }
   }
   if (json.sequence.map(id => dictionary[id].text).join('') !== text) {
-    throw new Error('원문 전체가 일치하지 않아 이전 분석을 유지합니다.');
+    throw new Error('원문 전체가 일치하지 않아 이전 분석을 그대로 둬요.');
   }
   return { ...json, dictionary };
 }
@@ -203,7 +203,7 @@ function preserveRetainedKoreanLocales(original, result) {
     if (!token || token !== original.dictionary?.[id] || token.pos === '개행') continue;
     const explanationLocale = canonicalViewerLocale(token.explanationLocale || original.metadata.explanationLocale || 'ko');
     const meaningLocale = canonicalViewerLocale(token.meaningLocale || explanationLocale);
-    if (!explanationLocale || !meaningLocale) throw new Error('기존 뜻의 설명 언어를 확인하지 못했어요. 이전 분석을 유지합니다.');
+    if (!explanationLocale || !meaningLocale) throw new Error('기존 뜻의 설명 언어를 확인하지 못했어요. 이전 분석을 그대로 둬요.');
     dictionary[id] = { ...token, explanationLocale, meaningLocale };
   }
   return { ...result, dictionary };
@@ -221,7 +221,7 @@ export async function replaceViewerAnalysis(client, material, rawText, json, att
     p_expected_json: material.processed_json, p_raw: rawText, p_json: json, p_attempt: attempt,
   });
   if (error) {
-    if (error.code === 'PGRST202') throw new Error('안전한 분석 저장 기능을 준비 중이에요. 기존 원문과 분석은 그대로 유지됩니다.');
+    if (error.code === 'PGRST202') throw new Error('안전한 분석 저장 기능을 준비 중이에요. 기존 원문과 분석은 그대로 있어요.');
     throw error;
   }
   if (!data?.material?.id) throw new Error('저장 결과를 확인하지 못했어요. 자료를 다시 열어 확인해 주세요.');
@@ -230,13 +230,13 @@ export async function replaceViewerAnalysis(client, material, rawText, json, att
 
 export async function runPreservedReanalysis(client, material, signal, analyze, options = {}, onProgress) {
   const rawText = options.rawTextOverride ?? material.raw_text;
-  if (!rawText?.trim()) throw new Error('원본 텍스트가 없습니다.');
+  if (!rawText?.trim()) throw new Error('원본 텍스트가 없어요.');
   const checkAbort = () => { if (signal.aborted) throw new DOMException('Aborted', 'AbortError'); };
   checkAbort();
   const original = options.baseJsonOverride || material.processed_json;
   const coverage = inspectAnalysisCoverage(rawText, original);
   const selective = !options.fullReset && (options.resume || options.selectedLineIndices != null || original?.failed_indices?.length);
-  if (selective && !coverage.validStructure) throw new Error('기존 분석의 줄 위치를 확인하지 못했어요. 원문은 유지됩니다. 전체 재분석을 사용해 주세요.');
+  if (selective && !coverage.validStructure) throw new Error('기존 분석의 줄 위치를 확인하지 못했어요. 원문은 그대로 있으니 전체 재분석을 사용해 주세요.');
   const selected = selective ? [...new Set([
     ...(options.selectedLineIndices || []), ...coverage.missingIndices,
   ])].sort((a, b) => a - b) : null;
@@ -289,7 +289,7 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
     : settleReanalysisBoundaries(mappedBoundaries, readBoundaryEdits(result), line => !selected || selected.includes(line)));
   if (selected?.length) result = preserveRetainedKoreanLocales(original,
     mergeReanalysisLines(rawText, original, result, selected));
-  if (!completeAnalysis(result, rawText)) throw new Error('새 분석을 완료하지 못했어요. 기존 원문과 분석은 그대로 유지됩니다.');
+  if (!completeAnalysis(result, rawText)) throw new Error('새 분석을 완료하지 못했어요. 기존 원문과 분석은 그대로 있어요.');
   // 다시 분석한 줄의 한국어 기록을 새 어절 morphology로 다시 나눈다(후보 밖이면 pending). 조각 id는 아래 보존 단계가 잇는다.
   let koreanSettled = mappedKorean;
   if (mappedKorean && selected?.length !== 0) {
@@ -306,7 +306,7 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
   let json = preserveReanalysisTokens(material, rawText, { ...result, metadata: mergedMetadata }, corrections || []);
   if (settledBoundaries) json = preserveBoundaryBase(json, priorBoundaries, mappedBoundaries, material.processed_json?.metadata, corrections);
   if (metadata.language === 'Korean') json = rebaseKoreanSourceSpans(rawText, json);
-  if (!completeAnalysis(json, rawText)) throw new Error('분석 연결을 확인하지 못했어요. 기존 원문과 분석은 그대로 유지됩니다.');
+  if (!completeAnalysis(json, rawText)) throw new Error('분석 연결을 확인하지 못했어요. 기존 원문과 분석은 그대로 있어요.');
   checkAbort();
   options.onCommitting?.();
   const record = await replaceViewerAnalysis(client, material, rawText, json, attempt);

@@ -60,7 +60,7 @@ export default function BoardInkRecognition({rootId,team,capture,isCurrent,onPla
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={capture.image} alt="인식할 선택 영역의 필기"/>
       </details>
-      {!rows?<p>선택한 부분만 <strong>Google Gemini</strong>로 인식합니다. 원래 필기는 그대로 남아요.</p>:<>
+      {!rows?<p>선택한 부분만 <strong>Google Gemini</strong>로 인식해요. 원래 필기는 그대로 남아요.</p>:<>
         <p className="board-ink-guide">표기와 뜻을 확인해 판에 놓으세요.</p>
         <div className="board-ink-results">{rows.map(row=><article key={row.index} data-placed={row.placed}>
           <div className="board-ink-row-heading"><label><input type="checkbox" checked={row.selected} disabled={row.placed||applying||!row.text.trim()||!row.meaning.trim()} onChange={event=>edit(row.index,{selected:event.target.checked})} aria-label={`${row.original} 놓기 선택`}/><span>{row.placed?'판에 놓음':row.uncertain?'표기·뜻 확인':'인식한 표현'}</span></label><small>원문 {row.original}</small></div>
@@ -77,7 +77,7 @@ export default function BoardInkRecognition({rootId,team,capture,isCurrent,onPla
     </div>
     <footer>{error&&<p role="alert">{error}</p>}{message&&<p role="status">{message}</p>}
       {!rows?<button className="board-ink-primary" disabled={busy} onClick={recognize}>{busy?'선택한 필기를 읽는 중…':error?'다시 인식':'이 부분 인식하기'}</button>:<button className="board-ink-primary" disabled={!values.length||applying} onClick={()=>place(needsPage)}>{applying?'놓는 중…':needsPage?`새 판에 ${values.length}개 놓기`:`선택한 ${values.length}개 판에 놓기`}</button>}
-      <small>{busy?'다른 부분에 필기를 계속해도 됩니다. 닫으면 결과 적용을 취소합니다.':rows?'수업 기록·개인 단어장에 자동 저장하지 않습니다.':'전체 판·교재는 전송하지 않습니다.'}</small>
+      <small>{busy?'다른 부분에 필기를 계속해도 돼요. 닫으면 결과를 적용하지 않아요.':rows?'수업 기록·개인 단어장에 자동으로 저장하지 않아요.':'전체 판·교재는 보내지 않아요.'}</small>
     </footer></>}
   </section>;
 }

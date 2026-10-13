@@ -55,13 +55,13 @@ test('home separates no expressions, not-yet-due expressions, due work and faile
    if(req.method()==='HEAD')return r.fulfill({status:200,headers:{...headers,'content-range':`*/${state==='due'?1:0}`}});
    return r.fulfill({status:200,headers,contentType:'application/json',body:JSON.stringify(state==='empty'?[]:[{word_text:'駅',language:'Japanese',interval:1,last_reviewed_at:null}])});
   });
-  for(const [value,message] of [['empty','예문 아래 ‘예문 담기’로 시작하세요.'],['scheduled','지금 복습할 표현은 없어요.'],['due','복습할 표현이 있어요. 오늘 분량은 복습에서 확인하세요.']]){
+  for(const [value,message] of [['empty','예문 아래 ‘예문 담기’로 시작해 보세요.'],['scheduled','지금 복습할 표현이 없어요.'],['due','복습할 표현이 있어요. 오늘 분량은 복습에서 확인해 주세요.']]){
    state=value;await go(f,'/home');await f.page.locator('.today-review').getByText(message,{exact:true}).waitFor();
    assert.equal(await f.page.locator('.today-review').getByRole('link',{name:'복습',exact:true}).getAttribute('href'),'/vocab');
    await capture(f,`home-${value}-1280`);
   }
-  state='error';await go(f,'/home');await f.page.getByRole('button',{name:'다시 불러오기',exact:true}).waitFor({timeout:30000});await capture(f,'home-error-1280');
-  state='scheduled';await f.page.getByRole('button',{name:'다시 불러오기',exact:true}).click();await f.page.getByText('지금 복습할 표현은 없어요.',{exact:true}).waitFor();
+  state='error';await go(f,'/home');await f.page.getByRole('button',{name:'다시 시도',exact:true}).waitFor({timeout:30000});await capture(f,'home-error-1280');
+  state='scheduled';await f.page.getByRole('button',{name:'다시 시도',exact:true}).click();await f.page.getByText('지금 복습할 표현이 없어요.',{exact:true}).waitFor();
   assert.equal(writes,0);
  }finally{await f.context.close();}
 });

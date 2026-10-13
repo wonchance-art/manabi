@@ -22,7 +22,7 @@ import VocabularyExclusionList from '../components/VocabularyExclusionList';
 import VocabReview, { REVIEW_PREP_FAILED } from './VocabReview';
 import VocabDetailCard from './VocabDetailCard';
 import { CardGridSkeleton } from '../components/Skeleton';
-import { friendlyToastMessage } from '../lib/errorMessage';
+import { failureMessage } from '../lib/errorMessage';
 import { detectLang, detectLangConfident, hasCjkText } from '../lib/constants';
 import { stripSourceLangInMeaning } from '../lib/studySession';
 import { authEntryHref } from '../lib/authRedirect';
@@ -359,13 +359,13 @@ function VocabWorkspace({ reviewScope }) {
     mutationFn: async (draft) => {
       const actorId = user?.id;
       const text = draft.word_text.trim();
-      if (!text) throw new Error('단어를 입력해주세요');
+      if (!text) throw new Error('단어를 입력해 주세요');
       // 사용자가 고른 언어가 먼저다. 없으면 **확신할 때만** 채우고, 못 가르면 비워 둔다
       // (표기 추측을 DB에 박지 않는다 — 옛 중국어 단어가 일본어로 굳던 자리다).
       const guess = draft.language || detectLangConfident(text);
       if (guess === 'Korean') throw new Error('지원하는 언어를 선택해 주세요.');
       if (!(await fsrsReview.controller.refresh()) || !workspaceAlive.current || mutationGuard.current.accountId !== actorId) {
-        throw new Error('복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.');
+        throw new Error('복습을 저장하지 못했어요. 연결을 확인해 주세요 — 이 단어는 다음에 다시 나와요.');
       }
       const vocabulary = {
         word_text: text,
@@ -388,7 +388,7 @@ function VocabWorkspace({ reviewScope }) {
     onSuccess: (result) => {
       if (!workspaceAlive.current || result?.stale || (result?.actorId && result.actorId !== mutationGuard.current.accountId)) return;
       if (result?.ok !== true) {
-        toast('복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.', 'error', 5000);
+        toast('복습을 저장하지 못했어요. 연결을 확인해 주세요 — 이 단어는 다음에 다시 나와요.', 'error', 5000);
         return;
       }
       if (result.actorId !== user?.id) return;
@@ -397,7 +397,7 @@ function VocabWorkspace({ reviewScope }) {
       setManualAddOpen(false);
       setManualDraft({ word_text: '', furigana: '', meaning: '', pos: '', language: 'Japanese' });
     },
-    onError: (err) => { if (workspaceAlive.current && mutationGuard.current.accountId === user?.id) toast('추가 실패 — ' + friendlyToastMessage(err), 'error'); },
+    onError: (err) => { if (workspaceAlive.current && mutationGuard.current.accountId === user?.id) toast(failureMessage('단어를 추가하지 못했어요.', err), 'error'); },
   });
   manualAddPendingRef.current = manualAddMutation.isPending;
 
@@ -598,7 +598,7 @@ function VocabWorkspace({ reviewScope }) {
     } catch {
       if (!currentActor()) return;
       scoringRef.current = false;
-      toast('복습 계산을 불러오지 못했어요. 다시 시도해주세요.', 'error');
+      toast('복습 계산을 불러오지 못했어요. 다시 시도해 주세요.', 'error');
       return;
     }
     if (!currentActor()) return;
@@ -643,7 +643,7 @@ function VocabWorkspace({ reviewScope }) {
       next_review_at: nextStats.next_review_at,
     }).then((r) => {
       if (!currentActor()) return;
-      if (r?.ok === false) { toast('복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.', 'error', 5000); return; }
+      if (r?.ok === false) { toast('복습을 저장하지 못했어요. 연결을 확인해 주세요 — 이 단어는 다음에 다시 나와요.', 'error', 5000); return; }
       invalidateVocabularyLearning(queryClient, actorId);
       if (!r?.queued) refreshProfileReadOnly(actorId)?.catch(() => {});
       if (gradeSessionRef.current !== gradeSession) return;
@@ -651,7 +651,7 @@ function VocabWorkspace({ reviewScope }) {
         lastGradeRef.current = { ...snapshot, reviewedAt: r?.reviewedAt || null, queued: !!r?.queued };
       }
     }).catch(() => {
-      if (currentActor()) toast('복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.', 'error', 5000);
+      if (currentActor()) toast('복습을 저장하지 못했어요. 연결을 확인해 주세요 — 이 단어는 다음에 다시 나와요.', 'error', 5000);
     }).finally(() => {
       if (currentActor()) pendingGradeRef.current = Math.max(0, pendingGradeRef.current - 1);
     });
@@ -723,7 +723,7 @@ function VocabWorkspace({ reviewScope }) {
       }
     } catch (err) {
       if (!currentActor()) return;
-      toast('되돌리기 실패 — ' + friendlyToastMessage(err), 'error');
+      toast(failureMessage('되돌리지 못했어요.', err), 'error');
       return;
     } finally {
       if (currentActor()) scoringRef.current = false;
@@ -781,7 +781,7 @@ function VocabWorkspace({ reviewScope }) {
       cache.set(currentWord.id, parsed.examples);
       setExampleSentences(parsed.examples);
     } catch {
-      toast('예문 생성에 실패했어요.', 'error');
+      toast('예문을 만들지 못했어요.', 'error');
     } finally {
       setExampleLoading(false);
     }
@@ -1081,7 +1081,7 @@ function VocabWorkspace({ reviewScope }) {
             <button type="button" className="btn btn--ghost btn--md" onClick={() => selectLanguage(scope.lang)}>범위 풀기</button></div></section>
       ) : vocabError || !learningAvailable ? (
         <>
-        <section className="review-room-state" role="alert"><h2>표현을 불러오지 못했어요.</h2><p>연결을 확인한 뒤 다시 불러와 주세요. 복습 기록은 그대로 남아 있어요.</p><button type="button" className="btn btn--primary" onClick={() => refetchVocab()}>다시 불러오기</button></section>
+        <section className="review-room-state" role="alert"><h2>표현을 불러오지 못했어요.</h2><p>연결을 확인한 뒤 다시 시도해 주세요. 복습 기록은 그대로 남아 있어요.</p><button type="button" className="btn btn--primary" onClick={() => refetchVocab()}>다시 시도</button></section>
         {vocab.length > 0 && vocabList}
         </>
       ) : tab === 'fsrs' ? (
@@ -1109,18 +1109,18 @@ function VocabWorkspace({ reviewScope }) {
               <Link href={isBookScope ? reviewScope.returnTo : hasAnyWords ? '/home' : '/books/japanese-n5'} className="btn btn--primary">{isBookScope ? '읽던 교재로 돌아가기 →' : hasAnyWords ? '오늘로 →' : '교재에서 표현 고르기 →'}</Link>
             </>}
             {reviewQueue.length > reviewIdx && !reviewFinished && <button type="button" className="review-room-resume" onClick={() => setTab('review')}>멈춘 복습 이어가기 · {reviewIdx} / {reviewQueue.length} →</button>}
-            {vocabError && <p role="alert">최신 표현을 확인하지 못했어요. <button type="button" onClick={() => refetchVocab()}>다시 불러오기</button></p>}
+            {vocabError && <p role="alert">최신 표현을 확인하지 못했어요. <button type="button" onClick={() => refetchVocab()}>다시 시도</button></p>}
             {fsrsReview.status === 'error' && <p role="alert">복습 일정을 불러오지 못했어요. <button type="button" onClick={() => fsrsReview.controller.refresh()}>다시 시도</button></p>}
-            {fsrsReview.error?.message === 'fsrs_sync_blocked' && <p role="alert">복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.
+            {fsrsReview.error?.message === 'fsrs_sync_blocked' && <p role="alert">복습을 저장하지 못했어요. 연결을 확인해 주세요 — 이 단어는 다음에 다시 나와요.
               <button type="button" onClick={() => fsrsReview.controller.retrySync()}>다시 시도</button>
             </p>}
-            {fsrsReview.pendingSaves.length > 0 && <p role="alert">복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.
+            {fsrsReview.pendingSaves.length > 0 && <p role="alert">복습을 저장하지 못했어요. 연결을 확인해 주세요 — 이 단어는 다음에 다시 나와요.
               <button type="button" onClick={() => fsrsReview.pendingSaves.forEach(row => fsrsReview.controller.retrySave(row.operationId))}>다시 시도</button>
             </p>}
           </section>
           {!isBookScope && <section className="review-room-grammar" aria-labelledby="review-grammar-title">
             <p className="manabi-eyebrow">02 / PATTERNS</p><h2 id="review-grammar-title">문법도 한 번 더.</h2>
-            {grammarLoading ? <p role="status">복습 일정을 확인하고 있어요…</p> : grammarError ? <p role="alert">문법 일정을 불러오지 못했어요. <button type="button" className="btn btn--ghost btn--sm" onClick={() => refetchGrammar()}>다시 시도</button></p> : <p>{dueGrammarCount ? `다시 확인할 문법 ${dueGrammarCount}개가 있어요.` : grammarQueue?.total ? '지금 복습할 문법은 없어요. 다음 일정에 다시 만나요.' : '이야기 학습에서 연습한 문법의 복습 일정이 여기에 모여요. N5 과별 답안과는 별개예요.'}</p>}
+            {grammarLoading ? <p role="status">복습 일정을 확인하고 있어요…</p> : grammarError ? <p role="alert">문법 일정을 불러오지 못했어요. <button type="button" className="btn btn--ghost btn--sm" onClick={() => refetchGrammar()}>다시 시도</button></p> : <p>{dueGrammarCount ? `다시 확인할 문법 ${dueGrammarCount}개가 있어요.` : grammarQueue?.total ? '지금 복습할 문법이 없어요. 다음 일정에 다시 만나요.' : '이야기 학습에서 연습한 문법의 복습 일정이 여기에 모여요. N5 과별 답안과는 별개예요.'}</p>}
             <Link href="/review/grammar" prefetch={false} className="manabi-link">{dueGrammarCount ? `문법만 ${dueGrammarCount}개 →` : '문법 복습 확인 →'}</Link>
             <div className="review-room-extra"><p>글 한 편으로 함께 연습하고 싶다면</p><Link href="/study" prefetch={false} className="manabi-link">이야기로 연습 →</Link></div>
                   {confused.length >= CONFUSED_MIN && (
@@ -1389,7 +1389,7 @@ function VocabWorkspace({ reviewScope }) {
               value={manualDraft.pos}
               onChange={e => setManualDraft(d => ({ ...d, pos: e.target.value }))}
               className="form-input"
-              placeholder="동사 / 명사 / 형용사..."
+              placeholder="동사 / 명사 / 형용사…"
               style={{ marginBottom: 16 }}
             />
 
@@ -1402,7 +1402,7 @@ function VocabWorkspace({ reviewScope }) {
                 disabled={manualAddMutation.isPending || !manualDraft.word_text.trim()}
                 style={{ flex: 2 }}
               >
-                {manualAddMutation.isPending ? '추가 중...' : '추가'}
+                {manualAddMutation.isPending ? '추가 중…' : '추가'}
               </Button>
             </div>
           </div>

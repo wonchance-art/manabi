@@ -229,7 +229,7 @@ describe('CourseMap', () => {
     );
 
     expect(markup).toContain('data-course-map="empty"');
-    expect(markup).toContain('레슨이 없습니다.');
+    expect(markup).toContain('레슨이 없어요.');
     expect(markup).not.toContain('data-course-next=');
   });
 
