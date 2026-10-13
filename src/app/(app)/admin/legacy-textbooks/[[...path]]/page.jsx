@@ -10,10 +10,12 @@ import { loadChapter } from '@/content/refGrammarLoaders';
 export const dynamic = 'force-dynamic';
 export const metadata = { title: '기존 교재 보관함', robots: { index: false, follow: false } };
 const languages = { japanese: 'Japanese', chinese: 'Chinese', english: 'English', french: 'French' };
+const legacy = name => import('@/views/legacy/LegacyReferenceRoutes').then(m => ({ default: m[name] }));
 // Only the two secondary page kinds need route adapters. Grammar shares its renderer directly.
 const pages = {
-  japanese: { vocab: () => import('../../../japanese/vocab/[level]/page'), bunkei: () => import('../../../japanese/bunkei/[level]/page') },
-  chinese: { vocab: () => import('../../../chinese/vocab/[level]/page'), bunkei: () => import('../../../chinese/bunkei/[level]/page') },
+  // 일본어 · 중국어 공개 경로는 새 레벨 목록(LEVEL-LIST-AJ-001)이라, 보관함은 옮겨 둔 예전 본문을 쓴다.
+  japanese: { vocab: () => legacy('JapaneseVocabLegacy'), bunkei: () => legacy('JapaneseBunkeiLegacy') },
+  chinese: { vocab: () => legacy('ChineseVocabLegacy'), bunkei: () => legacy('ChineseBunkeiLegacy') },
   english: { vocab: () => import('../../../english/vocab/[level]/page'), bunkei: () => import('../../../english/bunkei/[level]/page') },
   french: { vocab: () => import('../../../french/vocab/[level]/page'), bunkei: () => import('../../../french/bunkei/[level]/page') },
 };

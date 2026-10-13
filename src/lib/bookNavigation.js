@@ -24,7 +24,11 @@ export function validReadingProgress(value) {
   return { page, completed: [...new Set((Array.isArray(source.completed) ? source.completed : []).filter(id => /^u(0[1-9]|[1-3][0-9]|4[0-2])$/.test(id)))] };
 }
 
+// 일본어 · 중국어 레벨별 단어 · 문형 목록은 새 화면으로 다시 열었다(LEVEL-LIST-AJ-001) — 일 n5~n1 · 중 h1~h6만.
+// 문법 챕터 · 언어 루트 · 영어 · 프랑스어 · 그 밖의 레벨(중국어 life 등)은 그대로 보관함이다.
+export const OPEN_LEVEL_LIST = /^\/(?:japanese\/(?:vocab|bunkei)\/n[1-5]|chinese\/(?:vocab|bunkei)\/h[1-6])\/?$/i;
 export function legacyTextbookTarget(pathname) {
+  if (OPEN_LEVEL_LIST.test(pathname)) return null;
   if (/^\/(japanese|chinese|english|french)(?:\/(grammar|vocab|bunkei)\/[^/]+)?\/?$/.test(pathname)) {
     return `/admin/legacy-textbooks${pathname.replace(/\/$/, '')}`;
   }

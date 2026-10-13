@@ -1,34 +1,8 @@
-import ReferencePatternIndexPage from '@/views/ReferencePatternIndexPage';
-import { REF_LANGS } from '@/content/refLangs';
-import { getBunkei, countBunkei } from '@/content/japanese';
+// 레벨별 문형 목록(LEVEL-LIST-AJ-001) — 예전 레퍼런스 본문은 관리자 보관함(src/views/legacy/LegacyReferenceRoutes.jsx)으로 옮겼다.
+import { levelListRoute } from '@/views/levelListRoute';
 
-const ref = REF_LANGS.Japanese;
-
-// 문형 사전이 있는 레벨만 (OT 제외)
-const BUNKEI_LEVELS = ref.LEVEL_META.filter(m => countBunkei(m.key) > 0);
-
-export function generateStaticParams() {
-  return BUNKEI_LEVELS.map(m => ({ level: m.key.toLowerCase() }));
-}
-
-export async function generateMetadata({ params }) {
-  const { level } = await params;
-  const bunkei = getBunkei(level);
-  if (!bunkei) return { title: 'JLPT 문형 사전' };
-  const title = `${bunkei.title} | JLPT 문형 사전`;
-  const description = bunkei.desc || `JLPT ${level.toUpperCase()} 문형 전수 수록 — 접속·뜻·예문·챕터 링크`;
-  return { title, description, openGraph: { title, description } };
-}
-
-export default async function Page({ params }) {
-  const { level } = await params;
-  return (
-    <ReferencePatternIndexPage
-      refInfo={{ base: ref.base, flag: ref.flag, name: ref.name, langCode: ref.langCode }}
-      levelMeta={BUNKEI_LEVELS}
-      meta={ref.getLevelMeta(level)}
-      bunkei={getBunkei(level)}
-      hasVocab={ref.countVocab(level) > 0}
-    />
-  );
-}
+const route = levelListRoute('japanese', 'bunkei');
+export const dynamicParams = false;
+export const generateStaticParams = route.generateStaticParams;
+export const generateMetadata = route.generateMetadata;
+export default route.Page;

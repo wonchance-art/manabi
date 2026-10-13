@@ -40,7 +40,8 @@ import { tagLabel } from '../lib/errorTags';
 // 'use client' 번들에 교재 전체가 딸려 오지 않는다.
 import { deriveVocabRungs, vocabTypeForRung } from '../lib/skillRung';
 import { exportCSV, exportAnki } from '../lib/vocabIO';
-import { useZhHskLevels, zhHskLevelOf } from '../lib/zhHskLevel';
+import { zhHskLevelOf } from '../lib/zhHskLevel';
+import { useZhHskLevels } from '../lib/useZhHskLevels';
 import { logReviewEvents } from '../lib/reviewEvents';
 import { withLegacyReviewLock } from '../lib/legacyReviewSync';
 import {

@@ -12,8 +12,8 @@
 // 그대로다(바꾸면 분절이 달라진다).
 //
 // 120KB 표라 정적 import하지 않고 지연 로드한다(viewerHanjaPanel·hanjaEtym 선례) — 중국어 화면에서만 1회 받는다.
-
-import { useEffect, useState } from 'react';
+// React 훅(useZhHskLevels)은 useZhHskLevels.js에 둔다 — 레벨 화면(AJ)의 서버 조립이 이 모듈을 들이므로
+// 여기에 react 훅 import가 있으면 서버 컴포넌트 그래프에서 막힌다.
 
 export const ZH_HSK_LEVELS = [1, 2, 3, 4, 5, 6, 7];
 
@@ -23,18 +23,6 @@ let levelsPromise = null;
 export function loadZhHskLevels() {
   levelsPromise ||= import('./data/zhHsk2026Level.json').then((m) => m.default || m);
   return levelsPromise;
-}
-
-/** 표 훅 — enabled(중국어 화면)일 때만 받는다. 꺼져 있거나 받는 중이면 null. */
-export function useZhHskLevels(enabled) {
-  const [levels, setLevels] = useState(null);
-  useEffect(() => {
-    if (!enabled) return undefined;
-    let alive = true;
-    loadZhHskLevels().then((t) => { if (alive) setLevels(t); }).catch(() => {});
-    return () => { alive = false; };
-  }, [enabled]);
-  return enabled ? levels : null;
 }
 
 /** 단어의 HSK 2026 급수(1~7, 7 = 7–9 밴드). 표에 없거나 표가 아직 없으면 null. */
