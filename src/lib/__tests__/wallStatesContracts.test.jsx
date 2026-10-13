@@ -82,6 +82,14 @@ describe('② 공용 확인 창 — 기본 버튼은 중립, 문구는 표준(co
     const pdf = confirmBlocks(read('src/views/MaterialAddPdfSection.jsx'))[0];
     expect(pdf).toContain('title={`"${pdf?.title}" PDF를 휴지통으로 옮길까요?`}');
     expect(pdf).toContain('confirmLabel="휴지통으로"');
+    // 실제 서재 경로(/materials → LibraryPage → LibraryShelf, M09 실측 6145801780)도 같은 표준.
+    const shelf = read('src/components/library/LibraryShelf.jsx');
+    const shelfTrash = sliceBetween(shelf, "{dialog==='trash'&&", '</LibraryDialog>');
+    expect(shelfTrash).toContain('`"${menu.display_title||menu.title}" 자료를 휴지통으로 옮길까요?`');
+    expect(shelfTrash).toContain('`선택한 ${subject.length}개 자료를 휴지통으로 옮길까요?`');
+    expect(shelfTrash).toContain('<p>학습 기록은 남아 있어요.</p>');
+    expect(shelfTrash).toContain('>휴지통으로</button>');
+    expect(shelfTrash).not.toMatch(/>이동<\/button>|title="휴지통으로 이동"|남습니다/);
     for (const block of [materials, pdf]) {
       expect(block).not.toContain('confirmLabel="이동"');
       expect(block).not.toContain('confirmLabel="삭제"');
