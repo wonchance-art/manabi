@@ -108,7 +108,8 @@ describe('같은 한자어 판정 — 정체 꼴 한국 한자음(+두음)이 �
       expect(sameHanjaWord(w, refIndex.get(w).word.ko, tables), w).not.toBeNull();
     }
   });
-  it('정본 수치 재현 — 2자 이상 5,710개 중 간체 음 2,147 기준선 → R0+ 정체 음 2,216(잃음 0), 경계 규칙은 그 부분집합', () => {
+  it('정본 수치 재현 — 2자 이상 5,710개 중 간체 음 2,145 기준선 → R0+ 정체 음 2,214(잃음 0), 경계 규칙은 그 부분집합', () => {
+    // ZH-DICT-FIX-001(2026-10-13): 学院·爱人의 뜻이 한국어 동형어(학원·애인)를 벗어나 세 수치 모두 정확히 -2(가짜동족 해소).
     const words = [...refIndex].filter(([zh]) => /^\p{Script=Han}{2,}$/u.test(zh));
     const simpEum = (w) => {
       const r = [...w].map((c) => koTable[c]);
@@ -135,12 +136,12 @@ describe('같은 한자어 판정 — 정체 꼴 한국 한자음(+두음)이 �
         if (!tOk) outside.push(zh);
       }
     }
-    expect(simp).toBeGreaterThanOrEqual(2147);
-    expect(trad).toBeGreaterThanOrEqual(2216);
+    expect(simp).toBeGreaterThanOrEqual(2145);
+    expect(trad).toBeGreaterThanOrEqual(2214);
     expect(trad - simp).toBeGreaterThanOrEqual(69);
     expect(lost).toEqual([]);
     expect(outside).toEqual([]);
-    expect(judged).toBeLessThan(trad); // 경계 규칙이 护士류를 걸러 낸다(실측 2,166)
+    expect(judged).toBeLessThan(trad); // 경계 규칙이 护士류를 걸러 낸다(실측 2,164)
     expect(judged).toBeGreaterThanOrEqual(2148);
   });
   it('짧은 뜻 — 첫 조각, 괄호 설명 제거, 6자 상한', () => {
