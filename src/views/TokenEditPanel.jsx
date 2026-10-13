@@ -103,7 +103,7 @@ export default function TokenEditPanel({ token, language, dictEntry, saving, onS
           checked={applyGlobal}
           onChange={(e) => setApplyGlobal(e.target.checked)}
         />
-        {sharedEdit ? '이 단어 전체에 적용 (공유 사전·내 단어장)' : '내 단어장에도 반영'}
+        {sharedEdit ? '이 단어 전체에 적용 (공유 사전·담은 표현)' : '담은 표현에도 반영'}
       </label>
 
       <div className="token-edit__actions">

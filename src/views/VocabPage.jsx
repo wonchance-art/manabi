@@ -26,7 +26,14 @@ import { friendlyToastMessage } from '../lib/errorMessage';
 import { detectLang, detectLangConfident, hasCjkText } from '../lib/constants';
 import { stripSourceLangInMeaning } from '../lib/studySession';
 import { authEntryHref } from '../lib/authRedirect';
-import { bookReviewHref, fetchBookVocabularyIds } from '../lib/bookReviewNavigation';
+import { bookReviewHref } from '../lib/bookReviewNavigation';
+import {
+  countReviewScope, parseReviewScope, reviewLevelLabel, reviewScopeHref, reviewScopeKey, reviewScopeLine,
+  reviewScopeMatcher, reviewScopeSourceLabel, reviewWordLang, REVIEW_SCOPE_BOOKS, STUDY_SOURCE_REF,
+} from '../lib/reviewScope';
+import { fetchReviewHistory, fetchReviewScopeIds, reviewSourceNeedsIds } from '../lib/reviewScopeData';
+import { currentLearningLang, readStoredLearningLang } from '../lib/learningLang';
+import ReviewScopeBar from '../components/vocab/ReviewScopeBar';
 import { useVocabData, invalidateVocabularyLearning } from '../lib/useVocabData';
 import { isVocabularyReviewAvailable, isVocabularyReviewDue, isVocabularyUnreviewed } from '../lib/vocabularyLearningRead';
 import { wordStage } from '../lib/growthStats';
@@ -56,15 +63,24 @@ const MAX_EXAMPLE_CACHE = 50;
 // W R2 undo 스냅샷이 복원하는 SRS 5필드 — persistVocabGrade 페이로드와 같은 snake_case
 const SRS_FIELDS = ['interval', 'ease_factor', 'repetitions', 'next_review_at', 'last_reviewed_at'];
 
-export default function VocabPage({ bookReview = null }) {
-  const { user, loading } = useAuth();
-  if (loading) return <div className="page-container manabi-review-room" role="status">계정을 확인하고 있어요…</div>;
+// 범위 주소(REV-SCOPE R1-A) → 복습방. 범위가 바뀌면 주소가 바뀌고, 주소가 바뀌면 작업 공간을 새로 연다
+// (이전 범위의 줄 · 답 · undo를 끌고 오지 않는다). 명시한 범위가 무효면 「전체」로 새지 않는다.
+export default function VocabPage({ scopeParams = {} }) {
+  const { user, profile, loading } = useAuth();
+  const [storedLang, setStoredLang] = useState(undefined);
+  useEffect(() => { setStoredLang(readStoredLearningLang()); }, []);
+  const request = useMemo(() => parseReviewScope(scopeParams, { defaultLang: currentLearningLang(profile, storedLang) }),
+    [scopeParams, profile, storedLang]);
+  if (loading || (!request.invalid && !request.explicit && storedLang === undefined)) return <div className="page-container manabi-review-room" role="status">계정을 확인하고 있어요…</div>;
+  if (request.invalid) return <div className="page-container manabi-review-room"><section className="review-room-state" role="alert"><h1>범위를 불러오지 못했어요. 전체로 바꾸지 않았어요.</h1><p>주소의 복습 범위를 확인해 주세요.</p><div className="manabi-row"><button type="button" className="btn btn--ghost" onClick={() => location.reload()}>다시 시도</button><Link href="/vocab" className="btn btn--primary">범위 풀기</Link></div></section></div>;
+  const { scope } = request;
+  const bookReview = scope.src?.kind === 'book'
+    ? { bookId: scope.src.bookId, from: scope.src.from, to: scope.src.to, returnTo: request.returnTo || `/books/${scope.src.bookId}` } : null;
   // 계정이 바뀌면 큐·답·undo·열린 상세를 함께 폐기한다. 이전 계정 세션을 재사용하지 않는다.
-  if (bookReview?.invalid) return <div className="page-container"><h1>복습 범위를 확인해 주세요.</h1><Link href="/vocab">전체 복습으로 이동 →</Link></div>;
-  return <VocabWorkspace key={`${user?.id || 'guest'}:${bookReview?.bookId || 'all'}:${bookReview?.returnTo || ''}`} bookReview={bookReview} />;
+  return <VocabWorkspace key={`${user?.id || 'guest'}:${reviewScopeKey(scope)}:${bookReview?.returnTo || ''}`} bookReview={bookReview} scope={scope} />;
 }
 
-function VocabWorkspace({ bookReview }) {
+function VocabWorkspace({ bookReview, scope }) {
   const { user, refreshProfileReadOnly } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -99,12 +115,8 @@ function VocabWorkspace({ bookReview }) {
   const [sortBy, setSortBy] = useState('due');
   const [langFilter, setLangFilter] = useState('all');
   const [showHint, setShowHint] = useState(false);
-  const [seriesFilter, setSeriesFilter] = useState('all');
   const [levelFilter, setLevelFilter] = useState('all');
   const [settingsRestored, setSettingsRestored] = useState(false);
-  useEffect(() => {
-    if (settingsRestored && !bookReview) { try { localStorage.setItem('vocab_seriesFilter', seriesFilter); } catch {} }
-  }, [seriesFilter, settingsRestored, bookReview]);
   useEffect(() => {
     if (settingsRestored && !bookReview) { try { localStorage.setItem('vocab_levelFilter', levelFilter); } catch {} }
   }, [levelFilter, settingsRestored, bookReview]);
@@ -130,7 +142,6 @@ function VocabWorkspace({ bookReview }) {
     try {
       if (!bookReview) {
         setLangFilter(localStorage.getItem('vocab_langFilter') || 'all');
-        setSeriesFilter(localStorage.getItem('vocab_seriesFilter') || 'all');
         setLevelFilter(localStorage.getItem('vocab_levelFilter') || 'all');
       }
       const storedMode = localStorage.getItem('as_review_mode');
@@ -215,19 +226,40 @@ function VocabWorkspace({ bookReview }) {
   const guardedUpdateVocabMutation = { ...updateVocabMutation, mutate: (body, ...options) => {
     if (canMutateWords([body.id])) updateVocabMutation.mutate(body, ...options);
   } };
+  // 출처 범위(교재 과 · 자료 · 노트)는 서버가 돌려준 id 묶음으로 정한다. 실패하면 닫힘 — 전체로 넓히지 않는다.
+  const scopeSourceKey = scope.src ? reviewScopeKey({ lang: scope.lang, src: scope.src }) : null;
   const bookScope = useQuery({
-    queryKey: ['book-review', user?.id, 'scope', bookReview?.bookId],
-    enabled: !!user && !!bookReview,
-    queryFn: ({ signal }) => fetchBookVocabularyIds({ signal }),
+    queryKey: ['book-review', user?.id, 'scope', scopeSourceKey],
+    enabled: !!user && reviewSourceNeedsIds(scope.src),
+    queryFn: ({ signal }) => fetchReviewScopeIds(scope.src, { signal }),
   });
+  const scopeIds = reviewSourceNeedsIds(scope.src) ? bookScope.data : null;
   const vocab = useMemo(() => {
     if (!bookReview) return allVocab;
     const ids = new Set(bookScope.data || []);
     return allVocab.filter(word => ids.has(word.id));
   }, [allVocab, bookReview, bookScope.data]);
-  const fsrsScopeIds = useMemo(() => vocab.filter(word => reviewAvailable(word) && reviewSupported(word)
-    && (seriesFilter === 'all' || deckFor(word)?.key === seriesFilter)).map(word => word.id),
-  [vocab, reviewSupported, seriesFilter, reviewAvailable, deckFor]);
+  // 급수 자동 분류(오너 승인 ②) — 급수는 저장하지 않고 표시 시점에 레퍼런스 어휘
+  // 인덱스로 계산한다(기존 단어 소급 적용). 중국어 단어가 있을 때(또는 급수 범위일 때)만 1회 지연 로드.
+  const hasZhVocab = useMemo(() => vocab.some(v => v.language === 'Chinese'), [vocab]);
+  const [zhRefIndex, setZhRefIndex] = useState(null);
+  const [zhRefFailed, setZhRefFailed] = useState(false);
+  useEffect(() => {
+    if (!(hasZhVocab || scope.level) || zhRefIndex) return undefined;
+    let alive = true;
+    loadRefVocabIndex('Chinese').then((ix) => { if (alive) setZhRefIndex(ix); }).catch(() => { if (alive) setZhRefFailed(true); });
+    return () => { alive = false; };
+  }, [hasZhVocab, zhRefIndex, scope.level]);
+  const refLevelOf = useCallback((v) => (
+    v?.language === 'Chinese' && zhRefIndex ? (zhRefIndex.get(v.word_text)?.level || null) : null
+  ), [zhRefIndex]);
+  // 범위 판정(REV-SCOPE R1-A) — 개수 · 시작 · 줄이 모두 이 판정 하나를 쓴다.
+  const scopeMatch = useMemo(() => reviewScopeMatcher(scope, { sourceIds: scopeIds, levelOf: refLevelOf }), [scope, scopeIds, refLevelOf]);
+  const scopePending = (reviewSourceNeedsIds(scope.src) && bookScope.isPending) || (!!scope.level && !zhRefIndex && !zhRefFailed);
+  const scopeFailed = (reviewSourceNeedsIds(scope.src) && bookScope.isError) || (!!scope.level && zhRefFailed);
+  const fsrsScopeIds = useMemo(() => scopePending || scopeFailed ? [] : vocab.filter(word => reviewAvailable(word) && reviewSupported(word)
+    && scopeMatch(word)).map(word => word.id),
+  [vocab, reviewSupported, reviewAvailable, scopeMatch, scopePending, scopeFailed]);
   const fsrsControllerRef = useRef(null), quotaSignature = useRef(null);
   const admission = useLearningAdmission({ accountId: user?.id, onQuota: quota => {
     const signature = JSON.stringify([quota.learningDay, quota.policyRevision, quota.used, quota.active, quota.fsrsEnabled]);
@@ -377,19 +409,6 @@ function VocabWorkspace({ bookReview }) {
     };
   }, [manualAddOpen]);
 
-  // 급수 자동 분류(오너 승인 ②) — 급수는 저장하지 않고 표시 시점에 레퍼런스 어휘
-  // 인덱스로 계산한다(기존 단어 소급 적용). 중국어 단어가 있을 때만 1회 지연 로드.
-  const hasZhVocab = useMemo(() => vocab.some(v => v.language === 'Chinese'), [vocab]);
-  const [zhRefIndex, setZhRefIndex] = useState(null);
-  useEffect(() => {
-    if (!hasZhVocab || zhRefIndex) return undefined;
-    let alive = true;
-    loadRefVocabIndex('Chinese').then((ix) => { if (alive) setZhRefIndex(ix); }).catch(() => {});
-    return () => { alive = false; };
-  }, [hasZhVocab, zhRefIndex]);
-  const refLevelOf = useCallback((v) => (
-    v?.language === 'Chinese' && zhRefIndex ? (zhRefIndex.get(v.word_text)?.level || null) : null
-  ), [zhRefIndex]);
   // 급수 필터는 중국어 문맥에서만 의미가 있다 — 다른 언어로 좁히면 자동 해제.
   useEffect(() => {
     if (levelFilter !== 'all' && langFilter !== 'all' && langFilter !== 'Chinese') setLevelFilter('all');
@@ -411,9 +430,6 @@ function VocabWorkspace({ bookReview }) {
     if (langFilter !== 'all') {
       list = list.filter(x => x._item.language === langFilter);
     }
-    if (seriesFilter !== 'all') {
-      list = list.filter(x => deckFor(x._item)?.key === seriesFilter);
-    }
     if (levelFilter !== 'all' && zhRefIndex) {
       // 급수 필터는 중국어 한정 스코프 — 'NONE'은 레퍼런스 사전 밖 단어(미분류).
       list = list.filter(x => {
@@ -434,34 +450,15 @@ function VocabWorkspace({ bookReview }) {
       list = [...list].sort((a, b) => (a.word_text || '').localeCompare(b.word_text || '', 'ja'));
     }
     return list;
-  }, [vocabSearchIndex, search, sortBy, langFilter, seriesFilter, levelFilter, zhRefIndex, deckFor, reviewDueAt]);
+  }, [vocabSearchIndex, search, sortBy, langFilter, levelFilter, zhRefIndex, reviewDueAt]);
 
   useEffect(() => { setVisibleCount(30); }, [search, sortBy, langFilter, levelFilter]);
 
-  // 단어가 속한 시리즈 집합 (chip filter용)
-  const availableSeries = useMemo(() => {
-    const set = new Map(); // key → display label (교재 덱 + 리더 시리즈)
-    for (const v of vocab) {
-      const d = deckFor(v);
-      if (d && !set.has(d.key)) set.set(d.key, d.label);
-    }
-    return [...set.entries()].map(([key, label]) => ({ key, label }));
-  }, [vocab, deckFor]);
-
-  // seriesFilter 무효화: 더이상 vocab에 없는 시리즈가 선택돼있으면 'all'로
-  useEffect(() => {
-    if (seriesFilter !== 'all' && !availableSeries.some(s => s.key === seriesFilter)) {
-      setSeriesFilter('all');
-    }
-  }, [seriesFilter, availableSeries]);
-
-  const vocabMatchesSeries = useCallback(v => seriesFilter === 'all' || deckFor(v)?.key === seriesFilter, [seriesFilter, deckFor]);
-
-  // 현재 덱(시리즈 필터) 범위의 단어 — 히어로·현황·복습 큐가 공유
-  const deckScope = useMemo(() => vocab.filter(v => {
+  // 지금 범위의 단어 — 히어로·현황·복습 큐가 공유
+  const deckScope = useMemo(() => scopePending || scopeFailed ? [] : vocab.filter(v => {
     const projection = learningById.get(v.id);
-    return projection && !projection.review.excluded && !projection.review.known && reviewSupported(v) && vocabMatchesSeries(v);
-  }), [vocab, vocabMatchesSeries, reviewSupported, learningById]);
+    return projection && !projection.review.excluded && !projection.review.known && reviewSupported(v) && scopeMatch(v);
+  }), [vocab, scopeMatch, scopePending, scopeFailed, reviewSupported, learningById]);
 
   // 덱 범위 구성: 미학습(신규)·학습 중·숙련 (서로 안 겹치게 분할)
   const deckStats = useMemo(() => {
@@ -479,20 +476,48 @@ function VocabWorkspace({ bookReview }) {
   const remainingNew = admission.compatibility
     ? Math.max(0, newPerDay - introIds.filter(id => allVocab.some(v => v.id === id)).length)
     : admission.quota?.active ? admission.quota.remaining : 0;
-  const session = useMemo(() => {
-    if (!admission.quota) return { reviewsDue: [], newAvailable: [], newToday: 0, count: 0 };
-    const now = new Date(effectiveNow);
-    const admitted = new Set(admission.quota.admittedLegacyCardIds || []);
-    const legacyScope = deckScope.filter(v => learningById.get(v.id)?.source === 'legacy' && !fsrsReview.enrolledIds.includes(v.id) && fsrsReview.controller.canLegacy(v.id));
-    const reviewsDue = legacyScope.filter(v => !isVocabularyUnreviewed(learningById.get(v.id)) && isVocabularyReviewDue(learningById.get(v.id), now));
-    const newAvailable = legacyScope.filter(v => isVocabularyUnreviewed(learningById.get(v.id)) && isVocabularyReviewDue(learningById.get(v.id), now));
-    const resumed = newAvailable.filter(v => admitted.has(v.id));
-    const unseen = newAvailable.filter(v => !admitted.has(v.id));
-    const fsrsNew = fsrsReview.ready.filter(entry => entry.card.state === 'New' && !entry.firstQuestionAt).length;
-    const fsrsCount = fsrsReview.ready.length - fsrsNew + Math.min(fsrsNew, remainingNew);
-    const newToday = resumed.length + Math.min(unseen.length, Math.max(0, remainingNew - Math.min(fsrsNew, remainingNew)));
-    return { reviewsDue, newAvailable: [...resumed, ...unseen], newToday, count: reviewsDue.length + newToday + fsrsCount };
-  }, [deckScope, remainingNew, fsrsReview.enrolledIds, fsrsReview.ready, fsrsReview.controller, learningById, effectiveNow, admission.quota]);
+  // 밀린 복습 기준(지난 14일 완료 복습 수). 못 읽은 언어는 기본값(하루 20)으로 센다.
+  const reviewHistory = useQuery({ queryKey: ['review-history', user?.id], enabled: !!user, staleTime: 300000,
+    queryFn: () => fetchReviewHistory(supabase, user.id) });
+  // 화면 숫자 = 시작하는 줄 길이: 개수와 줄을 같은 함수 · 같은 인자에서 얻는다(countReviewScope 정본).
+  const scopeReview = useMemo(() => {
+    if (!admission.quota || scopePending || scopeFailed || reviewHistory.isPending) return null;
+    const args = {
+      snapshot: projections, fsrsEntries: fsrsReview.ready, scope, now: effectiveNow, match: scopeMatch,
+      quota: { remaining: remainingNew, admittedLegacyCardIds: admission.quota.admittedLegacyCardIds },
+      history: reviewHistory.data || null, supported: reviewSupported,
+      canLegacy: id => !fsrsReview.enrolledIds.includes(id) && fsrsReview.controller.canLegacy(id),
+    };
+    // 0개일 때 「HSK 2를 빼면 12개」 — 급수 하나만 푼 같은 범위
+    const unleveled = scope.level ? (({ level, ...rest }) => rest)(scope) : null;
+    const widen = unleveled ? countReviewScope({ ...args, scope: unleveled, match: reviewScopeMatcher(unleveled, { sourceIds: scopeIds, levelOf: refLevelOf }) }).total : null;
+    return { line: reviewScopeLine(args), count: countReviewScope(args), widen };
+  }, [scopeIds, refLevelOf, projections, fsrsReview.ready, fsrsReview.enrolledIds, fsrsReview.controller, scope, effectiveNow, scopeMatch,
+    remainingNew, admission.quota, reviewHistory.isPending, reviewHistory.data, reviewSupported, scopePending, scopeFailed]);
+  const scopeCount = scopeReview?.count || null;
+  const session = scopeReview ? { reviewsDue: scopeReview.line.legacyReviews, newAvailable: scopeReview.line.legacyNewAvailable,
+    newToday: scopeReview.line.legacyNew.length, count: scopeReview.count.total } : { reviewsDue: [], newAvailable: [], newToday: 0, count: 0 };
+
+  const materialTitle = id => materialTitles.get(Number(id)) ?? materialTitles.get(id) ?? null;
+  const scopeSourceLabel = reviewScopeSourceLabel(scope.src, { materialTitle });
+  const scopeNarrowed = !!(scope.level || scope.src || scope.state !== 'due');
+  const unscopedHref = reviewScopeHref({ lang: scope.lang, state: 'due' });
+  // 범위 시트 선택지 · 개수 = 그 언어의 담은 표현(아는 단어 · 제외 · 뜻 없음 제외) 수.
+  const scopeOptions = useMemo(() => {
+    const rows = allVocab.filter(word => {
+      const projection = learningById.get(word.id);
+      return projection && isVocabularyReviewAvailable(projection) && reviewWordLang(word) === scope.lang && word.meaning?.trim();
+    });
+    const tally = (key) => rows.reduce((all, word) => { const value = key(word); if (value != null) all.set(value, (all.get(value) || 0) + 1); return all; }, new Map());
+    const levels = scope.lang === 'Chinese' && zhRefIndex ? tally(word => (/^H[1-6]$/.test(refLevelOf(word) || '') ? refLevelOf(word) : 'NONE')) : null;
+    const decks = [...tally(word => (word.source_ref && word.source_ref !== STUDY_SOURCE_REF ? word.source_ref : null)).entries()].map(([ref, count]) => ({ ref, count }));
+    const materials = [...tally(word => (word.source_material_id != null ? String(word.source_material_id) : null)).entries()]
+      .map(([id, count]) => ({ id, count, title: materialTitle(id) })).filter(item => item.title);
+    return { total: rows.length, levels, decks, materials, study: tally(word => (word.source_ref === STUDY_SOURCE_REF ? 1 : null)).get(1) || 0,
+      book: Object.values(REVIEW_SCOPE_BOOKS).some(book => book.lang === scope.lang) };
+    // materialTitle은 materialTitles에서만 바뀐다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allVocab, learningById, scope.lang, zhRefIndex, refLevelOf, materialTitles]);
 
   // 복습 큐(스냅샷) → 단어 객체. 길이 안정(삭제돼도 null 유지)해 인덱스 정렬 보존.
   const reviewSessionWords = useMemo(
@@ -995,17 +1020,19 @@ function VocabWorkspace({ bookReview }) {
       {/* 헤더 — 세션 중에는 없앤다. 부제와 총계는 아래 통계와 중복이라 뺐다. */}
       {!inSession && (
         <header className="review-room-heading">
-          <div><p className="manabi-eyebrow">THE REVIEW ROOM</p><h1>{tab === 'browse' ? '담은 표현' : bookReview ? 'N5 표현 복습' : '복습'}</h1></div>
+          <div><p className="manabi-eyebrow">THE REVIEW ROOM</p><h1>{tab === 'browse' ? '담은 표현' : ['복습', scopeSourceLabel].filter(Boolean).join(' · ')}</h1></div>
           {!bookReview && <p>읽다가 담은 표현을,<br />내가 쓰는 말로.</p>}
         </header>
       )}
 
 
       {bookReview && !inSession && <section className="review-room-scope review-room-book-scope" aria-label="복습 범위">
-        <p>범위 · 일본어 N5에서 담은 표현 (모든 판본)</p>
+        <p>범위 · 일본어 N5 {scopeSourceLabel}에서 담은 표현 (모든 판본)</p>
         <p>같은 표현은 한 카드로 복습해요. 과별 답안·학습 완료와는 별개예요.</p>
-        <div className="manabi-row"><Link href={bookReview.returnTo}>← 교재로</Link><Link href="/vocab">전체 복습 보기</Link></div>
+        <div className="manabi-row"><Link href={bookReview.returnTo}>← 교재로</Link><Link href={unscopedHref}>범위 풀기</Link></div>
       </section>}
+      {!inSession && <ReviewScopeBar scope={scope} byLang={scopeCount?.byLang || null} options={scopeOptions}
+        sourceLabel={scopeSourceLabel} returnTo={bookReview?.returnTo} />}
       {/* 세션 상단바 — 나가기 · 진행. 카드 안에 있던 '남은 단어'를 여기로 올려 문항만 남긴다. */}
       {inSession && tab !== 'fsrs' && (() => {
         const total = reviewQueue.length || 1;
@@ -1032,10 +1059,10 @@ function VocabWorkspace({ bookReview }) {
         );
       })()}
 
-      {isLoading || (bookReview && bookScope.isPending) ? (
+      {isLoading || scopePending ? (
         <CardGridSkeleton height={120} />
-      ) : bookReview && bookScope.isError ? (
-        <section className="review-room-state" role="alert"><h2>이 교재의 표현 범위를 불러오지 못했어요.</h2><p>다시 확인한 뒤 복습을 시작해 주세요.</p><button type="button" className="btn btn--primary" onClick={() => bookScope.refetch()}>범위 다시 불러오기</button></section>
+      ) : scopeFailed ? (
+        <section className="review-room-state" role="alert"><h2>범위를 불러오지 못했어요. 전체로 바꾸지 않았어요.</h2><p>다시 확인한 뒤 복습을 시작해 주세요.</p><div className="manabi-row"><button type="button" className="btn btn--primary" onClick={() => (zhRefFailed ? location.reload() : bookScope.refetch())}>다시 시도</button><Link href={unscopedHref} className="btn btn--ghost">범위 풀기</Link></div></section>
       ) : vocabError || !learningAvailable ? (
         <>
         <section className="review-room-state" role="alert"><h2>표현을 불러오지 못했어요.</h2><p>연결을 확인한 뒤 다시 불러와 주세요. 복습 기록은 그대로 남아 있어요.</p><button type="button" className="btn btn--primary" onClick={() => refetchVocab()}>다시 불러오기</button></section>
@@ -1053,15 +1080,23 @@ function VocabWorkspace({ bookReview }) {
           <section className="card vocab-hero" aria-labelledby="review-today-title">
             <div className="vocab-hero__top"><span className="vocab-hero__kicker">오늘 할 일</span><span className="manabi-eyebrow">01 / RECALL</span></div>
             <h2 id="review-today-title">{session.count ? '오늘 다시 볼 표현' : vocab.length ? '잠시, 읽기로 돌아가요.' : '첫 표현을 담아 보세요.'}</h2>
-            {admission.status !== 'ready' ? <p role="status" className="review-room-note">복습 준비 중…</p> : session.count > 0 ? <>
+            {admission.status !== 'ready' || !scopeCount ? <p role="status" className="review-room-note">복습 준비 중…</p> : session.count > 0 ? <>
               <div className="review-room-number"><strong className="vocab-hero__num">{session.count}</strong><span>개의 표현</span></div>
-              <p className="review-room-note">{session.reviewsDue.length > 0 && `기억을 확인할 표현 ${session.reviewsDue.length}개`}{session.reviewsDue.length > 0 && session.newToday > 0 && ' · '}{session.newToday > 0 && `처음 익힐 표현 ${session.newToday}개`}</p>
+              <p className="review-room-note">{scopeCount.due > 0 && `기억을 확인할 표현 ${scopeCount.due}개`}{scopeCount.due > 0 && scopeCount.newAllowed > 0 && ' · '}{scopeCount.newAllowed > 0 && `처음 익힐 표현 ${scopeCount.newAllowed}개`}</p>
+              {scopeCount.newLocked > 0 && !scopeCount.backlogBlocked && <p className="review-room-note">{`${scope.src?.kind === 'book' && scope.src.from === scope.src.to ? '이 과' : '이 범위'} 표현 ${scopeCount.newAllowed + scopeCount.newLocked}개 · 오늘 시작 ${scopeCount.newAllowed}개(새 표현 한도) · 나머지 ${scopeCount.newLocked}개는 내일`}</p>}
+              {scopeCount.backlogBlocked && scopeCount.newLocked > 0 && <p className="review-room-note">밀린 복습부터 해요. 오늘은 새 표현을 쉬어요.</p>}
               <Button onClick={startReview} disabled={startingReview || !fsrsReview.registryAvailable || admission.status !== 'ready'} className="review-room-start">{startingReview || fsrsReview.status === 'loading' ? '복습 준비 중…' : `표현 ${session.count}개 복습 →`}</Button>
             </> : <>
-              <p className="review-room-note">{!vocab.length ? '교재 예문의 ‘이 예문 담기’로 기억하고 싶은 문장을 골라 주세요.' : seriesFilter !== 'all' && !deckScope.length ? '이 범위에는 아직 담은 표현이 없어요. 아래에서 범위를 바꿀 수 있어요.' : session.newAvailable.length ? `오늘 새 표현 한도에 도달했어요. 남은 ${session.newAvailable.length}개는 다음에 익혀요.` : '지금 다시 볼 표현은 없어요. 다음 복습까지 새로운 문장을 만나 보세요.'}</p>
-              <Link href={bookReview?.returnTo || (vocab.length ? '/home' : '/books/japanese-n5')} className="btn btn--primary">{bookReview ? '읽던 교재로 돌아가기 →' : vocab.length ? '오늘로 →' : '교재에서 표현 고르기 →'}</Link>
+              <p className="review-room-note">{!vocab.length ? '교재 예문의 ‘예문 담기’로 기억하고 싶은 문장을 골라 주세요.'
+                : scopeNarrowed ? `이 범위엔 오늘 복습할 표현이 없어요${scopeReview?.widen ? ` · ${reviewLevelLabel(scope.level)}를 빼면 ${scopeReview.widen}개` : ''}`
+                : scopeCount.backlogBlocked && scopeCount.newLocked ? '밀린 복습부터 해요. 오늘은 새 표현을 쉬어요.'
+                : scopeCount.newLocked ? `오늘 새 표현 한도에 도달했어요. 남은 ${scopeCount.newLocked}개는 다음에 익혀요.`
+                : '지금 다시 볼 표현은 없어요. 다음 복습까지 새로운 문장을 만나 보세요.'}</p>
+              {scopeNarrowed && vocab.length > 0 ? <div className="manabi-row">
+                {scope.level && <Link href={reviewScopeHref((({ level, ...rest }) => rest)(scope), { returnTo: bookReview?.returnTo })} className="btn btn--primary">급수 풀기</Link>}
+                <Link href={unscopedHref} className={scope.level ? 'btn btn--ghost' : 'btn btn--primary'}>범위 풀기</Link>
+              </div> : <Link href={bookReview?.returnTo || (vocab.length ? '/home' : '/books/japanese-n5')} className="btn btn--primary">{bookReview ? '읽던 교재로 돌아가기 →' : vocab.length ? '오늘로 →' : '교재에서 표현 고르기 →'}</Link>}
             </>}
-            {!bookReview && <p className="review-room-scope">복습 범위 · {seriesFilter === 'all' ? '전체 표현' : availableSeries.find(x => x.key === seriesFilter)?.label ?? seriesFilter}</p>}
             {reviewQueue.length > reviewIdx && !reviewFinished && <button type="button" className="review-room-resume" onClick={() => setTab('review')}>멈춘 복습 이어가기 · {reviewIdx} / {reviewQueue.length} →</button>}
             {vocabError && <p role="alert">최신 표현을 확인하지 못했어요. <button type="button" onClick={() => refetchVocab()}>다시 불러오기</button></p>}
             {fsrsReview.status === 'error' && <p role="alert">복습 일정을 불러오지 못했어요. <button type="button" onClick={() => fsrsReview.controller.refresh()}>다시 시도</button></p>}
@@ -1106,9 +1141,6 @@ function VocabWorkspace({ bookReview }) {
             </div>
             {vocab.length > 0 && (
               <p className="review-sec__meta">
-                {seriesFilter !== 'all' && (
-                  <strong>{availableSeries.find(x => x.key === seriesFilter)?.label ?? seriesFilter} 덱 · </strong>
-                )}
                 미학습 {deckStats.neu} · 학습 중 {deckStats.learning} · 숙련 {deckStats.mastered}
               </p>
             )}
@@ -1144,7 +1176,7 @@ function VocabWorkspace({ bookReview }) {
           </section>
 
               <details className="review-room-settings">
-                <summary aria-label="단어장 도구">{bookReview ? '복습 설정' : '복습 방식과 단어장 관리'} <span>{bookReview ? '방식 · 하루 새 표현 한도' : '범위 · 방식 · 가져오기'}</span></summary>
+                <summary aria-label="단어장 도구">{bookReview ? '복습 설정' : '복습 방식과 단어장 관리'} <span>{bookReview ? '방식 · 하루 새 표현 한도' : '방식 · 가져오기'}</span></summary>
                 <div className="vocab-tools__menu">
                   {!bookReview && <>
                   <button type="button" className="vocab-tools__item" onClick={() => setManualAddOpen(true)}>
@@ -1164,29 +1196,7 @@ function VocabWorkspace({ bookReview }) {
                     onChange={e => { const f = e.target.files?.[0]; if (f) csvImportMutation.mutate(f); e.target.value = ''; }}
                     style={{ display: 'none' }} />
                   </>}
-                  {/* 덱·방식은 기본값이면 평생 안 건드리는 설정 — 카드 표면 대신 여기(설정 서랍)에 산다.
-                      덱이 걸려 있으면 단어장 카드 요약에 덱 이름이 떠서 잊히지 않는다. */}
-                  {!bookReview && availableSeries.length > 0 && (
-                    <div className="vocab-tools__field">
-                      <label htmlFor="deck-filter" style={{ display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 5 }}>
-                        덱
-                      </label>
-                      <select
-                        id="deck-filter"
-                        aria-label="덱 선택"
-                        value={seriesFilter}
-                        onChange={e => setSeriesFilter(e.target.value)}
-                        style={{
-                          width: '100%', padding: '6px 8px', fontSize: '0.85rem',
-                          borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)',
-                          background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer',
-                        }}
-                      >
-                        <option value="all">전체 덱</option>
-                        {availableSeries.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
-                      </select>
-                    </div>
-                  )}
+                  {/* 범위(덱 포함)는 복습방 위 범위 막대가 정한다(REV-SCOPE R1-A) — 서랍에는 방식 · 한도만 산다. */}
                   <div className="vocab-tools__field">
                     <label htmlFor="review-mode" style={{ display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 5 }}>
                       단어 복습 방식

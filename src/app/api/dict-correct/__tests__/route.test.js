@@ -202,7 +202,7 @@ describe('승격 호출부 배선', () => {
     expect(src).toMatch(/else if \(opts\?\.applyVocab\) applyCorrectionToVocab\(selectedToken, corrections\);/);
     const panel = fs.readFileSync('src/views/TokenEditPanel.jsx', 'utf8');
     expect(panel).toContain("onSave(pending, sharedEdit ? { applyGlobal } : { applyVocab: applyGlobal })");
-    expect(panel).toContain("sharedEdit ? '이 단어 전체에 적용 (공유 사전·내 단어장)' : '내 단어장에도 반영'");
+    expect(panel).toContain("sharedEdit ? '이 단어 전체에 적용 (공유 사전·담은 표현)' : '담은 표현에도 반영'");
   });
   it('뷰어 promoteCorrection이 material_id(현재 자료 id)를 보낸다', async () => {
     const fs = await import('node:fs');

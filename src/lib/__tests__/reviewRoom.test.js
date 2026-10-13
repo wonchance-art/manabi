@@ -46,7 +46,8 @@ describe('review room recall and source contract', () => {
   });
   it('account changes remount all session state; queue preparation cannot revive an unmounted account', () => {
     const code = fs.readFileSync('src/views/VocabPage.jsx','utf8');
-    expect(code).toContain("key={`${user?.id || 'guest'}:${bookReview?.bookId || 'all'}:${bookReview?.returnTo || ''}`}");
+    // 범위가 바뀌어도 새로 연다(이전 범위의 줄 · 답 · undo를 끌고 오지 않는다).
+    expect(code).toContain("key={`${user?.id || 'guest'}:${reviewScopeKey(scope)}:${bookReview?.returnTo || ''}`}");
     expect(code).toContain('if (!workspaceAlive.current) return;');
     expect(code).toContain('error: vocabError, refetch: refetchVocab');
   });

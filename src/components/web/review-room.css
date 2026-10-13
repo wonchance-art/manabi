@@ -103,3 +103,27 @@
 .vocabulary-exclusions li > span { min-width: 0; overflow-wrap: anywhere; }
 .vocabulary-exclusions small { display: block; color: var(--text-muted); }
 .vocabulary-exclusions li > button { flex: 0 0 auto; }
+/* 범위 막대 · 범위 시트(REV-SCOPE R1-A §5-1 · §5-2). 언어 색은 v2 토큰 + color-mix만 쓴다. */
+.review-scope { display:grid; gap:10px; margin:0 0 26px; min-width:0; }
+.review-scope__langs,.review-scope__chips { display:flex; flex-wrap:wrap; gap:6px; min-width:0; }
+.review-scope__lang,.review-scope__chip { --scope-tone:var(--ja); display:inline-flex; align-items:center; gap:7px; min-height:44px; max-width:100%; padding:0 14px; border:1px solid var(--rule); border-radius:999px; background:var(--sheet); color:var(--ink); font:inherit; font-size:13px; font-weight:600; text-decoration:none; cursor:pointer; overflow-wrap:anywhere; }
+.review-scope__lang--zh { --scope-tone:var(--zh); }
+.review-scope__lang--en { --scope-tone:var(--en); }
+.review-scope__lang--fr { --scope-tone:var(--fr); }
+.review-scope__lang b { font-weight:700; font-size:12px; }
+.review-scope__lang[aria-current="true"],.review-scope__chip.is-on { border-color:var(--scope-tone); color:var(--scope-tone); background:color-mix(in srgb, var(--scope-tone) 9%, var(--sheet)); }
+.review-scope__chip:disabled { opacity:.45; cursor:not-allowed; }
+.review-scope__count { font-size:11px; font-weight:500; color:var(--muted); }
+.review-scope-overlay { align-items:flex-end; }
+.review-scope-sheet { width:min(560px, 100%); max-height:86vh; overflow-y:auto; background:var(--sheet); color:var(--ink); border:1px solid var(--rule); border-radius:18px 18px 0 0; padding:18px 16px 22px; }
+.review-scope-sheet h2 { font-size:17px; margin:0 0 4px; }
+.review-scope-sheet h3 { font-size:12px; color:var(--muted); font-weight:600; margin:16px 0 6px; }
+.review-scope-sheet__sub,.review-scope-sheet__note { font-size:12px; line-height:1.7; color:var(--muted); margin:0; }
+.review-scope-sheet__note { margin-top:12px; }
+.review-scope-sheet__list { list-style:none; margin:8px 0 0; padding:0; display:grid; gap:2px; }
+.review-scope-sheet__list label { display:flex; align-items:center; gap:10px; min-height:44px; font-size:13px; overflow-wrap:anywhere; }
+.review-scope-sheet__list label>span:first-of-type { flex:1; min-width:0; }
+.review-scope-sheet__range { display:flex; flex-wrap:wrap; gap:12px; margin-top:8px; }
+.review-scope-sheet__range label { display:grid; gap:4px; font-size:12px; color:var(--muted); }
+.review-scope-sheet__range select { min-height:44px; padding:0 8px; border:1px solid var(--rule); border-radius:3px; background:var(--sheet); color:var(--ink); }
+.review-scope-sheet__actions { display:grid; gap:8px; margin-top:20px; }

@@ -36,7 +36,8 @@ describe('FSRS personal review surface', () => {
       expect(body).toContain('fsrsReview.controller.canLegacy(');
     }
     expect(source).toContain("tab === 'fsrs'");
-    expect(source).toContain('fsrsReview.enrolledIds.includes(v.id)');
+    // 예전 일정 줄(reviewScopeLine)은 FSRS에 등록된 카드를 넣지 않는다.
+    expect(source).toContain('canLegacy: id => !fsrsReview.enrolledIds.includes(id)');
   });
   it('active manual save uses one atomic command and only confirmed disabled mode retains legacy insert', () => {
     const source = readFileSync(new URL('../VocabPage.jsx', import.meta.url), 'utf8');

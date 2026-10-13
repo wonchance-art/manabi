@@ -2,6 +2,7 @@ import { requireUser } from '@/lib/supabaseServer';
 import { reply, errorReply, checkDb, fail } from '@/lib/server/learningContext';
 import { sourceHref } from '@/lib/learningSources';
 import { BOOK_ID } from '@/lib/textbook/contract';
+import { bookChapterSlugs, parseReviewScope } from '@/lib/reviewScope';
 
 export const dynamic = 'force-dynamic';
 export async function GET(request) {
@@ -13,10 +14,20 @@ export async function GET(request) {
     const raw = params.get('offset') || '0';
     if (!/^\d{1,7}$/.test(raw)) fail(400, '목록 위치를 확인해 주세요.');
     const offset = Number(raw), size = scope ? 200 : 40;
-    const { data, error } = await auth.supabase.from('vocabulary_contexts')
+    // 과 범위(REV-SCOPE R1-A): from · to가 둘 다 있으면 그 과 slug만. 하나만 있거나 어긋나면 넓히지 않고 거부한다.
+    const from = params.get('from'), to = params.get('to');
+    let chapters = null;
+    if (from !== null || to !== null) {
+      const range = parseReviewScope({ src: `book:${BOOK_ID}:${from}-${to}` });
+      if (!scope || range.invalid) fail(400, '과 범위를 확인해 주세요.');
+      chapters = bookChapterSlugs(range.scope.src);
+    }
+    let query = auth.supabase.from('vocabulary_contexts')
       .select(scope ? 'id,user_vocabulary!inner(id,user_id)' : 'id,kind,lang,chapter_slug,locator,quote,translation,created_at,user_vocabulary!inner(id,user_id,word_text,meaning,furigana)')
       .eq('user_id', auth.user.id).eq('user_vocabulary.user_id', auth.user.id)
-      .eq('kind', 'textbook').eq('locator->>bookId', BOOK_ID)
+      .eq('kind', 'textbook').eq('locator->>bookId', BOOK_ID);
+    if (chapters) query = query.in('chapter_slug', chapters);
+    const { data, error } = await query
       .order('created_at', { ascending: false }).order('id', { ascending: false }).range(offset, offset + size);
     checkDb(error);
     const rows = data || [];

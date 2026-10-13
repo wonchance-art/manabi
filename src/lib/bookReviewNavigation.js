@@ -15,11 +15,11 @@ export function safeBookReturn(value) {
   } catch { return null; }
 }
 
-export function bookReviewHref(returnTo) {
-  const params = new URLSearchParams({ book: BOOK_ID });
+// 채점 복습방의 교재 범위(REV-SCOPE R1-A 주소 문법). 과를 주지 않으면 전체 과(1–42).
+// 예전 `?book=` 주소도 계속 읽는다(parseBookReview · parseReviewScope).
+export function bookReviewHref(returnTo, { from = 1, to = 42 } = {}) {
   const safe = safeBookReturn(returnTo);
-  if (safe) params.set('returnTo', safe);
-  return `/vocab?${params}`;
+  return `/vocab?lang=Japanese&src=book:${BOOK_ID}:${from}-${to}${safe ? `&returnTo=${encodeURIComponent(safe)}` : ''}`;
 }
 
 export function parseBookReview(params = {}) {
@@ -37,11 +37,13 @@ export function bookReferenceHref(href) {
   return url.pathname + url.search + url.hash;
 }
 
-export async function fetchBookVocabularyIds({ signal, fetcher = fetch } = {}) {
+export async function fetchBookVocabularyIds({ signal, fetcher = fetch, from = null, to = null } = {}) {
   const ids = new Set();
+  // 과 범위(REV-SCOPE R1-A). 전체 과는 예전 주소 그대로 부른다.
+  const range = from !== null && to !== null ? `&from=${from}&to=${to}` : '';
   let offset = 0;
   do {
-    const response = await fetcher(`/api/learning/book-review?scope=1&offset=${offset}`, { cache: 'no-store', signal });
+    const response = await fetcher(`/api/learning/book-review?scope=1${range}&offset=${offset}`, { cache: 'no-store', signal });
     const result = await response.json();
     if (!response.ok || !Array.isArray(result.wordIds)) throw new Error('이 교재의 표현 범위를 불러오지 못했어요.');
     for (const id of result.wordIds) ids.add(id);

@@ -46,7 +46,9 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
     expect(pdf).toContain('const [hideKnown, setHideKnown] = useState(true)');
     expect(pdf).toMatch(/useEffect\(\(\) => \{[\s\S]*pdf_language[\s\S]*pdf_hideKnown[\s\S]*\}, \[\]\)/);
     expect(vocab).toContain("const [langFilter, setLangFilter] = useState('all')");
-    expect(vocab).toContain("const [seriesFilter, setSeriesFilter] = useState('all')");
+    // 덱(seriesFilter)은 범위 주소로 옮겼다(REV-SCOPE R1-A). 기기에 저장한 배움 언어도 마운트 뒤에 읽는다.
+    expect(vocab).toContain('const [storedLang, setStoredLang] = useState(undefined)');
+    expect(vocab).toMatch(/useEffect\(\(\) => \{ setStoredLang\(readStoredLearningLang\(\)\); \}, \[\]\)/);
     expect(vocab).toContain("const [reviewMode, setReviewMode] = useState('auto')");
     expect(vocab).toContain('const [newPerDay, setNewPerDay] = useState(DEFAULT_NEW_PER_DAY)');
     expect(vocab).toContain('const [introIds, setIntroIds] = useState([])');

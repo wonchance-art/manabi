@@ -17,6 +17,7 @@ import { passageOf, sourcePassageHref, passageLocation, correctPassageToken } fr
 import { takePassageAnalysis } from '@/lib/passageAnalysis';
 import { composerOf, shouldReadComposerOriginal } from '@/lib/materialComposer';
 import Link from 'next/link';
+import { REVIEW_SCOPE_LANGS, reviewScopeHref } from '../lib/reviewScope';
 import { LibraryReturnLink } from '@/components/web/LibraryReaderLink';
 import { readerReturnLabel } from '../lib/libraryReturn';
 import ActionIcon from '../components/ActionIcon';
@@ -1284,6 +1285,9 @@ export default function ViewerPage() {
   }, [user, material?.processed_json, savedWords, knownWordSet]);
   // 「N개 수집 → 단어장」(AD-R2 설계 Q4) — 이 자료의 내용어 중 단어장에 담긴 수. 같은 엔진에 '이미 앎'을 합치기 전
   // 인덱스를 넣는다(담은 것만 센다). 표본 하한은 두지 않는다 — 수집은 비율이 아니라 개수라 0% 오표기 위험이 없다.
+  // 「이 자료 표현 복습」(REV-SCOPE R1-A 진입점) — 이 자료 범위의 채점 복습방. 범위를 만들 수 없는 자료는 전체 복습으로.
+  const materialReviewHref = REVIEW_SCOPE_LANGS.includes(materialLang) && /^[1-9]\d{0,18}$/.test(String(id))
+    ? reviewScopeHref({ lang: materialLang, src: { kind: 'material', ids: [String(id)] }, state: 'due' }) : '/vocab';
   const collectedInMaterial = useMemo(() => (user && material?.processed_json ? materialFit(material.processed_json, savedWords).known : 0), [user, material?.processed_json, savedWords]);
 
   // 받아쓰기 추천용 담은 단어 집합 — 표기·기본형 합집합(엔진이 text.includes로 대조).
@@ -3267,7 +3271,7 @@ export default function ViewerPage() {
         return (
           <div className="word-detail-card__actrow save-grade__saved">
             <span className="save-grade__status">
-              <button disabled className="btn btn--ghost btn--sm save-grade__in">{vt('✓ 단어장에 있음')}</button>
+              <button disabled className="btn btn--ghost btn--sm save-grade__in">{vt('✓ 담은 표현에 있음')}</button>
               {nextReview && <span className="save-grade__next">{nextReview.due ? vt('복습 차례') : vt('다음 복습 {date}', { date: nextReview.label })}</span>}
             </span>
             {koreanSaveReady(selectedToken) && <SaveContextButton key={`${id}:${selectedToken.id || selectedToken.text}:${leftPanelText}:${materialLang === 'Korean' ? `${effectiveExplanationLocale}:${readingContextSource(selectedToken)?.sourceRevision}` : ''}`}
@@ -3303,7 +3307,7 @@ export default function ViewerPage() {
       {!user && material?.__local && !koreanPieceSelected && (
         // 팀 사본(v2-AB R2 S2) — 담기 CTA. 「로그인이 필요합니다」 토스트 대신 돌아올 길이 있는 시트.
         <div className="save-grade__guest">
-          <p className="save-grade__guide">{vt('로그인하면 「{word}」이(가) 내 단어장에 담기고 며칠 뒤 복습으로 돌아와요.', {word: headText})}</p>
+          <p className="save-grade__guide">{vt('로그인하면 「{word}」이(가) 담은 표현에 들어가고 며칠 뒤 복습으로 돌아와요.', {word: headText})}</p>
           <div className="word-detail-card__actrow">
             <Link
               href={`/auth?from=${encodeURIComponent(`/class/${material.__team}`)}`}
@@ -3679,7 +3683,7 @@ export default function ViewerPage() {
               <span className="viewer-badge viewer-stats">
                 {coverage && <span title={vt("담은 단어와 '이미 알아요' 표시를 합쳐 센 값 — 서재 맞춤도와 같은 계산이에요")}>{vt('아는 단어 {percent}% · 새 단어 {count}개', {percent: Math.round(coverage.coverage * 100), count: coverage.unknown})}</span>}
                 {coverage && collectedInMaterial > 0 && ' · '}
-                {collectedInMaterial > 0 && <Link href="/vocab" prefetch={false} className="viewer-stats__vocab">{vt('{count}개 수집 → 단어장', {count: collectedInMaterial})}</Link>}
+                {collectedInMaterial > 0 && <Link href={materialReviewHref} prefetch={false} className="viewer-stats__vocab">{vt('{count}개 수집 · 이 자료 표현 복습 →', {count: collectedInMaterial})}</Link>}
               </span>
             )}
           </div>

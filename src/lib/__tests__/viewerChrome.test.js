@@ -437,7 +437,9 @@ describe('⑨ AD-R2 읽기 크롬 — 영문 0 · 라벨 툴바 · 통계 한 �
     expect(src).toContain('const collectedInMaterial = useMemo(() => (user && material?.processed_json ? materialFit(material.processed_json, savedWords).known : 0), [user, material?.processed_json, savedWords]);');
     const stats = sliceBetween(header(), '<span className="viewer-badge viewer-stats"', '</Link>}');
     expect(stats).toContain("vt('아는 단어 {percent}% · 새 단어 {count}개'");
-    expect(stats).toMatch(/<Link href="\/vocab" prefetch=\{false\} className="viewer-stats__vocab">\{vt\('\{count\}개 수집 → 단어장', \{count: collectedInMaterial\}\)\}$/);
+    // 「이 자료 표현 복습」(REV-SCOPE R1-A 진입점): 이 자료 범위의 채점 복습방으로 간다.
+    expect(stats).toMatch(/<Link href=\{materialReviewHref\} prefetch=\{false\} className="viewer-stats__vocab">\{vt\('\{count\}개 수집 · 이 자료 표현 복습 →', \{count: collectedInMaterial\}\)\}$/);
+    expect(src).toContain("reviewScopeHref({ lang: materialLang, src: { kind: 'material', ids: [String(id)] }, state: 'due' })");
     // 수집 링크도 무채색 — 크롬 강조색은 복습 하나(위 ⑥)
     const link = sliceBetween(read(MANABI_CSS), '.manabi-app .viewer-layout .viewer-stats__vocab {', '}');
     expect(link).toContain('color:inherit');

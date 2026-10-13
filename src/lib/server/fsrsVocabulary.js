@@ -3,7 +3,7 @@ import { UUID, LEARNING_LANGUAGES } from '../learningSources.js';
 import { hasCjkText } from '../constants.js';
 import { introduceFsrsCard, schedulerTime, validateFsrsCard } from '../fsrsScheduler.js';
 import { requireLearningCapability } from './learningCapabilities.js';
-import { VOCABULARY_LEARNING_SUMMARY_FIELDS } from '../vocabularyLearningRead.js';
+import { VOCABULARY_LEARNING_REQUIRED_FIELDS } from '../vocabularyLearningRead.js';
 
 const reject = (code, status = 503) => { throw Object.assign(new Error(code), { code, status }); };
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -41,9 +41,11 @@ function metadataTime(value, roundUp = false) {
   } catch { reject('fsrs_snapshot_unavailable'); }
 }
 
+// source_ref는 범위 판정(REV-SCOPE R1-A)용 보조 필드다. 없는 행을 거부해 전체 학습 화면을 끄지 않는다.
 function checkedRow(row, userId) {
   if (!object(row) || !id(row.id) || row.user_id !== userId || typeof row.word_text !== 'string'
-      || !VOCABULARY_LEARNING_SUMMARY_FIELDS.every(key => Object.hasOwn(row, key))
+      || !VOCABULARY_LEARNING_REQUIRED_FIELDS.every(key => Object.hasOwn(row, key))
+      || (row.source_ref != null && typeof row.source_ref !== 'string')
       || (row.language !== null && !LEARNING_LANGUAGES.includes(row.language))
       || ['base_form', 'meaning', 'created_at', 'last_reviewed_at', 'next_review_at'].some(key => row[key] !== null && typeof row[key] !== 'string')
       || (row.interval !== null && (typeof row.interval !== 'number' || !Number.isFinite(row.interval)))

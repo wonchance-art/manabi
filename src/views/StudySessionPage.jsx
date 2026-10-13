@@ -1475,11 +1475,11 @@ export default function StudySessionPage({
         && picked === item.word?.meaning && (
         <div style={{ marginTop: 12, fontSize: '0.9rem' }}>
           {encounterSaveState === 'saved' ? (
-            <span style={{ color: 'var(--text-muted)' }}>✓ 단어장에 담았어요</span>
+            <span style={{ color: 'var(--text-muted)' }}>✓ 담은 표현에 있어요</span>
           ) : (
             <button type="button" className="study-textlink" disabled={encounterSaveState === 'saving'}
               onClick={saveEncounterWord}>
-              {encounterSaveState === 'saving' ? '…' : '+ 단어장에 담기'}
+              {encounterSaveState === 'saving' ? '…' : '+ 담기'}
             </button>
           )}
         </div>

@@ -30,7 +30,9 @@ describe('complete actor-scoped vocabulary loader', () => {
     await fetchVocabularyLearningRows(actorId, { fetchImpl, fields: 'summary' });
     expect(fetchImpl.mock.calls[0][0]).toBe('/api/learning/vocabulary?view=learning&fields=summary');
     expect(VOCABULARY_LEARNING_SUMMARY_FIELDS).toEqual(['id', 'user_id', 'word_text', 'base_form', 'meaning', 'language',
-      'created_at', 'interval', 'ease_factor', 'repetitions', 'last_reviewed_at', 'next_review_at', 'source_material_id']);
+      'created_at', 'interval', 'ease_factor', 'repetitions', 'last_reviewed_at', 'next_review_at', 'source_material_id',
+      // 덱 · 오늘 학습 범위(REV-SCOPE R1-A)는 source_ref로 판정한다 — 배움 칸 개수도 같은 필드를 쓴다.
+      'source_ref']);
     expect(Object.isFrozen(VOCABULARY_LEARNING_SUMMARY_FIELDS)).toBe(true);
     await expect(fetchVocabularyLearningRows(actorId, { fetchImpl, fields: 'unsafe' })).rejects.toThrow('invalid_fields');
     expect(fetchImpl).toHaveBeenCalledTimes(1);

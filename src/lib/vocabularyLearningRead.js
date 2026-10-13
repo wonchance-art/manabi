@@ -9,8 +9,10 @@ const legacyWeights = generatorParameters().w;
 const pinnedWeights = generatorParameters({ request_retention: FSRS_POLICY.retention,
   maximum_interval: FSRS_POLICY.maximumInterval, enable_fuzz: false, enable_short_term: true }).w;
 
-export const VOCABULARY_LEARNING_SUMMARY_FIELDS = Object.freeze(['id', 'user_id', 'word_text', 'base_form',
+/** 행 검사가 요구하는 필드. 요약 조회는 여기에 범위 판정용 source_ref(있으면)를 더해 보낸다(REV-SCOPE R1-A). */
+export const VOCABULARY_LEARNING_REQUIRED_FIELDS = Object.freeze(['id', 'user_id', 'word_text', 'base_form',
   'meaning', 'language', 'created_at', 'interval', 'ease_factor', 'repetitions', 'last_reviewed_at', 'next_review_at', 'source_material_id']);
+export const VOCABULARY_LEARNING_SUMMARY_FIELDS = Object.freeze([...VOCABULARY_LEARNING_REQUIRED_FIELDS, 'source_ref']);
 
 // PostgreSQL의 기존 timestamp는 마이크로초를 가질 수 있다. 원문 값은 그대로 두고,
 // 읽기 eligibility만 다음 밀리초로 올림하여 실제 만기보다 먼저 활성화하지 않는다.

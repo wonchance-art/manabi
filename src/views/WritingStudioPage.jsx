@@ -448,7 +448,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
                   lang={LANG_CODE[g.lang]}
                   disabled={added || gapBusy === key}
                   onClick={() => addGap(g)}
-                  title={added ? '단어장에 있어요' : `담기 — ${g.count}번 못 썼어요`}
+                  title={added ? '담은 표현에 있어요' : `담기 — ${g.count}번 못 썼어요`}
                   style={{ fontSize: '0.8rem', padding: '3px 10px', cursor: added ? 'default' : 'pointer' }}
                 >
                   {g.text}
