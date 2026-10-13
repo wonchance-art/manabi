@@ -8,8 +8,8 @@ import {
 } from '../aozoraParser.js';
 import { aozoraFixture } from './helpers/aozoraFixtures.js';
 
-// 서식 견본은 실제 작품이 아니다(fixtures/aozora/README.md). 실물 txt 배치만 따라 쓴 것이라,
-// 네트워크가 열리면 실제 작품 3편으로 이 계약을 다시 고정한다.
+// 서식 견본은 실제 작품이 아니다(fixtures/aozora/README.md) — 경계 사례를 짧게 고정하는 용도다.
+// 실물 txt 계약(정본 5편·羅生門 거부 견본)은 aozoraRealWorks.test.js에 있다.
 
 /** 머리 + 기호 설명 블록 + 본문 + 판권으로 감싼 최소 실물형 txt. */
 const wrap = (body, colophon = '底本：「見本」架空書房\n入力：甲\n校正：乙') => [
