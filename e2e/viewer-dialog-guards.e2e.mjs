@@ -26,14 +26,14 @@ const manage = async f => {
   await f.page.getByRole('dialog', { name: '학습' }).getByRole('button', { name: /^자료 관리/ }).click();
 };
 
-test('원문 수정: 고친 뒤 Esc·취소는 「변경 내용 버리기」를 묻고, Esc를 거듭 눌러도 편집 창이 화면에서 사라지지 않는다', { timeout: 240000 }, async () => {
+test('원문 수정: 고친 뒤 Esc·취소는 「저장하지 않은 변경을 버릴까요?」를 묻고, Esc를 거듭 눌러도 편집 창이 화면에서 사라지지 않는다', { timeout: 240000 }, async () => {
   const f = await open();
   try {
     await manage(f);
     await f.page.getByRole('button', { name: /^원문 수정/ }).click();
     const editor = f.page.getByRole('dialog', { name: '원문 수정', exact: true });
     const box = editor.getByRole('textbox', { name: '원문 텍스트', exact: true });
-    const ask = f.page.getByText('저장하지 않은 변경을 버리고 닫을까요?', { exact: true });
+    const ask = f.page.getByRole('dialog', { name: '저장하지 않은 변경을 버릴까요?', exact: true });
     // 고치지 않았으면 취소가 바로 닫는다
     await editor.getByRole('button', { name: '취소', exact: true }).click();
     await editor.waitFor({ state: 'hidden' });
@@ -44,6 +44,8 @@ test('원문 수정: 고친 뒤 Esc·취소는 「변경 내용 버리기」를 
     await box.fill(draft);
     await f.page.keyboard.press('Escape');
     await ask.waitFor();
+    assert.equal(await ask.getByRole('button', { name: '버리기', exact: true }).count(), 1);
+    assert.equal(await ask.getByRole('button', { name: '확인', exact: true }).count(), 0);
     // 확인 창은 편집 창(top layer) 위에서 실제로 눌린다 — 계속 수정
     await f.page.getByRole('button', { name: '계속 수정', exact: true }).click();
     await ask.waitFor({ state: 'hidden' });
@@ -72,7 +74,9 @@ test('자료 관리 > 전체 분석: 한 번 누르면 확인 화면만 — 취�
     const panel = f.page.getByRole('dialog', { name: '자료 관리' });
     await panel.getByRole('button', { name: /^전체 분석/ }).click();
     await panel.getByText('전체 분석을 다시 할까요?', { exact: true }).waitFor();
-    await panel.getByText('지금 분석 결과를 새 결과로 바꿉니다. 직접 고친 뜻·단어 경계는 같은 자리에 남은 것만 이어집니다.', { exact: true }).waitFor();
+    await panel.getByText('지금 분석 결과를 새 결과로 바꿔요. 직접 고친 뜻·단어 경계는 같은 자리에 남은 것만 이어져요.', { exact: true }).waitFor();
+    // 버튼은 실제 동작 이름 + 취소(문구 표준 §2)
+    await panel.getByRole('button', { name: '전체 분석', exact: true }).waitFor();
     await panel.getByRole('button', { name: '취소', exact: true }).click();
     await panel.getByRole('button', { name: /^부분 분석/ }).waitFor();
     await f.page.waitForTimeout(300);

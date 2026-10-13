@@ -3770,7 +3770,7 @@ export default function ViewerPage() {
           {reanalyzePanel === 'confirm-full' && (
             <div className="reader-manage" role="group" aria-labelledby="reanalyze-confirm-title">
               <p id="reanalyze-confirm-title" style={{ fontWeight: 700, margin: '16px 0 6px' }}>{vt("전체 분석을 다시 할까요?")}</p>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 12px', lineHeight: 1.6 }}>{vt("지금 분석 결과를 새 결과로 바꿉니다. 직접 고친 뜻·단어 경계는 같은 자리에 남은 것만 이어집니다.")}</p>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 12px', lineHeight: 1.6 }}>{vt("지금 분석 결과를 새 결과로 바꿔요. 직접 고친 뜻·단어 경계는 같은 자리에 남은 것만 이어져요.")}</p>
               <div className="reanalyze-panel__actions">
                 <button className="btn btn--ghost btn--sm" onClick={() => setReanalyzePanel('menu')}>{vt("취소")}</button>
                 <button className="btn btn--primary btn--sm" onClick={startFullReanalyze}>{vt("전체 분석")}</button>

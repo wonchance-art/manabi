@@ -116,8 +116,8 @@ export default function VocabList({
   const confirmBulkDelete = () => {
     if (selectedIds.size === 0 || [...selectedIds].some(id => !canModify(vocab.find(word => word.id === id)))) return;
     setConfirmAction({
-      title: '단어 삭제',
-      message: `선택한 ${selectedIds.size}개 단어를 삭제할까요?`,
+      title: `선택한 ${selectedIds.size}개 단어를 삭제할까요?`,
+      message: '삭제하면 되돌릴 수 없어요.',
       onConfirm: () => {
         bulkDeleteMutation?.mutate(Array.from(selectedIds));
         clearSelection();
@@ -310,8 +310,8 @@ export default function VocabList({
                 <button type="button" className="vocab-row__act vocab-row__act--danger" title="삭제" aria-label={`${v.word_text} 삭제`}
                   disabled={!canModify(v)}
                   onClick={() => setConfirmAction({
-                    title: '단어 삭제',
-                    message: `"${v.word_text}" 를 단어장에서 삭제할까요?`,
+                    title: `"${v.word_text}" 단어를 삭제할까요?`,
+                    message: '삭제하면 되돌릴 수 없어요.',
                     onConfirm: () => { deleteMutation.mutate(v.id); setConfirmAction(null); },
                   })}>✕</button>
               )}

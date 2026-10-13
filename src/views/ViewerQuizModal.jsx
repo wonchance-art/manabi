@@ -37,7 +37,7 @@ export default function ViewerQuizModal({
   const completionRef = useRef(null);
   useDialogKeys(!!quizState, quizRef, closeQuiz);
   useDialogKeys(!quizState && !!completionModal, completionRef, () => setCompletionModal(null));
-  const quizTitle = quizState?.status === 'loading' ? '이해도 확인 중...' : quizState?.status === 'done' ? '퀴즈 완료' : '이해도 퀴즈';
+  const quizTitle = quizState?.status === 'loading' ? '이해도 확인 중…' : quizState?.status === 'done' ? '퀴즈 완료' : '이해도 퀴즈';
 
   return (
     <>
@@ -48,7 +48,7 @@ export default function ViewerQuizModal({
             <button type="button" className="completion-modal__close" onClick={closeQuiz} aria-label="퀴즈 닫기">×</button>
             {quizState.status === 'loading' && (
               <>
-                <h2 className="completion-modal__title">이해도 확인 중...</h2>
+                <h2 className="completion-modal__title">이해도 확인 중…</h2>
                 <Spinner message="AI가 퀴즈를 만들고 있어요" />
               </>
             )}

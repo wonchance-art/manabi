@@ -577,11 +577,11 @@ function DeletePdfConfirm({ pdf, onClose, onConfirm }) {
   return (
     <ConfirmModal
       open={!!pdf}
-      title="휴지통으로 이동"
-      message={relatedError ? '연결된 자료를 확인하지 못했습니다. 닫은 뒤 다시 시도해 주세요.'
-        : relatedCount === null ? '연결된 자료를 확인하는 중입니다…'
-        : `"${pdf?.title}"을 휴지통으로 옮깁니다. 원본과 학습 기록은 남습니다.`}
-      confirmLabel="이동"
+      title={`"${pdf?.title}" PDF를 휴지통으로 옮길까요?`}
+      message={relatedError ? '연결된 자료를 확인하지 못했어요. 닫은 뒤 다시 시도해 주세요.'
+        : relatedCount === null ? '연결된 자료를 확인하고 있어요…'
+        : '원본과 학습 기록은 남아 있어요.'}
+      confirmLabel="휴지통으로"
       variant="primary"
       confirmDisabled={relatedCount === null || relatedError}
       onConfirm={() => { if (relatedCount !== null && !relatedError) onConfirm(); }}

@@ -29,19 +29,28 @@ function confirmBlocks(src) {
   return blocks;
 }
 
-describe('② 공용 확인 창 — 기본 버튼은 중립', () => {
-  it('기본값은 「확인」(primary) — 빨간 「삭제」가 아니다', () => {
-    const html = renderToStaticMarkup(<ConfirmModal open message="계속할까요?" onConfirm={() => {}} onCancel={() => {}} />);
-    expect(html).toContain('>확인</button>');
-    expect(html).toContain('btn btn--primary');
+describe('② 공용 확인 창 — 기본 버튼은 중립, 문구는 표준(copy-standard §2)', () => {
+  it('버튼 문구 기본값이 없다 — 「확인」·빨간 「삭제」로 떨어지지 않는다', () => {
+    const html = renderToStaticMarkup(<ConfirmModal open title="계속할까요?" onConfirm={() => {}} onCancel={() => {}} />);
+    expect(html).not.toContain('>확인</button>');
     expect(html).not.toContain('삭제');
+    expect(html).toContain('btn btn--primary');
     expect(html).not.toContain('btn--danger');
+    // 둘째 문장(message)은 있을 때만 그린다
+    expect(html).not.toContain('confirm-modal__msg');
   });
 
   it('잠근 확인 버튼은 disabled로 그린다(조용한 무반응 대신)', () => {
-    const html = renderToStaticMarkup(<ConfirmModal open title="휴지통으로 이동" message="확인하는 중" confirmLabel="이동" confirmDisabled onConfirm={() => {}} onCancel={() => {}} />);
-    expect(html).toMatch(/<button class="btn btn--primary btn--sm" disabled="">이동<\/button>/);
+    const html = renderToStaticMarkup(<ConfirmModal open title="휴지통으로 옮길까요?" message="확인하고 있어요…" confirmLabel="휴지통으로" confirmDisabled onConfirm={() => {}} onCancel={() => {}} />);
+    expect(html).toMatch(/<button class="btn btn--primary btn--sm" disabled="">휴지통으로<\/button>/);
     expect(html).toContain('aria-labelledby="confirm-title"');
+    expect(html).toContain('<p class="confirm-modal__msg">확인하고 있어요…</p>');
+  });
+
+  it('어느 호출부도 「확인」/「예」를 동작 버튼으로 쓰지 않는다', () => {
+    for (const file of SOURCES) {
+      for (const block of confirmBlocks(read(file))) expect(block, file).not.toMatch(/confirmLabel=["{`']+(확인|예)["}`']/);
+    }
   });
 
   it('모든 호출부가 버튼 문구와 제목을 직접 정한다 — 기본값에 기대어 뜻이 바뀌지 않게', () => {
@@ -63,17 +72,33 @@ describe('② 공용 확인 창 — 기본 버튼은 중립', () => {
         if (block.includes('휴지통')) expect(block, file).not.toContain('variant="danger"');
       }
     }
-    const materials = confirmBlocks(read('src/views/MaterialsPage.jsx')).join('\n');
-    expect(materials).toContain('title="휴지통으로 이동"');
-    expect(materials).toContain('confirmLabel="이동"');
+    // 휴지통 이동 = 질문 제목 + 「휴지통으로」(「이동」·「삭제」 아님)
+    const materialsSrc = read('src/views/MaterialsPage.jsx');
+    const materials = confirmBlocks(materialsSrc).join('\n');
+    expect(materialsSrc).toContain('title: `"${m.title}" 자료를 휴지통으로 옮길까요?`,');
+    expect(materialsSrc).toContain("message: '학습 기록은 남아 있어요.',");
+    expect(materials).toContain('title={confirmAction?.title}');
+    expect(materials).toContain('confirmLabel="휴지통으로"');
+    const pdf = confirmBlocks(read('src/views/MaterialAddPdfSection.jsx'))[0];
+    expect(pdf).toContain('title={`"${pdf?.title}" PDF를 휴지통으로 옮길까요?`}');
+    expect(pdf).toContain('confirmLabel="휴지통으로"');
+    for (const block of [materials, pdf]) {
+      expect(block).not.toContain('confirmLabel="이동"');
+      expect(block).not.toContain('confirmLabel="삭제"');
+    }
   });
 
-  it('영구 삭제 확인(관리자·단어)은 제목을 갖고 「삭제」(danger)를 명시한다', () => {
+  it('영구 삭제 확인(관리자·단어)은 질문 제목 + 「삭제」(danger) + 되돌릴 수 없음 한 문장', () => {
     const admin = read('src/views/AdminPage.jsx');
-    for (const title of ['자료 삭제', '소스 삭제', '수정본 삭제']) expect(admin).toContain(`confirmDelete('${title}',`);
+    for (const title of ['「${m.title}」 자료를 삭제할까요?', '「${s.name}」 소스를 삭제할까요?', '「${o.lang} · ${o.slug}」 수정본을 삭제할까요?']) expect(admin).toContain(`confirmDelete(\`${title}\`,`);
+    expect(admin).toContain("message: '삭제하면 되돌릴 수 없어요.',");
+    expect(admin).not.toContain('하시겠습니까');
+    expect(admin).not.toContain('을(를)');
     expect(confirmBlocks(admin)[0]).toMatch(/title=\{confirmAction\?\.title\}[\s\S]*confirmLabel="삭제"[\s\S]*variant="danger"/);
     const list = read('src/views/VocabList.jsx');
-    expect(list.match(/title: '단어 삭제'/g)).toHaveLength(2);
+    expect(list).toContain('title: `선택한 ${selectedIds.size}개 단어를 삭제할까요?`,');
+    expect(list).toContain('title: `"${v.word_text}" 단어를 삭제할까요?`,');
+    expect(list.match(/message: '삭제하면 되돌릴 수 없어요\.',/g)).toHaveLength(2);
     const vocabPageBlocks = confirmBlocks(read('src/views/VocabPage.jsx'));
     expect(vocabPageBlocks).toHaveLength(1);
     expect(vocabPageBlocks[0]).toMatch(/title=\{confirmAction\?\.title\}[\s\S]*confirmLabel="삭제"[\s\S]*variant="danger"/);
@@ -83,7 +108,7 @@ describe('② 공용 확인 창 — 기본 버튼은 중립', () => {
 describe('③ 이해도 퀴즈·읽기 완료 창', () => {
   const noop = () => {};
   it('퀴즈 창은 dialog 역할·이름과 닫기 버튼을 가진다(로딩·진행·완료 모두)', () => {
-    for (const [state, name] of [[{ status: 'loading' }, '이해도 확인 중...'],
+    for (const [state, name] of [[{ status: 'loading' }, '이해도 확인 중…'],
       [{ status: 'active', currentQ: 0, selected: null, questions: [{ question: 'q', options: ['a', 'b'], answer: 0 }] }, '이해도 퀴즈'],
       [{ status: 'done', score: 1, total: 1 }, '퀴즈 완료']]) {
       const html = renderToStaticMarkup(<ViewerQuizModal quizState={state} closeQuiz={noop} setCompletionModal={noop} />);
@@ -156,16 +181,46 @@ describe('④ 확인 없이 지우거나 버리는 동작', () => {
     expect(reader).not.toMatch(/onClick=\{\(\)=>clearDraft\(/);
     expect(reader.match(/onClick=\{\(\)=>setClearing\(/g)).toHaveLength(2);
     const block = confirmBlocks(reader).join('\n');
-    expect(block).toContain('title="초안 비우기"');
+    expect(block).toContain('title={`「${draftLabel(clearing)}」 초안을 비울까요?`}');
+    expect(block).toContain('message="지운 초안은 되돌릴 수 없어요."');
+    expect(block).toContain('confirmLabel="비우기"');
     expect(block).toContain('variant="danger"');
     expect(block).toContain('clearDraft(row)');
   });
 
-  it('PDF 휴지통: 연결 확인 전·실패 시 이유를 쓰고 「이동」을 잠근다', () => {
+  it('PDF 휴지통: 연결 확인 전·실패 시 이유를 쓰고(해요체) 「휴지통으로」를 잠근다', () => {
     const block = confirmBlocks(read('src/views/MaterialAddPdfSection.jsx'))[0];
     expect(block).toContain('confirmDisabled={relatedCount === null || relatedError}');
-    expect(block).toContain('연결된 자료를 확인하지 못했습니다. 닫은 뒤 다시 시도해 주세요.');
-    expect(block).toContain('연결된 자료를 확인하는 중입니다…');
+    expect(block).toContain("'연결된 자료를 확인하지 못했어요. 닫은 뒤 다시 시도해 주세요.'");
+    expect(block).toContain("'연결된 자료를 확인하고 있어요…'");
+    expect(block).toContain("'원본과 학습 기록은 남아 있어요.'");
+    expect(block).not.toMatch(/습니다|입니다/);
+  });
+
+  it('이 PR이 더한 확인 창 문구는 표준을 따른다 — 질문 제목·해요체·「…」·「해 주세요」', () => {
+    const touched = ['src/views/MaterialsPage.jsx', 'src/views/MaterialAddPdfSection.jsx', 'src/views/AdminPage.jsx', 'src/views/VocabList.jsx',
+      'src/components/classroom/ClassroomReader.jsx', 'src/lib/useDiscardGuard.js'];
+    for (const file of touched) {
+      const src = read(file);
+      for (const block of confirmBlocks(src)) {
+        const literal = block.match(/\btitle=(?:"([^"]+)"|\{`([^`]+)`\})/);
+        if (literal) expect(literal[1] || literal[2], `${file}: 확인창 제목은 질문`).toMatch(/\?$/);
+      }
+      // 확인 창 문구(여는 태그·setConfirmAction 객체·confirmDelete 호출·DISCARD_CONFIRM)만 본다 — 파일의 다른 기존 문구는 이 PR 범위 밖.
+      const objects = [...src.matchAll(/setConfirmAction\(\{[\s\S]*?onConfirm|DISCARD_CONFIRM = Object\.freeze\(\{[\s\S]*?\}\)/g)].map(m => m[0]);
+      for (const object of objects) {
+        for (const [, title] of object.matchAll(/\btitle: [`'"]([^`'"]+)[`'"],/g)) expect(title, `${file}: 확인창 제목은 질문`).toMatch(/\?$/);
+      }
+      for (const [, title] of src.matchAll(/confirmDelete\(`([^`]+)`,/g)) expect(title, `${file}: 확인창 제목은 질문`).toMatch(/\?$/);
+      const copy = [...confirmBlocks(src), ...objects].join('\n').replace(/\{\.\.\./g, '{'); // JSX 펼침 문법 제외
+      expect(copy, file).not.toMatch(/해주세요|하시겠습니까|습니다|입니다|로딩 중|\.\.\.|을\(를\)|「확인」/);
+    }
+    expect(read('src/lib/useDiscardGuard.js')).toContain("title: '저장하지 않은 변경을 버릴까요?',");
+    expect(read('src/lib/useDiscardGuard.js')).toContain("confirmLabel: '버리기',");
+    expect(read('src/lib/useDiscardGuard.js')).toContain("cancelLabel: '계속 수정',");
+    const viewer = read('src/views/ViewerPage.jsx');
+    expect(viewer).toContain('vt("지금 분석 결과를 새 결과로 바꿔요. 직접 고친 뜻·단어 경계는 같은 자리에 남은 것만 이어져요.")');
+    expect(viewer).not.toContain('새 결과로 바꿉니다');
   });
 });
 
@@ -187,7 +242,7 @@ describe('⑤ 상태와 맞는 문구', () => {
   it('읽기 트랙: 로딩에는 다시 시도 버튼이 없고, 응답 후 상세가 없을 때만 실패 문구와 버튼', () => {
     const src = read('src/views/ReadingTrackPage.jsx');
     const loading = sliceBetween(src, '{activePending ? (', ') : !deniedGuest ? (');
-    expect(loading).toContain('글과 문항을 불러오는 중이에요…');
+    expect(loading).toContain('글과 문항 불러오는 중…');
     expect(loading).not.toContain('다시 시도');
     const failed = sliceBetween(src, ') : !deniedGuest ? (', ') : (');
     expect(failed).toContain('글과 문항을 불러오지 못했어요.');
@@ -204,7 +259,9 @@ describe('⑤ 상태와 맞는 문구', () => {
     const admin = read('src/views/AdminPage.jsx');
     for (const [error, what] of [['usersError', '유저'], ['materialsError', '자료'], ['sourcesError', '소스'], ['overridesError', '수정본'], ['reportsError', '신고']]) {
       expect(admin).toContain(`${error} ? <AdminLoadError what="${what}"`);
+      expect(admin).toContain(`<Spinner message="${what} 목록 불러오는 중…" />`);
     }
+    expect(admin).not.toContain('로딩 중...');
   });
 });
 

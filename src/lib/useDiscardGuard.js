@@ -7,11 +7,10 @@ import { useRef, useState } from 'react';
  * 바뀐 것이 있으면 공용 ConfirmModal을 띄운다. 이미 묻는 중에 다시 닫기가 오면(네이티브
  * <dialog>의 Esc 등) 묻기를 거두고 편집으로 돌아간다 — 실수로 두 번 눌러 버리지 않게.
  *
- * 문구는 「저장하지 않은 변경을 버리고 이동할까요?」(교재 편집기) 선례를 닫기에 맞췄다.
+ * 문구는 문구 표준 §2(확인창 제목 = 질문, 버튼 = 실제 동작 이름)를 따른다.
  */
 export const DISCARD_CONFIRM = Object.freeze({
-  title: '변경 내용 버리기',
-  message: '저장하지 않은 변경을 버리고 닫을까요?',
+  title: '저장하지 않은 변경을 버릴까요?',
   confirmLabel: '버리기',
   cancelLabel: '계속 수정',
   variant: 'danger',
