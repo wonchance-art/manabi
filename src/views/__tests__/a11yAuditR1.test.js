@@ -65,9 +65,14 @@ describe('핵심 학습 경로 접근성 수리 계약', () => {
     const vocab = source('src/views/VocabReview.jsx');
     const page = source('src/views/VocabPage.jsx');
     const grammar = source('src/views/GrammarReviewSession.jsx');
-    // 방식·덱 선택은 세션 시작 전(VocabPage)의 셀렉트다 — 칩 그룹에서 바꿨지만 접근 가능한 이름은 유지.
+    // 방식 선택은 세션 시작 전(VocabPage)의 셀렉트다 — 칩 그룹에서 바꿨지만 접근 가능한 이름은 유지.
     expect(page).toContain('aria-label="복습 방식"');
-    expect(page).toContain('aria-label="덱 선택"');
+    // 덱 선택은 범위 막대의 「출처 · 사전 급수 덱」으로 흡수했다(REV-SCOPE-R1A) — 그 자리의 이름도 보조기술에 전달된다.
+    expect(page).not.toContain('aria-label="덱 선택"');
+    const scopeBar = source('src/components/vocab/ReviewScopeBar.jsx');
+    expect(scopeBar).toContain('aria-label="사전 급수 덱"');
+    expect(scopeBar).toContain('aria-label={`${chip.label} 범위 풀기`}');
+    expect(scopeBar).toContain('aria-pressed={lang === scope.lang}');
     // 진행 안내도 카드 안에서 상단바로 옮겼다 — 안내 자체는 유지되어야 한다.
     expect(page).toContain('role="progressbar"');
     expect(page).toContain('role="status" aria-live="polite"');

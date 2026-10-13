@@ -434,7 +434,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
         <div className="card" style={{ padding: '16px 18px', marginBottom: 14 }}>
           <div style={{ fontSize: '0.82rem', fontWeight: 700, marginBottom: 4 }}>쓰려다 못 쓴 말</div>
           <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: 10 }}>
-            첨삭에서 고쳐진 표현이에요. 담으면 단어장에서 복습해요(자동으로 담지 않아요).
+            첨삭에서 고쳐진 표현이에요. 담으면 담은 표현으로 복습해요(자동으로 담지 않아요).
           </div>
           <div className="writing-gaps" style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {writingGaps.slice(0, 24).map((g) => {
@@ -448,7 +448,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
                   lang={LANG_CODE[g.lang]}
                   disabled={added || gapBusy === key}
                   onClick={() => addGap(g)}
-                  title={added ? '단어장에 있어요' : `담기 — ${g.count}번 못 썼어요`}
+                  title={added ? '담은 표현에 있어요' : `담기 — ${g.count}번 못 썼어요`}
                   style={{ fontSize: '0.8rem', padding: '3px 10px', cursor: added ? 'default' : 'pointer' }}
                 >
                   {g.text}

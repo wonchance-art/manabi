@@ -115,7 +115,7 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
     expect(css).toContain('.word-detail-card__actrow > .btn { flex: 1; min-width: 0; }');
     // AE-R1 개정(정본 §2.1 「더 알아보기 = 요청 버튼」·「없어지는 것: 이 문장에서는?」, 설계서 §7.1):
     // 자세한 설명은 같은 핸들러(fetchWordDetail)를 「✦ 자세한 설명」이 부르고, 「이 문장에서는?」·「상세 설명 보기」는 없다.
-    for (const s of ['fetchWordDetail(selectedToken)', 'vt("✦ 자세한 설명")', 'vt("✦ 비슷한 말 찾기")', "'✓ 단어장에 있음'"]) {
+    for (const s of ['fetchWordDetail(selectedToken)', 'vt("✦ 자세한 설명")', 'vt("✦ 비슷한 말 찾기")', "'✓ 담은 표현에 있음'"]) {
       expect(card).toContain(s);
     }
     for (const s of ['runCtxExplain(', '상세 설명 보기']) expect(card).not.toContain(s);

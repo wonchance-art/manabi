@@ -36,7 +36,8 @@ describe('FSRS personal review surface', () => {
       expect(body).toContain('fsrsReview.controller.canLegacy(');
     }
     expect(source).toContain("tab === 'fsrs'");
-    expect(source).toContain('fsrsReview.enrolledIds.includes(v.id)');
+    // REV-SCOPE-R1A: 오늘 줄 계산은 countReviewScope로 옮겼고, 등록 id 가드는 그 canLegacy 입력으로 넘긴다.
+    expect(source).toContain('canLegacy: id => !fsrsReview.enrolledIds.includes(id) && fsrsReview.controller.canLegacy(id)');
   });
   it('active manual save uses one atomic command and only confirmed disabled mode retains legacy insert', () => {
     const source = readFileSync(new URL('../VocabPage.jsx', import.meta.url), 'utf8');

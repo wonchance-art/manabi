@@ -405,6 +405,17 @@ test('world access: 비로그인 사용자는 로그인 안내 화면에서 차�
   });
 });
 
+test('review access: 비로그인 사용자는 복습방에서 오류 대신 로그인 안내를 본다', { timeout: config.timeout }, async () => {
+  // 2026-10-14 M09 #1447 Preview: 로그인 전 /vocab이 `learning.rows` TypeError로 오류 화면이 되던 회귀.
+  await runInFreshPage(async (page) => {
+    await page.goto('/vocab', { waitUntil: 'domcontentloaded' });
+    await assertVisible(page.getByRole('link', { name: '로그인하고 단어장 쓰기', exact: true }), 'signed-out review room login link');
+    await page.goto('/vocab?lang=Chinese', { waitUntil: 'domcontentloaded' });
+    await assertVisible(page.getByRole('link', { name: '로그인하고 이어가기 →', exact: true }), 'signed-out scoped review login link');
+    assert.equal(await page.getByText('단어장을 불러오지 못했어요').count(), 0);
+  });
+});
+
 test('visibility: 일반 사용자에게 미완성 내비와 독해 트랙 진입을 숨긴다', { timeout: config.timeout }, async () => {
   await runInFreshPage(async (page, context) => {
     await seedMockSessionCookie(context, 'learner');

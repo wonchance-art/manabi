@@ -135,7 +135,7 @@ describe('authoritative vocabulary learning UI', () => {
     expect(source).toContain('fsrsReview.controller.retrySave(row.operationId)');
     const data = readFileSync(new URL('../useVocabData.js', import.meta.url), 'utf8');
     expect(data).toContain("queryKey: ['vocab', user?.id, 'learning']");
-    expect(data).toContain('learning.rows : EMPTY_ROWS');
+    expect(data).toContain('ownLearning.rows : EMPTY_ROWS');
     expect(data).not.toContain('fetchVocab(');
   });
 });

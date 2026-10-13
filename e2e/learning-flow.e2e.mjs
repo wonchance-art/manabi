@@ -701,7 +701,7 @@ test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복�
     await assertVisible(page.getByRole('heading', { name: '복습', exact: true }), 'vocabulary review heading');
     await assertVisible(page.getByRole('button', { name: 'la famille — 가족 상세 열기', exact: true }), 'saved word in vocabulary list');
     // 카드는 총계 하나만 말하고, 분해는 버튼 라벨이 대신한다 — 같은 수를 두 번 적지 않는다.
-    await assertVisible(page.getByText('오늘 할 일', { exact: false }), 'todo kicker');
+    await assertVisible(page.getByText('이 범위에서 오늘', { exact: false }), 'scope kicker');
     assert.equal((await page.locator('.vocab-hero__num').textContent()).trim(), '1', 'hero total counts the one saved word');
     assert.equal(
       await page.getByText('복습 0', { exact: false }).count(),
