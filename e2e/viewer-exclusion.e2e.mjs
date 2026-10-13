@@ -128,7 +128,9 @@ test('실패/중복/이동 뒤 늦은 표시 응답은 현재 단어를 바꾸�
  const f = await setup({ width: 390 });
  try {
   await f.select(0); f.fail(); await f.toggle('아는 단어').click();
-  await f.page.getByText('fixture write failure', { exact: true }).waitFor();
+  // WALL-STATES-001: 실패는 alert 토스트로 알리되 원문(fixture write failure)은 내지 않고 이 화면의 폴백 문구를 쓴다.
+  await f.page.getByRole('alert').filter({ hasText: '잠시 후 다시 시도해 주세요.' }).waitFor();
+  assert.equal(await f.page.getByText('fixture write failure').count(), 0);
   assert.equal(f.exclusions.length, 0); assert.equal(await f.gradesUI.first().isEnabled(), true);
   f.hold(); await f.toggle('아는 단어').click(); await delay(100);
   assert.equal(await f.toggle('아는 단어').isDisabled(), true);
