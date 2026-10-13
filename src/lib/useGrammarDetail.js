@@ -12,6 +12,7 @@ import { buildViewerGrammarPrompt, parseViewerExplanation, formatViewerExplanati
 import {
   buildGrammarPrompt, formatChapterCandidates, grammarCacheKey, parseGrammarResult,
 } from './grammarDetail';
+import { friendlyToastMessage } from './errorMessage';
 
 /** 레퍼런스 문법 챕터 후보 — 매니페스트는 무거우므로 [자세히]를 처음 누를 때만 지연 로드.
  * 옛 교재 챕터 주소는 관리자 보관함으로 옮겨져 learnerHref가 null로 막는다 — 후보(slug·제목)는
@@ -112,7 +113,7 @@ export function useGrammarDetail({ materialLang, toast, explanationLocale = 'ko'
     } catch (err) {
       if (!current()) return;
       setResult('');
-      toast?.('문법 해설에 실패했어요 — ' + (err?.message || ''), 'error');
+      toast?.('문법 해설에 실패했어요 — ' + friendlyToastMessage(err), 'error');
     } finally {
       if (current()) { clearTimeout(deadline.current); deadline.current = null; setLoading(false); }
     }

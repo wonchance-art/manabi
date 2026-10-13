@@ -5,6 +5,7 @@ import {classHistoryState} from '../../lib/classHistoryNavigation';
 import {useInfiniteQuery} from '@tanstack/react-query';
 import {readUnlock} from '../../lib/classClient';
 import ClassStudyHistory from './ClassStudyHistory';
+import { friendlyToastMessage } from '../../lib/errorMessage';
 export default function ClassRemoteHistory({team,user,...props}){
  const initial=classHistoryState(useSearchParams());
  const [search,setSearch]=useState(initial.search),[term,setTerm]=useState(initial.search),[extras,setExtras]=useState(initial.extras);
@@ -18,7 +19,7 @@ export default function ClassRemoteHistory({team,user,...props}){
  const restoring=search===initial.search&&extras===initial.extras&&shown<initial.shown&&query.hasNextPage;
  const {isFetching,error,fetchNextPage}=query;
  useEffect(()=>{if(restoring&&!isFetching&&!error)fetchNextPage();},[restoring,isFetching,error,fetchNextPage]);
- return <>{query.isLoading&&<p role="status">수업 기록을 불러오는 중…</p>}{query.error&&<p role="alert">{query.error.message} <button onClick={()=>query.refetch()}>다시 불러오기</button></p>}
+ return <>{query.isLoading&&<p role="status">수업 기록을 불러오는 중…</p>}{query.error&&<p role="alert">{friendlyToastMessage(query.error)} <button onClick={()=>query.refetch()}>다시 불러오기</button></p>}
  <ClassStudyHistory {...props} showEmpty={!query.isLoading&&!query.error} notes={query.data?.pages.flatMap(p=>p.notes)||[]} coverage={query.data?.pages[0]?.coverage||[]} remote={{search,setSearch,extras,setExtras,restoring}}/>
  {query.hasNextPage&&<button className="classroom-button classroom-button--quiet" disabled={query.isFetchingNextPage} onClick={()=>query.fetchNextPage()}>{query.isFetchingNextPage?'불러오는 중…':'이전 수업 더 보기'}</button>}</>;
 }

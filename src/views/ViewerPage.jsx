@@ -173,7 +173,7 @@ import TokenRangeGrips from './TokenRangeGrips';
 import ViewerComments from './ViewerComments';
 import ViewerQuizModal from './ViewerQuizModal';
 import { langNameKo, splitSentenceAroundWord, detectLang } from '../lib/constants';
-import { attributionParts, literatureAttributionParts } from '../lib/videoAttribution';
+import { attributionParts, literatureAttributionParts, materialSource } from '../lib/videoAttribution';
 import { logReviewEvents } from '../lib/reviewEvents';
 
 // 공부 모드 지원 언어 키 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
@@ -2512,7 +2512,7 @@ export default function ViewerPage() {
     if (gradeAction.current !== action) return;
     const snapshot = undo ? { ...undo, text: savedToken.text } : null;
     lastSaveRef.current = snapshot;
-    if (linked || snapshot) toast(<span>「{savedToken.text}{vt("」 저장됨")}{snapshot && <ViewerLabelSlot locale={uiLocale} text={<>{vt('저장 취소 ·')} {UNDO_KEY_LABEL}</>}><button type="button" className="btn btn--ghost btn--sm" style={{ pointerEvents: 'auto' }} onClick={() => undoLastSave(snapshot)}>저장 취소 · {UNDO_KEY_LABEL}</button></ViewerLabelSlot>}</span>, 'success', 8000);
+    if (linked || snapshot) toast(<span>「{savedToken.text}{vt("」 단어를 저장했어요")}{snapshot && <ViewerLabelSlot locale={uiLocale} text={<>{vt('되돌리기 ·')} {UNDO_KEY_LABEL}</>}><button type="button" className="btn btn--ghost btn--sm" style={{ pointerEvents: 'auto' }} onClick={() => undoLastSave(snapshot)}>되돌리기 · {UNDO_KEY_LABEL}</button></ViewerLabelSlot>}</span>, 'success', 8000);
   };
 
   const isDragSelection=dragTokens!==null;
@@ -2548,7 +2548,7 @@ export default function ViewerPage() {
         <p style={{ color: 'var(--text-secondary)', marginBottom: 20, maxWidth: 400, margin: '0 auto 20px' }}>
           {isNotFound
             ? '이 자료는 삭제됐거나 비공개로 전환됐을 수 있어요. 연결됐던 단어는 단어장에 그대로 남아 있습니다.'
-            : (error.message || '잠시 후 다시 시도해주세요.')}
+            : friendlyToastMessage(error, '잠시 후 다시 시도해주세요.')}
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           {!isNotFound && <button onClick={() => refetch()} className="btn btn--primary">{vt("다시 시도")}</button>}
@@ -3701,7 +3701,7 @@ export default function ViewerPage() {
           저장만 되고 어디에도 안 보이던 것을 여기서 드러낸다(저장은 표기가 아니다).
           라이선스를 모르는 개인 반입분에도 채널·원본 링크는 준다 — 어차피 필요한 정보다. */}
       {(() => {
-        const at = attributionParts(material?.metadata?.source);
+        const at = attributionParts(materialSource(material));
         if (!at) return null;
         return (
           <p className="viewer-attribution">{vt("출처:")}{at.channel || '유튜브'}

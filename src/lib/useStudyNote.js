@@ -2,6 +2,7 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {readTeachingBoard, saveTeachingBoard} from './teachingBoardStore';
 import {noteScope, validateStudyNote, sameStudyNote} from './studyNotes';
+import { friendlyToastMessage } from './errorMessage';
 
 export async function requestNote(url, options) {
   const response = await fetch(url, {...options, cache: 'no-store', headers: {'Content-Type': 'application/json', ...options?.headers}});
@@ -62,7 +63,7 @@ export default function useStudyNote(owner, id) {
       return run.value;
     })().catch(error => {
       if (error.status === 409 || error.code === 'board_conflict') run.blocked = true;
-      publish(run, {saving: false, conflict: run.blocked, error: error.message});
+      publish(run, {saving: false, conflict: run.blocked, error: friendlyToastMessage(error)});
       throw error;
     }).finally(() => { run.syncing = null; });
     await run.syncing;
@@ -89,7 +90,7 @@ export default function useStudyNote(owner, id) {
       } catch (error) {
         // Revoked/deleted notes must not be resurrected from an offline cache.
         if (cached && ![401,403,404].includes(error.status)) { run.value = cached; run.dirty = !!cached.dirty; publish(run, {ready: true, value: cached, error: '연결되지 않아 이 기기의 노트를 열었어요. 연결 후 계정에 저장하세요.'}); }
-        else publish(run, {error: error.message});
+        else publish(run, {error: friendlyToastMessage(error)});
       }
     })();
     return () => { run.alive = false; clearTimeout(timer.current); };
@@ -99,10 +100,10 @@ export default function useStudyNote(owner, id) {
     const run = session.current;
     if (!run?.alive || !run.value) return;
     const next = {...run.value, ...patch};
-    try { next.document = validateStudyNote(next.document); } catch (error) { publish(run, {error: error.message}); throw error; }
+    try { next.document = validateStudyNote(next.document); } catch (error) { publish(run, {error: friendlyToastMessage(error)}); throw error; }
     run.value = next; run.dirty = true; run.generation++;
     publish(run, {value: next, saving: !run.blocked});
-    persist(run).catch(error => { if (error.code === 'board_conflict') run.blocked = true; publish(run, {error: error.message, saving: false, conflict: run.blocked}); });
+    persist(run).catch(error => { if (error.code === 'board_conflict') run.blocked = true; publish(run, {error: friendlyToastMessage(error), saving: false, conflict: run.blocked}); });
     clearTimeout(timer.current); timer.current = setTimeout(() => sync().catch(() => {}), 1000);
   }, [persist, publish, sync]);
   useEffect(() => {

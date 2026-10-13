@@ -29,6 +29,7 @@ import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
 import MaterialGroupCard from '../components/MaterialGroupCard';
 import SuggestionArtwork from '../components/SuggestionArtwork';
+import { friendlyToastMessage } from '@/lib/errorMessage';
 
 
 async function fetchTodaySuggestions() {
@@ -163,7 +164,7 @@ export default function MaterialsPage({ libraryView = null }) {
       invalidateLibrary(queryClient,user.id);
       toast('휴지통으로 옮겼습니다.', 'success');
     },
-    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
+    onError: (err) => toast('삭제 실패: ' + friendlyToastMessage(err), 'error'),
   });
 
   const toggleVisibilityMutation = useMutation({
@@ -178,7 +179,7 @@ export default function MaterialsPage({ libraryView = null }) {
       queryClient.invalidateQueries({ queryKey: ['materials'] });
       toast(newVisibility === 'public' ? '공용으로 공개했습니다.' : '비공개로 전환했습니다.', 'success');
     },
-    onError: (err) => toast('변경 실패: ' + err.message, 'error'),
+    onError: (err) => toast('변경 실패: ' + friendlyToastMessage(err), 'error'),
   });
   const searchParams = useSearchParams();
   // 기본 탭(v2-P, 오너 지시 「내 자료가 먼저」) — 로그인 `private` / 비로그인 `public`.

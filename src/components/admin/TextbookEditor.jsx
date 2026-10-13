@@ -7,6 +7,7 @@ import { useAuth } from '../../lib/AuthContext';
 import { CHAPTER_FIELD_LABELS, editableEntries, updateChapterValue } from '../../lib/chapterEditorModel';
 import { TEXTBOOK_THEMES, textbookThemeStyle } from '../../lib/textbookTheme';
 import './textbook.css';
+import { friendlyToastMessage } from '../../lib/errorMessage';
 
 const labelFor = (key) => CHAPTER_FIELD_LABELS[key] || key;
 
@@ -77,7 +78,7 @@ export default function TextbookEditor({ catalog, initialLang, initialSlug }) {
       if (controller.signal.aborted) return;
       setSnapshot(result); setDraft(result.merged);
     }).catch((cause) => {
-      if (!controller.signal.aborted) setError(cause.message);
+      if (!controller.signal.aborted) setError(friendlyToastMessage(cause));
     }).finally(() => { if (!controller.signal.aborted) setPending(false); });
     return () => controller.abort();
   }, [selection.lang, selection.slug, reload, isAdmin]);
@@ -114,7 +115,7 @@ export default function TextbookEditor({ catalog, initialLang, initialSlug }) {
       setNotice('저장했어요. 교재 페이지에 수정 내용이 반영됩니다.');
       router.refresh();
     } catch (cause) {
-      setError(cause.message || '연결이 끊겼어요. 입력한 내용은 유지됩니다.');
+      setError(friendlyToastMessage(cause, '연결이 끊겼어요. 입력한 내용은 유지됩니다.'));
     } finally { savingRef.current = false; setSaving(false); }
   }
 

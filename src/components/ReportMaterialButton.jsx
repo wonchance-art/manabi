@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import Button from './Button';
+import { friendlyToastMessage } from '../lib/errorMessage';
 
 const REASONS = [
   { value: 'inappropriate', label: '부적절한 콘텐츠' },
@@ -75,7 +76,7 @@ export default function ReportMaterialButton({ materialId, userId, toast }) {
       setOpen(false);
       setDetails('');
     } catch (err) {
-      toast('신고 실패 — ' + (err?.message || '잠시 후 다시 시도'), 'error');
+      toast('신고 실패 — ' + friendlyToastMessage(err, '잠시 후 다시 시도'), 'error');
     } finally {
       setSubmitting(false);
     }

@@ -20,6 +20,7 @@ import { useStudyLanguages } from '@/lib/useStudyLanguages';
 import { useViewerLanguage } from '@/lib/useViewerLanguage';
 import StudyLanguageChips from './StudyLanguageChips';
 import './material-composer.css';
+import { friendlyToastMessage } from '@/lib/errorMessage';
 
 export default function MaterialComposer() {
   const { user, loading } = useAuth();
@@ -169,7 +170,7 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
       if (draftRef.current.links.length >= MAX_LINKS) throw new Error('링크는 10개까지 추가할 수 있어요.');
       change({ links: [...draftRef.current.links, url] }); setLinkInput(''); setLinkOpen(false);
       setNotice('링크를 추가했어요. 원문은 저장 후 열 수 있어요.');
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(friendlyToastMessage(err)); }
   }
 
   async function addFiles(files) {
@@ -186,7 +187,7 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
       if (draftRef.current.files.length + additions.length > MAX_ATTACHMENTS) throw new Error('파일은 한 자료에 5개까지 추가할 수 있어요.');
       change({ files: [...draftRef.current.files, ...additions] });
       setNotice(additions.length ? '원본을 추가했어요. 작성한 글은 그대로 유지됩니다.' : '이미 추가한 파일이에요.');
-    } catch (err) { if (alive.current) setError(err.message); }
+    } catch (err) { if (alive.current) setError(friendlyToastMessage(err)); }
     finally { prepareRef.current = false; if (alive.current) setPreparing(false); }
   }
 
@@ -202,7 +203,7 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
         current = { ...current, links: [...new Set([...current.links, url])] };
       }
       validateComposer(current);
-    } catch (err) { setError(err.message); return; }
+    } catch (err) { setError(friendlyToastMessage(err)); return; }
     submitRef.current = true; setBusy(true); setError(''); setIntent(action);
     current = { ...current, frozen: true };
     draftRef.current = current; setDraft(current); setLinkInput('');

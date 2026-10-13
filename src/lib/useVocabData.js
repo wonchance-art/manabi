@@ -171,7 +171,7 @@ export function useVocabData() {
       if (context?.actorId !== actorRef.current) return;
       toast(`${count}개 단어를 삭제했습니다.`, 'info');
     },
-    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast('일괄 삭제 실패: ' + err.message, 'error'); },
+    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast('일괄 삭제 실패: ' + friendlyToastMessage(err), 'error'); },
   });
 
   return {

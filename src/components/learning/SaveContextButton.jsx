@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../lib/AuthContext';
 import './learning.css';
+import { friendlyToastMessage } from '../../lib/errorMessage';
 
 export async function saveContext(payload) {
   const response = await fetch('/api/learning/vocabulary', { method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload) });
@@ -26,7 +27,7 @@ export default function SaveContextButton({ word, source, label = '복습에 담
       onSaved?.(result);
     } catch(cause) {
       if(cause.code === 'meaning_conflict' && cause.existing) setConflict(cause);
-      else setError(cause.message);
+      else setError(friendlyToastMessage(cause));
     } finally {busy.current=false;setPending(false);}
   }
   if (!user) return <p className="learning-links__muted">로그인하면 출처와 함께 복습에 담을 수 있어요.</p>;

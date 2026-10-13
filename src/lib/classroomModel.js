@@ -1,6 +1,7 @@
 import { noteEntries, TEAM_KEY_RE } from './classBoard';
 import { replaceViewerAnalysis } from './reanalysisPreservation';
 import { classStudyHref } from './classStudy';
+import { friendlyToastMessage } from './errorMessage';
 
 export const CLASS_LANG = {
   Japanese: { code: 'ja', label: '일본어', glyph: 'あ' }, Chinese: { code: 'zh', label: '중국어', glyph: '学' },
@@ -45,7 +46,7 @@ export function classLinkPath(value, origin) {
 export function classroomError(error) {
   if (error?.code === 'PGRST202') return '안전한 수업 저장 기능을 준비 중이에요. 입력은 이 기기에 보관되어 있어요.';
   if (error?.code === '40001') return '다른 창에서 내용이 바뀌었어요. 최신 내용을 확인한 뒤 다시 저장해 주세요.';
-  return error?.message || '연결을 확인한 뒤 다시 시도해 주세요.';
+  return friendlyToastMessage(error, '연결을 확인한 뒤 다시 시도해 주세요.');
 }
 export async function appendClassroomEntry(client, operation) {
   const { data, error } = await client.rpc(operation.seed?'classroom_append_study':'classroom_append_entry', {

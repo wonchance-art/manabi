@@ -18,6 +18,7 @@ import { useToast } from '../lib/ToastContext';
 import ActionIcon from './ActionIcon';
 import { shouldShowOnboarding } from '../lib/onboardingGate';
 import { showLocalReminder } from '../lib/localReminder';
+import { friendlyToastMessage } from '@/lib/errorMessage';
 
 const navIcons={'/home':'home','/lessons':'book','/discover':'compass','/vocab':'review','/materials':'library'};
 
@@ -73,7 +74,7 @@ export default function Layout({ children }) {
       if (error) throw error;
       toast('인증 메일을 다시 보냈어요. 받은편지함을 확인해주세요.', 'success');
     } catch (err) {
-      toast('재발송 실패 — ' + (err?.message || '잠시 후 다시 시도'), 'error');
+      toast('재발송 실패 — ' + friendlyToastMessage(err, '잠시 후 다시 시도'), 'error');
     } finally {
       setResendingConfirm(false);
     }

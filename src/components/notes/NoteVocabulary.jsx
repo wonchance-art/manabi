@@ -4,6 +4,7 @@ import {useQueryClient} from '@tanstack/react-query';
 import {noteCandidatePayload} from '@/lib/studyNotes';
 import {requestNote} from '@/lib/useStudyNote';
 import BoardIcon from '@/components/classroom/BoardIcon';
+import { friendlyToastMessage } from '@/lib/errorMessage';
 
 export default function NoteVocabulary({saved, noteId, note, onChange, onFocus, onClose, sync, message}) {
   const queryClient = useQueryClient(), working = useRef(false);
@@ -28,7 +29,7 @@ export default function NoteVocabulary({saved, noteId, note, onChange, onFocus, 
         return !item.reading&&result.reading?{...item,reading:result.reading,reviewed:false}:item;
       }));
       if (!result.senses?.length && !result.candidates?.length) setNotice('저장된 사전 뜻이 없어요. 노트에서 배운 뜻을 적어 주세요.');
-    } catch (error) { setNotice(error.message); } finally { setLookupId(null); }
+    } catch (error) { setNotice(friendlyToastMessage(error)); } finally { setLookupId(null); }
   }
   async function saveRows(list, confirmation = {}) {
     if (working.current || !list.length) return;
@@ -44,12 +45,12 @@ export default function NoteVocabulary({saved, noteId, note, onChange, onFocus, 
           result.created ? created++ : linked++;
           patch(row.id, {vocabularyId: result.vocabularyId});
           setOutcomes(current => ({...current, [row.id]: {ok: true, text: result.created ? '새로 담음' : '기존 단어에 문맥 연결'}}));
-        } catch (error) { failed++; setOutcomes(current => ({...current, [row.id]: {...error.detail, error: error.message}})); }
+        } catch (error) { failed++; setOutcomes(current => ({...current, [row.id]: {...error.detail, error: friendlyToastMessage(error)}})); }
       }
       await sync();
       setNotice(`새 단어 ${created}개 · 기존 단어 ${linked}개 연결${failed ? ` · 확인/재시도 ${failed}개` : ''}`);
       queryClient.invalidateQueries({predicate: query => /vocab|learning-summary/.test(String(query.queryKey[0]))});
-    } catch (error) { setNotice(error.message); }
+    } catch (error) { setNotice(friendlyToastMessage(error)); }
     finally { working.current = false; setBusy(false); }
   }
   const inkCount = note.board.pages.reduce((count, page) => count + page.elements.filter(el => !el.isDeleted && el.type === 'freedraw').length, 0);

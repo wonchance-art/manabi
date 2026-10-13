@@ -39,9 +39,10 @@ import {classHistoryEntries} from '../lib/classStudyHistory';
 import ClassSaveResume from '../components/classroom/ClassSaveResume';
 import {classEntryHref,cacheClassSource} from '../lib/classHistoryNavigation';
 import { CourseTab } from '../components/classroom/ClassCourseSchedule';
+import { friendlyToastMessage } from '../lib/errorMessage';
 
 const RELOCK_MSG = '암호를 다시 입력해 주세요 — 선생님이 바꿨거나 30일이 지났어요.';
-const errMsg = (err) => (err?.status === 429 ? '잠시 후 다시 시도해 주세요.' : err?.message || '알 수 없는 오류');
+const errMsg = (err) => (err?.status === 429 ? '잠시 후 다시 시도해 주세요.' : friendlyToastMessage(err));
 
 async function copyToClipboard(text, toast, done) {
   try { await navigator.clipboard.writeText(text); toast(done, 'success'); }
@@ -255,7 +256,7 @@ function StudentView({ teamKey, user, toast }) {
         if(result.state==='choose'){setChoice({entry,candidates:result.candidates});return;}
         await refetchClaimed();
         if(result.copyId)router.push(destination(studentReaderHref(result.copyId,teamKey,entry.day)));
-      }catch(err){if(err?.status===401)relock(RELOCK_MSG);else toast(err.message,'error');}
+      }catch(err){if(err?.status===401)relock(RELOCK_MSG);else toast(friendlyToastMessage(err),'error');}
       finally{setRow(id,false);}return;
     }
     const existing = copies.get(id);
@@ -357,7 +358,7 @@ function StudentView({ teamKey, user, toast }) {
 
       {featured&&activeTab==='book'&&<button className="classroom-featured-note" onClick={()=>openEntry(featured)} disabled={!!rowBusy[featured.id]}><span className="classroom-eyebrow">{recent?'이어서 공부하기':featured.day?'최근 수업 노트':'수업 교재'}</span><h2>{featured.day?`${dayLabel(featured.day)} 수업 노트`:chapterLabel(featured.title)}</h2><p>{recent?'읽던 위치에서 계속 공부하세요.':'한 표현씩, 내 언어로 만들어 보세요.'}</p><b>{rowBusy[featured.id]?'자료 확인 중…':recent?'이어 읽기 →':'읽기 시작 →'}</b>{user&&<small>처음 여는 자료는 내 서재에 보관됩니다.</small>}</button>}
       {claimedError&&<p role="alert">내 자료 목록을 확인하지 못했어요. <button onClick={()=>refetchClaimed()}>다시 확인</button></p>}
-      {choice&&<div className="classroom-notice" role="group" aria-label="기존 사본 선택"><b>사용할 사본을 선택하세요.</b><p>다른 사본은 삭제하지 않습니다.</p>{choice.candidates.map(c=><button key={c.id} disabled={busy} onClick={async()=>{setBusy(true);try{const r=await requestClassCopy(teamKey,choice.entry.id,'open',{preferred:c.id});if(r.copyId)router.push(classEntryHref(studentReaderHref(r.copyId,teamKey,choice.entry.day),teamKey,choice.entry));setChoice(null);}catch(e){toast(e.message,'error');}finally{setBusy(false);}}}>{c.title} · {new Date(c.createdAt).toLocaleDateString('ko-KR')}</button>)}<button onClick={()=>setChoice(null)}>나중에</button></div>}
+      {choice&&<div className="classroom-notice" role="group" aria-label="기존 사본 선택"><b>사용할 사본을 선택하세요.</b><p>다른 사본은 삭제하지 않습니다.</p>{choice.candidates.map(c=><button key={c.id} disabled={busy} onClick={async()=>{setBusy(true);try{const r=await requestClassCopy(teamKey,choice.entry.id,'open',{preferred:c.id});if(r.copyId)router.push(classEntryHref(studentReaderHref(r.copyId,teamKey,choice.entry.day),teamKey,choice.entry));setChoice(null);}catch(e){toast(friendlyToastMessage(e),'error');}finally{setBusy(false);}}}>{c.title} · {new Date(c.createdAt).toLocaleDateString('ko-KR')}</button>)}<button onClick={()=>setChoice(null)}>나중에</button></div>}
       <div className="classroom-tabs" aria-label="수업 자료 종류">{team.course&&<button aria-pressed={activeTab==='course'} onClick={()=>setStudentTab('course')}>코스</button>}<button aria-pressed={activeTab==='book'} onClick={()=>setStudentTab('book')}>교재</button><button aria-pressed={activeTab==='notes'} onClick={()=>setStudentTab('notes')}>수업 기록</button></div>
       {activeTab==='course'&&team.course&&<CourseTab teamKey={teamKey} user={user}/>}
       {activeTab==='notes'&&<ClassRemoteHistory team={teamKey} user={user} chapters={chapters} onOpen={n=>{if(!dim(n))openEntry(n);}} onCopy={copyNotePlain} disabled={dim}/>}

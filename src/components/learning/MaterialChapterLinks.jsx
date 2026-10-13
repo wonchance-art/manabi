@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../lib/AuthContext';
 import './learning.css';
+import { friendlyToastMessage } from '../../lib/errorMessage';
 
 export default function MaterialChapterLinks({ lang, slug, kind, materialId, browseFirst = false }) {
   const {user}=useAuth();
@@ -14,7 +15,7 @@ export default function MaterialChapterLinks({ lang, slug, kind, materialId, bro
   async function change(method,payload){if(pending)return;setPending(true);setError('');try{
     const response=await fetch('/api/learning/material-links',{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     const result=await response.json();if(!response.ok)throw new Error(result.error);setSelected('');await refetch();
-  }catch(cause){setError(cause.message);}finally{setPending(false);}}
+  }catch(cause){setError(friendlyToastMessage(cause));}finally{setPending(false);}}
   function connect(){if(slug){const found=data.candidates.find(c=>`${c.kind}:${c.id}`===selected);if(found)change('POST',{lang,slug,kind:found.kind,materialId:found.id});}
     else if(selected)change('POST',{lang,slug:selected,kind,materialId});}
   const selector = data && <>
@@ -29,7 +30,7 @@ export default function MaterialChapterLinks({ lang, slug, kind, materialId, bro
     <p className="learning-links__muted">나에게만 보임</p>
     {!user?<p>로그인하면 내 연결 자료를 볼 수 있어요.</p>:<>
       {isLoading&&<p role="status">불러오는 중…</p>}
-      {(error||loadError)&&<p role="alert">{error||loadError.message}</p>}
+      {(error||loadError)&&<p role="alert">{error||friendlyToastMessage(loadError)}</p>}
       {loadError&&<button type="button" className="btn btn--ghost btn--sm" onClick={()=>refetch()}>다시 시도</button>}
       {data&&<>
         <ul>{data.links.map(link=><li key={link.id} className="learning-links__row"><Link href={link.href}>{link.title||'제목 없는 자료'}</Link></li>)}</ul>
@@ -47,7 +48,7 @@ export default function MaterialChapterLinks({ lang, slug, kind, materialId, bro
     <p className="learning-links__muted">연결 목록은 나에게만 보입니다. 자료의 공개 범위는 바뀌지 않습니다.</p>
     {!user?<p>로그인하면 자료와 교재를 연결할 수 있어요.</p>:<>
       {isLoading&&<p role="status">불러오는 중…</p>}
-      {(error||loadError)&&<p role="alert">{error||loadError.message}</p>}
+      {(error||loadError)&&<p role="alert">{error||friendlyToastMessage(loadError)}</p>}
       {loadError&&<button type="button" className="btn btn--ghost btn--sm" onClick={()=>refetch()}>다시 시도</button>}
       {data&&<>
         <ul>{data.links.map(link=><li key={link.id} className="learning-links__row"><Link href={link.href}>{link.title||'제목 없는 자료'}</Link>

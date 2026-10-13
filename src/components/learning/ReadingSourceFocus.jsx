@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { useAuth } from '../../lib/AuthContext';
 import { learningSourceRevision, readingSourceTarget, UUID } from '../../lib/learningSources';
 import { revealInReader } from '../../lib/usePagedReader';
+import { friendlyToastMessage } from '../../lib/errorMessage';
 
 export default function ReadingSourceFocus({ materialId, ready, json, rawText, onTarget }) {
   const {user,loading}=useAuth();
@@ -45,7 +46,7 @@ export default function ReadingSourceFocus({ materialId, ready, json, rawText, o
       onTarget(tokenId);
       revealInReader(target,{block:'center'}); // 쪽 넘김 보기면 그 토큰의 쪽으로(READER-PAGED-001)
     }
-    focus().catch(error=>{if(!request.signal.aborted&&!interacted){setMessage(error.message);setFailed(true);}});
+    focus().catch(error=>{if(!request.signal.aborted&&!interacted){setMessage(friendlyToastMessage(error));setFailed(true);}});
     return ()=>{request.abort();window.removeEventListener('pointerdown',stop,true);window.removeEventListener('keydown',stop,true);};
   },[materialId,ready,json,rawText,onTarget,search,userId,loading,retry]);
   return message?<p className="learning-links" role="status">{message}{failed&&<button className="btn btn--ghost btn--sm" onClick={()=>setRetry(n=>n+1)}>다시 시도</button>}</p>:null;

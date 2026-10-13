@@ -15,6 +15,9 @@
  *
  * ⚠ 실측으로 알게 된 구멍: `metadata.source`는 **저장만 되고 어디에도 표시되지 않았다**.
  * 저장은 표기가 아니다. 라이선스가 요구하는 것은 **읽는 사람에게 보이는 것**이다.
+ * ⚠ 두 번째 구멍(2026-10-13): R5의 뷰어는 `material.metadata.source`를 읽었는데, `reading_materials`에는
+ * `metadata` 열이 없다. 저장하는 쪽(자료 추가 링크·추천 읽기)은 모두 `processed_json.metadata.source`에 쓴다.
+ * 그래서 출처 줄이 한 번도 그려지지 않았다 → 읽는 자리를 {@link materialSource} 한 곳으로 모은다.
  */
 
 /** 검색으로 찾은 CC BY 영상 — 라이선스 재확인을 통과한 것만. */
@@ -63,15 +66,39 @@ export function isCreativeCommonsText(text) {
 }
 
 /**
+ * 자료 행에서 출처 기록을 꺼낸다. 저장 위치의 정본은 `processed_json.metadata.source`다
+ * (MaterialAddPage initJson·suggestionReading의 `meta.source`). 행에 `metadata` 열은 없다.
+ */
+export function materialSource(material) {
+  return material?.processed_json?.metadata?.source ?? null;
+}
+
+/**
  * 화면에 보이는 출처 한 줄의 재료. 렌더는 컴포넌트가 한다(링크를 걸어야 하므로).
  * 라이선스를 모르는 개인 반입분에도 **채널·원본 링크는 준다** — 법적 의무는 없지만
  * 「어디서 온 글인지」는 어차피 필요한 정보다.
  * @returns {{channel:string, license:string, url:string}|null}
  */
+/**
+ * 원본 링크는 https 유튜브 주소일 때만 건다. `processed_json`은 자료 소유자가 쓰는 값이라, 공개 자료의
+ * 출처 줄이 다른 사람에게 임의 주소(피싱·data: 등)를 띄우는 통로가 되면 안 된다.
+ */
+export function safeYoutubeUrl(raw) {
+  try {
+    const u = new URL(String(raw || '').trim());
+    const host = u.hostname.toLowerCase();
+    const ok = u.protocol === 'https:' && !u.username && !u.password
+      && (host === 'youtu.be' || host === 'youtube.com' || host.endsWith('.youtube.com'));
+    return ok ? u.href : '';
+  } catch {
+    return '';
+  }
+}
+
 export function attributionParts(source) {
   if (!source || source.kind !== 'youtube') return null;
   const channel = String(source.channel || '').trim();
-  const url = String(source.url || '').trim();
+  const url = safeYoutubeUrl(source.url);
   if (!channel && !url) return null;
   return { channel, license: LICENSE_LABEL[source.license] || '', url };
 }

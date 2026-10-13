@@ -16,6 +16,7 @@ import './reading-content.css';
 import useLibraryActivity from '@/components/library/useLibraryActivity';
 import {LibraryReturnLink} from '@/components/web/LibraryReaderLink';
 import {safeLibraryReturn, libraryReaderHref} from '@/lib/libraryReturn';
+import { friendlyToastMessage } from '@/lib/errorMessage';
 
 function withoutRuby(node) {
   if (!node) return '';
@@ -142,7 +143,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     fetch(`/api/books/${BOOK_ID}/${book.edition}/reading?unit=${unit}`, { signal: controller.signal })
       .then(async response => { const data = await response.json(); if (!response.ok) throw new Error(data.error || '본문을 불러오지 못했어요.'); return data; })
       .then(data => { setSections(data.sections); setLoading(false); })
-      .catch(cause => { if (cause.name !== 'AbortError') { setError(cause.message); setLoading(false); } });
+      .catch(cause => { if (cause.name !== 'AbortError') { setError(friendlyToastMessage(cause)); setLoading(false); } });
     return () => controller.abort();
   }, [book.edition, unit]);
 

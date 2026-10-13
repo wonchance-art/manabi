@@ -8,6 +8,7 @@ import { bookReferenceHref } from '../../lib/bookReviewNavigation';
 import { reviewSourceContexts } from '../../lib/learningSources';
 import { ARCHIVED_TEXTBOOK_NOTICE } from '../../lib/bookNavigation';
 import './learning.css';
+import { friendlyToastMessage } from '../../lib/errorMessage';
 
 export default function VocabularyContexts({ vocabularyId, readOnly = false, word = null }) {
   const {user}=useAuth();
@@ -21,7 +22,7 @@ export default function VocabularyContexts({ vocabularyId, readOnly = false, wor
       const result=await response.json();
       if(!response.ok)throw new Error(result.error || '문맥을 지우지 못했어요.');
       await refetch();
-    } catch(cause) {setRemoveError(cause.message);} finally {setRemoving(null);}
+    } catch(cause) {setRemoveError(friendlyToastMessage(cause));} finally {setRemoving(null);}
   }
   const {primary,others}=word?reviewSourceContexts(word,data || []):{primary:null,others:data || []};
   return <>
