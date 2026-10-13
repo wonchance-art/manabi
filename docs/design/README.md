@@ -24,6 +24,7 @@
 | [`wall-rules.md`](wall-rules.md) | 화면 벽 AI 판정 규칙 정본 — 판정 종류 · 객관 검사 · 자동 승인 조건(교차 모델) · 자동 승인 금지 목록 · PR 코멘트 형식 |
 | [`registry.json`](registry.json) | 설계 등록부 — 설계마다 코드 · 단계 · 목업 원본 · 프레임 · 연결 장면 · 인계 링크 |
 | [`states-inventory.json`](states-inventory.json) | 상태 · 알림 재고 스냅숏(토스트 · 오류 · 로딩 · 빈 상태 · 대화상자 · 메일 · 푸시 1,139개, 위치 · 문구 · 확인할 점, 문구 묶음). 코드에서 뽑은 목록이라 캡처가 아니다 — 화면 벽 「상태 · 알림」 탭의 원본 |
+| [`copy-standard.md`](copy-standard.md) | 화면 문구 표준 정본 — 해요체 · 실패 「…지 못했어요」 · 버튼 「다시 시도」 · 상황별 문구 · 문구 린트 |
 | `mocks/<id>/<id>.html` | 확정 목업 원본. 파일 하나로 열린다(외부 의존은 Google Fonts뿐) |
 | `mocks/<id>/<id>.<frame>.jpg` | 목업에서 뽑은 비교용 프레임. 화면 벽 「예정」 타일과 「목업과 일치」 판정에 쓴다 |
 
