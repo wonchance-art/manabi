@@ -258,7 +258,7 @@ const themes = {
         { zh: "事故", pinyin: "shìgù", ko: "사고", pos: "명사", ex: { zh: "路上发生了一起交通事故。", pinyin: "Lùshang fāshēngle yì qǐ jiāotōng shìgù.", ko: "길에서 교통사고가 발생했어요." } },
         { zh: "事件", pinyin: "shìjiàn", ko: "사건", pos: "명사", ex: { zh: "这是一起重大事件。", pinyin: "Zhè shì yì qǐ zhòngdà shìjiàn.", ko: "이것은 중대한 사건이에요." } },
         { zh: "事实上", pinyin: "shìshíshàng", ko: "사실상, 실제로", pos: "부사", ex: { zh: "事实上，这个问题很简单。", pinyin: "Shìshíshàng, zhège wèntí hěn jiǎndān.", ko: "사실상 이 문제는 매우 간단해요." } },
-        { zh: "事业", pinyin: "shìyè", ko: "사업, 일", pos: "명사", ex: { zh: "他把一生都献给了教育事业。", pinyin: "Tā bǎ yìshēng dōu xiàn gěile jiàoyù shìyè.", ko: "그는 평생을 교육 사업에 바쳤어요." } },
+        { zh: "事业", pinyin: "shìyè", ko: "(평생의) 일, 경력; 공익을 위한 일", pos: "명사", hanja: "사업(事業) — 한국어 '사업(장사·비즈니스)'과 쓰임이 달라요! 중국어에선 평생 걸고 하는 일·경력이나 교육·자선 같은 공익 사업이에요. 장사는 生意예요.", ex: { zh: "他把一生都献给了教育事业。", pinyin: "Tā bǎ yìshēng dōu xiàn gěile jiàoyù shìyè.", ko: "그는 평생을 교육 사업에 바쳤어요." } },
         { zh: "试题", pinyin: "shìtí", ko: "시험 문제", pos: "명사", ex: { zh: "这次考试的试题很难。", pinyin: "Zhè cì kǎoshì de shìtí hěn nán.", ko: "이번 시험 문제는 매우 어려웠어요." } },
         { zh: "试验", pinyin: "shìyàn", ko: "시험하다, 실험하다", pos: "동사", ex: { zh: "科学家正在做一个新试验。", pinyin: "Kēxuéjiā zhèngzài zuò yí ge xīn shìyàn.", ko: "과학자가 새로운 실험을 하고 있어요." } },
         { zh: "室", pinyin: "shì", ko: "방, 실", pos: "명사", ex: { zh: "老师在办公室里。", pinyin: "Lǎoshī zài bàngōngshì lǐ.", ko: "선생님은 사무실에 계세요." } },
