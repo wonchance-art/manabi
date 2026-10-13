@@ -1,20 +1,21 @@
 'use client';
 
-// 복습 범위 막대 · 범위 시트 · 범위 상태 문구(REV-SCOPE-R1A — 설계 §5-1 · §5-2 · §5-6).
+// 복습 범위 막대 · 범위 시트 · 범위 상태 문구(REV-SCOPE-R1A · R1B-1 — 설계 §5-1 · §5-2 · §5-6).
 // 숫자는 전부 부모가 넘긴 countFor(= countReviewScope)에서 나온다 — 이 파일은 따로 세지 않는다(원칙 3).
-// R1-A 범위: 언어 · 급수 · 출처 · 상태. 「종류」 칩 · 세션 길이 · 집중 연습은 R1-B, 최근 범위 · 고정은 R2라 그리지 않는다.
+// 축: 언어 · 급수 · 출처 · 상태 · 종류(단어 · 문장, R1-B-1 — 문형은 R2). 최근 범위 · 고정은 R2라 그리지 않는다.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  BOOK_LESSONS, SCOPE_LANG_LABELS, STUDY_SOURCE_REF, ZH_SCOPE_LEVELS,
-  scopeLevelLabel, scopeSourceLabel, scopeStateLabel, wordScopeLanguage, MAX_SCOPE_MATERIALS,
+  BOOK_LESSONS, SCOPE_LANG_LABELS, STUDY_SOURCE_REF, ZH_SCOPE_LEVELS, REVIEW_SCOPE_TYPES,
+  scopeLevelLabel, scopeSourceLabel, scopeStateLabel, scopeTypeLabel, wordScopeLanguage, MAX_SCOPE_MATERIALS,
 } from '../../lib/reviewScope';
 import { BOOK_ID } from '../../lib/textbook/contract';
 
-const RELEASE = { level: '급수 풀기', state: '상태 풀기', source: '출처 풀기' };
+const RELEASE = { level: '급수 풀기', state: '상태 풀기', source: '출처 풀기', type: '종류 풀기' };
 
 export function clearScopeAxis(scope, axis) {
   if (axis === 'level') return { ...scope, level: null };
   if (axis === 'state') return { ...scope, state: 'due' };
+  if (axis === 'type') { const { type: _type, ...rest } = scope; return rest; }
   return { ...scope, source: null };
 }
 
@@ -23,6 +24,7 @@ function scopeChips(scope, materialTitles) {
   if (scope.level) chips.push({ axis: 'level', label: scopeLevelLabel(scope.level) });
   if (scope.source) chips.push({ axis: 'source', label: scopeSourceLabel(scope.source, { materialTitles }) });
   if (scope.state && scope.state !== 'due') chips.push({ axis: 'state', label: scopeStateLabel(scope.state) });
+  if (scope.type) chips.push({ axis: 'type', label: scopeTypeLabel(scope.type) });
   return chips;
 }
 
@@ -35,38 +37,54 @@ export function objectParticle(text) {
   return '를';
 }
 
-/** 범위 상태 문구(§5-6 중 범위 관련) — 0개 · 한도 막힘 · 남은 새 표현 · FSRS 뒤로 밀린 예전 일정 카드. */
-export function ReviewScopeNotice({ empty = false, scope, count, countFor, remainingNew = 0, languages = [], onChange, fallback = null, materialTitles }) {
+/**
+ * 범위 상태 문구(§5-6) — 0개 · 한도 막힘 · 남은 새 표현 · 밀린 복습(새 표현 0) · 뜻 없는 표현.
+ * onPractice가 있으면 0개 · 한도 막힘에 「집중 연습」을 낸다(집중 연습은 일정 · 한도를 바꾸지 않는다).
+ */
+export function ReviewScopeNotice({ empty = false, scope, count, countFor, remainingNew = 0, languages = [], onChange, fallback = null, materialTitles,
+  onPractice = null, onFillMeaning = null }) {
   const singleLesson = scope.source?.kind === 'book' && scope.source.from === scope.source.to;
-  const limit = count.newLocked > 0
+  const paused = !!count.backlog?.active;
+  const limit = !paused && count.newLocked > 0
     ? `${singleLesson ? '이 과' : '이 범위'} 새 표현 ${count.newAllowed + count.newLocked}개 · 오늘 시작 ${count.newAllowed}개(새 표현 한도) · 나머지 ${count.newLocked}개는 내일`
     : null;
   const alternative = useMemo(() => {
     if (!empty) return null;
-    for (const axis of ['level', 'state', 'source']) {
-      const active = axis === 'level' ? !!scope.level : axis === 'state' ? scope.state !== 'due' : !!scope.source;
+    for (const axis of ['level', 'state', 'source', 'type']) {
+      const active = axis === 'level' ? !!scope.level : axis === 'state' ? scope.state !== 'due' : axis === 'type' ? !!scope.type : !!scope.source;
       if (!active) continue;
       const next = clearScopeAxis(scope, axis);
       const result = countFor(next);
       if (result.status === 'ready' && result.total > 0) {
-        const label = axis === 'level' ? scopeLevelLabel(scope.level) : axis === 'state' ? scopeStateLabel(scope.state) : scopeSourceLabel(scope.source, { materialTitles });
+        const label = axis === 'level' ? scopeLevelLabel(scope.level) : axis === 'state' ? scopeStateLabel(scope.state)
+          : axis === 'type' ? scopeTypeLabel(scope.type) : scopeSourceLabel(scope.source, { materialTitles });
         return { axis, next, total: result.total, label };
       }
     }
     return null;
   }, [empty, scope, countFor, materialTitles]);
   const together = languages.length > 1 ? `(${languages.map(lang => SCOPE_LANG_LABELS[lang]).join(' · ')} 합쳐서)` : '';
+  // 밀린 복습(§6-1 ③): 그 언어의 기한 지난 복습이 하루 평균의 2배를 넘으면 새 표현을 쉰다 — 줄은 잊기 쉬운 순서.
+  const backlog = paused ? <p className="review-room-note review-scope-notice__backlog" role="status">
+    밀린 복습부터 — 잊기 쉬운 순서로. 오늘은 새 표현을 쉬어요(밀린 복습 {count.backlog.overdue} · 하루 평균 {Math.round(count.backlog.baseline * 10) / 10}).</p> : null;
+  const noMeaning = count.noMeaning > 0 ? <p className="review-room-note review-scope-notice__meaning">뜻이 없는 표현 {count.noMeaning}개는 복습에서 빠져요.
+    {onFillMeaning && <button type="button" className="btn btn--ghost btn--sm" onClick={onFillMeaning}>뜻 채우기</button>}</p> : null;
+  const practice = onPractice ? <button type="button" className="btn btn--ghost btn--sm review-scope-notice__practice" onClick={onPractice}>{empty ? '집중 연습' : '지금 집중 연습으로 보기'}</button> : null;
   if (empty) return <>
     {alternative ? <div className="review-scope-notice" role="status">
       <p className="review-room-note">이 범위엔 오늘 복습할 표현이 없어요 · {alternative.label}{objectParticle(alternative.label)} 빼면 {alternative.total}개</p>
       <button type="button" className="btn btn--ghost btn--sm review-scope-notice__release" onClick={() => onChange(alternative.next)}>{RELEASE[alternative.axis]}</button>
-    </div> : <p className="review-room-note">{limit || fallback}</p>}
+      {practice}
+    </div> : <><p className="review-room-note">{limit || fallback}</p>{practice && <div className="review-scope-notice">{practice}</div>}</>}
     {alternative && limit && <p className="review-room-note">{limit}</p>}
+    {backlog}
+    {noMeaning}
   </>;
   return <>
-    {limit && <p className="review-room-note review-scope-notice__limit">{limit}</p>}
-    {!limit && remainingNew > 0 && <p className="review-room-note">새 표현 · 오늘 {remainingNew}개 더{together}</p>}
-    {count.engine === 'fsrs' && count.deferred > 0 && <p className="review-room-note">예전 일정 표현 {count.deferred}개는 이 복습을 마친 뒤 이어서 나와요.</p>}
+    {backlog}
+    {limit && <div className="review-scope-notice"><p className="review-room-note review-scope-notice__limit">{limit}</p>{practice}</div>}
+    {!limit && !paused && remainingNew > 0 && <p className="review-room-note">새 표현 · 오늘 {remainingNew}개 더{together}</p>}
+    {noMeaning}
   </>;
 }
 
@@ -214,9 +232,18 @@ function ReviewScopeSheet({ scope, countFor, allVocab, learningById, materialTit
           </div>
         </fieldset>
 
+        <fieldset className="review-scope-sheet__group">
+          <legend>종류</legend>
+          <div className="review-scope-sheet__options">
+            <Option active={!draft.type} onClick={() => setDraft(clearScopeAxis(draft, 'type'))} count={ready(clearScopeAxis(draft, 'type'))}>전체</Option>
+            {REVIEW_SCOPE_TYPES.map(type => <Option key={type} active={draft.type === type} onClick={() => setDraft({ ...draft, type })}
+              count={ready({ ...draft, type })}>{scopeTypeLabel(type)}</Option>)}
+          </div>
+        </fieldset>
+
         <div className="review-scope-sheet__foot">
           <button type="button" className="btn btn--primary btn--md" onClick={() => onApply(draft)}>이 범위로 보기</button>
-          <p className="review-scope-sheet__muted">출처가 기록되지 않은 옛 표현은 「출처 · 전체」에서만 나와요.</p>
+          <p className="review-scope-sheet__muted">출처가 기록되지 않은 옛 표현은 「출처 · 전체」에서만 나와요. 종류는 담은 문장 · 끝 부호로 정해요(「문형」은 준비 중).</p>
         </div>
       </div>
     </div>
