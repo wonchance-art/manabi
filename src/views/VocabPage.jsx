@@ -1390,7 +1390,10 @@ function VocabWorkspace({ bookReview }) {
 
       <ConfirmModal
         open={!!confirmAction}
+        title={confirmAction?.title}
         message={confirmAction?.message}
+        confirmLabel="삭제"
+        variant="danger"
         onConfirm={confirmAction?.onConfirm}
         onCancel={() => setConfirmAction(null)}
       />

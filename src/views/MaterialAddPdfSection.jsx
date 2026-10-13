@@ -573,12 +573,17 @@ function DeletePdfConfirm({ pdf, onClose, onConfirm }) {
     return () => { cancelled = true; };
   }, [pdf]);
 
+  // 확인 전·실패 시 「이동」을 눌러도 아무 일 없던 조용한 무반응 대신, 상태를 문구로 알리고 버튼을 잠근다.
   return (
     <ConfirmModal
       open={!!pdf}
       title="휴지통으로 이동"
-      message={relatedError ? '연결된 자료를 확인하지 못했습니다.' : `"${pdf?.title}"을 휴지통으로 옮깁니다. 원본과 학습 기록은 남습니다.`}
+      message={relatedError ? '연결된 자료를 확인하지 못했습니다. 닫은 뒤 다시 시도해 주세요.'
+        : relatedCount === null ? '연결된 자료를 확인하는 중입니다…'
+        : `"${pdf?.title}"을 휴지통으로 옮깁니다. 원본과 학습 기록은 남습니다.`}
       confirmLabel="이동"
+      variant="primary"
+      confirmDisabled={relatedCount === null || relatedError}
       onConfirm={() => { if (relatedCount !== null && !relatedError) onConfirm(); }}
       onCancel={onClose}
     />

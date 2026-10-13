@@ -968,9 +968,13 @@ export default function MaterialsPage({ libraryView = null }) {
         );
       })()}
 
+      {/* 휴지통 이동은 되돌릴 수 있다 — 내 서재(LibraryShelf)·PDF 목록과 같은 「휴지통으로 이동」/「이동」. */}
       <ConfirmModal
         open={!!confirmAction}
+        title="휴지통으로 이동"
         message={confirmAction?.message}
+        confirmLabel="이동"
+        variant="primary"
         onConfirm={confirmAction?.onConfirm}
         onCancel={() => setConfirmAction(null)}
       />

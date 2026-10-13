@@ -248,8 +248,9 @@ export default function AdminPage() {
     });
   };
 
-  const confirmDelete = (label, onConfirm) => {
+  const confirmDelete = (title, label, onConfirm) => {
     setConfirmAction({
+      title,
       message: `정말 "${label}"을(를) 삭제하시겠습니까?`,
       onConfirm: () => { onConfirm(); setConfirmAction(null); },
     });
@@ -463,7 +464,7 @@ export default function AdminPage() {
                           size="sm"
                           variant="danger"
                           disabled={deleteMaterialMutation.isPending}
-                          onClick={() => confirmDelete(m.title, () => deleteMaterialMutation.mutate(m.id))}
+                          onClick={() => confirmDelete('자료 삭제', m.title, () => deleteMaterialMutation.mutate(m.id))}
                         >
                           삭제
                         </Button>
@@ -611,7 +612,7 @@ export default function AdminPage() {
                               size="sm"
                               variant="danger"
                               disabled={deleteSourceMutation.isPending}
-                              onClick={() => confirmDelete(s.name, () => deleteSourceMutation.mutate(s.id))}
+                              onClick={() => confirmDelete('소스 삭제', s.name, () => deleteSourceMutation.mutate(s.id))}
                             >
                               삭제
                             </Button>
@@ -680,7 +681,7 @@ export default function AdminPage() {
                               size="sm"
                               variant="danger"
                               disabled={deleteOverrideMutation.isPending}
-                              onClick={() => confirmDelete(`${o.lang} · ${o.slug} 수정본`, () => deleteOverrideMutation.mutate({ lang: o.lang, slug: o.slug }))}
+                              onClick={() => confirmDelete('수정본 삭제', `${o.lang} · ${o.slug} 수정본`, () => deleteOverrideMutation.mutate({ lang: o.lang, slug: o.slug }))}
                             >
                               복원(삭제)
                             </Button>
@@ -743,7 +744,10 @@ export default function AdminPage() {
 
       <ConfirmModal
         open={!!confirmAction}
+        title={confirmAction?.title}
         message={confirmAction?.message}
+        confirmLabel="삭제"
+        variant="danger"
         onConfirm={confirmAction?.onConfirm}
         onCancel={() => setConfirmAction(null)}
       />
