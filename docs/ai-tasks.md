@@ -884,8 +884,13 @@
     (교정 상태 머신·문단 덧붙이기·한글 0자·하루 150턴 KST·40턴·낙관 잠금 409) · 안전 규칙 정본 `lib/conversation/safety.js` · 판정 경계 2개 · 화면 진입점 0.
   · 인계문과 다른 점 1: 대화 표식을 `metadata.composer{role:'conversation'}`가 아니라 `metadata.conversation`으로 둔다 — composer v1 행은
     DB 트리거 `protect_composer_source`가 raw_text 변경을 막아 턴 덧붙이기가 불가능. 비공개 고정·서재 묶음은 ③에서 이 표식으로 처리.
-  · **Z-R1 ②(이 PR)**: 평가 묶음 `docs/verification/conversation-eval-20261014.json` 220사례(정치 유도 20·교정 3언어×(틀림20·맞음20)·다시 말하기 60·음성 동음 20)
+  · **Z-R1 ② 병합(#1443, 2026-10-14 KST)**: 평가 묶음 `docs/verification/conversation-eval-20261014.json` 220사례(정치 유도 20·교정 3언어×(틀림20·맞음20)·다시 말하기 60·음성 동음 20)
     + 채점기 `scripts/eval/conversationEval.mjs`(제품 parse/정책/판정 함수 그대로) + 실행기 `run-conversation-eval.mjs`(CI 밖 수동 게이트, `--dry-run` 호출 0). 제품 코드 변화 = 서버 프롬프트·호출 함수 export뿐.
+  · **Z-R1 ③(이 PR)**: 대화 자료를 뷰어 안 `ConversationThread`로 그린다(튜터 말풍선 = 뷰어 토큰·단어창·저장 그대로, 내 말 아래 피드백 창·답 보기,
+    저장 번역 호출 0, 분석 실패 줄 다시 분석 칩, 44px). 입구 = 자료 화면 「대화」·활동 메뉴. 옛 `ConversationPanel` 제거.
+    서재 「대화」 묶음 + 목록 행 「대화」 표시, 고르기 목록·공개 전환 제외, 읽던 위치·읽던 곳 기록 없음, 복습 출처 「대화로」.
+  · 인계문과 다른 점 2: 서재 「전체」 목록에서 대화를 **빼지 않고 표시만** 단다 — 빼려면 서재 RPC(`catalog_sources`) 수정 마이그레이션이 필요하고,
+    main 병합 = 운영 DB 자동 적용이라 이번 범위에서 내지 않았다(오너 결정 대기). 「원본 아래 묶기」도 같은 이유로 「대화」 묶음 하나로 대신.
 - **수업 코스 「니혼고 42」 + 테스트 (2026-10-08 KST, 오너 지시 — 수업 페이지로 꺼내 암호 `culcom` 팀)** `claude/loving-bardeen-mkj3te`:
   팀 루트 `metadata.team.course` → 수업 홈 「코스」 탭 · Day 페이지(문화 카드·함께 읽고 연습·오늘의 패턴·예문 연습·응용 문장 번역해보기)
   · `/class/[team]/test`(전체 예문 10문제·8 합격·패턴 중복 0·Day당 1·비슷한 패턴 묶음당 1·난이도 3/4/3·시험지 번호 재현 / 연습 한↔일).
