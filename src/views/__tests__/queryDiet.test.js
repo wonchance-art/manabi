@@ -17,7 +17,9 @@ describe('쿼리 다이어트 계약', () => {
     const viewer = read('src/views/ViewerPage.jsx');
     expect(viewer).toContain("select('id, title, status:processed_json->>status, language:processed_json->metadata->>language, level:processed_json->metadata->>level')");
     const modal = read('src/views/ViewerQuizModal.jsx');
-    expect(modal).toContain("nextMaterial.language === 'English'");
+    // 평탄 필드 소비 — 예전 고정값 `nextMaterial.language === 'English'`은 영어 외 전부를 「일본어」로
+    // 쓰던 버그를 함께 박제하고 있었다(WALL-STATES-001 ③). 공용 언어 이름 함수로 같은 평탄 필드를 읽는다.
+    expect(modal).toContain('langNameKo(nextMaterial.language)');
     expect(modal).not.toContain('nextMaterial.processed_json');
   });
 

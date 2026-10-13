@@ -1,17 +1,51 @@
+import { useEffect, useRef } from 'react';
 import Spinner from '../components/Spinner';
 import { formatDuration } from '../lib/readingTimer';
+import { langNameKo } from '../lib/constants';
 import Button from '../components/Button';
 
+/**
+ * 퀴즈·읽기 완료 창의 키보드 계약(WALL-STATES-001 ③) — 열리면 창으로 포커스를 옮기고,
+ * Esc는 그 창의 닫기와 같은 길로 간다. 퀴즈 Esc = closeQuiz(퀴즈를 건너뛰고 완료 요약으로),
+ * 완료 Esc = 「계속 읽기」. 닫힌 뒤에는 열기 전 포커스로 돌려준다.
+ */
+function useDialogKeys(open, ref, onEscape) {
+  const escape = useRef(onEscape);
+  escape.current = onEscape;
+  useEffect(() => {
+    if (!open) return undefined;
+    const trigger = typeof document !== 'undefined' ? document.activeElement : null;
+    ref.current?.focus({ preventScroll: true });
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      escape.current?.();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      if (trigger?.isConnected && (document.activeElement === document.body || !document.activeElement)) trigger.focus?.({ preventScroll: true });
+    };
+  }, [open, ref]);
+}
+
 export default function ViewerQuizModal({
-  quizState, handleQuizAnswer, advanceQuiz, finishQuiz,
+  quizState, handleQuizAnswer, advanceQuiz, finishQuiz, closeQuiz,
   completionModal, setCompletionModal, material, nextMaterial,
 }) {
+  const quizRef = useRef(null);
+  const completionRef = useRef(null);
+  useDialogKeys(!!quizState, quizRef, closeQuiz);
+  useDialogKeys(!quizState && !!completionModal, completionRef, () => setCompletionModal(null));
+  const quizTitle = quizState?.status === 'loading' ? '이해도 확인 중...' : quizState?.status === 'done' ? '퀴즈 완료' : '이해도 퀴즈';
+
   return (
     <>
       {/* 이해도 퀴즈 모달 */}
       {quizState && (
         <div className="modal-overlay completion-overlay">
-          <div className="modal completion-modal">
+          <div ref={quizRef} className="modal completion-modal" role="dialog" aria-modal="true" aria-label={quizTitle} tabIndex={-1}>
+            <button type="button" className="completion-modal__close" onClick={closeQuiz} aria-label="퀴즈 닫기">×</button>
             {quizState.status === 'loading' && (
               <>
                 <h2 className="completion-modal__title">이해도 확인 중...</h2>
@@ -94,8 +128,8 @@ export default function ViewerQuizModal({
       {/* 읽기 완료 요약 모달 */}
       {completionModal && (
         <div className="modal-overlay completion-overlay">
-          <div className="modal completion-modal">
-            <h2 className="completion-modal__title">읽기 완료</h2>
+          <div ref={completionRef} className="modal completion-modal" role="dialog" aria-modal="true" aria-labelledby="completion-modal-title" tabIndex={-1}>
+            <h2 className="completion-modal__title" id="completion-modal-title">읽기 완료</h2>
             <p className="completion-modal__subtitle">{material?.title}</p>
 
             {/* 유창성 측정(v2-I R1a) — 조용히 1회만. 경쟁·랭킹 요소 없음(설계 §3).
@@ -156,7 +190,7 @@ export default function ViewerQuizModal({
                 <a href={`/viewer/${nextMaterial.id}`} className="completion-next-card">
                   <span className="completion-next-card__badge">다음 추천</span>
                   <span className="completion-next-card__flag">
-                    {nextMaterial.language === 'English' ? '영어' : '일본어'}
+                    {langNameKo(nextMaterial.language)}
                   </span>
                   <span className="completion-next-card__title">{nextMaterial.title}</span>
                   <span className="completion-next-card__arrow">→</span>

@@ -363,7 +363,7 @@ export default function ViewerPage() {
   const settingsTrigger = useRef(null);
   const quiz = useViewerQuiz();
   const { quizState, completionModal, setCompletionModal, generateQuiz,
-          handleQuizAnswer, advanceQuiz, finishQuiz } = quiz;
+          handleQuizAnswer, advanceQuiz, finishQuiz, closeQuiz } = quiz;
 
   const [selectedToken, setSelectedToken] = useState(null);
   const selectedTokenRef=useRef(selectedToken);selectedTokenRef.current=selectedToken;
@@ -4332,7 +4332,7 @@ export default function ViewerPage() {
 
       <ViewerQuizModal
         quizState={quizState} handleQuizAnswer={handleQuizAnswer}
-        advanceQuiz={advanceQuiz} finishQuiz={finishQuiz}
+        advanceQuiz={advanceQuiz} finishQuiz={finishQuiz} closeQuiz={closeQuiz}
         completionModal={completionModal} setCompletionModal={setCompletionModal}
         material={material} nextMaterial={nextMaterial}
       />
