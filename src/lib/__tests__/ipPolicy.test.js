@@ -2,6 +2,12 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { sliceBetween } from './helpers/sliceBetween';
+import {
+  AOZORA_AUTHOR_DIED_BEFORE,
+  AOZORA_PUBLISHED_BEFORE,
+  AOZORA_REQUIRED_JURISDICTIONS,
+  aozoraRightsPublishable,
+} from '../aozoraRights.js';
 
 /**
  * 계약: IP 정책 정합 (오너 확정 2026-08-31 "아주 적극적으로 사용해야함", #1077).
@@ -54,6 +60,27 @@ describe('IP 정책 정합 계약 (v2 — 브랜드 적극 사용)', () => {
     for (const ban of ['시각 재현', '본문 복제', '비방', '중화권 정치']) {
       expect(policy, `정책 문서에 금지 누락: ${ban}`).toContain(ban);
     }
+  });
+
+  it('금지⑵의 퍼블릭 도메인 예외(D1, 2026-10-12)는 세 조건이 함께 살아 있고 코드 기준과 같은 숫자다', () => {
+    // 예외가 문서에 없으면 정본 문학책 공개가 금지⑵로 오독되고(이 파일 머리의 사고와 같은 형태),
+    // 조건이 하나라도 빠지면 번역서·보호 중 작품까지 예외로 새어 나간다. 그래서 조건 셋과 강제 지점을 함께 묶는다.
+    const exception = sliceBetween(read('docs/policy-brand-content.md'), '### 2.1 퍼블릭 도메인 예외', '## 3.');
+    expect(exception, '조건① 보호기간 — 출판 연도 기준').toContain(`${AOZORA_PUBLISHED_BEFORE}년 이전 출판`);
+    expect(exception, '조건① 보호기간 — 사망 연도 기준').toContain(`${AOZORA_AUTHOR_DIED_BEFORE}년 이전 사망`);
+    expect(exception, '조건① 검토 관할').toContain(AOZORA_REQUIRED_JURISDICTIONS.join('·'));
+    expect(exception, '조건② 번역·삽화 없음').toMatch(/번역[\s\S]{0,10}삽화/);
+    expect(exception, '조건③ 권리 기록 승인').toMatch(/권리 기록[\s\S]{0,10}approved/);
+    expect(exception, '강제 지점 포인터').toContain('scripts/build-literature.mjs --check');
+    expect(exception, '금지⑴은 예외가 아니다').toMatch(/금지⑴은 그대로/);
+    // 코드 쪽도 같은 기준으로 판정한다 — 문서만 바뀌고 게이트가 그대로면 이중 진실이다.
+    const credits = { translator: null, illustrator: null };
+    const rights = { status: 'approved', basis: 'public-domain', reviewedBy: 'owner', reviewedAt: '2026-10-12',
+      reviewedJurisdictions: [...AOZORA_REQUIRED_JURISDICTIONS], evidenceUrl: 'https://www.aozora.gr.jp/' };
+    expect(aozoraRightsPublishable(rights, credits, { publishedYear: AOZORA_PUBLISHED_BEFORE - 1, authorDeathYear: null })).toBe(true);
+    expect(aozoraRightsPublishable(rights, credits, { publishedYear: AOZORA_PUBLISHED_BEFORE, authorDeathYear: AOZORA_AUTHOR_DIED_BEFORE })).toBe(false);
+    expect(aozoraRightsPublishable(rights, { ...credits, translator: '訳者' }, { publishedYear: 1900, authorDeathYear: 1920 })).toBe(false);
+    expect(aozoraRightsPublishable({ ...rights, status: 'reviewing' }, credits, { publishedYear: 1900, authorDeathYear: 1920 })).toBe(false);
   });
 
   it('구 IP 감사표는 스테일 경고를 달고 v1 시점 기록임을 밝힌다', () => {
