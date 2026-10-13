@@ -160,6 +160,7 @@ import { senseReviewItems, senseReviewDismissKey, senseReviewOptions, keepSenseC
 import { dismissedBoundaryForms } from '../lib/boundaryEdits';
 import ViewerSenseReview from '../components/viewer/ViewerSenseReview';
 import { BoundaryMergeConfirm, BoundaryMergeRow, BoundaryPendingList, BoundarySplitPanel } from '../components/viewer/ViewerBoundaryEdit';
+import { SEGMENT_RULE_LANGUAGES, deleteUserSegmentRule, fetchUserSegmentRules, saveSharedSegmentRule, saveUserSegmentRule, userRuleJoinOf } from '../lib/segmentRules';
 import {
   BoundaryEditError, boundaryEditContext, boundaryEntryAllowed, boundaryReasonHidden, boundaryReasonMessage, boundaryTokenOrigin,
   boundaryUndoValid, commitBoundaryEdit, pendingBoundaryRows, planBoundaryMerge, planBoundarySplit, planNeighborMerge, splitPreview,
@@ -1817,16 +1818,48 @@ export default function ViewerPage() {
     if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
     return data;
   };
+  // AD-R3 PR④ 단어 경계 규칙(② 내 다른 자료에도 · ③ 모든 사용자) — 내 규칙 목록 읽기 1회(RLS, 본인 행만)가 표 존재 확인을 겸한다.
+  // 표가 없으면(롤백 · 미적용) available:false → 확인 줄 ②③과 카드 「규칙 지우기」를 숨긴다. 자료 소유자 · 중·일·영에서만 읽는다.
+  const segmentRulesEnabled = !!user?.id && user.id === material?.owner_id && SEGMENT_RULE_LANGUAGES.includes(materialLang);
+  const { data: segmentRulesData } = useQuery({
+    queryKey: ['segment-rules', user?.id, materialLang],
+    queryFn: () => fetchUserSegmentRules(supabase, { language: materialLang }),
+    enabled: segmentRulesEnabled,
+    staleTime: 5 * 60_000,
+  });
+  const segmentRulesAvailable = segmentRulesEnabled && segmentRulesData?.available === true;
+  // 규칙 쓰기 — 이 자료 묶기가 저장된 **뒤에만** 한 번(실패해도 이 자료 경계는 그대로). 규칙 표 하나만 쓴다(단어장·FSRS·사전 0).
+  const writeBoundaryRule = async (rule) => {
+    if (rule.scope === 'shared') {
+      let accessToken = null;
+      try { accessToken = (await supabase.auth.getSession()).data?.session?.access_token ?? null; } catch { /* 아래 403으로 알린다 */ }
+      return saveSharedSegmentRule(rule, { fetch: (...args) => fetch(...args), accessToken });
+    }
+    return saveUserSegmentRule(supabase, { ...rule, userId: user?.id, materialId: id });
+  };
   const boundaryMutation = useMutation({
-    mutationFn: async ({ request, undo }) => {
+    mutationFn: async ({ request, undo, rule = null }) => {
       if (!legacyTokenEditingAllowedRef.current && !koreanSplitAllowedRef.current) throw new BoundaryEditError('korean');
       const current = queryClient.getQueryData(['material', id]) || material;
       const deps = { client: supabase, analyze: analyzeBoundaryLine, userId: user?.id };
       if (undo) return { ...(await undoBoundaryEdit(current, undo, deps)), kind: 'undo' };
-      return commitBoundaryEdit(current, request, deps);
+      const out = await commitBoundaryEdit(current, request, deps);
+      if (!out || !rule) return out;
+      try {
+        await writeBoundaryRule(rule);
+        return { ...out, ruleSaved: rule.scope };
+      } catch {
+        return { ...out, ruleFailed: rule.scope };
+      }
     },
     onSuccess: (out) => {
       if (!out) return;
+      if (out.ruleSaved) {
+        queryClient.invalidateQueries({ queryKey: ['segment-rules', user?.id, materialLang] });
+        toast(vt('규칙을 저장했어요. 다음 분석부터 적용해요.'), 'success');
+      } else if (out.ruleFailed) {
+        toast(vt('이 자료에는 묶었어요. 규칙은 저장하지 못했어요.'), 'error');
+      }
       queryClient.setQueryData(['material', id], out.material);
       if (isClient) clearAnalysisCache(localStorage); // 드래그 단어 목록 캐시가 옛 분할을 돌려주지 않게(§1.4)
       queryClient.invalidateQueries({ queryKey: ['material', id] });
@@ -1856,6 +1889,16 @@ export default function ViewerPage() {
           : vt('단어 경계를 적용하지 못했어요. 잠시 뒤 다시 해 주세요.');
       toast(text, 'error');
     },
+  });
+  // AD-R3 PR④ 카드 「규칙 지우기」 — 내 규칙 표 한 행만 지운다(RLS · 본인). 자료 · 단어장 · FSRS · 사전 쓰기 0.
+  const [ruleDeletedNotice, setRuleDeletedNotice] = useState(null);
+  const segmentRuleDeleteMutation = useMutation({
+    mutationFn: (surface) => deleteUserSegmentRule(supabase, { userId: user?.id, language: materialLang, surface }),
+    onSuccess: () => {
+      setRuleDeletedNotice(selectedToken?.id ?? null);
+      queryClient.invalidateQueries({ queryKey: ['segment-rules', user?.id, materialLang] });
+    },
+    onError: () => toast(vt('규칙을 지우지 못했어요. 잠시 후 다시 시도해 주세요.'), 'error'),
   });
   // AD-R4 PR④ 경계 후보 [아니요] — 그 꼴을 이 자료에서 접는다(metadata.viewerBoundaryDismissed). 묶기·나누기와 같은 원자 RPC 하나,
   // 토큰·기록·단어장·FSRS·사전 쓰기 0. 재분석은 원래 metadata를 이어 쓰므로 접은 꼴은 재분석 뒤에도 접힌 채다.
@@ -2762,6 +2805,13 @@ export default function ViewerPage() {
         onConfirm={cuts => boundaryMutation.mutate({ request: { line: koreanPlan.line, start: koreanPlan.start, end: koreanPlan.end, cuts } })} onCancel={() => setBoundaryPanel(null)} />}
     </>;
   };
+  // AD-R3 PR④ 확인 줄 범위: ② 내 다른 자료에도(규칙 표가 있을 때) · ③ 모든 사용자(관리자 + 규칙 표). 묶기 확정 = 이 자료 저장 + 고른 범위의 규칙.
+  const boundaryScopes = segmentRulesAvailable ? { mine: true, shared: !!isAdmin } : null;
+  const confirmBoundaryMerge = (plan, scope) => {
+    if (!plan?.ok) return;
+    const rule = scope === 'mine' || scope === 'shared' ? { scope, language: materialLang, surface: plan.result, cuts: [] } : null;
+    boundaryMutation.mutate({ request: plan.request, rule });
+  };
   const boundarySavedParts = (tokenIds) => [...new Set((tokenIds || []).map(tid => json.dictionary?.[tid]).filter(t => t && isTokenSaved(savedWords, t, materialLang)).map(t => t.text))];
   const openBoundaryPanel = (panel) => { setIsEditingToken(false); setBoundaryPanel(panel); };
   // 드래그 「한 단어로 묶기」 — [문장] 탭 원문 줄 아래(목업). 드래그 동작·번역 경로는 그대로, 버튼 하나만 더한다.
@@ -2770,8 +2820,8 @@ export default function ViewerPage() {
   const dragPlan = dragRange ? planBoundaryMerge(material, dragRange.start, dragRange.end, boundaryCtx) : null;
   const boundaryMergeBlock = dragPlan && !boundaryReasonHidden(dragPlan.reason) ? (
     boundaryPanel?.kind === 'drag' && boundaryPanel.key === dragKey
-      ? <BoundaryMergeConfirm key={dragKey} plan={dragPlan} savedWords={boundarySavedParts(dragPlan.ids)} busy={boundaryBusy} contentLang={contentLangTag} vt={vt}
-        onConfirm={() => boundaryMutation.mutate({ request: dragPlan.request })} onCancel={() => setBoundaryPanel(null)} />
+      ? <BoundaryMergeConfirm key={dragKey} plan={dragPlan} savedWords={boundarySavedParts(dragPlan.ids)} scopes={boundaryScopes} busy={boundaryBusy} contentLang={contentLangTag} vt={vt}
+        onConfirm={scope => confirmBoundaryMerge(dragPlan, scope)} onCancel={() => setBoundaryPanel(null)} />
       : <BoundaryMergeRow plan={dragPlan} reasonText={dragPlan.ok ? null : boundaryReasonMessage(dragPlan.reason)} vt={vt}
         onStart={() => setBoundaryPanel({ kind: 'drag', key: dragKey })} />
   ) : null;
@@ -2779,6 +2829,10 @@ export default function ViewerPage() {
   const cardTokenId = boundaryAllowed && selectedToken?.id && isSheetOpen ? selectedToken.id : null;
   const boundaryOrigin = cardTokenId ? boundaryTokenOrigin(json, cardTokenId) : null;
   const boundaryUndoShown = !!cardTokenId && boundaryUndo?.tokenId === cardTokenId && boundaryUndoValid(json, boundaryUndo.undo);
+  // AD-R3 PR④ 카드 「내 규칙으로 묶음 · [규칙 지우기]」 — 분석 때 내 묶기 규칙(②)으로 묶인 토큰. 지우면 다음 분석부터 적용하지 않는다
+  // (이 자료의 지금 토큰은 그대로 — 이 자료만 되돌리려면 ⋯ 「나누기」). 규칙 표가 없으면 줄이 없다.
+  const cardRuleSurface = cardTokenId && segmentRulesAvailable && boundaryOrigin !== 'merged'
+    ? userRuleJoinOf(json.dictionary?.[cardTokenId], segmentRulesData?.rules, materialLang) : null;
   const renderBoundaryCard = () => {
     if (koreanCardTokenId) return renderKoreanBoundaryCard();
     if (!cardTokenId) return null;
@@ -2796,12 +2850,15 @@ export default function ViewerPage() {
       const reason = plan.ok ? null : boundaryReasonMessage(plan.reason === 'no_neighbor' && side === 'next' && plans.prev.reason !== 'no_neighbor' ? plans.prev.reason : plan.reason);
       panelNode = <BoundaryMergeConfirm key={`neighbor:${cardTokenId}`} plan={plan} reasonText={reason} busy={boundaryBusy} contentLang={contentLangTag} vt={vt}
         choice={plans.prev.ok || plans.next.ok ? { value: side, prev: plans.prev.ok, next: plans.next.ok, onChange: value => setBoundaryPanel({ ...panel, side: value }) } : null}
-        savedWords={plan.ok ? boundarySavedParts(plan.ids) : []}
-        onConfirm={() => plan.ok && boundaryMutation.mutate({ request: plan.request })} onCancel={() => setBoundaryPanel(null)} />;
+        savedWords={plan.ok ? boundarySavedParts(plan.ids) : []} scopes={boundaryScopes}
+        onConfirm={scope => confirmBoundaryMerge(plan, scope)} onCancel={() => setBoundaryPanel(null)} />;
     }
     return <>
       {boundaryOrigin === 'merged' && <p className="reader-card-boundary"><span>{vt('직접 묶은 단어')}</span>{' · '}<button type="button" className="btn btn--ghost btn--sm"
         disabled={boundaryBusy} onClick={() => openBoundaryPanel({ kind: 'split', tokenId: cardTokenId })}>{vt('나누기')}</button></p>}
+      {cardRuleSurface && <p className="reader-card-boundary"><span>{vt('내 규칙으로 묶음')}</span>{' · '}<button type="button" className="btn btn--ghost btn--sm"
+        disabled={segmentRuleDeleteMutation.isPending} onClick={() => segmentRuleDeleteMutation.mutate(cardRuleSurface)}>{vt('규칙 지우기')}</button></p>}
+      {ruleDeletedNotice === cardTokenId && !cardRuleSurface && <p className="reader-card-boundary-undo"><span role="status">{vt('규칙을 지웠어요. 다음 분석부터 적용하지 않아요.')}</span></p>}
       {boundaryUndoShown && <p className="reader-card-boundary-undo"><span role="status">{vt(boundaryUndo.kind === 'merge' ? '묶었어요' : '나눴어요')}</span>{' · '}<button type="button"
         className="btn btn--ghost btn--sm" disabled={boundaryBusy} onClick={() => boundaryMutation.mutate({ undo: boundaryUndo.undo })}>{vt('되돌리기')}</button></p>}
       {panelNode}

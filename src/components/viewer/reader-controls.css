@@ -864,7 +864,7 @@
 .viewer-boundary-confirm__choice button[aria-pressed="true"] {font-weight:700;box-shadow:inset 0 -2px 0 var(--reader-accent);}
 .viewer-boundary-confirm__preview,.viewer-boundary-split__preview {margin:0;font-size:1rem;line-height:1.6;color:var(--reader-ink);overflow-wrap:anywhere;}
 .viewer-boundary-confirm__op {color:var(--reader-muted);}
-.viewer-boundary-confirm__scope {margin:0;padding:0;border:0;}
+.viewer-boundary-confirm__scope {margin:0;padding:0;border:0;display:flex;flex-direction:column;align-items:flex-start;}
 .viewer-boundary-confirm__scope label {display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:.875rem;color:var(--reader-ink);}
 .viewer-boundary-confirm__scope input {width:18px;height:18px;margin:0;accent-color:var(--reader-accent);}
 .viewer-boundary-confirm__note {margin:0;font-size:.8125rem;line-height:1.5;color:var(--reader-muted);}

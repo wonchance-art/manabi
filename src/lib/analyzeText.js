@@ -431,7 +431,8 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeader },
         signal,
-        body: JSON.stringify({ lines: units.map(unit => unit.text), language, ...(isKorean ? { explanationLocale } : {}),
+        // segmentRules: AD-R3 PR④ — 자료 분석 · 재분석만 ② 내 규칙 · ③ 공유 규칙을 적용받는다(한국어는 어절 분석기라 없음).
+        body: JSON.stringify({ lines: units.map(unit => unit.text), language, ...(isKorean ? { explanationLocale } : { segmentRules: true }),
           ...(boundariesBody.length ? { boundaries: boundariesBody } : {}) }),
       }, signal);
       const data = await res.json();

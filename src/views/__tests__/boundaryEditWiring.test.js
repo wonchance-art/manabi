@@ -81,3 +81,45 @@ describe('AD-R3 PR③ 문구 · 누름 영역', () => {
     expect(block).not.toMatch(/#[0-9a-f]{3,8}\b|rgb\(/i);
   });
 });
+
+describe('AD-R3 PR④ 배선 — 적용 범위 ②③ · 규칙 지우기', () => {
+  const rules = read('src/lib/segmentRules.js');
+  it('②③ 선택지는 규칙 표가 있을 때만(내 규칙 읽기 = 표 확인), ③은 관리자에게만', () => {
+    expect(viewer).toContain('const segmentRulesAvailable = segmentRulesEnabled && segmentRulesData?.available === true;');
+    expect(viewer).toContain('const boundaryScopes = segmentRulesAvailable ? { mine: true, shared: !!isAdmin } : null;');
+    expect(parts).toContain("const shownScopes = SCOPE_LABELS.filter(([value]) => value === 'material' || scopes?.[value] === true);");
+    // 드래그 확인 줄 · ⋯ 옆 단어와 묶기 둘 다 같은 범위 · 같은 확정 함수
+    expect(viewer.match(/scopes=\{boundaryScopes\}/g)).toHaveLength(2);
+    expect(viewer.match(/onConfirm=\{scope => confirmBoundaryMerge\(/g)).toHaveLength(2);
+  });
+  it('규칙 쓰기는 이 자료 저장(commitBoundaryEdit)이 끝난 뒤에만 · 실패해도 이 자료 경계는 그대로', () => {
+    const mutation = sliceBetween(viewer, 'const boundaryMutation = useMutation({', '\n  });');
+    expect(mutation.indexOf('await commitBoundaryEdit(current, request, deps)')).toBeGreaterThan(0);
+    expect(mutation.indexOf('await commitBoundaryEdit(current, request, deps)')).toBeLessThan(mutation.indexOf('await writeBoundaryRule(rule)'));
+    expect(mutation).toContain('return { ...out, ruleFailed: rule.scope };');
+    // ③은 관리자 라우트로만(표에 쓰기 정책 없음), ②는 본인 규칙 표 upsert만
+    expect(rules).toContain("fetchImpl('/api/admin/segment-rules'");
+    expect(rules).toContain(".upsert(row, { onConflict: 'user_id,language,surface' })");
+  });
+  it('규칙 경로도 단어장 · FSRS · 평가 이력 · 사전 쓰기 0', () => {
+    const write = sliceBetween(viewer, 'const writeBoundaryRule = async (rule) => {', '\n  };');
+    const remove = sliceBetween(viewer, 'const segmentRuleDeleteMutation = useMutation({', '\n  });');
+    for (const src of [rules, write, remove]) {
+      for (const banned of ['addToVocab', 'saveInlineVocabulary', 'gradeInline', 'promoteCorrection', 'knownState', 'recordVocabEncounters',
+        'dict-correct', 'user_vocabulary', 'vocabulary_contexts', 'review_events', 'morpheme_dictionary', '/api/learning']) {
+        expect(src, banned).not.toContain(banned);
+      }
+    }
+  });
+  it('카드 「내 규칙으로 묶음 · [규칙 지우기]」는 소유자 카드(cardTokenId) · 규칙 표 있음 · 내 묶기 규칙과 같은 꼴일 때만', () => {
+    expect(viewer).toContain("const cardRuleSurface = cardTokenId && segmentRulesAvailable && boundaryOrigin !== 'merged'");
+    expect(viewer).toContain('userRuleJoinOf(json.dictionary?.[cardTokenId], segmentRulesData?.rules, materialLang)');
+  });
+  it('새 문구는 ko·zh-CN·zh-TW 세 벌', () => {
+    for (const key of ['내 다른 자료에도 (다음 분석부터)', '모든 사용자 (관리자)', '다른 자료에서도 이 글자가 나오면 묶어요.',
+      '모든 사용자의 다음 분석부터 이 글자를 묶어요.', '규칙을 저장했어요. 다음 분석부터 적용해요.', '이 자료에는 묶었어요. 규칙은 저장하지 못했어요.',
+      '내 규칙으로 묶음', '규칙 지우기', '규칙을 지웠어요. 다음 분석부터 적용하지 않아요.', '규칙을 지우지 못했어요. 잠시 후 다시 시도해 주세요.']) {
+      for (const locale of VIEWER_MESSAGE_LOCALES) expect(VIEWER_MESSAGES[locale][key], `${locale}: ${key}`).toBeTruthy();
+    }
+  });
+});

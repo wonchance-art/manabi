@@ -1,12 +1,13 @@
 'use client';
 // 뷰어 v2 AD-R3 PR③ — 「이 자료」 단어 경계 편집 화면 조각(설계서 docs/manabi-viewer-v2-ad-r3.md §6.3 목업).
 // · BoundaryMergeRow: [문장] 탭 원문 줄 아래 [⊕ 한 단어로 묶기] — 조건이 안 맞으면 숨기지 않고 꺼진 채 이유 한 줄(§6.1).
-// · BoundaryMergeConfirm: 같은 자리 확인 줄 「身体 + 素质 → 身体素质 / ◉ 이 자료만 / 단어장의 身体은(는) 그대로 있어요. / [묶기] [취소]」.
-//   범위는 ① 이 자료만(②③은 PR④). ⋯ 「옆 단어와 묶기」는 같은 확인 줄 위에 [앞 단어와][뒤 단어와] 고르기를 둔다.
+// · BoundaryMergeConfirm: 같은 자리 확인 줄 「身体 + 素质 → 身体素质 / ◉ 이 자료만 / ○ 내 다른 자료에도 (다음 분석부터) /
+//   ○ 모든 사용자 (관리자) / 단어장의 身体은(는) 그대로 있어요. / [묶기] [취소]」. ②③(PR④)은 호출 쪽이 scopes로 켤 때만 보인다
+//   (규칙 표가 있을 때 · ③은 관리자만). ⋯ 「옆 단어와 묶기」는 같은 확인 줄 위에 [앞 단어와][뒤 단어와] 고르기를 둔다.
 // · BoundarySplitPanel: 「어디서 나눌까요?」 글자 사이마다 44px 칼선 칸(누르면 진하게, 여러 개) · 미리 보기 · [나누기](칼선 0이면 꺼짐) [취소].
 // · BoundaryPendingList: 재분석에서 적용하지 못한 기록 목록(알림 [보기] → [문장] 탭 자리, 보기 전용).
 // 쓰기는 호출 쪽(ViewerPage → boundaryEditFlow)이 한다. 이 파일은 표시와 고르기만 한다. 「AI」 표시 없음.
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
 export function BoundaryReason({ reason, vt }) {
   if (!reason) return null;
@@ -31,9 +32,16 @@ export function BoundaryMergeRow({ plan, reasonText, onStart, vt }) {
  * @param {Array<[string, object?]>|null} p.reasonText plan이 안 될 때 이유 문구
  * @param {{value:'prev'|'next', onChange:(v)=>void, prev:boolean, next:boolean}|null} [p.choice] ⋯ 「옆 단어와 묶기」
  * @param {string[]} p.savedWords 단어장에 있는 구성 단어(있을 때만 안내 줄)
+ * @param {{mine?:boolean, shared?:boolean}} [p.scopes] ② 내 다른 자료에도 · ③ 모든 사용자(관리자) 선택지를 보일지(AD-R3 PR④)
+ * onConfirm(scope) — scope = 'material' | 'mine' | 'shared'
  */
-export function BoundaryMergeConfirm({ plan, reasonText, choice = null, savedWords = [], busy, onConfirm, onCancel, contentLang, vt, autoFocus = true }) {
+const SCOPE_LABELS = [['material', '이 자료만'], ['mine', '내 다른 자료에도 (다음 분석부터)'], ['shared', '모든 사용자 (관리자)']];
+export function BoundaryMergeConfirm({ plan, reasonText, choice = null, savedWords = [], scopes = null, busy, onConfirm, onCancel, contentLang, vt, autoFocus = true }) {
   const rootRef = useRef(null);
+  const radioName = `viewer-boundary-scope-${useId()}`;
+  const [scope, setScope] = useState('material');
+  const shownScopes = SCOPE_LABELS.filter(([value]) => value === 'material' || scopes?.[value] === true);
+  const activeScope = shownScopes.some(([value]) => value === scope) ? scope : 'material';
   useEffect(() => {
     if (!autoFocus) return undefined;
     const frame = requestAnimationFrame(() => rootRef.current?.querySelector('button:not(:disabled), input')?.focus({ preventScroll: true }));
@@ -59,13 +67,18 @@ export function BoundaryMergeConfirm({ plan, reasonText, choice = null, savedWor
           </p>
           <fieldset className="viewer-boundary-confirm__scope">
             <legend className="sr-only">{vt('적용 범위')}</legend>
-            <label><input type="radio" name="viewer-boundary-scope" checked readOnly />{vt('이 자료만')}</label>
+            {shownScopes.map(([value, label]) => (
+              <label key={value}><input type="radio" name={radioName} value={value} checked={activeScope === value} disabled={busy}
+                onChange={() => setScope(value)} />{vt(label)}</label>
+            ))}
           </fieldset>
+          {activeScope === 'mine' && <p className="viewer-boundary-confirm__note">{vt('다른 자료에서도 이 글자가 나오면 묶어요.')}</p>}
+          {activeScope === 'shared' && <p className="viewer-boundary-confirm__note">{vt('모든 사용자의 다음 분석부터 이 글자를 묶어요.')}</p>}
           {savedWords.length > 0 && <p className="viewer-boundary-confirm__note">{vt('단어장의 {word}은(는) 그대로 있어요.', { word: savedWords.join('·') })}</p>}
         </>
       ) : <BoundaryReason reason={reasonText} vt={vt} />}
       <div className="viewer-boundary-confirm__actions">
-        <button type="button" className="btn btn--primary btn--sm" disabled={busy || !plan?.ok} onClick={onConfirm}>{busy ? vt('묶는 중…') : vt('묶기')}</button>
+        <button type="button" className="btn btn--primary btn--sm" disabled={busy || !plan?.ok} onClick={() => onConfirm(activeScope)}>{busy ? vt('묶는 중…') : vt('묶기')}</button>
         <button type="button" className="btn btn--ghost btn--sm" disabled={busy} onClick={onCancel}>{vt('취소')}</button>
       </div>
     </div>

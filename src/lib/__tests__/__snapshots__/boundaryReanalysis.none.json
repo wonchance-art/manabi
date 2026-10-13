@@ -4,7 +4,7 @@
       "bodies": [
         {
           "url": "/api/analyze",
-          "body": "{\"lines\":[\"运动员的身体素质非常好。\",\"他是我的社恐朋友。\",\"身体好。\"],\"language\":\"Chinese\"}"
+          "body": "{\"lines\":[\"运动员的身体素质非常好。\",\"他是我的社恐朋友。\",\"身体好。\"],\"language\":\"Chinese\",\"segmentRules\":true}"
         }
       ],
       "rpcs": [],
@@ -185,7 +185,7 @@
       "bodies": [
         {
           "url": "/api/analyze",
-          "body": "{\"lines\":[\"运动员的身体素质非常好。\",\"他是我的社恐朋友。\",\"身体好。\"],\"language\":\"Chinese\"}"
+          "body": "{\"lines\":[\"运动员的身体素质非常好。\",\"他是我的社恐朋友。\",\"身体好。\"],\"language\":\"Chinese\",\"segmentRules\":true}"
         }
       ],
       "rpcs": [
@@ -550,7 +550,7 @@
       "bodies": [
         {
           "url": "/api/analyze",
-          "body": "{\"lines\":[\"运动员的身体素质非常好。\",\"他是我的社恐朋友。\"],\"language\":\"Chinese\"}"
+          "body": "{\"lines\":[\"运动员的身体素质非常好。\",\"他是我的社恐朋友。\"],\"language\":\"Chinese\",\"segmentRules\":true}"
         }
       ],
       "rpcs": [
@@ -915,7 +915,7 @@
       "bodies": [
         {
           "url": "/api/analyze",
-          "body": "{\"lines\":[\"新的一行。\",\"运动员的身体素质非常好。\",\"他是我的好朋友。\"],\"language\":\"Chinese\"}"
+          "body": "{\"lines\":[\"新的一行。\",\"运动员的身体素质非常好。\",\"他是我的好朋友。\"],\"language\":\"Chinese\",\"segmentRules\":true}"
         }
       ],
       "rpcs": [
@@ -1311,7 +1311,7 @@
       "bodies": [
         {
           "url": "/api/analyze",
-          "body": "{\"lines\":[\"明日は申し込んだ映画館に行きます。\",\"天気予報を見た。\",\"映画館は近い。\"],\"language\":\"Japanese\"}"
+          "body": "{\"lines\":[\"明日は申し込んだ映画館に行きます。\",\"天気予報を見た。\",\"映画館は近い。\"],\"language\":\"Japanese\",\"segmentRules\":true}"
         }
       ],
       "rpcs": [],
@@ -1492,7 +1492,7 @@
       "bodies": [
         {
           "url": "/api/analyze",
-          "body": "{\"lines\":[\"明日は申し込んだ映画館に行きます。\",\"天気予報を見た。\",\"映画館は近い。\"],\"language\":\"Japanese\"}"
+          "body": "{\"lines\":[\"明日は申し込んだ映画館に行きます。\",\"天気予報を見た。\",\"映画館は近い。\"],\"language\":\"Japanese\",\"segmentRules\":true}"
         }
       ],
       "rpcs": [
@@ -1857,7 +1857,7 @@
       "bodies": [
         {
           "url": "/api/analyze",
-          "body": "{\"lines\":[\"明日は申し込んだ映画館に行きます。\",\"天気予報を見た。\"],\"language\":\"Japanese\"}"
+          "body": "{\"lines\":[\"明日は申し込んだ映画館に行きます。\",\"天気予報を見た。\"],\"language\":\"Japanese\",\"segmentRules\":true}"
         }
       ],
       "rpcs": [
@@ -2222,7 +2222,7 @@
       "bodies": [
         {
           "url": "/api/analyze",
-          "body": "{\"lines\":[\"新しい行。\",\"明日は申し込んだ映画館に行きます。\",\"天気予報を聞いた。\"],\"language\":\"Japanese\"}"
+          "body": "{\"lines\":[\"新しい行。\",\"明日は申し込んだ映画館に行きます。\",\"天気予報を聞いた。\"],\"language\":\"Japanese\",\"segmentRules\":true}"
         }
       ],
       "rpcs": [
@@ -2618,7 +2618,7 @@
       "bodies": [
         {
           "url": "/api/analyze",
-          "body": "{\"lines\":[\"I picked up the book.\",\"She looked after them.\",\"Pick up the pen.\"],\"language\":\"English\"}"
+          "body": "{\"lines\":[\"I picked up the book.\",\"She looked after them.\",\"Pick up the pen.\"],\"language\":\"English\",\"segmentRules\":true}"
         }
       ],
       "rpcs": [],
@@ -2783,7 +2783,7 @@
       "bodies": [
         {
           "url": "/api/analyze",
-          "body": "{\"lines\":[\"I picked up the book.\",\"She looked after them.\",\"Pick up the pen.\"],\"language\":\"English\"}"
+          "body": "{\"lines\":[\"I picked up the book.\",\"She looked after them.\",\"Pick up the pen.\"],\"language\":\"English\",\"segmentRules\":true}"
         }
       ],
       "rpcs": [
@@ -3116,7 +3116,7 @@
       "bodies": [
         {
           "url": "/api/analyze",
-          "body": "{\"lines\":[\"I picked up the book.\",\"She looked after them.\"],\"language\":\"English\"}"
+          "body": "{\"lines\":[\"I picked up the book.\",\"She looked after them.\"],\"language\":\"English\",\"segmentRules\":true}"
         }
       ],
       "rpcs": [
@@ -3449,7 +3449,7 @@
       "bodies": [
         {
           "url": "/api/analyze",
-          "body": "{\"lines\":[\"A new line.\",\"I picked up the book.\",\"She looked after us.\"],\"language\":\"English\"}"
+          "body": "{\"lines\":[\"A new line.\",\"I picked up the book.\",\"She looked after us.\"],\"language\":\"English\",\"segmentRules\":true}"
         }
       ],
       "rpcs": [

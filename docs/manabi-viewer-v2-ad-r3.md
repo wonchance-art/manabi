@@ -317,6 +317,13 @@ COMMIT;
 
 - 코드 쪽 안전장치: 표가 없으면(`PGRST205`/`42P01`) 분석은 규칙 없이 그대로 진행하고, ②③ 선택지는 숨긴다. 롤백해도 분석이 깨지지 않는다.
 
+**PR④ 구현 메모(2026-10-13 KST · 구현 세션)**
+- `reading_materials.id`는 **bigint**다(운영 관측 카탈로그 `supabase/tests/fixtures/m09-learning-contracts-20261010.sql:374-375`, `viewer_replace_analysis(p_id bigint)`, `user_vocabulary.material_id`·`vocabulary_contexts.material_id` bigint). 그래서 `source_material_id bigint REFERENCES reading_materials(id) ON DELETE SET NULL`이다. 초안의 uuid는 `token_corrections` 마이그레이션(`material_id uuid`)을 따른 것인데, 그 외래 키는 bigint 기본 키와 타입이 맞지 않아 그대로는 만들 수 없다 — 운영 `token_corrections` 실제 타입은 읽기 전용으로 따로 확인할 일이다(범위 밖 · 보고만).
+- 지문 철사(아키텍처 §4.9-1): 새 표 2개 · reading_materials로 들어오는 외래 키 1개는 capability 지문 · FSRS 계약 넷 · snapshot을 바꾸지 않는다 — `supabase/tests/segment-rules.mjs`(M09 카탈로그 위 적용 · 롤백 · 재적용, CI)가 단언한다. `service_role` 권한은 기본 권한에 기대지 않고 명시했다. 보존 검사는 `docs/sql/segment-rules-preservation-readonly.sql`(READ ONLY).
+- `supabase/migrations`에는 두지 않는다(자동 db push 경로 밖) — 운영 담당이 known-word-controls.sql과 같은 방식으로 적용한다.
+- 규칙 읽기는 자료 분석 · 재분석(`analyzeHybrid`)이 `segmentRules: true`를 실을 때만이다. 드래그 · 빠른 분석 · 묶기 한 줄 분석은 읽기 0(지금과 같다). 규칙 층 결과는 `boundaryApplied`에 싣지 않는다(자료 기록이 아니다).
+- 화면은 ② ③을 묶기 확인 줄(드래그 · ⋯ 옆 단어와 묶기)에만 둔다. 나누기 규칙은 표 · 서버 · 관리자 라우트가 받지만 화면 진입점은 다음 라운드다.
+
 ---
 
 ## 6. 화면

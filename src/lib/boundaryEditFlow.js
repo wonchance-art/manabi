@@ -5,7 +5,8 @@
 // · 쓰기는 둘뿐이다: 이 자료의 processed_json(원자 RPC viewer_replace_analysis — 기대값 비교·소유자·분석 임대 확인)과
 //   token_corrections 이력 한 줄(after_value.source = 'boundary_edit'). 원문(p_raw = p_expected_raw)·저장 단어·FSRS·
 //   평가 이력·개인 뜻·출처·사전은 쓰지 않는다(boundaryEditWiring.test.js 소스 계약 + e2e 요청 감시).
-// · 범위는 ① 이 자료만이다. ② 내 다른 자료·③ 공유 사전 규칙은 PR④(DDL)에서 더한다.
+// · 범위는 ① 이 자료다. ② 내 다른 자료 · ③ 공유 규칙(PR④)은 이 자료 저장이 끝난 뒤 ViewerPage가 규칙 표에 따로 쓴다
+//   (segmentRules.js — 이 흐름은 규칙을 모른다).
 // · 중·일·영 판정(planBoundaryMerge·planBoundarySplit…)은 한국어를 'korean'으로 거부한다. 한국어는 오너 B안(2026-10-09, §7.5)
 //   어절 안 나누기만 따로 연다(planKoreanSplit · commitBoundaryEdit 한국어 갈래) — 조각은 서버가 아니라 기존 morphology로 만들고
 //   (koreanBoundarySplit.js), 쓰기는 같은 원자 RPC + 이력 한 줄이다. 어절을 넘는 묶기는 열지 않는다.
