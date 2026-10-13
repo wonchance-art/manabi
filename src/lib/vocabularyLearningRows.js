@@ -1,6 +1,6 @@
 /** 완전한 actor-bound snapshot만 projection으로 만든다. 오류를 빈 단어장으로 바꾸지 않는다. */
 import { schedulerTime } from './fsrsScheduler.js';
-import { isVocabularyReviewAvailable, projectVocabularyLearning, VOCABULARY_LEARNING_SUMMARY_FIELDS } from './vocabularyLearningRead.js';
+import { isVocabularyReviewAvailable, projectVocabularyLearning, VOCABULARY_LEARNING_REQUIRED_FIELDS } from './vocabularyLearningRead.js';
 import { kstDateString, kstDayStartMs } from './growthStats.js';
 
 const failure = (code, extra = {}) => Object.assign(new Error(code), { code, ...extra });
@@ -21,7 +21,7 @@ export function projectVocabularyLearningRows(snapshot, { actorId, at = snapshot
   const seen = new Set();
   const projections = snapshot.rows.map(vocabulary => {
     if (!vocabulary || !identity(vocabulary.id) || seen.has(vocabulary.id) || vocabulary.user_id !== actorId ||
-        typeof vocabulary.word_text !== 'string' || !VOCABULARY_LEARNING_SUMMARY_FIELDS.every(key => Object.hasOwn(vocabulary, key)) ||
+        typeof vocabulary.word_text !== 'string' || !VOCABULARY_LEARNING_REQUIRED_FIELDS.every(key => Object.hasOwn(vocabulary, key)) ||
         (vocabulary.language !== null && (typeof vocabulary.language !== 'string' || !vocabulary.language))) throw failure('vocabulary_learning_invalid_rows');
     seen.add(vocabulary.id);
     return projectVocabularyLearning({ actorId, vocabulary, registry: entries.get(vocabulary.id),

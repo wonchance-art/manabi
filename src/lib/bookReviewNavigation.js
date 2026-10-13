@@ -1,31 +1,23 @@
-import { BOOK_ID, bookHref } from './textbook/contract';
+import { BOOK_ID } from './textbook/contract';
+import { BOOK_LESSONS, safeBookReturn, serializeReviewScope } from './reviewScopeUrl';
 
-const BOOK_PATH = `/books/${BOOK_ID}`;
-const PAGE = /^(?:cover|u(?:0[1-9]|[1-3][0-9]|4[0-2])(?:-[a-z0-9_-]+)?)$/;
+// 돌아갈 곳 판정은 범위 주소 정본(reviewScope)이 소유한다 — 여기서는 기존 import 경로만 이어 준다.
+export { safeBookReturn };
 
-// A return destination is reading context, never an arbitrary redirect.
-export function safeBookReturn(value) {
-  if (typeof value !== 'string' || value.length > 500 || !value.startsWith(`${BOOK_PATH}?`)) return null;
-  try {
-    const url = new URL(value, 'https://manabi.invalid');
-    if (url.pathname !== BOOK_PATH || !/^[a-f0-9]{24}$/.test(url.searchParams.get('edition') || '')) return null;
-    if ([...url.searchParams.keys()].some(key => key !== 'edition') || url.searchParams.getAll('edition').length !== 1) return null;
-    const page = decodeURIComponent(url.hash.slice(1)) || 'cover';
-    return PAGE.test(page) ? bookHref(url.searchParams.get('edition'), page) : null;
-  } catch { return null; }
+/**
+ * 교재 범위 복습 주소(REV-SCOPE-R1A) — 범위 주소 정본(serializeReviewScope)으로 만든다.
+ * 과 범위를 주지 않으면 교재 전체(1–42과). 옛 `?book=japanese-n5&returnTo=` 주소는 parseReviewScope가 같은 범위로 읽는다.
+ */
+export function bookReviewHref(returnTo, { from = 1, to = BOOK_LESSONS } = {}) {
+  return serializeReviewScope({ lang: 'Japanese', level: null, source: { kind: 'book', bookId: BOOK_ID, from, to }, state: 'due' }, { returnTo });
 }
 
-export function bookReviewHref(returnTo) {
-  const params = new URLSearchParams({ book: BOOK_ID });
+/** 「교재의 담은 표현」 목록(/books/japanese-n5/review) — 돌아갈 판본 · 위치를 그대로 넘긴다. 안전한 돌아갈 곳이 없으면 null. */
+export function bookExpressionListHref(returnTo) {
   const safe = safeBookReturn(returnTo);
-  if (safe) params.set('returnTo', safe);
-  return `/vocab?${params}`;
-}
-
-export function parseBookReview(params = {}) {
-  if (params.book === undefined) return null;
-  if (params.book !== BOOK_ID) return { invalid: true };
-  return { bookId: BOOK_ID, returnTo: safeBookReturn(params.returnTo) || BOOK_PATH };
+  if (!safe) return null;
+  const edition = new URL(safe, 'https://manabi.invalid').searchParams.get('edition');
+  return `/books/${BOOK_ID}/review?edition=${edition}&returnTo=${encodeURIComponent(safe)}`;
 }
 
 // Keep stored source URLs canonical; only the act of consulting them is marked.
@@ -37,17 +29,28 @@ export function bookReferenceHref(href) {
   return url.pathname + url.search + url.hash;
 }
 
-export async function fetchBookVocabularyIds({ signal, fetcher = fetch } = {}) {
+async function fetchScopeIds(path, { signal, fetcher = fetch, failure }) {
   const ids = new Set();
   let offset = 0;
   do {
-    const response = await fetcher(`/api/learning/book-review?scope=1&offset=${offset}`, { cache: 'no-store', signal });
+    const response = await fetcher(`${path}${path.includes('?') ? '&' : '?'}offset=${offset}`, { cache: 'no-store', signal });
     const result = await response.json();
-    if (!response.ok || !Array.isArray(result.wordIds)) throw new Error('이 교재의 표현 범위를 불러오지 못했어요.');
+    if (!response.ok || !Array.isArray(result.wordIds)) throw new Error(failure);
     for (const id of result.wordIds) ids.add(id);
     if (result.nextOffset == null) return [...ids];
     if (!Number.isSafeInteger(result.nextOffset) || result.nextOffset <= offset) throw new Error('표현 목록의 다음 위치를 확인하지 못했어요.');
     offset = result.nextOffset;
   } while (!signal?.aborted);
   throw new DOMException('Aborted', 'AbortError');
+}
+
+/** 교재 범위의 내 단어 id — 과 범위(from · to)를 주면 그 과에서 담은 것만. 한 쪽이라도 실패하면 전체 실패(닫힘). */
+export function fetchBookVocabularyIds({ signal, fetcher = fetch, from = 1, to = BOOK_LESSONS } = {}) {
+  const range = from === 1 && to === BOOK_LESSONS ? '' : `&from=${from}&to=${to}`;
+  return fetchScopeIds(`/api/learning/book-review?scope=1${range}`, { signal, fetcher, failure: '이 교재의 표현 범위를 불러오지 못했어요.' });
+}
+
+/** 자료(노트 포함) 범위의 내 단어 id — 저장 출처(source_material_id) ∪ 담은 문맥(vocabulary_contexts.material_id). */
+export function fetchMaterialVocabularyIds({ ids, signal, fetcher = fetch } = {}) {
+  return fetchScopeIds(`/api/learning/material-review?ids=${ids.join(',')}`, { signal, fetcher, failure: '이 자료의 표현 범위를 불러오지 못했어요.' });
 }

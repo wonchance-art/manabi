@@ -21,7 +21,9 @@ let levelsPromise = null;
 
 /** 2026 급수 표 로드 — 1회 받아 캐시. */
 export function loadZhHskLevels() {
-  levelsPromise ||= import('./data/zhHsk2026Level.json').then((m) => m.default || m);
+  // 실패한 로드는 캐시하지 않는다 — 복습 급수 범위의 「다시 시도」가 다시 받을 수 있게(REV-SCOPE-R1A).
+  levelsPromise ||= import('./data/zhHsk2026Level.json').then((m) => m.default || m)
+    .catch((error) => { levelsPromise = null; throw error; });
   return levelsPromise;
 }
 
