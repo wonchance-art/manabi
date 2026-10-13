@@ -41,6 +41,7 @@ import vocabN1jlptE from '../content/japanese/vocab/n1_jlpt_e';
 import vocabN1jlptF from '../content/japanese/vocab/n1_jlpt_f';
 import vocabN1jlptG from '../content/japanese/vocab/n1_jlpt_g';
 import vocabN1jlptH from '../content/japanese/vocab/n1_jlpt_h';
+import { LANG_NAME_KO } from './constants';
 
 const LEVEL_META = [
   { key: 'N5', label: 'N5 기초', focus: '기초 입문', color: '#F5C34A', bg: 'rgba(245,195,74,0.12)', line: 'rgba(245,195,74,0.35)' },
@@ -147,8 +148,7 @@ function buildReadingIndex() {
 
 export const JAPANESE_VOCAB_REF = Object.freeze({
   base: '/japanese',
-  flag: '🇯🇵',
-  name: '일본어',
+  name: LANG_NAME_KO.Japanese,
   langCode: 'ja',
   LEVEL_META,
   /** 정본 표기로 단어를 찾는다 — { level, word } 또는 null. */

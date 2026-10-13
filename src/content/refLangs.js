@@ -1,22 +1,23 @@
 /**
  * 언어 레퍼런스 통합 인덱스
  * 강의 페이지(레퍼런스 뷰)와 라우트가 언어 구분 없이 같은 API로 접근한다.
+ * 언어 표시는 글자다 — 이름은 정본 LANG_NAME_KO, 국기 필드는 두지 않는다(D-X6, 2026-10-12).
  */
 import french from './french';
 import japanese from './japanese';
 import english from './english';
 import chinese from './chinese';
+import { LANG_NAME_KO } from '../lib/constants';
 
 export const REF_LANGS = {
   English: {
     ...english,
     base: '/english',
     readKey: 'en_read_chapters',
-    flag: '🇬🇧',
-    name: '영어',
+    name: LANG_NAME_KO.English,
     langCode: 'en',
     blurb: 'A1부터 C2까지 학습 순서대로 배치된 **문법·어휘 레퍼런스**예요. 학교 영어로 «아는데 안 되는» 지점 — 한국어 감각과 충돌하는 관사·시제·어순 — 을 정면으로 공략합니다.',
-    legend: ['🚨 한국인 함정', '🇰🇷 한국어와 비교', '🌱 어원 연결', '💡 팁'],
+    legend: ['🚨 한국인 함정', '한국어와 비교', '🌱 어원 연결', '💡 팁'],
     pitch: {
       hook: "10년을 배웠는데 입이 안 떨어지는 건 재능이 아니라 마지막 조각 몇 개가 빠져서예요.",
       scenes: [
@@ -35,11 +36,10 @@ export const REF_LANGS = {
     ...french,
     base: '/french',
     readKey: 'fr_read_chapters',
-    flag: '🇫🇷',
-    name: '프랑스어',
+    name: LANG_NAME_KO.French,
     langCode: 'fr',
     blurb: 'A0 기초 상식부터 C2까지 학습 순서대로 배치된 **문법·어휘 레퍼런스**예요. 한국어 화자가 막히는 지점과, 영어와 라틴어 뿌리가 같은 단어의 연결고리를 함께 짚어줍니다.',
-    legend: ['🚨 한국인 함정', '🇬🇧 영어와 비교', '🌱 라틴어 어원', '💡 팁'],
+    legend: ['🚨 한국인 함정', '영어와 비교', '🌱 라틴어 어원', '💡 팁'],
     pitch: {
       hook: "크루아상, 데자뷔, 앙코르처럼 이미 쓰고 있는 단어가 많아서, 프랑스어는 사실 처음이 아니에요.",
       scenes: [
@@ -58,11 +58,10 @@ export const REF_LANGS = {
     ...japanese,
     base: '/japanese',
     readKey: 'ja_read_chapters',
-    flag: '🇯🇵',
-    name: '일본어',
+    name: LANG_NAME_KO.Japanese,
     langCode: 'ja',
     blurb: 'N5부터 N1까지 학습 순서대로 배치된 **문법·어휘 레퍼런스**예요. 한국어 화자의 3대 자산 — 같은 어순, 1:1 조사, 공유하는 한자어 — 를 무기로 쓰고, 어긋나는 지점은 정면으로 다룹니다.',
-    legend: ['🚨 한국인 함정', '🇰🇷 한국어와 비교', '🈶 한자어 연결', '💡 팁'],
+    legend: ['🚨 한국인 함정', '한국어와 비교', '🈶 한자어 연결', '💡 팁'],
     pitch: {
       hook: "히라가나만 떼면 된다는 말이 반은 맞는 게, 나머지 반은 이미 한국어가 해 놨거든요.",
       scenes: [
@@ -81,11 +80,10 @@ export const REF_LANGS = {
     ...chinese,
     base: '/chinese',
     readKey: 'zh_read_chapters',
-    flag: '🇨🇳',
-    name: '중국어',
+    name: LANG_NAME_KO.Chinese,
     langCode: 'zh',
     blurb: 'HSK 1급(H1)부터 6급(H6)까지 학습 순서대로 배치된 **문법·어휘 레퍼런스**예요. 한국어 화자의 최대 무기 — 공유하는 한자어 — 를 지렛대로 쓰고, 어순(SVO)·성조·양사처럼 어긋나는 지점은 정면으로 다룹니다.',
-    legend: ['🚨 한국인 함정', '🇰🇷 한국어와 비교', '🈶 한자어 연결', '💡 팁'],
+    legend: ['🚨 한국인 함정', '한국어와 비교', '🈶 한자어 연결', '💡 팁'],
     pitch: {
       hook: "'도서관'이 '투슈관', '준비'가 '쭌베이'로 들리는 건 열에 일곱이 뿌리가 같은 단어라서예요.",
       scenes: [
