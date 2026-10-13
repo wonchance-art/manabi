@@ -76,6 +76,12 @@ import vocabH3hsk30 from './vocab/h3_hsk30';
 import vocabH4hsk30 from './vocab/h4_hsk30';
 import vocabH5hsk30 from './vocab/h5_hsk30';
 import vocabH6hsk30 from './vocab/h6_hsk30';
+// HSK 2026 보강(《HSK 考试大纲》 2026-07 实施 — docs/design/hsk2026) — 1–6급 2026 단어 중 우리 사전에 없던 584개(ZH-LEVEL-2026-001 ④). 2급 1개(没意思)는 h2.js에.
+import vocabH1hsk2026 from './vocab/h1_hsk2026';
+import vocabH3hsk2026 from './vocab/h3_hsk2026';
+import vocabH4hsk2026 from './vocab/h4_hsk2026';
+import vocabH5hsk2026 from './vocab/h5_hsk2026';
+import vocabH6hsk2026 from './vocab/h6_hsk2026';
 import vocabExpansion from './vocab/expansion';
 // 원본 어휘 + HSK 보강 어휘를 '보강' 구분 없이 한 사전으로 — 품사별 자연 분류로 통합.
 const POS_GROUPS = [
@@ -192,12 +198,12 @@ const registry = createRegistry(
     H6: withExtraExamples(grammarH6, exH6),
   },
   {
-    H1: mergeVocab(vocabH1, vocabH1hsk, vocabH1hsk30),
+    H1: mergeVocab(vocabH1, vocabH1hsk, vocabH1hsk30, vocabH1hsk2026),
     H2: mergeVocab(vocabH2, vocabH2hsk, vocabH2hsk30),
-    H3: mergeVocab(vocabH3, vocabH3hsk, vocabH3hsk30),
-    H4: mergeVocab(vocabH4, vocabH4hskA, vocabH4hskB, vocabH4hskC, vocabH4hsk30),
-    H5: mergeVocab(vocabH5, vocabH5hskA, vocabH5hskB, vocabH5hskC, vocabH5hskD, vocabH5hskE, vocabH5hskF, vocabH5hsk30),
-    H6: mergeVocab(vocabH6, vocabH6hskA, vocabH6hskB, vocabH6hskC, vocabH6hskD, vocabH6hskE, vocabH6hsk30),
+    H3: mergeVocab(vocabH3, vocabH3hsk, vocabH3hsk30, vocabH3hsk2026),
+    H4: mergeVocab(vocabH4, vocabH4hskA, vocabH4hskB, vocabH4hskC, vocabH4hsk30, vocabH4hsk2026),
+    H5: mergeVocab(vocabH5, vocabH5hskA, vocabH5hskB, vocabH5hskC, vocabH5hskD, vocabH5hskE, vocabH5hskF, vocabH5hsk30, vocabH5hsk2026),
+    H6: mergeVocab(vocabH6, vocabH6hskA, vocabH6hskB, vocabH6hskC, vocabH6hskD, vocabH6hskE, vocabH6hsk30, vocabH6hsk2026),
     LIFE: vocabExpansion,
   },
 );

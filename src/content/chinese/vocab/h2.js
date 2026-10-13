@@ -151,6 +151,8 @@ const themes = {
         { zh: "火锅", pinyin: "huǒguō", ko: "훠궈", pos: "명사", ex: { zh: "我爱吃火锅。", pinyin: "wǒ ài chī huǒguō", ko: "훠궈를 정말 좋아해요." } },
         { zh: "胖", pinyin: "pàng", ko: "살찌다, 뚱뚱하다", pos: "형용사", ex: { zh: "我胖了三公斤。", pinyin: "wǒ pàng le sān gōngjīn", ko: "3킬로그램 쪘어요." } },
         { zh: "饿", pinyin: "è", ko: "배고프다", pos: "형용사", hanja: "아(餓) — '기아'의 아.", ex: { zh: "我饿了。", pinyin: "wǒ è le", ko: "배고파요." } },
+        // HSK 2026 2급 단어 중 우리 사전에 없던 1개(ZH-LEVEL-2026-001 ④) — 한 단어짜리 보강 파일은 어휘 모듈 3단어 하한(contentSchemaContract)에 걸려 여기에 둔다. 병음은 2026 원문 그대로.
+        { zh: "没意思", pinyin: "méi yìsi", ko: "재미없다, 시시하다", pos: "표현", ex: { zh: "这个电影真没意思。", pinyin: "zhège diànyǐng zhēn méi yìsi", ko: "이 영화는 정말 재미없어요." } },
       ],
     },
   ],
