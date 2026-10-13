@@ -35,3 +35,30 @@
 .conv__icon { min-width: 44px; min-height: 44px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); color: var(--text-primary); cursor: pointer; }
 .conv__icon--send { background: var(--primary); color: #fff; border-color: transparent; }
 .conv__icon:disabled { opacity: 0.5; cursor: default; }
+
+/* 새 대화(v2-Z Z-R2) — 주제·언어·수준 칩은 위 .conv-chip(44px) 그대로, 고른 칩은 aria-pressed로 표시. */
+.conv-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.conv-new { display: flex; flex-direction: column; gap: 22px; max-width: 640px; }
+.conv-new__head h1 { margin: 0; }
+.conv-new__lede { margin: 4px 0 0; color: var(--text-secondary); }
+.conv-new__group { display: flex; flex-direction: column; gap: 10px; }
+.conv-new__group h2 { margin: 0; font-size: 1rem; color: var(--text-primary); }
+.conv-new__group h2 small { margin-left: 6px; font-size: 0.8rem; font-weight: 400; color: var(--text-muted); }
+.conv-new__chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.conv-chip[aria-pressed="true"] { border-color: var(--primary); color: var(--text-primary); background: color-mix(in srgb, var(--primary) 12%, transparent); font-weight: 600; }
+.conv-new__own input { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); color: var(--text-primary); font: inherit; }
+.conv-new__words { margin: 0; color: var(--text-primary); }
+.conv-new__start { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.conv-new__start .manabi-button { min-height: 44px; }
+.conv-new__note { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
+.conv-new__error { margin: 0; color: var(--danger); }
+.conv-new__recent { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.conv-new__recent a { display: flex; flex-direction: column; gap: 2px; min-height: 44px; justify-content: center; padding: 8px 12px; border: 1px solid var(--border); border-radius: 12px; color: var(--text-primary); text-decoration: none; }
+.conv-new__recent small { color: var(--text-muted); }
+
+/* 머리 ⋯(Z-R2) — 주제·수준 바꾸기 · 새 대화 · 지우기. */
+.conv__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.conv-menu { position: relative; }
+.conv-menu__list { position: absolute; right: 0; top: calc(100% + 4px); z-index: 20; display: flex; flex-direction: column; min-width: 180px; padding: 4px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); box-shadow: 0 6px 20px color-mix(in srgb, var(--text-primary) 14%, transparent); }
+.conv-menu__item { display: flex; align-items: center; min-height: 44px; padding: 0 12px; border: 0; border-radius: 8px; background: none; color: var(--text-primary); font: inherit; text-align: left; text-decoration: none; cursor: pointer; }
+.conv-menu__item:hover, .conv-menu__item:focus-visible { background: var(--bg-secondary); }

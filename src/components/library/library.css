@@ -229,3 +229,5 @@
 .shelf-chapter-parts{display:grid;gap:16px}
 .shelf-chapter-parts>div{display:grid;grid-template-columns:80px 1fr;gap:8px}
 .shelf-chapter-parts p{grid-column:1/-1;white-space:pre-wrap;max-height:140px;overflow:auto;font-size:13px;line-height:1.8;color:var(--muted)}
+.shelf-conversations-tools{display:flex;align-items:center;gap:12px}
+.shelf-conversations-new{display:inline-flex;align-items:center;min-height:44px;font-size:12px;color:var(--ink);text-decoration:underline;text-underline-offset:4px}

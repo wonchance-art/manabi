@@ -1,6 +1,8 @@
-// 대화 모드 화면 쪽 호출 — 서버 대화 턴 경로(/api/conversation/turn) 하나만 부른다(v2-Z Z-R1 ③).
+// 대화 모드 화면 쪽 호출 — 턴은 서버 대화 턴 경로(/api/conversation/turn) 하나만 부른다(v2-Z Z-R1 ③).
+// 지우기는 서재 휴지통 작업 경로를 그대로 쓴다(Z-R2).
 // 튜터 프롬프트·안전 규칙·교정 규칙은 서버가 쥐고, 화면은 요청과 캐시 합치기만 한다.
 import { supabase } from '../supabase';
+import { currentLibraryTarget, runLibraryOperation } from '../libraryOperations';
 
 async function bearer() {
   try {
@@ -67,4 +69,19 @@ export async function startTopicConversation({ topic, language, level, outputWor
   const attemptId = newAttemptId();
   const body = await postConversationTurn({ topic, language, level, outputWords, ...(attemptId ? { attemptId } : {}) });
   return String(body.materialId);
+}
+
+/** 이 대화에서 담은 단어 수(지우기 확인창). 내 문맥 행만 보인다(RLS). 실패하면 null — 숫자 없이 묻는다. */
+export async function countConversationWords(materialId) {
+  const { count, error } = await supabase.from('vocabulary_contexts')
+    .select('id', { count: 'exact', head: true })
+    .eq('material_id', String(materialId));
+  return error ? null : count ?? null;
+}
+
+/** 대화 지우기 = 서재 휴지통(되돌리기 가능). 서재 화면의 휴지통과 같은 작업 경로다. */
+export async function trashConversation(materialId) {
+  const target = await currentLibraryTarget(supabase, { target_kind: 'material', target_id: String(materialId) });
+  const result = await runLibraryOperation(supabase, 'trash', [target]);
+  if (result.items.some((item) => item.status !== 'success')) throw new Error('대화가 바뀌었어요. 다시 열어 확인해 주세요.');
 }

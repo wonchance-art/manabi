@@ -10,7 +10,10 @@
 // - 말풍선은 분석이 붙은 완성본을 한 번만 그린다(기다리는 동안은 「입력 중」 점, 입력 칸은 열려 있다).
 import { useEffect, useId, useRef, useState } from 'react';
 import { conversationItems, openRetryOf, CONVERSATION_ERRORS, CONVERSATION_MAX_TURNS, countMyTurns } from '../../lib/conversation/turnModel';
-import { postConversationTurn } from '../../lib/conversation/conversationClient';
+import Link from 'next/link';
+import { postConversationTurn, countConversationWords } from '../../lib/conversation/conversationClient';
+import { newConversationHref } from '../../lib/conversation/newConversation';
+import ConfirmModal from '../ConfirmModal';
 import { isImeComposing } from '../../lib/imeComposing';
 import { bcp47ForLanguage } from '../../lib/speechLang';
 import { langNameKo } from '../../lib/constants';
@@ -54,7 +57,7 @@ function MyText({ text, focus }) {
 
 export default function ConversationThread({
   material, conversation, tokensByLine, renderToken, language, speak, ttsSupported,
-  onTurnResult, onReload, onNewConversation, onRetryAnalysis, analysisBusy = false, outputWords = [],
+  onTurnResult, onReload, onNewConversation, onRetryAnalysis, onDelete, analysisBusy = false, outputWords = [],
 }) {
   const materialId = material?.id;
   const rawLines = (material?.raw_text || '').split('\n');
@@ -76,6 +79,9 @@ export default function ConversationThread({
   const [openTx, setOpenTx] = useState(() => new Set());
   const [listening, setListening] = useState(false);
   const [sttSupported, setSttSupported] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [confirm, setConfirm] = useState(null); // { words: number|null } — 지우기 확인창
+  const [deleting, setDeleting] = useState(false);
   const requestRef = useRef(0);
   const materialRef = useRef(materialId);
   const recognitionRef = useRef(null);
@@ -179,12 +185,50 @@ export default function ConversationThread({
     return next;
   });
 
+  async function askDelete() {
+    setMenuOpen(false);
+    setConfirm({ words: null });
+    const words = await countConversationWords(materialId).catch(() => null);
+    setConfirm((prev) => (prev ? { words } : prev));
+  }
+
+  async function confirmDelete() {
+    if (deleting) return;
+    setDeleting(true);
+    try { await onDelete?.(); setConfirm(null); } finally { setDeleting(false); }
+  }
+
+  // 무엇이 남고 무엇이 지워지는지 먼저(시안 「지우기」). 담은 단어 수는 조회가 끝나면 붙는다.
+  const deleteMessage = confirm ? (
+    <>
+      {[conversation.topic, langKo, `말풍선 ${items.length}개`, confirm.words != null ? `담은 단어 ${confirm.words}개` : null].filter(Boolean).join(' · ')}
+      <br />담은 단어와 복습 일정은 단어장에 그대로 남아요.
+      <br />휴지통에서 되돌릴 수 있어요. 영구 삭제하면 복습 카드의 「대화로」 출처 문장도 함께 지워져요.
+    </>
+  ) : null;
+
   const placeholder = open ? '다시 말해 보세요' : `${langKo}로 답해 보세요`;
   const blocked = error?.blocked || full;
 
   return (
     <div className="conv">
-      <p className="conv__meta">{[conversation.topic, langKo, conversation.level, '대화'].filter(Boolean).join(' · ')}</p>
+      <div className="conv__head">
+        <p className="conv__meta">{[conversation.topic, langKo, conversation.level, '대화'].filter(Boolean).join(' · ')}</p>
+        <div className="conv-menu">
+          <button type="button" className="conv__icon" aria-label="대화 메뉴" aria-haspopup="menu" aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((v) => !v)}>⋯</button>
+          {menuOpen && (
+            <div className="conv-menu__list" role="menu" onKeyDown={(e) => { if (e.key === 'Escape') setMenuOpen(false); }}>
+              <Link role="menuitem" className="conv-menu__item"
+                href={newConversationHref({ language, level: conversation.level, topic: conversation.topic })}>주제·수준 바꾸기</Link>
+              {onNewConversation && (
+                <button type="button" role="menuitem" className="conv-menu__item" onClick={() => { setMenuOpen(false); onNewConversation(); }}>새 대화</button>
+              )}
+              {onDelete && <button type="button" role="menuitem" className="conv-menu__item" onClick={askDelete}>지우기</button>}
+            </div>
+          )}
+        </div>
+      </div>
       <OutputWordChips words={outputWords} usedSet={usedWordSet} />
       <div className="conv__log" role="log" aria-live="polite" aria-relevant="additions" id={listId}>
         {items.map((item) => {
@@ -278,6 +322,16 @@ export default function ConversationThread({
         )}
         <div ref={endRef} />
       </div>
+      <ConfirmModal
+        open={!!confirm}
+        title="이 대화를 휴지통으로 옮길까요?"
+        message={deleteMessage}
+        variant="primary"
+        confirmLabel="휴지통으로"
+        confirmDisabled={deleting}
+        onConfirm={confirmDelete}
+        onCancel={() => { if (!deleting) setConfirm(null); }}
+      />
       <div className="conv__input">
         <textarea
           className="conv__textarea"

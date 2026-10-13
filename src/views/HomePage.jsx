@@ -134,6 +134,8 @@ export default function HomePage({ book = null }) {
       </section>
     </div>
     {user && continueDeckItems.length > 0 && <section className="today-tools"><div className="manabi-section-heading"><h2>학습을 이어가는 방법</h2><Link href="/materials" className="manabi-link">내 서재</Link></div><ContinueDeck items={continueDeckItems} /></section>}
+    {/* 대화 모드 v2-Z Z-R2 — 읽은 말을 꺼내 쓰는 입구(자료 없이 시작). */}
+    {user && <Link className="today-library-row" href="/conversation/new" prefetch={false}><span>말해 보기</span><strong>AI 튜터와 목표어로 대화</strong><span>새 대화 ↗</span></Link>}
     {material && !activeMaterial && <Link className="today-library-row" href={`/viewer/${material.reading_materials.id}`}><span>내 서재에서 읽는 중</span><strong>{material.reading_materials.title}</strong><span>이어 읽기 ↗</span></Link>}
   </div>;
 }

@@ -5,7 +5,11 @@ import { conversationHref, conversationShelfMeta, fetchConversations } from '../
 
 const read = (rel) => readFileSync(new URL(`../../../${rel}`, import.meta.url), 'utf8');
 
-function fakeClient(rows, calls) {
+function fakeClient(rows, calls, trashed = []) {
+  const state = {
+    select() { return state; }, eq() { return state; }, neq() { return state; },
+    range() { return Promise.resolve({ data: trashed.map((id) => ({ target_kind: 'material', target_id: id })), error: null }); },
+  };
   const chain = {
     select(cols) { calls.push(['select', cols]); return chain; },
     eq(...a) { calls.push(['eq', ...a]); return chain; },
@@ -13,7 +17,7 @@ function fakeClient(rows, calls) {
     order(...a) { calls.push(['order', ...a]); return chain; },
     limit(n) { calls.push(['limit', n]); return Promise.resolve({ data: rows, error: null }); },
   };
-  return { from(table) { calls.push(['from', table]); return chain; } };
+  return { from(table) { calls.push(['from', table]); return table === 'library_item_state' ? state : chain; } };
 }
 
 describe('서재 「대화」 묶음 조회', () => {
@@ -23,7 +27,8 @@ describe('서재 「대화」 묶음 조회', () => {
       { id: 12, title: '여행 이야기', created_at: '2026-10-13T16:00:00Z', topic: '여행', language: 'Chinese', parentId: '7', marker: '1' },
       { id: 11, title: '일반 자료', created_at: null }, // 필터를 모르는 백엔드가 섞어 보낸 행
       { id: 9, title: '', created_at: null, topic: null, language: null, parentId: null, marker: '1' },
-    ], calls), 'u1');
+      { id: 5, title: '지운 대화', created_at: null, topic: null, language: null, parentId: null, marker: '1' },
+    ], calls, ['5']), 'u1');
     expect(calls).toContainEqual(['from', 'reading_materials']);
     expect(calls).toContainEqual(['eq', 'owner_id', 'u1']);
     expect(calls).toContainEqual(['not', 'processed_json->metadata->conversation', 'is', null]);
@@ -31,6 +36,7 @@ describe('서재 「대화」 묶음 조회', () => {
     expect(cols).not.toMatch(/raw_text|processed_json,|processed_json$/);
     expect(rows[0]).toEqual({ id: '12', title: '여행', language: 'Chinese', parentId: '7', createdAt: '2026-10-13T16:00:00Z' });
     expect(rows[1].title).toBe('대화');
+    expect(rows.map((r) => r.id)).toEqual(['12', '9']); // 휴지통으로 옮긴 대화는 묶음에서 빠진다
   });
 
   it('보조 정보는 언어·시작점·KST 날짜', () => {

@@ -18,7 +18,7 @@ import { takePassageAnalysis } from '@/lib/passageAnalysis';
 import { composerOf, shouldReadComposerOriginal } from '@/lib/materialComposer';
 import Link from 'next/link';
 import { LibraryReturnLink } from '@/components/web/LibraryReaderLink';
-import { readerReturnLabel } from '../lib/libraryReturn';
+import { readerReturnLabel, safeReaderReturn } from '../lib/libraryReturn';
 import ActionIcon from '../components/ActionIcon';
 import ViewerReferenceExample from '../components/viewer/ViewerReferenceExample';
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -88,7 +88,8 @@ import ReportMaterialButton from '../components/ReportMaterialButton';
 import ReadingTest from '../components/ReadingTest';
 import ConversationThread from '../components/conversation/ConversationThread';
 import { conversationOf, tokensByLineIndex, applyTurnResult } from '../lib/conversation/turnModel';
-import { openConversationFor, startTopicConversation } from '../lib/conversation/conversationClient';
+import { openConversationFor, startTopicConversation, trashConversation } from '../lib/conversation/conversationClient';
+import { invalidateLibrary } from '../lib/libraryOperations';
 import { useOutputWords } from '../lib/useOutputWords';
 import ViewerBottomSheet from '../components/ViewerBottomSheet';
 import ListenControls from '../components/ListenControls';
@@ -684,6 +685,18 @@ export default function ViewerPage() {
       setConversationOpening(false);
     }
   }, [user?.id, material, conversationOpening, noteRouter, id, toast, originalParams]);
+  // 머리 ⋯ → 지우기(Z-R2) = 서재 휴지통. 옮긴 뒤 들어온 곳(없으면 서재)으로 돌아간다.
+  const deleteConversation = useCallback(async () => {
+    try {
+      await trashConversation(id);
+      await invalidateLibrary(queryClient, user?.id);
+      queryClient.invalidateQueries({ queryKey: ['library-conversations', user?.id] });
+      toast('휴지통으로 옮겼어요.', 'success');
+      noteRouter.push(safeReaderReturn(originalParams.get('returnTo')));
+    } catch (cause) {
+      toast(friendlyToastMessage(cause), 'error');
+    }
+  }, [id, queryClient, user?.id, toast, noteRouter, originalParams]);
   const handleConversationTurn = useCallback((body) => {
     let merged = false;
     queryClient.setQueryData(['material', id], (prev) => {
@@ -4062,6 +4075,7 @@ export default function ViewerPage() {
                 onTurnResult={handleConversationTurn}
                 onReload={() => refetch()}
                 onNewConversation={() => openConversation({ fresh: true })}
+                onDelete={user?.id === material?.owner_id ? deleteConversation : null}
                 onRetryAnalysis={user?.id === material?.owner_id ? () => reanalyze.mutation.mutate({ resume: true }) : null}
                 analysisBusy={isAnalyzing || reanalyze.mutation.isPending}
                 outputWords={outputWords}

@@ -1,6 +1,8 @@
 // 서재의 「대화」 묶음(v2-Z Z-R1 ③) — 대화 자료(processed_json.metadata.conversation)만 따로 읽는다.
 // 서재 목록 RPC(personal_library_page_v2)는 대화를 일반 글과 똑같이 돌려준다. RPC를 바꾸는 DB 변경 없이,
 // 화면이 이 조회로 대화를 「대화」 묶음에 모으고, 목록의 같은 자료에는 「대화」 표시를 붙인다.
+import { filterActiveSources } from '../libraryOperations';
+
 export const CONVERSATION_SHELF_LIMIT = 200;
 export const CONVERSATION_SHELF_PREVIEW = 3;
 
@@ -22,7 +24,9 @@ export async function fetchConversations(client, userId, { limit = CONVERSATION_
     .limit(limit);
   if (error) throw error;
   // 표식 열을 한 번 더 본다 — JSON 경로 필터를 모르는 경로(옛 프록시·테스트 백엔드)가 일반 자료를 섞어 보내도 대화만 남긴다.
-  return (data || []).filter((row) => row.marker != null).map((row) => ({
+  // 휴지통으로 옮긴 대화는 묶음에서 뺀다(서재 휴지통에서 되돌리면 다시 보인다).
+  const active = await filterActiveSources(client, userId, (data || []).filter((row) => row.marker != null));
+  return active.map((row) => ({
     id: String(row.id),
     title: row.topic || row.title || '대화',
     language: row.language || null,
