@@ -20,6 +20,7 @@ import {
 import { analysisTokenLine } from './analysisCoverage';
 import { analysisLineUnits, boundaryFromUnit, boundaryToUnit } from './analyzeText';
 import { replaceViewerAnalysis } from './reanalysisPreservation';
+import { reportError } from './reportError';
 
 /** 화면 판정에 넘길 문맥(§6.1 · §4.4 · Q4 · §12.2). 수업 사본 = 팀 수업이 만든 사본(source_ref) 또는 기기 사본(__local). */
 export function boundaryEditContext(material, { userId, classMode = false, passage = false } = {}) {
@@ -318,9 +319,9 @@ async function logBoundaryHistory(client, { materialId, userId, tokenId, before,
     const { error } = await client.from('token_corrections').insert({
       material_id: materialId, token_id: tokenId, user_id: userId, before_value: before, after_value: after,
     });
-    if (error) console.warn('[boundary log] failed:', error.message);
+    if (error) reportError(error, { where: 'token_corrections insert (boundary_edit)', materialId, tokenId });
   } catch (error) {
-    console.warn('[boundary log] failed:', error?.message);
+    reportError(error, { where: 'token_corrections insert (boundary_edit)', materialId, tokenId });
   }
 }
 

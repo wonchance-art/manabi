@@ -44,6 +44,7 @@ import { comprehensionRatio, ladderLabel, ladderTargetCpm, nextLadderStep } from
 import { computeHeadingLevels } from '../lib/headingHeuristics';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
+import { reportError } from '../lib/reportError';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 import PatternCard from '../components/PatternCard';
@@ -267,6 +268,9 @@ async function upsertViewerVocabulary(row, options = VOCAB_UPSERT) {
 // undo 안내 라벨 — 표기용일 뿐이고 동작은 metaKey || ctrlKey 양쪽을 다 받는다.
 const UNDO_KEY_LABEL = typeof navigator !== 'undefined'
   && /mac|iphone|ipad/i.test(navigator.userAgentData?.platform || navigator.platform || '') ? '⌘Z' : 'Ctrl+Z';
+
+// 뜻·발음·품사 교정은 저장됐지만 이력(token_corrections)을 못 남긴 경우 — 다시 분석하면 이력으로만 되살리므로 알린다.
+const CORRECTION_HISTORY_FAILED = '고친 내용은 저장했지만 기록을 남기지 못했어요. 자료를 다시 분석하면 이 수정이 사라질 수 있어요.';
 
 // 한국어 기본 마크업을 유지하는 공통 글자 슬롯. 번역은 내용만 바꾸며 요소·속성·동작은 공유한다.
 function ViewerLabelSlot({locale, text, children}) {
@@ -1785,6 +1789,12 @@ export default function ViewerPage() {
           after_value: corrections,
         });
         if (logError) console.warn('[correction log] failed:', logError.message);
+        // 재분석 보존기는 이 이력으로 교정을 되살린다(reanalysisPreservation.js) — 못 남겼으면 조용히 넘기지 않는다.
+        // 교정은 이미 저장됐으므로 실패로 돌리지 않는다. 조용한 교정(quiet)에도 알린다.
+        if (logError) {
+          reportError(logError, { where: 'token_corrections insert', materialId: id, tokenId });
+          toast(CORRECTION_HISTORY_FAILED, 'warning', 8000);
+        }
       }
       return { tokenId, corrections };
     },
