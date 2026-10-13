@@ -267,7 +267,7 @@ describe('소스 계약', () => {
   });
   it('안전 규칙 문안은 한 곳(lib/conversation/safety.js)뿐이다', () => {
     const phrase = 'politics of the Chinese-speaking world';
-    const hits = ['src/components/ConversationPanel.jsx', 'src/lib/server/conversationTurn.js', 'src/lib/conversation/turnModel.js']
+    const hits = ['src/components/conversation/ConversationThread.jsx', 'src/lib/server/conversationTurn.js', 'src/lib/conversation/turnModel.js']
       .filter((f) => read(f).includes(phrase));
     expect(hits).toEqual([]);
     expect(read('src/lib/conversation/safety.js')).toContain(phrase);

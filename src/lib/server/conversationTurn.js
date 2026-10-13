@@ -294,6 +294,7 @@ export async function runConversationTurn({ userId, body, deps, now = Date.now()
       analysis,
       translations: newTranslations,
       dayTurns: conversation.dayTurns,
+      conversation, // 턴 기록(작다) — 화면이 대화 전체를 다시 받지 않고 캐시에 합친다
     },
   };
 }

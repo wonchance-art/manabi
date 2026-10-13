@@ -86,7 +86,10 @@ import { charDetail, charEtym, isInspectableChar, materialWordsWithChar, wordsWi
 import { fetchSynAnt, peekSynAnt, synAntEligible } from '../lib/synAnt';
 import ReportMaterialButton from '../components/ReportMaterialButton';
 import ReadingTest from '../components/ReadingTest';
-import ConversationPanel from '../components/ConversationPanel';
+import ConversationThread from '../components/conversation/ConversationThread';
+import { conversationOf, tokensByLineIndex, applyTurnResult } from '../lib/conversation/turnModel';
+import { openConversationFor, startTopicConversation } from '../lib/conversation/conversationClient';
+import { useOutputWords } from '../lib/useOutputWords';
 import ViewerBottomSheet from '../components/ViewerBottomSheet';
 import ListenControls from '../components/ListenControls';
 import { formatDetail } from '../lib/wordDetailFormat';
@@ -350,7 +353,6 @@ export default function ViewerPage() {
   const dictationPickerOpen=modal('dictationPick'), setDictationPickerOpen=value=>changeModal('dictationPick',value);
   const dictationSentence=modal('dictation')?activeModal.value:null, setDictationSentence=value=>changeModal('dictation',value);
   const showReadingTest=modal('reading'), setShowReadingTest=value=>changeModal('reading',value);
-  const showConversation=modal('conversation'), setShowConversation=value=>changeModal('conversation',value);
   const dictationDrafts=useRef(new Map());
   useEffect(()=>{setActiveModal(null);setPaceRunning(false);dictationDrafts.current.clear();},[id,user?.id]);
   useEffect(()=>{setActiveModal(prev=>prev?.kind==='source'?prev:null);setPaceRunning(false);dictationDrafts.current.clear();},[material?.raw_text,material?.processed_json]);
@@ -410,7 +412,7 @@ export default function ViewerPage() {
   }, [material?.raw_text, material?.processed_json]);
   useEffect(() => { detailGate.current.cancel(); }, [selectedToken]);
 
-  useLibraryActivity(materialActivity(material,passageOf(material)||originalParams.get('study')==='1'?'study':'text',null,null,user?.id),!!material&&!isLoading&&!error&&!shouldReadComposerOriginal(material,originalParams));
+  useLibraryActivity(materialActivity(material,passageOf(material)||originalParams.get('study')==='1'?'study':'text',null,null,user?.id),!!material&&!isLoading&&!error&&!shouldReadComposerOriginal(material,originalParams)&&!conversationOf(material)); // 대화(v2-Z)는 「읽던 곳」 기록을 남기지 않는다 — 서재 「대화」 묶음이 입구
 
   // [자세히] 인라인 문법 해설(오너 확정) — 모달·체크박스 없이 시트 좌측에서 펼친다.
   const grammar = useGrammarDetail({ materialLang, toast, explanationLocale: effectiveExplanationLocale, scope: cacheScope });
@@ -663,6 +665,34 @@ export default function ViewerPage() {
 
   // 재분석 로직 + UI
   const reanalyze = useReanalyze({ materialId: id, material, refetch, toast, explanationLocale: effectiveExplanationLocale, onPendingBoundaries: showPendingBoundaries });
+  // 대화 모드(v2-Z Z-R1 ③) — 대화 하나 = 내 비공개 자료 한 건. 본문 자리에 말풍선을 펴고, 토큰·단어창·저장은 이 뷰어 그대로다.
+  const conversation = conversationOf(material);
+  const outputWords = useOutputWords(materialLang, { enabled: !!conversation });
+  const [conversationOpening, setConversationOpening] = useState(false);
+  const openConversation = useCallback(async ({ fresh = false } = {}) => {
+    if (!user?.id || !material?.id || conversationOpening) return;
+    setConversationOpening(true);
+    try {
+      const own = conversationOf(material);
+      const cid = own && !own.parentId
+        ? await startTopicConversation({ topic: own.topic, language: own.language, level: own.level })
+        : await openConversationFor({ userId: user.id, parentId: own ? own.parentId : material.id, fresh: fresh || !!own });
+      noteRouter.push(`/viewer/${cid}?returnTo=${encodeURIComponent(own ? (originalParams.get('returnTo') || '/materials') : `/viewer/${id}`)}`);
+    } catch (cause) {
+      toast(cause?.code === 'daily_limit' ? '오늘은 여기까지 · 내일 다시' : '대화를 열지 못했어요. 잠시 뒤 다시 해 주세요.', 'error');
+    } finally {
+      setConversationOpening(false);
+    }
+  }, [user?.id, material, conversationOpening, noteRouter, id, toast, originalParams]);
+  const handleConversationTurn = useCallback((body) => {
+    let merged = false;
+    queryClient.setQueryData(['material', id], (prev) => {
+      const next = applyTurnResult(prev, body);
+      merged = !!next;
+      return next || prev;
+    });
+    if (!merged) refetch();
+  }, [queryClient, id, refetch]);
   const reanalyzeMutation = reanalyze.mutation;
   const startPassageMutation = reanalyzeMutation.mutate;
   useEffect(() => {
@@ -2607,7 +2637,7 @@ export default function ViewerPage() {
   keyHandlersRef.current = {
     addToVocab, gradeInline, undo: undoAny,
     cardOpen: !!selectedToken && isSheetOpen,
-    blocked: settingsOpen || sourceEditOpen || isEditingToken || !!reanalyzePanel || showReadingTest || showConversation || dictationPickerOpen || !!dictationSentence || !!quizState || !!completionModal,
+    blocked: settingsOpen || sourceEditOpen || isEditingToken || !!reanalyzePanel || showReadingTest || dictationPickerOpen || !!dictationSentence || !!quizState || !!completionModal,
     saveLocked: isWordSaved || saveAnim || selectedExcluded || !wordStateReady || knownPending || exclusionState.mutation.isPending,
     inlineDue: !!user && !selectedExcluded && wordStateReady && !knownPending && !exclusionState.mutation.isPending && isWordSaved && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending,
   };
@@ -4018,6 +4048,27 @@ export default function ViewerPage() {
             );
           };
 
+          // 대화 자료 — 같은 renderToken으로 말풍선을 편다(토큰 부품·CSS·단어창·저장 경로 공유, §8 계약).
+          if (conversation) {
+            return (
+              <ConversationThread
+                material={material}
+                conversation={conversation}
+                tokensByLine={tokensByLineIndex(json.sequence)}
+                renderToken={(tokenId) => renderToken(tokenId)}
+                language={materialLang}
+                speak={speak}
+                ttsSupported={ttsSupported}
+                onTurnResult={handleConversationTurn}
+                onReload={() => refetch()}
+                onNewConversation={() => openConversation({ fresh: true })}
+                onRetryAnalysis={user?.id === material?.owner_id ? () => reanalyze.mutation.mutate({ resume: true }) : null}
+                analysisBusy={isAnalyzing || reanalyze.mutation.isPending}
+                outputWords={outputWords}
+              />
+            );
+          }
+
           if (showRaw) {
             return rawLines.map((line, lineIdx) => {
               const lineTokens = tokensByLine.get(lineIdx);
@@ -4141,7 +4192,7 @@ export default function ViewerPage() {
       {/* 다 읽었다면(뷰어 정돈 A안) — **끝의 행동은 끝에**. 읽기 완료(누르면 퀴즈·완독 화면)·오늘 학습은
           예전에 본문 **위** 액션바에 상시로 있었고, 리딩 테스트·회화는 아래에 있어 두 자리로 갈려 있었다.
           한 줄로 모은다. 이벤트·퀴즈·오늘 학습 핸드오프(study_source_*)는 그대로 — 자리만 옮겼다. */}
-      {(isDone || isPending) && !showReadingTest && !showConversation && (
+      {(isDone || isPending) && !showReadingTest && !conversation && (
         <div className="post-reading">
           <ViewerLabelSlot locale={uiLocale} text={vt('다 읽었다면')}><div className="post-reading__label">다 읽었다면</div></ViewerLabelSlot>
           <div className="post-reading-actions">
@@ -4170,8 +4221,8 @@ export default function ViewerPage() {
             {isDone && (
               <button className="post-reading-actions__btn" onClick={() => setShowReadingTest(true)}>{vt("리딩 테스트")}</button>
             )}
-            {isDone && (
-              <button className="post-reading-actions__btn" onClick={() => setShowConversation(true)}>{vt("회화 연습")}</button>
+            {isDone && user && (
+              <button className="post-reading-actions__btn" disabled={conversationOpening} onClick={openConversation}>{vt("대화")}</button>
             )}
           </div>
         </div>
@@ -4308,8 +4359,8 @@ export default function ViewerPage() {
         {user&&!String(id).startsWith('local:')&&<Link className="btn btn--secondary" href={`/notes/new?${new URLSearchParams({material:String(id),language:materialLang})}`}>{vt("내 학습 노트 펼치기 ↗")}</Link>}
         {ttsSupported&&sentences.length>0&&<button onClick={()=>setDictationPickerOpen(true)}><b>{vt("받아쓰기")}</b><span>{vt("추천 문장 하나를 골라 듣고 써요")}</span></button>}
         {ttsSupported&&pickedSentence&&<button onClick={()=>setDictationSentence(pickedSentence.text)}><b>{vt("선택 문장 받아쓰기")}</b><span>{vt("지금 지정한 문장으로 시작해요")}</span></button>}
-        {isDone&&<><button onClick={()=>setShowReadingTest(true)}><b>{vt("읽기 확인")}</b><span>{vt("전체 자료 · 기존 읽기 확인 기록에 연결돼요")}</span></button><button onClick={()=>setShowConversation(true)}><b>{vt("회화 연습")}</b><span>{vt("전체 자료를 주제로 대화해요")}</span></button></>}
-        {!isDone&&<p>{vt("자료 분석이 끝나면 읽기 확인과 회화 연습을 사용할 수 있어요.")}</p>}
+        {isDone&&<><button onClick={()=>setShowReadingTest(true)}><b>{vt("읽기 확인")}</b><span>{vt("전체 자료 · 기존 읽기 확인 기록에 연결돼요")}</span></button>{user&&!conversation&&<button disabled={conversationOpening} onClick={()=>{setActiveModal(null);openConversation();}}><b>{vt("대화")}</b><span>{vt("이 자료를 주제로 대화해요")}</span></button>}</>}
+        {!isDone&&<p>{vt("자료 분석이 끝나면 읽기 확인과 대화를 사용할 수 있어요.")}</p>}
         {/* 툴바 ⋯의 후신(AD-R2 설계 Q1 ③) — 조건·동작은 그대로, 자리만 「학습」 창의 마지막 항목. */}
         {user?.id===material?.owner_id&&!passageOf(material)&&!isAnalyzing&&<button onClick={()=>{setActiveModal(null);setReanalyzePanel('menu');}}><b>{vt("자료 관리")}</b><span>{vt("다시 분석하거나 원문을 고쳐요")}</span></button>}
       </div></ViewerModal>}
@@ -4328,20 +4379,6 @@ export default function ViewerPage() {
         </ViewerModal>
       )}
 
-      {/* 회화 연습 인라인 확장 */}
-      {isDone && showConversation && (
-        <ViewerModal uiLocale={uiLocale} title={vt("회화 연습 · 전체 자료")} onClose={()=>setShowConversation(false)}>
-          <ConversationPanel
-            rawText={material?.raw_text}
-            language={materialLang}
-            materialId={id}
-            materialTitle={material?.title}
-            onClose={() => setShowConversation(false)}
-            inline
-            nextLesson={nextLesson}
-          />
-        </ViewerModal>
-      )}
 
 
       {user?.id === material?.owner_id && (

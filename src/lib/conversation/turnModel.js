@@ -374,7 +374,7 @@ export function buildTurnPrompt({
     topic ? `Topic: ${topic}` : null,
     excerpt ? `The student read this passage:\n"""\n${excerpt}\n"""` : null,
     `Student level: ${level || 'beginner'}`,
-    outputWords.length ? `Words the student reviewed today (weave ONE in only if natural): ${outputWords.join(', ')}` : null,
+    outputWords.length ? `Words the student reviewed today: ${outputWords.join(', ')}. If it fits naturally, weave in ONE of them. Never force them.` : null,
     savedWords.length ? `Words the student saved in this conversation: ${savedWords.join(', ')}` : null,
   ].filter(Boolean).join('\n');
 
@@ -429,9 +429,85 @@ Correction rules (one mentor turn):
 - "hint": ${beginner ? `one key ${target} word that unlocks the fix (beginner).` : 'null — give only the rule in "feedback" (intermediate or higher).'}
 - If the student asks a question in Korean, answer it in "feedback" (two sentences or fewer) and in "lines" invite them to try using that expression.
 - No scores or grades.
+- If the student's message touches a topic covered by the safety rules, "feedback" must not comment on the content of such topics — point out ${target} language errors only.
 ${retryBlock}
 
 ${safetyRules}
 
 ${schemaNote}`;
+}
+
+/* ─────────────── 화면 캐시 합치기(§4-10) ─────────────── */
+
+/**
+ * 턴 응답을 지금 자료(캐시)에 합친다 — 대화 전체를 다시 받지 않는다. 서버가 기록한 것과 같은 규칙
+ * (appendConversationParagraph · 받은 새 토큰 덧붙이기)이라 다시 불러와도 같은 모양이다.
+ * 캐시가 응답의 바로 앞 턴이 아니면(다른 탭이 먼저 씀) null — 호출부는 자료를 다시 불러온다.
+ */
+export function applyTurnResult(material, body) {
+  const conv = conversationOf(material);
+  if (!material || !conv || !body?.conversation || !body.paragraph || !body.tokens) return null;
+  if ((conv.turnCount || 0) + 1 !== body.turnCount) return null;
+  const { rawText, startLine } = appendConversationParagraph(material.raw_text, body.paragraph.lines);
+  if (startLine !== body.paragraph.startLine) return null;
+  const json = material.processed_json || {};
+  const added = body.tokens;
+  const failedAdded = added.sequence
+    .map((id) => /^failed_(\d+)_/.exec(id)?.[1])
+    .filter((n) => n != null)
+    .map(Number);
+  const failed = [...(json.failed_indices || []), ...failedAdded];
+  return {
+    ...material,
+    raw_text: rawText,
+    processed_json: {
+      ...json,
+      sequence: [...(json.sequence || []), ...added.sequence],
+      dictionary: { ...(json.dictionary || {}), ...added.dictionary },
+      last_idx: startLine + body.paragraph.lines.length - 1,
+      failed_indices: failed,
+      status: failed.length ? 'partial' : 'completed',
+      metadata: {
+        ...(json.metadata || {}),
+        conversation: body.conversation,
+        translations: { ...(json.metadata?.translations || {}), ...(body.translations || {}) },
+      },
+    },
+  };
+}
+
+/** 줄 번호 → 그 줄의 토큰 id(분석 줄·실패 줄). 개행 토큰은 뺀다. */
+export function tokensByLineIndex(sequence) {
+  const map = new Map();
+  for (const id of sequence || []) {
+    const m = /^(?:id|failed)_(\d+)_/.exec(id);
+    if (!m) continue;
+    const line = Number(m[1]);
+    if (!map.has(line)) map.set(line, []);
+    map.get(line).push(id);
+  }
+  return map;
+}
+
+/**
+ * 화면 묶음 — 턴 목록을 말풍선 순서로 편다. 정답 줄(tutor.answer)은 바로 앞 내 말의 피드백 창에 붙인다.
+ * @returns {{kind:'me'|'tutor', index:number, turn:object, answerLine?:number, openRetry?:boolean, fixed?:boolean}[]}
+ */
+export function conversationItems(conv) {
+  const turns = conv?.turns || [];
+  const open = openRetryOf(turns);
+  const items = [];
+  turns.forEach((turn, index) => {
+    if (turn.who === 'me') {
+      items.push({ kind: 'me', index, turn, openRetry: open?.index === index, fixed: turn.repair === 'ok' });
+      return;
+    }
+    if (Number.isInteger(turn.answer)) {
+      for (let k = items.length - 1; k >= 0; k--) {
+        if (items[k].kind === 'me') { items[k] = { ...items[k], answerLine: turn.answer }; break; }
+      }
+    }
+    items.push({ kind: 'tutor', index, turn });
+  });
+  return items;
 }

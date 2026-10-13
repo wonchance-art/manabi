@@ -4,6 +4,7 @@ import { loadPublishedRegistry } from '@/lib/publishedChapter';
 import { LEARNING_LANGUAGES, LANGUAGE_BASE, materialIdValid, normalizeLearningWord, tokenContext, koreanTokenContext, learningSourceRevision } from '@/lib/learningSources';
 import {absoluteSourceSpan, exactSourceQuote} from '@/lib/viewerLocalizedContext';
 import {isStudyNote, noteFromMaterial} from '@/lib/studyNotes';
+import { conversationOf } from '@/lib/conversation/turnModel';
 
 export const fail = (status, message, extra = {}) => { throw Object.assign(new Error(message), { status, ...extra }); };
 export function checkDb(error) { if (error) fail(503, '자료 연결을 저장하거나 불러오지 못했어요. 잠시 후 다시 시도해 주세요.'); }
@@ -84,7 +85,8 @@ export async function resolveSave(supabase, userId, payload) {
         if (context.language !== lang) fail(400, '자료의 언어를 다시 확인해 주세요.');
         const token = context.token;
         normalized = { ...normalized, word_text: normalizeLearningWord(token.sep_link || token.base_form || token.text), meaning: String(token.meaning || normalized.meaning).trim(), furigana: token.furigana || token.reading || '', pos: token.pos || '' };
-        resolved = { kind: 'reading', materialId: String(material.id), quote: context.quote.slice(0,4000), translation: '', locator: { tokenId: source.tokenId, surface: token.text } };
+        // 대화(v2-Z)에서 담은 말은 출처 표식을 남긴다 — 복습 카드가 「대화로」 돌아가는 링크로 보여 준다.
+        resolved = { kind: 'reading', materialId: String(material.id), quote: context.quote.slice(0,4000), translation: '', locator: { tokenId: source.tokenId, surface: token.text, ...(conversationOf(material) ? { conversation: true } : {}) } };
       } else {
         const quote = String(source.quote || '').trim(), surface = String(source.surface || '').trim();
         const compact = text => String(text || '').normalize('NFC').replace(/\s+/g,'');

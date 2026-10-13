@@ -22,6 +22,10 @@
 .shelf-recent-card p{font-size:11px;line-height:1.65;color:var(--muted);margin:0}
 .shelf-recent-card p span{color:var(--ink)}
 .shelf-recent-toggle{display:none;font-size:12px!important;text-decoration:underline;text-underline-offset:4px}
+/* 대화 묶음(v2-Z) — 읽던 곳 아래, 전체 목록 위. 줄 모양은 서재 목록(.shelf-row) 그대로. */
+.shelf-conversations{padding:25px 0 20px;border-bottom:1px solid var(--rule)}
+.shelf-conversations .shelf-rows{margin-top:12px}
+.shelf-conversations-toggle{min-height:44px;font-size:12px!important;text-decoration:underline;text-underline-offset:4px}
 .shelf-cover{--cover-color:var(--muted);width:48px;height:64px;flex:none;background:var(--cover-color);color:var(--sheet);position:relative;display:flex;flex-direction:column;padding:6px 5px 5px 10px;border-radius:1px 3px 3px 1px;box-shadow:inset 4px 0 0 color-mix(in srgb,var(--ink) 18%,transparent);overflow:hidden}
 .shelf-cover[data-language=Japanese]{--cover-color:var(--ja)}
 .shelf-cover[data-language=Chinese]{--cover-color:var(--zh)}
