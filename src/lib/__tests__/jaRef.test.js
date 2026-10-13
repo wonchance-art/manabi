@@ -72,7 +72,7 @@ describe('ja 대응 배선 계약', () => {
   });
 
   it('라우트가 ja 미판정 행을 백필 대상으로 배선한다', () => {
-    const src = fs.readFileSync(path.join(process.cwd(), 'src/app/api/analyze/route.js'), 'utf8');
+    const src = fs.readFileSync(path.join(process.cwd(), 'src/lib/server/analyzeCore.js'), 'utf8');
     expect(src).toContain('needsZhJaBackfill(entry)');
   });
 });
