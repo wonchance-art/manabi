@@ -878,6 +878,10 @@
 
 ## Claude (claude/*)
 ### doing
+- **복습 범위 · 개수 · 진입점 REV-SCOPE R1-A (2026-10-14 00:23 KST~, 오너 승인 「전부 다 승인함」 — [#1337 인계](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6106712027))** `claude/project-thread-jqlex2`:
+  범위 주소 `/vocab?lang&level&src&state`(`reviewScope.js` 순수 · 무효면 닫힘, 전체로 새지 않음) · 화면 숫자와 시작 줄 = `countReviewScope`/`reviewScopeLine` 같은 인자 ·
+  범위 막대/시트(언어·급수·출처 덱/자료/오늘 학습/교재 과 범위·상태) · 진입점(교재 도구막대·과 끝·자료 뷰어) · 「담은 표현」 이름 통일. 계약 `reviewScope.test.js`·`reviewScopeWiring.test.js`.
+  다음: AK 배움 홈 · 현황(`countReviewScope` 사용) → R1-B(코드 + anki-v2 SQL은 PGlite 검증 · 운영 미적용).
 - **수업 코스 「니혼고 42」 + 테스트 (2026-10-08 KST, 오너 지시 — 수업 페이지로 꺼내 암호 `culcom` 팀)** `claude/loving-bardeen-mkj3te`:
   팀 루트 `metadata.team.course` → 수업 홈 「코스」 탭 · Day 페이지(문화 카드·함께 읽고 연습·오늘의 패턴·예문 연습·응용 문장 번역해보기)
   · `/class/[team]/test`(전체 예문 10문제·8 합격·패턴 중복 0·Day당 1·비슷한 패턴 묶음당 1·난이도 3/4/3·시험지 번호 재현 / 연습 한↔일).
