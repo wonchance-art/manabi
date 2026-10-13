@@ -2,6 +2,7 @@ import { callGemini, parseGeminiJSON, buildTokenizationPrompt } from './gemini';
 import { canonizeTokenPos } from './server/posCanon';
 import { boundaryParagraphRequest, compactBoundaryText, readBoundaryEdits, settleBoundaryRecord } from './boundaryEdits';
 import { locateLineTokens, splitSentenceRanges } from './viewerSentenceLine';
+import { applyMaterialRubyLocks } from './aozoraRuby';
 
 // /api/analyze 입력 캡 미러 — route.js의 MAX_LINES·MAX_LINE_LEN과 같은 값(analyzeLongLines.test.js가 핀).
 // 서버는 캡을 넘은 줄에 truncated 표식을 단다. 자료 분석은 캡 안으로 나눠 보내 표식이 오지 않게 한다.
@@ -454,6 +455,14 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
     }
   }
   emitReady();
+
+  // 저자 루비 잠금(아오조라 정본 책, 설계 §3.3) — 유일한 분석 경로 끝에서 적용해 재분석·재시도에도 다시 덮인다.
+  // metadata.literature.rubyLocks가 없으면 무변경. 정확히 한 토큰과 맞는 루비만, 원문과 어긋나면 하나도 적용하지 않는다.
+  if (language === 'Japanese') {
+    const locked = applyMaterialRubyLocks(rawText, currentJson);
+    if (locked.diagnostics?.skipped) console.warn('[analyzeHybrid] ruby locks skipped:', locked.diagnostics.skipped);
+    currentJson = locked.json;
+  }
 
   currentJson.status = resolveAnalysisStatus(currentJson.dictionary, currentJson.failed_indices.length, total);
   currentJson.metadata = {
