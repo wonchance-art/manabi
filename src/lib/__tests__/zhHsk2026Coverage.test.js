@@ -26,8 +26,9 @@ function hsk2026Levels() {
     const lv = /^[1-6]$/.test(e.level) ? Number(e.level) : 99;
     const cur = map.get(w) || { level: 99, pinyins: new Set() };
     cur.level = Math.min(cur.level, lv);
-    cur.pinyins.add(e.pinyin);
-    for (const alt of e.pinyin_alts || []) cur.pinyins.add(alt);
+    // 격음 부호는 리포 관례 ASCII '(원문 PDF 추출본의 곡선 ’와 같은 부호로 본다 — bù'ān 선례)
+    cur.pinyins.add(e.pinyin.replace(/’/g, "'"));
+    for (const alt of e.pinyin_alts || []) cur.pinyins.add(alt.replace(/’/g, "'"));
     map.set(w, cur);
   }
   return new Map([...map].filter(([, v]) => v.level <= 6));
@@ -93,14 +94,18 @@ describe('HSK 2026 1–6급 — 우리 사전 커버리지', () => {
     }
   });
 
-  it('한국어 동형이의어(같은 한자, 다른 뜻)는 첫 뜻에 두지 않고 한자 주의를 단다 — 转机·入住·出力·分期·改编·青春期·谈论·预定·原本·质疑', async () => {
+  it('한국어 동형이의어(같은 한자, 다른 뜻·쓰임)는 첫 뜻에 두지 않고 한자 주의를 단다 — 转机·入住·出力·分期·改编·青春期·原本·质疑', async () => {
     const all = (await loadVocabFiles()).filter((f) => /_hsk2026\.js$/.test(f.file)).flatMap((f) => f.words);
-    const CASES = { 转机: '전기', 入住: '입주', 出力: '출력', 分期: '분기', 改编: '개편', 青春期: '청춘기', 谈论: '담론', 预定: '예정', 原本: '원본', 质疑: '질의' };
+    const CASES = { 转机: '전기', 入住: '입주', 出力: '출력', 分期: '분기', 改编: '개편', 青春期: '청춘기', 原本: '원본', 质疑: '질의' };
     for (const [zh, eum] of Object.entries(CASES)) {
       const w = all.find((x) => x.zh === zh);
       expect(w, zh).toBeTruthy();
       expect(w.ko.split(/[;,]/)[0], `${zh} 첫 뜻`).not.toContain(eum);
-      expect(w.hanja, `${zh} 한자 주의`).toMatch(new RegExp(`^${eum}\\(.+\\) — 한국어 '${eum}`));
+      expect(w.hanja, `${zh} 한자 주의`).toMatch(new RegExp(`^${eum}\\(.+\\) — `));
     }
+    // 표본 대조(2026-10-13)로 가짜동족이 아니라고 본 것 — 谈论(담론의 기본 뜻 = 이야기함)은 주의 없음,
+    // 预定은 본뜻 「미리 정하다」가 첫 뜻(예약은 보통 预订).
+    expect(all.find((x) => x.zh === '谈论').hanja).toBeUndefined();
+    expect(all.find((x) => x.zh === '预定').ko.split(/[;,]/)[0]).toBe('미리 정하다');
   });
 });
