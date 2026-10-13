@@ -30,6 +30,13 @@ function ScoreSection({ word, onScore }) {
  * 한 곳에 두고 값은 CSS 토큰이 진다. 같은 블록이 화면 둘에 복제돼 있어(데스크톱·모바일)
  * 인라인으로 두면 고칠 때마다 두 벌을 맞춰야 했다.
  */
+/**
+ * 복습 입장(admission) 준비 실패 문구 — 단어장 상단 알림과 복습 카드가 같이 쓴다(WALL-STATES-001 ⑤).
+ * 채점 저장 실패 문구(「복습 저장 실패 … 이 단어는 다음에 다시 나와요」)는 저장할 채점이 있을 때만
+ * 맞는 말이라, 저장 전 단계인 준비 실패에 쓰지 않는다.
+ */
+export const REVIEW_PREP_FAILED = '복습을 준비하지 못했어요. 연결을 확인하고 다시 시도해 주세요.';
+
 export function quizOptClass(selected, isAnswer, isThis) {
   const state = selected === null ? '' : isAnswer ? ' quiz-opt--right' : isThis ? ' quiz-opt--wrong' : '';
   return `quiz-opt${state}${selected === null ? '' : ' quiz-opt--done'}`;
@@ -144,7 +151,7 @@ export default function VocabReview({
         </div>
       ) : admissionPending || admissionError ? (
         <div className="card review-card review-card--center" role={admissionError ? 'alert' : 'status'}>
-          <p>{admissionError ? '복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.' : '복습 준비 중…'}</p>
+          <p>{admissionError ? REVIEW_PREP_FAILED : '복습 준비 중…'}</p>
           {admissionError && <Button variant="ghost" onClick={onAdmissionRetry}>다시 시도</Button>}
         </div>
       ) : reviewWords.length > 0 && currentWord ? (
