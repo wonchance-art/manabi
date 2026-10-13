@@ -192,7 +192,7 @@ const history=page.getByRole('region',{name:'수업 돌아보기',exact:true});
 await history.getByText('你好',{exact:true}).waitFor();
 await history.getByRole('searchbox',{name:'지난 수업에서 찾기'}).fill('안녕하세요');
 await history.getByText('你好',{exact:true}).waitFor();
-assert.equal(await history.getByText('이전 형식의 노트입니다. 노트를 열어 확인하세요.').count(),0);
+assert.equal(await history.getByText('이전 형식의 노트예요. 노트를 열어 확인해 주세요.').count(),0);
 check('owner history displays and searches actual entries with the selected note columns');
 await history.getByRole('button',{name:'노트 열기 →',exact:true})[activate]();
 await page.waitForURL(/\/viewer\/\d+\?returnTo=/);

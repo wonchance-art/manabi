@@ -37,7 +37,7 @@ export async function POST(request) {
   const toInsert = STARTER_MATERIALS.filter(m => !existingTitles.has(m.title));
 
   if (toInsert.length === 0) {
-    return Response.json({ inserted: 0, message: '이미 모든 스타터 콘텐츠가 존재합니다.' });
+    return Response.json({ inserted: 0, message: '스타터 콘텐츠가 이미 모두 있어요.' });
   }
 
   const rows = toInsert.map(m => ({

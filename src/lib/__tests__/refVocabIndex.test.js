@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildVocabIndex, loadRefVocabIndex, refLevelLabel } from '../refVocabIndex';
+import { buildVocabIndex, loadRefVocabIndex } from '../refVocabIndex';
 
 // 계약(오너 승인 ②): 급수는 저장하지 않고 표시 시점에 레퍼런스 어휘 인덱스로 계산한다.
 // 중복 단어는 낮은 급수(먼저 배우는 쪽)가 이기고, H1~H6 밖(생활 등)은 최하위 순위다.
@@ -34,18 +34,6 @@ describe('buildVocabIndex — 급수 인덱스 구축', () => {
   });
 });
 
-describe('refLevelLabel — 급수 라벨', () => {
-  it('H1~H6 → HSK n', () => {
-    expect(refLevelLabel('H1')).toBe('HSK 1');
-    expect(refLevelLabel('H6')).toBe('HSK 6');
-  });
-  it('그 외 레벨은 생활, 없으면 null', () => {
-    expect(refLevelLabel('LIFE')).toBe('생활');
-    expect(refLevelLabel(null)).toBeNull();
-    expect(refLevelLabel(undefined)).toBeNull();
-  });
-});
-
 describe('loadRefVocabIndex — 실제 콘텐츠 로드(중국어)', () => {
   it('미지원 언어는 null', async () => {
     expect(await loadRefVocabIndex('Japanese')).toBeNull();
@@ -64,5 +52,35 @@ describe('loadRefVocabIndex — 실제 콘텐츠 로드(중국어)', () => {
     expect(hello.word.ex?.zh).toBeTruthy();
     // 같은 언어 재요청은 같은 인덱스(중복 로드 없음)
     expect(await loadRefVocabIndex('Chinese')).toBe(ix);
+  });
+});
+
+// 계약(ZH-DICT-FIX-001, 오너 승인 2026-10-13): 표제어 하나에 항목 하나만 남는 인덱스에서
+// 사전 뜻이 한국어 동형 한자어로 오독되거나(学院≠학원·爱人≠애인) 주 독음이 낮은 급수에
+// 없어 엉뚱한 뜻이 이기는(行 → háng) 회귀를 막는다.
+describe('loadRefVocabIndex — 사전 정정 회귀 고정(ZH-DICT-FIX-001)', () => {
+  it('行 단독 표제는 HSK 1의 xíng(좋다·괜찮다)이 이긴다 — h4의 háng(줄·업종)이 아니라', async () => {
+    const ix = await loadRefVocabIndex('Chinese');
+    const xing = ix.get('行');
+    expect(xing.level).toBe('H1');
+    expect(xing.word.pinyin).toBe('xíng');
+    expect(xing.word.ko).toMatch(/^좋다/);
+  });
+
+  it('本事는 경성 běnshi(능력·재주)로 싣는다', async () => {
+    const ix = await loadRefVocabIndex('Chinese');
+    const w = ix.get('本事').word;
+    expect(w.pinyin).toBe('běnshi');
+    expect(w.ko).toMatch(/^능력/);
+  });
+
+  it('学院·爱人의 뜻은 한국어 동형어(학원·애인)로 시작하지 않고, 한자 노트로 차이를 짚는다', async () => {
+    const ix = await loadRefVocabIndex('Chinese');
+    const xueyuan = ix.get('学院').word;
+    const airen = ix.get('爱人').word;
+    expect(xueyuan.ko.startsWith('학원')).toBe(false);
+    expect(airen.ko.startsWith('애인')).toBe(false);
+    expect(xueyuan.hanja).toMatch(/학원.*달라요/);
+    expect(airen.hanja).toMatch(/애인.*달라요/);
   });
 });

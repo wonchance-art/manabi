@@ -42,7 +42,7 @@ export function useReanalyzeUI({ reanalyze, material, toast, panel, onPanelChang
       const para = paragraphs[pi];
       if (para) para.lineIndices.forEach(li => lineIndices.add(li));
     }
-    if (lineIndices.size === 0) { toast?.('문단을 선택해주세요.', 'warning'); return; }
+    if (lineIndices.size === 0) { toast?.('문단을 골라 주세요.', 'warning'); return; }
     setReanalyzePanel(null);
     setSelectedParas(new Set());
     reanalyze.mutation.mutate({ selectedLineIndices: lineIndices });

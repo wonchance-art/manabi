@@ -11,7 +11,7 @@ import { composerOf } from './materialComposer';
 import { runPassageAnalysis } from './passageAnalysis';
 import { inspectAnalysisCoverage } from './analysisCoverage';
 import { pendingBoundaryCount } from './boundaryEdits';
-import { friendlyToastMessage } from './errorMessage';
+import { failureMessage } from './errorMessage';
 
 const STALE_THRESHOLD_MS = 3 * 60 * 1000;
 
@@ -82,7 +82,7 @@ export function useReanalyze({ materialId, material, refetch, toast, explanation
     // 편집 초안과 리맵된 분석은 성공한 최종 교체 전까지 메모리에만 둔다.
     mutationFn: async ({ fullReset = false, resume = false, selectedLineIndices = null, rawTextOverride = null, baseJsonOverride = null } = {}) => {
       let rawText = rawTextOverride || material?.raw_text;
-      if (!rawText) throw new Error('원본 텍스트가 없습니다.');
+      if (!rawText) throw new Error('원본 텍스트가 없어요.');
       if (passageOf(material)) {
         const controller = new AbortController();
         abortRef.current = controller;
@@ -117,18 +117,18 @@ export function useReanalyze({ materialId, material, refetch, toast, explanation
     onSuccess: (json, variables, scope) => {
       if (activeId.current !== scope?.materialId) return;
       if (json?.__passageNotAcquired) { refetch?.(); return; }
-      if (json?.status === 'failed') toast?.('분석에 실패했어요. 원문은 그대로 남아 있어요.', 'error');
+      if (json?.status === 'failed') toast?.('분석하지 못했어요. 원문은 그대로 남아 있어요.', 'error');
       else if (json?.status === 'partial') toast?.('일부 줄은 분석을 다시 시도해야 해요.', 'warning');
       // AD-R3: 직접 고친 단어 경계를 적용하지 못했으면 조용히 넘기지 않고 개수를 알린다(기록은 pending으로 남는다).
       // PR③: 뷰어는 onPendingBoundaries로 목업 문구(3개 언어) + [보기](적용하지 못한 기록 목록)를 띄운다. 없으면 한국어 한 벌.
       else if (pendingBoundaryCount(json) && onPendingBoundaries) onPendingBoundaries(pendingBoundaryCount(json));
       else if (pendingBoundaryCount(json)) toast?.(`분석을 다시 했어요. 직접 고친 단어 경계 ${pendingBoundaryCount(json)}개는 적용하지 못했어요.`, 'warning');
-      else toast?.('분석 완료!', 'success');
+      else toast?.('분석을 마쳤어요', 'success');
       refetch?.();
     },
     onError: (err, variables, scope) => {
       if (activeId.current !== scope?.materialId) return;
-      if (err.name !== 'AbortError') toast?.('분석 실패: ' + friendlyToastMessage(err), 'error');
+      if (err.name !== 'AbortError') toast?.(failureMessage('분석하지 못했어요.', err), 'error');
       refetch?.();
     },
   });

@@ -166,7 +166,7 @@ describe('resolveEnTokenContext — lemma 행·뜻 선택', () => {
 
 describe('영어 라우트 배선 계약', () => {
   it('occurrence 판별·stats.enPos·graceful resolver가 실제 라우트에 연결된다', () => {
-    const src = fs.readFileSync(path.join(process.cwd(), 'src/app/api/analyze/route.js'), 'utf8');
+    const src = fs.readFileSync(path.join(process.cwd(), 'src/lib/server/analyzeCore.js'), 'utf8');
     expect(src).toContain('collectEnPosMarks(tokenizedLines, cache)');
     expect(src).toContain('resolveEnTokenContext({ token: t');
     expect(src).toContain('enPos: {');

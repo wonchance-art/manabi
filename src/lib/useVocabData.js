@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
-import { friendlyToastMessage } from './errorMessage';
+import { failureMessage } from './errorMessage';
 import { csvToVocabRows } from './vocabIO';
 import { fetchVocabularyLearningRows } from './vocabularyLearningRows';
 import { useMemo, useRef } from 'react';
@@ -78,7 +78,7 @@ export function useVocabData() {
     onSuccess: (_result, _variables, context) => {
       invalidateVocabularyLearning(queryClient, context?.actorId);
     },
-    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast('업데이트 실패 — ' + friendlyToastMessage(err), 'error'); },
+    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast(failureMessage('단어를 수정하지 못했어요.', err), 'error'); },
   });
 
   const deleteMutation = useMutation({
@@ -94,9 +94,9 @@ export function useVocabData() {
       invalidateVocabularyLearning(queryClient, context?.actorId);
       queryClient.invalidateQueries({ queryKey: ['vocabulary-exclusions', context?.actorId] });
       if (context?.actorId !== actorRef.current) return;
-      toast('단어를 삭제했습니다.', 'info');
+      toast('단어를 삭제했어요.', 'info');
     },
-    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast('삭제 실패 — ' + friendlyToastMessage(err), 'error'); },
+    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast(failureMessage('단어를 삭제하지 못했어요.', err), 'error'); },
   });
 
   // CSV 불러오기
@@ -105,7 +105,7 @@ export function useVocabData() {
     mutationFn: async (file) => {
       const text = await file.text();
       const rows = csvToVocabRows(text, user.id);
-      if (rows.length === 0) throw new Error('유효한 행이 없습니다.');
+      if (rows.length === 0) throw new Error('가져올 수 있는 행이 없어요.');
       if (rows.length > 5000) throw new Error('한 번에 5000개까지만 가져올 수 있어요.');
 
       // 500개씩 배치 upsert
@@ -126,7 +126,7 @@ export function useVocabData() {
       if (context?.actorId !== actorRef.current) return;
       toast(`${count}개 단어를 가져왔어요. (중복은 자동 스킵)`, 'success', 5000);
     },
-    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast('가져오기 실패 — ' + friendlyToastMessage(err), 'error'); },
+    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast(failureMessage('단어를 가져오지 못했어요.', err), 'error'); },
   });
 
   // 개별 단어 편집 (word_text/furigana/meaning/pos)
@@ -151,7 +151,7 @@ export function useVocabData() {
       if (context?.actorId !== actorRef.current) return;
       toast('단어를 수정했어요', 'success');
     },
-    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast('수정 실패 — ' + friendlyToastMessage(err), 'error'); },
+    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast(failureMessage('단어를 수정하지 못했어요.', err), 'error'); },
   });
 
   const bulkDeleteMutation = useMutation({
@@ -169,9 +169,9 @@ export function useVocabData() {
       invalidateVocabularyLearning(queryClient, context?.actorId);
       queryClient.invalidateQueries({ queryKey: ['vocabulary-exclusions', context?.actorId] });
       if (context?.actorId !== actorRef.current) return;
-      toast(`${count}개 단어를 삭제했습니다.`, 'info');
+      toast(`단어 ${count}개를 삭제했어요.`, 'info');
     },
-    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast('일괄 삭제 실패: ' + friendlyToastMessage(err), 'error'); },
+    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast(failureMessage('선택한 단어를 삭제하지 못했어요.', err), 'error'); },
   });
 
   return {

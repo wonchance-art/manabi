@@ -50,10 +50,10 @@ function SettingsForm({root,user,onClose}) {
       <label>언어<select value={draft.lang} onChange={e=>setDraft(v=>({...v,lang:e.target.value}))}>{Object.entries(LANG_NAME_KO).filter(([key])=>['Japanese','Chinese','English','French'].includes(key)).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></label>
       <label className="class-team-settings__wide">수업 교재<select value={draft.bookKey} disabled={query.isLoading||!!query.error} onChange={e=>setDraft(v=>({...v,bookKey:e.target.value}))}><option value="">교재 없이 수업</option>{team.bookKey&&!books.some(b=>b.key===team.bookKey)&&<option value={team.bookKey}>현재 연결된 교재</option>}{books.map(book=><option key={book.key} value={book.key}>{book.title||'제목 없는 교재'} · {book.count}과</option>)}</select></label>
       <label className="class-team-settings__wide">수업 코스<select value={draft.course} onChange={e=>setDraft(v=>({...v,course:e.target.value}))}><option value="">코스 없음</option>{courseOptions().map(c=><option key={c.key} value={c.key}>{c.title}</option>)}</select></label>
-      {query.error&&<p role="alert">교재 목록을 확인하지 못했어요. <button type="button" onClick={()=>query.refetch()}>다시 확인</button></p>}
-      <details className="class-team-settings__wide"><summary>입장 암호 변경</summary><label>새 암호<input type="password" autoComplete="new-password" value={password} onChange={e=>setPassword(e.target.value)}/></label><p>저장하면 학생들이 새 암호로 다시 입장해야 합니다. 비워 두면 기존 암호를 유지합니다.</p></details>
+      {query.error&&<p role="alert">교재 목록을 확인하지 못했어요. <button type="button" onClick={()=>query.refetch()}>다시 시도</button></p>}
+      <details className="class-team-settings__wide"><summary>입장 암호 변경</summary><label>새 암호<input type="password" autoComplete="new-password" value={password} onChange={e=>setPassword(e.target.value)}/></label><p>저장하면 학생들이 새 암호로 다시 입장해야 해요. 비워 두면 기존 암호를 그대로 써요.</p></details>
       <footer className="class-team-settings__wide"><button className="classroom-button" disabled={busy}>{busy?'저장 중…':'설정 저장'}</button><p role="status">{message}</p></footer>
-      {conflict&&<button type="button" disabled={busy} onClick={reloadSettings}>최신 설정으로 다시 열기</button>}
+      {conflict&&<button type="button" disabled={busy} onClick={reloadSettings}>최신 설정 불러오기</button>}
     </form>
   </section>;
 }

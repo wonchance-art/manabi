@@ -84,7 +84,7 @@ try {
   await page.getByLabel('이메일', { exact: true }).fill('qa@example.invalid');
   await layout('password-recovery-mobile');
   await page.getByRole('button', { name: '재설정 링크 보내기', exact: true }).click();
-  await page.getByText('비밀번호 재설정 링크를 이메일로 보냈습니다. 확인해주세요.', { exact: true }).waitFor();
+  await page.getByText('비밀번호 재설정 링크를 이메일로 보냈어요. 확인해 주세요.', { exact: true }).waitFor();
   await page.getByRole('status').filter({ hasText: '비밀번호 재설정 링크' }).waitFor();
   await layout('recovery-confirmation-mobile');
   report.successTextContrast = await page.getByRole('status').filter({ hasText: '비밀번호 재설정 링크' }).evaluate(renderedContrast);

@@ -23,7 +23,7 @@ async function fetchMerged(lang, slug) {
     `/api/admin/chapter?lang=${encodeURIComponent(lang)}&slug=${encodeURIComponent(slug)}`, { cache: 'no-store' }
   );
   const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(json.error || '불러오기에 실패했어요.');
+  if (!res.ok) throw new Error(json.error || '불러오지 못했어요.');
   return json;
 }
 // ── 경로 규약 해석 ──
@@ -175,7 +175,7 @@ export default function InlineEditForm({ lang, slug, path, kind, onDone, onCance
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(friendlyToastMessage(json.error, '저장에 실패했어요.'));
+        setError(friendlyToastMessage(json.error, '저장하지 못했어요.'));
         setSaving(false);
         return;
       }
@@ -183,7 +183,7 @@ export default function InlineEditForm({ lang, slug, path, kind, onDone, onCance
       router.refresh();
       onDone();
     } catch {
-      setError('네트워크 오류로 저장하지 못했어요.');
+      setError('저장하지 못했어요. 인터넷 연결을 확인해 주세요.');
       setSaving(false);
     }
   }
@@ -242,7 +242,7 @@ export default function InlineEditForm({ lang, slug, path, kind, onDone, onCance
               />
             </label>
           ))}
-          <p className="admin-edit__hint">예문과 해석을 수정해요. 출처 정보는 그대로 유지됩니다.</p>
+          <p className="admin-edit__hint">예문과 해석을 수정해요. 출처 정보는 그대로 남아요.</p>
         </div>
       )}
 

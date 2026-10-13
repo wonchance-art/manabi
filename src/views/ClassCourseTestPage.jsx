@@ -105,7 +105,7 @@ function TestMode({ course, pool, teacher }) {
     return <div className="course-card">
       <div className="course-card__top"><span>시험지 #{sheetNo}</span><span>{size}문제 · {need}문제 이상 합격</span></div>
       <p className="course-card__prompt">한국어 문장을 보고 바로 일본어로 말해 보세요.</p>
-      <p className="course-line__ko">뜻과 의도가 맞으면 통과예요. 비슷한 패턴으로 답해도 뜻이 맞으면 통과로 봐요. {teacher ? 'Space로 모범답, 1·O는 통과, 2·X는 실패예요.' : '혼자 볼 때는 모범답과 비교해 스스로 판정하세요.'}</p>
+      <p className="course-line__ko">뜻과 의도가 맞으면 통과예요. 비슷한 패턴으로 답해도 뜻이 맞으면 통과로 봐요. {teacher ? 'Space로 모범답, 1·O는 통과, 2·X는 실패예요.' : '혼자 볼 때는 모범답과 비교해 스스로 판정해 주세요.'}</p>
       <div className="course-actions"><button className="classroom-button" onClick={start}>시험 시작</button><button className="classroom-button classroom-button--quiet" onClick={fresh}>다른 시험지</button></div>
     </div>;
   }

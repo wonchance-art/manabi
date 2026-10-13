@@ -53,7 +53,7 @@ export default function ClassSourceFocus({ material, user, params, onResolve, to
         if (key && (!source || String(source.materialId) !== String(sourceId))) throw new Error('이 자료에 해당하는 수업 위치를 확인하지 못했어요.');
         const target = resolveClassSource(material.processed_json, source);
         if (!target) {
-          setState({ message: '정확한 위치를 찾지 못했어요. 교재 내용이 바뀌었거나 같은 표현이 여러 곳에 있습니다.', quote: source?.quote });
+          setState({ message: '정확한 위치를 찾지 못했어요. 교재 내용이 바뀌었거나 같은 표현이 여러 곳에 있어요.', quote: source?.quote });
           return;
         }
         callback.current(target, source);

@@ -37,12 +37,12 @@ export async function POST(request) {
   try {
     body = await request.json();
   } catch {
-    return Response.json({ error: '잘못된 JSON입니다.' }, { status: 400 });
+    return Response.json({ error: '잘못된 JSON이에요.' }, { status: 400 });
   }
   const nodeId = typeof body?.nodeId === 'string' ? body.nodeId : '';
   // 앨범 정본 노드만 허용 — 렌더 가능하지만 수집 금지인 노드와 임의 id를 함께 차단한다.
   if (!isStampAlbumNodeId(nodeId)) {
-    return Response.json({ error: 'nodeId가 올바르지 않습니다.' }, { status: 400 });
+    return Response.json({ error: 'nodeId가 올바르지 않아요.' }, { status: 400 });
   }
 
   const { supabase, user } = auth;

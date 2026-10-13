@@ -4737,7 +4737,7 @@ export const REF_GRAMMAR_MANIFEST = {
               "order": 5,
               "title": "박자 하나로 아주머니가 할머니로",
               "topic": "발음과 박자(모라)",
-              "summary": "おばさん(오바상)과 おばあさん(오바ー상)은 박자 하나 차이로 아주머니와 할머니가 갈려요. 한국어에 없는 '박자' 감각을 처음부터 제대로 잡아요.",
+              "summary": "おばさん(오바상)과 おばあさん(오바-상)은 박자 하나 차이로 아주머니와 할머니가 갈려요. 한국어에 없는 '박자' 감각을 처음부터 제대로 잡아요.",
               "duration": "약 10분",
               "courseLesson": {
                 "lessonRef": {
@@ -7513,7 +7513,7 @@ export const REF_GRAMMAR_MANIFEST = {
         },
         {
           "key": "H1",
-          "vocabCount": 416,
+          "vocabCount": 417,
           "bunkeiAvailable": true,
           "bunkeiChapterSlugs": [
             "h1-01-shi",
