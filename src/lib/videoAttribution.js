@@ -79,10 +79,26 @@ export function materialSource(material) {
  * 「어디서 온 글인지」는 어차피 필요한 정보다.
  * @returns {{channel:string, license:string, url:string}|null}
  */
+/**
+ * 원본 링크는 https 유튜브 주소일 때만 건다. `processed_json`은 자료 소유자가 쓰는 값이라, 공개 자료의
+ * 출처 줄이 다른 사람에게 임의 주소(피싱·data: 등)를 띄우는 통로가 되면 안 된다.
+ */
+export function safeYoutubeUrl(raw) {
+  try {
+    const u = new URL(String(raw || '').trim());
+    const host = u.hostname.toLowerCase();
+    const ok = u.protocol === 'https:' && !u.username && !u.password
+      && (host === 'youtu.be' || host === 'youtube.com' || host.endsWith('.youtube.com'));
+    return ok ? u.href : '';
+  } catch {
+    return '';
+  }
+}
+
 export function attributionParts(source) {
   if (!source || source.kind !== 'youtube') return null;
   const channel = String(source.channel || '').trim();
-  const url = String(source.url || '').trim();
+  const url = safeYoutubeUrl(source.url);
   if (!channel && !url) return null;
   return { channel, license: LICENSE_LABEL[source.license] || '', url };
 }

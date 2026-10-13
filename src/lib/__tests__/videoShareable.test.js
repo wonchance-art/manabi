@@ -4,7 +4,7 @@ import path from 'node:path';
 import { sliceBetween } from './helpers/sliceBetween.js';
 import {
   CC_SOURCE, PD_SOURCE, LICENSE_CC_BY, LICENSE_PUBLIC_DOMAIN,
-  attributionParts, isCreativeCommonsText, isShareableSource, licenseForSource, materialSource,
+  attributionParts, isCreativeCommonsText, isShareableSource, licenseForSource, materialSource, safeYoutubeUrl,
 } from '../videoAttribution';
 import { createSuggestionSave } from '../suggestionReading';
 import {
@@ -256,6 +256,18 @@ describe('F R5 — 표기는 저장이 아니라 **표시**다', () => {
     const at = attributionParts({ kind: 'youtube', channel: 'C', url: 'u' });
     expect(at.license).toBe('');
     expect(attributionParts({ kind: 'youtube', channel: 'C', url: 'u', license: LICENSE_CC_BY }).license).toBe('CC BY');
+  });
+
+  it('원본 링크는 https 유튜브 주소만 — 소유자가 쓴 값이 공개 자료에서 임의 링크가 되지 않는다', () => {
+    expect(safeYoutubeUrl('https://www.youtube.com/watch?v=abcdefghijk')).toBe('https://www.youtube.com/watch?v=abcdefghijk');
+    expect(safeYoutubeUrl('https://youtu.be/abcdefghijk')).toBe('https://youtu.be/abcdefghijk');
+    expect(safeYoutubeUrl('https://m.youtube.com/watch?v=abcdefghijk')).toBe('https://m.youtube.com/watch?v=abcdefghijk');
+    for (const bad of ['javascript:alert(1)', 'http://www.youtube.com/watch?v=x', 'https://youtube.com.evil.example/x',
+      'https://evilyoutube.com/x', 'https://user:pw@www.youtube.com/x', 'data:text/html,hi', '', null, 'u']) {
+      expect(safeYoutubeUrl(bad), String(bad)).toBe('');
+    }
+    expect(attributionParts({ kind: 'youtube', channel: 'C', url: 'javascript:alert(1)' })).toEqual({ channel: 'C', license: '', url: '' });
+    expect(attributionParts({ kind: 'youtube', url: 'javascript:alert(1)' }), '채널도 안전한 주소도 없으면 줄이 없다').toBe(null);
   });
 
   it('영상 출처가 아니면 표기 줄이 없다', () => {
