@@ -273,12 +273,14 @@ describe('같은 한자어 타일 — selectSameHanjaTiles', () => {
     expect(yue.map((x) => x.word)).toContain('音乐会');
     expect(yue.map((x) => x.word)).not.toContain('乐观');
   });
-  it('모자란 칸 = 판정 실패 후보의 짧은 뜻(흐림) — 音乐의 乐: 音乐会 음악회 · 乐曲 악곡 · 乐队 「악단」 흐림', () => {
-    const t = tiles({ ch: '乐', reading: 'yuè', headText: '音乐', index: 1 });
-    expect(t.map((x) => x.word)).toEqual(['音乐会', '乐曲', '乐队']);
-    expect(t.map((x) => x.ko)).toEqual(['음악회', '악곡', null]);
-    expect(t[2]).toMatchObject({ short: '악단', dim: true });
-    expect(t.slice(0, 2).every((x) => !x.dim && x.short === null)).toBe(true);
+  // HSK 2026 보강(ZH-LEVEL-2026-001 ④)으로 乐器 악기가 들어와 기본 3칸이 판정 성공으로 찼다 — 모자란 칸은 4칸째로 본다.
+  it('모자란 칸 = 판정 실패 후보의 짧은 뜻(흐림) — 音乐의 乐: 音乐会 음악회 · 乐器 악기 · 乐曲 악곡 · 乐队 「악단」 흐림', () => {
+    expect(tiles({ ch: '乐', reading: 'yuè', headText: '音乐', index: 1 }).map((x) => x.word)).toEqual(['音乐会', '乐器', '乐曲']);
+    const t = tiles({ ch: '乐', reading: 'yuè', headText: '音乐', index: 1, cap: 4 });
+    expect(t.map((x) => x.word)).toEqual(['音乐会', '乐器', '乐曲', '乐队']);
+    expect(t.map((x) => x.ko)).toEqual(['음악회', '악기', '악곡', null]);
+    expect(t[3]).toMatchObject({ short: '악단', dim: true });
+    expect(t.slice(0, 3).every((x) => !x.dim && x.short === null)).toBe(true);
   });
   it('경계 위반 단어(护士 「호사」)는 한국 한자어 줄에 오지 않는다 — 내 단어라도 흐린 짧은 뜻', () => {
     const t = tiles({ ch: '护', reading: 'hù', headText: '保护', cap: 20, savedRows: [{ word_text: '护士', meaning: '간호사', language: 'Chinese' }] });

@@ -1,6 +1,8 @@
 /**
  * H2 (HSK 2급) HSK 3.0 표준 보강 어휘 — 공식 어휘표(drkameleon/complete-hsk-vocabulary, MIT)에서
  * 기존에 없던 333개를 채웠어요. 한자·병음·품사는 표준 데이터, 뜻·예문은 학습용으로 작성.
+ * 끝의 「HSK2 2026 보강」 주제는 《HSK 考试大纲》(2025-11 발표 · 2026-07 시행) 2급 중 빠졌던 1개
+ * (ZH-LEVEL-2026-001 ④) — 한 단어짜리 파일은 사전 계약(모듈당 3단어 이상)에 걸려 여기에 붙였어요.
  */
 const themes = {
   themes: [
@@ -341,6 +343,12 @@ const themes = {
         { zh: "作家", pinyin: "zuòjiā", ko: "작가", pos: "명사", ex: { zh: "她是一位有名的作家。", pinyin: "Tā shì yí wèi yǒu míng de zuò jiā.", ko: "그녀는 유명한 작가예요." } },
         { zh: "做到", pinyin: "zuòdào", ko: "해내다, 달성하다", pos: "동사", ex: { zh: "只要努力就能做到。", pinyin: "Zhǐ yào nǔ lì jiù néng zuò dào.", ko: "노력만 하면 해낼 수 있어요." } },
         { zh: "做饭", pinyin: "zuòfàn", ko: "밥을 짓다, 요리하다", pos: "동사", ex: { zh: "妈妈每天在家做饭。", pinyin: "Mā ma měi tiān zài jiā zuò fàn.", ko: "엄마는 매일 집에서 밥을 지어요." } },
+      ],
+    },
+    {
+      name: "HSK2 2026 보강",
+      words: [
+        { zh: "没意思", pinyin: "méi yìsi", ko: "재미없다, 시시하다", pos: "표현", ex: { zh: "这个电影真没意思。", pinyin: "Zhège diànyǐng zhēn méi yìsi.", ko: "이 영화는 정말 재미없어요." } },
       ],
     },
   ],

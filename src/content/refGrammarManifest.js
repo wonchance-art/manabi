@@ -4737,7 +4737,7 @@ export const REF_GRAMMAR_MANIFEST = {
               "order": 5,
               "title": "박자 하나로 아주머니가 할머니로",
               "topic": "발음과 박자(모라)",
-              "summary": "おばさん(오바상)과 おばあさん(오바ー상)은 박자 하나 차이로 아주머니와 할머니가 갈려요. 한국어에 없는 '박자' 감각을 처음부터 제대로 잡아요.",
+              "summary": "おばさん(오바상)과 おばあさん(오바-상)은 박자 하나 차이로 아주머니와 할머니가 갈려요. 한국어에 없는 '박자' 감각을 처음부터 제대로 잡아요.",
               "duration": "약 10분",
               "courseLesson": {
                 "lessonRef": {
@@ -7513,7 +7513,7 @@ export const REF_GRAMMAR_MANIFEST = {
         },
         {
           "key": "H1",
-          "vocabCount": 416,
+          "vocabCount": 421,
           "bunkeiAvailable": true,
           "bunkeiChapterSlugs": [
             "h1-01-shi",
@@ -8098,7 +8098,7 @@ export const REF_GRAMMAR_MANIFEST = {
         },
         {
           "key": "H2",
-          "vocabCount": 497,
+          "vocabCount": 498,
           "bunkeiAvailable": true,
           "bunkeiChapterSlugs": [
             "h2-03-zai-progressive",
@@ -8455,7 +8455,7 @@ export const REF_GRAMMAR_MANIFEST = {
         },
         {
           "key": "H3",
-          "vocabCount": 686,
+          "vocabCount": 692,
           "bunkeiAvailable": true,
           "bunkeiChapterSlugs": [
             "h3-01-ba",
@@ -8817,7 +8817,7 @@ export const REF_GRAMMAR_MANIFEST = {
         },
         {
           "key": "H4",
-          "vocabCount": 1030,
+          "vocabCount": 1072,
           "bunkeiAvailable": true,
           "bunkeiChapterSlugs": [
             "h3-01-ba",
@@ -9106,7 +9106,7 @@ export const REF_GRAMMAR_MANIFEST = {
         },
         {
           "key": "H5",
-          "vocabCount": 2091,
+          "vocabCount": 2205,
           "bunkeiAvailable": true,
           "bunkeiChapterSlugs": [
             "h4-02-hypothesis",
@@ -9339,7 +9339,7 @@ export const REF_GRAMMAR_MANIFEST = {
         },
         {
           "key": "H6",
-          "vocabCount": 2130,
+          "vocabCount": 2546,
           "bunkeiAvailable": true,
           "bunkeiChapterSlugs": [
             "h5-05-passive",
