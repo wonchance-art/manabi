@@ -154,8 +154,14 @@ describe('같은 한자어 타일 — 3개 이하 · 내 단어 먼저(꼬리표
     const html = render({ ch: '乐', word: '音乐', reading: 'yuè', key: '0:1' });
     const words = sliceClass(html, 'hanja-pop__words');
     expect(text(words)).not.toContain('快乐');
-    expect(text(words)).toBe('yīnyuèhuì音乐会음악회yuèqǔ乐曲악곡yuèduì乐队악단'); // 설계서 §12.4 목업 그대로
-    const dim = words.split('class="hanja-pop__tile').slice(1).filter((t) => t.startsWith(' is-dim'));
+    // 설계서 §12.4 목업은 音乐会 · 乐曲 · 乐队(흐림)였다 — ZH-LEVEL-2026-001 ④(2026-10-13)로 HSK 2026 6급 乐器 「악기」가
+    // 우리 사전에 들어와 판정 통과 셋이 칸을 채운다.
+    expect(text(words)).toBe('yīnyuèhuì音乐会음악회yuèqì乐器악기yuèqǔ乐曲악곡');
+    // 흐린 칸은 快乐의 乐(lè)로 본다 — 乐观 낙관 · 娱乐 오락 · 可乐 「콜라」 흐림.
+    const lwords = sliceClass(render({ ch: '乐', word: '快乐', reading: 'lè', key: '0:1' }), 'hanja-pop__words');
+    const dim = lwords.split('class="hanja-pop__tile').slice(1).filter((t) => t.startsWith(' is-dim'));
+    expect(dim.length).toBe(1);
+    expect(text(dim[0])).toContain('可乐');
     for (const t of dim) expect(t).toContain('class="hanja-pop__tko is-short"');
   });
   it('후보 0 → 덩어리 빈 자리(높이 유지)', () => {
