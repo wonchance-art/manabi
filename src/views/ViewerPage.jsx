@@ -678,7 +678,7 @@ export default function ViewerPage() {
   const {
     reanalyzePanel, setReanalyzePanel,
     selectedParas, paragraphs,
-    togglePara, startFullReanalyze, startPartialReanalyze,
+    togglePara, requestFullReanalyze, startFullReanalyze, startPartialReanalyze,
   } = useReanalyzeUI({ reanalyze, material, toast, panel:modal('manage')?activeModal.value:null, onPanelChange:value=>changeModal('manage',value) });
 
   // ③ 원문 수정(오너 승인) — 소유자 전용, 저장 시 바뀐 줄만 재분석(sourceEdit.js 계획).
@@ -3736,7 +3736,7 @@ export default function ViewerPage() {
         <ViewerModal uiLocale={uiLocale} title={vt("자료 관리")} onClose={()=>setReanalyzePanel(null)}>
           {reanalyzePanel === 'menu' && (
             <div className="reader-manage">
-              <button className="reanalyze-panel__item" onClick={startFullReanalyze}>
+              <button className="reanalyze-panel__item" onClick={requestFullReanalyze}>
                 <strong>{vt("전체 분석")}</strong>
                 <span>{vt("처음부터 다시 분석합니다")}</span>
               </button>
@@ -3748,6 +3748,16 @@ export default function ViewerPage() {
                 <strong>{vt("원문 수정")}</strong>
                 <span>{vt("텍스트를 고치면 바뀐 줄만 분석합니다")}</span>
               </button>}
+            </div>
+          )}
+          {reanalyzePanel === 'confirm-full' && (
+            <div className="reader-manage" role="group" aria-labelledby="reanalyze-confirm-title">
+              <p id="reanalyze-confirm-title" style={{ fontWeight: 700, margin: '16px 0 6px' }}>{vt("전체 분석을 다시 할까요?")}</p>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 12px', lineHeight: 1.6 }}>{vt("지금 분석 결과를 새 결과로 바꿉니다. 직접 고친 뜻·단어 경계는 같은 자리에 남은 것만 이어집니다.")}</p>
+              <div className="reanalyze-panel__actions">
+                <button className="btn btn--ghost btn--sm" onClick={() => setReanalyzePanel('menu')}>{vt("취소")}</button>
+                <button className="btn btn--primary btn--sm" onClick={startFullReanalyze}>{vt("전체 분석")}</button>
+              </div>
             </div>
           )}
           {reanalyzePanel === 'pick' && (
