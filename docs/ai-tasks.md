@@ -893,7 +893,7 @@
   - #1346 `claude/korean-word-meaning` — 한국어 저장 뜻(#1342 인수, Codex 브랜치 미수정). 뜻 표본 측정(M09 배정 CLAUDE-M09-001-3) →
     오너 REVIEW 판정 → Preview·실계정 검수 후 병합. 목록 ★ 한 번 저장의 분리 여부는 오너 결정 대기.
   - #1349 `claude/krdict-senses` — 한국어기초사전 1단계 기반. 공식본 dry-run 대조(M09 CLAUDE-M09-001-5) 대기.
-  - #1344 교재 피드백 잔여: **PR-B**(10-13 목업 게시 → `claude/textbook-pr-b` — 같은 문구 부제만 숨김·회화 [해석 보기/가리기] 유지·읽기/듣기 물음에 그 과 해답 이름 표지·39과 제목 재노출 방지, e2e `textbook-reading-clarity` 추가) · PR-C(활용 안내, 오너 문구).
+  - #1344 교재 피드백 잔여: **PR-B**(10-13 목업 게시 → `claude/project-thread-l70fv5` — 같은 문구 부제만 숨김·회화 [해석 보기/가리기] 유지·읽기/듣기 물음에 그 과 해답 이름 표지·39과 제목 재노출 방지, e2e `textbook-reading-clarity` 추가) · PR-C(활용 안내, 오너 문구).
     #1345 후속: PR-0(팀 없는 교재 설명 집계)은 **완료** — M09 운영 READ ONLY 0건([6036231612](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036231612)), 따라서 PR-2b 불요. PR-3 대기.
   - 튜터 프롬프트의 중화권 정치 서술 배제(하드리밋 ⑷) → #1389 `conversationSafetyRules`(두 프롬프트 주입) — 병합 `85f59a77`(10-09, 오너 예외 승인).
   - ⚠ 운영 마이그레이션 이력 ≠ main `supabase/migrations` — 운영 READ ONLY 확인 완료(10-07, [6036231612](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036231612)):
