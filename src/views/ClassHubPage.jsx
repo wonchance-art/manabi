@@ -3,7 +3,7 @@
 /**
  * 수업 팀 허브 `/class` (v2-AB R1 · 팀 페이지 상세 S6, #1077 5604199672) — 오너 전용.
  *
- * 팀을 만들고(키·이름·언어·교재·암호) 설정을 고친다. 팀 = 루트 자료 한 행(metadata.team) — 새 테이블 0.
+ * 팀을 기본만으로 만든다(이름·언어·링크·암호). 교재·전체 과 수·코스·일정은 수업 안 설정(ClassTeamSettings·코스 탭)이 정본. 팀 = 루트 자료 한 행(metadata.team) — 새 테이블 0.
  * 암호는 **브라우저에서 해시**해 저장한다(평문은 어디에도 남지 않는다). 그래서 오너도 나중에 못 본다 —
  * 생성·변경 모달에서 **그때 한 번만** 보여 주고 복사하게 한다(「암호는 지금만 보여요」).
  * 학생·익명은 여기서 팀 목록을 볼 수 없다 — 팀 링크로 들어온다.
@@ -26,7 +26,6 @@ import { ClassroomShell,ClassroomState,ClassCover } from '../components/classroo
 import ClassroomJoin from '../components/classroom/ClassroomJoin';
 import { saveClassroomMetadata } from '../lib/classroomModel';
 import { hashPassword, makeSalt, validatePassword } from '../lib/classPassword';
-import { courseOptions } from '../lib/classCourse';
 import { friendlyToastMessage } from '../lib/errorMessage';
 
 const LANG_OPTIONS = ['Japanese', 'Chinese', 'English', 'French'];
@@ -57,6 +56,9 @@ async function copyText(text, toast, label) {
   }
 }
 
+// 만들 때는 기본만(이름·언어·링크·암호). 교재·전체 과 수·코스·일정은 수업 안 '설정'에서 — 오너 결정 2026-10-13.
+const EMPTY_DRAFT = { key: '', name: '', lang: 'Japanese', password: '' };
+
 export default function ClassHubPage() {
   const { user, isAdmin, loading } = useAuth();
   const toast = useToast();
@@ -77,11 +79,9 @@ export default function ClassHubPage() {
   const bookByKey = useMemo(() => new Map(books.map((b) => [b.key, b])), [books]);
 
   const [creating, setCreating] = useState(false);
-  const [draft, setDraft] = useState({ key: '', name: '', lang: 'Japanese', bookKey: '', bookTotal: '', course: '', password: '' });
+  const [draft, setDraft] = useState(EMPTY_DRAFT);
   const [busy, setBusy] = useState(false);
   const [revealed, setRevealed] = useState(null); // { key, name, password } — 생성·변경 직후 한 번만
-  const [editing, setEditing] = useState(null);   // 설정 중인 팀(루트 자료)
-  const [editDraft, setEditDraft] = useState(null);
   const [pwTarget, setPwTarget] = useState(null);  // 암호 바꾸는 팀
   const [pwDraft, setPwDraft] = useState('');
   const [pwConfirm, setPwConfirm] = useState(false);
@@ -101,8 +101,7 @@ export default function ClassHubPage() {
       const pwSalt = makeSalt();
       const pwHash = await hashPassword(draft.password, pwSalt);
       const row = buildTeamRootRow({
-        key, name: draft.name, lang: draft.lang, bookKey: draft.bookKey || null,
-        bookTotal: draft.bookTotal ? Number(draft.bookTotal) : null, course: draft.course || null, pwHash, pwSalt, ownerId: user.id,
+        key, name: draft.name, lang: draft.lang, pwHash, pwSalt, ownerId: user.id,
       });
       const existing = await supabase.from('reading_materials').select('id, processed_json').eq('owner_id',user.id).eq('processed_json->metadata->team->>key',key).eq('processed_json->metadata->team->>root','true').maybeSingle();
       if(existing.error) throw existing.error;
@@ -110,39 +109,11 @@ export default function ClassHubPage() {
       if(existingTeam && await hashPassword(draft.password,existingTeam.pwSalt)!==existingTeam.pwHash) { refresh(); throw new Error('이전 요청으로 이미 만들어진 수업이에요. 목록에서 공유 암호를 변경해 주세요.'); }
       if(!existing.data){const {error}=await supabase.from('reading_materials').insert(row);if(error)throw error;}
       setRevealed({ key, name: existingTeam?.name || row.processed_json.metadata.team.name, password: draft.password });
-      setDraft({ key: '', name: '', lang: 'Japanese', bookKey: '', bookTotal: '', course: '', password: '' });
+      setDraft(EMPTY_DRAFT);
       setCreating(false);
       refresh();
     } catch (err) {
       toast('수업 만들기 실패 — ' + friendlyToastMessage(err), 'error');
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  function openEdit(team) {
-    setEditing(team);
-    setEditDraft({ name: team.name, lang: team.lang, bookKey: team.bookKey || '', bookTotal: team.bookTotal ? String(team.bookTotal) : '', course: team.course || '' });
-  }
-
-  async function handleEditSave(e) {
-    e.preventDefault();
-    if (!editing || !editDraft) return;
-    setBusy(true);
-    try {
-      const next = patchTeamRoot(editing.material.processed_json, {
-        name: editDraft.name.trim() || editing.key,
-        lang: editDraft.lang,
-        bookKey: editDraft.bookKey || null,
-        bookTotal: editDraft.bookTotal ? Number(editDraft.bookTotal) : null,
-        course: editDraft.course || null,
-      });
-      await saveClassroomMetadata(supabase,editing.material,next.metadata);
-      toast('설정을 저장했어요.', 'success');
-      setEditing(null);
-      refresh();
-    } catch (err) {
-      toast('설정 저장 실패 — ' + friendlyToastMessage(err), 'error');
     } finally {
       setBusy(false);
     }
@@ -184,6 +155,7 @@ export default function ClassHubPage() {
             <code style={{ fontSize: '1.05rem', padding: '4px 8px', background: 'var(--bg-secondary)', borderRadius: 6 }}>{revealed.password}</code>
             <Button size="sm" variant="secondary" onClick={() => copyText(revealed.password, toast, '암호')}>암호 복사</Button>
             <Button size="sm" variant="secondary" onClick={() => copyText(shareLink(revealed.key), toast, '링크')}>링크 복사</Button>
+            <Link href={`/class/${revealed.key}?settings=1`} className="classroom-button">수업 열고 설정하기 →</Link>
             <Button size="sm" variant="ghost" onClick={() => setRevealed(null)}>닫기</Button>
           </div>
         </div>
@@ -205,36 +177,17 @@ export default function ClassHubPage() {
               </select>
             </div>
             <div className="form-field">
-              <label className="form-label" htmlFor="team-book">교재 (내 책 묶음)</label>
-              <select id="team-book" className="form-input" value={draft.bookKey} onChange={(e) => setDraft((d) => ({ ...d, bookKey: e.target.value }))}>
-                <option value="">없음</option>
-                {books.map((b) => <option key={b.key} value={b.key}>{b.title || '제목 없는 교재'} · {b.count}과</option>)}
-              </select>
-            </div>
-          </div>
-          <div className="form-row">
-            <div className="form-field">
               <label className="form-label" htmlFor="team-key">링크 주소 (/class/…)</label>
               <input id="team-key" className="form-input" value={draft.key} onChange={(e) => setDraft((d) => ({ ...d, key: e.target.value.trim().toLowerCase() }))} placeholder="예: culcom" maxLength={16} autoComplete="off" spellCheck={false} />
             </div>
-            <div className="form-field">
-              <label className="form-label" htmlFor="team-course">수업 코스 (선택)</label>
-              <select id="team-course" className="form-input" value={draft.course} onChange={(e) => setDraft((d) => ({ ...d, course: e.target.value }))}>
-                <option value="">코스 없음</option>
-                {courseOptions().map((c) => <option key={c.key} value={c.key}>{c.title}</option>)}
-              </select>
-            </div>
           </div>
           <div className="form-row">
             <div className="form-field">
-              <label className="form-label" htmlFor="team-total">교재 전체 과 수 (선택)</label>
-              <input id="team-total" className="form-input" type="number" min={1} value={draft.bookTotal} onChange={(e) => setDraft((d) => ({ ...d, bookTotal: e.target.value }))} placeholder="41" />
-            </div>
-            <div className="form-field">
-              <label className="form-label" htmlFor="team-pw">암호 ({TEAM_PW_MIN}자 이상 · 지금만 보여요)</label>
+              <label className="form-label" htmlFor="team-pw">입장 암호 ({TEAM_PW_MIN}자 이상 · 지금만 보여요)</label>
               <input id="team-pw" className="form-input" value={draft.password} onChange={(e) => setDraft((d) => ({ ...d, password: e.target.value }))} autoComplete="off" />
             </div>
           </div>
+          <p>교재·코스·일정은 수업을 연 뒤 <b>설정</b>에서 정해요.</p>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
             <Button size="sm" variant="ghost" type="button" onClick={() => setCreating(false)}>취소</Button>
             <Button size="sm" type="submit" disabled={busy}>{busy ? '만드는 중…' : '수업 만들기'}</Button>
@@ -250,54 +203,13 @@ export default function ClassHubPage() {
             return <article key={t.key} className="classroom-team-card" data-language={t.lang}>
               <ClassCover team={t}/><div className="classroom-team-body"><span className="classroom-eyebrow">{LANG_NAME_KO[t.lang]}{notes[0]?` · 최근 수업 ${dayLabel(notes[0].day)}`:' · 새로운 수업'}</span><h2>{t.name}</h2><p>{book?`${book.title||'수업 교재'} · 공유된 ${book.count}과`:'교재 없이 자유롭게 표현을 나누는 수업'}<br/>{notes.length?`수업 노트 ${notes.length}편`:'첫 수업 노트를 기다리고 있어요.'}</p>
               <div className="classroom-actions"><Link href={`/class/${t.key}`} className="classroom-button">수업 열기 →</Link><button className="classroom-text-button" onClick={()=>copyText(shareLink(t.key),toast,'수업 링크')}>학생에게 링크 공유</button></div>
-              <details className="classroom-team-settings"><summary>수업 설정</summary><div className="classroom-actions"><Button size="sm" variant="secondary" onClick={()=>openEdit(t)}>이름 · 교재 변경</Button><Button size="sm" variant="ghost" onClick={()=>{setPwTarget(t);setPwDraft('');}}>공유 암호 변경</Button></div>
+              <details className="classroom-team-settings"><summary>수업 설정</summary><div className="classroom-actions"><Link href={`/class/${t.key}?settings=1`} className="classroom-text-button">이름 · 교재 · 코스 설정</Link><Button size="sm" variant="ghost" onClick={()=>{setPwTarget(t);setPwDraft('');}}>공유 암호 변경</Button></div>
                 {pwTarget?.key === t.key && (
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 10 }}>
                     <input className="form-input" style={{ flex: '1 1 160px' }} value={pwDraft} onChange={(e) => setPwDraft(e.target.value)} placeholder={`새 암호 ${TEAM_PW_MIN}자 이상`} autoComplete="off" />
                     <Button size="sm" disabled={busy} onClick={() => setPwConfirm(true)}>바꾸기</Button>
                     <Button size="sm" variant="ghost" onClick={() => setPwTarget(null)}>취소</Button>
                   </div>
-                )}
-                {editing?.key === t.key && editDraft && (
-                  <form onSubmit={handleEditSave} style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
-                    <div className="form-row">
-                      <div className="form-field">
-                        <label className="form-label">수업 이름</label>
-                        <input className="form-input" value={editDraft.name} onChange={(e) => setEditDraft((d) => ({ ...d, name: e.target.value }))} />
-                      </div>
-                      <div className="form-field">
-                        <label className="form-label">언어</label>
-                        <select className="form-input" value={editDraft.lang} onChange={(e) => setEditDraft((d) => ({ ...d, lang: e.target.value }))}>
-                          {LANG_OPTIONS.map((l) => <option key={l} value={l}>{LANG_NAME_KO[l]}</option>)}
-                        </select>
-                      </div>
-                    </div>
-                    <div className="form-row">
-                      <div className="form-field">
-                        <label className="form-label">교재</label>
-                        <select className="form-input" value={editDraft.bookKey} onChange={(e) => setEditDraft((d) => ({ ...d, bookKey: e.target.value }))}>
-                          <option value="">없음</option>
-                          {books.map((b) => <option key={b.key} value={b.key}>{b.title || '제목 없는 교재'} · {b.count}과</option>)}
-                        </select>
-                      </div>
-                      <div className="form-field">
-                        <label className="form-label">교재 총 과 수</label>
-                        <input className="form-input" type="number" min={1} value={editDraft.bookTotal} onChange={(e) => setEditDraft((d) => ({ ...d, bookTotal: e.target.value }))} />
-                      </div>
-                    </div>
-                    <div className="form-field">
-                      <label className="form-label">수업 코스</label>
-                      <select className="form-input" value={editDraft.course} onChange={(e) => setEditDraft((d) => ({ ...d, course: e.target.value }))}>
-                        <option value="">코스 없음</option>
-                        {courseOptions().map((c) => <option key={c.key} value={c.key}>{c.title}</option>)}
-                      </select>
-                    </div>
-                    <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>팀 키(<code>{t.key}</code>)는 링크 주소라 바꿀 수 없어요.</p>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-                      <Button size="sm" variant="ghost" type="button" onClick={() => setEditing(null)}>취소</Button>
-                      <Button size="sm" type="submit" disabled={busy}>저장</Button>
-                    </div>
-                  </form>
                 )}
               </details></div></article>;
           })}

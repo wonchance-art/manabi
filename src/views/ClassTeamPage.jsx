@@ -94,7 +94,7 @@ function OwnerView({ root, user, teamKey, toast }) {
   const routeSearch=useSearchParams();
   const team = getTeam(root.processed_json?.metadata);
   const [tab,setTab]=useState(()=>{const view=routeSearch.get('view');return view==='history'?'notes':view==='book'?'book':team.course?'course':'book';});
-  const [settingsOpen,setSettingsOpen]=useState(false);
+  const [settingsOpen,setSettingsOpen]=useState(()=>routeSearch.get('settings')==='1'); // 새 수업 직후 허브에서 ?settings=1로 들어온다
   const settingsButton=useRef(null);
   const { data: chapters = [], error:chaptersError, isLoading:chaptersLoading, refetch:retryChapters } = useQuery({
     queryKey: ['class-book-chapters', user.id, team.bookKey],
