@@ -6,6 +6,7 @@ export const CONVERSATION_SHELF_PREVIEW = 3;
 
 const COLUMNS = [
   'id', 'title', 'created_at',
+  'marker:processed_json->metadata->conversation->>version',
   'topic:processed_json->metadata->conversation->>topic',
   'language:processed_json->metadata->conversation->>language',
   'parentId:processed_json->metadata->conversation->>parentId',
@@ -20,7 +21,8 @@ export async function fetchConversations(client, userId, { limit = CONVERSATION_
     .order('id', { ascending: false })
     .limit(limit);
   if (error) throw error;
-  return (data || []).map((row) => ({
+  // 표식 열을 한 번 더 본다 — JSON 경로 필터를 모르는 경로(옛 프록시·테스트 백엔드)가 일반 자료를 섞어 보내도 대화만 남긴다.
+  return (data || []).filter((row) => row.marker != null).map((row) => ({
     id: String(row.id),
     title: row.topic || row.title || '대화',
     language: row.language || null,

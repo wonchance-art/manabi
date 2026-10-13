@@ -20,8 +20,9 @@ describe('서재 「대화」 묶음 조회', () => {
   it('내 대화 표식 자료만, 최신순으로, 본문 없이 메타만 읽는다', async () => {
     const calls = [];
     const rows = await fetchConversations(fakeClient([
-      { id: 12, title: '여행 이야기', created_at: '2026-10-13T16:00:00Z', topic: '여행', language: 'Chinese', parentId: '7' },
-      { id: 9, title: '', created_at: null, topic: null, language: null, parentId: null },
+      { id: 12, title: '여행 이야기', created_at: '2026-10-13T16:00:00Z', topic: '여행', language: 'Chinese', parentId: '7', marker: '1' },
+      { id: 11, title: '일반 자료', created_at: null }, // 필터를 모르는 백엔드가 섞어 보낸 행
+      { id: 9, title: '', created_at: null, topic: null, language: null, parentId: null, marker: '1' },
     ], calls), 'u1');
     expect(calls).toContainEqual(['from', 'reading_materials']);
     expect(calls).toContainEqual(['eq', 'owner_id', 'u1']);
