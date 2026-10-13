@@ -893,10 +893,12 @@
   - #1346 `claude/korean-word-meaning` — 한국어 저장 뜻(#1342 인수, Codex 브랜치 미수정). 뜻 표본 측정(M09 배정 CLAUDE-M09-001-3) →
     오너 REVIEW 판정 → Preview·실계정 검수 후 병합. 목록 ★ 한 번 저장의 분리 여부는 오너 결정 대기.
   - #1349 `claude/krdict-senses` — 한국어기초사전 1단계 기반. 공식본 dry-run 대조(M09 CLAUDE-M09-001-5) 대기.
-  - #1344 교재 피드백 잔여 PR-B(부제 반복·해석 문구·물음 표식, 목업 대기)·PR-C(활용 안내, 오너 문구) · #1345 후속 PR-0(운영 집계)·PR-3.
+  - #1344 교재 피드백 잔여: **PR-B**(10-13 목업 게시 → `claude/textbook-pr-b` — 같은 문구 부제만 숨김·회화 [해석 보기/가리기] 유지·읽기/듣기 물음에 그 과 해답 이름 표지·39과 제목 재노출 방지, e2e `textbook-reading-clarity` 추가) · PR-C(활용 안내, 오너 문구).
+    #1345 후속: PR-0(팀 없는 교재 설명 집계)은 **완료** — M09 운영 READ ONLY 0건([6036231612](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036231612)), 따라서 PR-2b 불요. PR-3 대기.
   - 튜터 프롬프트의 중화권 정치 서술 배제(하드리밋 ⑷) → #1389 `conversationSafetyRules`(두 프롬프트 주입) — 병합 `85f59a77`(10-09, 오너 예외 승인).
-  - ⚠ 운영 마이그레이션 이력 ≠ main `supabase/migrations`(스택 #1316~#1321 SQL 3건·10월 활성화 이력). 다음 마이그레이션 병합 시
-    `supabase-migrations.yml` 실패 가능성 — 운영 READ ONLY 확인 전 스택 PR 닫기 보류.
+  - ⚠ 운영 마이그레이션 이력 ≠ main `supabase/migrations` — 운영 READ ONLY 확인 완료(10-07, [6036231612](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036231612)):
+    운영에만 있는 버전 11개(teaching_board_cloud·classroom_direct_vocabulary·viewer_token_correction_atomic·10월 활성화 이력 등), main에만 있는 버전 0.
+    다음 `supabase/migrations` 병합 시 `supabase-migrations.yml` 실패 가능 — DB 변경은 `docs/sql` + M09 적용으로 낸다. 스택 #1316~#1321은 유지.
   - 이 컨테이너에서 불가(오너/M09): 운영 DB 조회·적용, 정상 실계정 검수(10-06 04:00 경계 이후 학습 검수 = CLAUDE-M09-001-2 진행 중).
 - **뷰어 v2 (2026-10-07 21:10 KST~, 오너 지시 「이 세션이 뷰어 v2 맡아」)** — 구현 큐 전부 병합·운영 배포(2026-10-08 16:50 KST, done 참조).
   정본 = [R0 버그](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6031758159) · [v2 라운드](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6036574287).
@@ -946,24 +948,24 @@
     ⑤ #1376 번역 light 유지 · ⑥ 화면 세부 #1374·#1378·#1380·#1382·#1383·#1384 현행 유지.
   - **ZH-GRID-001**(10-12 오너 승인 목업): 중국어 본문 격자 조판 — 한자·전각 부호 = 같은 한 칸(병음 칸 / 끄면 1em), 낱말 사이 간격 0·「글자 간격」은 칸마다,
     반각 묶음(2024·iPhone) 칸 올림, 닫는 부호 줄머리 금지(禁则), 터치 문장 막대 한 칸, Aa 미리보기 동일 · 일·중 기본 글자 간격 0(옛 기본 0.25 저장값 1회 이행, 표식 `cjkGap0`) ·
-    브랜치 `claude/zh-grid` · e2e viewer-zh-grid 신설(CI 목록 추가).
+    브랜치 `claude/zh-grid` · e2e viewer-zh-grid 신설(CI 목록 추가). → **#1417 병합**
   - **READER-PAGED-001**(10-12 오너 「화면 채우면 다음으로 넘어가도록」·「권장대로」): 서재 글 쪽 넘김 리더 설계 확정(기본 쪽 넘김·Aa 스크롤 선택·20만 자 상한 유지) —
     ① 글자 수 제한 정리 PR(EPUB 4.5만 재분할·EPUB 5만 캡·YouTube 5만 무언 절단·1만 자 권유 제거) ② P0 쪽 넘김 구현(진행).
   - **ANALYZE-LONG-LINE-001**(10-12 발견·수정, 학습 흐름 버그): 200자 넘는 일·영·중 줄이 분석에서 잘린 채 completed로 저장되던 문제 —
     문장 단위로 나눠 보내고 원래 줄로 잇기 · 서버 truncated 표식 · 모든 언어 덮기 검사 · 100줄 넘는 문단 분할 요청 · 기존 잘린 자료 복구 경로 ·
-    Preview QA 429 대응: 여러 문단을 한 요청으로 묶기(글자 예산 중400·일800·영2000) · 429는 Retry-After 대기 후 2회 재시도(PR 진행).
-  - **BOUNDARY-LONG-LINE-001**(10-12, ANALYZE-LONG-LINE-001 남은 문제): 200자 넘는 줄의 200자 뒤 묶기·나누기가 analysis_mismatch로 막히던 문제 — 경계 편집도 자료 분석과 같은 조각(analysisLineUnits)으로 나눠 기록이 든 조각만 보내고 줄 좌표로 잇기 · 429 재시도 · 계약 `boundaryLongLines.test.js`(PR 진행).
-  - **YT-SOURCE-LINE-001**(10-13, 오너 「여기서 진행」): 뷰어 유튜브 출처 줄이 `reading_materials`에 없는 `metadata` 열을 읽어 한 번도 안 그려지던 문제(CC BY 표기 조건) — `materialSource()`로 `processed_json.metadata.source`를 읽고, 쓰는 쪽 실물 행 기준 계약(`videoShareable.test.js`)(PR 진행).
-  - **AOZORA-P0-1**(10-13, 오너 「권장대로」·결정 D1~D6 10-12): 아오조라 「책자」 P0 1차 — #1295 aozora 모듈 이식·수정(권리 D5·JP/KR/US, txt 파서 실물 결함 4건, 장 초안·루비 잠금 재기준화), `build-literature.mjs --check`(prebuild), 분석 말미 저자 루비 잠금(사용자 교정 우선), 뷰어 출처 줄, 정책 ⑵ 퍼블릭 도메인 예외(D1)+`ipPolicy.test.js` · 실물 원문·관리자 게시는 2차(aozora.gr.jp 네트워크 허용 대기)(PR 진행).
-  - **BUILD-FONT-VENDOR-001**(10-13, 오너 「글꼴 저장소 내장」): 배포 빌드가 Google Fonts 10패밀리 woff2 약 950개를 매번 받다 하나만 실패해도 ERROR(#1402·#1419 Preview) — 같은 바이트를 `vendor/google-fonts`(41MB·OFL)에 두고 `next-build.mjs`가 사본을 넘김. layout 호출 무변경, 네트워크 빌드와 `.next/static/media` 956개·CSS·preload 바이트 동일 실측 · 1회 재빌드(BUILD-FONT-RETRY-001) 대체 · 계약 `next-build.test.js`(PR 진행).
+    Preview QA 429 대응: 여러 문단을 한 요청으로 묶기(글자 예산 중400·일800·영2000) · 429는 Retry-After 대기 후 2회 재시도 → **#1412 병합**.
+  - **BOUNDARY-LONG-LINE-001**(10-12, ANALYZE-LONG-LINE-001 남은 문제): 200자 넘는 줄의 200자 뒤 묶기·나누기가 analysis_mismatch로 막히던 문제 — 경계 편집도 자료 분석과 같은 조각(analysisLineUnits)으로 나눠 기록이 든 조각만 보내고 줄 좌표로 잇기 · 429 재시도 · 계약 `boundaryLongLines.test.js` → **#1421 병합**.
+  - **YT-SOURCE-LINE-001**(10-13, 오너 「여기서 진행」): 뷰어 유튜브 출처 줄이 `reading_materials`에 없는 `metadata` 열을 읽어 한 번도 안 그려지던 문제(CC BY 표기 조건) — `materialSource()`로 `processed_json.metadata.source`를 읽고, 쓰는 쪽 실물 행 기준 계약(`videoShareable.test.js`) → **#1427 병합**.
+  - **AOZORA-P0-1**(10-13, 오너 「권장대로」·결정 D1~D6 10-12): 아오조라 「책자」 P0 1차 — #1295 aozora 모듈 이식·수정(권리 D5·JP/KR/US, txt 파서 실물 결함 4건, 장 초안·루비 잠금 재기준화), `build-literature.mjs --check`(prebuild), 분석 말미 저자 루비 잠금(사용자 교정 우선), 뷰어 출처 줄, 정책 ⑵ 퍼블릭 도메인 예외(D1)+`ipPolicy.test.js` · 실물 원문·관리자 게시는 2차(aozora.gr.jp 네트워크 허용 대기) → **#1424 병합**.
+  - **BUILD-FONT-VENDOR-001**(10-13, 오너 「글꼴 저장소 내장」): 배포 빌드가 Google Fonts 10패밀리 woff2 약 950개를 매번 받다 하나만 실패해도 ERROR(#1402·#1419 Preview) — 같은 바이트를 `vendor/google-fonts`(41MB·OFL)에 두고 `next-build.mjs`가 사본을 넘김. layout 호출 무변경, 네트워크 빌드와 `.next/static/media` 956개·CSS·preload 바이트 동일 실측 · 1회 재빌드(BUILD-FONT-RETRY-001) 대체 · 계약 `next-build.test.js` → **#1423 병합**.
   - **PR-TRIAGE-1323**(10-12 오너 「권장대로 전부 진행」): 정체 PR #1323에서 살릴 2가지 이식 — 뷰어 단어 버튼 안 중첩 버튼 분리·닫을 때 초점 복귀·문장 막대 24px,
-    설명판 뜻 단어 경계 줄바꿈(`wrapMeaning`) · 계약 `wordTokenNesting.test.js` · 이식 PR 병합 뒤 #1323 닫기.
-  - **MEANING-VERIFY-001**(10-12 오너 승인 — axolotl 「우렁눈이」 저장 원인 수정): 영어 새 단어 뜻은 공유 사전 첫 저장 전 standard 검증 배치당 1회(ok 저장 · wrong+고친 뜻 저장 · unsure/실패 = 저장 없이 반환) + 생성 프롬프트 음역 규칙 + 관리자 PATCH 뜻별 pos·en_pos_v 보존 + 금지 답 표 `docs/verification/en-meaning-gold-20261012.json`(33) · `claude/meaning-verify` — 남은 것: 키 있는 실측(`scripts/eval/en-meaning-gold.mjs`)·PR·Preview.
-  - **ORIGINAL-POSITION-RETRY-001**(10-12 실계정 Preview QA — 복습 뒤 원본 복귀 시 온라인인데 「연결되면…」 오프라인 안내): 4초 제한을 클라이언트·auth 세션 준비 뒤에 시작 · 첫 읽기 자동 재시도 2회(1s·3s, 안내 없음) · 소진 시 오프라인(navigator.onLine=false)만 기존 문구, 온라인은 「읽던 위치를 불러오지 못했어요」+다시 시도 · errorCode console.warn — 브랜치 `claude/original-position-retry`.
+    설명판 뜻 단어 경계 줄바꿈(`wrapMeaning`) · 계약 `wordTokenNesting.test.js` · 이식 PR 병합 뒤 #1323 닫기. → **#1413 병합 · #1323 닫힘**
+  - **MEANING-VERIFY-001**(10-12 오너 승인 — axolotl 「우렁눈이」 저장 원인 수정): 영어 새 단어 뜻은 공유 사전 첫 저장 전 standard 검증 배치당 1회(ok 저장 · wrong+고친 뜻 저장 · unsure/실패 = 저장 없이 반환) + 생성 프롬프트 음역 규칙 + 관리자 PATCH 뜻별 pos·en_pos_v 보존 + 금지 답 표 `docs/verification/en-meaning-gold-20261012.json`(33) · `claude/meaning-verify` — 남은 것: 키 있는 실측(`scripts/eval/en-meaning-gold.mjs`)·PR·Preview. → **#1419 병합**
+  - **ORIGINAL-POSITION-RETRY-001**(10-12 실계정 Preview QA — 복습 뒤 원본 복귀 시 온라인인데 「연결되면…」 오프라인 안내): 4초 제한을 클라이언트·auth 세션 준비 뒤에 시작 · 첫 읽기 자동 재시도 2회(1s·3s, 안내 없음) · 소진 시 오프라인(navigator.onLine=false)만 기존 문구, 온라인은 「읽던 위치를 불러오지 못했어요」+다시 시도 · errorCode console.warn — 브랜치 `claude/original-position-retry`. → **#1418 병합**
   - 보류: AE-R3 PR③(공유 사전 요미 쓰기 — ⓒ 확정으로 재정리 필요, ⓑ 권장 · 오너 「나중에」) · AD-R3 PR④(규칙 표 DDL — 동결 해제로 착수 가능) ·
     한국어 어절 넘는 묶기(할 수 있다 — 별도 질문).
   - **READER-PAGED-001 P0**(10-12 설계 확정 「권장대로」): 서재 글 쪽 넘김 — 분석 뷰어·원본 리더, 기본 쪽 넘김·Aa 스크롤 선택, 밀기·키보드·쪽 막대·여백 띠,
-    위치는 토큰(글자) 기준 재계산, 마지막 쪽에 읽기 완료 · 덤: 읽던 위치 복원 조회 누락(`is_completed`만 조회) 수정 · e2e viewer-paged-reader 신설.
+    위치는 토큰(글자) 기준 재계산, 마지막 쪽에 읽기 완료 · 덤: 읽던 위치 복원 조회 누락(`is_completed`만 조회) 수정 · e2e viewer-paged-reader 신설. → **#1416 병합**
   - 오너 결정 대기: #1368 트레이드오프 · #1396 꼴 이름 2종·조각 간격.
 ### todo (오너 전건 승인 2026-07-18 — owner-gate 해제분 포함, Codex-1 확장 큐 = #150 코멘트 5012160829)
 - 🧊 **이 아래 전량 = 게임·월드 트랙 동결**(오너 "게임 월드는 ㄴㄴ" 2026-08-25).
