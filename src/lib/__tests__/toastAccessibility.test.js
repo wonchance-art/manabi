@@ -86,4 +86,14 @@ describe('WALL-STATES-001 ⑦ 토스트 접근성', () => {
     expect(close).toMatch(/min-width:\s*44px/);
     expect(close).toMatch(/min-height:\s*44px/);
   });
+
+  it('종류별 바탕은 불투명 --bg-elevated 위에 얹는다 — 밝은 셸 밖에서도 글자가 비쳐 흐려지지 않는다(M09 실측)', () => {
+    const css = readFileSync('src/index.css', 'utf8');
+    const block = sliceBetween(css, '/* ========= Toast Notifications ========= */', '/* ========= 오늘의 추천 자료 ========= */');
+    for (const kind of ['success', 'error', 'warning', 'info', 'celebrate']) {
+      const rule = block.match(new RegExp(`\\.toast--${kind}\\s*\\{([^}]*)\\}`))?.[1] || '';
+      const background = rule.match(/background:\s*([^;]*);/)?.[1] || '';
+      expect(background, `toast--${kind}`).toContain('var(--bg-elevated)');
+    }
+  });
 });
