@@ -13,11 +13,15 @@ import Button from '../components/Button';
 import AccountSettings from '../components/AccountSettings';
 import InstallPrompt from '../components/InstallPrompt';
 import { friendlyToastMessage } from '../lib/errorMessage';
+import { useViewerLanguage } from '../lib/useViewerLanguage';
+import { VIEWER_LOCALE_OPTIONS } from '../lib/viewerMessages';
 
 export default function MyPage() {
   const { user, profile, fetchProfile, signOut } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
+  // 내 언어 — 기기별 viewer_language:v1(ONB-001 D-L2). 화면 · 해설 언어를 같은 값으로 바꾼다.
+  const { uiLocale, setUiLocale, setExplanationLocale } = useViewerLanguage();
 
   const [editName, setEditName]           = useState('');
   const [editLanguages, setEditLanguages] = useState(['Japanese']);
@@ -206,10 +210,24 @@ export default function MyPage() {
               <input className="form-input" value={editName} onChange={e => setEditName(e.target.value)} maxLength={20} />
             </div>
             <div className="form-field">
+              <span className="form-label" id="mypage-my-language">내 언어</span>
+              <div className="toggle-group" role="radiogroup" aria-labelledby="mypage-my-language">
+                {VIEWER_LOCALE_OPTIONS.map(([locale, label]) => (
+                  <button key={locale} type="button" role="radio" aria-checked={uiLocale === locale} lang={locale}
+                    className={`toggle-btn ${uiLocale === locale ? 'toggle-btn--primary' : ''}`}
+                    onClick={() => { setUiLocale(locale); setExplanationLocale(locale); }}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="form-field">
               <label className="form-label">학습 언어 <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(복수 선택 가능)</span></label>
               <div className="toggle-group">
                 {/* 온보딩과 같은 4트랙. 첫 번째 언어가 홈 예보·오늘 학습 기본 언어가 된다. */}
-                {[['Japanese', '일본어'], ['English', '영어'], ['French', '프랑스어'], ['Chinese', '중국어']].map(([lang, label]) => (
+                {/* 한국어(준비 중)는 배열에 있거나 내 언어가 중국어일 때 보인다 — 배열에 있는데 안 보이는 값 금지(ONB-001). */}
+                {[['Japanese', '일본어'], ['English', '영어'], ['French', '프랑스어'], ['Chinese', '중국어'],
+                  ...(editLanguages.includes('Korean') || uiLocale !== 'ko' ? [['Korean', '한국어 (준비 중)']] : [])].map(([lang, label]) => (
                   <button key={lang} type="button"
                     aria-pressed={editLanguages.includes(lang)}
                     className={`toggle-btn ${editLanguages.includes(lang) ? 'toggle-btn--primary' : ''}`}

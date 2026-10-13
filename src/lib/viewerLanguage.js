@@ -56,6 +56,24 @@ export function textReadingSupported(info) {
   return info?.capabilities.text === 'supported' && info.capabilities.analysis === 'supported';
 }
 
+/**
+ * 「준비 중」 학습 언어 — 등록부에는 있으나 학습 과정(급수·복습·/study)이 아직 없는 언어(ONB-001 D-L4).
+ * 판정은 여기 하나다. 화면마다 따로 판정하지 않는다. 'Korean'은 `LEVELS`·`LANG_NAME_KO`에 넣지 않는다(오너 결정).
+ * 출시 언어(legacy · released)도, 등록부에 없는 값도 준비 중이 아니다.
+ */
+export function isPreparingLearningLanguage(language, registry = VIEWER_LANGUAGES) {
+  const info = typeof language === 'string' ? registry[language] : null;
+  if (!info) return false;
+  return !['legacy', 'released'].includes(info.releaseStatus) || info.capabilities.review !== 'supported';
+}
+
+/** 프로필의 주 언어(learning_language[0]). 배열이 아니던 옛 값도 읽는다. 폴백 없음 — 호출자가 정한다. */
+export function primaryLearningLanguage(profile) {
+  const value = profile?.learning_language;
+  const first = Array.isArray(value) ? value[0] : value;
+  return typeof first === 'string' && first ? first : null;
+}
+
 /** 알려진 DB 이름 또는 선언된 BCP47 태그만 매핑한다. 표기 추측/목표어 폴백은 없다. */
 export function viewerLanguageInfo(language, registry = VIEWER_LANGUAGES) {
   if (typeof language !== 'string') return null;

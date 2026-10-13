@@ -21,6 +21,8 @@ import { detectLang, langNameKo } from '@/lib/constants';
 import { canReadSuggestion, suggestionHref } from '@/lib/suggestionReading';
 import { fetchVocabularyLearningRows } from '@/lib/vocabularyLearningRows';
 import { isVocabularyReviewDue } from '@/lib/vocabularyLearningRead';
+import { isPreparingLearningLanguage } from '@/lib/viewerLanguage';
+import { PreparingLanguageLine } from '@/components/PreparingLanguageNotice';
 
 export async function fetchHomeData(userId, lang, nowMs = Date.now()) {
   // 전체 두 코호트를 같은 snapshot에서 합친 뒤 필터한다. 구형 due WHERE로 먼저 자르지 않는다.
@@ -66,6 +68,7 @@ export default function HomePage({ book = null }) {
   const local = useReadingProgress(book?.edition);
   const resume = bookResume(book, local.progress, local.hasProgress);
   const lang = (Array.isArray(profile?.learning_language) ? profile.learning_language[0] : profile?.learning_language) || 'Japanese';
+  const preparingLanguage = isPreparingLearningLanguage(lang); // ONB-001 D-L4 — 준비 중 언어는 일본어로 넘기지 않고 안내한다
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['home-v2', user?.id, lang], queryFn: () => fetchHomeData(user.id, lang),
     enabled: !!user && !authLoading, staleTime: 60000, refetchOnWindowFocus: true,
@@ -109,6 +112,7 @@ export default function HomePage({ book = null }) {
   return <div className="manabi-page manabi-today">
     <section className="today-opening" aria-label="오늘의 읽기">
       <div className="today-copy"><h1>오늘</h1>
+        {preparingLanguage && <PreparingLanguageLine />}
         {pending ? <div className="today-location" role="status">읽던 위치를 확인하고 있어요…</div> : <div className="today-location">
           <span className="today-location__number" aria-hidden="true">{activeMaterial || !resume ? '↗' : String(resume.lesson.number).padStart(2, '0')}</span>
           <div><small>{activeMaterial ? '내 서재 · 읽는 중' : resume ? `일본어 N5 · ${resume.total}과` : '교재'}</small><strong>{activeTitle || '교재 선택'}</strong></div>

@@ -5,6 +5,8 @@ import Link from 'next/link';
 import Button from '../components/Button';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
+import { PROFILE_LEVEL_COLUMN, profileLevel } from '../lib/constants';
+import { profileLevelForStudyKey, studyKeyForProfileLevel } from '../lib/onboardingPlan';
 
 /** 로컬 날짜 YYYY-MM-DD — StudySessionPage.ymdLocal과 동일 포맷(산출 시드 키 값 일치) */
 function ymdLocal(d) {
@@ -27,7 +29,9 @@ const INTEREST_OPTIONS = [
  * 서버는 coldStart만 판단하고, 표시 여부는 클라의 localStorage 가드(study_onboarded_<lang>)로 결정한다.
  * 온보딩을 건너뛰거나 마치면 children(조립된 StudySessionPage)을 그대로 렌더한다.
  *
- * 흐름: ① 지식 3택(처음/기초/배운적) → [문자 안내] → ② 관심사 4택 → 시작하기.
+ * 흐름: [수준 확인] → ① 지식 3택(처음/기초/배운적) → [문자 안내] → ② 관심사 4택 → 시작하기.
+ *  - 첫 방문 온보딩이 프로필 수준을 정했으면 ①을 확인 한 번으로 줄인다(ONB-001 D-O4). 「다른 수준 고르기」로
+ *    고르면 프로필 수준도 같이 고친다(정본 하나 — PROFILE_LEVEL_COLUMN). 수준이 없으면(프 · 중 null) 기존 3택.
  *  - '처음' + 문자 트랙(가나·병음) 보유 언어면 ②로 가기 전 문자 안내 단계를 한 번 끼운다(명시적 선택).
  *  - 백필 없음(처음): 가드만 기록하고 리로드 없이 세션 표시.
  *  - 백필 있음(기초/배운적): 건너뛴 레벨 챕터를 user_ref_progress에 upsert 후 reload(재료 재조립).
@@ -39,21 +43,28 @@ const INTEREST_OPTIONS = [
  *   children:React.ReactNode}} props
  */
 export default function StudyOnboarding({ lang, langName, levels = [], readKey = null, scriptTrack = null, children }) {
-  const { user } = useAuth();
-  const [phase, setPhase] = useState('loading'); // 'loading'|'q1'|'chars'|'q2'|'session'
+  const { user, profile, loading: authLoading } = useAuth();
+  const [phase, setPhase] = useState('loading'); // 'loading'|'confirm'|'q1'|'chars'|'q2'|'session'
+  const [revised, setRevised] = useState(false); // 확인 화면에서 「다른 수준 고르기」로 들어왔나
   const [knowledge, setKnowledge] = useState(null); // 'fresh'|'basics'|'learned'
   const [startKey, setStartKey] = useState(null);
   const [interest, setInterest] = useState(null);
   const [busy, setBusy] = useState(false);
 
+  const regular = levels.filter(l => !l.isIntro);
+  // 프로필 수준 → /study 레벨 키. 정규 레벨에 없는 값(옛 값 · 매핑 밖)이면 확인 화면을 띄우지 않는다.
+  const savedLevel = profileLevel(profile, lang);
+  const savedKey = regular.some(l => l.key === studyKeyForProfileLevel(savedLevel)) ? studyKeyForProfileLevel(savedLevel) : null;
+  const savedLabel = regular.find(l => l.key === savedKey)?.label || savedLevel;
+
   // 마운트 시 가드 확인 — 이미 온보딩했으면 세션 바로 렌더(서버는 coldStart만 판단).
+  // 프로필을 읽은 뒤에 정한다(확인형 여부가 프로필 수준에 달려 있다).
   useEffect(() => {
+    if (authLoading) return;
     let onboarded = false;
     try { onboarded = !!localStorage.getItem(`study_onboarded_${lang}`); } catch {}
-    setPhase(onboarded ? 'session' : 'q1');
-  }, [lang]);
-
-  const regular = levels.filter(l => !l.isIntro);
+    setPhase(prev => prev !== 'loading' ? prev : onboarded ? 'session' : savedKey ? 'confirm' : 'q1');
+  }, [lang, authLoading, savedKey]);
 
   // 시작 레벨보다 앞선 레벨(인트로 포함)의 전체 챕터 slug — 건너뛰기 백필 대상.
   function levelsBefore(key) {
@@ -83,9 +94,24 @@ export default function StudyOnboarding({ lang, langName, levels = [], readKey =
 
   const scriptNoun = scriptTrack?.kind === 'pinyin' ? '병음' : '가나';
 
+  // 확인 화면 「이대로 시작」 — 첫 급수면 「처음이에요」와 같은 길(문자 안내 포함), 아니면 그 급수부터.
+  function confirmSaved() {
+    if (savedKey === regular[0]?.key) chooseFresh();
+    else chooseLevel(savedKey);
+  }
+
+  // 「다른 수준 고르기」로 고른 급수를 프로필에도 쓴다. 매핑 밖(LIFE 등)이거나 같으면 쓰지 않는다. 실패는 무해.
+  async function syncProfileLevel() {
+    const column = PROFILE_LEVEL_COLUMN[lang];
+    const next = profileLevelForStudyKey(lang, startKey);
+    if (!revised || !column || !next || next === savedLevel || !user?.id) return;
+    try { await supabase.from('profiles').update({ [column]: next }).eq('id', user.id); } catch {}
+  }
+
   async function handleStart() {
     if (!interest || busy) return;
     setBusy(true);
+    await syncProfileLevel();
 
     // 관심사 — 쿠키(1년) + localStorage 백업. 실패는 무해.
     try {
@@ -136,6 +162,25 @@ export default function StudyOnboarding({ lang, langName, levels = [], readKey =
 
   return (
     <div className="page-container" style={{ maxWidth: 560, paddingTop: 40 }}>
+      {/* ── 수준 확인 (첫 방문 온보딩이 정한 급수) ── */}
+      {phase === 'confirm' && (
+        <>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: 6 }}>오늘의 학습 · {langName}</p>
+          <h1 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: 6 }}>
+            {langName}, {savedLabel}부터 시작할까요?
+          </h1>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 22 }}>
+            처음 들어올 때 고른 급수예요.
+          </p>
+          <Button onClick={confirmSaved} style={{ width: '100%' }}>이대로 시작</Button>
+          <p style={{ textAlign: 'center', marginTop: 12 }}>
+            <button type="button" className="study-textlink" onClick={() => { setRevised(true); setPhase('q1'); }}>
+              다른 수준 고르기
+            </button>
+          </p>
+        </>
+      )}
+
       {/* ── ① 지식 ── */}
       {phase === 'q1' && (
         <>

@@ -5,6 +5,8 @@ import { wordStage } from '../lib/growthStats';
 import { vocabularyRetrievability } from '../lib/vocabularyLearningRead';
 import { vocabularyReviewCalendar } from '../lib/vocabularyLearningRows';
 import { LEVELS, detectLang, langNameKo, profileLevel } from '../lib/constants';
+import { isPreparingLearningLanguage } from '../lib/viewerLanguage';
+import { PreparingLanguageLine } from '../components/PreparingLanguageNotice';
 
 /**
  * 급수별 누적 어휘 목표. 값은 우리가 정하는 게 아니라 **각 시험의 공표 수치**를 따른다
@@ -98,6 +100,8 @@ export default function VocabStats({ vocab, profile, section, projections = [], 
     profileLangs.includes(l) || vocab.some(v => (v.language === l) || (!v.language && detectLang(v.word_text) === l))
   );
 
+  // 준비 중 언어(한국어)만 배우는 계정 — 급수 체계가 없으니 일본어 급수 칸 대신 「준비 중」 한 줄(ONB-001 D-L4).
+  const preparingOnly = activeLangs.length === 0 && profileLangs.some(l => isPreparingLearningLanguage(l));
   const [levelLang, setLevelLang] = useState(activeLangs[0] || 'Japanese');
   const effLevelLang = activeLangs.includes(levelLang) ? levelLang : activeLangs[0];
 
@@ -109,6 +113,7 @@ export default function VocabStats({ vocab, profile, section, projections = [], 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* 레벨 진행도 + 급수 커버리지 통합 */}
+      {showLevels && preparingOnly && <PreparingLanguageLine />}
       {showLevels && activeLangs.length > 0 && effLevelLang && (() => {
         const meta = LANG_META[effLevelLang];
         const langVocab = getLangVocab(vocab, effLevelLang);
