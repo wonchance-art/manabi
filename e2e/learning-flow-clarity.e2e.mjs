@@ -84,5 +84,12 @@ test('language is the first review scope axis: list chips, count and start follo
   await sheet.getByRole('group',{name:'급수'}).count();await sheet.getByText('급수는 중국어만 고를 수 있어요. 일본어 N급은 준비 중이에요.',{exact:true}).waitFor();
   await check(f,'review-scope-sheet-390');
   await f.page.keyboard.press('Escape');await sheet.waitFor({state:'detached'});assert.equal(await add.evaluate(node=>node===document.activeElement),true);
+  // 명시 주소로 들어와 범위를 바꾸면 주소도 같은 범위가 되고, 새로고침해도 그 범위가 남는다 — 저장 설정은 그대로(M09 6152793665).
+  await f.page.goto('/vocab?lang=French',{waitUntil:'domcontentloaded',timeout:120000});
+  await languages.getByRole('button',{name:'일본어 1',exact:true}).click();
+  await f.page.waitForURL(url=>url.pathname==='/vocab'&&url.search==='?lang=Japanese');
+  await f.page.reload({waitUntil:'domcontentloaded'});
+  await languages.getByRole('button',{name:'일본어 1',exact:true}).waitFor();assert.equal(await languages.getByRole('button',{name:'일본어 1',exact:true}).getAttribute('aria-pressed'),'true');
+  assert.equal(await f.page.evaluate(()=>localStorage.getItem('vocab_reviewScope')),'lang=French');
  }finally{await f.context.close();}
 });

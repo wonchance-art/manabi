@@ -196,6 +196,20 @@ describe('호출 지점 — 개수는 countReviewScope 하나, 시작은 같은 
     expect(page).not.toMatch(/localStorage\.setItem\('vocab_(langFilter|levelFilter|seriesFilter)'/);
     expect(read('src/views/VocabList.jsx')).not.toContain("localStorage.setItem('vocab_langFilter'");
   });
+  it('명시 주소에서 범위를 바꾸면 주소도 같은 범위가 된다 — 새로고침해도 급수가 남는다(M09 6152793665)', () => {
+    const sync = sliceBetween(page, 'const entryUrlRef = useRef(null);', '}, [scopeDraft, explicitScope]);');
+    expect(sync).toContain('if (!explicitScope || !scopeDraft');
+    expect(sync).toContain('serializeReviewScope(scopeDraft, { returnTo: explicitScope.returnTo })');
+    expect(sync).toContain('window.history.replaceState(window.history.state, \'\', target)');
+    // 주소 → 범위 → 주소 왕복: 시트에서 HSK 3을 적용한 범위는 새로고침 때 같은 범위로 다시 읽힌다.
+    const applied = { lang: 'Chinese', level: 'H3', source: null, state: 'due' };
+    const href = serializeReviewScope(applied);
+    expect(href).toBe('/vocab?lang=Chinese&level=H3');
+    const reread = parseReviewScope(Object.fromEntries(new URL(href, 'http://x').searchParams));
+    expect(reread.explicit).toBe(true);
+    expect(reread.scope.level).toBe('H3');
+    expect(serializeReviewScope(reread.scope)).toBe(href);
+  });
   it('무효 주소는 닫힘 화면 — 시작 버튼 · 목록 없이 범위 풀기만', async () => {
     const { default: VocabPage } = await import('../../views/VocabPage');
     const html = renderToStaticMarkup(createElement(VocabPage, { reviewScope: parseReviewScope({ lang: 'Japanese', level: 'H2' }) }));
