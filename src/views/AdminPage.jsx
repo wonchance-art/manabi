@@ -98,6 +98,16 @@ async function fetchWorldReports() {
 }
 
 // ── Component ─────────────────────────────────────
+/** 목록 불러오기 실패 — 빈 목록(「총 0명」·「아직 … 없어요」)과 구분한다(WALL-STATES-001 ⑤). */
+function AdminLoadError({ what, onRetry }) {
+  return (
+    <div className="card" role="alert" style={{ padding: '20px' }}>
+      <p style={{ margin: '0 0 12px', color: 'var(--text-secondary)' }}>{what} 목록을 불러오지 못했어요.</p>
+      <Button variant="ghost" size="sm" onClick={() => onRetry()}>다시 시도</Button>
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const { user, isAdmin, loading } = useAuth();
   const [tab, setTab] = useState('users');
@@ -107,31 +117,31 @@ export default function AdminPage() {
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  const { data: users = [], isLoading: usersLoading } = useQuery({
+  const { data: users = [], isLoading: usersLoading, isError: usersError, refetch: refetchUsers } = useQuery({
     queryKey: ['admin-users'],
     queryFn: fetchAllUsers,
     enabled: isAdmin && tab === 'users',
   });
 
-  const { data: materials = [], isLoading: matsLoading } = useQuery({
+  const { data: materials = [], isLoading: matsLoading, isError: materialsError, refetch: refetchMaterials } = useQuery({
     queryKey: ['admin-materials'],
     queryFn: fetchAllMaterials,
     enabled: isAdmin && tab === 'materials',
   });
 
-  const { data: sources = [], isLoading: sourcesLoading } = useQuery({
+  const { data: sources = [], isLoading: sourcesLoading, isError: sourcesError, refetch: refetchSources } = useQuery({
     queryKey: ['admin-sources'],
     queryFn: fetchContentSources,
     enabled: isAdmin && tab === 'sources',
   });
 
-  const { data: overrides = [], isLoading: overridesLoading } = useQuery({
+  const { data: overrides = [], isLoading: overridesLoading, isError: overridesError, refetch: refetchOverrides } = useQuery({
     queryKey: ['admin-overrides'],
     queryFn: fetchContentOverrides,
     enabled: isAdmin && tab === 'overrides',
   });
 
-  const { data: reports = [], isLoading: reportsLoading } = useQuery({
+  const { data: reports = [], isLoading: reportsLoading, isError: reportsError, refetch: refetchReports } = useQuery({
     queryKey: ['admin-world-reports'],
     queryFn: fetchWorldReports,
     enabled: isAdmin && tab === 'reports',
@@ -249,9 +259,11 @@ export default function AdminPage() {
     });
   };
 
-  const confirmDelete = (label, onConfirm) => {
+  // 확인창 제목은 질문(문구 표준 §2) — 이름 뒤에 종류 명사를 붙여 조사를 고정한다(괄호 조사 하드코딩 제거).
+  const confirmDelete = (title, onConfirm) => {
     setConfirmAction({
-      message: `정말 "${label}"을(를) 삭제하시겠습니까?`,
+      title,
+      message: '삭제하면 되돌릴 수 없어요.',
       onConfirm: () => { onConfirm(); setConfirmAction(null); },
     });
   };
@@ -369,7 +381,7 @@ export default function AdminPage() {
 
       {/* ── 유저 관리 ── */}
       {tab === 'users' && (
-        usersLoading ? <Spinner message="유저 목록 로딩 중..." /> : (
+        usersLoading ? <Spinner message="유저 목록 불러오는 중…" /> : usersError ? <AdminLoadError what="유저" onRetry={refetchUsers} /> : (
           <div className="admin-table-wrap">
             <div className="admin-table-header">
               <span>총 {users.length}명</span>
@@ -420,7 +432,7 @@ export default function AdminPage() {
 
       {/* ── 자료 관리 ── */}
       {tab === 'materials' && (
-        matsLoading ? <Spinner message="자료 목록 로딩 중..." /> : (
+        matsLoading ? <Spinner message="자료 목록 불러오는 중…" /> : materialsError ? <AdminLoadError what="자료" onRetry={refetchMaterials} /> : (
           <div className="admin-table-wrap">
             {/* 책 단위 정제(v2-AB R0) — 내 책 묶음만 후보로 보인다(RPC가 소유자만 받는다) */}
             <BookRefinePanel
@@ -464,7 +476,7 @@ export default function AdminPage() {
                           size="sm"
                           variant="danger"
                           disabled={deleteMaterialMutation.isPending}
-                          onClick={() => confirmDelete(m.title, () => deleteMaterialMutation.mutate(m.id))}
+                          onClick={() => confirmDelete(`「${m.title}」 자료를 삭제할까요?`, () => deleteMaterialMutation.mutate(m.id))}
                         >
                           삭제
                         </Button>
@@ -480,7 +492,7 @@ export default function AdminPage() {
 
       {/* ── 콘텐츠 소스 관리 ── */}
       {tab === 'sources' && (
-        sourcesLoading ? <Spinner message="소스 목록 로딩 중..." /> : (
+        sourcesLoading ? <Spinner message="소스 목록 불러오는 중…" /> : sourcesError ? <AdminLoadError what="소스" onRetry={refetchSources} /> : (
           <div>
             <div className="admin-table-header" style={{ marginBottom: '16px' }}>
               <span>총 {sources.length}개 소스</span>
@@ -612,7 +624,7 @@ export default function AdminPage() {
                               size="sm"
                               variant="danger"
                               disabled={deleteSourceMutation.isPending}
-                              onClick={() => confirmDelete(s.name, () => deleteSourceMutation.mutate(s.id))}
+                              onClick={() => confirmDelete(`「${s.name}」 소스를 삭제할까요?`, () => deleteSourceMutation.mutate(s.id))}
                             >
                               삭제
                             </Button>
@@ -630,7 +642,7 @@ export default function AdminPage() {
 
       {/* ── 콘텐츠 오버라이드 관리 ── */}
       {tab === 'overrides' && (
-        overridesLoading ? <Spinner message="수정본 목록 로딩 중..." /> : (
+        overridesLoading ? <Spinner message="수정본 목록 불러오는 중…" /> : overridesError ? <AdminLoadError what="수정본" onRetry={refetchOverrides} /> : (
           <div>
             <Link href="/admin/legacy-textbooks" className="btn btn--ghost" style={{ marginRight: 12, marginBottom: 16 }}>기존 교재 보관함</Link>
             <Link href="/admin/textbooks" className="btn btn--primary" style={{ marginBottom: 16 }}>교재 편집 열기</Link>
@@ -681,7 +693,7 @@ export default function AdminPage() {
                               size="sm"
                               variant="danger"
                               disabled={deleteOverrideMutation.isPending}
-                              onClick={() => confirmDelete(`${o.lang} · ${o.slug} 수정본`, () => deleteOverrideMutation.mutate({ lang: o.lang, slug: o.slug }))}
+                              onClick={() => confirmDelete(`「${o.lang} · ${o.slug}」 수정본을 삭제할까요?`, () => deleteOverrideMutation.mutate({ lang: o.lang, slug: o.slug }))}
                             >
                               복원(삭제)
                             </Button>
@@ -699,7 +711,7 @@ export default function AdminPage() {
 
       {/* ── 월드 신고 (열람 전용) ── */}
       {tab === 'reports' && (
-        reportsLoading ? <Spinner message="신고 목록 로딩 중..." /> : (
+        reportsLoading ? <Spinner message="신고 목록 불러오는 중…" /> : reportsError ? <AdminLoadError what="신고" onRetry={refetchReports} /> : (
           <div>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.6 }}>
               학습 월드에서 접수된 신고 목록이에요(world_reports). 지금은 열람만 가능해요 —
@@ -744,7 +756,10 @@ export default function AdminPage() {
 
       <ConfirmModal
         open={!!confirmAction}
+        title={confirmAction?.title}
         message={confirmAction?.message}
+        confirmLabel="삭제"
+        variant="danger"
         onConfirm={confirmAction?.onConfirm}
         onCancel={() => setConfirmAction(null)}
       />

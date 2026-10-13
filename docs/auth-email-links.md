@@ -18,6 +18,12 @@
 | Change Email Address | `supabase/templates/email_change.html` | 새 이메일 주소를 확인해 주세요 |
 | Reset Password | `supabase/templates/recovery.html` | 비밀번호 재설정 링크 |
 
+- **이 표가 메일 제목의 저장소 정본이다**(WALL-STATES-001 ⑨). 제목은 Supabase 대시보드에만 저장되므로, 대시보드에서 제목을
+  바꾸려면 이 표를 먼저 고치고 같은 값을 붙여 넣는다. `supabase/templates/`에 템플릿 파일을 더하면 이 표에도 줄을 더해야
+  `authEmailSubjects.test.js`가 통과한다(파일↔표 양방향 대조). `supabase/config.toml`의 `[auth.email.template.*]`에 두지
+  않은 이유: 그 파일은 운영 마이그레이션 워크플로(`supabase db push`, CLI `latest`)가 읽는 설정이라 템플릿 항목을 더하면
+  마이그레이션을 적용할 때마다 `content_path` 검증이 운영 파이프라인에 얹히고, `supabase config push`를 누가 실행하면 이 최소 설정으로
+  다른 인증 설정까지 기본값으로 덮인다.
 - 제목에 `[manabi]`를 붙이지 않는다 — 보낸 사람 이름이 이미 manabi다.
 - **「OO님,」은 재설정·이메일 변경 메일에만 넣는다.** 가입 인증·로그인 링크 메일은 아직 확인되지 않은 주소로 가고,
   `display_name`은 가입하는 쪽이 마음대로 적는 값이다. 남의 주소로 가입하면서 닉네임에 「계정이 정지됐습니다 ○○로 접속」 같은

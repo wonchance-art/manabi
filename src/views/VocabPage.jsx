@@ -19,7 +19,7 @@ import OfflineNotice, { PendingReviewsNotice } from '../components/OfflineNotice
 import ConfirmModal from '../components/ConfirmModal';
 import VocabList from './VocabList';
 import VocabularyExclusionList from '../components/VocabularyExclusionList';
-import VocabReview from './VocabReview';
+import VocabReview, { REVIEW_PREP_FAILED } from './VocabReview';
 import VocabDetailCard from './VocabDetailCard';
 import { CardGridSkeleton } from '../components/Skeleton';
 import { friendlyToastMessage } from '../lib/errorMessage';
@@ -831,9 +831,9 @@ function VocabWorkspace({ bookReview }) {
     setReviewFinished(false);
     setTypingAnswer('');
     setContextSelected(null);
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
+    // 알림 권한은 여기서 묻지 않는다(WALL-STATES-001 ⑥) — 복습을 시작할 때마다 설명 없이 묻던 자리라,
+    // 한 번 거부하면 학습 끝의 푸시 안내(StudySessionPage 「내일 이야기가 도착하면 알려드릴까요?」)와
+    // 내 정보의 알림 켜기까지 막혔다. 권한은 그 두 곳에서 사용자가 고른 뒤에만 요청한다.
   };
 
   // 복습 예정(학습한 단어) 먼저, 그다음 하루 한도 내 새 단어
@@ -987,7 +987,7 @@ function VocabWorkspace({ bookReview }) {
       {/* 네트워크가 죽어 캐시 스냅샷으로 살아난 화면임을 알린다(v2-N R1) */}
       {isOffline && <OfflineNotice what="단어장" />}
       {admission.error && tab !== 'review' && <div role="alert" className="card">
-        <p>복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.</p>
+        <p>{REVIEW_PREP_FAILED}</p>
         <Button variant="ghost" onClick={() => admission.controller.retryConfiguration().catch(() => {})}>다시 시도</Button>
       </div>}
       <PendingReviewsNotice count={pendingReviewCount} />
@@ -1064,7 +1064,7 @@ function VocabWorkspace({ bookReview }) {
             {!bookReview && <p className="review-room-scope">복습 범위 · {seriesFilter === 'all' ? '전체 표현' : availableSeries.find(x => x.key === seriesFilter)?.label ?? seriesFilter}</p>}
             {reviewQueue.length > reviewIdx && !reviewFinished && <button type="button" className="review-room-resume" onClick={() => setTab('review')}>멈춘 복습 이어가기 · {reviewIdx} / {reviewQueue.length} →</button>}
             {vocabError && <p role="alert">최신 표현을 확인하지 못했어요. <button type="button" onClick={() => refetchVocab()}>다시 불러오기</button></p>}
-            {fsrsReview.status === 'error' && <p role="alert">복습 일정을 확인하고 있어요… <button type="button" onClick={() => fsrsReview.controller.refresh()}>다시 시도</button></p>}
+            {fsrsReview.status === 'error' && <p role="alert">복습 일정을 불러오지 못했어요. <button type="button" onClick={() => fsrsReview.controller.refresh()}>다시 시도</button></p>}
             {fsrsReview.error?.message === 'fsrs_sync_blocked' && <p role="alert">복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.
               <button type="button" onClick={() => fsrsReview.controller.retrySync()}>다시 시도</button>
             </p>}
@@ -1390,7 +1390,10 @@ function VocabWorkspace({ bookReview }) {
 
       <ConfirmModal
         open={!!confirmAction}
+        title={confirmAction?.title}
         message={confirmAction?.message}
+        confirmLabel="삭제"
+        variant="danger"
         onConfirm={confirmAction?.onConfirm}
         onCancel={() => setConfirmAction(null)}
       />
