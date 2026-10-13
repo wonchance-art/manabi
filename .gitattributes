@@ -1,0 +1,2 @@
+# 정본 문학책 원문 — entry.json의 textSha256이 커밋된 바이트를 대조한다(scripts/build-literature.mjs). 줄바꿈 변환 금지.
+src/content/literature/aozora/*/source.txt -text
