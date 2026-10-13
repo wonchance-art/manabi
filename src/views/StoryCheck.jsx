@@ -276,7 +276,7 @@ function StoryQuestion({ q, langCode }) {
       )}
       {result?.ok && (
         <div className="fr-quiz__answer">
-          ○ {q.why || '정답입니다.'}{result.tries > 1 ? ` (${result.tries}회 시도)` : ''}
+          ○ {q.why || '정답이에요.'}{result.tries > 1 ? ` (${result.tries}회 시도)` : ''}
           {q.qtype === 'order' && q.ko && (
             <div style={{ marginTop: 4 }}>
               <span lang="ja" style={{ fontWeight: 700 }}>{(q.answerTiles || []).join('')}</span>

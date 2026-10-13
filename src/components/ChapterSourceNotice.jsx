@@ -20,6 +20,6 @@ export default function ChapterSourceNotice({ revision }) {
   if (!changed && !missing) return null;
   return <p role="status" className="card" style={{ padding: '12px 16px', lineHeight: 1.7 }}>
     {missing ? '예문의 위치가 바뀌었어요. 이 단원에서 최신 설명을 확인해 주세요.'
-      : '복습을 시작한 뒤 교재 내용이 수정됐어요. 지금은 최신 내용을 보고 있습니다.'}
+      : '복습을 시작한 뒤 교재 내용이 수정됐어요. 지금은 최신 내용을 보고 있어요.'}
   </p>;
 }

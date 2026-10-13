@@ -51,7 +51,7 @@ export function ChapterNotes({user,teamKey,chapter}) {
  // 조회가 실패해도 이 기기의 저장 대기분은 보여 준다 — 보관돼 있다는 사실이 복구의 출발점이다.
  return <div className="class-textbook-notes__body">
   {loading&&<p className="classroom-status" role="status">교재 설명을 불러오는 중…</p>}
-  {failed&&<p className="classroom-notice" role="alert">교재 설명을 불러오지 못했어요. <button onClick={()=>{query.refetch();text.refetch();}}>다시 확인</button></p>}
+  {failed&&<p className="classroom-notice" role="alert">교재 설명을 불러오지 못했어요. <button onClick={()=>{query.refetch();text.refetch();}}>다시 시도</button></p>}
   {ready&&!placed.length&&!unplaced.length&&<p className="class-textbook-notes__empty">이 과에는 아직 교재 설명이 없어요.</p>}
   {ready&&placed.map(({row})=><article key={row.id}>
    <q>{row.anchor.exact}</q>
@@ -60,7 +60,7 @@ export function ChapterNotes({user,teamKey,chapter}) {
    {canEdit&&<NoteHistory history={history} id={row.id}/>}
   </article>)}
   {ready&&editor&&!editingPlaced&&<article><q>{editor.anchor?.exact}</q>{form}</article>}
-  {pending&&<div className="classroom-notice" role="status"><p>{pending.conflict?'다른 수정과 겹쳤어요. 입력은 보관돼 있습니다.':'이 기기에 보관됨 · 서버 저장 확인 대기'}</p><pre>{pending.annotation.body}</pre>{pending.conflict?<button disabled={busy} onClick={()=>resolveConflict(setEditor)}>최신 내용 확인하고 다시 편집</button>:<button disabled={busy} onClick={retry}>저장 재시도</button>}</div>}
+  {pending&&<div className="classroom-notice" role="status"><p>{pending.conflict?'다른 수정과 겹쳤어요. 입력은 보관돼 있어요.':'이 기기에 보관됨 · 서버 저장 확인 대기'}</p><pre>{pending.annotation.body}</pre>{pending.conflict?<button disabled={busy} onClick={()=>resolveConflict(setEditor)}>최신 내용 확인하고 다시 편집</button>:<button disabled={busy} onClick={retry}>저장 재시도</button>}</div>}
   {message&&<p className="classroom-status" role="status">{message}</p>}
   {ready&&canEdit&&archived.length>0&&<details><summary>보관한 설명 {archived.length}개</summary>{archived.map(({row,location})=><article key={row.id}><q>{row.anchor.exact}</q><p>{row.body}</p>{location?<button className="classroom-text-button" disabled={locked||!!editor} onClick={()=>save(textbookSaveRequest(row,{archived:false}))}>다시 표시</button>:<small>원문 위치가 바뀌어 다시 표시할 수 없어요.</small>}</article>)}</details>}
   {ready&&unplaced.length>0&&<details><summary>원문 위치 확인이 필요한 설명 {unplaced.length}개</summary><p className="class-textbook-notes__hint">수업 화면에서 원문을 선택해 다시 연결해 주세요.</p>{unplaced.map(({row})=><article key={row.id}><q>{row.anchor.exact}</q><p>{row.body}</p></article>)}</details>}

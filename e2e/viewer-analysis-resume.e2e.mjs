@@ -95,7 +95,7 @@ try {
  assert(Math.abs(topBefore-topAfter)<160,`reading position moved ${topAfter-topBefore}px`);await pass('reading during recovery keeps the same source near the viewport');
  for(const failure of ['fail','conflict']) {
   material=original();mode=failure;await open(failure);const snapshot=structuredClone(material);
-  await resume().click();await page.getByText(/분석 실패:/).waitFor();await resume().waitFor();assert.deepEqual(material,snapshot);await pass(failure+' keeps prior source and enables retry');
+  await resume().click();await page.getByText(/분석하지 못했어요\. /).waitFor();await resume().waitFor();assert.deepEqual(material,snapshot);await pass(failure+' keeps prior source and enables retry');
  }
  material=original();mode='success';material.processed_json.status='completed';await open('completed-but-missing');await resume().click();await page.waitForFunction(()=>!document.querySelector('.analyzing-banner'));await pass('completed status with missing text offers recovery');
  material.processed_json.status='analyzing';material.processed_json.metadata.updated_at='2026-01-01';await open('status-only');const previousCalls=calls;await resume().click();await page.waitForFunction(()=>!document.querySelector('.analyzing-banner'));assert.equal(calls,previousCalls);await pass('status-only recovery makes no AI request');

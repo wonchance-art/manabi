@@ -316,7 +316,7 @@ export default function VocabList({
           <div className="empty-state">
             <p className="empty-state__msg">
               {search
-                ? '검색 결과가 없습니다.'
+                ? '검색 결과가 없어요.'
                 : '아직 수집한 단어가 없어요'}
             </p>
             {!search && (
@@ -406,7 +406,7 @@ export default function VocabList({
                 disabled={updateVocabMutation?.isPending || !canModify(vocab.find(word => word.id === editing.id))}
                 style={{ flex: 2 }}
               >
-                {updateVocabMutation?.isPending ? '저장 중...' : '저장'}
+                {updateVocabMutation?.isPending ? '저장 중…' : '저장'}
               </Button>
             </div>
           </div>

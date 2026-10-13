@@ -46,7 +46,7 @@ export async function requireAdmin() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: '로그인이 필요합니다.', status: 401 };
+  if (!user) return { error: '로그인이 필요해요.', status: 401 };
 
   const { data: profile, error } = await supabase
     .from('profiles')
@@ -54,7 +54,7 @@ export async function requireAdmin() {
     .eq('id', user.id)
     .single();
   if (error || profile?.role !== 'admin') {
-    return { error: '관리자 권한이 필요합니다.', status: 403 };
+    return { error: '관리자 권한이 필요해요.', status: 403 };
   }
 
   return { supabase, user };
@@ -73,7 +73,7 @@ export async function requireUser() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: '로그인이 필요합니다.', status: 401 };
+  if (!user) return { error: '로그인이 필요해요.', status: 401 };
 
   return { supabase, user };
 }

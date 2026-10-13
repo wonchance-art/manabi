@@ -489,7 +489,7 @@ function DdayTile({ refManifest }) {
         // 조용히 삼키면 "과정을 골랐는데 궤도가 안 뜬다"가 된다 — 무엇이 저장됐는지 말한다.
         if (!error && (nextLang || nextLevel)) toast('날짜는 저장했어요 — 목표 과정은 아직 준비 중이에요', 'info');
       }
-      if (error) toast('동기화 실패 — 이 기기에는 저장됐어요', 'error');
+      if (error) toast('동기화하지 못했어요. 이 기기에는 저장됐어요.', 'error');
       else fetchProfile(user.id, user.user_metadata);
     }
     setBusy(false);
@@ -543,7 +543,7 @@ function DdayTile({ refManifest }) {
           <div style={{ display: 'flex', gap: 8 }}>
             <Button size="sm" onClick={() => persist(date, label.trim(), goalLang, goalLang ? goalLevel : '')}
               disabled={!date || busy} style={{ flex: 1 }}>
-              {busy ? '저장 중...' : '저장'}
+              {busy ? '저장 중…' : '저장'}
             </Button>
             {dday && <Button size="sm" variant="secondary" onClick={() => persist('', '', '', '')} disabled={busy} style={{ flex: 1 }}>삭제</Button>}
           </div>
