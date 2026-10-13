@@ -31,7 +31,7 @@ export function readingCatalog(book) {
     edition: book.editionId,
     title: book.manuscript.title,
     subtitle: book.manuscript.subtitle,
-    lessons: book.manuscript.lessons.map(({ id, number, part, title, subtitle, goal, patterns, duration }) => ({ id, number, part, title, subtitle, goal, duration, quote: patterns?.[0]?.examples?.[0] || null })),
+    lessons: book.manuscript.lessons.map(({ id, number, part, title, title_ja: titleJa, subtitle, goal, patterns, duration }) => ({ id, number, part, title, titleJa: titleJa || null, subtitle, goal, duration, quote: patterns?.[0]?.examples?.[0] || null })),
     cultures: book.manuscript.cultures.map(({ id, title, lead, after }) => ({ id, title, lead, after })),
   };
 }

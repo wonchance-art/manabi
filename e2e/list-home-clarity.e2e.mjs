@@ -15,8 +15,8 @@ const go=(f,path)=>f.page.goto(path,{waitUntil:'domcontentloaded',timeout:120000
 
 test('new guest can start the published book and use its tools without two identical first-lesson actions',async()=>{
  const f=await fixture({guest:true,width:320});try{
-  await go(f,'/home');await f.page.getByRole('heading',{name:'오늘',exact:true}).waitFor();
-  const start=f.page.getByRole('link',{name:'첫 페이지 열기',exact:true});await start.waitFor();
+  await go(f,'/home');await f.page.getByRole('heading',{name:'배움',exact:true}).waitFor();
+  const start=f.page.locator('a.learn-resume').filter({hasText:'첫 페이지 열기'});await start.waitFor();
   assert.match(await start.getAttribute('href'),new RegExp(`${edition}#u01-start`));await capture(f,'home-new-320');
   await go(f,'/lessons');await f.page.getByRole('link',{name:'공부 시작하기 →',exact:true}).waitFor();
   await f.page.getByRole('button',{name:'영어',exact:true}).click();
@@ -33,7 +33,7 @@ test('new guest can start the published book and use its tools without two ident
 test('returning reader keeps exact edition/page and can restart only when that is a different destination',async()=>{
  const f=await fixture({guest:true,width:390});try{
   await f.context.addInitScript(({edition})=>localStorage.setItem(`manabi-book-progress:${edition}:guest`,JSON.stringify({page:'u42-message-reading',completed:['u01'],updatedAt:new Date().toISOString()})),{edition});
-  await go(f,'/home');const next=f.page.getByRole('link',{name:'이어서 읽기',exact:true});await next.waitFor();
+  await go(f,'/home');const next=f.page.locator('a.learn-resume').filter({hasText:'이어서 읽기'});await next.waitFor();
   assert.match(await next.getAttribute('href'),new RegExp(`${edition}#u42-message-reading`));await capture(f,'home-returning-390');
   await go(f,`/books/japanese-n5?edition=${edition}`);
   const resume=f.page.getByRole('link',{name:'42과 이어 읽기 →',exact:true});await resume.waitFor();
@@ -44,24 +44,19 @@ test('returning reader keeps exact edition/page and can restart only when that i
  }finally{await f.context.close();}
 });
 
-test('home separates no expressions, not-yet-due expressions, due work and failed data with retry',async()=>{
+test('learn review tile separates no expressions and failed data with retry, without writes',async()=>{
+ // 배움(LEARN-HOME-AK-001): 「복습」 문단 대신 단어 복습 칸. 숫자는 countReviewScope(계약), 여기서는 빈 상태 · 실패 · 다시 시도만 본다.
  const f=await fixture({width:1280});try{
-  let state='empty',writes=0;
-  await f.context.route('**/rest/v1/user_vocabulary*',r=>{
+  let failing=false,writes=0;
+  await f.context.route('**/api/learning/vocabulary**',r=>{
    const req=r.request();if(!['GET','HEAD','OPTIONS'].includes(req.method()))writes++;
-   const headers={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'GET,HEAD,OPTIONS','access-control-expose-headers':'content-range'};
-   if(req.method()==='OPTIONS')return r.fulfill({status:204,headers});
-   if(state==='error')return r.fulfill({status:503,headers,contentType:'application/json',body:JSON.stringify({message:'fixture unavailable'})});
-   if(req.method()==='HEAD')return r.fulfill({status:200,headers:{...headers,'content-range':`*/${state==='due'?1:0}`}});
-   return r.fulfill({status:200,headers,contentType:'application/json',body:JSON.stringify(state==='empty'?[]:[{word_text:'駅',language:'Japanese',interval:1,last_reviewed_at:null}])});
+   if(failing&&req.method()==='GET')return r.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,error:'fixture unavailable'})});
+   return r.continue();
   });
-  for(const [value,message] of [['empty','예문 아래 ‘예문 담기’로 시작해 보세요.'],['scheduled','지금 복습할 표현이 없어요.'],['due','복습할 표현이 있어요. 오늘 분량은 복습에서 확인해 주세요.']]){
-   state=value;await go(f,'/home');await f.page.locator('.today-review').getByText(message,{exact:true}).waitFor();
-   assert.equal(await f.page.locator('.today-review').getByRole('link',{name:'복습',exact:true}).getAttribute('href'),'/vocab');
-   await capture(f,`home-${value}-1280`);
-  }
-  state='error';await go(f,'/home');await f.page.getByRole('button',{name:'다시 시도',exact:true}).waitFor({timeout:30000});await capture(f,'home-error-1280');
-  state='scheduled';await f.page.getByRole('button',{name:'다시 시도',exact:true}).click();await f.page.getByText('지금 복습할 표현이 없어요.',{exact:true}).waitFor();
+  await go(f,'/home');const tile=f.page.locator('a.learn-review');await tile.waitFor();
+  await capture(f,'home-review-tile-1280');
+  failing=true;await go(f,'/home');await f.page.getByRole('button',{name:'다시 시도',exact:true}).waitFor({timeout:30000});await capture(f,'home-error-1280');
+  failing=false;await f.page.getByRole('button',{name:'다시 시도',exact:true}).click();await f.page.locator('.manabi-inline-state[role=alert]').waitFor({state:'detached'});
   assert.equal(writes,0);
  }finally{await f.context.close();}
 });
