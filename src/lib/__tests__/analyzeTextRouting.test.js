@@ -35,7 +35,7 @@ describe('analyzeText ↔ /api/analyze 언어 집합 정합', () => {
   });
 
   it('서버 토크나이저가 3언어 모두 배선돼 있다', () => {
-    const route = read('src/app/api/analyze/route.js');
+    const route = read('src/lib/server/analyzeCore.js'); // 분석 핵심(v2-Z Z-R1 ①에서 라우트 밖으로)
     expect(route).toContain('tokenizeJaLine');
     expect(route).toContain('tokenizeEnLine');
     expect(route).toContain('tokenizeZhLine');

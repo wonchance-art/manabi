@@ -568,7 +568,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         this.enteringCorridor = false;
         this.inputLocked = false;
         this.refreshNearInteraction(true);
-        ctx.setStatus?.({ phase: 'error', message: '플랫폼 저장에 실패했어요. 연결을 확인해 주세요.' });
+        ctx.setStatus?.({ phase: 'error', message: '플랫폼을 저장하지 못했어요. 연결을 확인해 주세요.' });
         return false;
       }
       ctx.setStatus?.(null);
@@ -699,7 +699,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         this.leavingByAir = false;
         this.inputLocked = false;
         this.refreshNearInteraction(true);
-        ctx.setStatus?.({ phase: 'error', message: '귀환 위치 저장에 실패했어요. 연결을 확인해 주세요.' });
+        ctx.setStatus?.({ phase: 'error', message: '귀환 위치를 저장하지 못했어요. 연결을 확인해 주세요.' });
         return false;
       }
       ctx.setStatus?.(null);

@@ -10,12 +10,12 @@ export default function ViewerError({ error, reset }) {
   const isAnalyzing = error?.message?.includes('analyzing') || error?.message?.includes('분석');
 
   const config = isNotFound
-    ? { icon: '', title: '자료를 찾을 수 없습니다', desc: '삭제되었거나 잘못된 링크일 수 있어요.' }
+    ? { icon: '', title: '자료를 찾을 수 없어요', desc: '삭제됐거나 잘못된 링크일 수 있어요.' }
     : isNetwork
-    ? { icon: '', title: '네트워크 연결 오류', desc: '인터넷 연결을 확인한 후 다시 시도해주세요.' }
+    ? { icon: '', title: '인터넷 연결을 확인해 주세요', desc: '연결되면 다시 시도해 주세요.' }
     : isAnalyzing
-    ? { icon: '', title: 'AI가 아직 분석 중입니다', desc: '잠시 후 다시 시도해주세요. 분석에는 수십 초가 걸릴 수 있어요.' }
-    : { icon: '', title: '콘텐츠를 불러올 수 없습니다', desc: '잠시 후 다시 시도해 주세요.' };
+    ? { icon: '', title: 'AI가 아직 분석하고 있어요', desc: '분석에는 수십 초가 걸릴 수 있어요. 잠시 후 다시 시도해 주세요.' }
+    : { icon: '', title: '자료를 불러오지 못했어요', desc: '잠시 후 다시 시도해 주세요.' };
 
   return (
     <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>

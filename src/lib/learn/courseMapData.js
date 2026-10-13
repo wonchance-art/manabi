@@ -171,7 +171,7 @@ function buildVocabularyOnlyMap(course, vocab, track, definition, level) {
       grammar: {
         concepts: [`${definition.label} 생활 어휘`],
         chapterRefs: [],
-        explanation: '기존 레벨별 어휘 학습 페이지로 연결됩니다.',
+        explanation: '기존 레벨별 어휘 학습 페이지로 연결돼요.',
       },
       vocabulary: vocabularyForThemes([theme], definition.language),
       exercises: [],

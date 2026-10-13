@@ -23,7 +23,7 @@ export async function saveImportOnce(client, attempt) {
     attempt.uncertain = true;
     const { data, error } = await client.from('reading_materials').insert([row]).select('id');
     if (error) throw error;
-    if (!data?.[0]?.id) throw new Error('저장 결과를 확인하지 못했어요. 다시 시도하면 같은 요청을 확인합니다.');
+    if (!data?.[0]?.id) throw new Error('저장 결과를 확인하지 못했어요. 다시 시도하면 같은 요청을 확인해요.');
     return (attempt.record = { ...row, id: data[0].id });
   })();
   try { return await attempt.pending; } finally { attempt.pending = null; }

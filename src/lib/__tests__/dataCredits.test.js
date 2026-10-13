@@ -32,6 +32,7 @@ function walk(dir, out = []) {
 const MARKERS = [
   { re: /CC-CEDICT/, id: 'cc-cedict' },
   { re: /ivankra\/hsk30/, id: 'hsk30' },
+  { re: /HSK 考试大纲/, id: 'hsk-syllabus-2026' },
   { re: /drkameleon\/complete-hsk-vocabulary/, id: 'complete-hsk-vocabulary' },
   { re: /kuromoji/, id: 'kuromoji-ipadic' },
   { re: /open-anki-jlpt-decks/, id: 'open-anki-jlpt-decks' },

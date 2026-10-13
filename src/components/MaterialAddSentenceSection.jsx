@@ -268,7 +268,7 @@ export default function MaterialAddSentenceSection({
                   border: '1px solid var(--primary)', borderRadius: 'var(--radius-md)',
                 }}
               >
-                📘 원어·뜻이 번갈아 있어요 → <strong style={{ color: 'var(--text-primary)' }}>원어만 담고 뜻은 드래그 번역에 붙입니다</strong>
+                📘 원어·뜻이 번갈아 있어요 → <strong style={{ color: 'var(--text-primary)' }}>원어만 담고 뜻은 드래그 번역에 붙여요</strong>
                 {' '}· {summarizeSplit(stats)}
                 {stats.unassigned > 0 && ' — 미배정 줄은 담기지 않아요(원어 줄 바로 아래에 두면 짝이 돼요)'}
               </p>

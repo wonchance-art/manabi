@@ -18,7 +18,7 @@ const themes = {
         { zh: "报到", pinyin: "bàodào", ko: "등록하다, 체크인하다", pos: "동사", ex: { zh: "新生今天来学校报到。", pinyin: "Xīnshēng jīntiān lái xuéxiào bàodào.", ko: "신입생이 오늘 학교에 등록하러 왔어요." } },
         { zh: "北部", pinyin: "běibù", ko: "북부", pos: "명사", ex: { zh: "他住在城市的北部。", pinyin: "Tā zhù zài chéngshì de běibù.", ko: "그는 도시의 북부에 살아요." } },
         { zh: "背后", pinyin: "bèihòu", ko: "뒤, 배후", pos: "명사", ex: { zh: "有人在他背后说他坏话。", pinyin: "Yǒu rén zài tā bèihòu shuō tā huàihuà.", ko: "누군가 그의 뒤에서 그를 험담해요." } },
-        { zh: "本事", pinyin: "běnshì", ko: "원작, 본래 이야기", pos: "명사", ex: { zh: "这部电影的本事来自一部小说。", pinyin: "Zhè bù diànyǐng de běnshì láizì yí bù xiǎoshuō.", ko: "이 영화의 원작 이야기는 한 소설에서 비롯되었어요." } },
+        { zh: "本事", pinyin: "běnshi", ko: "능력, 재주", pos: "명사", ex: { zh: "他很有本事。", pinyin: "Tā hěn yǒu běnshi.", ko: "그는 능력이 아주 좋아요." } },
         { zh: "变为", pinyin: "biànwéi", ko: "~로 변하다, ~이 되다", pos: "동사", ex: { zh: "沙漠逐渐变为绿洲。", pinyin: "Shāmò zhújiàn biànwéi lǜzhōu.", ko: "사막이 점차 오아시스로 변했어요." } },
         { zh: "标题", pinyin: "biāotí", ko: "제목, 표제", pos: "명사", ex: { zh: "这篇文章的标题很吸引人。", pinyin: "Zhè piān wénzhāng de biāotí hěn xīyǐn rén.", ko: "이 글의 제목은 매우 흥미로워요." } },
         { zh: "并", pinyin: "bìng", ko: "그리고, 또한", pos: "부사", ex: { zh: "他学习努力,并取得了好成绩。", pinyin: "Tā xuéxí nǔlì, bìng qǔdé le hǎo chéngjì.", ko: "그는 열심히 공부했고, 또한 좋은 성적을 얻었어요." } },

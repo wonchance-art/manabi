@@ -173,7 +173,7 @@ try {
  assert(stroke.points.every(([,y])=>Math.abs(y)<1),'a horizontal stroke stays horizontal when selection tools disappear');
  assert.notDeepEqual(await pixelAt(),beforePixel,'ink must render ON TOP of the card');
  await saveScreen('board-ink');check('real pointer ink remains visible over semantic expression');
- await menus.action('tools','실행 취소');await waitFor(async()=> !(await scene()).some(el=>el.type==='freedraw'));
+ await menus.action('tools','되돌리기');await waitFor(async()=> !(await scene()).some(el=>el.type==='freedraw'));
  await menus.action('tools','다시 실행');await waitFor(async()=> (await scene()).some(el=>el.type==='freedraw'));
  check('native undo and redo restore the stroke without reader grading');
  await menus.action('tools','선택');
@@ -231,7 +231,7 @@ try {
  assert(await page.locator('.viewer-layout').evaluate(el=>el.scrollWidth<=el.clientWidth+1));
  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(500);await saveScreen('board-phone');
  await menus.open('tools');
- assert(await hud.getByRole('button',{name:'실행 취소',exact:true}).isVisible(),'phone exposes native undo through its tool menu');
+ assert(await hud.getByRole('button',{name:'되돌리기',exact:true}).isVisible(),'phone exposes native undo through its tool menu');
  assert(await hud.getByRole('button',{name:'다시 실행',exact:true}).isVisible(),'phone exposes native redo through its tool menu');await menus.close();
  const mobileScene=await head(),mobilePage=mobileScene.document.pages.find(p=>p.id===mobileScene.document.activePage);
  assert(await board.locator('.teaching-board-surface').evaluate((surface,{elements,camera})=>elements.filter(el=>!el.isDeleted&&el.type==='text'&&el.opacity!==0).every(el=>{

@@ -170,10 +170,10 @@ export function planRefine(material) {
   }
   const d = diffLineMap(oldText.split('\n'), split.sourceText.split('\n'));
   if (!d.ok) return { ok: false, reason: '자료가 너무 커서 정제 계획을 세우지 못했어요.' };
-  if (d.changedNew.length > 0) return { ok: false, reason: '뜻 줄만 걷어내는 계획이 아닙니다(바뀐 줄 존재) — 정제를 중단합니다.' };
+  if (d.changedNew.length > 0) return { ok: false, reason: '뜻 줄만 걷어내는 계획이 아니에요(바뀐 줄 있음) — 정제를 멈췄어요.' };
   const base = material?.processed_json || { sequence: [], dictionary: {}, failed_indices: [] };
   const r = remapProcessedJson(base, d.pairs);
-  if (!r.ok) return { ok: false, reason: '기존 분석을 옮길 수 없어 정제를 중단합니다.' };
+  if (!r.ok) return { ok: false, reason: '기존 분석을 옮길 수 없어 정제를 멈췄어요.' };
   const remapped = {
     ...r.json,
     metadata: { ...(base.metadata || {}), translations },
