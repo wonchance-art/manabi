@@ -6626,7 +6626,7 @@ a.viewer-badge:hover {
   background: rgba(255,107,107,0.1);
 }
 
-/* ========= French Reference (강의 🇫🇷 탭 + /french/grammar·vocab) ========= */
+/* ========= French Reference (강의 프랑스어 탭 + /french/grammar·vocab) ========= */
 .fr-level-dot {
   flex-shrink: 0;
   width: 46px; height: 46px; border-radius: 50%;
@@ -6803,7 +6803,7 @@ a.viewer-badge:hover {
 .fr-callout--tip { border-color: #9775FA; background: rgba(151,117,250,0.1); }
 .fr-callout--tip .fr-callout__label { color: #9775FA; }
 
-/* 🇬🇧↔🇫🇷 나란히 비교 블록 — vsEn(파랑) 계열, 영어/프랑스어 정렬 대조 */
+/* 영어 ↔ 프랑스어 나란히 비교 블록 — vsEn(파랑) 계열, 영어/프랑스어 정렬 대조 */
 .fr-parallel {
   margin: 12px 0 4px;
   padding: 12px 14px;

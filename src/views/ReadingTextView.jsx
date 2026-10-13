@@ -591,7 +591,7 @@ function PatternCard({ card, onClose }) {
           <p style={{ fontSize: '0.9rem', lineHeight: 1.7, color: 'var(--text-secondary)', marginBottom: 10 }}>{card.explain}</p>
         )}
         {card.contrast && (
-          <p style={{ fontSize: '0.84rem', lineHeight: 1.6, color: 'var(--text-muted)', marginBottom: 10 }}>🇰🇷 {card.contrast}</p>
+          <p style={{ fontSize: '0.84rem', lineHeight: 1.6, color: 'var(--text-muted)', marginBottom: 10 }}><strong style={{ color: 'var(--text-secondary)' }}>한국어와 비교</strong> · {card.contrast}</p>
         )}
         {card.ex && (
           <div style={{ fontSize: '0.95rem', paddingTop: 8, borderTop: '1px solid var(--border)' }}>

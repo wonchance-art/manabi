@@ -13,6 +13,7 @@ import StudyPlanPanel from './StudyPlanPanel';
 import BookRefinePanel from '../components/BookRefinePanel';
 import LiteraturePublishPanel from '../components/LiteraturePublishPanel';
 import { failureMessage } from '../lib/errorMessage';
+import { LANG_NAME_KO } from '../lib/constants';
 
 const SOURCE_TYPE_LABELS = {
   wikipedia_good:   'Wikipedia 우수 기사',
@@ -519,8 +520,8 @@ export default function AdminPage() {
                       value={newSource.language}
                       onChange={e => handleNewSourceChange('language', e.target.value)}
                     >
-                      <option value="Japanese">🇯🇵 Japanese</option>
-                      <option value="English">🇬🇧 English</option>
+                      <option value="Japanese">{LANG_NAME_KO.Japanese}</option>
+                      <option value="English">{LANG_NAME_KO.English}</option>
                     </select>
                   </div>
 
@@ -595,7 +596,7 @@ export default function AdminPage() {
               return (
                 <div key={lang} style={{ marginBottom: '28px' }}>
                   <h3 style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    {lang === 'Japanese' ? '🇯🇵 Japanese' : '🇬🇧 English'}
+                    {LANG_NAME_KO[lang]}
                   </h3>
                   <table className="admin-table">
                     <thead>
