@@ -102,3 +102,44 @@ export function attributionParts(source) {
   if (!channel && !url) return null;
   return { channel, license: LICENSE_LABEL[source.license] || '', url };
 }
+
+/* ─────────────────────────────────────────────────────────────
+ * 아오조라 정본 책(설계 §3.4) — 같은 「출처 한 줄」 문법의 문학 분기.
+ * 데이터는 processed_json.metadata.literature(provider:'aozora')에 있다(scripts/build-literature.mjs가 만든다).
+ * 青空文庫 취급 규준: 작품명·저자·底本 정보를 지우지 말 것, 바꿨다면 작업 이력을 남길 것(요망),
+ * 「青空文庫」 이름은 출처 표시에 쓰되 관여·허락을 암시하지 말 것 — 그래서 「출처: 青空文庫」 한 줄만 쓴다.
+ * ─────────────────────────────────────────────────────────────*/
+
+const AOZORA_EDIT_CODES = ['ruby-reading-aid', 'chapter-split-by-manabi'];
+
+/** 도서 카드 링크는 青空文庫 HTTPS 주소일 때만 건다 — 공개 자료 metadata에 임의 링크(javascript: 등)가 실려도 그리지 않는다. */
+function aozoraCardHref(value) {
+  try {
+    const url = new URL(String(value || ''));
+    return url.protocol === 'https:' && url.hostname === 'www.aozora.gr.jp' ? url.href : '';
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * 아오조라 장의 출처 줄 재료. 「원작 퍼블릭 도메인」은 권리 기록이 approved·public-domain일 때만 쓴다(없는 권리를 주장하지 않는다).
+ * 底本은 첫 줄(서명·출판사)만 — 들여쓴 연속 줄(발행일·판차)은 metadata에 남고 한 줄 표기에는 넣지 않는다.
+ * @returns {{provider:string, sourceBook:string, inputter:string, proofreader:string, cardUrl:string, publicDomain:boolean, editNote:boolean}|null}
+ */
+export function literatureAttributionParts(literature) {
+  if (!literature || typeof literature !== 'object' || literature.provider !== 'aozora') return null;
+  const text = (value) => (typeof value === 'string' ? value.trim() : '');
+  const colophon = literature.colophon && typeof literature.colophon === 'object' ? literature.colophon : {};
+  const rights = literature.rights && typeof literature.rights === 'object' ? literature.rights : {};
+  const edits = Array.isArray(literature.edits) ? literature.edits : [];
+  return {
+    provider: '青空文庫',
+    sourceBook: Array.isArray(colophon.sourceBook) ? text(colophon.sourceBook[0]) : '',
+    inputter: text(colophon.inputter),
+    proofreader: text(colophon.proofreader),
+    cardUrl: aozoraCardHref(literature.cardUrl),
+    publicDomain: rights.status === 'approved' && rights.basis === LICENSE_PUBLIC_DOMAIN,
+    editNote: AOZORA_EDIT_CODES.every((code) => edits.includes(code)),
+  };
+}

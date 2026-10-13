@@ -80,9 +80,11 @@ function splitByLength(text, { targetChars, titleBase }) {
  * 본문 텍스트 → 챕터 배열 [{title, text}].
  * 헤딩이 2개 이상 감지되면 헤딩 분할(표제 줄이 챕터 제목), 아니면 길이 분할.
  * 어느 경로든 상한(maxChars)을 넘는 챕터는 문단 경계에서 재분할된다.
+ * headingTest — 표제 줄 판정 교체(기본 isHeadingLine). 원문이 표제를 구조로 이미 아는 반입(아오조라 見出し 주석)은
+ * 추정 패턴 대신 그 표제만 표제로 쓴다 — 본문 줄이 패턴에 걸려 장이 잘못 갈리지 않게.
  */
 export function splitTextIntoChapters(rawText, opts = {}) {
-  const { targetChars = CHAPTER_TARGET_CHARS, maxChars = CHAPTER_MAX_CHARS, headings = true } = opts;
+  const { targetChars = CHAPTER_TARGET_CHARS, maxChars = CHAPTER_MAX_CHARS, headings = true, headingTest = isHeadingLine } = opts;
   const text = String(rawText || '').trim();
   if (!text) return [];
   // headings:false — 표제를 보지 않고 문단 경계 길이 분할만(상한 초과 장 하나를 자를 때)
@@ -93,7 +95,7 @@ export function splitTextIntoChapters(rawText, opts = {}) {
   let cur = { title: null, lines: [] };
   let headingCount = 0;
   for (const line of lines) {
-    if (isHeadingLine(line)) {
+    if (headingTest(line)) {
       headingCount++;
       if (cur.title != null || cur.lines.some((l) => l.trim())) sections.push(cur);
       cur = { title: stripMd(line), lines: [] };

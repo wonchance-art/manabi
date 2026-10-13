@@ -173,7 +173,7 @@ import TokenRangeGrips from './TokenRangeGrips';
 import ViewerComments from './ViewerComments';
 import ViewerQuizModal from './ViewerQuizModal';
 import { langNameKo, splitSentenceAroundWord, detectLang } from '../lib/constants';
-import { attributionParts, materialSource } from '../lib/videoAttribution';
+import { attributionParts, literatureAttributionParts, materialSource } from '../lib/videoAttribution';
 import { logReviewEvents } from '../lib/reviewEvents';
 
 // 공부 모드 지원 언어 키 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
@@ -3707,6 +3707,23 @@ export default function ViewerPage() {
           <p className="viewer-attribution">{vt("출처:")}{at.channel || '유튜브'}
             {at.license && <> · <span className="viewer-attribution__license">{at.license}</span></>}
             {at.url && <> · <a href={at.url} target="_blank" rel="noopener noreferrer">{vt("원본 보기")}</a></>}
+          </p>
+        );
+      })()}
+
+      {/* 아오조라 정본 책 출처(설계 §3.4 · 목업 C) — 유튜브·PDF와 **같은 한 줄 문법**. 정본 책 데이터는 processed_json.metadata.literature에
+          산다(metadata.book과 같은 자리). 青空文庫·底本·입력·교정·도서 카드와 「우리가 바꾼 점」을 보이게 한다(저장은 표기가 아니다). */}
+      {(() => {
+        const lit = literatureAttributionParts(material?.processed_json?.metadata?.literature);
+        if (!lit) return null;
+        return (
+          <p className="viewer-attribution">{vt("출처:")} {lit.provider}
+            {lit.sourceBook && <> · {vt("底本 {book}", { book: lit.sourceBook })}</>}
+            {lit.inputter && <> · {vt("입력 {name}", { name: lit.inputter })}</>}
+            {lit.proofreader && <> · {vt("교정 {name}", { name: lit.proofreader })}</>}
+            {lit.publicDomain && <> · <span className="viewer-attribution__license">{vt("원작 퍼블릭 도메인")}</span></>}
+            {lit.cardUrl && <> · <a href={lit.cardUrl} target="_blank" rel="noopener noreferrer">{vt("도서 카드 보기")}</a></>}
+            {lit.editNote && <span className="viewer-attribution__muted"> · {vt("루비는 독음 보조, 장 분할은 manabi 편집")}</span>}
           </p>
         );
       })()}

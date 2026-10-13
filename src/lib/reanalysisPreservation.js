@@ -4,6 +4,7 @@ import { canonicalViewerLocale } from './viewerLanguage';
 import { exactSourceQuote } from './viewerLocalizedContext';
 import { compactBoundaryText, readBoundaryEdits } from './boundaryEdits';
 import { reapplyKoreanBoundaries } from './koreanBoundarySplit';
+import { clearRubyLockOnCorrection } from './aozoraRuby';
 
 const tokenLine = id => analysisTokenLine(id) ?? NaN;
 
@@ -52,7 +53,8 @@ export function preserveReanalysisTokens(material, text, result, corrections = [
     const target = match?.id || id;
     if (dictionary[target]) throw new Error('분석 결과의 식별자가 겹쳐 이전 분석을 유지합니다.');
     sequence.push(target);
-    dictionary[target] = { ...token, ...(match?.patch || {}) };
+    // 교정값이 분석 결과(저자 루비 잠금 포함)를 이긴다 — 독음 교정이면 잠금 표식도 지운다(사용자 교정 > 저자 루비 > 분석기).
+    dictionary[target] = clearRubyLockOnCorrection({ ...token, ...(match?.patch || {}) }, match?.patch);
     // 뷰어 v2 AD-R4 §7: 뜻을 교정한 토큰은 교정값이 이기므로 서버의 「뜻 확인 필요」 표식(meaningCheck)을 지운다.
     if (match?.patch && Object.hasOwn(match.patch, 'meaning')) delete dictionary[target].meaningCheck;
     if (match?.patch && Object.hasOwn(match.patch, 'meaning') && old.metadata?.language === 'Korean') {

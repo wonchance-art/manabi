@@ -1,5 +1,6 @@
 // 뜻·발음 수동 편집(링큐식)의 후보 구성 — 공유 사전 항목·현재 토큰 값·다음자 후보를
 // 중복 없이 합친다. UI(TokenEditPanel)와 분리된 순수 로직: 후보 규칙이 곧 계약이다.
+import { clearRubyLockOnCorrection } from './aozoraRuby';
 
 /**
  * 뜻 후보 — 사전의 다중 뜻(pos 태그 동반 가능, 흔한 순)이 먼저, 현재 표시 뜻(교정 이력
@@ -80,11 +81,12 @@ export function revertCorrections(beforeToken, corrections) {
 /**
  * 교정 적용 — 토큰에 교정 칸을 덮고, 뜻을 교정했으면 「뜻 확인 필요」 내부 표식(meaningCheck)을 지운다
  * (뷰어 v2 AD-R4 §6.2·§6.3·§7: 사용자가 정한 뜻이 이긴다). 같은 뜻을 확정하는 교정([이대로 둘게요])도 지운다.
+ * 독음을 교정했으면 저자 루비 잠금 표식(reading_source·reading_locked)도 지운다 — 사용자 교정 > 저자 루비(aozoraRuby).
  * correctTokenMutation이 저장 직전과 카드 갱신에 같은 함수를 쓴다(새 쓰기 경로 아님).
  * @returns {object} 새 토큰
  */
 export function applyTokenCorrections(token, corrections) {
-  const next = { ...token, ...corrections };
+  const next = clearRubyLockOnCorrection({ ...token, ...corrections }, corrections);
   if (corrections && Object.hasOwn(corrections, 'meaning')) delete next.meaningCheck;
   return next;
 }
