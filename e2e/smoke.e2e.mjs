@@ -416,6 +416,21 @@ test('review access: 비로그인 사용자는 복습방에서 오류 대신 로
   });
 });
 
+test('learn access: 비로그인 사용자도 배움 · 현황에 오류 없이 들어온다', { timeout: config.timeout }, async () => {
+  // LEARN-HOME-AK-001: 로그인 전에도 배움은 빈 벽이 아니다(이어 읽기 · 오늘 문단 맛보기 · 로그인 권유), 현황은 로그인 안내.
+  // runInFreshPage가 console.error · pageerror를 실패로 센다 — `undefined === undefined` 유형 크래시가 여기서 잡힌다.
+  await runInFreshPage(async (page) => {
+    await page.goto('/home', { waitUntil: 'domcontentloaded' });
+    await assertVisible(page.getByRole('heading', { name: '배움', exact: true }), 'signed-out learn heading');
+    await assertVisible(page.locator('a.learn-resume'), 'signed-out resume tile');
+    await assertVisible(page.getByText('로그인하면 여기에 쌓여요', { exact: true }), 'signed-out login invitation');
+    assert.equal(await page.getByText('학습 기록을 불러오지 못했어요', { exact: false }).count(), 0);
+    await page.goto('/progress', { waitUntil: 'domcontentloaded' });
+    await assertVisible(page.getByRole('heading', { name: '현황', exact: true }), 'signed-out progress heading');
+    await assertVisible(page.locator('.learn-login').getByRole('link', { name: '로그인', exact: true }), 'signed-out progress login link');
+  });
+});
+
 test('visibility: 일반 사용자에게 미완성 내비와 독해 트랙 진입을 숨긴다', { timeout: config.timeout }, async () => {
   await runInFreshPage(async (page, context) => {
     await seedMockSessionCookie(context, 'learner');

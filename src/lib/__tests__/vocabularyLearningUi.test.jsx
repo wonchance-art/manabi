@@ -135,7 +135,8 @@ describe('authoritative vocabulary learning UI', () => {
     expect(source).toContain('fsrsReview.controller.retrySave(row.operationId)');
     const data = readFileSync(new URL('../useVocabData.js', import.meta.url), 'utf8');
     expect(data).toContain("queryKey: ['vocab', user?.id, 'learning']");
-    expect(data).toContain('learning.rows : EMPTY_ROWS');
+    // 게스트 크래시 수정(#1447 129f275b) 뒤에도 단어 행은 그 사용자의 학습 snapshot에서만 온다(ownLearning).
+    expect(data).toContain('ownLearning ? ownLearning.rows : EMPTY_ROWS');
     expect(data).not.toContain('fetchVocab(');
   });
 });
