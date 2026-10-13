@@ -58,22 +58,22 @@ function AuthForm() {
 
     try {
       if (isReset) {
-        if (newPw.length < 8) { setError('비밀번호는 8자 이상이어야 합니다.'); setLoading(false); return; }
-        if (newPw !== confirmNewPw) { setError('비밀번호 확인이 일치하지 않습니다.'); setLoading(false); return; }
+        if (newPw.length < 8) { setError('비밀번호는 8자 이상이어야 해요.'); setLoading(false); return; }
+        if (newPw !== confirmNewPw) { setError('비밀번호 확인이 일치하지 않아요.'); setLoading(false); return; }
         const { error: updErr } = await supabase.auth.updateUser({ password: newPw });
         if (updErr) throw updErr;
-        setSuccess('비밀번호가 변경됐어요. 자동으로 로그인됩니다...');
+        setSuccess('비밀번호가 변경됐어요. 자동으로 로그인할게요…');
         setTimeout(() => router.push('/home'), 1500);
       } else if (isForgot) {
         await resetPassword(email);
-        setSuccess('비밀번호 재설정 링크를 이메일로 보냈습니다. 확인해주세요.');
+        setSuccess('비밀번호 재설정 링크를 이메일로 보냈어요. 확인해 주세요.');
       } else if (isLogin) {
         await signIn(email, password);
         router.push(from);
       } else {
-        if (password.length < 8) { setError('비밀번호는 8자 이상이어야 합니다.'); setLoading(false); return; }
+        if (password.length < 8) { setError('비밀번호는 8자 이상이어야 해요.'); setLoading(false); return; }
         await signUp(email, password, displayName);
-        setSuccess('인증 이메일을 발송했습니다. 이메일을 확인해주세요.');
+        setSuccess('인증 이메일을 보냈어요. 이메일을 확인해 주세요.');
       }
     } catch (err) {
       const msg = toKoreanError(err?.message || String(err));
@@ -92,7 +92,7 @@ function AuthForm() {
     try {
       await resendConfirmation(email);
       setError('');
-      setSuccess('인증 메일을 다시 보냈습니다. 받은 편지함과 스팸함을 확인해주세요.');
+      setSuccess('인증 메일을 다시 보냈어요. 받은 편지함과 스팸함을 확인해 주세요.');
     } catch (err) {
       setError(toKoreanError(err?.message || String(err)) || AUTH_FALLBACK_MESSAGE);
     } finally {
@@ -117,7 +117,7 @@ function AuthForm() {
             {isReset ? '새 비밀번호 설정' : isForgot ? '비밀번호 찾기' : isLogin ? '로그인' : '회원가입'}
           </h1>
           <p className="auth-header__sub">
-            {isReset ? '사용할 새 비밀번호를 입력해주세요' : isForgot ? '가입한 이메일로 재설정 링크를 보내드려요' : isLogin ? '진도와 단어장이 기기 간에 이어져요' : '진도·단어장·작문 기록을 계정에 보관해요'}
+            {isReset ? '사용할 새 비밀번호를 입력해 주세요' : isForgot ? '가입한 이메일로 재설정 링크를 보내드려요' : isLogin ? '진도와 단어장이 기기 간에 이어져요' : '진도·단어장·작문 기록을 계정에 보관해요'}
           </p>
         </div>
 
@@ -240,7 +240,7 @@ function AuthForm() {
 
           {error && error === 'ALREADY_REGISTERED' ? (
             <div className="auth-alert auth-alert--error" role="alert">
-              이미 가입된 이메일입니다. 로그인하거나 Google로 계속하세요.{' '}
+              이미 가입된 이메일이에요. 로그인하거나 Google로 계속해 주세요.{' '}
               <button
                 type="button"
                 onClick={() => { setIsLogin(true); setError(''); setSuccess(''); }}
@@ -264,7 +264,7 @@ function AuthForm() {
                 disabled={resending || !email}
                 className="auth-alert__link"
               >
-                {resending ? '보내는 중...' : '인증 메일 다시 보내기'}
+                {resending ? '보내는 중…' : '인증 메일 다시 보내기'}
               </button>
             </div>
           ) : error ? (
@@ -280,13 +280,13 @@ function AuthForm() {
             disabled={loading}
             className={`auth-submit ${loading ? 'auth-submit--loading' : ''}`}
           >
-            {loading ? '처리 중...' : isReset ? '비밀번호 변경' : isForgot ? '재설정 링크 보내기' : isLogin ? '로그인' : '회원가입'}
+            {loading ? '처리 중…' : isReset ? '비밀번호 변경' : isForgot ? '재설정 링크 보내기' : isLogin ? '로그인' : '회원가입'}
           </button>
 
           {!isLogin && !isForgot && !isReset && (
             <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: 10, lineHeight: 1.5 }}>
               가입 시 <a href="/terms" target="_blank" rel="noopener" style={{ color: 'var(--primary-light)' }}>이용약관</a> 및{' '}
-              <a href="/privacy" target="_blank" rel="noopener" style={{ color: 'var(--primary-light)' }}>개인정보 처리방침</a>에 동의합니다.
+              <a href="/privacy" target="_blank" rel="noopener" style={{ color: 'var(--primary-light)' }}>개인정보 처리방침</a>에 동의해요.
             </p>
           )}
         </form>

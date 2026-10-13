@@ -80,11 +80,11 @@ export default async function Page({ searchParams }) {
           <h1 className="page-header__title">📊 학습 지표</h1>
           <p className="page-header__subtitle">집계 RPC 기반 · 전체 사용자</p>
         </div>
-        <Card title="마이그레이션이 필요해요" hint="집계 함수가 아직 이 환경에 배포되지 않았습니다.">
+        <Card title="마이그레이션이 필요해요" hint="집계 함수가 아직 이 환경에 배포되지 않았어요.">
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.7 }}>
             <code>supabase/migrations/20260708000100_admin_metrics_rpc.sql</code>을 Supabase 대시보드
-            SQL Editor에서 실행하면 아래 대시보드가 채워집니다. (집계 전용 함수 — 행·원문은
-            반환하지 않습니다.)
+            SQL Editor에서 실행하면 아래 대시보드가 채워져요. (집계 전용 함수 — 행·원문은
+            반환하지 않아요.)
           </p>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 10 }}>
             오류: {rpcError.message || String(rpcError)}
@@ -190,7 +190,7 @@ export default async function Page({ searchParams }) {
       {/* ④ 불량 문항 top10 */}
       <Card
         title="④ 불량 문항 후보 (top 10)"
-        hint="item_key별 오답률 상위. 노출 3회 이상만. 원문(detail)은 표시하지 않습니다 — 오답률·노출수만으로 후보를 좁힙니다."
+        hint="item_key별 오답률 상위. 노출 3회 이상만. 원문(detail)은 표시하지 않아요 — 오답률·노출수만으로 후보를 좁혀요."
       >
         {health.length === 0 ? (
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>표본 부족 — 아직 후보 없음</p>

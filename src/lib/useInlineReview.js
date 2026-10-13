@@ -1,6 +1,6 @@
 'use client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { friendlyToastMessage } from './errorMessage';
+import { failureMessage } from './errorMessage';
 import { detectLang } from './constants';
 import { recordReviewCompleted } from './learn/progressStore';
 import { calculateFSRS } from './fsrs';
@@ -87,13 +87,13 @@ export function useInlineReview({ user: account, fetchProfile, toast }) {
       // 보상(streak)은 정본 안에서 기록됐다 — 여기서는 표시만 새로 고친다(큐 경로는 아직 기록 전)
       if (account?.id === userId) {
         if (!queued) fetchProfile?.(userId);
-        toast?.(queued ? '복습 저장 — 연결되면 보내요' : '복습 완료!', 'success', 2000);
+        toast?.(queued ? '복습을 이 기기에 저장했어요. 연결되면 보내요.' : '복습을 저장했어요', 'success', 2000);
       }
     },
     onError: (err, variables, context) => {
       settleVocabularyReview(queryClient, context);
       if (account?.id === (context?.userId || variables?.userId || account?.id)) {
-        toast?.('복습 저장 실패 — ' + friendlyToastMessage(err), 'error');
+        toast?.(failureMessage('복습을 저장하지 못했어요.', err), 'error');
       }
     },
   });

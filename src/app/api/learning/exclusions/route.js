@@ -55,7 +55,7 @@ export async function POST(request) {
       p_language: language, p_word: word, p_vocabulary_id: vocabularyId, p_excluded: body.excluded, p_exclusion_id: exclusionId,
     });
     if (error?.message?.includes('vocabulary_ambiguous_match')) fail(409, '같은 기본형의 기존 카드가 여러 개예요.');
-    if (error?.code === '42501') fail(404, '접근할 수 없는 단어입니다.');
+    if (error?.code === '42501') fail(404, '접근할 수 없는 단어예요.');
     checkDb(error); return reply(data);
   } catch (error) { return errorReply(error); }
 }

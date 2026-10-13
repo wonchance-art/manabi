@@ -137,7 +137,7 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
         // (기록이 이 기기에만 남는다는 사실은 화면에서 따로 알린다.)
         if (!user?.id) return applyGuestReviewResult({ lang: item.lang, slug: item.srs.slug, rating });
         const updated = await gradeGrammarReview({ ...item.srs, user_id: user.id }, rating);
-        if (!updated) throw new Error('문법 복습 결과를 저장하지 못했습니다.');
+        if (!updated) throw new Error('문법 복습 결과를 저장하지 못했어요.');
 
         // 저장 확인 뒤에만 활동·이벤트와 완료 상태를 확정한다.
         recordActivity(user.id, () => fetchProfile(user.id));
@@ -232,7 +232,7 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 20 }}>
           {signedOut
             ? '로그인하면 통과한 문법 챕터가 며칠 뒤 자동으로 복습 큐에 돌아와요.'
-            : '오늘 복습할 문법이 없어요. 강의에서 챕터의 패턴 체크를 통과하면 며칠 뒤 여기로 돌아옵니다.'}
+            : '지금 복습할 문법이 없어요. 강의에서 챕터의 패턴 체크를 통과하면 며칠 뒤 여기로 돌아와요.'}
         </p>
         <Link href={signedOut ? '/auth' : '/lessons'} className="btn btn--primary btn--md">
           {signedOut ? '로그인 →' : '강의 보러 가기 →'}

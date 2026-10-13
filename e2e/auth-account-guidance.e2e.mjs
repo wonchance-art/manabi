@@ -86,7 +86,7 @@ test('B 비밀번호가 틀리면 Google 가입자 안내가 함께 나온다', 
   await page.getByLabel('이메일', { exact: true }).fill('google-user@example.com');
   await page.getByLabel('비밀번호', { exact: true }).fill('wrong-password');
   await page.locator('form').getByRole('button', { name: '로그인', exact: true }).click();
-  await page.getByRole('alert').filter({ hasText: '이메일 또는 비밀번호가 올바르지 않습니다.' }).waitFor();
+  await page.getByRole('alert').filter({ hasText: '이메일 또는 비밀번호가 올바르지 않아요.' }).waitFor();
   assert.match(await alertText(page), /Google로 가입하셨다면 위의 「Google로 계속하기」를 눌러 주세요/);
   assert.deepEqual(errors, []);
   await context.close();
@@ -102,7 +102,7 @@ test('C 미인증 로그인은 인증 메일을 다시 보낼 수 있다', async
   await page.getByLabel('이메일', { exact: true }).fill('pending@example.com');
   await page.getByLabel('비밀번호', { exact: true }).fill('fixture-password-24');
   await page.locator('form').getByRole('button', { name: '로그인', exact: true }).click();
-  await page.getByRole('alert').filter({ hasText: '이메일 인증이 필요합니다.' }).waitFor();
+  await page.getByRole('alert').filter({ hasText: '이메일 인증이 필요해요.' }).waitFor();
   await page.getByRole('button', { name: '인증 메일 다시 보내기' }).click();
   await page.getByRole('status').filter({ hasText: '인증 메일을 다시 보냈습니다.' }).waitFor();
   const resend = calls.filter(call => call.path.endsWith('/resend'));

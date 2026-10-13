@@ -54,7 +54,7 @@ export async function POST(request) {
   // 인증 확인 — 로그인 사용자만 분석 가능 (Gemini 쿼터 남용 방지)
   const authHeader = request.headers.get('authorization');
   if (!authHeader) {
-    return Response.json({ error: '로그인이 필요합니다.' }, { status: 401 });
+    return Response.json({ error: '로그인이 필요해요.' }, { status: 401 });
   }
   const token = authHeader.replace(/^Bearer\s+/i, '');
   const anonClient = createClient(
@@ -64,7 +64,7 @@ export async function POST(request) {
   );
   const { data: { user }, error: userErr } = await anonClient.auth.getUser(token);
   if (userErr || !user) {
-    return Response.json({ error: '세션이 만료됐어요. 다시 로그인해주세요.' }, { status: 401 });
+    return Response.json({ error: '세션이 만료됐어요. 다시 로그인해 주세요.' }, { status: 401 });
   }
 
   // Rate limit — 사용자별 분당 20회
@@ -72,7 +72,7 @@ export async function POST(request) {
   const rl = rateLimit(key, { limit: 20, windowMs: 60_000 });
   if (!rl.ok) {
     return Response.json(
-      { error: '요청이 너무 많아요. 잠시 후 다시 시도해주세요.' },
+      { error: '요청이 너무 많아요. 잠시 후 다시 시도해 주세요.' },
       { status: 429, headers: { 'Retry-After': String(Math.ceil(rl.resetIn / 1000)) } }
     );
   }

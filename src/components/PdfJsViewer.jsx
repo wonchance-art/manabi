@@ -201,8 +201,8 @@ export default function PdfJsViewer({ pdfUrl, onPageText, onPageChange, initialP
     return () => cancelAnimationFrame(frame);
   }, [pageNumber, pageWindow]);
 
-  if (error) return <div className="pdf-side__empty">PDF 파일 주소를 불러올 수 없어요.</div>;
-  if (!doc || !pdfjs) return <Spinner message="로딩 중..." />;
+  if (error) return <div className="pdf-side__empty">PDF 파일 주소를 불러오지 못했어요.</div>;
+  if (!doc || !pdfjs) return <Spinner message="PDF 불러오는 중…" />;
 
   return (
     <div className="pdfjs-viewer">

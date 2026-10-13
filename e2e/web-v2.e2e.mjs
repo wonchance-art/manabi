@@ -161,7 +161,7 @@ try {
   assert.equal(await mp.getByRole('link', { name: '이어서 읽기', exact: true }).isVisible(), true);
   report.fixtureStates.push('server failure leaves local book readable and exposes retry');
   failed = false; due = 0;
-  await mp.getByRole('button', { name: '다시 불러오기', exact: true }).click();
+  await mp.getByRole('button', { name: '다시 시도', exact: true }).click();
   await mp.getByRole('heading', { name: /첫 표현을 담아 보세요/ }).waitFor();
   assert.equal((await mp.locator('.today-review h2').innerText()).includes('<br'), false);
   assert.equal((await mp.locator('.today-review h2').innerText()).replace(/\s+/g, ' '), '기억하고 싶은 첫 표현을 담아 보세요.');

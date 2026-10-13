@@ -37,7 +37,7 @@ export async function accessibleMaterial(supabase, userId, kind, id) {
   const { data, error } = await supabase.from(table).select(fields).eq('id', id).maybeSingle();
   checkDb(error);
   // 기존 permissive RLS가 남은 환경에서도 명시적인 접근 검사로 비공개 내용을 반환하지 않는다.
-  if (!data || (data.owner_id !== userId && !(kind === 'reading' && data.visibility === 'public'))) fail(404, '접근할 수 없는 자료입니다.');
+  if (!data || (data.owner_id !== userId && !(kind === 'reading' && data.visibility === 'public'))) fail(404, '접근할 수 없는 자료예요.');
   return data;
 }
 

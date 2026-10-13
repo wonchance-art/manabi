@@ -35,8 +35,8 @@ export function libraryOperationError(error){
  if(message.includes('duplicate'))return '같은 이름의 폴더가 있어요.';
  if(message.includes('cycle'))return '하위 폴더 안으로 옮길 수 없어요.';
  if(message.includes('selection_limit'))return '한 번에 5,000개까지 선택할 수 있어요.';
- if(/conflict|expired/.test(message))return '다른 변경이 있습니다. 새로 확인해 주세요.';
- if(['PGRST202','42P01','42703'].includes(error?.code))return '서재 업데이트 준비 중입니다. 잠시 후 다시 시도해 주세요.';
+ if(/conflict|expired/.test(message))return '다른 변경이 있어요. 새로 확인해 주세요.';
+ if(['PGRST202','42P01','42703'].includes(error?.code))return '서재 업데이트를 준비하고 있어요. 잠시 후 다시 시도해 주세요.';
  return '저장 결과를 확인하지 못했어요. 다시 확인해 주세요.';
 }
 export function folderPaths(folders){

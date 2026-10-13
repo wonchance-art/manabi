@@ -174,7 +174,7 @@ ${conversationSafetyRules(targetLang)}`;
       if (text) setMessages([{ role: 'ai', text, ts: Date.now() }]);
     } catch {
       if (!isCurrentRequest(requestId, requestMaterialId)) return;
-      setMessages([{ role: 'ai', text: '(시작에 실패했어요. 다시 시도해 주세요)', ts: Date.now(), error: true }]);
+      setMessages([{ role: 'ai', text: '(대화를 시작하지 못했어요. 다시 시도해 주세요)', ts: Date.now(), error: true }]);
     } finally {
       if (isCurrentRequest(requestId, requestMaterialId)) setLoading(false);
     }
@@ -275,7 +275,7 @@ Output PART 1, then a blank line, then PART 2 (if any). No labels, no other text
           <div className="conversation-panel__empty">
             <p style={{ margin: '0 0 14px', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>
               {targetLangKo}로 AI 튜터와 본문에 대해 대화해보세요.<br />
-              짧고 자연스러운 질문으로 시작합니다.
+              짧고 자연스러운 질문으로 시작해요.
             </p>
             <Button onClick={startConversation}>대화 시작</Button>
           </div>
@@ -320,7 +320,7 @@ Output PART 1, then a blank line, then PART 2 (if any). No labels, no other text
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder={listening ? '듣는 중...' : placeholder}
+            placeholder={listening ? '듣는 중…' : placeholder}
             className="conversation-panel__input"
             rows={2}
             disabled={loading}

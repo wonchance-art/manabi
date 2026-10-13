@@ -60,4 +60,4 @@ export function libraryComposerHref(returnTo,collection){
  if(collectionId(collection))params.set('collection',collection);
  return `/materials/add?${params}`;
 }
-export const libraryError=error=>['PGRST202','42P01'].includes(error?.code)?'서재 기능을 준비하고 있어요. 잠시 후 다시 열어 주세요.':'불러오지 못했어요. 저장된 자료는 그대로 있습니다.';
+export const libraryError=error=>['PGRST202','42P01'].includes(error?.code)?'서재 기능을 준비하고 있어요. 잠시 후 다시 열어 주세요.':'불러오지 못했어요. 저장된 자료는 그대로 있어요.';

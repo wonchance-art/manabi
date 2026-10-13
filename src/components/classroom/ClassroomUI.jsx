@@ -7,7 +7,7 @@ export function ClassroomShell({ lang='Japanese', children, board=false, teamHom
   return <div className={`classroom-shell${board?' classroom-shell--board':''}${teamHome?' classroom-team-home':''}`} data-language={lang}><div className="classroom-page">{children}</div></div>;
 }
 export function ClassroomState({title,children,retry}) {
-  return <ClassroomShell><section className="classroom-state"><span className="classroom-eyebrow">MANABI / CLASS</span><h1>{title}</h1>{children}{retry&&<button className="classroom-button" onClick={retry}>다시 불러오기</button>}</section></ClassroomShell>;
+  return <ClassroomShell><section className="classroom-state"><span className="classroom-eyebrow">MANABI / CLASS</span><h1>{title}</h1>{children}{retry&&<button className="classroom-button" onClick={retry}>다시 시도</button>}</section></ClassroomShell>;
 }
 export function ClassCover({team,small=false}) {
   const lang=classLanguage(team.lang);

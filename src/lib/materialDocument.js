@@ -93,7 +93,7 @@ export async function saveDocumentOnce(client, save, onStage = () => {}) {
 export function documentError(error) {
   if (error?.message === 'EDIT_CONFLICT') return '다른 곳에서 먼저 수정한 글이 있어요. 내 초안은 유지했으며 최신 글을 덮어쓰지 않았어요.';
   if (error?.message === 'MATERIAL_NOT_EDITABLE') return '수정할 수 없는 자료예요. 삭제되었거나 다른 계정의 자료일 수 있어요.';
-  if (error?.message === 'EDIT_SCHEMA_PENDING' || /document_json/.test(error?.message || '')) return '수정 기능의 저장소 연결을 준비하고 있어요. 기존 자료는 그대로 읽을 수 있습니다.';
+  if (error?.message === 'EDIT_SCHEMA_PENDING' || /document_json/.test(error?.message || '')) return '수정 기능의 저장소 연결을 준비하고 있어요. 기존 자료는 그대로 읽을 수 있어요.';
   return null;
 }
 

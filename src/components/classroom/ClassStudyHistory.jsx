@@ -36,7 +36,7 @@ export default function ClassStudyHistory({notes,coverage=[],chapters,onOpen,onC
       <label>지난 수업에서 찾기<input type="search" maxLength={200} value={search} onChange={e=>{restored.current=true;setSearch(e.target.value);}} placeholder="표현 · 뜻 · 날짜"/></label>
       <button aria-pressed={extras} onClick={()=>setExtras(v=>!v)}>교재 밖 표현만</button>
     </div>
-    {showEmpty&&!dates.length&&<p role="status">{search||extras?'조건에 맞는 표현이 없어요.':'아직 수업 기록이 없어요. 교재는 먼저 읽어 볼 수 있습니다.'}</p>}
+    {showEmpty&&!dates.length&&<p role="status">{search||extras?'조건에 맞는 표현이 없어요.':'아직 수업 기록이 없어요. 교재는 먼저 읽어 볼 수 있어요.'}</p>}
     {dates.map(day=>{
       const dayNotes=rows.filter(n=>n.day===day),read=confirmed.find(c=>c.day===day);
       return <article className="class-study-history__day" key={day}>
@@ -57,7 +57,7 @@ export default function ClassStudyHistory({notes,coverage=[],chapters,onOpen,onC
             return <li key={entry.id}><div><strong>{entry.text}</strong>{entry.reading&&<small>{entry.reading}</small>}<p>{entry.meaning||'노트에서 문맥과 뜻 확인'}</p></div>
               {chapter?<div className="class-study-history__source"><small>{chapter.order}과에서 선택한 표현</small><button disabled={disabled(chapter)} onClick={()=>open({...chapter,day,source:entry.source,...(/^[a-zA-Z0-9_-]{1,100}:[0-9]{1,8}$/.test(entry.id)?{sourceNote:note.id,sourceEntry:entry.id}:{sourceToken:entry.source.tokenId,sourceQuote:entry.source.quote})})}>교재에서 보기 ↗</button></div>:<span>{entry.source?.kind==='manual'?'교재 밖 표현':'수업 표현'}</span>}
             </li>;
-          })}</ul>:<p>이전 형식의 노트입니다. 노트를 열어 확인하세요.</p>}
+          })}</ul>:<p>이전 형식의 노트예요. 노트를 열어 확인해 주세요.</p>}
         </section>)}
       </article>;
     })}
