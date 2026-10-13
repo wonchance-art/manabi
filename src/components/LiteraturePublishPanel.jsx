@@ -141,6 +141,7 @@ export default function LiteraturePublishPanel({ toast }) {
         title={confirmBook ? `「${confirmBook.title}」 책을 공개 자료로 게시할까요?` : ''}
         message={confirmBook ? `${confirmBook.plan.insert.length}장이 모든 사용자에게 공개돼요. 근거: 작가 ${confirmBook.rights.authorDeathYear} 사망 · ${confirmBook.rights.reviewedJurisdictions.join('·')} 검토. 게시 뒤 장마다 열어 분석해 주세요.` : ''}
         confirmLabel="게시"
+        variant="primary"
         confirmDisabled={publish.isPending}
         onConfirm={() => { const key = confirmBook.key; setConfirmBook(null); publish.mutate(key); }}
         onCancel={() => setConfirmBook(null)}
