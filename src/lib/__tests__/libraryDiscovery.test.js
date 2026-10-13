@@ -7,7 +7,7 @@ describe('library sections and real record boundaries', () => {
     const view = text => libraryView(new URLSearchParams(text));
     expect(view('')).toBe('reading');
     expect(navigationOwner('/study/library')).toBe('/materials');
-    expect(navigationOwner('/study')).toBe('/vocab');
+    expect(navigationOwner('/study')).toBe('/home'); // 메뉴에서 빠진 학습 경로 = 배움 소속(LEARN-HOME-AK-001 정정)
     expect(view('view=notes')).toBe('notes');
     expect(view('tab=public&view=notes')).toBe('public');
     expect(view('tab=private')).toBe('owned');

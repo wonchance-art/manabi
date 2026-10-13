@@ -428,7 +428,8 @@ test('visibility: 일반 사용자에게 미완성 내비와 독해 트랙 진�
     // 기본 데스크톱 viewport 에서는 CSS 로 숨겨져 role locator 대상에서 빠지므로
     // DOM 계약 자체를 확인하는 안정적인 aria-label selector 를 사용한다.
     const mobileNav = page.locator('nav[aria-label="모바일 내비게이션"]');
-    assert.deepEqual(await desktopNav.locator('a').allTextContents(), ['오늘', '교재', '발견', '복습', '내 서재']);
+    assert.deepEqual(await desktopNav.locator('a').allTextContents(), ['배움', '서재', '산책']);
+    assert.deepEqual(await mobileNav.locator('a').allTextContents(), ['배움', '서재', '산책'], 'mobile tab bar shows icon + the same three labels');
     await assertVisible(page.getByRole('link', { name: '일본어 N5 책 둘러보기', exact: true }), 'published N5 book');
     assert.equal(await page.locator('.lessons-list__group-header').count(), 0, 'legacy level lists stay in the administrator archive');
     assert.equal(await desktopNav.locator('a[href="/learn"]').count(), 0);

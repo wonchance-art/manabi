@@ -1,21 +1,31 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { MAIN_NAV, navigationOwner, bookResume, recentMaterial, chooseResume } from '../webNavigation';
 import { validReadingProgress, readingProgressKey } from '../bookNavigation';
 const published = JSON.parse(readFileSync('src/content/textbookEditions/7f572327dc67893e9453246c/bundle.json', 'utf8'));
 const book = { lessons: published.manuscript.lessons };
 
 describe('approved navigation and current edition resume', () => {
-  it('has five unique destinations and assigns nested reading routes without prefix collisions', () => {
-    expect(MAIN_NAV.map(item => item.label)).toEqual(['오늘', '교재', '발견', '복습', '내 서재']);
-    expect(new Set(MAIN_NAV.map(item => item.href)).size).toBe(5);
+  it('has three menus in the approved order and assigns nested routes without prefix collisions', () => {
+    // 메뉴 셋(LEARN-HOME-AK-001 — 오너 확정 목업 2026-10-09): 배움 · 서재 · 산책. 「대화」는 화면이 생길 때까지 숨긴다.
+    expect(MAIN_NAV.map(item => item.label)).toEqual(['배움', '서재', '산책']);
+    expect(MAIN_NAV.map(item => item.href)).toEqual(['/home', '/materials', '/discover']);
+    expect(new Set(MAIN_NAV.map(item => item.href)).size).toBe(3);
     for (const item of MAIN_NAV) expect(navigationOwner(item.href)).toBe(item.href);
-    expect(navigationOwner('/books/japanese-n5')).toBe('/lessons');
+    // 메뉴에서 빠진 교재 · 복습 · 학습 경로는 배움 소속이다(정정 2026-10-11) — 어느 메뉴에도 불이 안 들어오는 화면이 없게.
+    for (const path of ['/vocab', '/vocab?lang=Chinese', '/review/grammar', '/study', '/learn/course', '/lessons', '/books/japanese-n5', '/progress']) {
+      expect(navigationOwner(path.split('?')[0]), path).toBe('/home');
+    }
+    expect(navigationOwner('/study/library')).toBe('/materials');
     expect(navigationOwner('/studies/france/fr-culture')).toBe('/discover');
     expect(navigationOwner('/viewer/a-material')).toBe('/materials');
-    expect(navigationOwner('/study')).toBe('/vocab');
+    expect(navigationOwner('/groups')).toBe('/materials');
+    expect(navigationOwner('/vocabulary-other')).toBe(null);
     expect(navigationOwner('/materials-other')).toBe(null);
     expect(navigationOwner('/admin')).toBe(null);
+  });
+  it('keeps /lessons and /vocab as live routes even though they left the menu', () => {
+    for (const route of ['lessons', 'vocab']) expect(existsSync(`src/app/(app)/${route}/page.jsx`), route).toBe(true);
   });
   it('uses all 42 published lessons, exact source anchors, and explicit completion only', () => {
     const progress = validReadingProgress({ page: 'u29-study2', completed: ['u01', 'u01', 'u29', 'n5-04-desu-da'] });
