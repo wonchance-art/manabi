@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HSK 한자 탭</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans+SC:wght@300;400;500&display=swap">
+<style>
+/* 문서 바탕(설명 글) — 두 테마. 앱 화면 그림(.frame 안)은 실제 앱의 밝은 화면이라 색을 고정한다. */
+:root{
+  --doc-bg:#EFECE4; --doc-ink:#24261F; --doc-muted:#6C6E65; --doc-line:#D9D4C8; --doc-card:#F8F6F0;
+  --doc-accent:#7E3B49; --doc-code:#E6E1D6; --doc-warn:#8A5A12;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --doc-bg:#1B1C19; --doc-ink:#E9E6DD; --doc-muted:#A3A398; --doc-line:#3A3B35; --doc-card:#24251F;
+    --doc-accent:#E2A5B1; --doc-code:#2E2F29; --doc-warn:#E0B26A;
+  }
+}
+:root[data-theme="dark"]{
+  --doc-bg:#1B1C19; --doc-ink:#E9E6DD; --doc-muted:#A3A398; --doc-line:#3A3B35; --doc-card:#24251F;
+  --doc-accent:#E2A5B1; --doc-code:#2E2F29; --doc-warn:#E0B26A;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--doc-bg);color:var(--doc-ink);font:15px/1.65 Manrope,'Noto Sans KR',sans-serif;-webkit-font-smoothing:antialiased}
+[lang^=zh]{font-family:'Noto Sans SC','Noto Sans KR',sans-serif}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0}
+:focus-visible{outline:2px solid #994A5A;outline-offset:2px}
+.doc{max-width:1240px;margin:0 auto;padding:40px 16px 96px;display:flex;flex-direction:column;gap:56px}
+.eyebrow{font:700 12px 'Noto Sans KR',sans-serif;letter-spacing:.08em;color:var(--doc-accent);margin:0 0 10px}
+h1{font:700 34px/1.15 Manrope,'Noto Sans KR',sans-serif;letter-spacing:-.02em;margin:0 0 14px;text-wrap:balance}
+h2{font:700 22px/1.3 'Noto Sans KR',sans-serif;margin:0 0 6px;text-wrap:balance}
+h3{font:700 15px/1.4 'Noto Sans KR',sans-serif;margin:22px 0 8px}
+.lead{max-width:760px;margin:0;color:var(--doc-muted)}
+.sec-note{max-width:760px;margin:0 0 20px;color:var(--doc-muted);font-size:14px}
+.points{margin:16px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px;max-width:820px}
+.points b{color:var(--doc-ink)}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--doc-line);border-radius:10px;background:var(--doc-card)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:640px}
+th,td{text-align:left;vertical-align:top;padding:9px 12px;border-bottom:1px solid var(--doc-line)}
+th{font-weight:700;font-size:12.5px;color:var(--doc-muted);letter-spacing:.02em}
+tr:last-child td{border-bottom:0}
+td:first-child{white-space:nowrap}
+code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+code{background:var(--doc-code);padding:1px 5px;border-radius:4px}
+pre{background:var(--doc-code);padding:14px 16px;border-radius:10px;overflow-x:auto;line-height:1.55;margin:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.callout{border-left:3px solid var(--doc-warn);padding:8px 14px;background:var(--doc-card);border-radius:0 8px 8px 0;font-size:14px;max-width:880px}
+.decide{counter-reset:d;list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;max-width:880px}
+.decide li{background:var(--doc-card);border:1px solid var(--doc-line);border-radius:10px;padding:12px 14px 12px 46px;position:relative}
+.decide li::before{counter-increment:d;content:counter(d);position:absolute;left:14px;top:12px;width:22px;height:22px;border-radius:50%;background:var(--doc-accent);color:var(--doc-bg);font:700 12px/22px Manrope,sans-serif;text-align:center}
+.rec{color:var(--doc-accent);font-weight:700}
+
+/* ── 앱 화면 그림 (밝은 앱 화면 고정) ── */
+.frames{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.fig{display:flex;flex-direction:column;gap:10px;margin:0;max-width:100%;min-width:0}
+.fig figcaption{font-size:13px;color:var(--doc-muted);max-width:390px}
+.fig figcaption b{color:var(--doc-ink)}
+.frame{--app:#F6F4EE;--card:#FFFDF9;--ink:#252721;--ink2:#3B3D36;--muted:#75776E;--faint:#A3A399;--line:#E2DDD2;--soft:#ECE8DF;--field:#EDE9E0;--rose:#994A5A;--rose-ink:#7E3B49;--rule:#D9C4C9;--ok:#2F6B4F;--warn:#8A5A12;--warnbg:#F6EEDD;--chip:#F4F1EA;
+  background:var(--app);color:var(--ink);border-radius:16px;overflow:hidden;box-shadow:0 14px 34px rgba(20,22,18,.18);font-size:15px}
+.frame.desk{width:100%;max-width:1200px}
+.frame.phone{width:390px;max-width:100%;border-radius:28px;border:8px solid #22231F}
+.gnb{display:flex;align-items:center;justify-content:space-between;height:60px;padding:0 24px;border-bottom:1px solid var(--line);background:var(--app)}
+.phone .gnb{height:52px;padding:0 16px}
+.logo{font:800 21px Manrope,sans-serif;letter-spacing:-1.2px}.logo i{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--rose);margin-left:2px}
+.gnav{display:flex;gap:22px;font-size:13px;color:var(--muted)}.gnav .on{color:var(--ink);font-weight:700}
+.page{padding:34px 40px 40px}.phone .page{padding:20px 16px 24px}
+.ptitle{font:700 40px/1.05 Manrope,'Noto Sans KR',sans-serif;letter-spacing:-.03em;margin:0 0 18px}
+.phone .ptitle{font-size:30px;margin-bottom:14px}
+.back{font-size:13px;color:var(--muted);margin:0 0 10px;display:block}
+.pills{display:flex;gap:6px;margin:0 0 16px;flex-wrap:wrap}.pills span{min-width:36px;height:32px;padding:0 10px;border-radius:16px;display:grid;place-items:center;font:600 13px Manrope,sans-serif;background:var(--soft);color:var(--ink2)}.pills .on{background:var(--ink);color:#fff}
+.tabs{display:flex;gap:24px;border-bottom:1px solid var(--line);margin:0 0 16px;font-size:14px;color:var(--muted)}.tabs span{padding:0 0 10px}.tabs .on{color:var(--ink);font-weight:700;box-shadow:inset 0 -2px 0 var(--ink)}
+.tools{display:flex;gap:8px;align-items:center;margin:0 0 20px;flex-wrap:wrap}
+.find{flex:1;min-width:140px;height:44px;border-radius:10px;background:var(--field);display:flex;align-items:center;padding:0 14px;color:var(--faint);font-size:14px}
+.tbtn{height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-size:14px;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.layout{display:grid;grid-template-columns:168px minmax(0,1fr) 372px;gap:28px;align-items:start}
+.toc{display:flex;flex-direction:column;gap:2px;font-size:13.5px;position:relative}
+.toc a{display:flex;justify-content:space-between;padding:7px 10px;border-radius:8px;color:var(--ink2);text-decoration:none}
+.toc a small{color:var(--faint);font:500 12px Manrope,sans-serif}
+.toc a.on{background:var(--card);font-weight:700;box-shadow:inset 3px 0 0 var(--rose)}
+.toc .sep{height:1px;background:var(--line);margin:6px 10px}
+.set-h{display:flex;align-items:baseline;justify-content:space-between;margin:0 0 12px;gap:10px}
+.set-h h4{margin:0;font:700 17px 'Noto Sans KR',sans-serif}
+.set-h small{font-size:13px;color:var(--muted)}
+.chiprow{display:flex;gap:6px;overflow:hidden;margin:0 0 14px}
+.chiprow span{flex:none;height:32px;padding:0 12px;border-radius:16px;background:var(--soft);font-size:13px;display:grid;place-items:center;color:var(--ink2)}.chiprow .on{background:var(--ink);color:#fff}
+.hz-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.phone .hz-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+
+/* 한자 카드 */
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:14px}
+.sheet{position:relative;background:rgba(37,39,33,.28);padding-top:56px}
+.sheet .card{border-radius:18px 18px 0 0;border:0;min-height:560px;box-shadow:0 -6px 24px rgba(0,0,0,.12)}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:-6px auto 0}
+.c-head{display:flex;gap:14px;align-items:flex-start}
+.c-ch{font:300 64px/1 'Noto Sans SC',sans-serif;letter-spacing:-.02em}
+.c-meta{flex:1;display:flex;flex-direction:column;gap:3px;padding-top:4px;min-width:0}
+.c-rd{font:600 17px Manrope,sans-serif;display:flex;gap:6px;flex-wrap:wrap}
+.c-rd span+span::before{content:'·';color:var(--faint);margin-right:6px}
+.c-ref{font-size:13px;color:var(--muted)}
+.c-ref b{font-weight:500;color:var(--ink2)}
+.c-x{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--muted);flex:none;margin:-8px -8px 0 0}
+.rd{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:12px}
+.rd-h{display:flex;align-items:center;gap:10px}
+.rd-h .p{font:700 16px Manrope,sans-serif}
+.rd-h .zh{font:400 15px 'Noto Sans SC',sans-serif;color:var(--ink2);background:var(--soft);border-radius:6px;padding:0 6px}
+.rd-h .n{font-size:12px;color:var(--faint)}
+.rd-h .hear{margin-left:auto;height:36px;padding:0 10px 0 8px;border-radius:18px;border:1px solid var(--line);display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink2)}
+.rd-h .hear [lang]{font-size:13px}
+.sense{display:flex;flex-direction:column;gap:6px}
+.sense .g{font-size:13.5px;font-weight:700;color:var(--ink2)}
+.sense .g small{font-weight:400;color:var(--muted)}
+.wchips{display:flex;flex-wrap:wrap;gap:6px}
+.wc{min-height:44px;border-radius:10px;background:var(--chip);border:1px solid transparent;padding:5px 10px 6px;display:flex;flex-direction:column;align-items:flex-start;line-height:1.25;text-align:left;position:relative}
+.wc .wp{font:500 11.5px Manrope,sans-serif;color:var(--muted)}
+.wc .wz{font:400 17px 'Noto Sans SC',sans-serif}
+.wc .wk{font-size:12px;color:var(--ink2)}
+.wc em{font-style:normal;color:var(--rose-ink);font-weight:700}
+.wc .wz em{font-weight:500}
+.wc.mine{border-color:var(--rule)}
+.wc.mine::after{content:'';position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--rose)}
+.wc.known .wk::after{content:' ✓';color:var(--ok);font-weight:700}
+.phr{display:flex;flex-direction:column;gap:4px;border-left:2px solid var(--line);padding-left:10px}
+.phr div{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.phr [lang^=zh]{font-size:16px}.phr .pp{font:500 11.5px Manrope,sans-serif;color:var(--muted)}.phr .pk{font-size:13px;color:var(--ink2)}
+.linkbtn{align-self:flex-start;min-height:36px;display:flex;align-items:center;font-size:13px;font-weight:700;color:var(--rose-ink)}
+.other{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}
+.other b{font:600 13px Manrope,sans-serif;color:var(--ink2)}
+.watch{background:var(--warnbg);border-radius:10px;padding:9px 12px;display:flex;flex-direction:column;gap:4px;font-size:13px}
+.watch .lab{font-weight:700;color:var(--warn);font-size:12px}
+.watch div{display:flex;gap:6px;flex-wrap:wrap;align-items:baseline}
+.watch [lang^=zh]{font-size:15px}
+.watch .wp2{font:500 11.5px Manrope,sans-serif;color:var(--muted)}
+.cell{background:var(--card);border:1px solid var(--line);border-radius:12px;display:grid;place-items:center;position:relative;min-height:84px;padding:0}
+.cell .ch{font:400 40px/1 'Noto Sans SC',sans-serif}
+.cell.unk{border-color:var(--rose);background:#FBF1F3}
+.cell.unk::after{content:'모름';position:absolute;top:5px;right:7px;font:700 10.5px 'Noto Sans KR',sans-serif;color:var(--rose-ink)}
+.cell.ok::after{content:'✓';position:absolute;top:4px;right:8px;font:700 12px Manrope,sans-serif;color:var(--faint)}
+.cell.sel{box-shadow:0 0 0 2px var(--ink)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin:12px 0 0;flex-wrap:wrap}
+.lg{display:inline-block;width:22px;height:16px;border-radius:5px;border:1px solid var(--line);background:var(--card);vertical-align:-3px;margin-right:6px;position:relative}
+.lg.unk{border-color:var(--rose);background:#FBF1F3}
+.startbar{display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap}
+.b-pri{height:48px;padding:0 18px;border-radius:12px;background:var(--ink);color:#fff;font-weight:700;display:flex;align-items:center;gap:8px}
+.b-sec{height:48px;padding:0 16px;border-radius:12px;background:#F3E4E7;color:var(--rose-ink);font-weight:700;display:flex;align-items:center;gap:6px}
+.b-pri small,.b-sec small{font:600 13px Manrope,sans-serif;opacity:.8}
+/* 넘기기 */
+.flow{display:flex;flex-direction:column;background:var(--app);min-height:720px}
+.desk .flow{min-height:560px;border:1px solid var(--line);border-radius:16px;background:var(--card)}
+.f-top{display:flex;align-items:center;gap:10px;height:52px;padding:0 6px 0 10px;font-size:13px;color:var(--muted)}
+.f-top .prog{font:600 13px Manrope,'Noto Sans KR',sans-serif;color:var(--ink2);flex:1;text-align:center}
+.f-top button{min-width:44px;height:44px;border-radius:10px;display:grid;place-items:center;color:var(--muted);font-size:13px;padding:0 6px}
+.pbar{height:3px;background:var(--line);margin:0 16px;border-radius:2px;overflow:hidden}.pbar i{display:block;height:100%;background:var(--ink)}
+.last{margin:12px 16px 0;padding:6px 6px 6px 12px;border-radius:12px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;gap:10px;font-size:13px;min-height:52px}
+.desk .last{background:var(--app)}
+.last .lk{font-size:11.5px;color:var(--faint);flex:none}
+.last .lch{font:400 22px 'Noto Sans SC',sans-serif;flex:none}
+.last .lbody{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3}
+.last .lpy{font:600 13px Manrope,sans-serif}
+.last .lgl{color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.last .fix{min-height:44px;padding:0 12px;border-radius:10px;color:var(--rose-ink);font-weight:700;font-size:13px;white-space:nowrap;flex:none}
+.q{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:300px}
+.q .big{font:300 150px/1 'Noto Sans SC',sans-serif}
+.q .hint{font-size:13px;color:var(--faint)}
+.ans2{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 18px}
+.ans2 button{height:64px;border-radius:16px;font-weight:700;font-size:17px}
+.b-no{background:#F3E4E7;color:var(--rose-ink)}.b-yes{background:var(--ink);color:#fff}
+.keys{display:flex;justify-content:center;gap:14px;font-size:11.5px;color:var(--faint);padding:0 0 16px;flex-wrap:wrap}
+kbd{font:600 11px Manrope,sans-serif;border:1px solid var(--line);border-radius:4px;padding:0 5px;background:var(--app);color:var(--muted)}
+.flow .card{border:0;border-radius:0;background:transparent;padding:14px 16px 0}
+.marked{display:flex;align-items:center;gap:8px;font-size:12.5px}
+.marked span{font-weight:700;color:var(--rose-ink);background:#F3E4E7;border-radius:6px;padding:3px 8px}
+.marked button{min-height:36px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-size:12.5px}
+.nextbar{position:sticky;bottom:0;margin:6px -16px 0;padding:14px 16px 18px;background:linear-gradient(rgba(246,244,238,0),var(--app) 28%)}
+.nextbar button{width:100%;height:60px;border-radius:16px;background:var(--ink);color:#fff;font-weight:700;font-size:17px}
+.endbox{padding:30px 18px 22px;display:flex;flex-direction:column;gap:16px}
+.endbox h4{font:700 26px/1.2 'Noto Sans KR',sans-serif;margin:0}
+.endbox p{margin:0;color:var(--muted);font-size:14px}
+.endlist{display:flex;flex-direction:column;gap:8px}
+.endlist button{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;text-align:left;min-height:60px}
+.endlist .ech{font:400 30px/1 'Noto Sans SC',sans-serif}
+.endlist .epy{font:600 13px Manrope,sans-serif}
+.endlist .egl{font-size:13px;color:var(--ink2)}
+.endbtns{display:flex;flex-direction:column;gap:8px}
+.endbtns .b-pri,.endbtns .b-sec{justify-content:center;height:56px}
+.guest{font-size:12.5px;color:var(--muted);text-align:center}
+.layout2{display:grid;grid-template-columns:168px minmax(0,1fr) 380px;gap:28px;align-items:start}
+.toc a small.u{color:var(--rose-ink);font-weight:700}
+@media (max-width:1100px){.layout2{grid-template-columns:minmax(0,1fr)}.layout2 .toc{display:none}}
+.parts{font-size:13px;color:var(--muted)}
+.parts [lang^=zh]{color:var(--ink2);font-size:14px}
+/* 단어 카드(AJ 부품) */
+.wcard{display:flex;flex-direction:column;gap:12px}
+.wcard .bk{font-size:13px;color:var(--muted);min-height:36px;display:flex;align-items:center;gap:4px}
+.wcard .bk [lang]{font-size:15px;color:var(--ink2)}
+.wcard .hw{display:flex;align-items:baseline;gap:10px}
+.wcard .hw [lang^=zh]{font:400 30px 'Noto Sans SC',sans-serif}
+.wcard .hw .p{font:500 14px Manrope,sans-serif;color:var(--muted)}
+.wcard .mean{font-size:16px;font-weight:700}
+.wcard .ex{border-left:2px solid var(--line);padding-left:10px;display:flex;flex-direction:column;gap:2px}
+.wcard .ex [lang^=zh]{font-size:17px}.wcard .ex .k{font-size:13.5px;color:var(--ink2)}
+.acts{display:flex;justify-content:flex-end;gap:10px}
+.rb{width:44px;height:44px;border-radius:50%;display:grid;place-items:center}
+.rb.ex2{background:#ECE8DF;color:var(--ink2)}.rb.sv{background:var(--rose);color:#fff}
+.src{font-size:12px;color:var(--faint)}
+@media (max-width:1100px){.layout{grid-template-columns:minmax(0,1fr)}.toc{display:none}}
+@media (prefers-reduced-motion:no-preference){.wc,.cell{transition:transform .12s}.wc:hover,.cell:hover{transform:translateY(-1px)}}
+</style>
+<body>
+<main class="doc">
+
+<header>
+  <p class="eyebrow">v2-AL · 설계 2판 · 2026-10-13 KST · 1판 오너 승인 반영</p>
+  <h1>HSK 한자 탭 — 소리 내 읽고, 모르면 바로 체크</h1>
+  <p class="lead">중국어 레벨 화면(AJ)의 세 번째 탭 「한자」. 글자만 보고 스스로 읽고 뜻을 떠올린다. <b>병음 · 뜻은 「몰라요」를 누른 뒤에만</b> 나온다. 아는 글자는 한 번 눌러 바로 다음, 모르는 글자는 한 번 눌러 체크와 답 카드.</p>
+  <ul class="points">
+    <li><b>목록 · 문제 화면에 병음 · 뜻 0.</b> 목록은 글자와 표시(모름 · 확인함)만.</li>
+    <li><b>넘기기:</b> 큰 글자 하나 + [몰라요] [알아요]. 알아요 = <b>탭 1번에 다음 글자</b>. 몰라요 = 체크 + 그 자리에서 답 카드 → [다음] (탭 2번).</li>
+    <li><b>「방금」 줄:</b> 알아요로 넘긴 글자의 답(소리 전부 · 첫 뜻)을 다음 화면 위에 한 줄로 보여 준다. 틀렸으면 [몰랐어요] 한 번으로 고친다 — 확인에 드는 탭 0.</li>
+    <li><b>기록:</b> 글자마다 학습 이벤트 1건(<code>review_events</code>, <code>source:'hanzi'</code>). 새 테이블 · 새 열 0. 모름 표시 = 그 글자의 마지막 기록이 「몰라요」.</li>
+    <li><b>급수 기준: HSK 2026</b>(오너 제공 파일). 아래 그림의 글자 묶음은 2021 목록으로 그린 예시 — 파일을 받으면 다시 계산한다.</li>
+    <li>1판에서 승인된 것 그대로: AJ 「한자」 탭 · 12자 묶음 · 조어력 순 · 문법 글자 따로 · 답 카드(소리 → 뜻 갈래 → 단어) · 저장은 단어만(AJ 단어 카드).</li>
+  </ul>
+</header>
+
+<section>
+  <h2>1. 넓은 화면 — 목록과 넘기기</h2>
+  <p class="sec-note">가운데 목록은 글자만, 오른쪽에서 넘기기. 목차 숫자는 그 묶음의 「모름」 수.</p>
+  <figure class="fig">
+  <div class="frame desk" role="img" aria-label="넓은 화면: HSK 1 한자 묶음 3 목록과 넘기기 화면">
+    <div class="gnb"><span class="logo">manabi<i></i></span><span class="gnav"><span>오늘</span><span class="on">교재</span><span>발견</span><span>복습</span><span>내 서재</span></span></div>
+    <div class="page">
+      <span class="back">← 교재</span>
+      <p class="ptitle">HSK 1 한자</p>
+      <div class="pills"><span class="on">1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span></div>
+      <div class="tabs"><span>단어</span><span>문형</span><span class="on">한자</span></div>
+      <div class="layout2">
+        <nav class="toc" aria-label="묶음 목차">
+          <a href="#">문법 글자 <small>모름 2</small></a>
+          <span class="sep"></span>
+          <a href="#">묶음 1 <small>모름 1</small></a>
+          <a href="#">묶음 2 <small>모름 3</small></a>
+          <a href="#" class="on">묶음 3 <small class="u">모름 4</small></a>
+          <a href="#">묶음 4 <small>아직</small></a>
+          <a href="#">묶음 5 <small>아직</small></a>
+          <a href="#">…</a>
+        </nav>
+        <div>
+          <div class="set-h"><h4>묶음 3</h4><small>12자 · 모름 4 · 아직 1</small></div>
+          <div class="startbar"><button class="b-pri" type="button">넘기며 확인 <small>12</small></button><button class="b-sec" type="button">모름만 <small>4</small></button></div>
+          <div class="hz-grid" id="gridDesk"></div>
+          <div class="legend"><span><i class="lg unk"></i>모름(마지막 확인에서)</span><span><i class="lg"></i>✓ 확인함 · 표시 없음 = 아직</span></div>
+        </div>
+        <div class="flow" id="flowDesk"></div>
+      </div>
+    </div>
+  </div>
+  <figcaption><b>넘기며 확인</b> = 그 묶음 12자를 <b>섞어서</b>. <b>모름만</b> = 모름 표시 글자만 섞어서. 글자 칸을 누르면 그 글자부터 시작(답은 안 보임). 넓은 화면은 키보드: <kbd>Space</kbd>·<kbd>→</kbd> 알아요/다음, <kbd>↓</kbd>·<kbd>X</kbd> 몰라요, <kbd>←</kbd> 이전, <kbd>Esc</kbd> 끝내기.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>2. 휴대폰 — 한 손으로 넘기기</h2>
+  <p class="sec-note">버튼은 엄지 자리(화면 아래)에 크게. 문제 화면에는 큰 글자와 버튼 둘뿐.</p>
+  <div class="frames">
+    <figure class="fig">
+      <div class="frame phone" role="img" aria-label="휴대폰: 묶음 3 목록">
+        <div class="gnb"><span class="logo">manabi<i></i></span><span class="gnav"><span class="on">교재</span></span></div>
+        <div class="page">
+          <span class="back">← 교재</span>
+          <p class="ptitle">HSK 1 한자</p>
+          <div class="tabs"><span>단어</span><span>문형</span><span class="on">한자</span></div>
+          <div class="chiprow"><span>문법 글자</span><span>묶음 1</span><span>묶음 2</span><span class="on">묶음 3</span><span>묶음 4</span></div>
+          <div class="set-h"><h4>묶음 3</h4><small>모름 4 · 아직 1</small></div>
+          <div class="startbar"><button class="b-pri" type="button" style="flex:1;justify-content:center">넘기며 확인 <small>12</small></button><button class="b-sec" type="button">모름만 <small>4</small></button></div>
+          <div class="hz-grid" id="gridPhone"></div>
+        </div>
+      </div>
+      <figcaption><b>목록</b> — 글자만. 병음 · 뜻 0. 모름은 장미 칸, 확인함은 흐린 ✓, 아직은 표시 없음.</figcaption>
+    </figure>
+
+    <figure class="fig">
+      <div class="frame phone"><div class="flow" id="flowQ"></div></div>
+      <figcaption><b>문제</b> — 会. 위의 「방금」 줄은 앞에서 「알아요」로 넘긴 学의 답. 맞았으면 그냥 지나가고, 틀렸으면 [몰랐어요] 한 번. 「소리 내어 읽고…」 안내는 처음 한 번만.</figcaption>
+    </figure>
+
+    <figure class="fig">
+      <div class="frame phone"><div class="flow" id="flowA"></div></div>
+      <figcaption><b>몰라요 뒤</b> — 行을 모름으로 체크하고 그 자리에서 답 카드. 아래 [다음 →] 한 번이면 다음 글자. 잘못 눌렀으면 「취소」. 단어 칩을 누르면 AJ 단어 카드(저장 · 제외).</figcaption>
+    </figure>
+
+    <figure class="fig">
+      <div class="frame phone"><div class="flow"><div class="f-top"><button type="button" aria-label="목록으로">✕</button><span class="prog">묶음 3 · 끝</span><span style="width:44px"></span></div><div class="pbar"><i style="width:100%"></i></div>
+        <div class="endbox">
+          <h4>12자 중 모름 4</h4>
+          <p>다음에 이 묶음을 열면 모름 표시로 남아 있어요.</p>
+          <div class="endlist" id="endList"></div>
+          <div class="endbtns"><button class="b-pri" type="button">모른 4자만 다시</button><button class="b-sec" type="button" style="background:var(--soft);color:var(--ink2)">다음 묶음 →</button></div>
+        </div></div></div>
+      <figcaption><b>끝</b> — 모른 글자만 답과 함께 다시 보여 주고(누르면 답 카드), [모른 4자만 다시]는 섞어서. 로그인 전이면 「로그인하면 모름 표시가 남아요」 한 줄이 더 붙는다.</figcaption>
+    </figure>
+  </div>
+
+  <h3>답 카드 예(몰라요 뒤에 나오는 화면 — 1판 규칙 그대로)</h3>
+  <div class="frames">
+    <figure class="fig"><div class="frame phone"><div class="sheet" id="cardFa"></div></div>
+      <figcaption><b>发</b> — 간체 하나에 정체 둘(發 · 髮). 소리 줄마다 正 · 훈음.</figcaption></figure>
+    <figure class="fig"><div class="frame phone"><div class="sheet" id="cardDe"></div></div>
+      <figcaption><b>得</b> — 문법 갈래는 짧은 구 + 「문형 보기」. 뜻이 옅어진 觉得 · 记得는 따로 묶음.</figcaption></figure>
+    <figure class="fig"><div class="frame phone"><div class="sheet"><div class="card wcard">
+        <div class="grab"></div>
+        <button class="bk" type="button">‹ <span lang="zh-Hans">学</span> 카드로</button>
+        <div class="hw"><span lang="zh-Hans">学院</span><span class="p" lang="zh-Latn-pinyin"><b style="color:#7E3B49">xué</b>yuàn</span></div>
+        <p class="mean" style="margin:0">단과대학 · 전문 교육 기관</p>
+        <div class="watch"><span class="lab">주의</span><div>한국어 「학원」(사설 학원)과 달라요.</div></div>
+        <div class="ex"><span lang="zh-Hans">她在艺术学院学习绘画。</span><span class="k">그녀는 예술대학에서 그림을 공부해요.</span></div>
+        <div class="acts"><span class="rb ex2" aria-label="제외 — 아는 단어로 옮기기"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></span><span class="rb sv" aria-label="저장"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span></div>
+      </div></div></div>
+      <figcaption><b>단어로 넘어가기</b> — 답 카드의 学院 칩을 누른 뒤. AJ 단어 카드 그대로(저장 = <code>/api/learning/vocabulary</code> <code>action:'save'</code>, 제외 = <code>markKnown</code>).</figcaption></figure>
+  </div>
+</section>
+
+<section>
+  <h2>3. 넘기기 규칙</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>자리</th><th>규칙</th><th>계약(검사)</th></tr></thead>
+    <tbody>
+      <tr><td>목록</td><td>글자 · 표시(모름 / 확인함 / 아직)만. 칸 누르기 = 그 글자부터 넘기기</td><td>목록 DOM에 병음 · 뜻 글자 0</td></tr>
+      <tr><td>시작</td><td>[넘기며 확인 12] = 묶음 전체를 섞어서 · [모름만 N] = 모름 표시만 섞어서(N = 0이면 숨김)</td><td>같은 묶음을 두 번 시작해도 순서가 고정되지 않음(위치로 외우기 방지)</td></tr>
+      <tr><td>문제</td><td>큰 글자 150px 하나 + [몰라요] [알아요](높이 64px, 화면 아래). 진행 「묶음 3 · 3 / 12」 + 진행 막대</td><td>문제 화면 DOM에 병음 · 뜻 0</td></tr>
+      <tr><td>알아요</td><td>바로 다음 글자(전환 120ms 이하, 다음 글자 자료는 미리 불러옴). 직전 글자는 「방금」 줄로</td><td>알아요 → 다음 글자까지 탭 1</td></tr>
+      <tr><td>방금 줄</td><td>직전 글자 · <b>소리 전부</b> · 첫 뜻(1줄, 말줄임). [몰랐어요] = 그 글자를 모름으로 고침. 다음 결정을 하면 사라짐</td><td>고침은 기록을 늘리지 않고 그 1건을 바꿈</td></tr>
+      <tr><td>몰라요</td><td>모름 체크 + 그 자리에서 답 카드(1판 카드). 위에 「모름 체크됨 · 취소」, 아래 고정 [다음 →]</td><td>몰라요 → 다음 글자까지 탭 2</td></tr>
+      <tr><td>이전</td><td>왼쪽 위 「이전」 · <kbd>←</kbd>: 직전 글자로(고른 답은 남고 다시 고를 수 있음)</td><td>—</td></tr>
+      <tr><td>끝</td><td>「12자 중 모름 N」 + 모른 글자(답 함께, 누르면 카드) + [모른 N자만 다시] [다음 묶음 →]. 중간에 ✕로 나가도 그때까지 기록은 남음</td><td>—</td></tr>
+      <tr><td>기록</td><td>글자마다 1건: <code>{lang:'zh', source:'hanzi', item_key:'行', correct, detail:{level, set, std:'hsk2026'}}</code>. 다음 결정 때(또는 끝 · 나가기 때) 확정 → 방금 줄 고침이 확정 전에 들어감</td><td>한 번 넘기기에서 글자당 1건 · <code>logReviewEvents</code>(기존 함수)로만 씀</td></tr>
+      <tr><td>로그인 전</td><td>넘기기는 그대로 되고 표시는 그 화면에서만. 기록 0, 브라우저 저장 0(AJ 계약과 같음)</td><td>로그인 전 쓰기 0</td></tr>
+    </tbody>
+  </table></div>
+  <h3>답 카드(1판 승인 규칙)</h3>
+  <p class="sec-note" style="margin:0">머리(글자 · 소리 · 참고 = 正 · 훈음 · 구성) → 주의 → 소리별(단어 수 순, 대표 단어 듣기) → 뜻 갈래별(현대 뜻 10자 · 단어 칩 3개) · 문법 갈래는 짧은 구 + 문형 보기. 단어 칩 → AJ 단어 카드. 넘기기 안의 답 카드는 닫기(✕) 대신 [다음 →].</p>
+</section>
+
+<section>
+  <h2>4. 엄격 검토 — 학습자 관점</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>위험</th><th>설계가 막는 법</th></tr></thead>
+    <tbody>
+      <tr><td>「알아요」를 너무 쉽게 누름(아는 착각)</td><td>방금 줄이 답을 보여 줌 — 추가 탭 없이 확인, 틀리면 한 번에 고침</td></tr>
+      <tr><td>소리 하나만 알고 「알아요」(行 = xíng만)</td><td>방금 줄에 소리 전부(xíng · háng). 모르는 소리가 있으면 [몰랐어요]</td></tr>
+      <tr><td>목록 순서로 외움(위치 단서)</td><td>넘기기는 매번 섞음. 목록은 글자만이라 순서 단서가 있어도 답은 안 보임</td></tr>
+      <tr><td>잘못 누름(몰라요/알아요)</td><td>「취소」(몰라요 뒤) · 「이전」 · 방금 줄 [몰랐어요]</td></tr>
+      <tr><td>모르는 글자가 많아 지침</td><td>12자 묶음 단위로 끝이 보임 · 끝에서 「모른 N자만 다시」</td></tr>
+      <tr><td>체크가 복습으로 이어지지 않음</td><td>모름 표시 + 「모름만」이 글자 쪽 반복. 단어 저장은 답 카드 → AJ 단어 카드 → 기존 복습(FSRS). 글자 자체 간격 반복은 하지 않음(1판 결정)</td></tr>
+      <tr><td>학습 기록 화면 오염</td><td><code>source:'hanzi'</code>는 새 값 — 주간 보고 · 약점 진단이 모르는 source를 어떻게 다루는지 개발 세션이 확인(활동량에는 넣고 단어 정답률에는 섞지 않음)</td></tr>
+    </tbody>
+  </table></div>
+  <h3>급수 기준 HSK 2026 — 같이 정할 것</h3>
+  <p class="callout" style="margin:0">같은 레벨 화면 안에서 「한자」 탭만 2026이고 「단어」 · 「문형」 탭(AJ, 우리 사전 급수)이 2021이면, 같은 「HSK 1」 알약이 탭마다 다른 범위를 뜻하게 된다. 2026 개정은 1급 글자가 246자로 줄고 많은 글자가 급수를 옮겼다. <b>AJ도 같은 파일로 맞추는 것을 권장</b> — AJ는 아직 미착수라 지금 바꾸는 비용이 가장 작다. 우리 사전 단어 급수 재배정은 콘텐츠 작업으로 따로 잡는다.</p>
+</section>
+
+<section>
+  <h2>5. 사례 대조(2판 추가분)</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>사례</th><th>판정</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr><td>Anki · Skritter 자기 채점(앞면만 보고 판단)</td><td>채택</td><td>답을 가리고 떠올리기 → 시험 효과(Rowland 2014, g≈0.50)</td></tr>
+      <tr><td>Anki 「답 보기」 뒤 채점(탭 2번)</td><td>부분 채택</td><td>모르는 글자만 답을 펼침. 아는 글자는 답 보기 없이 탭 1번 — 대신 방금 줄로 확인</td></tr>
+      <tr><td>WaniKani 틀린 항목 다시</td><td>채택</td><td>끝에서 「모른 N자만 다시」(섞어서)</td></tr>
+      <tr><td>Kornell 2009(큰 묶음이 간격상 유리)</td><td>채택</td><td>12자 묶음 전체를 한 번에 넘김</td></tr>
+      <tr><td>글자 카드 별도 간격 반복(HanziHero · Skritter)</td><td>보류</td><td>단어 FSRS와 이중 일정 · 1판 결정(저장은 단어만). 모름 표시 반복으로 대신</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>6. 결정</h2>
+  <ol class="decide">
+    <li>체크 기록 = 기존 학습 이벤트(<code>review_events</code>, <code>source:'hanzi'</code>). <span class="rec">권장</span> — 새 테이블 · 열 0, 기존 함수로만 씀.</li>
+    <li>AJ 「단어」 · 「문형」 탭도 HSK 2026 파일로 맞춤. <span class="rec">권장</span> — 같은 알약이 탭마다 다른 범위가 되지 않게.</li>
+    <li>로그인 전에는 체크가 그 화면에서만(저장 0). <span class="rec">권장</span> — AJ의 「브라우저에만 남는 체크 저장 0」 계약과 같다.</li>
+  </ol>
+</section>
+
+</main>
+<script>
+const CELLS = [['分','ok'],['学','ok'],['行','unk'],['会','unk'],['好','ok'],['天','ok'],['中','ok'],['用','ok'],['说','ok'],['后','unk'],['过','unk'],['高','']];
+function cellHTML([ch, st]) {
+  const s = st === 'unk' ? ', 모름' : st === 'ok' ? ', 확인함' : ', 아직';
+  return `<button type="button" class="cell ${st}" aria-label="${ch}${s} — 이 글자부터 넘기기"><span class="ch" lang="zh-Hans">${ch}</span></button>`;
+}
+document.getElementById('gridDesk').innerHTML = CELLS.map(cellHTML).join('');
+document.getElementById('gridPhone').innerHTML = CELLS.map(cellHTML).join('');
+function fTop(n, total) {
+  return `<div class="f-top"><button type="button" aria-label="이전 글자">‹ 이전</button><span class="prog" role="status">묶음 3 · ${n} / ${total}</span><button type="button" aria-label="끝내기">✕</button></div><div class="pbar"><i style="width:${Math.round(n / total * 100)}%"></i></div>`;
+}
+function qScreen({ n, last, ch, hint, keys }) {
+  return fTop(n, 12) +
+    (last ? `<div class="last" aria-label="방금 넘긴 글자의 답"><span class="lk">방금</span><span class="lch" lang="zh-Hans">${last.ch}</span><span class="lbody"><span class="lpy" lang="zh-Latn-pinyin">${last.py}</span><span class="lgl">${last.gl}</span></span><button class="fix" type="button">몰랐어요</button></div>` : '') +
+    `<div class="q"><span class="big" lang="zh-Hans">${ch}</span>${hint ? '<span class="hint">소리 내어 읽고, 뜻을 떠올려 보세요</span>' : ''}</div>` +
+    `<div class="ans2"><button class="b-no" type="button">몰라요</button><button class="b-yes" type="button">알아요</button></div>` +
+    (keys ? `<div class="keys"><span><kbd>↓</kbd> 몰라요</span><span><kbd>Space</kbd> 알아요</span><span><kbd>←</kbd> 이전</span><span><kbd>Esc</kbd> 끝내기</span></div>` : '');
+}
+const LAST_XUE = { ch: '学', py: 'xué', gl: '배우다 · 학교' };
+document.getElementById('flowDesk').innerHTML = qScreen({ n: 3, last: LAST_XUE, ch: '会', keys: true });
+document.getElementById('flowQ').innerHTML = qScreen({ n: 3, last: LAST_XUE, ch: '会', hint: true });
+const END = [['行', 'xíng · háng', '가다 · 하다 / 줄 · 업종'], ['会', 'huì · kuài', '할 줄 알다 · 모이다 / 셈'], ['后', 'hòu', '뒤 · 후'], ['过', 'guò', '지나다 · ~한 적 있다']];
+document.getElementById('endList').innerHTML = END.map(([c, p, g]) => `<button type="button"><span class="ech" lang="zh-Hans">${c}</span><span style="display:flex;flex-direction:column"><span class="epy" lang="zh-Latn-pinyin">${p}</span><span class="egl">${g}</span></span></button>`).join('');
+function chip([zh, sy, at, ko, koHi, state]) {
+  const ss = sy.split(' ');
+  const zs = [...zh];
+  const py = ss.map((s, i) => i === at ? `<em>${s}</em>` : s).join('');
+  const zz = zs.map((c, i) => i === at ? `<em>${c}</em>` : c).join('');
+  const kk = koHi ? ko.replace(koHi, `<em>${koHi}</em>`) : ko;
+  const cls = state ? ` ${state}` : '';
+  const extra = state === 'mine' ? ', 내 단어' : state === 'known' ? ', 아는 단어' : '';
+  return `<button type="button" class="wc${cls}" aria-label="${zh} ${ss.join('')} ${ko}${extra}"><span class="wp" lang="zh-Latn-pinyin">${py}</span><span class="wz" lang="zh-Hans">${zz}</span><span class="wk">${kk}</span></button>`;
+}
+const SPK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/></svg>';
+const X = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+function card(d, sheet, foot) {
+  let h = `<div class="card">${sheet ? '<div class="grab"></div>' : ''}<div class="c-head"><span class="c-ch" lang="zh-Hans">${d.ch}</span><div class="c-meta">` +
+    `<span class="c-rd" lang="zh-Latn-pinyin">${d.py.map(p => `<span>${p}</span>`).join('')}</span>` +
+    (d.ref ? `<span class="c-ref">참고 <b>${d.ref}</b></span>` : '') +
+    (d.parts ? `<span class="parts">구성 <span lang="zh-Hant">${d.parts}</span></span>` : '') +
+    `</div>${d.noX ? "" : `<button class="c-x" type="button" aria-label="닫기">${X}</button>`}</div>`;
+  if (d.watch) h += `<div class="watch"><span class="lab">주의</span>${d.watch.map(([w, p, k, why]) => `<div><span lang="zh-Hans">${w}</span><span class="wp2" lang="zh-Latn-pinyin">${p}</span><span>${k} — ${why}</span></div>`).join('')}</div>`;
+  for (const r of d.rd) {
+    h += `<div class="rd"><div class="rd-h"><span class="p" lang="zh-Latn-pinyin">${r.py}</span>` +
+      (r.zheng ? `<span class="zh" lang="zh-Hant" title="정체">正 ${r.zheng}</span>` : '') +
+      (r.hun ? `<span class="n">참고 ${r.hun}</span>` : '') +
+      (r.n ? `<span class="n">단어 ${r.n}</span>` : r.fn ? `<span class="n">문법</span>` : '') +
+      (r.hear ? `<button class="hear" type="button" aria-label="${r.hear} 듣기">${SPK}<span lang="zh-Hans">${r.hear}</span></button>` : '') + `</div>`;
+    for (const s of r.s) {
+      h += `<div class="sense"><span class="g">${s.g}</span>`;
+      if (s.w) h += `<div class="wchips">${s.w.map(chip).join('')}</div>`;
+      if (s.phr) h += `<div class="phr">${s.phr.map(([z, p, k]) => `<div><span lang="zh-Hans">${z}</span><span class="pp" lang="zh-Latn-pinyin">${p}</span><span class="pk">${k}</span></div>`).join('')}</div><button class="linkbtn" type="button">문형 보기 ›</button>`;
+      h += `</div>`;
+    }
+    h += `</div>`;
+  }
+  if (d.other) h += `<p class="other" style="margin:0">다른 소리 · ${d.other.map(([p, g]) => `<b lang="zh-Latn-pinyin">${p}</b> ${g}`).join(' · ')}</p>`;
+  return h + (foot || "") + `</div>`;
+}
+const HANG = { noX: true, ch: '行', py: ['xíng', 'háng'], ref: '다닐 행', parts: '彳 · 亍',
+  watch: [['行李', 'xíngli', '짐', '글자 뜻으로 풀리지 않아요']],
+  rd: [
+    { py: 'xíng', n: 39, hear: '旅行', s: [
+      { g: '가다 · 다니다', w: [['旅行', 'lǚ xíng', 1, '여행', '행'], ['行人', 'xíng rén', 0, '행인', '행'], ['自行车', 'zì xíng chē', 1, '자전거', null]] },
+      { g: '하다 · 행하다', w: [['进行', 'jìn xíng', 1, '진행', '행'], ['举行', 'jǔ xíng', 1, '거행', '행'], ['实行', 'shí xíng', 1, '실행', '행']] },
+      { g: '된다 · 괜찮다', w: [['不行', 'bù xíng', 1, '안 된다', null]] }] },
+    { py: 'háng', n: 7, hear: '银行', s: [
+      { g: '줄 · 업종', w: [['银行', 'yín háng', 1, '은행', '행', 'mine'], ['行业', 'háng yè', 0, '업종', null]] }] }] };
+const FA = { ch: '发', py: ['fā', 'fà'], ref: '소리마다 정체가 달라요',
+  watch: [['沙发', 'shāfā', '소파', '소리만 빌린 외래어예요']],
+  rd: [
+    { py: 'fā', zheng: '發', hun: '쏠 발', n: 44, hear: '出发', s: [
+      { g: '내다 · 보내다', w: [['发送', 'fā sòng', 0, '발송', '발'], ['发表', 'fā biǎo', 0, '발표', '발'], ['发言', 'fā yán', 0, '발언', '발']] },
+      { g: '생기다 · 드러나다', w: [['发生', 'fā shēng', 0, '발생', '발'], ['发现', 'fā xiàn', 0, '발견', '발'], ['发烧', 'fā shāo', 0, '열이 나다', null]] },
+      { g: '펴다 · 키우다', w: [['发展', 'fā zhǎn', 0, '발전', '발'], ['开发', 'kāi fā', 1, '개발', '발'], ['发达', 'fā dá', 0, '발달', '발']] }] },
+    { py: 'fà', zheng: '髮', hun: '터럭 발', n: 2, hear: '头发', s: [
+      { g: '머리카락', w: [['头发', 'tóu fa', 1, '머리카락', null, 'known'], ['理发', 'lǐ fà', 1, '이발', '발']] }] }] };
+const DE = { ch: '得', py: ['dé', 'de'], ref: '얻을 득',
+  rd: [
+    { py: 'dé', n: 17, hear: '得到', s: [
+      { g: '얻다', w: [['得到', 'dé dào', 0, '얻다', null], ['取得', 'qǔ dé', 1, '취득', '득'], ['获得', 'huò dé', 1, '획득', '득']] }] },
+    { py: 'de', n: 18, hear: '觉得', s: [
+      { g: '문법 · 동사 뒤 정도 · 가능', phr: [['跑得快', 'pǎo de kuài', '빨리 달려요'], ['听得懂', 'tīng de dǒng', '알아들어요']] },
+      { g: '동사에 붙어 한 단어 <small>(得 뜻이 옅어요)</small>', w: [['觉得', 'jué de', 1, '느끼다', null, 'known'], ['记得', 'jì de', 1, '기억하다', null], ['懂得', 'dǒng de', 1, '이해하다', null]] }] }],
+  other: [['děi', '~해야 한다(말할 때)']] };
+const XUE = { ch: '学', py: ['xué'], ref: '正 學 · 배울 학',
+  watch: [['学院', 'xuéyuàn', '단과대학', '한국어 「학원」과 뜻이 달라요']],
+  rd: [
+    { py: 'xué', n: 47, hear: '学习', s: [
+      { g: '배우다', w: [['学习', 'xué xí', 0, '학습', '학', 'known'], ['同学', 'tóng xué', 1, '급우', null], ['留学生', 'liú xué shēng', 1, '유학생', '학']] },
+      { g: '학교 · 학문', w: [['学校', 'xué xiào', 0, '학교', '학', 'known'], ['大学', 'dà xué', 1, '대학', '학'], ['科学', 'kē xué', 1, '과학', '학']] }] }] };
+document.getElementById('flowA').innerHTML = fTop(4, 12) +
+  card(HANG, false, '<div class="nextbar"><button type="button">다음 →</button></div>').replace('<div class="card">', '<div class="card"><div class="marked"><span>모름 체크됨</span><button type="button">취소</button></div>');
+document.getElementById('cardFa').innerHTML = card(FA, true);
+document.getElementById('cardDe').innerHTML = card(DE, true);
+</script>
+</body>
+</html>

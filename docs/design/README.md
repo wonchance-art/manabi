@@ -45,6 +45,7 @@
 | ae | AE-R2 · AE-R3 — 단어창 3차 | [mocks/ae/ae.html](mocks/ae/ae.html) |
 | conv | v2-Z — 대화 모드 | [mocks/conv/conv.html](mocks/conv/conv.html) |
 | lv | LEVEL-LIST-AJ-001 — 레벨별 단어 · 문형 다시 열기(일 · 중) | [mocks/lv/lv.html](mocks/lv/lv.html) |
+| al | HANZI-TAB-AL-001 — 중국어 레벨 화면 「한자」 탭(글자만 보고 읽기 · 몰라요/알아요 넘기기 · 답 카드) | [mocks/al/al.html](mocks/al/al.html) |
 
 brand(아이콘 · 브랜드)는 Design 타입 보드라 파일 하나로 열리지 않아 아티팩트에만 둔다. mail(인증 메일)은 앱 화면이 아니라 화면 벽 밖이다.
 
