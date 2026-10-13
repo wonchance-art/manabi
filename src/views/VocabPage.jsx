@@ -831,9 +831,9 @@ function VocabWorkspace({ bookReview }) {
     setReviewFinished(false);
     setTypingAnswer('');
     setContextSelected(null);
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
+    // 알림 권한은 여기서 묻지 않는다(WALL-STATES-001 ⑥) — 복습을 시작할 때마다 설명 없이 묻던 자리라,
+    // 한 번 거부하면 학습 끝의 푸시 안내(StudySessionPage 「내일 이야기가 도착하면 알려드릴까요?」)와
+    // 내 정보의 알림 켜기까지 막혔다. 권한은 그 두 곳에서 사용자가 고른 뒤에만 요청한다.
   };
 
   // 복습 예정(학습한 단어) 먼저, 그다음 하루 한도 내 새 단어
