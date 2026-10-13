@@ -13,7 +13,7 @@
 // src/lib/data/jaWords.json(CC BY-SA 4.0, 이 파일만)이 중국어 단어의 일본어 표기·읽기로 화면에 닿는다
 // (오너 승인 범위 결정 #1337 2026-10-07).
 
-export const DATA_CREDITS_UPDATED = '2026년 10월 7일';
+export const DATA_CREDITS_UPDATED = '2026년 10월 13일';
 
 export const DATA_CREDIT_SECTIONS = [
   {
@@ -36,6 +36,15 @@ export const DATA_CREDIT_SECTIONS = [
         license: 'MIT',
         licenseUrl: 'https://opensource.org/license/mit',
         sourceUrl: 'https://github.com/ivankra/hsk30',
+      },
+      {
+        id: 'hsk-syllabus-2026',
+        name: '中文水平考试 HSK 考试大纲',
+        holder: '中外语言交流合作中心',
+        use: '단어의 HSK 급수 표시(2025년 11월 발표 · 2026년 7월 시행)',
+        license: '공식 시험 대강 — 단어·급수 목록만 사용',
+        licenseUrl: 'https://www.chinesetest.cn/',
+        sourceUrl: 'https://www.chinesetest.cn/',
       },
       {
         id: 'complete-hsk-vocabulary',

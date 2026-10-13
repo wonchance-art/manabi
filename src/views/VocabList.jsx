@@ -5,7 +5,7 @@ import ConfirmModal from '../components/ConfirmModal';
 import { hasUnsavedEdits, useDiscardGuard } from '../lib/useDiscardGuard';
 import { detectLang, displayWord } from '../lib/constants';
 import { refInline } from './refShared';
-import { refLevelLabel } from '../lib/refVocabIndex';
+import { ZH_HSK_LEVELS, zhHskLevelLabel } from '../lib/zhHskLevel';
 import { wordStage } from '../lib/growthStats';
 import { isVocabularyReviewDue } from '../lib/vocabularyLearningRead';
 
@@ -13,16 +13,10 @@ const EDIT_FIELDS = ['word_text', 'furigana', 'meaning', 'pos'];
 
 const LANG_CODE = { Japanese: 'ja', Chinese: 'zh-Hans', English: 'en', French: 'fr', Korean: 'ko' };
 
-// 급수 자동 분류 필터(②) — 급수는 레퍼런스 사전에서 표시 시점 계산. 'NONE'=사전 밖.
+// 급수 자동 분류 필터(②) — 급수는 HSK 2026 표에서 표시 시점 계산(ZH-LEVEL-2026-001). 'NONE'=표 밖.
 const LEVEL_OPTIONS = [
   { value: 'all', label: '급수 전체' },
-  { value: 'H1', label: 'HSK 1' },
-  { value: 'H2', label: 'HSK 2' },
-  { value: 'H3', label: 'HSK 3' },
-  { value: 'H4', label: 'HSK 4' },
-  { value: 'H5', label: 'HSK 5' },
-  { value: 'H6', label: 'HSK 6' },
-  { value: 'LIFE', label: '생활' },
+  ...ZH_HSK_LEVELS.map((level) => ({ value: `H${level}`, label: zhHskLevelLabel(level) })),
   { value: 'NONE', label: '미분류' },
 ];
 
@@ -242,7 +236,7 @@ export default function VocabList({
           const stageLabel = learning?.review.excluded ? '제외' : stage?.label || '—';
           const due = !!learning && isVocabularyReviewDue(learning, Math.max(new Date(now).getTime(), Date.parse(learning.review.evaluatedAt)));
           const lc = LANG_CODE[v.language];
-          const refLevel = refLevelLabel(refLevelOf?.(v));
+          const refLevel = zhHskLevelLabel(refLevelOf?.(v));
           return (
           <div
             key={v.id}
