@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { MAIN_NAV, navigationOwner, bookResume, recentMaterial, chooseResume } from '../webNavigation';
 import { validReadingProgress, readingProgressKey } from '../bookNavigation';
+import { sliceBetween } from './helpers/sliceBetween';
 const published = JSON.parse(readFileSync('src/content/textbookEditions/7f572327dc67893e9453246c/bundle.json', 'utf8'));
 const book = { lessons: published.manuscript.lessons };
 
@@ -49,5 +50,13 @@ describe('approved navigation and current edition resume', () => {
     expect(chooseResume({ started: true }, '2026-09-06T02:00:00Z', row)).toBe('book');
     expect(chooseResume({ started: true }, null, row)).toBe('book');
     expect(chooseResume(null, null, null)).toBe(null);
+  });
+
+  it('집중 읽기 메뉴도 지금 위치를 표시한다 — 뷰어에서 기본 메뉴가 숨어도 「서재」에 불(M09 6155101880)', () => {
+    expect(navigationOwner('/viewer/301')).toBe('/materials');
+    const layout = readFileSync('src/components/Layout.jsx', 'utf8');
+    const reader = sliceBetween(layout, 'function ReaderSiteMenu', 'export default function Layout');
+    expect(reader).toContain("aria-current={navigationOwner(pathname) === item.href ? 'page' : undefined}");
+    expect(readFileSync('src/components/web/focused-reader.css', 'utf8')).toContain('.reader-site-menu nav a[aria-current="page"]');
   });
 });

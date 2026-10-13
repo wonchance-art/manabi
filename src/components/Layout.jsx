@@ -42,7 +42,8 @@ function ReaderSiteMenu({ isAdmin }) {
   return <details ref={ref} className="reader-site-menu">
     <summary aria-label="메뉴" title="메뉴" data-icon-action><ActionIcon name="menu"/></summary>
     <nav aria-label="읽기 화면 내비게이션" onClick={e => { if (e.target.closest('a')) ref.current.open = false; }}>
-      {MAIN_NAV.map(item => <Link key={item.href} href={item.href} prefetch={item.prefetch}>{item.label}</Link>)}
+      {/* 집중 읽기에서는 기본 메뉴가 숨으므로 이 메뉴가 지금 위치를 알려야 한다(뷰어 = 서재 — M09 6155101880) */}
+      {MAIN_NAV.map(item => <Link key={item.href} href={item.href} prefetch={item.prefetch} aria-current={navigationOwner(pathname) === item.href ? 'page' : undefined}>{item.label}</Link>)}
       {isAdmin && <Link href="/class" prefetch={false}>수업</Link>}
       {isAdmin && <Link href="/admin" prefetch={false}>관리</Link>}
     </nav>
