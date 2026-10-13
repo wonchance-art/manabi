@@ -23,6 +23,9 @@ src/content/literature/aozora/
    - 文字遣い種別 `新字新仮名`, 미해결 외자 0(JIS 면구점만 있는 외자는 미해결로 친다 — 빌드가 실패한다).
    - **1931년 이전 출판** 또는 **작가 1945년 이전 사망**. 번역자·삽화가 없음(원작만).
    - 장당 1,500–4,000자(10–15분)에 맞는 분량. 見出し 주석이 2개 이상이면 그 표제로 장을 나눈다.
+     見出し가 없으면 장 수를 round(전체/3,000)로 정해 고르게 나눈다(짧은 꼬리 장 없음).
+   - JIS 3·4수준 외자(`第3水準1-87-71` 등 면구점만 있는 것)가 있는 작품은 지금 넣을 수 없다(예: 蜘蛛の糸·羅生門·夢十夜·トロッコ).
+     新字旧仮名(예: 杜子春)도 제외.
 2. **원문 받기** — 도서 카드(`https://www.aozora.gr.jp/cards/<인물ID>/card<작품ID>.html`)의
    「テキストファイル(ルビあり)」 zip을 받는다.
    - zip의 SHA-256을 기록한다: `sha256sum xxx_ruby_yyy.zip` → `entry.json`의 `sourceSha256`.
@@ -31,12 +34,27 @@ src/content/literature/aozora/
    - `source.txt`의 SHA-256 → `entry.json`의 `textSha256`(빌드가 매번 대조한다 — 원문 수정을 막는 장치).
 3. **권리 검토 기록** — `rights`를 사람이 채운다. 법률 판단을 자동화하지 않는다(fail-closed 증거 계약).
    - `status: "approved"`, `basis: "public-domain"`(허락작·CC 작품 `permission`은 공개 불가).
-   - `reviewedBy`(역할명, 예: `"owner"` — 이메일·실명은 적지 않는다. 공개 자료 metadata에 실린다),
+   - `reviewedBy`(역할명, 예: `"owner"`·`"claude"` — 이메일·실명은 적지 않는다. 공개 자료 metadata에 실린다).
+     Claude가 근거(도서 카드의 초출·몰년)를 대조해 채운 기록은, 관리자가 게시 화면에서 같은 근거를 보고
+     「게시」를 누를 때 사람 확인이 끝난다(게시 전에는 아무것도 공개되지 않는다).
+     그 밖의 칸:
      `reviewedAt`(KST 날짜 `YYYY-MM-DD`), `evidenceUrl`(HTTPS — 보통 도서 카드).
    - `reviewedJurisdictions`: **`["JP", "KR", "US"]` 셋을 모두** 검토해 적는다.
 4. `node scripts/build-literature.mjs` → `chapters.json` 생성. 출력의 장 수·진단(`diagnostics`)을 확인한다.
    - `mappedRubyCount`/`rubyCount`, `droppedRubyCount`(0이어야 정상), `annotationRubyCount`(독음이 아닌 루비 수).
 5. `node scripts/build-literature.mjs --check`와 `npm test` 통과 후 PR. (`prebuild`에도 `--check`가 걸려 있다.)
+
+## 수록 작품 (2026-10-14 KST, AOZORA-P0-2)
+
+| 작품 키 | 작품 | 저자(몰년) | 초출 | 레벨 | 장 |
+|---|---|---|---|---|---|
+| aozora-000121-000637 | 手袋を買いに | 新美南吉(1943) | 1943 『牛をつないだ椿の木』(사후) | N4 기본 | 1 |
+| aozora-000121-000628 | ごん狐 | 新美南吉(1943) | 1932 「赤い鳥」 | N3 중급 | 6(見出し) |
+| aozora-000081-043754 | 注文の多い料理店 | 宮沢賢治(1933) | 1924 | N3 중급 | 2 |
+| aozora-000879-000042 | 鼻 | 芥川龍之介(1927) | 1916 「新思潮」 | N2 상급 | 2 |
+| aozora-000148-000753 | 文鳥 | 夏目漱石(1916) | 1908 「大阪朝日」 | N1 심화 | 4 |
+
+다섯 편 모두 작가 1945년 이전 사망(D5) · 번역·삽화 없음 · 新字新仮名 · 외자 미해결 0. 레벨은 편집 라벨(D6).
 
 ## entry.json 형식
 
