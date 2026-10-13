@@ -132,7 +132,7 @@ export default function MaterialAddLinkSection({ toast, onReady, initialUrl = ''
               /* 320px에서도 [가져오기]와 한 줄에 선다 — 기저를 크게 잡으면 버튼이 혼자
                  아래로 떨어져 실수처럼 보인다(렌더 실측). */
               style={{ flex: '1 1 140px', minWidth: 0 }}
-              placeholder="https://youtu.be/..."
+              placeholder="https://youtu.be/…"
               value={url}
               inputMode="url"
               onChange={(e) => { setUrl(e.target.value); setManual(null); }}

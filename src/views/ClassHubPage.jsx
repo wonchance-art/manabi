@@ -26,7 +26,7 @@ import { ClassroomShell,ClassroomState,ClassCover } from '../components/classroo
 import ClassroomJoin from '../components/classroom/ClassroomJoin';
 import { saveClassroomMetadata } from '../lib/classroomModel';
 import { hashPassword, makeSalt, validatePassword } from '../lib/classPassword';
-import { friendlyToastMessage } from '../lib/errorMessage';
+import { failureMessage } from '../lib/errorMessage';
 
 const LANG_OPTIONS = ['Japanese', 'Chinese', 'English', 'French'];
 
@@ -113,7 +113,7 @@ export default function ClassHubPage() {
       setCreating(false);
       refresh();
     } catch (err) {
-      toast('수업 만들기 실패 — ' + friendlyToastMessage(err), 'error');
+      toast(failureMessage('수업을 만들지 못했어요.', err), 'error');
     } finally {
       setBusy(false);
     }
@@ -136,7 +136,7 @@ export default function ClassHubPage() {
       setPwDraft('');
       refresh();
     } catch (err) {
-      toast('암호 변경 실패 — ' + friendlyToastMessage(err), 'error');
+      toast(failureMessage('암호를 바꾸지 못했어요.', err), 'error');
     } finally {
       setBusy(false);
     }
@@ -195,7 +195,7 @@ export default function ClassHubPage() {
         </form>
       )}
 
-      {teamError ? <div className="classroom-notice" role="alert">수업 목록을 불러오지 못했어요. <button onClick={()=>retryTeams()}>다시 불러오기</button></div> : isLoading ? <p role="status">수업을 불러오는 중…</p> : teams.length===0 ? <div className="classroom-empty"><b>첫 수업을 열어 보세요.</b><p>이름과 언어를 정하면 바로 시작할 수 있어요. 교재는 나중에 연결해도 됩니다.</p></div> : (
+      {teamError ? <div className="classroom-notice" role="alert">수업 목록을 불러오지 못했어요. <button onClick={()=>retryTeams()}>다시 시도</button></div> : isLoading ? <p role="status">수업을 불러오는 중…</p> : teams.length===0 ? <div className="classroom-empty"><b>첫 수업을 열어 보세요.</b><p>이름과 언어를 정하면 바로 시작할 수 있어요. 교재는 나중에 연결해도 돼요.</p></div> : (
         <div className="classroom-hub-list">
           {teams.map(t=>{
             const book=t.bookKey?bookByKey.get(t.bookKey):null;
@@ -218,9 +218,9 @@ export default function ClassHubPage() {
 
       <ConfirmModal
         open={pwConfirm}
-        title="암호 바꾸기"
+        title="입장 암호를 바꿀까요?"
         message="암호를 바꾸면 학생들의 기기에서 해제가 풀려 다시 한 번 입력하게 돼요. 새 암호는 바꾼 직후 한 번만 보여요."
-        confirmLabel="바꾸기"
+        confirmLabel="암호 바꾸기"
         variant="primary"
         onConfirm={handlePasswordChange}
         onCancel={() => setPwConfirm(false)}

@@ -18,7 +18,7 @@ import { useToast } from '../lib/ToastContext';
 import ActionIcon from './ActionIcon';
 import { shouldShowOnboarding } from '../lib/onboardingGate';
 import { showLocalReminder } from '../lib/localReminder';
-import { friendlyToastMessage } from '@/lib/errorMessage';
+import { failureMessage } from '@/lib/errorMessage';
 
 const navIcons={'/home':'home','/lessons':'book','/discover':'compass','/vocab':'review','/materials':'library'};
 
@@ -72,9 +72,9 @@ export default function Layout({ children }) {
     try {
       const { error } = await supabase.auth.resend({ type: 'signup', email: user.email });
       if (error) throw error;
-      toast('인증 메일을 다시 보냈어요. 받은편지함을 확인해주세요.', 'success');
+      toast('인증 메일을 다시 보냈어요. 받은편지함을 확인해 주세요.', 'success');
     } catch (err) {
-      toast('재발송 실패 — ' + friendlyToastMessage(err, '잠시 후 다시 시도'), 'error');
+      toast(failureMessage('인증 메일을 보내지 못했어요.', err), 'error');
     } finally {
       setResendingConfirm(false);
     }
@@ -254,7 +254,7 @@ export default function Layout({ children }) {
       {/* 오프라인 배너 */}
       {isOffline && (
         <div className="offline-banner" role="alert" aria-live="assertive">
-          인터넷 연결이 끊겼습니다. 저장해 둔 자료·단어장은 그대로 볼 수 있어요.
+          인터넷 연결을 확인해 주세요. 저장해 둔 자료·단어장은 그대로 볼 수 있어요.
         </div>
       )}
 
@@ -271,7 +271,7 @@ export default function Layout({ children }) {
             textAlign: 'center',
           }}
         >
-          이메일 인증이 필요해요 — <strong>{user.email}</strong> 받은편지함을 확인해주세요.{' '}
+          이메일 인증이 필요해요 — <strong>{user.email}</strong> 받은편지함을 확인해 주세요.{' '}
           <button
             type="button"
             onClick={resendConfirmation}
@@ -283,7 +283,7 @@ export default function Layout({ children }) {
               fontWeight: 600, marginLeft: 4,
             }}
           >
-            {resendingConfirm ? '발송 중...' : '인증 메일 다시 보내기'}
+            {resendingConfirm ? '발송 중…' : '인증 메일 다시 보내기'}
           </button>
         </div>
       )}

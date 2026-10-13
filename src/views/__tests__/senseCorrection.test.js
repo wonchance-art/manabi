@@ -87,11 +87,11 @@ describe('이 자리 뜻 교정 — 배선 (ViewerPage)', () => {
     expect(viewer).toMatch(/useEffect\(\(\) => \{ setSenseUndo\(null\); \}, \[selectedToken\?\.id, isSheetOpen\]\)/);
   });
 
-  it('조용한 교정(quiet)은 「수정이 저장됐어요!」 토스트를 생략 — 실패 토스트와 TokenEditPanel 경로는 그대로', () => {
+  it('조용한 교정(quiet)은 「수정을 저장했어요」 토스트를 생략 — 실패 토스트와 TokenEditPanel 경로는 그대로', () => {
     const mutation = sliceBetween(viewer, 'const correctTokenMutation = useMutation({', '\n  });');
     expect(mutation).toMatch(/onSuccess: \(\{ tokenId, corrections \}, variables\) => \{/);
-    expect(mutation).toMatch(/if \(!variables\?\.quiet\) toast\('수정이 저장됐어요!', 'success'\);/);
-    expect(mutation).toContain("onError: (err) => toast('수정 실패 — ' + friendlyToastMessage(err), 'error')");
+    expect(mutation).toMatch(/if \(!variables\?\.quiet\) toast\('수정을 저장했어요', 'success'\);/);
+    expect(mutation).toContain("onError: (err) => toast(failureMessage('수정을 저장하지 못했어요.', err), 'error')");
     expect(mutation).not.toContain('promoteCorrection');
   });
 });

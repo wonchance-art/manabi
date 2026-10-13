@@ -118,7 +118,7 @@ export async function fetchWithRateLimitRetry(url, init, signal) {
  * 토큰은 줄 안에 순서대로 있어야 하고, 토큰 사이·뒤 빈틈은 일·중이면 공백뿐, 영어면 영숫자가 없어야 한다
  * (영어 토크나이저는 공백과 — ’ % 같은 기호를 토큰으로 내지 않는다 — 그 빈틈까지 실패로 보면 정상 줄이 깨진다).
  */
-function tokensCoverLine(line, texts, language) {
+export function tokensCoverLine(line, texts, language) {
   const spots = locateLineTokens(line, texts);
   if (spots.some((spot, k) => !spot && texts[k] && texts[k] !== '\n')) return false;
   const gapOk = (gap) => (language === 'English' ? !/[A-Za-z0-9]/.test(gap) : !gap.trim());

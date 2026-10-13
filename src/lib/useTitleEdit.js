@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
-import { friendlyToastMessage } from './errorMessage';
+import { failureMessage } from './errorMessage';
 
 /**
  * 자료 제목 편집 hook (owner만).
@@ -28,7 +28,7 @@ export function useTitleEdit(materialId, toast) {
       setTitleEditing(false);
       toast?.('제목을 수정했어요', 'success');
     },
-    onError: (err) => toast?.('제목 수정 실패 — ' + friendlyToastMessage(err), 'error'),
+    onError: (err) => toast?.(failureMessage('제목을 바꾸지 못했어요.', err), 'error'),
   });
 
   return { titleEditing, setTitleEditing, titleDraft, setTitleDraft, updateTitleMutation };

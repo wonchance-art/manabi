@@ -28,7 +28,7 @@ export function noteResponse(row) {
 }
 export async function updateOwnNote(db, userId, id, body) {
   const current = await readOwnNote(db, userId, id);
-  if (!UUID.test(body.revision || '') || current.processed_json.metadata.studyNote.revision !== body.revision) fail(409, '다른 창이나 기기에서 노트를 수정했어요. 내 초안은 이 기기에 보관되어 있습니다.');
+  if (!UUID.test(body.revision || '') || current.processed_json.metadata.studyNote.revision !== body.revision) fail(409, '다른 창이나 기기에서 노트를 수정했어요. 내 초안은 이 기기에 보관돼 있어요.');
   if (body.document?.key !== current.processed_json.metadata.studyNote.document.key) fail(400, '노트 식별자를 변경할 수 없어요.');
   let next;
   try { next = noteMaterialRow(userId, body.title, body.document, crypto.randomUUID()); } catch (error) { fail(400, error.message); }

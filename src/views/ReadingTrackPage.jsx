@@ -166,7 +166,7 @@ function ReadingTrack({ track, user, selectedId }) {
   if (!track) {
     return (
       <div className="page-container" style={{ maxWidth: 720 }}>
-        <p style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>트랙을 불러올 수 없어요.</p>
+        <p style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>트랙을 불러오지 못했어요.</p>
       </div>
     );
   }
@@ -284,7 +284,7 @@ function ReadingTrack({ track, user, selectedId }) {
             ) : isError ? (
               <>
                 <p style={{ fontSize: '0.92rem', color: 'var(--danger)', marginBottom: 14 }}>
-                  기록에 실패했어요. 다시 시도해 주세요.
+                  기록하지 못했어요. 다시 시도해 주세요.
                 </p>
                 <button type="button" className="btn btn--primary btn--md" onClick={retry}>다시 시도</button>
               </>

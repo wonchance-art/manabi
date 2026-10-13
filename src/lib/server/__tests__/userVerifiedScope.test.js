@@ -32,7 +32,7 @@ describe('user_verified 보호 = DB 무손상 (오너 확정 2026-08-24)', () =>
   });
 
   it('DB 쓰기 경로가 source=gemini 조건을 이중으로 건다 — 목록이 뚫려도 update가 막는다', () => {
-    const route = read('src/app/api/analyze/route.js');
+    const route = read('src/lib/server/analyzeCore.js'); // 분석 핵심(v2-Z Z-R1 ①)
     // 라우트의 writeback update는 반드시 source='gemini'로 좁혀야 한다(최후 방어선).
     expect(route).toMatch(/buildZhPosWriteback[\s\S]{0,600}?\.eq\('source',\s*'gemini'\)/);
   });

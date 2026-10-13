@@ -34,6 +34,6 @@ export async function POST(request) {
     return Response.json({ ok: true });
   } catch (err) {
     console.error('[account/delete]', err);
-    return Response.json({ error: err.message || '삭제 실패' }, { status: 500 });
+    return Response.json({ error: err.message || '계정을 삭제하지 못했어요.' }, { status: 500 });
   }
 }

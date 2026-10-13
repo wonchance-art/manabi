@@ -411,7 +411,7 @@ test('pending Korean explanations cancel across locales and keyboard retry prese
     assert.equal(pending.length, 2, 'UI-only change must not restart the pending explanation');
     assert(!(await page.locator('.word-detail-card').first().textContent()).includes('STALE_KO'));
     pending[1].resolve('invalid fixture explanation');
-    const retry = meaning.getByRole('button', { name: '重新載入解說', exact: true });
+    const retry = meaning.getByRole('button', { name: '重試', exact: true });
     await retry.waitFor();
     await geometry(page, 'failed-zh-TW-width390', ui);
     await retry.focus(); await page.keyboard.press('Enter'); await arrivals[2].promise;

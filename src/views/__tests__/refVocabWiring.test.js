@@ -28,7 +28,8 @@ describe('뷰어 시트 — 우리 사전 연동', () => {
   });
 
   it('급수 뱃지·정본 예문은 박스 없이 자연 배치, 한자 노트는 한자 대조와 중복 방지', () => {
-    expect(src).toContain('refLevelLabel(refVocab.level)');
+    // 급수 뱃지는 HSK 2026 표(ZH-LEVEL-2026-001 — zhHskLevelSites.test.js가 정본 계약)
+    expect(src).toContain('{hskLevelLabel && <span className="word-detail-card__level">{hskLevelLabel}</span>}');
     expect(src).toContain('refVocab?.word?.ex');
     expect(src).toMatch(/refVocab\?\.word\?\.hanja && !showHanjaKo/);
     // 오너 피드백: 별도 '우리 사전' 라벨 블록으로 가두지 않는다
@@ -41,22 +42,23 @@ describe('단어장 — 급수 자동 분류·필터', () => {
   const list = read('src/views/VocabList.jsx');
   const css = read('src/index.css');
 
-  it('VocabPage: 중국어 단어가 있을 때 인덱스를 지연 로드하고 필터 상태를 영속화한다', () => {
-    expect(page).toContain("loadRefVocabIndex('Chinese')");
+  it('VocabPage: 중국어 단어가 있을 때 급수 표를 지연 로드하고 필터 상태를 영속화한다', () => {
+    expect(page).toContain('useZhHskLevels(hasZhVocab)');
     expect(page).toContain("localStorage.setItem('vocab_levelFilter', levelFilter)");
     expect(page).toContain('refLevelOf={refLevelOf}');
     expect(page).toContain('showLevelFilter={showLevelFilter}');
   });
 
   it('VocabPage: 급수 필터는 중국어 한정 스코프로 거른다', () => {
-    expect(page).toMatch(/levelFilter !== 'all' && zhRefIndex/);
+    expect(page).toMatch(/levelFilter !== 'all' && zhHskLevels/);
     expect(page).toContain("x._item.language !== 'Chinese'");
   });
 
-  it('VocabList: 급수 필터 선택지(HSK 1~6·생활·미분류)와 행 뱃지를 렌더한다', () => {
+  it('VocabList: 급수 필터 선택지(HSK 2026 급수 1~7·미분류)와 행 뱃지를 렌더한다', () => {
     expect(list).toContain("aria-label=\"급수 필터\"");
-    for (const label of ['HSK 1', 'HSK 6', '생활', '미분류']) expect(list).toContain(label);
-    expect(list).toContain('refLevelLabel(refLevelOf?.(v))');
+    expect(list).toContain("label: zhHskLevelLabel(level)");
+    expect(list).toContain('미분류');
+    expect(list).toContain('zhHskLevelLabel(refLevelOf?.(v))');
     expect(list).toContain("className=\"vocab-row__level\"");
   });
 

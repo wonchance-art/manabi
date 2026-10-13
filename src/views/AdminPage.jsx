@@ -11,7 +11,7 @@ import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
 import StudyPlanPanel from './StudyPlanPanel';
 import BookRefinePanel from '../components/BookRefinePanel';
-import { friendlyToastMessage } from '../lib/errorMessage';
+import { failureMessage } from '../lib/errorMessage';
 
 const SOURCE_TYPE_LABELS = {
   wikipedia_good:   'Wikipedia 우수 기사',
@@ -157,14 +157,14 @@ export default function AdminPage() {
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        throw new Error(j.error || '삭제 실패');
+        throw new Error(j.error || 'override delete failed');
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-overrides'] });
       toast('수정본을 삭제하고 파일 버전으로 복원했어요.', 'success');
     },
-    onError: (err) => toast('삭제 실패: ' + friendlyToastMessage(err), 'error'),
+    onError: (err) => toast(failureMessage('삭제하지 못했어요.', err), 'error'),
   });
 
   // 역할 변경
@@ -174,7 +174,7 @@ export default function AdminPage() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
-    onError: (err) => toast('역할 변경 실패: ' + friendlyToastMessage(err), 'error'),
+    onError: (err) => toast(failureMessage('역할을 바꾸지 못했어요.', err), 'error'),
   });
 
   // 자료 삭제
@@ -184,7 +184,7 @@ export default function AdminPage() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-materials'] }),
-    onError: (err) => toast('삭제 실패: ' + friendlyToastMessage(err), 'error'),
+    onError: (err) => toast(failureMessage('삭제하지 못했어요.', err), 'error'),
   });
 
   // 소스 토글
@@ -194,7 +194,7 @@ export default function AdminPage() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-sources'] }),
-    onError: (err) => toast('변경 실패: ' + friendlyToastMessage(err), 'error'),
+    onError: (err) => toast(failureMessage('바꾸지 못했어요.', err), 'error'),
   });
 
   // 소스 추가
@@ -207,9 +207,9 @@ export default function AdminPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-sources'] });
       setShowAddForm(false);
       setNewSource(DEFAULT_NEW_SOURCE);
-      toast('소스가 추가되었습니다.', 'success');
+      toast('소스를 추가했어요.', 'success');
     },
-    onError: (err) => toast('추가 실패: ' + friendlyToastMessage(err), 'error'),
+    onError: (err) => toast(failureMessage('소스를 추가하지 못했어요.', err), 'error'),
   });
 
   // 소스 삭제
@@ -219,7 +219,7 @@ export default function AdminPage() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-sources'] }),
-    onError: (err) => toast('삭제 실패: ' + friendlyToastMessage(err), 'error'),
+    onError: (err) => toast(failureMessage('삭제하지 못했어요.', err), 'error'),
   });
 
   // 인증 게이트는 모든 Hooks 호출 뒤에 둔다 — 위에서 조기 반환하면 loading true→false 전이 때
@@ -229,7 +229,7 @@ export default function AdminPage() {
   if (!isAdmin) return (
     <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
       <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🚫</div>
-      <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>접근 권한이 없습니다</h2>
+      <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>접근 권한이 없어요</h2>
       <Link href="/" className="btn btn--primary">홈으로</Link>
     </div>
   );
@@ -577,7 +577,7 @@ export default function AdminPage() {
                     onClick={handleAddSource}
                     disabled={addSourceMutation.isPending}
                   >
-                    {addSourceMutation.isPending ? '추가 중...' : '추가'}
+                    {addSourceMutation.isPending ? '추가 중…' : '추가'}
                   </Button>
                 </div>
               </div>

@@ -63,7 +63,7 @@ describe('교사 팀 페이지 교재 설명', () => {
   m.notes=notes({query:{isLoading:false,error:new Error('x'),refetch:()=>{}},data:undefined,canEdit:undefined,pending});
   const html=render();
   expect(html).toContain('교재 설명을 불러오지 못했어요.');
-  expect(html).toContain('다시 확인');
+  expect(html).toContain('다시 시도');
   expect(html).toContain('이 기기에 보관됨 · 서버 저장 확인 대기');
   expect(html).toContain('오프라인 입력');
   expect(html).toContain('저장 재시도');
@@ -74,7 +74,7 @@ describe('교사 팀 페이지 교재 설명', () => {
   const pending={operation:'o',conflict:true,annotation:{id:'lib',revision:1,anchor:row('lib','b').anchor,body:'겹친 입력',archived:false}};
   m.notes=notes({rows:[row('lib','b')],pending});
   const html=render();
-  expect(html).toContain('다른 수정과 겹쳤어요. 입력은 보관돼 있습니다.');
+  expect(html).toContain('다른 수정과 겹쳤어요. 입력은 보관돼 있어요.');
   expect(html).toContain('최신 내용 확인하고 다시 편집');
   expect(html).not.toContain('저장 재시도');
   // 대기 중에는 다른 편집을 시작할 수 없다(덮어쓰기 방지).

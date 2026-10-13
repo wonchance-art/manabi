@@ -89,8 +89,8 @@ try {
   await page.waitForURL('**/suggestions/**');
   await page.getByRole('heading',{name:item.title,exact:true}).waitFor();
   check('legacy new-material URL redirects to reader');
-  failRead=true;await page.reload();await page.getByRole('button',{name:'다시 불러오기'}).waitFor();
-  failRead=false;await page.getByRole('button',{name:'다시 불러오기'}).click();await page.getByRole('heading',{name:item.title,exact:true}).waitFor();
+  failRead=true;await page.reload();await page.getByRole('button',{name:'다시 시도',exact:true}).waitFor();
+  failRead=false;await page.getByRole('button',{name:'다시 시도',exact:true}).click();await page.getByRole('heading',{name:item.title,exact:true}).waitFor();
   unknown=true;await page.reload();await page.getByRole('heading',{name:'추천 자료를 찾을 수 없어요.'}).waitFor();unknown=false;
   check('failure retry and missing-article state');
   await context.close();

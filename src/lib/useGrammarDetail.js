@@ -12,7 +12,7 @@ import { buildViewerGrammarPrompt, parseViewerExplanation, formatViewerExplanati
 import {
   buildGrammarPrompt, formatChapterCandidates, grammarCacheKey, parseGrammarResult,
 } from './grammarDetail';
-import { friendlyToastMessage } from './errorMessage';
+import { failureMessage } from './errorMessage';
 
 /** 레퍼런스 문법 챕터 후보 — 매니페스트는 무거우므로 [자세히]를 처음 누를 때만 지연 로드.
  * 옛 교재 챕터 주소는 관리자 보관함으로 옮겨져 learnerHref가 null로 막는다 — 후보(slug·제목)는
@@ -75,7 +75,7 @@ export function useGrammarDetail({ materialLang, toast, explanationLocale = 'ko'
     deadline.current = setTimeout(() => {
       if (!current()) return;
       setLoading(false); setResult('');
-      toast?.('문법 해설에 실패했어요.', 'error');
+      toast?.('문법 해설을 받지 못했어요.', 'error');
       cancel();
     }, 30000);
     try {
@@ -113,7 +113,7 @@ export function useGrammarDetail({ materialLang, toast, explanationLocale = 'ko'
     } catch (err) {
       if (!current()) return;
       setResult('');
-      toast?.('문법 해설에 실패했어요 — ' + friendlyToastMessage(err), 'error');
+      toast?.(failureMessage('문법 해설을 받지 못했어요.', err), 'error');
     } finally {
       if (current()) { clearTimeout(deadline.current); deadline.current = null; setLoading(false); }
     }
@@ -129,7 +129,7 @@ export function useGrammarDetail({ materialLang, toast, explanationLocale = 'ko'
     setAsking(true);
     deadline.current = setTimeout(() => {
       if (!current()) return;
-      setAsking(false); toast?.('질문 처리에 실패했어요.', 'error'); cancel();
+      setAsking(false); toast?.('질문에 답하지 못했어요.', 'error'); cancel();
     }, 30000);
     try {
       const responseLanguage = locale === 'zh-CN' ? 'Simplified Chinese (Mainland China)'
@@ -144,7 +144,7 @@ export function useGrammarDetail({ materialLang, toast, explanationLocale = 'ko'
       setQuestion('');
     } catch {
       if (!current()) return;
-      toast?.('질문 처리에 실패했어요.', 'error');
+      toast?.('질문에 답하지 못했어요.', 'error');
     } finally {
       if (current()) { clearTimeout(deadline.current); deadline.current = null; setAsking(false); }
     }

@@ -2,7 +2,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { analyzeText } from './analyzeText';
-import { friendlyToastMessage } from './errorMessage';
+import { failureMessage } from './errorMessage';
 import { resolveRange } from './pdfRangeBridge';
 
 /**
@@ -25,7 +25,7 @@ export function usePdfRangeMutation({ material, sourcePdf, user, toast }) {
         ? startPage
         : (Number.isFinite(material?.page_end) ? material.page_end + 1 : NaN);
       const range = resolveRange({ startPage: from, chunkSize, pageCount: sourcePdf.page_count });
-      if (!range) throw new Error('PDF 끝에 도달했습니다.');
+      if (!range) throw new Error('PDF 끝까지 읽었어요.');
       const { start: nextStart, end: nextEnd } = range;
 
       const { extractPageRange, getPdfMetadata, ocrPageRange } = await import('./pdfExtract');
@@ -36,7 +36,7 @@ export function usePdfRangeMutation({ material, sourcePdf, user, toast }) {
         const { data: signed } = await supabase.storage
           .from('user-pdfs')
           .createSignedUrl(sourcePdf.storage_path, 60);
-        if (!signed?.signedUrl) throw new Error('PDF 접근 실패');
+        if (!signed?.signedUrl) throw new Error('PDF를 열지 못했어요.');
         const res = await fetch(signed.signedUrl);
         buffer = await res.arrayBuffer();
         cachePdf(sourcePdf.id, buffer).catch(() => {});
@@ -45,12 +45,12 @@ export function usePdfRangeMutation({ material, sourcePdf, user, toast }) {
       let text = await extractPageRange(buffer, nextStart, nextEnd);
 
       if (!text || text.length < 30) {
-        toast?.('스캔본으로 감지 — OCR로 재시도합니다 (시간이 걸려요)', 'info', 4000);
+        toast?.('스캔본이라 OCR로 다시 추출할게요. 시간이 조금 걸려요.', 'info', 4000);
         const { doc } = await getPdfMetadata(buffer);
         text = await ocrPageRange(doc, nextStart, nextEnd);
       }
 
-      if (!text || text.length < 30) throw new Error('추출된 텍스트가 너무 적습니다.');
+      if (!text || text.length < 30) throw new Error('추출된 텍스트가 너무 적어요.');
 
       const initJson = {
         sequence: [], dictionary: {}, last_idx: -1, status: 'analyzing',
@@ -101,9 +101,9 @@ export function usePdfRangeMutation({ material, sourcePdf, user, toast }) {
       return inserted;
     },
     onSuccess: (inserted) => {
-      toast?.('분석 시작 — 뷰어로 이동합니다', 'success');
+      toast?.('분석을 시작했어요. 뷰어로 이동할게요.', 'success');
       window.location.href = `/viewer/${inserted.id}`;
     },
-    onError: (err) => toast?.('범위 가져오기 실패 — ' + friendlyToastMessage(err), 'error'),
+    onError: (err) => toast?.(failureMessage('범위를 가져오지 못했어요.', err), 'error'),
   });
 }

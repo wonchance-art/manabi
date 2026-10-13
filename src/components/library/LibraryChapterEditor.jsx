@@ -78,7 +78,7 @@ export default function LibraryChapterEditor({ownerId,bookKey,title,nextOrder,ch
    </fieldset>
    {draftError&&<p role="alert">이 기기에 초안을 보관하지 못했어요. 내용을 복사해 두세요.</p>}
    {failure&&<p role="alert">{failure.message}{failure.id&&<LibraryReaderLink href={`/viewer/${failure.id}`}> 열기</LibraryReaderLink>}</p>}
-   <div className="shelf-dialog-actions"><button type="button" disabled={busy} onClick={close}>취소</button><button type="submit" className="manabi-button" disabled={!ready||busy}>{busy?'저장 중…':draft.frozen?'다시 확인':chapter?'저장':'추가'}</button></div>
+   <div className="shelf-dialog-actions"><button type="button" disabled={busy} onClick={close}>취소</button><button type="submit" className="manabi-button" disabled={!ready||busy}>{busy?'저장 중…':draft.frozen?'다시 시도':chapter?'저장':'추가'}</button></div>
   </form>
  </LibraryDialog>;
 }

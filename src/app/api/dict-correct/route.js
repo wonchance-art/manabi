@@ -43,7 +43,7 @@ export async function POST(request) {
   const rl = rateLimit(getClientKey(request, user.id), { limit: 10, windowMs: 60_000 });
   if (!rl.ok) {
     return Response.json(
-      { error: '요청이 너무 많아요. 잠시 후 다시 시도해주세요.' },
+      { error: '요청이 너무 많아요. 잠시 후 다시 시도해 주세요.' },
       { status: 429, headers: { 'Retry-After': String(Math.ceil(rl.resetIn / 1000)) } }
     );
   }

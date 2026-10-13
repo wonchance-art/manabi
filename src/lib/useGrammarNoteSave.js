@@ -1,7 +1,7 @@
 'use client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
-import { friendlyToastMessage } from './errorMessage';
+import { failureMessage } from './errorMessage';
 
 /**
  * 문법 분석 결과를 grammar_notes 테이블에 저장.
@@ -22,6 +22,6 @@ export function useGrammarNoteSave({ user, materialId, selectedText, explanation
       queryClient.invalidateQueries({ queryKey: ['grammar-notes', user?.id] });
       toast?.('문법 노트에 저장됐어요.', 'success');
     },
-    onError: (err) => toast?.('저장 실패 — ' + friendlyToastMessage(err), 'error'),
+    onError: (err) => toast?.(failureMessage('저장하지 못했어요.', err), 'error'),
   });
 }

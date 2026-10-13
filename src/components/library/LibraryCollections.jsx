@@ -33,11 +33,11 @@ export default function LibraryCollections({ownerId,target=null,onClose,onSelect
  <select aria-label="폴더 동작" value={editing.action} onChange={e=>setEditing({...editing,action:e.target.value})}><option value="rename">이름 변경</option><option value="move">이동</option><option value="trash">폴더 삭제</option></select>
  {editing.action==='rename'&&<input aria-label="폴더 이름" maxLength={80} value={editing.name} onChange={e=>setEditing({...editing,name:e.target.value})}/>}
  {editing.action==='move'&&<select aria-label="상위 폴더" value={editing.parent} onChange={e=>setEditing({...editing,parent:e.target.value})}><option value="">내 서재</option>{folders.filter(f=>f.id!==folder.id).map(f=><option key={f.id} value={f.id}>{f.path}</option>)}</select>}
- {editing.action==='trash'&&<p>하위 폴더도 삭제됩니다. 자료는 남습니다.</p>}
+ {editing.action==='trash'&&<p>하위 폴더도 삭제돼요. 자료는 남아 있어요.</p>}
  <button disabled={busy||!editing.name.trim()}>{editing.action==='trash'?'폴더 삭제':'저장'}</button><button type="button" onClick={()=>setEditing(null)}>취소</button></form>}
  </div>)}</div>
  {error&&<p role="alert">{error}</p>}
- {undo&&<div className="shelf-notice" role="status">저장됨 <button disabled={busy} onClick={()=>run(async()=>{await libraryRpc(supabase,'library_folder_undo',{p_request:undo});setUndo(null);})}>실행 취소</button></div>}
+ {undo&&<div className="shelf-notice" role="status">저장됨 <button disabled={busy} onClick={()=>run(async()=>{await libraryRpc(supabase,'library_folder_undo',{p_request:undo});setUndo(null);})}>되돌리기</button></div>}
  <form className="shelf-create-collection" onSubmit={e=>{e.preventDefault();run(async()=>{await change('create',null,{name:name.trim(),parent});setName('');});}}>
  <label htmlFor="collection-name">새 폴더</label><div><input id="collection-name" maxLength={80} value={name} autoComplete="off" placeholder="이름" onChange={e=>setName(e.target.value)} disabled={busy}/><button disabled={busy||!name.trim()}>만들기</button></div>
  <label className="shelf-sr" htmlFor="folder-parent">상위 폴더</label><select id="folder-parent" value={parent} onChange={e=>setParent(e.target.value)}><option value="">내 서재</option>{folders.map(f=><option key={f.id} value={f.id}>{f.path}</option>)}</select>

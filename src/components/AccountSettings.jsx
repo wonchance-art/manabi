@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { friendlyToastMessage } from '../lib/errorMessage';
+import { failureMessage } from '../lib/errorMessage';
 import Button from './Button';
 
 const EXPORT_KEYS = ['profile', 'vocab', 'materials', 'progress', 'notes', 'writings', 'pdfs'];
@@ -12,7 +12,7 @@ export function unwrapAccountExportResults(results) {
     .map((result, index) => (!result || result.error) ? EXPORT_KEYS[index] : null)
     .filter(Boolean);
   if (failed.length > 0) {
-    throw new Error(`데이터 조회 실패: ${failed.join(', ')}`);
+    throw new Error(`데이터를 불러오지 못했어요: ${failed.join(', ')}`);
   }
   return Object.fromEntries(EXPORT_KEYS.map((key, index) => [key, results[index]?.data ?? null]));
 }
@@ -102,14 +102,14 @@ export default function AccountSettings({ user, toast, signOut }) {
       setPwMode(false);
       setCurrentPw(''); setNewPw(''); setConfirmPw('');
     } catch (err) {
-      toast('변경 실패 — ' + friendlyToastMessage(err), 'error');
+      toast(failureMessage(passwordLogin ? '비밀번호를 바꾸지 못했어요.' : '비밀번호를 만들지 못했어요.', err), 'error');
     } finally {
       setSubmitting(false);
     }
   }
 
   async function handleExportMyData() {
-    setExportMsg('데이터 수집 중...');
+    setExportMsg('데이터 모으는 중…');
     try {
       const exportResults = await Promise.all([
         supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
@@ -139,7 +139,7 @@ export default function AccountSettings({ user, toast, signOut }) {
       toast('내 데이터를 JSON으로 내보냈어요', 'success');
     } catch (err) {
       setExportMsg(null);
-      toast('내보내기 실패 — ' + friendlyToastMessage(err), 'error');
+      toast(failureMessage('데이터를 내보내지 못했어요.', err), 'error');
     }
   }
 
@@ -153,11 +153,11 @@ export default function AccountSettings({ user, toast, signOut }) {
         headers: { Authorization: `Bearer ${session?.access_token}` },
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || '삭제 실패');
+      if (!res.ok) throw new Error(json.error || 'account delete failed');
       toast('계정이 삭제됐어요. 안녕히 가세요.', 'info', 4000);
       await signOut();
     } catch (err) {
-      toast('삭제 실패 — ' + friendlyToastMessage(err), 'error');
+      toast(failureMessage('계정을 삭제하지 못했어요.', err), 'error');
     } finally {
       setDeleting(false);
       setDeleteConfirm(false);
@@ -226,7 +226,7 @@ export default function AccountSettings({ user, toast, signOut }) {
             />
             <div style={{ display: 'flex', gap: 6 }}>
               <Button type="submit" size="sm" disabled={submitting}>
-                {submitting ? '저장 중...' : passwordLogin ? '변경' : '만들기'}
+                {submitting ? '저장 중…' : passwordLogin ? '변경' : '만들기'}
               </Button>
               <Button
                 type="button" size="sm" variant="ghost"
@@ -263,8 +263,8 @@ export default function AccountSettings({ user, toast, signOut }) {
           >
             <h3 id={deleteTitleId} style={{ margin: '0 0 8px', color: 'var(--danger)' }}>계정 삭제</h3>
             <p style={{ fontSize: '0.88rem', lineHeight: 1.6, color: 'var(--text-secondary)', marginBottom: 14 }}>
-              이 작업은 <strong>되돌릴 수 없습니다</strong>. 수집한 모든 단어, 자료, 기록이 영구 삭제돼요.
-              공용(public)으로 공유한 자료는 익명 사용자로 남을 수 있습니다.
+              이 작업은 <strong>되돌릴 수 없어요</strong>. 수집한 모든 단어, 자료, 기록이 영구 삭제돼요.
+              공용(public)으로 공유한 자료는 익명 사용자로 남을 수 있어요.
             </p>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 10 }}>
               계속하려면 아래에 <strong>삭제</strong>를 입력하세요:
@@ -288,7 +288,7 @@ export default function AccountSettings({ user, toast, signOut }) {
                 disabled={deleting || deleteText !== '삭제'}
                 style={{ flex: 2, background: 'var(--danger)' }}
               >
-                {deleting ? '삭제 중...' : '영구 삭제'}
+                {deleting ? '삭제 중…' : '영구 삭제'}
               </Button>
             </div>
           </div>

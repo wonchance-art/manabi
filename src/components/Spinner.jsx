@@ -1,4 +1,4 @@
-export default function Spinner({ message = '로딩 중...' }) {
+export default function Spinner({ message = '불러오는 중…' }) {
   return (
     <div className="spinner-wrap">
       <div className="spinner" />

@@ -69,7 +69,7 @@ export async function verifyBoardMenus({page,board,activate,check,saveScreen}) {
   const tools=menus.hud.locator('.board-quick-tools').getByRole('button',{name:'선택',exact:true});
   assert(await tools.evaluate(el=>el===document.activeElement));
   await tools.press('Enter');await menus.hud.locator('#board-menu-tools').waitFor({state:'visible'});
-  assert(await menus.hud.getByRole('button',{name:'실행 취소',exact:true}).isDisabled());
+  assert(await menus.hud.getByRole('button',{name:'되돌리기',exact:true}).isDisabled());
   assert(await menus.hud.getByRole('button',{name:'다시 실행',exact:true}).isDisabled());
   await saveScreen('board-tools');
   await page.keyboard.press('Escape');assert(await tools.evaluate(el=>el===document.activeElement));
