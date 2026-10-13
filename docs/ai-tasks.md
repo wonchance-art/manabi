@@ -878,6 +878,7 @@
 
 ## Claude (claude/*)
 ### doing
+- **ONB-001 첫 방문 온보딩 + 내 언어 + 한국어(준비 중) (2026-10-14 KST, 오너 「전부 다 승인함」)** `claude/project-thread-xitfo6`: 모달 2단계(미리 선택 없음 · 주 언어 · 선택 닉네임 · 내 언어) · /study q1 확인형(D-O4) · 준비 중 언어 가드 6곳(`isPreparingLearningLanguage` 하나) · 계약 `onboardingPlan.test.js`. 남은 것: Preview 정상 실계정(한국어 · 简体中文 경로) · **중국어 문구 원어민 검수(미검수)**.
 - **수업 코스 「니혼고 42」 + 테스트 (2026-10-08 KST, 오너 지시 — 수업 페이지로 꺼내 암호 `culcom` 팀)** `claude/loving-bardeen-mkj3te`:
   팀 루트 `metadata.team.course` → 수업 홈 「코스」 탭 · Day 페이지(문화 카드·함께 읽고 연습·오늘의 패턴·예문 연습·응용 문장 번역해보기)
   · `/class/[team]/test`(전체 예문 10문제·8 합격·패턴 중복 0·Day당 1·비슷한 패턴 묶음당 1·난이도 3/4/3·시험지 번호 재현 / 연습 한↔일).
