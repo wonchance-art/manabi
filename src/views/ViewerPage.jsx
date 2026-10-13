@@ -174,6 +174,8 @@ import ViewerComments from './ViewerComments';
 import ViewerQuizModal from './ViewerQuizModal';
 import { langNameKo, splitSentenceAroundWord, detectLang } from '../lib/constants';
 import { attributionParts, literatureAttributionParts, materialSource } from '../lib/videoAttribution';
+import { isCanonicalLiteratureMaterial } from '../lib/literatureCanonical';
+import { useCanonicalLiterature } from '../lib/useCanonicalLiterature';
 import { logReviewEvents } from '../lib/reviewEvents';
 
 // 공부 모드 지원 언어 키 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
@@ -322,6 +324,9 @@ export default function ViewerPage() {
   const effectiveExplanationLocale = languageInfo?.explanationLocales.includes(explanationLocale) ? explanationLocale : 'ko';
   const learningCapabilities = useLearningCapabilities(materialLang);
   const learningStorageSupported = learningCapabilities.save;
+  // 아오조라 정본 책 — 출처 줄은 정본 대조표와 원문 해시가 맞을 때만(가짜 크레딧 차단), 원문 수정은 막는다(AOZORA-P0-2).
+  const canonicalLiterature = useCanonicalLiterature(material);
+  const canonicalLiteratureLocked = isCanonicalLiteratureMaterial(material);
   const [koreanSources, setKoreanSources] = useState({ scope: '', byToken: {} });
   const koreanSourceScope = useMemo(() => materialLang === 'Korean' ? JSON.stringify([id, material?.raw_text, material?.processed_json]) : '',
     [materialLang, id, material?.raw_text, material?.processed_json]);
@@ -684,7 +689,7 @@ export default function ViewerPage() {
   // ③ 원문 수정(오너 승인) — 소유자 전용, 저장 시 바뀐 줄만 재분석(sourceEdit.js 계획).
 
   const handleSourceEditSave = async (plan) => {
-    if (composerOf(material)) return;
+    if (composerOf(material) || canonicalLiteratureLocked) return;
     if (!plan || plan.noop) { setSourceEditOpen(false); return; }
     if (!plan.ok) { toast(plan.reason, 'error'); return; }
     if (plan.expectedRaw !== material.raw_text || JSON.stringify(plan.expectedJson) !== JSON.stringify(material.processed_json)) {
@@ -3711,10 +3716,11 @@ export default function ViewerPage() {
         );
       })()}
 
-      {/* 아오조라 정본 책 출처(설계 §3.4 · 목업 C) — 유튜브·PDF와 **같은 한 줄 문법**. 정본 책 데이터는 processed_json.metadata.literature에
-          산다(metadata.book과 같은 자리). 青空文庫·底本·입력·교정·도서 카드와 「우리가 바꾼 점」을 보이게 한다(저장은 표기가 아니다). */}
+      {/* 아오조라 정본 책 출처(설계 §3.4 · 목업 C) — 유튜브·PDF와 **같은 한 줄 문법**. 青空文庫·底本·입력·교정·도서 카드와 「우리가 바꾼 점」을
+          보이게 한다(저장은 표기가 아니다). 크레딧은 자료 metadata가 아니라 정본 대조표(manifest.generated.json)에서 읽고, 자료 원문이
+          그 장의 정본과 같을 때만 그린다 — 남의 공개 자료에 꾸며 넣은 아오조라 metadata로는 이 줄이 생기지 않는다(AOZORA-P0-2). */}
       {(() => {
-        const lit = literatureAttributionParts(material?.processed_json?.metadata?.literature);
+        const lit = literatureAttributionParts(canonicalLiterature);
         if (!lit) return null;
         return (
           <p className="viewer-attribution">{vt("출처:")} {lit.provider}
@@ -3761,10 +3767,11 @@ export default function ViewerPage() {
                 <strong>{vt("부분 분석")}</strong>
                 <span>{vt("문단을 선택해서 분석합니다")}</span>
               </button>
-              {!composerOf(material) && <button className="reanalyze-panel__item" onClick={() => { setReanalyzePanel(null); setSourceEditOpen(true); }}>
+              {!composerOf(material) && !canonicalLiteratureLocked && <button className="reanalyze-panel__item" onClick={() => { setReanalyzePanel(null); setSourceEditOpen(true); }}>
                 <strong>{vt("원문 수정")}</strong>
                 <span>{vt("텍스트를 고치면 바뀐 줄만 분석합니다")}</span>
               </button>}
+              {canonicalLiteratureLocked && <p className="reader-metadata">{vt("정본 책이라 원문은 고칠 수 없어요")} · {vt("단어 뜻·발음 교정과 다시 분석은 그대로 쓸 수 있어요")}</p>}
             </div>
           )}
           {reanalyzePanel === 'confirm-full' && (

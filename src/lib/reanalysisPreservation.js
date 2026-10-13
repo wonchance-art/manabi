@@ -5,6 +5,7 @@ import { exactSourceQuote } from './viewerLocalizedContext';
 import { compactBoundaryText, readBoundaryEdits } from './boundaryEdits';
 import { reapplyKoreanBoundaries } from './koreanBoundarySplit';
 import { clearRubyLockOnCorrection } from './aozoraRuby';
+import { CANONICAL_LITERATURE_EDIT_BLOCKED, isCanonicalLiteratureMaterial } from './literatureCanonical';
 
 const tokenLine = id => analysisTokenLine(id) ?? NaN;
 
@@ -231,6 +232,8 @@ export async function replaceViewerAnalysis(client, material, rawText, json, att
 export async function runPreservedReanalysis(client, material, signal, analyze, options = {}, onProgress) {
   const rawText = options.rawTextOverride ?? material.raw_text;
   if (!rawText?.trim()) throw new Error('원본 텍스트가 없습니다.');
+  // 정본 책(아오조라) 원문은 저자 루비 잠금·출처 대조의 기준이다 — 원문 수정(뷰어·책 정제 공용 경로)을 여기서 막는다.
+  if (rawText !== material.raw_text && isCanonicalLiteratureMaterial(material)) throw new Error(CANONICAL_LITERATURE_EDIT_BLOCKED);
   const checkAbort = () => { if (signal.aborted) throw new DOMException('Aborted', 'AbortError'); };
   checkAbort();
   const original = options.baseJsonOverride || material.processed_json;

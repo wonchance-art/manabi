@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { buildLiterature, LITERATURE_FILES, LITERATURE_ROOT } from '../../../scripts/lib/literature-build.mjs';
+import { buildLiterature, LITERATURE_FILES, LITERATURE_OUTPUTS, LITERATURE_ROOT } from '../../../scripts/lib/literature-build.mjs';
 import { aozoraFixture, sha256, sampleEntry } from './helpers/aozoraFixtures.js';
 
 // 정본 문학책 빌드(scripts/build-literature.mjs) 계약 — 리포 상태 --check가 통과하고(prebuild와 같은 검사),
@@ -30,7 +30,7 @@ const sample = (overrides = {}) => ({
 });
 
 describe('build-literature — 리포 상태', () => {
-  it('리포의 정본 폴더가 --check를 통과한다(작품 0편이면 no-op)', async () => {
+  it('리포의 정본 폴더(5편)가 --check를 통과한다 — 목록·대조표 포함', async () => {
     const { errors } = await buildLiterature({ root: LITERATURE_ROOT, check: true });
     expect(errors).toEqual([]);
   });
@@ -62,6 +62,36 @@ describe('build-literature — 생성·결정성·낡음', () => {
     const file = path.join(root, 'aozora-000001-000001', LITERATURE_FILES.chapters);
     writeFileSync(file, readFileSync(file, 'utf8').replace('かわも', 'かわづら'));
     expect((await buildLiterature({ root, check: true })).errors).toEqual([expect.stringContaining('원문과 다르다')]);
+  });
+});
+
+describe('build-literature — 게시 목록·뷰어 대조표(AOZORA-P0-2)', () => {
+  it('작품 폴더에서 index.generated.js(서버 게시용)와 manifest.generated.json(뷰어 대조용)을 만든다', async () => {
+    const root = workspace([sample()]);
+    await buildLiterature({ root });
+    expect(readFileSync(path.join(root, LITERATURE_OUTPUTS.index), 'utf8'))
+      .toContain("import book0 from './aozora-000001-000001/chapters.json';");
+    const manifest = JSON.parse(readFileSync(path.join(root, LITERATURE_OUTPUTS.manifest), 'utf8'));
+    const chapters = JSON.parse(readFileSync(path.join(root, 'aozora-000001-000001', LITERATURE_FILES.chapters), 'utf8')).chapters;
+    expect(manifest.works['aozora-000001-000001'].chapters).toEqual(chapters.map((chapter) => ({ order: chapter.order, title: chapter.title, sha256: sha256(chapter.rawText) })));
+    expect(manifest.works['aozora-000001-000001'].literature).not.toHaveProperty('rubyLocks');
+  });
+
+  it('--check: 손댄 대조표·목록은 실패', async () => {
+    const root = workspace([sample()]);
+    await buildLiterature({ root });
+    const file = path.join(root, LITERATURE_OUTPUTS.manifest);
+    writeFileSync(file, readFileSync(file, 'utf8').replace('見本入力者', '偽者'));
+    expect((await buildLiterature({ root, check: true })).errors).toEqual([expect.stringContaining(`${LITERATURE_OUTPUTS.manifest}가 작품 폴더와 다르다`)]);
+  });
+
+  it('한 편이라도 실패하면 목록·대조표를 다시 쓰지 않는다(깨진 작품이 빠진 채 목록이 줄지 않게)', async () => {
+    const root = workspace([sample()]);
+    await buildLiterature({ root });
+    const before = readFileSync(path.join(root, LITERATURE_OUTPUTS.index), 'utf8');
+    writeFileSync(path.join(root, 'aozora-000001-000001', LITERATURE_FILES.source), source.replace('霧', '雲'));
+    expect((await buildLiterature({ root })).errors).toEqual([expect.stringContaining('SHA-256')]);
+    expect(readFileSync(path.join(root, LITERATURE_OUTPUTS.index), 'utf8')).toBe(before);
   });
 });
 

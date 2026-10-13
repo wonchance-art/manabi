@@ -11,6 +11,7 @@ import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
 import StudyPlanPanel from './StudyPlanPanel';
 import BookRefinePanel from '../components/BookRefinePanel';
+import LiteraturePublishPanel from '../components/LiteraturePublishPanel';
 import { friendlyToastMessage } from '../lib/errorMessage';
 
 const SOURCE_TYPE_LABELS = {
@@ -281,6 +282,7 @@ export default function AdminPage() {
           { key: 'myplan',    label: '📅 내 진도' },
           { key: 'users',     label: '👥 유저 관리' },
           { key: 'materials', label: '📰 자료 관리' },
+          { key: 'literature', label: '📚 정본 문학책' },
           { key: 'sources',   label: '📡 콘텐츠 소스' },
           { key: 'overrides', label: '📝 콘텐츠' },
           { key: 'reports',   label: '🚩 신고' },
@@ -298,6 +300,9 @@ export default function AdminPage() {
 
       {/* ── 내 진도 (관리자 전용 학습 진도표) ── */}
       {tab === 'myplan' && <StudyPlanPanel />}
+
+      {/* ── 정본 문학책 게시(AOZORA-P0-2) — 권리 근거 확인 → 게시 → 장마다 1회 분석 → 루비 적용률 ── */}
+      {tab === 'literature' && <LiteraturePublishPanel toast={toast} />}
 
       {/* ── 신기능 — 관리자용 바로가기 (학습 기능은 네비 '학습' 탭에 정식 배치됨) ── */}
       {tab === 'features' && (

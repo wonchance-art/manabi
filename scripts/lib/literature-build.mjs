@@ -7,8 +7,47 @@ import path from 'node:path';
 
 export const LITERATURE_ROOT = 'src/content/literature/aozora';
 export const LITERATURE_FILES = Object.freeze({ source: 'source.txt', entry: 'entry.json', chapters: 'chapters.json' });
+/**
+ * 루트에 같이 만드는 산출물(AOZORA-P0-2) — 작품 폴더 목록에서 결정적으로 나온다. 손으로 고치지 않는다.
+ *   index  관리자 게시 API가 정적 import하는 책 목록(장 원문 포함 — 서버 전용)
+ *   manifest 뷰어가 쓰는 정본 대조표(장 원문 SHA-256 + 출처 크레딧). 원문은 싣지 않는다.
+ */
+export const LITERATURE_OUTPUTS = Object.freeze({ index: 'index.generated.js', manifest: 'manifest.generated.json' });
 
 const sha256 = (buffer) => createHash('sha256').update(buffer).digest('hex');
+
+/** 책 목록 모듈 — 작품 폴더의 chapters.json을 정적 import한다(Next·vitest 둘 다 JSON import를 푼다). */
+export function serializeIndex(keys) {
+  const lines = [
+    '// 자동 생성 — node scripts/build-literature.mjs. 손으로 고치지 않는다(--check가 낡음을 잡는다).',
+    '// 정본 문학책 장 원문을 싣는다 — 서버(관리자 게시 API)에서만 import한다. 뷰어는 manifest.generated.json을 쓴다.',
+    ...keys.map((key, index) => `import book${index} from './${key}/${LITERATURE_FILES.chapters}';`),
+    '',
+    `export const LITERATURE_BOOKS = Object.freeze([${keys.map((_, index) => `book${index}`).join(', ')}]);`,
+  ];
+  return `${lines.join('\n')}\n`;
+}
+
+/**
+ * 뷰어 정본 대조표 — 작품 키 → 크레딧(rubyLocks 제외) + 장마다 원문 SHA-256.
+ * 뷰어는 자료 metadata가 아니라 **이 표**로 출처 줄을 그리고, 자료 raw_text의 해시가 표와 같을 때만 그린다
+ * (자료 소유자가 metadata.literature를 꾸며 넣어도 가짜 크레딧이 보이지 않는다).
+ */
+export function createManifest(drafts) {
+  const works = {};
+  for (const draft of drafts) {
+    const { rubyLocks: _locks, ...literature } = draft.chapters[0].metadata.literature;
+    works[draft.book.key] = {
+      title: draft.book.title,
+      author: draft.book.author,
+      level: draft.book.level,
+      total: draft.book.total,
+      literature,
+      chapters: draft.chapters.map((chapter) => ({ order: chapter.order, title: chapter.title, sha256: sha256(Buffer.from(chapter.rawText, 'utf8')) })),
+    };
+  }
+  return { schemaVersion: 1, works };
+}
 
 /** chapters.json 직렬화 정본 — 2칸 들여쓰기 + 끝 개행. */
 export function serializeChapters(draft) {
@@ -56,6 +95,7 @@ export async function buildLiterature({ root = LITERATURE_ROOT, check = false } 
     return { works, errors }; // 카탈로그가 깨졌으면 어느 작품도 쓰지 않는다
   }
 
+  const drafts = [];
   for (const work of loaded) {
     try {
       const draft = createAozoraMaterialDraft(work.entry, parseAozoraText(work.source));
@@ -74,9 +114,23 @@ export async function buildLiterature({ root = LITERATURE_ROOT, check = false } 
         if (current !== output) writeFileSync(target, output);
         works.push({ key: work.dir, chapters: draft.chapters.length, status: current === output ? 'unchanged' : 'written' });
       }
+      drafts.push(draft);
     } catch (error) {
       errors.push(`${work.dir}: ${error.message}`);
     }
+  }
+  // 한 편이라도 실패하면 목록을 바꾸지 않는다 — 깨진 작품이 빠진 채 게시 목록이 줄어드는 일을 막는다.
+  if (errors.length) return { works, errors };
+  const outputs = [
+    [LITERATURE_OUTPUTS.index, serializeIndex(drafts.map((draft) => draft.book.key))],
+    [LITERATURE_OUTPUTS.manifest, serializeChapters(createManifest(drafts))],
+  ];
+  for (const [file, output] of outputs) {
+    const target = path.join(root, file);
+    const current = existsSync(target) ? readFileSync(target, 'utf8') : null;
+    if (current === output) continue;
+    if (check) errors.push(`${file}가 작품 폴더와 다르다 — node scripts/build-literature.mjs로 다시 만든다`);
+    else writeFileSync(target, output);
   }
   return { works, errors };
 }
