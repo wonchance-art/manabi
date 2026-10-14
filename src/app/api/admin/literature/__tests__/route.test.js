@@ -6,13 +6,13 @@ vi.mock('@/lib/supabaseServer', () => ({ requireAdmin: authenticate }));
 import { GET, POST } from '../route';
 import { LITERATURE_BOOKS } from '../../../../../content/literature/aozora/index.generated.js';
 
-// 관리자 정본 문학책 게시 API(AOZORA-P0-2) — 권한·멱등·충돌 시 무게시·원문은 리포 산출물에서만.
+// 관리자 정본 문학책 게시 API(AOZORA-P0-2 · P0-3) — 권한·준비(비공개) 멱등·충돌 시 무게시·분석 완료 뒤에만 공개·원문은 리포 산출물에서만.
 
 const KEY = 'aozora-000879-000042'; // 鼻(2장)
 const book = LITERATURE_BOOKS.find((item) => item.book.key === KEY);
 
 function database() {
-  const state = { rows: [], failRead: false, failInsert: false, inserts: [], nextId: 500 };
+  const state = { rows: [], failRead: false, failInsert: false, inserts: [], updates: [], nextId: 500 };
   const supabase = { from: vi.fn(() => {
     let operation = 'read', payload, columns = '';
     const filters = [];
@@ -21,7 +21,16 @@ function database() {
       eq: (key, value) => { filters.push(['eq', key, value]); return query; },
       in: (key, values) => { filters.push(['in', key, values]); return query; },
       insert: (value) => { operation = 'insert'; payload = value; return query; },
+      update: (value) => { operation = 'update'; payload = value; return query; },
       then: (resolve) => {
+        if (operation === 'update') {
+          const ids = filters.find(([kind, key]) => kind === 'in' && key === 'id')?.[2] || [];
+          const eq = filters.filter(([kind]) => kind === 'eq');
+          const hit = state.rows.filter((item) => ids.includes(item.id) && eq.every(([, key, value]) => item[key] === value));
+          hit.forEach((item) => Object.assign(item, payload));
+          state.updates.push({ payload, ids: hit.map((item) => item.id) });
+          return Promise.resolve({ data: hit.map((item) => ({ id: item.id })), error: null }).then(resolve);
+        }
         if (operation === 'insert') {
           if (state.failInsert) return Promise.resolve({ data: null, error: { message: 'insert failed' } }).then(resolve);
           state.inserts.push(payload);
@@ -30,7 +39,7 @@ function database() {
           return Promise.resolve({ data: created.map((item) => ({ id: item.id, order: String(item.processed_json.metadata.book.order) })), error: null }).then(resolve);
         }
         if (state.failRead) return Promise.resolve({ data: null, error: { message: 'read failed' } }).then(resolve);
-        const keys = filters.find(([kind]) => kind === 'in')?.[2] || [];
+        const keys = filters.find(([kind, key]) => kind === 'in' && key !== 'id')?.[2] || [];
         const owner = filters.find(([kind, key]) => kind === 'eq' && key === 'owner_id')?.[2];
         const data = state.rows
           .filter((item) => item.owner_id === owner && keys.includes(item.processed_json.metadata.book.key))
@@ -57,7 +66,7 @@ describe('관리자 정본 문학책 게시 API', () => {
   it.each([401, 403])('권한 없는 요청 %s은 조회·게시를 거부한다', async (status) => {
     authenticate.mockResolvedValue({ error: '권한 없음', status });
     expect((await GET(new Request('http://localhost/api/admin/literature'))).status).toBe(status);
-    expect((await post({ action: 'publish', key: KEY })).status).toBe(status);
+    expect((await post({ action: 'prepare', key: KEY })).status).toBe(status);
     expect(db.supabase.from).not.toHaveBeenCalled();
   });
 
@@ -69,13 +78,13 @@ describe('관리자 정본 문학책 게시 API', () => {
     expect(JSON.stringify(books)).not.toContain(book.chapters[0].rawText.slice(0, 20));
   });
 
-  it('게시: 정본 장을 관리자 소유 공개 행으로 넣고, 다시 눌러도 더 넣지 않는다(멱등)', async () => {
-    const first = await post({ action: 'publish', key: KEY, chapters: [{ rawText: '偽の本文' }] });
+  it('준비: 정본 장을 관리자 소유 **비공개** 행으로 넣고, 다시 눌러도 더 넣지 않는다(멱등)', async () => {
+    const first = await post({ action: 'prepare', key: KEY, chapters: [{ rawText: '偽の本文' }] });
     expect(first.status).toBe(200);
     expect((await first.json()).inserted).toEqual([{ id: 500, order: '1' }, { id: 501, order: '2' }]);
     expect(db.state.inserts[0].map((item) => [item.owner_id, item.visibility, item.raw_text, item.processed_json.status]))
-      .toEqual(book.chapters.map((chapter) => ['admin-id', 'public', chapter.rawText, 'pending']));
-    const again = await post({ action: 'publish', key: KEY });
+      .toEqual(book.chapters.map((chapter) => ['admin-id', 'private', chapter.rawText, 'pending']));
+    const again = await post({ action: 'prepare', key: KEY });
     expect(await again.json()).toMatchObject({ ok: true, inserted: [], plan: { state: 'published' } });
     expect(db.state.inserts).toHaveLength(1);
   });
@@ -83,7 +92,7 @@ describe('관리자 정본 문학책 게시 API', () => {
   it('정본과 다른 장이 이미 있으면 409, 아무것도 넣지 않는다', async () => {
     db.state.rows.push({ id: 9, owner_id: 'admin-id', raw_text: '書き換え', visibility: 'public',
       processed_json: { status: 'completed', metadata: { book: { key: KEY, order: 1 } } } });
-    const response = await post({ action: 'publish', key: KEY });
+    const response = await post({ action: 'prepare', key: KEY });
     expect(response.status).toBe(409);
     expect((await response.json()).plan.conflicts).toEqual([{ order: 1, id: 9, reason: 'text-differs' }]);
     expect(db.state.inserts).toEqual([]);
@@ -91,14 +100,15 @@ describe('관리자 정본 문학책 게시 API', () => {
 
   it('다른 사용자가 같은 book key로 만든 자료는 게시 판단에 섞이지 않는다', async () => {
     db.state.rows.push({ id: 3, owner_id: 'someone', raw_text: '偽', visibility: 'public', processed_json: { status: 'idle', metadata: { book: { key: KEY, order: 1 } } } });
-    expect((await post({ action: 'publish', key: KEY })).status).toBe(200);
+    expect((await post({ action: 'prepare', key: KEY })).status).toBe(200);
     expect(db.state.inserts[0]).toHaveLength(2);
   });
 
   it.each([
     [{ action: 'delete', key: KEY }, 400],
-    [{ action: 'publish' }, 400],
-    [{ action: 'publish', key: 'aozora-000001-000001' }, 404],
+    [{ action: 'publish', key: KEY }, 400],
+    [{ action: 'prepare' }, 400],
+    [{ action: 'prepare', key: 'aozora-000001-000001' }, 404],
   ])('잘못된 요청 %j → %s', async (body, status) => {
     expect((await post(body)).status).toBe(status);
     expect(db.state.inserts).toEqual([]);
@@ -106,18 +116,41 @@ describe('관리자 정본 문학책 게시 API', () => {
 
   it('조회·저장 실패는 원문 없이 한국어 안내(503)', async () => {
     db.state.failRead = true;
-    const read = await post({ action: 'publish', key: KEY });
+    const read = await post({ action: 'prepare', key: KEY });
     expect(read.status).toBe(503);
     expect((await read.json()).error).not.toMatch(/failed/);
     db.state.failRead = false;
     db.state.failInsert = true;
-    const write = await post({ action: 'publish', key: KEY });
+    const write = await post({ action: 'prepare', key: KEY });
     expect(write.status).toBe(503);
     expect((await write.json()).error).not.toMatch(/failed/);
   });
 
+  it('공개: 분석 전 장이 있으면 409로 아무것도 공개하지 않는다', async () => {
+    await post({ action: 'prepare', key: KEY });
+    db.state.rows[0].processed_json.status = 'completed';
+    const response = await post({ action: 'release', key: KEY });
+    expect(response.status).toBe(409);
+    expect((await response.json()).release).toEqual({ ok: false, reason: 'not-analyzed', ids: [] });
+    expect(db.state.updates).toEqual([]);
+    expect(db.state.rows.map((item) => item.visibility)).toEqual(['private', 'private']);
+  });
+
+  it('공개: 모든 장이 분석 완료면 관리자 소유 비공개 장만 public으로 — 다시 눌러도 변화 없음', async () => {
+    await post({ action: 'prepare', key: KEY });
+    db.state.rows.forEach((item) => { item.processed_json.status = 'completed'; });
+    const response = await post({ action: 'release', key: KEY });
+    expect(response.status).toBe(200);
+    expect((await response.json()).released).toEqual([{ id: 500 }, { id: 501 }]);
+    expect(db.state.updates).toEqual([{ payload: { visibility: 'public' }, ids: [500, 501] }]);
+    expect(db.state.rows.map((item) => item.visibility)).toEqual(['public', 'public']);
+    expect(await (await post({ action: 'release', key: KEY })).json()).toEqual({ ok: true, released: [] });
+    const { books } = await (await GET(new Request('http://localhost/api/admin/literature'))).json();
+    expect(books.find((item) => item.key === KEY).stage).toBe('released');
+  });
+
   it('루비 적용률: 분석 전은 null', async () => {
-    await post({ action: 'publish', key: KEY });
+    await post({ action: 'prepare', key: KEY });
     const response = await GET(new Request(`http://localhost/api/admin/literature?ruby=${KEY}`));
     expect(await response.json()).toEqual({ key: KEY, coverage: book.chapters.map((chapter) => ({ order: chapter.order, rubyLocks: chapter.metadata.literature.rubyLocks.length, applied: null })) });
     expect((await GET(new Request('http://localhost/api/admin/literature?ruby=nope'))).status).toBe(404);
