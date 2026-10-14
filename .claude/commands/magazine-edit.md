@@ -5,8 +5,8 @@
 원칙의 정본은 따로 있다(이중 진실 방지 — 여기 다시 쓰지 말 것):
 - 설계·꼭지 순서·오너 결정: `docs/japanology/magazine/README.md`
 - 문체 32규칙·꼭지별 문체(§3.1.1)·계약 후보(§3.4): `docs/japanology/magazine/report-editorial-craft.md`
-- 금지 표현 목록은 코드 한 곳(`src/lib/editorialRules.js`, 계약 EDIT-STD-001 도입 시 신설)만 정본으로 삼는다.
-  도입 전에는 보고서 §3.1 규칙 10·11·16·17·18·21·23이 임시 정본이다.
+- 금지 표현 목록은 코드 한 곳 `src/lib/editorialRules.js`(계약 EDIT-STD-001·002)만 정본으로 삼는다 —
+  규칙 10·11·12·13·16·17·18(S1 어휘)·23·26과 `lintEditorial`. 아직 코드에 없는 규칙(15·21·18 S2 등)은 보고서 §3.1이 정본이다.
 - 화면 문구(버튼·안내)는 `/korean-copy`·`docs/design/copy-standard.md` 소관 — 이 커맨드는 기사 본문만 다룬다.
 
 ## 요청
