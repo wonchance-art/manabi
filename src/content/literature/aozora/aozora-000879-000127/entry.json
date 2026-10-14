@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "personId": "000879",
+  "workId": "127",
+  "title": "羅生門",
+  "author": "芥川龍之介",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1915,
+  "authorDeathYear": 1927,
+  "level": "N2 상급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000879/card127.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000879/files/127_ruby_150.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "e63d8fe54826547fe4a66a66fc39ea0d822895c015b8f300bfe285c86c637400",
+  "textSha256": "a28253f6d959f5bc81b3f9eb5d08a9e6f447364e2f18767f7c420aa98b808d46",
+  "attribution": {
+    "author": "芥川龍之介",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-14",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR",
+      "US"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000879/card127.html"
+  },
+  "display": {
+    "titleReading": "らしょうもん",
+    "titleKo": "라쇼몬",
+    "authorKo": "아쿠타가와 류노스케",
+    "cover": "rust",
+    "motif": "rain-gate"
+  }
+}
