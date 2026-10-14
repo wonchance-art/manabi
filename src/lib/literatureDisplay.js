@@ -4,7 +4,7 @@
 // display{titleReading, titleKo, authorKo, cover}를 빌드가 정본 대조표(manifest.generated.json)에 싣고, 화면은 그 표로
 // 같은 틀(세로 제목·작가·한국어 제목)에 작품 색 하나만 바꿔 그린다. 색은 자유 값이 아니라 아래 팔레트 이름이다
 // (대비·다크 처리를 CSS 한 곳에서 지킨다).
-// 목차: 작가의 見出し(一·二…)는 그대로, manabi가 분량으로 나눈 장은 「1/2」, 한 장이면 「전편」 — 교재의 「과」를 쓰지 않는다.
+// 목차: 작가의 見出し(一·二…)는 그대로, manabi가 분량으로 나눈 장은 「1/2」, 한 장이면 「전문」(「전편」은 前篇으로 읽힌다) — 교재의 「과」를 쓰지 않는다.
 // 장 줄에는 그 장 첫 문장(incipit)을 단다. 이름표가 아니라 본문이 장을 알아보게 한다.
 // 이 모듈은 빌드(scripts/lib/literature-build.mjs)도 쓰므로 대조표를 import하지 않는다 — 작품 찾기는 literatureCanonical.literatureWork.
 
@@ -15,6 +15,9 @@ const filled = (value) => typeof value === 'string' && value.trim() !== '';
 
 /** 표지 세로 제목 한 줄 상한 — 썸네일(60×84) 높이에 11px로 다섯 자. 긴 제목은 display.coverTitle에 줄바꿈을 직접 둔다. */
 export const LITERATURE_COVER_LINE_MAX = 5;
+
+// display.titleKo는 **원제 직역**이다(학습자에게 일본어 제목을 풀어 주는 줄) — 국내 번역본의 의역 제목(「금빛 여우」·
+// 「장갑을 사러 간 아기여우」)을 쓰지 않는다. authorKo는 국립국어원 외래어 표기법.
 
 /** entry.json display 검사(빌드) — 빠지거나 팔레트 밖이거나 표지 제목이 작품명과 다르면 throw. */
 export function validateLiteratureDisplay(display, title) {
@@ -33,23 +36,36 @@ export function validateLiteratureDisplay(display, title) {
     ...(display.coverTitle ? { coverTitle: display.coverTitle } : {}) };
 }
 
-/** 장 첫 문단의 앞부분 — 목차 줄에 단다(원문 그대로, 길면 「…」). */
-export function literatureIncipit(rawText, max = 24) {
+/**
+ * 장 첫 문장 — 목차 줄에 단다(원문 그대로). 에디터 검토(2026-10-14): 낱말 한가운데·마침표 뒤에서 자르지 않는다.
+ *   ① 첫 문장(。까지)이 30자 이하면 문장 전체(「…」 없음) ② 길면 앞 28자 안, 12자 이후의 마지막 「、」에서 자르고 「…」
+ *   ③ 쉼표도 없으면 24자에서 자르고 「…」.
+ */
+export function literatureIncipit(rawText) {
   const first = String(rawText || '').trim().split(/\n/u)[0].trim();
-  return first.length > max ? `${first.slice(0, max)}…` : first;
+  const end = first.indexOf('。');
+  const sentence = end === -1 ? first : first.slice(0, end + 1);
+  if (sentence.length <= 30 && (end !== -1 || first.length <= 30)) return sentence;
+  const comma = first.slice(0, 28).lastIndexOf('、');
+  return comma >= 12 ? `${first.slice(0, comma)}…` : `${first.slice(0, 24)}…`;
 }
 
-/** 목차 줄 앞 표지 — 見出し 그대로 · 「1/2」 · 「전편」. 표에 없는 장이면 순서 숫자. */
+/** 목차 줄 앞 표지 — 見出し 그대로 · 「1/2」 · 「전문」. 표에 없는 장이면 순서 숫자. */
 export function literatureChapterLabel(work, order) {
   return work?.chapters.find((chapter) => chapter.order === Number(order))?.title ?? String(order ?? '');
 }
 
-/** 책 묶음 카드 메타 — 나눈 방식을 말한다(작가의 장인지, manabi가 나눈 것인지). */
+const NATIVE_COUNT = ['', '한', '두', '세', '네', '다섯', '여섯', '일곱', '여덟', '아홉'];
+
+/**
+ * 책 묶음 카드 메타 — 나눈 방식을 말한다(작가의 장인지, manabi가 나눈 것인지). 「번」은 고유어 수(아홉까지 한글 —
+ * 「2번」은 번호로 읽힌다), 작가의 장은 「N장 구성」(「6장」만으로는 종이 장수로 읽힌다).
+ */
 export function literatureDivisionLabel(work) {
   if (!work) return '';
-  if (work.division === 'heading') return `${work.total}장`;
+  if (work.division === 'heading') return `${work.total}장 구성`;
   if (work.division === 'whole') return '한 번에 읽기';
-  return `${work.total}번에 나눠 읽기`;
+  return `${NATIVE_COUNT[work.total] || work.total} 번에 나눠 읽기`;
 }
 
 /** 장 제목(뷰어 머리) — 「ごん狐 — 一」 · 「鼻 (1/2)」 · 「手袋を買いに」. 저장된 자료 제목이 예전 표기여도 표를 따른다. */

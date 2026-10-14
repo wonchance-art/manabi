@@ -687,8 +687,9 @@ export default function MaterialsPage({ libraryView = null }) {
               const literatureProps = work ? {
                 art: <LiteratureCover work={work} />,
                 title: <><span lang="ja">{work.title}</span> <small className="group-card__reading" lang="ja">{work.display?.titleReading}</small></>,
-                subtitle: [work.display?.titleKo, work.display?.authorKo, work.literature?.publishedYear && `${work.literature.publishedYear}년`].filter(Boolean).join(' · '),
-                meta: `${literatureDivisionLabel(work)} · 읽음 ${readDone}/${b.chapters.length}${pendingNote}`,
+                subtitle: [work.display?.titleKo, work.display?.authorKo, work.literature?.publishedYear && `${work.literature.publishedYear}년 발표`].filter(Boolean).join(' · '),
+                // 레벨·분량이 고를 때 먼저 보는 정보(에디터 검토) — 그다음 나눈 방식·읽음
+                meta: [work.level, work.chars && `${work.chars.toLocaleString()}자`, literatureDivisionLabel(work), `읽음 ${readDone}/${b.chapters.length}`].filter(Boolean).join(' · ') + pendingNote,
                 fitLine: fitLineOf(bf, '장'),
               } : null;
               return (

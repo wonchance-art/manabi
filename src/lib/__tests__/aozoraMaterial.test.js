@@ -105,8 +105,8 @@ describe('createAozoraMaterialDraft — 見出し 없는 원작은 문단 경계
   it('짧은 원작은 한 장, 상한보다 긴 원작은 상한 안에서 고르게', () => {
     const short = createAozoraMaterialDraft(sampleEntry(), parseAozoraText(wrap(['あ'.repeat(70), 'い'.repeat(30)].join('\n'))), { targetChars: 80, maxChars: 200 });
     expect(short.diagnostics.chapterChars).toEqual([102]);
-    // 한 장이면 「전편」, 자료 제목은 작품명만(「— 1편」 같은 꼬리를 달지 않는다)
-    expect([short.book.division, short.chapters[0].title, short.chapters[0].materialTitle]).toEqual(['whole', '전편', '書式見本　朝の川']);
+    // 한 장이면 「전문」(「전편」은 前篇으로 읽힌다), 자료 제목은 작품명만(「— 1편」 같은 꼬리를 달지 않는다)
+    expect([short.book.division, short.chapters[0].title, short.chapters[0].materialTitle]).toEqual(['whole', '전문', '書式見本　朝の川']);
     const long = createAozoraMaterialDraft(sampleEntry(), parseAozoraText(wrap(Array.from({ length: 9 }, () => 'え'.repeat(30)).join('\n'))), { targetChars: 100, maxChars: 120 });
     expect(long.diagnostics.chapterChars).toEqual([94, 94, 94]);
   });

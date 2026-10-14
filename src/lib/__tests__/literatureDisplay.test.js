@@ -14,22 +14,22 @@ import manifest from '../../content/literature/aozora/manifest.generated.json';
 import { sliceBetween } from './helpers/sliceBetween';
 
 // 정본 문학책 표지·목차 표기(AOZORA-P0-5, 오너 확정 2026-10-14 「표지 직접 만들기 · 1과 2과 개편」).
-// 표지는 원서 이미지가 아닌 타이포그래피(IP 정책 §2.1 금지⑴), 목차는 작가 見出し / 나눈 위치(1/2) / 전편 — 「과」를 쓰지 않는다.
+// 표지는 원서 이미지가 아닌 타이포그래피(IP 정책 §2.1 금지⑴), 목차는 작가 見出し / 나눈 위치(1/2) / 전문 — 「과」를 쓰지 않는다.
 
 const read = (file) => readFileSync(path.join(process.cwd(), file), 'utf8');
 const KEYS = { gon: 'aozora-000121-000628', hana: 'aozora-000879-000042', tebukuro: 'aozora-000121-000637' };
 
 describe('정본 5편 표기 — 대조표가 싣는다', () => {
-  it('목차: 見出し 그대로 · 나눈 장은 1/N · 한 장이면 전편 — 「과」·「편」이 없다', () => {
+  it('목차: 見出し 그대로 · 나눈 장은 1/N · 한 장이면 전문 — 「과」·「편」이 없다', () => {
     const labels = Object.fromEntries(Object.entries(manifest.works).map(([key, work]) => [key, [work.division, work.chapters.map((chapter) => chapter.title)]]));
     expect(labels).toEqual({
       'aozora-000081-043754': ['split', ['1/2', '2/2']],
       'aozora-000121-000628': ['heading', ['一', '二', '三', '四', '五', '六']],
-      'aozora-000121-000637': ['whole', ['전편']],
+      'aozora-000121-000637': ['whole', ['전문']],
       'aozora-000148-000753': ['split', ['1/4', '2/4', '3/4', '4/4']],
       'aozora-000879-000042': ['split', ['1/2', '2/2']],
     });
-    expect(JSON.stringify(manifest)).not.toMatch(/\d+(과|편)"/u);
+    expect(JSON.stringify(manifest)).not.toMatch(/\d+(과|편)"|전편/u);
   });
 
   it('표지 표기: 읽기(가나)·한국어 제목·작가 한국어 이름·팔레트 색 — 다섯 편이 서로 다른 색', () => {
@@ -40,10 +40,15 @@ describe('정본 5편 표기 — 대조표가 싣는다', () => {
     expect(new Set(works.map((work) => work.display.cover)).size).toBe(works.length);
   });
 
-  it('장 첫 문장(incipit)은 원문 앞부분 그대로 — 길면 「…」', () => {
-    expect(manifest.works[KEYS.hana].chapters[1].incipit).toBe('しばらく踏んでいると、やがて、粟粒のようなものが…');
-    expect(manifest.works[KEYS.gon].chapters[2].incipit).toBe('兵十が、赤い井戸のところで、麦をといでいました。');
+  it('장 첫 문장(incipit) — 30자 이하 첫 문장은 통째로, 길면 「、」에서(낱말 한가운데·마침표 뒤에서 자르지 않는다)', () => {
+    const incipits = (key) => manifest.works[key].chapters.map((chapter) => chapter.incipit);
+    expect(incipits(KEYS.hana)).toEqual(['禅智内供の鼻と云えば、池の尾で知らない者はない。', 'しばらく踏んでいると、やがて、粟粒のようなものが…']);
+    expect(incipits(KEYS.gon).slice(0, 4)).toEqual(['これは、私が小さいときに…', '十日ほどたって、ごんが、弥助というお百姓の家の裏…', '兵十が、赤い井戸のところで、麦をといでいました。', '月のいい晩でした。']);
+    for (const work of Object.values(manifest.works)) {
+      for (const { incipit } of work.chapters) expect(incipit.endsWith('…') ? /、…$|[^、。]…$/u.test(incipit) && !incipit.includes('。') : incipit.endsWith('。')).toBe(true);
+    }
     expect(literatureIncipit('\n\n　短い。\n\n次')).toBe('短い。');
+    expect(literatureIncipit('あ'.repeat(40))).toBe(`${'あ'.repeat(24)}…`); // 쉼표가 없으면 24자
   });
 });
 
@@ -59,7 +64,9 @@ describe('표기 함수', () => {
   });
 
   it('카드 메타 — 나눈 방식을 말한다', () => {
-    expect([gon, hana, tebukuro].map(literatureDivisionLabel)).toEqual(['6장', '2번에 나눠 읽기', '한 번에 읽기']);
+    // 「번」은 고유어 수(「2번」은 번호로 읽힌다), 작가의 장은 「N장 구성」(「6장」은 종이 장수로 읽힌다)
+    expect([gon, hana, literatureWork('aozora-000148-000753'), tebukuro].map(literatureDivisionLabel))
+      .toEqual(['6장 구성', '두 번에 나눠 읽기', '네 번에 나눠 읽기', '한 번에 읽기']);
   });
 
   it('책 묶음 → 작품: 아오조라 정본 표식 + 대조표 key가 둘 다 있어야(일반 책은 null)', () => {
@@ -102,7 +109,9 @@ describe('화면 배선', () => {
     const viewer = read('src/views/ViewerPage.jsx');
     expect(viewer).toContain('const literatureBook = canonicalLiterature ? literatureWork(bookMeta?.key) : null;');
     expect(viewer).toContain('<h1 className="page-header__title">{viewerTitle}</h1>');
-    expect(viewer).toContain("{ prevLabel: '이전 장', nextLabel: '다음 장' } : { prevLabel: '이전 부분', nextLabel: '다음 부분' }");
+    expect(viewer).toContain("literatureBook.division === 'heading' ? ['이전 장', '다음 장'] : ['이전 부분', '다음 부분']");
+    expect(viewer).toContain('nextLabel: bookNav.next ? `${nextLabel}: ${literatureTitleOf(bookNav.next.order)}` : nextLabel,'); // 목적지까지 읽어 준다
+    expect(viewer).toContain("literatureBook?.division === 'heading' ? literatureChapterLabel(literatureBook, bookNav.next.order)"); // 「이어 읽기 · 二」
     expect(viewer).toContain('canAppend: !!user?.id && material?.owner_id === user.id && !literatureBook');
     expect(viewer).toContain('!composerOf(material) && !literatureBook && (');
   });

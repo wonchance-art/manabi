@@ -60,6 +60,7 @@ export function createManifest(drafts) {
       level: draft.book.level,
       total: draft.book.total,
       division: draft.book.division,
+      chars: draft.chapters.reduce((sum, chapter) => sum + chapter.rawText.length, 0), // 분량(카드 메타 — 책 고를 때 먼저 보는 정보)
       display: draft.display, // 표지·한국어 제목(entry.json display — literatureDisplay)
       literature,
       chapters: draft.chapters.map((chapter, index) => ({ order: chapter.order, title: chapter.title, incipit: draft.incipits[index],

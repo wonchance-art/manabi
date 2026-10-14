@@ -177,7 +177,7 @@ import ViewerQuizModal from './ViewerQuizModal';
 import { langNameKo, splitSentenceAroundWord, detectLang } from '../lib/constants';
 import { attributionParts, literatureAttributionParts, materialSource } from '../lib/videoAttribution';
 import { isCanonicalLiteratureMaterial, literatureWork } from '../lib/literatureCanonical';
-import { literatureChapterTitle } from '../lib/literatureDisplay';
+import { literatureChapterLabel, literatureChapterTitle } from '../lib/literatureDisplay';
 import { useCanonicalLiterature } from '../lib/useCanonicalLiterature';
 import { logReviewEvents } from '../lib/reviewEvents';
 
@@ -559,9 +559,16 @@ export default function ViewerPage() {
         pos: bookNav.pos, total: bookNav.total,
         prev: bookNav.prev && literatureBook ? { ...bookNav.prev, title: literatureTitleOf(bookNav.prev.order) } : bookNav.prev,
         next: bookNav.next && literatureBook ? { ...bookNav.next, title: literatureTitleOf(bookNav.next.order) } : bookNav.next,
-        // 정본 문학책은 작가 목차면 「장」, manabi가 나눈 것이면 「부분」 — 교재의 「과」를 쓰지 않는다.
+        // 정본 문학책은 작가 목차면 「장」, manabi가 나눈 것이면 「부분」 — 교재의 「과」를 쓰지 않는다. 화면 읽기 프로그램에는
+        // 목적지까지 읽어 준다(「다음 장: ごん狐 — 二」).
         ...(literatureBook
-          ? (literatureBook.division === 'heading' ? { prevLabel: '이전 장', nextLabel: '다음 장' } : { prevLabel: '이전 부분', nextLabel: '다음 부분' })
+          ? (() => {
+            const [prevLabel, nextLabel] = literatureBook.division === 'heading' ? ['이전 장', '다음 장'] : ['이전 부분', '다음 부분'];
+            return {
+              prevLabel: bookNav.prev ? `${prevLabel}: ${literatureTitleOf(bookNav.prev.order)}` : prevLabel,
+              nextLabel: bookNav.next ? `${nextLabel}: ${literatureTitleOf(bookNav.next.order)}` : nextLabel,
+            };
+          })()
           : { prevLabel: '이전 과', nextLabel: '다음 과' }),
       }
     : (prevLesson || nextLesson)
@@ -4221,7 +4228,7 @@ export default function ViewerPage() {
         if (bookNav?.next) {
           return (
             <Link href={classStudyNeighborHref(bookNav.next,studyContext,originalParams.get('returnTo'))} className="next-lesson-card">
-              <div className="next-lesson-card__hint">{literatureBook ? vt("이어 읽기 ·") : vt("다음 과 ·")}{bookNav.pos + 1}/{bookNav.total}</div>
+              <div className="next-lesson-card__hint">{literatureBook ? vt("이어 읽기 ·") : vt("다음 과 ·")}{literatureBook?.division === 'heading' ? literatureChapterLabel(literatureBook, bookNav.next.order) : `${bookNav.pos + 1}/${bookNav.total}`}</div>
               <div className="next-lesson-card__title">{literatureTitleOf(bookNav.next.order) || bookNav.next.title}</div>
             </Link>
           );

@@ -147,14 +147,15 @@ function continuesPrevious(text) {
 }
 
 // 장 이름(오너 확정 2026-10-14 「1과 2과」 개편) — 작가의 見出し(一·二…)는 그대로 쓰고, manabi가 분량으로 나눈 장은
-// 작가의 장으로 오인되지 않게 「1/2」처럼 나눈 위치만 적는다(교재의 「과」·연재의 「편」을 쓰지 않는다). 한 장이면 「전편」.
+// 작가의 장으로 오인되지 않게 「1/2」처럼 나눈 위치만 적는다(교재의 「과」·연재의 「편」을 쓰지 않는다). 한 장이면 「전문」
+// (「전편」은 前篇 — 뒷부분이 따로 있는 것처럼 읽힌다, 에디터 검토).
 export const LITERATURE_DIVISION = Object.freeze({ HEADING: 'heading', SPLIT: 'split', WHOLE: 'whole' });
 
 function chapterTitle(part, order, total, projection) {
   const title = String(part.title || '').replace(/[\uE000\uE001]/gu, '');
   const base = title.replace(/ \(\d+\/\d+\)$/u, '');
   if (projection.useHeadings && projection.headingTexts.has(base)) return title;
-  return total === 1 ? '전편' : `${order}/${total}`;
+  return total === 1 ? '전문' : `${order}/${total}`;
 }
 
 /** 자료 제목 — 見出し 장은 「작품 — 一」, 나눈 장은 「작품 (1/2)」, 한 장이면 작품명만. */
