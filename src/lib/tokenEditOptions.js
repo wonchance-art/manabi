@@ -82,11 +82,17 @@ export function revertCorrections(beforeToken, corrections) {
  * 교정 적용 — 토큰에 교정 칸을 덮고, 뜻을 교정했으면 「뜻 확인 필요」 내부 표식(meaningCheck)을 지운다
  * (뷰어 v2 AD-R4 §6.2·§6.3·§7: 사용자가 정한 뜻이 이긴다). 같은 뜻을 확정하는 교정([이대로 둘게요])도 지운다.
  * 독음을 교정했으면 저자 루비 잠금 표식(reading_source·reading_locked)도 지운다 — 사용자 교정 > 저자 루비(aozoraRuby).
+ * 정본 책 검수 힌트의 제안(meaningSuggest·meaningNote)도 뜻 교정과 함께 지운다(literatureReviewHints).
  * correctTokenMutation이 저장 직전과 카드 갱신에 같은 함수를 쓴다(새 쓰기 경로 아님).
  * @returns {object} 새 토큰
  */
 export function applyTokenCorrections(token, corrections) {
   const next = clearRubyLockOnCorrection({ ...token, ...corrections }, corrections);
-  if (corrections && Object.hasOwn(corrections, 'meaning')) delete next.meaningCheck;
+  if (corrections && Object.hasOwn(corrections, 'meaning')) {
+    delete next.meaningCheck;
+    // 정본 책 검수 힌트(AOZORA-P0-4)의 제안·근거도 확정과 함께 걷는다 — 공개 뒤 열람자 데이터에 검수용 값이 남지 않게.
+    delete next.meaningSuggest;
+    delete next.meaningNote;
+  }
   return next;
 }
