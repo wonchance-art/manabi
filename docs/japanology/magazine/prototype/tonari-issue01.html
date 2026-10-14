@@ -101,7 +101,7 @@ rt{font-size:.5em;font-family:var(--font-ja);color:var(--muted);line-height:1}
 .head{display:grid;grid-template-columns:var(--rail) minmax(0,var(--measure));gap:0 32px;margin-bottom:36px}
 .head .rail{padding-top:.35em}
 .head h1,.head h2{font-size:clamp(1.65rem, 1.2rem + 1.6vw, 2.35rem)}
-.kicker{display:block;font-size:15px;font-weight:400;color:var(--muted);margin-top:.5em;line-height:1.5}
+.kicker{display:block;font-size:15px;font-weight:400;color:var(--muted);margin:.5em 0 0;line-height:1.5}
 .body{display:grid;grid-template-columns:var(--rail) minmax(0,var(--measure));gap:0 32px}
 .body > *{grid-column:2}
 .body > .aside{grid-column:1;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:.45em;line-height:1.5}
@@ -229,7 +229,7 @@ details.note .inner{padding:4px 20px 12px 20px;font-size:16px}
   <div class="article">
     <header class="head">
       <div class="rail"><span class="chip">창간사</span></div>
-      <h1 id="ed-h"><span lang="ja">はじめまして</span> 다음에<span class="kicker">창간사 · 같은 질문, 다른 조건</span></h1>
+      <div><h1 id="ed-h"><span lang="ja">はじめまして</span> 다음에</h1><p class="kicker">창간사 · 같은 질문, 다른 조건</p></div>
     </header>
     <div class="body">
       <p>일본어 교재의 첫 과는 이름을 말하는 법에서 시작해요. <span lang="ja">はじめまして</span>(하지메마시테). 처음 뵙겠습니다.</p>
