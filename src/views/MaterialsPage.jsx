@@ -683,6 +683,13 @@ export default function MaterialsPage({ libraryView = null }) {
               // 정본 문학책(AOZORA-P0-5) — 타이포그래피 표지 + 작가 목차(一·二) / 나눈 위치(1/2) + 장 첫 문장. 교재의 「과」를 쓰지 않는다.
               const work = literatureWorkOfBook(b);
               const chapterOf = (c) => work?.chapters.find((item) => item.order === c._bookOrder);
+              // 장 표지 — 작가 見出し(一·二)는 일본어로, 「1/2」는 날짜로 읽히지 않게 화면 읽기용 「2부분 중 1」을 따로 둔다.
+              const literatureLead = (order) => {
+                const label = literatureChapterLabel(work, order);
+                if (work.division === 'heading') return <span lang="ja">{label}</span>;
+                if (work.division === 'whole') return label;
+                return <><span aria-hidden="true">{label}</span><span className="group-card__sr">{`${work.total}부분 중 ${order}`}</span></>;
+              };
               // 묶음 카드는 한 자리에서만 그린다(계약 ③) — 정본 문학책은 props만 다르다.
               const literatureProps = work ? {
                 art: <LiteratureCover work={work} />,
@@ -703,7 +710,7 @@ export default function MaterialsPage({ libraryView = null }) {
                   rows={b.chapters.map((c) => ({
                     key: c.id,
                     onClick: () => openReader(`/viewer/${c.id}`),
-                    lead: work ? literatureChapterLabel(work, c._bookOrder) : c._bookOrder,
+                    lead: work ? literatureLead(c._bookOrder) : c._bookOrder,
                     title: work ? <span lang="ja">{chapterOf(c)?.incipit || c.title}</span>
                       : c.title.includes(' — ') ? c.title.split(' — ').slice(1).join(' — ') : c.title,
                     right: chapterTags(c),

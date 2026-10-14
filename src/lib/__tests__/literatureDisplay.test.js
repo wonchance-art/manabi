@@ -89,9 +89,12 @@ describe('화면 배선', () => {
   it('표지는 글자만 — 이미지·외부 그림을 쓰지 않는다(금지⑴) · 팔레트 색마다 CSS가 있다 · 인라인 색 없음', () => {
     const cover = read('src/components/books/LiteratureCover.jsx');
     expect(cover).not.toMatch(/<img|background-image|url\(/u);
+    // 제목 글꼴은 웹폰트 명조로 고정(기기마다 다른 시스템 명조 대신) — 사이트 전체 preload 없이
+    expect(cover).toContain("Noto_Serif_JP({ weight: ['600'], subsets: ['latin'], display: 'swap', preload: false, variable: '--font-lit-serif' })");
     expect(cover).not.toContain('style=');
     const css = read('src/components/books/literature-cover.css');
     for (const color of LITERATURE_COVER_COLORS) expect(css).toContain(`.lit-cover--${color}{`);
+    expect(css).toContain('font-family:var(--font-lit-serif)');
     expect(css).not.toMatch(/url\(/u);
   });
 
@@ -100,7 +103,8 @@ describe('화면 배선', () => {
     const block = sliceBetween(page, 'const bookCards = books.map', 'const pdfCards');
     expect(block).toContain('const work = literatureWorkOfBook(b);');
     expect(block).toContain('art: <LiteratureCover work={work} />');
-    expect(block).toContain('lead: work ? literatureChapterLabel(work, c._bookOrder) : c._bookOrder');
+    expect(block).toContain('lead: work ? literatureLead(c._bookOrder) : c._bookOrder');
+    expect(block).toContain('<span className="group-card__sr">{`${work.total}부분 중 ${order}`}</span>'); // 「1/2」를 날짜로 읽지 않게
     expect(block).toContain("fitLine: fitLineOf(bf, '장')");
     expect(block).toContain('footer={!work && b.chapters[0]?.owner_id === user?.id');
   });

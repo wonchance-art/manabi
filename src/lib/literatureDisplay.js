@@ -8,8 +8,11 @@
 // 장 줄에는 그 장 첫 문장(incipit)을 단다. 이름표가 아니라 본문이 장을 알아보게 한다.
 // 이 모듈은 빌드(scripts/lib/literature-build.mjs)도 쓰므로 대조표를 import하지 않는다 — 작품 찾기는 literatureCanonical.literatureWork.
 
-/** 표지 색 — 작품 이미지에서 고른 이름(눈·여우 주홍·숲·먹·매화). CSS `.lit-cover--<name>`이 값을 갖는다. */
-export const LITERATURE_COVER_COLORS = Object.freeze(['snow', 'vermilion', 'forest', 'ink', 'plum']);
+/**
+ * 표지 색 — 작품 이미지에서 고른 이름(눈·여우 주홍·숲·먹·회청). CSS `.lit-cover--<name>`이 값을 갖는다.
+ * 앱 주색·일본어 서재 표지(로즈 #994a5a)와 같은 색상 계열은 피한다(디자이너 검토 — 매화색은 브랜드 강조로 읽혔다).
+ */
+export const LITERATURE_COVER_COLORS = Object.freeze(['snow', 'vermilion', 'forest', 'ink', 'slate']);
 
 const filled = (value) => typeof value === 'string' && value.trim() !== '';
 

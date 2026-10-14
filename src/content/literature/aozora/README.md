@@ -118,7 +118,7 @@
 - `translator`·`illustrator`는 키를 빼지 말고 `null`로 적는다(빠뜨림 = 미검토로 보고 공개하지 않는다).
 - `display`(AOZORA-P0-5)는 표지·카드 표기다. 원서 표지·삽화 이미지는 쓰지 않는다(IP 정책 §2.1 금지⑴) — 표지는 같은 틀에
   세로 제목과 작품 색만 바뀌는 타이포그래피 표지다. 빌드가 검사하고 대조표(`manifest.generated.json`)에 싣는다.
-  - `titleReading`은 가나만. `cover`는 팔레트 이름(`snow`·`vermilion`·`forest`·`ink`·`plum`, `literatureDisplay.js`) —
+  - `titleReading`은 가나만. `cover`는 팔레트 이름(`snow`·`vermilion`·`forest`·`ink`·`slate`, `literatureDisplay.js`) —
     작품 이미지에 맞춰 고르고 이미 쓴 색과 겹치지 않게 한다. 새 색이 필요하면 CSS와 팔레트를 함께 늘리고 흰 글자 대비 4.5:1 이상을 지킨다.
   - 표지 세로 제목은 한 줄 다섯 자까지 — 넘으면 `coverTitle`에 작품명 그대로 줄바꿈(`\n`)만 넣는다(다른 글자를 넣으면 빌드 실패).
 - 장 이름은 빌드가 정한다: 見出し가 있으면 그대로(「ごん狐 — 一」), 분량으로 나눈 장은 「1/2」(자료 제목 「鼻 (1/2)」),
