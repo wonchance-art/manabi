@@ -28,7 +28,15 @@ describe('literatureAttributionParts — 출처 줄 재료', () => {
       cardUrl: 'https://www.aozora.gr.jp/cards/000001/card1.html',
       publicDomain: true,
       editNote: true,
+      smallKanaNote: false,
     });
+  });
+
+  it('작은 가나를 보통 크기로 바꾼 책만 그 편집을 한 줄 더 밝힌다(small-kana-as-full)', () => {
+    const substituted = createAozoraMaterialDraft(sampleEntry(), parseAozoraText(aozoraFixture('format-sample-headings.txt')
+      .replace('。', '。僕※［＃小書き平仮名ん、168-12］とこ。'))).chapters[0].metadata.literature;
+    expect(substituted.edits).toEqual(['ruby-reading-aid', 'chapter-split-by-manabi', 'small-kana-as-full']);
+    expect(literatureAttributionParts(substituted)).toMatchObject({ editNote: true, smallKanaNote: true });
   });
 
   it('권리 기록이 approved·public-domain이 아니면 「원작 퍼블릭 도메인」을 쓰지 않는다(없는 권리 주장 금지)', () => {
@@ -58,7 +66,7 @@ describe('뷰어 배선 — 출처 줄이 실제로 그려진다', () => {
     expect(block).not.toContain('literatureAttributionParts(material');
     expect(viewer).toContain('const canonicalLiterature = useCanonicalLiterature(material);');
     expect(block).toContain('className="viewer-attribution"');
-    for (const piece of ['lit.provider', 'lit.sourceBook', 'lit.inputter', 'lit.proofreader', 'lit.cardUrl', 'lit.publicDomain', 'lit.editNote']) {
+    for (const piece of ['lit.provider', 'lit.sourceBook', 'lit.inputter', 'lit.proofreader', 'lit.cardUrl', 'lit.publicDomain', 'lit.editNote', 'lit.smallKanaNote']) {
       expect(block, `출처 줄 항목 누락: ${piece}`).toContain(piece);
     }
     expect(block).toContain('rel="noopener noreferrer"');
@@ -68,5 +76,6 @@ describe('뷰어 배선 — 출처 줄이 실제로 그려진다', () => {
     expect(translateViewerText('ko', '입력 {name}', { name: '甲' })).toBe('입력 甲');
     expect(translateViewerText('zh-CN', '원작 퍼블릭 도메인')).toBe('原作已进入公有领域');
     expect(translateViewerText('zh-TW', '루비는 독음 보조, 장 분할은 manabi 편집')).toBe('注音僅為讀音輔助，分章由 manabi 編輯');
+    expect(translateViewerText('zh-CN', '글꼴에 없는 작은 가나는 보통 크기로')).toBe('字库中没有的小写假名改为普通大小');
   });
 });

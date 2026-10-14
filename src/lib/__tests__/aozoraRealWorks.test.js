@@ -93,6 +93,8 @@ describe('실물 「羅生門」 — JIS X 0213 외자와 그 외자에 걸린 �
 // 2차 묶음 8편(2026-10-14 KST, 오너 「유명 작가·작품 위주로 확장」) — 羅生門·蜘蛛の糸·山月記는 JIS X 0213 외자·외자 루비를 푼 뒤에야 들어왔다.
 const WORKS = {
   'aozora-000074-000424': { title: '檸檬', level: 'N1 심화', chapters: 2, ruby: 95 },
+  // 銀河鉄道の夜 — 유니코드에 없는 작은 「ん」 한 자를 보통 「ん」으로 바꿔 넣었다(편집 기록 small-kana-as-full)
+  'aozora-000081-000456': { title: '銀河鉄道の夜', level: 'N3 중급', chapters: 17, ruby: 689 },
   'aozora-000081-000470': { title: 'セロ弾きのゴーシュ', level: 'N3 중급', chapters: 4, ruby: 142 },
   'aozora-000081-000473': { title: 'よだかの星', level: 'N3 중급', chapters: 2, ruby: 64 },
   'aozora-000081-043754': { title: '注文の多い料理店', level: 'N3 중급', chapters: 2, ruby: 106 },
@@ -112,6 +114,13 @@ describe('정본 작품 — 리포의 작품 폴더', () => {
     const dirs = readdirSync(path.join(process.cwd(), LITERATURE_ROOT), { withFileTypes: true })
       .filter((item) => item.isDirectory()).map((item) => item.name).sort();
     expect(dirs).toEqual(Object.keys(WORKS));
+  });
+
+  it('작은 가나 대체는 銀河鉄道の夜 「僕んとこ」 한 곳뿐 — 그 책만 편집 기록 small-kana-as-full을 단다', () => {
+    const substituted = Object.keys(WORKS).filter((key) => work(key).chapters.chapters[0].metadata.literature.edits.includes('small-kana-as-full'));
+    expect(substituted).toEqual(['aozora-000081-000456']);
+    const text = work('aozora-000081-000456').chapters.chapters.map((chapter) => chapter.rawText).join('');
+    expect(text).toContain('僕んとこへ来なかったので');
   });
 
   it.each(Object.entries(WORKS))('%s — 공개 가능·잠금 정확·장 크기', (key, expected) => {

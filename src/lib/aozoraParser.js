@@ -79,9 +79,15 @@ function headingMark(description) {
   return null;
 }
 
+// Unicode에 없는 작은 가나 — 보통 크기 글자로 바꾸고(substituted) 책 metadata의 「우리가 바꾼 점」에 남긴다.
+// 오너 결정(2026-10-14 KST 「권장대로」): 銀河鉄道の夜 「僕ん(작은 ん)とこ」 한 글자 — 뜻이 같은 「僕んとこ」로 읽힌다.
+// 이 표에 없는 이름은 여전히 미해결(fail-closed). 작은 ㇰ·ㇶ 등 Unicode에 있는 작은 가나는 면-구-점으로 이미 풀린다.
+export const AOZORA_SUBSTITUTED_GAIJI = Object.freeze({ 小書き平仮名ん: 'ん' });
+
 function gaijiNode(description) {
   const name = description.split('、')[0];
   if (Object.hasOwn(SYMBOL_GAIJI, name)) return { type: 'gaiji', description, status: 'resolved', char: SYMBOL_GAIJI[name] };
+  if (Object.hasOwn(AOZORA_SUBSTITUTED_GAIJI, name)) return { type: 'gaiji', description, status: 'resolved', char: AOZORA_SUBSTITUTED_GAIJI[name], substituted: true };
   const unicode = description.match(/U\+([0-9A-F]{4,6})/i);
   if (unicode) {
     const point = Number.parseInt(unicode[1], 16);

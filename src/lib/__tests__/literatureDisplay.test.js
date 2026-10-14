@@ -33,6 +33,10 @@ describe('정본 작품 표기 — 대조표가 싣는다', () => {
       'aozora-000074-000424': ['split', ['1/2', '2/2']],
       'aozora-000081-000470': ['split', ['1/4', '2/4', '3/4', '4/4']],
       'aozora-000081-000473': ['split', ['1/2', '2/2']],
+      'aozora-000081-000456': ['heading', [
+        '一、午后の授業', '二、活版所', '三、家', '四、ケンタウル祭の夜', '五、天気輪の柱', '六、銀河ステーション',
+        '七、北十字とプリオシン海岸 (1/2)', '七、北十字とプリオシン海岸 (2/2)', '八、鳥を捕る人 (1/2)', '八、鳥を捕る人 (2/2)',
+        ...Array.from({ length: 7 }, (_, k) => `九、ジョバンニの切符 (${k + 1}/7)`)]],
       'aozora-000119-000624': ['split', ['1/2', '2/2']],
       'aozora-000129-045245': ['split', ['1/3', '2/3', '3/3']],
       'aozora-000148-000752': ['heading', ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一']
@@ -52,13 +56,15 @@ describe('정본 작품 표기 — 대조표가 싣는다', () => {
     expect(Object.fromEntries(works.map((work) => [work.title, work.display.titleKo])))
       .toEqual({ '注文の多い料理店': '주문이 많은 요리점', 'ごん狐': '여우 곤', '手袋を買いに': '장갑을 사러', '文鳥': '문조', '鼻': '코',
         '檸檬': '레몬', 'セロ弾きのゴーシュ': '첼로 켜는 고슈', 'よだかの星': '쏙독새의 별', '山月記': '산월기', '高瀬舟': '다카세부네',
-        '坊っちゃん': '도련님', '蜘蛛の糸': '거미줄', '羅生門': '라쇼몬' });
+        '坊っちゃん': '도련님', '蜘蛛の糸': '거미줄', '羅生門': '라쇼몬',
+        '銀河鉄道の夜': '은하철도의 밤' });
     expect(new Set(works.map((work) => work.display.cover)).size).toBe(works.length);
     // 문양은 작품 분위기에서, 작품마다 새로(오너 지시 2026-10-14 KST 「작품마다 새 문양」) — 같은 문양을 두 작품이 쓰지 않는다
     expect(Object.fromEntries(works.map((work) => [work.title, work.display.motif])))
       .toEqual({ '注文の多い料理店': 'forest-doors', 'ごん狐': 'higanbana', '手袋を買いに': 'snow-night', '文鳥': 'birdcage', '鼻': 'ink-steam',
         '檸檬': 'lemon-books', 'セロ弾きのゴーシュ': 'cello-night', 'よだかの星': 'nightjar-star', '山月記': 'moon-tiger', '高瀬舟': 'night-boat',
-        '坊っちゃん': 'steam-sea', '蜘蛛の糸': 'lotus-thread', '羅生門': 'rain-gate' });
+        '坊っちゃん': 'steam-sea', '蜘蛛の糸': 'lotus-thread', '羅生門': 'rain-gate',
+        '銀河鉄道の夜': 'night-train' });
     expect(new Set(works.map((work) => work.display.motif)).size).toBe(works.length);
   });
 

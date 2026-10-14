@@ -350,6 +350,36 @@ function CelloNight() {
   );
 }
 
+// 銀河鉄道の夜(1934) — 쇼와 초 동화책의 밤하늘 판화: 왼쪽 반을 비스듬히 가로지르는 은하수, 그 위를 달려 오르는 작은 기차(불 켜진 창),
+// 위쪽의 남십자. 제목이 오른쪽 세로줄을 다 쓰므로 그림은 왼쪽 반에만.
+function NightTrain() {
+  const stars = scatter(22, 9, [6, 6, 56, 160]);
+  const cars = [[10, 0], [22, 0], [34, 0]];
+  return (
+    <>
+      <path className={`${P(2)} lit-art__glow`} d="M4 168L4 126 58 30V74L22 168Z" fill="currentColor" />
+      <path className={P(2)} d="M8 158L56 54M14 164L57 72" stroke="currentColor" strokeWidth="0.5" strokeDasharray="1 2.5" />
+      <g className={P(1)} fill="currentColor">{stars.map(([x, y], i) => <circle key={`${x}-${y}`} cx={x} cy={y} r={i % 5 ? 0.7 : 1.3} />)}</g>
+      <g className={P(1)} fill="currentColor">
+        <path d="M30 10L31 14.6 35.6 15.6 31 16.6 30 21.2 29 16.6 24.4 15.6 29 14.6Z" />
+        <circle cx="30" cy="27" r="1.2" /><circle cx="22" cy="18" r="1" /><circle cx="38" cy="18" r="1" />
+      </g>
+      <g transform="rotate(-56 30 104)">
+        <path className={P(5)} d="M-2 112H64" stroke="currentColor" strokeWidth="0.8" />
+        <g className={P(3)} fill="currentColor">
+          <path d="M46 102H58L60 105V111H46Z" />
+          <rect x="49" y="98" width="3" height="4" />
+          {cars.map(([x]) => <rect key={x} x={x - 8} y="103" width="10.6" height="8" rx="1" />)}
+        </g>
+        <g className={P(4)} fill="currentColor">
+          {cars.flatMap(([x]) => [<rect key={`${x}a`} x={x - 6.4} y="105" width="2.6" height="2.4" />, <rect key={`${x}b`} x={x - 2.4} y="105" width="2.6" height="2.4" />])}
+          <circle cx="59" cy="107" r="1" />
+        </g>
+      </g>
+    </>
+  );
+}
+
 // 옛 종이 — 다섯 권 공통 층(오너 「빈티지 효과 · 옛 종이 질감」). 그림 위·글자 아래에 깔린다(글자는 z-index:1).
 // 「새 책처럼」(오너 2026-10-14 KST — 어두컴컴한 효과 없애기): 바랜 얼룩·가장자리 그을음은 두지 않고, 갓 찍은 옛 종이의
 // 옅은 결(고주파 잡음 점)과 고르지 않은 밝은 결만 남긴다. 그림 자체에는 활판 느낌(아주 작은 번짐 + 옅은 농도 차)만 준다. 전부 코드로 만든 절차 질감이다(이미지·외부 주소 없음).
@@ -394,6 +424,7 @@ const ART = {
   'snow-night': SnowNight, higanbana: Higanbana, 'forest-doors': ForestDoors, 'ink-steam': InkSteam, birdcage: Birdcage,
   'rain-gate': RainGate, 'lotus-thread': LotusThread, 'moon-tiger': MoonTiger, 'steam-sea': SteamSea,
   'lemon-books': LemonBooks, 'nightjar-star': NightjarStar, 'night-boat': NightBoat, 'cello-night': CelloNight,
+  'night-train': NightTrain,
 };
 
 export default function LiteratureCoverArt({ motif }) {
