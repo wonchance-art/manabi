@@ -167,7 +167,7 @@ export default function HomePage({ book = null }) {
   else if (kind === 'book' && resume) resumeItem = bookItem(book, resume);
   else if (lang === 'Japanese' && !book) resumeItem = { lang, kicker: '교재', glyph: GLYPH.Japanese, title: '교재 정보를 불러오지 못했어요',
     sub: '교재 목록에서 다시 골라 주세요.', href: '/lessons', cta: '교재 보기' };
-  else if (suggestion) resumeItem = { lang, kicker: '산책 추천', glyph: '文', title: suggestion.title,
+  else if (suggestion) resumeItem = { lang, kicker: '산책 추천', glyph: '文', title: suggestion.title, titleLang: encounterLookupLang(suggestion.language) || undefined,
     sub: [langNameKo(suggestion.language), suggestion.level].filter(Boolean).join(' · '), href: suggestionHref(suggestion, 'home'), cta: '읽어 보기' };
   else if (!pending) resumeItem = { lang, kicker: '산책', glyph: GLYPH[lang] || '文', title: '오늘 읽을 글을 골라 보세요',
     sub: `${learnLangLabel(lang)} 읽을거리`, href: '/discover', cta: '산책하기' };

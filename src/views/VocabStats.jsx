@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { wordStage } from '../lib/growthStats';
 import { memoryHealth } from '../lib/memoryHealth';
 import { LEVELS, detectLang, langNameKo, profileLevel } from '../lib/constants';
+import { langTag } from '../components/vocab/ReviewCardParts';
 
 /**
  * 급수별 누적 어휘 목표. 값은 우리가 정하는 게 아니라 **각 시험의 공표 수치**를 따른다
@@ -176,7 +177,7 @@ export default function VocabStats({ vocab, profile, section, projections = [], 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {hardWords.map(({ vocabulary: v, memory }) => (
                 <div key={v.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontWeight: 700, fontSize: '0.95rem', minWidth: 70 }}>{v.word_text}</span>
+                  <span style={{ fontWeight: 700, fontSize: '0.95rem', minWidth: 70 }} lang={langTag(v)}>{v.word_text}</span>
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.meaning}</span>
                   <span style={{
                     fontSize: '0.75rem', fontWeight: 600,

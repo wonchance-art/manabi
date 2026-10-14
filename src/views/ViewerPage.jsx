@@ -3669,7 +3669,7 @@ export default function ViewerPage() {
              매만지고 있었다(:hover가 할 일). 밖으로 빼고 baseline으로 맞춘다.
              ※ 여기 있던 `flex: 1`은 죽은 값이었다 — 부모(.page-header)가 flex가 아니다. */
           <div className="viewer-titlerow">
-            <h1 className="page-header__title">{material.title}</h1>
+            <h1 className="page-header__title" lang={contentLangTag}>{material.title}</h1>
             {user?.id === material?.owner_id && !composerOf(material) && (
               <button
                 className="viewer-title-edit"
@@ -4215,7 +4215,7 @@ export default function ViewerPage() {
           return (
             <Link href={classStudyNeighborHref(nextLesson,studyContext,originalParams.get('returnTo'))} className="next-lesson-card">
               <div className="next-lesson-card__hint">{vt("다음 편")}</div>
-              <div className="next-lesson-card__title">{nextLesson.title}</div>
+              <div className="next-lesson-card__title" lang={contentLangTag}>{nextLesson.title}</div>
             </Link>
           );
         }
@@ -4223,7 +4223,7 @@ export default function ViewerPage() {
           return (
             <Link href={classStudyNeighborHref(bookNav.next,studyContext,originalParams.get('returnTo'))} className="next-lesson-card">
               <div className="next-lesson-card__hint">{vt("다음 과 ·")}{bookNav.pos + 1}/{bookNav.total}</div>
-              <div className="next-lesson-card__title">{bookNav.next.title}</div>
+              <div className="next-lesson-card__title" lang={contentLangTag}>{bookNav.next.title}</div>
             </Link>
           );
         }

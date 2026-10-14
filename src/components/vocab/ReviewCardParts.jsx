@@ -53,7 +53,7 @@ export function ReviewReadingRow({ word, speak, ttsSupported }) {
   const text = line.kind === 'pinyin' || line.kind === 'phonetic' ? line.text : null;
   if (!text && !(ttsSupported && speak)) return null;
   return <p className="review-card__reading-row">
-    {text && <span className={`review-card__reading review-card__reading--${line.kind}`}>{text}</span>}
+    {text && <span className={`review-card__reading review-card__reading--${line.kind}`} lang={langTag(word)}>{text}</span>}
     <ListenButton word={word} speak={speak} ttsSupported={ttsSupported} />
   </p>;
 }

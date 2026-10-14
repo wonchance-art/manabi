@@ -11,11 +11,11 @@
  * 복습 4개`. 그래서 줄의 좌/우 슬롯을 노드로 받는다 — 분기는 호출부에 남기고 이 안에는
  * 두지 않는다(분기가 들어오는 순간 다시 두 벌이 된다).
  */
-export default function MaterialGroupCard({ icon, title, meta, fitLine, rows, footer, open }) {
+export default function MaterialGroupCard({ icon, title, meta, fitLine, rows, footer, open, lang }) {
   return (
     <details className="card book-card group-card" open={open || undefined}>
       <summary className="group-card__summary">
-        <span className="group-card__title">{icon} {title}</span>
+        <span className="group-card__title" lang={lang}>{icon} {title}</span>
         <span className="group-card__meta">{meta}</span>
         {fitLine && <span className="group-card__fit">{fitLine}</span>}
       </summary>
@@ -30,7 +30,7 @@ export default function MaterialGroupCard({ icon, title, meta, fitLine, rows, fo
             onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), r.onClick?.())}
           >
             <span className="group-card__lead">{r.lead}</span>
-            <span className="group-card__rowtitle">{r.title}</span>
+            <span className="group-card__rowtitle" lang={lang}>{r.title}</span>
             {r.right}
           </div>
         ))}
