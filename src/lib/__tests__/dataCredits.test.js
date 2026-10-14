@@ -47,6 +47,9 @@ const MARKERS = [
   { re: /ODbL/, id: 'openstreetmap' },
   { re: /Natural Earth/, id: 'natural-earth' },
   { re: /ETOPO/, id: 'etopo-2022' },
+  { re: /ColBase/, id: 'colbase' },
+  { re: /api\.artic\.edu/, id: 'art-institute-chicago' },
+  { re: /Wikidata/, id: 'wikidata' },
 ];
 
 describe('자료 출처 — 코드의 원천 표지와 화면 목록이 갈리지 않는다', () => {

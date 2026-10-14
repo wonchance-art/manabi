@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import JapanStudiesMapPage from '@/views/JapanStudiesMapPage';
 
 export const metadata = {
@@ -6,5 +7,9 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <JapanStudiesMapPage />;
+  return (
+    <Suspense fallback={null}>
+      <JapanStudiesMapPage />
+    </Suspense>
+  );
 }

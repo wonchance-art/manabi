@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { JAPAN_PATH, JP_PREF_LINES, JP_VIEW, projectJp } from '../components/japanMapPaths';
 import { JP_MAP_PINS, JP_MAP_THEMES } from '../content/studies/japanMapPins';
 
@@ -14,7 +15,9 @@ const THEME_BY_ID = Object.fromEntries(JP_MAP_THEMES.map((t) => [t.id, t]));
  */
 export default function JapanStudiesMapPage() {
   const [theme, setTheme] = useState('all');
-  const [activeId, setActiveId] = useState(null);
+  // ?pin=<id> 딥링크 — 실제 핀 id만 받고 모르는 값은 무시한다
+  const pinParam = useSearchParams().get('pin');
+  const [activeId, setActiveId] = useState(() => (JP_MAP_PINS.some((p) => p.id === pinParam) ? pinParam : null));
 
   const pins = useMemo(
     () => (theme === 'all' ? JP_MAP_PINS : JP_MAP_PINS.filter((p) => p.themes.includes(theme))),
