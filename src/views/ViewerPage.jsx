@@ -3765,6 +3765,7 @@ export default function ViewerPage() {
             {lit.publicDomain && <> · <span className="viewer-attribution__license">{vt("원작 퍼블릭 도메인")}</span></>}
             {lit.cardUrl && <> · <a href={lit.cardUrl} target="_blank" rel="noopener noreferrer">{vt("도서 카드 보기")}</a></>}
             {lit.editNote && <span className="viewer-attribution__muted"> · {vt("루비는 독음 보조, 장 분할은 manabi 편집")}</span>}
+            {lit.smallKanaNote && <span className="viewer-attribution__muted"> · {vt("글꼴에 없는 작은 가나는 보통 크기로")}</span>}
           </p>
         );
       })()}

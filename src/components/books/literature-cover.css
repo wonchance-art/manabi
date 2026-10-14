@@ -20,6 +20,7 @@
 .lit-cover--nightjar{--cover-color:#2b2547}
 .lit-cover--river{--cover-color:#234a52}
 .lit-cover--walnut{--cover-color:#5a3b28}
+.lit-cover--plum{--cover-color:#3a2440}
 .lit-cover__title{position:relative;z-index:1;writing-mode:vertical-rl;white-space:nowrap;font-family:var(--font-lit-serif),"Noto Serif CJK JP",serif;font-weight:500;font-size:11px;line-height:1.25;letter-spacing:.02em}
 .lit-cover__line{display:block}
 .lit-cover[data-motif=ink-steam] .lit-cover__title{color:#2b2724}

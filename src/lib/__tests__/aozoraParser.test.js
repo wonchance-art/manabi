@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  AOZORA_SUBSTITUTED_GAIJI,
   aozoraBlockText,
   aozoraDocumentToPlainText,
   aozoraRubyClass,
@@ -129,8 +130,19 @@ describe('parseAozoraText — 외자·깨진 루비·경계', () => {
       .toEqual([['resolved', '枻', 11], ['resolved', '埼', 11], ['resolved', '揷', 11], ['unresolved', null, 11]]);
     expect(aozoraDocumentToPlainText(document)).toBe('古い枻と埼、揷、〓。');
     // 비한자 외자는 수준 없이 면-구-점만(吾輩は猫である 「小書き片仮名ヒ、1-6-84」), 쪽-줄 두 마디(「168-12」)는 번호가 아니다
-    const small = parseAozoraText(wrap('ア※［＃小書き片仮名ヒ、1-6-84］と※［＃小書き平仮名ん、168-12］'));
+    const small = parseAozoraText(wrap('ア※［＃小書き片仮名ヒ、1-6-84］と※［＃小書き片仮名ン、168-12］'));
     expect(small.gaiji.map((item) => [item.status, item.char ?? null])).toEqual([['resolved', 'ㇶ'], ['unresolved', null]]);
+  });
+
+  it('Unicode에 없는 작은 「ん」만 보통 「ん」으로 바꾸고 표시한다(substituted) — 표에 없는 이름은 여전히 미해결', () => {
+    // 실물: 銀河鉄道の夜 「僕《ぼく》※［＃小書き平仮名ん、168-12］とこへ」 — 오너 결정 2026-10-14 KST
+    expect(AOZORA_SUBSTITUTED_GAIJI).toEqual({ 小書き平仮名ん: 'ん' });
+    const document = parseAozoraText(wrap('僕《ぼく》※［＃小書き平仮名ん、168-12］とこへ'));
+    expect(document.gaiji.map(({ status, char, substituted }) => [status, char, substituted])).toEqual([['resolved', 'ん', true]]);
+    expect(aozoraDocumentToPlainText(document)).toBe('僕んとこへ');
+    expect(document.warnings).toEqual([]);
+    const plain = parseAozoraText(wrap('※［＃「木＋世」、第3水準1-85-56］'));
+    expect(plain.gaiji[0]).not.toHaveProperty('substituted');
   });
 
   it('JIS X 0213 표는 0208 밖 칸만 싣는다 — 제1면 1,918 + 제2면 2,436 = 4,354(JIS X 0213:2004 추가 문자 수)', async () => {
