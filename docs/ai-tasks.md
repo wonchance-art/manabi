@@ -878,6 +878,9 @@
 
 ## Claude (claude/*)
 ### doing
+- **REV-SCOPE-R1B-2 학습 단계 정책 SQL (2026-10-14 12:40 KST~, 오너 「여기서 진행」 — 인계 [#1337 R1-B](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6106712130), R1-B-1 #1450 위에서)** `claude/project-thread-jqlex2`:
+  anki-v2(학습 1분 · 10분, 재학습 10분) — `valid_card`가 anki-seconds-v1 · anki-v2 둘 다 받고 New 검사는 카드 정책 첫 단계로 · `fsrs_capabilities` 정책값 · 지문 재게시 SQL + 복원 SQL ·
+  PGlite(M09 fixture) 검증 · 코드는 받은 정책값을 따른다. **운영 미적용** — SQL 검수 · 오너 확인 뒤 별도. 결과는 #1337 보고.
 - **「그림 한 장 읽기」 미술관 해설 학습 — ART-P0-1 카탈로그 계약 (2026-10-14 KST, 오너 「좋아 가보자」)** `claude/project-thread-kpr8od`:
   해설 본문은 박물관 오픈데이터(ColBase 정부표준이용규약 2.0 · 시카고 미술관 CC BY)에서 그대로 받고, 작품 정보는 개체 4종(작가·장소·시대·작품, Wikidata QID 정규 키) + 큐레이션으로 쌓는다.
   · **ART-P0-1 병합([#1457](https://github.com/wonchance-art/manabi/pull/1457), 2026-10-14 KST)**: `src/content/art/*.json`(작품 0점·시대 1) + `src/lib/artCatalog.js` 계약(전시 여부 저장 금지·장소 역할 3종·날짜 원문 표기+범위·해설 라이선스 허용 목록·원문 해시·이미지 PD/CC0+alt·지역학 핀 대조) + 정보 카드 값 계산. 화면 진입점 0.

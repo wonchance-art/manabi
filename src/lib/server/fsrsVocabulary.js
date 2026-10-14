@@ -1,7 +1,7 @@
 /** 전체 어휘 읽기와 새 수동 단어의 원자 저장. 예전 일정 컬럼에 새 기억을 덮어쓰지 않는다. */
 import { UUID, LEARNING_LANGUAGES } from '../learningSources.js';
 import { hasCjkText } from '../constants.js';
-import { introduceFsrsCard, schedulerTime, validateFsrsCard } from '../fsrsScheduler.js';
+import { FSRS_POLICIES, introduceFsrsCard, schedulerTime, validateFsrsCard } from '../fsrsScheduler.js';
 import { requireLearningCapability } from './learningCapabilities.js';
 import { VOCABULARY_LEARNING_REQUIRED_FIELDS } from '../vocabularyLearningRead.js';
 
@@ -122,7 +122,10 @@ export async function saveManualVocabulary({ authClient, serviceClient, userId, 
     try { await requireLearningCapability(authClient, 'Korean'); } catch { reject('fsrs_storage_unavailable'); }
   }
   // RPC가 enabled·소유자·identity receipt를 같은 트랜잭션에서 검사한다. 브라우저 nextCard는 없다.
-  const initialCard = introduceFsrsCard(now);
+  // 첫 질문까지의 대기는 서버가 알린 학습 단계 정책을 따른다(REV-SCOPE R1-B-2).
+  const capabilities = await rpc(authClient, 'fsrs_capabilities');
+  if (capabilities?.version !== 1 || !Object.hasOwn(FSRS_POLICIES, capabilities.policyVersion)) reject('fsrs_storage_unavailable');
+  const initialCard = introduceFsrsCard(now, { policyVersion: capabilities.policyVersion });
   const response = await rpc(serviceClient, 'fsrs_save_manual_vocabulary', {
     p_actor: userId, p_request: request, p_initial_card: initialCard,
   });

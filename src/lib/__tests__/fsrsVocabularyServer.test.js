@@ -26,7 +26,9 @@ beforeEach(() => {
   vi.clearAllMocks(); receipt = null; databaseError = null;
   snapshot = { version: 1, actorId: actor, enabled: true, registryAvailable: true, complete: true, now,
     rows: [raw(), raw(legacyId)], registry: [registry(), registry(legacyId, false)] };
-  authClient = { rpc: vi.fn(async () => ({ data: { version: 1, languages: { Korean: { save: true, review: true, known: true, exclude: true } } } })) };
+  authClient = { rpc: vi.fn(async name => (name === 'fsrs_capabilities'
+    ? { data: { version: 1, enabled: true, policyVersion: 'anki-seconds-v1', dailyNewLimit: 15 } }
+    : { data: { version: 1, languages: { Korean: { save: true, review: true, known: true, exclude: true } } } })) };
   client = { rpc: vi.fn(async (name, args) => {
     if (databaseError) return { error: databaseError };
     if (name === 'fsrs_vocabulary_snapshot') return { data: clone(snapshot) };

@@ -44,13 +44,14 @@ export function revealFsrsAttempt(attempt, at, { hint = false } = {}) {
     eligible: attempt.eligible && !hint, hintedAt: hint ? new Date(schedulerTime(at)).toISOString() : null });
 }
 
-export function finishFsrsAttempt(attempt, rating, { operationId, at }) {
+/** policyVersion = 채점 뒤 카드의 학습 단계 정책(서버가 알린 지금 정책). 생략하면 카드 정책 그대로. */
+export function finishFsrsAttempt(attempt, rating, { operationId, at, policyVersion }) {
   if (attempt?.phase !== 'revealed') throw new Error('answer_not_revealed');
   validateAttempt(attempt);
   if (attempt.eligible !== true || attempt.hintedAt !== null) throw new Error('recall_not_eligible');
   if (!identity(operationId)) throw new Error('invalid_operation_id');
   if (schedulerTime(at) < schedulerTime(attempt.revealedAt)) throw new Error('attempt_clock_reversed');
-  const result = scheduleFsrsReview(attempt.card, rating, at);
+  const result = scheduleFsrsReview(attempt.card, rating, at, policyVersion ? { policyVersion } : undefined);
   return { version: 1, id: operationId, kind: 'grade', userId: attempt.userId, cardId: attempt.cardId,
     attemptId: attempt.id, expectedRevision: attempt.card.revision,
     previousCard: copy(attempt.card), nextCard: result.card,
@@ -77,7 +78,7 @@ export function planFsrsUndo(operation, currentCard, { operationId, userId, card
   const replay = finishFsrsAttempt({ id: operation.attemptId, userId, cardId,
     card: operation.previousCard, phase: 'revealed', eligible: true, hintedAt: null,
     questionAt: log.questionAt, revealedAt: log.revealedAt,
-  }, log.rating, { operationId: operation.id, at: log.reviewedAt });
+  }, log.rating, { operationId: operation.id, at: log.reviewedAt, policyVersion: operation.nextCard?.policyVersion });
   if (stateKey(replay.nextCard) !== stateKey(operation.nextCard) ||
       Object.keys(replay.log).some(key => stateKey(replay.log[key]) !== stateKey(log[key]))) throw new Error('invalid_grade_snapshot');
   if (schedulerTime(at) < schedulerTime(operation.log.reviewedAt)) throw new Error('attempt_clock_reversed');
