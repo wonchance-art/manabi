@@ -15,8 +15,15 @@
 /* ごん狐 — 어린이 잡지 석판 다색: 미색 띠·테 · 노을 살구 · 먼 산 쑥색 · 들 올리브 · 꽃 빨강 · 여우 밤색 */
 .lit-art--higanbana{--p1:#f3e4c6;--p2:#efb48c;--p3:#93a07f;--p4:#5e6e4a;--p5:#cf3a24;--p6:#4a3124}
 /* 注文の多い料理店 — 자비 출판 활판 2–3도: 거친 미색 종이 선 · 황토 문·간판 · 짙은 숲 먹 · 산고양이 눈 */
-.lit-art--forest-doors{--p1:#ecdfbf;--p2:#c27a3a;--p3:#1d3326;--p4:#e8c54a}
+.lit-art--forest-doors{--p1:#ecdfbf;--p2:#c27a3a;--p3:#14271b;--p4:#e8c54a}
 /* 鼻 — 다이쇼 문예서: 천 바탕 위 미색 題簽 · 가는 갈색 테 · 작은 붉은 인 · 천결(흰 .1) */
 .lit-art--ink-steam{--p1:#ebe3cf;--p2:#6a5b48;--p3:#a8402c;--p4:var(--sheet)}
 /* 文鳥 — 메이지 아르누보 세 판색: 鉄紺 · 金茶 · 生成り(바탕은 표지색, 새는 더 밝은 미색) */
 .lit-art--birdcage{--p1:#27324a;--p2:#a87a36;--p3:#f7f1e2}
+/* 옛 종이 층(PaperGrain) — 다섯 권 공통. 고운 결은 짙은 갈색·밝은 미색 점, 얼룩은 황갈색, 잉크 빠진 결은 밝은 미색, 가장자리는 그을음.
+   글자 뒤 대비는 4.5:1 이상을 지킨다(scratch contrast 측정). */
+.lit-paper__grain{flood-color:#2a1c0e;flood-opacity:.16}
+.lit-paper__fleck{flood-color:#fff4dc;flood-opacity:.07}
+.lit-paper__stain{flood-color:#8a5a28;flood-opacity:.16}
+.lit-paper__fade{flood-color:#fff1d2;flood-opacity:.05}
+.lit-paper__edge{color:#24170a}
