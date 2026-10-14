@@ -9,6 +9,7 @@
 //      (applyMaterialRubyLocks fail-closed) 출처 대조도 깨진다. metadata.literature.provider가 'aozora'인 자료는
 //      원문 수정(rawTextOverride)을 받지 않는다 — 분석·재분석·단어 교정은 그대로 된다.
 import manifest from '../content/literature/aozora/manifest.generated.json';
+import { literatureChapterTitle } from './literatureDisplay';
 
 export const CANONICAL_LITERATURE_EDIT_BLOCKED = '정본 책의 원문은 고칠 수 없어요. 단어 뜻·발음 교정과 다시 분석은 그대로 쓸 수 있어요.';
 
@@ -36,6 +37,16 @@ export function canonicalLiteratureChapter(metadata, works = manifest.works) {
   const work = typeof key === 'string' && Object.hasOwn(works, key) ? works[key] : null;
   const chapter = work?.chapters.find((item) => item.order === order) || null;
   return work && chapter ? { work, chapter } : null;
+}
+
+/**
+ * 저장된 자료 제목 대신 보일 정본 장 제목(「鼻 (1/2)」 · 「ごん狐 — 一」 · 「手袋を買いに」). 정본 장이 아니면 저장된 제목 그대로.
+ * 예전 표기(「鼻 — 1편」)로 서재에 옮겨 둔 사본도 다시 받지 않고 표를 따르게 한다 — 책 카드(literatureWorkOfBook)와 같은
+ * metadata 판정이다(제목 표기만 바꾸므로 원문 해시 대조는 하지 않는다 — 크레딧은 verifiedCanonicalLiterature 몫).
+ */
+export function literatureDisplayTitle(metadata, storedTitle, works = manifest.works) {
+  const found = canonicalLiteratureChapter(metadata, works);
+  return found ? literatureChapterTitle(found.work, found.chapter.order) : storedTitle;
 }
 
 export async function sha256Hex(text) {
