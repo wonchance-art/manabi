@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import { execSync } from 'node:child_process';
 import { sliceBetween } from './helpers/sliceBetween.js';
 
 /**
@@ -38,14 +39,32 @@ describe('줄바꿈 정본 — 한국어 어절 · 일본어/중국어 일반', 
     expect(block).toContain('h1, h2, h3 { text-wrap: balance; }');
   });
 
-  it('학습 대상 언어 글을 담는 클래스 · :lang(ja|zh) 규칙에는 keep-all이 없다', () => {
+  // 한국어 전용 내용만 담는 클래스 — 여기서만 keep-all을 다시 적어도 된다(일본어 · 중국어 컨테이너 안의 한국어 뜻 · 해설 등).
+  // 그 밖의 클래스 규칙은 keep-all을 적지 않는다: 클래스 규칙은 [lang|="ja"] 되돌림보다 우선순위가 같거나 높아
+  // lang="ja"를 단 제목에도 keep-all이 걸린다(M09 #1337 6164424314 — .manabi-page h3 · .learn-paragraph__sentence 선례).
+  // src/content/textbookEditions/** 는 게시 판본 스냅숏이라 이 검사 밖이다.
+  const KOREAN_ONLY = [
+    '.tb-line__ko', '.course-day__ko', '.course-cal__tag', '.composer-save-actions button', '.reader-sentence__glosses ul',
+    // index.css — 문법 레퍼런스의 한국어 해설 · 한자 다리 노트 · 버전 배지(한국어 UI)
+    '.version-badge__panel', '.fr-section__heading', '.fr-section__para', '.fr-callout__body', '.fr-parallel__note', '.hanja-bridge__note',
+  ];
+
+  it('keep-all은 정본 블록과 한국어 전용 클래스에만 — 다른 규칙이 lang 되돌림을 덮지 않는다', () => {
     const offenders = [];
     for (const { file, css } of sources) {
+      if (file.startsWith(path.join('src', 'content', 'textbookEditions'))) continue;
       for (const [, selector, body] of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
-        const targetLang = /__(jp|ja|zh)\b|:lang\((ja|zh)|\[lang\|?="?(ja|zh)/.test(selector);
-        if (targetLang && /word-break\s*:\s*keep-all/.test(body)) offenders.push(`${file}: ${selector.trim()}`);
+        if (!/word-break\s*:\s*keep-all/.test(body)) continue;
+        const sel = selector.trim();
+        if (sel !== '[lang|="ko"]' && !KOREAN_ONLY.includes(sel)) offenders.push(`${file}: ${sel}`);
       }
     }
+    expect(offenders).toEqual([]);
+  });
+
+  it('JSX 인라인 스타일도 lang="ja|zh" 요소에 keep-all을 걸지 않는다', () => {
+    const jsx = execSync('git ls-files "src/*.jsx" "src/**/*.jsx"', { cwd: root, encoding: 'utf8' }).split('\n').filter(Boolean);
+    const offenders = jsx.filter((file) => /lang="(ja|zh)[^"]*"[^>]*wordBreak:\s*'keep-all'/.test(read(file)));
     expect(offenders).toEqual([]);
   });
 

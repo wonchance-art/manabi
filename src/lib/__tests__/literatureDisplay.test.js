@@ -150,7 +150,7 @@ describe('화면 배선', () => {
   it('뷰어 — 대조된 정본 장만 제목·형제 이름을 표에서, 「과」 대신 장/부분, 이어 적기·제목 편집 없음', () => {
     const viewer = read('src/views/ViewerPage.jsx');
     expect(viewer).toContain('const literatureBook = canonicalLiterature ? literatureWork(bookMeta?.key) : null;');
-    expect(viewer).toContain('<h1 className="page-header__title">{viewerTitle}</h1>');
+    expect(viewer).toContain('<h1 className="page-header__title" lang={contentLangTag}>{viewerTitle}</h1>'); // lang = LINE-BREAK-001
     expect(viewer).toContain("literatureBook.division === 'heading' ? ['이전 장', '다음 장'] : ['이전 부분', '다음 부분']");
     expect(viewer).toContain('nextLabel: bookNav.next ? `${nextLabel}: ${literatureTitleOf(bookNav.next.order)}` : nextLabel,'); // 목적지까지 읽어 준다
     expect(viewer).toContain("literatureBook?.division === 'heading' ? literatureChapterLabel(literatureBook, bookNav.next.order)"); // 「이어 읽기 · 二」

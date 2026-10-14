@@ -674,7 +674,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .page-header__title {
   font-family: var(--font-serif);
   letter-spacing: -0.01em;
-  word-break: keep-all;
+  /* word-break는 줄바꿈 정본(LINE-BREAK-001)이 lang으로 정한다 — 뷰어 제목은 자료 언어(lang=ja/zh)다. */
   font-size: 2.05rem;
   font-weight: 700;
   margin-bottom: 8px;
