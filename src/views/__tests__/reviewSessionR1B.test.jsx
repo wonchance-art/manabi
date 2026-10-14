@@ -46,6 +46,12 @@ describe('카드 앞뒤(§3-3) — 앞면 = 글자만, 뒷면 = 뜻 + 읽기 + �
     expect(css).toContain('.review-room-session:has(.review-grade-bar) { padding-bottom:');
     expect(css).toContain('body:has(.review-grade-bar) .review-known-undo { bottom:');
   });
+
+  it('채점 버튼 모양은 뷰어와 같은 4색 채움 — 복습방이 색을 덮어쓰지 않는다(오너 지시 2026-10-14, M09 6159634731)', () => {
+    const css = read('src/components/web/review-room.css');
+    expect(css).not.toMatch(/\.review-score-btn(--(again|hard|good|easy))?\s*\{[^}]*(background|border-top-color)\s*:/);
+    expect(css).not.toContain('.review-score-btn { border-radius:3px');
+  });
   it('뒷면: 일본어 한자어는 한자 위 후리가나(ruby), 중국어는 병음, 둘 다 ▷ 듣기 — 발음 판정 문구', () => {
     const jaBack = card(ja, { showAnswer: true });
     expect(jaBack).toContain('<ruby>駅<rt>えき</rt></ruby>');
