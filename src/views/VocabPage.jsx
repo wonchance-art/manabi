@@ -36,6 +36,7 @@ import {
   readResume, restoreResume, sessionLengthOptions, sliceSession, stepProgress, writeResume,
 } from '../lib/reviewQueue';
 import { hasMeaning, readReviewSound, saveReviewSound, shouldAutoplay } from '../lib/reviewCard';
+import { textbookThemeStyle } from '../lib/textbookTheme';
 import { buildPracticeEvent, practiceFragileIds } from '../lib/practiceEvents';
 import { ReviewIntroCard, ReviewSoundToggle, useScoreArmed } from '../components/vocab/ReviewCardParts';
 import { useKnownWords } from '../lib/useKnownWords';
@@ -1337,7 +1338,7 @@ function VocabWorkspace({ reviewScope }) {
           />);
 
   return (
-    <div className={`page-container manabi-review-room${isBookScope ? ' is-book-scoped' : ''}`}>
+    <div className={`page-container manabi-review-room${isBookScope ? ' is-book-scoped' : ''}`} style={textbookThemeStyle(scope.lang)}>
 
       {/* 네트워크가 죽어 캐시 스냅샷으로 살아난 화면임을 알린다(v2-N R1) */}
       {isOffline && <OfflineNotice what="단어장" />}

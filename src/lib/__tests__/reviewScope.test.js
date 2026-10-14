@@ -291,24 +291,32 @@ describe('R1-B-1 줄 규칙 — countReviewScope가 줄과 개수를 함께 낸�
     expect(ids.indexOf('A2') - ids.indexOf('A1')).toBeGreaterThanOrEqual(4);
   });
 
-  it('밀린 복습: 그 언어의 기한 지난 복습 > 하루 평균 × 2면 새 표현 0 · 문구 재료(backlog) · 줄 = 복습만(잊기 쉬운 순)', () => {
+  it('밀린 복습: 그 언어의 기한 지난 복습 > 기준(하루 평균, 하한 10) × 2면 새 표현 0 · 문구 재료(backlog) · 줄 = 복습만(잊기 쉬운 순)', () => {
     const old = NOW - 60 * DAY;
-    const rows = [
-      ...Array.from({ length: 5 }, (_, i) => legacyRow(`R${i}`, { created_at: iso(old), last_reviewed_at: iso(NOW - (20 + i) * DAY), interval: 3 + i })),
+    const overdueRows = n => Array.from({ length: n }, (_, i) => legacyRow(`R${i}`, { created_at: iso(old), last_reviewed_at: iso(NOW - (20 + (i % 10)) * DAY), interval: 3 + (i % 10) }));
+    const tail = [
       legacyRow('recent', { created_at: iso(old), last_reviewed_at: iso(NOW - 2 * DAY), next_review_at: iso(NOW + 5 * DAY) }),
       legacyRow('N1', { created_at: iso(old), interval: 0, repetitions: 0, last_reviewed_at: null }),
     ];
+    // 하한(오너 승인 2026-10-14): 평균 1/14인 가벼운 사용자는 밀린 복습 5장으로 새 표현이 멈추지 않는다.
+    const light = countReviewScope({ snapshot: mixed({ rows: [...overdueRows(5), ...tail] }), quota: quota(), scope: zh, now: NOW });
+    expect(light.backlog).toMatchObject({ overdue: 5, active: false });
+    expect(light.newAllowed).toBe(1);
+    const rows = [
+      ...overdueRows(21),
+      ...tail,
+    ];
     const snap = mixed({ rows });
     const count = countReviewScope({ snapshot: snap, quota: quota(), scope: zh, now: NOW });
-    expect(count.backlog).toMatchObject({ overdue: 5, active: true });
+    expect(count.backlog).toMatchObject({ overdue: 21, active: true });
     expect(count.backlog.baseline).toBeCloseTo(1 / 14);
-    expect(count).toMatchObject({ newAllowed: 0, newLocked: 1, due: 5, total: 5 });
+    expect(count).toMatchObject({ newAllowed: 0, newLocked: 1, due: 21, total: 21 });
     expect(count.queue.items.every(item => !item.isNew)).toBe(true);
-    expect(count.byLang.Chinese).toBe(5);
+    expect(count.byLang.Chinese).toBe(21);
     // 좁힌 범위도 그 언어의 밀린 복습 규칙을 따른다(새 표현만 범위 = 0)
     expect(countReviewScope({ snapshot: snap, quota: quota(), scope: { ...zh, state: 'new' }, now: NOW })).toMatchObject({ total: 0, newLocked: 1 });
     // 계정 한도는 차감하지 않는다(입력 quota 그대로) — 배움 칸(snapshot만) · 복습방(controller 입력)이 같은 수
-    expect(countReviewScope({ snapshot: snap, quota: quota(), scope: zh, now: NOW, fsrsEntries: [] }).total).toBe(5);
+    expect(countReviewScope({ snapshot: snap, quota: quota(), scope: zh, now: NOW, fsrsEntries: [] }).total).toBe(21);
   });
 
   it('뜻 없는 표현은 줄 · 개수에서 빠지고 noMeaning으로 따로 센다(목록 「뜻 채우기」)', () => {

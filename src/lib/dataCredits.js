@@ -13,7 +13,7 @@
 // src/lib/data/jaWords.json(CC BY-SA 4.0, 이 파일만)이 중국어 단어의 일본어 표기·읽기로 화면에 닿는다
 // (오너 승인 범위 결정 #1337 2026-10-07).
 
-export const DATA_CREDITS_UPDATED = '2026년 10월 13일';
+export const DATA_CREDITS_UPDATED = '2026년 10월 14일';
 
 export const DATA_CREDIT_SECTIONS = [
   {
@@ -189,6 +189,57 @@ export const DATA_CREDIT_SECTIONS = [
         license: '퍼블릭 도메인',
         licenseUrl: 'https://www.ncei.noaa.gov/products/etopo-global-relief-model',
         sourceUrl: 'https://www.ncei.noaa.gov/products/etopo-global-relief-model',
+      },
+    ],
+  },
+  {
+    title: '미술',
+    items: [
+      {
+        id: 'colbase',
+        name: 'ColBase',
+        holder: '국립문화재기구',
+        use: '그림 한 장 읽기의 일본어·영어 작품 해설(재팬서치 경유)',
+        license: '정부표준이용규약 2.0 (CC BY 4.0 호환)',
+        licenseUrl: 'https://colbase.nich.go.jp/pages/term',
+        sourceUrl: 'https://colbase.nich.go.jp/',
+        changes: '웹에 보이도록 서식 기호만 지우고, 낱말은 그대로 두었습니다.',
+      },
+      {
+        id: 'art-institute-chicago',
+        name: 'Art Institute of Chicago',
+        holder: '시카고 미술관',
+        use: '영어 작품 해설',
+        license: '해설 CC BY 4.0',
+        licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
+        sourceUrl: 'https://api.artic.edu/docs/',
+        changes: '웹에 보이도록 서식 기호만 지우고, 낱말은 그대로 두었습니다.',
+      },
+      {
+        id: 'metropolitan-museum-of-art',
+        name: 'The Metropolitan Museum of Art Open Access',
+        holder: '메트로폴리탄 미술관',
+        use: '그림 한 장 읽기의 퍼블릭 도메인 작품 이미지',
+        license: 'CC0 1.0',
+        licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+        sourceUrl: 'https://www.metmuseum.org/hubs/open-access',
+      },
+      {
+        id: 'wikimedia-commons',
+        name: 'Wikimedia Commons',
+        holder: '레이크스 미술관(Rijksmuseum) 디지털화본',
+        use: '그림 한 장 읽기의 퍼블릭 도메인 작품 이미지(메트에 없는 작품)',
+        license: 'CC0 1.0',
+        licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+        sourceUrl: 'https://commons.wikimedia.org/',
+      },
+      {
+        id: 'wikidata',
+        name: 'Wikidata',
+        use: '작품·작가·장소의 정규 키와 좌표',
+        license: 'CC0 1.0',
+        licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+        sourceUrl: 'https://www.wikidata.org/',
       },
     ],
   },
