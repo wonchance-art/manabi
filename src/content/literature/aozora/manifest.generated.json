@@ -13,6 +13,7 @@
         "titleKo": "주문이 많은 요리점",
         "authorKo": "미야자와 겐지",
         "cover": "forest",
+        "motif": "forest-doors",
         "coverTitle": "注文の\n多い料理店"
       },
       "literature": {
@@ -88,7 +89,8 @@
         "titleReading": "ごんぎつね",
         "titleKo": "여우 곤",
         "authorKo": "니이미 난키치",
-        "cover": "vermilion"
+        "cover": "vermilion",
+        "motif": "higanbana"
       },
       "literature": {
         "schemaVersion": 1,
@@ -188,6 +190,7 @@
         "titleKo": "장갑을 사러",
         "authorKo": "니이미 난키치",
         "cover": "snow",
+        "motif": "snow-night",
         "coverTitle": "手袋を\n買いに"
       },
       "literature": {
@@ -257,7 +260,8 @@
         "titleReading": "ぶんちょう",
         "titleKo": "문조",
         "authorKo": "나쓰메 소세키",
-        "cover": "slate"
+        "cover": "slate",
+        "motif": "birdcage"
       },
       "literature": {
         "schemaVersion": 1,
@@ -346,7 +350,8 @@
         "titleReading": "はな",
         "titleKo": "코",
         "authorKo": "아쿠타가와 류노스케",
-        "cover": "ink"
+        "cover": "ink",
+        "motif": "ink-steam"
       },
       "literature": {
         "schemaVersion": 1,

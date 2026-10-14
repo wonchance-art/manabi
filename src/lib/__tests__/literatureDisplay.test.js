@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import {
   LITERATURE_COVER_COLORS,
+  LITERATURE_COVER_MOTIFS,
   literatureChapterLabel,
   literatureChapterTitle,
   literatureDivisionLabel,
@@ -32,12 +33,15 @@ describe('정본 5편 표기 — 대조표가 싣는다', () => {
     expect(JSON.stringify(manifest)).not.toMatch(/\d+(과|편)"|전편/u);
   });
 
-  it('표지 표기: 읽기(가나)·한국어 제목·작가 한국어 이름·팔레트 색 — 다섯 편이 서로 다른 색', () => {
+  it('표지 표기: 읽기(가나)·한국어 제목·작가 한국어 이름·팔레트 색·문양 — 다섯 편이 서로 다른 색·문양', () => {
     const works = Object.values(manifest.works);
     for (const work of works) expect(validateLiteratureDisplay(work.display, work.title)).toEqual(work.display);
     expect(Object.fromEntries(works.map((work) => [work.title, work.display.titleKo])))
       .toEqual({ '注文の多い料理店': '주문이 많은 요리점', 'ごん狐': '여우 곤', '手袋を買いに': '장갑을 사러', '文鳥': '문조', '鼻': '코' });
     expect(new Set(works.map((work) => work.display.cover)).size).toBe(works.length);
+    // 문양은 작품 분위기에서(오너 지시 2026-10-14 KST) — 눈밤·彼岸花·숲의 문들·수묵 김·새장
+    expect(Object.fromEntries(works.map((work) => [work.title, work.display.motif])))
+      .toEqual({ '注文の多い料理店': 'forest-doors', 'ごん狐': 'higanbana', '手袋を買いに': 'snow-night', '文鳥': 'birdcage', '鼻': 'ink-steam' });
   });
 
   it('장 첫 문장(incipit) — 30자 이하 첫 문장은 통째로, 길면 「、」에서(낱말 한가운데·마침표 뒤에서 자르지 않는다)', () => {
@@ -77,18 +81,30 @@ describe('표기 함수', () => {
   });
 
   it.each([
-    [{ titleReading: 'はな', titleKo: '코', authorKo: '아', cover: 'gold' }, 'display.cover'],
-    [{ titleReading: 'hana', titleKo: '코', authorKo: '아', cover: 'ink' }, 'kana'],
-    [{ titleReading: 'はな', titleKo: ' ', authorKo: '아', cover: 'ink' }, 'titleKo'],
+    [{ titleReading: 'はな', titleKo: '코', authorKo: '아', cover: 'gold', motif: 'ink-steam' }, 'display.cover'],
+    [{ titleReading: 'hana', titleKo: '코', authorKo: '아', cover: 'ink', motif: 'ink-steam' }, 'kana'],
+    [{ titleReading: 'はな', titleKo: ' ', authorKo: '아', cover: 'ink', motif: 'ink-steam' }, 'titleKo'],
+    [{ titleReading: 'はな', titleKo: '코', authorKo: '아', cover: 'ink' }, 'display.motif'],
   ])('검사 실패 %j', (display, message) => {
     expect(() => validateLiteratureDisplay(display, '鼻')).toThrow(message);
   });
 });
 
 describe('화면 배선', () => {
-  it('표지는 글자만 — 이미지·외부 그림을 쓰지 않는다(금지⑴) · 팔레트 색마다 CSS가 있다 · 인라인 색 없음', () => {
+  it('표지는 글자 + 자작 SVG 문양 — 이미지·외부 그림을 쓰지 않는다(금지⑴) · 팔레트 색·문양마다 CSS가 있다 · 인라인 색 없음', () => {
     const cover = read('src/components/books/LiteratureCover.jsx');
     expect(cover).not.toMatch(/<img|background-image|url\(/u);
+    expect(cover).toContain('<LiteratureCoverArt motif={work.display.motif} />');
+    const art = read('src/components/books/LiteratureCoverArt.jsx');
+    expect(art).not.toMatch(/<img|<image|href=|url\(|style=|#[0-9a-f]{3,8}\b|rgba?\(/iu); // 그림은 코드 도형만, 색은 CSS에서만
+    expect(art).toContain('aria-hidden="true"');
+    expect(art).toContain("import { LITERATURE_COVER_MOTIFS } from '../../lib/literatureDisplay';"); // 키 목록 정본 하나
+    const artCss = read('src/components/books/literature-cover-art.css');
+    for (const motif of LITERATURE_COVER_MOTIFS) {
+      expect(artCss).toContain(`.lit-art--${motif}{`);
+      expect(art).toMatch(new RegExp(`['\\s{]${motif.includes('-') ? `'${motif}'` : motif}: [A-Z]`, 'u')); // 키마다 그림이 있다
+    }
+    expect(artCss).not.toMatch(/url\(/u);
     // 제목 글꼴은 웹폰트 명조로 고정(기기마다 다른 시스템 명조 대신) — 사이트 전체 preload 없이
     expect(cover).toContain("Noto_Serif_JP({ weight: '400', subsets: ['latin'], display: 'swap', preload: false, variable: '--font-lit-serif' })");
     expect(cover).not.toContain('style=');

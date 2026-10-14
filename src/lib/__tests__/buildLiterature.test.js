@@ -108,6 +108,7 @@ describe('build-literature — fail-closed', () => {
     ['entry.json 없음', { ...sample(), entry: null }, 'entry.json'],
     ['표지 표기 없음', sample({ display: undefined }), 'display is required'],
     ['팔레트 밖 표지 색', sample({ display: { ...sampleEntry().display, cover: '#ff0000' } }), 'display.cover'],
+    ['없는 표지 문양', sample({ display: { ...sampleEntry().display, motif: 'original-cover-scan' } }), 'display.motif'],
     ['표지 제목이 작품명과 다름', sample({ display: { ...sampleEntry().display, coverTitle: '書式見本\n朝の海' } }), 'coverTitle'],
     ['표지 한 줄이 너무 김', sample({ display: { ...sampleEntry().display, coverTitle: undefined } }), 'cover title lines'],
     ['미해결 외자', (() => {

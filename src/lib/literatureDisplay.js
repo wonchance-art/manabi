@@ -2,7 +2,7 @@
 //
 // 표지: 원서 표지·삽화 이미지는 쓰지 않는다(IP 정책 §2.1 금지⑴ — 표지는 타이포그래피만). 작품마다 entry.json의
 // display{titleReading, titleKo, authorKo, cover}를 빌드가 정본 대조표(manifest.generated.json)에 싣고, 화면은 그 표로
-// 같은 틀(세로 제목·작가·한국어 제목)에 작품 색 하나만 바꿔 그린다. 색은 자유 값이 아니라 아래 팔레트 이름이다
+// 같은 틀(세로 제목·책등·아래 선)에 작품 색과 문양(motif)만 바꿔 그린다. 색은 자유 값이 아니라 아래 팔레트 이름이다
 // (대비·다크 처리를 CSS 한 곳에서 지킨다).
 // 목차: 작가의 見出し(一·二…)는 그대로, manabi가 분량으로 나눈 장은 「1/2」, 한 장이면 「전문」(「전편」은 前篇으로 읽힌다) — 교재의 「과」를 쓰지 않는다.
 // 장 줄에는 그 장 첫 문장(incipit)을 단다. 이름표가 아니라 본문이 장을 알아보게 한다.
@@ -13,6 +13,12 @@
  * 앱 주색·일본어 서재 표지(로즈 #994a5a)와 같은 색상 계열은 피한다(디자이너 검토 — 매화색은 브랜드 강조로 읽혔다).
  */
 export const LITERATURE_COVER_COLORS = Object.freeze(['snow', 'vermilion', 'forest', 'ink', 'slate']);
+
+/**
+ * 표지 그림(모티프) — 작품 분위기에서 고른 자작 SVG(LiteratureCoverArt). 원서 표지·삽화·알려진 캐릭터를 옮기지 않는다
+ * (IP 정책 §2.1 금지⑴, 오너 지시 2026-10-14 KST 「책에 어울리는 분위기·이미지·문양」). 작품마다 하나, 겹치지 않게.
+ */
+export const LITERATURE_COVER_MOTIFS = Object.freeze(['snow-night', 'higanbana', 'forest-doors', 'ink-steam', 'birdcage']);
 
 const filled = (value) => typeof value === 'string' && value.trim() !== '';
 
@@ -30,12 +36,13 @@ export function validateLiteratureDisplay(display, title) {
   }
   if (!/^[ぁ-ゟ゠-ヿー\s]+$/u.test(display.titleReading)) throw new Error('display.titleReading must be kana');
   if (!LITERATURE_COVER_COLORS.includes(display.cover)) throw new Error(`display.cover must be one of ${LITERATURE_COVER_COLORS.join('·')}`);
+  if (!LITERATURE_COVER_MOTIFS.includes(display.motif)) throw new Error(`display.motif must be one of ${LITERATURE_COVER_MOTIFS.join('·')}`);
   const coverTitle = display.coverTitle ?? title;
   if (typeof coverTitle !== 'string' || coverTitle.replace(/\n/gu, '') !== title) throw new Error('display.coverTitle must be the title with line breaks only');
   if (coverTitle.split('\n').some((line) => !line || line.length > LITERATURE_COVER_LINE_MAX)) {
     throw new Error(`cover title lines must be 1-${LITERATURE_COVER_LINE_MAX} characters — break it in display.coverTitle`);
   }
-  return { titleReading: display.titleReading, titleKo: display.titleKo, authorKo: display.authorKo, cover: display.cover,
+  return { titleReading: display.titleReading, titleKo: display.titleKo, authorKo: display.authorKo, cover: display.cover, motif: display.motif,
     ...(display.coverTitle ? { coverTitle: display.coverTitle } : {}) };
 }
 

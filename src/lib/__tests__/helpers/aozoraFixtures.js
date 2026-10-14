@@ -36,7 +36,7 @@ export const sampleEntry = (overrides = {}) => ({
   textSha256: 'b'.repeat(64),
   attribution: { author: '見本太郎', translator: null, illustrator: null },
   rights: approvedRights(),
-  display: { titleReading: 'しょしきみほん　あさのかわ', titleKo: '서식 견본 아침 강', authorKo: '견본 다로', cover: 'snow', coverTitle: '書式見本　\n朝の川' },
+  display: { titleReading: 'しょしきみほん　あさのかわ', titleKo: '서식 견본 아침 강', authorKo: '견본 다로', cover: 'snow', motif: 'snow-night', coverTitle: '書式見本　\n朝の川' },
   ...overrides,
 });
 
@@ -51,6 +51,6 @@ export const plainSampleEntry = (overrides = {}) => sampleEntry({
   sourceSha256: 'c'.repeat(64),
   attribution: { author: '見本花子', translator: null, illustrator: null },
   rights: approvedRights({ evidenceUrl: 'https://www.aozora.gr.jp/cards/000002/card2.html' }),
-  display: { titleReading: 'しょしきみほん　ゆうがたのまち', titleKo: '서식 견본 저녁 마을', authorKo: '견본 하나코', cover: 'ink', coverTitle: '書式見本　\n夕方の町' },
+  display: { titleReading: 'しょしきみほん　ゆうがたのまち', titleKo: '서식 견본 저녁 마을', authorKo: '견본 하나코', cover: 'ink', motif: 'ink-steam', coverTitle: '書式見本　\n夕方の町' },
   ...overrides,
 });
