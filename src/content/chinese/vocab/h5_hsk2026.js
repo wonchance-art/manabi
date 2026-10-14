@@ -53,7 +53,7 @@ const themes = {
         { zh: "纪念日", pinyin: "jìniànrì", ko: "기념일", pos: "명사", hanja: "기념일(紀念日) — 한자가 그대로", ex: { zh: "今天是我们的结婚纪念日。", pinyin: "Jīntiān shì wǒmen de jiéhūn jìniànrì.", ko: "오늘은 우리 결혼기념일이에요." } },
         { zh: "加深", pinyin: "jiāshēn", ko: "깊어지다, 깊게 하다", pos: "동사", ex: { zh: "这次旅行加深了我们的友情。", pinyin: "Zhè cì lǚxíng jiāshēnle wǒmen de yǒuqíng.", ko: "이번 여행으로 우리의 우정이 더 깊어졌어요." } },
         { zh: "讲述", pinyin: "jiǎngshù", ko: "이야기하다, 서술하다", pos: "동사", ex: { zh: "这部电影讲述了一个爱情故事。", pinyin: "Zhè bù diànyǐng jiǎngshùle yí ge àiqíng gùshi.", ko: "이 영화는 한 사랑 이야기를 다뤄요." } },
-        { zh: "降水", pinyin: "jiàngshuǐ", ko: "강수, 강수량(내린 비·눈의 양); 비나 눈이 내림", pos: "명사", hanja: "강수(降水) — 한자 그대로", ex: { zh: "明天北方地区将有降水。", pinyin: "Míngtiān běifāng dìqū jiāng yǒu jiàngshuǐ.", ko: "내일 북부 지역에 비나 눈이 내릴 거예요." } },
+        { zh: "降水", pinyin: "jiàngshuǐ", ko: "비나 눈이 내리다; 강수, 강수량", pos: "동사", hanja: "강수(降水) — 한자 그대로", ex: { zh: "明天北方地区将有降水。", pinyin: "Míngtiān běifāng dìqū jiāng yǒu jiàngshuǐ.", ko: "내일 북부 지역에 비나 눈이 내릴 거예요." } },
         { zh: "近年来", pinyin: "jìnnián lái", ko: "최근 몇 년간, 근래", pos: "표현", ex: { zh: "近年来，这个城市变化很大。", pinyin: "Jìnnián lái, zhège chéngshì biànhuà hěn dà.", ko: "최근 몇 년 동안 이 도시는 많이 변했어요." } },
         { zh: "久远", pinyin: "jiǔyuǎn", ko: "오래되다, 아득하다", pos: "형용사", hanja: "구원(久遠) — 오랠 구·멀 원: 아득히 오래되다", ex: { zh: "这是一个久远的故事。", pinyin: "Zhè shì yí ge jiǔyuǎn de gùshi.", ko: "이건 아주 오래된 이야기예요." } },
         { zh: "橘子", pinyin: "júzi", ko: "귤", pos: "명사", ex: { zh: "我很喜欢吃橘子。", pinyin: "Wǒ hěn xǐhuan chī júzi.", ko: "저는 귤 먹는 걸 정말 좋아해요." } },
