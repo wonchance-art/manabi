@@ -101,7 +101,7 @@ describe('준비 → 분석 → 검수 → 공개(P0-3 · P0-4)', () => {
 
 describe('관리자 화면 요약·루비 적용률', () => {
   it('정본 작품 모두 게시 가능 — 권리 기록이 깨지면 불가', () => {
-    expect(LITERATURE_BOOKS.length).toBe(21);
+    expect(LITERATURE_BOOKS.length).toBe(26);
     expect(LITERATURE_BOOKS.every(literatureBookPublishable)).toBe(true);
     const broken = { ...book, chapters: book.chapters.map((chapter) => ({ ...chapter, metadata: { ...chapter.metadata, literature: { ...chapter.metadata.literature, rights: { status: 'reviewing', basis: 'unknown' } } } })) };
     expect(literatureBookPublishable(broken)).toBe(false);

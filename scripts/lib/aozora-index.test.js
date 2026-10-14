@@ -39,6 +39,9 @@ describe('공식 색인 CSV → 작품', () => {
     expect(aozoraCandidateIssues(kawabata)).toEqual(['보호기간 JP·KR 미확인/보호']);
     const rampo = aozoraIndexWorks(parseCsv(csv({ ...rashomon, 初出: '「新青年」1925（大正14）年', 没年月日: '1965-07-28' }))).get('127');
     expect(aozoraCandidateIssues(rampo)).toEqual([]);
+    // D5 개정(2026-10-15 「일본에서만 끝나면 그만」) — 미국 URAA 보호 중(1948 출판·1948 사망)이어도 후보
+    const dazai = aozoraIndexWorks(parseCsv(csv({ ...rashomon, 初出: '「展望」1948（昭和23）年6月', 没年月日: '1948-06-13' }))).get('127');
+    expect(aozoraCandidateIssues(dazai)).toEqual([]);
     const living = aozoraIndexWorks(parseCsv(csv({ ...rashomon, 作品著作権フラグ: 'あり' }))).get('127');
     expect(aozoraCandidateIssues(living)).toContain('저작권 존속 작품');
   });

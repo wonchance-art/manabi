@@ -561,6 +561,119 @@ function SpiderSun() {
   );
 }
 
+// 4차 묶음(2026-10-15 KST, 오너 「일본에서만 끝나면 그만」 — D5 개정으로 처음 들어온 太宰治·坂口安吾).
+
+// 走れメロス(1940) — 쇼와 전기 소년 잡지의 2–3도 판화: 지는 해, 언덕 위 성벽 도시, 굽이진 길을 달려 오르는 작은 그림자.
+function MelosRun() {
+  return (
+    <>
+      <circle className={`${P(1)} lit-art__glow`} cx="40" cy="48" r="18" fill="currentColor" />
+      <circle className={P(1)} cx="40" cy="48" r="9" fill="currentColor" />
+      <g className={P(3)} fill="currentColor">
+        <path d="M4 66H12V60H15V66H24V56H28V52H31V56H35V66H44V58H48V54H52V58H56V66H58V74H4Z" />
+      </g>
+      <path className={P(4)} d="M4 74H58V168H4Z" fill="currentColor" />
+      <path className={P(2)} d="M30 74C30 84 18 88 18 98S42 108 42 120 14 134 14 146 34 160 34 168H40C40 160 20 150 20 146S48 132 48 120 24 106 24 98 36 84 34 74Z" fill="currentColor" />
+      <g className={P(5)} fill="currentColor">
+        <circle cx="22" cy="128.5" r="1.6" />
+        <path d="M21.2 130.5L19 136 16.5 140.5M21.5 133L24.6 136.5 23.4 140.5M21 132L17.8 133.6M22 132L25.4 130.4" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+      </g>
+    </>
+  );
+}
+
+// 人間失格(1948) — 전후 문예서의 담담한 2–3도: 책상 위에 흩어진 사진 석 장(はしがき) — 웃는 道化 가면 한 장, 빈 방, 검은 한 장.
+function ClownPhotos() {
+  return (
+    <>
+      <g transform="rotate(-9 24 40)">
+        <rect className={P(1)} x="10" y="22" width="28" height="34" fill="currentColor" />
+        <rect className={P(2)} x="13" y="25" width="22" height="22" fill="currentColor" />
+        <path className={P(3)} d="M16 47V36H32V47M20 36V31H28V36" fill="none" stroke="currentColor" strokeWidth="0.8" />
+      </g>
+      <g transform="rotate(7 32 92)">
+        <rect className={P(1)} x="16" y="72" width="32" height="40" fill="currentColor" />
+        <rect className={P(2)} x="19" y="75" width="26" height="27" fill="currentColor" />
+        <circle className={P(1)} cx="32" cy="88" r="9" fill="currentColor" />
+        <g className={P(3)} fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round">
+          <path d="M27.5 86Q29 84.4 30.5 86M33.5 86Q35 84.4 36.5 86M28 90.5Q32 95 36 90.5" />
+        </g>
+        <circle className={P(4)} cx="32" cy="89" r="0.9" fill="currentColor" />
+      </g>
+      <g transform="rotate(-4 26 140)">
+        <rect className={P(1)} x="10" y="122" width="30" height="36" fill="currentColor" />
+        <rect className={P(3)} x="13" y="125" width="24" height="24" fill="currentColor" />
+      </g>
+    </>
+  );
+}
+
+// 斜陽(1947) — 전후 문예서의 2도: 이즈 산장의 기울어 지는 해, 비스듬한 햇살, 바다 수평선, 언덕 위 작은 산장.
+function SettingSun() {
+  return (
+    <>
+      <g className={P(1)} stroke="currentColor" strokeWidth="0.7" opacity="0.55">
+        <path d="M30 104L4 70M30 104L10 52M30 104L22 40M30 104L38 40M30 104L50 52M30 104L57 66" />
+      </g>
+      <path className={P(1)} d="M12 104A18 18 0 0 1 48 104Z" fill="currentColor" />
+      <path className={P(2)} d="M4 104H58V168H4Z" fill="currentColor" />
+      <g className={P(1)} fill="none" stroke="currentColor" strokeWidth="0.7" strokeLinecap="round" opacity="0.8">
+        <path d="M16 110H44M20 116H40M24 122H36M27 128H33" />
+      </g>
+      <path className={P(3)} d="M4 146Q22 132 40 140T58 136V168H4Z" fill="currentColor" />
+      <g className={P(4)} fill="currentColor">
+        <path d="M12 140L19 134 26 140Z" />
+        <rect x="14" y="140" width="10" height="6" />
+      </g>
+      <rect className={P(1)} x="17.5" y="141.5" width="3" height="2.4" fill="currentColor" />
+    </>
+  );
+}
+
+// 女生徒(1939) — 쇼와 10년대 소녀 잡지의 맑은 평면 색: 꿈에 든 엄마의 서양 우산, 장미 한 송이, 둥근 안경.
+function UmbrellaRose() {
+  return (
+    <>
+      <g className={P(5)} fill="none" stroke="currentColor" strokeWidth="1.2">
+        <circle cx="18" cy="24" r="6" /><circle cx="34" cy="24" r="6" /><path d="M24 23Q26 21 28 23M12 23L6 20M40 23L46 20" />
+      </g>
+      <g transform="rotate(-28 32 96)">
+        <path className={P(2)} d="M32 52L24 116H40Z" fill="currentColor" />
+        <path className={P(4)} d="M32 52L29 116M32 52L35 116" stroke="currentColor" strokeWidth="0.5" />
+        <path className={P(4)} d="M32 116V132Q32 137 27.5 137T23 132" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        <path className={P(4)} d="M32 46V52" stroke="currentColor" strokeWidth="1" />
+      </g>
+      <g className={P(6)} fill="currentColor">
+        <path d="M44 150L40 128" stroke="currentColor" strokeWidth="1.1" fill="none" />
+        <path d="M41.5 140C36 138 34 134 35 131C39 132 41.5 135 41.5 140Z" />
+        <path d="M42.6 146C47 145 50 142 50 138C46 138.5 43.5 141.5 42.6 146Z" />
+      </g>
+      <g className={P(3)} fill="currentColor">
+        <circle cx="40" cy="124" r="6" />
+      </g>
+      <path className={P(1)} d="M37 123.5Q40 120.5 43 123.5Q40 126 37 123.5ZM38 126.5Q40 128.5 42 126.5" fill="none" stroke="currentColor" strokeWidth="0.7" />
+    </>
+  );
+}
+
+// 桜の森の満開の下(1947) — 전후 문예서의 판화 2–3도: 하늘을 덮은 만개한 벚꽃, 검은 줄기, 바람 없이 지는 꽃잎.
+function BlossomStorm() {
+  // 두 줄 제목이라 작가 줄이 왼쪽(x 40–48)으로 온다 — 줄기·지는 꽃잎은 x 36 안, 꽃 그늘은 제목 둘째 줄 위(y 50 위)까지만.
+  const canopy = scatter(16, 11, [6, 6, 48, 40]).concat(scatter(6, 13, [6, 44, 32, 70]));
+  const petals = scatter(14, 12, [6, 78, 34, 160]);
+  return (
+    <>
+      <g className={P(3)} fill="currentColor">
+        <path d="M10 168L13 90 8 72 15 86 17 68 18 92 16 168Z" />
+        <path d="M27 168L29 98 25 78 31 94 34 76 32 100 32 168Z" />
+      </g>
+      <g className={P(1)} fill="currentColor">{canopy.map(([x, y], i) => <circle key={`${x}-${y}`} cx={x} cy={y} r={i % 3 ? 5.5 : 7.5} />)}</g>
+      <g className={P(2)} fill="currentColor">{canopy.filter((_, i) => i % 2).map(([x, y]) => <circle key={`${x}-${y}`} cx={x + 2} cy={y + 2} r="2.8" />)}</g>
+      <g className={P(1)} fill="currentColor">{petals.map(([x, y], i) => <ellipse key={`${x}-${y}`} cx={x} cy={y} rx="1.6" ry="0.9" transform={`rotate(${(i * 47) % 180} ${x} ${y})`} />)}</g>
+    </>
+  );
+}
+
 // 옛 종이 — 다섯 권 공통 층(오너 「빈티지 효과 · 옛 종이 질감」). 그림 위·글자 아래에 깔린다(글자는 z-index:1).
 // 「새 책처럼」(오너 2026-10-14 KST — 어두컴컴한 효과 없애기): 바랜 얼룩·가장자리 그을음은 두지 않고, 갓 찍은 옛 종이의
 // 옅은 결(고주파 잡음 점)과 고르지 않은 밝은 결만 남긴다. 그림 자체에는 활판 느낌(아주 작은 번짐 + 옅은 농도 차)만 준다. 전부 코드로 만든 절차 질감이다(이미지·외부 주소 없음).
@@ -607,6 +720,7 @@ const ART = {
   'lemon-books': LemonBooks, 'nightjar-star': NightjarStar, 'night-boat': NightBoat, 'cello-night': CelloNight,
   'night-train': NightTrain, 'kamakura-letter': KamakuraLetter, 'crab-pear': CrabPear, 'wind-hill': WindHill,
   'dusk-rails': DuskRails, 'peach-house': PeachHouse, 'deco-chair': DecoChair, 'spider-sun': SpiderSun,
+  'melos-run': MelosRun, 'clown-photos': ClownPhotos, 'setting-sun': SettingSun, 'umbrella-rose': UmbrellaRose, 'blossom-storm': BlossomStorm,
 };
 
 export default function LiteratureCoverArt({ motif }) {

@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "personId": "000035",
+  "workId": "275",
+  "title": "女生徒",
+  "author": "太宰治",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1939,
+  "authorDeathYear": 1948,
+  "level": "N2 상급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000035/card275.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000035/files/275_ruby_1532.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "b0e3e36efa5bada163a00bf5cf51fb3ee43dbb191509bcc743062cb6b5fef350",
+  "textSha256": "8bf7cb9e9b2cd40c276269c1acdc743376225bf7d6b12d1e6ff4ebe276e784a1",
+  "attribution": {
+    "author": "太宰治",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-15",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000035/card275.html"
+  },
+  "display": {
+    "titleReading": "じょせいと",
+    "titleKo": "여학생",
+    "authorKo": "다자이 오사무",
+    "cover": "lilac",
+    "motif": "umbrella-rose"
+  }
+}

@@ -102,7 +102,7 @@ describe('build-literature — 게시 목록·뷰어 대조표(AOZORA-P0-2)', ()
 describe('build-literature — fail-closed', () => {
   it.each([
     ['권리 미승인', sample({ rights: { status: 'reviewing', basis: 'unknown' } }), 'not publishable'],
-    ['관할 누락', sample({ rights: { ...sampleEntry().rights, reviewedJurisdictions: ['JP', 'KR'] } }), 'JP·KR·US'],
+    ['관할 누락', sample({ rights: { ...sampleEntry().rights, reviewedJurisdictions: ['JP', 'US'] } }), 'JP·KR'],
     ['원문 수정(해시 불일치)', { ...sample(), source: source.replace('霧', '雲') }, 'SHA-256'],
     ['폴더 이름 ≠ 작품 키', { ...sample(), dir: 'aozora-000001-000009' }, '작품 키'],
     ['entry.json 없음', { ...sample(), entry: null }, 'entry.json'],

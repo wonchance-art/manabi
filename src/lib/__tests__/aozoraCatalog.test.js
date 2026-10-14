@@ -25,9 +25,10 @@ describe('Aozora catalog contract', () => {
     expect(() => validateAozoraCatalogEntry(entry({ charset: 'shift_jis' }))).toThrow('charset');
   });
 
-  it('D5 연도가 공개 판정에 들어간다 — 1931 이후 출판 + 1945 이후 사망은 공개 불가', () => {
-    expect(aozoraCatalogEntryPublishable(entry({ publishedYear: 1940, authorDeathYear: 1948 }))).toBe(false);
+  it('D5 연도가 공개 판정에 들어간다 — 일본 보호기간(작가 1968년 이전 사망)만, 미국은 보지 않는다(개정 2026-10-15)', () => {
+    expect(aozoraCatalogEntryPublishable(entry({ publishedYear: 1940, authorDeathYear: 1948 })), '太宰형 — 미국 보호 중이어도 공개').toBe(true);
     expect(aozoraCatalogEntryPublishable(entry({ publishedYear: 1940, authorDeathYear: 1943 }))).toBe(true);
+    expect(aozoraCatalogEntryPublishable(entry({ publishedYear: 1960, authorDeathYear: 1968 }))).toBe(false);
     // 사망 연도를 모르면 일본 보호기간을 판정할 수 없다 — 1931년 이전 출판이어도 공개하지 않는다(2026-10-14 보정)
     expect(aozoraCatalogEntryPublishable(entry({ publishedYear: 1925, authorDeathYear: null }))).toBe(false);
     expect(aozoraCatalogEntryPublishable(entry({ publishedYear: 1925, authorDeathYear: 1965 }))).toBe(true);
@@ -68,7 +69,7 @@ describe('Aozora catalog contract', () => {
     [{ level: 'N2' }, 'level'],
     [{ attribution: { author: '다른 저자' } }, 'must match'],
     [{ attribution: { author: '見本太郎', illustrator: null } }, 'translator must be explicit'],
-    [{ rights: approvedRights({ reviewedJurisdictions: ['JP', 'KR'] }) }, 'JP·KR·US'],
+    [{ rights: approvedRights({ reviewedJurisdictions: ['JP', 'US'] }) }, 'JP·KR'],
   ])('위험한 항목을 거부한다 (%#)', (overrides, message) => {
     expect(() => validateAozoraCatalogEntry(entry(overrides))).toThrow(message);
     expect(aozoraCatalogEntryPublishable(entry(overrides))).toBe(false);

@@ -258,7 +258,7 @@ export function createAozoraMaterialDraft(entry, document, options = {}) {
         (target) => splitTextIntoChapters(section.text, { targetChars: target, maxChars, headings: false }), { partLimit: AOZORA_HEADING_CHAPTER_MAX_CHARS });
       return pieces.length > 1 ? pieces.map((piece, index) => ({ ...piece, title: `${section.title} (${index + 1}/${pieces.length})` })) : [section];
     })
-    : balancedLengthSplit(projection.text.length, targetChars, maxChars, split, { keepBalanced: true });
+    : balancedLengthSplit(projection.text.length, targetChars, maxChars, split, { keepBalanced: true, partLimit: AOZORA_HEADING_CHAPTER_MAX_CHARS });
   invariant(parts.length > 0, 'Aozora document produced no chapters');
 
   const key = aozoraWorkKey(entry);
