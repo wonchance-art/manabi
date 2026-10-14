@@ -3,6 +3,7 @@ import { ART_CATALOG } from '../../content/art/index.js';
 import { JP_MAP_PINS } from '../../content/studies/japanMapPins.js';
 import {
   artCurationWorks,
+  artDateDisplay,
   artDescriptionHashMismatches,
   artInfoCard,
   artWorksAtPlace,
@@ -33,12 +34,16 @@ function fixture() {
         title: { native: '甲図', ko: '갑 그림', reading: 'こうず' },
         date: { text: '天保2～5年頃', startYear: 1831, endYear: 1834, certainty: 'range' },
         periods: ['jp-edo'], medium: { native: '木版多色摺', ko: '다색 목판화' },
-        places: [{ place: 'museum-a', role: 'holding' }, { place: 'museum-b', role: 'holding' }, { place: 'coast-a', role: 'depicted' }],
+        places: [
+          { place: 'museum-a', role: 'holding', url: 'https://colbase.nich.go.jp/collection_items/x' },
+          { place: 'museum-b', role: 'holding', url: 'https://www.artic.edu/artworks/1' },
+          { place: 'coast-a', role: 'depicted' },
+        ],
         descriptions: [{
-          language: 'ja', source: 'colbase', sourceId: 'X-1', sourceUrl: 'https://colbase.nich.go.jp/collection_items/x',
+          language: 'ja', source: 'colbase', sourceId: 'cobas-1', sourceUrl: 'https://colbase.nich.go.jp/collection_items/x',
           credit: '甲博物館所蔵 / ColBase', license: 'jp-gov-standard-2.0', text: TEXT, textSha256: TEXT_SHA,
         }],
-        terms: ['浮世絵', '錦絵'], lookFor: ['배는 몇 척?'],
+        terms: ['構図', '細部'], lookFor: ['배는 몇 척?'],
         image: { url: 'https://example.org/a.jpg', sourceUrl: 'https://example.org/a', license: 'public-domain', alt: '큰 파도 아래 작은 배들' },
       },
       {
@@ -46,7 +51,7 @@ function fixture() {
         title: { native: '乙図', ko: '을 그림' },
         date: { text: 'c. 1840', startYear: 1838, endYear: 1842, certainty: 'circa' },
         periods: ['jp-edo'], medium: { native: '木版' },
-        places: [{ place: 'museum-b', role: 'holding' }],
+        places: [{ place: 'museum-b', role: 'holding', url: 'https://www.artic.edu/artworks/1' }],
         descriptions: [{
           language: 'en', source: 'aic', sourceId: '1', sourceUrl: 'https://api.artic.edu/api/v1/artworks/1',
           credit: 'Art Institute of Chicago', license: 'cc-by-4.0', text: TEXT, textSha256: TEXT_SHA,
@@ -61,9 +66,43 @@ function fixture() {
 const pinIds = new Set(JP_MAP_PINS.map((pin) => pin.id));
 
 describe('정본 카탈로그(src/content/art) — 실제 리포 데이터', () => {
-  it('계약을 지킨다(작품 0점도 통과) — 지역학 핀 연결까지 대조', async () => {
+  it('계약을 지킨다 — 지역학 핀 연결까지 대조', async () => {
     expect(validateArtCatalog(ART_CATALOG, { studiesPinIds: pinIds })).toEqual([]);
     expect(await artDescriptionHashMismatches(ART_CATALOG), '해설은 받은 원문 그대로').toEqual([]);
+  });
+
+  it('첫 큐레이션(ART-P0-2): 호쿠사이·히로시게 풍경 우키요에 여덟 점, 연대순', () => {
+    const works = artCurationWorks(ART_CATALOG, 'ukiyoe-landscape-hokusai-hiroshige');
+    expect(works).toHaveLength(8);
+    expect(new Set(works.map((work) => work.artist))).toEqual(new Set(['katsushika-hokusai', 'utagawa-hiroshige']));
+    const starts = works.map((work) => work.date.startYear);
+    expect(starts).toEqual([...starts].sort((a, b) => a - b));
+  });
+
+  it('작품마다 일본어 해설이 하나 이상 — 읽기 자료가 되는 원문', () => {
+    for (const work of ART_CATALOG.works) {
+      expect(work.descriptions.some((description) => description.language === 'ja'), work.id).toBe(true);
+    }
+  });
+
+  it('크레딧은 실제 출처 이름을 담는다 — ColBase는 정부표준이용규약 2.0, 시카고 미술관은 CC BY 4.0', () => {
+    for (const work of ART_CATALOG.works) {
+      for (const description of work.descriptions) {
+        const expected = { colbase: ['ColBase', 'jp-gov-standard-2.0'], aic: ['Art Institute of Chicago', 'cc-by-4.0'] }[description.source];
+        expect(description.credit, `${work.id} ${description.sourceId}`).toContain(expected[0]);
+        expect(description.license).toBe(expected[1]);
+      }
+    }
+  });
+
+  it('이미지는 시카고 미술관 CC0(퍼블릭 도메인 작품)만, 박물관 요청 캡션과 함께', () => {
+    const images = ART_CATALOG.works.filter((work) => work.image).map((work) => work.image);
+    expect(images.length).toBeGreaterThan(0);
+    for (const image of images) {
+      expect(image.url).toMatch(/^https:\/\/www\.artic\.edu\/iiif\/2\/[0-9a-f-]{36}\/full\/843,\/0\/default\.jpg$/);
+      expect(image.license).toBe('cc0');
+      expect(image.credit).toMatch(/The Art Institute of Chicago\. CC0$/);
+    }
   });
 });
 
@@ -151,6 +190,46 @@ describe('artCatalog 계약 — fail-closed', () => {
     expect(validateArtCatalog(catalog, { studiesPinIds: pinIds }).join('\n')).toMatch(/없는 지역학 핀 atlantis/);
   });
 
+  it('소장처는 소장품 기록 HTTPS 링크와 함께', () => {
+    const catalog = fixture();
+    delete catalog.works[0].places[0].url;
+    catalog.works[1].places[0].url = 'http://www.artic.edu/artworks/1';
+    const errors = validateArtCatalog(catalog).join('\n');
+    expect(errors).toMatch(/works\[0\]\.places\[0\]\.url/);
+    expect(errors).toMatch(/works\[1\]\.places\[0\]\.url/);
+  });
+
+  it('해설 출처는 받는 곳 이름·id 형식만, 날짜 표기 출처도 같은 이름', () => {
+    const catalog = fixture();
+    catalog.works[0].descriptions[0].sourceId = 'A-11176';
+    catalog.works[1].descriptions[0].source = 'met';
+    catalog.works[0].date.source = 'wikipedia';
+    const errors = validateArtCatalog(catalog).join('\n');
+    expect(errors).toMatch(/sourceId: colbase id 형식/);
+    expect(errors).toMatch(/source: colbase\|aic/);
+    expect(errors).toMatch(/date\.source/);
+  });
+
+  it('핵심 용어는 일본어 해설에 실제로 나오는 말만', () => {
+    const catalog = fixture();
+    catalog.works[0].terms = ['構図', '浮世絵'];
+    const errors = validateArtCatalog(catalog).join('\n');
+    expect(errors).toMatch(/「浮世絵」가 일본어 해설에 없다/);
+    expect(errors).not.toMatch(/「構図」/);
+  });
+
+  it('그림이 없는 작품에는 찾아볼 것을 두지 않는다', () => {
+    const catalog = fixture();
+    catalog.works[1].lookFor = ['배는 몇 척?'];
+    expect(validateArtCatalog(catalog).join('\n')).toMatch(/works\[1\]\.lookFor: 그림이 없으면/);
+  });
+
+  it('박물관 내부 메모가 섞인 해설은 싣지 않는다', () => {
+    const catalog = fixture();
+    catalog.works[0].descriptions[0].text = '解説の本文。（A-10569-7616と同様）(20131029_h21・22）';
+    expect(validateArtCatalog(catalog).join('\n')).toMatch(/내부 메모/);
+  });
+
   it('큐레이션은 두 점 이상·중복 없음·있는 작품만', () => {
     const catalog = fixture();
     catalog.curations[0].works = ['work-a', 'work-a', 'work-z'];
@@ -161,15 +240,49 @@ describe('artCatalog 계약 — fail-closed', () => {
 });
 
 describe('정보 카드·탐색', () => {
-  it('카드: 원문 날짜 표기·시대·소장처는 늘 「소장」·그림 속 장소·크레딧', () => {
+  it('카드: 원문 날짜 표기·시대·소장처는 늘 「소장처」·그림 속 장소·크레딧', () => {
     const card = artInfoCard(fixture(), 'work-a');
-    expect(card.date).toEqual({ text: '天保2～5年頃', periods: [{ ko: '에도 시대', native: '江戸時代' }] });
+    expect(card.date).toEqual({ text: '天保2～5年頃', display: '天保2～5年頃', periods: [{ ko: '에도 시대', native: '江戸時代' }] });
     expect(card.artist.years).toBe('1760–1849');
-    expect(card.holdings.map((h) => [h.id, h.label])).toEqual([['museum-a', '소장'], ['museum-b', '소장']]);
+    expect(card.holdings.map((h) => [h.id, h.label, h.url])).toEqual([
+      ['museum-a', '소장처', 'https://colbase.nich.go.jp/collection_items/x'],
+      ['museum-b', '소장처', 'https://www.artic.edu/artworks/1'],
+    ]);
     expect(card.depicted.map((p) => p.id)).toEqual(['coast-a']);
     expect(card.credits).toEqual([{ language: 'ja', credit: '甲博物館所蔵 / ColBase', license: '정부표준이용규약 2.0', sourceUrl: 'https://colbase.nich.go.jp/collection_items/x' }]);
     expect(JSON.stringify(card)).not.toMatch(/전시/);
     expect(artInfoCard(fixture(), 'missing')).toBeNull();
+  });
+
+  // 화면 날짜(검토 반영): 출처의 영어 약식 표기(「c. 1830/33」)를 그대로 보이지 않는다 — 일본어 원문 표기만 그대로, 나머지는 한국어.
+  it.each([
+    [{ text: '江戸時代・安政4年(1857)', startYear: 1857, endYear: 1857, certainty: 'exact' }, '江戸時代・安政4年(1857)'],
+    [{ text: '1857', startYear: 1857, endYear: 1857, certainty: 'exact' }, '1857년'],
+    [{ text: '1830/33', startYear: 1830, endYear: 1833, certainty: 'range' }, '1830–33년'],
+    [{ text: 'c. 1830/33', startYear: 1830, endYear: 1833, certainty: 'circa' }, '1830–33년경'],
+    [{ text: 'c. 1830', startYear: 1830, endYear: 1830, certainty: 'circa' }, '1830년경'],
+    [{ text: '1801-05', startYear: 1801, endYear: 1805, certainty: 'range' }, '1801–05년'],
+    [{ text: '1795/1805', startYear: 1795, endYear: 1805, certainty: 'range' }, '1795–1805년'],
+    [{ text: 'c. 1899/1901', startYear: 1899, endYear: 1901, certainty: 'circa' }, '1899–1901년경'],
+  ])('날짜 표시 %j → %s', (date, display) => {
+    expect(artDateDisplay(date)).toBe(display);
+  });
+
+  it('날짜 표시: 영어 표기는 카드에서 한국어로, 원문 표기에 이미 있는 시대 이름은 시대 칸에서 뺀다', () => {
+    const catalog = fixture();
+    catalog.works[1].date = { text: 'c. 1830/33', startYear: 1830, endYear: 1833, certainty: 'circa' };
+    catalog.works[1].periods = ['jp-edo'];
+    expect(artInfoCard(catalog, 'work-b').date).toEqual({ text: 'c. 1830/33', display: '1830–33년경', periods: [{ ko: '에도 시대', native: '江戸時代' }] });
+    catalog.works[0].date = { text: '江戸時代・安政4年(1857)', startYear: 1857, endYear: 1857, certainty: 'exact' };
+    expect(artInfoCard(catalog, 'work-a').date).toEqual({ text: '江戸時代・安政4年(1857)', display: '江戸時代・安政4年(1857)', periods: [] });
+  });
+
+  it('날짜 표시: 실제 카탈로그 — 화면 날짜에 영어 약식 표기(c. · /)가 남지 않는다', () => {
+    for (const work of ART_CATALOG.works) {
+      const { date } = artInfoCard(ART_CATALOG, work.id);
+      expect(date.display, work.id).not.toMatch(/\bc\.|\//);
+      for (const period of date.periods) expect(date.text.includes(period.native), `${work.id}: 시대 중복`).toBe(false);
+    }
   });
 
   it('카드: 허용 밖 이미지는 그리지 않는다', () => {

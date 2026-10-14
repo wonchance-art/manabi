@@ -880,8 +880,14 @@
 ### doing
 - **「그림 한 장 읽기」 미술관 해설 학습 — ART-P0-1 카탈로그 계약 (2026-10-14 KST, 오너 「좋아 가보자」)** `claude/project-thread-kpr8od`:
   해설 본문은 박물관 오픈데이터(ColBase 정부표준이용규약 2.0 · 시카고 미술관 CC BY)에서 그대로 받고, 작품 정보는 개체 4종(작가·장소·시대·작품, Wikidata QID 정규 키) + 큐레이션으로 쌓는다.
-  · **ART-P0-1(이 PR)**: `src/content/art/*.json`(작품 0점·시대 1) + `src/lib/artCatalog.js` 계약(전시 여부 저장 금지·장소 역할 3종·날짜 원문 표기+범위·해설 라이선스 허용 목록·원문 해시·이미지 PD/CC0+alt·지역학 핀 대조) + 정보 카드 값 계산. 화면 진입점 0.
-  · **ART-P0-2(다음)**: 호쿠사이·히로시게 풍경 우키요에 원문 수집 → 작품 등록 → 정보 카드·큐레이션 책. 선행 = 클라우드 환경 도메인 허용(colbase.nich.go.jp·jpsearch.go.jp·www.wikidata.org·query.wikidata.org·api.artic.edu). 설계 노트 = 프로젝트 파일 `notes/art-reading-mode.md`.
+  · **ART-P0-1 병합([#1457](https://github.com/wonchance-art/manabi/pull/1457), 2026-10-14 KST)**: `src/content/art/*.json`(작품 0점·시대 1) + `src/lib/artCatalog.js` 계약(전시 여부 저장 금지·장소 역할 3종·날짜 원문 표기+범위·해설 라이선스 허용 목록·원문 해시·이미지 PD/CC0+alt·지역학 핀 대조) + 정보 카드 값 계산. 화면 진입점 0.
+  · **ART-P0-2(2026-10-14 KST)** `claude/lucid-babbage-qgm1sf`([#1462](https://github.com/wonchance-art/manabi/pull/1462)): 실물 여덟 점 — 호쿠사이 冨嶽三十六景 3 · 히로시게 東海道 2 + 名所江戸百景 3,
+    해설 13건(ja ColBase 8 · en 5) 원문 그대로 + 해시, 이미지 7(시카고 미술관 CC0) · 작가 2 · 장소 12 · 큐레이션 3. 받기·대조 스크립트 `scripts/fetch-art-description.mjs`(--verify 13/13)
+    + 변환 정본 `src/lib/artSource.js`. 계약 추가: 소장 기록 링크 필수 · 출처 id 형식 · 내부 메모 해설 차단. 라이선스 원문 대조(ColBase=정부표준 2.0 준거, AIC description=CC BY 4.0·PD 이미지 CC0). 화면 진입점 0.
+  · **ART-P0-3(오너 「ㄱㄱ」 2026-10-14 KST — #1462에 이어서)**: 큐레이션 책 「北斎と広重の風景版画」(N2 상급, 8장) — `src/lib/artBook.js`(카탈로그 = 정본 대조표, 작품 한 점 = 일본어 해설 한 장)
+    · 게시 API 공용화 `src/lib/server/bookPublishRoute.js`(/api/admin/literature 동작 그대로 + /api/admin/art-books) · 관리자 🖼️ 미술 책 탭(같은 패널 kind=art)
+    · 뷰어 작품 정보 카드 `ViewerArtCard`(해시 대조 통과 장만 · 원문 수정 잠금) · 자료 출처 「미술」 절 · 일본 지도 `?pin=` 딥링크.
+    남은 것: Preview 실계정 검수(관리자 게시 → 분석 → 검수 → 공개, 그림 로드 확인) — 운영 게시는 그다음.
 - **대화 모드 v2-Z 전 라운드 (2026-10-14 KST, 오너 「전부 다 승인함」 — 인계 [CONVERSATION-V2Z-001](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6050886728))** `claude/project-thread-a2xmmk`:
   순서 = 인계문 §10 그대로 Z-R1 ①서버 → ②평가 묶음 → ③화면 → Z-R2 → Z-R3, PR 하나씩.
   · **Z-R1 ① 병합(#1438, 2026-10-14 KST)**: `/api/analyze` 핵심 → `analyzeCore.analyzeLines`(응답 동일) · `POST /api/conversation/turn` · 순수 규칙 `lib/conversation/turnModel.js`

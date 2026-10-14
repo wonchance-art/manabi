@@ -5,9 +5,10 @@
 // fail-closed로 검사하고, 작품 화면의 정보 카드에 쓸 값을 계산한다.
 //
 // 대표 사이트 대조(설계 §15–§16)에서 온 규칙:
-//   · 「소장 ≠ 전시 중」 — 전시 여부는 수시로 바뀌는 값이라 **저장하지 않는다**(onView 류 키 금지). 카드는 늘 「소장」.
+//   · 「소장 ≠ 전시 중」 — 전시 여부는 수시로 바뀌는 값이라 **저장하지 않는다**(onView 류 키 금지). 카드는 늘 「소장처」.
 //   · 같은 판화가 여러 곳에 있다 — 작품 1 : 소장처 N. 장소 역할은 소장(holding)·그림 속 장소(depicted)·제작지(made) 셋.
-//   · 날짜는 출처마다 다르게 적는다 — 원문 표기(text)를 그대로 보이고, 정렬·묶음은 연도 범위로만.
+//   · 날짜는 출처마다 다르게 적는다 — 일본어 원문 표기(text)는 그대로 보이고, 영어 약식 표기는 연도 범위로 한국어를 만든다
+//     (artDateDisplay). 정렬·묶음은 연도 범위로만.
 //   · 해설 본문은 재사용이 허용된 라이선스만, 원문 해시로 묶는다(아오조라 textSha256 선례 — 손으로 고친 해설을 막는다).
 //   · 이미지는 퍼블릭 도메인/CC0만. 그 밖은 그림 없이 해설만(IP 하드리밋 ⑴과 별개로 저작권 보호).
 
@@ -43,6 +44,10 @@ const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const QID = /^Q[1-9]\d*$/;
 const SHA256 = /^[0-9a-f]{64}$/;
 const LANGUAGE = /^(?:ja|zh|en|fr)$/;
+/** 해설 출처 — scripts/fetch-art-description.mjs가 받는 곳(src/lib/artSource.js ART_SOURCES)과 같은 이름·id 형식. */
+const SOURCE_ID = Object.freeze({ colbase: /^cobas-\d+$/, aic: /^\d+$/ });
+/** 박물관 내부 메모(「(20131029_h21・22)」 같은 작업 번호)가 섞인 해설 — 공개 해설이 아니다(ART-P0-2 실측). */
+const INTERNAL_MEMO = /\d{8}_h\d+/;
 
 const isObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 const isText = (value) => typeof value === 'string' && value.trim().length > 0;
@@ -118,12 +123,13 @@ function checkDescription(description, at, errors) {
   if (!isObject(description)) { errors.push(`${at}: 객체여야 한다`); return; }
   if (!LANGUAGE.test(description.language ?? '')) errors.push(`${at}.language: ja|zh|en|fr`);
   if (!Object.values(ART_TEXT_LICENSE).includes(description.license)) errors.push(`${at}.license: 허용 목록 밖 ${description.license}`);
-  if (!isText(description.source) || !isText(description.sourceId)) errors.push(`${at}: source·sourceId가 필요하다`);
+  if (!Object.hasOwn(SOURCE_ID, description.source ?? '')) errors.push(`${at}.source: ${Object.keys(SOURCE_ID).join('|')}`);
+  else if (!SOURCE_ID[description.source].test(description.sourceId ?? '')) errors.push(`${at}.sourceId: ${description.source} id 형식이 아니다`);
   if (!isHttps(description.sourceUrl)) errors.push(`${at}.sourceUrl: HTTPS 원문 주소가 필요하다`);
   if (!isText(description.credit)) errors.push(`${at}.credit: 크레딧 줄이 필요하다(출처 표기 의무)`);
   if (!isText(description.text) || description.text.length > ART_LIMITS.descriptionMax) {
     errors.push(`${at}.text: 해설 1–${ART_LIMITS.descriptionMax}자`);
-  }
+  } else if (INTERNAL_MEMO.test(description.text)) errors.push(`${at}.text: 박물관 내부 메모가 섞인 해설은 싣지 않는다`);
   if (!SHA256.test(description.textSha256 ?? '')) errors.push(`${at}.textSha256: 원문 해시가 필요하다`);
 }
 
@@ -134,6 +140,7 @@ function checkWork(work, at, refs, errors) {
   if (!isObject(date) || !isText(date.text)) errors.push(`${at}.date.text: 원문 표기가 필요하다`);
   else if (!isYear(date.startYear) || !isYear(date.endYear) || date.startYear > date.endYear) errors.push(`${at}.date: startYear ≤ endYear`);
   else if (!ART_DATE_CERTAINTY.includes(date.certainty)) errors.push(`${at}.date.certainty: ${ART_DATE_CERTAINTY.join('|')}`);
+  if (isObject(date) && date.source !== undefined && !Object.hasOwn(SOURCE_ID, date.source)) errors.push(`${at}.date.source: 표기를 가져온 출처(${Object.keys(SOURCE_ID).join('|')})`);
   for (const id of work.periods ?? []) if (!refs.periodIds.has(id)) errors.push(`${at}.periods: 없는 시대 ${id}`);
   if (!isObject(work.medium) || !isText(work.medium.native)) errors.push(`${at}.medium.native: 재료·기법 원문이 필요하다`);
 
@@ -141,6 +148,8 @@ function checkWork(work, at, refs, errors) {
   places.forEach((entry, index) => {
     if (!refs.placeIds.has(entry?.place)) errors.push(`${at}.places[${index}]: 없는 장소 ${entry?.place}`);
     if (!ART_PLACE_ROLES.includes(entry?.role)) errors.push(`${at}.places[${index}].role: ${ART_PLACE_ROLES.join('|')}`);
+    // 소장처는 그 기관의 소장품 기록 링크와 함께 — 전시 여부·자세한 정보는 이 링크에서 본다(저장하지 않으므로).
+    if (entry?.role === 'holding' && !isHttps(entry.url)) errors.push(`${at}.places[${index}].url: 소장품 기록 HTTPS 링크가 필요하다`);
   });
   if (!places.some((entry) => entry?.role === 'holding')) errors.push(`${at}.places: 소장처(holding)가 하나 이상 필요하다`);
 
@@ -154,11 +163,24 @@ function checkWork(work, at, refs, errors) {
   if (work.lookFor !== undefined && (!Array.isArray(work.lookFor) || work.lookFor.length > ART_LIMITS.lookFor || !work.lookFor.every(isText))) {
     errors.push(`${at}.lookFor: 찾아볼 것 0–${ART_LIMITS.lookFor}개`);
   }
+  // 핵심 용어는 읽기 자료(일본어 해설)에 실제로 나오는 말이어야 한다 — 본문에서 만나야 단어 저장으로 이어진다.
+  const japanese = descriptions.filter((description) => description?.language === 'ja').map((description) => description.text ?? '');
+  for (const term of Array.isArray(work.terms) ? work.terms : []) {
+    if (isText(term) && !japanese.some((text) => text.includes(term))) errors.push(`${at}.terms: 「${term}」가 일본어 해설에 없다`);
+  }
+  // 찾아볼 것은 그림을 보며 하는 질문 — 그림이 없으면 두지 않는다.
+  if (Array.isArray(work.lookFor) && work.lookFor.length > 0 && !work.image) errors.push(`${at}.lookFor: 그림이 없으면 찾아볼 것을 두지 않는다`);
   if (work.image !== undefined && work.image !== null) {
     const image = work.image;
     if (!ART_IMAGE_LICENSES.includes(image?.license)) errors.push(`${at}.image.license: 퍼블릭 도메인/CC0만(그 밖은 image 없이)`);
     if (!isHttps(image?.url) || !isHttps(image?.sourceUrl)) errors.push(`${at}.image: HTTPS url·sourceUrl이 필요하다`);
     if (!isText(image?.alt)) errors.push(`${at}.image.alt: 대체 텍스트가 필요하다(접근성)`);
+    if (image?.credit !== undefined && !isText(image.credit)) errors.push(`${at}.image.credit: 캡션은 비어 있으면 안 된다`);
+    // 원본 크기(선택) — 화면이 판형 비율로 자리를 미리 잡는다. 있으면 둘 다 양의 정수.
+    if ((image?.width !== undefined || image?.height !== undefined)
+      && !(Number.isInteger(image?.width) && image.width > 0 && Number.isInteger(image?.height) && image.height > 0)) {
+      errors.push(`${at}.image: width·height는 둘 다 양의 정수`);
+    }
   }
 }
 
@@ -212,9 +234,31 @@ function yearSpan(from, to) {
   return from === to ? String(from) : `${from}–${to}`;
 }
 
+/** 가나·한자가 섞인 원문 표기(「江戸時代・安政4年(1857)」) — 일본어로 그대로 보인다. */
+const JAPANESE_TEXT = /[\u3040-\u30ff\u3400-\u9fff]/;
+const yearKo = (year) => (year < 0 ? `기원전 ${-year}` : String(year));
+
+/**
+ * 화면용 날짜 한 줄 — 「c. 1830/33」 같은 출처의 영어 약식 표기를 그대로 보이지 않는다.
+ * 원문 표기에 가나·한자가 있으면 그대로(일본어), 아니면 연도 범위·확실성으로 한국어:
+ *   exact 1857 → 「1857년」 · range 1830–1833 → 「1830–33년」(같은 세기면 끝 연도 앞 두 자리 생략) · circa → 「1830–33년경」 · 「1830년경」.
+ */
+export function artDateDisplay(date) {
+  const text = typeof date?.text === 'string' ? date.text.trim() : '';
+  if (JAPANESE_TEXT.test(text)) return text;
+  const { startYear: from, endYear: to, certainty } = date ?? {};
+  if (!isYear(from) || !isYear(to) || from > to) return text;
+  let span = yearKo(from);
+  if (to !== from) {
+    const sameCentury = from >= 1000 && Math.floor(from / 100) === Math.floor(to / 100);
+    span += `–${sameCentury ? String(to % 100).padStart(2, '0') : yearKo(to)}`;
+  }
+  return `${span}년${certainty === 'circa' ? '경' : ''}`;
+}
+
 /**
  * 작품 화면 정보 카드(설계 §12 목업) — 화면에 그릴 값만. 없는 작품이면 null.
- * 소장처 라벨은 늘 「소장」이다(전시 여부는 원문 링크에서 — 저장하지 않으므로 말할 수도 없다).
+ * 소장처 라벨은 늘 「소장처」다 — 「전시 중」이라고 말하지 않는다(전시 여부는 원문 링크에서 — 저장하지 않으므로 말할 수도 없다).
  */
 export function artInfoCard(catalog, workId) {
   const work = catalog?.works?.find((item) => item.id === workId);
@@ -226,7 +270,7 @@ export function artInfoCard(catalog, workId) {
     .filter((entry) => entry.role === role && placeById.has(entry.place))
     .map((entry) => {
       const place = placeById.get(entry.place);
-      return { id: place.id, name: place.name, city: place.city ?? null, lat: place.lat, lng: place.lng, links: place.links ?? {} };
+      return { id: place.id, name: place.name, city: place.city ?? null, lat: place.lat, lng: place.lng, links: place.links ?? {}, url: entry.url ?? null };
     });
   return {
     id: work.id,
@@ -237,9 +281,15 @@ export function artInfoCard(catalog, workId) {
       years: yearSpan(artist.born, artist.died),
       life: artist.life,
     },
-    date: { text: work.date.text, periods: (work.periods ?? []).map((id) => periodById.get(id)?.label).filter(Boolean) },
+    date: {
+      text: work.date.text,
+      display: artDateDisplay(work.date),
+      // 원문 표기에 이미 시대 이름이 있으면(「江戸時代・安政4年(1857)」) 시대를 한 번 더 적지 않는다.
+      periods: (work.periods ?? []).map((id) => periodById.get(id)?.label)
+        .filter((label) => label && !(isText(label.native) && work.date.text.includes(label.native))),
+    },
     medium: work.medium,
-    holdings: placesFor('holding').map((place) => ({ ...place, label: '소장' })),
+    holdings: placesFor('holding').map((place) => ({ ...place, label: '소장처' })),
     depicted: placesFor('depicted'),
     made: placesFor('made'),
     terms: work.terms,
