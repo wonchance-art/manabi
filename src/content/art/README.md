@@ -4,7 +4,7 @@
 개체로 쌓아 시기·작가 특집으로 큐레이션한다. 첫 큐레이션은 **호쿠사이·히로시게 풍경 우키요에**.
 
 이 폴더는 **정본**이다. 형식·규칙은 `src/lib/artCatalog.js`(`validateArtCatalog`)가 정하고 `artCatalog.test.js`가 CI에서 잡는다.
-ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록 작품」)을 싣는다. 화면 진입점은 아직 0 — 정보 카드·큐레이션 책 화면은 ART-P0-3.
+ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록 작품」), **ART-P0-3은 큐레이션 책 게시와 뷰어 정보 카드**(아래 「큐레이션 책」).
 
 ## 파일
 
@@ -33,6 +33,22 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
 - **찾아볼 것(`lookFor`)은 그림이 있을 때만** — 그림을 보며 하는 질문이다.
 - 민감 소장처(반환 논쟁·중화권)는 이름·도시 같은 **사실만** 적는다.
 
+## 큐레이션 책 (ART-P0-3)
+
+`src/lib/artBook.js`가 큐레이션을 **정본 문학책과 같은 모양의 책**으로 만든다 — 작품 한 점 = 일본어 해설 한 장.
+
+- 장 원문(`raw_text`)은 카탈로그 해설 `text` 그대로, 해시는 `textSha256` 그대로다. 따로 대조표를 만들지 않는다 — **카탈로그가 곧 정본 대조표**다.
+- 자료 metadata: `book {key: 'art-<큐레이션 id>', title, author, order, total}` + `literature {provider: 'art', curation, work, source, sourceId, sourceUrl, license, credit, textSha256}`.
+  루비·검수 힌트 키는 두지 않는다(현대 해설문).
+- 장 제목은 「<책 제목> — <작품 제목>」 — 서재 책 카드가 「 — 」 뒤를 장 이름으로 쓰므로 책 제목(`title.native`)에는 「 — 」를 쓰지 않는다(빌드가 막는다).
+- 큐레이션의 `level`은 편집 라벨이다(산책 레벨 필터). 게시하는 책은 `ART_PUBLISHED_CURATIONS`뿐 — 작가별 큐레이션은 같은 해설의 부분집합이라 따로 게시하지 않는다.
+
+**게시(관리자)** — 관리자 → 🖼️ 미술 책. 정본 문학책과 같은 순서다: 「게시」(장마다 **비공개** 자료 + 바로 분석) → 장마다 뷰어에서 확인하고 「검수 완료」
+→ 「공개」(모든 장이 분석·검수 완료일 때만). 게시 직전에 `artBookPublishable`이 카탈로그 계약·원문·라이선스를 한 번 더 본다(fail-closed).
+
+**뷰어** — 자료 `raw_text`의 SHA-256이 카탈로그 해시와 같고 책 순서·작품이 맞을 때만 정보 카드(그림·작가·날짜·소장·그림 속 장소·찾아볼 것)와 출처 줄을 그린다
+(`verifiedArtChapter`). 남이 자기 자료에 `provider: 'art'`를 꾸며 넣어도 원문이 다르면 아무것도 보이지 않는다. 큐레이션 책 장은 원문 수정이 막힌다(분석·단어 교정은 그대로).
+
 ## 출처와 라이선스 (2026-10-14 KST 원문 대조)
 
 | 출처 | 해설 받는 곳 | 해설 라이선스 | 이미지 | 크레딧 |
@@ -55,7 +71,8 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
 4. `npm test`로 계약 통과를 확인한다. 출처 쪽 해설이 바뀌었는지는 `node scripts/fetch-art-description.mjs --verify`(네트워크)로 대조한다.
 
 **네트워크:** `colbase.nich.go.jp`·`jpsearch.go.jp`·`www.wikidata.org`·`query.wikidata.org`·`api.artic.edu`는 2026-10-14 클라우드 환경에서 열려 있다
-(Node `fetch`는 `NODE_USE_ENV_PROXY=1`). `www.artic.edu`(IIIF 이미지 호스트)는 닫혀 있어 이미지 URL의 200 응답은 화면 단계(ART-P0-3)에서 브라우저로 확인한다.
+(Node `fetch`는 `NODE_USE_ENV_PROXY=1`). `www.artic.edu`(IIIF 이미지 호스트)는 닫혀 있어 이미지 URL의 200 응답은 Preview 브라우저 검수에서 확인한다.
+이미지는 미술관 IIIF를 바로 쓴다(AIC API 문서: 핫링크 환영 — 다만 언제든 내려가거나 바뀔 수 있다). 그림이 안 뜨면 뷰어는 그림 칸만 숨기고 정보는 그대로 보인다.
 
 ## 수록 작품 (2026-10-14 KST, ART-P0-2)
 
@@ -70,7 +87,7 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
 | hiroshige-kameido-umeyashiki | 名所江戸百景 亀戸梅屋舗 | 江戸時代・安政4年(1857) (ColBase) | 도쿄 국립박물관 · 시카고 미술관 | ja ColBase 128자 · en AIC 380자 | AIC CC0 |
 | hiroshige-fukagawa-susaki-jumantsubo | 名所江戸百景 深川洲崎十万坪 | 江戸時代・安政4年(1857) (ColBase) | 도쿄 국립박물관 · 시카고 미술관 | ja ColBase 119자 · en AIC 371자 | AIC CC0 |
 
-큐레이션: `ukiyoe-landscape-hokusai-hiroshige`(여덟 점 연대순) · `katsushika-hokusai-fugaku`(3) · `utagawa-hiroshige-landscape`(5).
+큐레이션: `ukiyoe-landscape-hokusai-hiroshige`(여덟 점 연대순 · 게시 책 「北斎と広重の風景版画」 N2 상급) · `katsushika-hokusai-fugaku`(3) · `utagawa-hiroshige-landscape`(5).
 
 **넣지 못한 작품(기록):** 東海道 日本橋 朝之景·蒲原 夜之雪, 冨嶽三十六景 甲州石班沢·尾州不二見原 — ColBase·AIC 어디에도 해설이 없다.
 冨嶽三十六景 山下白雨 — AIC 해설 1,547자로 상한(1,500자) 초과, 자르지 않으므로 제외. ColBase 영어 해설 `cobas-51489`(庄野)는
