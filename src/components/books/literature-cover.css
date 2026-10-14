@@ -9,7 +9,7 @@
 .lit-cover--forest{--cover-color:#2f5a3f}
 .lit-cover--ink{--cover-color:#2f2c2b}
 .lit-cover--slate{--cover-color:#4f5560}
-.lit-cover__title{writing-mode:vertical-rl;white-space:pre;font-family:var(--font-lit-serif),"Noto Serif CJK JP",serif;font-weight:600;line-height:1.15;letter-spacing:.04em}
+.lit-cover__title{writing-mode:vertical-rl;white-space:pre;font-family:var(--font-lit-serif),"Noto Serif CJK JP",serif;font-weight:400;line-height:1.15;letter-spacing:.04em}
 .lit-cover__title--xl{font-size:28px}
 .lit-cover__title--l{font-size:26px}
 .lit-cover__title--m{font-size:19px}

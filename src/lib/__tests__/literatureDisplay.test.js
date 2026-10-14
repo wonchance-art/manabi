@@ -90,7 +90,7 @@ describe('화면 배선', () => {
     const cover = read('src/components/books/LiteratureCover.jsx');
     expect(cover).not.toMatch(/<img|background-image|url\(/u);
     // 제목 글꼴은 웹폰트 명조로 고정(기기마다 다른 시스템 명조 대신) — 사이트 전체 preload 없이
-    expect(cover).toContain("Noto_Serif_JP({ weight: ['600'], subsets: ['latin'], display: 'swap', preload: false, variable: '--font-lit-serif' })");
+    expect(cover).toContain("Noto_Serif_JP({ weight: '400', subsets: ['latin'], display: 'swap', preload: false, variable: '--font-lit-serif' })");
     expect(cover).not.toContain('style=');
     const css = read('src/components/books/literature-cover.css');
     for (const color of LITERATURE_COVER_COLORS) expect(css).toContain(`.lit-cover--${color}{`);
