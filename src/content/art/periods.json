@@ -1,0 +1,9 @@
+[
+  {
+    "id": "jp-edo",
+    "culture": "jp",
+    "label": { "ko": "에도 시대", "native": "江戸時代" },
+    "startYear": 1603,
+    "endYear": 1868
+  }
+]
