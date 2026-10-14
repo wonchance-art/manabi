@@ -1,14 +1,19 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import {
   LITERATURE_PUBLISH_STATE,
   literatureBookPublishable,
   literatureBookSummary,
   literaturePublishRows,
   literatureRubyCoverage,
+  literatureStage,
   planLiteraturePublish,
+  planLiteratureRelease,
 } from '../literaturePublish.js';
 import { getBook, groupByBook } from '../bookMeta.js';
 import { LITERATURE_BOOKS } from '../../content/literature/aozora/index.generated.js';
+import { sliceBetween } from './helpers/sliceBetween';
 
 // 관리자 게시 계획(AOZORA-P0-2) — 실물 「ごん狐」(6장)로 book key + 장 순서 멱등·충돌 시 무게시를 고정한다.
 
@@ -36,9 +41,9 @@ describe('planLiteraturePublish — book key + 장 순서 멱등', () => {
 describe('literaturePublishRows — 기존 책 등록과 같은 행 모양', () => {
   const rows = literaturePublishRows(book, [2, 5], 'admin-id', '2026-10-14T00:00:00.000Z');
 
-  it('고른 장만, 공개·관리자 소유·분석 전(pending), 원문·metadata는 정본 그대로', () => {
+  it('고른 장만, **비공개**·관리자 소유·분석 전(pending), 원문·metadata는 정본 그대로 — 공개는 분석 뒤 따로', () => {
     expect(rows.map((item) => item.title)).toEqual(['ごん狐 — 二', 'ごん狐 — 五']);
-    expect(rows[0]).toMatchObject({ visibility: 'public', owner_id: 'admin-id', raw_text: book.chapters[1].rawText,
+    expect(rows[0]).toMatchObject({ visibility: 'private', owner_id: 'admin-id', raw_text: book.chapters[1].rawText,
       processed_json: { sequence: [], dictionary: {}, last_idx: -1, status: 'pending' } });
     expect(rows[0].processed_json.metadata).toEqual({ ...book.chapters[1].metadata, updated_at: '2026-10-14T00:00:00.000Z' });
   });
@@ -47,6 +52,29 @@ describe('literaturePublishRows — 기존 책 등록과 같은 행 모양', () 
     const all = literaturePublishRows(book, [1, 2, 3, 4, 5, 6], 'admin-id').map((item, index) => ({ id: index, ...item })).reverse();
     expect(getBook(all[0].processed_json.metadata)).toMatchObject({ key: 'aozora-000121-000628', title: 'ごん狐', order: 6, total: 6 });
     expect(groupByBook(all).books.map((item) => [item.key, item.chapters.map((chapter) => chapter.id)])).toEqual([['aozora-000121-000628', [0, 1, 2, 3, 4, 5]]]);
+  });
+});
+
+describe('준비 → 분석 → 공개(P0-3 「분석을 마치고 배포」)', () => {
+  const all = (overrides = {}) => [1, 2, 3, 4, 5, 6].map((order) => row(order, { status: 'completed', visibility: 'private', ...overrides }));
+
+  it('단계: 없음 unpublished → 일부/분석 전 preparing → 전 장 분석·비공개 ready → 전 장 공개 released', () => {
+    expect(literatureStage(book, [])).toBe('unpublished');
+    expect(literatureStage(book, [row(1, { status: 'completed', visibility: 'private' })])).toBe('preparing');
+    expect(literatureStage(book, all().map((item, index) => (index === 3 ? { ...item, status: 'pending' } : item)))).toBe('preparing');
+    expect(literatureStage(book, all())).toBe('ready');
+    expect(literatureStage(book, all({ visibility: 'public' }))).toBe('released');
+    expect(literatureStage(book, [row(1, { raw_text: '書き換え' })])).toBe('conflict');
+  });
+
+  it('공개는 모든 장이 있고 모두 분석 완료일 때만 — 비공개 장만 고른다', () => {
+    expect(planLiteratureRelease(book, all())).toEqual({ ok: true, reason: null, ids: [101, 102, 103, 104, 105, 106] });
+    const mixed = all().map((item, index) => (index < 2 ? { ...item, visibility: 'public' } : item));
+    expect(planLiteratureRelease(book, mixed).ids).toEqual([103, 104, 105, 106]);
+    expect(planLiteratureRelease(book, all().map((item, index) => (index === 5 ? { ...item, status: 'analyzing' } : item))))
+      .toEqual({ ok: false, reason: 'not-analyzed', ids: [] });
+    expect(planLiteratureRelease(book, all().slice(0, 5))).toEqual({ ok: false, reason: 'incomplete', ids: [] });
+    expect(planLiteratureRelease(book, [...all(), row(2, { id: 999, status: 'completed' })])).toEqual({ ok: false, reason: 'conflict', ids: [] });
   });
 });
 
@@ -61,7 +89,7 @@ describe('관리자 화면 요약·루비 적용률', () => {
     const summary = literatureBookSummary(book, [{ ...row(1), status: 'completed', visibility: 'public' }]);
     expect(summary).toMatchObject({ key: 'aozora-000121-000628', title: 'ごん狐', author: '新美南吉', level: 'N3 중급', total: 6, publishable: true,
       rights: { basis: 'public-domain', reviewedJurisdictions: ['JP', 'KR', 'US'], publishedYear: 1932, authorDeathYear: 1943, charset: '新字新仮名' },
-      plan: { state: 'partial', insert: [2, 3, 4, 5, 6] } });
+      plan: { state: 'partial', insert: [2, 3, 4, 5, 6] }, stage: 'preparing' });
     expect(summary.chapters[0]).toEqual({ order: 1, title: '一', chars: book.chapters[0].rawText.length, rubyLocks: book.chapters[0].metadata.literature.rubyLocks.length,
       material: { id: 101, status: 'completed', visibility: 'public' } });
     expect(summary.chapters[1].material).toBe(null);
@@ -76,5 +104,20 @@ describe('관리자 화면 요약·루비 적용률', () => {
         { order: 2, rubyLocks: book.chapters[1].metadata.literature.rubyLocks.length, applied: null },
         { order: 3, rubyLocks: book.chapters[2].metadata.literature.rubyLocks.length, applied: null },
       ]);
+  });
+});
+
+describe('관리자 화면 배선 — 게시 한 번에 준비·분석, 공개는 분석 뒤', () => {
+  const panel = readFileSync(path.join(process.cwd(), 'src/components/LiteraturePublishPanel.jsx'), 'utf8');
+
+  it('분석은 뷰어와 같은 경로(runPreservedReanalysis + analyzeText, 전체 분석) — 새 분석기를 만들지 않는다', () => {
+    expect(panel).toContain('await runPreservedReanalysis(supabase, row, controller.signal, analyzeText, { fullReset: true });');
+    expect(panel).toContain("import { runPreservedReanalysis } from '../lib/reanalysisPreservation';");
+  });
+
+  it('「게시」(prepare) 성공 뒤 바로 분석을 시작하고, 「공개」(release)는 ready 단계에서만 보인다', () => {
+    expect(sliceBetween(panel, 'const prepare = useMutation', 'const release = useMutation')).toContain('if (next) analyzeBook(next);');
+    expect(panel).toContain("{book.stage === 'ready' && (");
+    expect(panel).toContain("post('release', book.key)");
   });
 });
