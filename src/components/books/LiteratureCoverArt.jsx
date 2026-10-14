@@ -44,24 +44,25 @@ function Lily({ x, y, s, stem }) {
   );
 }
 
-const SNOW = [[14, 14], [30, 8], [62, 6], [12, 56], [24, 76], [10, 118], [22, 132], [56, 124], [76, 120], [114, 112], [112, 18]];
+const SNOW = [[14, 14], [30, 8], [56, 6], [44, 22], [12, 56], [34, 50], [24, 76], [48, 72], [10, 118], [22, 108], [114, 160]];
 
+// 배치 규칙(오너 2026-10-14 「글자가 그림과 겹치지 않게」): 세로 제목(오른쪽 위)·작가(그 왼쪽 아래) 칸 안에는
+// 옅은 바탕결(faint, 투명도 .1)만 지나가고, 주제 도형은 그 칸 밖 — 왼쪽 띠·짧은 제목 아래 빈자리 — 에 둔다.
 function SnowNight() {
   return (
     <>
-      <path className="lit-art__faint" d={`${yukiwa(19, 36, 10)}${yukiwa(16, 98, 6)}`} fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <path className="lit-art__faint" d={`${yukiwa(20, 34, 10)}${yukiwa(40, 92, 6)}`} fill="none" stroke="currentColor" strokeWidth="1.6" />
       <g className="lit-art__mid" fill="currentColor">
         {SNOW.map(([x, y], i) => <circle key={`${x}-${y}`} cx={x} cy={y} r={i % 3 ? 1.2 : 1.8} />)}
       </g>
       <path className="lit-art__faint" d="M0 142C30 128 70 122 120 126V168H0Z" fill="currentColor" />
-      {/* 마을 불빛은 언덕 왼쪽 — 오른쪽 세로 제목 줄(手袋を買いに 여섯 자)이 바닥까지 내려와도 겹치지 않게 */}
       <circle className="lit-art__glow" cx="44" cy="128" r="10" fill="currentColor" />
       <g className="lit-art__accent" fill="currentColor">
         <rect x="36" y="126" width="3" height="4" />
         <rect x="42" y="124" width="3" height="5" />
         <rect x="48" y="127" width="3" height="3" />
       </g>
-      <path className="lit-art__lo" d="M0 162C40 160 76 142 120 134V168H0Z" fill="currentColor" />
+      <path className="lit-art__lo" d="M0 138C20 132 42 140 56 158C78 162 100 160 120 158V168H0Z" fill="currentColor" />
     </>
   );
 }
@@ -70,28 +71,33 @@ function Higanbana() {
   return (
     <>
       <circle className="lit-art__faint" cx="26" cy="34" r="13" fill="currentColor" />
-      <path className="lit-art__deep" d="M0 150C30 140 70 146 120 138V168H0Z" fill="currentColor" />
-      <Lily x={24} y={100} s={1.5} stem="M24 100C26 124 22 144 24 168" />
-      <Lily x={47} y={124} s={1.15} stem="M47 124C46 140 49 154 48 168" />
-      <path className="lit-art__deep" d="M13 140C14 150 12 160 13 168" fill="none" stroke="currentColor" strokeWidth="1.6" />
-      <ellipse className="lit-art__accent" cx="13" cy="138" rx="2.4" ry="3.6" fill="currentColor" />
+      <path className="lit-art__deep" d="M0 156C40 152 80 160 120 156V168H0Z" fill="currentColor" />
+      <Lily x={24} y={98} s={1.5} stem="M24 98C26 124 22 146 24 168" />
+      <Lily x={42} y={130} s={0.9} stem="M42 130C41 144 43 156 42 168" />
+      <Lily x={94} y={116} s={1.25} stem="M94 116C96 134 92 152 94 168" />
+      <path className="lit-art__deep" d="M11 142C12 152 10 160 11 168" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <ellipse className="lit-art__accent" cx="11" cy="140" rx="2.4" ry="3.6" fill="currentColor" />
     </>
   );
 }
 
+// 숲길 끝, 위쪽 빈자리에 문 안의 문 — 가장 안쪽 어둠과 왼쪽 숲 그늘에 산고양이 눈.
 function ForestDoors() {
-  const doors = [[6, 82, 48, 82], [13, 96, 34, 62], [19, 107, 22, 46], [24, 115, 12, 33]];
+  const doors = [[34, 16, 32, 60], [38.5, 28.5, 23, 46], [42, 38.5, 16, 35], [44.5, 46.5, 11, 26]];
   const arch = ([x, y, w, h]) => `M${x} ${y + h}V${y + w / 2}A${w / 2} ${w / 2} 0 0 1 ${x + w} ${y + w / 2}V${y + h}`;
   return (
     <>
-      <path className="lit-art__deep" d="M4 168V60L12 30 20 60V168ZM40 168V70L50 20 60 70V168ZM88 168V140L100 108 112 140V168Z" fill="currentColor" />
+      <path className="lit-art__faint" d="M36 76H64L96 168H8Z" fill="currentColor" />
+      <path className="lit-art__deep" d="M5 168V58L13 24 21 58V168ZM17 168V96L24 66 29 90V168ZM84 168V156L97 136 110 156V168Z" fill="currentColor" />
       {doors.map((d, i) => (
         <path key={d[0]} className={i < 2 ? 'lit-art__mid' : 'lit-art__lo'} d={arch(d)} fill="none" stroke="currentColor" strokeWidth={i === 0 ? 2.2 : 1.6} />
       ))}
       <path className="lit-art__deep" d={`${arch(doors[3])}Z`} fill="currentColor" />
       <g className="lit-art__accent" fill="currentColor">
-        <ellipse cx="27.5" cy="132" rx="1.7" ry="1.2" />
-        <ellipse cx="32.5" cy="132" rx="1.7" ry="1.2" />
+        <ellipse cx="47.6" cy="60" rx="1.6" ry="1.1" />
+        <ellipse cx="52.4" cy="60" rx="1.6" ry="1.1" />
+        <ellipse cx="11" cy="122" rx="1.3" ry="0.9" />
+        <ellipse cx="15" cy="122" rx="1.3" ry="0.9" />
       </g>
     </>
   );
@@ -100,18 +106,22 @@ function ForestDoors() {
 function InkSteam() {
   return (
     <>
-      <circle className="lit-art__faint" cx="44" cy="106" r="32" fill="currentColor" />
+      <circle className="lit-art__faint" cx="34" cy="98" r="28" fill="currentColor" />
+      <circle className="lit-art__faint" cx="98" cy="96" r="16" fill="currentColor" />
       <g className="lit-art__mid" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-        <path d="M32 118C26 106 38 100 32 92S28 80 34 74" />
-        <path d="M44 116C38 104 50 98 44 88S38 74 46 68C52 63 55 70 51 73" />
-        <path d="M56 118C52 110 60 104 56 96" />
+        <path d="M22 118C16 104 28 98 22 88S18 74 24 66" />
+        <path d="M33 116C27 100 39 94 33 82S27 62 35 54C41 48 45 54 41 58" />
+        <path d="M44 118C40 108 48 102 44 92" />
       </g>
-      <path className="lit-art__lo" d="M18 122H70C68 136 56 142 44 142S20 136 18 122Z" fill="currentColor" />
-      <path className="lit-art__mid" d="M14 122H74" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-      <rect className="lit-art__accent" x="98" y="140" width="8" height="10" rx="1" fill="currentColor" />
+      <path className="lit-art__lo" d="M14 122H52C50 136 42 142 33 142S16 136 14 122Z" fill="currentColor" />
+      <path className="lit-art__mid" d="M11 122H55" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+      <rect className="lit-art__accent" x="96" y="138" width="8" height="10" rx="1" fill="currentColor" />
     </>
   );
 }
+
+// 粟の穂 — 문조의 모이. 짧은 제목 아래 빈자리에 고개 숙인 이삭 하나.
+const MILLET = [0, 1, 2, 3, 4, 5, 6, 7].map((k) => [r1(92 - 1.3 * k + (k % 2 ? 2 : -2)), r1(94 + 2.8 * k)]);
 
 function Birdcage() {
   const bars = [16, 22, 28, 34, 40, 46].map((x) => `M${x} 142V102Q${x} 86 31 82`).join('');
@@ -127,8 +137,10 @@ function Birdcage() {
       </g>
       <path className="lit-art__accent" d="M42 116.5L46 118L42 120Z" fill="currentColor" />
       <circle className="lit-art__deep" cx="39.5" cy="117.6" r="0.9" fill="currentColor" />
+      <path className="lit-art__lo" d="M104 164C104 132 102 104 93 90" fill="none" stroke="currentColor" strokeWidth="1.4" />
       <g className="lit-art__mid" fill="currentColor">
-        {[[18, 138.5], [24, 139.5], [36, 139], [44, 138.5], [72, 160], [80, 157], [88, 161]].map(([x, y]) => <circle key={x} cx={x} cy={y} r="1.1" />)}
+        {MILLET.map(([x, y]) => <ellipse key={y} cx={x} cy={y} rx="1.8" ry="1.4" />)}
+        {[[18, 138.5], [24, 139.5], [36, 139], [44, 138.5], [84, 160], [92, 158]].map(([x, y]) => <circle key={x} cx={x} cy={y} r="1.1" />)}
       </g>
     </>
   );
