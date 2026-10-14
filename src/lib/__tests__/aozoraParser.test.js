@@ -122,10 +122,26 @@ describe('parseAozoraText — 見出し 주석의 여러 형태', () => {
 });
 
 describe('parseAozoraText — 외자·깨진 루비·경계', () => {
-  it('JIS 면구점만 있는 외자는 미해결(〓), U+ 표기는 그 글자로 해결', () => {
-    const document = parseAozoraText(wrap('古い※［＃「魚＋花」、第4水準2-93-10］と※［＃「土へん＋竒」、U+57FC、10-3］。'));
-    expect(document.gaiji.map((item) => [item.status, item.char ?? null, item.line])).toEqual([['unresolved', null, 11], ['resolved', '埼', 11]]);
-    expect(aozoraDocumentToPlainText(document)).toBe('古い〓と埼。');
+  it('U+ 표기와 JIS X 0213 면-구-점(제3·4수준)은 그 글자로 해결, 번호도 표기도 없으면 미해결(〓)', () => {
+    // 실물 표기: 羅生門 「※［＃「木＋世」、第3水準1-85-56］」(枻), 2면 「第4水準2-13-28」(揷)
+    const document = parseAozoraText(wrap('古い※［＃「木＋世」、第3水準1-85-56］と※［＃「土へん＋竒」、U+57FC、10-3］、※［＃「插」でつくりの縦棒が下に突き抜けている、第4水準2-13-28］、※［＃「口＋世」］。'));
+    expect(document.gaiji.map((item) => [item.status, item.char ?? null, item.line]))
+      .toEqual([['resolved', '枻', 11], ['resolved', '埼', 11], ['resolved', '揷', 11], ['unresolved', null, 11]]);
+    expect(aozoraDocumentToPlainText(document)).toBe('古い枻と埼、揷、〓。');
+    // 비한자 외자는 수준 없이 면-구-점만(吾輩は猫である 「小書き片仮名ヒ、1-6-84」), 쪽-줄 두 마디(「168-12」)는 번호가 아니다
+    const small = parseAozoraText(wrap('ア※［＃小書き片仮名ヒ、1-6-84］と※［＃小書き平仮名ん、168-12］'));
+    expect(small.gaiji.map((item) => [item.status, item.char ?? null])).toEqual([['resolved', 'ㇶ'], ['unresolved', null]]);
+  });
+
+  it('JIS X 0213 표는 0208 밖 칸만 싣는다 — 제1면 1,918 + 제2면 2,436 = 4,354(JIS X 0213:2004 추가 문자 수)', async () => {
+    const { default: table } = await import('../aozoraJisx0213.json');
+    const keys = Object.keys(table);
+    expect(keys).toHaveLength(4354);
+    expect(keys.filter((key) => key.startsWith('1-'))).toHaveLength(1918);
+    expect(table['1-87-71']).toBe('犍');
+    expect(table['1-16-1']).toBeUndefined(); // 亜 — JIS X 0208 칸(외자가 아니다)
+    // 제2면은 JIS X 0213이 쓰는 구만(1·3–5·8·12–15·78–94) — JIS X 0212 칸이 섞이지 않는다
+    expect(keys.some((key) => /^2-(2|6|7|9|10|11|16|77)-/u.test(key))).toBe(false);
   });
 
   it('깨진 루비는 기호를 조용히 지우지 않고 경고한다', () => {

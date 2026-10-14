@@ -65,34 +65,49 @@ describe('실물 「ごん狐」(新美南吉) — 見出し 주석이 장을 �
   });
 });
 
-describe('실물 「羅生門」 — JIS 3·4수준 외자는 미해결로 보고 공개하지 않는다(fail-closed)', () => {
+describe('실물 「羅生門」 — JIS X 0213 외자와 그 외자에 걸린 루비를 푼다', () => {
   const document = parseAozoraText(aozoraFixture('real-rashomon-000879-127.txt'));
 
-  it('면구점만 있는 외자 3개는 미해결, 그 외자에 걸린 루비는 RUBY_ON_GAIJI 경고', () => {
-    expect(document.gaiji.map((item) => [item.line, item.status])).toEqual([[38, 'unresolved'], [40, 'unresolved'], [42, 'unresolved']]);
-    expect(document.gaiji[0].description).toBe('「てへん＋丑」、第4水準2-12-93');
-    expect(document.warnings.map((warning) => [warning.code, warning.line]))
-      .toEqual([['RUBY_ON_GAIJI', 38], ['RUBY_ON_GAIJI', 40], ['RUBY_ON_GAIJI', 42]]);
+  it('면구점 외자 3개는 표로 해결, 그 외자에 걸린 루비는 외자 글자가 기준이 된다(RUBY_ON_GAIJI 경고 없음)', () => {
+    expect(document.gaiji.map((item) => [item.line, item.status])).toEqual([[38, 'resolved'], [40, 'resolved'], [42, 'resolved']]);
+    expect(document.gaiji[0]).toMatchObject({ description: '「てへん＋丑」、第4水準2-12-93', char: '扭' });
+    expect(document.warnings).toEqual([]);
+    const rubies = document.blocks.flatMap((block) => block.children ?? []).filter((child) => child.type === 'ruby');
+    expect(rubies).toContainEqual({ type: 'ruby', base: '眶', reading: 'まぶた' });
   });
 
-  it('책 초안을 만들지 않는다', () => {
+  it('책 초안을 만든다 — 외자는 본문 글자로, 그 루비는 저자 루비 잠금으로', () => {
     const entry = { ...work('aozora-000879-000042').entry, workId: '127', title: '羅生門',
       cardUrl: 'https://www.aozora.gr.jp/cards/000879/card127.html',
       sourceFileUrl: 'https://www.aozora.gr.jp/cards/000879/files/127_ruby_150.zip' };
-    expect(() => createAozoraMaterialDraft(entry, document)).toThrow('unresolved gaiji');
+    const draft = createAozoraMaterialDraft(entry, document);
+    const text = draft.chapters.map((chapter) => chapter.rawText).join('');
+    expect(text).toContain('眶の赤くなった');
+    expect(text).not.toContain('〓');
+    expect(draft.diagnostics.droppedRubyCount).toBe(0);
+    expect(draft.chapters.flatMap((chapter) => chapter.metadata.literature.rubyLocks)).toContainEqual(expect.objectContaining({ base: '眶', reading: 'まぶた' }));
   });
 });
 
-// 정본 5편 — 편집 레벨(D6)·장 수·루비 수를 고정한다. 장 크기는 10–15분 분량(설계 §1.2), 見出し 없는 작품은 고른 길이.
+// 정본 작품 — 편집 레벨(D6)·장 수·루비 수를 고정한다. 장 크기는 10–15분 분량(설계 §1.2), 見出し 없는 작품은 고른 길이.
+// 2차 묶음 8편(2026-10-14 KST, 오너 「유명 작가·작품 위주로 확장」) — 羅生門·蜘蛛の糸·山月記는 JIS X 0213 외자·외자 루비를 푼 뒤에야 들어왔다.
 const WORKS = {
+  'aozora-000074-000424': { title: '檸檬', level: 'N1 심화', chapters: 2, ruby: 95 },
+  'aozora-000081-000470': { title: 'セロ弾きのゴーシュ', level: 'N3 중급', chapters: 4, ruby: 142 },
+  'aozora-000081-000473': { title: 'よだかの星', level: 'N3 중급', chapters: 2, ruby: 64 },
   'aozora-000081-043754': { title: '注文の多い料理店', level: 'N3 중급', chapters: 2, ruby: 106 },
+  'aozora-000119-000624': { title: '山月記', level: 'N1 심화', chapters: 2, ruby: 242 },
   'aozora-000121-000628': { title: 'ごん狐', level: 'N3 중급', chapters: 6, ruby: 69 },
   'aozora-000121-000637': { title: '手袋を買いに', level: 'N4 기본', chapters: 1, ruby: 64 },
+  'aozora-000129-045245': { title: '高瀬舟', level: 'N2 상급', chapters: 3, ruby: 123 },
+  'aozora-000148-000752': { title: '坊っちゃん', level: 'N2 상급', chapters: 34, ruby: 3042 },
   'aozora-000148-000753': { title: '文鳥', level: 'N1 심화', chapters: 4, ruby: 444 },
   'aozora-000879-000042': { title: '鼻', level: 'N2 상급', chapters: 2, ruby: 145 },
+  'aozora-000879-000092': { title: '蜘蛛の糸', level: 'N3 중급', chapters: 3, ruby: 68 },
+  'aozora-000879-000127': { title: '羅生門', level: 'N2 상급', chapters: 2, ruby: 129 },
 };
 
-describe('정본 5편 — 리포의 작품 폴더', () => {
+describe('정본 작품 — 리포의 작품 폴더', () => {
   it('폴더 목록이 고정 표와 같다(작품 추가 시 이 표도 함께 고친다)', () => {
     const dirs = readdirSync(path.join(process.cwd(), LITERATURE_ROOT), { withFileTypes: true })
       .filter((item) => item.isDirectory()).map((item) => item.name).sort();

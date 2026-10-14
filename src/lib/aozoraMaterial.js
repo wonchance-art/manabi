@@ -16,6 +16,8 @@ export const AOZORA_MATERIAL_VERSION = 1;
 /** 장 크기 — 10~15분 분량(설계 §1.2). 표제 장이 상한을 넘을 때만 문단 경계에서 더 나눈다. */
 export const AOZORA_CHAPTER_TARGET_CHARS = 3000;
 export const AOZORA_CHAPTER_MAX_CHARS = 6000;
+/** 見出し 장이 이보다 길면 그 장만 고른 크기로 다시 나눈다(「一 (1/2)」) — 장당 10–15분(설계 §1.2). 坊っちゃん 실측: 一 7,539자. */
+export const AOZORA_HEADING_CHAPTER_MAX_CHARS = 4000;
 /** 우리가 바꾼 점(취급 규준 「작업 이력」) — 뷰어 출처 줄이 이 코드로 문구를 고른다. */
 export const AOZORA_EDIT_NOTES = Object.freeze(['ruby-reading-aid', 'chapter-split-by-manabi']);
 
@@ -221,7 +223,16 @@ export function createAozoraMaterialDraft(entry, document, options = {}) {
   const maxChars = options.maxChars ?? AOZORA_CHAPTER_MAX_CHARS;
   const targetChars = options.targetChars ?? AOZORA_CHAPTER_TARGET_CHARS;
   const split = (target) => splitTextIntoChapters(projection.text, { targetChars: target, maxChars, headingTest });
-  const parts = projection.useHeadings ? split(targetChars) : balancedLengthSplit(projection.text.length, targetChars, maxChars, split);
+  // 見出し 장은 작가의 목차대로 두되, 한 장이 상한보다 길면 그 장만 見出し 없는 원작과 같은 고른 분할로 나눈다
+  // (예전에는 6,000자 넘을 때만 앞에서부터 잘라 「一 (1/2)」 5,538자 · 「一 (2/2)」 2,001자처럼 꼬리가 짧았다 — 坊っちゃん 실측).
+  const parts = projection.useHeadings
+    ? splitTextIntoChapters(projection.text, { targetChars, maxChars: Number.MAX_SAFE_INTEGER, headingTest }).flatMap((section) => {
+      if (section.text.length <= AOZORA_HEADING_CHAPTER_MAX_CHARS) return [section];
+      const pieces = balancedLengthSplit(section.text.length, targetChars, maxChars,
+        (target) => splitTextIntoChapters(section.text, { targetChars: target, maxChars, headings: false }));
+      return pieces.length > 1 ? pieces.map((piece, index) => ({ ...piece, title: `${section.title} (${index + 1}/${pieces.length})` })) : [section];
+    })
+    : balancedLengthSplit(projection.text.length, targetChars, maxChars, split);
   invariant(parts.length > 0, 'Aozora document produced no chapters');
 
   const key = aozoraWorkKey(entry);
