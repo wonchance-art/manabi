@@ -278,7 +278,7 @@ export default function VocabList({
                 {displayWord(v.word_text, v.pos)}
               </button>
             </h3>
-            {v.furigana && <span className="vocab-row__reading">{v.furigana}</span>}
+            {v.furigana && <span className="vocab-row__reading" lang={lc}>{v.furigana}</span>}
 
             {String(v.meaning ?? '').trim() || !updateVocabMutation || selectMode
               ? <p className="vocab-row__meaning">{v.meaning}</p>

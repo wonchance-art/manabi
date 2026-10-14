@@ -140,6 +140,15 @@ export function literatureStage(book, rows = []) {
 }
 
 /**
+ * 일괄 게시·분석 대상(설계 docs/literature-pipeline.md §4.1) — 관리자 요약(literatureBookSummary) 중 게시할 수 있고,
+ * 아직 준비·분석이 남았고(unpublished·preparing), 정본과 다른 장(충돌)이 없는 작품. 검수·공개 단계는 넣지 않는다(사람 확인 지점).
+ */
+export function literatureBatchTargets(summaries = []) {
+  return summaries.filter((book) => book.publishable && book.plan.conflicts.length === 0
+    && (book.stage === 'unpublished' || book.stage === 'preparing'));
+}
+
+/**
  * 관리자 화면용 요약 — 근거·단계·장별 상태. 원문은 싣지 않는다.
  * 근거 칸은 출처별로 하나: 아오조라는 rights(권리 근거), 큐레이션 책은 provenance(장별 출처·라이선스·원문 링크·크레딧).
  */

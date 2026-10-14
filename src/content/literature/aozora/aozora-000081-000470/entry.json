@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "personId": "000081",
+  "workId": "470",
+  "title": "セロ弾きのゴーシュ",
+  "author": "宮沢賢治",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1934,
+  "authorDeathYear": 1933,
+  "level": "N3 중급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000081/card470.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000081/files/470_ruby_3987.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "aacb6f6508dae889378522209627d64527e71b8c49e9483d5e33066c0ac9d4d4",
+  "textSha256": "9502bf449cd682f27c392ea29ca04f1c6788341a722ef3a7d438f0f027418404",
+  "attribution": {
+    "author": "宮沢賢治",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-14",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR",
+      "US"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000081/card470.html"
+  },
+  "display": {
+    "titleReading": "セロひきのゴーシュ",
+    "titleKo": "첼로 켜는 고슈",
+    "authorKo": "미야자와 겐지",
+    "cover": "walnut",
+    "motif": "cello-night",
+    "coverTitle": "セロ弾きの\nゴーシュ"
+  }
+}

@@ -19,6 +19,7 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
+import { literatureDisplayTitle } from '@/lib/literatureCanonical';
 import { bookHref } from '@/lib/textbook/contract';
 import { bookResume, chooseResume, recentMaterial } from '@/lib/webNavigation';
 import useReadingProgress from '@/components/books/useReadingProgress';
@@ -50,7 +51,7 @@ export async function fetchHomeData(userId, nowMs = Date.now()) {
   const [learning, recentResult, { buildForecast }] = await Promise.all([
     fetchVocabularyLearningRows(userId, { fields: 'summary' }),
     supabase.from('reading_progress')
-      .select('material_id, is_completed, updated_at, reading_materials(id, title, language:processed_json->metadata->>language, level:processed_json->metadata->>level)')
+      .select('material_id, is_completed, updated_at, reading_materials(id, title, language:processed_json->metadata->>language, level:processed_json->metadata->>level, book:processed_json->metadata->book, provider:processed_json->metadata->literature->>provider)')
       .eq('user_id', userId).eq('is_completed', false).order('updated_at', { ascending: false }).limit(20),
     import('@/lib/forecast'),
   ]);
@@ -106,7 +107,9 @@ function materialItem(material, lang) {
   const m = material.reading_materials;
   const materialLang = m.language || lang;
   return { lang: materialLang, kicker: `내 서재 · ${learnLangLabel(materialLang)}`, glyph: GLYPH[materialLang] || '文',
-    title: m.title, titleLang: encounterLookupLang(materialLang) || undefined, sub: m.level || null,
+    // 서재에 예전 표기(「鼻 — 1편」)로 옮겨 둔 정본 문학책도 정본 표기(「鼻 (1/2)」)로(AOZORA-P0-5 — 다시 받지 않아도 된다)
+    title: literatureDisplayTitle({ book: m.book, literature: { provider: m.provider } }, m.title),
+    titleLang: encounterLookupLang(materialLang) || undefined, sub: m.level || null,
     href: `/viewer/${m.id}`, cta: '이어서 읽기' };
 }
 
@@ -167,7 +170,7 @@ export default function HomePage({ book = null }) {
   else if (kind === 'book' && resume) resumeItem = bookItem(book, resume);
   else if (lang === 'Japanese' && !book) resumeItem = { lang, kicker: '교재', glyph: GLYPH.Japanese, title: '교재 정보를 불러오지 못했어요',
     sub: '교재 목록에서 다시 골라 주세요.', href: '/lessons', cta: '교재 보기' };
-  else if (suggestion) resumeItem = { lang, kicker: '산책 추천', glyph: '文', title: suggestion.title,
+  else if (suggestion) resumeItem = { lang, kicker: '산책 추천', glyph: '文', title: suggestion.title, titleLang: encounterLookupLang(suggestion.language) || undefined,
     sub: [langNameKo(suggestion.language), suggestion.level].filter(Boolean).join(' · '), href: suggestionHref(suggestion, 'home'), cta: '읽어 보기' };
   else if (!pending) resumeItem = { lang, kicker: '산책', glyph: GLYPH[lang] || '文', title: '오늘 읽을 글을 골라 보세요',
     sub: `${learnLangLabel(lang)} 읽을거리`, href: '/discover', cta: '산책하기' };

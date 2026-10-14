@@ -47,7 +47,8 @@ const LANGUAGE = /^(?:ja|zh|en|fr)$/;
 /** 해설 출처 — scripts/fetch-art-description.mjs가 받는 곳(src/lib/artSource.js ART_SOURCES)과 같은 이름·id 형식. */
 const SOURCE_ID = Object.freeze({ colbase: /^cobas-\d+$/, aic: /^\d+$/ });
 /** 박물관 내부 메모(「(20131029_h21・22)」 같은 작업 번호)가 섞인 해설 — 공개 해설이 아니다(ART-P0-2 실측). */
-/** 그림 파일 경로 — public/art 아래 파일(사이트 상대 주소). 지금 파일은 메트로폴리탄 미술관 오픈 액세스(CC0, images.metmuseum.org)에서 받았다. */
+/** 그림 파일 경로 — public/art 아래 파일(사이트 상대 주소). 지금 파일은 메트로폴리탄 미술관 오픈 액세스(CC0, images.metmuseum.org)에서,
+ *  메트에 없는 亀戸梅屋舗만 레이크스 미술관 CC0 디지털화본을 위키미디어 공용(commons.wikimedia.org)에서 받았다. */
 export const ART_IMAGE_PATH = /^\/art\/[a-z0-9-]+\.(?:jpg|webp)$/;
 const INTERNAL_MEMO = /\d{8}_h\d+/;
 /** ColBase 읽기 표시(「宮＠みや＠は」「+かたきうち+」) — 원문 그대로 실으면 학습자에게 기호가 보인다. 고치지 않고 싣지 않는다(ART-AUTO-001 실측). */

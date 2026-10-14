@@ -16,6 +16,7 @@ import { buildChapterQuiz } from '@/lib/refQuiz';
 import { composeSession, buildWarmupItems, buildEncounterItems } from '@/lib/studySession';
 import { computeEwma, dialFromEwma, computeWeakness, deriveVocabRungs } from '@/lib/skillRung';
 import { countsForDifficulty, isPracticeEvent, practiceAsWeaknessEvents } from '@/lib/practiceEvents';
+import { ACTIVITY_ONLY_SOURCES } from './weeklyReport';
 // deriveVocabRungs는 콘텐츠 무의존 순수 함수라 skillRung으로 이전됐다.
 // 기존 import 경로(테스트·과거 소비처) 호환 위해 re-export — studyMaterials 공개 API 불변.
 export { deriveVocabRungs };
@@ -394,9 +395,9 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
       .then(({ data }) => { encounterContextRows = data || []; }, () => {});
   }
   const exampleByWord = applyEncounterContextExamples(baseExamples, encounterContextRows);
-  // 다이얼은 채점 문항만 본다 — ui(행동 계측)·dict(자가 채점)는 정답률 신호가 아니다 (§4.9 무간섭 보장).
+  // 다이얼은 채점 문항만 본다 — ui(행동 계측)·dict(자가 채점)·hanzi(글자 자기 확인)는 정답률 신호가 아니다 (§4.9 무간섭 보장).
   // 집중 연습은 정답이 정해진 문항만 다이얼에 넣는다(self 제외 — REV-SCOPE §6-1 ⑤).
-  const gradedEvents = eventsAsc.filter(countsForDifficulty).map(e => ({ correct: !!e.correct }));
+  const gradedEvents = eventsAsc.filter(countsForDifficulty).filter(e => !ACTIVITY_ONLY_SOURCES.has(e.source)).map(e => ({ correct: !!e.correct }));
   const ewma = computeEwma(gradedEvents);
   const dial = dialFromEwma(ewma, 20, gradedEvents.length);
 

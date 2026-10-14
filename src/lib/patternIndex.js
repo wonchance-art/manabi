@@ -133,14 +133,15 @@ export function isUsableKernel(kernel, lang) {
  * 문형 세트 → 커널 인덱스.
  *
  * @param {Array<{level: string, mod: object}>} sets 레벨별 문형 모듈
- * @param {{base?: string, validSlugs?: Set<string>}} [opts]
+ * @param {{base?: string, validSlugs?: Set<string>, allKernels?: boolean}} [opts]
+ *   allKernels: 표지 거르기(isUsableKernel) 없이 모든 커널 — 「한자」 탭 「문형 보기」가 了 · 的 같은 한 글자로 찾는다(HANZI-TAB-AL-001).
  *   base: 챕터 주소 앞머리('/chinese'). validSlugs: 정본 챕터 slug —
  *   주면 목록에 없는 `ch`는 **링크를 만들지 않는다**(환각·오타 차단).
  *   옛 교재 챕터 주소는 관리자 보관함으로 옮겨져 learnerHref가 null로 막는다 — `ch`(복습 표식 열쇠)는 남고
  *   `href`만 비며, 카드는 링크 대신 보관 안내를 보인다(VIEWER-R0-BUGS-001 버그 3).
  * @returns {Map<string, Array<object>>} 커널 → 패턴들(입력 순서 그대로 — 결정성)
  */
-export function buildKernelIndex(sets, { base = '', validSlugs, lang } = {}) {
+export function buildKernelIndex(sets, { base = '', validSlugs, lang, allKernels = false } = {}) {
   const index = new Map();
   let seq = 0;
   for (const { level, mod } of sets || []) {
@@ -165,7 +166,7 @@ export function buildKernelIndex(sets, { base = '', validSlugs, lang } = {}) {
         // 슬롯이 없는 표기는 구문이 아니라 어휘 항목이다 — 밑줄이 문법을 가리키지 않는다.
         if (lang === 'Japanese' && !hasSlotMarker(item.pattern)) continue;
         for (const kernel of kernelsOf(item.pattern, lang)) {
-          if (!isUsableKernel(kernel, lang)) continue;
+          if (!allKernels && !isUsableKernel(kernel, lang)) continue;
           if (!index.has(kernel)) index.set(kernel, []);
           const bucket = index.get(kernel);
           // 같은 패턴이 같은 커널로 두 번 들어오지 않게(표기에 커널이 반복될 수 있다)
@@ -331,7 +332,7 @@ export function supportsPatterns(language) {
 let zhSetsPromise = null;
 let jaSetsPromise = null;
 
-export function loadPatternIndex(language, { validSlugs } = {}) {
+export function loadPatternIndex(language, { validSlugs, allKernels = false } = {}) {
   if (language === 'Japanese') {
     jaSetsPromise ||= Promise.all([
       import('../content/japanese/bunkei/n5').then((m) => ({ level: 'N5', mod: m })),
@@ -340,7 +341,7 @@ export function loadPatternIndex(language, { validSlugs } = {}) {
       import('../content/japanese/bunkei/n2').then((m) => ({ level: 'N2', mod: m })),
       import('../content/japanese/bunkei/n1').then((m) => ({ level: 'N1', mod: m })),
     ]);
-    return jaSetsPromise.then((sets) => buildKernelIndex(sets, { base: '/japanese', validSlugs, lang: 'Japanese' }));
+    return jaSetsPromise.then((sets) => buildKernelIndex(sets, { base: '/japanese', validSlugs, lang: 'Japanese', allKernels }));
   }
   if (language !== 'Chinese') return Promise.resolve(null);
   // 무거운 건 콘텐츠 import뿐이라 그것만 캐시한다. 인덱스 조립은 484패턴이라 공짜이고,
@@ -353,5 +354,5 @@ export function loadPatternIndex(language, { validSlugs } = {}) {
     import('../content/chinese/bunkei/h5').then((m) => ({ level: 'H5', mod: m })),
     import('../content/chinese/bunkei/h6').then((m) => ({ level: 'H6', mod: m })),
   ]);
-  return zhSetsPromise.then((sets) => buildKernelIndex(sets, { base: '/chinese', validSlugs, lang: 'Chinese' }));
+  return zhSetsPromise.then((sets) => buildKernelIndex(sets, { base: '/chinese', validSlugs, lang: 'Chinese', allKernels }));
 }

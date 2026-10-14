@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "personId": "000119",
+  "workId": "624",
+  "title": "山月記",
+  "author": "中島敦",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1942,
+  "authorDeathYear": 1942,
+  "level": "N1 심화",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000119/card624.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000119/files/624_ruby_5668.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "15ddcdd4e7f55c985eb4b5f4ce41f519c8b37ce4c288624f31a46f08dcbe84f9",
+  "textSha256": "9d7723fe7ad8cac77fb7e989765c794cac73754c0a61fce79d8053b091365fe4",
+  "attribution": {
+    "author": "中島敦",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-14",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR",
+      "US"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000119/card624.html"
+  },
+  "display": {
+    "titleReading": "さんげつき",
+    "titleKo": "산월기",
+    "authorKo": "나카지마 아쓰시",
+    "cover": "twilight",
+    "motif": "moon-tiger"
+  }
+}
