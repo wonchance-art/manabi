@@ -9,7 +9,8 @@ import { JAPANESE_VOCAB_REF } from './japaneseVocabRegistry';
 import { getBunkei as getJaBunkei, countBunkei as countJaBunkei } from '../content/japanese';
 import { getVocab as getZhVocab, getBunkei as getZhBunkei, countBunkei as countZhBunkei, ZH_LEVEL_META } from '../content/chinese';
 import { loadZhHskLevels, zhHskLevelOf } from './zhHskLevel';
-import { LEVEL_LIST_LANGS, levelWordKey, shortMeaning } from './levelList';
+import { LEVEL_LIST_LANGS, levelKinds, levelWordKey, shortMeaning } from './levelList';
+import { loadHanziTable } from './zhHanzi';
 
 const bunkeiOf = { japanese: getJaBunkei, chinese: getZhBunkei };
 const bunkeiCountOf = { japanese: countJaBunkei, chinese: countZhBunkei };
@@ -91,12 +92,29 @@ function bunkeiGroups(lang, levelKey) {
   })).filter((g) => g.entries.length);
 }
 
+/**
+ * 「한자」 탭 묶음(HANZI-TAB-AL-001) — 글자만 넘긴다(병음 · 뜻은 화면이 답 카드를 열 때 표를 따로 받는다 — 목록 DOM에 0).
+ * 문법 글자 묶음(set 0)이 있으면 맨 앞.
+ */
+async function hanziGroups(levelKey) {
+  const table = await loadHanziTable(levelKey);
+  if (!table) return null;
+  const bySet = new Map();
+  for (const [ch, c] of Object.entries(table.chars)) {
+    if (!bySet.has(c.set)) bySet.set(c.set, []);
+    bySet.get(c.set).push({ key: ch });
+  }
+  return [...bySet].sort((a, b) => a[0] - b[0])
+    .map(([set, entries]) => ({ name: set === 0 ? '문법 글자' : `묶음 ${set}`, set, entries }));
+}
+
 /** 한 화면의 목록 — { lang, kind, levelKey, groups:[{name, entries}] }. 없는 레벨이면 null. */
 export async function levelListData(lang, kind, levelParam) {
   const conf = LEVEL_LIST_LANGS[lang];
   const levelKey = String(levelParam || '').toUpperCase();
-  if (!conf || !conf.levels.includes(levelKey) || !['vocab', 'bunkei'].includes(kind)) return null;
-  const groups = kind === 'bunkei' ? bunkeiGroups(lang, levelKey)
+  if (!conf || !conf.levels.includes(levelKey) || !levelKinds(lang, levelKey).includes(kind)) return null;
+  const groups = kind === 'hanzi' ? await hanziGroups(levelKey)
+    : kind === 'bunkei' ? bunkeiGroups(lang, levelKey)
     : lang === 'japanese' ? japaneseVocabGroups(levelKey) : await chineseVocabGroups(levelKey);
   if (!groups) return null;
   return { lang, kind, levelKey, groups };
@@ -117,6 +135,8 @@ function countTiles(lang, conf) {
       levelKey,
       vocab: vocab ? vocab.groups.reduce((n, g) => n + g.entries.length, 0) : 0,
       bunkei: bunkeiCountOf[lang](levelKey),
+      ...(levelKinds(lang, levelKey).includes('hanzi')
+        ? { hanzi: (await levelListData(lang, 'hanzi', levelKey))?.groups.reduce((n, g) => n + g.entries.length, 0) || 0 } : {}),
     };
   }));
 }

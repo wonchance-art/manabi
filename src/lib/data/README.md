@@ -15,6 +15,7 @@
 | `hanjaHun.json` | libhangul `hanja.txt` 훈음 필드 + OpenCC `STCharacters` + 수기 감수(`scripts/hanja-curated.mjs`) | BSD 3-Clause · Apache-2.0 | `scripts/generate-hanja-hun.mjs` |
 | `zhHskLevel.json` | ivankra/hsk30 (`hsk30.csv`) — HSK 2021 등급표. **분절 방벽 전용**(`server/zhTokenFix.js` isZhRealWord), 화면 급수에는 쓰지 않는다 | MIT | `scripts/build-zh-hsk.mjs` |
 | `zhHsk2026Level.json` | 《中文水平考试 HSK 考试大纲》(中外语言交流合作中心, 2025-11 발표 · 2026-07 시행) 词汇大纲 — 설계 정본 `docs/design/hsk2026/words.json`에서 생성(동형어 번호 뗌 · 같은 표기는 가장 낮은 급수 · 괄호 급수는 앞 급수, 10,896단어). **화면 급수 표시 정본**(`src/lib/zhHskLevel.js`) | 공식 시험 대강의 단어·급수 목록만 발췌(PDF 원문은 싣지 않는다) | `scripts/build-zh-hsk2026.mjs`(`--check`, Node 22·24 같은 바이트) |
+| `zhHanzi/<level>.json` | 「한자」 탭 표(HANZI-TAB-AL-001): 글자 목록 · 급수 = 《中文水平考试 HSK 考试大纲》 汉字大纲 认读字(`docs/design/hsk2026/chars.json`), 조어력 = `zhHsk2026Level.json`, 단어 · 병음 = 우리 사전(`src/content/chinese/vocab`), 뜻 갈래 · 주의 = 자체 콘텐츠 `src/content/chinese/hanzi/<level>.json`(AI 초안 → 다른 모델 표본 대조), 묶음 조각 = `hanjaPanel.json` · `hanjaTrad.json`. 화면은 동적 import만 | 공식 대강의 글자 · 급수 목록만 발췌 · 자체 저작 · 위 표들의 라이선스 | `scripts/build-zh-hanzi.mjs`(`--check`) |
 | `hanjaStory.json` | 자체 작성 | — | — |
 | `jaYomiIndex.json` | 저장소 콘텐츠(`src/content/japanese/**`)에서 생성 | 콘텐츠 원천을 따른다 | `jaYomiIndexBuild.test.js` 참조 |
 | `drillRefs.json` | 저장소 콘텐츠에서 생성 | 자체 | `drillRefsBuild.test.js` 참조 |

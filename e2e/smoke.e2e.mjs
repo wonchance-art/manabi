@@ -615,6 +615,56 @@ test('vocab performance: N3 초기 DOM과 savedSet 요청을 예산 안에 유�
   });
 });
 
+const TONE_MARK = /[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/;
+async function runHanziTab(signedIn) {
+  const writes = [];
+  await runInFreshPage(async (page, context) => {
+    if (signedIn) await seedMockSessionCookie(context, 'learner');
+    page.on('request', (request) => {
+      if (request.method() === 'POST' && new URL(request.url()).pathname.endsWith('/review_events')) writes.push(request.postDataJSON());
+    });
+    await page.goto('/chinese/hanzi/h1', { waitUntil: 'load', timeout: config.timeout * 2 });
+    const board = page.locator('.hz-board');
+    await assertVisible(board.locator('.hz-cell').first(), 'hanzi grid');
+    // 목록에는 글자만 — 병음 0
+    assert.doesNotMatch(await board.locator('.hz-set').innerText(), TONE_MARK);
+    await board.getByRole('button', { name: /^넘기며 확인/ }).click();
+    const flow = board.locator('.hz-flow');
+    await assertVisible(flow.getByRole('status').filter({ hasText: '1 / ' }), 'first question');
+    // 문제 화면에도 병음 · 뜻 0
+    assert.doesNotMatch(await flow.innerText(), TONE_MARK);
+    // 알아요 → 다음 글자까지 탭 1
+    await flow.getByRole('button', { name: '알아요', exact: true }).click();
+    await assertVisible(flow.getByRole('status').filter({ hasText: '2 / ' }), 'second question after one tap');
+    await assertVisible(flow.locator('.hz-last'), 'just-passed answer row');
+    // 몰라요 → 답 카드 → 다음 → 다음 글자까지 탭 2
+    await flow.getByRole('button', { name: '몰라요', exact: true }).click();
+    await assertVisible(flow.getByText('모름 체크됨'), 'answer card');
+    await flow.getByRole('button', { name: '다음 →', exact: true }).click();
+    await assertVisible(flow.getByRole('status').filter({ hasText: '3 / ' }), 'third question after two taps');
+    // 나가기 — 그때까지의 기록(글자당 1건)
+    await flow.getByRole('button', { name: '끝내기', exact: true }).click();
+    await assertVisible(board.locator('.hz-cell--miss'), 'miss mark on list');
+    await page.waitForTimeout(500);
+  });
+  return writes;
+}
+
+test('hanzi tab: 글자만 보고 넘기기 · 알아요 탭 1 · 몰라요 탭 2 · 로그인 전 기록 0', { timeout: config.timeout * 2 }, async () => {
+  const writes = await runHanziTab(false);
+  assert.equal(writes.length, 0, 'guest must not write review_events');
+});
+
+test('hanzi tab: 로그인하면 글자마다 hanzi 기록 1건', { timeout: config.timeout * 2 }, async () => {
+  const writes = await runHanziTab(true);
+  const rows = writes.flat();
+  assert.equal(rows.length, 2, `two decided characters → two rows, got ${JSON.stringify(rows)}`);
+  assert.deepEqual(rows.map((r) => r.source), ['hanzi', 'hanzi']);
+  assert.equal(new Set(rows.map((r) => r.item_key)).size, 2);
+  assert.deepEqual(rows.map((r) => r.correct), [true, false]);
+  assert.equal(rows[0].detail.std, 'hsk2026');
+});
+
 test('world: 일반 로그인 세션에서 GBC 게임 셸을 렌더한다', { timeout: config.timeout }, async () => {
   await runInFreshPage(async (page, context) => {
     await mockWorldShellRuntime(context);

@@ -23,6 +23,7 @@ import { weakChapterSet, promoteWeakFirst } from './weaknessProfile';
 import { levelBand } from '@/lib/writingPrompts';
 import { kstWeekStartMs } from './growthStats'; // 상대 경로 — vitest가 실모듈을 로드한다(@ 별칭 없음)
 import { dropUndoneEvents } from './undoneReviews';
+import { isGradedReviewEvent } from './weeklyReport';
 // 옛 교재 챕터 주소는 관리자 보관함으로만 열린다 — 세션 카드의 「자세히」 링크는 null로 비운다(VIEWER-R0-BUGS-001 버그 3).
 import { learnerHref } from './bookNavigation';
 import { THEMES } from '@/lib/studyParagraph';
@@ -391,8 +392,8 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
       .then(({ data }) => { encounterContextRows = data || []; }, () => {});
   }
   const exampleByWord = applyEncounterContextExamples(baseExamples, encounterContextRows);
-  // 다이얼은 채점 문항만 본다 — ui(행동 계측)·dict(자가 채점)는 정답률 신호가 아니다 (§4.9 무간섭 보장).
-  const gradedEvents = eventsAsc.filter(e => e.source !== 'ui' && e.source !== 'dict').map(e => ({ correct: !!e.correct }));
+  // 다이얼은 채점 문항만 본다 — ui(행동 계측)·dict(자가 채점)·hanzi(글자 자기 확인)는 정답률 신호가 아니다 (§4.9 무간섭 보장).
+  const gradedEvents = eventsAsc.filter(isGradedReviewEvent).map(e => ({ correct: !!e.correct }));
   const ewma = computeEwma(gradedEvents);
   const dial = dialFromEwma(ewma, 20, gradedEvents.length);
 

@@ -1,21 +1,21 @@
-// 레벨별 단어 · 문형 목록 라우트 공용(서버) — /{japanese,chinese}/{vocab,bunkei}/{레벨} 네 페이지가 같은 조립을 쓴다.
+// 레벨별 단어 · 문형 · 한자 목록 라우트 공용(서버) — /{japanese,chinese}/{vocab,bunkei}/{레벨}과 /chinese/hanzi/{레벨}이 같은 조립을 쓴다.
 import { notFound } from 'next/navigation';
 import LevelListPage from '@/views/LevelListPage';
 import { levelListData } from '@/lib/levelListData';
-import { LEVEL_LIST_LANGS, levelLabel } from '@/lib/levelList';
-
-const KIND_LABEL = { vocab: '단어', bunkei: '문형' };
+import { LEVEL_KIND_LABEL as KIND_LABEL, LEVEL_LIST_LANGS, levelKinds, levelLabel } from '@/lib/levelList';
 
 export function levelListRoute(lang, kind) {
   const conf = LEVEL_LIST_LANGS[lang];
   return {
-    generateStaticParams: () => conf.levels.map(key => ({ level: key.toLowerCase() })),
+    generateStaticParams: () => conf.levels.filter(key => levelKinds(lang, key).includes(kind)).map(key => ({ level: key.toLowerCase() })),
     async generateMetadata({ params }) {
       const { level } = await params;
       const key = String(level || '').toUpperCase();
-      if (!conf.levels.includes(key)) return {};
+      if (!conf.levels.includes(key) || !levelKinds(lang, key).includes(kind)) return {};
       const title = `${levelLabel(key)} ${KIND_LABEL[kind]} | ${conf.name}`;
-      const description = `${conf.name} ${levelLabel(key)} ${KIND_LABEL[kind]} 목록 — 뜻 · 예문 · 듣기, 단어는 바로 복습에 저장`;
+      const description = kind === 'hanzi'
+        ? `${conf.name} ${levelLabel(key)} 한자 — 글자만 보고 읽어 보고, 모르는 글자는 바로 체크`
+        : `${conf.name} ${levelLabel(key)} ${KIND_LABEL[kind]} 목록 — 뜻 · 예문 · 듣기, 단어는 바로 복습에 저장`;
       return { title, description, alternates: { canonical: `/${lang}/${kind}/${key.toLowerCase()}` }, openGraph: { title, description } };
     },
     async Page({ params }) {

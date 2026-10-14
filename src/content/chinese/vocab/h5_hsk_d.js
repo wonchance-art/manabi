@@ -192,7 +192,7 @@ const themes = {
         { zh: "浅", pinyin: "qiǎn", ko: "(깊이가) 얕다; (색이) 연하다", pos: "형용사", hanja: "천(淺) — '얕을 천'. 입력 병음(jiān)은 오독, 표준은 qiǎn이에요.", ex: { zh: "这条河很浅。", pinyin: "zhè tiáo hé hěn qiǎn", ko: "이 강은 얕아요." } },
         { zh: "强烈", pinyin: "qiángliè", ko: "강렬하다, 격렬하다", pos: "형용사", hanja: "강렬(強烈) — '強'은 강할 강, '烈'은 매울 렬.", ex: { zh: "阳光很强烈。", pinyin: "yángguāng hěn qiángliè", ko: "햇빛이 강렬해요." } },
         { zh: "巧妙", pinyin: "qiǎomiào", ko: "교묘하다, 절묘하다", pos: "형용사", hanja: "교묘(巧妙) — '巧'는 공교할 교, '妙'는 묘할 묘.", ex: { zh: "他用了一个巧妙的办法。", pinyin: "tā yòng le yí ge qiǎomiào de bànfǎ", ko: "그는 절묘한 방법을 썼어요." } },
-        { zh: "亲爱", pinyin: "qīnài", ko: "친애하는, 사랑하는", pos: "형용사", hanja: "친애(親愛) — '親'은 친할 친, '愛'는 사랑 애.", ex: { zh: "亲爱的妈妈，节日快乐！", pinyin: "qīn'ài de māma, jiérì kuàilè", ko: "사랑하는 엄마, 명절 잘 보내세요!" } },
+        { zh: "亲爱", pinyin: "qīn'ài", ko: "친애하는, 사랑하는", pos: "형용사", hanja: "친애(親愛) — '親'은 친할 친, '愛'는 사랑 애.", ex: { zh: "亲爱的妈妈，节日快乐！", pinyin: "qīn'ài de māma, jiérì kuàilè", ko: "사랑하는 엄마, 명절 잘 보내세요!" } },
         { zh: "亲切", pinyin: "qīnqiè", ko: "친근하다, 다정하다", pos: "형용사", hanja: "친절(親切) — '親'은 친할 친, '切'은 간절할 절.", ex: { zh: "她对人很亲切。", pinyin: "tā duì rén hěn qīnqiè", ko: "그녀는 사람을 다정하게 대해요." } },
         { zh: "勤劳", pinyin: "qínláo", ko: "부지런하다, 근면하다", pos: "형용사", hanja: "근로(勤勞) — '勤'은 부지런할 근, '勞'는 일할 로.", ex: { zh: "他是个勤劳的人。", pinyin: "tā shì ge qínláo de rén", ko: "그는 부지런한 사람이에요." } },
         { zh: "青", pinyin: "qīng", ko: "푸르다, 파랗다; (식물이) 푸르다", pos: "형용사", hanja: "청(靑) — '푸를 청'. 입력 병음(Qīng, 약칭)은 오독, 표준은 qīng이에요.", ex: { zh: "山上的草很青。", pinyin: "shān shang de cǎo hěn qīng", ko: "산 위의 풀이 푸르러요." } },

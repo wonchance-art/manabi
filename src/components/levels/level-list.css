@@ -2,7 +2,7 @@
    새 색은 --lv-* 토큰 — 다크 값과 함께 index.css에 등록하고, 셸(.manabi-app)은 늘 밝은 화면이라 여기서 라이트 값으로 고정한다
    (web-shell.css --accent-text · --warning-text와 같은 방식, COLOR-V2-UNIFY-001). 장미(--ja)는 저장과 선택 표시에만 쓴다.
    접힘은 셸 컨테이너(manabi-shell) 폭으로 — 새 뷰포트 쿼리를 만들지 않는다(ui-conventions §2). */
-.manabi-app{--lv-card:#fffdf9;--lv-line:#e2ddd2;--lv-chip:#ece8df;--lv-chip-hover:#e2ddd2;--lv-field:#ede9e0;--lv-have:#f3e4e7;--lv-busy:#b77885;--lv-formula:#efeae0;--lv-ex-rule:#d9c4c9;--lv-warn:#8a5a12;--lv-faint:#a3a399}
+.manabi-app{--lv-card:#fffdf9;--lv-line:#e2ddd2;--lv-chip:#ece8df;--lv-chip-hover:#e2ddd2;--lv-field:#ede9e0;--lv-have:#f3e4e7;--lv-busy:#b77885;--lv-formula:#efeae0;--lv-ex-rule:#d9c4c9;--lv-warn:#8a5a12;--lv-faint:#a3a399;--lv-miss:#fbf1f3;--lv-warnbg:#f6eedd;--lv-ok:#2f6b4f}
 
 /* 책장 타일 */
 .lv-shelf{margin-top:52px}
