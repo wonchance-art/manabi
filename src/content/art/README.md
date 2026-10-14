@@ -96,8 +96,23 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
 | hiroshige-kameido-umeyashiki | 名所江戸百景 亀戸梅屋舗 | 江戸時代・安政4年(1857) (ColBase) | 도쿄 국립박물관 · 시카고 미술관 · 레이크스 미술관 | ja ColBase 128자 · en AIC 380자 | 레이크스 CC0(위키미디어 공용 경유) |
 | hiroshige-fukagawa-susaki-jumantsubo | 名所江戸百景 深川洲崎十万坪 | 江戸時代・安政4年(1857) (ColBase) | 도쿄 국립박물관 · 시카고 미술관 · 메트로폴리탄 미술관 | ja ColBase 119자 · en AIC 371자 | 메트 CC0 |
 
-큐레이션: `ukiyoe-landscape-hokusai-hiroshige`(여덟 점 연대순 · 게시 책 「北斎と広重の風景版画」 N2 상급) · `katsushika-hokusai-fugaku`(3) · `utagawa-hiroshige-landscape`(5).
+**둘째 묶음 (2026-10-14 KST)** — 전부 세 곳 소장 기록(도쿄 국립박물관 · 시카고 미술관 · 메트로폴리탄 미술관), 해설은 ColBase 일본어만, 그림은 메트 CC0.
+
+| 작품 id | 작품 | 날짜 표기(출처) | 해설 |
+|---|---|---|---|
+| hokusai-gohyaku-rakanji-sazaido | 冨嶽三十六景 五百らかん寺さゞゐどう | c. 1830/33 (AIC) | ja ColBase 122자 |
+| hokusai-onmayagashi-ryogokubashi-yuhimi | 冨嶽三十六景 御厩川岸より両国橋夕陽見 | c. 1830/33 (AIC) | ja ColBase 590자 |
+| hiroshige-asakusa-kinryuzan | 名所江戸百景 浅草金龍山 | 江戸時代・安政3年(1856) (ColBase) | ja ColBase 127자 |
+| hiroshige-komagatado-azumabashi | 名所江戸百景 駒形堂吾嬬橋 | 江戸時代・安政4年(1857) (ColBase) | ja ColBase 607자 |
+| hiroshige-tsuki-no-misaki | 名所江戸百景 月の岬 | 江戸時代・安政4年(1857) (ColBase) | ja ColBase 118자 |
+| hiroshige-asakusa-tanbo-torinomachi-mode | 名所江戸百景 浅草田甫 酉の町詣 | 江戸時代・安政4年(1857) (ColBase) | ja ColBase 659자 |
+| hiroshige-ryogoku-hanabi | 名所江戸百景 両国花火 | 江戸時代・安政5年(1858) (ColBase) | ja ColBase 120자 |
+
+큐레이션: `ukiyoe-landscape-hokusai-hiroshige`(여덟 점 연대순 · 게시 책 「北斎と広重の風景版画」 N2 상급) ·
+`ukiyoe-landscape-hokusai-hiroshige-2`(둘째 묶음 일곱 점 연대순 · 게시 책 「続・北斎と広重の風景版画」 N2 상급 — 첫 책과 작품이 겹치지 않는다) ·
+`katsushika-hokusai-fugaku`(5) · `utagawa-hiroshige-landscape`(10).
 
 **넣지 못한 작품(기록):** 東海道 日本橋 朝之景·蒲原 夜之雪, 冨嶽三十六景 甲州石班沢·尾州不二見原 — ColBase·AIC 어디에도 해설이 없다.
 冨嶽三十六景 山下白雨 — AIC 해설 1,547자로 상한(1,500자) 초과, 자르지 않으므로 제외. ColBase 영어 해설 `cobas-51489`(庄野)는
 내부 메모가 섞여 있어 쓰지 않았다(일본어 해설만).
+東海道五拾三次之内 宮 熱田神事(`cobas-55584`) — 해설 머리에 ColBase 읽기 표시 「宮＠みや＠は」가 섞여 있어 제외(원문을 고치지 않는다 — 계약이 읽기 표시를 거부한다).

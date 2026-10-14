@@ -891,6 +891,9 @@
     · **게시·그림 확인 완료(오너, 2026-10-14 17시대 KST — 운영 카드에 메트 그림 7장) · 「공개」는 books와 협의 후**(오너 지시 — 그 전에는 관리자 공개·공개 전제 변경 금지).
   · **ART-IMG-002(2026-10-14 KST)** `claude/art-img-002-kameido`: 마지막 빈 그림 亀戸梅屋舗 — 브루클린 전질 사본이 위키미디어 공용에 없어 레이크스 미술관 RP-P-1956-743(CC0) 공식 디지털화본을 공용 경유로 받아 `public/art`에 저장(425×625) · 소장처 레이크스 추가 · 찾아볼 것 3 · 자료 출처 「위키미디어 공용」. 이제 여덟 점 모두 그림 있음.
     · **오너 수동 입력 대기(오너 「그 링크 기억해둬」 2026-10-14 19:40 KST)**: 亀戸梅屋舗 레이크스 소장 링크 — 지금 값 `https://hdl.handle.net/10934/RM0001.COLLECT.46050`(공용 파일이 든 공식 handle), 미술관 작품 페이지 `https://www.rijksmuseum.nl/en/collection/RP-P-1956-743`. 두 호스트가 클라우드 환경에서 막혀 열리는지 미확인 — 오너가 브라우저에서 확인해 `works.json` 그 작품 `places[rijksmuseum].url`을 직접 넣는다.
+  · **병합 #1462 · #1465(2026-10-14 KST)**: 게시·그림 확인 완료(오너, 운영). 그림은 public/art 자체 보관(메트 CC0) — 시카고 미술관 IIIF 봇 차단 대응(ART-IMG-001). **공개는 books와 협의 후.**
+  · **ART-P0-4(#1473)**: 둘째 책 「続・北斎と広重の風景版画」 7점(메트 CC0 그림) + 읽기 표시 해설 거부 계약. 宮 熱田神事는 읽기 표시로 제외.
+  · **ART-AUTO-001 설계**: `docs/design/art-pipeline.md` — A안(수집 스냅샷 → 오프라인 후보표·빌드 --check → 세션 저작 → PR) · ColBase CC BY 그림 허용(오너 결정). 구현 순서 AUTO-1~4.
 - **대화 모드 v2-Z 전 라운드 (2026-10-14 KST, 오너 「전부 다 승인함」 — 인계 [CONVERSATION-V2Z-001](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6050886728))** `claude/project-thread-a2xmmk`:
   순서 = 인계문 §10 그대로 Z-R1 ①서버 → ②평가 묶음 → ③화면 → Z-R2 → Z-R3, PR 하나씩.
   · **Z-R1 ① 병합(#1438, 2026-10-14 KST)**: `/api/analyze` 핵심 → `analyzeCore.analyzeLines`(응답 동일) · `POST /api/conversation/turn` · 순수 규칙 `lib/conversation/turnModel.js`
