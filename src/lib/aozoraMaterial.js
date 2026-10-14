@@ -20,6 +20,8 @@ export const AOZORA_CHAPTER_MAX_CHARS = 6000;
 export const AOZORA_HEADING_CHAPTER_MAX_CHARS = 4000;
 /** 우리가 바꾼 점(취급 규준 「작업 이력」) — 뷰어 출처 줄이 이 코드로 문구를 고른다. */
 export const AOZORA_EDIT_NOTES = Object.freeze(['ruby-reading-aid', 'chapter-split-by-manabi']);
+/** Unicode에 없는 작은 가나를 보통 크기로 바꾼 책에만 더하는 편집 표시(AOZORA_SUBSTITUTED_GAIJI). */
+export const AOZORA_SMALL_KANA_EDIT = 'small-kana-as-full';
 
 const OPEN = '\uE000';
 const CLOSE = '\uE001';
@@ -127,13 +129,14 @@ function unmarkChapter(markedText, queue, cursor) {
  * splitTextIntoChapters는 목표를 넘기 전에 장을 닫아 꼬리가 짧게 남는다(실물 「鼻」 2837·2752·230자). 장 수를 먼저
  * 정하면 장 크기가 고르다(2,9xx·2,9xx). 분할 자체는 정본 splitTextIntoChapters가 그대로 한다(문단 경계만).
  */
-function balancedLengthSplit(length, targetChars, maxChars, split) {
-  const count = Math.max(1, Math.round(length / targetChars));
+function balancedLengthSplit(length, targetChars, maxChars, split, partLimit = Infinity) {
+  const count = Math.max(1, Math.round(length / targetChars), Math.ceil(length / partLimit));
   const step = Math.max(1, Math.ceil(targetChars / 60));
   let first = null;
   for (let target = Math.ceil(length / count), tries = 0; target <= maxChars && tries < 40; target += step) {
     const parts = split(target);
     if (parts.length > count) continue;
+    if (parts.some((part) => part.text.length > partLimit)) break; // 더 큰 목표는 더 큰 조각만 만든다 — 장 수를 늘린 첫 후보로
     first ??= parts;
     // 고른 크기 안에서는 장 머리가 앞 문단에 매달린 이음 문단(と答えた。· 、…)이 아닌 경계를 고른다(실물 「鼻」 2장 머리).
     if (parts.slice(1).every((part) => !continuesPrevious(part.text))) return parts;
@@ -191,7 +194,7 @@ function literatureMetadata(entry, document) {
       inputter: colophon.inputter,
       proofreader: colophon.proofreader,
     },
-    edits: [...AOZORA_EDIT_NOTES],
+    edits: [...AOZORA_EDIT_NOTES, ...(document.gaiji.some((item) => item.substituted) ? [AOZORA_SMALL_KANA_EDIT] : [])],
   };
 }
 
@@ -229,7 +232,7 @@ export function createAozoraMaterialDraft(entry, document, options = {}) {
     ? splitTextIntoChapters(projection.text, { targetChars, maxChars: Number.MAX_SAFE_INTEGER, headingTest }).flatMap((section) => {
       if (section.text.length <= AOZORA_HEADING_CHAPTER_MAX_CHARS) return [section];
       const pieces = balancedLengthSplit(section.text.length, targetChars, maxChars,
-        (target) => splitTextIntoChapters(section.text, { targetChars: target, maxChars, headings: false }));
+        (target) => splitTextIntoChapters(section.text, { targetChars: target, maxChars, headings: false }), AOZORA_HEADING_CHAPTER_MAX_CHARS);
       return pieces.length > 1 ? pieces.map((piece, index) => ({ ...piece, title: `${section.title} (${index + 1}/${pieces.length})` })) : [section];
     })
     : balancedLengthSplit(projection.text.length, targetChars, maxChars, split);

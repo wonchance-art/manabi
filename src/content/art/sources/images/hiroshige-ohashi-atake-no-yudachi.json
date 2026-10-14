@@ -1,0 +1,19 @@
+{
+  "bytes": 415519,
+  "fetchedAt": "2026-10-14",
+  "file": "hiroshige-ohashi-atake-no-yudachi.jpg",
+  "height": 625,
+  "record": {
+    "artistDisplayName": "Utagawa Hiroshige",
+    "creditLine": "Purchase, Joseph Pulitzer Bequest, 1918",
+    "isPublicDomain": true,
+    "objectDate": "1857",
+    "title": "Sudden Shower over Shin-Ōhashi Bridge and Atake (Ōhashi Atake no yūdachi), from the series One Hundred Famous Views of Edo (Meisho Edo hyakkei)"
+  },
+  "sha256": "37571a51e8a5e652568582b6184398f36a217de80c4d219938a37af548ea0408",
+  "source": "met",
+  "sourceId": "36461",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/36461",
+  "width": 437,
+  "workId": "hiroshige-ohashi-atake-no-yudachi"
+}

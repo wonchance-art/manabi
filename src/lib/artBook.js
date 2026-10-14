@@ -15,8 +15,8 @@ export const ART_BOOK_VERSION = 1;
 const BOOK_LANGUAGE = 'ja';
 const MATERIAL_LANGUAGE = 'Japanese';
 
-/** 책으로 게시하는 큐레이션 — 작가별 큐레이션은 이 책의 부분집합이라 따로 게시하지 않는다(같은 해설이 두 행이 되지 않게). */
-export const ART_PUBLISHED_CURATIONS = Object.freeze(['ukiyoe-landscape-hokusai-hiroshige']);
+/** 책으로 게시하는 큐레이션 — 작가별 큐레이션은 이 책들의 부분집합이라 따로 게시하지 않는다(같은 해설이 두 행이 되지 않게 — 게시 책끼리도 작품이 겹치지 않는다). */
+export const ART_PUBLISHED_CURATIONS = Object.freeze(['ukiyoe-landscape-hokusai-hiroshige', 'ukiyoe-landscape-hokusai-hiroshige-2']);
 
 export const artBookKey = (curationId) => `art-${curationId}`;
 

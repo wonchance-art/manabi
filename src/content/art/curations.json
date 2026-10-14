@@ -22,6 +22,27 @@
     ]
   },
   {
+    "id": "ukiyoe-landscape-hokusai-hiroshige-2",
+    "kind": "theme",
+    "title": {
+      "ko": "호쿠사이와 히로시게의 풍경 판화 2",
+      "native": "続・北斎と広重の風景版画"
+    },
+    "level": "N2 상급",
+    "summary": {
+      "ko": "에도의 강과 다리, 절과 축제, 그리고 도카이도 미야 역참의 밤 제례. 호쿠사이 두 점과 히로시게 여섯 점을 연대순으로 읽는다."
+    },
+    "works": [
+      "hokusai-gohyaku-rakanji-sazaido",
+      "hokusai-onmayagashi-ryogokubashi-yuhimi",
+      "hiroshige-asakusa-kinryuzan",
+      "hiroshige-komagatado-azumabashi",
+      "hiroshige-tsuki-no-misaki",
+      "hiroshige-asakusa-tanbo-torinomachi-mode",
+      "hiroshige-ryogoku-hanabi"
+    ]
+  },
+  {
     "id": "katsushika-hokusai-fugaku",
     "kind": "artist",
     "title": {
@@ -31,7 +52,9 @@
     "works": [
       "hokusai-kanagawa-oki-nami-ura",
       "hokusai-gaifu-kaisei",
-      "hokusai-bushu-tamagawa"
+      "hokusai-bushu-tamagawa",
+      "hokusai-gohyaku-rakanji-sazaido",
+      "hokusai-onmayagashi-ryogokubashi-yuhimi"
     ]
   },
   {
@@ -44,9 +67,14 @@
     "works": [
       "hiroshige-shono-hakuu",
       "hiroshige-kuwana-shichiri-no-watashi",
+      "hiroshige-asakusa-kinryuzan",
       "hiroshige-ohashi-atake-no-yudachi",
       "hiroshige-kameido-umeyashiki",
-      "hiroshige-fukagawa-susaki-jumantsubo"
+      "hiroshige-fukagawa-susaki-jumantsubo",
+      "hiroshige-komagatado-azumabashi",
+      "hiroshige-tsuki-no-misaki",
+      "hiroshige-asakusa-tanbo-torinomachi-mode",
+      "hiroshige-ryogoku-hanabi"
     ]
   }
 ]

@@ -1,0 +1,75 @@
+{
+  "id": "hiroshige-asakusa-kinryuzan",
+  "wikidata": "Q60176419",
+  "artist": "utagawa-hiroshige",
+  "title": {
+    "native": "名所江戸百景 浅草金龍山",
+    "ko": "명소 에도 100경 — 아사쿠사 긴류잔",
+    "reading": "めいしょえどひゃっけい あさくさきんりゅうざん"
+  },
+  "series": {
+    "native": "名所江戸百景",
+    "ko": "명소 에도 100경"
+  },
+  "date": {
+    "text": "江戸時代・安政3年(1856)",
+    "source": "colbase",
+    "startYear": 1856,
+    "endYear": 1856,
+    "certainty": "exact"
+  },
+  "periods": [
+    "jp-edo"
+  ],
+  "medium": {
+    "native": "大判　錦絵",
+    "ko": "세로 오반 니시키에(다색 목판화)"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7390"
+    },
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/34096"
+    },
+    {
+      "place": "metropolitan-museum-of-art",
+      "role": "holding",
+      "url": "https://www.metmuseum.org/art/collection/search/56689"
+    },
+    {
+      "place": "senso-ji",
+      "role": "depicted"
+    },
+    {
+      "place": "kaminarimon",
+      "role": "depicted"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-55849"
+    }
+  ],
+  "terms": [
+    "大提灯",
+    "五重塔",
+    "コントラスト"
+  ],
+  "lookFor": [
+    "화면 위를 가득 채운 큰 제등과 왼쪽의 붉은 기둥을 찾아봐요.",
+    "눈길 너머 멀리 보이는 붉은 문과 오층탑을 찾아봐요.",
+    "눈 내리는 경내를 걷는 사람들은 무엇을 쓰고 있을까요?"
+  ],
+  "image": {
+    "source": "met",
+    "sourceId": "56689",
+    "alt": "화면 위쪽에 커다란 붉은 제등이 걸려 있고 왼쪽에는 붉은 기둥이 서 있다. 그 사이로 눈 덮인 경내가 펼쳐지고, 멀리 붉은 문과 오층탑이 보이며, 우산을 쓴 사람들이 눈길을 걷는다."
+  }
+}

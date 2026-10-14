@@ -77,6 +77,176 @@
         }
       ]
     },
+    "aozora-000081-000456": {
+      "title": "銀河鉄道の夜",
+      "author": "宮沢賢治",
+      "level": "N3 중급",
+      "total": 17,
+      "division": "heading",
+      "chars": 39077,
+      "display": {
+        "titleReading": "ぎんがてつどうのよる",
+        "titleKo": "은하철도의 밤",
+        "authorKo": "미야자와 겐지",
+        "cover": "plum",
+        "motif": "night-train"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000081-000456",
+        "personId": "000081",
+        "workId": "456",
+        "title": "銀河鉄道の夜",
+        "author": "宮沢賢治",
+        "publishedYear": 1934,
+        "authorDeathYear": 1933,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000081/card456.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000081/files/456_ruby_145.zip",
+        "sourceSha256": "8bc90c0c7f97e069d02c4783ce905fa7b959cf60a74df816aeccf94079555076",
+        "textSha256": "567602c3bcb00d5bbb43803b6fef40a687efbcd43aaa5adc84d3cbefb7fd090c",
+        "attribution": {
+          "author": "宮沢賢治",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-14",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000081/card456.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「新編　銀河鉄道の夜」新潮文庫、新潮社",
+            "1989（平成元）年6月15日発行",
+            "1994（平成6）年6月5日13刷"
+          ],
+          "parentBook": [
+            "「新修宮沢賢治全集　第十二巻」筑摩書房",
+            "1980（昭和55）年1月"
+          ],
+          "inputter": "中村隆生、野口英司",
+          "proofreader": "野口英司"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi",
+          "small-kana-as-full"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "一、午后の授業",
+          "incipit": "「ではみなさんは、そういうふうに川だと云われたり…",
+          "sha256": "c3fd7304bcaf180210b1f364dcef5d674b6523430a59351527c4cfae62dd6ec7"
+        },
+        {
+          "order": 2,
+          "title": "二、活版所",
+          "incipit": "ジョバンニが学校の門を出るとき…",
+          "sha256": "795ef67838e26a41b4bf2a9e63b0f2e88a7f0d26558beb9a69bbcdfa2bf1713a"
+        },
+        {
+          "order": 3,
+          "title": "三、家",
+          "incipit": "ジョバンニが勢よく帰って来たのは、ある裏町の小さな家でした。",
+          "sha256": "e8f85dad7cf1ce77b25a2697642380fe119697e09dbd1bfb3f1af1b47eca7973"
+        },
+        {
+          "order": 4,
+          "title": "四、ケンタウル祭の夜",
+          "incipit": "ジョバンニは、口笛を吹いているようなさびしい口付きで…",
+          "sha256": "82191272e3c79cc433bcd32e57f26f560d06967bcfa6ba753fac86cfef1c9afc"
+        },
+        {
+          "order": 5,
+          "title": "五、天気輪の柱",
+          "incipit": "牧場のうしろはゆるい丘になって、その黒い平らな頂上は…",
+          "sha256": "703ecf49fade0fd37b5679953ca16c7df693d84ea4ced7a48e9714cfbab05007"
+        },
+        {
+          "order": 6,
+          "title": "六、銀河ステーション",
+          "incipit": "そしてジョバンニはすぐうしろの天気輪の柱がいつか…",
+          "sha256": "f33c9c6ee4ade6e539ef989cd789054ef2cb4895a9e5a922cc3fbea45e96592b"
+        },
+        {
+          "order": 7,
+          "title": "七、北十字とプリオシン海岸 (1/2)",
+          "incipit": "「おっかさんは、ぼくをゆるして下さるだろうか。",
+          "sha256": "48c4d0ddcfa94a31542af94a1677bf79be0a5f6ffee887337aa22353dd5ec303"
+        },
+        {
+          "order": 8,
+          "title": "七、北十字とプリオシン海岸 (2/2)",
+          "incipit": "「この砂はみんな水晶だ。",
+          "sha256": "d97d28bc663c71a217b36210b9c395267cc9df5b05ae24e52268b7e926c4e718"
+        },
+        {
+          "order": 9,
+          "title": "八、鳥を捕る人 (1/2)",
+          "incipit": "「ここへかけてもようございますか。",
+          "sha256": "bfdf80f3fef9bf7bd52fbf08e8a18be6ee00763a66f04cc6c86e936490e730f9"
+        },
+        {
+          "order": 10,
+          "title": "八、鳥を捕る人 (2/2)",
+          "incipit": "「どうです。",
+          "sha256": "e0a621718d83a41c6f9c69c1db3e270dff5c2108386a97ccc990029cf5bf5d2d"
+        },
+        {
+          "order": 11,
+          "title": "九、ジョバンニの切符 (1/7)",
+          "incipit": "「もうここらは白鳥区のおしまいです。",
+          "sha256": "4bffc23f101c1b4bf5e4a769384e8c57e9301b7369237018a3d65ce790408506"
+        },
+        {
+          "order": 12,
+          "title": "九、ジョバンニの切符 (2/7)",
+          "incipit": "「ああ、ここはランカシャイヤだ。",
+          "sha256": "737ccfb5150889d7b5d97c73b17ab56030f4e836c45e716e4ca65fef94e5a750"
+        },
+        {
+          "order": 13,
+          "title": "九、ジョバンニの切符 (3/7)",
+          "incipit": "「いかがですか。",
+          "sha256": "203cce1dfc53a1a7a6486aec0d586ab45f7ab8eb6ce41a4d6b8140b87eaf060b"
+        },
+        {
+          "order": 14,
+          "title": "九、ジョバンニの切符 (4/7)",
+          "incipit": "「いまこそわたれわたり鳥、いまこそわたれわたり鳥。",
+          "sha256": "2f03681e58094c18f4f49d559c5964e42633c932fa9918f89f00700570ec2fdd"
+        },
+        {
+          "order": 15,
+          "title": "九、ジョバンニの切符 (5/7)",
+          "incipit": "どんどんどんどん汽車は走って行きました。",
+          "sha256": "bdda19da9ffaf052d4e1b525343d1aaae92ea37f23d7e0decbd94e84d4b22730"
+        },
+        {
+          "order": 16,
+          "title": "九、ジョバンニの切符 (6/7)",
+          "incipit": "「ここでおりなけぁいけないのです。",
+          "sha256": "41cf7378397e453b3eaeb10dd9947761739f9bba4c67fe9b27f6d61a92737b00"
+        },
+        {
+          "order": 17,
+          "title": "九、ジョバンニの切符 (7/7)",
+          "incipit": "ジョバンニは眼をひらきました。",
+          "sha256": "c1606ed6b7e9249b6bec0fa7c7368805fd040bb1df309e1ea0fc0b8c4a49c96b"
+        }
+      ]
+    },
     "aozora-000081-000470": {
       "title": "セロ弾きのゴーシュ",
       "author": "宮沢賢治",

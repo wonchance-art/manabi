@@ -1,0 +1,66 @@
+{
+  "id": "hiroshige-kuwana-shichiri-no-watashi",
+  "wikidata": "Q75090473",
+  "artist": "utagawa-hiroshige",
+  "title": {
+    "native": "東海道五拾三次之内 桑名 七里渡口",
+    "ko": "도카이도 53역참 — 구와나, 시치리 나루터",
+    "reading": "とうかいどうごじゅうさんつぎのうち くわな しちりのわたしぐち"
+  },
+  "series": {
+    "native": "東海道五拾三次之内",
+    "ko": "도카이도 53역참"
+  },
+  "date": {
+    "text": "江戸時代・19世紀",
+    "source": "colbase",
+    "startYear": 1833,
+    "endYear": 1834,
+    "certainty": "range"
+  },
+  "periods": [
+    "jp-edo"
+  ],
+  "medium": {
+    "native": "横大判　錦絵",
+    "ko": "가로 오반 니시키에(다색 목판화)"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-2953"
+    },
+    {
+      "place": "metropolitan-museum-of-art",
+      "role": "holding",
+      "url": "https://www.metmuseum.org/art/collection/search/36964"
+    },
+    {
+      "place": "kuwana-juku",
+      "role": "depicted"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-51490"
+    }
+  ],
+  "terms": [
+    "海路",
+    "船着場",
+    "七里の渡し"
+  ],
+  "lookFor": [
+    "나루터에 닿는 큰 배 두 척의 돛은 어떤 모양일까요?",
+    "성의 돌담과 지붕을 찾아봐요.",
+    "물결은 어떤 선으로 그려졌을까요?"
+  ],
+  "image": {
+    "source": "met",
+    "sourceId": "36964",
+    "alt": "돛을 단 큰 배 두 척이 물결을 헤치고 구와나 성의 돌담 나루터에 닿고, 멀리 바다에는 돛단배들이 떠 있다. 하늘 위쪽은 붉게 물들어 있다."
+  }
+}

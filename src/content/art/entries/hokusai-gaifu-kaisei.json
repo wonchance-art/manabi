@@ -1,0 +1,76 @@
+{
+  "id": "hokusai-gaifu-kaisei",
+  "wikidata": "Q3565037",
+  "artist": "katsushika-hokusai",
+  "title": {
+    "native": "冨嶽三十六景 凱風快晴",
+    "ko": "후가쿠 36경 — 맑은 날의 남풍",
+    "reading": "ふがくさんじゅうろっけい がいふうかいせい"
+  },
+  "series": {
+    "native": "冨嶽三十六景",
+    "ko": "후가쿠 36경"
+  },
+  "date": {
+    "text": "c. 1830/33",
+    "source": "aic",
+    "startYear": 1830,
+    "endYear": 1833,
+    "certainty": "circa"
+  },
+  "periods": [
+    "jp-edo"
+  ],
+  "medium": {
+    "native": "横大判　錦絵",
+    "ko": "가로 오반 니시키에(다색 목판화)"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/A-11176-1"
+    },
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/87005"
+    },
+    {
+      "place": "metropolitan-museum-of-art",
+      "role": "holding",
+      "url": "https://www.metmuseum.org/art/collection/search/57007"
+    },
+    {
+      "place": "mount-fuji",
+      "role": "depicted"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-166407"
+    },
+    {
+      "language": "en",
+      "source": "colbase",
+      "sourceId": "cobas-166407"
+    }
+  ],
+  "terms": [
+    "凱風",
+    "版木",
+    "摺り"
+  ],
+  "lookFor": [
+    "산의 붉은색은 꼭대기에서 어디까지 이어질까요?",
+    "산기슭 아래 숲은 어떻게 표현됐을까요?",
+    "하늘의 흰 구름 줄은 어느 쪽으로 흐를까요?"
+  ],
+  "image": {
+    "source": "met",
+    "sourceId": "57007",
+    "alt": "푸른 하늘에 비늘 같은 흰 구름이 줄지어 있고, 붉게 물든 후지산이 화면 가득 솟아 있다. 꼭대기에는 눈 줄기가 남아 있고 사람은 보이지 않는다."
+  }
+}

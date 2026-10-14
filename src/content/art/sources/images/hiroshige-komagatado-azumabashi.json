@@ -1,0 +1,19 @@
+{
+  "bytes": 76163,
+  "fetchedAt": "2026-10-14",
+  "file": "hiroshige-komagatado-azumabashi.jpg",
+  "height": 625,
+  "record": {
+    "artistDisplayName": "Utagawa Hiroshige",
+    "creditLine": "Gift of Estate of Samuel Isham, 1914",
+    "isPublicDomain": true,
+    "objectDate": "1857",
+    "title": "“Azuma Bridge from Komagatadō Temple,” from the series One Hundred Famous Views of Edo (Meisho Edo hyakkei, Komagatadō Azumabashi)"
+  },
+  "sha256": "cbb436ad1d88e66567c3df0d4824cbc65792b83050f3d29e173fe4d71db9f437",
+  "source": "met",
+  "sourceId": "37282",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/37282",
+  "width": 409,
+  "workId": "hiroshige-komagatado-azumabashi"
+}
