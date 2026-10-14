@@ -888,6 +888,9 @@
     · 게시 API 공용화 `src/lib/server/bookPublishRoute.js`(/api/admin/literature 동작 그대로 + /api/admin/art-books) · 관리자 🖼️ 미술 책 탭(같은 패널 kind=art)
     · 뷰어 작품 정보 카드 `ViewerArtCard`(해시 대조 통과 장만 · 원문 수정 잠금) · 자료 출처 「미술」 절 · 일본 지도 `?pin=` 딥링크.
     남은 것: Preview 실계정 검수(관리자 게시 → 분석 → 검수 → 공개, 그림 로드 확인) — 운영 게시는 그다음.
+  · **병합 #1462 · #1465(2026-10-14 KST)**: 게시·그림 확인 완료(오너, 운영). 그림은 public/art 자체 보관(메트 CC0) — 시카고 미술관 IIIF 봇 차단 대응(ART-IMG-001). **공개는 books와 협의 후.** 亀戸梅屋舗 그림은 별도 세션(ART-IMG-002).
+  · **ART-P0-4(이 브랜치)**: 둘째 책 「続・北斎と広重の風景版画」 7점(메트 CC0 그림) + 읽기 표시 해설 거부 계약. 宮 熱田神事는 읽기 표시로 제외.
+  · **ART-AUTO-001 설계**: `docs/design/art-pipeline.md` — A안(수집 스냅샷 → 오프라인 후보표·빌드 --check → 세션 저작 → PR) · ColBase CC BY 그림 허용(오너 결정). 구현 순서 AUTO-1~4.
 - **대화 모드 v2-Z 전 라운드 (2026-10-14 KST, 오너 「전부 다 승인함」 — 인계 [CONVERSATION-V2Z-001](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6050886728))** `claude/project-thread-a2xmmk`:
   순서 = 인계문 §10 그대로 Z-R1 ①서버 → ②평가 묶음 → ③화면 → Z-R2 → Z-R3, PR 하나씩.
   · **Z-R1 ① 병합(#1438, 2026-10-14 KST)**: `/api/analyze` 핵심 → `analyzeCore.analyzeLines`(응답 동일) · `POST /api/conversation/turn` · 순수 규칙 `lib/conversation/turnModel.js`
