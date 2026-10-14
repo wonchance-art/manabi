@@ -80,6 +80,32 @@ async function playServerTTS(text, language, playbackRate = 1, generation) {
   await audio.play();
 }
 
+/**
+ * 다음 카드 소리 미리 받기(REV-SCOPE-R1B-1 §3-3) — 서버 음성을 재생 캐시에 넣기만 한다. 실패는 조용히(재생할 때 다시 시도).
+ * 같은 주소는 한 번만 받는다.
+ */
+const prefetching = new Map();
+export function prefetchSpeech(text, language) {
+  if (typeof window === 'undefined' || !text || !getTtsCapabilities().serverAudio) return;
+  const url = `/api/tts?lang=${encodeURIComponent(language)}&text=${encodeURIComponent(text)}`;
+  if (serverAudioCache.has(url) || prefetching.has(url)) return;
+  const request = window.fetch(url).then(res => (res.ok ? res.blob() : null)).then(blob => {
+    if (blob && !serverAudioCache.has(url)) serverAudioCache.set(url, window.URL.createObjectURL(blob));
+  }).catch(() => {}).finally(() => prefetching.delete(url));
+  prefetching.set(url, request);
+}
+
+/** 세션 시작 단추를 누를 때 오디오를 한 번 열어 둔다(iOS 자동 재생 제한). 소리는 나지 않는다. */
+const SILENT_WAV = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';
+export function unlockSpeechAudio() {
+  if (typeof window === 'undefined' || typeof window.Audio !== 'function') return;
+  try {
+    const audio = new window.Audio(SILENT_WAV);
+    audio.muted = true;
+    audio.play()?.catch?.(() => {});
+  } catch { /* 열 수 없으면 카드의 ▷로 재생한다 */ }
+}
+
 export function useTTS() {
   const [voicesReady, setVoicesReady] = useState(false);
 
