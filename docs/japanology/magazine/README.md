@@ -88,6 +88,18 @@
 | 계약 EDIT-STD-001·002 | `src/lib/editorialRules.js`, `src/lib/__tests__/editorialStandard.test.js` | **커밋** — CI 판정 대기 |
 | 서가 서지·한국어판 확인 | `shelf-verification.md` | **완료**(사용 가능 15/20, 한국어판 6) |
 
+### 일본어 원문 제작 (방향 전환 후, 진행 중)
+
+| 작업 | 산출 경로 |
+|---|---|
+| 創刊の辞 + 第1号 編集後記 | `ja/00-launch/sogan.md` |
+| 特集扉リード + 本編1「午後五時のメロディ」 | `ja/01-machi/01-gogo-goji.md` |
+| 本編2「住所の文法」+ 本編3「雪国の町」 | `ja/01-machi/02-03-jusho-yukiguni.md` |
+| 本編4「回覧板と避難所」+ 数字で見る日本の町 + 町を読む10冊 | `ja/01-machi/04-data-books.md` |
+| 뷰어 연동 설계(정본 문학책 경로 재사용 검토) | `integration-design.md` |
+
+다음: 일본어 원어민 교열 관점 검수(문체·표기 통일) → 한국인 N3–N2 학습자 뷰어 독해 시험 → 연동 설계 승인 → 게시.
+
 이후 순서: 1호 전 꼭지 통합(`issues/01-land/issue.md`) → 콘텐츠 스키마(`src/content/studies/japan/magazine/**`)와 호 전용 판 구현(텍스트 목업·시안 승인 후) → MAG-FACT-001·MAG-ANATOMY-001 → 1차 원문 재대조(네트워크 허용 필요: registry.npmjs.org, stat.go.jp·mext.go.jp 등).
 
 ## 오너 결정 (2026-10-14 KST — 「권장 및 승인 함」)
