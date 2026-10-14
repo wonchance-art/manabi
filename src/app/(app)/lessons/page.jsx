@@ -1,5 +1,6 @@
 import Bookshelf from '@/components/books/Bookshelf';
 import { publishedReading, readingCatalog } from '@/lib/server/bookReading';
+import { levelTileCounts } from '@/lib/levelListData';
 
 export const dynamic = 'force-dynamic';
 export const metadata = {
@@ -13,5 +14,8 @@ export default async function Page({ searchParams }) {
   const sp = await searchParams;
   let book = null;
   try { book = readingCatalog((await publishedReading()).book); } catch { /* Fail closed until a verified edition is available. */ }
-  return <Bookshelf book={book} initialLang={sp?.lang} />;
+  // 레벨별 단어 · 문형 타일(LEVEL-LIST-AJ-001) — 숫자는 목록과 같은 조립에서 센다.
+  let levelTiles = {};
+  try { levelTiles = { Japanese: await levelTileCounts('japanese'), Chinese: await levelTileCounts('chinese') }; } catch { /* 타일 없이 책장은 그대로 연다. */ }
+  return <Bookshelf book={book} initialLang={sp?.lang} levelTiles={levelTiles} />;
 }

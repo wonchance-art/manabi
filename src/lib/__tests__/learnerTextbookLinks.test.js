@@ -116,9 +116,11 @@ describe('learnerHref 관문과 보관 출처 표시', () => {
   it('옛 교재 주소만 null로 막고 다른 학습자 주소는 그대로 둔다', () => {
     const { learnerHref } = bookNavigation;
     expect(typeof learnerHref).toBe('function');
-    for (const href of ['/japanese', '/chinese/', '/english/grammar/a1-01-be-verb?sourceRevision=r#tb-x', '/french/vocab/a1', '/japanese/bunkei/n5', '/chinese/grammar/h1-01-shi#x'])
+    for (const href of ['/japanese', '/chinese/', '/english/grammar/a1-01-be-verb?sourceRevision=r#tb-x', '/french/vocab/a1', '/chinese/grammar/h1-01-shi#x', '/chinese/vocab/life'])
       expect(learnerHref(href), href).toBeNull();
-    for (const href of ['/books/japanese-n5?edition=x#u01', '/viewer/1?sourceText=a', '/lessons', '/japanese/reading', '/review/grammar', '/admin/legacy-textbooks/japanese/grammar/n5-04-desu-da'])
+    // LEVEL-LIST-AJ-001: 다시 연 일 · 중 레벨 목록은 실제 주소를 돌려준다(전: /japanese/bunkei/n5 → null).
+    for (const href of ['/books/japanese-n5?edition=x#u01', '/viewer/1?sourceText=a', '/lessons', '/japanese/reading', '/review/grammar', '/admin/legacy-textbooks/japanese/grammar/n5-04-desu-da',
+      '/japanese/bunkei/n5', '/japanese/vocab/n3#x', '/chinese/vocab/h1?q=1'])
       expect(learnerHref(href), href).toBe(href);
     expect(learnerHref(null)).toBeNull();
     expect(learnerHref('')).toBeNull();

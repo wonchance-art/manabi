@@ -584,9 +584,10 @@ test('vocab performance: N3 초기 DOM과 savedSet 요청을 예산 안에 유�
     await seedMockSessionCookie(context, 'admin', { restRequests });
     const startedAt = Date.now();
     await page.goto('/japanese/vocab/n3', { waitUntil: 'load', timeout: config.timeout * 2 });
-    await assertVisible(page.locator('.fr-vrow').first(), 'N3 first vocabulary row');
+    // LEVEL-LIST-AJ-001: 옛 행(.fr-vrow) → 레벨 목록 카드(.lv-entry). 예산(150개 점진 · DOM · savedSet 분할)은 그대로.
+    await assertVisible(page.locator('.lv-entry').first(), 'N3 first vocabulary row');
     const elapsed = Date.now() - startedAt;
-    const rows = await page.locator('.fr-vrow').count();
+    const rows = await page.locator('.lv-entry').count();
     const nodes = await page.locator('*').count();
 
     assert.ok(elapsed < 8000, `N3 vocab load ${elapsed}ms exceeded 8000ms`);
@@ -609,8 +610,8 @@ test('vocab performance: N3 초기 DOM과 savedSet 요청을 예산 안에 유�
       `savedSet URL exceeded 8000 chars: ${Math.max(...savedRequests.map(url => url.length))}`
     );
 
-    await page.getByRole('searchbox', { name: '단어 검색' }).fill('頬');
-    await assertVisible(page.locator('.fr-vrow').filter({ hasText: '頬' }), 'word beyond initial slice remains searchable');
+    await page.getByRole('searchbox', { name: 'N3 단어에서 찾기' }).fill('頬');
+    await assertVisible(page.locator('.lv-entry').filter({ hasText: '頬' }), 'word beyond initial slice remains searchable');
   });
 });
 

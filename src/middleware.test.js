@@ -125,3 +125,22 @@ describe('관리자 경로 보호 (기존 계약 유지)', () => {
     }
   });
 });
+
+describe('레벨별 단어 · 문형 목록 공개 (LEVEL-LIST-AJ-001)', () => {
+  beforeEach(() => {
+    createServerClientMock.mockReset();
+  });
+
+  it('일 · 중 레벨 목록은 세션 조회 없이 통과하고, 문법 · 루트 · 영어 · 프랑스어는 여전히 보관함으로 보낸다', async () => {
+    for (const path of ['/japanese/vocab/n5', '/japanese/bunkei/n5', '/chinese/vocab/h1', '/chinese/bunkei/h6']) {
+      const response = await middleware(request(path));
+      expect(response.headers.get('x-middleware-next'), path).toBe('1');
+    }
+    for (const path of ['/japanese/grammar/n5-04-desu-da', '/chinese/grammar/h1-01-shi', '/japanese', '/chinese/vocab/life', '/french/vocab/a1', '/english/bunkei/a1']) {
+      const response = await middleware(request(path));
+      expect(response.status, path).toBe(307);
+      expect(response.headers.get('location'), path).toBe(`https://example.test/admin/legacy-textbooks${path}`);
+    }
+    expect(createServerClientMock).not.toHaveBeenCalled();
+  });
+});

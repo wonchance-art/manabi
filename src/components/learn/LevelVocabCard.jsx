@@ -9,7 +9,8 @@
 import { useMemo } from 'react';
 import Link from 'next/link';
 import { haveWordSet, vocabCoverage } from '@/lib/goalVocab';
-import { useZhHskLevels, zhHskLevelOf } from '@/lib/zhHskLevel';
+import { zhHskLevelOf } from '@/lib/zhHskLevel';
+import { useZhHskLevels } from '@/lib/useZhHskLevels';
 import { ZH_SCOPE_LEVELS, scopeLevelLabel, serializeReviewScope } from '@/lib/reviewScope';
 
 const LEVEL_KEYS = ZH_SCOPE_LEVELS.filter(key => key !== 'NONE');

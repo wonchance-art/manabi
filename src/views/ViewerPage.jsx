@@ -135,7 +135,8 @@ import { isLocalId, parseLocalId, chaptersForLocalNav } from '../lib/classBoard'
 import { getSharedCopy } from '../lib/sharedStore';
 import { readIndexCache } from '../lib/classClient';
 import { useRefVocabEntry, useRefVocabIndex } from '../lib/refVocabIndex';
-import { useZhHskLevels, zhHskLevelOf, zhHskLevelLabel } from '../lib/zhHskLevel';
+import { zhHskLevelOf, zhHskLevelLabel } from '../lib/zhHskLevel';
+import { useZhHskLevels } from '../lib/useZhHskLevels';
 import { loadHanjaPanelTable, onIdle, prefetchHanjaPanel } from '../lib/viewerHanjaPanel';
 import { useTokenDictPrefetch } from '../lib/useTokenDictPrefetch';
 import { tokenDictPrefetchEnabled, tokenDictQueryKey, tokenDictKeyOf, prefetchTokenDict } from '../lib/tokenDictPrefetch';
