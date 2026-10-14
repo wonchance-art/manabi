@@ -236,3 +236,22 @@ describe('PR② 판단 1 — 원래 id 별칭: 저장 → 묶기 → 원문 위 
     expect(record.base[0]).toMatchObject({ id: ids(mat0.processed_json, 0)[2].replace(/^id_0_/, 'id_1_'), was: [ids(mat0.processed_json, 0)[2]] });
   });
 });
+
+// TOKEN-CORRECTIONS-BIGINT-001 — 이력 표 타입이 어긋나 insert가 거절돼도 경계 저장은 유지하되, 실패를 조용히 삼키지 않는다.
+describe('이력 저장 실패는 드러낸다', () => {
+  it('token_corrections insert가 오류를 돌려줘도 자료 저장은 유지되고 reportError로 남는다', async () => {
+    const mat = await material();
+    const before = structuredClone(mat.processed_json);
+    const failing = client();
+    const from = failing.from;
+    failing.from = (table) => ({ ...from(table), insert: async () => ({ error: { message: 'invalid input syntax for type uuid: "7"', code: '22P02' } }) });
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const plan = planBoundaryMerge(mat, seqIndex(mat, ids(before, 0)[2]), seqIndex(mat, ids(before, 0)[3]), ctxOf(mat));
+    const out = await commitBoundaryEdit(mat, plan.request, deps({ client: failing }));
+    expect(rpcs.map(r => r.name)).toEqual(['viewer_replace_analysis']);
+    expect(texts(out.material.processed_json, 0)).toContain('身体素质');
+    expect(errors).toHaveBeenCalledWith('[report]', 'invalid input syntax for type uuid: "7"',
+      { where: 'token_corrections insert (boundary_edit)', materialId: 7, tokenId: ids(before, 0)[2] });
+    errors.mockRestore();
+  });
+});

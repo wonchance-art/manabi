@@ -1,7 +1,10 @@
 -- 형태소 분석 결과 교정 히스토리
+-- material_id는 처음에 uuid로 적혀 reading_materials.id(bigint) 참조가 42804로 실패했다(새 DB에서 표가 생기지 않음).
+-- 새 DB 체인이 여기서 멈추지 않게 bigint로 고쳤다(오너 승인 2026-10-14). 이미 다른 상태로 만들어진 DB는
+-- 20261013150000_token_corrections_material_bigint.sql이 비파괴로 맞춘다.
 CREATE TABLE IF NOT EXISTS token_corrections (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  material_id uuid NOT NULL REFERENCES reading_materials(id) ON DELETE CASCADE,
+  material_id bigint NOT NULL REFERENCES reading_materials(id) ON DELETE CASCADE,
   token_id text NOT NULL,
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   before_value jsonb,
