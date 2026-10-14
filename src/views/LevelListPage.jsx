@@ -29,6 +29,8 @@ const SpinIcon = () => <svg {...svg} width={20} height={20} strokeWidth={2.2}><p
 const CrossIcon = () => <svg {...svg} strokeWidth={2}><path d="M6 6l12 12M18 6 6 18" /></svg>;
 
 const newId = () => globalThis.crypto.randomUUID();
+// 처음엔 150개만 그린다(N3 2,108개를 한 번에 그리면 DOM 예산 초과 — smoke e2e 「vocab performance」). 찾기는 레벨 전체에서 한다.
+export const LEVEL_LIST_PAGE = 150;
 
 /** 위 읽기 — 한자 구간에만 루비(alignFurigana 재사용). 정렬이 안 되면 글자만. */
 function Ruby({ text, reading }) {
@@ -79,6 +81,9 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
   const [toast, setToast] = useState(null);
   const [activeGroup, setActiveGroup] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [limit, setLimit] = useState(LEVEL_LIST_PAGE);
+  const [jumpTo, setJumpTo] = useState(null);
+  const moreRef = useRef(null);
   const pendingExclude = useRef(null);
   const fsrs = useRef(null);
   const userRef = useRef(userId);
@@ -159,6 +164,40 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
     return { shown: filtered.filter((g) => g.entries.length), knownEntries: filtered.flatMap((g) => g.known) };
   }, [groups, vocab, knownSet, query]);
   const knownView = vocab && showKnown && knownEntries.length > 0;
+  useEffect(() => setLimit(LEVEL_LIST_PAGE), [query]);
+  // 점진 그리기 — 묶음 순서대로 limit개까지만. 묶음 제목의 개수는 전체 개수다.
+  const { visible, total } = useMemo(() => {
+    let budget = limit;
+    const out = shown.map((g) => {
+      const entries = g.entries.slice(0, Math.max(0, budget));
+      budget -= entries.length;
+      return { ...g, entries, count: g.entries.length };
+    });
+    return { visible: out, total: shown.reduce((n, g) => n + g.entries.length, 0) };
+  }, [shown, limit]);
+  const rest = Math.max(0, total - limit);
+  useEffect(() => {
+    const node = moreRef.current;
+    if (!node || !rest || typeof IntersectionObserver === 'undefined') return undefined;
+    const io = new IntersectionObserver((items) => {
+      if (items.some((i) => i.isIntersecting)) setLimit((n) => n + LEVEL_LIST_PAGE);
+    }, { rootMargin: '600px 0px' });
+    io.observe(node);
+    return () => io.disconnect();
+  }, [rest, knownView]);
+  // 목차로 아직 안 그린 묶음에 가면 그 묶음까지 그린 뒤 옮겨 간다.
+  const openGroup = (event, gi) => {
+    const start = shown.slice(0, gi).reduce((n, g) => n + g.entries.length, 0);
+    if (start < limit) return;
+    event.preventDefault();
+    setLimit(start + LEVEL_LIST_PAGE);
+    setJumpTo(gi);
+  };
+  useEffect(() => {
+    if (jumpTo == null) return;
+    document.getElementById(`lv-${kind}-${jumpTo}`)?.scrollIntoView();
+    setJumpTo(null);
+  }, [jumpTo, kind]);
   useEffect(() => { if (showKnown && knownEntries.length === 0) setShowKnown(false); }, [showKnown, knownEntries.length]);
 
   // 목차 — 보이는 묶음을 따라간다.
@@ -175,7 +214,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
 
   const title = `${levelLabel(levelKey)} ${KIND_LABEL[kind]}`;
   const groupId = (i) => `lv-${kind}-${i}`;
-  const nav = shown.map((g, i) => ({ name: g.name, href: `#${groupId(i)}`, current: i === activeGroup }));
+  const nav = shown.map((g, i) => ({ i, name: g.name, href: `#${groupId(i)}`, current: i === activeGroup }));
   const speakOk = mounted && ttsSupported;
 
   return <div className={`manabi-page lv-page lv-page--${kind}`}>
@@ -203,13 +242,13 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
         <p className="lv-mean">{e.meaning}</p>
       </li>)}</ul>
     </div></div> : <>
-      <nav className="lv-chips" aria-label="주제">{nav.map((n) => <a key={n.href} href={n.href} aria-current={n.current || undefined}>{n.name}</a>)}</nav>
+      <nav className="lv-chips" aria-label="주제">{nav.map((n) => <a key={n.href} href={n.href} aria-current={n.current || undefined} onClick={(e) => openGroup(e, n.i)}>{n.name}</a>)}</nav>
       <div className={vocab ? 'lv-split' : 'lv-split lv-split--wide'}>
-        {vocab && <nav aria-label="주제 목차"><ul className="lv-toc">{nav.map((n) => <li key={n.href}><a href={n.href} aria-current={n.current || undefined}>{n.name}</a></li>)}</ul></nav>}
+        {vocab && <nav aria-label="주제 목차"><ul className="lv-toc">{nav.map((n) => <li key={n.href}><a href={n.href} aria-current={n.current || undefined} onClick={(e) => openGroup(e, n.i)}>{n.name}</a></li>)}</ul></nav>}
         <div className="lv-col">
           {shown.length === 0 && <p className="lv-empty" role="status">{query ? '이 레벨에서 찾지 못했어요' : '모든 단어를 아는 단어로 옮겼어요'}</p>}
-          {shown.map((g, gi) => <section key={g.name} className="lv-group" id={groupId(gi)} data-lv-group={gi} aria-labelledby={`${groupId(gi)}-h`}>
-            <h2 id={`${groupId(gi)}-h`}>{g.name}<span>{g.entries.length}</span></h2>
+          {visible.map((g, gi) => g.entries.length > 0 && <section key={g.name} className="lv-group" id={groupId(gi)} data-lv-group={gi} aria-labelledby={`${groupId(gi)}-h`}>
+            <h2 id={`${groupId(gi)}-h`}>{g.name}<span>{g.count}</span></h2>
             <ul className="lv-entries">{g.entries.map((e) => vocab ? <li key={e.key} className="lv-entry">
               <div className="lv-entry__top">
                 <div className="lv-entry__word"><Headword entry={e} lang={lang} levelKey={levelKey} />
@@ -231,6 +270,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
               {e.exs.length > 0 && <div className="lv-pat__exs">{e.exs.map((ex, i) => <Example key={i} ex={ex} lang={lang} speak={speakOk ? say : null} />)}</div>}
             </li>)}</ul>
           </section>)}
+          {rest > 0 && <div ref={moreRef} className="lv-more"><button type="button" onClick={() => setLimit((n) => n + LEVEL_LIST_PAGE)}>더 보기 · {rest.toLocaleString('en-US')}개 남음</button></div>}
           <p className="lv-src">{conf.source}</p>
         </div>
       </div>

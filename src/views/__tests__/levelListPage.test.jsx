@@ -20,9 +20,11 @@ describe('단어 목록', () => {
   it('N5: 가나 먼저 크게 + 한자 작게, 카드마다 [제외][저장] 순서 · 이름표 · 출처 한 줄', async () => {
     const html = await render('japanese', 'vocab', 'n5');
     expect(html).toContain('<h1>N5 단어</h1>');
-    expect(html).toMatch(/<span class="lv-hw" lang="ja">かぞく<\/span><span class="lv-kj" lang="ja">家族<\/span>/);
+    expect(html).toMatch(/<span class="lv-hw" lang="ja">[ぁ-ゖァ-ヺー]+<\/span><span class="lv-kj" lang="ja">[^<]*[一-龯][^<]*<\/span>/);
+    // 처음엔 150개만(전: 950개 전부 → 후: 150개 + 「더 보기」 — smoke e2e N3 DOM 예산). 묶음 제목 개수는 전체 기준.
     const cards = count(html, 'class="lv-entry"');
-    expect(cards).toBeGreaterThan(900);
+    expect(cards).toBe(150);
+    expect(html).toContain('더 보기 · 800개 남음');
     expect(count(html, 'aria-label="제외 — 아는 단어로 옮기기" title="제외"')).toBe(cards);
     expect(count(html, 'aria-label="저장" title="저장"')).toBe(cards);
     expect(html.indexOf('lv-fab--ex')).toBeLessThan(html.indexOf('lv-fab--save'));
