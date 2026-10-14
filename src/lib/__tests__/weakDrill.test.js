@@ -130,9 +130,10 @@ describe('A R3 — 배선', () => {
   });
 
   it('누르면 그 방식으로 고정하고 연다 — 드롭다운을 찾게 두지 않는다', () => {
+    // REV-SCOPE-R1B-1: 타이핑 · 리스닝은 집중 연습의 갈래 — 처방은 그 갈래로 고정한 집중 연습을 연다(일정은 바뀌지 않음).
     const src = page();
-    expect(src).toContain('setReviewMode(weakDrill.mode)');
-    expect(src).toContain('startSession(weakDrill.words.map');
+    expect(src).toContain('startPractice(weakDrill.words.map((c) => c.word), { mode: weakDrill.mode })');
+    expect(src).toContain('if (mode) setPracticeMode(mode);');
   });
 
   it('처방이 없으면 줄 자체가 없다', () => {

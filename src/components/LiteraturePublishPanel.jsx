@@ -1,7 +1,8 @@
 'use client';
 
-// 관리자 정본 문학책 게시(AOZORA-P0-2 · P0-3 「분석을 마치고 배포」).
-// 「게시」 한 번 → 장들을 비공개로 준비하고 이 화면이 장마다 한 번씩 분석 → 루비 적용률 확인 → 「공개」.
+// 관리자 정본 문학책 게시(AOZORA-P0-2 · P0-3 · P0-4 「분석 → 검수·편집 → 공개」).
+// 「게시」 한 번 → 장들을 비공개로 준비하고 이 화면이 장마다 한 번씩 분석 → 장을 열어 「뜻 확인 필요」(문맥 뜻 제안)를 확정하고
+// 단어 경계를 맞춘 뒤 장마다 「검수 완료」 → 「공개」.
 // 분석 결과는 장마다 하나라 모든 사용자가 같이 쓰고, 단어 상태만 사람마다 따로 얹힌다 — 사용자는 「분석 전」 장을 보지 않는다.
 // 게시 내용은 서버가 리포 빌드 산출물에서만 만든다(/api/admin/literature). 이 화면은 원문을 보내지 않는다.
 //
@@ -10,8 +11,12 @@
 //   미게시 · 2장                                                                         [게시]
 //   ── 누른 뒤 ──
 //   준비 중 · 분석 1/2 · 이 화면을 닫지 마세요                                            [멈춤]
-//   ── 끝나면 ──
-//   분석 2/2 · 산책에 아직 안 보여요 · 루비 적용 1편 140/145 · 2편 136/138                  [공개]
+//   ── 분석이 끝나면 ──
+//   검수 0/2 · 장을 열어 「뜻 확인 필요」를 확인해 주세요
+//     · 1편 ↗ · 루비 140/145 · 제안 12개 · 확인 3개 남음
+//     · 2편 ↗ · 루비 136/138 · 제안 9개 · 확인 끝                 [검수 완료]
+//   ── 검수가 끝나면 ──
+//   검수 2/2 · 산책에 아직 안 보여요                                                      [공개]
 //   ── 공개 뒤 ──
 //   공개됨 · 산책 › 함께 읽는 글 · 루비 적용 …
 import { useEffect, useRef, useState } from 'react';
@@ -44,24 +49,43 @@ function stageLabel(book, running) {
   switch (book.stage) {
     case 'unpublished': return `미게시 · ${book.total}장`;
     case 'preparing': return `준비 중 · 분석 ${analyzedCount(book)}/${book.total} · 멈췄어요`;
-    case 'ready': return `분석 ${book.total}/${book.total} · 산책에 아직 안 보여요`;
+    case 'reviewing': return `검수 ${book.chapters.filter((chapter) => chapter.material?.reviewed).length}/${book.total} · 장을 열어 「뜻 확인 필요」를 확인해 주세요`;
+    case 'ready': return `검수 ${book.total}/${book.total} · 산책에 아직 안 보여요`;
     case 'released': return '공개됨 · 산책 › 함께 읽는 글';
     default: return '확인 필요';
   }
 }
 
-function RubyCoverage({ bookKey, chapters }) {
+// 장별 검수 줄 — 저자 루비 적용 · 검수 제안 수 · 남은 「뜻 확인 필요」 · [검수 완료](남은 확인 0일 때만).
+function ChapterReview({ book, onReview, reviewing }) {
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: [...QUERY_KEY, 'ruby', bookKey],
-    queryFn: () => request(`${API}?ruby=${encodeURIComponent(bookKey)}`),
+    queryKey: [...QUERY_KEY, 'ruby', book.key],
+    queryFn: () => request(`${API}?ruby=${encodeURIComponent(book.key)}`),
   });
-  if (isLoading) return <span className="admin-table__muted">루비 적용률 세는 중…</span>;
-  if (isError) return <button type="button" className="admin-table__muted" onClick={() => refetch()}>루비 적용률을 불러오지 못했어요 · 다시 시도</button>;
-  const titleOf = new Map(chapters.map((chapter) => [chapter.order, chapter.title]));
+  if (isLoading) return <p className="admin-table__muted" role="status">검수 상태를 세는 중…</p>;
+  if (isError) return <button type="button" className="admin-table__muted" onClick={() => refetch()}>검수 상태를 불러오지 못했어요 · 다시 시도</button>;
+  const byOrder = new Map(data.coverage.map((item) => [item.order, item]));
   return (
-    <span className="admin-table__muted">
-      루비 적용 {data.coverage.map((item) => `${titleOf.get(item.order)} ${item.applied == null ? '분석 전' : `${item.applied}/${item.rubyLocks}`}`).join(' · ')}
-    </span>
+    <ul className="admin-table__muted" style={{ margin: '4px 0 0', paddingInlineStart: '16px' }}>
+      {book.chapters.map((chapter) => {
+        const item = byOrder.get(chapter.order) || {};
+        const material = chapter.material;
+        return (
+          <li key={chapter.order}>
+            {material ? <Link href={`/viewer/${material.id}`}>{chapter.title} ↗</Link> : chapter.title}
+            {item.applied != null && ` · 루비 ${item.applied}/${item.rubyLocks}`}
+            {item.hints > 0 && ` · 제안 ${item.hints}개`}
+            {item.hintsMissed?.length > 0 && ` · 안 붙은 제안 ${item.hintsMissed.length}개(${item.hintsMissed.join('·')} — 장에서 직접 확인)`}
+            {item.remaining != null && (item.remaining > 0 ? ` · 확인 ${item.remaining}개 남음` : ' · 확인 끝')}
+            {material?.reviewed
+              ? ' · 검수 완료 ✅'
+              : book.stage === 'reviewing' && material && item.remaining === 0 && (
+                <Button size="sm" variant="ghost" disabled={reviewing} onClick={() => onReview(book, chapter)}>검수 완료</Button>
+              )}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -88,7 +112,7 @@ export default function LiteraturePublishPanel({ toast }) {
         await runPreservedReanalysis(supabase, row, controller.signal, analyzeText, { fullReset: true });
         queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       }
-      toast(`「${book.title}」 모든 장을 분석했어요. 루비 적용률을 확인하고 공개해 주세요.`, 'success');
+      toast(`「${book.title}」 모든 장을 분석했어요. 장을 열어 검수해 주세요.`, 'success');
     } catch (error) {
       if (error?.name !== 'AbortError') toast(failureMessage('장을 분석하지 못했어요.', error), 'error');
     } finally {
@@ -106,6 +130,14 @@ export default function LiteraturePublishPanel({ toast }) {
       if (next) analyzeBook(next);
     },
     onError: (error) => toast(friendlyToastMessage(error, '책을 준비하지 못했어요. 잠시 후 다시 시도해 주세요.'), 'error'),
+  });
+
+  const review = useMutation({
+    mutationFn: ({ book, chapter }) => request(API, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'review', key: book.key, order: chapter.order }) }),
+    onSuccess: (_, { chapter }) => toast(`${chapter.title} 검수를 마쳤어요.`, 'success'),
+    onError: (error) => toast(friendlyToastMessage(error, '검수 완료를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.'), 'error'),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
   });
 
   const release = useMutation({
@@ -126,12 +158,13 @@ export default function LiteraturePublishPanel({ toast }) {
   }
 
   const books = data?.books || [];
-  const busy = !!running || prepare.isPending || release.isPending;
+  const busy = !!running || prepare.isPending || review.isPending || release.isPending;
   return (
     <div className="admin-table-wrap">
       <p className="admin-table__muted" style={{ margin: '0 0 12px' }}>
         青空文庫 퍼블릭 도메인 원작(리포 <code>src/content/literature/aozora</code>). 「게시」를 누르면 장들을 비공개로 준비하고 이 화면에서
-        한 번씩 분석해요. 분석 결과는 모든 사용자가 같이 쓰고, 단어 상태만 사람마다 따로예요. 루비 적용률을 확인한 뒤 「공개」하면 산책에 보여요.
+        한 번씩 분석해요. 장을 열어 「뜻 확인 필요」(문맥 뜻 제안)를 확정하고 장마다 「검수 완료」를 누른 뒤 「공개」하면 산책에 보여요.
+        분석과 검수 결과는 모든 사용자가 같이 쓰고, 단어 상태만 사람마다 따로예요.
       </p>
       <div className="admin-table-header"><span>총 {books.length}편</span></div>
       <table className="admin-table">
@@ -154,7 +187,7 @@ export default function LiteraturePublishPanel({ toast }) {
                 </td>
                 <td>
                   <div role={runningHere ? 'status' : undefined}>{stageLabel(book, runningHere)}</div>
-                  {prepared && (
+                  {prepared && !['reviewing', 'ready', 'released'].includes(book.stage) && (
                     <div className="admin-table__muted">
                       {book.chapters.map((chapter) => (
                         <span key={chapter.order} style={{ marginRight: '8px' }}>
@@ -170,7 +203,9 @@ export default function LiteraturePublishPanel({ toast }) {
                       ⚠ {conflict.order ?? '?'}장 · {CONFLICT_LABEL[conflict.reason] || conflict.reason} (자료 #{conflict.id})
                     </div>
                   ))}
-                  {(book.stage === 'ready' || book.stage === 'released') && <div><RubyCoverage bookKey={book.key} chapters={book.chapters} /></div>}
+                  {['reviewing', 'ready', 'released'].includes(book.stage) && (
+                    <ChapterReview book={book} reviewing={review.isPending} onReview={(item, chapter) => review.mutate({ book: item, chapter })} />
+                  )}
                 </td>
                 <td>
                   {runningHere && <Button size="sm" variant="ghost" onClick={() => abortRef.current?.abort()}>멈춤</Button>}
@@ -196,7 +231,7 @@ export default function LiteraturePublishPanel({ toast }) {
           : `「${confirm.book.title}」 책을 산책에 공개할까요?`}
         message={!confirm ? '' : confirm.action === 'prepare'
           ? `${confirm.book.total}장을 비공개로 넣고 이 화면에서 한 번씩 분석해요. 근거: 작가 ${confirm.book.rights.authorDeathYear} 사망 · ${confirm.book.rights.reviewedJurisdictions.join('·')} 검토. 공개 전에는 다른 사용자에게 보이지 않아요.`
-          : '공개하면 모든 사용자가 읽을 수 있어요. 분석 결과는 같이 쓰고, 단어 상태는 사람마다 따로예요.'}
+          : '모든 장의 검수를 마쳤어요. 공개하면 모든 사용자가 읽을 수 있어요. 분석 결과는 같이 쓰고, 단어 상태는 사람마다 따로예요.'}
         confirmLabel={confirm?.action === 'release' ? '공개' : '게시'}
         variant="primary"
         confirmDisabled={busy}

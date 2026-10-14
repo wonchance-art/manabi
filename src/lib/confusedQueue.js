@@ -12,6 +12,7 @@
 // 여전히 /study 단독 소유.
 
 import { computeWeakness } from './skillRung';
+import { practiceAsWeaknessEvents } from './practiceEvents';
 
 /** 집계 창 — 주간 약점 세션과 같은 14일(두 화면이 같은 '헷갈림'을 말해야 한다). */
 export const CONFUSED_SINCE_DAYS = 14;
@@ -28,8 +29,9 @@ export const CONFUSED_MIN = 2;
  * @returns {Array<{word: object, wrong: number, total: number, score: number}>}
  */
 export function confusedVocabWords(events, vocabRows, { now = Date.now(), cap = CONFUSED_CAP } = {}) {
-  // vocab 소스만 — grammar·ui 이벤트가 cap 자리를 먹지 않게 집계 전에 거른다.
-  const vocabEvents = (events || []).filter((e) => e?.source === 'vocab');
+  // vocab 소스만 — grammar·ui 이벤트가 cap 자리를 먹지 않게 집계 전에 거른다. 집중 연습 기록(item_key = 단어 id)은
+  // 「몰랐어요」 · 오답을 그 단어의 vocab 이벤트로 옮겨 함께 센다(REV-SCOPE §6-1 ⑤).
+  const vocabEvents = practiceAsWeaknessEvents(events, vocabRows).filter((e) => e?.source === 'vocab');
   const sinceMs = now - CONFUSED_SINCE_DAYS * 86400000;
   const weak = computeWeakness(vocabEvents, { sinceMs, cap }).filter((w) => w.wrong > 0);
   // item_key = word_text 매핑(buildWeaknessMaterials 선례) — 삭제된 단어는 자연 탈락.

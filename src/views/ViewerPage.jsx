@@ -2840,7 +2840,7 @@ export default function ViewerPage() {
   // 권한은 사전 뜻 줄 교정(senseEditable)과 같은 판정이고, 수업 모드에서는 숨긴다(§13). 구간 학습(passage)은 교정 RPC가
   // 표식을 지울 수 없어(토큰 || 교정 병합) 제외한다. 열람자에게는 줄·목록이 없고 카드 ⓘ만 보인다.
   const senseReviewAllowed = canEditToken && legacyTokenEditingAllowed && learningStorageSupported && !classStudyActive
-    && materialLang === 'Chinese' && isDone && !passageOf(material);
+    && (materialLang === 'Chinese' || (materialLang === 'Japanese' && canonicalLiteratureLocked)) && isDone && !passageOf(material);
   const senseReviewShown = senseReviewAllowed && senseReviewList.length > 0 && senseReviewDismissed !== senseReviewKey;
   const openSenseReview = () => {
     if (!senseReviewAllowed || !senseReviewList.length) return;
@@ -2871,7 +2871,7 @@ export default function ViewerPage() {
     const dictEntry = query?.data;
     const pending = dictEntry === undefined && senseReviewDictFailed !== senseReviewDictSignature;
     return { id: token.id, token, dictEntry: dictEntry ?? null, sentence: cardSentenceOf(token),
-      options: pending ? null : senseReviewOptions(dictEntry ?? null, token), resolved: !needsMeaningCheck(token) };
+      options: pending ? null : senseReviewOptions(dictEntry ?? null, token, materialLang), resolved: !needsMeaningCheck(token) };
   });
   // ── AD-R4 PR④ 경계 후보 줄(설계서 §6.2) — [묶기]는 그 자리에서 AD-R3 확인 줄(planBoundaryMerge → boundaryMutation → commitBoundaryEdit,
   // 새 쓰기 경로 0), [아니요]는 boundaryDismissMutation. [묶기]를 열 수 있는 조건은 AD-R3 진입점과 같다(boundaryAllowed).

@@ -3,6 +3,7 @@ import { canonizeTokenPos } from './server/posCanon';
 import { boundaryParagraphRequest, compactBoundaryText, readBoundaryEdits, settleBoundaryRecord } from './boundaryEdits';
 import { locateLineTokens, splitSentenceRanges } from './viewerSentenceLine';
 import { applyMaterialRubyLocks } from './aozoraRuby';
+import { applyMaterialReviewHints } from './literatureReviewHints';
 
 // /api/analyze 입력 캡 미러 — route.js의 MAX_LINES·MAX_LINE_LEN과 같은 값(analyzeLongLines.test.js가 핀).
 // 서버는 캡을 넘은 줄에 truncated 표식을 단다. 자료 분석은 캡 안으로 나눠 보내 표식이 오지 않게 한다.
@@ -462,6 +463,8 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
     const locked = applyMaterialRubyLocks(rawText, currentJson);
     if (locked.diagnostics?.skipped) console.warn('[analyzeHybrid] ruby locks skipped:', locked.diagnostics.skipped);
     currentJson = locked.json;
+    // 정본 책 검수 힌트(AOZORA-P0-4) — 「뜻 확인 필요」 표식 + 문맥 뜻 제안만 붙인다(뜻은 그대로, 관리자가 목록에서 확정).
+    currentJson = applyMaterialReviewHints(rawText, currentJson).json;
   }
 
   currentJson.status = resolveAnalysisStatus(currentJson.dictionary, currentJson.failed_indices.length, total);

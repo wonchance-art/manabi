@@ -104,8 +104,9 @@ describe('재대결 — 정본 재사용·이음새 계약 (오너 승인 2026-0
     expect(CONFUSED_MIN).toBe(2);
   });
 
-  it('이벤트 조회는 vocab 소스·14일 창을 서버에서 거른다 — 쿼리 다이어트', () => {
-    expect(page).toMatch(/\.eq\('source', 'vocab'\)[\s\S]{0,120}?\.gte\('created_at'/);
+  it('이벤트 조회는 vocab(+ 집중 연습) 소스·14일 창을 서버에서 거른다 — 쿼리 다이어트', () => {
+    // REV-SCOPE-R1B-1 §6-1 ⑤: 집중 연습의 「몰랐어요」 · 오답이 헷갈린 표현에 들어가므로 같은 조회가 source 'practice'도 받는다.
+    expect(page).toMatch(/\.in\('source', \['vocab', 'practice'\]\)[\s\S]{0,120}?\.gte\('created_at'/);
     expect(page).toContain('CONFUSED_SINCE_DAYS');
   });
 });
