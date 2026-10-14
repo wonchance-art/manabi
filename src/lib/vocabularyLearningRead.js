@@ -1,6 +1,6 @@
 /** 읽기 전용 학습 projection. 원본 단어/출처와 일정의 코호트를 합쳐 쓰지 않는다. */
 import { forgetting_curve, generatorParameters } from 'ts-fsrs';
-import { FSRS_POLICY, learningDay, schedulerTime, validateFsrsCard } from './fsrsScheduler.js';
+import { FSRS_POLICIES, FSRS_POLICY, fsrsPolicySteps, learningDay, schedulerTime, validateFsrsCard } from './fsrsScheduler.js';
 
 const identity = value => typeof value === 'string' && value.length > 0 && value.length <= 200;
 const fail = code => { throw Object.assign(new Error(code), { code }); };
@@ -70,7 +70,10 @@ export function projectVocabularyLearning({ actorId, vocabulary, registry, enabl
     if (due < schedulerTime(card.due)) fail('vocabulary_learning_invalid_registry');
     if (registry.attempt && (registry.attempt.userId !== actorId || registry.attempt.cardId !== vocabulary.id)) fail('vocabulary_learning_owner_mismatch');
     firstQuestionAt = registry.firstQuestionAt;
-    if (firstQuestionAt !== null && (schedulerTime(firstQuestionAt) < schedulerTime(card.introducedAt) + FSRS_POLICY.learning[0] * 1000 || schedulerTime(firstQuestionAt) > now)) fail('vocabulary_learning_invalid_receipt');
+    // 첫 질문은 소개 정책의 첫 단계 뒤다. 채점된 카드는 정책이 바뀌었을 수 있어(anki-seconds-v1 → anki-v2) 가장 짧은 첫 단계로 본다.
+    const firstStep = card.state === 'New' ? fsrsPolicySteps(card.policyVersion).learning[0]
+      : Math.min(...Object.values(FSRS_POLICIES).map(policy => policy.learning[0]));
+    if (firstQuestionAt !== null && (schedulerTime(firstQuestionAt) < schedulerTime(card.introducedAt) + firstStep * 1000 || schedulerTime(firstQuestionAt) > now)) fail('vocabulary_learning_invalid_receipt');
   } else {
     if (registry.card !== null || registry.nextQuestionAt !== null || registry.firstQuestionAt !== null || registry.attempt != null) fail('vocabulary_learning_cohort_mismatch');
     source = 'legacy'; memory = legacyMemory(vocabulary); firstQuestionAt = null;

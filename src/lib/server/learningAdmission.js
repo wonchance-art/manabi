@@ -1,6 +1,6 @@
 /** 실제 인증 사용자와 DB clock만 공통 첫 문제 입장권을 만들 수 있다. */
 import { UUID } from '../learningSources.js';
-import { FSRS_POLICY, learningDay, schedulerTime } from '../fsrsScheduler.js';
+import { FSRS_POLICIES, learningDay, schedulerTime } from '../fsrsScheduler.js';
 import { normalizeAdmissionRequest, normalizeAdmissionStatus, validateAdmissionReceipt } from '../learningAdmission.js';
 import { validateVocabularyLearningSnapshot } from './fsrsVocabulary.js';
 
@@ -30,7 +30,7 @@ const exactMissingRpc = (error, name) => error?.code === 'PGRST202'
 
 async function capability(authClient) {
   const response = await call(authClient, 'fsrs_capabilities');
-  if (response?.error || response?.data?.version !== 1 || response.data.policyVersion !== FSRS_POLICY.version
+  if (response?.error || response?.data?.version !== 1 || !Object.hasOwn(FSRS_POLICIES, response.data.policyVersion)
     || typeof response.data.enabled !== 'boolean') reject();
   return response.data.enabled;
 }
