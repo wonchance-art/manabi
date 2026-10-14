@@ -13,13 +13,12 @@ const titleLines = (work) => String(work.display?.coverTitle || work.title).spli
 
 export default function LiteratureCover({ work }) {
   if (!work?.display) return null;
-  const lines = titleLines(work);
-  const longest = Math.max(...lines.map((line) => line.length));
-  const size = longest === 1 ? 'xl' : longest === 2 ? 'l' : longest === 3 ? 'm' : 's';
+  // 제목은 모든 작품이 같은 크기·같은 자리(시리즈 — 오너 지시 2026-10-14 KST 「서적마다 편차 없이」). 글자 수로 크기를
+  // 바꾸지 않고, 긴 제목은 display.coverTitle의 줄바꿈으로 같은 크기의 둘째 줄을 연다.
   return (
-    <span className={`lit-cover lit-cover--${work.display.cover}${lines.length > 1 ? ' lit-cover--multi' : ''} ${serif.variable}`} aria-hidden="true">
+    <span className={`lit-cover lit-cover--${work.display.cover} ${serif.variable}`} aria-hidden="true">
       <LiteratureCoverArt motif={work.display.motif} />
-      <span lang="ja" className={`lit-cover__title lit-cover__title--${size}`}>{lines.join('\n')}</span>
+      <span lang="ja" className="lit-cover__title">{titleLines(work).join('\n')}</span>
       <i />
     </span>
   );

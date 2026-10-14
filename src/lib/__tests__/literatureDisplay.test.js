@@ -111,6 +111,9 @@ describe('화면 배선', () => {
     const css = read('src/components/books/literature-cover.css');
     for (const color of LITERATURE_COVER_COLORS) expect(css).toContain(`.lit-cover--${color}{`);
     expect(css).toContain('font-family:var(--font-lit-serif)');
+    // 시리즈: 제목 크기는 한 값뿐 — 글자 수로 크기를 바꾸지 않는다(오너 지시 「서적마다 편차 없이」)
+    expect(css.match(/font-size:/gu)).toHaveLength(1);
+    expect(cover).not.toMatch(/longest|lit-cover__title--/u);
     expect(css).not.toMatch(/url\(/u);
   });
 

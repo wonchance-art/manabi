@@ -22,7 +22,7 @@ export const LITERATURE_COVER_MOTIFS = Object.freeze(['snow-night', 'higanbana',
 
 const filled = (value) => typeof value === 'string' && value.trim() !== '';
 
-/** 표지 세로 제목 한 줄 상한 — 썸네일(60×84) 높이에 11px로 다섯 자. 긴 제목은 display.coverTitle에 줄바꿈을 직접 둔다. */
+/** 표지 세로 제목 한 줄 상한 — 모든 작품 같은 12px로 썸네일(60×84) 높이에 다섯 자. 긴 제목은 display.coverTitle에 줄바꿈을 직접 둔다. */
 export const LITERATURE_COVER_LINE_MAX = 5;
 
 // display.titleKo는 **원제 직역**이다(학습자에게 일본어 제목을 풀어 주는 줄) — 국내 번역본의 의역 제목(「금빛 여우」·
