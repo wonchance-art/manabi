@@ -75,6 +75,7 @@ function ChapterReview({ book, onReview, reviewing }) {
             {material ? <Link href={`/viewer/${material.id}`}>{chapter.title} ↗</Link> : chapter.title}
             {item.applied != null && ` · 루비 ${item.applied}/${item.rubyLocks}`}
             {item.hints > 0 && ` · 제안 ${item.hints}개`}
+            {item.hintsMissed?.length > 0 && ` · 안 붙은 제안 ${item.hintsMissed.length}개(${item.hintsMissed.join('·')} — 장에서 직접 확인)`}
             {item.remaining != null && (item.remaining > 0 ? ` · 확인 ${item.remaining}개 남음` : ' · 확인 끝')}
             {material?.reviewed
               ? ' · 검수 완료 ✅'

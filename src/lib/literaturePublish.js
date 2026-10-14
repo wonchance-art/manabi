@@ -12,7 +12,7 @@
 // 정본에 없는 순서가 하나라도 있으면 아무것도 넣거나 공개하지 않는다(덮어쓰기·삭제 없음 — 사람이 확인한다).
 import { aozoraRightsPublishable } from './aozoraRights.js';
 import { countAppliedRubyLocks } from './aozoraRuby.js';
-import { countAttachedReviewHints } from './literatureReviewHints.js';
+import { countAttachedReviewHints, reviewHintCoverage } from './literatureReviewHints.js';
 import { senseReviewItems } from './viewerSenseReview.js';
 
 /** 장 검수 완료인가 — 검수 때의 분석 revision이 지금과 같아야 한다(재분석하면 다시 검수). rows: {review, revision} */
@@ -151,6 +151,8 @@ export function literatureRubyCoverage(book, rows = []) {
       applied: analyzed ? countAppliedRubyLocks(json) : null,
       hints: (chapter.metadata.literature.reviewHints || []).length,
       hintsAttached: analyzed ? countAttachedReviewHints(json) : null,
+      // 분석기 경계 때문에 붙지 못한 제안의 글자 — 검수자가 그 자리를 직접 본다(분석 전·힌트 없음은 []).
+      hintsMissed: analyzed ? reviewHintCoverage(chapter.rawText, json, chapter.metadata.literature.reviewHints).missed : [],
       remaining: analyzed ? literatureReviewRemaining(json) : null,
     };
   });

@@ -128,11 +128,22 @@ function unmarkChapter(markedText, queue, cursor) {
 function balancedLengthSplit(length, targetChars, maxChars, split) {
   const count = Math.max(1, Math.round(length / targetChars));
   const step = Math.max(1, Math.ceil(targetChars / 60));
-  for (let target = Math.ceil(length / count); target <= maxChars; target += step) {
+  let first = null;
+  for (let target = Math.ceil(length / count), tries = 0; target <= maxChars && tries < 40; target += step) {
     const parts = split(target);
-    if (parts.length <= count) return parts;
+    if (parts.length > count) continue;
+    first ??= parts;
+    // 고른 크기 안에서는 장 머리가 앞 문단에 매달린 이음 문단(と答えた。· 、…)이 아닌 경계를 고른다(실물 「鼻」 2장 머리).
+    if (parts.slice(1).every((part) => !continuesPrevious(part.text))) return parts;
+    tries += 1;
   }
-  return split(targetChars);
+  return first ?? split(targetChars);
+}
+
+/** 앞 문단에 이어지는 문단인가 — 인용 뒤 조사(と·って)·쉼표로 시작하면 앞 대사의 꼬리다. 표식(U+E000)은 건너뛴다. */
+function continuesPrevious(text) {
+  const head = String(text || '').replace(/^[\uE000\uE001\s\u3000]+/u, '');
+  return /^(?:と|って|、|。)/u.test(head);
 }
 
 function chapterTitle(part, order, projection) {

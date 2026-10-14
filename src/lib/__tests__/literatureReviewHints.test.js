@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { applyMaterialReviewHints, countAttachedReviewHints, resolveReviewHints } from '../literatureReviewHints.js';
+import { applyMaterialReviewHints, countAttachedReviewHints, resolveReviewHints, reviewHintCoverage } from '../literatureReviewHints.js';
+import { preserveReanalysisTokens } from '../reanalysisPreservation';
 import { applyTokenCorrections } from '../tokenEditOptions.js';
 import { senseReviewItems, senseReviewOptions } from '../viewerSenseReview.js';
 import { LITERATURE_BOOKS } from '../../content/literature/aozora/index.generated.js';
@@ -81,6 +82,22 @@ describe('applyMaterialReviewHints — 분석 말미: 표식 + 제안만, 뜻은
     const token = applyMaterialReviewHints(rawText, json()).json.dictionary.t1;
     expect(applyTokenCorrections(token, { meaning: '미터(m)' })).toEqual({ text: '米', meaning: '미터(m)' });
     expect(applyTokenCorrections(token, { furigana: 'メートル' })).toMatchObject({ meaningCheck: 'ctx', meaningSuggest: '미터(m)' });
+  });
+
+  it('검수 보조 — 분석기 경계 때문에 붙을 수 없는 힌트의 글자를 돌려준다(확정 여부와 무관)', () => {
+    const split = { ...json(), sequence: ['t0', 't1a', 't2', 't3'],
+      dictionary: { ...json().dictionary, t1a: { text: '米', meaning: '쌀' } } };
+    expect(reviewHintCoverage(rawText, json(), json().metadata.literature.reviewHints)).toEqual({ hintCount: 2, matched: 2, missed: [] });
+    const wide = { sequence: ['w0', 'w1'], dictionary: { w0: { text: '十米も', meaning: '' }, w1: { text: '逃げた', meaning: '' } } };
+    expect(reviewHintCoverage(rawText, wide, [{ start: 0, end: 4, base: '十米も逃', meaning: 'x' }]).missed).toEqual(['十米も逃']);
+    expect(reviewHintCoverage(rawText, split, []).hintCount).toBe(0);
+  });
+
+  it('재분석 보존: 확정한 뜻(교정)이 이기면 다시 붙은 표식·제안·근거를 모두 걷는다', () => {
+    const material = { raw_text: '米', processed_json: { sequence: ['id_0_0'], dictionary: { id_0_0: { text: '米', meaning: '미터(m)' } },
+      metadata: { viewerCorrections: { id_0_0: ['meaning'] } } } };
+    const result = { sequence: ['id_0_0'], dictionary: { id_0_0: { text: '米', meaning: '쌀', meaningCheck: 'ctx', meaningSuggest: '미터(m)', meaningNote: 'メートル' } }, metadata: {} };
+    expect(preserveReanalysisTokens(material, '米', result).dictionary.id_0_0).toEqual({ text: '米', meaning: '미터(m)' });
   });
 
   it('analyzeHybrid가 저자 루비 잠금 바로 뒤에 붙인다(유일한 분석 경로 — 재분석에도 다시 붙음)', () => {
