@@ -4,7 +4,7 @@
  *
  * 실행(리포 루트):
  *   node scripts/fetch-art-description.mjs aic <작품 id>       시카고 미술관 description → {text, textSha256, sourceUrl}
- *   node scripts/fetch-art-description.mjs colbase <JPS id>    ColBase 解説(재팬서치 경유) → 같은 모양
+ *   node scripts/fetch-art-description.mjs colbase <JPS id> [en]  ColBase 解説(재팬서치 경유, 기본 일본어) → 같은 모양
  *   node scripts/fetch-art-description.mjs --verify            카탈로그의 해설을 모두 다시 받아 text가 지금 출처와 같은지 대조
  *
  * 받은 응답 → text 변환은 src/lib/artSource.js의 artSourceText 하나뿐이다(태그 벗기기·줄바꿈 맞추기, 낱말은 그대로).
@@ -21,13 +21,13 @@ async function fetchJson(url) {
   return response.json();
 }
 
-async function fetchDescription(sourceKey, id) {
+async function fetchDescription(sourceKey, id, language) {
   const source = ART_SOURCES[sourceKey];
   if (!source) throw new Error(`모르는 출처 ${sourceKey} — ${Object.keys(ART_SOURCES).join('|')}`);
   const json = await fetchJson(source.apiUrl(id));
-  const text = artSourceText(source.rawText(json));
+  const text = artSourceText(source.rawText(json, language));
   if (!text) throw new Error(`${sourceKey} ${id}: 해설이 비어 있다`);
-  return { source: sourceKey, sourceId: String(id), sourceUrl: source.pageUrl(id, json), text, textSha256: await sha256Hex(text) };
+  return { source: sourceKey, sourceId: String(id), language: language ?? (sourceKey === 'aic' ? 'en' : 'ja'), sourceUrl: source.pageUrl(id, json), text, textSha256: await sha256Hex(text) };
 }
 
 if (process.argv.includes('--verify')) {
@@ -36,7 +36,7 @@ if (process.argv.includes('--verify')) {
   for (const work of ART_CATALOG.works) {
     for (const description of work.descriptions) {
       try {
-        const fresh = await fetchDescription(description.source, description.sourceId);
+        const fresh = await fetchDescription(description.source, description.sourceId, description.language);
         const same = fresh.textSha256 === description.textSha256;
         if (!same) failed += 1;
         console.log(`${same ? '✓' : '✗'} ${work.id} ${description.source}:${description.sourceId}${same ? '' : ' — 출처 해설이 바뀌었다(다시 받아 검토)'}`);
@@ -48,10 +48,10 @@ if (process.argv.includes('--verify')) {
   }
   process.exit(failed ? 1 : 0);
 } else {
-  const [sourceKey, id] = process.argv.slice(2);
+  const [sourceKey, id, language] = process.argv.slice(2);
   if (!sourceKey || !id) {
-    console.error('사용법: node scripts/fetch-art-description.mjs <aic|colbase> <id>  |  --verify');
+    console.error('사용법: node scripts/fetch-art-description.mjs <aic|colbase> <id> [ja|en]  |  --verify');
     process.exit(2);
   }
-  console.log(JSON.stringify(await fetchDescription(sourceKey, id), null, 2));
+  console.log(JSON.stringify(await fetchDescription(sourceKey, id, language), null, 2));
 }

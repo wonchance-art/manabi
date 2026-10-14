@@ -45,9 +45,16 @@ export function artSourceText(raw) {
  * 카탈로그 description.source 값이 키다(artCatalog의 source와 같은 이름).
  */
 export const ART_SOURCES = Object.freeze({
+  // 시카고 미술관 — description(HTML, CC BY 4.0). 영어만.
   aic: Object.freeze({
     apiUrl: (id) => `https://api.artic.edu/api/v1/artworks/${encodeURIComponent(id)}?fields=id,title,description`,
     rawText: (json) => json?.data?.description ?? '',
     pageUrl: (id) => `https://www.artic.edu/artworks/${encodeURIComponent(id)}`,
+  }),
+  // ColBase — 재팬서치 항목 API(cobas-<번호>)의 common.description(일본어)·descriptionEn(영어). ColBase 자체 API는 키가 필요하다.
+  colbase: Object.freeze({
+    apiUrl: (id) => `https://jpsearch.go.jp/api/item/${encodeURIComponent(id)}`,
+    rawText: (json, language = 'ja') => (language === 'en' ? json?.common?.descriptionEn : json?.common?.description) ?? '',
+    pageUrl: (id, json) => json?.common?.linkUrl ?? `https://jpsearch.go.jp/item/${encodeURIComponent(id)}`,
   }),
 });

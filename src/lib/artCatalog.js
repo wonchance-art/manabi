@@ -43,6 +43,10 @@ const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const QID = /^Q[1-9]\d*$/;
 const SHA256 = /^[0-9a-f]{64}$/;
 const LANGUAGE = /^(?:ja|zh|en|fr)$/;
+/** 해설 출처 — scripts/fetch-art-description.mjs가 받는 곳(src/lib/artSource.js ART_SOURCES)과 같은 이름·id 형식. */
+const SOURCE_ID = Object.freeze({ colbase: /^cobas-\d+$/, aic: /^\d+$/ });
+/** 박물관 내부 메모(「(20131029_h21・22)」 같은 작업 번호)가 섞인 해설 — 공개 해설이 아니다(ART-P0-2 실측). */
+const INTERNAL_MEMO = /\d{8}_h\d+/;
 
 const isObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 const isText = (value) => typeof value === 'string' && value.trim().length > 0;
@@ -118,12 +122,13 @@ function checkDescription(description, at, errors) {
   if (!isObject(description)) { errors.push(`${at}: 객체여야 한다`); return; }
   if (!LANGUAGE.test(description.language ?? '')) errors.push(`${at}.language: ja|zh|en|fr`);
   if (!Object.values(ART_TEXT_LICENSE).includes(description.license)) errors.push(`${at}.license: 허용 목록 밖 ${description.license}`);
-  if (!isText(description.source) || !isText(description.sourceId)) errors.push(`${at}: source·sourceId가 필요하다`);
+  if (!Object.hasOwn(SOURCE_ID, description.source ?? '')) errors.push(`${at}.source: ${Object.keys(SOURCE_ID).join('|')}`);
+  else if (!SOURCE_ID[description.source].test(description.sourceId ?? '')) errors.push(`${at}.sourceId: ${description.source} id 형식이 아니다`);
   if (!isHttps(description.sourceUrl)) errors.push(`${at}.sourceUrl: HTTPS 원문 주소가 필요하다`);
   if (!isText(description.credit)) errors.push(`${at}.credit: 크레딧 줄이 필요하다(출처 표기 의무)`);
   if (!isText(description.text) || description.text.length > ART_LIMITS.descriptionMax) {
     errors.push(`${at}.text: 해설 1–${ART_LIMITS.descriptionMax}자`);
-  }
+  } else if (INTERNAL_MEMO.test(description.text)) errors.push(`${at}.text: 박물관 내부 메모가 섞인 해설은 싣지 않는다`);
   if (!SHA256.test(description.textSha256 ?? '')) errors.push(`${at}.textSha256: 원문 해시가 필요하다`);
 }
 
@@ -134,6 +139,7 @@ function checkWork(work, at, refs, errors) {
   if (!isObject(date) || !isText(date.text)) errors.push(`${at}.date.text: 원문 표기가 필요하다`);
   else if (!isYear(date.startYear) || !isYear(date.endYear) || date.startYear > date.endYear) errors.push(`${at}.date: startYear ≤ endYear`);
   else if (!ART_DATE_CERTAINTY.includes(date.certainty)) errors.push(`${at}.date.certainty: ${ART_DATE_CERTAINTY.join('|')}`);
+  if (isObject(date) && date.source !== undefined && !Object.hasOwn(SOURCE_ID, date.source)) errors.push(`${at}.date.source: 표기를 가져온 출처(${Object.keys(SOURCE_ID).join('|')})`);
   for (const id of work.periods ?? []) if (!refs.periodIds.has(id)) errors.push(`${at}.periods: 없는 시대 ${id}`);
   if (!isObject(work.medium) || !isText(work.medium.native)) errors.push(`${at}.medium.native: 재료·기법 원문이 필요하다`);
 
@@ -141,6 +147,8 @@ function checkWork(work, at, refs, errors) {
   places.forEach((entry, index) => {
     if (!refs.placeIds.has(entry?.place)) errors.push(`${at}.places[${index}]: 없는 장소 ${entry?.place}`);
     if (!ART_PLACE_ROLES.includes(entry?.role)) errors.push(`${at}.places[${index}].role: ${ART_PLACE_ROLES.join('|')}`);
+    // 소장처는 그 기관의 소장품 기록 링크와 함께 — 전시 여부·자세한 정보는 이 링크에서 본다(저장하지 않으므로).
+    if (entry?.role === 'holding' && !isHttps(entry.url)) errors.push(`${at}.places[${index}].url: 소장품 기록 HTTPS 링크가 필요하다`);
   });
   if (!places.some((entry) => entry?.role === 'holding')) errors.push(`${at}.places: 소장처(holding)가 하나 이상 필요하다`);
 
@@ -159,6 +167,7 @@ function checkWork(work, at, refs, errors) {
     if (!ART_IMAGE_LICENSES.includes(image?.license)) errors.push(`${at}.image.license: 퍼블릭 도메인/CC0만(그 밖은 image 없이)`);
     if (!isHttps(image?.url) || !isHttps(image?.sourceUrl)) errors.push(`${at}.image: HTTPS url·sourceUrl이 필요하다`);
     if (!isText(image?.alt)) errors.push(`${at}.image.alt: 대체 텍스트가 필요하다(접근성)`);
+    if (image?.credit !== undefined && !isText(image.credit)) errors.push(`${at}.image.credit: 캡션은 비어 있으면 안 된다`);
   }
 }
 
@@ -226,7 +235,7 @@ export function artInfoCard(catalog, workId) {
     .filter((entry) => entry.role === role && placeById.has(entry.place))
     .map((entry) => {
       const place = placeById.get(entry.place);
-      return { id: place.id, name: place.name, city: place.city ?? null, lat: place.lat, lng: place.lng, links: place.links ?? {} };
+      return { id: place.id, name: place.name, city: place.city ?? null, lat: place.lat, lng: place.lng, links: place.links ?? {}, url: entry.url ?? null };
     });
   return {
     id: work.id,
