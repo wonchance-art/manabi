@@ -15,7 +15,7 @@
  */
 export const LITERATURE_COVER_COLORS = Object.freeze(['snow', 'vermilion', 'forest', 'ink', 'cream',
   'rust', 'abyss', 'twilight', 'sky', 'dove', 'nightjar', 'river', 'walnut', 'plum',
-  'ash', 'pear', 'meadow', 'olive', 'peach', 'wine', 'amber']);
+  'ash', 'pear', 'meadow', 'olive', 'peach', 'wine', 'amber', 'aegean', 'fog', 'mauve', 'lilac', 'cherry']);
 
 /**
  * 표지 그림(모티프) — 작품 분위기에서 고른 자작 SVG(LiteratureCoverArt). 원서 표지·삽화·알려진 캐릭터를 옮기지 않는다
@@ -23,7 +23,8 @@ export const LITERATURE_COVER_COLORS = Object.freeze(['snow', 'vermilion', 'fore
  */
 export const LITERATURE_COVER_MOTIFS = Object.freeze(['snow-night', 'higanbana', 'forest-doors', 'ink-steam', 'birdcage',
   'rain-gate', 'lotus-thread', 'moon-tiger', 'steam-sea', 'lemon-books', 'nightjar-star', 'night-boat', 'cello-night', 'night-train',
-  'kamakura-letter', 'crab-pear', 'wind-hill', 'dusk-rails', 'peach-house', 'deco-chair', 'spider-sun']);
+  'kamakura-letter', 'crab-pear', 'wind-hill', 'dusk-rails', 'peach-house', 'deco-chair', 'spider-sun',
+  'melos-run', 'clown-photos', 'setting-sun', 'umbrella-rose', 'blossom-storm']);
 
 const filled = (value) => typeof value === 'string' && value.trim() !== '';
 

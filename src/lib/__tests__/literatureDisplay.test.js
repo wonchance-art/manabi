@@ -21,6 +21,8 @@ const read = (file) => readFileSync(path.join(process.cwd(), file), 'utf8');
 const DIGITS = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
 /** 1–99 → 漢数字(十一·二十·五十六) — 작가 見出し 절 번호 표기 */
 const kanjiNumber = (n) => `${n >= 20 ? DIGITS[Math.floor(n / 10)] : ''}${n >= 10 ? '十' : ''}${DIGITS[n % 10]}`;
+/** 한 見出し 장을 n조각으로 나눈 이름 — 「一 (1/5)」… */
+const parts = (heading, n) => Array.from({ length: n }, (_, k) => `${heading} (${k + 1}/${n})`);
 const KEYS = { gon: 'aozora-000121-000628', hana: 'aozora-000879-000042', tebukuro: 'aozora-000121-000637' };
 
 describe('정본 작품 표기 — 대조표가 싣는다', () => {
@@ -58,6 +60,12 @@ describe('정본 작품 표기 — 대조표가 싣는다', () => {
       'aozora-000879-043016': ['split', ['1/2', '2/2']],
       'aozora-001383-056641': ['split', ['1/2', '2/2']],
       'aozora-001779-056648': ['split', ['1/4', '2/4', '3/4', '4/4']],
+      // 4차 묶음(2026-10-15) — 人間失格은 はしがき·手記 셋·あとがき(第三の手記는 一·二 절), 斜陽은 一–八
+      'aozora-000035-000275': ['split', Array.from({ length: 10 }, (_, k) => `${k + 1}/10`)],
+      'aozora-000035-000301': ['heading', ['はしがき', ...parts('第一の手記', 3), ...parts('第二の手記', 9), ...parts('第三の手記　一', 6), ...parts('二', 5), 'あとがき']],
+      'aozora-000035-001565': ['heading', [...parts('一', 5), ...parts('二', 5), ...parts('三', 5), ...parts('四', 4), ...parts('五', 5), ...parts('六', 4), ...parts('七', 3), '八']],
+      'aozora-000035-001567': ['split', ['1/3', '2/3', '3/3']],
+      'aozora-001095-042618': ['split', Array.from({ length: 6 }, (_, k) => `${k + 1}/6`)],
     });
     expect(JSON.stringify(manifest)).not.toMatch(/\d+(과|편)"|전편/u);
   });
@@ -70,7 +78,8 @@ describe('정본 작품 표기 — 대조표가 싣는다', () => {
         '檸檬': '레몬', 'セロ弾きのゴーシュ': '첼로 켜는 고슈', 'よだかの星': '쏙독새의 별', '山月記': '산월기', '高瀬舟': '다카세부네',
         '坊っちゃん': '도련님', '蜘蛛の糸': '거미줄', '羅生門': '라쇼몬',
         '銀河鉄道の夜': '은하철도의 밤', 'こころ': '마음', 'やまなし': '돌배', '風の又三郎': '바람의 마타사부로', 'トロッコ': '광차',
-        '杜子春': '두자춘', '人間椅子': '인간 의자', '刺青': '문신' });
+        '杜子春': '두자춘', '人間椅子': '인간 의자', '刺青': '문신',
+        '走れメロス': '달려라 메로스', '人間失格': '인간 실격', '斜陽': '사양', '女生徒': '여학생', '桜の森の満開の下': '만개한 벚꽃 숲 아래' });
     expect(new Set(works.map((work) => work.display.cover)).size).toBe(works.length);
     // 문양은 작품 분위기에서, 작품마다 새로(오너 지시 2026-10-14 KST 「작품마다 새 문양」) — 같은 문양을 두 작품이 쓰지 않는다
     expect(Object.fromEntries(works.map((work) => [work.title, work.display.motif])))
@@ -78,7 +87,8 @@ describe('정본 작품 표기 — 대조표가 싣는다', () => {
         '檸檬': 'lemon-books', 'セロ弾きのゴーシュ': 'cello-night', 'よだかの星': 'nightjar-star', '山月記': 'moon-tiger', '高瀬舟': 'night-boat',
         '坊っちゃん': 'steam-sea', '蜘蛛の糸': 'lotus-thread', '羅生門': 'rain-gate',
         '銀河鉄道の夜': 'night-train', 'こころ': 'kamakura-letter', 'やまなし': 'crab-pear', '風の又三郎': 'wind-hill', 'トロッコ': 'dusk-rails',
-        '杜子春': 'peach-house', '人間椅子': 'deco-chair', '刺青': 'spider-sun' });
+        '杜子春': 'peach-house', '人間椅子': 'deco-chair', '刺青': 'spider-sun',
+        '走れメロス': 'melos-run', '人間失格': 'clown-photos', '斜陽': 'setting-sun', '女生徒': 'umbrella-rose', '桜の森の満開の下': 'blossom-storm' });
     expect(new Set(works.map((work) => work.display.motif)).size).toBe(works.length);
   });
 
