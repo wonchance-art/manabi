@@ -878,6 +878,9 @@
 
 ## Claude (claude/*)
 ### doing
+- **REV-SCOPE-R1B-2 학습 단계 정책 SQL (2026-10-14 12:40 KST~, 오너 「여기서 진행」 — 인계 [#1337 R1-B](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6106712130), R1-B-1 #1450 위에서)** `claude/project-thread-jqlex2`:
+  anki-v2(학습 1분 · 10분, 재학습 10분) — `valid_card`가 anki-seconds-v1 · anki-v2 둘 다 받고 New 검사는 카드 정책 첫 단계로 · `fsrs_capabilities` 정책값 · 지문 재게시 SQL + 복원 SQL ·
+  PGlite(M09 fixture) 검증 · 코드는 받은 정책값을 따른다. **운영 미적용** — SQL 검수 · 오너 확인 뒤 별도. 결과는 #1337 보고.
 - **대화 모드 v2-Z 전 라운드 (2026-10-14 KST, 오너 「전부 다 승인함」 — 인계 [CONVERSATION-V2Z-001](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6050886728))** `claude/project-thread-a2xmmk`:
   순서 = 인계문 §10 그대로 Z-R1 ①서버 → ②평가 묶음 → ③화면 → Z-R2 → Z-R3, PR 하나씩.
   · **Z-R1 ① 병합(#1438, 2026-10-14 KST)**: `/api/analyze` 핵심 → `analyzeCore.analyzeLines`(응답 동일) · `POST /api/conversation/turn` · 순수 규칙 `lib/conversation/turnModel.js`
