@@ -27,7 +27,7 @@ const themes = {
         { zh: "发言", pinyin: "fāyán", ko: "발언하다; 발언", pos: "동사", hanja: "발언(發言) — 한자 그대로.", ex: { zh: "请大家自由发言。", pinyin: "qǐng dàjiā zìyóu fāyán", ko: "여러분 자유롭게 발언해 주세요." } },
         { zh: "罚款", pinyin: "fákuǎn", ko: "벌금을 물리다; 벌금", pos: "동사", hanja: "벌관(罰款) — '罰'은 벌할 벌, '款'은 돈·항목 관.", ex: { zh: "乱停车会被罚款。", pinyin: "luàn tíngchē huì bèi fákuǎn", ko: "함부로 주차하면 벌금을 물어요." } },
         { zh: "翻", pinyin: "fān", ko: "뒤집다, 넘기다; 번역하다", pos: "동사", hanja: "번(翻) — '뒤칠 번'. '번역(翻譯)'의 번.", ex: { zh: "他翻开书看了起来。", pinyin: "tā fān kāi shū kàn le qǐlái", ko: "그는 책을 펼쳐 읽기 시작했어요." } },
-        { zh: "妨碍", pinyin: "fángài", ko: "방해하다, 지장을 주다", pos: "동사", hanja: "방애(妨礙) — '妨'은 방해할 방, '礙'는 거리낄 애.", ex: { zh: "别妨碍他工作。", pinyin: "bié fáng'ài tā gōngzuò", ko: "그가 일하는 걸 방해하지 마세요." } },
+        { zh: "妨碍", pinyin: "fáng'ài", ko: "방해하다, 지장을 주다", pos: "동사", hanja: "방애(妨礙) — '妨'은 방해할 방, '礙'는 거리낄 애.", ex: { zh: "别妨碍他工作。", pinyin: "bié fáng'ài tā gōngzuò", ko: "그가 일하는 걸 방해하지 마세요." } },
         { zh: "放松", pinyin: "fàngsōng", ko: "긴장을 풀다, 느슨하게 하다", pos: "동사", hanja: "방송(放鬆) — '放'은 놓을 방, '鬆'은 느슨할 송.", ex: { zh: "周末好好放松一下。", pinyin: "zhōumò hǎohǎo fàngsōng yíxià", ko: "주말에 푹 쉬며 긴장을 풀어요." } },
         { zh: "奋斗", pinyin: "fèndòu", ko: "분투하다, 힘써 싸우다", pos: "동사", hanja: "분투(奮鬥) — '奮'은 떨칠 분, '鬥'는 싸울 투.", ex: { zh: "为理想而奋斗。", pinyin: "wèi lǐxiǎng ér fèndòu", ko: "이상을 위해 분투해요." } },
         { zh: "讽刺", pinyin: "fěngcì", ko: "풍자하다, 비꼬다; 풍자", pos: "동사", hanja: "풍자(諷刺) — '諷'은 풍자할 풍, '刺'는 찌를 자.", ex: { zh: "他喜欢讽刺别人。", pinyin: "tā xǐhuan fěngcì biéren", ko: "그는 남을 비꼬길 좋아해요." } },

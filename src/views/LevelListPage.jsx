@@ -3,6 +3,7 @@
 // 단어: 찾기 · 아는 단어 N · 뜻 가리기, 카드마다 [제외][저장]. 문형: 읽기 전용(저장 · 번호 · 캡션 · 펼치기 없음).
 // 저장 = /api/learning/vocabulary action:'save'(FSRS 직접 추가 정본, 기존 카드는 그대로 돌려받는다).
 // 제외 = 아는 단어 표시(useKnownWords → markKnown). 로그인 전에는 둘 다 로그인 안내만, 기록 0.
+// 한자(중국어 HSK 1–2): HanziBoard — 답 카드의 단어 칩이 같은 저장 · 제외 함수를 쓴다(HANZI-TAB-AL-001).
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -15,11 +16,11 @@ import { createFsrsLearningClient } from '@/lib/fsrsLearningClient';
 import { authEntryHref } from '@/lib/authRedirect';
 import { alignFurigana } from '@/views/refShared';
 import {
-  LEVEL_LIST_LANGS, levelLabel, levelPill, levelListHref, jaHeadMode, matchesLevelQuery, splitKnown, fetchSavedLevelKeys,
+  LEVEL_LIST_LANGS, LEVEL_KIND_LABEL, levelKinds, levelLabel, levelPill, levelListHref, jaHeadMode, matchesLevelQuery, splitKnown, fetchSavedLevelKeys,
 } from '@/lib/levelList';
+import HanziBoard from '@/components/levels/HanziBoard';
 import '@/components/levels/level-list.css';
 
-const KIND_LABEL = { vocab: '단어', bunkei: '문형' };
 const svg = { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true };
 const SpeakerIcon = () => <svg {...svg} width={17} height={17} strokeWidth={1.5}><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5H4Z" /><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" /></svg>;
 const SearchIcon = () => <svg {...svg} width={17} height={17} strokeWidth={1.6}><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14M21 21l-5-5" /></svg>;
@@ -65,12 +66,14 @@ function SaveButton({ state, onSave }) {
 export default function LevelListPage({ lang, kind, levelKey, groups }) {
   const conf = LEVEL_LIST_LANGS[lang];
   const vocab = kind === 'vocab';
+  const hanzi = kind === 'hanzi';
+  const wordsOn = vocab || hanzi; // 단어 저장 · 제외를 쓰는 탭
   const pathname = usePathname();
   const { user } = useAuth();
   const userId = user?.id || null;
   const { speak, supported: ttsSupported } = useTTS();
   const say = useCallback((text) => speak(text, conf.language), [speak, conf.language]);
-  const known = useKnownWords(conf.langCode, vocab && !!userId);
+  const known = useKnownWords(conf.langCode, wordsOn && !!userId);
 
   const [query, setQuery] = useState('');
   const [hideMeaning, setHideMeaning] = useState(false);
@@ -109,12 +112,20 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
 
   // FSRS 저장 클라이언트 — 계정마다 하나, 계정이 바뀌면 버린다.
   useEffect(() => {
-    if (!vocab || !userId) return undefined;
+    if (!wordsOn || !userId) return undefined;
     const client = createFsrsLearningClient({ accountId: userId, getAccountId: () => userRef.current });
     client.start();
     fsrs.current = client;
     return () => { client.dispose?.(); if (fsrs.current === client) fsrs.current = null; };
-  }, [vocab, userId]);
+  }, [wordsOn, userId]);
+
+  // 한자 탭 — 답 카드를 열 때 그 칩 단어들의 「저장됨」만 받아 합친다.
+  const loadSaved = useCallback((keys) => {
+    if (!userId || !keys?.length) return;
+    fetchSavedLevelKeys(supabase, userId, conf.language, keys)
+      .then((set) => setSaved((prev) => (set.size ? new Set([...prev, ...set]) : prev)))
+      .catch(() => {});
+  }, [userId, conf.language]);
 
   const loginToast = (message) => setToast({ message, href: authEntryHref(pathname), action: '로그인' });
 
@@ -212,7 +223,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
     return () => io.disconnect();
   }, [shown]);
 
-  const title = `${levelLabel(levelKey)} ${KIND_LABEL[kind]}`;
+  const title = `${levelLabel(levelKey)} ${LEVEL_KIND_LABEL[kind]}`;
   const groupId = (i) => `lv-${kind}-${i}`;
   const nav = shown.map((g, i) => ({ i, name: g.name, href: `#${groupId(i)}`, current: i === activeGroup }));
   const speakOk = mounted && ttsSupported;
@@ -222,13 +233,19 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
     <div className="lv-head">
       <h1>{title}</h1>
       <nav className="lv-pills" aria-label="레벨">
-        {conf.levels.map((key) => <Link key={key} href={levelListHref(lang, kind, key)} aria-current={key === levelKey ? 'page' : undefined}
+        {conf.levels.map((key) => <Link key={key} href={levelListHref(lang, levelKinds(lang, key).includes(kind) ? kind : 'vocab', key)} aria-current={key === levelKey ? 'page' : undefined}
           aria-label={levelLabel(key)}>{levelPill(key)}</Link>)}
       </nav>
     </div>
     <nav className="lv-tabs" aria-label="목록 종류">
-      {Object.entries(KIND_LABEL).map(([k, label]) => <Link key={k} href={levelListHref(lang, k, levelKey)} aria-current={k === kind ? 'page' : undefined}>{label}</Link>)}
+      {levelKinds(lang, levelKey).map((k) => <Link key={k} href={levelListHref(lang, k, levelKey)} aria-current={k === kind ? 'page' : undefined}>{LEVEL_KIND_LABEL[k]}</Link>)}
     </nav>
+    {hanzi ? <HanziBoard levelKey={levelKey} groups={groups} userId={mounted ? userId : null} mounted={mounted} say={speakOk ? say : null}
+      loginHref={authEntryHref(pathname)} words={{
+        knownSet, save, exclude, loadSaved,
+        isSaved: (key) => saved.has(key), isSaving: (key) => saving.has(key),
+        isPendingKnown: (key) => mounted && !!userId && known.isPendingWord(conf.langCode, key),
+      }} /> : <>
     <div className="lv-tools">
       <label className="lv-search"><SearchIcon /><input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="찾기" aria-label={`${title}에서 찾기`} /></label>
       {vocab && knownEntries.length > 0 && <button type="button" className="lv-toggle lv-known-count" aria-pressed={knownView} onClick={() => setShowKnown((v) => !v)}>아는 단어 {knownEntries.length}</button>}
@@ -274,6 +291,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
           <p className="lv-src">{conf.source}</p>
         </div>
       </div>
+    </>}
     </>}
     {toast && <div className="lv-toast" role="status">
       <span>{toast.message}</span>

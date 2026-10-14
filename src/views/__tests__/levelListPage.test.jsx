@@ -74,6 +74,36 @@ describe('문형 목록', () => {
   });
 });
 
+describe('한자 목록(HANZI-TAB-AL-001)', () => {
+  const TONE = /[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/;
+  it('HSK 1 한자: 세 번째 탭 · 글자만(병음 · 뜻 0) · 묶음 목차 · 시작 버튼', async () => {
+    const data = await levelListData('chinese', 'hanzi', 'h1');
+    const html = renderToStaticMarkup(<LevelListPage {...data} />);
+    expect(html).toContain('<h1>HSK 1 한자</h1>');
+    const tabs = [...html.matchAll(/<nav class="lv-tabs"[^>]*>(.*?)<\/nav>/g)][0][1];
+    expect([...tabs.matchAll(/>([^<]+)<\/a>/g)].map((m) => m[1])).toEqual(['단어', '문형', '한자']);
+    expect(html).not.toMatch(TONE);
+    const table = (await import('../../lib/data/zhHanzi/H1.json')).default;
+    const glosses = Object.values(table.chars).flatMap((c) => c.rd.flatMap((r) => r.s.map((x) => x.g)));
+    expect(glosses.filter((g) => [...g].length >= 2 && html.includes(g))).toEqual([]); // 한 글자 뜻(소 · 나)은 화면 문구와 겹쳐 뺀다
+    expect(count(html, 'class="hz-cell')).toBe(data.groups[0].entries.length);
+    expect(html).toContain('>문법 글자<');
+    expect(html).toContain('넘기며 확인 <small>');
+    expect(html).not.toContain('모름만'); // 로그인 전 · 표시 0
+    expect(html).not.toContain('class="lv-search"');
+    // 알약: 한자 탭이 있는 급수(1 · 2)는 한자로, 없는 급수(3–6)는 단어로 — 없는 주소(404) 0
+    const pills = [...html.matchAll(/href="(\/chinese\/[a-z]+\/h\d)" aria-label="HSK \d"|aria-label="HSK \d" href="(\/chinese\/[a-z]+\/h\d)"/g)].map((m) => m[1] || m[2]);
+    expect(pills).toEqual(['/chinese/hanzi/h1', '/chinese/hanzi/h2', '/chinese/vocab/h3', '/chinese/vocab/h4', '/chinese/vocab/h5', '/chinese/vocab/h6']);
+  });
+
+  it('한자 탭은 HSK 1–2급만 — 3급 이상 · 일본어에는 없다', async () => {
+    expect(await render('chinese', 'vocab', 'h1')).toContain('href="/chinese/hanzi/h1"');
+    expect(await render('chinese', 'vocab', 'h3')).not.toContain('/chinese/hanzi/');
+    expect(await levelListData('chinese', 'hanzi', 'h3')).toBeNull();
+    expect(await levelListData('japanese', 'hanzi', 'n5')).toBeNull();
+  });
+});
+
 describe('책장 타일', () => {
   it('레벨 + 「단어 N / 문형 N」 두 줄, 숫자는 넘겨받은 값(천 단위 쉼표)', () => {
     const html = renderToStaticMarkup(<LevelTiles language="Chinese" tiles={[{ levelKey: 'H1', vocab: 300, bunkei: 77 }, { levelKey: 'H6', vocab: 1384, bunkei: 59 }]} />);
