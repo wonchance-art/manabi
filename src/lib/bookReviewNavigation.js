@@ -29,25 +29,37 @@ export function bookReferenceHref(href) {
   return url.pathname + url.search + url.hash;
 }
 
-async function fetchScopeIds(path, { signal, fetcher = fetch, failure }) {
-  const ids = new Set();
+async function collectScope(path, { signal, fetcher = fetch, failure }) {
+  const ids = new Set(), chapters = {};
   let offset = 0;
   do {
     const response = await fetcher(`${path}${path.includes('?') ? '&' : '?'}offset=${offset}`, { cache: 'no-store', signal });
     const result = await response.json();
     if (!response.ok || !Array.isArray(result.wordIds)) throw new Error(failure);
     for (const id of result.wordIds) ids.add(id);
-    if (result.nextOffset == null) return [...ids];
+    if (result.chapters && typeof result.chapters === 'object') {
+      for (const [id, slug] of Object.entries(result.chapters)) if (typeof slug === 'string' && !(id in chapters)) chapters[id] = slug;
+    }
+    if (result.nextOffset == null) return { ids: [...ids], chapters };
     if (!Number.isSafeInteger(result.nextOffset) || result.nextOffset <= offset) throw new Error('표현 목록의 다음 위치를 확인하지 못했어요.');
     offset = result.nextOffset;
   } while (!signal?.aborted);
   throw new DOMException('Aborted', 'AbortError');
 }
 
-/** 교재 범위의 내 단어 id — 과 범위(from · to)를 주면 그 과에서 담은 것만. 한 쪽이라도 실패하면 전체 실패(닫힘). */
-export function fetchBookVocabularyIds({ signal, fetcher = fetch, from = 1, to = BOOK_LESSONS } = {}) {
+async function fetchScopeIds(path, options) {
+  return (await collectScope(path, options)).ids;
+}
+
+/** 교재 범위의 내 단어 id + 단어별 과(chapter_slug — 복습 줄의 띄우기 단위, REV-SCOPE-R1B-1). 실패 규칙은 아래와 같다. */
+export function fetchBookScope({ signal, fetcher = fetch, from = 1, to = BOOK_LESSONS } = {}) {
   const range = from === 1 && to === BOOK_LESSONS ? '' : `&from=${from}&to=${to}`;
-  return fetchScopeIds(`/api/learning/book-review?scope=1${range}`, { signal, fetcher, failure: '이 교재의 표현 범위를 불러오지 못했어요.' });
+  return collectScope(`/api/learning/book-review?scope=1${range}`, { signal, fetcher, failure: '이 교재의 표현 범위를 불러오지 못했어요.' });
+}
+
+/** 교재 범위의 내 단어 id — 과 범위(from · to)를 주면 그 과에서 담은 것만. 한 쪽이라도 실패하면 전체 실패(닫힘). */
+export async function fetchBookVocabularyIds(options = {}) {
+  return (await fetchBookScope(options)).ids;
 }
 
 /** 자료(노트 포함) 범위의 내 단어 id — 저장 출처(source_material_id) ∪ 담은 문맥(vocabulary_contexts.material_id). */

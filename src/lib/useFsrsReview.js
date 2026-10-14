@@ -230,10 +230,12 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
       return { enrolled: false, error };
     }
   }
-  async function question() {
+  // cardId를 주면 그 카드를 연다(두 엔진이 섞인 복습 줄 — REV-SCOPE-R1B-1). 출제 가능한 카드가 아니면 열지 않는다.
+  async function question(cardId = null) {
+    if (cardId && state.current?.cardId === cardId) return true;
     return run(async token => {
       if (!(await refresh()) || disposed || token !== generation || !state.enabled) return false;
-      const entry = state.ready[0];
+      const entry = cardId ? state.ready.find(row => row.cardId === cardId) : state.ready[0];
       if (!entry) return false;
       const current = { cardId: entry.cardId, card: clone(entry.card), word: visibleWord(entry.cardId),
         attempt: null, phase: 'question', previews: null, previewAt: null };

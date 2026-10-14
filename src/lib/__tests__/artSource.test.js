@@ -1,0 +1,42 @@
+import { describe, expect, it } from 'vitest';
+import { ART_SOURCES, artSourceText } from '../artSource.js';
+
+describe('artSourceText — 출처 응답 → 카탈로그 해설 text', () => {
+  it('시카고 미술관 HTML: 문단은 빈 줄, 태그는 벗기고 속 글자는 남긴다', () => {
+    const html = '<p>Katsushika Hokusai’s series, <em>Thirty-Six Views of Mount Fuji</em>, was begun in 1830.</p>\n<p>The <a href="/x">Great Wave</a> &amp; Fuji.</p>\n';
+    expect(artSourceText(html)).toBe(
+      'Katsushika Hokusai’s series, Thirty-Six Views of Mount Fuji, was begun in 1830.\n\nThe Great Wave & Fuji.',
+    );
+  });
+
+  it('ColBase 평문: CRLF만 맞추고 전각 공백·문장부호는 그대로', () => {
+    expect(artSourceText('　富士を望む。\r\n　波が高い。\r\n')).toBe('　富士を望む。\n　波が高い。');
+  });
+
+  it('엔티티(이름·10진·16진)를 글자로, 모르는 엔티티는 그대로', () => {
+    expect(artSourceText('a&nbsp;b &#8212; &#x2014; &lt;i&gt; &unknown;')).toBe('a\u00a0b — — <i> &unknown;');
+  });
+
+  it('<br>은 줄바꿈, 빈 줄 여럿은 하나로', () => {
+    expect(artSourceText('<p>一行目<br>二行目</p>\n\n\n<p>次の段落</p>')).toBe('一行目\n二行目\n\n次の段落');
+  });
+
+  it('경계 입력: 속성 붙은 <br>, HTML 주석, NUL·범위 밖 코드 포인트', () => {
+    expect(artSourceText('一<br class="y">二')).toBe('一\n二');
+    expect(artSourceText('前<!-- a > b -->後')).toBe('前後');
+    expect(artSourceText('&#0;x&#99999999;')).toBe('&#0;x&#99999999;');
+  });
+
+  it('출처표: 출처마다 받을 수 있는 해설 언어', () => {
+    expect(ART_SOURCES.colbase.languages).toEqual(['ja', 'en']);
+    expect(ART_SOURCES.aic.languages).toEqual(['en']);
+    expect(ART_SOURCES.colbase.rawText({ common: { description: '<p>日</p>', descriptionEn: 'en' } }, 'ja')).toBe('<p>日</p>');
+    expect(ART_SOURCES.colbase.rawText({ common: { description: '日', descriptionEn: 'en' } }, 'en')).toBe('en');
+    expect(ART_SOURCES.aic.rawText({ data: { description: '<p>x</p>' } })).toBe('<p>x</p>');
+  });
+
+  it('문자열이 아니면 빈 문자열', () => {
+    expect(artSourceText(null)).toBe('');
+    expect(artSourceText(undefined)).toBe('');
+  });
+});
