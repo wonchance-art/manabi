@@ -50,6 +50,8 @@ const SOURCE_ID = Object.freeze({ colbase: /^cobas-\d+$/, aic: /^\d+$/ });
 /** 그림 파일 경로 — public/art 아래 파일(사이트 상대 주소). 지금 파일은 메트로폴리탄 미술관 오픈 액세스(CC0, images.metmuseum.org)에서 받았다. */
 export const ART_IMAGE_PATH = /^\/art\/[a-z0-9-]+\.(?:jpg|webp)$/;
 const INTERNAL_MEMO = /\d{8}_h\d+/;
+/** ColBase 읽기 표시(「宮＠みや＠は」「+かたきうち+」) — 원문 그대로 실으면 학습자에게 기호가 보인다. 고치지 않고 싣지 않는다(ART-AUTO-001 실측). */
+const READING_MARKS = /[＠@][\u3040-\u30ff]{1,12}[＠@]|\+[\u3040-\u30ff]{1,12}\+/;
 
 const isObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 const isText = (value) => typeof value === 'string' && value.trim().length > 0;
@@ -132,6 +134,7 @@ function checkDescription(description, at, errors) {
   if (!isText(description.text) || description.text.length > ART_LIMITS.descriptionMax) {
     errors.push(`${at}.text: 해설 1–${ART_LIMITS.descriptionMax}자`);
   } else if (INTERNAL_MEMO.test(description.text)) errors.push(`${at}.text: 박물관 내부 메모가 섞인 해설은 싣지 않는다`);
+  else if (READING_MARKS.test(description.text)) errors.push(`${at}.text: 읽기 표시(＠よみ＠·+よみ+)가 섞인 해설은 싣지 않는다`);
   if (!SHA256.test(description.textSha256 ?? '')) errors.push(`${at}.textSha256: 원문 해시가 필요하다`);
 }
 

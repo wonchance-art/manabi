@@ -9,10 +9,12 @@ const clone = (value) => JSON.parse(JSON.stringify(value));
 const materialOf = (chapter, patch = {}) => ({ raw_text: chapter.rawText, processed_json: { metadata: chapter.metadata }, ...patch });
 
 describe('큐레이션 책 — 카탈로그 → 정본 책 장', () => {
-  const [book] = artBooks();
+  const books = artBooks();
+  const [book, second] = books;
 
-  it('게시 책은 풍경 우키요에 한 권, 작품 한 점 = 일본어 해설 한 장', () => {
-    expect(ART_PUBLISHED_CURATIONS).toEqual(['ukiyoe-landscape-hokusai-hiroshige']);
+  it('게시 책은 풍경 우키요에 두 권(첫 권 그대로 + 속편), 작품 한 점 = 일본어 해설 한 장', () => {
+    expect(ART_PUBLISHED_CURATIONS).toEqual(['ukiyoe-landscape-hokusai-hiroshige', 'ukiyoe-landscape-hokusai-hiroshige-2']);
+    expect(books.map((item) => item.book.key)).toEqual(ART_PUBLISHED_CURATIONS.map(artBookKey));
     expect(book.book).toEqual({
       key: artBookKey('ukiyoe-landscape-hokusai-hiroshige'), title: '北斎と広重の風景版画', author: '葛飾北斎・歌川広重', level: 'N2 상급', total: 8,
     });
@@ -27,9 +29,33 @@ describe('큐레이션 책 — 카탈로그 → 정본 책 장', () => {
     }
   });
 
+  it('속편: 호쿠사이 두 점 + 히로시게 다섯 점, 일곱 장 연대순', () => {
+    expect(second.book).toEqual({
+      key: artBookKey('ukiyoe-landscape-hokusai-hiroshige-2'), title: '続・北斎と広重の風景版画', author: '葛飾北斎・歌川広重', level: 'N2 상급', total: 7,
+    });
+    expect(second.chapters.map((chapter) => chapter.order)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    const works = new Map(ART_CATALOG.works.map((work) => [work.id, work]));
+    const chapterWorks = second.chapters.map((chapter) => works.get(chapter.metadata.literature.work));
+    expect(chapterWorks.filter((work) => work.artist === 'katsushika-hokusai')).toHaveLength(2);
+    expect(chapterWorks.filter((work) => work.artist === 'utagawa-hiroshige')).toHaveLength(5);
+    const starts = chapterWorks.map((work) => work.date.startYear);
+    expect(starts).toEqual([...starts].sort((a, b) => a - b));
+    for (const chapter of second.chapters) {
+      expect(chapter.materialTitle).toBe(`${second.book.title} — ${chapter.title}`);
+      expect(chapter.metadata.book).toMatchObject({ key: second.book.key, order: chapter.order, total: 7 });
+    }
+  });
+
+  it('게시 책끼리 작품이 겹치지 않는다 — 같은 해설이 두 행이 되지 않게', () => {
+    const ids = books.flatMap((item) => item.chapters.map((chapter) => chapter.metadata.literature.work));
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
   it('장 원문은 카탈로그 해설 그대로 — 해시가 같고 게시 가능', async () => {
-    expect(await verifyArtBookTexts(book)).toEqual([]);
-    expect(artBookPublishable(book)).toBe(true);
+    for (const item of books) {
+      expect(await verifyArtBookTexts(item), item.book.key).toEqual([]);
+      expect(artBookPublishable(item), item.book.key).toBe(true);
+    }
   });
 
   it('원문을 고친 장·허용 밖 라이선스가 있으면 게시하지 않는다', () => {

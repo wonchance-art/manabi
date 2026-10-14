@@ -165,5 +165,155 @@
     "city": "뉴욕",
     "lat": 40.779444,
     "lng": -73.963056
+  },
+  {
+    "id": "sumida-river",
+    "wikidata": "Q222149",
+    "kind": "landscape",
+    "name": {
+      "native": "隅田川",
+      "ko": "스미다강"
+    },
+    "city": "도쿄",
+    "lat": 35.718611111,
+    "lng": 139.807222222,
+    "links": {
+      "studiesPin": "tokyo"
+    }
+  },
+  {
+    "id": "ryogoku-bridge",
+    "wikidata": "Q3080489",
+    "kind": "site",
+    "name": {
+      "native": "両国橋",
+      "ko": "료고쿠 다리"
+    },
+    "city": "도쿄",
+    "lat": 35.69431,
+    "lng": 139.788719,
+    "links": {
+      "studiesPin": "tokyo"
+    }
+  },
+  {
+    "id": "onmaya-gashi",
+    "wikidata": "Q66730519",
+    "kind": "site",
+    "name": {
+      "native": "御厩河岸",
+      "ko": "온마야 강기슭"
+    },
+    "city": "도쿄",
+    "lat": 35.70145,
+    "lng": 139.79291,
+    "links": {
+      "studiesPin": "tokyo"
+    }
+  },
+  {
+    "id": "rakanji-ojima",
+    "wikidata": "Q97176584",
+    "kind": "temple",
+    "name": {
+      "native": "羅漢寺",
+      "ko": "라칸지(고햐쿠라칸지 옛터)"
+    },
+    "city": "도쿄",
+    "lat": 35.689611111,
+    "lng": 139.826666666,
+    "links": {
+      "studiesPin": "tokyo"
+    }
+  },
+  {
+    "id": "senso-ji",
+    "wikidata": "Q615183",
+    "kind": "temple",
+    "name": {
+      "native": "浅草寺",
+      "ko": "센소지"
+    },
+    "city": "도쿄",
+    "lat": 35.714555555,
+    "lng": 139.796638888,
+    "links": {
+      "studiesPin": "tokyo"
+    }
+  },
+  {
+    "id": "kaminarimon",
+    "wikidata": "Q2378708",
+    "kind": "site",
+    "name": {
+      "native": "雷門",
+      "ko": "가미나리몬"
+    },
+    "city": "도쿄",
+    "lat": 35.71113333,
+    "lng": 139.796325,
+    "links": {
+      "studiesPin": "tokyo"
+    }
+  },
+  {
+    "id": "komagata-do",
+    "wikidata": "Q100597198",
+    "kind": "temple",
+    "name": {
+      "native": "駒形堂",
+      "ko": "고마가타도"
+    },
+    "city": "도쿄",
+    "lat": 35.708934,
+    "lng": 139.796757,
+    "links": {
+      "studiesPin": "tokyo"
+    }
+  },
+  {
+    "id": "azuma-bridge",
+    "wikidata": "Q794294",
+    "kind": "site",
+    "name": {
+      "native": "吾妻橋",
+      "ko": "아즈마 다리"
+    },
+    "city": "도쿄",
+    "lat": 35.71,
+    "lng": 139.798888888,
+    "links": {
+      "studiesPin": "tokyo"
+    }
+  },
+  {
+    "id": "tsuki-no-misaki",
+    "wikidata": "Q458243",
+    "kind": "site",
+    "name": {
+      "native": "月の岬",
+      "ko": "쓰키노미사키(달의 곶)"
+    },
+    "city": "도쿄",
+    "lat": 35.64350278,
+    "lng": 139.74089722,
+    "links": {
+      "studiesPin": "tokyo"
+    }
+  },
+  {
+    "id": "otori-shrine-asakusa",
+    "wikidata": "Q11676284",
+    "kind": "temple",
+    "name": {
+      "native": "鷲神社",
+      "ko": "오토리 신사"
+    },
+    "city": "도쿄",
+    "lat": 35.72256806,
+    "lng": 139.79188611,
+    "links": {
+      "studiesPin": "tokyo"
+    }
   }
 ]
