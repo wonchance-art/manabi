@@ -1,0 +1,75 @@
+{
+  "id": "hokusai-gohyaku-rakanji-sazaido",
+  "wikidata": "Q18173408",
+  "artist": "katsushika-hokusai",
+  "title": {
+    "native": "冨嶽三十六景 五百らかん寺さゞゐどう",
+    "ko": "후가쿠 36경 — 고햐쿠라칸지의 사자이도",
+    "reading": "ふがくさんじゅうろっけい ごひゃくらかんじさざいどう"
+  },
+  "series": {
+    "native": "冨嶽三十六景",
+    "ko": "후가쿠 36경"
+  },
+  "date": {
+    "text": "c. 1830/33",
+    "source": "aic",
+    "startYear": 1830,
+    "endYear": 1833,
+    "certainty": "circa"
+  },
+  "periods": [
+    "jp-edo"
+  ],
+  "medium": {
+    "native": "横大判　錦絵",
+    "ko": "가로 오반 니시키에(다색 목판화)"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-2735"
+    },
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/24707"
+    },
+    {
+      "place": "metropolitan-museum-of-art",
+      "role": "holding",
+      "url": "https://www.metmuseum.org/art/collection/search/55740"
+    },
+    {
+      "place": "rakanji-ojima",
+      "role": "depicted"
+    },
+    {
+      "place": "mount-fuji",
+      "role": "depicted"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-51299"
+    }
+  ],
+  "terms": [
+    "螺旋",
+    "見晴台",
+    "眺望"
+  ],
+  "lookFor": [
+    "난간에 선 사람들은 모두 어느 쪽을 바라보고 있을까요?",
+    "왼쪽에서 팔을 뻗어 먼 곳을 가리키는 사람을 찾아봐요.",
+    "마룻바닥 널빤지의 줄이 어느 쪽으로 모이는지 따라가 봐요."
+  ],
+  "image": {
+    "source": "met",
+    "sourceId": "55740",
+    "alt": "절 높은 곳의 넓은 마루에서 사람들이 난간에 기대어 먼 들판 너머 작은 후지산을 바라본다. 왼쪽에는 팔을 뻗어 가리키는 사람이, 오른쪽 구석에는 앉아 쉬는 사람들이 있고, 처마 끝에 등롱이 매달려 있다."
+  }
+}

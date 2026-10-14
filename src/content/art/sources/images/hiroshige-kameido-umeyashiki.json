@@ -1,0 +1,20 @@
+{
+  "bytes": 92607,
+  "file": "hiroshige-kameido-umeyashiki.jpg",
+  "height": 625,
+  "note": "ART-IMG-002 — 레이크스 미술관 RP-P-1956-743(CC0) 디지털화본을 위키미디어 공용 파일 페이지에서 받았다. 공용 API는 요청 제한(429)이 잦아 record는 파일 페이지·레이크스 기록에서 손으로 옮겼다. 원 파일은 upload.wikimedia.org 960px 썸네일을 로컬에서 줄인 것이다(README 「이미지」).",
+  "record": {
+    "accession": "RP-P-1956-743",
+    "artist": "Utagawa Hiroshige",
+    "date": "1857",
+    "holder": "Rijksmuseum, Amsterdam",
+    "license": "cc0",
+    "title": "“Plum Garden in Kameido” (Kameido umeyashiki), from the series One Hundred Famous Views of Edo"
+  },
+  "sha256": "8d519c6c4960abb4b0e315abedbcd8d42c9301a7cf562da9eba4e3f9d9e4ed5d",
+  "source": "commons",
+  "sourceId": "File:De_pruimenboomgaard_te_Kameido_Kameido_umeyashiki_(titel_op_object)_Honderd_beroemde_gezichten_op_Edo_(serietitel)_Meisho_Edo_hyakkei_(serietitel_op_object),_RP-P-1956-743.jpg",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:De_pruimenboomgaard_te_Kameido_Kameido_umeyashiki_(titel_op_object)_Honderd_beroemde_gezichten_op_Edo_(serietitel)_Meisho_Edo_hyakkei_(serietitel_op_object),_RP-P-1956-743.jpg",
+  "width": 425,
+  "workId": "hiroshige-kameido-umeyashiki"
+}

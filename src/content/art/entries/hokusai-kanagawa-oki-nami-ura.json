@@ -1,0 +1,80 @@
+{
+  "id": "hokusai-kanagawa-oki-nami-ura",
+  "wikidata": "Q252485",
+  "artist": "katsushika-hokusai",
+  "title": {
+    "native": "冨嶽三十六景 神奈川沖浪裏",
+    "ko": "후가쿠 36경 — 가나가와 앞바다 파도 아래",
+    "reading": "ふがくさんじゅうろっけい かながわおきなみうら"
+  },
+  "series": {
+    "native": "冨嶽三十六景",
+    "ko": "후가쿠 36경"
+  },
+  "date": {
+    "text": "1830/33",
+    "source": "aic",
+    "startYear": 1830,
+    "endYear": 1833,
+    "certainty": "range"
+  },
+  "periods": [
+    "jp-edo"
+  ],
+  "medium": {
+    "native": "横大判　錦絵",
+    "ko": "가로 오반 니시키에(다색 목판화)"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-685"
+    },
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/24645"
+    },
+    {
+      "place": "metropolitan-museum-of-art",
+      "role": "holding",
+      "url": "https://www.metmuseum.org/art/collection/search/39799"
+    },
+    {
+      "place": "tokyo-bay",
+      "role": "depicted"
+    },
+    {
+      "place": "mount-fuji",
+      "role": "depicted"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-49296"
+    },
+    {
+      "language": "en",
+      "source": "aic",
+      "sourceId": "24645"
+    }
+  ],
+  "terms": [
+    "浮世絵師",
+    "木版画",
+    "ベルリン・ブルー"
+  ],
+  "lookFor": [
+    "파도에 휩쓸리는 배는 몇 척이고, 노 젓는 사람들은 어떤 자세일까요?",
+    "멀리 작은 후지산은 파도의 어느 부분과 겹쳐 보일까요?",
+    "푸른색이 가장 짙은 곳과 옅은 곳을 찾아봐요."
+  ],
+  "image": {
+    "source": "met",
+    "sourceId": "39799",
+    "alt": "발톱처럼 휘어 올라간 큰 파도가 길고 좁은 배 세 척을 덮치려 하고, 파도 골 사이 멀리 눈 덮인 작은 후지산이 보인다."
+  }
+}

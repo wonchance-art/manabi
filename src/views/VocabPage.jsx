@@ -663,10 +663,18 @@ function VocabWorkspace({ reviewScope }) {
     [reviewQueue, vocab]
   );
   const currentStep = reviewQueue[reviewIdx];
+  // 「다시」 재노출 단계 — 방금 채점해 다음 일정이 하루 뒤라, 입장권을 다시 받지 않고 일정도 다시 저장하지 않는다
+  // (입장 RPC는 채점된 적 있고 next_review_at이 미래인 카드를 learning_card_not_due로 거절한다 — M09 #1337 6171362813).
+  const againWord = useMemo(() => {
+    const step = reviewQueue[reviewIdx];
+    return step?.engine === 'legacy' && step.phase === 'again' && fsrsReview.controller.canLegacy(step.id)
+      ? vocab.find(v => v.id === step.id && reviewSupported(v) && !v.is_excluded && !v.is_known) : undefined;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reviewQueue, reviewIdx, vocab, reviewSupported, fsrsReview.controller, fsrsReview.registryAvailable, fsrsReview.enrolledIds]);
   // 예전 일정 단계 — 입장권(admission)을 받은 뒤에만 연다(처음 보는 표현 카드도 새 표현 한도를 여기서 쓴다).
   const candidateWord = useMemo(() => {
     const step = reviewQueue[reviewIdx];
-    return step?.engine === 'legacy' && step.phase !== 'skipped' && fsrsReview.controller.canLegacy(step.id) ? vocab.find(v => v.id === step.id && reviewAvailable(v) && reviewSupported(v)) : undefined;
+    return step?.engine === 'legacy' && step.phase !== 'skipped' && step.phase !== 'again' && fsrsReview.controller.canLegacy(step.id) ? vocab.find(v => v.id === step.id && reviewAvailable(v) && reviewSupported(v)) : undefined;
     // controller는 안정 객체라 canLegacy 결과가 바뀌는 신호(registryAvailable·enrolledIds)를 명시해 다시 판정한다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewQueue, reviewIdx, vocab, reviewSupported, reviewAvailable, fsrsReview.controller, fsrsReview.registryAvailable, fsrsReview.enrolledIds]);
@@ -679,8 +687,8 @@ function VocabWorkspace({ reviewScope }) {
 
   const questionKey = `${reviewSessionId}:${reviewIdx}`;
   // 로그인 전에는 user?.id·current가 둘 다 비어 undefined === undefined가 되지 않게 사용자 id를 먼저 본다(게스트 /vocab 크래시).
-  const currentWord = !!user?.id && admission.current?.accountId === user.id && admission.current.cardId === candidateWord?.id
-    && admission.current.questionKey === questionKey ? candidateWord : undefined;
+  const currentWord = againWord || (!!user?.id && admission.current?.accountId === user.id && admission.current.cardId === candidateWord?.id
+    && admission.current.questionKey === questionKey ? candidateWord : undefined);
   // 같은 카드면 새 객체여도 다시 묻지 않는다 — id에만 반응한다.
   const candidateId = candidateWord?.id;
   useEffect(() => {
@@ -710,6 +718,11 @@ function VocabWorkspace({ reviewScope }) {
   };
 
   const handleScore = async (rating) => {
+    // 「다시」 재노출은 확인만 — 일정 · 기록은 첫 채점 한 번뿐이다. 또 「다시」면 한 번 더 끝에 둔다.
+    if (againWord && currentWord?.id === againWord.id) {
+      if (!scoringRef.current) goNextReview(rating === 1 ? againWord.id : null);
+      return;
+    }
     const actorId = user?.id;
     const lifetime = gradeLifetimeRef.current;
     const currentActor = () => workspaceAlive.current && gradeLifetimeRef.current === lifetime && mutationGuard.current.accountId === actorId;
@@ -787,6 +800,7 @@ function VocabWorkspace({ reviewScope }) {
   };
 
   const handleSkip = () => {
+    if (againWord && currentWord?.id === againWord.id) { if (!scoringRef.current) goNextReview(); return; }
     if (scoringRef.current || pendingGradeRef.current || !currentWord || !fsrsReview.controller.canLegacy(currentWord.id) || !reviewSupported(currentWord) || currentWord.is_excluded) return;
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -1077,9 +1091,11 @@ function VocabWorkspace({ reviewScope }) {
   };
 
   // 다른 탭에서 제외 · 삭제 · 아는 단어가 된 지금 카드는 채점 없이 다음 남은 단계로 건너뛴다(두 엔진).
+  // 「다시」 재노출은 방금 채점해 일정상 아직 때가 아니므로 reviewAvailable 대신 제외 · 아는 단어만 본다(againWord와 같은 조건).
   const stepValid = step => step.phase !== 'skipped' && (step.engine === 'fsrs' ? fsrsStepValid(step.id)
-    : fsrsReview.controller.canLegacy(step.id) && vocab.some(row => row.id === step.id && reviewAvailable(row) && reviewSupported(row)));
-  const stepReady = !!candidateWord || !!fsrsStepWord;
+    : fsrsReview.controller.canLegacy(step.id) && vocab.some(row => row.id === step.id && reviewSupported(row)
+      && (step.phase === 'again' ? !row.is_excluded && !row.is_known : reviewAvailable(row))));
+  const stepReady = !!candidateWord || !!againWord || !!fsrsStepWord;
   useEffect(() => {
     if (stepReady || reviewFinished || !reviewQueue.length || isLoading || vocabError || koreanCapabilities.isLoading || !fsrsReview.registryAvailable) return;
     const next = reviewQueue.findIndex((step, index) => index > reviewIdx && stepValid(step));
@@ -1158,7 +1174,8 @@ function VocabWorkspace({ reviewScope }) {
   const finishInfo = reviewRun && runProgress ? {
     scopeLabel: scopeSummaryLabel(scope, { materialTitles }),
     total: runProgress.done,
-    again: reviewQueue.filter(step => step.phase === 'again').length + fsrsAgain,
+    // 「다시」 재노출에서 또 「다시」를 눌러 같은 표현이 여러 번 끝에 붙어도 한 번으로 센다.
+    again: new Set(reviewQueue.filter(step => step.phase === 'again').map(step => step.id)).size + fsrsAgain,
     cutRemaining: reviewRun.cut ? session.queue.ids.filter(id => !reviewRun.cardIds.includes(id)).length : 0,
     onContinueCut: () => startReview(),
     waiting: waitingFsrs, onResumeWaiting: resumeWaiting,

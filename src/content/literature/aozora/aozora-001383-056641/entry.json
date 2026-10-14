@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "personId": "001383",
+  "workId": "56641",
+  "title": "刺青",
+  "author": "谷崎潤一郎",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1910,
+  "authorDeathYear": 1965,
+  "level": "N1 심화",
+  "cardUrl": "https://www.aozora.gr.jp/cards/001383/card56641.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/001383/files/56641_ruby_59456.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "40e71791342b99fe7f82e5bee2be1c29cdb7b9e654dc7025857a112658f27f6f",
+  "textSha256": "73441e3b15a3f41c411fd29c6d95bc5b86afcc05bb224dac4f182a36af69e748",
+  "attribution": {
+    "author": "谷崎潤一郎",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-15",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR",
+      "US"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/001383/card56641.html"
+  },
+  "display": {
+    "titleReading": "しせい",
+    "titleKo": "문신",
+    "authorKo": "다니자키 준이치로",
+    "cover": "amber",
+    "motif": "spider-sun"
+  }
+}

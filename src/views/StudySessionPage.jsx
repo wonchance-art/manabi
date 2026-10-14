@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { seededShuffle } from '../lib/seededShuffle';
 import Button from '../components/Button';
 import ExerciseEnginePrototype from '../components/ExerciseEnginePrototype';
 import RefSpeak from '../components/RefSpeak';
@@ -38,14 +39,6 @@ async function persistWritingPractice(row) {
   }
 }
 
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
 
 /**
  * 공부 모드 세션 — 서버가 조립한 ~12문항을 듀오링고식으로 진행한다.
@@ -56,7 +49,7 @@ export default function StudySessionPage({
   session = null, paragraphMaterials = null, pregenerated = null, warmup = [], encounterItems = [], dial = 'normal',
   sourceMode = false,
   lang, langCode, langName, readKey,
-  band = 'beginner', languages = [], signedOut = false,
+  band = 'beginner', languages = [], signedOut = false, shuffleSeed = '',
 }) {
   // 입문 레벨(N5 등) 일본어 배려 — 답변 중에도 요미가나·후리가나를 보여준다.
   const kanjiCare = band === 'beginner' && langCode === 'ja';
@@ -369,9 +362,12 @@ export default function StudySessionPage({
     [queue]
   );
 
-  // 문항별 셔플 보기·토큰 (uid 기준 1회)
+  // 문항별 셔플 보기·토큰 (uid 기준 1회). 첫 문항은 서버에서도 렌더되므로 무작위로 섞으면 서버와 첫 클라이언트 렌더의
+  // 순서가 달라 하이드레이션 오류(React #418)가 났다(M09 #1337 6176524870). 서버가 요청마다 만든 shuffleSeed + uid로
+  // 결정적으로 섞는다 — 같은 세션 안에서는 서버 · 클라이언트가 같고, 세션마다 순서는 바뀐다.
   const prepared = useMemo(() => {
     if (!item) return null;
+    const shuffle = arr => seededShuffle(arr, `${shuffleSeed}:${item.uid}`);
     if (item.options) return { options: shuffle(item.options) };
     if (item.tokens) return { bank: shuffle(item.tokens.map((t, ti) => ({ t, ti }))) };
     if (item.quiz?.tokens) return { bank: shuffle(item.quiz.tokens.map((t, ti) => ({ t, ti }))) };

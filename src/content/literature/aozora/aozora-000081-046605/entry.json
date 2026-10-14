@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "personId": "000081",
+  "workId": "46605",
+  "title": "やまなし",
+  "author": "宮沢賢治",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1923,
+  "authorDeathYear": 1933,
+  "level": "N3 중급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000081/card46605.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000081/files/46605_ruby_29758.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "fb4a85928dacee7d3ab0ac925c450fb61c3bc470935e1ea8ad7d16a3626d5c4d",
+  "textSha256": "c368ec414aee189bbe5a26f9c3afd4956b796efe87e233b3a5c8fbebc2ae33df",
+  "attribution": {
+    "author": "宮沢賢治",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-15",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR",
+      "US"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000081/card46605.html"
+  },
+  "display": {
+    "titleReading": "やまなし",
+    "titleKo": "돌배",
+    "authorKo": "미야자와 겐지",
+    "cover": "pear",
+    "motif": "crab-pear"
+  }
+}

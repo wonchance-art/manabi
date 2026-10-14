@@ -1,0 +1,19 @@
+{
+  "bytes": 98187,
+  "fetchedAt": "2026-10-14",
+  "file": "hiroshige-tsuki-no-misaki.jpg",
+  "height": 624,
+  "record": {
+    "artistDisplayName": "Utagawa Hiroshige",
+    "creditLine": "Rogers Fund, 1919",
+    "isPublicDomain": true,
+    "objectDate": "1857",
+    "title": "Moon-Viewing Location (Tsuki no Misaki), from the series One Hundred Famous Views of Edo (Meisho Edo Hyakkei)"
+  },
+  "sha256": "fd976ed465059fc48262e467b13a57dcec7c37a2d09c2d5a4946ba84a9b79e53",
+  "source": "met",
+  "sourceId": "55095",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/55095",
+  "width": 430,
+  "workId": "hiroshige-tsuki-no-misaki"
+}

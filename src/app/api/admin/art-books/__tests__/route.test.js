@@ -10,7 +10,7 @@ import { artBooks } from '../../../../../lib/artBook.js';
 // 관리자 큐레이션 책 게시 API(ART-P0-3) — 정본 문학책과 같은 처리(bookPublishRoute)로 준비(비공개) → 분석 → 검수 → 공개.
 // 원문은 카탈로그에서만 오고, 출처 기록이 카탈로그와 어긋난 책은 게시하지 않는다(422).
 
-const [book] = artBooks();
+const [book, second] = artBooks();
 const KEY = book.book.key; // art-ukiyoe-landscape-hokusai-hiroshige(8장)
 const URL_BASE = 'http://localhost/api/admin/art-books';
 
@@ -83,11 +83,12 @@ describe('관리자 큐레이션 책 게시 API', () => {
     expect(db.supabase.from).not.toHaveBeenCalled();
   });
 
-  it('목록: 큐레이션 책 한 권 — 권리 근거 대신 장별 출처·라이선스·원문 링크·크레딧, 원문은 싣지 않는다', async () => {
+  it('목록: 큐레이션 책 두 권 — 권리 근거 대신 장별 출처·라이선스·원문 링크·크레딧, 원문은 싣지 않는다', async () => {
     const response = await GET(new Request(URL_BASE));
     expect(response.headers.get('Cache-Control')).toBe('private, no-store');
     const { books } = await response.json();
-    expect(books.map((item) => [item.key, item.total, item.publishable, item.stage])).toEqual([[KEY, 8, true, 'unpublished']]);
+    expect(books.map((item) => [item.key, item.total, item.publishable, item.stage]))
+      .toEqual([[KEY, 8, true, 'unpublished'], [second.book.key, 7, true, 'unpublished']]);
     const [summary] = books;
     expect(summary).not.toHaveProperty('rights');
     expect(summary.provenance.provider).toBe('art');

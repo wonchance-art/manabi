@@ -92,6 +92,7 @@ describe('verifiedCanonicalLiterature — 가짜 크레딧 차단', () => {
       cardUrl: 'https://www.aozora.gr.jp/cards/000879/card42.html',
       publicDomain: true,
       editNote: true,
+      smallKanaNote: false,
     });
   });
 

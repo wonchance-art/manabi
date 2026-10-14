@@ -91,20 +91,30 @@ describe('실물 「羅生門」 — JIS X 0213 외자와 그 외자에 걸린 �
 
 // 정본 작품 — 편집 레벨(D6)·장 수·루비 수를 고정한다. 장 크기는 10–15분 분량(설계 §1.2), 見出し 없는 작품은 고른 길이.
 // 2차 묶음 8편(2026-10-14 KST, 오너 「유명 작가·작품 위주로 확장」) — 羅生門·蜘蛛の糸·山月記는 JIS X 0213 외자·외자 루비를 푼 뒤에야 들어왔다.
+// 3차 묶음 7편(같은 날, 오너 「다음 묶음도 권장대로」) — こころ·やまなし·風の又三郎·トロッコ·杜子春·人間椅子·刺青.
 const WORKS = {
   'aozora-000074-000424': { title: '檸檬', level: 'N1 심화', chapters: 2, ruby: 95 },
+  // 銀河鉄道の夜 — 유니코드에 없는 작은 「ん」 한 자를 보통 「ん」으로 바꿔 넣었다(편집 기록 small-kana-as-full)
+  'aozora-000081-000456': { title: '銀河鉄道の夜', level: 'N3 중급', chapters: 17, ruby: 689 },
+  'aozora-000081-000462': { title: '風の又三郎', level: 'N3 중급', chapters: 11, ruby: 219 },
   'aozora-000081-000470': { title: 'セロ弾きのゴーシュ', level: 'N3 중급', chapters: 4, ruby: 142 },
   'aozora-000081-000473': { title: 'よだかの星', level: 'N3 중급', chapters: 2, ruby: 64 },
   'aozora-000081-043754': { title: '注文の多い料理店', level: 'N3 중급', chapters: 2, ruby: 106 },
+  'aozora-000081-046605': { title: 'やまなし', level: 'N3 중급', chapters: 2, ruby: 56 },
   'aozora-000119-000624': { title: '山月記', level: 'N1 심화', chapters: 2, ruby: 242 },
   'aozora-000121-000628': { title: 'ごん狐', level: 'N3 중급', chapters: 6, ruby: 69 },
   'aozora-000121-000637': { title: '手袋を買いに', level: 'N4 기본', chapters: 1, ruby: 64 },
   'aozora-000129-045245': { title: '高瀬舟', level: 'N2 상급', chapters: 3, ruby: 123 },
   'aozora-000148-000752': { title: '坊っちゃん', level: 'N2 상급', chapters: 34, ruby: 3042 },
   'aozora-000148-000753': { title: '文鳥', level: 'N1 심화', chapters: 4, ruby: 444 },
+  'aozora-000148-000773': { title: 'こころ', level: 'N2 상급', chapters: 110, ruby: 4567 },
   'aozora-000879-000042': { title: '鼻', level: 'N2 상급', chapters: 2, ruby: 145 },
   'aozora-000879-000092': { title: '蜘蛛の糸', level: 'N3 중급', chapters: 3, ruby: 68 },
   'aozora-000879-000127': { title: '羅生門', level: 'N2 상급', chapters: 2, ruby: 129 },
+  'aozora-000879-043015': { title: '杜子春', level: 'N3 중급', chapters: 6, ruby: 267 },
+  'aozora-000879-043016': { title: 'トロッコ', level: 'N3 중급', chapters: 2, ruby: 136 },
+  'aozora-001383-056641': { title: '刺青', level: 'N1 심화', chapters: 2, ruby: 131 },
+  'aozora-001779-056648': { title: '人間椅子', level: 'N2 상급', chapters: 4, ruby: 239 },
 };
 
 describe('정본 작품 — 리포의 작품 폴더', () => {
@@ -112,6 +122,19 @@ describe('정본 작품 — 리포의 작품 폴더', () => {
     const dirs = readdirSync(path.join(process.cwd(), LITERATURE_ROOT), { withFileTypes: true })
       .filter((item) => item.isDirectory()).map((item) => item.name).sort();
     expect(dirs).toEqual(Object.keys(WORKS));
+  });
+
+  it('작은 가나 대체는 銀河鉄道の夜 「僕んとこ」 한 곳뿐 — 그 책만 편집 기록 small-kana-as-full을 단다', () => {
+    const substituted = Object.keys(WORKS).filter((key) => work(key).chapters.chapters[0].metadata.literature.edits.includes('small-kana-as-full'));
+    expect(substituted).toEqual(['aozora-000081-000456']);
+    const text = work('aozora-000081-000456').chapters.chapters.map((chapter) => chapter.rawText).join('');
+    expect(text).toContain('僕んとこへ来なかったので');
+  });
+
+  it('첫 見出し 앞 짧은 머리말은 첫 장 머리로(やまなし 21자가 한 장이 되지 않는다) — 목차는 작가 見出し 그대로', () => {
+    const { chapters } = work('aozora-000081-046605');
+    expect(chapters.chapters.map((chapter) => chapter.title)).toEqual(['一、五月', '二、十二月']);
+    expect(chapters.chapters[0].rawText.startsWith('小さな谷川の底を写した二枚の青い幻燈です。\n\n二疋の蟹の子供らが')).toBe(true);
   });
 
   it.each(Object.entries(WORKS))('%s — 공개 가능·잠금 정확·장 크기', (key, expected) => {

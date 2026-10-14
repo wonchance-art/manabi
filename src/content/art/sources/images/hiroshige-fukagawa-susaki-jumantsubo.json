@@ -1,0 +1,19 @@
+{
+  "bytes": 96758,
+  "fetchedAt": "2026-10-14",
+  "file": "hiroshige-fukagawa-susaki-jumantsubo.jpg",
+  "height": 624,
+  "record": {
+    "artistDisplayName": "Utagawa Hiroshige",
+    "creditLine": "The Howard Mansfield Collection, Purchase, Rogers Fund, 1936",
+    "isPublicDomain": true,
+    "objectDate": "1856",
+    "title": "“Jūmantsubo Plain at Fukagawa Susaki,” from the series One Hundred Famous Views of Edo"
+  },
+  "sha256": "42ff3992ae035ea04c0a362a90be1dc99072277106a9936481c18666d0dabfad",
+  "source": "met",
+  "sourceId": "55733",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/55733",
+  "width": 417,
+  "workId": "hiroshige-fukagawa-susaki-jumantsubo"
+}

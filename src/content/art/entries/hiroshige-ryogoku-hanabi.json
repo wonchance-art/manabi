@@ -1,0 +1,75 @@
+{
+  "id": "hiroshige-ryogoku-hanabi",
+  "wikidata": "Q19938878",
+  "artist": "utagawa-hiroshige",
+  "title": {
+    "native": "名所江戸百景 両国花火",
+    "ko": "명소 에도 100경 — 료고쿠 불꽃놀이",
+    "reading": "めいしょえどひゃっけい りょうごくはなび"
+  },
+  "series": {
+    "native": "名所江戸百景",
+    "ko": "명소 에도 100경"
+  },
+  "date": {
+    "text": "江戸時代・安政5年(1858)",
+    "source": "colbase",
+    "startYear": 1858,
+    "endYear": 1858,
+    "certainty": "exact"
+  },
+  "periods": [
+    "jp-edo"
+  ],
+  "medium": {
+    "native": "大判　錦絵",
+    "ko": "세로 오반 니시키에(다색 목판화)"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7388"
+    },
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/26522"
+    },
+    {
+      "place": "metropolitan-museum-of-art",
+      "role": "holding",
+      "url": "https://www.metmuseum.org/art/collection/search/37093"
+    },
+    {
+      "place": "ryogoku-bridge",
+      "role": "depicted"
+    },
+    {
+      "place": "sumida-river",
+      "role": "depicted"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-55847"
+    }
+  ],
+  "terms": [
+    "川開き",
+    "供養",
+    "提灯"
+  ],
+  "lookFor": [
+    "하늘로 솟았다 떨어지는 불꽃의 붉은 줄기를 따라가 봐요.",
+    "다리 위 사람들은 어떻게 그려져 있을까요?",
+    "강 위에서 등불을 단 큰 놀잇배를 찾아봐요."
+  ],
+  "image": {
+    "source": "met",
+    "sourceId": "37093",
+    "alt": "어두운 밤하늘에 붉은 불꽃 줄기가 높이 솟았다 떨어지고, 오른쪽 위에는 별 모양 불꽃이 흩어져 있다. 아래로는 긴 다리가 푸른 강을 가로지르고, 강 위에 등불을 단 놀잇배와 작은 배들이 떠 있다."
+  }
+}

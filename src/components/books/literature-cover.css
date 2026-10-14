@@ -20,6 +20,14 @@
 .lit-cover--nightjar{--cover-color:#2b2547}
 .lit-cover--river{--cover-color:#234a52}
 .lit-cover--walnut{--cover-color:#5a3b28}
+.lit-cover--plum{--cover-color:#3a2440}
+.lit-cover--ash{--cover-color:#57534d}
+.lit-cover--pear{--cover-color:#e6dc9e;color:#3a3a1c}
+.lit-cover--meadow{--cover-color:#c9d9b0;color:#26361e}
+.lit-cover--olive{--cover-color:#4d5222}
+.lit-cover--peach{--cover-color:#efd3cf;color:#4f1f2b}
+.lit-cover--wine{--cover-color:#5c1830}
+.lit-cover--amber{--cover-color:#8a4313}
 .lit-cover__title{position:relative;z-index:1;writing-mode:vertical-rl;white-space:nowrap;font-family:var(--font-lit-serif),"Noto Serif CJK JP",serif;font-weight:500;font-size:11px;line-height:1.25;letter-spacing:.02em}
 .lit-cover__line{display:block}
 .lit-cover[data-motif=ink-steam] .lit-cover__title{color:#2b2724}

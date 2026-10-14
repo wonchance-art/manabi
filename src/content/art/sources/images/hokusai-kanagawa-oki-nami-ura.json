@@ -1,0 +1,19 @@
+{
+  "bytes": 112230,
+  "fetchedAt": "2026-10-14",
+  "file": "hokusai-kanagawa-oki-nami-ura.jpg",
+  "height": 410,
+  "record": {
+    "artistDisplayName": "Katsushika Hokusai",
+    "creditLine": "The Howard Mansfield Collection, Purchase, Rogers Fund, 1936",
+    "isPublicDomain": true,
+    "objectDate": "ca. 1830–32",
+    "title": "Under the Wave off Kanagawa (Kanagawa oki nami ura), or The Great Wave, from the series Thirty-six Views of Mount Fuji (Fugaku sanjūrokkei)"
+  },
+  "sha256": "cca653cef3d832a81ceaa2a344ecbeeec31ecfc0fa12d33df4c3d03cd04a3f56",
+  "source": "met",
+  "sourceId": "39799",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/39799",
+  "width": 600,
+  "workId": "hokusai-kanagawa-oki-nami-ura"
+}
