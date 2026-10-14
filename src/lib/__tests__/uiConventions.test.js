@@ -92,7 +92,7 @@ const ALLOWED_MIN = [760, 900];
 /** 현재 총 뷰포트 쿼리 수. 늘릴 수 없다 — 새 접힘은 @container로.
  *  28 → 26 (2026-09-01): 죽은 CSS 라운드가 규칙을 걷어내며 **@media 블록 둘이 통째로
  *  비어** 사라졌다. 화면을 위해 줄인 게 아니라 아무도 안 쓰던 접힘이 없어진 것이다. */
-const VIEWPORT_QUERY_CAP = 26;
+const VIEWPORT_QUERY_CAP = 25;
 
 function cssFiles() {
   const out = [];

@@ -19,7 +19,7 @@ const codeOf = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/
 const FAKE = {
   languages: {
     Chinese: {
-      base: '/chinese', langCode: 'zh', flag: '🇨🇳', name: '중국어',
+      base: '/chinese', langCode: 'zh', name: '중국어',
       levelMeta: [{ key: 'L1', label: 'L1 기초' }, { key: 'L2', label: 'L2 초급' }],
       levels: [
         {

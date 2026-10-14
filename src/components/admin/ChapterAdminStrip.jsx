@@ -35,13 +35,13 @@ export default function ChapterAdminStrip({ lang, slug, overridden = false }) {
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        toast(friendlyToastMessage(json.error, '복원에 실패했어요.'), 'error');
+        toast(friendlyToastMessage(json.error, '복원하지 못했어요.'), 'error');
         return;
       }
       toast('파일 버전으로 복원했어요.', 'success');
       router.refresh();
     } catch {
-      toast('네트워크 오류로 복원하지 못했어요.', 'error');
+      toast('복원하지 못했어요. 인터넷 연결을 확인해 주세요.', 'error');
     } finally {
       setBusy(false);
     }

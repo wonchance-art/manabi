@@ -36,7 +36,7 @@ describe('new vocabulary save undo', () => {
   it('missing capability or changed server record never falls back to unconditional deletion', async () => {
     const c = client([]), snapshot = await prepareViewerSaveUndo(c, inserted, source, false);
     c.rpc.mockResolvedValue({ error: { code: 'PGRST202' } });
-    await expect(undoViewerSave(c, snapshot, 'owner')).rejects.toThrow('유지됩니다');
+    await expect(undoViewerSave(c, snapshot, 'owner')).rejects.toThrow('저장한 단어는 그대로 있어요');
     c.rpc.mockResolvedValue({ error: new Error('subsequent review') });
     await expect(undoViewerSave(c, snapshot, 'owner')).rejects.toThrow('subsequent review');
     c.rpc.mockResolvedValue({ data: false });

@@ -1,0 +1,843 @@
+{
+  "schemaVersion": 1,
+  "book": {
+    "key": "aozora-000121-000628",
+    "title": "ごん狐",
+    "author": "新美南吉",
+    "level": "N3 중급",
+    "total": 6
+  },
+  "chapters": [
+    {
+      "order": 1,
+      "title": "一",
+      "materialTitle": "ごん狐 — 一",
+      "rawText": "これは、私が小さいときに、村の茂平というおじいさんからきいたお話です。\n\nむかしは、私たちの村のちかくの、中山というところに小さなお城があって、中山さまというおとのさまが、おられたそうです。\n\nその中山から、少しはなれた山の中に、「ごん狐」という狐がいました。ごんは、一人ぼっちの小狐で、しだの一ぱいしげった森の中に穴をほって住んでいました。そして、夜でも昼でも、あたりの村へ出てきて、いたずらばかりしました。はたけへ入って芋をほりちらしたり、菜種がらの、ほしてあるのへ火をつけたり、百姓家の裏手につるしてあるとんがらしをむしりとって、いったり、いろんなことをしました。\n\n或秋のことでした。二、三日雨がふりつづいたその間、ごんは、外へも出られなくて穴の中にしゃがんでいました。\n\n雨があがると、ごんは、ほっとして穴からはい出ました。空はからっと晴れていて、百舌鳥の声がきんきん、ひびいていました。\n\nごんは、村の小川の堤まで出て来ました。あたりの、すすきの穂には、まだ雨のしずくが光っていました。川は、いつもは水が少いのですが、三日もの雨で、水が、どっとましていました。ただのときは水につかることのない、川べりのすすきや、萩の株が、黄いろくにごった水に横だおしになって、もまれています。ごんは川下の方へと、ぬかるみみちを歩いていきました。\n\nふと見ると、川の中に人がいて、何かやっています。ごんは、見つからないように、そうっと草の深いところへ歩きよって、そこからじっとのぞいてみました。\n\n「兵十だな」と、ごんは思いました。兵十はぼろぼろの黒いきものをまくし上げて、腰のところまで水にひたりながら、魚をとる、はりきりという、網をゆすぶっていました。はちまきをした顔の横っちょうに、まるい萩の葉が一まい、大きな黒子みたいにへばりついていました。\n\nしばらくすると、兵十は、はりきり網の一ばんうしろの、袋のようになったところを、水の中からもちあげました。その中には、芝の根や、草の葉や、くさった木ぎれなどが、ごちゃごちゃはいっていましたが、でもところどころ、白いものがきらきら光っています。それは、ふというなぎの腹や、大きなきすの腹でした。兵十は、びくの中へ、そのうなぎやきすを、ごみと一しょにぶちこみました。そして、また、袋の口をしばって、水の中へ入れました。\n\n兵十はそれから、びくをもって川から上りびくを土手においといて、何をさがしにか、川上の方へかけていきました。\n\n兵十がいなくなると、ごんは、ぴょいと草の中からとび出して、びくのそばへかけつけました。ちょいと、いたずらがしたくなったのです。ごんはびくの中の魚をつかみ出しては、はりきり網のかかっているところより下手の川の中を目がけて、ぽんぽんなげこみました。どの魚も、「とぼん」と音を立てながら、にごった水の中へもぐりこみました。\n\n一ばんしまいに、太いうなぎをつかみにかかりましたが、何しろぬるぬるとすべりぬけるので、手ではつかめません。ごんはじれったくなって、頭をびくの中につッこんで、うなぎの頭を口にくわえました。うなぎは、キュッと言ってごんの首へまきつきました。そのとたんに兵十が、向うから、\n\n「うわアぬすと狐め」と、どなりたてました。ごんは、びっくりしてとびあがりました。うなぎをふりすててにげようとしましたが、うなぎは、ごんの首にまきついたままはなれません。ごんはそのまま横っとびにとび出して一しょうけんめいに、にげていきました。\n\nほら穴の近くの、はんの木の下でふりかえって見ましたが、兵十は追っかけては来ませんでした。\n\nごんは、ほっとして、うなぎの頭をかみくだき、やっとはずして穴のそとの、草の葉の上にのせておきました。",
+      "metadata": {
+        "language": "Japanese",
+        "level": "N3 중급",
+        "book": {
+          "key": "aozora-000121-000628",
+          "title": "ごん狐",
+          "author": "新美南吉",
+          "order": 1,
+          "total": 6
+        },
+        "literature": {
+          "schemaVersion": 1,
+          "provider": "aozora",
+          "workKey": "aozora-000121-000628",
+          "personId": "000121",
+          "workId": "628",
+          "title": "ごん狐",
+          "author": "新美南吉",
+          "publishedYear": 1932,
+          "authorDeathYear": 1943,
+          "charset": "新字新仮名",
+          "cardUrl": "https://www.aozora.gr.jp/cards/000121/card628.html",
+          "sourceFileUrl": "https://www.aozora.gr.jp/cards/000121/files/628_ruby_649.zip",
+          "sourceSha256": "2f214158ddc83a89c88400c8ca63cb0d6add8b625b3cea0599a26fdc19274189",
+          "textSha256": "857830bc526c22d63e795f0635beaa4cc6dcead23eab0ba3a9eec534f75e3251",
+          "attribution": {
+            "author": "新美南吉",
+            "translator": null,
+            "illustrator": null
+          },
+          "rights": {
+            "status": "approved",
+            "basis": "public-domain",
+            "reviewedBy": "claude",
+            "reviewedAt": "2026-10-14",
+            "reviewedJurisdictions": [
+              "JP",
+              "KR",
+              "US"
+            ],
+            "evidenceUrl": "https://www.aozora.gr.jp/cards/000121/card628.html"
+          },
+          "colophon": {
+            "sourceBook": [
+              "「新美南吉童話集」岩波文庫、岩波書店",
+              "1996（平成8）年7月16日発行第1刷",
+              "1997（平成9）年7月15日発行第2刷"
+            ],
+            "parentBook": [],
+            "inputter": "林裕司",
+            "proofreader": "浜野智"
+          },
+          "edits": [
+            "ruby-reading-aid",
+            "chapter-split-by-manabi"
+          ],
+          "rubyLocks": [
+            {
+              "start": 4,
+              "end": 5,
+              "base": "私",
+              "reading": "わたし"
+            },
+            {
+              "start": 15,
+              "end": 17,
+              "base": "茂平",
+              "reading": "もへい"
+            },
+            {
+              "start": 53,
+              "end": 55,
+              "base": "中山",
+              "reading": "なかやま"
+            },
+            {
+              "start": 118,
+              "end": 119,
+              "base": "狐",
+              "reading": "ぎつね"
+            },
+            {
+              "start": 134,
+              "end": 136,
+              "base": "一人",
+              "reading": "ひとり"
+            },
+            {
+              "start": 222,
+              "end": 224,
+              "base": "菜種",
+              "reading": "なたね"
+            },
+            {
+              "start": 242,
+              "end": 245,
+              "base": "百姓家",
+              "reading": "ひゃくしょうや"
+            },
+            {
+              "start": 287,
+              "end": 288,
+              "base": "或",
+              "reading": "ある"
+            },
+            {
+              "start": 288,
+              "end": 289,
+              "base": "秋",
+              "reading": "あき"
+            },
+            {
+              "start": 310,
+              "end": 311,
+              "base": "間",
+              "reading": "あいだ"
+            },
+            {
+              "start": 379,
+              "end": 382,
+              "base": "百舌鳥",
+              "reading": "もず"
+            },
+            {
+              "start": 407,
+              "end": 409,
+              "base": "小川",
+              "reading": "おがわ"
+            },
+            {
+              "start": 410,
+              "end": 411,
+              "base": "堤",
+              "reading": "つつみ"
+            },
+            {
+              "start": 458,
+              "end": 459,
+              "base": "少",
+              "reading": "すくな"
+            },
+            {
+              "start": 512,
+              "end": 513,
+              "base": "萩",
+              "reading": "はぎ"
+            },
+            {
+              "start": 547,
+              "end": 549,
+              "base": "川下",
+              "reading": "かわしも"
+            },
+            {
+              "start": 647,
+              "end": 649,
+              "base": "兵十",
+              "reading": "ひょうじゅう"
+            },
+            {
+              "start": 755,
+              "end": 757,
+              "base": "黒子",
+              "reading": "ほくろ"
+            },
+            {
+              "start": 999,
+              "end": 1000,
+              "base": "上",
+              "reading": "あが"
+            },
+            {
+              "start": 1004,
+              "end": 1006,
+              "base": "土手",
+              "reading": "どて"
+            },
+            {
+              "start": 1021,
+              "end": 1023,
+              "base": "川上",
+              "reading": "かわかみ"
+            },
+            {
+              "start": 1135,
+              "end": 1137,
+              "base": "下手",
+              "reading": "しもて"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "order": 2,
+      "title": "二",
+      "materialTitle": "ごん狐 — 二",
+      "rawText": "十日ほどたって、ごんが、弥助というお百姓の家の裏を通りかかりますと、そこの、いちじくの木のかげで、弥助の家内が、おはぐろをつけていました。鍛冶屋の新兵衛の家のうらを通ると、新兵衛の家内が髪をすいていました。ごんは、\n\n「ふふん、村に何かあるんだな」と、思いました。\n\n「何だろう、秋祭かな。祭なら、太鼓や笛の音がしそうなものだ。それに第一、お宮にのぼりが立つはずだが」\n\nこんなことを考えながらやって来ますと、いつの間にか、表に赤い井戸のある、兵十の家の前へ来ました。その小さな、こわれかけた家の中には、大勢の人があつまっていました。よそいきの着物を着て、腰に手拭をさげたりした女たちが、表のかまどで火をたいています。大きな鍋の中では、何かぐずぐず煮えていました。\n\n「ああ、葬式だ」と、ごんは思いました。\n\n「兵十の家のだれが死んだんだろう」\n\nお午がすぎると、ごんは、村の墓地へ行って、六地蔵さんのかげにかくれていました。いいお天気で、遠く向うには、お城の屋根瓦が光っています。墓地には、ひがん花が、赤い布のようにさきつづいていました。と、村の方から、カーン、カーン、と、鐘が鳴って来ました。葬式の出る合図です。\n\nやがて、白い着物を着た葬列のものたちがやって来るのがちらちら見えはじめました。話声も近くなりました。葬列は墓地へはいって来ました。人々が通ったあとには、ひがん花が、ふみおられていました。\n\nごんはのびあがって見ました。兵十が、白いかみしもをつけて、位牌をささげています。いつもは、赤いさつま芋みたいな元気のいい顔が、きょうは何だかしおれていました。\n\n「ははん、死んだのは兵十のおっ母だ」\n\nごんはそう思いながら、頭をひっこめました。\n\nその晩、ごんは、穴の中で考えました。\n\n「兵十のおっ母は、床についていて、うなぎが食べたいと言ったにちがいない。それで兵十がはりきり網をもち出したんだ。ところが、わしがいたずらをして、うなぎをとって来てしまった。だから兵十は、おっ母にうなぎを食べさせることができなかった。そのままおっ母は、死んじゃったにちがいない。ああ、うなぎが食べたい、うなぎが食べたいとおもいながら、死んだんだろう。ちょッ、あんないたずらをしなけりゃよかった。」",
+      "metadata": {
+        "language": "Japanese",
+        "level": "N3 중급",
+        "book": {
+          "key": "aozora-000121-000628",
+          "title": "ごん狐",
+          "author": "新美南吉",
+          "order": 2,
+          "total": 6
+        },
+        "literature": {
+          "schemaVersion": 1,
+          "provider": "aozora",
+          "workKey": "aozora-000121-000628",
+          "personId": "000121",
+          "workId": "628",
+          "title": "ごん狐",
+          "author": "新美南吉",
+          "publishedYear": 1932,
+          "authorDeathYear": 1943,
+          "charset": "新字新仮名",
+          "cardUrl": "https://www.aozora.gr.jp/cards/000121/card628.html",
+          "sourceFileUrl": "https://www.aozora.gr.jp/cards/000121/files/628_ruby_649.zip",
+          "sourceSha256": "2f214158ddc83a89c88400c8ca63cb0d6add8b625b3cea0599a26fdc19274189",
+          "textSha256": "857830bc526c22d63e795f0635beaa4cc6dcead23eab0ba3a9eec534f75e3251",
+          "attribution": {
+            "author": "新美南吉",
+            "translator": null,
+            "illustrator": null
+          },
+          "rights": {
+            "status": "approved",
+            "basis": "public-domain",
+            "reviewedBy": "claude",
+            "reviewedAt": "2026-10-14",
+            "reviewedJurisdictions": [
+              "JP",
+              "KR",
+              "US"
+            ],
+            "evidenceUrl": "https://www.aozora.gr.jp/cards/000121/card628.html"
+          },
+          "colophon": {
+            "sourceBook": [
+              "「新美南吉童話集」岩波文庫、岩波書店",
+              "1996（平成8）年7月16日発行第1刷",
+              "1997（平成9）年7月15日発行第2刷"
+            ],
+            "parentBook": [],
+            "inputter": "林裕司",
+            "proofreader": "浜野智"
+          },
+          "edits": [
+            "ruby-reading-aid",
+            "chapter-split-by-manabi"
+          ],
+          "rubyLocks": [
+            {
+              "start": 0,
+              "end": 2,
+              "base": "十日",
+              "reading": "とおか"
+            },
+            {
+              "start": 12,
+              "end": 14,
+              "base": "弥助",
+              "reading": "やすけ"
+            },
+            {
+              "start": 52,
+              "end": 54,
+              "base": "家内",
+              "reading": "かない"
+            },
+            {
+              "start": 69,
+              "end": 72,
+              "base": "鍛冶屋",
+              "reading": "かじや"
+            },
+            {
+              "start": 73,
+              "end": 76,
+              "base": "新兵衛",
+              "reading": "しんべえ"
+            },
+            {
+              "start": 135,
+              "end": 136,
+              "base": "何",
+              "reading": "なん"
+            },
+            {
+              "start": 208,
+              "end": 209,
+              "base": "間",
+              "reading": "ま"
+            },
+            {
+              "start": 252,
+              "end": 254,
+              "base": "大勢",
+              "reading": "おおぜい"
+            },
+            {
+              "start": 280,
+              "end": 282,
+              "base": "手拭",
+              "reading": "てぬぐい"
+            },
+            {
+              "start": 312,
+              "end": 313,
+              "base": "鍋",
+              "reading": "なべ"
+            },
+            {
+              "start": 375,
+              "end": 376,
+              "base": "午",
+              "reading": "ひる"
+            },
+            {
+              "start": 395,
+              "end": 398,
+              "base": "六地蔵",
+              "reading": "ろくじぞう"
+            },
+            {
+              "start": 430,
+              "end": 433,
+              "base": "屋根瓦",
+              "reading": "やねがわら"
+            },
+            {
+              "start": 449,
+              "end": 450,
+              "base": "花",
+              "reading": "ばな"
+            },
+            {
+              "start": 454,
+              "end": 455,
+              "base": "布",
+              "reading": "きれ"
+            },
+            {
+              "start": 488,
+              "end": 489,
+              "base": "鐘",
+              "reading": "かね"
+            },
+            {
+              "start": 503,
+              "end": 505,
+              "base": "合図",
+              "reading": "あいず"
+            },
+            {
+              "start": 549,
+              "end": 551,
+              "base": "話声",
+              "reading": "はなしごえ"
+            },
+            {
+              "start": 634,
+              "end": 636,
+              "base": "位牌",
+              "reading": "いはい"
+            },
+            {
+              "start": 655,
+              "end": 656,
+              "base": "芋",
+              "reading": "いも"
+            },
+            {
+              "start": 701,
+              "end": 702,
+              "base": "母",
+              "reading": "かあ"
+            },
+            {
+              "start": 758,
+              "end": 759,
+              "base": "床",
+              "reading": "とこ"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "order": 3,
+      "title": "三",
+      "materialTitle": "ごん狐 — 三",
+      "rawText": "兵十が、赤い井戸のところで、麦をといでいました。\n\n兵十は今まで、おっ母と二人きりで、貧しいくらしをしていたもので、おっ母が死んでしまっては、もう一人ぼっちでした。\n\n「おれと同じ一人ぼっちの兵十か」\n\nこちらの物置の後から見ていたごんは、そう思いました。\n\nごんは物置のそばをはなれて、向うへいきかけますと、どこかで、いわしを売る声がします。\n\n「いわしのやすうりだアい。いきのいいいわしだアい」\n\nごんは、その、いせいのいい声のする方へ走っていきました。と、弥助のおかみさんが、裏戸口から、\n\n「いわしをおくれ。」と言いました。いわし売は、いわしのかごをつんだ車を、道ばたにおいて、ぴかぴか光るいわしを両手でつかんで、弥助の家の中へもってはいりました。ごんはそのすきまに、かごの中から、五、六ぴきのいわしをつかみ出して、もと来た方へかけだしました。そして、兵十の家の裏口から、家の中へいわしを投げこんで、穴へ向ってかけもどりました。途中の坂の上でふりかえって見ますと、兵十がまだ、井戸のところで麦をといでいるのが小さく見えました。\n\nごんは、うなぎのつぐないに、まず一つ、いいことをしたと思いました。\n\nつぎの日には、ごんは山で栗をどっさりひろって、それをかかえて、兵十の家へいきました。裏口からのぞいて見ますと、兵十は、午飯をたべかけて、茶椀をもったまま、ぼんやりと考えこんでいました。へんなことには兵十の頬ぺたに、かすり傷がついています。どうしたんだろうと、ごんが思っていますと、兵十がひとりごとをいいました。\n\n「一たいだれが、いわしなんかをおれの家へほうりこんでいったんだろう。おかげでおれは、盗人と思われて、いわし屋のやつに、ひどい目にあわされた」と、ぶつぶつ言っています。\n\nごんは、これはしまったと思いました。かわいそうに兵十は、いわし屋にぶんなぐられて、あんな傷までつけられたのか。\n\nごんはこうおもいながら、そっと物置の方へまわってその入口に、栗をおいてかえりました。\n\nつぎの日も、そのつぎの日もごんは、栗をひろっては、兵十の家へもって来てやりました。そのつぎの日には、栗ばかりでなく、まつたけも二、三ぼんもっていきました。",
+      "metadata": {
+        "language": "Japanese",
+        "level": "N3 중급",
+        "book": {
+          "key": "aozora-000121-000628",
+          "title": "ごん狐",
+          "author": "新美南吉",
+          "order": 3,
+          "total": 6
+        },
+        "literature": {
+          "schemaVersion": 1,
+          "provider": "aozora",
+          "workKey": "aozora-000121-000628",
+          "personId": "000121",
+          "workId": "628",
+          "title": "ごん狐",
+          "author": "新美南吉",
+          "publishedYear": 1932,
+          "authorDeathYear": 1943,
+          "charset": "新字新仮名",
+          "cardUrl": "https://www.aozora.gr.jp/cards/000121/card628.html",
+          "sourceFileUrl": "https://www.aozora.gr.jp/cards/000121/files/628_ruby_649.zip",
+          "sourceSha256": "2f214158ddc83a89c88400c8ca63cb0d6add8b625b3cea0599a26fdc19274189",
+          "textSha256": "857830bc526c22d63e795f0635beaa4cc6dcead23eab0ba3a9eec534f75e3251",
+          "attribution": {
+            "author": "新美南吉",
+            "translator": null,
+            "illustrator": null
+          },
+          "rights": {
+            "status": "approved",
+            "basis": "public-domain",
+            "reviewedBy": "claude",
+            "reviewedAt": "2026-10-14",
+            "reviewedJurisdictions": [
+              "JP",
+              "KR",
+              "US"
+            ],
+            "evidenceUrl": "https://www.aozora.gr.jp/cards/000121/card628.html"
+          },
+          "colophon": {
+            "sourceBook": [
+              "「新美南吉童話集」岩波文庫、岩波書店",
+              "1996（平成8）年7月16日発行第1刷",
+              "1997（平成9）年7月15日発行第2刷"
+            ],
+            "parentBook": [],
+            "inputter": "林裕司",
+            "proofreader": "浜野智"
+          },
+          "edits": [
+            "ruby-reading-aid",
+            "chapter-split-by-manabi"
+          ],
+          "rubyLocks": [
+            {
+              "start": 37,
+              "end": 39,
+              "base": "二人",
+              "reading": "ふたり"
+            },
+            {
+              "start": 106,
+              "end": 108,
+              "base": "物置",
+              "reading": "ものおき"
+            },
+            {
+              "start": 109,
+              "end": 110,
+              "base": "後",
+              "reading": "うしろ"
+            },
+            {
+              "start": 231,
+              "end": 233,
+              "base": "弥助",
+              "reading": "やすけ"
+            },
+            {
+              "start": 269,
+              "end": 270,
+              "base": "売",
+              "reading": "うり"
+            },
+            {
+              "start": 406,
+              "end": 407,
+              "base": "向",
+              "reading": "むか"
+            },
+            {
+              "start": 516,
+              "end": 517,
+              "base": "栗",
+              "reading": "くり"
+            },
+            {
+              "start": 563,
+              "end": 565,
+              "base": "午飯",
+              "reading": "ひるめし"
+            },
+            {
+              "start": 572,
+              "end": 574,
+              "base": "茶椀",
+              "reading": "ちゃわん"
+            },
+            {
+              "start": 606,
+              "end": 607,
+              "base": "頬",
+              "reading": "ほっ"
+            },
+            {
+              "start": 703,
+              "end": 705,
+              "base": "盗人",
+              "reading": "ぬすびと"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "order": 4,
+      "title": "四",
+      "materialTitle": "ごん狐 — 四",
+      "rawText": "月のいい晩でした。ごんは、ぶらぶらあそびに出かけました。中山さまのお城の下を通ってすこしいくと、細い道の向うから、だれか来るようです。話声が聞えます。チンチロリン、チンチロリンと松虫が鳴いています。\n\nごんは、道の片がわにかくれて、じっとしていました。話声はだんだん近くなりました。それは、兵十と加助というお百姓でした。\n\n「そうそう、なあ加助」と、兵十がいいました。\n\n「ああん？」\n\n「おれあ、このごろ、とてもふしぎなことがあるんだ」\n\n「何が？」\n\n「おっ母が死んでからは、だれだか知らんが、おれに栗やまつたけなんかを、まいにちまいにちくれるんだよ」\n\n「ふうん、だれが？」\n\n「それがわからんのだよ。おれの知らんうちに、おいていくんだ」\n\nごんは、ふたりのあとをつけていきました。\n\n「ほんとかい？」\n\n「ほんとだとも。うそと思うなら、あした見に来いよ。その栗を見せてやるよ」\n\n「へえ、へんなこともあるもんだなア」\n\nそれなり、二人はだまって歩いていきました。\n\n加助がひょいと、後を見ました。ごんはびくっとして、小さくなってたちどまりました。加助は、ごんには気がつかないで、そのままさっさとあるきました。吉兵衛というお百姓の家まで来ると、二人はそこへはいっていきました。ポンポンポンポンと木魚の音がしています。窓の障子にあかりがさしていて、大きな坊主頭がうつって動いていました。ごんは、\n\n「おねんぶつがあるんだな」と思いながら井戸のそばにしゃがんでいました。しばらくすると、また三人ほど、人がつれだって吉兵衛の家へはいっていきました。お経を読む声がきこえて来ました。",
+      "metadata": {
+        "language": "Japanese",
+        "level": "N3 중급",
+        "book": {
+          "key": "aozora-000121-000628",
+          "title": "ごん狐",
+          "author": "新美南吉",
+          "order": 4,
+          "total": 6
+        },
+        "literature": {
+          "schemaVersion": 1,
+          "provider": "aozora",
+          "workKey": "aozora-000121-000628",
+          "personId": "000121",
+          "workId": "628",
+          "title": "ごん狐",
+          "author": "新美南吉",
+          "publishedYear": 1932,
+          "authorDeathYear": 1943,
+          "charset": "新字新仮名",
+          "cardUrl": "https://www.aozora.gr.jp/cards/000121/card628.html",
+          "sourceFileUrl": "https://www.aozora.gr.jp/cards/000121/files/628_ruby_649.zip",
+          "sourceSha256": "2f214158ddc83a89c88400c8ca63cb0d6add8b625b3cea0599a26fdc19274189",
+          "textSha256": "857830bc526c22d63e795f0635beaa4cc6dcead23eab0ba3a9eec534f75e3251",
+          "attribution": {
+            "author": "新美南吉",
+            "translator": null,
+            "illustrator": null
+          },
+          "rights": {
+            "status": "approved",
+            "basis": "public-domain",
+            "reviewedBy": "claude",
+            "reviewedAt": "2026-10-14",
+            "reviewedJurisdictions": [
+              "JP",
+              "KR",
+              "US"
+            ],
+            "evidenceUrl": "https://www.aozora.gr.jp/cards/000121/card628.html"
+          },
+          "colophon": {
+            "sourceBook": [
+              "「新美南吉童話集」岩波文庫、岩波書店",
+              "1996（平成8）年7月16日発行第1刷",
+              "1997（平成9）年7月15日発行第2刷"
+            ],
+            "parentBook": [],
+            "inputter": "林裕司",
+            "proofreader": "浜野智"
+          },
+          "edits": [
+            "ruby-reading-aid",
+            "chapter-split-by-manabi"
+          ],
+          "rubyLocks": [
+            {
+              "start": 148,
+              "end": 150,
+              "base": "加助",
+              "reading": "かすけ"
+            },
+            {
+              "start": 377,
+              "end": 378,
+              "base": "来",
+              "reading": "こ"
+            },
+            {
+              "start": 445,
+              "end": 446,
+              "base": "後",
+              "reading": "うしろ"
+            },
+            {
+              "start": 508,
+              "end": 511,
+              "base": "吉兵衛",
+              "reading": "きちべえ"
+            },
+            {
+              "start": 550,
+              "end": 552,
+              "base": "木魚",
+              "reading": "もくぎょ"
+            },
+            {
+              "start": 563,
+              "end": 565,
+              "base": "障子",
+              "reading": "しょうじ"
+            },
+            {
+              "start": 579,
+              "end": 582,
+              "base": "坊主頭",
+              "reading": "ぼうずあたま"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "order": 5,
+      "title": "五",
+      "materialTitle": "ごん狐 — 五",
+      "rawText": "ごんは、おねんぶつがすむまで、井戸のそばにしゃがんでいました。兵十と加助は、また一しょにかえっていきます。ごんは、二人の話をきこうと思って、ついていきました。兵十の影法師をふみふみいきました。\n\nお城の前まで来たとき、加助が言い出しました。\n\n「さっきの話は、きっと、そりゃあ、神さまのしわざだぞ」\n\n「えっ？」と、兵十はびっくりして、加助の顔を見ました。\n\n「おれは、あれからずっと考えていたが、どうも、そりゃ、人間じゃない、神さまだ、神さまが、お前がたった一人になったのをあわれに思わっしゃって、いろんなものをめぐんで下さるんだよ」\n\n「そうかなあ」\n\n「そうだとも。だから、まいにち神さまにお礼を言うがいいよ」\n\n「うん」\n\nごんは、へえ、こいつはつまらないなと思いました。おれが、栗や松たけを持っていってやるのに、そのおれにはお礼をいわないで、神さまにお礼をいうんじゃア、おれは、引き合わないなあ。",
+      "metadata": {
+        "language": "Japanese",
+        "level": "N3 중급",
+        "book": {
+          "key": "aozora-000121-000628",
+          "title": "ごん狐",
+          "author": "新美南吉",
+          "order": 5,
+          "total": 6
+        },
+        "literature": {
+          "schemaVersion": 1,
+          "provider": "aozora",
+          "workKey": "aozora-000121-000628",
+          "personId": "000121",
+          "workId": "628",
+          "title": "ごん狐",
+          "author": "新美南吉",
+          "publishedYear": 1932,
+          "authorDeathYear": 1943,
+          "charset": "新字新仮名",
+          "cardUrl": "https://www.aozora.gr.jp/cards/000121/card628.html",
+          "sourceFileUrl": "https://www.aozora.gr.jp/cards/000121/files/628_ruby_649.zip",
+          "sourceSha256": "2f214158ddc83a89c88400c8ca63cb0d6add8b625b3cea0599a26fdc19274189",
+          "textSha256": "857830bc526c22d63e795f0635beaa4cc6dcead23eab0ba3a9eec534f75e3251",
+          "attribution": {
+            "author": "新美南吉",
+            "translator": null,
+            "illustrator": null
+          },
+          "rights": {
+            "status": "approved",
+            "basis": "public-domain",
+            "reviewedBy": "claude",
+            "reviewedAt": "2026-10-14",
+            "reviewedJurisdictions": [
+              "JP",
+              "KR",
+              "US"
+            ],
+            "evidenceUrl": "https://www.aozora.gr.jp/cards/000121/card628.html"
+          },
+          "colophon": {
+            "sourceBook": [
+              "「新美南吉童話集」岩波文庫、岩波書店",
+              "1996（平成8）年7月16日発行第1刷",
+              "1997（平成9）年7月15日発行第2刷"
+            ],
+            "parentBook": [],
+            "inputter": "林裕司",
+            "proofreader": "浜野智"
+          },
+          "edits": [
+            "ruby-reading-aid",
+            "chapter-split-by-manabi"
+          ],
+          "rubyLocks": [
+            {
+              "start": 82,
+              "end": 85,
+              "base": "影法師",
+              "reading": "かげぼうし"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "order": 6,
+      "title": "六",
+      "materialTitle": "ごん狐 — 六",
+      "rawText": "そのあくる日もごんは、栗をもって、兵十の家へ出かけました。兵十は物置で縄をなっていました。それでごんは家の裏口から、こっそり中へはいりました。\n\nそのとき兵十は、ふと顔をあげました。と狐が家の中へはいったではありませんか。こないだうなぎをぬすみやがったあのごん狐めが、またいたずらをしに来たな。\n\n「ようし。」\n\n兵十は立ちあがって、納屋にかけてある火縄銃をとって、火薬をつめました。\n\nそして足音をしのばせてちかよって、今戸口を出ようとするごんを、ドンと、うちました。ごんは、ばたりとたおれました。兵十はかけよって来ました。家の中を見ると、土間に栗が、かためておいてあるのが目につきました。\n\n「おや」と兵十は、びっくりしてごんに目を落しました。\n\n「ごん、お前だったのか。いつも栗をくれたのは」\n\nごんは、ぐったりと目をつぶったまま、うなずきました。\n\n兵十は火縄銃をばたりと、とり落しました。青い煙が、まだ筒口から細く出ていました。",
+      "metadata": {
+        "language": "Japanese",
+        "level": "N3 중급",
+        "book": {
+          "key": "aozora-000121-000628",
+          "title": "ごん狐",
+          "author": "新美南吉",
+          "order": 6,
+          "total": 6
+        },
+        "literature": {
+          "schemaVersion": 1,
+          "provider": "aozora",
+          "workKey": "aozora-000121-000628",
+          "personId": "000121",
+          "workId": "628",
+          "title": "ごん狐",
+          "author": "新美南吉",
+          "publishedYear": 1932,
+          "authorDeathYear": 1943,
+          "charset": "新字新仮名",
+          "cardUrl": "https://www.aozora.gr.jp/cards/000121/card628.html",
+          "sourceFileUrl": "https://www.aozora.gr.jp/cards/000121/files/628_ruby_649.zip",
+          "sourceSha256": "2f214158ddc83a89c88400c8ca63cb0d6add8b625b3cea0599a26fdc19274189",
+          "textSha256": "857830bc526c22d63e795f0635beaa4cc6dcead23eab0ba3a9eec534f75e3251",
+          "attribution": {
+            "author": "新美南吉",
+            "translator": null,
+            "illustrator": null
+          },
+          "rights": {
+            "status": "approved",
+            "basis": "public-domain",
+            "reviewedBy": "claude",
+            "reviewedAt": "2026-10-14",
+            "reviewedJurisdictions": [
+              "JP",
+              "KR",
+              "US"
+            ],
+            "evidenceUrl": "https://www.aozora.gr.jp/cards/000121/card628.html"
+          },
+          "colophon": {
+            "sourceBook": [
+              "「新美南吉童話集」岩波文庫、岩波書店",
+              "1996（平成8）年7月16日発行第1刷",
+              "1997（平成9）年7月15日発行第2刷"
+            ],
+            "parentBook": [],
+            "inputter": "林裕司",
+            "proofreader": "浜野智"
+          },
+          "edits": [
+            "ruby-reading-aid",
+            "chapter-split-by-manabi"
+          ],
+          "rubyLocks": [
+            {
+              "start": 35,
+              "end": 36,
+              "base": "縄",
+              "reading": "なわ"
+            },
+            {
+              "start": 167,
+              "end": 169,
+              "base": "納屋",
+              "reading": "なや"
+            },
+            {
+              "start": 175,
+              "end": 178,
+              "base": "火縄銃",
+              "reading": "ひなわじゅう"
+            },
+            {
+              "start": 271,
+              "end": 273,
+              "base": "土間",
+              "reading": "どま"
+            },
+            {
+              "start": 331,
+              "end": 332,
+              "base": "前",
+              "reading": "まい"
+            },
+            {
+              "start": 406,
+              "end": 408,
+              "base": "筒口",
+              "reading": "つつぐち"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "diagnostics": {
+    "sourceBlockCount": 82,
+    "headingCount": 6,
+    "splitByHeadings": true,
+    "rubyCount": 69,
+    "mappedRubyCount": 69,
+    "droppedRubyCount": 0,
+    "midParagraphSplitCount": 0,
+    "headingRubyCount": 0,
+    "annotationRubyCount": 0,
+    "noteCount": 15,
+    "resolvedGaijiCount": 0,
+    "chapterChars": [
+      1550,
+      946,
+      924,
+      690,
+      403,
+      419
+    ]
+  }
+}

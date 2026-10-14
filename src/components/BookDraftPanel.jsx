@@ -79,7 +79,7 @@ export default function BookDraftPanel({
             : `총 ${draft.chapters.reduce((n, c) => n + c.text.length, 0).toLocaleString()}자`}
           {translationCount > 0 && ` · 뜻 ${translationCount.toLocaleString()}개는 원문이 아니라 드래그 번역에 붙어요`}
           {' '}· 각 챕터는 열 때 분석돼요
-          {draft.privateOnly && (<><br />🔒 개인 소장 자료 — 비공개로 등록됩니다</>)}
+          {draft.privateOnly && (<><br />🔒 개인 소장 자료 — 비공개로 등록돼요</>)}
         </span>
         {doneCount > 0 ? (
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

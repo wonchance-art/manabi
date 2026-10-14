@@ -17,8 +17,12 @@ import {
   sumGroupSnapshots,
 } from './studyGroups';
 
-/** @returns {{key, href, tone, kicker, title, meta}|null} */
-export function useGroupEntryItem() {
+/**
+ * @param {{invite?: boolean}} [opts] invite=false면 그룹이 없을 때 안내 항목을 만들지 않는다
+ *   (배움 화면 — 오너 확정 목업에 없는 권유 카드를 모든 계정에 띄우지 않는다, LEARN-HOME-AK-001).
+ * @returns {{key, href, tone, kicker, title, meta}|null}
+ */
+export function useGroupEntryItem({ invite = true } = {}) {
   const { user } = useAuth();
   const weekStart = kstWeekStartDate();
 
@@ -48,6 +52,7 @@ export function useGroupEntryItem() {
   const base = { key: 'group', href: '/groups', tone: 'social', meta: '→' };
 
   if (groups.length === 0) {
+    if (!invite) return null;
     return { ...base, kicker: '👥 함께 읽기', title: '그룹을 만들거나 초대 코드로 참가해 보세요' };
   }
 

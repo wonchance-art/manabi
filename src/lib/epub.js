@@ -24,7 +24,7 @@ function parseZipDirectory(buf) {
   }
   if (eocd < 0) throw new Error('ZIP 형식이 아님(EOCD 없음)');
   const count = view.getUint16(eocd + 10, true);
-  if (count > 10000) throw new Error('EPUB 항목이 너무 많습니다.');
+  if (count > 10000) throw new Error('EPUB 항목이 너무 많아요.');
   let p = view.getUint32(eocd + 16, true); // 중앙 디렉터리 시작
   const entries = new Map();
   let unpackedBytes = 0;
@@ -70,7 +70,7 @@ async function readZipEntry(buf, entry) {
       const { value, done } = await reader.read();
       if (done) break;
       total += value.byteLength;
-      if (total > MAX_ENTRY_BYTES || total > entry.size) throw new Error('EPUB 압축 용량 정보가 맞지 않습니다.');
+      if (total > MAX_ENTRY_BYTES || total > entry.size) throw new Error('EPUB 압축 용량 정보가 맞지 않아요.');
       chunks.push(value);
     }
   } catch (error) { await reader.cancel().catch(() => {}); throw error; }

@@ -120,6 +120,21 @@ function unmarkChapter(markedText, queue, cursor) {
   return { rawText, rubyLocks, dropped };
 }
 
+/**
+ * 見出し 없는 원작의 길이 분할 — 장 수를 round(전체/목표)로 정하고, 그 수 안에 드는 가장 작은 목표 크기를 찾는다.
+ * splitTextIntoChapters는 목표를 넘기 전에 장을 닫아 꼬리가 짧게 남는다(실물 「鼻」 2837·2752·230자). 장 수를 먼저
+ * 정하면 장 크기가 고르다(2,9xx·2,9xx). 분할 자체는 정본 splitTextIntoChapters가 그대로 한다(문단 경계만).
+ */
+function balancedLengthSplit(length, targetChars, maxChars, split) {
+  const count = Math.max(1, Math.round(length / targetChars));
+  const step = Math.max(1, Math.ceil(targetChars / 60));
+  for (let target = Math.ceil(length / count); target <= maxChars; target += step) {
+    const parts = split(target);
+    if (parts.length <= count) return parts;
+  }
+  return split(targetChars);
+}
+
 function chapterTitle(part, order, projection) {
   const title = String(part.title || '').replace(/[\uE000\uE001]/gu, '');
   const base = title.replace(/ \(\d+\/\d+\)$/u, '');
@@ -180,11 +195,10 @@ export function createAozoraMaterialDraft(entry, document, options = {}) {
     `Aozora document has parser warnings: ${document.warnings.map((item) => `${item.code}@${item.line ?? '-'}`).join(', ')}`);
 
   const projection = projectDocument(document);
-  const parts = splitTextIntoChapters(projection.text, {
-    targetChars: options.targetChars ?? AOZORA_CHAPTER_TARGET_CHARS,
-    maxChars: options.maxChars ?? AOZORA_CHAPTER_MAX_CHARS,
-    headingTest,
-  });
+  const maxChars = options.maxChars ?? AOZORA_CHAPTER_MAX_CHARS;
+  const targetChars = options.targetChars ?? AOZORA_CHAPTER_TARGET_CHARS;
+  const split = (target) => splitTextIntoChapters(projection.text, { targetChars: target, maxChars, headingTest });
+  const parts = projection.useHeadings ? split(targetChars) : balancedLengthSplit(projection.text.length, targetChars, maxChars, split);
   invariant(parts.length > 0, 'Aozora document produced no chapters');
 
   const key = aozoraWorkKey(entry);

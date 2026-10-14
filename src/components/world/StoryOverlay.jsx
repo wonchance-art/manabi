@@ -255,7 +255,7 @@ export function AirportQuiz({ text, onPass, onExit }) {
           // 원격 upsert 실패({error}) — push 부터 다시 시도(P2-8)
           <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 8, padding: '6px 0' }}>
             <p style={{ fontSize: '0.82rem', color: GBC.red, margin: 0, lineHeight: 1.5 }}>
-              기록에 실패했어요. 다시 시도해 주세요.
+              기록하지 못했어요. 다시 시도해 주세요.
             </p>
             <button type="button" onClick={savePass} style={{ ...gbcButtonPrimary, alignSelf: 'center' }}>
               다시 시도

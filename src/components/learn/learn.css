@@ -1,0 +1,179 @@
+/* 배움 · 현황 대시보드 (LEARN-HOME-AK-001 — 오너 확정 목업 docs/design/mocks/ak/ak.html, 2026-10-09).
+   격자 = 예전 홈 메트로 비율: 본문 672 · 4열 · 줄 146 · 간격 12 · 카드 반경 20. 휴대폰(셸 폭 ≤640) = 2열 · 줄 120.
+   색은 셸 토큰(--paper · --sheet · --ink · --muted · --rule · --ja/--zh/--en/--fr)과 color-mix로만 만든다 — 새 값 없음.
+   휴대폰 순서는 클래스 order(.learn-order-*)로 정한다 — nth-child 순서 버그를 되풀이하지 않는다. */
+.manabi-app .manabi-page.learn-page{max-width:720px;padding:40px 24px 64px}
+.learn-page{--learn-track:color-mix(in srgb,var(--rule) 55%,var(--sheet));--learn-soft:color-mix(in srgb,var(--ink) 4%,var(--sheet));--learn-rose-1:color-mix(in srgb,var(--ja) 28%,var(--sheet));--learn-rose-2:color-mix(in srgb,var(--ja) 58%,var(--sheet));--learn-rose-4:color-mix(in srgb,var(--ja) 62%,var(--ink));--learn-go:var(--accent-text);--learn-stop:var(--danger)}
+.learn-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px;min-width:0}
+.learn-top__title{display:flex;align-items:center;gap:14px;min-width:0}
+.learn-page .learn-top h1{font:700 34px/1.2 var(--font-manrope),var(--font-noto-kr),sans-serif;letter-spacing:-1.2px;margin:0;white-space:nowrap}
+.learn-toplink{font-size:13px;font-weight:700;color:var(--ink);min-height:44px;display:inline-flex;align-items:center;white-space:nowrap}
+.learn-crumb{display:inline-flex;align-items:center;min-height:44px;font-size:13px;font-weight:700;color:var(--muted);margin:-12px 0 0}
+.learn-chips{display:flex;gap:4px;align-items:center}
+.learn-chip{display:inline-flex;align-items:center;min-height:44px;padding:0;border:0;background:transparent;font:inherit;cursor:pointer}
+.learn-chip>span{font-size:12.5px;font-weight:600;line-height:1.4;padding:4px 12px;border-radius:999px;border:1px solid var(--rule);color:var(--muted);white-space:nowrap;background:var(--sheet)}
+.learn-chip.is-on>span{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.learn-chip:focus-visible{outline:none}
+.learn-chip:focus-visible>span{outline:2px solid var(--ja);outline-offset:3px}
+.learn-button-s{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--ink);background:transparent;color:var(--ink);font:700 13px/1 var(--font-noto-kr),sans-serif;white-space:nowrap;cursor:pointer}
+button.learn-button-s{min-height:44px}
+.learn-note{font-size:12px;color:var(--muted);margin:14px 0 0}
+.learn-more{margin-top:28px}
+.learn-more .deck-card{background:var(--sheet);border:1px solid var(--rule);box-shadow:none;border-radius:20px}
+
+/* 격자 */
+.learn-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:minmax(146px,auto);gap:12px}
+.learn-tile{border-radius:20px;padding:24px;background:var(--sheet);border:1px solid var(--rule);box-shadow:0 1px 3px color-mix(in srgb,var(--ink) 6%,transparent);display:flex;flex-direction:column;min-width:0;position:relative;overflow:hidden;color:var(--ink);text-decoration:none;transition:background .15s ease}
+a.learn-tile:hover{background:var(--learn-soft)}
+.learn-tile__head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.learn-kick{font-size:11.8px;font-weight:700;letter-spacing:.02em;color:var(--muted)}
+.learn-tile__cta{font-size:12.8px;font-weight:600;color:var(--ja);text-align:right}
+.learn-quad{grid-column:span 2;grid-row:span 2;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:12px;min-width:0}
+.learn-quad>.learn-goal,.learn-stats>.learn-goal{grid-column:span 2}
+
+/* 작은 칸(오늘 목표 · 연속 · 이번 주 · 아는 단어) */
+.learn-stat{align-items:center;justify-content:center;gap:4px;text-align:center;padding-top:23px;padding-bottom:25px}
+.learn-stat__value{font:700 27.2px/1.15 var(--font-serif-kr),serif;font-variant-numeric:tabular-nums}
+.learn-stat__label{font-size:11.2px;line-height:1.45;color:var(--muted)}
+
+/* 단어 복습 · 오늘 문단(2×2) */
+.learn-review,.learn-paragraph{grid-column:span 2;grid-row:span 2;padding-top:25px;padding-bottom:23px}
+.learn-review__due{font-size:11.8px;font-weight:600;color:var(--ja);font-variant-numeric:tabular-nums}
+.learn-review__cycle,.learn-paragraph__cycle{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;min-width:0}
+.learn-review__cycle{animation:learnIn .5s ease}
+@keyframes learnIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.learn-review__word{font:700 24.8px/1.3 var(--font-serif-kr),serif;overflow-wrap:anywhere}
+.learn-review__meaning{font-size:13.6px;color:var(--muted);overflow-wrap:anywhere}
+.learn-review__empty{font-size:13.6px;color:var(--muted);line-height:1.6}
+.learn-paragraph__cycle{transform:translateY(-1px)}
+.learn-paragraph__sentence{font:700 19px/1.65 var(--font-serif-kr),serif;max-width:15em;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:keep-all;overflow-wrap:anywhere}
+.learn-paragraph__words{font:700 20px/1.4 var(--font-serif-kr),serif;overflow-wrap:anywhere}
+.learn-paragraph__cap{font-size:12.5px;color:var(--muted)}
+
+/* 이어 읽기 — 시안 C(위아래 나눔). 머리 = 언어 색, 옅은 색은 언어 색 9% + 종이(새 값 없음). */
+.learn-resume{grid-column:span 2;grid-row:span 2;padding:0}
+.learn-resume.lang-ja{--lc:var(--ja)}.learn-resume.lang-zh{--lc:var(--zh)}.learn-resume.lang-en{--lc:var(--en)}.learn-resume.lang-fr{--lc:var(--fr)}
+.learn-resume{--lw:color-mix(in srgb,var(--lc) 9%,var(--sheet))}
+.learn-resume__glyph{position:absolute;z-index:1;pointer-events:none;font:300 130px/1 var(--font-noto-jp),var(--font-noto-sc),sans-serif;right:-8px;top:-16px;color:color-mix(in srgb,#fff 17%,transparent)}
+.learn-resume__glyph[lang=zh]{font-family:var(--font-noto-sc),sans-serif}
+.learn-resume__head{display:flex;flex-direction:column;justify-content:space-between;height:124px;padding:20px 24px;background:var(--lc);color:#fff;flex:none}
+.learn-resume__kicker{font:700 12px/1.4 var(--font-noto-kr),sans-serif;letter-spacing:.02em;color:color-mix(in srgb,#fff 76%,transparent)}
+.learn-resume__num{font:700 40px/1 var(--font-serif-kr),serif;letter-spacing:-1px}
+.learn-resume__body{display:block;position:relative;padding:18px 24px 0;min-width:0}
+.learn-resume__title{display:block;font:700 20px/1.45 var(--font-serif-kr),serif;line-break:strict;overflow-wrap:anywhere;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.learn-resume__sub{display:block;font-size:14px;line-height:1.5;margin-top:4px;color:var(--muted);overflow-wrap:anywhere}
+.learn-resume__bottom{margin-top:auto;display:flex;align-items:center;gap:12px;padding:0 24px 22px;position:relative}
+.learn-resume__count{font:600 12px var(--font-manrope),sans-serif;color:var(--muted);white-space:nowrap;flex:none}
+.learn-resume__bar{flex:1;min-width:40px;height:4px;border-radius:2px;position:relative;overflow:hidden;background:var(--lw)}
+.learn-resume__bar i{position:absolute;inset:0 auto 0 0;border-radius:2px;background:var(--lc)}
+.learn-resume__spacer{flex:1}
+.learn-resume__pill{display:inline-flex;align-items:center;gap:12px;height:44px;padding:0 6px 0 18px;margin-left:6px;border-radius:999px;font-weight:700;font-size:14px;white-space:nowrap;background:var(--lc);color:#fff;flex:none}
+.learn-resume__pill i{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-style:normal;background:#fff;color:var(--lc)}
+.learn-resume[role=status] .learn-resume__body{padding-top:24px}
+
+/* 진행바 반쪽(2×1, 높이 146) — 세로 배치 B(등간격, 정수 px): 넓은 화면 15/13/20/21, 휴대폰 15/12/20/20 */
+.learn-goal{height:146px;padding:15px 18px 0;display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto auto auto;align-content:start;align-items:start;row-gap:0;column-gap:10px}
+.learn-goal__head{grid-column:1/-1;grid-row:1;font-size:11px;line-height:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.learn-goal__big{font:700 24px/24px var(--font-serif-kr),serif;letter-spacing:-.5px;grid-row:2;margin-top:13px}
+.learn-goal__d{grid-column:1}
+.learn-goal__eta{grid-column:3;justify-self:end;display:inline-flex;align-items:center;gap:6px}
+.learn-goal .is-go{color:var(--learn-go)}.learn-goal .is-stop{color:var(--learn-stop)}
+.learn-goal__signal{display:inline-block;width:9px;height:9px;border-radius:50%;background:currentColor;flex:none}
+.learn-goal__barcell{grid-column:1/-1;grid-row:3;margin-top:20px}
+.learn-goal__bar{position:relative;display:block;height:8px;border-radius:99px;background:var(--learn-track)}
+.learn-goal__bar i{position:absolute;inset:0 auto 0 0;border-radius:99px;background:var(--ja)}
+.learn-goal__bar b{position:absolute;top:50%;width:16px;height:16px;border-radius:50%;background:var(--sheet);box-shadow:inset 0 0 0 3.5px var(--ja),0 1px 3px color-mix(in srgb,var(--ink) 12%,transparent);transform:translate(-50%,-50%)}
+.learn-goal__cap{grid-column:1/-1;grid-row:4;margin-top:21px;display:flex;justify-content:space-between;gap:8px;font-size:11px;line-height:14px;color:var(--muted);white-space:nowrap}
+.learn-goal__cap em{font-style:normal;font-weight:700;color:var(--ink)}
+.learn-goal--empty{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:10px;padding:16px 18px}
+.learn-goal__title{display:block;font-weight:800;font-size:15.2px}
+.learn-goal__line{display:block;margin-top:4px;font-size:12px;color:var(--muted)}
+.learn-guest{grid-column:span 4;flex-direction:row;align-items:center;justify-content:space-between;gap:16px;padding:24px}
+
+/* 현황 — 히트맵 반쪽 · 레벨 어휘 · 기억 건강 */
+.learn-heatmap{grid-column:span 2;height:146px;padding:14px 21px 18px}
+.learn-sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.learn-sec-title{font-size:15.2px;font-weight:700;margin:0}
+.learn-sec-meta{font-size:12.2px;color:var(--muted);white-space:nowrap}
+.learn-heatmap__strip{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,10px);grid-auto-columns:10px;gap:2px;margin-top:6px;justify-content:start;overflow:hidden}
+.learn-heatmap__strip i{display:block;border-radius:2px;background:var(--learn-track)}
+.learn-heatmap__strip .l1{background:var(--learn-rose-1)}.learn-heatmap__strip .l2{background:var(--learn-rose-2)}.learn-heatmap__strip .l3{background:var(--ja)}.learn-heatmap__strip .l4{background:var(--learn-rose-4)}
+.learn-levels,.learn-memory{grid-column:span 2;grid-row:span 2;padding:22px 24px}
+.learn-levels .learn-sec-head,.learn-memory .learn-sec-head{margin-bottom:12px}
+.learn-levels__rows{display:flex;flex-direction:column;gap:9px}
+.learn-levels__row{display:grid;grid-template-columns:4.6em minmax(0,1fr) 3.2em 5px 3.4em;align-items:center;gap:0 6px;padding:3px 0;border-radius:6px;color:var(--ink);text-decoration:none;min-height:30px}
+a.learn-levels__row:hover{background:var(--learn-soft)}
+.learn-levels__key{font:700 14px/1 var(--font-serif-kr),serif;white-space:nowrap}
+.learn-levels__bar{height:7px;position:relative;background:var(--learn-track);border-radius:99px;overflow:hidden;margin-right:8px}
+.learn-levels__bar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px}
+.learn-levels__bar .s{background:var(--learn-rose-1)}.learn-levels__bar .k{background:var(--ja)}
+.learn-levels__have,.learn-levels__total{font-size:12.2px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.learn-levels__have{color:var(--ink);font-weight:600}
+.learn-levels__total{color:var(--muted)}
+.learn-levels__sep{font-size:12.2px;color:var(--muted);text-align:center}
+.learn-levels__legend{display:flex;gap:14px;font-size:11.2px;color:var(--muted);margin-top:auto;padding-top:10px}
+.learn-levels__legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px}
+.learn-levels__legend .k{background:var(--ja)}.learn-levels__legend .s{background:var(--learn-rose-1)}
+.learn-center{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12.5px;color:var(--muted)}
+.learn-memory__ret{font-size:13px;font-weight:700;color:var(--ink)}
+.learn-memory__buckets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.learn-memory__bucket{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;background:var(--learn-soft);border-radius:10px;color:var(--ink);text-decoration:none;min-width:0}
+a.learn-memory__bucket:hover{background:color-mix(in srgb,var(--ink) 8%,var(--sheet))}
+.learn-memory__bucket small{font-size:12px}
+.learn-memory__bucket b{font:700 19px/1.3 var(--font-serif-kr),serif}
+.learn-memory__bucket span{font-size:11.2px;color:var(--muted)}
+.learn-memory__s{font-size:11.5px;color:var(--muted);margin:12px 0 4px}
+.learn-memory__fc{display:flex;align-items:stretch;justify-content:space-between;height:78px;gap:12px;padding:0 6px}
+.learn-memory__col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.learn-memory__n{font-size:12px;font-weight:700}
+.learn-memory__area{flex:1;width:100%;display:flex;align-items:flex-end}
+.learn-memory__area i{display:block;width:100%;border-radius:4px 4px 0 0;background:var(--learn-rose-2)}
+.learn-memory__col:first-child .learn-memory__area i{background:var(--ja)}
+.learn-memory__l{font-size:11.2px;color:var(--muted);white-space:nowrap}
+
+@media (prefers-reduced-motion:reduce){.learn-review__cycle{animation:none}.learn-tile{transition:none}}
+
+/* 휴대폰 — 셸 폭 640 이하: 2열 · 줄 120 · 2×2 → 2×1. 순서는 클래스로(상태 묶음은 맨 아래). */
+@container manabi-shell (max-width:640px){
+  .manabi-app .manabi-page.learn-page{padding:22px 16px 40px}
+  .learn-top{margin-bottom:16px}
+  .learn-page .learn-top h1{font-size:28px}
+  .learn-top__title{gap:10px}
+  .learn-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(120px,auto)}
+  .learn-resume,.learn-review,.learn-paragraph,.learn-quad,.learn-guest{grid-column:span 2;grid-row:span 1}
+  .learn-resume{height:236px}
+  .learn-resume__glyph{font-size:104px;top:-14px}
+  .learn-resume__head{height:92px;padding:16px 22px}
+  .learn-resume__num{font-size:30px}
+  .learn-resume__body{padding:14px 22px 0}
+  .learn-resume__title{font-size:18px}
+  .learn-resume__sub{font-size:13px}
+  .learn-resume__bottom{padding:0 22px 18px}
+  .learn-review{min-height:190px;padding-top:26px;padding-bottom:22px}
+  .learn-review__cycle{transform:translateY(1px)}
+  .learn-paragraph{min-height:190px;padding-top:24px;padding-bottom:24px}
+  .learn-paragraph__cycle{transform:none}
+  .learn-quad{grid-template-rows:auto minmax(120px,auto)}
+  .learn-order-status{order:3}
+  .learn-stat{padding-top:24px;padding-bottom:24px}
+  .learn-stat__value{font-size:22.4px}
+  .learn-goal{padding:15px 20px 0}
+  .learn-goal__big{font-size:26px;line-height:26px;margin-top:12px}
+  .learn-goal__cap{margin-top:20px}
+  .learn-guest{flex-direction:column;align-items:flex-start}
+  .learn-heatmap{height:auto;padding:16px 22px 20px}
+  .learn-heatmap__strip{grid-template-rows:repeat(7,minmax(0,1fr));grid-auto-columns:minmax(0,1fr)}
+  .learn-heatmap__strip i{aspect-ratio:1}
+  .learn-levels,.learn-memory{grid-column:span 2}
+  .learn-memory__fc{gap:6px;padding:0}
+  .learn-stats .learn-order-1{order:1}.learn-stats .learn-order-2{order:2}.learn-stats .learn-order-3{order:3}.learn-stats .learn-order-4{order:4}
+  .learn-stats .learn-order-5{order:5}.learn-stats .learn-order-6{order:6}.learn-stats .learn-order-7{order:7}.learn-stats .learn-order-8{order:8}
+}
+@container manabi-shell (max-width:360px){.learn-resume__count{display:none}.learn-top__title{gap:6px}.learn-page .learn-top h1{font-size:26px}}
+button.learn-tile{font:inherit;text-align:left;cursor:pointer}
+button.learn-tile:hover{background:var(--learn-soft)}
+button.learn-stat{text-align:center}
+.learn-memory__area i.is-zero{background:var(--rule)}
+.learn-login{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.learn-login .learn-button-s{min-height:44px}
+span.learn-chip{cursor:default}

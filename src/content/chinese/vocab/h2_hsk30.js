@@ -8,7 +8,7 @@ const themes = {
       name: "HSK2 3.0 보강",
       icon: "🟩",
       words: [
-        { zh: "爱人", pinyin: "àiren", ko: "애인, 배우자", pos: "명사", ex: { zh: "他的爱人是医生。", pinyin: "Tā de àiren shì yīshēng.", ko: "그의 배우자는 의사예요." } },
+        { zh: "爱人", pinyin: "àiren", ko: "배우자(남편 · 아내)", pos: "명사", hanja: "애인(愛人) — 한국어 '애인(연인)'과 뜻이 달라요! 중국어에선 남편이나 아내, 곧 배우자예요.", ex: { zh: "他的爱人是医生。", pinyin: "Tā de àiren shì yīshēng.", ko: "그의 배우자는 의사예요." } },
         { zh: "白色", pinyin: "báisè", ko: "흰색", pos: "명사", ex: { zh: "她喜欢穿白色的衣服。", pinyin: "Tā xǐhuan chuān báisè de yīfu.", ko: "그녀는 흰색 옷을 입는 것을 좋아해요." } },
         { zh: "班长", pinyin: "bānzhǎng", ko: "반장", pos: "명사", ex: { zh: "他是我们班的班长。", pinyin: "Tā shì wǒmen bān de bānzhǎng.", ko: "그는 우리 반의 반장이에요." } },
         { zh: "办", pinyin: "bàn", ko: "처리하다, 하다", pos: "동사", ex: { zh: "这件事我来办。", pinyin: "Zhè jiàn shì wǒ lái bàn.", ko: "이 일은 내가 처리하겠어요." } },

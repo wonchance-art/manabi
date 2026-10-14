@@ -46,7 +46,7 @@ const themes = {
         { zh: "遍布", pinyin: "biànbù", ko: "널리 퍼지다, 두루 분포하다", pos: "동사", ex: { zh: "这种植物遍布全国各地。", pinyin: "Zhè zhǒng zhíwù biànbù quánguó gèdì.", ko: "이 식물은 전국 각지에 널리 분포되어 있어요." } },
         { zh: "衷心", pinyin: "zhōngxīn", ko: "진심으로, 충심으로", pos: "부사", ex: { zh: "我衷心祝愿你们幸福美满。", pinyin: "Wǒ zhōngxīn zhùyuàn nǐmen xìngfú měimǎn.", ko: "저는 여러분의 행복을 진심으로 기원합니다." } },
         { zh: "司令", pinyin: "sīlìng", ko: "사령관", pos: "명사", ex: { zh: "他被任命为部队的司令。", pinyin: "Tā bèi rènmìng wéi bùduì de sīlìng.", ko: "그는 부대의 사령관으로 임명되었어요." } },
-        { zh: "若干", pinyin: "ruògān", ko: "약간, 다소, 몇몇", pos: "수사", ex: { zh: "会议提出了若干改进意见。", pinyin: "Huìyì tíchū le ruògān gǎijìn yìjiàn.", ko: "회의에서 몇 가지 개선 의견을 제시했어요." } },
+        { zh: "若干", pinyin: "ruògān", ko: "몇몇, 여러, 얼마간", pos: "수사", hanja: "약간(若干) — 한국어 '약간(조금)'과 뜻이 달라요! 중국어에선 '몇몇, 여러'처럼 수를 말해요. 조금은 一点儿이에요.", ex: { zh: "会议提出了若干改进意见。", pinyin: "Huìyì tíchū le ruògān gǎijìn yìjiàn.", ko: "회의에서 몇 가지 개선 의견을 제시했어요." } },
         { zh: "批判", pinyin: "pīpàn", ko: "비판하다", pos: "동사", ex: { zh: "老师批判了他的错误观点。", pinyin: "Lǎoshī pīpàn le tā de cuòwù guāndiǎn.", ko: "선생님은 그의 잘못된 견해를 비판했어요." } },
         { zh: "难堪", pinyin: "nánkān", ko: "난처하다, 곤란하다", pos: "형용사", ex: { zh: "他的问题让我感到十分难堪。", pinyin: "Tā de wèntí ràng wǒ gǎndào shífēn nánkān.", ko: "그의 질문에 나는 매우 난처했어요." } },
         { zh: "野心", pinyin: "yěxīn", ko: "야심, 야망", pos: "명사", ex: { zh: "他从小就有很大的野心。", pinyin: "Tā cóng xiǎo jiù yǒu hěn dà de yěxīn.", ko: "그는 어릴 때부터 큰 야심을 가지고 있었어요." } },

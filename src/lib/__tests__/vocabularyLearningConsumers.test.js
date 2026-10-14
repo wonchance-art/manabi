@@ -98,7 +98,7 @@ describe('effective output vocabulary reads', () => {
 // 기존 snapshot API와 실제 소비 함수를 함께 검증해 옛 SQL due/날짜 필터 재등장을 막는다.
 const db = vi.hoisted(() => ({ from: vi.fn() }));
 vi.mock('../supabase', () => ({ supabase: db }));
-import { fetchHomeData } from '../../views/HomePage';
+import { fetchHomeData, learnReviewCount } from '../../views/HomePage';
 import { fetchProfileStats } from '../../views/ProfileStats';
 import { introduceFsrsCard, scheduleFsrsReview } from '../fsrsScheduler';
 
@@ -138,8 +138,12 @@ describe('home and profile mixed memory integration', () => {
     const before = JSON.stringify(snapshot.rows);
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => snapshot })));
     recentProgress();
-    const home = await fetchHomeData(ACTOR, 'Chinese', NOW - 1000);
-    expect(home.dueCount).toBe(1); // 새 FSRS의 보존된 legacy 만기면 2가 되는 회귀
+    const home = await fetchHomeData(ACTOR, NOW - 1000);
+    // 배움 단어 복습 칸 숫자(LEARN-HOME-AK-001) = 복습방과 같은 countReviewScope total — 같은 snapshot의 투영으로 센다.
+    const quota = { active: true, remaining: 0, admittedLegacyCardIds: [] };
+    expect(learnReviewCount({ snapshot: home.learning, lang: 'Chinese', quota, now: home.now })).toBe(1); // 새 FSRS의 보존된 legacy 만기면 2가 되는 회귀
+    expect(learnReviewCount({ snapshot: home.learning, lang: 'Japanese', quota, now: home.now })).toBe(0); // 언어 밖 카드 0
+    expect(learnReviewCount({ snapshot: home.learning, lang: 'Chinese', quota: null, now: home.now })).toBe(null); // 한도를 모르면 숫자 없음
     expect(home.vocabByLang.Chinese).toBe(2);
     expect(JSON.stringify(snapshot.rows)).toBe(before);
     expect(fetch.mock.calls[0][0]).toContain('fields=summary');
@@ -159,7 +163,7 @@ describe('home and profile mixed memory integration', () => {
   it('propagates unavailable/incomplete registry and never presents it as zero or legacy', async () => {
     recentProgress();
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ ...mixedSnapshot(), complete: false }) })));
-    await expect(fetchHomeData(ACTOR, 'Chinese', NOW)).rejects.toThrow();
+    await expect(fetchHomeData(ACTOR, NOW)).rejects.toThrow();
     await expect(fetchProfileStats(ACTOR, NOW)).rejects.toThrow();
     vi.unstubAllGlobals();
   });
@@ -167,7 +171,7 @@ describe('home and profile mixed memory integration', () => {
   it('propagates the other home query failure too', async () => {
     recentProgress({ error: new Error('recent_denied') });
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => mixedSnapshot() })));
-    await expect(fetchHomeData(ACTOR, 'Chinese', NOW)).rejects.toThrow('recent_denied');
+    await expect(fetchHomeData(ACTOR, NOW)).rejects.toThrow('recent_denied');
     vi.unstubAllGlobals();
   });
 });

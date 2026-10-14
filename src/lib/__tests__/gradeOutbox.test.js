@@ -54,16 +54,16 @@ describe('인라인 채점 — 한 길(recordReviewCompleted)과 큐 결과', ()
     expect(qc.setQueryData).toHaveBeenCalledWith(['vocab-words', 'u1'], expect.any(Function));
     expect(qc.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['vocab-words', 'u1'] });
     expect(fetchProfile).not.toHaveBeenCalled();
-    expect(toast).toHaveBeenCalledWith('복습 저장 — 연결되면 보내요', 'success', 2000);
+    expect(toast).toHaveBeenCalledWith('복습을 이 기기에 저장했어요. 연결되면 보내요.', 'success', 2000);
   });
 
-  it('온라인 저장 — queued false, 「복습 완료!」, streak 표시 갱신', async () => {
+  it('온라인 저장 — queued false, 「복습을 저장했어요」, streak 표시 갱신', async () => {
     recordReviewCompleted.mockResolvedValue({ ok: true, reviewedAt: '2026-09-03T00:00:00.000Z' });
     const result = await hook.mutationFn({ vocab, rating: 4 });
     expect(result.queued).toBe(false);
     await hook.onSuccess(result);
     expect(fetchProfile).toHaveBeenCalledWith('u1');
-    expect(toast).toHaveBeenCalledWith('복습 완료!', 'success', 2000);
+    expect(toast).toHaveBeenCalledWith('복습을 저장했어요', 'success', 2000);
   });
 
   it('큐마저 못 쓴 환경 — { ok:false }를 삼키지 않고 던진다(무증상 유실 금지)', async () => {

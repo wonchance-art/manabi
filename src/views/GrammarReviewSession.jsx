@@ -63,7 +63,7 @@ function UpcomingList({ upcoming }) {
             display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px',
             borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', fontSize: '0.84rem',
           }}>
-            <span aria-hidden="true">{u.flag}</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem', flexShrink: 0 }}>{u.langName}</span>
             <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {u.level} #{u.order} {u.title}
             </span>
@@ -83,8 +83,9 @@ function UpcomingList({ upcoming }) {
 /**
  * 문법 SRS 복습 세션 — due 챕터를 한 챕터씩 미니 퀴즈로 재확인하고
  * 정답률을 FSRS rating으로 바꿔 다음 복습일을 스케줄한다.
- * items: [{ srs, lang, langCode, langName, flag, title, order, level, href, quiz }]
- * upcoming: [{ flag, level, order, title, href, dueAt }] — 예정 복습(가시성)
+ * items: [{ srs, lang, langCode, langName, title, order, level, href, quiz }]
+ * upcoming: [{ langName, level, order, title, href, dueAt }] — 예정 복습(가시성)
+ * 언어는 글자(langName)로 보인다 — 국기는 쓰지 않는다(D-X6, 2026-10-12).
  */
 export default function GrammarReviewSession({ items, upcoming = [], signedOut = false }) {
   const { user, fetchProfile } = useAuth();
@@ -137,7 +138,7 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
         // (기록이 이 기기에만 남는다는 사실은 화면에서 따로 알린다.)
         if (!user?.id) return applyGuestReviewResult({ lang: item.lang, slug: item.srs.slug, rating });
         const updated = await gradeGrammarReview({ ...item.srs, user_id: user.id }, rating);
-        if (!updated) throw new Error('문법 복습 결과를 저장하지 못했습니다.');
+        if (!updated) throw new Error('문법 복습 결과를 저장하지 못했어요.');
 
         // 저장 확인 뒤에만 활동·이벤트와 완료 상태를 확정한다.
         recordActivity(user.id, () => fetchProfile(user.id));
@@ -232,7 +233,7 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 20 }}>
           {signedOut
             ? '로그인하면 통과한 문법 챕터가 며칠 뒤 자동으로 복습 큐에 돌아와요.'
-            : '오늘 복습할 문법이 없어요. 강의에서 챕터의 패턴 체크를 통과하면 며칠 뒤 여기로 돌아옵니다.'}
+            : '지금 복습할 문법이 없어요. 강의에서 챕터의 패턴 체크를 통과하면 며칠 뒤 여기로 돌아와요.'}
         </p>
         <Link href={signedOut ? '/auth' : '/lessons'} className="btn btn--primary btn--md">
           {signedOut ? '로그인 →' : '강의 보러 가기 →'}
@@ -258,11 +259,10 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
             const Card = href ? Link : 'div';
             return (
             <Card key={i} {...(href ? { href } : {})} className="card" style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontSize: '1.1rem' }}>{r.item.flag}</span>
               <span style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ display: 'block', fontSize: '0.92rem', fontWeight: 600 }}>#{r.item.order} {r.item.title}</span>
                 <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                  {r.right}/{r.total} · {RATING_LABEL[r.rating]}
+                  {r.item.langName ? `${r.item.langName} · ` : ''}{r.right}/{r.total} · {RATING_LABEL[r.rating]}
                   {r.nextDays ? ` · 다음 복습 ${r.nextDays}일 후` : ''}
                 </span>
               </span>
@@ -289,7 +289,7 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
           문법 복습 · 챕터 {idx + 1}/{items.length}
         </div>
         <h1 style={{ fontSize: '1.25rem', fontWeight: 700, lineHeight: 1.4 }}>
-          {item.flag} #{item.order} {item.title}
+          #{item.order} {item.title}
         </h1>
         <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: 4 }}>
           {item.langName} · {item.level} · 기억이 흐려지기 전에 다시 확인해요
