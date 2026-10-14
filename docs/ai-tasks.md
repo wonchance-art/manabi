@@ -888,6 +888,7 @@
     · 게시 API 공용화 `src/lib/server/bookPublishRoute.js`(/api/admin/literature 동작 그대로 + /api/admin/art-books) · 관리자 🖼️ 미술 책 탭(같은 패널 kind=art)
     · 뷰어 작품 정보 카드 `ViewerArtCard`(해시 대조 통과 장만 · 원문 수정 잠금) · 자료 출처 「미술」 절 · 일본 지도 `?pin=` 딥링크.
     남은 것: Preview 실계정 검수(관리자 게시 → 분석 → 검수 → 공개, 그림 로드 확인) — 운영 게시는 그다음.
+  · **ART-IMG-002(2026-10-14 KST)** `claude/art-img-002-kameido`: 마지막 빈 그림 亀戸梅屋舗 — 브루클린 전질 사본이 위키미디어 공용에 없어 레이크스 미술관 RP-P-1956-743(CC0) 공식 디지털화본을 공용 경유로 받아 `public/art`에 저장(425×625) · 소장처 레이크스 추가 · 찾아볼 것 3 · 자료 출처 「위키미디어 공용」. 이제 여덟 점 모두 그림 있음.
 - **대화 모드 v2-Z 전 라운드 (2026-10-14 KST, 오너 「전부 다 승인함」 — 인계 [CONVERSATION-V2Z-001](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6050886728))** `claude/project-thread-a2xmmk`:
   순서 = 인계문 §10 그대로 Z-R1 ①서버 → ②평가 묶음 → ③화면 → Z-R2 → Z-R3, PR 하나씩.
   · **Z-R1 ① 병합(#1438, 2026-10-14 KST)**: `/api/analyze` 핵심 → `analyzeCore.analyzeLines`(응답 동일) · `POST /api/conversation/turn` · 순수 규칙 `lib/conversation/turnModel.js`
