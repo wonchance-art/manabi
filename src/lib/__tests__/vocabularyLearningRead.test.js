@@ -30,7 +30,8 @@ describe('complete vocabulary read projection preserves its separate cohorts', (
     expect(projection).not.toHaveProperty('next_review_at');
     expect(isKnownWord(projection)).toBe(true);
     expect(isKnownWord(raw)).toBe(false);
-    expect(wordStage(projection).key).toBe('learning');
+    // 카드 단계(D15): 첫 답 「쉬움」으로 졸업한 Review 카드는 scheduledDays < 21 → 익히는 중(REV-SCOPE-R1B-1).
+    expect(wordStage(projection).key).toBe('young');
     expect(wordStage(raw).key).toBe('new');
   });
 

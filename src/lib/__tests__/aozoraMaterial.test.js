@@ -92,6 +92,14 @@ describe('createAozoraMaterialDraft — 見出し 없는 원작은 문단 경계
     expect(draft.diagnostics.midParagraphSplitCount).toBe(0);
   });
 
+  it('장 머리가 앞 대사에 매달린 이음 문단(と答えた。)이면 다음 경계를 고른다(실물 「鼻」 2장 머리)', () => {
+    const body = ['あ'.repeat(50), `と${'い'.repeat(29)}`, 'う'.repeat(30)].join('\n');
+    const draft = createAozoraMaterialDraft(sampleEntry(), parseAozoraText(wrap(body)), { targetChars: 60, maxChars: 200 });
+    // 가장 고른 [50, 62]는 2장이 「と…」로 시작한다 → 이음 문단을 앞 장에 붙인 [82, 30].
+    expect(draft.diagnostics.chapterChars).toEqual([82, 30]);
+    expect(draft.chapters[1].rawText.startsWith('う')).toBe(true);
+  });
+
   it('짧은 원작은 한 장, 상한보다 긴 원작은 상한 안에서 고르게', () => {
     const short = createAozoraMaterialDraft(sampleEntry(), parseAozoraText(wrap(['あ'.repeat(70), 'い'.repeat(30)].join('\n'))), { targetChars: 80, maxChars: 200 });
     expect(short.diagnostics.chapterChars).toEqual([102]);

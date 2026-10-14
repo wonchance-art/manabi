@@ -127,7 +127,7 @@ try {for(const engine of (process.env.QA_ENGINE==='chromium'?[chromium]:[chromiu
    const persisted=page.waitForResponse(response=>response.request().method()==='PATCH'&&new URL(response.url()).pathname==='/rest/v1/user_vocabulary');
    await page.getByRole('button',{name:/알맞음/}).click();assert.equal((await persisted).status(),200);
   }
-  await page.getByRole('heading',{name:'이번 표현 복습을 마쳤어요',exact:true}).waitFor();
+  await page.getByRole('heading',{name:'오늘 몫 끝',exact:true}).waitFor();
   assert.equal(writes.filter(w=>w.table==='user_vocabulary'&&w.method==='PATCH').length,3);
   assert.deepEqual(new Set(writes.filter(w=>w.table==='user_vocabulary'&&w.method==='PATCH').map(w=>w.target)),new Set([id(1),id(2),id(5)]));
   assert.deepEqual(words.filter(w=>[id(3),id(4)].includes(w.id)),beforeWords.filter(w=>[id(3),id(4)].includes(w.id)));
