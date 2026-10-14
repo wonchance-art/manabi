@@ -22,6 +22,12 @@
 //   ── 공개 뒤 ──
 //   공개됨 · 산책 › 함께 읽는 글 · 루비 적용 …
 //
+// 일괄 게시·분석(AOZORA-P1-1 설계 §4.1, 오너 「권장대로」 2026-10-14 KST) — 표 위 한 줄:
+//   준비 안 된 8편                                                       [8편 모두 게시·분석]
+//   ── 누른 뒤(확인 창은 한 번 — 작품 목록) ──
+//   일괄 진행 3/8 · 「坊っちゃん」 분석 12/34 · 이 화면을 닫지 마세요         [멈춤]
+//   멈췄다가 다시 누르면 남은 작품·남은 장부터. 검수·공개는 지금처럼 작품마다(사람 확인 지점).
+//
 // 기대 화면(kind="art", 출처 칸):
 //   北斎と広重の風景版画 · 葛飾北斎・歌川広重   N2 상급   ColBase · 정부표준이용규약 2.0 · 8장
 //                                                        출처: ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · …
@@ -37,6 +43,7 @@ import { supabase } from '../lib/supabase';
 import { analyzeText } from '../lib/analyzeText';
 import { runPreservedReanalysis } from '../lib/reanalysisPreservation';
 import { failureMessage, friendlyToastMessage } from '../lib/errorMessage';
+import { literatureBatchTargets } from '../lib/literaturePublish';
 
 const LITERATURE_API = '/api/admin/literature';
 const CONFLICT_LABEL = { 'text-differs': '정본과 원문이 다름', 'duplicate-order': '같은 장이 둘', 'unknown-order': '정본에 없는 장' };
@@ -102,6 +109,7 @@ const prepareBasis = (book, kind) => (kind === 'art'
 
 const analyzedCount = (book) => book.chapters.filter((chapter) => chapter.material?.status === 'completed').length;
 
+
 function stageLabel(book, running, kind) {
   if (running) return `준비 중 · 분석 ${running.done}/${running.total} · 이 화면을 닫지 마세요`;
   switch (book.stage) {
@@ -154,31 +162,70 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
   const post = (action, key) => postTo(api, action, key);
   const [confirm, setConfirm] = useState(null); // { action: 'prepare' | 'release', book }
   const [running, setRunning] = useState(null); // { key, done, total }
+  const [batch, setBatch] = useState(null); // { titles, index } — 일괄 게시·분석 진행
   const abortRef = useRef(null);
   const { data, isLoading, isError, refetch } = useQuery({ queryKey: QUERY_KEY, queryFn: () => request(api) });
   useEffect(() => () => abortRef.current?.abort(), []);
 
-  // 장마다 뷰어와 같은 분석 경로(runPreservedReanalysis — 분석 말미에 저자 루비 잠금)로 한 번씩. 한 번에 한 작품.
-  async function analyzeBook(book) {
+  // 장마다 뷰어와 같은 분석 경로(runPreservedReanalysis — 분석 말미에 저자 루비 잠금)로 한 번씩.
+  async function analyzeChapters(book, controller) {
     const targets = book.chapters.filter((chapter) => chapter.material && chapter.material.status !== 'completed');
-    if (targets.length === 0 || abortRef.current) return;
+    for (const [index, chapter] of targets.entries()) {
+      setRunning({ key: book.key, done: index, total: targets.length });
+      const { data: row, error } = await supabase.from('reading_materials').select('*').eq('id', chapter.material.id).single();
+      if (error) throw error;
+      await runPreservedReanalysis(supabase, row, controller.signal, analyzeText, { fullReset: true });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    }
+  }
+
+  // 한 작품 — 「게시」 뒤·「이어서 분석」.
+  async function analyzeBook(book) {
+    if (book.chapters.every((chapter) => !chapter.material || chapter.material.status === 'completed') || abortRef.current) return;
     const controller = new AbortController();
     abortRef.current = controller;
-    setRunning({ key: book.key, done: 0, total: targets.length });
     try {
-      for (const [index, chapter] of targets.entries()) {
-        setRunning({ key: book.key, done: index, total: targets.length });
-        const { data: row, error } = await supabase.from('reading_materials').select('*').eq('id', chapter.material.id).single();
-        if (error) throw error;
-        await runPreservedReanalysis(supabase, row, controller.signal, analyzeText, { fullReset: true });
-        queryClient.invalidateQueries({ queryKey: QUERY_KEY });
-      }
+      await analyzeChapters(book, controller);
       toast(`「${book.title}」 모든 장을 분석했어요. 장을 열어 검수해 주세요.`, 'success');
     } catch (error) {
       if (error?.name !== 'AbortError') toast(failureMessage('장을 분석하지 못했어요.', error), 'error');
     } finally {
       abortRef.current = null;
       setRunning(null);
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    }
+  }
+
+  // 일괄 — 준비 안 된 작품을 차례로 준비(prepare)·분석한다. 작품마다 최신 상태를 다시 읽어, 멈췄다 다시 누르면 남은 장부터 잇는다.
+  // 검수·공개는 하지 않는다(사람 확인 지점 — 작품마다 그대로).
+  async function runBatch(books) {
+    if (abortRef.current || books.length === 0) return;
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const titles = books.map((book) => book.title);
+    let done = 0;
+    try {
+      for (const [index, target] of books.entries()) {
+        if (controller.signal.aborted) break;
+        setBatch({ titles, index });
+        const find = async () => (await queryClient.fetchQuery({ queryKey: QUERY_KEY, queryFn: () => request(api) })).books.find((item) => item.key === target.key);
+        let book = await find();
+        if (!book || literatureBatchTargets([book]).length === 0) continue;
+        if (book.plan.insert.length > 0) {
+          await post('prepare', book.key);
+          book = await find();
+        }
+        if (!book || book.plan.conflicts.length > 0) continue;
+        await analyzeChapters(book, controller);
+        done += 1;
+      }
+      if (!controller.signal.aborted) toast(`${done}편을 준비·분석했어요. 작품마다 장을 열어 검수해 주세요.`, 'success');
+    } catch (error) {
+      if (error?.name !== 'AbortError') toast(failureMessage('일괄 게시·분석을 마치지 못했어요. 다시 누르면 남은 장부터 이어요.', error), 'error');
+    } finally {
+      abortRef.current = null;
+      setRunning(null);
+      setBatch(null);
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     }
   }
@@ -219,7 +266,8 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
   }
 
   const books = data?.books || [];
-  const busy = !!running || prepare.isPending || review.isPending || release.isPending;
+  const busy = !!running || !!batch || prepare.isPending || review.isPending || release.isPending;
+  const pending = literatureBatchTargets(books);
   return (
     <div className="admin-table-wrap">
       {kind === 'art' ? (
@@ -235,14 +283,28 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
           분석과 검수 결과는 모든 사용자가 같이 쓰고, 단어 상태만 사람마다 따로예요.
         </p>
       )}
-      <div className="admin-table-header"><span>총 {books.length}{KIND[kind].unit}</span></div>
+      <div className="admin-table-header">
+        <span>총 {books.length}{KIND[kind].unit}</span>
+        {batch ? (
+          <span role="status">
+            일괄 진행 {batch.index + 1}/{batch.titles.length} · 「{batch.titles[batch.index]}」
+            {running ? ` 분석 ${running.done}/${running.total}` : ' 준비 중'} · 이 화면을 닫지 마세요{' '}
+            <Button size="sm" variant="ghost" onClick={() => abortRef.current?.abort()}>멈춤</Button>
+          </span>
+        ) : pending.length > 1 && (
+          <span>
+            준비 안 된 {pending.length}{KIND[kind].unit}{' '}
+            <Button size="sm" disabled={busy} onClick={() => setConfirm({ action: 'batch', books: pending })}>{pending.length}{KIND[kind].unit} 모두 게시·분석</Button>
+          </span>
+        )}
+      </div>
       <table className="admin-table">
         <thead>
           <tr><th>작품</th><th>레벨</th><th>{KIND[kind].evidence}</th><th>단계</th><th>작업</th></tr>
         </thead>
         <tbody>
           {books.map((book) => {
-            const runningHere = running?.key === book.key ? running : null;
+            const runningHere = running?.key === book.key && !batch ? running : null;
             const prepared = book.chapters.some((chapter) => chapter.material);
             return (
               <tr key={book.key}>
@@ -290,19 +352,24 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
       </table>
       <ConfirmModal
         open={!!confirm}
-        title={!confirm ? '' : confirm.action === 'prepare'
-          ? `「${confirm.book.title}」 책을 준비하고 분석할까요?`
-          : `「${confirm.book.title}」 책을 산책에 공개할까요?`}
-        message={!confirm ? '' : confirm.action === 'prepare'
-          ? `${confirm.book.total}장을 비공개로 넣고 이 화면에서 한 번씩 분석해요. ${prepareBasis(confirm.book, kind)}. 공개 전에는 다른 사용자에게 보이지 않아요.`
-          : '모든 장의 검수를 마쳤어요. 공개하면 모든 사용자가 읽을 수 있어요. 분석 결과는 같이 쓰고, 단어 상태는 사람마다 따로예요.'}
-        confirmLabel={confirm?.action === 'release' ? '공개' : '게시'}
+        title={!confirm ? '' : confirm.action === 'batch'
+          ? `${confirm.books.length}${KIND[kind].unit}을 차례로 준비하고 분석할까요?`
+          : confirm.action === 'prepare'
+            ? `「${confirm.book.title}」 책을 준비하고 분석할까요?`
+            : `「${confirm.book.title}」 책을 산책에 공개할까요?`}
+        message={!confirm ? '' : confirm.action === 'batch'
+          ? `${confirm.books.map((book) => `${book.title}(${book.total}장)`).join(' · ')}. 모두 비공개로 넣고 이 화면에서 한 장씩 분석해요. 근거는 표의 「${KIND[kind].evidence}」 칸과 같아요. 검수와 공개는 작품마다 따로 해요.`
+          : confirm.action === 'prepare'
+            ? `${confirm.book.total}장을 비공개로 넣고 이 화면에서 한 번씩 분석해요. ${prepareBasis(confirm.book, kind)}. 공개 전에는 다른 사용자에게 보이지 않아요.`
+            : '모든 장의 검수를 마쳤어요. 공개하면 모든 사용자가 읽을 수 있어요. 분석 결과는 같이 쓰고, 단어 상태는 사람마다 따로예요.'}
+        confirmLabel={confirm?.action === 'release' ? '공개' : confirm?.action === 'batch' ? '모두 게시·분석' : '게시'}
         variant="primary"
         confirmDisabled={busy}
         onConfirm={() => {
-          const { action, book } = confirm;
+          const { action, book, books: targets } = confirm;
           setConfirm(null);
-          if (action === 'prepare') prepare.mutate(book);
+          if (action === 'batch') runBatch(targets);
+          else if (action === 'prepare') prepare.mutate(book);
           else release.mutate(book);
         }}
         onCancel={() => setConfirm(null)}
