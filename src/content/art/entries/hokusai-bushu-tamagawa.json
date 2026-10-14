@@ -1,0 +1,75 @@
+{
+  "id": "hokusai-bushu-tamagawa",
+  "wikidata": "Q18173390",
+  "artist": "katsushika-hokusai",
+  "title": {
+    "native": "冨嶽三十六景 武州玉川",
+    "ko": "후가쿠 36경 — 무사시국 다마강",
+    "reading": "ふがくさんじゅうろっけい ぶしゅうたまがわ"
+  },
+  "series": {
+    "native": "冨嶽三十六景",
+    "ko": "후가쿠 36경"
+  },
+  "date": {
+    "text": "c. 1830/33",
+    "source": "aic",
+    "startYear": 1830,
+    "endYear": 1833,
+    "certainty": "circa"
+  },
+  "periods": [
+    "jp-edo"
+  ],
+  "medium": {
+    "native": "横大判　錦絵",
+    "ko": "가로 오반 니시키에(다색 목판화)"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/A-11176-10"
+    },
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/24790"
+    },
+    {
+      "place": "metropolitan-museum-of-art",
+      "role": "holding",
+      "url": "https://www.metmuseum.org/art/collection/search/56392"
+    },
+    {
+      "place": "tama-river",
+      "role": "depicted"
+    },
+    {
+      "place": "mount-fuji",
+      "role": "depicted"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-166408"
+    }
+  ],
+  "terms": [
+    "空摺り",
+    "グラデーション",
+    "霞"
+  ],
+  "lookFor": [
+    "강을 건너는 배와 기슭에서 말을 끄는 사람을 찾아봐요.",
+    "강물의 흰 부분에서 짙은 푸른색까지 색이 어떻게 이어질까요?",
+    "강과 후지산 사이에 비워 둔 안개 띠는 얼마나 넓을까요?"
+  ],
+  "image": {
+    "source": "met",
+    "sourceId": "56392",
+    "alt": "넓은 다마강을 배 한 척이 건너고, 앞 기슭에는 짐 실은 말을 끄는 사람이 있다. 비워 둔 안개 띠 너머로 흰 후지산이 보인다."
+  }
+}

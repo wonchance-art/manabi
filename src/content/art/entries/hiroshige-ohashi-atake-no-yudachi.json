@@ -1,0 +1,80 @@
+{
+  "id": "hiroshige-ohashi-atake-no-yudachi",
+  "wikidata": "Q5826309",
+  "artist": "utagawa-hiroshige",
+  "title": {
+    "native": "名所江戸百景 大はしあたけの夕立",
+    "ko": "명소 에도 100경 — 오하시 다리와 아타케의 소나기",
+    "reading": "めいしょえどひゃっけい おおはしあたけのゆうだち"
+  },
+  "series": {
+    "native": "名所江戸百景",
+    "ko": "명소 에도 100경"
+  },
+  "date": {
+    "text": "江戸時代・安政4年(1857)",
+    "source": "colbase",
+    "startYear": 1857,
+    "endYear": 1857,
+    "certainty": "exact"
+  },
+  "periods": [
+    "jp-edo"
+  ],
+  "medium": {
+    "native": "大判　錦絵",
+    "ko": "세로 오반 니시키에(다색 목판화)"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7342"
+    },
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/26545"
+    },
+    {
+      "place": "metropolitan-museum-of-art",
+      "role": "holding",
+      "url": "https://www.metmuseum.org/art/collection/search/36461"
+    },
+    {
+      "place": "shin-ohashi",
+      "role": "depicted"
+    },
+    {
+      "place": "atake",
+      "role": "depicted"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-55802"
+    },
+    {
+      "language": "en",
+      "source": "aic",
+      "sourceId": "26545"
+    }
+  ],
+  "terms": [
+    "夕立",
+    "筏",
+    "模写"
+  ],
+  "lookFor": [
+    "다리 위 사람들은 비를 어떻게 피하고 있을까요?",
+    "다리 아래 강을 지나는 뗏목을 찾아봐요.",
+    "맨 위 먹구름 띠는 어떤 모양으로 칠해졌을까요?"
+  ],
+  "image": {
+    "source": "met",
+    "sourceId": "36461",
+    "alt": "높은 곳에서 내려다본 나무다리 위로 사람들이 우산과 거적을 쓰고 소나기를 피해 달리고, 강 위로 뗏목 하나가 지나간다. 건너편 기슭은 빗줄기에 흐려져 있다."
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "id": "hiroshige-komagatado-azumabashi",
+  "wikidata": "Q60175408",
+  "artist": "utagawa-hiroshige",
+  "title": {
+    "native": "名所江戸百景 駒形堂吾嬬橋",
+    "ko": "명소 에도 100경 — 고마가타도와 아즈마 다리",
+    "reading": "めいしょえどひゃっけい こまがたどうあづまばし"
+  },
+  "series": {
+    "native": "名所江戸百景",
+    "ko": "명소 에도 100경"
+  },
+  "date": {
+    "text": "江戸時代・安政4年(1857)",
+    "source": "colbase",
+    "startYear": 1857,
+    "endYear": 1857,
+    "certainty": "exact"
+  },
+  "periods": [
+    "jp-edo"
+  ],
+  "medium": {
+    "native": "大判　錦絵",
+    "ko": "세로 오반 니시키에(다색 목판화)"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7343"
+    },
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/26550"
+    },
+    {
+      "place": "metropolitan-museum-of-art",
+      "role": "holding",
+      "url": "https://www.metmuseum.org/art/collection/search/37282"
+    },
+    {
+      "place": "komagata-do",
+      "role": "depicted"
+    },
+    {
+      "place": "azuma-bridge",
+      "role": "depicted"
+    },
+    {
+      "place": "sumida-river",
+      "role": "depicted"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-55803"
+    }
+  ],
+  "terms": [
+    "ぼかし摺り",
+    "梅雨空",
+    "ホトトギス"
+  ],
+  "lookFor": [
+    "하늘을 가로지르는 두견새와 그 둘레의 먹 번짐을 찾아봐요.",
+    "긴 장대 끝의 붉은 깃발은 어느 쪽으로 나부끼고 있을까요?",
+    "왼쪽 아래 지붕과 멀리 강 위의 배들은 크기가 얼마나 다를까요?"
+  ],
+  "image": {
+    "source": "met",
+    "sourceId": "37282",
+    "alt": "어둑한 하늘에 두견새 한 마리가 날고, 긴 장대 끝에 붉은 깃발이 나부낀다. 아래로는 배들이 떠 있는 넓은 강과 건너편 강가 마을이 보이고, 왼쪽 아래 구석에 고마가타도의 지붕이 있다."
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "bytes": 99443,
+  "fetchedAt": "2026-10-14",
+  "file": "hiroshige-asakusa-kinryuzan.jpg",
+  "height": 625,
+  "record": {
+    "artistDisplayName": "Utagawa Hiroshige",
+    "creditLine": "The Howard Mansfield Collection, Purchase, Rogers Fund, 1936",
+    "isPublicDomain": true,
+    "objectDate": "1856",
+    "title": "Kinryūsan Temple at Asakusa, from the series \"One Hundred Famous Views of Edo\""
+  },
+  "sha256": "c228dbeae888b5707a6553509cbdb67d65a5a6d33708821c5d27e0039b98fbff",
+  "source": "met",
+  "sourceId": "56689",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/56689",
+  "width": 427,
+  "workId": "hiroshige-asakusa-kinryuzan"
+}

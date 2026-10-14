@@ -1,0 +1,19 @@
+{
+  "bytes": 345252,
+  "fetchedAt": "2026-10-14",
+  "file": "hiroshige-kuwana-shichiri-no-watashi.jpg",
+  "height": 407,
+  "record": {
+    "artistDisplayName": "Utagawa Hiroshige",
+    "creditLine": "Rogers Fund, 1918",
+    "isPublicDomain": true,
+    "objectDate": "ca. 1834",
+    "title": "Kuwana, Shichi-Ri Watashi Guchi"
+  },
+  "sha256": "93cfbab4236c4afbf5a244af4775cd903e0132f00d1c1b9097202da2548a0175",
+  "source": "met",
+  "sourceId": "36964",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/36964",
+  "width": 599,
+  "workId": "hiroshige-kuwana-shichiri-no-watashi"
+}

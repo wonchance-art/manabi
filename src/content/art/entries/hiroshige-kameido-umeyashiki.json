@@ -1,0 +1,76 @@
+{
+  "id": "hiroshige-kameido-umeyashiki",
+  "wikidata": "Q21127606",
+  "artist": "utagawa-hiroshige",
+  "title": {
+    "native": "名所江戸百景 亀戸梅屋舗",
+    "ko": "명소 에도 100경 — 가메이도 매화 정원",
+    "reading": "めいしょえどひゃっけい かめいどうめやしき"
+  },
+  "series": {
+    "native": "名所江戸百景",
+    "ko": "명소 에도 100경"
+  },
+  "date": {
+    "text": "江戸時代・安政4年(1857)",
+    "source": "colbase",
+    "startYear": 1857,
+    "endYear": 1857,
+    "certainty": "exact"
+  },
+  "periods": [
+    "jp-edo"
+  ],
+  "medium": {
+    "native": "大判　錦絵",
+    "ko": "세로 오반 니시키에(다색 목판화)"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7318"
+    },
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/26577"
+    },
+    {
+      "place": "rijksmuseum",
+      "role": "holding",
+      "url": "https://hdl.handle.net/10934/RM0001.COLLECT.46050"
+    },
+    {
+      "place": "kameido-umeyashiki",
+      "role": "depicted"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-55778"
+    },
+    {
+      "language": "en",
+      "source": "aic",
+      "sourceId": "26577"
+    }
+  ],
+  "terms": [
+    "梅屋敷",
+    "近景",
+    "連作"
+  ],
+  "lookFor": [
+    "화면 앞을 가로지르는 매화 가지는 어디서 어디로 뻗었을까요?",
+    "울타리 너머 꽃구경하는 사람은 몇 명일까요?",
+    "하늘의 붉은색은 위아래로 어떻게 바뀔까요?"
+  ],
+  "image": {
+    "source": "commons",
+    "sourceId": "File:De_pruimenboomgaard_te_Kameido_Kameido_umeyashiki_(titel_op_object)_Honderd_beroemde_gezichten_op_Edo_(serietitel)_Meisho_Edo_hyakkei_(serietitel_op_object),_RP-P-1956-743.jpg",
+    "alt": "화면 앞에 굵은 매화나무 가지가 크게 가로지르며 흰 꽃을 피웠고, 그 너머 울타리 뒤로 꽃구경하는 사람들이 작게 보인다. 하늘은 붉게 물들어 있다."
+  }
+}

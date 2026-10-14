@@ -1,0 +1,19 @@
+{
+  "bytes": 99059,
+  "fetchedAt": "2026-10-14",
+  "file": "hiroshige-shono-hakuu.jpg",
+  "height": 405,
+  "record": {
+    "artistDisplayName": "Utagawa Hiroshige",
+    "creditLine": "Rogers Fund, 1918",
+    "isPublicDomain": true,
+    "objectDate": "ca. 1833–34",
+    "title": "Sudden Shower in Shōno"
+  },
+  "sha256": "b01fb0509a37bf4469e2a8c4a0d8110273b8ea14c796fee59ebbe9dd1d7b8a0b",
+  "source": "met",
+  "sourceId": "36967",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/36967",
+  "width": 599,
+  "workId": "hiroshige-shono-hakuu"
+}
