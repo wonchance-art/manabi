@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { sliceBetween } from './helpers/sliceBetween';
 import {
-  AOZORA_AUTHOR_DIED_BEFORE,
+  AOZORA_AUTHOR_DIED_BEFORE, AOZORA_KR_AUTHOR_DIED_BEFORE,
   AOZORA_PUBLISHED_BEFORE,
   AOZORA_REQUIRED_JURISDICTIONS,
   aozoraRightsPublishable,
@@ -68,6 +68,7 @@ describe('IP 정책 정합 계약 (v2 — 브랜드 적극 사용)', () => {
     const exception = sliceBetween(read('docs/policy-brand-content.md'), '### 2.1 퍼블릭 도메인 예외', '## 3.');
     expect(exception, '조건① 보호기간 — 출판 연도 기준').toContain(`${AOZORA_PUBLISHED_BEFORE}년 이전 출판`);
     expect(exception, '조건① 보호기간 — 사망 연도 기준').toContain(`${AOZORA_AUTHOR_DIED_BEFORE}년 이전 사망`);
+    expect(exception, '조건① 보호기간 — 1931년 이전 출판작의 한국 기준(2026-10-14 보강)').toContain(`작가 ${AOZORA_KR_AUTHOR_DIED_BEFORE}년 이전 사망`);
     expect(exception, '조건① 검토 관할').toContain(AOZORA_REQUIRED_JURISDICTIONS.join('·'));
     expect(exception, '조건② 번역·삽화 없음').toMatch(/번역[\s\S]{0,10}삽화/);
     expect(exception, '조건③ 권리 기록 승인').toMatch(/권리 기록[\s\S]{0,10}approved/);
@@ -77,7 +78,9 @@ describe('IP 정책 정합 계약 (v2 — 브랜드 적극 사용)', () => {
     const credits = { translator: null, illustrator: null };
     const rights = { status: 'approved', basis: 'public-domain', reviewedBy: 'owner', reviewedAt: '2026-10-12',
       reviewedJurisdictions: [...AOZORA_REQUIRED_JURISDICTIONS], evidenceUrl: 'https://www.aozora.gr.jp/' };
-    expect(aozoraRightsPublishable(rights, credits, { publishedYear: AOZORA_PUBLISHED_BEFORE - 1, authorDeathYear: null })).toBe(true);
+    expect(aozoraRightsPublishable(rights, credits, { publishedYear: AOZORA_PUBLISHED_BEFORE - 1, authorDeathYear: AOZORA_KR_AUTHOR_DIED_BEFORE - 1 })).toBe(true);
+    expect(aozoraRightsPublishable(rights, credits, { publishedYear: AOZORA_PUBLISHED_BEFORE - 1, authorDeathYear: AOZORA_KR_AUTHOR_DIED_BEFORE })).toBe(false);
+    expect(aozoraRightsPublishable(rights, credits, { publishedYear: AOZORA_PUBLISHED_BEFORE - 1, authorDeathYear: null })).toBe(false);
     expect(aozoraRightsPublishable(rights, credits, { publishedYear: AOZORA_PUBLISHED_BEFORE, authorDeathYear: AOZORA_AUTHOR_DIED_BEFORE })).toBe(false);
     expect(aozoraRightsPublishable(rights, { ...credits, translator: '訳者' }, { publishedYear: 1900, authorDeathYear: 1920 })).toBe(false);
     expect(aozoraRightsPublishable({ ...rights, status: 'reviewing' }, credits, { publishedYear: 1900, authorDeathYear: 1920 })).toBe(false);

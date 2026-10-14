@@ -8,6 +8,8 @@
 //   ③ 본문: 한 줄 = 한 문단. ｜기준《읽기》, 기준《읽기》, ［＃주석］, ※［＃외자］
 //   ④ 판권: 말미의 「底本：」부터. 들여쓴 줄은 바로 위 항목의 연속 줄이다.
 
+import JISX0213 from './aozoraJisx0213.json';
+
 export const AOZORA_DOCUMENT_VERSION = 2;
 
 const DASH_LINE = /^-{10,}\s*$/;
@@ -85,6 +87,14 @@ function gaijiNode(description) {
     const point = Number.parseInt(unicode[1], 16);
     if (point <= 0x10ffff) return { type: 'gaiji', description, status: 'resolved', char: String.fromCodePoint(point) };
   }
+  // JIS X 0213 면-구-점(「第3水準1-87-71」·「第4水準2-13-28」, 비한자는 「小書き片仮名ヒ、1-6-84」처럼 수준 없이) — 青空文庫가 외자를
+  // 가리키는 정식 번호다. 표(aozoraJisx0213.json, scripts/literature/gen-jisx0213.py가 JIS X 0213:2004 공식 대응에서 생성)에 있는
+  // 칸만 푼다. 없는 칸·쪽-줄 표기(「168-12」 — 두 마디)는 미해결(fail-closed).
+  const cell = description.split('、').map((part) => part.trim().match(/^(?:第[34]水準)?([12])-(\d{1,2})-(\d{1,2})$/u)).find(Boolean);
+  if (cell) {
+    const char = JISX0213[`${cell[1]}-${Number(cell[2])}-${Number(cell[3])}`];
+    if (char) return { type: 'gaiji', description, status: 'resolved', char };
+  }
   return { type: 'gaiji', description, status: 'unresolved' };
 }
 
@@ -107,6 +117,20 @@ function parseInline(source, lineNumber, ctx) {
       children.push({ type: 'ruby', base: match[1], reading: match[2] });
     } else if (match[3] != null) {
       const previous = children.at(-1);
+      // 해결된 외자에 걸린 루비(「※［＃「目＋匡」、第3水準1-88-81］《まぶた》」) — 외자는 한자 한 글자이므로 앞 한자 연속과 함께 기준이 된다.
+      if (previous?.type === 'gaiji' && previous.status === 'resolved') {
+        let base = '';
+        while (children.at(-1)?.type === 'gaiji' && children.at(-1).status === 'resolved') base = children.pop().char + base;
+        const before = children.at(-1);
+        if (before?.type === 'text' && aozoraRubyClass(Array.from(before.value).at(-1)) === 'kanji') {
+          const runStart = trailingRunStart(before.value);
+          base = before.value.slice(runStart) + base;
+          before.value = before.value.slice(0, runStart);
+          if (!before.value) children.pop();
+        }
+        children.push({ type: 'ruby', base, reading: match[3] });
+        continue;
+      }
       const start = previous?.type === 'text' ? trailingRunStart(previous.value) : -1;
       if (start < 0) {
         ctx.warnings.push({ code: previous?.type === 'gaiji' ? 'RUBY_ON_GAIJI' : 'RUBY_WITHOUT_BASE', line: lineNumber, source });

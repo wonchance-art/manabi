@@ -3,6 +3,7 @@ import {
   AOZORA_RIGHTS_BASIS,
   AOZORA_RIGHTS_STATUS,
   aozoraRightsPublishable,
+  aozoraJurisdictionVerdict,
   aozoraWorkWithinSelection,
   validateAozoraRights,
 } from '../aozoraRights.js';
@@ -31,13 +32,20 @@ describe('Aozora rights gate — fail-closed 증거 계약', () => {
     expect(validateAozoraRights(approved({ reviewedJurisdictions: ['US', 'KR', 'JP', 'TW'] }))).toBe(true);
   });
 
-  it('D5 선정 — 1931년 이전 출판 또는 1945년 이전 사망, 경계값은 제외', () => {
+  it('D5 선정 — 1945년 이전 사망, 또는 1931년 이전 출판 + 1963년 이전 사망. 경계값은 제외', () => {
     expect(aozoraWorkWithinSelection({ publishedYear: 1930, authorDeathYear: 1960 })).toBe(true);
     expect(aozoraWorkWithinSelection({ publishedYear: 1940, authorDeathYear: 1944 })).toBe(true);
     expect(aozoraWorkWithinSelection({ publishedYear: 1931, authorDeathYear: 1945 })).toBe(false);
     expect(aozoraWorkWithinSelection({ publishedYear: 1946, authorDeathYear: 1948 }), '다자이형 — 미국 URAA 회복 가능').toBe(false);
     expect(aozoraWorkWithinSelection({ publishedYear: '1920', authorDeathYear: null }), '문자열 연도는 무효').toBe(false);
     expect(aozoraWorkWithinSelection({})).toBe(false);
+    // 2026-10-14 보강: 1931년 이전 출판이어도 1963년 이후 사망 작가는 한국 보호 중(江戸川乱歩·谷崎潤一郎 1965)
+    expect(aozoraWorkWithinSelection({ publishedYear: 1925, authorDeathYear: 1965 }), '乱歩형 — KR 보호').toBe(false);
+    expect(aozoraWorkWithinSelection({ publishedYear: 1921, authorDeathYear: 1962 }), '1962 사망 — KR 만료').toBe(true);
+    expect(aozoraWorkWithinSelection({ publishedYear: 1921, authorDeathYear: 1963 })).toBe(false);
+    expect(aozoraWorkWithinSelection({ publishedYear: 1920, authorDeathYear: null }), '사망 연도 모름 — KR 판정 불가').toBe(false);
+    expect(aozoraJurisdictionVerdict({ publishedYear: 1925, authorDeathYear: 1965 })).toEqual({ JP: true, KR: false, US: true, ok: false });
+    expect(aozoraJurisdictionVerdict({ publishedYear: 1940, authorDeathYear: 1942 })).toEqual({ JP: true, KR: true, US: true, ok: true });
     expect(aozoraRightsPublishable(approved(), originalOnly, { publishedYear: 1946, authorDeathYear: 1948 })).toBe(false);
   });
 

@@ -150,7 +150,8 @@ describe('createAozoraMaterialDraft — 결정성·불변·fail-closed', () => {
     ['제목 불일치', () => [sampleEntry({ title: '別作品' }), headed()], 'title'],
     ['저자 불일치', () => [sampleEntry(), parseAozoraText(wrap('本文。', ['書式見本　朝の川', '別人']))], 'author'],
     ['판권 없음', () => [sampleEntry(), parseAozoraText('書式見本　朝の川\n見本太郎\n\n本文。')], '底本'],
-    ['미해결 외자', () => [sampleEntry(), parseAozoraText(wrap('古い※［＃「魚＋花」、第4水準2-93-10］。'))], 'unresolved gaiji'],
+    // 면-구-점도 U+도 없는 외자(구성 설명만) — JIS X 0213 표로도 풀 수 없다
+    ['미해결 외자', () => [sampleEntry(), parseAozoraText(wrap('古い※［＃「口＋世」］。'))], 'unresolved gaiji'],
     ['깨진 루비', () => [sampleEntry(), parseAozoraText(wrap('｜壊れた《ルビ'))], 'MALFORMED_RUBY'],
   ])('%s → 실패', (_, args, message) => {
     expect(() => createAozoraMaterialDraft(...args())).toThrow(message);

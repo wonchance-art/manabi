@@ -3,11 +3,13 @@
 //
 // 선정 기준(오너 결정 D5, 2026-10-12 KST) — 법률 자문이 아니라 보수적 안전선이다:
 //   · 검토 관할 JP·KR·US 세 곳을 **모두** 기록해야 승인으로 본다.
-//   · 「1931년 이전 출판」 또는 「1945년 이전 작가 사망」인 원작만 공개한다.
-//     - JP: 1967년 이전 사망 작가는 만료 확정(2018 연장 비소급). 1945년 이전 사망이면 충분하다.
-//     - KR: 1962년 이전 사망 작가는 만료. 1945년 이전 사망이면 충분하다.
+//   · 「1945년 이전 작가 사망」, 또는 「1931년 이전 출판 + 1963년 이전 작가 사망」인 원작만 공개한다.
+//     - JP: 1967년 이전 사망 작가는 만료 확정(2018 연장 비소급). 1963년 이전 사망이면 충분하다.
+//     - KR: 1962년 이전 사망 작가는 만료(2013 연장 비소급). 1963년 이후 사망이면 사후 70년 보호 중이다.
 //     - US: 1931년 이전 출판작은 만료(95년). 그 뒤 출판작도 작가가 1945년 이전 사망이면
 //       1996-01-01 시점 일본에서 이미 만료(사후 50년)라 URAA 회복 대상이 아니다.
+//     (2026-10-14 KST 보강: 예전 식 「1931년 이전 출판 또는 1945년 이전 사망」은 江戸川乱歩·谷崎潤一郎(1965 사망)의
+//      1931년 이전 작품을 통과시켰다 — 한국에서 2035년 말까지 보호 중이다. KR 조건을 식에 넣어 막는다.)
 //   · 번역자·삽화가가 없는 원작만(2차 저작자의 권리가 따로 산다).
 
 export const AOZORA_RIGHTS_STATUS = Object.freeze({
@@ -30,6 +32,10 @@ export const AOZORA_REQUIRED_JURISDICTIONS = Object.freeze(['JP', 'KR', 'US']);
 export const AOZORA_PUBLISHED_BEFORE = 1931;
 /** 이 해 **이전**에 사망한 작가의 원작은 공개 가능(D5). */
 export const AOZORA_AUTHOR_DIED_BEFORE = 1945;
+/** 일본 — 1967년 이전 사망 작가는 만료 확정(2018 연장 비소급). */
+export const AOZORA_JP_AUTHOR_DIED_BEFORE = 1968;
+/** 1931년 이전 출판작이라도 작가가 이 해 **이전**에 사망해야 한다 — 한국 보호기간(1962년 이전 사망 작가만 만료). */
+export const AOZORA_KR_AUTHOR_DIED_BEFORE = 1963;
 
 const STATUS_VALUES = new Set(Object.values(AOZORA_RIGHTS_STATUS));
 const BASIS_VALUES = new Set(Object.values(AOZORA_RIGHTS_BASIS));
@@ -84,12 +90,19 @@ export function validateAozoraRights(rights) {
   return true;
 }
 
-/** D5 선정 기준 — 1931년 이전 출판 또는 1945년 이전 작가 사망. 연도를 모르면 false(fail-closed). */
-export function aozoraWorkWithinSelection(work = {}) {
+/** 관할별 보호기간 판정(D5 안전선) — {JP, KR, US, ok}. 연도를 모르면 그 관할은 false(fail-closed). 법률 자문이 아니다. */
+export function aozoraJurisdictionVerdict(work = {}) {
   const published = isAozoraYear(work?.publishedYear) ? work.publishedYear : null;
   const died = isAozoraYear(work?.authorDeathYear) ? work.authorDeathYear : null;
-  return (published != null && published < AOZORA_PUBLISHED_BEFORE)
-    || (died != null && died < AOZORA_AUTHOR_DIED_BEFORE);
+  const JP = died != null && died < AOZORA_JP_AUTHOR_DIED_BEFORE;
+  const KR = died != null && died < AOZORA_KR_AUTHOR_DIED_BEFORE;
+  const US = (published != null && published < AOZORA_PUBLISHED_BEFORE) || (died != null && died < AOZORA_AUTHOR_DIED_BEFORE);
+  return { JP, KR, US, ok: JP && KR && US };
+}
+
+/** D5 선정 기준 — 1945년 이전 작가 사망, 또는 1931년 이전 출판 + 1963년 이전 작가 사망. 연도를 모르면 false(fail-closed). */
+export function aozoraWorkWithinSelection(work = {}) {
+  return aozoraJurisdictionVerdict(work).ok;
 }
 
 /**
