@@ -112,7 +112,7 @@ describe('build-literature — fail-closed', () => {
     ['표지 제목이 작품명과 다름', sample({ display: { ...sampleEntry().display, coverTitle: '書式見本\n朝の海' } }), 'coverTitle'],
     ['표지 한 줄이 너무 김', sample({ display: { ...sampleEntry().display, coverTitle: undefined } }), 'cover title lines'],
     ['미해결 외자', (() => {
-      const text = source.replace('水の音', '※［＃「魚＋花」、第4水準2-93-10］の音');
+      const text = source.replace('水の音', '※［＃「魚＋花」］の音'); // 면-구-점·U+ 없는 외자 — JIS X 0213 표로도 못 푼다
       return { ...sample({ textSha256: sha256(text) }), source: text };
     })(), 'unresolved gaiji'],
   ])('%s → 실패하고 chapters.json을 쓰지 않는다', async (_, work, message) => {

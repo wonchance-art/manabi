@@ -4,7 +4,8 @@ import { FSRS_POLICIES, learningDay, schedulerTime } from '../fsrsScheduler.js';
 import { normalizeAdmissionRequest, normalizeAdmissionStatus, validateAdmissionReceipt } from '../learningAdmission.js';
 import { validateVocabularyLearningSnapshot } from './fsrsVocabulary.js';
 
-const reject = (code = 'fsrs_admission_unavailable', status = 503) => { throw Object.assign(new Error(code), { code, status }); };
+// detail은 서버 로그 전용 — fsrsLearning.js reject와 같은 규칙(REVIEW-LOAD-TRANSIENT-001).
+const reject = (code = 'fsrs_admission_unavailable', status = 503, detail) => { throw Object.assign(new Error(code), { code, status, ...(detail ? { detail } : {}) }); };
 const authenticated = userId => { if (!UUID.test(userId || '')) reject('fsrs_auth_required', 401); };
 function databaseError(error) {
   if (!error) return;
@@ -20,10 +21,11 @@ function databaseError(error) {
     [/pending|not_started|stopped|disabled|admission_inactive/, 'fsrs_admission_pending', 409],
     [/invalid.*request/, 'fsrs_invalid_request', 400],
   ]) if (pattern.test(message)) reject(code, status);
-  reject();
+  reject(undefined, undefined, `admission: ${error.code || ''} ${message}`.slice(0, 300));
 }
 async function call(client, name, args) {
-  try { return await client.rpc(name, args); } catch { reject(); }
+  try { return await client.rpc(name, args); }
+  catch (error) { reject(undefined, undefined, `${name} threw: ${error?.name || ''} ${error?.message || ''}`.slice(0, 300)); }
 }
 const exactMissingRpc = (error, name) => error?.code === 'PGRST202'
   && String(error.message || '').startsWith(`Could not find the function public.${name}(`);
@@ -31,7 +33,7 @@ const exactMissingRpc = (error, name) => error?.code === 'PGRST202'
 async function capability(authClient) {
   const response = await call(authClient, 'fsrs_capabilities');
   if (response?.error || response?.data?.version !== 1 || !Object.hasOwn(FSRS_POLICIES, response.data.policyVersion)
-    || typeof response.data.enabled !== 'boolean') reject();
+    || typeof response.data.enabled !== 'boolean') reject(undefined, undefined, `fsrs_capabilities: ${response?.error ? `${response.error.code || ''} ${response.error.message || ''}`.slice(0, 200) : 'contract mismatch'}`);
   return response.data.enabled;
 }
 
@@ -59,10 +61,10 @@ export async function readLearningAdmissionStatus({ authClient, serviceClient, u
         timeZone: 'Asia/Seoul', rolloverHour: 4, limit: null, policyRevision: null,
         used: null, remaining: null, fsrsUsed: null, legacyUsed: null, admittedLegacyCardIds: null }, { actorId: userId });
     }
-    reject();
+    reject(undefined, undefined, `learning_admission_status: ${response.error.code || ''} ${String(response.error.message || '')}`.slice(0, 300));
   }
   const status = normalizeAdmissionStatus(response?.data, { actorId: userId });
-  if (!status.installed || status.fsrsEnabled !== fsrsEnabled) reject();
+  if (!status.installed || status.fsrsEnabled !== fsrsEnabled) reject(undefined, undefined, `learning_admission_status: installed=${status.installed} fsrsEnabled=${status.fsrsEnabled}/${fsrsEnabled}`);
   return status;
 }
 

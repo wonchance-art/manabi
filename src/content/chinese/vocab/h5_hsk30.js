@@ -337,7 +337,7 @@ const themes = {
         { zh: "联想", pinyin: "Liánxiǎng", ko: "연상하다; 롄샹(중국 PC 브랜드 — 상표가 된 단어)", pos: "동사", ex: { zh: "看到这张照片，我联想到了童年。", pinyin: "Kàndào zhè zhāng zhàopiàn, wǒ liánxiǎng dào le tóngnián.", ko: "이 사진을 보니 어린 시절이 연상되었어요." } },
         { zh: "脸盆", pinyin: "liǎnpén", ko: "세숫대야", pos: "양사", ex: { zh: "他用脸盆洗脸。", pinyin: "Tā yòng liǎnpén xǐ liǎn.", ko: "그는 세숫대야로 얼굴을 씻어요." } },
         { zh: "脸色", pinyin: "liǎnsè", ko: "안색", pos: "명사", ex: { zh: "你今天脸色不太好。", pinyin: "Nǐ jīntiān liǎnsè bú tài hǎo.", ko: "오늘 안색이 별로 좋지 않네요." } },
-        { zh: "两岸", pinyin: "liǎngàn", ko: "양안, (강·해협의) 양쪽 기슭", pos: "명사", ex: { zh: "河的两岸种满了树。", pinyin: "Hé de liǎng àn zhòng mǎn le shù.", ko: "강의 양쪽 기슭에는 나무가 가득 심어져 있어요." } },
+        { zh: "两岸", pinyin: "liǎng'àn", ko: "양안, (강·해협의) 양쪽 기슭", pos: "명사", ex: { zh: "河的两岸种满了树。", pinyin: "Hé de liǎng àn zhòng mǎn le shù.", ko: "강의 양쪽 기슭에는 나무가 가득 심어져 있어요." } },
         { zh: "铃声", pinyin: "língshēng", ko: "벨소리", pos: "명사", ex: { zh: "手机铃声响了。", pinyin: "Shǒujī língshēng xiǎng le.", ko: "휴대폰 벨소리가 울렸어요." } },
         { zh: "领带", pinyin: "lǐngdài", ko: "넥타이", pos: "명사", ex: { zh: "他今天系了一条领带。", pinyin: "Tā jīntiān jì le yì tiáo lǐngdài.", ko: "그는 오늘 넥타이를 맸어요." } },
         { zh: "令", pinyin: "lìng", ko: "~하게 하다, 시키다", pos: "동사", ex: { zh: "这个消息令人高兴。", pinyin: "Zhège xiāoxi lìng rén gāoxìng.", ko: "이 소식은 사람을 기쁘게 해요." } },

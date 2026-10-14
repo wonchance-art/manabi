@@ -28,7 +28,10 @@ describe('Aozora catalog contract', () => {
   it('D5 연도가 공개 판정에 들어간다 — 1931 이후 출판 + 1945 이후 사망은 공개 불가', () => {
     expect(aozoraCatalogEntryPublishable(entry({ publishedYear: 1940, authorDeathYear: 1948 }))).toBe(false);
     expect(aozoraCatalogEntryPublishable(entry({ publishedYear: 1940, authorDeathYear: 1943 }))).toBe(true);
-    expect(aozoraCatalogEntryPublishable(entry({ publishedYear: 1925, authorDeathYear: null }))).toBe(true);
+    // 사망 연도를 모르면 일본 보호기간을 판정할 수 없다 — 1931년 이전 출판이어도 공개하지 않는다(2026-10-14 보정)
+    expect(aozoraCatalogEntryPublishable(entry({ publishedYear: 1925, authorDeathYear: null }))).toBe(false);
+    expect(aozoraCatalogEntryPublishable(entry({ publishedYear: 1925, authorDeathYear: 1965 }))).toBe(true);
+    expect(aozoraCatalogEntryPublishable(entry({ publishedYear: 1926, authorDeathYear: 1972 }))).toBe(false);
   });
 
   it('정렬·복제·깊은 동결 — 입력 순서와 외부 변경에 흔들리지 않는다', () => {

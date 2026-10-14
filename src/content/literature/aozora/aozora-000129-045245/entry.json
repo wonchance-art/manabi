@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "personId": "000129",
+  "workId": "45245",
+  "title": "高瀬舟",
+  "author": "森鴎外",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1916,
+  "authorDeathYear": 1922,
+  "level": "N2 상급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000129/card45245.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000129/files/45245_ruby_21882.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "7232f0a253749d7c131abde0b9bccacf63283e63134dd583e0428745fab4d21b",
+  "textSha256": "375fe2631ea160f32ff8be10e13f0b7a13eb2dab4905c441ca465796d47da628",
+  "attribution": {
+    "author": "森鴎外",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-14",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR",
+      "US"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000129/card45245.html"
+  },
+  "display": {
+    "titleReading": "たかせぶね",
+    "titleKo": "다카세부네",
+    "authorKo": "모리 오가이",
+    "cover": "river",
+    "motif": "night-boat"
+  }
+}

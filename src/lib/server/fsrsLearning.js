@@ -9,7 +9,8 @@ import { readLearningAdmissionStatus } from './learningAdmission.js';
 const identity = value => typeof value === 'string' && /^[A-Za-z0-9_.:-]{1,200}$/.test(value);
 const canonical = value => JSON.stringify(value, Object.keys(value).sort());
 const same = (left, right) => canonical(left) === canonical(right);
-const reject = (code, status = 503) => { throw Object.assign(new Error(code), { code, status }); };
+// detail은 서버 로그 전용(응답 본문에 싣지 않는다) — 503이 어느 단계에서 났는지 남긴다(REVIEW-LOAD-TRANSIENT-001).
+const reject = (code, status = 503, detail) => { throw Object.assign(new Error(code), { code, status, ...(detail ? { detail } : {}) }); };
 const copy = value => JSON.parse(JSON.stringify(value));
 const fields = {
   enroll: [], question: ['attemptId', 'answerVisible', 'dailyNewLimit', 'expectedPolicyRevision'], reveal: ['attemptId', 'hint'],
@@ -22,6 +23,13 @@ export function fsrsServiceClient() {
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
 }
 
+/** 5xx만 원인 단계를 남긴다. 사용자 ID · 요청 본문 · 키는 싣지 않는다. */
+export function logFsrsUnavailable(route, error) {
+  const { status } = fsrsError(error);
+  if (status < 500) return;
+  console.warn(`[fsrs] ${route} ${status}`, error?.code || error?.name || 'error', error?.detail || error?.message || '');
+}
+
 export function fsrsError(error) {
   const known = Number.isInteger(error?.status) && error.status >= 400 && error.status <= 599
     && /^fsrs_[a-z_]+$/.test(error.code || '');
@@ -29,7 +37,7 @@ export function fsrsError(error) {
     code: known ? error.code : 'fsrs_storage_unavailable' } };
 }
 
-function databaseError(error) {
+function databaseError(error, name = 'rpc') {
   if (!error) return;
   const message = String(error.message || '');
   const cases = [
@@ -45,14 +53,16 @@ function databaseError(error) {
     [/recall_not_eligible/, 'fsrs_recall_not_eligible', 422],
     [/disabled|unavailable|not_ready/, 'fsrs_storage_unavailable', 503],
   ];
-  for (const [pattern, code, status] of cases) if (pattern.test(message)) reject(code, status);
-  reject('fsrs_storage_unavailable');
+  const detail = `${name}: ${error.code || ''} ${message}`.slice(0, 300);
+  for (const [pattern, code, status] of cases) if (pattern.test(message)) reject(code, status, status >= 500 ? detail : undefined);
+  reject('fsrs_storage_unavailable', 503, detail);
 }
 
 async function rpc(client, name, args) {
   let result;
-  try { result = await client.rpc(name, args); } catch { reject('fsrs_storage_unavailable'); }
-  databaseError(result?.error);
+  try { result = await client.rpc(name, args); }
+  catch (error) { reject('fsrs_storage_unavailable', 503, `${name} threw: ${error?.name || ''} ${error?.message || ''}`.slice(0, 300)); }
+  databaseError(result?.error, name);
   return result?.data;
 }
 
@@ -85,7 +95,7 @@ async function capabilities(client) {
   // 설치 부재와 읽기 장애를 '등록 카드 없음'으로 변환하지 않는다.
   const raw = await rpc(client, 'fsrs_capabilities');
   // 학습 단계 정책은 서버가 정한다(REV-SCOPE R1-B-2 anki-v2). 모르는 정책값이면 추측하지 않고 멈춘다.
-  if (raw?.version !== 1 || !Object.hasOwn(FSRS_POLICIES, raw?.policyVersion) || typeof raw.enabled !== 'boolean') reject('fsrs_storage_unavailable');
+  if (raw?.version !== 1 || !Object.hasOwn(FSRS_POLICIES, raw?.policyVersion) || typeof raw.enabled !== 'boolean') reject('fsrs_storage_unavailable', 503, 'fsrs_capabilities: contract mismatch');
   return { version: 1, enabled: raw.enabled,
     policyVersion: raw.policyVersion };
 }
@@ -94,10 +104,10 @@ function checkedState(raw, userId, cardId = null) {
   if (!raw) return null;
   if (raw.userId !== userId || !UUID.test(raw.cardId || '') || (cardId && raw.cardId !== cardId)) reject('fsrs_card_not_found', 404);
   if (raw.card === null && raw.enrolled === false) return null;
-  try { validateFsrsCard(raw.card); } catch { reject('fsrs_storage_unavailable'); }
+  try { validateFsrsCard(raw.card); } catch { reject('fsrs_storage_unavailable', 503, 'state: invalid card'); }
   if (raw.attempt && (raw.attempt.userId !== userId || raw.attempt.cardId !== raw.cardId
     || !identity(raw.attempt.id) || !['question', 'revealed', 'abandoned'].includes(raw.attempt.phase)
-    || typeof raw.attempt.eligible !== 'boolean' || !same(raw.attempt.card, raw.card))) reject('fsrs_storage_unavailable');
+    || typeof raw.attempt.eligible !== 'boolean' || !same(raw.attempt.card, raw.card))) reject('fsrs_storage_unavailable', 503, 'state: attempt mismatch');
   return raw;
 }
 
@@ -130,9 +140,9 @@ export async function readFsrsStatus({ authClient, serviceClient, userId, now = 
   if (!UUID.test(userId || '')) reject('fsrs_auth_required', 401);
   const contract = await capabilities(authClient);
   const rows = await rpc(serviceClient, 'fsrs_list_states', { p_actor: userId });
-  if (!Array.isArray(rows)) reject('fsrs_storage_unavailable');
+  if (!Array.isArray(rows)) reject('fsrs_storage_unavailable', 503, 'fsrs_list_states: not an array');
   const cards = rows.map(row => publicState(checkedState(row, userId)));
-  if (new Set(cards.map(card => card.cardId)).size !== cards.length) reject('fsrs_storage_unavailable');
+  if (new Set(cards.map(card => card.cardId)).size !== cards.length) reject('fsrs_storage_unavailable', 503, 'fsrs_list_states: duplicate card');
   const firstQuestionsToday = cards.filter(entry => entry.firstQuestionAt
     && learningDay(entry.firstQuestionAt, entry.card.timeZone, entry.card.rolloverHour)
       === learningDay(now, entry.card.timeZone, entry.card.rolloverHour)).length;

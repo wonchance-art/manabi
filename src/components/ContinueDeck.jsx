@@ -33,7 +33,7 @@ function ContinueRow({ item }) {
     >
       <span className="deck-card__body">
         <span className="deck-card__kicker">{item.kicker}</span>
-        <span className="deck-card__title">{item.title}</span>
+        <span className="deck-card__title" lang={item.titleLang}>{item.title}</span>
         {item.chips?.length > 0 && (
           <span className="deck-card__chips">
             {item.chips.map((c) => <span key={c} className="deck-card__chip">{c}</span>)}

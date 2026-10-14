@@ -20,7 +20,7 @@ import { sliceBetween } from './helpers/sliceBetween';
 const read = (file) => readFileSync(path.join(process.cwd(), file), 'utf8');
 const KEYS = { gon: 'aozora-000121-000628', hana: 'aozora-000879-000042', tebukuro: 'aozora-000121-000637' };
 
-describe('정본 5편 표기 — 대조표가 싣는다', () => {
+describe('정본 작품 표기 — 대조표가 싣는다', () => {
   it('목차: 見出し 그대로 · 나눈 장은 1/N · 한 장이면 전문 — 「과」·「편」이 없다', () => {
     const labels = Object.fromEntries(Object.entries(manifest.works).map(([key, work]) => [key, [work.division, work.chapters.map((chapter) => chapter.title)]]));
     expect(labels).toEqual({
@@ -29,19 +29,37 @@ describe('정본 5편 표기 — 대조표가 싣는다', () => {
       'aozora-000121-000637': ['whole', ['전문']],
       'aozora-000148-000753': ['split', ['1/4', '2/4', '3/4', '4/4']],
       'aozora-000879-000042': ['split', ['1/2', '2/2']],
+      // 2차 묶음(2026-10-14) — 見出し가 4,000자를 넘는 장은 그 장만 고르게 나눈다(坊っちゃん 「一 (1/3)」)
+      'aozora-000074-000424': ['split', ['1/2', '2/2']],
+      'aozora-000081-000470': ['split', ['1/4', '2/4', '3/4', '4/4']],
+      'aozora-000081-000473': ['split', ['1/2', '2/2']],
+      'aozora-000119-000624': ['split', ['1/2', '2/2']],
+      'aozora-000129-045245': ['split', ['1/3', '2/3', '3/3']],
+      'aozora-000148-000752': ['heading', ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一']
+        .flatMap((heading, index) => {
+          const parts = [3, 2, 2, 3, 3, 4, 4, 3, 3, 3, 4][index];
+          return Array.from({ length: parts }, (_, k) => `${heading} (${k + 1}/${parts})`);
+        })],
+      'aozora-000879-000092': ['heading', ['一', '二', '三']],
+      'aozora-000879-000127': ['split', ['1/2', '2/2']],
     });
     expect(JSON.stringify(manifest)).not.toMatch(/\d+(과|편)"|전편/u);
   });
 
-  it('표지 표기: 읽기(가나)·한국어 제목·작가 한국어 이름·팔레트 색·문양 — 다섯 편이 서로 다른 색·문양', () => {
+  it('표지 표기: 읽기(가나)·한국어 제목·작가 한국어 이름·팔레트 색·문양 — 작품마다 서로 다른 색·문양', () => {
     const works = Object.values(manifest.works);
     for (const work of works) expect(validateLiteratureDisplay(work.display, work.title)).toEqual(work.display);
     expect(Object.fromEntries(works.map((work) => [work.title, work.display.titleKo])))
-      .toEqual({ '注文の多い料理店': '주문이 많은 요리점', 'ごん狐': '여우 곤', '手袋を買いに': '장갑을 사러', '文鳥': '문조', '鼻': '코' });
+      .toEqual({ '注文の多い料理店': '주문이 많은 요리점', 'ごん狐': '여우 곤', '手袋を買いに': '장갑을 사러', '文鳥': '문조', '鼻': '코',
+        '檸檬': '레몬', 'セロ弾きのゴーシュ': '첼로 켜는 고슈', 'よだかの星': '쏙독새의 별', '山月記': '산월기', '高瀬舟': '다카세부네',
+        '坊っちゃん': '도련님', '蜘蛛の糸': '거미줄', '羅生門': '라쇼몬' });
     expect(new Set(works.map((work) => work.display.cover)).size).toBe(works.length);
-    // 문양은 작품 분위기에서(오너 지시 2026-10-14 KST) — 눈밤·彼岸花·숲의 문들·수묵 김·새장
+    // 문양은 작품 분위기에서, 작품마다 새로(오너 지시 2026-10-14 KST 「작품마다 새 문양」) — 같은 문양을 두 작품이 쓰지 않는다
     expect(Object.fromEntries(works.map((work) => [work.title, work.display.motif])))
-      .toEqual({ '注文の多い料理店': 'forest-doors', 'ごん狐': 'higanbana', '手袋を買いに': 'snow-night', '文鳥': 'birdcage', '鼻': 'ink-steam' });
+      .toEqual({ '注文の多い料理店': 'forest-doors', 'ごん狐': 'higanbana', '手袋を買いに': 'snow-night', '文鳥': 'birdcage', '鼻': 'ink-steam',
+        '檸檬': 'lemon-books', 'セロ弾きのゴーシュ': 'cello-night', 'よだかの星': 'nightjar-star', '山月記': 'moon-tiger', '高瀬舟': 'night-boat',
+        '坊っちゃん': 'steam-sea', '蜘蛛の糸': 'lotus-thread', '羅生門': 'rain-gate' });
+    expect(new Set(works.map((work) => work.display.motif)).size).toBe(works.length);
   });
 
   it('장 첫 문장(incipit) — 30자 이하 첫 문장은 통째로, 길면 「、」에서(낱말 한가운데·마침표 뒤에서 자르지 않는다)', () => {
@@ -49,7 +67,8 @@ describe('정본 5편 표기 — 대조표가 싣는다', () => {
     expect(incipits(KEYS.hana)).toEqual(['禅智内供の鼻と云えば、池の尾で知らない者はない。', 'しばらく踏んでいると、やがて、粟粒のようなものが…']);
     expect(incipits(KEYS.gon).slice(0, 4)).toEqual(['これは、私が小さいときに…', '十日ほどたって、ごんが、弥助というお百姓の家の裏…', '兵十が、赤い井戸のところで、麦をといでいました。', '月のいい晩でした。']);
     for (const work of Object.values(manifest.works)) {
-      for (const { incipit } of work.chapters) expect(incipit.endsWith('…') ? /、…$|[^、。]…$/u.test(incipit) && !incipit.includes('。') : incipit.endsWith('。')).toBe(true);
+      // 끝이 「…」이면 쉼표 경계·24자 규칙, 아니면 통째 문장 — 。 또는 30자 이하 대사 한 줄(「時間が減って、…妙だな」 — 坊っちゃん)
+      for (const { incipit } of work.chapters) expect(incipit.endsWith('…') ? /、…$|[^、。]…$/u.test(incipit) && !incipit.includes('。') : /[。」]$/u.test(incipit)).toBe(true);
     }
     expect(literatureIncipit('\n\n　短い。\n\n次')).toBe('短い。');
     expect(literatureIncipit('あ'.repeat(40))).toBe(`${'あ'.repeat(24)}…`); // 쉼표가 없으면 24자
@@ -150,7 +169,7 @@ describe('화면 배선', () => {
   it('뷰어 — 대조된 정본 장만 제목·형제 이름을 표에서, 「과」 대신 장/부분, 이어 적기·제목 편집 없음', () => {
     const viewer = read('src/views/ViewerPage.jsx');
     expect(viewer).toContain('const literatureBook = canonicalLiterature ? literatureWork(bookMeta?.key) : null;');
-    expect(viewer).toContain('<h1 className="page-header__title">{viewerTitle}</h1>');
+    expect(viewer).toContain('<h1 className="page-header__title" lang={contentLangTag}>{viewerTitle}</h1>'); // lang = LINE-BREAK-001
     expect(viewer).toContain("literatureBook.division === 'heading' ? ['이전 장', '다음 장'] : ['이전 부분', '다음 부분']");
     expect(viewer).toContain('nextLabel: bookNav.next ? `${nextLabel}: ${literatureTitleOf(bookNav.next.order)}` : nextLabel,'); // 목적지까지 읽어 준다
     expect(viewer).toContain("literatureBook?.division === 'heading' ? literatureChapterLabel(literatureBook, bookNav.next.order)"); // 「이어 읽기 · 二」

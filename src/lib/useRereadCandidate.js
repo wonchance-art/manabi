@@ -12,13 +12,14 @@ import { useAuth } from './AuthContext';
 import { pickRereadCandidates } from './rereadSchedule';
 import { fetchMaterialRoundRows } from './readingSpeedRows';
 import { lastRoundCpm } from './readingSpeedHistory';
+import { encounterLookupLang } from './refVocabLookup';
 import { literatureDisplayTitle } from './literatureCanonical';
 
 async function fetchCompletedRows(userId) {
   const { data, error } = await supabase
     .from('reading_progress')
     // 정본 문학책 판정에 쓰는 metadata 두 칸만 함께 받는다(책 위치 · 아오조라 표식) — 예전 표기로 저장된 제목을 정본 표기로 바꾼다.
-    .select('material_id, is_completed, completed_at, reading_materials(title, book:processed_json->metadata->book, provider:processed_json->metadata->literature->>provider)')
+    .select('material_id, is_completed, completed_at, reading_materials(title, language:processed_json->metadata->>language, book:processed_json->metadata->book, provider:processed_json->metadata->literature->>provider)')
     .eq('user_id', userId)
     .eq('is_completed', true)
     .order('completed_at', { ascending: false })
@@ -27,7 +28,7 @@ async function fetchCompletedRows(userId) {
   return data || [];
 }
 
-/** @returns {{key, href, kicker, title, meta}|null} — 덱 항목 서술(렌더는 덱이 한다). */
+/** @returns {{key, href, kicker, title, titleLang, meta}|null} — 덱 항목 서술(렌더는 덱이 한다). */
 export function useRereadCandidate() {
   const { user } = useAuth();
   const { data: rows } = useQuery({
@@ -61,6 +62,8 @@ export function useRereadCandidate() {
     href: `/viewer/${candidate.material_id}`,
     kicker: lastCpm ? `다시 읽기 · 지난번 ${lastCpm}자/분` : '다시 읽기 · 두 번째는 훨씬 빨라요',
     title,
+    // 자료 제목은 학습 대상 언어 — 줄바꿈 정본(LINE-BREAK-001)이 lang으로 언어를 가린다.
+    titleLang: encounterLookupLang(material?.language) || undefined,
     meta: `${candidate.daysSince}일 만에 →`,
   };
 }

@@ -150,11 +150,16 @@ describe('같은 한자어 타일 — 3개 이하 · 내 단어 먼저(꼬리표
     expect(tiles.slice(1).every((t) => !t.includes('hanja-pop__mine'))).toBe(true);
     expect(text(words)).not.toContain('壮观');
   });
-  it('판정 실패 칸은 짧은 뜻(흐림 — is-dim · is-short), 乐 yuè 칸에 快乐(lè) 없음', () => {
-    const html = render({ ch: '乐', word: '音乐', reading: 'yuè', key: '0:1' });
+  it('판정 실패 칸은 짧은 뜻(흐림 — is-dim · is-short) — 商店의 店: 药店 「약국」, 乐 yuè 칸에 快乐(lè) 없음', () => {
+    const yue = sliceClass(render({ ch: '乐', word: '音乐', reading: 'yuè', key: '0:1' }), 'hanja-pop__words');
+    expect(text(yue)).not.toContain('快乐');
+    // 설계서 §12.4 목업은 音乐의 乐(音乐会 · 乐曲 · 乐队 흐림)이었으나, HSK 2026 보강(ZH-LEVEL-2026-001 ④)으로
+    // 乐器 악기가 들어와 세 칸이 판정 성공으로 찼다 — 흐린 칸은 같은 모양(2칸 성공 + 1칸 흐림)인 商店의 店으로 본다.
+    expect(text(yue)).toBe('yīnyuèhuì音乐会음악회yuèqì乐器악기yuèqǔ乐曲악곡');
+    const html = render({ ch: '店', word: '商店', reading: 'diàn', key: '0:1' });
     const words = sliceClass(html, 'hanja-pop__words');
-    expect(text(words)).not.toContain('快乐');
-    expect(text(words)).toBe('yīnyuèhuì音乐会음악회yuèqǔ乐曲악곡yuèduì乐队악단'); // 설계서 §12.4 목업 그대로
+    expect(text(words)).toBe('shūdiàn书店서점diànpù店铺점포yàodiàn药店약국');
+    expect(words.split('class="hanja-pop__tile').slice(1).filter((t) => t.startsWith(' is-dim'))).toHaveLength(1);
     const dim = words.split('class="hanja-pop__tile').slice(1).filter((t) => t.startsWith(' is-dim'));
     for (const t of dim) expect(t).toContain('class="hanja-pop__tko is-short"');
   });

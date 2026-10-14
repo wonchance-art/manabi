@@ -9,16 +9,19 @@
 // 이 모듈은 빌드(scripts/lib/literature-build.mjs)도 쓰므로 대조표를 import하지 않는다 — 작품 찾기는 literatureCanonical.literatureWork.
 
 /**
- * 표지 바탕 — 작품과 그 시대 장정에서 고른 이름(쪽빛 눈밤·여우 주홍·숲·먹 천·메이지 生成り). CSS `.lit-cover--<name>`이
+ * 표지 바탕 — 작품과 그 시대 장정에서 고른 이름(쪽빛 눈밤·여우 주홍·숲·먹 천·메이지 生成り · 2차: 해 질 녘 녹·심연·
+ * 달밤 보라·바다 하늘·잿빛 비둘기·밤 보라·강·호두). CSS `.lit-cover--<name>`이
  * 값을 갖는다. 앱 주색·일본어 서재 표지(로즈 #994a5a)와 같은 색상 계열은 피한다(디자이너 검토).
  */
-export const LITERATURE_COVER_COLORS = Object.freeze(['snow', 'vermilion', 'forest', 'ink', 'cream']);
+export const LITERATURE_COVER_COLORS = Object.freeze(['snow', 'vermilion', 'forest', 'ink', 'cream',
+  'rust', 'abyss', 'twilight', 'sky', 'dove', 'nightjar', 'river', 'walnut']);
 
 /**
  * 표지 그림(모티프) — 작품 분위기에서 고른 자작 SVG(LiteratureCoverArt). 원서 표지·삽화·알려진 캐릭터를 옮기지 않는다
  * (IP 정책 §2.1 금지⑴, 오너 지시 2026-10-14 KST 「책에 어울리는 분위기·이미지·문양」). 작품마다 하나, 겹치지 않게.
  */
-export const LITERATURE_COVER_MOTIFS = Object.freeze(['snow-night', 'higanbana', 'forest-doors', 'ink-steam', 'birdcage']);
+export const LITERATURE_COVER_MOTIFS = Object.freeze(['snow-night', 'higanbana', 'forest-doors', 'ink-steam', 'birdcage',
+  'rain-gate', 'lotus-thread', 'moon-tiger', 'steam-sea', 'lemon-books', 'nightjar-star', 'night-boat', 'cello-night']);
 
 const filled = (value) => typeof value === 'string' && value.trim() !== '';
 

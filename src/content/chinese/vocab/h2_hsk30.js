@@ -1,6 +1,8 @@
 /**
  * H2 (HSK 2급) HSK 3.0 표준 보강 어휘 — 공식 어휘표(drkameleon/complete-hsk-vocabulary, MIT)에서
  * 기존에 없던 333개를 채웠어요. 한자·병음·품사는 표준 데이터, 뜻·예문은 학습용으로 작성.
+ * 끝의 「HSK2 2026 보강」 주제는 《HSK 考试大纲》(2025-11 발표 · 2026-07 시행) 2급 중 빠졌던 1개
+ * (ZH-LEVEL-2026-001 ④) — 한 단어짜리 파일은 사전 계약(모듈당 3단어 이상)에 걸려 여기에 붙였어요.
  */
 const themes = {
   themes: [
@@ -30,7 +32,7 @@ const themes = {
         { zh: "不行", pinyin: "bùxíng", ko: "안 된다", pos: "형용사", ex: { zh: "你现在走不行。", pinyin: "Nǐ xiànzài zǒu bùxíng.", ko: "너는 지금 가면 안 돼요." } },
         { zh: "不要", pinyin: "búyào", ko: "~하지 마라", pos: "부사", ex: { zh: "不要在这里抽烟。", pinyin: "Búyào zài zhèlǐ chōuyān.", ko: "여기서 담배 피우지 마라." } },
         { zh: "不一定", pinyin: "bùyídìng", ko: "반드시 ~한 것은 아니다", pos: "부사", ex: { zh: "他不一定会来。", pinyin: "Tā bù yídìng huì lái.", ko: "그가 꼭 온다고는 할 수 없어요." } },
-        { zh: "不一会儿", pinyin: "bù yīhuǐr", ko: "얼마 지나지 않아, 곧", pos: "부사", ex: { zh: "不一会儿,雨就停了。", pinyin: "Bù yīhuǐr, yǔ jiù tíng le.", ko: "얼마 지나지 않아 비가 멈췄어요." } },
+        { zh: "不一会儿", pinyin: "bù yīhuìr", ko: "얼마 지나지 않아, 곧", pos: "부사", ex: { zh: "不一会儿,雨就停了。", pinyin: "Bù yīhuìr, yǔ jiù tíng le.", ko: "얼마 지나지 않아 비가 멈췄어요." } },
         { zh: "草地", pinyin: "cǎodì", ko: "잔디밭, 초원", pos: "명사", ex: { zh: "孩子们在草地上玩耍。", pinyin: "Háizimen zài cǎodì shàng wánshuǎ.", ko: "아이들이 잔디밭에서 놀아요." } },
         { zh: "查", pinyin: "chá", ko: "조사하다, 찾다", pos: "동사", ex: { zh: "我要查一下这个词的意思。", pinyin: "Wǒ yào chá yíxià zhège cí de yìsi.", ko: "나는 이 단어의 뜻을 좀 찾아봐야 해요." } },
         { zh: "常见", pinyin: "chángjiàn", ko: "흔하다, 자주 보이는", pos: "형용사", ex: { zh: "这是一种常见的病。", pinyin: "Zhè shì yì zhǒng chángjiàn de bìng.", ko: "이것은 흔한 병이에요." } },
@@ -184,7 +186,7 @@ const themes = {
         { zh: "排", pinyin: "pái", ko: "줄을 서다, 배열하다", pos: "동사", ex: { zh: "大家在门口排队。", pinyin: "Dàjiā zài ménkǒu pái duì.", ko: "모두 입구에서 줄을 서요." } },
         { zh: "碰", pinyin: "pèng", ko: "부딪치다, 만나다", pos: "동사", ex: { zh: "别碰我的东西。", pinyin: "Bié pèng wǒ de dōngxi.", ko: "내 물건 건드리지 마." } },
         { zh: "碰到", pinyin: "pèngdào", ko: "우연히 만나다, 마주치다", pos: "동사", ex: { zh: "我在路上碰到了老朋友。", pinyin: "Wǒ zài lùshang pèngdàole lǎo péngyou.", ko: "나는 길에서 옛 친구를 우연히 만났어요." } },
-        { zh: "平安", pinyin: "píngān", ko: "평안하다, 무사하다", pos: "형용사", ex: { zh: "祝你一路平安。", pinyin: "Zhù nǐ yílù píng'ān.", ko: "가시는 길 평안하시길 바랍니다." } },
+        { zh: "平安", pinyin: "píng'ān", ko: "평안하다, 무사하다", pos: "형용사", ex: { zh: "祝你一路平安。", pinyin: "Zhù nǐ yílù píng'ān.", ko: "가시는 길 평안하시길 바랍니다." } },
         { zh: "瓶", pinyin: "píng", ko: "병(양사)", pos: "양사", ex: { zh: "我买了一瓶水。", pinyin: "Wǒ mǎile yì píng shuǐ.", ko: "나는 물 한 병을 샀어요." } },
         { zh: "普通", pinyin: "pǔtōng", ko: "보통이다, 평범하다", pos: "형용사", ex: { zh: "他是一个普通人。", pinyin: "Tā shì yí ge pǔtōng rén.", ko: "그는 평범한 사람이에요." } },
         { zh: "骑车", pinyin: "qíchē", ko: "자전거를 타다", pos: "동사", ex: { zh: "我每天骑车上班。", pinyin: "Wǒ měitiān qí chē shàngbān.", ko: "나는 매일 자전거를 타고 출근해요." } },
@@ -243,7 +245,7 @@ const themes = {
         { zh: "图片", pinyin: "túpiàn", ko: "그림, 사진", pos: "명사", ex: { zh: "这张图片很漂亮。", pinyin: "zhè zhāng túpiàn hěn piàoliang.", ko: "이 사진은 매우 아름다워요." } },
         { zh: "外地", pinyin: "wàidì", ko: "타지, 다른 지역", pos: "명사", ex: { zh: "他是从外地来的。", pinyin: "tā shì cóng wàidì lái de.", ko: "그는 다른 지역에서 왔어요." } },
         { zh: "外卖", pinyin: "wàimài", ko: "배달 음식, 테이크아웃", pos: "명사", ex: { zh: "我今天点了外卖。", pinyin: "wǒ jīntiān diǎnle wàimài.", ko: "나는 오늘 배달 음식을 시켰어요." } },
-        { zh: "晚安", pinyin: "wǎnān", ko: "안녕히 주무세요, 잘 자요", pos: "동사", ex: { zh: "晚安,做个好梦。", pinyin: "wǎn'ān, zuò ge hǎomèng.", ko: "안녕히 주무세요, 좋은 꿈 꾸세요." } },
+        { zh: "晚安", pinyin: "wǎn'ān", ko: "안녕히 주무세요, 잘 자요", pos: "동사", ex: { zh: "晚安,做个好梦。", pinyin: "wǎn'ān, zuò ge hǎomèng.", ko: "안녕히 주무세요, 좋은 꿈 꾸세요." } },
         { zh: "晚报", pinyin: "wǎnbào", ko: "석간신문", pos: "명사", ex: { zh: "爷爷每天看晚报。", pinyin: "yéye měitiān kàn wǎnbào.", ko: "할아버지는 매일 석간신문을 봐요." } },
         { zh: "晚餐", pinyin: "wǎncān", ko: "저녁 식사, 만찬", pos: "명사", ex: { zh: "我们一起吃晚餐吧。", pinyin: "wǒmen yìqǐ chī wǎncān ba.", ko: "우리 같이 저녁 먹자." } },
         { zh: "晚会", pinyin: "wǎnhuì", ko: "저녁 파티, 이브닝 파티", pos: "명사", ex: { zh: "学校举办了新年晚会。", pinyin: "xuéxiào jǔbànle xīnnián wǎnhuì.", ko: "학교에서 신년 이브닝 파티를 열었어요." } },
@@ -281,7 +283,7 @@ const themes = {
         { zh: "夜里", pinyin: "yèli", ko: "밤에, 밤중", pos: "명사", ex: { zh: "夜里下起了大雨。", pinyin: "Yèli xià qǐ le dàyǔ.", ko: "밤에 큰 비가 내리기 시작했어요." } },
         { zh: "一部分", pinyin: "yíbùfen", ko: "일부분, 일부", pos: "수사", ex: { zh: "这只是问题的一部分。", pinyin: "Zhè zhǐ shì wèntí de yí bùfen.", ko: "이것은 단지 문제의 일부일 뿐이에요." } },
         { zh: "一点点", pinyin: "yìdiǎndiǎn", ko: "조금, 아주 조금", pos: "명사", ex: { zh: "我只吃了一点点。", pinyin: "Wǒ zhǐ chī le yìdiǎndiǎn.", ko: "나는 아주 조금만 먹었어요." } },
-        { zh: "一路平安", pinyin: "yílù píngān", ko: "가시는 길 평안하시길, 안전한 여행 되세요", pos: "표현", ex: { zh: "祝你一路平安!", pinyin: "Zhù nǐ yílù píng'ān!", ko: "가시는 길 평안하시길 빕니다!" } },
+        { zh: "一路平安", pinyin: "yílù píng'ān", ko: "가시는 길 평안하시길, 안전한 여행 되세요", pos: "표현", ex: { zh: "祝你一路平安!", pinyin: "Zhù nǐ yílù píng'ān!", ko: "가시는 길 평안하시길 빕니다!" } },
         { zh: "一路顺风", pinyin: "yílù shùnfēng", ko: "가시는 길 순조롭길, 잘 다녀오세요", pos: "동사", ex: { zh: "明天你要出发了,一路顺风!", pinyin: "Míngtiān nǐ yào chūfā le, yílù shùnfēng!", ko: "내일 출발하시는군요, 잘 다녀오세요!" } },
         { zh: "一生", pinyin: "yìshēng", ko: "일생, 평생", pos: "명사", ex: { zh: "他把一生都献给了教育事业。", pinyin: "Tā bǎ yìshēng dōu xiàn gěi le jiàoyù shìyè.", ko: "그는 일생을 교육 사업에 바쳤어요." } },
         { zh: "以上", pinyin: "yǐshàng", ko: "이상", pos: "명사", ex: { zh: "十八岁以上才能进去。", pinyin: "Shíbā suì yǐshàng cái néng jìnqù.", ko: "18세 이상이어야만 들어갈 수 있어요." } },
@@ -341,6 +343,12 @@ const themes = {
         { zh: "作家", pinyin: "zuòjiā", ko: "작가", pos: "명사", ex: { zh: "她是一位有名的作家。", pinyin: "Tā shì yí wèi yǒu míng de zuò jiā.", ko: "그녀는 유명한 작가예요." } },
         { zh: "做到", pinyin: "zuòdào", ko: "해내다, 달성하다", pos: "동사", ex: { zh: "只要努力就能做到。", pinyin: "Zhǐ yào nǔ lì jiù néng zuò dào.", ko: "노력만 하면 해낼 수 있어요." } },
         { zh: "做饭", pinyin: "zuòfàn", ko: "밥을 짓다, 요리하다", pos: "동사", ex: { zh: "妈妈每天在家做饭。", pinyin: "Mā ma měi tiān zài jiā zuò fàn.", ko: "엄마는 매일 집에서 밥을 지어요." } },
+      ],
+    },
+    {
+      name: "HSK2 2026 보강",
+      words: [
+        { zh: "没意思", pinyin: "méi yìsi", ko: "재미없다, 시시하다", pos: "표현", ex: { zh: "这个电影真没意思。", pinyin: "Zhège diànyǐng zhēn méi yìsi.", ko: "이 영화는 정말 재미없어요." } },
       ],
     },
   ],

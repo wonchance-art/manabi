@@ -25,3 +25,20 @@
 .lit-paper__grain{flood-color:#2a1c0e;flood-opacity:.06}
 .lit-paper__fleck{flood-color:#fff4dc;flood-opacity:.07}
 .lit-paper__fade{flood-color:#fff1d2;flood-opacity:.05}
+/* 2차 묶음(2026-10-14 KST) — 작품마다 새 문양, 시대 장정의 평평한 판색만 */
+/* 羅生門 — 해 질 녘 비: 문 그림자 · 옅은 빗줄기 · 노을 낮은 하늘 */
+.lit-art--rain-gate{--p1:#1d1412;--p2:#a9826a;--p3:#7a3a2b}
+/* 蜘蛛の糸 — 극락 연못(연잎·분홍 연꽃) · 은빛 실 · 지옥 불결 */
+.lit-art--lotus-thread{--p1:#e8e2d4;--p2:#e3a3ad;--p3:#4f6d62;--p4:#a8402c;--p5:#621f17}
+/* 山月記 — 달 · 겹친 산 · 범 */
+.lit-art--moon-tiger{--p1:#f1e8cf;--p2:#2a2a3e;--p3:#c9963f;--p4:#1c1c2a;--p5:#5f5f80}
+/* 坊っちゃん — 메이지 담채: 남색 선 · 꼭두서니 띠 · 흰 연기 · 바다 */
+.lit-art--steam-sea{--p1:#1f3346;--p2:#b34a3c;--p3:#f8f5ec;--p4:#8fb4c2}
+/* 檸檬 — 레몬 노랑 · 화집 색 */
+.lit-art--lemon-books{--p1:#f2d23c;--p2:#c9a42c;--p3:#2f3338;--p4:#a9473a;--p5:#cfc7b6;--p6:#6f8a6c}
+/* よだかの星 — 별 · 푸르게 타는 별 · 쏙독새 · 산 */
+.lit-art--nightjar-star{--p1:#f4f0e0;--p2:#6f9be8;--p3:#191530;--p4:#3d365f;--p5:#dfe9ff;--p6:#bdb5d9}
+/* 高瀬舟 — 으스름달 · 버들 · 물결 · 배 그림자 · 등불 */
+.lit-art--night-boat{--p1:#ece4c8;--p2:#122629;--p3:#6f9579;--p4:#4b7f87;--p5:#e8c37a}
+/* セロ弾きのゴーシュ — 호박색 첼로 · 짙은 나무 · 크림 음표·뻐꾸기 */
+.lit-art--cello-night{--p1:#c98a4b;--p2:#2b1a10;--p3:#f0e2c4;--p4:#8a5a33}

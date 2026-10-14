@@ -12,6 +12,14 @@
 .lit-cover--forest{--cover-color:#2f5a3f}
 .lit-cover--ink{--cover-color:#343a46}
 .lit-cover--cream{--cover-color:#ece3cc;color:#27324a}
+.lit-cover--rust{--cover-color:#5b2e24}
+.lit-cover--abyss{--cover-color:#1f2a33}
+.lit-cover--twilight{--cover-color:#4a4a68}
+.lit-cover--sky{--cover-color:#cfe0e6;color:#1f3346}
+.lit-cover--dove{--cover-color:#4f5560}
+.lit-cover--nightjar{--cover-color:#2b2547}
+.lit-cover--river{--cover-color:#234a52}
+.lit-cover--walnut{--cover-color:#5a3b28}
 .lit-cover__title{position:relative;z-index:1;writing-mode:vertical-rl;white-space:nowrap;font-family:var(--font-lit-serif),"Noto Serif CJK JP",serif;font-weight:500;font-size:11px;line-height:1.25;letter-spacing:.02em}
 .lit-cover__line{display:block}
 .lit-cover[data-motif=ink-steam] .lit-cover__title{color:#2b2724}

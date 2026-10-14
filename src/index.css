@@ -97,6 +97,11 @@
   /* Transition */
   --transition-fast: 0.15s ease;
   --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* 레벨별 단어 · 문형 목록(LEVEL-LIST-AJ-001) — 다크 값. 셸(.manabi-app)은 밝은 화면이라 level-list.css가 라이트 값으로 고정한다. */
+  --lv-card: #26231f; --lv-line: #3a352e; --lv-chip: #34302a; --lv-chip-hover: #3f3a33; --lv-field: #2e2a25;
+  --lv-have: #4a2c33; --lv-busy: #8c5462; --lv-formula: #332f28; --lv-ex-rule: #6b4a52; --lv-warn: #e1b36a; --lv-faint: #8a877e;
+  --lv-miss: #3d262c; --lv-warnbg: #352c1d; --lv-ok: #8cc7a6; /* 한자 탭(HANZI-TAB-AL-001) */
 }
 
 /* ========= Light Theme (warm cream) ========= */
@@ -121,6 +126,11 @@
   --gnb-bg: rgba(245, 239, 230, 0.92);
   --mobile-nav-bg: rgba(237, 228, 216, 0.98);
   --card-shadow-hover: 0 8px 32px rgba(100, 50, 20, 0.12);
+
+  /* 레벨별 단어 · 문형 목록(LEVEL-LIST-AJ-001) — 목업 8판 값 */
+  --lv-card: #fffdf9; --lv-line: #e2ddd2; --lv-chip: #ece8df; --lv-chip-hover: #e2ddd2; --lv-field: #ede9e0;
+  --lv-have: #f3e4e7; --lv-busy: #b77885; --lv-formula: #efeae0; --lv-ex-rule: #d9c4c9; --lv-warn: #8a5a12; --lv-faint: #a3a399;
+  --lv-miss: #fbf1f3; --lv-warnbg: #f6eedd; --lv-ok: #2f6b4f;
 }
 
 /* ========= Reset ========= */
@@ -211,6 +221,17 @@ body {
   -webkit-user-select: none;
   -webkit-touch-callout: none;
 }
+
+/* ── 줄바꿈 (LINE-BREAK-001, 오너 승인 2026-10-14 · docs/ui-conventions.md §7) ──
+   한국어는 어절(띄어쓰기) 단위로 넘긴다 — <html lang="ko">에서 상속된다.
+   일본어·중국어는 띄어쓰기가 없어 keep-all이면 문장부호에서만 넘어가므로, lang 속성이 붙은
+   요소에서 일반 규칙으로 되돌린다(자손은 상속). 그 안의 한국어(lang="ko")는 다시 어절 단위.
+   :lang()이 아니라 속성 선택자를 쓰는 이유: :lang()은 모든 자손 요소에 직접 걸려, 부모가
+   정한 값을 상속받아야 할 자식까지 덮는다. 긴 어절 · URL은 overflow-wrap이 넘침만 막는다. */
+[lang|="ko"] { word-break: keep-all; }
+[lang|="ja"], [lang|="zh"] { word-break: normal; }
+body { overflow-wrap: break-word; }
+h1, h2, h3 { text-wrap: balance; }
 
 /* 전역 무선택의 유일 예외 — 타이핑 입력란(글쓰기·포럼·자료 추가·관리자 폼 전량 커버) */
 input, textarea, [contenteditable]:not([contenteditable="false"]) {
@@ -663,7 +684,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .page-header__title {
   font-family: var(--font-serif);
   letter-spacing: -0.01em;
-  word-break: keep-all;
+  /* word-break는 줄바꿈 정본(LINE-BREAK-001)이 lang으로 정한다 — 뷰어 제목은 자료 언어(lang=ja/zh)다. */
   font-size: 2.05rem;
   font-weight: 700;
   margin-bottom: 8px;
@@ -2119,7 +2140,9 @@ a.viewer-badge:hover {
 .viewer-attribution__muted { color: var(--text-muted); }
 
 /* 다 읽었다면 — 끝의 행동 한 줄. 버튼 넷이 같은 옷(post-reading-actions__btn), 완료만 색. */
-.post-reading { margin-top: 20px; }
+/* 쪽 넘김(READER-PAGED-001)에서 이 줄이 쪽 경계에 걸려 두 쪽으로 나뉘지 않게 — 제목 높이 등 머리 배치가
+   조금만 바뀌어도 단 나눔이 밀려 앞 쪽에서 시작하던 것(LINE-BREAK-001 실측, viewer-paged-reader 390px). */
+.post-reading { margin-top: 20px; break-inside: avoid; }
 .post-reading__label {
   font-size: 0.78rem;
   color: var(--text-muted);

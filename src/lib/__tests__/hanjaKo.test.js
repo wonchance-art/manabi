@@ -340,6 +340,7 @@ describe('R0+ 正 꼴 훈음 조회', () => {
 // (표제어, 한글, 한자) 중복 제거 = 2,474쌍(2026-10-07 실측, 설계 세션 기준과 같은 수).
 // 비교는 첫 음절 두음법칙을 양쪽 다 정규화한다(노판 = 로판 — 두음은 표시 관례이지 음 오류가 아니다).
 describe('R0+ 회귀 — 우리 사전 한자어 표기 2,474쌍', () => {
+  const FILL_2026 = /^HSK[1-6] 2026 보강$/;
   const ko = readData('hanjaKo.json');
   const hun = readData('hanjaHun.json');
   const trad = readData('hanjaTrad.json');
@@ -360,6 +361,7 @@ describe('R0+ 회귀 — 우리 사전 한자어 표기 2,474쌍', () => {
     for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.js')).sort()) {
       const mod = await import(`../../content/chinese/vocab/${f.replace(/\.js$/, '')}.js`);
       for (const theme of mod.default?.themes || []) for (const w of theme.words || []) {
+        if (FILL_2026.test(theme.name)) continue; // 2,474쌍 기준 말뭉치 밖 — 아래 2026 보강 계약이 따로 본다
         const m = w?.hanja && RE.exec(w.hanja);
         if (!m) continue;
         const [, hangul, hz] = m;
@@ -381,6 +383,27 @@ describe('R0+ 회귀 — 우리 사전 한자어 표기 2,474쌍', () => {
     expect(regressed).toEqual([]);
     expect(after.length).toBeLessThanOrEqual(44);
     expect(before.length).toBeGreaterThan(after.length); // 간체 조회 123 → 正 꼴 44(실측)
+  });
+
+  // HSK 2026 보강(ZH-LEVEL-2026-001 ④, 2026-10-13 KST)의 한자어 표기는 위 기준 말뭉치에 섞지 않고 따로 고정한다.
+  // 불일치 4건은 표기 오류가 아니라 조회가 단어 안 본음·속음(렬→열 · 렴 · 률→율)을 모르는 기존 한계다.
+  it('HSK 2026 보강 표기 — 불일치는 본음·속음 4건뿐', async () => {
+    const dir = path.join(process.cwd(), 'src/content/chinese/vocab');
+    const off = [];
+    for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.js')).sort()) {
+      const mod = await import(`../../content/chinese/vocab/${f.replace(/\.js$/, '')}.js`);
+      for (const theme of mod.default?.themes || []) {
+        if (!FILL_2026.test(theme.name)) continue;
+        for (const w of theme.words || []) {
+          const m = w?.hanja && RE.exec(w.hanja);
+          if (!m) continue;
+          const [, hangul, hz] = m;
+          if ([...hangul].length !== [...hz].length || [...hz].length !== [...w.zh].length) continue;
+          if (!same(hanjaReadingsOf(w.zh, { koTable: ko, hunTable: hun, tradTable: trad }).map((x) => x.eum), hangul)) off.push(`${w.zh}(${hangul})`);
+        }
+      }
+    }
+    expect(off.sort()).toEqual(['失恋(실연)', '率(률)', '肺炎(폐렴)', '自律(자율)'].sort());
   });
 });
 

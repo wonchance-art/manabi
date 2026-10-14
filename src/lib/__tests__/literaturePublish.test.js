@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import {
+import { literatureBatchTargets,
   LITERATURE_PUBLISH_STATE,
   literatureBookPublishable,
   literatureBookSummary,
@@ -100,8 +100,9 @@ describe('준비 → 분석 → 검수 → 공개(P0-3 · P0-4)', () => {
 });
 
 describe('관리자 화면 요약·루비 적용률', () => {
-  it('정본 5편 모두 게시 가능 — 권리 기록이 깨지면 불가', () => {
-    expect(LITERATURE_BOOKS.map(literatureBookPublishable)).toEqual([true, true, true, true, true]);
+  it('정본 작품 모두 게시 가능 — 권리 기록이 깨지면 불가', () => {
+    expect(LITERATURE_BOOKS.length).toBe(13);
+    expect(LITERATURE_BOOKS.every(literatureBookPublishable)).toBe(true);
     const broken = { ...book, chapters: book.chapters.map((chapter) => ({ ...chapter, metadata: { ...chapter.metadata, literature: { ...chapter.metadata.literature, rights: { status: 'reviewing', basis: 'unknown' } } } })) };
     expect(literatureBookPublishable(broken)).toBe(false);
   });
@@ -169,12 +170,37 @@ describe('큐레이션 책(ART-P0-3) — 같은 게시 계획, 출처별 판정�
   });
 });
 
+describe('일괄 게시·분석 대상(설계 §4.1 — 오너 「권장대로」 2026-10-14 KST)', () => {
+  const summary = (overrides) => ({ publishable: true, stage: 'unpublished', plan: { conflicts: [], insert: [1] }, ...overrides });
+  it('게시 가능 · 준비/분석이 남음 · 충돌 없음만 — 검수·공개 단계는 사람이 작품마다', () => {
+    const books = [
+      summary({ key: 'a' }),
+      summary({ key: 'b', stage: 'preparing', plan: { conflicts: [], insert: [] } }),
+      summary({ key: 'c', publishable: false }),
+      summary({ key: 'd', plan: { conflicts: [{ id: 1, reason: 'text-differs' }], insert: [] } }),
+      summary({ key: 'e', stage: 'reviewing' }),
+      summary({ key: 'f', stage: 'ready' }),
+      summary({ key: 'g', stage: 'released' }),
+    ];
+    expect(literatureBatchTargets(books).map((book) => book.key)).toEqual(['a', 'b']);
+  });
+});
+
 describe('관리자 화면 배선 — 게시 한 번에 준비·분석, 공개는 분석 뒤', () => {
   const panel = readFileSync(path.join(process.cwd(), 'src/components/LiteraturePublishPanel.jsx'), 'utf8');
 
   it('분석은 뷰어와 같은 경로(runPreservedReanalysis + analyzeText, 전체 분석) — 새 분석기를 만들지 않는다', () => {
     expect(panel).toContain('await runPreservedReanalysis(supabase, row, controller.signal, analyzeText, { fullReset: true });');
     expect(panel).toContain("import { runPreservedReanalysis } from '../lib/reanalysisPreservation';");
+  });
+
+  it('일괄: 대상 판정은 순수 함수 하나, 작품마다 최신 상태를 다시 읽어 준비 → 같은 분석 경로, 검수·공개는 하지 않는다', () => {
+    const batch = sliceBetween(panel, 'async function runBatch', '\n  }\n');
+    expect(panel).toContain('const pending = literatureBatchTargets(books);');
+    expect(batch).toContain("await post('prepare', book.key);");
+    expect(batch).toContain('await analyzeChapters(book, controller);');
+    expect(batch).not.toMatch(/'release'|'review'/u);
+    expect(panel).toContain("if (action === 'batch') runBatch(targets);");
   });
 
   it('「게시」(prepare) 성공 뒤 바로 분석을 시작하고, 「공개」(release)는 ready 단계에서만 보인다', () => {

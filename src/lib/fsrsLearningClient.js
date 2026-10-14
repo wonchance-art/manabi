@@ -26,7 +26,7 @@ export function fsrsFailureStatus(error) {
 export function createFsrsLearningClient({ accountId, getAccountId = () => accountId,
   fetchImpl = (...args) => globalThis.fetch(...args), outbox = createFsrsOperationOutbox(),
   questionStore = createAdmissionIntentStore({ databaseName: 'manabi-fsrs-questions-v1' }),
-  eventTarget = globalThis.window, requestTimeout = 15000 } = {}) {
+  eventTarget = globalThis.window, requestTimeout = 15000, readRetryDelay = 800 } = {}) {
   const listeners = new Set(), receipts = new Map(), controllers = new Set();
   let disposed = false, started = false, flushing = null, rerun = false, generation = 0;
   const assertOwner = () => {
@@ -250,7 +250,16 @@ export function createFsrsLearningClient({ accountId, getAccountId = () => accou
     },
     async load() {
       await readPending();
-      const body = await request();
+      let body;
+      // 상태 읽기(GET)만 5xx에 두 번까지 다시 묻는다(0.8초 → 1.6초) — 쓰기는 outbox가 재전송을 맡는다.
+      // 로그인 직후 503이 약 2초 이어진 뒤 200이 온 실측(M09 #1337 6164825176)에서 오류 문구가 먼저 떴다.
+      for (let attempt = 0; ; attempt++) {
+        try { body = await request(); break; }
+        catch (error) {
+          if (!(error?.status >= 500) || attempt >= 2) throw error;
+          await new Promise(resolve => setTimeout(resolve, readRetryDelay * 2 ** attempt));
+        }
+      }
       if (typeof body.enabled !== 'boolean' || !Array.isArray(body.cards) || body.registryAvailable !== true) {
         throw problem('fsrs_invalid_response');
       }

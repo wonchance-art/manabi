@@ -6,6 +6,7 @@ import { previewFsrsRatings, validateFsrsCard } from './fsrsScheduler';
 import { fsrsQueueState } from './fsrsReviewSession';
 import { normalizeFsrsSaveRequest } from './fsrsOperationOutbox';
 import { normalizeAdmissionStatus } from './learningAdmission';
+import { logLearningFailure } from './useLearningAdmission';
 
 const clone = value => JSON.parse(JSON.stringify(value));
 const uuid = () => globalThis.crypto.randomUUID();
@@ -139,6 +140,7 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
           try { pending = await client.pending(); } catch { /* 기존 의도/오류 상태를 빈 큐로 덮지 않는다. */ }
         }
         if (!disposed && token === generation && readToken === readGeneration) {
+          logLearningFailure('fsrs load', error);
           publish({ registryAvailable: false, status: 'error', error,
             ...(pending ? { ...pendingPatch(pending), enrolledIds: [...new Set([...state.enrolledIds, ...pendingEnrolledIds(pending)])] } : {}) });
           queue();
