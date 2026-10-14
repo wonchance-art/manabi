@@ -1,34 +1,8 @@
-import ReferenceVocabPage from '@/views/ReferenceVocabPage';
-import { JAPANESE_VOCAB_REF } from '@/lib/japaneseVocabRegistry';
+// 레벨별 단어 목록(LEVEL-LIST-AJ-001) — 예전 레퍼런스 본문은 관리자 보관함(src/views/legacy/LegacyReferenceRoutes.jsx)으로 옮겼다.
+import { levelListRoute } from '@/views/levelListRoute';
 
-const ref = JAPANESE_VOCAB_REF;
-
-// 어휘가 있는 레벨만 (OT 등 문법 전용 레벨 제외)
-const VOCAB_LEVELS = ref.LEVEL_META.filter(m => ref.countVocab(m.key) > 0);
-
-export function generateStaticParams() {
-  return VOCAB_LEVELS.map(m => ({ level: m.key.toLowerCase() }));
-}
-
-export async function generateMetadata({ params }) {
-  const { level } = await params;
-  const vocab = ref.getVocab(level);
-  if (!vocab) return { title: '일본어 어휘' };
-  const title = `${vocab.title} | 일본어 어휘`;
-  const description = vocab.desc || '한국어 화자를 위한 일본어 레벨별 어휘 레퍼런스';
-  return { title, description, openGraph: { title, description } };
-}
-
-export default async function Page({ params }) {
-  const { level } = await params;
-  return (
-    <ReferenceVocabPage
-      lang="Japanese"
-      refInfo={{ base: ref.base, name: ref.name, langCode: ref.langCode }}
-      levelMeta={VOCAB_LEVELS}
-      meta={ref.getLevelMeta(level)}
-      vocab={ref.getVocab(level)}
-      hasBunkei={ref.hasBunkei(level)}
-    />
-  );
-}
+const route = levelListRoute('japanese', 'vocab');
+export const dynamicParams = false;
+export const generateStaticParams = route.generateStaticParams;
+export const generateMetadata = route.generateMetadata;
+export default route.Page;

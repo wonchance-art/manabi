@@ -139,7 +139,8 @@ import { isLocalId, parseLocalId, chaptersForLocalNav } from '../lib/classBoard'
 import { getSharedCopy } from '../lib/sharedStore';
 import { readIndexCache } from '../lib/classClient';
 import { useRefVocabEntry, useRefVocabIndex } from '../lib/refVocabIndex';
-import { useZhHskLevels, zhHskLevelOf, zhHskLevelLabel } from '../lib/zhHskLevel';
+import { zhHskLevelOf, zhHskLevelLabel } from '../lib/zhHskLevel';
+import { useZhHskLevels } from '../lib/useZhHskLevels';
 import { loadHanjaPanelTable, onIdle, prefetchHanjaPanel } from '../lib/viewerHanjaPanel';
 import { useTokenDictPrefetch } from '../lib/useTokenDictPrefetch';
 import { tokenDictPrefetchEnabled, tokenDictQueryKey, tokenDictKeyOf, prefetchTokenDict } from '../lib/tokenDictPrefetch';
@@ -180,7 +181,8 @@ import ViewerComments from './ViewerComments';
 import ViewerQuizModal from './ViewerQuizModal';
 import { langNameKo, splitSentenceAroundWord, detectLang } from '../lib/constants';
 import { attributionParts, literatureAttributionParts, materialSource } from '../lib/videoAttribution';
-import { isCanonicalLiteratureMaterial } from '../lib/literatureCanonical';
+import { isCanonicalLiteratureMaterial, literatureWork } from '../lib/literatureCanonical';
+import { literatureChapterLabel, literatureChapterTitle } from '../lib/literatureDisplay';
 import { useCanonicalLiterature } from '../lib/useCanonicalLiterature';
 import { isArtBookMaterial } from '../lib/artBookProvider';
 import { useArtBookChapter } from '../lib/useArtBookChapter';
@@ -516,6 +518,11 @@ export default function ViewerPage() {
 
   // 책 챕터 목록(P1) — metadata.book이 있으면 같은 key의 형제 챕터를 불러 내비를 만든다
   const bookMeta = getBook(material?.processed_json?.metadata);
+  // 정본 문학책(AOZORA-P0-5) — 원문이 정본과 대조된 장만, 제목·형제 이름을 대조표에서 읽는다(「과」 대신 一·二 / 1/2).
+  // 저장된 자료 제목이 예전 표기(「鼻 — 1편」)여도 화면은 정본 표기를 따른다.
+  const literatureBook = canonicalLiterature ? literatureWork(bookMeta?.key) : null;
+  const literatureTitleOf = (order) => (literatureBook ? literatureChapterTitle(literatureBook, order) : null);
+  const viewerTitle = literatureTitleOf(bookMeta?.order) || material?.title;
   const { data: bookChapters } = useQuery({
     queryKey: ['book-chapters', bookMeta?.key, material?.owner_id],
     queryFn: async () => {
@@ -549,7 +556,7 @@ export default function ViewerPage() {
       next: idx < navChapters.length - 1 ? navChapters[idx + 1] : null,
       // 이어 적기(#1077 5520128974) — 마지막 과의 「다음 →」 자리에 「다음 과 적기」(내 책만)
       key: bookMeta.key,
-      canAppend: !!user?.id && material?.owner_id === user.id,
+      canAppend: !!user?.id && material?.owner_id === user.id && !literatureBook, // 정본 책은 이어 적지 않는다
     };
   })();
 
@@ -560,8 +567,20 @@ export default function ViewerPage() {
   const siblingNav = bookNav
     ? {
         kind: 'book', label: `《${bookNav.title || '제목 없는 교재'}》`,
-        pos: bookNav.pos, total: bookNav.total, prev: bookNav.prev, next: bookNav.next,
-        prevLabel: '이전 과', nextLabel: '다음 과',
+        pos: bookNav.pos, total: bookNav.total,
+        prev: bookNav.prev && literatureBook ? { ...bookNav.prev, title: literatureTitleOf(bookNav.prev.order) } : bookNav.prev,
+        next: bookNav.next && literatureBook ? { ...bookNav.next, title: literatureTitleOf(bookNav.next.order) } : bookNav.next,
+        // 정본 문학책은 작가 목차면 「장」, manabi가 나눈 것이면 「부분」 — 교재의 「과」를 쓰지 않는다. 화면 읽기 프로그램에는
+        // 목적지까지 읽어 준다(「다음 장: ごん狐 — 二」).
+        ...(literatureBook
+          ? (() => {
+            const [prevLabel, nextLabel] = literatureBook.division === 'heading' ? ['이전 장', '다음 장'] : ['이전 부분', '다음 부분'];
+            return {
+              prevLabel: bookNav.prev ? `${prevLabel}: ${literatureTitleOf(bookNav.prev.order)}` : prevLabel,
+              nextLabel: bookNav.next ? `${nextLabel}: ${literatureTitleOf(bookNav.next.order)}` : nextLabel,
+            };
+          })()
+          : { prevLabel: '이전 과', nextLabel: '다음 과' }),
       }
     : (prevLesson || nextLesson)
       ? {
@@ -3712,8 +3731,8 @@ export default function ViewerPage() {
              매만지고 있었다(:hover가 할 일). 밖으로 빼고 baseline으로 맞춘다.
              ※ 여기 있던 `flex: 1`은 죽은 값이었다 — 부모(.page-header)가 flex가 아니다. */
           <div className="viewer-titlerow">
-            <h1 className="page-header__title">{material.title}</h1>
-            {user?.id === material?.owner_id && !composerOf(material) && (
+            <h1 className="page-header__title" lang={contentLangTag}>{viewerTitle}</h1>
+            {user?.id === material?.owner_id && !composerOf(material) && !literatureBook && (
               <button
                 className="viewer-title-edit"
                 onClick={() => { setTitleDraft(material.title); setTitleEditing(true); }}
@@ -4280,15 +4299,15 @@ export default function ViewerPage() {
           return (
             <Link href={classStudyNeighborHref(nextLesson,studyContext,originalParams.get('returnTo'))} className="next-lesson-card">
               <div className="next-lesson-card__hint">{vt("다음 편")}</div>
-              <div className="next-lesson-card__title">{nextLesson.title}</div>
+              <div className="next-lesson-card__title" lang={contentLangTag}>{nextLesson.title}</div>
             </Link>
           );
         }
         if (bookNav?.next) {
           return (
             <Link href={classStudyNeighborHref(bookNav.next,studyContext,originalParams.get('returnTo'))} className="next-lesson-card">
-              <div className="next-lesson-card__hint">{vt("다음 과 ·")}{bookNav.pos + 1}/{bookNav.total}</div>
-              <div className="next-lesson-card__title">{bookNav.next.title}</div>
+              <div className="next-lesson-card__hint">{literatureBook ? vt("이어 읽기 ·") : vt("다음 과 ·")}{literatureBook?.division === 'heading' ? literatureChapterLabel(literatureBook, bookNav.next.order) : `${bookNav.pos + 1}/${bookNav.total}`}</div>
+              <div className="next-lesson-card__title" lang={contentLangTag}>{literatureTitleOf(bookNav.next.order) || bookNav.next.title}</div>
             </Link>
           );
         }

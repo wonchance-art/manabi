@@ -34,7 +34,6 @@
   font-family: var(--font-serif);
   font-size: clamp(1.35rem, 4vw, 1.75rem);
   line-height: 1.35;
-  word-break: keep-all;
 }
 
 .progress {
@@ -301,7 +300,6 @@
   margin: 0;
   font-size: 0.98rem;
   line-height: 1.45;
-  word-break: keep-all;
 }
 
 .unitCount {

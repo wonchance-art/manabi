@@ -4,6 +4,7 @@ import { displayWord } from '../lib/constants';
 import { isVocabularyReviewDue, isVocabularyUnreviewed, vocabularyRetrievability } from '../lib/vocabularyLearningRead';
 import { fsrsIntervalLabel } from '../lib/useFsrsReview';
 import VocabularyContexts from '../components/learning/VocabularyContexts';
+import { langTag } from '../components/vocab/ReviewCardParts';
 import { wordStage } from '../lib/growthStats';
 
 const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak, ttsSupported, showBookContexts = false, projection, now: at = new Date() }) {
@@ -62,11 +63,11 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
         <button type="button" className="vocab-detail-card__close" onClick={onClose} aria-label="단어 상세 닫기" data-dialog-initial-focus>✕</button>
 
         <div className="vocab-detail-card__header">
-          {v.furigana && <span className="vocab-detail-card__furigana">{v.furigana}</span>}
-          <h2 id="vocab-detail-title" className="vocab-detail-card__word">
+          {v.furigana && <span className="vocab-detail-card__furigana" lang={langTag(v)}>{v.furigana}</span>}
+          <h2 id="vocab-detail-title" className="vocab-detail-card__word" lang={langTag(v)}>
             {displayWord(v.word_text, v.pos)}
             {ttsSupported && (
-              <button type="button" className="vocab-detail-card__tts" onClick={() => speak(v.word_text, v.language || 'Japanese')} aria-label={`${v.word_text} 발음 듣기`}>▷</button>
+              <button type="button" className="vocab-detail-card__tts" lang="ko" onClick={() => speak(v.word_text, v.language || 'Japanese')} aria-label={`${v.word_text} 발음 듣기`}>▷</button>
             )}
           </h2>
           <p id="vocab-detail-meaning" className="vocab-detail-card__meaning">{v.meaning}</p>
@@ -146,7 +147,7 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
           <div className="vocab-detail-card__source">
             <h3 className="vocab-detail-card__section-title">출처 자료</h3>
             {v.source_sentence && (
-              <p style={{
+              <p lang={langTag(v)} style={{
                 fontSize: '0.85rem', color: 'var(--text-secondary)',
                 padding: '8px 12px', background: 'var(--bg-secondary)',
                 borderRadius: 'var(--radius-md)', marginBottom: 8, lineHeight: 1.6,

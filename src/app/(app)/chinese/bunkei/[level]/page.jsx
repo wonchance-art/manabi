@@ -1,34 +1,8 @@
-import ReferencePatternIndexPage from '@/views/ReferencePatternIndexPage';
-import { REF_LANGS } from '@/content/refLangs';
-import { getBunkei, countBunkei } from '@/content/chinese';
+// 레벨별 문형 목록(LEVEL-LIST-AJ-001) — 예전 레퍼런스 본문은 관리자 보관함(src/views/legacy/LegacyReferenceRoutes.jsx)으로 옮겼다.
+import { levelListRoute } from '@/views/levelListRoute';
 
-const ref = REF_LANGS.Chinese;
-
-const BUNKEI_LEVELS = ref.LEVEL_META.filter(m => countBunkei(m.key) > 0);
-
-export function generateStaticParams() {
-  return BUNKEI_LEVELS.map(m => ({ level: m.key.toLowerCase() }));
-}
-
-export async function generateMetadata({ params }) {
-  const { level } = await params;
-  const bunkei = getBunkei(level);
-  if (!bunkei) return { title: '중국어 문형 사전' };
-  const title = `${bunkei.title} | 중국어 문형 사전`;
-  const description = bunkei.desc || `중국어 ${level.toUpperCase()} 핵심 구문·표현 전수 수록 — 구조·뜻·예문·챕터 링크`;
-  return { title, description, openGraph: { title, description } };
-}
-
-export default async function Page({ params }) {
-  const { level } = await params;
-  return (
-    <ReferencePatternIndexPage
-      lang="Chinese"
-      refInfo={{ base: ref.base, name: ref.name, langCode: ref.langCode }}
-      levelMeta={BUNKEI_LEVELS}
-      meta={ref.getLevelMeta(level)}
-      bunkei={getBunkei(level)}
-      hasVocab={ref.countVocab(level) > 0}
-    />
-  );
-}
+const route = levelListRoute('chinese', 'bunkei');
+export const dynamicParams = false;
+export const generateStaticParams = route.generateStaticParams;
+export const generateMetadata = route.generateMetadata;
+export default route.Page;
