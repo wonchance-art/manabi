@@ -191,3 +191,27 @@ describe('세션 · 끝 화면 · 상태 문구(§5-5 · §5-6)', () => {
     expect(page).not.toContain('멈춘 복습 이어가기 ·');
   });
 });
+
+describe('「다시」 재노출(예전 일정) — 입장권 · 일정 저장 없이 확인만(M09 #1337 6171362813)', () => {
+  // 입장 RPC(learning_admit_legacy)는 채점된 적 있고 next_review_at이 미래인 카드를 learning_card_not_due(409)로 거절한다.
+  // 예전 일정의 채점은 next_review_at을 최소 하루 뒤로 두므로, 재노출이 입장권을 다시 받으면 세션이 「복습을 준비하지 못했어요」로 멈춘다.
+  const candidate = sliceBetween(page, 'const candidateWord = useMemo', '}, [reviewQueue, reviewIdx');
+  const score = sliceBetween(page, 'const handleScore = async (rating) => {', 'const actorId = user?.id;');
+  const skip = sliceBetween(page, 'const handleSkip = () => {', 'const tomorrow');
+
+  it('재노출 단계는 입장권 후보가 아니다 — 지금 카드는 againWord로 바로 연다', () => {
+    expect(candidate).toContain("step.phase !== 'again'");
+    expect(page).toMatch(/const currentWord = againWord \|\|/);
+  });
+
+  it('재노출의 채점 · 미루기는 기록 · 일정 저장 없이 다음으로 — 「다시」면 한 번 더 끝에', () => {
+    expect(score).toContain('goNextReview(rating === 1 ? againWord.id : null)');
+    expect(score).not.toContain('recordReviewCompleted');
+    expect(skip).toContain('goNextReview()');
+    expect(skip).not.toContain('scoreMutation');
+  });
+
+  it('끝 화면 「다시」 수는 같은 표현을 한 번으로 센다', () => {
+    expect(page).toContain("new Set(reviewQueue.filter(step => step.phase === 'again').map(step => step.id)).size");
+  });
+});
