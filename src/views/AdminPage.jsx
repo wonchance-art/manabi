@@ -284,6 +284,7 @@ export default function AdminPage() {
           { key: 'users',     label: '👥 유저 관리' },
           { key: 'materials', label: '📰 자료 관리' },
           { key: 'literature', label: '📚 정본 문학책' },
+          { key: 'art',       label: '🖼️ 미술 책' },
           { key: 'sources',   label: '📡 콘텐츠 소스' },
           { key: 'overrides', label: '📝 콘텐츠' },
           { key: 'reports',   label: '🚩 신고' },
@@ -304,6 +305,9 @@ export default function AdminPage() {
 
       {/* ── 정본 문학책 게시(AOZORA-P0-2) — 권리 근거 확인 → 게시 → 장마다 1회 분석 → 루비 적용률 ── */}
       {tab === 'literature' && <LiteraturePublishPanel toast={toast} />}
+
+      {/* ── 「그림 한 장 읽기」 큐레이션 책 게시(ART-P0-3) — 같은 패널·같은 흐름, 근거 칸만 출처·라이선스·원문 링크 ── */}
+      {tab === 'art' && <LiteraturePublishPanel toast={toast} api="/api/admin/art-books" kind="art" />}
 
       {/* ── 신기능 — 관리자용 바로가기 (학습 기능은 네비 '학습' 탭에 정식 배치됨) ── */}
       {tab === 'features' && (
