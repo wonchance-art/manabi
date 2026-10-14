@@ -69,6 +69,17 @@ describe('새 FSRS 서버 경계', () => {
     await expect(request('question')).rejects.toMatchObject({ code: 'fsrs_storage_unavailable' });
   });
 
+  it('503은 어느 RPC · 단계에서 났는지 detail로 남기고, 응답 본문(fsrsError)엔 싣지 않는다(REVIEW-LOAD-TRANSIENT-001)', async () => {
+    serviceClient.rpc.mockResolvedValue({ error: { code: '57014', message: 'canceling statement due to statement timeout' } });
+    const failed = await readFsrsStatus({ authClient, serviceClient, userId: owner }).catch(error => error);
+    expect(failed).toMatchObject({ code: 'fsrs_storage_unavailable', status: 503,
+      detail: 'fsrs_list_states: 57014 canceling statement due to statement timeout' });
+    expect(fsrsError(failed).body).toEqual({ ok: false, code: 'fsrs_storage_unavailable' });
+    authClient.rpc.mockRejectedValue(new TypeError('fetch failed'));
+    await expect(readFsrsStatus({ authClient, serviceClient, userId: owner }))
+      .rejects.toMatchObject({ detail: 'fsrs_capabilities threw: TypeError fetch failed' });
+  });
+
   it('오래된 계정·사용자 제공 메모리/시각/소유자·부정한 간격/평점을 DB 호출 전에 거절한다', async () => {
     await expect(request('question', { accountId: stranger })).rejects.toMatchObject({ code: 'fsrs_account_changed', status: 409 });
     for (const forged of [{ nextCard: {} }, { due: instant(0) }, { at: instant(0) }, { userId: owner }, { expectedRevision: -1 }, { dailyNewLimit: 999 }]) {

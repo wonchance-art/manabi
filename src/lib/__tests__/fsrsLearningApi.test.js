@@ -57,4 +57,19 @@ describe('인증된 새 FSRS API', () => {
     mocks.requireUser.mockRejectedValue(new Error('cookie token'));
     expect((await GET()).status).toBe(503);
   });
+
+  it('5xx는 원인 단계를 서버 로그에만 남긴다 — 응답 본문엔 없고, 4xx는 로그하지 않는다(REVIEW-LOAD-TRANSIENT-001)', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      mocks.read.mockRejectedValue(Object.assign(new Error('fsrs_storage_unavailable'),
+        { status: 503, code: 'fsrs_storage_unavailable', detail: 'fsrs_list_states threw: TypeError fetch failed' }));
+      const response = await GET();
+      expect(await response.json()).toEqual({ ok: false, code: 'fsrs_storage_unavailable' });
+      expect(warn).toHaveBeenCalledWith('[fsrs] GET 503', 'fsrs_storage_unavailable', 'fsrs_list_states threw: TypeError fetch failed');
+      warn.mockClear();
+      mocks.apply.mockRejectedValue(Object.assign(new Error('x'), { status: 409, code: 'fsrs_revision_conflict' }));
+      await post({});
+      expect(warn).not.toHaveBeenCalled();
+    } finally { warn.mockRestore(); }
+  });
 });
