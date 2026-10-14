@@ -117,6 +117,9 @@ describe('EDIT-STD-001 — lintEditorial 규칙', () => {
     expect(rules('아침, 점심, 저녁에 종이 울린다.')).toEqual([]);
     expect(rules('아침, 점심, 저녁, 밤에 종이 울린다.')).toEqual(['R13 쉼표 3개 > 2개']);
     expect(rules('그는 「하나, 둘, 셋, 넷」 하고 센다.')).toEqual([]);
+    // 숫자 자릿점은 쉼표가 아니다(1호 04·06 원고 2,847곳 오탐 — 2026-10-14)
+    expect(rules('A는 2,847곳, B는 1,234곳, C는 3,456곳이다.')).toEqual([]);
+    expect(rules('2,847곳, 1,234곳, 3,456곳, 9,999곳이다.')).toEqual(['R13 쉼표 3개 > 2개']);
   });
 
   it('규칙 16 — 약한 표현', () => {

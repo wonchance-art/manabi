@@ -168,7 +168,8 @@ export function lintEditorial(text, { register } = {}) {
     const { original, masked } = sentence;
     const length = Array.from(original).length;
     if (length > MAX_SENTENCE_CHARS) add('R12', `${length}자 > ${MAX_SENTENCE_CHARS}자`, sentence);
-    const commas = (masked.match(/[,，、]/g) || []).length;
+    // 숫자 자릿점(2,847)은 쉼표가 아니다 — 숫자 사이의 쉼표는 세지 않는다.
+    const commas = (masked.match(/(?<!\d),|,(?!\d)|[，、]/g) || []).length;
     if (commas > MAX_COMMAS) add('R13', `쉼표 ${commas}개 > ${MAX_COMMAS}개`, sentence);
     const ending = masked.replace(TRAILING, '');
     for (const [rule, list] of LEXICON) {
