@@ -128,7 +128,7 @@ describe('local: 뷰어 — 네트워크 0', () => {
     const localNeighbors=chaptersForLocalNav({chapters:[{id:12,title:'과',order:1}]},'a');
     expect(classStudyNeighborHref(localNeighbors[0],{team:'a',day:'2026-09-10'})).toBe('/class/a?open=12');
     // 「다음 과 적기」는 owner_id 게이트 그대로 — 사본의 소유자는 선생님이라 학생·익명에겐 안 뜬다(bookAppend 계약 불변)
-    expect(viewer).toContain("canAppend: !!user?.id && material?.owner_id === user.id,");
+    expect(viewer).toContain("canAppend: !!user?.id && material?.owner_id === user.id && !literatureBook,");
     // 편집·재분석·제목·삭제·교정은 전부 owner_id 게이트 — 사본의 owner_id는 선생님이라 학생에겐 안 뜬다
     expect(viewer).toContain('const canEditToken = !!user?.id && user.id === material?.owner_id;');
   });

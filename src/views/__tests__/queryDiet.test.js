@@ -28,7 +28,8 @@ describe('쿼리 다이어트 계약', () => {
     expect(home).not.toContain(".limit(300)");
     // 배움(LEARN-HOME-AK-001)의 이어 읽기는 칩 언어의 서재 자료와 그 급수를 보인다 — 본문 JSON을 통째로 끌지 않고
     // 메타 경로의 스칼라 두 칸만 더한다(뷰어 다음 자료 추천과 같은 방식).
-    expect(home).toContain("reading_materials(id, title, language:processed_json->metadata->>language, level:processed_json->metadata->>level)')");
+    // 정본 문학책 제목 표기(AOZORA-P0-5)는 책 위치(작은 객체)와 아오조라 표식 한 칸만 더한다.
+    expect(home).toContain("reading_materials(id, title, language:processed_json->metadata->>language, level:processed_json->metadata->>level, book:processed_json->metadata->book, provider:processed_json->metadata->literature->>provider)')");
     expect(home).not.toMatch(/reading_materials\([^)]*processed_json[,)]/);
     expect(home).toContain(".eq('user_id', userId)");
   });

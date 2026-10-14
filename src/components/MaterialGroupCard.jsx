@@ -11,11 +11,14 @@
  * 복습 4개`. 그래서 줄의 좌/우 슬롯을 노드로 받는다 — 분기는 호출부에 남기고 이 안에는
  * 두지 않는다(분기가 들어오는 순간 다시 두 벌이 된다).
  */
-export default function MaterialGroupCard({ icon, title, meta, fitLine, rows, footer, open }) {
+export default function MaterialGroupCard({ icon, art, title, subtitle, meta, fitLine, rows, footer, open }) {
+  // art(선택) — 아이콘 대신 그림(표지 등)을 왼쪽에 세운다. subtitle(선택) — 제목 아래 한 줄.
   return (
     <details className="card book-card group-card" open={open || undefined}>
-      <summary className="group-card__summary">
-        <span className="group-card__title">{icon} {title}</span>
+      <summary className={art ? 'group-card__summary group-card__summary--art' : 'group-card__summary'}>
+        {art && <span className="group-card__art">{art}</span>}
+        <span className="group-card__title">{art ? title : <>{icon} {title}</>}</span>
+        {subtitle && <span className="group-card__subtitle">{subtitle}</span>}
         <span className="group-card__meta">{meta}</span>
         {fitLine && <span className="group-card__fit">{fitLine}</span>}
       </summary>

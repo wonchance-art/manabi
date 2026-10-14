@@ -30,5 +30,12 @@
       "US"
     ],
     "evidenceUrl": "https://www.aozora.gr.jp/cards/000879/card42.html"
+  },
+  "display": {
+    "titleReading": "はな",
+    "titleKo": "코",
+    "authorKo": "아쿠타가와 류노스케",
+    "cover": "ink",
+    "motif": "ink-steam"
   }
 }
