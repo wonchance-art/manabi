@@ -1091,9 +1091,11 @@ function VocabWorkspace({ reviewScope }) {
   };
 
   // 다른 탭에서 제외 · 삭제 · 아는 단어가 된 지금 카드는 채점 없이 다음 남은 단계로 건너뛴다(두 엔진).
+  // 「다시」 재노출은 방금 채점해 일정상 아직 때가 아니므로 reviewAvailable 대신 제외 · 아는 단어만 본다(againWord와 같은 조건).
   const stepValid = step => step.phase !== 'skipped' && (step.engine === 'fsrs' ? fsrsStepValid(step.id)
-    : fsrsReview.controller.canLegacy(step.id) && vocab.some(row => row.id === step.id && reviewAvailable(row) && reviewSupported(row)));
-  const stepReady = !!candidateWord || !!fsrsStepWord;
+    : fsrsReview.controller.canLegacy(step.id) && vocab.some(row => row.id === step.id && reviewSupported(row)
+      && (step.phase === 'again' ? !row.is_excluded && !row.is_known : reviewAvailable(row))));
+  const stepReady = !!candidateWord || !!againWord || !!fsrsStepWord;
   useEffect(() => {
     if (stepReady || reviewFinished || !reviewQueue.length || isLoading || vocabError || koreanCapabilities.isLoading || !fsrsReview.registryAvailable) return;
     const next = reviewQueue.findIndex((step, index) => index > reviewIdx && stepValid(step));

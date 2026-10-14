@@ -215,3 +215,43 @@ describe('「다시」 재노출(예전 일정) — 입장권 · 일정 저장 �
     expect(page).toContain("new Set(reviewQueue.filter(step => step.phase === 'again').map(step => step.id)).size");
   });
 });
+
+describe('「다시」 재노출 — 준비된 카드로 세고, 건너뛰기 판정에서도 살린다(M09 #1337 6173065866)', () => {
+  // 지금 카드가 준비됐는지(stepReady)에 againWord가 빠지면, 아래 effect가 재노출을 「준비된 카드 없음」으로 보고
+  // 다음 유효 단계로 건너뛰거나(마지막이면) 세션을 끝냈다 — 첫 「다시」 뒤 재노출 없이 「오늘 몫 끝」.
+  const block = sliceBetween(page, '  const stepValid = step =>', '  // 새 일정 학습 단계');
+  const run = ({ queue, idx, againWord, candidateWord, fsrsStepWord, vocab }) => {
+    const calls = { idx: null, finished: 0 };
+    const env = {
+      reviewQueue: queue, reviewIdx: idx, againWord, candidateWord, fsrsStepWord, vocab,
+      reviewFinished: false, isLoading: false, vocabError: null, koreanCapabilities: { isLoading: false },
+      fsrsReview: { registryAvailable: true, controller: { canLegacy: () => true } }, fsrsStepValid: () => true,
+      reviewSupported: () => true, reviewAvailable: row => !row.last_reviewed_at,
+      setReviewIdx: value => { calls.idx = value; }, finishRun: () => { calls.finished += 1; }, useEffect: fn => fn(),
+    };
+    new Function(...Object.keys(env), block)(...Object.values(env));
+    return calls;
+  };
+  const graded = { id: 'a', last_reviewed_at: '2026-10-15T00:00:00Z' };
+
+  it('마지막 단계가 재노출이면 그 카드를 연다 — 세션을 끝내지 않는다', () => {
+    const calls = run({ queue: [{ id: 'a', engine: 'legacy', phase: 'question' }, { id: 'a', engine: 'legacy', phase: 'again' }],
+      idx: 1, againWord: graded, vocab: [graded] });
+    expect(calls).toEqual({ idx: null, finished: 0 });
+  });
+
+  it('지금 카드가 빠졌을 때 다음 유효 단계 찾기에서도 재노출은 유효하다(채점돼 reviewAvailable이 거짓이어도)', () => {
+    const gone = { id: 'b', last_reviewed_at: null, is_excluded: true };
+    const calls = run({ queue: [{ id: 'b', engine: 'legacy', phase: 'question' }, { id: 'a', engine: 'legacy', phase: 'again' }],
+      idx: 0, vocab: [gone, graded] });
+    expect(calls.idx).toBe(1);
+    expect(calls.finished).toBe(0);
+  });
+
+  it('제외 · 아는 단어가 된 재노출은 건너뛴다', () => {
+    const known = { ...graded, is_known: true };
+    const calls = run({ queue: [{ id: 'b', engine: 'legacy', phase: 'question' }, { id: 'a', engine: 'legacy', phase: 'again' }],
+      idx: 0, vocab: [{ id: 'b', is_excluded: true }, known] });
+    expect(calls.finished).toBe(1);
+  });
+});
