@@ -1,4 +1,4 @@
-import { Noto_Serif_JP } from 'next/font/google';
+import { Shippori_Mincho_B1 } from 'next/font/google';
 import LiteratureCoverArt from './LiteratureCoverArt';
 import './literature-cover.css';
 
@@ -6,8 +6,10 @@ import './literature-cover.css';
 // 같은 틀에 작품 색(display.cover)·문양(display.motif — LiteratureCoverArt)·세로 제목만 바뀐다. 제목·작가는 옆 글자가 읽어 주므로 장식이다(aria-hidden).
 // 제목 글꼴은 웹폰트(명조)로 고정한다 — 시스템 명조는 한국어 Windows에 없는 경우가 많아 기기마다 표지가 달라진다
 // (디자이너 검토). 사이트 전체 preload 없이 표지가 보일 때만 받는다(ChineseSerif·문법 레이아웃 선례).
-// 굵기는 문법 레이아웃과 같은 400 — 배포 빌드는 저장소 사본(scripts/fonts)에서만 글꼴을 읽으므로 사본에 있는 호출과 맞춘다.
-const serif = Noto_Serif_JP({ weight: '400', subsets: ['latin'], display: 'swap', preload: false, variable: '--font-lit-serif' });
+// 글꼴은 しっぽり明朝 B1(쓰키지체 계열 활판 명조 · 잉크 고임 재현) 500 — 오너가 실제 글꼴 비교에서 골랐다(2026-10-14 KST,
+// 「폰트가 안 어울린다」 → Noto Serif JP 400 · B1 400/500 · Zen Old Mincho 400/500 비교). 500은 60×84 실제 크기에서도 획이 옅어지지 않는다.
+// 배포 빌드는 저장소 사본(vendor/google-fonts)에서만 글꼴을 읽으므로 이 호출을 바꾸면 사본도 함께 받는다.
+const serif = Shippori_Mincho_B1({ weight: '500', subsets: ['latin'], display: 'swap', preload: false, variable: '--font-lit-serif' });
 
 const titleLines = (work) => String(work.display?.coverTitle || work.title).split('\n');
 

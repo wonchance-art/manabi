@@ -115,11 +115,17 @@ describe('화면 배선', () => {
     }
     expect(artCss).not.toMatch(/url\(/u);
     // 제목 글꼴은 웹폰트 명조로 고정(기기마다 다른 시스템 명조 대신) — 사이트 전체 preload 없이
-    expect(cover).toContain("Noto_Serif_JP({ weight: '400', subsets: ['latin'], display: 'swap', preload: false, variable: '--font-lit-serif' })");
+    // 글꼴은 오너가 실제 글꼴 비교에서 고른 しっぽり明朝 B1 500(2026-10-14 KST) — 제목·작가가 같은 굵기를 받는다(500 한 벌만 받으므로)
+    expect(cover).toContain("Shippori_Mincho_B1({ weight: '500', subsets: ['latin'], display: 'swap', preload: false, variable: '--font-lit-serif' })");
+    expect(cover).not.toMatch(/Noto_Serif_JP/u);
     expect(cover).not.toContain('style=');
     const css = read('src/components/books/literature-cover.css');
     for (const color of LITERATURE_COVER_COLORS) expect(css).toContain(`.lit-cover--${color}{`);
     expect(css).toContain('font-family:var(--font-lit-serif)');
+    expect(css.match(/font-weight:500/gu)).toHaveLength(2);
+    expect(css).not.toMatch(/font-weight:(?!500)/u);
+    // 작가 끝은 아래 선(bottom:8px)보다 위에서 멈춘다 — 두 줄 제목이면 작가가 선 바로 위로 와 끝 글자가 선에 닿았다
+    expect(css).toMatch(/\.lit-cover__author\{[^}]*margin:0 2px 3px 0/u);
     // 시리즈: 제목 크기는 한 값뿐 — 글자 수로 크기를 바꾸지 않는다(오너 지시 「서적마다 편차 없이」)
     expect(css.match(/\.lit-cover__title\{[^}]*font-size:11px/u)).toBeTruthy();
     expect(css.match(/font-size:/gu)).toHaveLength(2); // 제목 하나 + 작가 하나 — 작품마다 다른 크기가 없다
