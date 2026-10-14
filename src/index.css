@@ -2130,7 +2130,9 @@ a.viewer-badge:hover {
 .viewer-attribution__muted { color: var(--text-muted); }
 
 /* 다 읽었다면 — 끝의 행동 한 줄. 버튼 넷이 같은 옷(post-reading-actions__btn), 완료만 색. */
-.post-reading { margin-top: 20px; }
+/* 쪽 넘김(READER-PAGED-001)에서 이 줄이 쪽 경계에 걸려 두 쪽으로 나뉘지 않게 — 제목 높이 등 머리 배치가
+   조금만 바뀌어도 단 나눔이 밀려 앞 쪽에서 시작하던 것(LINE-BREAK-001 실측, viewer-paged-reader 390px). */
+.post-reading { margin-top: 20px; break-inside: avoid; }
 .post-reading__label {
   font-size: 0.78rem;
   color: var(--text-muted);
