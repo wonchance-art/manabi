@@ -16,6 +16,9 @@ export const DEFAULT_SESSION_LENGTH = 20;
 export const BACKLOG_WINDOW_DAYS = 14;
 export const BACKLOG_DEFAULT_BASELINE = 20;
 export const BACKLOG_FACTOR = 2;
+// 기준 하한(오너 승인 2026-10-14) — 오래 쓴 가벼운 사용자(14일에 3장 → 평균 0.2)가 밀린 복습 1장에 새 표현이
+// 멈추지 않게, 판정에 쓰는 기준은 하루 10장 아래로 내려가지 않는다. 화면의 「하루 평균」은 실제 평균 그대로.
+export const BACKLOG_MIN_BASELINE = 10;
 export const RESUME_MAX_AGE_MS = 24 * 3600 * 1000;
 
 const byNumber = (a, b) => (a === b ? 0 : a < b ? -1 : 1);
@@ -174,5 +177,5 @@ export function backlogBaseline(projections, { now = Date.now() } = {}) {
 }
 
 export function isBacklogged(overdue, baseline) {
-  return overdue > BACKLOG_FACTOR * baseline;
+  return overdue > BACKLOG_FACTOR * Math.max(baseline, BACKLOG_MIN_BASELINE);
 }
