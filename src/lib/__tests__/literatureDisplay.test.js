@@ -104,7 +104,8 @@ describe('화면 배선', () => {
     expect(cover).not.toMatch(/<img|background-image|url\(/u);
     expect(cover).toContain('<LiteratureCoverArt motif={work.display.motif} />');
     const art = read('src/components/books/LiteratureCoverArt.jsx');
-    expect(art).not.toMatch(/<img|<image|href=|url\(|style=|#[0-9a-f]{3,8}\b|rgba?\(/iu); // 그림은 코드 도형만, 색은 CSS에서만
+    // 그림은 코드 도형만, 색은 CSS에서만 — 같은 표지 안의 필터·그라디언트 참조(url(#…) · href="#…")만 허용(옛 종이 질감, 외부 그림·data: 없음)
+    expect(art).not.toMatch(/<img|<image|href=(?!["{`]#|\{`#)|url\((?!#)|data:|style=|#[0-9a-f]{3,8}\b|rgba?\(/iu);
     expect(art).toContain('aria-hidden="true"');
     expect(art).toContain("import { LITERATURE_COVER_MOTIFS } from '../../lib/literatureDisplay';"); // 키 목록 정본 하나
     const artCss = read('src/components/books/literature-cover-art.css');
