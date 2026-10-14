@@ -67,15 +67,15 @@
 
 오너 지시 「tonari로 가자, 나머지 권장대로, 에이전트 풀가동」에 따라 병렬 발주한 작업과 산출 경로. 파일이 없으면 미완료다 — 이어받는 세션은 아래 순서로 재개한다.
 
-| 작업 | 산출 경로 | 다음 단계 |
+| 작업 | 산출 경로 | 상태 |
 |---|---|---|
-| 1호 02 숫자로 보기 + 03 짧은 꼭지 3편 | `issues/01-land/sections/02-03-numbers-columns.md` | 독자 시험(a·b) → 퇴고 |
-| 1호 04 モノ・コト・ヒト + 05 지도 + 06 살게 된다면 | `issues/01-land/sections/04-06-list-map-living.md` | 독자 시험(a·c) → 퇴고 |
-| 1호 편집자의 말 + 07 한국과 나란히 + 08 해 보기 + 일본어 + 서가 | `issues/01-land/sections/00-07-08-words-shelf.md` | 독자 시험(a·d) → 퇴고 |
-| 2호 표지 후보 + 01 첫 장면 + 02 숫자 | `issues/02-learn/sections/01-02-scene-numbers.md` | 독자 시험 |
-| 시각 시안(표지 세로 단어·창간사·1호 표지·첫 장면·칩) | `prototype/tonari-issue01.html` + `prototype/shots/` | 오너 확인(아티팩트로 공유) → 화면 구현 설계 |
-| 계약 EDIT-STD-001(금지 표현·문장 길이·표기 사전) | `src/lib/editorialRules.js`, `src/lib/__tests__/editorialStandard.test.js` | CI green 확인(로컬은 npm 차단) |
-| 서가 서지·한국어판 확인 | `shelf-verification.md` | 서가 항목 확정 |
+| 1호 02 숫자로 보기 + 03 짧은 꼭지 3편 | `issues/01-land/sections/02-03-numbers-columns.md` | v1 독자 시험(a6·b5·c7) → v2 개고 중 |
+| 1호 04 モノ・コト・ヒト + 05 지도 + 06 살게 된다면 | `issues/01-land/sections/04-06-list-map-living.md` | v1 독자 시험(a6·b5·c7) → v2 개고 중 |
+| 1호 편집자의 말 + 07 + 08 + 일본어 + 서가 | `issues/01-land/sections/00-07-08-words-shelf.md` | **v2 완료**(독자 시험 a6·d5 반영) |
+| 2호 표지 후보 + 01 첫 장면 + 02 숫자 | `issues/02-learn/sections/01-02-scene-numbers.md` | 첫 장면 v2(a6·c7 반영), 02 정의 보강 과제 남음 |
+| 시각 시안 | `prototype/tonari-issue01.html` · [아티팩트](https://claude.ai/artifact/KCGWbxxNcrfHi1NYfT5gZx) | **완료** — 오너 확인 대기 |
+| 계약 EDIT-STD-001·002 | `src/lib/editorialRules.js`, `src/lib/__tests__/editorialStandard.test.js` | **커밋** — CI 판정 대기 |
+| 서가 서지·한국어판 확인 | `shelf-verification.md` | **완료**(사용 가능 15/20, 한국어판 6) |
 
 이후 순서: 1호 전 꼭지 통합(`issues/01-land/issue.md`) → 콘텐츠 스키마(`src/content/studies/japan/magazine/**`)와 호 전용 판 구현(텍스트 목업·시안 승인 후) → MAG-FACT-001·MAG-ANATOMY-001 → 1차 원문 재대조(네트워크 허용 필요: registry.npmjs.org, stat.go.jp·mext.go.jp 등).
 
