@@ -33,7 +33,7 @@ function fixture() {
     logReviewEvents: vi.fn(async () => {}), withLegacyReviewLock,
     setReviewQueue: vi.fn(), setIntroIds: vi.fn(), saveIntroIds: vi.fn(),
     setReviewSessionId: vi.fn(), setReviewIdx: vi.fn(), setShowAnswer: vi.fn(), setContextSelected: vi.fn(),
-    setTypingAnswer: vi.fn(), setReviewFinished: vi.fn(), friendlyToastMessage: error => error.message,
+    setTypingAnswer: vi.fn(), setReviewFinished: vi.fn(), friendlyToastMessage: error => error.message, failureMessage: (head, error) => `${head} ${error.message}`,
     questionKey: 'session:0', currentWord: { id: 'card-a', word_text: '猫', language: 'Japanese', meaning: '고양이' },
     reviewSupported: () => true, isNewWord: () => false, detectLang: () => 'Japanese',
     SRS_FIELDS: ['interval', 'ease_factor', 'repetitions', 'next_review_at', 'last_reviewed_at'],

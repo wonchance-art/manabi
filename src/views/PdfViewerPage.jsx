@@ -211,7 +211,7 @@ export default function PdfViewerPage() {
         setTokens(markKnown(result));
       } catch {
         if (requestId === analyzeRequestRef.current) {
-          setAnalysisError(prev => ({ ...prev, tokens: '단어 분석에 실패했어요.' }));
+          setAnalysisError(prev => ({ ...prev, tokens: '단어를 분석하지 못했어요.' }));
         }
       } finally {
         if (requestId === analyzeRequestRef.current) setAnalyzing(false);
@@ -225,7 +225,7 @@ export default function PdfViewerPage() {
         setContextExpl(result);
       } catch {
         if (requestId === analyzeRequestRef.current) {
-          setAnalysisError(prev => ({ ...prev, context: '번역과 맥락 생성에 실패했어요.' }));
+          setAnalysisError(prev => ({ ...prev, context: '번역과 맥락을 만들지 못했어요.' }));
         }
       } finally {
         if (requestId === analyzeRequestRef.current) setContextLoading(false);
@@ -249,7 +249,7 @@ export default function PdfViewerPage() {
   }, [language, savedVocab]);
 
   async function handleSaveWord(token) {
-    if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
+    if (!user) { toast('로그인이 필요해요.', 'warning'); return; }
     const key = token.base_form || token.text;
     setSaving(prev => ({ ...prev, [key]: true }));
     try {
@@ -269,11 +269,11 @@ export default function PdfViewerPage() {
       setSaving(prev => ({ ...prev, [key]: 'done' }));
       try {
         await saveContext({ word: pdfContextWord(token), source: { kind: 'pdf', pdfId: id, page: sourcePage || null, quote: inputText } });
-        toast(`"${token.text}" 저장!`, 'success');
+        toast(`"${token.text}" 단어를 저장했어요`, 'success');
       } catch {
         toast('단어는 저장했지만 문맥 연결이 남아 있어요. 문맥 추가를 눌러 다시 연결해 주세요.', 'warning', 6000);
       }
-    } catch (e) { toast('저장 실패', 'error'); setSaving(prev => ({ ...prev, [key]: false })); }
+    } catch (e) { toast('단어를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.', 'error'); setSaving(prev => ({ ...prev, [key]: false })); }
   }
 
   function handleDismissWord(token) {
@@ -283,7 +283,7 @@ export default function PdfViewerPage() {
     toast(`"${token.text}" — 아는 단어`, 'info');
   }
 
-  if (isLoading) return <div className="page-container"><Spinner message="PDF 로딩 중..." /></div>;
+  if (isLoading) return <div className="page-container"><Spinner message="PDF 불러오는 중…" /></div>;
   if (error) return (
     <div className="page-container" style={{ textAlign: 'center', paddingTop: 80 }}>
       <h2>PDF를 찾을 수 없어요</h2>
@@ -304,7 +304,7 @@ export default function PdfViewerPage() {
         </div>
       )}
       {contextLoading ? (
-        <div className="pdf-context__loading">번역 + 맥락 생성 중...</div>
+        <div className="pdf-context__loading">번역 + 맥락 생성 중…</div>
       ) : analysisError.context ? (
         <div className="pdf-side__empty">
           {analysisError.context}<br />
@@ -351,7 +351,7 @@ export default function PdfViewerPage() {
       })}
     </div>
   ) : analyzing ? (
-    <div className="pdf-side__empty">분석 중...</div>
+    <div className="pdf-side__empty">분석 중…</div>
   ) : analysisError.tokens ? (
     <div className="pdf-side__empty">
       {analysisError.tokens}<br />
@@ -359,7 +359,7 @@ export default function PdfViewerPage() {
     </div>
   ) : (
     <div className="pdf-side__empty">
-      단어 목록이<br />여기에 표시됩니다
+      단어 목록이<br />여기에 나타나요
     </div>
   );
 
@@ -394,19 +394,19 @@ export default function PdfViewerPage() {
         <main className="pdf-main">
           {pdfUrlError || (pdfInfo && !pdfInfo.storage_path) ? (
             <div className="pdf-side__empty">
-              PDF 파일 주소를 불러올 수 없어요.<br />
+              PDF 파일 주소를 불러오지 못했어요.<br />
               {pdfInfo?.storage_path && (
                 <button type="button" className="btn btn--primary btn--sm" onClick={() => refetchPdfUrl()}>다시 시도</button>
               )}
             </div>
           ) : isPdfUrlLoading ? (
-            <Spinner message="로딩 중..." />
+            <Spinner message="PDF 불러오는 중…" />
           ) : pdfUrl ? (
             usePdfJs
               ? <PdfJsViewer pdfUrl={pdfUrl} onPageChange={setLivePage} initialPage={initialPage} onReady={onPdfReady} />
               : <PdfDocument pdfUrl={pdfUrl} page={initialPage} onReady={onPdfReady} />
           ) : (
-            <div className="pdf-side__empty">PDF 파일 주소가 없습니다.</div>
+            <div className="pdf-side__empty">PDF 파일 주소가 없어요.</div>
           )}
           <div className="pdf-input-bar">
             <button className="btn btn--ghost btn--sm" style={{ flexShrink: 0 }}
@@ -419,7 +419,7 @@ export default function PdfViewerPage() {
               onPaste={e => { const t = e.clipboardData?.getData('text')?.trim(); if (t) { e.preventDefault(); handleAnalyze(t); } }}
               onKeyDown={e => e.key === 'Enter' && handleAnalyze(inputText)} />
             <Button size="sm" onClick={() => handleAnalyze(inputText)} disabled={!inputText.trim() || analyzing || contextLoading}>
-              {analyzing || contextLoading ? '...' : '→'}
+              {analyzing || contextLoading ? '…' : '→'}
             </Button>
           </div>
         </main>
@@ -471,7 +471,7 @@ export default function PdfViewerPage() {
             </div>
             <div className="pdf-detail-popup__body">
               {wordDetail.loading
-                ? <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>상세 설명 생성 중...</div>
+                ? <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>상세 설명 생성 중…</div>
                 : <div className="pdf-detail-popup__text" dangerouslySetInnerHTML={{ __html: formatDetail(wordDetail.detail) }} />
               }
             </div>

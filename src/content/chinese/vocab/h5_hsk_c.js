@@ -113,7 +113,7 @@ const themes = {
         { zh: "戒指", pinyin: "jièzhi", ko: "반지", pos: "명사", hanja: "계지(戒指) — '戒'는 경계할 계, '指'는 손가락 지.", ex: { zh: "他送了女朋友一枚戒指。", pinyin: "tā sòng le nǚpéngyou yì méi jièzhi", ko: "그는 여자친구에게 반지를 선물했어요." } },
         { zh: "金属", pinyin: "jīnshǔ", ko: "금속", pos: "명사", hanja: "금속(金屬) — '金'은 쇠 금, '屬'은 무리 속.", ex: { zh: "这个零件是金属做的。", pinyin: "zhège língjiàn shì jīnshǔ zuò de", ko: "이 부품은 금속으로 만들어졌어요." } },
         { zh: "经典", pinyin: "jīngdiǎn", ko: "고전; 고전적인, 클래식한", pos: "명사", hanja: "경전(經典) — '經'은 지날 경, '典'은 법 전.", ex: { zh: "这是一部经典电影。", pinyin: "zhè shì yí bù jīngdiǎn diànyǐng", ko: "이건 고전 명작 영화예요." } },
-        { zh: "精力", pinyin: "jīnglì", ko: "정력, 기력, 에너지", pos: "명사", hanja: "정력(精力) — '精'은 정할 정, '力'은 힘 력.", ex: { zh: "他工作时精力充沛。", pinyin: "tā gōngzuò shí jīnglì chōngpèi", ko: "그는 일할 때 기력이 넘쳐요." } },
+        { zh: "精力", pinyin: "jīnglì", ko: "기력, 에너지, 힘", pos: "명사", hanja: "정력(精力) — 한국어 '정력'과 어감이 달라요! 중국어에선 일·공부에 쏟는 기력·에너지예요. '精'은 정할 정, '力'은 힘 력.", ex: { zh: "他工作时精力充沛。", pinyin: "tā gōngzuò shí jīnglì chōngpèi", ko: "그는 일할 때 기력이 넘쳐요." } },
         { zh: "景色", pinyin: "jǐngsè", ko: "경치, 풍경", pos: "명사", hanja: "경색(景色) — '景'은 볕 경, '色'은 빛 색.", ex: { zh: "山上的景色很美。", pinyin: "shān shang de jǐngsè hěn měi", ko: "산 위 경치가 아름다워요." } },
         { zh: "酒吧", pinyin: "jiǔbā", ko: "술집, 바, 펍", pos: "명사", hanja: "주(酒) + 吧(바). '酒'는 술 주, '吧'는 음역자예요.", ex: { zh: "晚上我们去酒吧坐坐。", pinyin: "wǎnshang wǒmen qù jiǔbā zuòzuo", ko: "저녁에 우리 바에 가서 좀 앉아요." } },
         { zh: "救护车", pinyin: "jiùhùchē", ko: "구급차, 앰뷸런스", pos: "명사", hanja: "구호차(救護車) — '救'는 구원할 구, '護'는 도울 호, '車'는 수레 차.", ex: { zh: "快叫救护车！", pinyin: "kuài jiào jiùhùchē", ko: "빨리 구급차를 불러요!" } },

@@ -201,32 +201,45 @@ describe('§2 저장 — dday_date 재사용 + 2컬럼, 그리고 적용 전 무
 });
 
 describe('배선 — 목표를 세운 사람에게만, 세울 곳은 한 군데', () => {
+  // 배움 · 현황(LEARN-HOME-AK-001): 궤도 줄 = 진행바 반쪽(GoalTrackTile), D-Day 타일 = 그 칸의 D-58로 흡수,
+  // 목표 편집 = 현황의 「목표 수정」 모달 하나(배움의 「목표 정하기」도 그리로 간다).
   const stats = read('src/views/ProfileStats.jsx');
+  const tile = codeOf(read('src/components/learn/GoalTrackTile.jsx'));
+  const home = read('src/views/HomePage.jsx');
 
-  it('궤도 줄은 목표가 다 갖춰졌을 때만 뜬다(설계 §4 계약 5)', () => {
-    expect(stats).toContain('if (!goalLang || !goalLevel || !goalDate) return null;');
+  it('궤도는 목표가 다 갖춰졌을 때만 그린다 — 없으면 「목표를 정하면」 빈 상태(설계 §4 계약 5의 결)', () => {
+    expect(tile).toContain('const hasGoal = !!(user?.id && goalLang && goalLevel && goalDate);');
+    expect(tile).toContain("if (!hasGoal || catalog.isError) return { status: 'none', view: null };");
+    expect(tile).toContain('목표를 정하면');
   });
 
-  it('D-Day 타일은 목표가 없어도 자리를 지킨다 — 숨김이 "위젯 사라짐"으로 읽혔다', () => {
-    // 타일 자체는 조건 없이 그려진다(2026-08-30 오너 확정 "상시 표시"의 결).
-    expect(stats).toContain('<DdayTile refManifest={refManifest} />');
-    expect(stats).not.toMatch(/\{\s*\w+\s*&&\s*<DdayTile/);
+  it('목표 칸은 목표가 없어도 자리를 지킨다 — 숨김이 "위젯 사라짐"으로 읽혔다', () => {
+    // 배움 · 현황 모두 진행바 칸을 조건 없이 그린다(2026-08-30 오너 확정 "상시 표시"의 결).
+    expect(home).toContain('<GoalTrackTile />');
+    expect(stats).toContain('<GoalTrackTile className="learn-order-1"');
+    expect(home).not.toMatch(/\{\s*\w+\s*&&\s*<GoalTrackTile/);
+    expect(stats).not.toMatch(/\{\s*\w+\s*&&\s*<GoalTrackTile/);
   });
 
-  it('목표를 고치는 자리는 D-Day 모달 하나 — 날짜와 과정이 두 화면으로 갈리지 않는다', () => {
+  it('목표를 고치는 자리는 현황의 목표 · D-Day 모달 하나 — 날짜와 과정이 두 화면으로 갈리지 않는다', () => {
     expect(stats).toContain('목표 · D-Day');
     expect(stats).toContain('setGoalLang(');
     expect(stats).toContain('setGoalLevel(');
+    expect(stats).toContain('<GoalEditor catalog={catalog.data} openSignal={goalSignal} />');
+    expect(tile).toContain("editHref = '/progress?goal=edit'");
+    expect(home).not.toContain('목표 · D-Day');
   });
 
   it('궤도는 순수 함수가 계산한다 — 화면이 날짜 산수를 다시 하지 않는다', () => {
-    const card = codeOf(sliceBetween(stats, 'function GoalTrackCard(', '\n}'));
-    expect(card).toContain('pace({');
-    expect(card).toContain('countRecentDone(');
-    // 하루의 밀리초가 카드 안에 다시 나타나면 KST 경계가 두 벌이 된다
-    expect(card).not.toMatch(/86400000/);
-    // 계획도 관리자 진도표와 같은 함수로 — 챕터 수가 갈리면 남은 수가 갈린다
-    expect(card).toContain('buildPlan({ languages: refManifest }');
-    expect(card).toContain('markProgress(plan, rows)');
+    const hook = sliceBetween(tile, 'export function useGoalTrack(', '\n}');
+    expect(hook).toContain('pace({');
+    expect(hook).toContain('countRecentDone(');
+    // 하루의 밀리초가 칸 안에 다시 나타나면 KST 경계가 두 벌이 된다
+    expect(tile).not.toMatch(/86400000/);
+    // 계획도 관리자 진도표와 같은 함수로 — 과 수가 갈리면 남은 수가 갈린다
+    expect(hook).toContain('buildPlan({ languages: catalog.data }');
+    expect(hook).toContain('markProgress(plan, rows)');
+    expect(hook).toContain('goalTrackView({ marked, p, goalName, goalDate })');
   });
 });
+

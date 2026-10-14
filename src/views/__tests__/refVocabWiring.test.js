@@ -42,16 +42,24 @@ describe('단어장 — 급수 자동 분류·필터', () => {
   const list = read('src/views/VocabList.jsx');
   const css = read('src/index.css');
 
-  it('VocabPage: 중국어 단어가 있을 때 급수 표를 지연 로드하고 필터 상태를 영속화한다', () => {
+  it('VocabPage: 중국어 단어가 있을 때 급수 표를 지연 로드하고 급수를 범위로 영속화한다', () => {
     expect(page).toContain('useZhHskLevels(hasZhVocab)');
-    expect(page).toContain("localStorage.setItem('vocab_levelFilter', levelFilter)");
+    // REV-SCOPE-R1A: 급수는 목록 전용 필터가 아니라 복습 범위의 축이다 — 범위 하나로 저장한다(명시 주소일 때는 저장하지 않음).
+    expect(page).toContain("localStorage.setItem(SAVED_SCOPE_KEY, serializeReviewScope(scopeDraft)");
+    expect(page).toContain("levelFilter={scope.level || 'all'}");
+    expect(page).toContain('setLevelFilter={selectLevel}');
     expect(page).toContain('refLevelOf={refLevelOf}');
     expect(page).toContain('showLevelFilter={showLevelFilter}');
   });
 
-  it('VocabPage: 급수 필터는 중국어 한정 스코프로 거른다', () => {
-    expect(page).toMatch(/levelFilter !== 'all' && zhHskLevels/);
-    expect(page).toContain("x._item.language !== 'Chinese'");
+  it('VocabPage: 급수는 중국어 한정 범위이고, 목록뿐 아니라 개수 · 복습 줄까지 같은 범위로 거른다', () => {
+    expect(page).toContain("const showLevelFilter = hasZhVocab && !!zhHskLevels && scope.lang === 'Chinese';");
+    // 목록(vocab)과 복습 줄(countReviewScope · scopedFsrsCardIds)이 같은 범위 거르기를 쓴다
+    expect(page).toContain('allVocab.filter(scopeMatcher.matches)');
+    expect(page).toContain('createScopeMatcher(scope, { levels: scopeLevels, sourceIds: scopeSourceIds })');
+    expect(page).toContain('scopedFsrsCardIds(scopeArgs)');
+    const scope = read('src/lib/reviewScope.js');
+    expect(scope).toContain("if (scope.level && wordZhLevel(word, levels) !== scope.level) return false;");
   });
 
   it('VocabList: 급수 필터 선택지(HSK 2026 급수 1~7·미분류)와 행 뱃지를 렌더한다', () => {

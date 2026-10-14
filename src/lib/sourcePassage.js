@@ -125,7 +125,7 @@ export async function openSourcePassage(client, material, source, text, language
 }
 
 export function passageError(error) {
-  if (['PGRST202', '42883'].includes(error?.code)) return '구간 학습 연결을 준비하고 있어요. 원본은 그대로 읽을 수 있습니다.';
+  if (['PGRST202', '42883'].includes(error?.code)) return '구간 학습 연결을 준비하고 있어요. 원본은 그대로 읽을 수 있어요.';
   if (/PASSAGE_SOURCE_CHANGED/.test(error?.message)) return '원본이 변경됐어요. 최신 원본에서 구간을 다시 골라 주세요.';
   if (/PASSAGE_ACCESS/.test(error?.message)) return '원본에 접근할 수 없어요. 로그인 상태와 자료를 확인해 주세요.';
   if (/PASSAGE_LENGTH/.test(error?.message)) return `학습할 내용을 1~${PASSAGE_MAX_CHARS.toLocaleString()}자로 골라 주세요.`;

@@ -29,7 +29,7 @@ import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
 import MaterialGroupCard from '../components/MaterialGroupCard';
 import SuggestionArtwork from '../components/SuggestionArtwork';
-import { friendlyToastMessage } from '@/lib/errorMessage';
+import { failureMessage } from '@/lib/errorMessage';
 
 
 async function fetchTodaySuggestions() {
@@ -158,13 +158,13 @@ export default function MaterialsPage({ libraryView = null }) {
     mutationFn: async (id) => {
       const target = await currentLibraryTarget(supabase,{target_kind:'material',target_id:String(id)});
       const result = await runLibraryOperation(supabase,'trash',[target]);
-      if(result.items.some(item=>item.status!=='success'))throw new Error('자료가 변경됐습니다. 다시 확인해 주세요.');
+      if(result.items.some(item=>item.status!=='success'))throw new Error('자료가 바뀌었어요. 다시 확인해 주세요.');
     },
     onSuccess: () => {
       invalidateLibrary(queryClient,user.id);
-      toast('휴지통으로 옮겼습니다.', 'success');
+      toast('자료를 휴지통으로 옮겼어요.', 'success');
     },
-    onError: (err) => toast('삭제 실패: ' + friendlyToastMessage(err), 'error'),
+    onError: (err) => toast(failureMessage('휴지통으로 옮기지 못했어요.', err), 'error'),
   });
 
   const toggleVisibilityMutation = useMutation({
@@ -177,9 +177,9 @@ export default function MaterialsPage({ libraryView = null }) {
     },
     onSuccess: (_, { newVisibility }) => {
       queryClient.invalidateQueries({ queryKey: ['materials'] });
-      toast(newVisibility === 'public' ? '공용으로 공개했습니다.' : '비공개로 전환했습니다.', 'success');
+      toast(newVisibility === 'public' ? '공용으로 공개했어요.' : '비공개로 바꿨어요.', 'success');
     },
-    onError: (err) => toast('변경 실패: ' + friendlyToastMessage(err), 'error'),
+    onError: (err) => toast(failureMessage('공개 범위를 바꾸지 못했어요.', err), 'error'),
   });
   const searchParams = useSearchParams();
   // 기본 탭(v2-P, 오너 지시 「내 자료가 먼저」) — 로그인 `private` / 비로그인 `public`.
@@ -251,7 +251,7 @@ export default function MaterialsPage({ libraryView = null }) {
       setPinnedIds((prev) => new Set(prev).add(id));
       toast('받아뒀어요 — 연결이 없어도 열립니다.', 'success');
     } catch {
-      toast('받아두지 못했어요. 연결을 확인해주세요.', 'error');
+      toast('받아 두지 못했어요. 연결을 확인해 주세요.', 'error');
     } finally {
       setPinBusy(null);
     }
@@ -544,7 +544,7 @@ export default function MaterialsPage({ libraryView = null }) {
           <span className="search-wrap__icon" />
           <input
             type="text"
-            placeholder="제목으로 자료 찾기..."
+            placeholder="제목으로 자료 찾기…"
             id="library-search" aria-label="자료 제목 검색" maxLength={120} value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
             className="search-wrap__input"
@@ -641,15 +641,15 @@ export default function MaterialsPage({ libraryView = null }) {
         )}
       </div>
 
-      {dueVocabError && <div className="library-query-state" role="alert">표현을 불러오지 못했어요. <button type="button" onClick={() => refetchDueVocab()}>다시 불러오기</button></div>}
-      {progressError && <div className="library-query-state" role="alert">읽음 기록을 불러오지 못했어요. <button type="button" onClick={() => refetchProgress()}>다시 불러오기</button></div>}
-      {showPdfs && pdfsError && <div className="library-query-state" role="alert">PDF 목록을 불러오지 못했어요. <button type="button" onClick={() => refetchPdfs()}>다시 불러오기</button></div>}
+      {dueVocabError && <div className="library-query-state" role="alert">표현을 불러오지 못했어요. <button type="button" onClick={() => refetchDueVocab()}>다시 시도</button></div>}
+      {progressError && <div className="library-query-state" role="alert">읽음 기록을 불러오지 못했어요. <button type="button" onClick={() => refetchProgress()}>다시 시도</button></div>}
+      {showPdfs && pdfsError && <div className="library-query-state" role="alert">PDF 목록을 불러오지 못했어요. <button type="button" onClick={() => refetchPdfs()}>다시 시도</button></div>}
       {showPdfs && pdfsLoading && <p role="status">PDF 목록 확인 중…</p>}
       {(!tab || isLoading) ? (
         <CardGridSkeleton />
       ) : materialsError ? (
         <div className="empty-state">
-          <p className="empty-state__msg">자료 목록을 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.</p>
+          <p className="empty-state__msg">자료 목록을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.</p>
           <button type="button" className="btn btn--primary btn--md" onClick={() => refetchMaterials()}>다시 시도</button>
         </div>
       ) : (filtered.length > 0 || visiblePdfs.length > 0) ? (
@@ -916,12 +916,12 @@ export default function MaterialsPage({ libraryView = null }) {
         <div className="empty-state">
           <p className="empty-state__msg">
             {anyFilter
-              ? '조건에 맞는 자료가 없습니다.'
+              ? '조건에 맞는 자료가 없어요.'
               : !user
                 ? '자료는 계정에 저장돼요.\n로그인하면 텍스트를 올려 해부하고 단어장에 모을 수 있어요.'
                 : tab === 'public'
-                  ? '아직 공유된 공용 자료가 없습니다.'
-                  : libraryView === 'notes' ? '아직 작성한 노트가 없습니다.' : '아직 보관된 개인 자료가 없습니다.'}
+                  ? '아직 공유된 공용 자료가 없어요.'
+                  : libraryView === 'notes' ? '아직 작성한 노트가 없어요.' : '아직 보관된 개인 자료가 없어요.'}
           </p>
           {/* 게스트에게 빈 목록만 보여 주지 않는다 — 왜 비어 있는지와 다음 행동을 함께 준다. */}
           {!user && !anyFilter ? (

@@ -8,7 +8,7 @@ import { JAPANESE_VOCAB_REF } from '@/lib/japaneseVocabRegistry';
 import { getBunkei as getJaBunkei, countBunkei as countJaBunkei } from '@/content/japanese';
 import { getBunkei as getZhBunkei, countBunkei as countZhBunkei } from '@/content/chinese';
 
-const refInfoOf = ref => ({ base: ref.base, flag: ref.flag, name: ref.name, langCode: ref.langCode });
+const refInfoOf = ref => ({ base: ref.base, name: ref.name, langCode: ref.langCode });
 
 export async function JapaneseVocabLegacy({ params }) {
   const { level } = await params;

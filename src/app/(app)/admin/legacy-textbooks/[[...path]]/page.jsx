@@ -26,7 +26,7 @@ export default async function Page({ params, searchParams }) {
   const query = await searchParams;
   const [lang, kind, slug] = path;
   if (path.length > 3 || (lang && !languages[lang]) || (kind && ((kind !== 'grammar' && !pages[lang]?.[kind]) || !slug))) notFound();
-  const header = <div className="page-container"><p><Link href="/admin">관리자</Link> / <Link href="/admin/legacy-textbooks">기존 교재 보관함</Link></p><p>기존 네 언어의 문법·어휘·문형 교재입니다.</p><div className="manabi-row"><Link href="/admin/textbooks">기존 원고 편집 →</Link><Link href="/admin/books/japanese-n5">새 일본어 N5 원고 편집 →</Link><Link href="/lessons">새 책장 →</Link></div></div>;
+  const header = <div className="page-container"><p><Link href="/admin">관리자</Link> / <Link href="/admin/legacy-textbooks">기존 교재 보관함</Link></p><p>기존 네 언어의 문법·어휘·문형 교재예요.</p><div className="manabi-row"><Link href="/admin/textbooks">기존 원고 편집 →</Link><Link href="/admin/books/japanese-n5">새 일본어 N5 원고 편집 →</Link><Link href="/lessons">새 책장 →</Link></div></div>;
   if (kind === 'grammar') {
     // Share the canonical loader and renderer rather than importing another route's
     // page module: the archive must own its RSC/client-reference rendering boundary.

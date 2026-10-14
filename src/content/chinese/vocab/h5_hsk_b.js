@@ -92,7 +92,7 @@ const themes = {
         { zh: "胳膊", pinyin: "gēbo", ko: "팔", pos: "명사", ex: { zh: "他的胳膊很有力。", pinyin: "tā de gēbo hěn yǒulì", ko: "그는 팔에 힘이 있어요." } },
         { zh: "鸽子", pinyin: "gēzi", ko: "비둘기", pos: "명사", hanja: "합자(鴿子) — '鴿'은 비둘기 합.", ex: { zh: "广场上有很多鸽子。", pinyin: "guǎngchǎng shang yǒu hěn duō gēzi", ko: "광장에 비둘기가 많아요." } },
         { zh: "工厂", pinyin: "gōngchǎng", ko: "공장", pos: "명사", hanja: "공창(工廠) — '工'은 장인 공, '廠'은 헛간·공장 창.", ex: { zh: "他在工厂工作。", pinyin: "tā zài gōngchǎng gōngzuò", ko: "그는 공장에서 일해요." } },
-        { zh: "工程师", pinyin: "gōngchéngshī", ko: "엔지니어, 기사", pos: "명사", hanja: "공정사(工程師) — '工程'은 공정, '師'는 스승·전문가 사.", ex: { zh: "他是一名工程师。", pinyin: "tā shì yì míng gōngchéngshī", ko: "그는 엔지니어예요." } },
+        { zh: "工程师", pinyin: "gōngchéngshī", ko: "엔지니어, 기사", pos: "명사", hanja: "공정사(工程師) — '工程'은 공학·공사, '師'는 스승·전문가 사.", ex: { zh: "他是一名工程师。", pinyin: "tā shì yì míng gōngchéngshī", ko: "그는 엔지니어예요." } },
         { zh: "工人", pinyin: "gōngrén", ko: "노동자, 근로자", pos: "명사", hanja: "공인(工人) — '工'은 장인 공, '人'은 사람 인.", ex: { zh: "工人们正在修路。", pinyin: "gōngrénmen zhèngzài xiū lù", ko: "노동자들이 도로를 보수하고 있어요." } },
         { zh: "工业", pinyin: "gōngyè", ko: "공업, 산업", pos: "명사", hanja: "공업(工業) — '工'은 장인 공, '業'은 업 업.", ex: { zh: "这个城市工业很发达。", pinyin: "zhège chéngshì gōngyè hěn fādá", ko: "이 도시는 공업이 발달했어요." } },
         { zh: "公寓", pinyin: "gōngyù", ko: "아파트, 공동 주택", pos: "명사", hanja: "공우(公寓) — '公'은 공평할 공, '寓'는 부칠·거처 우.", ex: { zh: "他住在一套公寓里。", pinyin: "tā zhù zài yí tào gōngyù lǐ", ko: "그는 아파트에 살아요." } },

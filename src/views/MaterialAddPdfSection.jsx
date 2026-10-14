@@ -8,7 +8,7 @@ import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
 import { getPdfMetadata, extractPageRange, ocrPageRange, suggestChunkSize, renderPageAsBase64 } from '../lib/pdfExtract';
 import { getCachedPdf, cachePdf } from '../lib/pdfCache';
-import { friendlyToastMessage } from '@/lib/errorMessage';
+import { failureMessage } from '@/lib/errorMessage';
 
 const MAX_PDF_SIZE = 50 * 1024 * 1024; // 50MB
 
@@ -77,15 +77,15 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
     mutationFn: async (pdf) => {
       const target=await currentLibraryTarget(supabase,{target_kind:'pdf',target_id:pdf.id});
       const result=await runLibraryOperation(supabase,'trash',[target]);
-      if(result.items.some(item=>item.status!=='success'))throw new Error('자료가 변경됐습니다. 다시 확인해 주세요.');
+      if(result.items.some(item=>item.status!=='success'))throw new Error('자료가 바뀌었어요. 다시 확인해 주세요.');
     },
     onSuccess: () => {
-      toast('휴지통으로 옮겼습니다.', 'info');
+      toast('PDF를 휴지통으로 옮겼어요.', 'info');
       invalidateLibrary(queryClient,user.id);
       refetch();
       queryClient.invalidateQueries({ queryKey: ['pdf-ranges'] });
     },
-    onError: (err) => toast('삭제 실패: ' + friendlyToastMessage(err), 'error'),
+    onError: (err) => toast(failureMessage('휴지통으로 옮기지 못했어요.', err), 'error'),
   });
 
   const handleFileSelect = async (e) => {
@@ -101,7 +101,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
       return;
     }
     if (!agreedCopyright) {
-      toast('본인 학습 목적 사용에 동의해주세요.', 'warning');
+      toast('본인 학습 목적 사용에 동의해 주세요.', 'warning');
       return;
     }
 
@@ -113,7 +113,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
 
       if (isLikelyScanned) {
         toast(
-          `스캔본으로 감지됐어요 (페이지당 평균 ${avgCharsPerPage}자). OCR 모드로 추출합니다. 시간이 조금 더 걸려요.`,
+          `스캔본으로 감지됐어요 (페이지당 평균 ${avgCharsPerPage}자). OCR 모드로 추출할게요. 시간이 조금 더 걸려요.`,
           'info',
           6000,
         );
@@ -172,7 +172,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
       setPageStart(1);
       setPageEnd(Math.min(suggested, pageCount));
     } catch (err) {
-      toast('업로드 실패: ' + friendlyToastMessage(err), 'error');
+      toast(failureMessage('PDF를 올리지 못했어요.', err), 'error');
     } finally {
       setUploading(false);
       e.target.value = ''; // 같은 파일 재선택 가능하게
@@ -192,7 +192,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
         const { data: signed } = await supabase.storage
           .from('user-pdfs')
           .createSignedUrl(activePdf.storage_path, 60);
-        if (!signed?.signedUrl) throw new Error('PDF 접근 실패');
+        if (!signed?.signedUrl) throw new Error('PDF를 열지 못했어요.');
 
         const res = await fetch(signed.signedUrl);
         buffer = await res.arrayBuffer();
@@ -218,7 +218,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
       }
 
       if (text.length > 50000) {
-        toast('추출된 텍스트가 너무 커요. 페이지 범위를 줄여주세요.', 'warning');
+        toast('추출된 텍스트가 너무 커요. 페이지 범위를 줄여 주세요.', 'warning');
         return;
       }
 
@@ -230,7 +230,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
       });
       setActivePdf(null);
     } catch (err) {
-      toast('텍스트 추출 실패: ' + friendlyToastMessage(err), 'error');
+      toast(failureMessage('텍스트를 추출하지 못했어요.', err), 'error');
     } finally {
       setExtractingRange(false);
       setOcrProgress(null);
@@ -269,14 +269,14 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
           <Button
             onClick={() => {
               if (!agreedCopyright) {
-                toast('먼저 아래 저작권 동의를 체크해주세요.', 'warning');
+                toast('먼저 아래 저작권 동의를 체크해 주세요.', 'warning');
                 return;
               }
               fileInputRef.current?.click();
             }}
             disabled={uploading}
           >
-            {uploading ? '업로드 중...' : '＋ PDF 업로드'}
+            {uploading ? '업로드 중…' : '＋ PDF 업로드'}
           </Button>
         </div>
       </div>
@@ -293,7 +293,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
           checked={agreedCopyright}
           onChange={e => setAgreedCopyright(e.target.checked)}
         />
-        본인 학습 목적으로만 사용하며, 저작권 자료를 공개 공유하지 않겠습니다.
+        본인 학습 목적으로만 사용하며, 저작권 자료를 공개 공유하지 않을게요.
       </label>
 
       {pdfs.length === 0 ? (
@@ -392,7 +392,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
             </div>
 
             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 12 }}>
-              너무 많은 페이지는 분석에 시간이 오래 걸려요. 5~10페이지가 적절합니다.
+              너무 많은 페이지는 분석에 시간이 오래 걸려요. 5~10페이지가 적절해요.
             </p>
 
             {/* OCR 토글 */}
@@ -444,7 +444,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
               </Button>
               <Button onClick={handleExtractAndAnalyze} disabled={extractingRange} style={{ flex: 2 }}>
                 {extractingRange
-                  ? (useOcr ? 'OCR 추출 중...' : '텍스트 추출 중...')
+                  ? (useOcr ? 'OCR 추출 중…' : '텍스트 추출 중…')
                   : useOcr
                     ? `OCR로 p.${pageStart}-${pageEnd} 추출 →`
                     : `p.${pageStart}-${pageEnd} 가져오기 →`}
@@ -474,7 +474,7 @@ function PdfRangesList({ pdfId }) {
     queryFn: () => fetchPdfAnalyzedRanges(pdfId),
   });
 
-  if (isLoading) return <div style={{ padding: 10, fontSize: '0.8rem', color: 'var(--text-muted)' }}>로딩 중...</div>;
+  if (isLoading) return <div style={{ padding: 10, fontSize: '0.8rem', color: 'var(--text-muted)' }}>PDF 목록 불러오는 중…</div>;
   if (ranges.length === 0) {
     return (
       <div style={{ padding: '10px 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>

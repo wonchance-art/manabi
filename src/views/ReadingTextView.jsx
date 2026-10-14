@@ -513,7 +513,7 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
               )}
               {a?.ok && (
                 <div className="fr-quiz__answer">
-                  ○ {q.why || '정답입니다.'}{a.tries > 1 ? ` (${a.tries}회 시도)` : ''}
+                  ○ {q.why || '정답이에요.'}{a.tries > 1 ? ` (${a.tries}회 시도)` : ''}
                   {q.qtype === 'order' && q.ko && (
                     <div style={{ marginTop: 4 }}>
                       <span lang="ja" style={{ fontWeight: 700 }}>{(q.answerTiles || []).join('')}</span>
@@ -545,7 +545,7 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
             // 원격 upsert 실패({error}) — push 부터 다시 시도(P2-8)
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <p style={{ fontSize: '0.86rem', color: 'var(--danger)', margin: 0 }}>
-                기록에 실패했어요. 잠시 후 다시 시도해 주세요.
+                기록하지 못했어요. 잠시 후 다시 시도해 주세요.
               </p>
               <button type="button" className="btn btn--primary btn--md" onClick={runSave}>
                 다시 시도
@@ -591,7 +591,7 @@ function PatternCard({ card, onClose }) {
           <p style={{ fontSize: '0.9rem', lineHeight: 1.7, color: 'var(--text-secondary)', marginBottom: 10 }}>{card.explain}</p>
         )}
         {card.contrast && (
-          <p style={{ fontSize: '0.84rem', lineHeight: 1.6, color: 'var(--text-muted)', marginBottom: 10 }}>🇰🇷 {card.contrast}</p>
+          <p style={{ fontSize: '0.84rem', lineHeight: 1.6, color: 'var(--text-muted)', marginBottom: 10 }}><strong style={{ color: 'var(--text-secondary)' }}>한국어와 비교</strong> · {card.contrast}</p>
         )}
         {card.ex && (
           <div style={{ fontSize: '0.95rem', paddingTop: 8, borderTop: '1px solid var(--border)' }}>

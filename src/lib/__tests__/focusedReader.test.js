@@ -14,8 +14,10 @@ describe('focused reader boundaries', () => {
     for (const path of [null, '/viewer', '/viewer/123/edit', '/materials', '/books/japanese-n5', '/pdf/123']) expect(isFocusedReadingRoute(path)).toBe(false);
   });
   it('does not prefetch personalized home, review and library across login', () => {
-    for (const href of ['/home', '/vocab', '/materials']) expect(MAIN_NAV.find(item => item.href === href).prefetch).toBe(false);
-    expect(MAIN_NAV.map(item => item.label)).toEqual(['오늘', '교재', '발견', '복습', '내 서재']);
+    // 메뉴 셋(LEARN-HOME-AK-001): 개인화 화면(배움 · 서재)은 prefetch를 끈다. 복습(/vocab)은 메뉴에서 빠지고
+    // 배움의 단어 복습 칸(prefetch={false})으로 들어간다 — performanceRepairs P5가 그 칸을 함께 지킨다.
+    for (const href of ['/home', '/materials']) expect(MAIN_NAV.find(item => item.href === href).prefetch).toBe(false);
+    expect(MAIN_NAV.map(item => item.label)).toEqual(['배움', '서재', '산책']);
   });
 });
 

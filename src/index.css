@@ -3202,7 +3202,6 @@ a.viewer-badge:hover {
 
 /* ========= MyPage ========= */
 
-
 .mypage-avatar {
   width: 70px;
   height: 70px;
@@ -3365,19 +3364,6 @@ a.viewer-badge:hover {
   background: var(--primary);
   color: white;
   border-color: var(--primary);
-}
-
-.mypage-stat-cell__value {
-  font-family: var(--font-serif);
-  font-weight: 700;
-  font-size: 1.35rem;
-  line-height: 1.15;
-  color: var(--text-primary);
-  font-variant-numeric: tabular-nums;
-}
-.mypage-stat-cell__label {
-  font-size: 0.7rem;
-  color: var(--text-muted);
 }
 
 /* ── badge gallery ── */
@@ -3827,18 +3813,12 @@ a.viewer-badge:hover {
     flex-shrink: 0;
   }
 
-
-
   /* (액션바 좁은 화면 규칙은 뷰어 정돈 A안에서 액션바와 함께 사라졌다 — 경로 줄은 flex-wrap이 접는다) */
-
-
 
   /* Card touch target */
   .card--clickable {
     min-height: 140px;
   }
-
-
 
   /* Landing mobile */
 
@@ -3851,13 +3831,9 @@ a.viewer-badge:hover {
     display: none;
   }
 
-
-
   .gnb__streak {
     display: none;
   }
-
-
 
   /* Review score buttons — bigger touch targets */
   .review-score-grid {
@@ -3868,11 +3844,6 @@ a.viewer-badge:hover {
     padding: 16px 4px;
     font-size: 0.9rem;
   }
-
-
-
-
-
 
   .guide-cta__btn {
     width: 100%;
@@ -3885,15 +3856,6 @@ a.viewer-badge:hover {
   }
 
   /* Home mobile */
-
-
-
-
-
-
-
-
-
 
 }
 
@@ -6672,7 +6634,7 @@ a.viewer-badge:hover {
   background: rgba(255,107,107,0.1);
 }
 
-/* ========= French Reference (강의 🇫🇷 탭 + /french/grammar·vocab) ========= */
+/* ========= French Reference (강의 프랑스어 탭 + /french/grammar·vocab) ========= */
 .fr-level-dot {
   flex-shrink: 0;
   width: 46px; height: 46px; border-radius: 50%;
@@ -6849,7 +6811,7 @@ a.viewer-badge:hover {
 .fr-callout--tip { border-color: #9775FA; background: rgba(151,117,250,0.1); }
 .fr-callout--tip .fr-callout__label { color: #9775FA; }
 
-/* 🇬🇧↔🇫🇷 나란히 비교 블록 — vsEn(파랑) 계열, 영어/프랑스어 정렬 대조 */
+/* 영어 ↔ 프랑스어 나란히 비교 블록 — vsEn(파랑) 계열, 영어/프랑스어 정렬 대조 */
 .fr-parallel {
   margin: 12px 0 4px;
   padding: 12px 14px;
@@ -7831,142 +7793,9 @@ a.viewer-badge:hover {
 .fr-check__main { font-size: 0.92rem; font-weight: 700; }
 .fr-check__pron { font-size: 0.74rem; font-weight: 400; color: var(--text-muted); }
 
-/* ========= 프로필 — 급수 진행·시리즈 진척도 ========= */
-/* 오너 지시(2026-08-26, #959 재정정): [진도 ············ 🇯🇵🇬🇧🇨🇳] — 제목 왼쪽·국기
-   오른쪽 정렬의 한 줄. #959의 2단 고정은 탭이 텍스트 칩이라 좁은 폭에서 잘리던 때의
-   처방이었고, 이후 탭이 국기 이모지만으로 줄어(#1058 계열) 한 줄이 다시 넉넉해졌다.
-   언어가 늘어 국기가 넘치면 탭 쪽만 가로 스크롤(제목은 밀리지 않는다). */
-.lvprog__head {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 8px; margin-bottom: 12px;
-}
-.lvprog__tabs {
-  display: flex; gap: 4px;
-  min-width: 0; overflow-x: auto;
-  scrollbar-width: none; /* 칩 몇 개짜리 보조 스크롤 — 바는 숨기고 제스처만 */
-}
-.lvprog__tabs::-webkit-scrollbar { display: none; }
-.lvprog__tabs .chip { flex-shrink: 0; white-space: nowrap; }
-.lvprog__rows { display: flex; flex-direction: column; gap: 9px; }
-.lvprog__row { display: flex; align-items: center; gap: 10px; }
-.lvprog__key {
-  font-family: var(--font-serif);
-  font-size: 1.05rem; font-weight: 700; line-height: 1;
-  width: 2.8ch; flex-shrink: 0; text-align: left;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-primary);
-}
-.lvprog__key.is-done { color: var(--accent-text); }
+/* 예전 홈 메트로 벤토(.bento · nth-child 휴대폰 순서)는 배움 · 현황 격자(components/learn/learn.css, 클래스 order)로 옮겼다 — LEARN-HOME-AK-001. */
 
-.lvprog__bar {
-  flex: 1; height: 7px; position: relative;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-full); overflow: hidden;
-}
-.lvprog__bar-read, .lvprog__bar-pass {
-  position: absolute; left: 0; top: 0; bottom: 0;
-  border-radius: var(--radius-full);
-  transition: width 0.5s ease;
-}
-.lvprog__bar-read { background: var(--primary-glow); }
-.lvprog__bar-pass { background: var(--primary); }
-.lvprog__count {
-  font-size: 0.76rem; color: var(--text-muted);
-  width: 4.4em; flex-shrink: 0; text-align: right;
-  font-variant-numeric: tabular-nums; white-space: nowrap;
-}
-
-.lvprog__legend {
-  display: flex; gap: 14px; flex-wrap: wrap;
-  font-size: 0.7rem; color: var(--text-muted); margin-top: 10px;
-}
-.lvprog__dot {
-  display: inline-block; width: 8px; height: 8px;
-  border-radius: 2px; margin-right: 4px;
-}
-.lvprog__dot--read { background: var(--primary-glow); }
-.lvprog__dot--pass { background: var(--primary); }
-
-/* ========= 현황 벤토 그리드 — 조용한 타일 (구조는 메트로, 톤은 에디토리얼) ========= */
-.bento {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: minmax(146px, auto);
-  gap: 12px;
-  margin-top: 16px;
-}
-.bento-item { min-width: 0; }
-.bento--1x1 { grid-column: span 1; grid-row: span 1; }
-.bento--2x2 { grid-column: span 2; grid-row: span 2; }
-.bento--4x1 { grid-column: span 4; grid-row: span 1; }
-
-/* 타일 내부 카드가 타일을 가득 채우도록 */
-.bento-item > .card,
-.bento-item > div > .card { height: 100%; margin: 0; }
-.bento-item > div { height: 100%; }
-.bento-item .card.mypage-section { margin-bottom: 0; }
-
-/* 1×1 통계 타일 — 세리프 숫자 중앙 정렬 */
-.bento-stat {
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 4px;
-  text-align: center;
-}
-.bento-stat .mypage-stat-cell__value { font-size: 1.7rem; }
-
-@media (max-width: 600px) {
-  .bento { grid-template-columns: repeat(2, 1fr); grid-auto-rows: minmax(120px, auto); }
-  .bento--2x2 { grid-column: span 2; grid-row: span 1; }
-  .bento--4x1 { grid-column: span 2; }
-  .bento-stat .mypage-stat-cell__value { font-size: 1.4rem; }
-  /* 모바일 순서: [목표][D-Day] / [스트릭][오늘 활동] / [단어 복습 라이브] / 나머지
-     — 3번째 자식 = 단어 복습 타일, 6번째부터 = 진도·기억 건강·히트맵 (ProfileStats 구조와 연동) */
-  .bento > :nth-child(3) { order: 2; }
-  .bento > :nth-child(n+6) { order: 3; }
-}
-
-/* 단어 복습 라이브 타일 */
-.review-tile {
-  display: flex; flex-direction: column;
-  justify-content: space-between;
-  text-decoration: none; color: inherit;
-  transition: background 0.15s ease;
-}
-.review-tile:hover { background: var(--bg-elevated); }
-.review-tile__head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-.review-tile__kicker { font-size: 0.74rem; font-weight: 700; color: var(--text-muted); letter-spacing: 0.02em; }
-.review-tile__due { font-size: 0.74rem; font-weight: 600; color: var(--warning); font-variant-numeric: tabular-nums; }
-.review-tile__cycle {
-  flex: 1; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 6px;
-  text-align: center; min-height: 0;
-  animation: reviewWordIn 0.5s ease;
-}
-.review-tile__word {
-  font-family: var(--font-serif);
-  font-size: 1.55rem; font-weight: 700; line-height: 1.3;
-  color: var(--text-primary);
-  word-break: keep-all; overflow-wrap: anywhere;
-}
-.review-tile__meaning {
-  font-size: 0.85rem; color: var(--text-secondary);
-  line-height: 1.5;
-  overflow: hidden; display: -webkit-box;
-  -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-}
-.review-tile__cta {
-  font-size: 0.8rem; font-weight: 600; color: var(--primary-light);
-  text-align: right;
-}
-@keyframes reviewWordIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: none; }
-}
-
-/* 4×4 타일 + 누르는 통계 타일 + 타일 모달 + 달력형 히트맵 */
-.bento-stat--btn { cursor: pointer; border: 1px solid var(--border); transition: background 0.15s ease; }
-.bento-stat--btn:hover { background: var(--bg-elevated); }
+/* 타일 모달 */
 
 .tile-modal__overlay {
   position: fixed; inset: 0; z-index: 1000;
@@ -7991,14 +7820,6 @@ a.viewer-badge:hover {
 /* ── 궤도 줄 (v2-D R2) — 목표를 세운 사람에게만 뜨는 홈 머리 한 줄 ── */
 /* 카드 전체가 버튼이다(탭하면 상세 모달 — DdayTile·WeeklyTile의 타일→모달 정본 재사용).
    button은 font를 상속하지 않으므로 명시한다. */
-.goal-track {
-  display: flex; flex-direction: column; justify-content: center; gap: 8px;
-  width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer;
-}
-.goal-track:hover { border-color: var(--border-hover); }
-.goal-track__head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
-.goal-track__title { font-weight: 800; font-size: 0.95rem; color: var(--text-primary); }
-.goal-track__count { font-size: 0.82rem; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
 .goal-track__verdict {
   /* 알약은 패딩 때문에 baseline이 아래로 밀린다 — 혼자만 가운데로 맞춰 머리 줄이 부풀지 않게. */
   margin-left: auto; align-self: center;
@@ -8011,43 +7832,10 @@ a.viewer-badge:hover {
 .goal-track__verdict.is-late { background: color-mix(in srgb, var(--warning) 16%, transparent); color: var(--warning-text); }
 /* 진도 막대 — 진도표(myplan-bar)와 같은 결. 숫자와 같은 것을 말하되 한눈에 들어온다. */
 /* flex-shrink 0 — 좁은 화면에서 본문이 두 줄이 되면 6px 막대가 0으로 눌려 사라진다(실측). */
-.goal-track__bar { flex: 0 0 6px; border-radius: 99px; background: var(--bg-elevated); overflow: hidden; }
-.goal-track__fill { display: block; height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent, var(--primary))); transition: width 0.3s ease; }
-.goal-track__line {
-  margin: 0; font-size: 0.84rem; color: var(--text-secondary);
-  font-variant-numeric: tabular-nums;
-}
-.goal-track__line b { color: var(--text-primary); font-weight: 700; }
 
 /* 상세 모달 — 진행·속도·어휘 세 줄(설계 §2 MyPage 상세 목업). 라벨은 고정폭, 값은 흐른다. */
-.goal-detail { display: flex; flex-direction: column; gap: 12px; font-variant-numeric: tabular-nums; }
-.goal-detail__row { display: flex; gap: 10px; align-items: baseline; }
-.goal-detail__label {
-  flex: 0 0 2.4em; font-size: 0.78rem; font-weight: 700; color: var(--text-muted);
-}
-.goal-detail__value { flex: 1 1 auto; min-width: 0; font-size: 0.85rem; color: var(--text-secondary); }
-.goal-detail__value b { color: var(--text-primary); font-weight: 700; }
-.goal-detail__levels { display: flex; flex-wrap: wrap; gap: 3px 8px; margin-top: 5px; font-size: 0.74rem; color: var(--text-muted); }
-.goal-detail__levels .is-done { color: #4A8A5C; }
-
-.hm-day {
-  aspect-ratio: 1; width: 100%;
-  border: none; padding: 0; border-radius: 2px;
-  background: var(--bg-secondary);
-  cursor: pointer;
-}
-.hm-day--future { background: transparent; }
 
 /* 히트맵 — 좌→우 연속 주 스트립 */
-.hm-scroll { overflow-x: auto; margin-top: 10px; }
-.hm-strip {
-  display: grid;
-  grid-auto-flow: column;
-  grid-template-rows: repeat(7, 1fr);
-  gap: 2px;
-  min-width: 320px;
-}
-.hm-strip .hm-day { width: 100%; min-width: 9px; }
 
 /* 어휘 — 복습 히어로 */
 /* 가로로 넓을 때 — 카드가 한 열로 길게 늘어지지 않게 2열로 조판한다.
@@ -8227,10 +8015,6 @@ a.viewer-badge:hover {
 .vocab-stat--total { margin-left: auto; background: transparent; border-color: transparent; }
 
 /* 진도 — n/n 분수 칼럼 정렬 (자릿수가 변해도 슬래시 위치 고정) */
-.lvprog__frac { display: inline-flex; align-items: baseline; }
-.lvprog__frac-n { min-width: 2ch; text-align: right; }
-.lvprog__frac-sep { margin: 0 2px; color: var(--text-muted); }
-.lvprog__frac-d { min-width: 2ch; text-align: left; }
 
 .gojuon { margin: 8px 0 4px; }
 .gojuon-set { margin-bottom: 18px; }

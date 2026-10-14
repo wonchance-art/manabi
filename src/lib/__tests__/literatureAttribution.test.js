@@ -53,8 +53,10 @@ describe('뷰어 배선 — 출처 줄이 실제로 그려진다', () => {
   const viewer = readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
   const block = sliceBetween(viewer, '아오조라 정본 책 출처', 'PDF 출처 —');
 
-  it('정본 책 데이터 자리(processed_json.metadata.literature)를 읽어 같은 한 줄 문법으로 그린다', () => {
-    expect(block).toContain('literatureAttributionParts(material?.processed_json?.metadata?.literature)');
+  it('정본 대조를 통과한 크레딧(useCanonicalLiterature)만 같은 한 줄 문법으로 그린다 — 자료 metadata를 직접 읽지 않는다', () => {
+    expect(block).toContain('literatureAttributionParts(canonicalLiterature)');
+    expect(block).not.toContain('literatureAttributionParts(material');
+    expect(viewer).toContain('const canonicalLiterature = useCanonicalLiterature(material);');
     expect(block).toContain('className="viewer-attribution"');
     for (const piece of ['lit.provider', 'lit.sourceBook', 'lit.inputter', 'lit.proofreader', 'lit.cardUrl', 'lit.publicDomain', 'lit.editNote']) {
       expect(block, `출처 줄 항목 누락: ${piece}`).toContain(piece);

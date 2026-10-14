@@ -20,7 +20,7 @@ export default function Bookshelf({ book, initialLang, levelTiles = {} }) {
   const [selected, setSelected] = useState(BOOK_SERIES.some(s => s.language === initialLang) ? initialLang : 'all');
   const series = selected === 'all' ? BOOK_SERIES : BOOK_SERIES.filter(item => item.language === selected);
   return <div className="manabi-page manabi-bookshelf"><header className="manabi-page-heading"><h1>교재</h1></header>
-    {book ? <ContinueBook book={book} /> : <section className="manabi-inline-state" role="status">발행 교재를 불러오지 못했어요. <button type="button" onClick={() => location.reload()}>다시 확인</button></section>}
+    {book ? <ContinueBook book={book} /> : <section className="manabi-inline-state" role="status">발행 교재를 불러오지 못했어요. <button type="button" onClick={() => location.reload()}>다시 시도</button></section>}
     <div className="shelf-language-tabs" aria-label="교재 언어"><button type="button" aria-pressed={selected === 'all'} onClick={() => setSelected('all')}>전체 시리즈</button>{BOOK_SERIES.map(item => <button key={item.id} type="button" aria-pressed={selected === item.language} onClick={() => setSelected(item.language)} style={{ '--series-color': item.color }}>{item.name}</button>)}</div>
     <div className="manabi-series-shelf">{series.map(item => {
       const published = item.language === 'Japanese' && book;

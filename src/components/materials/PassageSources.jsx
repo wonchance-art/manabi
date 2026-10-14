@@ -31,7 +31,7 @@ export function PassageSourceFocus({ material, sources }) {
   if (!passage) return null;
   return <aside className="passage-return-notice" aria-label="학습 구간의 출처" role="status">
     <strong>{passageLocation(passage)}에서 고른 부분</strong>
-    <p>{matched ? '원본에서 해당 구간을 표시했어요.' : passage.manual ? '직접 입력한 학습 구간이에요. 출처의 쪽·장까지 연결됩니다.' : '보관한 인용을 아래에 표시합니다. 원본의 글이나 판본이 달라 정확히 맞지 않으면 쪽·장과 이 인용으로 확인해 주세요.'}</p>
+    <p>{matched ? '원본에서 해당 구간을 표시했어요.' : passage.manual ? '직접 입력한 학습 구간이에요. 출처의 쪽·장까지 연결돼요.' : '보관한 인용을 아래에 보여 드려요. 원본의 글이나 판본이 달라 정확히 맞지 않으면 쪽·장과 이 인용으로 확인해 주세요.'}</p>
     {!matched && passage.quote && <blockquote>{passage.quote.exact}</blockquote>}
   </aside>;
 }
@@ -52,7 +52,7 @@ export default function PassageSources({ material }) {
     getNextPageParam: page => page.offset + page.items.length < page.total ? page.offset + 20 : undefined,
   });
   if (query.isPending) return <p role="status" className="passage-list-state">학습 구간을 확인하는 중…</p>;
-  if (query.isError) return <p role="alert">학습 구간을 불러오지 못했어요. <button onClick={() => query.refetch()}>다시 확인</button></p>;
+  if (query.isError) return <p role="alert">학습 구간을 불러오지 못했어요. <button onClick={() => query.refetch()}>다시 시도</button></p>;
   const pages = query.data?.pages || [], total = pages[0]?.total || 0;
   if (!total) return null;
   const href = id => `/viewer/${id}?${new URLSearchParams({ study: '1', returnTo: safeLibraryReturn(params.get('returnTo')) })}`;

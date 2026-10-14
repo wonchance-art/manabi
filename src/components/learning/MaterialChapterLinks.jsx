@@ -36,7 +36,7 @@ export default function MaterialChapterLinks({ lang, slug, kind, materialId, bro
         <ul>{data.links.map(link=><li key={link.id} className="learning-links__row"><Link href={link.href}>{link.title||'제목 없는 자료'}</Link></li>)}</ul>
         {!data.links.length&&<p>연결한 자료가 없어요.</p>}
         <details><summary>연결 관리</summary>
-          <p className="learning-links__muted">자료의 공개 범위는 바뀌지 않습니다.</p>
+          <p className="learning-links__muted">자료의 공개 범위는 바뀌지 않아요.</p>
           {data.links.length>0&&<ul>{data.links.map(link=><li key={link.id} className="learning-links__row"><span>{link.title||'제목 없는 자료'}</span><button type="button" className="btn btn--ghost btn--sm" disabled={pending} onClick={()=>change('DELETE',{id:link.id})} aria-label={`${link.title} 연결 해제`}>연결 해제</button></li>)}</ul>}
           {selector}
         </details>
@@ -45,7 +45,7 @@ export default function MaterialChapterLinks({ lang, slug, kind, materialId, bro
   </section>;
   return <details className="learning-links" onToggle={event=>setOpen(event.currentTarget.open)}>
     <summary>{slug?'자료와 함께 복습하기':'연결한 교재 단원'}</summary>
-    <p className="learning-links__muted">연결 목록은 나에게만 보입니다. 자료의 공개 범위는 바뀌지 않습니다.</p>
+    <p className="learning-links__muted">연결 목록은 나에게만 보여요. 자료의 공개 범위는 바뀌지 않아요.</p>
     {!user?<p>로그인하면 자료와 교재를 연결할 수 있어요.</p>:<>
       {isLoading&&<p role="status">불러오는 중…</p>}
       {(error||loadError)&&<p role="alert">{error||friendlyToastMessage(loadError)}</p>}

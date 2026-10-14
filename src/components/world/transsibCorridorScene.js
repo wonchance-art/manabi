@@ -265,7 +265,7 @@ export function buildTranssibCorridorScene(Phaser, ctx) {
         this.refreshNearStop(true);
         ctx.setStatus?.({
           phase: 'error',
-          message: '종착역 저장에 실패했어요. 연결을 확인하고 다시 시도해 주세요.',
+          message: '종착역을 저장하지 못했어요. 연결을 확인하고 다시 시도해 주세요.',
         });
         return false;
       } finally {

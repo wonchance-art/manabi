@@ -48,7 +48,7 @@ export function inspectAnalysisCoverage(text, json) {
 export function mergeReanalysisLines(text, original, result, selected) {
   const before = inspectAnalysisCoverage(text, original);
   const after = inspectAnalysisCoverage(text, result);
-  if (!before.validStructure || !after.validStructure) throw new Error('분석 결과의 줄 위치가 올바르지 않아 기존 분석을 유지합니다.');
+  if (!before.validStructure || !after.validStructure) throw new Error('분석 결과의 줄 위치가 올바르지 않아 기존 분석을 그대로 둬요.');
   const targets = new Set(selected), sequence = [], dictionary = {};
   const lines = text.split('\n');
   for (let line = 0; line < lines.length; line++) {

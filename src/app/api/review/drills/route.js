@@ -51,7 +51,6 @@ export async function POST(request) {
       lang: row.lang,
       langCode: ref.langCode,
       langName: ref.name,
-      flag: ref.flag,
       title: `${found.chapter.title} · 드릴`,
       order: found.chapter.order,
       level: found.chapter.level,

@@ -18,9 +18,8 @@ import { useToast } from '../lib/ToastContext';
 import ActionIcon from './ActionIcon';
 import { shouldShowOnboarding } from '../lib/onboardingGate';
 import { showLocalReminder } from '../lib/localReminder';
-import { friendlyToastMessage } from '@/lib/errorMessage';
+import { failureMessage } from '@/lib/errorMessage';
 
-const navIcons={'/home':'home','/lessons':'book','/discover':'compass','/vocab':'review','/materials':'library'};
 
 // 미완성 기능 임시 숨김 — true로 바꾸면 학습·클래스 내비가 함께 복원된다.
 
@@ -43,7 +42,8 @@ function ReaderSiteMenu({ isAdmin }) {
   return <details ref={ref} className="reader-site-menu">
     <summary aria-label="메뉴" title="메뉴" data-icon-action><ActionIcon name="menu"/></summary>
     <nav aria-label="읽기 화면 내비게이션" onClick={e => { if (e.target.closest('a')) ref.current.open = false; }}>
-      {MAIN_NAV.map(item => <Link key={item.href} href={item.href} prefetch={item.prefetch}>{item.label}</Link>)}
+      {/* 집중 읽기에서는 기본 메뉴가 숨으므로 이 메뉴가 지금 위치를 알려야 한다(뷰어 = 서재 — M09 6155101880) */}
+      {MAIN_NAV.map(item => <Link key={item.href} href={item.href} prefetch={item.prefetch} aria-current={navigationOwner(pathname) === item.href ? 'page' : undefined}>{item.label}</Link>)}
       {isAdmin && <Link href="/class" prefetch={false}>수업</Link>}
       {isAdmin && <Link href="/admin" prefetch={false}>관리</Link>}
     </nav>
@@ -72,9 +72,9 @@ export default function Layout({ children }) {
     try {
       const { error } = await supabase.auth.resend({ type: 'signup', email: user.email });
       if (error) throw error;
-      toast('인증 메일을 다시 보냈어요. 받은편지함을 확인해주세요.', 'success');
+      toast('인증 메일을 다시 보냈어요. 받은편지함을 확인해 주세요.', 'success');
     } catch (err) {
-      toast('재발송 실패 — ' + friendlyToastMessage(err, '잠시 후 다시 시도'), 'error');
+      toast(failureMessage('인증 메일을 보내지 못했어요.', err), 'error');
     } finally {
       setResendingConfirm(false);
     }
@@ -134,7 +134,7 @@ export default function Layout({ children }) {
       if (parseInt(hour) === currentHour && lastSent !== todayKey) {
         // 안드로이드 크롬은 페이지 생성자 알림을 거부한다 — 서비스 워커 showNotification 우선(localReminder.js).
         showLocalReminder('복습할 시간이에요', {
-          body: '오늘의 단어를 복습하고 스트릭을 유지하세요.',
+          body: '오늘의 단어를 복습하고 연속 기록을 이어 가 보세요.',
           tag: 'as-review-reminder',
         }).then((shown) => {
           if (shown) { try { localStorage.setItem('as_reminder_last_sent', todayKey); } catch {} }
@@ -164,7 +164,7 @@ export default function Layout({ children }) {
     <div className={`manabi-app${focusedReading ? ' manabi-app--reading' : ''}`}>
       <a href="#main-content" className="skip-link">본문으로 건너뛰기</a>
       <header className="gnb" role="banner">
-        <Link href="/home" prefetch={false} className="gnb__logo" aria-label="manabi 오늘">
+        <Link href="/home" prefetch={false} className="gnb__logo" aria-label="manabi 배움">
           <span>manabi<span className="manabi-brand-dot" aria-hidden="true" /></span>
         </Link>
 
@@ -175,14 +175,10 @@ export default function Layout({ children }) {
               key={l.href}
               href={l.href}
               prefetch={l.prefetch}
-              className={`gnb__link ${isNavActive(l.href) ? 'active' : ''}`}
+              className={`gnb__link gnb__link--text ${isNavActive(l.href) ? 'active' : ''}`}
               aria-current={isNavActive(l.href) ? 'page' : undefined}
-              aria-label={l.label}
-              title={l.label}
-              data-icon-action
             >
-              <ActionIcon name={navIcons[l.href]}/>
-              <span className="gnb__action-label">{l.label}</span>
+              {l.label}
             </Link>
           ))}
         </nav>
@@ -254,7 +250,7 @@ export default function Layout({ children }) {
       {/* 오프라인 배너 */}
       {isOffline && (
         <div className="offline-banner" role="alert" aria-live="assertive">
-          인터넷 연결이 끊겼습니다. 저장해 둔 자료·단어장은 그대로 볼 수 있어요.
+          인터넷 연결을 확인해 주세요. 저장해 둔 자료·단어장은 그대로 볼 수 있어요.
         </div>
       )}
 
@@ -271,7 +267,7 @@ export default function Layout({ children }) {
             textAlign: 'center',
           }}
         >
-          이메일 인증이 필요해요 — <strong>{user.email}</strong> 받은편지함을 확인해주세요.{' '}
+          이메일 인증이 필요해요 — <strong>{user.email}</strong> 받은편지함을 확인해 주세요.{' '}
           <button
             type="button"
             onClick={resendConfirmation}
@@ -283,7 +279,7 @@ export default function Layout({ children }) {
               fontWeight: 600, marginLeft: 4,
             }}
           >
-            {resendingConfirm ? '발송 중...' : '인증 메일 다시 보내기'}
+            {resendingConfirm ? '발송 중…' : '인증 메일 다시 보내기'}
           </button>
         </div>
       )}
@@ -298,6 +294,7 @@ export default function Layout({ children }) {
             className={`mobile-nav__link ${isNavActive(l.href) ? 'active' : ''}`}
             aria-current={isNavActive(l.href) ? 'page' : undefined}
           >
+            <ActionIcon name={l.icon}/>
             <span>{l.label}</span>
           </Link>
         ))}

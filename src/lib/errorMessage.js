@@ -107,3 +107,16 @@ export function friendlyError(err, { fallback } = {}) {
 export function friendlyToastMessage(err, fallback) {
   return friendlyError(err, { fallback }).message;
 }
+
+// 원인을 모를 때 실패 문장 뒤에 붙는 다음 행동 한 문장.
+export const RETRY_LATER_MESSAGE = '잠시 후 다시 시도해 주세요.';
+
+/**
+ * 실패 토스트 — 「〔무엇〕을 〔동작〕하지 못했어요.」 + 원인 안내(모르는 오류면 「잠시 후 다시 시도해 주세요.」).
+ * 화면마다 짓던 「저장 실패 — {원인}」 명사형을 대신한다(copy-standard.md §2 「실패」, COPY-STD-001).
+ * @param {string} head 실패 문장 — 예: '단어를 저장하지 못했어요.'
+ * @param {Error|string} err
+ */
+export function failureMessage(head, err) {
+  return `${head} ${friendlyToastMessage(err, RETRY_LATER_MESSAGE)}`;
+}

@@ -22,7 +22,7 @@ const LEVEL_OPTIONS = [
 
 export default function VocabList({
   vocab = [], filteredVocab, visibleCount, setVisibleCount,
-  search, setSearch, sortBy, setSortBy, langFilter, setLangFilter,
+  search, setSearch, sortBy, setSortBy, langFilter, setLangFilter, langAllOption = true, languages = null,
   levelFilter = 'all', setLevelFilter, showLevelFilter = false, refLevelOf,
   ttsSupported, speak, setConfirmAction, deleteMutation, onWordClick,
   bulkDeleteMutation, updateVocabMutation,
@@ -37,7 +37,8 @@ export default function VocabList({
     { value: 'Chinese', label: '중국어' },
     { value: 'Korean', label: '한국어' },
   ];
-  const langsInVocab = LANG_LABELS.filter(l => vocab.some(v => v.language === l.value));
+  // 복습방은 범위로 이미 좁힌 목록을 넘기므로, 고를 수 있는 언어는 부모가 따로 준다(languages).
+  const langsInVocab = LANG_LABELS.filter(l => (languages ? languages.includes(l.value) : vocab.some(v => v.language === l.value)));
 
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
@@ -161,15 +162,16 @@ export default function VocabList({
           )}
         <div className="chip-group" role="group" aria-label="표현 목록 언어">
           {/* 4개 언어를 늘 깔아 두면 단어가 한 언어뿐일 때도 칩 5개가 자리를 먹는다 —
-              단어장에 실제로 있는 언어만, 그것도 둘 이상일 때만 보여준다. */}
+              단어장에 실제로 있는 언어만, 그것도 둘 이상일 때만 보여준다. 복습방(REV-SCOPE-R1A)에서는 언어가
+              범위의 첫 축이라 「전체」가 없고, 저장은 부모(범위 저장 규칙)가 맡는다 — 명시 범위에서 저장 설정을 덮지 않게. */}
           {(langsInVocab.length > 1
-            ? [{ value: 'all', label: '전체' }, ...langsInVocab]
+            ? [...(langAllOption ? [{ value: 'all', label: '전체' }] : []), ...langsInVocab]
             : []
           ).map(f => (
             <button
               type="button"
               key={f.value}
-              onClick={() => { setLangFilter(f.value); localStorage.setItem('vocab_langFilter', f.value); }}
+              onClick={() => setLangFilter(f.value)}
               className={`chip ${langFilter === f.value ? 'chip--active' : ''}`}
               aria-pressed={langFilter === f.value}
             >
@@ -316,7 +318,7 @@ export default function VocabList({
           <div className="empty-state">
             <p className="empty-state__msg">
               {search
-                ? '검색 결과가 없습니다.'
+                ? '검색 결과가 없어요.'
                 : '아직 수집한 단어가 없어요'}
             </p>
             {!search && (
@@ -406,7 +408,7 @@ export default function VocabList({
                 disabled={updateVocabMutation?.isPending || !canModify(vocab.find(word => word.id === editing.id))}
                 style={{ flex: 2 }}
               >
-                {updateVocabMutation?.isPending ? '저장 중...' : '저장'}
+                {updateVocabMutation?.isPending ? '저장 중…' : '저장'}
               </Button>
             </div>
           </div>

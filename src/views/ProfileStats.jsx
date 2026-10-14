@@ -1,36 +1,48 @@
 'use client';
 
+/**
+ * 현황(`/progress`) — 배움의 「현황 전체 →」 (LEARN-HOME-AK-001, 오너 확정 목업 2026-10-09 · 정정 2026-10-11 · D-X6).
+ *
+ *   ← 배움
+ *   현황 [언어 칩]                                    [목표 수정]
+ *   [ 진행바 반쪽 2×1   ][ 오늘 목표 ][ 연속      ]
+ *   [ 히트맵 24주 2×1   ][ 이번 주   ][ 아는 단어 ]
+ *   [ 레벨 어휘 2×2     ][ 기억 건강 2×2          ]
+ *
+ * 예전 홈 메트로 대시보드(어느 경로에도 마운트돼 있지 않던 이 파일)를 현황으로 되살렸다. 배움(홈)과 함께 쓰는 칸은
+ * components/learn으로 떼어 냈다 — 홈은 이 파일을 불러오지 않는다(performanceRepairs P4).
+ * 언어 칩은 레벨 어휘 · 기억 건강 · 아는 단어를 그 언어로 거른다. 복습 개수 칸은 없다(진입 링크만 범위 주소).
+ * 휴대폰은 한 격자를 펴고 클래스 order로 순서를 정한다(진행바 → 오늘 목표 · 연속 → 이번 주 · 아는 단어 → 히트맵 → 레벨 어휘 → 기억 건강).
+ */
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
-import { isPassed } from '../components/RefPatternCheck';
-import { pullProgress } from '../lib/refProgress';
 import { buildWeeklyReport, weekRangeLabel } from '../lib/weeklyReport';
 import { fetchWeeklyReportRows } from '../lib/weeklyReportRows';
 import { topLabeledWeakness, weaknessLine, weaknessProfile } from '../lib/weaknessProfile';
-import { fetchWeaknessRows } from '../lib/weaknessRows';
-import { buildPlan, markProgress } from '../lib/studyPlan';
-import { countRecentDone, pace, perDayLabel } from '../lib/goalPace';
-import { fetchGoalProgressRows } from '../lib/goalRows';
-import { haveWordSet, vocabCoverage } from '../lib/goalVocab';
-import { loadRefVocabIndex } from '../lib/refVocabIndex';
 import { fetchKnownWords, knownWordsLang } from '../lib/knownWords';
+import { LANG_NAME_KO, detectLang } from '../lib/constants';
 import Button from '../components/Button';
-import VocabStats from './VocabStats';
 import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
-import { isVocabularyReviewAvailable, isVocabularyReviewDue } from '../lib/vocabularyLearningRead';
 import { kstDayStartMs, kstDateString } from '../lib/growthStats';
+import useLearnLanguage from '../components/learn/useLearnLanguage';
+import LangChips from '../components/learn/LangChips';
+import GoalTrackTile, { useGoalCatalog } from '../components/learn/GoalTrackTile';
+import { StatTile, StreakTile, TodayGoalTile } from '../components/learn/LearnTiles';
+import LevelVocabCard from '../components/learn/LevelVocabCard';
+import MemoryHealthCard from '../components/learn/MemoryHealthCard';
+import '../components/learn/learn.css';
 
-const LANG_KO = { Japanese: '일본어', English: '영어', Chinese: '중국어', French: '프랑스어' };
-// 진도 탭은 국기 이모지만(오너 지정 — 좁은 폭 글자 잘림 해소). 이름은 aria-label·title로.
-const LANG_FLAG = { Japanese: '🇯🇵', English: '🇬🇧', Chinese: '🇨🇳', French: '🇫🇷' };
+/** 히트맵 — 최근 24주(168일), 가장 오른쪽 아래가 오늘. */
+export const HEATMAP_DAYS = 168;
+const DAY_MS = 24 * 3600 * 1000;
 
 export async function fetchProfileStats(userId, now = Date.now()) {
   const learning = await fetchVocabularyLearningRows(userId, { fields: 'summary' });
-  const heatmapStart = kstDayStartMs(now) - 179 * 86400000;
+  const heatmapStart = kstDayStartMs(now) - (HEATMAP_DAYS - 1) * DAY_MS;
   const heatmapDayCounts = {};
   for (const v of learning.rows) {
     const created = Date.parse(v.created_at);
@@ -41,27 +53,10 @@ export async function fetchProfileStats(userId, now = Date.now()) {
   return { vocab: learning.rows, projections: learning.projections, now: learning.now, heatmapDayCounts };
 }
 
-const isToday = (ts, now = Date.now()) => !!ts && Date.parse(ts) >= kstDayStartMs(now)
-  && Date.parse(ts) < kstDayStartMs(now) + 86400000;
-
-/** 가장 최근 학습 기록이 있는 언어 — 진도 탭 기본값 */
-function lastActiveLang(refManifest) {
-  let best = null, bestTs = 0;
-  try {
-    for (const [lang, ref] of Object.entries(refManifest)) {
-      let ts = 0;
-      const dates = JSON.parse(localStorage.getItem(`${ref.readKey}_dates`) || '{}');
-      for (const t of Object.values(dates)) ts = Math.max(ts, t || 0);
-      const checks = JSON.parse(localStorage.getItem(`${ref.readKey}_check`) || '{}');
-      for (const r of Object.values(checks)) ts = Math.max(ts, r?.at || 0);
-      if (ts > bestTs) { bestTs = ts; best = lang; }
-    }
-  } catch {}
-  return best;
-}
-
-export default function ProfileStats({ refManifest = {} }) {
-  const { user, profile } = useAuth();
+export default function ProfileStats() {
+  const { user, profile, loading: authLoading } = useAuth();
+  const catalog = useGoalCatalog(!!user);
+  const [goalSignal, setGoalSignal] = useState(0);
 
   const { data, error, refetch } = useQuery({
     queryKey: ['profile-stats', user?.id],
@@ -69,6 +64,10 @@ export default function ProfileStats({ refManifest = {} }) {
     enabled: !!user,
     staleTime: 1000 * 60,
   });
+  const vocabCounts = useMemo(() => (data?.vocab || []).reduce((all, v) => {
+    const key = v.language || detectLang(v.word_text || ''); all[key] = (all[key] || 0) + 1; return all;
+  }, {}), [data?.vocab]);
+  const { langs, lang, choose } = useLearnLanguage(profile, vocabCounts);
 
   // 이번 주 카드(rfc-weekly-report 목업 A) — 실패·빈 주는 카드 생략으로 조용히.
   const { data: weeklyRows } = useQuery({
@@ -79,64 +78,60 @@ export default function ProfileStats({ refManifest = {} }) {
   });
   const weekly = useMemo(() => (weeklyRows ? buildWeeklyReport(weeklyRows) : null), [weeklyRows]);
 
-  if (!user) return null;
-  if (error) return (
-    <div className="bento">
-      <div className="bento-item bento--4x1 card" role="alert">
-        <p>학습 통계를 불러오지 못했어요.</p>
-        <Button size="sm" variant="secondary" onClick={() => refetch()}>다시 시도</Button>
+  // 아는 단어 — 칩 언어의 「이미 앎」 표시. 미적용 · 실패는 조용히(칸만 「–」).
+  const knownLang = knownWordsLang(lang);
+  const { data: knownRows } = useQuery({
+    queryKey: ['known-words', user?.id, knownLang],
+    enabled: !!user?.id && !!knownLang,
+    queryFn: async () => {
+      try { return await fetchKnownWords(user.id, knownLang); }
+      catch { return null; }
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
+  // 배움의 「목표 정하기」(/progress?goal=edit)로 들어오면 프로필을 받은 뒤 목표 편집을 연다.
+  useEffect(() => {
+    if (!profile) return;
+    try { if (new URLSearchParams(window.location.search).get('goal') === 'edit') setGoalSignal(n => n + 1); } catch { /* 주소를 못 읽으면 닫힌 채로 */ }
+  }, [profile]);
+
+  if (!authLoading && !user) {
+    return (
+      <div className="manabi-page learn-page">
+        <Link href="/home" prefetch={false} className="learn-crumb">← 배움</Link>
+        <div className="learn-top"><div className="learn-top__title"><h1>현황</h1></div></div>
+        <div className="manabi-inline-state learn-login" role="status"><span>로그인이 필요해요.</span><Link href="/auth" prefetch={false} className="learn-button-s">로그인</Link></div>
       </div>
-    </div>
-  );
-  if (!data) return null;
-  const vocab = data.vocab;
+    );
+  }
+  const vocab = data?.vocab || [];
   const projections = data?.projections || [];
-  const streak = profile?.streak_count ?? 0;
-  const streakFreeze = profile?.streak_freeze_count;
-  const hasHeatmap = data?.heatmapDayCounts && Object.keys(data.heatmapDayCounts).length > 0;
 
   return (
-    <div className="bento">
-      {/* 목표를 세운 사람에게만 뜨는 궤도 한 줄 — 미설정이면 침묵한다(설계 §4 계약 5).
-          숨김이 '위젯 사라짐'으로 읽히는 문제와는 다르다: 사라지는 게 아니라 아직 생긴
-          적이 없고, 세우는 자리는 늘 자리를 지키는 D-Day 타일 안에 있다. */}
-      <GoalTrackCard refManifest={refManifest} vocab={vocab} />
-      <GoalTile vocab={vocab} projections={projections} />
-      <DdayTile refManifest={refManifest} />
-      <div className="bento-item bento--2x2">
-        <ReviewTile projections={projections} />
+    <div className="manabi-page learn-page">
+      <Link href="/home" prefetch={false} className="learn-crumb">← 배움</Link>
+      <div className="learn-top">
+        <div className="learn-top__title"><h1>현황</h1><LangChips langs={langs} lang={lang} onChange={choose} /></div>
+        <button type="button" className="learn-button-s" onClick={() => setGoalSignal(n => n + 1)}>목표 수정</button>
       </div>
-      <StatTile
-        label="스트릭"
-        value={streak ? `${streak}일${streakFreeze > 0 ? ` · 🛡${streakFreeze}` : ''}` : '–'}
-      />
-      {/* '오늘 활동' 타일이 있던 자리(오너 확정 2026-08-26: 제거·이번 주를 이 크기로).
-          오늘 활동은 ⑴ 챕터 수가 이 기기 localStorage 한정 ⑵ 단어 축은 '오늘 목표'
-          타일과 중복 ⑶ 활동한 날에도 0을 크게 보여줘 0 무표기 원칙과 충돌 — 반쪽
-          지표라 지운다. 주간 거울은 4×1 카드 대신 이 한 칸으로 줄인다. */}
-      {weekly && <WeeklyTile weekly={weekly} />}
-      <div className="bento-item bento--2x2">
-        <LevelCoverageCard refManifest={refManifest} />
-      </div>
-      {vocab.length > 0 && (
-        <div className="bento-item bento--2x2">
-          <VocabStats vocab={vocab} projections={projections} learningAvailable now={data.now} profile={profile} section="memory" />
+      {error && (
+        <div className="manabi-inline-state" role="alert">
+          학습 통계를 불러오지 못했어요. <button type="button" onClick={() => refetch()}>다시 시도</button>
         </div>
       )}
-      {hasHeatmap && (
-        <div className="bento-item bento--4x1">
-          <HeatmapCard dayCounts={data.heatmapDayCounts} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-function StatTile({ label, value }) {
-  return (
-    <div className="bento-item bento--1x1 card bento-stat">
-      <span className="mypage-stat-cell__value">{value}</span>
-      <span className="mypage-stat-cell__label">{label}</span>
+      <div className="learn-grid learn-stats">
+        <GoalTrackTile className="learn-order-1" onOpen={() => setGoalSignal(n => n + 1)} />
+        <TodayGoalTile vocab={vocab} projections={projections} profile={profile} empty={!data} className="learn-order-2" />
+        <StreakTile profile={profile} className="learn-order-3" />
+        <HeatmapCard dayCounts={data?.heatmapDayCounts || {}} className="learn-order-6" />
+        {/* 빈 주에도 칸은 자리를 지킨다(오너 확정 2026-08-30 "상시 표시") — 게이트는 로드 대기만, 로드 전은 같은 칸의 「–」. */}
+        {weekly ? <WeeklyTile weekly={weekly} className="learn-order-4" /> : <StatTile value="–" label="이번 주" className="learn-order-4" />}
+        <StatTile value={Array.isArray(knownRows) ? knownRows.length.toLocaleString('ko-KR') : '–'} label="아는 단어" className="learn-order-5" />
+        <LevelVocabCard lang={lang} vocab={vocab} projections={projections} knownRows={knownRows || []} className="learn-order-7" />
+        <MemoryHealthCard lang={lang} projections={projections} now={data?.now || Date.now()} className="learn-order-8" />
+      </div>
+      <GoalEditor catalog={catalog.data} openSignal={goalSignal} />
     </div>
   );
 }
@@ -147,7 +142,7 @@ function StatTile({ label, value }) {
      사라짐'으로 읽혔다). 값은 0 대신 스트릭 타일의 '–' 선례 — 0 무표기 원칙과의
      절충점. 탭하면 전체 거울을 모달로 편다(DdayTile의 타일→모달 정본 재사용 —
      지난주 병기는 모달에만 남는다). ── */
-function WeeklyTile({ weekly }) {
+function WeeklyTile({ weekly, className = '' }) {
   const [open, setOpen] = useState(false);
   const acc = weekly.reviews.accuracy == null ? null : Math.round(weekly.reviews.accuracy * 100);
   const [value, label] = weekly.reviews.total > 0
@@ -158,9 +153,9 @@ function WeeklyTile({ weekly }) {
     : ['–', '이번 주'];
   return (
     <>
-      <button type="button" className="bento-item bento--1x1 card bento-stat bento-stat--btn" onClick={() => setOpen(true)}>
-        <span className="mypage-stat-cell__value">{value}</span>
-        <span className="mypage-stat-cell__label">{label}</span>
+      <button type="button" className={`learn-tile learn-stat learn-stat--btn ${className}`.trim()} onClick={() => setOpen(true)}>
+        <span className="learn-stat__value">{value}</span>
+        <span className="learn-stat__label">{label}</span>
       </button>
       {open && (
         <TileModal title={`이번 주 (${weekRangeLabel(weekly.week)})`} onClose={() => setOpen(false)}>
@@ -241,179 +236,12 @@ function WeakSpotLine({ weekStartMs }) {
   );
 }
 
-/* ── 목표 타일 — 오늘 달성률 표시 전용. 탭하면 마이페이지에서 목표 편집(정본 슬라이더). ── */
+/* ── 목표 편집(목표 · D-Day 모달) — 목표일 설정 (서버 동기화, 비로그인·오프라인은 localStorage 폴백).
+     v2-D R2에서 '무엇을 향해 가는가'(언어·도달 레벨)가 여기 붙었다. 날짜 편집기와 과정을 한 모달에 모은다 —
+     목표가 두 곳으로 갈리지 않게, 목표를 고치는 자리는 현황의 「목표 수정」(배움의 「목표 정하기」도 여기로 온다) 하나다.
+     예전 D-Day 타일은 진행바 반쪽(D-58)으로 흡수됐다(LEARN-HOME-AK-001). ── */
 
-function GoalTile({ vocab, projections }) {
-  const { profile } = useAuth();
-
-  const gReview = profile?.goal_review ?? 5;
-  const gWords = profile?.goal_words ?? 5;
-  const reviewsToday = projections.filter(p => isToday(p.memory?.lastReview)).length;
-  const wordsToday = vocab.filter(v => isToday(v.created_at)).length;
-  // 달성률 — 복습·수집 목표 기준 (완독은 목표 설정만 지원)
-  const pct = Math.round(
-    (Math.min(1, reviewsToday / Math.max(gReview, 1)) + Math.min(1, wordsToday / Math.max(gWords, 1))) / 2 * 100
-  );
-
-  return (
-    <Link href="/profile" className="bento-item bento--1x1 card bento-stat bento-stat--btn">
-      <span className="mypage-stat-cell__value">{pct}%</span>
-      <span className="mypage-stat-cell__label">오늘 목표</span>
-    </Link>
-  );
-}
-
-/* ── 궤도 줄 (v2-D R2, 설계 §2) — "목표는 코드에, 진도는 서버에" 를 끝내는 마지막 한 줄.
-     R1로 계획표가 곧 진도표가 됐지만 표는 "몇 개 했다"까지만 말했다. 목표일이 정해져
-     있는데 역산이 없으면 그 진도가 빠른 건지 늦은 건지 알 수 없다. 남은 일수·필요 속도·
-     지금 속도·예상 완료일을 한 줄로 말하고, 판정은 세 단계까지만 한다(벌칙 없음). ── */
-
-const VERDICT_CLASS = { 여유: 'easy', 적정: 'ontrack', 이탈: 'late' };
-
-function GoalTrackCard({ refManifest, vocab }) {
-  const { user, profile } = useAuth();
-  const [open, setOpen] = useState(false);
-  const [vocabIndex, setVocabIndex] = useState(null);
-  const goalLang = profile?.goal_lang;
-  const goalLevel = profile?.goal_level;
-  const goalDate = profile?.dday_date;
-
-  // 계획은 관리자 진도표와 같은 함수로 세운다 — 챕터 수가 갈리면 "남은 47"이 화면마다 달라진다.
-  // 홈이 이미 받아 둔 정본 투영을 쓰므로 정본 manifest 전체를 번들에 끌어오지 않는다.
-  const plan = useMemo(
-    () => (goalLang && goalLevel ? buildPlan({ languages: refManifest }, goalLang, { upto: goalLevel }) : null),
-    [refManifest, goalLang, goalLevel],
-  );
-
-  const { data: rows = [] } = useQuery({
-    queryKey: ['goal-progress', user?.id, goalLang],
-    enabled: !!user?.id && !!plan,
-    queryFn: () => fetchGoalProgressRows(user.id, goalLang),
-    staleTime: 1000 * 60 * 5,
-  });
-
-  // '이미 앎'과 정본 어휘 인덱스는 **상세를 열 때만** 가져온다. 어휘 정본은 무거워서
-  // (중국어만 1.9MB 소스) 홈 첫 화면에 얹으면 한 줄짜리 진단이 페이지 값을 치른다.
-  const { data: knownRows = [] } = useQuery({
-    queryKey: ['goal-known', user?.id, goalLang],
-    enabled: open && !!user?.id && !!knownWordsLang(goalLang),
-    queryFn: async () => {
-      try { return await fetchKnownWords(user.id, knownWordsLang(goalLang)); }
-      catch { return []; }          // 미적용·실패는 조용히 — 어휘 줄만 덜 정확해진다
-    },
-    staleTime: 1000 * 60 * 5,
-  });
-
-  useEffect(() => {
-    if (!open || !goalLang) return undefined;
-    let alive = true;
-    loadRefVocabIndex(goalLang).then((ix) => { if (alive) setVocabIndex(ix); }).catch(() => {});
-    return () => { alive = false; };
-  }, [open, goalLang]);
-
-  const track = useMemo(() => {
-    if (!plan) return null;
-    const marked = markProgress(plan, rows);
-    const slugSet = new Set(plan.levels.flatMap(lv => lv.chapters).map(c => c.slug));
-    const p = pace({
-      remaining: marked.remaining,
-      targetDate: goalDate,
-      recentDone: countRecentDone(rows, slugSet),
-    });
-    return p ? { marked, p } : null;
-  }, [plan, rows, goalDate]);
-
-  const coverage = useMemo(() => {
-    if (!vocabIndex || !plan) return null;
-    const have = haveWordSet({ vocabRows: vocab, knownRows, language: goalLang });
-    return vocabCoverage(vocabIndex, plan.levels.map(lv => lv.key), have);
-  }, [vocabIndex, plan, vocab, knownRows, goalLang]);
-
-  if (!goalLang || !goalLevel || !goalDate) return null;
-  if (!track) return null;
-
-  const { marked, p } = track;
-  // 목표 이름은 사용자가 D-Day에 적어 둔 말이 우선 — "HSK 5"라고 적었으면 그대로 부른다.
-  const goalName = profile?.dday_label || plan.levels[plan.levels.length - 1]?.label || goalLevel;
-  const dLabel = p.daysLeft > 0 ? `D-${p.daysLeft}` : p.daysLeft === 0 ? 'D-Day' : `기한 ${Math.abs(p.daysLeft)}일 지남`;
-  const gapLabel = p.gapDays == null ? null
-    : p.gapDays > 0 ? `${p.gapDays}일 늦음`
-      : p.gapDays < 0 ? `${Math.abs(p.gapDays)}일 이름`
-        : '딱 맞음';
-  const paceLine = p.done ? '계획한 챕터를 다 마쳤어요 🎉' : (
-    <>
-      하루 <b>{perDayLabel(p.needPerDay)}챕터</b> 필요
-      {p.etaDate
-        ? <> · 최근 2주 {perDayLabel(p.actualPerDay)} → 예상 {p.etaDate} ({gapLabel})</>
-        : <> · 최근 2주 진도가 없어 예상 완료일은 아직 못 내요</>}
-    </>
-  );
-
-  return (
-    <>
-      <button type="button" className="bento-item bento--4x1 card goal-track" onClick={() => setOpen(true)}>
-        <span className="goal-track__head">
-          <span className="goal-track__title">{plan.flag} {goalName}까지</span>
-          <span className="goal-track__count">{marked.done}/{marked.total}챕터 · {dLabel}</span>
-          {p.verdict && (
-            <span className={`goal-track__verdict is-${VERDICT_CLASS[p.verdict]}`}>{p.verdict}</span>
-          )}
-        </span>
-        <span className="goal-track__bar"><span className="goal-track__fill" style={{ width: `${marked.pct}%` }} /></span>
-        <span className="goal-track__line">{paceLine}</span>
-      </button>
-
-      {open && (
-        <TileModal title={`${goalName}까지`} onClose={() => setOpen(false)}>
-          <div className="goal-detail">
-            <div className="goal-detail__row">
-              <span className="goal-detail__label">진행</span>
-              <span className="goal-detail__value">
-                <b>{marked.done}/{marked.total}</b>챕터 ({marked.pct}%)
-                <span className="goal-detail__levels">
-                  {marked.levels.map(lv => (
-                    <span key={lv.key} className={lv.done === lv.total ? 'is-done' : ''}>
-                      {lv.key} {lv.done}/{lv.total}
-                    </span>
-                  ))}
-                </span>
-              </span>
-            </div>
-            <div className="goal-detail__row">
-              <span className="goal-detail__label">속도</span>
-              <span className="goal-detail__value">{paceLine}</span>
-            </div>
-            {/* 어휘 축 합류(R3). 정본 어휘 인덱스가 있는 언어에서만 — 없으면 줄 자체가 없다.
-                "확보"는 담았거나(=FSRS 큐) 이미 안다고 표시한 것: 둘 다 다시 배우지 않아도 되는 말. */}
-            {knownWordsLang(goalLang) && (
-              <div className="goal-detail__row">
-                <span className="goal-detail__label">어휘</span>
-                <span className="goal-detail__value">
-                  {coverage ? (
-                    <>
-                      정본 {coverage.total.toLocaleString()}개 중 <b>{coverage.have.toLocaleString()}</b> 확보 ({coverage.pct}%)
-                      <span className="goal-detail__levels">
-                        {coverage.byLevel.map(b => (
-                          <span key={b.level}>{b.level} {b.have}/{b.total}</span>
-                        ))}
-                      </span>
-                    </>
-                  ) : vocabIndex ? '이 언어의 어휘 정본은 아직 없어요' : '세는 중…'}
-                </span>
-              </div>
-            )}
-          </div>
-        </TileModal>
-      )}
-    </>
-  );
-}
-
-/* ── D-Day 타일 — 목표일 설정 (서버 동기화, 비로그인·오프라인은 localStorage 폴백).
-     v2-D R2에서 '무엇을 향해 가는가'(언어·도달 레벨)가 여기 붙었다. 날짜 편집기가 이미
-     여기 있는데 과정만 다른 화면에 두면 목표가 두 곳으로 갈린다 — 한 모달에 모은다. ── */
-
-function DdayTile({ refManifest }) {
+function GoalEditor({ catalog, openSignal = 0 }) {
   const { user, profile, fetchProfile } = useAuth();
   const toast = useToast();
   const [local, setLocal] = useState(null);
@@ -449,15 +277,8 @@ function DdayTile({ refManifest }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, profile?.dday_date, local?.date]);
 
-  const diff = useMemo(() => {
-    if (!dday?.date) return null;
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    const target = new Date(dday.date); target.setHours(0, 0, 0, 0);
-    return Math.round((target - today) / 86400000);
-  }, [dday]);
-
   // 레벨은 그 언어에 챕터가 있는 것만 — 어휘 전용 레벨을 목표로 잡으면 계획이 빈다.
-  const levelOptions = ((refManifest?.[goalLang]?.levels) || []).filter(lv => (lv.chapters || []).length > 0);
+  const levelOptions = ((catalog?.[goalLang]?.levels) || []).filter(lv => (lv.chapters || []).length > 0);
 
   function openModal() {
     setDate(dday?.date || '');
@@ -466,6 +287,12 @@ function DdayTile({ refManifest }) {
     setGoalLevel(profile?.goal_level || '');
     setOpen(true);
   }
+  // 「목표 수정」 버튼 · ?goal=edit 진입이 신호를 올리면 연다(열 때마다 지금 값으로 채운다).
+  useEffect(() => {
+    if (openSignal > 0) openModal();
+    // openModal은 매 렌더 새 함수 — 신호가 바뀔 때만 연다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openSignal]);
 
   async function persist(nextDate, nextLabel, nextLang, nextLevel) {
     if (busy) return;
@@ -489,24 +316,16 @@ function DdayTile({ refManifest }) {
         // 조용히 삼키면 "과정을 골랐는데 궤도가 안 뜬다"가 된다 — 무엇이 저장됐는지 말한다.
         if (!error && (nextLang || nextLevel)) toast('날짜는 저장했어요 — 목표 과정은 아직 준비 중이에요', 'info');
       }
-      if (error) toast('동기화 실패 — 이 기기에는 저장됐어요', 'error');
+      if (error) toast('동기화하지 못했어요. 이 기기에는 저장됐어요.', 'error');
       else fetchProfile(user.id, user.user_metadata);
     }
     setBusy(false);
     setOpen(false);
   }
 
-  const value = !mounted || !dday ? '설정'
-    : diff === 0 ? 'D-Day'
-    : diff > 0 ? `D-${diff}`
-    : `D+${Math.abs(diff)}`;
-
+  if (!mounted) return null;
   return (
     <>
-      <button type="button" className="bento-item bento--1x1 card bento-stat bento-stat--btn" onClick={openModal}>
-        <span className="mypage-stat-cell__value">{value}</span>
-        <span className="mypage-stat-cell__label">{(mounted && dday?.label) || 'D-Day'}</span>
-      </button>
       {open && (
         <TileModal title="목표 · D-Day" onClose={() => setOpen(false)}>
           <div className="tile-modal__row">
@@ -527,8 +346,8 @@ function DdayTile({ refManifest }) {
               <select className="form-input dday-goal__sel" aria-label="목표 언어"
                 value={goalLang} onChange={e => { setGoalLang(e.target.value); setGoalLevel(''); }}>
                 <option value="">선택 안 함</option>
-                {Object.keys(refManifest || {}).map(l => (
-                  <option key={l} value={l}>{LANG_KO[l] || l}</option>
+                {Object.keys(catalog || {}).filter(l => LANG_NAME_KO[l]).map(l => (
+                  <option key={l} value={l}>{LANG_NAME_KO[l]}</option>
                 ))}
               </select>
               <select className="form-input dday-goal__sel" aria-label="목표 레벨"
@@ -543,7 +362,7 @@ function DdayTile({ refManifest }) {
           <div style={{ display: 'flex', gap: 8 }}>
             <Button size="sm" onClick={() => persist(date, label.trim(), goalLang, goalLang ? goalLevel : '')}
               disabled={!date || busy} style={{ flex: 1 }}>
-              {busy ? '저장 중...' : '저장'}
+              {busy ? '저장 중…' : '저장'}
             </Button>
             {dday && <Button size="sm" variant="secondary" onClick={() => persist('', '', '', '')} disabled={busy} style={{ flex: 1 }}>삭제</Button>}
           </div>
@@ -568,201 +387,27 @@ function TileModal({ title, onClose, children }) {
   );
 }
 
-/* ── 단어 복습 라이브 타일 — 단어가 시간차로 넘어가는 메트로식 타일, 클릭 시 단어장 ── */
+/* ── 히트맵 반쪽(2×1) — 최근 24주, 칸 10px · 간격 2px, 범례 없음(칸마다 개수 툴팁). 좌→우로 시간이 흐르고 맨 오른쪽 아래가 오늘. ── */
 
-function ReviewTile({ projections }) {
-  const now = Math.max(Date.now(), ...projections.map(p => Date.parse(p.review.evaluatedAt)));
-  // 기억 일정과 노출 후 대기 시간을 구분한 같은 projection으로 목록·수를 계산한다.
-  const { pool, dueCount } = useMemo(() => {
-    const due = projections.filter(p => isVocabularyReviewDue(p, now))
-      .sort((a, b) => Date.parse(a.review.nextQuestionAt) - Date.parse(b.review.nextQuestionAt));
-    const candidates = due.length ? due : projections.filter(isVocabularyReviewAvailable)
-      .sort((a, b) => Date.parse(b.vocabulary.created_at) - Date.parse(a.vocabulary.created_at));
-    return { pool: candidates.slice(0, 20).map(p => p.vocabulary), dueCount: due.length };
-    // now는 렌더 시점 고정으로 충분
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projections]);
-
-  const [idx, setIdx] = useState(0);
-  useEffect(() => {
-    if (pool.length < 2) return;
-    const t = setInterval(() => setIdx(i => (i + 1) % pool.length), 3500);
-    return () => clearInterval(t);
-  }, [pool.length]);
-
-  const word = pool[idx % Math.max(pool.length, 1)];
-
-  return (
-    <Link href="/vocab" className="card review-tile">
-      <span className="review-tile__head">
-        <span className="review-tile__kicker">단어 복습</span>
-        {dueCount > 0 && <span className="review-tile__due">{dueCount}개 대기</span>}
-      </span>
-      {word ? (
-        <span className="review-tile__cycle" key={word.id ?? idx}>
-          <span className="review-tile__word">{word.word_text}</span>
-          <span className="review-tile__meaning">{word.meaning}</span>
-        </span>
-      ) : (
-        <span className="review-tile__cycle">
-          <span className="review-tile__meaning">아직 수집한 단어가 없어요.<br />자료를 읽으며 단어를 모아보세요.</span>
-        </span>
-      )}
-      <span className="review-tile__cta">복습하기 →</span>
-    </Link>
-  );
-}
-
-/* ── 진도 — 레벨별 챕터(교재) 통과 + 어휘 수집 통합, 3개 언어 ── */
-
-function LevelCoverageCard({ refManifest }) {
-  const { user } = useAuth();
-  const langs = Object.keys(refManifest);
-  const [lang, setLang] = useState(langs[0] || 'Japanese');
-  // SSR과 첫 클라이언트 렌더를 일치시키기 위해 localStorage는 마운트 후에만 읽는다
-  const [mounted, setMounted] = useState(false);
-  // 서버 병합으로 localStorage가 갱신되면 progress 메모를 재실행하기 위한 카운터
-  const [merged, setMerged] = useState(0);
-  useEffect(() => {
-    setMounted(true);
-    // 최근 학습 기록이 있는 언어 우선 → 마지막 선택 언어 폴백
-    const recent = lastActiveLang(refManifest);
-    const saved = localStorage.getItem('lessons_lang');
-    if (recent && langs.includes(recent)) setLang(recent);
-    else if (langs.includes(saved)) setLang(saved);
-    // langs·refManifest는 정적 매니페스트에서 파생
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // 로그인 시 서버 기록과 병합 — 다른 기기에서 읽은 챕터 반영 (LessonsPage와 동일 패턴).
-  // 먼저 localStorage로 렌더한 뒤 병합이 끝나면 재읽기(깜빡임 최소). 실패 시 localStorage 유지.
-  useEffect(() => {
-    if (!user?.id) return;
-    const readKeys = Object.fromEntries(
-      Object.entries(refManifest).map(([name, r]) => [name, r.readKey])
-    );
-    pullProgress(user.id, readKeys).then(changed => { if (changed) setMerged(m => m + 1); });
-    // refManifest는 서버에서 내려오는 정적 데이터
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
-
-  const ref = refManifest[lang];
-
-  // 교재 진행 — localStorage (교재 목록과 동일 원본, 로그인 시 서버 병합 반영)
-  const progress = useMemo(() => {
-    if (!ref || !mounted) return { readSet: new Set(), checkMap: {} };
-    try {
-      return {
-        readSet: new Set(JSON.parse(localStorage.getItem(ref.readKey) || '[]')),
-        checkMap: JSON.parse(localStorage.getItem(`${ref.readKey}_check`) || '{}'),
-      };
-    } catch { return { readSet: new Set(), checkMap: {} }; }
-    // merged는 본문에서 읽지 않는 재읽기 신호다 — 서버 병합이 localStorage를 바꾼 뒤 다시 읽게 한다(빼면 병합 반영 안 됨).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ref, mounted, merged]);
-
-  if (!ref) return null;
-
-  return (
-    <div className="card mypage-section">
-      <div className="lvprog__head">
-        <h2 className="mypage-section__title" style={{ margin: 0 }}>진도</h2>
-        <div className="lvprog__tabs">
-          {langs.map(l => (
-            <button key={l} type="button"
-              className={`chip ${lang === l ? 'chip--active' : ''}`}
-              aria-label={LANG_KO[l] || l}
-              aria-pressed={lang === l}
-              title={LANG_KO[l] || l}
-              style={{ fontSize: '1.05rem', lineHeight: 1 }}
-              onClick={() => setLang(l)}>
-              <span aria-hidden="true">{LANG_FLAG[l] || (LANG_KO[l] || l)}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="lvprog__rows">
-        {ref.levels.map(lv => {
-          const total = lv.chapters.length;
-          const passed = lv.chapters.filter(c => isPassed(progress.checkMap[c.slug])).length;
-          const read = lv.chapters.filter(c => progress.readSet.has(c.slug)).length;
-          // 인트로 레벨(OT/A0 — levels 첫 항목)은 관문이 없어 '전부 읽음'이 완료 기준
-          const isIntro = lv.key === ref.levels[0]?.key;
-          const done = total > 0 && (isIntro ? read === total : passed === total);
-          return (
-            <div key={lv.key} className="lvprog__row">
-              <span className={`lvprog__key ${done ? 'is-done' : ''}`}>{lv.short || lv.key}</span>
-              <span className="lvprog__bar">
-                <span className="lvprog__bar-read" style={{ width: `${total ? (read / total) * 100 : 0}%` }} />
-                <span className="lvprog__bar-pass" style={{ width: `${total ? (passed / total) * 100 : 0}%` }} />
-              </span>
-              <span className="lvprog__count">
-                {done ? '수료' : (
-                  <span className="lvprog__frac">
-                    <span className="lvprog__frac-n">{passed}</span>
-                    <span className="lvprog__frac-sep">/</span>
-                    <span className="lvprog__frac-d">{total}</span>
-                  </span>
-                )}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-      <div className="lvprog__legend">
-        <span><span className="lvprog__dot lvprog__dot--read" />읽음</span>
-        <span><span className="lvprog__dot lvprog__dot--pass" />통과</span>
-      </div>
-    </div>
-  );
-}
-
-/* ── 히트맵 — 좌→우로 진행되는 연속 주 스트립, 호버·터치 시 날짜·개수 ── */
-
-function HeatmapCard({ dayCounts }) {
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-
-  // 최근 180일 — 가장 오른쪽 아래가 오늘 (좌→우 시간 진행)
-  const days = useMemo(() => {
-    const total = 180;
-    return Array.from({ length: total }, (_, i) => {
-      const d = new Date(today);
-      d.setDate(d.getDate() - (total - 1 - i));
-      return d;
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+function HeatmapCard({ dayCounts, className = '' }) {
+  const todayStart = kstDayStartMs(Date.now());
+  const days = Array.from({ length: HEATMAP_DAYS }, (_, i) => kstDateString(todayStart - (HEATMAP_DAYS - 1 - i) * DAY_MS));
   const maxCount = Math.max(1, ...Object.values(dayCounts));
-  const totalActive = Object.keys(dayCounts).length;
-  const totalWords = Object.values(dayCounts).reduce((a, b) => a + b, 0);
-  const colorOf = n => {
-    if (!n) return 'var(--bg-secondary)';
-    const lvl = Math.ceil((n / maxCount) * 4);
-    return ['', 'var(--primary-glow)', 'var(--primary)', 'var(--accent)', 'var(--accent)'][lvl] || 'var(--accent)';
-  };
+  const shown = days.filter(key => dayCounts[key] > 0);
+  const totalWords = shown.reduce((sum, key) => sum + dayCounts[key], 0);
+  const levelOf = n => (!n ? '' : `l${Math.min(4, Math.max(1, Math.ceil((n / maxCount) * 4)))}`);
 
   return (
-    <div className="card mypage-section">
-      <div className="lvprog__head">
-        <h2 className="mypage-section__title" style={{ margin: 0 }}>히트맵</h2>
-        <span className="lvprog__count">{totalActive}일 · {totalWords}개</span>
+    <div className={`learn-tile learn-heatmap ${className}`.trim()}>
+      <div className="learn-sec-head">
+        <h2 className="learn-sec-title">히트맵</h2>
+        {shown.length > 0 && <span className="learn-sec-meta">{shown.length}일 · {totalWords.toLocaleString('ko-KR')}개</span>}
       </div>
-      <div className="hm-scroll">
-        <div className="hm-strip">
-          {days.map((d, i) => {
-            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            const n = dayCounts[key] || 0;
-            return (
-              <span
-                key={i}
-                className="hm-day"
-                style={{ background: colorOf(n) }}
-                title={`${d.getMonth() + 1}월 ${d.getDate()}일 · ${n}개`}
-              />
-            );
-          })}
-        </div>
+      <div className="learn-heatmap__strip">
+        {days.map(key => {
+          const n = dayCounts[key] || 0;
+          return <i key={key} className={levelOf(n) || undefined} title={`${Number(key.slice(5, 7))}월 ${Number(key.slice(8))}일 · ${n}개`} />;
+        })}
       </div>
     </div>
   );

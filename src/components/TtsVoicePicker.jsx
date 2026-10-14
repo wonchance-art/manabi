@@ -128,7 +128,7 @@ export default function TtsVoicePicker({ language = 'Japanese', compact = false 
           </ul>
           {voices.every(v => v.localService) && (
             <div className="tts-voice__hint">
-              더 자연스러운 음성이 필요하면 Chrome 또는 Edge로 접속하면 Google·Microsoft 클라우드 음성이 추가됩니다.
+              더 자연스러운 음성이 필요하면 Chrome 또는 Edge로 접속해 주세요. Google·Microsoft 클라우드 음성이 추가돼요.
             </div>
           )}
         </div>

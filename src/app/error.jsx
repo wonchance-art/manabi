@@ -23,11 +23,11 @@ export default function RouteError({ error, reset }) {
       color: 'var(--text-primary)', textAlign: 'center',
     }}>
       <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: 8 }}>
-        {isNetwork ? '네트워크 연결을 확인해주세요' : '문제가 발생했어요'}
+        {isNetwork ? '인터넷 연결을 확인해 주세요' : '문제가 발생했어요'}
       </h2>
       <p style={{ color: 'var(--text-secondary)', marginBottom: 24, maxWidth: 420, lineHeight: 1.6 }}>
         {isNetwork
-          ? '인터넷 연결이 불안정한 것 같아요. 잠시 후 다시 시도해주세요.'
+          ? '연결이 불안정한 것 같아요. 잠시 후 다시 시도해 주세요.'
           : '잠시 후 다시 시도해 주세요. 문제가 계속되면 아래 오류 ID를 알려 주세요.'}
       </p>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>

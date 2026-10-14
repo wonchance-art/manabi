@@ -77,7 +77,6 @@ export function buildPlan(manifest, lang, { upto } = {}) {
   return {
     lang,
     langCode: L.langCode,
-    flag: L.flag,
     name: L.name,
     base: L.base,
     levels,

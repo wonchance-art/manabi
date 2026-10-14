@@ -333,7 +333,7 @@ test('390px zh saved (before review): the saved row with the next review date re
   await tap(f,'id_0_2','경기장');
   const row=f.page.locator('#inspector-word .save-grade__saved');
   await row.waitFor();
-  assert.equal(await row.getByRole('button',{name:'✓ 단어장에 있음',exact:true}).count(),1);
+  assert.equal(await row.getByRole('button',{name:'✓ 담은 표현에 있음',exact:true}).count(),1);
   assert.match(await row.innerText(),/다음 복습 \d+월 \d+일/);
   assert.equal(await row.getByRole('button',{name:'아는 단어',exact:true}).count(),1,'known toggle sits in the saved row');
   assertFirstScreen(await measure(f.page),{label:'zh 390 saved',bottom:'saved'});
@@ -498,7 +498,7 @@ test('owner: tapping another dictionary sense corrects this spot only; 「되돌
   await until(()=>stored().meaning==='장관, 웅장한 경관');
   assert.equal(stored().pos,'명사','the sense pos travels with the meaning (TokenEditPanel chip rule)');
   assert.equal(stored().furigana,original.furigana,'reading untouched');
-  assert.equal(await f.page.getByText('수정이 저장됐어요!',{exact:true}).count(),0,'the inline line replaces the toast');
+  assert.equal(await f.page.getByText('수정을 저장했어요',{exact:true}).count(),0,'the inline line replaces the toast');
   await undoLine.getByRole('button',{name:'되돌리기',exact:true}).click();
   await meaning.getByText('웅장하다, 장관이다',{exact:true}).waitFor();
   await until(()=>stored().meaning==='웅장하다, 장관이다');

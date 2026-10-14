@@ -139,16 +139,16 @@ export function JaText({ ja, yomi, fallbackPron = true }) {
   );
 }
 
-/** 섹션 콜아웃 — 렌더 순서 고정 */
+/** 섹션 콜아웃 — 렌더 순서 고정. 상자는 이름 글자로 구분한다(국기 아이콘 없음 — D-X6, 2026-10-12). */
 export const CALLOUT_ORDER = ['pitfall', 'vsKo', 'vsEn', 'hanja', 'etym', 'tip'];
 
 export const CALLOUT_KINDS = {
-  pitfall: { icon: '🚨', label: '한국인이 헷갈리는 포인트', cls: 'fr-callout--pitfall' },
-  vsKo:    { icon: '🇰🇷', label: '한국어와 비교', cls: 'fr-callout--vsen' },
-  vsEn:    { icon: '🇬🇧', label: '영어와 비교', cls: 'fr-callout--vsen' },
-  hanja:   { icon: '🈶', label: '한자어 연결', cls: 'fr-callout--etym' },
-  etym:    { icon: '🌱', label: '어원 연결', cls: 'fr-callout--etym' },
-  tip:     { icon: '💡', label: '팁', cls: 'fr-callout--tip' },
+  pitfall: { label: '한국인이 헷갈리는 포인트', cls: 'fr-callout--pitfall' },
+  vsKo:    { label: '한국어와 비교', cls: 'fr-callout--vsen' },
+  vsEn:    { label: '영어와 비교', cls: 'fr-callout--vsen' },
+  hanja:   { label: '한자어 연결', cls: 'fr-callout--etym' },
+  etym:    { label: '어원 연결', cls: 'fr-callout--etym' },
+  tip:     { label: '팁', cls: 'fr-callout--tip' },
 };
 
 export function Callout({ kind, text }) {
@@ -163,14 +163,14 @@ export function Callout({ kind, text }) {
 }
 
 /**
- * 🇬🇧↔🇫🇷 나란히 비교 블록 — 영어와 문법 구조가 평행한 지점을 시각적으로 대조.
+ * 영어 ↔ 프랑스어 나란히 비교 블록 — 영어와 문법 구조가 평행한 지점을 시각적으로 대조.
  * data: { rows: [{ en, fr, ko? }], note? }  — en/fr 안의 **굵게**로 평행 부분 강조.
  */
 export function RefParallel({ data }) {
   if (!data || !Array.isArray(data.rows) || data.rows.length === 0) return null;
   return (
     <div className="fr-parallel">
-      <span className="fr-parallel__label">🇬🇧 ↔ 🇫🇷 영어와 나란히</span>
+      <span className="fr-parallel__label">영어와 나란히</span>
       <div className="fr-parallel__rows">
         {data.rows.map((r, i) => (
           <div key={i} className="fr-parallel__row">
