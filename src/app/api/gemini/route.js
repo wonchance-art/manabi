@@ -71,7 +71,7 @@ export async function POST(request) {
   if (!authHeader) {
     recordStat('errors');
     stats.errorByStatus['401'] = (stats.errorByStatus['401'] || 0) + 1;
-    return Response.json({ error: { message: '로그인이 필요합니다.' } }, { status: 401 });
+    return Response.json({ error: { message: '로그인이 필요해요.' } }, { status: 401 });
   }
   const token = authHeader.replace(/^Bearer\s+/i, '');
   const authClient = createClient(
@@ -83,7 +83,7 @@ export async function POST(request) {
   if (authErr || !authUser) {
     recordStat('errors');
     stats.errorByStatus['401'] = (stats.errorByStatus['401'] || 0) + 1;
-    return Response.json({ error: { message: '세션이 만료됐어요. 다시 로그인해주세요.' } }, { status: 401 });
+    return Response.json({ error: { message: '세션이 만료됐어요. 다시 로그인해 주세요.' } }, { status: 401 });
   }
 
   // 사용자 ID 기반 rate limit (IP보다 공정)
@@ -92,7 +92,7 @@ export async function POST(request) {
   if (isRateLimited(rateLimitKey)) {
     recordStat('rateLimited');
     return Response.json(
-      { error: { message: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' } },
+      { error: { message: '요청이 너무 많아요. 잠시 후 다시 시도해 주세요.' } },
       { status: 429 }
     );
   }

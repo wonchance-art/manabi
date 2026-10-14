@@ -85,27 +85,28 @@ describe('suggestionRank — 순수 랭커', () => {
 describe('홈 배선 (HomePage)', () => {
   const home = read('src/views/HomePage.jsx');
 
-  it('scored[0] 한 장 대신 순수 랭커 상위 N장 — 커버리지는 material_id 카드만 materialFit으로', () => {
-    expect(home).toContain("import { rankSuggestions, REASON } from '@/lib/suggestionRank';");
-    expect(home).toContain('}).slice(0, 2);');
+  // 배움(LEARN-HOME-AK-001): 「읽을거리」 두 장 목록은 목업에서 빠지고, 추천은 이어 읽기 칸의 넷째 상태(산책 추천)로만 남는다 —
+  // 교재 · 서재 자료가 없는 언어에서 그 언어의 추천 한 장. 순서는 여전히 순수 랭커가 정한다(scored[0] 직접 고르기 금지).
+  it('추천은 순수 랭커가 고른 칩 언어의 한 장 — 교재 · 서재 자료가 없을 때만 받는다', () => {
+    expect(home).toContain("import { rankSuggestions } from '@/lib/suggestionRank';");
     expect(home).not.toMatch(/return scored\[0\]/);
-    expect(home).toContain("fitOf: s => fitMap[s.material_id] ?? null,");
+    expect(home).toContain('langs: [lang], fitOf: () => null,');
     expect(home).toContain("levelOf: s => getIdealLevel(s.language, data?.vocabByLang?.[s.language] || 0),");
-    // 재료: 추천 material_id의 processed_json만(상한 12) + 이 화면이 이미 끌어온 단어 행으로 {surfaces, bases}
-    expect(home).toContain(".select('id, processed_json').in('id', fitIds)");
+    expect(home).toContain('.find(s => s.language === lang)');
+    expect(home).toContain('enabled: needSuggestion');
     expect(home).toContain("fetchVocabularyLearningRows(userId, { fields: 'summary' })");
     expect(VOCABULARY_LEARNING_SUMMARY_FIELDS).toEqual(expect.arrayContaining(['language', 'word_text', 'base_form']));
-    expect(home).toContain('materialFit(m.processed_json, known)');
+    // 칸에 사유 줄이 없으니 자료 본문(processed_json)을 커버리지용으로 끌어오지 않는다
+    expect(home).not.toContain(".select('id, processed_json')");
     // 뷰어의 fetchUserVocabWords를 옮기지 않았다(offlineCache 앵커)
     expect(home).not.toContain('fetchUserVocabWords');
     expect(read('src/views/ViewerPage.jsx')).toContain('async function fetchUserVocabWords');
   });
 
-  it('카드마다 사유 한 줄 — 문구는 뷰가 조립하고, 사유 없는 카드는 그리지 않는다', () => {
-    expect(home).toContain('function reasonText(rank) {');
-    for (const r of ['FIT', 'FIT_EASY', 'FIT_HARD', 'LEVEL', 'LEVEL_NEAR', 'LANG', 'OTHER']) expect(home).toContain(`case REASON.${r}:`);
-    expect(home).toContain('reasonText(s.rank)');
-    expect(home).toContain('className="today-story"');
-    expect(home).toContain('suggestions.map(s =>');
+  it('추천 칸은 읽을 수 있는 카드만, 목적지는 추천 읽기 주소 정본', () => {
+    expect(home).toContain('.filter(canReadSuggestion)');
+    expect(home).toContain("suggestionHref(suggestion, 'home')");
+    expect(home).toContain("kicker: '산책 추천'");
   });
 });
+

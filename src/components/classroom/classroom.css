@@ -130,7 +130,7 @@ button.classroom-featured-note {width:100%;border:0;text-align:left;font:inherit
 
 @container (max-width:520px) {
  .class-team-heading {flex-direction:column;align-items:stretch;gap:10px;}
- .class-team-heading h1 {word-break:keep-all;overflow-wrap:anywhere;}
+ .class-team-heading h1 {overflow-wrap:anywhere;}
  .class-team-heading>.classroom-actions {justify-content:flex-end;}
 }
 

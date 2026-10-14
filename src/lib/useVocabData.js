@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
-import { friendlyToastMessage } from './errorMessage';
+import { failureMessage } from './errorMessage';
 import { csvToVocabRows } from './vocabIO';
 import { fetchVocabularyLearningRows } from './vocabularyLearningRows';
 import { useMemo, useRef } from 'react';
@@ -50,8 +50,11 @@ export function useVocabData() {
     queryFn: ({ signal }) => fetchVocabLearningData(user.id, { signal, getActorId: () => actorRef.current }),
     enabled: !!user,
   });
-  const vocab = learning?.actorId === user?.id ? learning.rows : EMPTY_ROWS;
-  const projections = learning?.actorId === user?.id ? learning.projections : EMPTY_ROWS;
+  // 로그인 전에는 query가 꺼져 learning이 없다 — `undefined === undefined`로 남의(없는) 결과를 읽지 않게
+  // 사용자 id가 있을 때만 그 사용자의 결과로 인정한다(2026-10-14 M09: 게스트 /vocab 크래시).
+  const ownLearning = user?.id && learning?.actorId === user.id ? learning : null;
+  const vocab = ownLearning ? ownLearning.rows : EMPTY_ROWS;
+  const projections = ownLearning ? ownLearning.projections : EMPTY_ROWS;
   const materialIds = useMemo(() => [...new Set(vocab.map(row => row.source_material_id).filter(Boolean))].sort(), [vocab]);
   // 제목은 로그인 사용자의 RLS로만 읽는 표시 보조다. 실패해도 학습 정본을 대체하지 않는다.
   const { data: materialTitles = EMPTY_TITLES } = useQuery({
@@ -78,7 +81,7 @@ export function useVocabData() {
     onSuccess: (_result, _variables, context) => {
       invalidateVocabularyLearning(queryClient, context?.actorId);
     },
-    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast('업데이트 실패 — ' + friendlyToastMessage(err), 'error'); },
+    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast(failureMessage('단어를 수정하지 못했어요.', err), 'error'); },
   });
 
   const deleteMutation = useMutation({
@@ -94,9 +97,9 @@ export function useVocabData() {
       invalidateVocabularyLearning(queryClient, context?.actorId);
       queryClient.invalidateQueries({ queryKey: ['vocabulary-exclusions', context?.actorId] });
       if (context?.actorId !== actorRef.current) return;
-      toast('단어를 삭제했습니다.', 'info');
+      toast('단어를 삭제했어요.', 'info');
     },
-    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast('삭제 실패 — ' + friendlyToastMessage(err), 'error'); },
+    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast(failureMessage('단어를 삭제하지 못했어요.', err), 'error'); },
   });
 
   // CSV 불러오기
@@ -105,7 +108,7 @@ export function useVocabData() {
     mutationFn: async (file) => {
       const text = await file.text();
       const rows = csvToVocabRows(text, user.id);
-      if (rows.length === 0) throw new Error('유효한 행이 없습니다.');
+      if (rows.length === 0) throw new Error('가져올 수 있는 행이 없어요.');
       if (rows.length > 5000) throw new Error('한 번에 5000개까지만 가져올 수 있어요.');
 
       // 500개씩 배치 upsert
@@ -126,7 +129,7 @@ export function useVocabData() {
       if (context?.actorId !== actorRef.current) return;
       toast(`${count}개 단어를 가져왔어요. (중복은 자동 스킵)`, 'success', 5000);
     },
-    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast('가져오기 실패 — ' + friendlyToastMessage(err), 'error'); },
+    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast(failureMessage('단어를 가져오지 못했어요.', err), 'error'); },
   });
 
   // 개별 단어 편집 (word_text/furigana/meaning/pos)
@@ -151,7 +154,7 @@ export function useVocabData() {
       if (context?.actorId !== actorRef.current) return;
       toast('단어를 수정했어요', 'success');
     },
-    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast('수정 실패 — ' + friendlyToastMessage(err), 'error'); },
+    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast(failureMessage('단어를 수정하지 못했어요.', err), 'error'); },
   });
 
   const bulkDeleteMutation = useMutation({
@@ -169,20 +172,20 @@ export function useVocabData() {
       invalidateVocabularyLearning(queryClient, context?.actorId);
       queryClient.invalidateQueries({ queryKey: ['vocabulary-exclusions', context?.actorId] });
       if (context?.actorId !== actorRef.current) return;
-      toast(`${count}개 단어를 삭제했습니다.`, 'info');
+      toast(`단어 ${count}개를 삭제했어요.`, 'info');
     },
-    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast('일괄 삭제 실패: ' + err.message, 'error'); },
+    onError: (err, _variables, context) => { if (context?.actorId === actorRef.current) toast(failureMessage('선택한 단어를 삭제하지 못했어요.', err), 'error'); },
   });
 
   return {
     vocab,
     projections,
-    learningAvailable: !error && learning?.actorId === user?.id && learning?.complete === true,
-    learningNow: learning?.now,
+    learningAvailable: !error && ownLearning?.complete === true,
+    learningNow: ownLearning?.now,
     materialTitles,
-    isOffline: learning?.actorId === user?.id && learning?.offline === true,
+    isOffline: ownLearning?.offline === true,
     isLoading,
-    error: error || learning?.readError,
+    error: error || ownLearning?.readError,
     refetch,
     scoreMutation,
     deleteMutation,

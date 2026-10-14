@@ -278,7 +278,7 @@ describe('splitZhToken — 우연 병합 분해', () => {
 // 조립이 안 쓰면 분리가 조용히 사라진다.
 describe('분리 배선 계약 (analyze route)', () => {
   it('라우트가 parts verdict로 splitZhToken을 호출한다', () => {
-    const src = fs.readFileSync(path.join(process.cwd(), 'src/app/api/analyze/route.js'), 'utf8');
+    const src = fs.readFileSync(path.join(process.cwd(), 'src/lib/server/analyzeCore.js'), 'utf8');
     expect(src).toContain('splitZhToken(t, parts)');
   });
 });

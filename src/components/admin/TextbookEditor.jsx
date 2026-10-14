@@ -7,6 +7,7 @@ import { useAuth } from '../../lib/AuthContext';
 import { CHAPTER_FIELD_LABELS, editableEntries, updateChapterValue } from '../../lib/chapterEditorModel';
 import { TEXTBOOK_THEMES, textbookThemeStyle } from '../../lib/textbookTheme';
 import './textbook.css';
+import { friendlyToastMessage } from '../../lib/errorMessage';
 
 const labelFor = (key) => CHAPTER_FIELD_LABELS[key] || key;
 
@@ -77,7 +78,7 @@ export default function TextbookEditor({ catalog, initialLang, initialSlug }) {
       if (controller.signal.aborted) return;
       setSnapshot(result); setDraft(result.merged);
     }).catch((cause) => {
-      if (!controller.signal.aborted) setError(cause.message);
+      if (!controller.signal.aborted) setError(friendlyToastMessage(cause));
     }).finally(() => { if (!controller.signal.aborted) setPending(false); });
     return () => controller.abort();
   }, [selection.lang, selection.slug, reload, isAdmin]);
@@ -111,21 +112,21 @@ export default function TextbookEditor({ catalog, initialLang, initialSlug }) {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || '저장하지 못했어요.');
       setSnapshot({ ...snapshot, merged: draft, override: draft, updatedAt: result.updatedAt });
-      setNotice('저장했어요. 교재 페이지에 수정 내용이 반영됩니다.');
+      setNotice('저장했어요. 교재 페이지에 수정 내용이 반영돼요.');
       router.refresh();
     } catch (cause) {
-      setError(cause.message || '연결이 끊겼어요. 입력한 내용은 유지됩니다.');
+      setError(friendlyToastMessage(cause, '인터넷 연결을 확인해 주세요. 입력한 내용은 그대로 있어요.'));
     } finally { savingRef.current = false; setSaving(false); }
   }
 
   if (authLoading) return <p className="page-container">관리자 권한 확인 중…</p>;
   if (!isAdmin) return <p className="page-container">관리자 계정으로 로그인해 주세요.</p>;
-  if (!book) return <p className="page-container">편집할 교재가 없습니다.</p>;
+  if (!book) return <p className="page-container">편집할 교재가 없어요.</p>;
   const levels = [...new Set(book.chapters.map((chapter) => chapter.level))];
 
   return <div className="page-container textbook-editor textbook-theme" style={textbookThemeStyle(selection.lang)}>
     <header className="textbook-editor__header"><div><h1>교재 편집</h1>
-      <p className="textbook-editor__muted">언어와 레벨을 고르고 내용을 다듬어 주세요. 저장하면 교재에 바로 반영됩니다.</p></div>
+      <p className="textbook-editor__muted">언어와 레벨을 고르고 내용을 다듬어 주세요. 저장하면 교재에 바로 반영돼요.</p></div>
       <Link href="/admin" onClick={(event) => { if (saving || !mayLeave()) event.preventDefault(); }}>관리자 홈</Link>
     </header>
     <fieldset className="textbook-editor__pickers" disabled={saving}>
@@ -141,7 +142,7 @@ export default function TextbookEditor({ catalog, initialLang, initialSlug }) {
     </fieldset>
     {pending && <p role="status">교재를 불러오는 중…</p>}
     {error && <div className="textbook-editor__message" role="alert"><p>{error}</p>
-      <button className="btn btn--ghost btn--sm" type="button" disabled={saving} onClick={() => { if (mayLeave()) setReload((n) => n + 1); }}>최신 내용 다시 불러오기</button>
+      <button className="btn btn--ghost btn--sm" type="button" disabled={saving} onClick={() => { if (mayLeave()) setReload((n) => n + 1); }}>최신 내용 불러오기</button>
     </div>}
     {notice && <p className="textbook-editor__message" role="status">{notice}</p>}
     {draft && <>

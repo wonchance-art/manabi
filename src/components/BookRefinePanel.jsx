@@ -22,6 +22,7 @@ import { analyzeText } from '../lib/analyzeText';
 import { runPreservedReanalysis, replaceViewerAnalysis } from '../lib/reanalysisPreservation';
 import Button from './Button';
 import ConfirmModal from './ConfirmModal';
+import { friendlyToastMessage, failureMessage } from '../lib/errorMessage';
 
 const STATUS_LABEL = {
   wait: '대기', running: '정제 중…', done: '완료', skip: '뜻 줄 없음', fail: '실패',
@@ -84,7 +85,7 @@ export default function BookRefinePanel({ materials, userId, toast, onRefined })
       const unassigned = rows.flatMap(({ chapter, plan }) => (plan.ok ? plan.unassigned.map((u) => ({ ...u, title: chapter.title })) : []));
       setInspect({ book, rows, stats, unassigned });
     } catch (err) {
-      toast?.('정제 검사 실패: ' + (err?.message || '알 수 없는 오류'), 'error');
+      toast?.(failureMessage('정제 검사를 하지 못했어요.', err), 'error');
     } finally {
       setBusy(false);
     }
@@ -109,12 +110,12 @@ export default function BookRefinePanel({ materials, userId, toast, onRefined })
       } catch (err) {
         if (err?.name === 'AbortError') break;
         failed += 1;
-        setProgress((p) => ({ ...p, [chapter.id]: 'fail', [`${chapter.id}:reason`]: err?.message || '실패' }));
+        setProgress((p) => ({ ...p, [chapter.id]: 'fail', [`${chapter.id}:reason`]: friendlyToastMessage(err, '정제하지 못했어요.') }));
       }
     }
     setBusy(false);
     abortRef.current = null;
-    toast?.(`《${inspect.book.title || '제목 없는 책'}》 정제 — ${done}과 완료${failed ? ` · ${failed}과 실패` : ''}`, failed ? 'warning' : 'success');
+    toast?.(`《${inspect.book.title || '제목 없는 책'}》 ${done}과를 정제했어요.${failed ? ` ${failed}과는 정제하지 못했어요.` : ''}`, failed ? 'warning' : 'success');
     onRefined?.();
   }
 
@@ -173,7 +174,7 @@ export default function BookRefinePanel({ materials, userId, toast, onRefined })
               <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                 {busy && abortRef.current
                   ? <Button size="sm" variant="danger" onClick={() => abortRef.current?.abort()}>중단</Button>
-                  : <Button size="sm" disabled={busy} onClick={() => setConfirming(true)}>정제 실행 ({inspect.stats.chapters}과)</Button>}
+                  : <Button size="sm" disabled={busy} onClick={() => setConfirming(true)}>정제하기 ({inspect.stats.chapters}과)</Button>}
                 <Button size="sm" variant="ghost" disabled={busy} onClick={() => setInspect(null)}>닫기</Button>
               </div>
             </>
@@ -183,9 +184,9 @@ export default function BookRefinePanel({ materials, userId, toast, onRefined })
 
       <ConfirmModal
         open={confirming}
-        title="책 단위 정제"
+        title="이 책을 책 단위로 정제할까요?"
         message={inspect ? `《${inspect.book.title || '제목 없는 책'}》 ${inspect.stats.chapters}과 · ${summarizeSplit(inspect.stats)} — 원어만 남기고 뜻은 드래그 번역에 붙여요. 원어 줄은 재분석하지 않아요.` : ''}
-        confirmLabel="정제 실행"
+        confirmLabel="정제하기"
         variant="primary"
         onConfirm={handleRun}
         onCancel={() => setConfirming(false)}

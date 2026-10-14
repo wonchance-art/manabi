@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import fs from 'node:fs';
+import { sliceBetween } from './helpers/sliceBetween';
 vi.mock('../AuthContext', () => ({ useAuth: () => ({ user: null }) }));
 import VocabReview from '../../views/VocabReview';
 const word = { id: 1, word_text: 'きっかけ', meaning: '계기', language: 'Japanese', source_material_id: 91001, source_sentence: '学ぶきっかけです。' };
@@ -32,7 +33,7 @@ describe('review room recall and source contract', () => {
     const returnTo = '/books/japanese-n5?edition=8a8c1c1fd452773810abaf8c#u42-message-reading';
     const html = render({ reviewFinished: true, bookReview: { bookId: 'japanese-n5', returnTo } });
     expect(html).toContain(`href="${returnTo}"`);
-    expect(html).toContain('이번 표현 복습을 마쳤어요');
+    expect(html).toContain('오늘 몫 끝'); // 끝 화면(§5-5) — 「전체 복습 끝」이 아니라 이 범위 · 오늘 몫
     expect(html).not.toContain('href="/lessons"');
     expect(html).not.toContain('href="/materials"');
     expect(html).not.toContain('오늘의 복습 완료');
@@ -46,8 +47,11 @@ describe('review room recall and source contract', () => {
   });
   it('account changes remount all session state; queue preparation cannot revive an unmounted account', () => {
     const code = fs.readFileSync('src/views/VocabPage.jsx','utf8');
-    expect(code).toContain("key={`${user?.id || 'guest'}:${bookReview?.bookId || 'all'}:${bookReview?.returnTo || ''}`}");
-    expect(code).toContain('if (!workspaceAlive.current) return;');
+    // 범위 주소(REV-SCOPE-R1A)가 바뀌어도 같은 규칙 — 계정 · 명시 범위가 바뀌면 작업 공간 전체를 새로 만든다.
+    expect(code).toContain("const scopeKey = reviewScope?.explicit ? serializeReviewScope(reviewScope.scope, { returnTo: reviewScope.returnTo }) : 'saved';");
+    expect(code).toContain("key={`${user?.id || 'guest'}:${scopeKey}`}");
+    // 줄 준비(admission · FSRS refresh) 뒤 언마운트된 작업 공간이면 시작하지 않는다.
+    expect(sliceBetween(code, 'const startSession = async', 'const queue = initialSteps(planned);')).toContain('|| !workspaceAlive.current) return;');
     expect(code).toContain('error: vocabError, refetch: refetchVocab');
   });
   it('server grammar query failures branch before a successful empty session', () => {

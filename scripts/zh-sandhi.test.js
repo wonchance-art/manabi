@@ -23,7 +23,8 @@ describe('一 — 뒤 성조로 갈린다', () => {
   it('끝음절 어휘는 yī를 지킨다 — 콘텐츠 표제어에서 뽑은 닫힌 목록', () => {
     for (const [zh, py] of [['这是我第一次。', 'zhè shì wǒ dì yī cì'], ['他是我朋友之一。', 'tā shì wǒ péngyou zhī yī'],
       ['万一下雨呢。', 'wàn yī xià yǔ ne'], ['这是唯一的办法。', 'zhè shì wéi yī de bànfǎ'],
-      ['同一个人。', 'tóng yī ge rén'], ['周一开会。', 'zhōu yī kāi huì']])
+      ['同一个人。', 'tóng yī ge rén'], ['周一开会。', 'zhōu yī kāi huì'],
+      ['老师一一回答。', 'lǎoshī yī yī huídá']])
       expect(v(zh, py), zh).toEqual([]);
   });
 

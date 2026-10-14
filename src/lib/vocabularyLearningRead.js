@@ -1,6 +1,6 @@
 /** 읽기 전용 학습 projection. 원본 단어/출처와 일정의 코호트를 합쳐 쓰지 않는다. */
 import { forgetting_curve, generatorParameters } from 'ts-fsrs';
-import { FSRS_POLICY, learningDay, schedulerTime, validateFsrsCard } from './fsrsScheduler.js';
+import { FSRS_POLICIES, FSRS_POLICY, fsrsPolicySteps, learningDay, schedulerTime, validateFsrsCard } from './fsrsScheduler.js';
 
 const identity = value => typeof value === 'string' && value.length > 0 && value.length <= 200;
 const fail = code => { throw Object.assign(new Error(code), { code }); };
@@ -9,8 +9,12 @@ const legacyWeights = generatorParameters().w;
 const pinnedWeights = generatorParameters({ request_retention: FSRS_POLICY.retention,
   maximum_interval: FSRS_POLICY.maximumInterval, enable_fuzz: false, enable_short_term: true }).w;
 
-export const VOCABULARY_LEARNING_SUMMARY_FIELDS = Object.freeze(['id', 'user_id', 'word_text', 'base_form',
+// 학습 snapshot 행이 반드시 가져야 하는 칸(없으면 snapshot 전체를 거부한다).
+export const VOCABULARY_LEARNING_REQUIRED_FIELDS = Object.freeze(['id', 'user_id', 'word_text', 'base_form',
   'meaning', 'language', 'created_at', 'interval', 'ease_factor', 'repetitions', 'last_reviewed_at', 'next_review_at', 'source_material_id']);
+// 요약 조회(fields=summary)가 보내는 칸. source_ref는 복습 범위의 「사전 급수 덱 · 오늘 학습」 출처라(REV-SCOPE-R1A)
+// 요약에도 싣는다 — 다만 nullable 출처 메타라 필수 칸 검사에는 넣지 않는다(옛 행 · 고정 데이터가 snapshot을 깨지 않게).
+export const VOCABULARY_LEARNING_SUMMARY_FIELDS = Object.freeze([...VOCABULARY_LEARNING_REQUIRED_FIELDS, 'source_ref']);
 
 // PostgreSQL의 기존 timestamp는 마이크로초를 가질 수 있다. 원문 값은 그대로 두고,
 // 읽기 eligibility만 다음 밀리초로 올림하여 실제 만기보다 먼저 활성화하지 않는다.
@@ -66,7 +70,10 @@ export function projectVocabularyLearning({ actorId, vocabulary, registry, enabl
     if (due < schedulerTime(card.due)) fail('vocabulary_learning_invalid_registry');
     if (registry.attempt && (registry.attempt.userId !== actorId || registry.attempt.cardId !== vocabulary.id)) fail('vocabulary_learning_owner_mismatch');
     firstQuestionAt = registry.firstQuestionAt;
-    if (firstQuestionAt !== null && (schedulerTime(firstQuestionAt) < schedulerTime(card.introducedAt) + FSRS_POLICY.learning[0] * 1000 || schedulerTime(firstQuestionAt) > now)) fail('vocabulary_learning_invalid_receipt');
+    // 첫 질문은 소개 정책의 첫 단계 뒤다. 채점된 카드는 정책이 바뀌었을 수 있어(anki-seconds-v1 → anki-v2) 가장 짧은 첫 단계로 본다.
+    const firstStep = card.state === 'New' ? fsrsPolicySteps(card.policyVersion).learning[0]
+      : Math.min(...Object.values(FSRS_POLICIES).map(policy => policy.learning[0]));
+    if (firstQuestionAt !== null && (schedulerTime(firstQuestionAt) < schedulerTime(card.introducedAt) + firstStep * 1000 || schedulerTime(firstQuestionAt) > now)) fail('vocabulary_learning_invalid_receipt');
   } else {
     if (registry.card !== null || registry.nextQuestionAt !== null || registry.firstQuestionAt !== null || registry.attempt != null) fail('vocabulary_learning_cohort_mismatch');
     source = 'legacy'; memory = legacyMemory(vocabulary); firstQuestionAt = null;

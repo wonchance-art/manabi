@@ -234,6 +234,28 @@ describe('account-bound FSRS operation transport', () => {
     client.dispose();
   });
 
+  it('retries the status GET twice on 5xx only, then surfaces the failure (REVIEW-LOAD-TRANSIENT-001)', async () => {
+    const ok = reply({ version: 1, actorId: 'alice', enabled: true, registryAvailable: true, cards: [] });
+    const down = reply({ ok: false, code: 'fsrs_storage_unavailable' }, 503);
+    let fetchImpl = vi.fn().mockResolvedValueOnce(down).mockResolvedValueOnce(down).mockResolvedValueOnce(ok);
+    let client = createFsrsLearningClient({ accountId: 'alice', outbox: memory(), fetchImpl, readRetryDelay: 0 });
+    await expect(client.load()).resolves.toMatchObject({ registryAvailable: true });
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+    client.dispose();
+
+    fetchImpl = vi.fn(async () => down);
+    client = createFsrsLearningClient({ accountId: 'alice', outbox: memory(), fetchImpl, readRetryDelay: 0 });
+    await expect(client.load()).rejects.toMatchObject({ code: 'fsrs_storage_unavailable', status: 503 });
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+    client.dispose();
+
+    fetchImpl = vi.fn(async () => reply({ ok: false, code: 'fsrs_auth_required' }, 401));
+    client = createFsrsLearningClient({ accountId: 'alice', outbox: memory(), fetchImpl, readRetryDelay: 0 });
+    await expect(client.load()).rejects.toMatchObject({ code: 'fsrs_auth_required' });
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    client.dispose();
+  });
+
   it('does not substitute a stale GET failure or unreadable queue with an empty success', async () => {
     const store = memory(); store.list.mockRejectedValue(new Error('blocked storage'));
     const client = createFsrsLearningClient({ accountId: 'alice', outbox: store,

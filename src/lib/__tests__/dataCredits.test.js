@@ -32,6 +32,7 @@ function walk(dir, out = []) {
 const MARKERS = [
   { re: /CC-CEDICT/, id: 'cc-cedict' },
   { re: /ivankra\/hsk30/, id: 'hsk30' },
+  { re: /HSK 考试大纲/, id: 'hsk-syllabus-2026' },
   { re: /drkameleon\/complete-hsk-vocabulary/, id: 'complete-hsk-vocabulary' },
   { re: /kuromoji/, id: 'kuromoji-ipadic' },
   { re: /open-anki-jlpt-decks/, id: 'open-anki-jlpt-decks' },
@@ -46,6 +47,11 @@ const MARKERS = [
   { re: /ODbL/, id: 'openstreetmap' },
   { re: /Natural Earth/, id: 'natural-earth' },
   { re: /ETOPO/, id: 'etopo-2022' },
+  { re: /ColBase/, id: 'colbase' },
+  { re: /api\.artic\.edu/, id: 'art-institute-chicago' },
+  { re: /Wikidata/, id: 'wikidata' },
+  { re: /metmuseum\.org/, id: 'metropolitan-museum-of-art' },
+  { re: /commons\.wikimedia\.org/, id: 'wikimedia-commons' },
 ];
 
 describe('자료 출처 — 코드의 원천 표지와 화면 목록이 갈리지 않는다', () => {

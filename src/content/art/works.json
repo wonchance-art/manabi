@@ -1,0 +1,1307 @@
+[
+  {
+    "id": "hokusai-kanagawa-oki-nami-ura",
+    "wikidata": "Q252485",
+    "artist": "katsushika-hokusai",
+    "title": {
+      "native": "冨嶽三十六景 神奈川沖浪裏",
+      "ko": "후가쿠 36경 — 가나가와 앞바다 파도 아래",
+      "reading": "ふがくさんじゅうろっけい かながわおきなみうら"
+    },
+    "series": {
+      "native": "冨嶽三十六景",
+      "ko": "후가쿠 36경"
+    },
+    "date": {
+      "text": "1830/33",
+      "source": "aic",
+      "startYear": 1830,
+      "endYear": 1833,
+      "certainty": "range"
+    },
+    "periods": [
+      "jp-edo"
+    ],
+    "medium": {
+      "native": "横大判　錦絵",
+      "ko": "가로 오반 니시키에(다색 목판화)"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-685"
+      },
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/24645"
+      },
+      {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/39799"
+      },
+      {
+        "place": "tokyo-bay",
+        "role": "depicted"
+      },
+      {
+        "place": "mount-fuji",
+        "role": "depicted"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-49296",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-685",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "襲いかかるようにせり上がった大波と、うねりに翻弄される小舟。渦巻のような構図の中心に、富士山が自然対人間のドラマを見ているかのように配されている。自然をそのままに描くのではなく、誇張を加えたダイナミックな構成が高い効果をもたらしている。\n\n　これは、江戸時代の後半に、浮世絵師の葛飾北斎が描いた木版画で、富士山をテーマとした46枚シリーズの一枚です。日本の絵画の中でも、最も世界的に知られた一枚ではないでしょうか。タイトルは「冨嶽三十六景」なのに46枚あるのは、人気が高く当初の予定から10枚増えたためです。葛飾北斎は、アメリカの雑誌『ライフ』で「この1000年で最も重要な功績を残した世界の100人」にも選ばれています。\n　嵐を予感させる暗い空をバックに、大きなうねりをあげる波と、その向こうから顔を出す富士山。房総から江戸に急ぎの荷物を運ぶ早船でしょうか、たくさんの漕ぎ手が乗った船が波にまかれています。本当にこんな大波がきたら、人びとの乗る船はひとたまりもありません。現実的な風景ではなく、ちょっと大げさに、ドラマチックに表現したのでしょう。大きく動きのある波と遠く安定した三角形の富士山の対比が、遠近感を生み出しています。\n　この作品をはじめ、「冨嶽三十六景」シリーズの最初の頃には、「ベルリン・ブルー」と呼ばれた青い顔料が多く使われています。この時代にヨーロッパから日本に入ってきたもので、北斎の新しいものへの関心の高さが見てとれます。",
+        "textSha256": "0633699768ee087d2b208ef024af26b74dac5a0ef5ec3b71506e2377e4cb5755"
+      },
+      {
+        "language": "en",
+        "source": "aic",
+        "sourceId": "24645",
+        "sourceUrl": "https://www.artic.edu/artworks/24645",
+        "credit": "Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "Katsushika Hokusai’s much celebrated series, Thirty-Six Views of Mount Fuji (Fugaku sanjûrokkei), was begun in 1830, when the artist was 70 years old. This tour-de-force series established the popularity of landscape prints, which continues to this day. Perhaps most striking about the series is Hokusai’s copious use of the newly affordable Berlin blue pigment, featured in many of the compositions in the color for the sky and water. Mount Fuji is the protagonist in each scene, viewed from afar or up close, during various weather conditions and seasons, and from all directions.\n\nThe most famous image from the set is the \"Great Wave\" (Kanagawa oki nami ura), in which a diminutive Mount Fuji can be seen in the distance under the crest of a giant wave. The three impressions of Hokusai’s Great Wave in the Art Institute are all later impressions than the first state of the design.",
+        "textSha256": "578c51634bdffdf283b3eac6b27f7a036b2b38ec3cb576cca630fc35d2c0889e"
+      }
+    ],
+    "terms": [
+      "浮世絵師",
+      "木版画",
+      "ベルリン・ブルー"
+    ],
+    "lookFor": [
+      "파도에 휩쓸리는 배는 몇 척이고, 노 젓는 사람들은 어떤 자세일까요?",
+      "멀리 작은 후지산은 파도의 어느 부분과 겹쳐 보일까요?",
+      "푸른색이 가장 짙은 곳과 옅은 곳을 찾아봐요."
+    ],
+    "image": {
+      "url": "/art/hokusai-kanagawa-oki-nami-ura.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/39799",
+      "license": "cc0",
+      "credit": "Katsushika Hokusai. Under the Wave off Kanagawa (Kanagawa oki nami ura), or The Great Wave, from the series Thirty-six Views of Mount Fuji (Fugaku sanjūrokkei), ca. 1830–32. The Metropolitan Museum of Art, The Howard Mansfield Collection, Purchase, Rogers Fund, 1936. CC0",
+      "width": 600,
+      "height": 410,
+      "alt": "발톱처럼 휘어 올라간 큰 파도가 길고 좁은 배 세 척을 덮치려 하고, 파도 골 사이 멀리 눈 덮인 작은 후지산이 보인다."
+    }
+  },
+  {
+    "id": "hokusai-gaifu-kaisei",
+    "wikidata": "Q3565037",
+    "artist": "katsushika-hokusai",
+    "title": {
+      "native": "冨嶽三十六景 凱風快晴",
+      "ko": "후가쿠 36경 — 맑은 날의 남풍",
+      "reading": "ふがくさんじゅうろっけい がいふうかいせい"
+    },
+    "series": {
+      "native": "冨嶽三十六景",
+      "ko": "후가쿠 36경"
+    },
+    "date": {
+      "text": "c. 1830/33",
+      "source": "aic",
+      "startYear": 1830,
+      "endYear": 1833,
+      "certainty": "circa"
+    },
+    "periods": [
+      "jp-edo"
+    ],
+    "medium": {
+      "native": "横大判　錦絵",
+      "ko": "가로 오반 니시키에(다색 목판화)"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/A-11176-1"
+      },
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/87005"
+      },
+      {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/57007"
+      },
+      {
+        "place": "mount-fuji",
+        "role": "depicted"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-166407",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-11176-1",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "　これは、江戸時代の後半に、浮世絵師の葛飾北斎が描いた木版画で、富士山をテーマとした46枚シリーズの一枚です。日本の絵画の中でも、世界的に知られた一枚ではないでしょうか。タイトルは「冨嶽三十六景」なのに46枚あるのは、人気が高く当初の予定から10枚増えたためです。\n　作品タイトルにある「凱風」とは、南から吹くおだやかな風のこと。富士山の裾野までを広くゆったりと描いています。人物も描かれておらず、自然の雄大さが感じられる景色です。何より特徴的なのは、赤くあらわされた山肌です。これは、晴天の中に立つ富士山の赤土の色なのでしょうか、それとも朝焼けに染まった色なのでしょうか。\n　この作品は版画ですから、同じ版木を使っていても、摺りごとに違いがあらわれます。実は同じ「凱風快晴」でも、空や富士山がもっと淡い色をしたバージョンもあり、そちらはだんだんと昇る朝日を受けて景色が色づくプロセスを描いた、といった雰囲気です。一方、東博所蔵のこちらのバージョンでは、青空や赤い富士山の色がよりはっきりとあらわされ、暑い晴天の中に立つ富士、という強さがあるようです。こうした摺りごとのバリエーションが見られるのも、版画の面白さのひとつです。\n　この作品をはじめ、「冨嶽三十六景」シリーズの最初の頃には、「ベロ」と呼ばれた青い顔料「ベルリン・ブルー」が多く使われています。この時代にヨーロッパから日本に入ってきたもので、北斎の新しいものへの関心の高さが見てとれます。",
+        "textSha256": "b880c1e38253e0669db0222650092d154b87b70f53992adb7ec9f78c2546cfc7"
+      },
+      {
+        "language": "en",
+        "source": "colbase",
+        "sourceId": "cobas-166407",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-11176-1",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "This woodblock print was produced by the ukiyo-e artist Katsushika Hokusai in the late Edo period. It is one of a series of works called Thirty-Six Views of Mount Fuji. It is also one of the most famous Japanese pictures in the world.\n\nThe “mild breeze” of the title refers to a gentle wind that blows in from the south. The foot of Mount Fuji spreads out expansively. There are no human figures and the scene focuses on the grandeur of nature. The most distinctive feature is the reddened mountain surface. Perhaps this redness is the color of Fuji's volcanic surface on a clear day, or maybe the mountain has been dyed this color by the dawn sunlight.\n\nThis is a woodblock print, but the same block can produce different results depending on the printing technique. Some versions of Mild Breeze on a Fine Day use lighter colors for the sky and Mount Fuji. This creates a sense of the landscape changing color as the morning sun slowly rises. However, this version from Tokyo National Museum's collection uses more vivid hues for the blue sky and the red mountain. This emphasizes the sense of Mount Fuji captured on a hot, clear day. These variations enhance the enjoyment of woodblock prints.",
+        "textSha256": "8b2ce17eb9deceb8e79e059ebf685465ca938f97489d93cc17d130e5229524af"
+      }
+    ],
+    "terms": [
+      "凱風",
+      "版木",
+      "摺り"
+    ],
+    "lookFor": [
+      "산의 붉은색은 꼭대기에서 어디까지 이어질까요?",
+      "산기슭 아래 숲은 어떻게 표현됐을까요?",
+      "하늘의 흰 구름 줄은 어느 쪽으로 흐를까요?"
+    ],
+    "image": {
+      "url": "/art/hokusai-gaifu-kaisei.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/57007",
+      "license": "cc0",
+      "credit": "Katsushika Hokusai. South Wind, Clear Sky (Gaifū kaisei), also known as Red Fuji, from the series Thirty-six Views of Mount Fuji (Fugaku sanjūrokkei), ca. 1830–32. The Metropolitan Museum of Art, The Howard Mansfield Collection, Purchase, Rogers Fund, 1936. CC0",
+      "width": 599,
+      "height": 413,
+      "alt": "푸른 하늘에 비늘 같은 흰 구름이 줄지어 있고, 붉게 물든 후지산이 화면 가득 솟아 있다. 꼭대기에는 눈 줄기가 남아 있고 사람은 보이지 않는다."
+    }
+  },
+  {
+    "id": "hokusai-bushu-tamagawa",
+    "wikidata": "Q18173390",
+    "artist": "katsushika-hokusai",
+    "title": {
+      "native": "冨嶽三十六景 武州玉川",
+      "ko": "후가쿠 36경 — 무사시국 다마강",
+      "reading": "ふがくさんじゅうろっけい ぶしゅうたまがわ"
+    },
+    "series": {
+      "native": "冨嶽三十六景",
+      "ko": "후가쿠 36경"
+    },
+    "date": {
+      "text": "c. 1830/33",
+      "source": "aic",
+      "startYear": 1830,
+      "endYear": 1833,
+      "certainty": "circa"
+    },
+    "periods": [
+      "jp-edo"
+    ],
+    "medium": {
+      "native": "横大判　錦絵",
+      "ko": "가로 오반 니시키에(다색 목판화)"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/A-11176-10"
+      },
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/24790"
+      },
+      {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/56392"
+      },
+      {
+        "place": "tama-river",
+        "role": "depicted"
+      },
+      {
+        "place": "mount-fuji",
+        "role": "depicted"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-166408",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-11176-10",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "　これは、江戸時代の後半に、浮世絵師の葛飾北斎が描いた多色摺りの木版画です。富士山をテーマとした46枚シリーズの一枚です。タイトルは「冨嶽三十六景」なのに46枚あるのは、人気が高く当初の予定から10枚増えたためです。\n　ここは玉川、現在の多摩川のほとりです。たっぷりと水をたたえた流れを、一艘の舟が渡っています。手前の岸には、馬の背に荷物をのせて引く人物が一人。あとはただ広々とした水辺の風景です。向こう岸の地面と、さらに遠景の富士山との間は、霞のように空間が大胆に省略されています。\n　水面に注目してみましょう。川幅の中に白から濃い青色までのグラデーションが凝縮され、水の流れの清らかさ、豊かさを感じさせます。よく見ると、水面に立った細かな波は、水の流れの白い部分にも、凹凸の空摺りであらわされています。\n　この作品をはじめ、「冨嶽三十六景」シリーズの最初の頃には、「ベロ」と呼ばれた青い顔料「ベルリン・ブルー」が多く使われています。この時代にヨーロッパから日本に入ってきたもので、北斎の新しいものへの関心の高さが見てとれます。",
+        "textSha256": "a395b6e8a4be589d552a260b8dcaeece071bdd3e0f68cf1be444fdcd40f051c1"
+      }
+    ],
+    "terms": [
+      "空摺り",
+      "グラデーション",
+      "霞"
+    ],
+    "lookFor": [
+      "강을 건너는 배와 기슭에서 말을 끄는 사람을 찾아봐요.",
+      "강물의 흰 부분에서 짙은 푸른색까지 색이 어떻게 이어질까요?",
+      "강과 후지산 사이에 비워 둔 안개 띠는 얼마나 넓을까요?"
+    ],
+    "image": {
+      "url": "/art/hokusai-bushu-tamagawa.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/56392",
+      "license": "cc0",
+      "credit": "Katsushika Hokusai. Tama River in Musashi Province (Bushū Tamagawa), from the series Thirty-six Views of Mount Fuji (Fugaku sanjūrokkei), ca. 1830–32. The Metropolitan Museum of Art, Henry L. Phillips Collection, Bequest of Henry L. Phillips, 1939. CC0",
+      "width": 600,
+      "height": 401,
+      "alt": "넓은 다마강을 배 한 척이 건너고, 앞 기슭에는 짐 실은 말을 끄는 사람이 있다. 비워 둔 안개 띠 너머로 흰 후지산이 보인다."
+    }
+  },
+  {
+    "id": "hiroshige-shono-hakuu",
+    "wikidata": "Q75090509",
+    "artist": "utagawa-hiroshige",
+    "title": {
+      "native": "東海道五拾三次之内 庄野 白雨",
+      "ko": "도카이도 53역참 — 쇼노의 소나기",
+      "reading": "とうかいどうごじゅうさんつぎのうち しょうの はくう"
+    },
+    "series": {
+      "native": "東海道五拾三次之内",
+      "ko": "도카이도 53역참"
+    },
+    "date": {
+      "text": "c. 1833/34",
+      "source": "aic",
+      "startYear": 1833,
+      "endYear": 1834,
+      "certainty": "circa"
+    },
+    "periods": [
+      "jp-edo"
+    ],
+    "medium": {
+      "native": "横大判　錦絵",
+      "ko": "가로 오반 니시키에(다색 목판화)"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-2949"
+      },
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/130691"
+      },
+      {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/36967"
+      },
+      {
+        "place": "shono-juku",
+        "role": "depicted"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-51489",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-2949",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "広重は生涯にわたり東海道を題材とした作品を多数制作しました。その最大のヒット作が竹内孫八（たけのうちまごはち）と鶴屋喜右衛門（つるやきえもん）を版元として出版された「保永堂（ほうえいどう）版東海道」。なかでも「白雨」と題された本図は、突然の夕立に道を急ぐ人々を臨場感たっぷりに描いた、シリーズを代表する一図です。",
+        "textSha256": "d080f39c368ffb74f4b5eb67d49c8a44f8712c2880088436017992d5825ec9c2"
+      }
+    ],
+    "terms": [
+      "版元",
+      "夕立",
+      "臨場感"
+    ],
+    "lookFor": [
+      "비스듬한 빗줄기는 어떤 선으로 그어졌을까요?",
+      "비탈을 오르는 사람과 내려가는 사람을 찾아봐요.",
+      "뒤편 대숲은 몇 겹의 그림자로 나뉠까요?"
+    ],
+    "image": {
+      "url": "/art/hiroshige-shono-hakuu.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/36967",
+      "license": "cc0",
+      "credit": "Utagawa Hiroshige. Sudden Shower in Shōno, ca. 1833–34. The Metropolitan Museum of Art, Rogers Fund, 1918. CC0",
+      "width": 599,
+      "height": 405,
+      "alt": "세찬 소나기 속에서 가마꾼과 삿갓 쓴 길손들이 비탈길을 서둘러 오르내리고, 뒤편 대숲이 바람에 휘어 회색 그림자로 겹쳐 있다."
+    }
+  },
+  {
+    "id": "hiroshige-kuwana-shichiri-no-watashi",
+    "wikidata": "Q75090473",
+    "artist": "utagawa-hiroshige",
+    "title": {
+      "native": "東海道五拾三次之内 桑名 七里渡口",
+      "ko": "도카이도 53역참 — 구와나, 시치리 나루터",
+      "reading": "とうかいどうごじゅうさんつぎのうち くわな しちりのわたしぐち"
+    },
+    "series": {
+      "native": "東海道五拾三次之内",
+      "ko": "도카이도 53역참"
+    },
+    "date": {
+      "text": "江戸時代・19世紀",
+      "source": "colbase",
+      "startYear": 1833,
+      "endYear": 1834,
+      "certainty": "range"
+    },
+    "periods": [
+      "jp-edo"
+    ],
+    "medium": {
+      "native": "横大判　錦絵",
+      "ko": "가로 오반 니시키에(다색 목판화)"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-2953"
+      },
+      {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/36964"
+      },
+      {
+        "place": "kuwana-juku",
+        "role": "depicted"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-51490",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-2953",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "『東海道五拾三次之内』は、日本橋から京都までの道のりを描いた広重の代表作です。本作には、宮（現愛知県名古屋市）から桑名（現三重県桑名市）を結ぶ海路「七里の渡し」が描かれています。桑名城が見える船着場に、乗客をぎっしり乗せた船が到着した様子です。",
+        "textSha256": "3426f0cd27cb30d908900653b8a999197f2862d1a395845b6ea814b753c14a5d"
+      }
+    ],
+    "terms": [
+      "海路",
+      "船着場",
+      "七里の渡し"
+    ],
+    "lookFor": [
+      "나루터에 닿는 큰 배 두 척의 돛은 어떤 모양일까요?",
+      "성의 돌담과 지붕을 찾아봐요.",
+      "물결은 어떤 선으로 그려졌을까요?"
+    ],
+    "image": {
+      "url": "/art/hiroshige-kuwana-shichiri-no-watashi.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/36964",
+      "license": "cc0",
+      "credit": "Utagawa Hiroshige. Kuwana, Shichi-Ri Watashi Guchi, ca. 1834. The Metropolitan Museum of Art, Rogers Fund, 1918. CC0",
+      "width": 599,
+      "height": 407,
+      "alt": "돛을 단 큰 배 두 척이 물결을 헤치고 구와나 성의 돌담 나루터에 닿고, 멀리 바다에는 돛단배들이 떠 있다. 하늘 위쪽은 붉게 물들어 있다."
+    }
+  },
+  {
+    "id": "hiroshige-ohashi-atake-no-yudachi",
+    "wikidata": "Q5826309",
+    "artist": "utagawa-hiroshige",
+    "title": {
+      "native": "名所江戸百景 大はしあたけの夕立",
+      "ko": "명소 에도 100경 — 오하시 다리와 아타케의 소나기",
+      "reading": "めいしょえどひゃっけい おおはしあたけのゆうだち"
+    },
+    "series": {
+      "native": "名所江戸百景",
+      "ko": "명소 에도 100경"
+    },
+    "date": {
+      "text": "江戸時代・安政4年(1857)",
+      "source": "colbase",
+      "startYear": 1857,
+      "endYear": 1857,
+      "certainty": "exact"
+    },
+    "periods": [
+      "jp-edo"
+    ],
+    "medium": {
+      "native": "大判　錦絵",
+      "ko": "세로 오반 니시키에(다색 목판화)"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7342"
+      },
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/26545"
+      },
+      {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/36461"
+      },
+      {
+        "place": "shin-ohashi",
+        "role": "depicted"
+      },
+      {
+        "place": "atake",
+        "role": "depicted"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-55802",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7342",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "夕立にみまわれた人々が、大はし(両国橋の下流に架けられた「新大橋」)を走り去ってゆく。その橋の下を一艘の筏が越えてゆき、対岸の安宅(あたけ)は雨に烟っている。高い視点から構成された本図を、後年ゴッホが模写している。",
+        "textSha256": "f93dea44392cdb798cb571260c729a67ad8c1d6fb5c25465a708ca1cff498707"
+      },
+      {
+        "language": "en",
+        "source": "aic",
+        "sourceId": "26545",
+        "sourceUrl": "https://www.artic.edu/artworks/26545",
+        "credit": "Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "This image of travelers caught in a sudden downpour on a bridge is instantly recognizable to fans of Utagawa Hiroshige. To create the dark, rolling clouds at the top of the composition, a printer applied the gradation by hand in a scalloped shape rather than the usual straight line.",
+        "textSha256": "2f184db0d0e8281010fc8cbdcf83b52c35e1218ef3d548a62ed189c477b7f7a2"
+      }
+    ],
+    "terms": [
+      "夕立",
+      "筏",
+      "模写"
+    ],
+    "lookFor": [
+      "다리 위 사람들은 비를 어떻게 피하고 있을까요?",
+      "다리 아래 강을 지나는 뗏목을 찾아봐요.",
+      "맨 위 먹구름 띠는 어떤 모양으로 칠해졌을까요?"
+    ],
+    "image": {
+      "url": "/art/hiroshige-ohashi-atake-no-yudachi.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/36461",
+      "license": "cc0",
+      "credit": "Utagawa Hiroshige. Sudden Shower over Shin-Ōhashi Bridge and Atake (Ōhashi Atake no yūdachi), from the series One Hundred Famous Views of Edo (Meisho Edo hyakkei), 1857. The Metropolitan Museum of Art, Purchase, Joseph Pulitzer Bequest, 1918. CC0",
+      "width": 437,
+      "height": 625,
+      "alt": "높은 곳에서 내려다본 나무다리 위로 사람들이 우산과 거적을 쓰고 소나기를 피해 달리고, 강 위로 뗏목 하나가 지나간다. 건너편 기슭은 빗줄기에 흐려져 있다."
+    }
+  },
+  {
+    "id": "hiroshige-kameido-umeyashiki",
+    "wikidata": "Q21127606",
+    "artist": "utagawa-hiroshige",
+    "title": {
+      "native": "名所江戸百景 亀戸梅屋舗",
+      "ko": "명소 에도 100경 — 가메이도 매화 정원",
+      "reading": "めいしょえどひゃっけい かめいどうめやしき"
+    },
+    "series": {
+      "native": "名所江戸百景",
+      "ko": "명소 에도 100경"
+    },
+    "date": {
+      "text": "江戸時代・安政4年(1857)",
+      "source": "colbase",
+      "startYear": 1857,
+      "endYear": 1857,
+      "certainty": "exact"
+    },
+    "periods": [
+      "jp-edo"
+    ],
+    "medium": {
+      "native": "大判　錦絵",
+      "ko": "세로 오반 니시키에(다색 목판화)"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7318"
+      },
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/26577"
+      },
+      {
+        "place": "rijksmuseum",
+        "role": "holding",
+        "url": "https://hdl.handle.net/10934/RM0001.COLLECT.46050"
+      },
+      {
+        "place": "kameido-umeyashiki",
+        "role": "depicted"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-55778",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7318",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "「名所江戸百景」は季節感豊かに江戸の町を描いた広重最晩年の連作です。本図は、亀戸天満宮裏手にあった梅屋敷を描いています。手前に花を咲かせた梅の木を極端に大きく描いて柵の向こうの人物と対比させています。近景の一部に接近し拡大して描く広重の特徴が現れています。",
+        "textSha256": "7eb9183154c4b88d6d932b42aa85986b6a422abbbe6c57990f0fe50a3fe49c4b"
+      },
+      {
+        "language": "en",
+        "source": "aic",
+        "sourceId": "26577",
+        "sourceUrl": "https://www.artic.edu/artworks/26577",
+        "credit": "Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "This print is one of Utagawa Hiroshige’s most recognizable designs due to its innovative composition and unexpected colors—especially the reddish sky. The tree filling the composition was the most famous tree in Edo (now Tokyo), said to resemble a sleeping dragon. The image was famously copied by Vincent van Gogh in 1887 in his painting Flowering Plum Orchard (After Hiroshige).",
+        "textSha256": "827a3644909df64320f4d4706c7e0d14dbcbc8c3cd372ee163ea673163e2387e"
+      }
+    ],
+    "terms": [
+      "梅屋敷",
+      "近景",
+      "連作"
+    ],
+    "lookFor": [
+      "화면 앞을 가로지르는 매화 가지는 어디서 어디로 뻗었을까요?",
+      "울타리 너머 꽃구경하는 사람은 몇 명일까요?",
+      "하늘의 붉은색은 위아래로 어떻게 바뀔까요?"
+    ],
+    "image": {
+      "url": "/art/hiroshige-kameido-umeyashiki.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:De_pruimenboomgaard_te_Kameido_Kameido_umeyashiki_(titel_op_object)_Honderd_beroemde_gezichten_op_Edo_(serietitel)_Meisho_Edo_hyakkei_(serietitel_op_object),_RP-P-1956-743.jpg",
+      "license": "cc0",
+      "credit": "Utagawa Hiroshige. “Plum Garden in Kameido” (Kameido umeyashiki), from the series One Hundred Famous Views of Edo, 1857. Rijksmuseum, Amsterdam, RP-P-1956-743. CC0 (via Wikimedia Commons)",
+      "width": 425,
+      "height": 625,
+      "alt": "화면 앞에 굵은 매화나무 가지가 크게 가로지르며 흰 꽃을 피웠고, 그 너머 울타리 뒤로 꽃구경하는 사람들이 작게 보인다. 하늘은 붉게 물들어 있다."
+    }
+  },
+  {
+    "id": "hiroshige-fukagawa-susaki-jumantsubo",
+    "wikidata": "Q60176427",
+    "artist": "utagawa-hiroshige",
+    "title": {
+      "native": "名所江戸百景 深川洲崎十万坪",
+      "ko": "명소 에도 100경 — 후카가와 스사키 십만 평",
+      "reading": "めいしょえどひゃっけい ふかがわすさきじゅうまんつぼ"
+    },
+    "series": {
+      "native": "名所江戸百景",
+      "ko": "명소 에도 100경"
+    },
+    "date": {
+      "text": "江戸時代・安政4年(1857)",
+      "source": "colbase",
+      "startYear": 1857,
+      "endYear": 1857,
+      "certainty": "exact"
+    },
+    "periods": [
+      "jp-edo"
+    ],
+    "medium": {
+      "native": "大判　錦絵",
+      "ko": "세로 오반 니시키에(다색 목판화)"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7398"
+      },
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/26605"
+      },
+      {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/55733"
+      },
+      {
+        "place": "fukagawa",
+        "role": "depicted"
+      },
+      {
+        "place": "tokyo-bay",
+        "role": "depicted"
+      },
+      {
+        "place": "mount-tsukuba",
+        "role": "depicted"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-55857",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7398",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "雪の降る日に、空高く飛んでいた一羽の大鷲が深川洲崎の沖で波間に漂う桶をみつけ、まさに降下しようとする一瞬を描いています。遠景（画面上段）の筑波山を望む静かな雪景色が、これから始まるドラマの舞台となるのです。鷲の大きな眼と鋭い爪に注目です。",
+        "textSha256": "9430e507b97f4a6729bd508c5077f672a449e855f80ad1fe84483e75b49c9b7e"
+      },
+      {
+        "language": "en",
+        "source": "aic",
+        "sourceId": "26605",
+        "sourceUrl": "https://www.artic.edu/artworks/26605",
+        "credit": "Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "cc-by-4.0",
+        "text": "This design of a golden eagle about to swoop down on its prey is one of the most popular in the series. Hiroshige depicted the bird up close, with its wings spanning the composition. Below, we have a bird’s-eye view of snow-covered Edo Bay (now Tokyo Bay), the body of water next to the capital. The artist and 19th-century viewers could only imagine such an aerial view.",
+        "textSha256": "f18df83741f8acc35fe3744fe4f4e007af4af496e3e04455d58fa52f2521909c"
+      }
+    ],
+    "terms": [
+      "大鷲",
+      "沖",
+      "雪景色"
+    ],
+    "lookFor": [
+      "수리의 큰 눈과 날카로운 발톱을 찾아봐요.",
+      "물결 사이에 떠 있는 통은 어디 있을까요?",
+      "멀리 쓰쿠바산은 화면 어느 쪽에 있을까요?"
+    ],
+    "image": {
+      "url": "/art/hiroshige-fukagawa-susaki-jumantsubo.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/55733",
+      "license": "cc0",
+      "credit": "Utagawa Hiroshige. “Jūmantsubo Plain at Fukagawa Susaki,” from the series One Hundred Famous Views of Edo, 1856. The Metropolitan Museum of Art, The Howard Mansfield Collection, Purchase, Rogers Fund, 1936. CC0",
+      "width": 417,
+      "height": 624,
+      "alt": "눈 내리는 하늘 높이 날개를 활짝 편 큰 수리가 화면 위쪽을 가로지르고, 아래로는 눈 덮인 바닷가 들판과 물 위에 뜬 통 하나, 멀리 산이 보인다."
+    }
+  },
+  {
+    "id": "hokusai-gohyaku-rakanji-sazaido",
+    "wikidata": "Q18173408",
+    "artist": "katsushika-hokusai",
+    "title": {
+      "native": "冨嶽三十六景 五百らかん寺さゞゐどう",
+      "ko": "후가쿠 36경 — 고햐쿠라칸지의 사자이도",
+      "reading": "ふがくさんじゅうろっけい ごひゃくらかんじさざいどう"
+    },
+    "series": {
+      "native": "冨嶽三十六景",
+      "ko": "후가쿠 36경"
+    },
+    "date": {
+      "text": "c. 1830/33",
+      "source": "aic",
+      "startYear": 1830,
+      "endYear": 1833,
+      "certainty": "circa"
+    },
+    "periods": [
+      "jp-edo"
+    ],
+    "medium": {
+      "native": "横大判　錦絵",
+      "ko": "가로 오반 니시키에(다색 목판화)"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-2735"
+      },
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/24707"
+      },
+      {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/55740"
+      },
+      {
+        "place": "rakanji-ojima",
+        "role": "depicted"
+      },
+      {
+        "place": "mount-fuji",
+        "role": "depicted"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-51299",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-2735",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "現在東京目黒にある五百羅漢寺は、もとは本所大島にありました。ここにさざえ堂と呼ばれた螺旋（らせん）構造の通路がめぐる三階建ての建物があり、階上の見晴台からの眺望が評判でした。思い思いに富士を眺める人々の後ろ姿が、見晴らしの良さを物語っています。",
+        "textSha256": "5d10bc14b0a90b327007a1ec583c0b0d8d5d133780ac359c3b651d397060c02b"
+      }
+    ],
+    "terms": [
+      "螺旋",
+      "見晴台",
+      "眺望"
+    ],
+    "lookFor": [
+      "난간에 선 사람들은 모두 어느 쪽을 바라보고 있을까요?",
+      "왼쪽에서 팔을 뻗어 먼 곳을 가리키는 사람을 찾아봐요.",
+      "마룻바닥 널빤지의 줄이 어느 쪽으로 모이는지 따라가 봐요."
+    ],
+    "image": {
+      "url": "/art/hokusai-gohyaku-rakanji-sazaido.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/55740",
+      "license": "cc0",
+      "credit": "Katsushika Hokusai. Sazai Hall at the Temple of the Five Hundred Arhats (Gohyaku Rakanji Sazaidō), from the series Thirty-six Views of Mount Fuji (Fugaku sanjūrokkei), ca. 1830–32. The Metropolitan Museum of Art, Henry L. Phillips Collection, Bequest of Henry L. Phillips, 1939. CC0",
+      "width": 599,
+      "height": 403,
+      "alt": "절 높은 곳의 넓은 마루에서 사람들이 난간에 기대어 먼 들판 너머 작은 후지산을 바라본다. 왼쪽에는 팔을 뻗어 가리키는 사람이, 오른쪽 구석에는 앉아 쉬는 사람들이 있고, 처마 끝에 등롱이 매달려 있다."
+    }
+  },
+  {
+    "id": "hokusai-onmayagashi-ryogokubashi-yuhimi",
+    "wikidata": "Q18173407",
+    "artist": "katsushika-hokusai",
+    "title": {
+      "native": "冨嶽三十六景 御厩川岸より両国橋夕陽見",
+      "ko": "후가쿠 36경 — 온마야 강기슭에서 본 료고쿠 다리의 석양",
+      "reading": "ふがくさんじゅうろっけい おんまやがしよりりょうごくばしゆうひみ"
+    },
+    "series": {
+      "native": "冨嶽三十六景",
+      "ko": "후가쿠 36경"
+    },
+    "date": {
+      "text": "c. 1830/33",
+      "source": "aic",
+      "startYear": 1830,
+      "endYear": 1833,
+      "certainty": "circa"
+    },
+    "periods": [
+      "jp-edo"
+    ],
+    "medium": {
+      "native": "横大判　錦絵",
+      "ko": "가로 오반 니시키에(다색 목판화)"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/A-11176-4"
+      },
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/10914"
+      },
+      {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/37319"
+      },
+      {
+        "place": "onmaya-gashi",
+        "role": "depicted"
+      },
+      {
+        "place": "ryogoku-bridge",
+        "role": "depicted"
+      },
+      {
+        "place": "sumida-river",
+        "role": "depicted"
+      },
+      {
+        "place": "mount-fuji",
+        "role": "depicted"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-166392",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-11176-4",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "これは、江戸時代の後半に、浮世絵師の葛飾北斎が描いた木版画です。富士山をテーマとした46枚シリーズの一枚です。タイトルは「冨嶽三十六景」なのに46枚あるのは、人気が高く当初の予定から10枚増えたためです。\nここは将軍の厩（うまや）があったことから、御厩川岸（おんまやがし）と呼ばれる、現在の東京、墨田川。そこから対岸を結ぶ渡し舟が、両国橋をバックに描かれています。画面中央に小さく見える富士山も、対岸の景色や橋も、色味を抑えてほとんどシルエットのようにあらわされています。陽が落ちて、だんだんと風景から色が失われていく時間です。空の黒いグラデーションや、濃い青であらわされた水から、もう夜に近い時間であることがわかります。\n舟の人びとを描く輪郭線にも青が使われています。彼らの多くは俯いたり、こちらに背中を向けています。あまり顔が見えないからか、むしろ彼らの視線の先の風景を、私たちも一緒に見ているような効果があるようです。タイトルには「夕陽見」とありますが、色づく夕焼けが終わった後、人びとが青のモノクロームの世界に浸っている静かな時間帯を描いているのでしょうか。\nこの作品をはじめ、「冨嶽三十六景」シリーズの最初の頃には、「ベルリン・ブルー」と呼ばれた青い顔料が多く使われています。この時代にヨーロッパから日本に入ってきたもので、北斎の新しいものへの関心の高さが見てとれます。",
+        "textSha256": "35dbef569617cd6ff61e4c3c4ac085818225e6930ab4aa17e26c1bc56100c1e7"
+      }
+    ],
+    "terms": [
+      "渡し舟",
+      "シルエット",
+      "夕焼け"
+    ],
+    "lookFor": [
+      "나룻배에 탄 사람들은 대부분 어느 쪽을 향하고 있을까요?",
+      "긴 다리 너머 한가운데에 작게 보이는 후지산을 찾아봐요.",
+      "하늘 위쪽의 검은색은 아래로 내려오며 어떻게 옅어질까요?"
+    ],
+    "image": {
+      "url": "/art/hokusai-onmayagashi-ryogokubashi-yuhimi.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/37319",
+      "license": "cc0",
+      "credit": "Katsushika Hokusai. Viewing the Sunset over Ryōgoku Bridge from the Onmaya Embankment (Onmayagashi yori Ryōgokubashi sekiyō o miru), from the series Thirty-six Views of Mount Fuji (Fugaku sanjūrokkei), ca. 1830–32. The Metropolitan Museum of Art, Rogers Fund, 1922. CC0",
+      "width": 599,
+      "height": 413,
+      "alt": "사람을 가득 태운 나룻배가 짙푸른 물결을 건너고, 뒤로 긴 나무다리 료고쿠 다리가 강을 가로지른다. 다리 너머 가운데에 검푸른 작은 후지산이 보이고, 하늘은 위로 갈수록 어두워진다."
+    }
+  },
+  {
+    "id": "hiroshige-asakusa-kinryuzan",
+    "wikidata": "Q60176419",
+    "artist": "utagawa-hiroshige",
+    "title": {
+      "native": "名所江戸百景 浅草金龍山",
+      "ko": "명소 에도 100경 — 아사쿠사 긴류잔",
+      "reading": "めいしょえどひゃっけい あさくさきんりゅうざん"
+    },
+    "series": {
+      "native": "名所江戸百景",
+      "ko": "명소 에도 100경"
+    },
+    "date": {
+      "text": "江戸時代・安政3年(1856)",
+      "source": "colbase",
+      "startYear": 1856,
+      "endYear": 1856,
+      "certainty": "exact"
+    },
+    "periods": [
+      "jp-edo"
+    ],
+    "medium": {
+      "native": "大判　錦絵",
+      "ko": "세로 오반 니시키에(다색 목판화)"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7390"
+      },
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/34096"
+      },
+      {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/56689"
+      },
+      {
+        "place": "senso-ji",
+        "role": "depicted"
+      },
+      {
+        "place": "kaminarimon",
+        "role": "depicted"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-55849",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7390",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "『名所江戸百景』は季節感豊かに江戸の町を描いた広重最晩年の連作。縦長の画面に奥行きを作り出すため近景を極端に拡大した構図がとられています。本図は浅草寺雷門と大提灯を大きく描き、遠くに仁王門と五重塔を望みます。赤と白のコントラストも画面を引き締めています。",
+        "textSha256": "332641a2b7a19c98647449b5123ad899ef77d1a7a7b2a65a8d407d86e6a30c39"
+      }
+    ],
+    "terms": [
+      "大提灯",
+      "五重塔",
+      "コントラスト"
+    ],
+    "lookFor": [
+      "화면 위를 가득 채운 큰 제등과 왼쪽의 붉은 기둥을 찾아봐요.",
+      "눈길 너머 멀리 보이는 붉은 문과 오층탑을 찾아봐요.",
+      "눈 내리는 경내를 걷는 사람들은 무엇을 쓰고 있을까요?"
+    ],
+    "image": {
+      "url": "/art/hiroshige-asakusa-kinryuzan.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/56689",
+      "license": "cc0",
+      "credit": "Utagawa Hiroshige. Kinryūsan Temple at Asakusa, from the series \"One Hundred Famous Views of Edo\", 1856. The Metropolitan Museum of Art, The Howard Mansfield Collection, Purchase, Rogers Fund, 1936. CC0",
+      "width": 427,
+      "height": 625,
+      "alt": "화면 위쪽에 커다란 붉은 제등이 걸려 있고 왼쪽에는 붉은 기둥이 서 있다. 그 사이로 눈 덮인 경내가 펼쳐지고, 멀리 붉은 문과 오층탑이 보이며, 우산을 쓴 사람들이 눈길을 걷는다."
+    }
+  },
+  {
+    "id": "hiroshige-komagatado-azumabashi",
+    "wikidata": "Q60175408",
+    "artist": "utagawa-hiroshige",
+    "title": {
+      "native": "名所江戸百景 駒形堂吾嬬橋",
+      "ko": "명소 에도 100경 — 고마가타도와 아즈마 다리",
+      "reading": "めいしょえどひゃっけい こまがたどうあづまばし"
+    },
+    "series": {
+      "native": "名所江戸百景",
+      "ko": "명소 에도 100경"
+    },
+    "date": {
+      "text": "江戸時代・安政4年(1857)",
+      "source": "colbase",
+      "startYear": 1857,
+      "endYear": 1857,
+      "certainty": "exact"
+    },
+    "periods": [
+      "jp-edo"
+    ],
+    "medium": {
+      "native": "大判　錦絵",
+      "ko": "세로 오반 니시키에(다색 목판화)"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7343"
+      },
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/26550"
+      },
+      {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/37282"
+      },
+      {
+        "place": "komagata-do",
+        "role": "depicted"
+      },
+      {
+        "place": "azuma-bridge",
+        "role": "depicted"
+      },
+      {
+        "place": "sumida-river",
+        "role": "depicted"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-55803",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7343",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "隅田川に吾妻橋がかかる風景、左手前の屋根は馬頭観音を祀る駒形堂。吉原の遊女、高尾太夫が詠んだ有名な句「君はいま駒形あたりほととぎす」をもとに、駒形堂とホトトギスが組み合わされたのでしょう。上部のぼかし摺りが梅雨空の雰囲気をよく表現しています。\n\n　江戸時代の絵師、歌川広重の最晩年の代表作「名所江戸百景」シリーズのうちの一枚です。シリーズは目録を含め全120枚。のちに4つの季節に分類されますが、この作品は夏の一枚とされています。そのポイントは、画面の上を飛ぶ初夏の鳥、ホトトギスでしょう。\n　ホトトギスが横切る空は、上方がぼかし摺（ず）りでどんよりと暗く表現され、天気の急変を告げています。空に描かれた線をよく見ると、そこに雨が降ってきたことがわかります。ホトトギスの周りにぼかされた墨とあいまって、梅雨空（つゆぞら）の雰囲気です。\n　ここは隅田川。西側の岸から東を眺め、左手、上流にかかる橋は吾妻橋（あづまばし）です。左の隅に描かれている屋根は、馬頭観音を祀る駒形堂です。当時の江戸の人々にとって「駒形堂」と「ホトトギス」の組み合わせは、吉原の遊女、高尾太夫（たかおだゆう）が詠んだ「君はいま駒形あたりほととぎす」という有名な句を連想させるものでした。\n　名所江戸百景の特徴でもある縦位置の構図、大きく描かれた駒形堂や赤い旗と、遠景の橋や船などの、モチーフの大小の対比で遠近を感じさせる表現も印象的な作品です。",
+        "textSha256": "47924d1b08aec8fa10cdca5cd70d434e8403719b7702e0995e4353e4d6d4383f"
+      }
+    ],
+    "terms": [
+      "ぼかし摺り",
+      "梅雨空",
+      "ホトトギス"
+    ],
+    "lookFor": [
+      "하늘을 가로지르는 두견새와 그 둘레의 먹 번짐을 찾아봐요.",
+      "긴 장대 끝의 붉은 깃발은 어느 쪽으로 나부끼고 있을까요?",
+      "왼쪽 아래 지붕과 멀리 강 위의 배들은 크기가 얼마나 다를까요?"
+    ],
+    "image": {
+      "url": "/art/hiroshige-komagatado-azumabashi.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/37282",
+      "license": "cc0",
+      "credit": "Utagawa Hiroshige. “Azuma Bridge from Komagatadō Temple,” from the series One Hundred Famous Views of Edo (Meisho Edo hyakkei, Komagatadō Azumabashi), 1857. The Metropolitan Museum of Art, Gift of Estate of Samuel Isham, 1914. CC0",
+      "width": 409,
+      "height": 625,
+      "alt": "어둑한 하늘에 두견새 한 마리가 날고, 긴 장대 끝에 붉은 깃발이 나부낀다. 아래로는 배들이 떠 있는 넓은 강과 건너편 강가 마을이 보이고, 왼쪽 아래 구석에 고마가타도의 지붕이 있다."
+    }
+  },
+  {
+    "id": "hiroshige-tsuki-no-misaki",
+    "wikidata": "Q60176403",
+    "artist": "utagawa-hiroshige",
+    "title": {
+      "native": "名所江戸百景 月の岬",
+      "ko": "명소 에도 100경 — 달의 곶",
+      "reading": "めいしょえどひゃっけい つきのみさき"
+    },
+    "series": {
+      "native": "名所江戸百景",
+      "ko": "명소 에도 100경"
+    },
+    "date": {
+      "text": "江戸時代・安政4年(1857)",
+      "source": "colbase",
+      "startYear": 1857,
+      "endYear": 1857,
+      "certainty": "exact"
+    },
+    "periods": [
+      "jp-edo"
+    ],
+    "medium": {
+      "native": "大判　錦絵",
+      "ko": "세로 오반 니시키에(다색 목판화)"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7372"
+      },
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/34313"
+      },
+      {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/55095"
+      },
+      {
+        "place": "tsuki-no-misaki",
+        "role": "depicted"
+      },
+      {
+        "place": "tokyo-bay",
+        "role": "depicted"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-55831",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7372",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "月の岬は、品川湾を一望することが出来る小高い丘で、中秋の名月を見る最高の場所といわれていました。月見の宴が終わったばかりで、まだ片付けの終わらない妓楼の二階座敷を満月が明るく照らしています。席を後にする遊女の姿が障子に影を作っています。",
+        "textSha256": "7d892ec454b8fa579cd4ce90d0d9934566634522d31336d670cbd56e183c9730"
+      }
+    ],
+    "terms": [
+      "中秋の名月",
+      "月見",
+      "障子"
+    ],
+    "lookFor": [
+      "왼쪽 장지문에 비친 그림자는 누구의 모습일까요?",
+      "다다미 위에 남은 그릇과 술잔을 찾아봐요.",
+      "보름달 곁을 날아가는 새 떼와 바다 위의 배들을 찾아봐요."
+    ],
+    "image": {
+      "url": "/art/hiroshige-tsuki-no-misaki.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/55095",
+      "license": "cc0",
+      "credit": "Utagawa Hiroshige. Moon-Viewing Location (Tsuki no Misaki), from the series One Hundred Famous Views of Edo (Meisho Edo Hyakkei), 1857. The Metropolitan Museum of Art, Rogers Fund, 1919. CC0",
+      "width": 430,
+      "height": 624,
+      "alt": "연회가 끝난 2층 다다미방 너머로 배들이 떠 있는 바다와 보름달, 줄지어 나는 새 떼가 보인다. 바닥에는 그릇과 등이 남아 있고, 왼쪽 장지문에는 머리 장식을 한 여인의 그림자가 비친다."
+    }
+  },
+  {
+    "id": "hiroshige-asakusa-tanbo-torinomachi-mode",
+    "wikidata": "Q60176422",
+    "artist": "utagawa-hiroshige",
+    "title": {
+      "native": "名所江戸百景 浅草田甫 酉の町詣",
+      "ko": "명소 에도 100경 — 아사쿠사 논과 도리노마치 참배",
+      "reading": "めいしょえどひゃっけい あさくさたんぼ とりのまちもうで"
+    },
+    "series": {
+      "native": "名所江戸百景",
+      "ko": "명소 에도 100경"
+    },
+    "date": {
+      "text": "江戸時代・安政4年(1857)",
+      "source": "colbase",
+      "startYear": 1857,
+      "endYear": 1857,
+      "certainty": "exact"
+    },
+    "periods": [
+      "jp-edo"
+    ],
+    "medium": {
+      "native": "大判　錦絵",
+      "ko": "세로 오반 니시키에(다색 목판화)"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7392"
+      },
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/26534"
+      },
+      {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/36539"
+      },
+      {
+        "place": "otori-shrine-asakusa",
+        "role": "depicted"
+      },
+      {
+        "place": "mount-fuji",
+        "role": "depicted"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-55851",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7392",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "名所江戸百景は広重の作品のうち最大枚数を誇る名所絵シリーズ。この図の題にある酉の町詣は、11月の酉の日に行われる鷲(おおとり)神社の祭礼のことです。同じ浅草田甫にあった新吉原(しんよしわら)の遊女屋の窓から猫が眺める先には、祭礼で販売される熊手を担いだ人々の行列が描かれます。\n\n　江戸時代の絵師、歌川広重の最晩年の代表作「名所江戸百景」シリーズの、目録を含めた120枚セットのうちの1枚です。\n　猫が佇む格子窓の外には田んぼが広がり、畦道（あぜみち）には浅草の鷲神社（おおとりじんじゃ）に向かう人々の行列が描かれています。大きく描かれた手前の格子窓と、遠くの田んぼや富士山などのモチーフの大小の対比により遠近感を出す表現や、縦位置の構図は「名所江戸百景」シリーズの特徴でもあります。\n　酉（とり）の町詣（まちもうで）は、11月の酉の日に行われる鷲(おおとり)神社の祭礼のことです。開運や商売繁盛を願い、熊手（くまで）などの縁起物を求める人で賑わいました。酉の市は江戸の秋の風物詩でもありました。鷲神社から近く、部屋の中に遊女の小道具である簪（かんざし）や手拭い（てぬぐい）があることから、ここが吉原であることがうかがえます。畳の上にある簪をよく見ると、熊手のデザインです。酉の市のお土産なのかもしれません。夕日に赤く染まった空に巣に帰る雁（かり）の群れが見え、これから遊女の仕事も忙しくなる時間帯です。窓の外を見つめる猫は、外の世界に憧れる遊女の気持ちを表しているのでしょうか。見る人に様々な想像を抱かせる作品です。",
+        "textSha256": "938ca36f0445730805f01a0f14869c05fa442b7365d1836c91e2e02096433d82"
+      }
+    ],
+    "terms": [
+      "格子窓",
+      "熊手",
+      "遠近感"
+    ],
+    "lookFor": [
+      "창턱에 앉은 흰 고양이는 어디를 바라보고 있을까요?",
+      "창밖 멀리 후지산과 줄지어 나는 새 떼를 찾아봐요.",
+      "방 왼쪽 아래 바닥에 놓인 작은 물건들을 찾아봐요."
+    ],
+    "image": {
+      "url": "/art/hiroshige-asakusa-tanbo-torinomachi-mode.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/36539",
+      "license": "cc0",
+      "credit": "Utagawa Hiroshige. Pilgrimage to the Torinomachi Festival across the Ricefields of Asakusa (Asakusa tanbo Torinomachi mōde), from the series One Hundred Famous  Views of Edo (Meisho Edo hyakkei), 1857 (Ansei 4), 11th month. The Metropolitan Museum of Art, Rogers Fund, 1914. CC0",
+      "width": 420,
+      "height": 624,
+      "alt": "격자창 창턱에 흰 고양이가 앉아 창밖을 내다본다. 창 너머로 논과 마을이 펼쳐지고, 붉게 물든 지평선 위로 후지산과 줄지어 나는 새 떼가 보인다. 오른쪽 창턱에는 수건이 걸쳐 있다."
+    }
+  },
+  {
+    "id": "hiroshige-ryogoku-hanabi",
+    "wikidata": "Q19938878",
+    "artist": "utagawa-hiroshige",
+    "title": {
+      "native": "名所江戸百景 両国花火",
+      "ko": "명소 에도 100경 — 료고쿠 불꽃놀이",
+      "reading": "めいしょえどひゃっけい りょうごくはなび"
+    },
+    "series": {
+      "native": "名所江戸百景",
+      "ko": "명소 에도 100경"
+    },
+    "date": {
+      "text": "江戸時代・安政5年(1858)",
+      "source": "colbase",
+      "startYear": 1858,
+      "endYear": 1858,
+      "certainty": "exact"
+    },
+    "periods": [
+      "jp-edo"
+    ],
+    "medium": {
+      "native": "大判　錦絵",
+      "ko": "세로 오반 니시키에(다색 목판화)"
+    },
+    "places": [
+      {
+        "place": "tokyo-national-museum",
+        "role": "holding",
+        "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7388"
+      },
+      {
+        "place": "art-institute-of-chicago",
+        "role": "holding",
+        "url": "https://www.artic.edu/artworks/26522"
+      },
+      {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/37093"
+      },
+      {
+        "place": "ryogoku-bridge",
+        "role": "depicted"
+      },
+      {
+        "place": "sumida-river",
+        "role": "depicted"
+      }
+    ],
+    "descriptions": [
+      {
+        "language": "ja",
+        "source": "colbase",
+        "sourceId": "cobas-55847",
+        "sourceUrl": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7388",
+        "credit": "ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로",
+        "license": "jp-gov-standard-2.0",
+        "text": "隅田川では、飢饉や疫病による死者供養や疫病除けとして、川開きの日などに幾度か花火が打ち上げられたといいます。本図は、隅田川上流の上空から、両国橋を越えて上がる花火を描きます。華やかな花火と、シルエットによる提灯や人物たちの対比が印象的です。",
+        "textSha256": "c5584487c269ad48ee84152b5e4b9bc1474313b8200eb87992b6efaf7f53b83e"
+      }
+    ],
+    "terms": [
+      "川開き",
+      "供養",
+      "提灯"
+    ],
+    "lookFor": [
+      "하늘로 솟았다 떨어지는 불꽃의 붉은 줄기를 따라가 봐요.",
+      "다리 위 사람들은 어떻게 그려져 있을까요?",
+      "강 위에서 등불을 단 큰 놀잇배를 찾아봐요."
+    ],
+    "image": {
+      "url": "/art/hiroshige-ryogoku-hanabi.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/37093",
+      "license": "cc0",
+      "credit": "Utagawa Hiroshige. Fireworks at Ryōgoku Bridge, from the series One Hundred Famous Views of Edo, 1858. The Metropolitan Museum of Art, Purchase, Joseph Pulitzer Bequest, 1918. CC0",
+      "width": 417,
+      "height": 625,
+      "alt": "어두운 밤하늘에 붉은 불꽃 줄기가 높이 솟았다 떨어지고, 오른쪽 위에는 별 모양 불꽃이 흩어져 있다. 아래로는 긴 다리가 푸른 강을 가로지르고, 강 위에 등불을 단 놀잇배와 작은 배들이 떠 있다."
+    }
+  }
+]

@@ -1,0 +1,84 @@
+{
+  "id": "hiroshige-fukagawa-susaki-jumantsubo",
+  "wikidata": "Q60176427",
+  "artist": "utagawa-hiroshige",
+  "title": {
+    "native": "名所江戸百景 深川洲崎十万坪",
+    "ko": "명소 에도 100경 — 후카가와 스사키 십만 평",
+    "reading": "めいしょえどひゃっけい ふかがわすさきじゅうまんつぼ"
+  },
+  "series": {
+    "native": "名所江戸百景",
+    "ko": "명소 에도 100경"
+  },
+  "date": {
+    "text": "江戸時代・安政4年(1857)",
+    "source": "colbase",
+    "startYear": 1857,
+    "endYear": 1857,
+    "certainty": "exact"
+  },
+  "periods": [
+    "jp-edo"
+  ],
+  "medium": {
+    "native": "大判　錦絵",
+    "ko": "세로 오반 니시키에(다색 목판화)"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7398"
+    },
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/26605"
+    },
+    {
+      "place": "metropolitan-museum-of-art",
+      "role": "holding",
+      "url": "https://www.metmuseum.org/art/collection/search/55733"
+    },
+    {
+      "place": "fukagawa",
+      "role": "depicted"
+    },
+    {
+      "place": "tokyo-bay",
+      "role": "depicted"
+    },
+    {
+      "place": "mount-tsukuba",
+      "role": "depicted"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-55857"
+    },
+    {
+      "language": "en",
+      "source": "aic",
+      "sourceId": "26605"
+    }
+  ],
+  "terms": [
+    "大鷲",
+    "沖",
+    "雪景色"
+  ],
+  "lookFor": [
+    "수리의 큰 눈과 날카로운 발톱을 찾아봐요.",
+    "물결 사이에 떠 있는 통은 어디 있을까요?",
+    "멀리 쓰쿠바산은 화면 어느 쪽에 있을까요?"
+  ],
+  "image": {
+    "source": "met",
+    "sourceId": "55733",
+    "alt": "눈 내리는 하늘 높이 날개를 활짝 편 큰 수리가 화면 위쪽을 가로지르고, 아래로는 눈 덮인 바닷가 들판과 물 위에 뜬 통 하나, 멀리 산이 보인다."
+  }
+}

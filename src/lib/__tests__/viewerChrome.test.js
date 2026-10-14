@@ -139,7 +139,7 @@ describe('⑤ 접근성 하한 유지', () => {
 describe('⑥ 제목 줄·액션 축 — 실측이 더한 것', () => {
   it('편집 버튼이 h1 밖이다 — 제목 그라디언트 클립에 얹히지 않는다', () => {
     const row = sliceBetween(header(), '<div className="viewer-titlerow">', '</div>');
-    expect(row).toMatch(/<h1 className="page-header__title">\{material\.title\}<\/h1>/);
+    expect(row).toMatch(/<h1 className="page-header__title" lang=\{contentLangTag\}>\{viewerTitle\}<\/h1>/); // 정본 문학책은 대조표 제목(AOZORA-P0-5)
     expect(row, '편집은 h1 형제여야 한다').toContain('className="viewer-title-edit"');
   });
 
@@ -432,12 +432,14 @@ describe('⑨ AD-R2 읽기 크롬 — 영문 0 · 라벨 툴바 · 통계 한 �
     expect(toggle).toContain("{withLabel&&<span>{vt('자동 진행')}</span>}");
   });
 
-  it('통계 줄 한 덩어리 — 「N개 수집 → 단어장」은 커버리지와 같은 배지 안의 /vocab 링크, 수는 이 자료 기준(Q4)', () => {
+  it('통계 줄 한 덩어리 — 「N개 수집 · 이 자료 표현 복습」은 커버리지와 같은 배지 안의 복습 링크, 수는 이 자료 기준(Q4)', () => {
     const src = read(VIEWER);
     expect(src).toContain('const collectedInMaterial = useMemo(() => (user && material?.processed_json ? materialFit(material.processed_json, savedWords).known : 0), [user, material?.processed_json, savedWords]);');
     const stats = sliceBetween(header(), '<span className="viewer-badge viewer-stats"', '</Link>}');
     expect(stats).toContain("vt('아는 단어 {percent}% · 새 단어 {count}개'");
-    expect(stats).toMatch(/<Link href="\/vocab" prefetch=\{false\} className="viewer-stats__vocab">\{vt\('\{count\}개 수집 → 단어장', \{count: collectedInMaterial\}\)\}$/);
+    // REV-SCOPE-R1A: 전체 복습(/vocab)이 아니라 이 자료 범위의 복습방으로 간다(범위 주소 정본 serializeReviewScope).
+    expect(stats).toMatch(/<Link href=\{materialReviewHref\} prefetch=\{false\} className="viewer-stats__vocab">\{vt\('\{count\}개 수집 · 이 자료 표현 복습', \{count: collectedInMaterial\}\)\}$/);
+    expect(src).toContain("serializeReviewScope({ lang: materialLang, level: null, source: { kind: 'material', ids: [String(material.id)] }, state: 'due' })");
     // 수집 링크도 무채색 — 크롬 강조색은 복습 하나(위 ⑥)
     const link = sliceBetween(read(MANABI_CSS), '.manabi-app .viewer-layout .viewer-stats__vocab {', '}');
     expect(link).toContain('color:inherit');

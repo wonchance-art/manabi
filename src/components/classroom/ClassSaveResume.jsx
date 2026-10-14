@@ -8,6 +8,7 @@ import {supabase} from '../../lib/supabase';
 import {buildVocabRow,VOCAB_UPSERT} from '../../lib/vocabIO';
 import {tokenContext} from '../../lib/learningSources';
 import {saveContext} from '../learning/SaveContextButton';
+import { friendlyToastMessage } from '../../lib/errorMessage';
 
 export default function ClassSaveResume({user}){
   const params=useSearchParams(),request=params.get('classSave'),router=useRouter(),client=useQueryClient();
@@ -39,7 +40,7 @@ export default function ClassSaveResume({user}){
       url.searchParams.set('sourceText',quote.slice(0,1000));
       url.searchParams.set('classSaved','1');
       router.replace(url.pathname+url.search);setMessage('표현과 문맥을 저장했어요.');
-    })().catch(error=>{if(active){setMessage(error.code==='meaning_conflict'?'단어는 보관되어 있어요. 기존 뜻과 같은 의미인지 확인해 주세요.':wordSaved?'단어는 저장됐지만 문맥 연결을 마치지 못했어요. 다시 시도해 주세요.':error.message||'저장을 마치지 못했어요. 다시 시도해 주세요.');if(error.code==='meaning_conflict')setConflict(error);}})
+    })().catch(error=>{if(active){setMessage(error.code==='meaning_conflict'?'단어는 보관되어 있어요. 기존 뜻과 같은 의미인지 확인해 주세요.':wordSaved?'단어는 저장됐지만 문맥 연결을 마치지 못했어요. 다시 시도해 주세요.':friendlyToastMessage(error,'저장을 마치지 못했어요. 다시 시도해 주세요.'));if(error.code==='meaning_conflict')setConflict(error);}})
       .finally(()=>{if(active)setBusy(false);});
     return()=>{active=false;};
   },[user?.id,request,retry,confirm,router,client]);

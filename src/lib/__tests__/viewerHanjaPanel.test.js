@@ -108,7 +108,9 @@ describe('같은 한자어 판정 — 정체 꼴 한국 한자음(+두음)이 �
       expect(sameHanjaWord(w, refIndex.get(w).word.ko, tables), w).not.toBeNull();
     }
   });
-  it('정본 수치 재현 — 2자 이상 5,710개 중 간체 음 2,147 기준선 → R0+ 정체 음 2,216(잃음 0), 경계 규칙은 그 부분집합', () => {
+  it('정본 수치 재현 — 2자 이상 5,710개 중 간체 음 2,133 기준선 → R0+ 정체 음 2,202(잃음 0), 경계 규칙은 그 부분집합', () => {
+    // ZH-DICT-FIX-001(2026-10-13): 学院·爱人의 뜻이 한국어 동형어(학원·애인)를 벗어나 세 수치 모두 정확히 -2(가짜동족 해소).
+    // ZH-DICT-FIX-002(2026-10-13): 가짜동족 12개(事业·工程·电动车·协议·协议书·道理·情报·言论·若干·文物·标记·精力)로 다시 정확히 -12.
     const words = [...refIndex].filter(([zh]) => /^\p{Script=Han}{2,}$/u.test(zh));
     const simpEum = (w) => {
       const r = [...w].map((c) => koTable[c]);
@@ -135,12 +137,12 @@ describe('같은 한자어 판정 — 정체 꼴 한국 한자음(+두음)이 �
         if (!tOk) outside.push(zh);
       }
     }
-    expect(simp).toBeGreaterThanOrEqual(2147);
-    expect(trad).toBeGreaterThanOrEqual(2216);
+    expect(simp).toBeGreaterThanOrEqual(2133);
+    expect(trad).toBeGreaterThanOrEqual(2202);
     expect(trad - simp).toBeGreaterThanOrEqual(69);
     expect(lost).toEqual([]);
     expect(outside).toEqual([]);
-    expect(judged).toBeLessThan(trad); // 경계 규칙이 护士류를 걸러 낸다(실측 2,166)
+    expect(judged).toBeLessThan(trad); // 경계 규칙이 护士류를 걸러 낸다(실측 2,152)
     expect(judged).toBeGreaterThanOrEqual(2148);
   });
   it('짧은 뜻 — 첫 조각, 괄호 설명 제거, 6자 상한', () => {
@@ -273,12 +275,14 @@ describe('같은 한자어 타일 — selectSameHanjaTiles', () => {
     expect(yue.map((x) => x.word)).toContain('音乐会');
     expect(yue.map((x) => x.word)).not.toContain('乐观');
   });
-  it('모자란 칸 = 판정 실패 후보의 짧은 뜻(흐림) — 音乐의 乐: 音乐会 음악회 · 乐曲 악곡 · 乐队 「악단」 흐림', () => {
-    const t = tiles({ ch: '乐', reading: 'yuè', headText: '音乐', index: 1 });
-    expect(t.map((x) => x.word)).toEqual(['音乐会', '乐曲', '乐队']);
-    expect(t.map((x) => x.ko)).toEqual(['음악회', '악곡', null]);
-    expect(t[2]).toMatchObject({ short: '악단', dim: true });
-    expect(t.slice(0, 2).every((x) => !x.dim && x.short === null)).toBe(true);
+  // HSK 2026 보강(ZH-LEVEL-2026-001 ④)으로 乐器 악기가 들어와 기본 3칸이 판정 성공으로 찼다 — 모자란 칸은 4칸째로 본다.
+  it('모자란 칸 = 판정 실패 후보의 짧은 뜻(흐림) — 音乐의 乐: 音乐会 음악회 · 乐器 악기 · 乐曲 악곡 · 乐队 「악단」 흐림', () => {
+    expect(tiles({ ch: '乐', reading: 'yuè', headText: '音乐', index: 1 }).map((x) => x.word)).toEqual(['音乐会', '乐器', '乐曲']);
+    const t = tiles({ ch: '乐', reading: 'yuè', headText: '音乐', index: 1, cap: 4 });
+    expect(t.map((x) => x.word)).toEqual(['音乐会', '乐器', '乐曲', '乐队']);
+    expect(t.map((x) => x.ko)).toEqual(['음악회', '악기', '악곡', null]);
+    expect(t[3]).toMatchObject({ short: '악단', dim: true });
+    expect(t.slice(0, 3).every((x) => !x.dim && x.short === null)).toBe(true);
   });
   it('경계 위반 단어(护士 「호사」)는 한국 한자어 줄에 오지 않는다 — 내 단어라도 흐린 짧은 뜻', () => {
     const t = tiles({ ch: '护', reading: 'hù', headText: '保护', cap: 20, savedRows: [{ word_text: '护士', meaning: '간호사', language: 'Chinese' }] });

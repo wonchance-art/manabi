@@ -20,32 +20,57 @@ export function isKnownWord(row) {
   return (isVocabularyLearningProjection(row) ? row.memory.stability ?? 0 : row?.interval ?? 0) >= KNOWN_WORD_MIN_INTERVAL;
 }
 
-/** '숙련' 경계 — 이 모듈 밖에서 쓰지 않는다(단어 상세 카드의 단계 라벨 전용). */
-export const MASTERED_MIN_INTERVAL = 30;
+/** 「익숙」 경계(Anki Mature와 같은 21일) — 카드 단계 전용. 「아는 단어」(KNOWN_WORD_MIN_INTERVAL)와는 따로 둔다. */
+export const MATURE_MIN_INTERVAL = 21;
+
+const DAY_MS = 86400000;
+const stamp = value => (value == null ? NaN : typeof value === 'number' ? value : Date.parse(value));
 
 /**
- * 단어 단계 — 신규 / 초기 / 학습 중 / 숙련 (부채 ②, 2026-09-01).
+ * 카드 간격(일, 버림) = 다음 복습 예정일 − 마지막 복습일(REV-SCOPE 3판 §3-4, D15).
+ * 새 일정(FSRS) 카드는 scheduledDays와 같다. 예전 일정 카드는 next_review_at − last_reviewed_at으로 잰다 —
+ * 예전 카드의 interval 칸은 실제로 안정도라 간격으로 쓰지 않는다. 잴 수 없으면 null.
+ */
+export function cardIntervalDays(row) {
+  if (isVocabularyLearningProjection(row)) {
+    if (row.source === 'fsrs-v1') return row.memory.state === 'Review' ? row.memory.scheduledDays ?? null : 0;
+    const gap = stamp(row.memory.due) - stamp(row.memory.lastReview);
+    return Number.isFinite(gap) ? Math.max(0, Math.floor(gap / DAY_MS)) : null;
+  }
+  const gap = stamp(row?.next_review_at) - stamp(row?.last_reviewed_at);
+  return Number.isFinite(gap) ? Math.max(0, Math.floor(gap / DAY_MS)) : null;
+}
+
+const STAGE_LABELS = { new: '신규', learning: '학습', young: '익히는 중', mature: '익숙', relearning: '재학습' };
+const stage = key => ({ key, label: STAGE_LABELS[key] });
+
+/**
+ * 카드 단계 — 신규 → 학습 → 익히는 중(간격 21일 미만) → 익숙(21일 이상) → 재학습
+ * (Anki New · Learning · Young · Mature · Relearning, 오너 결정 D15 2026-10-10).
  *
- * ── 왜 여기로 왔나
- * 이 판정이 `VocabDetailCard` 안에 삼항으로 있었고, 중간 경계 `7`을
- * **`KNOWN_WORD_MIN_INTERVAL`을 import하지 않고 리터럴로** 쓰고 있었다. 지금은 값이
- * 같아 증상이 없지만 상수를 바꾸는 순간 **카드는 「학습 중」인데 카운터는 「아는 단어」가
- * 아닌** 상태가 생긴다 — 그게 「기억 통계 이중 진실」로 적혀 있던 것의 실체다
- * (나머지는 이 모듈이 생기면서 이미 해소됐다: 주간 기억 수치는 두 화면이 다 review_events).
+ * ── 왜 여기에 있나
+ * 이 판정이 `VocabDetailCard` 안에 삼항으로 있다가 이 모듈로 왔다(부채 ②, 2026-09-01). 이 모듈의 선언대로
+ * **「무엇을 세는가」의 판정 · 문구가 여기를 지난다.** 색은 표현이라 CSS가 진다(`.badge--stage-*`).
  *
- * 이 모듈의 선언대로 **「무엇을 세는가」의 판정·문구가 여기를 지난다.** 색은 지나지
- * 않는다 — 그건 표현이라 CSS가 진다(`.badge--stage-*`).
+ * ── 바뀐 점(REV-SCOPE-R1B-1)
+ * 예전 판정(초기 · 학습 중 7일 · 숙련 30일, 안정도 기준)을 대체한다. 단계 경계는 「아는 단어」 기준
+ * (KNOWN_WORD_MIN_INTERVAL = 7, 안정도)과 분리한다 — 그 값을 바꾸면 현황 「아는 단어」 숫자가 달라지므로
+ * 별도 결정이다. 예전 일정 카드에는 분 단위 학습 단계가 없어 신규 · 익히는 중 · 익숙만 나온다.
+ * 일정 계산에는 영향이 없다(읽기 전용 표시).
  *
- * @param {{interval?: number|null, last_reviewed_at?: string|null}} row - user_vocabulary 한 행
- * @returns {{key: 'new'|'early'|'learning'|'mastered', label: string}}
+ * @param {object} row - 학습 projection 또는 user_vocabulary 한 행
+ * @returns {{key: 'new'|'learning'|'young'|'mature'|'relearning', label: string}}
  */
 export function wordStage(row) {
-  const projected = isVocabularyLearningProjection(row);
-  if (!(projected ? row.memory.lastReview : row?.last_reviewed_at)) return { key: 'new', label: '신규' };
-  const interval = projected ? row.memory.stability ?? 0 : row?.interval ?? 0;
-  if (interval >= MASTERED_MIN_INTERVAL) return { key: 'mastered', label: '숙련' };
-  if (interval >= KNOWN_WORD_MIN_INTERVAL) return { key: 'learning', label: '학습 중' };
-  return { key: 'early', label: '초기' };
+  if (isVocabularyLearningProjection(row) && row.source === 'fsrs-v1') {
+    const state = row.memory.state;
+    if (state === 'New') return stage('new');
+    if (state === 'Learning') return stage('learning');
+    if (state === 'Relearning') return stage('relearning');
+  } else if (!(isVocabularyLearningProjection(row) ? row.memory.lastReview : row?.last_reviewed_at)) {
+    return stage('new');
+  }
+  return stage((cardIntervalDays(row) ?? 0) >= MATURE_MIN_INTERVAL ? 'mature' : 'young');
 }
 
 /**

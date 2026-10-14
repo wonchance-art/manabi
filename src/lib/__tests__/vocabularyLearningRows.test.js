@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { introduceFsrsCard } from '../fsrsScheduler.js';
 import { fetchVocabularyLearningRows, projectVocabularyLearningRows, vocabularyReviewCalendar } from '../vocabularyLearningRows.js';
-import { VOCABULARY_LEARNING_SUMMARY_FIELDS } from '../vocabularyLearningRead.js';
+import { VOCABULARY_LEARNING_REQUIRED_FIELDS, VOCABULARY_LEARNING_SUMMARY_FIELDS } from '../vocabularyLearningRead.js';
 
 const actorId = 'learner', now = '2026-10-03T12:00:00.000Z';
 const snapshot = () => ({ version: 1, actorId, enabled: true, registryAvailable: true, complete: true, now,
@@ -29,9 +29,13 @@ describe('complete actor-scoped vocabulary loader', () => {
     const fetchImpl = vi.fn().mockResolvedValue(response(snapshot()));
     await fetchVocabularyLearningRows(actorId, { fetchImpl, fields: 'summary' });
     expect(fetchImpl.mock.calls[0][0]).toBe('/api/learning/vocabulary?view=learning&fields=summary');
+    // REV-SCOPE-R1A: 요약에도 source_ref(사전 급수 덱 · 오늘 학습 출처)를 싣는다 — 배움 칸이 같은 범위 개수를 센다.
+    // 필수 칸 검사는 그대로 13칸이다(nullable 출처 메타가 없다고 snapshot 전체를 거부하지 않는다).
     expect(VOCABULARY_LEARNING_SUMMARY_FIELDS).toEqual(['id', 'user_id', 'word_text', 'base_form', 'meaning', 'language',
-      'created_at', 'interval', 'ease_factor', 'repetitions', 'last_reviewed_at', 'next_review_at', 'source_material_id']);
+      'created_at', 'interval', 'ease_factor', 'repetitions', 'last_reviewed_at', 'next_review_at', 'source_material_id', 'source_ref']);
+    expect(VOCABULARY_LEARNING_REQUIRED_FIELDS).toEqual(VOCABULARY_LEARNING_SUMMARY_FIELDS.filter(key => key !== 'source_ref'));
     expect(Object.isFrozen(VOCABULARY_LEARNING_SUMMARY_FIELDS)).toBe(true);
+    expect(Object.isFrozen(VOCABULARY_LEARNING_REQUIRED_FIELDS)).toBe(true);
     await expect(fetchVocabularyLearningRows(actorId, { fetchImpl, fields: 'unsafe' })).rejects.toThrow('invalid_fields');
     expect(fetchImpl).toHaveBeenCalledTimes(1);
   });

@@ -8,7 +8,7 @@ const clean = (value, max) => typeof value === 'string' ? value.normalize('NFC')
 const ordered = value => Array.isArray(value) ? value.map(ordered) : value && typeof value==='object' ? Object.fromEntries(Object.keys(value).sort().map(key=>[key,ordered(value[key])])) : value;
 
 export function recognitionElements(page, ids) {
-  if (!page || !Array.isArray(ids) || !ids.length || ids.length > RECOGNITION_ELEMENT_LIMIT || new Set(ids).size !== ids.length || ids.some(id=>typeof id!=='string'||id.length>100)) throw new Error('인식할 필기를 선택해 주세요. 한 번에 500개 요소까지 가능합니다.');
+  if (!page || !Array.isArray(ids) || !ids.length || ids.length > RECOGNITION_ELEMENT_LIMIT || new Set(ids).size !== ids.length || ids.some(id=>typeof id!=='string'||id.length>100)) throw new Error('인식할 필기를 선택해 주세요. 한 번에 500개 요소까지 가능해요.');
   const chosen = page.elements.filter(el=>ids.includes(el.id));
   if (chosen.length!==ids.length || chosen.some(el=>el.isDeleted || el.opacity===0 || !types.has(el.type))) throw new Error('보이는 필기와 글자만 선택해 주세요. 이미지와 외부 콘텐츠는 인식 대상이 아닙니다.');
   if (!chosen.some(el=>el.type==='text'||el.type==='freedraw')) throw new Error('손글씨나 입력한 글자가 포함된 부분을 선택해 주세요.');

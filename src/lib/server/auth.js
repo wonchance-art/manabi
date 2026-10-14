@@ -16,10 +16,10 @@ function anonClient() {
 // Bearer 토큰 → 로그인 유저. 실패 시 { error, status: 401 }.
 export async function requireUser(request) {
   const authHeader = request.headers.get('authorization');
-  if (!authHeader) return { error: '로그인이 필요합니다.', status: 401 };
+  if (!authHeader) return { error: '로그인이 필요해요.', status: 401 };
   const token = authHeader.replace(/^Bearer\s+/i, '');
   const { data: { user }, error } = await anonClient().auth.getUser(token);
-  if (error || !user) return { error: '세션이 만료됐어요. 다시 로그인해주세요.', status: 401 };
+  if (error || !user) return { error: '세션이 만료됐어요. 다시 로그인해 주세요.', status: 401 };
   return { user };
 }
 

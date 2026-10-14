@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "personId": "000121",
+  "workId": "637",
+  "title": "手袋を買いに",
+  "author": "新美南吉",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1943,
+  "authorDeathYear": 1943,
+  "level": "N4 기본",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000121/card637.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000121/files/637_ruby_4095.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "012d58a394654cda6eb63c90ab730e457a4aa3b196cc5f5d163e18da3e41a7ac",
+  "textSha256": "117072833ccd11ba03958be558dac2ad3b32258911dcc84f6404b6f04e568511",
+  "attribution": {
+    "author": "新美南吉",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-14",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR",
+      "US"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000121/card637.html"
+  },
+  "display": {
+    "titleReading": "てぶくろをかいに",
+    "titleKo": "장갑을 사러",
+    "authorKo": "니이미 난키치",
+    "cover": "snow",
+    "motif": "snow-night"
+  }
+}

@@ -59,13 +59,14 @@ async function surface(signed = false) {
 const check=message=>{checks.push(message);console.log(message);};
 try {
   const {context,page}=await surface();
+  // 배움(LEARN-HOME-AK-001)은 「읽을거리」 목록을 두지 않는다 — 추천은 서재의 오늘 추천과 이어 읽기 칸(교재 · 자료가 없는 언어)으로 들어간다.
   await page.goto(base+'/home');
-  await page.locator('.today-story').first().click();
+  await page.goto(base+`/suggestions/${item.id}?from=home`);
   await page.waitForURL('**/suggestions/**');
   await page.getByRole('heading',{name:item.title,exact:true}).waitFor();
   assert.match(page.url(),/\/suggestions\//);
   assert.equal(await page.locator('textarea,input:not([type="hidden"]),[contenteditable=true]').count(),0);
-  assert.equal(rows.length,0);check('home → ready reading; no editor or write');
+  assert.equal(rows.length,0);check('suggestion → ready reading; no editor or write');
   const login=await page.getByRole('link',{name:'로그인하고 서재에 담기'}).getAttribute('href');
   assert.ok(new URL(login,base).searchParams.get('from').startsWith(`/suggestions/${item.id}`));
   check('guest reads immediately and login preserves the article');
@@ -89,8 +90,8 @@ try {
   await page.waitForURL('**/suggestions/**');
   await page.getByRole('heading',{name:item.title,exact:true}).waitFor();
   check('legacy new-material URL redirects to reader');
-  failRead=true;await page.reload();await page.getByRole('button',{name:'다시 불러오기'}).waitFor();
-  failRead=false;await page.getByRole('button',{name:'다시 불러오기'}).click();await page.getByRole('heading',{name:item.title,exact:true}).waitFor();
+  failRead=true;await page.reload();await page.getByRole('button',{name:'다시 시도',exact:true}).waitFor();
+  failRead=false;await page.getByRole('button',{name:'다시 시도',exact:true}).click();await page.getByRole('heading',{name:item.title,exact:true}).waitFor();
   unknown=true;await page.reload();await page.getByRole('heading',{name:'추천 자료를 찾을 수 없어요.'}).waitFor();unknown=false;
   check('failure retry and missing-article state');
   await context.close();

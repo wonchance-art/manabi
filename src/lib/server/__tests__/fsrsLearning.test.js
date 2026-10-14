@@ -8,7 +8,7 @@ const id = '20000000-0000-0000-0000-000000000001';
 const introducedAt = '2026-10-02T18:59:00.000Z'; // KST 학습일 경계(04시) 직전
 const instant = seconds => new Date(Date.parse(introducedAt) + seconds * 1000).toISOString();
 const clone = value => JSON.parse(JSON.stringify(value));
-let authClient, serviceClient, stored, operations, enabled, applyError, databaseAt, policyLimit;
+let authClient, serviceClient, stored, operations, enabled, applyError, databaseAt, policyLimit, policyVersion;
 
 function request(action, extra = {}, now = instant(30)) {
   databaseAt = now;
@@ -17,10 +17,10 @@ function request(action, extra = {}, now = instant(30)) {
 }
 
 beforeEach(() => {
-  enabled = true; applyError = null; operations = new Map(); databaseAt = instant(30); policyLimit = 15;
+  enabled = true; applyError = null; operations = new Map(); databaseAt = instant(30); policyLimit = 15; policyVersion = 'anki-seconds-v1';
   stored = { cardId: id, userId: owner, card: introduceFsrsCard(introducedAt), attempt: null,
     enrolled: true, excluded: false, eligible: true, firstQuestionAt: null };
-  authClient = { rpc: vi.fn(async () => ({ data: { version: 1, enabled, policyVersion: 'anki-seconds-v1' } })) };
+  authClient = { rpc: vi.fn(async () => ({ data: { version: 1, enabled, policyVersion } })) };
   // 서버 RPC 경계의 메모리 대역. 권한/원자성 자체는 별도 SQL 계약에서 검증한다.
   serviceClient = { rpc: vi.fn(async (name, args) => {
     if (args.p_actor !== owner) return { error: { message: 'fsrs_forbidden' } };
@@ -69,6 +69,17 @@ describe('새 FSRS 서버 경계', () => {
     await expect(request('question')).rejects.toMatchObject({ code: 'fsrs_storage_unavailable' });
   });
 
+  it('503은 어느 RPC · 단계에서 났는지 detail로 남기고, 응답 본문(fsrsError)엔 싣지 않는다(REVIEW-LOAD-TRANSIENT-001)', async () => {
+    serviceClient.rpc.mockResolvedValue({ error: { code: '57014', message: 'canceling statement due to statement timeout' } });
+    const failed = await readFsrsStatus({ authClient, serviceClient, userId: owner }).catch(error => error);
+    expect(failed).toMatchObject({ code: 'fsrs_storage_unavailable', status: 503,
+      detail: 'fsrs_list_states: 57014 canceling statement due to statement timeout' });
+    expect(fsrsError(failed).body).toEqual({ ok: false, code: 'fsrs_storage_unavailable' });
+    authClient.rpc.mockRejectedValue(new TypeError('fetch failed'));
+    await expect(readFsrsStatus({ authClient, serviceClient, userId: owner }))
+      .rejects.toMatchObject({ detail: 'fsrs_capabilities threw: TypeError fetch failed' });
+  });
+
   it('오래된 계정·사용자 제공 메모리/시각/소유자·부정한 간격/평점을 DB 호출 전에 거절한다', async () => {
     await expect(request('question', { accountId: stranger })).rejects.toMatchObject({ code: 'fsrs_account_changed', status: 409 });
     for (const forged of [{ nextCard: {} }, { due: instant(0) }, { at: instant(0) }, { userId: owner }, { expectedRevision: -1 }, { dailyNewLimit: 999 }]) {
@@ -91,6 +102,21 @@ describe('새 FSRS 서버 경계', () => {
     expect(response.card).toMatchObject({ state: 'New', due: instant(130), introducedAt: instant(100), revision: 0, reps: 0 });
     expect(operations.get('enroll')).toMatchObject({ userId: owner, nextCard: response.card });
     await expect(request('enroll', { operationId: 'another' })).rejects.toMatchObject({ status: 409 });
+  });
+
+  it('학습 단계 정책은 서버가 알린 값을 따른다 — anki-v2 등록 1분 · 예전 카드는 다음 채점에 같은 단계로 넘어감 · 모르는 정책은 거절(R1-B-2)', async () => {
+    policyVersion = 'anki-v2';
+    // 예전 정책(30초) New 카드: 그대로 묻고, 채점 결과부터 새 정책 단계(1분 · 10분)를 쓴다.
+    const question = await request('question');
+    expect(question.previews[1].due).toBe(instant(90));
+    await request('reveal', { attemptId: 'question' }, instant(31));
+    const graded = await request('grade', { attemptId: 'question', rating: 1 }, instant(32));
+    expect(graded.card).toMatchObject({ policyVersion: 'anki-v2', state: 'Learning', step: 0, due: instant(91) });
+    stored = null;
+    const enrolled = await request('enroll', {}, instant(100));
+    expect(enrolled.card).toMatchObject({ policyVersion: 'anki-v2', state: 'New', due: instant(160) });
+    policyVersion = 'future-policy';
+    await expect(request('question', {}, instant(200))).rejects.toMatchObject({ code: 'fsrs_storage_unavailable' });
   });
 
   it('첫 질문은 정확한 due부터 가능하고 저장/문제 노출은 기억 갱신이나 평가가 아니다', async () => {

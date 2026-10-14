@@ -24,6 +24,7 @@ import {
 import { holidayName } from '../../lib/krHolidays';
 import './class-course.css';
 import { useClassCourse, courseErrorText } from '../../lib/classCourseClient';
+import { friendlyToastMessage } from '../../lib/errorMessage';
 
 const same = (a, b) => JSON.stringify(parseSchedule(a)) === JSON.stringify(parseSchedule(b));
 
@@ -47,7 +48,7 @@ function useScheduleSaver({ user, teamKey, stored }) {
       await client.invalidateQueries({ queryKey: ['class-course', teamKey] });
       return true;
     } catch (err) {
-      setMessage(err instanceof ScheduleError ? err.message : classroomError(err));
+      setMessage(err instanceof ScheduleError ? friendlyToastMessage(err) : classroomError(err));
       return false;
     } finally { setBusy(false); }
   }
@@ -129,7 +130,7 @@ function DateEditor({ schedule, total, session, saver, onDone, range }) {
       preview = session.day === 1 ? `첫 수업이 ${shortDate(value)}로 바뀌고 모든 일정이 다시 계산돼요. 시험 ${shortDate(imp.testFrom)} → ${shortDate(imp.testTo)}`
         : `뒤 수업 ${imp.shifted}회가 다시 계산돼요. 시험 ${shortDate(imp.testFrom)} → ${shortDate(imp.testTo)}`;
       if (holidayName(value)) preview += ` · ${holidayName(value)}에 보강해요`;
-    } catch (err) { error = err.message; }
+    } catch (err) { error = friendlyToastMessage(err); }
   }
   async function submit(e) {
     e.preventDefault();
@@ -234,6 +235,6 @@ export default function CourseSchedule({ course, teamKey, user, root, schedule }
 export function CourseTab({ teamKey, user, root = null }) {
   const q = useClassCourse(teamKey, user?.id);
   if (q.isLoading) return <p role="status">코스를 불러오는 중…</p>;
-  if (q.error) return <div className="classroom-notice" role="alert">{courseErrorText(q.error)} <button onClick={() => q.refetch()}>다시 불러오기</button></div>;
+  if (q.error) return <div className="classroom-notice" role="alert">{courseErrorText(q.error)} <button onClick={() => q.refetch()}>다시 시도</button></div>;
   return <CourseSchedule course={q.data.course} teamKey={teamKey} user={user} root={root} schedule={q.data.team?.schedule} />;
 }

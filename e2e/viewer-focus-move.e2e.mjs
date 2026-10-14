@@ -94,9 +94,15 @@ test('390px: first tap shows only the move bar; touch and keyboard move; second 
   assert.equal(await bar(f).count(),0,'the sheet carries ^/v while it has content');
   const header=await f.page.locator('.viewer-inspector__header').boundingBox();
   assert.ok(header.height<=56,`sheet header is one row: ${header.height}px`);
-  const nav=await f.page.locator('.viewer-inspector__header').getByRole('button',{name:'아래 문장',exact:true}).boundingBox();
-  const tab=await f.page.locator('#inspector-word-tab').boundingBox();
-  assert.ok(Math.abs((nav.y+nav.height/2)-(tab.y+tab.height/2))<4,'^/v share the tab row');
+  // 시트가 열리며 자리를 잡는 동안 한 번만 재면 중간 프레임을 잡는다(CI 1회 실측 2026-10-13) — 최대 2초 동안 같은 줄에 놓이는지 본다.
+  const navBtn=f.page.locator('.viewer-inspector__header').getByRole('button',{name:'아래 문장',exact:true});
+  let navTabGap=Infinity;
+  for(let i=0;i<20&&navTabGap>=4;i++){
+   if(i)await f.page.waitForTimeout(100);
+   const nav=await navBtn.boundingBox();const tab=await f.page.locator('#inspector-word-tab').boundingBox();
+   if(nav&&tab)navTabGap=Math.abs((nav.y+nav.height/2)-(tab.y+tab.height/2));
+  }
+  assert.ok(navTabGap<4,`^/v share the tab row (gap ${navTabGap}px)`);
   const geometry=await f.page.locator('.viewer-inspector').evaluate(sheet=>{
    const r=el=>{const b=el.getBoundingClientRect();return {top:b.top,bottom:b.bottom};};
    const body=sheet.querySelector('.reader-card-body');

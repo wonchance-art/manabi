@@ -14,8 +14,10 @@ describe('focused reader boundaries', () => {
     for (const path of [null, '/viewer', '/viewer/123/edit', '/materials', '/books/japanese-n5', '/pdf/123']) expect(isFocusedReadingRoute(path)).toBe(false);
   });
   it('does not prefetch personalized home, review and library across login', () => {
-    for (const href of ['/home', '/vocab', '/materials']) expect(MAIN_NAV.find(item => item.href === href).prefetch).toBe(false);
-    expect(MAIN_NAV.map(item => item.label)).toEqual(['오늘', '교재', '발견', '복습', '내 서재']);
+    // 메뉴 셋(LEARN-HOME-AK-001): 개인화 화면(배움 · 서재)은 prefetch를 끈다. 복습(/vocab)은 메뉴에서 빠지고
+    // 배움의 단어 복습 칸(prefetch={false})으로 들어간다 — performanceRepairs P5가 그 칸을 함께 지킨다.
+    for (const href of ['/home', '/materials']) expect(MAIN_NAV.find(item => item.href === href).prefetch).toBe(false);
+    expect(MAIN_NAV.map(item => item.label)).toEqual(['배움', '서재', '산책']);
   });
 });
 
@@ -68,6 +70,13 @@ describe('display changes preserve the visible text', () => {
 });
 
 describe('display changes in the paged view (READER-PAGED-001)', () => {
+  // 「다 읽었다면」 줄은 쪽 경계에서 쪼개지지 않는다 — 머리 높이(제목 줄바꿈 등)가 조금 바뀌어도 단 나눔이 밀려
+  // 앞 쪽에서 시작하던 회귀(LINE-BREAK-001, e2e viewer-paged-reader 390px 「end-of-reading row lands on the last page」).
+  it('keeps the end-of-reading row in one page (break-inside: avoid)', async () => {
+    const { readFileSync } = await import('node:fs');
+    const css = readFileSync(new URL('../../index.css', import.meta.url), 'utf8');
+    expect(css).toMatch(/\.post-reading \{[^}]*break-inside: avoid;[^}]*\}/);
+  });
   // 화면 좌표 기준점(captureReadingAnchor)은 세로 스크롤 전용이다 — 다단에서는 다른 단의 토큰도 같은 높이에 있어
   // 첫 단의 토큰을 잡는다. 쪽 넘김 보기에서는 Aa 변경을 그대로 적용하고, 기준 토큰 복원은 usePagedReader가 한다
   // (pagedReader.test.js 「restores the anchor token after a resize or font change」).

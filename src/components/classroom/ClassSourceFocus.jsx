@@ -6,6 +6,7 @@ import { fetchTeamRoot } from '../../lib/classTeamQueries';
 import { classSourceRequest, cachedClassSource } from '../../lib/classHistoryNavigation';
 import { resolveClassSource, sourceFromClassNote } from '../../lib/classSource';
 import { revealInReader } from '../../lib/usePagedReader';
+import { friendlyToastMessage } from '../../lib/errorMessage';
 
 export default function ClassSourceFocus({ material, user, params, onResolve, tokenRefs }) {
   const [state, setState] = useState(null), [retry, setRetry] = useState(0);
@@ -52,7 +53,7 @@ export default function ClassSourceFocus({ material, user, params, onResolve, to
         if (key && (!source || String(source.materialId) !== String(sourceId))) throw new Error('이 자료에 해당하는 수업 위치를 확인하지 못했어요.');
         const target = resolveClassSource(material.processed_json, source);
         if (!target) {
-          setState({ message: '정확한 위치를 찾지 못했어요. 교재 내용이 바뀌었거나 같은 표현이 여러 곳에 있습니다.', quote: source?.quote });
+          setState({ message: '정확한 위치를 찾지 못했어요. 교재 내용이 바뀌었거나 같은 표현이 여러 곳에 있어요.', quote: source?.quote });
           return;
         }
         callback.current(target, source);
@@ -61,7 +62,7 @@ export default function ClassSourceFocus({ material, user, params, onResolve, to
           if (alive && tokenRefs.current[target.first]) revealInReader(tokenRefs.current[target.first], { block: 'center', behavior: 'instant' });
         }); });
       } catch (error) {
-        if (alive && error.name !== 'AbortError') setState({ message: error.message, retry: !!key && !material.__local });
+        if (alive && error.name !== 'AbortError') setState({ message: friendlyToastMessage(error), retry: !!key && !material.__local });
       }
     })();
     return () => { alive = false; controller.abort(); cancelAnimationFrame(frame); };

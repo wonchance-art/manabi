@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "personId": "000148",
+  "workId": "752",
+  "title": "坊っちゃん",
+  "author": "夏目漱石",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1906,
+  "authorDeathYear": 1916,
+  "level": "N2 상급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000148/card752.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000148/files/752_ruby_2438.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "53c4d86033d0e4590c0354df5fec2709820ef21c09fa402826ff33376ec21228",
+  "textSha256": "ece4fc71aad3bed366e86851e818a2525d47fdd732f503866cf7aa084eef6a92",
+  "attribution": {
+    "author": "夏目漱石",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-14",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR",
+      "US"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000148/card752.html"
+  },
+  "display": {
+    "titleReading": "ぼっちゃん",
+    "titleKo": "도련님",
+    "authorKo": "나쓰메 소세키",
+    "cover": "sky",
+    "motif": "steam-sea"
+  }
+}

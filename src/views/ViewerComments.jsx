@@ -59,7 +59,7 @@ export default function ViewerComments({
             value={commentInput}
             onChange={e => setCommentInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && commentInput.trim() && addCommentMutation.mutate(commentInput.trim())}
-            placeholder="이 자료에 대해 이야기해보세요..."
+            placeholder="이 자료에 대해 이야기해보세요…"
             className="search-input"
             style={{ flex: 1 }}
             maxLength={500}
@@ -69,7 +69,7 @@ export default function ViewerComments({
             disabled={!commentInput.trim() || addCommentMutation.isPending}
             onClick={() => addCommentMutation.mutate(commentInput.trim())}
           >
-            {addCommentMutation.isPending ? '...' : '등록'}
+            {addCommentMutation.isPending ? '…' : '등록'}
           </Button>
         </div>
       ) : (

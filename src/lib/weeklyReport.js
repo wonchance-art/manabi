@@ -8,9 +8,17 @@ import { kstWeekStartMs } from './growthStats';
 
 const WEEK_MS = 7 * 86400000;
 
-/** 채점 문항 판정 — EWMA 다이얼과 동일 결(ui=행동 계측·dict=자가 채점은 정답률 신호가 아니다). */
+/**
+ * 활동량에만 드는 출처 — 「한자」 탭 넘기기(HANZI-TAB-AL-001 §4)는 글자마다 스스로 「알아요 · 몰라요」를 고른 기록이다.
+ * 이번 주 복습 수(활동량)에는 넣고, 정답률 · 다이얼 같은 채점 신호에는 섞지 않는다.
+ */
+export const ACTIVITY_ONLY_SOURCES = Object.freeze(new Set(['hanzi']));
+
+/** 채점 문항 판정 — EWMA 다이얼과 동일 결(ui=행동 계측·dict=자가 채점·hanzi=글자 자기 확인은 정답률 신호가 아니다). */
 export function isGradedReviewEvent(event) {
-  return !!event && event.source !== 'ui' && event.source !== 'dict';
+  // 집중 연습(source 'practice')은 일정 밖 연습이라 복습 수 · 정답률 · 산출 단어에 넣지 않는다(REV-SCOPE §6-1 ⑤).
+  return !!event && event.source !== 'ui' && event.source !== 'dict' && event.source !== 'practice'
+    && !ACTIVITY_ONLY_SOURCES.has(event.source);
 }
 
 function inRange(ts, startMs, endMs) {
@@ -28,13 +36,20 @@ function countInRange(rows, field, startMs, endMs) {
 
 function reviewSlice(events, startMs, endMs) {
   let total = 0;
+  let graded = 0;
   let correct = 0;
   for (const e of events || []) {
-    if (!isGradedReviewEvent(e) || !e.created_at || !inRange(e.created_at, startMs, endMs)) continue;
+    if (!e?.created_at || !inRange(e.created_at, startMs, endMs)) continue;
+    if (ACTIVITY_ONLY_SOURCES.has(e.source)) {
+      total += 1; // 활동량만 — 정답률 분모 · 분자에는 넣지 않는다
+      continue;
+    }
+    if (!isGradedReviewEvent(e)) continue;
     total += 1;
+    graded += 1;
     if (e.correct) correct += 1;
   }
-  return { total, correct, accuracy: total > 0 ? correct / total : null };
+  return { total, correct, accuracy: graded > 0 ? correct / graded : null };
 }
 
 /**

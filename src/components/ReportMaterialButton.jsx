@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import Button from './Button';
+import { failureMessage } from '../lib/errorMessage';
 
 const REASONS = [
   { value: 'inappropriate', label: '부적절한 콘텐츠' },
@@ -70,12 +71,12 @@ export default function ReportMaterialButton({ materialId, userId, toast }) {
           throw error;
         }
       } else {
-        toast('신고가 접수됐어요. 검토 후 조치하겠습니다.', 'success');
+        toast('신고가 접수됐어요. 검토한 뒤 조치할게요.', 'success');
       }
       setOpen(false);
       setDetails('');
     } catch (err) {
-      toast('신고 실패 — ' + (err?.message || '잠시 후 다시 시도'), 'error');
+      toast(failureMessage('신고를 접수하지 못했어요.', err), 'error');
     } finally {
       setSubmitting(false);
     }
@@ -93,7 +94,7 @@ export default function ReportMaterialButton({ materialId, userId, toast }) {
           color: 'var(--text-muted)', fontSize: '0.78rem',
           cursor: 'pointer', padding: '4px 8px', textDecoration: 'underline',
         }}
-        title="이 자료를 신고합니다"
+        title="이 자료 신고하기"
       >
         신고
       </button>
@@ -115,7 +116,7 @@ export default function ReportMaterialButton({ materialId, userId, toast }) {
           >
             <h3 id={titleId} style={{ margin: '0 0 8px' }}>자료 신고</h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 14 }}>
-              이 자료가 부적절하다고 생각하시면 이유를 선택해주세요.
+              이 자료가 부적절하다고 생각하면 이유를 골라 주세요.
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
@@ -149,7 +150,7 @@ export default function ReportMaterialButton({ materialId, userId, toast }) {
                 취소
               </Button>
               <Button onClick={handleSubmit} disabled={submitting} style={{ flex: 1 }}>
-                {submitting ? '접수 중...' : '신고'}
+                {submitting ? '접수 중…' : '신고'}
               </Button>
             </div>
           </div>

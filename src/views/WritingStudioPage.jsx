@@ -14,6 +14,7 @@ import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { recordActivity } from '../lib/streak';
 // 첨삭 태그·추천 챕터 링크는 옛 교재 주소일 수 있다(저장된 이력 포함) — 보관함으로만 열리므로 링크를 내지 않는다(VIEWER-R0-BUGS-001 버그 3).
 import { learnerHref } from '../lib/bookNavigation';
+import { friendlyToastMessage } from '../lib/errorMessage';
 
 const LANGS = [
   { key: 'Japanese', label: '일본어' },
@@ -191,14 +192,14 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.feedback) {
-        setError(data?.error?.message || '첨삭에 실패했어요. 잠시 후 다시 시도해주세요.');
+        setError(friendlyToastMessage(data?.error?.message, '첨삭을 받지 못했어요. 잠시 후 다시 시도해 주세요.'));
         return;
       }
       const fb = data.feedback;
       setResult(fb);
       persist(trimmed, fb);
     } catch {
-      setError('네트워크 오류가 발생했어요.');
+      setError('인터넷 연결을 확인해 주세요. 작문은 그대로 있어요.');
     } finally {
       setLoading(false);
     }
@@ -433,7 +434,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
         <div className="card" style={{ padding: '16px 18px', marginBottom: 14 }}>
           <div style={{ fontSize: '0.82rem', fontWeight: 700, marginBottom: 4 }}>쓰려다 못 쓴 말</div>
           <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: 10 }}>
-            첨삭에서 고쳐진 표현이에요. 담으면 단어장에서 복습해요(자동으로 담지 않아요).
+            첨삭에서 고쳐진 표현이에요. 담으면 담은 표현으로 복습해요(자동으로 담지 않아요).
           </div>
           <div className="writing-gaps" style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {writingGaps.slice(0, 24).map((g) => {
@@ -447,7 +448,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
                   lang={LANG_CODE[g.lang]}
                   disabled={added || gapBusy === key}
                   onClick={() => addGap(g)}
-                  title={added ? '단어장에 있어요' : `담기 — ${g.count}번 못 썼어요`}
+                  title={added ? '담은 표현에 있어요' : `담기 — ${g.count}번 못 썼어요`}
                   style={{ fontSize: '0.8rem', padding: '3px 10px', cursor: added ? 'default' : 'pointer' }}
                 >
                   {g.text}

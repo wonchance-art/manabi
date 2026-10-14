@@ -4,6 +4,7 @@ import {useQueryClient} from '@tanstack/react-query';
 import {noteCandidatePayload} from '@/lib/studyNotes';
 import {requestNote} from '@/lib/useStudyNote';
 import BoardIcon from '@/components/classroom/BoardIcon';
+import { friendlyToastMessage } from '@/lib/errorMessage';
 
 export default function NoteVocabulary({saved, noteId, note, onChange, onFocus, onClose, sync, message}) {
   const queryClient = useQueryClient(), working = useRef(false);
@@ -28,7 +29,7 @@ export default function NoteVocabulary({saved, noteId, note, onChange, onFocus, 
         return !item.reading&&result.reading?{...item,reading:result.reading,reviewed:false}:item;
       }));
       if (!result.senses?.length && !result.candidates?.length) setNotice('저장된 사전 뜻이 없어요. 노트에서 배운 뜻을 적어 주세요.');
-    } catch (error) { setNotice(error.message); } finally { setLookupId(null); }
+    } catch (error) { setNotice(friendlyToastMessage(error)); } finally { setLookupId(null); }
   }
   async function saveRows(list, confirmation = {}) {
     if (working.current || !list.length) return;
@@ -44,12 +45,12 @@ export default function NoteVocabulary({saved, noteId, note, onChange, onFocus, 
           result.created ? created++ : linked++;
           patch(row.id, {vocabularyId: result.vocabularyId});
           setOutcomes(current => ({...current, [row.id]: {ok: true, text: result.created ? '새로 담음' : '기존 단어에 문맥 연결'}}));
-        } catch (error) { failed++; setOutcomes(current => ({...current, [row.id]: {...error.detail, error: error.message}})); }
+        } catch (error) { failed++; setOutcomes(current => ({...current, [row.id]: {...error.detail, error: friendlyToastMessage(error)}})); }
       }
       await sync();
       setNotice(`새 단어 ${created}개 · 기존 단어 ${linked}개 연결${failed ? ` · 확인/재시도 ${failed}개` : ''}`);
       queryClient.invalidateQueries({predicate: query => /vocab|learning-summary/.test(String(query.queryKey[0]))});
-    } catch (error) { setNotice(error.message); }
+    } catch (error) { setNotice(friendlyToastMessage(error)); }
     finally { working.current = false; setBusy(false); }
   }
   const inkCount = note.board.pages.reduce((count, page) => count + page.elements.filter(el => !el.isDeleted && el.type === 'freedraw').length, 0);
@@ -58,9 +59,9 @@ export default function NoteVocabulary({saved, noteId, note, onChange, onFocus, 
     <p className="note-review-intro">표기와 뜻을 확인한 표현을 선택하세요. 필기 원본은 그대로 남아요.</p>
     <div className="note-review-actions"><button disabled={busy} onClick={()=>onChange(current=>current.map(row=>!row.excluded&&!row.vocabularyId&&row.text.trim()&&row.meaning.trim()?{...row,reviewed:true}:row))}>뜻 있는 항목 모두 선택</button><label><input type="checkbox" checked={showExcluded} onChange={event=>setShowExcluded(event.target.checked)}/>제외한 항목</label></div>
     <div className="note-review-scroll">
-      {!rows.length&&<div className="note-review-empty"><h3>노트에서 표현을 모아 보세요.</h3><p>＋로 놓은 단어와 글자 도구로 적은 내용을 정리할 수 있어요. ‘표현 → 뜻’으로 적으면 한 줄씩 연결됩니다.</p></div>}
+      {!rows.length&&<div className="note-review-empty"><h3>노트에서 표현을 모아 보세요.</h3><p>＋로 놓은 단어와 글자 도구로 적은 내용을 정리할 수 있어요. ‘표현 → 뜻’으로 적으면 한 줄씩 연결돼요.</p></div>}
       {inkCount>0&&<p className="note-review-hint">손글씨도 정리하려면 이 창을 닫고 선택 도구로 필기를 감싼 뒤, 선택한 요소 메뉴에서 ‘선택한 필기 인식’을 누르세요.</p>}
-      {saved.isError&&<p role="status">기존 단어 목록을 불러오지 못했어요. 저장할 때 중복을 다시 확인합니다. <button onClick={()=>saved.refetch()}>다시 확인</button></p>}
+      {saved.isError&&<p role="status">기존 단어 목록을 불러오지 못했어요. 저장할 때 중복을 다시 확인해요. <button onClick={()=>saved.refetch()}>다시 시도</button></p>}
       {rows.map(row => {
         const outcome = outcomes[row.id], choicesForRow = choices[row.id]?.query===row.text?choices[row.id]:null;
         const existing = saved.data?.find(item => item.language === row.language && (item.word_text === (row.base || row.text) || item.base_form === (row.base || row.text)));
@@ -76,6 +77,6 @@ export default function NoteVocabulary({saved, noteId, note, onChange, onFocus, 
         </article>;
       })}
     </div>
-    <footer>{(notice||message)&&<p role="status">{notice||message}</p>}<button className="manabi-button" disabled={busy||!selected.length} onClick={()=>saveRows(selected)}>{busy?'선택한 표현 담는 중…':`선택한 ${selected.length}개 담기`}</button><small>기존 단어의 뜻과 복습 일정은 유지됩니다.</small></footer>
+    <footer>{(notice||message)&&<p role="status">{notice||message}</p>}<button className="manabi-button" disabled={busy||!selected.length} onClick={()=>saveRows(selected)}>{busy?'선택한 표현 담는 중…':`선택한 ${selected.length}개 담기`}</button><small>기존 단어의 뜻과 복습 일정은 그대로예요.</small></footer>
   </aside>;
 }

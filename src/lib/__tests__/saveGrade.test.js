@@ -104,7 +104,7 @@ describe('저장 등급 — 뷰어 배선(ViewerPage)', () => {
     expect(keys).toContain("e.target?.closest?.('.viewer-3col, .toast-container')");
     expect(keys).toContain("e.target === document.body && document.querySelector('.viewer-3col')");
     expect(viewer).toContain('useEffect(() => { lastSaveRef.current = null; lastInlineGradeRef.current = null; }, [id, user?.id]);');
-    expect(viewer).toContain('onClick={() => undoLastSave(snapshot)}>저장 취소 · {UNDO_KEY_LABEL}');
+    expect(viewer).toContain('onClick={() => undoLastSave(snapshot)}>되돌리기 · {UNDO_KEY_LABEL}');
     expect(viewer).toMatch(/UNDO_KEY_LABEL = [\s\S]{0,200}\? '⌘Z' : 'Ctrl\+Z'/);
   });
 

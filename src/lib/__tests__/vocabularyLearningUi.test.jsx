@@ -50,8 +50,8 @@ describe('authoritative vocabulary learning UI', () => {
     const html = render(VocabList, listProps(snapshot));
     expect(html).toContain('nǐ hǎo');
     expect(html).toContain('안녕하세요');
-    expect((html.match(/title="숙련"/g) || []).length).toBe(1);
-    expect((html.match(/title="초기"/g) || []).length).toBe(1);
+    expect((html.match(/title="학습"/g) || []).length).toBe(1); // 카드 단계(D15): FSRS 학습 단계 — interval 999(옛 칸)를 쓰지 않는다
+    expect((html.match(/title="익히는 중"/g) || []).length).toBe(1); // 예전 카드: 간격 = next − last = 1일(interval 40 = 안정도 아님)
     expect((html.match(/class="vocab-row__due"/g) || []).length).toBe(1);
     expect(snapshot.rows[0].interval).toBe(999);
     expect(snapshot.rows[0].repetitions).toBe(99);
@@ -90,13 +90,13 @@ describe('authoritative vocabulary learning UI', () => {
     expect(html).toContain(`유지율 ${Math.round(measured.reduce((sum, n) => sum + n, 0) / measured.length * 100)}%`);
     expect(html).toContain('Again 3');
     expect(html).not.toContain('Again 99');
-    expect(html).toContain('숙련 1');
+    expect(html).toContain('익숙 0'); // 익숙(21일+)은 간격으로 — 안정도 40 · 옛 interval 999로 부풀리지 않는다(R1-B-1)
     expect((html.match(/class="forecast-count">2</g) || []).length).toBe(1);
   });
   it('disabled enrollment preserves memory but does not enter calendar or due state', () => {
     const snapshot = fixture({ enabled: false });
     const html = render(VocabStats, { vocab: snapshot.rows, projections: snapshot.projections, learningAvailable: true, now: at });
-    expect(html).toContain('숙련 1');
+    expect(html).toContain('익숙 0');
     expect(html).not.toContain('class="forecast-count">2<');
     const detail = render(VocabDetailCard, { word: snapshot.rows[0], projection: snapshot.projections[0], now: at + 60_000, onClose() {} });
     expect(detail).toContain('>30s<');
@@ -106,7 +106,7 @@ describe('authoritative vocabulary learning UI', () => {
     const snapshot = fixture();
     const done = render(VocabReview, { vocab: snapshot.rows, projections: snapshot.projections, learningAvailable: true, now: at,
       reviewWords: [], reviewIdx: 0, reviewFinished: true });
-    expect(done).toContain('>1</span><span class="review-done__stat-label">숙련 표현');
+    expect(done).toContain('>0</span><span class="review-done__stat-label">익숙 표현(21일 이상)');
     expect(done).toContain('총 1개 예정');
     const grading = render(VocabReview, { vocab: snapshot.rows, reviewWords: [snapshot.rows[1]], reviewIdx: 0,
       currentWord: snapshot.rows[1], reviewMode: 'flash', showAnswer: true });
@@ -119,7 +119,7 @@ describe('authoritative vocabulary learning UI', () => {
     const snapshot = fixture();
     const unknown = render(VocabStats, { vocab: snapshot.rows, learningAvailable: false, now: at });
     expect(unknown).toContain('유지율 —');
-    expect(unknown).toContain('숙련 —');
+    expect(unknown).toContain('익숙 —');
     expect(unknown).not.toContain('유지율 0%');
     expect(() => render(VocabDetailCard, { word: snapshot.rows[0], projection: snapshot.projections[0], now: START, onClose() {} })).not.toThrow();
     expect(() => render(VocabList, { ...listProps(snapshot), now: START })).not.toThrow();
@@ -135,7 +135,7 @@ describe('authoritative vocabulary learning UI', () => {
     expect(source).toContain('fsrsReview.controller.retrySave(row.operationId)');
     const data = readFileSync(new URL('../useVocabData.js', import.meta.url), 'utf8');
     expect(data).toContain("queryKey: ['vocab', user?.id, 'learning']");
-    expect(data).toContain('learning.rows : EMPTY_ROWS');
+    expect(data).toContain('ownLearning.rows : EMPTY_ROWS');
     expect(data).not.toContain('fetchVocab(');
   });
 });

@@ -6,6 +6,18 @@ export const FSRS_POLICY = Object.freeze({
   learning: Object.freeze([30, 600]), relearning: Object.freeze([600]),
   retention: 0.9, maximumInterval: 36500, timeZone: 'Asia/Seoul', rolloverHour: 4,
 });
+// 학습 단계 정책(REV-SCOPE R1-B-2). 어느 정책으로 새 카드를 만들고 채점할지는 서버(fsrs_capabilities)가 정한다.
+// 두 정책 모두 학습 2단계 · 재학습 1단계라 단계 순번은 그대로 옮겨진다 — 학습 · 재학습 중인 카드는 다음 채점 때 새 정책으로 넘어간다.
+export const FSRS_POLICIES = Object.freeze({
+  'anki-seconds-v1': Object.freeze({ learning: FSRS_POLICY.learning, relearning: FSRS_POLICY.relearning }),
+  'anki-v2': Object.freeze({ learning: Object.freeze([60, 600]), relearning: Object.freeze([600]) }),
+});
+/** 취소 · 중단 뒤 다시 묻기까지의 고정 대기(SQL next_question_at의 30초). 학습 단계와 무관하다. */
+export const FSRS_RETRY_SECONDS = 30;
+export function fsrsPolicySteps(version) {
+  if (!Object.hasOwn(FSRS_POLICIES, version)) throw new Error('unsupported_fsrs_card');
+  return FSRS_POLICIES[version];
+}
 const DAY = 86400000;
 const STATES = ['New', 'Learning', 'Review', 'Relearning'];
 const algorithm = new FSRSAlgorithm({ request_retention: FSRS_POLICY.retention,
@@ -51,7 +63,8 @@ export function learningDay(value, timeZone = FSRS_POLICY.timeZone, rolloverHour
 
 export function validateFsrsCard(card) {
   if (!card || card.version !== 1 || card.engine !== FSRS_POLICY.engine ||
-      card.policyVersion !== FSRS_POLICY.version || !STATES.includes(card.state)) throw new Error('unsupported_fsrs_card');
+      !Object.hasOwn(FSRS_POLICIES, card.policyVersion) || !STATES.includes(card.state)) throw new Error('unsupported_fsrs_card');
+  const policy = FSRS_POLICIES[card.policyVersion];
   if (FSRSVersion !== FSRS_POLICY.engine) throw new Error('unverified_fsrs_engine');
   for (const key of ['revision', 'reps', 'lapses', 'step', 'scheduledDays', 'elapsedDays']) {
     if (!Number.isSafeInteger(card[key]) || card[key] < 0) throw new Error('invalid_fsrs_counter');
@@ -63,43 +76,47 @@ export function validateFsrsCard(card) {
   if (!Number.isFinite(card.stability) || !Number.isFinite(card.difficulty)) throw new Error('invalid_fsrs_memory');
   if (card.state === 'New') {
     if (card.stability !== 0 || card.difficulty !== 0 || card.reps !== 0 || card.lastReview !== null ||
-        card.step !== 0 || card.elapsedDays !== 0 || due < introduced + FSRS_POLICY.learning[0] * 1000) throw new Error('invalid_new_card');
+        card.step !== 0 || card.elapsedDays !== 0 || due < introduced + policy.learning[0] * 1000) throw new Error('invalid_new_card');
   } else {
     const last = schedulerTime(card.lastReview);
     if (last < introduced || due < last || card.reps < 1 || card.stability < S_MIN || card.stability > S_MAX ||
         card.difficulty < 1 || card.difficulty > 10) throw new Error('invalid_fsrs_memory');
   }
-  const steps = card.state === 'Learning' ? FSRS_POLICY.learning : card.state === 'Relearning' ? FSRS_POLICY.relearning : null;
+  const steps = card.state === 'Learning' ? policy.learning : card.state === 'Relearning' ? policy.relearning : null;
   if ((steps && card.step >= steps.length) || (!steps && card.step !== 0) ||
       (card.state !== 'Review' && card.scheduledDays !== 0) ||
       (card.state === 'Review' && (card.scheduledDays < 1 || card.scheduledDays > FSRS_POLICY.maximumInterval))) throw new Error('invalid_fsrs_step');
   return card;
 }
 
-/** 저장·본문 노출은 회상이 아니다. 첫 문제까지 30초를 두고 기억 상태와 평가 이력은 갱신하지 않는다. */
-export function introduceFsrsCard(at, { timeZone = FSRS_POLICY.timeZone, rolloverHour = FSRS_POLICY.rolloverHour } = {}) {
-  const now = schedulerTime(at);
-  return validateFsrsCard({ version: 1, engine: FSRS_POLICY.engine, policyVersion: FSRS_POLICY.version,
+/** 저장·본문 노출은 회상이 아니다. 첫 문제까지 정책의 첫 단계(30초 · 1분)를 두고 기억 상태와 평가 이력은 갱신하지 않는다. */
+export function introduceFsrsCard(at, { timeZone = FSRS_POLICY.timeZone, rolloverHour = FSRS_POLICY.rolloverHour,
+  policyVersion = FSRS_POLICY.version } = {}) {
+  const now = schedulerTime(at), policy = fsrsPolicySteps(policyVersion);
+  return validateFsrsCard({ version: 1, engine: FSRS_POLICY.engine, policyVersion,
     timeZone, rolloverHour, introducedAt: new Date(now).toISOString(), revision: 0,
     state: 'New', step: 0, stability: 0, difficulty: 0, reps: 0, lapses: 0,
-    due: new Date(now + FSRS_POLICY.learning[0] * 1000).toISOString(), lastReview: null,
+    due: new Date(now + policy.learning[0] * 1000).toISOString(), lastReview: null,
     scheduledDays: 0, elapsedDays: 0 });
 }
 
-function stepPlan(card, rating) {
-  if (card.state === 'Review') return rating === 1 ? { state: 'Relearning', step: 0, seconds: 600 } : null;
+function stepPlan(card, rating, policy) {
+  if (card.state === 'Review') return rating === 1 ? { state: 'Relearning', step: 0, seconds: policy.relearning[0] } : null;
   if (rating === 4) return null;
   const state = card.state === 'New' ? 'Learning' : card.state;
-  const steps = state === 'Relearning' ? FSRS_POLICY.relearning : FSRS_POLICY.learning;
+  const steps = state === 'Relearning' ? policy.relearning : policy.learning;
   if (rating === 1) return { state, step: 0, seconds: steps[0] };
   if (rating === 2) return { state, step: card.step, seconds: card.step > 0 ? steps[card.step]
     : steps.length === 1 ? Math.round(steps[0] * 1.5) : Math.round((steps[0] + steps[1]) / 2) };
   return card.step + 1 < steps.length ? { state, step: card.step + 1, seconds: steps[card.step + 1] } : null;
 }
 
-/** 같은 카드와 한 번 캡처한 시각으로 네 버튼의 실제 전이를 계산한다. 미리 복습하지 않는다. */
-export function previewFsrsRatings(input, at) {
-  const card = validateFsrsCard(input), now = schedulerTime(at);
+/**
+ * 같은 카드와 한 번 캡처한 시각으로 네 버튼의 실제 전이를 계산한다. 미리 복습하지 않는다.
+ * policyVersion = 채점 뒤 카드의 정책(서버가 알린 지금 정책). 생략하면 카드의 정책을 그대로 쓴다.
+ */
+export function previewFsrsRatings(input, at, { policyVersion = input?.policyVersion } = {}) {
+  const card = validateFsrsCard(input), now = schedulerTime(at), policy = fsrsPolicySteps(policyVersion);
   if (now < schedulerTime(card.due)) throw new Error('fsrs_card_not_due');
   const elapsed = card.lastReview === null ? 0 : learningDay(now, card.timeZone, card.rolloverHour)
     - learningDay(card.lastReview, card.timeZone, card.rolloverHour);
@@ -112,8 +129,8 @@ export function previewFsrsRatings(input, at) {
     days[3] = Math.min(FSRS_POLICY.maximumInterval, Math.max(days[3], days[2] + 1));
   }
   return Object.fromEntries([1, 2, 3, 4].map(rating => {
-    const step = stepPlan(card, rating), scheduledDays = step ? 0 : days[rating - 1];
-    const next = { ...card, ...memory[rating - 1], revision: card.revision + 1,
+    const step = stepPlan(card, rating, policy), scheduledDays = step ? 0 : days[rating - 1];
+    const next = { ...card, ...memory[rating - 1], policyVersion, revision: card.revision + 1,
       state: step?.state || 'Review', step: step?.step || 0, scheduledDays, elapsedDays: elapsed,
       reps: card.reps + 1, lapses: card.lapses + (card.state === 'Review' && rating === 1 ? 1 : 0),
       lastReview: new Date(now).toISOString(),
@@ -126,7 +143,7 @@ export function previewFsrsRatings(input, at) {
   }));
 }
 
-export function scheduleFsrsReview(card, rating, at) {
+export function scheduleFsrsReview(card, rating, at, options) {
   if (![1, 2, 3, 4].includes(rating)) throw new Error('invalid_fsrs_rating');
-  return previewFsrsRatings(card, at)[rating];
+  return previewFsrsRatings(card, at, options)[rating];
 }

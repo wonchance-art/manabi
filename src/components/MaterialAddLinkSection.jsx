@@ -18,6 +18,7 @@ import { supabase } from '../lib/supabase';
 import { detectLinkKind, transcriptFromPaste } from '../lib/linkImport';
 import { MAX_BODY_CHARS } from '../lib/materialComposer';
 import { BODY_CAP_LABEL } from '../lib/bookSplit';
+import { friendlyToastMessage } from '../lib/errorMessage';
 
 /**
  * 자막 본문 맞추기 — 저장 상한(MAX_BODY_CHARS) 안이면 그대로, 넘을 때만 상한 안의 마지막 줄바꿈에서
@@ -91,7 +92,7 @@ export default function MaterialAddLinkSection({ toast, onReady, initialUrl = ''
         setManual({ videoId: j?.videoId || '', title: j?.title || '', channel: j?.channel || '' });
         return;
       }
-      toast(j?.message || '가져오지 못했어요.', 'error');
+      toast(friendlyToastMessage(j?.message, '가져오지 못했어요.'), 'error');
     } catch {
       toast('가져오지 못했어요 — 잠시 후 다시 시도해 주세요.', 'error');
     } finally {
@@ -131,7 +132,7 @@ export default function MaterialAddLinkSection({ toast, onReady, initialUrl = ''
               /* 320px에서도 [가져오기]와 한 줄에 선다 — 기저를 크게 잡으면 버튼이 혼자
                  아래로 떨어져 실수처럼 보인다(렌더 실측). */
               style={{ flex: '1 1 140px', minWidth: 0 }}
-              placeholder="https://youtu.be/..."
+              placeholder="https://youtu.be/…"
               value={url}
               inputMode="url"
               onChange={(e) => { setUrl(e.target.value); setManual(null); }}

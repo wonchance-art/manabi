@@ -1,6 +1,6 @@
 /** 서버가 검증한 사용자·시각·저장 상태만 새 FSRS 전이에 사용할 수 있다. */
 import { createClient } from '@supabase/supabase-js';
-import { FSRS_POLICY, introduceFsrsCard, learningDay, previewFsrsRatings, schedulerTime, validateFsrsCard } from '../fsrsScheduler.js';
+import { FSRS_POLICIES, FSRS_RETRY_SECONDS, introduceFsrsCard, learningDay, previewFsrsRatings, schedulerTime, validateFsrsCard } from '../fsrsScheduler.js';
 import { beginFsrsAttempt, revealFsrsAttempt, finishFsrsAttempt, planFsrsUndo } from '../fsrsReviewSession.js';
 import { UUID } from '../learningSources.js';
 import { DEFAULT_NEW_PER_DAY, NEW_PER_DAY_OPTIONS } from '../vocabStudy.js';
@@ -9,7 +9,8 @@ import { readLearningAdmissionStatus } from './learningAdmission.js';
 const identity = value => typeof value === 'string' && /^[A-Za-z0-9_.:-]{1,200}$/.test(value);
 const canonical = value => JSON.stringify(value, Object.keys(value).sort());
 const same = (left, right) => canonical(left) === canonical(right);
-const reject = (code, status = 503) => { throw Object.assign(new Error(code), { code, status }); };
+// detail은 서버 로그 전용(응답 본문에 싣지 않는다) — 503이 어느 단계에서 났는지 남긴다(REVIEW-LOAD-TRANSIENT-001).
+const reject = (code, status = 503, detail) => { throw Object.assign(new Error(code), { code, status, ...(detail ? { detail } : {}) }); };
 const copy = value => JSON.parse(JSON.stringify(value));
 const fields = {
   enroll: [], question: ['attemptId', 'answerVisible', 'dailyNewLimit', 'expectedPolicyRevision'], reveal: ['attemptId', 'hint'],
@@ -22,6 +23,13 @@ export function fsrsServiceClient() {
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
 }
 
+/** 5xx만 원인 단계를 남긴다. 사용자 ID · 요청 본문 · 키는 싣지 않는다. */
+export function logFsrsUnavailable(route, error) {
+  const { status } = fsrsError(error);
+  if (status < 500) return;
+  console.warn(`[fsrs] ${route} ${status}`, error?.code || error?.name || 'error', error?.detail || error?.message || '');
+}
+
 export function fsrsError(error) {
   const known = Number.isInteger(error?.status) && error.status >= 400 && error.status <= 599
     && /^fsrs_[a-z_]+$/.test(error.code || '');
@@ -29,7 +37,7 @@ export function fsrsError(error) {
     code: known ? error.code : 'fsrs_storage_unavailable' } };
 }
 
-function databaseError(error) {
+function databaseError(error, name = 'rpc') {
   if (!error) return;
   const message = String(error.message || '');
   const cases = [
@@ -45,14 +53,16 @@ function databaseError(error) {
     [/recall_not_eligible/, 'fsrs_recall_not_eligible', 422],
     [/disabled|unavailable|not_ready/, 'fsrs_storage_unavailable', 503],
   ];
-  for (const [pattern, code, status] of cases) if (pattern.test(message)) reject(code, status);
-  reject('fsrs_storage_unavailable');
+  const detail = `${name}: ${error.code || ''} ${message}`.slice(0, 300);
+  for (const [pattern, code, status] of cases) if (pattern.test(message)) reject(code, status, status >= 500 ? detail : undefined);
+  reject('fsrs_storage_unavailable', 503, detail);
 }
 
 async function rpc(client, name, args) {
   let result;
-  try { result = await client.rpc(name, args); } catch { reject('fsrs_storage_unavailable'); }
-  databaseError(result?.error);
+  try { result = await client.rpc(name, args); }
+  catch (error) { reject('fsrs_storage_unavailable', 503, `${name} threw: ${error?.name || ''} ${error?.message || ''}`.slice(0, 300)); }
+  databaseError(result?.error, name);
   return result?.data;
 }
 
@@ -84,19 +94,20 @@ export function parseFsrsRequest(body, userId) {
 async function capabilities(client) {
   // 설치 부재와 읽기 장애를 '등록 카드 없음'으로 변환하지 않는다.
   const raw = await rpc(client, 'fsrs_capabilities');
-  if (raw?.version !== 1 || raw?.policyVersion !== FSRS_POLICY.version || typeof raw.enabled !== 'boolean') reject('fsrs_storage_unavailable');
+  // 학습 단계 정책은 서버가 정한다(REV-SCOPE R1-B-2 anki-v2). 모르는 정책값이면 추측하지 않고 멈춘다.
+  if (raw?.version !== 1 || !Object.hasOwn(FSRS_POLICIES, raw?.policyVersion) || typeof raw.enabled !== 'boolean') reject('fsrs_storage_unavailable', 503, 'fsrs_capabilities: contract mismatch');
   return { version: 1, enabled: raw.enabled,
-    policyVersion: FSRS_POLICY.version };
+    policyVersion: raw.policyVersion };
 }
 
 function checkedState(raw, userId, cardId = null) {
   if (!raw) return null;
   if (raw.userId !== userId || !UUID.test(raw.cardId || '') || (cardId && raw.cardId !== cardId)) reject('fsrs_card_not_found', 404);
   if (raw.card === null && raw.enrolled === false) return null;
-  try { validateFsrsCard(raw.card); } catch { reject('fsrs_storage_unavailable'); }
+  try { validateFsrsCard(raw.card); } catch { reject('fsrs_storage_unavailable', 503, 'state: invalid card'); }
   if (raw.attempt && (raw.attempt.userId !== userId || raw.attempt.cardId !== raw.cardId
     || !identity(raw.attempt.id) || !['question', 'revealed', 'abandoned'].includes(raw.attempt.phase)
-    || typeof raw.attempt.eligible !== 'boolean' || !same(raw.attempt.card, raw.card))) reject('fsrs_storage_unavailable');
+    || typeof raw.attempt.eligible !== 'boolean' || !same(raw.attempt.card, raw.card))) reject('fsrs_storage_unavailable', 503, 'state: attempt mismatch');
   return raw;
 }
 
@@ -107,7 +118,7 @@ function publicState(raw) {
     nextQuestionAt: raw.nextQuestionAt ?? raw.card.due };
 }
 
-function result(raw, userId, now, operationId, duplicate = false) {
+function result(raw, userId, now, operationId, duplicate = false, policyVersion = raw?.card?.policyVersion) {
   const state = checkedState(raw, userId), at = new Date(schedulerTime(now)).toISOString();
   if (!state) reject('fsrs_storage_unavailable');
   const response = { ok: true, version: 1, actorId: userId, now: at, ...publicState(state), operationId, duplicate };
@@ -118,7 +129,7 @@ function result(raw, userId, now, operationId, duplicate = false) {
   if (response.eligible && schedulerTime(response.nextQuestionAt) <= schedulerTime(at) && schedulerTime(state.card.due) <= schedulerTime(at)) {
     const previewAt = state.attempt?.phase === 'revealed' ? state.attempt.revealedAt : at;
     try {
-      response.previews = Object.fromEntries(Object.entries(previewFsrsRatings(state.card, previewAt))
+      response.previews = Object.fromEntries(Object.entries(previewFsrsRatings(state.card, previewAt, { policyVersion }))
         .map(([rating, preview]) => [rating, { due: preview.card.due }]));
     } catch { /* 평가 결과가 이미 반영된 재전송에는 이전 미리보기를 붙이지 않는다. */ }
   }
@@ -129,9 +140,9 @@ export async function readFsrsStatus({ authClient, serviceClient, userId, now = 
   if (!UUID.test(userId || '')) reject('fsrs_auth_required', 401);
   const contract = await capabilities(authClient);
   const rows = await rpc(serviceClient, 'fsrs_list_states', { p_actor: userId });
-  if (!Array.isArray(rows)) reject('fsrs_storage_unavailable');
+  if (!Array.isArray(rows)) reject('fsrs_storage_unavailable', 503, 'fsrs_list_states: not an array');
   const cards = rows.map(row => publicState(checkedState(row, userId)));
-  if (new Set(cards.map(card => card.cardId)).size !== cards.length) reject('fsrs_storage_unavailable');
+  if (new Set(cards.map(card => card.cardId)).size !== cards.length) reject('fsrs_storage_unavailable', 503, 'fsrs_list_states: duplicate card');
   const firstQuestionsToday = cards.filter(entry => entry.firstQuestionAt
     && learningDay(entry.firstQuestionAt, entry.card.timeZone, entry.card.rolloverHour)
       === learningDay(now, entry.card.timeZone, entry.card.rolloverHour)).length;
@@ -147,12 +158,12 @@ function checkAttempt(state, request, userId) {
   return attempt;
 }
 
-function transition(state, request, userId, at) {
+function transition(state, request, userId, at, policyVersion) {
   const base = { version: 1, id: request.operationId, kind: request.action, userId,
     cardId: request.cardId, expectedRevision: request.expectedRevision, request };
   if (request.action === 'enroll') {
     if (state) reject('fsrs_already_enrolled', 409);
-    return { ...base, nextCard: introduceFsrsCard(at) };
+    return { ...base, nextCard: introduceFsrsCard(at, { policyVersion }) };
   }
   if (!state) reject('fsrs_card_not_found', 404);
   if (state.card.revision !== request.expectedRevision) reject('fsrs_revision_conflict', 409);
@@ -165,7 +176,7 @@ function transition(state, request, userId, at) {
     }
     if (state.attempt?.phase === 'abandoned') {
       const exposed = state.attempt.revealedAt || state.attempt.questionAt;
-      if (schedulerTime(at) < schedulerTime(exposed) + FSRS_POLICY.learning[0] * 1000) reject('fsrs_card_not_due', 409);
+      if (schedulerTime(at) < schedulerTime(exposed) + FSRS_RETRY_SECONDS * 1000) reject('fsrs_card_not_due', 409);
     }
     return { ...base, dailyNewLimit: request.dailyNewLimit, nextAttempt: beginFsrsAttempt(state.card, { id: request.attemptId, userId,
       cardId: request.cardId, at, answerVisible: request.answerVisible }) };
@@ -182,7 +193,7 @@ function transition(state, request, userId, at) {
     // 응답을 본 시각은 서버에 이미 기록되어 있다. 오프라인 전송 지연은 회상 간격이 아니다.
     if (attempt.phase !== 'revealed' || !attempt.revealedAt) reject('fsrs_answer_not_revealed', 409);
     if (schedulerTime(attempt.revealedAt) > schedulerTime(at)) reject('fsrs_attempt_conflict', 409);
-    return { ...finishFsrsAttempt(attempt, request.rating, { operationId: request.operationId, at: attempt.revealedAt }), request };
+    return { ...finishFsrsAttempt(attempt, request.rating, { operationId: request.operationId, at: attempt.revealedAt, policyVersion }), request };
   }
   if (state.attempt && ['question', 'revealed'].includes(state.attempt.phase)) reject('fsrs_attempt_conflict', 409);
   const target = state.operations?.find(operation => operation.id === request.targetOperationId);
@@ -197,7 +208,7 @@ export async function applyFsrsRequest({ authClient, serviceClient, userId, body
   if (!contract.enabled) reject('fsrs_storage_unavailable');
   const admission = await readLearningAdmissionStatus({ authClient, serviceClient, userId, knownFsrsEnabled: contract.enabled, now });
   if (!admission.installed) reject('fsrs_admission_unavailable');
-  const currentResult = async (current, duplicate) => ({ ...result(current, userId, at, request.operationId, duplicate),
+  const currentResult = async (current, duplicate) => ({ ...result(current, userId, at, request.operationId, duplicate, contract.policyVersion),
     admission: await readLearningAdmissionStatus({ authClient, serviceClient, userId, knownFsrsEnabled: contract.enabled, now }) });
   const previous = await rpc(serviceClient, 'fsrs_read_operation', { p_actor: userId, p_card_id: request.cardId, p_operation_id: request.operationId });
   const raw = await rpc(serviceClient, 'fsrs_read_state', { p_actor: userId, p_card_id: request.cardId });
@@ -216,7 +227,7 @@ export async function applyFsrsRequest({ authClient, serviceClient, userId, body
     if (target) state.operations = [...(state.operations || []), target];
   }
   let operation;
-  try { operation = transition(state, request, userId, at); } catch (error) {
+  try { operation = transition(state, request, userId, at, contract.policyVersion); } catch (error) {
     if (error?.code) throw error;
     const messages = { fsrs_card_not_due: ['fsrs_card_not_due', 409], recall_not_eligible: ['fsrs_recall_not_eligible', 422],
       answer_not_revealed: ['fsrs_answer_not_revealed', 409], invalid_attempt_phase: ['fsrs_attempt_conflict', 409],

@@ -45,7 +45,14 @@ describe('personal reading state and navigation', () => {
     expect(validReadingProgress({ page: 'javascript:alert(1)', completed: ['u01', 'u01', 'u42', 'u43', null] })).toEqual({ page: 'u01-start', completed: ['u01', 'u42'] });
   });
   it('only moves legacy textbooks, preserving unrelated viewer and reading routes', () => {
-    for (const lang of ['japanese', 'chinese', 'english', 'french']) for (const suffix of ['', '/grammar/first', '/vocab/n5', '/bunkei/a1']) expect(legacyTextbookTarget(`/${lang}${suffix}`)).toBe(`/admin/legacy-textbooks/${lang}${suffix}`);
+    // LEVEL-LIST-AJ-001: 일 · 중 레벨별 단어 · 문형(일 n5~n1 · 중 h1~h6)만 새 화면으로 열렸다. 나머지 조합은 보관함 그대로.
+    // (전: 4언어 × '' · /grammar/first · /vocab/n5 · /bunkei/a1 전부 보관함)
+    for (const lang of ['japanese', 'chinese', 'english', 'french']) for (const suffix of ['', '/grammar/first', '/vocab/n5', '/bunkei/a1']) {
+      const opened = (lang === 'japanese' && ['/vocab/n5'].includes(suffix));
+      expect(legacyTextbookTarget(`/${lang}${suffix}`)).toBe(opened ? null : `/admin/legacy-textbooks/${lang}${suffix}`);
+    }
+    for (const path of ['/japanese/vocab/n1', '/japanese/bunkei/n5', '/japanese/bunkei/n1/', '/chinese/vocab/h1', '/chinese/bunkei/h6']) expect(legacyTextbookTarget(path), path).toBe(null);
+    for (const path of ['/japanese/vocab/ot', '/chinese/vocab/life', '/chinese/vocab/n5', '/japanese/vocab/h1', '/japanese/grammar/n5-04-desu-da', '/chinese/grammar/h1-01-shi', '/english/vocab/a1', '/french/bunkei/a1']) expect(legacyTextbookTarget(path), path).toBe(`/admin/legacy-textbooks${path}`);
     for (const path of ['/lessons', '/books/japanese-n5', '/vocab', '/materials', '/japanese/reading/first', '/admin', '/viewer/42', '/assets/overworld/map.json']) expect(legacyTextbookTarget(path)).toBe(null);
   });
 });

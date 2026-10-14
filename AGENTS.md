@@ -68,6 +68,7 @@ Claude 세션이 기획·SPEC과 협업을 조율한다. 구현 산출물은 **d
 ## 코드 관례
 
 - 기존 파일의 주석 밀도·네이밍·한국어 주석 관례를 따른다.
+- 화면 문구는 `docs/design/copy-standard.md`.
 - 새 로직은 **순수 모듈 우선**(네트워크·supabase import 없는 `src/lib/*.js` + 테스트) —
   UI 배선·카피는 Claude가 별도 라운드로 얹는다.
 - 날짜·주간 경계는 `src/lib/growthStats.js`, 채점 이벤트 판정은

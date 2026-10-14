@@ -21,5 +21,5 @@ export default function BoardHistory({canvasRoot,pageId,onAction}) {
     const button=canvasRoot.current?.querySelector(`.teaching-board-surface [data-testid="button-${action}"]:not(:disabled)`);
     if(button){button.click();onAction?.();}
   };
-  return <div className="board-icon-grid" role="group" aria-label="필기 실행 기록">{[['undo','실행 취소'],['redo','다시 실행']].map(([action,label])=><BoardIconButton key={action} icon={action} label={label} disabled={!available[action]} onClick={()=>run(action)}/>)}</div>;
+  return <div className="board-icon-grid" role="group" aria-label="필기 실행 기록">{[['undo','되돌리기'],['redo','다시 실행']].map(([action,label])=><BoardIconButton key={action} icon={action} label={label} disabled={!available[action]} onClick={()=>run(action)}/>)}</div>;
 }

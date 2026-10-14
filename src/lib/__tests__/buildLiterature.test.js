@@ -2,8 +2,9 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { buildLiterature, LITERATURE_FILES, LITERATURE_ROOT } from '../../../scripts/lib/literature-build.mjs';
+import { buildLiterature, LITERATURE_FILES, LITERATURE_OUTPUTS, LITERATURE_ROOT } from '../../../scripts/lib/literature-build.mjs';
 import { aozoraFixture, sha256, sampleEntry } from './helpers/aozoraFixtures.js';
+import { literatureIncipit } from '../literatureDisplay.js';
 
 // 정본 문학책 빌드(scripts/build-literature.mjs) 계약 — 리포 상태 --check가 통과하고(prebuild와 같은 검사),
 // 임시 작품 폴더로 생성·결정성·낡음·fail-closed를 확인한다. 작품 원문은 서식 견본(실제 작품 아님)이다.
@@ -30,7 +31,7 @@ const sample = (overrides = {}) => ({
 });
 
 describe('build-literature — 리포 상태', () => {
-  it('리포의 정본 폴더가 --check를 통과한다(작품 0편이면 no-op)', async () => {
+  it('리포의 정본 폴더(5편)가 --check를 통과한다 — 목록·대조표 포함', async () => {
     const { errors } = await buildLiterature({ root: LITERATURE_ROOT, check: true });
     expect(errors).toEqual([]);
   });
@@ -65,6 +66,39 @@ describe('build-literature — 생성·결정성·낡음', () => {
   });
 });
 
+describe('build-literature — 게시 목록·뷰어 대조표(AOZORA-P0-2)', () => {
+  it('작품 폴더에서 index.generated.js(서버 게시용)와 manifest.generated.json(뷰어 대조용)을 만든다', async () => {
+    const root = workspace([sample()]);
+    await buildLiterature({ root });
+    expect(readFileSync(path.join(root, LITERATURE_OUTPUTS.index), 'utf8'))
+      .toContain("import book0 from './aozora-000001-000001/chapters.json';");
+    const manifest = JSON.parse(readFileSync(path.join(root, LITERATURE_OUTPUTS.manifest), 'utf8'));
+    const chapters = JSON.parse(readFileSync(path.join(root, 'aozora-000001-000001', LITERATURE_FILES.chapters), 'utf8')).chapters;
+    expect(manifest.works['aozora-000001-000001'].chapters).toEqual(chapters.map((chapter) => ({ order: chapter.order, title: chapter.title,
+      incipit: literatureIncipit(chapter.rawText), sha256: sha256(chapter.rawText) })));
+    // 표지·목차 표기(AOZORA-P0-5) — entry.json display + 나눈 방식
+    expect(manifest.works['aozora-000001-000001']).toMatchObject({ division: 'heading', display: sampleEntry().display });
+    expect(manifest.works['aozora-000001-000001'].literature).not.toHaveProperty('rubyLocks');
+  });
+
+  it('--check: 손댄 대조표·목록은 실패', async () => {
+    const root = workspace([sample()]);
+    await buildLiterature({ root });
+    const file = path.join(root, LITERATURE_OUTPUTS.manifest);
+    writeFileSync(file, readFileSync(file, 'utf8').replace('見本入力者', '偽者'));
+    expect((await buildLiterature({ root, check: true })).errors).toEqual([expect.stringContaining(`${LITERATURE_OUTPUTS.manifest}가 작품 폴더와 다르다`)]);
+  });
+
+  it('한 편이라도 실패하면 목록·대조표를 다시 쓰지 않는다(깨진 작품이 빠진 채 목록이 줄지 않게)', async () => {
+    const root = workspace([sample()]);
+    await buildLiterature({ root });
+    const before = readFileSync(path.join(root, LITERATURE_OUTPUTS.index), 'utf8');
+    writeFileSync(path.join(root, 'aozora-000001-000001', LITERATURE_FILES.source), source.replace('霧', '雲'));
+    expect((await buildLiterature({ root })).errors).toEqual([expect.stringContaining('SHA-256')]);
+    expect(readFileSync(path.join(root, LITERATURE_OUTPUTS.index), 'utf8')).toBe(before);
+  });
+});
+
 describe('build-literature — fail-closed', () => {
   it.each([
     ['권리 미승인', sample({ rights: { status: 'reviewing', basis: 'unknown' } }), 'not publishable'],
@@ -72,8 +106,13 @@ describe('build-literature — fail-closed', () => {
     ['원문 수정(해시 불일치)', { ...sample(), source: source.replace('霧', '雲') }, 'SHA-256'],
     ['폴더 이름 ≠ 작품 키', { ...sample(), dir: 'aozora-000001-000009' }, '작품 키'],
     ['entry.json 없음', { ...sample(), entry: null }, 'entry.json'],
+    ['표지 표기 없음', sample({ display: undefined }), 'display is required'],
+    ['팔레트 밖 표지 색', sample({ display: { ...sampleEntry().display, cover: '#ff0000' } }), 'display.cover'],
+    ['없는 표지 문양', sample({ display: { ...sampleEntry().display, motif: 'original-cover-scan' } }), 'display.motif'],
+    ['표지 제목이 작품명과 다름', sample({ display: { ...sampleEntry().display, coverTitle: '書式見本\n朝の海' } }), 'coverTitle'],
+    ['표지 한 줄이 너무 김', sample({ display: { ...sampleEntry().display, coverTitle: undefined } }), 'cover title lines'],
     ['미해결 외자', (() => {
-      const text = source.replace('水の音', '※［＃「魚＋花」、第4水準2-93-10］の音');
+      const text = source.replace('水の音', '※［＃「魚＋花」］の音'); // 면-구-점·U+ 없는 외자 — JIS X 0213 표로도 못 푼다
       return { ...sample({ textSha256: sha256(text) }), source: text };
     })(), 'unresolved gaiji'],
   ])('%s → 실패하고 chapters.json을 쓰지 않는다', async (_, work, message) => {

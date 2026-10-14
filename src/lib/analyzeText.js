@@ -3,6 +3,7 @@ import { canonizeTokenPos } from './server/posCanon';
 import { boundaryParagraphRequest, compactBoundaryText, readBoundaryEdits, settleBoundaryRecord } from './boundaryEdits';
 import { locateLineTokens, splitSentenceRanges } from './viewerSentenceLine';
 import { applyMaterialRubyLocks } from './aozoraRuby';
+import { applyMaterialReviewHints } from './literatureReviewHints';
 
 // /api/analyze 입력 캡 미러 — route.js의 MAX_LINES·MAX_LINE_LEN과 같은 값(analyzeLongLines.test.js가 핀).
 // 서버는 캡을 넘은 줄에 truncated 표식을 단다. 자료 분석은 캡 안으로 나눠 보내 표식이 오지 않게 한다.
@@ -118,7 +119,7 @@ export async function fetchWithRateLimitRetry(url, init, signal) {
  * 토큰은 줄 안에 순서대로 있어야 하고, 토큰 사이·뒤 빈틈은 일·중이면 공백뿐, 영어면 영숫자가 없어야 한다
  * (영어 토크나이저는 공백과 — ’ % 같은 기호를 토큰으로 내지 않는다 — 그 빈틈까지 실패로 보면 정상 줄이 깨진다).
  */
-function tokensCoverLine(line, texts, language) {
+export function tokensCoverLine(line, texts, language) {
   const spots = locateLineTokens(line, texts);
   if (spots.some((spot, k) => !spot && texts[k] && texts[k] !== '\n')) return false;
   const gapOk = (gap) => (language === 'English' ? !/[A-Za-z0-9]/.test(gap) : !gap.trim());
@@ -462,6 +463,8 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
     const locked = applyMaterialRubyLocks(rawText, currentJson);
     if (locked.diagnostics?.skipped) console.warn('[analyzeHybrid] ruby locks skipped:', locked.diagnostics.skipped);
     currentJson = locked.json;
+    // 정본 책 검수 힌트(AOZORA-P0-4) — 「뜻 확인 필요」 표식 + 문맥 뜻 제안만 붙인다(뜻은 그대로, 관리자가 목록에서 확정).
+    currentJson = applyMaterialReviewHints(rawText, currentJson).json;
   }
 
   currentJson.status = resolveAnalysisStatus(currentJson.dictionary, currentJson.failed_indices.length, total);

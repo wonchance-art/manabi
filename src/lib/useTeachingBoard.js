@@ -2,6 +2,7 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {emptyBoard} from './teachingBoard';
 import {readTeachingBoard, readTeachingBoardRecoveries, saveTeachingBoard} from './teachingBoardStore';
+import { friendlyToastMessage } from './errorMessage';
 
 // A chapter route remounts the reader. Finish this tab's outgoing save before
 // the next reader loads the same daily board; other tabs still use CAS recovery.
@@ -19,7 +20,7 @@ export function useTeachingBoard(scope) {
       current.current = row?.document || emptyBoard(crypto.randomUUID());
       run.document=current.current;
       setState({ready: true, error: '', saving: false, document: current.current, recoveries});
-    }).catch(error => { if (run.alive) setState({ready: false, error: error.message, saving: false, document: null}); });
+    }).catch(error => { if (run.alive) setState({ready: false, error: friendlyToastMessage(error), saving: false, document: null}); });
     return () => { run.alive = false; };
   }, [scope]);
 
@@ -40,7 +41,7 @@ export function useTeachingBoard(scope) {
         if (run.alive && !run.dirty) setState(previous => ({...previous, saving: false, error: ''}));
       } catch (error) {
         if (error.code === 'board_conflict') run.blocked = true;
-        if (run.alive) setState(previous => ({...previous, saving: false, error: error.message}));
+        if (run.alive) setState(previous => ({...previous, saving: false, error: friendlyToastMessage(error)}));
       }
     });
     const pending=run.chain;

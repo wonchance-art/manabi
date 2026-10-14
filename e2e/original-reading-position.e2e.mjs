@@ -8,7 +8,7 @@ async function create(f,{body='A quiet page to read.',files=['pdf','epub']}={}){
  await f.page.goto('/materials/add');await f.page.locator('#composer-title').fill('어디서든 이어지는 문장');await f.page.locator('#composer-body').fill(body);
  if(files.length)await f.page.locator('input[type=file]').setInputFiles(files.map(kind=>new URL(`./fixtures/composer/reading.${kind}`,import.meta.url).pathname));
  await f.page.getByRole('button',{name:body?'저장만':'저장',exact:true}).click();await f.page.locator('.original-reader').waitFor();if(body)await f.page.locator('.original-writing').waitFor();
- await f.page.getByText('읽던 위치가 계정에 저장됩니다.',{exact:true}).waitFor();return f.rows[0];
+ await f.page.getByText('읽던 위치가 계정에 저장돼요.',{exact:true}).waitFor();return f.rows[0];
 }
 // 글만 있는 자료의 본문은 기본이 쪽 넘김(READER-PAGED-001)이다. 세로 스크롤 위치를 재는 검사는 스크롤 보기를 고른 사람으로 연다.
 async function scrollView(f){await f.context.addInitScript(()=>{if(!localStorage.getItem('viewer_preferences_v2'))localStorage.setItem('viewer_preferences_v2',JSON.stringify({version:2,common:{readerView:'scroll'},languages:{}}));});}
@@ -78,7 +78,7 @@ test('saved response loss and refresh preserve one revision; changed body does n
  try{
   await scrollView(a);
   const root=await create(a,{files:[],body:longBody});a.losePositionReply();await a.page.locator('.original-writing').hover();await a.page.mouse.wheel(0,1800);await a.page.getByRole('button',{name:'동기화 다시 시도',exact:true}).waitFor();const before=(await rows(a))[0];
-  await a.page.getByRole('button',{name:'동기화 다시 시도',exact:true}).click();await a.page.getByText('읽던 위치가 계정에 저장됩니다.',{exact:true}).waitFor();assert.equal((await rows(a))[0].version,before.version);
+  await a.page.getByRole('button',{name:'동기화 다시 시도',exact:true}).click();await a.page.getByText('읽던 위치가 계정에 저장돼요.',{exact:true}).waitFor();assert.equal((await rows(a))[0].version,before.version);
   await a.page.reload();await a.page.locator('.original-writing').waitFor();assert.equal((await rows(a))[0].version,before.version);
   await a.page.getByRole('link',{name:'수정',exact:true}).click();await a.page.locator('#composer-body').fill('A newly written short body.');await a.page.getByRole('button',{name:'변경 저장',exact:true}).click();await a.page.locator('.original-writing').waitFor();
   assert.equal(await a.page.locator('.original-writing').innerText(),'A newly written short body.');assert.equal(root.raw_text,longBody);assert.equal(a.rows.length,1);assert.equal((await rows(a))[0].source.revision,null);await noOverflow(a);

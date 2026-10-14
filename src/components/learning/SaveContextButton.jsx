@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../lib/AuthContext';
 import './learning.css';
+import { friendlyToastMessage } from '../../lib/errorMessage';
 
 export async function saveContext(payload) {
   const response = await fetch('/api/learning/vocabulary', { method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload) });
@@ -21,12 +22,12 @@ export default function SaveContextButton({ word, source, label = '복습에 담
     busy.current=true;setPending(true);setError('');setMessage('');
     try {
       const result = await saveContext({word,source,...(confirm ? {confirmId:confirm.id,confirmMeaning:confirm.meaning} : {})});
-      setConflict(null);setMessage(result.contextAdded ? '출처와 함께 담았어요. 기존 복습 일정은 유지됩니다.' : '이미 담아둔 문맥이에요.');
+      setConflict(null);setMessage(result.contextAdded ? '출처와 함께 담았어요. 기존 복습 일정은 그대로예요.' : '이미 담아둔 문맥이에요.');
       for (const key of ['vocab','vocab-words','pdf-saved-vocab','vocabulary-contexts','book-review']) queryClient.invalidateQueries({queryKey:[key,user.id]});
       onSaved?.(result);
     } catch(cause) {
       if(cause.code === 'meaning_conflict' && cause.existing) setConflict(cause);
-      else setError(cause.message);
+      else setError(friendlyToastMessage(cause));
     } finally {busy.current=false;setPending(false);}
   }
   if (!user) return <p className="learning-links__muted">로그인하면 출처와 함께 복습에 담을 수 있어요.</p>;

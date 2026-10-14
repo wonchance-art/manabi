@@ -6,6 +6,7 @@
 // - 후보는 누름 버튼(aria-pressed)이다 — 네이티브 라디오는 화살표 키만으로 선택이 바뀌어 누를 때마다 저장되기 때문이다.
 // - 고친 줄은 목록을 연 동안 그 자리에 남는다(포커스를 잃지 않게). 머리 개수와 본문 위 줄의 N은 남은 표식 수로 줄어든다.
 // - 「AI」 표시는 없다(오너 결정). 후보 밖 문맥 뜻(meaningCheck 'ctx')도 표 없이 「지금:」에 그대로 보인다.
+// - 일본어 정본 책(AOZORA-P0-4): 검수 힌트의 문맥 뜻 제안이 후보 맨 앞에 「문맥 제안」으로, 근거(meaningNote)는 「지금:」 아래 한 줄.
 // - AD-R4 PR④ 경계 후보 줄: 「运动员的【身体 素质】非常好。 / 한 단어로 묶을까요? [묶기] [아니요]」(설계서 §6.2·§6.4).
 //   [묶기]는 그 자리에서 AD-R3 확인 줄(호출 쪽이 그린 BoundaryMergeConfirm — boundaryEditFlow로 확정)을 연다. 이 파일은 쓰지 않는다.
 //   [아니요]는 호출 쪽 onDismiss → 같은 원자 RPC로 그 꼴을 접는다. 처리한 줄은 목록을 연 동안 「묶었어요」/「확인했어요」로 남는다.
@@ -53,6 +54,7 @@ export default function ViewerSenseReview({ rows, remaining, busy, onChoose, onK
                 {sentence ? <>{sentence.before}<mark>{sentence.term}</mark>{sentence.after}</> : <mark>{token.text}</mark>}
               </p>
               <p className="viewer-sense-review__now">{vt('지금: {meaning}', { meaning: token.meaning || vt('(뜻 없음)') })}</p>
+              {token.meaningNote && <p className="viewer-sense-review__note">{token.meaningNote}</p>}
               {options === null ? <p className="viewer-sense-review__loading" role="status">{vt('불러오는 중…')}</p>
                 : options.length > 0 && (
                   <div className="viewer-sense-review__options" role="group" aria-label={vt('사전 뜻 · {count}개', { count: options.length })}>
@@ -61,6 +63,7 @@ export default function ViewerSenseReview({ rows, remaining, busy, onChoose, onK
                         data-meaning={option.meaning} disabled={busy || option.current} onClick={() => onChoose(row, option.meaning)}>
                         <span aria-hidden="true" className="viewer-sense-review__mark">{MARK(option.current)}</span>
                         <span>{option.meaning}</span>
+                        {option.suggested && <small className="viewer-sense-review__suggested">{vt('문맥 제안')}</small>}
                       </button>
                     ))}
                   </div>

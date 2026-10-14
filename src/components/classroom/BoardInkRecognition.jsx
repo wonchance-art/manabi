@@ -5,6 +5,7 @@ import {inkRows,editInkRow,inkValues} from '../../lib/teachingInk';
 import {BoardIconButton} from './BoardIcon';
 import {WordDisplayControls} from './TeachingWord';
 import {annotatedLanguage} from '../../lib/teachingWordLayout';
+import { friendlyToastMessage } from '../../lib/errorMessage';
 
 export default function BoardInkRecognition({rootId,team,capture,isCurrent,onPlace,onClose,appearance,onAppearance}) {
   const root=useRef(null),request=useRef(null),alive=useRef(false),placing=useRef(false);
@@ -31,7 +32,7 @@ export default function BoardInkRecognition({rootId,team,capture,isCurrent,onPla
       if(result.fingerprint!==capture.fingerprint||!await isCurrent(capture))throw new Error('선택한 필기가 바뀌었어요. 닫은 뒤 다시 선택해 주세요.');
       if(!result.expressions?.length){setError('읽을 수 있는 표현이 없어요. 영역을 줄이거나 ＋에서 직접 입력해 주세요.');return;}
       setRows(inkRows(result.expressions));
-    }catch(cause){if(alive.current)setError(cause.name==='AbortError'?'인식 시간이 길어졌어요. 다시 시도해 주세요.':cause.message);}
+    }catch(cause){if(alive.current)setError(cause.name==='AbortError'?'인식 시간이 길어졌어요. 다시 시도해 주세요.':friendlyToastMessage(cause));}
     finally{clearTimeout(timeout);request.current=null;if(alive.current)setBusy(false);}
   }
   const edit=(index,patch)=>{setRows(previous=>previous.map(row=>row.index===index?editInkRow(row,patch):row));setNeedsPage(false);setError('');setMessage('');};
@@ -45,7 +46,7 @@ export default function BoardInkRecognition({rootId,team,capture,isCurrent,onPla
       if(result.needsPage){setNeedsPage(true);setMessage('현재 화면에 공간이 부족해요. 원래 필기를 보존하고 새 판에 놓을 수 있어요.');return;}
       setRows(previous=>previous.map(row=>result.indices.includes(row.index)?{...row,placed:true,selected:false}:row));
       setCollapsed(true);setNeedsPage(false);setMessage(result.existing?'이미 놓은 표현을 선택했어요.':'판에 놓았어요. 학생용 기록은 요소 메뉴에서 수업에 남기기를 눌러 주세요.');
-    }catch(cause){if(alive.current)setError(cause.message);}
+    }catch(cause){if(alive.current)setError(friendlyToastMessage(cause));}
     finally{placing.current=false;if(alive.current)setApplying(false);}
   }
   return <section className="board-ink-panel" data-collapsed={collapsed} ref={root} role="dialog" aria-label="필기에서 표현 가져오기" onKeyDown={event=>{
@@ -59,7 +60,7 @@ export default function BoardInkRecognition({rootId,team,capture,isCurrent,onPla
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={capture.image} alt="인식할 선택 영역의 필기"/>
       </details>
-      {!rows?<p>선택한 부분만 <strong>Google Gemini</strong>로 인식합니다. 원래 필기는 그대로 남아요.</p>:<>
+      {!rows?<p>선택한 부분만 <strong>Google Gemini</strong>로 인식해요. 원래 필기는 그대로 남아요.</p>:<>
         <p className="board-ink-guide">표기와 뜻을 확인해 판에 놓으세요.</p>
         <div className="board-ink-results">{rows.map(row=><article key={row.index} data-placed={row.placed}>
           <div className="board-ink-row-heading"><label><input type="checkbox" checked={row.selected} disabled={row.placed||applying||!row.text.trim()||!row.meaning.trim()} onChange={event=>edit(row.index,{selected:event.target.checked})} aria-label={`${row.original} 놓기 선택`}/><span>{row.placed?'판에 놓음':row.uncertain?'표기·뜻 확인':'인식한 표현'}</span></label><small>원문 {row.original}</small></div>
@@ -76,7 +77,7 @@ export default function BoardInkRecognition({rootId,team,capture,isCurrent,onPla
     </div>
     <footer>{error&&<p role="alert">{error}</p>}{message&&<p role="status">{message}</p>}
       {!rows?<button className="board-ink-primary" disabled={busy} onClick={recognize}>{busy?'선택한 필기를 읽는 중…':error?'다시 인식':'이 부분 인식하기'}</button>:<button className="board-ink-primary" disabled={!values.length||applying} onClick={()=>place(needsPage)}>{applying?'놓는 중…':needsPage?`새 판에 ${values.length}개 놓기`:`선택한 ${values.length}개 판에 놓기`}</button>}
-      <small>{busy?'다른 부분에 필기를 계속해도 됩니다. 닫으면 결과 적용을 취소합니다.':rows?'수업 기록·개인 단어장에 자동 저장하지 않습니다.':'전체 판·교재는 전송하지 않습니다.'}</small>
+      <small>{busy?'다른 부분에 필기를 계속해도 돼요. 닫으면 결과를 적용하지 않아요.':rows?'수업 기록·개인 단어장에 자동으로 저장하지 않아요.':'전체 판·교재는 보내지 않아요.'}</small>
     </footer></>}
   </section>;
 }

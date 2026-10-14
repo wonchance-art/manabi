@@ -22,10 +22,10 @@ export function classCopyUpdatePlan(copy,base,source,corrections=[]){
     const before=base.processed_json?.dictionary?.[id];
     if(before?.text===token.text&&!sameContent(before.meaning,token.meaning))summary.meanings.push({text:token.text,before:before.meaning||'',after:token.meaning||'',personal:!!copy.processed_json?.dictionary?.[id]&&!sameContent(copy.processed_json.dictionary[id].meaning,before.meaning)});
   }
-  if(!base){return sameContent(mine,next)?{state:'current',summary}:{state:'blocked',reason:'예전에 받은 기준 내용이 없어 자동으로 합칠 수 없어요. 내 자료를 유지합니다.',summary};}
+  if(!base){return sameContent(mine,next)?{state:'current',summary}:{state:'blocked',reason:'예전에 받은 기준 내용이 없어 자동으로 합칠 수 없어요. 내 자료는 그대로 둬요.',summary};}
   if(sameContent(base,next))return {state:'current',summary};
   if(copy.raw_text!==base.raw_text)return {state:'blocked',reason:'내가 수정한 원문이 있어 자동으로 바꾸지 않았어요.',summary};
-  if(next.raw_text!==base.raw_text&&!next.raw_text.startsWith(base.raw_text+'\n'))return {state:'blocked',reason:'기존 원문이 수정되거나 삭제됐어요. 저장한 위치를 보호하기 위해 내 자료를 유지합니다.',summary};
+  if(next.raw_text!==base.raw_text&&!next.raw_text.startsWith(base.raw_text+'\n'))return {state:'blocked',reason:'기존 원문이 수정되거나 삭제됐어요. 저장한 위치를 보호하려고 내 자료는 그대로 둬요.',summary};
   // Only exact unchanged spans may retain IDs and corrections; no fuzzy matching of words.
   const fields=['meaning','furigana','reading','pos'];const patches=[];
   const old=copy.processed_json||{},baseline=base.processed_json||{};
@@ -45,13 +45,13 @@ export function classCopyUpdatePlan(copy,base,source,corrections=[]){
   }
   let result;
   try{result=preserveReanalysisTokens({...copy,processed_json:{...old,metadata:mineMeta}},next.raw_text,next.processed_json,patches);}
-  catch{return {state:'blocked',reason:'기존 단어 위치를 안전하게 연결하지 못했어요. 내 자료를 유지합니다.',summary};}
+  catch{return {state:'blocked',reason:'기존 단어 위치를 안전하게 연결하지 못했어요. 내 자료는 그대로 둬요.',summary};}
   // Saved vocabulary contexts use these lexical IDs. A changed segmentation must not
   // silently drop them, even when the text itself has not changed.
   for(const id of old.sequence||[]){
     const token=old.dictionary?.[id];
     if(token?.pos==='개행'||token?.failed)continue;
-    if(result.dictionary?.[id]?.text!==token?.text)return {state:'blocked',reason:'단어의 분석 단위가 달라졌어요. 저장한 단어와 문맥을 보호하기 위해 내 자료를 유지합니다.',summary};
+    if(result.dictionary?.[id]?.text!==token?.text)return {state:'blocked',reason:'단어의 분석 단위가 달라졌어요. 저장한 단어와 문맥을 보호하려고 내 자료는 그대로 둬요.',summary};
   }
   const sourceMeta=next.processed_json.metadata||{};
   const metadata={...old.metadata,...sourceMeta,viewerCorrections:result.metadata.viewerCorrections};

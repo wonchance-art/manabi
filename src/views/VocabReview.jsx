@@ -1,55 +1,174 @@
 import { useEffect, useId, useRef } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
-import { detectLang, displayWord, splitSentenceAroundWord } from '../lib/constants';
+import { detectLang, splitSentenceAroundWord } from '../lib/constants';
 import VocabularyContexts from '../components/learning/VocabularyContexts';
+import { ReviewCardMeta, ReviewHeadword, ReviewReadingRow, langTag } from '../components/vocab/ReviewCardParts';
+import { gradeGuide, revealTrigger } from '../lib/reviewCard';
 import { wordStage } from '../lib/growthStats';
 import { vocabularyReviewCalendar } from '../lib/vocabularyLearningRows';
 
-function ScoreSection({ word, onScore }) {
+/**
+ * 채점 막대(REV-SCOPE-R1B-1 §5-3) — 하단 고정, 뒷면 전엔 잠금, 펼친 뒤 0.3초 입력 무시(armed). 버튼은 넷뿐이다.
+ * 기준 문구는 발음 판정 대상에만 발음을 말한다(gradeGuide). 라벨 · 순서 · 접미사는 저장 4등급(vocabIO.SAVE_GRADES)과 같다.
+ */
+function ScoreSection({ word, onScore, armed = true, locked = false }) {
+  const off = locked || !armed;
   return (
-    <div className="review-card__answer" role="status" aria-live="polite">
-      <p className="review-card__meaning">{word.meaning}</p>
-      <VocabularyContexts key={word.id} vocabularyId={word.id} word={word} readOnly />
-      <p className="review-score-guide">기억이 얼마나 잘 됐나요?<span className="review-keys-hint"> · 키 1~4 · 되돌리기 Ctrl/⌘+Z</span></p>
+    <div className={`review-grade-bar${locked ? ' is-locked' : ''}`} role="group" aria-label="기억 채점">
+      {!locked && <p className="review-score-guide review-grade-guide">{gradeGuide(word)}<span className="review-keys-hint"> · 키 1~4 · 되돌리기 Ctrl/⌘+Z</span></p>}
       {/* 숫자 배지 = 키 안내(W R2) — 라벨 텍스트는 버튼 첫 자식 그대로(saveGrade 계약이 이 소스에서 라벨을 뽑는다) */}
       <div className="review-score-grid" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
-        <button onClick={() => onScore(1)} className="review-score-btn review-score-btn--again" title="오늘 다시 나와요">다시<span className="save-grade__key" aria-hidden="true">1</span></button>
-        <button onClick={() => onScore(2)} className="review-score-btn review-score-btn--hard" title="간격이 짧아져요">어려움<span className="save-grade__key" aria-hidden="true">2</span></button>
-        <button onClick={() => onScore(3)} className="review-score-btn review-score-btn--good" title="정확히 기억했다면 이걸로">알맞음<span className="save-grade__key" aria-hidden="true">3</span></button>
-        <button onClick={() => onScore(4)} className="review-score-btn review-score-btn--easy" title="간격이 많이 늘어나요">쉬움<span className="save-grade__key" aria-hidden="true">4</span></button>
+        <button onClick={() => onScore(1)} className="review-score-btn review-score-btn--again" disabled={off} title="오늘 다시 나와요">다시<span className="save-grade__key" aria-hidden="true">1</span></button>
+        <button onClick={() => onScore(2)} className="review-score-btn review-score-btn--hard" disabled={off} title="간격이 짧아져요">어려움<span className="save-grade__key" aria-hidden="true">2</span></button>
+        <button onClick={() => onScore(3)} className="review-score-btn review-score-btn--good" disabled={off} title="정확히 기억했다면 이걸로">알맞음<span className="save-grade__key" aria-hidden="true">3</span></button>
+        <button onClick={() => onScore(4)} className="review-score-btn review-score-btn--easy" disabled={off} title="간격이 많이 늘어나요">쉬움<span className="save-grade__key" aria-hidden="true">4</span></button>
+      </div>
+    </div>
+  );
+}
+
+/** 집중 연습 두 단계(§5-3) — 일정 · 한도는 그대로, 연습 기록만. 키 1 · 2. */
+function PracticeButtons({ onResult, armed = true }) {
+  return (
+    <div className="review-grade-bar review-grade-bar--practice" role="group" aria-label="집중 연습 결과">
+      <div className="review-score-grid" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+        <button type="button" onClick={() => onResult(1)} className="review-score-btn review-score-btn--again" disabled={!armed}>몰랐어요<span className="practice-key" aria-hidden="true">1</span></button>
+        <button type="button" onClick={() => onResult(3)} className="review-score-btn review-score-btn--good" disabled={!armed}>알았어요<span className="practice-key" aria-hidden="true">2</span></button>
       </div>
     </div>
   );
 }
 
 /**
+ * 복습 입장(admission) 준비 실패 문구 — 단어장 상단 알림과 복습 카드가 같이 쓴다(WALL-STATES-001 ⑤).
+ * 채점 저장 실패 문구(「복습 저장 실패 … 이 단어는 다음에 다시 나와요」)는 저장할 채점이 있을 때만
+ * 맞는 말이라, 저장 전 단계인 준비 실패에 쓰지 않는다.
+ */
+export const REVIEW_PREP_FAILED = '복습을 준비하지 못했어요. 연결을 확인하고 다시 시도해 주세요.';
+
+/**
  * 문맥 퀴즈 보기의 상태 클래스 (v2-K 잔여).
  *
  * 색이 삼항 **안**에 있어 한 줄 색 계약도 여러 줄 라쳇도 못 잡던 자리다 — 판정을 여기
- * 한 곳에 두고 값은 CSS 토큰이 진다. 같은 블록이 화면 둘에 복제돼 있어(데스크톱·모바일)
- * 인라인으로 두면 고칠 때마다 두 벌을 맞춰야 했다.
+ * 한 곳에 두고 값은 CSS 토큰이 진다.
  */
 export function quizOptClass(selected, isAnswer, isThis) {
   const state = selected === null ? '' : isAnswer ? ' quiz-opt--right' : isThis ? ' quiz-opt--wrong' : '';
   return `quiz-opt${state}${selected === null ? '' : ' quiz-opt--done'}`;
 }
 
+/** 7일 복습 일정 — 끝 화면 공통. */
+function UpcomingCalendar({ projections, learningAvailable, now }) {
+  const at = Math.max(new Date(now).getTime(), ...projections.map(row => Date.parse(row.review.evaluatedAt)));
+  const days = learningAvailable ? vocabularyReviewCalendar(projections, at, { startOffset: 1 }) : [];
+  const max = Math.max(...days.map(d => d.count), 1);
+  const total = days.reduce((s, d) => s + d.count, 0);
+  return (
+    <div className="review-done__calendar">
+      <div className="review-done__calendar-head">
+        <span>앞으로 7일 복습 일정</span>
+        <span>총 {learningAvailable ? total : '—'}개 예정</span>
+      </div>
+      <div className="review-done__bars">
+        {days.map((d, i) => (
+          <div key={i} className="review-done__bar-col">
+            <div className={`review-done__bar${d.count > 0 ? ' has-count' : ''}`}
+              style={{ height: d.count > 0 ? `${Math.max(8, (d.count / max) * 40)}px` : '2px' }} title={`${d.key}: ${d.count}개`} />
+            <span className="review-done__bar-day">{d.key.slice(5).replace('-', '/')}</span>
+            {d.count > 0 && <span className="review-done__bar-count">{d.count}</span>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * 끝 화면(§5-5) — 「전체 복습 끝」이라고 하지 않는다(기존 계약). 학습 단계 카드가 남았으면 끝이 아니라 「잠시 뒤」.
+ * finish = { scopeLabel, total, again, cutRemaining?, onContinueCut?, waiting?:{count, nextAt, ready}, onResumeWaiting?,
+ *            returnLink?:{href,label}, outOfScope?:{count,label,onClick} }
+ */
+function ReviewFinished({ finish = {}, bookReview, vocab, projections, learningAvailable, now, setTab }) {
+  const { scopeLabel, total = 0, again = 0, cutRemaining = 0, onContinueCut, waiting, onResumeWaiting, returnLink, outOfScope } = finish;
+  const returnTo = returnLink || (bookReview ? { href: bookReview.returnTo, label: '읽던 교재로 돌아가기' } : null);
+  const mature = learningAvailable ? projections.filter(row => wordStage(row).key === 'mature').length : null;
+  return (
+    <div className="review-done">
+      <div className="review-done__header">
+        {scopeLabel && <p className="review-done__scope">{scopeLabel}</p>}
+        <h2 className="review-done__title">{cutRemaining > 0 ? `${total}개 끝 · 오늘 몫 ${cutRemaining}개 남음` : '오늘 몫 끝'}</h2>
+        <p className="review-done__summary">{[`${total}개`, again > 0 && `다시 ${again}`].filter(Boolean).join(' · ')}</p>
+        {waiting?.count > 0 && <p className="review-done__waiting" role="status">「다시」 {waiting.count}개는 잠시 뒤 다시 나와요{waiting.nextAt && !waiting.ready ? <> · <time dateTime={waiting.nextAt}>{new Date(waiting.nextAt).toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' })}</time></> : null}</p>}
+      </div>
+
+      <div className="review-done__actions">
+        {waiting?.count > 0 && <button type="button" className="btn btn--primary btn--md" disabled={!waiting.ready} onClick={onResumeWaiting}>잠시 뒤 이어 하기</button>}
+        {cutRemaining > 0 && onContinueCut && <button type="button" className="btn btn--primary btn--md" onClick={onContinueCut}>이어서 {cutRemaining}개</button>}
+        {returnTo && <Link href={returnTo.href} className="review-done__card"><div className="review-done__card-text"><strong>{returnTo.label}</strong><span>복습을 시작하기 전의 판본과 위치로 돌아가요.</span></div></Link>}
+        {outOfScope?.count > 0 && <button type="button" className="btn btn--ghost btn--md" onClick={outOfScope.onClick}>범위 밖 {outOfScope.label} {outOfScope.count}개 이어서</button>}
+        {!returnTo && !outOfScope?.count && !(waiting?.count > 0) && <>
+          <Link href="/materials" className="review-done__card">
+            <div className="review-done__card-text"><strong>새 자료 읽기</strong><span>읽으면서 새 단어를 수집해요</span></div>
+          </Link>
+          <Link href="/lessons" className="review-done__card">
+            <div className="review-done__card-text"><strong>교재 둘러보기</strong><span>읽고 싶은 교재를 골라 주세요</span></div>
+          </Link>
+        </>}
+      </div>
+
+      <div className="review-done__stats">
+        <div className="review-done__stat">
+          <span className="review-done__stat-value">{mature ?? '—'}</span>
+          <span className="review-done__stat-label">익숙 표현(21일 이상)</span>
+        </div>
+        <div className="review-done__stat-divider" />
+        <div className="review-done__stat">
+          <span className="review-done__stat-value">{vocab.length}</span>
+          <span className="review-done__stat-label">이 범위 표현</span>
+        </div>
+      </div>
+      <UpcomingCalendar projections={projections} learningAvailable={learningAvailable} now={now} />
+
+      <Button variant="ghost" onClick={() => setTab('list')} style={{ marginTop: 8 }}>
+        {bookReview ? '이 교재 표현 목록으로' : '목록으로'}
+      </Button>
+    </div>
+  );
+}
+
+/** 집중 연습 끝 — 일정은 바뀌지 않았다는 것과 「몰랐어요」가 흐릿 범위로 이어진다는 것만 말한다. */
+function PracticeFinished({ practice, setTab }) {
+  return (
+    <div className="review-done review-done--practice">
+      <div className="review-done__header">
+        <p className="review-done__scope">집중 연습</p>
+        <h2 className="review-done__title">집중 연습 {practice.total}개 끝</h2>
+        <p className="review-done__summary">{[`${practice.total}개`, practice.unknown > 0 && `몰랐어요 ${practice.unknown}`].filter(Boolean).join(' · ')}</p>
+        <p className="review-room-note">일정은 바뀌지 않았어요.{practice.unknown > 0 ? ' 「몰랐어요」 표현은 「흐릿 · 위험」 범위에 나와요.' : ''}</p>
+      </div>
+      <div className="review-done__actions">
+        {practice.unknown > 0 && practice.onFragile && <button type="button" className="btn btn--primary btn--md" onClick={practice.onFragile}>흐릿 · 위험 보기</button>}
+        <Button variant="ghost" onClick={() => setTab('list')}>목록으로</Button>
+      </div>
+    </div>
+  );
+}
+
 export default function VocabReview({
   vocab, projections = [], learningAvailable = false, now = new Date(), reviewWords, reviewIdx, currentWord, admissionPending = false, admissionError = null, onAdmissionRetry, bookReview = null,
-  reviewFinished, reviewMode, effectiveMode, setReviewMode,
+  reviewFinished, reviewMode, effectiveMode,
   showAnswer, setShowAnswer, showHint, setShowHint,
-  typingAnswer, setTypingAnswer, contextSelected, setContextSelected, contextOptions,
+  typingAnswer, setTypingAnswer, contextSelected, contextOptions,
   handleScore, handleSkip, pickContextOption, ttsSupported, speak,
   exampleSentences, exampleLoading, loadExamples,
-  setTab,
+  setTab, armed = true, onReveal, onKnown, knownDisabled = false, metaLabel = '복습', finish = null, practice = null,
 }) {
   const hintId = useId();
-  // 실제 출제 유형 — 자동 모드는 단어별 rung이 정한 서브모드(effectiveMode), 그 외엔 reviewMode.
-  // 픽커의 활성 표시만 reviewMode를 쓰고, 카드 렌더링은 전부 mode를 따른다.
+  // 실제 출제 유형 — 본 복습은 플래시(스스로 채점)뿐이다(REV-SCOPE-R1B-1). 타이핑 · 리스닝은 집중 연습의 갈래(practice).
   const mode = effectiveMode || reviewMode;
 
-  // 리스닝 모드: 카드 전환 시 자동 TTS 재생
+  // 리스닝 갈래: 카드 전환 시 자동 TTS 재생
   const prevIdxRef = useRef(reviewIdx);
   useEffect(() => {
     if (mode === 'listening' && ttsSupported && currentWord && prevIdxRef.current !== reviewIdx) {
@@ -58,145 +177,61 @@ export default function VocabReview({
     prevIdxRef.current = reviewIdx;
   }, [reviewIdx, mode, ttsSupported, currentWord, speak]);
 
+  const reveal = event => { setShowAnswer(true); setShowHint?.(false); onReveal?.(revealTrigger(event)); };
+  const finishBar = practice
+    ? (showAnswer && mode !== 'listening' ? <PracticeButtons onResult={handleScore} armed={armed} /> : null)
+    : currentWord && mode === 'flash' && <ScoreSection word={currentWord} onScore={handleScore} armed={armed} locked={!showAnswer} />;
+
   return (
     <div className="review-room-session">
       {reviewFinished ? (
-        <div className="review-done">
-          <div className="review-done__header">
-            <h2 className="review-done__title">이번 표현 복습을 마쳤어요</h2>
-          </div>
-
-          <div className="review-done__stats">
-            <div className="review-done__stat">
-              <span className="review-done__stat-value">{new Set(reviewWords.filter(Boolean).map(word => word.id)).size}</span>
-              <span className="review-done__stat-label">복습한 표현</span>
-            </div>
-            <div className="review-done__stat-divider" />
-            <div className="review-done__stat">
-              <span className="review-done__stat-value">{learningAvailable ? projections.filter(row => wordStage(row).key === 'mastered').length : '—'}</span>
-              <span className="review-done__stat-label">숙련 표현</span>
-            </div>
-            <div className="review-done__stat-divider" />
-            <div className="review-done__stat">
-              <span className="review-done__stat-value">{vocab.length}</span>
-              <span className="review-done__stat-label">전체 표현</span>
-            </div>
-          </div>
-
-          {/* 향후 7일 복습 스케줄 미리보기 */}
-          {(() => {
-            const at = Math.max(new Date(now).getTime(), ...projections.map(row => Date.parse(row.review.evaluatedAt)));
-            const days = learningAvailable ? vocabularyReviewCalendar(projections, at, { startOffset: 1 }) : [];
-            const max = Math.max(...days.map(d => d.count), 1);
-            const total = days.reduce((s, d) => s + d.count, 0);
-            return (
-              <div style={{ marginTop: 20, padding: '16px 20px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
-                  <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                    앞으로 7일 복습 일정
-                  </span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>총 {learningAvailable ? total : '—'}개 예정</span>
-                </div>
-                <div style={{ display: 'flex', gap: 4, alignItems: 'flex-end', height: 50 }}>
-                  {days.map((d, i) => (
-                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-                      <div
-                        style={{
-                          width: '100%',
-                          height: d.count > 0 ? `${Math.max(8, (d.count / max) * 40)}px` : '2px',
-                          background: d.count > 0 ? 'var(--primary-light)' : 'var(--border)',
-                          borderRadius: 'var(--radius-sm)',
-                          transition: 'height 0.4s',
-                        }}
-                        title={`${d.key}: ${d.count}개`}
-                      />
-                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
-                        {d.key.slice(5).replace('-', '/')}
-                      </span>
-                      {d.count > 0 && (
-                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--primary-light)' }}>{d.count}</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })()}
-
-          {bookReview ? <div className="review-done__actions"><Link href={bookReview.returnTo} className="review-done__card"><div className="review-done__card-text"><strong>읽던 교재로 돌아가기</strong><span>복습을 시작하기 전의 판본과 위치로 돌아가요.</span></div></Link></div> : <div className="review-done__actions">
-            <Link href="/materials" className="review-done__card">
-              <div className="review-done__card-text">
-                <strong>새 자료 읽기</strong>
-                <span>읽으면서 새 단어를 수집해요</span>
-              </div>
-            </Link>
-            <Link href="/lessons" className="review-done__card">
-              <div className="review-done__card-text">
-                <strong>교재 둘러보기</strong>
-                <span>읽고 싶은 교재를 골라 주세요</span>
-              </div>
-            </Link>
-          </div>}
-
-          <Button variant="ghost" onClick={() => setTab('list')} style={{ marginTop: 8 }}>
-            {bookReview ? '이 교재 표현 목록으로' : '목록으로'}
-          </Button>
-        </div>
+        practice ? <PracticeFinished practice={practice} setTab={setTab} />
+          : <ReviewFinished finish={finish || { total: new Set(reviewWords.filter(Boolean).map(word => word.id)).size }} bookReview={bookReview} vocab={vocab}
+            projections={projections} learningAvailable={learningAvailable} now={now} setTab={setTab} />
       ) : admissionPending || admissionError ? (
         <div className="card review-card review-card--center" role={admissionError ? 'alert' : 'status'}>
-          <p>{admissionError ? '복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.' : '복습 준비 중…'}</p>
+          <p>{admissionError ? REVIEW_PREP_FAILED : '복습 준비 중…'}</p>
           {admissionError && <Button variant="ghost" onClick={onAdmissionRetry}>다시 시도</Button>}
         </div>
       ) : reviewWords.length > 0 && currentWord ? (
         <>
+          {practice && <p className="review-practice-banner" role="note">집중 연습 · 일정은 바뀌지 않아요</p>}
           <div className="card review-card" style={{ padding: 0 }}>
             <div className="review-card__progress review-card__progress--tools">
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div className="review-card__tools">
                 {mode === 'flash' && !showAnswer && currentWord?.source_sentence && (
                   <button type="button" className="review-hint-btn" onClick={() => setShowHint(h => !h)} aria-expanded={showHint} aria-controls={hintId}>
                     {showHint ? '힌트 숨기기' : '힌트'}
                   </button>
                 )}
-                <button type="button" className="review-skip-btn" onClick={() => { setShowHint(false); handleSkip(); }} title="내일로 미루기">
-                  스킵 →
-                </button>
+                {onKnown && (
+                  <button type="button" className="review-known-btn" disabled={knownDisabled} onClick={() => onKnown(currentWord)}>
+                    아는 단어
+                  </button>
+                )}
+                {!practice && handleSkip && (
+                  <button type="button" className="review-skip-btn" onClick={() => { setShowHint(false); handleSkip(); }} title="내일로 미루기">
+                    스킵 →
+                  </button>
+                )}
               </div>
             </div>
 
             <div className="review-card__body">
-              <p className="review-room-prompt">{showAnswer ? '뜻을 확인했어요. 기억의 정도를 골라 주세요.' : mode === 'typing' ? '이 표현의 뜻을 써 보세요.' : mode === 'context' ? '문장 속 표현의 뜻을 골라 보세요.' : mode === 'listening' ? '듣고, 뜻을 떠올려 보세요.' : '이 표현, 어떤 뜻이었나요?'}</p>
-              {/* 단어 헤더 (문맥 퀴즈는 정답 공개 전까지 숨김 — 단, 예문이 없으면 단어 자체가 문제이므로 공개) */}
-              {currentWord && ((mode !== 'context' && mode !== 'listening') || showAnswer || (mode === 'context' && !currentWord.source_sentence)) && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                  <h2 className="review-card__word">{displayWord(currentWord.word_text, currentWord.pos)}</h2>
-                  {ttsSupported && (
-                    <button
-                      onClick={() => speak(currentWord.word_text, currentWord.language || detectLang(currentWord.word_text))}
-                      title="발음 듣기"
-                      aria-label={`${currentWord.word_text} 발음 듣기`}
-                      style={{
-                        background: 'var(--bg-secondary)', border: '1px solid var(--border)',
-                        borderRadius: 'var(--radius-full)', padding: '4px 10px',
-                        fontSize: '0.9rem', cursor: 'pointer', color: 'var(--text-secondary)',
-                      }}
-                    >
-                      ▷
-                    </button>
-                  )}
-                </div>
+              <ReviewCardMeta label={metaLabel} word={currentWord} />
+              {mode !== 'flash' && <p className="review-room-prompt">{showAnswer ? '뜻을 확인했어요.' : mode === 'typing' ? '이 표현의 뜻을 써 보세요.' : mode === 'context' ? '문장 속 표현의 뜻을 골라 보세요.' : '듣고, 뜻을 골라 보세요.'}</p>}
+              {/* 표제어 — 앞면은 글자만(읽기 · 소리 없음). 문맥 · 듣기 갈래는 답을 보기 전까지 숨긴다(예문이 없으면 단어가 문제). */}
+              {((mode !== 'context' && mode !== 'listening') || showAnswer || (mode === 'context' && !currentWord.source_sentence)) && (
+                <ReviewHeadword word={currentWord} revealed={showAnswer} />
               )}
 
-              {showAnswer && currentWord.furigana && (
-                <p className="review-card__furigana">[{currentWord.furigana}]</p>
-              )}
-
-              {/* 플래시카드 모드 */}
+              {/* 플래시카드(본 복습 · 집중 연습 「스스로 확인」) */}
               {mode === 'flash' && (
                 <>
                   {!showAnswer && showHint && currentWord.source_sentence && (() => {
                     const { parts, term } = splitSentenceAroundWord(currentWord.source_sentence, currentWord.word_text, currentWord.base_form);
                     return (
-                      <p id={hintId} className="review-card__hint" role="status" aria-live="polite" aria-atomic="true">
+                      <p id={hintId} className="review-card__hint" role="status" aria-live="polite" aria-atomic="true" lang={langTag(currentWord)}>
                         {parts.map((part, i, arr) => (
                           i < arr.length - 1
                             ? <span key={i}>{part}<mark className="review-card__highlight review-card__highlight--hint">{term}</mark></span>
@@ -205,59 +240,51 @@ export default function VocabReview({
                       </p>
                     );
                   })()}
-                  {showAnswer ? (
-                    <ScoreSection word={currentWord} onScore={handleScore} />
-                  ) : (
-                    <Button variant="secondary" size="lg" onClick={() => { setShowAnswer(true); setShowHint(false); }}
-                      style={{ marginTop: '40px', borderRadius: 'var(--radius-full)' }}>
-                      정답 확인하기
+                  {!showAnswer && (
+                    <Button variant="secondary" size="lg" onClick={reveal} className="review-reveal-btn">
+                      {practice ? '뜻 보기' : '정답 확인하기'}<span className="review-keys-hint review-keys-hint--space" aria-hidden="true"> · Space</span>
                     </Button>
                   )}
                 </>
               )}
 
-              {/* 타이핑 모드 */}
-              {mode === 'typing' && (
-                <>
-                  {!showAnswer ? (
-                    <div style={{ marginTop: '30px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <input
-                        type="text"
-                        value={typingAnswer}
-                        onChange={e => setTypingAnswer(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && typingAnswer.trim() && setShowAnswer(true)}
-                        placeholder="의미를 입력하세요..."
-                        aria-label={`${currentWord.word_text}의 의미`}
-                        className="search-input"
-                        autoFocus
-                        style={{ fontSize: '1rem', textAlign: 'center' }}
-                      />
-                      <Button onClick={() => setShowAnswer(true)} disabled={!typingAnswer.trim()}>
-                        확인하기 →
-                      </Button>
-                    </div>
-                  ) : (
-                    <div style={{ marginTop: '16px' }}>
-                      {typingAnswer && (
-                        <div style={{ marginBottom: '12px', padding: '10px 14px', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', fontSize: '0.9rem' }}>
-                          <span style={{ color: 'var(--text-muted)' }}>내 답: </span>
-                          <span>{typingAnswer}</span>
-                        </div>
-                      )}
-                      <ScoreSection word={currentWord} onScore={handleScore} />
-                    </div>
-                  )}
-                </>
+              {/* 뒷면 — 뜻 + 읽기 + 소리 + 원문(출처 없는 표현은 원문 보기 없음) */}
+              {showAnswer && (mode === 'flash' || mode === 'typing') && (
+                <div className="review-card__answer" role="status" aria-live="polite">
+                  {mode === 'typing' && typingAnswer && <p className="review-card__typed"><span>내 답: </span>{typingAnswer}</p>}
+                  <p className="review-card__meaning">{currentWord.meaning}</p>
+                  <ReviewReadingRow word={currentWord} speak={speak} ttsSupported={ttsSupported} />
+                  <VocabularyContexts key={currentWord.id} vocabularyId={currentWord.id} word={currentWord} readOnly />
+                </div>
               )}
 
-              {/* 문맥 퀴즈 모드 */}
+              {/* 쓰기 갈래(집중 연습) */}
+              {mode === 'typing' && !showAnswer && (
+                <div className="review-typing">
+                  <input
+                    type="text"
+                    value={typingAnswer}
+                    onChange={e => setTypingAnswer(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && typingAnswer.trim() && setShowAnswer(true)}
+                    placeholder="의미를 입력하세요…"
+                    aria-label={`${currentWord.word_text}의 의미`}
+                    className="search-input"
+                    autoFocus
+                  />
+                  <Button onClick={() => setShowAnswer(true)} disabled={!typingAnswer.trim()}>
+                    확인하기 →
+                  </Button>
+                </div>
+              )}
+
+              {/* 문맥 퀴즈 갈래 */}
               {mode === 'context' && (
                 <>
                   <div style={{ marginBottom: '20px' }}>
                     {currentWord.source_sentence ? (() => {
                       const { parts, term } = splitSentenceAroundWord(currentWord.source_sentence, currentWord.word_text, currentWord.base_form);
                       return (
-                        <p className="review-card__hint" style={{ fontSize: '1rem', lineHeight: 1.8 }}>
+                        <p className="review-card__hint" style={{ fontSize: '1rem', lineHeight: 1.8 }} lang={langTag(currentWord)}>
                           {parts.map((part, i, arr) =>
                             i < arr.length - 1
                               ? <span key={i}>{part}<mark style={{ background: 'var(--bg-elevated)', color: 'transparent', borderRadius: '4px', padding: '0 4px' }}>{'　'.repeat(Math.max(2, term.length))}</mark></span>
@@ -269,7 +296,7 @@ export default function VocabReview({
                   </div>
 
                   {!showAnswer ? (
-                    <div role="group" aria-label="문맥에 맞는 뜻 고르기" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div role="group" aria-label="문맥에 맞는 뜻 고르기" className="review-quiz-options">
                       {contextOptions.map((opt, i) => (
                         <button
                           key={i}
@@ -285,48 +312,35 @@ export default function VocabReview({
                       ))}
                     </div>
                   ) : (
-                    <ScoreSection word={currentWord} onScore={handleScore} />
+                    <div className="review-card__answer" role="status" aria-live="polite"><p className="review-card__meaning">{currentWord.meaning}</p></div>
                   )}
 
                   {contextSelected !== null && contextOptions[contextSelected]?.id !== currentWord.id && !showAnswer && (
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-                      <Button onClick={() => handleScore(1)} variant="secondary" style={{ flex: 1 }}>
-                        다시 (Again)
-                      </Button>
-                      <Button onClick={() => { setShowAnswer(true); }} variant="ghost" style={{ flex: 1 }}>
-                        정답 보기
-                      </Button>
+                    <div className="review-quiz-wrong">
+                      <Button onClick={() => handleScore(1)} variant="secondary" style={{ flex: 1 }}>{practice ? '다음 →' : '다시 (Again)'}</Button>
+                      <Button onClick={() => { setShowAnswer(true); }} variant="ghost" style={{ flex: 1 }}>정답 보기</Button>
                     </div>
                   )}
                 </>
               )}
 
-              {/* 리스닝 모드 */}
+              {/* 듣기 갈래(집중 연습) */}
               {mode === 'listening' && (
                 <>
                   {ttsSupported ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', marginTop: '20px' }}>
+                    <div className="review-listening">
                       <button
                         onClick={() => speak(currentWord.word_text, currentWord.language || detectLang(currentWord.word_text))}
                         className="review-listen-btn"
-                        style={{
-                          width: 80, height: 80, borderRadius: '50%',
-                          background: 'var(--primary-glow)', border: '2px solid var(--primary)',
-                          fontSize: '2rem', cursor: 'pointer',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          transition: 'transform 0.15s',
-                        }}
                         title="다시 듣기"
                         aria-label={`${currentWord.word_text} 다시 듣기`}
                       >
                         ▷
                       </button>
-                      <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                        소리를 듣고 알맞은 뜻을 고르세요
-                      </p>
+                      <p className="review-listening__note">소리를 듣고 알맞은 뜻을 고르세요</p>
 
                       {!showAnswer ? (
-                        <div role="group" aria-label="들은 단어의 뜻 고르기" style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                        <div role="group" aria-label="들은 단어의 뜻 고르기" className="review-quiz-options">
                           {contextOptions.map((opt, i) => (
                             <button
                               key={i}
@@ -342,77 +356,57 @@ export default function VocabReview({
                           ))}
                         </div>
                       ) : (
-                        <ScoreSection word={currentWord} onScore={handleScore} />
+                        <div className="review-card__answer" role="status" aria-live="polite"><p className="review-card__meaning">{currentWord.meaning}</p></div>
                       )}
 
                       {contextSelected !== null && contextOptions[contextSelected]?.id !== currentWord.id && !showAnswer && (
-                        <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
-                          <Button onClick={() => handleScore(1)} variant="secondary" style={{ flex: 1 }}>
-                            다시 (Again)
-                          </Button>
-                          <Button onClick={() => setShowAnswer(true)} variant="ghost" style={{ flex: 1 }}>
-                            정답 보기
-                          </Button>
+                        <div className="review-quiz-wrong">
+                          <Button onClick={() => handleScore(1)} variant="secondary" style={{ flex: 1 }}>{practice ? '다음 →' : '다시 (Again)'}</Button>
+                          <Button onClick={() => setShowAnswer(true)} variant="ghost" style={{ flex: 1 }}>정답 보기</Button>
                         </div>
                       )}
+                      {showAnswer && practice && <Button onClick={() => handleScore(1)} variant="secondary">다음 →</Button>}
                     </div>
                   ) : (
-                    <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginTop: '24px' }}>
-                      이 브라우저에서는 TTS를 지원하지 않아요. 다른 모드를 선택해주세요.
-                    </p>
+                    <p className="review-listening__note">이 브라우저에서는 소리를 낼 수 없어요. 다른 방식을 골라 주세요.</p>
                   )}
                 </>
               )}
 
               {/* AI 예문 (정답 공개 후 공통) */}
-              {(showAnswer || contextSelected !== null) && (
-                <div style={{ marginTop: '20px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
+              {!practice && (showAnswer || contextSelected !== null) && (
+                <div className="review-examples">
                   {exampleSentences ? (
                     <>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                        AI 예문
-                      </p>
+                      <p className="review-examples__label">AI 예문</p>
                       {exampleSentences.map((ex, i) => (
-                        <div key={i} style={{
-                          marginBottom: '10px', padding: '10px 14px',
-                          background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)',
-                        }}>
-                          <p style={{ fontSize: '0.95rem', marginBottom: '4px', lineHeight: 1.6 }}>{ex.sentence}</p>
-                          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{ex.translation}</p>
+                        <div key={i} className="review-examples__item">
+                          <p lang={langTag(currentWord)}>{ex.sentence}</p>
+                          <p className="review-examples__tr">{ex.translation}</p>
                         </div>
                       ))}
                     </>
                   ) : (
-                    <button
-                      onClick={loadExamples}
-                      disabled={exampleLoading}
-                      aria-live="polite"
-                      style={{
-                        width: '100%', padding: '8px',
-                        background: 'none', border: '1px dashed var(--border)',
-                        borderRadius: 'var(--radius-md)', cursor: exampleLoading ? 'default' : 'pointer',
-                        color: 'var(--text-muted)', fontSize: '0.85rem',
-                        opacity: exampleLoading ? 0.6 : 1,
-                      }}
-                    >
-                      {exampleLoading ? '예문 생성 중...' : 'AI 예문 보기'}
+                    <button onClick={loadExamples} disabled={exampleLoading} aria-live="polite" className="review-examples__load">
+                      {exampleLoading ? '예문 만드는 중…' : 'AI 예문 보기'}
                     </button>
                   )}
                 </div>
               )}
             </div>
           </div>
+          {finishBar}
         </>
       ) : (
         <div className="card review-card review-card--center">
           <div className="review-card__emoji">{vocab.length === 0 ? '★' : '✓'}</div>
           <h2 style={{ marginBottom: '10px' }}>
-            {vocab.length === 0 ? '단어를 먼저 수집해볼까요?' : '지금은 복습할 단어가 없어요'}
+            {vocab.length === 0 ? '아직 담은 표현이 없어요' : '지금 복습할 표현이 없어요'}
           </h2>
           <p style={{ color: 'var(--text-secondary)', marginBottom: 16 }}>
             {vocab.length === 0
-              ? '자료를 읽으면서 모르는 단어를 탭하면 자동 저장돼요'
-              : 'FSRS가 다음 복습 시점을 계산해 줄 거예요. 새 자료를 읽으며 단어를 더 모아보세요.'}
+              ? '자료를 읽으면서 모르는 단어를 누르면 담을 수 있어요.'
+              : '다음 복습 때가 되면 여기에 모여요. 새 자료를 읽으며 표현을 더 담아 보세요.'}
           </p>
           <Link href="/materials" className="btn btn--primary btn--md">
             자료 {vocab.length === 0 ? '읽으러 가기' : '더 읽기'}

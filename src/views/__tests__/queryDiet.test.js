@@ -17,15 +17,20 @@ describe('쿼리 다이어트 계약', () => {
     const viewer = read('src/views/ViewerPage.jsx');
     expect(viewer).toContain("select('id, title, status:processed_json->>status, language:processed_json->metadata->>language, level:processed_json->metadata->>level')");
     const modal = read('src/views/ViewerQuizModal.jsx');
-    expect(modal).toContain("nextMaterial.language === 'English'");
+    // 평탄 필드 소비 — 예전 고정값 `nextMaterial.language === 'English'`은 영어 외 전부를 「일본어」로
+    // 쓰던 버그를 함께 박제하고 있었다(WALL-STATES-001 ③). 공용 언어 이름 함수로 같은 평탄 필드를 읽는다.
+    expect(modal).toContain('langNameKo(nextMaterial.language)');
     expect(modal).not.toContain('nextMaterial.processed_json');
   });
 
   it('홈 — 옛 시리즈 300행 조회를 없애고 최근 진행 join은 제목만', () => {
     const home = read('src/views/HomePage.jsx');
     expect(home).not.toContain(".limit(300)");
-    expect(home).toContain("reading_materials(id, title)')");
-    expect(home).not.toContain('reading_materials(id, title, processed_json)');
+    // 배움(LEARN-HOME-AK-001)의 이어 읽기는 칩 언어의 서재 자료와 그 급수를 보인다 — 본문 JSON을 통째로 끌지 않고
+    // 메타 경로의 스칼라 두 칸만 더한다(뷰어 다음 자료 추천과 같은 방식).
+    // 정본 문학책 제목 표기(AOZORA-P0-5)는 책 위치(작은 객체)와 아오조라 표식 한 칸만 더한다.
+    expect(home).toContain("reading_materials(id, title, language:processed_json->metadata->>language, level:processed_json->metadata->>level, book:processed_json->metadata->book, provider:processed_json->metadata->literature->>provider)')");
+    expect(home).not.toMatch(/reading_materials\([^)]*processed_json[,)]/);
     expect(home).toContain(".eq('user_id', userId)");
   });
 
@@ -38,7 +43,8 @@ describe('쿼리 다이어트 계약', () => {
     expect(stats).not.toMatch(/user_vocabulary'\)[\s\S]{0,40}?\.select\('\*'\)/);
     expect(stats).not.toContain('source_sentence');
     expect(stats).toContain("fetchVocabularyLearningRows(userId, { fields: 'summary' })");
-    expect(stats).toContain('isVocabularyReviewDue');
+    // 단어 복습 칸은 배움 · 현황 공용 모듈로 옮겼다(LEARN-HOME-AK-001) — 같은 요약 snapshot의 투영으로 센다.
+    expect(read('src/components/learn/LearnTiles.jsx')).toContain('isVocabularyReviewDue');
   });
 
   it('단어장 IO — 언어 백필은 언어별 배치 UPDATE, 출처 제목 청크는 병렬', () => {

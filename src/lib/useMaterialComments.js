@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from './supabase';
+import { failureMessage } from './errorMessage';
 
 /**
  * 자료(viewer)의 댓글 조회/생성/삭제 훅
@@ -30,7 +31,7 @@ export function useMaterialComments({ materialId, user, toast, enabled = true })
       if (error) throw error;
     },
     onSuccess: () => commentsQuery.refetch(),
-    onError: (err) => toast?.('댓글 저장 실패: ' + err.message, 'error'),
+    onError: (err) => toast?.(failureMessage('댓글을 저장하지 못했어요.', err), 'error'),
   });
 
   const deleteMutation = useMutation({
@@ -43,7 +44,7 @@ export function useMaterialComments({ materialId, user, toast, enabled = true })
       if (error) throw error;
     },
     onSuccess: () => commentsQuery.refetch(),
-    onError: (err) => toast?.('삭제 실패: ' + err.message, 'error'),
+    onError: (err) => toast?.(failureMessage('댓글을 삭제하지 못했어요.', err), 'error'),
   });
 
   return {

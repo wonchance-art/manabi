@@ -68,11 +68,17 @@ describe('홈 알림 덱 계약', () => {
 
   it('홈의 알림성 진입이 전부 덱으로 모인다 — 흩어진 카드가 남지 않는다', () => {
     const home = read('src/views/HomePage.jsx');
-    expect(home).toContain("key: 'forecast'");
-    expect(home).toContain('chooseResume(resume, local.updatedAt, material)');
+    // 배움(LEARN-HOME-AK-001): 예보 항목은 덱에서 「오늘 문단」 칸으로 옮겼다 — 같은 알림이 두 자리에 나오지 않는다.
+    // 예보 탭 기록 이음새(buildForecastTapEvent → logReviewEvents)는 그 칸에서 그대로 남는다.
+    expect(home).not.toContain("key: 'forecast'");
+    expect(home).toContain('<ParagraphTile');
+    expect(home).toContain('onForecastTap={onForecastTap}');
+    expect(home).toContain('logReviewEvents(user.id, [buildForecastTapEvent(lang, forecast)])');
+    expect(read('src/components/learn/ParagraphTile.jsx')).toContain("onClick={state.kind === 'forecast' ? onForecastTap : undefined}");
+    expect(home).toContain('chooseResume(bookForLang, local.updatedAt, material)');
     expect(home).not.toContain("key: 'lesson'");
     expect(home).toContain('useRereadCandidate()');
-    expect(home).toContain('useGroupEntryItem()');
+    expect(home).toContain('useGroupEntryItem({ invite: false })');
     // 옛 개별 카드는 부활 금지 — 같은 알림이 두 자리에 나오면 겹치기가 무의미해진다.
     expect(home).not.toContain('<ForecastCard');
     expect(home).not.toContain('<GroupEntryCard');

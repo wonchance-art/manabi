@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "personId": "000879",
+  "workId": "42",
+  "title": "鼻",
+  "author": "芥川龍之介",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1916,
+  "authorDeathYear": 1927,
+  "level": "N2 상급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000879/card42.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000879/files/42_ruby_154.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "80fe438eb147091a7f3f827583f85ea63304b00a88e6de3d14f2933799036c85",
+  "textSha256": "f007db7fce7cfcc2a921fbc9e68260ad3f2f3349961cdba0fc459520c399b330",
+  "attribution": {
+    "author": "芥川龍之介",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-14",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR",
+      "US"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000879/card42.html"
+  },
+  "display": {
+    "titleReading": "はな",
+    "titleKo": "코",
+    "authorKo": "아쿠타가와 류노스케",
+    "cover": "ink",
+    "motif": "ink-steam"
+  }
+}

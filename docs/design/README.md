@@ -25,6 +25,7 @@
 | [`registry.json`](registry.json) | 설계 등록부 — 설계마다 코드 · 단계 · 목업 원본 · 프레임 · 연결 장면 · 인계 링크 |
 | [`states-inventory.json`](states-inventory.json) | 상태 · 알림 재고 스냅숏(토스트 · 오류 · 로딩 · 빈 상태 · 대화상자 · 메일 · 푸시 1,139개, 위치 · 문구 · 확인할 점, 문구 묶음). 코드에서 뽑은 목록이라 캡처가 아니다 — 화면 벽 「상태 · 알림」 탭의 원본 |
 | [`copy-standard.md`](copy-standard.md) | 화면 문구 표준 정본 — 해요체 · 실패 「…지 못했어요」 · 버튼 「다시 시도」 · 상황별 문구 · 문구 린트 |
+| [`hsk2026/`](hsk2026/README.md) | HSK 2026 급수 목록(2025-11 발표 · 2026-07 시행 대강에서 뽑은 认读字 · 书写字 · 단어 11,000개)과 2021 기준과의 차이. 중국어 급수의 정본 |
 | `mocks/<id>/<id>.html` | 확정 목업 원본. 파일 하나로 열린다(외부 의존은 Google Fonts뿐) |
 | `mocks/<id>/<id>.<frame>.jpg` | 목업에서 뽑은 비교용 프레임. 화면 벽 「예정」 타일과 「목업과 일치」 판정에 쓴다 |
 
@@ -45,6 +46,7 @@
 | ae | AE-R2 · AE-R3 — 단어창 3차 | [mocks/ae/ae.html](mocks/ae/ae.html) |
 | conv | v2-Z — 대화 모드 | [mocks/conv/conv.html](mocks/conv/conv.html) |
 | lv | LEVEL-LIST-AJ-001 — 레벨별 단어 · 문형 다시 열기(일 · 중) | [mocks/lv/lv.html](mocks/lv/lv.html) |
+| al | HANZI-TAB-AL-001 — 중국어 레벨 화면 「한자」 탭(글자만 보고 읽기 · 몰라요/알아요 넘기기 · 답 카드) | [mocks/al/al.html](mocks/al/al.html) |
 
 brand(아이콘 · 브랜드)는 Design 타입 보드라 파일 하나로 열리지 않아 아티팩트에만 둔다. mail(인증 메일)은 앱 화면이 아니라 화면 벽 밖이다.
 

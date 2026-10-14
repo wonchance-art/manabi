@@ -55,7 +55,7 @@ try {
  await page.goto(base+'/auth');await page.getByLabel('이메일',{exact:true}).fill(user.email);await page.getByLabel('비밀번호',{exact:true}).fill('fixture-password');await page.getByRole('button',{name:'로그인',exact:true}).last().click();await page.waitForURL('**/home');
  await page.goto(base+'/vocab');await page.getByRole('button',{name:'표현 2개 복습 →',exact:true}).waitFor();
  assert.equal((await page.locator('.vocab-hero__num').innerText()).trim(),'2');
- await page.getByRole('link',{name:'문법만 1개 →',exact:true}).waitFor();
+ await page.getByRole('link',{name:'문법 1개 →',exact:true}).waitFor();
  await check('separate vocabulary and grammar counts');
  await page.screenshot({path:out+'/review-desktop.png',fullPage:true});
  for(const width of [320,390,768,1440]) {await page.setViewportSize({width,height:950});await check('entrance width '+width);}
@@ -63,7 +63,7 @@ try {
  await page.getByRole('button',{name:'표현 2개 복습 →',exact:true}).click();await page.getByRole('button',{name:'정답 확인하기',exact:true}).waitFor();
  assert.equal(await page.getByText('계기',{exact:true}).count(),0,'answer must be hidden');
  await check('flash recall hides answer');
- await page.getByRole('button',{name:'← 나가기',exact:true}).click();await page.getByRole('button',{name:/멈춘 복습 이어가기/}).click();await page.getByRole('button',{name:'정답 확인하기',exact:true}).click();
+ await page.getByRole('button',{name:'← 나가기',exact:true}).click();await page.getByRole('button',{name:/멈춘 복습 이어 하기/}).click();await page.getByRole('button',{name:'정답 확인하기',exact:true}).click();
  await page.getByText('계기',{exact:true}).waitFor();
  // A single valid context is the primary source; only additional contexts are folded.
  assert.equal(await page.getByRole('button',{name:'이 문맥만 지우기',exact:true}).count(),0);
@@ -84,11 +84,11 @@ try {
  // Clear this fixture's offline snapshot: exercise genuine request failure, not valid offline recovery.
  state='error';await page.evaluate(async()=>{for(const db of await indexedDB.databases())indexedDB.deleteDatabase(db.name);});await page.reload();
  await page.getByRole('heading',{name:'표현을 불러오지 못했어요.',exact:true}).waitFor();await check('failure is not an empty/completed state');
- state='empty';await page.getByRole('button',{name:'다시 불러오기',exact:true}).click();await page.getByRole('heading',{name:'첫 표현을 담아 보세요.',exact:true}).waitFor();await check('retry recovers');
+ state='empty';await page.getByRole('button',{name:'다시 시도',exact:true}).click();await page.getByRole('heading',{name:'첫 표현을 담아 보세요.',exact:true}).waitFor();await check('retry recovers');
  grammarFail=true;await page.reload();await page.getByRole('alert').filter({hasText:'문법 일정을 불러오지 못했어요.'}).waitFor();await check('independent grammar failure');
  grammarFail=false;state='due';rows=[{...rows[0],word_text:'長い表現'.repeat(18),meaning:'아주 긴 뜻 '.repeat(25),next_review_at:'2026-01-02'}];await page.reload();
  await page.getByRole('button',{name:'표현 1개 복습 →',exact:true}).waitFor();await page.setViewportSize({width:320,height:844});await check('long expression and meaning at 320px');
- await page.locator('.review-room-settings summary').focus();await page.keyboard.press('Enter');await page.getByLabel('복습 방식',{exact:true}).waitFor();await check('keyboard settings controls remain accessible');
+ await page.locator('.review-room-settings summary').focus();await page.keyboard.press('Enter');await page.getByLabel('하루 새 단어 한도',{exact:true}).waitFor();await check('keyboard settings controls remain accessible');
  await page.screenshot({path:out+'/settings-mobile.png',fullPage:true});
  assert.deepEqual(report.errors,[]);
 } finally {fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));await browser.close();}

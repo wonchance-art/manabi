@@ -92,7 +92,7 @@ try {
  await page.locator('.viewer-back-link').click();await page.getByRole('heading',{name:'내가 펼친 세계.',exact:true}).waitFor();await page.waitForTimeout(250);assert(reads.some(row=>row.last_token_idx>0));await check('leaving before debounce flushes the saved token position');
  // The clock is advanced only in this fixture so the just-saved expression is due.
  vocab[0].next_review_at='2026-01-01';vocab[0].interval=1;
- await page.goto(base+'/vocab');await page.locator('.review-room-settings summary').click();await page.getByLabel('복습 방식',{exact:true}).selectOption('flash');await page.getByRole('button',{name:'표현 1개 복습 →',exact:true}).click();
+ await page.goto(base+'/vocab');await page.getByRole('button',{name:'표현 1개 복습 →',exact:true}).click(); // 본 복습은 플래시뿐(REV-SCOPE-R1B-1)
  await page.getByRole('button',{name:'정답 확인하기',exact:true}).click();await page.locator('.learning-links summary').click();
  const gradesBefore=writes.filter(w=>w.table==='user_vocabulary'&&w.method==='PATCH').length;
  const popupEvent=page.waitForEvent('popup');await page.getByRole('link',{name:'자료 속 문장 열기 ↗',exact:true}).click();
@@ -113,7 +113,7 @@ try {
  for(const width of [320,390,768]){await page.setViewportSize({width,height:844});await check('long titles and return links width '+width);}
  await page.goto(base+'/materials/add?advanced=1');await page.locator('.form-textarea').fill('あさです。\n\nひるです。');analysisMode='slow';await page.getByRole('button',{name:'저장하고 읽기 준비',exact:true}).click();await page.getByRole('button',{name:'분석 중단',exact:true}).waitFor();await page.getByRole('button',{name:'지금 바로 읽기',exact:true}).click();await page.locator('.viewer-back-link').waitFor();const early=records.at(-1);assert(['pending','partial'].includes(early.processed_json.status));await page.getByText(/원문은 그대로 읽을 수 있어요/).waitFor();await check('open during analysis stops the old writer and keeps raw text readable');
  analysisMode='ok';writeFail=true;await page.getByRole('button',{name:'이 챕터 분석하기',exact:true}).click();
- await page.getByText(/분석 실패: fixture result save unavailable/).waitFor();assert.equal(early.processed_json.status,'pending');await check('reader reanalysis reports persistence failure without claiming success');
+ await page.getByText(/분석하지 못했어요\. /).waitFor();assert.equal(early.processed_json.status,'pending');await check('reader reanalysis reports persistence failure without claiming success');
  writeFail=false;await page.getByRole('button',{name:'이 챕터 분석하기',exact:true}).click();await page.locator('.word-token').first().waitFor();assert.equal(early.processed_json.status,'completed');await check('reader retries analysis on the same saved original');
  await page.goto(base+'/materials/add?advanced=1&direction=write');await page.locator('.form-textarea').fill('내가 직접 쓴 비공개 노트');const callsBefore=analysisCalls;await page.getByRole('button',{name:'노트 저장하기',exact:true}).click();await page.getByText('노트를 저장했어요.',{exact:true}).waitFor();assert.equal(analysisCalls,callsBefore);assert.equal(records.at(-1).direction,'write');assert.equal(records.at(-1).visibility,'private');await check('notes remain private and never invoke analysis');
  await page.setViewportSize({width:1440,height:1000});await page.goto(base+'/materials/add?advanced=1');await page.locator('.form-textarea').waitFor();await shot('import-desktop');await page.setViewportSize({width:390,height:844});await shot('import-mobile');await check('final import layout mobile');

@@ -116,3 +116,42 @@ describe('full-state FSRS with explicit Anki seconds policy', () => {
     }
   });
 });
+
+// REV-SCOPE R1-B-2: 학습 단계 Anki 기본값(1분 · 10분, 재학습 10분). 정책은 서버가 알린 값을 따르고,
+// 기존 anki-seconds-v1 카드는 계속 읽히고 채점되며, 학습 중 카드는 다음 채점 때 같은 단계 순번으로 넘어간다.
+describe('learning-step policy anki-v2 alongside anki-seconds-v1', () => {
+  const v2 = { policyVersion: 'anki-v2' };
+  it('introduces anki-v2 cards one minute before the first question', () => {
+    const card = introduceFsrsCard(at, v2);
+    expect(card).toMatchObject({ policyVersion: 'anki-v2', state: 'New', due: plus(at, 60) });
+    expect(() => validateFsrsCard({ ...card, due: plus(at, 30) })).toThrow('invalid_new_card');
+    // 예전 정책 New 카드는 30초 그대로 유효하다 — 정책을 바꿔도 무효 카드가 늘지 않는다.
+    expect(validateFsrsCard(introduced()).due).toBe(plus(at, 30));
+  });
+
+  it('schedules 1 / 5.5 / 10 minutes on anki-v2 and keeps Relearning at 10 minutes', () => {
+    const card = introduceFsrsCard(at, v2), result = previewFsrsRatings(card, card.due);
+    expect([1, 2, 3].map(r => delay(result[r], card.due))).toEqual([60, 330, 600]);
+    const learning = grade(card, 3), next = previewFsrsRatings(learning, learning.due);
+    expect(delay(next[1], learning.due)).toBe(60);
+    expect(delay(next[2], learning.due)).toBe(600);
+    let review = grade(learning, 3);
+    expect(review.state).toBe('Review');
+    review = scheduleFsrsReview(review, 1, review.due).card;
+    expect(review).toMatchObject({ state: 'Relearning', step: 0, policyVersion: 'anki-v2' });
+    expect((Date.parse(review.due) - Date.parse(review.lastReview)) / 1000).toBe(600);
+  });
+
+  it('moves an anki-seconds-v1 card to the announced policy at its next grade, keeping the step index', () => {
+    const old = grade(introduced(), 3);
+    expect(old).toMatchObject({ policyVersion: 'anki-seconds-v1', state: 'Learning', step: 1 });
+    const moved = previewFsrsRatings(old, old.due, v2);
+    expect(moved[1].card).toMatchObject({ policyVersion: 'anki-v2', state: 'Learning', step: 0 });
+    expect(delay(moved[1], old.due)).toBe(60);
+    expect(moved[2].card).toMatchObject({ policyVersion: 'anki-v2', step: 1 });
+    expect(delay(moved[2], old.due)).toBe(600);
+    // 정책을 알리지 않으면 카드 정책 그대로(이전 동작).
+    expect(previewFsrsRatings(old, old.due)[1].card.policyVersion).toBe('anki-seconds-v1');
+    expect(() => previewFsrsRatings(old, old.due, { policyVersion: 'future-policy' })).toThrow('unsupported_fsrs_card');
+  });
+});

@@ -11,6 +11,9 @@ import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
 import StudyPlanPanel from './StudyPlanPanel';
 import BookRefinePanel from '../components/BookRefinePanel';
+import LiteraturePublishPanel from '../components/LiteraturePublishPanel';
+import { failureMessage } from '../lib/errorMessage';
+import { LANG_NAME_KO } from '../lib/constants';
 
 const SOURCE_TYPE_LABELS = {
   wikipedia_good:   'Wikipedia 우수 기사',
@@ -97,6 +100,16 @@ async function fetchWorldReports() {
 }
 
 // ── Component ─────────────────────────────────────
+/** 목록 불러오기 실패 — 빈 목록(「총 0명」·「아직 … 없어요」)과 구분한다(WALL-STATES-001 ⑤). */
+function AdminLoadError({ what, onRetry }) {
+  return (
+    <div className="card" role="alert" style={{ padding: '20px' }}>
+      <p style={{ margin: '0 0 12px', color: 'var(--text-secondary)' }}>{what} 목록을 불러오지 못했어요.</p>
+      <Button variant="ghost" size="sm" onClick={() => onRetry()}>다시 시도</Button>
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const { user, isAdmin, loading } = useAuth();
   const [tab, setTab] = useState('users');
@@ -106,31 +119,31 @@ export default function AdminPage() {
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  const { data: users = [], isLoading: usersLoading } = useQuery({
+  const { data: users = [], isLoading: usersLoading, isError: usersError, refetch: refetchUsers } = useQuery({
     queryKey: ['admin-users'],
     queryFn: fetchAllUsers,
     enabled: isAdmin && tab === 'users',
   });
 
-  const { data: materials = [], isLoading: matsLoading } = useQuery({
+  const { data: materials = [], isLoading: matsLoading, isError: materialsError, refetch: refetchMaterials } = useQuery({
     queryKey: ['admin-materials'],
     queryFn: fetchAllMaterials,
     enabled: isAdmin && tab === 'materials',
   });
 
-  const { data: sources = [], isLoading: sourcesLoading } = useQuery({
+  const { data: sources = [], isLoading: sourcesLoading, isError: sourcesError, refetch: refetchSources } = useQuery({
     queryKey: ['admin-sources'],
     queryFn: fetchContentSources,
     enabled: isAdmin && tab === 'sources',
   });
 
-  const { data: overrides = [], isLoading: overridesLoading } = useQuery({
+  const { data: overrides = [], isLoading: overridesLoading, isError: overridesError, refetch: refetchOverrides } = useQuery({
     queryKey: ['admin-overrides'],
     queryFn: fetchContentOverrides,
     enabled: isAdmin && tab === 'overrides',
   });
 
-  const { data: reports = [], isLoading: reportsLoading } = useQuery({
+  const { data: reports = [], isLoading: reportsLoading, isError: reportsError, refetch: refetchReports } = useQuery({
     queryKey: ['admin-world-reports'],
     queryFn: fetchWorldReports,
     enabled: isAdmin && tab === 'reports',
@@ -146,14 +159,14 @@ export default function AdminPage() {
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        throw new Error(j.error || '삭제 실패');
+        throw new Error(j.error || 'override delete failed');
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-overrides'] });
       toast('수정본을 삭제하고 파일 버전으로 복원했어요.', 'success');
     },
-    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
+    onError: (err) => toast(failureMessage('삭제하지 못했어요.', err), 'error'),
   });
 
   // 역할 변경
@@ -163,7 +176,7 @@ export default function AdminPage() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
-    onError: (err) => toast('역할 변경 실패: ' + err.message, 'error'),
+    onError: (err) => toast(failureMessage('역할을 바꾸지 못했어요.', err), 'error'),
   });
 
   // 자료 삭제
@@ -173,7 +186,7 @@ export default function AdminPage() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-materials'] }),
-    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
+    onError: (err) => toast(failureMessage('삭제하지 못했어요.', err), 'error'),
   });
 
   // 소스 토글
@@ -183,7 +196,7 @@ export default function AdminPage() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-sources'] }),
-    onError: (err) => toast('변경 실패: ' + err.message, 'error'),
+    onError: (err) => toast(failureMessage('바꾸지 못했어요.', err), 'error'),
   });
 
   // 소스 추가
@@ -196,9 +209,9 @@ export default function AdminPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-sources'] });
       setShowAddForm(false);
       setNewSource(DEFAULT_NEW_SOURCE);
-      toast('소스가 추가되었습니다.', 'success');
+      toast('소스를 추가했어요.', 'success');
     },
-    onError: (err) => toast('추가 실패: ' + err.message, 'error'),
+    onError: (err) => toast(failureMessage('소스를 추가하지 못했어요.', err), 'error'),
   });
 
   // 소스 삭제
@@ -208,7 +221,7 @@ export default function AdminPage() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-sources'] }),
-    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
+    onError: (err) => toast(failureMessage('삭제하지 못했어요.', err), 'error'),
   });
 
   // 인증 게이트는 모든 Hooks 호출 뒤에 둔다 — 위에서 조기 반환하면 loading true→false 전이 때
@@ -218,7 +231,7 @@ export default function AdminPage() {
   if (!isAdmin) return (
     <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
       <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🚫</div>
-      <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>접근 권한이 없습니다</h2>
+      <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>접근 권한이 없어요</h2>
       <Link href="/" className="btn btn--primary">홈으로</Link>
     </div>
   );
@@ -248,9 +261,11 @@ export default function AdminPage() {
     });
   };
 
-  const confirmDelete = (label, onConfirm) => {
+  // 확인창 제목은 질문(문구 표준 §2) — 이름 뒤에 종류 명사를 붙여 조사를 고정한다(괄호 조사 하드코딩 제거).
+  const confirmDelete = (title, onConfirm) => {
     setConfirmAction({
-      message: `정말 "${label}"을(를) 삭제하시겠습니까?`,
+      title,
+      message: '삭제하면 되돌릴 수 없어요.',
       onConfirm: () => { onConfirm(); setConfirmAction(null); },
     });
   };
@@ -268,6 +283,8 @@ export default function AdminPage() {
           { key: 'myplan',    label: '📅 내 진도' },
           { key: 'users',     label: '👥 유저 관리' },
           { key: 'materials', label: '📰 자료 관리' },
+          { key: 'literature', label: '📚 정본 문학책' },
+          { key: 'art',       label: '🖼️ 미술 책' },
           { key: 'sources',   label: '📡 콘텐츠 소스' },
           { key: 'overrides', label: '📝 콘텐츠' },
           { key: 'reports',   label: '🚩 신고' },
@@ -285,6 +302,12 @@ export default function AdminPage() {
 
       {/* ── 내 진도 (관리자 전용 학습 진도표) ── */}
       {tab === 'myplan' && <StudyPlanPanel />}
+
+      {/* ── 정본 문학책 게시(AOZORA-P0-2) — 권리 근거 확인 → 게시 → 장마다 1회 분석 → 루비 적용률 ── */}
+      {tab === 'literature' && <LiteraturePublishPanel toast={toast} />}
+
+      {/* ── 「그림 한 장 읽기」 큐레이션 책 게시(ART-P0-3) — 같은 패널·같은 흐름, 근거 칸만 출처·라이선스·원문 링크 ── */}
+      {tab === 'art' && <LiteraturePublishPanel toast={toast} api="/api/admin/art-books" kind="art" />}
 
       {/* ── 신기능 — 관리자용 바로가기 (학습 기능은 네비 '학습' 탭에 정식 배치됨) ── */}
       {tab === 'features' && (
@@ -368,7 +391,7 @@ export default function AdminPage() {
 
       {/* ── 유저 관리 ── */}
       {tab === 'users' && (
-        usersLoading ? <Spinner message="유저 목록 로딩 중..." /> : (
+        usersLoading ? <Spinner message="유저 목록 불러오는 중…" /> : usersError ? <AdminLoadError what="유저" onRetry={refetchUsers} /> : (
           <div className="admin-table-wrap">
             <div className="admin-table-header">
               <span>총 {users.length}명</span>
@@ -378,7 +401,7 @@ export default function AdminPage() {
                 <tr>
                   <th>닉네임</th>
                   <th>역할</th>
-                  <th>스트릭</th>
+                  <th>연속</th>
                   <th>마지막 접속</th>
                   <th>역할 변경</th>
                 </tr>
@@ -419,7 +442,7 @@ export default function AdminPage() {
 
       {/* ── 자료 관리 ── */}
       {tab === 'materials' && (
-        matsLoading ? <Spinner message="자료 목록 로딩 중..." /> : (
+        matsLoading ? <Spinner message="자료 목록 불러오는 중…" /> : materialsError ? <AdminLoadError what="자료" onRetry={refetchMaterials} /> : (
           <div className="admin-table-wrap">
             {/* 책 단위 정제(v2-AB R0) — 내 책 묶음만 후보로 보인다(RPC가 소유자만 받는다) */}
             <BookRefinePanel
@@ -463,7 +486,7 @@ export default function AdminPage() {
                           size="sm"
                           variant="danger"
                           disabled={deleteMaterialMutation.isPending}
-                          onClick={() => confirmDelete(m.title, () => deleteMaterialMutation.mutate(m.id))}
+                          onClick={() => confirmDelete(`「${m.title}」 자료를 삭제할까요?`, () => deleteMaterialMutation.mutate(m.id))}
                         >
                           삭제
                         </Button>
@@ -479,7 +502,7 @@ export default function AdminPage() {
 
       {/* ── 콘텐츠 소스 관리 ── */}
       {tab === 'sources' && (
-        sourcesLoading ? <Spinner message="소스 목록 로딩 중..." /> : (
+        sourcesLoading ? <Spinner message="소스 목록 불러오는 중…" /> : sourcesError ? <AdminLoadError what="소스" onRetry={refetchSources} /> : (
           <div>
             <div className="admin-table-header" style={{ marginBottom: '16px' }}>
               <span>총 {sources.length}개 소스</span>
@@ -501,8 +524,8 @@ export default function AdminPage() {
                       value={newSource.language}
                       onChange={e => handleNewSourceChange('language', e.target.value)}
                     >
-                      <option value="Japanese">🇯🇵 Japanese</option>
-                      <option value="English">🇬🇧 English</option>
+                      <option value="Japanese">{LANG_NAME_KO.Japanese}</option>
+                      <option value="English">{LANG_NAME_KO.English}</option>
                     </select>
                   </div>
 
@@ -564,7 +587,7 @@ export default function AdminPage() {
                     onClick={handleAddSource}
                     disabled={addSourceMutation.isPending}
                   >
-                    {addSourceMutation.isPending ? '추가 중...' : '추가'}
+                    {addSourceMutation.isPending ? '추가 중…' : '추가'}
                   </Button>
                 </div>
               </div>
@@ -577,7 +600,7 @@ export default function AdminPage() {
               return (
                 <div key={lang} style={{ marginBottom: '28px' }}>
                   <h3 style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    {lang === 'Japanese' ? '🇯🇵 Japanese' : '🇬🇧 English'}
+                    {LANG_NAME_KO[lang]}
                   </h3>
                   <table className="admin-table">
                     <thead>
@@ -611,7 +634,7 @@ export default function AdminPage() {
                               size="sm"
                               variant="danger"
                               disabled={deleteSourceMutation.isPending}
-                              onClick={() => confirmDelete(s.name, () => deleteSourceMutation.mutate(s.id))}
+                              onClick={() => confirmDelete(`「${s.name}」 소스를 삭제할까요?`, () => deleteSourceMutation.mutate(s.id))}
                             >
                               삭제
                             </Button>
@@ -629,7 +652,7 @@ export default function AdminPage() {
 
       {/* ── 콘텐츠 오버라이드 관리 ── */}
       {tab === 'overrides' && (
-        overridesLoading ? <Spinner message="수정본 목록 로딩 중..." /> : (
+        overridesLoading ? <Spinner message="수정본 목록 불러오는 중…" /> : overridesError ? <AdminLoadError what="수정본" onRetry={refetchOverrides} /> : (
           <div>
             <Link href="/admin/legacy-textbooks" className="btn btn--ghost" style={{ marginRight: 12, marginBottom: 16 }}>기존 교재 보관함</Link>
             <Link href="/admin/textbooks" className="btn btn--primary" style={{ marginBottom: 16 }}>교재 편집 열기</Link>
@@ -680,7 +703,7 @@ export default function AdminPage() {
                               size="sm"
                               variant="danger"
                               disabled={deleteOverrideMutation.isPending}
-                              onClick={() => confirmDelete(`${o.lang} · ${o.slug} 수정본`, () => deleteOverrideMutation.mutate({ lang: o.lang, slug: o.slug }))}
+                              onClick={() => confirmDelete(`「${o.lang} · ${o.slug}」 수정본을 삭제할까요?`, () => deleteOverrideMutation.mutate({ lang: o.lang, slug: o.slug }))}
                             >
                               복원(삭제)
                             </Button>
@@ -698,7 +721,7 @@ export default function AdminPage() {
 
       {/* ── 월드 신고 (열람 전용) ── */}
       {tab === 'reports' && (
-        reportsLoading ? <Spinner message="신고 목록 로딩 중..." /> : (
+        reportsLoading ? <Spinner message="신고 목록 불러오는 중…" /> : reportsError ? <AdminLoadError what="신고" onRetry={refetchReports} /> : (
           <div>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.6 }}>
               학습 월드에서 접수된 신고 목록이에요(world_reports). 지금은 열람만 가능해요 —
@@ -743,7 +766,10 @@ export default function AdminPage() {
 
       <ConfirmModal
         open={!!confirmAction}
+        title={confirmAction?.title}
         message={confirmAction?.message}
+        confirmLabel="삭제"
+        variant="danger"
         onConfirm={confirmAction?.onConfirm}
         onCancel={() => setConfirmAction(null)}
       />

@@ -16,7 +16,7 @@ const snapshot = () => ({ wordId: 'card-a', itemKey: '猫', word: '猫', lang: '
   reviewedAt: '2026-10-04T14:59:00.000Z', queued: true, reviewIdx: 2, requeued: false,
   wasNew: false, prev: { interval: 5, ease_factor: 3, repetitions: 1, next_review_at: '2026-10-03T00:00:00Z', last_reviewed_at: null } });
 
-function fixture() {
+function fixture(extra = {}) {
   let mountEffect, cleanup;
   const undoQueuedReview = vi.fn(async () => ({ ok: true, queued: false, status: 'settled', compensated: true }));
   const persistVocabGrade = vi.fn(async () => {});
@@ -33,13 +33,14 @@ function fixture() {
     logReviewEvents: vi.fn(async () => {}), withLegacyReviewLock,
     setReviewQueue: vi.fn(), setIntroIds: vi.fn(), saveIntroIds: vi.fn(),
     setReviewSessionId: vi.fn(), setReviewIdx: vi.fn(), setShowAnswer: vi.fn(), setContextSelected: vi.fn(),
-    setTypingAnswer: vi.fn(), setReviewFinished: vi.fn(), friendlyToastMessage: error => error.message,
+    setTypingAnswer: vi.fn(), setReviewFinished: vi.fn(), friendlyToastMessage: error => error.message, failureMessage: (head, error) => `${head} ${error.message}`,
     questionKey: 'session:0', currentWord: { id: 'card-a', word_text: '猫', language: 'Japanese', meaning: '고양이' },
     reviewSupported: () => true, isNewWord: () => false, detectLang: () => 'Japanese',
     SRS_FIELDS: ['interval', 'ease_factor', 'repetitions', 'next_review_at', 'last_reviewed_at'],
     reviewIdx: 0, effectiveMode: 'flash', reviewMode: 'flash', recordReviewCompleted,
     refreshProfileReadOnly: vi.fn(async () => {}), registerNewIntro: vi.fn(), goNextReview: vi.fn(),
     useEffect: fn => { mountEffect = fn; cleanup = fn(); },
+    againWord: undefined, ...extra,
   };
   const actions = new Function(...Object.keys(c), `${lifecycleSource}\n${scoreSource}\n${undoSource}\nreturn { handleScore, undoLastGrade };`)(...Object.values(c));
   return { ...actions, c, undoQueuedReview, persistVocabGrade, recordReviewCompleted,
@@ -192,5 +193,18 @@ describe('queued review undo recovery in the actual VocabPage handlers', () => {
     hold.resolve(); await prior; await pending;
     expect(f.persistVocabGrade).not.toHaveBeenCalled(); expect(f.c.logReviewEvents).not.toHaveBeenCalled();
     expect(f.c.lastGradeRef.current).toBe(last); expect(f.c.toast).not.toHaveBeenCalled();
+  });
+
+  it('「다시」 재노출 카드는 기록 · 일정 저장 · undo 스냅샷 없이 다음으로 — 또 「다시」면 한 번 더 끝에(M09 #1337 6171362813)', async () => {
+    const word = { id: 'card-a', word_text: '猫', language: 'Japanese', meaning: '고양이' };
+    const f = fixture({ againWord: word, currentWord: word }), before = f.c.lastGradeRef.current;
+    await f.handleScore(1);
+    expect(f.c.goNextReview).toHaveBeenLastCalledWith('card-a');
+    await f.handleScore(3);
+    expect(f.c.goNextReview).toHaveBeenLastCalledWith(null);
+    expect(f.recordReviewCompleted).not.toHaveBeenCalled();
+    expect(f.persistVocabGrade).not.toHaveBeenCalled();
+    expect(f.c.lastGradeRef.current).toBe(before);
+    expect(f.c.pendingGradeRef.current).toBe(0);
   });
 });

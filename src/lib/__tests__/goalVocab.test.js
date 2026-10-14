@@ -110,7 +110,7 @@ describe('§5 이음새 신설 0 — 대조만 하고 아무것도 적재하지 
   it('궤도 카드가 읽는 테이블은 이미 있는 둘뿐 — 어휘 축에 새 저장소가 없다', () => {
     // "미래에 마이그레이션이 하나도 없다"로 세면 다음 축의 정당한 스키마 변경에 깨진다.
     // 지키려는 건 R3이 **읽기만 한다**는 것이므로 읽는 대상을 고정한다.
-    const card = read('src/views/ProfileStats.jsx');
+    const card = read('src/views/ProfileStats.jsx') + read('src/components/learn/LevelVocabCard.jsx');
     const tables = new Set([...card.matchAll(/\.from\('(\w+)'\)/g)].map(m => m[1]));
     expect(card).toContain("fetchVocabularyLearningRows(userId, { fields: 'summary' })");
     expect(card).toContain('vocab: learning.rows');
@@ -123,28 +123,40 @@ describe('§5 이음새 신설 0 — 대조만 하고 아무것도 적재하지 
   });
 });
 
-describe('배선 — 무거운 정본은 상세를 열 때만', () => {
-  const stats = read('src/views/ProfileStats.jsx');
-  const card = codeOf(sliceBetween(stats, 'function GoalTrackCard(', '\n}'));
+describe('배선 — 무거운 정본은 배움 첫 화면에 싣지 않는다(LEARN-HOME-AK-001: 어휘 축은 현황의 레벨 어휘 칸)', () => {
+  // 예전 궤도 카드의 「상세 모달」이 하던 어휘 축은 현황의 레벨 어휘 칸이 맡는다. 지키려는 것은 그대로다:
+  // 배움(홈) 첫 화면은 어휘 표 · '이미 앎' 조회를 치르지 않는다. 현황에서도 표는 그 언어(중국어)일 때만 받는다.
+  const stats = codeOf(read('src/views/ProfileStats.jsx'));
+  const home = codeOf(read('src/views/HomePage.jsx'));
+  const card = codeOf(read('src/components/learn/LevelVocabCard.jsx'));
 
-  it('어휘 정본 인덱스는 모달을 열어야 로드된다 — 홈 첫 화면이 1.9MB를 치르면 안 된다', () => {
-    // 정본 어휘는 언어당 수천 단어(뜻·병음·예문 포함)라 홈에 상주시킬 물건이 아니다.
-    const effect = sliceBetween(card, 'useEffect(() => {', '}, [open, goalLang]);');
-    expect(effect).toContain('if (!open || !goalLang) return undefined;');
-    expect(effect).toContain('loadRefVocabIndex(goalLang)');
+  it('배움 첫 화면은 어휘 표 · 레벨 어휘 칸 · 이미 앎 조회를 불러오지 않는다', () => {
+    for (const banned of ['LevelVocabCard', 'loadRefVocabIndex', 'useZhHskLevels', 'loadZhHskLevels', 'fetchKnownWords']) {
+      expect(home, banned).not.toContain(banned);
+    }
   });
 
-  it("'이미 앎' 조회도 열었을 때만 — 안 여는 사람에게 쿼리를 태우지 않는다", () => {
-    const q = sliceBetween(card, "queryKey: ['goal-known'", '});');
-    expect(q).toContain('enabled: open && !!user?.id && !!knownWordsLang(goalLang),');
-    expect(q).toContain('fetchKnownWords(user.id, knownWordsLang(goalLang))');
-    // 실패·미적용은 조용히 — 어휘 줄만 덜 정확해진다
-    expect(q).toMatch(/catch \{ return \[\]; \}/);
+  it('어휘 표는 레벨 목록이 있는 언어에서만 받는다 — 다른 언어 칩은 표를 내려받지 않는다', () => {
+    expect(card).toContain("const supported = lang === 'Chinese';");
+    expect(card).toContain('useZhHskLevels(supported)');
+  });
+
+  it("'이미 앎' 조회는 칩 언어 하나 · 실패는 조용히(칸만 「–」, 레벨 어휘는 담은 표현으로)", () => {
+    const q = sliceBetween(stats, "queryKey: ['known-words'", '});');
+    expect(q).toContain('enabled: !!user?.id && !!knownLang,');
+    expect(q).toContain('fetchKnownWords(user.id, knownLang)');
+    expect(q).toMatch(/catch \{ return null; \}/);
+    expect(stats).toContain('knownRows={knownRows || []}');
   });
 
   it('확보 계산은 순수 함수 둘이 한다 — 화면이 교집합을 다시 짜지 않는다', () => {
-    expect(card).toContain('haveWordSet({ vocabRows: vocab, knownRows, language: goalLang })');
-    expect(card).toContain('vocabCoverage(vocabIndex, plan.levels.map(lv => lv.key), have)');
+    expect(card).toContain('haveWordSet({ vocabRows: vocab, knownRows, language: lang })');
+    expect(card).toContain('vocabCoverage(index, LEVEL_KEYS, haveWordSet(');
+  });
+
+  it('급수는 화면 정본 HSK 2026 표 — 복습 범위(level=H2)와 같은 판정', () => {
+    expect(card).toContain('zhHskLevelOf(word, levels)');
+    expect(card).toContain('serializeReviewScope({ lang, level: row.level })');
   });
 
   it('단어장 행의 language가 조회에 있다 — 없으면 남의 언어 단어가 확보로 샌다', () => {
@@ -152,7 +164,8 @@ describe('배선 — 무거운 정본은 상세를 열 때만', () => {
     expect(VOCABULARY_LEARNING_SUMMARY_FIELDS).toContain('language');
   });
 
-  it('어휘 정본이 없는 언어에서는 줄 자체가 없다 — 빈 칸이 남으면 고장으로 읽힌다', () => {
-    expect(card).toContain('{knownWordsLang(goalLang) && (');
+  it('레벨 목록이 없는 언어는 빈 막대 대신 한 줄 안내 — 빈 칸이 남으면 고장으로 읽힌다', () => {
+    expect(card).toContain('이 언어의 레벨 목록은 준비 중이에요');
   });
 });
+

@@ -6,6 +6,7 @@ import { useAuth } from '../lib/AuthContext';
 import { LEVELS } from '../lib/constants';
 import { syncAuthDisplayName } from '../lib/authDisplayName';
 import Button from './Button';
+import { failureMessage } from '../lib/errorMessage';
 
 export default function OnboardingModal() {
   const { user, profile, fetchProfile } = useAuth();
@@ -30,7 +31,7 @@ export default function OnboardingModal() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!displayName.trim()) { setError('닉네임을 입력해주세요.'); return; }
+    if (!displayName.trim()) { setError('닉네임을 입력해 주세요.'); return; }
     setSaving(true);
     setError('');
 
@@ -53,7 +54,7 @@ export default function OnboardingModal() {
     }
 
     if (err) {
-      setError('저장 실패: ' + err.message);
+      setError(failureMessage('프로필을 저장하지 못했어요.', err));
       setSaving(false);
       return;
     }
@@ -66,7 +67,7 @@ export default function OnboardingModal() {
       <div className="onboarding-modal">
         <div className="onboarding-modal__header">
           <h2 className="onboarding-modal__title">manabi에 오신 걸 환영해요!</h2>
-          <p className="onboarding-modal__sub">학습 시작 전에 몇 가지만 알려주세요.</p>
+          <p className="onboarding-modal__sub">학습 시작 전에 몇 가지만 알려 주세요.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="onboarding-modal__body">
@@ -197,7 +198,7 @@ export default function OnboardingModal() {
           {error && <p style={{ color: 'var(--danger)', fontSize: '0.85rem' }}>{error}</p>}
 
           <Button type="submit" size="lg" disabled={saving} style={{ width: '100%', marginTop: '8px' }}>
-            {saving ? '저장 중...' : '시작하기'}
+            {saving ? '저장 중…' : '시작하기'}
           </Button>
         </form>
       </div>

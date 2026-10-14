@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { wordStage } from '../lib/growthStats';
-import { vocabularyRetrievability } from '../lib/vocabularyLearningRead';
-import { vocabularyReviewCalendar } from '../lib/vocabularyLearningRows';
+import { memoryHealth } from '../lib/memoryHealth';
 import { LEVELS, detectLang, langNameKo, profileLevel } from '../lib/constants';
+import { langTag } from '../components/vocab/ReviewCardParts';
 
 /**
  * 급수별 누적 어휘 목표. 값은 우리가 정하는 게 아니라 **각 시험의 공표 수치**를 따른다
@@ -87,9 +87,9 @@ function LangTabs({ activeLangs, current, onChange }) {
 // section prop: undefined = 전체, 'levels' = 진행도+커버리지, 'memory' = 기억건강+스케줄, 'hardwords' = 요주의
 export default function VocabStats({ vocab, profile, section, projections = [], learningAvailable = false, now = new Date() }) {
   const learningById = new Map(projections.map(row => [row.vocabulary.id, row]));
-  const evaluatedAt = Math.max(new Date(now).getTime(), ...projections.map(row => Date.parse(row.review.evaluatedAt)));
   const hardWords = projections.filter(row => row.memory.lapses >= 2).sort((a, b) => b.memory.lapses - a.memory.lapses || (a.memory.stability ?? Infinity) - (b.memory.stability ?? Infinity)).slice(0, 5);
-  const calendar = learningAvailable ? vocabularyReviewCalendar(projections, evaluatedAt) : [];
+  const health = memoryHealth(projections, now, { learningAvailable });
+  const calendar = health.calendar;
   const maxCount = Math.max(1, ...calendar.map(day => day.count));
   const profileLangs = profile?.learning_language || [];
   // 언어 목록은 정본(`LEVELS`)에서 나온다 — 지역 목록을 또 만들면 언어가 늘 때마다 갈린다
@@ -113,7 +113,7 @@ export default function VocabStats({ vocab, profile, section, projections = [], 
         const meta = LANG_META[effLevelLang];
         const langVocab = getLangVocab(vocab, effLevelLang);
         const total = langVocab.length;
-        const mastered = learningAvailable ? langVocab.filter(v => learningById.has(v.id) && wordStage(learningById.get(v.id)).key === 'mastered').length : null;
+        const mastered = learningAvailable ? langVocab.filter(v => learningById.has(v.id) && wordStage(learningById.get(v.id)).key === 'mature').length : null;
         // 컬럼 선택은 정본으로 — 삼항 체인은 언어가 늘 때마다 마지막 가지가 오답이 된다.
         const { level: targetLevel, count: targetCount } =
           targetOf(effLevelLang, profileLevel(profile, effLevelLang) || meta.defaultTarget);
@@ -141,7 +141,7 @@ export default function VocabStats({ vocab, profile, section, projections = [], 
             {/* 커버리지 차트 */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
               <h3 style={{ fontSize: '1rem', margin: 0 }}>{meta.coverageTitle}</h3>
-              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>수집 {total} · 숙련 {mastered ?? '—'}</span>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>수집 {total} · 익숙 {mastered ?? '—'}</span>
             </div>
             <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end', height: 100, padding: '4px 0' }}>
               {levels.map(([label, t]) => {
@@ -164,7 +164,7 @@ export default function VocabStats({ vocab, profile, section, projections = [], 
             </div>
             <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: 6, display: 'flex', gap: 12 }}>
               <span><span style={{ display: 'inline-block', width: 8, height: 8, background: 'var(--primary)', borderRadius: 2, marginRight: 3 }} />수집</span>
-              <span><span style={{ display: 'inline-block', width: 8, height: 8, background: 'var(--accent)', borderRadius: 2, marginRight: 3 }} />숙련</span>
+              <span><span style={{ display: 'inline-block', width: 8, height: 8, background: 'var(--accent)', borderRadius: 2, marginRight: 3 }} />익숙</span>
             </div>
           </div>
         );
@@ -177,7 +177,7 @@ export default function VocabStats({ vocab, profile, section, projections = [], 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {hardWords.map(({ vocabulary: v, memory }) => (
                 <div key={v.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontWeight: 700, fontSize: '0.95rem', minWidth: 70 }}>{v.word_text}</span>
+                  <span style={{ fontWeight: 700, fontSize: '0.95rem', minWidth: 70 }} lang={langTag(v)}>{v.word_text}</span>
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.meaning}</span>
                   <span style={{
                     fontSize: '0.75rem', fontWeight: 600,
@@ -194,20 +194,7 @@ export default function VocabStats({ vocab, profile, section, projections = [], 
 
       {/* 기억 건강 리포트 */}
       {showMemory && vocab.length > 0 && (() => {
-        const retentionBuckets = { high: 0, mid: 0, low: 0, forgotten: 0 };
-        let totalRetention = 0;
-        let measuredCount = 0;
-        if (learningAvailable) projections.forEach(projection => {
-          const retention = vocabularyRetrievability(projection, evaluatedAt);
-          if (retention == null) return;
-          measuredCount++;
-          totalRetention += retention;
-          if (retention >= 0.9) retentionBuckets.high++;
-          else if (retention >= 0.7) retentionBuckets.mid++;
-          else if (retention >= 0.4) retentionBuckets.low++;
-          else retentionBuckets.forgotten++;
-        });
-        const avgRetention = measuredCount ? Math.round((totalRetention / measuredCount) * 100) : null;
+        const { buckets: retentionBuckets, measured: measuredCount, avgRetention } = health;
         return (
           <div className="card" >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>

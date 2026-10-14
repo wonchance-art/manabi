@@ -24,11 +24,16 @@ import { groupByPdf, pageRangeLabel, readProgressLabel } from '../lib/pdfGroups'
 import { useGroupReadIds } from '../lib/useGroupReadIds';
 import { LEVELS, langNameKo, levelRank, profileLevel, isWriteMaterial } from '../lib/constants';
 import { canReadSuggestion, suggestionHref, suggestionSource } from '../lib/suggestionReading';
+import { encounterLookupLang } from '../lib/refVocabLookup';
 import { isLibraryNote, materialLibraryFilters } from '../lib/libraryDiscovery';
 import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
 import MaterialGroupCard from '../components/MaterialGroupCard';
+import LiteratureCover from '../components/books/LiteratureCover';
+import { literatureWorkOfBook } from '../lib/literatureCanonical';
+import { literatureChapterLabel, literatureDivisionLabel } from '../lib/literatureDisplay';
 import SuggestionArtwork from '../components/SuggestionArtwork';
+import { failureMessage } from '@/lib/errorMessage';
 
 
 async function fetchTodaySuggestions() {
@@ -54,7 +59,7 @@ function SuggestionCard({ suggestion: s, router }) {
           <span className="suggestion-card__source">{s.channel_name}</span>
           {canStudy && <span className="suggestion-card__ready">✓ 바로 읽기</span>}
         </div>
-        <h3 className="suggestion-card__title">{s.title}</h3>
+        <h3 className="suggestion-card__title" lang={encounterLookupLang(s.language) || undefined}>{s.title}</h3>
         <div className="suggestion-card__actions">
           {canStudy ? <button className="btn btn--primary btn--sm" onClick={handleStudy}>바로 읽기</button>
             : source.url ? <a className="btn btn--sm" href={source.url} target="_blank" rel="noopener noreferrer">{source.label} ↗</a>
@@ -157,13 +162,13 @@ export default function MaterialsPage({ libraryView = null }) {
     mutationFn: async (id) => {
       const target = await currentLibraryTarget(supabase,{target_kind:'material',target_id:String(id)});
       const result = await runLibraryOperation(supabase,'trash',[target]);
-      if(result.items.some(item=>item.status!=='success'))throw new Error('자료가 변경됐습니다. 다시 확인해 주세요.');
+      if(result.items.some(item=>item.status!=='success'))throw new Error('자료가 바뀌었어요. 다시 확인해 주세요.');
     },
     onSuccess: () => {
       invalidateLibrary(queryClient,user.id);
-      toast('휴지통으로 옮겼습니다.', 'success');
+      toast('자료를 휴지통으로 옮겼어요.', 'success');
     },
-    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
+    onError: (err) => toast(failureMessage('휴지통으로 옮기지 못했어요.', err), 'error'),
   });
 
   const toggleVisibilityMutation = useMutation({
@@ -176,9 +181,9 @@ export default function MaterialsPage({ libraryView = null }) {
     },
     onSuccess: (_, { newVisibility }) => {
       queryClient.invalidateQueries({ queryKey: ['materials'] });
-      toast(newVisibility === 'public' ? '공용으로 공개했습니다.' : '비공개로 전환했습니다.', 'success');
+      toast(newVisibility === 'public' ? '공용으로 공개했어요.' : '비공개로 바꿨어요.', 'success');
     },
-    onError: (err) => toast('변경 실패: ' + err.message, 'error'),
+    onError: (err) => toast(failureMessage('공개 범위를 바꾸지 못했어요.', err), 'error'),
   });
   const searchParams = useSearchParams();
   // 기본 탭(v2-P, 오너 지시 「내 자료가 먼저」) — 로그인 `private` / 비로그인 `public`.
@@ -250,7 +255,7 @@ export default function MaterialsPage({ libraryView = null }) {
       setPinnedIds((prev) => new Set(prev).add(id));
       toast('받아뒀어요 — 연결이 없어도 열립니다.', 'success');
     } catch {
-      toast('받아두지 못했어요. 연결을 확인해주세요.', 'error');
+      toast('받아 두지 못했어요. 연결을 확인해 주세요.', 'error');
     } finally {
       setPinBusy(null);
     }
@@ -543,7 +548,7 @@ export default function MaterialsPage({ libraryView = null }) {
           <span className="search-wrap__icon" />
           <input
             type="text"
-            placeholder="제목으로 자료 찾기..."
+            placeholder="제목으로 자료 찾기…"
             id="library-search" aria-label="자료 제목 검색" maxLength={120} value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
             className="search-wrap__input"
@@ -640,15 +645,15 @@ export default function MaterialsPage({ libraryView = null }) {
         )}
       </div>
 
-      {dueVocabError && <div className="library-query-state" role="alert">표현을 불러오지 못했어요. <button type="button" onClick={() => refetchDueVocab()}>다시 불러오기</button></div>}
-      {progressError && <div className="library-query-state" role="alert">읽음 기록을 불러오지 못했어요. <button type="button" onClick={() => refetchProgress()}>다시 불러오기</button></div>}
-      {showPdfs && pdfsError && <div className="library-query-state" role="alert">PDF 목록을 불러오지 못했어요. <button type="button" onClick={() => refetchPdfs()}>다시 불러오기</button></div>}
+      {dueVocabError && <div className="library-query-state" role="alert">표현을 불러오지 못했어요. <button type="button" onClick={() => refetchDueVocab()}>다시 시도</button></div>}
+      {progressError && <div className="library-query-state" role="alert">읽음 기록을 불러오지 못했어요. <button type="button" onClick={() => refetchProgress()}>다시 시도</button></div>}
+      {showPdfs && pdfsError && <div className="library-query-state" role="alert">PDF 목록을 불러오지 못했어요. <button type="button" onClick={() => refetchPdfs()}>다시 시도</button></div>}
       {showPdfs && pdfsLoading && <p role="status">PDF 목록 확인 중…</p>}
       {(!tab || isLoading) ? (
         <CardGridSkeleton />
       ) : materialsError ? (
         <div className="empty-state">
-          <p className="empty-state__msg">자료 목록을 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.</p>
+          <p className="empty-state__msg">자료 목록을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.</p>
           <button type="button" className="btn btn--primary btn--md" onClick={() => refetchMaterials()}>다시 시도</button>
         </div>
       ) : (filtered.length > 0 || visiblePdfs.length > 0) ? (
@@ -667,6 +672,7 @@ export default function MaterialsPage({ libraryView = null }) {
             // PDF 묶음(v2-P)은 그 다음 — 손으로 매긴 `metadata.book`이 자동 파생인
             // `source_pdf_id`를 이기도록 **호출 순서로** 우선순위를 세운다.
             const { books, singles: bookless } = groupByBook(filtered);
+            const contentLangOf = (c) => (c ? encounterLookupLang(documentOf(c)?.language ?? c.processed_json?.metadata?.language) || undefined : undefined);
             const { groups: pdfGroupsHere, rest: singles } = groupByPdf(bookless, visiblePdfs);
             const bookCards = books.map((b) => {
               const analyzed = b.chapters.filter((c) => ['completed', 'partial'].includes(c.processed_json?.status)).length;
@@ -675,22 +681,45 @@ export default function MaterialsPage({ libraryView = null }) {
               // 책 단위 커버리지(R2) — 챕터 types 합집합. 어휘 교재의 진짜 지표는 챕터별 배지가
               // 아니라 "책 전체 단어 중 몇 개를 아는가"다. 표본 미달·게스트·미분석은 무표기.
               const bf = savedFitIndex ? bookFit(b.chapters, savedFitIndex) : null;
+              const pendingNote = pendingCount > 0 ? ` · 분석 전 ${pendingCount}` : '';
+              // 정본 문학책(AOZORA-P0-5) — 타이포그래피 표지 + 작가 목차(一·二) / 나눈 위치(1/2) + 장 첫 문장. 교재의 「과」를 쓰지 않는다.
+              const work = literatureWorkOfBook(b);
+              const chapterOf = (c) => work?.chapters.find((item) => item.order === c._bookOrder);
+              // 장 표지 — 작가 見出し(一·二)는 일본어로, 「1/2」는 날짜로 읽히지 않게 화면 읽기용 「2부분 중 1」을 따로 둔다.
+              const literatureLead = (order) => {
+                const label = literatureChapterLabel(work, order);
+                if (work.division === 'heading') return <span lang="ja">{label}</span>;
+                if (work.division === 'whole') return label;
+                return <><span aria-hidden="true">{label}</span><span className="group-card__sr">{`${work.total}부분 중 ${order}`}</span></>;
+              };
+              // 묶음 카드는 한 자리에서만 그린다(계약 ③) — 정본 문학책은 props만 다르다.
+              const literatureProps = work ? {
+                art: <LiteratureCover work={work} />,
+                title: <><span lang="ja">{work.title}</span> <small className="group-card__reading" lang="ja">{work.display?.titleReading}</small></>,
+                subtitle: [work.display?.titleKo, work.display?.authorKo, work.literature?.publishedYear && `${work.literature.publishedYear}년 발표`].filter(Boolean).join(' · '),
+                // 레벨·분량이 고를 때 먼저 보는 정보(에디터 검토) — 그다음 나눈 방식·읽음
+                meta: [work.level, work.chars && `${work.chars.toLocaleString()}자`, literatureDivisionLabel(work), `읽음 ${readDone}/${b.chapters.length}`].filter(Boolean).join(' · ') + pendingNote,
+                fitLine: fitLineOf(bf, '장'),
+              } : null;
               return (
                 <MaterialGroupCard
                   key={b.key}
                   icon="📖"
                   title={b.title || '제목 없는 책'}
-                  meta={`챕터 ${b.chapters.length} · 읽음 ${readDone}/${b.chapters.length}${pendingCount > 0 ? ` · 분석 전 ${pendingCount}` : ''}`}
+                  lang={b.title ? contentLangOf(b.chapters[0]) : undefined}
+                  meta={`챕터 ${b.chapters.length} · 읽음 ${readDone}/${b.chapters.length}${pendingNote}`}
                   fitLine={fitLineOf(bf, '과')}
+                  {...literatureProps}
                   rows={b.chapters.map((c) => ({
                     key: c.id,
                     onClick: () => openReader(`/viewer/${c.id}`),
-                    lead: c._bookOrder,
-                    title: c.title.includes(' — ') ? c.title.split(' — ').slice(1).join(' — ') : c.title,
+                    lead: work ? literatureLead(c._bookOrder) : c._bookOrder,
+                    title: work ? <span lang="ja">{chapterOf(c)?.incipit || c.title}</span>
+                      : c.title.includes(' — ') ? c.title.split(' — ').slice(1).join(' — ') : c.title,
                     right: chapterTags(c),
                   }))}
                   // 이어 적기(#1077 5520128974) — 내 책에만 「다음 과 적기」(PDF 카드 「이어 읽기」와 같은 자리)
-                  footer={b.chapters[0]?.owner_id === user?.id ? (
+                  footer={!work && b.chapters[0]?.owner_id === user?.id ? (
                     <Link href={`/materials/add?book=${encodeURIComponent(b.key)}`} className="btn btn--secondary btn--sm">+ 다음 과 적기</Link>
                   ) : null}
                 />
@@ -710,6 +739,7 @@ export default function MaterialsPage({ libraryView = null }) {
                   key={g.key}
                   icon="📕"
                   title={g.pdf.title}
+                  lang={contentLangOf(g.chapters[0])}
                   meta={[
                     `PDF ${g.pdf.page_count}쪽`,
                     progress,
@@ -797,7 +827,7 @@ export default function MaterialsPage({ libraryView = null }) {
                 title={previewText || undefined}
               >
                 <div className="mat-card__head">
-                  <h3 className="card__title">
+                  <h3 className="card__title" lang={encounterLookupLang(language) || undefined}>
                     <Link
                       href={readerHref(`/viewer/${m.id}`)}
                       style={{ color: 'inherit', textDecoration: 'none' }}
@@ -856,7 +886,8 @@ export default function MaterialsPage({ libraryView = null }) {
                             e.stopPropagation();
                             closeMenu(e);
                             setConfirmAction({
-                              message: `"${m.title}" 자료를 휴지통으로 옮길까요? 학습 기록은 남습니다.`,
+                              title: `"${m.title}" 자료를 휴지통으로 옮길까요?`,
+                              message: '학습 기록은 남아 있어요.',
                               onConfirm: () => { deleteMutation.mutate(m.id); setConfirmAction(null); },
                             });
                           }}
@@ -914,12 +945,12 @@ export default function MaterialsPage({ libraryView = null }) {
         <div className="empty-state">
           <p className="empty-state__msg">
             {anyFilter
-              ? '조건에 맞는 자료가 없습니다.'
+              ? '조건에 맞는 자료가 없어요.'
               : !user
                 ? '자료는 계정에 저장돼요.\n로그인하면 텍스트를 올려 해부하고 단어장에 모을 수 있어요.'
                 : tab === 'public'
-                  ? '아직 공유된 공용 자료가 없습니다.'
-                  : libraryView === 'notes' ? '아직 작성한 노트가 없습니다.' : '아직 보관된 개인 자료가 없습니다.'}
+                  ? '아직 공유된 공용 자료가 없어요.'
+                  : libraryView === 'notes' ? '아직 작성한 노트가 없어요.' : '아직 보관된 개인 자료가 없어요.'}
           </p>
           {/* 게스트에게 빈 목록만 보여 주지 않는다 — 왜 비어 있는지와 다음 행동을 함께 준다. */}
           {!user && !anyFilter ? (
@@ -968,9 +999,13 @@ export default function MaterialsPage({ libraryView = null }) {
         );
       })()}
 
+      {/* 휴지통 이동은 되돌릴 수 있다 — 질문 제목 + 「휴지통으로」(문구 표준 §2). 빨간 「삭제」는 영구 삭제만. */}
       <ConfirmModal
         open={!!confirmAction}
+        title={confirmAction?.title}
         message={confirmAction?.message}
+        confirmLabel="휴지통으로"
+        variant="primary"
         onConfirm={confirmAction?.onConfirm}
         onCancel={() => setConfirmAction(null)}
       />

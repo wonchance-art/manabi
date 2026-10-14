@@ -282,7 +282,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: baseR
       <nav style={{ marginBottom: 18 }} aria-label="브레드크럼">
         {/* 돌아가기는 네비 링크라 WCAG 2.5.8의 본문 인라인 예외를 못 받는다 — 실측 높이 16px을 24px로. */}
         <Link href={backHref} style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', minHeight: 24 }}>
-          ← {ref.flag} {ref.name} 강의 목록
+          ← {ref.name} 강의 목록
         </Link>
       </nav>
 

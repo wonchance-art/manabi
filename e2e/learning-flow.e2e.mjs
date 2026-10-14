@@ -657,6 +657,12 @@ test('writing: 초안과 체크리스트를 새로고침 뒤 복원하고 이어
 test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복습 큐에 반영한다', { timeout: config.timeout * 2 }, async () => {
   await runInFreshPage(async (page, context) => {
     const { session, storedWords, writes, writesByTable } = await mockAuthenticatedVocab(context, { role: 'admin' });
+    // 복습 카드는 펼칠 때(포인터) 소리를 자동 재생한다(REV-SCOPE-R1B-1 §3-3) — 합성 무음 음성으로 서버 음성 경로를 대신한다.
+    const speechRequests = [];
+    await context.route('**/api/tts**', route => {
+      speechRequests.push(new URL(route.request().url()).searchParams.get('text'));
+      return route.fulfill({ status: 200, contentType: 'audio/wav', body: Buffer.from('UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=', 'base64') });
+    });
     await page.goto('/french/vocab/a1', { waitUntil: 'domcontentloaded', timeout: config.timeout });
     await assertVisible(page.getByRole('heading', { name: 'A1 기초 어휘', exact: true }), 'French A1 vocabulary heading');
 
@@ -695,13 +701,19 @@ test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복�
       },
     );
 
-    await page.getByRole('link', { name: '복습', exact: true }).first().click();
-    await page.waitForURL('**/vocab', { timeout: config.timeout });
+    // 메뉴 셋(LEARN-HOME-AK-001): 복습은 메뉴에서 빠지고 배움의 단어 복습 칸으로 들어간다. 클라이언트 이동(캐시 재조회)은 그대로
+    // 거친다 — 배움 → 칸(범위 주소 = 칩 언어). 학습 언어가 없는 계정이라 칩은 담은 표현의 언어(프랑스어)다.
+    await page.getByRole('navigation', { name: '메인 내비게이션' }).getByRole('link', { name: '배움', exact: true }).click();
+    await page.waitForURL('**/home', { timeout: config.timeout });
+    const reviewTile = page.locator('a.learn-review[href="/vocab?lang=French"]');
+    await assertVisible(reviewTile, 'learn review tile scoped to the saved word language');
+    await reviewTile.click();
+    await page.waitForURL('**/vocab?lang=French', { timeout: config.timeout });
     assert.equal(new URL(page.url()).pathname, '/vocab');
     await assertVisible(page.getByRole('heading', { name: '복습', exact: true }), 'vocabulary review heading');
     await assertVisible(page.getByRole('button', { name: 'la famille — 가족 상세 열기', exact: true }), 'saved word in vocabulary list');
     // 카드는 총계 하나만 말하고, 분해는 버튼 라벨이 대신한다 — 같은 수를 두 번 적지 않는다.
-    await assertVisible(page.getByText('오늘 할 일', { exact: false }), 'todo kicker');
+    await assertVisible(page.getByText('이 범위에서 오늘', { exact: false }), 'scope kicker');
     assert.equal((await page.locator('.vocab-hero__num').textContent()).trim(), '1', 'hero total counts the one saved word');
     assert.equal(
       await page.getByText('복습 0', { exact: false }).count(),
@@ -715,12 +727,23 @@ test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복�
     // 진행은 카드 안 '남은 단어'에서 상단바 'n / m'으로 옮겼다 — 세션 화면은 문항만 남긴다.
     await assertVisible(page.getByRole('progressbar', { name: '복습 진행' }), 'session progress bar');
     await assertVisible(page.getByText('0 / 1', { exact: true }), 'one-word review queue');
+    // REV-SCOPE-R1B-1: 새 표현의 첫 등장은 채점 없는 「처음 보는 표현」 카드다(전부 보여 주고 「다음 →」). 일정 저장 없음.
+    await assertVisible(page.getByText('처음 보는 표현', { exact: true }), 'first-seen card heading');
+    await assertVisible(page.getByRole('heading', { name: 'la famille', exact: true }), 'saved word first-seen card');
+    await assertVisible(page.getByText('가족', { exact: true }), 'first-seen card shows the meaning');
+    await assertVisible(page.getByText('잠시 뒤 다시 물어볼게요', { exact: true }), 'first-seen card promise');
+    assert.equal(await page.getByRole('button', { name: /알맞음/ }).count(), 0, 'first-seen card has no grading');
+    await page.getByRole('button', { name: '다음 →', exact: true }).click();
+    // 같은 표현을 세션 안에서 다시 묻는다(예전 일정 카드 = 세션 내 재질문). 진행은 서로 다른 카드 수라 여전히 0 / 1.
+    await assertVisible(page.getByText('0 / 1', { exact: true }), 'distinct-card progress');
     // 첫 단어 하나로는 객관식 오답을 만들 수 없다. 표현을 보고 뜻을 떠올리는 카드로 시작한다.
     await assertVisible(page.getByRole('heading', { name: 'la famille', exact: true }), 'saved word review card');
     assert.equal(await page.getByRole('group', { name: '문맥에 맞는 뜻 고르기', exact: true }).count(), 0);
     assert.equal(await page.getByText('가족', { exact: true }).count(), 0, 'recall answer stays hidden');
-    await page.getByRole('button', { name: '정답 확인하기', exact: true }).click();
+    await page.getByRole('button', { name: /정답 확인하기/ }).click();
     await assertVisible(page.getByText('가족', { exact: true }), 'saved word review answer');
+    await assertVisible(page.getByText('뜻을 못 떠올렸다면 다시', { exact: false }), 'meaning-only grading guide for French');
+    assert.ok(speechRequests.includes('la famille'), 'revealing by pointer plays the expression once (sound on by default)');
 
     // ── 채점이 SRS 정본에 '올바른 컬럼명으로' 닿는지 ──
     // 한때 easeFactor(비존재 컬럼)를 보내고 repetitions를 빠뜨려, PostgREST가 UPDATE 전체를

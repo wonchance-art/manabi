@@ -7,6 +7,8 @@
 
 import { useEffect, useState } from 'react';
 
+// 항목의 level은 세트 파일 위치(옛 급수) — 중복 정리·정렬용이고 화면 급수가 아니다. 화면의 HSK 급수는
+// zhHskLevel.js(HSK 2026 표)가 정본이다(ZH-LEVEL-2026-001).
 const LEVEL_RANK = { H1: 1, H2: 2, H3: 3, H4: 4, H5: 5, H6: 6 }; // 그 외(LIFE 등) = 9
 
 /** 세트 배열 → word 인덱스. 중복 단어는 낮은 급수(먼저 배우는 쪽)가 이긴다. */
@@ -36,19 +38,23 @@ export function loadRefVocabIndex(language) {
     import('../content/chinese/vocab/h1').then((m) => ({ level: 'H1', mod: m })),
     import('../content/chinese/vocab/h1_hsk').then((m) => ({ level: 'H1', mod: m })),
     import('../content/chinese/vocab/h1_hsk30').then((m) => ({ level: 'H1', mod: m })),
+    import('../content/chinese/vocab/h1_hsk2026').then((m) => ({ level: 'H1', mod: m })),
     import('../content/chinese/vocab/h2').then((m) => ({ level: 'H2', mod: m })),
     import('../content/chinese/vocab/h2_hsk').then((m) => ({ level: 'H2', mod: m })),
     import('../content/chinese/vocab/h2_hsk30').then((m) => ({ level: 'H2', mod: m })),
     import('../content/chinese/vocab/h3').then((m) => ({ level: 'H3', mod: m })),
     import('../content/chinese/vocab/h3_hsk').then((m) => ({ level: 'H3', mod: m })),
     import('../content/chinese/vocab/h3_hsk30').then((m) => ({ level: 'H3', mod: m })),
+    import('../content/chinese/vocab/h3_hsk2026').then((m) => ({ level: 'H3', mod: m })),
     import('../content/chinese/vocab/h4').then((m) => ({ level: 'H4', mod: m })),
     import('../content/chinese/vocab/h4_hsk30').then((m) => ({ level: 'H4', mod: m })),
+    import('../content/chinese/vocab/h4_hsk2026').then((m) => ({ level: 'H4', mod: m })),
     import('../content/chinese/vocab/h4_hsk_a').then((m) => ({ level: 'H4', mod: m })),
     import('../content/chinese/vocab/h4_hsk_b').then((m) => ({ level: 'H4', mod: m })),
     import('../content/chinese/vocab/h4_hsk_c').then((m) => ({ level: 'H4', mod: m })),
     import('../content/chinese/vocab/h5').then((m) => ({ level: 'H5', mod: m })),
     import('../content/chinese/vocab/h5_hsk30').then((m) => ({ level: 'H5', mod: m })),
+    import('../content/chinese/vocab/h5_hsk2026').then((m) => ({ level: 'H5', mod: m })),
     import('../content/chinese/vocab/h5_hsk_a').then((m) => ({ level: 'H5', mod: m })),
     import('../content/chinese/vocab/h5_hsk_b').then((m) => ({ level: 'H5', mod: m })),
     import('../content/chinese/vocab/h5_hsk_c').then((m) => ({ level: 'H5', mod: m })),
@@ -57,6 +63,7 @@ export function loadRefVocabIndex(language) {
     import('../content/chinese/vocab/h5_hsk_f').then((m) => ({ level: 'H5', mod: m })),
     import('../content/chinese/vocab/h6').then((m) => ({ level: 'H6', mod: m })),
     import('../content/chinese/vocab/h6_hsk30').then((m) => ({ level: 'H6', mod: m })),
+    import('../content/chinese/vocab/h6_hsk2026').then((m) => ({ level: 'H6', mod: m })),
     import('../content/chinese/vocab/h6_hsk_a').then((m) => ({ level: 'H6', mod: m })),
     import('../content/chinese/vocab/h6_hsk_b').then((m) => ({ level: 'H6', mod: m })),
     import('../content/chinese/vocab/h6_hsk_c').then((m) => ({ level: 'H6', mod: m })),
@@ -65,12 +72,6 @@ export function loadRefVocabIndex(language) {
     import('../content/chinese/vocab/expansion').then((m) => ({ level: 'LIFE', mod: m })),
   ]).then(buildVocabIndex);
   return zhIndexPromise;
-}
-
-/** 급수 라벨 — H1~H6은 'HSK n', 그 외는 '생활'(expansion 등). */
-export function refLevelLabel(level) {
-  const m = /^H([1-6])$/.exec(level || '');
-  return m ? `HSK ${m[1]}` : level ? '생활' : null;
 }
 
 /** 인덱스 자체 훅(한자 창 같은 표제어 밖 조회용, AE-R4) — 같은 1회 로드 캐시를 쓴다. 미지원 언어·로딩 중은 null. */

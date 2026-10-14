@@ -1,0 +1,71 @@
+{
+  "id": "hiroshige-shono-hakuu",
+  "wikidata": "Q75090509",
+  "artist": "utagawa-hiroshige",
+  "title": {
+    "native": "東海道五拾三次之内 庄野 白雨",
+    "ko": "도카이도 53역참 — 쇼노의 소나기",
+    "reading": "とうかいどうごじゅうさんつぎのうち しょうの はくう"
+  },
+  "series": {
+    "native": "東海道五拾三次之内",
+    "ko": "도카이도 53역참"
+  },
+  "date": {
+    "text": "c. 1833/34",
+    "source": "aic",
+    "startYear": 1833,
+    "endYear": 1834,
+    "certainty": "circa"
+  },
+  "periods": [
+    "jp-edo"
+  ],
+  "medium": {
+    "native": "横大判　錦絵",
+    "ko": "가로 오반 니시키에(다색 목판화)"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-2949"
+    },
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/130691"
+    },
+    {
+      "place": "metropolitan-museum-of-art",
+      "role": "holding",
+      "url": "https://www.metmuseum.org/art/collection/search/36967"
+    },
+    {
+      "place": "shono-juku",
+      "role": "depicted"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-51489"
+    }
+  ],
+  "terms": [
+    "版元",
+    "夕立",
+    "臨場感"
+  ],
+  "lookFor": [
+    "비스듬한 빗줄기는 어떤 선으로 그어졌을까요?",
+    "비탈을 오르는 사람과 내려가는 사람을 찾아봐요.",
+    "뒤편 대숲은 몇 겹의 그림자로 나뉠까요?"
+  ],
+  "image": {
+    "source": "met",
+    "sourceId": "36967",
+    "alt": "세찬 소나기 속에서 가마꾼과 삿갓 쓴 길손들이 비탈길을 서둘러 오르내리고, 뒤편 대숲이 바람에 휘어 회색 그림자로 겹쳐 있다."
+  }
+}

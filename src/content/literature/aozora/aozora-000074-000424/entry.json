@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "personId": "000074",
+  "workId": "424",
+  "title": "檸檬",
+  "author": "梶井基次郎",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1925,
+  "authorDeathYear": 1932,
+  "level": "N1 심화",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000074/card424.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000074/files/424_ruby_19825.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "c1bf570b1852ad970329c35a671cc5dfeca623ac721d81518a0bb98701fdcf1d",
+  "textSha256": "55e18859cde3d25483fc4ea448924f9922e1bd1dc5bbf7c58970c636b69e8944",
+  "attribution": {
+    "author": "梶井基次郎",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-14",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR",
+      "US"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000074/card424.html"
+  },
+  "display": {
+    "titleReading": "れもん",
+    "titleKo": "레몬",
+    "authorKo": "가지이 모토지로",
+    "cover": "dove",
+    "motif": "lemon-books"
+  }
+}

@@ -6,6 +6,7 @@ import {libraryRpc} from '@/lib/libraryOperations';
 import {prepareChapterItems,splitChapterDraft,chapterError,validChapterOrder} from '@/lib/libraryBookChapters';
 import {LibraryDialog} from './LibraryCollections';
 import LibraryReaderLink from '@/components/web/LibraryReaderLink';
+import { friendlyToastMessage } from '@/lib/errorMessage';
 
 export default function LibraryChapterEditor({ownerId,bookKey,title,nextOrder,chapter=null,onClose,onSaved}) {
  const scope=`book-chapters:${bookKey}`;
@@ -49,7 +50,7 @@ export default function LibraryChapterEditor({ownerId,bookKey,title,nextOrder,ch
     saved=await libraryRpc(supabase,'library_book_set_order',{p_key:bookKey,p_id:chapter.id,p_order:Number(draft.order),p_expected:chapter.order});
    }else{
     let items;
-    try{items=draft.frozen||prepareChapterItems(draft);}catch(error){setFailure({message:error.message});return;}
+    try{items=draft.frozen||prepareChapterItems(draft);}catch(error){setFailure({message:friendlyToastMessage(error)});return;}
     const frozen={...draft,frozen:items};setDraft(frozen);await persist(frozen);
     const result=await libraryRpc(supabase,'library_book_add_chapters',{p_key:bookKey,p_request:draft.id,p_items:items});
     saved=result.items[0];
@@ -62,7 +63,7 @@ export default function LibraryChapterEditor({ownerId,bookKey,title,nextOrder,ch
   }finally{pending.current=false;setBusy(false);}
   if(saved)onSaved(saved.id);
  }
- function split(){try{const parts=splitChapterDraft(draft,lines);if(!parts.length||parts.length>50)throw new Error('한 번에 1~50과로 나눠 주세요.');update({parts});}catch(error){setFailure({message:error.message});}}
+ function split(){try{const parts=splitChapterDraft(draft,lines);if(!parts.length||parts.length>50)throw new Error('한 번에 1~50과로 나눠 주세요.');update({parts});}catch(error){setFailure({message:friendlyToastMessage(error)});}}
  const locked=!ready||busy||!!draft.frozen;
  return <LibraryDialog title={chapter?'과 번호 수정':'과 추가'} onClose={close}>
   <p className="shelf-chapter-book">{title}</p>
@@ -77,7 +78,7 @@ export default function LibraryChapterEditor({ownerId,bookKey,title,nextOrder,ch
    </fieldset>
    {draftError&&<p role="alert">이 기기에 초안을 보관하지 못했어요. 내용을 복사해 두세요.</p>}
    {failure&&<p role="alert">{failure.message}{failure.id&&<LibraryReaderLink href={`/viewer/${failure.id}`}> 열기</LibraryReaderLink>}</p>}
-   <div className="shelf-dialog-actions"><button type="button" disabled={busy} onClick={close}>취소</button><button type="submit" className="manabi-button" disabled={!ready||busy}>{busy?'저장 중…':draft.frozen?'다시 확인':chapter?'저장':'추가'}</button></div>
+   <div className="shelf-dialog-actions"><button type="button" disabled={busy} onClick={close}>취소</button><button type="submit" className="manabi-button" disabled={!ready||busy}>{busy?'저장 중…':draft.frozen?'다시 시도':chapter?'저장':'추가'}</button></div>
   </form>
  </LibraryDialog>;
 }

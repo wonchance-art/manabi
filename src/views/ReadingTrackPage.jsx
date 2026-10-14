@@ -166,7 +166,7 @@ function ReadingTrack({ track, user, selectedId }) {
   if (!track) {
     return (
       <div className="page-container" style={{ maxWidth: 720 }}>
-        <p style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>트랙을 불러올 수 없어요.</p>
+        <p style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>트랙을 불러오지 못했어요.</p>
       </div>
     );
   }
@@ -237,15 +237,20 @@ function ReadingTrack({ track, user, selectedId }) {
         <div className="page-container" style={{ maxWidth: 720 }}>
           <button type="button" className="chip" onClick={closeViewer} style={{ marginBottom: 12 }}>← 목록</button>
           <div className="card" style={{ padding: '28px 18px', textAlign: 'center' }}>
-            {!deniedGuest ? (
-              <>
+            {activePending ? (
+              // 서버 응답 전 — 로딩만. 재시도 버튼은 응답이 왔는데 상세가 없을 때만 띄운다(WALL-STATES-001 ⑤).
+              <p role="status" style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', margin: 0 }}>
+                글과 문항 불러오는 중…
+              </p>
+            ) : !deniedGuest ? (
+              <div role="alert">
                 <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', marginBottom: 14 }}>
-                  글과 문항을 불러오는 중이에요…
+                  글과 문항을 불러오지 못했어요.
                 </p>
                 <button type="button" className="btn btn--secondary btn--sm" onClick={() => router.refresh()}>
                   다시 시도
                 </button>
-              </>
+              </div>
             ) : (
               <>
                 <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', marginBottom: 14 }}>
@@ -279,7 +284,7 @@ function ReadingTrack({ track, user, selectedId }) {
             ) : isError ? (
               <>
                 <p style={{ fontSize: '0.92rem', color: 'var(--danger)', marginBottom: 14 }}>
-                  기록에 실패했어요. 다시 시도해 주세요.
+                  기록하지 못했어요. 다시 시도해 주세요.
                 </p>
                 <button type="button" className="btn btn--primary btn--md" onClick={retry}>다시 시도</button>
               </>

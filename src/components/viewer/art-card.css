@@ -1,0 +1,45 @@
+/* 작품 정보 카드(ART-P0-3) — 「그림 한 장 읽기」 큐레이션 책 장의 본문 위. 색은 뷰어 별칭(--reader-*)만 쓴다(docs/ui-conventions.md §1).
+   좁은 화면 접힘은 뷰포트 쿼리가 아니라 카드 자신의 @container로(§2 — 뷰포트 쿼리 총량 동결). 애니메이션 없음. */
+.viewer-layout .viewer-art-card {
+  container: art-card / inline-size;
+  margin: 0 0 6px; padding: 14px 16px;
+  border: 1px solid var(--reader-line); border-radius: 8px;
+  background: var(--reader-surface); color: var(--reader-ink);
+  font-size: 14px; line-height: 1.65;
+}
+/* 쪽 넘김(다단) 읽기에서 그림·캡션이 단 사이로 쪼개지지 않게. */
+.viewer-layout .viewer-art-card__figure {margin: 0 0 12px; break-inside: avoid;}
+/* 카탈로그 원본 크기(img width·height 속성)로 브라우저가 판형 비율의 자리를 미리 잡는다 — 늦게 떠도 본문이 밀리지 않고,
+   세로 판화도 높이 상한까지 크게 보인다(가로 폭에 맞춰 작아지지 않게). */
+.viewer-layout .viewer-art-card__img {
+  display: block; width: auto; max-width: 100%; height: auto; max-height: min(72svh, 520px);
+  margin-inline: auto; background: var(--reader-paper); border-radius: 4px;
+}
+/* 크기 정보가 없는 그림만 — 높이를 미리 정한 상자 안에 담는다(가로·세로 판형 모두 contain). */
+.viewer-layout .viewer-art-card__img--box {width: 100%; height: clamp(200px, 62cqi, 440px); max-height: none; object-fit: contain;}
+.viewer-layout .viewer-art-card__caption {margin-top: 6px; font-size: 12px; line-height: 1.5; color: var(--reader-muted); overflow-wrap: anywhere;}
+.viewer-layout .viewer-art-card__title {margin: 0 0 2px; font-size: 1.05rem; font-weight: 700; line-height: 1.5; color: var(--reader-ink); overflow-wrap: anywhere;}
+.viewer-layout .viewer-art-card__title-ko {font-weight: 500;}
+.viewer-layout .viewer-art-card__meta {margin: 0 0 10px; font-size: 13px; color: var(--reader-muted); overflow-wrap: anywhere;}
+.viewer-layout .viewer-art-card__facts {display: grid; gap: 4px; margin: 0;}
+.viewer-layout .viewer-art-card__fact {display: grid; grid-template-columns: 6.5em minmax(0, 1fr); gap: 8px; align-items: baseline;}
+.viewer-layout .viewer-art-card__fact dt {font-size: 12px; font-weight: 600; color: var(--reader-muted);}
+.viewer-layout .viewer-art-card__fact dd {margin: 0; min-width: 0; overflow-wrap: anywhere;}
+.viewer-layout .viewer-art-card :is(a, a:visited) {color: var(--reader-accent); text-decoration: underline; text-underline-offset: 3px;}
+.viewer-layout .viewer-art-card a:hover {color: var(--reader-ink);}
+/* 줄 안 링크의 누르는 자리를 44px 이상으로 — 위아래 안쪽 여백을 같은 바깥 음수 여백으로 상쇄해 줄 높이는 그대로.
+   카드 값 줄 14px×1.65 ≈ 23px + 11px×2 = 45px · 출처 줄 0.78rem×1.5 ≈ 19px + 13px×2 = 45px. */
+.viewer-layout .viewer-art-card__fact dd a {display: inline-block; padding-block: 11px; margin-block: -11px;}
+.viewer-layout .viewer-art-credit a {display: inline-block; padding-block: 13px; margin-block: -13px;}
+.viewer-layout .viewer-art-card__look {margin: 0; padding: 0; list-style: none;}
+.viewer-layout .viewer-art-card__num {color: var(--reader-muted);}
+.viewer-layout .viewer-art-card__about {margin-top: 4px;}
+.viewer-layout .viewer-art-card__about > summary {display: list-item; min-height: 44px; padding-block: 10px; line-height: 24px; cursor: pointer; font-size: 13px; color: var(--reader-muted);}
+.viewer-layout .viewer-art-card__about > p {margin: 0 0 4px; font-size: 13px; line-height: 1.7;}
+.viewer-layout .viewer-art-card :is(a, summary):focus-visible,
+.viewer-layout .viewer-art-credit a:focus-visible {outline: 2px solid var(--reader-accent); outline-offset: 2px; border-radius: 2px;}
+.viewer-layout .viewer-art-credit {margin-top: 0;}
+/* 폰 폭 — 라벨을 값 위로 올려 한 줄 폭을 값에 다 준다. */
+@container art-card (max-width: 420px) {
+  .viewer-layout .viewer-art-card__fact {grid-template-columns: minmax(0, 1fr); gap: 0;}
+}

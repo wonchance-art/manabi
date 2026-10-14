@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "personId": "000148",
+  "workId": "753",
+  "title": "文鳥",
+  "author": "夏目漱石",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1908,
+  "authorDeathYear": 1916,
+  "level": "N1 심화",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000148/card753.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000148/files/753_ruby_1701.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "0431a79f04f6dd57532476fa793ca77307fcb6c3b090fe6db5dbec11b8322812",
+  "textSha256": "250b0c2602dceef1d6ecd1404ad12287c3c800f19fcfb9fdd2a777b936b3480d",
+  "attribution": {
+    "author": "夏目漱石",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-14",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR",
+      "US"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000148/card753.html"
+  },
+  "display": {
+    "titleReading": "ぶんちょう",
+    "titleKo": "문조",
+    "authorKo": "나쓰메 소세키",
+    "cover": "cream",
+    "motif": "birdcage"
+  }
+}

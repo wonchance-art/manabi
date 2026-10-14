@@ -364,7 +364,7 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
               </Link>
             )}
             {passedNow && !next && (
-              <span className="fr-check__last">마지막 챕터까지 마쳤습니다.</span>
+              <span className="fr-check__last">마지막 챕터까지 마쳤어요.</span>
             )}
           </div>
           {passedNow && reviewLinks.length > 0 && (

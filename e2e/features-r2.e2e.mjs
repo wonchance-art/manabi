@@ -89,7 +89,7 @@ async function mockAccount(context, { material, reread = false, outputWords = fa
       else if (request.method() !== 'GET') known.add(request.postDataJSON().word_text);
       return reply(route, request.method() === 'GET' ? [...known].map((word_text) => ({ word_text })) : []);
     }
-    if (table === 'reading_progress' && reread && select.includes('reading_materials(title)')) {
+    if (table === 'reading_progress' && reread && select.includes('reading_materials(title')) {
       return reply(route, [{ material_id: 92001, is_completed: true, completed_at: '2026-07-01T00:00:00.000Z', reading_materials: { title: '오래된 E2E 읽기' } }]);
     }
     if (table === 'user_vocabulary' && outputWords && select.includes('last_reviewed_at')) {
