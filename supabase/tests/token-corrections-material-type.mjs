@@ -10,6 +10,9 @@ const require = createRequire(import.meta.url);
 const { PGlite } = require(process.env.PGLITE_MODULE || '@electric-sql/pglite');
 
 const original = await fs.readFile(new URL('../migrations/20260414000300_token_corrections.sql', import.meta.url), 'utf8');
+// 원래 파일은 2026-10-14에 uuid→bigint로 고쳤다. 운영 등 이미 옛 정의로 시도된 DB의 출발 상태를 재현하려고 옛 정의를 되살린다.
+const legacyOriginal = original.replace('material_id bigint NOT NULL', 'material_id uuid NOT NULL');
+assert.notEqual(legacyOriginal, original, '원래 파일의 material_id 정의가 바뀌면 이 재현도 고친다');
 const forward = await fs.readFile(new URL('../migrations/20261013150000_token_corrections_material_bigint.sql', import.meta.url), 'utf8');
 const owner = '10000000-0000-0000-0000-000000000001', other = '10000000-0000-0000-0000-000000000002';
 let checks = 0;
@@ -39,7 +42,7 @@ async function as(db, user) {
 // 클라이언트(boundaryEditFlow·correctTokenMutation)가 보내는 행과 같은 모양 — material_id는 숫자 자료 id.
 // 원래 정의는 외래 키도, 읽기 정책(m.id = material_id)도 uuid↔bigint로 만들 수 없다 — uuid 표가 운영에 있다면
 // 외래 키·읽기 정책 없이 손으로 만든 것뿐이다. 그 모양을 재현한다.
-const handMadeUuidTable = original.replace(/REFERENCES reading_materials\(id\) ON DELETE CASCADE/, '')
+const handMadeUuidTable = legacyOriginal.replace(/REFERENCES reading_materials\(id\) ON DELETE CASCADE/, '')
   .replace(/CREATE POLICY "Owner or author can view corrections"[\s\S]*?\);\n/, '');
 const insertHistory = (db, user, materialId) => db.query(`insert into public.token_corrections(material_id, token_id, user_id, before_value, after_value)
   values ($1, 'id_0_2', $2, '{"meaning":"옛 뜻"}', '{"meaning":"새 뜻"}')`, [materialId, user]);
@@ -61,10 +64,19 @@ async function assertWorking(db) {
 }
 
 try {
-  await check('수정 전 재현: 원래 마이그레이션은 bigint 자료 표에서 42804로 실패해 이력 표가 생기지 않는다', async () => {
+  await check('수정 전 재현: 옛 정의(uuid)는 bigint 자료 표에서 42804로 실패해 이력 표가 생기지 않는다', async () => {
     const db = await base();
-    await assert.rejects(db.exec(original), err => err.code === '42804');
+    await assert.rejects(db.exec(legacyOriginal), err => err.code === '42804');
     assert.equal((await rows(db, "select to_regclass('public.token_corrections') as r"))[0].r, null);
+  });
+
+  await check('새 DB 체인: 고친 원래 파일 → 정방향 마이그레이션 순서로 멈추지 않고 정상 동작한다', async () => {
+    const db = await base();
+    await db.exec(original);
+    assert.equal(await columnType(db), 'bigint');
+    await db.exec(forward);
+    assert.equal((await rows(db, "select count(*)::int as n from pg_policies where tablename = 'token_corrections'"))[0].n, 2);
+    await assertWorking(db);
   });
 
   await check('① 표 없음 → bigint로 만들고 이력 쓰기·읽기·RLS·연쇄 삭제가 동작한다', async () => {
