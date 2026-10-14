@@ -13,7 +13,9 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
 | `periods.json` | 시대(문화권별 라벨 + 연도 범위) | 우리 id(`jp-edo`) |
 | `artists.json` | 작가 — 이름(원어·한국어·읽기), 생몰년, **생애 요약(우리가 쓴 한국어, 400자 이하)** | Wikidata QID |
 | `places.json` | 장소 — 소장처·그림 속 장소·제작지, 좌표, 지역학 핀(`links.studiesPin`) | Wikidata QID |
-| `works.json` | 작품 — 제목, 날짜(원문 표기 + 연도 범위), 재료·기법, 장소(역할별), 해설, 핵심 용어 ≤3, 찾아볼 것 ≤3, 이미지 | Wikidata QID |
+| `works.json` | **생성물**(`node scripts/build-art.mjs`, 손으로 고치지 않는다) — 작품: 제목, 날짜(원문 표기 + 연도 범위), 재료·기법, 장소(역할별), 해설, 핵심 용어 ≤3, 찾아볼 것 ≤3, 이미지 | Wikidata QID |
+| `entries/<작품 id>.json` | 작품의 사람이 쓰는 필드 + 고른 출처 id(해설 `{language, source, sourceId}`, 그림 `{source, sourceId, alt}`). 순서는 `entries/order.json` | 작품 id |
+| `sources/<출처>/<id>.json` | 출처 원 응답 스냅샷 — `colbase/cobas-<번호>`·`aic/<id>`(해설 원문 HTML은 받은 그대로) · `images/<작품 id>`(그림 출처 기록 + `public/art` 파일 sha256·바이트·픽셀) | 출처 id |
 | `curations.json` | 큐레이션 — 작가·시대·주제 묶음(두 점 이상, 순서 있음) | 우리 id |
 
 ## 규칙 (계약 테스트가 강제)
@@ -69,17 +71,29 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
 - 「편집: 서식 기호만 지우고 글자는 그대로」 — ColBase 규약은 편집·가공 시 그 사실을 따로 적으라고 한다. 우리는 HTML 태그를 벗기고 줄바꿈을 맞출 뿐 낱말은 바꾸지 않지만, 그것도 적는다(화면에 「HTML」 같은 코드 말은 쓰지 않는다).
 - 발췌·번역은 하지 않는다(하면 「…를 바탕으로 발췌·번역」으로 표기를 바꿔야 한다). 1,500자를 넘는 해설은 자르지 않고 싣지 않는다.
 
-## 작품 추가 절차
+## 작품 추가 절차 (ART-AUTO-1 — 스냅샷 → entries → 빌드 → --check)
 
-1. 작품을 고르고 Wikidata에서 작품(P170 작가 일치)·작가·소장처·그림 속 장소 QID와 좌표를 확인한다.
-2. 해설 원문을 받는다 — `node scripts/fetch-art-description.mjs colbase cobas-<번호> [en]` 또는 `… aic <id>`.
-   출력의 `text`·`textSha256`·`sourceUrl`을 그대로 `works.json`에 넣는다. 응답 → text 변환은 `src/lib/artSource.js`의
-   `artSourceText` 하나뿐이다(태그 벗기기·엔티티 풀기·줄바꿈 맞추기 — 낱말·문장부호·문단 머리 전각 공백은 그대로).
-   해설이 붙은 레코드가 연작(부모)인지 낱장(자식)인지 확인해 `sourceUrl`을 해설이 실제로 붙은 레코드로 둔다.
-3. 작가 생애 요약·제목 한국어·이미지 대체 텍스트·핵심 용어(해설에 실제로 나오는 일본어)·찾아볼 것은 우리가 쓴다.
-4. `npm test`로 계약 통과를 확인한다. 출처 쪽 해설이 바뀌었는지는 `node scripts/fetch-art-description.mjs --verify`(네트워크)로 대조한다.
+`works.json`은 **생성물**이다. 해설 text·`textSha256`·`sourceUrl`·`credit`·`license`, 그림 `url`·`sourceUrl`·`license`·`credit`·`width`·`height`는
+`scripts/build-art.mjs`가 `sources/` 스냅샷에서 만든다. 크레딧·라이선스 문구는 `src/lib/artSource.js` 출처표(`ART_SOURCES`·`ART_IMAGE_SOURCES`) 한 곳뿐이다.
+`periods`·`artists`·`places`·`curations.json`은 아직 손으로 쓴다.
 
-**네트워크:** `colbase.nich.go.jp`·`jpsearch.go.jp`·`www.wikidata.org`·`query.wikidata.org`·`api.artic.edu`는 2026-10-14 클라우드 환경에서 열려 있다
+1. 작품을 고르고 Wikidata에서 작품(P170 작가 일치)·작가·소장처·그림 속 장소 QID와 좌표를 확인한다(장소·작가가 새로우면 `places.json`·`artists.json`에 더한다).
+   해설이 붙은 레코드가 연작(부모)인지 낱장(자식)인지 확인해, 해설이 실제로 붙은 레코드 id를 고른다.
+2. `entries/<작품 id>.json`을 쓰고 `entries/order.json`에 작품 id를 더한다 — 사람이 쓰는 필드(id·wikidata·artist·title·series·date·periods·medium·
+   places·terms·lookFor)와 고른 출처 id만 둔다. 해설은 `{"language": "ja", "source": "colbase", "sourceId": "cobas-<번호>"}`, 그림은
+   `{"source": "met", "sourceId": "<objectID>", "alt": "…"}`. 기계 필드를 entries에 쓰면 빌드가 실패한다(손으로 쓴 값이 소리 없이 무시되지 않게).
+3. 그림 파일을 `public/art/<작품 id>.jpg`에 둔다(받은 바이트 그대로 — 아래 「이미지」 규칙). 위키미디어 공용 그림은 공용 API가 요청 제한(429)이 잦아
+   `sources/images/<작품 id>.json`에 `record`(artist·title·date·holder·accession·license)·`sourceUrl`을 손으로 먼저 쓴다.
+4. 스냅샷을 받는다 — `NODE_USE_ENV_PROXY=1 node scripts/art/snapshot-sources.mjs --work <작품 id>`(네트워크, CI에는 걸지 않는다).
+   재팬서치·시카고 미술관 해설 응답과 메트 objects 기록을 결정적 직렬화(키 정렬·2칸·끝 개행)로 `sources/`에 쓰고, 그림 파일의 sha256·바이트·픽셀을 기록한다.
+   받은 날짜는 `fetchedAt`(KST). 받은 내용이 같으면 파일을 바꾸지 않는다. 응답 → text 변환은 `artSourceText` 하나뿐이다(태그 벗기기·엔티티 풀기·
+   줄바꿈 맞추기 — 낱말·문장부호·문단 머리 전각 공백은 그대로).
+5. `node scripts/build-art.mjs`로 `works.json`을 만들고 diff를 읽는다. 계약(길이·내부 메모·읽기 표시·용어가 해설에 있는지 등)을 어기면 빌드가 실패하고 아무것도 쓰지 않는다.
+6. `npm run check:art`(= prebuild의 `node scripts/build-art.mjs --check`)와 `npm test`. `--check`는 쓰지 않고, `works.json`이 entries·sources와 다르거나
+   그림 파일 sha256이 스냅샷과 다르거나 스냅샷이 없으면 실패한다. 출처 쪽 해설이 바뀌었는지는 스냅샷을 다시 받아(4) `works.json` diff로 본다
+   (`node scripts/fetch-art-description.mjs --verify`도 그대로 쓸 수 있다).
+
+**네트워크:** `colbase.nich.go.jp`·`jpsearch.go.jp`·`www.wikidata.org`·`query.wikidata.org`·`api.artic.edu`·`collectionapi.metmuseum.org`는 2026-10-14 클라우드 환경에서 열려 있다
 (Node `fetch`는 `NODE_USE_ENV_PROXY=1`). `www.artic.edu`(IIIF 이미지 호스트)는 닫혀 있어 이미지 URL의 200 응답은 Preview 브라우저 검수에서 확인한다.
 그림은 `public/art`의 자체 보관 파일만 쓴다(위 「이미지」 규칙). 파일을 못 불러오면 뷰어는 그림 칸과 찾아볼 것만 숨긴다.
 

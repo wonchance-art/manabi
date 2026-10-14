@@ -1,0 +1,75 @@
+{
+  "id": "hiroshige-asakusa-tanbo-torinomachi-mode",
+  "wikidata": "Q60176422",
+  "artist": "utagawa-hiroshige",
+  "title": {
+    "native": "名所江戸百景 浅草田甫 酉の町詣",
+    "ko": "명소 에도 100경 — 아사쿠사 논과 도리노마치 참배",
+    "reading": "めいしょえどひゃっけい あさくさたんぼ とりのまちもうで"
+  },
+  "series": {
+    "native": "名所江戸百景",
+    "ko": "명소 에도 100경"
+  },
+  "date": {
+    "text": "江戸時代・安政4年(1857)",
+    "source": "colbase",
+    "startYear": 1857,
+    "endYear": 1857,
+    "certainty": "exact"
+  },
+  "periods": [
+    "jp-edo"
+  ],
+  "medium": {
+    "native": "大判　錦絵",
+    "ko": "세로 오반 니시키에(다색 목판화)"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7392"
+    },
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/26534"
+    },
+    {
+      "place": "metropolitan-museum-of-art",
+      "role": "holding",
+      "url": "https://www.metmuseum.org/art/collection/search/36539"
+    },
+    {
+      "place": "otori-shrine-asakusa",
+      "role": "depicted"
+    },
+    {
+      "place": "mount-fuji",
+      "role": "depicted"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-55851"
+    }
+  ],
+  "terms": [
+    "格子窓",
+    "熊手",
+    "遠近感"
+  ],
+  "lookFor": [
+    "창턱에 앉은 흰 고양이는 어디를 바라보고 있을까요?",
+    "창밖 멀리 후지산과 줄지어 나는 새 떼를 찾아봐요.",
+    "방 왼쪽 아래 바닥에 놓인 작은 물건들을 찾아봐요."
+  ],
+  "image": {
+    "source": "met",
+    "sourceId": "36539",
+    "alt": "격자창 창턱에 흰 고양이가 앉아 창밖을 내다본다. 창 너머로 논과 마을이 펼쳐지고, 붉게 물든 지평선 위로 후지산과 줄지어 나는 새 떼가 보인다. 오른쪽 창턱에는 수건이 걸쳐 있다."
+  }
+}
