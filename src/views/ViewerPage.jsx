@@ -178,6 +178,9 @@ import { langNameKo, splitSentenceAroundWord, detectLang } from '../lib/constant
 import { attributionParts, literatureAttributionParts, materialSource } from '../lib/videoAttribution';
 import { isCanonicalLiteratureMaterial } from '../lib/literatureCanonical';
 import { useCanonicalLiterature } from '../lib/useCanonicalLiterature';
+import { isArtBookMaterial } from '../lib/artBook';
+import { useArtBookChapter } from '../lib/useArtBookChapter';
+import ViewerArtCard from '../components/viewer/ViewerArtCard';
 import { logReviewEvents } from '../lib/reviewEvents';
 
 // 공부 모드 지원 언어 키 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
@@ -329,6 +332,10 @@ export default function ViewerPage() {
   // 아오조라 정본 책 — 출처 줄은 정본 대조표와 원문 해시가 맞을 때만(가짜 크레딧 차단), 원문 수정은 막는다(AOZORA-P0-2).
   const canonicalLiterature = useCanonicalLiterature(material);
   const canonicalLiteratureLocked = isCanonicalLiteratureMaterial(material);
+  // 「그림 한 장 읽기」 큐레이션 책(ART-P0-3) — 작품 카드는 카탈로그 해시 대조를 통과한 장만, 원문 수정은 정본 책처럼 막는다.
+  // 아오조라 잠금과 따로 둔다: canonicalLiteratureLocked는 일본어 「뜻 확인 필요」 검수도 켜는데, 그건 큐레이션 책 범위가 아니다.
+  const artBookChapter = useArtBookChapter(material);
+  const artBookLocked = isArtBookMaterial(material);
   const [koreanSources, setKoreanSources] = useState({ scope: '', byToken: {} });
   const koreanSourceScope = useMemo(() => materialLang === 'Korean' ? JSON.stringify([id, material?.raw_text, material?.processed_json]) : '',
     [materialLang, id, material?.raw_text, material?.processed_json]);
@@ -691,6 +698,7 @@ export default function ViewerPage() {
   // ③ 원문 수정(오너 승인) — 소유자 전용, 저장 시 바뀐 줄만 재분석(sourceEdit.js 계획).
 
   const handleSourceEditSave = async (plan) => {
+    if (artBookLocked) return;
     if (composerOf(material) || canonicalLiteratureLocked) return;
     if (!plan || plan.noop) { setSourceEditOpen(false); return; }
     if (!plan.ok) { toast(plan.reason, 'error'); return; }
@@ -3753,6 +3761,10 @@ export default function ViewerPage() {
         </p>
       )}
 
+      {/* 「그림 한 장 읽기」 작품 정보 카드(ART-P0-3 목업) — 그림 · 제목 · 작가 · 소장 · 그림 속 장소 · 찾아볼 것, 그 아래 해설 출처 한 줄.
+          값은 카탈로그 해시 대조를 통과한 장(useArtBookChapter)에서만 온다 — 남의 공개 자료에 꾸며 넣은 provider 'art' metadata로는 생기지 않는다. */}
+      <ViewerArtCard chapter={artBookChapter} vt={vt} />
+
       {/* Reading Progress Bar */}
       {isDone && (
         <div className="viewer-progress-bar" aria-label={`읽기 진행률 ${readProgress}%`}>
@@ -3776,11 +3788,12 @@ export default function ViewerPage() {
                 <strong>{vt("부분 분석")}</strong>
                 <span>{vt("문단을 골라 분석해요")}</span>
               </button>
-              {!composerOf(material) && !canonicalLiteratureLocked && <button className="reanalyze-panel__item" onClick={() => { setReanalyzePanel(null); setSourceEditOpen(true); }}>
+              {!composerOf(material) && !artBookLocked && !canonicalLiteratureLocked && <button className="reanalyze-panel__item" onClick={() => { setReanalyzePanel(null); setSourceEditOpen(true); }}>
                 <strong>{vt("원문 수정")}</strong>
                 <span>{vt("텍스트를 고치면 바뀐 줄만 분석해요")}</span>
               </button>}
               {canonicalLiteratureLocked && <p className="reader-metadata">{vt("정본 책이라 원문은 고칠 수 없어요")} · {vt("단어 뜻·발음 교정과 다시 분석은 그대로 쓸 수 있어요")}</p>}
+              {artBookLocked && <p className="reader-metadata">{vt("정본 책이라 원문은 고칠 수 없어요")} · {vt("단어 뜻·발음 교정과 다시 분석은 그대로 쓸 수 있어요")}</p>}
             </div>
           )}
           {reanalyzePanel === 'confirm-full' && (

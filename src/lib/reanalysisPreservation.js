@@ -6,6 +6,7 @@ import { compactBoundaryText, readBoundaryEdits } from './boundaryEdits';
 import { reapplyKoreanBoundaries } from './koreanBoundarySplit';
 import { clearRubyLockOnCorrection } from './aozoraRuby';
 import { CANONICAL_LITERATURE_EDIT_BLOCKED, isCanonicalLiteratureMaterial } from './literatureCanonical';
+import { isArtBookMaterial } from './artBook';
 
 const tokenLine = id => analysisTokenLine(id) ?? NaN;
 
@@ -238,7 +239,8 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
   const rawText = options.rawTextOverride ?? material.raw_text;
   if (!rawText?.trim()) throw new Error('원본 텍스트가 없어요.');
   // 정본 책(아오조라) 원문은 저자 루비 잠금·출처 대조의 기준이다 — 원문 수정(뷰어·책 정제 공용 경로)을 여기서 막는다.
-  if (rawText !== material.raw_text && isCanonicalLiteratureMaterial(material)) throw new Error(CANONICAL_LITERATURE_EDIT_BLOCKED);
+  // 큐레이션 책(ART-P0-3) 원문도 카탈로그 해시가 기준이라(바뀌면 작품 카드·출처가 사라진다) 같은 자리에서 막는다.
+  if (rawText !== material.raw_text && (isCanonicalLiteratureMaterial(material) || isArtBookMaterial(material))) throw new Error(CANONICAL_LITERATURE_EDIT_BLOCKED);
   const checkAbort = () => { if (signal.aborted) throw new DOMException('Aborted', 'AbortError'); };
   checkAbort();
   const original = options.baseJsonOverride || material.processed_json;
