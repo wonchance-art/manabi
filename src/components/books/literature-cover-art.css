@@ -1,21 +1,22 @@
-/* 정본 문학책 표지 그림(LiteratureCoverArt) — 표지 바탕 위·제목 아래 층. 색은 여기서만 정한다.
-   흰 톤은 제목과 같은 --sheet를 농도로만 나누고, 짙은 톤은 --ink, 강조색은 모티프마다 하나(--art-accent).
-   왼쪽 4px은 책등 그림자 자리라 잘라 낸다. 제목·아래 선은 literature-cover.css에서 z-index:1로 위에 선다. */
-.lit-art{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;clip-path:inset(0 0 0 4px);color:var(--sheet);--art-accent:var(--sheet)}
-.lit-art__hi{color:var(--sheet);opacity:.92}
-.lit-art__mid{color:var(--sheet);opacity:.45}
-.lit-art__lo{color:var(--sheet);opacity:.22}
-.lit-art__faint{color:var(--sheet);opacity:.1}
-.lit-art__deep{color:var(--ink);opacity:.32}
-.lit-art__accent{color:var(--art-accent)}
-.lit-art__glow{color:var(--art-accent);opacity:.22}
-/* 手袋を買いに — 차가운 눈밤의 단 하나 따뜻한 불: 마을 등불 */
-.lit-art--snow-night{--art-accent:#f2c66d}
-/* ごん狐 — 주홍 바탕 위에 더 밝은 꽃빛(톤 온 톤), 짙은 들판이 받쳐 준다 */
-.lit-art--higanbana{--art-accent:#f2664a}
-/* 注文の多い料理店 — 어둠 속 산고양이 눈 */
-.lit-art--forest-doors{--art-accent:#e3d36a}
-/* 鼻 — 수묵화의 낙관(붉은 도장) */
-.lit-art--ink-steam{--art-accent:#b8452e}
-/* 文鳥 — 흰 문조의 분홍 부리 */
-.lit-art--birdcage{--art-accent:#ec8f8a}
+/* 정본 문학책 표지 그림(LiteratureCoverArt) — 시대 장정의 재구성. 표지 바탕 위·글자 아래 층이고, 색은 여기서만 정한다.
+   모티프마다 판색 --p1…--p6을 정하고 도형은 lit-art__pN으로 고른다(옛 인쇄처럼 평평한 색면). __t = 종이결·천결 같은 바탕결(.1).
+   왼쪽 4px은 책등 그림자 자리라 잘라 낸다. 제목·작가·아래 선은 literature-cover.css에서 z-index:1로 위에 선다. */
+.lit-art{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;clip-path:inset(0 0 0 4px)}
+.lit-art__p1{color:var(--p1)}
+.lit-art__p2{color:var(--p2)}
+.lit-art__p3{color:var(--p3)}
+.lit-art__p4{color:var(--p4)}
+.lit-art__p5{color:var(--p5)}
+.lit-art__p6{color:var(--p6)}
+.lit-art__t{opacity:.1}
+.lit-art__glow{opacity:.3}
+/* 手袋を買いに — 쇼와 10년대 2도 인쇄: 쪽빛 바탕(표지색) · 따뜻한 노랑 · 눈은 종이색 */
+.lit-art--snow-night{--p1:#f2ead8;--p2:#f1c04c;--p3:var(--cover-color)}
+/* ごん狐 — 어린이 잡지 석판 다색: 미색 띠·테 · 노을 살구 · 먼 산 쑥색 · 들 올리브 · 꽃 빨강 · 여우 밤색 */
+.lit-art--higanbana{--p1:#f3e4c6;--p2:#efb48c;--p3:#93a07f;--p4:#5e6e4a;--p5:#cf3a24;--p6:#4a3124}
+/* 注文の多い料理店 — 자비 출판 활판 2–3도: 거친 미색 종이 선 · 황토 문·간판 · 짙은 숲 먹 · 산고양이 눈 */
+.lit-art--forest-doors{--p1:#ecdfbf;--p2:#c27a3a;--p3:#1d3326;--p4:#e8c54a}
+/* 鼻 — 다이쇼 문예서: 천 바탕 위 미색 題簽 · 가는 갈색 테 · 작은 붉은 인 · 천결(흰 .1) */
+.lit-art--ink-steam{--p1:#ebe3cf;--p2:#6a5b48;--p3:#a8402c;--p4:var(--sheet)}
+/* 文鳥 — 메이지 아르누보 세 판색: 鉄紺 · 金茶 · 生成り(바탕은 표지색, 새는 더 밝은 미색) */
+.lit-art--birdcage{--p1:#27324a;--p2:#a87a36;--p3:#f7f1e2}

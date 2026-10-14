@@ -136,7 +136,7 @@ NDL 디지털 컬렉션(保護期間満了) 대조가 남아 있다. 2028-01-01 
 - `translator`·`illustrator`는 키를 빼지 말고 `null`로 적는다(빠뜨림 = 미검토로 보고 공개하지 않는다).
 - `display`(AOZORA-P0-5)는 표지·카드 표기다. 원서 표지·삽화 이미지는 쓰지 않는다(IP 정책 §2.1 금지⑴) — 표지는 같은 틀에
   세로 제목과 작품 색만 바뀌는 타이포그래피 표지다. 빌드가 검사하고 대조표(`manifest.generated.json`)에 싣는다.
-  - `titleReading`은 가나만. `cover`는 팔레트 이름(`snow`·`vermilion`·`forest`·`ink`·`slate`, `literatureDisplay.js`) —
+  - `titleReading`은 가나만. `cover`는 팔레트 이름(`snow`·`vermilion`·`forest`·`ink`·`cream`, `literatureDisplay.js`) —
     작품 이미지에 맞춰 고르고 이미 쓴 색과 겹치지 않게 한다. 새 색이 필요하면 CSS와 팔레트를 함께 늘리고 흰 글자 대비 4.5:1 이상을 지킨다.
   - `motif`는 표지 문양(`LITERATURE_COVER_MOTIFS` — `LiteratureCoverArt`의 자작 SVG). 원서 표지·기존 삽화·알려진 캐릭터를
     옮기지 않는다. 새 작품은 그 작품 분위기의 새 문양을 같은 틀(오른쪽 위 제목 자리 비움 · 아래·왼쪽에 주제 · 색은 CSS)로 그려 더한다.

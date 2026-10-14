@@ -18,7 +18,7 @@ export default function LiteratureCover({ work }) {
   // 한 줄에 안 들어가는 제목만 둘째 줄을 아래에 붙인다(계단 배치 — 두 줄이 반반 떠서 아래가 비지 않게).
   const lines = titleLines(work);
   return (
-    <span className={`lit-cover lit-cover--${work.display.cover} ${serif.variable}`} aria-hidden="true">
+    <span className={`lit-cover lit-cover--${work.display.cover} ${serif.variable}`} data-motif={work.display.motif} aria-hidden="true">
       <LiteratureCoverArt motif={work.display.motif} />
       <span lang="ja" className={lines.length > 1 ? 'lit-cover__title lit-cover__title--stepped' : 'lit-cover__title'}>
         {lines.map((line) => <span key={line} className="lit-cover__line">{line}</span>)}

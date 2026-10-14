@@ -9,10 +9,10 @@
 // 이 모듈은 빌드(scripts/lib/literature-build.mjs)도 쓰므로 대조표를 import하지 않는다 — 작품 찾기는 literatureCanonical.literatureWork.
 
 /**
- * 표지 색 — 작품 이미지에서 고른 이름(눈·여우 주홍·숲·먹·회청). CSS `.lit-cover--<name>`이 값을 갖는다.
- * 앱 주색·일본어 서재 표지(로즈 #994a5a)와 같은 색상 계열은 피한다(디자이너 검토 — 매화색은 브랜드 강조로 읽혔다).
+ * 표지 바탕 — 작품과 그 시대 장정에서 고른 이름(쪽빛 눈밤·여우 주홍·숲·먹 천·메이지 生成り). CSS `.lit-cover--<name>`이
+ * 값을 갖는다. 앱 주색·일본어 서재 표지(로즈 #994a5a)와 같은 색상 계열은 피한다(디자이너 검토).
  */
-export const LITERATURE_COVER_COLORS = Object.freeze(['snow', 'vermilion', 'forest', 'ink', 'slate']);
+export const LITERATURE_COVER_COLORS = Object.freeze(['snow', 'vermilion', 'forest', 'ink', 'cream']);
 
 /**
  * 표지 그림(모티프) — 작품 분위기에서 고른 자작 SVG(LiteratureCoverArt). 원서 표지·삽화·알려진 캐릭터를 옮기지 않는다
