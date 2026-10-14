@@ -34,7 +34,8 @@ describe('정본 대조표(manifest.generated.json)', () => {
         .toEqual(item.chapters.map((chapter) => createHash('sha256').update(chapter.rawText, 'utf8').digest('hex')));
       expect(work.literature.provider).toBe('aozora');
       expect(work.literature).not.toHaveProperty('rubyLocks');
-      expect(JSON.stringify(work)).not.toContain(item.chapters[0].rawText.slice(0, 30));
+      // 장 첫 문장(incipit, 목차 줄 — AOZORA-P0-5)만 싣고 그 뒤 본문은 싣지 않는다
+      for (const chapter of item.chapters) expect(JSON.stringify(work)).not.toContain(chapter.rawText.slice(40, 80));
     }
   });
 

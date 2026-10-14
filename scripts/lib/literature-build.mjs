@@ -46,7 +46,7 @@ export function serializeIndex(keys) {
 }
 
 /**
- * 뷰어 정본 대조표 — 작품 키 → 크레딧(rubyLocks 제외) + 장마다 원문 SHA-256.
+ * 뷰어 정본 대조표 — 작품 키 → 크레딧(rubyLocks 제외) + 표지 표기(display·division) + 장마다 이름·첫 문장·원문 SHA-256.
  * 뷰어는 자료 metadata가 아니라 **이 표**로 출처 줄을 그리고, 자료 raw_text의 해시가 표와 같을 때만 그린다
  * (자료 소유자가 metadata.literature를 꾸며 넣어도 가짜 크레딧이 보이지 않는다).
  */
@@ -59,8 +59,12 @@ export function createManifest(drafts) {
       author: draft.book.author,
       level: draft.book.level,
       total: draft.book.total,
+      division: draft.book.division,
+      chars: draft.chapters.reduce((sum, chapter) => sum + chapter.rawText.length, 0), // 분량(카드 메타 — 책 고를 때 먼저 보는 정보)
+      display: draft.display, // 표지·한국어 제목(entry.json display — literatureDisplay)
       literature,
-      chapters: draft.chapters.map((chapter) => ({ order: chapter.order, title: chapter.title, sha256: sha256(Buffer.from(chapter.rawText, 'utf8')) })),
+      chapters: draft.chapters.map((chapter, index) => ({ order: chapter.order, title: chapter.title, incipit: draft.incipits[index],
+        sha256: sha256(Buffer.from(chapter.rawText, 'utf8')) })),
     };
   }
   return { schemaVersion: 1, works };
@@ -76,11 +80,12 @@ export function serializeChapters(draft) {
  * @returns {Promise<{works: Array<{key, chapters, status: 'written'|'unchanged'|'checked'}>, errors: string[]}>}
  */
 export async function buildLiterature({ root = LITERATURE_ROOT, check = false } = {}) {
-  const [{ createAozoraCatalog, aozoraWorkKey }, { parseAozoraText }, { createAozoraMaterialDraft }, { resolveReviewHints }] = await Promise.all([
+  const [{ createAozoraCatalog, aozoraWorkKey }, { parseAozoraText }, { createAozoraMaterialDraft }, { resolveReviewHints }, { validateLiteratureDisplay, literatureIncipit }] = await Promise.all([
     import('../../src/lib/aozoraCatalog.js'),
     import('../../src/lib/aozoraParser.js'),
     import('../../src/lib/aozoraMaterial.js'),
     import('../../src/lib/literatureReviewHints.js'),
+    import('../../src/lib/literatureDisplay.js'),
   ]);
   const errors = [];
   const works = [];
@@ -102,7 +107,8 @@ export async function buildLiterature({ root = LITERATURE_ROOT, check = false } 
       if (dir !== key) throw new Error(`폴더 이름은 작품 키 ${key}여야 한다`);
       if (sha256(sourceBytes) !== entry.textSha256) throw new Error(`${LITERATURE_FILES.source}의 SHA-256이 entry.textSha256과 다르다(원문이 바뀌었다)`);
       const review = has(LITERATURE_FILES.review) ? JSON.parse(readFileSync(path.join(base, LITERATURE_FILES.review), 'utf8')) : null;
-      loaded.push({ dir, base, entry, review, source: new TextDecoder('utf-8', { fatal: true }).decode(sourceBytes) });
+      const display = validateLiteratureDisplay(entry.display, entry.title); // 표지 표기(AOZORA-P0-5) — 없으면 그 작품은 쓰지 않는다
+      loaded.push({ dir, base, entry, review, display, source: new TextDecoder('utf-8', { fatal: true }).decode(sourceBytes) });
     } catch (error) {
       errors.push(`${dir}: ${error.message}`);
     }
@@ -133,7 +139,7 @@ export async function buildLiterature({ root = LITERATURE_ROOT, check = false } 
         if (current !== output) writeFileSync(target, output);
         works.push({ key: work.dir, chapters: draft.chapters.length, status: current === output ? 'unchanged' : 'written' });
       }
-      drafts.push(draft);
+      drafts.push({ ...draft, display: work.display, incipits: draft.chapters.map((chapter) => literatureIncipit(chapter.rawText)) });
     } catch (error) {
       errors.push(`${work.dir}: ${error.message}`);
     }

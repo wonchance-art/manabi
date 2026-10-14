@@ -99,9 +99,9 @@ describe('배선 계약 — 입구·등록·진입·완료', () => {
     expect(page).toContain('initialBookKey={appendBookKey}');
     const materials = read('src/views/MaterialsPage.jsx');
     expect(materials).toContain('href={`/materials/add?book=${encodeURIComponent(b.key)}`}');
-    expect(materials).toContain("footer={b.chapters[0]?.owner_id === user?.id ? (");
+    expect(materials).toContain("footer={!work && b.chapters[0]?.owner_id === user?.id ? ("); // 정본 문학책은 이어 적지 않는다(AOZORA-P0-5)
     const viewer = read('src/views/ViewerPage.jsx');
-    expect(viewer).toContain('canAppend: !!user?.id && material?.owner_id === user.id,');
+    expect(viewer).toContain('canAppend: !!user?.id && material?.owner_id === user.id && !literatureBook,');
     expect(viewer).toContain('href={`/materials/add?book=${encodeURIComponent(bookNav.key)}`}');
   });
 

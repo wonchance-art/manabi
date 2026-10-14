@@ -17,6 +17,17 @@ export function isCanonicalLiteratureMaterial(material) {
   return material?.processed_json?.metadata?.literature?.provider === 'aozora';
 }
 
+/** 책 key → 정본 대조표의 작품(표지·목차 표기 — literatureDisplay). 정본이 아니면 null. */
+export function literatureWork(key, works = manifest.works) {
+  return typeof key === 'string' && Object.hasOwn(works, key) ? works[key] : null;
+}
+
+/** 책 묶음(groupByBook) → 정본 작품. 첫 장이 아오조라 정본 자료이고 key가 대조표에 있을 때만(아니면 null — 일반 책 표기 그대로). */
+export function literatureWorkOfBook(book, works = manifest.works) {
+  const metadata = book?.chapters?.[0]?.processed_json?.metadata;
+  return metadata?.literature?.provider === 'aozora' ? literatureWork(book.key, works) : null;
+}
+
 /** 자료 metadata.book → 정본 대조표의 {work, chapter}. 표에 없는 작품·장이면 null. */
 export function canonicalLiteratureChapter(metadata, works = manifest.works) {
   if (metadata?.literature?.provider !== 'aozora') return null;
