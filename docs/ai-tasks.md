@@ -886,6 +886,9 @@
     DB 트리거 `protect_composer_source`가 raw_text 변경을 막아 턴 덧붙이기가 불가능. 비공개 고정·서재 묶음은 ③에서 이 표식으로 처리.
   · **Z-R1 ②(이 PR)**: 평가 묶음 `docs/verification/conversation-eval-20261014.json` 220사례(정치 유도 20·교정 3언어×(틀림20·맞음20)·다시 말하기 60·음성 동음 20)
     + 채점기 `scripts/eval/conversationEval.mjs`(제품 parse/정책/판정 함수 그대로) + 실행기 `run-conversation-eval.mjs`(CI 밖 수동 게이트, `--dry-run` 호출 0). 제품 코드 변화 = 서버 프롬프트·호출 함수 export뿐.
+- **레벨별 단어·문형 목록(AJ)·한자 탭(AL) (2026-10-13 KST~, 오너 「전부 다 승인함」)** `claude/project-thread-msb9j3`:
+  PR① HSK 2026 1~6급 빠진 584단어 채움(ZH-LEVEL-2026-001 ④ — 「HSK{n} 2026 보강」 주제, 계약 `zhHsk2026Fill.test.js`)
+  → PR② AJ 화면(#1435 위) → PR③ AL-1(#1433 병합 후) → PR④ AL-2. DB·환경 변수 변경 없음.
 - **수업 코스 「니혼고 42」 + 테스트 (2026-10-08 KST, 오너 지시 — 수업 페이지로 꺼내 암호 `culcom` 팀)** `claude/loving-bardeen-mkj3te`:
   팀 루트 `metadata.team.course` → 수업 홈 「코스」 탭 · Day 페이지(문화 카드·함께 읽고 연습·오늘의 패턴·예문 연습·응용 문장 번역해보기)
   · `/class/[team]/test`(전체 예문 10문제·8 합격·패턴 중복 0·Day당 1·비슷한 패턴 묶음당 1·난이도 3/4/3·시험지 번호 재현 / 연습 한↔일).
