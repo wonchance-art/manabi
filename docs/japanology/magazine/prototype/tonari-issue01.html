@@ -77,14 +77,15 @@ rt{font-size:.5em;font-family:var(--font-ja);color:var(--muted);line-height:1}
 .hashira .mast{font-family:var(--font-ja);color:var(--ink)}
 
 /* ── 1. 매거진 표지 ── */
-.cover{min-height:min(100svh, 980px);display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto 1fr;gap:24px 40px;padding-block:28px 40px}
-.masthead{grid-column:1 / -1;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px}
+.cover{min-height:min(100svh, 980px);display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto 1fr auto;grid-template-areas:"mast mast" "blurb word" "list word";gap:24px 40px;padding-block:28px 40px}
+.masthead{grid-area:mast;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px}
 .masthead .title{margin:0;font-family:var(--font-display);font-weight:700;font-size:clamp(1.75rem, 1.2rem + 2vw, 2.6rem);line-height:1.1;font-feature-settings:'palt'}
 .masthead .series{margin:0;font-size:15px;color:var(--muted)}
-.vword{writing-mode:vertical-rl;font-family:var(--font-display);font-weight:700;font-feature-settings:'vpal';line-height:1;letter-spacing:0;margin:0;color:var(--ink);font-size:clamp(4.25rem, min(26vw, 19svh), 12rem);justify-self:end;align-self:start;user-select:none}
-.cover .side{grid-column:1;grid-row:2;align-self:end;max-width:30rem}
-.cover .vword{grid-column:2;grid-row:2}
-.blurb{margin:0 0 28px;font-size:15px;line-height:1.7;color:var(--muted)}
+.vword{writing-mode:vertical-rl;font-family:var(--font-display);font-weight:700;font-feature-settings:'vpal';line-height:1.25;letter-spacing:0;margin:0;color:var(--ink);font-size:clamp(4.25rem, min(26vw, 19svh), 12rem);justify-self:end;align-self:start;user-select:none}
+.cover .vword{grid-area:word}
+.cover .blurb{grid-area:blurb;align-self:end}
+.cover .list{grid-area:list;max-width:30rem}
+.blurb{margin:0;font-size:15px;line-height:1.7;color:var(--muted)}
 .blurb strong{display:block;color:var(--ink);font-size:17px;font-weight:700}
 .issues{list-style:none;margin:0;padding:0;font-size:15px;line-height:1.5}
 .issues li{display:grid;grid-template-columns:2.6em minmax(0,1fr);gap:0 .5em;padding:5px 0}
@@ -124,8 +125,10 @@ details.note[open] summary .hint{display:none}
 details.note .inner{padding:4px 20px 12px 20px;font-size:16px}
 
 /* ── 3. 1호 표지(扉) ── */
-.icover{min-height:min(100svh, 940px);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px 48px;padding-block:28px 40px;align-items:stretch}
-.icover .meta{display:flex;flex-direction:column;justify-content:space-between;gap:32px}
+.icover{min-height:min(100svh, 940px);display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto 1fr;grid-template-areas:"ihead word" "toc word";gap:32px 48px;padding-block:28px 40px}
+.icover .ihead{grid-area:ihead}
+.icover nav{grid-area:toc;align-self:end}
+.icover .vword{grid-area:word;align-self:start}
 .icover .no{margin:0;font-size:15px;color:var(--muted)}
 .icover .no .mast{font-family:var(--font-ja);color:var(--ink)}
 .icover h1{font-size:clamp(2rem, 1.4rem + 2.4vw, 3rem);margin:.25em 0 .35em;font-feature-settings:'palt'}
@@ -138,7 +141,6 @@ details.note .inner{padding:4px 20px 12px 20px;font-size:16px}
 .toc a{display:inline-flex;align-items:center;min-height:44px;text-underline-offset:4px;text-decoration-thickness:1px}
 .toc .soon{font-size:12px}
 .toc-note{font-size:12px;color:var(--muted);margin:10px 0 0}
-.icover .vword{align-self:center}
 
 /* ── 4. 첫 장면 ── */
 .scene p{margin-bottom:1.4em}
@@ -166,7 +168,10 @@ details.note .inner{padding:4px 20px 12px 20px;font-size:16px}
   .body > *,.body > .aside{grid-column:1}
   .body > .aside{padding-top:0;margin-bottom:2px}
   .article{padding-block:28px 48px}
-  .icover{grid-template-columns:minmax(0,1fr) auto;gap:16px}
+  .cover{grid-template-areas:"mast mast" "blurb word" "list list";grid-template-rows:auto auto 1fr;min-height:0}
+  .cover .list{align-self:start}
+  .icover{grid-template-areas:"ihead word" "toc toc";grid-template-rows:auto auto;gap:28px 16px;min-height:0}
+  .head{margin-bottom:28px}
 }
 /* ── 작은 폰 ── */
 @media (max-width: 480px){
@@ -201,8 +206,8 @@ details.note .inner{padding:4px 20px 12px 20px;font-size:16px}
   </header>
   <h1 id="c0-h" class="sr-only">『<span lang="ja">となり</span>』 창간호 — <span lang="ja">となり</span></h1>
   <p class="vword" lang="ja" aria-hidden="true">となり</p>
-  <div class="side">
-    <p class="blurb"><strong>창간호의 단어, <span lang="ja">となり</span>(도나리)</strong>옆, 이웃이라는 뜻</p>
+  <p class="blurb"><strong>창간호의 단어, <span lang="ja">となり</span>(도나리)</strong>옆, 이웃이라는 뜻</p>
+  <div class="list">
     <h2 class="sr-only">여덟 개의 호</h2>
     <ol class="issues">
       <li class="now"><span class="n">0</span><span>창간사 <span lang="ja">はじめまして</span> 다음에<span class="tag">지금 이 호</span></span></li>
@@ -272,13 +277,13 @@ details.note .inner{padding:4px 20px 12px 20px;font-size:16px}
 <!-- ═════════ 화면 3 · 1호 표지(扉) ═════════ -->
 <p class="screen-label" aria-hidden="true">화면 3 · 1호 표지</p>
 <section class="screen icover" aria-labelledby="i1-h">
-  <div class="meta">
-    <div>
+    <div class="ihead">
       <p class="no"><span class="mast" lang="ja">『となり』</span> 1호</p>
       <h1 id="i1-h"><span class="sr-only"><span lang="ja">まち</span>(마치) — </span>땅과 동네</h1>
       <p class="sub">사람들이 어디에, 어떻게 모여 사는지.</p>
       <span class="chip">먼저 읽을 분 · 일본 여행 입문</span>
     </div>
+  <p class="vword" lang="ja" aria-hidden="true">まち</p>
     <nav aria-label="1호 차례">
       <ol class="toc">
         <li class="live"><span class="plate">01</span><a href="#s01">첫 장면 — 오후 다섯 시의 노래</a></li>
@@ -292,8 +297,6 @@ details.note .inner{padding:4px 20px 12px 20px;font-size:16px}
       </ol>
       <p class="toc-note">프로토타입에는 01만 있어요. 02–08은 원고 전.</p>
     </nav>
-  </div>
-  <p class="vword" lang="ja" aria-hidden="true">まち</p>
 </section>
 
 <!-- ═════════ 화면 4 · 01 첫 장면 ═════════ -->
