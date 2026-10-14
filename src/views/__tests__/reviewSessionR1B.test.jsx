@@ -36,6 +36,16 @@ describe('카드 앞뒤(§3-3) — 앞면 = 글자만, 뒷면 = 뜻 + 읽기 + �
       expect(html).toContain('review-grade-bar is-locked');
     }
   });
+
+  it('채점 막대는 화면 최하단 고정 — 카드 길이와 무관한 같은 자리, 세션은 막대 높이만큼 비운다(M09 6158372690)', () => {
+    const css = read('src/components/web/review-room.css');
+    const bar = sliceBetween(css, '.review-grade-bar {', '}');
+    expect(bar).toContain('position:fixed');
+    expect(bar).toContain('bottom:0');
+    expect(bar).not.toContain('sticky');
+    expect(css).toContain('.review-room-session:has(.review-grade-bar) { padding-bottom:');
+    expect(css).toContain('body:has(.review-grade-bar) .review-known-undo { bottom:');
+  });
   it('뒷면: 일본어 한자어는 한자 위 후리가나(ruby), 중국어는 병음, 둘 다 ▷ 듣기 — 발음 판정 문구', () => {
     const jaBack = card(ja, { showAnswer: true });
     expect(jaBack).toContain('<ruby>駅<rt>えき</rt></ruby>');
