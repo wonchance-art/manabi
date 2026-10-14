@@ -678,7 +678,7 @@ export default function MaterialsPage({ libraryView = null }) {
               const bf = savedFitIndex ? bookFit(b.chapters, savedFitIndex) : null;
               return (
                 <MaterialGroupCard
-                  key={b.key}
+                  key={b.groupKey}
                   icon="📖"
                   title={b.title || '제목 없는 책'}
                   meta={`챕터 ${b.chapters.length} · 읽음 ${readDone}/${b.chapters.length}${pendingCount > 0 ? ` · 분석 전 ${pendingCount}` : ''}`}

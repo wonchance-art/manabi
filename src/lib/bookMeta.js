@@ -29,8 +29,11 @@ export function analysisStateOf(material) {
 
 /**
  * 자료 목록을 책 그룹과 단독 자료로 분리.
- * @returns {{ books: Array<{key, title, chapters: object[]}>, singles: object[] }}
- *   books는 첫 등장 순, chapters는 book.order 오름차순.
+ * 묶음 단위는 **소유자 + book key**다. 공개 탭에는 여러 소유자의 자료가 섞이므로 key만으로 묶으면
+ * 남이 같은 key(예: 정본 문학책의 결정적 key)를 metadata에 넣은 장이 공식 책 카드 안에 끼어든다.
+ * 뷰어 형제 장 내비(소유자 필터)·서재 RPC(owner_id 조건)와 같은 기준으로 맞춘다.
+ * @returns {{ books: Array<{key, ownerId, groupKey, title, chapters: object[]}>, singles: object[] }}
+ *   books는 첫 등장 순, chapters는 book.order 오름차순. groupKey는 목록 렌더 키로 쓴다.
  */
 export function groupByBook(materials) {
   const map = new Map();
@@ -41,8 +44,10 @@ export function groupByBook(materials) {
       singles.push(m);
       continue;
     }
-    if (!map.has(book.key)) map.set(book.key, { key: book.key, title: book.title, chapters: [] });
-    map.get(book.key).chapters.push({ ...m, _bookOrder: book.order });
+    const ownerId = m?.owner_id ?? null;
+    const groupKey = `${ownerId ?? ''}\u0000${book.key}`;
+    if (!map.has(groupKey)) map.set(groupKey, { key: book.key, ownerId, groupKey, title: book.title, chapters: [] });
+    map.get(groupKey).chapters.push({ ...m, _bookOrder: book.order });
   }
   const books = [...map.values()].map((b) => ({
     ...b,
