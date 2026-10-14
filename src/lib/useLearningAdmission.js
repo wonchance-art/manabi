@@ -134,6 +134,12 @@ export function createLearningAdmissionClient({ accountId, getAccountId = () => 
   };
 }
 
+/** 화면에 오류를 띄운 실패만 콘솔에 코드 · 상태로 남긴다(원문 메시지 · 응답 본문은 싣지 않는다).
+ *  서버가 200인데 「복습을 준비하지 못했어요」가 뜬 관찰(M09 #1337 6166527435)의 클라이언트 단계를 가르기 위함. */
+export function logLearningFailure(where, error) {
+  console.warn(`[learning] ${where} 실패`, error?.code || error?.name || 'error', error?.status ?? '');
+}
+
 export function createLearningAdmissionController({ accountId, client, onQuota = () => {},
   eventTarget = globalThis.window, visibilityTarget = globalThis.document,
   setTimer = setTimeout, clearTimer = clearTimeout } = {}) {
@@ -159,7 +165,10 @@ export function createLearningAdmissionController({ accountId, client, onQuota =
         if (disposed || token !== generation || readToken !== readGeneration) return false;
         applyQuota(quota); return true;
       } catch (error) {
-        if (!disposed && token === generation && readToken === readGeneration) publish({ status: 'error', quota: null, current: null, error });
+        if (!disposed && token === generation && readToken === readGeneration) {
+          logLearningFailure('admission load', error);
+          publish({ status: 'error', quota: null, current: null, error });
+        }
         return false;
       } finally { if (token === generation && readToken === readGeneration) loading = null; }
     })();
@@ -185,6 +194,7 @@ export function createLearningAdmissionController({ accountId, client, onQuota =
         return true;
       } catch (error) {
         if (!disposed && token === generation && questionToken === requestGeneration) {
+          logLearningFailure('admission question', error);
           if (error.status === 409) { readGeneration++; loading = null; await refresh(); }
           publish({ current: null, error });
         }
@@ -204,7 +214,7 @@ export function createLearningAdmissionController({ accountId, client, onQuota =
       readGeneration++; loading = null;
       applyQuota(response.quota); return true;
     } catch (error) {
-      if (!disposed && token === generation) { if (error.status === 409) { readGeneration++; loading = null; await refresh(); } publish({ error }); }
+      if (!disposed && token === generation) { logLearningFailure('admission configure', error); if (error.status === 409) { readGeneration++; loading = null; await refresh(); } publish({ error }); }
       return false;
     } finally { if (!disposed && token === generation) publish({ busy: false }); }
   }
