@@ -54,8 +54,8 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
 
 | 출처 | 해설 받는 곳 | 해설 라이선스 | 이미지 | 크레딧 |
 |---|---|---|---|---|
-| ColBase(국립문화재기구) | 재팬서치 항목 API `https://jpsearch.go.jp/api/item/cobas-<번호>`의 `common.description`(일본어)·`descriptionEn`(영어). ColBase 자체 API는 키가 필요하다 | ColBase 이용규약 = 정부표준이용규약 2.0 준거(CC BY 4.0 호환). 재팬서치의 ColBase `metadataRights`도 같은 규약 | `ccby` — 쓰지 않음 | 「출처: ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로」 + 원문 페이지 `sourceUrl` |
-| 시카고 미술관(AIC) | `https://api.artic.edu/api/v1/artworks/<id>`의 `description`(HTML) | CC BY 4.0(`description` 필드만, 나머지는 CC0) | `is_public_domain`이면 CC0, IIIF `…/full/843,/0/default.jpg` 핫링크 허용 | 「해설: Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로」(라이선스 이름은 화면이 따로 붙인다) |
+| ColBase(국립문화재기구) | 재팬서치 항목 API `https://jpsearch.go.jp/api/item/cobas-<번호>`의 `common.description`(일본어)·`descriptionEn`(영어). ColBase 자체 API는 키가 필요하다 | ColBase 이용규약 = 정부표준이용규약 2.0 준거(CC BY 4.0 호환). 재팬서치의 ColBase `metadataRights`도 같은 규약 | `ccby` — 쓰지 않음 | 「ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로」(화면이 「출처:」를 앞에 붙인다) + 원문 페이지 `sourceUrl` |
+| 시카고 미술관(AIC) | `https://api.artic.edu/api/v1/artworks/<id>`의 `description`(HTML) | CC BY 4.0(`description` 필드만, 나머지는 CC0) | `is_public_domain`이면 CC0, IIIF `…/full/843,/0/default.jpg` 핫링크 허용 | 「Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로」(「출처:」·라이선스 이름은 화면이 붙인다) |
 | Wikidata | QID·좌표·라벨 | CC0 | — | 의무 없음 |
 
 - 「편집: 서식 기호만 지우고 글자는 그대로」 — ColBase 규약은 편집·가공 시 그 사실을 따로 적으라고 한다. 우리는 HTML 태그를 벗기고 줄바꿈을 맞출 뿐 낱말은 바꾸지 않지만, 그것도 적는다(화면에 「HTML」 같은 코드 말은 쓰지 않는다).
