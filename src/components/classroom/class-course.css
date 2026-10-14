@@ -164,7 +164,7 @@
 .course-day__chapters {display:grid;grid-template-columns:auto auto 1fr;gap:6px 12px;align-items:baseline}
 .course-day__ch {display:contents}
 .course-day__n {color:var(--tb-ink);font-weight:700;font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
-.course-day__jp {font-family:var(--tb-ja);font-size:15px;font-weight:600;word-break:keep-all}
+.course-day__jp {font-family:var(--tb-ja);font-size:15px;font-weight:600;line-break:strict}
 .course-day__ko {font-size:13.5px;color:var(--text-secondary);line-height:1.5;word-break:keep-all;text-align:right}
 .course-day__note {margin:6px 16px 12px;font-size:14px;color:var(--text-secondary)}
 
