@@ -153,5 +153,29 @@
     },
     "lat": 36.225805555,
     "lng": 140.105
+  },
+  {
+    "id": "metropolitan-museum-of-art",
+    "wikidata": "Q160236",
+    "kind": "museum",
+    "name": {
+      "native": "The Metropolitan Museum of Art",
+      "ko": "메트로폴리탄 미술관"
+    },
+    "city": "뉴욕",
+    "lat": 40.779444,
+    "lng": -73.963056
+  },
+  {
+    "id": "rijksmuseum",
+    "wikidata": "Q190804",
+    "kind": "museum",
+    "name": {
+      "native": "Rijksmuseum",
+      "ko": "레이크스 미술관"
+    },
+    "city": "암스테르담",
+    "lat": 52.36,
+    "lng": 4.885277777
   }
 ]

@@ -38,6 +38,11 @@
         "url": "https://www.artic.edu/artworks/24645"
       },
       {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/39799"
+      },
+      {
         "place": "tokyo-bay",
         "role": "depicted"
       },
@@ -79,12 +84,12 @@
       "푸른색이 가장 짙은 곳과 옅은 곳을 찾아봐요."
     ],
     "image": {
-      "url": "https://www.artic.edu/iiif/2/b3974542-b9b4-7568-fc4b-966738f61d78/full/843,/0/default.jpg",
-      "sourceUrl": "https://www.artic.edu/artworks/24645",
+      "url": "/art/hokusai-kanagawa-oki-nami-ura.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/39799",
       "license": "cc0",
-      "credit": "Katsushika Hokusai. Under the Wave off Kanagawa (Kanagawa oki nami ura), also known as The Great Wave, from the series \"Thirty-Six Views of Mount Fuji (Fugaku sanjūrokkei)\", 1830/33. The Art Institute of Chicago. CC0",
-      "width": 6679,
-      "height": 4577,
+      "credit": "Katsushika Hokusai. Under the Wave off Kanagawa (Kanagawa oki nami ura), or The Great Wave, from the series Thirty-six Views of Mount Fuji (Fugaku sanjūrokkei), ca. 1830–32. The Metropolitan Museum of Art, The Howard Mansfield Collection, Purchase, Rogers Fund, 1936. CC0",
+      "width": 600,
+      "height": 410,
       "alt": "발톱처럼 휘어 올라간 큰 파도가 길고 좁은 배 세 척을 덮치려 하고, 파도 골 사이 멀리 눈 덮인 작은 후지산이 보인다."
     }
   },
@@ -127,6 +132,11 @@
         "url": "https://www.artic.edu/artworks/87005"
       },
       {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/57007"
+      },
+      {
         "place": "mount-fuji",
         "role": "depicted"
       }
@@ -164,12 +174,12 @@
       "하늘의 흰 구름 줄은 어느 쪽으로 흐를까요?"
     ],
     "image": {
-      "url": "https://www.artic.edu/iiif/2/38726da7-8122-dc49-9243-766a1eeba9ed/full/843,/0/default.jpg",
-      "sourceUrl": "https://www.artic.edu/artworks/87005",
+      "url": "/art/hokusai-gaifu-kaisei.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/57007",
       "license": "cc0",
-      "credit": "Katsushika Hokusai. A Mild Breeze on a Fine Day (Gaifu kaisei), from the series \"Thirty-six Views of Mount Fuji (Fugaku sanjurokkei)\", c. 1830/33. The Art Institute of Chicago. CC0",
-      "width": 4817,
-      "height": 3307,
+      "credit": "Katsushika Hokusai. South Wind, Clear Sky (Gaifū kaisei), also known as Red Fuji, from the series Thirty-six Views of Mount Fuji (Fugaku sanjūrokkei), ca. 1830–32. The Metropolitan Museum of Art, The Howard Mansfield Collection, Purchase, Rogers Fund, 1936. CC0",
+      "width": 599,
+      "height": 413,
       "alt": "푸른 하늘에 비늘 같은 흰 구름이 줄지어 있고, 붉게 물든 후지산이 화면 가득 솟아 있다. 꼭대기에는 눈 줄기가 남아 있고 사람은 보이지 않는다."
     }
   },
@@ -212,6 +222,11 @@
         "url": "https://www.artic.edu/artworks/24790"
       },
       {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/56392"
+      },
+      {
         "place": "tama-river",
         "role": "depicted"
       },
@@ -243,12 +258,12 @@
       "강과 후지산 사이에 비워 둔 안개 띠는 얼마나 넓을까요?"
     ],
     "image": {
-      "url": "https://www.artic.edu/iiif/2/bf2c118b-d095-0e97-5118-9a65dd073f12/full/843,/0/default.jpg",
-      "sourceUrl": "https://www.artic.edu/artworks/24790",
+      "url": "/art/hokusai-bushu-tamagawa.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/56392",
       "license": "cc0",
-      "credit": "Katsushika Hokusai. Tama River in Musashi Province (Bushu Tamagawa), from the series \"Thirty-six Views of Mount Fuji (Fugaku sanjurokkei)\", c. 1830/33. The Art Institute of Chicago. CC0",
-      "width": 3000,
-      "height": 2043,
+      "credit": "Katsushika Hokusai. Tama River in Musashi Province (Bushū Tamagawa), from the series Thirty-six Views of Mount Fuji (Fugaku sanjūrokkei), ca. 1830–32. The Metropolitan Museum of Art, Henry L. Phillips Collection, Bequest of Henry L. Phillips, 1939. CC0",
+      "width": 600,
+      "height": 401,
       "alt": "넓은 다마강을 배 한 척이 건너고, 앞 기슭에는 짐 실은 말을 끄는 사람이 있다. 비워 둔 안개 띠 너머로 흰 후지산이 보인다."
     }
   },
@@ -291,6 +306,11 @@
         "url": "https://www.artic.edu/artworks/130691"
       },
       {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/36967"
+      },
+      {
         "place": "shono-juku",
         "role": "depicted"
       }
@@ -318,12 +338,12 @@
       "뒤편 대숲은 몇 겹의 그림자로 나뉠까요?"
     ],
     "image": {
-      "url": "https://www.artic.edu/iiif/2/59aaddd6-cb2d-25b6-b0f6-e95042fce0a5/full/843,/0/default.jpg",
-      "sourceUrl": "https://www.artic.edu/artworks/130691",
+      "url": "/art/hiroshige-shono-hakuu.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/36967",
       "license": "cc0",
-      "credit": "Utagawa Hiroshige. Shono: Driving Rain (Shono hakuu), from the series \"Fifty-three Stations of the Tokaido (Tokaido gojusan tsugi no uchi),\" also known as the Hoeido Tokaido, c. 1833/34. The Art Institute of Chicago. CC0",
-      "width": 3426,
-      "height": 2214,
+      "credit": "Utagawa Hiroshige. Sudden Shower in Shōno, ca. 1833–34. The Metropolitan Museum of Art, Rogers Fund, 1918. CC0",
+      "width": 599,
+      "height": 405,
       "alt": "세찬 소나기 속에서 가마꾼과 삿갓 쓴 길손들이 비탈길을 서둘러 오르내리고, 뒤편 대숲이 바람에 휘어 회색 그림자로 겹쳐 있다."
     }
   },
@@ -361,6 +381,11 @@
         "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-2953"
       },
       {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/36964"
+      },
+      {
         "place": "kuwana-juku",
         "role": "depicted"
       }
@@ -381,7 +406,21 @@
       "海路",
       "船着場",
       "七里の渡し"
-    ]
+    ],
+    "lookFor": [
+      "나루터에 닿는 큰 배 두 척의 돛은 어떤 모양일까요?",
+      "성의 돌담과 지붕을 찾아봐요.",
+      "물결은 어떤 선으로 그려졌을까요?"
+    ],
+    "image": {
+      "url": "/art/hiroshige-kuwana-shichiri-no-watashi.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/36964",
+      "license": "cc0",
+      "credit": "Utagawa Hiroshige. Kuwana, Shichi-Ri Watashi Guchi, ca. 1834. The Metropolitan Museum of Art, Rogers Fund, 1918. CC0",
+      "width": 599,
+      "height": 407,
+      "alt": "돛을 단 큰 배 두 척이 물결을 헤치고 구와나 성의 돌담 나루터에 닿고, 멀리 바다에는 돛단배들이 떠 있다. 하늘 위쪽은 붉게 물들어 있다."
+    }
   },
   {
     "id": "hiroshige-ohashi-atake-no-yudachi",
@@ -420,6 +459,11 @@
         "place": "art-institute-of-chicago",
         "role": "holding",
         "url": "https://www.artic.edu/artworks/26545"
+      },
+      {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/36461"
       },
       {
         "place": "shin-ohashi",
@@ -463,12 +507,12 @@
       "맨 위 먹구름 띠는 어떤 모양으로 칠해졌을까요?"
     ],
     "image": {
-      "url": "https://www.artic.edu/iiif/2/cf4a7aa2-6f16-efcf-8702-3bdd663a63ba/full/843,/0/default.jpg",
-      "sourceUrl": "https://www.artic.edu/artworks/26545",
+      "url": "/art/hiroshige-ohashi-atake-no-yudachi.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/36461",
       "license": "cc0",
-      "credit": "Utagawa Hiroshige. Sudden Shower over Shin Ohashi Bridge and Atake (Ohashi Atake no yudachi), from the series \"One Hundred Famous Views of Edo (Meisho Edo hyakkei)\", 1857. The Art Institute of Chicago. CC0",
-      "width": 2266,
-      "height": 3405,
+      "credit": "Utagawa Hiroshige. Sudden Shower over Shin-Ōhashi Bridge and Atake (Ōhashi Atake no yūdachi), from the series One Hundred Famous Views of Edo (Meisho Edo hyakkei), 1857. The Metropolitan Museum of Art, Purchase, Joseph Pulitzer Bequest, 1918. CC0",
+      "width": 437,
+      "height": 625,
       "alt": "높은 곳에서 내려다본 나무다리 위로 사람들이 우산과 거적을 쓰고 소나기를 피해 달리고, 강 위로 뗏목 하나가 지나간다. 건너편 기슭은 빗줄기에 흐려져 있다."
     }
   },
@@ -511,6 +555,11 @@
         "url": "https://www.artic.edu/artworks/26577"
       },
       {
+        "place": "rijksmuseum",
+        "role": "holding",
+        "url": "https://hdl.handle.net/10934/RM0001.COLLECT.46050"
+      },
+      {
         "place": "kameido-umeyashiki",
         "role": "depicted"
       }
@@ -548,12 +597,12 @@
       "하늘의 붉은색은 위아래로 어떻게 바뀔까요?"
     ],
     "image": {
-      "url": "https://www.artic.edu/iiif/2/89a2332f-be15-8e05-bc79-778738fdc1ef/full/843,/0/default.jpg",
-      "sourceUrl": "https://www.artic.edu/artworks/26577",
+      "url": "/art/hiroshige-kameido-umeyashiki.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:De_pruimenboomgaard_te_Kameido_Kameido_umeyashiki_(titel_op_object)_Honderd_beroemde_gezichten_op_Edo_(serietitel)_Meisho_Edo_hyakkei_(serietitel_op_object),_RP-P-1956-743.jpg",
       "license": "cc0",
-      "credit": "Utagawa Hiroshige. Plum Garden at Kameido (Kameido Umeyashiki), from the series \"One Hundred Famous Views of Edo (Meisho Edo hyakkei)\", 1857. The Art Institute of Chicago. CC0",
-      "width": 4211,
-      "height": 6202,
+      "credit": "Utagawa Hiroshige. “Plum Garden in Kameido” (Kameido umeyashiki), from the series One Hundred Famous Views of Edo, 1857. Rijksmuseum, Amsterdam, RP-P-1956-743. CC0 (via Wikimedia Commons)",
+      "width": 425,
+      "height": 625,
       "alt": "화면 앞에 굵은 매화나무 가지가 크게 가로지르며 흰 꽃을 피웠고, 그 너머 울타리 뒤로 꽃구경하는 사람들이 작게 보인다. 하늘은 붉게 물들어 있다."
     }
   },
@@ -594,6 +643,11 @@
         "place": "art-institute-of-chicago",
         "role": "holding",
         "url": "https://www.artic.edu/artworks/26605"
+      },
+      {
+        "place": "metropolitan-museum-of-art",
+        "role": "holding",
+        "url": "https://www.metmuseum.org/art/collection/search/55733"
       },
       {
         "place": "fukagawa",
@@ -641,12 +695,12 @@
       "멀리 쓰쿠바산은 화면 어느 쪽에 있을까요?"
     ],
     "image": {
-      "url": "https://www.artic.edu/iiif/2/5b88161b-254e-fdf2-5d69-b869fd506ac8/full/843,/0/default.jpg",
-      "sourceUrl": "https://www.artic.edu/artworks/26605",
+      "url": "/art/hiroshige-fukagawa-susaki-jumantsubo.jpg",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/55733",
       "license": "cc0",
-      "credit": "Utagawa Hiroshige. Fukagawa Susaki and Jumantsubo (Fukagawa Susaki Jumantsubo), from the series \"One Hundred Famous Views of Edo (Meisho Edo hyakkei)\", 1857. The Art Institute of Chicago. CC0",
-      "width": 2255,
-      "height": 3418,
+      "credit": "Utagawa Hiroshige. “Jūmantsubo Plain at Fukagawa Susaki,” from the series One Hundred Famous Views of Edo, 1856. The Metropolitan Museum of Art, The Howard Mansfield Collection, Purchase, Rogers Fund, 1936. CC0",
+      "width": 417,
+      "height": 624,
       "alt": "눈 내리는 하늘 높이 날개를 활짝 편 큰 수리가 화면 위쪽을 가로지르고, 아래로는 눈 덮인 바닷가 들판과 물 위에 뜬 통 하나, 멀리 산이 보인다."
     }
   }

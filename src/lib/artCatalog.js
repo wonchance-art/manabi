@@ -47,6 +47,9 @@ const LANGUAGE = /^(?:ja|zh|en|fr)$/;
 /** 해설 출처 — scripts/fetch-art-description.mjs가 받는 곳(src/lib/artSource.js ART_SOURCES)과 같은 이름·id 형식. */
 const SOURCE_ID = Object.freeze({ colbase: /^cobas-\d+$/, aic: /^\d+$/ });
 /** 박물관 내부 메모(「(20131029_h21・22)」 같은 작업 번호)가 섞인 해설 — 공개 해설이 아니다(ART-P0-2 실측). */
+/** 그림 파일 경로 — public/art 아래 파일(사이트 상대 주소). 지금 파일은 메트로폴리탄 미술관 오픈 액세스(CC0, images.metmuseum.org)에서,
+ *  메트에 없는 亀戸梅屋舗만 레이크스 미술관 CC0 디지털화본을 위키미디어 공용(commons.wikimedia.org)에서 받았다. */
+export const ART_IMAGE_PATH = /^\/art\/[a-z0-9-]+\.(?:jpg|webp)$/;
 const INTERNAL_MEMO = /\d{8}_h\d+/;
 
 const isObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -173,7 +176,9 @@ function checkWork(work, at, refs, errors) {
   if (work.image !== undefined && work.image !== null) {
     const image = work.image;
     if (!ART_IMAGE_LICENSES.includes(image?.license)) errors.push(`${at}.image.license: 퍼블릭 도메인/CC0만(그 밖은 image 없이)`);
-    if (!isHttps(image?.url) || !isHttps(image?.sourceUrl)) errors.push(`${at}.image: HTTPS url·sourceUrl이 필요하다`);
+    // 그림 파일은 manabi가 직접 들고 있는 것만(public/art) — 미술관 서버에 바로 연결하면 그쪽 봇 차단에 끊긴다(ART-IMG-001 실측).
+    if (!ART_IMAGE_PATH.test(image?.url ?? '')) errors.push(`${at}.image.url: /art/<이름>.jpg|webp(public/art에 둔 파일)만`);
+    if (!isHttps(image?.sourceUrl)) errors.push(`${at}.image.sourceUrl: 그림을 받은 원본 페이지 HTTPS 주소가 필요하다`);
     if (!isText(image?.alt)) errors.push(`${at}.image.alt: 대체 텍스트가 필요하다(접근성)`);
     if (image?.credit !== undefined && !isText(image.credit)) errors.push(`${at}.image.credit: 캡션은 비어 있으면 안 된다`);
     // 원본 크기(선택) — 화면이 판형 비율로 자리를 미리 잡는다. 있으면 둘 다 양의 정수.

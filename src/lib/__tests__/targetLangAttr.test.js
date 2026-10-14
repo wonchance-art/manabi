@@ -26,9 +26,9 @@ describe('학습 언어 글에 lang 바인딩 (LINE-BREAK-001)', () => {
 
   it('뷰어 — 제목 h1과 다음 편/다음 과 제목이 자료 언어 태그를 단다(루트 lang=uiLocale 아래)', () => {
     const src = read('src/views/ViewerPage.jsx');
-    expect(src).toContain('<h1 className="page-header__title" lang={contentLangTag}>{material.title}</h1>');
+    expect(src).toContain('<h1 className="page-header__title" lang={contentLangTag}>{viewerTitle}</h1>');
     expect(src).toContain('<div className="next-lesson-card__title" lang={contentLangTag}>{nextLesson.title}</div>');
-    expect(src).toContain('<div className="next-lesson-card__title" lang={contentLangTag}>{bookNav.next.title}</div>');
+    expect(src).toContain('<div className="next-lesson-card__title" lang={contentLangTag}>{literatureTitleOf(bookNav.next.order) || bookNav.next.title}</div>');
   });
 
   it('복습 카드 문맥 — 대표 문장과 다른 문맥 인용이 단어 언어 lang을 단다', () => {
@@ -51,7 +51,7 @@ describe('학습 언어 글에 lang 바인딩 (LINE-BREAK-001)', () => {
 
   it('홈 「다시 읽기」 카드 — 조회에 자료 언어를 싣고 덱 제목에 lang을 단다', () => {
     const hook = read('src/lib/useRereadCandidate.js');
-    expect(hook).toContain('reading_materials(title, language:processed_json->metadata->>language)');
+    expect(hook).toContain('reading_materials(title, language:processed_json->metadata->>language, ');
     expect(hook).toContain('titleLang: encounterLookupLang(material?.language) || undefined');
     expect(read('src/components/ContinueDeck.jsx')).toContain('<span className="deck-card__title" lang={item.titleLang}>');
   });

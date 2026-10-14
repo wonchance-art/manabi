@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  BACKLOG_DEFAULT_BASELINE, INTERLEAVE_EVERY, REASK_AFTER, SOURCE_SPACING, backlogBaseline, initialSteps, insertAfterIntro,
+  BACKLOG_DEFAULT_BASELINE, BACKLOG_MIN_BASELINE, INTERLEAVE_EVERY, REASK_AFTER, SOURCE_SPACING, backlogBaseline, initialSteps, insertAfterIntro,
   insertLearningStep, isBacklogged, orderReviewQueue, readResume, restoreResume, sessionLengthOptions, sliceSession, stepProgress, writeResume,
 } from '../reviewQueue';
 
@@ -121,7 +121,7 @@ describe('이어 하기(세션 저장소 { scopeKey, cardIds, index, startedAt }
   });
 });
 
-describe('밀린 복습 규칙 — 기준 = 지난 14일 하루 평균(기록이 없으면 20), 2배를 넘으면 새 표현 0', () => {
+describe('밀린 복습 규칙 — 기준 = 지난 14일 하루 평균(기록이 없으면 20 · 하한 10), 2배를 넘으면 새 표현 0', () => {
   const NOW = Date.parse('2026-10-13T00:00:00.000Z');
   const p = (created, lastReview) => ({ vocabulary: { created_at: new Date(created).toISOString() }, memory: { lastReview: lastReview == null ? null : new Date(lastReview).toISOString() } });
   it('기록이 14일에 못 미치거나 지난 14일 채점이 없으면 기본값 20', () => {
@@ -131,7 +131,14 @@ describe('밀린 복습 규칙 — 기준 = 지난 14일 하루 평균(기록이
   it('14일 안에 마지막 채점이 있는 카드 수 ÷ 14', () => {
     const rows = Array.from({ length: 28 }, (_, i) => p(NOW - 90 * DAY, NOW - (i % 14) * DAY));
     expect(backlogBaseline(rows, { now: NOW })).toBe(2);
-    expect(isBacklogged(4, 2)).toBe(false);
-    expect(isBacklogged(5, 2)).toBe(true);
+  });
+  it('판정 기준은 하루 10장 아래로 내려가지 않는다 — 평균 2인 가벼운 사용자도 밀린 복습 20장까지는 새 표현을 이어 간다', () => {
+    expect(BACKLOG_MIN_BASELINE).toBe(10);
+    expect(isBacklogged(5, 2)).toBe(false);
+    expect(isBacklogged(20, 2)).toBe(false);
+    expect(isBacklogged(21, 2)).toBe(true);
+    // 평균이 하한보다 크면 평균 × 2 그대로
+    expect(isBacklogged(30, 15)).toBe(false);
+    expect(isBacklogged(31, 15)).toBe(true);
   });
 });

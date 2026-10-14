@@ -139,7 +139,7 @@ describe('⑤ 접근성 하한 유지', () => {
 describe('⑥ 제목 줄·액션 축 — 실측이 더한 것', () => {
   it('편집 버튼이 h1 밖이다 — 제목 그라디언트 클립에 얹히지 않는다', () => {
     const row = sliceBetween(header(), '<div className="viewer-titlerow">', '</div>');
-    expect(row).toMatch(/<h1 className="page-header__title" lang=\{contentLangTag\}>\{material\.title\}<\/h1>/);
+    expect(row).toMatch(/<h1 className="page-header__title" lang=\{contentLangTag\}>\{viewerTitle\}<\/h1>/); // 정본 문학책은 대조표 제목(AOZORA-P0-5)
     expect(row, '편집은 h1 형제여야 한다').toContain('className="viewer-title-edit"');
   });
 

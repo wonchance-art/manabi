@@ -29,6 +29,9 @@ import { isLibraryNote, materialLibraryFilters } from '../lib/libraryDiscovery';
 import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
 import MaterialGroupCard from '../components/MaterialGroupCard';
+import LiteratureCover from '../components/books/LiteratureCover';
+import { literatureWorkOfBook } from '../lib/literatureCanonical';
+import { literatureChapterLabel, literatureDivisionLabel } from '../lib/literatureDisplay';
 import SuggestionArtwork from '../components/SuggestionArtwork';
 import { failureMessage } from '@/lib/errorMessage';
 
@@ -678,23 +681,45 @@ export default function MaterialsPage({ libraryView = null }) {
               // 책 단위 커버리지(R2) — 챕터 types 합집합. 어휘 교재의 진짜 지표는 챕터별 배지가
               // 아니라 "책 전체 단어 중 몇 개를 아는가"다. 표본 미달·게스트·미분석은 무표기.
               const bf = savedFitIndex ? bookFit(b.chapters, savedFitIndex) : null;
+              const pendingNote = pendingCount > 0 ? ` · 분석 전 ${pendingCount}` : '';
+              // 정본 문학책(AOZORA-P0-5) — 타이포그래피 표지 + 작가 목차(一·二) / 나눈 위치(1/2) + 장 첫 문장. 교재의 「과」를 쓰지 않는다.
+              const work = literatureWorkOfBook(b);
+              const chapterOf = (c) => work?.chapters.find((item) => item.order === c._bookOrder);
+              // 장 표지 — 작가 見出し(一·二)는 일본어로, 「1/2」는 날짜로 읽히지 않게 화면 읽기용 「2부분 중 1」을 따로 둔다.
+              const literatureLead = (order) => {
+                const label = literatureChapterLabel(work, order);
+                if (work.division === 'heading') return <span lang="ja">{label}</span>;
+                if (work.division === 'whole') return label;
+                return <><span aria-hidden="true">{label}</span><span className="group-card__sr">{`${work.total}부분 중 ${order}`}</span></>;
+              };
+              // 묶음 카드는 한 자리에서만 그린다(계약 ③) — 정본 문학책은 props만 다르다.
+              const literatureProps = work ? {
+                art: <LiteratureCover work={work} />,
+                title: <><span lang="ja">{work.title}</span> <small className="group-card__reading" lang="ja">{work.display?.titleReading}</small></>,
+                subtitle: [work.display?.titleKo, work.display?.authorKo, work.literature?.publishedYear && `${work.literature.publishedYear}년 발표`].filter(Boolean).join(' · '),
+                // 레벨·분량이 고를 때 먼저 보는 정보(에디터 검토) — 그다음 나눈 방식·읽음
+                meta: [work.level, work.chars && `${work.chars.toLocaleString()}자`, literatureDivisionLabel(work), `읽음 ${readDone}/${b.chapters.length}`].filter(Boolean).join(' · ') + pendingNote,
+                fitLine: fitLineOf(bf, '장'),
+              } : null;
               return (
                 <MaterialGroupCard
                   key={b.key}
                   icon="📖"
                   title={b.title || '제목 없는 책'}
                   lang={b.title ? contentLangOf(b.chapters[0]) : undefined}
-                  meta={`챕터 ${b.chapters.length} · 읽음 ${readDone}/${b.chapters.length}${pendingCount > 0 ? ` · 분석 전 ${pendingCount}` : ''}`}
+                  meta={`챕터 ${b.chapters.length} · 읽음 ${readDone}/${b.chapters.length}${pendingNote}`}
                   fitLine={fitLineOf(bf, '과')}
+                  {...literatureProps}
                   rows={b.chapters.map((c) => ({
                     key: c.id,
                     onClick: () => openReader(`/viewer/${c.id}`),
-                    lead: c._bookOrder,
-                    title: c.title.includes(' — ') ? c.title.split(' — ').slice(1).join(' — ') : c.title,
+                    lead: work ? literatureLead(c._bookOrder) : c._bookOrder,
+                    title: work ? <span lang="ja">{chapterOf(c)?.incipit || c.title}</span>
+                      : c.title.includes(' — ') ? c.title.split(' — ').slice(1).join(' — ') : c.title,
                     right: chapterTags(c),
                   }))}
                   // 이어 적기(#1077 5520128974) — 내 책에만 「다음 과 적기」(PDF 카드 「이어 읽기」와 같은 자리)
-                  footer={b.chapters[0]?.owner_id === user?.id ? (
+                  footer={!work && b.chapters[0]?.owner_id === user?.id ? (
                     <Link href={`/materials/add?book=${encodeURIComponent(b.key)}`} className="btn btn--secondary btn--sm">+ 다음 과 적기</Link>
                   ) : null}
                 />
