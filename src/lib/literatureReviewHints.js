@@ -71,25 +71,43 @@ export function resolveReviewHints(review, chapterTexts) {
  * 원문과 어긋나는 힌트(base 불일치)는 그 힌트만 건너뛴다. 분석 결과의 뜻·독음은 바꾸지 않는다.
  * @returns {{json: object, diagnostics: null | {hintCount:number, attachedCount:number}}}
  */
+/** 힌트 범위에 맞는 토큰 — 범위와 같은 토큰, 없으면 범위를 품은 토큰 하나. 원문과 어긋난 힌트·실패 토큰은 null. */
+function hintToken(rawText, spans, dictionary, hint) {
+  if (!hint || typeof hint.base !== 'string' || rawText.slice(hint.start, hint.end) !== hint.base) return null;
+  const span = spans.find((s) => s.start === hint.start && s.end === hint.end)
+    || spans.find((s) => s.start <= hint.start && s.end >= hint.end && s.text !== '\n');
+  const token = span ? dictionary[span.tokenId] : null;
+  return token && !token.failed && token.pos !== '개행' ? span : null;
+}
+
+function tokenSpans(rawText, json) {
+  try { return indexAozoraTokenSpans(rawText, json.sequence, json.dictionary); } catch { return null; }
+}
+
+/**
+ * 검수 보조 — 지금 분석에서 힌트가 붙을 수 있는 자리인지(확정 여부와 무관, 토큰 경계만 본다). 안 붙는 힌트는 분석기가
+ * 그 낱말을 다른 경계로 잘랐다는 뜻이라, 검수자가 그 자리를 직접 보도록 글자를 돌려준다.
+ * @returns {{hintCount:number, matched:number, missed:string[]}}
+ */
+export function reviewHintCoverage(rawText, json, hints) {
+  const list = Array.isArray(hints) ? hints : [];
+  const spans = list.length ? tokenSpans(rawText, json || {}) : null;
+  const missed = list.filter((hint) => !spans || !hintToken(rawText, spans, json.dictionary || {}, hint)).map((hint) => hint.base);
+  return { hintCount: list.length, matched: list.length - missed.length, missed };
+}
+
 export function applyMaterialReviewHints(rawText, json) {
   const hints = json?.metadata?.literature?.reviewHints;
   if (!Array.isArray(hints) || hints.length === 0) return { json, diagnostics: null };
-  let spans;
-  try {
-    spans = indexAozoraTokenSpans(rawText, json.sequence, json.dictionary);
-  } catch {
-    return { json, diagnostics: { hintCount: hints.length, attachedCount: 0 } };
-  }
+  const spans = tokenSpans(rawText, json);
+  if (!spans) return { json, diagnostics: { hintCount: hints.length, attachedCount: 0 } };
   const corrected = json.metadata?.viewerCorrections || {};
   const dictionary = { ...json.dictionary };
   let attached = 0;
   for (const hint of hints) {
-    if (!hint || typeof hint.base !== 'string' || rawText.slice(hint.start, hint.end) !== hint.base) continue;
-    const span = spans.find((s) => s.start === hint.start && s.end === hint.end)
-      || spans.find((s) => s.start <= hint.start && s.end >= hint.end && s.text !== '\n');
+    const span = hintToken(rawText, spans, dictionary, hint);
     if (!span) continue;
     const token = dictionary[span.tokenId];
-    if (!token || token.failed || token.pos === '개행') continue;
     if (Array.isArray(corrected[span.tokenId]) && corrected[span.tokenId].includes('meaning')) continue;
     dictionary[span.tokenId] = { ...token, meaningCheck: 'ctx', meaningSuggest: hint.meaning, ...(hint.note ? { meaningNote: hint.note } : {}) };
     attached += 1;

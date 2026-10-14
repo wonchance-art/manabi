@@ -121,9 +121,9 @@ describe('관리자 화면 요약·루비 적용률', () => {
     const locks = (k) => book.chapters[k].metadata.literature.rubyLocks.length;
     expect(literatureRubyCoverage(book, [{ order: '1', processed_json: analyzed }, { order: '2', processed_json: { sequence: [] } }]).slice(0, 3))
       .toEqual([
-        { order: 1, rubyLocks: locks(0), applied: 2, hints: 0, hintsAttached: 0, remaining: 0 },
-        { order: 2, rubyLocks: locks(1), applied: null, hints: 0, hintsAttached: null, remaining: null },
-        { order: 3, rubyLocks: locks(2), applied: null, hints: 0, hintsAttached: null, remaining: null },
+        { order: 1, rubyLocks: locks(0), applied: 2, hints: 0, hintsAttached: 0, hintsMissed: [], remaining: 0 },
+        { order: 2, rubyLocks: locks(1), applied: null, hints: 0, hintsAttached: null, hintsMissed: [], remaining: null },
+        { order: 3, rubyLocks: locks(2), applied: null, hints: 0, hintsAttached: null, hintsMissed: [], remaining: null },
       ]);
   });
 });

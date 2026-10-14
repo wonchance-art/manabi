@@ -191,7 +191,7 @@ describe('관리자 정본 문학책 게시 API', () => {
     await post({ action: 'prepare', key: KEY });
     const response = await GET(new Request(`http://localhost/api/admin/literature?ruby=${KEY}`));
     expect(await response.json()).toEqual({ key: KEY, coverage: book.chapters.map((chapter) => ({ order: chapter.order, rubyLocks: chapter.metadata.literature.rubyLocks.length, applied: null,
-      hints: 0, hintsAttached: null, remaining: null })) });
+      hints: 0, hintsAttached: null, hintsMissed: [], remaining: null })) });
     expect((await GET(new Request('http://localhost/api/admin/literature?ruby=nope'))).status).toBe(404);
   });
 });
