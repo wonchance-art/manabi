@@ -53,8 +53,14 @@
 .review-room-source-link { text-align:left; margin:18px 0; }
 .review-room-source-link a { color:var(--ja); font-size:13px; min-height:44px; display:inline-flex; align-items:center; }
 .review-room-source-link small { display:block; color:var(--muted); font-size:11px; line-height:1.7; }
-.manabi-review-room .review-score-grid { gap:8px; }
-.manabi-review-room .review-score-btn { border-radius:8px; min-height:52px; }
+/* 뷰어 채점 양식(reader-controls.css 326–332, 474)과 같은 색·테두리·글자. 복습의 52px 터치 높이는 유지한다. */
+.manabi-review-room .review-score-grid { gap:6px; }
+.manabi-review-room .review-score-btn { border-radius:3px; min-height:52px; font-size:.8rem; padding:7px 2px; border:1px solid var(--rule); color:var(--ink); background:var(--sheet); }
+.manabi-review-room .review-score-btn--again { background:color-mix(in srgb,var(--danger) 13%,var(--sheet)); }
+.manabi-review-room .review-score-btn--hard { background:color-mix(in srgb,var(--warning) 13%,var(--sheet)); }
+.manabi-review-room .review-score-btn--good { background:var(--book-wash); }
+.manabi-review-room .review-score-btn--easy { background:color-mix(in srgb,var(--book-main) 15%,var(--sheet)); }
+.manabi-review-room .save-grade__key { opacity:1; color:var(--muted); }
 .manabi-review-room .quiz-opt { min-height:48px; border-radius:3px; overflow-wrap:anywhere; }
 .manabi-review-room .learning-links { text-align:left; }
 .manabi-review-room .learning-links summary { min-height:44px; padding-block:12px; }
