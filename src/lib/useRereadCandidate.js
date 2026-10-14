@@ -12,11 +12,12 @@ import { useAuth } from './AuthContext';
 import { pickRereadCandidates } from './rereadSchedule';
 import { fetchMaterialRoundRows } from './readingSpeedRows';
 import { lastRoundCpm } from './readingSpeedHistory';
+import { encounterLookupLang } from './refVocabLookup';
 
 async function fetchCompletedRows(userId) {
   const { data, error } = await supabase
     .from('reading_progress')
-    .select('material_id, is_completed, completed_at, reading_materials(title)')
+    .select('material_id, is_completed, completed_at, reading_materials(title, language:processed_json->metadata->>language)')
     .eq('user_id', userId)
     .eq('is_completed', true)
     .order('completed_at', { ascending: false })
@@ -25,7 +26,7 @@ async function fetchCompletedRows(userId) {
   return data || [];
 }
 
-/** @returns {{key, href, kicker, title, meta}|null} — 덱 항목 서술(렌더는 덱이 한다). */
+/** @returns {{key, href, kicker, title, titleLang, meta}|null} — 덱 항목 서술(렌더는 덱이 한다). */
 export function useRereadCandidate() {
   const { user } = useAuth();
   const { data: rows } = useQuery({
@@ -45,7 +46,8 @@ export function useRereadCandidate() {
   });
 
   if (!user || !rows || !candidate) return null;
-  const title = rows.find((r) => r.material_id === candidate.material_id)?.reading_materials?.title;
+  const material = rows.find((r) => r.material_id === candidate.material_id)?.reading_materials;
+  const title = material?.title;
   if (!title) return null;
 
   // 속도는 **kicker**에 얹는다. meta는 nowrap·flex-shrink:0이라 여기에 넣으면 제목을
@@ -57,6 +59,8 @@ export function useRereadCandidate() {
     href: `/viewer/${candidate.material_id}`,
     kicker: lastCpm ? `다시 읽기 · 지난번 ${lastCpm}자/분` : '다시 읽기 · 두 번째는 훨씬 빨라요',
     title,
+    // 자료 제목은 학습 대상 언어 — 줄바꿈 정본(LINE-BREAK-001)이 lang으로 언어를 가린다.
+    titleLang: encounterLookupLang(material?.language) || undefined,
     meta: `${candidate.daysSince}일 만에 →`,
   };
 }

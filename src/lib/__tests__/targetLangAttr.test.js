@@ -48,4 +48,11 @@ describe('학습 언어 글에 lang 바인딩 (LINE-BREAK-001)', () => {
     const source = sliceBetween(src, '{v.source_sentence && (', 'v.source_sentence.split');
     expect(source).toContain('<p lang={langTag(v)}');
   });
+
+  it('홈 「다시 읽기」 카드 — 조회에 자료 언어를 싣고 덱 제목에 lang을 단다', () => {
+    const hook = read('src/lib/useRereadCandidate.js');
+    expect(hook).toContain('reading_materials(title, language:processed_json->metadata->>language)');
+    expect(hook).toContain('titleLang: encounterLookupLang(material?.language) || undefined');
+    expect(read('src/components/ContinueDeck.jsx')).toContain('<span className="deck-card__title" lang={item.titleLang}>');
+  });
 });
