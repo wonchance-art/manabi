@@ -203,7 +203,7 @@ export const DATA_CREDIT_SECTIONS = [
         license: '정부표준이용규약 2.0 (CC BY 4.0 호환)',
         licenseUrl: 'https://colbase.nich.go.jp/pages/term',
         sourceUrl: 'https://colbase.nich.go.jp/',
-        changes: 'HTML 태그만 정리하고 낱말은 그대로 두었습니다.',
+        changes: '웹에 보이도록 서식 기호만 지우고, 낱말은 그대로 두었습니다.',
       },
       {
         id: 'art-institute-chicago',
@@ -213,7 +213,7 @@ export const DATA_CREDIT_SECTIONS = [
         license: '해설 CC BY 4.0 · 이미지 CC0',
         licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
         sourceUrl: 'https://api.artic.edu/docs/',
-        changes: 'HTML 태그만 정리했습니다.',
+        changes: '웹에 보이도록 서식 기호만 지우고, 낱말은 그대로 두었습니다.',
       },
       {
         id: 'wikidata',

@@ -175,6 +175,11 @@ function checkWork(work, at, refs, errors) {
     if (!isHttps(image?.url) || !isHttps(image?.sourceUrl)) errors.push(`${at}.image: HTTPS url·sourceUrl이 필요하다`);
     if (!isText(image?.alt)) errors.push(`${at}.image.alt: 대체 텍스트가 필요하다(접근성)`);
     if (image?.credit !== undefined && !isText(image.credit)) errors.push(`${at}.image.credit: 캡션은 비어 있으면 안 된다`);
+    // 원본 크기(선택) — 화면이 판형 비율로 자리를 미리 잡는다. 있으면 둘 다 양의 정수.
+    if ((image?.width !== undefined || image?.height !== undefined)
+      && !(Number.isInteger(image?.width) && image.width > 0 && Number.isInteger(image?.height) && image.height > 0)) {
+      errors.push(`${at}.image: width·height는 둘 다 양의 정수`);
+    }
   }
 }
 

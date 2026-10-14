@@ -27,10 +27,11 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
   `credit`(크레딧 줄)·HTTPS `sourceUrl`·`textSha256` 필수 — 받은 원문을 고치면 해시가 어긋나 테스트가 실패한다. 1,500자 상한(목표 200–600자).
   `source`는 `colbase`(id `cobas-<번호>`) · `aic`(id 숫자)만 — 받는 곳이 정해진 출처만 싣는다(`cc-by-sa-4.0` 위키백과는 라이선스 목록에만 있고, 받기 경로를 만들기 전에는 실을 수 없다). 박물관 내부 메모(「(20131029_h21・22)」 같은 작업 번호)가 섞인 해설은 싣지 않는다.
 - **이미지**는 `public-domain`·`cc0`만, `alt`(한국어 대체 텍스트) 필수. 저작권이 남은 작품은 `image` 없이 해설만.
-  지금은 **시카고 미술관의 퍼블릭 도메인 작품 이미지(CC0)** 만 쓴다(`credit` = 미술관이 요청한 캡션 「Artist. Title, Date. The Art Institute of Chicago.」).
+  지금은 **시카고 미술관의 퍼블릭 도메인 작품 이미지(CC0)** 만 쓴다(`credit` = 미술관이 요청한 캡션 「Artist. Title, Date. The Art Institute of Chicago.」,
+  `width`·`height` = 원본 크기(AIC API `thumbnail`) — 화면이 판형 비율로 자리를 잡는다).
   ColBase 이미지는 권리 구분이 CC BY(`ccby`)라 이 허용 목록 밖이다 — 쓰려면 허용 목록·출처 표기 계약부터 바꾼다(오너 결정).
 - **핵심 용어(`terms`)는 일본어 해설에 실제로 나오는 말**만 — 본문에서 만나야 단어 저장으로 이어진다.
-- **찾아볼 것(`lookFor`)은 그림이 있을 때만** — 그림을 보며 하는 질문이다.
+- **찾아볼 것(`lookFor`)은 그림이 있을 때만** — 그림을 보며 하는 질문이다. 화면 문구라 해요체(「…일까요?」·「…찾아봐요.」).
 - 민감 소장처(반환 논쟁·중화권)는 이름·도시 같은 **사실만** 적는다.
 
 ## 큐레이션 책 (ART-P0-3)
@@ -53,11 +54,11 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
 
 | 출처 | 해설 받는 곳 | 해설 라이선스 | 이미지 | 크레딧 |
 |---|---|---|---|---|
-| ColBase(국립문화재기구) | 재팬서치 항목 API `https://jpsearch.go.jp/api/item/cobas-<번호>`의 `common.description`(일본어)·`descriptionEn`(영어). ColBase 자체 API는 키가 필요하다 | ColBase 이용규약 = 정부표준이용규약 2.0 준거(CC BY 4.0 호환). 재팬서치의 ColBase `metadataRights`도 같은 규약 | `ccby` — 쓰지 않음 | 「출처: ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 표시 형식만 정리(HTML 태그)」 + 원문 페이지 `sourceUrl` |
-| 시카고 미술관(AIC) | `https://api.artic.edu/api/v1/artworks/<id>`의 `description`(HTML) | CC BY 4.0(`description` 필드만, 나머지는 CC0) | `is_public_domain`이면 CC0, IIIF `…/full/843,/0/default.jpg` 핫링크 허용 | 「해설: Art Institute of Chicago · CC BY 4.0 · 표시 형식만 정리(HTML 태그)」 |
+| ColBase(국립문화재기구) | 재팬서치 항목 API `https://jpsearch.go.jp/api/item/cobas-<번호>`의 `common.description`(일본어)·`descriptionEn`(영어). ColBase 자체 API는 키가 필요하다 | ColBase 이용규약 = 정부표준이용규약 2.0 준거(CC BY 4.0 호환). 재팬서치의 ColBase `metadataRights`도 같은 규약 | `ccby` — 쓰지 않음 | 「출처: ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로」 + 원문 페이지 `sourceUrl` |
+| 시카고 미술관(AIC) | `https://api.artic.edu/api/v1/artworks/<id>`의 `description`(HTML) | CC BY 4.0(`description` 필드만, 나머지는 CC0) | `is_public_domain`이면 CC0, IIIF `…/full/843,/0/default.jpg` 핫링크 허용 | 「해설: Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로」(라이선스 이름은 화면이 따로 붙인다) |
 | Wikidata | QID·좌표·라벨 | CC0 | — | 의무 없음 |
 
-- 「표시 형식만 정리」 — ColBase 규약은 편집·가공 시 그 사실을 따로 적으라고 한다. 우리는 HTML 태그를 벗기고 줄바꿈을 맞출 뿐 낱말은 바꾸지 않지만, 그것도 적는다.
+- 「편집: 서식 기호만 지우고 글자는 그대로」 — ColBase 규약은 편집·가공 시 그 사실을 따로 적으라고 한다. 우리는 HTML 태그를 벗기고 줄바꿈을 맞출 뿐 낱말은 바꾸지 않지만, 그것도 적는다(화면에 「HTML」 같은 코드 말은 쓰지 않는다).
 - 발췌·번역은 하지 않는다(하면 「…를 바탕으로 발췌·번역」으로 표기를 바꿔야 한다). 1,500자를 넘는 해설은 자르지 않고 싣지 않는다.
 
 ## 작품 추가 절차
