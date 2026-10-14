@@ -27,8 +27,10 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
   `credit`(크레딧 줄)·HTTPS `sourceUrl`·`textSha256` 필수 — 받은 원문을 고치면 해시가 어긋나 테스트가 실패한다. 1,500자 상한(목표 200–600자).
   `source`는 `colbase`(id `cobas-<번호>`) · `aic`(id 숫자)만 — 받는 곳이 정해진 출처만 싣는다(`cc-by-sa-4.0` 위키백과는 라이선스 목록에만 있고, 받기 경로를 만들기 전에는 실을 수 없다). 박물관 내부 메모(「(20131029_h21・22)」 같은 작업 번호)가 섞인 해설은 싣지 않는다.
 - **이미지**는 `public-domain`·`cc0`만, `alt`(한국어 대체 텍스트) 필수. 저작권이 남은 작품은 `image` 없이 해설만.
-  지금은 **시카고 미술관의 퍼블릭 도메인 작품 이미지(CC0)** 만 쓴다(`credit` = 미술관이 요청한 캡션 「Artist. Title, Date. The Art Institute of Chicago.」,
-  `width`·`height` = 원본 크기(AIC API `thumbnail`) — 화면이 판형 비율로 자리를 잡는다).
+  **그림 파일은 manabi가 직접 들고 있는 것만** — `public/art/<작품 id>.jpg`, `image.url`은 `/art/<작품 id>.jpg`(계약이 강제).
+  미술관 서버에 바로 연결하지 않는다: 시카고 미술관 IIIF는 다른 사이트에 끼운 그림 요청을 봇 차단(Cloudflare)해 운영 화면에서 그림이 뜨지 않았다(ART-IMG-001, 2026-10-14 KST).
+  지금 파일은 **메트로폴리탄 미술관 오픈 액세스(CC0)** 에서 받은 것이다(`sourceUrl` = 메트 작품 페이지, `credit` = 「Artist. Title, Date. The Metropolitan Museum of Art, <기증 기록>. CC0」,
+  `width`·`height` = 파일 실제 픽셀 — 테스트가 JPEG 머리에서 대조한다). 메트에 없는 작품(亀戸梅屋舗)은 그림·찾아볼 것 없이 둔다.
   ColBase 이미지는 권리 구분이 CC BY(`ccby`)라 이 허용 목록 밖이다 — 쓰려면 허용 목록·출처 표기 계약부터 바꾼다(오너 결정).
 - **핵심 용어(`terms`)는 일본어 해설에 실제로 나오는 말**만 — 본문에서 만나야 단어 저장으로 이어진다.
 - **찾아볼 것(`lookFor`)은 그림이 있을 때만** — 그림을 보며 하는 질문이다. 화면 문구라 해요체(「…일까요?」·「…찾아봐요.」).
@@ -56,6 +58,7 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
 |---|---|---|---|---|
 | ColBase(국립문화재기구) | 재팬서치 항목 API `https://jpsearch.go.jp/api/item/cobas-<번호>`의 `common.description`(일본어)·`descriptionEn`(영어). ColBase 자체 API는 키가 필요하다 | ColBase 이용규약 = 정부표준이용규약 2.0 준거(CC BY 4.0 호환). 재팬서치의 ColBase `metadataRights`도 같은 규약 | `ccby` — 쓰지 않음 | 「ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로」(화면이 「출처:」를 앞에 붙인다) + 원문 페이지 `sourceUrl` |
 | 시카고 미술관(AIC) | `https://api.artic.edu/api/v1/artworks/<id>`의 `description`(HTML) | CC BY 4.0(`description` 필드만, 나머지는 CC0) | `is_public_domain`이면 CC0, IIIF `…/full/843,/0/default.jpg` 핫링크 허용 | 「Art Institute of Chicago(시카고 미술관) · 편집: 서식 기호만 지우고 글자는 그대로」(「출처:」·라이선스 이름은 화면이 붙인다) |
+| 메트로폴리탄 미술관 | — | — | 오픈 액세스 CC0(작품 이미지, `public/art`에 저장) | 그림 캡션 `image.credit` |
 | Wikidata | QID·좌표·라벨 | CC0 | — | 의무 없음 |
 
 - 「편집: 서식 기호만 지우고 글자는 그대로」 — ColBase 규약은 편집·가공 시 그 사실을 따로 적으라고 한다. 우리는 HTML 태그를 벗기고 줄바꿈을 맞출 뿐 낱말은 바꾸지 않지만, 그것도 적는다(화면에 「HTML」 같은 코드 말은 쓰지 않는다).
@@ -73,20 +76,20 @@ ART-P0-1은 형식과 계약, **ART-P0-2는 실물 여덟 점**(아래 「수록
 
 **네트워크:** `colbase.nich.go.jp`·`jpsearch.go.jp`·`www.wikidata.org`·`query.wikidata.org`·`api.artic.edu`는 2026-10-14 클라우드 환경에서 열려 있다
 (Node `fetch`는 `NODE_USE_ENV_PROXY=1`). `www.artic.edu`(IIIF 이미지 호스트)는 닫혀 있어 이미지 URL의 200 응답은 Preview 브라우저 검수에서 확인한다.
-이미지는 미술관 IIIF를 바로 쓴다(AIC API 문서: 핫링크 환영 — 다만 언제든 내려가거나 바뀔 수 있다). 그림이 안 뜨면 뷰어는 그림 칸만 숨기고 정보는 그대로 보인다.
+그림은 `public/art`의 자체 보관 파일만 쓴다(위 「이미지」 규칙). 파일을 못 불러오면 뷰어는 그림 칸과 찾아볼 것만 숨긴다.
 
 ## 수록 작품 (2026-10-14 KST, ART-P0-2)
 
 | 작품 id | 작품 | 날짜 표기(출처) | 소장(기록) | 해설 | 이미지 |
 |---|---|---|---|---|---|
-| hokusai-kanagawa-oki-nami-ura | 冨嶽三十六景 神奈川沖浪裏 | 1830/33 (AIC) | 도쿄 국립박물관 · 시카고 미술관 | ja ColBase 623자 · en AIC 886자 | AIC CC0 |
-| hokusai-gaifu-kaisei | 冨嶽三十六景 凱風快晴 | c. 1830/33 (AIC) | 도쿄 국립박물관 · 시카고 미술관 | ja ColBase 625자 · en ColBase 1,195자 | AIC CC0 |
-| hokusai-bushu-tamagawa | 冨嶽三十六景 武州玉川 | c. 1830/33 (AIC) | 도쿄 국립박물관 · 시카고 미술관 | ja ColBase 465자 | AIC CC0 |
-| hiroshige-shono-hakuu | 東海道五拾三次之内 庄野 白雨 | c. 1833/34 (AIC) | 도쿄 국립박물관 · 시카고 미술관 | ja ColBase 156자 | AIC CC0 |
-| hiroshige-kuwana-shichiri-no-watashi | 東海道五拾三次之内 桑名 七里渡口 | 江戸時代・19世紀 (ColBase) | 도쿄 국립박물관 | ja ColBase 122자 | 없음 |
-| hiroshige-ohashi-atake-no-yudachi | 名所江戸百景 大はしあたけの夕立 | 江戸時代・安政4年(1857) (ColBase) | 도쿄 국립박물관 · 시카고 미술관 | ja ColBase 107자 · en AIC 283자 | AIC CC0 |
-| hiroshige-kameido-umeyashiki | 名所江戸百景 亀戸梅屋舗 | 江戸時代・安政4年(1857) (ColBase) | 도쿄 국립박물관 · 시카고 미술관 | ja ColBase 128자 · en AIC 380자 | AIC CC0 |
-| hiroshige-fukagawa-susaki-jumantsubo | 名所江戸百景 深川洲崎十万坪 | 江戸時代・安政4年(1857) (ColBase) | 도쿄 국립박물관 · 시카고 미술관 | ja ColBase 119자 · en AIC 371자 | AIC CC0 |
+| hokusai-kanagawa-oki-nami-ura | 冨嶽三十六景 神奈川沖浪裏 | 1830/33 (AIC) | 도쿄 국립박물관 · 시카고 미술관 · 메트로폴리탄 미술관 | ja ColBase 623자 · en AIC 886자 | 메트 CC0 |
+| hokusai-gaifu-kaisei | 冨嶽三十六景 凱風快晴 | c. 1830/33 (AIC) | 도쿄 국립박물관 · 시카고 미술관 · 메트로폴리탄 미술관 | ja ColBase 625자 · en ColBase 1,195자 | 메트 CC0 |
+| hokusai-bushu-tamagawa | 冨嶽三十六景 武州玉川 | c. 1830/33 (AIC) | 도쿄 국립박물관 · 시카고 미술관 · 메트로폴리탄 미술관 | ja ColBase 465자 | 메트 CC0 |
+| hiroshige-shono-hakuu | 東海道五拾三次之内 庄野 白雨 | c. 1833/34 (AIC) | 도쿄 국립박물관 · 시카고 미술관 · 메트로폴리탄 미술관 | ja ColBase 156자 | 메트 CC0 |
+| hiroshige-kuwana-shichiri-no-watashi | 東海道五拾三次之内 桑名 七里渡口 | 江戸時代・19世紀 (ColBase) | 도쿄 국립박물관 · 메트로폴리탄 미술관 | ja ColBase 122자 | 메트 CC0 |
+| hiroshige-ohashi-atake-no-yudachi | 名所江戸百景 大はしあたけの夕立 | 江戸時代・安政4年(1857) (ColBase) | 도쿄 국립박물관 · 시카고 미술관 · 메트로폴리탄 미술관 | ja ColBase 107자 · en AIC 283자 | 메트 CC0 |
+| hiroshige-kameido-umeyashiki | 名所江戸百景 亀戸梅屋舗 | 江戸時代・安政4年(1857) (ColBase) | 도쿄 국립박물관 · 시카고 미술관 | ja ColBase 128자 · en AIC 380자 | 없음(메트에 없음) |
+| hiroshige-fukagawa-susaki-jumantsubo | 名所江戸百景 深川洲崎十万坪 | 江戸時代・安政4年(1857) (ColBase) | 도쿄 국립박물관 · 시카고 미술관 · 메트로폴리탄 미술관 | ja ColBase 119자 · en AIC 371자 | 메트 CC0 |
 
 큐레이션: `ukiyoe-landscape-hokusai-hiroshige`(여덟 점 연대순 · 게시 책 「北斎と広重の風景版画」 N2 상급) · `katsushika-hokusai-fugaku`(3) · `utagawa-hiroshige-landscape`(5).
 
