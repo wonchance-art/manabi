@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "personId": "001779",
+  "workId": "56648",
+  "title": "人間椅子",
+  "author": "江戸川乱歩",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1925,
+  "authorDeathYear": 1965,
+  "level": "N2 상급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/001779/card56648.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/001779/files/56648_ruby_58198.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "e97aefbf18ec8e0373896850a97b3cf72b33f738aaa2a5abfb7d41f0c3f15b28",
+  "textSha256": "8dd678a6e87326ce0727f5d1fd3afc08006343d3af7ae4fa6ddc6a302481fab7",
+  "attribution": {
+    "author": "江戸川乱歩",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-15",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR",
+      "US"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/001779/card56648.html"
+  },
+  "display": {
+    "titleReading": "にんげんいす",
+    "titleKo": "인간 의자",
+    "authorKo": "에도가와 란포",
+    "cover": "wine",
+    "motif": "deco-chair"
+  }
+}

@@ -247,6 +247,136 @@
         }
       ]
     },
+    "aozora-000081-000462": {
+      "title": "風の又三郎",
+      "author": "宮沢賢治",
+      "level": "N3 중급",
+      "total": 11,
+      "division": "split",
+      "chars": 31124,
+      "display": {
+        "titleReading": "かぜのまたさぶろう",
+        "titleKo": "바람의 마타사부로",
+        "authorKo": "미야자와 겐지",
+        "cover": "meadow",
+        "motif": "wind-hill"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000081-000462",
+        "personId": "000081",
+        "workId": "462",
+        "title": "風の又三郎",
+        "author": "宮沢賢治",
+        "publishedYear": 1934,
+        "authorDeathYear": 1933,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000081/card462.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000081/files/462_ruby_716.zip",
+        "sourceSha256": "c7564ce0a0358483b8d5bef89b82aff9e9455d98eb1c48915b5bdf2496130712",
+        "textSha256": "e59e02a13b1a5f5cc4fc3942b96a131cb20a477b3d876437c95f509ca6668fca",
+        "attribution": {
+          "author": "宮沢賢治",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-15",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000081/card462.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "岩波文庫『童話集　風の又三郎』",
+            "1951（昭和26）年4月25日　第1刷発行",
+            "1967（昭和42）年7月16日　第24刷改版発行"
+          ],
+          "parentBook": [],
+          "inputter": "柴田卓治",
+          "proofreader": "野口英司"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "1/11",
+          "incipit": "どっどど　どどうど　どどうど　どどう",
+          "sha256": "4cffc59fd911cba716da9e9311eedc7aa6f693a5bccca1f276614112fe210f33"
+        },
+        {
+          "order": 2,
+          "title": "2/11",
+          "incipit": "「みなさん。",
+          "sha256": "0bc3e344b9a0b425cf0fe1ea7531d5110a6f8db022bbaab501312a409b177792"
+        },
+        {
+          "order": 3,
+          "title": "3/11",
+          "incipit": "「何ぶんどうかよろしくおねがいいたします。",
+          "sha256": "4e680863e7d7a813f943a5075c4bc0d2a7833d2b52abf7a09dc5f66201e2e85d"
+        },
+        {
+          "order": 4,
+          "title": "4/11",
+          "incipit": "「わあ、こいつおれのだなあ。",
+          "sha256": "dcb771002d6cd61e3bc053d3d681f21e37c730f49cd4c6f42cec502ac2e5d19f"
+        },
+        {
+          "order": 5,
+          "title": "5/11",
+          "incipit": "「うな神さんの帯見だごとあるが。",
+          "sha256": "dc113b71ab356a84b486f07840f2be7163f0983290cf1862df84d0d8986a7cb3"
+        },
+        {
+          "order": 6,
+          "title": "6/11",
+          "incipit": "嘉助は、仰向けになって空を見ました。",
+          "sha256": "5d116274f19eab73e54f8dc71fbd0801e750889dee4a0c6c9151fd3a884c078a"
+        },
+        {
+          "order": 7,
+          "title": "7/11",
+          "incipit": "おじいさんは霧の中に立っていて、",
+          "sha256": "dc6ba88b26fe91eb1ed38b5097e9f4e1895ba723b4eb3c628cfb47d746c011e4"
+        },
+        {
+          "order": 8,
+          "title": "8/11",
+          "incipit": "「おら、もっと取ってぐぢゃ。",
+          "sha256": "0d9441e9ef09fd157d4bebfe830201b3058b201fd2745c219f4007f47e5d27b9"
+        },
+        {
+          "order": 9,
+          "title": "9/11",
+          "incipit": "けれどもみんな底まで行かないに息がつまって浮かび…",
+          "sha256": "a7ef6c370aec1d349f04d4b98373bdccda2c77afe4bd7f060aeb69b5acc4f75e"
+        },
+        {
+          "order": 10,
+          "title": "10/11",
+          "incipit": "すると佐太郎は袖でそれをかくすようにして…",
+          "sha256": "89aafe399ee0d966a7d0802d4c186cb9af3600cb95a0680a12715017dfc93caa"
+        },
+        {
+          "order": 11,
+          "title": "11/11",
+          "incipit": "風はどっこどっこ又三郎。",
+          "sha256": "f2073011a8f6b8c24954bf97c6e0ecbd9bd03c944a0f908ea9dec0043a64522b"
+        }
+      ]
+    },
     "aozora-000081-000470": {
       "title": "セロ弾きのゴーシュ",
       "author": "宮沢賢治",
@@ -492,6 +622,82 @@
           "title": "2/2",
           "incipit": "二人はめがねをはずしたり、カフスボタンをとったり…",
           "sha256": "b190766b7643eb9e757a5c94770aebadc39963dd3bc5790367a0ea90c01a41a0"
+        }
+      ]
+    },
+    "aozora-000081-046605": {
+      "title": "やまなし",
+      "author": "宮沢賢治",
+      "level": "N3 중급",
+      "total": 2,
+      "division": "heading",
+      "chars": 2745,
+      "display": {
+        "titleReading": "やまなし",
+        "titleKo": "돌배",
+        "authorKo": "미야자와 겐지",
+        "cover": "pear",
+        "motif": "crab-pear"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000081-046605",
+        "personId": "000081",
+        "workId": "46605",
+        "title": "やまなし",
+        "author": "宮沢賢治",
+        "publishedYear": 1923,
+        "authorDeathYear": 1933,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000081/card46605.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000081/files/46605_ruby_29758.zip",
+        "sourceSha256": "fb4a85928dacee7d3ab0ac925c450fb61c3bc470935e1ea8ad7d16a3626d5c4d",
+        "textSha256": "c368ec414aee189bbe5a26f9c3afd4956b796efe87e233b3a5c8fbebc2ae33df",
+        "attribution": {
+          "author": "宮沢賢治",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-15",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000081/card46605.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「新編風の又三郎」新潮文庫、新潮社",
+            "1989（平成元）年2月25日発行",
+            "1989（平成元）年6月10日2刷"
+          ],
+          "parentBook": [],
+          "inputter": "蒋龍",
+          "proofreader": "noriko saito"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "一、五月",
+          "incipit": "小さな谷川の底を写した二枚の青い幻燈です。",
+          "sha256": "18b0e04da8c19e970eae1db33046b17be05d97bcee78fd434234313f777a9275"
+        },
+        {
+          "order": 2,
+          "title": "二、十二月",
+          "incipit": "蟹の子供らはもうよほど大きくなり…",
+          "sha256": "dd344867d96458d71362cba761aa304c3da4458e1239ca4c2b35559bc4705e90"
         }
       ]
     },
@@ -1183,6 +1389,730 @@
         }
       ]
     },
+    "aozora-000148-000773": {
+      "title": "こころ",
+      "author": "夏目漱石",
+      "level": "N2 상급",
+      "total": 110,
+      "division": "heading",
+      "chars": 162200,
+      "display": {
+        "titleReading": "こころ",
+        "titleKo": "마음",
+        "authorKo": "나쓰메 소세키",
+        "cover": "ash",
+        "motif": "kamakura-letter"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000148-000773",
+        "personId": "000148",
+        "workId": "773",
+        "title": "こころ",
+        "author": "夏目漱石",
+        "publishedYear": 1914,
+        "authorDeathYear": 1916,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000148/card773.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000148/files/773_ruby_5968.zip",
+        "sourceSha256": "c55d7bf6c7cc5bd960ce291949f38cae9ba6a672a6142c3b9e1a9f5a159fa4c4",
+        "textSha256": "c94f3a49e050b25293a54402435486cbc199812a85e2a57c045241979073bb3c",
+        "attribution": {
+          "author": "夏目漱石",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-15",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000148/card773.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「こころ」集英社文庫、集英社",
+            "1991（平成3）年2月25日第1刷",
+            "1995（平成7）年6月14日第10刷"
+          ],
+          "parentBook": [],
+          "inputter": "j.utiyama",
+          "proofreader": "伊藤時也"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "上　先生と私　一",
+          "incipit": "私はその人を常に先生と呼んでいた。",
+          "sha256": "5e1c2823f72716f861ee6f806b1ed6c62e0916f3d1c864b8b187289e08422f8f"
+        },
+        {
+          "order": 2,
+          "title": "二",
+          "incipit": "私がその掛茶屋で先生を見た時は…",
+          "sha256": "fca29999bf65685b096709b3e1605f68421db2bdfc9c0dcb1c33d6e9799cd6e9"
+        },
+        {
+          "order": 3,
+          "title": "三",
+          "incipit": "私は次の日も同じ時刻に浜へ行って先生の顔を見た。",
+          "sha256": "8c3d35706d3830703d53aac7d1ab26d92af47d11fe7f1e7e8a6b58e3f3afa745"
+        },
+        {
+          "order": 4,
+          "title": "四",
+          "incipit": "私は月の末に東京へ帰った。",
+          "sha256": "6b4f2bc4c218e48268725bb6bb4c88b14825a253d34a8a8a917faaf9f4fb18e8"
+        },
+        {
+          "order": 5,
+          "title": "五",
+          "incipit": "私は墓地の手前にある苗畠の左側からはいって…",
+          "sha256": "d83a65f9e8317674411e5e0decec4fce42b33db0c0c499c6802e400edf195eb4"
+        },
+        {
+          "order": 6,
+          "title": "六",
+          "incipit": "私はそれから時々先生を訪問するようになった。",
+          "sha256": "0b2cb3ec04191b393f5cd83c85db2143caa09bdccda2799edbab4516d8abb918"
+        },
+        {
+          "order": 7,
+          "title": "七",
+          "incipit": "私は不思議に思った。",
+          "sha256": "f2dd96e4db3eab44972bc7db702509925b807fb9010bc10eed0c3e77d6f7b1f4"
+        },
+        {
+          "order": 8,
+          "title": "八",
+          "incipit": "幸いにして先生の予言は実現されずに済んだ。",
+          "sha256": "a23464bbed731bc1e837089d27b7ab9091847577b75944321395897b6795909c"
+        },
+        {
+          "order": 9,
+          "title": "九",
+          "incipit": "私の知る限り先生と奥さんとは、仲の好い夫婦の一対であった。",
+          "sha256": "212298547a9a7fbec1e9a7a77417bc30dd22344d68898cb7d60f1415ec9aafc4"
+        },
+        {
+          "order": 10,
+          "title": "十",
+          "incipit": "二人が帰るとき歩きながらの沈黙が一丁も二丁もつづいた。",
+          "sha256": "d907ce2aa44ae945c2fe8a1b3e854922c1475a7a61c1e8ddfb9336e821e58bc6"
+        },
+        {
+          "order": 11,
+          "title": "十一",
+          "incipit": "その時の私はすでに大学生であった。",
+          "sha256": "aa6162fb8a36e0d4432bcfdba8e203ce67e63b975f7c4cefcc2606c0e30ceaf8"
+        },
+        {
+          "order": 12,
+          "title": "十二",
+          "incipit": "奥さんは東京の人であった。",
+          "sha256": "2f376f8143a65fdc2fefee6839c5fec8cde68bac3e4d2b81fe48bad9b807737e"
+        },
+        {
+          "order": 13,
+          "title": "十三",
+          "incipit": "我々は群集の中にいた。",
+          "sha256": "2dd1f29dd62d7b143dcf802c229de8cd1b90cc5d2a07fb47303758e0f0848a58"
+        },
+        {
+          "order": 14,
+          "title": "十四",
+          "incipit": "年の若い私はややともすると一図になりやすかった。",
+          "sha256": "9ad11e55c088f4aa01c44cdb93cf15a0a8937d866eb961c0f157a8697cec1781"
+        },
+        {
+          "order": 15,
+          "title": "十五",
+          "incipit": "その後私は奥さんの顔を見るたびに気になった。",
+          "sha256": "1c96253cd77604bf4016d6d0992e1c1eb856f85a67fed7b5f3101f8be0a64db7"
+        },
+        {
+          "order": 16,
+          "title": "十六",
+          "incipit": "私の行ったのはまだ灯の点くか点かない暮れ方であったが…",
+          "sha256": "c419854390cf98338a585c67de0e09363ea46a7615a4e9bef9626a0c9503d862"
+        },
+        {
+          "order": 17,
+          "title": "十七",
+          "incipit": "私はまだその後にいうべき事をもっていた。",
+          "sha256": "1a7817f1867c34aaba77c06ece8d000561b3add3e573a730df979412a9c93b90"
+        },
+        {
+          "order": 18,
+          "title": "十八",
+          "incipit": "私は奥さんの理解力に感心した。",
+          "sha256": "cad810e0f0858280e89b88c641b3ca6ecbedaae6872bc1f74edf1c997459609b"
+        },
+        {
+          "order": 19,
+          "title": "十九",
+          "incipit": "始め私は理解のある女性として奥さんに対していた。",
+          "sha256": "119a0bc1b6d9c827d22ed274df733b8e0bd8546fe2a8a531997ff19366d7603b"
+        },
+        {
+          "order": 20,
+          "title": "二十",
+          "incipit": "私は私のつらまえた事実の許す限り、奥さんを慰めようとした。",
+          "sha256": "3badd7424dd120ffaede38a7bbf514ebbd8c16b623e4d21c58e0a3bde5dcac80"
+        },
+        {
+          "order": 21,
+          "title": "二十一",
+          "incipit": "冬が来た時、私は偶然国へ帰らなければならない事になった。",
+          "sha256": "8e8f7caf4db88626c4646fc2fe272b44d364d74c6e1cde3db7e322ac1a7e6ac1"
+        },
+        {
+          "order": 22,
+          "title": "二十二",
+          "incipit": "父の病気は思ったほど悪くはなかった。",
+          "sha256": "195fb433fb795f6125ef26ca9f4ccd8338cf803c12df89a20cdbc2f28089fd9e"
+        },
+        {
+          "order": 23,
+          "title": "二十三",
+          "incipit": "私は退屈な父の相手としてよく将碁盤に向かった。",
+          "sha256": "ba09a10d1cd05b5eea5cb04b9c6535bc675098ced2cddf3ba600bbc6e8585325"
+        },
+        {
+          "order": 24,
+          "title": "二十四",
+          "incipit": "東京へ帰ってみると、松飾はいつか取り払われていた。",
+          "sha256": "96278eb6350bd3cb2f9616029e6be4951d8f8dc80e444e58dae42a679097508a"
+        },
+        {
+          "order": 25,
+          "title": "二十五",
+          "incipit": "その年の六月に卒業するはずの私は…",
+          "sha256": "7ac648be53b26b0be70428b398db89edac80585042e42dea31cd0df2864f511c"
+        },
+        {
+          "order": 26,
+          "title": "二十六",
+          "incipit": "私の自由になったのは、八重桜の散った枝にいつしか…",
+          "sha256": "c83b3f89cf4289638af0df065f5c801c110fe1cec6a75c573a99adda6b828337"
+        },
+        {
+          "order": 27,
+          "title": "二十七",
+          "incipit": "私はすぐその帽子を取り上げた。",
+          "sha256": "7b486dd9e20408fb9f8b98d83474241f28344f787923ba251d3da8bf39a36877"
+        },
+        {
+          "order": 28,
+          "title": "二十八",
+          "incipit": "「君のうちに財産があるなら…",
+          "sha256": "55b7a851b3cc4e71f37cfb7069709c8090288b2013827bff20d38928157434ba"
+        },
+        {
+          "order": 29,
+          "title": "二十九",
+          "incipit": "先生の談話は、この犬と小供のために…",
+          "sha256": "d418449e66019ce2f3fb01a2f0361915a1ce9554c45f7603e78438cb55161779"
+        },
+        {
+          "order": 30,
+          "title": "三十",
+          "incipit": "その時の私は腹の中で先生を憎らしく思った。",
+          "sha256": "27a774670742fd353fcb1f29b7885c473538762b173829b7b019395d6eb32341"
+        },
+        {
+          "order": 31,
+          "title": "三十一",
+          "incipit": "その日の談話もついにこれぎりで発展せずにしまった。",
+          "sha256": "184c7b971710fede8daf7f4a6d7daffa6d541525c887d39547623d85bbe6808a"
+        },
+        {
+          "order": 32,
+          "title": "三十二",
+          "incipit": "私の論文は自分が評価していたほどに…",
+          "sha256": "e955cba1cbe38c65af494fdc13da009030a3b74ed49434a6b728aba26cfdea49"
+        },
+        {
+          "order": 33,
+          "title": "三十三",
+          "incipit": "飯になった時、奥さんは傍に坐っている下女を次へ立たせて…",
+          "sha256": "643f2dfd8992833f0cc4e11e23fa2b36a94c58762ca4f2a02ecaa35d8f734ab8"
+        },
+        {
+          "order": 34,
+          "title": "三十四",
+          "incipit": "私はその夜十時過ぎに先生の家を辞した。",
+          "sha256": "eca948eb543c3eb601686a90b79d2774986986fc88ba586da16df1ec3d86f709"
+        },
+        {
+          "order": 35,
+          "title": "三十五",
+          "incipit": "私は立て掛けた腰をまたおろして…",
+          "sha256": "28262834f16da8027c9e993f56c698ef1f8ff2a1dd09a6aed84c29a5f50c9ee6"
+        },
+        {
+          "order": 36,
+          "title": "三十六",
+          "incipit": "私はその翌日も暑さを冒して、頼まれものを買い集めて歩いた。",
+          "sha256": "c6968c7629e61bcc6318de8ae11ccf625ac4d011944b4e51603f6085d515812e"
+        },
+        {
+          "order": 37,
+          "title": "中　両親と私　一",
+          "incipit": "宅へ帰って案外に思ったのは…",
+          "sha256": "85a2ae057a8b37dcef3fa0b240c337cef643e42b4b81bebf4da9ecda152fc5fd"
+        },
+        {
+          "order": 38,
+          "title": "二",
+          "incipit": "私は母を蔭へ呼んで父の病状を尋ねた。",
+          "sha256": "9b88ae864944b168cacd8739bb5396f42d75b798f6a0e502187146d81b14c761"
+        },
+        {
+          "order": 39,
+          "title": "三",
+          "incipit": "私のために赤い飯を炊いて客をするという相談が父と…",
+          "sha256": "879ace91a78cc92efa6bf89706642cfa2a2c8c44975e64969d6d26ec2dfbd8ff"
+        },
+        {
+          "order": 40,
+          "title": "四",
+          "incipit": "小勢な人数には広過ぎる古い家がひっそりしている中に…",
+          "sha256": "79da95dc1afeffcf865da0e9dda97a9ad6994091886c4e0223f0158a2103c8f1"
+        },
+        {
+          "order": 41,
+          "title": "五",
+          "incipit": "父の元気は次第に衰えて行った。",
+          "sha256": "25aff12fa4b494779d810b7672d2c8c4d3681e12726976f0d58e1b04e626a768"
+        },
+        {
+          "order": 42,
+          "title": "六",
+          "incipit": "八月の半ばごろになって、私はある朋友から手紙を受け取った。",
+          "sha256": "faa781e31412eb602495896091ab17d9e969d7c96e281a598291c402c4b6e5d2"
+        },
+        {
+          "order": 43,
+          "title": "七",
+          "incipit": "父は明らかに自分の病気を恐れていた。",
+          "sha256": "5f0a4412ee82bdecd6886404bc2923b3277aff3dff15b13030c1df747fbc3dda"
+        },
+        {
+          "order": 44,
+          "title": "八",
+          "incipit": "九月始めになって、私はいよいよまた東京へ出ようとした。",
+          "sha256": "84fbe2b4d250bfb59081034e0b0083aefdd1cb18ced17ef8d11afb194f792c98"
+        },
+        {
+          "order": 45,
+          "title": "九",
+          "incipit": "私がいよいよ立とうという間際になって…",
+          "sha256": "4085e8a728e428cd644d0f473be97ccb33cce8757936e5cdfc801eff3d43921c"
+        },
+        {
+          "order": 46,
+          "title": "十",
+          "incipit": "父の病気は同じような状態で一週間以上つづいた。",
+          "sha256": "5fdc3f2e483d8b3f8a94bbc673edb875bba7ce7009556e1e7f9d8d7dea6baf86"
+        },
+        {
+          "order": 47,
+          "title": "十一",
+          "incipit": "こうした落ち付きのない間にも…",
+          "sha256": "58832c7f7350b4971530a775ab5bd2e8ab7e863ebfeb855e4558ca7635848aa0"
+        },
+        {
+          "order": 48,
+          "title": "十二",
+          "incipit": "兄が帰って来た時、父は寝ながら新聞を読んでいた。",
+          "sha256": "aa4431ff9e7dc25e22f56c62a9cf1412f1bf022a1ae54f721048a7b251592269"
+        },
+        {
+          "order": 49,
+          "title": "十三",
+          "incipit": "私の書いた手紙はかなり長いものであった。",
+          "sha256": "d09cdaddb920dc09b42fa9caf3d11fd22846c8ad642873edbc11e185befdc3e3"
+        },
+        {
+          "order": 50,
+          "title": "十四",
+          "incipit": "父の病気は最後の一撃を待つ間際まで進んで来て…",
+          "sha256": "8e0b44f4e1340d9dabad956bb8152f9260c7bb7ef0140d0a3a41e407a6f65135"
+        },
+        {
+          "order": 51,
+          "title": "十五",
+          "incipit": "「先生先生というのは一体誰の事だい」と兄が聞いた。",
+          "sha256": "f9cc61108925fbff3b8252ef218eeddfebf11f3f25535a5eefe692297bc0ed91"
+        },
+        {
+          "order": 52,
+          "title": "十六",
+          "incipit": "父は時々囈語をいうようになった。",
+          "sha256": "9de09c15de7c4f87a346ff0670b13a94f65f79da2940dc0244ac22507982f2cb"
+        },
+        {
+          "order": 53,
+          "title": "十七",
+          "incipit": "その日は病人の出来がことに悪いように見えた。",
+          "sha256": "11f167a106e9a846716d09eee51bb1aa772c6ecb7434a7d9f52895ec45c99bee"
+        },
+        {
+          "order": 54,
+          "title": "十八",
+          "incipit": "病室にはいつの間にか医者が来ていた。",
+          "sha256": "73b806c1e839ac5c1f5fe220e9786b14a587095ae34b8e9d6ce5a495c9782283"
+        },
+        {
+          "order": 55,
+          "title": "下　先生と遺書　一",
+          "incipit": "「……私はこの夏あなたから二、三度手紙を受け取りました。",
+          "sha256": "1b58e202818089aa16c4f8bb01391235c479f130af4d6c1988d6a0b75bd13157"
+        },
+        {
+          "order": 56,
+          "title": "二",
+          "incipit": "「私はそれからこの手紙を書き出しました。",
+          "sha256": "3e1068dde86b07f1b848089419baa1a2fcb9e4833783ae245bd54acda2b4c322"
+        },
+        {
+          "order": 57,
+          "title": "三",
+          "incipit": "「私が両親を亡くしたのは、まだ私の廿歳にならない時分でした。",
+          "sha256": "ff8b0a1963aafb98686fdf7fb84d3e4288415936699d03e88a2f0438629ecd59"
+        },
+        {
+          "order": 58,
+          "title": "四",
+          "incipit": "「とにかくたった一人取り残された私は、母のいい付け通り…",
+          "sha256": "40e7f2514efd2a45007ce6de775b2cbe860eed2114538ba0b6b83c89e3a71e16"
+        },
+        {
+          "order": 59,
+          "title": "五",
+          "incipit": "「私が夏休みを利用して始めて国へ帰った時…",
+          "sha256": "ce62f0733ff0db4e728544e93d9a8d6eed56ef968a80be78401e41507ebc33ab"
+        },
+        {
+          "order": 60,
+          "title": "六",
+          "incipit": "「私は縁談の事をそれなり忘れてしまいました。",
+          "sha256": "b52338f85dc0e26c95c02681b79c50825895b5019681215d2a5a36348d2bab1c"
+        },
+        {
+          "order": 61,
+          "title": "七",
+          "incipit": "「私が三度目に帰国したのは…",
+          "sha256": "ecb49d62907eb8fab4fa84af2ffd069cfa8828066f0d930f6f56f3b0a6a960e8"
+        },
+        {
+          "order": 62,
+          "title": "八",
+          "incipit": "「私は今まで叔父任せにしておいた家の財産について…",
+          "sha256": "4c11d21098dcdff2110ff9539abea7c2688c727efd488a41afa2e51efa7ff07e"
+        },
+        {
+          "order": 63,
+          "title": "九",
+          "incipit": "「一口でいうと、叔父は私の財産を胡魔化したのです。",
+          "sha256": "eb4a6e7c4f5f544532274021230d3d1d7adcbd02ce9b8d29c40bc620728fccd4"
+        },
+        {
+          "order": 64,
+          "title": "十",
+          "incipit": "「金に不自由のない私は、騒々しい下宿を出て…",
+          "sha256": "164b6040c2244f97c708747df2c8bda34969e4f941c231479453f1f90b0f2e3e"
+        },
+        {
+          "order": 65,
+          "title": "十一",
+          "incipit": "「私は早速その家へ引き移りました。",
+          "sha256": "c3a5a02da7f6921c750b3dd854283f40b289d8841fc8678fa123f3b7102d79e7"
+        },
+        {
+          "order": 66,
+          "title": "十二",
+          "incipit": "「私の気分は国を立つ時すでに厭世的になっていました。",
+          "sha256": "0a92fddaf71b3c6bf5ef17208c5c2f8e05f21010a1074943f5b29053b45ed36a"
+        },
+        {
+          "order": 67,
+          "title": "十三",
+          "incipit": "「奥さんのこの態度が自然私の気分に影響して来ました。",
+          "sha256": "ef55973a2d2ea2cd1163d3ff604bb9f191033cfbb5a43952b540f21a5f88b2a9"
+        },
+        {
+          "order": 68,
+          "title": "十四",
+          "incipit": "「私はお嬢さんの立ったあとで、ほっと一息するのです。",
+          "sha256": "2331b259bd43fb309021708830df9abe59e4d55b83b13c6bf015374d015674cf"
+        },
+        {
+          "order": 69,
+          "title": "十五",
+          "incipit": "「私は奥さんの態度を色々綜合して見て…",
+          "sha256": "65552e28adff576e5ba587465d061ada152e102999d3dca82dc74b85bde444e4"
+        },
+        {
+          "order": 70,
+          "title": "十六",
+          "incipit": "「私は相変らず学校へ出席していました。",
+          "sha256": "5e64cf3c745614c8b60b10da4395ffa9dacb2caea01dcc83708158c48261292d"
+        },
+        {
+          "order": 71,
+          "title": "十七",
+          "incipit": "「私が書物ばかり買うのを見て…",
+          "sha256": "44cec0973035ca3a0174e999d50f116260452de5afe6fa4168d6636510f941cd"
+        },
+        {
+          "order": 72,
+          "title": "十八",
+          "incipit": "「私は宅へ帰って奥さんとお嬢さんにその話をしました。",
+          "sha256": "9c5ac9eb1d550f33d3224c26e6397bf49d7405cf606864daf31d072174bba254"
+        },
+        {
+          "order": 73,
+          "title": "十九",
+          "incipit": "「私はその友達の名をここにＫと呼んでおきます。",
+          "sha256": "44b94349ebb728da977ba9ab4219adb379a0333b54560bb979bcd2d15ca26b2d"
+        },
+        {
+          "order": 74,
+          "title": "二十",
+          "incipit": "「Ｋと私は同じ科へ入学しました。",
+          "sha256": "351e11dfe7a05d2ebf2db7c332214392a644a2d9f934538caa9b61cd515faec9"
+        },
+        {
+          "order": 75,
+          "title": "二十一",
+          "incipit": "「Ｋの手紙を見た養父は大変怒りました。",
+          "sha256": "fb4ea53ea831d2958cda4233b8de6a15d01595ff31e4147c08883deeef048203"
+        },
+        {
+          "order": 76,
+          "title": "二十二",
+          "incipit": "「Ｋの事件が一段落ついた後で…",
+          "sha256": "29344c9ea0cc37bbb63b89f8bf681dc358a56c96f4d853b437eed70ad98e1d21"
+        },
+        {
+          "order": 77,
+          "title": "二十三",
+          "incipit": "「私の座敷には控えの間というような四畳が付属していました。",
+          "sha256": "2cf7a9db5d3e08c10b18605b24d1f0712aebb733c603289aa7fe4af9cc2e2b1a"
+        },
+        {
+          "order": 78,
+          "title": "二十四",
+          "incipit": "「私は奥さんからそういう風に取り扱われた結果…",
+          "sha256": "7ca062beab6db4ec6610ca64ab962a3046ec60ba639c76d0c9df9017eb021a91"
+        },
+        {
+          "order": 79,
+          "title": "二十五",
+          "incipit": "「私は蔭へ廻って、奥さんとお嬢さんに…",
+          "sha256": "bacdfddb828fdbcdfd2606579409ca5b6aed3915cd8bbfff4ecb169b948c539b"
+        },
+        {
+          "order": 80,
+          "title": "二十六",
+          "incipit": "「Ｋと私は同じ科におりながら…",
+          "sha256": "976d82b7f55b828a605a8c7864dd539582bc2bbae46ed392fc3405efa7227913"
+        },
+        {
+          "order": 81,
+          "title": "二十七",
+          "incipit": "「一週間ばかりして私はまたＫとお嬢さんがいっしょ…",
+          "sha256": "01b16feafc2665f54b2a63417c561af7e29d53f8ae286b6baa002b9efa2debd6"
+        },
+        {
+          "order": 82,
+          "title": "二十八",
+          "incipit": "「Ｋはあまり旅へ出ない男でした。",
+          "sha256": "ae8f270bf6c71b4a7bff66f48d7c001dd4056e1f4dcaff8a25d99156fc33344c"
+        },
+        {
+          "order": 83,
+          "title": "二十九",
+          "incipit": "「私は思い切って自分の心をＫに打ち明けようとしました。",
+          "sha256": "22fdecac1c6cef6af41c8adf859ca81bf38f928093c3e23da21499c434e92016"
+        },
+        {
+          "order": 84,
+          "title": "三十",
+          "incipit": "「こんな風にして歩いていると…",
+          "sha256": "6f235a6b2efc465c5ed61f030ed6c9b698d991452da31b9f0de66cd29b545a79"
+        },
+        {
+          "order": 85,
+          "title": "三十一",
+          "incipit": "「その時私はしきりに人間らしいという言葉を使いました。",
+          "sha256": "1e917710d8170ba75dfe8780f2a94f21502d21b49977189aecc3dfa41034ac33"
+        },
+        {
+          "order": 86,
+          "title": "三十二",
+          "incipit": "「それのみならず私はお嬢さんの態度の少し前と変っ…",
+          "sha256": "7e362625ba5e027929f4bc66d5ffef01427abbe6a137c0a376a18dbab9a1ad9d"
+        },
+        {
+          "order": 87,
+          "title": "三十三",
+          "incipit": "「十一月の寒い雨の降る日の事でした。",
+          "sha256": "de5b6fd59bfb2a2119cff0fbeac1cce8b99fcff8439b2ce3fbe1aec3801759cf"
+        },
+        {
+          "order": 88,
+          "title": "三十四",
+          "incipit": "「私はＫに向ってお嬢さんといっしょに出たのかと聞きました。",
+          "sha256": "fce28f83a790b65b3943affd4cf786e340a54898a9f414f9807ea5a1dac07d94"
+        },
+        {
+          "order": 89,
+          "title": "三十五",
+          "incipit": "「こんな訳で私はどちらの方面へ向っても進む事がで…",
+          "sha256": "3363346beea3678e27c01c22ce4bf7f2f69e3f210c164dcaa875344d1a6b8b2c"
+        },
+        {
+          "order": 90,
+          "title": "三十六",
+          "incipit": "「Ｋはなかなか奥さんとお嬢さんの話を已めませんでした。",
+          "sha256": "1b75f6327c48589b9aeea177fa6c3431bb1dc04c2f99d398aeb466c528df56d4"
+        },
+        {
+          "order": 91,
+          "title": "三十七",
+          "incipit": "「二人は各自の室に引き取ったぎり顔を合わせませんでした。",
+          "sha256": "2d2b99271795c7e6ed531f2b37c9954f36f6dc22ba005c37dc21342ea2a86f32"
+        },
+        {
+          "order": 92,
+          "title": "三十八",
+          "incipit": "「私が家へはいると間もなく俥の音が聞こえました。",
+          "sha256": "2d31d0c3c6dfed6eb01b9e929db11bf8614c18a46629072053dbee655b873eda"
+        },
+        {
+          "order": 93,
+          "title": "三十九",
+          "incipit": "「Ｋの生返事は翌日になっても、その翌日になっても…",
+          "sha256": "6c301577c229e9e8663080895fe7322d152a5791d602c22ead0606533e48d342"
+        },
+        {
+          "order": 94,
+          "title": "四十",
+          "incipit": "「ある日私は久しぶりに学校の図書館に入りました。",
+          "sha256": "19d16122cb322e9d27c3e0d5c443281a92aad41e98d85b54f3c040ceaa94be28"
+        },
+        {
+          "order": 95,
+          "title": "四十一",
+          "incipit": "「私はちょうど他流試合でもする人のようにＫを注意…",
+          "sha256": "334f1d40642bf38e27c5dd5306bdd19d43e51174f6c4c5206ff63518d54ad64a"
+        },
+        {
+          "order": 96,
+          "title": "四十二",
+          "incipit": "「私はＫと並んで足を運ばせながら…",
+          "sha256": "9c9b9894b1f4bd6fc7ea457ff23087d0f77677e69ea924ab188e20cb45ef121c"
+        },
+        {
+          "order": 97,
+          "title": "四十三",
+          "incipit": "「その頃は覚醒とか新しい生活とかいう文字のまだな…",
+          "sha256": "155e3a5b11817a428db813e7ce130d19457bee789f9b541829401493d85836fe"
+        },
+        {
+          "order": 98,
+          "title": "四十四",
+          "incipit": "「Ｋの果断に富んだ性格は私によく知れていました。",
+          "sha256": "919c9e3067ecb5cdbcfc1e6ce84b2507e060b8dde9bb3805cd02dc8fbaaeecf1"
+        },
+        {
+          "order": 99,
+          "title": "四十五",
+          "incipit": "「Ｋから聞かされた打ち明け話を…",
+          "sha256": "ccbc2bac496ac8f1b9ece11a4dad112e12cd29662c4b09e6c8795067198aa390"
+        },
+        {
+          "order": 100,
+          "title": "四十六",
+          "incipit": "「私は猿楽町から神保町の通りへ出て、小川町の方へ曲りました。",
+          "sha256": "f9eb978756513eca7d229d21d36a0720a0c7ddb8c1fb8d4bf3a984f1c1671cf8"
+        },
+        {
+          "order": 101,
+          "title": "四十七",
+          "incipit": "「私はそのまま二、三日過ごしました。",
+          "sha256": "5d3b4d8efcb62ba81856c67229186ae195be901e7029ff006d43ce9275565171"
+        },
+        {
+          "order": 102,
+          "title": "四十八",
+          "incipit": "「勘定して見ると奥さんがＫに話をしてからもう二日…",
+          "sha256": "3ef6c79d3a7b09564f441e6fbc5f71ee7d88ec1bd43bc10c53473c6416f4a1ef"
+        },
+        {
+          "order": 103,
+          "title": "四十九",
+          "incipit": "「私は突然Ｋの頭を抱えるように両手で少し持ち上げました。",
+          "sha256": "081c30761fabf48f0a52e330f26526e39325ac0eff9b66232a8ddc2f70fc47df"
+        },
+        {
+          "order": 104,
+          "title": "五十",
+          "incipit": "「私は奥さんに気の毒でしたけれども…",
+          "sha256": "5002a980108318481075f71cc72013fb383983a9a133fc55d1cc9111f73d53c2"
+        },
+        {
+          "order": 105,
+          "title": "五十一",
+          "incipit": "「Ｋの葬式の帰り路に、私はその友人の一人から…",
+          "sha256": "584d620e63c8de61bddd5d5254d4f214c0298fd5486f512d97cf8c20a554a2cc"
+        },
+        {
+          "order": 106,
+          "title": "五十二",
+          "incipit": "「私の亡友に対するこうした感じはいつまでも続きました。",
+          "sha256": "a606ecc2945bcdd8a695832cbfb25ad01efdc62d0dd9bd7591715f2f3480c061"
+        },
+        {
+          "order": 107,
+          "title": "五十三",
+          "incipit": "「書物の中に自分を生埋めにする事のできなかった私は…",
+          "sha256": "da84f4b79413dc9e397424e8c1f8cef1940dd1fb35261c94f1d98087119101b5"
+        },
+        {
+          "order": 108,
+          "title": "五十四",
+          "incipit": "「その内妻の母が病気になりました。",
+          "sha256": "7e7c504c57685fbb578a97f1ae494e1eb10af8dd3bc8e5a1851d9a990ad29fa2"
+        },
+        {
+          "order": 109,
+          "title": "五十五",
+          "incipit": "「死んだつもりで生きて行こうと決心した私の心は…",
+          "sha256": "3cdb46bb5ce5f25adeee5f2705271901b662a1f41ff708dd86b93ee2fe8f7c9a"
+        },
+        {
+          "order": 110,
+          "title": "五十六",
+          "incipit": "「私は殉死という言葉をほとんど忘れていました。",
+          "sha256": "cafbec82840431f0e4eff881bb656fb60efe3f5f256120cbede5730d109b5d35"
+        }
+      ]
+    },
     "aozora-000879-000042": {
       "title": "鼻",
       "author": "芥川龍之介",
@@ -1420,6 +2350,351 @@
           "title": "2/2",
           "incipit": "下人は、六分の恐怖と四分の好奇心とに動かされて…",
           "sha256": "02ce946446b7741bc1507f31dc27f598689f0a7834c20b54604b31e483b3aee6"
+        }
+      ]
+    },
+    "aozora-000879-043015": {
+      "title": "杜子春",
+      "author": "芥川龍之介",
+      "level": "N3 중급",
+      "total": 6,
+      "division": "heading",
+      "chars": 9298,
+      "display": {
+        "titleReading": "とししゅん",
+        "titleKo": "두자춘",
+        "authorKo": "아쿠타가와 류노스케",
+        "cover": "peach",
+        "motif": "peach-house"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000879-043015",
+        "personId": "000879",
+        "workId": "43015",
+        "title": "杜子春",
+        "author": "芥川龍之介",
+        "publishedYear": 1920,
+        "authorDeathYear": 1927,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000879/card43015.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000879/files/43015_ruby_17393.zip",
+        "sourceSha256": "e702225f1d30d9ce75cb645c05359d7f11b0fb277f650b8f5cf0bd4ef8b40ef9",
+        "textSha256": "668213e9d00b5650c7737c4c9f74adb8dd543dea5e1c8ed862d62ea1cb91ca67",
+        "attribution": {
+          "author": "芥川龍之介",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-15",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000879/card43015.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「蜘蛛の糸・杜子春」新潮文庫、新潮社",
+            "1968（昭和43）年11月15日発行",
+            "1989（平成元）年5月30日46刷"
+          ],
+          "parentBook": [],
+          "inputter": "蒋龍",
+          "proofreader": "noriko saito"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "一",
+          "incipit": "或春の日暮です。",
+          "sha256": "d12ff52308bb6c331724340db8615937e77b1e75087e6406992e52e0c95e4b8a"
+        },
+        {
+          "order": 2,
+          "title": "二",
+          "incipit": "杜子春は一日の内に、洛陽の都でも唯一人という大金…",
+          "sha256": "904ad38d1e1299718de237eb761bdf1843e6764e716c62ee935cc72a1481f966"
+        },
+        {
+          "order": 3,
+          "title": "三",
+          "incipit": "「お前は何を考えているのだ」",
+          "sha256": "0db907255dc1df98e995334b7359a54afd98a3a3393506cf50ab3bb12bc7aa8e"
+        },
+        {
+          "order": 4,
+          "title": "四",
+          "incipit": "二人を乗せた青竹は、間もなく峨眉山へ舞い下りました。",
+          "sha256": "af20590c227eab71d19b8a0ff740cafe9f1cfbe8b3fc9f140a6a329adf4b7908"
+        },
+        {
+          "order": 5,
+          "title": "五",
+          "incipit": "杜子春の体は岩の上へ、仰向けに倒れていましたが…",
+          "sha256": "e3a383777bcba0f0b7a760d263e15a6945be6a603a3488ed8fa737c19c633495"
+        },
+        {
+          "order": 6,
+          "title": "六",
+          "incipit": "その声に気がついて見ると、杜子春はやはり夕日を浴びて…",
+          "sha256": "e17024168c0b0ecfa8d348f1fa9a1813ba99073a36a50db80e5464d4209d964c"
+        }
+      ]
+    },
+    "aozora-000879-043016": {
+      "title": "トロッコ",
+      "author": "芥川龍之介",
+      "level": "N3 중급",
+      "total": 2,
+      "division": "split",
+      "chars": 4405,
+      "display": {
+        "titleReading": "トロッコ",
+        "titleKo": "광차",
+        "authorKo": "아쿠타가와 류노스케",
+        "cover": "olive",
+        "motif": "dusk-rails"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000879-043016",
+        "personId": "000879",
+        "workId": "43016",
+        "title": "トロッコ",
+        "author": "芥川龍之介",
+        "publishedYear": 1922,
+        "authorDeathYear": 1927,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000879/card43016.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000879/files/43016_ruby_16663.zip",
+        "sourceSha256": "fee4a89edfad88d84e787e6ba42a774a1891d10754090eb5132bc9b6ba25c27b",
+        "textSha256": "d3aeea051af1514507da5202d8c5ecf3344e40d6af47f08bd8db28c494228405",
+        "attribution": {
+          "author": "芥川龍之介",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-15",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000879/card43016.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「蜘蛛の糸・杜子春」新潮文庫、新潮社",
+            "1968（昭和43）年11月15日発行",
+            "1984（昭和59）年12月25日38刷改版",
+            "1989（平成元）年5月30日46刷"
+          ],
+          "parentBook": [],
+          "inputter": "蒋龍",
+          "proofreader": "鈴木厚司"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "1/2",
+          "incipit": "小田原熱海間に、軽便鉄道敷設の工事が始まったのは…",
+          "sha256": "5cbcf9eebdd506e04046bf99a017f04a58c4942a4acdcb3ea5d9607524db11ac"
+        },
+        {
+          "order": 2,
+          "title": "2/2",
+          "incipit": "竹藪のある所へ来ると、トロッコは静かに走るのを止めた。",
+          "sha256": "2a66f8ca04520aeb5af07893c72a50298264e8f80c34bd62bd9fa4841ee7d562"
+        }
+      ]
+    },
+    "aozora-001383-056641": {
+      "title": "刺青",
+      "author": "谷崎潤一郎",
+      "level": "N1 심화",
+      "total": 2,
+      "division": "split",
+      "chars": 5786,
+      "display": {
+        "titleReading": "しせい",
+        "titleKo": "문신",
+        "authorKo": "다니자키 준이치로",
+        "cover": "amber",
+        "motif": "spider-sun"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-001383-056641",
+        "personId": "001383",
+        "workId": "56641",
+        "title": "刺青",
+        "author": "谷崎潤一郎",
+        "publishedYear": 1910,
+        "authorDeathYear": 1965,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/001383/card56641.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/001383/files/56641_ruby_59456.zip",
+        "sourceSha256": "40e71791342b99fe7f82e5bee2be1c29cdb7b9e654dc7025857a112658f27f6f",
+        "textSha256": "73441e3b15a3f41c411fd29c6d95bc5b86afcc05bb224dac4f182a36af69e748",
+        "attribution": {
+          "author": "谷崎潤一郎",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-15",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/001383/card56641.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「潤一郎ラビリンス※［＃ローマ数字1、1-13-21］――初期短編集」中公文庫、中央公論社",
+            "1998（平成10）年5月18日初版発行"
+          ],
+          "parentBook": [
+            "「谷崎潤一郎全集　第一巻」中央公論社",
+            "1981（昭和56）年5月25日"
+          ],
+          "inputter": "砂場清隆",
+          "proofreader": "門田裕志"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "1/2",
+          "incipit": "其れはまだ人々が「愚」と云う貴い徳を持って居て…",
+          "sha256": "2e6e79e31fe431ddecca53049d877f304ac73c1e3cdb4429bb9806591a981a12"
+        },
+        {
+          "order": 2,
+          "title": "2/2",
+          "incipit": "娘は暫くこの奇怪な絵の面を見入って居たが…",
+          "sha256": "aa234be4530aa10b11c04722b3e40bcec1eaf9cf2c4ec654f261b2fa6760580f"
+        }
+      ]
+    },
+    "aozora-001779-056648": {
+      "title": "人間椅子",
+      "author": "江戸川乱歩",
+      "level": "N2 상급",
+      "total": 4,
+      "division": "split",
+      "chars": 15005,
+      "display": {
+        "titleReading": "にんげんいす",
+        "titleKo": "인간 의자",
+        "authorKo": "에도가와 란포",
+        "cover": "wine",
+        "motif": "deco-chair"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-001779-056648",
+        "personId": "001779",
+        "workId": "56648",
+        "title": "人間椅子",
+        "author": "江戸川乱歩",
+        "publishedYear": 1925,
+        "authorDeathYear": 1965,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/001779/card56648.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/001779/files/56648_ruby_58198.zip",
+        "sourceSha256": "e97aefbf18ec8e0373896850a97b3cf72b33f738aaa2a5abfb7d41f0c3f15b28",
+        "textSha256": "8dd678a6e87326ce0727f5d1fd3afc08006343d3af7ae4fa6ddc6a302481fab7",
+        "attribution": {
+          "author": "江戸川乱歩",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-15",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/001779/card56648.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「江戸川乱歩全集　第1巻　屋根裏の散歩者」光文社文庫、光文社",
+            "2004（平成16）年7月20日初版1刷発行"
+          ],
+          "parentBook": [
+            "「江戸川乱歩全集　第五巻」平凡社",
+            "1931（昭和6）年7月"
+          ],
+          "inputter": "砂場清隆",
+          "proofreader": "湖山ルル"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "1/4",
+          "incipit": "佳子は、毎朝、夫の登庁を見送って了うと…",
+          "sha256": "229c36327a9aee0668d47630a336499b7cd7f2ebc60fa55cc5027aa13a7b9615"
+        },
+        {
+          "order": 2,
+          "title": "2/4",
+          "incipit": "さて、出来上った椅子を見ますと…",
+          "sha256": "da1d08e5d1acfa6b52724ca2a83734853a6b5ca8778908e9acde3cf7b6a6e6d0"
+        },
+        {
+          "order": 3,
+          "title": "3/4",
+          "incipit": "まっ暗で、身動きも出来ない革張りの中の天地。",
+          "sha256": "94c4bb6362b7e5a401ed731cd227091f8013f84eeb436f6b154cd0bf5b613ee0"
+        },
+        {
+          "order": 4,
+          "title": "4/4",
+          "incipit": "私は、それを知ると、一時はガッカリ致しました。",
+          "sha256": "3031ad4baf2a9b484108cb617656b605f972a8e2be06d7df703df10081727ba4"
         }
       ]
     }

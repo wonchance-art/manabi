@@ -18,6 +18,10 @@ export const AOZORA_CHAPTER_TARGET_CHARS = 3000;
 export const AOZORA_CHAPTER_MAX_CHARS = 6000;
 /** 見出し 장이 이보다 길면 그 장만 고른 크기로 다시 나눈다(「一 (1/2)」) — 장당 10–15분(설계 §1.2). 坊っちゃん 실측: 一 7,539자. */
 export const AOZORA_HEADING_CHAPTER_MAX_CHARS = 4000;
+/** 첫 見出し 앞 머리말이 이 길이 이하면 첫 장 머리에 붙인다(実물 やまなし 「小さな谷川の底を写した二枚の青い幻燈です。」 21자가 한 장이 되던 문제). */
+export const AOZORA_PREFACE_MERGE_MAX_CHARS = 500;
+/** 고른 분할로 받아들이는 장 크기 비(가장 긴 장 / 가장 짧은 장) — 이보다 고르지 않은 후보는 이음 문단 회피보다 뒤로 둔다. */
+const BALANCED_RATIO = 1.25;
 /** 우리가 바꾼 점(취급 규준 「작업 이력」) — 뷰어 출처 줄이 이 코드로 문구를 고른다. */
 export const AOZORA_EDIT_NOTES = Object.freeze(['ruby-reading-aid', 'chapter-split-by-manabi']);
 /** Unicode에 없는 작은 가나를 보통 크기로 바꾼 책에만 더하는 편집 표시(AOZORA_SUBSTITUTED_GAIJI). */
@@ -129,20 +133,39 @@ function unmarkChapter(markedText, queue, cursor) {
  * splitTextIntoChapters는 목표를 넘기 전에 장을 닫아 꼬리가 짧게 남는다(실물 「鼻」 2837·2752·230자). 장 수를 먼저
  * 정하면 장 크기가 고르다(2,9xx·2,9xx). 분할 자체는 정본 splitTextIntoChapters가 그대로 한다(문단 경계만).
  */
-function balancedLengthSplit(length, targetChars, maxChars, split, partLimit = Infinity) {
+function balancedLengthSplit(length, targetChars, maxChars, split, { partLimit = Infinity, keepBalanced = false } = {}) {
   const count = Math.max(1, Math.round(length / targetChars), Math.ceil(length / partLimit));
   const step = Math.max(1, Math.ceil(targetChars / 60));
   let first = null;
+  let firstClean = null;
   for (let target = Math.ceil(length / count), tries = 0; target <= maxChars && tries < 40; target += step) {
     const parts = split(target);
     if (parts.length > count) continue;
     if (parts.some((part) => part.text.length > partLimit)) break; // 더 큰 목표는 더 큰 조각만 만든다 — 장 수를 늘린 첫 후보로
     first ??= parts;
     // 고른 크기 안에서는 장 머리가 앞 문단에 매달린 이음 문단(と答えた。· 、…)이 아닌 경계를 고른다(실물 「鼻」 2장 머리).
-    if (parts.slice(1).every((part) => !continuesPrevious(part.text))) return parts;
+    const clean = parts.slice(1).every((part) => !continuesPrevious(part.text));
+    // keepBalanced: 목표를 키울수록 앞 장이 커지고 꼬리가 준다 — 이음 문단을 피한 첫 후보가 고르지 않으면(실물 人間椅子
+    // 3,2xx×4 · 2,113자) 더 찾아 고르면서 깨끗한 후보를 고르고, 없을 때만 그 첫 후보로 물러난다.
+    // 見出し 장 안 나눔(坊っちゃん)에는 켜지 않는다 — 이미 게시됐을 수 있는 장 경계를 바꾸지 않는다(켜면 「六」 네 조각이 바뀐다).
+    if (clean && (!keepBalanced || balancedParts(parts))) return parts;
+    if (clean) firstClean ??= parts;
     tries += 1;
   }
-  return first ?? split(targetChars);
+  return firstClean ?? first ?? split(targetChars);
+}
+
+/** 첫 見出し 앞의 짧은 머리말(見出し가 아닌 첫 조각)은 따로 한 장으로 두지 않고 첫 見出し 장 머리에 붙인다 — 목차는 작가 見出し 그대로. */
+function mergeShortPreface(sections, projection) {
+  const [lead, next, ...rest] = sections;
+  const leadTitle = String(lead?.title || '').replace(/[\uE000\uE001]/gu, '');
+  if (!next || projection.headingTexts.has(leadTitle) || lead.text.length > AOZORA_PREFACE_MERGE_MAX_CHARS) return sections;
+  return [{ ...next, text: `${lead.text}\n\n${next.text}` }, ...rest];
+}
+
+function balancedParts(parts) {
+  const sizes = parts.map((part) => part.text.length);
+  return Math.max(...sizes) < Math.min(...sizes) * BALANCED_RATIO;
 }
 
 /** 앞 문단에 이어지는 문단인가 — 인용 뒤 조사(と·って)·쉼표로 시작하면 앞 대사의 꼬리다. 표식(U+E000)은 건너뛴다. */
@@ -229,13 +252,13 @@ export function createAozoraMaterialDraft(entry, document, options = {}) {
   // 見出し 장은 작가의 목차대로 두되, 한 장이 상한보다 길면 그 장만 見出し 없는 원작과 같은 고른 분할로 나눈다
   // (예전에는 6,000자 넘을 때만 앞에서부터 잘라 「一 (1/2)」 5,538자 · 「一 (2/2)」 2,001자처럼 꼬리가 짧았다 — 坊っちゃん 실측).
   const parts = projection.useHeadings
-    ? splitTextIntoChapters(projection.text, { targetChars, maxChars: Number.MAX_SAFE_INTEGER, headingTest }).flatMap((section) => {
+    ? mergeShortPreface(splitTextIntoChapters(projection.text, { targetChars, maxChars: Number.MAX_SAFE_INTEGER, headingTest }), projection).flatMap((section) => {
       if (section.text.length <= AOZORA_HEADING_CHAPTER_MAX_CHARS) return [section];
       const pieces = balancedLengthSplit(section.text.length, targetChars, maxChars,
-        (target) => splitTextIntoChapters(section.text, { targetChars: target, maxChars, headings: false }), AOZORA_HEADING_CHAPTER_MAX_CHARS);
+        (target) => splitTextIntoChapters(section.text, { targetChars: target, maxChars, headings: false }), { partLimit: AOZORA_HEADING_CHAPTER_MAX_CHARS });
       return pieces.length > 1 ? pieces.map((piece, index) => ({ ...piece, title: `${section.title} (${index + 1}/${pieces.length})` })) : [section];
     })
-    : balancedLengthSplit(projection.text.length, targetChars, maxChars, split);
+    : balancedLengthSplit(projection.text.length, targetChars, maxChars, split, { keepBalanced: true });
   invariant(parts.length > 0, 'Aozora document produced no chapters');
 
   const key = aozoraWorkKey(entry);

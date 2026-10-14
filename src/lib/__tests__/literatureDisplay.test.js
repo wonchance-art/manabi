@@ -18,6 +18,9 @@ import { sliceBetween } from './helpers/sliceBetween';
 // 표지는 원서 이미지가 아닌 타이포그래피(IP 정책 §2.1 금지⑴), 목차는 작가 見出し / 나눈 위치(1/2) / 전문 — 「과」를 쓰지 않는다.
 
 const read = (file) => readFileSync(path.join(process.cwd(), file), 'utf8');
+const DIGITS = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+/** 1–99 → 漢数字(十一·二十·五十六) — 작가 見出し 절 번호 표기 */
+const kanjiNumber = (n) => `${n >= 20 ? DIGITS[Math.floor(n / 10)] : ''}${n >= 10 ? '十' : ''}${DIGITS[n % 10]}`;
 const KEYS = { gon: 'aozora-000121-000628', hana: 'aozora-000879-000042', tebukuro: 'aozora-000121-000637' };
 
 describe('정본 작품 표기 — 대조표가 싣는다', () => {
@@ -46,6 +49,15 @@ describe('정본 작품 표기 — 대조표가 싣는다', () => {
         })],
       'aozora-000879-000092': ['heading', ['一', '二', '三']],
       'aozora-000879-000127': ['split', ['1/2', '2/2']],
+      // 3차 묶음(2026-10-14) — こころ는 上·中·下 見出し 아래 절 번호 그대로 110장(대見出し는 그 첫 절 이름 앞에)
+      'aozora-000081-046605': ['heading', ['一、五月', '二、十二月']],
+      'aozora-000081-000462': ['split', Array.from({ length: 11 }, (_, k) => `${k + 1}/11`)],
+      'aozora-000148-000773': ['heading', [['上　先生と私', 36], ['中　両親と私', 18], ['下　先生と遺書', 56]]
+        .flatMap(([part, count]) => Array.from({ length: count }, (_, k) => (k ? kanjiNumber(k + 1) : `${part}　一`)))],
+      'aozora-000879-043015': ['heading', ['一', '二', '三', '四', '五', '六']],
+      'aozora-000879-043016': ['split', ['1/2', '2/2']],
+      'aozora-001383-056641': ['split', ['1/2', '2/2']],
+      'aozora-001779-056648': ['split', ['1/4', '2/4', '3/4', '4/4']],
     });
     expect(JSON.stringify(manifest)).not.toMatch(/\d+(과|편)"|전편/u);
   });
@@ -57,14 +69,16 @@ describe('정본 작품 표기 — 대조표가 싣는다', () => {
       .toEqual({ '注文の多い料理店': '주문이 많은 요리점', 'ごん狐': '여우 곤', '手袋を買いに': '장갑을 사러', '文鳥': '문조', '鼻': '코',
         '檸檬': '레몬', 'セロ弾きのゴーシュ': '첼로 켜는 고슈', 'よだかの星': '쏙독새의 별', '山月記': '산월기', '高瀬舟': '다카세부네',
         '坊っちゃん': '도련님', '蜘蛛の糸': '거미줄', '羅生門': '라쇼몬',
-        '銀河鉄道の夜': '은하철도의 밤' });
+        '銀河鉄道の夜': '은하철도의 밤', 'こころ': '마음', 'やまなし': '돌배', '風の又三郎': '바람의 마타사부로', 'トロッコ': '광차',
+        '杜子春': '두자춘', '人間椅子': '인간 의자', '刺青': '문신' });
     expect(new Set(works.map((work) => work.display.cover)).size).toBe(works.length);
     // 문양은 작품 분위기에서, 작품마다 새로(오너 지시 2026-10-14 KST 「작품마다 새 문양」) — 같은 문양을 두 작품이 쓰지 않는다
     expect(Object.fromEntries(works.map((work) => [work.title, work.display.motif])))
       .toEqual({ '注文の多い料理店': 'forest-doors', 'ごん狐': 'higanbana', '手袋を買いに': 'snow-night', '文鳥': 'birdcage', '鼻': 'ink-steam',
         '檸檬': 'lemon-books', 'セロ弾きのゴーシュ': 'cello-night', 'よだかの星': 'nightjar-star', '山月記': 'moon-tiger', '高瀬舟': 'night-boat',
         '坊っちゃん': 'steam-sea', '蜘蛛の糸': 'lotus-thread', '羅生門': 'rain-gate',
-        '銀河鉄道の夜': 'night-train' });
+        '銀河鉄道の夜': 'night-train', 'こころ': 'kamakura-letter', 'やまなし': 'crab-pear', '風の又三郎': 'wind-hill', 'トロッコ': 'dusk-rails',
+        '杜子春': 'peach-house', '人間椅子': 'deco-chair', '刺青': 'spider-sun' });
     expect(new Set(works.map((work) => work.display.motif)).size).toBe(works.length);
   });
 
@@ -73,8 +87,12 @@ describe('정본 작품 표기 — 대조표가 싣는다', () => {
     expect(incipits(KEYS.hana)).toEqual(['禅智内供の鼻と云えば、池の尾で知らない者はない。', 'しばらく踏んでいると、やがて、粟粒のようなものが…']);
     expect(incipits(KEYS.gon).slice(0, 4)).toEqual(['これは、私が小さいときに…', '十日ほどたって、ごんが、弥助というお百姓の家の裏…', '兵十が、赤い井戸のところで、麦をといでいました。', '月のいい晩でした。']);
     for (const work of Object.values(manifest.works)) {
-      // 끝이 「…」이면 쉼표 경계·24자 규칙, 아니면 통째 문장 — 。 또는 30자 이하 대사 한 줄(「時間が減って、…妙だな」 — 坊っちゃん)
-      for (const { incipit } of work.chapters) expect(incipit.endsWith('…') ? /、…$|[^、。]…$/u.test(incipit) && !incipit.includes('。') : /[。」]$/u.test(incipit)).toBe(true);
+      // 끝이 「…」이면 쉼표 경계·24자 규칙, 아니면 30자 이하 통째 — 。까지의 문장, 대사 한 줄(「時間が減って、…妙だな」 — 坊っちゃん),
+      // 또는 。 없는 짧은 첫 줄 통째(노래 「どっどど　どどうど…」·줄이 끊긴 「霧の中に立っていて、」 — 風の又三郎)
+      for (const { incipit } of work.chapters) {
+        expect(incipit.endsWith('…') ? /、…$|[^、。]…$/u.test(incipit) && !incipit.includes('。')
+          : incipit.length <= 30 && (/[。」]$/u.test(incipit) || !incipit.includes('。'))).toBe(true);
+      }
     }
     expect(literatureIncipit('\n\n　短い。\n\n次')).toBe('短い。');
     expect(literatureIncipit('あ'.repeat(40))).toBe(`${'あ'.repeat(24)}…`); // 쉼표가 없으면 24자
