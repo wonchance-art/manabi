@@ -165,5 +165,17 @@
     "city": "뉴욕",
     "lat": 40.779444,
     "lng": -73.963056
+  },
+  {
+    "id": "rijksmuseum",
+    "wikidata": "Q190804",
+    "kind": "museum",
+    "name": {
+      "native": "Rijksmuseum",
+      "ko": "레이크스 미술관"
+    },
+    "city": "암스테르담",
+    "lat": 52.36,
+    "lng": 4.885277777
   }
 ]

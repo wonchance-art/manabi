@@ -225,6 +225,15 @@ export const DATA_CREDIT_SECTIONS = [
         sourceUrl: 'https://www.metmuseum.org/hubs/open-access',
       },
       {
+        id: 'wikimedia-commons',
+        name: 'Wikimedia Commons',
+        holder: '레이크스 미술관(Rijksmuseum) 디지털화본',
+        use: '그림 한 장 읽기의 퍼블릭 도메인 작품 이미지(메트에 없는 작품)',
+        license: 'CC0 1.0',
+        licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+        sourceUrl: 'https://commons.wikimedia.org/',
+      },
+      {
         id: 'wikidata',
         name: 'Wikidata',
         use: '작품·작가·장소의 정규 키와 좌표',

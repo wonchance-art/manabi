@@ -25,7 +25,7 @@ describe('createAozoraMaterialDraft — 見出し 기준 장 분할(기존 split
   const draft = createAozoraMaterialDraft(sampleEntry(), headed());
 
   it('見出し가 장 제목, 문단은 빈 줄로 띄운 평문(들여쓰기 전각 공백 제거)', () => {
-    expect(draft.book).toEqual({ key: 'aozora-000001-000001', title: '書式見本　朝の川', author: '見本太郎', level: 'N3 중급', total: 2 });
+    expect(draft.book).toEqual({ key: 'aozora-000001-000001', title: '書式見本　朝の川', author: '見本太郎', level: 'N3 중급', total: 2, division: 'heading' });
     expect(draft.chapters.map(({ order, title, materialTitle }) => ({ order, title, materialTitle }))).toEqual([
       { order: 1, title: '一', materialTitle: '書式見本　朝の川 — 一' },
       { order: 2, title: '二', materialTitle: '書式見本　朝の川 — 二' },
@@ -74,9 +74,11 @@ describe('createAozoraMaterialDraft — 見出し 기준 장 분할(기존 split
 });
 
 describe('createAozoraMaterialDraft — 見出し 없는 원작은 문단 경계 길이 분할', () => {
-  it('제목은 「N편」, 의미 주석 루비(ノート《帳面》)는 잠그지 않는다', () => {
+  it('나눈 장은 「1/2」(작가의 장·교재의 과로 오인되지 않게), 의미 주석 루비(ノート《帳面》)는 잠그지 않는다', () => {
     const draft = createAozoraMaterialDraft(plainSampleEntry(), plain(), { targetChars: 80, maxChars: 120 });
-    expect(draft.chapters.map((chapter) => chapter.title)).toEqual(['1편', '2편']);
+    expect(draft.book.division).toBe('split');
+    expect(draft.chapters.map(({ title, materialTitle }) => [title, materialTitle]))
+      .toEqual([['1/2', '書式見本　夕方の町 (1/2)'], ['2/2', '書式見本　夕方の町 (2/2)']]);
     expect(draft.chapters.flatMap((chapter) => chapter.metadata.literature.rubyLocks.map((lock) => lock.base)))
       .toEqual(['夕方', '町', '時計台', '台所']);
     expect(draft.diagnostics).toMatchObject({ splitByHeadings: false, rubyCount: 4, mappedRubyCount: 4, annotationRubyCount: 2, midParagraphSplitCount: 0 });
@@ -103,6 +105,8 @@ describe('createAozoraMaterialDraft — 見出し 없는 원작은 문단 경계
   it('짧은 원작은 한 장, 상한보다 긴 원작은 상한 안에서 고르게', () => {
     const short = createAozoraMaterialDraft(sampleEntry(), parseAozoraText(wrap(['あ'.repeat(70), 'い'.repeat(30)].join('\n'))), { targetChars: 80, maxChars: 200 });
     expect(short.diagnostics.chapterChars).toEqual([102]);
+    // 한 장이면 「전문」(「전편」은 前篇으로 읽힌다), 자료 제목은 작품명만(「— 1편」 같은 꼬리를 달지 않는다)
+    expect([short.book.division, short.chapters[0].title, short.chapters[0].materialTitle]).toEqual(['whole', '전문', '書式見本　朝の川']);
     const long = createAozoraMaterialDraft(sampleEntry(), parseAozoraText(wrap(Array.from({ length: 9 }, () => 'え'.repeat(30)).join('\n'))), { targetChars: 100, maxChars: 120 });
     expect(long.diagnostics.chapterChars).toEqual([94, 94, 94]);
   });

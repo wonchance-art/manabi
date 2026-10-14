@@ -7509,7 +7509,7 @@ export const REF_GRAMMAR_MANIFEST = {
         },
         {
           "key": "H1",
-          "vocabCount": 417,
+          "vocabCount": 422,
           "bunkeiAvailable": true,
           "bunkeiChapterSlugs": [
             "h1-01-shi",
@@ -8094,7 +8094,7 @@ export const REF_GRAMMAR_MANIFEST = {
         },
         {
           "key": "H2",
-          "vocabCount": 497,
+          "vocabCount": 498,
           "bunkeiAvailable": true,
           "bunkeiChapterSlugs": [
             "h2-03-zai-progressive",
@@ -8451,7 +8451,7 @@ export const REF_GRAMMAR_MANIFEST = {
         },
         {
           "key": "H3",
-          "vocabCount": 686,
+          "vocabCount": 692,
           "bunkeiAvailable": true,
           "bunkeiChapterSlugs": [
             "h3-01-ba",
@@ -8813,7 +8813,7 @@ export const REF_GRAMMAR_MANIFEST = {
         },
         {
           "key": "H4",
-          "vocabCount": 1030,
+          "vocabCount": 1072,
           "bunkeiAvailable": true,
           "bunkeiChapterSlugs": [
             "h3-01-ba",
@@ -9102,7 +9102,7 @@ export const REF_GRAMMAR_MANIFEST = {
         },
         {
           "key": "H5",
-          "vocabCount": 2091,
+          "vocabCount": 2205,
           "bunkeiAvailable": true,
           "bunkeiChapterSlugs": [
             "h4-02-hypothesis",
@@ -9335,7 +9335,7 @@ export const REF_GRAMMAR_MANIFEST = {
         },
         {
           "key": "H6",
-          "vocabCount": 2130,
+          "vocabCount": 2546,
           "bunkeiAvailable": true,
           "bunkeiChapterSlugs": [
             "h5-05-passive",
