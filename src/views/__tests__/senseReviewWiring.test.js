@@ -84,8 +84,8 @@ describe('뜻 확인 필요 — 순수 규칙 (viewerSenseReview)', () => {
 });
 
 describe('뜻 확인 필요 — 배선 (ViewerPage)', () => {
-  it('줄은 소유자(사전 뜻 교정과 같은 권한) · 중국어 · 분석 끝 · N>0 · 닫지 않았을 때만 — 수업 모드·구간 학습 제외', () => {
-    expect(viewer).toMatch(/const senseReviewAllowed = canEditToken && legacyTokenEditingAllowed && learningStorageSupported && !classStudyActive\s+&& materialLang === 'Chinese' && isDone && !passageOf\(material\);/);
+  it('줄은 소유자(사전 뜻 교정과 같은 권한) · 중국어 또는 일본어 정본 책(AOZORA-P0-4 검수) · 분석 끝 · N>0 · 닫지 않았을 때만 — 수업 모드·구간 학습 제외', () => {
+    expect(viewer).toMatch(/const senseReviewAllowed = canEditToken && legacyTokenEditingAllowed && learningStorageSupported && !classStudyActive\s+&& \(materialLang === 'Chinese' \|\| \(materialLang === 'Japanese' && canonicalLiteratureLocked\)\) && isDone && !passageOf\(material\);/);
     expect(viewer).toContain('const senseReviewShown = senseReviewAllowed && senseReviewList.length > 0 && senseReviewDismissed !== senseReviewKey;');
     expect(viewer).toContain('const senseReviewList = useMemo(() => senseReviewItems(material?.processed_json, materialLang), [material?.processed_json, materialLang]);');
     const line = sliceBetween(viewer, '{senseReviewShown && (', '\n        )}');
