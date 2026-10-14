@@ -6,7 +6,7 @@ import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from '
 import path from 'node:path';
 
 export const LITERATURE_ROOT = 'src/content/literature/aozora';
-export const LITERATURE_FILES = Object.freeze({ source: 'source.txt', entry: 'entry.json', chapters: 'chapters.json' });
+export const LITERATURE_FILES = Object.freeze({ source: 'source.txt', entry: 'entry.json', chapters: 'chapters.json', review: 'review.json' });
 /**
  * 루트에 같이 만드는 산출물(AOZORA-P0-2) — 작품 폴더 목록에서 결정적으로 나온다. 손으로 고치지 않는다.
  *   index  관리자 게시 API가 정적 import하는 책 목록(장 원문 포함 — 서버 전용)
@@ -15,6 +15,23 @@ export const LITERATURE_FILES = Object.freeze({ source: 'source.txt', entry: 'en
 export const LITERATURE_OUTPUTS = Object.freeze({ index: 'index.generated.js', manifest: 'manifest.generated.json' });
 
 const sha256 = (buffer) => createHash('sha256').update(buffer).digest('hex');
+
+/**
+ * 검수 힌트(review.json, 선택 — AOZORA-P0-4)를 장마다 metadata.literature.reviewHints로 싣는다. 없으면 초안 그대로(키도 없음).
+ * 힌트가 원문에 없거나 겹치면 resolveReviewHints가 throw — 그 작품은 빌드 실패.
+ */
+function withReviewHints(draft, review, resolveReviewHints) {
+  if (!review) return draft;
+  const resolved = resolveReviewHints(review, draft.chapters.map((chapter) => chapter.rawText));
+  return {
+    ...draft,
+    chapters: draft.chapters.map((chapter, index) => ({
+      ...chapter,
+      metadata: { ...chapter.metadata, literature: { ...chapter.metadata.literature, reviewHints: resolved[index] } },
+    })),
+    diagnostics: { ...draft.diagnostics, reviewHintCount: resolved.reduce((sum, hints) => sum + hints.length, 0) },
+  };
+}
 
 /** 책 목록 모듈 — 작품 폴더의 chapters.json을 정적 import한다(Next·vitest 둘 다 JSON import를 푼다). */
 export function serializeIndex(keys) {
@@ -36,7 +53,7 @@ export function serializeIndex(keys) {
 export function createManifest(drafts) {
   const works = {};
   for (const draft of drafts) {
-    const { rubyLocks: _locks, ...literature } = draft.chapters[0].metadata.literature;
+    const { rubyLocks: _locks, reviewHints: _hints, ...literature } = draft.chapters[0].metadata.literature;
     works[draft.book.key] = {
       title: draft.book.title,
       author: draft.book.author,
@@ -59,10 +76,11 @@ export function serializeChapters(draft) {
  * @returns {Promise<{works: Array<{key, chapters, status: 'written'|'unchanged'|'checked'}>, errors: string[]}>}
  */
 export async function buildLiterature({ root = LITERATURE_ROOT, check = false } = {}) {
-  const [{ createAozoraCatalog, aozoraWorkKey }, { parseAozoraText }, { createAozoraMaterialDraft }] = await Promise.all([
+  const [{ createAozoraCatalog, aozoraWorkKey }, { parseAozoraText }, { createAozoraMaterialDraft }, { resolveReviewHints }] = await Promise.all([
     import('../../src/lib/aozoraCatalog.js'),
     import('../../src/lib/aozoraParser.js'),
     import('../../src/lib/aozoraMaterial.js'),
+    import('../../src/lib/literatureReviewHints.js'),
   ]);
   const errors = [];
   const works = [];
@@ -83,7 +101,8 @@ export async function buildLiterature({ root = LITERATURE_ROOT, check = false } 
       const key = aozoraWorkKey(entry);
       if (dir !== key) throw new Error(`폴더 이름은 작품 키 ${key}여야 한다`);
       if (sha256(sourceBytes) !== entry.textSha256) throw new Error(`${LITERATURE_FILES.source}의 SHA-256이 entry.textSha256과 다르다(원문이 바뀌었다)`);
-      loaded.push({ dir, base, entry, source: new TextDecoder('utf-8', { fatal: true }).decode(sourceBytes) });
+      const review = has(LITERATURE_FILES.review) ? JSON.parse(readFileSync(path.join(base, LITERATURE_FILES.review), 'utf8')) : null;
+      loaded.push({ dir, base, entry, review, source: new TextDecoder('utf-8', { fatal: true }).decode(sourceBytes) });
     } catch (error) {
       errors.push(`${dir}: ${error.message}`);
     }
@@ -98,7 +117,7 @@ export async function buildLiterature({ root = LITERATURE_ROOT, check = false } 
   const drafts = [];
   for (const work of loaded) {
     try {
-      const draft = createAozoraMaterialDraft(work.entry, parseAozoraText(work.source));
+      const draft = withReviewHints(createAozoraMaterialDraft(work.entry, parseAozoraText(work.source)), work.review, resolveReviewHints);
       // 한 문단이 장 상한보다 길면 글자 수로 잘려 문장(때로 루비 기준)이 두 장으로 찢긴다 — 공개하지 않는다.
       const { midParagraphSplitCount, droppedRubyCount } = draft.diagnostics;
       if (midParagraphSplitCount > 0 || droppedRubyCount > 0) {

@@ -16,7 +16,9 @@ export const ACTIVITY_ONLY_SOURCES = Object.freeze(new Set(['hanzi']));
 
 /** 채점 문항 판정 — EWMA 다이얼과 동일 결(ui=행동 계측·dict=자가 채점·hanzi=글자 자기 확인은 정답률 신호가 아니다). */
 export function isGradedReviewEvent(event) {
-  return !!event && event.source !== 'ui' && event.source !== 'dict' && !ACTIVITY_ONLY_SOURCES.has(event.source);
+  // 집중 연습(source 'practice')은 일정 밖 연습이라 복습 수 · 정답률 · 산출 단어에 넣지 않는다(REV-SCOPE §6-1 ⑤).
+  return !!event && event.source !== 'ui' && event.source !== 'dict' && event.source !== 'practice'
+    && !ACTIVITY_ONLY_SOURCES.has(event.source);
 }
 
 function inRange(ts, startMs, endMs) {

@@ -124,7 +124,7 @@ describe('주간 보고 · 약점 — hanzi는 활동량에만', () => {
     expect(weaknessProfile(events, { now: NOW })).toEqual([]);
   });
   it('EWMA 다이얼도 채점 이벤트만(studyMaterials)', () => {
-    expect(read('src/lib/studyMaterials.js')).toMatch(/filter\(isGradedReviewEvent\)/);
+    expect(read('src/lib/studyMaterials.js')).toMatch(/filter\(countsForDifficulty\)\.filter\(e => !ACTIVITY_ONLY_SOURCES\.has\(e\.source\)\)/);
   });
 });
 

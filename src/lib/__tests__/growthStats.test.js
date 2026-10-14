@@ -3,7 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   KNOWN_WORD_MIN_INTERVAL,
-  MASTERED_MIN_INTERVAL,
+  MATURE_MIN_INTERVAL,
+  cardIntervalDays,
   wordStage,
   isKnownWord,
   isPassedChapter,
@@ -161,27 +162,43 @@ describe('표시 문구 상수', () => {
  * 리터럴로** 쓰고 있었다. 값이 같아 증상이 없었을 뿐, 상수를 바꾸면 **카드는 「학습 중」인데
  * 카운터는 「아는 단어」가 아닌** 상태가 생긴다.
  */
-describe('단어 단계(wordStage) — 경계가 한 곳에서만 산다', () => {
-  const row = (interval, reviewed = '2026-09-01T00:00:00Z') => ({ interval, last_reviewed_at: reviewed });
+describe('카드 단계(wordStage, D15) — 신규 · 학습 · 익히는 중 · 익숙(21일) · 재학습, 경계가 한 곳에서만 산다', () => {
+  // REV-SCOPE-R1B-1: 간격 = 다음 복습 예정일 − 마지막 복습일(일, 버림). 예전 카드의 interval 칸(= 안정도)은 쓰지 않는다.
+  const DAY = 86400000;
+  const last = '2026-09-01T00:00:00Z';
+  const row = (days, extra = {}) => ({ interval: 999, last_reviewed_at: last,
+    next_review_at: new Date(Date.parse(last) + days * DAY + 3600000).toISOString(), ...extra });
+  const fsrs = (state, scheduledDays = 0) => ({ kind: 'vocabulary-learning', version: 1, source: 'fsrs-v1',
+    memory: { state, scheduledDays, lastReview: state === 'New' ? null : last, due: last, stability: 50 }, review: {}, vocabulary: {} });
 
   it('복습한 적 없으면 신규 — interval이 커도 그렇다', () => {
     expect(wordStage({ interval: 999, last_reviewed_at: null })).toEqual({ key: 'new', label: '신규' });
     expect(wordStage({})).toEqual({ key: 'new', label: '신규' });
+    expect(wordStage(fsrs('New'))).toEqual({ key: 'new', label: '신규' });
   });
 
-  it('경계는 아는 단어 기준과 **같은 상수**를 쓴다', () => {
-    expect(wordStage(row(KNOWN_WORD_MIN_INTERVAL))).toMatchObject({ key: 'learning' });
-    expect(wordStage(row(KNOWN_WORD_MIN_INTERVAL - 1))).toMatchObject({ key: 'early' });
-    // 이 동치가 부채의 본체다 — 「학습 중 이상」과 「아는 단어」는 같은 선이어야 한다.
-    for (const n of [0, 1, 6, 7, 8, 29, 30, 100]) {
-      const stage = wordStage(row(n));
-      expect(isKnownWord({ interval: n }), `interval ${n}`).toBe(stage.key === 'learning' || stage.key === 'mastered');
-    }
+  it('간격 21일이 익숙의 경계다(이 모듈 자기 상수) — 예전 카드는 next_review_at − last_reviewed_at으로 잰다', () => {
+    expect(MATURE_MIN_INTERVAL).toBe(21);
+    expect(wordStage(row(MATURE_MIN_INTERVAL))).toEqual({ key: 'mature', label: '익숙' });
+    expect(wordStage(row(MATURE_MIN_INTERVAL - 1))).toEqual({ key: 'young', label: '익히는 중' });
+    // 안정도(interval 칸)는 간격이 아니다 — 999여도 간격 3일이면 익히는 중.
+    expect(cardIntervalDays(row(3))).toBe(3);
+    expect(wordStage(row(3, { interval: 999 }))).toMatchObject({ key: 'young' });
   });
 
-  it('숙련 경계는 이 모듈 자기 상수다', () => {
-    expect(wordStage(row(MASTERED_MIN_INTERVAL))).toEqual({ key: 'mastered', label: '숙련' });
-    expect(wordStage(row(MASTERED_MIN_INTERVAL - 1))).toMatchObject({ key: 'learning' });
+  it('새 일정 카드는 상태 · scheduledDays로 — 학습 · 재학습 · 익히는 중 · 익숙', () => {
+    expect(wordStage(fsrs('Learning'))).toEqual({ key: 'learning', label: '학습' });
+    expect(wordStage(fsrs('Relearning'))).toEqual({ key: 'relearning', label: '재학습' });
+    expect(wordStage(fsrs('Review', 20))).toMatchObject({ key: 'young' });
+    expect(wordStage(fsrs('Review', 21))).toMatchObject({ key: 'mature' });
+  });
+
+  it('「아는 단어」 기준(7, 안정도)은 단계 경계와 분리해 그대로 둔다 — 바꾸면 현황 숫자가 달라지는 별도 결정', () => {
+    expect(KNOWN_WORD_MIN_INTERVAL).toBe(7);
+    expect(isKnownWord({ interval: 7 })).toBe(true);
+    // 단계와 아는 단어는 서로 다른 값을 잰다(간격 vs 안정도) — 한쪽을 바꿔도 다른 쪽이 따라 움직이지 않는다.
+    expect(wordStage(row(3, { interval: 30 })).key).toBe('young');
+    expect(isKnownWord({ interval: 30 })).toBe(true);
   });
 
   it('카드가 판정을 다시 하지 않는다 — 경계값이 화면에 되살아나지 않게', () => {

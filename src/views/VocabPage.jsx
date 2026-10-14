@@ -26,14 +26,24 @@ import { failureMessage } from '../lib/errorMessage';
 import { detectLang, detectLangConfident, hasCjkText } from '../lib/constants';
 import { stripSourceLangInMeaning } from '../lib/studySession';
 import { authEntryHref } from '../lib/authRedirect';
-import { bookExpressionListHref, fetchBookVocabularyIds, fetchMaterialVocabularyIds } from '../lib/bookReviewNavigation';
+import { bookExpressionListHref, fetchBookScope, fetchMaterialVocabularyIds } from '../lib/bookReviewNavigation';
 import {
   countReviewScope, reviewScopeQuota, scopedFsrsCardIds, createScopeMatcher, scopeNeedsLookup, serializeReviewScope, scopeHeading,
-  wordScopeLanguage, formatScopeSource, parseReviewScope, REVIEW_SCOPE_LANGS, ZH_SCOPE_LEVELS,
+  wordScopeLanguage, formatScopeSource, parseReviewScope, REVIEW_SCOPE_LANGS, ZH_SCOPE_LEVELS, SCOPE_LANG_LABELS, scopeSummaryLabel, FRAGILE_RETRIEVABILITY,
 } from '../lib/reviewScope';
+import {
+  DEFAULT_SESSION_LENGTH, SESSION_LENGTHS, initialSteps, insertAfterIntro, insertLearningStep,
+  readResume, restoreResume, sessionLengthOptions, sliceSession, stepProgress, writeResume,
+} from '../lib/reviewQueue';
+import { hasMeaning, readReviewSound, saveReviewSound, shouldAutoplay } from '../lib/reviewCard';
+import { textbookThemeStyle } from '../lib/textbookTheme';
+import { buildPracticeEvent, practiceFragileIds } from '../lib/practiceEvents';
+import { ReviewIntroCard, ReviewSoundToggle, useScoreArmed } from '../components/vocab/ReviewCardParts';
+import { useKnownWords } from '../lib/useKnownWords';
+import { knownWordsLang } from '../lib/knownWords';
 import ReviewScopeBar, { ReviewScopeNotice } from '../components/vocab/ReviewScopeBar';
 import { useVocabData, invalidateVocabularyLearning } from '../lib/useVocabData';
-import { isVocabularyReviewAvailable, isVocabularyUnreviewed } from '../lib/vocabularyLearningRead';
+import { isVocabularyReviewAvailable, isVocabularyUnreviewed, vocabularyRetrievability } from '../lib/vocabularyLearningRead';
 import { wordStage } from '../lib/growthStats';
 import { confusedVocabWords, CONFUSED_MIN, CONFUSED_SINCE_DAYS } from '../lib/confusedQueue';
 import { dropUndoneEvents } from '../lib/undoneReviews';
@@ -41,12 +51,10 @@ import { fetchUndoMarkers } from '../lib/undoneReviewsRows';
 import { weaknessProfile } from '../lib/weaknessProfile';
 import { weakDrillPrescription, weakDrillWords, hasWeakDrill } from '../lib/weakDrill';
 import { tagLabel } from '../lib/errorTags';
-// skillRung은 콘텐츠 무의존 순수 모듈 — studyMaterials(→content 레지스트리)를 끌어오지 않아
-// 'use client' 번들에 교재 전체가 딸려 오지 않는다.
-import { deriveVocabRungs, vocabTypeForRung } from '../lib/skillRung';
 import { exportCSV, exportAnki } from '../lib/vocabIO';
 import { zhHskLevelOf, loadZhHskLevels } from '../lib/zhHskLevel';
 import { useZhHskLevels } from '../lib/useZhHskLevels';
+import { prefetchSpeech, unlockSpeechAudio } from '../lib/useTTS';
 import { logReviewEvents } from '../lib/reviewEvents';
 import { withLegacyReviewLock } from '../lib/legacyReviewSync';
 import {
@@ -102,6 +110,8 @@ function VocabWorkspace({ reviewScope }) {
   const queryClient = useQueryClient();
   const { speak: speakSupported, supported: ttsSupported } = useTTS();
   const koreanCapabilities = useLearningCapabilities('Korean');
+  // 카드의 「아는 단어」 — 표시 · 해제만 쓴다(목록 조회는 하지 않는다). 표시하면 복습 보호와 출제 소비자가 함께 갱신된다.
+  const knownWords = useKnownWords(null, false);
   const reviewSupported = useCallback(word => word?.language !== 'Korean' || koreanCapabilities.review, [koreanCapabilities.review]);
   const speak = useCallback((text, language, ...options) => {
     if (language !== 'Korean') speakSupported(text, language, ...options);
@@ -154,15 +164,19 @@ function VocabWorkspace({ reviewScope }) {
     if (current !== target) window.history.replaceState(window.history.state, '', target);
   }, [scopeDraft, explicitScope]);
 
-  const [reviewMode, setReviewMode] = useState('auto');
-
-  // 자동 모드용: 복습 시작 시 review_events에서 유도한 단어별 숙련 rung (word_text → rung)
-  const [vocabRungs, setVocabRungs] = useState({});
-
-  // reviewMode 영속화
+  // 집중 연습 갈래(REV-SCOPE-R1B-1 §6-1 ④) — 스스로 확인(flash) · 뜻 쓰기(typing) · 듣고 고르기(listening).
+  // 본 복습은 플래시(버튼 넷)뿐이다. 예전 「단어 복습 방식」(자동 · 문맥 · 타이핑 · 리스닝)의 타이핑 · 리스닝이 여기로 왔다.
+  const [practiceMode, setPracticeMode] = useState('flash');
   useEffect(() => {
-    if (settingsRestored) { try { localStorage.setItem('as_review_mode', reviewMode); } catch {} }
-  }, [reviewMode, settingsRestored]);
+    if (settingsRestored) { try { localStorage.setItem('as_review_mode', practiceMode); } catch {} }
+  }, [practiceMode, settingsRestored]);
+  // 세션 길이(서로 다른 카드 수 — 20 · 50 · 전부) · 소리 자동 재생은 기기별로 기억한다.
+  const [sessionLength, setSessionLength] = useState(DEFAULT_SESSION_LENGTH);
+  useEffect(() => {
+    if (settingsRestored) { try { localStorage.setItem('vocab_session_length', String(sessionLength ?? 'all')); } catch {} }
+  }, [sessionLength, settingsRestored]);
+  const [soundOn, setSoundOn] = useState(true);
+  const toggleSound = on => { setSoundOn(on); saveReviewSound(on); };
 
   // 하루 새 단어 한도
   const [newPerDay, setNewPerDay] = useState(DEFAULT_NEW_PER_DAY);
@@ -175,7 +189,10 @@ function VocabWorkspace({ reviewScope }) {
     try {
       if (!explicitScope) setScopeDraft(readSavedScope());
       const storedMode = localStorage.getItem('as_review_mode');
-      setReviewMode(['auto', 'flash', 'typing', 'context', 'listening'].includes(storedMode) ? storedMode : 'auto');
+      setPracticeMode(['typing', 'listening'].includes(storedMode) ? storedMode : 'flash');
+      const storedLength = localStorage.getItem('vocab_session_length');
+      setSessionLength(storedLength === 'all' ? null : SESSION_LENGTHS.includes(Number(storedLength)) ? Number(storedLength) : DEFAULT_SESSION_LENGTH);
+      setSoundOn(readReviewSound());
       const storedNewPerDay = parseInt(localStorage.getItem('vocab_new_per_day'), 10);
       setNewPerDay(NEW_PER_DAY_OPTIONS.includes(storedNewPerDay) ? storedNewPerDay : DEFAULT_NEW_PER_DAY);
     } catch { /* 저장소 차단 시 기본값 유지 */ }
@@ -194,9 +211,32 @@ function VocabWorkspace({ reviewScope }) {
     });
   };
 
-  // 복습 큐 — startReview에서 스냅샷으로 고정 (채점해도 재배열/스킵 없음)
+  // 복습 줄(REV-SCOPE-R1B-1) — 단계 [{ id, engine:'fsrs'|'legacy', phase }]. 시작할 때 고정하고, 처음 보는 표현 뒤의
+  // 채점 · 예전 일정 재질문 · 「다시」 재노출 · FSRS 학습 단계만 줄 메타데이터로 끼운다(일정은 저장하지 않는다).
   const [reviewQueue, setReviewQueue] = useState([]);
   const [reviewSessionId, setReviewSessionId] = useState(0);
+  // 이번 세션의 서로 다른 카드(진행 n / N · 세션 길이) · 끝낸 카드 · 「다시」 수 · 시작 시각 · 이어 하기 기록.
+  const [reviewRun, setReviewRun] = useState(null);
+  // 비동기 채점(FSRS 정착 · 예전 일정 계산 모듈 로드) 뒤에 줄을 넘길 때는 그사이 끼운 단계(학습 단계)를 놓치지 않게 최신 줄을 본다.
+  const reviewQueueRef = useRef(reviewQueue);
+  reviewQueueRef.current = reviewQueue;
+  const reviewIdxRef = useRef(reviewIdx);
+  reviewIdxRef.current = reviewIdx;
+  const lastEngineRef = useRef('legacy');
+  const lastTriggerRef = useRef('pointer');
+  // 집중 연습(§6-1 ④) — { ids, idx, total, unknown, mode, scopeKey }. 일정 · 한도 호출 0회, 연습 기록만.
+  const [practice, setPractice] = useState(null);
+  // 카드에서 「아는 단어」(#1335) — 하단 「아는 단어로 옮겼어요 [되돌리기]」.
+  const [knownUndo, setKnownUndo] = useState(null);
+  const [missingMeaningOnly, setMissingMeaningOnly] = useState(false);
+  // 이 세션에서 채점한 새 일정 카드(학습 단계 재확인 · 끝 화면 「잠시 뒤」) · 새 일정 「다시」 수.
+  const [sessionFsrsIds, setSessionFsrsIds] = useState([]);
+  const [fsrsAgain, setFsrsAgain] = useState(0);
+  // 이어 하기 기록(세션 저장소) — 마운트 후 읽는다(SSR · hydration 첫 렌더는 비어 있음).
+  const [resumeStore, setResumeStore] = useState(null);
+  useEffect(() => {
+    if (user?.id) setResumeStore(readResume(typeof window === 'undefined' ? null : window.sessionStorage, user.id));
+  }, [user?.id]);
 
   // 미전송 복습 수(v2-N R2). 폴링하지 않는다 — 카드가 넘어갈 때(reviewIdx)와 Layout이
   // 동기화를 마치고 쏘는 신호, 두 시점에만 다시 센다. 게스트·큐 불가 환경은 0.
@@ -274,17 +314,19 @@ function VocabWorkspace({ reviewScope }) {
   // 출처 id 조회(교재 과 범위 · 자료 · 노트) — 서버가 본인 단어 id 묶음을 주고 클라이언트가 좁힌다(교재 범위 선례).
   // 쿼리 키 접두사 'book-review'는 저장 · 제외 · 아는 단어 변경 때 이미 무효화된다.
   const lookupSource = scopeNeedsLookup(scope.source) ? scope.source : null;
+  // 교재 범위는 단어별 과(chapter_slug)도 받는다 — 복습 줄에서 같은 과의 새 표현끼리 띄우는 단위(R1-B-1 §6-1 ③).
   const sourceScope = useQuery({
     queryKey: ['book-review', user?.id, 'scope', lookupSource ? formatScopeSource(lookupSource) : null],
     enabled: !!user && !!lookupSource,
-    queryFn: ({ signal }) => lookupSource.kind === 'book'
-      ? fetchBookVocabularyIds({ signal, from: lookupSource.from, to: lookupSource.to })
-      : fetchMaterialVocabularyIds({ signal, ids: lookupSource.ids }),
+    queryFn: async ({ signal }) => lookupSource.kind === 'book'
+      ? fetchBookScope({ signal, from: lookupSource.from, to: lookupSource.to })
+      : { ids: await fetchMaterialVocabularyIds({ signal, ids: lookupSource.ids }), chapters: null },
   });
   // 급수 범위는 HSK 2026 표가 있어야 판정한다. 표를 못 받으면 범위를 닫는다(전체로 세지 않는다).
   const scopeLevelsQuery = useQuery({ queryKey: ['zh-hsk-levels'], queryFn: loadZhHskLevels, enabled: !!scope.level, staleTime: Infinity, gcTime: Infinity });
   const scopeLevels = scope.level ? scopeLevelsQuery.data ?? null : null;
-  const scopeSourceIds = lookupSource ? sourceScope.data ?? null : null;
+  const scopeSourceIds = lookupSource ? sourceScope.data?.ids ?? null : null;
+  const scopeChapters = lookupSource ? sourceScope.data?.chapters ?? null : null;
   const scopeFailed = (!!lookupSource && sourceScope.isError) || (!!scope.level && scopeLevelsQuery.isError);
   const scopePending = !scopeFailed && ((!!lookupSource && !sourceScope.isSuccess) || (!!scope.level && !scopeLevels));
   const scopeMatcher = useMemo(() => createScopeMatcher(scope, { levels: scopeLevels, sourceIds: scopeSourceIds }), [scope, scopeLevels, scopeSourceIds]);
@@ -328,7 +370,7 @@ function VocabWorkspace({ reviewScope }) {
   const gradeSessionRef = useRef(0);
   const reviewKeysRef = useRef({});
   useEffect(() => {
-    if (tab !== 'review' || reviewFinished || manualAddOpen) return undefined;
+    if ((tab !== 'review' && tab !== 'practice') || (tab === 'review' && reviewFinished) || manualAddOpen) return undefined;
     function onKeyDown(e) {
       const t = e.target;
       const inField = !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
@@ -340,11 +382,14 @@ function VocabWorkspace({ reviewScope }) {
         return;
       }
       if (inField || e.metaKey || e.ctrlKey || e.altKey) return;
+      // Space = 뒷면 보기(앞면일 때만 — REV-SCOPE-R1B-1 §5-3). 새 일정 카드는 그 화면이 같은 키를 처리한다.
+      if (e.key === ' ' && h.space) { e.preventDefault(); h.space(); return; }
       if (!/^[1-4]$/.test(e.key)) return;
       const n = Number(e.key);
       if (!h.row) return;                    // 화면에 4버튼 줄이 없으면 아무 일도 하지 않는다
       e.preventDefault();
       if (h.row === 'score') h.score?.(n);
+      else if (h.row === 'practice') { if (n <= 2) h.practice?.(n === 1 ? 1 : 3); }   // 집중 연습: 1 몰랐어요 · 2 알았어요
       else if (h.row === 'options') h.pick?.(n - 1);
       else if (h.row === 'wrong') { if (n === 1) h.score?.(1); else if (n === 2) h.reveal?.(); }
     }
@@ -461,6 +506,8 @@ function VocabWorkspace({ reviewScope }) {
     setReviewQueue([]);
     setReviewIdx(0);
     setReviewFinished(false);
+    setReviewRun(null);
+    setPractice(null);
   }, []);
   const selectLanguage = useCallback(lang => changeScope({ lang, level: null, source: null, state: 'due' }), [changeScope]);
   const selectLevel = useCallback(level => changeScope({ ...scope, lang: 'Chinese', level: level === 'all' ? null : level,
@@ -483,6 +530,8 @@ function VocabWorkspace({ reviewScope }) {
       list = list.filter(x => x._searchKey.includes(q));
     }
     list = list.map(x => x._item); // 인덱스 랩 해제
+    // 「뜻 채우기」(§5-6) — 뜻이 없어 복습에서 빠진 표현만 모아 본다.
+    if (missingMeaningOnly) list = list.filter(word => !hasMeaning(word));
 
     if (sortBy === 'due') {
       list = [...list].sort((a, b) => reviewDueAt(a) - reviewDueAt(b));
@@ -492,7 +541,7 @@ function VocabWorkspace({ reviewScope }) {
       list = [...list].sort((a, b) => (a.word_text || '').localeCompare(b.word_text || '', 'ja'));
     }
     return list;
-  }, [vocabSearchIndex, search, sortBy, reviewDueAt]);
+  }, [vocabSearchIndex, search, sortBy, reviewDueAt, missingMeaningOnly]);
 
   useEffect(() => { setVisibleCount(30); }, [search, sortBy, scopeKey]);
 
@@ -502,16 +551,15 @@ function VocabWorkspace({ reviewScope }) {
     return projection && !projection.review.excluded && !projection.review.known && reviewSupported(v);
   }), [vocab, reviewSupported, learningById]);
 
-  // 덱 범위 구성: 미학습(신규)·학습 중·숙련 (서로 안 겹치게 분할)
+  // 범위 구성 — 카드 단계(D15, growthStats.wordStage): 신규 · 학습 · 익히는 중 · 익숙 · 재학습(서로 안 겹치게 분할).
   const deckStats = useMemo(() => {
-    let neu = 0, learning = 0, mastered = 0;
+    const stages = new Map();
     for (const v of deckScope) {
-      const projection = learningById.get(v.id);
-      if (isVocabularyUnreviewed(projection)) neu++;
-      else if (wordStage(projection).key === 'mastered') mastered++;
-      else learning++;
+      const stage = wordStage(learningById.get(v.id));
+      stages.set(stage.key, { label: stage.label, count: (stages.get(stage.key)?.count || 0) + 1 });
     }
-    return { total: deckScope.length, neu, learning, mastered };
+    const order = ['new', 'learning', 'young', 'mature', 'relearning'];
+    return { total: deckScope.length, stages: order.filter(key => stages.has(key)).map(key => ({ key, ...stages.get(key) })) };
   }, [deckScope, learningById]);
 
   // 오늘 세션 미리보기 — 복습 예정 + (하루 한도 내) 새 단어
@@ -534,34 +582,100 @@ function VocabWorkspace({ reviewScope }) {
   const dueGrammarCount = grammarQueue?.due || 0;
   const grammarRows = grammarQueue?.rows ?? null;
 
+  // ⚔ 헷갈린 단어 재대결(#1077-15) — 최근 2주 오답 가중 상위(computeWeakness 정본)만 모은
+  // 집중 큐. 배너·선택은 조회만 하고, 채점은 위 공통 경로 그대로라 여기서 맞히면 약점
+  // 점수가 내려가 일요일 약점 세션에서 자연히 빠진다(공유 원장이 곧 dedup — 승인된 이음새).
+  // 같은 조회가 집중 연습 기록(source 'practice')도 받는다 — 「몰랐어요」 · 오답은 헷갈린 표현 · 흐릿 범위에 들어간다
+  // (REV-SCOPE-R1B-1 §6-1 ⑤ 읽는 곳 표).
+  const { data: recentVocabEvents = [] } = useQuery({
+    queryKey: ['confused-events', user?.id],
+    queryFn: async () => {
+      const sinceIso = new Date(Date.now() - CONFUSED_SINCE_DAYS * 86400000).toISOString();
+      const [{ data, error }, markers] = await Promise.all([
+        supabase
+          .from('review_events')
+          // detail은 유형 큐(v2-A R3)가 qtype을 보려고 함께 받는다 — 새 조회 대신 컬럼 하나.
+          .select('source, item_key, correct, created_at, detail')
+          .eq('user_id', user.id)
+          .in('source', ['vocab', 'practice'])
+          .gte('created_at', sinceIso)
+          .order('created_at', { ascending: false })
+          .limit(400),
+        // undo 마커(source ui)는 위 source='vocab' 조회에 없다 — 마커 전용 조회를 붙여 되돌린
+        // 채점을 뺀다(W 후속 ②). 마커 조회 실패는 빈 배열 = 현행 집계로 수렴.
+        fetchUndoMarkers(user.id, { sinceIso }),
+      ]);
+      if (error) throw error;
+      return dropUndoneEvents(data || [], markers);
+    },
+    enabled: !!user,
+    staleTime: 1000 * 60,
+  });
+  // 흐릿 범위(state=fragile)에 더할 표현 — 지난 14일 집중 연습에서 「몰랐어요」 · 오답을 받은 것.
+  const practiceFragile = useMemo(() => [...practiceFragileIds(recentVocabEvents)], [recentVocabEvents]);
+
   // 오늘 복습 개수와 시작할 줄 — countReviewScope 하나가 낸다(배움 칸 · 언어 칩 · 복습방 공용, 계약 reviewScopeCount).
-  // 같은 결과의 queue로 복습을 시작하므로 화면 숫자 = 시작하는 줄 길이다. R1-A는 기존 엔진 규칙(FSRS가 하나라도
-  // 출제 가능하면 세션 전체가 FSRS)을 그대로 세고, 두 엔진 합치기는 R1-B가 한다.
-  // 출처 id는 지금 범위와 같은 출처일 때만 쓴다 — 다른 출처(시트의 후보)는 조회 전이라 pending으로 센다.
-  const countFor = useCallback(target => countReviewScope({
-    ...scopeArgs, scope: target, levels: target.level ? scopeLevels || zhHskLevels : null,
-    sourceIds: scopeNeedsLookup(target.source) && formatScopeSource(target.source) === formatScopeSource(scope.source) ? scopeSourceIds : null, quota: scopeQuota,
-    fsrsEntries: fsrsReview.cards, fsrsEnabled: fsrsReview.enabled, pendingIds: fsrsReview.pending.map(entry => entry.cardId),
-    // 예전 일정 줄은 FSRS에 등록된 id를 다시 내지 않는다(등록 id · 대기 연산 모두 — 기존 오늘 세션 계산과 같은 가드).
-    canLegacy: id => !fsrsReview.enrolledIds.includes(id) && fsrsReview.controller.canLegacy(id), grammar: grammarRows,
+  // 같은 결과의 queue(두 엔진이 섞인 한 줄 — R1-B-1)로 복습을 시작하므로 화면 숫자 = 시작하는 줄 길이다.
+  // 출처 id(교재는 과까지)는 지금 범위와 같은 출처일 때만 쓴다 — 다른 출처(시트의 후보)는 조회 전이라 pending으로 센다.
+  const countFor = useCallback(target => {
+    const sameSource = scopeNeedsLookup(target.source) && formatScopeSource(target.source) === formatScopeSource(scope.source);
+    return countReviewScope({
+      ...scopeArgs, scope: target, levels: target.level ? scopeLevels || zhHskLevels : null,
+      sourceIds: sameSource ? scopeSourceIds : null, chapters: sameSource ? scopeChapters : null, quota: scopeQuota,
+      fsrsEntries: fsrsReview.cards, fsrsEnabled: fsrsReview.enabled, pendingIds: fsrsReview.pending.map(entry => entry.cardId),
+      // 예전 일정 줄은 FSRS에 등록된 id를 다시 내지 않는다(등록 id · 대기 연산 모두 — 기존 오늘 세션 계산과 같은 가드).
+      canLegacy: id => !fsrsReview.enrolledIds.includes(id) && fsrsReview.controller.canLegacy(id), grammar: grammarRows,
+      fragileIds: practiceFragile,
+    });
     // controller는 안정 객체라 canLegacy 판정 신호(registryAvailable · enrolledIds)를 명시한다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [projections, learningAvailable, scopeKey, effectiveNow, scopeLevels, scopeSourceIds, zhHskLevels, reviewSupported, remainingNew,
-    admission.quota, fsrsReview.cards, fsrsReview.enabled, fsrsReview.pending, fsrsReview.enrolledIds, fsrsReview.registryAvailable, fsrsReview.controller, grammarRows]);
+  }, [projections, learningAvailable, scopeKey, effectiveNow, scopeLevels, scopeSourceIds, scopeChapters, zhHskLevels, reviewSupported, remainingNew,
+    admission.quota, fsrsReview.cards, fsrsReview.enabled, fsrsReview.pending, fsrsReview.enrolledIds, fsrsReview.registryAvailable, fsrsReview.controller, grammarRows, practiceFragile]);
   const scopeCount = useMemo(() => (admission.quota && learningAvailable ? countFor(scope) : null), [countFor, scope, admission.quota, learningAvailable]);
-  const session = scopeCount && scopeCount.status === 'ready' ? scopeCount : { status: 'pending', total: 0, due: 0, newAllowed: 0, newLocked: 0, deferred: 0, byLang: scopeCount?.byLang || {}, queue: { legacyIds: [], fsrsIds: [] } };
+  const session = scopeCount && scopeCount.status === 'ready' ? scopeCount : { status: 'pending', total: 0, due: 0, newAllowed: 0, newLocked: 0, deferred: 0,
+    noMeaning: 0, backlog: null, byLang: scopeCount?.byLang || {}, queue: { items: [], ids: [], legacyIds: [], fsrsIds: [] } };
+  // 세션 길이(§6-1 ③) — 「5분 ≈ 20 · 50 · 전부」는 서로 다른 카드 수(새 표현 포함, 학습 단계 · 재질문 제외). 줄 앞에서 자른다.
+  // 버튼 숫자 = 시작하는 줄 길이(sessionCards.length).
+  const lengthOptions = sessionLengthOptions(session.total);
+  const activeLength = lengthOptions.length && sessionLength && sessionLength < session.total ? sessionLength : null;
+  const sessionCards = sliceSession(session.queue.items, activeLength);
 
-  // 복습 큐(스냅샷) → 단어 객체. 길이 안정(삭제돼도 null 유지)해 인덱스 정렬 보존.
+  // 집중 연습 대상(§6-1 ④) — 범위 안 표현 전체(기한과 무관). 새 표현만 · 흐릿 · 위험 범위는 그 상태만. 잊기 쉬운 순서.
+  const practiceWords = useMemo(() => {
+    const fragile = new Set(practiceFragile);
+    const rows = [];
+    for (const word of vocab) {
+      const p = learningById.get(word.id);
+      if (!p || p.review.known || p.review.excluded || !reviewSupported(word) || !hasMeaning(word)) continue;
+      const r = vocabularyRetrievability(p, Math.max(effectiveNow, Date.parse(p.review.evaluatedAt) || 0));
+      const isNew = isVocabularyUnreviewed(p);
+      if (scope.state === 'new' && !isNew) continue;
+      if (scope.state === 'fragile' && (isNew || !(fragile.has(String(word.id)) || (r ?? 1) < FRAGILE_RETRIEVABILITY))) continue;
+      rows.push({ word, r: r ?? 2 });
+    }
+    return rows.sort((a, b) => a.r - b.r).map(row => row.word);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vocab, learningById, reviewSupported, scope.state, practiceFragile, Math.floor(effectiveNow / 60000)]);
+
+  // 복습 줄(단계) → 단어 객체. 길이 안정(삭제돼도 null 유지)해 인덱스 정렬 보존.
   const reviewSessionWords = useMemo(
-    () => reviewQueue.map(id => vocab.find(v => v.id === id) || null),
+    () => reviewQueue.map(step => vocab.find(v => v.id === step.id) || null),
     [reviewQueue, vocab]
   );
+  const currentStep = reviewQueue[reviewIdx];
+  // 예전 일정 단계 — 입장권(admission)을 받은 뒤에만 연다(처음 보는 표현 카드도 새 표현 한도를 여기서 쓴다).
   const candidateWord = useMemo(() => {
-    const id = reviewQueue[reviewIdx];
-    return id != null && fsrsReview.controller.canLegacy(id) ? vocab.find(v => v.id === id && reviewAvailable(v) && reviewSupported(v)) : undefined;
+    const step = reviewQueue[reviewIdx];
+    return step?.engine === 'legacy' && step.phase !== 'skipped' && fsrsReview.controller.canLegacy(step.id) ? vocab.find(v => v.id === step.id && reviewAvailable(v) && reviewSupported(v)) : undefined;
     // controller는 안정 객체라 canLegacy 결과가 바뀌는 신호(registryAvailable·enrolledIds)를 명시해 다시 판정한다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewQueue, reviewIdx, vocab, reviewSupported, reviewAvailable, fsrsReview.controller, fsrsReview.registryAvailable, fsrsReview.enrolledIds]);
+  // 새 일정(FSRS) 단계 — 카드는 controller가 연다(질문 · 노출 · 채점은 FSRS 경로 그대로).
+  const fsrsStepValid = useCallback(id => {
+    const projection = learningById.get(id);
+    return vocab.some(row => row.id === id && reviewSupported(row)) && !!projection && !projection.review.known && !projection.review.excluded;
+  }, [learningById, vocab, reviewSupported]);
+  const fsrsStepWord = currentStep?.engine === 'fsrs' && currentStep.phase !== 'skipped' && fsrsStepValid(currentStep.id) ? vocab.find(v => v.id === currentStep.id) : undefined;
 
   const questionKey = `${reviewSessionId}:${reviewIdx}`;
   // 로그인 전에는 user?.id·current가 둘 다 비어 undefined === undefined가 되지 않게 사용자 id를 먼저 본다(게스트 /vocab 크래시).
@@ -573,29 +687,27 @@ function VocabWorkspace({ reviewScope }) {
     if (tab === 'review' && !reviewFinished && candidateId !== undefined) admission.controller.question(candidateId, questionKey);
   }, [tab, reviewFinished, candidateId, questionKey, admission.controller]);
 
-  // 자동 모드: 단어 rung → 세션과 동일한 문항 유형(vocabTypeForRung)을 복습 서브모드로 매핑.
-  // rung≤1→choice(문맥 객관식), 2→cloze(단서회상 — 여기선 문맥 객관식으로 수렴), 3→typing, ≥4→listening.
-  // TTS 미지원이면 listening은 문맥으로 강등. (cloze 전용 서브모드가 없어 context로 매핑 — 무해)
-  const autoSubMode = (word) => {
-    if (!word) return 'context';
-    const rung = vocabRungs[word.word_text] ?? 0;
-    const vtype = vocabTypeForRung(rung, 'normal');
-    if (vtype === 'vocab-typing') return 'typing';
-    if (vtype === 'vocab-listening') return ttsSupported && word.language !== 'Korean' ? 'listening' : 'context';
-    return 'context'; // vocab-choice
-  };
+  // 집중 연습 — 일정 · 한도 밖이라 입장권을 받지 않는다. 지금 카드 = 연습 줄의 카드.
+  const practiceWord = tab === 'practice' && practice && !practice.finished ? allVocab.find(v => v.id === practice.ids[practice.idx]) : undefined;
+  const activeWord = tab === 'practice' ? practiceWord : currentWord;
   const contextOptions = useMemo(() => {
-    if (!currentWord) return [];
-    const others = vocab.filter(v => v.id !== currentWord.id && v.meaning);
+    if (!activeWord) return [];
+    const others = vocab.filter(v => v.id !== activeWord.id && v.meaning);
     const distractors = fisherYatesShuffle(others).slice(0, 3);
     // 보기 텍스트는 원어 병기 괄호를 정리 — 정답 식별은 id 기준이라 채점엔 무영향
-    return fisherYatesShuffle([...distractors, currentWord])
+    return fisherYatesShuffle([...distractors, activeWord])
       .map(v => ({ ...v, meaning: stripSourceLangInMeaning(v.meaning) }));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reviewIdx, currentWord?.id]);
-  const effectiveMode = usableVocabReviewMode(
-    reviewMode === 'auto' ? autoSubMode(currentWord) : currentWord?.language === 'Korean' && reviewMode === 'listening' ? 'context' : reviewMode, currentWord, contextOptions,
-  );
+  }, [reviewIdx, practice?.idx, activeWord?.id]);
+  // 본 복습은 플래시(버튼 넷)뿐이다. 집중 연습은 고른 갈래 — 보기를 만들 수 없으면 스스로 확인으로 돌린다.
+  const effectiveMode = tab === 'practice'
+    ? usableVocabReviewMode(activeWord?.language === 'Korean' && practiceMode === 'listening' ? 'flash' : practiceMode, activeWord, contextOptions)
+    : 'flash';
+  // 펼친 뒤 0.3초는 채점을 받지 않는다(두 번 탭 오채점 방지 — 버튼 · 키 모두).
+  const scoreArmed = useScoreArmed(showAnswer && !!activeWord, `${tab}:${questionKey}:${practice?.idx ?? ''}`);
+  const autoplay = (word, trigger) => {
+    if (word && word.language !== 'Korean' && shouldAutoplay({ soundOn, ttsSupported, trigger })) speak(word.word_text, word.language || detectLang(word.word_text));
+  };
 
   const handleScore = async (rating) => {
     const actorId = user?.id;
@@ -645,7 +757,7 @@ function VocabWorkspace({ reviewScope }) {
       itemKey: currentWord.word_text,
       lang: currentWord.language || detectLang(currentWord.word_text),
       correct: rating > 1,
-      detail: { word_id: currentWord.id, meaning: currentWord.meaning, rating, mode: reviewMode, qtype },
+      detail: { word_id: currentWord.id, meaning: currentWord.meaning, rating, mode: effectiveMode, qtype },
     }, {
       // calculateFSRS 반환 키를 그대로 쓴다 — DB 컬럼과 동일(snake_case).
       // 이전엔 easeFactor(비존재 컬럼)를 보내고 repetitions를 빠뜨려, PostgREST가 UPDATE 전체를
@@ -670,7 +782,7 @@ function VocabWorkspace({ reviewScope }) {
     });
     // 기존 scoreMutation은 progressStore 내부에서 처리됨
     if (wasNew && admission.current?.compatibility) registerNewIntro(currentWord.id);            // 새 단어 첫 학습 → 오늘 한도 차감
-    goNextReview(rating === 1 ? currentWord.id : null);      // '다시'는 이번 세션 끝에 재노출
+    goNextReview(rating === 1 ? currentWord.id : null);      // '다시'는 이번 세션 끝에 재노출(줄 메타데이터 — 일정은 위 채점 한 번)
     scoringRef.current = false;
   };
 
@@ -744,7 +856,7 @@ function VocabWorkspace({ reviewScope }) {
     if (!currentActor() || lastGradeRef.current !== last) return;
     lastGradeRef.current = null;
     // 세션 되감기 — 재노출된 큐 항목 제거 · 신규 한도 복원 · 종료 화면이었으면 되살림
-    if (last.requeued) setReviewQueue((q) => (q[q.length - 1] === last.wordId ? q.slice(0, -1) : q));
+    if (last.requeued) setReviewQueue((q) => (q[q.length - 1]?.id === last.wordId ? q.slice(0, -1) : q));
     if (last.wasNew && last.legacyBudgetCompatibility) {
       setIntroIds((prev) => { const next = prev.filter((id) => id !== last.wordId); saveIntroIds(next); return next; });
     }
@@ -760,13 +872,14 @@ function VocabWorkspace({ reviewScope }) {
   };
 
   // 객관식·듣기의 보기 선택 — 클릭과 키 `1`~`4`가 같은 함수를 탄다(정답이면 700ms 뒤 자동 3점,
-  // 오답이면 「다시/정답 보기」 노출은 렌더가 contextSelected로 판정)
+  // 오답이면 「다시/정답 보기」 노출은 렌더가 contextSelected로 판정). 본 복습은 플래시뿐이라 집중 연습의 듣기 갈래가 쓴다.
   const pickContextOption = (i) => {
-    if (contextSelected !== null || !currentWord) return;
+    if (contextSelected !== null || !activeWord) return;
     const opt = contextOptions[i];
     if (!opt) return;
     setContextSelected(i);
-    if (opt.id === currentWord.id) setTimeout(() => handleScore(3), 700);
+    const score = tab === 'practice' ? handlePractice : handleScore;
+    if (opt.id === activeWord.id) setTimeout(() => score(3), 700);
   };
 
   useEffect(() => {
@@ -800,26 +913,109 @@ function VocabWorkspace({ reviewScope }) {
     }
   }
 
-  const goNextReview = (requeueId = null) => {
+  // 세션 끝 — 낙관 전진을 서버 정본과 재동기한다.
+  const finishRun = () => {
+    setReviewFinished(true);
+    toast('이번 표현 복습을 마쳤어요', 'celebrate', 5000);
+    // 세션 동안의 낙관 전진을 서버 정본과 재동기 — 채점 저장이 fire-and-forget이라
+    // 여기서 한 번 무효화하지 않으면 다음 화면이 낡은 FSRS 값을 계속 본다.
+    queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
+    // 복습 완료 시 진도 갱신 — 현재 시리즈 필터의 모든 복습 완료 단어를 학습 진도로 기록
+    updateReadingProgress();
+  };
+
+  // 다음 단계로(두 엔진 공통). queue를 넘기면 그 줄 기준으로 끝을 판정한다(방금 끼운 단계 포함).
+  const advanceStep = (queue = reviewQueueRef.current) => {
     admission.controller.leave();
     setShowHint(false);
     setTypingAnswer('');
     setContextSelected(null);
-    const newLen = reviewQueue.length + (requeueId ? 1 : 0);
-    if (requeueId) setReviewQueue(q => [...q, requeueId]);
-    if (reviewIdx < newLen - 1) {
+    const index = reviewIdxRef.current;
+    if (index < queue.length - 1) {
+      reviewIdxRef.current = index + 1;
+      setReviewIdx(index + 1);
+      setShowAnswer(false);
+    } else finishRun();
+  };
+
+  // 예전 일정 채점 · 미루기 뒤 — 「다시」는 이번 세션 끝에 재노출(줄 메타데이터만, 일정 저장은 채점 한 번).
+  const goNextReview = (requeueId = null) => {
+    lastEngineRef.current = 'legacy';
+    admission.controller.leave();
+    setShowHint(false);
+    setTypingAnswer('');
+    setContextSelected(null);
+    const newLen = reviewQueueRef.current.length + (requeueId ? 1 : 0);
+    if (requeueId) setReviewQueue(q => [...q, { id: requeueId, engine: 'legacy', phase: 'again' }]);
+    if (reviewIdxRef.current < newLen - 1) {
+      reviewIdxRef.current += 1;
       setReviewIdx(i => i + 1);
       setShowAnswer(false);
-    } else {
-      setReviewFinished(true);
-      toast('이번 표현 복습을 마쳤어요', 'celebrate', 5000);
-      // 세션 동안의 낙관 전진을 서버 정본과 재동기 — 채점 저장이 fire-and-forget이라
-      // 여기서 한 번 무효화하지 않으면 다음 화면이 낡은 FSRS 값을 계속 본다.
-      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
-      // 복습 완료 시 진도 갱신 — 현재 시리즈 필터의 모든 복습 완료 단어를 학습 진도로 기록
-      updateReadingProgress();
-    }
+    } else finishRun();
   };
+
+  // 처음 보는 표현 「다음 →」 — 채점 없음. 3장 뒤 같은 표현을 채점 카드로 다시 묻는다(FSRS = 첫 질문,
+  // 예전 일정 = 세션 내 재질문). 호환 모드(기기 한도)는 첫 학습 카드에서 오늘 한도 1을 쓴다(증거 모델 §2-1).
+  const advanceIntro = trigger => {
+    lastTriggerRef.current = trigger;
+    if (currentStep?.engine === 'legacy' && currentWord && isNewWord(currentWord) && admission.current?.compatibility) registerNewIntro(currentWord.id);
+    const next = insertAfterIntro(reviewQueueRef.current, reviewIdxRef.current);
+    setReviewQueue(next);
+    advanceStep(next);
+  };
+
+  // 지금 단계를 건너뛴다(그 카드의 남은 단계도) — 아는 단어로 옮겼거나 다른 곳에서 이미 채점 · 제외돼 열 수 없을 때.
+  const skipCard = id => {
+    const next = reviewQueueRef.current.map((step, index) => (index >= reviewIdxRef.current && step.id === id ? { ...step, phase: 'skipped' } : step));
+    setReviewQueue(next);
+    advanceStep(next);
+  };
+
+  // 새 일정(FSRS) 채점이 정착했다 — 학습 단계 카드는 때가 되면 줄에 다시 끼운다(아래 효과).
+  const onFsrsGraded = (cardId, rating) => {
+    lastEngineRef.current = 'fsrs';
+    lastGradeRef.current = null;
+    if (rating === 1) setFsrsAgain(n => n + 1);
+    setSessionFsrsIds(ids => (ids.includes(cardId) ? ids : [...ids, cardId]));
+    advanceStep();
+  };
+  // 새 일정 채점 되돌리기 — 새 연산(revision +1)으로 되돌리고, 그 카드는 노출 대기 뒤 학습 단계처럼 다시 나온다.
+  const undoFsrsGrade = async () => {
+    const last = fsrsReview.lastGrade;
+    if (!last || fsrsReview.busy) return;
+    if (!(await fsrsReview.controller.undo()) || !workspaceAlive.current) return;
+    const cardId = last.payload.cardId;
+    if (last.payload.rating === 1) setFsrsAgain(n => Math.max(0, n - 1));
+    setReviewQueue(q => {
+      let at = -1;
+      q.forEach((step, index) => { if (index < reviewIdx && step.id === cardId && step.phase !== 'intro' && step.phase !== 'skipped') at = index; });
+      return at < 0 ? q : q.map((step, index) => (index === at ? { ...step, phase: 'undone' } : step));
+    });
+    setSessionFsrsIds(ids => (ids.includes(cardId) ? ids : [...ids, cardId]));
+    const word = vocab.find(v => v.id === cardId);
+    toast(`되돌렸어요 — 「${word?.word_text || ''}」 잠시 뒤 다시 나와요`, 'info');
+  };
+
+  // 카드에서 「아는 단어」(#1335) — 바로 빼고 하단에 되돌리기. 일정 · 평가 기록은 보존된다(DB 트리거가 복습 보호만 바꾼다).
+  const markKnownInSession = word => {
+    const lang = knownWordsLang(word?.language, koreanCapabilities.known);
+    if (!word || !lang || knownWords.mutation.isPending) return;
+    knownWords.mutation.mutate({ lang, wordText: word.word_text, known: true });
+    setKnownUndo({ lang, wordText: word.word_text });
+    if (tab === 'practice') { advancePractice(false); return; }
+    fsrsReview.controller.leave();
+    skipCard(word.id);
+  };
+  const undoKnownInSession = () => {
+    if (!knownUndo) return;
+    knownWords.mutation.mutate({ lang: knownUndo.lang, wordText: knownUndo.wordText, known: false, removeKeys: [knownUndo.wordText] });
+    setKnownUndo(null);
+  };
+  useEffect(() => {
+    if (!knownUndo) return undefined;
+    const timer = setTimeout(() => setKnownUndo(null), 8000);
+    return () => clearTimeout(timer);
+  }, [knownUndo]);
 
   const updateReadingProgress = () => {
     if (isBookScope || !user?.id) return;
@@ -843,45 +1039,30 @@ function VocabWorkspace({ reviewScope }) {
     } catch {}
   };
 
-  // 세션 시작 공통 경로 — 진입점(오늘 복습·재대결)은 **큐만** 다르고, rung 유도·상태 초기화·
-  // 채점(handleScore → recordReviewCompleted)은 전부 이 한 길이다. 재대결이 두 번째 문이
-  // 되면서 정본화: 채점 경로를 문마다 새로 만들지 않는다.
-  const startSession = async (queueWords, { includeFsrs = false } = {}) => {
+  // 세션 시작 공통 경로 — 진입점(오늘 복습 · 이어 하기 · 재대결)은 **줄만** 다르고, 상태 초기화 · 채점(예전 일정 =
+  // handleScore → recordReviewCompleted, 새 일정 = FSRS controller)은 이 한 길이다. 본 복습은 두 엔진이 섞인 줄
+  // (countReviewScope의 queue.items — FSRS 독점 해제, R1-B-1), 재대결은 예전 일정 카드만(기존 경로).
+  const startSession = async (queueWords, { items = null, resumeFrom = null } = {}) => {
     if (!(await admission.controller.refresh()) || !(await fsrsReview.controller.refresh()) || !workspaceAlive.current) return;
-    const registry = fsrsReview.controller.getSnapshot();
-    if (includeFsrs && registry.enabled && registry.ready.length) { setTab('fsrs'); return; }
-    const queue = queueWords.filter(v => reviewAvailable(v) && reviewSupported(v) && fsrsReview.controller.canLegacy(v.id)).map(v => v.id);
+    const planned = items
+      ? items.filter(item => (item.engine === 'fsrs' ? fsrsStepValid(item.id)
+        : fsrsReview.controller.canLegacy(item.id) && vocab.some(v => v.id === item.id && reviewAvailable(v) && reviewSupported(v))))
+      : queueWords.filter(v => reviewAvailable(v) && reviewSupported(v) && fsrsReview.controller.canLegacy(v.id))
+        .map(v => ({ id: v.id, engine: 'legacy', isNew: false, introduced: true }));
+    const queue = initialSteps(planned);
     // 범위를 아직 판정하지 못했거나 조회가 실패했으면 시작하지 않는다 — 다른 범위 카드로 대신 열지 않는다.
     if (queue.length === 0 || startingRef.current || scopePending || scopeFailed || (explicitScope && vocabError)) return;
-    startingRef.current = true;
-    setStartingReview(true);
-
-    // 자동(추천) 모드용 rung 유도 — review_events 1회 조회(해당 언어들, 최근 400건, desc→asc).
-    // 조회 실패·이벤트 0건이면 rung 기본 0 → vocabTypeForRung(0)=choice 위주(무해 폴백).
-    let rungs = {};
-    try {
-      const langs = [...new Set(queueWords.map(v => v.language || detectLang(v.word_text)))];
-      const { data, error } = await supabase
-        .from('review_events')
-        .select('source, item_key, correct, detail, created_at')
-        .eq('user_id', user.id)
-        .in('lang', langs)
-        .order('created_at', { ascending: false })
-        .limit(400);
-      if (!error && data) {
-        // 되돌린 채점 제외(W 후속 ②) — lang 필터뿐이라 undo 마커가 같은 표본에 있다
-        const eventsAsc = dropUndoneEvents(data).slice().reverse();
-        rungs = deriveVocabRungs(eventsAsc, queueWords);
-      }
-    } catch { /* 폴백: 빈 rung → choice 위주 */ }
-    if (!workspaceAlive.current) return;
-    startingRef.current = false;
-    setStartingReview(false);
     gradeSessionRef.current++;
     lastGradeRef.current = null;
-    setVocabRungs(rungs);
+    lastEngineRef.current = 'legacy';
+    setSessionFsrsIds([]);
+    setFsrsAgain(0);
+    setKnownUndo(null);
+    setReviewRun({ scopeKey, cardIds: resumeFrom?.cardIds || planned.map(item => item.id), priorDone: resumeFrom?.doneIds || [],
+      startedAt: resumeFrom?.startedAt || new Date().toISOString(), cut: !items || resumeFrom ? false : planned.length < session.total });
 
     admission.controller.leave();
+    fsrsReview.controller.leave();
     setReviewSessionId(id => id + 1);
     setReviewQueue(queue);
     setTab('review');
@@ -895,55 +1076,156 @@ function VocabWorkspace({ reviewScope }) {
     // 내 정보의 알림 켜기까지 막혔다. 권한은 그 두 곳에서 사용자가 고른 뒤에만 요청한다.
   };
 
-  // 복습 예정(학습한 단어) 먼저, 그다음 하루 한도 내 새 단어
-  // 다른 탭에서 제외/삭제된 현재 카드는 채점 없이 다음 남은 카드로 건너뛴다.
+  // 다른 탭에서 제외 · 삭제 · 아는 단어가 된 지금 카드는 채점 없이 다음 남은 단계로 건너뛴다(두 엔진).
+  const stepValid = step => step.phase !== 'skipped' && (step.engine === 'fsrs' ? fsrsStepValid(step.id)
+    : fsrsReview.controller.canLegacy(step.id) && vocab.some(row => row.id === step.id && reviewAvailable(row) && reviewSupported(row)));
+  const stepReady = !!candidateWord || !!fsrsStepWord;
   useEffect(() => {
-    if (candidateWord || reviewFinished || !reviewQueue.length || isLoading || vocabError || koreanCapabilities.isLoading || !fsrsReview.registryAvailable) return;
-    const next = reviewQueue.findIndex((id, index) => index > reviewIdx && fsrsReview.controller.canLegacy(id) && vocab.some(row => row.id === id && reviewAvailable(row) && reviewSupported(row)));
+    if (stepReady || reviewFinished || !reviewQueue.length || isLoading || vocabError || koreanCapabilities.isLoading || !fsrsReview.registryAvailable) return;
+    const next = reviewQueue.findIndex((step, index) => index > reviewIdx && stepValid(step));
     if (next >= 0) setReviewIdx(next);
-    else { setReviewIdx(reviewQueue.length); setReviewFinished(true); }
-  }, [candidateWord, reviewFinished, reviewQueue, reviewIdx, vocab, isLoading, vocabError, koreanCapabilities.isLoading, reviewSupported, reviewAvailable, fsrsReview.registryAvailable, fsrsReview.controller]);
+    else { setReviewIdx(reviewQueue.length); finishRun(); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stepReady, reviewFinished, reviewQueue, reviewIdx, vocab, isLoading, vocabError, koreanCapabilities.isLoading, reviewSupported, reviewAvailable, fsrsReview.registryAvailable, fsrsReview.controller, fsrsStepValid]);
+
+  // 새 일정 학습 단계(1분 · 10분 — 지금 정책은 30초 · 10분) 카드는 다시 물을 때가 되면 지금 카드 바로 뒤에 끼운다.
+  useEffect(() => {
+    if (tab !== 'review' || reviewFinished || !reviewQueue.length || !sessionFsrsIds.length) return;
+    let next = reviewQueue;
+    for (const entry of fsrsReview.ready) if (sessionFsrsIds.includes(entry.cardId)) next = insertLearningStep(next, reviewIdx, entry.cardId);
+    if (next !== reviewQueue) setReviewQueue(next);
+  }, [tab, reviewFinished, reviewQueue, reviewIdx, sessionFsrsIds, fsrsReview.ready]);
+
+  // 끝 화면의 「잠시 뒤」 — 이 세션에서 채점한 새 일정 카드 중 학습 · 재학습 단계에 남은 것.
+  const waitingFsrs = useMemo(() => {
+    const cards = fsrsReview.cards.filter(entry => sessionFsrsIds.includes(entry.cardId) && ['Learning', 'Relearning'].includes(entry.card?.state));
+    if (!cards.length) return null;
+    const readyIds = cards.filter(entry => fsrsReview.ready.some(row => row.cardId === entry.cardId)).map(entry => entry.cardId);
+    const times = cards.map(entry => Math.max(Date.parse(entry.card.due), entry.nextQuestionAt ? Date.parse(entry.nextQuestionAt) : 0)).filter(Number.isFinite);
+    return { count: cards.length, readyIds, ready: readyIds.length > 0, nextAt: times.length ? new Date(Math.min(...times)).toISOString() : null };
+  }, [fsrsReview.cards, fsrsReview.ready, sessionFsrsIds]);
+  const resumeWaiting = () => {
+    if (!waitingFsrs?.ready) return;
+    const next = [...reviewQueue, ...waitingFsrs.readyIds.map(id => ({ id, engine: 'fsrs', phase: 'learn' }))];
+    setReviewQueue(next);
+    setReviewIdx(reviewQueue.length);
+    setShowAnswer(false);
+    setReviewFinished(false);
+  };
+
+  // 진행 n / N(서로 다른 카드) · 이어 하기 기록(세션 저장소 — 새로고침 · 24시간). 끝냈고 기다리는 카드가 없으면 지운다.
+  const runProgress = reviewRun ? stepProgress(reviewQueue, reviewFinished ? reviewQueue.length : reviewIdx, reviewRun.cardIds, reviewRun.priorDone) : null;
+  useEffect(() => {
+    if (!user?.id || !reviewRun || !runProgress) return;
+    const storage = typeof window === 'undefined' ? null : window.sessionStorage;
+    if (reviewFinished && !waitingFsrs?.count) { writeResume(storage, user.id, null); setResumeStore(null); return; }
+    const value = { scopeKey: reviewRun.scopeKey, cardIds: [...runProgress.doneIds, ...runProgress.remainingIds], index: runProgress.doneIds.length, startedAt: reviewRun.startedAt };
+    writeResume(storage, user.id, value);
+    setResumeStore(value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, reviewRun, reviewQueue, reviewIdx, reviewFinished, waitingFsrs?.count]);
+  // 새로고침 뒤 「멈춘 복습 이어 하기 (n / N)」 — 같은 범위 · 24시간 안 · 다른 곳에서 채점된 카드는 건너뛴다.
+  const restorable = useMemo(() => {
+    if (!resumeStore || !learningAvailable || (reviewRun && reviewRun.scopeKey === scopeKey)) return null;
+    return restoreResume(resumeStore, { scopeKey, now: effectiveNow,
+      reviewedAt: id => { const at = Date.parse(learningById.get(id)?.memory.lastReview); return Number.isFinite(at) ? at : null; },
+      available: id => { const p = learningById.get(id); return !!p && isVocabularyReviewAvailable(p) && !p.review.known && !p.review.excluded && hasMeaning(p.vocabulary) && vocab.some(v => v.id === id); } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resumeStore, learningAvailable, reviewRun, scopeKey, learningById, vocab, Math.floor(effectiveNow / 60000)]);
+  const inMemoryResume = reviewRun && reviewRun.scopeKey === scopeKey && !reviewFinished && reviewQueue.length > reviewIdx ? runProgress : null;
+  const resumeRun = () => {
+    if (inMemoryResume) { setTab('review'); return; }
+    if (!restorable) return;
+    unlockSpeechAudio();
+    const admitted = new Set(scopeQuota?.admittedLegacyCardIds || []);
+    const items = restorable.remaining.map(id => {
+      const p = learningById.get(id), fsrs = p.source === 'fsrs-v1';
+      return { id, engine: fsrs ? 'fsrs' : 'legacy', isNew: isVocabularyUnreviewed(p), introduced: fsrs ? !!p.review.firstQuestionAt : admitted.has(id) };
+    });
+    startSession(null, { items, resumeFrom: { cardIds: resumeStore.cardIds, startedAt: resumeStore.startedAt,
+      doneIds: resumeStore.cardIds.filter(id => !restorable.remaining.includes(id)) } });
+  };
+
+  // 끝 화면(§5-5) — 범위 이름 · 끝낸 수 · 「다시」 수 · 길이 칩으로 남긴 오늘 몫 · 학습 단계 대기 · 읽던 자료 · 범위 밖 이어서.
+  const narrowed = !!(scope.level || scope.source || scope.state !== 'due' || scope.type);
+  const outOfScopeCount = useMemo(() => {
+    if (!reviewFinished || !narrowed || !reviewRun) return 0;
+    const wide = countFor({ lang: scope.lang, level: null, source: null, state: 'due' });
+    if (wide.status !== 'ready') return 0;
+    const seen = new Set([...reviewRun.cardIds, ...session.queue.ids]);
+    return wide.queue.ids.filter(id => !seen.has(id)).length;
+  }, [reviewFinished, narrowed, reviewRun, countFor, scope.lang, session.queue.ids]);
+  const finishInfo = reviewRun && runProgress ? {
+    scopeLabel: scopeSummaryLabel(scope, { materialTitles }),
+    total: runProgress.done,
+    again: reviewQueue.filter(step => step.phase === 'again').length + fsrsAgain,
+    cutRemaining: reviewRun.cut ? session.queue.ids.filter(id => !reviewRun.cardIds.includes(id)).length : 0,
+    onContinueCut: () => startReview(),
+    waiting: waitingFsrs, onResumeWaiting: resumeWaiting,
+    returnLink: scope.source?.kind === 'material' && scope.source.ids.length === 1 ? { href: `/viewer/${scope.source.ids[0]}`, label: '읽던 자료로 돌아가기' } : null,
+    outOfScope: outOfScopeCount ? { count: outOfScopeCount, label: SCOPE_LANG_LABELS[scope.lang], onClick: () => { selectLanguage(scope.lang); setTab('list'); } } : null,
+  } : null;
 
   // 화면 숫자(session.total)와 같은 계산 결과의 줄로 시작한다 — 보이는 개수 = 시작하는 줄 길이(계약 reviewScopeCount).
-  const startReview = () =>
-    startSession(session.queue.legacyIds.map(id => vocab.find(v => v.id === id)).filter(Boolean), { includeFsrs: true });
+  // 세션 길이 칩을 고르면 같은 줄의 앞에서 자른 sessionCards(버튼 숫자)로 시작한다.
+  const startReview = () => {
+    unlockSpeechAudio();
+    return startSession(null, { items: sessionCards });
+  };
 
-  // ⚔ 헷갈린 단어 재대결(#1077-15) — 최근 2주 오답 가중 상위(computeWeakness 정본)만 모은
-  // 집중 큐. 배너·선택은 조회만 하고, 채점은 위 공통 경로 그대로라 여기서 맞히면 약점
-  // 점수가 내려가 일요일 약점 세션에서 자연히 빠진다(공유 원장이 곧 dedup — 승인된 이음새).
-  const { data: recentVocabEvents = [] } = useQuery({
-    queryKey: ['confused-events', user?.id],
-    queryFn: async () => {
-      const sinceIso = new Date(Date.now() - CONFUSED_SINCE_DAYS * 86400000).toISOString();
-      const [{ data, error }, markers] = await Promise.all([
-        supabase
-          .from('review_events')
-          // detail은 유형 큐(v2-A R3)가 qtype을 보려고 함께 받는다 — 새 조회 대신 컬럼 하나.
-          .select('source, item_key, correct, created_at, detail')
-          .eq('user_id', user.id)
-          .eq('source', 'vocab')
-          .gte('created_at', sinceIso)
-          .order('created_at', { ascending: false })
-          .limit(400),
-        // undo 마커(source ui)는 위 source='vocab' 조회에 없다 — 마커 전용 조회를 붙여 되돌린
-        // 채점을 뺀다(W 후속 ②). 마커 조회 실패는 빈 배열 = 현행 집계로 수렴.
-        fetchUndoMarkers(user.id, { sinceIso }),
-      ]);
-      if (error) throw error;
-      return dropUndoneEvents(data || [], markers);
-    },
-    enabled: !!user,
-    staleTime: 1000 * 60,
-  });
   const confused = useMemo(
     () => confusedVocabWords(recentVocabEvents, vocab),
     [recentVocabEvents, vocab],
   );
   const startRematch = () => startSession(confused.map((c) => c.word));
 
+  // ── 집중 연습(§6-1 ④) — FSRS · 예전 일정 · 새 표현 한도(admission) 호출 0회(계약). 연습 기록(review_events
+  // source 'practice')만 남긴다. 채점 경로(handleScore · recordReviewCompleted · controller.grade)를 타지 않는다.
+  const startPractice = (words, { mode = null } = {}) => {
+    const ids = (words || []).filter(word => word && hasMeaning(word) && reviewSupported(word)).map(word => word.id);
+    if (!ids.length) return;
+    unlockSpeechAudio();
+    if (mode) setPracticeMode(mode);
+    setKnownUndo(null);
+    setPractice({ ids, idx: 0, total: ids.length, unknown: 0, finished: false, scopeKey });
+    setTab('practice');
+    setShowAnswer(false);
+    setShowHint(false);
+    setTypingAnswer('');
+    setContextSelected(null);
+  };
+  const advancePractice = missed => {
+    setShowAnswer(false);
+    setShowHint(false);
+    setTypingAnswer('');
+    setContextSelected(null);
+    setPractice(current => {
+      if (!current) return current;
+      const done = current.idx + 1 >= current.ids.length;
+      return { ...current, unknown: current.unknown + (missed ? 1 : 0), ...(done ? { finished: true } : { idx: current.idx + 1 }) };
+    });
+  };
+  const handlePractice = rating => {
+    const word = practiceWord;
+    if (!word || !practice || practice.finished || !user?.id) return;
+    const qtype = effectiveMode === 'typing' ? 'typing' : effectiveMode === 'listening' ? 'listening' : effectiveMode === 'context' ? 'choice' : 'self';
+    const result = qtype === 'self' ? (rating > 1 ? 'known' : 'unknown') : rating > 1 ? 'correct' : 'wrong';
+    const event = buildPracticeEvent({ word, qtype, scope: practice.scopeKey, result });
+    if (event) logReviewEvents(user.id, [event]);
+    advancePractice(result === 'unknown' || result === 'wrong');
+  };
+  // 연습 중 지운 · 아는 단어가 된 표현은 기록 없이 넘긴다.
+  useEffect(() => {
+    if (tab === 'practice' && practice && !practice.finished && !practiceWord && !isLoading) advancePractice(false);
+  }, [tab, practice, practiceWord, isLoading]);
+  // 연습을 마치면 헷갈린 표현 · 흐릿 범위가 새 기록을 읽게 한다.
+  useEffect(() => {
+    if (practice?.finished) queryClient.invalidateQueries({ queryKey: ['confused-events', user?.id] });
+  }, [practice?.finished, queryClient, user?.id]);
+
   // 🎯 유형 큐(v2-A R3) — R1이 진단하고 R2가 편성에 반영한 약점을, 사용자가 **한 번에
-  // 그 연습으로 들어갈** 길로 잇는다. 방식 선택(reviewMode)은 원래 있었고 없던 건 다리다.
-  // 같은 이벤트 배열을 재사용하므로 추가 조회 0. 처방할 축이 없거나 표본이 얕으면 null.
+  // 그 연습으로 들어갈** 길로 잇는다. 같은 이벤트 배열을 재사용하므로 추가 조회 0. 처방할 축이 없거나 표본이 얕으면 null.
+  // 타이핑 · 리스닝은 집중 연습의 갈래라(R1-B-1) 처방도 집중 연습으로 연다 — 일정은 바뀌지 않는다.
   const weakDrill = useMemo(() => {
     const pick = weakDrillPrescription(weaknessProfile(recentVocabEvents), { ttsSupported });
     if (!pick) return null;
@@ -951,29 +1233,55 @@ function VocabWorkspace({ reviewScope }) {
     return hasWeakDrill(words) ? { ...pick, words } : null;
   }, [recentVocabEvents, vocab, ttsSupported]);
 
-  // 처방을 누르면 그 방식으로 고정해 세션을 연다 — 사용자가 드롭다운을 찾아 바꾸지 않아도 된다.
+  // 처방을 누르면 그 방식으로 고정해 연다 — 사용자가 갈래를 찾아 바꾸지 않아도 된다.
   const startWeakDrill = () => {
     if (!weakDrill) return;
-    setReviewMode(weakDrill.mode);
-    startSession(weakDrill.words.map((c) => c.word));
+    startPractice(weakDrill.words.map((c) => c.word), { mode: weakDrill.mode });
   };
 
+  // 지금 카드가 바뀌면 다음 카드 소리를 미리 받는다(소리 켬 · 음성 가능할 때).
+  useEffect(() => {
+    if (tab !== 'review' || reviewFinished || !soundOn || !ttsSupported) return;
+    const next = reviewQueue.slice(reviewIdx + 1).find(step => step.phase !== 'skipped');
+    const word = next && vocab.find(v => v.id === next.id);
+    if (word && word.language !== 'Korean') prefetchSpeech(word.word_text, word.language || detectLang(word.word_text));
+  }, [tab, reviewFinished, reviewIdx, reviewQueue, soundOn, ttsSupported, vocab]);
+  // 처음 보는 표현은 펼친 채로 나온다 — 직전 동작이 포인터 · 단축키였으면 소리를 낸다(보조기술이면 글로만).
+  const introWord = currentStep?.phase === 'intro' ? (currentStep.engine === 'legacy' ? currentWord : fsrsStepWord) : undefined;
+  useEffect(() => {
+    if (tab === 'review' && !reviewFinished && introWord) autoplay(introWord, lastTriggerRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, reviewFinished, introWord?.id, questionKey]);
 
   // 복습 세션 중에는 페이지 크롬(헤더·통계·필터·하단 네비)을 걷어낸다.
   // 하단 네비는 Layout 소유라 컴포넌트에서 못 지운다 — body 클래스로 CSS에 알린다.
   // 훅은 아래 `if (!user)` 조기 return보다 **위**에 있어야 한다(#838 Hooks 순서 사고와 같은 자리).
-  const inSession = tab === 'fsrs' || tab === 'review' && !reviewFinished;
-  // W R2 — 지금 화면에 있는 4버튼 줄(상태로 판정, DOM 질의 금지)
+  const inSession = tab === 'review' && !reviewFinished || tab === 'practice' && !!practice && !practice.finished;
+  // W R2 — 지금 화면에 있는 4버튼 줄(상태로 판정, DOM 질의 금지). 집중 연습은 두 버튼 줄(키 1 · 2).
   const quizMode = effectiveMode === 'context' || effectiveMode === 'listening';
-  const reviewKeyRow = !currentWord ? null
+  // 처음 보는 표현 카드에는 채점 줄이 없다(Space = 「다음 →」).
+  const introStep = tab === 'review' && currentStep?.phase === 'intro';
+  const keyWord = tab === 'practice' ? practiceWord : introStep ? undefined : currentWord;
+  const reviewKeyRow = !keyWord ? null
+    : tab === 'practice' && showAnswer ? (effectiveMode === 'listening' ? null : 'practice')
     : showAnswer ? 'score'
     : quizMode && contextSelected === null && contextOptions.length > 0 && (effectiveMode !== 'listening' || ttsSupported) ? 'options'
-    : quizMode && contextSelected !== null && contextOptions[contextSelected]?.id !== currentWord.id ? 'wrong'
+    : quizMode && contextSelected !== null && contextOptions[contextSelected]?.id !== keyWord.id ? 'wrong'
     : null;
+  const revealCard = trigger => {
+    lastTriggerRef.current = trigger;
+    setShowAnswer(true);
+    setShowHint(false);
+    if (tab === 'review') autoplay(currentWord, trigger);
+  };
   reviewKeysRef.current = {
-    row: tab === 'review' && inSession ? reviewKeyRow : null,
-    score: handleScore, pick: pickContextOption, reveal: () => setShowAnswer(true),
+    row: inSession && (reviewKeyRow !== 'score' && reviewKeyRow !== 'practice' || scoreArmed) ? reviewKeyRow : null,
+    score: handleScore, pick: pickContextOption, reveal: () => setShowAnswer(true), practice: handlePractice,
+    space: inSession && introStep && introWord ? () => advanceIntro('shortcut')
+      : inSession && keyWord && !showAnswer && effectiveMode === 'flash' ? () => revealCard('shortcut') : undefined,
     undo: undoLastGrade, canUndo: !!lastGradeRef.current && !scoringRef.current,
+    // 직전 채점이 새 일정 카드였으면 ⌘Z · ↶는 그 카드를 되돌린다(되돌리기는 한 단계).
+    ...(lastEngineRef.current === 'fsrs' && tab === 'review' ? { undo: undoFsrsGrade, canUndo: !!fsrsReview.lastGrade && !fsrsReview.busy } : {}),
   };
   useEffect(() => {
     if (typeof document === 'undefined') return undefined;
@@ -1031,7 +1339,7 @@ function VocabWorkspace({ reviewScope }) {
           />);
 
   return (
-    <div className={`page-container manabi-review-room${isBookScope ? ' is-book-scoped' : ''}`}>
+    <div className={`page-container manabi-review-room${isBookScope ? ' is-book-scoped' : ''}`} style={textbookThemeStyle(scope.lang)}>
 
       {/* 네트워크가 죽어 캐시 스냅샷으로 살아난 화면임을 알린다(v2-N R1) */}
       {isOffline && <OfflineNotice what="단어장" />}
@@ -1059,19 +1367,20 @@ function VocabWorkspace({ reviewScope }) {
         <p>같은 표현은 판본이 달라도 한 카드로 복습해요. 과별 답안 · 학습 완료와는 별개예요.</p>
         <div className="manabi-row"><Link href={reviewScope.returnTo}>← 교재로</Link>{bookExpressionListHref(reviewScope.returnTo) && <Link href={bookExpressionListHref(reviewScope.returnTo)} prefetch={false}>교재의 담은 표현</Link>}</div>
       </section>}
-      {/* 세션 상단바 — 나가기 · 진행. 카드 안에 있던 '남은 단어'를 여기로 올려 문항만 남긴다. */}
-      {inSession && tab !== 'fsrs' && (() => {
-        const total = reviewQueue.length || 1;
-        const doneCount = Math.min(reviewIdx, total);
+      {/* 세션 상단바 — 나가기 · 진행(서로 다른 카드 n / N) · 🔈/🔇 · 되돌리기. 카드 안에는 문항만 남긴다. */}
+      {inSession && (() => {
+        const progress = tab === 'practice' ? { done: practice.idx, total: practice.total } : runProgress || { done: 0, total: 0 };
+        const total = progress.total || 1;
+        const doneCount = Math.min(progress.done, total);
         return (
           <div className="review-topbar">
-            <button type="button" className="review-topbar__exit" onClick={() => setTab('list')}>
+            <button type="button" className="review-topbar__exit" onClick={() => { fsrsReview.controller.leave(); setTab('list'); }}>
               ← 나가기
             </button>
             <div
               className="review-topbar__track"
               role="progressbar"
-              aria-label="복습 진행"
+              aria-label={tab === 'practice' ? '집중 연습 진행' : '복습 진행'}
               aria-valuemin={0}
               aria-valuemax={total}
               aria-valuenow={doneCount}
@@ -1079,15 +1388,18 @@ function VocabWorkspace({ reviewScope }) {
               <div className="review-topbar__fill" style={{ width: `${(doneCount / total) * 100}%` }} />
             </div>
             <span className="review-topbar__count" role="status" aria-live="polite" aria-atomic="true">
-              {doneCount} / {total}
+              {doneCount} / {progress.total}
             </span>
+            {ttsSupported && <ReviewSoundToggle on={soundOn} onToggle={toggleSound} />}
+            {tab === 'review' && <button type="button" className="review-topbar__undo" aria-label="직전 채점 되돌리기" title="되돌리기 Ctrl/⌘+Z"
+              disabled={!reviewKeysRef.current.canUndo} onClick={() => reviewKeysRef.current.undo?.()}>↶</button>}
           </div>
         );
       })()}
 
-      {isLoading || (tab !== 'review' && tab !== 'fsrs' && scopePending && !vocabError) ? (
+      {isLoading || (tab !== 'review' && tab !== 'practice' && scopePending && !vocabError) ? (
         <CardGridSkeleton height={120} />
-      ) : tab !== 'review' && tab !== 'fsrs' && scopeFailed ? (
+      ) : tab !== 'review' && tab !== 'practice' && scopeFailed ? (
         // 범위를 못 읽으면 닫는다(설계 §5-6) — 시작 버튼 없음, 「전체」로 바꾸지 않음, 저장 설정 그대로.
         <section className="review-room-state" role="alert"><h2>범위를 불러오지 못했어요.</h2><p>전체로 바꾸지 않았어요. 다시 시도하거나 범위를 풀어 주세요.</p>
           <div className="manabi-row"><button type="button" className="btn btn--primary btn--md" onClick={() => (lookupSource && sourceScope.isError ? sourceScope.refetch() : scopeLevelsQuery.refetch())}>다시 시도</button>
@@ -1097,8 +1409,6 @@ function VocabWorkspace({ reviewScope }) {
         <section className="review-room-state" role="alert"><h2>표현을 불러오지 못했어요.</h2><p>연결을 확인한 뒤 다시 시도해 주세요. 복습 기록은 그대로 남아 있어요.</p><button type="button" className="btn btn--primary" onClick={() => refetchVocab()}>다시 시도</button></section>
         {vocab.length > 0 && vocabList}
         </>
-      ) : tab === 'fsrs' ? (
-        <FsrsReviewSession review={fsrsReview} onExit={() => setTab('list')} />
       ) : tab === 'list' ? (
         /* ── 대시보드 — 각 영역을 같은 문법(제목·수 / 오른쪽 진입 / 요약 / 미리보기)으로 조망한다.
            목록을 다 펼치지 않는다: 단어장은 임박 5개만, 나머지는 클릭해서 들어간다.
@@ -1114,14 +1424,31 @@ function VocabWorkspace({ reviewScope }) {
               <div className="review-room-number"><strong className="vocab-hero__num">{session.total}</strong><span>개의 표현</span></div>
               {/* 0인 갈래는 적지 않는다(learning-flow e2e 「복습 0」 금지) — 「복습 14 · 새 표현 4」(설계 §5-1). */}
               <p className="review-room-note">{[session.due > 0 && `복습 ${session.due}`, session.newAllowed > 0 && `새 표현 ${session.newAllowed}`].filter(Boolean).join(' · ')}</p>
-              <Button onClick={startReview} disabled={startingReview || !fsrsReview.registryAvailable || admission.status !== 'ready'} className="review-room-start">{startingReview || fsrsReview.status === 'loading' ? '복습 준비 중…' : `표현 ${session.total}개 복습 →`}</Button>
-              <ReviewScopeNotice scope={scope} count={session} countFor={countFor} remainingNew={remainingNew} languages={[...languageCounts.keys()]} onChange={changeScope} materialTitles={materialTitles} />
+              {/* 세션 길이(§5-1) — 서로 다른 카드 수. 20개보다 많을 때만. */}
+              {lengthOptions.length > 0 && <div className="review-length" role="group" aria-label="세션 길이">
+                {lengthOptions.map(length => (
+                  <button key={length ?? 'all'} type="button" className={`review-length__chip${activeLength === length ? ' is-active' : ''}`} aria-pressed={activeLength === length}
+                    onClick={() => setSessionLength(length)}>
+                    {length === null ? `전부 ${session.total}` : length === DEFAULT_SESSION_LENGTH ? `5분 · 약 ${length}개` : `${length}개`}
+                  </button>
+                ))}
+              </div>}
+              <div className="review-room-actions">
+                <Button onClick={startReview} disabled={startingReview || !fsrsReview.registryAvailable || admission.status !== 'ready'} className="review-room-start">{startingReview || fsrsReview.status === 'loading' ? '복습 준비 중…' : `표현 ${sessionCards.length}개 복습 →`}</Button>
+                {practiceWords.length > 0 && <Button variant="ghost" onClick={() => startPractice(practiceWords)} className="review-room-practice">집중 연습</Button>}
+              </div>
+              {practiceWords.length > 0 && <p className="review-room-note review-room-practice-note">복습 {session.total}개 먼저 하면 일정에 반영돼요. 집중 연습은 일정을 바꾸지 않아요.</p>}
+              <ReviewScopeNotice scope={scope} count={session} countFor={countFor} remainingNew={remainingNew} languages={[...languageCounts.keys()]} onChange={changeScope} materialTitles={materialTitles}
+                onPractice={practiceWords.length ? () => startPractice(practiceWords) : null} onFillMeaning={() => { setMissingMeaningOnly(true); setTab('browse'); }} />
             </> : <>
               <ReviewScopeNotice empty scope={scope} count={session} countFor={countFor} remainingNew={remainingNew} languages={[...languageCounts.keys()]} onChange={changeScope} materialTitles={materialTitles}
+                onPractice={practiceWords.length ? () => startPractice(practiceWords) : null} onFillMeaning={() => { setMissingMeaningOnly(true); setTab('browse'); }}
                 fallback={!hasAnyWords ? '교재 예문의 ‘예문 담기’로 기억하고 싶은 문장을 골라 주세요.' : '지금 다시 볼 표현은 없어요. 다음 복습까지 새로운 문장을 만나 보세요.'} />
               <Link href={isBookScope ? reviewScope.returnTo : hasAnyWords ? '/home' : '/books/japanese-n5'} className="btn btn--primary">{isBookScope ? '읽던 교재로 돌아가기 →' : hasAnyWords ? '오늘로 →' : '교재에서 표현 고르기 →'}</Link>
             </>}
-            {reviewQueue.length > reviewIdx && !reviewFinished && <button type="button" className="review-room-resume" onClick={() => setTab('review')}>멈춘 복습 이어가기 · {reviewIdx} / {reviewQueue.length} →</button>}
+            {/* 멈춘 복습 이어 하기(§5-6) — 같은 화면이면 메모리의 줄, 새로고침 뒤면 세션 저장소의 기록(24시간). */}
+            {(inMemoryResume || restorable) && <button type="button" className="review-room-resume" onClick={resumeRun}>
+              멈춘 복습 이어 하기 ({(inMemoryResume || restorable).done} / {(inMemoryResume || restorable).total}) →</button>}
             {vocabError && <p role="alert">최신 표현을 확인하지 못했어요. <button type="button" onClick={() => refetchVocab()}>다시 시도</button></p>}
             {fsrsReview.status === 'error' && <p role="alert">복습 일정을 불러오지 못했어요. <button type="button" onClick={() => fsrsReview.controller.refresh()}>다시 시도</button></p>}
             {fsrsReview.error?.message === 'fsrs_sync_blocked' && <p role="alert">복습을 저장하지 못했어요. 연결을 확인해 주세요 — 이 단어는 다음에 다시 나와요.
@@ -1134,7 +1461,7 @@ function VocabWorkspace({ reviewScope }) {
           {!isBookScope && <section className="review-room-grammar" aria-labelledby="review-grammar-title">
             <p className="manabi-eyebrow">02 / PATTERNS</p><h2 id="review-grammar-title">문법도 한 번 더.</h2>
             {grammarLoading ? <p role="status">복습 일정을 확인하고 있어요…</p> : grammarError ? <p role="alert">문법 일정을 불러오지 못했어요. <button type="button" className="btn btn--ghost btn--sm" onClick={() => refetchGrammar()}>다시 시도</button></p> : <p>{dueGrammarCount ? `다시 확인할 문법 ${dueGrammarCount}개가 있어요.` : grammarQueue?.total ? '지금 복습할 문법이 없어요. 다음 일정에 다시 만나요.' : '이야기 학습에서 연습한 문법의 복습 일정이 여기에 모여요. N5 과별 답안과는 별개예요.'}</p>}
-            <Link href="/review/grammar" prefetch={false} className="manabi-link">{dueGrammarCount ? `문법만 ${dueGrammarCount}개 →` : '문법 복습 확인 →'}</Link>
+            <Link href="/review/grammar" prefetch={false} className="manabi-link">{dueGrammarCount ? `문법 ${dueGrammarCount}개 →` : '문법 복습 확인 →'}</Link>
             <div className="review-room-extra"><p>글 한 편으로 함께 연습하고 싶다면</p><Link href="/study" prefetch={false} className="manabi-link">이야기로 연습 →</Link></div>
                   {confused.length >= CONFUSED_MIN && (
                     <button type="button" className="vocab-rematch" onClick={startRematch}>
@@ -1165,7 +1492,7 @@ function VocabWorkspace({ reviewScope }) {
             </div>
             {vocab.length > 0 && (
               <p className="review-sec__meta">
-                미학습 {deckStats.neu} · 학습 중 {deckStats.learning} · 숙련 {deckStats.mastered}
+                {deckStats.stages.map(stage => `${stage.label} ${stage.count}`).join(' · ')}
               </p>
             )}
             <VocabularyExclusionList vocab={allVocab} scopeIds={lookupSource ? scopeSourceIds || EMPTY_IDS : null} />
@@ -1200,7 +1527,7 @@ function VocabWorkspace({ reviewScope }) {
           </section>
 
               <details className="review-room-settings">
-                <summary aria-label="단어장 도구">{isBookScope ? '복습 설정' : '복습 방식과 단어장 관리'} <span>{isBookScope ? '방식 · 하루 새 표현 한도' : '방식 · 가져오기'}</span></summary>
+                <summary aria-label="단어장 도구">{isBookScope ? '복습 설정' : '복습 설정과 단어장 관리'} <span>{isBookScope ? '하루 새 표현 한도' : '한도 · 가져오기'}</span></summary>
                 <div className="vocab-tools__menu">
                   {!isBookScope && <>
                   <button type="button" className="vocab-tools__item" onClick={() => setManualAddOpen(true)}>
@@ -1220,29 +1547,8 @@ function VocabWorkspace({ reviewScope }) {
                     onChange={e => { const f = e.target.files?.[0]; if (f) csvImportMutation.mutate(f); e.target.value = ''; }}
                     style={{ display: 'none' }} />
                   </>}
-                  {/* 덱 선택은 범위 막대의 「출처 · 사전 급수 덱」으로 흡수했다(REV-SCOPE-R1A). 여기는 방식 · 한도만. */}
-                  <div className="vocab-tools__field">
-                    <label htmlFor="review-mode" style={{ display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 5 }}>
-                      단어 복습 방식
-                    </label>
-                    <select
-                      id="review-mode"
-                      aria-label="복습 방식"
-                      value={reviewMode}
-                      onChange={e => setReviewMode(e.target.value)}
-                      style={{
-                        width: '100%', padding: '6px 8px', fontSize: '0.85rem',
-                        borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)',
-                        background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer',
-                      }}
-                    >
-                      <option value="auto">자동</option>
-                      <option value="flash">플래시</option>
-                      <option value="typing">타이핑</option>
-                      <option value="context">문맥</option>
-                      <option value="listening" disabled={!ttsSupported}>듣기</option>
-                    </select>
-                  </div>
+                  {/* 덱 선택은 범위 막대의 「출처 · 사전 급수 덱」으로 흡수했다(REV-SCOPE-R1A). 단어 복습 방식(타이핑 · 리스닝)은
+                      집중 연습의 갈래로 옮겼다(REV-SCOPE-R1B-1) — 본 복습은 플래시(버튼 넷)뿐이다. 여기는 한도만. */}
                   <div className="vocab-tools__limit">
                     <label htmlFor="new-per-day" style={{ display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 5 }}>
                       하루 새 단어 한도{explicitScope && ' · 전체 복습과 공유'}
@@ -1288,49 +1594,109 @@ function VocabWorkspace({ reviewScope }) {
         </div>
       ) : tab === 'browse' ? (
         <>
-          <button type="button" className="chip" style={{ marginBottom: 12 }} onClick={() => setTab('list')}>
+          <button type="button" className="chip" style={{ marginBottom: 12 }} onClick={() => { setMissingMeaningOnly(false); setTab('list'); }}>
             ← 돌아가기
           </button>
+          {missingMeaningOnly && <p className="review-room-note review-missing-meaning">뜻이 없는 표현만 보고 있어요. 뜻을 채우면 다음 복습부터 나와요.
+            <button type="button" className="btn btn--ghost btn--sm" onClick={() => setMissingMeaningOnly(false)}>전체 보기</button></p>}
           <VocabularyExclusionList vocab={allVocab} scopeIds={lookupSource ? scopeSourceIds || EMPTY_IDS : null} />
           {vocabList}
         </>
       ) : tab === 'review' ? (
-        <VocabReview
-          bookReview={isBookScope ? { returnTo: reviewScope.returnTo } : null}
-          vocab={vocab}
-          projections={projections.filter(row => vocab.some(word => word.id === row.vocabulary.id))}
-          learningAvailable={learningAvailable}
-          now={effectiveNow}
-          reviewWords={reviewSessionWords}
-          reviewIdx={reviewIdx}
-          currentWord={currentWord}
-          admissionPending={!!candidateWord && !currentWord && !admission.error}
-          admissionError={!!candidateWord && !currentWord ? admission.error : null}
-          onAdmissionRetry={() => admission.controller.question(candidateWord.id, questionKey)}
-          reviewFinished={reviewFinished}
-          pickContextOption={pickContextOption}
-          reviewMode={reviewMode}
-          effectiveMode={effectiveMode}
-          setReviewMode={setReviewMode}
-          showAnswer={showAnswer}
-          setShowAnswer={setShowAnswer}
-          showHint={showHint}
-          setShowHint={setShowHint}
-          typingAnswer={typingAnswer}
-          setTypingAnswer={setTypingAnswer}
-          contextSelected={contextSelected}
-          setContextSelected={setContextSelected}
-          contextOptions={contextOptions}
-          handleScore={handleScore}
-          handleSkip={handleSkip}
-          ttsSupported={ttsSupported && currentWord?.language !== 'Korean'}
-          speak={speak}
-          exampleSentences={exampleSentences}
-          exampleLoading={exampleLoading}
-          loadExamples={loadExamples}
-          setTab={setTab}
-        />
+        currentStep && !reviewFinished && currentStep.engine === 'fsrs' && currentStep.phase !== 'intro' ? (
+          // 새 일정 카드 — 같은 카드 규격으로 controller가 연다(질문 · 노출 · 채점 · 학습 단계는 FSRS 경로 그대로).
+          <FsrsReviewSession review={fsrsReview} embedded cardId={currentStep.id} stepKey={questionKey} onExit={() => setTab('list')}
+            onGraded={onFsrsGraded} onUnavailable={skipCard} speak={speak} ttsSupported={ttsSupported && fsrsStepWord?.language !== 'Korean'}
+            onReveal={(trigger, word) => { lastTriggerRef.current = trigger; autoplay(word, trigger); }}
+            onKnown={markKnownInSession} knownDisabled={knownWords.mutation.isPending} />
+        ) : currentStep && !reviewFinished && currentStep.phase === 'intro' && (currentStep.engine === 'fsrs' ? fsrsStepWord : currentWord) ? (
+          // 처음 보는 표현 — 채점 없음. 3장 뒤 다시 묻는다.
+          <div className="review-room-session">
+            <ReviewIntroCard word={currentStep.engine === 'fsrs' ? fsrsStepWord : currentWord} speak={speak}
+              ttsSupported={ttsSupported && (currentStep.engine === 'fsrs' ? fsrsStepWord : currentWord)?.language !== 'Korean'} onNext={advanceIntro} />
+          </div>
+        ) : (
+          <VocabReview
+            bookReview={isBookScope ? { returnTo: reviewScope.returnTo } : null}
+            vocab={vocab}
+            projections={projections.filter(row => vocab.some(word => word.id === row.vocabulary.id))}
+            learningAvailable={learningAvailable}
+            now={effectiveNow}
+            reviewWords={reviewSessionWords}
+            reviewIdx={reviewIdx}
+            currentWord={currentWord}
+            admissionPending={!!candidateWord && !currentWord && !admission.error}
+            admissionError={!!candidateWord && !currentWord ? admission.error : null}
+            onAdmissionRetry={() => admission.controller.question(candidateWord.id, questionKey)}
+            reviewFinished={reviewFinished}
+            pickContextOption={pickContextOption}
+            effectiveMode={effectiveMode}
+            showAnswer={showAnswer}
+            setShowAnswer={setShowAnswer}
+            showHint={showHint}
+            setShowHint={setShowHint}
+            typingAnswer={typingAnswer}
+            setTypingAnswer={setTypingAnswer}
+            contextSelected={contextSelected}
+            contextOptions={contextOptions}
+            handleScore={handleScore}
+            handleSkip={handleSkip}
+            ttsSupported={ttsSupported && currentWord?.language !== 'Korean'}
+            speak={speak}
+            exampleSentences={exampleSentences}
+            exampleLoading={exampleLoading}
+            loadExamples={loadExamples}
+            setTab={setTab}
+            armed={scoreArmed}
+            onReveal={trigger => { lastTriggerRef.current = trigger; autoplay(currentWord, trigger); }}
+            onKnown={markKnownInSession}
+            knownDisabled={knownWords.mutation.isPending}
+            finish={finishInfo}
+          />
+        )
+      ) : tab === 'practice' && practice ? (
+        <>
+          {!practice.finished && <div className="review-practice-modes" role="group" aria-label="연습 방식">
+            {[['flash', '스스로 확인'], ['typing', '뜻 쓰기'], ['listening', '듣고 고르기']].map(([mode, label]) => (
+              <button key={mode} type="button" className={`review-length__chip${practiceMode === mode ? ' is-active' : ''}`} aria-pressed={practiceMode === mode}
+                disabled={mode === 'listening' && !ttsSupported}
+                onClick={() => { setPracticeMode(mode); setShowAnswer(false); setTypingAnswer(''); setContextSelected(null); }}>{label}</button>
+            ))}
+          </div>}
+          <VocabReview
+            vocab={vocab}
+            reviewWords={practice.ids}
+            reviewIdx={practice.idx}
+            currentWord={practiceWord}
+            reviewFinished={practice.finished}
+            pickContextOption={pickContextOption}
+            effectiveMode={effectiveMode}
+            showAnswer={showAnswer}
+            setShowAnswer={setShowAnswer}
+            showHint={showHint}
+            setShowHint={setShowHint}
+            typingAnswer={typingAnswer}
+            setTypingAnswer={setTypingAnswer}
+            contextSelected={contextSelected}
+            contextOptions={contextOptions}
+            handleScore={handlePractice}
+            ttsSupported={ttsSupported && practiceWord?.language !== 'Korean'}
+            speak={speak}
+            setTab={setTab}
+            armed={scoreArmed}
+            onReveal={trigger => { lastTriggerRef.current = trigger; autoplay(practiceWord, trigger); }}
+            onKnown={markKnownInSession}
+            knownDisabled={knownWords.mutation.isPending}
+            metaLabel={`집중 연습 · ${Math.min(practice.idx + 1, practice.total)} / ${practice.total}`}
+            practice={{ total: practice.total, unknown: practice.unknown,
+              onFragile: () => { changeScope({ ...scope, state: 'fragile' }); setTab('list'); } }}
+          />
+        </>
       ) : null}
+
+      {knownUndo && inSession && <div className="review-known-undo" role="status">
+        아는 단어로 옮겼어요 <button type="button" className="btn btn--ghost btn--sm" onClick={undoKnownInSession}>되돌리기</button>
+      </div>}
 
       {detailWord && (
         <div lang={detailWord.language === 'Korean' ? 'ko' : undefined}><VocabDetailCard now={effectiveNow} projection={learningAvailable ? learningById.get(detailWord.id) : undefined} showBookContexts={isBookScope || (detailWord.language === 'Korean' && koreanCapabilities.review)} word={detailWord} onClose={() => setDetailWord(null)} speak={speak} ttsSupported={ttsSupported && detailWord.language !== 'Korean'} /></div>

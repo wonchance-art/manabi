@@ -1,0 +1,169 @@
+[
+  {
+    "id": "tokyo-national-museum",
+    "wikidata": "Q653433",
+    "kind": "museum",
+    "name": {
+      "native": "東京国立博物館",
+      "ko": "도쿄 국립박물관"
+    },
+    "city": "도쿄",
+    "lat": 35.718888888,
+    "lng": 139.776388888,
+    "links": {
+      "studiesPin": "tokyo"
+    }
+  },
+  {
+    "id": "art-institute-of-chicago",
+    "wikidata": "Q239303",
+    "kind": "museum",
+    "name": {
+      "native": "Art Institute of Chicago",
+      "ko": "시카고 미술관"
+    },
+    "city": "시카고",
+    "lat": 41.879444444,
+    "lng": -87.623888888
+  },
+  {
+    "id": "mount-fuji",
+    "wikidata": "Q39231",
+    "kind": "landscape",
+    "name": {
+      "native": "富士山",
+      "ko": "후지산"
+    },
+    "lat": 35.360555555,
+    "lng": 138.7275
+  },
+  {
+    "id": "tokyo-bay",
+    "wikidata": "Q141017",
+    "kind": "landscape",
+    "name": {
+      "native": "東京湾",
+      "ko": "도쿄만"
+    },
+    "lat": 35.416666666,
+    "lng": 139.783333333
+  },
+  {
+    "id": "tama-river",
+    "wikidata": "Q1063006",
+    "kind": "landscape",
+    "name": {
+      "native": "多摩川",
+      "ko": "다마강"
+    },
+    "lat": 35.5322,
+    "lng": 139.7777
+  },
+  {
+    "id": "shono-juku",
+    "wikidata": "Q3033358",
+    "kind": "site",
+    "name": {
+      "native": "庄野宿",
+      "ko": "쇼노 역참"
+    },
+    "city": "스즈카",
+    "lat": 34.89209722,
+    "lng": 136.52578889
+  },
+  {
+    "id": "kuwana-juku",
+    "wikidata": "Q3069785",
+    "kind": "site",
+    "name": {
+      "native": "桑名宿",
+      "ko": "구와나 역참"
+    },
+    "city": "구와나",
+    "lat": 35.06841,
+    "lng": 136.696094
+  },
+  {
+    "id": "shin-ohashi",
+    "wikidata": "Q11501659",
+    "kind": "site",
+    "name": {
+      "native": "新大橋",
+      "ko": "신오하시 다리"
+    },
+    "city": "도쿄",
+    "lat": 35.6875,
+    "lng": 139.79194444,
+    "links": {
+      "studiesPin": "tokyo"
+    }
+  },
+  {
+    "id": "atake",
+    "wikidata": "Q60189195",
+    "kind": "site",
+    "name": {
+      "native": "安宅",
+      "ko": "아타케"
+    },
+    "city": "도쿄",
+    "lat": 35.68786,
+    "lng": 139.792917,
+    "links": {
+      "studiesPin": "tokyo"
+    }
+  },
+  {
+    "id": "kameido-umeyashiki",
+    "wikidata": "Q100935225",
+    "kind": "site",
+    "name": {
+      "native": "亀戸梅屋舗",
+      "ko": "가메이도 매화 정원(우메야시키)"
+    },
+    "city": "도쿄",
+    "lat": 35.703342,
+    "lng": 139.820458,
+    "links": {
+      "studiesPin": "tokyo"
+    }
+  },
+  {
+    "id": "fukagawa",
+    "wikidata": "Q3090689",
+    "kind": "site",
+    "name": {
+      "native": "深川",
+      "ko": "후카가와"
+    },
+    "city": "도쿄",
+    "lat": 35.676077777,
+    "lng": 139.797008333,
+    "links": {
+      "studiesPin": "tokyo"
+    }
+  },
+  {
+    "id": "mount-tsukuba",
+    "wikidata": "Q1754619",
+    "kind": "landscape",
+    "name": {
+      "native": "筑波山",
+      "ko": "쓰쿠바산"
+    },
+    "lat": 36.225805555,
+    "lng": 140.105
+  },
+  {
+    "id": "metropolitan-museum-of-art",
+    "wikidata": "Q160236",
+    "kind": "museum",
+    "name": {
+      "native": "The Metropolitan Museum of Art",
+      "ko": "메트로폴리탄 미술관"
+    },
+    "city": "뉴욕",
+    "lat": 40.779444,
+    "lng": -73.963056
+  }
+]

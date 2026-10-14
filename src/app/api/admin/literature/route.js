@@ -1,105 +1,15 @@
 /**
- * 관리자 정본 문학책 게시 API(AOZORA-P0-2 · P0-3 「분석을 마치고 배포」).
- *
- *  GET                → { books: 요약[] }  권리 근거 · 단계(stage) · 장별 게시/분석 상태(원문 없음)
- *  GET ?ruby=<key>    → { key, coverage }   분석된 장의 저자 루비 적용 수(적용률 검수)
- *  POST { action:'prepare', key }
- *                     → 정본 장 중 아직 없는 장만 **비공개** reading_materials로 넣는다(book key + 장 순서 멱등).
- *                       원문이 다른 장·중복 장이 있으면 409로 아무것도 넣지 않는다(덮어쓰기·삭제 없음).
- *                       분석은 관리자 화면이 장마다 뷰어와 같은 경로로 한다(이 API는 분석하지 않는다).
- *  POST { action:'release', key }
- *                     → 모든 장이 있고 모두 분석 완료일 때만 비공개 장을 공개로 바꾼다. 아니면 409.
- *
- * 원문은 요청이 아니라 리포 빌드 산출물(index.generated.js)에서만 온다 — 클라이언트가 장 내용을 보낼 수 없다.
- * 인증: requireAdmin()(쿠키 세션 + profiles.role='admin'). 쓰기는 사용자 세션 클라이언트로 해 RLS(소유자 쓰기)가
- * 최종 방어다. service_role 키는 쓰지 않는다. 행 소유자는 게시한 관리자 본인이다.
+ * 관리자 정본 문학책 게시 API(AOZORA-P0-2 · P0-3 · P0-4 「분석 → 검수·편집 → 공개」).
+ * 처리는 큐레이션 책(/api/admin/art-books)과 같이 쓴다 — 동작·요청·응답 모양은 src/lib/server/bookPublishRoute.js.
+ * 정본 = 青空文庫 빌드 산출물(index.generated.js). 게시 가능 판정은 권리 기록(aozoraRightsPublishable).
  */
-import { requireAdmin } from '@/lib/supabaseServer';
 import { LITERATURE_BOOKS } from '@/content/literature/aozora/index.generated.js';
-import {
-  literatureBookPublishable, literatureBookSummary, literaturePublishRows, literatureRubyCoverage, planLiteraturePublish, planLiteratureRelease,
-} from '@/lib/literaturePublish';
+import { createBookPublishHandlers } from '@/lib/server/bookPublishRoute';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const NO_STORE = { 'Cache-Control': 'private, no-store' };
-const respond = (body, status = 200) => Response.json(body, { status, headers: NO_STORE });
-const KEY_PATH = 'processed_json->metadata->book->>key';
-const ROW_COLUMNS = `id, raw_text, visibility, status:processed_json->>status, key:${KEY_PATH}, order:processed_json->metadata->book->>order`;
+const handlers = createBookPublishHandlers(() => LITERATURE_BOOKS);
 
-const findBook = (key) => LITERATURE_BOOKS.find((book) => book.book.key === key) || null;
-
-async function publishedRows(supabase, ownerId, keys, columns = ROW_COLUMNS) {
-  if (keys.length === 0) return [];
-  const { data, error } = await supabase.from('reading_materials').select(columns).eq('owner_id', ownerId).in(KEY_PATH, keys);
-  if (error) throw error;
-  return data || [];
-}
-
-export async function GET(request) {
-  const auth = await requireAdmin();
-  if (auth.error) return respond({ error: auth.error }, auth.status);
-  const { supabase, user } = auth;
-  const rubyKey = new URL(request.url).searchParams.get('ruby');
-  try {
-    if (rubyKey != null) {
-      const book = findBook(rubyKey);
-      if (!book) return respond({ error: '정본 책을 찾지 못했어요.' }, 404);
-      const rows = await publishedRows(supabase, user.id, [rubyKey], `id, key:${KEY_PATH}, order:processed_json->metadata->book->>order, processed_json`);
-      return respond({ key: rubyKey, coverage: literatureRubyCoverage(book, rows) });
-    }
-    const rows = await publishedRows(supabase, user.id, LITERATURE_BOOKS.map((book) => book.book.key));
-    return respond({ books: LITERATURE_BOOKS.map((book) => literatureBookSummary(book, rows.filter((row) => row.key === book.book.key))) });
-  } catch {
-    return respond({ error: '게시 상태를 확인하지 못했어요. 잠시 후 다시 불러와 주세요.' }, 503);
-  }
-}
-
-export async function POST(request) {
-  const auth = await requireAdmin();
-  if (auth.error) return respond({ error: auth.error }, auth.status);
-  let body;
-  try { body = await request.json(); } catch { return respond({ error: '입력 형식을 확인해 주세요.' }, 400); }
-  if (!body || typeof body !== 'object' || !['prepare', 'release'].includes(body.action) || typeof body.key !== 'string') {
-    return respond({ error: '작업할 책을 선택해 주세요.' }, 400);
-  }
-  const book = findBook(body.key);
-  if (!book) return respond({ error: '정본 책을 찾지 못했어요.' }, 404);
-  if (!literatureBookPublishable(book)) return respond({ error: '권리 기록이 공개 기준을 통과하지 못한 책이에요.' }, 422);
-
-  const { supabase, user } = auth;
-  let rows;
-  try {
-    rows = await publishedRows(supabase, user.id, [book.book.key]);
-  } catch {
-    return respond({ error: '게시 상태를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.' }, 503);
-  }
-
-  if (body.action === 'release') {
-    const release = planLiteratureRelease(book, rows);
-    if (!release.ok) {
-      const error = release.reason === 'not-analyzed' ? '아직 분석하지 않은 장이 있어 공개하지 않았어요. 분석을 마친 뒤 공개해 주세요.'
-        : release.reason === 'incomplete' ? '준비하지 않은 장이 있어 공개하지 않았어요.'
-          : '정본과 다른 장이 있어 공개하지 않았어요. 자료 관리에서 확인해 주세요.';
-      return respond({ error, release }, 409);
-    }
-    if (release.ids.length === 0) return respond({ ok: true, released: [] });
-    const { data, error } = await supabase.from('reading_materials').update({ visibility: 'public' })
-      .in('id', release.ids).eq('owner_id', user.id).eq('visibility', 'private').select('id');
-    if (error) return respond({ error: '책을 공개하지 못했어요. 잠시 후 다시 시도해 주세요.' }, 503);
-    return respond({ ok: true, released: data || [] });
-  }
-
-  const plan = planLiteraturePublish(book, rows);
-  if (plan.conflicts.length) {
-    return respond({ error: '이미 준비된 장 중 정본과 다른 장이 있어 넣지 않았어요. 자료 관리에서 확인해 주세요.', plan }, 409);
-  }
-  if (plan.insert.length === 0) return respond({ ok: true, inserted: [], plan });
-
-  const { data, error } = await supabase.from('reading_materials')
-    .insert(literaturePublishRows(book, plan.insert, user.id))
-    .select('id, order:processed_json->metadata->book->>order');
-  if (error) return respond({ error: '책을 준비하지 못했어요. 잠시 후 다시 시도해 주세요.' }, 503);
-  return respond({ ok: true, inserted: data || [], plan });
-}
+export const GET = (request) => handlers.GET(request);
+export const POST = (request) => handlers.POST(request);
