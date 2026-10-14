@@ -30,13 +30,15 @@ describe('공식 색인 CSV → 작품', () => {
     expect(aozoraCandidateIssues(work)).toEqual([]);
   });
 
-  it('선정 기준 밖이면 이유를 모두 적는다 — 번역자 행 · 旧仮名 · 저작권 존속 · KR 보호(1931년 이전 출판이어도 1963년 이후 사망)', () => {
+  it('선정 기준 밖이면 이유를 모두 적는다 — 번역자 행 · 旧仮名 · 저작권 존속 · JP 보호(1931년 이전 출판이어도 1968년 이후 사망)', () => {
     const translated = aozoraIndexWorks(parseCsv(csv(rashomon, { ...rashomon, 人物ID: '000001', 姓: '某', 名: '訳者', 役割フラグ: '翻訳者', 没年月日: '1990-01-01' }))).get('127');
     expect(aozoraCandidateIssues(translated)).toEqual(expect.arrayContaining(['저자 외 역할(翻訳者)']));
     const old = aozoraIndexWorks(parseCsv(csv({ ...rashomon, 文字遣い種別: '新字旧仮名' }))).get('127');
     expect(aozoraCandidateIssues(old)).toEqual(['文字遣い種別 新字旧仮名(新字新仮名만)']);
+    const kawabata = aozoraIndexWorks(parseCsv(csv({ ...rashomon, 初出: '「文藝時代」1926（大正15）年', 没年月日: '1972-04-16' }))).get('127');
+    expect(aozoraCandidateIssues(kawabata)).toEqual(['보호기간 JP·KR 미확인/보호']);
     const rampo = aozoraIndexWorks(parseCsv(csv({ ...rashomon, 初出: '「新青年」1925（大正14）年', 没年月日: '1965-07-28' }))).get('127');
-    expect(aozoraCandidateIssues(rampo)).toEqual(['보호기간 KR 미확인/보호']);
+    expect(aozoraCandidateIssues(rampo)).toEqual([]);
     const living = aozoraIndexWorks(parseCsv(csv({ ...rashomon, 作品著作権フラグ: 'あり' }))).get('127');
     expect(aozoraCandidateIssues(living)).toContain('저작권 존속 작품');
   });
