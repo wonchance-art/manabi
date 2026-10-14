@@ -162,6 +162,13 @@ function checkWork(work, at, refs, errors) {
   if (work.lookFor !== undefined && (!Array.isArray(work.lookFor) || work.lookFor.length > ART_LIMITS.lookFor || !work.lookFor.every(isText))) {
     errors.push(`${at}.lookFor: 찾아볼 것 0–${ART_LIMITS.lookFor}개`);
   }
+  // 핵심 용어는 읽기 자료(일본어 해설)에 실제로 나오는 말이어야 한다 — 본문에서 만나야 단어 저장으로 이어진다.
+  const japanese = descriptions.filter((description) => description?.language === 'ja').map((description) => description.text ?? '');
+  for (const term of Array.isArray(work.terms) ? work.terms : []) {
+    if (isText(term) && !japanese.some((text) => text.includes(term))) errors.push(`${at}.terms: 「${term}」가 일본어 해설에 없다`);
+  }
+  // 찾아볼 것은 그림을 보며 하는 질문 — 그림이 없으면 두지 않는다.
+  if (Array.isArray(work.lookFor) && work.lookFor.length > 0 && !work.image) errors.push(`${at}.lookFor: 그림이 없으면 찾아볼 것을 두지 않는다`);
   if (work.image !== undefined && work.image !== null) {
     const image = work.image;
     if (!ART_IMAGE_LICENSES.includes(image?.license)) errors.push(`${at}.image.license: 퍼블릭 도메인/CC0만(그 밖은 image 없이)`);

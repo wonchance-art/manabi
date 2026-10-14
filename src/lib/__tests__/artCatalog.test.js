@@ -42,7 +42,7 @@ function fixture() {
           language: 'ja', source: 'colbase', sourceId: 'cobas-1', sourceUrl: 'https://colbase.nich.go.jp/collection_items/x',
           credit: '甲博物館所蔵 / ColBase', license: 'jp-gov-standard-2.0', text: TEXT, textSha256: TEXT_SHA,
         }],
-        terms: ['浮世絵', '錦絵'], lookFor: ['배는 몇 척?'],
+        terms: ['構図', '細部'], lookFor: ['배는 몇 척?'],
         image: { url: 'https://example.org/a.jpg', sourceUrl: 'https://example.org/a', license: 'public-domain', alt: '큰 파도 아래 작은 배들' },
       },
       {
@@ -207,6 +207,20 @@ describe('artCatalog 계약 — fail-closed', () => {
     expect(errors).toMatch(/sourceId: colbase id 형식/);
     expect(errors).toMatch(/source: colbase\|aic/);
     expect(errors).toMatch(/date\.source/);
+  });
+
+  it('핵심 용어는 일본어 해설에 실제로 나오는 말만', () => {
+    const catalog = fixture();
+    catalog.works[0].terms = ['構図', '浮世絵'];
+    const errors = validateArtCatalog(catalog).join('\n');
+    expect(errors).toMatch(/「浮世絵」가 일본어 해설에 없다/);
+    expect(errors).not.toMatch(/「構図」/);
+  });
+
+  it('그림이 없는 작품에는 찾아볼 것을 두지 않는다', () => {
+    const catalog = fixture();
+    catalog.works[1].lookFor = ['배는 몇 척?'];
+    expect(validateArtCatalog(catalog).join('\n')).toMatch(/works\[1\]\.lookFor: 그림이 없으면/);
   });
 
   it('박물관 내부 메모가 섞인 해설은 싣지 않는다', () => {

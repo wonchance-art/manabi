@@ -11,7 +11,8 @@ function decodeEntities(text) {
   return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (whole, name) => {
     if (name[0] === '#') {
       const code = name[1] === 'x' || name[1] === 'X' ? parseInt(name.slice(2), 16) : parseInt(name.slice(1), 10);
-      return Number.isFinite(code) ? String.fromCodePoint(code) : whole;
+      // NUL·범위 밖 코드 포인트는 글자로 풀지 않는다(fromCodePoint RangeError 방지).
+      return Number.isInteger(code) && code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : whole;
     }
     return ENTITIES[name.toLowerCase()] ?? whole;
   });
@@ -19,7 +20,7 @@ function decodeEntities(text) {
 
 /**
  * 출처 문자열 → 카탈로그 해설 text. 문단은 빈 줄 하나로 나눈다.
- *   · 줄바꿈 CRLF·CR → LF, 문단 태그(</p><p>)는 빈 줄, <br>은 줄바꿈, 나머지 태그는 지운다(속 글자는 남긴다).
+ *   · 줄바꿈 CRLF·CR → LF, HTML 주석은 지우고, 문단 태그(</p><p>)는 빈 줄, <br>은 줄바꿈, 나머지 태그는 지운다(속 글자는 남긴다).
  *   · HTML 엔티티를 글자로 푼다.
  *   · 줄 끝 공백과 줄 앞 ASCII 공백·탭만 지운다 — 일본어 문단 머리 전각 공백(U+3000)은 원문 그대로 둔다.
  *   · 빈 줄이 여럿이면 하나로, 앞뒤 빈 줄은 지운다.
@@ -28,8 +29,9 @@ export function artSourceText(raw) {
   if (typeof raw !== 'string') return '';
   const text = raw
     .replace(/\r\n?/g, '\n')
+    .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/<\/p>\s*<p\b[^>]*>/gi, '\n\n')
-    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<br\b[^>]*>/gi, '\n')
     .replace(/<\/?p\b[^>]*>/gi, '\n\n')
     .replace(/<[^>]+>/g, '');
   return decodeEntities(text)
@@ -47,12 +49,14 @@ export function artSourceText(raw) {
 export const ART_SOURCES = Object.freeze({
   // 시카고 미술관 — description(HTML, CC BY 4.0). 영어만.
   aic: Object.freeze({
+    languages: Object.freeze(['en']),
     apiUrl: (id) => `https://api.artic.edu/api/v1/artworks/${encodeURIComponent(id)}?fields=id,title,description`,
     rawText: (json) => json?.data?.description ?? '',
     pageUrl: (id) => `https://www.artic.edu/artworks/${encodeURIComponent(id)}`,
   }),
   // ColBase — 재팬서치 항목 API(cobas-<번호>)의 common.description(일본어)·descriptionEn(영어). ColBase 자체 API는 키가 필요하다.
   colbase: Object.freeze({
+    languages: Object.freeze(['ja', 'en']),
     apiUrl: (id) => `https://jpsearch.go.jp/api/item/${encodeURIComponent(id)}`,
     rawText: (json, language = 'ja') => (language === 'en' ? json?.common?.descriptionEn : json?.common?.description) ?? '',
     pageUrl: (id, json) => json?.common?.linkUrl ?? `https://jpsearch.go.jp/item/${encodeURIComponent(id)}`,

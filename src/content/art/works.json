@@ -235,7 +235,7 @@
     ],
     "lookFor": [
       "강을 건너는 배와 기슭에서 말을 끄는 사람을 찾아보자.",
-      "색 없이 눌러 찍은 물결 무늬(空摺り)는 어디에 있을까?",
+      "강물의 흰 부분에서 짙은 푸른색까지 색이 어떻게 이어질까?",
       "강과 후지산 사이에 비워 둔 안개 띠는 얼마나 넓을까?"
     ],
     "image": {
@@ -337,7 +337,7 @@
       "source": "colbase",
       "startYear": 1833,
       "endYear": 1834,
-      "certainty": "circa"
+      "certainty": "range"
     },
     "periods": [
       "jp-edo"
@@ -373,11 +373,6 @@
       "海路",
       "船着場",
       "七里の渡し"
-    ],
-    "lookFor": [
-      "나루터에 닿는 배 두 척의 돛은 어떤 모양일까?",
-      "나루터 너머 구와나 성의 성벽을 찾아보자.",
-      "물결은 어떤 무늬로 그려졌을까?"
     ]
   },
   {
@@ -593,6 +588,10 @@
         "role": "depicted"
       },
       {
+        "place": "tokyo-bay",
+        "role": "depicted"
+      },
+      {
         "place": "mount-tsukuba",
         "role": "depicted"
       }
@@ -625,7 +624,7 @@
       "雪景色"
     ],
     "lookFor": [
-      "독수리의 큰 눈과 날카로운 발톱을 찾아보자.",
+      "수리의 큰 눈과 날카로운 발톱을 찾아보자.",
       "물결 사이에 떠 있는 통은 어디 있을까?",
       "멀리 쓰쿠바산은 화면 어느 쪽에 있을까?"
     ],
@@ -634,7 +633,7 @@
       "sourceUrl": "https://www.artic.edu/artworks/26605",
       "license": "cc0",
       "credit": "Utagawa Hiroshige. Fukagawa Susaki and Jumantsubo (Fukagawa Susaki Jumantsubo), from the series \"One Hundred Famous Views of Edo (Meisho Edo hyakkei)\", 1857. The Art Institute of Chicago. CC0",
-      "alt": "눈 내리는 하늘 높이 날개를 활짝 편 큰 독수리가 화면 위쪽을 가로지르고, 아래로는 눈 덮인 바닷가 들판과 물 위에 뜬 통 하나, 멀리 산이 보인다."
+      "alt": "눈 내리는 하늘 높이 날개를 활짝 편 큰 수리가 화면 위쪽을 가로지르고, 아래로는 눈 덮인 바닷가 들판과 물 위에 뜬 통 하나, 멀리 산이 보인다."
     }
   }
 ]

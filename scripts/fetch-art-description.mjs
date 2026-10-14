@@ -24,10 +24,12 @@ async function fetchJson(url) {
 async function fetchDescription(sourceKey, id, language) {
   const source = ART_SOURCES[sourceKey];
   if (!source) throw new Error(`모르는 출처 ${sourceKey} — ${Object.keys(ART_SOURCES).join('|')}`);
+  language ??= source.languages[0];
+  if (!source.languages.includes(language)) throw new Error(`${sourceKey}는 ${source.languages.join('|')} 해설만 있다(받은 값: ${language})`);
   const json = await fetchJson(source.apiUrl(id));
   const text = artSourceText(source.rawText(json, language));
   if (!text) throw new Error(`${sourceKey} ${id}: 해설이 비어 있다`);
-  return { source: sourceKey, sourceId: String(id), language: language ?? (sourceKey === 'aic' ? 'en' : 'ja'), sourceUrl: source.pageUrl(id, json), text, textSha256: await sha256Hex(text) };
+  return { source: sourceKey, sourceId: String(id), language, sourceUrl: source.pageUrl(id, json), text, textSha256: await sha256Hex(text) };
 }
 
 if (process.argv.includes('--verify')) {

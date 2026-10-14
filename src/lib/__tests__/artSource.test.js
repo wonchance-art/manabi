@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { artSourceText } from '../artSource.js';
+import { ART_SOURCES, artSourceText } from '../artSource.js';
 
 describe('artSourceText — 출처 응답 → 카탈로그 해설 text', () => {
   it('시카고 미술관 HTML: 문단은 빈 줄, 태그는 벗기고 속 글자는 남긴다', () => {
@@ -19,6 +19,20 @@ describe('artSourceText — 출처 응답 → 카탈로그 해설 text', () => {
 
   it('<br>은 줄바꿈, 빈 줄 여럿은 하나로', () => {
     expect(artSourceText('<p>一行目<br>二行目</p>\n\n\n<p>次の段落</p>')).toBe('一行目\n二行目\n\n次の段落');
+  });
+
+  it('경계 입력: 속성 붙은 <br>, HTML 주석, NUL·범위 밖 코드 포인트', () => {
+    expect(artSourceText('一<br class="y">二')).toBe('一\n二');
+    expect(artSourceText('前<!-- a > b -->後')).toBe('前後');
+    expect(artSourceText('&#0;x&#99999999;')).toBe('&#0;x&#99999999;');
+  });
+
+  it('출처표: 출처마다 받을 수 있는 해설 언어', () => {
+    expect(ART_SOURCES.colbase.languages).toEqual(['ja', 'en']);
+    expect(ART_SOURCES.aic.languages).toEqual(['en']);
+    expect(ART_SOURCES.colbase.rawText({ common: { description: '<p>日</p>', descriptionEn: 'en' } }, 'ja')).toBe('<p>日</p>');
+    expect(ART_SOURCES.colbase.rawText({ common: { description: '日', descriptionEn: 'en' } }, 'en')).toBe('en');
+    expect(ART_SOURCES.aic.rawText({ data: { description: '<p>x</p>' } })).toBe('<p>x</p>');
   });
 
   it('문자열이 아니면 빈 문자열', () => {
