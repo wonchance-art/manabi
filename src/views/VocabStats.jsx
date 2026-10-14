@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { wordStage } from '../lib/growthStats';
-import { vocabularyRetrievability } from '../lib/vocabularyLearningRead';
-import { vocabularyReviewCalendar } from '../lib/vocabularyLearningRows';
+import { memoryHealth } from '../lib/memoryHealth';
 import { LEVELS, detectLang, langNameKo, profileLevel } from '../lib/constants';
 import { isPreparingLearningLanguage } from '../lib/viewerLanguage';
 import { PreparingLanguageLine } from '../components/PreparingLanguageNotice';
@@ -89,9 +88,9 @@ function LangTabs({ activeLangs, current, onChange }) {
 // section prop: undefined = 전체, 'levels' = 진행도+커버리지, 'memory' = 기억건강+스케줄, 'hardwords' = 요주의
 export default function VocabStats({ vocab, profile, section, projections = [], learningAvailable = false, now = new Date() }) {
   const learningById = new Map(projections.map(row => [row.vocabulary.id, row]));
-  const evaluatedAt = Math.max(new Date(now).getTime(), ...projections.map(row => Date.parse(row.review.evaluatedAt)));
   const hardWords = projections.filter(row => row.memory.lapses >= 2).sort((a, b) => b.memory.lapses - a.memory.lapses || (a.memory.stability ?? Infinity) - (b.memory.stability ?? Infinity)).slice(0, 5);
-  const calendar = learningAvailable ? vocabularyReviewCalendar(projections, evaluatedAt) : [];
+  const health = memoryHealth(projections, now, { learningAvailable });
+  const calendar = health.calendar;
   const maxCount = Math.max(1, ...calendar.map(day => day.count));
   const profileLangs = profile?.learning_language || [];
   // 언어 목록은 정본(`LEVELS`)에서 나온다 — 지역 목록을 또 만들면 언어가 늘 때마다 갈린다
@@ -199,20 +198,7 @@ export default function VocabStats({ vocab, profile, section, projections = [], 
 
       {/* 기억 건강 리포트 */}
       {showMemory && vocab.length > 0 && (() => {
-        const retentionBuckets = { high: 0, mid: 0, low: 0, forgotten: 0 };
-        let totalRetention = 0;
-        let measuredCount = 0;
-        if (learningAvailable) projections.forEach(projection => {
-          const retention = vocabularyRetrievability(projection, evaluatedAt);
-          if (retention == null) return;
-          measuredCount++;
-          totalRetention += retention;
-          if (retention >= 0.9) retentionBuckets.high++;
-          else if (retention >= 0.7) retentionBuckets.mid++;
-          else if (retention >= 0.4) retentionBuckets.low++;
-          else retentionBuckets.forgotten++;
-        });
-        const avgRetention = measuredCount ? Math.round((totalRetention / measuredCount) * 100) : null;
+        const { buckets: retentionBuckets, measured: measuredCount, avgRetention } = health;
         return (
           <div className="card" >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>

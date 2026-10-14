@@ -92,10 +92,10 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
         }, { onConflict: 'user_id,word_text' });
       if (error) throw error;
       setSavedSet(prev => new Set([...prev, item.pattern]));
-      toast?.(`"${item.pattern}" 단어장에 저장`, 'success');
+      toast?.(`"${item.pattern}" 문형을 저장했어요`, 'success');
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user.id] });
     } catch {
-      toast?.('저장 실패', 'error');
+      toast?.('문형을 저장하지 못했어요. 잠시 후 다시 시도해 주세요.', 'error');
     }
   }
 

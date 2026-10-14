@@ -107,7 +107,8 @@ describe('서버 — 줄을 조용히 자르지 않는다(계약)', () => {
     const slices = [...route.matchAll(/\.slice\(0, MAX_LINE_LEN\)/g)];
     expect(slices).toHaveLength(1);
     expect(route).toMatch(/if \(line\.length > MAX_LINE_LEN\) truncatedLines\.add\(i\);/);
-    expect(route).toMatch(/truncatedLines\.has\(lineIdx\) \? \{ \.\.\.lineResult, truncated: true \}/);
+    // 분석 핵심은 analyzeCore로 꺼냈다(v2-Z Z-R1 ①) — 표식을 붙이는 조립은 거기 있다.
+    expect(read('src/lib/server/analyzeCore.js')).toMatch(/truncatedLines\.has\(lineIdx\) \? \{ \.\.\.lineResult, truncated: true \}/);
   });
 });
 

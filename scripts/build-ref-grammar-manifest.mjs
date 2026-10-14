@@ -27,7 +27,6 @@ try {
     languages[language] = {
       base: ref.base,
       readKey: ref.readKey,
-      flag: ref.flag,
       name: ref.name,
       langCode: ref.langCode,
       blurb: ref.blurb,

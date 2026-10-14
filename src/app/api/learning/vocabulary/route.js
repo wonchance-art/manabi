@@ -72,7 +72,7 @@ export async function POST(request) {
       checkDb(readError);
       return reply({ error: '같은 뜻인지 확인해 주세요.', code: 'meaning_conflict', existing, incomingMeaning: saved.word.meaning }, 409);
     }
-    if (error?.message?.includes('vocabulary_language_conflict')) return reply({ error: '같은 표기의 단어가 다른 언어로 저장되어 있어요. 기존 카드를 합치지 않았습니다.', code: 'language_conflict' },409);
+    if (error?.message?.includes('vocabulary_language_conflict')) return reply({ error: '같은 표기의 단어가 다른 언어로 저장되어 있어요. 기존 카드는 합치지 않았어요.', code: 'language_conflict' },409);
     if (error?.message?.includes('vocabulary_ambiguous_match')) return reply({error:'이 표현의 기존 카드가 여러 개 있어요. 단어장에서 중복 카드를 확인한 뒤 다시 담아 주세요.',code:'ambiguous_match'},409);
     checkDb(error);
     if (korean) {
@@ -108,7 +108,7 @@ export async function GET(request) {
       const {data:context,error}=await auth.supabase.from('vocabulary_contexts')
         .select('id,kind,material_id,locator,quote').eq('user_id',auth.user.id).eq('id',contextId).maybeSingle();
       checkDb(error);
-      if(!context || context.kind!=='reading' || String(context.material_id)!==params.get('materialId')) fail(404,'접근할 수 없는 문맥입니다.');
+      if(!context || context.kind!=='reading' || String(context.material_id)!==params.get('materialId')) fail(404,'접근할 수 없는 문맥이에요.');
       await accessibleMaterial(auth.supabase,auth.user.id,'reading',context.material_id);
       return reply({context});
     }

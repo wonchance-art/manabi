@@ -51,7 +51,7 @@ function LangPlan({ plan, rows, state }) {
   return (
     <section className="myplan-lang">
       <div className="myplan-lang__head">
-        <h3 className="myplan-lang__title">{p.flag} {p.name} → {p.goalLabel}</h3>
+        <h3 className="myplan-lang__title">{p.name} → {p.goalLabel}</h3>
         <span className="myplan-lang__sub">정본 문법 {p.total}챕터</span>
       </div>
       <div className="myplan-bar"><div className="myplan-bar__fill" style={{ width: `${p.pct}%` }} /></div>

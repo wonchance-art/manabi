@@ -1,6 +1,7 @@
 // Decorative only: the owning control supplies its accessible name and state.
 const paths={
   home:'M3 11 12 3l9 8M5 10v11h5v-7h4v7h5V10',
+  learn:'M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5A1.5 1.5 0 0 1 4 17.5v-12ZM20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5-.7 1.5-1.5v-12Z',
   book:'M12 5v16M12 5C8 2 3 3 3 3v16s5-1 9 2c4-3 9-2 9-2V3s-5-1-9 2Z',
   library:'M4 4v16M9 4v16M14 4v16M18 4l3 16',
   compass:'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20M16 8l-3 5-5 3 3-5 5-3Z',

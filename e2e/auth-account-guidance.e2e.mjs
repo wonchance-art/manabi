@@ -53,9 +53,9 @@ test('A 이미 가입된 이메일로 가입하면 메일 발송 대신 가입�
   await page.getByLabel('이메일', { exact: true }).fill('owner@example.com');
   await page.getByLabel('비밀번호', { exact: true }).fill('fixture-password-24');
   await page.locator('form').getByRole('button', { name: '회원가입', exact: true }).click();
-  await page.getByRole('alert').filter({ hasText: '이미 가입된 이메일입니다.' }).waitFor();
-  assert.match(await alertText(page), /로그인하거나 Google로 계속하세요/);
-  assert.equal(await page.getByRole('status').filter({ hasText: '인증 이메일을 발송했습니다' }).count(), 0);
+  await page.getByRole('alert').filter({ hasText: '이미 가입된 이메일이에요.' }).waitFor();
+  assert.match(await alertText(page), /로그인하거나 Google로 계속해 주세요/);
+  assert.equal(await page.getByRole('status').filter({ hasText: '인증 이메일을 보냈어요' }).count(), 0);
   assert.equal(calls.filter(call => call.path.endsWith('/signup')).length, 1);
   await page.getByRole('button', { name: '로그인하러 가기 →' }).click();
   await page.getByRole('heading', { name: '로그인', exact: true }).waitFor();
@@ -73,7 +73,7 @@ test('A 새 이메일 가입은 지금처럼 인증 메일 발송을 알린다',
   await page.getByLabel('이메일', { exact: true }).fill('new@example.com');
   await page.getByLabel('비밀번호', { exact: true }).fill('fixture-password-24');
   await page.locator('form').getByRole('button', { name: '회원가입', exact: true }).click();
-  await page.getByRole('status').filter({ hasText: '인증 이메일을 발송했습니다' }).waitFor();
+  await page.getByRole('status').filter({ hasText: '인증 이메일을 보냈어요' }).waitFor();
   assert.equal(await authError(page).count(), 0);
   assert.deepEqual(errors, []);
   await context.close();
@@ -86,7 +86,7 @@ test('B 비밀번호가 틀리면 Google 가입자 안내가 함께 나온다', 
   await page.getByLabel('이메일', { exact: true }).fill('google-user@example.com');
   await page.getByLabel('비밀번호', { exact: true }).fill('wrong-password');
   await page.locator('form').getByRole('button', { name: '로그인', exact: true }).click();
-  await page.getByRole('alert').filter({ hasText: '이메일 또는 비밀번호가 올바르지 않습니다.' }).waitFor();
+  await page.getByRole('alert').filter({ hasText: '이메일 또는 비밀번호가 올바르지 않아요.' }).waitFor();
   assert.match(await alertText(page), /Google로 가입하셨다면 위의 「Google로 계속하기」를 눌러 주세요/);
   assert.deepEqual(errors, []);
   await context.close();
@@ -102,9 +102,9 @@ test('C 미인증 로그인은 인증 메일을 다시 보낼 수 있다', async
   await page.getByLabel('이메일', { exact: true }).fill('pending@example.com');
   await page.getByLabel('비밀번호', { exact: true }).fill('fixture-password-24');
   await page.locator('form').getByRole('button', { name: '로그인', exact: true }).click();
-  await page.getByRole('alert').filter({ hasText: '이메일 인증이 필요합니다.' }).waitFor();
+  await page.getByRole('alert').filter({ hasText: '이메일 인증이 필요해요.' }).waitFor();
   await page.getByRole('button', { name: '인증 메일 다시 보내기' }).click();
-  await page.getByRole('status').filter({ hasText: '인증 메일을 다시 보냈습니다.' }).waitFor();
+  await page.getByRole('status').filter({ hasText: '인증 메일을 다시 보냈어요.' }).waitFor();
   const resend = calls.filter(call => call.path.endsWith('/resend'));
   assert.equal(resend.length, 1);
   assert.equal(resend[0].body.type, 'signup');

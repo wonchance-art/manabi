@@ -48,7 +48,7 @@ export async function POST(request) {
   // 인증 — /api/writing-feedback와 동일한 Bearer 검증
   const authHeader = request.headers.get('authorization');
   if (!authHeader) {
-    return Response.json({ error: { message: '로그인이 필요합니다.' } }, { status: 401 });
+    return Response.json({ error: { message: '로그인이 필요해요.' } }, { status: 401 });
   }
   const token = authHeader.replace(/^Bearer\s+/i, '');
   const authClient = createClient(
@@ -58,10 +58,10 @@ export async function POST(request) {
   );
   const { data: { user: authUser }, error: authErr } = await authClient.auth.getUser(token);
   if (authErr || !authUser) {
-    return Response.json({ error: { message: '세션이 만료됐어요. 다시 로그인해주세요.' } }, { status: 401 });
+    return Response.json({ error: { message: '세션이 만료됐어요. 다시 로그인해 주세요.' } }, { status: 401 });
   }
   if (isRateLimited(`u:${authUser.id}`)) {
-    return Response.json({ error: { message: '요청이 너무 잦아요. 잠시 후 다시 시도해주세요.' } }, { status: 429 });
+    return Response.json({ error: { message: '요청이 너무 잦아요. 잠시 후 다시 시도해 주세요.' } }, { status: 429 });
   }
 
   // Gemini 키가 없어도 Groq만으로 진행 — 하드 실패는 두 키 모두 없을 때만
@@ -89,7 +89,7 @@ export async function POST(request) {
     const pos = cap(body.token.pos, 20);
     const language = cap(body.language, 20);
     if (!language || !sentence || !word) {
-      return Response.json({ error: { message: '잘못된 요청입니다.' } }, { status: 400 });
+      return Response.json({ error: { message: '잘못된 요청이에요.' } }, { status: 400 });
     }
     const promptText = buildTokenExplainPrompt({ language, sentence, word, base, pos });
     try {
@@ -99,7 +99,7 @@ export async function POST(request) {
         .then((r) => r.text).catch(() => null);
       const result = sanitizeTokenExplain(parseTokenExplain(raw), { sentence, word, base });
       if (!result) {
-        return Response.json({ error: { message: '설명 생성에 실패했어요.' } }, { status: 502 });
+        return Response.json({ error: { message: '설명을 만들지 못했어요.' } }, { status: 502 });
       }
       // suspect 적재(수확 루프) — 실패해도 설명 응답에는 영향 없음(fire-and-forget).
       // token_corrections RLS(본인 insert)를 그대로 타도록 사용자 JWT를 실은 클라이언트로 쓴다.
@@ -135,14 +135,14 @@ export async function POST(request) {
   const { language, question } = body || {};
   const type = question?.type;
   if (!language || !question || !['cloze', 'vocab', 'comprehension'].includes(type)) {
-    return Response.json({ error: { message: '잘못된 요청입니다.' } }, { status: 400 });
+    return Response.json({ error: { message: '잘못된 요청이에요.' } }, { status: 400 });
   }
   const sentence = cap(question.sentence, 200);
   const correct = cap(question.correct, 120);
   const picked = cap(question.picked, 120);
   const ko = cap(question.ko, 200);
   if (!sentence || !correct) {
-    return Response.json({ error: { message: '잘못된 요청입니다.' } }, { status: 400 });
+    return Response.json({ error: { message: '잘못된 요청이에요.' } }, { status: 400 });
   }
 
   const promptText =
@@ -156,7 +156,7 @@ export async function POST(request) {
 
     const text = cleanText(raw);
     if (!text) {
-      return Response.json({ error: { message: '해설 생성에 실패했어요.' } }, { status: 502 });
+      return Response.json({ error: { message: '해설을 만들지 못했어요.' } }, { status: 502 });
     }
     return Response.json({ explanation: text }, { status: 200 });
   } catch (err) {

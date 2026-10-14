@@ -39,6 +39,6 @@ export async function POST(request,{params}){
       copyRevision,sourceRevision:state.sourceRevision,preview:state.source.raw_text.slice(0,6000)});
   }catch(error){
     const missing=error?.code==='PGRST202'||error?.code==='42P01';
-    return reply({error:missing?'안전한 자료 보관 기능을 준비 중이에요. 잠시 후 다시 열어 주세요.':error?.code==='40001'?'내용이 바뀌었어요. 다시 확인해 주세요.':error?.code==='42501'?'수업 접근 권한을 다시 확인해 주세요.':'자료를 처리하지 못했어요. 기존 자료는 유지됩니다.'},missing?503:error?.code==='40001'?409:error?.code==='42501'?403:500);
+    return reply({error:missing?'안전한 자료 보관 기능을 준비 중이에요. 잠시 후 다시 열어 주세요.':error?.code==='40001'?'내용이 바뀌었어요. 다시 확인해 주세요.':error?.code==='42501'?'수업 접근 권한을 다시 확인해 주세요.':'자료를 처리하지 못했어요. 기존 자료는 그대로 있어요.'},missing?503:error?.code==='40001'?409:error?.code==='42501'?403:500);
   }
 }

@@ -3,7 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { VOCABULARY_LEARNING_SUMMARY_FIELDS } from '../../lib/vocabularyLearningRead';
 
-const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ProfileStats.jsx'), 'utf8');
+const read = (file) => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
+// 단어 복습 칸은 배움(HomePage)이 조회하고 배움 · 현황 공용 모듈(LearnTiles)이 그린다(LEARN-HOME-AK-001).
+// 현황(ProfileStats)은 같은 요약 snapshot으로 기억 건강 · 레벨 어휘를 그린다.
+const src = read('src/views/ProfileStats.jsx');
+const home = read('src/views/HomePage.jsx');
+const tiles = read('src/components/learn/LearnTiles.jsx');
 
 /**
  * 계약: 복습 타일이 **그리는 필드는 모두 조회에 있어야 한다**.
@@ -20,8 +25,10 @@ describe('ProfileStats — 조회 필드 ⊇ 렌더 필드', () => {
   it('복습 타일 조회를 찾을 수 있다', () => {
     expect(src).toContain("fetchVocabularyLearningRows(userId, { fields: 'summary' })");
     expect(src).toContain('projections: learning.projections');
-    expect(src).toContain('<VocabStats vocab={vocab} projections={projections} learningAvailable');
-    expect(src).toContain('isVocabularyReviewDue(p, now)');
+    expect(src).toContain('<MemoryHealthCard lang={lang} projections={projections}');
+    expect(home).toContain("fetchVocabularyLearningRows(userId, { fields: 'summary' })");
+    expect(home).toContain('<ReviewTile projections={data?.learning?.projections || []}');
+    expect(tiles).toContain('isVocabularyReviewDue(p, now)');
   });
 
   it.each(['id', 'word_text', 'meaning'])('타일이 그리는 %s가 조회에 있다', (field) => {
@@ -39,8 +46,8 @@ describe('ProfileStats — 조회 필드 ⊇ 렌더 필드', () => {
   });
 
   it('타일이 실제로 그 세 필드를 쓴다(반대 방향 드리프트도 잡는다)', () => {
-    expect(src).toContain('word.word_text');
-    expect(src).toContain('word.meaning');
-    expect(src).toContain('word.id');
+    expect(tiles).toContain('word.word_text');
+    expect(tiles).toContain('word.meaning');
+    expect(tiles).toContain('word.id');
   });
 });

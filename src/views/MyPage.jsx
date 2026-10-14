@@ -92,12 +92,12 @@ export default function MyPage() {
     try {
       const res = await fetch('/api/push/test', { method: 'POST' });
       if (res.status === 503) { toast('서버에 푸시 키가 아직 등록되지 않았어요.', 'error'); return; }
-      if (!res.ok) { toast('테스트 발송에 실패했어요.', 'error'); return; }
+      if (!res.ok) { toast('테스트 알림을 보내지 못했어요.', 'error'); return; }
       const data = await res.json().catch(() => ({}));
       const n = data?.sent ?? 0;
       toast(n > 0 ? `테스트 알림을 보냈어요 (${n}건).` : '보낼 구독이 없어요.', n > 0 ? 'success' : 'info');
     } catch {
-      toast('테스트 발송에 실패했어요.', 'error');
+      toast('테스트 알림을 보내지 못했어요.', 'error');
     } finally {
       setPushBusy(false);
     }
@@ -108,7 +108,7 @@ export default function MyPage() {
       localStorage.removeItem('as_reminder_hour');
       localStorage.removeItem('as_reminder_last_sent');
       setReminderHour('');
-      toast('복습 알림이 해제됐습니다.', 'success');
+      toast('복습 알림을 껐어요.', 'success');
       return;
     }
     if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
@@ -139,13 +139,13 @@ export default function MyPage() {
       }).eq('id', user.id);
       if (error) throw error;
     },
-    onSuccess: () => { fetchProfile(user.id, user.user_metadata); setIsEditingGoals(false); toast('목표가 저장됐습니다.', 'success'); },
+    onSuccess: () => { fetchProfile(user.id, user.user_metadata); setIsEditingGoals(false); toast('목표를 저장했어요.', 'success'); },
     onError: (err) => toast(friendlyToastMessage(err), 'error'),
   });
 
   const saveProfileMutation = useMutation({
     mutationFn: async () => {
-      if (!editName.trim()) throw new Error('닉네임을 입력해주세요.');
+      if (!editName.trim()) throw new Error('닉네임을 입력해 주세요.');
       const base = {
         display_name: editName.trim(),
         learning_language: editLanguages,
@@ -162,14 +162,14 @@ export default function MyPage() {
       if (error) throw error;
       await syncAuthDisplayName(supabase, user, base.display_name);
     },
-    onSuccess: () => { fetchProfile(user.id, user.user_metadata); queryClient.invalidateQueries({ queryKey: ['home', user.id] }); toast('프로필이 저장됐습니다.', 'success'); },
+    onSuccess: () => { fetchProfile(user.id, user.user_metadata); queryClient.invalidateQueries({ queryKey: ['home', user.id] }); toast('프로필을 저장했어요.', 'success'); },
     onError: (err) => toast(friendlyToastMessage(err), 'error'),
   });
 
   if (!user) {
     return (
       <div className="page-container mypage-noauth">
-        <h2 className="mypage-noauth__title">로그인이 필요합니다</h2>
+        <h2 className="mypage-noauth__title">로그인이 필요해요</h2>
         <Link href="/auth" className="btn btn--primary btn--md">로그인하러 가기</Link>
       </div>
     );
@@ -285,7 +285,7 @@ export default function MyPage() {
               </div>
             )}
             <Button size="sm" onClick={() => saveProfileMutation.mutate()} disabled={saveProfileMutation.isPending}>
-              {saveProfileMutation.isPending ? '저장 중...' : '저장'}
+              {saveProfileMutation.isPending ? '저장 중…' : '저장'}
             </Button>
           </div>
         </details>
@@ -310,7 +310,7 @@ export default function MyPage() {
                 ))}
                 <div className="mypage-goal-actions">
                   <Button size="sm" onClick={() => saveGoalsMutation.mutate()} disabled={saveGoalsMutation.isPending} style={{ flex: 1 }}>
-                    {saveGoalsMutation.isPending ? '저장 중...' : '저장'}
+                    {saveGoalsMutation.isPending ? '저장 중…' : '저장'}
                   </Button>
                   <Button size="sm" variant="secondary" onClick={() => setIsEditingGoals(false)} style={{ flex: 1 }}>취소</Button>
                 </div>

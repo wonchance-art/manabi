@@ -21,7 +21,7 @@ import MaterialAddEpubSection from '../components/MaterialAddEpubSection';
 import MaterialAddSentenceSection from '../components/MaterialAddSentenceSection';
 import MaterialAddLinkSection from '../components/MaterialAddLinkSection';
 import BookDraftPanel from '../components/BookDraftPanel';
-import { friendlyToastMessage } from '../lib/errorMessage';
+import { friendlyToastMessage, failureMessage } from '../lib/errorMessage';
 import { titleFromBody } from '../lib/materialTitle';
 import { useQueryClient } from '@tanstack/react-query';
 import { createImportAttempt, saveImportOnce, interruptedImportJson, persistImportAnalysis } from '../lib/materialImport';
@@ -222,7 +222,7 @@ function MaterialAddForm() {
   };
 
   async function handleBookRegister() {
-    if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
+    if (!user) { toast('로그인이 필요해요.', 'warning'); return; }
     if (!bookDraft || bookDraft.chapters.length === 0) return;
     const bookLanguage = bookDraft.language || language;
     const bookTarget = viewerLanguageInfo(bookLanguage);
@@ -280,9 +280,9 @@ function MaterialAddForm() {
       setBookFirstNewId(inserted?.[0]?.id ?? null);
       toast(bookDraft.append
         ? `《${bookDraft.title}》 ${startOrder}과~${lastOrder}과를 이었어요(지금 ${existingCount + bookDraft.chapters.length}과). 각 과는 열 때 분석돼요.`
-        : `《${bookDraft.title}》 챕터 ${total}개 등록 완료! 각 챕터는 열 때 분석돼요.`, 'success');
+        : `《${bookDraft.title}》 챕터 ${total}개를 등록했어요. 각 챕터는 열 때 분석돼요.`, 'success');
     } catch (err) {
-      toast(bookDraft.append ? chapterError(err).message : '책 등록 실패 — ' + friendlyToastMessage(err), 'error');
+      toast(bookDraft.append ? chapterError(err).message : failureMessage('책을 등록하지 못했어요.', err), 'error');
     } finally {
       setBookRegistering(false);
     }
@@ -364,8 +364,8 @@ function MaterialAddForm() {
 
   async function handleStart() {
     if (busyRef.current || savedRecordRef.current) return;
-    if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
-    if (!rawText.trim()) { toast('내용을 입력해주세요.', 'warning'); return; }
+    if (!user) { toast('로그인이 필요해요.', 'warning'); return; }
+    if (!rawText.trim()) { toast('내용을 입력해 주세요.', 'warning'); return; }
     if (targetLanguage?.code === 'ko' && (!isKoreanReading || pdfSource || epubSource)) {
       toast('한국어는 텍스트 읽기 자료로 추가해 주세요.', 'warning'); return;
     }

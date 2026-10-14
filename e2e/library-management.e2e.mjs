@@ -17,7 +17,7 @@ test('select, nested folders, move, trash, restore and undo preserve originals',
  await f.page.getByRole('button',{name:'폴더에 추가',exact:true}).click();await f.page.getByLabel('대상 폴더').selectOption({label:'여행 / 기차'});await f.page.getByRole('button',{name:'추가',exact:true}).click();await f.page.getByText('5개 완료',{exact:true}).waitFor();
  await f.page.getByRole('button',{name:'여행 / 기차',exact:true}).click();await f.page.locator('.shelf-row').nth(4).waitFor();
  await f.page.getByRole('button',{name:'선택',exact:true}).click();await f.page.getByRole('checkbox',{name:'현재 표시된 자료 선택'}).check();await f.page.getByRole('button',{name:'이동',exact:true}).click();await f.page.getByLabel('대상 폴더').selectOption({label:'여행'});await f.page.getByRole('button',{name:'이동',exact:true}).last().click();await f.page.locator('.shelf-empty').waitFor();
- await f.page.getByRole('button',{name:'실행 취소',exact:true}).click();await f.page.locator('.shelf-row').nth(4).waitFor();
+ await f.page.getByRole('button',{name:'되돌리기',exact:true}).click();await f.page.locator('.shelf-row').nth(4).waitFor();
  await f.page.getByRole('button',{name:'전체',exact:true}).click();await f.page.getByRole('button',{name:'선택',exact:true}).click();await f.page.getByRole('checkbox',{name:'현재 표시된 자료 선택'}).check();await f.page.getByRole('button',{name:'휴지통',exact:true}).last().click();await f.page.getByRole('button',{name:'휴지통으로',exact:true}).click();await f.page.locator('.shelf-empty').waitFor();
  await f.page.getByRole('navigation',{name:'서재 위치'}).getByRole('button',{name:'휴지통',exact:true}).click();await f.page.locator('.shelf-row').nth(4).waitFor();await f.page.getByRole('button',{name:'선택',exact:true}).click();await f.page.getByRole('checkbox',{name:'현재 표시된 자료 선택'}).check();await f.page.getByRole('button',{name:'복원',exact:true}).click();await f.page.locator('.shelf-empty').waitFor();
  await f.page.getByRole('button',{name:'여행 / 기차',exact:true}).click();await f.page.locator('.shelf-row').nth(4).waitFor();assert.equal(JSON.stringify(f.rows),originals);await overflow(f);
@@ -29,10 +29,10 @@ test('all filtered results include unloaded rows but exclude newly arriving matc
  seed(f,65);await enter(f);assert.equal(await f.page.locator('.shelf-row').count(),20);
  await f.page.getByRole('button',{name:'선택',exact:true}).click();await f.page.getByRole('button',{name:'검색 결과 65개 선택'}).click();await f.page.getByText('65개 선택',{exact:true}).waitFor();
  f.rows.push({...f.rows[0],id:99,title:'뒤늦게 들어온 자료'});
- await f.page.getByRole('button',{name:'휴지통',exact:true}).last().click();await f.page.getByRole('button',{name:'휴지통으로',exact:true}).click();await f.page.getByRole('button',{name:'다시 확인',exact:true}).waitFor();
- await f.page.reload({waitUntil:'domcontentloaded',timeout:120000});await f.page.getByRole('button',{name:'다시 확인',exact:true}).click();await f.page.getByText('65개 완료',{exact:true}).waitFor();assert.equal(await f.page.locator('.shelf-row').count(),1);assert.match(await f.page.locator('.shelf-row').innerText(),/뒤늦게/);
- lose=true;await f.page.getByRole('button',{name:'실행 취소',exact:true}).click();await f.page.getByRole('button',{name:'다시 확인',exact:true}).waitFor();
- await f.page.reload({waitUntil:'domcontentloaded',timeout:120000});await f.page.getByRole('button',{name:'다시 확인',exact:true}).click();await f.page.getByText('65개 취소됨',{exact:true}).waitFor();assert.equal((await f.db.query("select count(*)::int n from library_item_state where state='trashed'")).rows[0].n,0);await overflow(f);
+ await f.page.getByRole('button',{name:'휴지통',exact:true}).last().click();await f.page.getByRole('button',{name:'휴지통으로',exact:true}).click();await f.page.getByRole('button',{name:'다시 시도',exact:true}).waitFor();
+ await f.page.reload({waitUntil:'domcontentloaded',timeout:120000});await f.page.getByRole('button',{name:'다시 시도',exact:true}).click();await f.page.getByText('65개 완료',{exact:true}).waitFor();assert.equal(await f.page.locator('.shelf-row').count(),1);assert.match(await f.page.locator('.shelf-row').innerText(),/뒤늦게/);
+ lose=true;await f.page.getByRole('button',{name:'되돌리기',exact:true}).click();await f.page.getByRole('button',{name:'다시 시도',exact:true}).waitFor();
+ await f.page.reload({waitUntil:'domcontentloaded',timeout:120000});await f.page.getByRole('button',{name:'다시 시도',exact:true}).click();await f.page.getByText('65개 취소됨',{exact:true}).waitFor();assert.equal((await f.db.query("select count(*)::int n from library_item_state where state='trashed'")).rows[0].n,0);await overflow(f);
  }finally{await f.close();}
 });
 

@@ -53,7 +53,7 @@ export async function POST(request) {
   // 인증 — /api/gemini와 동일한 Bearer 검증
   const authHeader = request.headers.get('authorization');
   if (!authHeader) {
-    return Response.json({ error: { message: '로그인이 필요합니다.' } }, { status: 401 });
+    return Response.json({ error: { message: '로그인이 필요해요.' } }, { status: 401 });
   }
   const token = authHeader.replace(/^Bearer\s+/i, '');
   const authClient = createClient(
@@ -63,17 +63,17 @@ export async function POST(request) {
   );
   const { data: { user: authUser }, error: authErr } = await authClient.auth.getUser(token);
   if (authErr || !authUser) {
-    return Response.json({ error: { message: '세션이 만료됐어요. 다시 로그인해주세요.' } }, { status: 401 });
+    return Response.json({ error: { message: '세션이 만료됐어요. 다시 로그인해 주세요.' } }, { status: 401 });
   }
   if (isRateLimited(`u:${authUser.id}`)) {
-    return Response.json({ error: { message: '첨삭 요청이 너무 잦아요. 잠시 후 다시 시도해주세요.' } }, { status: 429 });
+    return Response.json({ error: { message: '첨삭 요청이 너무 잦아요. 잠시 후 다시 시도해 주세요.' } }, { status: 429 });
   }
 
   // Gemini 키가 없어도 Groq만으로 진행 가능 — 하드 실패는 두 키 모두 없을 때만
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey && !process.env.GROQ_API_KEY) {
     return Response.json(
-      { error: { message: '서버에 AI 키가 설정되지 않았어요 (GEMINI_API_KEY 또는 GROQ_API_KEY). Vercel 환경 변수를 확인해주세요.' } },
+      { error: { message: '서버에 AI 키가 설정되지 않았어요 (GEMINI_API_KEY 또는 GROQ_API_KEY). Vercel 환경 변수를 확인해 주세요.' } },
       { status: 500 }
     );
   }
@@ -85,14 +85,14 @@ export async function POST(request) {
 
   const { language, level, text, promptType = 'free', prompt = '', chapterSlug = null, mode = null, targetPattern = null } = body || {};
   if (!WRITING_LEVELS[language]) {
-    return Response.json({ error: { message: '지원하지 않는 언어입니다.' } }, { status: 400 });
+    return Response.json({ error: { message: '지원하지 않는 언어예요.' } }, { status: 400 });
   }
   // 문장 채점 경량 모드 — 한 문장이라 200자로 캡
   const sentenceMode = mode === 'sentence';
   const maxText = sentenceMode ? 200 : MAX_TEXT;
   const trimmed = String(text || '').trim();
   if (!trimmed) {
-    return Response.json({ error: { message: '작문을 입력해주세요.' } }, { status: 400 });
+    return Response.json({ error: { message: '작문을 입력해 주세요.' } }, { status: 400 });
   }
   if (trimmed.length > maxText) {
     return Response.json({ error: { message: `한 번에 ${maxText}자까지 첨삭할 수 있어요.` } }, { status: 400 });
@@ -125,7 +125,7 @@ export async function POST(request) {
     targetPattern: safeTarget,
   });
   if (!promptText) {
-    return Response.json({ error: { message: '지원하지 않는 언어입니다.' } }, { status: 400 });
+    return Response.json({ error: { message: '지원하지 않는 언어예요.' } }, { status: 400 });
   }
 
   try {
@@ -141,7 +141,7 @@ export async function POST(request) {
     if (!feedback) {
       console.error('[writing-feedback] unusable model output', String(raw).slice(0, 200));
       return Response.json(
-        { error: { message: '첨삭 생성에 실패했어요. 잠시 후 다시 시도해주세요.' } },
+        { error: { message: '첨삭을 만들지 못했어요. 잠시 후 다시 시도해 주세요.' } },
         { status: 502 }
       );
     }

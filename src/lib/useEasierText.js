@@ -9,7 +9,7 @@ import { buildEasierPrompt, easierCacheKey } from './grammarDetail';
 import { langNameKo } from './constants';
 import { canonicalViewerLocale, viewerLanguageInfo } from './viewerLanguage';
 import { createViewerRequestGate, viewerCacheKey } from './viewerReliability';
-import { friendlyToastMessage } from './errorMessage';
+import { failureMessage } from './errorMessage';
 
 export function useEasierText({ materialLang, toast, explanationLocale = 'ko', scope = '' }) {
   const [open, setOpen] = useState(false);
@@ -44,7 +44,7 @@ export function useEasierText({ materialLang, toast, explanationLocale = 'ko', s
     deadline.current = setTimeout(() => {
       if (!current()) return;
       setLoading(false); setOpen(false);
-      toast?.('쉬운 문장 생성에 실패했어요.', 'error'); cancel();
+      toast?.('쉬운 문장을 만들지 못했어요.', 'error'); cancel();
     }, 30000);
     try {
       const key = await viewerCacheKey(easierCacheKey(materialLang, '').split(':')[0], requestScope, text);
@@ -64,7 +64,7 @@ export function useEasierText({ materialLang, toast, explanationLocale = 'ko', s
     } catch (err) {
       if (!current()) return;
       setOpen(false); // 버튼으로 되돌려 재시도 가능하게 — 빈 패널을 남기지 않는다
-      toast?.('쉬운 문장 생성에 실패했어요 — ' + friendlyToastMessage(err), 'error');
+      toast?.(failureMessage('쉬운 문장을 만들지 못했어요.', err), 'error');
     } finally {
       if (current()) { clearTimeout(deadline.current); deadline.current = null; setLoading(false); }
     }

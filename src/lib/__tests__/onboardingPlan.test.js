@@ -165,7 +165,8 @@ describe('ONB-001 「준비 중」 언어 가드 (D-L4) — ⑤ 한국어 주 �
 
   it('배움 홈 · 단어 통계 · 내 정보 — 안내 줄과 보이는 한국어 값', () => {
     const home = read('src/views/HomePage.jsx');
-    expect(home).toContain('isPreparingLearningLanguage(lang)');
+    expect(home).toContain('isPreparingLearningLanguage(primaryLearningLanguage(profile))');
+    expect(home).toContain('{!onlyPreparing && <LangChips');
     expect(home).toContain('{preparingLanguage && <PreparingLanguageLine />}');
     const stats = read('src/views/VocabStats.jsx');
     expect(stats).toContain('{showLevels && preparingOnly && <PreparingLanguageLine />}');

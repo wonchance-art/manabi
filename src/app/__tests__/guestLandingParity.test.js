@@ -44,9 +44,12 @@ describe('/home — 게스트가 와도 빈 벽이 아니다', () => {
   it('게스트가 들어갈 문이 남아 있다 — 전에 가던 교재로 가는 길이 끊기면 안 된다', () => {
     // 통일 전 게스트는 /lessons(교재 목록)를 첫 화면으로 받았다. 로그인 벽만 세우면
     // "볼 것이 있던 화면"이 "볼 것 없는 화면"으로 나빠진다 — 그건 수리가 아니다.
-    expect(guest).toContain('href="/lessons"');
-    expect(guest).toContain('href="/materials"');
-    expect(guest).toContain("user ? '/vocab' : '/auth'");
+    // 배움(LEARN-HOME-AK-001): 게스트도 이어 읽기 칸으로 발행 교재 첫 페이지에 들어가고, 교재 정보를 못 받으면 교재 목록으로 간다.
+    // 서재 · 산책은 메뉴가 늘 연다. 로그인은 「로그인하면 여기에 쌓여요」 칸의 권유일 뿐이다.
+    expect(guest).toContain('bookHref(book.edition, resume.page)');
+    expect(guest).toContain("href: '/lessons'");
+    expect(guest).toContain('href="/auth"');
+    expect(guest).toContain('로그인하면 여기에 쌓여요');
     expect(guest).not.toContain('if (!user) return');
   });
 
