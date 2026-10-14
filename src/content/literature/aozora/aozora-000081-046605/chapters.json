@@ -1,0 +1,498 @@
+{
+  "schemaVersion": 1,
+  "book": {
+    "key": "aozora-000081-046605",
+    "title": "やまなし",
+    "author": "宮沢賢治",
+    "level": "N3 중급",
+    "total": 2,
+    "division": "heading"
+  },
+  "chapters": [
+    {
+      "order": 1,
+      "title": "一、五月",
+      "materialTitle": "やまなし — 一、五月",
+      "rawText": "小さな谷川の底を写した二枚の青い幻燈です。\n\n二疋の蟹の子供らが青じろい水の底で話していました。\n\n『クラムボンはわらったよ。』\n\n『クラムボンはかぷかぷわらったよ。』\n\n『クラムボンは跳ねてわらったよ。』\n\n『クラムボンはかぷかぷわらったよ。』\n\n上の方や横の方は、青くくらく鋼のように見えます。そのなめらかな天井を、つぶつぶ暗い泡が流れて行きます。\n\n『クラムボンはわらっていたよ。』\n\n『クラムボンはかぷかぷわらったよ。』\n\n『それならなぜクラムボンはわらったの。』\n\n『知らない。』\n\nつぶつぶ泡が流れて行きます。蟹の子供らもぽっぽっぽっとつづけて五六粒泡を吐きました。それはゆれながら水銀のように光って斜めに上の方へのぼって行きました。\n\nつうと銀のいろの腹をひるがえして、一疋の魚が頭の上を過ぎて行きました。\n\n『クラムボンは死んだよ。』\n\n『クラムボンは殺されたよ。』\n\n『クラムボンは死んでしまったよ………。』\n\n『殺されたよ。』\n\n『それならなぜ殺された。』兄さんの蟹は、その右側の四本の脚の中の二本を、弟の平べったい頭にのせながら云いました。\n\n『わからない。』\n\n魚がまたツウと戻って下流のほうへ行きました。\n\n『クラムボンはわらったよ。』\n\n『わらった。』\n\nにわかにパッと明るくなり、日光の黄金は夢のように水の中に降って来ました。\n\n波から来る光の網が、底の白い磐の上で美しくゆらゆらのびたりちぢんだりしました。泡や小さなごみからはまっすぐな影の棒が、斜めに水の中に並んで立ちました。\n\n魚がこんどはそこら中の黄金の光をまるっきりくちゃくちゃにしておまけに自分は鉄いろに変に底びかりして、又上流の方へのぼりました。\n\n『お魚はなぜああ行ったり来たりするの。』\n\n弟の蟹がまぶしそうに眼を動かしながらたずねました。\n\n『何か悪いことをしてるんだよとってるんだよ。』\n\n『とってるの。』\n\n『うん。』\n\nそのお魚がまた上流から戻って来ました。今度はゆっくり落ちついて、ひれも尾も動かさずただ水にだけ流されながらお口を環のように円くしてやって来ました。その影は黒くしずかに底の光の網の上をすべりました。\n\n『お魚は……。』\n\nその時です。俄に天井に白い泡がたって、青びかりのまるでぎらぎらする鉄砲弾のようなものが、いきなり飛込んで来ました。\n\n兄さんの蟹ははっきりとその青いもののさきがコンパスのように黒く尖っているのも見ました。と思ううちに、魚の白い腹がぎらっと光って一ぺんひるがえり、上の方へのぼったようでしたが、それっきりもう青いものも魚のかたちも見えず光の黄金の網はゆらゆらゆれ、泡はつぶつぶ流れました。\n\n二疋はまるで声も出ず居すくまってしまいました。\n\nお父さんの蟹が出て来ました。\n\n『どうしたい。ぶるぶるふるえているじゃないか。』\n\n『お父さん、いまおかしなものが来たよ。』\n\n『どんなもんだ。』\n\n『青くてね、光るんだよ。はじがこんなに黒く尖ってるの。それが来たらお魚が上へのぼって行ったよ。』\n\n『そいつの眼が赤かったかい。』\n\n『わからない。』\n\n『ふうん。しかし、そいつは鳥だよ。かわせみと云うんだ。大丈夫だ、安心しろ。おれたちはかまわないんだから。』\n\n『お父さん、お魚はどこへ行ったの。』\n\n『魚かい。魚はこわい所へ行った』\n\n『こわいよ、お父さん。』\n\n『いいいい、大丈夫だ。心配するな。そら、樺の花が流れて来た。ごらん、きれいだろう。』\n\n泡と一緒に、白い樺の花びらが天井をたくさんすべって来ました。\n\n『こわいよ、お父さん。』弟の蟹も云いました。\n\n光の網はゆらゆら、のびたりちぢんだり、花びらの影はしずかに砂をすべりました。",
+      "metadata": {
+        "language": "Japanese",
+        "level": "N3 중급",
+        "book": {
+          "key": "aozora-000081-046605",
+          "title": "やまなし",
+          "author": "宮沢賢治",
+          "order": 1,
+          "total": 2
+        },
+        "literature": {
+          "schemaVersion": 1,
+          "provider": "aozora",
+          "workKey": "aozora-000081-046605",
+          "personId": "000081",
+          "workId": "46605",
+          "title": "やまなし",
+          "author": "宮沢賢治",
+          "publishedYear": 1923,
+          "authorDeathYear": 1933,
+          "charset": "新字新仮名",
+          "cardUrl": "https://www.aozora.gr.jp/cards/000081/card46605.html",
+          "sourceFileUrl": "https://www.aozora.gr.jp/cards/000081/files/46605_ruby_29758.zip",
+          "sourceSha256": "fb4a85928dacee7d3ab0ac925c450fb61c3bc470935e1ea8ad7d16a3626d5c4d",
+          "textSha256": "c368ec414aee189bbe5a26f9c3afd4956b796efe87e233b3a5c8fbebc2ae33df",
+          "attribution": {
+            "author": "宮沢賢治",
+            "translator": null,
+            "illustrator": null
+          },
+          "rights": {
+            "status": "approved",
+            "basis": "public-domain",
+            "reviewedBy": "claude",
+            "reviewedAt": "2026-10-15",
+            "reviewedJurisdictions": [
+              "JP",
+              "KR",
+              "US"
+            ],
+            "evidenceUrl": "https://www.aozora.gr.jp/cards/000081/card46605.html"
+          },
+          "colophon": {
+            "sourceBook": [
+              "「新編風の又三郎」新潮文庫、新潮社",
+              "1989（平成元）年2月25日発行",
+              "1989（平成元）年6月10日2刷"
+            ],
+            "parentBook": [],
+            "inputter": "蒋龍",
+            "proofreader": "noriko saito"
+          },
+          "edits": [
+            "ruby-reading-aid",
+            "chapter-split-by-manabi"
+          ],
+          "rubyLocks": [
+            {
+              "start": 16,
+              "end": 18,
+              "base": "幻燈",
+              "reading": "げんとう"
+            },
+            {
+              "start": 24,
+              "end": 25,
+              "base": "疋",
+              "reading": "ひき"
+            },
+            {
+              "start": 26,
+              "end": 27,
+              "base": "蟹",
+              "reading": "かに"
+            },
+            {
+              "start": 93,
+              "end": 94,
+              "base": "跳",
+              "reading": "は"
+            },
+            {
+              "start": 139,
+              "end": 140,
+              "base": "鋼",
+              "reading": "はがね"
+            },
+            {
+              "start": 156,
+              "end": 158,
+              "base": "天井",
+              "reading": "てんじょう"
+            },
+            {
+              "start": 166,
+              "end": 167,
+              "base": "泡",
+              "reading": "あわ"
+            },
+            {
+              "start": 280,
+              "end": 281,
+              "base": "粒",
+              "reading": "つぶ"
+            },
+            {
+              "start": 283,
+              "end": 284,
+              "base": "吐",
+              "reading": "は"
+            },
+            {
+              "start": 306,
+              "end": 307,
+              "base": "斜",
+              "reading": "なな"
+            },
+            {
+              "start": 453,
+              "end": 454,
+              "base": "脚",
+              "reading": "あし"
+            },
+            {
+              "start": 475,
+              "end": 476,
+              "base": "云",
+              "reading": "い"
+            },
+            {
+              "start": 500,
+              "end": 501,
+              "base": "戻",
+              "reading": "もど"
+            },
+            {
+              "start": 558,
+              "end": 560,
+              "base": "黄金",
+              "reading": "きん"
+            },
+            {
+              "start": 561,
+              "end": 562,
+              "base": "夢",
+              "reading": "ゆめ"
+            },
+            {
+              "start": 587,
+              "end": 588,
+              "base": "網",
+              "reading": "あみ"
+            },
+            {
+              "start": 594,
+              "end": 595,
+              "base": "磐",
+              "reading": "いわ"
+            },
+            {
+              "start": 634,
+              "end": 635,
+              "base": "影",
+              "reading": "かげ"
+            },
+            {
+              "start": 646,
+              "end": 647,
+              "base": "並",
+              "reading": "なら"
+            },
+            {
+              "start": 668,
+              "end": 670,
+              "base": "黄金",
+              "reading": "きん"
+            },
+            {
+              "start": 707,
+              "end": 708,
+              "base": "又",
+              "reading": "また"
+            },
+            {
+              "start": 708,
+              "end": 710,
+              "base": "上流",
+              "reading": "かみ"
+            },
+            {
+              "start": 754,
+              "end": 755,
+              "base": "眼",
+              "reading": "め"
+            },
+            {
+              "start": 820,
+              "end": 822,
+              "base": "上流",
+              "reading": "かみ"
+            },
+            {
+              "start": 848,
+              "end": 849,
+              "base": "尾",
+              "reading": "お"
+            },
+            {
+              "start": 869,
+              "end": 870,
+              "base": "環",
+              "reading": "わ"
+            },
+            {
+              "start": 929,
+              "end": 930,
+              "base": "俄",
+              "reading": "にわか"
+            },
+            {
+              "start": 956,
+              "end": 959,
+              "base": "鉄砲弾",
+              "reading": "てっぽうだま"
+            },
+            {
+              "start": 971,
+              "end": 973,
+              "base": "飛込",
+              "reading": "とびこ"
+            },
+            {
+              "start": 1013,
+              "end": 1014,
+              "base": "尖",
+              "reading": "とが"
+            },
+            {
+              "start": 1092,
+              "end": 1094,
+              "base": "黄金",
+              "reading": "きん"
+            },
+            {
+              "start": 1322,
+              "end": 1325,
+              "base": "大丈夫",
+              "reading": "だいじょうぶ"
+            },
+            {
+              "start": 1422,
+              "end": 1423,
+              "base": "樺",
+              "reading": "かば"
+            },
+            {
+              "start": 1448,
+              "end": 1450,
+              "base": "一緒",
+              "reading": "いっしょ"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "order": 2,
+      "title": "二、十二月",
+      "materialTitle": "やまなし — 二、十二月",
+      "rawText": "蟹の子供らはもうよほど大きくなり、底の景色も夏から秋の間にすっかり変りました。\n\n白い柔かな円石もころがって来、小さな錐の形の水晶の粒や、金雲母のかけらもながれて来てとまりました。\n\nそのつめたい水の底まで、ラムネの瓶の月光がいっぱいに透とおり天井では波が青じろい火を、燃したり消したりしているよう、あたりはしんとして、ただいかにも遠くからというように、その波の音がひびいて来るだけです。\n\n蟹の子供らは、あんまり月が明るく水がきれいなので睡らないで外に出て、しばらくだまって泡をはいて天上の方を見ていました。\n\n『やっぱり僕の泡は大きいね。』\n\n『兄さん、わざと大きく吐いてるんだい。僕だってわざとならもっと大きく吐けるよ。』\n\n『吐いてごらん。おや、たったそれきりだろう。いいかい、兄さんが吐くから見ておいで。そら、ね、大きいだろう。』\n\n『大きかないや、おんなじだい。』\n\n『近くだから自分のが大きく見えるんだよ。そんなら一緒に吐いてみよう。いいかい、そら。』\n\n『やっぱり僕の方大きいよ。』\n\n『本当かい。じゃ、も一つはくよ。』\n\n『だめだい、そんなにのびあがっては。』\n\nまたお父さんの蟹が出て来ました。\n\n『もうねろねろ。遅いぞ、あしたイサドへ連れて行かんぞ。』\n\n『お父さん、僕たちの泡どっち大きいの』\n\n『それは兄さんの方だろう』\n\n『そうじゃないよ、僕の方大きいんだよ』弟の蟹は泣きそうになりました。\n\nそのとき、トブン。\n\n黒い円い大きなものが、天井から落ちてずうっとしずんで又上へのぼって行きました。キラキラッと黄金のぶちがひかりました。\n\n『かわせみだ』子供らの蟹は頸をすくめて云いました。\n\nお父さんの蟹は、遠めがねのような両方の眼をあらん限り延ばして、よくよく見てから云いました。\n\n『そうじゃない、あれはやまなしだ、流れて行くぞ、ついて行って見よう、ああいい匂いだな』\n\nなるほど、そこらの月あかりの水の中は、やまなしのいい匂いでいっぱいでした。\n\n三疋はぼかぼか流れて行くやまなしのあとを追いました。\n\nその横あるきと、底の黒い三つの影法師が、合せて六つ踊るようにして、やまなしの円い影を追いました。\n\n間もなく水はサラサラ鳴り、天井の波はいよいよ青い焔をあげ、やまなしは横になって木の枝にひっかかってとまり、その上には月光の虹がもかもか集まりました。\n\n『どうだ、やっぱりやまなしだよ、よく熟している、いい匂いだろう。』\n\n『おいしそうだね、お父さん』\n\n『待て待て、もう二日ばかり待つとね、こいつは下へ沈んで来る、それからひとりでにおいしいお酒ができるから、さあ、もう帰って寝よう、おいで』\n\n親子の蟹は三疋自分等の穴に帰って行きます。\n\n波はいよいよ青じろい焔をゆらゆらとあげました、それは又金剛石の粉をはいているようでした。\n\n＊\n\n私の幻燈はこれでおしまいであります。",
+      "metadata": {
+        "language": "Japanese",
+        "level": "N3 중급",
+        "book": {
+          "key": "aozora-000081-046605",
+          "title": "やまなし",
+          "author": "宮沢賢治",
+          "order": 2,
+          "total": 2
+        },
+        "literature": {
+          "schemaVersion": 1,
+          "provider": "aozora",
+          "workKey": "aozora-000081-046605",
+          "personId": "000081",
+          "workId": "46605",
+          "title": "やまなし",
+          "author": "宮沢賢治",
+          "publishedYear": 1923,
+          "authorDeathYear": 1933,
+          "charset": "新字新仮名",
+          "cardUrl": "https://www.aozora.gr.jp/cards/000081/card46605.html",
+          "sourceFileUrl": "https://www.aozora.gr.jp/cards/000081/files/46605_ruby_29758.zip",
+          "sourceSha256": "fb4a85928dacee7d3ab0ac925c450fb61c3bc470935e1ea8ad7d16a3626d5c4d",
+          "textSha256": "c368ec414aee189bbe5a26f9c3afd4956b796efe87e233b3a5c8fbebc2ae33df",
+          "attribution": {
+            "author": "宮沢賢治",
+            "translator": null,
+            "illustrator": null
+          },
+          "rights": {
+            "status": "approved",
+            "basis": "public-domain",
+            "reviewedBy": "claude",
+            "reviewedAt": "2026-10-15",
+            "reviewedJurisdictions": [
+              "JP",
+              "KR",
+              "US"
+            ],
+            "evidenceUrl": "https://www.aozora.gr.jp/cards/000081/card46605.html"
+          },
+          "colophon": {
+            "sourceBook": [
+              "「新編風の又三郎」新潮文庫、新潮社",
+              "1989（平成元）年2月25日発行",
+              "1989（平成元）年6月10日2刷"
+            ],
+            "parentBook": [],
+            "inputter": "蒋龍",
+            "proofreader": "noriko saito"
+          },
+          "edits": [
+            "ruby-reading-aid",
+            "chapter-split-by-manabi"
+          ],
+          "rubyLocks": [
+            {
+              "start": 43,
+              "end": 44,
+              "base": "柔",
+              "reading": "やわら"
+            },
+            {
+              "start": 46,
+              "end": 48,
+              "base": "円石",
+              "reading": "まるいし"
+            },
+            {
+              "start": 59,
+              "end": 60,
+              "base": "錐",
+              "reading": "きり"
+            },
+            {
+              "start": 63,
+              "end": 65,
+              "base": "水晶",
+              "reading": "すいしょう"
+            },
+            {
+              "start": 69,
+              "end": 72,
+              "base": "金雲母",
+              "reading": "きんうんも"
+            },
+            {
+              "start": 108,
+              "end": 109,
+              "base": "瓶",
+              "reading": "びん"
+            },
+            {
+              "start": 118,
+              "end": 119,
+              "base": "透",
+              "reading": "すき"
+            },
+            {
+              "start": 220,
+              "end": 221,
+              "base": "睡",
+              "reading": "ねむ"
+            },
+            {
+              "start": 262,
+              "end": 263,
+              "base": "僕",
+              "reading": "ぼく"
+            },
+            {
+              "start": 517,
+              "end": 518,
+              "base": "遅",
+              "reading": "おそ"
+            },
+            {
+              "start": 667,
+              "end": 669,
+              "base": "黄金",
+              "reading": "きん"
+            },
+            {
+              "start": 695,
+              "end": 696,
+              "base": "頸",
+              "reading": "くび"
+            },
+            {
+              "start": 794,
+              "end": 795,
+              "base": "匂",
+              "reading": "にお"
+            },
+            {
+              "start": 883,
+              "end": 886,
+              "base": "影法師",
+              "reading": "かげぼうし"
+            },
+            {
+              "start": 893,
+              "end": 894,
+              "base": "踊",
+              "reading": "おど"
+            },
+            {
+              "start": 942,
+              "end": 943,
+              "base": "焔",
+              "reading": "ほのお"
+            },
+            {
+              "start": 959,
+              "end": 960,
+              "base": "枝",
+              "reading": "えだ"
+            },
+            {
+              "start": 979,
+              "end": 980,
+              "base": "虹",
+              "reading": "にじ"
+            },
+            {
+              "start": 1069,
+              "end": 1070,
+              "base": "沈",
+              "reading": "しず"
+            },
+            {
+              "start": 1105,
+              "end": 1106,
+              "base": "寝",
+              "reading": "ね"
+            },
+            {
+              "start": 1124,
+              "end": 1125,
+              "base": "等",
+              "reading": "ら"
+            },
+            {
+              "start": 1165,
+              "end": 1168,
+              "base": "金剛石",
+              "reading": "こんごうせき"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "diagnostics": {
+    "sourceBlockCount": 85,
+    "headingCount": 2,
+    "splitByHeadings": true,
+    "rubyCount": 56,
+    "mappedRubyCount": 56,
+    "droppedRubyCount": 0,
+    "midParagraphSplitCount": 0,
+    "headingRubyCount": 0,
+    "annotationRubyCount": 0,
+    "noteCount": 2,
+    "resolvedGaijiCount": 0,
+    "chapterChars": [
+      1540,
+      1205
+    ]
+  }
+}

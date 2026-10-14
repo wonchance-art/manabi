@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "personId": "000081",
+  "workId": "462",
+  "title": "風の又三郎",
+  "author": "宮沢賢治",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1934,
+  "authorDeathYear": 1933,
+  "level": "N3 중급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000081/card462.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000081/files/462_ruby_716.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "c7564ce0a0358483b8d5bef89b82aff9e9455d98eb1c48915b5bdf2496130712",
+  "textSha256": "e59e02a13b1a5f5cc4fc3942b96a131cb20a477b3d876437c95f509ca6668fca",
+  "attribution": {
+    "author": "宮沢賢治",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-15",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR",
+      "US"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000081/card462.html"
+  },
+  "display": {
+    "titleReading": "かぜのまたさぶろう",
+    "titleKo": "바람의 마타사부로",
+    "authorKo": "미야자와 겐지",
+    "cover": "meadow",
+    "motif": "wind-hill"
+  }
+}
