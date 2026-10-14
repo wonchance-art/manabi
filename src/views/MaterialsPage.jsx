@@ -24,6 +24,7 @@ import { groupByPdf, pageRangeLabel, readProgressLabel } from '../lib/pdfGroups'
 import { useGroupReadIds } from '../lib/useGroupReadIds';
 import { LEVELS, langNameKo, levelRank, profileLevel, isWriteMaterial } from '../lib/constants';
 import { canReadSuggestion, suggestionHref, suggestionSource } from '../lib/suggestionReading';
+import { encounterLookupLang } from '../lib/refVocabLookup';
 import { isLibraryNote, materialLibraryFilters } from '../lib/libraryDiscovery';
 import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
@@ -58,7 +59,7 @@ function SuggestionCard({ suggestion: s, router }) {
           <span className="suggestion-card__source">{s.channel_name}</span>
           {canStudy && <span className="suggestion-card__ready">✓ 바로 읽기</span>}
         </div>
-        <h3 className="suggestion-card__title">{s.title}</h3>
+        <h3 className="suggestion-card__title" lang={encounterLookupLang(s.language) || undefined}>{s.title}</h3>
         <div className="suggestion-card__actions">
           {canStudy ? <button className="btn btn--primary btn--sm" onClick={handleStudy}>바로 읽기</button>
             : source.url ? <a className="btn btn--sm" href={source.url} target="_blank" rel="noopener noreferrer">{source.label} ↗</a>
@@ -671,6 +672,7 @@ export default function MaterialsPage({ libraryView = null }) {
             // PDF 묶음(v2-P)은 그 다음 — 손으로 매긴 `metadata.book`이 자동 파생인
             // `source_pdf_id`를 이기도록 **호출 순서로** 우선순위를 세운다.
             const { books, singles: bookless } = groupByBook(filtered);
+            const contentLangOf = (c) => (c ? encounterLookupLang(documentOf(c)?.language ?? c.processed_json?.metadata?.language) || undefined : undefined);
             const { groups: pdfGroupsHere, rest: singles } = groupByPdf(bookless, visiblePdfs);
             const bookCards = books.map((b) => {
               const analyzed = b.chapters.filter((c) => ['completed', 'partial'].includes(c.processed_json?.status)).length;
@@ -704,6 +706,7 @@ export default function MaterialsPage({ libraryView = null }) {
                   key={b.key}
                   icon="📖"
                   title={b.title || '제목 없는 책'}
+                  lang={b.title ? contentLangOf(b.chapters[0]) : undefined}
                   meta={`챕터 ${b.chapters.length} · 읽음 ${readDone}/${b.chapters.length}${pendingNote}`}
                   fitLine={fitLineOf(bf, '과')}
                   {...literatureProps}
@@ -736,6 +739,7 @@ export default function MaterialsPage({ libraryView = null }) {
                   key={g.key}
                   icon="📕"
                   title={g.pdf.title}
+                  lang={contentLangOf(g.chapters[0])}
                   meta={[
                     `PDF ${g.pdf.page_count}쪽`,
                     progress,
@@ -823,7 +827,7 @@ export default function MaterialsPage({ libraryView = null }) {
                 title={previewText || undefined}
               >
                 <div className="mat-card__head">
-                  <h3 className="card__title">
+                  <h3 className="card__title" lang={encounterLookupLang(language) || undefined}>
                     <Link
                       href={readerHref(`/viewer/${m.id}`)}
                       style={{ color: 'inherit', textDecoration: 'none' }}

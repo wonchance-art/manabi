@@ -269,3 +269,15 @@ R3에서 `myplan` 격자를 실제로 옮겨 그 차이를 실측했다 — 260p
 - IndexedDB: `anatomy-offline-cache` · `anatomy-pdf-cache` · `anatomy-class-shared`(기존 오프라인 저장분).
 - `public/sw.js` `CACHE_NAME` 접두사 `anatomy-studio-v`(`scripts/update-sw-version.mjs`).
 - `window.__anatomyErrorHooked`, UA `AnatomyStudio/1.0`, `robots.js`·`sitemap.js` 기본 도메인.
+
+## 7. 줄바꿈 (LINE-BREAK-001 — 오너 승인 2026-10-14)
+
+- **한국어는 어절(띄어쓰기) 단위로 넘긴다.** `[lang|="ko"] { word-break: keep-all }`이 `<html lang="ko">`에서 상속된다.
+  Chrome 기본값은 한국어를 음절 사이에서 끊는다(「준비하지 못했어 / 요」).
+- **일본어 · 중국어 글에는 반드시 `lang`을 단다.** `[lang|="ja"]` · `[lang|="zh"]`가 `word-break: normal`로 되돌린다.
+  `lang`이 없으면 한국어 규칙을 상속해 문장부호에서만 넘어간다. 그 안의 한국어 뜻 · 해설은 `lang="ko"`로 다시 어절 단위가 된다.
+- **클래스 · 인라인 규칙에 `keep-all`을 다시 적지 않는다.** 한국어는 `<html lang="ko">`에서 이미 상속받는다. 클래스 규칙은 `[lang|="ja"]` 되돌림과 우선순위가 같거나 높아, `lang="ja"`를 단 제목에도 `keep-all`이 걸린다(M09 실측 — `.manabi-page h3` · `.learn-paragraph__sentence`). 예외는 일본어 · 중국어 컨테이너 안에 놓이는 **한국어 전용** 클래스뿐이고, 목록은 계약(`KOREAN_ONLY`)이 정본이다. `src/content/textbookEditions/**`(게시 판본 스냅숏)는 별도.
+- 긴 어절 · URL 넘침은 `body { overflow-wrap: break-word }`가 막는다. 플렉스 · 그리드 칸이 좁아져야 하는 곳은 지금처럼 `overflow-wrap: anywhere`를 그 요소에 단다(최소 폭 계산이 바뀐다).
+- 제목(`h1`–`h3`)은 `text-wrap: balance`로 줄 길이를 고른다. 긴 본문 · 뷰어 토큰 줄에는 `text-wrap`을 쓰지 않는다(조판 · 토큰 위치).
+- `word-break: break-all`은 쓰지 않는다(한국어 · 영어 단어를 아무 데서나 끊는다).
+- 계약: `src/lib/__tests__/lineBreak.test.js`.

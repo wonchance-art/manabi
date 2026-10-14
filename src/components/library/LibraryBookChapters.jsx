@@ -4,6 +4,7 @@ import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {supabase} from '@/lib/supabase';
 import {chapterCaption,fetchBookChapterPage} from '@/lib/libraryBookChapters';
 import {invalidateLibrary} from '@/lib/libraryOperations';
+import {encounterLookupLang} from '@/lib/refVocabLookup';
 import LibraryReaderLink from '@/components/web/LibraryReaderLink';
 import LibraryChapterEditor from './LibraryChapterEditor';
 import useLibraryOutline from './useLibraryOutline';
@@ -26,7 +27,7 @@ export default function LibraryBookChapters({row,ownerId,disabled=false}) {
   {expanded&&<>
    {query.isPending&&<p role="status">목차를 불러오는 중…</p>}{query.isError&&<p role="alert">목차를 불러오지 못했어요. <button onClick={()=>query.refetch()}>다시 시도</button></p>}
    {query.data&&<ol>{query.data.items.map(chapter=><li key={chapter.id} className={reveal===chapter.id?'is-added':undefined}>
-    <LibraryReaderLink href={`/viewer/${chapter.id}`}><span className="shelf-chapter-order">{chapter.order==null?'—':`${chapter.order}과`}</span><span className="shelf-chapter-title">{chapterCaption(chapter,query.data.title)}</span><span aria-hidden="true">↗</span></LibraryReaderLink>
+    <LibraryReaderLink href={`/viewer/${chapter.id}`}><span className="shelf-chapter-order">{chapter.order==null?'—':`${chapter.order}과`}</span><span className="shelf-chapter-title" lang={encounterLookupLang(row.language)||undefined}>{chapterCaption(chapter,query.data.title)}</span><span aria-hidden="true">↗</span></LibraryReaderLink>
     {chapter.order!=null&&<button ref={node=>{if(node)chapterButtons.current.set(chapter.id,node);else chapterButtons.current.delete(chapter.id);}} className="shelf-chapter-menu" aria-label={`${chapter.order}과 더보기`} disabled={disabled} aria-expanded={menu===chapter.id} onClick={()=>setMenu(menu===chapter.id?null:chapter.id)}>···</button>}
     {menu===chapter.id&&<div className="shelf-chapter-options"><button onClick={()=>{setEditor(chapter);setMenu(null);}}>과 번호 수정</button></div>}
    </li>)}</ol>}

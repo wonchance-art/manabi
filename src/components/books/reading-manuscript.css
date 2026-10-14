@@ -9,7 +9,7 @@
 .book-reading-content .study-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:24px 0}.book-reading-content .study-row{display:grid;grid-template-columns:58px minmax(0,1fr);align-items:start;gap:8px;padding:13px 14px;border:1px solid #E7D2DE;border-radius:6px;background:#FCF5F9}.book-reading-content .study-row>b{color:#85586F;font-size:15px}.book-reading-content .study-row>span{font-size:18px;line-height:1.8}.book-reading-content .study-row>small{grid-column:1/-1;color:#706973;font-size:12px;line-height:1.6}@container manabi-reader (max-width:600px){.book-reading-content .study-grid{grid-template-columns:1fr}.book-reading-content .study-row{grid-template-columns:72px minmax(0,1fr)}}
 
 /* Keep Korean headings together at word boundaries on narrow screens. */
-.book-reading-content h1,.book-reading-content h2,.book-reading-content h3,.book-reading-content h4{word-break:keep-all;overflow-wrap:anywhere}
+.book-reading-content h1,.book-reading-content h2,.book-reading-content h3,.book-reading-content h4{overflow-wrap:anywhere}
 
 .book-reading-content .pattern h3 small{flex:0 0 auto;min-width:2ch;white-space:nowrap;align-self:flex-start}
 
