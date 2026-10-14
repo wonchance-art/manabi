@@ -53,8 +53,14 @@
 .review-room-source-link { text-align:left; margin:18px 0; }
 .review-room-source-link a { color:var(--ja); font-size:13px; min-height:44px; display:inline-flex; align-items:center; }
 .review-room-source-link small { display:block; color:var(--muted); font-size:11px; line-height:1.7; }
-.manabi-review-room .review-score-grid { gap:8px; }
-.manabi-review-room .review-score-btn { border-radius:3px; min-height:52px; }
+/* 뷰어 채점 양식(reader-controls.css 326–332, 474)과 같은 색·테두리·글자. 복습의 52px 터치 높이는 유지한다. */
+.manabi-review-room .review-score-grid { gap:6px; }
+.manabi-review-room .review-score-btn { border-radius:3px; min-height:52px; font-size:.8rem; padding:7px 2px; border:1px solid var(--rule); color:var(--ink); background:var(--sheet); }
+.manabi-review-room .review-score-btn--again { background:color-mix(in srgb,var(--danger) 13%,var(--sheet)); }
+.manabi-review-room .review-score-btn--hard { background:color-mix(in srgb,var(--warning) 13%,var(--sheet)); }
+.manabi-review-room .review-score-btn--good { background:var(--book-wash); }
+.manabi-review-room .review-score-btn--easy { background:color-mix(in srgb,var(--book-main) 15%,var(--sheet)); }
+.manabi-review-room .save-grade__key { opacity:1; color:var(--muted); }
 .manabi-review-room .quiz-opt { min-height:48px; border-radius:3px; overflow-wrap:anywhere; }
 .manabi-review-room .learning-links { text-align:left; }
 .manabi-review-room .learning-links summary { min-height:44px; padding-block:12px; }
@@ -80,15 +86,6 @@
   .review-room-session-nav>span { font-size:10px; }
   .manabi-grammar-room .fr-quiz__item { padding:18px; }
 }
-/* Keep the four familiar ratings, but make their color quieter than the question. */
-.manabi-review-room .review-score-btn { background:var(--paper); color:var(--ink); border:1px solid var(--rule); border-top-width:3px; }
-.manabi-review-room .review-score-btn--again { border-top-color:var(--ja); }
-.manabi-review-room .review-score-btn--hard { border-top-color:var(--en); }
-.manabi-review-room .review-score-btn--good { border-top-color:var(--zh); }
-.manabi-review-room .review-score-btn--easy { border-top-color:var(--fr); }
-.manabi-review-room .review-score-btn:hover { background:var(--bg-secondary); color:var(--ink); }
-.manabi-review-room .review-score-btn .save-grade__key { color:var(--muted); }
-
 /* A book is an explicit review scope, with its own reading return. */
 .review-room-book-scope { margin-bottom: 24px; font-size: .85rem; line-height: 1.65; }
 .review-room-book-scope .manabi-row a { display: inline-flex; align-items: center; min-height: 44px; }
@@ -135,3 +132,75 @@
 .review-scope-sheet__range select { min-height:44px; min-width:96px; border:1px solid var(--rule); background:var(--sheet); color:var(--ink); border-radius:3px; font:inherit; padding:0 8px; }
 .review-scope-sheet__foot { display:grid; gap:8px; margin-top:20px; }
 .review-scope-sheet__foot .btn { width:100%; min-height:48px; justify-content:center; }
+
+/* REV-SCOPE-R1B-1 — one card spec for both engines: front = glyphs only, back = meaning + reading + sound.
+   The grade bar is pinned to the bottom (sticky, inside the session) and locked until the back is shown. */
+.review-card__meta { font-size:12px; color:var(--muted); text-align:center; margin:0 0 18px; letter-spacing:.02em; }
+.manabi-review-room .review-card__word ruby { ruby-position:over; }
+.manabi-review-room .review-card__word rt { font-size:.42em; color:var(--muted); letter-spacing:.04em; }
+.review-card__reading-row { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:8px 12px; margin:6px 0 14px; }
+.review-card__reading { font-size:17px; color:var(--ink); overflow-wrap:anywhere; }
+.review-card__reading--phonetic { font-size:14px; color:var(--muted); }
+.review-listen { min-height:44px; min-width:44px; padding:0 14px; border:1px solid var(--rule); border-radius:999px; background:var(--paper); color:var(--ja); font:inherit; font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+.review-card__typed { font-size:13px; color:var(--muted); margin:0 0 10px; overflow-wrap:anywhere; }
+.review-card__tools { display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:flex-end; width:100%; }
+.review-known-btn,.review-hint-btn,.review-skip-btn { min-height:44px; }
+.review-known-btn { border:1px solid var(--rule); background:var(--sheet); color:var(--muted); border-radius:3px; font:inherit; font-size:12px; padding:0 12px; cursor:pointer; }
+.review-reveal-btn { margin-top:32px; border-radius:999px; }
+/* 채점 막대 = 화면 최하단 고정(설계 §5-3 「하단 고정」 — 카드 길이와 무관하게 엄지 · 손 위치가 같다, M09 6158372690).
+   카드 폭(680px)에 맞춰 가운데 두고, 세션은 막대 높이만큼 아래를 비워 마지막 줄이 가려지지 않게 한다. */
+.review-grade-bar { position:fixed; left:0; right:0; bottom:0; z-index:5; box-sizing:border-box; max-width:712px; margin:0 auto; padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px)); background:var(--paper); border-top:1px solid var(--rule); }
+.review-room-session:has(.review-grade-bar) { padding-bottom:calc(150px + env(safe-area-inset-bottom,0px)); }
+.review-grade-bar.is-locked .review-score-btn { opacity:.55; }
+.review-grade-guide { font-size:12px; color:var(--muted); text-align:center; margin:0 0 8px; line-height:1.6; overflow-wrap:anywhere; }
+.review-grade-bar--practice .review-score-btn { min-height:52px; }
+.practice-key { margin-left:6px; font-size:11px; color:var(--muted); }
+.review-card--intro .review-card__body { display:flex; flex-direction:column; align-items:stretch; }
+.review-intro__next { margin-top:22px; min-height:48px; justify-content:center; }
+.review-intro__note { font-size:12px; color:var(--muted); text-align:center; margin:10px 0 0; }
+.review-sound-toggle,.review-topbar__undo { flex:0 0 44px; width:44px; height:44px; border:1px solid var(--rule); border-radius:3px; background:var(--sheet); color:var(--ink); font-size:16px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; }
+.review-topbar__undo:disabled { opacity:.45; cursor:not-allowed; }
+.review-length { display:flex; flex-wrap:wrap; gap:8px; margin:6px 0 14px; }
+.review-length__chip { min-height:44px; padding:0 14px; border:1px solid var(--rule); border-radius:999px; background:var(--sheet); color:var(--ink); font:inherit; font-size:13px; cursor:pointer; }
+.review-length__chip.is-active { border-color:var(--ja); color:var(--ja); background:color-mix(in srgb,var(--ja) 8%,var(--sheet)); font-weight:600; }
+.review-length__chip:disabled { opacity:.5; cursor:not-allowed; }
+.review-room-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.review-room-actions .review-room-start { flex:1 1 220px; }
+.review-room-practice { flex:0 1 auto; min-height:44px; }
+.review-room-practice-note { font-size:12px; }
+.review-practice-banner { margin:0 0 10px; padding:10px 14px; border-radius:3px; background:color-mix(in srgb,var(--en) 12%,var(--sheet)); color:var(--ink); font-size:13px; font-weight:600; }
+.review-practice-modes { display:flex; flex-wrap:wrap; gap:8px; max-width:680px; margin:0 auto 12px; }
+.review-known-undo { position:fixed; left:16px; right:16px; bottom:calc(16px + env(safe-area-inset-bottom,0px)); z-index:6; max-width:680px; margin:10px auto 0; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; padding:8px 14px; border:1px solid var(--rule); border-radius:3px; background:var(--sheet); font-size:13px; }
+.review-known-undo .btn { min-height:44px; }
+body:has(.review-grade-bar) .review-known-undo { bottom:calc(140px + env(safe-area-inset-bottom,0px)); }
+.review-scope-notice__practice,.review-scope-notice__meaning .btn { min-height:44px; }
+.review-scope-notice__backlog { color:var(--ink); }
+.review-missing-meaning { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.review-missing-meaning .btn { min-height:44px; }
+.vocab-row__fill { min-height:44px; border:1px dashed var(--rule); border-radius:3px; background:none; color:var(--ja); font:inherit; font-size:13px; padding:0 10px; cursor:pointer; justify-self:start; }
+.review-typing { margin-top:30px; display:flex; flex-direction:column; gap:12px; }
+.review-typing input { font-size:1rem; text-align:center; }
+.review-listening { display:flex; flex-direction:column; align-items:center; gap:16px; margin-top:20px; }
+.review-listening__note { font-size:.85rem; color:var(--muted); text-align:center; }
+.review-quiz-options { display:flex; flex-direction:column; gap:8px; width:100%; }
+.review-quiz-wrong { display:flex; gap:8px; margin-top:16px; width:100%; }
+.review-examples { margin-top:20px; border-top:1px solid var(--rule); padding-top:16px; }
+.review-examples__label { font-size:.75rem; color:var(--muted); margin-bottom:10px; letter-spacing:.06em; }
+.review-examples__item { margin-bottom:10px; padding:10px 14px; background:var(--paper); border-radius:3px; text-align:left; }
+.review-examples__item p { margin:0 0 4px; line-height:1.6; overflow-wrap:anywhere; }
+.review-examples__tr { font-size:.82rem; color:var(--muted); }
+.review-examples__load { width:100%; min-height:44px; padding:8px; background:none; border:1px dashed var(--rule); border-radius:3px; cursor:pointer; color:var(--muted); font:inherit; font-size:.85rem; }
+.review-done__scope { font-size:12px; color:var(--muted); margin:0 0 6px; }
+.review-done__summary { font-size:15px; margin:6px 0 0; }
+.review-done__waiting { font-size:13px; color:var(--ja); margin:8px 0 0; }
+.review-done__calendar { margin-top:20px; padding:16px 20px; background:var(--paper); border-radius:3px; }
+.review-done__calendar-head { display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin-bottom:10px; font-size:.78rem; color:var(--muted); }
+.review-done__calendar-head span:first-child { font-weight:700; color:var(--ink); }
+.review-done__bars { display:flex; gap:4px; align-items:flex-end; height:50px; }
+.review-done__bar-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; min-width:0; }
+.review-done__bar { width:100%; background:var(--rule); border-radius:2px; transition:height .4s; }
+.review-done__bar.has-count { background:var(--ja); }
+.review-done__bar-day,.review-done__bar-count { font-size:.65rem; color:var(--muted); }
+.review-done__bar-count { font-weight:700; color:var(--ja); }
+.review-done__actions .btn { min-height:44px; }
+@media (prefers-reduced-motion: reduce) { .review-done__bar { transition:none; } }

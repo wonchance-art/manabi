@@ -835,6 +835,8 @@
 .viewer-sense-review__sentence {margin:0 0 2px;font-size:1rem;line-height:1.6;color:var(--reader-ink);overflow-wrap:anywhere;}
 .viewer-sense-review__sentence mark {background:var(--reader-selected);color:inherit;font-weight:700;border-radius:2px;}
 .viewer-sense-review__now {margin:0;font-size:.875rem;line-height:1.5;color:var(--reader-muted);overflow-wrap:anywhere;}
+.viewer-sense-review__note {margin:0;font-size:.8125rem;line-height:1.5;color:var(--reader-muted);overflow-wrap:anywhere;}
+.viewer-sense-review__suggested {font-size:.75rem;color:var(--reader-muted);border:1px solid currentColor;border-radius:4px;padding:0 4px;}
 .viewer-sense-review__options {display:flex;flex-wrap:wrap;gap:0 10px;margin:0 -6px;}
 .viewer-sense-review__option {display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:4px 6px;border:0;border-radius:4px;background:transparent;color:var(--reader-ink);font:inherit;font-size:.9375rem;line-height:1.4;text-align:start;cursor:pointer;}
 .viewer-sense-review__option:hover:not(:disabled) {background:color-mix(in srgb,var(--reader-selected) 60%,transparent);}

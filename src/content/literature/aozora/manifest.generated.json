@@ -347,12 +347,12 @@
         {
           "order": 1,
           "title": "1편",
-          "sha256": "5016451cbf169f354f6a0e9904dc964c7fe9c5f548510324406e86f36136fcdf"
+          "sha256": "c688a85340f1659e907d00116b69b793fead2a4d85c4f72410918801c8e07f8c"
         },
         {
           "order": 2,
           "title": "2편",
-          "sha256": "80210df7b092d4624bbe8973ca3b9aa37eba6095bf48de9e5eb2781c80b42651"
+          "sha256": "b267f45457f618f4b13f41ce9893ef68a419a62d60b6096b1a3de1f2c33af9f4"
         }
       ]
     }

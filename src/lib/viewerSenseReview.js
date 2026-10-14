@@ -16,7 +16,7 @@ export function needsMeaningCheck(token) {
 }
 
 /**
- * 이 자료의 「뜻 확인 필요」 항목 — 문장(분석) 순. 중국어만(한국어·일본어·영어 무변경, 설계서 §8).
+ * 이 자료의 「뜻 확인 필요」 항목 — 문장(분석) 순. 중국어 + 일본어 정본 책(AOZORA-P0-4)만(그 밖은 무변경, 설계서 §8).
  * N = 뜻 표식(meaningCheck) 토큰 수 + 경계 후보 수(§6.1). 두 종류가 한 목록에 문장 순서로 섞인다.
  * - 뜻 항목 {id, token}: 사용자가 뜻을 교정한 토큰(재분석 보존 표시 viewerCorrections에 meaning)은 빠진다(§6.1·§7) — 교정
  *   경로가 표식을 지우지만, 표식이 남은 옛 데이터에서도 교정값이 이긴다.
@@ -26,7 +26,9 @@ export function needsMeaningCheck(token) {
  * @returns {Array<{id:string, token:object}|{kind:'boundary', id:string, tokenId:string, nextId:string, form:string, parts:string[], token:object}>}
  */
 export function senseReviewItems(processedJson, language) {
-  if (language !== 'Chinese') return [];
+  // 중국어(AD-R4) + 일본어 정본 책(AOZORA-P0-4 검수 힌트 — metadata.literature.provider 'aozora')만.
+  const literature = language === 'Japanese' && processedJson?.metadata?.literature?.provider === 'aozora';
+  if (language !== 'Chinese' && !literature) return [];
   const dictionary = processedJson?.dictionary;
   const sequence = Array.isArray(processedJson?.sequence) ? processedJson.sequence : [];
   if (!dictionary) return [];
@@ -82,10 +84,16 @@ export function senseReviewDismissKey(materialId, processedJson) {
  * 후보는 서버가 프롬프트에 실은 것과 같은 사전 행 뜻(≤3, §4.1)만 — refVocab 줄은 목록에 넣지 않는다.
  * @returns {Array<{meaning:string, pos:string|null, current:boolean}>}
  */
-export function senseReviewOptions(dictEntry, token) {
-  return buildSenseList({ dictEntry, refWord: null, token, language: 'Chinese' })
+export function senseReviewOptions(dictEntry, token, language = 'Chinese') {
+  const options = buildSenseList({ dictEntry, refWord: null, token, language })
     .flatMap((group) => group.items)
     .map(({ meaning, pos, current }) => ({ meaning, pos, current }));
+  // 정본 책 검수 힌트의 문맥 뜻 제안(AOZORA-P0-4)은 맨 앞 — 사전 행에 같은 뜻이 있으면 그 줄에 표시만 단다.
+  const suggest = typeof token?.meaningSuggest === 'string' ? token.meaningSuggest.trim() : '';
+  if (!suggest) return options;
+  const same = options.find((option) => option.meaning === suggest);
+  if (same) return [{ ...same, suggested: true }, ...options.filter((option) => option !== same)];
+  return [{ meaning: suggest, pos: null, current: String(token.meaning || '').trim() === suggest, suggested: true }, ...options];
 }
 
 /**

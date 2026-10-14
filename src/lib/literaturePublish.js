@@ -1,15 +1,25 @@
 // 정본 문학책 관리자 게시 계획(AOZORA-P0-2 · P0-3) — 저장·네트워크 없는 순수 함수. API(/api/admin/literature)가 쓴다.
 //
-// 게시 흐름(P0-3, 오너 확정 2026-10-14 「분석을 마치고 배포」): 준비 → 분석 → 공개.
+// 게시 흐름(P0-3·P0-4, 오너 확정 2026-10-14 「분석 → 검수·편집 → 공개」): 준비 → 분석 → 검수 → 공개.
 //   ① 준비: 빌드 산출물(chapters.json)의 장마다 **비공개** reading_materials 행 하나(기존 책 등록과 같은 모양: status 'pending',
 //      metadata.book). 산책·공용 목록에 아직 보이지 않는다.
 //   ② 분석: 관리자 화면이 장마다 뷰어와 같은 경로(runPreservedReanalysis)로 한 번 분석한다 — 분석 결과는 행 하나에 저장돼
 //      모든 사용자가 같이 쓰고, 단어 상태(저장·아는 단어·복습)만 사람마다 따로 얹힌다. 저자 루비 잠금은 분석 말미에 걸린다.
-//   ③ 공개: 모든 장이 분석 완료일 때만 visibility를 public으로 바꾼다 — 사용자는 「분석 전」 장을 보지 않는다.
+//   ③ 검수: 관리자가 장을 열어 「뜻 확인 필요」(검수 힌트·문맥 뜻 제안 — literatureReviewHints)를 모두 확정하고 단어 경계를
+//      맞춘 뒤 장마다 「검수 완료」 — metadata.literatureReview {reviewedAt, viewerRevision}. 재분석하면 revision이 바뀌어 다시 검수.
+//   ④ 공개: 모든 장이 분석·검수 완료일 때만 visibility를 public으로 바꾼다 — 사용자는 「분석 전」·「검수 전」 장을 보지 않는다.
 // 멱등 기준은 **book key + 장 순서**다: 이미 있는 장은 다시 넣지 않고, 정본과 원문이 다른 장·같은 순서가 둘인 장·
 // 정본에 없는 순서가 하나라도 있으면 아무것도 넣거나 공개하지 않는다(덮어쓰기·삭제 없음 — 사람이 확인한다).
 import { aozoraRightsPublishable } from './aozoraRights.js';
 import { countAppliedRubyLocks } from './aozoraRuby.js';
+import { countAttachedReviewHints, reviewHintCoverage } from './literatureReviewHints.js';
+import { senseReviewItems } from './viewerSenseReview.js';
+
+/** 장 검수 완료인가 — 검수 때의 분석 revision이 지금과 같아야 한다(재분석하면 다시 검수). rows: {review, revision} */
+export const chapterReviewed = (row) => typeof row?.review?.viewerRevision === 'string' && row.review.viewerRevision === row.revision;
+
+/** 이 장에 남은 「뜻 확인 필요」 수(검수 힌트 표식 + 경계 후보) — 0이어야 검수 완료를 받는다. */
+export const literatureReviewRemaining = (json) => senseReviewItems(json, 'Japanese').length;
 
 export const LITERATURE_PUBLISH_STATE = Object.freeze({
   UNPUBLISHED: 'unpublished',
@@ -62,25 +72,30 @@ export function literaturePublishRows(book, orders, ownerId, now = new Date().to
 }
 
 /**
- * 공개 계획 — 모든 장이 있고(충돌 없음) 모두 분석 완료일 때만, 아직 비공개인 장들을 공개한다.
- * rows: [{id, raw_text, order, status, visibility}]
- * @returns {{ok: boolean, reason: null|'conflict'|'incomplete'|'not-analyzed', ids: Array}}
+ * 공개 계획 — 모든 장이 있고(충돌 없음) 모두 분석·검수 완료일 때만, 아직 비공개인 장들을 공개한다.
+ * rows: [{id, raw_text, order, status, visibility, review, revision}]
+ * @returns {{ok: boolean, reason: null|'conflict'|'incomplete'|'not-analyzed'|'not-reviewed', ids: Array}}
  */
 export function planLiteratureRelease(book, rows = []) {
   const plan = planLiteraturePublish(book, rows);
   if (plan.conflicts.length) return { ok: false, reason: 'conflict', ids: [] };
   if (plan.insert.length) return { ok: false, reason: 'incomplete', ids: [] };
   if (rows.some((row) => row.status !== 'completed')) return { ok: false, reason: 'not-analyzed', ids: [] };
+  if (rows.some((row) => !chapterReviewed(row))) return { ok: false, reason: 'not-reviewed', ids: [] };
   return { ok: true, reason: null, ids: rows.filter((row) => row.visibility !== 'public').map((row) => row.id) };
 }
 
-/** 작품 단계 — unpublished(행 없음) · preparing(준비·분석 중) · ready(분석 완료·비공개) · released(전 장 공개) · conflict */
+/**
+ * 작품 단계 — unpublished(행 없음) · preparing(준비·분석 중) · reviewing(분석 완료·검수 중) · ready(검수 완료·비공개)
+ * · released(전 장 공개) · conflict. 이미 공개된 책은 재분석으로 검수가 낡아도 released로 둔다(공개 상태가 사실).
+ */
 export function literatureStage(book, rows = []) {
   const plan = planLiteraturePublish(book, rows);
   if (plan.conflicts.length) return 'conflict';
   if (rows.length === 0) return 'unpublished';
   if (plan.insert.length || rows.some((row) => row.status !== 'completed')) return 'preparing';
-  return rows.every((row) => row.visibility === 'public') ? 'released' : 'ready';
+  if (rows.every((row) => row.visibility === 'public')) return 'released';
+  return rows.every(chapterReviewed) ? 'ready' : 'reviewing';
 }
 
 /** 관리자 화면용 요약 — 권리 근거·단계·장별 상태. 원문은 싣지 않는다. */
@@ -115,18 +130,30 @@ export function literatureBookSummary(book, rows = []) {
         title: chapter.title,
         chars: chapter.rawText.length,
         rubyLocks: chapter.metadata.literature.rubyLocks.length,
-        material: row ? { id: row.id, status: row.status || 'idle', visibility: row.visibility } : null,
+        material: row ? { id: row.id, status: row.status || 'idle', visibility: row.visibility, reviewed: chapterReviewed(row) } : null,
       };
     }),
   };
 }
 
-/** 분석된 장의 저자 루비 적용 수(적용률 검수) — rows: [{order, processed_json}] */
+/**
+ * 장별 검수 보조 — 저자 루비 적용 수(적용률), 검수 힌트 수·붙은 수, 남은 「뜻 확인 필요」 수. 분석 전 장은 null.
+ * rows: [{order, processed_json}]
+ */
 export function literatureRubyCoverage(book, rows = []) {
   const byOrder = new Map(rows.map((row) => [Number(row.order), row]));
   return book.chapters.map((chapter) => {
     const json = byOrder.get(chapter.order)?.processed_json;
     const analyzed = Array.isArray(json?.sequence) && json.sequence.length > 0;
-    return { order: chapter.order, rubyLocks: chapter.metadata.literature.rubyLocks.length, applied: analyzed ? countAppliedRubyLocks(json) : null };
+    return {
+      order: chapter.order,
+      rubyLocks: chapter.metadata.literature.rubyLocks.length,
+      applied: analyzed ? countAppliedRubyLocks(json) : null,
+      hints: (chapter.metadata.literature.reviewHints || []).length,
+      hintsAttached: analyzed ? countAttachedReviewHints(json) : null,
+      // 분석기 경계 때문에 붙지 못한 제안의 글자 — 검수자가 그 자리를 직접 본다(분석 전·힌트 없음은 []).
+      hintsMissed: analyzed ? reviewHintCoverage(chapter.rawText, json, chapter.metadata.literature.reviewHints).missed : [],
+      remaining: analyzed ? literatureReviewRemaining(json) : null,
+    };
   });
 }

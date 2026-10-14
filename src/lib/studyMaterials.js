@@ -15,6 +15,7 @@ import { refMain, refPron } from '@/views/refShared';
 import { buildChapterQuiz } from '@/lib/refQuiz';
 import { composeSession, buildWarmupItems, buildEncounterItems } from '@/lib/studySession';
 import { computeEwma, dialFromEwma, computeWeakness, deriveVocabRungs } from '@/lib/skillRung';
+import { countsForDifficulty, isPracticeEvent, practiceAsWeaknessEvents } from '@/lib/practiceEvents';
 // deriveVocabRungs는 콘텐츠 무의존 순수 함수라 skillRung으로 이전됐다.
 // 기존 import 경로(테스트·과거 소비처) 호환 위해 re-export — studyMaterials 공개 API 불변.
 export { deriveVocabRungs };
@@ -200,7 +201,8 @@ async function buildWeaknessMaterials(supabase, userId, lang, ref, reviewEventRo
   // 최근 14일 약점 집계 (오답이 있는 것만)
   const sinceMs = nowMs - 14 * 86400000;
   const legacyByWord = new Map(legacyRows.map(row => [row.word_text, row]));
-  const weak = computeWeakness(reviewEventRows.filter(event => event.source !== 'vocab' || legacyByWord.has(event.item_key)),
+  // 집중 연습의 「몰랐어요」 · 오답은 그 단어의 vocab 기록으로 옮겨 함께 센다(REV-SCOPE §6-1 ⑤ — 약점 계산 포함).
+  const weak = computeWeakness(practiceAsWeaknessEvents(reviewEventRows, legacyRows).filter(event => event.source !== 'vocab' || legacyByWord.has(event.item_key)),
     { sinceMs, cap: 20 }).filter(w => w.wrong > 0);
   const weakVocab = weak.filter(w => w.source === 'vocab' && legacyByWord.has(w.item_key)).slice(0, 3);
   // grammar 약점 후보에서 인트로 레벨(OT/A0) 챕터 제외 — 복습 대상이 아니다
@@ -371,7 +373,8 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
 
   // ── 콜드스타트 — 추가 쿼리 없이 이미 조회한 행에서만 유도(온보딩 표시 근거) ──
   const chapterSlugs = new Set(ref.ALL_CHAPTERS.map(c => c.slug));
-  const coldStart = deriveColdStart(progressRows, languageRows, reviewEventRows, chapterSlugs);
+  // 집중 연습 기록은 콜드스타트 판정(학습 이력)에 넣지 않는다 — 읽는 곳 표(REV-SCOPE §6-1 ⑤)의 「그 밖 = 제외」.
+  const coldStart = deriveColdStart(progressRows, languageRows, reviewEventRows.filter(e => !isPracticeEvent(e)), chapterSlugs);
 
   // ── 숙련 rung · 난이도 다이얼 유도 (review_events 순수 함수) ──
   const eventsAsc = (reviewEventRows || []).slice().reverse();
@@ -392,7 +395,8 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   }
   const exampleByWord = applyEncounterContextExamples(baseExamples, encounterContextRows);
   // 다이얼은 채점 문항만 본다 — ui(행동 계측)·dict(자가 채점)는 정답률 신호가 아니다 (§4.9 무간섭 보장).
-  const gradedEvents = eventsAsc.filter(e => e.source !== 'ui' && e.source !== 'dict').map(e => ({ correct: !!e.correct }));
+  // 집중 연습은 정답이 정해진 문항만 다이얼에 넣는다(self 제외 — REV-SCOPE §6-1 ⑤).
+  const gradedEvents = eventsAsc.filter(countsForDifficulty).map(e => ({ correct: !!e.correct }));
   const ewma = computeEwma(gradedEvents);
   const dial = dialFromEwma(ewma, 20, gradedEvents.length);
 

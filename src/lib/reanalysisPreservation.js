@@ -57,7 +57,12 @@ export function preserveReanalysisTokens(material, text, result, corrections = [
     // 교정값이 분석 결과(저자 루비 잠금 포함)를 이긴다 — 독음 교정이면 잠금 표식도 지운다(사용자 교정 > 저자 루비 > 분석기).
     dictionary[target] = clearRubyLockOnCorrection({ ...token, ...(match?.patch || {}) }, match?.patch);
     // 뷰어 v2 AD-R4 §7: 뜻을 교정한 토큰은 교정값이 이기므로 서버의 「뜻 확인 필요」 표식(meaningCheck)을 지운다.
-    if (match?.patch && Object.hasOwn(match.patch, 'meaning')) delete dictionary[target].meaningCheck;
+    if (match?.patch && Object.hasOwn(match.patch, 'meaning')) {
+      delete dictionary[target].meaningCheck;
+      // 정본 책 검수 힌트(AOZORA-P0-4)의 제안·근거도 — 재분석 말미 훅이 다시 붙여도 확정한 뜻이 이기므로 걷는다(applyTokenCorrections와 같은 규칙).
+      delete dictionary[target].meaningSuggest;
+      delete dictionary[target].meaningNote;
+    }
     if (match?.patch && Object.hasOwn(match.patch, 'meaning') && old.metadata?.language === 'Korean') {
       const meaningLocale = canonicalViewerLocale(match.token.meaningLocale || match.token.explanationLocale
         || old.metadata.explanationLocale || 'ko');

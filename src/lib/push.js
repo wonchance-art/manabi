@@ -96,6 +96,8 @@ async function fetchRecentSessionTimes(userId) {
       .from('review_events')
       .select('created_at')
       .eq('user_id', userId)
+      // 집중 연습은 학습 시각 추정(알림 시각)에 넣지 않는다(REV-SCOPE §6-1 ⑤ — 알림 = 제외).
+      .neq('source', 'practice')
       .gte('created_at', sinceIso)
       .order('created_at', { ascending: false })
       .limit(500);
