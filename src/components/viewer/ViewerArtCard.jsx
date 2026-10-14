@@ -24,6 +24,9 @@ const JAPANESE = /[\u3040-\u30ff\u3400-\u9fff]/;
 /** 미술관 캡션(라틴 문자만)이면 영어로 읽힌다 — 한글·한자가 섞이면 lang을 붙이지 않는다. */
 const LATIN_ONLY = /^[\u0020-\u024f\u1e00-\u1eff\u2010-\u201f]+$/;
 const httpsUrl = (value) => (typeof value === 'string' && value.startsWith('https://') ? value : '');
+/** 그림은 manabi가 직접 들고 있는 파일만(public/art) — 미술관 서버 직접 연결은 봇 차단으로 끊길 수 있다(ART-IMG-001). */
+const SELF_HOSTED_IMAGE = /^\/art\/[a-z0-9-]+\.(?:jpg|webp)$/;
+const selfHostedImage = (value) => (typeof value === 'string' && SELF_HOSTED_IMAGE.test(value) ? value : '');
 const placeName = (place) => place?.name?.ko || place?.name?.native || '';
 const studiesMapHref = (pin) => `/studies/japan/map?pin=${encodeURIComponent(pin)}`;
 /** 원본 크기(카탈로그 image.width·height) — 있으면 판형 비율로 자리를 미리 잡는다(세로 판화가 작아지지 않게). */
@@ -39,7 +42,7 @@ export default function ViewerArtCard({ chapter, vt }) {
   const [failedImage, setFailedImage] = useState('');
   const card = chapter?.card;
   if (!card) return null;
-  const imageUrl = httpsUrl(card.image?.url);
+  const imageUrl = selfHostedImage(card.image?.url);
   const image = imageUrl && failedImage !== imageUrl ? card.image : null;
   const size = imageSize(image);
   const artist = card.artist;

@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ART_CATALOG } from '../../content/art/index.js';
 import { JP_MAP_PINS } from '../../content/studies/japanMapPins.js';
@@ -44,7 +46,7 @@ function fixture() {
           credit: '甲博物館所蔵 / ColBase', license: 'jp-gov-standard-2.0', text: TEXT, textSha256: TEXT_SHA,
         }],
         terms: ['構図', '細部'], lookFor: ['배는 몇 척?'],
-        image: { url: 'https://example.org/a.jpg', sourceUrl: 'https://example.org/a', license: 'public-domain', alt: '큰 파도 아래 작은 배들' },
+        image: { url: '/art/work-a.jpg', sourceUrl: 'https://example.org/a', license: 'public-domain', alt: '큰 파도 아래 작은 배들' },
       },
       {
         id: 'work-b', wikidata: 'Q6', artist: 'artist-a',
@@ -64,6 +66,21 @@ function fixture() {
 }
 
 const pinIds = new Set(JP_MAP_PINS.map((pin) => pin.id));
+
+/** JPEG SOF 마커에서 픽셀 크기 — 그림 파일과 카탈로그 width·height 대조용. */
+function jpegSize(buffer) {
+  let offset = 2;
+  while (offset < buffer.length) {
+    if (buffer[offset] !== 0xff) return null;
+    const marker = buffer[offset + 1];
+    const length = buffer.readUInt16BE(offset + 2);
+    if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) {
+      return { width: buffer.readUInt16BE(offset + 7), height: buffer.readUInt16BE(offset + 5) };
+    }
+    offset += 2 + length;
+  }
+  return null;
+}
 
 describe('정본 카탈로그(src/content/art) — 실제 리포 데이터', () => {
   it('계약을 지킨다 — 지역학 핀 연결까지 대조', async () => {
@@ -95,13 +112,16 @@ describe('정본 카탈로그(src/content/art) — 실제 리포 데이터', () 
     }
   });
 
-  it('이미지는 시카고 미술관 CC0(퍼블릭 도메인 작품)만, 박물관 요청 캡션과 함께', () => {
-    const images = ART_CATALOG.works.filter((work) => work.image).map((work) => work.image);
-    expect(images.length).toBeGreaterThan(0);
-    for (const image of images) {
-      expect(image.url).toMatch(/^https:\/\/www\.artic\.edu\/iiif\/2\/[0-9a-f-]{36}\/full\/843,\/0\/default\.jpg$/);
+  it('그림은 public/art에 둔 파일 — 파일이 있고 실제 픽셀 크기가 width·height와 같다(ART-IMG-001)', () => {
+    const works = ART_CATALOG.works.filter((work) => work.image);
+    expect(works.length).toBeGreaterThan(0);
+    for (const { id, image } of works) {
+      expect(image.url, id).toBe(`/art/${id}.jpg`);
+      const file = path.join(process.cwd(), 'public', image.url);
+      expect(fs.existsSync(file), `${file} 없음`).toBe(true);
+      expect(jpegSize(fs.readFileSync(file)), id).toEqual({ width: image.width, height: image.height });
       expect(image.license).toBe('cc0');
-      expect(image.credit).toMatch(/The Art Institute of Chicago\. CC0$/);
+      expect(image.credit, id).toMatch(/\S/);
     }
   });
 });
@@ -134,6 +154,12 @@ describe('artCatalog 계약 — fail-closed', () => {
     const catalog = fixture();
     catalog.works[0].descriptions[0].text += '（追記）';
     expect(await artDescriptionHashMismatches(catalog)).toEqual(['work-a.descriptions[0]']);
+  });
+
+  it('그림 주소는 public/art 파일만 — 미술관 서버 직접 연결은 실패', () => {
+    const catalog = fixture();
+    catalog.works[0].image.url = 'https://www.artic.edu/iiif/2/x/full/843,/0/default.jpg';
+    expect(validateArtCatalog(catalog).join('\n')).toMatch(/image\.url: \/art\//);
   });
 
   it('이미지는 퍼블릭 도메인/CC0 + 대체 텍스트만', () => {
