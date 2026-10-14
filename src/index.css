@@ -2175,6 +2175,12 @@ a.viewer-badge:hover {
   flex-wrap: wrap;
 }
 .group-card__title { font-weight: 800; font-size: 1rem; }
+/* 그림 칸(정본 문학책 표지) — 그림은 왼쪽 세로 한 칸, 글자 줄은 오른쪽에 쌓는다. */
+.group-card__summary--art { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 14px; row-gap: 3px; align-content: center; }
+.group-card__summary--art > :not(.group-card__art) { grid-column: 2; }
+.group-card__art { grid-row: 1 / span 4; align-self: start; display: flex; }
+.group-card__subtitle { font-size: 0.8rem; color: var(--text-secondary); }
+.group-card__reading { font-weight: 400; font-size: 0.75rem; color: var(--text-muted); margin-left: 4px; }
 .group-card__meta { font-size: 0.78rem; color: var(--text-muted); }
 .group-card__fit {
   flex-basis: 100%;

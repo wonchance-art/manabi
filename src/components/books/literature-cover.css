@@ -1,0 +1,16 @@
+/* 정본 문학책 표지(AOZORA-P0-5) — 타이포그래피 표지. 색은 작품 이미지에서 고른 팔레트 이름 다섯(literatureDisplay
+   LITERATURE_COVER_COLORS)만 쓴다. 바탕 위 글자는 --sheet(#fffdf9) — 다섯 색 모두 흰 글자 대비 4.5:1 이상(AA).
+   셸은 늘 밝은 화면이라 표지는 테마를 따라 바뀌지 않는다(책은 물건이다). 서재 표지(.shelf-cover)와 같은 문법:
+   왼쪽 책등 그림자 · 아래 짧은 선. */
+.lit-cover{--cover-color:#2f2c2b;width:60px;height:84px;flex:none;background:var(--cover-color);color:#fffdf9;position:relative;display:flex;justify-content:flex-end;padding:8px 8px 14px 12px;border-radius:1px 3px 3px 1px;box-shadow:inset 4px 0 0 #00000026;overflow:hidden}
+.lit-cover--snow{--cover-color:#3d5a7a}
+.lit-cover--vermilion{--cover-color:#a33a26}
+.lit-cover--forest{--cover-color:#2f5a3f}
+.lit-cover--ink{--cover-color:#2f2c2b}
+.lit-cover--plum{--cover-color:#7a3d5c}
+.lit-cover__title{writing-mode:vertical-rl;white-space:pre;font-family:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","Noto Serif CJK JP",serif;font-weight:600;line-height:1.15;letter-spacing:.06em}
+.lit-cover__title--xl{font-size:28px}
+.lit-cover__title--l{font-size:22px}
+.lit-cover__title--m{font-size:16px}
+.lit-cover__title--s{font-size:11px}
+.lit-cover i{position:absolute;left:12px;bottom:8px;width:14px;height:1px;background:currentColor;opacity:.55}

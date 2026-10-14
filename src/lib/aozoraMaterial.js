@@ -146,10 +146,21 @@ function continuesPrevious(text) {
   return /^(?:と|って|、|。)/u.test(head);
 }
 
-function chapterTitle(part, order, projection) {
+// 장 이름(오너 확정 2026-10-14 「1과 2과」 개편) — 작가의 見出し(一·二…)는 그대로 쓰고, manabi가 분량으로 나눈 장은
+// 작가의 장으로 오인되지 않게 「1/2」처럼 나눈 위치만 적는다(교재의 「과」·연재의 「편」을 쓰지 않는다). 한 장이면 「전편」.
+export const LITERATURE_DIVISION = Object.freeze({ HEADING: 'heading', SPLIT: 'split', WHOLE: 'whole' });
+
+function chapterTitle(part, order, total, projection) {
   const title = String(part.title || '').replace(/[\uE000\uE001]/gu, '');
   const base = title.replace(/ \(\d+\/\d+\)$/u, '');
-  return projection.useHeadings && projection.headingTexts.has(base) ? title : `${order}편`;
+  if (projection.useHeadings && projection.headingTexts.has(base)) return title;
+  return total === 1 ? '전편' : `${order}/${total}`;
+}
+
+/** 자료 제목 — 見出し 장은 「작품 — 一」, 나눈 장은 「작품 (1/2)」, 한 장이면 작품명만. */
+function chapterMaterialTitle(entry, title, division) {
+  if (division === LITERATURE_DIVISION.WHOLE) return entry.title;
+  return division === LITERATURE_DIVISION.HEADING ? `${entry.title} — ${title}` : `${entry.title} (${title})`;
 }
 
 function literatureMetadata(entry, document) {
@@ -213,6 +224,8 @@ export function createAozoraMaterialDraft(entry, document, options = {}) {
   invariant(parts.length > 0, 'Aozora document produced no chapters');
 
   const key = aozoraWorkKey(entry);
+  const division = projection.useHeadings ? LITERATURE_DIVISION.HEADING
+    : parts.length === 1 ? LITERATURE_DIVISION.WHOLE : LITERATURE_DIVISION.SPLIT;
   const literature = literatureMetadata(entry, document);
   const cursor = { index: 0 };
   const droppedRuby = [];
@@ -221,11 +234,11 @@ export function createAozoraMaterialDraft(entry, document, options = {}) {
     const { rawText, rubyLocks, dropped } = unmarkChapter(part.text, projection.queue, cursor);
     droppedRuby.push(...dropped);
     invariant(rawText.trim(), 'Aozora chapter cannot be empty');
-    const title = chapterTitle(part, order, projection);
+    const title = chapterTitle(part, order, parts.length, projection);
     return {
       order,
       title,
-      materialTitle: `${entry.title} — ${title}`,
+      materialTitle: chapterMaterialTitle(entry, title, division),
       rawText,
       metadata: {
         language: 'Japanese',
@@ -240,7 +253,7 @@ export function createAozoraMaterialDraft(entry, document, options = {}) {
   const mappedRubyCount = chapters.reduce((sum, chapter) => sum + chapter.metadata.literature.rubyLocks.length, 0);
   return freezeDeep({
     schemaVersion: AOZORA_MATERIAL_VERSION,
-    book: { key, title: entry.title, author: entry.author, level: entry.level, total: chapters.length },
+    book: { key, title: entry.title, author: entry.author, level: entry.level, total: chapters.length, division },
     chapters,
     diagnostics: {
       sourceBlockCount: document.blocks.length,

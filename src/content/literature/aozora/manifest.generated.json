@@ -6,6 +6,14 @@
       "author": "宮沢賢治",
       "level": "N3 중급",
       "total": 2,
+      "division": "split",
+      "display": {
+        "titleReading": "ちゅうもんのおおいりょうりてん",
+        "titleKo": "주문이 많은 요리점",
+        "authorKo": "미야자와 겐지",
+        "cover": "forest",
+        "coverTitle": "注文の\n多い料理店"
+      },
       "literature": {
         "schemaVersion": 1,
         "provider": "aozora",
@@ -56,12 +64,14 @@
       "chapters": [
         {
           "order": 1,
-          "title": "1편",
+          "title": "1/2",
+          "incipit": "二人の若い紳士が、すっかりイギリスの兵隊のかたち…",
           "sha256": "2f7f258a3e6cabc374356e8ede41367b2f010ab1238ec1a386757eb1618d95a2"
         },
         {
           "order": 2,
-          "title": "2편",
+          "title": "2/2",
+          "incipit": "二人はめがねをはずしたり、カフスボタンをとったり…",
           "sha256": "b190766b7643eb9e757a5c94770aebadc39963dd3bc5790367a0ea90c01a41a0"
         }
       ]
@@ -71,6 +81,13 @@
       "author": "新美南吉",
       "level": "N3 중급",
       "total": 6,
+      "division": "heading",
+      "display": {
+        "titleReading": "ごんぎつね",
+        "titleKo": "여우 곤",
+        "authorKo": "니이미 난키치",
+        "cover": "vermilion"
+      },
       "literature": {
         "schemaVersion": 1,
         "provider": "aozora",
@@ -122,31 +139,37 @@
         {
           "order": 1,
           "title": "一",
+          "incipit": "これは、私が小さいときに、村の茂平というおじいさ…",
           "sha256": "486b3148b96ebf9245817e3825d1f97f9ee774f3a15c9139b0d8ea9a857d933d"
         },
         {
           "order": 2,
           "title": "二",
+          "incipit": "十日ほどたって、ごんが、弥助というお百姓の家の裏…",
           "sha256": "91cd18764402affab0f2341d1ee288eab1f1dcd3fff4e20de6ce6289c50cc805"
         },
         {
           "order": 3,
           "title": "三",
+          "incipit": "兵十が、赤い井戸のところで、麦をといでいました。",
           "sha256": "c5b2c9e90f9a74e39d1e5698f0778b70aaed7cbfc66bf3f95214766b45b54759"
         },
         {
           "order": 4,
           "title": "四",
+          "incipit": "月のいい晩でした。ごんは、ぶらぶらあそびに出かけ…",
           "sha256": "77ecc77e2af02c957a7d7cd264d006dec8c4531009a9d53d9c313ffd6703bdfa"
         },
         {
           "order": 5,
           "title": "五",
+          "incipit": "ごんは、おねんぶつがすむまで、井戸のそばにしゃが…",
           "sha256": "10e45ce6f7ff4f5dc7d56148746b58ac4d8880b5331703d2bc37915f8d1b9e43"
         },
         {
           "order": 6,
           "title": "六",
+          "incipit": "そのあくる日もごんは、栗をもって、兵十の家へ出か…",
           "sha256": "36bc23076c33c0f85147d1a7d9cee1fd08a14ef3edff2762a982e10cb4fcbe4c"
         }
       ]
@@ -156,6 +179,14 @@
       "author": "新美南吉",
       "level": "N4 기본",
       "total": 1,
+      "division": "whole",
+      "display": {
+        "titleReading": "てぶくろをかいに",
+        "titleKo": "장갑을 사러",
+        "authorKo": "니이미 난키치",
+        "cover": "snow",
+        "coverTitle": "手袋を\n買いに"
+      },
       "literature": {
         "schemaVersion": 1,
         "provider": "aozora",
@@ -206,7 +237,8 @@
       "chapters": [
         {
           "order": 1,
-          "title": "1편",
+          "title": "전편",
+          "incipit": "寒い冬が北方から、狐の親子の棲んでいる森へもやっ…",
           "sha256": "f03186c059cdac41ef208aa5cdb8ac090940dff637e885e9c067b0f918150127"
         }
       ]
@@ -216,6 +248,13 @@
       "author": "夏目漱石",
       "level": "N1 심화",
       "total": 4,
+      "division": "split",
+      "display": {
+        "titleReading": "ぶんちょう",
+        "titleKo": "문조",
+        "authorKo": "나쓰메 소세키",
+        "cover": "plum"
+      },
       "literature": {
         "schemaVersion": 1,
         "provider": "aozora",
@@ -268,22 +307,26 @@
       "chapters": [
         {
           "order": 1,
-          "title": "1편",
+          "title": "1/4",
+          "incipit": "十月早稲田に移る。伽藍のような書斎にただ一人、片…",
           "sha256": "b8bc82945c21cf696ee63c2645542d563fa84d77a968469caf7c2e178896d8c9"
         },
         {
           "order": 2,
-          "title": "2편",
+          "title": "2/4",
+          "incipit": "文鳥の眼は真黒である。瞼の周囲に細い淡紅色の絹糸…",
           "sha256": "4569566201914074535e765970096878bcbbfca087a6c67aa865b6346b7e190a"
         },
         {
           "order": 3,
-          "title": "3편",
+          "title": "3/4",
+          "incipit": "餌壺にはまだ粟が八分通り這入っている。しかし殻も…",
           "sha256": "82450aaad94856462e5f1c3924b5ff04f28bcce07182b39ce7d6e3dc95a639dd"
         },
         {
           "order": 4,
-          "title": "4편",
+          "title": "4/4",
+          "incipit": "自分は急に易籠を取って来た。そうして文鳥をこの方…",
           "sha256": "5fece9cce0830c4a56404bf0962f52485760c52ef2fd5f9edea114c3d8ab3d63"
         }
       ]
@@ -293,6 +336,13 @@
       "author": "芥川龍之介",
       "level": "N2 상급",
       "total": 2,
+      "division": "split",
+      "display": {
+        "titleReading": "はな",
+        "titleKo": "코",
+        "authorKo": "아쿠타가와 류노스케",
+        "cover": "ink"
+      },
       "literature": {
         "schemaVersion": 1,
         "provider": "aozora",
@@ -346,12 +396,14 @@
       "chapters": [
         {
           "order": 1,
-          "title": "1편",
+          "title": "1/2",
+          "incipit": "禅智内供の鼻と云えば、池の尾で知らない者はない。…",
           "sha256": "c688a85340f1659e907d00116b69b793fead2a4d85c4f72410918801c8e07f8c"
         },
         {
           "order": 2,
-          "title": "2편",
+          "title": "2/2",
+          "incipit": "しばらく踏んでいると、やがて、粟粒のようなものが…",
           "sha256": "b267f45457f618f4b13f41ce9893ef68a419a62d60b6096b1a3de1f2c33af9f4"
         }
       ]
