@@ -9,7 +9,7 @@ export default function PdfError({ error, reset }) {
   return (
     <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
       <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '8px' }}>
-        PDF를 열 수 없습니다
+        PDF를 열지 못했어요
       </h2>
       <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto 24px' }}>
         잠시 후 다시 시도해 주세요.

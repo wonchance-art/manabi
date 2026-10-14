@@ -117,7 +117,7 @@ function cleanMaterials(body) {
 export async function POST(request) {
   const authHeader = request.headers.get('authorization');
   if (!authHeader) {
-    return Response.json({ error: { message: '로그인이 필요합니다.' } }, { status: 401 });
+    return Response.json({ error: { message: '로그인이 필요해요.' } }, { status: 401 });
   }
   const token = authHeader.replace(/^Bearer\s+/i, '');
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -125,10 +125,10 @@ export async function POST(request) {
   const authClient = createClient(url, anonKey, { auth: { persistSession: false } });
   const { data: { user: authUser }, error: authErr } = await authClient.auth.getUser(token);
   if (authErr || !authUser) {
-    return Response.json({ error: { message: '세션이 만료됐어요. 다시 로그인해주세요.' } }, { status: 401 });
+    return Response.json({ error: { message: '세션이 만료됐어요. 다시 로그인해 주세요.' } }, { status: 401 });
   }
   if (isRateLimited(`u:${authUser.id}`)) {
-    return Response.json({ error: { message: '요청이 너무 잦아요. 잠시 후 다시 시도해주세요.' } }, { status: 429 });
+    return Response.json({ error: { message: '요청이 너무 잦아요. 잠시 후 다시 시도해 주세요.' } }, { status: 429 });
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
@@ -205,7 +205,7 @@ export async function POST(request) {
     if (!paragraph) {
       console.error('[study-paragraph] unusable model output after retry');
       if (isPrefetch) return Response.json({ ok: false }, { status: 200 });
-      return Response.json({ error: { message: '문단 생성에 실패했어요.' } }, { status: 502 });
+      return Response.json({ error: { message: '문단을 만들지 못했어요.' } }, { status: 502 });
     }
 
     // 내 자료 세션은 연재 밖(단발) — arcSummary를 제거해 다음 세션 deriveArc가 이 이야기를 이어받지 않게.

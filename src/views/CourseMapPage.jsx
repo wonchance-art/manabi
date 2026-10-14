@@ -100,7 +100,7 @@ export function CourseMap({
           </div>
         </header>
         <div className={`card ${styles.empty}`} role="status">
-          레슨이 없습니다.
+          레슨이 없어요.
         </div>
       </div>
     );
@@ -132,12 +132,12 @@ export function CourseMap({
         <div
           className={styles.streak}
           data-course-streak={streakCount}
-          aria-label={`${streakCount}일 스트릭`}
+          aria-label={`${streakCount}일 연속`}
         >
           <span className={styles.streakFire} aria-hidden="true">🔥</span>
           <span className={styles.streakBody}>
             <strong>{streakCount}일</strong>
-            <span>스트릭 · {motivationSource === 'guest' ? '이 기기 기준' : '계정 기준'}</span>
+            <span>연속 · {motivationSource === 'guest' ? '이 기기 기준' : '계정 기준'}</span>
           </span>
         </div>
         <div

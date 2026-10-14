@@ -25,7 +25,7 @@ export default async function Page({ params }) {
   return (
     <ReferenceVocabPage
       lang="English"
-      refInfo={{ base: ref.base, flag: ref.flag, name: ref.name, langCode: ref.langCode }}
+      refInfo={{ base: ref.base, name: ref.name, langCode: ref.langCode }}
       levelMeta={VOCAB_LEVELS}
       meta={ref.getLevelMeta(level)}
       vocab={ref.getVocab(level)}

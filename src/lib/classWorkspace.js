@@ -34,17 +34,33 @@ export function classSettingsPatch(team, draft, books) {
   if (bookKey && bookKey !== team.bookKey && !selected) throw new Error('연결할 교재를 다시 선택해 주세요.');
   const course = draft.course || null;
   if (course && !courseInfo(course)) throw new Error('연결할 코스를 다시 선택해 주세요.');
+  // 전체 과 수 = 공유하지 않은 과까지 센 교재 분량(선택). 손대지 않았으면 교재를 바꿀 때 공유 과 수로 채운다.
+  const total = bookTotalInput(draft), current = team.bookTotal || null;
+  const typed = total !== undefined && total !== current;
+  const bookTotal = !bookKey ? null : typed ? total : bookKey !== team.bookKey ? selected?.count || null : current;
   return {name, lang: draft.lang, bookKey,
-    ...(bookKey !== team.bookKey ? {chapterId: null, bookTotal: selected?.count || null} : {}),
+    ...(bookKey !== team.bookKey ? {chapterId: null} : {}),
+    ...(bookTotal !== current ? {bookTotal} : {}),
     ...('course' in draft && course !== (team.course || null) ? {course} : {})};
+}
+
+function bookTotalInput(draft) {
+  if (!('bookTotal' in draft)) return undefined;
+  const raw = String(draft.bookTotal ?? '').trim();
+  if (!raw) return null;
+  const n = Number(raw);
+  if (!Number.isInteger(n) || n < 1 || n > 9999) throw new Error('교재 전체 과 수는 1 이상의 숫자로 적어 주세요.');
+  return n;
 }
 
 // A remembered chapter may change while the settings form is open. Keep fields
 // the teacher did not touch, but never overwrite another writer's setting.
 export function rebaseClassSettings(base, latest, draft) {
   const merged = {...draft};
-  for (const field of ['name','lang','bookKey','course']) {
-    const before = base[field] || '', now = latest[field] || '', input = draft[field] || '';
+  const text = (v) => (v == null ? '' : String(v));
+  for (const field of ['name','lang','bookKey','bookTotal','course']) {
+    if (!(field in draft)) continue;
+    const before = text(base[field]), now = text(latest[field]), input = text(draft[field]);
     if (input === before) merged[field] = now;
     else if (now !== before && now !== input) {
       const error = new Error('다른 창에서 수업 설정이 바뀌었어요. 최신 설정을 불러와 다시 확인해 주세요.');

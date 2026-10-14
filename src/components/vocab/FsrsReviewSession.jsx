@@ -43,7 +43,7 @@ export default function FsrsReviewSession({ review, onExit }) {
       <button type="button" className="btn btn--ghost btn--sm" title="되돌리기 Ctrl/⌘+Z"
         disabled={!lastGrade || busy} onClick={() => controller.undo()}>↶</button>
     </div>
-    {error && <p role="alert">복습 저장 실패 — 연결을 확인해주세요. 이 단어는 다음에 다시 나와요.
+    {error && <p role="alert">복습을 저장하지 못했어요. 연결을 확인해 주세요 — 이 단어는 다음에 다시 나와요.
       <button type="button" disabled={busy} onClick={() => current && !current.attempt ? controller.question() : controller.refresh()}>다시 시도</button>
     </p>}
     {word ? <div className="card review-card" aria-busy={busy} style={{ padding: 0 }}>
@@ -69,7 +69,7 @@ export default function FsrsReviewSession({ review, onExit }) {
           onClick={() => controller.reveal()} style={{ marginTop: '40px', borderRadius: 'var(--radius-full)' }}>정답 확인하기</Button>}
       </div>
     </div> : <div className="review-room-state" role="status">
-      <p>{busy ? '복습 준비 중…' : '지금 다시 볼 표현은 없어요. 다음 복습까지 새로운 문장을 만나 보세요.'}</p>
+      <p>{busy ? '복습 준비 중…' : '지금 복습할 표현이 없어요. 다음 복습까지 새로운 문장을 만나 보세요.'}</p>
       {nextWakeAt && <time dateTime={nextWakeAt}>{new Date(nextWakeAt).toLocaleTimeString()}</time>}
       <Button variant="ghost" disabled={busy} onClick={leave}>목록으로</Button>
     </div>}

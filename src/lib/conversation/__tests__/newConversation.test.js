@@ -43,7 +43,7 @@ describe('입구와 머리 ⋯(정적 계약)', () => {
     expect(page).toContain('대화는 내 서재에 비공개로 남아요. 언제든 지울 수 있어요.');
   });
   it('홈·자료 추가·서재에 「새 대화」 입구', () => {
-    expect(read('views/HomePage.jsx')).toContain('href="/conversation/new"');
+    expect(read('views/HomePage.jsx')).toContain("key: 'conversation', href: newConversationHref({ language: lang })");
     expect(read('components/materials/MaterialEntry.jsx')).toContain('<Link href="/conversation/new">자료 없이 대화하기 ↗</Link>');
     expect(read('components/library/ConversationShelf.jsx')).toContain('/conversation/new?returnTo=%2Fmaterials');
   });

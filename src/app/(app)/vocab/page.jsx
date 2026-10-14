@@ -1,5 +1,5 @@
 import VocabPage from '@/views/VocabPage';
-import { parseBookReview } from '@/lib/bookReviewNavigation';
+import { parseReviewScope } from '@/lib/reviewScopeUrl';
 
 export const metadata = {
   title: '복습',
@@ -7,6 +7,7 @@ export const metadata = {
   openGraph: { title: '복습 | manabi', description: 'FSRS v4 알고리즘 기반 과학적 단어 복습' },
 };
 
+// 범위 주소(lang · level · src · state, 옛 ?book=)는 REV-SCOPE-R1A 정본 parseReviewScope가 읽는다.
 export default async function Page({ searchParams }) {
-  return <VocabPage bookReview={parseBookReview(await searchParams)} />;
+  return <VocabPage reviewScope={parseReviewScope(await searchParams)} />;
 }

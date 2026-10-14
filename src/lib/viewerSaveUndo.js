@@ -12,13 +12,13 @@ export async function prepareViewerSaveUndo(client, inserted, source, linked) {
 }
 
 export async function undoViewerSave(client, snapshot, userId) {
-  if (!snapshot || snapshot.expected.user_id !== userId || Date.now() > snapshot.expiresAt) throw new Error('저장 취소 가능 시간이 지났어요.');
+  if (!snapshot || snapshot.expected.user_id !== userId || Date.now() > snapshot.expiresAt) throw new Error('되돌릴 수 있는 시간이 지났어요.');
   const { data, error } = await client.rpc('viewer_undo_vocabulary_save', {
     p_id: snapshot.id, p_expected: snapshot.expected, p_context_ids: snapshot.contextIds,
   });
   if (error) {
-    if (error.code === 'PGRST202') throw new Error('안전한 저장 취소 기능을 준비 중이에요. 저장한 단어는 유지됩니다.');
+    if (error.code === 'PGRST202') throw new Error('안전한 되돌리기 기능을 준비 중이에요. 저장한 단어는 그대로 있어요.');
     throw error;
   }
-  if (data !== true) throw new Error('단어가 없거나 저장 취소 결과를 확인하지 못했어요.');
+  if (data !== true) throw new Error('단어가 없거나 되돌린 결과를 확인하지 못했어요.');
 }

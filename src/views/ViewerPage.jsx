@@ -62,6 +62,7 @@ import { viewerLanguageInfo } from '../lib/viewerLanguage';
 import { useLearningCapabilities } from '../lib/useLearningCapabilities';
 import { koreanReadingSource, learningSourceRevision } from '../lib/learningSources';
 import { translateViewerText } from '../lib/viewerMessages';
+import { serializeReviewScope } from '../lib/reviewScopeUrl';
 import { useViewerQuiz } from '../lib/useViewerQuiz';
 import { useReanalyze } from '../lib/useReanalyze';
 import { useReanalyzeUI } from '../lib/useReanalyzeUI';
@@ -71,7 +72,7 @@ import { useInlineReview, patchVocabWordsCache } from '../lib/useInlineReview';
 import { assertLegacyFsrsAllowed } from '../lib/fsrsLegacyBoundary';
 import { insertConfirmedVocabulary, preservePendingVocabularyReviews } from '../lib/viewerVocabularyCache';
 import { useMaterialComments } from '../lib/useMaterialComments';
-import { friendlyToastMessage } from '../lib/errorMessage';
+import { friendlyToastMessage, failureMessage } from '../lib/errorMessage';
 import { SAVE_GRADES, VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { useVocabularyExclusions } from '../lib/useVocabularyExclusions';
 import { exclusionWord, findVocabularyExclusion } from '../lib/vocabularyExclusion';
@@ -137,7 +138,8 @@ import { useSentencePrefetch } from '../lib/useSentencePrefetch';
 import { isLocalId, parseLocalId, chaptersForLocalNav } from '../lib/classBoard';
 import { getSharedCopy } from '../lib/sharedStore';
 import { readIndexCache } from '../lib/classClient';
-import { useRefVocabEntry, useRefVocabIndex, refLevelLabel } from '../lib/refVocabIndex';
+import { useRefVocabEntry, useRefVocabIndex } from '../lib/refVocabIndex';
+import { useZhHskLevels, zhHskLevelOf, zhHskLevelLabel } from '../lib/zhHskLevel';
 import { loadHanjaPanelTable, onIdle, prefetchHanjaPanel } from '../lib/viewerHanjaPanel';
 import { useTokenDictPrefetch } from '../lib/useTokenDictPrefetch';
 import { tokenDictPrefetchEnabled, tokenDictQueryKey, tokenDictKeyOf, prefetchTokenDict } from '../lib/tokenDictPrefetch';
@@ -178,6 +180,8 @@ import ViewerComments from './ViewerComments';
 import ViewerQuizModal from './ViewerQuizModal';
 import { langNameKo, splitSentenceAroundWord, detectLang } from '../lib/constants';
 import { attributionParts, literatureAttributionParts, materialSource } from '../lib/videoAttribution';
+import { isCanonicalLiteratureMaterial } from '../lib/literatureCanonical';
+import { useCanonicalLiterature } from '../lib/useCanonicalLiterature';
 import { logReviewEvents } from '../lib/reviewEvents';
 
 // 공부 모드 지원 언어 키 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
@@ -326,6 +330,9 @@ export default function ViewerPage() {
   const effectiveExplanationLocale = languageInfo?.explanationLocales.includes(explanationLocale) ? explanationLocale : 'ko';
   const learningCapabilities = useLearningCapabilities(materialLang);
   const learningStorageSupported = learningCapabilities.save;
+  // 아오조라 정본 책 — 출처 줄은 정본 대조표와 원문 해시가 맞을 때만(가짜 크레딧 차단), 원문 수정은 막는다(AOZORA-P0-2).
+  const canonicalLiterature = useCanonicalLiterature(material);
+  const canonicalLiteratureLocked = isCanonicalLiteratureMaterial(material);
   const [koreanSources, setKoreanSources] = useState({ scope: '', byToken: {} });
   const koreanSourceScope = useMemo(() => materialLang === 'Korean' ? JSON.stringify([id, material?.raw_text, material?.processed_json]) : '',
     [materialLang, id, material?.raw_text, material?.processed_json]);
@@ -727,7 +734,7 @@ export default function ViewerPage() {
   // ③ 원문 수정(오너 승인) — 소유자 전용, 저장 시 바뀐 줄만 재분석(sourceEdit.js 계획).
 
   const handleSourceEditSave = async (plan) => {
-    if (composerOf(material)) return;
+    if (composerOf(material) || canonicalLiteratureLocked) return;
     if (!plan || plan.noop) { setSourceEditOpen(false); return; }
     if (!plan.ok) { toast(plan.reason, 'error'); return; }
     if (plan.expectedRaw !== material.raw_text || JSON.stringify(plan.expectedJson) !== JSON.stringify(material.processed_json)) {
@@ -1328,6 +1335,10 @@ export default function ViewerPage() {
   // 「N개 수집 → 단어장」(AD-R2 설계 Q4) — 이 자료의 내용어 중 단어장에 담긴 수. 같은 엔진에 '이미 앎'을 합치기 전
   // 인덱스를 넣는다(담은 것만 센다). 표본 하한은 두지 않는다 — 수집은 비율이 아니라 개수라 0% 오표기 위험이 없다.
   const collectedInMaterial = useMemo(() => (user && material?.processed_json ? materialFit(material.processed_json, savedWords).known : 0), [user, material?.processed_json, savedWords]);
+  // 「이 자료 표현 복습」(REV-SCOPE-R1A 진입점) — 범위 주소 정본으로 이 자료 범위의 복습방 주소를 만든다.
+  const materialReviewHref = /^[1-9]\d{0,17}$/.test(String(material?.id ?? ''))
+    ? serializeReviewScope({ lang: materialLang, level: null, source: { kind: 'material', ids: [String(material.id)] }, state: 'due' })
+    : '/vocab';
 
   // 받아쓰기 추천용 담은 단어 집합 — 표기·기본형 합집합(엔진이 text.includes로 대조).
   const dictationSavedSet = useMemo(
@@ -1791,7 +1802,7 @@ export default function ViewerPage() {
         throw new Error('한국어 분석의 뜻은 이 편집 기능으로 수정할 수 없어요.');
       }
       const currentJson = material?.processed_json;
-      if (!currentJson?.dictionary?.[tokenId]) throw new Error('토큰을 찾을 수 없습니다.');
+      if (!currentJson?.dictionary?.[tokenId]) throw new Error('토큰을 찾을 수 없어요.');
 
       const beforeToken = currentJson.dictionary[tokenId];
       const updatedDict = {
@@ -1840,9 +1851,9 @@ export default function ViewerPage() {
       // BottomSheet에 표시되는 selectedToken도 업데이트
       setSelectedToken(prev => prev?.id === tokenId ? applyTokenCorrections(prev, corrections) : prev);
       // 사전 뜻 줄 교정(AE-R1 PR③)은 카드 안 「뜻을 바꿨어요 · 되돌리기」 줄이 알린다 — 토스트를 겹치지 않는다.
-      if (!variables?.quiet) toast('수정이 저장됐어요!', 'success');
+      if (!variables?.quiet) toast('수정을 저장했어요', 'success');
     },
-    onError: (err) => toast('수정 실패 — ' + friendlyToastMessage(err), 'error'),
+    onError: (err) => toast(failureMessage('수정을 저장하지 못했어요.', err), 'error'),
   });
 
   // AD-R3 PR③ 묶기·나누기·되돌리기 쓰기 — boundaryEditFlow 하나(그 줄만 /api/analyze boundaries → viewer_replace_analysis
@@ -1947,7 +1958,7 @@ export default function ViewerPage() {
       const synced = await syncSavedVocab(token, corrections);
       toast(synced ? '단어장에도 반영했어요!' : '단어장에 없는 단어예요 — 이 자료에만 반영했어요.', synced ? 'success' : 'info');
     } catch {
-      toast('단어장 반영은 실패했어요 — 이 자료에는 반영됐어요.', 'warning');
+      toast('단어장에는 반영하지 못했어요. 이 자료에는 반영됐어요.', 'warning');
     }
   };
 
@@ -1977,7 +1988,7 @@ export default function ViewerPage() {
       if (isClient) clearAnalysisCache(localStorage); // 승격된 뜻 반영(§C4)
       toast('사전과 단어장에도 반영했어요!', 'success');
     } catch {
-      toast('전체 적용은 실패했어요 — 이 자료에는 반영됐어요.', 'warning');
+      toast('전체에는 적용하지 못했어요. 이 자료에는 반영됐어요.', 'warning');
     }
   };
 
@@ -2176,6 +2187,9 @@ export default function ViewerPage() {
   const raiseGlyphBudget = useCallback((key, step) => setGlyphBudget((cur) => (cur.key === key && cur.step >= step ? cur : { key, step, zhengBelow: cur.key === key && cur.zhengBelow })), []);
   const glyphZhengMiss = useCallback((key) => setGlyphBudget((cur) => (cur.key === key && cur.zhengBelow ? cur : { key, step: cur.key === key ? cur.step : 0, zhengBelow: true })), []);
   const refVocab = useRefVocabEntry(materialLang, selectedLexKey || selectedToken?.text);
+  // 메타 줄 급수 = HSK 2026 표(ZH-LEVEL-2026-001) — 우리 사전 세트 파일 위치(옛 급수)가 아니다. 표 밖 단어는 표시 없음.
+  const zhHskLevels = useZhHskLevels(materialLang === 'Chinese');
+  const hskLevelLabel = zhHskLevelLabel(zhHskLevelOf(selectedLexKey || selectedToken?.text, zhHskLevels));
   // 본문 문맥(수동 교정 포함)이 카드와 저장의 기준. 사전의 다른 뜻은 접어 구분한다.
   const refMeaning = contextualMeaning(selectedToken) || null;
   const referenceMatches = referenceMatchesContext(selectedToken, refVocab?.word);
@@ -2335,12 +2349,12 @@ export default function ViewerPage() {
       setKoreanSaveConflict(null);
       // The atomic RPC may reuse a card. Never manufacture an INSERT/undo snapshot.
       lastSaveRef.current = null;
-      toast(`"${token.text}" 저장!`, 'success');
+      toast(`"${token.text}" 단어를 저장했어요`, 'success');
       return result;
     } catch (error) {
       if (koreanSaveDisplayScope.current !== scope) return null;
       if (error.code === 'meaning_conflict') setKoreanSaveConflict({ tokenId: token.id, text: token.text });
-      else toast('저장 실패 — ' + friendlyToastMessage(error), 'error');
+      else toast(failureMessage('단어를 저장하지 못했어요.', error), 'error');
       return null;
     }
   }
@@ -2377,10 +2391,10 @@ export default function ViewerPage() {
         language: materialLang,
       }));
       const linked = await attachReadingContext(token);
-      if (linked) toast(`"${token.text}" 저장!`, 'success');
+      if (linked) toast(`"${token.text}" 단어를 저장했어요`, 'success');
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
     } catch {
-      toast('저장 실패', 'error');
+      toast('단어를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.', 'error');
     } finally {
       setInlineSaving(prev => ({ ...prev, [key]: false }));
     }
@@ -2390,7 +2404,7 @@ export default function ViewerPage() {
   // 비어 있어 자연히 무시된다(경쟁 조건 차단).
   const undoLastSave = async (snapshot = lastSaveRef.current) => {
     if (!snapshot || undoBusy.current) return;
-    if (snapshot !== lastSaveRef.current) { toast('가장 최근 저장만 취소할 수 있어요.', 'info'); return; }
+    if (snapshot !== lastSaveRef.current) { toast('가장 최근 저장만 되돌릴 수 있어요.', 'info'); return; }
     undoBusy.current = true;
     try {
       await undoViewerSave(supabase, snapshot, user?.id);
@@ -2398,9 +2412,9 @@ export default function ViewerPage() {
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['vocabulary-contexts', user?.id] });
-      toast(`"${snapshot.text}" 저장을 취소했어요`, 'info');
+      toast(`"${snapshot.text}" 저장을 되돌렸어요`, 'info');
     } catch (err) {
-      toast('취소 실패 — ' + friendlyToastMessage(err), 'error');
+      toast(failureMessage('저장을 되돌리지 못했어요.', err), 'error');
     } finally { undoBusy.current = false; }
   };
 
@@ -2466,7 +2480,7 @@ export default function ViewerPage() {
       lastInlineGradeRef.current = null;
       toast(`되돌렸어요 — 「${last.word}」 다시 채점`, 'info');
     } catch (err) {
-      toast('되돌리기 실패 — ' + friendlyToastMessage(err), 'error');
+      toast(failureMessage('되돌리지 못했어요.', err), 'error');
     } finally { undoBusy.current = false; }
   };
   const undoAny = () => (lastInlineGradeRef.current ? undoInlineGrade() : undoLastSave());
@@ -2495,7 +2509,7 @@ export default function ViewerPage() {
     if (user && (selectedExcluded || !wordStateReady || knownPending || exclusionState.mutation.isPending)) return;
     if (!user) {
       if (material?.__local) { toast('로그인하면 담겨요 — 카드의 「로그인 · 가입」으로 가세요.', 'info'); return; }
-      toast('로그인이 필요합니다.', 'warning');
+      toast('로그인이 필요해요.', 'warning');
       return;
     }
     if (!selectedToken || !koreanSaveReady(selectedToken)) return;
@@ -2538,7 +2552,7 @@ export default function ViewerPage() {
       queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
       if (saveScopeRef.current === saveScope) saveCountRef.current += 1;
     } catch (err) {
-      if (saveScopeRef.current === saveScope) toast('단어 추가 실패 — ' + friendlyToastMessage(err), 'error');
+      if (saveScopeRef.current === saveScope) toast(failureMessage('단어를 추가하지 못했어요.', err), 'error');
       return;
     } finally {
       savingGrade.current.delete(saveKey);
@@ -2567,7 +2581,7 @@ export default function ViewerPage() {
     return selection&&isDragSelection&&tokenRange.range&&restoredClassSource?.quote===selection.text?{...selection,source:restoredClassSource}:selection;
   },[material,isSheetOpen,selectedToken,refMeaning,headReading,isDragSelection,leftPanelText,pickedSentence,tokenRange.range,restoredClassSource]);
 
-  if (isLoading) return <div className="page-container"><Spinner message="자료 해부 중..." /></div>;
+  if (isLoading) return <div className="page-container"><Spinner message="자료 불러오는 중…" /></div>;
   if (isStudyNote(material)) return <div className="page-container"><Spinner message="개인 노트를 펼치고 있어요…" /></div>;
   if (error?.code === 'LOCAL_MISSING') {
     // 팀 사본이 없다(7일이 지났거나 다른 기기) — 팀 페이지가 다시 받는다. ?team=이 돌아갈 길.
@@ -2586,12 +2600,12 @@ export default function ViewerPage() {
       <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
         <div style={{ fontSize: '3rem', marginBottom: 12 }}>{isNotFound ? '' : '×'}</div>
         <h2 style={{ color: 'var(--text-primary)', marginBottom: 8 }}>
-          {isNotFound ? '자료를 찾을 수 없어요' : '자료를 불러올 수 없어요'}
+          {isNotFound ? '자료를 찾을 수 없어요' : '자료를 불러오지 못했어요'}
         </h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: 20, maxWidth: 400, margin: '0 auto 20px' }}>
           {isNotFound
-            ? '이 자료는 삭제됐거나 비공개로 전환됐을 수 있어요. 연결됐던 단어는 단어장에 그대로 남아 있습니다.'
-            : friendlyToastMessage(error, '잠시 후 다시 시도해주세요.')}
+            ? '이 자료는 삭제됐거나 비공개로 바뀌었을 수 있어요. 연결됐던 단어는 단어장에 그대로 남아 있어요.'
+            : friendlyToastMessage(error, '잠시 후 다시 시도해 주세요.')}
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           {!isNotFound && <button onClick={() => refetch()} className="btn btn--primary">{vt("다시 시도")}</button>}
@@ -2605,8 +2619,8 @@ export default function ViewerPage() {
   if (material?.visibility === 'private' && material?.owner_id !== user?.id && !material?.__local) {
     return (
       <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
-        <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>{vt("비공개 자료입니다")}</h2>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>{vt("이 자료는 작성자만 열람할 수 있습니다.")}</p>
+        <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>{vt("비공개 자료예요")}</h2>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>{vt("이 자료는 작성자만 볼 수 있어요.")}</p>
         <LibraryReturnLink className="btn btn--primary" aria-label={vt(readerReturnLabel(originalParams.get('returnTo')))}><span aria-hidden="true">←</span></LibraryReturnLink>
       </div>
     );
@@ -2667,7 +2681,7 @@ export default function ViewerPage() {
       <div className="pdf-word-list__header" style={{ marginBottom: 10 }}>
         <span className="pdf-word-list__title">{vt("단어 (")}{dragTokens.length})</span>
       </div>
-      {dragAnalyzing && <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 8 }}>{vt("분석 중...")}</div>}
+      {dragAnalyzing && <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 8 }}>{vt("분석 중…")}</div>}
       {dragTokens.map((t, i) => {
         const isSaved = savedWords.surfaces?.has(t.text) || savedWords.bases?.has(t.base_form);
         const saveKey = t.base_form || t.text;
@@ -2953,7 +2967,7 @@ export default function ViewerPage() {
               품사 오염으로 읽히던 중의성 소멸. 사전 읽기가 없어 표제어가 폴백일 때만 라벨 텍스트. */}
           <ViewerLabelSlot locale={uiLocale} text={vt('기본형')}>{headFallback && <span className="word-detail-card__base">기본형</span>}</ViewerLabelSlot>
           {materialLang === 'Korean' && selectedToken.text !== headText && <span lang="ko">{selectedToken.text} → {headText}</span>}
-          {refVocab && <span className="word-detail-card__level">{refLevelLabel(refVocab.level)}</span>}
+          {hskLevelLabel && <span className="word-detail-card__level">{hskLevelLabel}</span>}
         </div>
         {/* 듣기는 칩 줄 끝(정본 §2.1 칩 줄 — 44px 누름 영역). 수업 모드는 판서 단어 옆 듣기를 그대로 쓴다. */}
         {!classStudyActive && ttsSupported && <button className="word-detail-card__speak" onClick={() => speak(headText, materialLang, { ...ttsOptsFor(ttsRate), preferBrowser: true })} aria-label="발음 듣기" {...(uiLocale === 'ko' ? {} : {'aria-label': vt('발음 듣기')})} title={vt("발음 듣기")} data-icon-action><ActionIcon name="audio"/></button>}
@@ -3151,7 +3165,7 @@ export default function ViewerPage() {
       })()}
       {classMeaning?.editor||(!classStudyActive&&<div className={`word-detail-card__meaningrow${materialLang === 'English' && selectedToken.reading ? ' word-detail-card__meaningrow--tight' : ''}`}>
         <div className="word-detail-card__meaning" lang={materialLang === 'Korean' ? effectiveExplanationLocale : undefined}>
-          {materialLang === 'Korean' ? (koreanPieceSelected ? koreanPieceMeaning(selectedToken) : localizedWord.loading ? vt('문맥 뜻을 불러오는 중…') : localizedWord.error ? <button onClick={localizedWord.retry}>{vt('설명을 다시 불러오기')}</button> : localizedWord.meaning) : refMeaning || selectedToken.meaning || '(뜻 없음)'}
+          {materialLang === 'Korean' ? (koreanPieceSelected ? koreanPieceMeaning(selectedToken) : localizedWord.loading ? vt('문맥 뜻을 불러오는 중…') : localizedWord.error ? <button onClick={localizedWord.retry}>{vt('다시 시도')}</button> : localizedWord.meaning) : refMeaning || selectedToken.meaning || '(뜻 없음)'}
         </div>
         {/* 리스트 단어는 자료 토큰이 아니라(id 없음) 이 자료의 교정 대상이 될 수 없다 */}
         {canEditToken && selectedToken.id && (
@@ -3278,7 +3292,7 @@ export default function ViewerPage() {
         {synAntEligible(selectedToken,materialLang) && (synAnt?.loading ? <p role="status">{vt("불러오는 중…")}</p>
           : synAnt && !synAnt.error ? <div className="syn-ant"><div className="syn-ant__row"><span>{vt("유의어")}</span>{renderSynAntChips(synAnt.syn)}</div><div className="syn-ant__row"><span>{vt("반의어")}</span>{renderSynAntChips(synAnt.ant)}</div>{!synAnt.syn.length&&!synAnt.ant.length&&<p>{vt("표시할 항목이 없어요.")}</p>}</div>
           : <>{synAnt?.error && <p role="status">{vt("불러오지 못했어요.")}</p>}<button type="button" className="btn btn--ghost btn--sm reader-card-learn__ask" onClick={() => setSynAntRequest(n => n + 1)}>{vt("✦ 비슷한 말 찾기")}</button></>)}
-        {wordDetail?.loading ? <p role="status">{vt("상세 설명 생성 중...")}</p>
+        {wordDetail?.loading ? <p role="status">{vt("상세 설명 만드는 중…")}</p>
           : wordDetail?.detail ? <div className="reader-card-learn__detail"><small>{vt('일반 사전 설명 · 본문과 다른 뜻이 포함될 수 있어요')}</small><div className="pdf-detail-popup__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(wordDetail.detail) }} /></div>
           : <button type="button" onClick={() => fetchWordDetail(selectedToken)} className="btn btn--ghost btn--sm reader-card-learn__ask">{vt("✦ 자세한 설명")}</button>}
         {/* 일본어로는(AE-R3 PR② — 일본어 대조 블록 대체, 설계서 §5): 日 줄이 숨겨졌을 때만(수업 모드는 자형 열이 없으므로 항상) —
@@ -3301,7 +3315,7 @@ export default function ViewerPage() {
             known: !selectedKnown, removeKeys: selectedKnownKeys })}>
           {vt(selectedKnown ? '✓ 아는 단어' : '아는 단어')}
         </button>;
-        // 저장(복습 전) = 등급 대신 한 줄 「✓ 단어장에 있음 · 다음 복습 날짜 [이 문맥 추가] ☐ 아는 단어」.
+        // 저장(복습 전) = 등급 대신 한 줄 「✓ 담은 표현에 있음 · 다음 복습 날짜 [이 문맥 추가] ☐ 아는 단어」(이름 통일 REV-SCOPE §6-1 ⑧).
         const savedRow = !selectedExcluded && isWordSaved && !saveAnim && !inlineReviewMutation.isPending && !isTokenInlineDue(savedWords, selectedToken, materialLang);
         if (!savedRow) return <div className="save-grade__header">
           <p className="save-grade__guide">{vt("얼마나 알겠어요?")}</p>
@@ -3310,7 +3324,7 @@ export default function ViewerPage() {
         return (
           <div className="word-detail-card__actrow save-grade__saved">
             <span className="save-grade__status">
-              <button disabled className="btn btn--ghost btn--sm save-grade__in">{vt('✓ 단어장에 있음')}</button>
+              <button disabled className="btn btn--ghost btn--sm save-grade__in">{vt('✓ 담은 표현에 있음')}</button>
               {nextReview && <span className="save-grade__next">{nextReview.due ? vt('복습 차례') : vt('다음 복습 {date}', { date: nextReview.label })}</span>}
             </span>
             {koreanSaveReady(selectedToken) && <SaveContextButton key={`${id}:${selectedToken.id || selectedToken.text}:${leftPanelText}:${materialLang === 'Korean' ? `${effectiveExplanationLocale}:${readingContextSource(selectedToken)?.sourceRevision}` : ''}`}
@@ -3319,7 +3333,7 @@ export default function ViewerPage() {
           </div>
         );
       })()}
-      {user && (exclusionState.isError || knownState.isError) && <button type="button" className="btn btn--ghost btn--sm" onClick={() => { exclusionState.refetch(); knownState.refetch(); }}>{vt("상태 다시 확인")}</button>}
+      {user && (exclusionState.isError || knownState.isError) && <button type="button" className="btn btn--ghost btn--sm" onClick={() => { exclusionState.refetch(); knownState.refetch(); }}>{vt("다시 시도")}</button>}
 
       {user && learningCapabilities.review && !koreanPieceSelected && findSavedVocab(savedWords, selectedToken, materialLang) && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending && (
         // W R3㉮ — 척도를 정본에 맞춘다: 모름/애매/알아=1/2/3(Easy 없음)이 아니라 복습 화면과 같은 4등급.
@@ -3346,7 +3360,7 @@ export default function ViewerPage() {
       {!user && material?.__local && !koreanPieceSelected && (
         // 팀 사본(v2-AB R2 S2) — 담기 CTA. 「로그인이 필요합니다」 토스트 대신 돌아올 길이 있는 시트.
         <div className="save-grade__guest">
-          <p className="save-grade__guide">{vt('로그인하면 「{word}」이(가) 내 단어장에 담기고 며칠 뒤 복습으로 돌아와요.', {word: headText})}</p>
+          <p className="save-grade__guide">{vt('로그인하면 「{word}」이(가) 담은 표현에 들어가고 며칠 뒤 복습으로 돌아와요.', {word: headText})}</p>
           <div className="word-detail-card__actrow">
             <Link
               href={`/auth?from=${encodeURIComponent(`/class/${material.__team}`)}`}
@@ -3608,7 +3622,7 @@ export default function ViewerPage() {
       {!user && (
         <div className="viewer-guest-banner">
           <span>{vt("단어를 클릭해 뜻을 확인할 수 있어요.")}</span>
-          <Link href="/auth" className="viewer-guest-banner__cta">{vt("로그인하면 단어장에 저장하고 복습할 수 있습니다 →")}</Link>
+          <Link href="/auth" className="viewer-guest-banner__cta">{vt("로그인하면 단어장에 저장하고 복습할 수 있어요 →")}</Link>
         </div>
       )}
 
@@ -3709,7 +3723,7 @@ export default function ViewerPage() {
         {/* 배지 3종은 여태 header의 **직계 자식**이었다 — 래퍼가 없어 폭이 제각각이었고
             (inline-block 하나 vs 전체 폭 둘) 세로도 3줄을 먹었다. 한 줄로 모은다.
             인라인 style 3벌은 공용 클래스로 — v2-K R1 토큰화가 남긴 나머지다. */}
-        {savedWordsError && <p role="alert">{vt("잠시 후 다시 시도해주세요.")} <button type="button" onClick={() => refetchSavedWords()}>{vt("다시 시도")}</button></p>}
+        {savedWordsError && <p role="alert">{vt("저장한 단어를 불러오지 못했어요.")} <button type="button" onClick={() => refetchSavedWords()}>{vt("다시 시도")}</button></p>}
         {((user && dueInMaterial > 0) || coverage || collectedInMaterial > 0) && (
           <div className="viewer-badges">
             {user && dueInMaterial > 0 && (
@@ -3722,7 +3736,7 @@ export default function ViewerPage() {
               <span className="viewer-badge viewer-stats">
                 {coverage && <span title={vt("담은 단어와 '이미 알아요' 표시를 합쳐 센 값 — 서재 맞춤도와 같은 계산이에요")}>{vt('아는 단어 {percent}% · 새 단어 {count}개', {percent: Math.round(coverage.coverage * 100), count: coverage.unknown})}</span>}
                 {coverage && collectedInMaterial > 0 && ' · '}
-                {collectedInMaterial > 0 && <Link href="/vocab" prefetch={false} className="viewer-stats__vocab">{vt('{count}개 수집 → 단어장', {count: collectedInMaterial})}</Link>}
+                {collectedInMaterial > 0 && <Link href={materialReviewHref} prefetch={false} className="viewer-stats__vocab">{vt('{count}개 수집 · 이 자료 표현 복습', {count: collectedInMaterial})}</Link>}
               </span>
             )}
           </div>
@@ -3754,10 +3768,11 @@ export default function ViewerPage() {
         );
       })()}
 
-      {/* 아오조라 정본 책 출처(설계 §3.4 · 목업 C) — 유튜브·PDF와 **같은 한 줄 문법**. 정본 책 데이터는 processed_json.metadata.literature에
-          산다(metadata.book과 같은 자리). 青空文庫·底本·입력·교정·도서 카드와 「우리가 바꾼 점」을 보이게 한다(저장은 표기가 아니다). */}
+      {/* 아오조라 정본 책 출처(설계 §3.4 · 목업 C) — 유튜브·PDF와 **같은 한 줄 문법**. 青空文庫·底本·입력·교정·도서 카드와 「우리가 바꾼 점」을
+          보이게 한다(저장은 표기가 아니다). 크레딧은 자료 metadata가 아니라 정본 대조표(manifest.generated.json)에서 읽고, 자료 원문이
+          그 장의 정본과 같을 때만 그린다 — 남의 공개 자료에 꾸며 넣은 아오조라 metadata로는 이 줄이 생기지 않는다(AOZORA-P0-2). */}
       {(() => {
-        const lit = literatureAttributionParts(material?.processed_json?.metadata?.literature);
+        const lit = literatureAttributionParts(canonicalLiterature);
         if (!lit) return null;
         return (
           <p className="viewer-attribution">{vt("출처:")} {lit.provider}
@@ -3798,16 +3813,17 @@ export default function ViewerPage() {
             <div className="reader-manage">
               <button className="reanalyze-panel__item" onClick={requestFullReanalyze}>
                 <strong>{vt("전체 분석")}</strong>
-                <span>{vt("처음부터 다시 분석합니다")}</span>
+                <span>{vt("처음부터 다시 분석해요")}</span>
               </button>
               <button className="reanalyze-panel__item" onClick={() => { setReanalyzePanel('pick'); setSelectedParas(new Set()); }}>
                 <strong>{vt("부분 분석")}</strong>
-                <span>{vt("문단을 선택해서 분석합니다")}</span>
+                <span>{vt("문단을 골라 분석해요")}</span>
               </button>
-              {!composerOf(material) && <button className="reanalyze-panel__item" onClick={() => { setReanalyzePanel(null); setSourceEditOpen(true); }}>
+              {!composerOf(material) && !canonicalLiteratureLocked && <button className="reanalyze-panel__item" onClick={() => { setReanalyzePanel(null); setSourceEditOpen(true); }}>
                 <strong>{vt("원문 수정")}</strong>
-                <span>{vt("텍스트를 고치면 바뀐 줄만 분석합니다")}</span>
+                <span>{vt("텍스트를 고치면 바뀐 줄만 분석해요")}</span>
               </button>}
+              {canonicalLiteratureLocked && <p className="reader-metadata">{vt("정본 책이라 원문은 고칠 수 없어요")} · {vt("단어 뜻·발음 교정과 다시 분석은 그대로 쓸 수 있어요")}</p>}
             </div>
           )}
           {reanalyzePanel === 'confirm-full' && (
@@ -3875,7 +3891,7 @@ export default function ViewerPage() {
         <span className="reader-page-probe" data-page-probe aria-hidden="true" />
         {isAnalyzing && !needsRecovery && (
           <div className="analyzing-banner">
-            <span>{vt(reanalyze.committing ? '검증한 분석을 저장 중입니다…' : reanalyzeMutation.isPending ? '새 분석을 준비 중입니다. 기존 자료는 유지됩니다.' : '문단 단위로 분석 중입니다...')}</span>
+            <span>{vt(reanalyze.committing ? '검증한 분석을 저장하고 있어요…' : reanalyzeMutation.isPending ? '새 분석을 준비하고 있어요. 기존 자료는 그대로 있어요.' : '문단 단위로 분석하고 있어요…')}</span>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button onClick={() => refetch()} className="analyzing-banner__refresh">{vt("새로고침")}</button>
               {user?.id === material?.owner_id && reanalyzeMutation.isPending && (
@@ -3888,10 +3904,10 @@ export default function ViewerPage() {
         {needsRecovery && user?.id === material?.owner_id && (
           <div className="analyzing-banner" style={{ background: 'color-mix(in srgb, var(--warning-bright) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--warning-bright) 40%, transparent)' }}>
             <span role="status" aria-live="polite">{reanalyze.committing
-              ? '검증한 분석을 저장 중입니다…'
+              ? '검증한 분석을 저장하고 있어요…'
               : reanalyze.recovery
                 ? `${reanalyze.recovery.total}곳 중 ${reanalyze.recovery.completed}곳을 복구했어요. 기존 내용은 그대로 볼 수 있어요.`
-                : reanalyzeMutation.isPending ? '새 분석을 준비 중입니다. 기존 자료는 유지됩니다.'
+                : reanalyzeMutation.isPending ? '새 분석을 준비하고 있어요. 기존 자료는 그대로 있어요.'
                   : missingLineCount > 0 ? `분석이 끝나지 않은 부분이 ${missingLineCount}곳 있어요.` : '분석 결과를 확인하고 마무리할 수 있어요.'}</span>
             <div style={{ display: 'flex', gap: '8px' }}>
               {reanalyzeMutation.isPending
@@ -3915,7 +3931,7 @@ export default function ViewerPage() {
 
         {isFailed && (
           <div className="analyzing-banner analyzing-banner--error">
-            <span>{vt("분석에 실패했습니다.")}</span>
+            <span>{vt("분석하지 못했어요.")}</span>
             {reanalyzeMutation.isPending
               ? <button onClick={stopReanalysis} disabled={reanalyze.committing} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>{vt("⏹ 중단")}</button>
               : <button onClick={startFullReanalyze} className="analyzing-banner__refresh">{vt("재분석")}</button>
@@ -3993,7 +4009,7 @@ export default function ViewerPage() {
                   data-tid={tokenId}
                 data-source-token={tokenId}
                 data-source-text={token.text}
-                  className={`word-token word-token--failed${pickedClass}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}`} style={paceStyle} title={vt("분석 실패 — 재시도 버튼을 눌러주세요")}>
+                  className={`word-token word-token--failed${pickedClass}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}`} style={paceStyle} title={vt("분석하지 못했어요. 재분석 버튼을 눌러 주세요")}>
                   {linePick}
                   <span className="furigana" />
                   <span className="surface">{zhGrid ? <ZhText text={token.text} /> : token.text}</span>
@@ -4218,7 +4234,7 @@ export default function ViewerPage() {
                     disabled={markCompleteMutation.isPending}
                     className="post-reading-actions__btn post-reading-actions__btn--primary"
                   >
-                    {markCompleteMutation.isPending ? '...' : '✓ 읽기 완료'}
+                    {markCompleteMutation.isPending ? '…' : '✓ 읽기 완료'}
                   </button>
             )}
             {user && material?.raw_text && STUDY_LANGS.has(materialLang) && (
@@ -4284,7 +4300,7 @@ export default function ViewerPage() {
             >
               <div className="next-lesson-card__hint">{vt("다음 범위")}</div>
               <div className="next-lesson-card__title">
-                {nextRangeMutation.isPending ? '추출 중...' : `p.${material.page_end + 1}-${to} 분석 →`}
+                {nextRangeMutation.isPending ? '추출 중…' : `p.${material.page_end + 1}-${to} 분석 →`}
               </div>
             </button>
           );

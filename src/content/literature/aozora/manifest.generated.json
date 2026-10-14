@@ -1,0 +1,360 @@
+{
+  "schemaVersion": 1,
+  "works": {
+    "aozora-000081-043754": {
+      "title": "注文の多い料理店",
+      "author": "宮沢賢治",
+      "level": "N3 중급",
+      "total": 2,
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000081-043754",
+        "personId": "000081",
+        "workId": "43754",
+        "title": "注文の多い料理店",
+        "author": "宮沢賢治",
+        "publishedYear": 1924,
+        "authorDeathYear": 1933,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000081/card43754.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000081/files/43754_ruby_17594.zip",
+        "sourceSha256": "b129a08c52941ca4916854100e58829218abb1243a99d23be90a71790fc3117a",
+        "textSha256": "20a2f0a5cae37b8c093bcef2e1127b8d5116e922f9c0616e05b9f89205978b5a",
+        "attribution": {
+          "author": "宮沢賢治",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-14",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000081/card43754.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「注文の多い料理店」新潮文庫、新潮社",
+            "1990（平成2）年5月25日発行",
+            "1997（平成9）年5月10日17刷"
+          ],
+          "parentBook": [],
+          "inputter": "土屋隆",
+          "proofreader": "noriko saito"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "1편",
+          "sha256": "2f7f258a3e6cabc374356e8ede41367b2f010ab1238ec1a386757eb1618d95a2"
+        },
+        {
+          "order": 2,
+          "title": "2편",
+          "sha256": "b190766b7643eb9e757a5c94770aebadc39963dd3bc5790367a0ea90c01a41a0"
+        }
+      ]
+    },
+    "aozora-000121-000628": {
+      "title": "ごん狐",
+      "author": "新美南吉",
+      "level": "N3 중급",
+      "total": 6,
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000121-000628",
+        "personId": "000121",
+        "workId": "628",
+        "title": "ごん狐",
+        "author": "新美南吉",
+        "publishedYear": 1932,
+        "authorDeathYear": 1943,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000121/card628.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000121/files/628_ruby_649.zip",
+        "sourceSha256": "2f214158ddc83a89c88400c8ca63cb0d6add8b625b3cea0599a26fdc19274189",
+        "textSha256": "857830bc526c22d63e795f0635beaa4cc6dcead23eab0ba3a9eec534f75e3251",
+        "attribution": {
+          "author": "新美南吉",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-14",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000121/card628.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「新美南吉童話集」岩波文庫、岩波書店",
+            "1996（平成8）年7月16日発行第1刷",
+            "1997（平成9）年7月15日発行第2刷"
+          ],
+          "parentBook": [],
+          "inputter": "林裕司",
+          "proofreader": "浜野智"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "一",
+          "sha256": "486b3148b96ebf9245817e3825d1f97f9ee774f3a15c9139b0d8ea9a857d933d"
+        },
+        {
+          "order": 2,
+          "title": "二",
+          "sha256": "91cd18764402affab0f2341d1ee288eab1f1dcd3fff4e20de6ce6289c50cc805"
+        },
+        {
+          "order": 3,
+          "title": "三",
+          "sha256": "c5b2c9e90f9a74e39d1e5698f0778b70aaed7cbfc66bf3f95214766b45b54759"
+        },
+        {
+          "order": 4,
+          "title": "四",
+          "sha256": "77ecc77e2af02c957a7d7cd264d006dec8c4531009a9d53d9c313ffd6703bdfa"
+        },
+        {
+          "order": 5,
+          "title": "五",
+          "sha256": "10e45ce6f7ff4f5dc7d56148746b58ac4d8880b5331703d2bc37915f8d1b9e43"
+        },
+        {
+          "order": 6,
+          "title": "六",
+          "sha256": "36bc23076c33c0f85147d1a7d9cee1fd08a14ef3edff2762a982e10cb4fcbe4c"
+        }
+      ]
+    },
+    "aozora-000121-000637": {
+      "title": "手袋を買いに",
+      "author": "新美南吉",
+      "level": "N4 기본",
+      "total": 1,
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000121-000637",
+        "personId": "000121",
+        "workId": "637",
+        "title": "手袋を買いに",
+        "author": "新美南吉",
+        "publishedYear": 1943,
+        "authorDeathYear": 1943,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000121/card637.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000121/files/637_ruby_4095.zip",
+        "sourceSha256": "012d58a394654cda6eb63c90ab730e457a4aa3b196cc5f5d163e18da3e41a7ac",
+        "textSha256": "117072833ccd11ba03958be558dac2ad3b32258911dcc84f6404b6f04e568511",
+        "attribution": {
+          "author": "新美南吉",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-14",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000121/card637.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「新美南吉童話集」岩波文庫、岩波書店",
+            "1996（平成8）年7月16日第1刷発行",
+            "1997（平成9）年7月15日第2刷発行"
+          ],
+          "parentBook": [],
+          "inputter": "大野晋",
+          "proofreader": "伊藤祥"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "1편",
+          "sha256": "f03186c059cdac41ef208aa5cdb8ac090940dff637e885e9c067b0f918150127"
+        }
+      ]
+    },
+    "aozora-000148-000753": {
+      "title": "文鳥",
+      "author": "夏目漱石",
+      "level": "N1 심화",
+      "total": 4,
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000148-000753",
+        "personId": "000148",
+        "workId": "753",
+        "title": "文鳥",
+        "author": "夏目漱石",
+        "publishedYear": 1908,
+        "authorDeathYear": 1916,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000148/card753.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000148/files/753_ruby_1701.zip",
+        "sourceSha256": "0431a79f04f6dd57532476fa793ca77307fcb6c3b090fe6db5dbec11b8322812",
+        "textSha256": "250b0c2602dceef1d6ecd1404ad12287c3c800f19fcfb9fdd2a777b936b3480d",
+        "attribution": {
+          "author": "夏目漱石",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-14",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000148/card753.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「夏目漱石全集10」ちくま文庫、筑摩書房",
+            "1988（昭和63）年7月26日第1刷発行"
+          ],
+          "parentBook": [
+            "「筑摩全集類聚版夏目漱石全集」筑摩書房",
+            "1971（昭和46）年4月〜1972（昭和47）年1月"
+          ],
+          "inputter": "柴田卓治",
+          "proofreader": "大野晋"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "1편",
+          "sha256": "b8bc82945c21cf696ee63c2645542d563fa84d77a968469caf7c2e178896d8c9"
+        },
+        {
+          "order": 2,
+          "title": "2편",
+          "sha256": "4569566201914074535e765970096878bcbbfca087a6c67aa865b6346b7e190a"
+        },
+        {
+          "order": 3,
+          "title": "3편",
+          "sha256": "82450aaad94856462e5f1c3924b5ff04f28bcce07182b39ce7d6e3dc95a639dd"
+        },
+        {
+          "order": 4,
+          "title": "4편",
+          "sha256": "5fece9cce0830c4a56404bf0962f52485760c52ef2fd5f9edea114c3d8ab3d63"
+        }
+      ]
+    },
+    "aozora-000879-000042": {
+      "title": "鼻",
+      "author": "芥川龍之介",
+      "level": "N2 상급",
+      "total": 2,
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000879-000042",
+        "personId": "000879",
+        "workId": "42",
+        "title": "鼻",
+        "author": "芥川龍之介",
+        "publishedYear": 1916,
+        "authorDeathYear": 1927,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000879/card42.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000879/files/42_ruby_154.zip",
+        "sourceSha256": "80fe438eb147091a7f3f827583f85ea63304b00a88e6de3d14f2933799036c85",
+        "textSha256": "f007db7fce7cfcc2a921fbc9e68260ad3f2f3349961cdba0fc459520c399b330",
+        "attribution": {
+          "author": "芥川龍之介",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-14",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000879/card42.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「芥川龍之介全集1」ちくま文庫、筑摩書房",
+            "1986（昭和61）年9月24日第1刷発行",
+            "1997（平成9）年4月15日第14刷発行"
+          ],
+          "parentBook": [
+            "「筑摩全集類聚版芥川龍之介全集」筑摩書房",
+            "1971（昭和46）年3月〜1971（昭和46）年11月"
+          ],
+          "inputter": "平山誠、野口英司",
+          "proofreader": "もりみつじゅんじ"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "1편",
+          "sha256": "5016451cbf169f354f6a0e9904dc964c7fe9c5f548510324406e86f36136fcdf"
+        },
+        {
+          "order": 2,
+          "title": "2편",
+          "sha256": "80210df7b092d4624bbe8973ca3b9aa37eba6095bf48de9e5eb2781c80b42651"
+        }
+      ]
+    }
+  }
+}

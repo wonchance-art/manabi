@@ -196,3 +196,13 @@
 .manabi-app .viewer-back-link[data-icon-action]:focus-visible::after{right:auto;left:0}
 .manabi-app details[open]>[data-icon-action]:focus-visible::after{display:none}
 @container manabi-shell (max-width:900px){.manabi-app .gnb,.manabi-app.manabi-app--reading .gnb{padding-inline:12px;gap:4px}.manabi-app .gnb .gnb__logo{font-size:20px}.manabi-app .gnb .reader-site-menu nav{left:50%;right:auto;transform:translateX(-50%)}}
+/* 메뉴 셋 — 배움 · 서재 · 산책(LEARN-HOME-AK-001, 오너 확정 목업 2026-10-09). 넓은 화면은 글자 메뉴를 가운데에, 휴대폰은 아이콘 + 글자 탭 막대. */
+.manabi-app .gnb .gnb__nav{position:absolute;left:50%;transform:translateX(-50%);gap:4px}
+.manabi-app .gnb .gnb__link--text{display:inline-flex;align-items:center;justify-content:center;min-height:44px;height:44px;padding:0 14px;border-radius:0;background:transparent;box-shadow:none;color:var(--muted);font:500 14.5px/1 var(--font-noto-kr),sans-serif;text-decoration:none}
+.manabi-app .gnb .gnb__link--text:hover{background:transparent;color:var(--ink)}
+.manabi-app .gnb .gnb__link--text[aria-current="page"]{background:transparent;box-shadow:none;color:var(--ink);font-weight:700}
+.manabi-app .gnb .gnb__link--text[aria-current="page"]::after{content:'';position:absolute;left:14px;right:14px;bottom:4px;height:2px;background:var(--ink)}
+.manabi-app .mobile-nav__link{gap:2px;font-weight:500;font-size:11px;color:var(--muted);min-height:48px}
+.manabi-app .mobile-nav__link .action-icon{width:22px;height:22px}
+.manabi-app .mobile-nav__link.active{color:var(--ja);font-weight:700}
+.manabi-app .mobile-nav__link.active::before{display:none}

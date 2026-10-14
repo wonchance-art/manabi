@@ -96,9 +96,10 @@ try {for(const engine of (process.env.QA_ENGINE==='chromium'?[chromium]:[chromiu
   if(['radio','checkbox'].includes(await answerField.getAttribute('type')))await answerField.check();else await answerField.fill('합성 답안');
   const answerKey=`manabi-book-answers:${revision}:${uid}`,savedAnswer=await page.evaluate(key=>localStorage.getItem(key),answerKey);assert(savedAnswer);
 
-  await page.getByRole('link',{name:'담은 표현',exact:true}).click();
-  const reviewLink=page.getByRole('link',{name:'이 교재 표현 복습 →',exact:true});await reviewLink.waitFor();
+  // REV-SCOPE-R1A: 도구막대 「담은 표현」 = 교재 범위의 채점 복습방(범위 주소 정본 src=book:japanese-n5:1-42).
+  const reviewLink=page.getByRole('link',{name:'담은 표현',exact:true});await reviewLink.waitFor();
   const scopeHref=await reviewLink.getAttribute('href'),returnTo=new URL(scopeHref,base).searchParams.get('returnTo');assert(returnTo.includes(revision));assert(returnTo.includes('#u42-'));
+  assert.equal(new URL(scopeHref,base).searchParams.get('src'),'book:japanese-n5:1-42');
   const storedBefore=await page.evaluate(({progressKey,oldKey})=>[localStorage.getItem(progressKey),localStorage.getItem(oldKey)],{progressKey,oldKey});
   const beforeWords=structuredClone(words);
   // The first page contains only repeated card 1; other cards must come from the next page.
@@ -106,7 +107,7 @@ try {for(const engine of (process.env.QA_ENGINE==='chromium'?[chromium]:[chromiu
   const readCount=writes.filter(w=>w.table==='library_reading_activity').length;
   await reviewLink.click();await page.getByRole('button',{name:'표현 3개 복습 →',exact:true}).waitFor();
   assert.equal(await page.getByRole('heading',{name:'문법도 한 번 더.'}).count(),0);assert.equal(await page.getByText('bonjour',{exact:true}).count(),0);assert.equal(await page.getByText('別の資料',{exact:true}).count(),0);
-  assert.deepEqual(await page.evaluate(()=>['vocab_seriesFilter','vocab_langFilter','vocab_levelFilter'].map(k=>localStorage.getItem(k))),['french-old','French','H6']);
+  assert.deepEqual(await page.evaluate(()=>['vocab_seriesFilter','vocab_langFilter','vocab_levelFilter','vocab_reviewScope'].map(k=>localStorage.getItem(k))),['french-old','French','H6',null]);
   await check('save and duplicate protection → explicit N5 scope wins over old filters; 3 unique cards across paginated, repeated edition sources');
   for(const width of [1440,390,320]){await page.setViewportSize({width,height:960});await check(`book review entrance ${width}px`);await page.screenshot({path:`${out}/${engine.name()}-scope-${width}.png`,fullPage:true});}
   // Keyboard entry, and an actual source popup rather than a URL-only assertion.
@@ -139,9 +140,9 @@ try {for(const engine of (process.env.QA_ENGINE==='chromium'?[chromium]:[chromiu
   await page.goto(base+`/books/japanese-n5?edition=${revision}&reference=1#u01-start`);await page.getByRole('link',{name:'여기부터 이어읽기 →'}).click();
   await page.waitForURL(url=>!url.searchParams.has('reference'));
   await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)||'{}').page?.startsWith('u01'),progressKey);await check('explicit continue from source changes the main reading position');
-  scopeFail=true;await page.goto(base+scopeHref);await page.getByRole('heading',{name:'이 교재의 표현 범위를 불러오지 못했어요.'}).waitFor();assert.equal(await page.locator('.review-room-start').count(),0);await check('scope failure cannot start or fall back to unrelated cards');
-  scopeFail=false;scopeEmpty=true;await page.getByRole('button',{name:'범위 다시 불러오기'}).click();await page.getByRole('heading',{name:'첫 표현을 담아 보세요.'}).waitFor();assert.equal(await page.locator('.review-room-start').count(),0);await check('empty book scope is distinct from failed scope and does not include global cards');
-  scopeEmpty=false;await page.goto(base+'/vocab');await page.getByRole('heading',{name:'복습',exact:true}).waitFor();assert.equal(await page.locator('[aria-label="복습 범위"]').count(),0);await page.getByRole('heading',{name:'문법도 한 번 더.'}).waitFor();await check('global review remains a separate explicit destination');
+  scopeFail=true;await page.goto(base+scopeHref);await page.getByRole('heading',{name:'범위를 불러오지 못했어요.'}).waitFor();assert.equal(await page.locator('.review-room-start').count(),0);await check('scope failure cannot start or fall back to unrelated cards');
+  scopeFail=false;scopeEmpty=true;await page.getByRole('button',{name:'다시 시도',exact:true}).click();await page.getByRole('heading',{name:'첫 표현을 담아 보세요.'}).waitFor();assert.equal(await page.locator('.review-room-start').count(),0);await check('empty book scope is distinct from failed scope and does not include global cards');
+  scopeEmpty=false;await page.goto(base+'/vocab');await page.getByRole('heading',{name:'복습',exact:true}).waitFor();assert.equal(await page.locator('[aria-label="교재 범위 안내"]').count(),0);await page.getByRole('heading',{name:'문법도 한 번 더.'}).waitFor();await check('global review remains a separate explicit destination');
   await context.clearCookies();await page.goto(base+scopeHref);await page.getByRole('link',{name:'로그인하고 이어가기 →'}).waitFor();assert.equal(await page.locator('.review-card').count(),0);await check('signed-out account cannot reuse the prior scoped queue');
   assert.deepEqual(report.errors,[]);
  }finally{await context.close();await browser.close();}

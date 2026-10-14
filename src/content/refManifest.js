@@ -44,7 +44,6 @@ export function buildContinueManifest() {
     out[name] = {
       base: ref.base,
       readKey: ref.readKey,
-      flag: ref.flag,
       name: ref.name,
       levels: ref.LEVEL_META.map(m => ({
         key: m.key,

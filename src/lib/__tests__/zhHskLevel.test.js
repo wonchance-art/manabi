@@ -2,18 +2,20 @@ import { describe, expect, it } from 'vitest';
 import ZH_HSK_LEVEL from '../data/zhHskLevel.json';
 import HSK_POS_FIX from '../server/data/zhPosFixHsk.json';
 import { ZH_POS_FIX } from '../server/zhTokenFix.js';
-import { zhHskLevelOf, zhHskProfile } from '../zhHskLevel.js';
+import ZH_HSK_2026_LEVEL from '../data/zhHsk2026Level.json';
+import { zhHskProfile } from '../zhHskLevel.js';
 import { tokenizeZhLine } from '../server/tokenizeZh.js';
 
 // 계약: HSK 3.0 급수·품사 계층 (분석 개선 R3 — 오너 승인 2026-08-29).
 // 원천 ivankra/hsk30(MIT, 공식 목록 11,092단어 정리본), 생성 scripts/build-zh-hsk.mjs.
-// ⑴ 급수 데이터 정본 + 조회·프로필(엔진 — UI는 목업 승인 후, i+1 R1→R2 선례)
+// ⑴ 2021 급수 데이터 — 분절 방벽(isZhRealWord)의 본체. 화면 급수 조회·프로필은 HSK 2026 표
+//    (zhHskLevel.js — ZH-LEVEL-2026-001, zhHsk2026Level.test.js)로 옮겼다.
 // ⑵ 품사 충돌 수확층(jieba 계열과 HSK 집합이 서로소인 것만) — R1 POS_FIX의 자동 시드.
 //    R5: 고유명사류(nr/ns/nt/nz) 태그는 CEDICT 대문자 판별자(© MDBG, CC BY-SA 4.0 —
 //    고유명사는 병음이 대문자)로 갈라, 소문자 독음뿐인 일반어 오태그(明白/nr·星星/nz)만
 //    수확하고 진짜 고유명사(北京·성씨 겸용 毛/周)는 존중한다.
 
-describe('zhHskLevel 데이터 정본', () => {
+describe('zhHskLevel 데이터(2021 — 분절 방벽)', () => {
   const entries = Object.entries(ZH_HSK_LEVEL);
 
   it('규모 — 공식 목록 11,092의 한자 표제어(파이프 변형 분해 후 1만+)', () => {
@@ -26,16 +28,16 @@ describe('zhHskLevel 데이터 정본', () => {
   });
 
   it('스팟 핀 — 1급 기초어·파이프 변형 분해·7-9 밴드', () => {
-    expect(zhHskLevelOf('爱')).toBe(1);
-    expect(zhHskLevelOf('爸爸')).toBe(1);
-    expect(zhHskLevelOf('爸')).toBe(1); // 爸爸|爸 파이프 변형 각각 등재
-    expect(zhHskLevelOf('朋友')).toBe(1);
+    expect(ZH_HSK_LEVEL['爱']).toBe(1);
+    expect(ZH_HSK_LEVEL['爸爸']).toBe(1);
+    expect(ZH_HSK_LEVEL['爸']).toBe(1); // 爸爸|爸 파이프 변형 각각 등재
+    expect(ZH_HSK_LEVEL['朋友']).toBe(1);
     expect(ZH_HSK_LEVEL['癌']).toBe(7); // 7-9 밴드 → 7
-    expect(zhHskLevelOf('없는말')).toBeNull();
+    expect(ZH_HSK_LEVEL['없는말']).toBeUndefined();
   });
 });
 
-describe('zhHskProfile — 자료 난이도 프로필(순수)', () => {
+describe('zhHskProfile — 자료 난이도 프로필(순수, HSK 2026 표)', () => {
   const words = [
     { key: '爱', text: '爱', base_form: '爱' },       // 1급
     { key: '朋友', text: '朋友', base_form: '朋友' }, // 1급
@@ -44,7 +46,7 @@ describe('zhHskProfile — 자료 난이도 프로필(순수)', () => {
   ];
 
   it('급수 분포·미담김 분포·중앙값을 센다(담김은 뷰어 관용구 대조)', () => {
-    const p = zhHskProfile(words, { surfaces: new Set(['爱']), bases: new Set() });
+    const p = zhHskProfile(words, { surfaces: new Set(['爱']), bases: new Set() }, ZH_HSK_2026_LEVEL);
     expect(p.tagged).toBe(3);
     expect(p.untagged).toBe(1);
     expect(p.byLevel[1]).toBe(2);
@@ -55,7 +57,7 @@ describe('zhHskProfile — 자료 난이도 프로필(순수)', () => {
   });
 
   it('표본 없음 → 중앙값 null(0 무표기 결)', () => {
-    const p = zhHskProfile([], {});
+    const p = zhHskProfile([], {}, ZH_HSK_2026_LEVEL);
     expect(p.tagged).toBe(0);
     expect(p.unknownMedianLevel).toBeNull();
   });

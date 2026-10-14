@@ -40,7 +40,6 @@ function createFacade(languageManifest) {
   return {
     base: languageManifest.base,
     readKey: languageManifest.readKey,
-    flag: languageManifest.flag,
     name: languageManifest.name,
     langCode: languageManifest.langCode,
     blurb: languageManifest.blurb,

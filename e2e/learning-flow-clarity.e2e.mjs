@@ -35,15 +35,22 @@ test('direct book entry has no invented library return; real context survives co
 test('final chapter offers review preparation for this book and exact edition, without starting a session',async()=>{
  const f=await fixture({guest:true});try{
   await f.page.goto(`/books/japanese-n5?edition=${edition}#u42-message-reading`,{waitUntil:'domcontentloaded',timeout:120000});
-  const list=f.page.getByRole('link',{name:'담은 표현',exact:true});await list.waitFor();assert.match(await list.getAttribute('href'),/\/books\/japanese-n5\/review/);
+  // REV-SCOPE-R1A: 도구막대 「담은 표현」은 채점 없는 목록 대신 교재 범위의 채점 복습방으로 간다(같은 범위 주소 정본).
   const review=f.page.getByRole('link',{name:'이 교재 표현 복습 →',exact:true});await review.waitFor();
-  const url=new URL(await review.getAttribute('href'),f.page.url());assert.equal(url.pathname,'/vocab');assert.equal(url.searchParams.get('book'),'japanese-n5');
+  const toolbar=f.page.locator('.manabi-reader-toolbar').getByRole('link',{name:'담은 표현',exact:true});await toolbar.waitFor();
+  const toolbarUrl=new URL(await toolbar.getAttribute('href'),f.page.url());assert.equal(toolbarUrl.pathname,'/vocab');
+  assert.equal(toolbarUrl.searchParams.get('lang'),'Japanese');assert.equal(toolbarUrl.searchParams.get('src'),'book:japanese-n5:1-42');
+  assert.match(toolbarUrl.searchParams.get('returnTo'),new RegExp(`${edition}#u42-`));
+  const url=new URL(await review.getAttribute('href'),f.page.url());assert.equal(url.pathname,'/vocab');assert.equal(url.searchParams.get('src'),'book:japanese-n5:1-42');
   assert.match(url.searchParams.get('returnTo'),new RegExp(`${edition}#u42-`));
+  // 과 끝 「이 과 표현 복습」 = 그 과 하나의 범위
+  const lesson=f.page.getByRole('link',{name:'이 과 표현 복습 →',exact:true});await lesson.waitFor();
+  const lessonUrl=new URL(await lesson.getAttribute('href'),f.page.url());assert.equal(lessonUrl.searchParams.get('src'),'book:japanese-n5:42-42');assert.equal(lessonUrl.searchParams.get('lang'),'Japanese');
   await check(f,'book-review-destination');assert.equal(f.analysisCalls,0);
  }finally{await f.context.close();}
 });
 
-test('expression language search changes only the list; review preparation retains its explicit scope',async()=>{
+test('language is the first review scope axis: list chips, count and start follow one scope; search stays list-only',async()=>{
  const f=await fixture({width:390});try{
   const words=['駅','bonjour'].map((text,i)=>({id:`00000000-0000-4000-8000-${String(i+1).padStart(12,'0')}`,word_text:text,meaning:i?'안녕':'역',language:i?'French':'Japanese',interval:1,ease_factor:5,repetitions:1,next_review_at:'2026-01-02',last_reviewed_at:'2026-01-01',created_at:'2026-01-01'}));
   let writes=0;
@@ -56,12 +63,33 @@ test('expression language search changes only the list; review preparation retai
    return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(legacyLearningSnapshot({actorId:'00000000-0000-4000-8000-000000000172',rows:words,known:[],exclusions:[],fields:url.searchParams.get('fields')}))});
   });
   await f.page.goto('/vocab',{waitUntil:'domcontentloaded',timeout:120000});
-  const start=f.page.getByRole('button',{name:'표현 2개 복습 →',exact:true});await start.waitFor();await f.page.getByText('복습 범위 · 전체 표현',{exact:true}).waitFor();
+  // 언어 칩 숫자 = 그 언어만의 오늘 개수 · 시작 버튼 숫자 = 지금 범위(일본어)의 줄 길이 — 다른 언어는 섞이지 않는다.
+  const languages=f.page.getByRole('group',{name:'복습 언어'});
+  await languages.getByRole('button',{name:'일본어 1',exact:true}).waitFor();assert.equal(await languages.getByRole('button',{name:'일본어 1',exact:true}).getAttribute('aria-pressed'),'true');
+  await languages.getByRole('button',{name:'프랑스어 1',exact:true}).waitFor();
+  const start=f.page.getByRole('button',{name:'표현 1개 복습 →',exact:true});await start.waitFor();
   assert.equal(await f.page.getByRole('link',{name:'학습 통계',exact:true}).count(),0);
   await f.page.getByRole('button',{name:'전체 보기 →',exact:true}).click();await f.page.getByRole('heading',{name:'담은 표현',exact:true}).waitFor();
-  await f.page.getByRole('group',{name:'표현 목록 언어'}).getByRole('button',{name:'일본어',exact:true}).click();
-  await f.page.getByRole('textbox',{name:'표현 목록 검색'}).fill('駅');await f.page.getByText('역',{exact:true}).waitFor();assert.equal(await f.page.getByText('bonjour',{exact:true}).count(),0);
-  await check(f,'expression-list-390');await f.page.getByRole('button',{name:'← 돌아가기',exact:true}).click();await start.waitFor();await f.page.getByText('복습 범위 · 전체 표현',{exact:true}).waitFor();
+  await f.page.getByText('역',{exact:true}).waitFor();assert.equal(await f.page.getByText('bonjour',{exact:true}).count(),0);
+  await f.page.getByRole('group',{name:'표현 목록 언어'}).getByRole('button',{name:'프랑스어',exact:true}).click();
+  await f.page.getByRole('textbox',{name:'표현 목록 검색'}).fill('bon');await f.page.getByText('안녕',{exact:true}).waitFor();assert.equal(await f.page.getByText('역',{exact:true}).count(),0);
+  await check(f,'expression-list-390');await f.page.getByRole('button',{name:'← 돌아가기',exact:true}).click();await start.waitFor();
+  assert.equal(await languages.getByRole('button',{name:'프랑스어 1',exact:true}).getAttribute('aria-pressed'),'true');
+  // 명시 주소가 없는 복습방이라 고른 범위를 저장한다(명시 범위는 저장 설정을 덮지 않는다 — n5 범위 검사).
+  assert.equal(await f.page.evaluate(()=>localStorage.getItem('vocab_reviewScope')),'lang=French');
   assert.equal(writes,0);await check(f,'review-scope-390');
+  // 범위 시트(설계 §5-2)도 390px에서 가로로 넘치지 않고, Esc로 닫히며 초점이 돌아간다.
+  const add=f.page.getByRole('button',{name:'＋ 범위',exact:true});await add.click();
+  const sheet=f.page.getByRole('dialog',{name:'범위 고르기 · 프랑스어'});await sheet.waitFor();
+  await sheet.getByRole('group',{name:'급수'}).count();await sheet.getByText('급수는 중국어만 고를 수 있어요. 일본어 N급은 준비 중이에요.',{exact:true}).waitFor();
+  await check(f,'review-scope-sheet-390');
+  await f.page.keyboard.press('Escape');await sheet.waitFor({state:'detached'});assert.equal(await add.evaluate(node=>node===document.activeElement),true);
+  // 명시 주소로 들어와 범위를 바꾸면 주소도 같은 범위가 되고, 새로고침해도 그 범위가 남는다 — 저장 설정은 그대로(M09 6152793665).
+  await f.page.goto('/vocab?lang=French',{waitUntil:'domcontentloaded',timeout:120000});
+  await languages.getByRole('button',{name:'일본어 1',exact:true}).click();
+  await f.page.waitForURL(url=>url.pathname==='/vocab'&&url.search==='?lang=Japanese');
+  await f.page.reload({waitUntil:'domcontentloaded'});
+  await languages.getByRole('button',{name:'일본어 1',exact:true}).waitFor();assert.equal(await languages.getByRole('button',{name:'일본어 1',exact:true}).getAttribute('aria-pressed'),'true');
+  assert.equal(await f.page.evaluate(()=>localStorage.getItem('vocab_reviewScope')),'lang=French');
  }finally{await f.context.close();}
 });

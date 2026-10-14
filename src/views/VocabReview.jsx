@@ -233,7 +233,7 @@ export default function VocabReview({
                         value={typingAnswer}
                         onChange={e => setTypingAnswer(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && typingAnswer.trim() && setShowAnswer(true)}
-                        placeholder="의미를 입력하세요..."
+                        placeholder="의미를 입력하세요…"
                         aria-label={`${currentWord.word_text}의 의미`}
                         className="search-input"
                         autoFocus
@@ -365,7 +365,7 @@ export default function VocabReview({
                     </div>
                   ) : (
                     <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginTop: '24px' }}>
-                      이 브라우저에서는 TTS를 지원하지 않아요. 다른 모드를 선택해주세요.
+                      이 브라우저에서는 TTS를 지원하지 않아요. 다른 모드를 골라 주세요.
                     </p>
                   )}
                 </>
@@ -402,7 +402,7 @@ export default function VocabReview({
                         opacity: exampleLoading ? 0.6 : 1,
                       }}
                     >
-                      {exampleLoading ? '예문 생성 중...' : 'AI 예문 보기'}
+                      {exampleLoading ? '예문 생성 중…' : 'AI 예문 보기'}
                     </button>
                   )}
                 </div>
@@ -414,7 +414,7 @@ export default function VocabReview({
         <div className="card review-card review-card--center">
           <div className="review-card__emoji">{vocab.length === 0 ? '★' : '✓'}</div>
           <h2 style={{ marginBottom: '10px' }}>
-            {vocab.length === 0 ? '단어를 먼저 수집해볼까요?' : '지금은 복습할 단어가 없어요'}
+            {vocab.length === 0 ? '단어를 먼저 수집해볼까요?' : '지금 복습할 단어가 없어요'}
           </h2>
           <p style={{ color: 'var(--text-secondary)', marginBottom: 16 }}>
             {vocab.length === 0

@@ -45,8 +45,11 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
     expect(pdf).toContain("const [language, setLanguage] = useState('Japanese')");
     expect(pdf).toContain('const [hideKnown, setHideKnown] = useState(true)');
     expect(pdf).toMatch(/useEffect\(\(\) => \{[\s\S]*pdf_language[\s\S]*pdf_hideKnown[\s\S]*\}, \[\]\)/);
-    expect(vocab).toContain("const [langFilter, setLangFilter] = useState('all')");
-    expect(vocab).toContain("const [seriesFilter, setSeriesFilter] = useState('all')");
+    // 언어 · 급수 · 덱 필터는 복습 범위 하나로 합쳤다(REV-SCOPE-R1A). 첫 렌더는 주소 범위(없으면 null)로 고정하고
+    // 저장된 범위는 마운트 effect에서만 읽는다.
+    expect(vocab).toContain('const [scopeDraft, setScopeDraft] = useState(reviewScope.explicit ? reviewScope.scope : null)');
+    expect(vocab).toMatch(/useEffect\(\(\) => \{\s*try \{\s*if \(!explicitScope\) setScopeDraft\(readSavedScope\(\)\);/);
+    expect(vocab).not.toContain('useState(readSavedScope');
     expect(vocab).toContain("const [reviewMode, setReviewMode] = useState('auto')");
     expect(vocab).toContain('const [newPerDay, setNewPerDay] = useState(DEFAULT_NEW_PER_DAY)');
     expect(vocab).toContain('const [introIds, setIntroIds] = useState([])');
@@ -74,7 +77,7 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
     const confirm = src.indexOf('setResults(prev => prev.length > idx');
     expect(awaitSave).toBeGreaterThan(-1);
     expect(confirm).toBeGreaterThan(awaitSave);
-    expect(src).toContain("if (!updated) throw new Error('문법 복습 결과를 저장하지 못했습니다.')");
+    expect(src).toContain("if (!updated) throw new Error('문법 복습 결과를 저장하지 못했어요.')");
     expect(src).toContain('저장 다시 시도');
     expect(src).toContain('disabled={!graded || grading}');
   });

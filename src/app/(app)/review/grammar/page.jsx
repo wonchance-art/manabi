@@ -10,6 +10,7 @@ import GrammarReviewSession from '@/views/GrammarReviewSession';
 import GuestGrammarReview from '@/views/GuestGrammarReview';
 // 옛 교재 챕터 주소는 관리자 보관함으로만 열린다 — 학습자 링크는 null(VIEWER-R0-BUGS-001 버그 3).
 import { learnerHref } from '@/lib/bookNavigation';
+import { LANG_NAME_KO } from '@/lib/constants';
 
 export const metadata = { title: '문법 복습' };
 export const dynamic = 'force-dynamic';
@@ -47,7 +48,6 @@ function toReadingItem(row) {
     lang: row.lang,
     langCode: 'ja',
     langName: '독해',
-    flag: '📖',
     title: text.title || id,
     order: text.order,
     level: track.level || 'N5',
@@ -76,7 +76,6 @@ function toDrillItem(row, registries) {
     lang: row.lang,
     langCode: ref.langCode,
     langName: ref.name,
-    flag: ref.flag,
     title: `${found.chapter.title} · 드릴`,
     order: found.chapter.order,
     level: found.chapter.level,
@@ -108,7 +107,6 @@ function toItem(row, registries) {
     lang: row.lang,
     langCode: ref.langCode,
     langName: ref.name,
-    flag: ref.flag,
     title: found.chapter.title,
     order: found.chapter.order,
     level: found.chapter.level,
@@ -200,7 +198,7 @@ export default async function Page() {
       .order('next_review_at', { ascending: true })
       .limit(30),
   ]);
-  if (dueError || upcomingError) return <div className="page-container"><section className="manabi-inline-state" role="alert"><h1>문법 복습을 불러오지 못했어요.</h1><p>연결을 확인하고 다시 열어 주세요. 복습 기록은 그대로 남아 있어요.</p><a href="/review/grammar">다시 불러오기 →</a></section></div>;
+  if (dueError || upcomingError) return <div className="page-container"><section className="manabi-inline-state" role="alert"><h1>문법 복습을 불러오지 못했어요.</h1><p>연결을 확인하고 다시 시도해 주세요. 복습 기록은 그대로 남아 있어요.</p><a href="/review/grammar">다시 시도 →</a></section></div>;
   await prepare([...(dueRows || []), ...(upcomingRows || [])]);
 
   // ── 잔존 인트로 레벨(OT/A0) 큐 방어 — 표시하지 않고 본인 행을 삭제(fire-and-forget) ──
@@ -226,7 +224,7 @@ export default async function Page() {
       const found = findDrillContext(ref, drillId);
       if (!ref || !found) return null;
       return {
-        flag: ref.flag,
+        langName: ref.name,
         level: found.chapter.level,
         order: found.chapter.order,
         title: `${found.chapter.title} · 드릴`,
@@ -238,14 +236,14 @@ export default async function Page() {
       const track = getReadingTrack('n5-tokyo');
       const text = track?.texts?.find(t => t.id === row.slug.slice(3));
       if (!text) return null;
-      return { flag: '📖', level: '독해', order: text.order, title: text.title, href: '/japanese/reading', dueAt: row.next_review_at };
+      return { langName: LANG_NAME_KO.Japanese, level: '독해', order: text.order, title: text.title, href: '/japanese/reading', dueAt: row.next_review_at };
     }
     const ref = registries.get(row.lang);
     const ch = ref?.getChapter(row.slug)?.chapter;
     if (!ch) return null;
     if (ref.isIntroLevel(ch.level)) return null;   // 인트로 레벨 잔존 큐는 표시하지 않음
     return {
-      flag: ref.flag,
+      langName: ref.name,
       level: ch.level,
       order: ch.order,
       title: ch.title,

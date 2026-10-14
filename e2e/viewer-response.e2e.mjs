@@ -96,7 +96,7 @@ test('new grades react before held INSERT, next word is usable, and saved member
     await waitUntil(() => f.posts.length === 2);
     assert.equal(f.posts.length, 2, 'different words may save concurrently; duplicate rating is ignored');
     f.primary.release();
-    await f.actions.getByRole('button', { name: '✓ 단어장에 있음', exact: true }).waitFor({ timeout: 3000 });
+    await f.actions.getByRole('button', { name: '✓ 담은 표현에 있음', exact: true }).waitFor({ timeout: 3000 });
     if (process.env.COMPOSER_SCREENSHOTS) await f.page.screenshot({ path: `${process.env.COMPOSER_SCREENSHOTS}/new-confirmed-390.png`, fullPage: true });
     await waitUntil(() => f.auxiliaryStarted);
     assert.ok(await f.page.locator('[data-source-token="id_0_1"]').evaluate(el => el.classList.contains('word-token--saved')));
@@ -170,15 +170,15 @@ test('concurrent successful inline grades retain both schedules and personal mea
     await f.actions.getByRole('button', { name: /^알맞음/ }).click();
     await waitUntil(() => f.reviews.length === 2);
     f.review.release();
-    await f.actions.getByRole('button', { name: '✓ 단어장에 있음', exact: true }).waitFor({ timeout: 5000 });
+    await f.actions.getByRole('button', { name: '✓ 담은 표현에 있음', exact: true }).waitFor({ timeout: 5000 });
     await waitUntil(() => f.rows.every(row => Date.parse(row.last_reviewed_at) > Date.parse(previousReviewedAt.get(row.id))));
     assert.deepEqual(f.rows.map(row => row.meaning), ['고양이', '개']);
     assert.ok(f.rows.every(row => new Date(row.next_review_at) > new Date()));
     await f.page.reload({ waitUntil: 'domcontentloaded' });
     await f.select(0);
-    await f.actions.getByRole('button', { name: '✓ 단어장에 있음', exact: true }).waitFor();
+    await f.actions.getByRole('button', { name: '✓ 담은 표현에 있음', exact: true }).waitFor();
     await f.select(1);
-    await f.actions.getByRole('button', { name: '✓ 단어장에 있음', exact: true }).waitFor();
+    await f.actions.getByRole('button', { name: '✓ 담은 표현에 있음', exact: true }).waitFor();
     assert.equal(f.reviews.length, 2);
     assert.deepEqual(f.errors, []);
   } finally { f.primary.release(); f.auxiliary.release(); f.review.release(); await f.context.close(); }

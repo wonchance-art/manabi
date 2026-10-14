@@ -25,7 +25,7 @@ export default async function Page({ params }) {
   return (
     <ReferencePatternIndexPage
       lang="French"
-      refInfo={{ base: ref.base, flag: ref.flag, name: ref.name, langCode: ref.langCode }}
+      refInfo={{ base: ref.base, name: ref.name, langCode: ref.langCode }}
       levelMeta={BUNKEI_LEVELS}
       meta={ref.getLevelMeta(level)}
       bunkei={getBunkei(level)}

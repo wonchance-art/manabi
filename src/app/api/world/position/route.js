@@ -52,11 +52,11 @@ export async function POST(request) {
   try {
     body = await request.json();
   } catch {
-    return Response.json({ error: '잘못된 JSON입니다.' }, { status: 400 });
+    return Response.json({ error: '잘못된 JSON이에요.' }, { status: 400 });
   }
   const { supabase, user } = auth;
   const pos = await normalizePositionForUser(body, supabase, user.id);
-  if (!pos) return Response.json({ error: 'scene, x, y가 올바르지 않습니다.' }, { status: 400 });
+  if (!pos) return Response.json({ error: 'scene, x, y가 올바르지 않아요.' }, { status: 400 });
 
   const { error } = await supabase
     .from('world_positions')

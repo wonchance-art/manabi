@@ -33,9 +33,9 @@ describe('안내 기준 문구', () => {
   });
 
   it('비밀번호 최소 길이는 서버가 알려 준 숫자를 옮긴다', () => {
-    expect(toKoreanError('Password should be at least 8 characters.')).toBe('비밀번호는 최소 8자 이상이어야 합니다.');
-    expect(toKoreanError('Password should be at least 6 characters')).toBe('비밀번호는 최소 6자 이상이어야 합니다.');
-    expect(toKoreanError('Password should be at least')).toBe('비밀번호가 너무 짧습니다.');
+    expect(toKoreanError('Password should be at least 8 characters.')).toBe('비밀번호는 최소 8자 이상이어야 해요.');
+    expect(toKoreanError('Password should be at least 6 characters')).toBe('비밀번호는 최소 6자 이상이어야 해요.');
+    expect(toKoreanError('Password should be at least')).toBe('비밀번호가 너무 짧아요.');
   });
 
   it('쓰이지 않던 email_confirm_failed 안내는 남기지 않는다', () => {
