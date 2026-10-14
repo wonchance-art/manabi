@@ -135,7 +135,8 @@ import { isLocalId, parseLocalId, chaptersForLocalNav } from '../lib/classBoard'
 import { getSharedCopy } from '../lib/sharedStore';
 import { readIndexCache } from '../lib/classClient';
 import { useRefVocabEntry, useRefVocabIndex } from '../lib/refVocabIndex';
-import { useZhHskLevels, zhHskLevelOf, zhHskLevelLabel } from '../lib/zhHskLevel';
+import { zhHskLevelOf, zhHskLevelLabel } from '../lib/zhHskLevel';
+import { useZhHskLevels } from '../lib/useZhHskLevels';
 import { loadHanjaPanelTable, onIdle, prefetchHanjaPanel } from '../lib/viewerHanjaPanel';
 import { useTokenDictPrefetch } from '../lib/useTokenDictPrefetch';
 import { tokenDictPrefetchEnabled, tokenDictQueryKey, tokenDictKeyOf, prefetchTokenDict } from '../lib/tokenDictPrefetch';
@@ -176,8 +177,12 @@ import ViewerComments from './ViewerComments';
 import ViewerQuizModal from './ViewerQuizModal';
 import { langNameKo, splitSentenceAroundWord, detectLang } from '../lib/constants';
 import { attributionParts, literatureAttributionParts, materialSource } from '../lib/videoAttribution';
-import { isCanonicalLiteratureMaterial } from '../lib/literatureCanonical';
+import { isCanonicalLiteratureMaterial, literatureWork } from '../lib/literatureCanonical';
+import { literatureChapterLabel, literatureChapterTitle } from '../lib/literatureDisplay';
 import { useCanonicalLiterature } from '../lib/useCanonicalLiterature';
+import { isArtBookMaterial } from '../lib/artBookProvider';
+import { useArtBookChapter } from '../lib/useArtBookChapter';
+import ViewerArtCard from '../components/viewer/ViewerArtCard';
 import { logReviewEvents } from '../lib/reviewEvents';
 
 // 공부 모드 지원 언어 키 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
@@ -329,6 +334,10 @@ export default function ViewerPage() {
   // 아오조라 정본 책 — 출처 줄은 정본 대조표와 원문 해시가 맞을 때만(가짜 크레딧 차단), 원문 수정은 막는다(AOZORA-P0-2).
   const canonicalLiterature = useCanonicalLiterature(material);
   const canonicalLiteratureLocked = isCanonicalLiteratureMaterial(material);
+  // 「그림 한 장 읽기」 큐레이션 책(ART-P0-3) — 작품 카드는 카탈로그 해시 대조를 통과한 장만, 원문 수정은 정본 책처럼 막는다.
+  // 아오조라 잠금과 따로 둔다: canonicalLiteratureLocked는 일본어 「뜻 확인 필요」 검수도 켜는데, 그건 큐레이션 책 범위가 아니다.
+  const artBookChapter = useArtBookChapter(material);
+  const artBookLocked = isArtBookMaterial(material);
   const [koreanSources, setKoreanSources] = useState({ scope: '', byToken: {} });
   const koreanSourceScope = useMemo(() => materialLang === 'Korean' ? JSON.stringify([id, material?.raw_text, material?.processed_json]) : '',
     [materialLang, id, material?.raw_text, material?.processed_json]);
@@ -506,6 +515,11 @@ export default function ViewerPage() {
 
   // 책 챕터 목록(P1) — metadata.book이 있으면 같은 key의 형제 챕터를 불러 내비를 만든다
   const bookMeta = getBook(material?.processed_json?.metadata);
+  // 정본 문학책(AOZORA-P0-5) — 원문이 정본과 대조된 장만, 제목·형제 이름을 대조표에서 읽는다(「과」 대신 一·二 / 1/2).
+  // 저장된 자료 제목이 예전 표기(「鼻 — 1편」)여도 화면은 정본 표기를 따른다.
+  const literatureBook = canonicalLiterature ? literatureWork(bookMeta?.key) : null;
+  const literatureTitleOf = (order) => (literatureBook ? literatureChapterTitle(literatureBook, order) : null);
+  const viewerTitle = literatureTitleOf(bookMeta?.order) || material?.title;
   const { data: bookChapters } = useQuery({
     queryKey: ['book-chapters', bookMeta?.key, material?.owner_id],
     queryFn: async () => {
@@ -539,7 +553,7 @@ export default function ViewerPage() {
       next: idx < navChapters.length - 1 ? navChapters[idx + 1] : null,
       // 이어 적기(#1077 5520128974) — 마지막 과의 「다음 →」 자리에 「다음 과 적기」(내 책만)
       key: bookMeta.key,
-      canAppend: !!user?.id && material?.owner_id === user.id,
+      canAppend: !!user?.id && material?.owner_id === user.id && !literatureBook, // 정본 책은 이어 적지 않는다
     };
   })();
 
@@ -550,8 +564,20 @@ export default function ViewerPage() {
   const siblingNav = bookNav
     ? {
         kind: 'book', label: `《${bookNav.title || '제목 없는 교재'}》`,
-        pos: bookNav.pos, total: bookNav.total, prev: bookNav.prev, next: bookNav.next,
-        prevLabel: '이전 과', nextLabel: '다음 과',
+        pos: bookNav.pos, total: bookNav.total,
+        prev: bookNav.prev && literatureBook ? { ...bookNav.prev, title: literatureTitleOf(bookNav.prev.order) } : bookNav.prev,
+        next: bookNav.next && literatureBook ? { ...bookNav.next, title: literatureTitleOf(bookNav.next.order) } : bookNav.next,
+        // 정본 문학책은 작가 목차면 「장」, manabi가 나눈 것이면 「부분」 — 교재의 「과」를 쓰지 않는다. 화면 읽기 프로그램에는
+        // 목적지까지 읽어 준다(「다음 장: ごん狐 — 二」).
+        ...(literatureBook
+          ? (() => {
+            const [prevLabel, nextLabel] = literatureBook.division === 'heading' ? ['이전 장', '다음 장'] : ['이전 부분', '다음 부분'];
+            return {
+              prevLabel: bookNav.prev ? `${prevLabel}: ${literatureTitleOf(bookNav.prev.order)}` : prevLabel,
+              nextLabel: bookNav.next ? `${nextLabel}: ${literatureTitleOf(bookNav.next.order)}` : nextLabel,
+            };
+          })()
+          : { prevLabel: '이전 과', nextLabel: '다음 과' }),
       }
     : (prevLesson || nextLesson)
       ? {
@@ -691,7 +717,7 @@ export default function ViewerPage() {
   // ③ 원문 수정(오너 승인) — 소유자 전용, 저장 시 바뀐 줄만 재분석(sourceEdit.js 계획).
 
   const handleSourceEditSave = async (plan) => {
-    if (composerOf(material) || canonicalLiteratureLocked) return;
+    if (composerOf(material) || canonicalLiteratureLocked || artBookLocked) return;
     if (!plan || plan.noop) { setSourceEditOpen(false); return; }
     if (!plan.ok) { toast(plan.reason, 'error'); return; }
     if (plan.expectedRaw !== material.raw_text || JSON.stringify(plan.expectedJson) !== JSON.stringify(material.processed_json)) {
@@ -2840,7 +2866,7 @@ export default function ViewerPage() {
   // 권한은 사전 뜻 줄 교정(senseEditable)과 같은 판정이고, 수업 모드에서는 숨긴다(§13). 구간 학습(passage)은 교정 RPC가
   // 표식을 지울 수 없어(토큰 || 교정 병합) 제외한다. 열람자에게는 줄·목록이 없고 카드 ⓘ만 보인다.
   const senseReviewAllowed = canEditToken && legacyTokenEditingAllowed && learningStorageSupported && !classStudyActive
-    && materialLang === 'Chinese' && isDone && !passageOf(material);
+    && (materialLang === 'Chinese' || (materialLang === 'Japanese' && canonicalLiteratureLocked)) && isDone && !passageOf(material);
   const senseReviewShown = senseReviewAllowed && senseReviewList.length > 0 && senseReviewDismissed !== senseReviewKey;
   const openSenseReview = () => {
     if (!senseReviewAllowed || !senseReviewList.length) return;
@@ -2871,7 +2897,7 @@ export default function ViewerPage() {
     const dictEntry = query?.data;
     const pending = dictEntry === undefined && senseReviewDictFailed !== senseReviewDictSignature;
     return { id: token.id, token, dictEntry: dictEntry ?? null, sentence: cardSentenceOf(token),
-      options: pending ? null : senseReviewOptions(dictEntry ?? null, token), resolved: !needsMeaningCheck(token) };
+      options: pending ? null : senseReviewOptions(dictEntry ?? null, token, materialLang), resolved: !needsMeaningCheck(token) };
   });
   // ── AD-R4 PR④ 경계 후보 줄(설계서 §6.2) — [묶기]는 그 자리에서 AD-R3 확인 줄(planBoundaryMerge → boundaryMutation → commitBoundaryEdit,
   // 새 쓰기 경로 0), [아니요]는 boundaryDismissMutation. [묶기]를 열 수 있는 조건은 AD-R3 진입점과 같다(boundaryAllowed).
@@ -3662,8 +3688,8 @@ export default function ViewerPage() {
              매만지고 있었다(:hover가 할 일). 밖으로 빼고 baseline으로 맞춘다.
              ※ 여기 있던 `flex: 1`은 죽은 값이었다 — 부모(.page-header)가 flex가 아니다. */
           <div className="viewer-titlerow">
-            <h1 className="page-header__title">{material.title}</h1>
-            {user?.id === material?.owner_id && !composerOf(material) && (
+            <h1 className="page-header__title" lang={contentLangTag}>{viewerTitle}</h1>
+            {user?.id === material?.owner_id && !composerOf(material) && !literatureBook && (
               <button
                 className="viewer-title-edit"
                 onClick={() => { setTitleDraft(material.title); setTitleEditing(true); }}
@@ -3753,6 +3779,10 @@ export default function ViewerPage() {
         </p>
       )}
 
+      {/* 「그림 한 장 읽기」 작품 정보 카드(ART-P0-3 목업) — 그림 · 제목 · 작가 · 소장 · 그림 속 장소 · 찾아볼 것, 그 아래 해설 출처 한 줄.
+          값은 카탈로그 해시 대조를 통과한 장(useArtBookChapter)에서만 온다 — 남의 공개 자료에 꾸며 넣은 provider 'art' metadata로는 생기지 않는다. */}
+      <ViewerArtCard chapter={artBookChapter} vt={vt} />
+
       {/* Reading Progress Bar */}
       {isDone && (
         <div className="viewer-progress-bar" aria-label={`읽기 진행률 ${readProgress}%`}>
@@ -3776,11 +3806,12 @@ export default function ViewerPage() {
                 <strong>{vt("부분 분석")}</strong>
                 <span>{vt("문단을 골라 분석해요")}</span>
               </button>
-              {!composerOf(material) && !canonicalLiteratureLocked && <button className="reanalyze-panel__item" onClick={() => { setReanalyzePanel(null); setSourceEditOpen(true); }}>
+              {!composerOf(material) && !artBookLocked && !canonicalLiteratureLocked && <button className="reanalyze-panel__item" onClick={() => { setReanalyzePanel(null); setSourceEditOpen(true); }}>
                 <strong>{vt("원문 수정")}</strong>
                 <span>{vt("텍스트를 고치면 바뀐 줄만 분석해요")}</span>
               </button>}
               {canonicalLiteratureLocked && <p className="reader-metadata">{vt("정본 책이라 원문은 고칠 수 없어요")} · {vt("단어 뜻·발음 교정과 다시 분석은 그대로 쓸 수 있어요")}</p>}
+              {artBookLocked && <p className="reader-metadata">{vt("정본 책이라 원문은 고칠 수 없어요")} · {vt("단어 뜻·발음 교정과 다시 분석은 그대로 쓸 수 있어요")}</p>}
             </div>
           )}
           {reanalyzePanel === 'confirm-full' && (
@@ -4203,15 +4234,15 @@ export default function ViewerPage() {
           return (
             <Link href={classStudyNeighborHref(nextLesson,studyContext,originalParams.get('returnTo'))} className="next-lesson-card">
               <div className="next-lesson-card__hint">{vt("다음 편")}</div>
-              <div className="next-lesson-card__title">{nextLesson.title}</div>
+              <div className="next-lesson-card__title" lang={contentLangTag}>{nextLesson.title}</div>
             </Link>
           );
         }
         if (bookNav?.next) {
           return (
             <Link href={classStudyNeighborHref(bookNav.next,studyContext,originalParams.get('returnTo'))} className="next-lesson-card">
-              <div className="next-lesson-card__hint">{vt("다음 과 ·")}{bookNav.pos + 1}/{bookNav.total}</div>
-              <div className="next-lesson-card__title">{bookNav.next.title}</div>
+              <div className="next-lesson-card__hint">{literatureBook ? vt("이어 읽기 ·") : vt("다음 과 ·")}{literatureBook?.division === 'heading' ? literatureChapterLabel(literatureBook, bookNav.next.order) : `${bookNav.pos + 1}/${bookNav.total}`}</div>
+              <div className="next-lesson-card__title" lang={contentLangTag}>{literatureTitleOf(bookNav.next.order) || bookNav.next.title}</div>
             </Link>
           );
         }

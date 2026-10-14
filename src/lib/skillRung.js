@@ -1,3 +1,5 @@
+import { countsForSkillLadder } from './practiceEvents.js';
+
 /**
  * 어휘 숙련 사다리(rung) + EWMA 난이도 다이얼 — 순수 함수 모음.
  *
@@ -93,8 +95,11 @@ export function computeRung(events) {
 export function deriveVocabRungs(eventsAsc, dueVocabRows) {
   const rungs = {};
   for (const w of dueVocabRows || []) {
+    // 집중 연습의 정답이 정해진 문항(choice · cloze · typing · listening)도 사다리에 쌓는다 — 연습 기록은
+    // item_key가 단어 id다(REV-SCOPE §6-1 ⑤). self(몰랐어요/알았어요)는 넣지 않는다.
     const evs = (eventsAsc || [])
-      .filter(e => e.source === 'vocab' && e.item_key === w.word_text)
+      .filter(e => (e.source === 'vocab' && e.item_key === w.word_text)
+        || (w.id != null && countsForSkillLadder(e) && e.item_key === String(w.id)))
       .map(e => ({ qtype: e.detail?.qtype, correct: !!e.correct }));
     rungs[w.word_text] = computeRung(evs);
   }

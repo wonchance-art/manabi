@@ -81,7 +81,7 @@ export default function Nihongo42Page() {
                     >
                       Ch.{c.n}
                     </span>
-                    <span lang="ja" style={{ fontSize: '0.96rem', fontWeight: 600, color: 'var(--text-primary)', wordBreak: 'keep-all' }}>
+                    <span lang="ja" style={{ fontSize: '0.96rem', fontWeight: 600, color: 'var(--text-primary)' }}>
                       {c.jp[0]}
                     </span>
                     <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5, wordBreak: 'keep-all', textAlign: 'right' }}>

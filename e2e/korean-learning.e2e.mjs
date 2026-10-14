@@ -247,6 +247,10 @@ test('Korean atomic save, known/exclusion restore, locale conflict, due review a
     await f.page.addInitScript(()=>localStorage.setItem('as_review_mode','flash'));
     await f.page.goto('/vocab',{waitUntil:'domcontentloaded'});
     await f.page.getByRole('button',{name:'표현 1개 복습 →',exact:true}).click();
+    // REV-SCOPE-R1B-1: 새 표현의 첫 등장은 채점 없는 「처음 보는 표현」 카드 — 일정 · 평가 기록을 쓰지 않는다.
+    await f.page.getByText('처음 보는 표현',{exact:true}).waitFor();
+    assert.equal(f.events.length,0);assert.equal(f.cards[0].last_reviewed_at,null);
+    await f.page.getByRole('button',{name:'다음 →',exact:true}).click();
     await f.page.getByRole('heading',{name:'가다',exact:true}).waitFor();
     assert.equal(await f.page.locator('.review-card__answer').count(),0,'first question keeps its answer hidden until reveal');
     await f.page.getByRole('button',{name:'정답 확인하기',exact:true}).click();
@@ -255,7 +259,7 @@ test('Korean atomic save, known/exclusion restore, locale conflict, due review a
     const scored=f.page.waitForResponse(response=>response.url().includes('/rest/v1/user_vocabulary')&&response.request().method()==='PATCH');
     await f.page.locator('.review-score-btn--good').click();
     const committed=await scored;assert.equal(committed.status(),200);
-    await f.page.getByRole('heading',{name:'이번 표현 복습을 마쳤어요',exact:true}).waitFor();
+    await f.page.getByRole('heading',{name:'오늘 몫 끝',exact:true}).waitFor();
     assert.ok(Number.isFinite(Date.parse(f.cards[0].last_reviewed_at)),'only the committed grade records the first review');
     assert.equal(committed.request().postDataJSON().last_reviewed_at,f.cards[0].last_reviewed_at);
     assert.notEqual(f.cards[0].next_review_at,previousDue);
@@ -286,7 +290,7 @@ test('Verified Korean due queue reviews the existing edited card without resavin
     await f.page.getByRole('button',{name:'정답 확인하기',exact:true}).click();
     const scored=f.page.waitForResponse(response=>response.url().includes('/rest/v1/user_vocabulary')&&response.request().method()==='PATCH');
     await f.page.locator('.review-score-btn--good').click();await scored;
-    await f.page.getByRole('heading',{name:'이번 표현 복습을 마쳤어요',exact:true}).waitFor();
+    await f.page.getByRole('heading',{name:'오늘 몫 끝',exact:true}).waitFor();
     assert.equal(f.cards[0].id,before.id);assert.equal(f.cards[0].meaning,before.meaning);
     assert.equal(f.cards[0].source_sentence,before.source_sentence);assert.equal(f.cards[0].source_material_id,before.source_material_id);
     assert.notEqual(f.cards[0].next_review_at,before.next_review_at);assert.deepEqual(f.contexts,sources);

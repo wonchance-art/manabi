@@ -5,6 +5,7 @@ import {useSearchParams,useRouter} from 'next/navigation';
 import {useInfiniteQuery,useQuery,useQueryClient} from '@tanstack/react-query';
 import {supabase} from '@/lib/supabase';
 import {langNameKo} from '@/lib/constants';
+import {encounterLookupLang} from '@/lib/refVocabLookup';
 import {pinnedMaterialIds} from '@/lib/offlineCache';
 import {fetchLibraryPage,LIBRARY_LANGUAGES,libraryFilters,libraryNarrowed,libraryKey,libraryError,libraryComposerHref} from '@/lib/personalLibrary';
 import {libraryResume} from '@/lib/libraryActivity';
@@ -26,7 +27,7 @@ function RecentReads({user}){
   setRows(ordered.map(row=>({...row,resume:libraryResume(row,user.id,storage)})));
  },[recent.data,user.id]);
  if(!rows.length)return <>{recent.isPending&&<p className="shelf-muted" role="status">읽던 곳을 확인하고 있어요…</p>}<QueryFailure query={recent} label="읽던 곳"/></>;
- return <section className={`shelf-recent${more?' is-expanded':''}`} aria-labelledby="shelf-recent-title"><div className="shelf-section-heading"><h2 id="shelf-recent-title">읽던 곳에서</h2>{rows.length>1&&<button className="shelf-recent-toggle" aria-expanded={more} onClick={()=>setMore(!more)}>{more?'접기':'다른 읽던 자료'}</button>}</div><div className="shelf-recent-grid">{rows.map((row,index)=><LibraryReaderLink key={libraryKey(row)} href={row.resume.href} className={`shelf-recent-card${index?' shelf-recent-extra':''}`}><LibraryCover row={row}/><div><small>{row.language?langNameKo(row.language):'읽던 자료'}</small><h3>{row.title}</h3><p>{row.resume.label} <span aria-hidden="true">↗</span></p></div></LibraryReaderLink>)}</div><QueryFailure query={recent} label="읽던 곳"/></section>;
+ return <section className={`shelf-recent${more?' is-expanded':''}`} aria-labelledby="shelf-recent-title"><div className="shelf-section-heading"><h2 id="shelf-recent-title">읽던 곳에서</h2>{rows.length>1&&<button className="shelf-recent-toggle" aria-expanded={more} onClick={()=>setMore(!more)}>{more?'접기':'다른 읽던 자료'}</button>}</div><div className="shelf-recent-grid">{rows.map((row,index)=><LibraryReaderLink key={libraryKey(row)} href={row.resume.href} className={`shelf-recent-card${index?' shelf-recent-extra':''}`}><LibraryCover row={row}/><div><small>{row.language?langNameKo(row.language):'읽던 자료'}</small><h3 lang={encounterLookupLang(row.language)||undefined}>{row.title}</h3><p>{row.resume.label} <span aria-hidden="true">↗</span></p></div></LibraryReaderLink>)}</div><QueryFailure query={recent} label="읽던 곳"/></section>;
 }
 function FilterDialog({filters,onApply,onClose}){
  const [draft,setDraft]=useState(filters);

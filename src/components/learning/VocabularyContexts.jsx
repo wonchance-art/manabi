@@ -9,6 +9,8 @@ import { reviewSourceContexts } from '../../lib/learningSources';
 import { ARCHIVED_TEXTBOOK_NOTICE } from '../../lib/bookNavigation';
 import './learning.css';
 import { friendlyToastMessage } from '../../lib/errorMessage';
+// langTag(ReviewCardParts)는 이 파일을 import하므로 순환을 피해 같은 표를 가진 기존 util을 쓴다.
+import { encounterLookupLang } from '../../lib/refVocabLookup';
 
 export default function VocabularyContexts({ vocabularyId, readOnly = false, word = null }) {
   const {user}=useAuth();
@@ -25,9 +27,10 @@ export default function VocabularyContexts({ vocabularyId, readOnly = false, wor
     } catch(cause) {setRemoveError(friendlyToastMessage(cause));} finally {setRemoving(null);}
   }
   const {primary,others}=word?reviewSourceContexts(word,data || []):{primary:null,others:data || []};
+  const quoteLang=encounterLookupLang(word?.language) || undefined;
   return <>
     {primary&&<section className="review-card__context" aria-label="저장한 문맥">
-      {primary.quote&&<p className="review-card__source">{(()=>{
+      {primary.quote&&<p className="review-card__source" lang={quoteLang}>{(()=>{
         const {parts,term}=splitSentenceAroundWord(primary.quote,primary.locator?.surface || word.word_text,word.base_form);
         return parts.map((part,i)=><span key={i}>{part}{i<parts.length-1&&<mark className="review-card__highlight">{term}</mark>}</span>);
       })()}</p>}
@@ -37,7 +40,7 @@ export default function VocabularyContexts({ vocabularyId, readOnly = false, wor
     {error&&<p className="learning-links__muted">추가 문맥을 불러오지 못했어요. <button type="button" className="btn btn--ghost btn--sm" onClick={()=>refetch()}>다시 시도</button></p>}
     {others.length>0&&<details className="learning-links"><summary>{word?'다른 문맥':'이 표현을 만난 문맥'} {others.length}개</summary><ul>
     {others.map(context=><li key={context.id}>
-      <p className="learning-source-quote">{context.quote}</p>{context.translation&&<p>{context.translation}</p>}
+      <p className="learning-source-quote" lang={quoteLang}>{context.quote}</p>{context.translation&&<p>{context.translation}</p>}
       {context.href?<Link href={bookReferenceHref(context.href)} target="_blank" rel="noopener noreferrer" prefetch={false}>{context.locator?.noteCandidate?'내 노트의 필기':context.kind==='textbook'?'교재 예문':context.kind==='pdf'?`PDF${context.locator?.page?` ${context.locator.page}쪽`:''}`:'자료 속 문장'} 열기 ↗</Link>
         :<span className="learning-links__muted learning-source-archived">교재 예문 · {ARCHIVED_TEXTBOOK_NOTICE}</span>}
       {!readOnly && <button type="button" className="btn btn--ghost btn--sm" disabled={!!removing} onClick={()=>remove(context.id)}>{removing===context.id?'지우는 중…':'이 문맥만 지우기'}</button>}

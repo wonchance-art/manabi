@@ -67,7 +67,7 @@
 .discovery-reading-item__number{font-size:23px;color:var(--muted);font-weight:400;letter-spacing:-1px}
 .discovery-reading-item>div{min-width:0}
 .discovery-reading-item small{font-size:11px;color:var(--ja)}
-.discovery-reading-item h3{font-size:25px;letter-spacing:-.8px;line-height:1.5;margin:10px 0 12px;overflow-wrap:anywhere;word-break:keep-all}
+.discovery-reading-item h3{font-size:25px;letter-spacing:-.8px;line-height:1.5;margin:10px 0 12px;overflow-wrap:anywhere}
 .discovery-reading-item p{font-size:14px;line-height:1.95;color:var(--muted);margin:0 0 12px}
 .discovery-reading-item__source{font-size:10px;color:var(--muted);line-height:1.8}
 .discovery-reading-item>span:last-child{font-size:24px}

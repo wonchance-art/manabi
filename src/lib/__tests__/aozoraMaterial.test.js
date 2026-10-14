@@ -25,7 +25,7 @@ describe('createAozoraMaterialDraft — 見出し 기준 장 분할(기존 split
   const draft = createAozoraMaterialDraft(sampleEntry(), headed());
 
   it('見出し가 장 제목, 문단은 빈 줄로 띄운 평문(들여쓰기 전각 공백 제거)', () => {
-    expect(draft.book).toEqual({ key: 'aozora-000001-000001', title: '書式見本　朝の川', author: '見本太郎', level: 'N3 중급', total: 2 });
+    expect(draft.book).toEqual({ key: 'aozora-000001-000001', title: '書式見本　朝の川', author: '見本太郎', level: 'N3 중급', total: 2, division: 'heading' });
     expect(draft.chapters.map(({ order, title, materialTitle }) => ({ order, title, materialTitle }))).toEqual([
       { order: 1, title: '一', materialTitle: '書式見本　朝の川 — 一' },
       { order: 2, title: '二', materialTitle: '書式見本　朝の川 — 二' },
@@ -74,9 +74,11 @@ describe('createAozoraMaterialDraft — 見出し 기준 장 분할(기존 split
 });
 
 describe('createAozoraMaterialDraft — 見出し 없는 원작은 문단 경계 길이 분할', () => {
-  it('제목은 「N편」, 의미 주석 루비(ノート《帳面》)는 잠그지 않는다', () => {
+  it('나눈 장은 「1/2」(작가의 장·교재의 과로 오인되지 않게), 의미 주석 루비(ノート《帳面》)는 잠그지 않는다', () => {
     const draft = createAozoraMaterialDraft(plainSampleEntry(), plain(), { targetChars: 80, maxChars: 120 });
-    expect(draft.chapters.map((chapter) => chapter.title)).toEqual(['1편', '2편']);
+    expect(draft.book.division).toBe('split');
+    expect(draft.chapters.map(({ title, materialTitle }) => [title, materialTitle]))
+      .toEqual([['1/2', '書式見本　夕方の町 (1/2)'], ['2/2', '書式見本　夕方の町 (2/2)']]);
     expect(draft.chapters.flatMap((chapter) => chapter.metadata.literature.rubyLocks.map((lock) => lock.base)))
       .toEqual(['夕方', '町', '時計台', '台所']);
     expect(draft.diagnostics).toMatchObject({ splitByHeadings: false, rubyCount: 4, mappedRubyCount: 4, annotationRubyCount: 2, midParagraphSplitCount: 0 });
@@ -92,9 +94,19 @@ describe('createAozoraMaterialDraft — 見出し 없는 원작은 문단 경계
     expect(draft.diagnostics.midParagraphSplitCount).toBe(0);
   });
 
+  it('장 머리가 앞 대사에 매달린 이음 문단(と答えた。)이면 다음 경계를 고른다(실물 「鼻」 2장 머리)', () => {
+    const body = ['あ'.repeat(50), `と${'い'.repeat(29)}`, 'う'.repeat(30)].join('\n');
+    const draft = createAozoraMaterialDraft(sampleEntry(), parseAozoraText(wrap(body)), { targetChars: 60, maxChars: 200 });
+    // 가장 고른 [50, 62]는 2장이 「と…」로 시작한다 → 이음 문단을 앞 장에 붙인 [82, 30].
+    expect(draft.diagnostics.chapterChars).toEqual([82, 30]);
+    expect(draft.chapters[1].rawText.startsWith('う')).toBe(true);
+  });
+
   it('짧은 원작은 한 장, 상한보다 긴 원작은 상한 안에서 고르게', () => {
     const short = createAozoraMaterialDraft(sampleEntry(), parseAozoraText(wrap(['あ'.repeat(70), 'い'.repeat(30)].join('\n'))), { targetChars: 80, maxChars: 200 });
     expect(short.diagnostics.chapterChars).toEqual([102]);
+    // 한 장이면 「전문」(「전편」은 前篇으로 읽힌다), 자료 제목은 작품명만(「— 1편」 같은 꼬리를 달지 않는다)
+    expect([short.book.division, short.chapters[0].title, short.chapters[0].materialTitle]).toEqual(['whole', '전문', '書式見本　朝の川']);
     const long = createAozoraMaterialDraft(sampleEntry(), parseAozoraText(wrap(Array.from({ length: 9 }, () => 'え'.repeat(30)).join('\n'))), { targetChars: 100, maxChars: 120 });
     expect(long.diagnostics.chapterChars).toEqual([94, 94, 94]);
   });
@@ -138,7 +150,8 @@ describe('createAozoraMaterialDraft — 결정성·불변·fail-closed', () => {
     ['제목 불일치', () => [sampleEntry({ title: '別作品' }), headed()], 'title'],
     ['저자 불일치', () => [sampleEntry(), parseAozoraText(wrap('本文。', ['書式見本　朝の川', '別人']))], 'author'],
     ['판권 없음', () => [sampleEntry(), parseAozoraText('書式見本　朝の川\n見本太郎\n\n本文。')], '底本'],
-    ['미해결 외자', () => [sampleEntry(), parseAozoraText(wrap('古い※［＃「魚＋花」、第4水準2-93-10］。'))], 'unresolved gaiji'],
+    // 면-구-점도 U+도 없는 외자(구성 설명만) — JIS X 0213 표로도 풀 수 없다
+    ['미해결 외자', () => [sampleEntry(), parseAozoraText(wrap('古い※［＃「口＋世」］。'))], 'unresolved gaiji'],
     ['깨진 루비', () => [sampleEntry(), parseAozoraText(wrap('｜壊れた《ルビ'))], 'MALFORMED_RUBY'],
   ])('%s → 실패', (_, args, message) => {
     expect(() => createAozoraMaterialDraft(...args())).toThrow(message);

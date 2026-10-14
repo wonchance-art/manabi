@@ -65,8 +65,9 @@ describe('핵심 학습 경로 접근성 수리 계약', () => {
     const vocab = source('src/views/VocabReview.jsx');
     const page = source('src/views/VocabPage.jsx');
     const grammar = source('src/views/GrammarReviewSession.jsx');
-    // 방식 선택은 세션 시작 전(VocabPage)의 셀렉트다 — 칩 그룹에서 바꿨지만 접근 가능한 이름은 유지.
-    expect(page).toContain('aria-label="복습 방식"');
+    // 방식 선택: 본 복습은 플래시뿐이고(REV-SCOPE-R1B-1) 타이핑 · 리스닝은 집중 연습의 갈래다 — 그 칩 그룹에 이름이 있다.
+    expect(page).toContain('role="group" aria-label="연습 방식"');
+    expect(page).toContain('aria-pressed={practiceMode === mode}');
     // 덱 선택은 범위 막대의 「출처 · 사전 급수 덱」으로 흡수했다(REV-SCOPE-R1A) — 그 자리의 이름도 보조기술에 전달된다.
     expect(page).not.toContain('aria-label="덱 선택"');
     const scopeBar = source('src/components/vocab/ReviewScopeBar.jsx');

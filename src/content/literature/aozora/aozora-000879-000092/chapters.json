@@ -1,0 +1,637 @@
+{
+  "schemaVersion": 1,
+  "book": {
+    "key": "aozora-000879-000092",
+    "title": "蜘蛛の糸",
+    "author": "芥川龍之介",
+    "level": "N3 중급",
+    "total": 3,
+    "division": "heading"
+  },
+  "chapters": [
+    {
+      "order": 1,
+      "title": "一",
+      "materialTitle": "蜘蛛の糸 — 一",
+      "rawText": "ある日の事でございます。御釈迦様は極楽の蓮池のふちを、独りでぶらぶら御歩きになっていらっしゃいました。池の中に咲いている蓮の花は、みんな玉のようにまっ白で、そのまん中にある金色の蕊からは、何とも云えない好い匂が、絶間なくあたりへ溢れて居ります。極楽は丁度朝なのでございましょう。\n\nやがて御釈迦様はその池のふちに御佇みになって、水の面を蔽っている蓮の葉の間から、ふと下の容子を御覧になりました。この極楽の蓮池の下は、丁度地獄の底に当って居りますから、水晶のような水を透き徹して、三途の河や針の山の景色が、丁度覗き眼鏡を見るように、はっきりと見えるのでございます。\n\nするとその地獄の底に、犍陀多と云う男が一人、ほかの罪人と一しょに蠢いている姿が、御眼に止まりました。この犍陀多と云う男は、人を殺したり家に火をつけたり、いろいろ悪事を働いた大泥坊でございますが、それでもたった一つ、善い事を致した覚えがございます。と申しますのは、ある時この男が深い林の中を通りますと、小さな蜘蛛が一匹、路ばたを這って行くのが見えました。そこで犍陀多は早速足を挙げて、踏み殺そうと致しましたが、「いや、いや、これも小さいながら、命のあるものに違いない。その命を無暗にとると云う事は、いくら何でも可哀そうだ。」と、こう急に思い返して、とうとうその蜘蛛を殺さずに助けてやったからでございます。\n\n御釈迦様は地獄の容子を御覧になりながら、この犍陀多には蜘蛛を助けた事があるのを御思い出しになりました。そうしてそれだけの善い事をした報には、出来るなら、この男を地獄から救い出してやろうと御考えになりました。幸い、側を見ますと、翡翠のような色をした蓮の葉の上に、極楽の蜘蛛が一匹、美しい銀色の糸をかけて居ります。御釈迦様はその蜘蛛の糸をそっと御手に御取りになって、玉のような白蓮の間から、遥か下にある地獄の底へ、まっすぐにそれを御下しなさいました。",
+      "metadata": {
+        "language": "Japanese",
+        "level": "N3 중급",
+        "book": {
+          "key": "aozora-000879-000092",
+          "title": "蜘蛛の糸",
+          "author": "芥川龍之介",
+          "order": 1,
+          "total": 3
+        },
+        "literature": {
+          "schemaVersion": 1,
+          "provider": "aozora",
+          "workKey": "aozora-000879-000092",
+          "personId": "000879",
+          "workId": "92",
+          "title": "蜘蛛の糸",
+          "author": "芥川龍之介",
+          "publishedYear": 1918,
+          "authorDeathYear": 1927,
+          "charset": "新字新仮名",
+          "cardUrl": "https://www.aozora.gr.jp/cards/000879/card92.html",
+          "sourceFileUrl": "https://www.aozora.gr.jp/cards/000879/files/92_ruby_164.zip",
+          "sourceSha256": "3b9990dc830f79346242db7f37969a1c2c7dbb7fb9abe9915e8c89c83f8628c9",
+          "textSha256": "581d1ee699d1ba68b046ea3961cd78303bcff98d354897599ecaa185b0e548b1",
+          "attribution": {
+            "author": "芥川龍之介",
+            "translator": null,
+            "illustrator": null
+          },
+          "rights": {
+            "status": "approved",
+            "basis": "public-domain",
+            "reviewedBy": "claude",
+            "reviewedAt": "2026-10-14",
+            "reviewedJurisdictions": [
+              "JP",
+              "KR",
+              "US"
+            ],
+            "evidenceUrl": "https://www.aozora.gr.jp/cards/000879/card92.html"
+          },
+          "colophon": {
+            "sourceBook": [
+              "「芥川龍之介全集2」ちくま文庫、筑摩書房",
+              "1986（昭和61）年10月28日第1刷発行",
+              "1996（平成8）年7月15日第11刷発行"
+            ],
+            "parentBook": [],
+            "inputter": "平山誠、野口英司",
+            "proofreader": "もりみつじゅんじ"
+          },
+          "edits": [
+            "ruby-reading-aid",
+            "chapter-split-by-manabi"
+          ],
+          "rubyLocks": [
+            {
+              "start": 12,
+              "end": 16,
+              "base": "御釈迦様",
+              "reading": "おしゃかさま"
+            },
+            {
+              "start": 20,
+              "end": 22,
+              "base": "蓮池",
+              "reading": "はすいけ"
+            },
+            {
+              "start": 60,
+              "end": 61,
+              "base": "蓮",
+              "reading": "はす"
+            },
+            {
+              "start": 86,
+              "end": 88,
+              "base": "金色",
+              "reading": "きんいろ"
+            },
+            {
+              "start": 89,
+              "end": 90,
+              "base": "蕊",
+              "reading": "ずい"
+            },
+            {
+              "start": 101,
+              "end": 102,
+              "base": "好",
+              "reading": "よ"
+            },
+            {
+              "start": 103,
+              "end": 104,
+              "base": "匂",
+              "reading": "におい"
+            },
+            {
+              "start": 106,
+              "end": 108,
+              "base": "絶間",
+              "reading": "たえま"
+            },
+            {
+              "start": 114,
+              "end": 115,
+              "base": "溢",
+              "reading": "あふ"
+            },
+            {
+              "start": 156,
+              "end": 158,
+              "base": "御佇",
+              "reading": "おたたず"
+            },
+            {
+              "start": 166,
+              "end": 167,
+              "base": "面",
+              "reading": "おもて"
+            },
+            {
+              "start": 168,
+              "end": 169,
+              "base": "蔽",
+              "reading": "おお"
+            },
+            {
+              "start": 185,
+              "end": 187,
+              "base": "容子",
+              "reading": "ようす"
+            },
+            {
+              "start": 210,
+              "end": 212,
+              "base": "地獄",
+              "reading": "じごく"
+            },
+            {
+              "start": 225,
+              "end": 227,
+              "base": "水晶",
+              "reading": "すいしよう"
+            },
+            {
+              "start": 239,
+              "end": 241,
+              "base": "三途",
+              "reading": "さんず"
+            },
+            {
+              "start": 254,
+              "end": 255,
+              "base": "覗",
+              "reading": "のぞ"
+            },
+            {
+              "start": 256,
+              "end": 258,
+              "base": "眼鏡",
+              "reading": "めがね"
+            },
+            {
+              "start": 295,
+              "end": 297,
+              "base": "陀多",
+              "reading": "かんだた"
+            },
+            {
+              "start": 315,
+              "end": 316,
+              "base": "蠢",
+              "reading": "うごめ"
+            },
+            {
+              "start": 436,
+              "end": 438,
+              "base": "蜘蛛",
+              "reading": "くも"
+            },
+            {
+              "start": 446,
+              "end": 447,
+              "base": "這",
+              "reading": "は"
+            },
+            {
+              "start": 520,
+              "end": 522,
+              "base": "無暗",
+              "reading": "むやみ"
+            },
+            {
+              "start": 652,
+              "end": 653,
+              "base": "報",
+              "reading": "むくい"
+            },
+            {
+              "start": 699,
+              "end": 701,
+              "base": "翡翠",
+              "reading": "ひすい"
+            },
+            {
+              "start": 772,
+              "end": 774,
+              "base": "白蓮",
+              "reading": "しらはす"
+            },
+            {
+              "start": 800,
+              "end": 801,
+              "base": "下",
+              "reading": "おろ"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "order": 2,
+      "title": "二",
+      "materialTitle": "蜘蛛の糸 — 二",
+      "rawText": "こちらは地獄の底の血の池で、ほかの罪人と一しょに、浮いたり沈んだりしていた犍陀多でございます。何しろどちらを見ても、まっ暗で、たまにそのくら暗からぼんやり浮き上っているものがあると思いますと、それは恐しい針の山の針が光るのでございますから、その心細さと云ったらございません。その上あたりは墓の中のようにしんと静まり返って、たまに聞えるものと云っては、ただ罪人がつく微な嘆息ばかりでございます。これはここへ落ちて来るほどの人間は、もうさまざまな地獄の責苦に疲れはてて、泣声を出す力さえなくなっているのでございましょう。ですからさすが大泥坊の犍陀多も、やはり血の池の血に咽びながら、まるで死にかかった蛙のように、ただもがいてばかり居りました。\n\nところがある時の事でございます。何気なく犍陀多が頭を挙げて、血の池の空を眺めますと、そのひっそりとした暗の中を、遠い遠い天上から、銀色の蜘蛛の糸が、まるで人目にかかるのを恐れるように、一すじ細く光りながら、するすると自分の上へ垂れて参るのではございませんか。犍陀多はこれを見ると、思わず手を拍って喜びました。この糸に縋りついて、どこまでものぼって行けば、きっと地獄からぬけ出せるのに相違ございません。いや、うまく行くと、極楽へはいる事さえも出来ましょう。そうすれば、もう針の山へ追い上げられる事もなくなれば、血の池に沈められる事もある筈はございません。\n\nこう思いましたから犍陀多は、早速その蜘蛛の糸を両手でしっかりとつかみながら、一生懸命に上へ上へとたぐりのぼり始めました。元より大泥坊の事でございますから、こう云う事には昔から、慣れ切っているのでございます。\n\nしかし地獄と極楽との間は、何万里となくございますから、いくら焦って見た所で、容易に上へは出られません。ややしばらくのぼる中に、とうとう犍陀多もくたびれて、もう一たぐりも上の方へはのぼれなくなってしまいました。そこで仕方がございませんから、まず一休み休むつもりで、糸の中途にぶら下りながら、遥かに目の下を見下しました。\n\nすると、一生懸命にのぼった甲斐があって、さっきまで自分がいた血の池は、今ではもう暗の底にいつの間にかかくれて居ります。それからあのぼんやり光っている恐しい針の山も、足の下になってしまいました。この分でのぼって行けば、地獄からぬけ出すのも、存外わけがないかも知れません。犍陀多は両手を蜘蛛の糸にからみながら、ここへ来てから何年にも出した事のない声で、「しめた。しめた。」と笑いました。ところがふと気がつきますと、蜘蛛の糸の下の方には、数限もない罪人たちが、自分ののぼった後をつけて、まるで蟻の行列のように、やはり上へ上へ一心によじのぼって来るではございませんか。犍陀多はこれを見ると、驚いたのと恐しいのとで、しばらくはただ、莫迦のように大きな口を開いたまま、眼ばかり動かして居りました。自分一人でさえ断れそうな、この細い蜘蛛の糸が、どうしてあれだけの人数の重みに堪える事が出来ましょう。もし万一途中で断れたと致しましたら、折角ここへまでのぼって来たこの肝腎な自分までも、元の地獄へ逆落しに落ちてしまわなければなりません。そんな事があったら、大変でございます。が、そう云う中にも、罪人たちは何百となく何千となく、まっ暗な血の池の底から、うようよと這い上って、細く光っている蜘蛛の糸を、一列になりながら、せっせとのぼって参ります。今の中にどうかしなければ、糸はまん中から二つに断れて、落ちてしまうのに違いありません。\n\nそこで犍陀多は大きな声を出して、「こら、罪人ども。この蜘蛛の糸は己のものだぞ。お前たちは一体誰に尋いて、のぼって来た。下りろ。下りろ。」と喚きました。\n\nその途端でございます。今まで何ともなかった蜘蛛の糸が、急に犍陀多のぶら下っている所から、ぷつりと音を立てて断れました。ですから犍陀多もたまりません。あっと云う間もなく風を切って、独楽のようにくるくるまわりながら、見る見る中に暗の底へ、まっさかさまに落ちてしまいました。\n\n後にはただ極楽の蜘蛛の糸が、きらきらと細く光りながら、月も星もない空の中途に、短く垂れているばかりでございます。",
+      "metadata": {
+        "language": "Japanese",
+        "level": "N3 중급",
+        "book": {
+          "key": "aozora-000879-000092",
+          "title": "蜘蛛の糸",
+          "author": "芥川龍之介",
+          "order": 2,
+          "total": 3
+        },
+        "literature": {
+          "schemaVersion": 1,
+          "provider": "aozora",
+          "workKey": "aozora-000879-000092",
+          "personId": "000879",
+          "workId": "92",
+          "title": "蜘蛛の糸",
+          "author": "芥川龍之介",
+          "publishedYear": 1918,
+          "authorDeathYear": 1927,
+          "charset": "新字新仮名",
+          "cardUrl": "https://www.aozora.gr.jp/cards/000879/card92.html",
+          "sourceFileUrl": "https://www.aozora.gr.jp/cards/000879/files/92_ruby_164.zip",
+          "sourceSha256": "3b9990dc830f79346242db7f37969a1c2c7dbb7fb9abe9915e8c89c83f8628c9",
+          "textSha256": "581d1ee699d1ba68b046ea3961cd78303bcff98d354897599ecaa185b0e548b1",
+          "attribution": {
+            "author": "芥川龍之介",
+            "translator": null,
+            "illustrator": null
+          },
+          "rights": {
+            "status": "approved",
+            "basis": "public-domain",
+            "reviewedBy": "claude",
+            "reviewedAt": "2026-10-14",
+            "reviewedJurisdictions": [
+              "JP",
+              "KR",
+              "US"
+            ],
+            "evidenceUrl": "https://www.aozora.gr.jp/cards/000879/card92.html"
+          },
+          "colophon": {
+            "sourceBook": [
+              "「芥川龍之介全集2」ちくま文庫、筑摩書房",
+              "1986（昭和61）年10月28日第1刷発行",
+              "1996（平成8）年7月15日第11刷発行"
+            ],
+            "parentBook": [],
+            "inputter": "平山誠、野口英司",
+            "proofreader": "もりみつじゅんじ"
+          },
+          "edits": [
+            "ruby-reading-aid",
+            "chapter-split-by-manabi"
+          ],
+          "rubyLocks": [
+            {
+              "start": 38,
+              "end": 40,
+              "base": "陀多",
+              "reading": "かんだた"
+            },
+            {
+              "start": 182,
+              "end": 183,
+              "base": "微",
+              "reading": "かすか"
+            },
+            {
+              "start": 184,
+              "end": 186,
+              "base": "嘆息",
+              "reading": "たんそく"
+            },
+            {
+              "start": 224,
+              "end": 226,
+              "base": "責苦",
+              "reading": "せめく"
+            },
+            {
+              "start": 283,
+              "end": 284,
+              "base": "咽",
+              "reading": "むせ"
+            },
+            {
+              "start": 298,
+              "end": 299,
+              "base": "蛙",
+              "reading": "かわず"
+            },
+            {
+              "start": 337,
+              "end": 339,
+              "base": "何気",
+              "reading": "なにげ"
+            },
+            {
+              "start": 389,
+              "end": 391,
+              "base": "蜘蛛",
+              "reading": "くも"
+            },
+            {
+              "start": 466,
+              "end": 467,
+              "base": "拍",
+              "reading": "う"
+            },
+            {
+              "start": 479,
+              "end": 480,
+              "base": "縋",
+              "reading": "すが"
+            },
+            {
+              "start": 609,
+              "end": 611,
+              "base": "陀多",
+              "reading": "かんだた"
+            },
+            {
+              "start": 734,
+              "end": 735,
+              "base": "焦",
+              "reading": "あせ"
+            },
+            {
+              "start": 764,
+              "end": 765,
+              "base": "中",
+              "reading": "うち"
+            },
+            {
+              "start": 1080,
+              "end": 1082,
+              "base": "数限",
+              "reading": "かずかぎり"
+            },
+            {
+              "start": 1107,
+              "end": 1108,
+              "base": "蟻",
+              "reading": "あり"
+            },
+            {
+              "start": 1175,
+              "end": 1177,
+              "base": "莫迦",
+              "reading": "ばか"
+            },
+            {
+              "start": 1186,
+              "end": 1187,
+              "base": "開",
+              "reading": "あ"
+            },
+            {
+              "start": 1213,
+              "end": 1214,
+              "base": "断",
+              "reading": "き"
+            },
+            {
+              "start": 1238,
+              "end": 1240,
+              "base": "人数",
+              "reading": "にんず"
+            },
+            {
+              "start": 1263,
+              "end": 1264,
+              "base": "断",
+              "reading": "き"
+            },
+            {
+              "start": 1289,
+              "end": 1291,
+              "base": "肝腎",
+              "reading": "かんじん"
+            },
+            {
+              "start": 1303,
+              "end": 1305,
+              "base": "逆落",
+              "reading": "さかおと"
+            },
+            {
+              "start": 1385,
+              "end": 1386,
+              "base": "這",
+              "reading": "は"
+            },
+            {
+              "start": 1503,
+              "end": 1504,
+              "base": "己",
+              "reading": "おれ"
+            },
+            {
+              "start": 1519,
+              "end": 1520,
+              "base": "尋",
+              "reading": "き"
+            },
+            {
+              "start": 1540,
+              "end": 1541,
+              "base": "喚",
+              "reading": "わめ"
+            },
+            {
+              "start": 1601,
+              "end": 1602,
+              "base": "断",
+              "reading": "き"
+            },
+            {
+              "start": 1627,
+              "end": 1628,
+              "base": "間",
+              "reading": "ま"
+            },
+            {
+              "start": 1637,
+              "end": 1639,
+              "base": "独楽",
+              "reading": "こま"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "order": 3,
+      "title": "三",
+      "materialTitle": "蜘蛛の糸 — 三",
+      "rawText": "御釈迦様は極楽の蓮池のふちに立って、この一部始終をじっと見ていらっしゃいましたが、やがて犍陀多が血の池の底へ石のように沈んでしまいますと、悲しそうな御顔をなさりながら、またぶらぶら御歩きになり始めました。自分ばかり地獄からぬけ出そうとする、犍陀多の無慈悲な心が、そうしてその心相当な罰をうけて、元の地獄へ落ちてしまったのが、御釈迦様の御目から見ると、浅間しく思召されたのでございましょう。\n\nしかし極楽の蓮池の蓮は、少しもそんな事には頓着致しません。その玉のような白い花は、御釈迦様の御足のまわりに、ゆらゆら萼を動かして、そのまん中にある金色の蕊からは、何とも云えない好い匂が、絶間なくあたりへ溢れて居ります。極楽ももう午に近くなったのでございましょう。\n\n（大正七年四月十六日）",
+      "metadata": {
+        "language": "Japanese",
+        "level": "N3 중급",
+        "book": {
+          "key": "aozora-000879-000092",
+          "title": "蜘蛛の糸",
+          "author": "芥川龍之介",
+          "order": 3,
+          "total": 3
+        },
+        "literature": {
+          "schemaVersion": 1,
+          "provider": "aozora",
+          "workKey": "aozora-000879-000092",
+          "personId": "000879",
+          "workId": "92",
+          "title": "蜘蛛の糸",
+          "author": "芥川龍之介",
+          "publishedYear": 1918,
+          "authorDeathYear": 1927,
+          "charset": "新字新仮名",
+          "cardUrl": "https://www.aozora.gr.jp/cards/000879/card92.html",
+          "sourceFileUrl": "https://www.aozora.gr.jp/cards/000879/files/92_ruby_164.zip",
+          "sourceSha256": "3b9990dc830f79346242db7f37969a1c2c7dbb7fb9abe9915e8c89c83f8628c9",
+          "textSha256": "581d1ee699d1ba68b046ea3961cd78303bcff98d354897599ecaa185b0e548b1",
+          "attribution": {
+            "author": "芥川龍之介",
+            "translator": null,
+            "illustrator": null
+          },
+          "rights": {
+            "status": "approved",
+            "basis": "public-domain",
+            "reviewedBy": "claude",
+            "reviewedAt": "2026-10-14",
+            "reviewedJurisdictions": [
+              "JP",
+              "KR",
+              "US"
+            ],
+            "evidenceUrl": "https://www.aozora.gr.jp/cards/000879/card92.html"
+          },
+          "colophon": {
+            "sourceBook": [
+              "「芥川龍之介全集2」ちくま文庫、筑摩書房",
+              "1986（昭和61）年10月28日第1刷発行",
+              "1996（平成8）年7月15日第11刷発行"
+            ],
+            "parentBook": [],
+            "inputter": "平山誠、野口英司",
+            "proofreader": "もりみつじゅんじ"
+          },
+          "edits": [
+            "ruby-reading-aid",
+            "chapter-split-by-manabi"
+          ],
+          "rubyLocks": [
+            {
+              "start": 0,
+              "end": 4,
+              "base": "御釈迦様",
+              "reading": "おしゃかさま"
+            },
+            {
+              "start": 8,
+              "end": 10,
+              "base": "蓮池",
+              "reading": "はすいけ"
+            },
+            {
+              "start": 22,
+              "end": 24,
+              "base": "始終",
+              "reading": "しじゅう"
+            },
+            {
+              "start": 45,
+              "end": 47,
+              "base": "陀多",
+              "reading": "かんだた"
+            },
+            {
+              "start": 217,
+              "end": 219,
+              "base": "頓着",
+              "reading": "とんじゃく"
+            },
+            {
+              "start": 242,
+              "end": 244,
+              "base": "御足",
+              "reading": "おみあし"
+            },
+            {
+              "start": 254,
+              "end": 255,
+              "base": "萼",
+              "reading": "うてな"
+            },
+            {
+              "start": 272,
+              "end": 273,
+              "base": "蕊",
+              "reading": "ずい"
+            },
+            {
+              "start": 284,
+              "end": 285,
+              "base": "好",
+              "reading": "よ"
+            },
+            {
+              "start": 289,
+              "end": 291,
+              "base": "絶間",
+              "reading": "たえま"
+            },
+            {
+              "start": 297,
+              "end": 298,
+              "base": "溢",
+              "reading": "あふ"
+            },
+            {
+              "start": 310,
+              "end": 311,
+              "base": "午",
+              "reading": "ひる"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "diagnostics": {
+    "sourceBlockCount": 18,
+    "headingCount": 3,
+    "splitByHeadings": true,
+    "rubyCount": 68,
+    "mappedRubyCount": 68,
+    "droppedRubyCount": 0,
+    "midParagraphSplitCount": 0,
+    "headingRubyCount": 0,
+    "annotationRubyCount": 0,
+    "noteCount": 4,
+    "resolvedGaijiCount": 17,
+    "chapterChars": [
+      809,
+      1740,
+      340
+    ]
+  }
+}

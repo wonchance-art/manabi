@@ -1,11 +1,268 @@
 {
   "schemaVersion": 1,
   "works": {
+    "aozora-000074-000424": {
+      "title": "檸檬",
+      "author": "梶井基次郎",
+      "level": "N1 심화",
+      "total": 2,
+      "division": "split",
+      "chars": 4988,
+      "display": {
+        "titleReading": "れもん",
+        "titleKo": "레몬",
+        "authorKo": "가지이 모토지로",
+        "cover": "dove",
+        "motif": "lemon-books"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000074-000424",
+        "personId": "000074",
+        "workId": "424",
+        "title": "檸檬",
+        "author": "梶井基次郎",
+        "publishedYear": 1925,
+        "authorDeathYear": 1932,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000074/card424.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000074/files/424_ruby_19825.zip",
+        "sourceSha256": "c1bf570b1852ad970329c35a671cc5dfeca623ac721d81518a0bb98701fdcf1d",
+        "textSha256": "55e18859cde3d25483fc4ea448924f9922e1bd1dc5bbf7c58970c636b69e8944",
+        "attribution": {
+          "author": "梶井基次郎",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-14",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000074/card424.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「檸檬・ある心の風景　他二十編」旺文社文庫、旺文社",
+            "1972（昭和47）年12月10日初版発行",
+            "1974（昭和49）年第4刷発行"
+          ],
+          "parentBook": [],
+          "inputter": "j.utiyama",
+          "proofreader": "野口英司"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "1/2",
+          "incipit": "えたいの知れない不吉な塊が私の心を始終圧えつけていた。",
+          "sha256": "2bcd1cade277960983791aeceb122dcd36970ef82867ecf1b373ff951a1c0c96"
+        },
+        {
+          "order": 2,
+          "title": "2/2",
+          "incipit": "その日私はいつになくその店で買物をした。",
+          "sha256": "f5b2c495e453a0a7d31118b93f38f1cb77f370ee1a6910e3136241f4fb015bcd"
+        }
+      ]
+    },
+    "aozora-000081-000470": {
+      "title": "セロ弾きのゴーシュ",
+      "author": "宮沢賢治",
+      "level": "N3 중급",
+      "total": 4,
+      "division": "split",
+      "chars": 12015,
+      "display": {
+        "titleReading": "セロひきのゴーシュ",
+        "titleKo": "첼로 켜는 고슈",
+        "authorKo": "미야자와 겐지",
+        "cover": "walnut",
+        "motif": "cello-night",
+        "coverTitle": "セロ弾きの\nゴーシュ"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000081-000470",
+        "personId": "000081",
+        "workId": "470",
+        "title": "セロ弾きのゴーシュ",
+        "author": "宮沢賢治",
+        "publishedYear": 1934,
+        "authorDeathYear": 1933,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000081/card470.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000081/files/470_ruby_3987.zip",
+        "sourceSha256": "aacb6f6508dae889378522209627d64527e71b8c49e9483d5e33066c0ac9d4d4",
+        "textSha256": "9502bf449cd682f27c392ea29ca04f1c6788341a722ef3a7d438f0f027418404",
+        "attribution": {
+          "author": "宮沢賢治",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-14",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000081/card470.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「新編　銀河鉄道の夜」新潮文庫、新潮社",
+            "1989（平成元）年6月15日発行",
+            "1994（平成6）年6月5日13刷"
+          ],
+          "parentBook": [
+            "「新修宮沢賢治全集　第十二巻」筑摩書房",
+            "1980（昭和55）年1月"
+          ],
+          "inputter": "水口充、野口英司",
+          "proofreader": "野口英司"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "1/4",
+          "incipit": "ゴーシュは町の活動写真館でセロを弾く係りでした。",
+          "sha256": "0ce79481fbfbb43df4e7924c07b83d700452c76e5d4445c7219e584e894f5d3e"
+        },
+        {
+          "order": 2,
+          "title": "2/4",
+          "incipit": "「先生もうたくさんです。",
+          "sha256": "68979ff5356fad4dfa4bddafa4c41513d8690ecf4596044e925b93db5d2b241d"
+        },
+        {
+          "order": 3,
+          "title": "3/4",
+          "incipit": "「何だ、硝子へばかだなあ。",
+          "sha256": "60b46f5b14890b2d5d360291b8810da9e90e8d3fbeb1b6398dfe2ab496455b88"
+        },
+        {
+          "order": 4,
+          "title": "4/4",
+          "incipit": "「はい、ここらのものは病気になるとみんな先生のお…",
+          "sha256": "92b22618653b1d094658de502d3f0cdab408a942de396a15c9b9d87cb1d461b7"
+        }
+      ]
+    },
+    "aozora-000081-000473": {
+      "title": "よだかの星",
+      "author": "宮沢賢治",
+      "level": "N3 중급",
+      "total": 2,
+      "division": "split",
+      "chars": 5287,
+      "display": {
+        "titleReading": "よだかのほし",
+        "titleKo": "쏙독새의 별",
+        "authorKo": "미야자와 겐지",
+        "cover": "nightjar",
+        "motif": "nightjar-star"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000081-000473",
+        "personId": "000081",
+        "workId": "473",
+        "title": "よだかの星",
+        "author": "宮沢賢治",
+        "publishedYear": 1934,
+        "authorDeathYear": 1933,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000081/card473.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000081/files/473_ruby_467.zip",
+        "sourceSha256": "d9ccc2e223ac746da9d4a3175074b1268ea2dbeb182f9ca41d377d0a1bb00b39",
+        "textSha256": "de7efdaf3efe05eaf1b9ca900487c369117c171c8ce677af02587235a6cae6d7",
+        "attribution": {
+          "author": "宮沢賢治",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-14",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000081/card473.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「新編　銀河鉄道の夜」新潮文庫、新潮社",
+            "1989（平成元）年6月15日第1刷発行",
+            "1991（平成3）年3月10日4刷"
+          ],
+          "parentBook": [
+            "「新修宮沢賢治全集　第八巻」筑摩書房",
+            "1979（昭和54）年5月"
+          ],
+          "inputter": "佐々木美香",
+          "proofreader": "野口英司"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "1/2",
+          "incipit": "よだかは、実にみにくい鳥です。",
+          "sha256": "58b633adbcec7f10e91a3efbf926c5d35778a6316f3a28d9ca529b95ff507da1"
+        },
+        {
+          "order": 2,
+          "title": "2/2",
+          "incipit": "「いいや、僕は今度遠い所へ行くからね…",
+          "sha256": "1ed56a943f6cbf79811613ee58764b42b4195c29152dd07ed08c9521bc6a9c3a"
+        }
+      ]
+    },
     "aozora-000081-043754": {
       "title": "注文の多い料理店",
       "author": "宮沢賢治",
       "level": "N3 중급",
       "total": 2,
+      "division": "split",
+      "chars": 5702,
+      "display": {
+        "titleReading": "ちゅうもんのおおいりょうりてん",
+        "titleKo": "주문이 많은 요리점",
+        "authorKo": "미야자와 겐지",
+        "cover": "forest",
+        "motif": "forest-doors",
+        "coverTitle": "注文の多い\n料理店"
+      },
       "literature": {
         "schemaVersion": 1,
         "provider": "aozora",
@@ -56,13 +313,90 @@
       "chapters": [
         {
           "order": 1,
-          "title": "1편",
+          "title": "1/2",
+          "incipit": "二人の若い紳士が、すっかりイギリスの兵隊のかたちをして…",
           "sha256": "2f7f258a3e6cabc374356e8ede41367b2f010ab1238ec1a386757eb1618d95a2"
         },
         {
           "order": 2,
-          "title": "2편",
+          "title": "2/2",
+          "incipit": "二人はめがねをはずしたり、カフスボタンをとったり…",
           "sha256": "b190766b7643eb9e757a5c94770aebadc39963dd3bc5790367a0ea90c01a41a0"
+        }
+      ]
+    },
+    "aozora-000119-000624": {
+      "title": "山月記",
+      "author": "中島敦",
+      "level": "N1 심화",
+      "total": 2,
+      "division": "split",
+      "chars": 5833,
+      "display": {
+        "titleReading": "さんげつき",
+        "titleKo": "산월기",
+        "authorKo": "나카지마 아쓰시",
+        "cover": "twilight",
+        "motif": "moon-tiger"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000119-000624",
+        "personId": "000119",
+        "workId": "624",
+        "title": "山月記",
+        "author": "中島敦",
+        "publishedYear": 1942,
+        "authorDeathYear": 1942,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000119/card624.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000119/files/624_ruby_5668.zip",
+        "sourceSha256": "15ddcdd4e7f55c985eb4b5f4ce41f519c8b37ce4c288624f31a46f08dcbe84f9",
+        "textSha256": "9d7723fe7ad8cac77fb7e989765c794cac73754c0a61fce79d8053b091365fe4",
+        "attribution": {
+          "author": "中島敦",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-14",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000119/card624.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「李陵・山月記」新潮文庫、新潮社",
+            "1969（昭和44）年9月20日発行"
+          ],
+          "parentBook": [],
+          "inputter": "平松大樹",
+          "proofreader": "林めぐみ"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "1/2",
+          "incipit": "隴西の李徴は博学才穎、天宝の末年…",
+          "sha256": "00137bc85b71de4da5ba89ae76ee04bbfeb4f5d021d64ef936370c7363373dbd"
+        },
+        {
+          "order": 2,
+          "title": "2/2",
+          "incipit": "他でもない。",
+          "sha256": "7a3687b1311c89397755a0b03c1ebd997b1f73f7b3b14d4cb90d8bb5333bacba"
         }
       ]
     },
@@ -71,6 +405,15 @@
       "author": "新美南吉",
       "level": "N3 중급",
       "total": 6,
+      "division": "heading",
+      "chars": 4932,
+      "display": {
+        "titleReading": "ごんぎつね",
+        "titleKo": "여우 곤",
+        "authorKo": "니이미 난키치",
+        "cover": "vermilion",
+        "motif": "higanbana"
+      },
       "literature": {
         "schemaVersion": 1,
         "provider": "aozora",
@@ -122,31 +465,37 @@
         {
           "order": 1,
           "title": "一",
+          "incipit": "これは、私が小さいときに…",
           "sha256": "486b3148b96ebf9245817e3825d1f97f9ee774f3a15c9139b0d8ea9a857d933d"
         },
         {
           "order": 2,
           "title": "二",
+          "incipit": "十日ほどたって、ごんが、弥助というお百姓の家の裏…",
           "sha256": "91cd18764402affab0f2341d1ee288eab1f1dcd3fff4e20de6ce6289c50cc805"
         },
         {
           "order": 3,
           "title": "三",
+          "incipit": "兵十が、赤い井戸のところで、麦をといでいました。",
           "sha256": "c5b2c9e90f9a74e39d1e5698f0778b70aaed7cbfc66bf3f95214766b45b54759"
         },
         {
           "order": 4,
           "title": "四",
+          "incipit": "月のいい晩でした。",
           "sha256": "77ecc77e2af02c957a7d7cd264d006dec8c4531009a9d53d9c313ffd6703bdfa"
         },
         {
           "order": 5,
           "title": "五",
+          "incipit": "ごんは、おねんぶつがすむまで…",
           "sha256": "10e45ce6f7ff4f5dc7d56148746b58ac4d8880b5331703d2bc37915f8d1b9e43"
         },
         {
           "order": 6,
           "title": "六",
+          "incipit": "そのあくる日もごんは、栗をもって、兵十の家へ出かけました。",
           "sha256": "36bc23076c33c0f85147d1a7d9cee1fd08a14ef3edff2762a982e10cb4fcbe4c"
         }
       ]
@@ -156,6 +505,15 @@
       "author": "新美南吉",
       "level": "N4 기본",
       "total": 1,
+      "division": "whole",
+      "chars": 3603,
+      "display": {
+        "titleReading": "てぶくろをかいに",
+        "titleKo": "장갑을 사러",
+        "authorKo": "니이미 난키치",
+        "cover": "snow",
+        "motif": "snow-night"
+      },
       "literature": {
         "schemaVersion": 1,
         "provider": "aozora",
@@ -206,8 +564,362 @@
       "chapters": [
         {
           "order": 1,
-          "title": "1편",
+          "title": "전문",
+          "incipit": "寒い冬が北方から、狐の親子の棲んでいる森へもやって来ました。",
           "sha256": "f03186c059cdac41ef208aa5cdb8ac090940dff637e885e9c067b0f918150127"
+        }
+      ]
+    },
+    "aozora-000129-045245": {
+      "title": "高瀬舟",
+      "author": "森鴎外",
+      "level": "N2 상급",
+      "total": 3,
+      "division": "split",
+      "chars": 8795,
+      "display": {
+        "titleReading": "たかせぶね",
+        "titleKo": "다카세부네",
+        "authorKo": "모리 오가이",
+        "cover": "river",
+        "motif": "night-boat"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000129-045245",
+        "personId": "000129",
+        "workId": "45245",
+        "title": "高瀬舟",
+        "author": "森鴎外",
+        "publishedYear": 1916,
+        "authorDeathYear": 1922,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000129/card45245.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000129/files/45245_ruby_21882.zip",
+        "sourceSha256": "7232f0a253749d7c131abde0b9bccacf63283e63134dd583e0428745fab4d21b",
+        "textSha256": "375fe2631ea160f32ff8be10e13f0b7a13eb2dab4905c441ca465796d47da628",
+        "attribution": {
+          "author": "森鴎外",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-14",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000129/card45245.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「山椒大夫・高瀬舟」岩波文庫",
+            "1938（昭和13）年7月1日第1刷発行",
+            "1967（昭和42）年6月16日第34刷改版発行",
+            "1998（平成10）年4月6日第77刷発行"
+          ],
+          "parentBook": [],
+          "inputter": "kompass",
+          "proofreader": "土屋隆"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "1/3",
+          "incipit": "高瀬舟は京都の高瀬川を上下する小舟である。",
+          "sha256": "039d25e894ad8ac7800b1ef4a4322c22352d157fdf52b6bf8d25f4af32317257"
+        },
+        {
+          "order": 2,
+          "title": "2/3",
+          "incipit": "喜助はことばをついだ。",
+          "sha256": "29535dce9c5b5e14180ceae22c4fb9d90a34b48d020e69d0cb38c90d2a1d79db"
+        },
+        {
+          "order": 3,
+          "title": "3/3",
+          "incipit": "喜助はひどく恐れ入った様子で…",
+          "sha256": "14a28fd0e27ce49f6b06e42e931300c36f9fcf8fc54348e79e173f178d1f8921"
+        }
+      ]
+    },
+    "aozora-000148-000752": {
+      "title": "坊っちゃん",
+      "author": "夏目漱石",
+      "level": "N2 상급",
+      "total": 34,
+      "division": "heading",
+      "chars": 89153,
+      "display": {
+        "titleReading": "ぼっちゃん",
+        "titleKo": "도련님",
+        "authorKo": "나쓰메 소세키",
+        "cover": "sky",
+        "motif": "steam-sea"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000148-000752",
+        "personId": "000148",
+        "workId": "752",
+        "title": "坊っちゃん",
+        "author": "夏目漱石",
+        "publishedYear": 1906,
+        "authorDeathYear": 1916,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000148/card752.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000148/files/752_ruby_2438.zip",
+        "sourceSha256": "53c4d86033d0e4590c0354df5fec2709820ef21c09fa402826ff33376ec21228",
+        "textSha256": "ece4fc71aad3bed366e86851e818a2525d47fdd732f503866cf7aa084eef6a92",
+        "attribution": {
+          "author": "夏目漱石",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-14",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000148/card752.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「ちくま日本文学全集　夏目漱石」筑摩書房",
+            "1992（平成4）年1月20日第1刷発行"
+          ],
+          "parentBook": [
+            "「夏目漱石全集2」ちくま文庫、筑摩書房",
+            "1987（昭和62）年10月27日第1刷発行"
+          ],
+          "inputter": "真先芳秋",
+          "proofreader": "柳沢成雄"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "一 (1/3)",
+          "incipit": "親譲りの無鉄砲で小供の時から損ばかりしている。",
+          "sha256": "7ffd998c742c72b524e8177884aa3b9b235b88e6580596718fb5ad5e65730097"
+        },
+        {
+          "order": 2,
+          "title": "一 (2/3)",
+          "incipit": "母が死んでから清はいよいよおれを可愛がった。",
+          "sha256": "9907b3b6e526aa4c806a59c9f8a03f98634bf476a3b53dd70b0cca175a0ec75f"
+        },
+        {
+          "order": 3,
+          "title": "一 (3/3)",
+          "incipit": "兄とおれはかように分れたが、困ったのは清の行く先である。",
+          "sha256": "7e58bdd4d2c67d00468cde38862150d99f60ed4320b136a60e23016d1ec82634"
+        },
+        {
+          "order": 4,
+          "title": "二 (1/2)",
+          "incipit": "ぶうと云って汽船がとまると、艀が岸を離れて、漕ぎ寄せて来た。",
+          "sha256": "813d5291b1e7b3cc78b205aacf4ca3db732f59381c8fc1344a79a4df48e05b66"
+        },
+        {
+          "order": 5,
+          "title": "二 (2/2)",
+          "incipit": "そう、こうする内に喇叭が鳴った。",
+          "sha256": "882f070a8857c40842eae81ffa2a76b40c43e05c57a8ae433773b827354fc422"
+        },
+        {
+          "order": 6,
+          "title": "三 (1/2)",
+          "incipit": "いよいよ学校へ出た。",
+          "sha256": "bb47013b5504ccf3d1cb8b705b2bc89e67acde7565265e61e206825b3e312d23"
+        },
+        {
+          "order": 7,
+          "title": "三 (2/2)",
+          "incipit": "そのうち学校もいやになった。",
+          "sha256": "f6aae2a9ecf257c330ae6db3c540bca00f9b94fdf545a81ad547815452561842"
+        },
+        {
+          "order": 8,
+          "title": "四 (1/3)",
+          "incipit": "学校には宿直があって、職員が代る代るこれをつとめる。",
+          "sha256": "7d70eea8669815a1ee4bf229fa517d0757a4740dc65a58805dceb5439875dd7d"
+        },
+        {
+          "order": 9,
+          "title": "四 (2/3)",
+          "incipit": "「バッタを知らないのか、知らなけりゃ見せてやろう…",
+          "sha256": "8ff1f725b3385acd4d6458c1f1e6f7ca9627cf4fcb80b849eb1035c8af7b12a3"
+        },
+        {
+          "order": 10,
+          "title": "四 (3/3)",
+          "incipit": "清の事を考えながら、のつそつしていると…",
+          "sha256": "c7fd7eb23195c553831f381efc327991b9656fb1adaf61d027ab9a2739f3994a"
+        },
+        {
+          "order": 11,
+          "title": "五 (1/3)",
+          "incipit": "君釣りに行きませんかと赤シャツがおれに聞いた。",
+          "sha256": "269794bc90c29c5ceba24aee437f85b6533c2c3c4a9dff80c85c1abc3ae3e10b"
+        },
+        {
+          "order": 12,
+          "title": "五 (2/3)",
+          "incipit": "ここいらがいいだろうと船頭は船をとめて、錨を卸した。",
+          "sha256": "7946244aea310fb62397ed8f60d8d2b3bf0a6ba26bbc5d9d1f3a201e31eee780"
+        },
+        {
+          "order": 13,
+          "title": "五 (3/3)",
+          "incipit": "もう帰ろうかと赤シャツが思い出したように云うと…",
+          "sha256": "938f93cc68920f6b0addd741a1004da18efc9651771ee52208f4c4935621854f"
+        },
+        {
+          "order": 14,
+          "title": "六 (1/4)",
+          "incipit": "野だは大嫌いだ。",
+          "sha256": "c9c6babdc955aa8ec9ac109350d821c5c07f75b5c45ae218fee7d73cc69b61eb"
+        },
+        {
+          "order": 15,
+          "title": "六 (2/4)",
+          "incipit": "「冗談じゃない本当だ。",
+          "sha256": "e2db6119b68d74d42379f09f86cdf64df0bad861f5bcee588d3307eaf9ecab26"
+        },
+        {
+          "order": 16,
+          "title": "六 (3/4)",
+          "incipit": "おれは校長の言葉を聞いて…",
+          "sha256": "79caf9a5204b371e207867dfd79c96803302f5c1c4d17bd7afd539dfdb548181"
+        },
+        {
+          "order": 17,
+          "title": "六 (4/4)",
+          "incipit": "しばらくして山嵐はまた起立した。",
+          "sha256": "b897003473ae76823b055c6520cd3a12dfcbbfd2a51d83f78ac5db45f6925e15"
+        },
+        {
+          "order": 18,
+          "title": "七 (1/4)",
+          "incipit": "おれは即夜下宿を引き払った。",
+          "sha256": "7052ca180d866d66685a64871e3bdc2942c60b27ebbf685ce636df55df1d97c3"
+        },
+        {
+          "order": 19,
+          "title": "七 (2/4)",
+          "incipit": "「厄介だね。",
+          "sha256": "c1d8e0744b6fe86c9093d746e914f3de7c044e53899b79172fe1eed4b5d44424"
+        },
+        {
+          "order": 20,
+          "title": "七 (3/4)",
+          "incipit": "おれが椽鼻で清の手紙をひらつかせながら…",
+          "sha256": "58c7b390ee6aa09c2d81bae7c9e985d7828c3a3398fff63b3eca30ed0f192387"
+        },
+        {
+          "order": 21,
+          "title": "七 (4/4)",
+          "incipit": "温泉へ着いて、三階から、浴衣のなりで湯壺へ下りてみたら…",
+          "sha256": "8de516fb589a2ba85cb6ced347cd76072fdfc5246cf226eaf1d8040f2de2cbc5"
+        },
+        {
+          "order": 22,
+          "title": "八 (1/3)",
+          "incipit": "赤シャツに勧められて釣に行った帰りから、山嵐を疑ぐり出した。",
+          "sha256": "638edb79e6b5c767f8fc7a6c8ec631cc9bf472edb68e1be16a1e3ba26dfe73cf"
+        },
+        {
+          "order": 23,
+          "title": "八 (2/3)",
+          "incipit": "「時間が減って、もっと働くんですか、妙だな」",
+          "sha256": "8fa5c1eabc952c2260c15ad0c9a918b3e32d2db06ca344b9054529370f5c6caa"
+        },
+        {
+          "order": 24,
+          "title": "八 (3/3)",
+          "incipit": "小倉の袴をつけてまた出掛けた。",
+          "sha256": "435438d3a9cb4baf9d5e7de10baef1c7fdb878c0357ec61ff09736a76c1b34aa"
+        },
+        {
+          "order": 25,
+          "title": "九 (1/3)",
+          "incipit": "うらなり君の送別会のあるという日の朝、学校へ出たら…",
+          "sha256": "d7c4bd76b8f8cc0189de1dc0c9b5fc43df5869fd6cb7cadea7d40bb75fce922a"
+        },
+        {
+          "order": 26,
+          "title": "九 (2/3)",
+          "incipit": "二人が着いた頃には、人数ももう大概揃って…",
+          "sha256": "ac93e057fdbc876df8ee8310a902397375a816ddc9e1c7f2d67dcaec8bf0c969"
+        },
+        {
+          "order": 27,
+          "title": "九 (3/3)",
+          "incipit": "「ハイカラ野郎の、ペテン師の、イカサマ師の、猫被りの…",
+          "sha256": "e88667f7211933bbc0f935aec1258743c23d947f7a3f63200b2d142f18d20802"
+        },
+        {
+          "order": 28,
+          "title": "十 (1/3)",
+          "incipit": "祝勝会で学校はお休みだ。",
+          "sha256": "5470183bcc07730df459f2c56e8b5989811164c4fbf29d3092e336ccc0a0a0f3"
+        },
+        {
+          "order": 29,
+          "title": "十 (2/3)",
+          "incipit": "おれは筆と巻紙を抛り出して…",
+          "sha256": "d85a217a4ce0346f18a237c1248d0a91f2d71f77aa8c7bab56f9c3a47f931412"
+        },
+        {
+          "order": 30,
+          "title": "十 (3/3)",
+          "incipit": "式の時はさほどでもなかったが、今度は大変な人出だ。",
+          "sha256": "d88c98e2c58b7eb613a4e70421a2bc7ccffd6a370e0eaf51db62172672ae63d0"
+        },
+        {
+          "order": 31,
+          "title": "十一 (1/4)",
+          "incipit": "あくる日眼が覚めてみると、身体中痛くてたまらない。",
+          "sha256": "ac2dc730a8b225c99fb6583d009008d9f1bd4ecaf7ad5cb834fceffcc31c1b8c"
+        },
+        {
+          "order": 32,
+          "title": "十一 (2/4)",
+          "incipit": "「ひどいもんだな。",
+          "sha256": "c2cd297f8005663157d1b9fa51aee06956154b88277ad3facd7ed6d534286506"
+        },
+        {
+          "order": 33,
+          "title": "十一 (3/4)",
+          "incipit": "山嵐はいよいよ辞表を出して…",
+          "sha256": "b2a6bdbab29cc19f675e8eeab5d08bc49cb89f43e0b6f62190b4d28f645dc3f9"
+        },
+        {
+          "order": 34,
+          "title": "十一 (4/4)",
+          "incipit": "角屋から出る二人の影を見るや否や…",
+          "sha256": "a95828a1b04bbd9766ba4033aa8e4c949cf7396cc1c3028cc06891c2b0319230"
         }
       ]
     },
@@ -216,6 +928,15 @@
       "author": "夏目漱石",
       "level": "N1 심화",
       "total": 4,
+      "division": "split",
+      "chars": 10628,
+      "display": {
+        "titleReading": "ぶんちょう",
+        "titleKo": "문조",
+        "authorKo": "나쓰메 소세키",
+        "cover": "cream",
+        "motif": "birdcage"
+      },
       "literature": {
         "schemaVersion": 1,
         "provider": "aozora",
@@ -268,22 +989,26 @@
       "chapters": [
         {
           "order": 1,
-          "title": "1편",
+          "title": "1/4",
+          "incipit": "十月早稲田に移る。",
           "sha256": "b8bc82945c21cf696ee63c2645542d563fa84d77a968469caf7c2e178896d8c9"
         },
         {
           "order": 2,
-          "title": "2편",
+          "title": "2/4",
+          "incipit": "文鳥の眼は真黒である。",
           "sha256": "4569566201914074535e765970096878bcbbfca087a6c67aa865b6346b7e190a"
         },
         {
           "order": 3,
-          "title": "3편",
+          "title": "3/4",
+          "incipit": "餌壺にはまだ粟が八分通り這入っている。",
           "sha256": "82450aaad94856462e5f1c3924b5ff04f28bcce07182b39ce7d6e3dc95a639dd"
         },
         {
           "order": 4,
-          "title": "4편",
+          "title": "4/4",
+          "incipit": "自分は急に易籠を取って来た。",
           "sha256": "5fece9cce0830c4a56404bf0962f52485760c52ef2fd5f9edea114c3d8ab3d63"
         }
       ]
@@ -293,6 +1018,15 @@
       "author": "芥川龍之介",
       "level": "N2 상급",
       "total": 2,
+      "division": "split",
+      "chars": 5821,
+      "display": {
+        "titleReading": "はな",
+        "titleKo": "코",
+        "authorKo": "아쿠타가와 류노스케",
+        "cover": "ink",
+        "motif": "ink-steam"
+      },
       "literature": {
         "schemaVersion": 1,
         "provider": "aozora",
@@ -346,13 +1080,176 @@
       "chapters": [
         {
           "order": 1,
-          "title": "1편",
-          "sha256": "5016451cbf169f354f6a0e9904dc964c7fe9c5f548510324406e86f36136fcdf"
+          "title": "1/2",
+          "incipit": "禅智内供の鼻と云えば、池の尾で知らない者はない。",
+          "sha256": "c688a85340f1659e907d00116b69b793fead2a4d85c4f72410918801c8e07f8c"
         },
         {
           "order": 2,
-          "title": "2편",
-          "sha256": "80210df7b092d4624bbe8973ca3b9aa37eba6095bf48de9e5eb2781c80b42651"
+          "title": "2/2",
+          "incipit": "しばらく踏んでいると、やがて、粟粒のようなものが…",
+          "sha256": "b267f45457f618f4b13f41ce9893ef68a419a62d60b6096b1a3de1f2c33af9f4"
+        }
+      ]
+    },
+    "aozora-000879-000092": {
+      "title": "蜘蛛の糸",
+      "author": "芥川龍之介",
+      "level": "N3 중급",
+      "total": 3,
+      "division": "heading",
+      "chars": 2889,
+      "display": {
+        "titleReading": "くものいと",
+        "titleKo": "거미줄",
+        "authorKo": "아쿠타가와 류노스케",
+        "cover": "abyss",
+        "motif": "lotus-thread"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000879-000092",
+        "personId": "000879",
+        "workId": "92",
+        "title": "蜘蛛の糸",
+        "author": "芥川龍之介",
+        "publishedYear": 1918,
+        "authorDeathYear": 1927,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000879/card92.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000879/files/92_ruby_164.zip",
+        "sourceSha256": "3b9990dc830f79346242db7f37969a1c2c7dbb7fb9abe9915e8c89c83f8628c9",
+        "textSha256": "581d1ee699d1ba68b046ea3961cd78303bcff98d354897599ecaa185b0e548b1",
+        "attribution": {
+          "author": "芥川龍之介",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-14",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000879/card92.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「芥川龍之介全集2」ちくま文庫、筑摩書房",
+            "1986（昭和61）年10月28日第1刷発行",
+            "1996（平成8）年7月15日第11刷発行"
+          ],
+          "parentBook": [],
+          "inputter": "平山誠、野口英司",
+          "proofreader": "もりみつじゅんじ"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "一",
+          "incipit": "ある日の事でございます。",
+          "sha256": "c59a8dea51fa5b58891d49555a44d67dc9a6f1d082c71e993d0d6f1816fdcf98"
+        },
+        {
+          "order": 2,
+          "title": "二",
+          "incipit": "こちらは地獄の底の血の池で、ほかの罪人と一しょに…",
+          "sha256": "0a9bc9ad215917ebff449e2d1b2da23a0df94f8f2c78db88f32d03c8e28e0570"
+        },
+        {
+          "order": 3,
+          "title": "三",
+          "incipit": "御釈迦様は極楽の蓮池のふちに立って…",
+          "sha256": "f8967034616f312853cc35368a7af7763ac563756e83881fb5b97d451a25c7cf"
+        }
+      ]
+    },
+    "aozora-000879-000127": {
+      "title": "羅生門",
+      "author": "芥川龍之介",
+      "level": "N2 상급",
+      "total": 2,
+      "division": "split",
+      "chars": 5754,
+      "display": {
+        "titleReading": "らしょうもん",
+        "titleKo": "라쇼몬",
+        "authorKo": "아쿠타가와 류노스케",
+        "cover": "rust",
+        "motif": "rain-gate"
+      },
+      "literature": {
+        "schemaVersion": 1,
+        "provider": "aozora",
+        "workKey": "aozora-000879-000127",
+        "personId": "000879",
+        "workId": "127",
+        "title": "羅生門",
+        "author": "芥川龍之介",
+        "publishedYear": 1915,
+        "authorDeathYear": 1927,
+        "charset": "新字新仮名",
+        "cardUrl": "https://www.aozora.gr.jp/cards/000879/card127.html",
+        "sourceFileUrl": "https://www.aozora.gr.jp/cards/000879/files/127_ruby_150.zip",
+        "sourceSha256": "e63d8fe54826547fe4a66a66fc39ea0d822895c015b8f300bfe285c86c637400",
+        "textSha256": "a28253f6d959f5bc81b3f9eb5d08a9e6f447364e2f18767f7c420aa98b808d46",
+        "attribution": {
+          "author": "芥川龍之介",
+          "translator": null,
+          "illustrator": null
+        },
+        "rights": {
+          "status": "approved",
+          "basis": "public-domain",
+          "reviewedBy": "claude",
+          "reviewedAt": "2026-10-14",
+          "reviewedJurisdictions": [
+            "JP",
+            "KR",
+            "US"
+          ],
+          "evidenceUrl": "https://www.aozora.gr.jp/cards/000879/card127.html"
+        },
+        "colophon": {
+          "sourceBook": [
+            "「芥川龍之介全集1」ちくま文庫、筑摩書房",
+            "1986（昭和61）年9月24日第1刷発行",
+            "1997（平成9）年4月15日第14刷発行"
+          ],
+          "parentBook": [
+            "「筑摩全集類聚　芥川龍之介全集第一巻」筑摩書房",
+            "1971（昭和46）年3月5日初版第1刷発行"
+          ],
+          "inputter": "平山誠、野口英司",
+          "proofreader": "もりみつじゅんじ"
+        },
+        "edits": [
+          "ruby-reading-aid",
+          "chapter-split-by-manabi"
+        ]
+      },
+      "chapters": [
+        {
+          "order": 1,
+          "title": "1/2",
+          "incipit": "ある日の暮方の事である。",
+          "sha256": "f60b715e38f8cd734d3927d1b3a3fdd6f3b26ae3ada69116151acaf9d67815fc"
+        },
+        {
+          "order": 2,
+          "title": "2/2",
+          "incipit": "下人は、六分の恐怖と四分の好奇心とに動かされて…",
+          "sha256": "02ce946446b7741bc1507f31dc27f598689f0a7834c20b54604b31e483b3aee6"
         }
       ]
     }

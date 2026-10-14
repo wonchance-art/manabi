@@ -2,9 +2,12 @@
 // 개수 · 범위 거르기는 reviewScope.js(이 모듈을 다시 내보낸다).
 import { LEARNING_LANGUAGES } from './learningSources.js';
 import { BOOK_ID, bookHref } from './textbook/contract.js';
+import { EXPRESSION_KINDS, EXPRESSION_KIND_LABELS } from './reviewCard.js';
 
 export const REVIEW_SCOPE_LANGS = Object.freeze([...LEARNING_LANGUAGES]);
 export const REVIEW_SCOPE_STATES = Object.freeze(['due', 'new', 'fragile']);
+// 종류(REV-SCOPE-R1B-1 §6-1 ① type) — 단어 · 문장. 문형(pattern)은 R2. 판별은 reviewCard.expressionKind(읽을 때만).
+export const REVIEW_SCOPE_TYPES = EXPRESSION_KINDS;
 // 중국어 급수 = HSK 2026 표(zhHskLevel.js 정본, H7 = 7–9 밴드) · NONE = 표 밖(미분류). 일본어 N급은 R2.
 export const ZH_SCOPE_LEVELS = Object.freeze(['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'NONE']);
 export const BOOK_LESSONS = 42;
@@ -16,7 +19,7 @@ export const SCOPE_LANG_LABELS = Object.freeze({ Japanese: '일본어', Chinese:
 
 const BOOK_PATH = `/books/${BOOK_ID}`;
 const PAGE = /^(?:cover|u(?:0[1-9]|[1-3][0-9]|4[0-2])(?:-[a-z0-9_-]+)?)$/;
-const SCOPE_KEYS = ['lang', 'level', 'src', 'state', 'book'];
+const SCOPE_KEYS = ['lang', 'level', 'src', 'state', 'type', 'book'];
 const MATERIAL_ID = /^[1-9]\d{0,17}$/;
 const LESSON = /^[1-9]\d?$/;
 
@@ -79,7 +82,7 @@ function readParam(params, key) {
 }
 
 /**
- * 주소 → 범위. 범위 키(lang · level · src · state · 옛 book)가 하나도 없으면 명시 범위가 아니다(저장 설정을 쓴다).
+ * 주소 → 범위. 범위 키(lang · level · src · state · type · 옛 book)가 하나도 없으면 명시 범위가 아니다(저장 설정을 쓴다).
  * 반환: { explicit:false } | { explicit:true, scope, returnTo } | { explicit:true, invalid:true, reason }.
  * lang이 비면 null로 두고 화면이 기본 언어(배움 언어 칩 · 학습 언어)로 채운다 — 교재는 일본어, 급수는 중국어로 정해진다.
  */
@@ -115,17 +118,21 @@ export function parseReviewScope(params = {}) {
   }
   const state = values.state ?? 'due';
   if (!REVIEW_SCOPE_STATES.includes(state)) return invalid('state');
-  return { explicit: true, scope: { lang, level, source, state },
+  const type = values.type ?? null;
+  if (type !== null && !REVIEW_SCOPE_TYPES.includes(type)) return invalid('type');
+  // 종류는 고른 경우에만 범위에 싣는다(없으면 「전체」 — R1-A 범위 모양 그대로).
+  return { explicit: true, scope: { lang, level, source, state, ...(type ? { type } : {}) },
     returnTo: source?.kind === 'book' ? safeBookReturn(values.returnTo) || BOOK_PATH : null };
 }
 
-/** 범위 → 주소(정본 순서 lang · level · src · state · returnTo). state=due는 기본값이라 쓰지 않는다. */
+/** 범위 → 주소(정본 순서 lang · level · src · state · type · returnTo). state=due는 기본값이라 쓰지 않는다. */
 export function serializeReviewScope(scope, { returnTo } = {}) {
   const params = new URLSearchParams();
   if (scope?.lang) params.set('lang', scope.lang);
   if (scope?.level) params.set('level', scope.level);
   if (scope?.source) params.set('src', formatScopeSource(scope.source));
   if (scope?.state && scope.state !== 'due') params.set('state', scope.state);
+  if (REVIEW_SCOPE_TYPES.includes(scope?.type)) params.set('type', scope.type);
   if (scope?.source?.kind === 'book') {
     const safe = safeBookReturn(returnTo);
     if (safe) params.set('returnTo', safe);
@@ -148,6 +155,10 @@ export function scopeSourceLabel(source, { materialTitles } = {}) {
     case 'study': return STUDY_SOURCE_REF;
     default: return null;
   }
+}
+
+export function scopeTypeLabel(type) {
+  return EXPRESSION_KIND_LABELS[type] || null;
 }
 
 export function scopeStateLabel(state) {

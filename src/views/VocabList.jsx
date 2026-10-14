@@ -234,7 +234,7 @@ export default function VocabList({
           };
           const learning = learningById?.get(v.id);
           const stage = learning ? wordStage(learning) : null;
-          const stageColor = stage?.key === 'mastered' ? 'var(--accent)' : stage?.key === 'learning' ? 'var(--warning)' : 'var(--danger)';
+          const stageColor = stage?.key === 'mature' ? 'var(--accent)' : stage?.key === 'young' ? 'var(--warning)' : stage?.key === 'new' ? 'var(--text-muted)' : 'var(--danger)';
           const stageLabel = learning?.review.excluded ? '제외' : stage?.label || '—';
           const due = !!learning && isVocabularyReviewDue(learning, Math.max(new Date(now).getTime(), Date.parse(learning.review.evaluatedAt)));
           const lc = LANG_CODE[v.language];
@@ -278,9 +278,13 @@ export default function VocabList({
                 {displayWord(v.word_text, v.pos)}
               </button>
             </h3>
-            {v.furigana && <span className="vocab-row__reading">{v.furigana}</span>}
+            {v.furigana && <span className="vocab-row__reading" lang={lc}>{v.furigana}</span>}
 
-            <p className="vocab-row__meaning">{v.meaning}</p>
+            {String(v.meaning ?? '').trim() || !updateVocabMutation || selectMode
+              ? <p className="vocab-row__meaning">{v.meaning}</p>
+              // 뜻 없는 표현은 복습에서 빠진다(REV-SCOPE-R1B-1 §5-6) — 여기서 바로 뜻을 채운다.
+              : <button type="button" className="vocab-row__fill" disabled={!canModify(v)} onClick={e => { e.stopPropagation(); openEdit(v); }}
+                aria-label={`${v.word_text} 뜻 채우기`}>뜻 채우기</button>}
             {(v.etym || v.hanja || v.source_sentence) && (
               <div className="vocab-row__sub">
                 {(v.etym || v.hanja) && (

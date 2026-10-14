@@ -1,0 +1,44 @@
+/* 정본 문학책 표지 그림(LiteratureCoverArt) — 시대 장정의 재구성. 표지 바탕 위·글자 아래 층이고, 색은 여기서만 정한다.
+   모티프마다 판색 --p1…--p6을 정하고 도형은 lit-art__pN으로 고른다(옛 인쇄처럼 평평한 색면). __t = 종이결·천결 같은 바탕결(.1).
+   왼쪽 4px은 책등 그림자 자리라 잘라 낸다. 제목·작가·아래 선은 literature-cover.css에서 z-index:1로 위에 선다. */
+.lit-art{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;clip-path:inset(0 0 0 4px)}
+.lit-art__p1{color:var(--p1)}
+.lit-art__p2{color:var(--p2)}
+.lit-art__p3{color:var(--p3)}
+.lit-art__p4{color:var(--p4)}
+.lit-art__p5{color:var(--p5)}
+.lit-art__p6{color:var(--p6)}
+.lit-art__t{opacity:.1}
+.lit-art__glow{opacity:.3}
+/* 手袋を買いに — 쇼와 10년대 2도 인쇄: 쪽빛 바탕(표지색) · 따뜻한 노랑 · 눈은 종이색 */
+.lit-art--snow-night{--p1:#f2ead8;--p2:#f1c04c;--p3:var(--cover-color)}
+/* ごん狐 — 어린이 잡지 석판 다색: 미색 띠·테 · 노을 살구 · 먼 산 쑥색 · 들 올리브 · 꽃 빨강 · 여우 밤색 */
+.lit-art--higanbana{--p1:#f3e4c6;--p2:#efb48c;--p3:#93a07f;--p4:#5e6e4a;--p5:#cf3a24;--p6:#4a3124}
+/* 注文の多い料理店 — 자비 출판 활판 2–3도: 거친 미색 종이 선 · 황토 문·간판 · 짙은 숲 먹 · 산고양이 눈 */
+.lit-art--forest-doors{--p1:#ecdfbf;--p2:#c27a3a;--p3:#14271b;--p4:#e8c54a}
+/* 鼻 — 다이쇼 문예서: 천 바탕 위 미색 題簽 · 가는 갈색 테 · 작은 붉은 인 · 천결(흰 .1) */
+.lit-art--ink-steam{--p1:#ebe3cf;--p2:#6a5b48;--p3:#a8402c;--p4:var(--sheet)}
+/* 文鳥 — 메이지 아르누보 세 판색: 鉄紺 · 金茶 · 生成り(바탕은 표지색, 새는 더 밝은 미색) */
+.lit-art--birdcage{--p1:#27324a;--p2:#a87a36;--p3:#f7f1e2}
+/* 옛 종이 층(PaperGrain) — 다섯 권 공통, 새 책처럼(바랜 얼룩·그을음 없음). 옅은 결은 짙은 갈색·밝은 미색 점, 밝은 결은 미색.
+   글자 뒤 대비는 4.5:1 이상을 지킨다(scratch contrast 측정). */
+.lit-paper__grain{flood-color:#2a1c0e;flood-opacity:.06}
+.lit-paper__fleck{flood-color:#fff4dc;flood-opacity:.07}
+.lit-paper__fade{flood-color:#fff1d2;flood-opacity:.05}
+/* 2차 묶음(2026-10-14 KST) — 작품마다 새 문양, 시대 장정의 평평한 판색만 */
+/* 羅生門 — 해 질 녘 비: 문 그림자 · 옅은 빗줄기 · 노을 낮은 하늘 */
+.lit-art--rain-gate{--p1:#1d1412;--p2:#a9826a;--p3:#7a3a2b}
+/* 蜘蛛の糸 — 극락 연못(연잎·분홍 연꽃) · 은빛 실 · 지옥 불결 */
+.lit-art--lotus-thread{--p1:#e8e2d4;--p2:#e3a3ad;--p3:#4f6d62;--p4:#a8402c;--p5:#621f17}
+/* 山月記 — 달 · 겹친 산 · 범 */
+.lit-art--moon-tiger{--p1:#f1e8cf;--p2:#2a2a3e;--p3:#c9963f;--p4:#1c1c2a;--p5:#5f5f80}
+/* 坊っちゃん — 메이지 담채: 남색 선 · 꼭두서니 띠 · 흰 연기 · 바다 */
+.lit-art--steam-sea{--p1:#1f3346;--p2:#b34a3c;--p3:#f8f5ec;--p4:#8fb4c2}
+/* 檸檬 — 레몬 노랑 · 화집 색 */
+.lit-art--lemon-books{--p1:#f2d23c;--p2:#c9a42c;--p3:#2f3338;--p4:#a9473a;--p5:#cfc7b6;--p6:#6f8a6c}
+/* よだかの星 — 별 · 푸르게 타는 별 · 쏙독새 · 산 */
+.lit-art--nightjar-star{--p1:#f4f0e0;--p2:#6f9be8;--p3:#191530;--p4:#3d365f;--p5:#dfe9ff;--p6:#bdb5d9}
+/* 高瀬舟 — 으스름달 · 버들 · 물결 · 배 그림자 · 등불 */
+.lit-art--night-boat{--p1:#ece4c8;--p2:#122629;--p3:#6f9579;--p4:#4b7f87;--p5:#e8c37a}
+/* セロ弾きのゴーシュ — 호박색 첼로 · 짙은 나무 · 크림 음표·뻐꾸기 */
+.lit-art--cello-night{--p1:#c98a4b;--p2:#2b1a10;--p3:#f0e2c4;--p4:#8a5a33}
