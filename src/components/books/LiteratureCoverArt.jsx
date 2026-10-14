@@ -155,17 +155,17 @@ function Birdcage() {
 }
 
 // 옛 종이 — 다섯 권 공통 층(오너 「빈티지 효과 · 옛 종이 질감」). 그림 위·글자 아래에 깔린다(글자는 z-index:1).
-// 고운 종이결(고주파 잡음) · 얼룩(저주파 잡음을 문턱으로 자른 황갈색 반점) · 잉크가 고르지 않게 빠진 밝은 결 · 가장자리 그을음.
-// 그림 자체에는 활판 느낌(가장자리 미세 번짐 + 농도 얼룩)만 준다. 전부 코드로 만든 절차 질감이다(이미지·외부 주소 없음).
+// 「새 책처럼」(오너 2026-10-14 KST — 어두컴컴한 효과 없애기): 바랜 얼룩·가장자리 그을음은 두지 않고, 갓 찍은 옛 종이의
+// 옅은 결(고주파 잡음 점)과 고르지 않은 밝은 결만 남긴다. 그림 자체에는 활판 느낌(아주 작은 번짐 + 옅은 농도 차)만 준다. 전부 코드로 만든 절차 질감이다(이미지·외부 주소 없음).
 // 숫자 행렬은 잡음→투명도 변환일 뿐 색이 아니다 — 색은 CSS(flood-color·color)가 정한다.
 function PaperFilters({ id }) {
   return (
     <defs>
       <filter id={`${id}-print`} x="0" y="0" width="120" height="168" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
         <feTurbulence type="fractalNoise" baseFrequency="0.5" numOctaves="1" seed="2" result="edge" />
-        <feDisplacementMap in="SourceGraphic" in2="edge" scale="1.3" xChannelSelector="R" yChannelSelector="G" result="moved" />
+        <feDisplacementMap in="SourceGraphic" in2="edge" scale="0.6" xChannelSelector="R" yChannelSelector="G" result="moved" />
         <feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="2" seed="5" result="blot" />
-        <feColorMatrix in="blot" type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.9 0 0 0 0.5" result="inkMask" />
+        <feColorMatrix in="blot" type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.3 0 0 0 0.82" result="inkMask" />
         <feComposite in="moved" in2="inkMask" operator="in" />
       </filter>
       <filter id={`${id}-paper`} x="0" y="0" width="120" height="168" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
@@ -177,18 +177,11 @@ function PaperFilters({ id }) {
         <feFlood className="lit-paper__fleck" result="fleckC" />
         <feComposite in="fleckC" in2="flecksA" operator="in" result="fleck" />
         <feTurbulence type="fractalNoise" baseFrequency="0.035 0.045" numOctaves="3" seed="11" result="low" />
-        <feColorMatrix in="low" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2.6 0 0 0 -1.45" result="stainA" />
-        <feFlood className="lit-paper__stain" result="stainC" />
-        <feComposite in="stainC" in2="stainA" operator="in" result="stain" />
         <feColorMatrix in="low" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.4 0 0 0 1.05" result="fadeA" />
         <feFlood className="lit-paper__fade" result="fadeC" />
         <feComposite in="fadeC" in2="fadeA" operator="in" result="fade" />
-        <feMerge><feMergeNode in="fade" /><feMergeNode in="stain" /><feMergeNode in="grain" /><feMergeNode in="fleck" /></feMerge>
+        <feMerge><feMergeNode in="fade" /><feMergeNode in="grain" /><feMergeNode in="fleck" /></feMerge>
       </filter>
-      <radialGradient id={`${id}-edge`} cx="0.5" cy="0.5" r="0.72">
-        <stop offset="0.6" className="lit-paper__edge" stopColor="currentColor" stopOpacity="0" />
-        <stop offset="1" className="lit-paper__edge" stopColor="currentColor" stopOpacity="0.38" />
-      </radialGradient>
     </defs>
   );
 }
@@ -197,7 +190,6 @@ function PaperGrain({ id }) {
   return (
     <g className="lit-paper">
       <rect width="120" height="168" filter={`url(#${id}-paper)`} />
-      <rect width="120" height="168" fill={`url(#${id}-edge)`} />
     </g>
   );
 }

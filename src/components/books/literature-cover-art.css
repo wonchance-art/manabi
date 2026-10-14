@@ -20,10 +20,8 @@
 .lit-art--ink-steam{--p1:#ebe3cf;--p2:#6a5b48;--p3:#a8402c;--p4:var(--sheet)}
 /* 文鳥 — 메이지 아르누보 세 판색: 鉄紺 · 金茶 · 生成り(바탕은 표지색, 새는 더 밝은 미색) */
 .lit-art--birdcage{--p1:#27324a;--p2:#a87a36;--p3:#f7f1e2}
-/* 옛 종이 층(PaperGrain) — 다섯 권 공통. 고운 결은 짙은 갈색·밝은 미색 점, 얼룩은 황갈색, 잉크 빠진 결은 밝은 미색, 가장자리는 그을음.
+/* 옛 종이 층(PaperGrain) — 다섯 권 공통, 새 책처럼(바랜 얼룩·그을음 없음). 옅은 결은 짙은 갈색·밝은 미색 점, 밝은 결은 미색.
    글자 뒤 대비는 4.5:1 이상을 지킨다(scratch contrast 측정). */
-.lit-paper__grain{flood-color:#2a1c0e;flood-opacity:.16}
+.lit-paper__grain{flood-color:#2a1c0e;flood-opacity:.06}
 .lit-paper__fleck{flood-color:#fff4dc;flood-opacity:.07}
-.lit-paper__stain{flood-color:#8a5a28;flood-opacity:.16}
 .lit-paper__fade{flood-color:#fff1d2;flood-opacity:.05}
-.lit-paper__edge{color:#24170a}
