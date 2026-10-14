@@ -191,3 +191,67 @@ describe('세션 · 끝 화면 · 상태 문구(§5-5 · §5-6)', () => {
     expect(page).not.toContain('멈춘 복습 이어가기 ·');
   });
 });
+
+describe('「다시」 재노출(예전 일정) — 입장권 · 일정 저장 없이 확인만(M09 #1337 6171362813)', () => {
+  // 입장 RPC(learning_admit_legacy)는 채점된 적 있고 next_review_at이 미래인 카드를 learning_card_not_due(409)로 거절한다.
+  // 예전 일정의 채점은 next_review_at을 최소 하루 뒤로 두므로, 재노출이 입장권을 다시 받으면 세션이 「복습을 준비하지 못했어요」로 멈춘다.
+  const candidate = sliceBetween(page, 'const candidateWord = useMemo', '}, [reviewQueue, reviewIdx');
+  const score = sliceBetween(page, 'const handleScore = async (rating) => {', 'const actorId = user?.id;');
+  const skip = sliceBetween(page, 'const handleSkip = () => {', 'const tomorrow');
+
+  it('재노출 단계는 입장권 후보가 아니다 — 지금 카드는 againWord로 바로 연다', () => {
+    expect(candidate).toContain("step.phase !== 'again'");
+    expect(page).toMatch(/const currentWord = againWord \|\|/);
+  });
+
+  it('재노출의 채점 · 미루기는 기록 · 일정 저장 없이 다음으로 — 「다시」면 한 번 더 끝에', () => {
+    expect(score).toContain('goNextReview(rating === 1 ? againWord.id : null)');
+    expect(score).not.toContain('recordReviewCompleted');
+    expect(skip).toContain('goNextReview()');
+    expect(skip).not.toContain('scoreMutation');
+  });
+
+  it('끝 화면 「다시」 수는 같은 표현을 한 번으로 센다', () => {
+    expect(page).toContain("new Set(reviewQueue.filter(step => step.phase === 'again').map(step => step.id)).size");
+  });
+});
+
+describe('「다시」 재노출 — 준비된 카드로 세고, 건너뛰기 판정에서도 살린다(M09 #1337 6173065866)', () => {
+  // 지금 카드가 준비됐는지(stepReady)에 againWord가 빠지면, 아래 effect가 재노출을 「준비된 카드 없음」으로 보고
+  // 다음 유효 단계로 건너뛰거나(마지막이면) 세션을 끝냈다 — 첫 「다시」 뒤 재노출 없이 「오늘 몫 끝」.
+  const block = sliceBetween(page, '  const stepValid = step =>', '  // 새 일정 학습 단계');
+  const run = ({ queue, idx, againWord, candidateWord, fsrsStepWord, vocab }) => {
+    const calls = { idx: null, finished: 0 };
+    const env = {
+      reviewQueue: queue, reviewIdx: idx, againWord, candidateWord, fsrsStepWord, vocab,
+      reviewFinished: false, isLoading: false, vocabError: null, koreanCapabilities: { isLoading: false },
+      fsrsReview: { registryAvailable: true, controller: { canLegacy: () => true } }, fsrsStepValid: () => true,
+      reviewSupported: () => true, reviewAvailable: row => !row.last_reviewed_at,
+      setReviewIdx: value => { calls.idx = value; }, finishRun: () => { calls.finished += 1; }, useEffect: fn => fn(),
+    };
+    new Function(...Object.keys(env), block)(...Object.values(env));
+    return calls;
+  };
+  const graded = { id: 'a', last_reviewed_at: '2026-10-15T00:00:00Z' };
+
+  it('마지막 단계가 재노출이면 그 카드를 연다 — 세션을 끝내지 않는다', () => {
+    const calls = run({ queue: [{ id: 'a', engine: 'legacy', phase: 'question' }, { id: 'a', engine: 'legacy', phase: 'again' }],
+      idx: 1, againWord: graded, vocab: [graded] });
+    expect(calls).toEqual({ idx: null, finished: 0 });
+  });
+
+  it('지금 카드가 빠졌을 때 다음 유효 단계 찾기에서도 재노출은 유효하다(채점돼 reviewAvailable이 거짓이어도)', () => {
+    const gone = { id: 'b', last_reviewed_at: null, is_excluded: true };
+    const calls = run({ queue: [{ id: 'b', engine: 'legacy', phase: 'question' }, { id: 'a', engine: 'legacy', phase: 'again' }],
+      idx: 0, vocab: [gone, graded] });
+    expect(calls.idx).toBe(1);
+    expect(calls.finished).toBe(0);
+  });
+
+  it('제외 · 아는 단어가 된 재노출은 건너뛴다', () => {
+    const known = { ...graded, is_known: true };
+    const calls = run({ queue: [{ id: 'b', engine: 'legacy', phase: 'question' }, { id: 'a', engine: 'legacy', phase: 'again' }],
+      idx: 0, vocab: [{ id: 'b', is_excluded: true }, known] });
+    expect(calls.finished).toBe(1);
+  });
+});
