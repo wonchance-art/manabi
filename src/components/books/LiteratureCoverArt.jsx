@@ -54,11 +54,12 @@ function SnowNight() {
         {SNOW.map(([x, y], i) => <circle key={`${x}-${y}`} cx={x} cy={y} r={i % 3 ? 1.2 : 1.8} />)}
       </g>
       <path className="lit-art__faint" d="M0 142C30 128 70 122 120 126V168H0Z" fill="currentColor" />
-      <circle className="lit-art__glow" cx="97" cy="121" r="10" fill="currentColor" />
+      {/* 마을 불빛은 언덕 왼쪽 — 오른쪽 세로 제목 줄(手袋を買いに 여섯 자)이 바닥까지 내려와도 겹치지 않게 */}
+      <circle className="lit-art__glow" cx="44" cy="128" r="10" fill="currentColor" />
       <g className="lit-art__accent" fill="currentColor">
-        <rect x="89" y="119" width="3" height="4" />
-        <rect x="95" y="117" width="3" height="5" />
-        <rect x="101" y="120" width="3" height="3" />
+        <rect x="36" y="126" width="3" height="4" />
+        <rect x="42" y="124" width="3" height="5" />
+        <rect x="48" y="127" width="3" height="3" />
       </g>
       <path className="lit-art__lo" d="M0 162C40 160 76 142 120 134V168H0Z" fill="currentColor" />
     </>

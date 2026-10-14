@@ -1,14 +1,18 @@
 /* 정본 문학책 표지(AOZORA-P0-5) — 타이포그래피 표지. 색은 작품 이미지에서 고른 팔레트 이름 다섯(literatureDisplay
    LITERATURE_COVER_COLORS)만 쓴다. 바탕 위 글자는 --sheet(#fffefb) — 다섯 색 모두 흰 글자 대비 6.4:1 이상(AA).
-   제목은 모든 작품이 같은 글꼴·크기(12px)·자리 — 시리즈로 읽히게(오너 지시 2026-10-14 KST). 한 줄 다섯 자가 높이 62px 안에
-   들고(12×1.02×5≈61), 긴 제목은 같은 크기의 둘째 줄로(display.coverTitle).
+   배치는 모든 작품이 같다(오너 지시 2026-10-14 KST 「편차 없이 · 균형」): 제목 11px이 오른쪽 위에서 한 줄로(여섯 자까지
+   높이 69px 안 — 11×1.02×6≈67), 작가 6px이 그 왼쪽 아래(문고본의 대각선 짝). 여섯 자를 넘는 제목만 둘째 줄을 아래에
+   붙인다(--stepped: 첫 줄 위·끝 줄 아래 — 반반 떠서 아래가 비지 않게). 줄은 블록 둘(강제 줄바꿈은 줄마다 「끝 줄」 정렬을 받는다).
    셸은 늘 밝은 화면이라 표지는 테마를 따라 바뀌지 않는다(책은 물건이다). 서재 표지(.shelf-cover)와 같은 문법:
    왼쪽 책등 그림자 · 아래 짧은 선. */
-.lit-cover{--cover-color:#2f2c2b;width:60px;height:84px;flex:none;background:var(--cover-color);color:var(--sheet);position:relative;display:flex;justify-content:flex-end;padding:8px 8px 14px 12px;border-radius:1px 3px 3px 1px;box-shadow:inset 4px 0 0 color-mix(in srgb,var(--ink) 18%,transparent);overflow:hidden}
+.lit-cover{--cover-color:#2f2c2b;width:60px;height:84px;flex:none;background:var(--cover-color);color:var(--sheet);position:relative;box-sizing:border-box;display:flex;flex-direction:row-reverse;justify-content:flex-start;padding:7px 8px 8px 12px;border-radius:1px 3px 3px 1px;box-shadow:inset 4px 0 0 color-mix(in srgb,var(--ink) 18%,transparent);overflow:hidden}
 .lit-cover--snow{--cover-color:#3d5a7a}
 .lit-cover--vermilion{--cover-color:#a33a26}
 .lit-cover--forest{--cover-color:#2f5a3f}
 .lit-cover--ink{--cover-color:#2f2c2b}
 .lit-cover--slate{--cover-color:#4f5560}
-.lit-cover__title{position:relative;z-index:1;writing-mode:vertical-rl;white-space:pre;font-family:var(--font-lit-serif),"Noto Serif CJK JP",serif;font-weight:400;font-size:12px;line-height:1.25;letter-spacing:.02em}
+.lit-cover__title{position:relative;z-index:1;writing-mode:vertical-rl;white-space:nowrap;font-family:var(--font-lit-serif),"Noto Serif CJK JP",serif;font-weight:400;font-size:11px;line-height:1.25;letter-spacing:.02em}
+.lit-cover__line{display:block}
+.lit-cover__title--stepped .lit-cover__line:last-child{text-align:end}
+.lit-cover__author{position:relative;z-index:1;align-self:flex-end;height:max-content;margin-right:2px;writing-mode:vertical-rl;font-family:var(--font-lit-serif),"Noto Serif CJK JP",serif;font-size:6px;line-height:1;letter-spacing:.12em;opacity:.82}
 .lit-cover i{position:absolute;z-index:1;left:12px;bottom:8px;width:14px;height:1px;background:currentColor;opacity:.55}

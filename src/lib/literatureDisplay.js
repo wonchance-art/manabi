@@ -22,8 +22,11 @@ export const LITERATURE_COVER_MOTIFS = Object.freeze(['snow-night', 'higanbana',
 
 const filled = (value) => typeof value === 'string' && value.trim() !== '';
 
-/** 표지 세로 제목 한 줄 상한 — 모든 작품 같은 12px로 썸네일(60×84) 높이에 다섯 자. 긴 제목은 display.coverTitle에 줄바꿈을 직접 둔다. */
-export const LITERATURE_COVER_LINE_MAX = 5;
+/**
+ * 표지 세로 제목 한 줄 상한 — 모든 작품 같은 11px로 썸네일(60×84) 높이에 여섯 자. 여섯 자 이하는 줄을 나누지 않는다
+ * (반반 떠서 아래가 비어 보인다 — 오너 지적). 넘는 제목만 display.coverTitle에 줄바꿈을 두고, 첫 줄을 길게 끊는다.
+ */
+export const LITERATURE_COVER_LINE_MAX = 6;
 
 // display.titleKo는 **원제 직역**이다(학습자에게 일본어 제목을 풀어 주는 줄) — 국내 번역본의 의역 제목(「금빛 여우」·
 // 「장갑을 사러 간 아기여우」)을 쓰지 않는다. authorKo는 국립국어원 외래어 표기법.
@@ -39,8 +42,12 @@ export function validateLiteratureDisplay(display, title) {
   if (!LITERATURE_COVER_MOTIFS.includes(display.motif)) throw new Error(`display.motif must be one of ${LITERATURE_COVER_MOTIFS.join('·')}`);
   const coverTitle = display.coverTitle ?? title;
   if (typeof coverTitle !== 'string' || coverTitle.replace(/\n/gu, '') !== title) throw new Error('display.coverTitle must be the title with line breaks only');
-  if (coverTitle.split('\n').some((line) => !line || line.length > LITERATURE_COVER_LINE_MAX)) {
+  const lines = coverTitle.split('\n');
+  if (lines.some((line) => !line || line.length > LITERATURE_COVER_LINE_MAX)) {
     throw new Error(`cover title lines must be 1-${LITERATURE_COVER_LINE_MAX} characters — break it in display.coverTitle`);
+  }
+  if (lines.length > 1 && (title.length <= LITERATURE_COVER_LINE_MAX || lines[0].length < lines[lines.length - 1].length)) {
+    throw new Error('display.coverTitle breaks only titles that do not fit one line, with the first line the longer one');
   }
   return { titleReading: display.titleReading, titleKo: display.titleKo, authorKo: display.authorKo, cover: display.cover, motif: display.motif,
     ...(display.coverTitle ? { coverTitle: display.coverTitle } : {}) };

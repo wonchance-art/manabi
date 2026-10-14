@@ -14,7 +14,7 @@
         "authorKo": "미야자와 겐지",
         "cover": "forest",
         "motif": "forest-doors",
-        "coverTitle": "注文の\n多い料理店"
+        "coverTitle": "注文の多い\n料理店"
       },
       "literature": {
         "schemaVersion": 1,
@@ -190,8 +190,7 @@
         "titleKo": "장갑을 사러",
         "authorKo": "니이미 난키치",
         "cover": "snow",
-        "motif": "snow-night",
-        "coverTitle": "手袋を\n買いに"
+        "motif": "snow-night"
       },
       "literature": {
         "schemaVersion": 1,

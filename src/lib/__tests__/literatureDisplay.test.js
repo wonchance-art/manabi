@@ -88,6 +88,14 @@ describe('표기 함수', () => {
   ])('검사 실패 %j', (display, message) => {
     expect(() => validateLiteratureDisplay(display, '鼻')).toThrow(message);
   });
+
+  it.each([
+    ['한 줄에 드는 제목을 반반 나눔(아래가 비어 보인다)', '手袋を買いに', '手袋を\n買いに'],
+    ['첫 줄이 짧은 계단(둘째 줄이 더 길다)', '注文の多い料理店', '注文の\n多い料理店'],
+  ])('표지 제목 줄바꿈 거부 — %s', (_, title, coverTitle) => {
+    const display = { titleReading: 'て', titleKo: '가', authorKo: '아', cover: 'ink', motif: 'ink-steam', coverTitle };
+    expect(() => validateLiteratureDisplay(display, title)).toThrow('display.coverTitle breaks only');
+  });
 });
 
 describe('화면 배선', () => {
@@ -112,8 +120,12 @@ describe('화면 배선', () => {
     for (const color of LITERATURE_COVER_COLORS) expect(css).toContain(`.lit-cover--${color}{`);
     expect(css).toContain('font-family:var(--font-lit-serif)');
     // 시리즈: 제목 크기는 한 값뿐 — 글자 수로 크기를 바꾸지 않는다(오너 지시 「서적마다 편차 없이」)
-    expect(css.match(/font-size:/gu)).toHaveLength(1);
-    expect(cover).not.toMatch(/longest|lit-cover__title--/u);
+    expect(css.match(/\.lit-cover__title\{[^}]*font-size:11px/u)).toBeTruthy();
+    expect(css.match(/font-size:/gu)).toHaveLength(2); // 제목 하나 + 작가 하나 — 작품마다 다른 크기가 없다
+    expect(cover).not.toMatch(/longest|lit-cover__title--(xl|l|m|s)\b/u);
+    // 균형: 작가는 제목 왼쪽 아래(대각선 짝) · 긴 제목만 둘째 줄을 아래에 붙인다(반반 떠서 아래가 비지 않게)
+    expect(cover).toContain('<span lang="ja" className="lit-cover__author">{work.author}</span>');
+    expect(css).toContain('.lit-cover__title--stepped .lit-cover__line:last-child{text-align:end}');
     expect(css).not.toMatch(/url\(/u);
   });
 
