@@ -6,6 +6,7 @@ import {
   CANONICAL_LITERATURE_EDIT_BLOCKED,
   canonicalLiteratureChapter,
   isCanonicalLiteratureMaterial,
+  literatureDisplayTitle,
   verifiedCanonicalLiterature,
 } from '../literatureCanonical.js';
 import { runPreservedReanalysis } from '../reanalysisPreservation';
@@ -46,6 +47,37 @@ describe('정본 대조표(manifest.generated.json)', () => {
     expect(canonicalLiteratureChapter({ ...metadata, book: { ...metadata.book, key: 'aozora-000001-000001' } })).toBe(null);
     expect(canonicalLiteratureChapter({ book: metadata.book })).toBe(null);
     expect(canonicalLiteratureChapter({ ...metadata, book: { ...metadata.book, key: '__proto__' } })).toBe(null);
+  });
+});
+
+// 서재에 예전 표기(「鼻 — 1편」)로 옮겨 둔 사본도 다시 받지 않고 정본 표기로 보인다(AOZORA-P0-5 후속, 오너 2026-10-14 KST).
+// 저장된 제목을 그대로 그리던 홈 두 자리(이어 읽기 타일 · 다시 읽기 카드)가 같은 함수를 쓴다.
+describe('literatureDisplayTitle — 저장된 제목 대신 정본 장 제목', () => {
+  const byKey = (key) => LITERATURE_BOOKS.find((item) => item.book.key === key);
+  it('나눈 장 · 작가 見出し · 한 장 작품 — 저장된 예전 제목을 표기로 바꾼다', () => {
+    expect(literatureDisplayTitle(book.chapters[0].metadata, '鼻 — 1편')).toBe('鼻 (1/2)');
+    expect(literatureDisplayTitle(byKey('aozora-000121-000628').chapters[1].metadata, 'ごん狐 — 2편')).toBe('ごん狐 — 二');
+    expect(literatureDisplayTitle(byKey('aozora-000121-000637').chapters[0].metadata, '手袋を買いに — 1편')).toBe('手袋を買いに');
+  });
+
+  it('정본이 아니면(아오조라 표식 없음 · 표에 없는 장 · metadata 없음) 저장된 제목 그대로', () => {
+    const { metadata } = book.chapters[0];
+    expect(literatureDisplayTitle({ book: metadata.book }, '내 자료')).toBe('내 자료');
+    expect(literatureDisplayTitle({ ...metadata, book: { ...metadata.book, order: 9 } }, '鼻 — 9편')).toBe('鼻 — 9편');
+    expect(literatureDisplayTitle(undefined, '그냥 글')).toBe('그냥 글');
+    expect(literatureDisplayTitle(null, undefined)).toBe(undefined);
+  });
+
+  it('홈 두 자리가 책 위치와 아오조라 표식만 더 받아 이 함수로 제목을 그린다', () => {
+    const read = (rel) => readFileSync(path.join(process.cwd(), rel), 'utf8');
+    const metaColumns = 'book:processed_json->metadata->book, provider:processed_json->metadata->literature->>provider)';
+    const usage = 'literatureDisplayTitle({ book: m';
+    const home = read('src/views/HomePage.jsx');
+    expect(home).toContain(metaColumns);
+    expect(home).toContain(`${usage}.book, literature: { provider: m.provider } }, m.title)`);
+    const reread = read('src/lib/useRereadCandidate.js');
+    expect(reread).toContain(metaColumns);
+    expect(reread).toContain('literatureDisplayTitle({ book: material?.book, literature: { provider: material?.provider } }, material?.title)');
   });
 });
 

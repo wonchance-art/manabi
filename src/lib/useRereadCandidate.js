@@ -12,11 +12,13 @@ import { useAuth } from './AuthContext';
 import { pickRereadCandidates } from './rereadSchedule';
 import { fetchMaterialRoundRows } from './readingSpeedRows';
 import { lastRoundCpm } from './readingSpeedHistory';
+import { literatureDisplayTitle } from './literatureCanonical';
 
 async function fetchCompletedRows(userId) {
   const { data, error } = await supabase
     .from('reading_progress')
-    .select('material_id, is_completed, completed_at, reading_materials(title)')
+    // 정본 문학책 판정에 쓰는 metadata 두 칸만 함께 받는다(책 위치 · 아오조라 표식) — 예전 표기로 저장된 제목을 정본 표기로 바꾼다.
+    .select('material_id, is_completed, completed_at, reading_materials(title, book:processed_json->metadata->book, provider:processed_json->metadata->literature->>provider)')
     .eq('user_id', userId)
     .eq('is_completed', true)
     .order('completed_at', { ascending: false })
@@ -45,7 +47,9 @@ export function useRereadCandidate() {
   });
 
   if (!user || !rows || !candidate) return null;
-  const title = rows.find((r) => r.material_id === candidate.material_id)?.reading_materials?.title;
+  const material = rows.find((r) => r.material_id === candidate.material_id)?.reading_materials;
+  // 서재에 예전 표기(「鼻 — 1편」)로 옮겨 둔 정본 문학책도 화면은 정본 표기(「鼻 (1/2)」)를 따른다(AOZORA-P0-5).
+  const title = literatureDisplayTitle({ book: material?.book, literature: { provider: material?.provider } }, material?.title);
   if (!title) return null;
 
   // 속도는 **kicker**에 얹는다. meta는 nowrap·flex-shrink:0이라 여기에 넣으면 제목을
