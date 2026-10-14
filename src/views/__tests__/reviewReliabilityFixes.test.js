@@ -50,7 +50,8 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
     expect(vocab).toContain('const [scopeDraft, setScopeDraft] = useState(reviewScope.explicit ? reviewScope.scope : null)');
     expect(vocab).toMatch(/useEffect\(\(\) => \{\s*try \{\s*if \(!explicitScope\) setScopeDraft\(readSavedScope\(\)\);/);
     expect(vocab).not.toContain('useState(readSavedScope');
-    expect(vocab).toContain("const [reviewMode, setReviewMode] = useState('auto')");
+    expect(vocab).toContain("const [practiceMode, setPracticeMode] = useState('flash')"); // 방식은 집중 연습 갈래(R1-B-1)
+    expect(vocab).toContain('const [sessionLength, setSessionLength] = useState(DEFAULT_SESSION_LENGTH)');
     expect(vocab).toContain('const [newPerDay, setNewPerDay] = useState(DEFAULT_NEW_PER_DAY)');
     expect(vocab).toContain('const [introIds, setIntroIds] = useState([])');
     expect(vocab).not.toContain('useState(loadIntroIds)');

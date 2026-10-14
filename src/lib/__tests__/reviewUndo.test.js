@@ -36,7 +36,8 @@ describe('복습 undo — SRS 복원 + 보상 이벤트 (VocabPage)', () => {
   });
 
   it('세션 되감기 — reviewIdx·큐(재노출 제거)·introIds(신규 한도)·종료 화면이 채점 전으로', () => {
-    expect(undo).toContain("if (last.requeued) setReviewQueue((q) => (q[q.length - 1] === last.wordId ? q.slice(0, -1) : q));");
+    // 줄 = 단계 객체({ id, engine, phase }) — R1-B-1. 재노출 단계(맨 끝 'again')를 지운다.
+    expect(undo).toContain("if (last.requeued) setReviewQueue((q) => (q[q.length - 1]?.id === last.wordId ? q.slice(0, -1) : q));");
     expect(undo).toContain('setIntroIds((prev) => { const next = prev.filter((id) => id !== last.wordId); saveIntroIds(next); return next; });');
     expect(undo).toContain('setReviewIdx(last.reviewIdx);');
     expect(undo).toContain('setShowAnswer(true);');
@@ -80,7 +81,7 @@ describe('복습 키 1~4·⌘Z — 화면의 4버튼 줄에 작용 (VocabPage·V
   it('줄 판정은 상태로(DOM 질의 금지): 채점 / 보기 선택 / 오답 2버튼 / 없음', () => {
     expect(row).toContain("showAnswer ? 'score'");
     expect(row).toContain("contextSelected === null && contextOptions.length > 0 && (effectiveMode !== 'listening' || ttsSupported) ? 'options'");
-    expect(row).toContain("contextOptions[contextSelected]?.id !== currentWord.id ? 'wrong'");
+    expect(row).toContain("contextOptions[contextSelected]?.id !== keyWord.id ? 'wrong'"); // keyWord = 본 복습 카드 또는 집중 연습 카드
     expect(row).not.toMatch(/querySelector|getElementsBy/);
     expect(keys).not.toMatch(/querySelector|getElementsBy/);
   });
@@ -97,7 +98,9 @@ describe('복습 키 1~4·⌘Z — 화면의 4버튼 줄에 작용 (VocabPage·V
     expect(keys).toContain("else if (h.row === 'options') h.pick?.(n - 1);");
     expect(keys).toContain("else if (h.row === 'wrong') { if (n === 1) h.score?.(1); else if (n === 2) h.reveal?.(); }");
     const pick = sliceBetween(page, 'const pickContextOption = (i) => {', '\n  };');
-    expect(pick).toContain('if (opt.id === currentWord.id) setTimeout(() => handleScore(3), 700);');
+    // 집중 연습의 듣기 갈래도 같은 함수 — 정답이면 그 경로의 채점(본 복습 handleScore · 집중 연습 handlePractice)을 700ms 뒤에.
+    expect(pick).toContain("const score = tab === 'practice' ? handlePractice : handleScore;");
+    expect(pick).toContain('if (opt.id === activeWord.id) setTimeout(() => score(3), 700);');
     expect(review.match(/onClick=\{\(\) => pickContextOption\(i\)\}/g)).toHaveLength(2);
     expect(review).not.toMatch(/setContextSelected\(i\);\s*const isCorrect/);
   });
@@ -108,7 +111,7 @@ describe('복습 키 1~4·⌘Z — 화면의 4버튼 줄에 작용 (VocabPage·V
   });
 
   it('기존 Escape/Tab(수동 추가 다이얼로그) 리스너와 경쟁하지 않는다 — 다이얼로그가 열리면 복습 리스너가 빠진다', () => {
-    expect(keys).toContain("if (tab !== 'review' || reviewFinished || manualAddOpen) return undefined;");
+    expect(keys).toContain("if ((tab !== 'review' && tab !== 'practice') || (tab === 'review' && reviewFinished) || manualAddOpen) return undefined;");
     expect(page).toContain("if (event.key === 'Escape' && !manualAddPendingRef.current) {");
   });
 
