@@ -194,7 +194,7 @@ export function AuthProvider({ children }) {
         setProfile(null);
         // 세션이 있다가 사라진 경우 — 명시적 로그아웃이 아니면 만료로 간주
         if (event === 'SIGNED_OUT' && hadSessionRef.current && !explicitSignOutRef.current) {
-          toast('세션이 만료됐어요. 다시 로그인해주세요.', 'warning', 5000);
+          toast('세션이 만료됐어요. 다시 로그인해 주세요.', 'warning', 5000);
           if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
             const from = window.location.pathname + window.location.search;
             window.location.href = `/auth?from=${encodeURIComponent(from)}`;

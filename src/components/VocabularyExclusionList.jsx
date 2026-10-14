@@ -12,7 +12,7 @@ export default function VocabularyExclusionList({ vocab = [], scopeIds = null })
   const marks = scopedKnownWords(known.rows, state.rows, vocab, scopeIds).filter(row => KNOWN_LANGUAGES[row.lang]);
   const legacy = items.filter(entry => !known.rows.some(row => KNOWN_LANGUAGES[row.lang] === entry.language
     && knownWordKeys([row], row.lang, { text: entry.word_text }, state.rows).length));
-  if (state.isError || known.isError) return <p role="alert">상태를 확인하지 못했어요. <button type="button" className="btn btn--ghost btn--sm" onClick={() => { state.refetch(); known.refetch(); }}>다시 확인</button></p>;
+  if (state.isError || known.isError) return <p role="alert">상태를 확인하지 못했어요. <button type="button" className="btn btn--ghost btn--sm" onClick={() => { state.refetch(); known.refetch(); }}>다시 시도</button></p>;
   return <>
     {!!marks.length && <details className="vocabulary-exclusions vocabulary-known-words">
       <summary>아는 단어 <span>{marks.length}</span></summary>

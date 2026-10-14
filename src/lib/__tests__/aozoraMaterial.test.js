@@ -76,12 +76,27 @@ describe('createAozoraMaterialDraft — 見出し 기준 장 분할(기존 split
 describe('createAozoraMaterialDraft — 見出し 없는 원작은 문단 경계 길이 분할', () => {
   it('제목은 「N편」, 의미 주석 루비(ノート《帳面》)는 잠그지 않는다', () => {
     const draft = createAozoraMaterialDraft(plainSampleEntry(), plain(), { targetChars: 80, maxChars: 120 });
-    expect(draft.chapters.map((chapter) => chapter.title)).toEqual(['1편', '2편', '3편']);
+    expect(draft.chapters.map((chapter) => chapter.title)).toEqual(['1편', '2편']);
     expect(draft.chapters.flatMap((chapter) => chapter.metadata.literature.rubyLocks.map((lock) => lock.base)))
       .toEqual(['夕方', '町', '時計台', '台所']);
     expect(draft.diagnostics).toMatchObject({ splitByHeadings: false, rubyCount: 4, mappedRubyCount: 4, annotationRubyCount: 2, midParagraphSplitCount: 0 });
-    expect(draft.chapters[1].rawText).toBe('姉はノートを開いて、今日あったことを短く書いた。窓の外では、かげろうのような光が揺れていた。');
+    expect(draft.chapters[0].rawText.split('\n\n')[1]).toBe('姉はノートを開いて、今日あったことを短く書いた。窓の外では、かげろうのような光が揺れていた。');
     expectLocksExact(draft);
+  });
+
+  it('장 수를 먼저 정해 고르게 — 짧은 꼬리 장을 남기지 않는다(실물 「鼻」 2837·2752·230자, AOZORA-P0-2)', () => {
+    const body = ['あ'.repeat(50), 'い'.repeat(50), 'う'.repeat(8)].join('\n');
+    const draft = createAozoraMaterialDraft(sampleEntry(), parseAozoraText(wrap(body)), { targetChars: 60, maxChars: 200 });
+    // 이전: 목표(60)를 넘기 전에 닫아 [50, 50, 8]. 지금: round(112/60) = 2장 안에 드는 가장 작은 목표 → [50, 60].
+    expect(draft.diagnostics.chapterChars).toEqual([50, 60]);
+    expect(draft.diagnostics.midParagraphSplitCount).toBe(0);
+  });
+
+  it('짧은 원작은 한 장, 상한보다 긴 원작은 상한 안에서 고르게', () => {
+    const short = createAozoraMaterialDraft(sampleEntry(), parseAozoraText(wrap(['あ'.repeat(70), 'い'.repeat(30)].join('\n'))), { targetChars: 80, maxChars: 200 });
+    expect(short.diagnostics.chapterChars).toEqual([102]);
+    const long = createAozoraMaterialDraft(sampleEntry(), parseAozoraText(wrap(Array.from({ length: 9 }, () => 'え'.repeat(30)).join('\n'))), { targetChars: 100, maxChars: 120 });
+    expect(long.diagnostics.chapterChars).toEqual([94, 94, 94]);
   });
 
   it('기본 크기면 짧은 원작은 한 장 — 긴 줄을 나누지 않는다(분석 분할은 analyzeText 몫, #1412)', () => {

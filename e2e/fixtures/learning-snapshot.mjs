@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { learningDay } from '../../src/lib/fsrsScheduler.js';
 
 const SUMMARY_FIELDS = ['id', 'user_id', 'word_text', 'base_form', 'meaning', 'language', 'created_at',
-  'interval', 'ease_factor', 'repetitions', 'last_reviewed_at', 'next_review_at', 'source_material_id'];
+  'interval', 'ease_factor', 'repetitions', 'last_reviewed_at', 'next_review_at', 'source_material_id', 'source_ref'];
 const languageCodes = { Japanese: 'ja', Chinese: 'zh', French: 'fr', English: 'en', Korean: 'ko' };
 
 // These compatibility fixtures explicitly have no forward admission receipts. Reviewed
@@ -45,7 +45,7 @@ export function legacyLearningSnapshot({ actorId, rows, known = [], exclusions =
     // Earlier fixtures omitted nullable DB columns. Supply their protocol representation
     // on a distinct response object; never mutate the fixture's saved source or schedule.
     const response = { base_form: null, meaning: null, language: null, created_at: null, interval: null, ease_factor: null,
-      repetitions: null, last_reviewed_at: null, next_review_at: null, source_material_id: null, ...row, user_id: userId };
+      repetitions: null, last_reviewed_at: null, next_review_at: null, source_material_id: null, source_ref: null, ...row, user_id: userId };
     for (const field of ['created_at', 'last_reviewed_at', 'next_review_at']) {
       if (typeof response[field] === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(response[field])) {
         const timestamp = `${response[field]}T00:00:00.000Z`;

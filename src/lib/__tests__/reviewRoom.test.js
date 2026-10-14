@@ -46,7 +46,9 @@ describe('review room recall and source contract', () => {
   });
   it('account changes remount all session state; queue preparation cannot revive an unmounted account', () => {
     const code = fs.readFileSync('src/views/VocabPage.jsx','utf8');
-    expect(code).toContain("key={`${user?.id || 'guest'}:${bookReview?.bookId || 'all'}:${bookReview?.returnTo || ''}`}");
+    // 범위 주소(REV-SCOPE-R1A)가 바뀌어도 같은 규칙 — 계정 · 명시 범위가 바뀌면 작업 공간 전체를 새로 만든다.
+    expect(code).toContain("const scopeKey = reviewScope?.explicit ? serializeReviewScope(reviewScope.scope, { returnTo: reviewScope.returnTo }) : 'saved';");
+    expect(code).toContain("key={`${user?.id || 'guest'}:${scopeKey}`}");
     expect(code).toContain('if (!workspaceAlive.current) return;');
     expect(code).toContain('error: vocabError, refetch: refetchVocab');
   });

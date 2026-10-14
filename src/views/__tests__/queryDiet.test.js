@@ -26,8 +26,10 @@ describe('쿼리 다이어트 계약', () => {
   it('홈 — 옛 시리즈 300행 조회를 없애고 최근 진행 join은 제목만', () => {
     const home = read('src/views/HomePage.jsx');
     expect(home).not.toContain(".limit(300)");
-    expect(home).toContain("reading_materials(id, title)')");
-    expect(home).not.toContain('reading_materials(id, title, processed_json)');
+    // 배움(LEARN-HOME-AK-001)의 이어 읽기는 칩 언어의 서재 자료와 그 급수를 보인다 — 본문 JSON을 통째로 끌지 않고
+    // 메타 경로의 스칼라 두 칸만 더한다(뷰어 다음 자료 추천과 같은 방식).
+    expect(home).toContain("reading_materials(id, title, language:processed_json->metadata->>language, level:processed_json->metadata->>level)')");
+    expect(home).not.toMatch(/reading_materials\([^)]*processed_json[,)]/);
     expect(home).toContain(".eq('user_id', userId)");
   });
 
@@ -40,7 +42,8 @@ describe('쿼리 다이어트 계약', () => {
     expect(stats).not.toMatch(/user_vocabulary'\)[\s\S]{0,40}?\.select\('\*'\)/);
     expect(stats).not.toContain('source_sentence');
     expect(stats).toContain("fetchVocabularyLearningRows(userId, { fields: 'summary' })");
-    expect(stats).toContain('isVocabularyReviewDue');
+    // 단어 복습 칸은 배움 · 현황 공용 모듈로 옮겼다(LEARN-HOME-AK-001) — 같은 요약 snapshot의 투영으로 센다.
+    expect(read('src/components/learn/LearnTiles.jsx')).toContain('isVocabularyReviewDue');
   });
 
   it('단어장 IO — 언어 백필은 언어별 배치 UPDATE, 출처 제목 청크는 병렬', () => {

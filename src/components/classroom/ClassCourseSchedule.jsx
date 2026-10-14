@@ -235,6 +235,6 @@ export default function CourseSchedule({ course, teamKey, user, root, schedule }
 export function CourseTab({ teamKey, user, root = null }) {
   const q = useClassCourse(teamKey, user?.id);
   if (q.isLoading) return <p role="status">코스를 불러오는 중…</p>;
-  if (q.error) return <div className="classroom-notice" role="alert">{courseErrorText(q.error)} <button onClick={() => q.refetch()}>다시 불러오기</button></div>;
+  if (q.error) return <div className="classroom-notice" role="alert">{courseErrorText(q.error)} <button onClick={() => q.refetch()}>다시 시도</button></div>;
   return <CourseSchedule course={q.data.course} teamKey={teamKey} user={user} root={root} schedule={q.data.team?.schedule} />;
 }

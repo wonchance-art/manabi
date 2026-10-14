@@ -63,10 +63,10 @@ export async function PATCH(request) {
   try {
     body = await request.json();
   } catch {
-    return Response.json({ error: '잘못된 JSON입니다.' }, { status: 400 });
+    return Response.json({ error: '잘못된 JSON이에요.' }, { status: 400 });
   }
   const token = body?.token;
-  if (!token) return Response.json({ error: 'token이 필요합니다.' }, { status: 400 });
+  if (!token) return Response.json({ error: 'token이 필요해요.' }, { status: 400 });
 
   const { supabase, user } = auth;
   const { data: alive, error } = await supabase.rpc('heartbeat_world_session', { p_token: token });

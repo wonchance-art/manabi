@@ -43,11 +43,11 @@ export async function GET(request) {
   const lang = searchParams.get('lang');
   const slug = searchParams.get('slug');
   if (!lang || !slug) {
-    return Response.json({ error: 'lang, slug가 필요합니다.' }, { status: 400 });
+    return Response.json({ error: 'lang, slug가 필요해요.' }, { status: 400 });
   }
 
   const base = getBaseChapter(lang, slug);
-  if (!base) return Response.json({ error: '챕터를 찾을 수 없습니다.' }, { status: 404 });
+  if (!base) return Response.json({ error: '챕터를 찾을 수 없어요.' }, { status: 404 });
 
   // 오버라이드 + updated_at 조회 (사용자 세션 클라이언트 — select는 공개지만 일관되게 세션으로).
   const { supabase } = auth;
@@ -76,24 +76,24 @@ export async function POST(request) {
   try {
     body = await request.json();
   } catch {
-    return Response.json({ error: '잘못된 JSON입니다.' }, { status: 400 });
+    return Response.json({ error: '잘못된 JSON이에요.' }, { status: 400 });
   }
   const { lang, slug, data, expectedUpdatedAt } = body || {};
   if (!lang || !slug || !data || typeof data !== 'object') {
-    return Response.json({ error: 'lang, slug, data가 필요합니다.' }, { status: 400 });
+    return Response.json({ error: 'lang, slug, data가 필요해요.' }, { status: 400 });
   }
   if (!Object.hasOwn(body, 'expectedUpdatedAt')) {
     return Response.json({ error: '편집 화면을 새로 열고 다시 저장해 주세요.' }, { status: 428 });
   }
   if (expectedUpdatedAt !== null && (typeof expectedUpdatedAt !== 'string' || !Number.isFinite(Date.parse(expectedUpdatedAt)))) {
-    return Response.json({ error: '수정 버전이 올바르지 않습니다. 다시 불러와 주세요.' }, { status: 400 });
+    return Response.json({ error: '수정 버전이 올바르지 않아요. 다시 불러와 주세요.' }, { status: 400 });
   }
 
   // 구조 검증 — 렌더를 크래시시킬 수 있는 형태(sections가 배열이 아님, 문자열 필드에
   // 비문자열 등)는 저장 자체를 거부한다. 병합부도 같은 검증으로 fail-closed(이중 방어).
   if (!isValidOverride(data)) {
     return Response.json(
-      { error: '챕터 구조가 올바르지 않습니다. sections는 비어있지 않은 배열이어야 하고, 제목·본문 등 텍스트 필드는 문자열이어야 합니다.' },
+      { error: '챕터 구조가 올바르지 않아요. sections는 비어 있지 않은 배열이어야 하고, 제목·본문 등 텍스트 필드는 문자열이어야 해요.' },
       { status: 400 }
     );
   }
@@ -103,13 +103,13 @@ export async function POST(request) {
 
   // 원본 존재 확인 — 없는 슬러그에 오버라이드를 만들지 않는다.
   const base = getBaseChapter(lang, slug);
-  if (!base) return Response.json({ error: '챕터를 찾을 수 없습니다.' }, { status: 404 });
+  if (!base) return Response.json({ error: '챕터를 찾을 수 없어요.' }, { status: 404 });
 
   // story 문항 id 불변 — 학습 기록·채점 키 연동이라 삭제·변경을 서버가 최종 차단.
   const missing = missingStoryIds(base, data);
   if (missing.length > 0) {
     return Response.json(
-      { error: `story 문항 id는 삭제·변경할 수 없습니다 (기록 연동): ${missing.join(', ')}` },
+      { error: `story 문항 id는 삭제·변경할 수 없어요 (기록 연동): ${missing.join(', ')}` },
       { status: 400 }
     );
   }
@@ -127,7 +127,7 @@ export async function POST(request) {
       .eq('lang', lang).eq('slug', slug).eq('updated_at', expectedUpdatedAt);
   const { data: saved, error } = await query.select('updated_at').maybeSingle();
   if (error?.code === '23505' || (!error && !saved)) {
-    return Response.json({ error: '다른 편집에서 내용이 변경됐어요. 입력은 유지됩니다. 최신 내용을 확인한 뒤 다시 편집해 주세요.' }, { status: 409 });
+    return Response.json({ error: '다른 편집에서 내용이 바뀌었어요. 입력은 그대로 있어요. 최신 내용을 확인한 뒤 다시 편집해 주세요.' }, { status: 409 });
   }
   if (error) return Response.json({ error: error.message }, { status: 500 });
 
@@ -143,11 +143,11 @@ export async function DELETE(request) {
   try {
     body = await request.json();
   } catch {
-    return Response.json({ error: '잘못된 JSON입니다.' }, { status: 400 });
+    return Response.json({ error: '잘못된 JSON이에요.' }, { status: 400 });
   }
   const { lang, slug } = body || {};
   if (!lang || !slug) {
-    return Response.json({ error: 'lang, slug가 필요합니다.' }, { status: 400 });
+    return Response.json({ error: 'lang, slug가 필요해요.' }, { status: 400 });
   }
 
   const { supabase } = auth;

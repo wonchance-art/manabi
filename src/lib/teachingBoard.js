@@ -46,7 +46,7 @@ export function boardCamera(state) {
 
 export function validateBoard(value) {
   if (!value || value.version !== BOARD_VERSION || !Array.isArray(value.pages) || !value.pages.length || value.pages.length > BOARD_PAGE_LIMIT) {
-    throw new Error('설명판 형식을 확인하지 못했어요. 저장된 내용은 그대로 보존합니다.');
+    throw new Error('설명판 형식을 확인하지 못했어요. 저장된 내용은 그대로 남아 있어요.');
   }
   const ids = new Set();
   for (const page of value.pages) {

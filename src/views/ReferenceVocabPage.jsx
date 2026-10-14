@@ -247,10 +247,10 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
       }
       if (error) throw error;
       setSavedSet(prev => new Set([...prev, text]));
-      toast?.(`"${text}" 단어장에 저장`, 'success');
+      toast?.(`"${text}" 단어를 저장했어요`, 'success');
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user.id] });
     } catch {
-      toast?.('저장 실패', 'error');
+      toast?.('단어를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.', 'error');
     }
   }
 

@@ -21,7 +21,8 @@ describe('홈 통계 그리드 — 오늘 활동 폐지·이번 주 타일화', 
   });
 
   it('이번 주는 1×1 스탯 타일 — 4×1 와이드 카드로 되돌아가지 않는다', () => {
-    expect(code).toMatch(/WeeklyTile[\s\S]{0,600}?bento--1x1/);
+    // 현황(LEARN-HOME-AK-001)에서도 이번 주는 1×1 작은 칸(learn-stat) — 와이드(span 4)로 되돌아가지 않는다.
+    expect(code).toMatch(/function WeeklyTile[\s\S]{0,900}?learn-stat/);
     // 지키려는 것은 "주간 거울이 와이드로 부활하지 않는다"이지 "4×1 카드가 몇 개냐"가
     // 아니다. 총량으로 세면 무관한 카드 하나(v2-D R2 궤도 줄)에도 깨져 의도를 못 말한다
     // — 통짜 문자열 배선 계약에서 겪은 그 일. 주간 컴포넌트 안쪽만 본다.
@@ -34,8 +35,10 @@ describe('홈 통계 그리드 — 오늘 활동 폐지·이번 주 타일화', 
 
   it('빈 주에도 타일은 자리를 지킨다(오너 확정 2026-08-30 상시 표시) — 게이트는 로드 대기만', () => {
     // hasAny 게이트 부활 금지 — 숨김이 "위젯 사라짐"으로 읽혔다. 값은 스트릭 '–' 선례.
-    expect(code).toContain('weekly && <WeeklyTile');
-    expect(code).not.toContain('weekly?.hasAny && <WeeklyTile');
+    // 로드 전에도 같은 자리에 「– / 이번 주」 칸을 둔다 — 격자가 밀리지 않고 숨김도 없다.
+    expect(code).toContain('weekly ? <WeeklyTile weekly={weekly}');
+    expect(code).toMatch(/weekly \? <WeeklyTile[^\n]*: <StatTile value="–" label="이번 주"/);
+    expect(code).not.toContain('weekly?.hasAny');
     expect(code).toMatch(/readsCompleted > 0[\s\S]{0,120}?\['–', '이번 주'\]/);
   });
 

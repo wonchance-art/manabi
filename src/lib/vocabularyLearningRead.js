@@ -9,8 +9,12 @@ const legacyWeights = generatorParameters().w;
 const pinnedWeights = generatorParameters({ request_retention: FSRS_POLICY.retention,
   maximum_interval: FSRS_POLICY.maximumInterval, enable_fuzz: false, enable_short_term: true }).w;
 
-export const VOCABULARY_LEARNING_SUMMARY_FIELDS = Object.freeze(['id', 'user_id', 'word_text', 'base_form',
+// 학습 snapshot 행이 반드시 가져야 하는 칸(없으면 snapshot 전체를 거부한다).
+export const VOCABULARY_LEARNING_REQUIRED_FIELDS = Object.freeze(['id', 'user_id', 'word_text', 'base_form',
   'meaning', 'language', 'created_at', 'interval', 'ease_factor', 'repetitions', 'last_reviewed_at', 'next_review_at', 'source_material_id']);
+// 요약 조회(fields=summary)가 보내는 칸. source_ref는 복습 범위의 「사전 급수 덱 · 오늘 학습」 출처라(REV-SCOPE-R1A)
+// 요약에도 싣는다 — 다만 nullable 출처 메타라 필수 칸 검사에는 넣지 않는다(옛 행 · 고정 데이터가 snapshot을 깨지 않게).
+export const VOCABULARY_LEARNING_SUMMARY_FIELDS = Object.freeze([...VOCABULARY_LEARNING_REQUIRED_FIELDS, 'source_ref']);
 
 // PostgreSQL의 기존 timestamp는 마이크로초를 가질 수 있다. 원문 값은 그대로 두고,
 // 읽기 eligibility만 다음 밀리초로 올림하여 실제 만기보다 먼저 활성화하지 않는다.

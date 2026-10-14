@@ -20,7 +20,7 @@ export async function POST(request) {
   const rl = rateLimit(`conv:${getClientKey(request, user.id)}`, CONVERSATION_RATE);
   if (!rl.ok) {
     return Response.json(
-      { error: '요청이 너무 많아요. 잠시 후 다시 시도해주세요.', code: 'rate_limited' },
+      { error: '요청이 너무 많아요. 잠시 후 다시 시도해 주세요.', code: 'rate_limited' },
       { status: 429, headers: { 'Retry-After': String(Math.ceil(rl.resetIn / 1000)) } },
     );
   }

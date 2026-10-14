@@ -347,7 +347,7 @@ export default function QuestReview({ userId, onClose }) {
         {phase === 'empty' && (
           <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 10, padding: '8px 0' }}>
             <p style={{ fontSize: '0.92rem', lineHeight: 1.6, margin: 0 }}>
-              지금은 복습할 게 없어요 — 내일 다시 와요
+              지금 복습할 단어가 없어요. 내일 다시 와 주세요.
             </p>
             <p style={{ fontSize: '0.74rem', color: GBC.inkSoft, lineHeight: 1.5, margin: 0 }}>
               새 단어는 자료를 읽으며 모을 수 있어요(어휘 학습).

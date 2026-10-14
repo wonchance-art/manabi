@@ -94,7 +94,7 @@ function OwnerView({ root, user, teamKey, toast }) {
   const routeSearch=useSearchParams();
   const team = getTeam(root.processed_json?.metadata);
   const [tab,setTab]=useState(()=>{const view=routeSearch.get('view');return view==='history'?'notes':view==='book'?'book':team.course?'course':'book';});
-  const [settingsOpen,setSettingsOpen]=useState(false);
+  const [settingsOpen,setSettingsOpen]=useState(()=>routeSearch.get('settings')==='1'); // 새 수업 직후 허브에서 ?settings=1로 들어온다
   const settingsButton=useRef(null);
   const { data: chapters = [], error:chaptersError, isLoading:chaptersLoading, refetch:retryChapters } = useQuery({
     queryKey: ['class-book-chapters', user.id, team.bookKey],
@@ -111,7 +111,7 @@ function OwnerView({ root, user, teamKey, toast }) {
 
   async function copyNote(id) {
     const { data, error } = await supabase.from('reading_materials').select('*').eq('id', id).maybeSingle();
-    if (error || !data) { toast('정리본을 못 읽었어요.', 'error'); return; }
+    if (error || !data) { toast('정리본을 읽지 못했어요.', 'error'); return; }
     await copyToClipboard(classroomPlainText(data), toast, '정리본을 복사했어요 — 카톡에 붙여 넣으세요.');
   }
 
@@ -125,18 +125,18 @@ function OwnerView({ root, user, teamKey, toast }) {
   return <ClassroomShell lang={team.lang} teamHome>
     <header className="class-team-heading"><div><span className="classroom-eyebrow">MANABI CLASS · {LANG_NAME_KO[team.lang]}</span><h1>{team.name}</h1></div><div className="class-team-actions"><button className="classroom-text-button" onClick={()=>copyToClipboard(shareLink,toast,'수업 링크를 복사했어요.')}>학생 초대</button><button ref={settingsButton} className="classroom-text-button" aria-expanded={settingsOpen} onClick={()=>setSettingsOpen(v=>!v)}>설정</button></div></header>
     {settingsOpen&&<ClassTeamSettings root={root} user={user} onClose={()=>{setSettingsOpen(false);settingsButton.current?.focus();}}/>}
-    {tab==='book'&&<section className="class-team-start" aria-label="수업 시작"><ClassCover team={team} small/><div><span className="classroom-eyebrow">{dayLabel(todayKey())} 수업</span><h2>{start?chapterLabel(start.title):team.bookKey?'교재를 확인하고 있어요':'교재 없이 함께 배우기'}</h2><p>{start?'교재를 펼친 채 뜻을 확인하고, 오늘 배운 표현을 남깁니다.':'표현을 입력해 설명하고 수업 기록에 남길 수 있어요.'}</p>{!chaptersError&&!chaptersLoading&&<Link className="classroom-button" href={startHref}>{team.chapterId&&start?'수업 이어하기':'수업 시작'} <span aria-hidden="true">→</span></Link>}{chaptersLoading&&<p role="status">교재를 불러오는 중…</p>}{chaptersError&&<p role="alert">교재를 불러오지 못했어요. <button className="classroom-text-button" onClick={()=>retryChapters()}>다시 확인</button></p>}</div></section>}
+    {tab==='book'&&<section className="class-team-start" aria-label="수업 시작"><ClassCover team={team} small/><div><span className="classroom-eyebrow">{dayLabel(todayKey())} 수업</span><h2>{start?chapterLabel(start.title):team.bookKey?'교재를 확인하고 있어요':'교재 없이 함께 배우기'}</h2><p>{start?'교재를 펼친 채 뜻을 확인하고, 오늘 배운 표현을 남깁니다.':'표현을 입력해 설명하고 수업 기록에 남길 수 있어요.'}</p>{!chaptersError&&!chaptersLoading&&<Link className="classroom-button" href={startHref}>{team.chapterId&&start?'수업 이어하기':'수업 시작'} <span aria-hidden="true">→</span></Link>}{chaptersLoading&&<p role="status">교재를 불러오는 중…</p>}{chaptersError&&<p role="alert">교재를 불러오지 못했어요. <button className="classroom-text-button" onClick={()=>retryChapters()}>다시 시도</button></p>}</div></section>}
     <div className="classroom-tabs" aria-label="수업 자료 종류">{team.course&&<button aria-pressed={tab==='course'} onClick={()=>setTab('course')}>코스</button>}<button aria-pressed={tab==='book'} onClick={()=>setTab('book')}>교재</button><button aria-pressed={tab==='notes'} onClick={()=>setTab('notes')}>수업 기록 {notes.length||''}</button></div>
     {tab==='course'&&team.course?<CourseTab teamKey={teamKey} user={user} root={root}/>:tab==='notes'?<>
-      {notesLoading?<p role="status">수업 노트를 불러오는 중…</p>:notesError?<div className="classroom-notice" role="alert">노트를 불러오지 못했어요. <button onClick={()=>retryNotes()}>다시 불러오기</button></div>:latest&&<Link href={openHref(latest.id)} className="classroom-featured-note"><span className="classroom-eyebrow">최근 수업 노트</span><h2>{dayLabel(latest.day)}에 함께 배운 것들.</h2><p>{latest.title}</p><b>노트 읽기 →</b></Link>}
+      {notesLoading?<p role="status">수업 노트를 불러오는 중…</p>:notesError?<div className="classroom-notice" role="alert">노트를 불러오지 못했어요. <button onClick={()=>retryNotes()}>다시 시도</button></div>:latest&&<Link href={openHref(latest.id)} className="classroom-featured-note"><span className="classroom-eyebrow">최근 수업 노트</span><h2>{dayLabel(latest.day)}에 함께 배운 것들.</h2><p>{latest.title}</p><b>노트 읽기 →</b></Link>}
       {!notesLoading&&!notesError&&<ClassStudyHistory notes={history} coverage={coverageQuery.data||[]} chapters={chapters} onOpen={n=>router.push(classEntryHref(openHref(n.id),teamKey,n))} onCopy={n=>copyNote(n.id)}/>}</>
-      :team.bookKey?<><MaterialGroupCard open title={chapters[0]?.title?.split(' — ')[0]||'수업 교재'} meta={`공유된 ${chapters.length}과${team.bookTotal?` · 전체 ${team.bookTotal}과`:''}`} rows={chapters.map(c=>({key:c.id,onClick:()=>router.push(openHref(c.id)),lead:c.order,title:chapterLabel(c.title),right:String(c.id)===team.chapterId?<span>이어서 볼 과</span>:null}))}/>{chapters.length>0&&<ClassTextbookNotes user={user} teamKey={teamKey} chapters={chapters} initialId={start?.id}/>}</>:<div className="classroom-empty"><b>자유롭게 배우는 수업입니다.</b><p>교재를 연결하면 이곳에서 바로 펼쳐볼 수 있어요.</p><button className="classroom-button classroom-button--quiet" onClick={()=>setSettingsOpen(true)}>교재 연결</button></div>}
+      :team.bookKey?<><MaterialGroupCard open title={chapters[0]?.title?.split(' — ')[0]||'수업 교재'} meta={`공유된 ${chapters.length}과${team.bookTotal?` · 전체 ${team.bookTotal}과`:''}`} rows={chapters.map(c=>({key:c.id,onClick:()=>router.push(openHref(c.id)),lead:c.order,title:chapterLabel(c.title),right:String(c.id)===team.chapterId?<span>이어서 볼 과</span>:null}))}/>{chapters.length>0&&<ClassTextbookNotes user={user} teamKey={teamKey} chapters={chapters} initialId={start?.id}/>}</>:<div className="classroom-empty"><b>자유롭게 배우는 수업이에요.</b><p>교재를 연결하면 이곳에서 바로 펼쳐볼 수 있어요.</p><button className="classroom-button classroom-button--quiet" onClick={()=>setSettingsOpen(true)}>교재 연결</button></div>}
   </ClassroomShell>;
 }
 
 function NotesList({notes,onOpen,onCopy,right=null,dim=()=>false}) {
   return <section className="classroom-note-list" aria-label="날짜별 수업 노트">
-    {!notes.length?<div className="classroom-empty"><b>첫 수업 노트를 기다리고 있어요.</b><p>수업에서 입력한 표현이 날짜별로 모입니다.</p></div>:notes.map(n=><div className="classroom-note-row" key={n.id}><button disabled={dim(n)} onClick={()=>onOpen(n)}><time dateTime={n.day}>{dayLabel(n.day)}</time><strong>{n.lines!=null?`함께 배운 표현 ${n.lines}개`:n.title}</strong>{right?.(n)}</button><button className="classroom-text-button" aria-label={`${dayLabel(n.day)} 노트 복사`} onClick={()=>onCopy(n)}>복사</button></div>)}
+    {!notes.length?<div className="classroom-empty"><b>첫 수업 노트를 기다리고 있어요.</b><p>수업에서 입력한 표현이 날짜별로 모여요.</p></div>:notes.map(n=><div className="classroom-note-row" key={n.id}><button disabled={dim(n)} onClick={()=>onOpen(n)}><time dateTime={n.day}>{dayLabel(n.day)}</time><strong>{n.lines!=null?`함께 배운 표현 ${n.lines}개`:n.title}</strong>{right?.(n)}</button><button className="classroom-text-button" aria-label={`${dayLabel(n.day)} 노트 복사`} onClick={()=>onCopy(n)}>복사</button></div>)}
   </section>;
 }
 
@@ -185,7 +185,7 @@ function StudentView({ teamKey, user, toast }) {
       if (isOffline) {
         setUnlock(u);
         if (cached) { setIndex(cached); setPhase('ready'); }
-        else { setPhase('locked'); setLockMessage('오프라인이라 목록을 못 받았어요 — 연결되면 다시 열어 주세요.'); }
+        else { setPhase('locked'); setLockMessage('인터넷 연결을 확인해 주세요. 연결되면 목록을 다시 열 수 있어요.'); }
         return;
       }
       try {
@@ -196,7 +196,7 @@ function StudentView({ teamKey, user, toast }) {
         if (!alive) return;
         if (err?.status === 401) relock(RELOCK_MSG);
         else if (cached) { setUnlock(u); setIndex(cached); setPhase('ready'); }
-        else { setPhase('locked'); setLockMessage(err?.status === 503 ? '지금은 열 수 없어요 — 설정을 준비 중이에요.' : '목록을 못 받았어요. 잠시 후 다시 열어 주세요.'); }
+        else { setPhase('locked'); setLockMessage(err?.status === 503 ? '지금은 열 수 없어요 — 설정을 준비 중이에요.' : '목록을 받지 못했어요. 잠시 후 다시 열어 주세요.'); }
       }
     })();
     const onClaimed = () => { refreshCopies(); };
@@ -356,9 +356,9 @@ function StudentView({ teamKey, user, toast }) {
       )}
       {offline && <p role="status" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 10px' }}>오프라인 — 받아 둔 사본만 열려요.</p>}
 
-      {featured&&activeTab==='book'&&<button className="classroom-featured-note" onClick={()=>openEntry(featured)} disabled={!!rowBusy[featured.id]}><span className="classroom-eyebrow">{recent?'이어서 공부하기':featured.day?'최근 수업 노트':'수업 교재'}</span><h2>{featured.day?`${dayLabel(featured.day)} 수업 노트`:chapterLabel(featured.title)}</h2><p>{recent?'읽던 위치에서 계속 공부하세요.':'한 표현씩, 내 언어로 만들어 보세요.'}</p><b>{rowBusy[featured.id]?'자료 확인 중…':recent?'이어 읽기 →':'읽기 시작 →'}</b>{user&&<small>처음 여는 자료는 내 서재에 보관됩니다.</small>}</button>}
-      {claimedError&&<p role="alert">내 자료 목록을 확인하지 못했어요. <button onClick={()=>refetchClaimed()}>다시 확인</button></p>}
-      {choice&&<div className="classroom-notice" role="group" aria-label="기존 사본 선택"><b>사용할 사본을 선택하세요.</b><p>다른 사본은 삭제하지 않습니다.</p>{choice.candidates.map(c=><button key={c.id} disabled={busy} onClick={async()=>{setBusy(true);try{const r=await requestClassCopy(teamKey,choice.entry.id,'open',{preferred:c.id});if(r.copyId)router.push(classEntryHref(studentReaderHref(r.copyId,teamKey,choice.entry.day),teamKey,choice.entry));setChoice(null);}catch(e){toast(friendlyToastMessage(e),'error');}finally{setBusy(false);}}}>{c.title} · {new Date(c.createdAt).toLocaleDateString('ko-KR')}</button>)}<button onClick={()=>setChoice(null)}>나중에</button></div>}
+      {featured&&activeTab==='book'&&<button className="classroom-featured-note" onClick={()=>openEntry(featured)} disabled={!!rowBusy[featured.id]}><span className="classroom-eyebrow">{recent?'이어서 공부하기':featured.day?'최근 수업 노트':'수업 교재'}</span><h2>{featured.day?`${dayLabel(featured.day)} 수업 노트`:chapterLabel(featured.title)}</h2><p>{recent?'읽던 위치에서 계속 공부하세요.':'한 표현씩, 내 언어로 만들어 보세요.'}</p><b>{rowBusy[featured.id]?'자료 확인 중…':recent?'이어 읽기 →':'읽기 시작 →'}</b>{user&&<small>처음 여는 자료는 내 서재에 보관돼요.</small>}</button>}
+      {claimedError&&<p role="alert">내 자료 목록을 확인하지 못했어요. <button onClick={()=>refetchClaimed()}>다시 시도</button></p>}
+      {choice&&<div className="classroom-notice" role="group" aria-label="기존 사본 선택"><b>사용할 사본을 골라 주세요.</b><p>다른 사본은 삭제하지 않아요.</p>{choice.candidates.map(c=><button key={c.id} disabled={busy} onClick={async()=>{setBusy(true);try{const r=await requestClassCopy(teamKey,choice.entry.id,'open',{preferred:c.id});if(r.copyId)router.push(classEntryHref(studentReaderHref(r.copyId,teamKey,choice.entry.day),teamKey,choice.entry));setChoice(null);}catch(e){toast(friendlyToastMessage(e),'error');}finally{setBusy(false);}}}>{c.title} · {new Date(c.createdAt).toLocaleDateString('ko-KR')}</button>)}<button onClick={()=>setChoice(null)}>나중에</button></div>}
       <div className="classroom-tabs" aria-label="수업 자료 종류">{team.course&&<button aria-pressed={activeTab==='course'} onClick={()=>setStudentTab('course')}>코스</button>}<button aria-pressed={activeTab==='book'} onClick={()=>setStudentTab('book')}>교재</button><button aria-pressed={activeTab==='notes'} onClick={()=>setStudentTab('notes')}>수업 기록</button></div>
       {activeTab==='course'&&team.course&&<CourseTab teamKey={teamKey} user={user}/>}
       {activeTab==='notes'&&<ClassRemoteHistory team={teamKey} user={user} chapters={chapters} onOpen={n=>{if(!dim(n))openEntry(n);}} onCopy={copyNotePlain} disabled={dim}/>}

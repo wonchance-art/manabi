@@ -19,7 +19,7 @@ export default function GlobalError({ error, reset }) {
         }}>
           <h1 style={{ fontSize: '1.6rem', margin: '0 0 8px' }}>앱이 예상치 못한 오류로 중단됐어요</h1>
           <p style={{ color: '#65675f', marginBottom: 28, maxWidth: 460, lineHeight: 1.6 }}>
-            문제가 반복되면 페이지를 새로고침하거나 잠시 후 다시 방문해주세요.
+            문제가 반복되면 페이지를 새로고침하거나 잠시 후 다시 방문해 주세요.
           </p>
           <div style={{ display: 'flex', gap: 10 }}>
             <button

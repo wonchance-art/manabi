@@ -68,7 +68,7 @@ export default function PdfReadBridge({ pdfInfo, livePage, mutation, user }) {
             onClick={() => mutation.mutate({ startPage: start, chunkSize: pages })}
             disabled={mutation.isPending}
           >
-            {mutation.isPending ? '가져오는 중...' : '자료로 만들어 읽기'}
+            {mutation.isPending ? '가져오는 중…' : '자료로 만들어 읽기'}
           </Button>
         </div>
       )}

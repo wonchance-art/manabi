@@ -186,7 +186,7 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
       }
       if (draftRef.current.files.length + additions.length > MAX_ATTACHMENTS) throw new Error('파일은 한 자료에 5개까지 추가할 수 있어요.');
       change({ files: [...draftRef.current.files, ...additions] });
-      setNotice(additions.length ? '원본을 추가했어요. 작성한 글은 그대로 유지됩니다.' : '이미 추가한 파일이에요.');
+      setNotice(additions.length ? '원본을 추가했어요. 작성한 글은 그대로 있어요.' : '이미 추가한 파일이에요.');
     } catch (err) { if (alive.current) setError(friendlyToastMessage(err)); }
     finally { prepareRef.current = false; if (alive.current) setPreparing(false); }
   }
@@ -224,7 +224,7 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
       draftRef.current = saved; setDraft(saved); setDraftStatus('서재에 저장됨'); setStage(study ? '저장했어요. 학습 화면을 엽니다…' : '저장했어요. 자료를 엽니다…');
       if(saved.collectionId){
         try { await addToCollection(supabase,ownerId,saved.collectionId,{target_kind:'material',target_id:String(record.id)}); }
-        catch { if(alive.current)setError('자료는 저장했지만 모음집에 담지 못했어요. 자료를 다시 저장할 필요는 없습니다.'); return; }
+        catch { if(alive.current)setError('자료는 저장했지만 모음집에 담지 못했어요. 자료를 다시 저장할 필요는 없어요.'); return; }
         queryClient.invalidateQueries({queryKey:['personal-library',ownerId]});
       }
       if (study) {
@@ -265,7 +265,7 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
       await persistDraft(value);
       draftRef.current = value; saveRef.current = null; setDraft(value); setConflict(false); setError(''); setStage('');
       setDraftStatus('최신 글을 불러왔어요.');
-    } catch (err) { setError(documentError(err) || '최신 글을 불러오지 못했어요. 초안을 유지합니다.'); }
+    } catch (err) { setError(documentError(err) || '최신 글을 불러오지 못했어요. 초안은 그대로 있어요.'); }
   }
 
   function downloadDraft() {
@@ -300,10 +300,10 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
         <button type="button" disabled={locked || preparing} onClick={() => fileInput.current?.click()}>＋ 파일</button><button type="button" disabled={locked} aria-expanded={linkOpen} onClick={() => setLinkOpen(value => !value)}>↗ 링크</button><small>{preparing ? '파일 확인 중…' : '끌어 놓아도 좋아요 · 파일당 50MB'}</small></div>
       <StudyLanguageChips id="composer-language" languages={languages} value={languages.includes(draft.language) ? draft.language : ''} guessed={!!draft.languageGuessed} disabled={locked} onChange={language => change({ language, languageChosen: true, languageGuessed: false })} />
       {notice && !error && <p className="composer-notice" role="status">{notice}</p>}
-      {error && <div className="composer-error" role="alert">{error}{draft.frozen && !conflict && <p>저장 결과가 확정될 때까지 내용을 유지합니다. 아래에서 다시 저장해 주세요.</p>}{conflict && <div className="composer-conflict-actions"><button type="button" onClick={downloadDraft}>내 초안 텍스트 내려받기</button><button type="button" onClick={reloadLatest}>최신 글로 다시 수정</button></div>}</div>}
-      {draft.collectionId&&<p className="composer-info">저장한 뒤 ‘{collections.data?.find(c=>c.id===draft.collectionId)?.name||'선택한 모음집'}’에 담습니다.</p>}
+      {error && <div className="composer-error" role="alert">{error}{draft.frozen && !conflict && <p>저장 결과가 확정될 때까지 내용을 그대로 둬요. 아래에서 다시 저장해 주세요.</p>}{conflict && <div className="composer-conflict-actions"><button type="button" onClick={downloadDraft}>내 초안 텍스트 내려받기</button><button type="button" onClick={reloadLatest}>최신 글로 다시 수정</button></div>}</div>}
+      {draft.collectionId&&<p className="composer-info">저장한 뒤 ‘{collections.data?.find(c=>c.id===draft.collectionId)?.name||'선택한 모음집'}’에 담아요.</p>}
       <footer className="composer-save"><span role="status">{busy ? stage : draftStatus}</span><ComposerSaveActions study={composerStudyState(draft, languages, { note: writeNote })} editing={editing} frozen={draft.frozen} busy={busy} intent={intent} disabled={busy || preparing || conflict} onStudy={() => submit(null, 'study')} /></footer>
     </form>
-    <div className="composer-after"><span>{editing ? '첨부를 빼도 이전 원본은 보관됩니다. 새 본문으로 학습하면 별도의 학습 기록으로 이어집니다.' : '저장한 뒤 바로 읽을 수 있어요. 표현 학습은 읽는 화면에서 시작해요.'}</span>{!editing && <Link href="/materials/add?advanced=1">기존 책에 이어 붙이기·문장 목록 ↗</Link>}</div>
+    <div className="composer-after"><span>{editing ? '첨부를 빼도 이전 원본은 보관돼요. 새 본문으로 학습하면 별도의 학습 기록으로 이어져요.' : '저장한 뒤 바로 읽을 수 있어요. 표현 학습은 읽는 화면에서 시작해요.'}</span>{!editing && <Link href="/materials/add?advanced=1">기존 책에 이어 붙이기·문장 목록 ↗</Link>}</div>
   </section>;
 }

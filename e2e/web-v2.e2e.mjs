@@ -27,13 +27,13 @@ try {
   const page = await context.newPage(); activePage = page;
   page.on('pageerror', error => report.errors.push(error.message));
   await page.goto(base + '/home');
-  const first = page.getByRole('link', { name: '첫 페이지 열기', exact: true });
+  // 배움(LEARN-HOME-AK-001): 이어 읽기 칸(C) — 이름은 칸 전체 aria-label(「첫 페이지 열기 · 일본어 N5 · 01 · …」)
+  const first = page.locator('a.learn-resume').filter({ hasText: '첫 페이지 열기' });
   await first.waitFor();
-  await page.waitForFunction(() => !document.querySelector('.today-copy [aria-disabled="true"]'));
   const firstHref = await first.getAttribute('href');
   const edition = new URL(firstHref, base).searchParams.get('edition');
   assert(edition, 'home loads the verified published edition');
-  assert.match(await page.locator('.today-record').first().innerText(), /0 \/ 42과/);
+  assert.match(await page.locator('.learn-resume__count').first().innerText(), /0 \/ 42/);
   await check(page, 'home-desktop-new');
   await page.screenshot({ path: out + '/home-desktop.png', fullPage: true });
   await page.getByRole('link', { name: '책장 둘러보기', exact: true }).click();
@@ -48,10 +48,11 @@ try {
   await page.locator('#u29-patterns .examples').first().waitFor();
   assert.equal(await page.locator('#u29-patterns .examples').first().evaluate(el => getComputedStyle(el).borderStyle), 'solid');
   await page.screenshot({ path: out + '/reader-examples-desktop.png' });
-  await page.getByRole('link', { name: 'manabi 오늘', exact: true }).click();
-  await page.getByRole('link', { name: '이어서 읽기', exact: true }).waitFor();
-  assert.match(await page.getByRole('link', { name: '이어서 읽기', exact: true }).getAttribute('href'), /#u29-/);
-  await page.getByRole('link', { name: '이어서 읽기', exact: true }).click();
+  await page.getByRole('link', { name: 'manabi 배움', exact: true }).click();
+  const resumeTile = page.locator('a.learn-resume').filter({ hasText: '이어서 읽기' });
+  await resumeTile.waitFor();
+  assert.match(await resumeTile.getAttribute('href'), /#u29-/);
+  await resumeTile.click();
   await page.locator('#u29-patterns').waitFor();
   await page.getByRole('link', { name: '← 책으로', exact: true }).click();
   await page.getByRole('heading', { name: '한 권의 흐름', exact: true }).waitFor();
@@ -161,7 +162,7 @@ try {
   assert.equal(await mp.getByRole('link', { name: '이어서 읽기', exact: true }).isVisible(), true);
   report.fixtureStates.push('server failure leaves local book readable and exposes retry');
   failed = false; due = 0;
-  await mp.getByRole('button', { name: '다시 불러오기', exact: true }).click();
+  await mp.getByRole('button', { name: '다시 시도', exact: true }).click();
   await mp.getByRole('heading', { name: /첫 표현을 담아 보세요/ }).waitFor();
   assert.equal((await mp.locator('.today-review h2').innerText()).includes('<br'), false);
   assert.equal((await mp.locator('.today-review h2').innerText()).replace(/\s+/g, ' '), '기억하고 싶은 첫 표현을 담아 보세요.');

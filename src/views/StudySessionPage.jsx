@@ -866,7 +866,7 @@ export default function StudySessionPage({
         <div style={{ textAlign: 'center', paddingTop: 60 }}>
           <h1 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: 8 }}>문단 마무리 중…</h1>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>
-            {parkingLong ? '조금만 더 기다려주세요…' : '오늘의 이야기를 거의 다 엮었어요'}
+            {parkingLong ? '조금만 더 기다려 주세요…' : '오늘의 이야기를 거의 다 엮었어요'}
           </p>
         </div>
       </div>
@@ -1436,7 +1436,7 @@ export default function StudySessionPage({
 
           {phase === 'feedback' && produceState?.status === 'error' && (
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: 14 }}>
-              첨삭을 못 받았어요 — 다음에 다시
+              첨삭을 받지 못했어요 — 다음에 다시 해 봐요
             </p>
           )}
 
@@ -1475,11 +1475,11 @@ export default function StudySessionPage({
         && picked === item.word?.meaning && (
         <div style={{ marginTop: 12, fontSize: '0.9rem' }}>
           {encounterSaveState === 'saved' ? (
-            <span style={{ color: 'var(--text-muted)' }}>✓ 단어장에 담았어요</span>
+            <span style={{ color: 'var(--text-muted)' }}>✓ 담은 표현에 있음</span>
           ) : (
             <button type="button" className="study-textlink" disabled={encounterSaveState === 'saving'}
               onClick={saveEncounterWord}>
-              {encounterSaveState === 'saving' ? '…' : '+ 단어장에 담기'}
+              {encounterSaveState === 'saving' ? '…' : '+ 담기'}
             </button>
           )}
         </div>

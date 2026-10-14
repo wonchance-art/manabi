@@ -695,13 +695,19 @@ test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복�
       },
     );
 
-    await page.getByRole('link', { name: '복습', exact: true }).first().click();
-    await page.waitForURL('**/vocab', { timeout: config.timeout });
+    // 메뉴 셋(LEARN-HOME-AK-001): 복습은 메뉴에서 빠지고 배움의 단어 복습 칸으로 들어간다. 클라이언트 이동(캐시 재조회)은 그대로
+    // 거친다 — 배움 → 칸(범위 주소 = 칩 언어). 학습 언어가 없는 계정이라 칩은 담은 표현의 언어(프랑스어)다.
+    await page.getByRole('navigation', { name: '메인 내비게이션' }).getByRole('link', { name: '배움', exact: true }).click();
+    await page.waitForURL('**/home', { timeout: config.timeout });
+    const reviewTile = page.locator('a.learn-review[href="/vocab?lang=French"]');
+    await assertVisible(reviewTile, 'learn review tile scoped to the saved word language');
+    await reviewTile.click();
+    await page.waitForURL('**/vocab?lang=French', { timeout: config.timeout });
     assert.equal(new URL(page.url()).pathname, '/vocab');
     await assertVisible(page.getByRole('heading', { name: '복습', exact: true }), 'vocabulary review heading');
     await assertVisible(page.getByRole('button', { name: 'la famille — 가족 상세 열기', exact: true }), 'saved word in vocabulary list');
     // 카드는 총계 하나만 말하고, 분해는 버튼 라벨이 대신한다 — 같은 수를 두 번 적지 않는다.
-    await assertVisible(page.getByText('오늘 할 일', { exact: false }), 'todo kicker');
+    await assertVisible(page.getByText('이 범위에서 오늘', { exact: false }), 'scope kicker');
     assert.equal((await page.locator('.vocab-hero__num').textContent()).trim(), '1', 'hero total counts the one saved word');
     assert.equal(
       await page.getByText('복습 0', { exact: false }).count(),
