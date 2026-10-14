@@ -12,11 +12,11 @@ import { sliceBetween } from './helpers/sliceBetween';
 // 기대 화면(오너 합의 목업, 본문 바로 위):
 //   [그림]  (캡션: image.credit — 작게)
 //   冨嶽三十六景 神奈川沖浪裏 · 후가쿠 36경 — 가나가와 앞바다 파도 아래
-//   가쓰시카 호쿠사이(1760–1849) · 1830/33 · 에도 시대 · 가로로 긴 오반 크기 니시키에(다색 목판화)
-//   소장  도쿄 국립박물관 ↗ · 시카고 미술관 ↗
+//   가쓰시카 호쿠사이(1760–1849) · 1830–33년 · 에도 시대 · 가로로 긴 오반 크기 니시키에(다색 목판화)
+//   소장처  도쿄 국립박물관 ↗ · 시카고 미술관 ↗
 //   그림 속 장소  도쿄만 · 후지산
 //   찾아볼 것  ① … ② … ③ …
-//   출처: ColBase(국립문화재기구) · … · 정부표준이용규약 2.0 · 원문 ↗
+//   출처: ColBase(국립문화재기구) · … · 정부표준이용규약 2.0 · 출처 페이지 ↗
 
 const read = (file) => readFileSync(path.join(process.cwd(), file), 'utf8');
 const VIEWER = 'src/views/ViewerPage.jsx';
@@ -38,7 +38,12 @@ describe('뷰어 배선 — 카드는 대조를 통과한 장에서만', () => {
 
   it('훅은 useCanonicalLiterature와 같은 모양 — verifiedArtChapter, 의존 배열, 늦은 대조 버림', () => {
     const hook = read(HOOK);
-    expect(hook).toContain("import { ART_BOOK_PROVIDER, verifiedArtChapter } from './artBook';");
+    // 카탈로그 JSON 전체를 싣는 artBook.js는 큐레이션 책 자료일 때만 동적 import — 정적 import는 의존성 없는 판별 모듈만.
+    expect(hook).toContain("import { ART_BOOK_PROVIDER } from './artBookProvider';");
+    expect(hook).not.toMatch(/from ['"]\.\/artBook(?:\.js)?['"]/);
+    expect(hook).toContain("import('./artBook')");
+    expect(hook.indexOf('if (provider !== ART_BOOK_PROVIDER) return undefined;')).toBeLessThan(hook.indexOf("import('./artBook')"));
+    expect(hook).toContain('verifiedArtChapter');
     expect(hook).toContain('useState(null)');
     expect(hook).toContain('if (provider !== ART_BOOK_PROVIDER) return undefined;');
     expect(hook).toContain('if (live) setChapter(value);');
@@ -60,9 +65,10 @@ describe('뷰어 배선 — 카드는 대조를 통과한 장에서만', () => {
 describe('카드 마크업 계약', () => {
   const card = read(CARD);
 
-  it('원어(일본어) 제목에 lang="ja", 원문 표기 날짜는 가나·한자일 때만 lang="ja"', () => {
+  it('원어(일본어) 제목에 lang="ja", 날짜는 화면용 표기(date.display)를 쓰고 가나·한자일 때만 lang="ja"', () => {
     expect(card).toContain('<span lang="ja">{card.title?.native}</span>');
-    expect(card).toContain("lang={JAPANESE.test(card.date.text) ? 'ja' : undefined}");
+    expect(card).toContain("lang={JAPANESE.test(card.date.display) ? 'ja' : undefined}>{card.date.display}</span>");
+    expect(card, '출처의 영어 약식 날짜(c. 1830/33)를 그대로 그리지 않는다').not.toContain('{card.date.text}');
   });
 
   it('바깥 링크는 모두 새 창 + rel="noopener noreferrer", 접근 이름은 보이는 이름으로 시작하고 무엇이 열리는지 말한다', () => {
@@ -71,20 +77,31 @@ describe('카드 마크업 계약', () => {
     expect(blanks.length).toBeGreaterThanOrEqual(2);
     expect(rels.length).toBe(blanks.length);
     expect(card).toContain("aria-label={vt('{name} 소장품 기록 보기(새 창)', { name: placeName(place) })}");
-    expect(card).toContain("aria-label={vt('원문 보기(새 창)')}>{vt('원문')}");
+    expect(card).toContain("aria-label={vt('출처 페이지 열기(새 창)')}>{vt('출처 페이지')}");
+    expect(card).toContain("<dt>{vt('소장처')}</dt>");
     // 소장처 링크는 카탈로그의 소장품 기록 HTTPS 주소만.
     expect(card).toContain('<a href={httpsUrl(place.url)} target="_blank" rel="noopener noreferrer"');
   });
 
-  it('그림 속 장소는 지역학 핀이 있을 때만 지도로 잇는다', () => {
+  it('그림 속 장소는 지역학 핀이 있을 때만 지도로 잇는다 — 핀은 장소 자체가 아니라 근처 지역이라 「근처 보기」로 말한다', () => {
     expect(card).toContain('const studiesMapHref = (pin) => `/studies/japan/map?pin=${encodeURIComponent(pin)}`;');
     expect(card).toContain('place.links?.studiesPin');
+    expect(card).toContain("aria-label={vt('지역학 지도에서 {name} 근처 보기', { name: placeName(place) })}");
+  });
+
+  it('출처 줄은 다른 출처 줄(유튜브·아오조라)과 같이 화면 언어의 「출처:」로 시작한다 — 크레딧 데이터에는 머리말이 없다', () => {
+    expect(card).toContain('<p className="viewer-attribution viewer-art-credit">{vt(\'출처:\')} {credit.credit}');
+    expect(read(VIEWER)).toContain('{vt("출처:")}');
+  });
+
+  it('「찾아볼 것」 목록은 list-style:none이어도 목록으로 읽힌다(Safari) — role="list"', () => {
+    expect(card).toContain('<ol className="viewer-art-card__look" role="list">');
   });
 
   it('그림: 평범한 <img> — 데이터의 alt, 늦은 로딩, 불러오기 실패 시 그림만 숨기고 글 카드는 남긴다', () => {
     expect(card).not.toMatch(/from ['"]next\/image['"]/);
-    const img = sliceBetween(card, '<img className="viewer-art-card__img"', '/>');
-    for (const attr of ['alt={image.alt}', 'loading="lazy"', 'decoding="async"', 'onError={() => setFailedImage(imageUrl)}']) {
+    const img = sliceBetween(card, '<img className={`viewer-art-card__img', '/>');
+    for (const attr of ['alt={image.alt}', 'width={size?.width}', 'height={size?.height}', 'loading="lazy"', 'decoding="async"', 'onError={() => setFailedImage(imageUrl)}']) {
       expect(img, `img 속성 누락: ${attr}`).toContain(attr);
     }
     expect(card).toContain('const image = imageUrl && failedImage !== imageUrl ? card.image : null;');
@@ -123,6 +140,27 @@ describe('카드 CSS — 토큰·접힘·초점', () => {
     expect(css).toMatch(/@container art-card \(max-width: \d+px\)/);
   });
 
+  it('그림: 원본 비율로 자리를 잡고 세로 판화도 높이 상한까지 — 크기 정보가 없을 때만 고정 상자, 단 사이에서 쪼개지지 않는다', () => {
+    const img = sliceBetween(css, '.viewer-layout .viewer-art-card__img {', '}');
+    for (const rule of ['width: auto', 'max-width: 100%', 'height: auto', 'max-height: min(72svh, 520px)', 'margin-inline: auto', 'display: block']) {
+      expect(img, `img 규칙 누락: ${rule}`).toContain(rule);
+    }
+    expect(sliceBetween(css, '.viewer-layout .viewer-art-card__img--box {', '}')).toContain('object-fit: contain');
+    expect(read(CARD)).toContain("viewer-art-card__img${size ? '' : ' viewer-art-card__img--box'}");
+    expect(sliceBetween(css, '.viewer-layout .viewer-art-card__figure {', '}')).toContain('break-inside: avoid');
+    expect(sliceBetween(css, '.viewer-layout .viewer-art-card__caption {', '}')).toContain('font-size: 12px');
+  });
+
+  it('줄 안 링크(카드 값·출처 줄)는 누르는 자리 44px 이상 — 안쪽 여백을 음수 바깥 여백으로 상쇄', () => {
+    const dd = sliceBetween(css, '.viewer-layout .viewer-art-card__fact dd a {', '}');
+    const creditLink = sliceBetween(css, '.viewer-layout .viewer-art-credit a {', '}');
+    for (const [rule, pad] of [[dd, 11], [creditLink, 13]]) {
+      expect(rule).toContain('display: inline-block');
+      expect(rule).toContain(`padding-block: ${pad}px`);
+      expect(rule).toContain(`margin-block: -${pad}px`);
+    }
+  });
+
   it('링크·작가 소개(summary)에 키보드 초점 고리, 접기 버튼은 44px', () => {
     expect(css).toContain('.viewer-layout .viewer-art-card :is(a, summary):focus-visible');
     expect(sliceBetween(css, '.viewer-layout .viewer-art-card__about > summary {', '}')).toContain('min-height: 44px');
@@ -135,6 +173,13 @@ describe('원문 수정 차단 — 큐레이션 책도 정본처럼', () => {
   const chapter = createArtBook('ukiyoe-landscape-hokusai-hiroshige').chapters[0];
   const material = { id: 'm1', raw_text: chapter.rawText, processed_json: { metadata: chapter.metadata } };
 
+  it('판별 모듈은 의존성 없음 — 재분석 보존(클라이언트 경로)은 카탈로그를 싣는 artBook.js가 아니라 판별 모듈을 가져온다', () => {
+    expect(read('src/lib/artBookProvider.js')).not.toMatch(/^\s*(?:import|export\s+\{[^}]*\}\s+from)\b/m);
+    const preservation = read('src/lib/reanalysisPreservation.js');
+    expect(preservation).toContain("import { isArtBookMaterial } from './artBookProvider';");
+    expect(preservation).not.toMatch(/from ['"]\.\/artBook(?:\.js)?['"]/);
+  });
+
   it('runPreservedReanalysis(뷰어 원문 수정·책 정제 공용 경로)가 바뀐 원문을 저장 전에 거부한다', async () => {
     const analyze = async () => { throw new Error('분석까지 가면 안 된다'); };
     await expect(runPreservedReanalysis(null, material, new AbortController().signal, analyze, { rawTextOverride: `${chapter.rawText}\n\n追記` }))
@@ -142,9 +187,12 @@ describe('원문 수정 차단 — 큐레이션 책도 정본처럼', () => {
   });
 
   it('뷰어: 저장 처리·「원문 수정」 항목·이유 문구에 artBookLocked가 들어간다', () => {
-    expect(viewer).toContain("import { isArtBookMaterial } from '../lib/artBook';");
+    // 뷰어는 의존성 없는 판별 모듈만 — artBook.js(카탈로그 JSON 전체)를 뷰어 번들에 싣지 않는다.
+    expect(viewer).toContain("import { isArtBookMaterial } from '../lib/artBookProvider';");
+    expect(viewer).not.toMatch(/from ['"]\.\.\/lib\/artBook(?:\.js)?['"]/);
     expect(viewer).toContain('const artBookLocked = isArtBookMaterial(material);');
-    expect(sliceBetween(viewer, 'const handleSourceEditSave = async (plan) => {', 'if (!plan || plan.noop)')).toContain('if (artBookLocked) return;');
+    expect(sliceBetween(viewer, 'const handleSourceEditSave = async (plan) => {', 'if (!plan || plan.noop)'))
+      .toContain('if (composerOf(material) || canonicalLiteratureLocked || artBookLocked) return;');
     const manage = sliceBetween(viewer, 'className="reader-manage"', "reanalyzePanel === 'confirm-full'");
     expect(manage).toContain('!artBookLocked && !canonicalLiteratureLocked && <button className="reanalyze-panel__item"');
     expect(manage).toContain('{artBookLocked && <p className="reader-metadata">{vt("정본 책이라 원문은 고칠 수 없어요")}');

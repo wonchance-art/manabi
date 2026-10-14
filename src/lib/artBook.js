@@ -7,8 +7,10 @@
 import { ART_CATALOG } from '../content/art/index.js';
 import { ART_TEXT_LICENSE_LABEL, artInfoCard, validateArtCatalog } from './artCatalog.js';
 import { sha256Hex } from './literatureCanonical.js';
+import { ART_BOOK_PROVIDER } from './artBookProvider.js';
 
-export const ART_BOOK_PROVIDER = 'art';
+// 판별 상수·함수는 의존성 없는 artBookProvider.js가 정본이다(클라이언트 번들에 카탈로그를 싣지 않게) — 여기서는 다시 내보내기만.
+export { ART_BOOK_PROVIDER, isArtBookMaterial } from './artBookProvider.js';
 export const ART_BOOK_VERSION = 1;
 const BOOK_LANGUAGE = 'ja';
 const MATERIAL_LANGUAGE = 'Japanese';
@@ -104,11 +106,6 @@ export async function verifyArtBookTexts(book) {
     if ((await sha256Hex(chapter.rawText)) !== chapter.metadata.literature.textSha256) mismatched.push(chapter.order);
   }
   return mismatched;
-}
-
-/** 큐레이션 책 자료인가(동기 — metadata만 본다). 원문 수정 차단 판정에 쓴다. */
-export function isArtBookMaterial(material) {
-  return material?.processed_json?.metadata?.literature?.provider === ART_BOOK_PROVIDER;
 }
 
 /**

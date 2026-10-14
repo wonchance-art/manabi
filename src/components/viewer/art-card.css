@@ -7,13 +7,17 @@
   background: var(--reader-surface); color: var(--reader-ink);
   font-size: 14px; line-height: 1.65;
 }
-.viewer-layout .viewer-art-card__figure {margin: 0 0 12px;}
-/* 그림 크기 정보가 카탈로그에 없어 높이를 미리 정해 둔다(가로·세로 판형 모두 contain) — 늦게 떠도 본문이 밀리지 않는다. */
+/* 쪽 넘김(다단) 읽기에서 그림·캡션이 단 사이로 쪼개지지 않게. */
+.viewer-layout .viewer-art-card__figure {margin: 0 0 12px; break-inside: avoid;}
+/* 카탈로그 원본 크기(img width·height 속성)로 브라우저가 판형 비율의 자리를 미리 잡는다 — 늦게 떠도 본문이 밀리지 않고,
+   세로 판화도 높이 상한까지 크게 보인다(가로 폭에 맞춰 작아지지 않게). */
 .viewer-layout .viewer-art-card__img {
-  display: block; width: 100%; height: clamp(200px, 62cqi, 440px);
-  object-fit: contain; background: var(--reader-paper); border-radius: 4px;
+  display: block; width: auto; max-width: 100%; height: auto; max-height: min(72svh, 520px);
+  margin-inline: auto; background: var(--reader-paper); border-radius: 4px;
 }
-.viewer-layout .viewer-art-card__caption {margin-top: 6px; font-size: 11px; line-height: 1.5; color: var(--reader-muted); overflow-wrap: anywhere;}
+/* 크기 정보가 없는 그림만 — 높이를 미리 정한 상자 안에 담는다(가로·세로 판형 모두 contain). */
+.viewer-layout .viewer-art-card__img--box {width: 100%; height: clamp(200px, 62cqi, 440px); max-height: none; object-fit: contain;}
+.viewer-layout .viewer-art-card__caption {margin-top: 6px; font-size: 12px; line-height: 1.5; color: var(--reader-muted); overflow-wrap: anywhere;}
 .viewer-layout .viewer-art-card__title {margin: 0 0 2px; font-size: 1.05rem; font-weight: 700; line-height: 1.5; color: var(--reader-ink); overflow-wrap: anywhere;}
 .viewer-layout .viewer-art-card__title-ko {font-weight: 500;}
 .viewer-layout .viewer-art-card__meta {margin: 0 0 10px; font-size: 13px; color: var(--reader-muted); overflow-wrap: anywhere;}
@@ -23,6 +27,10 @@
 .viewer-layout .viewer-art-card__fact dd {margin: 0; min-width: 0; overflow-wrap: anywhere;}
 .viewer-layout .viewer-art-card :is(a, a:visited) {color: var(--reader-accent); text-decoration: underline; text-underline-offset: 3px;}
 .viewer-layout .viewer-art-card a:hover {color: var(--reader-ink);}
+/* 줄 안 링크의 누르는 자리를 44px 이상으로 — 위아래 안쪽 여백을 같은 바깥 음수 여백으로 상쇄해 줄 높이는 그대로.
+   카드 값 줄 14px×1.65 ≈ 23px + 11px×2 = 45px · 출처 줄 0.78rem×1.5 ≈ 19px + 13px×2 = 45px. */
+.viewer-layout .viewer-art-card__fact dd a {display: inline-block; padding-block: 11px; margin-block: -11px;}
+.viewer-layout .viewer-art-credit a {display: inline-block; padding-block: 13px; margin-block: -13px;}
 .viewer-layout .viewer-art-card__look {margin: 0; padding: 0; list-style: none;}
 .viewer-layout .viewer-art-card__num {color: var(--reader-muted);}
 .viewer-layout .viewer-art-card__about {margin-top: 4px;}

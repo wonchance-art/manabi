@@ -178,7 +178,7 @@ import { langNameKo, splitSentenceAroundWord, detectLang } from '../lib/constant
 import { attributionParts, literatureAttributionParts, materialSource } from '../lib/videoAttribution';
 import { isCanonicalLiteratureMaterial } from '../lib/literatureCanonical';
 import { useCanonicalLiterature } from '../lib/useCanonicalLiterature';
-import { isArtBookMaterial } from '../lib/artBook';
+import { isArtBookMaterial } from '../lib/artBookProvider';
 import { useArtBookChapter } from '../lib/useArtBookChapter';
 import ViewerArtCard from '../components/viewer/ViewerArtCard';
 import { logReviewEvents } from '../lib/reviewEvents';
@@ -698,8 +698,7 @@ export default function ViewerPage() {
   // ③ 원문 수정(오너 승인) — 소유자 전용, 저장 시 바뀐 줄만 재분석(sourceEdit.js 계획).
 
   const handleSourceEditSave = async (plan) => {
-    if (artBookLocked) return;
-    if (composerOf(material) || canonicalLiteratureLocked) return;
+    if (composerOf(material) || canonicalLiteratureLocked || artBookLocked) return;
     if (!plan || plan.noop) { setSourceEditOpen(false); return; }
     if (!plan.ok) { toast(plan.reason, 'error'); return; }
     if (plan.expectedRaw !== material.raw_text || JSON.stringify(plan.expectedJson) !== JSON.stringify(material.processed_json)) {

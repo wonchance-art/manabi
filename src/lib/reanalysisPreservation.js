@@ -6,7 +6,7 @@ import { compactBoundaryText, readBoundaryEdits } from './boundaryEdits';
 import { reapplyKoreanBoundaries } from './koreanBoundarySplit';
 import { clearRubyLockOnCorrection } from './aozoraRuby';
 import { CANONICAL_LITERATURE_EDIT_BLOCKED, isCanonicalLiteratureMaterial } from './literatureCanonical';
-import { isArtBookMaterial } from './artBook';
+import { isArtBookMaterial } from './artBookProvider';
 
 const tokenLine = id => analysisTokenLine(id) ?? NaN;
 

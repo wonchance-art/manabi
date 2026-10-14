@@ -156,4 +156,25 @@ describe('관리자 큐레이션 책 게시 API', () => {
     expect((await (await handlers.GET(new Request(URL_BASE))).json()).books[0].publishable).toBe(false);
     expect(db.state.inserts).toEqual([]);
   });
+
+  it('정본 목록 자체가 깨지면(getBooks throw — 카탈로그 계약 위반) 아무것도 읽거나 쓰지 않는다 — POST 422, GET 500(DB 장애 503과 구분)', async () => {
+    const handlers = createBookPublishHandlers(() => { throw new TypeError('없는 큐레이션'); },
+      { notPublishableError: '출처·라이선스 기록이 공개 기준을 통과하지 못한 책이에요.' });
+    for (const action of ['prepare', 'review', 'release']) {
+      const response = await handlers.POST(request({ action, key: KEY, order: 1 }));
+      expect(response.status).toBe(422);
+      expect(response.headers.get('Content-Type')).toMatch(/application\/json/);
+      expect(await response.json()).toEqual({ error: '출처·라이선스 기록이 공개 기준을 통과하지 못한 책이에요.' });
+    }
+    for (const url of [URL_BASE, `${URL_BASE}?ruby=${KEY}`]) {
+      const response = await handlers.GET(new Request(url));
+      expect(response.status).toBe(500);
+      expect(response.headers.get('Cache-Control')).toBe('private, no-store');
+      expect((await response.json()).error).toBe('정본 책 목록을 만들지 못했어요. 리포의 원본 기록을 확인해 주세요.');
+    }
+    // 입력 검사는 그대로 먼저 — 잘못된 요청은 여전히 400.
+    expect((await handlers.POST(request({ action: 'delete', key: KEY }))).status).toBe(400);
+    expect(db.supabase.from).not.toHaveBeenCalled();
+    expect(db.state.inserts).toEqual([]);
+  });
 });

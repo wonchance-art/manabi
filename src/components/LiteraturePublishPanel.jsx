@@ -78,7 +78,7 @@ function EvidenceCell({ book, kind }) {
           원문
           {chapters.map((item) => (
             <span key={item.order}>
-              {' '}<a href={item.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={`${item.order}장 원문`}>{item.order}</a>
+              {' '}<a href={item.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={`${item.order}장 원문(새 창)`}>{item.order}</a>
             </span>
           ))}
         </div>

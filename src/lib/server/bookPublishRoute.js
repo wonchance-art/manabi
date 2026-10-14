@@ -41,28 +41,36 @@ async function publishedRows(supabase, ownerId, keys, columns = ROW_COLUMNS) {
 }
 
 const DEFAULT_NOT_PUBLISHABLE = '권리 기록이 공개 기준을 통과하지 못한 책이에요.';
+/** 정본 책 목록 자체를 만들지 못했을 때(깨진 카탈로그 등 — getBooks가 throw) 목록 조회 안내. DB 장애(503)와 구분한다. */
+const BOOK_SOURCE_BROKEN = '정본 책 목록을 만들지 못했어요. 리포의 원본 기록을 확인해 주세요.';
 
 /**
  * 게시 API 처리 만들기 — getBooks: () => 정본 책 배열(literaturePublish.js가 받는 모양). 요청마다 부른다.
+ * getBooks가 throw하면(깨진 정본 — 예: 카탈로그 계약 위반으로 createArtBook 실패) 아무것도 읽거나 쓰지 않는다:
+ * POST는 422 + notPublishableError, GET은 500 + 원본 확인 안내(DB 장애 503과 구분). throw하지 않으면 동작은 그대로다.
  * @param {{notPublishableError?: string}} [options] 게시 가능 판정(literatureBookPublishable)에 걸렸을 때 422 안내
  * @returns {{GET: (request: Request) => Promise<Response>, POST: (request: Request) => Promise<Response>}}
  */
 export function createBookPublishHandlers(getBooks, { notPublishableError = DEFAULT_NOT_PUBLISHABLE } = {}) {
-  const findBook = (key) => getBooks().find((book) => book.book.key === key) || null;
+  /** 정본 책 목록 — 만들지 못하면 null(throw를 라우트 밖으로 내보내지 않는다). */
+  const loadBooks = () => {
+    try { return getBooks(); } catch { return null; }
+  };
 
   async function GET(request) {
     const auth = await requireAdmin();
     if (auth.error) return respond({ error: auth.error }, auth.status);
     const { supabase, user } = auth;
     const rubyKey = new URL(request.url).searchParams.get('ruby');
+    const books = loadBooks();
+    if (!books) return respond({ error: BOOK_SOURCE_BROKEN }, 500);
     try {
       if (rubyKey != null) {
-        const book = findBook(rubyKey);
+        const book = books.find((item) => item.book.key === rubyKey);
         if (!book) return respond({ error: '정본 책을 찾지 못했어요.' }, 404);
         const rows = await publishedRows(supabase, user.id, [rubyKey], `id, key:${KEY_PATH}, order:${ORDER_PATH}, processed_json`);
         return respond({ key: rubyKey, coverage: literatureRubyCoverage(book, rows) });
       }
-      const books = getBooks();
       const rows = await publishedRows(supabase, user.id, books.map((book) => book.book.key));
       return respond({ books: books.map((book) => literatureBookSummary(book, rows.filter((row) => row.key === book.book.key))) });
     } catch {
@@ -78,7 +86,9 @@ export function createBookPublishHandlers(getBooks, { notPublishableError = DEFA
     if (!body || typeof body !== 'object' || !['prepare', 'review', 'release'].includes(body.action) || typeof body.key !== 'string') {
       return respond({ error: '작업할 책을 선택해 주세요.' }, 400);
     }
-    const book = findBook(body.key);
+    const books = loadBooks();
+    if (!books) return respond({ error: notPublishableError }, 422);
+    const book = books.find((item) => item.book.key === body.key);
     if (!book) return respond({ error: '정본 책을 찾지 못했어요.' }, 404);
     if (!literatureBookPublishable(book)) return respond({ error: notPublishableError }, 422);
 

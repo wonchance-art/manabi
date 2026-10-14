@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { JAPAN_PATH, JP_PREF_LINES, JP_VIEW, projectJp } from '../components/japanMapPaths';
@@ -9,15 +9,34 @@ import { JP_MAP_PINS, JP_MAP_THEMES } from '../content/studies/japanMapPins';
 const THEME_BY_ID = Object.fromEntries(JP_MAP_THEMES.map((t) => [t.id, t]));
 
 /**
+ * ?pin=<id> 딥링크(작품 정보 카드 「그림 속 장소」 등) — 쿼리를 읽는 것은 이 작은 자식뿐이다.
+ * useSearchParams는 가장 가까운 Suspense 경계까지를 클라이언트 렌더로 미루므로, 자기 경계 안에 두어
+ * 제목·테마·지도·목록은 정적으로 먼저 그리고 핀 선택만 쿼리를 기다린다. 실제 핀 id만 받고 모르는 값은 무시한다.
+ * 쿼리 값이 바뀌면(같은 화면에서 다른 핀 링크로 이동) 다시 고른다.
+ */
+function PinFromQuery({ onPin }) {
+  const pinParam = useSearchParams().get('pin');
+  useEffect(() => {
+    if (JP_MAP_PINS.some((p) => p.id === pinParam)) onPin(pinParam);
+  }, [pinParam, onPin]);
+  return null;
+}
+
+/**
  * 일본학 지도 — 심층 5문서의 장소를 테마 핀으로 탐색한다.
  * 지도(SVG)와 아래 목록은 같은 필터를 공유한다 — 목록은 지도 없이도 전부 접근
  * 가능한 대체 수단(키보드·스크린리더)이자 훑어보기 뷰다.
  */
 export default function JapanStudiesMapPage() {
   const [theme, setTheme] = useState('all');
-  // ?pin=<id> 딥링크 — 실제 핀 id만 받고 모르는 값은 무시한다
-  const pinParam = useSearchParams().get('pin');
-  const [activeId, setActiveId] = useState(() => (JP_MAP_PINS.some((p) => p.id === pinParam) ? pinParam : null));
+  const [activeId, setActiveId] = useState(null);
+  // 딥링크 핀 — 지금 테마에 없는 핀이면 「전체」로 돌려 카드가 보이게 한다.
+  const selectPin = useCallback((id) => {
+    const pin = JP_MAP_PINS.find((p) => p.id === id);
+    if (!pin) return;
+    setActiveId(id);
+    setTheme((current) => (current === 'all' || pin.themes.includes(current) ? current : 'all'));
+  }, []);
 
   const pins = useMemo(
     () => (theme === 'all' ? JP_MAP_PINS : JP_MAP_PINS.filter((p) => p.themes.includes(theme))),
@@ -31,6 +50,9 @@ export default function JapanStudiesMapPage() {
 
   return (
     <div className="page-container" style={{ maxWidth: 880 }}>
+      <Suspense fallback={null}>
+        <PinFromQuery onPin={selectPin} />
+      </Suspense>
       <nav style={{ fontSize: '0.82rem', marginBottom: 12, opacity: 0.8 }}>
         <Link href="/studies">지역학</Link>{' / '}
         <Link href="/studies/japan">일본학</Link>{' / '}<span>지도</span>

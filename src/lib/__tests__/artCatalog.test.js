@@ -3,6 +3,7 @@ import { ART_CATALOG } from '../../content/art/index.js';
 import { JP_MAP_PINS } from '../../content/studies/japanMapPins.js';
 import {
   artCurationWorks,
+  artDateDisplay,
   artDescriptionHashMismatches,
   artInfoCard,
   artWorksAtPlace,
@@ -239,18 +240,49 @@ describe('artCatalog 계약 — fail-closed', () => {
 });
 
 describe('정보 카드·탐색', () => {
-  it('카드: 원문 날짜 표기·시대·소장처는 늘 「소장」·그림 속 장소·크레딧', () => {
+  it('카드: 원문 날짜 표기·시대·소장처는 늘 「소장처」·그림 속 장소·크레딧', () => {
     const card = artInfoCard(fixture(), 'work-a');
-    expect(card.date).toEqual({ text: '天保2～5年頃', periods: [{ ko: '에도 시대', native: '江戸時代' }] });
+    expect(card.date).toEqual({ text: '天保2～5年頃', display: '天保2～5年頃', periods: [{ ko: '에도 시대', native: '江戸時代' }] });
     expect(card.artist.years).toBe('1760–1849');
     expect(card.holdings.map((h) => [h.id, h.label, h.url])).toEqual([
-      ['museum-a', '소장', 'https://colbase.nich.go.jp/collection_items/x'],
-      ['museum-b', '소장', 'https://www.artic.edu/artworks/1'],
+      ['museum-a', '소장처', 'https://colbase.nich.go.jp/collection_items/x'],
+      ['museum-b', '소장처', 'https://www.artic.edu/artworks/1'],
     ]);
     expect(card.depicted.map((p) => p.id)).toEqual(['coast-a']);
     expect(card.credits).toEqual([{ language: 'ja', credit: '甲博物館所蔵 / ColBase', license: '정부표준이용규약 2.0', sourceUrl: 'https://colbase.nich.go.jp/collection_items/x' }]);
     expect(JSON.stringify(card)).not.toMatch(/전시/);
     expect(artInfoCard(fixture(), 'missing')).toBeNull();
+  });
+
+  // 화면 날짜(검토 반영): 출처의 영어 약식 표기(「c. 1830/33」)를 그대로 보이지 않는다 — 일본어 원문 표기만 그대로, 나머지는 한국어.
+  it.each([
+    [{ text: '江戸時代・安政4年(1857)', startYear: 1857, endYear: 1857, certainty: 'exact' }, '江戸時代・安政4年(1857)'],
+    [{ text: '1857', startYear: 1857, endYear: 1857, certainty: 'exact' }, '1857년'],
+    [{ text: '1830/33', startYear: 1830, endYear: 1833, certainty: 'range' }, '1830–33년'],
+    [{ text: 'c. 1830/33', startYear: 1830, endYear: 1833, certainty: 'circa' }, '1830–33년경'],
+    [{ text: 'c. 1830', startYear: 1830, endYear: 1830, certainty: 'circa' }, '1830년경'],
+    [{ text: '1801-05', startYear: 1801, endYear: 1805, certainty: 'range' }, '1801–05년'],
+    [{ text: '1795/1805', startYear: 1795, endYear: 1805, certainty: 'range' }, '1795–1805년'],
+    [{ text: 'c. 1899/1901', startYear: 1899, endYear: 1901, certainty: 'circa' }, '1899–1901년경'],
+  ])('날짜 표시 %j → %s', (date, display) => {
+    expect(artDateDisplay(date)).toBe(display);
+  });
+
+  it('날짜 표시: 영어 표기는 카드에서 한국어로, 원문 표기에 이미 있는 시대 이름은 시대 칸에서 뺀다', () => {
+    const catalog = fixture();
+    catalog.works[1].date = { text: 'c. 1830/33', startYear: 1830, endYear: 1833, certainty: 'circa' };
+    catalog.works[1].periods = ['jp-edo'];
+    expect(artInfoCard(catalog, 'work-b').date).toEqual({ text: 'c. 1830/33', display: '1830–33년경', periods: [{ ko: '에도 시대', native: '江戸時代' }] });
+    catalog.works[0].date = { text: '江戸時代・安政4年(1857)', startYear: 1857, endYear: 1857, certainty: 'exact' };
+    expect(artInfoCard(catalog, 'work-a').date).toEqual({ text: '江戸時代・安政4年(1857)', display: '江戸時代・安政4年(1857)', periods: [] });
+  });
+
+  it('날짜 표시: 실제 카탈로그 — 화면 날짜에 영어 약식 표기(c. · /)가 남지 않는다', () => {
+    for (const work of ART_CATALOG.works) {
+      const { date } = artInfoCard(ART_CATALOG, work.id);
+      expect(date.display, work.id).not.toMatch(/\bc\.|\//);
+      for (const period of date.periods) expect(date.text.includes(period.native), `${work.id}: 시대 중복`).toBe(false);
+    }
   });
 
   it('카드: 허용 밖 이미지는 그리지 않는다', () => {

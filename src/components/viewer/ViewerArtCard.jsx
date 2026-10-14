@@ -3,12 +3,14 @@
 //
 //   [그림]  (캡션: image.credit — 미술관이 요청한 캡션, 작게)
 //   冨嶽三十六景 神奈川沖浪裏 · 후가쿠 36경 — 가나가와 앞바다 파도 아래
-//   가쓰시카 호쿠사이(1760–1849) · 1830/33 · 에도 시대 · 가로로 긴 오반 크기 니시키에
-//   소장  도쿄 국립박물관 ↗ · 시카고 미술관 ↗
+//   가쓰시카 호쿠사이(1760–1849) · 1830–33년 · 에도 시대 · 가로로 긴 오반 크기 니시키에
+//   소장처  도쿄 국립박물관 ↗ · 시카고 미술관 ↗
 //   그림 속 장소  도쿄만 · 후지산
 //   찾아볼 것  ① … ② … ③ …
 //   ▸ 작가 소개
-//   출처: <credit> · <license> · 원문 ↗        ← 본문 바로 위 한 줄(유튜브·PDF·아오조라와 같은 viewer-attribution 문법)
+//   출처: <credit> · <license> · 출처 페이지 ↗   ← 본문 바로 위 한 줄(유튜브·PDF·아오조라와 같은 viewer-attribution 문법)
+//
+// 날짜는 artInfoCard의 date.display — 일본어 원문 표기는 그대로, 출처의 영어 약식 표기(「c. 1830/33」)는 한국어 연도로.
 //
 // 값은 useArtBookChapter(카탈로그 해시 대조를 통과한 장)에서만 온다 — 자료 metadata를 직접 읽지 않는다(가짜 크레딧 차단).
 // 화면 문구는 vt(뷰어 화면 언어, viewerMessages.js)로, 작품·장소 이름과 해설 크레딧은 학습 내용이라 그대로 둔다.
@@ -17,13 +19,16 @@ import Link from 'next/link';
 import './art-card.css';
 
 const CIRCLED = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'];
-/** 가나·한자가 섞인 원문 표기(「江戸時代・安政4年(1857)」)는 일본어로 읽힌다 — 「c. 1830/33」 같은 출처 표기는 그대로. */
+/** 가나·한자가 섞인 원문 표기(「江戸時代・安政4年(1857)」)는 일본어로 읽힌다 — 한국어 연도(「1830–33년경」)에는 lang을 붙이지 않는다. */
 const JAPANESE = /[\u3040-\u30ff\u3400-\u9fff]/;
 /** 미술관 캡션(라틴 문자만)이면 영어로 읽힌다 — 한글·한자가 섞이면 lang을 붙이지 않는다. */
 const LATIN_ONLY = /^[\u0020-\u024f\u1e00-\u1eff\u2010-\u201f]+$/;
 const httpsUrl = (value) => (typeof value === 'string' && value.startsWith('https://') ? value : '');
 const placeName = (place) => place?.name?.ko || place?.name?.native || '';
 const studiesMapHref = (pin) => `/studies/japan/map?pin=${encodeURIComponent(pin)}`;
+/** 원본 크기(카탈로그 image.width·height) — 있으면 판형 비율로 자리를 미리 잡는다(세로 판화가 작아지지 않게). */
+const imageSize = (image) => (Number.isInteger(image?.width) && image.width > 0 && Number.isInteger(image?.height) && image.height > 0
+  ? { width: image.width, height: image.height } : null);
 
 /**
  * @param {object} p
@@ -36,10 +41,11 @@ export default function ViewerArtCard({ chapter, vt }) {
   if (!card) return null;
   const imageUrl = httpsUrl(card.image?.url);
   const image = imageUrl && failedImage !== imageUrl ? card.image : null;
+  const size = imageSize(image);
   const artist = card.artist;
   const meta = [
     artist?.name?.ko && <Fragment key="artist">{artist.name.ko}{artist.years && `(${artist.years})`}</Fragment>,
-    card.date?.text && <span key="date" lang={JAPANESE.test(card.date.text) ? 'ja' : undefined}>{card.date.text}</span>,
+    card.date?.display && <span key="date" lang={JAPANESE.test(card.date.display) ? 'ja' : undefined}>{card.date.display}</span>,
     ...(card.date?.periods ?? []).map((period) => period?.ko && <Fragment key={`period:${period.ko}`}>{period.ko}</Fragment>),
     card.medium?.ko && <Fragment key="medium">{card.medium.ko}</Fragment>,
   ].filter(Boolean);
@@ -56,9 +62,11 @@ export default function ViewerArtCard({ chapter, vt }) {
       <section className="viewer-art-card" aria-label={vt('작품 정보')}>
         {image && (
           <figure className="viewer-art-card__figure">
-            {/* 미술관 IIIF 원본을 그대로 — next/image 최적화 경유 없이(원격 도메인 설정·변환 없이 원본 크기 843px 한 장). */}
+            {/* 미술관 IIIF 이미지를 그대로 — next/image 최적화 경유 없이(원격 도메인 설정·변환 없이 한 장).
+                width·height 속성은 비율만 알린다(CSS가 크기를 정한다) — 크기 정보가 없으면 고정 상자(--box)로. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="viewer-art-card__img" src={imageUrl} alt={image.alt} loading="lazy" decoding="async"
+            <img className={`viewer-art-card__img${size ? '' : ' viewer-art-card__img--box'}`} src={imageUrl} alt={image.alt}
+              width={size?.width} height={size?.height} loading="lazy" decoding="async"
               onError={() => setFailedImage(imageUrl)} />
             {image.credit && <figcaption className="viewer-art-card__caption" lang={LATIN_ONLY.test(image.credit) ? 'en' : undefined}>{image.credit}</figcaption>}
           </figure>
@@ -75,7 +83,7 @@ export default function ViewerArtCard({ chapter, vt }) {
         <dl className="viewer-art-card__facts">
           {holdings.length > 0 && (
             <div className="viewer-art-card__fact">
-              <dt>{vt('소장')}</dt>
+              <dt>{vt('소장처')}</dt>
               <dd>
                 {holdings.map((place, index) => (
                   <Fragment key={place.id}>
@@ -98,7 +106,7 @@ export default function ViewerArtCard({ chapter, vt }) {
                     {index > 0 && ' · '}
                     {place.links?.studiesPin
                       ? <Link href={studiesMapHref(place.links.studiesPin)} prefetch={false}
-                          aria-label={vt('{name} 지역학 지도에서 보기', { name: placeName(place) })}>{placeName(place)}</Link>
+                          aria-label={vt('지역학 지도에서 {name} 근처 보기', { name: placeName(place) })}>{placeName(place)}</Link>
                       : placeName(place)}
                   </Fragment>
                 ))}
@@ -109,7 +117,7 @@ export default function ViewerArtCard({ chapter, vt }) {
             <div className="viewer-art-card__fact">
               <dt>{vt('찾아볼 것')}</dt>
               <dd>
-                <ol className="viewer-art-card__look">
+                <ol className="viewer-art-card__look" role="list">
                   {lookFor.map((item, index) => (
                     <li key={index}><span aria-hidden="true" className="viewer-art-card__num">{CIRCLED[index] ?? `${index + 1}.`}</span> {item}</li>
                   ))}
@@ -126,9 +134,9 @@ export default function ViewerArtCard({ chapter, vt }) {
         )}
       </section>
       {credit?.credit && (
-        <p className="viewer-attribution viewer-art-credit">{credit.credit}
+        <p className="viewer-attribution viewer-art-credit">{vt('출처:')} {credit.credit}
           {credit.license && <> · <span className="viewer-attribution__license">{credit.license}</span></>}
-          {sourceUrl && <> · <a href={sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={vt('원문 보기(새 창)')}>{vt('원문')}<span aria-hidden="true"> ↗</span></a></>}
+          {sourceUrl && <> · <a href={sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={vt('출처 페이지 열기(새 창)')}>{vt('출처 페이지')}<span aria-hidden="true"> ↗</span></a></>}
         </p>
       )}
     </>

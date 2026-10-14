@@ -99,6 +99,7 @@ describe('정본 원문 수정 차단', () => {
     const manage = sliceBetween(viewer, 'className="reader-manage"', "reanalyzePanel === 'confirm-full'");
     expect(manage).toContain('!canonicalLiteratureLocked && <button className="reanalyze-panel__item" onClick={() => { setReanalyzePanel(null); setSourceEditOpen(true); }}>');
     expect(manage).toContain('{canonicalLiteratureLocked && <p className="reader-metadata">{vt("정본 책이라 원문은 고칠 수 없어요")}');
-    expect(viewer).toContain('if (composerOf(material) || canonicalLiteratureLocked) return;');
+    // 같은 줄에 다른 정본 잠금(큐레이션 책 artBookLocked, ART-P0-3)이 뒤에 붙어도 된다 — 문학 잠금 조건이 빠지면 안 된다.
+    expect(viewer).toMatch(/if \(composerOf\(material\) \|\| canonicalLiteratureLocked(?: \|\| \w+Locked)*\) return;/);
   });
 });

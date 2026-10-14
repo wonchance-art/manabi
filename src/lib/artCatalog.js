@@ -5,9 +5,10 @@
 // fail-closed로 검사하고, 작품 화면의 정보 카드에 쓸 값을 계산한다.
 //
 // 대표 사이트 대조(설계 §15–§16)에서 온 규칙:
-//   · 「소장 ≠ 전시 중」 — 전시 여부는 수시로 바뀌는 값이라 **저장하지 않는다**(onView 류 키 금지). 카드는 늘 「소장」.
+//   · 「소장 ≠ 전시 중」 — 전시 여부는 수시로 바뀌는 값이라 **저장하지 않는다**(onView 류 키 금지). 카드는 늘 「소장처」.
 //   · 같은 판화가 여러 곳에 있다 — 작품 1 : 소장처 N. 장소 역할은 소장(holding)·그림 속 장소(depicted)·제작지(made) 셋.
-//   · 날짜는 출처마다 다르게 적는다 — 원문 표기(text)를 그대로 보이고, 정렬·묶음은 연도 범위로만.
+//   · 날짜는 출처마다 다르게 적는다 — 일본어 원문 표기(text)는 그대로 보이고, 영어 약식 표기는 연도 범위로 한국어를 만든다
+//     (artDateDisplay). 정렬·묶음은 연도 범위로만.
 //   · 해설 본문은 재사용이 허용된 라이선스만, 원문 해시로 묶는다(아오조라 textSha256 선례 — 손으로 고친 해설을 막는다).
 //   · 이미지는 퍼블릭 도메인/CC0만. 그 밖은 그림 없이 해설만(IP 하드리밋 ⑴과 별개로 저작권 보호).
 
@@ -233,9 +234,31 @@ function yearSpan(from, to) {
   return from === to ? String(from) : `${from}–${to}`;
 }
 
+/** 가나·한자가 섞인 원문 표기(「江戸時代・安政4年(1857)」) — 일본어로 그대로 보인다. */
+const JAPANESE_TEXT = /[\u3040-\u30ff\u3400-\u9fff]/;
+const yearKo = (year) => (year < 0 ? `기원전 ${-year}` : String(year));
+
+/**
+ * 화면용 날짜 한 줄 — 「c. 1830/33」 같은 출처의 영어 약식 표기를 그대로 보이지 않는다.
+ * 원문 표기에 가나·한자가 있으면 그대로(일본어), 아니면 연도 범위·확실성으로 한국어:
+ *   exact 1857 → 「1857년」 · range 1830–1833 → 「1830–33년」(같은 세기면 끝 연도 앞 두 자리 생략) · circa → 「1830–33년경」 · 「1830년경」.
+ */
+export function artDateDisplay(date) {
+  const text = typeof date?.text === 'string' ? date.text.trim() : '';
+  if (JAPANESE_TEXT.test(text)) return text;
+  const { startYear: from, endYear: to, certainty } = date ?? {};
+  if (!isYear(from) || !isYear(to) || from > to) return text;
+  let span = yearKo(from);
+  if (to !== from) {
+    const sameCentury = from >= 1000 && Math.floor(from / 100) === Math.floor(to / 100);
+    span += `–${sameCentury ? String(to % 100).padStart(2, '0') : yearKo(to)}`;
+  }
+  return `${span}년${certainty === 'circa' ? '경' : ''}`;
+}
+
 /**
  * 작품 화면 정보 카드(설계 §12 목업) — 화면에 그릴 값만. 없는 작품이면 null.
- * 소장처 라벨은 늘 「소장」이다(전시 여부는 원문 링크에서 — 저장하지 않으므로 말할 수도 없다).
+ * 소장처 라벨은 늘 「소장처」다 — 「전시 중」이라고 말하지 않는다(전시 여부는 원문 링크에서 — 저장하지 않으므로 말할 수도 없다).
  */
 export function artInfoCard(catalog, workId) {
   const work = catalog?.works?.find((item) => item.id === workId);
@@ -258,9 +281,15 @@ export function artInfoCard(catalog, workId) {
       years: yearSpan(artist.born, artist.died),
       life: artist.life,
     },
-    date: { text: work.date.text, periods: (work.periods ?? []).map((id) => periodById.get(id)?.label).filter(Boolean) },
+    date: {
+      text: work.date.text,
+      display: artDateDisplay(work.date),
+      // 원문 표기에 이미 시대 이름이 있으면(「江戸時代・安政4年(1857)」) 시대를 한 번 더 적지 않는다.
+      periods: (work.periods ?? []).map((id) => periodById.get(id)?.label)
+        .filter((label) => label && !(isText(label.native) && work.date.text.includes(label.native))),
+    },
     medium: work.medium,
-    holdings: placesFor('holding').map((place) => ({ ...place, label: '소장' })),
+    holdings: placesFor('holding').map((place) => ({ ...place, label: '소장처' })),
     depicted: placesFor('depicted'),
     made: placesFor('made'),
     terms: work.terms,
