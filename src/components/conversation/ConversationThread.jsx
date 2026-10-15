@@ -8,7 +8,9 @@
 //   피드백 창과 내 말풍선에는 토큰이 없고, 정답 줄(「이렇게 말해요」)은 토큰이다.
 // - 번역은 받아 둔 번역(metadata.translations)이라 호출 0. 처음엔 닫혀 있다.
 // - 말풍선은 분석이 붙은 완성본을 한 번만 그린다(기다리는 동안은 「입력 중」 점, 입력 칸은 열려 있다).
-import { useEffect, useId, useRef, useState } from 'react';
+// - 채팅앱 껍데기(CONV-CHAT-001 ②, notes/conversation-chat-shell.md): 뷰어 상단바·제목·쪽 넘김 없이 화면 전체 높이.
+//   머리 한 줄 · 혼자 스크롤하는 대화 목록 · 맨 아래 입력창. 키보드가 열리면 visualViewport 높이에 맞춰 입력창이 키보드 위에 붙는다.
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import {
   conversationItems, openRetryOf, missingConversationLines, CONVERSATION_ERRORS, CONVERSATION_MAX_TURNS, CONVERSATION_ANALYZED_LANGUAGES, countMyTurns,
 } from '../../lib/conversation/turnModel';
@@ -28,12 +30,23 @@ export function isConversationRequestCurrent(requestRef, requestId, materialRef,
   return requestRef.current === requestId && materialRef.current === materialId;
 }
 
-// Enter = 전송, Shift+Enter = 줄바꿈. IME 후보 확정 Enter는 조합 중이므로 보내지 않는다(#1381).
-export function handleConversationKeyDown(e, send) {
-  if (e.key !== 'Enter' || e.shiftKey || isImeComposing(e)) return;
+/** 터치 화면(폰·태블릿)인가 — 화면 키보드에는 Shift가 없어 Enter를 줄바꿈으로 둔다(메신저 관례). */
+export function isTouchComposer() {
+  return typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: coarse)')?.matches;
+}
+
+// PC: Enter = 전송, Shift+Enter = 줄바꿈. 터치: Enter = 줄바꿈, 전송은 ➤ 버튼.
+// IME 후보 확정 Enter는 조합 중이므로 어느 쪽이든 보내지 않는다(#1381).
+export function handleConversationKeyDown(e, send, touch = isTouchComposer()) {
+  if (touch || e.key !== 'Enter' || e.shiftKey || isImeComposing(e)) return;
   e.preventDefault();
   send();
 }
+
+// 입력창은 한 줄에서 시작해 다섯 줄까지 자라고, 그 위로는 입력창 안에서 스크롤한다.
+export const CONVERSATION_COMPOSER_MAX_LINES = 5;
+// 맨 아래에서 이만큼(px) 안이면 「맨 아래에 있다」 — 새 말을 따라 내려간다. 위를 보고 있으면 자리를 지킨다.
+export const CONVERSATION_NEAR_BOTTOM_PX = 100;
 
 /** 실패 응답 → 화면 문구. 내 말은 입력 칸에 남겨 둔다(다시 보내기). */
 export function conversationErrorView(error) {
@@ -65,6 +78,7 @@ export const CONVERSATION_FILL_DELAYS = Object.freeze([0, 3000, 10000, 30000]);
 export default function ConversationThread({
   material, conversation, tokensByLine, renderToken, language, speak, ttsSupported,
   onTurnResult, onReload, onNewConversation, onFilled, onDelete, outputWords = [],
+  backLink = null, menuExtras = [],
 }) {
   const materialId = material?.id;
   const rawLines = (material?.raw_text || '').split('\n');
@@ -92,11 +106,17 @@ export default function ConversationThread({
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [shadow, setShadow] = useState(null); // { index, heard, listening } — [따라 말해 보기](채점 없음)
   const [fillTick, setFillTick] = useState(0);
+  const [openFb, setOpenFb] = useState(() => new Set());
+  const [jump, setJump] = useState(false); // 위를 보는 동안 새 말이 왔다 → 「새 메시지 ↓」
   const fillAttemptsRef = useRef(new Map());
   const requestRef = useRef(0);
   const materialRef = useRef(materialId);
   const recognitionRef = useRef(null);
-  const endRef = useRef(null);
+  const shellRef = useRef(null);
+  const logRef = useRef(null);
+  const inputRef = useRef(null);
+  const nearBottomRef = useRef(true);
+  const sentRef = useRef(false);
   materialRef.current = materialId;
 
   useEffect(() => {
@@ -113,9 +133,67 @@ export default function ConversationThread({
   }, [materialId]);
 
   const turnCount = conversation.turnCount || 0;
+  const toBottom = (smooth) => {
+    const log = logRef.current;
+    if (!log) return;
+    log.scrollTo?.({ top: log.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+    nearBottomRef.current = true;
+    setJump(false);
+  };
+  const onLogScroll = () => {
+    const log = logRef.current;
+    if (!log) return;
+    nearBottomRef.current = log.scrollHeight - log.scrollTop - log.clientHeight < CONVERSATION_NEAR_BOTTOM_PX;
+    if (nearBottomRef.current) setJump(false);
+  };
+  // 처음 열면 마지막 말에서 시작한다(채팅앱).
+  useLayoutEffect(() => { toBottom(false); }, [materialId]);
+  // 새 말: 내가 보냈으면 항상 맨 아래로, 맨 아래 근처였으면 따라가고, 위를 보고 있었으면 자리를 지키고 알린다.
   useEffect(() => {
-    endRef.current?.scrollIntoView?.({ block: 'end', behavior: 'smooth' });
-  }, [turnCount, loading]);
+    if (sentRef.current || nearBottomRef.current) toBottom(true);
+    else setJump(true);
+    sentRef.current = false;
+  }, [turnCount, loading, pending]);
+
+  // 키보드 — Android는 interactive-widget=resizes-content로 화면이 줄고, iOS는 visualViewport 높이에 맞춘다.
+  // viewport 메타는 이 화면에서만 바꾸고 나가면 되돌린다(다른 화면 영향 0).
+  useEffect(() => {
+    const meta = typeof document !== 'undefined' ? document.querySelector('meta[name="viewport"]') : null;
+    const before = meta?.getAttribute('content');
+    if (meta && before != null && !/interactive-widget/.test(before)) {
+      meta.setAttribute('content', `${before}, interactive-widget=resizes-content, viewport-fit=cover`);
+    }
+    const vv = typeof window !== 'undefined' ? window.visualViewport : null;
+    const shell = shellRef.current;
+    if (!vv || !shell) return () => { if (meta && before != null) meta.setAttribute('content', before); };
+    const fit = () => {
+      const stick = nearBottomRef.current;
+      shell.style.setProperty('--conv-vh', `${Math.round(vv.height)}px`);
+      // iOS는 키보드가 열려도 레이아웃을 줄이지 않고 화면을 밀어 올린다 — 밀린 만큼 껍데기를 따라 내린다.
+      shell.style.setProperty('--conv-top', `${Math.max(0, Math.round(vv.offsetTop))}px`);
+      if (stick) requestAnimationFrame(() => toBottom(false));
+    };
+    fit();
+    vv.addEventListener('resize', fit);
+    vv.addEventListener('scroll', fit);
+    return () => {
+      vv.removeEventListener('resize', fit);
+      vv.removeEventListener('scroll', fit);
+      if (meta && before != null) meta.setAttribute('content', before);
+    };
+  }, []);
+
+  // 입력창 자동 높이(최대 다섯 줄).
+  useLayoutEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    const cs = getComputedStyle(el);
+    const px = (k) => parseFloat(cs[k]) || 0;
+    const border = px('borderTopWidth') + px('borderBottomWidth');
+    const max = (px('lineHeight') || 24) * CONVERSATION_COMPOSER_MAX_LINES + px('paddingTop') + px('paddingBottom') + border;
+    el.style.height = `${Math.min(el.scrollHeight + border, max)}px`;
+  }, [input]);
 
   // 못 한 줄 자동 채우기 — 소유자 화면에서만(onFilled가 있을 때), 턴을 기다리는 동안은 쉬었다가 이어 한다.
   const missingKey = onFilled && CONVERSATION_ANALYZED_LANGUAGES.includes(language)
@@ -147,7 +225,7 @@ export default function ConversationThread({
     const requestId = ++requestRef.current;
     const requestMaterialId = materialId;
     const mode = retryText != null ? pending?.inputMode || 'text' : inputMode;
-    if (!action) { setPending({ text, inputMode: mode }); setInput(''); setInputMode('text'); }
+    if (!action) { sentRef.current = true; setPending({ text, inputMode: mode }); setInput(''); setInputMode('text'); }
     setLoading(true); setError(null);
     try {
       const body = await postConversationTurn({
@@ -226,11 +304,13 @@ export default function ConversationThread({
     return analyzed ? ids.map((id) => renderToken(id)) : <span className="word-token--raw">{rawLines[line]}</span>;
   };
 
-  const toggleTx = (index) => setOpenTx((prev) => {
+  const toggleIn = (setter) => (index) => setter((prev) => {
     const next = new Set(prev);
     if (next.has(index)) next.delete(index); else next.add(index);
     return next;
   });
+  const toggleTx = toggleIn(setOpenTx);
+  const toggleFb = toggleIn(setOpenFb);
 
   async function askDelete() {
     setMenuOpen(false);
@@ -257,28 +337,40 @@ export default function ConversationThread({
   const placeholder = open ? '다시 말해 보세요' : `${langKo}로 답해 보세요`;
   const blocked = error?.blocked || full;
 
+  const canSend = !!input.trim();
+  const showMic = sttSupported && (!canSend || listening);
+  const fbLabel = (item, open) => {
+    const { turn } = item;
+    const what = Number.isInteger(item.answerLine) || turn.focus ? '고칠 점' : '피드백';
+    return `${what} ${open ? '접기 ▾' : '보기 ▸'}`;
+  };
+
   return (
-    <div className="conv">
+    <div className="conv" ref={shellRef}>
       <div className="conv__head">
-        <p className="conv__meta">{[conversation.topic, langKo, conversation.level, '대화'].filter(Boolean).join(' · ')}</p>
+        {backLink}
+        <p className="conv__meta">{[conversation.topic, langKo, conversation.level].filter(Boolean).join(' · ')}</p>
         <div className="conv-menu">
-          <button type="button" className="conv__icon" aria-label="대화 메뉴" aria-haspopup="menu" aria-expanded={menuOpen}
+          <button type="button" className="conv__icon conv__icon--bare" aria-label="대화 메뉴" aria-haspopup="menu" aria-expanded={menuOpen}
             onClick={() => setMenuOpen((v) => !v)}>⋯</button>
           {menuOpen && (
             <div className="conv-menu__list" role="menu" onKeyDown={(e) => { if (e.key === 'Escape') setMenuOpen(false); }}>
-              <Link role="menuitem" className="conv-menu__item"
-                href={newConversationHref({ language, level: conversation.level, topic: conversation.topic })}>주제·수준 바꾸기</Link>
+              <button type="button" role="menuitem" className="conv-menu__item" onClick={() => { setMenuOpen(false); setSummaryOpen(true); }}>마치기</button>
               {onNewConversation && (
                 <button type="button" role="menuitem" className="conv-menu__item" onClick={() => { setMenuOpen(false); onNewConversation(); }}>새 대화</button>
               )}
-              <button type="button" role="menuitem" className="conv-menu__item" onClick={() => { setMenuOpen(false); setSummaryOpen(true); }}>마치기</button>
+              <Link role="menuitem" className="conv-menu__item"
+                href={newConversationHref({ language, level: conversation.level, topic: conversation.topic })}>주제·수준 바꾸기</Link>
+              {menuExtras.map((extra) => (
+                <button key={extra.label} type="button" role="menuitem" className="conv-menu__item" onClick={() => { setMenuOpen(false); extra.onSelect(); }}>{extra.label}</button>
+              ))}
               {onDelete && <button type="button" role="menuitem" className="conv-menu__item" onClick={askDelete}>지우기</button>}
             </div>
           )}
         </div>
       </div>
       <OutputWordChips words={outputWords} usedSet={usedWordSet} />
-      <div className="conv__log" role="log" aria-live="polite" aria-relevant="additions" id={listId}>
+      <div className="conv__log" role="log" aria-live="polite" aria-relevant="additions" id={listId} ref={logRef} onScroll={onLogScroll}>
         {items.map((item) => {
           if (item.kind === 'tutor') {
             const lines = item.turn.lines || [];
@@ -295,27 +387,37 @@ export default function ConversationThread({
                     </span>
                   ))}
                 </div>
-                <div className="conv-bubble__actions">
-                  {ttsSupported && (
-                    <button type="button" className="conv-chip" onClick={() => speak(sentence, language)} aria-label="튜터 말 듣기">🔊 듣기</button>
-                  )}
-                  {ko.length > 0 && (
-                    <button type="button" className="conv-chip" aria-expanded={txOpen} onClick={() => toggleTx(item.index)}>번역</button>
-                  )}
-                </div>
-                {txOpen && <p className="conv-bubble__tx">{ko.join(' ')}</p>}
+                {(ttsSupported || ko.length > 0) && (
+                  <div className="conv-bubble__actions">
+                    {ttsSupported && (
+                      <button type="button" className="conv-act" onClick={() => speak(sentence, language)} aria-label="튜터 말 듣기" title="듣기">🔊</button>
+                    )}
+                    {ko.length > 0 && (
+                      <button type="button" className="conv-act" aria-expanded={txOpen} onClick={() => toggleTx(item.index)} aria-label="번역" title="번역">文</button>
+                    )}
+                  </div>
+                )}
+                {txOpen && <p className="conv-bubble__tx" lang="ko">{ko.join(' ')}</p>}
               </div>
             );
           }
           const { turn } = item;
           const fbId = `${listId}-fb-${item.index}`;
           const hasFeedback = turn.feedback || item.fixed || Number.isInteger(item.answerLine) || item.openRetry;
+          // 다시 말하기가 열려 있으면(힌트·답 보기) 펼쳐 둔다 — 학습자가 할 일이 있다. 그 밖의 피드백은 한 줄로 접는다.
+          const onlyFixed = item.fixed && !Number.isInteger(item.answerLine);
+          const fbOpen = item.openRetry || onlyFixed || openFb.has(item.index);
           return (
             <div key={item.index} className="conv__row conv__row--me">
-              <div className="conv-bubble conv-bubble--me" lang={bcp47ForLanguage(language)} aria-describedby={hasFeedback ? fbId : undefined}>
+              <div className="conv-bubble conv-bubble--me" lang={bcp47ForLanguage(language)} aria-describedby={hasFeedback && fbOpen ? fbId : undefined}>
                 <MyText text={turn.text} focus={turn.focus} />
               </div>
-              {hasFeedback && (
+              {hasFeedback && !item.openRetry && !onlyFixed && (
+                <button type="button" className="conv-fb-toggle" aria-expanded={fbOpen} aria-controls={fbId} onClick={() => toggleFb(item.index)}>
+                  {fbLabel(item, fbOpen)}
+                </button>
+              )}
+              {hasFeedback && fbOpen && (
                 <div className="conv-feedback" id={fbId} lang="ko">
                   {item.fixed && <p className="conv-feedback__ok">✓ 스스로 고쳤어요</p>}
                   {turn.feedback && !item.fixed && <p>{turn.feedback}</p>}
@@ -331,7 +433,7 @@ export default function ConversationThread({
                       <div className="conv-answer" lang={bcp47ForLanguage(language)}>{lineView(item.answerLine)}</div>
                       <div className="conv-bubble__actions">
                         {ttsSupported && (
-                          <button type="button" className="conv-chip" onClick={() => speak(rawLines[item.answerLine], language)} aria-label="정답 문장 듣기">🔊 듣기</button>
+                          <button type="button" className="conv-act" onClick={() => speak(rawLines[item.answerLine], language)} aria-label="정답 문장 듣기" title="듣기">🔊</button>
                         )}
                         {sttSupported && (
                           <button type="button" className="conv-chip" disabled={shadow?.listening} onClick={() => startShadow(item.index)}>
@@ -351,7 +453,12 @@ export default function ConversationThread({
         })}
         {pending && (
           <div className="conv__row conv__row--me">
-            <div className="conv-bubble conv-bubble--me conv-bubble--pending">{pending.text}</div>
+            <div className="conv-bubble__send">
+              {error?.retry && (
+                <button type="button" className="conv-retry" disabled={loading} onClick={() => send({ retryText: pending.text })} aria-label="다시 보내기" title="다시 보내기">!</button>
+              )}
+              <div className={`conv-bubble conv-bubble--me conv-bubble--pending${error?.retry ? ' conv-bubble--failed' : ''}`}>{pending.text}</div>
+            </div>
           </div>
         )}
         {loading && (
@@ -377,8 +484,10 @@ export default function ConversationThread({
           <ConversationSummary materialId={materialId} conversation={conversation} language={language}
             outputWords={outputWords} onClose={() => setSummaryOpen(false)} />
         )}
-        <div ref={endRef} />
       </div>
+      {jump && (
+        <button type="button" className="conv__jump" onClick={() => toBottom(true)}>새 메시지 ↓</button>
+      )}
       <ConfirmModal
         open={!!confirm}
         title="이 대화를 휴지통으로 옮길까요?"
@@ -391,23 +500,26 @@ export default function ConversationThread({
       />
       <div className="conv__input">
         <textarea
+          ref={inputRef}
           className="conv__textarea"
           value={input}
           onChange={(e) => { setInput(e.target.value); if (!e.target.value) setInputMode('text'); }}
           onKeyDown={(e) => handleConversationKeyDown(e, () => send())}
           placeholder={listening ? '듣는 중…' : placeholder}
           aria-label={placeholder}
-          rows={2}
+          rows={1}
+          enterKeyHint="enter"
           disabled={blocked}
         />
-        {sttSupported && (
-          <button type="button" className="conv__icon" onClick={listening ? stopListening : startListening}
+        {showMic ? (
+          <button type="button" className="conv__icon conv__icon--bare" onClick={listening ? stopListening : startListening}
             aria-label={listening ? '음성 입력 중지' : '음성 입력'} disabled={blocked}>
             {listening ? '⏹' : '🎤'}
           </button>
+        ) : (
+          <button type="button" className="conv__icon conv__icon--send" onClick={() => send()} aria-label="보내기"
+            disabled={blocked || loading || !canSend}>➤</button>
         )}
-        <button type="button" className="conv__icon conv__icon--send" onClick={() => send()} aria-label="보내기"
-          disabled={blocked || loading || !input.trim()}>➤</button>
       </div>
     </div>
   );

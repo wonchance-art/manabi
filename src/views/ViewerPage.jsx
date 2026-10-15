@@ -823,7 +823,8 @@ export default function ViewerPage() {
   const [pagesEl,setPagesEl] = useState(null);
   const pageBarRef = useRef(null), pagedGuard = useRef({}), pagedInitialAnchor = useRef(null);
   const readerView = settings.readerView === 'scroll' ? 'scroll' : 'paged';
-  const pagedActive = readerView === 'paged' && !classStudyActive;
+  // 대화(CONV-CHAT-001 ②)는 채팅앱처럼 이어 스크롤한다 — 쪽으로 나누지 않는다.
+  const pagedActive = readerView === 'paged' && !classStudyActive && !conversation;
   // 자동 진행은 세로 흐름(휠·터치 감지·문장 스크롤)에 맞춘 기능이라 쪽 넘김 보기에서는 끈다(설계 §4 P0) — 스크롤 보기는 그대로.
   const autoPaceOn = autoPace && !pagedActive;
   const pager = usePagedReader({
@@ -3647,6 +3648,7 @@ export default function ViewerPage() {
       data-pron-spacing={materialLang==='Chinese'&&pronDisplay!=='none'?'reserved':'natural'}
       data-left-active={!!(leftPanelLoading || leftPanelResult)}
       data-reader-view={pagedActive?'paged':'scroll'}
+      data-chat={conversation?'true':undefined}
       data-right-active={!!(dragTokens !== null || (selectedToken && isSheetOpen))}>
 
       {/* 중앙 — 뷰어 본문 */}
@@ -3666,7 +3668,7 @@ export default function ViewerPage() {
             남고, 끝의 행동(읽기 완료·오늘 학습·다음 범위)은 본문 **아래**로 갔다(「끝은 끝에」). 예전 액션바는
             폰에서 두 줄(89px)로 꺾였고, 그 위에 뒤로가기 줄·시리즈 내비 줄이 따로 있었다. */}
         <div ref={classToolbarTarget} className="class-workspace-topbar" hidden={!classStudyActive}/>
-        <div className="viewer-topbar">
+        {!conversation&&<div className="viewer-topbar">
           {classStudyActive&&originalParams.get('returnTo')?.includes('view=history')&&<LibraryReturnLink className="viewer-back-link">{vt("← 수업 기록")}</LibraryReturnLink>}
           {!classStudyActive&&(material?.__local
             ? <Link href={`/class/${material.__team}`} className="viewer-back-link">{vt("← 팀 페이지")}</Link>
@@ -3703,7 +3705,7 @@ export default function ViewerPage() {
               <ActionIcon name="book"/><span>{vt("학습")}</span>
             </button>
           </div>
-        </div>
+        </div>}
       {/* 쪽 넘김 보기(READER-PAGED-001)의 흐름 — 상단 막대 아래 전부(제목·본문·「다 읽었다면」·다음 편·토론)가 쪽으로
           나뉜다. 스크롤 보기(data-reader-pages="scroll")에서는 아무 규칙도 없는 평범한 블록이다(지금 그대로). */}
       <div className="reader-pages-frame">
@@ -3714,7 +3716,8 @@ export default function ViewerPage() {
         else {tokenRange.restoreRange(target.first,target.last);setRestoredClassSource({materialId:String(material.id),quote:source.quote,anchor:classAnchorAt(textbookStream(json).text,target.start,target.end,source.quote)});setLeftPanelText(source.quote);const from=json.sequence.indexOf(target.first),to=json.sequence.indexOf(target.last);setDragTokens(json.sequence.slice(from,to+1).filter(tid=>json.dictionary[tid]?.pos!=='개행').map(tid=>({...json.dictionary[tid],id:tid})));setRightSheetSignal(v=>v+1);}
       }}/>
       <ClassCopyNotice key={String(id)} material={material} user={user} returnTo={originalParams.get('returnTo')}/>
-      <header className="page-header viewer-header">
+      {/* 대화는 채팅 머리 한 줄이 제목·메뉴를 맡는다(ConversationThread) — 읽기 머리·통계는 그리지 않는다. */}
+      {!conversation&&<header className="page-header viewer-header">
         <p className="reader-metadata reader-edition">{vt(languageInfo?.labelKo || langNameKo(materialLang))}{material?.processed_json?.metadata?.level ? ` · ${material.processed_json.metadata.level}` : ''} · {vt(material.visibility === 'public' ? '공개 읽기' : '내 자료')}</p>
         {composerOf(material) && <p className="reader-metadata">{passageOf(material)?`${passageLocation(passageOf(material))}에서 고른 학습 구간이에요. 원본은 위의 링크에서 열 수 있어요.`:'학습에 사용한 본문이에요. 현재 글은 위의 링크에서 열 수 있어요.'}</p>}
         {titleEditing && user?.id === material?.owner_id && !composerOf(material) ? (
@@ -3786,7 +3789,7 @@ export default function ViewerPage() {
             <button type="button" className="viewer-sense-review-line__close" aria-label={vt('뜻 확인 필요 알림 닫기')} title={vt('뜻 확인 필요 알림 닫기')} onClick={dismissSenseReview} data-icon-action><ActionIcon name="close"/></button>
           </p>
         )}
-      </header>
+      </header>}
       {!originalParams.get('sourceEntry')&&!originalParams.get('sourceQuote')&&<ReadingSourceFocus rawText={material?.raw_text} materialId={id} ready={!!material?.processed_json?.sequence?.length} json={material?.processed_json} onTarget={setSourceFocusId} />}
       {positionError && <div className="error-banner" role="status">{vt("읽기 위치를 저장하지 못했어요.")}<button type="button" className="btn btn--ghost" onClick={retryPosition}>{vt("다시 저장")}</button></div>}
 
@@ -3917,7 +3920,8 @@ export default function ViewerPage() {
         ref={readerRef}
         className={`reader-area reader-area--${theme}${focusMode && (pickedLineIdx !== null || tokenRange.range) ? ' reader-area--focus' : ''}${wordStateHl ? ' reader-area--hl' : ''}${paceDwell ? ' reader-area--pacing' : ''}${paceDwell && paceHeld ? ' reader-area--pacing-hold' : ''}`}
         style={{
-          fontSize: `${fontSize*(classStudyActive&&classBoardLayout==='split'?.8:1)}rem`,
+          // 대화 말풍선은 메신저 글자 크기 — 읽기 설정이 더 작으면 그 값을 따른다.
+          fontSize: conversation ? `min(${fontSize}rem, 1.0625rem)` : `${fontSize*(classStudyActive&&classBoardLayout==='split'?.8:1)}rem`,
           fontFamily: readerFontFamily(materialLang,fontFamily),
           gap: `max(${lineGap}px, var(--hl-row-gap-min, 0px)) ${zhGrid ? 0 : charGap}rem`, '--char-gap': `${charGap}rem`,
           // 체류 표시는 CSS 애니메이션이 시간을 잰다 — JS 프레임 루프 0(설계 §7①).
@@ -3931,7 +3935,8 @@ export default function ViewerPage() {
         <svg ref={sepArcRef} className="sep-arc" aria-hidden="true" />
         {/* 쪽 넘김 보기의 글자 크기 탐침(1em) — rem·글자 크기가 바뀌면 쪽을 다시 나눈다(usePagedReader). */}
         <span className="reader-page-probe" data-page-probe aria-hidden="true" />
-        {isAnalyzing && !needsRecovery && (
+        {/* 대화는 못 한 줄을 화면이 알아서 채운다(CONV-CHAT-001 ①) — 분석 배너·「이어서 분석」을 띄우지 않는다. */}
+        {isAnalyzing && !needsRecovery && !conversation && (
           <div className="analyzing-banner">
             <span>{vt(reanalyze.committing ? '검증한 분석을 저장하고 있어요…' : reanalyzeMutation.isPending ? '새 분석을 준비하고 있어요. 기존 자료는 그대로 있어요.' : '문단 단위로 분석하고 있어요…')}</span>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -3943,7 +3948,7 @@ export default function ViewerPage() {
           </div>
         )}
 
-        {needsRecovery && user?.id === material?.owner_id && (
+        {needsRecovery && user?.id === material?.owner_id && !conversation && (
           <div className="analyzing-banner" style={{ background: 'color-mix(in srgb, var(--warning-bright) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--warning-bright) 40%, transparent)' }}>
             <span role="status" aria-live="polite">{reanalyze.committing
               ? '검증한 분석을 저장하고 있어요…'
@@ -4136,6 +4141,11 @@ export default function ViewerPage() {
                 onDelete={user?.id === material?.owner_id ? deleteConversation : null}
                 onFilled={user?.id === material?.owner_id ? handleConversationFill : null}
                 outputWords={outputWords}
+                backLink={<LibraryReturnLink aria-label={vt(readerReturnLabel(originalParams.get('returnTo')))} title={vt(readerReturnLabel(originalParams.get('returnTo')))} data-icon-action><ActionIcon name="back"/></LibraryReturnLink>}
+                menuExtras={[
+                  { label: vt('읽기 설정'), onSelect: () => setSettingsOpen(true) },
+                  { label: vt('학습'), onSelect: () => changeModal('activities', true) },
+                ]}
               />
             );
           }
@@ -4254,7 +4264,7 @@ export default function ViewerPage() {
         {/* 조작 안내는 첫 자료의 일(뷰어 정돈 A안) — 단어를 한 번이라도 담은 사람에겐 100번째 자료에서도
             뜨던 문장을 접는다. 게스트는 위 배너가 같은 말을 하므로 여기서는 안 한다. 데스크톱은 오른쪽 빈
             패널이 같은 안내를 상시로 하니 CSS가 감춘다(안내는 한 벌). */}
-        {isDone && user && savedCount === 0 && (
+        {isDone && user && savedCount === 0 && !conversation && (
           <div className="reader-hint">{vt("단어를")}<strong>{vt("클릭")}</strong>{vt("하면 상세 정보, 문장을")}<strong>{vt("드래그")}</strong>{vt("하면 번역+맥락")}</div>
         )}
 
@@ -4300,7 +4310,7 @@ export default function ViewerPage() {
       )}
 
 
-      {STUDY_LANGS.has(materialLang) && <MaterialChapterLinks lang={materialLang} kind="reading" materialId={id} />}
+      {STUDY_LANGS.has(materialLang) && !conversation && <MaterialChapterLinks lang={materialLang} kind="reading" materialId={id} />}
 
       {/* 다음 — 한 자리에 하나(뷰어 정돈 A안): 시리즈 다음 편 → 책 다음 과 → 마지막 과면 「다음 과 적기」(내 책만,
           이어 적기 #1077 5520128974) → PDF 다음 범위(예전엔 본문 위 카드의 버튼) → 시리즈·레벨 완주. */}

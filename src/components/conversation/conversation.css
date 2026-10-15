@@ -1,17 +1,30 @@
-/* 대화 모드 화면(v2-Z Z-R1 ③) — 뷰어 본문 자리. 색은 토큰만(docs/ui-conventions.md), 터치 영역 44px 이상. */
-.conv { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-.conv__meta { margin: 0; font-size: 0.82rem; color: var(--text-muted); }
-.conv__log { display: flex; flex-direction: column; gap: 14px; padding-bottom: 8px; }
-.conv__row { display: flex; flex-direction: column; gap: 6px; max-width: 92%; }
-.conv__row--tutor { align-self: flex-start; align-items: flex-start; }
-.conv__row--me { align-self: flex-end; align-items: flex-end; }
-.conv-bubble { padding: 10px 14px; border-radius: 16px; line-height: 1.6; word-break: break-word; }
+/* 대화 모드 화면(v2-Z Z-R1 ③ → CONV-CHAT-001 ② 채팅앱 껍데기). 색은 토큰만(docs/ui-conventions.md), 터치 영역 44px 이상.
+   화면 전체 높이 = 머리 한 줄 · 혼자 스크롤하는 목록 · 맨 아래 입력창. position:fixed가 아니라 흐름 안의 세로 줄이라
+   iOS에서 입력창이 키보드와 어긋나지 않는다. 높이는 visualViewport(--conv-vh)가 있으면 그 값, 없으면 100dvh. */
+.conv { position: relative; display: flex; flex-direction: column; width: 100%; height: 100vh; height: var(--conv-vh, 100dvh); top: var(--conv-top, 0); font-size: 1rem; line-height: 1.5; }
+.conv__head { flex: none; display: flex; align-items: center; gap: 4px; min-height: 52px; padding: 4px 4px; border-bottom: 1px solid var(--border); background: var(--bg-primary); }
+.conv__head > a { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; color: var(--text-primary); text-decoration: none; }
+.conv__meta { flex: 1; min-width: 0; margin: 0; text-align: center; font-size: 0.95rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv__log { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 10px; padding: 12px 12px 16px; }
+.conv__row { display: flex; flex-direction: column; gap: 2px; }
+.conv__row--tutor { align-self: flex-start; align-items: flex-start; max-width: 85%; }
+.conv__row--me { align-self: flex-end; align-items: flex-end; max-width: 78%; }
+.conv-bubble { padding: 8px 12px; border-radius: 18px; line-height: 1.5; word-break: break-word; }
 .conv-bubble--tutor { background: var(--bg-secondary); border: 1px solid var(--border); border-bottom-left-radius: 4px; color: var(--text-primary); }
 .conv-bubble--me { background: color-mix(in srgb, var(--primary) 14%, transparent); border-bottom-right-radius: 4px; color: var(--text-primary); white-space: pre-wrap; }
 .conv-bubble--pending { opacity: 0.7; }
+.conv-bubble--failed { opacity: 0.55; }
+.conv-bubble__send { display: flex; align-items: center; gap: 4px; }
+.conv-retry { flex: none; min-width: 44px; min-height: 44px; border: 0; border-radius: 50%; background: none; color: var(--danger); font-weight: 800; font-size: 1.1rem; cursor: pointer; }
 .conv-bubble__line { display: contents; }
-.conv-bubble__actions { display: flex; flex-wrap: wrap; gap: 6px; }
-.conv-bubble__tx { margin: 0; font-size: 0.88rem; color: var(--text-secondary); }
+/* 분석이 아직 붙지 않은 줄은 평문으로 그대로 읽힌다(흐린 읽기 화면 표시 아님) — 채워지면 조용히 단어로 바뀐다. */
+.manabi-app .viewer-layout .reader-area .conv :is(.conv-bubble, .conv-answer) .word-token--raw { opacity: 1; color: inherit; letter-spacing: normal; }
+.conv-bubble__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0; }
+.conv-act { min-width: 44px; min-height: 36px; padding: 0 10px; border: 0; border-radius: 999px; background: none; color: var(--text-muted); font-size: 0.95rem; line-height: 1; cursor: pointer; }
+.conv-act[aria-expanded="true"] { color: var(--text-primary); background: var(--bg-secondary); }
+.conv-act:hover, .conv-act:focus-visible { color: var(--text-primary); }
+@media (pointer: coarse) { .conv-act { min-height: 44px; } }
+.conv-bubble__tx { margin: 2px 4px 0; font-size: 0.9rem; color: var(--text-secondary); }
 .conv-bubble--typing { display: inline-flex; gap: 4px; padding: 14px 18px; }
 .conv-bubble--typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); animation: conv-dot 1s infinite ease-in-out; }
 .conv-bubble--typing span:nth-child(2) { animation-delay: 0.15s; }
@@ -19,22 +32,39 @@
 @keyframes conv-dot { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .conv-bubble--typing span { animation: none; opacity: 0.6; } }
 .conv-wavy { text-decoration: underline wavy var(--warning); text-underline-offset: 4px; }
+.conv-fb-toggle { min-height: 44px; padding: 0 6px; border: 0; background: none; color: var(--text-secondary); font: inherit; font-size: 0.85rem; cursor: pointer; }
+.conv-fb-toggle:hover, .conv-fb-toggle:focus-visible { color: var(--text-primary); }
 .conv-feedback { align-self: stretch; border-left: 3px solid var(--warning); padding: 6px 10px; font-size: 0.9rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 6px; }
 .conv-feedback p { margin: 0; }
 .conv-feedback__ok { color: var(--accent-text); font-weight: 600; }
 .conv-feedback__hint span { font-weight: 700; color: var(--text-primary); }
 .conv-feedback__label { font-weight: 700; color: var(--text-primary); }
 .conv-feedback__answer { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
-.conv-answer { color: var(--text-primary); line-height: 1.6; }
+.conv-answer { color: var(--text-primary); line-height: 1.5; }
 .conv-chip { min-height: 44px; min-width: 44px; padding: 0 12px; border: 1px solid var(--border); border-radius: 999px; background: none; color: var(--text-secondary); font-size: 0.85rem; cursor: pointer; }
 .conv-chip:disabled { opacity: 0.5; cursor: default; }
 .conv__notice { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--text-secondary); }
-.conv__input { position: sticky; bottom: 0; display: flex; gap: 6px; align-items: flex-end; padding: 8px 0; background: var(--bg-primary); }
-.conv__textarea { flex: 1; min-height: 44px; resize: none; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); color: var(--text-primary); font: inherit; }
+.conv__jump { position: absolute; left: 50%; bottom: calc(76px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 5; min-height: 44px; padding: 0 16px; border: 1px solid var(--border); border-radius: 999px; background: var(--bg-card); color: var(--text-primary); font: inherit; font-size: 0.88rem; box-shadow: 0 4px 14px color-mix(in srgb, var(--text-primary) 14%, transparent); cursor: pointer; }
+.conv__input { flex: none; display: flex; gap: 6px; align-items: flex-end; padding: 8px 8px max(8px, env(safe-area-inset-bottom)); border-top: 1px solid var(--border); background: var(--bg-primary); }
+.conv__textarea { flex: 1; min-height: 44px; max-height: calc(1.5em * 5 + 22px); resize: none; padding: 10px 14px; border: 1px solid var(--border); border-radius: 22px; background: var(--bg-card); color: var(--text-primary); font: inherit; font-size: 1rem; line-height: 1.5; overflow-y: auto; }
 .conv__textarea:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
-.conv__icon { min-width: 44px; min-height: 44px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); color: var(--text-primary); cursor: pointer; }
+.conv__icon { flex: none; min-width: 44px; min-height: 44px; border: 1px solid var(--border); border-radius: 50%; background: var(--bg-card); color: var(--text-primary); cursor: pointer; }
+.conv__icon--bare { border-color: transparent; background: none; font-size: 1.15rem; }
 .conv__icon--send { background: var(--primary); color: #fff; border-color: transparent; }
 .conv__icon:disabled { opacity: 0.5; cursor: default; }
+
+/* 뷰어 안에서 대화 자료를 열면(data-chat) 읽기 화면의 틀을 걷어 낸다 — 전역 메뉴·하단 탭·여백·쪽 넘김 없음.
+   개인 노트(study-notes.css)의 :has() 숨김 선례. 읽기 자료에는 data-chat이 없어 아무 영향이 없다. */
+.manabi-app:has(.viewer-layout[data-chat="true"]) > .gnb,
+.manabi-app:has(.viewer-layout[data-chat="true"]) > .mobile-nav { display: none; }
+.manabi-app:has(.viewer-layout[data-chat="true"]) > .app-layout { padding-top: 0; padding-bottom: 0; }
+.manabi-app .viewer-layout[data-chat="true"] { min-height: 0; padding: 0; gap: 0; }
+.manabi-app .viewer-layout[data-chat="true"] .viewer-center { padding: 0; }
+.manabi-app .viewer-layout[data-chat="true"] .reader-pages { padding: 0; overflow: visible; }
+.manabi-app .viewer-layout[data-chat="true"] .reader-area { display: block; min-height: 0; padding: 0; background: var(--bg-primary); }
+@container reader (min-width: 1120px) {
+  .manabi-app .viewer-layout[data-chat="true"] .viewer-inspector { top: 12px; height: calc(var(--conv-vh, 100dvh) - 24px); }
+}
 
 /* 새 대화(v2-Z Z-R2) — 주제·언어·수준 칩은 위 .conv-chip(44px) 그대로, 고른 칩은 aria-pressed로 표시. */
 .conv-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -57,7 +87,6 @@
 .conv-new__recent small { color: var(--text-muted); }
 
 /* 머리 ⋯(Z-R2) — 주제·수준 바꾸기 · 새 대화 · 지우기. */
-.conv__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .conv-menu { position: relative; }
 .conv-menu__list { position: absolute; right: 0; top: calc(100% + 4px); z-index: 20; display: flex; flex-direction: column; min-width: 180px; padding: 4px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); box-shadow: 0 6px 20px color-mix(in srgb, var(--text-primary) 14%, transparent); }
 .conv-menu__item { display: flex; align-items: center; min-height: 44px; padding: 0 12px; border: 0; border-radius: 8px; background: none; color: var(--text-primary); font: inherit; text-align: left; text-decoration: none; cursor: pointer; }
