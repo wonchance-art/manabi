@@ -1,5 +1,5 @@
 import {describe,it,expect,vi} from 'vitest';
-import {uniqueTargets,selectedRange,continueOperation,prepareOperation,operationCounts,folderPaths,filterActiveSources,parsePendingOperation} from '../libraryOperations';
+import {uniqueTargets,selectedRange,continueOperation,prepareOperation,operationCounts,folderPaths,filterActiveSources,parsePendingOperation,invalidateLibrary} from '../libraryOperations';
 const row=(id,revision=0)=>({target_kind:'material',target_id:String(id),revision});
 describe('library management protocol',()=>{
  it('retains undo intent across reload and accepts earlier ID-only requests',()=>{
@@ -40,5 +40,12 @@ describe('library management protocol',()=>{
   const query={select(){return this;},eq(){return this;},neq(){return this;},range:vi.fn().mockResolvedValue({data:[{target_kind:'pdf',target_id:'pdf'},{target_kind:'material',target_id:'1'},{target_kind:'book',target_id:'book'}]})};
   const rows=[{id:1},{id:2,source_pdf_id:'pdf'},{id:3,processed_json:{metadata:{book:{key:'book'}}}},{id:4}];
   expect(await filterActiveSources({from:()=>query},'owner',rows)).toEqual([{id:4}]);expect(rows).toHaveLength(4);
+ });
+ it('refreshes the conversation group after trash/restore — the shelf reads it under its own key',async()=>{
+  const cache={invalidateQueries:vi.fn().mockResolvedValue()};
+  await invalidateLibrary(cache,'owner');
+  const keys=cache.invalidateQueries.mock.calls.map(([q])=>q.queryKey);
+  expect(keys).toContainEqual(['library-conversations','owner']);
+  expect(keys).toContainEqual(['personal-library','owner']);
  });
 });

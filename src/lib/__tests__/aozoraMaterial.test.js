@@ -145,7 +145,7 @@ describe('createAozoraMaterialDraft — 결정성·불변·fail-closed', () => {
   it.each([
     ['미승인', () => [sampleEntry({ rights: { status: 'candidate', basis: 'unknown' } }), headed()], 'not publishable'],
     ['번역작', () => [sampleEntry({ attribution: { author: '見本太郎', translator: '翻訳者', illustrator: null } }), headed()], 'not publishable'],
-    ['D5 밖', () => [sampleEntry({ publishedYear: 1946, authorDeathYear: 1948 }), headed()], 'not publishable'],
+    ['D5 밖(일본 보호 중 — 1968년 이후 사망)', () => [sampleEntry({ publishedYear: 1926, authorDeathYear: 1972 }), headed()], 'not publishable'],
     ['旧字旧仮名', () => [sampleEntry({ charset: '旧字旧仮名' }), headed()], 'not publishable'],
     ['제목 불일치', () => [sampleEntry({ title: '別作品' }), headed()], 'title'],
     ['저자 불일치', () => [sampleEntry(), parseAozoraText(wrap('本文。', ['書式見本　朝の川', '別人']))], 'author'],

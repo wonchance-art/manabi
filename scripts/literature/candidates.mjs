@@ -66,6 +66,15 @@ export function includedWorkIds() {
   return new Set(readdirSync(LITERATURE_ROOT).map((name) => name.match(/^aozora-\d{6}-(\d{6})$/u)?.[1]).filter(Boolean).map((id) => String(Number(id))));
 }
 
+/** 이미 넣은 작품의 「작가 ID·제목」 — 같은 작품의 다른 판(銀河鉄道の夜 456 · 43737)을 후보에서 뺀다. */
+export function includedTitleKeys() {
+  if (!existsSync(LITERATURE_ROOT)) return new Set();
+  return new Set(readdirSync(LITERATURE_ROOT).filter((name) => existsSync(path.join(LITERATURE_ROOT, name, 'entry.json'))).map((name) => {
+    const entry = JSON.parse(readFileSync(path.join(LITERATURE_ROOT, name, 'entry.json'), 'utf8'));
+    return `${entry.personId}|${entry.title}`;
+  }));
+}
+
 function option(name, fallback) {
   const index = process.argv.indexOf(name);
   return index >= 0 ? process.argv[index + 1] : fallback;
@@ -76,8 +85,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const author = option('--author', null);
   const all = process.argv.includes('--all');
   const included = includedWorkIds();
+  const includedTitles = includedTitleKeys();
   const works = [...(await loadAozoraIndex()).values()]
-    .filter((work) => !included.has(work.workId))
+    .filter((work) => !included.has(work.workId) && !includedTitles.has(`${work.author?.personId}|${work.title}`))
     .filter((work) => !author || work.author?.name === author)
     .map((work) => ({ ...work, issues: aozoraCandidateIssues(work) }))
     .filter((work) => all || work.issues.length === 0)

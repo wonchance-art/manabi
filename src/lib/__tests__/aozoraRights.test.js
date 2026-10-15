@@ -23,32 +23,32 @@ describe('Aozora rights gate — fail-closed 증거 계약', () => {
     expect(aozoraRightsPublishable(approved(), originalOnly), '연도를 모르면 공개하지 않는다').toBe(false);
   });
 
-  it('검토 관할은 JP·KR·US 셋 모두(D5) — 하나라도 빠지면 승인 기록이 아니다', () => {
-    for (const jurisdictions of [['JP', 'KR'], ['JP', 'US'], ['KR', 'US'], ['JP']]) {
+  it('검토 관할은 JP·KR 두 곳(D5 개정 2026-10-15) — 하나라도 빠지면 승인 기록이 아니다', () => {
+    for (const jurisdictions of [['JP'], ['KR'], ['JP', 'US'], ['KR', 'US']]) {
       const rights = approved({ reviewedJurisdictions: jurisdictions });
-      expect(() => validateAozoraRights(rights)).toThrow(/JP·KR·US/);
+      expect(() => validateAozoraRights(rights)).toThrow(/JP·KR/);
       expect(aozoraRightsPublishable(rights, originalOnly, early)).toBe(false);
     }
-    expect(validateAozoraRights(approved({ reviewedJurisdictions: ['US', 'KR', 'JP', 'TW'] }))).toBe(true);
+    // 개정 전 기록(JP·KR·US)도 그대로 유효하다
+    expect(validateAozoraRights(approved({ reviewedJurisdictions: ['JP', 'KR', 'US'] }))).toBe(true);
+    expect(validateAozoraRights(approved({ reviewedJurisdictions: ['KR', 'JP', 'TW'] }))).toBe(true);
   });
 
-  it('D5 선정 — 1945년 이전 사망, 또는 1931년 이전 출판 + 1968년 이전 사망. 경계값은 제외', () => {
-    expect(aozoraWorkWithinSelection({ publishedYear: 1930, authorDeathYear: 1960 })).toBe(true);
-    expect(aozoraWorkWithinSelection({ publishedYear: 1940, authorDeathYear: 1944 })).toBe(true);
-    expect(aozoraWorkWithinSelection({ publishedYear: 1931, authorDeathYear: 1945 })).toBe(false);
-    expect(aozoraWorkWithinSelection({ publishedYear: 1946, authorDeathYear: 1948 }), '다자이형 — 미국 URAA 회복 가능').toBe(false);
-    expect(aozoraWorkWithinSelection({ publishedYear: '1920', authorDeathYear: null }), '문자열 연도는 무효').toBe(false);
-    expect(aozoraWorkWithinSelection({})).toBe(false);
-    // 2026-10-14 보정: 1931년 이전 출판이어도 작가가 1968년 이후 사망이면 일본에서 보호 중(川端康成 1972 · 伊豆の踊子 1926)
-    expect(aozoraWorkWithinSelection({ publishedYear: 1926, authorDeathYear: 1972 }), '川端형 — JP 보호').toBe(false);
-    expect(aozoraWorkWithinSelection({ publishedYear: 1925, authorDeathYear: 1965 }), '乱歩형 — 세 관할 만료(KR은 제3조 제4항)').toBe(true);
+  it('D5 선정(오너 개정 2026-10-15 「일본에서만 끝나면 그만」) — 작가 1968년 이전 사망. 출판 연도·미국은 보지 않는다', () => {
+    expect(aozoraWorkWithinSelection({ publishedYear: 1948, authorDeathYear: 1948 }), '太宰형 — 일본 만료(미국은 URAA로 보호 중이어도 된다)').toBe(true);
+    expect(aozoraWorkWithinSelection({ publishedYear: 1946, authorDeathYear: 1955 }), '坂口安吾형').toBe(true);
     expect(aozoraWorkWithinSelection({ publishedYear: 1921, authorDeathYear: 1967 })).toBe(true);
-    expect(aozoraWorkWithinSelection({ publishedYear: 1921, authorDeathYear: 1968 })).toBe(false);
+    expect(aozoraWorkWithinSelection({ publishedYear: 1921, authorDeathYear: 1968 }), '경계 — 1968년 사망은 일본에서 보호(70년)').toBe(false);
+    expect(aozoraWorkWithinSelection({ publishedYear: 1926, authorDeathYear: 1972 }), '川端형 — JP 보호').toBe(false);
     expect(aozoraWorkWithinSelection({ publishedYear: 1920, authorDeathYear: null }), '사망 연도 모름 — JP 판정 불가').toBe(false);
+    expect(aozoraWorkWithinSelection({ publishedYear: '1920', authorDeathYear: '1920' }), '문자열 연도는 무효').toBe(false);
+    expect(aozoraWorkWithinSelection({})).toBe(false);
+    // US는 참고 표시만 — ok에 들어가지 않는다
+    expect(aozoraJurisdictionVerdict({ publishedYear: 1948, authorDeathYear: 1948 })).toEqual({ JP: true, KR: true, US: false, ok: true });
     expect(aozoraJurisdictionVerdict({ publishedYear: 1926, authorDeathYear: 1972 })).toEqual({ JP: false, KR: false, US: true, ok: false });
     expect(aozoraJurisdictionVerdict({ publishedYear: 1925, authorDeathYear: 1965 })).toEqual({ JP: true, KR: true, US: true, ok: true });
-    expect(aozoraJurisdictionVerdict({ publishedYear: 1940, authorDeathYear: 1942 })).toEqual({ JP: true, KR: true, US: true, ok: true });
-    expect(aozoraRightsPublishable(approved(), originalOnly, { publishedYear: 1946, authorDeathYear: 1948 })).toBe(false);
+    expect(aozoraRightsPublishable(approved(), originalOnly, { publishedYear: 1948, authorDeathYear: 1948 })).toBe(true);
+    expect(aozoraRightsPublishable(approved(), originalOnly, { publishedYear: 1926, authorDeathYear: 1972 })).toBe(false);
   });
 
   it('미승인 기록은 검토용으로 유효하지만 공개하지 않는다', () => {

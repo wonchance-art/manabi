@@ -3,7 +3,7 @@
 //
 // 왜 색인을 쓰나(2026-10-14 KST): 작품 추가의 손일(도서 카드 읽기 → 초출·몰년·文字遣い種別·역할 확인 → zip 받기 →
 // SHA-256 → Shift_JIS 변환 → entry.json 손으로 쓰기)은 색인 한 줄에 거의 다 있다. 법률 판단은 여전히 사람이
-// 기록하지만(aozoraRights — fail-closed 증거 계약), 그 근거 수집과 1차 판정(관할별)은 기계가 한다.
+// 기록하지만(aozoraRights — fail-closed 증거 계약), 그 근거 수집과 1차 판정(일본 보호기간)은 기계가 한다.
 import { inflateRawSync } from 'node:zlib';
 import { aozoraJurisdictionVerdict } from '../../src/lib/aozoraRights.js';
 
@@ -93,7 +93,7 @@ export function aozoraCandidateIssues(work, { publishedYear = work.publishedYear
   if (work.copyrighted || work.author?.copyrighted) issues.push('저작권 존속 작품');
   if (!/^https:\/\/www\.aozora\.gr\.jp\/cards\/\d{6}\/files\/[\w.-]+\.zip$/u.test(work.textUrl || '')) issues.push('텍스트 zip 주소 없음');
   const verdict = aozoraJurisdictionVerdict({ publishedYear: publishedYear ?? undefined, authorDeathYear: work.author?.deathYear ?? undefined });
-  if (!verdict.ok) issues.push(`보호기간 ${['JP', 'KR', 'US'].filter((code) => !verdict[code]).join('·')} 미확인/보호`);
+  if (!verdict.ok) issues.push(`보호기간 ${['JP', 'KR'].filter((code) => !verdict[code]).join('·')} 미확인/보호`);
   return issues;
 }
 

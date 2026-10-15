@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "personId": "000879",
+  "workId": "43015",
+  "title": "杜子春",
+  "author": "芥川龍之介",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1920,
+  "authorDeathYear": 1927,
+  "level": "N3 중급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000879/card43015.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000879/files/43015_ruby_17393.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "e702225f1d30d9ce75cb645c05359d7f11b0fb277f650b8f5cf0bd4ef8b40ef9",
+  "textSha256": "668213e9d00b5650c7737c4c9f74adb8dd543dea5e1c8ed862d62ea1cb91ca67",
+  "attribution": {
+    "author": "芥川龍之介",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-15",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR",
+      "US"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000879/card43015.html"
+  },
+  "display": {
+    "titleReading": "とししゅん",
+    "titleKo": "두자춘",
+    "authorKo": "아쿠타가와 류노스케",
+    "cover": "peach",
+    "motif": "peach-house"
+  }
+}

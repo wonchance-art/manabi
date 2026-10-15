@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "personId": "000035",
+  "workId": "1565",
+  "title": "斜陽",
+  "author": "太宰治",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1947,
+  "authorDeathYear": 1948,
+  "level": "N2 상급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000035/card1565.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000035/files/1565_ruby_8220.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "712a759c175c7341bb2916f747f95d0d900923b353d511001ad677b7411eabc8",
+  "textSha256": "8aeb4c436459d46f5928759a28f1d8dcb435f9210dc8d843fbd8148b509e58f4",
+  "attribution": {
+    "author": "太宰治",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-15",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000035/card1565.html"
+  },
+  "display": {
+    "titleReading": "しゃよう",
+    "titleKo": "사양",
+    "authorKo": "다자이 오사무",
+    "cover": "apricot",
+    "motif": "setting-sun"
+  }
+}
