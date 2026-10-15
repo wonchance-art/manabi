@@ -26,9 +26,15 @@ const BALANCED_RATIO = 1.25;
 export const AOZORA_EDIT_NOTES = Object.freeze(['ruby-reading-aid', 'chapter-split-by-manabi']);
 /** Unicode에 없는 작은 가나를 보통 크기로 바꾼 책에만 더하는 편집 표시(AOZORA_SUBSTITUTED_GAIJI). */
 export const AOZORA_SMALL_KANA_EDIT = 'small-kana-as-full';
+/** 교정자 없는 青空文庫 입력본을 오너 승인(entry.unproofreadApproval)으로 수록한 책에만 더하는 표시 — 뷰어 출처 줄이 밝힌다. */
+export const AOZORA_UNPROOFREAD_EDIT = 'unproofread-source';
 
 const OPEN = '\uE000';
 const CLOSE = '\uE001';
+/** 장보다 긴 문단을 문장 끝에서 나눈 조각의 머리 표식 — 분할기는 문단 경계로 보고, 장 안에서는 다시 이어 붙인다. */
+const SENTENCE_JOIN = '\uE002';
+// 문장 끝 — 。！？ 뒤 닫는 괄호까지(「…た。」의 」 앞에서 자르지 않는다). 루비 기준(漢字 연속)에는 없는 글자다.
+const SENTENCE_END = /[。！？!?][」』）〕】〉》"'”’]*/gu;
 const HEADING_PREFIX = '# ';
 const headingTest = (line) => line.startsWith(HEADING_PREFIX) && line.length > HEADING_PREFIX.length;
 const EDGE_SPACE = /^[\s\u3000]+|[\s\u3000]+$/gu;
@@ -66,13 +72,42 @@ function markedParagraph(block, queue, counts) {
   }).join('').replace(EDGE_SPACE, '');
 }
 
+/**
+ * 장 목표보다 긴 문단 → 문장 끝에서 묶은 조각들(둘째부터 SENTENCE_JOIN 머리). 짧은 문단은 그대로 한 줄.
+ * 실물: 吾輩は猫である 한 문단 1만 1천 자 · 駈込み訴え 전체가 두 문단 — 문단 경계만으로는 장 상한 안에 들 수 없어
+ * 분할기가 글자 수로 잘라 문장이 찢겼다. 문장 끝에서만 자르면 문장은 온전하고, 장 안의 조각은 원래 한 문단으로 다시 붙는다.
+ */
+function sentencePieces(paragraph, longChars, pieceChars) {
+  if (paragraph.replace(/[\uE000\uE001]/gu, '').length <= longChars) return [paragraph];
+  const sentences = [];
+  let start = 0;
+  for (const match of paragraph.matchAll(SENTENCE_END)) {
+    const end = match.index + match[0].length;
+    // 「…た。」と言った — 인용 뒤 조사·쉼표가 이어지면 아직 한 문장이다.
+    if (end < paragraph.length && !/^[\uE000\uE001]?(?:と|って|、|。)/u.test(paragraph.slice(end))) { sentences.push(paragraph.slice(start, end)); start = end; }
+  }
+  sentences.push(paragraph.slice(start));
+  const pieces = [];
+  for (const sentence of sentences) {
+    if (pieces.length && pieces.at(-1).length + sentence.length <= pieceChars) pieces[pieces.length - 1] += sentence;
+    else pieces.push(sentence);
+  }
+  // 조각 머리가 공백이면 분할기의 다듬기(trim)가 원문 글자를 지운다 — 그런 경계는 앞 조각에 붙여 둔다.
+  return pieces.reduce((out, piece) => {
+    if (out.length && /^[\s\u3000]/u.test(piece)) out[out.length - 1] += piece;
+    else out.push(piece);
+    return out;
+  }, []).map((piece, index) => (index ? `${SENTENCE_JOIN}${piece}` : piece));
+}
+
 /** 구조 문서 → 분할 입력 텍스트(표식 포함)와 루비 queue. 연속 표제는 한 줄로 합친다(빈 장 방지). */
-function projectDocument(document) {
+function projectDocument(document, { longChars = Infinity, pieceChars = Infinity } = {}) {
   const headingBlocks = document.blocks.filter((block) => block.type === 'heading');
   const useHeadings = headingBlocks.length >= 2;
   const queue = [];
   const counts = { annotationRuby: 0 };
   const lines = [];
+  const paragraphs = [];
   const headingTexts = new Set();
   let headingRubyCount = 0;
   let pendingHeading = null;
@@ -94,10 +129,11 @@ function projectDocument(document) {
     const paragraph = markedParagraph(block, queue, counts);
     if (!paragraph) continue;
     invariant(!useHeadings || !headingTest(paragraph), 'Aozora paragraph collides with the heading projection prefix');
-    lines.push(paragraph);
+    invariant(!paragraph.includes(SENTENCE_JOIN), 'Aozora paragraph contains the sentence-join marker');
+    lines.push(...sentencePieces(paragraph, longChars, pieceChars));
+    paragraphs.push(paragraph.replace(/[\uE000\uE001]/gu, ''));
   }
   flushHeading();
-  const paragraphs = lines.filter((line) => !useHeadings || !headingTest(line)).map((line) => line.replace(/[\uE000\uE001]/gu, ''));
   return { text: lines.join('\n\n'), queue, paragraphs, useHeadings, headingTexts, headingRubyCount, annotationRubyCount: counts.annotationRuby };
 }
 
@@ -170,7 +206,7 @@ function balancedParts(parts) {
 
 /** 앞 문단에 이어지는 문단인가 — 인용 뒤 조사(と·って)·쉼표로 시작하면 앞 대사의 꼬리다. 표식(U+E000)은 건너뛴다. */
 function continuesPrevious(text) {
-  const head = String(text || '').replace(/^[\uE000\uE001\s\u3000]+/u, '');
+  const head = String(text || '').replace(/^[\uE000-\uE002\s\u3000]+/u, '');
   return /^(?:と|って|、|。)/u.test(head);
 }
 
@@ -217,8 +253,55 @@ function literatureMetadata(entry, document) {
       inputter: colophon.inputter,
       proofreader: colophon.proofreader,
     },
-    edits: [...AOZORA_EDIT_NOTES, ...(document.gaiji.some((item) => item.substituted) ? [AOZORA_SMALL_KANA_EDIT] : [])],
+    edits: [...AOZORA_EDIT_NOTES, ...(document.gaiji.some((item) => item.substituted) ? [AOZORA_SMALL_KANA_EDIT] : []),
+      ...(colophon.proofreader ? [] : [AOZORA_UNPROOFREAD_EDIT])],
   };
+}
+
+/** 투영 텍스트 → 장 조각. */
+function chapterParts(projection, targetChars, maxChars) {
+  const split = (target) => splitTextIntoChapters(projection.text, { targetChars: target, maxChars, headingTest });
+  // 見出し 장은 작가의 목차대로 두되, 한 장이 상한보다 길면 그 장만 見出し 없는 원작과 같은 고른 분할로 나눈다
+  // (예전에는 6,000자 넘을 때만 앞에서부터 잘라 「一 (1/2)」 5,538자 · 「一 (2/2)」 2,001자처럼 꼬리가 짧았다 — 坊っちゃん 실측).
+  return projection.useHeadings
+    ? mergeShortPreface(splitTextIntoChapters(projection.text, { targetChars, maxChars: Number.MAX_SAFE_INTEGER, headingTest }), projection).flatMap((section) => {
+      if (section.text.length <= AOZORA_HEADING_CHAPTER_MAX_CHARS) return [section];
+      const pieces = balancedLengthSplit(section.text.length, targetChars, maxChars,
+        (target) => splitTextIntoChapters(section.text, { targetChars: target, maxChars, headings: false }), { partLimit: AOZORA_HEADING_CHAPTER_MAX_CHARS });
+      return pieces.length > 1 ? pieces.map((piece, index) => ({ ...piece, title: `${section.title} (${index + 1}/${pieces.length})` })) : [section];
+    })
+    : balancedLengthSplit(projection.text.length, targetChars, maxChars, split, { keepBalanced: true, partLimit: AOZORA_HEADING_CHAPTER_MAX_CHARS });
+}
+
+/**
+ * 見出し 없는 긴 원작의 짧은 꼬리 장 — 마지막 장이 목표의 2/3 미만이면 끝 두 장을 합쳐 반씩 다시 나눈다(같은 문단·문장 조각 경계).
+ * 실물 ドグラ・マグラ 146장: 고른 크기 탐색이 장 수가 많으면 꼬리를 못 맞춰 끝 장이 1,739자였다. 기존 작품은 꼬리가 이미 2/3 이상이라 그대로.
+ */
+function evenTail(parts, targetChars) {
+  if (parts.length < 2 || parts.at(-1).text.length >= (targetChars * 2) / 3) return parts;
+  const joined = `${parts.at(-2).text}\n\n${parts.at(-1).text}`;
+  // 반 크기에서 시작해 두 조각이 될 때까지 목표를 조금씩 키운다(앞 조각이 반보다 조금 짧으면 셋으로 남는다).
+  for (let target = Math.ceil(joined.length / 2); target < joined.length; target += 50) {
+    const halves = splitTextIntoChapters(joined, { targetChars: target, maxChars: joined.length, headings: false });
+    if (halves.length > 2) continue;
+    const ok = halves.length === 2 && halves.every((half) => half.text.length >= (targetChars * 2) / 3 && half.text.length <= AOZORA_HEADING_CHAPTER_MAX_CHARS);
+    return ok ? [...parts.slice(0, -2), ...halves] : parts;
+  }
+  return parts;
+}
+
+const partsSpread = (parts) => { const sizes = parts.map((part) => part.text.length); return Math.max(...sizes) / Math.min(...sizes); };
+/** 고른 분할의 창(목표의 2/3 이상 · 1.4배 안) 밖인가 — 한 장이면 해당 없음. */
+function unevenParts(parts, targetChars) {
+  if (parts.length < 2) return false;
+  return Math.min(...parts.map((part) => part.text.length)) < (targetChars * 2) / 3 || partsSpread(parts) >= 1.4;
+}
+
+/** 장 조각이 문단 한가운데서 시작하는가(문장 조각 표식으로 시작하는 장은 문장 끝에서 이어진 것이라 제외). */
+function startsMidParagraph(text, projection) {
+  if (text.startsWith(SENTENCE_JOIN)) return false;
+  const head = text.replace(/[\uE000\uE001]/gu, '').split('\n\n')[0];
+  return !projection.paragraphs.some((paragraph) => paragraph.startsWith(head));
 }
 
 /**
@@ -237,28 +320,34 @@ export function createAozoraMaterialDraft(entry, document, options = {}) {
   invariant(document.colophon.sourceBook.length > 0, 'Aozora colophon must name the source book (底本)');
   invariant(typeof document.colophon.inputter === 'string' && document.colophon.inputter,
     'Aozora colophon must name the inputter (入力)');
-  invariant(typeof document.colophon.proofreader === 'string' && document.colophon.proofreader,
+  // 교정자 없는 입력본은 기본 거부 — 오너가 그 작품 하나를 승인한 기록(entry.unproofreadApproval)이 있을 때만 받는다(夢十夜, 2026-10-15).
+  invariant((typeof document.colophon.proofreader === 'string' && document.colophon.proofreader) || entry.unproofreadApproval,
     'Aozora colophon must name the proofreader (校正)');
+  invariant(!entry.unproofreadApproval || !document.colophon.proofreader, 'unproofreadApproval is only for texts without a proofreader');
   const unresolved = document.gaiji.filter((item) => item.status !== 'resolved');
   invariant(unresolved.length === 0,
     `Aozora document has ${unresolved.length} unresolved gaiji (lines ${unresolved.map((item) => item.line).join(', ')})`);
   invariant(document.warnings.length === 0,
     `Aozora document has parser warnings: ${document.warnings.map((item) => `${item.code}@${item.line ?? '-'}`).join(', ')}`);
 
-  const projection = projectDocument(document);
   const maxChars = options.maxChars ?? AOZORA_CHAPTER_MAX_CHARS;
   const targetChars = options.targetChars ?? AOZORA_CHAPTER_TARGET_CHARS;
-  const split = (target) => splitTextIntoChapters(projection.text, { targetChars: target, maxChars, headingTest });
-  // 見出し 장은 작가의 목차대로 두되, 한 장이 상한보다 길면 그 장만 見出し 없는 원작과 같은 고른 분할로 나눈다
-  // (예전에는 6,000자 넘을 때만 앞에서부터 잘라 「一 (1/2)」 5,538자 · 「一 (2/2)」 2,001자처럼 꼬리가 짧았다 — 坊っちゃん 실측).
-  const parts = projection.useHeadings
-    ? mergeShortPreface(splitTextIntoChapters(projection.text, { targetChars, maxChars: Number.MAX_SAFE_INTEGER, headingTest }), projection).flatMap((section) => {
-      if (section.text.length <= AOZORA_HEADING_CHAPTER_MAX_CHARS) return [section];
-      const pieces = balancedLengthSplit(section.text.length, targetChars, maxChars,
-        (target) => splitTextIntoChapters(section.text, { targetChars: target, maxChars, headings: false }), { partLimit: AOZORA_HEADING_CHAPTER_MAX_CHARS });
-      return pieces.length > 1 ? pieces.map((piece, index) => ({ ...piece, title: `${section.title} (${index + 1}/${pieces.length})` })) : [section];
-    })
-    : balancedLengthSplit(projection.text.length, targetChars, maxChars, split, { keepBalanced: true, partLimit: AOZORA_HEADING_CHAPTER_MAX_CHARS });
+  // 먼저 문단 경계로만 나눈다. 그래도 문단 한가운데서 시작하는 장이 생길 때만(장보다 긴 문단 — 猫·駈込み訴え) 긴 문단을
+  // 문장 끝 조각으로 바꿔 다시 나눈다. 문단 경계로 다 들어가는 작품(기존 26편 전부)은 장 경계가 한 글자도 바뀌지 않는다.
+  // 見出し 없는 원작은 문단이 커서 고르게 못 나눌 때(가장 짧은 장이 목표의 2/3 미만 · 1.4배 넘게 들쭉날쭉 — 陰翳礼讃
+  // 1,972자 첫 장 · ドグラ・マグラ 1,739자 끝 장)도 문장 끝 조각으로 다시 나눠 더 고른 쪽을 쓴다.
+  let projection = projectDocument(document);
+  let parts = chapterParts(projection, targetChars, maxChars);
+  const torn = parts.some((part) => startsMidParagraph(part.text, projection));
+  if (torn || (!projection.useHeadings && unevenParts(parts, targetChars))) {
+    const sentenceProjection = projectDocument(document, { longChars: Math.round((targetChars * 2) / 3), pieceChars: Math.round(targetChars / 4) });
+    const sentenceParts = chapterParts(sentenceProjection, targetChars, maxChars);
+    if (torn || partsSpread(sentenceParts) < partsSpread(parts)) {
+      projection = sentenceProjection;
+      parts = sentenceParts;
+    }
+  }
+  if (!projection.useHeadings) parts = evenTail(parts, targetChars);
   invariant(parts.length > 0, 'Aozora document produced no chapters');
 
   const key = aozoraWorkKey(entry);
@@ -267,9 +356,13 @@ export function createAozoraMaterialDraft(entry, document, options = {}) {
   const literature = literatureMetadata(entry, document);
   const cursor = { index: 0 };
   const droppedRuby = [];
+  const continued = [];
   const chapters = parts.map((part, index) => {
     const order = index + 1;
-    const { rawText, rubyLocks, dropped } = unmarkChapter(part.text, projection.queue, cursor);
+    // 장 안의 문장 조각은 원래 한 문단으로 다시 잇고, 장 머리의 조각 표식은 「문장 끝에서 이어진 장」으로 센다.
+    continued.push(part.text.startsWith(SENTENCE_JOIN));
+    const joined = part.text.replaceAll(`\n\n${SENTENCE_JOIN}`, '').replaceAll(SENTENCE_JOIN, '');
+    const { rawText, rubyLocks, dropped } = unmarkChapter(joined, projection.queue, cursor);
     droppedRuby.push(...dropped);
     invariant(rawText.trim(), 'Aozora chapter cannot be empty');
     const title = chapterTitle(part, order, parts.length, projection);
@@ -301,10 +394,14 @@ export function createAozoraMaterialDraft(entry, document, options = {}) {
       mappedRubyCount,
       droppedRubyCount: droppedRuby.length,
       // 문단 한가운데서 시작하는 장 수 — 한 문단이 장 상한보다 길어 글자 수로 잘린 경우(문장이 찢긴다). 빌드는 0만 통과.
-      midParagraphSplitCount: chapters.filter((chapter) => {
+      // 문장 끝에서 이어진 장(sentenceSplitCount)은 문장이 온전하므로 여기서 세지 않는다.
+      midParagraphSplitCount: chapters.filter((chapter, index) => {
+        if (continued[index]) return false;
         const head = chapter.rawText.split('\n\n')[0];
         return !projection.paragraphs.some((paragraph) => paragraph.startsWith(head));
       }).length,
+      // 기존 작품(문장 끝 분할 없음)의 chapters.json을 바꾸지 않게, 있을 때만 적는다.
+      ...(continued.some(Boolean) ? { sentenceSplitCount: continued.filter(Boolean).length } : {}),
       headingRubyCount: projection.headingRubyCount,
       annotationRubyCount: projection.annotationRubyCount,
       noteCount: document.notes.length,

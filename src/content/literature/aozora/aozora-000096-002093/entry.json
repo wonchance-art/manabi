@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "personId": "000096",
+  "workId": "2093",
+  "title": "ドグラ・マグラ",
+  "author": "夢野久作",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1935,
+  "authorDeathYear": 1936,
+  "level": "N1 심화",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000096/card2093.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000096/files/2093_ruby_28087.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "1d5143674b64ebc771c0365d891e5c48b85da2b32d7cc203b6541e4ac3c813b7",
+  "textSha256": "817cbc92d675046848e0fdaf311d018a2e249a5cd94817ba44b6720eefc35ed5",
+  "attribution": {
+    "author": "夢野久作",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-15",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000096/card2093.html"
+  },
+  "display": {
+    "titleReading": "ドグラ・マグラ",
+    "titleKo": "도구라 마구라",
+    "coverTitle": "ドグラ・\nマグラ",
+    "authorKo": "유메노 규사쿠",
+    "cover": "susutake",
+    "motif": "clock-spiral"
+  }
+}

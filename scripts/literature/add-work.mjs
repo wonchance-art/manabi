@@ -6,6 +6,7 @@
  *   node scripts/literature/add-work.mjs 127                       羅生門 — 초안 + 진단
  *   node scripts/literature/add-work.mjs 127 --level "N2 상급" --approve claude
  *   node scripts/literature/add-work.mjs 127 --dry-run              파일을 쓰지 않고 진단만
+ *   node scripts/literature/add-work.mjs 799 --unproofread "오너 결정 원문"   교정자 없는 입력본(오너 승인 기록과 함께만)
  *
  * 하는 일:
  *   ① 공식 색인(candidates.mjs와 같은 캐시)에서 작품을 찾고 선정 기준(D5 일본 보호기간 만료·新字新仮名·원작만)을 1차 판정한다.
@@ -53,7 +54,7 @@ function knownAuthorKo(author) {
   return '';
 }
 
-export async function addWork(workId, { level, approve, dryRun = false } = {}) {
+export async function addWork(workId, { level, approve, unproofreadReason, dryRun = false } = {}) {
   const index = await loadAozoraIndex();
   const work = index.get(String(Number(workId)));
   if (!work) throw new Error(`색인에 작품 ${workId}가 없다`);
@@ -93,6 +94,8 @@ export async function addWork(workId, { level, approve, dryRun = false } = {}) {
       reviewedJurisdictions: ['JP', 'KR'],
       evidenceUrl: work.cardUrl,
     },
+    // 교정자 없는 입력본 — 오너가 그 작품을 승인한 원문을 --unproofread "<오너 결정>"으로 남길 때만(빌드도 이 기록을 본다)
+    ...(unproofreadReason ? { unproofreadApproval: { approvedBy: 'owner', approvedAt: kstToday(), reason: unproofreadReason } } : {}),
     display: {
       titleReading: /^[ぁ-ゟ゠-ヿー\s]+$/u.test(work.titleReading) ? work.titleReading : '',
       titleKo: '',
@@ -136,7 +139,7 @@ export async function addWork(workId, { level, approve, dryRun = false } = {}) {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const ids = process.argv.slice(2).filter((arg, index, args) => /^\d+$/u.test(arg) && !['--level', '--approve'].includes(args[index - 1]));
+  const ids = process.argv.slice(2).filter((arg, index, args) => /^\d+$/u.test(arg) && !['--level', '--approve', '--unproofread'].includes(args[index - 1]));
   if (!ids.length) {
     console.error('사용: node scripts/literature/add-work.mjs <作品ID> [...] [--level "N3 중급"] [--approve claude] [--dry-run]');
     process.exit(2);
@@ -148,7 +151,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   }
   let failed = 0;
   for (const id of ids) {
-    const { report, written, base, entry } = await addWork(id, { level, approve: option('--approve'), dryRun: process.argv.includes('--dry-run') });
+    const { report, written, base, entry } = await addWork(id, { level, approve: option('--approve'), unproofreadReason: option('--unproofread'), dryRun: process.argv.includes('--dry-run') });
     const d = report.diagnostics;
     console.log(`\n■ ${id} ${report.title} — ${report.author} (初出 ${report.publishedYear ?? '?'} · 몰 ${report.authorDeathYear ?? '?'})`);
     console.log(`  권리 1차 판정 JP ${report.verdict.JP ? '만료' : '?'} · KR ${report.verdict.KR ? '만료' : '?'}(JP를 따름)${report.verdict.US ? '' : ' · 참고: US 보호 가능(공개 조건 아님)'}`);

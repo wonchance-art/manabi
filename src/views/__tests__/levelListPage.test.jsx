@@ -9,6 +9,7 @@ vi.mock('@/lib/AuthContext', () => ({ useAuth: () => ({ user: null }) }));
 vi.mock('@/lib/supabase', () => ({ supabase: {} }));
 vi.mock('@/lib/useTTS', () => ({ useTTS: () => ({ speak: () => {}, supported: true }) }));
 vi.mock('@/lib/useKnownWords', () => ({ useKnownWords: () => ({ rows: [], isPendingWord: () => false, mutation: { mutate: () => {} } }) }));
+vi.mock('@/lib/useWordFacets', () => ({ useWordFacets: () => ({ available: true, rows: [], mark: () => {} }) }));
 
 const { default: LevelListPage, VocabCard } = await import('../LevelListPage.jsx');
 const { levelListData } = await import('../../lib/levelListData.js');
@@ -74,15 +75,16 @@ describe('단어 목록', () => {
   });
 });
 
-describe('단어 카드 — 고른 것 하나만 · 10초 보기 · 훈음 · 正日(LEVEL-OX-AN-001 3판)', () => {
+describe('단어 카드 — 고른 것 하나만 · 펼치기 · 훈음 · 正日(LEVEL-OX-AN-001 4판)', () => {
   const entry = { key: '学习', word: '学习', reading: 'xuéxí', meaning: '배우다, 공부하다', fullMeaning: '배우다', pos: '동사',
     ex: { text: '我在学习汉语。', reading: 'wǒ zài xuéxí hànyǔ.', ko: '나는 중국어를 공부하고 있다.' } };
-  const card = (view, extra = {}) => renderToStaticMarkup(<VocabCard entry={entry} lang="chinese" levelKey="h1" view={view} peek={!!extra.peek}
+  const card = (view, extra = {}) => renderToStaticMarkup(<VocabCard entry={entry} lang="chinese" levelKey="h1" view={view} peek={extra.peek}
     onPeek={() => {}} speak={() => {}} hunCells={hunRubyCells(entry.word, tables, { glyphPx: 27, hunPx: 12 })}
     glyph={extra.glyph ? glyphRows({ word: entry.word, tradTable: tables.tradTable, jaTable }) : null}
     known={!!extra.known} studying={!!extra.studying} saving={false} pendingKnown={false} onO={() => {}} onX={() => {}} />);
 
-  const solo = (html) => sliceBetween(html, '<div class="lv-solo">', '</div><button type="button" class="lv-sr"').replace('<div class="lv-solo">', '');
+  const solo = (html) => sliceBetween(html, '<div class="lv-solo">', '</div><div class="lv-acts">').replace('<div class="lv-solo">', '');
+  const reveal = (html) => sliceBetween(html, '<div class="lv-reveal__body">', '</div><i ').replace('<div class="lv-reveal__body">', '');
 
   it('전체: 글자마다 훈음(정체 꼴로 찾기 — 学→學 배울 학) · 병음 · 뜻 · 예문 · 듣기', () => {
     const html = card('all');
@@ -94,12 +96,13 @@ describe('단어 카드 — 고른 것 하나만 · 10초 보기 · 훈음 · �
     expect(html).not.toMatch(/lv-veil|lv-solo|lv-sr/);
   });
 
-  it('단어: 글자 + 훈음만(병음 · 뜻 · 예문 없음, 가린 칸 없음) — 카드 탭 · 「전체 10초 보기」로 잠깐 전부', () => {
+  it('단어: 글자 + 훈음만(병음 · 뜻 · 예문 없음, 가린 칸 없음) — 카드 탭 · 숨은 「펼쳐 보기」 버튼', () => {
     const html = card('word');
     const body = solo(html);
     expect(body).toContain('data-label="배울 학"');
     expect(body).not.toMatch(/xuéxí|배우다|我在|나는|lv-snd|lv-veil/);
-    expect(html).toContain('<button type="button" class="lv-sr">전체 10초 보기</button>');
+    expect(html).toContain('<button type="button" class="lv-sr" aria-expanded="false">펼쳐 보기</button>');
+    expect(html).not.toContain('lv-reveal'); // 접혀 있을 땐 펼칠 내용을 그리지 않는다
     expect(html).toContain('lv-fab--o');
   });
 
@@ -107,7 +110,35 @@ describe('단어 카드 — 고른 것 하나만 · 10초 보기 · 훈음 · �
     expect(solo(card('meaning'))).toBe('<p class="lv-solo__mean">배우다, 공부하다</p>');
     expect(solo(card('sentence'))).toBe('<p class="lv-solo__ex" lang="zh-CN">我在学习汉语。</p>');
     expect(solo(card('audio'))).toMatch(/^<button type="button" class="lv-solo__play" aria-label="듣기" title="듣기"><svg/);
-    expect(card('audio', { peek: true })).toBe(card('all', { }).replace('class="lv-entry"', 'class="lv-entry" data-peek="true"'));
+  });
+
+  it('펼치기(4판): 고른 줄은 그대로 · 나머지만 아래에, 다시 누르면 접기 · 남은 시간 줄 · 접히는 중엔 시간 줄 없음', () => {
+    for (const view of ['word', 'sentence', 'meaning', 'audio']) {
+      const open = card(view, { peek: 'open' });
+      expect(solo(open)).toBe(solo(card(view))); // 고른 줄은 펼쳐도 같은 자리 · 같은 모양
+      expect(open).toContain('data-peek="open"');
+      expect(open).toContain('<button type="button" class="lv-sr" aria-expanded="true">접기</button>');
+      expect(open).toMatch(/<i class="lv-reveal__time" style="animation-duration:10000ms" aria-hidden="true"><\/i>/);
+      expect(card(view, { peek: 'closing' })).not.toContain('lv-reveal__time');
+    }
+    // 단어 → 병음 · 뜻 · 예문, 뜻 → 표제어 · 예문(뜻 반복 없음), 문장 → 예문 병음 · 해석 + 표제어 · 뜻(예문 글자 반복 없음)
+    const word = reveal(card('word', { peek: 'open' }));
+    expect(word).toMatch(/^<p class="lv-reveal__line"><span class="lv-py">xuéxí<\/span>/);
+    expect(word).toContain('배우다, 공부하다');
+    expect(word).toContain('我在学习汉语。');
+    const meaning = reveal(card('meaning', { peek: 'open' }));
+    expect(meaning).toContain('data-label="배울 학"');
+    expect(meaning).not.toContain('lv-mean');
+    expect(meaning).toContain('나는 중국어를 공부하고 있다.');
+    const sentence = reveal(card('sentence', { peek: 'open' }));
+    expect(sentence).toContain('wǒ zài xuéxí hànyǔ.');
+    expect(sentence).not.toContain('我在学习汉语。');
+    expect(sentence).toContain('<p class="lv-mean">배우다, 공부하다</p>');
+    const audio = reveal(card('audio', { peek: 'open' }));
+    expect(audio).toContain('xuéxí');
+    expect(audio).toContain('<p class="lv-mean">배우다, 공부하다</p>');
+    // 전체 보기는 펼치기가 없다
+    expect(card('all', { peek: 'open' })).not.toMatch(/data-peek|lv-reveal/);
   });
 
   it('[O][X]: 아는 단어면 O만 눌림(점선 카드), 공부 중이면 X만 눌림', () => {

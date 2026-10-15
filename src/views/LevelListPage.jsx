@@ -2,10 +2,11 @@
 // 레벨별 단어 · 문형 목록(LEVEL-LIST-AJ-001) — 목업 docs/design/mocks/lv/lv.html 8판, 인계 #1337 6119208984 · 6146777048.
 // 단어(LEVEL-OX-AN-001 — 빠른 암기, 오너 지시 2026-10-15 · 목업 /mnt/project-files/notes/level-list-ox-mockup.md):
 // 찾기 + ⚙(아는 단어 숨기기 · 중국어 훈음(기본 켬) · 한자 대조), 보기 탭 하나 고르기 [전체 · 단어 · 문장 · 뜻 · 소리], 카드마다 [O][X].
-// 가린 칸을 누르면 그 카드가 10초 동안 전부 보였다가 다시 가려진다. 채점 · 입력창은 없다(채점 설계 폐기).
+// 탭 보기에서 카드를 누르면 나머지가 아래로 펼쳐지고, 다시 누르거나 10초가 지나면 접힌다(4판). 채점 · 입력창은 없다(채점 설계 폐기).
 // 문형: 읽기 전용(저장 · 번호 · 캡션 · 펼치기 없음).
 // X(모른다) = 공부 중인 단어로 저장 = /api/learning/vocabulary action:'save'(FSRS 직접 추가 정본, 기존 카드는 그대로 돌려받는다).
 // O(안다) = 아는 단어 표시(useKnownWords → markKnown). 다시 누르면 되돌린다. 로그인 전에는 둘 다 로그인 안내만, 기록 0.
+// 단어 · 문장 · 뜻 · 소리 탭의 O · X는 그 탭에만 기록한다(user_word_facets — LEVEL-FACET-AO-001). 탭 X는 공부 중 담기도 같이 한다.
 // 훈음 · 正日은 뷰어 부품을 그대로 쓴다(hunRubyCells + HunCell — 정체 꼴로 찾기, glyphRows — 正 대만 정체 · 日 일본어 표기).
 // 한자(중국어 HSK 1–2): HanziBoard — 답 카드의 단어 칩이 같은 저장 · 제외 함수를 쓴다(HANZI-TAB-AL-001).
 import Link from 'next/link';
@@ -15,7 +16,9 @@ import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { useTTS } from '@/lib/useTTS';
 import { useKnownWords } from '@/lib/useKnownWords';
-import { knownWordKeys, knownWordSetOf } from '@/lib/knownWordControl';
+import { knownWordKeys, knownWordSetOf, normalizeKnownWord } from '@/lib/knownWordControl';
+import { allFacetsKnown, facetIndex, facetMark } from '@/lib/wordFacets';
+import { useWordFacets } from '@/lib/useWordFacets';
 import { createFsrsLearningClient } from '@/lib/fsrsLearningClient';
 import { authEntryHref } from '@/lib/authRedirect';
 import { hunRubyCells } from '@/lib/viewerHunRuby';
@@ -25,7 +28,7 @@ import HunCell from '@/components/viewer/HunCell';
 import { alignFurigana } from '@/views/refShared';
 import {
   LEVEL_LIST_LANGS, LEVEL_KIND_LABEL, levelKinds, levelLabel, levelPill, levelListHref, jaHeadMode, matchesLevelQuery, splitKnown, fetchSavedLevelKeys,
-  LEVEL_PEEK_MS, LEVEL_PREFS_DEFAULT, LEVEL_VIEWS, normalizeLevelPrefs,
+  LEVEL_PEEK_CLOSE_MS, LEVEL_PEEK_MS, LEVEL_PREFS_DEFAULT, LEVEL_VIEWS, normalizeLevelPrefs,
 } from '@/lib/levelList';
 import HanziBoard from '@/components/levels/HanziBoard';
 import '@/components/levels/level-list.css';
@@ -72,12 +75,12 @@ function Example({ ex, lang, speak, hideTranslation }) {
 }
 
 /** [O] 안다(아는 단어) · [X] 모른다(공부 중인 단어) — 누른 쪽이 채워진다. 아는 단어가 먼저다(저장돼 있어도 O면 O만). */
-function OxButtons({ known, studying, saving, pendingKnown, onO, onX, showLabels = false }) {
+function OxButtons({ scope, known, studying, saving, pendingKnown, onO, onX, showLabels = false }) {
   return <div className="lv-acts">
-    <button type="button" className="lv-fab lv-fab--o" aria-pressed={known} aria-label="안다 — 아는 단어로" title="안다"
+    <button type="button" className="lv-fab lv-fab--o" aria-pressed={known} aria-label={scope ? `${scope} 탭에서 안다` : '안다 — 아는 단어로'} title="안다"
       onClick={onO} disabled={pendingKnown}><CircleIcon />{showLabels && <span>안다</span>}</button>
     <button type="button" className={`lv-fab lv-fab--x${saving ? ' lv-fab--busy' : ''}`} aria-pressed={!known && studying}
-      aria-label={saving ? '공부 중인 단어로 담는 중' : '모른다 — 공부 중인 단어로'} title="모른다"
+      aria-label={saving ? '공부 중인 단어로 담는 중' : `${scope ? `${scope} 탭에서 ` : ''}모른다 — 공부 중인 단어로`} title="모른다"
       aria-disabled={saving || undefined} onClick={saving ? undefined : onX} disabled={pendingKnown}>{saving ? <SpinIcon /> : <CrossIcon />}{showLabels && <span>모른다</span>}</button>
   </div>;
 }
@@ -92,14 +95,24 @@ function GlyphLine({ rows }) {
   </p>;
 }
 
+/** 읽기 한 줄 — 표제어에서 읽기를 뺀 「단어」 보기를 펼쳤을 때. 중국어 = 병음, 일본어 = 표제어에 안 보인 쪽(가나 ↔ 한자). */
+function readingLine(entry, lang, levelKey) {
+  if (lang === 'chinese') return entry.reading ? <span className="lv-py">{entry.reading}</span> : null;
+  if (!entry.reading || entry.reading === entry.word || !alignFurigana(entry.word, entry.reading)) return null;
+  return jaHeadMode(levelKey) === 'kana' ? <span className="lv-kj" lang="ja">{entry.word}</span> : <span className="lv-kj" lang="ja">{entry.reading}</span>;
+}
+
 /**
  * 단어 카드 — [O][X] + 보기 탭. 전체가 아니면 고른 것 하나만 깔끔하게 남긴다(가린 칸 없음 — 오너 2026-10-15
  * 「기존 모양에서 가리는 게 아니라 지정한 것들만 보이게」). 단어 = 글자(+훈음 · 正日, 읽기 없음), 문장 = 예문 글자만,
- * 뜻 = 뜻만, 소리 = 듣기 버튼만. 카드를 누르면 10초 동안 전체 모양으로 보였다가 돌아간다.
+ * 뜻 = 뜻만, 소리 = 듣기 버튼만.
+ * 카드를 누르면 고른 것은 제자리에 둔 채 나머지가 그 아래로 펼쳐지고, 다시 누르면 접힌다. 그대로 두면 10초 뒤 접힌다
+ * (4판 — 오너 2026-10-15 「다시 클릭하면 닫히게 · 애니메이션 · 닫히면서 단어 위치 변하는 것 개선」). peek = 'open' | 'closing'.
  */
-export function VocabCard({ entry: e, lang, levelKey, view, peek, onPeek, speak, hunCells, glyph, known, studying, saving, pendingKnown, onO, onX }) {
-  const ox = <OxButtons showLabels={lang === 'chinese'} known={known} studying={studying} saving={saving} pendingKnown={pendingKnown} onO={onO} onX={onX} />;
-  if (view === 'all' || peek) return <li className="lv-entry" data-known={known || undefined} data-peek={peek || undefined}>
+export function VocabCard({ entry: e, lang, levelKey, view, scoped = true, peek, peekEpoch = 0, onPeek, onRenew, speak, hunCells, glyph, known, studying, saving, pendingKnown, onO, onX }) {
+  const scope = view === 'all' || !scoped ? null : LEVEL_VIEWS.find((v) => v.id === view)?.label;
+  const ox = <OxButtons scope={scope} showLabels={lang === 'chinese'} known={known} studying={studying} saving={saving} pendingKnown={pendingKnown} onO={onO} onX={onX} />;
+  if (view === 'all') return <li className="lv-entry" data-known={known || undefined}>
     <div className="lv-entry__top">
       <div className="lv-entry__word"><Headword entry={e} lang={lang} levelKey={levelKey} hunCells={hunCells} />
         {speak && <button type="button" className="lv-snd" aria-label="듣기" title="듣기" onClick={() => speak(e.word)}><SpeakerIcon /></button>}</div>
@@ -115,12 +128,26 @@ export function VocabCard({ entry: e, lang, levelKey, view, peek, onPeek, speak,
       : view === 'meaning' ? <p className="lv-solo__mean">{e.meaning}</p>
         : speak ? <button type="button" className="lv-solo__play" aria-label="듣기" title="듣기" onClick={() => speak(e.word)}><SpeakerIcon /></button>
           : <p className="lv-solo__none">이 기기에서는 소리를 낼 수 없어요</p>;
-  // 카드 어디를 눌러도(버튼 밖) 10초 보기 — 키보드 · 화면 읽기는 숨은 「전체 보기」 버튼으로.
+  // 펼친 안에서 듣기를 누르면 10초를 다시 센다 — 듣는 중에 접히지 않게.
+  const say = speak && ((text) => { onRenew?.(); speak(text); });
+  const sndWord = say && <button type="button" className="lv-snd" aria-label="듣기" title="듣기" onClick={() => say(e.word)}><SpeakerIcon /></button>;
+  const head = <div className="lv-entry__word"><Headword entry={e} lang={lang} levelKey={levelKey} hunCells={hunCells} />{sndWord}</div>;
+  const mean = <p className="lv-mean">{e.meaning}</p>;
+  const example = e.ex && <Example ex={e.ex} lang={lang} speak={say} />;
+  const rest = view === 'word' ? <><p className="lv-reveal__line">{readingLine(e, lang, levelKey)}{sndWord}</p>{mean}{example}</>
+    : view === 'sentence' ? <>{e.ex && <p className="lv-ex lv-ex--tail">
+      {say && <button type="button" className="lv-snd" aria-label="예문 듣기" title="예문 듣기" onClick={() => say(e.ex.text)}><SpeakerIcon /></button>}
+      {zh && e.ex.reading && <span className="lv-ex__py">{e.ex.reading}</span>}
+      {e.ex.ko && <span className="lv-ex__tr">{e.ex.ko}</span>}</p>}{head}{mean}</>
+      : view === 'meaning' ? <>{head}<GlyphLine rows={glyph} />{example}</>
+        : <>{head}<GlyphLine rows={glyph} />{mean}{example}</>;
+  // 카드 어디를 눌러도(버튼 밖) 펼치기 · 접기 — 키보드 · 화면 읽기는 숨은 버튼으로 같은 동작.
   const tap = (event) => { if (!event.target.closest('button, a')) onPeek(); };
-  return <li className="lv-entry lv-entry--solo" data-known={known || undefined} data-view={view} onClick={tap}>
-    <div className="lv-solo">{solo}</div>
-    <button type="button" className="lv-sr" onClick={onPeek}>전체 10초 보기</button>
-    {ox}
+  return <li className="lv-entry lv-entry--solo" data-known={known || undefined} data-view={view} data-peek={peek || undefined} onClick={tap}>
+    <div className="lv-solo__row"><div className="lv-solo">{solo}</div>{ox}</div>
+    <button type="button" className="lv-sr" aria-expanded={peek === 'open'} onClick={onPeek}>{peek === 'open' ? '접기' : '펼쳐 보기'}</button>
+    {peek && <div className="lv-reveal"><div className="lv-reveal__in"><div className="lv-reveal__body">{rest}</div>
+      {peek === 'open' && <i key={peekEpoch} className="lv-reveal__time" style={{ animationDuration: `${LEVEL_PEEK_MS}ms` }} aria-hidden="true" />}</div></div>}
   </li>;
 }
 
@@ -138,7 +165,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
 
   const [query, setQuery] = useState('');
   const [prefs, setPrefsState] = useState(LEVEL_PREFS_DEFAULT);
-  const [peek, setPeek] = useState(() => new Set());
+  const [peek, setPeek] = useState(() => new Map()); // 단어 키 → { phase: 'open' | 'closing', epoch }
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [tables, setTables] = useState({});
   const [saved, setSaved] = useState(() => new Set());
@@ -168,21 +195,35 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
     try { localStorage.setItem(PREFS_KEY, JSON.stringify(next)); } catch { /* 저장소 없음 — 이번 화면만 */ }
     return next;
   });
-  // 가린 칸을 누르면 그 카드만 10초 동안 전부 보인다. 다시 누르면 10초를 새로 센다.
-  const peekCard = useCallback((key) => {
+  // 카드를 누르면 펼치고(10초 뒤 저절로 접힘), 펼친 카드를 다시 누르면 접는다. 접힐 때는 움직임이 끝난 뒤 내용을 뗀다.
+  const peekRef = useRef(peek);
+  peekRef.current = peek;
+  const setPhase = useCallback((key, phase) => setPeek((cur) => {
+    const n = new Map(cur);
+    if (phase) n.set(key, { phase, epoch: (cur.get(key)?.epoch || 0) + (phase === 'open' ? 1 : 0) }); else n.delete(key);
+    return n;
+  }), []);
+  const closePeek = useCallback((key) => {
     const timers = peekTimers.current;
     clearTimeout(timers.get(key));
-    setPeek((cur) => (cur.has(key) ? cur : new Set(cur).add(key)));
-    timers.set(key, setTimeout(() => {
-      timers.delete(key);
-      setPeek((cur) => { const n = new Set(cur); n.delete(key); return n; });
-    }, LEVEL_PEEK_MS));
-  }, []);
+    const reduced = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) { timers.delete(key); return setPhase(key, null); }
+    setPhase(key, 'closing');
+    timers.set(key, setTimeout(() => { timers.delete(key); setPhase(key, null); }, LEVEL_PEEK_CLOSE_MS));
+  }, [setPhase]);
+  const openPeek = useCallback((key) => {
+    const timers = peekTimers.current;
+    clearTimeout(timers.get(key));
+    setPhase(key, 'open');
+    timers.set(key, setTimeout(() => closePeek(key), LEVEL_PEEK_MS));
+  }, [setPhase, closePeek]);
+  const togglePeek = useCallback((key) => (peekRef.current.get(key)?.phase === 'open' ? closePeek(key) : openPeek(key)), [openPeek, closePeek]);
+  const renewPeek = useCallback((key) => { if (peekRef.current.get(key)?.phase === 'open') openPeek(key); }, [openPeek]);
   useEffect(() => () => { for (const t of peekTimers.current.values()) clearTimeout(t); }, []);
   useEffect(() => {
     for (const t of peekTimers.current.values()) clearTimeout(t);
     peekTimers.current.clear();
-    setPeek(new Set());
+    setPeek(new Map());
   }, [prefs.view]);
 
   // 훈음 · 正日 표 — 중국어 단어 목록에서 켠 것만 받는다(뷰어와 같은 표 · 같은 지연 로드 모듈).
@@ -207,6 +248,19 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
 
   const allEntries = useMemo(() => groups.flatMap((g) => g.entries), [groups]);
   const knownSet = useMemo(() => (mounted && userId ? knownWordSetOf(known.rows, [], conf.langCode) : new Set()), [mounted, userId, known.rows, conf.langCode]);
+  // 탭별 O · X(LEVEL-FACET-AO-001) — 전체 탭은 지금처럼 아는 단어 · 공부 중, 나머지 탭은 그 탭의 기록만 본다.
+  // 표를 읽지 못하면(운영 미적용 등) 탭별 기록을 끄고 모든 탭이 단어 단위 O · X를 쓴다 — 누를 때마다 저장 실패가 뜨지 않게.
+  const facets = useWordFacets(mounted ? userId : null, conf.langCode, vocab,
+    { onError: () => setToast({ message: '저장하지 못했어요. 잠시 후 다시 시도해 주세요' }) });
+  const facetView = vocab && prefs.view !== 'all' && facets.available ? prefs.view : null;
+  const facetIdx = useMemo(() => facetIndex(facets.rows), [facets.rows]);
+  // 숨길 단어 — 전체 탭은 아는 단어, 나머지 탭은 아는 단어 + 그 탭에서 O 한 단어.
+  const hiddenSet = useMemo(() => {
+    if (!facetView) return knownSet;
+    const set = new Set(knownSet);
+    for (const [word, marks] of facetIdx) if (marks[facetView] === 'o') set.add(word);
+    return set;
+  }, [facetView, knownSet, facetIdx]);
 
   // 저장됨 — 이미 단어장에 있는 단어는 처음부터 「저장됨」.
   useEffect(() => {
@@ -289,17 +343,38 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
     pendingStudy.current = entry;
     unmark(entry.key);
   };
+  // 탭별 O — 그 탭 기록만 켜고 끈다(아는 단어 · 복습은 그대로). 네 탭이 모두 O면 아는 단어로 옮길지 한 번 묻는다.
+  const markFacetO = (entry) => {
+    if (!userId) return loginToast('로그인하면 아는 단어를 기록할 수 있어요');
+    const facet = facetView, label = LEVEL_VIEWS.find((v) => v.id === facet)?.label;
+    const mark = facetMark(facetIdx, entry.key, facet) === 'o' ? null : 'o';
+    facets.mark({ wordText: entry.key, facet, mark });
+    if (!mark) return;
+    const after = new Map(facetIdx).set(normalizeKnownWord(entry.key), { ...facetIdx.get(normalizeKnownWord(entry.key)), [facet]: 'o' });
+    if (allFacetsKnown(after, entry.key) && !knownSet.has(entry.key)) {
+      setToast({ message: '네 탭 모두 알아요. 아는 단어로 옮길까요?', action: '옮기기', onAction: () => { exclude(entry); setToast(null); } });
+    } else if (prefs.hideKnown) {
+      setToast({ message: `${label} 탭에서 숨겼어요`, action: '되돌리기', onAction: () => { facets.mark({ wordText: entry.key, facet, mark: null }); setToast(null); } });
+    }
+  };
+  // 탭별 X — 그 탭에 X를 남기고 공부 중인 단어로 담는다(markX 그대로). 이미 X면 그 탭 기록만 지운다(담긴 카드는 그대로).
+  const markFacetX = (entry) => {
+    if (!userId) return loginToast('로그인하면 단어를 저장할 수 있어요');
+    if (facetMark(facetIdx, entry.key, facetView) === 'x') return facets.mark({ wordText: entry.key, facet: facetView, mark: null });
+    facets.mark({ wordText: entry.key, facet: facetView, mark: 'x' });
+    markX(entry);
+  };
 
   const hideKnown = vocab && prefs.hideKnown;
   const { shown, knownCount } = useMemo(() => {
     let known = 0;
     const filtered = groups.map((g) => {
-      const split = vocab ? splitKnown(g.entries, knownSet) : { shown: g.entries, known: [] };
+      const split = vocab ? splitKnown(g.entries, hiddenSet) : { shown: g.entries, known: [] };
       known += split.known.length;
       return { name: g.name, entries: (hideKnown ? split.shown : g.entries).filter((e) => matchesLevelQuery(e, query)) };
     });
     return { shown: filtered.filter((g) => g.entries.length), knownCount: known };
-  }, [groups, vocab, knownSet, query, hideKnown]);
+  }, [groups, vocab, hiddenSet, query, hideKnown]);
   useEffect(() => setLimit(LEVEL_LIST_PAGE), [query]);
   // 점진 그리기 — 묶음 순서대로 limit개까지만. 묶음 제목의 개수는 전체 개수다.
   const { visible, total } = useMemo(() => {
@@ -376,7 +451,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
         onClick={() => setSettingsOpen((v) => !v)}><GearIcon /></button>}
     </div>
     {vocab && settingsOpen && <div className="lv-settings" id="lv-settings">
-      {[['hideKnown', '아는 단어 숨기기', knownCount > 0 ? `${knownCount}개` : null],
+      {[['hideKnown', '아는 단어 숨기기', knownCount > 0 ? `${facetView ? `${LEVEL_VIEWS.find((v) => v.id === facetView)?.label} 탭 ` : ''}${knownCount}개` : null],
         ...(zhVocab ? [['hun', '훈음', '한자마다 뜻과 소리'], ['glyph', '한자 대조', '正 대만 정체 · 日 일본어 표기']] : [])]
         .map(([key, label, note]) => <button key={key} type="button" role="switch" className="lv-switch" aria-checked={prefs[key]}
           onClick={() => setPrefs({ [key]: !prefs[key] })}><span>{label}{note && <small>{note}</small>}</span><i aria-hidden="true" /></button>)}
@@ -385,21 +460,23 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
       {LEVEL_VIEWS.map((v) => <button key={v.id} type="button" aria-pressed={prefs.view === v.id}
         onClick={() => setPrefs({ view: v.id })}>{v.label}</button>)}
     </div>}
-    {vocab && prefs.view !== 'all' && <p className="lv-view__hint">카드를 누르면 10초 동안 전부 보여요</p>}
+    {vocab && prefs.view !== 'all' && <p className="lv-view__hint">카드를 누르면 펼쳐져요. 다시 누르거나 10초가 지나면 접혀요</p>}
 
       <nav className="lv-chips" aria-label="주제">{nav.map((n) => <a key={n.href} href={n.href} aria-current={n.current || undefined} onClick={(e) => openGroup(e, n.i)}>{n.name}</a>)}</nav>
       <div className={vocab ? 'lv-split' : 'lv-split lv-split--wide'}>
-        {vocab && <nav aria-label="주제 목차"><ul className="lv-toc">{nav.map((n) => <li key={n.href}><a href={n.href} aria-current={n.current || undefined} onClick={(e) => openGroup(e, n.i)}>{n.name}</a></li>)}</ul></nav>}
+        {vocab && <nav className="lv-tocnav" aria-label="주제 목차"><ul className="lv-toc">{nav.map((n) => <li key={n.href}><a href={n.href} aria-current={n.current || undefined} onClick={(e) => openGroup(e, n.i)}>{n.name}</a></li>)}</ul></nav>}
         <div className="lv-col">
           {shown.length === 0 && <p className="lv-empty" role="status">{query ? '이 레벨에서 찾지 못했어요' : '모든 단어를 아는 단어로 옮겼어요. 「아는 단어 숨기기」를 끄면 다시 보여요'}</p>}
           {visible.map((g, gi) => g.entries.length > 0 && <section key={g.name} className="lv-group" id={groupId(gi)} data-lv-group={gi} aria-labelledby={`${groupId(gi)}-h`}>
             <h2 id={`${groupId(gi)}-h`}>{g.name}<span>{g.count}</span></h2>
             <ul className="lv-entries">{g.entries.map((e) => vocab ? <VocabCard key={e.key} entry={e} lang={lang} levelKey={levelKey}
-              view={prefs.view} peek={peek.has(e.key)} onPeek={() => peekCard(e.key)} speak={speakOk ? say : null}
+              view={prefs.view} scoped={!!facetView} peek={peek.get(e.key)?.phase} peekEpoch={peek.get(e.key)?.epoch} onPeek={() => togglePeek(e.key)} onRenew={() => renewPeek(e.key)}
+              speak={speakOk ? say : null}
               hunCells={hunOf(e.word)} glyph={glyphOf(e.word)}
-              known={knownSet.has(e.key)} studying={saved.has(e.key)} saving={saving.has(e.key)}
+              known={facetView ? facetMark(facetIdx, e.key, facetView) === 'o' : knownSet.has(e.key)}
+              studying={facetView ? facetMark(facetIdx, e.key, facetView) === 'x' : saved.has(e.key)} saving={saving.has(e.key)}
               pendingKnown={mounted && !!userId && known.isPendingWord(conf.langCode, e.key)}
-              onO={() => markO(e)} onX={() => markX(e)} /> : <li key={e.key} className="lv-pat">
+              onO={() => (facetView ? markFacetO(e) : markO(e))} onX={() => (facetView ? markFacetX(e) : markX(e))} /> : <li key={e.key} className="lv-pat">
               <div className="lv-pat__head"><span className="lv-hw" lang={lang === 'chinese' ? 'zh-CN' : 'ja'}>{e.pattern}</span>{e.ko && <span className="lv-pat__ko">{e.ko}</span>}</div>
               {e.conn && <p className="lv-formula">{e.conn}</p>}
               {e.note && <p className="lv-note">{e.note}</p>}

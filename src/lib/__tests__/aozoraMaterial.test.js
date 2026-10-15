@@ -120,6 +120,32 @@ describe('createAozoraMaterialDraft — 見出し 없는 원작은 문단 경계
     expectLocksExact(draft);
   });
 
+  it('장보다 긴 문단은 문장 끝에서만 나누고, 장 안에서는 한 문단으로 다시 잇는다(실물 吾輩は猫である · 駈込み訴え)', () => {
+    const sentence = (i) => (i % 5 === 2 ? '「来た。」と｜時計台《とけいだい》が言った。' : `ふつうの文が${'あ'.repeat(6)}続く。`);
+    const long = Array.from({ length: 14 }, (_, i) => sentence(i)).join('');
+    const body = [long, 'おわりの短い文。'].join('\n');
+    const draft = createAozoraMaterialDraft(sampleEntry(), parseAozoraText(wrap(body)), { targetChars: 90, maxChars: 180 });
+    expect(draft.chapters.length).toBeGreaterThan(1);
+    expect(draft.diagnostics.midParagraphSplitCount).toBe(0);
+    expect(draft.diagnostics.sentenceSplitCount).toBeGreaterThan(0);
+    // 장 경계는 문장 끝 — 장마다 。로 끝나고, 인용 뒤 「と」 앞에서는 자르지 않는다
+    for (const chapter of draft.chapters) expect(chapter.rawText).toMatch(/。$/u);
+    for (const chapter of draft.chapters.slice(1)) expect(chapter.rawText).not.toMatch(/^と/u);
+    // 이어 붙이면 원문 그대로(장 안에 없던 빈 줄이 생기지 않는다)
+    const plain = long.replace(/｜([^《]+)《[^》]+》/gu, '$1');
+    const joined = draft.chapters.map((chapter) => chapter.rawText).join('');
+    expect(joined.replaceAll('\n\n', '')).toBe(`${plain}おわりの短い文。`);
+    expect(joined.split('\n\n').length).toBeLessThanOrEqual(2); // 원래 문단 경계 하나뿐
+    expectLocksExact(draft);
+  });
+
+  it('문단 경계로 다 들어가면 문장 끝 분할을 쓰지 않는다 — 기존 작품의 장 경계를 바꾸지 않는다', () => {
+    const body = Array.from({ length: 6 }, (_, i) => `第${i}の段落の文。${'い'.repeat(40)}。`).join('\n');
+    const draft = createAozoraMaterialDraft(sampleEntry(), parseAozoraText(wrap(body)), { targetChars: 120, maxChars: 240 });
+    expect(draft.diagnostics).not.toHaveProperty('sentenceSplitCount');
+    for (const chapter of draft.chapters) expect(chapter.rawText.split('\n\n').every((paragraph) => body.includes(paragraph))).toBe(true);
+  });
+
   it('상한을 넘는 한 문단이 루비 기준 한가운데서 갈리면 그 잠금만 버리고 센다(나머지는 정확)', () => {
     const body = `${'あ'.repeat(5)}｜時計台《とけいだい》${'い'.repeat(5)}｜台所《だいどころ》`;
     const draft = createAozoraMaterialDraft(sampleEntry(), parseAozoraText(wrap(body)), { targetChars: 10, maxChars: 10 });

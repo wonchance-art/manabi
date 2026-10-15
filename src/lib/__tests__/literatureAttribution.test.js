@@ -29,7 +29,20 @@ describe('literatureAttributionParts — 출처 줄 재료', () => {
       publicDomain: true,
       editNote: true,
       smallKanaNote: false,
+      unproofreadNote: false,
     });
+  });
+
+  it('교정자 없는 입력본은 오너 승인 기록이 있을 때만 수록되고, 출처 줄이 그 사실을 밝힌다(夢十夜, 2026-10-15)', () => {
+    const unproofread = aozoraFixture('format-sample-headings.txt').replace(/\n校正：[^\n]*/u, '');
+    expect(() => createAozoraMaterialDraft(sampleEntry(), parseAozoraText(unproofread))).toThrow('proofreader');
+    const approved = { ...sampleEntry(), unproofreadApproval: { approvedBy: 'owner', approvedAt: '2026-10-15', reason: '오너 결정 원문' } };
+    const lit = createAozoraMaterialDraft(approved, parseAozoraText(unproofread)).chapters[0].metadata.literature;
+    expect(lit.edits).toContain('unproofread-source');
+    expect(literatureAttributionParts(lit)).toMatchObject({ proofreader: '', unproofreadNote: true });
+    // 승인 기록은 누가·언제·왜가 다 있어야 하고, 교정자가 있는 원문에는 붙일 수 없다
+    expect(() => createAozoraMaterialDraft({ ...approved, unproofreadApproval: { approvedBy: 'claude', approvedAt: '2026-10-15', reason: 'x' } }, parseAozoraText(unproofread))).toThrow('owner');
+    expect(() => createAozoraMaterialDraft(approved, parseAozoraText(aozoraFixture('format-sample-headings.txt')))).toThrow('only for texts without a proofreader');
   });
 
   it('작은 가나를 보통 크기로 바꾼 책만 그 편집을 한 줄 더 밝힌다(small-kana-as-full)', () => {
@@ -66,7 +79,7 @@ describe('뷰어 배선 — 출처 줄이 실제로 그려진다', () => {
     expect(block).not.toContain('literatureAttributionParts(material');
     expect(viewer).toContain('const canonicalLiterature = useCanonicalLiterature(material);');
     expect(block).toContain('className="viewer-attribution"');
-    for (const piece of ['lit.provider', 'lit.sourceBook', 'lit.inputter', 'lit.proofreader', 'lit.cardUrl', 'lit.publicDomain', 'lit.editNote', 'lit.smallKanaNote']) {
+    for (const piece of ['lit.provider', 'lit.sourceBook', 'lit.inputter', 'lit.proofreader', 'lit.cardUrl', 'lit.publicDomain', 'lit.editNote', 'lit.smallKanaNote', 'lit.unproofreadNote']) {
       expect(block, `출처 줄 항목 누락: ${piece}`).toContain(piece);
     }
     expect(block).toContain('rel="noopener noreferrer"');
@@ -77,5 +90,6 @@ describe('뷰어 배선 — 출처 줄이 실제로 그려진다', () => {
     expect(translateViewerText('zh-CN', '원작 퍼블릭 도메인')).toBe('原作已进入公有领域');
     expect(translateViewerText('zh-TW', '루비는 독음 보조, 장 분할은 manabi 편집')).toBe('注音僅為讀音輔助，分章由 manabi 編輯');
     expect(translateViewerText('zh-CN', '글꼴에 없는 작은 가나는 보통 크기로')).toBe('字库中没有的小写假名改为普通大小');
+    expect(translateViewerText('zh-TW', '青空文庫 교정 전 입력본')).toBe('青空文庫未經校對的輸入本');
   });
 });
