@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "personId": "000081",
+  "workId": "466",
+  "title": "オツベルと象",
+  "author": "宮沢賢治",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1926,
+  "authorDeathYear": 1933,
+  "level": "N3 중급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000081/card466.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000081/files/466_ruby_1478.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "a13a59019b3fe65096f985f8de54623abcd606d5276707a45e25b7b87571462b",
+  "textSha256": "27b76a7174ae656028af401c716b10f9467cde4041c6f0cf3f4eb99952732c07",
+  "attribution": {
+    "author": "宮沢賢治",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-15",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000081/card466.html"
+  },
+  "display": {
+    "titleReading": "オツベルとぞう",
+    "titleKo": "오츠베르와 코끼리",
+    "authorKo": "미야자와 겐지",
+    "cover": "namakabe",
+    "motif": "white-elephant"
+  }
+}

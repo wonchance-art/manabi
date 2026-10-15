@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "personId": "000148",
+  "workId": "789",
+  "title": "吾輩は猫である",
+  "author": "夏目漱石",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1905,
+  "authorDeathYear": 1916,
+  "level": "N1 심화",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000148/card789.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000148/files/789_ruby_5639.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "6545750b89ee2c57f215a65079eeab56ee7c997373b7b86e5b00ae74fe69208f",
+  "textSha256": "6bad4af644a8cef1e3f0f33cd3dc905ad3a9c1afeea94d790399ed6c61387326",
+  "attribution": {
+    "author": "夏目漱石",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-15",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000148/card789.html"
+  },
+  "display": {
+    "titleReading": "わがはいはねこである",
+    "titleKo": "나는 고양이로소이다",
+    "coverTitle": "吾輩は猫\nである",
+    "authorKo": "나쓰메 소세키",
+    "cover": "nezumi",
+    "motif": "cat-study"
+  }
+}

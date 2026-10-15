@@ -558,6 +558,138 @@ function BlossomStorm() {
 }
 
 // 천결(布目)·종이결(和紙) — 모든 표지 공통 층. 숫자 행렬은 잡음→투명도 변환일 뿐 색이 아니다 — 색은 CSS(flood-color·color)가 정한다.
+// 吾輩は猫である(1905) — 苦沙弥 선생 집 縁側: 障子 격자 앞에 앉은 이름 없는 고양이 실루엣, 금빛 눈 하나만 밝게.
+function CatStudy() {
+  const grid = [...Array.from({ length: 9 }, (_, i) => `M${i * 14} 0V112`), ...Array.from({ length: 6 }, (_, i) => `M0 ${i * 20 + 12}H120`)].join('');
+  return (
+    <>
+      <Line c="lt" d={grid} w={0.5} />
+      <Fill c="dk" d="M0 128H120V168H0Z" />
+      <Line c="dd" d="M0 128H120M0 140H120M0 154H120M30 128V140M74 140V154M96 128V140M50 154V168" w={0.6} />
+      <g data-focal="">
+        <Fill c="dd" d="M15 102a11 10 0 1 0 22 0a11 10 0 1 0 -22 0ZM16 98L15 86 23 93ZM36 98L37 86 29 93ZM17 108C10 118 8 138 12 150H42C46 138 44 118 35 108Z" />
+        <Line c="dd" d="M40 148C52 150 57 140 51 132C48 127 52 123 57 125" w={3} cap />
+        <Fill c="acc" d="M19.6 101q2.6 -2.6 5.2 0q-2.6 2.6 -5.2 0ZM27.2 101q2.6 -2.6 5.2 0q-2.6 2.6 -5.2 0Z" />
+        <Line c="dd" d="M22.2 99.6v2.8M29.8 99.6v2.8" w={0.7} />
+      </g>
+    </>
+  );
+}
+
+// ドグラ・マグラ(1935) — 「ブウウ──ンンン」 첫 장의 柱時計: 판면을 감도는 소용돌이 선 앞에 선 시계 실루엣, 놋쇠 진자 하나만 밝게.
+function ClockSpiral() {
+  const spiral = Array.from({ length: 220 }, (_, i) => { const a = i * 0.16; const r = 2 + a * 4.2; return `${i ? 'L' : 'M'}${f1(34 + Math.cos(a) * r)} ${f1(108 + Math.sin(a) * r)}`; }).join('');
+  const ticks = Array.from({ length: 12 }, (_, i) => { const a = (i * Math.PI) / 6; return `M${f1(34 + Math.cos(a) * 8.6)} ${f1(94 + Math.sin(a) * 8.6)}L${f1(34 + Math.cos(a) * 10.4)} ${f1(94 + Math.sin(a) * 10.4)}`; }).join('');
+  return (
+    <>
+      <Line c="lt" d={spiral} w={0.55} />
+      <g transform="translate(-8 4)" data-focal="">
+        <Fill c="dd" d="M19 82Q34 64 49 82V118H19ZM23 118H45V158H23ZM20 158H48V162H20Z" />
+        <Fill c="paper" d="M23 94a11 11 0 1 0 22 0a11 11 0 1 0 -22 0Z" />
+        <Line c="dd" d={`${ticks}M34 94L34 86M34 94L39.6 97`} w={0.7} cap />
+        <Fill c="lt" d="M27 122H41V154H27Z" />
+        <Line c="acc" d="M34 120V146" w={0.9} />
+        <Fill c="acc" d="M30 148a4 4 0 1 0 8 0a4 4 0 1 0 -8 0Z" />
+      </g>
+    </>
+  );
+}
+
+// 学問のすすめ(1872) — 文明開化의 남포등: 펼친 책 위에 켠 석유 램프, 불꽃에서 퍼지는 햇살 선.
+function LampBook() {
+  const rays = Array.from({ length: 13 }, (_, i) => { const a = Math.PI * (1.05 + i * 0.075); return `M${f1(34 + Math.cos(a) * 16)} ${f1(100 + Math.sin(a) * 16)}L${f1(34 + Math.cos(a) * 92)} ${f1(100 + Math.sin(a) * 92)}`; }).join('');
+  return (
+    <>
+      <Line c="lt" d={rays} w={0.7} />
+      <Fill c="paper" d="M4 152Q19 143 34 149V164Q19 158 4 166ZM34 149Q49 143 64 152V166Q49 158 34 164Z" focal />
+      <Line c="dd" d="M9 153Q19 148 30 152M9 157Q19 152 30 156M38 152Q49 148 59 153M38 156Q49 152 59 157M38 160Q49 156 59 161" w={0.45} />
+      <g data-focal="">
+        <Fill c="dd" d="M24 146H44L40 140H28ZM32 140V124H36V140ZM25 118a9 6 0 1 0 18 0a9 6 0 1 0 -18 0Z" />
+        <Fill c="lt" d="M30 112Q27 101 31 93Q34 87 37 93Q41 101 38 112Z" />
+        <Fill c="acc" d="M34 108Q30.6 102 34 95Q37.4 102 34 108Z" />
+        <Fill c="acc2" d="M34 106Q32.4 102.4 34 99Q35.6 102.4 34 106Z" />
+      </g>
+    </>
+  );
+}
+
+// オツベルと象(1926) — 稲扱 작업장에 매인 흰 코끼리: 앞발의 쇠사슬과 分銅, 하늘의 달(「サンタマリア」에게 편지를 쓰던 밤).
+function WhiteElephant() {
+  const links = Array.from({ length: 5 }, (_, i) => `M${f1(27 - i * 3.2)} ${f1(149 + i * 2)}a1.8 1.1 0 1 0 3.6 0a1.8 1.1 0 1 0 -3.6 0Z`).join('');
+  return (
+    <>
+      <Fill c="acc2" d="M8 30a10 10 0 1 0 20 0a10 10 0 1 0 -20 0Z" />
+      <Line c="lt" d={scatter(14, 47, [70, 120, 120, 150]).map(([x, y, k]) => `M${x} ${y}l${f1(1 + k * 2)} -8M${x} ${y}l-${f1(1 + k)} -7M${x} ${y}l${f1(3 + k)} -6`).join('')} w={0.6} />
+      <Fill c="dk" d="M0 152Q60 146 120 152V168H0Z" />
+      <g data-focal="">
+        <Fill c="paper" d="M22 112C24 100 48 98 58 106C64 112 64 126 60 132L58 152H51L50 136H34L33 152H26L25 134C20 128 20 120 22 112ZM24 110C16 104 8 108 7 118C6 126 10 132 12 140C13 146 10 150 6 150C10 154 16 151 17 144C18 136 20 130 26 128Z" />
+        <Line c="dk" d="M24 108C31 105 35 112 33 120C31 126 25 126 22 120M8 118C10 120 13 120 15 118" w={0.6} />
+        <Fill c="dd" d="M15.2 114a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0Z" />
+        <Line c="dd" d={links} w={0.6} />
+        <Fill c="dd" d="M7 157H19L17 165H9Z" />
+      </g>
+    </>
+  );
+}
+
+// 駈込み訴え(1940) — 「銀三十」: 쏟아지는 은화와 그 주머니, 위로는 겟세마네의 올리브 가지.
+function SilverCoins() {
+  const coins = [[22, 130, 5.4, 0.55], [30, 136, 5, 1], [12, 142, 5.6, 0.4], [24, 150, 5.2, 0.8], [40, 148, 4.8, 0.5], [8, 158, 5, 1], [34, 160, 5.4, 0.35], [50, 158, 4.6, 0.9], [46, 136, 4.2, 1], [56, 146, 4.4, 0.45], [20, 162, 4.8, 0.6]];
+  const ellipse = ([x, y, r, t]) => `M${f1(x - r)} ${y}a${r} ${f1(r * t)} 0 1 0 ${f1(r * 2)} 0a${r} ${f1(r * t)} 0 1 0 ${f1(-r * 2)} 0Z`;
+  const leaves = [[14, 30, 40], [24, 26, -20], [32, 40, 50], [42, 34, -30], [50, 48, 40], [20, 46, 10]];
+  return (
+    <>
+      <Line c="lt" d="M0 22C18 30 34 36 60 58" w={0.9} cap />
+      <Fill c="lt" d={leaves.map(([x, y, rot]) => { const a = (rot * Math.PI) / 180; const P = (px, py) => `${f1(x + px * Math.cos(a) - py * Math.sin(a))} ${f1(y + px * Math.sin(a) + py * Math.cos(a))}`; return `M${P(0, -7)}Q${P(3, 0)} ${P(0, 7)}Q${P(-3, 0)} ${P(0, -7)}Z`; }).join('')} />
+      <g data-focal="">
+        <Fill c="dd" d="M5 122C2 112 8 102 14 100L11 94L14 96L16 92L18 96L21 93L19 100C25 102 30 112 27 122C25 128 7 128 5 122Z" />
+        <Line c="lt" d="M12 100Q16 102 20 100M18 100C22 98 26 96 30 98" w={0.7} cap />
+      </g>
+      <g data-focal="">
+        <Fill c="acc" d={coins.map(ellipse).join('')} />
+        <Line c="dd" d={coins.map(([x, y, r, t]) => ellipse([x, y, r * 0.66, t])).join('')} w={0.45} />
+      </g>
+    </>
+  );
+}
+
+// 桜の樹の下には(1928) — 「桜の樹の下には屍体が埋まっている！」: 땅 위에는 흰 벚꽃 가지, 땅 밑으로는 뿌리가 어둠 속으로 뻗어 작은 물방울 하나에 닿는다.
+function SakuraRoots() {
+  const blossoms = scatter(24, 53, [-4, 18, 40, 84]);
+  return (
+    <>
+      <Fill c="dd" d="M0 104Q30 100 60 104T120 102V168H0Z" />
+      <Line c="lt" d="M30 104C28 118 22 126 14 134C8 140 6 150 2 160M30 104C32 120 40 128 38 142C37 150 32 152 30 150M30 104C38 112 52 116 60 126C66 134 64 146 70 158M22 126C18 122 12 124 8 120M44 118C50 116 54 110 60 112" w={0.9} cap />
+      <Fill c="acc" d="M30 147C28 150 28 153 30.4 153.6C32.8 153 32.6 150 30 147Z" focal />
+      <Fill c="dd" d="M27 104C28 92 26 80 22 68L26 66C30 78 33 90 34 104Z" focal />
+      <Line c="dd" d="M24 76C16 64 10 58 2 52M25 84C30 76 36 70 42 66M23 70C22 60 24 50 28 42M28 92C34 90 38 86 42 80" w={1.4} cap />
+      <Fill c="paper" d={blossoms.map(([x, y, k]) => sakura(x, y, 3 + k * 2.4, k * 72)).join('')} focal />
+      <Fill c="lt" d={blossoms.map(([x, y]) => `M${f1(x - 0.8)} ${y}a0.8 0.8 0 1 0 1.6 0a0.8 0.8 0 1 0 -1.6 0Z`).join('')} />
+      <Fill c="lt" d={petals(59, 8, [44, 84, 120, 100], 0.8)} />
+    </>
+  );
+}
+
+// 陰翳礼讃(1933) — 촛불 하나가 비추는 칠기: 어둠 속 옅은 빛의 고리, 촛대와 뚜껑 덮인 옻칠 그릇, 금 蒔絵 선만 반짝인다.
+function LacquerCandle() {
+  return (
+    <>
+      <Fill c="lt" d="M2 112a30 26 0 1 0 60 0a30 26 0 1 0 -60 0Z" />
+      <Fill c="dk" d="M12 112a20 17 0 1 0 40 0a20 17 0 1 0 -40 0Z" />
+      <Fill c="dd" d="M0 140H120V168H0Z" />
+      <g data-focal="">
+        <Fill c="dd" d="M14 140H30L27 136H24V112H20V136H17ZM18 110H26V112H18Z" />
+        <Fill c="paper" d="M19.6 96H24.4V110H19.6Z" />
+        <Fill c="acc" d="M22 95Q18.6 89 22 81Q25.4 89 22 95Z" />
+        <Fill c="acc2" d="M22 93.4Q20.6 89.6 22 86Q23.4 89.6 22 93.4Z" />
+        <Fill c="dd" d="M34 138C34 128 42 124 52 124C62 124 70 128 70 138ZM40 124C40 118 46 116 52 116C58 116 64 118 64 124ZM50 114h4v3h-4Z" />
+        <Line c="acc" d="M36 133C44 130 60 130 68 133M42 121C48 119 56 119 62 121" w={0.5} />
+        <Fill c="paper" d="M44 127q2 -1.2 4 0q-2 0.8 -4 0Z" />
+      </g>
+    </>
+  );
+}
+
 function Surface({ id, jimon }) {
   const ground = JIMON[jimon];
   return (
@@ -596,6 +728,8 @@ const ART = {
   'night-train': NightTrain, 'kamakura-letter': KamakuraLetter, 'crab-pear': CrabPear, 'wind-hill': WindHill,
   'dusk-rails': DuskRails, 'peach-house': PeachHouse, 'deco-chair': DecoChair, 'spider-web': SpiderWeb,
   'melos-run': MelosRun, 'clown-photos': ClownPhotos, 'setting-sun': SettingSun, 'umbrella-rose': UmbrellaRose, 'blossom-storm': BlossomStorm,
+  'cat-study': CatStudy, 'clock-spiral': ClockSpiral, 'lamp-book': LampBook, 'white-elephant': WhiteElephant, 'silver-coins': SilverCoins,
+  'sakura-roots': SakuraRoots, 'lacquer-candle': LacquerCandle,
 };
 
 export default function LiteratureCoverArt({ motif }) {

@@ -33,6 +33,13 @@
 .lit-cover--usugaki{--cover-color:#e7a881;--tone-soft:#be835e;--tone-strong:#99623f;--tone-deep:#653614} /* 薄柿 */
 .lit-cover--usunezumi{--cover-color:#a5a49e;--tone-soft:#807f7a;--tone-strong:#605f5a;--tone-deep:#34332e} /* 薄鼠 */
 .lit-cover--yamabuki{--cover-color:#d6a234;--tone-soft:#ac7e02;--tone-strong:#875e00;--tone-deep:#553200} /* 山吹 */
+.lit-cover--nezumi{--cover-color:#7b7c7d;--tone-soft:#a2a3a4;--tone-strong:#c6c6c7;--tone-deep:#343435} /* 鼠 */
+.lit-cover--susutake{--cover-color:#6f514c;--tone-soft:#917773;--tone-strong:#b29a95;--tone-deep:#3a211d} /* 煤竹 */
+.lit-cover--nando{--cover-color:#2b6b7c;--tone-soft:#62909e;--tone-strong:#8ab1be;--tone-deep:#003241} /* 納戸 */
+.lit-cover--namakabe{--cover-color:#94846a;--tone-soft:#706148;--tone-strong:#50422b;--tone-deep:#251a00} /* 生壁 */
+.lit-cover--suou{--cover-color:#9e3d3f;--tone-soft:#be6b69;--tone-strong:#dd908d;--tone-deep:#5d000e} /* 蘇芳 */
+.lit-cover--umenezumi{--cover-color:#c099a0;--tone-soft:#9a757c;--tone-strong:#78555c;--tone-deep:#492930} /* 梅鼠 */
+.lit-cover--kobicha{--cover-color:#716246;--tone-soft:#968870;--tone-strong:#b7aa95;--tone-deep:#352a11} /* 媚茶 */
 .lit-cover__slip{position:absolute;z-index:1;top:5px;right:4px;display:flex;flex-direction:row-reverse;align-items:flex-start;gap:1.2px;padding:2.4px 1.9px;background:#f3ead4;color:#231f1b;box-shadow:inset 0 0 0 .9px #3a322a,inset 0 0 0 1.5px #f3ead4,inset 0 0 0 1.9px #3a322a,.4px .6px .8px color-mix(in srgb,#000 35%,transparent)}
 .lit-cover__title{display:flex;flex-direction:row-reverse;gap:1px;font-family:var(--font-lit-serif),"Noto Serif CJK JP",serif;font-weight:500;font-size:11px;line-height:1;letter-spacing:.04em}
 .lit-cover__line{display:block;writing-mode:vertical-rl;white-space:nowrap}

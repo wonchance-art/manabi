@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "personId": "001383",
+  "workId": "56642",
+  "title": "陰翳礼讃",
+  "author": "谷崎潤一郎",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1933,
+  "authorDeathYear": 1965,
+  "level": "N1 심화",
+  "cardUrl": "https://www.aozora.gr.jp/cards/001383/card56642.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/001383/files/56642_ruby_59574.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "67a392b507e7021dd75a6280654f7da44423f7393f2a8b6cfc7ab6855843829c",
+  "textSha256": "094bf84ca105d52d2ff73ddccc8ea093af673727656fe281c3f2db1593745818",
+  "attribution": {
+    "author": "谷崎潤一郎",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-15",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/001383/card56642.html"
+  },
+  "display": {
+    "titleReading": "いんえいらいさん",
+    "titleKo": "그늘에 대하여",
+    "authorKo": "다니자키 준이치로",
+    "cover": "kobicha",
+    "motif": "lacquer-candle"
+  }
+}

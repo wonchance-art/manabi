@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "personId": "000035",
+  "workId": "277",
+  "title": "駈込み訴え",
+  "author": "太宰治",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1940,
+  "authorDeathYear": 1948,
+  "level": "N2 상급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000035/card277.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000035/files/277_ruby_33097.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "70a8bf6258d91b0fba149abaf5419e925f84866c45599d7dedc6d0bf728b9886",
+  "textSha256": "8eb9583b849dc11ed39545face9328dae16668fe597c6956bc31a160386643d5",
+  "attribution": {
+    "author": "太宰治",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-15",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000035/card277.html"
+  },
+  "display": {
+    "titleReading": "かけこみうったえ",
+    "titleKo": "직소",
+    "authorKo": "다자이 오사무",
+    "cover": "suou",
+    "motif": "silver-coins"
+  }
+}
