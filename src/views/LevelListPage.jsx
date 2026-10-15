@@ -75,13 +75,13 @@ function Example({ ex, lang, speak, hideTranslation }) {
 }
 
 /** [O] 안다(아는 단어) · [X] 모른다(공부 중인 단어) — 누른 쪽이 채워진다. 아는 단어가 먼저다(저장돼 있어도 O면 O만). */
-function OxButtons({ scope, known, studying, saving, pendingKnown, onO, onX }) {
+function OxButtons({ scope, known, studying, saving, pendingKnown, onO, onX, showLabels = false }) {
   return <div className="lv-acts">
     <button type="button" className="lv-fab lv-fab--o" aria-pressed={known} aria-label={scope ? `${scope} 탭에서 안다` : '안다 — 아는 단어로'} title="안다"
-      onClick={onO} disabled={pendingKnown}><CircleIcon /></button>
+      onClick={onO} disabled={pendingKnown}><CircleIcon />{showLabels && <span>안다</span>}</button>
     <button type="button" className={`lv-fab lv-fab--x${saving ? ' lv-fab--busy' : ''}`} aria-pressed={!known && studying}
       aria-label={saving ? '공부 중인 단어로 담는 중' : `${scope ? `${scope} 탭에서 ` : ''}모른다 — 공부 중인 단어로`} title="모른다"
-      aria-disabled={saving || undefined} onClick={saving ? undefined : onX} disabled={pendingKnown}>{saving ? <SpinIcon /> : <CrossIcon />}</button>
+      aria-disabled={saving || undefined} onClick={saving ? undefined : onX} disabled={pendingKnown}>{saving ? <SpinIcon /> : <CrossIcon />}{showLabels && <span>모른다</span>}</button>
   </div>;
 }
 
@@ -111,7 +111,7 @@ function readingLine(entry, lang, levelKey) {
  */
 export function VocabCard({ entry: e, lang, levelKey, view, scoped = true, peek, peekEpoch = 0, onPeek, onRenew, speak, hunCells, glyph, known, studying, saving, pendingKnown, onO, onX }) {
   const scope = view === 'all' || !scoped ? null : LEVEL_VIEWS.find((v) => v.id === view)?.label;
-  const ox = <OxButtons scope={scope} known={known} studying={studying} saving={saving} pendingKnown={pendingKnown} onO={onO} onX={onX} />;
+  const ox = <OxButtons scope={scope} showLabels={lang === 'chinese'} known={known} studying={studying} saving={saving} pendingKnown={pendingKnown} onO={onO} onX={onX} />;
   if (view === 'all') return <li className="lv-entry" data-known={known || undefined}>
     <div className="lv-entry__top">
       <div className="lv-entry__word"><Headword entry={e} lang={lang} levelKey={levelKey} hunCells={hunCells} />
@@ -427,7 +427,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
   const nav = shown.map((g, i) => ({ i, name: g.name, href: `#${groupId(i)}`, current: i === activeGroup }));
   const speakOk = mounted && ttsSupported;
 
-  return <div className={`manabi-page lv-page lv-page--${kind}`}>
+  return <div className={`manabi-page lv-page lv-page--${kind}`} data-language={conf.langCode}>
     <p className="lv-crumb"><Link href={`/lessons?lang=${conf.language}`}>← 교재</Link></p>
     <div className="lv-head">
       <h1>{title}</h1>

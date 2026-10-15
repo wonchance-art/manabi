@@ -170,3 +170,57 @@
   .lv-acts .lv-fab--o,.lv-acts .lv-fab--x{box-sizing:border-box;border-color:var(--lv-line)}
   .lv-acts .lv-fab[aria-pressed=true]{border-color:transparent}
 }
+
+/* HSK 읽기 위계 — 기존 뷰어의 SC/TC/JP · 병음 Noto Sans와 웹 셸 토큰을 잇는다.
+   훈음·대조를 함께 켜도 표제어/병음/예문을 서로 다른 줄에서 읽고, 듣기 터치 영역은 글과 겹치지 않는다. */
+.lv-page--vocab[data-language="zh"] .lv-entry{border-radius:12px;padding:22px 24px;overflow-wrap:anywhere}
+.lv-page--vocab[data-language="zh"] .lv-entry__top{align-items:flex-start;gap:20px}
+.lv-page--vocab[data-language="zh"] .lv-entry__word{display:grid;grid-template-columns:minmax(0,1fr) 44px;grid-template-areas:"head sound" "reading sound";gap:6px 12px;flex:1}
+.lv-page--vocab[data-language="zh"] .lv-hw{grid-area:head;justify-self:start;font-size:27px;line-height:1.4;letter-spacing:0}
+.lv-page--vocab[data-language="zh"] .lv-hw--hun{flex-wrap:wrap;gap:4px;row-gap:8px}
+.lv-page--vocab[data-language="zh"] .lv-hw .word-fit__hun{line-height:1.5;margin-top:2px}
+.lv-page--vocab[data-language="zh"] .lv-py{grid-area:reading}
+.lv-page--vocab[data-language="zh"] :is(.lv-py,.lv-ex__py){font-family:var(--font-noto-sans),sans-serif;font-size:15px;line-height:1.7;letter-spacing:0;overflow-wrap:anywhere}
+.lv-page--vocab[data-language="zh"] .lv-snd{margin:0;border:1px solid var(--lv-line);background:var(--lv-field);color:var(--muted);touch-action:manipulation;transition:background .15s ease,color .15s ease}
+.lv-page--vocab[data-language="zh"] .lv-entry__word>.lv-snd{grid-area:sound;align-self:start}
+.lv-page--vocab[data-language="zh"] .lv-snd:hover{background:var(--lv-chip-hover);color:var(--ink)}
+.lv-page--vocab[data-language="zh"] .lv-snd:active{background:var(--lv-chip);color:var(--ink)}
+.lv-page--vocab[data-language="zh"] .lv-glyph{gap:8px 20px;margin:14px 0 0;font-size:18px;line-height:1.6}
+.lv-page--vocab[data-language="zh"] .lv-glyph>span{flex-wrap:wrap;gap:4px 8px;min-width:0}
+.lv-page--vocab[data-language="zh"] .lv-glyph small{font-size:14px;line-height:1.6}
+.lv-page--vocab[data-language="zh"] .lv-mean{margin-top:14px;font-size:17px;line-height:1.65}
+.lv-page--vocab[data-language="zh"] .lv-ex{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:4px 10px;align-items:start;margin-top:16px;padding:0 0 0 14px}
+.lv-page--vocab[data-language="zh"] .lv-ex__text{font-size:20px;line-height:1.75;min-width:0}
+.lv-page--vocab[data-language="zh"] .lv-ex>.lv-snd{grid-column:2;grid-row:1}
+.lv-page--vocab[data-language="zh"] :is(.lv-ex__py,.lv-ex__tr){grid-column:1/-1;margin:0}
+.lv-page--vocab[data-language="zh"] .lv-ex__tr{font-size:14px;line-height:1.75;overflow-wrap:anywhere}
+.lv-page--vocab[data-language="zh"] .lv-acts{gap:8px}
+.lv-page--vocab[data-language="zh"] .lv-fab{width:auto;min-width:94px;min-height:48px;height:auto;padding:10px 14px;display:inline-flex;gap:8px;border:1px solid var(--lv-line);border-radius:10px;font:600 14px/1.5 var(--font-noto-kr),sans-serif;touch-action:manipulation}
+.lv-page--vocab[data-language="zh"] .lv-fab svg{width:20px;height:20px;flex:none}
+.lv-page--vocab[data-language="zh"] .lv-fab[aria-pressed=true]{border-color:transparent}
+.lv-page--vocab[data-language="zh"] .lv-solo{min-width:0}
+.lv-page--vocab[data-language="zh"] .lv-solo__row{flex-wrap:wrap}
+.lv-page--vocab[data-language="zh"] .lv-solo>.lv-entry__word{display:block}
+.lv-page--vocab[data-language="zh"] .lv-solo__ex{font-size:22px;line-height:1.8}
+.lv-page--vocab[data-language="zh"] .lv-solo__mean{font-size:20px;line-height:1.7;overflow-wrap:anywhere}
+.lv-page--vocab[data-language="zh"] .lv-solo__play{border:1px solid var(--lv-line);background:var(--lv-field);color:var(--muted);touch-action:manipulation}
+.lv-page--vocab[data-language="zh"] .lv-gear{border:1px solid var(--lv-line)}
+.lv-page--vocab[data-language="zh"] .lv-view button{border-radius:6px 6px 0 0;touch-action:manipulation}
+.lv-page--vocab[data-language="zh"] .lv-view button:hover{background:var(--lv-chip)}
+.lv-page--vocab[data-language="zh"] .lv-switch{padding-block:10px;line-height:1.6}
+.lv-page--vocab[data-language="zh"] .lv-switch small{font-size:13px;line-height:1.6}
+@container manabi-shell (max-width:900px){
+  .lv-page--vocab[data-language="zh"] .lv-split{gap:0}
+  .lv-page--vocab[data-language="zh"] .lv-split>nav[aria-label="주제 목차"]{display:none}
+  .lv-page--vocab[data-language="zh"] .lv-entry{padding:18px}
+  .lv-page--vocab[data-language="zh"] .lv-acts{align-self:stretch;justify-content:flex-end;margin:18px 0 0;gap:10px}
+  .lv-page--vocab[data-language="zh"] .lv-acts .lv-fab{box-sizing:border-box;background-clip:border-box}
+  .lv-page--vocab[data-language="zh"] .lv-solo__row{flex-direction:column;align-items:stretch;gap:16px}
+  .lv-page--vocab[data-language="zh"] .lv-solo__row .lv-acts{align-self:flex-end;margin:0}
+  .lv-page--vocab[data-language="zh"] .lv-solo__ex{font-size:21px}
+}
+@media (prefers-reduced-motion:reduce){.lv-page--vocab[data-language="zh"] .lv-snd{transition:none}}
+.lv-page--vocab[data-language="zh"] .lv-ex--tail{padding-right:0}
+.lv-page--vocab[data-language="zh"] .lv-ex--tail .lv-snd{position:static;inset:auto;transform:none}
+.lv-page--vocab[data-language="zh"] .lv-ex--tail .lv-ex__py{grid-column:1;grid-row:1}
+.lv-page--vocab[data-language="zh"] .lv-ex--tail .lv-ex__tr{grid-column:1}
