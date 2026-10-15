@@ -325,6 +325,77 @@
               "reading": "よろこ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_1_0",
+              "line": 2,
+              "start": 15,
+              "end": 17,
+              "text": "稲扱",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_1",
+              "line": 6,
+              "start": 32,
+              "end": 34,
+              "text": "吹殻",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_2",
+              "line": 8,
+              "start": 27,
+              "end": 29,
+              "text": "稲扱",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_3",
+              "line": 18,
+              "start": 11,
+              "end": 13,
+              "text": "片脚",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_4",
+              "line": 26,
+              "start": 15,
+              "end": 17,
+              "text": "稲扱",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_5",
+              "line": 30,
+              "start": 7,
+              "end": 15,
+              "text": "パチパチパチパチ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            }
+          ]
         }
       }
     },
@@ -540,6 +611,44 @@
               "end": 1386,
               "base": "把",
               "reading": "わ"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_2_0",
+              "line": 0,
+              "start": 21,
+              "end": 23,
+              "text": "稲扱",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_1",
+              "line": 52,
+              "start": 23,
+              "end": 26,
+              "text": "鍛冶場",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_2",
+              "line": 58,
+              "start": 6,
+              "end": 9,
+              "text": "鍛冶場",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
             }
           ]
         }
@@ -867,6 +976,44 @@
               "reading": "や"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_3_0",
+              "line": 28,
+              "start": 0,
+              "end": 2,
+              "text": "赤衣",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_1",
+              "line": 28,
+              "start": 44,
+              "end": 47,
+              "text": "沙羅樹",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_2",
+              "line": 58,
+              "start": 52,
+              "end": 54,
+              "text": "片脚",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     }
@@ -887,6 +1034,7 @@
       1727,
       1553,
       2539
-    ]
+    ],
+    "boundaryMergeCount": 12
   }
 }

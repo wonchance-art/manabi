@@ -450,6 +450,132 @@
               "reading": "まれ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_1_0",
+              "line": 6,
+              "start": 58,
+              "end": 61,
+              "text": "縞模様",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_1",
+              "line": 6,
+              "start": 92,
+              "end": 95,
+              "text": "鼠花火",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_2",
+              "line": 12,
+              "start": 84,
+              "end": 87,
+              "text": "翡翠色",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_3",
+              "line": 12,
+              "start": 88,
+              "end": 91,
+              "text": "香水壜",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_4",
+              "line": 14,
+              "start": 166,
+              "end": 168,
+              "text": "乾蝦",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_5",
+              "line": 14,
+              "start": 362,
+              "end": 365,
+              "text": "快速調",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_6",
+              "line": 14,
+              "start": 473,
+              "end": 476,
+              "text": "人参葉",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_7",
+              "line": 14,
+              "start": 483,
+              "end": 485,
+              "text": "素晴",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_8",
+              "line": 16,
+              "start": 242,
+              "end": 244,
+              "text": "眼深",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_9",
+              "line": 16,
+              "start": 410,
+              "end": 413,
+              "text": "螺旋棒",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_10",
+              "line": 16,
+              "start": 443,
+              "end": 445,
+              "text": "鎰屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -708,6 +834,143 @@
               "reading": "いろど"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_2_0",
+              "line": 0,
+              "start": 33,
+              "end": 35,
+              "text": "檸檬",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_1",
+              "line": 0,
+              "start": 43,
+              "end": 45,
+              "text": "檸檬",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_2",
+              "line": 0,
+              "start": 126,
+              "end": 128,
+              "text": "檸檬",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_3",
+              "line": 0,
+              "start": 319,
+              "end": 321,
+              "text": "一顆",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_4",
+              "line": 2,
+              "start": 2,
+              "end": 4,
+              "text": "檸檬",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_5",
+              "line": 12,
+              "start": 72,
+              "end": 75,
+              "text": "諧謔心",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_6",
+              "line": 22,
+              "start": 19,
+              "end": 21,
+              "text": "檸檬",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_7",
+              "line": 22,
+              "start": 50,
+              "end": 52,
+              "text": "檸檬",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_8",
+              "line": 26,
+              "start": 43,
+              "end": 45,
+              "text": "檸檬",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_9",
+              "line": 28,
+              "start": 8,
+              "end": 10,
+              "text": "檸檬",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_10",
+              "line": 28,
+              "start": 80,
+              "end": 82,
+              "text": "檸檬",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_11",
+              "line": 38,
+              "start": 31,
+              "end": 33,
+              "text": "粉葉",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     }
@@ -727,6 +990,7 @@
     "chapterChars": [
       2603,
       2385
-    ]
+    ],
+    "boundaryMergeCount": 23
   }
 }

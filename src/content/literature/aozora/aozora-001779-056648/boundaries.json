@@ -1,0 +1,317 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "229c36327a9aee0668d47630a336499b7cd7f2ebc60fa55cc5027aa13a7b9615",
+      "edits": [
+        {
+          "line": 14,
+          "start": 23,
+          "end": 25,
+          "text": "此様",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 26,
+          "end": 28,
+          "text": "無躾",
+          "reason": "ruby"
+        },
+        {
+          "line": 20,
+          "start": 94,
+          "end": 97,
+          "text": "御不審",
+          "reason": "ruby"
+        },
+        {
+          "line": 24,
+          "start": 69,
+          "end": 71,
+          "text": "無躾",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 28,
+          "start": 41,
+          "end": 43,
+          "text": "醜貌",
+          "reason": "ruby"
+        },
+        {
+          "line": 28,
+          "start": 115,
+          "end": 117,
+          "text": "此世",
+          "reason": "ruby"
+        },
+        {
+          "line": 28,
+          "start": 194,
+          "end": 196,
+          "text": "其日",
+          "reason": "ruby"
+        },
+        {
+          "line": 28,
+          "start": 196,
+          "end": 198,
+          "text": "其日",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 32,
+          "start": 211,
+          "end": 215,
+          "text": "装飾電燈",
+          "reason": "ruby"
+        },
+        {
+          "line": 32,
+          "start": 236,
+          "end": 238,
+          "text": "絨氈",
+          "reason": "ruby"
+        },
+        {
+          "line": 36,
+          "start": 64,
+          "end": 66,
+          "text": "其辺",
+          "reason": "ruby"
+        },
+        {
+          "line": 36,
+          "start": 67,
+          "end": 69,
+          "text": "病児",
+          "reason": "ruby"
+        },
+        {
+          "line": 38,
+          "start": 19,
+          "end": 21,
+          "text": "度毎",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "da1d08e5d1acfa6b52724ca2a83734853a6b5ca8778908e9acde3cf7b6a6e6d0",
+      "edits": [
+        {
+          "line": 0,
+          "start": 38,
+          "end": 40,
+          "text": "我乍",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 135,
+          "end": 139,
+          "text": "フックラ",
+          "reason": "katakana"
+        },
+        {
+          "line": 0,
+          "start": 184,
+          "end": 186,
+          "text": "鞣革",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 129,
+          "end": 131,
+          "text": "巌丈",
+          "reason": "ruby"
+        },
+        {
+          "line": 20,
+          "start": 190,
+          "end": 192,
+          "text": "隠家",
+          "reason": "ruby"
+        },
+        {
+          "line": 20,
+          "start": 237,
+          "end": 240,
+          "text": "波打際",
+          "reason": "ruby"
+        },
+        {
+          "line": 20,
+          "start": 432,
+          "end": 434,
+          "text": "隠家",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 30,
+          "start": 68,
+          "end": 70,
+          "text": "絨氈",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 30,
+          "start": 146,
+          "end": 150,
+          "text": "フカフカ",
+          "reason": "katakana"
+        },
+        {
+          "line": 30,
+          "start": 163,
+          "end": 165,
+          "text": "太腿",
+          "reason": "ruby"
+        },
+        {
+          "line": 30,
+          "start": 187,
+          "end": 189,
+          "text": "鞣皮",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 30,
+          "start": 196,
+          "end": 198,
+          "text": "暖味",
+          "reason": "ruby"
+        },
+        {
+          "line": 32,
+          "start": 144,
+          "end": 148,
+          "text": "ボンヤリ",
+          "reason": "katakana"
+        },
+        {
+          "line": 34,
+          "start": 101,
+          "end": 103,
+          "text": "太腿",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "textSha256": "94c4bb6362b7e5a401ed731cd227091f8013f84eeb436f6b154cd0bf5b613ee0",
+      "edits": [
+        {
+          "line": 0,
+          "start": 141,
+          "end": 143,
+          "text": "肉塊",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 295,
+          "end": 297,
+          "text": "太腿",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 10,
+          "start": 126,
+          "end": 128,
+          "text": "鞣皮",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 206,
+          "end": 208,
+          "text": "気儘",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 25,
+          "end": 28,
+          "text": "陶酔的",
+          "reason": "ruby"
+        },
+        {
+          "line": 24,
+          "start": 6,
+          "end": 8,
+          "text": "仔馬",
+          "reason": "ruby"
+        },
+        {
+          "line": 28,
+          "start": 241,
+          "end": 245,
+          "text": "ムクムク",
+          "reason": "katakana"
+        },
+        {
+          "line": 34,
+          "start": 49,
+          "end": 51,
+          "text": "細叙",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "textSha256": "3031ad4baf2a9b484108cb617656b605f972a8e2be06d7df703df10081727ba4",
+      "edits": [
+        {
+          "line": 8,
+          "start": 21,
+          "end": 23,
+          "text": "管々",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 64,
+          "end": 68,
+          "text": "ソロソロ",
+          "reason": "katakana"
+        },
+        {
+          "line": 28,
+          "start": 9,
+          "end": 11,
+          "text": "無躾",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 32,
+          "start": 7,
+          "end": 9,
+          "text": "半程",
+          "reason": "ruby"
+        },
+        {
+          "line": 50,
+          "start": 91,
+          "end": 93,
+          "text": "筆癖",
+          "reason": "ruby"
+        },
+        {
+          "line": 54,
+          "start": 11,
+          "end": 13,
+          "text": "無躾",
+          "reason": "ruby-repeat"
+        }
+      ]
+    }
+  ]
+}

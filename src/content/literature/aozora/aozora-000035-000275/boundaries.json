@@ -1,0 +1,261 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "5aabce146354a13b98f2a24ded5536ea269fb29b7877b61eff9952fcee309397",
+      "edits": [
+        {
+          "line": 0,
+          "start": 449,
+          "end": 451,
+          "text": "上澄",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 286,
+          "end": 289,
+          "text": "ポカン",
+          "reason": "katakana"
+        },
+        {
+          "line": 6,
+          "start": 339,
+          "end": 342,
+          "text": "ポカン",
+          "reason": "katakana"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "e4aa4bcf515e85acd85db8aaa73f3e5858d098b5b77d69907398125526c7ac04",
+      "edits": [
+        {
+          "line": 0,
+          "start": 379,
+          "end": 381,
+          "text": "道傍",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 60,
+          "end": 63,
+          "text": "ポカン",
+          "reason": "katakana"
+        },
+        {
+          "line": 4,
+          "start": 62,
+          "end": 66,
+          "text": "カラッポ",
+          "reason": "katakana"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "textSha256": "e1672ebc5779737188cd5e5b959dcb505ea3a215880e174c2129dfe7d14fe2fe",
+      "edits": []
+    },
+    {
+      "order": 4,
+      "textSha256": "fb85551f71aae93f02fb35cd74d1ffa4bbc10a5e01baf99f84671f37e5b5e4a3",
+      "edits": [
+        {
+          "line": 4,
+          "start": 385,
+          "end": 387,
+          "text": "永々",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 28,
+          "end": 30,
+          "text": "一高",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "textSha256": "b0f3b5a30a07d52b51bb1bdc240443e9a56c2eb3c73c01e81d7de7349bede1cb",
+      "edits": [
+        {
+          "line": 4,
+          "start": 155,
+          "end": 157,
+          "text": "雌鶏",
+          "reason": "ruby"
+        },
+        {
+          "line": 14,
+          "start": 489,
+          "end": 491,
+          "text": "雌鶏",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 18,
+          "start": 192,
+          "end": 196,
+          "text": "ボーボー",
+          "reason": "katakana"
+        },
+        {
+          "line": 20,
+          "start": 517,
+          "end": 519,
+          "text": "道傍",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "textSha256": "0ac26abb1f1667ca11eab450220f4b767fa68a2a27dd9be8f44abd15cefb59ac",
+      "edits": [
+        {
+          "line": 12,
+          "start": 69,
+          "end": 72,
+          "text": "ポカン",
+          "reason": "katakana"
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "textSha256": "5aa55b43a3fc76c66e2349b5428e4b7dbfdd25e912e1fbdbe572a5711f8ed9f9",
+      "edits": [
+        {
+          "line": 2,
+          "start": 410,
+          "end": 412,
+          "text": "花瓣",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 669,
+          "end": 674,
+          "text": "デリカシイ",
+          "reason": "katakana"
+        },
+        {
+          "line": 6,
+          "start": 640,
+          "end": 643,
+          "text": "御相伴",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "textSha256": "ebd6349b177ab69770a43e47e346335ae7ae7b0a93b89ef17c5d3bd88c37f768",
+      "edits": [
+        {
+          "line": 6,
+          "start": 40,
+          "end": 43,
+          "text": "蜜柑箱",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "textSha256": "9d66fec4c49176fc75d3beceaeb5764b304cdac9449cf565775325d09d3899f6",
+      "edits": [
+        {
+          "line": 0,
+          "start": 278,
+          "end": 282,
+          "text": "パチクリ",
+          "reason": "katakana"
+        },
+        {
+          "line": 2,
+          "start": 28,
+          "end": 30,
+          "text": "百合",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 46,
+          "end": 48,
+          "text": "百合",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 93,
+          "end": 95,
+          "text": "百合",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 192,
+          "end": 194,
+          "text": "百合",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 313,
+          "end": 315,
+          "text": "百合",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 476,
+          "end": 478,
+          "text": "百合",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 712,
+          "end": 714,
+          "text": "百合",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "textSha256": "29e883c8e40bb753290728390482efc155e4b863d500ec8c7785cbde50a1ad44",
+      "edits": [
+        {
+          "line": 4,
+          "start": 963,
+          "end": 967,
+          "text": "刹那主義",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 41,
+          "end": 43,
+          "text": "百合",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 18,
+          "start": 14,
+          "end": 22,
+          "text": "パタパタパタパタ",
+          "reason": "katakana"
+        }
+      ]
+    }
+  ]
+}

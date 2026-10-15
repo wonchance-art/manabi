@@ -528,6 +528,44 @@
               "reading": "りん"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_2_0",
+              "line": 2,
+              "start": 16,
+              "end": 18,
+              "text": "蜂雀",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_1",
+              "line": 36,
+              "start": 48,
+              "end": 51,
+              "text": "大熊星",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_2",
+              "line": 40,
+              "start": 0,
+              "end": 3,
+              "text": "大熊星",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     }
@@ -547,6 +585,7 @@
     "chapterChars": [
       2674,
       2613
-    ]
+    ],
+    "boundaryMergeCount": 3
   }
 }

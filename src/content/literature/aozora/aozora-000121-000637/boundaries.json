@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "f03186c059cdac41ef208aa5cdb8ac090940dff637e885e9c067b0f918150127",
+      "edits": [
+        {
+          "line": 2,
+          "start": 0,
+          "end": 2,
+          "text": "或朝",
+          "reason": "ruby"
+        },
+        {
+          "line": 18,
+          "start": 34,
+          "end": 37,
+          "text": "牡丹色",
+          "reason": "ruby"
+        },
+        {
+          "line": 20,
+          "start": 46,
+          "end": 48,
+          "text": "霜焼",
+          "reason": "ruby"
+        },
+        {
+          "line": 50,
+          "start": 64,
+          "end": 67,
+          "text": "白銅貨",
+          "reason": "ruby"
+        },
+        {
+          "line": 70,
+          "start": 30,
+          "end": 33,
+          "text": "白銅貨",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 70,
+          "start": 78,
+          "end": 82,
+          "text": "チンチン",
+          "reason": "katakana"
+        },
+        {
+          "line": 84,
+          "start": 5,
+          "end": 7,
+          "text": "唄声",
+          "reason": "ruby"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "0ce79481fbfbb43df4e7924c07b83d700452c76e5d4445c7219e584e894f5d3e",
+      "edits": [
+        {
+          "line": 2,
+          "start": 30,
+          "end": 33,
+          "text": "交響曲",
+          "reason": "ruby"
+        },
+        {
+          "line": 8,
+          "start": 7,
+          "end": 11,
+          "text": "ボーボー",
+          "reason": "katakana"
+        },
+        {
+          "line": 30,
+          "start": 82,
+          "end": 86,
+          "text": "金沓鍛冶",
+          "reason": "ruby"
+        },
+        {
+          "line": 42,
+          "start": 65,
+          "end": 68,
+          "text": "三毛猫",
+          "reason": "ruby"
+        },
+        {
+          "line": 50,
+          "start": 18,
+          "end": 21,
+          "text": "三毛猫",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 80,
+          "start": 59,
+          "end": 61,
+          "text": "虎狩",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "68979ff5356fad4dfa4bddafa4c41513d8690ecf4596044e925b93db5d2b241d",
+      "edits": []
+    },
+    {
+      "order": 3,
+      "textSha256": "60b46f5b14890b2d5d360291b8810da9e90e8d3fbeb1b6398dfe2ab496455b88",
+      "edits": [
+        {
+          "line": 8,
+          "start": 10,
+          "end": 12,
+          "text": "狸汁",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 1,
+          "end": 3,
+          "text": "狸汁",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 10,
+          "end": 12,
+          "text": "狸汁",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 52,
+          "start": 45,
+          "end": 50,
+          "text": "ゴムテープ",
+          "reason": "katakana"
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "textSha256": "92b22618653b1d094658de502d3f0cdab408a942de396a15c9b9d87cb1d461b7",
+      "edits": [
+        {
+          "line": 66,
+          "start": 26,
+          "end": 28,
+          "text": "虎狩",
+          "reason": "ruby"
+        }
+      ]
+    }
+  ]
+}

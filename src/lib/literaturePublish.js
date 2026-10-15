@@ -13,7 +13,7 @@
 // 멱등 기준은 **book key + 장 순서**다: 이미 있는 장은 다시 넣지 않고, 정본과 원문이 다른 장·같은 순서가 둘인 장·
 // 정본에 없는 순서가 하나라도 있으면 아무것도 넣거나 공개하지 않는다(덮어쓰기·삭제 없음 — 사람이 확인한다).
 import { aozoraRightsPublishable } from './aozoraRights.js';
-import { countAppliedRubyLocks } from './aozoraRuby.js';
+import { countAppliedRubyLocks, indexAozoraTokenSpans } from './aozoraRuby.js';
 import { ART_BOOK_PROVIDER, artBookPublishable } from './artBook.js';
 import { ART_TEXT_LICENSE_LABEL } from './artCatalog.js';
 import { countAttachedReviewHints, reviewHintCoverage } from './literatureReviewHints.js';
@@ -149,6 +149,14 @@ export function literatureBatchTargets(summaries = []) {
 }
 
 /**
+ * 분석 이어하기 대상(AOZORA-P1-10) — 모든 장을 준비했는데 분석이 멈춘 작품(화면을 닫았거나 멈춤). 관리자 화면이 열릴 때 한 번
+ * 자동으로 이어 분석한다. 아직 넣지 않은 장이 있는 작품(준비 자체가 끊김)은 넣지 않는다 — 쓰기(prepare)는 사람이 누를 때만.
+ */
+export function literatureResumeTargets(summaries = []) {
+  return literatureBatchTargets(summaries).filter((book) => book.stage === 'preparing' && book.plan.insert.length === 0);
+}
+
+/**
  * 관리자 화면용 요약 — 근거·단계·장별 상태. 원문은 싣지 않는다.
  * 근거 칸은 출처별로 하나: 아오조라는 rights(권리 근거), 큐레이션 책은 provenance(장별 출처·라이선스·원문 링크·크레딧).
  */
@@ -186,6 +194,33 @@ export function literatureBookSummary(book, rows = []) {
  * 장별 검수 보조 — 저자 루비 적용 수(적용률), 검수 힌트 수·붙은 수, 남은 「뜻 확인 필요」 수. 분석 전 장은 null.
  * rows: [{order, processed_json}]
  */
+/**
+ * 분석 뒤에도 쪼개진 저자 루비 낱말(AOZORA-P1-10) — 2자 이상 루비 기준이 분석 토큰 둘 이상에 걸친 자리. 빌드가 미리 실은
+ * 「한 단어로 묶기」 기록으로도 못 묶은 곳(양 끝이 분석기 토큰 안쪽)이라 검수자가 뷰어에서 직접 묶거나 그대로 둘지 정한다.
+ * 고유명사(苦沙弥 → 苦|沙弥)가 형태소로 갈리면 뜻·저자 루비가 모두 어긋나므로 「검수 완료」 전에 보여 준다.
+ * 토큰을 원문 자리에 잇지 못하면(원문과 다른 분석) null — 셀 수 없음을 0으로 속이지 않는다.
+ */
+export function literatureBoundaryIssues(chapter, json) {
+  if (!Array.isArray(json?.sequence) || !json.sequence.length) return null;
+  const locks = rubyLocksOf(chapter).filter((lock) => lock.base.length >= 2).sort((a, b) => a.start - b.start);
+  if (!locks.length) return { count: 0, words: [] };
+  let spans;
+  try {
+    spans = indexAozoraTokenSpans(chapter.rawText, json.sequence, json.dictionary || {}).filter((span) => span.text !== '\n');
+  } catch {
+    return null;
+  }
+  const split = [];
+  let k = 0;
+  for (const lock of locks) {
+    while (k < spans.length && spans[k].end <= lock.start) k += 1;
+    let covering = 0;
+    for (let j = k; j < spans.length && spans[j].start < lock.end; j += 1) covering += 1;
+    if (covering >= 2) split.push(lock.base);
+  }
+  return { count: split.length, words: [...new Set(split)] };
+}
+
 export function literatureRubyCoverage(book, rows = []) {
   const byOrder = new Map(rows.map((row) => [Number(row.order), row]));
   return book.chapters.map((chapter) => {
@@ -200,6 +235,10 @@ export function literatureRubyCoverage(book, rows = []) {
       // 분석기 경계 때문에 붙지 못한 제안의 글자 — 검수자가 그 자리를 직접 본다(분석 전·힌트 없음은 []).
       hintsMissed: analyzed ? reviewHintCoverage(chapter.rawText, json, chapter.metadata.literature?.reviewHints).missed : [],
       remaining: analyzed ? literatureReviewRemaining(json) : null,
+      ...boundaryFields(analyzed ? literatureBoundaryIssues(chapter, json) : null),
     };
   });
 }
+
+/** 검수 칸: boundary = 쪼개진 루비 낱말 자리 수(분석 전·셀 수 없음은 null) · boundaryWords = 그 낱말(중복 없이 앞 5개). */
+const boundaryFields = (issues) => ({ boundary: issues ? issues.count : null, boundaryWords: issues ? issues.words.slice(0, 5) : [] });

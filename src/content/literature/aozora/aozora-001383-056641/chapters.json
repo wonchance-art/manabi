@@ -470,6 +470,297 @@
               "reading": "ゆ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_1_0",
+              "line": 0,
+              "start": 73,
+              "end": 75,
+              "text": "華魁",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_1",
+              "line": 2,
+              "start": 17,
+              "end": 20,
+              "text": "駕籠舁",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_2",
+              "line": 4,
+              "start": 7,
+              "end": 10,
+              "text": "刺青師",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_3",
+              "line": 4,
+              "start": 31,
+              "end": 33,
+              "text": "奴平",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_4",
+              "line": 4,
+              "start": 76,
+              "end": 78,
+              "text": "絖地",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_5",
+              "line": 4,
+              "start": 117,
+              "end": 120,
+              "text": "達磨金",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_6",
+              "line": 4,
+              "start": 138,
+              "end": 140,
+              "text": "朱刺",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_7",
+              "line": 6,
+              "start": 29,
+              "end": 32,
+              "text": "刺青師",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_8",
+              "line": 6,
+              "start": 47,
+              "end": 49,
+              "text": "畫工",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_9",
+              "line": 8,
+              "start": 4,
+              "end": 7,
+              "text": "刺青師",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_10",
+              "line": 8,
+              "start": 139,
+              "end": 141,
+              "text": "朱刺",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_11",
+              "line": 14,
+              "start": 14,
+              "end": 17,
+              "text": "知死期",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_12",
+              "line": 26,
+              "start": 21,
+              "end": 23,
+              "text": "平清",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_13",
+              "line": 28,
+              "start": 60,
+              "end": 63,
+              "text": "房楊枝",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_14",
+              "line": 28,
+              "start": 78,
+              "end": 81,
+              "text": "萬年青",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_15",
+              "line": 30,
+              "start": 12,
+              "end": 14,
+              "text": "藝妓",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_16",
+              "line": 34,
+              "start": 19,
+              "end": 23,
+              "text": "岩井杜若",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_17",
+              "line": 38,
+              "start": 28,
+              "end": 30,
+              "text": "此方",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_18",
+              "line": 42,
+              "start": 12,
+              "end": 14,
+              "text": "平清",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_19",
+              "line": 44,
+              "start": 21,
+              "end": 24,
+              "text": "備後表",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_20",
+              "line": 46,
+              "start": 26,
+              "end": 28,
+              "text": "平清",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_21",
+              "line": 54,
+              "start": 7,
+              "end": 9,
+              "text": "紂王",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_22",
+              "line": 54,
+              "start": 10,
+              "end": 12,
+              "text": "寵妃",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_23",
+              "line": 54,
+              "start": 13,
+              "end": 15,
+              "text": "末喜",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_24",
+              "line": 54,
+              "start": 25,
+              "end": 29,
+              "text": "瑠璃珊瑚",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_25",
+              "line": 54,
+              "start": 62,
+              "end": 64,
+              "text": "羅綾",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -928,6 +1219,77 @@
               "reading": "せなか"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_2_0",
+              "line": 22,
+              "start": 24,
+              "end": 26,
+              "text": "突俯",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_1",
+              "line": 30,
+              "start": 31,
+              "end": 33,
+              "text": "突俯",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_2",
+              "line": 40,
+              "start": 129,
+              "end": 131,
+              "text": "妙相",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_3",
+              "line": 42,
+              "start": 56,
+              "end": 59,
+              "text": "刺青師",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_4",
+              "line": 48,
+              "start": 17,
+              "end": 19,
+              "text": "土州",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_5",
+              "line": 52,
+              "start": 13,
+              "end": 15,
+              "text": "櫓声",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     }
@@ -947,6 +1309,7 @@
     "chapterChars": [
       2913,
       2873
-    ]
+    ],
+    "boundaryMergeCount": 32
   }
 }

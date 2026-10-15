@@ -1,0 +1,543 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "00137bc85b71de4da5ba89ae76ee04bbfeb4f5d021d64ef936370c7363373dbd",
+      "edits": [
+        {
+          "line": 0,
+          "start": 0,
+          "end": 2,
+          "text": "隴西",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 3,
+          "end": 5,
+          "text": "李徴",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 8,
+          "end": 10,
+          "text": "才穎",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 23,
+          "end": 25,
+          "text": "虎榜",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 32,
+          "end": 35,
+          "text": "江南尉",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 60,
+          "end": 62,
+          "text": "賤吏",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 198,
+          "end": 200,
+          "text": "李徴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 223,
+          "end": 225,
+          "text": "峭刻",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 254,
+          "end": 256,
+          "text": "登第",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 417,
+          "end": 419,
+          "text": "儁才",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 419,
+          "end": 421,
+          "text": "李徴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 0,
+          "start": 455,
+          "end": 457,
+          "text": "狂悖",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 482,
+          "end": 484,
+          "text": "汝水",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 595,
+          "end": 597,
+          "text": "李徴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 3,
+          "end": 7,
+          "text": "監察御史",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 8,
+          "end": 10,
+          "text": "陳郡",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 11,
+          "end": 13,
+          "text": "袁傪",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 24,
+          "end": 26,
+          "text": "嶺南",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 32,
+          "end": 34,
+          "text": "商於",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 79,
+          "end": 82,
+          "text": "人喰虎",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 131,
+          "end": 133,
+          "text": "袁傪",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 214,
+          "end": 216,
+          "text": "袁傪",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 283,
+          "end": 285,
+          "text": "袁傪",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 295,
+          "end": 297,
+          "text": "驚懼",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 328,
+          "end": 330,
+          "text": "李徴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 338,
+          "end": 340,
+          "text": "袁傪",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 341,
+          "end": 343,
+          "text": "李徴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 362,
+          "end": 364,
+          "text": "李徴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 384,
+          "end": 386,
+          "text": "袁傪",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 391,
+          "end": 393,
+          "text": "峻峭",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 394,
+          "end": 396,
+          "text": "李徴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 67,
+          "end": 69,
+          "text": "隴西",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 70,
+          "end": 72,
+          "text": "李徴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 0,
+          "end": 2,
+          "text": "袁傪",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 54,
+          "end": 56,
+          "text": "李徴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 127,
+          "end": 131,
+          "text": "畏怖嫌厭",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 169,
+          "end": 171,
+          "text": "愧赧",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 219,
+          "end": 221,
+          "text": "李徴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 18,
+          "end": 20,
+          "text": "袁傪",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 104,
+          "end": 106,
+          "text": "袁傪",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 119,
+          "end": 121,
+          "text": "李徴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 161,
+          "end": 163,
+          "text": "袁傪",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 165,
+          "end": 167,
+          "text": "李徴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 10,
+          "start": 15,
+          "end": 17,
+          "text": "汝水",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 0,
+          "end": 2,
+          "text": "袁傪",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 12,
+          "start": 15,
+          "end": 17,
+          "text": "叢中",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "7a3687b1311c89397755a0b03c1ebd997b1f73f7b3b14d4cb90d8bb5333bacba",
+      "edits": [
+        {
+          "line": 2,
+          "start": 0,
+          "end": 2,
+          "text": "袁傪",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 14,
+          "end": 16,
+          "text": "叢中",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 29,
+          "end": 31,
+          "text": "李徴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 93,
+          "end": 95,
+          "text": "袁傪",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 2,
+          "start": 117,
+          "end": 119,
+          "text": "成程",
+          "reason": "ruby"
+        },
+        {
+          "line": 4,
+          "start": 8,
+          "end": 10,
+          "text": "李徴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 116,
+          "end": 118,
+          "text": "袁傪",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 123,
+          "end": 125,
+          "text": "李徴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 6,
+          "start": 126,
+          "end": 129,
+          "text": "自嘲癖",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 190,
+          "end": 192,
+          "text": "李徴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 8,
+          "start": 0,
+          "end": 2,
+          "text": "袁傪",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 18,
+          "start": 73,
+          "end": 75,
+          "text": "李徴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 20,
+          "start": 390,
+          "end": 392,
+          "text": "憤悶",
+          "reason": "ruby"
+        },
+        {
+          "line": 20,
+          "start": 393,
+          "end": 395,
+          "text": "慙恚",
+          "reason": "ruby"
+        },
+        {
+          "line": 22,
+          "start": 2,
+          "end": 4,
+          "text": "四辺",
+          "reason": "ruby"
+        },
+        {
+          "line": 22,
+          "start": 29,
+          "end": 31,
+          "text": "暁角",
+          "reason": "ruby"
+        },
+        {
+          "line": 24,
+          "start": 46,
+          "end": 48,
+          "text": "李徴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 24,
+          "start": 197,
+          "end": 199,
+          "text": "道塗",
+          "reason": "ruby"
+        },
+        {
+          "line": 24,
+          "start": 200,
+          "end": 202,
+          "text": "飢凍",
+          "reason": "ruby"
+        },
+        {
+          "line": 24,
+          "start": 230,
+          "end": 232,
+          "text": "恩倖",
+          "reason": "ruby"
+        },
+        {
+          "line": 26,
+          "start": 5,
+          "end": 7,
+          "text": "叢中",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 26,
+          "start": 30,
+          "end": 32,
+          "text": "李徴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 26,
+          "start": 45,
+          "end": 47,
+          "text": "李徴",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 30,
+          "start": 15,
+          "end": 17,
+          "text": "袁傪",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 30,
+          "start": 18,
+          "end": 20,
+          "text": "嶺南",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 30,
+          "start": 105,
+          "end": 107,
+          "text": "此方",
+          "reason": "ruby"
+        },
+        {
+          "line": 32,
+          "start": 0,
+          "end": 2,
+          "text": "袁傪",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 32,
+          "start": 44,
+          "end": 46,
+          "text": "悲泣",
+          "reason": "ruby"
+        },
+        {
+          "line": 32,
+          "start": 53,
+          "end": 55,
+          "text": "袁傪",
+          "reason": "ruby-repeat"
+        }
+      ]
+    }
+  ]
+}

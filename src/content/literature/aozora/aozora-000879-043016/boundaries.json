@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "5cbcf9eebdd506e04046bf99a017f04a58c4942a4acdcb3ea5d9607524db11ac",
+      "edits": [
+        {
+          "line": 2,
+          "start": 70,
+          "end": 72,
+          "text": "袢天",
+          "reason": "ruby"
+        },
+        {
+          "line": 2,
+          "start": 177,
+          "end": 179,
+          "text": "其処",
+          "reason": "ruby"
+        },
+        {
+          "line": 20,
+          "start": 0,
+          "end": 2,
+          "text": "其処",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 20,
+          "start": 6,
+          "end": 9,
+          "text": "印袢天",
+          "reason": "ruby"
+        },
+        {
+          "line": 20,
+          "start": 16,
+          "end": 19,
+          "text": "麦藁帽",
+          "reason": "ruby"
+        },
+        {
+          "line": 20,
+          "start": 188,
+          "end": 191,
+          "text": "麦藁帽",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 20,
+          "start": 205,
+          "end": 207,
+          "text": "年毎",
+          "reason": "ruby"
+        },
+        {
+          "line": 32,
+          "start": 4,
+          "end": 6,
+          "text": "中中",
+          "reason": "ruby"
+        },
+        {
+          "line": 44,
+          "start": 27,
+          "end": 29,
+          "text": "其処",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 44,
+          "start": 34,
+          "end": 37,
+          "text": "蜜柑畑",
+          "reason": "ruby"
+        },
+        {
+          "line": 48,
+          "start": 0,
+          "end": 3,
+          "text": "蜜柑畑",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 48,
+          "start": 81,
+          "end": 84,
+          "text": "蜜柑畑",
+          "reason": "ruby-repeat"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "2a66f8ca04520aeb5af07893c72a50298264e8f80c34bd62bd9fa4841ee7d562",
+      "edits": [
+        {
+          "line": 0,
+          "start": 0,
+          "end": 2,
+          "text": "竹藪",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 50,
+          "end": 52,
+          "text": "竹藪",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 4,
+          "start": 53,
+          "end": 56,
+          "text": "乳呑児",
+          "reason": "ruby"
+        },
+        {
+          "line": 6,
+          "start": 77,
+          "end": 79,
+          "text": "難有",
+          "reason": "ruby"
+        },
+        {
+          "line": 18,
+          "start": 168,
+          "end": 171,
+          "text": "御時宜",
+          "reason": "ruby"
+        },
+        {
+          "line": 20,
+          "start": 58,
+          "end": 60,
+          "text": "次手",
+          "reason": "ruby"
+        },
+        {
+          "line": 20,
+          "start": 66,
+          "end": 68,
+          "text": "其処",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 22,
+          "start": 0,
+          "end": 2,
+          "text": "竹藪",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 24,
+          "start": 0,
+          "end": 3,
+          "text": "蜜柑畑",
+          "reason": "ruby-repeat"
+        },
+        {
+          "line": 28,
+          "start": 84,
+          "end": 86,
+          "text": "女衆",
+          "reason": "ruby"
+        },
+        {
+          "line": 30,
+          "start": 142,
+          "end": 144,
+          "text": "女衆",
+          "reason": "ruby-repeat"
+        }
+      ]
+    }
+  ]
+}

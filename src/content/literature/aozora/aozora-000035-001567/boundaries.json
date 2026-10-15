@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "tokenizer": "kuromoji + jaReadingFix · jaKanaSegment · jaCompoundMerge (src/lib/server/tokenizeJa.js)",
+  "chapters": [
+    {
+      "order": 1,
+      "textSha256": "a8a63e7fd4d93f420286cc489b75e5e38612e9ab29a6fe435728660046590e3c",
+      "edits": [
+        {
+          "line": 0,
+          "start": 14,
+          "end": 18,
+          "text": "邪智暴虐",
+          "reason": "ruby"
+        },
+        {
+          "line": 32,
+          "start": 5,
+          "end": 7,
+          "text": "下賤",
+          "reason": "ruby"
+        },
+        {
+          "line": 34,
+          "start": 6,
+          "end": 8,
+          "text": "悧巧",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "textSha256": "be732963496c9424580f6b05c17ab1b6708a89e9ddb823f20dad8ed248cbdcf3",
+      "edits": [
+        {
+          "line": 10,
+          "start": 475,
+          "end": 479,
+          "text": "木葉微塵",
+          "reason": "ruby"
+        },
+        {
+          "line": 10,
+          "start": 533,
+          "end": 535,
+          "text": "繋舟",
+          "reason": "ruby"
+        },
+        {
+          "line": 28,
+          "start": 214,
+          "end": 217,
+          "text": "韋駄天",
+          "reason": "ruby"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "textSha256": "c63ec3d4baf5d7ee8d483f8cbfee5dbc4defe954b3eaaef6a38ae21e4536fef0",
+      "edits": [
+        {
+          "line": 0,
+          "start": 5,
+          "end": 7,
+          "text": "潺々",
+          "reason": "ruby"
+        },
+        {
+          "line": 0,
+          "start": 78,
+          "end": 80,
+          "text": "滾々",
+          "reason": "ruby"
+        }
+      ]
+    }
+  ]
+}

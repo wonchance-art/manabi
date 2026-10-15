@@ -872,6 +872,121 @@
               "reading": "ほこ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_1_0",
+              "line": 0,
+              "start": 8,
+              "end": 10,
+              "text": "小供",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_1",
+              "line": 4,
+              "start": 102,
+              "end": 105,
+              "text": "山城屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_2",
+              "line": 4,
+              "start": 406,
+              "end": 408,
+              "text": "足搦",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_3",
+              "line": 4,
+              "start": 422,
+              "end": 425,
+              "text": "山城屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_4",
+              "line": 4,
+              "start": 515,
+              "end": 518,
+              "text": "山城屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_1_5",
+              "line": 6,
+              "start": 17,
+              "end": 19,
+              "text": "兼公",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_6",
+              "line": 6,
+              "start": 20,
+              "end": 22,
+              "text": "肴屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_7",
+              "line": 6,
+              "start": 32,
+              "end": 35,
+              "text": "人参畠",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_8",
+              "line": 12,
+              "start": 150,
+              "end": 152,
+              "text": "一遍",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_1_9",
+              "line": 12,
+              "start": 179,
+              "end": 181,
+              "text": "待駒",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -1304,6 +1419,187 @@
               "end": 2314,
               "base": "何",
               "reading": "なんに"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_2_0",
+              "line": 0,
+              "start": 25,
+              "end": 27,
+              "text": "小供",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_1",
+              "line": 0,
+              "start": 100,
+              "end": 103,
+              "text": "紅梅焼",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_2",
+              "line": 0,
+              "start": 121,
+              "end": 124,
+              "text": "蕎麦粉",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_3",
+              "line": 0,
+              "start": 162,
+              "end": 166,
+              "text": "鍋焼饂飩",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_4",
+              "line": 0,
+              "start": 188,
+              "end": 191,
+              "text": "靴足袋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_5",
+              "line": 0,
+              "start": 508,
+              "end": 511,
+              "text": "壱円札",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_6",
+              "line": 0,
+              "start": 607,
+              "end": 610,
+              "text": "胡魔化",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_7",
+              "line": 2,
+              "start": 145,
+              "end": 147,
+              "text": "兄様",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_8",
+              "line": 2,
+              "start": 197,
+              "end": 201,
+              "text": "依怙贔負",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_9",
+              "line": 4,
+              "start": 124,
+              "end": 126,
+              "text": "麹町",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_10",
+              "line": 4,
+              "start": 207,
+              "end": 210,
+              "text": "日本建",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_11",
+              "line": 6,
+              "start": 86,
+              "end": 88,
+              "text": "小供",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_2_12",
+              "line": 6,
+              "start": 128,
+              "end": 131,
+              "text": "不仕合",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_13",
+              "line": 8,
+              "start": 296,
+              "end": 299,
+              "text": "瓦落多",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_14",
+              "line": 8,
+              "start": 309,
+              "end": 312,
+              "text": "家屋敷",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_2_15",
+              "line": 8,
+              "start": 385,
+              "end": 388,
+              "text": "小川町",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
             }
           ]
         }
@@ -1804,6 +2100,176 @@
               "end": 2598,
               "base": "大丈夫",
               "reading": "だいしょうぶ"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_3_0",
+              "line": 0,
+              "start": 321,
+              "end": 324,
+              "text": "奉公易",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_1",
+              "line": 0,
+              "start": 331,
+              "end": 333,
+              "text": "気兼",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_2",
+              "line": 2,
+              "start": 31,
+              "end": 33,
+              "text": "商買",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_3",
+              "line": 2,
+              "start": 214,
+              "end": 216,
+              "text": "一遍",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_4",
+              "line": 4,
+              "start": 22,
+              "end": 24,
+              "text": "商買",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_5",
+              "line": 4,
+              "start": 57,
+              "end": 59,
+              "text": "商買",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_6",
+              "line": 4,
+              "start": 62,
+              "end": 64,
+              "text": "商買",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_7",
+              "line": 12,
+              "start": 105,
+              "end": 107,
+              "text": "麹町",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_8",
+              "line": 12,
+              "start": 143,
+              "end": 145,
+              "text": "喋舌",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_9",
+              "line": 12,
+              "start": 232,
+              "end": 234,
+              "text": "昔風",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_10",
+              "line": 14,
+              "start": 151,
+              "end": 154,
+              "text": "馬鹿気",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_11",
+              "line": 14,
+              "start": 306,
+              "end": 308,
+              "text": "笹飴",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_3_12",
+              "line": 14,
+              "start": 322,
+              "end": 324,
+              "text": "笹飴",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_13",
+              "line": 14,
+              "start": 353,
+              "end": 355,
+              "text": "笹飴",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_3_14",
+              "line": 16,
+              "start": 50,
+              "end": 52,
+              "text": "革鞄",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
             }
           ]
         }
@@ -2612,6 +3078,143 @@
               "reading": "おどさ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_4_0",
+              "line": 0,
+              "start": 526,
+              "end": 528,
+              "text": "革鞄",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_4_1",
+              "line": 2,
+              "start": 210,
+              "end": 213,
+              "text": "山城屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_4_2",
+              "line": 2,
+              "start": 226,
+              "end": 229,
+              "text": "山城屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_3",
+              "line": 4,
+              "start": 6,
+              "end": 9,
+              "text": "楷子段",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_4_4",
+              "line": 4,
+              "start": 71,
+              "end": 73,
+              "text": "革鞄",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_5",
+              "line": 4,
+              "start": 406,
+              "end": 408,
+              "text": "笹飴",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_4_6",
+              "line": 6,
+              "start": 93,
+              "end": 95,
+              "text": "革鞄",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_7",
+              "line": 6,
+              "start": 114,
+              "end": 117,
+              "text": "田舎者",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_8",
+              "line": 6,
+              "start": 234,
+              "end": 237,
+              "text": "田舎者",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_4_9",
+              "line": 8,
+              "start": 215,
+              "end": 217,
+              "text": "薄髯",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_4_10",
+              "line": 10,
+              "start": 3,
+              "end": 5,
+              "text": "控所",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_4_11",
+              "line": 10,
+              "start": 48,
+              "end": 50,
+              "text": "追々",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -3266,6 +3869,176 @@
               "end": 3028,
               "base": "肝癪持",
               "reading": "かんしゃくもち"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_5_0",
+              "line": 0,
+              "start": 35,
+              "end": 37,
+              "text": "控所",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_1",
+              "line": 0,
+              "start": 59,
+              "end": 61,
+              "text": "控所",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_2",
+              "line": 0,
+              "start": 149,
+              "end": 153,
+              "text": "一人一人",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_5_3",
+              "line": 2,
+              "start": 100,
+              "end": 102,
+              "text": "襯衣",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_5_4",
+              "line": 2,
+              "start": 631,
+              "end": 635,
+              "text": "毬栗坊主",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_5_5",
+              "line": 2,
+              "start": 647,
+              "end": 649,
+              "text": "面構",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_5_6",
+              "line": 2,
+              "start": 655,
+              "end": 657,
+              "text": "叮寧",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_5_7",
+              "line": 2,
+              "start": 805,
+              "end": 807,
+              "text": "励精",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_5_8",
+              "line": 2,
+              "start": 953,
+              "end": 957,
+              "text": "一人一人",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_9",
+              "line": 4,
+              "start": 138,
+              "end": 141,
+              "text": "山城屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_10",
+              "line": 6,
+              "start": 208,
+              "end": 211,
+              "text": "山城屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_11",
+              "line": 10,
+              "start": 69,
+              "end": 71,
+              "text": "笹飴",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_12",
+              "line": 12,
+              "start": 350,
+              "end": 352,
+              "text": "畳敷",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_5_13",
+              "line": 12,
+              "start": 637,
+              "end": 639,
+              "text": "通町",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_5_14",
+              "line": 12,
+              "start": 724,
+              "end": 727,
+              "text": "肝癪持",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
             }
           ]
         }
@@ -4128,6 +4901,209 @@
               "reading": "あ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_6_0",
+              "line": 0,
+              "start": 274,
+              "end": 276,
+              "text": "控所",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_6_1",
+              "line": 2,
+              "start": 11,
+              "end": 13,
+              "text": "控所",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_2",
+              "line": 2,
+              "start": 126,
+              "end": 128,
+              "text": "大僧",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_6_3",
+              "line": 2,
+              "start": 167,
+              "end": 170,
+              "text": "田舎者",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_6_4",
+              "line": 2,
+              "start": 413,
+              "end": 415,
+              "text": "君等",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_6_5",
+              "line": 2,
+              "start": 602,
+              "end": 604,
+              "text": "箆棒",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_6_6",
+              "line": 2,
+              "start": 678,
+              "end": 680,
+              "text": "控所",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_7",
+              "line": 4,
+              "start": 158,
+              "end": 161,
+              "text": "出席簿",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_6_8",
+              "line": 4,
+              "start": 389,
+              "end": 392,
+              "text": "随分妙",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_9",
+              "line": 6,
+              "start": 88,
+              "end": 91,
+              "text": "留守中",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_6_10",
+              "line": 6,
+              "start": 131,
+              "end": 135,
+              "text": "書画骨董",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_6_11",
+              "line": 6,
+              "start": 147,
+              "end": 149,
+              "text": "商買",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_6_12",
+              "line": 6,
+              "start": 301,
+              "end": 303,
+              "text": "見損",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_6_13",
+              "line": 6,
+              "start": 665,
+              "end": 667,
+              "text": "下読",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_6_14",
+              "line": 8,
+              "start": 627,
+              "end": 630,
+              "text": "好加減",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_6_15",
+              "line": 8,
+              "start": 806,
+              "end": 808,
+              "text": "大硯",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_6_16",
+              "line": 8,
+              "start": 985,
+              "end": 987,
+              "text": "支那",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_6_17",
+              "line": 8,
+              "start": 1068,
+              "end": 1071,
+              "text": "骨董責",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -4704,6 +5680,242 @@
               "end": 2427,
               "base": "探偵",
               "reading": "たんてい"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_7_0",
+              "line": 0,
+              "start": 86,
+              "end": 89,
+              "text": "蕎麦屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_1",
+              "line": 0,
+              "start": 287,
+              "end": 289,
+              "text": "油烟",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_7_2",
+              "line": 0,
+              "start": 319,
+              "end": 321,
+              "text": "麗々",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_3",
+              "line": 2,
+              "start": 164,
+              "end": 166,
+              "text": "控所",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_4",
+              "line": 2,
+              "start": 257,
+              "end": 259,
+              "text": "黒焦",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_7_5",
+              "line": 2,
+              "start": 275,
+              "end": 278,
+              "text": "田舎者",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_6",
+              "line": 2,
+              "start": 359,
+              "end": 361,
+              "text": "日露",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_7_7",
+              "line": 2,
+              "start": 385,
+              "end": 387,
+              "text": "小供",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_8",
+              "line": 2,
+              "start": 458,
+              "end": 460,
+              "text": "小供",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_9",
+              "line": 2,
+              "start": 509,
+              "end": 511,
+              "text": "君等",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_10",
+              "line": 4,
+              "start": 22,
+              "end": 24,
+              "text": "肝癪",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_7_11",
+              "line": 4,
+              "start": 172,
+              "end": 175,
+              "text": "団子屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_12",
+              "line": 4,
+              "start": 368,
+              "end": 371,
+              "text": "赤手拭",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_7_13",
+              "line": 4,
+              "start": 620,
+              "end": 623,
+              "text": "赤手拭",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_14",
+              "line": 4,
+              "start": 623,
+              "end": 626,
+              "text": "赤手拭",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_15",
+              "line": 4,
+              "start": 767,
+              "end": 769,
+              "text": "湯壺",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_7_16",
+              "line": 4,
+              "start": 770,
+              "end": 773,
+              "text": "花崗石",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_7_17",
+              "line": 4,
+              "start": 782,
+              "end": 784,
+              "text": "畳敷",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_7_18",
+              "line": 4,
+              "start": 882,
+              "end": 884,
+              "text": "湯壺",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_7_19",
+              "line": 4,
+              "start": 987,
+              "end": 989,
+              "text": "貼札",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_7_20",
+              "line": 4,
+              "start": 1194,
+              "end": 1197,
+              "text": "骨董責",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
             }
           ]
         }
@@ -5476,6 +6688,176 @@
               "reading": "まっさき"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_8_0",
+              "line": 0,
+              "start": 68,
+              "end": 72,
+              "text": "奏任待遇",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_8_1",
+              "line": 0,
+              "start": 430,
+              "end": 432,
+              "text": "疳性",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_8_2",
+              "line": 0,
+              "start": 467,
+              "end": 469,
+              "text": "小供",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_3",
+              "line": 2,
+              "start": 292,
+              "end": 295,
+              "text": "重禁錮",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_8_4",
+              "line": 2,
+              "start": 298,
+              "end": 300,
+              "text": "憂目",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_8_5",
+              "line": 2,
+              "start": 451,
+              "end": 454,
+              "text": "赤手拭",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_8_6",
+              "line": 4,
+              "start": 27,
+              "end": 30,
+              "text": "日暮方",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_8_7",
+              "line": 4,
+              "start": 342,
+              "end": 344,
+              "text": "竪町",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_8_8",
+              "line": 6,
+              "start": 99,
+              "end": 101,
+              "text": "尻持",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_8_9",
+              "line": 6,
+              "start": 125,
+              "end": 127,
+              "text": "尻持",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_10",
+              "line": 6,
+              "start": 132,
+              "end": 134,
+              "text": "小供",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_8_11",
+              "line": 6,
+              "start": 151,
+              "end": 154,
+              "text": "小川町",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_8_12",
+              "line": 6,
+              "start": 682,
+              "end": 684,
+              "text": "煤掃",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_8_13",
+              "line": 6,
+              "start": 980,
+              "end": 982,
+              "text": "間抜",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_8_14",
+              "line": 6,
+              "start": 1016,
+              "end": 1018,
+              "text": "椽側",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -5908,6 +7290,77 @@
               "end": 1730,
               "base": "真直",
               "reading": "まっすぐ"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_9_0",
+              "line": 0,
+              "start": 82,
+              "end": 84,
+              "text": "掃溜",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_9_1",
+              "line": 14,
+              "start": 368,
+              "end": 371,
+              "text": "胡魔化",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_9_2",
+              "line": 18,
+              "start": 89,
+              "end": 91,
+              "text": "横竪",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_9_3",
+              "line": 18,
+              "start": 236,
+              "end": 238,
+              "text": "辛防",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_9_4",
+              "line": 18,
+              "start": 330,
+              "end": 332,
+              "text": "難有",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_9_5",
+              "line": 18,
+              "start": 375,
+              "end": 377,
+              "text": "笹飴",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
             }
           ]
         }
@@ -6524,6 +7977,121 @@
               "reading": "ほ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_10_0",
+              "line": 0,
+              "start": 358,
+              "end": 361,
+              "text": "楷子段",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_10_1",
+              "line": 0,
+              "start": 362,
+              "end": 365,
+              "text": "三股半",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_10_2",
+              "line": 0,
+              "start": 555,
+              "end": 557,
+              "text": "小供",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_10_3",
+              "line": 0,
+              "start": 948,
+              "end": 950,
+              "text": "向脛",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_10_4",
+              "line": 0,
+              "start": 1541,
+              "end": 1545,
+              "text": "清和源氏",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_10_5",
+              "line": 0,
+              "start": 1550,
+              "end": 1552,
+              "text": "満仲",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_10_6",
+              "line": 0,
+              "start": 1810,
+              "end": 1812,
+              "text": "向脛",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_10_7",
+              "line": 0,
+              "start": 2014,
+              "end": 2016,
+              "text": "仰向",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_10_8",
+              "line": 6,
+              "start": 20,
+              "end": 22,
+              "text": "言草",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_10_9",
+              "line": 6,
+              "start": 101,
+              "end": 103,
+              "text": "手温",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -7106,6 +8674,88 @@
               "end": 2197,
               "base": "眺",
               "reading": "なが"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_11_0",
+              "line": 2,
+              "start": 79,
+              "end": 82,
+              "text": "神楽坂",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_11_1",
+              "line": 2,
+              "start": 1016,
+              "end": 1018,
+              "text": "沖釣",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_11_2",
+              "line": 4,
+              "start": 51,
+              "end": 54,
+              "text": "高柏寺",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_11_3",
+              "line": 4,
+              "start": 80,
+              "end": 82,
+              "text": "向側",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_11_4",
+              "line": 4,
+              "start": 616,
+              "end": 618,
+              "text": "吾々",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_11_5",
+              "line": 4,
+              "start": 636,
+              "end": 638,
+              "text": "吾々",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_11_6",
+              "line": 4,
+              "start": 823,
+              "end": 826,
+              "text": "小旦那",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
             }
           ]
         }
@@ -7758,6 +9408,99 @@
               "reading": "か"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_12_0",
+              "line": 0,
+              "start": 26,
+              "end": 28,
+              "text": "幾尋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_12_1",
+              "line": 0,
+              "start": 42,
+              "end": 44,
+              "text": "六尋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_12_2",
+              "line": 0,
+              "start": 52,
+              "end": 54,
+              "text": "六尋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_12_3",
+              "line": 0,
+              "start": 558,
+              "end": 560,
+              "text": "喋舌",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_12_4",
+              "line": 4,
+              "start": 304,
+              "end": 306,
+              "text": "難有",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_12_5",
+              "line": 8,
+              "start": 121,
+              "end": 124,
+              "text": "皺苦茶",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_12_6",
+              "line": 8,
+              "start": 183,
+              "end": 186,
+              "text": "凌雲閣",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_12_7",
+              "line": 8,
+              "start": 326,
+              "end": 329,
+              "text": "田舎者",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -8244,6 +9987,99 @@
               "end": 2422,
               "base": "掛声",
               "reading": "かけごえ"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_13_0",
+              "line": 2,
+              "start": 68,
+              "end": 71,
+              "text": "巻烟草",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_13_1",
+              "line": 2,
+              "start": 285,
+              "end": 287,
+              "text": "険呑",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_13_2",
+              "line": 2,
+              "start": 305,
+              "end": 307,
+              "text": "険呑",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_13_3",
+              "line": 2,
+              "start": 315,
+              "end": 317,
+              "text": "険呑",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_13_4",
+              "line": 4,
+              "start": 70,
+              "end": 72,
+              "text": "辛防",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_13_5",
+              "line": 20,
+              "start": 16,
+              "end": 19,
+              "text": "履歴書",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_13_6",
+              "line": 32,
+              "start": 80,
+              "end": 82,
+              "text": "僕等",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_13_7",
+              "line": 38,
+              "start": 215,
+              "end": 217,
+              "text": "奇絶",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
             }
           ]
         }
@@ -8950,6 +10786,110 @@
               "reading": "くせ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_14_0",
+              "line": 0,
+              "start": 13,
+              "end": 16,
+              "text": "沢庵石",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_14_1",
+              "line": 0,
+              "start": 313,
+              "end": 315,
+              "text": "蔭口",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_14_2",
+              "line": 2,
+              "start": 104,
+              "end": 107,
+              "text": "詐欺師",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_14_3",
+              "line": 2,
+              "start": 464,
+              "end": 466,
+              "text": "難有",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_14_4",
+              "line": 4,
+              "start": 41,
+              "end": 43,
+              "text": "難有",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_14_5",
+              "line": 6,
+              "start": 157,
+              "end": 159,
+              "text": "控所",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_14_6",
+              "line": 6,
+              "start": 370,
+              "end": 373,
+              "text": "盤台面",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_14_7",
+              "line": 12,
+              "start": 17,
+              "end": 19,
+              "text": "控所",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_14_8",
+              "line": 12,
+              "start": 148,
+              "end": 150,
+              "text": "通町",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -9586,6 +11526,132 @@
               "end": 2797,
               "base": "堪",
               "reading": "た"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_15_0",
+              "line": 22,
+              "start": 45,
+              "end": 47,
+              "text": "懸物",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_15_1",
+              "line": 32,
+              "start": 30,
+              "end": 32,
+              "text": "控所",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_15_2",
+              "line": 32,
+              "start": 121,
+              "end": 123,
+              "text": "見巡",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_15_3",
+              "line": 36,
+              "start": 250,
+              "end": 253,
+              "text": "小日向",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_15_4",
+              "line": 36,
+              "start": 254,
+              "end": 257,
+              "text": "養源寺",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_15_5",
+              "line": 36,
+              "start": 266,
+              "end": 268,
+              "text": "懸物",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_15_6",
+              "line": 36,
+              "start": 289,
+              "end": 292,
+              "text": "韋駄天",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_15_7",
+              "line": 38,
+              "start": 142,
+              "end": 144,
+              "text": "控所",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_15_8",
+              "line": 38,
+              "start": 210,
+              "end": 212,
+              "text": "湯壺",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_15_9",
+              "line": 40,
+              "start": 111,
+              "end": 114,
+              "text": "袱紗包",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_15_10",
+              "line": 42,
+              "start": 181,
+              "end": 183,
+              "text": "寡徳",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
             }
           ]
         }
@@ -10256,6 +12322,187 @@
               "reading": "かお"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_16_0",
+              "line": 0,
+              "start": 445,
+              "end": 448,
+              "text": "馬鹿気",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_16_1",
+              "line": 2,
+              "start": 208,
+              "end": 210,
+              "text": "陥欠",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_16_2",
+              "line": 2,
+              "start": 443,
+              "end": 445,
+              "text": "取計",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_16_3",
+              "line": 4,
+              "start": 58,
+              "end": 60,
+              "text": "気狂",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_16_4",
+              "line": 4,
+              "start": 86,
+              "end": 88,
+              "text": "気狂",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_16_5",
+              "line": 4,
+              "start": 98,
+              "end": 100,
+              "text": "難有",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_16_6",
+              "line": 4,
+              "start": 164,
+              "end": 166,
+              "text": "寝頸",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_16_7",
+              "line": 6,
+              "start": 138,
+              "end": 140,
+              "text": "喋舌",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_16_8",
+              "line": 6,
+              "start": 250,
+              "end": 252,
+              "text": "咄喊",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_16_9",
+              "line": 6,
+              "start": 255,
+              "end": 257,
+              "text": "吾々",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_16_10",
+              "line": 6,
+              "start": 270,
+              "end": 272,
+              "text": "吾校",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_16_11",
+              "line": 6,
+              "start": 300,
+              "end": 302,
+              "text": "吾々",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_16_12",
+              "line": 6,
+              "start": 328,
+              "end": 330,
+              "text": "振粛",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_16_13",
+              "line": 8,
+              "start": 301,
+              "end": 304,
+              "text": "穏便説",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_16_14",
+              "line": 10,
+              "start": 558,
+              "end": 560,
+              "text": "吾々",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_16_15",
+              "line": 10,
+              "start": 803,
+              "end": 805,
+              "text": "難有",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -10520,6 +12767,55 @@
               "end": 1409,
               "base": "互",
               "reading": "たがい"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_17_0",
+              "line": 4,
+              "start": 295,
+              "end": 298,
+              "text": "蕎麦屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_17_1",
+              "line": 4,
+              "start": 301,
+              "end": 304,
+              "text": "団子屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_17_2",
+              "line": 6,
+              "start": 29,
+              "end": 32,
+              "text": "蕎麦屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_17_3",
+              "line": 6,
+              "start": 33,
+              "end": 36,
+              "text": "団子屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
             }
           ]
         }
@@ -11154,6 +13450,66 @@
               "reading": "よしかわ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_18_0",
+              "line": 0,
+              "start": 146,
+              "end": 148,
+              "text": "気狂",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_18_1",
+              "line": 2,
+              "start": 76,
+              "end": 79,
+              "text": "山城屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_18_2",
+              "line": 2,
+              "start": 207,
+              "end": 211,
+              "text": "鍛冶屋町",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_18_3",
+              "line": 6,
+              "start": 21,
+              "end": 24,
+              "text": "世間並",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_18_4",
+              "line": 42,
+              "start": 56,
+              "end": 64,
+              "text": "マドンナマドンナ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            }
+          ]
         }
       }
     },
@@ -11700,6 +14056,132 @@
               "end": 2678,
               "base": "先",
               "reading": "せん"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_19_0",
+              "line": 2,
+              "start": 22,
+              "end": 24,
+              "text": "妲妃",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_19_1",
+              "line": 8,
+              "start": 26,
+              "end": 28,
+              "text": "艶福",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_19_2",
+              "line": 10,
+              "start": 117,
+              "end": 119,
+              "text": "好過",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_19_3",
+              "line": 10,
+              "start": 144,
+              "end": 146,
+              "text": "輿入",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_19_4",
+              "line": 38,
+              "start": 112,
+              "end": 114,
+              "text": "符箋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_19_5",
+              "line": 38,
+              "start": 132,
+              "end": 135,
+              "text": "山城屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_19_6",
+              "line": 38,
+              "start": 744,
+              "end": 746,
+              "text": "椽鼻",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_19_7",
+              "line": 38,
+              "start": 756,
+              "end": 758,
+              "text": "鄭寧",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_19_8",
+              "line": 38,
+              "start": 903,
+              "end": 905,
+              "text": "肝癪",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_19_9",
+              "line": 38,
+              "start": 988,
+              "end": 991,
+              "text": "田舎者",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_19_10",
+              "line": 38,
+              "start": 1044,
+              "end": 1046,
+              "text": "寝冷",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
             }
           ]
         }
@@ -12322,6 +14804,121 @@
               "reading": "てい"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_20_0",
+              "line": 0,
+              "start": 3,
+              "end": 5,
+              "text": "椽鼻",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_20_1",
+              "line": 0,
+              "start": 172,
+              "end": 174,
+              "text": "鄭寧",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_20_2",
+              "line": 2,
+              "start": 67,
+              "end": 70,
+              "text": "赤手拭",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_20_3",
+              "line": 2,
+              "start": 611,
+              "end": 618,
+              "text": "フロックコート",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_20_4",
+              "line": 2,
+              "start": 642,
+              "end": 644,
+              "text": "皆々",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_20_5",
+              "line": 2,
+              "start": 786,
+              "end": 789,
+              "text": "旦那様",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_20_6",
+              "line": 16,
+              "start": 124,
+              "end": 126,
+              "text": "金鎖",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_20_7",
+              "line": 16,
+              "start": 139,
+              "end": 141,
+              "text": "金鎖",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_20_8",
+              "line": 16,
+              "start": 217,
+              "end": 220,
+              "text": "売下所",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_20_9",
+              "line": 18,
+              "start": 151,
+              "end": 154,
+              "text": "田舎者",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -12814,6 +15411,132 @@
               "end": 1880,
               "base": "損",
               "reading": "そく"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_21_0",
+              "line": 0,
+              "start": 18,
+              "end": 20,
+              "text": "湯壺",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_21_1",
+              "line": 0,
+              "start": 90,
+              "end": 92,
+              "text": "湯壺",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_21_2",
+              "line": 2,
+              "start": 49,
+              "end": 51,
+              "text": "湯壺",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_21_3",
+              "line": 2,
+              "start": 266,
+              "end": 269,
+              "text": "格子窓",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_21_4",
+              "line": 2,
+              "start": 291,
+              "end": 294,
+              "text": "丸提灯",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_21_5",
+              "line": 4,
+              "start": 288,
+              "end": 291,
+              "text": "胡魔化",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_21_6",
+              "line": 4,
+              "start": 295,
+              "end": 298,
+              "text": "胡魔化",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_21_7",
+              "line": 6,
+              "start": 4,
+              "end": 6,
+              "text": "性来",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_21_8",
+              "line": 6,
+              "start": 163,
+              "end": 166,
+              "text": "野芹川",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_21_9",
+              "line": 6,
+              "start": 218,
+              "end": 221,
+              "text": "相生村",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_21_10",
+              "line": 6,
+              "start": 228,
+              "end": 231,
+              "text": "観音様",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
             }
           ]
         }
@@ -13460,6 +16183,154 @@
               "reading": "かくご"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_22_0",
+              "line": 0,
+              "start": 84,
+              "end": 87,
+              "text": "厳罰論",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_22_1",
+              "line": 0,
+              "start": 191,
+              "end": 194,
+              "text": "好加減",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_22_2",
+              "line": 0,
+              "start": 242,
+              "end": 245,
+              "text": "野芹川",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_22_3",
+              "line": 0,
+              "start": 456,
+              "end": 459,
+              "text": "回向院",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_22_4",
+              "line": 0,
+              "start": 497,
+              "end": 499,
+              "text": "控所",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_22_5",
+              "line": 0,
+              "start": 533,
+              "end": 536,
+              "text": "金壺眼",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_22_6",
+              "line": 0,
+              "start": 584,
+              "end": 587,
+              "text": "猫撫声",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_22_7",
+              "line": 2,
+              "start": 97,
+              "end": 99,
+              "text": "墻壁",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_22_8",
+              "line": 4,
+              "start": 54,
+              "end": 57,
+              "text": "野芹川",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_22_9",
+              "line": 4,
+              "start": 206,
+              "end": 209,
+              "text": "野芹川",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_22_10",
+              "line": 4,
+              "start": 394,
+              "end": 397,
+              "text": "随分妙",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_22_11",
+              "line": 6,
+              "start": 259,
+              "end": 262,
+              "text": "田舎者",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_22_12",
+              "line": 22,
+              "start": 4,
+              "end": 6,
+              "text": "難有",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -13820,6 +16691,143 @@
               "end": 2431,
               "base": "相良",
               "reading": "さがら"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_23_0",
+              "line": 6,
+              "start": 29,
+              "end": 32,
+              "text": "家屋敷",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_23_1",
+              "line": 6,
+              "start": 318,
+              "end": 321,
+              "text": "物数奇",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_23_2",
+              "line": 18,
+              "start": 20,
+              "end": 23,
+              "text": "物数奇",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_23_3",
+              "line": 20,
+              "start": 12,
+              "end": 15,
+              "text": "勘五郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_23_4",
+              "line": 22,
+              "start": 1,
+              "end": 4,
+              "text": "勘五郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_23_5",
+              "line": 22,
+              "start": 28,
+              "end": 31,
+              "text": "勘五郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_23_6",
+              "line": 22,
+              "start": 42,
+              "end": 47,
+              "text": "法螺右衛門",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_23_7",
+              "line": 46,
+              "start": 19,
+              "end": 21,
+              "text": "作略",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_23_8",
+              "line": 46,
+              "start": 35,
+              "end": 37,
+              "text": "欺撃",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_23_9",
+              "line": 56,
+              "start": 149,
+              "end": 151,
+              "text": "難有",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_23_10",
+              "line": 60,
+              "start": 268,
+              "end": 272,
+              "text": "太宰権帥",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_23_11",
+              "line": 60,
+              "start": 289,
+              "end": 294,
+              "text": "河合又五郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
             }
           ]
         }
@@ -14212,6 +17220,55 @@
               "end": 2194,
               "base": "巡査",
               "reading": "じゅんさ"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_24_0",
+              "line": 0,
+              "start": 62,
+              "end": 64,
+              "text": "眼付",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_24_1",
+              "line": 0,
+              "start": 126,
+              "end": 128,
+              "text": "見損",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_24_2",
+              "line": 0,
+              "start": 233,
+              "end": 235,
+              "text": "万歳",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_24_3",
+              "line": 6,
+              "start": 136,
+              "end": 140,
+              "text": "双方合併",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
             }
           ]
         }
@@ -14832,6 +17889,121 @@
               "end": 2890,
               "base": "胴着",
               "reading": "どうぎ"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_25_0",
+              "line": 0,
+              "start": 124,
+              "end": 127,
+              "text": "贋落款",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_25_1",
+              "line": 0,
+              "start": 161,
+              "end": 163,
+              "text": "懸物",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_25_2",
+              "line": 0,
+              "start": 222,
+              "end": 225,
+              "text": "胡魔化",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_25_3",
+              "line": 24,
+              "start": 25,
+              "end": 27,
+              "text": "軽跳",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_25_4",
+              "line": 30,
+              "start": 53,
+              "end": 56,
+              "text": "野芹川",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_25_5",
+              "line": 30,
+              "start": 68,
+              "end": 72,
+              "text": "馬鹿野郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_25_6",
+              "line": 30,
+              "start": 176,
+              "end": 178,
+              "text": "呆助",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_25_7",
+              "line": 34,
+              "start": 176,
+              "end": 179,
+              "text": "胡魔化",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_25_8",
+              "line": 36,
+              "start": 125,
+              "end": 129,
+              "text": "鉄拳制裁",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_25_9",
+              "line": 44,
+              "start": 31,
+              "end": 34,
+              "text": "花晨亭",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
             }
           ]
         }
@@ -15562,6 +18734,220 @@
               "reading": "お"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_26_0",
+              "line": 0,
+              "start": 61,
+              "end": 64,
+              "text": "山城屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_26_1",
+              "line": 0,
+              "start": 71,
+              "end": 73,
+              "text": "畳敷",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_26_2",
+              "line": 0,
+              "start": 347,
+              "end": 349,
+              "text": "懸物",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_26_3",
+              "line": 0,
+              "start": 416,
+              "end": 418,
+              "text": "麗々",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_26_4",
+              "line": 0,
+              "start": 441,
+              "end": 443,
+              "text": "海屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_26_5",
+              "line": 0,
+              "start": 466,
+              "end": 468,
+              "text": "海屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_26_6",
+              "line": 2,
+              "start": 45,
+              "end": 47,
+              "text": "海屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_26_7",
+              "line": 2,
+              "start": 48,
+              "end": 50,
+              "text": "懸物",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_26_8",
+              "line": 2,
+              "start": 601,
+              "end": 603,
+              "text": "向側",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_26_9",
+              "line": 4,
+              "start": 227,
+              "end": 231,
+              "text": "上代樸直",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_26_10",
+              "line": 4,
+              "start": 306,
+              "end": 308,
+              "text": "篤厚",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_26_11",
+              "line": 4,
+              "start": 447,
+              "end": 449,
+              "text": "慚死",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_26_12",
+              "line": 4,
+              "start": 558,
+              "end": 560,
+              "text": "鄭寧",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_26_13",
+              "line": 4,
+              "start": 700,
+              "end": 702,
+              "text": "難有",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_26_14",
+              "line": 4,
+              "start": 838,
+              "end": 840,
+              "text": "一遍",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_26_15",
+              "line": 8,
+              "start": 4,
+              "end": 7,
+              "text": "燗徳利",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_26_16",
+              "line": 8,
+              "start": 74,
+              "end": 77,
+              "text": "一巡周",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_26_17",
+              "line": 10,
+              "start": 56,
+              "end": 60,
+              "text": "一人二人",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_26_18",
+              "line": 10,
+              "start": 81,
+              "end": 83,
+              "text": "昔風",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -16198,6 +19584,198 @@
               "end": 2776,
               "base": "途中",
               "reading": "とちゅう"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_27_0",
+              "line": 0,
+              "start": 15,
+              "end": 19,
+              "text": "イカサマ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_27_1",
+              "line": 2,
+              "start": 40,
+              "end": 42,
+              "text": "演舌",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_27_2",
+              "line": 4,
+              "start": 35,
+              "end": 37,
+              "text": "演舌",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_27_3",
+              "line": 6,
+              "start": 19,
+              "end": 21,
+              "text": "一遍",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_27_4",
+              "line": 8,
+              "start": 27,
+              "end": 31,
+              "text": "イカサマ",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_27_5",
+              "line": 8,
+              "start": 46,
+              "end": 48,
+              "text": "椽側",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_27_6",
+              "line": 12,
+              "start": 23,
+              "end": 26,
+              "text": "両人共",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_27_7",
+              "line": 20,
+              "start": 73,
+              "end": 76,
+              "text": "居合抜",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_27_8",
+              "line": 20,
+              "start": 122,
+              "end": 125,
+              "text": "操人形",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_27_9",
+              "line": 26,
+              "start": 142,
+              "end": 145,
+              "text": "花月巻",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_27_10",
+              "line": 26,
+              "start": 175,
+              "end": 177,
+              "text": "半可",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_27_11",
+              "line": 28,
+              "start": 99,
+              "end": 106,
+              "text": "踏破千山万岳烟",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_27_12",
+              "line": 28,
+              "start": 178,
+              "end": 181,
+              "text": "棕梠箒",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_27_13",
+              "line": 30,
+              "start": 59,
+              "end": 61,
+              "text": "裸踴",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_27_14",
+              "line": 30,
+              "start": 209,
+              "end": 212,
+              "text": "気狂会",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_27_15",
+              "line": 30,
+              "start": 314,
+              "end": 316,
+              "text": "肝癪",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_27_16",
+              "line": 30,
+              "start": 524,
+              "end": 526,
+              "text": "頸筋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
             }
           ]
         }
@@ -16866,6 +20444,176 @@
               "end": 2633,
               "base": "断食",
               "reading": "だんじき"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_28_0",
+              "line": 0,
+              "start": 12,
+              "end": 15,
+              "text": "練兵場",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_28_1",
+              "line": 0,
+              "start": 205,
+              "end": 207,
+              "text": "小供",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_28_2",
+              "line": 0,
+              "start": 358,
+              "end": 360,
+              "text": "喋舌",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_28_3",
+              "line": 0,
+              "start": 364,
+              "end": 366,
+              "text": "喋舌",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_28_4",
+              "line": 0,
+              "start": 418,
+              "end": 420,
+              "text": "喋舌",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_28_5",
+              "line": 0,
+              "start": 425,
+              "end": 427,
+              "text": "喋舌",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_28_6",
+              "line": 0,
+              "start": 441,
+              "end": 443,
+              "text": "喋舌",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_28_7",
+              "line": 0,
+              "start": 524,
+              "end": 527,
+              "text": "勘五郎",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_28_8",
+              "line": 2,
+              "start": 108,
+              "end": 112,
+              "text": "神経衰弱",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_28_9",
+              "line": 2,
+              "start": 282,
+              "end": 285,
+              "text": "樗蒲一",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_28_10",
+              "line": 2,
+              "start": 387,
+              "end": 389,
+              "text": "逆捩",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_28_11",
+              "line": 2,
+              "start": 553,
+              "end": 555,
+              "text": "見傚",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_28_12",
+              "line": 2,
+              "start": 582,
+              "end": 588,
+              "text": "愚迂多良童子",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_28_13",
+              "line": 4,
+              "start": 79,
+              "end": 82,
+              "text": "薬師町",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_28_14",
+              "line": 8,
+              "start": 141,
+              "end": 143,
+              "text": "念入",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
             }
           ]
         }
@@ -17620,6 +21368,220 @@
               "reading": "けいだい"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_29_0",
+              "line": 0,
+              "start": 22,
+              "end": 24,
+              "text": "肱枕",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_29_1",
+              "line": 2,
+              "start": 2,
+              "end": 4,
+              "text": "十坪",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_29_2",
+              "line": 4,
+              "start": 105,
+              "end": 107,
+              "text": "芋責",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_29_3",
+              "line": 4,
+              "start": 117,
+              "end": 120,
+              "text": "蕎麦屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_29_4",
+              "line": 4,
+              "start": 123,
+              "end": 126,
+              "text": "団子屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_29_5",
+              "line": 4,
+              "start": 167,
+              "end": 169,
+              "text": "煮方",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_29_6",
+              "line": 8,
+              "start": 81,
+              "end": 84,
+              "text": "蕎麦屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_29_7",
+              "line": 8,
+              "start": 90,
+              "end": 93,
+              "text": "団子屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_29_8",
+              "line": 8,
+              "start": 100,
+              "end": 103,
+              "text": "取締上",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_29_9",
+              "line": 10,
+              "start": 201,
+              "end": 205,
+              "text": "御殿女中",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_29_10",
+              "line": 24,
+              "start": 9,
+              "end": 11,
+              "text": "枡屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_29_11",
+              "line": 36,
+              "start": 3,
+              "end": 5,
+              "text": "枡屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_29_12",
+              "line": 44,
+              "start": 322,
+              "end": 325,
+              "text": "八幡様",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_29_13",
+              "line": 46,
+              "start": 8,
+              "end": 11,
+              "text": "回向院",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_29_14",
+              "line": 46,
+              "start": 26,
+              "end": 28,
+              "text": "幾旒",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_29_15",
+              "line": 48,
+              "start": 34,
+              "end": 38,
+              "text": "帝国万歳",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_29_16",
+              "line": 48,
+              "start": 168,
+              "end": 170,
+              "text": "万歳",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_29_17",
+              "line": 48,
+              "start": 197,
+              "end": 200,
+              "text": "相生村",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_29_18",
+              "line": 48,
+              "start": 212,
+              "end": 215,
+              "text": "観音様",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -18312,6 +22274,99 @@
               "reading": "てんまつ"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_30_0",
+              "line": 2,
+              "start": 271,
+              "end": 275,
+              "text": "三河万歳",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_30_1",
+              "line": 2,
+              "start": 276,
+              "end": 279,
+              "text": "普陀洛",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_30_2",
+              "line": 4,
+              "start": 117,
+              "end": 119,
+              "text": "冷々",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_30_3",
+              "line": 4,
+              "start": 189,
+              "end": 192,
+              "text": "同志撃",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_30_4",
+              "line": 4,
+              "start": 422,
+              "end": 424,
+              "text": "汐酌",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_30_5",
+              "line": 10,
+              "start": 129,
+              "end": 132,
+              "text": "田舎者",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_30_6",
+              "line": 10,
+              "start": 429,
+              "end": 432,
+              "text": "田舎者",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_30_7",
+              "line": 12,
+              "start": 16,
+              "end": 20,
+              "text": "一重羽織",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            }
+          ]
         }
       }
     },
@@ -18992,6 +23047,165 @@
               "reading": "き"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_31_0",
+              "line": 0,
+              "start": 13,
+              "end": 16,
+              "text": "身体中",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_31_1",
+              "line": 0,
+              "start": 113,
+              "end": 115,
+              "text": "退儀",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_31_2",
+              "line": 0,
+              "start": 211,
+              "end": 214,
+              "text": "堀田某",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_31_3",
+              "line": 0,
+              "start": 370,
+              "end": 372,
+              "text": "吾校",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_31_4",
+              "line": 0,
+              "start": 400,
+              "end": 402,
+              "text": "吾人",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_31_5",
+              "line": 0,
+              "start": 424,
+              "end": 426,
+              "text": "吾人",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_31_6",
+              "line": 0,
+              "start": 430,
+              "end": 432,
+              "text": "吾人",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_31_7",
+              "line": 2,
+              "start": 59,
+              "end": 61,
+              "text": "無暗",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_31_8",
+              "line": 6,
+              "start": 47,
+              "end": 49,
+              "text": "自惚",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_31_9",
+              "line": 6,
+              "start": 252,
+              "end": 254,
+              "text": "万歳",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_31_10",
+              "line": 6,
+              "start": 305,
+              "end": 307,
+              "text": "焼点",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_31_11",
+              "line": 6,
+              "start": 348,
+              "end": 350,
+              "text": "君等",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_31_12",
+              "line": 8,
+              "start": 106,
+              "end": 108,
+              "text": "控所",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_31_13",
+              "line": 10,
+              "start": 84,
+              "end": 86,
+              "text": "僕等",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -19442,6 +23656,77 @@
               "end": 2508,
               "base": "利巧",
               "reading": "りこう"
+            }
+          ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_32_0",
+              "line": 0,
+              "start": 21,
+              "end": 23,
+              "text": "僕等",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_32_1",
+              "line": 12,
+              "start": 26,
+              "end": 31,
+              "text": "天道是耶非",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_32_2",
+              "line": 24,
+              "start": 397,
+              "end": 399,
+              "text": "泥鼈",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_32_3",
+              "line": 34,
+              "start": 24,
+              "end": 27,
+              "text": "胡魔化",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_32_4",
+              "line": 70,
+              "start": 43,
+              "end": 46,
+              "text": "可愛想",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_32_5",
+              "line": 72,
+              "start": 94,
+              "end": 96,
+              "text": "利巧",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
             }
           ]
         }
@@ -20112,6 +24397,209 @@
               "reading": "がまん"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_33_0",
+              "line": 0,
+              "start": 58,
+              "end": 60,
+              "text": "枡屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_33_1",
+              "line": 0,
+              "start": 231,
+              "end": 234,
+              "text": "馬鹿気",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_33_2",
+              "line": 0,
+              "start": 509,
+              "end": 512,
+              "text": "瓦斯燈",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_33_3",
+              "line": 0,
+              "start": 615,
+              "end": 618,
+              "text": "可愛想",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_33_4",
+              "line": 2,
+              "start": 53,
+              "end": 55,
+              "text": "芋責",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_33_5",
+              "line": 2,
+              "start": 84,
+              "end": 87,
+              "text": "赤手拭",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_33_6",
+              "line": 2,
+              "start": 102,
+              "end": 104,
+              "text": "枡屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_33_7",
+              "line": 2,
+              "start": 105,
+              "end": 108,
+              "text": "楷子段",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_33_8",
+              "line": 2,
+              "start": 133,
+              "end": 136,
+              "text": "韋駄天",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_33_9",
+              "line": 4,
+              "start": 9,
+              "end": 11,
+              "text": "小鈴",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_33_10",
+              "line": 20,
+              "start": 41,
+              "end": 43,
+              "text": "洋燈",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_33_11",
+              "line": 22,
+              "start": 3,
+              "end": 6,
+              "text": "一貫張",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_33_12",
+              "line": 22,
+              "start": 16,
+              "end": 18,
+              "text": "洋燈",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_33_13",
+              "line": 22,
+              "start": 83,
+              "end": 86,
+              "text": "チーン",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-katakana"
+            },
+            {
+              "id": "aozora_33_14",
+              "line": 40,
+              "start": 14,
+              "end": 18,
+              "text": "天網恢々",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_33_15",
+              "line": 42,
+              "start": 59,
+              "end": 62,
+              "text": "瓦斯燈",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_33_16",
+              "line": 46,
+              "start": 199,
+              "end": 201,
+              "text": "辛防",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_33_17",
+              "line": 46,
+              "start": 218,
+              "end": 221,
+              "text": "瓦斯燈",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     },
@@ -20570,6 +25058,209 @@
               "reading": "こびなた"
             }
           ]
+        },
+        "viewerBoundaries": {
+          "version": 1,
+          "edits": [
+            {
+              "id": "aozora_34_0",
+              "line": 0,
+              "start": 80,
+              "end": 83,
+              "text": "杉並木",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_34_1",
+              "line": 0,
+              "start": 173,
+              "end": 176,
+              "text": "杉並木",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_34_2",
+              "line": 4,
+              "start": 36,
+              "end": 38,
+              "text": "鄭寧",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_34_3",
+              "line": 6,
+              "start": 1,
+              "end": 4,
+              "text": "取締上",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_34_4",
+              "line": 6,
+              "start": 11,
+              "end": 14,
+              "text": "蕎麦屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_34_5",
+              "line": 6,
+              "start": 15,
+              "end": 18,
+              "text": "団子屋",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_34_6",
+              "line": 6,
+              "start": 331,
+              "end": 333,
+              "text": "尻持",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_34_7",
+              "line": 6,
+              "start": 385,
+              "end": 387,
+              "text": "肝癪",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_34_8",
+              "line": 6,
+              "start": 421,
+              "end": 423,
+              "text": "尻持",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_34_9",
+              "line": 12,
+              "start": 29,
+              "end": 32,
+              "text": "胡魔化",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            },
+            {
+              "id": "aozora_34_10",
+              "line": 22,
+              "start": 72,
+              "end": 75,
+              "text": "両人共",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_34_11",
+              "line": 22,
+              "start": 94,
+              "end": 96,
+              "text": "退儀",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_34_12",
+              "line": 26,
+              "start": 161,
+              "end": 163,
+              "text": "有之",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_34_13",
+              "line": 26,
+              "start": 172,
+              "end": 174,
+              "text": "申候",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_34_14",
+              "line": 26,
+              "start": 177,
+              "end": 186,
+              "text": "左様御承知被下度候",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_34_15",
+              "line": 32,
+              "start": 33,
+              "end": 35,
+              "text": "革鞄",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_34_16",
+              "line": 34,
+              "start": 10,
+              "end": 12,
+              "text": "街鉄",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby"
+            },
+            {
+              "id": "aozora_34_17",
+              "line": 34,
+              "start": 173,
+              "end": 176,
+              "text": "養源寺",
+              "cuts": [],
+              "base": [],
+              "status": "pending",
+              "source": "aozora-ruby-repeat"
+            }
+          ]
         }
       }
     }
@@ -20621,6 +25312,7 @@
       2528,
       2585,
       2323
-    ]
+    ],
+    "boundaryMergeCount": 411
   }
 }
