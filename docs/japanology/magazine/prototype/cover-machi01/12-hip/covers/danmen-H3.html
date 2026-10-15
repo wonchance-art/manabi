@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>富士吉田 表紙 danmen-H3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Space+Grotesk:wght@500&display=swap">
+<!--
+  『となり』 一つの町 01 富士吉田 — 12-hip 표지 danmen-H3 · 생성 파일(12-hip/build.mjs). 손으로 고치지 말 것. 2026-10-15 KST.
+  레이아웃은 11-center와 같다: 모든 글자 상자 left 14mm · right 14mm · text-align center(축 x105).
+  서체 체계 H3 ドット(픽셀 고딕 한 벌(제호·제목) + 읽는 고딕 + 기하 그로테스크 숫자): DotGothic16 · Zen Kaku Gothic New · Space Grotesk — 모두 Google Fonts, SIL OFL 1.1(확인 표 NOTES.md).
+  제호(탐색 단계 라이브 텍스트): TONARI 34.317mm(잉크 폭 95.058mm) · となり 9.787mm. 큰 글자 3역할은 같은 woff2를 ascent/descent-override로 다시 선언(상자 = 잉크 높이).
+  색: 바탕 #151b2c · 글자 #eef0f4 · 주홍 #d4462a는 그림의 한 곳(비글자)에만.
+  주인공 ⑤断面: 07-refine/05-danmen/data.json 그대로(国土地理院 標高API（getelevation.php）https://cyberjapandata2.gsi.go.jp/general/dem/scripts/getelevation.php; 열람 2026-10-15 13:09:17 KST·2026-10-15 13:15:37 KST·2026-10-15 15:04:07 KST). 縦横同縮尺 10.9936mm/km, 밑변 y258, 위치·형상 불변.
+  문구: 8月26日の夜 = 원고 72행 · ネクタイ生地の4割 = 54행(B06 山梨県) · 標高700〜900 = 56행(B49).
+-->
+<style>
+@font-face{font-family:'Hip Mast';font-style:normal;font-weight:400;font-display:block;src:url(https://fonts.gstatic.com/l/font?kit=v6-QGYjBJFKgyw5nSoDAGE7O-2ZwfAucH_xTyUIy_OwnYozKtHTqDvCFfGzk9osV&skey=eecae415a788803c&v=v22) format('woff2');ascent-override:82.3%;descent-override:0.7%;line-gap-override:0%}
+@font-face{font-family:'Hip Kana';font-style:normal;font-weight:400;font-display:block;src:url(https://fonts.gstatic.com/l/font?kit=v6-QGYjBJFKgyw5nSoDAGE7O-2ZwfAucH_xTyUIy_OwnYozKtHTqDvCFfGzk9osV&skey=eecae415a788803c&v=v22) format('woff2');ascent-override:88.3%;descent-override:6.7%;line-gap-override:0%}
+@font-face{font-family:'Hip Title';font-style:normal;font-weight:400;font-display:block;src:url(https://fonts.gstatic.com/l/font?kit=v6-QGYjBJFKgyw5nSoDAGE7O-2ZwfAucH_xTyUIy_OwnYozKtHTqDvCFfGzk9osV&skey=eecae415a788803c&v=v22) format('woff2');ascent-override:88.3%;descent-override:6.7%;line-gap-override:0%}
+:root{--night:#151b2c;--vermilion:#d4462a;--snow:#eef0f4;--page:#d9dce3;--page-ink:#151b2c}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--page:#0e1220;--page-ink:#eef0f4}}
+:root[data-theme="dark"]{--page:#0e1220;--page-ink:#eef0f4}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--page);color:var(--page-ink)}
+body{padding:16px}
+.wrap{max-width:860px;margin:0 auto;container-type:inline-size}
+.cover{--mm:calc(100cqw / 210);--cover-bg:#151b2c;--m:calc(var(--mm)*14);width:100%;aspect-ratio:210/297;position:relative;overflow:hidden;background:var(--cover-bg);color:#eef0f4}
+.cover > *{position:absolute;margin:0}
+.cover .plate{inset:0;width:100%;height:100%;display:block}
+.cover .mast{top:calc(var(--mm)*13);font-family:'Hip Mast';font-style:normal;font-weight:400;font-size:calc(var(--mm)*34.317);line-height:0.83;letter-spacing:0em}
+.cover .mast > span:first-child{display:inline-block;transform:translateX(0.095em)}
+.cover .kana{top:calc(var(--mm)*44.14);font-family:'Hip Kana';font-style:normal;font-weight:400;font-size:calc(var(--mm)*9.787);line-height:0.95;letter-spacing:0.1em}
+.cover .kana > span:first-child{display:inline-block;transform:translateX(0.015em)}
+.cover .c{left:var(--m);right:var(--m);text-align:center;white-space:nowrap}
+.cover .kick{top:calc(var(--mm)*58.298);font-family:'Zen Kaku Gothic New',sans-serif;font-weight:500;font-size:calc(var(--mm)*6.4);line-height:1;letter-spacing:.1em}
+.cover .kick .no{font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:calc(var(--mm)*6.4);margin-left:calc(var(--mm)*2.5);letter-spacing:.04em}
+.cover .ttl{font-family:'Hip Title';font-style:normal;font-weight:400;line-height:1;letter-spacing:0.06em}
+.cover .ttl > span:first-child{display:inline-block;transform:translateX(0.015em)} /* 광학 중심 보정(fit.json 잉크 실측) — 상자는 M·M 그대로 */
+.cover .z{letter-spacing:0}
+.cover .hr{margin-right:-.5em}
+.cover .hl{margin-left:-.5em}
+.cover .line{font-family:'Zen Kaku Gothic New',sans-serif;font-weight:500;font-size:calc(var(--mm)*5.6);line-height:1.6}
+.cover .story{font-family:'Zen Kaku Gothic New',sans-serif;font-weight:700;font-size:calc(var(--mm)*6);line-height:1.6}
+.cover .line > span,.cover .story > span,.cover .credit > span{display:block}
+.cover .credit{bottom:calc(var(--mm)*10);font-family:'Zen Kaku Gothic New',sans-serif;font-weight:400;font-size:calc(var(--mm)*3.24);line-height:1.42;font-feature-settings:'palt'}
+.cover .ttl{top:calc(var(--mm)*78.318);font-size:calc(var(--mm)*38)}
+.cover .l2{top:calc(var(--mm)*155.753)}
+.cover .l3{top:calc(var(--mm)*179.673)}
+.cover .story{top:calc(var(--mm)*211.593)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<article class="cover" lang="ja" aria-label="TONARI となり 一つの町 01 富士吉田 表紙">
+  <svg class="plate" viewBox="0 0 210 297" preserveAspectRatio="none" role="img" aria-label="下吉田駅から金鳥居を通って富士山頂の剣ヶ峯まで、さらに同じ直線の先までの地面の断面。縦と横は同じ縮尺。下吉田駅から金鳥居までの短い区間を朱で示す。">
+    <path d="M13 258L13 249.72L13.546 249.717L14.094 249.711L14.64 249.701L15.188 249.677L15.734 249.669L16.282 249.669L16.828 249.664L17.374 249.682L17.922 249.683L18.468 249.675L19.016 249.656L19.562 249.632L20.11 249.622L20.656 249.606L21.202 249.59L21.75 249.566L22.296 249.551L22.844 249.525L23.39 249.51L23.938 249.49L24.484 249.468L25.031 249.444L25.578 249.423L26.124 249.401L26.672 249.373L27.218 249.349L27.766 249.334L28.312 249.311L28.859 249.29L29.406 249.263L29.952 249.239L30.5 249.225L31.046 249.193L31.593 249.174L32.696 249.134L33.799 249.087L34.901 249.037L36.004 248.987L37.107 248.935L38.209 248.887L39.312 248.85L40.415 248.791L41.517 248.755L42.62 248.715L43.723 248.665L44.825 248.596L45.928 248.549L47.031 248.493L48.133 248.444L49.237 248.392L50.34 248.326L51.442 248.288L52.545 248.238L53.648 248.182L54.75 248.134L55.853 248.064L56.956 248.023L58.058 247.971L59.161 247.918L60.264 247.844L61.366 247.791L62.469 247.728L63.572 247.665L64.674 247.604L65.777 247.542L66.88 247.475L67.982 247.408L69.085 247.343L70.188 247.275L71.291 247.212L72.394 247.135L73.497 247.057L74.599 246.994L75.702 246.916L76.805 246.832L77.907 246.749L79.01 246.671L80.113 246.578L81.215 246.5L82.318 246.428L83.421 246.346L84.523 246.276L85.626 246.21L86.729 246.123L87.831 246.04L88.934 245.96L90.037 245.88L91.139 245.778L92.243 245.677L93.346 245.596L94.448 245.501L95.551 245.423L96.654 245.343L97.756 245.287L98.859 245.2L99.962 245.108L101.064 245.033L102.167 244.988L103.27 244.824L104.372 244.72L105.475 244.616L106.578 244.479L107.68 244.368L108.783 244.279L109.886 244.176L110.988 244.074L112.091 243.963L113.194 243.851L114.297 243.72L115.4 243.605L116.503 243.438L117.605 243.33L118.708 243.197L119.811 243.016L120.913 242.851L122.016 242.787L123.119 242.573L124.221 242.402L125.324 242.23L126.427 242.083L127.529 241.922L128.632 241.851L129.735 241.625L130.837 241.35L131.94 241.09L133.042 240.88L134.145 240.654L135.249 240.459L136.352 240.278L137.454 240.121L138.557 239.789L139.66 239.513L140.762 239.213L141.865 238.923L142.968 238.576L144.07 238.306L145.173 237.999L146.275 237.645L147.378 237.321L148.481 237.123L149.583 236.793L150.686 236.522L151.789 236.073L152.891 235.671L153.994 235.252L155.097 234.802L156.199 234.343L157.303 233.836L158.406 233.372L159.509 232.865L160.611 232.304L161.714 231.682L162.816 231.068L163.919 230.515L165.022 229.958L166.124 229.397L167.227 228.854L168.33 228.153L169.432 227.517L170.535 226.986L171.638 226.419L172.74 225.71L173.843 225.054L174.946 224.437L176.048 223.822L177.151 223.199L178.255 222.551L179.357 221.864L180.46 221.333L181.563 220.753L182.665 220.288L183.768 219.985L184.871 219.539L185.973 219.052L186.227 218.917L186.447 218.801L186.667 218.682L186.887 218.554L187.076 218.449L187.327 218.306L187.547 218.183L187.766 218.057L187.986 217.931L188.179 217.822L188.426 217.67L188.646 217.545L188.866 217.409L189.086 217.263L189.281 217.146L189.525 217.132L189.745 217.234L189.965 217.32L190.185 217.387L190.384 217.454L190.625 217.505L190.845 217.461L191.065 217.387L191.284 217.394L191.487 217.446L191.724 217.506L191.944 217.537L192.164 217.552L192.384 217.547L192.589 217.531L192.824 217.531L193.043 217.529L193.263 217.95L193.483 218.032L193.692 218.057L193.923 218.032L194.143 217.993L194.363 217.879L194.583 217.909L194.795 217.839L195.022 217.685L195.242 217.513L195.462 217.465L195.682 217.325L195.897 217.091L196.122 217.06L196.341 216.949L196.561 216.833L196.781 216.719L197 216.583L197.221 216.533L197.441 216.621L197.661 216.749L197.881 216.876L198.1 217.031L198.32 217.166L198.54 217.304L198.76 217.43L198.98 217.564L199.2 217.728L199.42 217.882L199.64 218.009L199.859 218.136L200.079 218.27L200.299 218.394L200.519 218.538L200.739 218.669L200.959 218.801L201.179 218.945L201.399 219.086L201.618 219.241L201.838 219.379L202.058 219.533L202.278 219.672L202.498 219.816L202.718 219.957L202.938 220.09L203.158 220.231L203.377 220.373L203.597 220.516L203.817 220.671L204.037 220.855L204.257 221.013L204.477 221.162L204.697 221.309L204.916 221.47L205.136 221.614L205.356 221.786L205.576 221.915L205.796 222.09L206.016 222.238L206.236 222.403L206.456 222.541L206.675 222.708L206.895 222.868L207.115 223.024L207.335 223.179L207.555 223.323L207.775 223.472L207.995 223.628L208.215 223.777L208.434 223.904L208.654 224L208.874 224.101L209.094 224.187L209.314 224.311L209.534 224.472L209.754 224.619L209.974 224.759L210.193 224.894L210.413 225.038L210.633 225.162L210.853 225.296L211.073 225.426L211.293 225.567L211.513 225.696L211.733 225.827L211.952 225.956L212.172 226.084L212.392 226.197L212.612 226.304L212.832 226.414L213.052 226.563L213.052 258Z" fill="#eef0f4"/>
+    <path d="M13 249.72L13.546 249.717L14.094 249.711L14.64 249.701L15.188 249.677L15.734 249.669L16.282 249.669L16.828 249.664L17.374 249.682L17.922 249.683L18.468 249.675L19.016 249.656L19.562 249.632L20.11 249.622L20.656 249.606L21.202 249.59L21.75 249.566L22.296 249.551L22.844 249.525L23.39 249.51L23.938 249.49L24.484 249.468L25.031 249.444L25.578 249.423L26.124 249.401L26.672 249.373L27.218 249.349L27.766 249.334L28.312 249.311L28.859 249.29L29.406 249.263L29.952 249.239L30.5 249.225L31.046 249.193L31.593 249.174L31.593 251.774L31.046 251.793L30.5 251.825L29.952 251.839L29.406 251.863L28.859 251.89L28.312 251.911L27.766 251.934L27.218 251.949L26.672 251.973L26.124 252.001L25.578 252.023L25.031 252.044L24.484 252.068L23.938 252.09L23.39 252.11L22.844 252.125L22.296 252.151L21.75 252.166L21.202 252.19L20.656 252.206L20.11 252.222L19.562 252.232L19.016 252.256L18.468 252.275L17.922 252.283L17.374 252.282L16.828 252.264L16.282 252.269L15.734 252.269L15.188 252.277L14.64 252.301L14.094 252.311L13.546 252.317L13 252.32Z" fill="#d4462a"/>
+  </svg>
+  <p class="c mast" aria-label="TONARI"><span>TONAR<span class="z">I</span></span></p>
+  <p class="c kana"><span>とな<span class="z">り</span></span></p>
+  <p class="c kick">一つの町<span class="no">0<span class="z">1</span></span></p>
+  <h1 class="c ttl"><span>富士吉<span class="z">田</span></span></h1>
+  <p class="c line l2"><span>8月26日の夜<span class="hr">、</span></span><span>道がいちばん明るくなる<span class="hr">。</span></span></p>
+  <p class="c line l3"><span>国産ネクタイ生地の4割に<span class="hr">、</span></span><span>ここの生地が使われている<span class="hr">。</span></span></p>
+  <p class="c story"><span>標高700〜900メートルほど<span class="hr">、</span></span><span>稲づくりに向かない土地<span class="hr">。</span></span></p>
+  <p class="c credit"><span>標高　国土地理院（標高API）・下吉田駅—金鳥居—剣ヶ峯とその延長線の断面</span><span>縦横同縮尺（誇張なし）・底辺は標高0m・朱は下吉田駅から金鳥居まで</span><span>となり編集部</span></p>
+</article>
+</div>
+</body>
+</html>
