@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L3 型紙 레터링</title>
+<style>
+  :root { --night:#151b2c; --snow:#eef0f4; --ver:#d4462a; --paper:#d9dce4; --mute:#5a6275; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--paper); color:var(--night); width:1500px; padding:28px 26px 34px;
+         font-family:"Noto Sans KR","Hiragino Sans","Apple SD Gothic Neo",system-ui,sans-serif; }
+  h1 { font-size:20px; font-weight:700; }
+  h1 b { display:inline-block; background:var(--night); color:var(--snow); font-size:13px; padding:2px 8px; margin-right:8px; vertical-align:3px; }
+  .lede { font-size:14px; color:#2a3142; margin-top:6px; }
+  .rule { margin:14px 0; padding:10px 14px; background:var(--snow); border-left:4px solid var(--ver); font-size:12.5px; line-height:1.65; color:#2a3142; }
+  h2 { font-size:14px; margin:18px 0 8px; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+  .cell { position:relative; height:250px; display:flex; align-items:center; justify-content:center; background:var(--snow); }
+  .cell.dark { background:var(--night); }
+  .cell img { display:block; height:150px; }
+  .cell img.w { height:auto; width:88%; }
+  .tag { position:absolute; left:10px; top:8px; font-size:11px; font-weight:700; padding:1px 6px; background:var(--night); color:var(--snow); }
+  .dark .tag { background:var(--snow); color:var(--night); }
+  .sizes { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .col { display:flex; flex-direction:column; gap:6px; }
+  .hdr { height:48px; display:flex; align-items:center; justify-content:space-between; padding:0 14px; background:var(--snow); border-bottom:1px solid #c7ccd6; }
+  .hdr.dark { background:var(--night); border-bottom-color:#2b344a; }
+  .hdr img { height:24px; display:block; }
+  .hdr span { font-size:11px; color:var(--mute); }
+  .hdr.dark span { color:#a3abbd; }
+  .cover { height:170px; background:var(--snow); display:flex; align-items:center; justify-content:center; }
+  .cover.dark { background:var(--night); }
+  .cover img { width:312px; }
+  .cover img.k { width:auto; height:96px; }
+  .small { font-size:11px; color:var(--mute); }
+  .detail { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .detail .cell { height:300px; overflow:hidden; }
+  .detail .cell img { height:auto; }
+</style>
+</head>
+<body>
+  <h1><b>L3</b>型紙(가타가미) — 형지를 오려 낸 TONARI · となり · トナリ</h1>
+  <p class="lede">글자를 칼로 오려 낸 형지. 종이 섬이 떨어지지 않게 남기는 다리(つり)가 이 단어의 서명이 된다 — 전부 같은 '/' 45°, 같은 폭.</p>
+  <div class="rule">구성 규칙: 획 굵기 W = 1u · 글자 높이 H = 5u(가나 칸 5.6u, 획은 그대로) · 획 끝은 획에 직각 절단(칼 끝) · 곡선은 원호만 ·
+    つり = 방향 45°('/') 한 가지, 폭 b = 0.24u(작은 판 0.50u) · 놓는 자리 두 경우뿐 — ① 닫힌 속공간 섬 하나에 하나(O·A·R) ② 획이 꿰뚫는 교차(な 2곳·ナ)는 중심을 '/'로 갈라 ㄱ·ㄴ 두 조각 — 교차가 섬을 닫으면(な 고리) 그 つり가 섬도 겸한다 ·
+    둥근 획의 つり는 '/'가 반지름과 겹치는 북동·남서에만(획에 직각) · 주홍 = 'な' 음절의 つり 하나(A 꼭지 / な·ナ 교차) — 두 조각을 묶는 붉은 실 · 검증: 오려 낸 뒤 떨어지는 종이 섬 0개(빌드가 assert).</div>
+
+  <h2>큰 크기 — 명 / 암</h2>
+  <div class="row">
+    <div class="cell"><span class="tag">TONARI · 국제·우산</span><img class="w" src="svg/L3-TONARI-light.svg" alt="TONARI"></div>
+    <div class="cell dark"><span class="tag">TONARI</span><img class="w" src="svg/L3-TONARI-dark.svg" alt="TONARI"></div>
+  </div>
+  <div class="row">
+    <div class="cell"><span class="tag">となり · 일본 시리즈</span><img src="svg/L3-tonari-hira-light.svg" alt="となり"></div>
+    <div class="cell dark"><span class="tag">となり</span><img src="svg/L3-tonari-hira-dark.svg" alt="となり"></div>
+  </div>
+  <div class="row">
+    <div class="cell"><span class="tag">トナリ · 하이브리드</span><img src="svg/L3-tonari-kata-light.svg" alt="トナリ"></div>
+    <div class="cell dark"><span class="tag">トナリ</span><img src="svg/L3-tonari-kata-dark.svg" alt="トナリ"></div>
+  </div>
+
+  <p class="small" style="margin:-2px 0 6px">つり 지도 — TONARI: O 북동 · A 꼭지(주홍) · R 북동 = 3 / となり: な 가로×사선 교차(주홍) · な 꼬리×기둥 교차(고리 겸함) = 2 / トナリ: ナ 교차(주홍) = 1. と·り·ト·リ·T·N·I는 떨어질 종이가 없어 つり가 없다.</p>
+  <h2>웹 헤더 24px — 작은 판(つり 폭 0.50u) / 위 칸은 큰 판 그대로 축소(비교)</h2>
+  <div class="sizes">
+    <div class="col">
+      <div class="hdr"><img src="svg/L3-TONARI-light.svg" alt=""><span>큰 판 축소</span></div>
+      <div class="hdr"><img src="svg/L3-TONARI-s-light.svg" alt=""><span>작은 판</span></div>
+      <div class="hdr dark"><img src="svg/L3-TONARI-s-dark.svg" alt=""><span>작은 판</span></div>
+    </div>
+    <div class="col">
+      <div class="hdr"><img src="svg/L3-tonari-hira-light.svg" alt=""><span>큰 판 축소</span></div>
+      <div class="hdr"><img src="svg/L3-tonari-hira-s-light.svg" alt=""><span>작은 판</span></div>
+      <div class="hdr dark"><img src="svg/L3-tonari-hira-s-dark.svg" alt=""><span>작은 판</span></div>
+    </div>
+    <div class="col">
+      <div class="hdr"><img src="svg/L3-tonari-kata-light.svg" alt=""><span>큰 판 축소</span></div>
+      <div class="hdr"><img src="svg/L3-tonari-kata-s-light.svg" alt=""><span>작은 판</span></div>
+      <div class="hdr dark"><img src="svg/L3-tonari-kata-s-dark.svg" alt=""><span>작은 판</span></div>
+    </div>
+  </div>
+
+  <h2>표지 제호 크기(폭 312px 기준)</h2>
+  <div class="sizes">
+    <div class="cover"><img src="svg/L3-TONARI-light.svg" alt=""></div>
+    <div class="cover dark"><img class="k" src="svg/L3-tonari-hira-dark.svg" alt=""></div>
+    <div class="cover"><img class="k" src="svg/L3-tonari-kata-light.svg" alt=""></div>
+  </div>
+  <p class="small" style="margin-top:8px">재생성: python3 -I build-l3.py (shapely 2.x) · 좌표 0.01 반올림, 2회 빌드 SHA256 동일 확인 · 주홍 #d4462a 한 곳.</p>
+</body>
+</html>
