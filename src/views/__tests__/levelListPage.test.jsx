@@ -9,6 +9,7 @@ vi.mock('@/lib/AuthContext', () => ({ useAuth: () => ({ user: null }) }));
 vi.mock('@/lib/supabase', () => ({ supabase: {} }));
 vi.mock('@/lib/useTTS', () => ({ useTTS: () => ({ speak: () => {}, supported: true }) }));
 vi.mock('@/lib/useKnownWords', () => ({ useKnownWords: () => ({ rows: [], isPendingWord: () => false, mutation: { mutate: () => {} } }) }));
+vi.mock('@/lib/useWordFacets', () => ({ useWordFacets: () => ({ rows: [], mark: () => {} }) }));
 
 const { default: LevelListPage, VocabCard } = await import('../LevelListPage.jsx');
 const { levelListData } = await import('../../lib/levelListData.js');
