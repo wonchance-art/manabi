@@ -209,3 +209,21 @@ describe('관리자 화면 배선 — 게시 한 번에 준비·분석, 공개�
     expect(panel).toContain("post('release', book.key)");
   });
 });
+
+describe('관리자 게시 화면 표지(오너 「게시 누르는 창에도 표지」 2026-10-15 KST)', () => {
+  const panel = readFileSync(path.join(process.cwd(), 'src/components/LiteraturePublishPanel.jsx'), 'utf8');
+
+  it('서재와 같은 LiteratureCover를 정본 대조표의 작품으로 그린다(새 표지 그림을 따로 만들지 않는다)', () => {
+    expect(panel).toContain("import LiteratureCover from './books/LiteratureCover';");
+    expect(sliceBetween(panel, 'export function BookCover', '\n}\n')).toContain('literatureWork(bookKey)');
+  });
+
+  it('표 한 줄과 게시·공개·일괄 확인 창에 표지 — 정본 문학책(kind=literature)일 때만', () => {
+    const row = sliceBetween(panel, '<td className="admin-table__title">', '</td>');
+    expect(row).toContain("kind === 'literature' && <BookCover bookKey={book.key} scale={0.5} />");
+    expect(sliceBetween(panel, '<ConfirmModal', '/>')).toContain('message={confirmMessage}');
+    const message = sliceBetween(panel, 'const confirmMessage', '\n  );\n');
+    expect(message).toContain("kind !== 'literature' ? confirmText");
+    expect(message).toContain("(confirm.action === 'batch' ? confirm.books : [confirm.book]).map((book) => (");
+  });
+});

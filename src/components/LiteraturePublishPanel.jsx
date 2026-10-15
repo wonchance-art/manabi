@@ -28,6 +28,11 @@
 //   일괄 진행 3/8 · 「坊っちゃん」 분석 12/34 · 이 화면을 닫지 마세요         [멈춤]
 //   멈췄다가 다시 누르면 남은 작품·남은 장부터. 검수·공개는 지금처럼 작품마다(사람 확인 지점).
 //
+// 표지(오너 「게시 누르는 창에도 표지」 2026-10-15 KST) — 서재와 같은 LiteratureCover를 그대로:
+//   표 한 줄:   [표지 30×42] 鼻 · 芥川龍之介 …
+//   게시·공개 확인 창: [표지 60×84] 위에 안내 문장 / 일괄 확인 창: 대상 작품 표지를 반 크기로 한 줄에
+//   「그림 한 장 읽기」(kind="art")는 정본 표지가 없어 그대로.
+//
 // 기대 화면(kind="art", 출처 칸):
 //   北斎と広重の風景版画 · 葛飾北斎・歌川広重   N2 상급   ColBase · 정부표준이용규약 2.0 · 8장
 //                                                        출처: ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · …
@@ -44,9 +49,24 @@ import { analyzeText } from '../lib/analyzeText';
 import { runPreservedReanalysis } from '../lib/reanalysisPreservation';
 import { failureMessage, friendlyToastMessage } from '../lib/errorMessage';
 import { literatureBatchTargets } from '../lib/literaturePublish';
+import { literatureWork } from '../lib/literatureCanonical';
+import LiteratureCover from './books/LiteratureCover';
 
 const LITERATURE_API = '/api/admin/literature';
 const CONFLICT_LABEL = { 'text-differs': '정본과 원문이 다름', 'duplicate-order': '같은 장이 둘', 'unknown-order': '정본에 없는 장' };
+
+/** 정본 표지 — 서재 카드와 같은 그림을 배율만 줄여서(60×84 기준). 정본 대조표에 없는 책(그림 책)은 그리지 않는다. */
+export function BookCover({ bookKey, scale = 1 }) {
+  const work = literatureWork(bookKey);
+  if (!work?.display) return null;
+  return (
+    <span style={{ display: 'inline-block', width: 60 * scale, height: 84 * scale, overflow: 'hidden', verticalAlign: 'middle', flex: 'none' }}>
+      <span style={{ display: 'block', width: 60, transform: `scale(${scale})`, transformOrigin: '0 0' }}>
+        <LiteratureCover work={work} />
+      </span>
+    </span>
+  );
+}
 
 async function request(url, init) {
   const response = await fetch(url, { cache: 'no-store', ...init });
@@ -268,6 +288,24 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
   const books = data?.books || [];
   const busy = !!running || !!batch || prepare.isPending || review.isPending || release.isPending;
   const pending = literatureBatchTargets(books);
+  // 확인 창 본문 — 정본 문학책이면 대상 작품 표지(한 권은 실제 크기, 일괄은 반 크기 줄)를 문장 위에.
+  // 확인 창 본문 — 정본 문학책이면 대상 작품 표지(한 권은 실제 크기, 일괄은 반 크기 줄)를 문장 위에.
+  const confirmText = !confirm ? '' : confirm.action === 'batch'
+    ? `${confirm.books.map((book) => `${book.title}(${book.total}장)`).join(' · ')}. 모두 비공개로 넣고 이 화면에서 한 장씩 분석해요. 근거는 표의 「${KIND[kind].evidence}」 칸과 같아요. 검수와 공개는 작품마다 따로 해요.`
+    : confirm.action === 'prepare'
+      ? `${confirm.book.total}장을 비공개로 넣고 이 화면에서 한 번씩 분석해요. ${prepareBasis(confirm.book, kind)}. 공개 전에는 다른 사용자에게 보이지 않아요.`
+      : '모든 장의 검수를 마쳤어요. 공개하면 모든 사용자가 읽을 수 있어요. 분석 결과는 같이 쓰고, 단어 상태는 사람마다 따로예요.';
+  const confirmMessage = !confirm || kind !== 'literature' ? confirmText : (
+    <>
+      <span style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '10px' }}>
+        {(confirm.action === 'batch' ? confirm.books : [confirm.book]).map((book) => (
+          <BookCover key={book.key} bookKey={book.key} scale={confirm.action === 'batch' ? 0.5 : 1} />
+        ))}
+      </span>
+      {confirmText}
+    </>
+  );
+
   return (
     <div className="admin-table-wrap">
       {kind === 'art' ? (
@@ -308,7 +346,12 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
             const prepared = book.chapters.some((chapter) => chapter.material);
             return (
               <tr key={book.key}>
-                <td className="admin-table__title">{book.title} · {book.author}</td>
+                <td className="admin-table__title">
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {kind === 'literature' && <BookCover bookKey={book.key} scale={0.5} />}
+                    <span>{book.title} · {book.author}</span>
+                  </span>
+                </td>
                 <td>{book.level}</td>
                 <EvidenceCell book={book} kind={kind} />
                 <td>
@@ -357,11 +400,7 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
           : confirm.action === 'prepare'
             ? `「${confirm.book.title}」 책을 준비하고 분석할까요?`
             : `「${confirm.book.title}」 책을 산책에 공개할까요?`}
-        message={!confirm ? '' : confirm.action === 'batch'
-          ? `${confirm.books.map((book) => `${book.title}(${book.total}장)`).join(' · ')}. 모두 비공개로 넣고 이 화면에서 한 장씩 분석해요. 근거는 표의 「${KIND[kind].evidence}」 칸과 같아요. 검수와 공개는 작품마다 따로 해요.`
-          : confirm.action === 'prepare'
-            ? `${confirm.book.total}장을 비공개로 넣고 이 화면에서 한 번씩 분석해요. ${prepareBasis(confirm.book, kind)}. 공개 전에는 다른 사용자에게 보이지 않아요.`
-            : '모든 장의 검수를 마쳤어요. 공개하면 모든 사용자가 읽을 수 있어요. 분석 결과는 같이 쓰고, 단어 상태는 사람마다 따로예요.'}
+        message={confirmMessage}
         confirmLabel={confirm?.action === 'release' ? '공개' : confirm?.action === 'batch' ? '모두 게시·분석' : '게시'}
         variant="primary"
         confirmDisabled={busy}
