@@ -109,8 +109,8 @@ function readingLine(entry, lang, levelKey) {
  * 카드를 누르면 고른 것은 제자리에 둔 채 나머지가 그 아래로 펼쳐지고, 다시 누르면 접힌다. 그대로 두면 10초 뒤 접힌다
  * (4판 — 오너 2026-10-15 「다시 클릭하면 닫히게 · 애니메이션 · 닫히면서 단어 위치 변하는 것 개선」). peek = 'open' | 'closing'.
  */
-export function VocabCard({ entry: e, lang, levelKey, view, peek, peekEpoch = 0, onPeek, onRenew, speak, hunCells, glyph, known, studying, saving, pendingKnown, onO, onX }) {
-  const scope = view === 'all' ? null : LEVEL_VIEWS.find((v) => v.id === view)?.label;
+export function VocabCard({ entry: e, lang, levelKey, view, scoped = true, peek, peekEpoch = 0, onPeek, onRenew, speak, hunCells, glyph, known, studying, saving, pendingKnown, onO, onX }) {
+  const scope = view === 'all' || !scoped ? null : LEVEL_VIEWS.find((v) => v.id === view)?.label;
   const ox = <OxButtons scope={scope} known={known} studying={studying} saving={saving} pendingKnown={pendingKnown} onO={onO} onX={onX} />;
   if (view === 'all') return <li className="lv-entry" data-known={known || undefined}>
     <div className="lv-entry__top">
@@ -249,9 +249,10 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
   const allEntries = useMemo(() => groups.flatMap((g) => g.entries), [groups]);
   const knownSet = useMemo(() => (mounted && userId ? knownWordSetOf(known.rows, [], conf.langCode) : new Set()), [mounted, userId, known.rows, conf.langCode]);
   // 탭별 O · X(LEVEL-FACET-AO-001) — 전체 탭은 지금처럼 아는 단어 · 공부 중, 나머지 탭은 그 탭의 기록만 본다.
-  const facetView = vocab && prefs.view !== 'all' ? prefs.view : null;
+  // 표를 읽지 못하면(운영 미적용 등) 탭별 기록을 끄고 모든 탭이 단어 단위 O · X를 쓴다 — 누를 때마다 저장 실패가 뜨지 않게.
   const facets = useWordFacets(mounted ? userId : null, conf.langCode, vocab,
     { onError: () => setToast({ message: '저장하지 못했어요. 잠시 후 다시 시도해 주세요' }) });
+  const facetView = vocab && prefs.view !== 'all' && facets.available ? prefs.view : null;
   const facetIdx = useMemo(() => facetIndex(facets.rows), [facets.rows]);
   // 숨길 단어 — 전체 탭은 아는 단어, 나머지 탭은 아는 단어 + 그 탭에서 O 한 단어.
   const hiddenSet = useMemo(() => {
@@ -469,7 +470,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
           {visible.map((g, gi) => g.entries.length > 0 && <section key={g.name} className="lv-group" id={groupId(gi)} data-lv-group={gi} aria-labelledby={`${groupId(gi)}-h`}>
             <h2 id={`${groupId(gi)}-h`}>{g.name}<span>{g.count}</span></h2>
             <ul className="lv-entries">{g.entries.map((e) => vocab ? <VocabCard key={e.key} entry={e} lang={lang} levelKey={levelKey}
-              view={prefs.view} peek={peek.get(e.key)?.phase} peekEpoch={peek.get(e.key)?.epoch} onPeek={() => togglePeek(e.key)} onRenew={() => renewPeek(e.key)}
+              view={prefs.view} scoped={!!facetView} peek={peek.get(e.key)?.phase} peekEpoch={peek.get(e.key)?.epoch} onPeek={() => togglePeek(e.key)} onRenew={() => renewPeek(e.key)}
               speak={speakOk ? say : null}
               hunCells={hunOf(e.word)} glyph={glyphOf(e.word)}
               known={facetView ? facetMark(facetIdx, e.key, facetView) === 'o' : knownSet.has(e.key)}
