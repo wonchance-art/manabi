@@ -200,7 +200,7 @@
 .lv-page--vocab[data-language="zh"] .lv-fab[aria-pressed=true]{border-color:transparent}
 .lv-page--vocab[data-language="zh"] .lv-solo{min-width:0}
 .lv-page--vocab[data-language="zh"] .lv-solo__row{flex-wrap:wrap}
-.lv-page--vocab[data-language="zh"] .lv-entry--solo .lv-entry__word{display:block}
+.lv-page--vocab[data-language="zh"] .lv-solo>.lv-entry__word{display:block}
 .lv-page--vocab[data-language="zh"] .lv-solo__ex{font-size:22px;line-height:1.8}
 .lv-page--vocab[data-language="zh"] .lv-solo__mean{font-size:20px;line-height:1.7;overflow-wrap:anywhere}
 .lv-page--vocab[data-language="zh"] .lv-solo__play{border:1px solid var(--lv-line);background:var(--lv-field);color:var(--muted);touch-action:manipulation}
