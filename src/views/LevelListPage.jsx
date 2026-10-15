@@ -25,7 +25,7 @@ import HunCell from '@/components/viewer/HunCell';
 import { alignFurigana } from '@/views/refShared';
 import {
   LEVEL_LIST_LANGS, LEVEL_KIND_LABEL, levelKinds, levelLabel, levelPill, levelListHref, jaHeadMode, matchesLevelQuery, splitKnown, fetchSavedLevelKeys,
-  LEVEL_PEEK_MS, LEVEL_PREFS_DEFAULT, LEVEL_VIEWS, normalizeLevelPrefs, levelCardShows,
+  LEVEL_PEEK_MS, LEVEL_PREFS_DEFAULT, LEVEL_VIEWS, normalizeLevelPrefs,
 } from '@/lib/levelList';
 import HanziBoard from '@/components/levels/HanziBoard';
 import '@/components/levels/level-list.css';
@@ -50,18 +50,19 @@ function Ruby({ text, reading }) {
   return segs.map((s, i) => (s.rt ? <ruby key={i}>{s.text}<rt>{s.rt}</rt></ruby> : <span key={i}>{s.text}</span>));
 }
 
-function Headword({ entry, lang, levelKey, hunCells }) {
+/** 표제어. bare = 읽기(병음 · 후리가나) 없이 글자만 — 「단어」만 볼 때 발음은 스스로 떠올린다. */
+function Headword({ entry, lang, levelKey, hunCells, bare = false }) {
+  const py = !bare && entry.reading && <span className="lv-py">{entry.reading}</span>;
   if (lang === 'chinese' && hunCells) return <><span className="lv-hw lv-hw--hun" lang="zh-CN">{hunCells.map((c, i) => <span key={i} className="lv-hc">
-    <span className="lv-hc__ch">{c.ch}</span><HunCell cell={c} /></span>)}</span>{entry.reading && <span className="lv-py">{entry.reading}</span>}</>;
-  if (lang === 'chinese') return <><span className="lv-hw" lang="zh-CN">{entry.word}</span>{entry.reading && <span className="lv-py">{entry.reading}</span>}</>;
+    <span className="lv-hc__ch">{c.ch}</span><HunCell cell={c} /></span>)}</span>{py}</>;
+  if (lang === 'chinese') return <><span className="lv-hw" lang="zh-CN">{entry.word}</span>{py}</>;
   const hasKanji = entry.reading && entry.reading !== entry.word && alignFurigana(entry.word, entry.reading);
-  if (jaHeadMode(levelKey) === 'kana' && hasKanji) return <><span className="lv-hw" lang="ja">{entry.reading}</span><span className="lv-kj" lang="ja">{entry.word}</span></>;
-  return <span className="lv-hw" lang="ja">{hasKanji ? <Ruby text={entry.word} reading={entry.reading} /> : entry.word}</span>;
+  if (jaHeadMode(levelKey) === 'kana' && hasKanji) return <><span className="lv-hw" lang="ja">{entry.reading}</span>{!bare && <span className="lv-kj" lang="ja">{entry.word}</span>}</>;
+  return <span className="lv-hw" lang="ja">{hasKanji && !bare ? <Ruby text={entry.word} reading={entry.reading} /> : entry.word}</span>;
 }
 
-function Example({ ex, lang, speak, hideTranslation, hideText = false }) {
+function Example({ ex, lang, speak, hideTranslation }) {
   const zh = lang === 'chinese';
-  if (hideText) return !hideTranslation && ex.ko ? <p className="lv-ex"><span className="lv-ex__tr">{ex.ko}</span></p> : null;
   return <p className="lv-ex">
     <span className="lv-ex__text" lang={zh ? 'zh-CN' : 'ja'}>{zh ? ex.text : <Ruby text={ex.text} reading={ex.reading} />}</span>
     {speak && <button type="button" className="lv-snd" aria-label="예문 듣기" title="예문 듣기" onClick={() => speak(ex.text)}><SpeakerIcon /></button>}
@@ -81,8 +82,6 @@ function OxButtons({ known, studying, saving, pendingKnown, onO, onX }) {
   </div>;
 }
 
-/** 가린 칸 — 누르면 그 카드가 10초 동안 전부 보인다. */
-const Veil = ({ onPeek, wide = false }) => <button type="button" className={`lv-veil${wide ? ' lv-veil--word' : ''}`} aria-label="가린 내용 10초 보기" onClick={onPeek} />;
 
 /** 正(대만 정체) · 日(일본어 표기) 한 줄 — 뷰어 자형 열과 같은 판정(glyphRows). 둘 다 없으면 없음. */
 function GlyphLine({ rows }) {
@@ -94,21 +93,34 @@ function GlyphLine({ rows }) {
 }
 
 /**
- * 단어 카드 — [O][X] + 보기 옵션. 가린 칸(Veil)이나 카드의 빈 곳을 누르면 그 카드가 10초 동안 전부 보인다.
- * 표제어(훈음 · 正日 포함)는 [단어]에서만 — [의미]만 볼 때 훈음이 답을 알려 주지 않게 함께 가린다.
+ * 단어 카드 — [O][X] + 보기 탭. 전체가 아니면 고른 것 하나만 깔끔하게 남긴다(가린 칸 없음 — 오너 2026-10-15
+ * 「기존 모양에서 가리는 게 아니라 지정한 것들만 보이게」). 단어 = 글자(+훈음 · 正日, 읽기 없음), 문장 = 예문 글자만,
+ * 뜻 = 뜻만, 소리 = 듣기 버튼만. 카드를 누르면 10초 동안 전체 모양으로 보였다가 돌아간다.
  */
-export function VocabCard({ entry: e, lang, levelKey, show, onPeek, speak, hunCells, glyph, known, studying, saving, pendingKnown, onO, onX }) {
-  // 카드의 빈 곳(버튼 · 링크 밖)을 눌러도 잠깐 보기 — 가린 칸 버튼이 키보드 · 화면 읽기 경로다.
-  const tapBlank = show.hidden ? (event) => { if (!event.target.closest('button, a')) onPeek(); } : undefined;
-  return <li className="lv-entry" data-known={known || undefined} data-hidden={show.hidden || undefined} onClick={tapBlank}>
+export function VocabCard({ entry: e, lang, levelKey, view, peek, onPeek, speak, hunCells, glyph, known, studying, saving, pendingKnown, onO, onX }) {
+  const ox = <OxButtons known={known} studying={studying} saving={saving} pendingKnown={pendingKnown} onO={onO} onX={onX} />;
+  if (view === 'all' || peek) return <li className="lv-entry" data-known={known || undefined} data-peek={peek || undefined}>
     <div className="lv-entry__top">
-      <div className="lv-entry__word">{show.word ? <Headword entry={e} lang={lang} levelKey={levelKey} hunCells={hunCells} /> : <Veil onPeek={onPeek} wide />}
-        {show.audio && speak && <button type="button" className="lv-snd" aria-label="듣기" title="듣기" onClick={() => speak(e.word)}><SpeakerIcon /></button>}</div>
-      <OxButtons known={known} studying={studying} saving={saving} pendingKnown={pendingKnown} onO={onO} onX={onX} />
+      <div className="lv-entry__word"><Headword entry={e} lang={lang} levelKey={levelKey} hunCells={hunCells} />
+        {speak && <button type="button" className="lv-snd" aria-label="듣기" title="듣기" onClick={() => speak(e.word)}><SpeakerIcon /></button>}</div>
+      {ox}
     </div>
-    {show.word && <GlyphLine rows={glyph} />}
-    <p className="lv-mean">{show.meaning ? e.meaning : <Veil onPeek={onPeek} />}</p>
-    {e.ex && <Example ex={e.ex} lang={lang} speak={show.audio ? speak : null} hideText={!show.sentence} hideTranslation={!show.meaning} />}
+    <GlyphLine rows={glyph} />
+    <p className="lv-mean">{e.meaning}</p>
+    {e.ex && <Example ex={e.ex} lang={lang} speak={speak} />}
+  </li>;
+  const zh = lang === 'chinese';
+  const solo = view === 'word' ? <><div className="lv-entry__word"><Headword entry={e} lang={lang} levelKey={levelKey} hunCells={hunCells} bare /></div><GlyphLine rows={glyph} /></>
+    : view === 'sentence' ? (e.ex ? <p className="lv-solo__ex" lang={zh ? 'zh-CN' : 'ja'}>{e.ex.text}</p> : <p className="lv-solo__ex lv-solo__none">예문 없음</p>)
+      : view === 'meaning' ? <p className="lv-solo__mean">{e.meaning}</p>
+        : speak ? <button type="button" className="lv-solo__play" aria-label="듣기" title="듣기" onClick={() => speak(e.word)}><SpeakerIcon /></button>
+          : <p className="lv-solo__none">이 기기에서는 소리를 낼 수 없어요</p>;
+  // 카드 어디를 눌러도(버튼 밖) 10초 보기 — 키보드 · 화면 읽기는 숨은 「전체 보기」 버튼으로.
+  const tap = (event) => { if (!event.target.closest('button, a')) onPeek(); };
+  return <li className="lv-entry lv-entry--solo" data-known={known || undefined} data-view={view} onClick={tap}>
+    <div className="lv-solo">{solo}</div>
+    <button type="button" className="lv-sr" onClick={onPeek}>전체 10초 보기</button>
+    {ox}
   </li>;
 }
 
@@ -373,6 +385,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
       {LEVEL_VIEWS.map((v) => <button key={v.id} type="button" aria-pressed={prefs.view === v.id}
         onClick={() => setPrefs({ view: v.id })}>{v.label}</button>)}
     </div>}
+    {vocab && prefs.view !== 'all' && <p className="lv-view__hint">카드를 누르면 10초 동안 전부 보여요</p>}
 
       <nav className="lv-chips" aria-label="주제">{nav.map((n) => <a key={n.href} href={n.href} aria-current={n.current || undefined} onClick={(e) => openGroup(e, n.i)}>{n.name}</a>)}</nav>
       <div className={vocab ? 'lv-split' : 'lv-split lv-split--wide'}>
@@ -382,7 +395,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
           {visible.map((g, gi) => g.entries.length > 0 && <section key={g.name} className="lv-group" id={groupId(gi)} data-lv-group={gi} aria-labelledby={`${groupId(gi)}-h`}>
             <h2 id={`${groupId(gi)}-h`}>{g.name}<span>{g.count}</span></h2>
             <ul className="lv-entries">{g.entries.map((e) => vocab ? <VocabCard key={e.key} entry={e} lang={lang} levelKey={levelKey}
-              show={levelCardShows(prefs.view, peek.has(e.key))} onPeek={() => peekCard(e.key)} speak={speakOk ? say : null}
+              view={prefs.view} peek={peek.has(e.key)} onPeek={() => peekCard(e.key)} speak={speakOk ? say : null}
               hunCells={hunOf(e.word)} glyph={glyphOf(e.word)}
               known={knownSet.has(e.key)} studying={saved.has(e.key)} saving={saving.has(e.key)}
               pendingKnown={mounted && !!userId && known.isPendingWord(conf.langCode, e.key)}
