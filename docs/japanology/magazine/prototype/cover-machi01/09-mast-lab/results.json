@@ -1,0 +1,146 @@
+{
+ "A-15-danmen": {
+  "ok": true,
+  "fails": []
+ },
+ "A-15-ippon": {
+  "ok": true,
+  "fails": []
+ },
+ "A-25-danmen": {
+  "ok": true,
+  "fails": []
+ },
+ "A-25-ippon": {
+  "ok": true,
+  "fails": []
+ },
+ "A-40-danmen-quote": {
+  "ok": true,
+  "fails": []
+ },
+ "A-40-danmen": {
+  "ok": true,
+  "fails": []
+ },
+ "A-40-ippon-quote": {
+  "ok": true,
+  "fails": []
+ },
+ "A-40-ippon": {
+  "ok": true,
+  "fails": []
+ },
+ "B-15-danmen": {
+  "ok": true,
+  "fails": []
+ },
+ "B-15-ippon": {
+  "ok": true,
+  "fails": []
+ },
+ "B-25-danmen": {
+  "ok": true,
+  "fails": []
+ },
+ "B-25-ippon": {
+  "ok": true,
+  "fails": []
+ },
+ "B-40-danmen": {
+  "ok": true,
+  "fails": []
+ },
+ "B-40-ippon": {
+  "ok": true,
+  "fails": []
+ },
+ "C1-15-danmen": {
+  "ok": true,
+  "fails": []
+ },
+ "C1-15-ippon": {
+  "ok": true,
+  "fails": []
+ },
+ "C1-25-danmen-name": {
+  "ok": true,
+  "fails": []
+ },
+ "C1-25-danmen-quote": {
+  "ok": true,
+  "fails": []
+ },
+ "C1-25-danmen": {
+  "ok": true,
+  "fails": []
+ },
+ "C1-25-ippon-name": {
+  "ok": true,
+  "fails": []
+ },
+ "C1-25-ippon-quote": {
+  "ok": true,
+  "fails": []
+ },
+ "C1-25-ippon": {
+  "ok": true,
+  "fails": []
+ },
+ "C1-40-danmen": {
+  "ok": true,
+  "fails": []
+ },
+ "C1-40-ippon": {
+  "ok": true,
+  "fails": []
+ },
+ "C2-15-danmen": {
+  "ok": true,
+  "fails": []
+ },
+ "C2-15-ippon": {
+  "ok": true,
+  "fails": []
+ },
+ "C2-25-danmen": {
+  "ok": true,
+  "fails": []
+ },
+ "C2-25-ippon": {
+  "ok": true,
+  "fails": []
+ },
+ "C2-40-danmen": {
+  "ok": true,
+  "fails": []
+ },
+ "C2-40-ippon": {
+  "ok": true,
+  "fails": []
+ },
+ "D-15-danmen": {
+  "ok": true,
+  "fails": []
+ },
+ "D-15-ippon": {
+  "ok": true,
+  "fails": []
+ },
+ "D-25-danmen": {
+  "ok": true,
+  "fails": []
+ },
+ "D-25-ippon": {
+  "ok": true,
+  "fails": []
+ },
+ "D-40-danmen": {
+  "ok": true,
+  "fails": []
+ },
+ "D-40-ippon": {
+  "ok": true,
+  "fails": []
+ }
+}

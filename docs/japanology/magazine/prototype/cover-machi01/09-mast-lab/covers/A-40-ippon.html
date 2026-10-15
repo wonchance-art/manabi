@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>富士吉田 表紙</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;800&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap">
+<!--
+  ※ 09-mast-lab/build-lab.py가 07-refine/01-ippon/cover.html를 복사해 제호·호 표기·크레딧 「となり編集部」만 바꾼 실험 사본(2026-10-15 KST).  
+  『となり』 一つの町 01 富士吉田 표지 「一本の線」 — 생성 파일(05-compose/build-cover.mjs). 손으로 고치지 말 것. 조립 2026-10-15 KST.
+  검사: node docs/japanology/magazine/prototype/check-cover.cjs cover.html  (바탕 = .cover의 --cover-bg)
+
+  색(2색 + 바탕)
+  - 바탕 snow #eef0f4 — 재단까지. 틀 없음.
+  - night #151b2c(吉田の火祭 밤·먹): 모든 글자, 산 능선. night/snow 15.0:1.
+  - vermilion #d4462a(北口本宮冨士浅間神社 丹塗り 大鳥居의 색): 富士みち 선·제호 괄호만. vermilion/snow 3.91:1 → 글자에는 쓰지 않는다.
+  - 金鳥居 도리이 윤곽은 night — 실물 金鳥居는 銅張りのコンクリート(観光庁 多言語解説文 001553179)라 주홍으로 칠하지 않는다.
+
+  출처
+  - 富士みち 중심선: © OpenStreetMap contributors（ODbL 1.0）, Overpass osm_base 2026-07-28 11:16 KST, way 169802151,93860688,110252410,1383654947,110253316,1185885234,110253372,110252217,1534791928,40796636,653388309.
+    위 끝 = OSM 富士みち 남단 노드 2097712407(上宿交差点) (136.42, 106.62). 아래 = 재단 y300에서 노드 사이 보간으로 자름. 직선화·회전 보정 없음.
+  - 위 방향 = 金鳥居(OSM way 1482786848 중점 35.4832112, 138.7979629)에서 본 剣ヶ峯 방위 205.14°(국소 정거) —
+    剣ヶ峯 35.360738, 138.727373 = 국토지리원 「日本の主な山岳標高（1003山）」 CSV 2026-03-31판. 축척 1mm = 11.3m. 산은 축척 밖 略図(능선 B안).
+  - 金鳥居 도리이: 판면 (126, 200) = OSM way 1482786848 중점, rotate(6.5°) = 도로(±150m 주성분)에 직교. 笠木 11·貫 8·기둥 7mm, 일반형(특정 마크 모방 없음).
+  - 부제: 観光庁 多言語解説文 「金鳥居」 「…30 メートルほど富士山に近く」(원고 B93). 「ほど」 유지.
+  - 제호: 03-mast/mast-light.svg(Shippori Mincho ExtraBold 아웃라인 수정, OFL 1.1 — 그림이므로 OFL 적용 밖). 괄호 0.75mm 겹선.
+  - 활자: Shippori Mincho 800(제목)·500(부제), Zen Kaku Gothic New 500(호 표기)·400(크레딧) — 모두 OFL, Google Fonts.
+
+  편집장 결정(2026-10-15 KST)
+  1 부제 「今の金鳥居は、もとの場所より30メートルほど山に近い。」 세로 2열, 「金鳥居」를 막대 높이에, 막대 왼끝과 띄움.
+  2 산정 = 국토지리원 剣ヶ峯, build-line.mjs 사본으로 재투영. 3 능선 B안. 4 제호 (13,13) 16mm.
+  5 명조(제호 외 제목·부제)/고딕(호 표기·크레딧). 6 크레딧 3줄 내용(인쇄 URL 포함), 3.4mm.
+  7 틀 없음·2색·주홍 글자 금지. 8 --mm = 100cqw/210(cqi 금지). 9 요소 7개.
+  v2 수정 지시(비평 05-critic-ad·05-critic-readers 종합): 金鳥居 = night 도리이 윤곽 · 축척 11.3m/mm(上宿 y106.62) ·
+  산 꼭짓점 (126, 56) 평탄 7.7mm 능선 1.4mm · 선 3.0mm · 제목 20mm. 선을 산정까지 늘리는 안은 사실 위반으로 기각.
+  v3 다듬기(07-refine/critic.md ①·§3 시리즈 규칙, 오너 선택 2026-10-15 KST): 선 3.4mm · 능선 1.6mm · 도리이 1.3/1.2mm · 평탄부 필렛 반경 2.5mm ·
+  호 표기 잉크 위끝 y31·「町」–「01」 2.5mm · 크레딧 3.2mm/행간 1.4/5행 · 세로 제목 메트릭 override(상자 = 1em). 축척·선 형상·꼭짓점·평탄 폭은 v2 그대로(직선화·회전 금지).
+-->
+<style>
+@font-face{font-family:'Shippori Mincho Tate';font-style:normal;font-weight:800;font-display:swap;src:url(https://fonts.gstatic.com/s/shipporimincho/v17/VdGDAZweH5EbgHY6YExcZfDoj0B4e9Om4fke5f7ErmwqJDbcxmkgTEWquC8NvBI.107.woff2) format('woff2');unicode-range:U+5bcc,U+20;ascent-override:88%;descent-override:12%;line-gap-override:0%}
+@font-face{font-family:'Shippori Mincho Tate';font-style:normal;font-weight:800;font-display:swap;src:url(https://fonts.gstatic.com/s/shipporimincho/v17/VdGDAZweH5EbgHY6YExcZfDoj0B4e9Om4fke5f7ErmwqJDbcxmkgTEWquC8NvBI.108.woff2) format('woff2');unicode-range:U+58eb;ascent-override:88%;descent-override:12%;line-gap-override:0%}
+@font-face{font-family:'Shippori Mincho Tate';font-style:normal;font-weight:800;font-display:swap;src:url(https://fonts.gstatic.com/s/shipporimincho/v17/VdGDAZweH5EbgHY6YExcZfDoj0B4e9Om4fke5f7ErmwqJDbcxmkgTEWquC8NvBI.103.woff2) format('woff2');unicode-range:U+5409;ascent-override:88%;descent-override:12%;line-gap-override:0%}
+@font-face{font-family:'Shippori Mincho Tate';font-style:normal;font-weight:800;font-display:swap;src:url(https://fonts.gstatic.com/s/shipporimincho/v17/VdGDAZweH5EbgHY6YExcZfDoj0B4e9Om4fke5f7ErmwqJDbcxmkgTEWquC8NvBI.114.woff2) format('woff2');unicode-range:U+7530;ascent-override:88%;descent-override:12%;line-gap-override:0%}
+:root{--night:#151b2c;--vermilion:#d4462a;--snow:#eef0f4;--page:#d9dce3;--page-ink:#151b2c}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--page:#0e1220;--page-ink:#eef0f4}}
+:root[data-theme="dark"]{--page:#0e1220;--page-ink:#eef0f4}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--page);color:var(--page-ink)}
+body{padding:16px}
+.wrap{max-width:860px;margin:0 auto;container-type:inline-size}
+
+/* ── 표지: A4 210×297mm, 1mm = 100cqw/210 ── */
+.cover{--mm:calc(100cqw / 210);--cover-bg:#eef0f4;
+  width:100%;aspect-ratio:210/297;position:relative;overflow:hidden;background:var(--cover-bg);color:var(--night)}
+.cover > *{position:absolute;margin:0}
+.cover .plate{inset:0;width:100%;height:100%;display:block}
+.cover .mast{left:calc(var(--mm)*13);top:calc(var(--mm)*13);width:calc(var(--mm)*84);height:calc(var(--mm)*43.777)}
+.cover .no{left:calc(var(--mm)*12.57);top:calc(var(--mm)*30.31);font-family:'Zen Kaku Gothic New',sans-serif;font-weight:500;
+  font-size:calc(var(--mm)*5.64);line-height:1;letter-spacing:.08em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cover .ttl{left:calc(var(--mm)*146);top:calc(var(--mm)*94.3);writing-mode:vertical-rl;font-family:'Shippori Mincho Tate','Shippori Mincho',serif;font-weight:800;
+  font-size:calc(var(--mm)*20);line-height:1;letter-spacing:0.04em;white-space:nowrap}
+.cover .sub{right:calc(var(--mm)*94.4);top:calc(var(--mm)*178);writing-mode:vertical-rl;font-family:'Shippori Mincho',serif;font-weight:500;
+  font-size:calc(var(--mm)*6);line-height:1.7;letter-spacing:0;white-space:nowrap}
+.cover .sub .tcy{text-combine-upright:all}
+.cover .credit{left:calc(var(--mm)*12.82);bottom:calc(var(--mm)*10);font-family:'Zen Kaku Gothic New',sans-serif;font-weight:400;
+  font-size:calc(var(--mm)*3.24);line-height:1.42;white-space:nowrap;font-feature-settings:'palt'}
+.cover .credit span{display:block}
+.cover .no .n{margin-left:calc(var(--mm)*2.5)}
+.cover .credit .hang{text-indent:-.5em} /* 行頭の『 — 全角括弧の左アキ半角を詰め、잉크 왼끝을 x13에 맞춤(Zen Kaku는 palt 미적용 확인) */
+/* 09-mast-lab */
+.cover .no{left:calc(var(--mm)*12.57);top:calc(var(--mm)*61.087)}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<article class="cover" lang="ja" aria-label="『となり』一つの町 01 富士吉田 表紙">
+  <svg class="plate" viewBox="0 0 210 297" preserveAspectRatio="none" role="img" aria-label="富士山の略図と、下から上宿へのびる富士みちの線。上は金鳥居から見た富士山頂の方角。線の上の鳥居の形が金鳥居の位置。">
+    <!-- 산 능선 略図 B안(축척 밖) · 剣ヶ峯 (126,56) · night 1.6mm -->
+    <path d="M-3 104.65L-2.32 104.51L-0.32 104.07L1.68 103.62L3.68 103.16L5.68 102.69L7.68 102.21L9.68 101.72L11.68 101.21L13.68 100.69L15.68 100.16L17.68 99.62L19.68 99.07L21.68 98.5L23.68 97.93L25.68 97.34L27.68 96.74L29.68 96.12L31.68 95.5L33.68 94.86L35.68 94.21L37.68 93.55L39.68 92.88L41.68 92.2L43.68 91.5L45.68 90.79L47.68 90.07L49.68 89.34L51.68 88.6L53.68 87.85L55.68 87.08L57.68 86.3L59.68 85.51L61.68 84.71L63.68 83.89L65.68 83.07L67.68 82.23L69.68 81.38L71.68 80.52L73.68 79.65L75.68 78.76L77.68 77.86L79.68 76.95L81.68 76.03L83.68 75.1L85.68 74.16L87.68 73.2L89.68 72.23L91.68 71.25L93.68 70.26L95.68 69.26L97.68 68.24L99.68 67.21L101.68 66.17L103.68 65.12L105.68 64.06L107.68 62.99L109.68 61.9L111.68 60.8L113.68 59.69L114.18 59.41L114.68 59.13L115.18 58.85L115.68 58.57L116.18 58.29L116.68 58L117.18 57.72L117.68 57.43L118.18 57.15L118.68 56.86L119.18 56.58L119.6 56.34A2.5 2.5 0 0 1 120.85 56L127.21 56A2.5 2.5 0 0 1 128.46 56.34L128.88 56.58L129.38 56.86L129.88 57.15L130.38 57.43L130.88 57.72L131.38 58L131.88 58.29L132.38 58.57L132.88 58.85L133.38 59.13L133.88 59.41L134.38 59.69L136.38 60.8L138.38 61.9L140.38 62.99L142.38 64.06L144.38 65.12L146.38 66.17L148.38 67.21L150.38 68.24L152.38 69.26L154.38 70.26L156.38 71.25L158.38 72.23L160.38 73.2L162.38 74.16L164.38 75.1L166.38 76.03L168.38 76.95L170.38 77.86L172.38 78.76L174.38 79.65L176.38 80.52L178.38 81.38L180.38 82.23L182.38 83.07L184.38 83.89L186.38 84.71L188.38 85.51L190.38 86.3L192.38 87.08L194.38 87.85L196.38 88.6L198.38 89.34L200.38 90.07L202.38 90.79L204.38 91.5L206.38 92.2L208.38 92.88L210.38 93.55L212.38 94.21L213 94.43" fill="none" stroke="#151b2c" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="butt"/>
+    <!-- 富士みち 중심선 · © OpenStreetMap contributors（ODbL） · vermilion 3.4mm -->
+    <path d="M122.44 300L122.55 295.33L122.74 292L122.69 291.23L122.73 286.56L122.84 282.35L122.81 280.01L122.94 276.21L122.93 266.44L123.34 253.25L123.53 239.97L123.67 234.9L123.77 222.07L123.85 220.01L123.98 218.63L125.68 202.64L126.01 200L126.45 196.43L127.18 189.7L127.82 184.32L129.2 171.48L131.62 150L133.99 127.18L135.58 113.01L136.42 106.62" fill="none" stroke="#d4462a" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="butt"/>
+    <!-- 金鳥居 도리이 윤곽 · night · 도로 직교 · 선 위에 선다 -->
+    <g transform="translate(126 200) rotate(6.5)" fill="none" stroke="#151b2c" stroke-linecap="butt">
+      <path d="M-3.2 -3.6V3.4M3.2 -3.6V3.4" stroke-width="1.2"/>
+      <path d="M-4 -1.5H4" stroke-width="1.2"/>
+      <path d="M-5.5 -4.5Q0 -2.7 5.5 -4.5" stroke-width="1.3"/>
+    </g>
+  </svg>
+  <svg class="mast" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 84 43.777" width="84mm" height="43.777mm" role="img" aria-label="となり"><path fill="#151b2c" d="M0 32.69Q0 29.361 1.621 26.791Q3.242 24.22 7.332 21.342Q5.394 19.674 4.663 18.189Q3.932 16.705 3.932 14.497Q3.932 12.59 4.684 9.585Q4.732 9.344 4.995 8.146Q5.259 6.948 5.259 5.97Q5.259 4.693 4.889 3.558Q4.519 2.424 3.877 1.584Q3.62 1.224 3.302 0.97Q2.985 0.716 2.985 0.758Q2.985 0.711 3.695 0.711Q4.473 0.711 5.869 0.99Q7.883 1.356 9.39 2.593Q10.897 3.83 10.897 5.827Q10.897 6.764 10.551 7.57Q10.206 8.376 9.819 9.44L9.589 10.36Q8.928 11.446 8.491 13.024Q8.054 14.601 8.054 15.777Q8.054 17.039 8.343 18.35Q8.631 19.662 9.333 19.662Q10.008 19.662 10.706 19.362Q11.404 19.063 12.557 18.391Q13.585 17.783 14.356 17.443Q15.126 17.103 15.824 17.103Q17.44 17.103 18.622 17.935Q19.804 18.767 19.804 19.804Q19.804 20.606 19.199 21.044Q18.593 21.483 17.418 21.759Q16.242 22.036 13.693 22.461Q7.722 23.424 5.567 25.775Q3.411 28.126 3.411 31.08Q3.411 33.476 4.729 34.718Q6.046 35.959 8.812 35.959Q10.598 35.959 14.28 35.099Q17.517 34.301 18.951 34.301Q20.75 34.301 21.674 35.011Q22.599 35.721 22.599 36.954Q22.599 39 19.593 39.66Q16.588 40.32 11.644 40.697Q0 40.697 0 32.69ZM37.964 11.715Q36.688 15.299 34.226 21.737Q31.764 28.176 31.201 29.444Q30.62 30.651 29.716 31.268Q28.812 31.885 27.905 31.885Q26.825 31.885 26.417 30.77Q26.01 29.655 26.01 27.384Q26.01 26.464 26.294 25.963Q26.577 25.461 27.465 24.386Q27.599 24.207 27.859 23.947Q28.119 23.688 28.459 23.25Q30.133 21.194 31.447 18.732Q32.762 16.271 34.033 12.669Q30.98 12.514 29.567 10.851Q28.155 9.188 27.602 7.667Q27.384 7.145 27.384 7.012Q27.384 7.107 27.242 7.107Q27.283 7.107 27.722 7.466Q28.519 8.163 29.894 8.63Q31.27 9.096 32.643 9.096Q33.184 9.096 35.055 8.829Q35.296 7.803 35.296 6.633Q35.296 4.113 33.841 3.126Q33.308 2.786 32.956 2.599Q32.604 2.411 32.505 2.34Q32.406 2.27 32.406 2.274Q32.406 2.195 32.856 2.045Q33.305 1.895 34.159 1.895Q35.302 1.895 36.68 2.309Q38.717 2.973 39.257 4.69L40.697 4.69Q41.002 4.69 43.019 4.402Q43.71 4.264 44.014 4.264Q44.776 4.264 45.212 4.82Q45.719 5.453 45.719 6.159Q45.719 6.962 45.099 7.759Q44.479 8.556 43.759 9.051Q41.66 10.45 37.964 11.715ZM39.371 5.78Q39.371 6.598 39.079 7.808Q39.71 7.609 40.158 7.41Q41.218 6.852 41.218 6.206Q41.218 5.63 40.274 5.276L39.371 4.948L39.371 5.78ZM48.183 20.183Q48.183 21.719 48.445 23.534Q48.708 25.349 49.23 27.865Q49.325 28.386 49.419 28.832Q49.513 29.277 49.581 29.891Q53.53 30.78 56.199 32.231Q57.698 33.003 58.27 33.884Q58.843 34.764 58.843 35.628Q58.843 36.521 58.278 37.212Q57.713 37.902 56.91 37.902Q55.648 37.812 54.401 37.211Q53.155 36.611 51.564 35.582Q51.226 35.341 50.163 34.733Q49.9 37.893 47.715 39.532Q45.53 41.171 42.45 41.171Q40.654 41.171 39.007 40.553Q37.36 39.936 36.328 38.724Q35.296 37.513 35.296 35.817Q35.296 32.711 38.13 31.042Q40.964 29.374 45.24 29.374Q45.34 24.465 45.576 22.248Q45.808 19.743 46.631 18.141Q47.455 16.539 48.998 15.48Q50.541 14.421 53.106 13.488Q53.915 13.239 53.915 12.508Q53.915 11.38 51.208 9.115Q50.741 8.726 50.741 8.717Q50.741 8.717 51.12 8.717Q51.339 8.717 52.078 8.81Q55.039 9.226 57.367 10.87Q59.695 12.513 59.695 14.687Q59.695 15.951 59.017 16.693Q58.338 17.435 57.327 17.435Q56.586 17.435 55.987 17.146Q55.388 16.858 54.22 16.017Q52.534 14.876 51.168 14.876Q49.616 14.876 48.9 16.336Q48.183 17.795 48.183 20.183ZM45.203 32.891Q43.288 32.453 41.692 32.453Q39.792 32.453 38.302 33.019Q36.812 33.584 36.812 35.107Q36.812 36.5 38.147 37.296Q39.482 38.091 41.124 38.091Q43.507 38.091 44.328 36.783Q45.149 35.475 45.203 32.891ZM84 20.609Q84 30.5 78.997 36.322Q73.994 42.143 66.275 43.687L65.781 43.777Q65.817 43.777 65.788 43.734Q65.76 43.691 65.76 43.682Q65.76 43.653 65.838 43.606Q72.653 40.919 75.508 34.442Q78.362 27.965 78.362 20.799Q78.362 16.253 77.4 13.243Q76.438 10.234 74.335 10.234Q72.341 10.234 70.863 12.302Q69.386 14.371 68.591 17.067Q67.797 19.763 67.797 21.415Q67.797 22.555 68.118 23.419Q68.439 24.283 69.065 25.391Q69.577 26.321 69.848 26.999Q70.118 27.676 70.118 28.426Q70.118 29.388 69.567 29.879Q69.015 30.369 68.223 30.369Q66.68 30.369 65.466 29.201Q64.253 28.032 63.585 26.097Q62.917 24.162 62.917 22.078Q62.917 19.781 63.341 17.334Q63.764 14.886 64.568 11.531Q65.185 8.918 65.496 7.244Q65.807 5.569 65.807 4.217Q65.807 3.33 65.652 2.683Q65.496 2.035 64.966 1.505Q64.407 0.946 64.041 0.783Q63.675 0.621 63.675 0.711Q63.675 0.577 64.098 0.288Q64.521 0 65.523 0Q67.649 0 68.766 1.585Q69.882 3.17 69.882 5.448Q69.882 6.934 69.674 7.88Q69.466 8.827 68.953 10.225Q68.283 11.853 67.85 13.778L67.625 16.271Q69.56 12.651 70.767 10.933Q71.974 9.215 73.241 8.469Q74.507 7.723 76.23 7.723Q77.931 7.723 79.735 9.161Q81.539 10.6 82.77 13.525Q84 16.45 84 20.609Z"/></svg>
+  <p class="no">一つの町<span class="n">01</span></p>
+  <h1 class="ttl">富士吉田</h1>
+  <p class="sub">今の金鳥居は、もとの場所より<br><span class="tcy">30</span>メートルほど山に近い。</p>
+  <p class="credit"><span>地図　© OpenStreetMap contributors（ODbL）</span><span>openstreetmap.org/copyright</span><span>上は金鳥居から見た</span><span>富士山頂（剣ヶ峯）の方角・山は略図</span><span>となり編集部</span></p>
+</article>
+</div>
+</body>
+</html>
