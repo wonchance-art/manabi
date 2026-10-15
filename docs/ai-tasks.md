@@ -878,9 +878,6 @@
 
 ## Claude (claude/*)
 ### doing
-- **REV-SCOPE-R1B-2 학습 단계 정책 SQL (2026-10-14 12:40 KST~, 오너 「여기서 진행」 — 인계 [#1337 R1-B](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6106712130), R1-B-1 #1450 위에서)** `claude/project-thread-jqlex2`:
-  anki-v2(학습 1분 · 10분, 재학습 10분) — `valid_card`가 anki-seconds-v1 · anki-v2 둘 다 받고 New 검사는 카드 정책 첫 단계로 · `fsrs_capabilities` 정책값 · 지문 재게시 SQL + 복원 SQL ·
-  PGlite(M09 fixture) 검증 · 코드는 받은 정책값을 따른다. **운영 미적용** — SQL 검수 · 오너 확인 뒤 별도. 결과는 #1337 보고.
 - **「그림 한 장 읽기」 미술관 해설 학습 — ART-P0-1 카탈로그 계약 (2026-10-14 KST, 오너 「좋아 가보자」)** `claude/project-thread-kpr8od`:
   해설 본문은 박물관 오픈데이터(ColBase 정부표준이용규약 2.0 · 시카고 미술관 CC BY)에서 그대로 받고, 작품 정보는 개체 4종(작가·장소·시대·작품, Wikidata QID 정규 키) + 큐레이션으로 쌓는다.
   · **ART-P0-1 병합([#1457](https://github.com/wonchance-art/manabi/pull/1457), 2026-10-14 KST)**: `src/content/art/*.json`(작품 0점·시대 1) + `src/lib/artCatalog.js` 계약(전시 여부 저장 금지·장소 역할 3종·날짜 원문 표기+범위·해설 라이선스 허용 목록·원문 해시·이미지 PD/CC0+alt·지역학 핀 대조) + 정보 카드 값 계산. 화면 진입점 0.
@@ -1052,6 +1049,10 @@
 - 런던 위성 마이크로 픽(재량 위임 해석): 윈저+옥스퍼드 2곳 추천 — 레만호 완성 후 순번
 - 일본 4도시 COPY 슬롯 이식(다국어 UI 확정 시) / 아토미움 = marker-only 유지 확인
 ### done (최근)
+- **REV-SCOPE-R1B-2 학습 단계 정책 anki-v2 (학습 1분 · 10분, 재학습 10분) — 병합 · 운영 SQL 적용 완료 (2026-10-15 08:42 KST)** `claude/project-thread-jqlex2`:
+  [#1461](https://github.com/wonchance-art/manabi/pull/1461) squash `55ef24c`(M09 Preview · [병합](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6176578713)) — 코드는 `fsrs_capabilities`가 알린 정책을 따르고 예전 카드는 다음 채점에 같은 단계 순번으로 넘어간다 ·
+  `docs/sql/fsrs-anki-v2-policy.sql`(+ 복원 SQL, PGlite `supabase/tests/fsrs-anki-v2-policy.mjs` CI) 오너 승인 「권장대로 ㄱㄱ」 → M09 1회 적용([보고](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6181021416)):
+  적용 전 MD5 4개 · 지문 4개 일치, 적용 후 계약값 anki-v2 · cards = valid_cards · 지문 4개 pinned · 복원 0회. 남은 것 = 새 카드 첫 질문 1분 · 채점 미리보기 실관찰(기회 관찰, 일부러 새 단어 만들지 않음). 기록 `docs/verification/REV-SCOPE-R1B-2.md`.
 - **뷰어 v2 전 라운드 병합·운영 배포 (2026-10-08 16:50 KST, 오너 「#1364부터 순서대로 병합해」 — [병합 보고](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6055334125))**:
   25 PR squash: #1364 · 설계 #1358·#1360·#1361·#1363 · AE-R1 #1359·#1367·#1374 · AE-R3 #1365·#1368·#1379 · AD-R4 #1370·#1372·#1382·#1384 ·
   AD-R3 #1373·#1377·#1383 · AE-R4 #1371·#1380 · AE-R2 #1362·#1376·#1378 · AD-R2 #1369·#1366·#1375. main `b909f9c1` CI 3종 green · Vercel Production 완료.
