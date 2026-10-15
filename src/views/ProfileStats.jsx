@@ -30,6 +30,8 @@ import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
 import { kstDayStartMs, kstDateString } from '../lib/growthStats';
 import useLearnLanguage from '../components/learn/useLearnLanguage';
 import LangChips from '../components/learn/LangChips';
+import { isPreparingLearningLanguage, primaryLearningLanguage } from '../lib/viewerLanguage';
+import { PreparingLanguageLine } from '../components/PreparingLanguageNotice';
 import GoalTrackTile, { useGoalCatalog } from '../components/learn/GoalTrackTile';
 import { StatTile, StreakTile, TodayGoalTile } from '../components/learn/LearnTiles';
 import LevelVocabCard from '../components/learn/LevelVocabCard';
@@ -68,6 +70,9 @@ export default function ProfileStats() {
     const key = v.language || detectLang(v.word_text || ''); all[key] = (all[key] || 0) + 1; return all;
   }, {}), [data?.vocab]);
   const { langs, lang, choose } = useLearnLanguage(profile, vocabCounts);
+  // ONB-001 D-L4 — 배움과 같은 규칙: 준비 중 언어만 배우면 일본어 폴백 칩 대신 안내 한 줄.
+  const preparingLanguage = isPreparingLearningLanguage(primaryLearningLanguage(profile));
+  const onlyPreparing = preparingLanguage && [].concat(profile?.learning_language || []).every(isPreparingLearningLanguage);
 
   // 이번 주 카드(rfc-weekly-report 목업 A) — 실패·빈 주는 카드 생략으로 조용히.
   const { data: weeklyRows } = useQuery({
@@ -112,7 +117,7 @@ export default function ProfileStats() {
     <div className="manabi-page learn-page">
       <Link href="/home" prefetch={false} className="learn-crumb">← 배움</Link>
       <div className="learn-top">
-        <div className="learn-top__title"><h1>현황</h1><LangChips langs={langs} lang={lang} onChange={choose} /></div>
+        <div className="learn-top__title"><h1>현황</h1>{!onlyPreparing && <LangChips langs={langs} lang={lang} onChange={choose} />}{preparingLanguage && <PreparingLanguageLine />}</div>
         <button type="button" className="learn-button-s" onClick={() => setGoalSignal(n => n + 1)}>목표 수정</button>
       </div>
       {error && (

@@ -46,6 +46,8 @@ import ParagraphTile from '@/components/learn/ParagraphTile';
 import GoalTrackTile from '@/components/learn/GoalTrackTile';
 import { ReviewTile, StreakTile, TodayGoalTile } from '@/components/learn/LearnTiles';
 import '@/components/learn/learn.css';
+import { isPreparingLearningLanguage, primaryLearningLanguage } from '@/lib/viewerLanguage';
+import { PreparingLanguageLine } from '@/components/PreparingLanguageNotice';
 
 export async function fetchHomeData(userId, nowMs = Date.now()) {
   // 전체 두 코호트를 같은 snapshot에서 합친 뒤 센다. 구형 due WHERE로 먼저 자르지 않는다.
@@ -123,6 +125,9 @@ export default function HomePage({ book = null }) {
     enabled: !!user && !authLoading, staleTime: 60000, refetchOnWindowFocus: true,
   });
   const { langs, lang, choose } = useLearnLanguage(profile, data?.vocabByLang);
+  // ONB-001 D-L4 — 주 언어가 준비 중(한국어)이면 안내 한 줄. 준비 중 언어만 배우면 일본어 폴백 칩을 보이지 않는다.
+  const preparingLanguage = isPreparingLearningLanguage(primaryLearningLanguage(profile));
+  const onlyPreparing = preparingLanguage && [].concat(profile?.learning_language || []).every(isPreparingLearningLanguage);
   const paragraph = useQuery({
     queryKey: ['learn-paragraph', user?.id, lang], queryFn: () => fetchPrefetchedSentence(user.id, lang),
     enabled: !!user && !authLoading, staleTime: 300000,
@@ -200,7 +205,7 @@ export default function HomePage({ book = null }) {
 
   return <div className="manabi-page learn-page">
     <div className="learn-top">
-      <div className="learn-top__title"><h1>배움</h1><LangChips langs={langs} lang={lang} onChange={choose} /></div>
+      <div className="learn-top__title"><h1>배움</h1>{!onlyPreparing && <LangChips langs={langs} lang={lang} onChange={choose} />}{preparingLanguage && <PreparingLanguageLine />}</div>
       <Link href="/progress" prefetch={false} className="learn-toplink">현황 전체 →</Link>
     </div>
     {error && <div className="manabi-inline-state" role="alert">학습 기록을 불러오지 못했어요. 읽기와 책장은 계속 이용할 수 있어요. <button type="button" onClick={() => refetch()}>다시 시도</button></div>}

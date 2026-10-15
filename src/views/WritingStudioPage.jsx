@@ -17,6 +17,8 @@ import { recordActivity } from '../lib/streak';
 // 첨삭 태그·추천 챕터 링크는 옛 교재 주소일 수 있다(저장된 이력 포함) — 보관함으로만 열리므로 링크를 내지 않는다(VIEWER-R0-BUGS-001 버그 3).
 import { learnerHref } from '../lib/bookNavigation';
 import { friendlyToastMessage } from '../lib/errorMessage';
+import { isPreparingLearningLanguage } from '../lib/viewerLanguage';
+import { PreparingLanguagePage } from '../components/PreparingLanguageNotice';
 
 const LANGS = [
   { key: 'Japanese', label: '일본어' },
@@ -38,6 +40,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
   const { user, profile, fetchProfile } = useAuth();
 
   const [language, setLanguage] = useState('Japanese');
+  const [preparingLanguage, setPreparingLanguage] = useState(false); // 준비 중 언어가 주 언어(ONB-001 D-L4)
   const outputWords = useOutputWords(language);
   const [level, setLevel] = useState('N5');
   const [tab, setTab] = useState('free');          // 'chapter' | 'topic' | 'free'
@@ -63,6 +66,8 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
       const saved = localStorage.getItem('writing_lang');
       const fromProfile = Array.isArray(profile?.learning_language) ? profile.learning_language[0] : profile?.learning_language;
       const init = saved || fromProfile;
+      // 고른 작문 언어가 없고 주 언어가 준비 중이면 일본어로 열지 않고 안내한다.
+      setPreparingLanguage(!saved && isPreparingLearningLanguage(fromProfile));
       if (init && WRITING_LEVELS[init]) setLanguage(init);
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -286,6 +291,8 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
       </div>
     );
   }
+
+  if (preparingLanguage) return <PreparingLanguagePage />;
 
   const lc = LANG_CODE[language];
 

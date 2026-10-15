@@ -878,6 +878,7 @@
 
 ## Claude (claude/*)
 ### doing
+- **ONB-001 첫 방문 온보딩 + 내 언어 + 한국어(준비 중) (2026-10-14 KST, 오너 「전부 다 승인함」)** `claude/project-thread-xitfo6`: 모달 2단계(미리 선택 없음 · 주 언어 · 선택 닉네임 · 내 언어) · /study q1 확인형(D-O4) · 준비 중 언어 가드 6곳(`isPreparingLearningLanguage` 하나) · 계약 `onboardingPlan.test.js`. 남은 것: Preview 정상 실계정(한국어 · 简体中文 경로) · **중국어 문구 원어민 검수(미검수)**.
 - **REV-SCOPE-R1B-2 학습 단계 정책 SQL (2026-10-14 12:40 KST~, 오너 「여기서 진행」 — 인계 [#1337 R1-B](https://github.com/wonchance-art/manabi/issues/1337#issuecomment-6106712130), R1-B-1 #1450 위에서)** `claude/project-thread-jqlex2`:
   anki-v2(학습 1분 · 10분, 재학습 10분) — `valid_card`가 anki-seconds-v1 · anki-v2 둘 다 받고 New 검사는 카드 정책 첫 단계로 · `fsrs_capabilities` 정책값 · 지문 재게시 SQL + 복원 SQL ·
   PGlite(M09 fixture) 검증 · 코드는 받은 정책값을 따른다. **운영 미적용** — SQL 검수 · 오너 확인 뒤 별도. 결과는 #1337 보고.

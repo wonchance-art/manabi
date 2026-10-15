@@ -1,6 +1,8 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getRefLang, REF_LANGS } from '@/content/refLangs';
+import { isPreparingLearningLanguage } from '@/lib/viewerLanguage';
+import { PreparingLanguagePage } from '@/components/PreparingLanguageNotice';
 import StudyLibraryPage from '@/views/StudyLibraryPage';
 import { isKnownWord, kstWeekStartIso } from '@/lib/growthStats';
 import { fsrsServiceClient } from '@/lib/server/fsrsLearning';
@@ -36,6 +38,8 @@ export default async function Page({ searchParams }) {
   if (!lang) {
     const { data: prof } = await supabase.from('profiles').select('learning_language').eq('id', user.id).single();
     const fromProfile = Array.isArray(prof?.learning_language) ? prof.learning_language[0] : prof?.learning_language;
+    // 준비 중 언어(한국어)가 주 언어면 일본어 세션을 만들지 않고 안내한다(ONB-001 D-L4).
+    if (isPreparingLearningLanguage(fromProfile)) return <PreparingLanguagePage />;
     lang = REF_LANGS[fromProfile] ? fromProfile : 'Japanese';
   }
   const ref = getRefLang(lang);
