@@ -1,0 +1,163 @@
+{
+ "principle": {
+  "H": 750,
+  "STEM": 130,
+  "HAIR": 45.5,
+  "HAIR/STEM": 0.35,
+  "KANA_H": 1.06,
+  "TRACK": 0,
+  "MINGAP": 0.75,
+  "DEPTH cap/STEM": 2.0,
+  "bodoni": {
+   "wght": 597,
+   "opsz": 6
+  }
+ },
+ "log": {
+  "kana_scale": 0.9746,
+  "raw": {
+   "kana": {
+    "ト 기둥": 83.3,
+    "リ 오른 획": 95.7,
+    "り 오른 획": 104.8,
+    "ナ 가로획(최소)": 56.4
+   },
+   "latin": {
+    "I 기둥": 130.1,
+    "T 팔(최소)": 36.4
+   }
+  },
+  "brush_ax_ay": {
+   "kana": [
+    12.6,
+    -5.45
+   ],
+   "latin": [
+    -0.05,
+    4.55
+   ]
+  },
+  "after_brush": {
+   "kana": {
+    "ト 기둥": 109.0,
+    "リ 오른 획": 120.8,
+    "り 오른 획": 129.9,
+    "ナ 가로획(최소)": 45.7
+   },
+   "latin": {
+    "I 기둥": 130.0,
+    "T 팔(최소)": 45.5
+   }
+  },
+  "rhythm": {
+   "G(TONARI 흰 깊이 평균)": 244.9,
+   "G/STEM": 1.884,
+   "TONARI": [
+    {
+     "pair": "TO",
+     "mean": 235.3,
+     "min": 115.5
+    },
+    {
+     "pair": "ON",
+     "mean": 234.0,
+     "min": 199.9
+    },
+    {
+     "pair": "NA",
+     "mean": 255.7,
+     "min": 174.1
+    },
+    {
+     "pair": "AR",
+     "mean": 250.4,
+     "min": 69.0
+    },
+    {
+     "pair": "RI",
+     "mean": 249.2,
+     "min": 64.1
+    }
+   ],
+   "となり": [
+    {
+     "pair": "とな",
+     "mean": 244.9,
+     "min": 149.8,
+     "by": "area",
+     "adj": 0
+    },
+    {
+     "pair": "なり",
+     "mean": 244.9,
+     "min": 149.5,
+     "by": "area",
+     "adj": 0
+    }
+   ],
+   "トナリ": [
+    {
+     "pair": "トナ",
+     "mean": 245.8,
+     "min": 97.5,
+     "by": "min",
+     "adj": 0
+    },
+    {
+     "pair": "ナリ",
+     "mean": 244.9,
+     "min": 98.7,
+     "by": "area",
+     "adj": 0
+    }
+   ]
+  },
+  "kana_dy": 22.3,
+  "G": 244.92
+ },
+ "marks": {
+  "TONARI": {
+   "file": "F2-TONARI",
+   "W": 447.41150878906245,
+   "H": 78.34524169921875,
+   "bbox": [
+    34.5,
+    -14.6,
+    4508.6,
+    768.9
+   ]
+  },
+  "となり": {
+   "file": "F2-tonari-hira",
+   "W": 220.2911171716712,
+   "H": 82.748,
+   "bbox": [
+    200.8,
+    -26.5,
+    2403.8,
+    801.0
+   ]
+  },
+  "トナリ": {
+   "file": "F2-tonari-kata",
+   "W": 192.42214479756012,
+   "H": 78.38900000000001,
+   "bbox": [
+    344.4,
+    -16.9,
+    2268.6,
+    767.0
+   ]
+  }
+ },
+ "fonts": {
+  "bodoni": {
+   "url": "https://raw.githubusercontent.com/google/fonts/67bc647ce1910e92f461bcc82aae30f21d21a9cc/ofl/bodonimoda/BodoniModa%5Bopsz,wght%5D.ttf",
+   "sha256": "550f5e34ee0a828d7941b1fe9bc58b34e5260d3f33a61532e6d0a0114e79a5cf"
+  },
+  "zenold-bold": {
+   "url": "https://raw.githubusercontent.com/google/fonts/67bc647ce1910e92f461bcc82aae30f21d21a9cc/ofl/zenoldmincho/ZenOldMincho-Bold.ttf",
+   "sha256": "d6b95c1ff45c8dac153d28961e4c37d7d03b648330c71f884d124dc652a13c0d"
+  }
+ }
+}
