@@ -10,6 +10,8 @@ import Button from '../components/Button';
 import { WRITING_LEVELS, topicsFor } from '../lib/writingPrompts';
 import { logReviewEvents } from '../lib/reviewEvents';
 import { harvestWritingGaps, gapKey } from '../lib/writingGaps';
+import { fetchConversationTurns } from '../lib/conversation/conversationLibrary';
+import { conversationGapRows } from '../lib/conversation/conversationLoop';
 import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { recordActivity } from '../lib/streak';
 // 첨삭 태그·추천 챕터 링크는 옛 교재 주소일 수 있다(저장된 이력 포함) — 보관함으로만 열리므로 링크를 내지 않는다(VIEWER-R0-BUGS-001 버그 3).
@@ -136,7 +138,11 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
         : 'id, created_at, language, sentence, corrected';
       const r = await supabase.from('writing_practice').select(cols)
         .eq('user_id', user.id).order('created_at', { ascending: false }).limit(60);
-      if (!r.error && r.data) setGapRows(r.data);
+      if (!r.error && r.data) {
+        // 대화에서 고친 말(v2-Z Z-R3)도 같은 수확기에 넣는다 — {sentence, corrected} 모양으로 파생만(새 표 0). 실패하면 작문만.
+        const conv = await fetchConversationTurns(supabase, user.id).then(conversationGapRows, () => []);
+        setGapRows([...r.data, ...conv]);
+      }
     } catch {}
   }
   // 수확 — 순수 모듈. 자동 담기는 없다: 아래 [담기] 버튼만이 단어장으로 가는 문(M7 저촉 회피 지점)

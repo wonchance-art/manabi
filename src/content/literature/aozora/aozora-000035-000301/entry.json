@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "personId": "000035",
+  "workId": "301",
+  "title": "人間失格",
+  "author": "太宰治",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1948,
+  "authorDeathYear": 1948,
+  "level": "N2 상급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000035/card301.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000035/files/301_ruby_5915.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "fb37d694f86687f9e84e26643804fa84b4346895f5f56a90dd8843a12e2bc9c8",
+  "textSha256": "554a3c075b7e6994c304a2c4bdce4056f3d7e9c6faeccbb4c249b77695786033",
+  "attribution": {
+    "author": "太宰治",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-15",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000035/card301.html"
+  },
+  "display": {
+    "titleReading": "にんげんしっかく",
+    "titleKo": "인간 실격",
+    "authorKo": "다자이 오사무",
+    "cover": "fog",
+    "motif": "clown-photos"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "bytes": 85720,
+  "fetchedAt": "2026-10-14",
+  "file": "hiroshige-ryogoku-hanabi.jpg",
+  "height": 625,
+  "record": {
+    "artistDisplayName": "Utagawa Hiroshige",
+    "creditLine": "Purchase, Joseph Pulitzer Bequest, 1918",
+    "isPublicDomain": true,
+    "objectDate": "1858",
+    "title": "Fireworks at Ryōgoku Bridge, from the series One Hundred Famous Views of Edo"
+  },
+  "sha256": "03a6029e069c7d21beef8939177e4919a6977af74704e583f6b7c6b9368e20f3",
+  "source": "met",
+  "sourceId": "37093",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/37093",
+  "width": 417,
+  "workId": "hiroshige-ryogoku-hanabi"
+}

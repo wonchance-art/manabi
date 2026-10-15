@@ -1,0 +1,75 @@
+{
+  "id": "hiroshige-tsuki-no-misaki",
+  "wikidata": "Q60176403",
+  "artist": "utagawa-hiroshige",
+  "title": {
+    "native": "名所江戸百景 月の岬",
+    "ko": "명소 에도 100경 — 달의 곶",
+    "reading": "めいしょえどひゃっけい つきのみさき"
+  },
+  "series": {
+    "native": "名所江戸百景",
+    "ko": "명소 에도 100경"
+  },
+  "date": {
+    "text": "江戸時代・安政4年(1857)",
+    "source": "colbase",
+    "startYear": 1857,
+    "endYear": 1857,
+    "certainty": "exact"
+  },
+  "periods": [
+    "jp-edo"
+  ],
+  "medium": {
+    "native": "大判　錦絵",
+    "ko": "세로 오반 니시키에(다색 목판화)"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/A-10569-7372"
+    },
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/34313"
+    },
+    {
+      "place": "metropolitan-museum-of-art",
+      "role": "holding",
+      "url": "https://www.metmuseum.org/art/collection/search/55095"
+    },
+    {
+      "place": "tsuki-no-misaki",
+      "role": "depicted"
+    },
+    {
+      "place": "tokyo-bay",
+      "role": "depicted"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-55831"
+    }
+  ],
+  "terms": [
+    "中秋の名月",
+    "月見",
+    "障子"
+  ],
+  "lookFor": [
+    "왼쪽 장지문에 비친 그림자는 누구의 모습일까요?",
+    "다다미 위에 남은 그릇과 술잔을 찾아봐요.",
+    "보름달 곁을 날아가는 새 떼와 바다 위의 배들을 찾아봐요."
+  ],
+  "image": {
+    "source": "met",
+    "sourceId": "55095",
+    "alt": "연회가 끝난 2층 다다미방 너머로 배들이 떠 있는 바다와 보름달, 줄지어 나는 새 떼가 보인다. 바닥에는 그릇과 등이 남아 있고, 왼쪽 장지문에는 머리 장식을 한 여인의 그림자가 비친다."
+  }
+}

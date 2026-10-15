@@ -1,0 +1,19 @@
+{
+  "bytes": 104830,
+  "fetchedAt": "2026-10-14",
+  "file": "hokusai-gaifu-kaisei.jpg",
+  "height": 413,
+  "record": {
+    "artistDisplayName": "Katsushika Hokusai",
+    "creditLine": "The Howard Mansfield Collection, Purchase, Rogers Fund, 1936",
+    "isPublicDomain": true,
+    "objectDate": "ca. 1830–32",
+    "title": "South Wind, Clear Sky (Gaifū kaisei), also known as Red Fuji, from the series Thirty-six Views of Mount Fuji (Fugaku sanjūrokkei)"
+  },
+  "sha256": "79e905f966c327336ced32ed9c1d82cac692893fad68c785f4096f9dc037e8a7",
+  "source": "met",
+  "sourceId": "57007",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/57007",
+  "width": 599,
+  "workId": "hokusai-gaifu-kaisei"
+}

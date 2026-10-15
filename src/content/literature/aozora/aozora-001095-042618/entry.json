@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "personId": "001095",
+  "workId": "42618",
+  "title": "桜の森の満開の下",
+  "author": "坂口安吾",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1947,
+  "authorDeathYear": 1955,
+  "level": "N2 상급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/001095/card42618.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/001095/files/42618_ruby_21052.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "62ad9835c234c1a3cbd1823dae16f49e3b055792d043292dd12df0f4a8242672",
+  "textSha256": "ef2e5d9355e40e3876527ca8f54d08b6f10231b924d92b09515ff2cdaee7d051",
+  "attribution": {
+    "author": "坂口安吾",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-15",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/001095/card42618.html"
+  },
+  "display": {
+    "titleReading": "さくらのもりのまんかいのした",
+    "titleKo": "만개한 벚꽃 숲 아래",
+    "authorKo": "사카구치 안고",
+    "cover": "cherry",
+    "motif": "blossom-storm",
+    "coverTitle": "桜の森の\n満開の下"
+  }
+}

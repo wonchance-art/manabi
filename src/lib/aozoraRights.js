@@ -1,17 +1,14 @@
 // 青空文庫 작품의 공개 여부를 보수적으로 판정하는 순수 계약.
 // 법률 판단을 자동화하지 않고, 사람이 남긴 검토 증거가 완전한지만 fail-closed로 검사한다.
 //
-// 선정 기준(오너 결정 D5, 2026-10-12 KST) — 법률 자문이 아니라 보수적 안전선이다:
-//   · 검토 관할 JP·KR·US 세 곳을 **모두** 기록해야 승인으로 본다.
-//   · 「1945년 이전 작가 사망」, 또는 「1931년 이전 출판 + 1968년 이전 작가 사망」인 원작만 공개한다.
-//     - JP: 1967년 이전 사망 작가는 만료 확정(사후 50년 — 2018년 70년 연장은 비소급).
-//     - KR: 저작권법 제3조 제4항(보호기간 상호주의) — 외국 저작물은 본국에서 보호기간이 끝났으면 한국에서도 보호하지 않는다.
-//       일본 원작이므로 JP가 만료면 KR도 만료다(한국 자체 기간 70년을 따로 세지 않는다).
-//     - US: 1931년 이전 출판작은 만료(95년). 그 뒤 출판작도 작가가 1945년 이전 사망이면
-//       1996-01-01 시점 일본에서 이미 만료(사후 50년)라 URAA 회복 대상이 아니다.
-//     (2026-10-14 KST 보정: 예전 식 「1931년 이전 출판 또는 1945년 이전 사망」은 출판만 이르면 사망 연도를 보지 않아,
-//      1968년 이후 사망 작가의 1931년 이전 작품(예: 川端康成 1972 사망 · 伊豆の踊子 1926 — 일본에서 2042년 말까지 보호)을
-//      통과시킬 수 있었다. JP 조건을 식에 넣는다. 江戸川乱歩·谷崎潤一郎(1965 사망)의 1931년 이전 작품은 세 관할 모두 만료다.)
+// 선정 기준(오너 결정 D5 2026-10-12 → 개정 2026-10-15 KST 「일본에서만 끝나면 그만」) — 법률 자문이 아니라 운영 기준이다:
+//   · **일본 보호기간이 끝난 원작만** 공개한다 = 작가가 1968년 **이전** 사망(1967년 이전 사망은 사후 50년으로 만료 확정 —
+//     2018년 70년 연장은 비소급). 출판 연도는 보지 않는다. 사망 연도를 모르면 공개하지 않는다(fail-closed).
+//     예: 太宰治(1948)·坂口安吾(1955)는 만료, 川端康成(1972 — 2042년 말까지 보호)은 보호 중.
+//   · KR: 저작권법 제3조 제4항(보호기간 상호주의) — 본국(일본)에서 끝난 외국 저작물은 한국에서도 보호하지 않으므로 JP와 같다.
+//   · US는 공개 조건이 아니다(개정 전에는 JP·KR·US 셋 모두 — 미국 URAA 회복으로 1931년 이후 출판·1945년 이후 사망 작가의
+//     작품이 막혔다: 人間失格 1948 → 미국 2043년 말까지). 판정은 참고로만 남긴다(aozoraJurisdictionVerdict().US).
+//   · 검토 기록은 JP·KR 두 곳을 남겨야 승인으로 본다(KR은 JP를 따르지만 서비스 관할이라 기록한다).
 //   · 번역자·삽화가가 없는 원작만(2차 저작자의 권리가 따로 산다).
 
 export const AOZORA_RIGHTS_STATUS = Object.freeze({
@@ -28,14 +25,14 @@ export const AOZORA_RIGHTS_BASIS = Object.freeze({
   UNKNOWN: 'unknown',
 });
 
-/** 승인 기록이 반드시 포함해야 하는 검토 관할(D5). */
-export const AOZORA_REQUIRED_JURISDICTIONS = Object.freeze(['JP', 'KR', 'US']);
-/** 이 해 **이전**에 출판된 원작은 공개 가능(D5). */
-export const AOZORA_PUBLISHED_BEFORE = 1931;
-/** 이 해 **이전**에 사망한 작가의 원작은 공개 가능(D5). */
-export const AOZORA_AUTHOR_DIED_BEFORE = 1945;
-/** 1931년 이전 출판작이라도 작가가 이 해 **이전**에 사망해야 한다 — 일본 보호기간(1967년 이전 사망 작가만 만료). */
+/** 승인 기록이 반드시 포함해야 하는 검토 관할(D5 개정 2026-10-15). */
+export const AOZORA_REQUIRED_JURISDICTIONS = Object.freeze(['JP', 'KR']);
+/** 공개 조건 — 작가가 이 해 **이전**에 사망(일본 보호기간 만료: 1967년 이전 사망 작가). */
 export const AOZORA_JP_AUTHOR_DIED_BEFORE = 1968;
+/** 참고(US, 공개 조건 아님) — 이 해 이전 출판작은 미국에서 만료(95년). */
+export const AOZORA_US_PUBLISHED_BEFORE = 1931;
+/** 참고(US, 공개 조건 아님) — 이 해 이전 사망 작가는 1996년 URAA 시점 일본에서 이미 만료라 미국 회복 대상이 아니다. */
+export const AOZORA_US_AUTHOR_DIED_BEFORE = 1945;
 
 const STATUS_VALUES = new Set(Object.values(AOZORA_RIGHTS_STATUS));
 const BASIS_VALUES = new Set(Object.values(AOZORA_RIGHTS_BASIS));
@@ -90,17 +87,20 @@ export function validateAozoraRights(rights) {
   return true;
 }
 
-/** 관할별 보호기간 판정(D5 안전선) — {JP, KR, US, ok}. 연도를 모르면 그 관할은 false(fail-closed). 법률 자문이 아니다. */
+/**
+ * 관할별 보호기간 판정 — {JP, KR, US, ok}. ok = JP(= KR). US는 참고 표시뿐이다(D5 개정 2026-10-15).
+ * 연도를 모르면 그 관할은 false(fail-closed). 법률 자문이 아니다.
+ */
 export function aozoraJurisdictionVerdict(work = {}) {
   const published = isAozoraYear(work?.publishedYear) ? work.publishedYear : null;
   const died = isAozoraYear(work?.authorDeathYear) ? work.authorDeathYear : null;
   const JP = died != null && died < AOZORA_JP_AUTHOR_DIED_BEFORE;
   const KR = JP; // 저작권법 제3조 제4항 — 본국(일본)에서 만료된 외국 저작물은 한국에서도 보호기간을 인정하지 않는다
-  const US = (published != null && published < AOZORA_PUBLISHED_BEFORE) || (died != null && died < AOZORA_AUTHOR_DIED_BEFORE);
-  return { JP, KR, US, ok: JP && KR && US };
+  const US = (published != null && published < AOZORA_US_PUBLISHED_BEFORE) || (died != null && died < AOZORA_US_AUTHOR_DIED_BEFORE);
+  return { JP, KR, US, ok: JP && KR };
 }
 
-/** D5 선정 기준 — 1945년 이전 작가 사망, 또는 1931년 이전 출판 + 1968년 이전 작가 사망. 연도를 모르면 false(fail-closed). */
+/** D5 선정 기준 — 일본 보호기간 만료(작가 1968년 이전 사망). 사망 연도를 모르면 false(fail-closed). */
 export function aozoraWorkWithinSelection(work = {}) {
   return aozoraJurisdictionVerdict(work).ok;
 }
@@ -108,7 +108,7 @@ export function aozoraWorkWithinSelection(work = {}) {
 /**
  * MVP 공개 정책: 명시적으로 승인된 퍼블릭 도메인 일본어 원작만 허용한다.
  * attribution의 translator·illustrator는 키가 있고 값이 null이어야 하며(빠뜨림 = 미검토),
- * work의 출판·사망 연도가 D5 선정 기준 안이어야 한다.
+ * work의 작가 사망 연도가 D5 선정 기준 안이어야 한다(일본 보호기간 만료).
  */
 export function aozoraRightsPublishable(rights, attribution = {}, work = {}) {
   try { validateAozoraRights(rights); } catch { return false; }

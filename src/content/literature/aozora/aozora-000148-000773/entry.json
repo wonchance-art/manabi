@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "personId": "000148",
+  "workId": "773",
+  "title": "こころ",
+  "author": "夏目漱石",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1914,
+  "authorDeathYear": 1916,
+  "level": "N2 상급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000148/card773.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000148/files/773_ruby_5968.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "c55d7bf6c7cc5bd960ce291949f38cae9ba6a672a6142c3b9e1a9f5a159fa4c4",
+  "textSha256": "c94f3a49e050b25293a54402435486cbc199812a85e2a57c045241979073bb3c",
+  "attribution": {
+    "author": "夏目漱石",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-15",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR",
+      "US"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000148/card773.html"
+  },
+  "display": {
+    "titleReading": "こころ",
+    "titleKo": "마음",
+    "authorKo": "나쓰메 소세키",
+    "cover": "mustard",
+    "motif": "kamakura-letter"
+  }
+}

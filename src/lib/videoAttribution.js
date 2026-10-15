@@ -111,6 +111,7 @@ export function attributionParts(source) {
  * ─────────────────────────────────────────────────────────────*/
 
 const AOZORA_EDIT_CODES = ['ruby-reading-aid', 'chapter-split-by-manabi'];
+const AOZORA_SMALL_KANA_EDIT = 'small-kana-as-full'; // aozoraMaterial.AOZORA_SMALL_KANA_EDIT — Unicode에 없는 작은 가나를 보통 크기로
 
 /** 도서 카드 링크는 青空文庫 HTTPS 주소일 때만 건다 — 공개 자료 metadata에 임의 링크(javascript: 등)가 실려도 그리지 않는다. */
 function aozoraCardHref(value) {
@@ -125,7 +126,7 @@ function aozoraCardHref(value) {
 /**
  * 아오조라 장의 출처 줄 재료. 「원작 퍼블릭 도메인」은 권리 기록이 approved·public-domain일 때만 쓴다(없는 권리를 주장하지 않는다).
  * 底本은 첫 줄(서명·출판사)만 — 들여쓴 연속 줄(발행일·판차)은 metadata에 남고 한 줄 표기에는 넣지 않는다.
- * @returns {{provider:string, sourceBook:string, inputter:string, proofreader:string, cardUrl:string, publicDomain:boolean, editNote:boolean}|null}
+ * @returns {{provider:string, sourceBook:string, inputter:string, proofreader:string, cardUrl:string, publicDomain:boolean, editNote:boolean, smallKanaNote:boolean}|null}
  */
 export function literatureAttributionParts(literature) {
   if (!literature || typeof literature !== 'object' || literature.provider !== 'aozora') return null;
@@ -141,5 +142,6 @@ export function literatureAttributionParts(literature) {
     cardUrl: aozoraCardHref(literature.cardUrl),
     publicDomain: rights.status === 'approved' && rights.basis === LICENSE_PUBLIC_DOMAIN,
     editNote: AOZORA_EDIT_CODES.every((code) => edits.includes(code)),
+    smallKanaNote: edits.includes(AOZORA_SMALL_KANA_EDIT),
   };
 }

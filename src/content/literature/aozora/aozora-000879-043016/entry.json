@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "personId": "000879",
+  "workId": "43016",
+  "title": "トロッコ",
+  "author": "芥川龍之介",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1922,
+  "authorDeathYear": 1927,
+  "level": "N3 중급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000879/card43016.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000879/files/43016_ruby_16663.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "fee4a89edfad88d84e787e6ba42a774a1891d10754090eb5132bc9b6ba25c27b",
+  "textSha256": "d3aeea051af1514507da5202d8c5ecf3344e40d6af47f08bd8db28c494228405",
+  "attribution": {
+    "author": "芥川龍之介",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-15",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR",
+      "US"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000879/card43016.html"
+  },
+  "display": {
+    "titleReading": "トロッコ",
+    "titleKo": "광차",
+    "authorKo": "아쿠타가와 류노스케",
+    "cover": "olive",
+    "motif": "dusk-rails"
+  }
+}

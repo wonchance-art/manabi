@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "personId": "000035",
+  "workId": "1567",
+  "title": "走れメロス",
+  "author": "太宰治",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1940,
+  "authorDeathYear": 1948,
+  "level": "N3 중급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000035/card1567.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000035/files/1567_ruby_4948.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "7f533fd6085370c83c5f7960329b7afb62dce1003960f500a3edf9ede673a50e",
+  "textSha256": "a2f4e00452a7c21875bed9af1f0dc47da78e4c7b1d2a2b0cc36a7a89ab677c0f",
+  "attribution": {
+    "author": "太宰治",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-15",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000035/card1567.html"
+  },
+  "display": {
+    "titleReading": "はしれメロス",
+    "titleKo": "달려라 메로스",
+    "authorKo": "다자이 오사무",
+    "cover": "aegean",
+    "motif": "melos-run"
+  }
+}

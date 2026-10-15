@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ART_SOURCES, artSourceText } from '../artSource.js';
+import { ART_IMAGE_LICENSE_LABEL, ART_IMAGE_SOURCES, ART_SOURCES, artSourceText } from '../artSource.js';
 
 describe('artSourceText — 출처 응답 → 카탈로그 해설 text', () => {
   it('시카고 미술관 HTML: 문단은 빈 줄, 태그는 벗기고 속 글자는 남긴다', () => {
@@ -33,6 +33,33 @@ describe('artSourceText — 출처 응답 → 카탈로그 해설 text', () => {
     expect(ART_SOURCES.colbase.rawText({ common: { description: '<p>日</p>', descriptionEn: 'en' } }, 'ja')).toBe('<p>日</p>');
     expect(ART_SOURCES.colbase.rawText({ common: { description: '日', descriptionEn: 'en' } }, 'en')).toBe('en');
     expect(ART_SOURCES.aic.rawText({ data: { description: '<p>x</p>' } })).toBe('<p>x</p>');
+  });
+
+  it('스냅샷(ART-AUTO-1): 응답에서 빌드가 쓰는 필드만, 원문 HTML은 받은 그대로', () => {
+    const colbase = ART_SOURCES.colbase.snapshot({ id: 'cobas-1', rdfindex: {}, common: {
+      linkUrl: 'https://colbase.nich.go.jp/collection_items/tnm/A-1', provider: 'tnm', title: '題', temporal: ['江戸時代'],
+      contributor: ['東京国立博物館'], description: '<p>日<br /></p>', thumbnailUrl: ['x'] } }, 'cobas-1');
+    expect(colbase).toEqual({ id: 'cobas-1', linkUrl: 'https://colbase.nich.go.jp/collection_items/tnm/A-1', provider: 'tnm', title: '題',
+      temporal: ['江戸時代'], contributor: ['東京国立博物館'], description: '<p>日<br /></p>' });
+    expect(ART_SOURCES.colbase.snapshotRaw(colbase, 'ja')).toBe('<p>日<br /></p>');
+    expect(ART_SOURCES.colbase.snapshotUrl(colbase)).toBe('https://colbase.nich.go.jp/collection_items/tnm/A-1');
+    expect(ART_SOURCES.colbase.snapshotUrl({ ...colbase, linkUrl: null })).toBe('https://jpsearch.go.jp/item/cobas-1');
+    expect(ART_SOURCES.colbase.credit(colbase)).toBe('ColBase(국립문화재기구) · 도쿄 국립박물관 소장 · 재팬서치 경유 · 편집: 서식 기호만 지우고 글자는 그대로');
+    expect(ART_SOURCES.colbase.credit({ ...colbase, provider: 'kyohaku-x' })).toBeNull();
+    const aic = ART_SOURCES.aic.snapshot({ data: { id: 7, title: 'T', date_display: '1857', description: '<p>x</p>', image_id: 'i' } });
+    expect(aic).toEqual({ id: 7, title: 'T', date_display: '1857', description: '<p>x</p>' });
+    expect(ART_SOURCES.aic.snapshotUrl(aic)).toBe('https://www.artic.edu/artworks/7');
+    expect(ART_SOURCES.aic.apiUrl('7')).toContain('date_display');
+  });
+
+  it('그림 출처표: 메트는 isPublicDomain일 때만 CC0, 캡션은 기록 그대로', () => {
+    const record = ART_IMAGE_SOURCES.met.record({ artistDisplayName: 'A', title: 'T', objectDate: '1857', creditLine: 'Gift', isPublicDomain: true, primaryImage: 'x' });
+    expect(record).toEqual({ artistDisplayName: 'A', title: 'T', objectDate: '1857', creditLine: 'Gift', isPublicDomain: true });
+    expect(ART_IMAGE_SOURCES.met.license(record)).toBe('cc0');
+    expect(ART_IMAGE_SOURCES.met.license({ ...record, isPublicDomain: false })).toBeNull();
+    expect(ART_IMAGE_SOURCES.met.credit(record, ART_IMAGE_LICENSE_LABEL.cc0)).toBe('A. T, 1857. The Metropolitan Museum of Art, Gift. CC0');
+    expect(ART_IMAGE_SOURCES.commons.credit({ artist: 'A', title: 'T', date: '1857', holder: 'Rijksmuseum, Amsterdam', accession: 'RP-1' }, 'CC0'))
+      .toBe('A. T, 1857. Rijksmuseum, Amsterdam, RP-1. CC0 (via Wikimedia Commons)');
   });
 
   it('문자열이 아니면 빈 문자열', () => {

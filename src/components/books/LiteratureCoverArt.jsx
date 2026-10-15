@@ -300,10 +300,12 @@ function NightjarStar() {
 
 // 高瀬舟(1916) — 다이쇼 문예서의 차분한 2–3도: 으스름달, 늘어진 버들가지, 강물 위 납작한 배와 마주 앉은 두 사람.
 function NightBoat() {
+  // 朧夜 — 달 원판 대신 옅은 안개 띠(山月記의 달과 구도가 겹쳤다 — 2026-10-15 나란히 검토).
   return (
     <>
-      <circle className={`${P(1)} lit-art__glow`} cx="42" cy="34" r="15" fill="currentColor" />
-      <circle className={P(1)} cx="42" cy="34" r="9.5" fill="currentColor" />
+      <g className={`${P(1)} lit-art__glow`} fill="currentColor">
+        <rect x="4" y="30" width="54" height="7" rx="3.5" /><rect x="14" y="44" width="44" height="5" rx="2.5" /><rect x="4" y="56" width="38" height="4" rx="2" />
+      </g>
       <g className={P(3)} fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round">
         <path d="M4 0C8 20 6 44 10 70M10 0C14 18 13 40 17 62M16 0C19 14 19 30 22 46M2 10C4 30 2 52 5 82" />
       </g>
@@ -317,6 +319,7 @@ function NightBoat() {
         <path d="M38 124V118C38 116 40 115 41.5 115S45 116 45 118V124Z" /><circle cx="41.5" cy="112.5" r="2.3" />
         <path d="M54 124L58 104" stroke="currentColor" strokeWidth="1" />
       </g>
+      <circle className={`${P(5)} lit-art__glow`} cx="31" cy="120" r="5" fill="currentColor" />
       <circle className={P(5)} cx="31" cy="120" r="1.6" fill="currentColor" />
     </>
   );
@@ -346,6 +349,336 @@ function CelloNight() {
         <path d="M18 111L22 109.5 18.5 112.8Z" />
       </g>
       <path className={P(4)} d="M4 114H24" stroke="currentColor" strokeWidth="1.4" />
+    </>
+  );
+}
+
+// 銀河鉄道の夜(1934) — 쇼와 초 동화책의 밤하늘 판화: 왼쪽 반을 비스듬히 가로지르는 은하수, 그 위를 달려 오르는 작은 기차(불 켜진 창),
+// 위쪽의 남십자. 제목이 오른쪽 세로줄을 다 쓰므로 그림은 왼쪽 반에만.
+function NightTrain() {
+  const stars = scatter(22, 9, [6, 6, 56, 160]);
+  const cars = [[10, 0], [22, 0], [34, 0]];
+  return (
+    <>
+      <path className={`${P(2)} lit-art__glow`} d="M4 168L4 126 58 30V74L22 168Z" fill="currentColor" />
+      <path className={P(2)} d="M8 158L56 54M14 164L57 72" stroke="currentColor" strokeWidth="0.5" strokeDasharray="1 2.5" />
+      <g className={P(1)} fill="currentColor">{stars.map(([x, y], i) => <circle key={`${x}-${y}`} cx={x} cy={y} r={i % 5 ? 0.7 : 1.3} />)}</g>
+      <g className={P(1)} fill="currentColor">
+        <path d="M30 10L31 14.6 35.6 15.6 31 16.6 30 21.2 29 16.6 24.4 15.6 29 14.6Z" />
+        <circle cx="30" cy="27" r="1.2" /><circle cx="22" cy="18" r="1" /><circle cx="38" cy="18" r="1" />
+      </g>
+      <g transform="rotate(-56 30 104)">
+        <path className={P(5)} d="M-2 112H64" stroke="currentColor" strokeWidth="0.8" />
+        <g className={P(3)} fill="currentColor">
+          <path d="M46 102H58L60 105V111H46Z" />
+          <rect x="49" y="98" width="3" height="4" />
+          {cars.map(([x]) => <rect key={x} x={x - 8} y="103" width="10.6" height="8" rx="1" />)}
+        </g>
+        <g className={P(4)} fill="currentColor">
+          {cars.flatMap(([x]) => [<rect key={`${x}a`} x={x - 6.4} y="105" width="2.6" height="2.4" />, <rect key={`${x}b`} x={x - 2.4} y="105" width="2.6" height="2.4" />])}
+          <circle cx="59" cy="107" r="1" />
+        </g>
+      </g>
+    </>
+  );
+}
+
+// 3차 묶음(2026-10-14 KST, 오너 「다음 묶음도 권장대로」) — 작품마다 새 문양. 원본 장정·삽화는 찾아보지도 옮기지도 않고,
+// 작품 속 한 장면을 그 시대 인쇄 관례(평평한 판색 2–5도)로 새로 그린다.
+
+// こころ(1914) — 다이쇼 초 문예서의 담백한 2–3도: 가마쿠라 바다의 수평선, 위로 드리운 솔가지, 접힌 긴 편지(遺書).
+function KamakuraLetter() {
+  return (
+    <>
+      <path className={P(3)} d="M4 21C14 17 24 22 34 18S48 11 57 13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <g className={P(3)} fill="currentColor">
+        <ellipse cx="12" cy="14" rx="8" ry="3.4" /><ellipse cx="28" cy="13" rx="9" ry="3.6" /><ellipse cx="46" cy="9" rx="8" ry="3.2" />
+        <ellipse cx="20" cy="25" rx="6" ry="2.6" /><ellipse cx="40" cy="20" rx="6.5" ry="2.6" />
+      </g>
+      <g transform="rotate(-8 30 76)">
+        <rect className={P(1)} x="16" y="52" width="28" height="46" fill="currentColor" />
+        <path className={P(4)} d="M40 57V93M36 57V90M32 57V93M28 57V86M24 57V92M20 57V80" stroke="currentColor" strokeWidth="0.7" />
+        <path className={P(5)} d="M16 75H44" stroke="currentColor" strokeWidth="0.5" />
+      </g>
+      <path className={P(2)} d="M4 120H58V168H4Z" fill="currentColor" />
+      <g className={P(1)} fill="none" stroke="currentColor" strokeWidth="0.7" strokeLinecap="round">
+        <path d="M8 127Q11 125 14 127M24 131Q27 129 30 131M40 126Q43 124 46 126M14 139Q17 137 20 139M34 143Q37 141 40 143M10 153Q13 151 16 153M44 155Q47 153 50 155" />
+      </g>
+      <path className={P(5)} d="M4 120H58" stroke="currentColor" strokeWidth="0.9" />
+    </>
+  );
+}
+
+// やまなし(1923) — 다이쇼 동화 잡지의 맑은 평면 색: 물속(골짜기 바닥에서 올려다본 幻燈), 거품, 떨어진 야마나시, 게 두 마리.
+function CrabPear() {
+  const bubbles = [[16, 46, 1.6], [18, 56, 1.2], [15, 66, 2], [44, 40, 1.3], [46, 52, 1.8], [12, 84, 1.1]];
+  return (
+    <>
+      <path className={P(1)} d="M4 30Q11 26 18 30T32 30T46 30T60 30V168H4Z" fill="currentColor" />
+      <path className={`${P(5)} lit-art__glow`} d="M14 30L6 120H16L24 30ZM38 30L32 120H40L46 30Z" fill="currentColor" />
+      <g className={P(5)} fill="none" stroke="currentColor" strokeWidth="0.8">{bubbles.map(([x, y, r]) => <circle key={`${x}-${y}`} cx={x} cy={y} r={r} />)}</g>
+      <g className={P(2)} fill="currentColor">
+        <circle cx="36" cy="94" r="7.5" />
+        <path d="M36 86.6Q37 83 39.5 81.5" fill="none" stroke="currentColor" strokeWidth="1" />
+      </g>
+      <path className={P(6)} d="M4 140Q20 132 34 138T60 134V168H4Z" fill="currentColor" />
+      <g className={P(3)} fill="currentColor">
+        <ellipse cx="18" cy="140" rx="5.5" ry="3.4" />
+        <path d="M13.5 137.5L10 133 12.5 132.5 15 136ZM22.5 137.5L26 133 23.5 132.5 21 136Z" />
+        <path d="M13 141L9 144M13.5 142.5L10 146.5M23 141L27 144M22.5 142.5L26 146.5" stroke="currentColor" strokeWidth="0.8" />
+        <ellipse cx="42" cy="146" rx="4.5" ry="2.8" />
+        <path d="M38.5 144L35.5 140.5 37.5 140 39.8 143ZM45.5 144L48.5 140.5 46.5 140 44.2 143Z" />
+        <path d="M38 147L35 149.5M46 147L49 149.5" stroke="currentColor" strokeWidth="0.7" />
+      </g>
+      <g className={P(4)} fill="currentColor"><circle cx="16.6" cy="136.6" r="0.7" /><circle cx="19.4" cy="136.6" r="0.7" /><circle cx="41" cy="143.6" r="0.6" /><circle cx="43" cy="143.6" r="0.6" /></g>
+    </>
+  );
+}
+
+// 風の又三郎(1934) — 쇼와 초 동화집의 판화 색: 고원 언덕의 작은 분교, 휘감아 부는 바람, 날리는 잎, 망토 자락이 뜬 아이.
+function WindHill() {
+  const leaves = [[12, 30, 30], [40, 22, -20], [50, 48, 60], [24, 62, -40], [8, 78, 15], [44, 76, 80]];
+  return (
+    <>
+      <g className={P(2)} fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
+        <path d="M4 42C18 34 34 36 42 44C47 50 42 57 35 54C30 51.5 33 46 37.5 48" />
+        <path d="M4 70C14 64 28 64 36 70" />
+        <path d="M16 96C26 88 42 88 50 96C54 101 50 106 45 104C41.5 102.5 43 98.5 46 99.5" />
+        <path d="M30 20C38 16 48 16 56 20" />
+      </g>
+      <g className={P(5)} fill="currentColor">{leaves.map(([x, y, r]) => <ellipse key={`${x}-${y}`} cx={x} cy={y} rx="2.6" ry="1.2" transform={`rotate(${r} ${x} ${y})`} />)}</g>
+      <path className={P(3)} d="M4 134C18 124 36 118 58 120V168H4Z" fill="currentColor" />
+      <g className={P(4)} fill="currentColor">
+        <path d="M33 117L42 110 51 117Z" />
+        <rect x="35" y="117" width="14" height="8" />
+      </g>
+      <g className={P(1)} fill="currentColor"><rect x="37.5" y="119" width="3" height="3" /><rect x="43.5" y="119" width="3" height="3" /></g>
+      <g className={P(6)} fill="currentColor">
+        <circle cx="16" cy="114" r="2.2" />
+        <path d="M14.5 116.5H17.5L18 126H14Z" />
+      </g>
+      <path className={P(1)} d="M15 117L4 123 14.5 125Z" fill="currentColor" opacity="0.85" />
+    </>
+  );
+}
+
+// トロッコ(1922) — 다이쇼 문예지 2–3도: 해 질 녘 귤밭 비탈, 아래로 뻗은 두 줄 레일과 침목, 내리막의 토롯코 한 대.
+function DuskRails() {
+  const mikan = [[10, 92], [16, 98], [48, 88], [54, 96], [8, 112], [52, 112]];
+  return (
+    <>
+      <circle className={P(2)} cx="34" cy="62" r="11" fill="currentColor" />
+      <circle className={`${P(2)} lit-art__glow`} cx="34" cy="62" r="20" fill="currentColor" />
+      <path className={P(3)} d="M4 76Q18 66 30 72T58 66V168H4Z" fill="currentColor" />
+      <g className={P(2)} fill="currentColor">{mikan.map(([x, y]) => <circle key={`${x}-${y}`} cx={x} cy={y} r="1.5" />)}</g>
+      <g className={P(4)} stroke="currentColor" strokeLinecap="round">
+        <path d="M12 168L30 84M38 168L34 84" strokeWidth="0.9" />
+        <path d="M13.5 160H37M16 148H36.5M18.5 136H36M21 124H35.6M23.2 113H35.2M25.2 103H34.8M27 94H34.4" strokeWidth="0.7" />
+      </g>
+      <g className={P(5)} fill="currentColor">
+        <path d="M17 120H37L35 131H19Z" />
+        <circle cx="21.5" cy="133" r="2" /><circle cx="32.5" cy="133" r="2" />
+      </g>
+      <path className={P(4)} d="M17 120H37" stroke="currentColor" strokeWidth="0.6" />
+    </>
+  );
+}
+
+// 杜子春(1920) — 다이쇼 동화 잡지의 담채: 이야기 끝의 泰山 남쪽 기슭, 집 한 채, 온 둘레의 복숭아꽃.
+function PeachHouse() {
+  const blossoms = [[12, 20], [22, 14], [30, 24], [40, 16], [50, 26], [18, 32], [44, 36], [34, 40]];
+  return (
+    <>
+      <path className={P(3)} d="M4 120L18 86 26 96 38 70 58 112V168H4Z" fill="currentColor" />
+      <path className={P(1)} d="M34 78L38 70 42 79 39 77 37 80Z" fill="currentColor" />
+      <path className={P(4)} d="M4 10C16 14 26 22 34 30S50 40 58 40M22 18Q26 10 32 8M40 33Q44 26 50 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <g className={P(2)} fill="currentColor">
+        {blossoms.map(([x, y]) => (
+          <g key={`${x}-${y}`}>
+            {[0, 72, 144, 216, 288].map((a) => <circle key={a} cx={x + 2.2 * Math.cos((a * Math.PI) / 180)} cy={y + 2.2 * Math.sin((a * Math.PI) / 180)} r="1.6" />)}
+          </g>
+        ))}
+      </g>
+      <g className={P(5)} fill="currentColor">{blossoms.map(([x, y]) => <circle key={`${x}-${y}`} cx={x} cy={y} r="0.8" />)}</g>
+      <path className={P(6)} d="M4 140Q24 132 58 138V168H4Z" fill="currentColor" />
+      <g fill="currentColor">
+        <path className={P(4)} d="M14 124L26 116 38 124Z" />
+        <rect className={P(1)} x="17" y="124" width="18" height="11" />
+        <rect className={P(4)} x="24" y="128" width="4" height="7" />
+      </g>
+      <g className={P(2)} fill="currentColor"><circle cx="44" cy="128" r="3.4" /><circle cx="10" cy="132" r="2.8" /><circle cx="50" cy="136" r="2.4" /></g>
+    </>
+  );
+}
+
+// 人間椅子(1925) — 다이쇼 말 탐정 잡지의 아르데코: 아래에서 퍼지는 금빛 햇살 선, 가죽 안락의자, 이음매 틈의 눈 하나.
+function DecoChair() {
+  return (
+    <>
+      <g className={P(1)} stroke="currentColor" strokeWidth="0.6" opacity="0.7">
+        {[[4, 70], [10, 44], [22, 30], [38, 30], [50, 44], [57, 70]].map(([x, y]) => <path key={x} d={`M30 168L${x} ${y}`} />)}
+      </g>
+      <g className={P(2)} fill="currentColor">
+        <path d="M14 80C14 70 20 66 30 66S46 70 46 80V112H14Z" />
+        <path d="M6 100C6 94 10 92 14 92V128H6ZM46 92C50 92 54 94 54 100V128H46Z" />
+        <rect x="6" y="112" width="48" height="18" rx="3" />
+        <path d="M9 130H13V142H9ZM47 130H51V142H47Z" />
+      </g>
+      <g className={P(3)} fill="none" stroke="currentColor" strokeWidth="0.7">
+        <path d="M18 84H42M18 96H42M30 70V110M14 112H46" />
+      </g>
+      <g className={P(1)} fill="currentColor">
+        {[[22, 78], [38, 78], [22, 90], [38, 90], [22, 102], [38, 102]].map(([x, y]) => <circle key={`${x}-${y}`} cx={x} cy={y} r="0.9" />)}
+      </g>
+      <path className={P(4)} d="M25 96Q30 92.6 35 96Q30 99.4 25 96Z" fill="currentColor" />
+      <circle className={P(2)} cx="30" cy="96" r="1.3" fill="currentColor" />
+      <path className={P(1)} d="M4 146H58" stroke="currentColor" strokeWidth="0.8" />
+    </>
+  );
+}
+
+// 刺青(1910) — 메이지 말 탐미 문예서의 판화 2–3도: 가는 거미줄과 그 한가운데의 큰 거미(女郎蜘蛛) — 사람 몸은 그리지 않는다.
+function SpiderWeb() {
+  // 해 원판은 쓰지 않는다(走れメロス·トロッコ와 구도가 겹쳤다 — 2026-10-15 나란히 검토): 위에서 내려온 실, 이슬 맺힌 거미줄, 큰 거미.
+  const cx = 30; const cy = 100;
+  const spokes = Array.from({ length: 10 }, (_, i) => (i * 36 * Math.PI) / 180);
+  const ring = (r) => spokes.map((a) => `${(cx + r * Math.cos(a)).toFixed(1)} ${(cy + r * Math.sin(a)).toFixed(1)}`).join('L');
+  const dew = [[8, 0], [14, 1], [20, 3], [26, 6], [20, 8], [14, 5]].map(([r, k]) => [cx + r * Math.cos(spokes[k] + 0.3), cy + r * Math.sin(spokes[k] + 0.3)]);
+  return (
+    <>
+      <path className={P(2)} d="M30 0V74M8 8L18 76M52 8L42 76" stroke="currentColor" strokeWidth="0.5" />
+      <g className={P(2)} fill="none" stroke="currentColor" strokeWidth="0.45">
+        {spokes.map((a) => <path key={a} d={`M${cx} ${cy}L${(cx + 27 * Math.cos(a)).toFixed(1)} ${(cy + 27 * Math.sin(a)).toFixed(1)}`} />)}
+        {[8, 14, 20, 26].map((r) => <path key={r} d={`M${ring(r)}Z`} />)}
+      </g>
+      <g className={P(1)} fill="currentColor">{dew.map(([x, y]) => <circle key={`${x}-${y}`} cx={x.toFixed(1)} cy={y.toFixed(1)} r="1.1" />)}</g>
+      <g className={P(3)} fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M27 96L19 88 16 78M27 99L15 96 9 90M27 102L16 106 11 114M28 104L22 114 22 124" />
+        <path d="M33 96L41 88 44 78M33 99L45 96 51 90M33 102L44 106 49 114M32 104L38 114 38 124" />
+      </g>
+      <g className={P(3)} fill="currentColor">
+        <ellipse cx="30" cy="96.5" rx="3.6" ry="3" />
+        <ellipse cx="30" cy="108" rx="5.2" ry="8.6" />
+      </g>
+      <g className={P(4)} fill="none" stroke="currentColor" strokeWidth="1.1"><path d="M25.8 104H34.2M25.2 108H34.8M25.8 112H34.2" /></g>
+      <path className={P(5)} d="M27.6 115.6Q30 117.4 32.4 115.6" fill="none" stroke="currentColor" strokeWidth="0.8" />
+    </>
+  );
+}
+
+// 4차 묶음(2026-10-15 KST, 오너 「일본에서만 끝나면 그만」 — D5 개정으로 처음 들어온 太宰治·坂口安吾).
+
+// 走れメロス(1940) — 쇼와 전기 소년 잡지의 2–3도 판화: 먼 성벽 도시, 범람한 강, 다리 기둥 사이를 뛰어 건너는 그림자.
+function MelosRun() {
+  // 해·길은 쓰지 않는다(トロッコ·刺青와 구도가 겹쳤다 — 2026-10-15 나란히 검토): 범람한 강을 뛰어 건너는 그림자와 먼 성벽.
+  const curls = [[10, 96], [26, 92], [42, 97], [16, 112], [34, 110], [50, 114], [8, 128], [26, 126], [44, 130]];
+  return (
+    <>
+      <g className={P(3)} fill="currentColor">
+        <path d="M4 44H10V38H13V44H22V34H26V30H29V34H33V44H42V36H46V32H50V36H54V44H58V50H4Z" />
+      </g>
+      <path className={P(4)} d="M4 84Q20 78 32 84T58 82V146H4Z" fill="currentColor" />
+      <g className={P(1)} fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round">
+        {curls.map(([x, y]) => <path key={`${x}-${y}`} d={`M${x - 5} ${y}Q${x - 2} ${y - 5} ${x + 1} ${y - 1}Q${x + 2} ${y + 1} ${x} ${y + 1.5}`} />)}
+      </g>
+      <g className={P(3)} fill="currentColor"><rect x="6" y="80" width="4" height="12" /><rect x="50" y="78" width="4" height="12" /></g>
+      <path className={P(5)} d="M4 146Q24 140 58 146V168H4Z" fill="currentColor" />
+      <g className={P(5)} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="32" cy="62" r="2.6" fill="currentColor" stroke="none" />
+        <path d="M31 65L27 74 20 78M29 70L36 76 41 74M30 67L24 64 20 66M31 67L37 64 41 60" />
+      </g>
+    </>
+  );
+}
+
+// 人間失格(1948) — 전후 문예서의 담담한 2–3도: 책상 위에 흩어진 사진 석 장(はしがき) — 웃는 道化 가면 한 장, 빈 방, 검은 한 장.
+function ClownPhotos() {
+  return (
+    <>
+      <g transform="rotate(-9 24 40)">
+        <rect className={P(1)} x="10" y="22" width="28" height="34" fill="currentColor" />
+        <rect className={P(2)} x="13" y="25" width="22" height="22" fill="currentColor" />
+        <path className={P(3)} d="M16 47V36H32V47M20 36V31H28V36" fill="none" stroke="currentColor" strokeWidth="0.8" />
+      </g>
+      <g transform="rotate(7 32 92)">
+        <rect className={P(1)} x="16" y="72" width="32" height="40" fill="currentColor" />
+        <rect className={P(2)} x="19" y="75" width="26" height="27" fill="currentColor" />
+        <circle className={P(1)} cx="32" cy="88" r="9" fill="currentColor" />
+        <g className={P(3)} fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round">
+          <path d="M27.5 86Q29 84.4 30.5 86M33.5 86Q35 84.4 36.5 86M28 90.5Q32 95 36 90.5" />
+        </g>
+        <circle className={P(4)} cx="32" cy="89" r="0.9" fill="currentColor" />
+      </g>
+      <g transform="rotate(-4 26 140)">
+        <rect className={P(1)} x="10" y="122" width="30" height="36" fill="currentColor" />
+        <rect className={P(3)} x="13" y="125" width="24" height="24" fill="currentColor" />
+      </g>
+    </>
+  );
+}
+
+// 斜陽(1947) — 전후 문예서의 2도: 이즈 산장의 기울어 지는 해, 비스듬한 햇살, 바다 수평선, 언덕 위 작은 산장.
+function SettingSun() {
+  return (
+    <>
+      <g className={P(1)} stroke="currentColor" strokeWidth="0.7" opacity="0.55">
+        <path d="M30 104L4 70M30 104L10 52M30 104L22 40M30 104L38 40M30 104L50 52M30 104L57 66" />
+      </g>
+      <path className={P(1)} d="M12 104A18 18 0 0 1 48 104Z" fill="currentColor" />
+      <path className={P(2)} d="M4 104H58V168H4Z" fill="currentColor" />
+      <g className={P(1)} fill="none" stroke="currentColor" strokeWidth="0.7" strokeLinecap="round" opacity="0.8">
+        <path d="M16 110H44M20 116H40M24 122H36M27 128H33" />
+      </g>
+      <path className={P(3)} d="M4 146Q22 132 40 140T58 136V168H4Z" fill="currentColor" />
+      <g className={P(4)} fill="currentColor">
+        <path d="M12 140L19 134 26 140Z" />
+        <rect x="14" y="140" width="10" height="6" />
+      </g>
+      <rect className={P(1)} x="17.5" y="141.5" width="3" height="2.4" fill="currentColor" />
+    </>
+  );
+}
+
+// 女生徒(1939) — 쇼와 10년대 소녀 잡지의 맑은 평면 색: 꿈에 든 엄마의 서양 우산, 장미 한 송이, 둥근 안경.
+function UmbrellaRose() {
+  return (
+    <>
+      <g className={P(5)} fill="none" stroke="currentColor" strokeWidth="1.2">
+        <circle cx="18" cy="24" r="6" /><circle cx="34" cy="24" r="6" /><path d="M24 23Q26 21 28 23M12 23L6 20M40 23L46 20" />
+      </g>
+      <g transform="rotate(-28 32 96)">
+        <path className={P(2)} d="M32 52L24 116H40Z" fill="currentColor" />
+        <path className={P(4)} d="M32 52L29 116M32 52L35 116" stroke="currentColor" strokeWidth="0.5" />
+        <path className={P(4)} d="M32 116V132Q32 137 27.5 137T23 132" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        <path className={P(4)} d="M32 46V52" stroke="currentColor" strokeWidth="1" />
+      </g>
+      <g className={P(6)} fill="currentColor">
+        <path d="M44 150L40 128" stroke="currentColor" strokeWidth="1.1" fill="none" />
+        <path d="M41.5 140C36 138 34 134 35 131C39 132 41.5 135 41.5 140Z" />
+        <path d="M42.6 146C47 145 50 142 50 138C46 138.5 43.5 141.5 42.6 146Z" />
+      </g>
+      <g className={P(3)} fill="currentColor">
+        <circle cx="40" cy="124" r="6" />
+      </g>
+      <path className={P(1)} d="M37 123.5Q40 120.5 43 123.5Q40 126 37 123.5ZM38 126.5Q40 128.5 42 126.5" fill="none" stroke="currentColor" strokeWidth="0.7" />
+    </>
+  );
+}
+
+// 桜の森の満開の下(1947) — 전후 문예서의 판화 2–3도: 하늘을 덮은 만개한 벚꽃, 검은 줄기, 바람 없이 지는 꽃잎.
+function BlossomStorm() {
+  // 두 줄 제목이라 작가 줄이 왼쪽(x 40–48)으로 온다 — 줄기·지는 꽃잎은 x 36 안, 꽃 그늘은 제목 둘째 줄 위(y 50 위)까지만.
+  const canopy = scatter(16, 11, [6, 6, 48, 40]).concat(scatter(6, 13, [6, 44, 32, 70]));
+  const petals = scatter(14, 12, [6, 78, 34, 160]);
+  return (
+    <>
+      <g className={P(3)} fill="currentColor">
+        <path d="M10 168L13 90 8 72 15 86 17 68 18 92 16 168Z" />
+        <path d="M27 168L29 98 25 78 31 94 34 76 32 100 32 168Z" />
+      </g>
+      <g className={P(1)} fill="currentColor">{canopy.map(([x, y], i) => <circle key={`${x}-${y}`} cx={x} cy={y} r={i % 3 ? 5.5 : 7.5} />)}</g>
+      <g className={P(2)} fill="currentColor">{canopy.filter((_, i) => i % 2).map(([x, y]) => <circle key={`${x}-${y}`} cx={x + 2} cy={y + 2} r="2.8" />)}</g>
+      <g className={P(1)} fill="currentColor">{petals.map(([x, y], i) => <ellipse key={`${x}-${y}`} cx={x} cy={y} rx="1.6" ry="0.9" transform={`rotate(${(i * 47) % 180} ${x} ${y})`} />)}</g>
     </>
   );
 }
@@ -394,6 +727,9 @@ const ART = {
   'snow-night': SnowNight, higanbana: Higanbana, 'forest-doors': ForestDoors, 'ink-steam': InkSteam, birdcage: Birdcage,
   'rain-gate': RainGate, 'lotus-thread': LotusThread, 'moon-tiger': MoonTiger, 'steam-sea': SteamSea,
   'lemon-books': LemonBooks, 'nightjar-star': NightjarStar, 'night-boat': NightBoat, 'cello-night': CelloNight,
+  'night-train': NightTrain, 'kamakura-letter': KamakuraLetter, 'crab-pear': CrabPear, 'wind-hill': WindHill,
+  'dusk-rails': DuskRails, 'peach-house': PeachHouse, 'deco-chair': DecoChair, 'spider-web': SpiderWeb,
+  'melos-run': MelosRun, 'clown-photos': ClownPhotos, 'setting-sun': SettingSun, 'umbrella-rose': UmbrellaRose, 'blossom-storm': BlossomStorm,
 };
 
 export default function LiteratureCoverArt({ motif }) {

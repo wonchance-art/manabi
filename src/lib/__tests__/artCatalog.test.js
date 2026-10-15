@@ -96,6 +96,24 @@ describe('정본 카탈로그(src/content/art) — 실제 리포 데이터', () 
     expect(starts).toEqual([...starts].sort((a, b) => a - b));
   });
 
+  it('둘째 큐레이션: 풍경 우키요에 속편 일곱 점, 연대순 · 첫 큐레이션과 겹치지 않는다', () => {
+    const works = artCurationWorks(ART_CATALOG, 'ukiyoe-landscape-hokusai-hiroshige-2');
+    expect(works).toHaveLength(7);
+    const starts = works.map((work) => work.date.startYear);
+    expect(starts).toEqual([...starts].sort((a, b) => a - b));
+    const first = new Set(artCurationWorks(ART_CATALOG, 'ukiyoe-landscape-hokusai-hiroshige').map((work) => work.id));
+    expect(works.filter((work) => first.has(work.id))).toEqual([]);
+  });
+
+  it('작가별 큐레이션은 그 작가의 작품만, 연대순', () => {
+    for (const curation of ART_CATALOG.curations.filter((item) => item.kind === 'artist')) {
+      const works = artCurationWorks(ART_CATALOG, curation.id);
+      expect(new Set(works.map((work) => work.artist)).size, curation.id).toBe(1);
+      const starts = works.map((work) => work.date.startYear);
+      expect(starts, curation.id).toEqual([...starts].sort((a, b) => a - b));
+    }
+  });
+
   it('작품마다 일본어 해설이 하나 이상 — 읽기 자료가 되는 원문', () => {
     for (const work of ART_CATALOG.works) {
       expect(work.descriptions.some((description) => description.language === 'ja'), work.id).toBe(true);
@@ -248,6 +266,14 @@ describe('artCatalog 계약 — fail-closed', () => {
     const catalog = fixture();
     catalog.works[1].lookFor = ['배는 몇 척?'];
     expect(validateArtCatalog(catalog).join('\n')).toMatch(/works\[1\]\.lookFor: 그림이 없으면/);
+  });
+
+  it('읽기 표시(＠よみ＠·+よみ+)가 섞인 해설은 싣지 않는다', () => {
+    for (const text of ['宮＠みや＠は、熱田神宮に由来する。', '+かたきうち+の場面。']) {
+      const catalog = fixture();
+      catalog.works[0].descriptions[0].text = text;
+      expect(validateArtCatalog(catalog).join('\n'), text).toMatch(/읽기 표시/);
+    }
   });
 
   it('박물관 내부 메모가 섞인 해설은 싣지 않는다', () => {

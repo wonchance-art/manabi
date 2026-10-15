@@ -1,0 +1,19 @@
+{
+  "bytes": 88753,
+  "fetchedAt": "2026-10-14",
+  "file": "hokusai-bushu-tamagawa.jpg",
+  "height": 401,
+  "record": {
+    "artistDisplayName": "Katsushika Hokusai",
+    "creditLine": "Henry L. Phillips Collection, Bequest of Henry L. Phillips, 1939",
+    "isPublicDomain": true,
+    "objectDate": "ca. 1830–32",
+    "title": "Tama River in Musashi Province (Bushū Tamagawa), from the series Thirty-six Views of Mount Fuji (Fugaku sanjūrokkei)"
+  },
+  "sha256": "5f30f8fec7db6dde1c19bfeacc9989ea690da09fd90ca7f09f9f324ad3432791",
+  "source": "met",
+  "sourceId": "56392",
+  "sourceUrl": "https://www.metmuseum.org/art/collection/search/56392",
+  "width": 600,
+  "workId": "hokusai-bushu-tamagawa"
+}

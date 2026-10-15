@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "personId": "000081",
+  "workId": "456",
+  "title": "銀河鉄道の夜",
+  "author": "宮沢賢治",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1934,
+  "authorDeathYear": 1933,
+  "level": "N3 중급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000081/card456.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000081/files/456_ruby_145.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "8bc90c0c7f97e069d02c4783ce905fa7b959cf60a74df816aeccf94079555076",
+  "textSha256": "567602c3bcb00d5bbb43803b6fef40a687efbcd43aaa5adc84d3cbefb7fd090c",
+  "attribution": {
+    "author": "宮沢賢治",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-14",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR",
+      "US"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000081/card456.html"
+  },
+  "display": {
+    "titleReading": "ぎんがてつどうのよる",
+    "titleKo": "은하철도의 밤",
+    "authorKo": "미야자와 겐지",
+    "cover": "ultramarine",
+    "motif": "night-train"
+  }
+}

@@ -70,7 +70,7 @@ export async function fetchTodayReviewRows(userId, { client = supabase, now = Da
   return { vocabRows, events: dropUndoneEvents(events.data || []), allowFallback, now };
 }
 
-export function useOutputWords(language) {
+export function useOutputWords(language, { enabled = true } = {}) {
   const { user } = useAuth();
   const actorId = user?.id;
   const [day, setDay] = useState(() => kstDayStartIso());
@@ -91,10 +91,10 @@ export function useOutputWords(language) {
   const { data } = useQuery({
     queryKey: ['output-words', actorId, kstDayStartIso(now)],
     queryFn: async ({ signal }) => ({ ...await fetchTodayReviewRows(actorId, { signal }), actorId }),
-    enabled: !!user,
+    enabled: !!user && enabled,
     staleTime: 1000 * 60 * 5,
   });
-  if (!user || !data || data.actorId !== actorId) return [];
+  if (!enabled || !user || !data || data.actorId !== actorId) return [];
   // data.now는 조회 범위의 고정 시각이다. 선택 날짜는 현재 KST 날짜를 따른다.
   return pickOutputWords({ ...data, language, now });
 }

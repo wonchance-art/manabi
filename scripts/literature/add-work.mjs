@@ -8,7 +8,7 @@
  *   node scripts/literature/add-work.mjs 127 --dry-run              파일을 쓰지 않고 진단만
  *
  * 하는 일:
- *   ① 공식 색인(candidates.mjs와 같은 캐시)에서 작품을 찾고 선정 기준(D5·新字新仮名·원작만·관할별 보호기간)을 1차 판정한다.
+ *   ① 공식 색인(candidates.mjs와 같은 캐시)에서 작품을 찾고 선정 기준(D5 일본 보호기간 만료·新字新仮名·원작만)을 1차 판정한다.
  *   ② 텍스트 zip을 받아 sourceSha256, Shift_JIS → UTF-8 source.txt, textSha256을 만든다(원문은 손대지 않는다).
  *   ③ 원문을 파싱해 미해결 외자·파서 경고·장 나눔(장 수·장별 글자 수·문단 찢김)을 진단한다. 문제가 있으면 아무것도 쓰지 않는다.
  *   ④ entry.json 초안 — 색인·원문에서 채울 수 있는 칸은 모두 채운다(제목·저자·연도·주소·해시·읽기, 같은 작가의 authorKo).
@@ -90,7 +90,7 @@ export async function addWork(workId, { level, approve, dryRun = false } = {}) {
       basis: 'public-domain',
       reviewedBy: approve || null,
       reviewedAt: approve ? kstToday() : null,
-      reviewedJurisdictions: ['JP', 'KR', 'US'],
+      reviewedJurisdictions: ['JP', 'KR'],
       evidenceUrl: work.cardUrl,
     },
     display: {
@@ -151,7 +151,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     const { report, written, base, entry } = await addWork(id, { level, approve: option('--approve'), dryRun: process.argv.includes('--dry-run') });
     const d = report.diagnostics;
     console.log(`\n■ ${id} ${report.title} — ${report.author} (初出 ${report.publishedYear ?? '?'} · 몰 ${report.authorDeathYear ?? '?'})`);
-    console.log(`  권리 1차 판정 JP ${report.verdict.JP ? '만료' : '?'} · KR ${report.verdict.KR ? '만료' : '?'} · US ${report.verdict.US ? '만료' : '?'}`);
+    console.log(`  권리 1차 판정 JP ${report.verdict.JP ? '만료' : '?'} · KR ${report.verdict.KR ? '만료' : '?'}(JP를 따름)${report.verdict.US ? '' : ' · 참고: US 보호 가능(공개 조건 아님)'}`);
     if (d) {
       console.log(`  장 ${d.titles.length}개(${d.division}) · 글자 ${d.chapterChars.join('/')} · 외자 ${d.resolvedGaijiCount}자 해결 · 루비 ${d.mappedRubyCount}/${d.rubyCount}`);
     }

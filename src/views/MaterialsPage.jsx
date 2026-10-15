@@ -3,6 +3,7 @@ import {currentLibraryTarget,runLibraryOperation,invalidateLibrary,filterActiveS
 import { composerOf } from '@/lib/materialComposer';
 import { documentOf, isStudySnapshot, documentListRow } from '@/lib/materialDocument';
 import {isStudyNote} from '@/lib/studyNoteIdentity';
+import { conversationOf } from '@/lib/conversation/turnModel';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
@@ -118,7 +119,8 @@ async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuer
     throw error;
   }
   // 팀 루트(수업 설정 행, v2-AB R1)는 자료가 아니다 — 목록에서 숨긴다(정리본은 자료로 보인다).
-  return (tab==='private'?await filterActiveSources(supabase,userId,data||[]):data||[]).map(documentListRow).filter(material => !isStudySnapshot(material) && !isTeamRoot(material) && (langFilter === 'all' || (documentOf(material)?.language ?? material.processed_json?.metadata?.language) === langFilter));
+  // 대화(v2-Z)도 고르는 읽을거리가 아니다 — 서재의 「대화」 묶음에만 모인다.
+  return (tab==='private'?await filterActiveSources(supabase,userId,data||[]):data||[]).map(documentListRow).filter(material => !isStudySnapshot(material) && !isTeamRoot(material) && !conversationOf(material) && (langFilter === 'all' || (documentOf(material)?.language ?? material.processed_json?.metadata?.language) === langFilter));
 }
 
 const PAGE_SIZE = 12;
@@ -858,7 +860,7 @@ export default function MaterialsPage({ libraryView = null }) {
                         {pinBusy === m.id ? '…' : isPinned ? '✓ 받아둠 — 해제' : documentOf(m)?.assets?.length ? '⬇ 작성한 본문 받아두기' : '⬇ 받아두기'}
                       </button>}
                       {isOwner && documentOf(m) && <button type="button" role="menuitem" className="mat-menu__item" onClick={() => router.push(readerHref(`/viewer/${m.id}`).replace(`/viewer/${m.id}`, `/materials/${m.id}/edit`))}>수정</button>}
-                      {isOwner && !composerOf(m) && !isStudyNote(m) && (
+                      {isOwner && !composerOf(m) && !isStudyNote(m) && !conversationOf(m) && (
                         <button
                           type="button"
                           role="menuitem"

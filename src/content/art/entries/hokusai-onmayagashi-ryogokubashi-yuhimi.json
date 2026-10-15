@@ -1,0 +1,83 @@
+{
+  "id": "hokusai-onmayagashi-ryogokubashi-yuhimi",
+  "wikidata": "Q18173407",
+  "artist": "katsushika-hokusai",
+  "title": {
+    "native": "冨嶽三十六景 御厩川岸より両国橋夕陽見",
+    "ko": "후가쿠 36경 — 온마야 강기슭에서 본 료고쿠 다리의 석양",
+    "reading": "ふがくさんじゅうろっけい おんまやがしよりりょうごくばしゆうひみ"
+  },
+  "series": {
+    "native": "冨嶽三十六景",
+    "ko": "후가쿠 36경"
+  },
+  "date": {
+    "text": "c. 1830/33",
+    "source": "aic",
+    "startYear": 1830,
+    "endYear": 1833,
+    "certainty": "circa"
+  },
+  "periods": [
+    "jp-edo"
+  ],
+  "medium": {
+    "native": "横大判　錦絵",
+    "ko": "가로 오반 니시키에(다색 목판화)"
+  },
+  "places": [
+    {
+      "place": "tokyo-national-museum",
+      "role": "holding",
+      "url": "https://colbase.nich.go.jp/collection_items/tnm/A-11176-4"
+    },
+    {
+      "place": "art-institute-of-chicago",
+      "role": "holding",
+      "url": "https://www.artic.edu/artworks/10914"
+    },
+    {
+      "place": "metropolitan-museum-of-art",
+      "role": "holding",
+      "url": "https://www.metmuseum.org/art/collection/search/37319"
+    },
+    {
+      "place": "onmaya-gashi",
+      "role": "depicted"
+    },
+    {
+      "place": "ryogoku-bridge",
+      "role": "depicted"
+    },
+    {
+      "place": "sumida-river",
+      "role": "depicted"
+    },
+    {
+      "place": "mount-fuji",
+      "role": "depicted"
+    }
+  ],
+  "descriptions": [
+    {
+      "language": "ja",
+      "source": "colbase",
+      "sourceId": "cobas-166392"
+    }
+  ],
+  "terms": [
+    "渡し舟",
+    "シルエット",
+    "夕焼け"
+  ],
+  "lookFor": [
+    "나룻배에 탄 사람들은 대부분 어느 쪽을 향하고 있을까요?",
+    "긴 다리 너머 한가운데에 작게 보이는 후지산을 찾아봐요.",
+    "하늘 위쪽의 검은색은 아래로 내려오며 어떻게 옅어질까요?"
+  ],
+  "image": {
+    "source": "met",
+    "sourceId": "37319",
+    "alt": "사람을 가득 태운 나룻배가 짙푸른 물결을 건너고, 뒤로 긴 나무다리 료고쿠 다리가 강을 가로지른다. 다리 너머 가운데에 검푸른 작은 후지산이 보이고, 하늘은 위로 갈수록 어두워진다."
+  }
+}

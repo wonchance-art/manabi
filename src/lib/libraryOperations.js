@@ -27,7 +27,7 @@ export async function currentLibraryTarget(client,target){
  if(error)throw error;return {...canonical,state:data?.state||'active',revision:data?.revision||0};
 }
 export async function invalidateLibrary(cache,owner){
- await Promise.all(['personal-library','library-recent','library-collections','library-memberships','library-bookmark','library-item-state','library-children','my-pdfs'].map(key=>cache.invalidateQueries({queryKey:[key,owner]})));
+ await Promise.all(['personal-library','library-recent','library-collections','library-memberships','library-bookmark','library-item-state','library-children','library-conversations','my-pdfs'].map(key=>cache.invalidateQueries({queryKey:[key,owner]})));
  await cache.invalidateQueries({queryKey:['materials']});
 }
 export function libraryOperationError(error){
