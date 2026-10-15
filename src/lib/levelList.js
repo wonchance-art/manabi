@@ -107,3 +107,39 @@ export async function fetchSavedLevelKeys(client, userId, language, keys, chunkS
   }
   return saved;
 }
+
+// ── O · X 빠른 암기 보기 옵션(LEVEL-OX-AN-001, 목업 /mnt/project-files/notes/level-list-ox-mockup.md) ──
+// 보기: [전체] │ [단어 / 문장] [의미] [듣기] — 여러 개를 고를 수 있고, 아무것도 안 고르면 전체. 단어 ↔ 문장은 둘 중 하나.
+export const LEVEL_CUES = Object.freeze(['word', 'sentence', 'meaning', 'audio']);
+/** 가린 것을 눌러 잠깐 보이는 시간(오너 지시 2026-10-15 — 10초 뒤 다시 가린다). */
+export const LEVEL_PEEK_MS = 10_000;
+export const LEVEL_PREFS_DEFAULT = Object.freeze({ cues: [], hideKnown: false, hun: true, glyph: false });
+
+/** 저장된 값 → 검증한 설정. 모르는 값은 버리고 기본값으로(단어 · 문장이 같이 있으면 단어만). */
+export function normalizeLevelPrefs(raw) {
+  const src = raw && typeof raw === 'object' ? raw : {};
+  const cues = LEVEL_CUES.filter((c) => Array.isArray(src.cues) && src.cues.includes(c));
+  const flag = (k) => (typeof src[k] === 'boolean' ? src[k] : LEVEL_PREFS_DEFAULT[k]);
+  return { cues: cues.includes('word') ? cues.filter((c) => c !== 'sentence') : cues,
+    hideKnown: flag('hideKnown'), hun: flag('hun'), glyph: flag('glyph') };
+}
+
+/** 보기 칩 누르기 — 전체는 비우기, 단어 · 문장은 서로 바꾼다. */
+export function toggleLevelCue(cues, cue) {
+  if (cue === 'all') return [];
+  const on = cues.includes(cue);
+  const pair = cue === 'word' ? 'sentence' : cue === 'sentence' ? 'word' : null;
+  const next = on ? cues.filter((c) => c !== cue) : [...cues.filter((c) => c !== pair), cue];
+  return LEVEL_CUES.filter((c) => next.includes(c));
+}
+
+/**
+ * 카드에서 무엇을 보일지. 표제어(훈음 · 正日 포함)는 [단어], 예문 본문은 [단어]·[문장], 뜻 · 예문 번역은 [의미],
+ * 듣기 버튼은 [듣기]. peek(빈칸을 눌러 10초)이면 전부 보인다.
+ */
+export function levelCardShows(cues, peek = false) {
+  if (peek || !cues?.length) return { word: true, sentence: true, meaning: true, audio: true, hidden: false };
+  const has = (c) => cues.includes(c);
+  const shows = { word: has('word'), sentence: has('word') || has('sentence'), meaning: has('meaning'), audio: has('audio') };
+  return { ...shows, hidden: !(shows.word && shows.sentence && shows.meaning && shows.audio) };
+}

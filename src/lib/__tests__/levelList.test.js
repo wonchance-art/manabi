@@ -3,7 +3,8 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { sliceBetween } from './helpers/sliceBetween.js';
 import { levelListData, levelTileCounts, ZH_POS_GROUPS } from '../levelListData.js';
-import { LEVEL_LIST_LANGS, shortMeaning, levelWordKey, matchesLevelQuery, splitKnown, levelLabel, levelPill, levelListHref, jaHeadMode } from '../levelList.js';
+import { LEVEL_LIST_LANGS, shortMeaning, levelWordKey, matchesLevelQuery, splitKnown, levelLabel, levelPill, levelListHref, jaHeadMode,
+  LEVEL_PEEK_MS, normalizeLevelPrefs, toggleLevelCue, levelCardShows } from '../levelList.js';
 import { knownWordSetOf, normalizeKnownWord } from '../knownWordControl.js';
 import { exclusionWord } from '../vocabularyExclusion.js';
 import { JAPANESE_VOCAB_REF } from '../japaneseVocabRegistry.js';
@@ -146,6 +147,45 @@ describe('⑷ 표기 규칙', () => {
         expect(Object.keys(e).sort()).toEqual(['conn', 'exs', 'key', 'ko', 'note', 'pattern']);
       }
     }
+  });
+});
+
+describe('⑹ O · X 빠른 암기 보기 옵션(LEVEL-OX-AN-001)', () => {
+  it('보기 칩: 전체 = 비우기, 단어 · 문장은 둘 중 하나, 순서는 단어 · 문장 · 의미 · 듣기', () => {
+    expect(toggleLevelCue(['word', 'meaning'], 'all')).toEqual([]);
+    expect(toggleLevelCue([], 'audio')).toEqual(['audio']);
+    expect(toggleLevelCue(['audio'], 'word')).toEqual(['word', 'audio']);
+    expect(toggleLevelCue(['word', 'audio'], 'sentence')).toEqual(['sentence', 'audio']);
+    expect(toggleLevelCue(['sentence'], 'word')).toEqual(['word']);
+    expect(toggleLevelCue(['meaning'], 'meaning')).toEqual([]);
+  });
+
+  it('카드 표시: 아무것도 안 고르면 전체, 하나라도 가리면 hidden, 10초 보기면 전부', () => {
+    expect(levelCardShows([])).toEqual({ word: true, sentence: true, meaning: true, audio: true, hidden: false });
+    expect(levelCardShows(['word'])).toEqual({ word: true, sentence: true, meaning: false, audio: false, hidden: true });
+    expect(levelCardShows(['sentence', 'audio'])).toEqual({ word: false, sentence: true, meaning: false, audio: true, hidden: true });
+    expect(levelCardShows(['word', 'meaning', 'audio']).hidden).toBe(false);
+    expect(levelCardShows(['meaning'], true).hidden).toBe(false);
+    expect(LEVEL_PEEK_MS).toBe(10_000);
+  });
+
+  it('저장된 설정 검증: 훈음 기본 켬 · 한자 대조 · 숨기기 기본 끔, 모르는 값은 버린다', () => {
+    expect(normalizeLevelPrefs(null)).toEqual({ cues: [], hideKnown: false, hun: true, glyph: false });
+    expect(normalizeLevelPrefs({ cues: ['audio', 'x', 'sentence', 'word'], hideKnown: true, hun: 'yes', glyph: true }))
+      .toEqual({ cues: ['word', 'audio'], hideKnown: true, hun: true, glyph: true });
+  });
+
+  it('화면 배선: 채점 · 입력창 없음, O = 아는 단어 토글, X = 저장(아는 단어면 먼저 풀고), 훈음 · 正日은 뷰어 부품', () => {
+    const page = read('src/views/LevelListPage.jsx');
+    expect(page).not.toMatch(/<input(?![^>]*type="search")|<textarea|grade/);
+    expect(sliceBetween(page, 'const markO = ', ';\n')).toContain('knownSet.has(entry.key) ? unmark(entry.key) : exclude(entry)');
+    const markX = sliceBetween(page, 'const markX = ', '\n  };');
+    expect(markX).toContain('return save(entry);');
+    expect(markX).toContain('pendingStudy.current = entry;');
+    expect(page).toContain("import { hunRubyCells } from '@/lib/viewerHunRuby';");
+    expect(page).toContain("import HunCell from '@/components/viewer/HunCell';");
+    expect(page).toContain("import { glyphRows } from '@/lib/glyphColumn';");
+    expect(page).not.toMatch(/hanjaReadingsOf|zhengForm/); // 새 조회 경로 금지 — 뷰어 함수만
   });
 });
 
