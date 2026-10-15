@@ -1,0 +1,314 @@
+{
+ "marks": {
+  "L1-up": {
+   "script": "alphabet",
+   "style": "에디토리얼 세리프",
+   "label": "TONARI — Instrument Serif",
+   "fonts": [
+    "instrument"
+   ],
+   "edits": [
+    "T·A 대문자선 위로 솟은 세리프 끝·꼭짓점(>722)을 40%로 눌러 높이를 고름",
+    "R 다리 끝(x 420–560, y<80)을 오른쪽 22 — R–I 사이를 메움",
+    "윤곽 +8단위 — 원래 가는 디스플레이 세리프라 웹 헤더 24px에서 헤어라인이 사라지는 것을 막음",
+    "자간: 잉크 사이 0.02–0.035em(원래 측면 여백의 약 1/3)"
+   ],
+   "intent": "좁고 높은 디스플레이 세리프 대문자. 글자 사이를 조여 한 덩어리 이름으로.",
+   "ratio": 3.803,
+   "vb": [
+    287.16,
+    75.5
+   ]
+  },
+  "L1-lo": {
+   "script": "alphabet",
+   "style": "에디토리얼 세리프",
+   "label": "tonari — Instrument Serif Italic",
+   "fonts": [
+    "instrument-i"
+   ],
+   "edits": [
+    "t 가로획 오른쪽 끝(점 25–29)을 +64 늘여 o에 닿게 — t와 o가 가로획으로 이어지는 이음(이웃끼리 손을 잡음)",
+    "윤곽 +8단위(작은 크기 헤어라인 보강)",
+    "자간: t–o는 이음 때문에 −0.005em, 나머지 0.015–0.02em"
+   ],
+   "intent": "이탤릭 세리프 소문자 — 손으로 쓴 듯한 흐름. t의 가로획이 옆 글자로 건너간다.",
+   "ratio": 3.28,
+   "vb": [
+    241.44,
+    73.6
+   ]
+  },
+  "L2-up": {
+   "script": "alphabet",
+   "style": "압축 그로테스크",
+   "label": "TONARI — Big Shoulders Display",
+   "fonts": [
+    "bigshoulders"
+   ],
+   "edits": [
+    "A 가로대를 20(1000 단위) 내리고 사선 위 x 보정, 꼭짓점 평평한 윗변을 양쪽 10씩 좁힘 — 큰 크기에서 A가 덜 뭉툭하게",
+    "R 다리 발끝 폭을 좁혀(13: −6, 14: +6) 다리를 곧게",
+    "자간: 잉크 사이 0.035–0.05em — 압축체 기둥 리듬을 고르게"
+   ],
+   "intent": "압축 그로테스크 대문자. 좁은 기둥 여섯 개가 같은 간격으로 선다.",
+   "ratio": 2.833,
+   "vb": [
+    231.86,
+    81.85
+   ]
+  },
+  "L2-lo": {
+   "script": "alphabet",
+   "style": "압축 그로테스크",
+   "label": "tonari — Big Shoulders Display",
+   "fonts": [
+    "bigshoulders"
+   ],
+   "edits": [
+    "t 가로대 왼쪽 돌기(점 5·6)를 줄기 쪽으로 +28 깎고 오른쪽(11·12)을 +20 늘림 — 가로대가 o 쪽으로만 뻗는다",
+    "자간: t–o 0.01em, 나머지 0.035–0.04em"
+   ],
+   "intent": "압축 소문자. t의 가로대가 오른쪽 이웃으로만 뻗는다.",
+   "ratio": 2.436,
+   "vb": [
+    197.13,
+    80.92
+   ]
+  },
+  "F-up": {
+   "script": "alphabet",
+   "style": "패밀리(기하 산세리프)",
+   "label": "TONARI — 패밀리",
+   "fonts": [
+    "murecho"
+   ],
+   "edits": [
+    "출발: Murecho wght 700(라틴·가나를 한 디자이너가 같은 기하로 그린 OFL 서체)",
+    "가나: 배율 = 대문자 높이×1.04 ÷ 가나 평균 잉크 높이, 그 뒤 기둥이 라틴 기둥(170)과 같도록 윤곽을 확장(계산값은 marks.json)",
+    "자간: 세 표기 모두 잉크 사이 = 기둥×0.42(71단위) — 같은 리듬",
+    "주홍 하나: 본체 곁에 떨어진 작은 획만 주홍 — TONARI의 A 가로대·tonari의 i 점·となり의 と 첫 획·トナリ의 ト 짧은 획(겹치는 부분은 본체 색이 위)"
+   ],
+   "intent": "우산 브랜드 — 일본 외 나라 시리즈와 서비스 전체를 대표. A 가로대(두 다리 사이의 이웃 획)만 주홍.",
+   "ratio": 4.67,
+   "vb": [
+    351.21,
+    75.2
+   ]
+  },
+  "F-lo": {
+   "script": "alphabet",
+   "style": "패밀리(기하 산세리프)",
+   "label": "tonari — 패밀리 보조 소문자",
+   "fonts": [
+    "murecho"
+   ],
+   "edits": [
+    "출발: Murecho wght 700(라틴·가나를 한 디자이너가 같은 기하로 그린 OFL 서체)",
+    "가나: 배율 = 대문자 높이×1.04 ÷ 가나 평균 잉크 높이, 그 뒤 기둥이 라틴 기둥(170)과 같도록 윤곽을 확장(계산값은 marks.json)",
+    "자간: 세 표기 모두 잉크 사이 = 기둥×0.42(71단위) — 같은 리듬",
+    "주홍 하나: 본체 곁에 떨어진 작은 획만 주홍 — TONARI의 A 가로대·tonari의 i 점·となり의 と 첫 획·トナリ의 ト 짧은 획(겹치는 부분은 본체 색이 위)"
+   ],
+   "intent": "패밀리 소문자(본문 속 언급·URL 같은 보조 자리). i 점이 주홍.",
+   "ratio": 3.595,
+   "vb": [
+    274.51,
+    76.37
+   ]
+  },
+  "F-hira": {
+   "script": "hiragana",
+   "style": "패밀리(기하 고딕)",
+   "label": "となり — 패밀리",
+   "fonts": [
+    "murecho"
+   ],
+   "edits": [
+    "출발: Murecho wght 700(라틴·가나를 한 디자이너가 같은 기하로 그린 OFL 서체)",
+    "가나: 배율 = 대문자 높이×1.04 ÷ 가나 평균 잉크 높이, 그 뒤 기둥이 라틴 기둥(170)과 같도록 윤곽을 확장(계산값은 marks.json)",
+    "자간: 세 표기 모두 잉크 사이 = 기둥×0.42(71단위) — 같은 리듬",
+    "주홍 하나: 본체 곁에 떨어진 작은 획만 주홍 — TONARI의 A 가로대·tonari의 i 점·となり의 と 첫 획·トナリ의 ト 짧은 획(겹치는 부분은 본체 색이 위)"
+   ],
+   "intent": "일본 국내 시리즈. と의 첫 획(본체 곁의 짧은 획)이 주홍.",
+   "ratio": 2.849,
+   "vb": [
+    236.4,
+    82.96
+   ]
+  },
+  "F-kata": {
+   "script": "katakana",
+   "style": "패밀리(기하 고딕)",
+   "label": "トナリ — 패밀리",
+   "fonts": [
+    "murecho"
+   ],
+   "edits": [
+    "출발: Murecho wght 700(라틴·가나를 한 디자이너가 같은 기하로 그린 OFL 서체)",
+    "가나: 배율 = 대문자 높이×1.04 ÷ 가나 평균 잉크 높이, 그 뒤 기둥이 라틴 기둥(170)과 같도록 윤곽을 확장(계산값은 marks.json)",
+    "자간: 세 표기 모두 잉크 사이 = 기둥×0.42(71단위) — 같은 리듬",
+    "주홍 하나: 본체 곁에 떨어진 작은 획만 주홍 — TONARI의 A 가로대·tonari의 i 점·となり의 と 첫 획·トナリ의 ト 짧은 획(겹치는 부분은 본체 색이 위)"
+   ],
+   "intent": "하이브리드/경계 — 일본×다른 나라가 만나는 꼭지. ト의 짧은 획이 주홍.",
+   "ratio": 2.831,
+   "vb": [
+    225.73,
+    79.73
+   ]
+  },
+  "H1": {
+   "script": "hiragana",
+   "style": "명조",
+   "label": "となり — Kaisei Tokumin",
+   "fonts": [
+    "kaisei"
+   ],
+   "edits": [
+    "な 교차부 바늘구멍(윤곽 1, 33×41) 삭제 — 파비콘·헤더 크기에서 얼룩",
+    "な 고리 속공간(윤곽 0) 112×130% — 작게 써도 고리가 열림",
+    "자간: 잉크 사이 0.05em(가나 기본 여백의 약 1/4)"
+   ],
+   "intent": "구슬 같은 맺음이 있는 장식 명조. 잡지 본문 제목(12-hip H2)과 같은 목소리.",
+   "ratio": 2.229,
+   "vb": [
+    197.7,
+    88.7
+   ]
+  },
+  "H2": {
+   "script": "hiragana",
+   "style": "굵은 고딕 디스플레이",
+   "label": "となり — Dela Gothic One",
+   "fonts": [
+    "dela"
+   ],
+   "edits": [
+    "な 고리 속공간(윤곽 2, 96×52 — 거의 막힘)을 170×210% — 굵은 획 안에서 고리가 읽히게",
+    "자간: 잉크 사이 0.035em(넓적한 글자를 바짝)"
+   ],
+   "intent": "넓적하고 아주 굵은 고딕. 작은 크기에서도 덩어리로 읽힌다.",
+   "ratio": 3.578,
+   "vb": [
+    279.8,
+    78.2
+   ]
+  },
+  "H3": {
+   "script": "hiragana",
+   "style": "둥근 고딕",
+   "label": "となり — Zen Maru Gothic Black",
+   "fonts": [
+    "zenmaru"
+   ],
+   "edits": [
+    "な 고리 속공간(윤곽 3, 95×67)을 145×175% — 둥근 굵은 획 안에서 고리가 막히지 않게",
+    "자간: 잉크 사이 0.04em"
+   ],
+   "intent": "둥근 끝의 굵은 고딕 — 손에 잡히는 부드러움(굿즈·아이 대상 등).",
+   "ratio": 2.174,
+   "vb": [
+    200.03,
+    92.03
+   ]
+  },
+  "K1": {
+   "script": "katakana",
+   "style": "굵은 고딕",
+   "label": "トナリ — Dela Gothic One",
+   "fonts": [
+    "dela"
+   ],
+   "edits": [
+    "ト 짧은 획 끝(x>800)을 오른쪽 36 — ナ 쪽으로 뻗음",
+    "윤곽 −10단위 — 아주 굵은 Dela의 글자 사이·안쪽 틈이 헤더 24px에서 막히지 않게(시험: ナ 줄기 머리를 자르면 テ로 읽혀 기각)",
+    "자간: 잉크 사이 0.03·0.04em"
+   ],
+   "intent": "아주 굵은 직선 가타카나. 세 글자가 하나의 띠처럼.",
+   "ratio": 3.53,
+   "vb": [
+    267.39,
+    75.74
+   ]
+  },
+  "K2": {
+   "script": "katakana",
+   "style": "모노라인 기하(직접 작도)",
+   "label": "トナリ — 모노라인 작도",
+   "fonts": [],
+   "edits": [
+    "서체 없이 직접 작도: 굵기 104(1000 단위) 단일, 끝은 모두 직각 절단",
+    "ト = 수직 줄기 + −22° 짧은 획 / ナ = 가로획 + 줄기 + 62° 원호 꼬리 / リ = 짧은 줄기 + 긴 줄기 + 62° 원호 꼬리(원호는 2차 베지어 30° 조각)",
+    "자간: 잉크 사이 0.06em"
+   ],
+   "intent": "직선과 원호 하나씩만으로 그린 가타카나. 기하가 곧 형태.",
+   "ratio": 2.257,
+   "vb": [
+    208.13,
+    92.21
+   ]
+  }
+ },
+ "lockups": {
+  "HL-tonari": {
+   "label": "계층 락업 — TONARI / となり",
+   "intent": "우산 TONARI 아래 일본 시리즈 となり. 같은 굵기·자간 원리라 크기만 다른 한 가족.",
+   "ratio": 2.627
+  },
+  "HL-tonari-k": {
+   "label": "계층 락업 — TONARI / トナリ",
+   "intent": "우산 TONARI 아래 하이브리드 꼭지 トナリ.",
+   "ratio": 2.624
+  },
+  "LK-kr": {
+   "label": "(선택) となり + 작은 TONARI",
+   "intent": "한국 독자용 후보로 낮춘 선택안 — となり 폭에 맞춰 자간을 벌린 읽기 TONARI.",
+   "ratio": 2.025
+  }
+ },
+ "family": {
+  "kana_scale": 0.8925,
+  "kana_embolden_units": 18.48,
+  "stem": 170.0,
+  "cap": 728.0,
+  "gap": 71.39999999999999
+ },
+ "licenses": {
+  "instrument": [
+   "Instrument Serif 1.000",
+   "Copyright 2022 The Instrument Serif Project Authors"
+  ],
+  "instrument-i": [
+   "Instrument Serif Italic 1.000",
+   "Copyright 2022 The Instrument Serif Project Authors"
+  ],
+  "bigshoulders": [
+   "Big Shoulders Display 2.002(가변, wght 800 인스턴스)",
+   "Copyright 2019 The Big Shoulders Project Authors"
+  ],
+  "murecho": [
+   "Murecho 1.010(가변, wght 700 인스턴스)",
+   "Copyright 2021 The Murecho Project Authors"
+  ],
+  "kaisei": [
+   "Kaisei Tokumin ExtraBold 5.003",
+   "Copyright 2020 The Kaisei Project Authors"
+  ],
+  "dela": [
+   "Dela Gothic One 1.005",
+   "Copyright 2020 The Dela Gothic Project Authors"
+  ],
+  "zenmaru": [
+   "Zen Maru Gothic Black 1.001",
+   "Copyright 2021 The Zen Maru Gothic Authors"
+  ]
+ },
+ "fonts": {
+  "instrument": "instrumentserif/InstrumentSerif-Regular.ttf",
+  "instrument-i": "instrumentserif/InstrumentSerif-Italic.ttf",
+  "bigshoulders": "bigshouldersdisplay/BigShouldersDisplay%5Bwght%5D.ttf",
+  "murecho": "murecho/Murecho%5Bwght%5D.ttf",
+  "kaisei": "kaiseitokumin/KaiseiTokumin-ExtraBold.ttf",
+  "dela": "delagothicone/DelaGothicOne-Regular.ttf",
+  "zenmaru": "zenmarugothic/ZenMaruGothic-Black.ttf"
+ }
+}
