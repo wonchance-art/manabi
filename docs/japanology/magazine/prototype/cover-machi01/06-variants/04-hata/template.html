@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>機の町 表紙</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;800&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap">
+<!--
+  『となり』 一つの町 01 富士吉田 표지 ④안 「機の町」 — 생성 파일(build.mjs + params.json + template.html). 손으로 고치지 말 것. 2026-10-15 KST.
+  색(바탕 + 2색): 바탕 night #151b2c(넥타이 원단의 짙은 바탕) · 경사(富士山 쪽으로 뻗은 길) snow #eef0f4 · 위사(그것을 가로지르는 길) vermilion #d4462a(글자 금지, 실에만).
+  출처: 도로 중심선 © OpenStreetMap contributors（ODbL 1.0）, Overpass osm_base 2026-07-28 11:16 KST, highway=trunk…residential(보도·service·track 제외).
+  투영: 本町二丁目 교차점(35.4930014,138.8040588) 원점 국소 정거, 위 = 그곳에서 본 剣ヶ峯(국토지리원 CSV 35.360738,138.727373) 방위 205.27°, 1mm = 7.6m.
+  천 조각의 위 끝 = 金鳥居(OSM way 1482786848 중점, 판면 y55) 앞 교차로의 위사, 아래 끝 = 本町二丁目(y216). 좌우는 재단까지. 위아래로 나온 '술'은 실제로 이어지는 길(경사)을 7–8mm만 더 그린 것.
+  模式: 교차부의 위·아래(끊김)는 실측이 아니다 — T자에서는 지나가는 길이 위, 나머지는 각 실을 따라 번갈아(평직). 가닥 수(한 길 6가닥)·폭은 표현.
+  부제: 원고 machi-fujiyoshida.md 54행 「県によれば、国産ネクタイ生地の4割にここの生地が使われている。」(출처 B06).
+  stats {{STATS}}
+-->
+<style>
+:root{--night:#151b2c;--vermilion:#d4462a;--snow:#eef0f4;--page:#d9dce3;--page-ink:#151b2c}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--page:#0e1220;--page-ink:#eef0f4}}
+:root[data-theme="dark"]{--page:#0e1220;--page-ink:#eef0f4}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--page);color:var(--page-ink)}
+body{padding:16px}
+.wrap{max-width:860px;margin:0 auto;container-type:inline-size}
+.cover{--mm:calc(100cqw / 210);--cover-bg:{{BG}};
+  width:100%;aspect-ratio:210/297;position:relative;overflow:hidden;background:var(--cover-bg);color:{{INK}}}
+.cover > *{position:absolute;margin:0}
+.cover .plate{inset:0;width:100%;height:100%;display:block}
+.cover .mast{left:calc(var(--mm)*13);top:calc(var(--mm)*13);width:calc(var(--mm)*32.87);height:calc(var(--mm)*16)}
+{{CSS}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<article class="cover" lang="ja" aria-label="『となり』一つの町 01 富士吉田 表紙">
+  <svg class="plate" viewBox="0 0 210 297" preserveAspectRatio="none" role="img" aria-label="下吉田の通りを織物の糸のように描いた図。富士山に向かう通りと、それを横切る通りが、上下に交互に織り合わさる。">{{WEAVE}}</svg>
+  {{MAST}}
+{{BODY}}
+</article>
+</div>
+</body>
+</html>
