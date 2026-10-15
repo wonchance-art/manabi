@@ -1,0 +1,204 @@
+{
+  "scale": {
+    "mPerMm": 12.9,
+    "ratio": "1:12900",
+    "fitFromPositions": 12.868
+  },
+  "origin": {
+    "geo": {
+      "lat": 35.4832112,
+      "lon": 138.7979629
+    },
+    "page": {
+      "x": 126,
+      "y": 200
+    },
+    "note": "金鳥居(35.4832112,138.7979629)가 판면 (126,200)"
+  },
+  "summitBearingDeg": 205.14,
+  "summitDistM": 15046,
+  "summitBearingGcDeg": 205.18,
+  "craterCenterBearingDeg": 204.38,
+  "craterVsKengamineDeg": -0.8,
+  "lineTopEnd": {
+    "node": 2097712407,
+    "geo": {
+      "lat": 35.4750708,
+      "lon": 138.7918346
+    },
+    "page": {
+      "x": 135.13,
+      "y": 118.2
+    },
+    "note": "OSM 富士みち 남단 = 国道138号와 만나는 교차점(上宿)"
+  },
+  "kitaguchiPin": {
+    "page": {
+      "x": 115.14,
+      "y": 88.92
+    },
+    "distFromTopEndM": 457
+  },
+  "bottomClip": {
+    "page": {
+      "x": 124.54,
+      "y": 300
+    },
+    "between": "clip(1147390571→2778679330)",
+    "upM": -1290
+  },
+  "shimoyoshidaBend": {
+    "node": 286755062,
+    "geo": {
+      "lat": 35.4948725,
+      "lon": 138.8044326
+    },
+    "page": {
+      "x": 127.6,
+      "y": 310.29
+    },
+    "note": "下吉田停車場線 교차, 여기서 富士みち가 북동으로 꺾임 — 판면 밖"
+  },
+  "toriiOnCenterline": {
+    "page": {
+      "x": 126.005,
+      "y": 200
+    },
+    "offsetFromToriiPointM": 0.07
+  },
+  "bearings": {
+    "overallDrawn_bottomToTop": 208.48,
+    "overallDrawn_tls": 208.37,
+    "toriiToTop_chord": 211.51,
+    "toriiToTop_tls": 211.42,
+    "bottomToTorii_chord": 205.98,
+    "bottomToTorii_tls": 206.3,
+    "shimoBendToTorii_chord_osm": 204.31,
+    "editor_408_to_topEnd_osm": 208.73,
+    "editor_408_to_topEnd_gc": 208.73,
+    "toriiToTop_gc": 211.51
+  },
+  "diffFromSummit": {
+    "overallDrawn_bottomToTop": 3.34,
+    "overallDrawn_tls": 3.23,
+    "toriiToTop_chord": 6.37,
+    "toriiToTop_tls": 6.28,
+    "bottomToTorii_chord": 0.84,
+    "bottomToTorii_tls": 1.16,
+    "shimoBendToTorii_chord_osm": -0.83,
+    "editor_408_to_topEnd_osm": 3.59,
+    "editor_408_to_topEnd_gc": 3.59,
+    "toriiToTop_gc": 6.37
+  },
+  "apexMiss": {
+    "apex": {
+      "x": 126,
+      "y": 46
+    },
+    "topEndOffsetX": 9.13,
+    "extend_overallChord_atY46": 13.33,
+    "extend_toriiToTop_atY46": 17.18,
+    "extend_lastSegment_atY46": 18.66,
+    "note": "+ = 꼭짓점 오른쪽(mm). 略図이므로 y=46은 실거리 15.06km가 아님 — 각도만 같다고 가정한 외삽"
+  },
+  "simplify": {
+    "eps": 0.01,
+    "nOrig": 56,
+    "nSimp": 34,
+    "maxDevMm": 0.006,
+    "maxDevM": 0.078,
+    "maxSpanAngDeg": 0.006,
+    "maxLongSegAngDeg": 0.06
+  },
+  "ridge": {
+    "recommended": "B",
+    "A": {
+      "kengamine": {
+        "x": 126,
+        "y": 46
+      },
+      "kenRightOfCraterCenterM": 205,
+      "flatCenterX": 123.95,
+      "flat": [
+        119.95,
+        127.95
+      ],
+      "exponentP": 0.393,
+      "leftBleed": {
+        "x": -3,
+        "y": 104
+      },
+      "rightBleed": {
+        "x": 213,
+        "y": 89.68
+      },
+      "slopeDeg": {
+        "rim": 30,
+        "d10": 29.5,
+        "d40": 27.7,
+        "rightBleed": 23.9,
+        "leftBleed": 12.5
+      },
+      "lineExtensionHitsRidge": {
+        "x": 142.31,
+        "y": 53.85,
+        "rightOfKengamineMm": 16.31
+      },
+      "ridgeYAtLineTopEndX": 49.78
+    },
+    "B": {
+      "kengamine": {
+        "x": 126,
+        "y": 46
+      },
+      "kenRightOfCraterCenterM": 205,
+      "flatCenterX": 123.95,
+      "flat": [
+        119.95,
+        127.95
+      ],
+      "exponentP": 1,
+      "leftBleed": {
+        "x": -3,
+        "y": 94.23
+      },
+      "rightBleed": {
+        "x": 213,
+        "y": 84.03
+      },
+      "slopeDeg": {
+        "rim": 30,
+        "d10": 28.7,
+        "d40": 24.6,
+        "rightBleed": 18,
+        "leftBleed": 12
+      },
+      "lineExtensionHitsRidge": {
+        "x": 142.33,
+        "y": 53.67,
+        "rightOfKengamineMm": 16.33
+      },
+      "ridgeYAtLineTopEndX": 49.73
+    }
+  },
+  "osm": {
+    "ways": [
+      169802151,
+      93860688,
+      110252410,
+      1383654947,
+      110253316,
+      1185885234,
+      110253372,
+      110252217,
+      1534791928,
+      40796636,
+      653388309
+    ],
+    "unchained": [
+      167641344
+    ],
+    "nodesChained": 104,
+    "south": 2097712407
+  }
+}
