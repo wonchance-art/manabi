@@ -1,7 +1,7 @@
 'use client';
 // 레벨별 단어 · 문형 목록(LEVEL-LIST-AJ-001) — 목업 docs/design/mocks/lv/lv.html 8판, 인계 #1337 6119208984 · 6146777048.
 // 단어(LEVEL-OX-AN-001 — 빠른 암기, 오너 지시 2026-10-15 · 목업 /mnt/project-files/notes/level-list-ox-mockup.md):
-// 찾기 · 보기 [전체] │ [단어/문장] [의미] [듣기] · 아는 단어 숨기기 · (중국어) 훈음(기본 켬) · 한자 대조, 카드마다 [O][X].
+// 찾기 + ⚙(아는 단어 숨기기 · 중국어 훈음(기본 켬) · 한자 대조), 보기 탭 하나 고르기 [전체 · 단어 · 문장 · 뜻 · 소리], 카드마다 [O][X].
 // 가린 칸을 누르면 그 카드가 10초 동안 전부 보였다가 다시 가려진다. 채점 · 입력창은 없다(채점 설계 폐기).
 // 문형: 읽기 전용(저장 · 번호 · 캡션 · 펼치기 없음).
 // X(모른다) = 공부 중인 단어로 저장 = /api/learning/vocabulary action:'save'(FSRS 직접 추가 정본, 기존 카드는 그대로 돌려받는다).
@@ -25,7 +25,7 @@ import HunCell from '@/components/viewer/HunCell';
 import { alignFurigana } from '@/views/refShared';
 import {
   LEVEL_LIST_LANGS, LEVEL_KIND_LABEL, levelKinds, levelLabel, levelPill, levelListHref, jaHeadMode, matchesLevelQuery, splitKnown, fetchSavedLevelKeys,
-  LEVEL_PEEK_MS, LEVEL_PREFS_DEFAULT, normalizeLevelPrefs, toggleLevelCue, levelCardShows,
+  LEVEL_PEEK_MS, LEVEL_PREFS_DEFAULT, LEVEL_VIEWS, normalizeLevelPrefs, levelCardShows,
 } from '@/lib/levelList';
 import HanziBoard from '@/components/levels/HanziBoard';
 import '@/components/levels/level-list.css';
@@ -35,6 +35,7 @@ const SpeakerIcon = () => <svg {...svg} width={17} height={17} strokeWidth={1.5}
 const SearchIcon = () => <svg {...svg} width={17} height={17} strokeWidth={1.6}><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14M21 21l-5-5" /></svg>;
 const SpinIcon = () => <svg {...svg} width={20} height={20} strokeWidth={2.2}><path d="M12 3a9 9 0 1 0 9 9" /></svg>;
 const CrossIcon = () => <svg {...svg} strokeWidth={2}><path d="M6 6l12 12M18 6 6 18" /></svg>;
+const GearIcon = () => <svg {...svg} width={19} height={19} strokeWidth={1.6}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" /></svg>;
 const CircleIcon = () => <svg {...svg} strokeWidth={2.2}><circle cx="12" cy="12" r="7" /></svg>;
 const PREFS_KEY = 'manabi:level-list-view';
 
@@ -126,6 +127,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
   const [query, setQuery] = useState('');
   const [prefs, setPrefsState] = useState(LEVEL_PREFS_DEFAULT);
   const [peek, setPeek] = useState(() => new Set());
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [tables, setTables] = useState({});
   const [saved, setSaved] = useState(() => new Set());
   const [saving, setSaving] = useState(() => new Set());
@@ -169,7 +171,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
     for (const t of peekTimers.current.values()) clearTimeout(t);
     peekTimers.current.clear();
     setPeek(new Set());
-  }, [prefs.cues]);
+  }, [prefs.view]);
 
   // 훈음 · 正日 표 — 중국어 단어 목록에서 켠 것만 받는다(뷰어와 같은 표 · 같은 지연 로드 모듈).
   const zhVocab = lang === 'chinese' && vocab;
@@ -358,26 +360,18 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
       }} /> : <>
     <div className="lv-tools">
       <label className="lv-search"><SearchIcon /><input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="찾기" aria-label={`${title}에서 찾기`} /></label>
+      {vocab && <button type="button" className="lv-gear" aria-label="설정" title="설정" aria-expanded={settingsOpen} aria-controls="lv-settings"
+        onClick={() => setSettingsOpen((v) => !v)}><GearIcon /></button>}
     </div>
-    {vocab && <div className="lv-opts">
-      <div className="lv-view" role="group" aria-label="보기">
-        <button type="button" className="lv-opt" aria-pressed={prefs.cues.length === 0} onClick={() => setPrefs({ cues: toggleLevelCue(prefs.cues, 'all') })}>전체</button>
-        <span className="lv-view__rule" aria-hidden="true" />
-        <span className="lv-view__pair">
-          {[['word', '단어'], ['sentence', '문장']].map(([cue, label]) => <button key={cue} type="button" className="lv-opt" aria-pressed={prefs.cues.includes(cue)}
-            onClick={() => setPrefs({ cues: toggleLevelCue(prefs.cues, cue) })}>{label}</button>)}
-        </span>
-        {[['meaning', '의미'], ['audio', '듣기']].map(([cue, label]) => <button key={cue} type="button" className="lv-opt" aria-pressed={prefs.cues.includes(cue)}
-          onClick={() => setPrefs({ cues: toggleLevelCue(prefs.cues, cue) })}>{label}</button>)}
-      </div>
-      <div className="lv-view" role="group" aria-label="표시">
-        <button type="button" className="lv-opt lv-opt--check" aria-pressed={prefs.hideKnown} onClick={() => setPrefs({ hideKnown: !prefs.hideKnown })}>
-          아는 단어 숨기기{knownCount > 0 && <span className="lv-opt__n">{knownCount}</span>}</button>
-        {zhVocab && <>
-          <button type="button" className="lv-opt lv-opt--check" aria-pressed={prefs.hun} onClick={() => setPrefs({ hun: !prefs.hun })}>훈음</button>
-          <button type="button" className="lv-opt lv-opt--check" aria-pressed={prefs.glyph} onClick={() => setPrefs({ glyph: !prefs.glyph })}>한자 대조</button>
-        </>}
-      </div>
+    {vocab && settingsOpen && <div className="lv-settings" id="lv-settings">
+      {[['hideKnown', '아는 단어 숨기기', knownCount > 0 ? `${knownCount}개` : null],
+        ...(zhVocab ? [['hun', '훈음', '한자마다 뜻과 소리'], ['glyph', '한자 대조', '正 대만 정체 · 日 일본어 표기']] : [])]
+        .map(([key, label, note]) => <button key={key} type="button" role="switch" className="lv-switch" aria-checked={prefs[key]}
+          onClick={() => setPrefs({ [key]: !prefs[key] })}><span>{label}{note && <small>{note}</small>}</span><i aria-hidden="true" /></button>)}
+    </div>}
+    {vocab && <div className="lv-view" role="group" aria-label="보기">
+      {LEVEL_VIEWS.map((v) => <button key={v.id} type="button" aria-pressed={prefs.view === v.id}
+        onClick={() => setPrefs({ view: v.id })}>{v.label}</button>)}
     </div>}
 
       <nav className="lv-chips" aria-label="주제">{nav.map((n) => <a key={n.href} href={n.href} aria-current={n.current || undefined} onClick={(e) => openGroup(e, n.i)}>{n.name}</a>)}</nav>
@@ -388,7 +382,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
           {visible.map((g, gi) => g.entries.length > 0 && <section key={g.name} className="lv-group" id={groupId(gi)} data-lv-group={gi} aria-labelledby={`${groupId(gi)}-h`}>
             <h2 id={`${groupId(gi)}-h`}>{g.name}<span>{g.count}</span></h2>
             <ul className="lv-entries">{g.entries.map((e) => vocab ? <VocabCard key={e.key} entry={e} lang={lang} levelKey={levelKey}
-              show={levelCardShows(prefs.cues, peek.has(e.key))} onPeek={() => peekCard(e.key)} speak={speakOk ? say : null}
+              show={levelCardShows(prefs.view, peek.has(e.key))} onPeek={() => peekCard(e.key)} speak={speakOk ? say : null}
               hunCells={hunOf(e.word)} glyph={glyphOf(e.word)}
               known={knownSet.has(e.key)} studying={saved.has(e.key)} saving={saving.has(e.key)}
               pendingKnown={mounted && !!userId && known.isPendingWord(conf.langCode, e.key)}
