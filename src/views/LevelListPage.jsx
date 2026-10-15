@@ -2,7 +2,7 @@
 // 레벨별 단어 · 문형 목록(LEVEL-LIST-AJ-001) — 목업 docs/design/mocks/lv/lv.html 8판, 인계 #1337 6119208984 · 6146777048.
 // 단어(LEVEL-OX-AN-001 — 빠른 암기, 오너 지시 2026-10-15 · 목업 /mnt/project-files/notes/level-list-ox-mockup.md):
 // 찾기 + ⚙(아는 단어 숨기기 · 중국어 훈음(기본 켬) · 한자 대조), 보기 탭 하나 고르기 [전체 · 단어 · 문장 · 뜻 · 소리], 카드마다 [O][X].
-// 가린 칸을 누르면 그 카드가 10초 동안 전부 보였다가 다시 가려진다. 채점 · 입력창은 없다(채점 설계 폐기).
+// 탭 보기에서 카드를 누르면 나머지가 아래로 펼쳐지고, 다시 누르거나 10초가 지나면 접힌다(4판). 채점 · 입력창은 없다(채점 설계 폐기).
 // 문형: 읽기 전용(저장 · 번호 · 캡션 · 펼치기 없음).
 // X(모른다) = 공부 중인 단어로 저장 = /api/learning/vocabulary action:'save'(FSRS 직접 추가 정본, 기존 카드는 그대로 돌려받는다).
 // O(안다) = 아는 단어 표시(useKnownWords → markKnown). 다시 누르면 되돌린다. 로그인 전에는 둘 다 로그인 안내만, 기록 0.
@@ -25,7 +25,7 @@ import HunCell from '@/components/viewer/HunCell';
 import { alignFurigana } from '@/views/refShared';
 import {
   LEVEL_LIST_LANGS, LEVEL_KIND_LABEL, levelKinds, levelLabel, levelPill, levelListHref, jaHeadMode, matchesLevelQuery, splitKnown, fetchSavedLevelKeys,
-  LEVEL_PEEK_MS, LEVEL_PREFS_DEFAULT, LEVEL_VIEWS, normalizeLevelPrefs,
+  LEVEL_PEEK_CLOSE_MS, LEVEL_PEEK_MS, LEVEL_PREFS_DEFAULT, LEVEL_VIEWS, normalizeLevelPrefs,
 } from '@/lib/levelList';
 import HanziBoard from '@/components/levels/HanziBoard';
 import '@/components/levels/level-list.css';
@@ -92,14 +92,23 @@ function GlyphLine({ rows }) {
   </p>;
 }
 
+/** 읽기 한 줄 — 표제어에서 읽기를 뺀 「단어」 보기를 펼쳤을 때. 중국어 = 병음, 일본어 = 표제어에 안 보인 쪽(가나 ↔ 한자). */
+function readingLine(entry, lang, levelKey) {
+  if (lang === 'chinese') return entry.reading ? <span className="lv-py">{entry.reading}</span> : null;
+  if (!entry.reading || entry.reading === entry.word || !alignFurigana(entry.word, entry.reading)) return null;
+  return jaHeadMode(levelKey) === 'kana' ? <span className="lv-kj" lang="ja">{entry.word}</span> : <span className="lv-kj" lang="ja">{entry.reading}</span>;
+}
+
 /**
  * 단어 카드 — [O][X] + 보기 탭. 전체가 아니면 고른 것 하나만 깔끔하게 남긴다(가린 칸 없음 — 오너 2026-10-15
  * 「기존 모양에서 가리는 게 아니라 지정한 것들만 보이게」). 단어 = 글자(+훈음 · 正日, 읽기 없음), 문장 = 예문 글자만,
- * 뜻 = 뜻만, 소리 = 듣기 버튼만. 카드를 누르면 10초 동안 전체 모양으로 보였다가 돌아간다.
+ * 뜻 = 뜻만, 소리 = 듣기 버튼만.
+ * 카드를 누르면 고른 것은 제자리에 둔 채 나머지가 그 아래로 펼쳐지고, 다시 누르면 접힌다. 그대로 두면 10초 뒤 접힌다
+ * (4판 — 오너 2026-10-15 「다시 클릭하면 닫히게 · 애니메이션 · 닫히면서 단어 위치 변하는 것 개선」). peek = 'open' | 'closing'.
  */
-export function VocabCard({ entry: e, lang, levelKey, view, peek, onPeek, speak, hunCells, glyph, known, studying, saving, pendingKnown, onO, onX }) {
+export function VocabCard({ entry: e, lang, levelKey, view, peek, peekEpoch = 0, onPeek, onRenew, speak, hunCells, glyph, known, studying, saving, pendingKnown, onO, onX }) {
   const ox = <OxButtons known={known} studying={studying} saving={saving} pendingKnown={pendingKnown} onO={onO} onX={onX} />;
-  if (view === 'all' || peek) return <li className="lv-entry" data-known={known || undefined} data-peek={peek || undefined}>
+  if (view === 'all') return <li className="lv-entry" data-known={known || undefined}>
     <div className="lv-entry__top">
       <div className="lv-entry__word"><Headword entry={e} lang={lang} levelKey={levelKey} hunCells={hunCells} />
         {speak && <button type="button" className="lv-snd" aria-label="듣기" title="듣기" onClick={() => speak(e.word)}><SpeakerIcon /></button>}</div>
@@ -115,12 +124,26 @@ export function VocabCard({ entry: e, lang, levelKey, view, peek, onPeek, speak,
       : view === 'meaning' ? <p className="lv-solo__mean">{e.meaning}</p>
         : speak ? <button type="button" className="lv-solo__play" aria-label="듣기" title="듣기" onClick={() => speak(e.word)}><SpeakerIcon /></button>
           : <p className="lv-solo__none">이 기기에서는 소리를 낼 수 없어요</p>;
-  // 카드 어디를 눌러도(버튼 밖) 10초 보기 — 키보드 · 화면 읽기는 숨은 「전체 보기」 버튼으로.
+  // 펼친 안에서 듣기를 누르면 10초를 다시 센다 — 듣는 중에 접히지 않게.
+  const say = speak && ((text) => { onRenew?.(); speak(text); });
+  const sndWord = say && <button type="button" className="lv-snd" aria-label="듣기" title="듣기" onClick={() => say(e.word)}><SpeakerIcon /></button>;
+  const head = <div className="lv-entry__word"><Headword entry={e} lang={lang} levelKey={levelKey} hunCells={hunCells} />{sndWord}</div>;
+  const mean = <p className="lv-mean">{e.meaning}</p>;
+  const example = e.ex && <Example ex={e.ex} lang={lang} speak={say} />;
+  const rest = view === 'word' ? <><p className="lv-reveal__line">{readingLine(e, lang, levelKey)}{sndWord}</p>{mean}{example}</>
+    : view === 'sentence' ? <>{e.ex && <p className="lv-ex lv-ex--tail">
+      {say && <button type="button" className="lv-snd" aria-label="예문 듣기" title="예문 듣기" onClick={() => say(e.ex.text)}><SpeakerIcon /></button>}
+      {zh && e.ex.reading && <span className="lv-ex__py">{e.ex.reading}</span>}
+      {e.ex.ko && <span className="lv-ex__tr">{e.ex.ko}</span>}</p>}{head}{mean}</>
+      : view === 'meaning' ? <>{head}<GlyphLine rows={glyph} />{example}</>
+        : <>{head}<GlyphLine rows={glyph} />{mean}{example}</>;
+  // 카드 어디를 눌러도(버튼 밖) 펼치기 · 접기 — 키보드 · 화면 읽기는 숨은 버튼으로 같은 동작.
   const tap = (event) => { if (!event.target.closest('button, a')) onPeek(); };
-  return <li className="lv-entry lv-entry--solo" data-known={known || undefined} data-view={view} onClick={tap}>
-    <div className="lv-solo">{solo}</div>
-    <button type="button" className="lv-sr" onClick={onPeek}>전체 10초 보기</button>
-    {ox}
+  return <li className="lv-entry lv-entry--solo" data-known={known || undefined} data-view={view} data-peek={peek || undefined} onClick={tap}>
+    <div className="lv-solo__row"><div className="lv-solo">{solo}</div>{ox}</div>
+    <button type="button" className="lv-sr" aria-expanded={peek === 'open'} onClick={onPeek}>{peek === 'open' ? '접기' : '펼쳐 보기'}</button>
+    {peek && <div className="lv-reveal"><div className="lv-reveal__in"><div className="lv-reveal__body">{rest}</div>
+      {peek === 'open' && <i key={peekEpoch} className="lv-reveal__time" style={{ animationDuration: `${LEVEL_PEEK_MS}ms` }} aria-hidden="true" />}</div></div>}
   </li>;
 }
 
@@ -138,7 +161,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
 
   const [query, setQuery] = useState('');
   const [prefs, setPrefsState] = useState(LEVEL_PREFS_DEFAULT);
-  const [peek, setPeek] = useState(() => new Set());
+  const [peek, setPeek] = useState(() => new Map()); // 단어 키 → { phase: 'open' | 'closing', epoch }
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [tables, setTables] = useState({});
   const [saved, setSaved] = useState(() => new Set());
@@ -168,21 +191,35 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
     try { localStorage.setItem(PREFS_KEY, JSON.stringify(next)); } catch { /* 저장소 없음 — 이번 화면만 */ }
     return next;
   });
-  // 가린 칸을 누르면 그 카드만 10초 동안 전부 보인다. 다시 누르면 10초를 새로 센다.
-  const peekCard = useCallback((key) => {
+  // 카드를 누르면 펼치고(10초 뒤 저절로 접힘), 펼친 카드를 다시 누르면 접는다. 접힐 때는 움직임이 끝난 뒤 내용을 뗀다.
+  const peekRef = useRef(peek);
+  peekRef.current = peek;
+  const setPhase = useCallback((key, phase) => setPeek((cur) => {
+    const n = new Map(cur);
+    if (phase) n.set(key, { phase, epoch: (cur.get(key)?.epoch || 0) + (phase === 'open' ? 1 : 0) }); else n.delete(key);
+    return n;
+  }), []);
+  const closePeek = useCallback((key) => {
     const timers = peekTimers.current;
     clearTimeout(timers.get(key));
-    setPeek((cur) => (cur.has(key) ? cur : new Set(cur).add(key)));
-    timers.set(key, setTimeout(() => {
-      timers.delete(key);
-      setPeek((cur) => { const n = new Set(cur); n.delete(key); return n; });
-    }, LEVEL_PEEK_MS));
-  }, []);
+    const reduced = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) { timers.delete(key); return setPhase(key, null); }
+    setPhase(key, 'closing');
+    timers.set(key, setTimeout(() => { timers.delete(key); setPhase(key, null); }, LEVEL_PEEK_CLOSE_MS));
+  }, [setPhase]);
+  const openPeek = useCallback((key) => {
+    const timers = peekTimers.current;
+    clearTimeout(timers.get(key));
+    setPhase(key, 'open');
+    timers.set(key, setTimeout(() => closePeek(key), LEVEL_PEEK_MS));
+  }, [setPhase, closePeek]);
+  const togglePeek = useCallback((key) => (peekRef.current.get(key)?.phase === 'open' ? closePeek(key) : openPeek(key)), [openPeek, closePeek]);
+  const renewPeek = useCallback((key) => { if (peekRef.current.get(key)?.phase === 'open') openPeek(key); }, [openPeek]);
   useEffect(() => () => { for (const t of peekTimers.current.values()) clearTimeout(t); }, []);
   useEffect(() => {
     for (const t of peekTimers.current.values()) clearTimeout(t);
     peekTimers.current.clear();
-    setPeek(new Set());
+    setPeek(new Map());
   }, [prefs.view]);
 
   // 훈음 · 正日 표 — 중국어 단어 목록에서 켠 것만 받는다(뷰어와 같은 표 · 같은 지연 로드 모듈).
@@ -385,17 +422,18 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
       {LEVEL_VIEWS.map((v) => <button key={v.id} type="button" aria-pressed={prefs.view === v.id}
         onClick={() => setPrefs({ view: v.id })}>{v.label}</button>)}
     </div>}
-    {vocab && prefs.view !== 'all' && <p className="lv-view__hint">카드를 누르면 10초 동안 전부 보여요</p>}
+    {vocab && prefs.view !== 'all' && <p className="lv-view__hint">카드를 누르면 펼쳐져요. 다시 누르거나 10초가 지나면 접혀요</p>}
 
       <nav className="lv-chips" aria-label="주제">{nav.map((n) => <a key={n.href} href={n.href} aria-current={n.current || undefined} onClick={(e) => openGroup(e, n.i)}>{n.name}</a>)}</nav>
       <div className={vocab ? 'lv-split' : 'lv-split lv-split--wide'}>
-        {vocab && <nav aria-label="주제 목차"><ul className="lv-toc">{nav.map((n) => <li key={n.href}><a href={n.href} aria-current={n.current || undefined} onClick={(e) => openGroup(e, n.i)}>{n.name}</a></li>)}</ul></nav>}
+        {vocab && <nav className="lv-tocnav" aria-label="주제 목차"><ul className="lv-toc">{nav.map((n) => <li key={n.href}><a href={n.href} aria-current={n.current || undefined} onClick={(e) => openGroup(e, n.i)}>{n.name}</a></li>)}</ul></nav>}
         <div className="lv-col">
           {shown.length === 0 && <p className="lv-empty" role="status">{query ? '이 레벨에서 찾지 못했어요' : '모든 단어를 아는 단어로 옮겼어요. 「아는 단어 숨기기」를 끄면 다시 보여요'}</p>}
           {visible.map((g, gi) => g.entries.length > 0 && <section key={g.name} className="lv-group" id={groupId(gi)} data-lv-group={gi} aria-labelledby={`${groupId(gi)}-h`}>
             <h2 id={`${groupId(gi)}-h`}>{g.name}<span>{g.count}</span></h2>
             <ul className="lv-entries">{g.entries.map((e) => vocab ? <VocabCard key={e.key} entry={e} lang={lang} levelKey={levelKey}
-              view={prefs.view} peek={peek.has(e.key)} onPeek={() => peekCard(e.key)} speak={speakOk ? say : null}
+              view={prefs.view} peek={peek.get(e.key)?.phase} peekEpoch={peek.get(e.key)?.epoch} onPeek={() => togglePeek(e.key)} onRenew={() => renewPeek(e.key)}
+              speak={speakOk ? say : null}
               hunCells={hunOf(e.word)} glyph={glyphOf(e.word)}
               known={knownSet.has(e.key)} studying={saved.has(e.key)} saving={saving.has(e.key)}
               pendingKnown={mounted && !!userId && known.isPendingWord(conf.langCode, e.key)}

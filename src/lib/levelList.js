@@ -114,8 +114,10 @@ export const LEVEL_VIEWS = Object.freeze([
   { id: 'all', label: '전체' }, { id: 'word', label: '단어' }, { id: 'sentence', label: '문장' },
   { id: 'meaning', label: '뜻' }, { id: 'audio', label: '소리' },
 ]);
-/** 가린 것을 눌러 잠깐 보이는 시간(오너 지시 2026-10-15 — 10초 뒤 다시 가린다). */
+/** 카드를 눌러 펼친 뒤 저절로 접히기까지(오너 지시 2026-10-15 — 다시 누르면 바로 접고, 그대로 두면 10초 뒤 접는다). */
 export const LEVEL_PEEK_MS = 10_000;
+/** 접히는 움직임 길이 — CSS lv-close와 같다. 움직임 줄이기 설정이면 0. */
+export const LEVEL_PEEK_CLOSE_MS = 200;
 export const LEVEL_PREFS_DEFAULT = Object.freeze({ view: 'all', hideKnown: false, hun: true, glyph: false });
 
 /** 저장된 값 → 검증한 설정. 모르는 값은 버리고 기본값으로. */
