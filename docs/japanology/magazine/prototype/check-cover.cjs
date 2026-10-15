@@ -21,8 +21,9 @@ const { chromium } = req('playwright');
     const parse = (c) => { const m = c.match(/[\d.]+/g); return m ? m.slice(0, 3).map(Number) : [0, 0, 0]; };
     const lum = ([r, g, b]) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
     const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
-    // 표지 바탕: 그라디언트의 어두운 끝(검사용으로 --night)
-    const bg = parse(getComputedStyle(document.documentElement).getPropertyValue('--night').trim().replace('#', '').match(/../g).map((h) => parseInt(h, 16)).join(','));
+    // 표지 바탕: 표지 요소의 --cover-bg(없으면 --night). 그라디언트면 어두운 끝을 넣어 둔다.
+    const hex = (getComputedStyle(cover).getPropertyValue('--cover-bg').trim() || getComputedStyle(document.documentElement).getPropertyValue('--night').trim()).replace('#', '');
+    const bg = hex.match(/../g).map((h) => parseInt(h, 16));
     const items = [];
     const walker = document.createTreeWalker(cover, NodeFilter.SHOW_TEXT);
     while (walker.nextNode()) {
