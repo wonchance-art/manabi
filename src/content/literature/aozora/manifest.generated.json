@@ -348,7 +348,7 @@
         "titleReading": "しゃよう",
         "titleKo": "사양",
         "authorKo": "다자이 오사무",
-        "cover": "mauve",
+        "cover": "apricot",
         "motif": "setting-sun"
       },
       "literature": {
@@ -764,7 +764,7 @@
         "titleReading": "ぎんがてつどうのよる",
         "titleKo": "은하철도의 밤",
         "authorKo": "미야자와 겐지",
-        "cover": "plum",
+        "cover": "ultramarine",
         "motif": "night-train"
       },
       "literature": {
@@ -2076,7 +2076,7 @@
         "titleReading": "こころ",
         "titleKo": "마음",
         "authorKo": "나쓰메 소세키",
-        "cover": "ash",
+        "cover": "mustard",
         "motif": "kamakura-letter"
       },
       "literature": {
@@ -3320,7 +3320,7 @@
         "titleKo": "문신",
         "authorKo": "다니자키 준이치로",
         "cover": "amber",
-        "motif": "spider-sun"
+        "motif": "spider-web"
       },
       "literature": {
         "schemaVersion": 1,
@@ -3397,7 +3397,7 @@
         "titleReading": "にんげんいす",
         "titleKo": "인간 의자",
         "authorKo": "에도가와 란포",
-        "cover": "wine",
+        "cover": "jet",
         "motif": "deco-chair"
       },
       "literature": {

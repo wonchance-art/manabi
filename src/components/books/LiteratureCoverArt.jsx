@@ -300,10 +300,12 @@ function NightjarStar() {
 
 // 高瀬舟(1916) — 다이쇼 문예서의 차분한 2–3도: 으스름달, 늘어진 버들가지, 강물 위 납작한 배와 마주 앉은 두 사람.
 function NightBoat() {
+  // 朧夜 — 달 원판 대신 옅은 안개 띠(山月記의 달과 구도가 겹쳤다 — 2026-10-15 나란히 검토).
   return (
     <>
-      <circle className={`${P(1)} lit-art__glow`} cx="42" cy="34" r="15" fill="currentColor" />
-      <circle className={P(1)} cx="42" cy="34" r="9.5" fill="currentColor" />
+      <g className={`${P(1)} lit-art__glow`} fill="currentColor">
+        <rect x="4" y="30" width="54" height="7" rx="3.5" /><rect x="14" y="44" width="44" height="5" rx="2.5" /><rect x="4" y="56" width="38" height="4" rx="2" />
+      </g>
       <g className={P(3)} fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round">
         <path d="M4 0C8 20 6 44 10 70M10 0C14 18 13 40 17 62M16 0C19 14 19 30 22 46M2 10C4 30 2 52 5 82" />
       </g>
@@ -317,6 +319,7 @@ function NightBoat() {
         <path d="M38 124V118C38 116 40 115 41.5 115S45 116 45 118V124Z" /><circle cx="41.5" cy="112.5" r="2.3" />
         <path d="M54 124L58 104" stroke="currentColor" strokeWidth="1" />
       </g>
+      <circle className={`${P(5)} lit-art__glow`} cx="31" cy="120" r="5" fill="currentColor" />
       <circle className={P(5)} cx="31" cy="120" r="1.6" fill="currentColor" />
     </>
   );
@@ -534,19 +537,21 @@ function DecoChair() {
   );
 }
 
-// 刺青(1910) — 메이지 말 탐미 문예서의 판화 2–3도: 아침 해, 가는 거미줄, 그 한가운데의 큰 거미(女郎蜘蛛) — 사람 몸은 그리지 않는다.
-function SpiderSun() {
+// 刺青(1910) — 메이지 말 탐미 문예서의 판화 2–3도: 가는 거미줄과 그 한가운데의 큰 거미(女郎蜘蛛) — 사람 몸은 그리지 않는다.
+function SpiderWeb() {
+  // 해 원판은 쓰지 않는다(走れメロス·トロッコ와 구도가 겹쳤다 — 2026-10-15 나란히 검토): 위에서 내려온 실, 이슬 맺힌 거미줄, 큰 거미.
   const cx = 30; const cy = 100;
   const spokes = Array.from({ length: 10 }, (_, i) => (i * 36 * Math.PI) / 180);
   const ring = (r) => spokes.map((a) => `${(cx + r * Math.cos(a)).toFixed(1)} ${(cy + r * Math.sin(a)).toFixed(1)}`).join('L');
+  const dew = [[8, 0], [14, 1], [20, 3], [26, 6], [20, 8], [14, 5]].map(([r, k]) => [cx + r * Math.cos(spokes[k] + 0.3), cy + r * Math.sin(spokes[k] + 0.3)]);
   return (
     <>
-      <circle className={`${P(1)} lit-art__glow`} cx="18" cy="30" r="20" fill="currentColor" />
-      <circle className={P(1)} cx="18" cy="30" r="11" fill="currentColor" />
+      <path className={P(2)} d="M30 0V74M8 8L18 76M52 8L42 76" stroke="currentColor" strokeWidth="0.5" />
       <g className={P(2)} fill="none" stroke="currentColor" strokeWidth="0.45">
         {spokes.map((a) => <path key={a} d={`M${cx} ${cy}L${(cx + 27 * Math.cos(a)).toFixed(1)} ${(cy + 27 * Math.sin(a)).toFixed(1)}`} />)}
         {[8, 14, 20, 26].map((r) => <path key={r} d={`M${ring(r)}Z`} />)}
       </g>
+      <g className={P(1)} fill="currentColor">{dew.map(([x, y]) => <circle key={`${x}-${y}`} cx={x.toFixed(1)} cy={y.toFixed(1)} r="1.1" />)}</g>
       <g className={P(3)} fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
         <path d="M27 96L19 88 16 78M27 99L15 96 9 90M27 102L16 106 11 114M28 104L22 114 22 124" />
         <path d="M33 96L41 88 44 78M33 99L45 96 51 90M33 102L44 106 49 114M32 104L38 114 38 124" />
@@ -563,20 +568,24 @@ function SpiderSun() {
 
 // 4차 묶음(2026-10-15 KST, 오너 「일본에서만 끝나면 그만」 — D5 개정으로 처음 들어온 太宰治·坂口安吾).
 
-// 走れメロス(1940) — 쇼와 전기 소년 잡지의 2–3도 판화: 지는 해, 언덕 위 성벽 도시, 굽이진 길을 달려 오르는 작은 그림자.
+// 走れメロス(1940) — 쇼와 전기 소년 잡지의 2–3도 판화: 먼 성벽 도시, 범람한 강, 다리 기둥 사이를 뛰어 건너는 그림자.
 function MelosRun() {
+  // 해·길은 쓰지 않는다(トロッコ·刺青와 구도가 겹쳤다 — 2026-10-15 나란히 검토): 범람한 강을 뛰어 건너는 그림자와 먼 성벽.
+  const curls = [[10, 96], [26, 92], [42, 97], [16, 112], [34, 110], [50, 114], [8, 128], [26, 126], [44, 130]];
   return (
     <>
-      <circle className={`${P(1)} lit-art__glow`} cx="40" cy="48" r="18" fill="currentColor" />
-      <circle className={P(1)} cx="40" cy="48" r="9" fill="currentColor" />
       <g className={P(3)} fill="currentColor">
-        <path d="M4 66H12V60H15V66H24V56H28V52H31V56H35V66H44V58H48V54H52V58H56V66H58V74H4Z" />
+        <path d="M4 44H10V38H13V44H22V34H26V30H29V34H33V44H42V36H46V32H50V36H54V44H58V50H4Z" />
       </g>
-      <path className={P(4)} d="M4 74H58V168H4Z" fill="currentColor" />
-      <path className={P(2)} d="M30 74C30 84 18 88 18 98S42 108 42 120 14 134 14 146 34 160 34 168H40C40 160 20 150 20 146S48 132 48 120 24 106 24 98 36 84 34 74Z" fill="currentColor" />
-      <g className={P(5)} fill="currentColor">
-        <circle cx="22" cy="128.5" r="1.6" />
-        <path d="M21.2 130.5L19 136 16.5 140.5M21.5 133L24.6 136.5 23.4 140.5M21 132L17.8 133.6M22 132L25.4 130.4" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+      <path className={P(4)} d="M4 84Q20 78 32 84T58 82V146H4Z" fill="currentColor" />
+      <g className={P(1)} fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round">
+        {curls.map(([x, y]) => <path key={`${x}-${y}`} d={`M${x - 5} ${y}Q${x - 2} ${y - 5} ${x + 1} ${y - 1}Q${x + 2} ${y + 1} ${x} ${y + 1.5}`} />)}
+      </g>
+      <g className={P(3)} fill="currentColor"><rect x="6" y="80" width="4" height="12" /><rect x="50" y="78" width="4" height="12" /></g>
+      <path className={P(5)} d="M4 146Q24 140 58 146V168H4Z" fill="currentColor" />
+      <g className={P(5)} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="32" cy="62" r="2.6" fill="currentColor" stroke="none" />
+        <path d="M31 65L27 74 20 78M29 70L36 76 41 74M30 67L24 64 20 66M31 67L37 64 41 60" />
       </g>
     </>
   );
@@ -719,7 +728,7 @@ const ART = {
   'rain-gate': RainGate, 'lotus-thread': LotusThread, 'moon-tiger': MoonTiger, 'steam-sea': SteamSea,
   'lemon-books': LemonBooks, 'nightjar-star': NightjarStar, 'night-boat': NightBoat, 'cello-night': CelloNight,
   'night-train': NightTrain, 'kamakura-letter': KamakuraLetter, 'crab-pear': CrabPear, 'wind-hill': WindHill,
-  'dusk-rails': DuskRails, 'peach-house': PeachHouse, 'deco-chair': DecoChair, 'spider-sun': SpiderSun,
+  'dusk-rails': DuskRails, 'peach-house': PeachHouse, 'deco-chair': DecoChair, 'spider-web': SpiderWeb,
   'melos-run': MelosRun, 'clown-photos': ClownPhotos, 'setting-sun': SettingSun, 'umbrella-rose': UmbrellaRose, 'blossom-storm': BlossomStorm,
 };
 

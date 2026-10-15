@@ -87,9 +87,34 @@ describe('정본 작품 표기 — 대조표가 싣는다', () => {
         '檸檬': 'lemon-books', 'セロ弾きのゴーシュ': 'cello-night', 'よだかの星': 'nightjar-star', '山月記': 'moon-tiger', '高瀬舟': 'night-boat',
         '坊っちゃん': 'steam-sea', '蜘蛛の糸': 'lotus-thread', '羅生門': 'rain-gate',
         '銀河鉄道の夜': 'night-train', 'こころ': 'kamakura-letter', 'やまなし': 'crab-pear', '風の又三郎': 'wind-hill', 'トロッコ': 'dusk-rails',
-        '杜子春': 'peach-house', '人間椅子': 'deco-chair', '刺青': 'spider-sun',
+        '杜子春': 'peach-house', '人間椅子': 'deco-chair', '刺青': 'spider-web',
         '走れメロス': 'melos-run', '人間失格': 'clown-photos', '斜陽': 'setting-sun', '女生徒': 'umbrella-rose', '桜の森の満開の下': 'blossom-storm' });
     expect(new Set(works.map((work) => work.display.motif)).size).toBe(works.length);
+  });
+
+  it('표지 바탕색은 서로 충분히 달라야 한다 — 어떤 두 권도 CIELAB 색차 12 미만이 아니다(2026-10-15 26권 나란히 검토)', () => {
+    // 이름만 다르고 눈으로는 같은 색(檸檬 회색 ↔ こころ 회색, よだかの星 ↔ 銀河鉄道の夜 보라)을 새 작품 추가 때 다시 만들지 않게.
+    const css = read('src/components/books/literature-cover.css');
+    const hex = Object.fromEntries([...css.matchAll(/\.lit-cover--([a-z]+)\{--cover-color:(#[0-9a-f]{6})/gu)].map((m) => [m[1], m[2]]));
+    const lab = (value) => {
+      const [r, g, b] = [1, 3, 5].map((i) => parseInt(value.slice(i, i + 2), 16) / 255)
+        .map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+      const f = (t) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
+      const x = f((r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047);
+      const y = f(r * 0.2126 + g * 0.7152 + b * 0.0722);
+      const z = f((r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883);
+      return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
+    };
+    const works = Object.values(manifest.works);
+    const close = [];
+    for (const [i, a] of works.entries()) {
+      for (const b of works.slice(i + 1)) {
+        const [p, q] = [lab(hex[a.display.cover]), lab(hex[b.display.cover])];
+        const distance = Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
+        if (distance < 12) close.push(`${a.title}(${a.display.cover}) ↔ ${b.title}(${b.display.cover}) ${distance.toFixed(1)}`);
+      }
+    }
+    expect(close).toEqual([]);
   });
 
   it('장 첫 문장(incipit) — 30자 이하 첫 문장은 통째로, 길면 「、」에서(낱말 한가운데·마침표 뒤에서 자르지 않는다)', () => {
