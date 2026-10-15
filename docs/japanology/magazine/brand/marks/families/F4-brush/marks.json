@@ -1,0 +1,57 @@
+{
+ "F4-up": {
+  "word": "TONARI",
+  "w": 4068.1,
+  "h": 875.2,
+  "ink_h": 827.2,
+  "base_from_top": 798.8,
+  "sha256-light": "511cb393d324628f7a5446f266412a0b9bb43b9387e41fe88df1bfb3743483d9",
+  "sha256-dark": "d8fb4e1b4313392136f18cc25809fbbcc3f2695a1898d17545b6084392853f4c"
+ },
+ "F4-hira": {
+  "word": "となり",
+  "w": 2116.1,
+  "h": 894.1,
+  "ink_h": 846.1,
+  "base_from_top": 778.0,
+  "sha256-light": "64f98eb0792ac7ec65a940f4ef1f8a234990a60ead208a00fd389ead38fdcc99",
+  "sha256-dark": "af4f1832e5d0c3f0082e7481472f57df22bf8daf24a15058c4fcbc3d40c6e8ce"
+ },
+ "F4-kata": {
+  "word": "トナリ",
+  "w": 2029.6,
+  "h": 889.0,
+  "ink_h": 841.0,
+  "base_from_top": 778.0,
+  "sha256-light": "a2e22bb873be5135f54d6a4009d31aeeb0d840f08b4f8f0342a4f83b24083e9e",
+  "sha256-dark": "b0deb53825925d131f888b49942c8613f9b0f6dcd3cd8dce55d98d0bbc873968"
+ },
+ "_rule": {
+  "nib_deg": 25.0,
+  "nib_a": 75.81,
+  "nib_b": 31.64,
+  "V": 140.0,
+  "H": 86.0,
+  "gap": 86.8,
+  "kana_scale": 0.92,
+  "entry_dir": [
+   -1.0,
+   1.0
+  ],
+  "entry_len": 30.0,
+  "entry_p": [
+   0.78,
+   1.07
+  ],
+  "press_relax": 0.16,
+  "tome_p": 1.05,
+  "waist": 0.94,
+  "harai_from": 0.5,
+  "harai_p": 0.1,
+  "rise_deg": 3.5,
+  "cap_ink_h": 744.8,
+  "kana_body_h_avg": 729.4,
+  "kana_body_over_cap": 0.979,
+  "kana_tail_depth": 92.2
+ }
+}
