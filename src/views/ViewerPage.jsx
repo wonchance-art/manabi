@@ -88,7 +88,7 @@ import { fetchSynAnt, peekSynAnt, synAntEligible } from '../lib/synAnt';
 import ReportMaterialButton from '../components/ReportMaterialButton';
 import ReadingTest from '../components/ReadingTest';
 import ConversationThread from '../components/conversation/ConversationThread';
-import { conversationOf, tokensByLineIndex, applyTurnResult } from '../lib/conversation/turnModel';
+import { conversationOf, tokensByLineIndex, applyTurnResult, applyFillResult } from '../lib/conversation/turnModel';
 import { openConversationFor, startTopicConversation, trashConversation } from '../lib/conversation/conversationClient';
 import { invalidateLibrary } from '../lib/libraryOperations';
 import { useOutputWords } from '../lib/useOutputWords';
@@ -734,6 +734,16 @@ export default function ViewerPage() {
     let merged = false;
     queryClient.setQueryData(['material', id], (prev) => {
       const next = applyTurnResult(prev, body);
+      merged = !!next;
+      return next || prev;
+    });
+    if (!merged) refetch();
+  }, [queryClient, id, refetch]);
+  // 못 한 줄 자동 채우기(CONV-CHAT-001) — 받은 토큰을 실패 토큰 자리에 끼운다. 캐시가 어긋났으면 다시 불러온다.
+  const handleConversationFill = useCallback((body) => {
+    let merged = false;
+    queryClient.setQueryData(['material', id], (prev) => {
+      const next = applyFillResult(prev, body);
       merged = !!next;
       return next || prev;
     });
@@ -4124,8 +4134,7 @@ export default function ViewerPage() {
                 onReload={() => refetch()}
                 onNewConversation={() => openConversation({ fresh: true })}
                 onDelete={user?.id === material?.owner_id ? deleteConversation : null}
-                onRetryAnalysis={user?.id === material?.owner_id ? () => reanalyze.mutation.mutate({ resume: true }) : null}
-                analysisBusy={isAnalyzing || reanalyze.mutation.isPending}
+                onFilled={user?.id === material?.owner_id ? handleConversationFill : null}
                 outputWords={outputWords}
               />
             );

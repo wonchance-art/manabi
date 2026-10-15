@@ -9,7 +9,9 @@
 // - 번역은 받아 둔 번역(metadata.translations)이라 호출 0. 처음엔 닫혀 있다.
 // - 말풍선은 분석이 붙은 완성본을 한 번만 그린다(기다리는 동안은 「입력 중」 점, 입력 칸은 열려 있다).
 import { useEffect, useId, useRef, useState } from 'react';
-import { conversationItems, openRetryOf, CONVERSATION_ERRORS, CONVERSATION_MAX_TURNS, countMyTurns } from '../../lib/conversation/turnModel';
+import {
+  conversationItems, openRetryOf, missingConversationLines, CONVERSATION_ERRORS, CONVERSATION_MAX_TURNS, CONVERSATION_ANALYZED_LANGUAGES, countMyTurns,
+} from '../../lib/conversation/turnModel';
 import Link from 'next/link';
 import { postConversationTurn, countConversationWords } from '../../lib/conversation/conversationClient';
 import { newConversationHref } from '../../lib/conversation/newConversation';
@@ -56,9 +58,13 @@ function MyText({ text, focus }) {
   );
 }
 
+// 못 한 줄 자동 채우기 간격(CONV-CHAT-001) — 바로 → 3초 → 10초 → 30초. 그 뒤는 다음에 자료를 열 때 다시 시작한다.
+// 사용자에게 재분석 버튼을 떠넘기지 않는다: 말풍선은 평문으로 먼저 읽히고, 분석이 붙으면 단어가 눌린다.
+export const CONVERSATION_FILL_DELAYS = Object.freeze([0, 3000, 10000, 30000]);
+
 export default function ConversationThread({
   material, conversation, tokensByLine, renderToken, language, speak, ttsSupported,
-  onTurnResult, onReload, onNewConversation, onRetryAnalysis, onDelete, analysisBusy = false, outputWords = [],
+  onTurnResult, onReload, onNewConversation, onFilled, onDelete, outputWords = [],
 }) {
   const materialId = material?.id;
   const rawLines = (material?.raw_text || '').split('\n');
@@ -85,6 +91,8 @@ export default function ConversationThread({
   const [deleting, setDeleting] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [shadow, setShadow] = useState(null); // { index, heard, listening } — [따라 말해 보기](채점 없음)
+  const [fillTick, setFillTick] = useState(0);
+  const fillAttemptsRef = useRef(new Map());
   const requestRef = useRef(0);
   const materialRef = useRef(materialId);
   const recognitionRef = useRef(null);
@@ -108,6 +116,30 @@ export default function ConversationThread({
   useEffect(() => {
     endRef.current?.scrollIntoView?.({ block: 'end', behavior: 'smooth' });
   }, [turnCount, loading]);
+
+  // 못 한 줄 자동 채우기 — 소유자 화면에서만(onFilled가 있을 때), 턴을 기다리는 동안은 쉬었다가 이어 한다.
+  const missingKey = onFilled && CONVERSATION_ANALYZED_LANGUAGES.includes(language)
+    ? missingConversationLines(material?.processed_json).join(',') : '';
+  useEffect(() => {
+    if (!missingKey || loading) return undefined;
+    const key = `${materialId}:${missingKey}`;
+    const tried = fillAttemptsRef.current.get(key) || 0;
+    if (tried >= CONVERSATION_FILL_DELAYS.length) return undefined;
+    const fillMaterialId = materialId;
+    const timer = setTimeout(async () => {
+      fillAttemptsRef.current.set(key, tried + 1);
+      try {
+        const body = await postConversationTurn({ materialId: String(fillMaterialId), action: 'analyze' });
+        if (materialRef.current !== fillMaterialId) return;
+        if (Object.keys(body?.filled || {}).length) onFilled(body);
+        else if (body?.analysis === 'skipped') fillAttemptsRef.current.set(key, CONVERSATION_FILL_DELAYS.length);
+        else setFillTick((t) => t + 1);
+      } catch {
+        if (materialRef.current === fillMaterialId) setFillTick((t) => t + 1);
+      }
+    }, CONVERSATION_FILL_DELAYS[tried]);
+    return () => clearTimeout(timer);
+  }, [missingKey, loading, materialId, fillTick, onFilled]);
 
   async function send({ action = null, retryText = null } = {}) {
     const text = action ? '' : (retryText ?? input).trim();
@@ -193,10 +225,6 @@ export default function ConversationThread({
     const analyzed = ids?.length && ids.every((id) => !material.processed_json.dictionary[id]?.failed);
     return analyzed ? ids.map((id) => renderToken(id)) : <span className="word-token--raw">{rawLines[line]}</span>;
   };
-  const failedIn = (lines) => lines.some((line) => {
-    const ids = tokensByLine.get(line);
-    return !ids?.length || ids.some((id) => material.processed_json.dictionary[id]?.failed);
-  });
 
   const toggleTx = (index) => setOpenTx((prev) => {
     const next = new Set(prev);
@@ -273,11 +301,6 @@ export default function ConversationThread({
                   )}
                   {ko.length > 0 && (
                     <button type="button" className="conv-chip" aria-expanded={txOpen} onClick={() => toggleTx(item.index)}>번역</button>
-                  )}
-                  {failedIn(lines) && onRetryAnalysis && (
-                    <button type="button" className="conv-chip" disabled={analysisBusy} onClick={onRetryAnalysis}>
-                      단어 분석을 못 했어요 · 다시 분석
-                    </button>
                   )}
                 </div>
                 {txOpen && <p className="conv-bubble__tx">{ko.join(' ')}</p>}
