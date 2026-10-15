@@ -17,7 +17,7 @@ describe('focused reader boundaries', () => {
     // 메뉴 셋(LEARN-HOME-AK-001): 개인화 화면(배움 · 서재)은 prefetch를 끈다. 복습(/vocab)은 메뉴에서 빠지고
     // 배움의 단어 복습 칸(prefetch={false})으로 들어간다 — performanceRepairs P5가 그 칸을 함께 지킨다.
     for (const href of ['/home', '/materials']) expect(MAIN_NAV.find(item => item.href === href).prefetch).toBe(false);
-    expect(MAIN_NAV.map(item => item.label)).toEqual(['배움', '서재', '산책']);
+    expect(MAIN_NAV.map(item => item.label)).toEqual(['배움', '대화', '서재', '산책']);
   });
 });
 
