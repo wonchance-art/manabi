@@ -655,7 +655,7 @@ function SilverCoins() {
 
 // 桜の樹の下には(1928) — 「桜の樹の下には屍体が埋まっている！」: 땅 위에는 흰 벚꽃 가지, 땅 밑으로는 뿌리가 어둠 속으로 뻗어 작은 물방울 하나에 닿는다.
 function SakuraRoots() {
-  const blossoms = scatter(24, 53, [-4, 18, 40, 84]);
+  const blossoms = scatter(24, 53, [-4, 18, 33, 84]);
   return (
     <>
       <Fill c="dd" d="M0 104Q30 100 60 104T120 102V168H0Z" />
@@ -686,6 +686,29 @@ function LacquerCandle() {
         <Line c="acc" d="M36 133C44 130 60 130 68 133M42 121C48 119 56 119 62 121" w={0.5} />
         <Fill c="paper" d="M44 127q2 -1.2 4 0q-2 0.8 -4 0Z" />
       </g>
+    </>
+  );
+}
+
+// 夢十夜(1908) — 第一夜 「百年待っていて下さい」: 둥근 돌 곁에서 줄기를 뻗어 고개 숙인 흰 백합, 꽃잎 끝 이슬, 새벽 별 하나.
+function LilyDream() {
+  const lily = [[-60, 15], [-20, 17], [20, 16], [58, 14]].map(([deg, r]) => {
+    const a = ((deg + 90) * Math.PI) / 180; const tip = [f1(40 + Math.cos(a) * r), f1(86 + Math.sin(a) * r)];
+    return `M40 86Q${f1(40 + Math.cos(a - 0.5) * r * 0.7)} ${f1(86 + Math.sin(a - 0.5) * r * 0.7)} ${tip[0]} ${tip[1]}Q${f1(40 + Math.cos(a + 0.5) * r * 0.7)} ${f1(86 + Math.sin(a + 0.5) * r * 0.7)} 40 86Z`;
+  }).join('');
+  return (
+    <>
+      <Fill c="lt" d={dots(61, 26, [2, 2, 118, 130], 0.25, 0.6)} />
+      <Fill c="dk" d="M0 156Q40 148 80 154T120 152V168H0Z" />
+      <Fill c="dd" d="M6 158C6 146 10 140 20 140C30 140 34 146 34 158Z" focal />
+      <Line c="dk" d="M26 156C30 134 34 110 36 92Q38 84 40 82M32 124C24 118 16 118 10 122M34 108C40 104 48 104 54 108" w={1.2} cap />
+      <Fill c="dk" d="M10 122C14 116 20 115 24 118C20 122 15 124 10 122ZM54 108C50 102 44 101 40 104C44 108 49 110 54 108Z" />
+      <g data-focal="">
+        <Fill c="paper" d={lily} />
+        <Line c="lt" d="M40 86L38 98M40 86L42 98M40 86L44 96" w={0.4} />
+        <Fill c="acc2" d="M27.4 99.4a1.4 1.7 0 1 0 2.8 0a1.4 1.7 0 1 0 -2.8 0ZM51.4 98.4a1.2 1.5 0 1 0 2.4 0a1.2 1.5 0 1 0 -2.4 0Z" />
+      </g>
+      <Fill c="acc" d={star4(16, 28, 7)} focal />
     </>
   );
 }
@@ -729,7 +752,7 @@ const ART = {
   'dusk-rails': DuskRails, 'peach-house': PeachHouse, 'deco-chair': DecoChair, 'spider-web': SpiderWeb,
   'melos-run': MelosRun, 'clown-photos': ClownPhotos, 'setting-sun': SettingSun, 'umbrella-rose': UmbrellaRose, 'blossom-storm': BlossomStorm,
   'cat-study': CatStudy, 'clock-spiral': ClockSpiral, 'lamp-book': LampBook, 'white-elephant': WhiteElephant, 'silver-coins': SilverCoins,
-  'sakura-roots': SakuraRoots, 'lacquer-candle': LacquerCandle,
+  'sakura-roots': SakuraRoots, 'lacquer-candle': LacquerCandle, 'lily-dream': LilyDream,
 };
 
 export default function LiteratureCoverArt({ motif }) {

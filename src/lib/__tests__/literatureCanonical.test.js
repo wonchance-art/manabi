@@ -93,6 +93,7 @@ describe('verifiedCanonicalLiterature — 가짜 크레딧 차단', () => {
       publicDomain: true,
       editNote: true,
       smallKanaNote: false,
+      unproofreadNote: false,
     });
   });
 

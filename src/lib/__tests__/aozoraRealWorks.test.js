@@ -121,6 +121,8 @@ const WORKS = {
   'aozora-000148-000773': { title: 'こころ', level: 'N2 상급', chapters: 110, ruby: 4567 },
   // 吾輩は猫である — 1만 1천 자 문단 등은 문장 끝에서 나눈 장(sentenceSplitCount 14)
   'aozora-000148-000789': { title: '吾輩は猫である', level: 'N1 심화', chapters: 113, ruby: 9214 },
+  // 夢十夜 — 青空文庫 유일 판이 교정자 없는 입력본, 오너 승인(unproofreadApproval)으로 수록
+  'aozora-000148-000799': { title: '夢十夜', level: 'N2 상급', chapters: 10, ruby: 714 },
   // 学問のすすめ — 九編의 여러 줄 中見出し(「ここから中見出し」…)를 표제 하나로
   'aozora-000296-047061': { title: '学問のすすめ', level: 'N1 심화', chapters: 37, ruby: 1059 },
   'aozora-000879-000042': { title: '鼻', level: 'N2 상급', chapters: 2, ruby: 145 },

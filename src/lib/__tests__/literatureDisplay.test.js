@@ -92,6 +92,7 @@ describe('정본 작품 표기 — 대조표가 싣는다', () => {
       'aozora-000074-000427': ['whole', ['전문']],
       'aozora-000096-002093': ['split', Array.from({ length: 146 }, (_, k) => `${k + 1}/146`)],
       'aozora-001383-056642': ['split', Array.from({ length: 9 }, (_, k) => `${k + 1}/9`)],
+      'aozora-000148-000799': ['heading', ['第一夜', '第二夜', '第三夜', '第四夜', '第五夜', '第六夜', '第七夜', '第八夜', '第九夜', '第十夜']],
     });
     expect(JSON.stringify(manifest)).not.toMatch(/\d+(과|편)"|전편/u);
   });
@@ -107,7 +108,7 @@ describe('정본 작품 표기 — 대조표가 싣는다', () => {
         '杜子春': '두자춘', '人間椅子': '인간 의자', '刺青': '문신',
         '走れメロス': '달려라 메로스', '人間失格': '인간 실격', '斜陽': '사양', '女生徒': '여학생', '桜の森の満開の下': '만개한 벚꽃 숲 아래',
         '吾輩は猫である': '나는 고양이로소이다', 'ドグラ・マグラ': '도구라 마구라', '学問のすすめ': '학문의 권장', 'オツベルと象': '오츠베르와 코끼리',
-        '駈込み訴え': '직소', '桜の樹の下には': '벚나무 아래에는', '陰翳礼讃': '그늘에 대하여' });
+        '駈込み訴え': '직소', '桜の樹の下には': '벚나무 아래에는', '陰翳礼讃': '그늘에 대하여', '夢十夜': '몽십야' });
     expect(new Set(works.map((work) => work.display.cover)).size).toBe(works.length);
     // 문양은 작품 분위기에서, 작품마다 새로(오너 지시 2026-10-14 KST 「작품마다 새 문양」) — 같은 문양을 두 작품이 쓰지 않는다
     expect(Object.fromEntries(works.map((work) => [work.title, work.display.motif])))
@@ -118,7 +119,7 @@ describe('정본 작품 표기 — 대조표가 싣는다', () => {
         '杜子春': 'peach-house', '人間椅子': 'deco-chair', '刺青': 'spider-web',
         '走れメロス': 'melos-run', '人間失格': 'clown-photos', '斜陽': 'setting-sun', '女生徒': 'umbrella-rose', '桜の森の満開の下': 'blossom-storm',
         '吾輩は猫である': 'cat-study', 'ドグラ・マグラ': 'clock-spiral', '学問のすすめ': 'lamp-book', 'オツベルと象': 'white-elephant',
-        '駈込み訴え': 'silver-coins', '桜の樹の下には': 'sakura-roots', '陰翳礼讃': 'lacquer-candle' });
+        '駈込み訴え': 'silver-coins', '桜の樹の下には': 'sakura-roots', '陰翳礼讃': 'lacquer-candle', '夢十夜': 'lily-dream' });
     expect(new Set(works.map((work) => work.display.motif)).size).toBe(works.length);
   });
 

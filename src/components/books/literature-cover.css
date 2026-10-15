@@ -40,6 +40,7 @@
 .lit-cover--suou{--cover-color:#9e3d3f;--tone-soft:#be6b69;--tone-strong:#dd908d;--tone-deep:#5d000e} /* 蘇芳 */
 .lit-cover--umenezumi{--cover-color:#c099a0;--tone-soft:#9a757c;--tone-strong:#78555c;--tone-deep:#492930} /* 梅鼠 */
 .lit-cover--kobicha{--cover-color:#716246;--tone-soft:#968870;--tone-strong:#b7aa95;--tone-deep:#352a11} /* 媚茶 */
+.lit-cover--fujinezumi{--cover-color:#a6a5c4;--tone-soft:#81809e;--tone-strong:#60607c;--tone-deep:#34344e} /* 藤鼠 */
 .lit-cover__slip{position:absolute;z-index:1;top:5px;right:4px;display:flex;flex-direction:row-reverse;align-items:flex-start;gap:1.2px;padding:2.4px 1.9px;background:#f3ead4;color:#231f1b;box-shadow:inset 0 0 0 .9px #3a322a,inset 0 0 0 1.5px #f3ead4,inset 0 0 0 1.9px #3a322a,.4px .6px .8px color-mix(in srgb,#000 35%,transparent)}
 .lit-cover__title{display:flex;flex-direction:row-reverse;gap:1px;font-family:var(--font-lit-serif),"Noto Serif CJK JP",serif;font-weight:500;font-size:11px;line-height:1;letter-spacing:.04em}
 .lit-cover__line{display:block;writing-mode:vertical-rl;white-space:nowrap}

@@ -26,6 +26,8 @@ const BALANCED_RATIO = 1.25;
 export const AOZORA_EDIT_NOTES = Object.freeze(['ruby-reading-aid', 'chapter-split-by-manabi']);
 /** Unicode에 없는 작은 가나를 보통 크기로 바꾼 책에만 더하는 편집 표시(AOZORA_SUBSTITUTED_GAIJI). */
 export const AOZORA_SMALL_KANA_EDIT = 'small-kana-as-full';
+/** 교정자 없는 青空文庫 입력본을 오너 승인(entry.unproofreadApproval)으로 수록한 책에만 더하는 표시 — 뷰어 출처 줄이 밝힌다. */
+export const AOZORA_UNPROOFREAD_EDIT = 'unproofread-source';
 
 const OPEN = '\uE000';
 const CLOSE = '\uE001';
@@ -251,7 +253,8 @@ function literatureMetadata(entry, document) {
       inputter: colophon.inputter,
       proofreader: colophon.proofreader,
     },
-    edits: [...AOZORA_EDIT_NOTES, ...(document.gaiji.some((item) => item.substituted) ? [AOZORA_SMALL_KANA_EDIT] : [])],
+    edits: [...AOZORA_EDIT_NOTES, ...(document.gaiji.some((item) => item.substituted) ? [AOZORA_SMALL_KANA_EDIT] : []),
+      ...(colophon.proofreader ? [] : [AOZORA_UNPROOFREAD_EDIT])],
   };
 }
 
@@ -317,8 +320,10 @@ export function createAozoraMaterialDraft(entry, document, options = {}) {
   invariant(document.colophon.sourceBook.length > 0, 'Aozora colophon must name the source book (底本)');
   invariant(typeof document.colophon.inputter === 'string' && document.colophon.inputter,
     'Aozora colophon must name the inputter (入力)');
-  invariant(typeof document.colophon.proofreader === 'string' && document.colophon.proofreader,
+  // 교정자 없는 입력본은 기본 거부 — 오너가 그 작품 하나를 승인한 기록(entry.unproofreadApproval)이 있을 때만 받는다(夢十夜, 2026-10-15).
+  invariant((typeof document.colophon.proofreader === 'string' && document.colophon.proofreader) || entry.unproofreadApproval,
     'Aozora colophon must name the proofreader (校正)');
+  invariant(!entry.unproofreadApproval || !document.colophon.proofreader, 'unproofreadApproval is only for texts without a proofreader');
   const unresolved = document.gaiji.filter((item) => item.status !== 'resolved');
   invariant(unresolved.length === 0,
     `Aozora document has ${unresolved.length} unresolved gaiji (lines ${unresolved.map((item) => item.line).join(', ')})`);

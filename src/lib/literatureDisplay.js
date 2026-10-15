@@ -14,10 +14,10 @@
  * 보라·마젠타·선명한 군청·파스텔은 그 시대 문예서에 거의 없어 쓰지 않는다(葡萄 하나만 — 아닐린 보라가 있던 시대).
  * 초판 색이 확인된 작품은 그 계열을 따른다(羅生門 紺 천 · 鼻 같은 책 함의 山吹 · 刺青 朱橙 · こころ 朱 · 人間失格 薄柿 ·
  * 注文の多い料理店 墨 · 山月記 鳥の子 · 斜陽 生成り). 새 책의 색이다 — 남은 고서의 바랜 색(황갈·적갈)이 아니다.
- * 5차(2026-10-15)는 四十八茶百鼠 시대의 鼠·煤竹·納戸·生壁·蘇芳·梅鼠·媚茶 — 江戸~明治 의복·장정에 흔한 수수한 색.
+ * 5차(2026-10-15)는 四十八茶百鼠 시대의 鼠·煤竹·納戸·生壁·蘇芳·梅鼠·媚茶·藤鼠(明治 유행색) — 江戸~明治 의복·장정에 흔한 수수한 색.
  * 어떤 두 권도 CIELAB 색차 12 미만이 아니다(literatureDisplay.test.js). CSS `.lit-cover--<name>`이 값을 갖는다.
  */
-export const LITERATURE_COVER_COLORS = Object.freeze(['ai', 'bengara', 'cha', 'ebi', 'enji', 'fukamidori', 'haijiro',
+export const LITERATURE_COVER_COLORS = Object.freeze(['ai', 'bengara', 'cha', 'ebi', 'enji', 'fujinezumi', 'fukamidori', 'haijiro',
   'haimidori', 'hanada', 'kaki', 'karashi', 'kinari', 'kobicha', 'kogecha', 'kon', 'moegi', 'namakabe', 'nando', 'nezumi',
   'nibi', 'odo', 'shiracha', 'shu', 'sumi', 'suou', 'susutake', 'tetsukon', 'torinoko', 'uguisu', 'umenezumi', 'usugaki',
   'usunezumi', 'yamabuki']);
@@ -30,7 +30,7 @@ export const LITERATURE_COVER_MOTIFS = Object.freeze(['snow-night', 'higanbana',
   'rain-gate', 'lotus-thread', 'moon-tiger', 'steam-sea', 'lemon-books', 'nightjar-star', 'night-boat', 'cello-night', 'night-train',
   'kamakura-letter', 'crab-pear', 'wind-hill', 'dusk-rails', 'peach-house', 'deco-chair', 'spider-web',
   'melos-run', 'clown-photos', 'setting-sun', 'umbrella-rose', 'blossom-storm',
-  'cat-study', 'clock-spiral', 'lamp-book', 'white-elephant', 'silver-coins', 'sakura-roots', 'lacquer-candle']);
+  'cat-study', 'clock-spiral', 'lamp-book', 'white-elephant', 'silver-coins', 'sakura-roots', 'lacquer-candle', 'lily-dream']);
 
 const filled = (value) => typeof value === 'string' && value.trim() !== '';
 
