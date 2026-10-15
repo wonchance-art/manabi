@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L1 隣り合う字</title>
+<style>
+  :root { --night:#151b2c; --snow:#eef0f4; --ver:#d4462a; --paper:#d9dce4; --mute:#5a6275; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--paper); color:var(--night); width:1500px; padding:28px 26px 34px;
+         font-family:"Noto Sans KR","Hiragino Sans","Apple SD Gothic Neo",system-ui,sans-serif; }
+  h1 { font-size:20px; font-weight:700; }
+  h1 b { display:inline-block; background:var(--night); color:var(--snow); font-size:13px; padding:2px 8px; margin-right:8px; vertical-align:3px; }
+  .lede { font-size:14px; color:#2a3142; margin-top:6px; }
+  .rule { margin:14px 0; padding:10px 14px; background:var(--snow); border-left:4px solid var(--ver); font-size:12.5px; line-height:1.65; color:#2a3142; }
+  .row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:10px; }
+  .cell { position:relative; height:200px; display:flex; align-items:center; justify-content:center; background:var(--snow); }
+  .cell.dark { background:var(--night); }
+  .cell.ana { background:#f7f8fa; height:180px; }
+  .cell img { display:block; }
+  .tag { position:absolute; left:10px; top:8px; font-size:11px; font-weight:700; padding:1px 6px; background:var(--night); color:var(--snow); }
+  .dark .tag { background:var(--snow); color:var(--night); }
+  .cap { font-size:11.5px; color:var(--mute); margin:2px 0 14px; }
+  h2 { font-size:14px; margin:18px 0 8px; }
+  .sizes { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .col { display:flex; flex-direction:column; gap:6px; }
+  .hdr { height:48px; display:flex; align-items:center; justify-content:space-between; padding:0 14px; background:var(--snow); border-bottom:1px solid #c7ccd6; }
+  .hdr.dark { background:var(--night); border-bottom-color:#2b344a; }
+  .hdr span { font-size:11px; color:var(--mute); }
+  .hdr.dark span { color:#a3abbd; }
+  .cover { height:200px; background:var(--snow); display:flex; align-items:center; justify-content:center; }
+  .cover.dark { background:var(--night); }
+</style>
+</head>
+<body>
+  <h1><b>L1</b>隣り合う字 — 이웃한 글자가 획을 나눠 쓰는 TONARI · となり · トナリ</h1>
+  <p class="lede">한 줄 규칙: 한 굵기의 골격선으로 긋되, 이웃 두 글자는 띄우지 않고 한쪽 획 끝이 다른 쪽 획 안으로 들어가 멈춘다. 주홍은 '획 끝이 이웃에 내려앉는' 왼쪽 첫 자리 하나.</p>
+  <div class="rule">숫자: 대문자 높이 H = 1000 · 획 굵기 W = 176(0.176H, 세 표기 공통, 끝은 획 직각 절단) · 가나 칸 1.06H ·
+    맞닿지 않는 이웃 사이 150 · 접점 TONARI 3곳(T 가로대가 O의 지붕 / N 오른기둥 = A 왼다리, N 대각이 그 발치에 내려앉음 / R 다리가 I 발에 닿음) ·
+    となり 1곳(と 맺음 끝에 な 사선 발이 내려앉음) · トナリ 1곳(ト 짧은 획 끝이 ナ 가로획 속으로) ·
+    주홍 = 두 글자 윤곽의 교집합을 접점에서 W 높이까지 자른 조각(단색이면 본체 색, 형태 동일).</div>
+  <div class="row"><div class="cell "><span class="tag">우산·국제</span><img src="svg/L1-up-light.svg" width="421.0" height="115.0" alt="TONARI"></div><div class="cell "><span class="tag">일본 시리즈</span><img src="svg/L1-hira-light.svg" width="301.1" height="132.3" alt="となり"></div><div class="cell "><span class="tag">하이브리드·경계</span><img src="svg/L1-kata-light.svg" width="237.6" height="125.2" alt="トナリ"></div></div>
+  <div class="row"><div class="cell dark"><span class="tag">우산·국제</span><img src="svg/L1-up-dark.svg" width="421.0" height="115.0" alt="TONARI"></div><div class="cell dark"><span class="tag">일본 시리즈</span><img src="svg/L1-hira-dark.svg" width="301.1" height="132.3" alt="となり"></div><div class="cell dark"><span class="tag">하이브리드·경계</span><img src="svg/L1-kata-dark.svg" width="237.6" height="125.2" alt="トナリ"></div></div>
+  <p class="cap">세 칸 모두 같은 배율(1000단위 = 115px). 위 밝은 바탕(밤 글자), 아래 밤 바탕(눈 글자).</p>
+  <h2>분해도 — 글자마다 반투명으로 겹쳐 칠했다. 짙은 곳 = 두 글자가 나눠 쓴 잉크, 주홍 선 = 접점 윤곽</h2>
+  <div class="row"><div class="cell ana"><span class="tag">TONARI</span><img src="svg/L1-up-anatomy.svg" width="402.7" height="110.0" alt="TONARI"></div><div class="cell ana"><span class="tag">となり</span><img src="svg/L1-hira-anatomy.svg" width="288.0" height="126.6" alt="となり"></div><div class="cell ana"><span class="tag">トナリ</span><img src="svg/L1-kata-anatomy.svg" width="227.3" height="119.7" alt="トナリ"></div></div>
+  <h2>작은 크기 — 웹 헤더 마크 높이 24px · 표지 제호 폭 312px(390px 표지의 80%)</h2>
+  <div class="sizes"><div class="col"><div class="hdr"><img src="svg/L1-up-light.svg" width="87.9" height="24.0" alt="TONARI"><span>（ダミー）見出し</span></div><div class="hdr dark"><img src="svg/L1-up-dark.svg" width="87.9" height="24.0" alt="TONARI"><span>（ダミー）見出し</span></div><div class="cover"><img src="svg/L1-up-light.svg" width="312.0" height="85.2" alt="TONARI"></div><div class="cover dark"><img src="svg/L1-up-dark.svg" width="312.0" height="85.2" alt="TONARI"></div></div><div class="col"><div class="hdr"><img src="svg/L1-hira-light.svg" width="54.6" height="24.0" alt="となり"><span>（ダミー）見出し</span></div><div class="hdr dark"><img src="svg/L1-hira-dark.svg" width="54.6" height="24.0" alt="となり"><span>（ダミー）見出し</span></div><div class="cover"><img src="svg/L1-hira-light.svg" width="312.0" height="137.1" alt="となり"></div><div class="cover dark"><img src="svg/L1-hira-dark.svg" width="312.0" height="137.1" alt="となり"></div></div><div class="col"><div class="hdr"><img src="svg/L1-kata-light.svg" width="45.6" height="24.0" alt="トナリ"><span>（ダミー）見出し</span></div><div class="hdr dark"><img src="svg/L1-kata-dark.svg" width="45.6" height="24.0" alt="トナリ"><span>（ダミー）見出し</span></div><div class="cover"><img src="svg/L1-kata-light.svg" width="312.0" height="164.4" alt="トナリ"></div><div class="cover dark"><img src="svg/L1-kata-dark.svg" width="312.0" height="164.4" alt="トナリ"></div></div></div>
+  <h2>단색(mono) — 주홍 조각을 본체 색으로</h2>
+  <div class="row"><div class="cell" style="height:120px"><img src="svg/L1-up-mono-light.svg" width="256.3" height="70.0" alt="TONARI"></div><div class="cell" style="height:120px"><img src="svg/L1-hira-mono-light.svg" width="183.3" height="80.5" alt="となり"></div><div class="cell" style="height:120px"><img src="svg/L1-kata-mono-light.svg" width="144.6" height="76.2" alt="トナリ"></div></div>
+</body>
+</html>
