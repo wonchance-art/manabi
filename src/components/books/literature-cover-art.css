@@ -1,72 +1,45 @@
-/* 정본 문학책 표지 그림(LiteratureCoverArt) — 시대 장정의 재구성. 표지 바탕 위·글자 아래 층이고, 색은 여기서만 정한다.
-   모티프마다 판색 --p1…--p6을 정하고 도형은 lit-art__pN으로 고른다(옛 인쇄처럼 평평한 색면). __t = 종이결·천결 같은 바탕결(.1).
-   왼쪽 4px은 책등 그림자 자리라 잘라 낸다. 제목·작가·아래 선은 literature-cover.css에서 z-index:1로 위에 선다. */
-.lit-art{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;clip-path:inset(0 0 0 4px)}
-.lit-art__p1{color:var(--p1)}
-.lit-art__p2{color:var(--p2)}
-.lit-art__p3{color:var(--p3)}
-.lit-art__p4{color:var(--p4)}
-.lit-art__p5{color:var(--p5)}
-.lit-art__p6{color:var(--p6)}
-.lit-art__t{opacity:.1}
-.lit-art__glow{opacity:.3}
-/* 手袋を買いに — 쇼와 10년대 2도 인쇄: 쪽빛 바탕(표지색) · 따뜻한 노랑 · 눈은 종이색 */
-.lit-art--snow-night{--p1:#f2ead8;--p2:#f1c04c;--p3:var(--cover-color)}
-/* ごん狐 — 어린이 잡지 석판 다색: 미색 띠·테 · 노을 살구 · 먼 산 쑥색 · 들 올리브 · 꽃 빨강 · 여우 밤색 */
-.lit-art--higanbana{--p1:#f3e4c6;--p2:#efb48c;--p3:#93a07f;--p4:#5e6e4a;--p5:#cf3a24;--p6:#4a3124}
-/* 注文の多い料理店 — 자비 출판 활판 2–3도: 거친 미색 종이 선 · 황토 문·간판 · 짙은 숲 먹 · 산고양이 눈 */
-.lit-art--forest-doors{--p1:#ecdfbf;--p2:#c27a3a;--p3:#14271b;--p4:#e8c54a}
-/* 鼻 — 다이쇼 문예서: 천 바탕 위 미색 題簽 · 가는 갈색 테 · 작은 붉은 인 · 천결(흰 .1) */
-.lit-art--ink-steam{--p1:#ebe3cf;--p2:#6a5b48;--p3:#a8402c;--p4:var(--sheet)}
-/* 文鳥 — 메이지 아르누보 세 판색: 鉄紺 · 金茶 · 生成り(바탕은 표지색, 새는 더 밝은 미색) */
-.lit-art--birdcage{--p1:#27324a;--p2:#a87a36;--p3:#f7f1e2}
-/* 옛 종이 층(PaperGrain) — 다섯 권 공통, 새 책처럼(바랜 얼룩·그을음 없음). 옅은 결은 짙은 갈색·밝은 미색 점, 밝은 결은 미색.
-   글자 뒤 대비는 4.5:1 이상을 지킨다(scratch contrast 측정). */
+/* 정본 문학책 표지 그림(LiteratureCoverArt) — 시리즈 A 「布装·型押し」. 천 위에 같은 색 계열로 찍는 판 둘(짙은 --dk·더 짙은 --dd ·
+   옅은 --lt)은 천 색(--cover-color)에서 섞어 만든다 — 천 색을 바꾸면 무늬도 따라온다. 밝은 점은 작품마다 강조색 --acc(·--acc2) 하나
+   (둘)와 생지색 --paper뿐이다(色版 2–3도 + 강조 1). 왼쪽 3px은 책등 홈 자리라 잘라 낸다. 題簽은 literature-cover.css(z-index:1). */
+.lit-art{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;clip-path:inset(0 0 0 3px);
+  --dk:color-mix(in srgb,var(--cover-color) 70%,#000);--dd:color-mix(in srgb,var(--cover-color) 42%,#000);
+  --lt:color-mix(in srgb,var(--cover-color) 76%,#fff);--paper:#ede3c9;--acc:#b8452c;--acc2:#e9dcbf}
+.lit-art__dk{color:var(--dk)}
+.lit-art__dd{color:var(--dd)}
+.lit-art__lt{color:var(--lt)}
+.lit-art__acc{color:var(--acc)}
+.lit-art__acc2{color:var(--acc2)}
+.lit-art__paper{color:var(--paper)}
+/* 천결(布目) — 날실·씨실 한 올씩 */
+.lit-art__weave{color:#000;opacity:.11}
+.lit-art__weave-hi{color:#fff;opacity:.05}
+/* 종이결(和紙) — 새 책처럼(바랜 얼룩·그을음 없음, 오너 2026-10-14 KST). 옅은 결은 짙은 갈색·밝은 미색 점. */
 .lit-paper__grain{flood-color:#2a1c0e;flood-opacity:.06}
 .lit-paper__fleck{flood-color:#fff4dc;flood-opacity:.07}
-.lit-paper__fade{flood-color:#fff1d2;flood-opacity:.05}
-/* 2차 묶음(2026-10-14 KST) — 작품마다 새 문양, 시대 장정의 평평한 판색만 */
-/* 羅生門 — 해 질 녘 비: 문 그림자 · 옅은 빗줄기 · 노을 낮은 하늘 */
-.lit-art--rain-gate{--p1:#1d1412;--p2:#a9826a;--p3:#7a3a2b}
-/* 蜘蛛の糸 — 극락 연못(연잎·분홍 연꽃) · 은빛 실 · 지옥 불결 */
-.lit-art--lotus-thread{--p1:#e8e2d4;--p2:#e3a3ad;--p3:#4f6d62;--p4:#a8402c;--p5:#621f17}
-/* 山月記 — 달 · 겹친 산 · 범 */
-.lit-art--moon-tiger{--p1:#f1e8cf;--p2:#2a2a3e;--p3:#c9963f;--p4:#1c1c2a;--p5:#5f5f80}
-/* 坊っちゃん — 메이지 담채: 남색 선 · 꼭두서니 띠 · 흰 연기 · 바다 */
-.lit-art--steam-sea{--p1:#1f3346;--p2:#b34a3c;--p3:#f8f5ec;--p4:#8fb4c2}
-/* 檸檬 — 레몬 노랑 · 화집 색 */
-.lit-art--lemon-books{--p1:#f2d23c;--p2:#c9a42c;--p3:#2f3338;--p4:#a9473a;--p5:#cfc7b6;--p6:#6f8a6c}
-/* よだかの星 — 별 · 푸르게 타는 별 · 쏙독새 · 산 */
-.lit-art--nightjar-star{--p1:#f4f0e0;--p2:#6f9be8;--p3:#191530;--p4:#3d365f;--p5:#dfe9ff;--p6:#bdb5d9}
-/* 高瀬舟 — 으스름 안개 · 배 그림자 · 버들 · 물결 · 등불 */
-.lit-art--night-boat{--p1:#ece4c8;--p2:#122629;--p3:#6f9579;--p4:#4b7f87;--p5:#e8c37a}
-/* セロ弾きのゴーシュ — 호박색 첼로 · 짙은 나무 · 크림 음표·뻐꾸기 */
-.lit-art--cello-night{--p1:#c98a4b;--p2:#2b1a10;--p3:#f0e2c4;--p4:#8a5a33}
-/* 銀河鉄道の夜 — 별 · 은하수 · 기차 그림자 · 불 켜진 창 · 레일 */
-.lit-art--night-train{--p1:#f3ecd8;--p2:#9c8cc0;--p3:#170e1c;--p4:#f2c75a;--p5:#b9a6cf}
-/* 3차 묶음(2026-10-14 KST) */
-/* こころ — 미색 편지 · 바다 회청 · 솔잎 먹 · 글줄 · 모래 */
-.lit-art--kamakura-letter{--p1:#efe7d2;--p2:#7e9897;--p3:#2a312b;--p4:#7a6f60;--p5:#c9b994}
-/* やまなし — 물빛 · 야마나시 노랑 · 게 붉은 갈색 · 게 눈 · 빛줄기·거품 · 바닥 */
-.lit-art--crab-pear{--p1:#a9cdc6;--p2:#d9a531;--p3:#a24d34;--p4:#fbf6e6;--p5:#eef6ef;--p6:#6b7a4b}
-/* 風の又三郎 — 망토·창 · 바람 · 언덕 · 분교 · 잎 · 아이 */
-.lit-art--wind-hill{--p1:#f6f4e8;--p2:#4f6c5a;--p3:#6f8f4e;--p4:#8b5a3c;--p5:#d0812c;--p6:#33404f}
-/* トロッコ — 노을·귤 · 비탈 · 레일 · 토롯코 */
-.lit-art--dusk-rails{--p2:#e39a48;--p3:#2b2f12;--p4:#c9bf98;--p5:#14150a}
-/* 杜子春 — 흰 벽·눈 덮인 봉우리 · 복숭아꽃 · 먼 산 · 가지·지붕 · 꽃술 · 풀밭 */
-.lit-art--peach-house{--p1:#fbf4ec;--p2:#e07a8e;--p3:#b98f97;--p4:#5a2d2a;--p5:#f6d36b;--p6:#a8b68a}
-/* 人間椅子 — 금빛 선·단추 · 짙은 가죽 · 이음매 · 눈 흰자 */
-.lit-art--deco-chair{--p1:#d8b45a;--p2:#6e2333;--p3:#a14a5c;--p4:#efe3c8}
-/* 刺青 — 이슬 · 거미줄·실 · 먹 거미 · 노랑 줄무늬 · 실 */
-.lit-art--spider-web{--p1:#f4d79c;--p2:#f6e7c9;--p3:#160a04;--p4:#e9b93a;--p5:#f6e7c9}
-/* 4차 묶음(2026-10-15 KST) */
-/* 走れメロス — 물결 · (미사용) · 성벽·다리 기둥 · 강 · 강둑·달리는 그림자 */
-.lit-art--melos-run{--p1:#e9f1f2;--p2:#d9c08e;--p3:#0f2c42;--p4:#3d86ad;--p5:#0f2333}
-/* 人間失格 — 인화지 · 은회색 상 · 먹 · 가면 볼 */
-.lit-art--clown-photos{--p1:#f7f5f0;--p2:#a9a59c;--p3:#2a2a2a;--p4:#b5483a}
-/* 斜陽 — 해·햇살 · 바다 · 언덕 · 산장 */
-.lit-art--setting-sun{--p1:#d9732b;--p2:#6a4a5e;--p3:#4a3446;--p4:#2e1f2c}
-/* 女生徒 — 장미 속 · 우산 · 장미 · 우산살·손잡이 · 안경 · 잎 */
-.lit-art--umbrella-rose{--p1:#f6d9df;--p2:#7d6aa0;--p3:#c2405a;--p4:#4a3a63;--p5:#6d5f86;--p6:#5d7d55}
-/* 桜の森の満開の下 — 꽃 · 꽃 그늘 · 줄기 */
-.lit-art--blossom-storm{--p1:#f6dde6;--p2:#e7b6c8;--p3:#2a1520}
+/* 작품별 강조색(나머지는 천 색에서 섞은 두 단) */
+.lit-art--snow-night{--acc:#c0472e}
+.lit-art--higanbana{--acc:#e6d3ae}
+.lit-art--forest-doors{--acc:#c9a24a}
+.lit-art--ink-steam{--acc:#b03a2a}
+.lit-art--birdcage{--acc:#c8402c}
+.lit-art--rain-gate{--acc:#9b4a2c}
+.lit-art--lotus-thread{--acc:#d3d8d6}
+.lit-art--moon-tiger{--acc:#ebdfb4}
+.lit-art--steam-sea{--acc:#d98a9a;--acc2:#7fa36a}
+.lit-art--lemon-books{--acc:#e8c43a;--acc2:#fbeea0}
+.lit-art--nightjar-star{--acc:#9fd0f0;--acc2:#f2fbff}
+.lit-art--night-boat{--acc:#f0c56a}
+.lit-art--cello-night{--acc:#ede3c9}
+.lit-art--night-train{--acc:#d3b25b}
+.lit-art--kamakura-letter{--acc:#ede3c9}
+.lit-art--crab-pear{--acc:#c08a1c;--acc2:#2f7fa6}
+.lit-art--wind-hill{--acc:#c4562a}
+.lit-art--dusk-rails{--acc:#e88a2a}
+.lit-art--peach-house{--acc:#cf5f66;--acc2:#6f8a4f}
+.lit-art--deco-chair{--acc:#c9a24a}
+.lit-art--spider-web{--acc:#e3b23c}
+.lit-art--melos-run{--acc:#ede3c9}
+.lit-art--clown-photos{--acc:#b8452c}
+.lit-art--setting-sun{--acc:#2d1f2c}
+.lit-art--umbrella-rose{--acc:#c2405a}
+.lit-art--blossom-storm{--acc:#f2d0da}

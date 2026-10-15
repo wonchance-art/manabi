@@ -202,15 +202,26 @@ describe('화면 배선', () => {
     expect(css).toContain('font-family:var(--font-lit-serif)');
     expect(css.match(/font-weight:500/gu)).toHaveLength(2);
     expect(css).not.toMatch(/font-weight:(?!500)/u);
-    // 작가 끝은 아래 선(bottom:8px)보다 위에서 멈춘다 — 두 줄 제목이면 작가가 선 바로 위로 와 끝 글자가 선에 닿았다
-    expect(css).toMatch(/\.lit-cover__author\{[^}]*margin:0 2px 3px 0/u);
+    // 시리즈 A(오너 선택 2026-10-15 KST) — 제목·작가는 따로 붙인 題簽 위에만 있다: 자리(위 5px·오른쪽 4px)·子持ち罫(굵은 바깥 줄 +
+    // 가는 안쪽 줄)가 모든 작품 같고, 생지 종이 위 먹 글자라 천·그림 색과 상관없이 대비 7:1 이상이다.
+    const slip = css.match(/\.lit-cover__slip\{([^}]*)\}/u)[1];
+    expect(slip).toContain('top:5px;right:4px');
+    expect(slip).toMatch(/box-shadow:inset 0 0 0 \.9px (#[0-9a-f]{6}),inset 0 0 0 1\.5px #f3ead4,inset 0 0 0 1\.9px \1/u);
+    const [paper, ink] = [slip.match(/background:(#[0-9a-f]{6})/u)[1], slip.match(/;color:(#[0-9a-f]{6})/u)[1]];
+    const lum = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+      .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)).reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+    expect((lum(paper) + 0.05) / (lum(ink) + 0.05)).toBeGreaterThan(7);
+    // 제목은 題簽 위쪽에서, 작가는 그 왼쪽 아래 끝에 — 작가가 제목보다 길어도 제목이 아래로 밀리지 않는다(檸檬·刺青 실측)
+    expect(slip).toContain('align-items:flex-start');
+    expect(css).toMatch(/\.lit-cover__author\{align-self:flex-end;/u);
     // 시리즈: 제목 크기는 한 값뿐 — 글자 수로 크기를 바꾸지 않는다(오너 지시 「서적마다 편차 없이」)
     expect(css.match(/\.lit-cover__title\{[^}]*font-size:11px/u)).toBeTruthy();
     expect(css.match(/font-size:/gu)).toHaveLength(2); // 제목 하나 + 작가 하나 — 작품마다 다른 크기가 없다
     expect(cover).not.toMatch(/longest|lit-cover__title--(xl|l|m|s)\b/u);
-    // 균형: 작가는 제목 왼쪽 아래(대각선 짝) · 긴 제목만 둘째 줄을 아래에 붙인다(반반 떠서 아래가 비지 않게)
+    // 균형: 작가는 제목 왼쪽 아래(대각선 짝) · 긴 제목만 둘째 줄을 한 글자 내려 붙인다
     expect(cover).toContain('<span lang="ja" className="lit-cover__author">{work.author}</span>');
-    expect(css).toContain('.lit-cover__title--stepped .lit-cover__line:last-child{text-align:end}');
+    expect(css).toContain('.lit-cover__title--stepped .lit-cover__line:last-child{padding-top:11px}'); // 둘째 줄은 한 글자 내려 붙인다
+    expect(cover).toContain('<span className="lit-cover__slip">');
     expect(css).not.toMatch(/url\(/u);
   });
 

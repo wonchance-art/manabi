@@ -1,42 +1,40 @@
-/* 정본 문학책 표지(AOZORA-P0-5) — 타이포그래피 표지. 색은 작품 이미지에서 고른 팔레트 이름 다섯(literatureDisplay
-   LITERATURE_COVER_COLORS)만 쓴다. 바탕 위 글자는 --sheet(#fffefb), 밝은 바탕(cream = 메이지 生成り)과 鼻의 題簽 위 제목만 짙은 먹 — 글자 뒤 실제 바탕 기준 모두 대비 4.5:1 이상(AA).
-   배치는 모든 작품이 같다(오너 지시 2026-10-14 KST 「편차 없이 · 균형」): 제목 11px이 오른쪽 위에서 한 줄로(여섯 자까지
-   높이 69px 안 — 11×1.02×6≈67), 작가 6px이 그 왼쪽 아래(문고본의 대각선 짝). 여섯 자를 넘는 제목만 둘째 줄을 아래에
-   붙인다(--stepped: 첫 줄 위·끝 줄 아래 — 반반 떠서 아래가 비지 않게). 줄은 블록 둘(강제 줄바꿈은 줄마다 「끝 줄」 정렬을 받는다).
-   작가 끝은 아래 선(i — 바닥에서 8px)보다 3px 위에서 멈춘다 — 두 줄 제목이면 작가가 선 바로 위로 밀려 끝 글자(治)가 선에 닿았다(10-14 실측).
-   셸은 늘 밝은 화면이라 표지는 테마를 따라 바뀌지 않는다(책은 물건이다). 서재 표지(.shelf-cover)와 같은 문법:
-   왼쪽 책등 그림자 · 아래 짧은 선. */
-.lit-cover{--cover-color:#2f2c2b;width:60px;height:84px;flex:none;background:var(--cover-color);color:var(--sheet);position:relative;box-sizing:border-box;display:flex;flex-direction:row-reverse;justify-content:flex-start;padding:7px 8px 8px 12px;border-radius:1px 3px 3px 1px;box-shadow:inset 4px 0 0 color-mix(in srgb,var(--ink) 18%,transparent);overflow:hidden}
+/* 정본 문학책 표지(AOZORA-P0-5 → 시리즈 A 개편 2026-10-15 KST, 오너 선택 「A가 전반적으로 낫네」) — 明治 말~昭和 초 문예서의
+   천 장정(クロス装) + 따로 붙인 題簽. 표지는 작품 색의 천(LITERATURE_COVER_COLORS — 어떤 두 권도 CIELAB 색차 12 미만이 아니다,
+   literatureDisplay.test.js)이고, 그림(LiteratureCoverArt)은 그 천 위에 같은 색 계열로 찍힌다. 제목·작가는 題簽 위에만 있다 —
+   생지 종이(#f3ead4)에 먹(#231f1b) = 대비 약 14:1이라 어떤 천·그림 위에서도 읽힌다.
+   題簽 규격은 모든 작품이 같다(오너 지시 2026-10-14 KST 「편차 없이 · 균형」): 오른쪽 위(위 5px · 오른쪽 4px), 子持ち罫(굵은 바깥 줄 +
+   가는 안쪽 줄), 제목 11px 한 줄(여섯 자까지 — 6×11×1.04 ≈ 69px, 題簽 아래 끝이 표지 아래에서 5px 이상 위), 작가 6px은 그 왼쪽 아래.
+   여섯 자를 넘는 제목만 둘째 줄을 한 글자 내려 붙인다(--stepped). 셸은 늘 밝은 화면이라 표지는 테마를 따라 바뀌지 않는다(책은 물건이다).
+   서재 표지(.shelf-cover)와 같은 문법: 왼쪽 책등 홈 그림자. */
+.lit-cover{--cover-color:#2f2c2b;display:block;width:60px;height:84px;flex:none;background:var(--cover-color);position:relative;box-sizing:border-box;border-radius:1px 2px 2px 1px;box-shadow:inset 3px 0 0 color-mix(in srgb,var(--ink) 16%,transparent),inset 3.6px 0 0 color-mix(in srgb,#fff 6%,transparent);overflow:hidden}
 .lit-cover--snow{--cover-color:#263a63}
 .lit-cover--vermilion{--cover-color:#a33a26}
 .lit-cover--forest{--cover-color:#2f5a3f}
 .lit-cover--ink{--cover-color:#343a46}
-.lit-cover--cream{--cover-color:#ece3cc;color:#27324a}
+.lit-cover--cream{--cover-color:#ece3cc}
 .lit-cover--rust{--cover-color:#5b2e24}
 .lit-cover--abyss{--cover-color:#16302a}
 .lit-cover--twilight{--cover-color:#4a4a68}
-.lit-cover--sky{--cover-color:#cfe0e6;color:#1f3346}
+.lit-cover--sky{--cover-color:#cfe0e6}
 .lit-cover--dove{--cover-color:#545b69}
 .lit-cover--nightjar{--cover-color:#2a1f52}
 .lit-cover--river{--cover-color:#234a52}
 .lit-cover--walnut{--cover-color:#6e4420}
 .lit-cover--ultramarine{--cover-color:#2b3a96}
 .lit-cover--mustard{--cover-color:#665012}
-.lit-cover--pear{--cover-color:#e6dc9e;color:#3a3a1c}
-.lit-cover--meadow{--cover-color:#c9d9b0;color:#26361e}
+.lit-cover--pear{--cover-color:#e6dc9e}
+.lit-cover--meadow{--cover-color:#c9d9b0}
 .lit-cover--olive{--cover-color:#4d5222}
-.lit-cover--peach{--cover-color:#efd3cf;color:#4f1f2b}
+.lit-cover--peach{--cover-color:#efd3cf}
 .lit-cover--jet{--cover-color:#1d1a17}
 .lit-cover--amber{--cover-color:#8a4313}
 .lit-cover--aegean{--cover-color:#1f5f8b}
-.lit-cover--fog{--cover-color:#bdbab4;color:#2a2a2a}
-.lit-cover--apricot{--cover-color:#f3c08a;color:#4a2c1a}
-.lit-cover--lilac{--cover-color:#ddd3e8;color:#3b2a4f}
+.lit-cover--fog{--cover-color:#bdbab4}
+.lit-cover--apricot{--cover-color:#f3c08a}
+.lit-cover--lilac{--cover-color:#ddd3e8}
 .lit-cover--cherry{--cover-color:#8c3d5b}
-.lit-cover__title{position:relative;z-index:1;writing-mode:vertical-rl;white-space:nowrap;font-family:var(--font-lit-serif),"Noto Serif CJK JP",serif;font-weight:500;font-size:11px;line-height:1.25;letter-spacing:.02em}
-.lit-cover__line{display:block}
-.lit-cover[data-motif=ink-steam] .lit-cover__title{color:#2b2724}
-.lit-cover[data-motif=snow-night] i{background:var(--cover-color);opacity:.8}
-.lit-cover__title--stepped .lit-cover__line:last-child{text-align:end}
-.lit-cover__author{position:relative;z-index:1;align-self:flex-end;height:max-content;margin:0 2px 3px 0;writing-mode:vertical-rl;font-family:var(--font-lit-serif),"Noto Serif CJK JP",serif;font-weight:500;font-size:6px;line-height:1;letter-spacing:.12em;opacity:.82}
-.lit-cover i{position:absolute;z-index:1;left:12px;bottom:8px;width:14px;height:1px;background:currentColor;opacity:.55}
+.lit-cover__slip{position:absolute;z-index:1;top:5px;right:4px;display:flex;flex-direction:row-reverse;align-items:flex-start;gap:1.2px;padding:2.4px 1.9px;background:#f3ead4;color:#231f1b;box-shadow:inset 0 0 0 .9px #3a322a,inset 0 0 0 1.5px #f3ead4,inset 0 0 0 1.9px #3a322a,.4px .6px .8px color-mix(in srgb,#000 35%,transparent)}
+.lit-cover__title{display:flex;flex-direction:row-reverse;gap:1px;font-family:var(--font-lit-serif),"Noto Serif CJK JP",serif;font-weight:500;font-size:11px;line-height:1;letter-spacing:.04em}
+.lit-cover__line{display:block;writing-mode:vertical-rl;white-space:nowrap}
+.lit-cover__title--stepped .lit-cover__line:last-child{padding-top:11px}
+.lit-cover__author{align-self:flex-end;writing-mode:vertical-rl;white-space:nowrap;font-family:var(--font-lit-serif),"Noto Serif CJK JP",serif;font-weight:500;font-size:6px;line-height:1;letter-spacing:.12em;color:#4a4038}
