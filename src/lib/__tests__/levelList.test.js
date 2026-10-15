@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { sliceBetween } from './helpers/sliceBetween.js';
 import { levelListData, levelTileCounts, ZH_POS_GROUPS } from '../levelListData.js';
 import { LEVEL_LIST_LANGS, shortMeaning, levelWordKey, matchesLevelQuery, splitKnown, levelLabel, levelPill, levelListHref, jaHeadMode,
-  LEVEL_PEEK_MS, LEVEL_VIEWS, normalizeLevelPrefs } from '../levelList.js';
+  LEVEL_PEEK_CLOSE_MS, LEVEL_PEEK_MS, LEVEL_VIEWS, normalizeLevelPrefs } from '../levelList.js';
 import { knownWordSetOf, normalizeKnownWord } from '../knownWordControl.js';
 import { exclusionWord } from '../vocabularyExclusion.js';
 import { JAPANESE_VOCAB_REF } from '../japaneseVocabRegistry.js';
@@ -154,6 +154,20 @@ describe('⑹ O · X 빠른 암기 보기 옵션(LEVEL-OX-AN-001)', () => {
   it('보기 탭: 하나만 고른다 — 전체 · 단어 · 문장 · 뜻 · 소리, 카드를 누르면 10초 동안 전부', () => {
     expect(LEVEL_VIEWS.map((v) => v.label)).toEqual(['전체', '단어', '문장', '뜻', '소리']);
     expect(LEVEL_PEEK_MS).toBe(10_000);
+  });
+
+  it('펼치기(4판): 다시 누르면 접기 · 10초 뒤 접기 · 접힘 움직임은 CSS와 같은 길이 · 움직임 줄이기면 즉시', () => {
+    const page = read('src/views/LevelListPage.jsx');
+    const css = read('src/components/levels/level-list.css');
+    expect(sliceBetween(page, 'const togglePeek = ', ';\n')).toContain("peekRef.current.get(key)?.phase === 'open' ? closePeek(key) : openPeek(key)");
+    expect(sliceBetween(page, 'const openPeek = ', '\n  }, [')).toContain('setTimeout(() => closePeek(key), LEVEL_PEEK_MS)');
+    const close = sliceBetween(page, 'const closePeek = ', '\n  }, [');
+    expect(close).toContain("(prefers-reduced-motion: reduce)");
+    expect(close).toContain('LEVEL_PEEK_CLOSE_MS');
+    expect(LEVEL_PEEK_CLOSE_MS).toBe(200);
+    expect(css).toContain('animation:lv-close .2s ease-in');
+    expect(css).toMatch(/@keyframes lv-open\{from\{grid-template-rows:0fr/);
+    expect(css).toMatch(/prefers-reduced-motion:reduce\)\{\.lv-reveal,[^}]*animation:none/);
   });
 
   it('저장된 설정 검증: 보기 전체 · 훈음 켬 · 한자 대조 · 숨기기 끔이 기본, 모르는 값은 버린다', () => {
