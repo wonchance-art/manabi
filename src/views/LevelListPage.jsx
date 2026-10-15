@@ -6,6 +6,7 @@
 // 문형: 읽기 전용(저장 · 번호 · 캡션 · 펼치기 없음).
 // X(모른다) = 공부 중인 단어로 저장 = /api/learning/vocabulary action:'save'(FSRS 직접 추가 정본, 기존 카드는 그대로 돌려받는다).
 // O(안다) = 아는 단어 표시(useKnownWords → markKnown). 다시 누르면 되돌린다. 로그인 전에는 둘 다 로그인 안내만, 기록 0.
+// 단어 · 문장 · 뜻 · 소리 탭의 O · X는 그 탭에만 기록한다(user_word_facets — LEVEL-FACET-AO-001). 탭 X는 공부 중 담기도 같이 한다.
 // 훈음 · 正日은 뷰어 부품을 그대로 쓴다(hunRubyCells + HunCell — 정체 꼴로 찾기, glyphRows — 正 대만 정체 · 日 일본어 표기).
 // 한자(중국어 HSK 1–2): HanziBoard — 답 카드의 단어 칩이 같은 저장 · 제외 함수를 쓴다(HANZI-TAB-AL-001).
 import Link from 'next/link';
@@ -15,7 +16,9 @@ import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { useTTS } from '@/lib/useTTS';
 import { useKnownWords } from '@/lib/useKnownWords';
-import { knownWordKeys, knownWordSetOf } from '@/lib/knownWordControl';
+import { knownWordKeys, knownWordSetOf, normalizeKnownWord } from '@/lib/knownWordControl';
+import { allFacetsKnown, facetIndex, facetMark } from '@/lib/wordFacets';
+import { useWordFacets } from '@/lib/useWordFacets';
 import { createFsrsLearningClient } from '@/lib/fsrsLearningClient';
 import { authEntryHref } from '@/lib/authRedirect';
 import { hunRubyCells } from '@/lib/viewerHunRuby';
@@ -72,12 +75,12 @@ function Example({ ex, lang, speak, hideTranslation }) {
 }
 
 /** [O] 안다(아는 단어) · [X] 모른다(공부 중인 단어) — 누른 쪽이 채워진다. 아는 단어가 먼저다(저장돼 있어도 O면 O만). */
-function OxButtons({ known, studying, saving, pendingKnown, onO, onX }) {
+function OxButtons({ scope, known, studying, saving, pendingKnown, onO, onX }) {
   return <div className="lv-acts">
-    <button type="button" className="lv-fab lv-fab--o" aria-pressed={known} aria-label="안다 — 아는 단어로" title="안다"
+    <button type="button" className="lv-fab lv-fab--o" aria-pressed={known} aria-label={scope ? `${scope} 탭에서 안다` : '안다 — 아는 단어로'} title="안다"
       onClick={onO} disabled={pendingKnown}><CircleIcon /></button>
     <button type="button" className={`lv-fab lv-fab--x${saving ? ' lv-fab--busy' : ''}`} aria-pressed={!known && studying}
-      aria-label={saving ? '공부 중인 단어로 담는 중' : '모른다 — 공부 중인 단어로'} title="모른다"
+      aria-label={saving ? '공부 중인 단어로 담는 중' : `${scope ? `${scope} 탭에서 ` : ''}모른다 — 공부 중인 단어로`} title="모른다"
       aria-disabled={saving || undefined} onClick={saving ? undefined : onX} disabled={pendingKnown}>{saving ? <SpinIcon /> : <CrossIcon />}</button>
   </div>;
 }
@@ -107,7 +110,8 @@ function readingLine(entry, lang, levelKey) {
  * (4판 — 오너 2026-10-15 「다시 클릭하면 닫히게 · 애니메이션 · 닫히면서 단어 위치 변하는 것 개선」). peek = 'open' | 'closing'.
  */
 export function VocabCard({ entry: e, lang, levelKey, view, peek, peekEpoch = 0, onPeek, onRenew, speak, hunCells, glyph, known, studying, saving, pendingKnown, onO, onX }) {
-  const ox = <OxButtons known={known} studying={studying} saving={saving} pendingKnown={pendingKnown} onO={onO} onX={onX} />;
+  const scope = view === 'all' ? null : LEVEL_VIEWS.find((v) => v.id === view)?.label;
+  const ox = <OxButtons scope={scope} known={known} studying={studying} saving={saving} pendingKnown={pendingKnown} onO={onO} onX={onX} />;
   if (view === 'all') return <li className="lv-entry" data-known={known || undefined}>
     <div className="lv-entry__top">
       <div className="lv-entry__word"><Headword entry={e} lang={lang} levelKey={levelKey} hunCells={hunCells} />
@@ -244,6 +248,18 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
 
   const allEntries = useMemo(() => groups.flatMap((g) => g.entries), [groups]);
   const knownSet = useMemo(() => (mounted && userId ? knownWordSetOf(known.rows, [], conf.langCode) : new Set()), [mounted, userId, known.rows, conf.langCode]);
+  // 탭별 O · X(LEVEL-FACET-AO-001) — 전체 탭은 지금처럼 아는 단어 · 공부 중, 나머지 탭은 그 탭의 기록만 본다.
+  const facetView = vocab && prefs.view !== 'all' ? prefs.view : null;
+  const facets = useWordFacets(mounted ? userId : null, conf.langCode, vocab,
+    { onError: () => setToast({ message: '저장하지 못했어요. 잠시 후 다시 시도해 주세요' }) });
+  const facetIdx = useMemo(() => facetIndex(facets.rows), [facets.rows]);
+  // 숨길 단어 — 전체 탭은 아는 단어, 나머지 탭은 아는 단어 + 그 탭에서 O 한 단어.
+  const hiddenSet = useMemo(() => {
+    if (!facetView) return knownSet;
+    const set = new Set(knownSet);
+    for (const [word, marks] of facetIdx) if (marks[facetView] === 'o') set.add(word);
+    return set;
+  }, [facetView, knownSet, facetIdx]);
 
   // 저장됨 — 이미 단어장에 있는 단어는 처음부터 「저장됨」.
   useEffect(() => {
@@ -326,17 +342,38 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
     pendingStudy.current = entry;
     unmark(entry.key);
   };
+  // 탭별 O — 그 탭 기록만 켜고 끈다(아는 단어 · 복습은 그대로). 네 탭이 모두 O면 아는 단어로 옮길지 한 번 묻는다.
+  const markFacetO = (entry) => {
+    if (!userId) return loginToast('로그인하면 아는 단어를 기록할 수 있어요');
+    const facet = facetView, label = LEVEL_VIEWS.find((v) => v.id === facet)?.label;
+    const mark = facetMark(facetIdx, entry.key, facet) === 'o' ? null : 'o';
+    facets.mark({ wordText: entry.key, facet, mark });
+    if (!mark) return;
+    const after = new Map(facetIdx).set(normalizeKnownWord(entry.key), { ...facetIdx.get(normalizeKnownWord(entry.key)), [facet]: 'o' });
+    if (allFacetsKnown(after, entry.key) && !knownSet.has(entry.key)) {
+      setToast({ message: '네 탭 모두 알아요. 아는 단어로 옮길까요?', action: '옮기기', onAction: () => { exclude(entry); setToast(null); } });
+    } else if (prefs.hideKnown) {
+      setToast({ message: `${label} 탭에서 숨겼어요`, action: '되돌리기', onAction: () => { facets.mark({ wordText: entry.key, facet, mark: null }); setToast(null); } });
+    }
+  };
+  // 탭별 X — 그 탭에 X를 남기고 공부 중인 단어로 담는다(markX 그대로). 이미 X면 그 탭 기록만 지운다(담긴 카드는 그대로).
+  const markFacetX = (entry) => {
+    if (!userId) return loginToast('로그인하면 단어를 저장할 수 있어요');
+    if (facetMark(facetIdx, entry.key, facetView) === 'x') return facets.mark({ wordText: entry.key, facet: facetView, mark: null });
+    facets.mark({ wordText: entry.key, facet: facetView, mark: 'x' });
+    markX(entry);
+  };
 
   const hideKnown = vocab && prefs.hideKnown;
   const { shown, knownCount } = useMemo(() => {
     let known = 0;
     const filtered = groups.map((g) => {
-      const split = vocab ? splitKnown(g.entries, knownSet) : { shown: g.entries, known: [] };
+      const split = vocab ? splitKnown(g.entries, hiddenSet) : { shown: g.entries, known: [] };
       known += split.known.length;
       return { name: g.name, entries: (hideKnown ? split.shown : g.entries).filter((e) => matchesLevelQuery(e, query)) };
     });
     return { shown: filtered.filter((g) => g.entries.length), knownCount: known };
-  }, [groups, vocab, knownSet, query, hideKnown]);
+  }, [groups, vocab, hiddenSet, query, hideKnown]);
   useEffect(() => setLimit(LEVEL_LIST_PAGE), [query]);
   // 점진 그리기 — 묶음 순서대로 limit개까지만. 묶음 제목의 개수는 전체 개수다.
   const { visible, total } = useMemo(() => {
@@ -413,7 +450,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
         onClick={() => setSettingsOpen((v) => !v)}><GearIcon /></button>}
     </div>
     {vocab && settingsOpen && <div className="lv-settings" id="lv-settings">
-      {[['hideKnown', '아는 단어 숨기기', knownCount > 0 ? `${knownCount}개` : null],
+      {[['hideKnown', '아는 단어 숨기기', knownCount > 0 ? `${facetView ? `${LEVEL_VIEWS.find((v) => v.id === facetView)?.label} 탭 ` : ''}${knownCount}개` : null],
         ...(zhVocab ? [['hun', '훈음', '한자마다 뜻과 소리'], ['glyph', '한자 대조', '正 대만 정체 · 日 일본어 표기']] : [])]
         .map(([key, label, note]) => <button key={key} type="button" role="switch" className="lv-switch" aria-checked={prefs[key]}
           onClick={() => setPrefs({ [key]: !prefs[key] })}><span>{label}{note && <small>{note}</small>}</span><i aria-hidden="true" /></button>)}
@@ -435,9 +472,10 @@ export default function LevelListPage({ lang, kind, levelKey, groups }) {
               view={prefs.view} peek={peek.get(e.key)?.phase} peekEpoch={peek.get(e.key)?.epoch} onPeek={() => togglePeek(e.key)} onRenew={() => renewPeek(e.key)}
               speak={speakOk ? say : null}
               hunCells={hunOf(e.word)} glyph={glyphOf(e.word)}
-              known={knownSet.has(e.key)} studying={saved.has(e.key)} saving={saving.has(e.key)}
+              known={facetView ? facetMark(facetIdx, e.key, facetView) === 'o' : knownSet.has(e.key)}
+              studying={facetView ? facetMark(facetIdx, e.key, facetView) === 'x' : saved.has(e.key)} saving={saving.has(e.key)}
               pendingKnown={mounted && !!userId && known.isPendingWord(conf.langCode, e.key)}
-              onO={() => markO(e)} onX={() => markX(e)} /> : <li key={e.key} className="lv-pat">
+              onO={() => (facetView ? markFacetO(e) : markO(e))} onX={() => (facetView ? markFacetX(e) : markX(e))} /> : <li key={e.key} className="lv-pat">
               <div className="lv-pat__head"><span className="lv-hw" lang={lang === 'chinese' ? 'zh-CN' : 'ja'}>{e.pattern}</span>{e.ko && <span className="lv-pat__ko">{e.ko}</span>}</div>
               {e.conn && <p className="lv-formula">{e.conn}</p>}
               {e.note && <p className="lv-note">{e.note}</p>}
