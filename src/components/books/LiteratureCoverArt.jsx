@@ -66,8 +66,9 @@ const plover = (x, y, s) => `M${f1(x - 2.8 * s)} ${f1(y)}a${f1(2.8 * s)} ${f1(2.
 const star4 = (x, y, r) => `M${x} ${f1(y - r)}L${f1(x + r * 0.22)} ${f1(y - r * 0.22)} ${f1(x + r)} ${y} ${f1(x + r * 0.22)} ${f1(y + r * 0.22)} ${x} ${f1(y + r)} ${f1(x - r * 0.22)} ${f1(y + r * 0.22)} ${f1(x - r)} ${y} ${f1(x - r * 0.22)} ${f1(y - r * 0.22)}Z`;
 const dots = (seed, n, box, r0, r1) => scatter(n, seed, box).map(([x, y, k]) => { const r = f1(r0 + k * (r1 - r0)); return `M${f1(x - r)} ${y}a${r} ${r} 0 1 0 ${f1(r * 2)} 0a${r} ${r} 0 1 0 ${f1(-r * 2)} 0Z`; }).join('');
 const rain = (seed, n) => scatter(n, seed, [-10, -10, 124, 168]).map(([x, y, k]) => `M${x} ${y}l${f1(-3 - k * 2)} ${f1(14 + k * 10)}`).join('');
-const Fill = ({ c, d }) => <path className={C(c)} d={d} fill="currentColor" />;
-const Line = ({ c, d, w = 0.6, cap }) => <path className={C(c)} d={d} fill="none" stroke="currentColor" strokeWidth={w} strokeLinecap={cap ? 'round' : undefined} strokeLinejoin={cap ? 'round' : undefined} />;
+// focal — 그 표지의 주제(題簽에 가리면 안 되는 것). 배경 문양은 題簽 밑으로 지나가도 된다(무늬 천 위에 題簽을 붙이는 실제 장정과 같다).
+const Fill = ({ c, d, focal }) => <path className={C(c)} d={d} fill="currentColor" data-focal={focal ? '' : undefined} />;
+const Line = ({ c, d, w = 0.6, cap, focal }) => <path className={C(c)} d={d} fill="none" stroke="currentColor" strokeWidth={w} strokeLinecap={cap ? 'round' : undefined} strokeLinejoin={cap ? 'round' : undefined} data-focal={focal ? '' : undefined} />;
 
 // ── 작품별 그림(초출 연대 순 아님 — ART 표 순서) ─────────────────────────
 
@@ -80,7 +81,7 @@ function SnowNight() {
       <Fill c="lt" d={rings.map(([x, y, k]) => yukiwa(x, y, 4 + k * 7)).join('')} />
       <Fill c="dk" d={rings.filter((_, i) => i % 3 === 0).map(([x, y, k]) => yukiwa(x, y, 1.6 + k * 2.8)).join('')} />
       <Fill c="dk" d={prints.map(([x, y]) => `M${x} ${y}a1.4 1.7 0 1 0 2.8 0a1.4 1.7 0 1 0 -2.8 0ZM${f1(x - 1)} ${f1(y - 2.6)}a0.6 0.6 0 1 0 1.2 0a0.6 0.6 0 1 0 -1.2 0ZM${f1(x + 1.4)} ${f1(y - 3.1)}a0.6 0.6 0 1 0 1.2 0a0.6 0.6 0 1 0 -1.2 0ZM${f1(x + 3.4)} ${f1(y - 2.4)}a0.6 0.6 0 1 0 1.2 0a0.6 0.6 0 1 0 -1.2 0Z`).join('')} />
-      <Fill c="acc" d="M14 132V122C14 116 24 116 24 122V132ZM14 127C10 127 9 120 11.6 119.4S14 123 14 124.2Z" />
+      <Fill c="acc" d="M14 132V122C14 116 24 116 24 122V132ZM14 127C10 127 9 120 11.6 119.4S14 123 14 124.2Z" focal />
       <Line c="paper" d="M14 129.4H24" w={1.1} />
     </>
   );
@@ -99,7 +100,7 @@ function Higanbana() {
       <Line c="dk" d={flowers.map(bloom).join('')} w={0.9} cap />
       <Line c="lt" d={flowers.map(([x, y, s]) => Array.from({ length: 6 }, (_, i) => { const a = (i / 6) * Math.PI * 2; return `M${x} ${y}l${f1(Math.cos(a) * 9 * s)} ${f1(Math.sin(a) * 7 * s - 4 * s)}`; }).join('')).join('')} w={0.35} />
       <Fill c="lt" d={dots(2, 40, [2, 70, 118, 166], 0.4, 0.9)} />
-      <Fill c="acc" d={[[20, 72], [32, 66], [27, 82]].map(([x, y]) => `M${x} ${y - 6}C${x + 2} ${y - 4} ${x + 6} ${y - 1} ${x + 5} ${y + 2}C${x + 4} ${y + 5} ${x - 4} ${y + 5} ${x - 5} ${y + 2}C${x - 6} ${y - 1} ${x - 2} ${y - 4} ${x} ${y - 6}Z`).join('')} />
+      <Fill focal c="acc" d={[[20, 72], [32, 66], [27, 82]].map(([x, y]) => `M${x} ${y - 6}C${x + 2} ${y - 4} ${x + 6} ${y - 1} ${x + 5} ${y + 2}C${x + 4} ${y + 5} ${x - 4} ${y + 5} ${x - 5} ${y + 2}C${x - 6} ${y - 1} ${x - 2} ${y - 4} ${x} ${y - 6}Z`).join('')} />
       <Fill c="dd" d={[[20, 72], [32, 66], [27, 82]].map(([x, y]) => `M${x - 4.6} ${y + 1.6}C${x - 2} ${y + 4.6} ${x + 2} ${y + 4.6} ${x + 4.6} ${y + 1.6}C${x + 3} ${y + 5.6} ${x - 3} ${y + 5.6} ${x - 4.6} ${y + 1.6}Z`).join('')} />
     </>
   );
@@ -114,10 +115,12 @@ function ForestDoors() {
       <Fill c="lt" d={firs.map(fir).join('')} />
       <Fill c="dk" d={[[18, 120, 1.3], [48, 150, 1.1], [100, 168, 1.2], [76, 168, 0.9]].map(fir).join('')} />
       <Line c="dk" d="M4 0V168M36 0V168M64 20V168" w={2.2} />
-      <Fill c="dd" d="M28 140V92C28 82 52 82 52 92V140Z" />
+      <g transform="translate(-16 0)">
+      <Fill c="dd" d="M28 140V92C28 82 52 82 52 92V140Z" focal />
       <Line c="acc" d="M28 140V92C28 82 52 82 52 92V140M40 84.6V140M31 96H37V112H31ZM43 96H49V112H43ZM31 118H37V134H31ZM43 118H49V134H43Z" w={0.7} />
       <Fill c="acc" d="M36.4 124a1.3 1.3 0 1 0 2.6 0a1.3 1.3 0 1 0 -2.6 0ZM41 124a1.3 1.3 0 1 0 2.6 0a1.3 1.3 0 1 0 -2.6 0Z" />
       <Line c="acc" d="M26 140H54" w={1.2} />
+      </g>
     </>
   );
 }
@@ -130,7 +133,7 @@ function InkSteam() {
       <Fill c="lt" d={clouds.map(([x, y, s]) => cloud(x, y, s)).join('')} />
       <Line c="dk" d={clouds.map(([x, y, s]) => swirl(x + 6 * s, y - 2 * s, 2.2 * s)).join('')} w={0.6} />
       <Line c="lt" d="M18 168C14 150 26 140 20 124S28 100 22 86M30 168C27 154 36 146 32 132" w={0.9} cap />
-      <Fill c="acc" d="M10 150H22V162H10Z" />
+      <Fill c="acc" d="M10 150H22V162H10Z" focal />
       <Line c="paper" d="M12.4 152.4H19.6V159.6H12.4ZM16 152.4V159.6M12.4 156H19.6" w={0.6} />
     </>
   );
@@ -145,8 +148,8 @@ function Birdcage() {
       <Line c="dk" d={ears.map(([x, y, r]) => `M${x} 168Q${f1(x + 2)} ${f1(y + 20)} ${x} ${y}`).join('')} w={0.8} />
       <Fill c="dk" d={ears.map(([x, y, r]) => Array.from({ length: 6 }, (_, i) => { const yy = y + i * 3; const xx = x + Math.sin((r * Math.PI) / 180) * i * 1.2; return `M${f1(xx - 1.4)} ${f1(yy)}a1.4 1.8 0 1 0 2.8 0a1.4 1.8 0 1 0 -2.8 0Z`; }).join('')).join('')} />
       <Line c="dk" d="M32 26V34M14 64C14 44 50 44 50 64M14 64V112M50 64V112M14 112H50M14 64H50M20 58V112M26 54V112M32 52V112M38 54V112M44 58V112M14 88H50" w={0.7} />
-      <Fill c="dk" d="M10 112H54V117H10Z" />
-      <Fill c="paper" d="M24 98c0 -6 6 -9 10 -7c2 -3 6 -3 7 0c-1 1 -3 1 -4 2c1 4 -2 8 -7 8h-6Z" />
+      <Fill c="dk" d="M10 112H54V117H10Z" focal />
+      <Fill c="paper" d="M24 98c0 -6 6 -9 10 -7c2 -3 6 -3 7 0c-1 1 -3 1 -4 2c1 4 -2 8 -7 8h-6Z" focal />
       <Fill c="acc" d="M38 91.6l3.6 1.2 -3.6 1.4Z" />
       <Line c="dk" d="M24 98c0 -6 6 -9 10 -7c2 -3 6 -3 7 0M22 101H40" w={0.5} />
     </>
@@ -159,7 +162,7 @@ function RainGate() {
   return (
     <>
       <Fill c="acc" d="M0 44H120V47H0Z" />
-      <Fill c="dd" d={`M30 34l3 2h-6ZM-4 52C10 50 20 44 30 38C40 44 50 50 64 52L60 55C46 53 38 49 30 44C22 49 14 53 0 55ZM3 55H57V70H3ZM-1 70H61V72.4H-1ZM-8 82C8 80 18 76 30 72C42 76 52 80 68 82L64 85.6C50 84 40 81 30 78C20 81 10 84 -4 85.6ZM2 85.6H58V91H2Z${pillars}M2 100h56v2.6h-56ZM-4 147H64V151H-4ZM-8 151H68V155H-8ZM-12 155H72V168H-12Z`} />
+      <Fill focal c="dd" d={`M30 34l3 2h-6ZM-4 52C10 50 20 44 30 38C40 44 50 50 64 52L60 55C46 53 38 49 30 44C22 49 14 53 0 55ZM3 55H57V70H3ZM-1 70H61V72.4H-1ZM-8 82C8 80 18 76 30 72C42 76 52 80 66 82L62 85.6C50 84 40 81 30 78C20 81 10 84 -4 85.6ZM2 85.6H58V91H2Z${pillars}M2 100h56v2.6h-56ZM-4 147H64V151H-4ZM-8 151H68V155H-8ZM-12 155H72V168H-12Z`} />
       <Line c="dk" d="M6 58V67M10 58V67M14 58V67M18 58V67M42 58V67M46 58V67M50 58V67M54 58V67M24 58H36V67H24ZM4 88H56" w={0.45} />
       <Line c="lt" d={rain(5, 80)} w={0.55} />
       <Fill c="dd" d="M66 26q3 -3 6 -1q3 -2 6 1q-3 -1 -6 1q-3 -2 -6 -1zM52 18q2.4 -2.4 4.8 -0.8q2.4 -1.6 4.8 0.8q-2.4 -0.8 -4.8 0.8q-2.4 -1.6 -4.8 -0.8zM74 36q2 -2 4 -0.6q2 -1.4 4 0.6q-2 -0.6 -4 0.6q-2 -1.4 -4 -0.6z" />
@@ -176,8 +179,8 @@ function LotusThread() {
       <Line c="dk" d={pads.map(([x, y, r]) => Array.from({ length: 5 }, (_, i) => { const a = Math.PI * (0.25 + i * 0.35); return `M${x} ${y}l${f1(Math.cos(a) * r * 0.9)} ${f1(Math.sin(a) * r * 0.38)}`; }).join('')).join('')} w={0.4} />
       <Fill c="dk" d="M30 110C26 102 28 94 34 90C34 96 36 100 34 104C38 98 42 96 46 96C44 102 40 106 34 110ZM34 110V128" />
       <Line c="dk" d="M34 110V128" w={0.8} />
-      <Line c="acc" d="M50 0V138" w={0.5} />
-      <Fill c="acc" d="M48.6 140a1.6 1.9 0 1 0 2.8 0a1.6 1.9 0 1 0 -2.8 0Z" />
+      <Line c="acc" d="M50 0V138" w={0.5} focal />
+      <Fill c="acc" d="M48.6 140a1.6 1.9 0 1 0 2.8 0a1.6 1.9 0 1 0 -2.8 0Z" focal />
       <Line c="acc" d="M47 138.6l-2 -1.6M47 141l-2.4 0.4M53 138.6l2 -1.6M53 141l2.4 0.4" w={0.4} />
       <Fill c="lt" d={dots(7, 26, [2, 6, 118, 90], 0.25, 0.6)} />
     </>
@@ -189,12 +192,12 @@ function MoonTiger() {
   const blades = scatter(30, 8, [0, 96, 120, 168]).map(([x, y, k]) => `M${x} 168Q${f1(x + 4 + k * 6)} ${f1(y + 18)} ${f1(x + 16 + k * 10)} ${y}`).join('');
   return (
     <>
-      <Fill c="acc" d="M10 34a14 14 0 1 0 28 0a14 14 0 1 0 -28 0Z" />
+      <Fill c="acc" d="M10 34a14 14 0 1 0 28 0a14 14 0 1 0 -28 0Z" focal />
       <Fill c="lt" d="M14 30c3 -2 6 -1 7 1M26 40c2 0 4 1 4 3" />
       <Line c="lt" d={blades} w={0.7} />
       <Line c="dk" d={scatter(14, 9, [0, 110, 110, 168]).map(([x, y, k]) => `M${x} 168Q${f1(x + 6)} ${f1(y + 14)} ${f1(x + 20 + k * 8)} ${y}`).join('')} w={1} />
       <Fill c="dk" d={scatter(10, 11, [2, 80, 70, 110]).map(([x, y, k]) => `M${x} ${y}q${f1(3 + k * 2)} -4 ${f1(6 + k * 3)} 0q${f1(-3 - k)} -1 ${f1(-6 - k * 3)} 0Z`).join('')} />
-      <Fill c="dd" d="M8 128c6 -6 18 -8 30 -6c6 1 10 4 12 8c-6 -2 -10 -2 -14 0c-8 -2 -18 -2 -28 -2Z" />
+      <Fill c="dd" d="M8 128c6 -6 18 -8 30 -6c6 1 10 4 12 8c-6 -2 -10 -2 -14 0c-8 -2 -18 -2 -28 -2Z" focal />
       <Line c="acc" d="M14 125l2 4M20 123.4l2 4.6M26 123l1.6 4.8M32 123.4l1.4 4.4M38 124.4l1 3.6" w={0.9} />
     </>
   );
@@ -210,9 +213,9 @@ function SteamSea() {
       <Line c="dk" d={hoppers.map(hopper).join('')} w={0.9} cap />
       <Line c="dk" d={seigaiha(-4, 134, 124, 172, 6)} w={0.6} />
       <Line c="dd" d="M14 128L34 108" w={0.8} cap />
-      <Fill c="acc" d="M17 125a2.6 2.6 0 1 0 0.1 0Z" />
+      <Fill c="acc" d="M17 125a2.6 2.6 0 1 0 0.1 0Z" focal />
       <Fill c="paper" d="M21.6 120.4a2.6 2.6 0 1 0 0.1 0Z" />
-      <Fill c="acc2" d="M26.2 115.8a2.6 2.6 0 1 0 0.1 0Z" />
+      <Fill c="acc2" d="M26.2 115.8a2.6 2.6 0 1 0 0.1 0Z" focal />
     </>
   );
 }
@@ -226,7 +229,7 @@ function LemonBooks() {
       <Fill c="lt" d={[2, 6, 9, 16, 19, 27, 31, 44, 47, 55, 58, 30, 35, 13].map((x, i) => `M${x} ${[4, 4, 8, 6, 4, 10, 6, 4, 8, 6, 10, 32, 30, 58][i]}h${[3, 2.4, 4, 2, 5, 3, 4, 2.6, 5, 3, 2.4, 4, 3, 4][i]}v${[20, 20, 16, 18, 20, 14, 18, 20, 16, 18, 14, 20, 22, 22][i]}h${-[3, 2.4, 4, 2, 5, 3, 4, 2.6, 5, 3, 2.4, 4, 3, 4][i]}Z`).join('')} />
       <Fill c="dk" d={books.map(([x, y, w, h, r]) => `M${x} ${y}h${w}v${h}h${-w}Z`).join('')} />
       <Line c="lt" d={books.map(([x, y, w, h]) => `M${x + 2} ${f1(y + h * 0.5)}h${w - 4}`).join('')} w={0.5} />
-      <Fill c="acc" d="M20 102c0 -4.6 5 -7.6 11 -7.6s11 3 11 7.6 -5 7.6 -11 7.6 -11 -3 -11 -7.6ZM20.4 100.8l-4 1.2 4 1.4ZM41.6 100.8l4 1.2 -4 1.4Z" />
+      <Fill c="acc" d="M20 102c0 -4.6 5 -7.6 11 -7.6s11 3 11 7.6 -5 7.6 -11 7.6 -11 -3 -11 -7.6ZM20.4 100.8l-4 1.2 4 1.4ZM41.6 100.8l4 1.2 -4 1.4Z" focal />
       <Line c="acc2" d="M24 98.4q4 -2.4 9 -1.6" w={0.7} cap />
     </>
   );
@@ -239,8 +242,8 @@ function NightjarStar() {
       <Fill c="lt" d={scatter(36, 3, [2, 2, 118, 166]).map(([x, y, k]) => star4(x, y, 1 + k * 2.4)).join('')} />
       <Line c="dk" d="M0 150C20 140 30 146 46 138S80 136 120 128M0 160C24 152 50 158 72 150S104 148 120 144" w={1.2} />
       <Fill c="dk" d="M0 150C20 140 30 146 46 138S80 136 120 128V168H0Z" />
-      <Fill c="dd" d="M40 82l3 -6 3 6 10 -4 -9 8 -1 8 -3 -4 -3 4 -1 -8 -9 -8Z" />
-      <Fill c="acc" d={star4(22, 26, 9)} />
+      <Fill c="dd" d="M40 82l3 -6 3 6 10 -4 -9 8 -1 8 -3 -4 -3 4 -1 -8 -9 -8Z" focal />
+      <Fill c="acc" d={star4(22, 26, 9)} focal />
       <Fill c="acc2" d="M18.6 26a3.4 3.4 0 1 0 6.8 0a3.4 3.4 0 1 0 -6.8 0Z" />
     </>
   );
@@ -254,10 +257,10 @@ function NightBoat() {
       <Line c="lt" d={kanze.map(([x, y, r]) => `${swirl(x, y, r)}M${f1(x - r * 3)} ${f1(y + r * 0.4)}C${f1(x - r * 4)} ${f1(y + r * 1.2)} ${f1(x - r * 5.2)} ${f1(y + r * 1.4)} ${f1(x - r * 6)} ${f1(y + r)}`).join('')} w={0.8} />
       <Line c="dk" d="M4 0C8 20 6 44 10 72M10 0C14 18 13 40 17 64M16 0C19 14 19 30 22 48M2 10C4 30 2 52 5 84M22 0C24 10 25 22 27 34" w={0.9} cap />
       <Fill c="dk" d={scatter(18, 6, [2, 10, 26, 80]).map(([x, y]) => `M${x} ${y}c0.8 1 0.8 3 0 4c-0.8 -1 -0.8 -3 0 -4Z`).join('')} />
-      <Fill c="dd" d="M18 102H64L58 108H23Z" />
+      <Fill c="dd" d="M18 102H64L58 108H23Z" focal />
       <Line c="dd" d="M58 102L66 80" w={0.9} />
       <Fill c="dd" d="M30 102v-6c0 -2 2 -3 3.4 -3s3.4 1 3.4 3v6ZM44 102v-5.6c0 -2 2 -3 3.4 -3s3.4 1 3.4 3V102Z" />
-      <Fill c="acc" d="M38.4 97a1.8 2.2 0 1 0 3.6 0a1.8 2.2 0 1 0 -3.6 0Z" />
+      <Fill c="acc" d="M38.4 97a1.8 2.2 0 1 0 3.6 0a1.8 2.2 0 1 0 -3.6 0Z" focal />
     </>
   );
 }
@@ -269,11 +272,11 @@ function CelloNight() {
     <>
       <Line c="lt" d={staff} w={0.45} />
       <Fill c="lt" d={[[10, 46], [24, 43], [70, 98], [96, 92], [14, 142], [60, 140], [86, 146]].map(([x, y]) => `M${x} ${y}a2 1.5 0 1 0 4 0a2 1.5 0 1 0 -4 0ZM${x + 3.6} ${y}v-9h0.8v9Z`).join('')} />
-      <g transform="rotate(-18 30 100)">
+      <g transform="translate(-4 0) rotate(-18 30 100)" data-focal="">
         <Fill c="dk" d="M30 70C23 70 19 75 20 82C20.6 86 23 88 23 90S19 94 19 101C19 111 24 118 30 118S41 111 41 101C41 94 37 92 37 90S39.4 86 40 82C41 75 37 70 30 70ZM28.6 30h2.8v42h-2.8ZM28 30c-1 -3 0 -6 2 -6s3 2 2 4.6l-0.6 1.4ZM30 118v8" />
         <Line c="lt" d="M25.6 86c-1.4 2.6 -1 5.4 0.4 7.4M34.4 86c1.4 2.6 1 5.4 -0.4 7.4M25.6 100h8.8M29.2 34V108M30.8 34V108" w={0.4} />
       </g>
-      <Fill c="paper" d="M60 72c-3 -2 -6 -1 -6.6 2c3 0 5 1 6 3c2 0.4 5 0 6 -2c-1.6 -2 -3.4 -2.6 -5.4 -3ZM66 75l4 -1.6 -3.4 3.2Z" />
+      <g transform="translate(-2 80)"><Fill c="paper" d="M60 72c-3 -2 -6 -1 -6.6 2c3 0 5 1 6 3c2 0.4 5 0 6 -2c-1.6 -2 -3.4 -2.6 -5.4 -3ZM66 75l4 -1.6 -3.4 3.2Z" focal /></g>
     </>
   );
 }
@@ -291,12 +294,12 @@ function NightTrain() {
       <Fill c="lt" d={core} />
       <Fill c="lt" d={dots(31, 46, [0, 0, 120, 168], 0.25, 0.9)} />
       <Fill c="paper" d={inBand.map(([x, y, k]) => { const r = f1(0.25 + k * 0.5); return `M${f1(x - r)} ${y}a${r} ${r} 0 1 0 ${f1(r * 2)} 0a${r} ${r} 0 1 0 ${f1(-r * 2)} 0Z`; }).join('')} />
-      <g transform="rotate(-52 40 122)">
+      <g transform="translate(-10 10) rotate(-52 40 122)" data-focal="">
         <Fill c="acc" d={`M58 110H72L75 114V121H58ZM62 106h3v4h-3Z${cars}`} />
         <Fill c="dd" d={windows} />
-        <Line c="acc" d={`M0 122.5H84M0 134H90${[6, 18, 30, 42, 54, 66, 78].map((x) => `M${x} 122.5L${x + 3} 134M${x + 6} 122.5L${x + 3} 134`).join('')}`} w={0.6} />
+        <Line c="acc" d={`M-6 122.5H78M-6 134H78${[-6, 6, 18, 30, 42, 54, 66].map((x) => `M${x} 122.5L${x + 3} 134M${x + 6} 122.5L${x + 3} 134`).join('')}`} w={0.6} />
       </g>
-      <Fill c="acc" d={star4(22, 22, 6)} />
+      <Fill c="acc" d={star4(22, 22, 6)} focal />
     </>
   );
 }
@@ -307,7 +310,7 @@ function KamakuraLetter() {
     <>
       <Line c="lt" d={seigaiha(-4, 88, 124, 172, 7)} w={0.75} />
       <Line c="dk" d={seigaiha(-4, 88, 124, 172, 7).split('M').filter((_, i) => i % 3 === 1).map((s) => `M${s}`).join('')} w={0.75} />
-      <Fill c="paper" d={`${plover(22, 62, 1.3)}${plover(40, 48, 1.1)}${plover(12, 40, 0.95)}`} />
+      <Fill c="paper" d={`${plover(22, 62, 1.3)}${plover(40, 48, 1.1)}${plover(12, 40, 0.95)}`} focal />
     </>
   );
 }
@@ -321,9 +324,9 @@ function CrabPear() {
       <Line c="dk" d={dots(16, 14, [6, 20, 60, 110], 0.8, 2)} w={0.5} />
       <Fill c="dk" d="M0 156Q30 148 60 154T120 150V168H0Z" />
       <Fill c="dd" d="M14 150a5 3 0 1 0 10 0a5 3 0 1 0 -10 0ZM14.6 147.6l-3 -4 2.4 -0.6 2.2 3.4ZM23.4 147.6l3 -4 -2.4 -0.6 -2.2 3.4ZM36 156a4 2.6 0 1 0 8 0a4 2.6 0 1 0 -8 0ZM36.6 154l-2.6 -3.2 2 -0.4 1.8 2.8ZM43.4 154l2.6 -3.2 -2 -0.4 -1.8 2.8Z" />
-      <Fill c="acc" d="M36 98a7 7 0 1 0 14 0a7 7 0 1 0 -14 0Z" />
+      <Fill c="acc" d="M36 98a7 7 0 1 0 14 0a7 7 0 1 0 -14 0Z" focal />
       <Line c="dk" d="M43 91q1 -4 3.6 -5" w={0.8} cap />
-      <Fill c="acc2" d="M30 32c-3 -3 -4 -8 -2 -11c2 -1 5 1 6 4l6 -3 -4 6c1 3 0 6 -2 7l4 8 -6 -6c-1 0 -2 -1 -2 -2l-4 6Z" />
+      <Fill c="acc2" d="M30 32c-3 -3 -4 -8 -2 -11c2 -1 5 1 6 4l6 -3 -4 6c1 3 0 6 -2 7l4 8 -6 -6c-1 0 -2 -1 -2 -2l-4 6Z" focal />
       <Fill c="acc" d="M32.6 36.4l1.6 2 -2.2 -0.6Z" />
     </>
   );
@@ -341,8 +344,8 @@ function WindHill() {
       <Fill c="lt" d={leaves.map(leaf).join('')} />
       <Fill c="acc" d={leaves.filter((_, i) => i % 6 === 0).map(leaf).join('')} />
       <Fill c="dk" d="M0 150C30 136 70 132 120 140V168H0Z" />
-      <Fill c="dd" d="M58 132l9 -7 9 7ZM60 132h14v8h-14Z" />
-      <Fill c="paper" d="M62.4 134h3v3h-3ZM68.4 134h3v3h-3Z" />
+      <Fill c="dd" d="M38 136l9 -7 9 7ZM40 136h14v8h-14Z" focal />
+      <Fill c="paper" d="M42.4 138h3v3h-3ZM48.4 138h3v3h-3Z" />
     </>
   );
 }
@@ -355,7 +358,7 @@ function DuskRails() {
       <Fill c="lt" d={trees.map(([x, y, k]) => { const r = f1(6 + k * 5); return `M${f1(x - r)} ${y}a${r} ${f1(r * 0.8)} 0 1 0 ${f1(r * 2)} 0a${r} ${f1(r * 0.8)} 0 1 0 ${f1(-r * 2)} 0Z`; }).join('')} />
       <Line c="dk" d="M24 168L58 0M50 168L66 0" w={1.1} />
       <Line c="dk" d={Array.from({ length: 16 }, (_, i) => { const t = i / 16; return `M${f1(24 + 34 * t - 1)} ${f1(168 - 168 * t)}H${f1(50 + 16 * t + 1)}`; }).join('')} w={0.7} />
-      <Fill c="acc" d={trees.flatMap(([x, y, k], i) => (i % 2 ? [] : [[x - 3, y - 1], [x + 2.4, y + 1.6]])).map(([x, y]) => `M${f1(x - 1.5)} ${f1(y)}a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0 -3 0Z`).join('')} />
+      <Fill focal c="acc" d={trees.flatMap(([x, y, k], i) => (i % 2 || (x > 62 && y < 124) ? [] : [[x - 3, y - 1], [x + 2.4, y + 1.6]])).map(([x, y]) => `M${f1(x - 1.5)} ${f1(y)}a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0 -3 0Z`).join('')} />
     </>
   );
 }
@@ -369,7 +372,7 @@ function PeachHouse() {
       <Line c="dk" d={clouds.map(([x, y, s]) => cloud(x, y, s)).join('')} w={0.6} />
       <Line c="dd" d="M0 140C14 132 22 136 30 128S44 122 52 116" w={1.2} cap />
       <Fill c="dk" d={[[12, 134], [26, 128], [40, 120], [50, 114], [20, 142]].map(([x, y], i) => sakura(x, y, 3, i * 30)).join('')} />
-      <Fill c="acc" d="M34 136c-4 0 -6 4 -5 7c2 4 8 4 10 0c1 -3 -1 -7 -5 -7Z" />
+      <Fill c="acc" d="M34 136c-4 0 -6 4 -5 7c2 4 8 4 10 0c1 -3 -1 -7 -5 -7Z" focal />
       <Fill c="acc2" d="M34 136c2 -3 5 -4 8 -3c-2 2 -5 3 -8 3Z" />
     </>
   );
@@ -380,7 +383,7 @@ function DecoChair() {
   return (
     <>
       <Line c="lt" d={[[4, 70], [10, 44], [22, 30], [38, 30], [50, 44], [57, 70], [70, 96], [90, 120]].map(([x, y]) => `M30 168L${x} ${y}`).join('')} w={0.5} />
-      <Fill c="lt" d="M14 80C14 70 20 66 30 66S46 70 46 80V112H14ZM6 100C6 94 10 92 14 92V128H6ZM46 92C50 92 54 94 54 100V128H46ZM6 112h48v18h-48ZM9 130h4v12h-4ZM47 130h4v12h-4Z" />
+      <Fill c="lt" d="M14 80C14 70 20 66 30 66S46 70 46 80V112H14ZM6 100C6 94 10 92 14 92V128H6ZM46 92C50 92 54 94 54 100V128H46ZM6 112h48v18h-48ZM9 130h4v12h-4ZM47 130h4v12h-4Z" focal />
       <Line c="acc" d="M18 84H42M18 96H42M30 70V110M14 112H46M4 146H58" w={0.6} />
       <Fill c="acc" d={[[22, 78], [38, 78], [22, 90], [38, 90], [22, 102], [38, 102]].map(([x, y]) => `M${x - 0.9} ${y}a0.9 0.9 0 1 0 1.8 0a0.9 0.9 0 1 0 -1.8 0Z`).join('')} />
       <Fill c="paper" d="M25 96Q30 92.6 35 96Q30 99.4 25 96Z" />
@@ -399,7 +402,7 @@ function SpiderWeb() {
       <Line c="lt" d={`${spokes.map((a) => `M${cx} ${cy}L${f1(cx + 90 * Math.cos(a))} ${f1(cy + 90 * Math.sin(a))}`).join('')}${[10, 20, 32, 46, 62, 80].map((r) => `${ring(r)}Z`).join('')}`} w={0.4} />
       <Line c="dk" d={`M${cx} 0V74${[10, 20, 32].map((r) => `${ring(r)}Z`).join('')}`} w={0.5} />
       <Line c="dd" d="M27 96L19 88 16 78M27 99L15 96 9 90M27 102L16 106 11 114M28 104L22 114 22 124M33 96L41 88 44 78M33 99L45 96 51 90M33 102L44 106 49 114M32 104L38 114 38 124" w={1} cap />
-      <Fill c="dd" d="M26.4 96.5a3.6 3 0 1 0 7.2 0a3.6 3 0 1 0 -7.2 0ZM24.8 108a5.2 8.6 0 1 0 10.4 0a5.2 8.6 0 1 0 -10.4 0Z" />
+      <Fill c="dd" d="M26.4 96.5a3.6 3 0 1 0 7.2 0a3.6 3 0 1 0 -7.2 0ZM24.8 108a5.2 8.6 0 1 0 10.4 0a5.2 8.6 0 1 0 -10.4 0Z" focal />
       <Line c="acc" d="M25.8 104H34.2M25.2 108H34.8M25.8 112H34.2" w={1.1} />
     </>
   );
@@ -414,7 +417,7 @@ function MelosRun() {
       <Fill c="dk" d="M0 84Q20 78 34 84T70 82T120 84V150H0Z" />
       <Line c="lt" d={curls.map(([x, y, k]) => { const r = 3 + k * 4; return `M${f1(x - r * 1.6)} ${y}Q${f1(x - r)} ${f1(y - r * 1.2)} ${f1(x + r * 0.2)} ${f1(y - r * 0.6)}Q${f1(x + r * 0.6)} ${f1(y + r * 0.2)} ${f1(x - r * 0.1)} ${f1(y + r * 0.3)}`; }).join('')} w={0.9} cap />
       <Fill c="dd" d="M6 80h4v14h-4ZM50 78h4v14h-4ZM0 150Q30 144 60 150T120 148V168H0Z" />
-      <Fill c="paper" d="M29.4 62a2.6 2.6 0 1 0 5.2 0a2.6 2.6 0 1 0 -5.2 0Z" />
+      <Fill c="paper" d="M29.4 62a2.6 2.6 0 1 0 5.2 0a2.6 2.6 0 1 0 -5.2 0Z" focal />
       <Line c="paper" d="M31 65L27 74 20 78M29 70L36 76 41 74M30 67L24 64 20 66M31 67L37 64 41 60" w={1.8} cap />
     </>
   );
@@ -425,19 +428,19 @@ function ClownPhotos() {
   return (
     <>
       <Fill c="lt" d={dots(29, 30, [2, 2, 118, 166], 0.3, 0.8)} />
-      <g transform="rotate(-9 24 40)">
+      <g transform="rotate(-9 24 40)" data-focal="">
         <Fill c="paper" d="M10 22h28v34h-28Z" />
         <Fill c="dk" d="M13 25h22v22h-22Z" />
         <Line c="paper" d="M16 47V36H32V47M20 36V31H28V36" w={0.6} />
       </g>
-      <g transform="rotate(7 32 92)">
+      <g transform="rotate(7 32 92)" data-focal="">
         <Fill c="paper" d="M16 72h32v40h-32Z" />
         <Fill c="dk" d="M19 75h26v27h-26Z" />
         <Fill c="paper" d="M23 88a9 9 0 1 0 18 0a9 9 0 1 0 -18 0Z" />
         <Line c="dd" d="M27.5 86Q29 84.4 30.5 86M33.5 86Q35 84.4 36.5 86" w={0.9} cap />
         <Line c="acc" d="M28 90.5Q32 95 36 90.5" w={1.1} cap />
       </g>
-      <g transform="rotate(-4 26 140)">
+      <g transform="rotate(-4 26 140)" data-focal="">
         <Fill c="paper" d="M10 122h30v36h-30Z" />
         <Fill c="dd" d="M13 125h24v24h-24Z" />
       </g>
@@ -450,12 +453,12 @@ function SettingSun() {
   return (
     <>
       <Line c="lt" d="M30 104L-10 60M30 104L0 40M30 104L16 26M30 104L36 24M30 104L56 30M30 104L76 44M30 104L96 64" w={0.8} />
-      <Fill c="dk" d="M6 104A24 24 0 0 1 54 104Z" />
+      <Fill c="dk" d="M6 104A24 24 0 0 1 54 104Z" focal />
       <Fill c="lt" d="M14 104A16 16 0 0 1 46 104Z" />
       <Line c="dk" d="M0 110H120M8 118H52M14 126H46M20 134H40" w={0.8} />
       <Fill c="dk" d="M0 150Q30 136 60 144T120 140V168H0Z" />
-      <Fill c="dd" d="M10 146l8 -6 8 6ZM12 146h12v6h-12Z" />
-      <Line c="acc" d="M64 160c6 -4 10 0 14 -2s6 -6 10 -4 4 4 8 2" w={1.6} cap />
+      <Fill c="dd" d="M10 146l8 -6 8 6ZM12 146h12v6h-12Z" focal />
+      <Line c="acc" d="M64 160c6 -4 10 0 14 -2s6 -6 10 -4 4 4 8 2" w={1.6} cap focal />
       <Fill c="acc" d="M95.4 156.4a2 1.4 0 1 0 4 0a2 1.4 0 1 0 -4 0Z" />
     </>
   );
@@ -467,14 +470,14 @@ function UmbrellaRose() {
     <>
       <Fill c="lt" d={dots(33, 34, [2, 2, 118, 166], 0.4, 1.1)} />
       <Line c="dk" d="M6 23a6 6 0 1 0 12 0a6 6 0 1 0 -12 0ZM24 23a6 6 0 1 0 12 0a6 6 0 1 0 -12 0ZM18 22q3 -2 6 0M6 22l-5 -3M36 22l5 -3" w={1.1} />
-      <g transform="rotate(-30 32 96)">
+      <g transform="rotate(-30 32 96)" data-focal="">
         <Fill c="dk" d="M32 48L22 120H42Z" />
         <Line c="lt" d="M32 48L28 120M32 48L36 120" w={0.5} />
         <Line c="dd" d="M32 120V138Q32 143 27 143T22 138M32 42V48" w={1.6} cap />
       </g>
       <Line c="dd" d="M52 166L48 138" w={1} />
       <Fill c="dd" d="M49.6 152C44 150 42 146 43 143C47 144 49.6 147 49.6 152ZM50.6 158C55 157 58 154 58 150C54 150.6 51.4 153.6 50.6 158Z" />
-      <Fill c="acc" d="M42 134a6 6 0 1 0 12 0a6 6 0 1 0 -12 0Z" />
+      <Fill c="acc" d="M42 134a6 6 0 1 0 12 0a6 6 0 1 0 -12 0Z" focal />
       <Line c="paper" d="M45 133.6Q48 130.6 51 133.6Q48 136 45 133.6ZM46 136.6Q48 138.6 50 136.6" w={0.6} />
     </>
   );
@@ -483,13 +486,13 @@ function UmbrellaRose() {
 // 桜の森の満開の下(1947) — 桜散らし: 판면을 덮은 벚꽃 송이를 두 단으로, 그 사이로 지는 꽃잎, 薄桜 송이 셋.
 function BlossomStorm() {
   const flowers = scatter(24, 41, [-6, -6, 126, 174]);
-  const pale = [[18, 118, 9, 10], [40, 140, 6, 40], [12, 150, 5, 70]];
+  const pale = [[18, 118, 9, 10], [34, 148, 6, 40], [10, 154, 5, 70]];
   return (
     <>
       <Fill c="dk" d={flowers.map(([x, y, k]) => sakura(x, y, 6 + k * 6, k * 70)).join('')} />
       <Fill c="dd" d={flowers.map(([x, y]) => `M${f1(x - 1.3)} ${y}a1.3 1.3 0 1 0 2.6 0a1.3 1.3 0 1 0 -2.6 0Z`).join('')} />
       <Fill c="lt" d={petals(43, 30, [0, 0, 120, 168], 0.9)} />
-      <Fill c="acc" d={pale.map(([x, y, r, rot]) => sakura(x, y, r, rot)).join('')} />
+      <Fill c="acc" d={pale.map(([x, y, r, rot]) => sakura(x, y, r, rot)).join('')} focal />
       <Fill c="dd" d={pale.map(([x, y]) => `M${x - 1.4} ${y}a1.4 1.4 0 1 0 2.8 0a1.4 1.4 0 1 0 -2.8 0Z`).join('')} />
     </>
   );
