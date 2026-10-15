@@ -59,11 +59,12 @@ describe('산출 주입 배선 계약', () => {
     const path = await import('node:path');
     const read = (p) => fs.readFileSync(path.join(process.cwd(), p), 'utf8');
     expect(read('src/views/WritingStudioPage.jsx')).toContain('OutputWordChips');
-    const conv = read('src/components/ConversationPanel.jsx');
+    // 대화(v2-Z): 화면이 칩·✓를 그리고, 오늘 단어는 서버 프롬프트에 조건부 주입된다.
+    const conv = read('src/components/conversation/ConversationThread.jsx');
     expect(conv).toContain('OutputWordChips');
-    expect(conv).toContain('useOutputWords');
-    expect(conv).toContain('Never force them'); // 자연 주입 — 강제 금지 문구
     expect(conv).toContain('usedWordSet'); // 학생이 쓰면 ✓
+    expect(read('src/views/ViewerPage.jsx')).toContain('useOutputWords(materialLang, { enabled: !!conversation })');
+    expect(read('src/lib/conversation/turnModel.js')).toContain('Never force them'); // 자연 주입 — 강제 금지 문구
     // 훅은 오늘(KST) 하한으로 서버측 축소 — 전 단어장 무견인
     expect(read('src/lib/useOutputWords.js')).toContain('kstDayStartIso');
   });

@@ -11,6 +11,7 @@ import {
 } from '../conversation/turnModel.js';
 import { conversationSafetyRules } from '../conversation/safety.js';
 import { kstDateString } from '../growthStats.js';
+import { difficultyNote, newWordCount, reaskSucceeded, reaskTarget } from '../conversation/conversationLoop.js';
 
 const MATERIAL_COLUMNS = 'id,owner_id,visibility,title,raw_text,processed_json';
 const ATTEMPT_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -66,6 +67,49 @@ async function readParent(supabase, userId, parentId) {
   return data;
 }
 
+/** Z-R3 다시 꺼내기 — 내 최근 대화들에서 하루 이상 지난 고친 문형 하나. 실패하면 null(대화는 그대로 시작). */
+async function reaskFor(supabase, userId, language, now) {
+  try {
+    const { data, error } = await supabase.from('reading_materials')
+      .select('id,language:processed_json->metadata->conversation->>language,turns:processed_json->metadata->conversation->turns,reask:processed_json->metadata->conversation->reask')
+      .eq('owner_id', userId)
+      .not('processed_json->metadata->conversation', 'is', null)
+      .order('id', { ascending: false })
+      .limit(20);
+    if (error) return null;
+    return reaskTarget(data || [], { language, now });
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Z-R3 난이도 — 이번 튜터 줄의 새 단어 수(내 단어장에 없는 표제어). 정답 줄은 세지 않는다.
+ * 실패하면 null(기록 없이 다음 답장은 기본 난이도).
+ */
+async function newWordsOf(supabase, userId, added, tutorLineNos) {
+  try {
+    const tutorLines = new Set(tutorLineNos);
+    const tokens = added.sequence
+      .filter((id) => tutorLines.has(Number(/^id_(\d+)_/.exec(id)?.[1])))
+      .map((id) => added.dictionary[id]);
+    if (!tokens.length) return null;
+    const words = [...new Set(tokens.map((t) => String(t?.base_form || t?.text || '').trim()).filter(Boolean))].slice(0, 80);
+    const { data, error } = await supabase.from('user_vocabulary').select('word_text')
+      .eq('user_id', userId).in('word_text', words);
+    if (error) return null;
+    return newWordCount(tokens, new Set((data || []).map((r) => r.word_text)));
+  } catch {
+    return null;
+  }
+}
+
+const lastTutorNewWords = (turns) => {
+  for (let i = (turns || []).length - 1; i >= 0; i--) if (turns[i]?.who === 'tutor') return turns[i].newWords;
+  return undefined;
+};
+const pendingReask = (conv) => (conv.reask || []).find((r) => r.ok == null) || null;
+
 function tutorLinesOf(rawText) {
   return String(rawText || '').split('\n');
 }
@@ -101,6 +145,8 @@ export function promptForTurn({ conv, rawText, text, inputMode = 'text', action 
       : text,
     inputMode, outputWords, savedWords,
     open: action === 'reveal' ? null : open?.focus || null,
+    reask: pendingReask(conv),
+    difficulty: difficultyNote(lastTutorNewWords(conv.turns)),
     safetyRules: conversationSafetyRules(conv.language),
   });
 }
@@ -157,8 +203,9 @@ export async function runConversationTurn({ userId, body, deps, now = Date.now()
       if (existing?.[0]?.id) return { status: 200, body: { materialId: String(existing[0].id), existing: true } };
     }
 
+    const reask = await reaskFor(supabase, userId, language, now);
     const prompt = buildTurnPrompt({
-      language, level, topic,
+      language, level, topic, reask,
       excerpt: parent ? String(parent.raw_text || '').slice(0, CONVERSATION_EXCERPT_CHARS) : '',
       outputWords, safetyRules: conversationSafetyRules(language), start: true,
     });
@@ -174,12 +221,15 @@ export async function runConversationTurn({ userId, body, deps, now = Date.now()
       ...(parent ? { parentId: String(parent.id) } : {}),
       turnCount: 1, day: kstDateString(now), dayTurns: 0,
       turns: [{ who: 'tutor', lines: lines.map((_, i) => startLine + i), at: now }],
+      ...(reask ? { reask: [{ ...reask, ok: null }] } : {}),
     };
     const translations = Object.fromEntries(ai.lines.filter((l) => l.ko).map((l) => [l.t, l.ko]));
     const { json, added } = appendParagraphTokens({
       sequence: [], dictionary: {}, last_idx: -1, failed_indices: [],
       metadata: { language, level, conversation, translations, ...(attempt ? { importAttempt: attempt } : {}) },
     }, { lines, startLine, results, ts, language });
+    const firstNewWords = await newWordsOf(supabase, userId, added, conversation.turns[0].lines);
+    if (Number.isInteger(firstNewWords)) conversation.turns[0].newWords = firstNewWords;
     const { data, error } = await supabase.from('reading_materials').insert([{
       owner_id: userId, visibility: 'private', title: topic, raw_text: rawText, processed_json: json,
     }]).select('id');
@@ -257,7 +307,10 @@ export async function runConversationTurn({ userId, body, deps, now = Date.now()
     ...(policy.answerLine ? { answer: lineNos[0] } : {}),
     at: now,
   };
-  const conversation = nextConversation(conv, { meTurn: policy.meTurn, closeRetry: policy.closeRetry, tutorTurn, now });
+  const reaskNow = pendingReask(conv);
+  const reaskOk = !!reaskNow && !!policy.meTurn && reaskSucceeded(reaskNow, text, policy.meTurn);
+  let conversation = nextConversation(conv, { meTurn: policy.meTurn, closeRetry: policy.closeRetry, tutorTurn, now });
+  if (reaskOk) conversation = { ...conversation, reask: (conv.reask || []).map((r) => (r === reaskNow ? { ...r, ok: true, at: now } : r)) };
   const newTranslations = Object.fromEntries(ai.lines.filter((l) => l.ko).map((l) => [l.t, l.ko]));
   const prevJson = material.processed_json || {};
   const { json, added } = appendParagraphTokens({
@@ -268,6 +321,8 @@ export async function runConversationTurn({ userId, body, deps, now = Date.now()
       translations: { ...(prevJson.metadata?.translations || {}), ...newTranslations },
     },
   }, { lines, startLine, results, ts, language });
+  const replyNewWords = await newWordsOf(supabase, userId, added, tutorTurn.lines);
+  if (Number.isInteger(replyNewWords)) tutorTurn.newWords = replyNewWords;
 
   // 6. 기록 — 「turnCount = 기대값」 조건(JSON 경로 필터, 낙관 잠금). 어긋나면 409, 화면은 최신 대화를 다시 불러온다.
   const { data: written, error: writeError } = await supabase.from('reading_materials')
@@ -294,6 +349,7 @@ export async function runConversationTurn({ userId, body, deps, now = Date.now()
       analysis,
       translations: newTranslations,
       dayTurns: conversation.dayTurns,
+      conversation, // 턴 기록(작다) — 화면이 대화 전체를 다시 받지 않고 캐시에 합친다
     },
   };
 }

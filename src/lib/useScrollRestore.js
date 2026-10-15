@@ -49,13 +49,16 @@ export function useScrollRestore({ user, materialId, material, readingProgress, 
     };
   }, [user?.id, materialId, key, queryClient]);
 
+  // 대화(v2-Z)는 「읽던 곳」이 없다 — 위치를 남기면 이어 읽기·서재 「읽던 곳에서」에 대화가 읽을거리처럼 끼어든다.
+  const tracksPosition = !material?.processed_json?.metadata?.conversation;
   const saveScrollPosition = useCallback((tokenIdx) => {
+    if (!tracksPosition) return;
     if (writerRef.current?.key === key) {
       // A delayed query response must not pull the reader back after they moved.
       restoredKey.current = key;
       writerRef.current.writer.schedule(tokenIdx);
     }
-  }, [key]);
+  }, [key, tracksPosition]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);

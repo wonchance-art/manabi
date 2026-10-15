@@ -26,6 +26,7 @@ import useReadingProgress from '@/components/books/useReadingProgress';
 import ContinueDeck from '@/components/ContinueDeck';
 import { useRereadCandidate } from '@/lib/useRereadCandidate';
 import { useGroupEntryItem } from '@/lib/useGroupEntryItem';
+import { newConversationHref } from '@/lib/conversation/newConversation';
 import { buildForecastTapEvent } from '@/lib/forecastTapEvent';
 import { logReviewEvents } from '@/lib/reviewEvents';
 import { getIdealLevel } from '@/lib/levels';
@@ -145,7 +146,10 @@ export default function HomePage({ book = null }) {
   };
   const rereadItem = useRereadCandidate();
   const groupItem = useGroupEntryItem({ invite: false });
-  const continueDeckItems = [rereadItem, groupItem].filter(Boolean);
+  // 대화 모드 v2-Z Z-R2 — 읽은 말을 꺼내 쓰는 입구(자료 없이 시작). 고른 학습 언어로 새 대화 화면을 연다.
+  const conversationItem = { key: 'conversation', href: newConversationHref({ language: lang }), tone: 'progress',
+    kicker: '말해 보기', title: 'AI 튜터와 목표어로 대화', meta: '새 대화 ↗' };
+  const continueDeckItems = [rereadItem, conversationItem, groupItem].filter(Boolean);
 
   // 이어 읽기 — 일본어는 교재 기록과 서재 자료를 실제 시각으로 비교, 다른 언어는 그 언어의 서재 자료 → 산책 추천.
   const pending = authLoading || (!!book && !local.ready) || (!!user && isLoading);

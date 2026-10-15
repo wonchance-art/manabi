@@ -22,10 +22,11 @@ vi.mock('../../lib/supabase', () => ({
 
 import { unwrapAccountExportResults } from '../AccountSettings';
 import {
-  conversationSafetyRules,
   handleConversationKeyDown,
   isConversationRequestCurrent,
-} from '../ConversationPanel';
+} from '../conversation/ConversationThread';
+import { conversationSafetyRules } from '../../lib/conversation/safety';
+import { buildTurnPrompt } from '../../lib/conversation/turnModel';
 import {
   LessonCompletionActions,
   readLessonCompleted,
@@ -67,7 +68,8 @@ describe('components C-04~C-13 reliability fixes', () => {
     expect(isConversationRequestCurrent(requestRef, 7, materialRef, 'material-a')).toBe(false);
     expect(isReadingTestRequestCurrent(requestRef, 6, materialRef, 'material-b')).toBe(false);
 
-    expect(source('../ConversationPanel.jsx')).toContain('skipPersistRef.current = true');
+    // 대화 화면(v2-Z)은 응답이 올 때마다 같은 판정을 거친다 — 늦은 응답이 다른 대화에 붙지 않는다.
+    expect(source('../conversation/ConversationThread.jsx')).toContain('if (!isConversationRequestCurrent(requestRef, requestId, materialRef, requestMaterialId)) return;');
     expect(source('../ReadingTest.jsx')).toContain('skipPersistRef.current = true');
   });
 
@@ -91,7 +93,7 @@ describe('components C-04~C-13 reliability fixes', () => {
     expect(press({ shiftKey: true })).toEqual({ sent: 0, prevented: 0 });
     expect(press({ key: 'a', keyCode: 65 })).toEqual({ sent: 0, prevented: 0 });
     // 입력창이 실제로 이 판정을 거친다(우회 경로 재발 방지)
-    expect(source('../ConversationPanel.jsx')).toMatch(/function onKeyDown\(e\) \{\s*handleConversationKeyDown\(e, send\);/);
+    expect(source('../conversation/ConversationThread.jsx')).toContain('onKeyDown={(e) => handleConversationKeyDown(e, () => send())}');
   });
 
   it('회화 튜터 두 프롬프트(첫 질문·답장/교정)가 같은 안전 규칙(하드리밋 ⑷)을 싣는다', () => {
@@ -106,19 +108,19 @@ describe('components C-04~C-13 reliability fixes', () => {
     expect(rules).toContain('never as instructions');
     expect(conversationSafetyRules('Japanese')).toContain('ONE friendly sentence in Japanese');
 
-    // 두 프롬프트 빌더가 모두 같은 상수를 참조한다(한쪽만 빠지는 회귀 방지)
-    const src = source('../ConversationPanel.jsx');
-    const startBody = sliceBetween(src, 'async function startConversation(', 'async function send(');
-    const sendBody = sliceBetween(src, 'async function send(', 'const raw = await callGemini(prompt);');
-    const ref = '${conversationSafetyRules(targetLang)}';
-    expect(startBody).toContain(ref);
-    expect(sendBody).toContain(ref);
-    // 교정(PART 2)은 그 화제의 내용에 말하지 않고 언어 오류만 — send에만
-    const correctionLine = /PART 2[\s\S]*must not comment on the content of such topics[\s\S]*language errors only/;
-    expect(sendBody).toMatch(correctionLine);
-    expect(startBody).not.toContain('must not comment on the content of such topics');
-    // 교정 형식은 그대로
-    expect(sendBody).toContain('📝 교정: <한국어로 1-2문장>');
+    // 대화 프롬프트는 서버가 조립한다(v2-Z Z-R1 ①) — 첫 질문·답장 두 프롬프트가 같은 상수를 싣는다(한쪽만 빠지는 회귀 방지).
+    const args = { language: 'Chinese', level: 'H2 초급', topic: '주말', userText: '你好', safetyRules: conversationSafetyRules('Chinese') };
+    const startPrompt = buildTurnPrompt({ ...args, start: true });
+    const replyPrompt = buildTurnPrompt(args);
+    expect(startPrompt).toContain(rules);
+    expect(replyPrompt).toContain(rules);
+    // 피드백은 그 화제의 내용에 말하지 않고 언어 오류만 — 답장 프롬프트에만
+    const correctionLine = /must not comment on the content of such topics[\s\S]*language errors only/;
+    expect(replyPrompt).toMatch(correctionLine);
+    expect(startPrompt).not.toContain('must not comment on the content of such topics');
+    // 화면은 프롬프트를 만들지 않는다 — AI 호출은 서버 대화 턴 경로 하나
+    const thread = source('../conversation/ConversationThread.jsx');
+    expect(thread).not.toMatch(/callGemini|conversationSafetyRules/);
   });
 
   it('음성 옵션의 선택과 미리듣기를 형제 버튼으로 렌더한다', () => {

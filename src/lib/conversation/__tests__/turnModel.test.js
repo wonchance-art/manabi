@@ -196,3 +196,34 @@ describe('하루 한도 · 판정 경계 · 화제 전환 풀', () => {
     expect(conversationOf({ processed_json: { metadata: { composer: { version: 1, role: 'study' } } } })).toBeNull();
   });
 });
+
+describe('화면 캐시 합치기 — 서버 기록과 같은 모양', () => {
+  it('턴 응답을 합치면 raw_text·토큰·턴 기록이 서버가 쓴 것과 같다', async () => {
+    const { applyTurnResult, tokensByLineIndex, conversationItems } = await import('../turnModel');
+    const material = { id: 7, raw_text: '你好！', processed_json: { sequence: ['id_0_0_1'], dictionary: { id_0_0_1: { text: '你好！' } },
+      failed_indices: [], metadata: { conversation: { version: 1, turnCount: 1, turns: [{ who: 'tutor', lines: [0] }] }, translations: { a: 'b' } } } };
+    const conversation = { version: 1, turnCount: 2, turns: [{ who: 'tutor', lines: [0] }, { who: 'me', text: 'x', focus: { level: 'retry', state: 'open', from: 'x', to: 'y' } }, { who: 'tutor', lines: [2] }] };
+    const body = { turnCount: 2, conversation, paragraph: { startLine: 2, lines: ['好的。'] },
+      tokens: { sequence: ['br_0_5', 'br_1_5', 'failed_2_5'], dictionary: { br_0_5: { text: '\n', pos: '개행' }, br_1_5: { text: '\n', pos: '개행' }, failed_2_5: { text: '好的。', failed: true } } },
+      translations: { '好的。': '좋아요.' } };
+    const next = applyTurnResult(material, body);
+    expect(next.raw_text).toBe('你好！\n\n好的。');
+    expect(next.processed_json.sequence).toEqual(['id_0_0_1', 'br_0_5', 'br_1_5', 'failed_2_5']);
+    expect(next.processed_json.failed_indices).toEqual([2]);
+    expect(next.processed_json.metadata.translations).toEqual({ a: 'b', '好的。': '좋아요.' });
+    expect(tokensByLineIndex(next.processed_json.sequence).get(2)).toEqual(['failed_2_5']);
+    // 다른 탭이 먼저 썼으면(턴 수가 이어지지 않으면) 합치지 않는다
+    expect(applyTurnResult(material, { ...body, turnCount: 3 })).toBeNull();
+    const items = conversationItems(conversation);
+    expect(items.map((i) => i.kind)).toEqual(['tutor', 'me', 'tutor']);
+    expect(items[1].openRetry).toBe(true);
+  });
+
+  it('정답 줄은 바로 앞 내 말의 피드백 창에 붙는다', async () => {
+    const { conversationItems } = await import('../turnModel');
+    const items = conversationItems({ turns: [{ who: 'tutor', lines: [0] }, { who: 'me', text: 'a', focus: { level: 'retry', state: 'missed' } },
+      { who: 'tutor', lines: [2] }, { who: 'me', text: 'b', repair: 'no' }, { who: 'tutor', answer: 4, lines: [5] }] });
+    expect(items[3]).toMatchObject({ kind: 'me', answerLine: 4 });
+    expect(items[1].answerLine).toBeUndefined();
+  });
+});
