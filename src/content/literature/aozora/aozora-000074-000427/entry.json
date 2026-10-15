@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "personId": "000074",
+  "workId": "427",
+  "title": "桜の樹の下には",
+  "author": "梶井基次郎",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1928,
+  "authorDeathYear": 1932,
+  "level": "N2 상급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000074/card427.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000074/files/427_ruby_19792.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "44a58d4467d0ae59f70990739a6eaa9c3b871077ce9fd24329ce2c09e94b0144",
+  "textSha256": "7e52dbd91ec93114044f2dbfda74a5b3bbd0ea3dc7d9f568c8ae72ddb3325825",
+  "attribution": {
+    "author": "梶井基次郎",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-15",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000074/card427.html"
+  },
+  "display": {
+    "titleReading": "さくらのきのしたには",
+    "titleKo": "벚나무 아래에는",
+    "coverTitle": "桜の樹の\n下には",
+    "authorKo": "가지이 모토지로",
+    "cover": "umenezumi",
+    "motif": "sakura-roots"
+  }
+}

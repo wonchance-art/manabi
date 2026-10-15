@@ -79,6 +79,14 @@ export function validateAozoraCatalogEntry(entry) {
   invariant(entry.attribution.illustrator == null || typeof entry.attribution.illustrator === 'string',
     'attribution.illustrator must be a string or null');
   validateAozoraRights(entry.rights);
+  // 교정자 없는 입력본의 수록 승인 — 누가·언제·왜(오너 결정 원문)를 남긴 경우만 유효하다.
+  if (entry.unproofreadApproval !== undefined) {
+    const approval = entry.unproofreadApproval;
+    invariant(approval && typeof approval === 'object' && !Array.isArray(approval), 'unproofreadApproval must be an object');
+    invariant(approval.approvedBy === 'owner', 'unproofreadApproval.approvedBy must be owner');
+    invariant(/^\d{4}-\d{2}-\d{2}$/u.test(String(approval.approvedAt)), 'unproofreadApproval.approvedAt must be YYYY-MM-DD');
+    invariant(typeof approval.reason === 'string' && approval.reason.trim(), 'unproofreadApproval.reason is required');
+  }
   return true;
 }
 

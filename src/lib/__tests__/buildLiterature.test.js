@@ -123,7 +123,8 @@ describe('build-literature — fail-closed', () => {
   });
 
   it('문단 한가운데를 가르는 장 경계는 실패(문장이 두 장으로 찢긴다)', async () => {
-    const long = `${'長い一文が続いていく。'.repeat(700)}`;
+    // 문장 끝(。)이 없는 장문 — 문장 끝 분할로도 장 상한 안에 들 수 없다
+    const long = `${'長い一文が続いていく、'.repeat(700)}`;
     const text = source.replace('　向こう岸に着いたとき、霧はすっかり晴れていた。', `　${long}`);
     const root = workspace([{ ...sample({ textSha256: sha256(text) }), source: text }]);
     const result = await buildLiterature({ root });

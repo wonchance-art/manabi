@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "personId": "000296",
+  "workId": "47061",
+  "title": "学問のすすめ",
+  "author": "福沢諭吉",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1872,
+  "authorDeathYear": 1901,
+  "level": "N1 심화",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000296/card47061.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000296/files/47061_ruby_28378.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "aeaa2fffa2de412163da8a4267550e5f23b5fc75a5ef321a73e7fe5d570a3b54",
+  "textSha256": "992b26db38ce357fef474c72e0db8c520aaa9bc128d1df94166696fef337a470",
+  "attribution": {
+    "author": "福沢諭吉",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-15",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000296/card47061.html"
+  },
+  "display": {
+    "titleReading": "がくもんのすすめ",
+    "titleKo": "학문의 권장",
+    "authorKo": "후쿠자와 유키치",
+    "cover": "nando",
+    "motif": "lamp-book"
+  }
+}

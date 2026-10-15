@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "personId": "000148",
+  "workId": "799",
+  "title": "夢十夜",
+  "author": "夏目漱石",
+  "language": "ja",
+  "charset": "新字新仮名",
+  "publishedYear": 1908,
+  "authorDeathYear": 1916,
+  "level": "N2 상급",
+  "cardUrl": "https://www.aozora.gr.jp/cards/000148/card799.html",
+  "sourceFileUrl": "https://www.aozora.gr.jp/cards/000148/files/799_ruby_6024.zip",
+  "sourceFormat": "txt",
+  "sourceSha256": "bbcba67c68db31aca5d24d8cab5ec17a1c85f9730b183f14895bb0b6d5ae19b8",
+  "textSha256": "3e71a09047500381e8f1fd06ea482f7eb7975599d11b725444e0b98a67ead226",
+  "attribution": {
+    "author": "夏目漱石",
+    "translator": null,
+    "illustrator": null
+  },
+  "rights": {
+    "status": "approved",
+    "basis": "public-domain",
+    "reviewedBy": "claude",
+    "reviewedAt": "2026-10-15",
+    "reviewedJurisdictions": [
+      "JP",
+      "KR"
+    ],
+    "evidenceUrl": "https://www.aozora.gr.jp/cards/000148/card799.html"
+  },
+  "unproofreadApproval": {
+    "approvedBy": "owner",
+    "approvedAt": "2026-10-15",
+    "reason": "오너 2026-10-15 KST 「괜찮지 않나 올려봐 일단 ㄱㄱ」 — 青空文庫 유일 판(1997 입력·2013 수정), 교정자 없음"
+  },
+  "display": {
+    "titleReading": "ゆめじゅうや",
+    "titleKo": "몽십야",
+    "authorKo": "나쓰메 소세키",
+    "cover": "fujinezumi",
+    "motif": "lily-dream"
+  }
+}
