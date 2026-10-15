@@ -28,7 +28,8 @@ describe('학습 언어 글에 lang 바인딩 (LINE-BREAK-001)', () => {
     const src = read('src/views/ViewerPage.jsx');
     expect(src).toContain('<h1 className="page-header__title" lang={contentLangTag}>{viewerTitle}</h1>');
     expect(src).toContain('<div className="next-lesson-card__title" lang={contentLangTag}>{nextLesson.title}</div>');
-    expect(src).toContain('<div className="next-lesson-card__title" lang={contentLangTag}>{literatureTitleOf(bookNav.next.order) || bookNav.next.title}</div>');
+    // 큐레이션 책(ART-READ-001)은 「다음 작품」 제목에서 책 제목을 뺀다 — lang 바인딩은 같다.
+    expect(src).toContain('<div className="next-lesson-card__title" lang={contentLangTag}>{literatureTitleOf(bookNav.next.order) || (artBookLocked ? String(bookNav.next.title || \'\').split(\' — \').pop() : bookNav.next.title)}</div>');
   });
 
   it('복습 카드 문맥 — 대표 문장과 다른 문맥 인용이 단어 언어 lang을 단다', () => {

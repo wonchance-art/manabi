@@ -7,6 +7,10 @@
   background: var(--reader-surface); color: var(--reader-ink);
   font-size: 14px; line-height: 1.65;
 }
+/* 기사형 배치(ART-READ-001): 머리(그림·제목·바이라인)는 상자 없이 기사 머리처럼, 꼬리(작품 이야기)는 본문 뒤에 띄워 상자로. */
+.viewer-layout .viewer-art-card--head {padding: 0 0 8px; border: 0; border-radius: 0; background: transparent;}
+.viewer-layout .viewer-art-card--facts {margin-top: 28px;}
+.viewer-layout .viewer-art-card--facts + .viewer-art-credit {margin-bottom: 16px;}
 /* 쪽 넘김(다단) 읽기에서 그림·캡션이 단 사이로 쪼개지지 않게. */
 .viewer-layout .viewer-art-card__figure {margin: 0 0 12px; break-inside: avoid;}
 /* 카탈로그 원본 크기(img width·height 속성)로 브라우저가 판형 비율의 자리를 미리 잡는다 — 늦게 떠도 본문이 밀리지 않고,

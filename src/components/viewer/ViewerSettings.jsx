@@ -61,7 +61,9 @@ function ToneLegend({uiLocale}) {
 function LocaleText({uiLocale='ko',message,values,children}) {
   return uiLocale==='ko'?children:t(uiLocale,message,values);
 }
-export default function ViewerSettings({settings:s,language,languageSettings,onClose,keepPosition,onReaderView,previewTokens=[],paceTargetCpm,paceEstimate,myCpm,patternNote,ttsSupported,fontStatus,initialTab='type'}) {
+export default function ViewerSettings({settings:s,language,languageSettings,onClose,keepPosition,onReaderView,previewTokens=[],paceTargetCpm,paceEstimate,myCpm,patternNote,ttsSupported,fontStatus,initialTab='type',scrollOnly=false}) {
+  // 스크롤로만 읽는 자료(「그림 한 장 읽기」 ART-READ-001)는 「보기」를 고르지 않는다 — 저장된 보기 설정은 그대로 둔다.
+  const pagedView=!scrollOnly&&(s.readerView||'paged')==='paged';
   const snapshot=useRef(s.snapshot());
   const localeSnapshot=useRef(languageSettings?{uiLocale:languageSettings.uiLocale,explanationLocale:languageSettings.explanationLocale}:null);
   const [tab,setTab]=useState(initialTab),[preview,setPreview]=useState(true);
@@ -95,7 +97,9 @@ export default function ViewerSettings({settings:s,language,languageSettings,onC
         <Choices label="배경" className="reader-settings__themes" symbols={Object.fromEntries(['light','sepia','dark'].map(name=>[name,<Icon key={name} name={name}/>]))} uiLocale={uiLocale} value={s.theme} items={choices([['light','밝게'],['sepia','종이'],['dark','어둡게']])} onChange={v=>set('theme',v)}/>
         {/* 보기(READER-PAGED-001 목업 E) — 기본은 쪽 넘김, 스크롤은 지금 그대로의 대안. 위치는 보기 쪽이 기준 글자로 지킨다
             (keepPosition의 화면 좌표 기준점은 다단 쪽에서 맞지 않는다). */}
-        <Choices label="보기" uiLocale={uiLocale} value={s.readerView||'paged'} items={choices([['paged','쪽 넘김'],['scroll','스크롤']])} onChange={v=>onReaderView?onReaderView(v):s.setReaderView?.(v)}/>
+        {scrollOnly
+          ?<p className="reader-setting-note">{tr('그림 읽기는 스크롤로 읽어요')}</p>
+          :<Choices label="보기" uiLocale={uiLocale} value={s.readerView||'paged'} items={choices([['paged','쪽 넘김'],['scroll','스크롤']])} onChange={v=>onReaderView?onReaderView(v):s.setReaderView?.(v)}/>}
         {s.fontFamily==='serif'&&fontStatus!=='ready'&&<p role="status">{tr(fontStatus==='error'?'명조를 불러오지 못해 고딕으로 표시하고 있어요.':'명조 글꼴을 불러오는 중이에요.')}</p>}
         <More uiLocale={uiLocale} count={changed(['pinyinSize','lineGap','charGap','fontFamily'])}>
         {language==='Chinese'&&<Slider uiLocale={uiLocale} label="병음 크기" value={s.pinyinSize} min={0.75} max={1} step={0.0625} display={`${Math.round(s.pinyinSize*16)}px`} onChange={v=>set('pinyinSize',v)}/>}
@@ -128,8 +132,8 @@ export default function ViewerSettings({settings:s,language,languageSettings,onC
         <Toggle label="문장 집중" uiLocale={uiLocale} note="읽는 문장은 선명하게, 주변 문장은 흐리게 표시해요" checked={s.focusMode} onChange={v=>set('focusMode',v)}/>
         {ttsSupported&&<Choices label="재생 속도" className="reader-settings__rates" uiLocale={uiLocale} value={s.ttsRate} items={Object.entries(TTS_RATES).map(([key,r])=>[key,r.label])} onChange={v=>set('ttsRate',v)}/>}
         <More uiLocale={uiLocale} count={changed(['autoPace','paceCpm','paceStep','autoSpeakOnClick'])}>
-        <Toggle label="자동 진행 허용" uiLocale={uiLocale} note="본문의 ‘자동 진행 시작’을 눌러야 이동해요" checked={s.autoPace} onChange={v=>set('autoPace',v)} disabled={s.readerView==='paged'} reason={s.readerView==='paged'?tr('쪽 넘김 보기에서는 자동 진행을 쓰지 않아요. 스크롤 보기에서 쓸 수 있어요.'):null}/>
-        {s.autoPace&&s.readerView!=='paged'&&<><div className="reader-setting-choices"><b>{tr('목표 속도 · {cpm}자/분',{cpm:paceTargetCpm})}</b><div><button aria-label={tr('느리게')} onClick={()=>s.restore({paceCpm:stepCpm(paceTargetCpm,-1),paceStep:0})}>− {tr('느리게')}</button><button aria-label={tr('빠르게')} onClick={()=>s.restore({paceCpm:stepCpm(paceTargetCpm,1),paceStep:0})}>{tr('빠르게')} +</button></div></div><details><summary>{tr('속도의 기준')}</summary>{paceEstimate?.thisSec!=null&&<p>{tr('이 문장 약 {seconds}초',{seconds:paceEstimate.thisSec})}</p>}{paceEstimate?.avgSec!=null&&<p>{tr('문장 평균 약 {seconds}초',{seconds:paceEstimate.avgSec})}</p>}<p><LocaleText uiLocale={uiLocale} message="{basis} · 훈련 단계 {step}" values={{basis:paceBasis,step:s.paceStep}}>{paceBasis} · 훈련 단계 {s.paceStep}</LocaleText></p><p>{tr('자동 진행 속도는 읽기 실력이나 이해도 기록이 아니에요.')}</p><button onClick={()=>s.restore({paceCpm:null,paceStep:0})}>{tr('기본 제안으로')}</button></details></>}
+        <Toggle label="자동 진행 허용" uiLocale={uiLocale} note="본문의 ‘자동 진행 시작’을 눌러야 이동해요" checked={s.autoPace} onChange={v=>set('autoPace',v)} disabled={pagedView} reason={pagedView?tr('쪽 넘김 보기에서는 자동 진행을 쓰지 않아요. 스크롤 보기에서 쓸 수 있어요.'):null}/>
+        {s.autoPace&&!pagedView&&<><div className="reader-setting-choices"><b>{tr('목표 속도 · {cpm}자/분',{cpm:paceTargetCpm})}</b><div><button aria-label={tr('느리게')} onClick={()=>s.restore({paceCpm:stepCpm(paceTargetCpm,-1),paceStep:0})}>− {tr('느리게')}</button><button aria-label={tr('빠르게')} onClick={()=>s.restore({paceCpm:stepCpm(paceTargetCpm,1),paceStep:0})}>{tr('빠르게')} +</button></div></div><details><summary>{tr('속도의 기준')}</summary>{paceEstimate?.thisSec!=null&&<p>{tr('이 문장 약 {seconds}초',{seconds:paceEstimate.thisSec})}</p>}{paceEstimate?.avgSec!=null&&<p>{tr('문장 평균 약 {seconds}초',{seconds:paceEstimate.avgSec})}</p>}<p><LocaleText uiLocale={uiLocale} message="{basis} · 훈련 단계 {step}" values={{basis:paceBasis,step:s.paceStep}}>{paceBasis} · 훈련 단계 {s.paceStep}</LocaleText></p><p>{tr('자동 진행 속도는 읽기 실력이나 이해도 기록이 아니에요.')}</p><button onClick={()=>s.restore({paceCpm:null,paceStep:0})}>{tr('기본 제안으로')}</button></details></>}
         {ttsSupported&&<Toggle label="단어 선택 시 발음" uiLocale={uiLocale} checked={s.autoSpeakOnClick} onChange={v=>set('autoSpeakOnClick',v)}/>}
         </More>
       </>}

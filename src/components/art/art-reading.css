@@ -1,0 +1,26 @@
+/* 「그림 한 장 읽기」 기사형 목록(ART-READ-001) — 뉴스 목록처럼 왼쪽 그림 · 오른쪽 제목과 바이라인. 좁으면 그림을 작게. */
+.art-reading { margin-top: 40px; container: art-reading / inline-size; }
+.art-reading__chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 16px; }
+.art-reading__chips button {
+  min-height: 44px; padding: 0 16px; border: 1px solid var(--rule); border-radius: 999px;
+  background: transparent; color: inherit; font: inherit; font-size: 14px; cursor: pointer;
+}
+.art-reading__chips button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--sheet); }
+.art-reading__chips button:focus-visible,
+.art-reading__card:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.art-reading__list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 30px; }
+.art-reading__card {
+  display: flex; gap: 16px; align-items: flex-start; min-height: 44px;
+  padding: 18px 0; border-top: 1px solid var(--rule); color: inherit; text-decoration: none;
+}
+.art-reading__thumb { flex: none; width: 96px; height: 96px; object-fit: cover; border-radius: 4px; background: var(--rule); }
+.art-reading__copy { display: grid; gap: 6px; min-width: 0; }
+.art-reading__copy strong { font-size: 18px; font-weight: 600; line-height: 1.5; }
+.art-reading__ko { font-size: 13px; color: var(--muted); }
+.art-reading__copy small { font-size: 12px; color: var(--muted); }
+.art-reading__private { font-weight: 600; }
+@container art-reading (max-width: 640px) {
+  .art-reading__list { grid-template-columns: minmax(0, 1fr); }
+  .art-reading__thumb { width: 72px; height: 72px; }
+  .art-reading__copy strong { font-size: 16px; }
+}
