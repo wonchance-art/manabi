@@ -107,3 +107,30 @@ export async function fetchSavedLevelKeys(client, userId, language, keys, chunkS
   }
   return saved;
 }
+
+// ── O · X 빠른 암기 보기 옵션(LEVEL-OX-AN-001, 목업 /mnt/project-files/notes/level-list-ox-mockup.md 2판) ──
+// 보기 탭은 하나만 고른다: 전체 · 단어 · 문장 · 뜻 · 소리 — 「무엇을 보여 줄지」. 나머지 설정은 ⚙ 안 스위치(오너 2026-10-15 「더 직관적이고 심플하게」).
+export const LEVEL_VIEWS = Object.freeze([
+  { id: 'all', label: '전체' }, { id: 'word', label: '단어' }, { id: 'sentence', label: '문장' },
+  { id: 'meaning', label: '뜻' }, { id: 'audio', label: '소리' },
+]);
+/** 가린 것을 눌러 잠깐 보이는 시간(오너 지시 2026-10-15 — 10초 뒤 다시 가린다). */
+export const LEVEL_PEEK_MS = 10_000;
+export const LEVEL_PREFS_DEFAULT = Object.freeze({ view: 'all', hideKnown: false, hun: true, glyph: false });
+
+/** 저장된 값 → 검증한 설정. 모르는 값은 버리고 기본값으로. */
+export function normalizeLevelPrefs(raw) {
+  const src = raw && typeof raw === 'object' ? raw : {};
+  const flag = (k) => (typeof src[k] === 'boolean' ? src[k] : LEVEL_PREFS_DEFAULT[k]);
+  return { view: LEVEL_VIEWS.some((v) => v.id === src.view) ? src.view : 'all',
+    hideKnown: flag('hideKnown'), hun: flag('hun'), glyph: flag('glyph') };
+}
+
+/**
+ * 카드에서 무엇을 보일지. 단어 = 표제어(훈음 · 正日 포함) + 예문 본문, 문장 = 예문 본문, 뜻 = 뜻 · 예문 번역,
+ * 소리 = 듣기 버튼만. peek(가린 칸을 눌러 10초)이면 전부 보인다.
+ */
+export function levelCardShows(view, peek = false) {
+  if (peek || !view || view === 'all') return { word: true, sentence: true, meaning: true, audio: true, hidden: false };
+  return { word: view === 'word', sentence: view === 'word' || view === 'sentence', meaning: view === 'meaning', audio: view === 'audio', hidden: true };
+}

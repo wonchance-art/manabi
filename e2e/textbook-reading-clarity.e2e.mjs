@@ -117,3 +117,27 @@ test('answer reasons stay readable (AA contrast, 14px+) and recall/example contr
   assert.ok(order.answer>order.reason&&order.reason>=order.wrong,JSON.stringify(order));
  }finally{await f.context.close();}
 });
+
+test('repeated chapter subtitles hide, the dialogue control keeps 「해석」, and reading/listening questions carry the answer-key name',async()=>{
+ const f=await fixture({guest:true,width:390});try{
+  for(const version of [old,edition]){
+   await open(f,'u01-patterns',version);
+   assert.equal(await f.page.locator('.manabi-chapter-subtitle').innerText(),'이름과 신분을 소개해요');
+   assert.equal(await f.page.locator('#u01-patterns > .subtitle').isVisible(),false);
+   assert.equal(await f.page.locator('#u01-start .listen-question .book-question-label').innerText(),'먼저 듣기');
+   assert.equal(await f.page.locator('#u01-practice .reading + p .book-question-label').innerText(),'읽기');
+   const toggle=f.page.locator('#u01-dialogue .translation');await toggle.waitFor();
+   assert.equal((await toggle.innerText()).trim(),'해석 가리기');await toggle.click();
+   assert.equal(await toggle.getAttribute('aria-pressed'),'true');assert.equal((await toggle.innerText()).trim(),'해석 보기');await toggle.click();
+   assert.equal((await toggle.innerText()).trim(),'해석 가리기');
+   await check(f,`subtitle-labels-${version.slice(0,2)}-390`);
+  }
+  // 「대화 확인」 chapters use their own answer-key name; a supplement page keeps its distinct subtitle.
+  await open(f,'u42-start');assert.equal(await f.page.locator('#u42-start .listen-question .book-question-label').innerText(),'대화 확인');
+  await open(f,'u42-text-plus');assert.equal(await f.page.locator('#u42-text-plus > .subtitle').isVisible(),true);
+  // u39: the dialogue sits in its own titled block, so the hidden page title stays hidden.
+  await open(f,'u39-start');assert.equal(await f.page.locator('#u39-start h2').first().isVisible(),false);
+  assert.equal(await f.page.locator('#u39-start .book-dialogue-heading').count(),0);
+  await check(f,'u39-dialogue-390');
+ }finally{await f.context.close();}
+});

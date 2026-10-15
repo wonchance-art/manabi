@@ -159,8 +159,36 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
         stage.classList.add('is-duplicate-stage'); duplicateStages.push(stage);
       }
     }
+    // Each later page repeats the chapter subtitle the opening already shows.
+    // Supplement pages carry their own subtitle, so only exact repeats are hidden.
+    const duplicateSubtitles = [];
+    const subtitle = lesson?.subtitle?.replace(/\s+/g, ' ').trim();
+    if (subtitle) for (const line of node.querySelectorAll('.paper > .subtitle')) {
+      if (line.textContent.replace(/\s+/g, ' ').trim() === subtitle) { line.classList.add('is-duplicate-subtitle'); duplicateSubtitles.push(line); }
+    }
+    // Reading and listening questions are unmarked in the body; give them the
+    // same name the answer key uses for that chapter so the two can be matched.
+    const questionLabels = [];
+    const label = (question, text) => {
+      if (!question || !text || question.querySelector(':scope > .book-question-label')) return;
+      const tag = document.createElement('span'); tag.className = 'book-question-label'; tag.textContent = text;
+      question.prepend(tag); questionLabels.push(tag);
+    };
+    const answerName = (unitPage, names) => [...node.querySelectorAll(`[data-unit-page="${unitPage}"] .answer > b`)]
+      .map(item => item.textContent.trim()).find(text => names.includes(text));
+    for (const question of node.querySelectorAll('.listen-question')) {
+      const unitPage = question.closest('[data-unit-page]')?.dataset.unitPage;
+      if (unitPage) label(question, answerName(unitPage, ['대화 확인', '먼저 듣기']));
+    }
+    for (const passage of node.querySelectorAll('article[id$="-practice"] .reading')) {
+      const question = passage.nextElementSibling;
+      const unitPage = passage.closest('[data-unit-page]')?.dataset.unitPage;
+      if (question?.tagName === 'P' && !question.className && unitPage) label(question, answerName(unitPage, ['읽기']));
+    }
     const dialogueHeaders = [];
     for (const button of node.querySelectorAll('.dialogue .translation')) {
+      // A dialogue inside its own titled block keeps the control beside that title.
+      if (button.closest('.learning-block')?.querySelector(':scope > h3')) continue;
       const heading = button.closest('article')?.querySelector(':scope > h2');
       if (!heading) continue;
       const marker = document.createComment('translation control');
@@ -204,9 +232,11 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     return () => {
       node.removeEventListener('input', remember); mounts.forEach(item => item.mount.remove());
       duplicateStages.forEach(stage => stage.classList.remove('is-duplicate-stage'));
+      duplicateSubtitles.forEach(line => line.classList.remove('is-duplicate-subtitle'));
+      questionLabels.forEach(tag => tag.remove());
       dialogueHeaders.forEach(({ header, heading, button, marker }) => { header.before(heading); marker.replaceWith(button); header.remove(); });
     };
-  }, [sections, draftKey, preview]);
+  }, [sections, draftKey, preview, lesson?.subtitle]);
 
   useEffect(() => {
     if (!ready || (unit !== 'cover' && (!sections.length || sections[0].unit !== unit))) return;
@@ -295,7 +325,7 @@ export default function BookReader({ book, sectionIndex, preview = false, refere
     if (button?.classList.contains('translation')) {
       const dialogue = button.closest('article')?.querySelector('.dialogue');
       const hidden = dialogue?.classList.toggle('hide-ko');
-      button.setAttribute('aria-pressed', String(!!hidden)); button.textContent = hidden ? '뜻 보기' : '뜻 가리기';
+      button.setAttribute('aria-pressed', String(!!hidden)); button.textContent = hidden ? '해석 보기' : '해석 가리기';
     }
     if (button?.classList.contains('hide-meanings')) {
       const hidden = button.closest('article')?.classList.toggle('meaning-hidden');
