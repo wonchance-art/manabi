@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { sliceBetween } from './helpers/sliceBetween.js';
 import { levelListData, levelTileCounts, ZH_POS_GROUPS } from '../levelListData.js';
 import { LEVEL_LIST_LANGS, shortMeaning, levelWordKey, matchesLevelQuery, splitKnown, levelLabel, levelPill, levelListHref, jaHeadMode,
-  LEVEL_PEEK_MS, LEVEL_VIEWS, normalizeLevelPrefs, levelCardShows } from '../levelList.js';
+  LEVEL_PEEK_MS, LEVEL_VIEWS, normalizeLevelPrefs } from '../levelList.js';
 import { knownWordSetOf, normalizeKnownWord } from '../knownWordControl.js';
 import { exclusionWord } from '../vocabularyExclusion.js';
 import { JAPANESE_VOCAB_REF } from '../japaneseVocabRegistry.js';
@@ -151,14 +151,8 @@ describe('⑷ 표기 규칙', () => {
 });
 
 describe('⑹ O · X 빠른 암기 보기 옵션(LEVEL-OX-AN-001)', () => {
-  it('보기 탭: 하나만 고른다 — 전체 · 단어 · 문장 · 뜻 · 소리, 가린 칸을 누르면 10초 동안 전부', () => {
+  it('보기 탭: 하나만 고른다 — 전체 · 단어 · 문장 · 뜻 · 소리, 카드를 누르면 10초 동안 전부', () => {
     expect(LEVEL_VIEWS.map((v) => v.label)).toEqual(['전체', '단어', '문장', '뜻', '소리']);
-    expect(levelCardShows('all')).toEqual({ word: true, sentence: true, meaning: true, audio: true, hidden: false });
-    expect(levelCardShows('word')).toEqual({ word: true, sentence: true, meaning: false, audio: false, hidden: true });
-    expect(levelCardShows('sentence')).toEqual({ word: false, sentence: true, meaning: false, audio: false, hidden: true });
-    expect(levelCardShows('meaning')).toEqual({ word: false, sentence: false, meaning: true, audio: false, hidden: true });
-    expect(levelCardShows('audio')).toEqual({ word: false, sentence: false, meaning: false, audio: true, hidden: true });
-    expect(levelCardShows('meaning', true).hidden).toBe(false);
     expect(LEVEL_PEEK_MS).toBe(10_000);
   });
 

@@ -14,7 +14,6 @@ const { default: LevelListPage, VocabCard } = await import('../LevelListPage.jsx
 const { levelListData } = await import('../../lib/levelListData.js');
 const { default: LevelTiles } = await import('../../components/levels/LevelTiles.jsx');
 
-const { levelCardShows } = await import('../../lib/levelList.js');
 const { hunRubyCells } = await import('../../lib/viewerHunRuby.js');
 const { glyphRows } = await import('../../lib/glyphColumn.js');
 const tables = {
@@ -44,7 +43,6 @@ describe('단어 목록', () => {
     expect(tabs).toEqual(['전체:true', '단어:false', '문장:false', '뜻:false', '소리:false']);
     expect(html).toContain('aria-label="설정" title="설정" aria-expanded="false" aria-controls="lv-settings"');
     expect(html).not.toMatch(/id="lv-settings"|lv-opt/);
-    expect(html).not.toContain('class="lv-veil');
     expect(html).toContain('<p class="lv-src">출처 open-anki-jlpt-decks</p>');
   });
 
@@ -76,46 +74,40 @@ describe('단어 목록', () => {
   });
 });
 
-describe('단어 카드 — 보기 옵션 · 10초 보기 · 훈음 · 正日(LEVEL-OX-AN-001)', () => {
+describe('단어 카드 — 고른 것 하나만 · 10초 보기 · 훈음 · 正日(LEVEL-OX-AN-001 3판)', () => {
   const entry = { key: '学习', word: '学习', reading: 'xuéxí', meaning: '배우다, 공부하다', fullMeaning: '배우다', pos: '동사',
     ex: { text: '我在学习汉语。', reading: 'wǒ zài xuéxí hànyǔ.', ko: '나는 중국어를 공부하고 있다.' } };
-  const card = (view, extra = {}) => renderToStaticMarkup(<VocabCard entry={entry} lang="chinese" levelKey="h1" show={levelCardShows(view, extra.peek)}
+  const card = (view, extra = {}) => renderToStaticMarkup(<VocabCard entry={entry} lang="chinese" levelKey="h1" view={view} peek={!!extra.peek}
     onPeek={() => {}} speak={() => {}} hunCells={hunRubyCells(entry.word, tables, { glyphPx: 27, hunPx: 12 })}
     glyph={extra.glyph ? glyphRows({ word: entry.word, tradTable: tables.tradTable, jaTable }) : null}
     known={!!extra.known} studying={!!extra.studying} saving={false} pendingKnown={false} onO={() => {}} onX={() => {}} />);
 
-  it('전체: 글자마다 훈음(정체 꼴로 찾기 — 学→學 배울 학) · 뜻 · 예문 · 듣기, 가린 칸 0', () => {
+  const solo = (html) => sliceBetween(html, '<div class="lv-solo">', '</div><button type="button" class="lv-sr"').replace('<div class="lv-solo">', '');
+
+  it('전체: 글자마다 훈음(정체 꼴로 찾기 — 学→學 배울 학) · 병음 · 뜻 · 예문 · 듣기', () => {
     const html = card('all');
     expect([...html.matchAll(/data-label="([^"]+)"/g)].map((m) => m[1])).toEqual(['배울 학', '익힐 습']);
+    expect(html).toContain('xuéxí');
     expect(html).toContain('배우다, 공부하다');
     expect(html).toContain('나는 중국어를 공부하고 있다.');
     expect(count(html, 'aria-label="듣기"')).toBe(1);
-    expect(html).not.toMatch(/lv-veil|data-hidden/);
+    expect(html).not.toMatch(/lv-veil|lv-solo|lv-sr/);
   });
 
-  it('단어: 표제어 · 예문 본문만, 뜻 · 번역은 가린 칸 / 뜻: 뜻 · 번역만, 표제어 · 훈음 · 예문 본문은 가림', () => {
-    const word = card('word');
-    expect(word).toContain('data-label="배울 학"');
-    expect(word).toContain('我在学习汉语。');
-    expect(word).not.toMatch(/배우다, 공부하다|나는 중국어를/);
-    expect(count(word, 'aria-label="가린 내용 10초 보기"')).toBe(1);
-    expect(word).not.toContain('aria-label="듣기"');
-    const meaning = card('meaning');
-    expect(meaning).toContain('배우다, 공부하다');
-    expect(meaning).toContain('나는 중국어를 공부하고 있다.');
-    expect(meaning).not.toMatch(/学习|data-label|我在/);
-    expect(meaning).toContain('lv-veil lv-veil--word');
+  it('단어: 글자 + 훈음만(병음 · 뜻 · 예문 없음, 가린 칸 없음) — 카드 탭 · 「전체 10초 보기」로 잠깐 전부', () => {
+    const html = card('word');
+    const body = solo(html);
+    expect(body).toContain('data-label="배울 학"');
+    expect(body).not.toMatch(/xuéxí|배우다|我在|나는|lv-snd|lv-veil/);
+    expect(html).toContain('<button type="button" class="lv-sr">전체 10초 보기</button>');
+    expect(html).toContain('lv-fab--o');
   });
 
-  it('문장: 예문 본문만(표제어 가림) / 소리: 듣기 버튼만, 나머지 가림 / 10초 보기면 전부', () => {
-    const sentence = card('sentence');
-    expect(sentence).toContain('我在学习汉语。');
-    expect(sentence).not.toMatch(/data-label|배우다/);
-    const audio = card('audio');
-    expect(audio).toContain('aria-label="듣기"');
-    expect(audio).not.toMatch(/学习|배우다|我在|나는/);
-    expect(count(audio, 'aria-label="가린 내용 10초 보기"')).toBe(2);
-    expect(card('audio', { peek: true })).toBe(card('all'));
+  it('뜻 · 문장 · 소리: 그 하나만', () => {
+    expect(solo(card('meaning'))).toBe('<p class="lv-solo__mean">배우다, 공부하다</p>');
+    expect(solo(card('sentence'))).toBe('<p class="lv-solo__ex" lang="zh-CN">我在学习汉语。</p>');
+    expect(solo(card('audio'))).toMatch(/^<button type="button" class="lv-solo__play" aria-label="듣기" title="듣기"><svg/);
+    expect(card('audio', { peek: true })).toBe(card('all', { }).replace('class="lv-entry"', 'class="lv-entry" data-peek="true"'));
   });
 
   it('[O][X]: 아는 단어면 O만 눌림(점선 카드), 공부 중이면 X만 눌림', () => {
@@ -131,7 +123,8 @@ describe('단어 카드 — 보기 옵션 · 10초 보기 · 훈음 · 正日(LE
     const html = card('all', { glyph: true });
     expect(html).toContain('<b aria-label="대만 정체">正</b><span lang="zh-TW">學習</span>');
     expect(html).toContain('<b aria-label="일본어 표기">日</b><span lang="ja">学習</span><small lang="ja">がくしゅう</small>');
-    expect(card('meaning', { glyph: true })).not.toContain('lv-glyph'); // 의미만 볼 때는 표제어와 함께 가린다
+    expect(card('meaning', { glyph: true })).not.toContain('lv-glyph'); // 뜻만 볼 때는 표제어와 함께 빠진다
+    expect(solo(card('word', { glyph: true }))).toContain('lv-glyph');
   });
 });
 
