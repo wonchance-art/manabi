@@ -1,7 +1,8 @@
-// 메뉴 셋(LEARN-HOME-AK-001 — 오너 확정 목업 2026-10-09): 배움 · 서재 · 산책. 「대화」는 화면이 생길 때까지 숨긴다
-// (생기면 배움 · 대화 · 서재 · 산책). /lessons · /vocab 경로는 남고 배움 화면의 칸으로 들어간다.
+// 메뉴 넷(LEARN-HOME-AK-001 — 오너 확정 목업 2026-10-09 「대화 화면이 생기면 배움 · 대화 · 서재 · 산책」,
+// 대화 화면 #1444 운영 반영 뒤 오너 지시 2026-10-15 「배움과 서재 사이 대화 넣어서 오픈」). /lessons · /vocab 경로는 남고 배움 화면의 칸으로 들어간다.
 export const MAIN_NAV = Object.freeze([
   { href: '/home', label: '배움', icon: 'learn', prefetch: false },
+  { href: '/conversation/new', label: '대화', icon: 'chat', prefetch: false },
   { href: '/materials', label: '서재', icon: 'library', prefetch: false },
   { href: '/discover', label: '산책', icon: 'compass' },
 ]);
@@ -11,6 +12,7 @@ export function isFocusedReadingRoute(pathname) {
 }
 export function navigationOwner(pathname) {
   if (/^\/study\/library(?:\/|$)/.test(pathname)) return '/materials';
+  if (/^\/conversation(?:\/|$)/.test(pathname)) return '/conversation/new';
   if (/^\/(?:discover|studies|world|suggestions)(?:\/|$)/.test(pathname)) return '/discover';
   // 메뉴에서 빠진 교재 · 복습 · 학습 경로는 배움 소속이다 — 어느 메뉴에도 불이 안 들어오는 화면을 만들지 않는다(정정 2026-10-11).
   if (/^\/(?:lessons|books|vocab|review|study|learn|progress)(?:\/|$)/.test(pathname)) return '/home';

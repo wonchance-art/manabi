@@ -7,11 +7,15 @@ const published = JSON.parse(readFileSync('src/content/textbookEditions/7f572327
 const book = { lessons: published.manuscript.lessons };
 
 describe('approved navigation and current edition resume', () => {
-  it('has three menus in the approved order and assigns nested routes without prefix collisions', () => {
-    // 메뉴 셋(LEARN-HOME-AK-001 — 오너 확정 목업 2026-10-09): 배움 · 서재 · 산책. 「대화」는 화면이 생길 때까지 숨긴다.
-    expect(MAIN_NAV.map(item => item.label)).toEqual(['배움', '서재', '산책']);
-    expect(MAIN_NAV.map(item => item.href)).toEqual(['/home', '/materials', '/discover']);
-    expect(new Set(MAIN_NAV.map(item => item.href)).size).toBe(3);
+  it('has four menus in the approved order and assigns nested routes without prefix collisions', () => {
+    // 메뉴 넷: 배움 · 대화 · 서재 · 산책(오너 확정 목업 2026-10-09 + 대화 오픈 지시 2026-10-15).
+    expect(MAIN_NAV.map(item => item.label)).toEqual(['배움', '대화', '서재', '산책']);
+    expect(MAIN_NAV.map(item => item.href)).toEqual(['/home', '/conversation/new', '/materials', '/discover']);
+    expect(new Set(MAIN_NAV.map(item => item.href)).size).toBe(4);
+    // 대화 메뉴 = 새 대화 화면(주제 · 이어서 하기). 대화 경로 안에서는 대화 메뉴에 불이 들어온다.
+    expect(existsSync('src/app/(app)/conversation/new/page.jsx')).toBe(true);
+    expect(navigationOwner('/conversation')).toBe('/conversation/new');
+    expect(navigationOwner('/conversation-other')).toBe(null);
     for (const item of MAIN_NAV) expect(navigationOwner(item.href)).toBe(item.href);
     // 메뉴에서 빠진 교재 · 복습 · 학습 경로는 배움 소속이다(정정 2026-10-11) — 어느 메뉴에도 불이 안 들어오는 화면이 없게.
     for (const path of ['/vocab', '/vocab?lang=Chinese', '/review/grammar', '/study', '/learn/course', '/lessons', '/books/japanese-n5', '/progress']) {
